@@ -143,6 +143,7 @@ struct _xwin_type _xwin =
 #endif
 
    NULL,        /* window close hook */
+   NULL,        /* window resize hook */
 #ifdef ALLEGRO_XWINDOWS_WITH_XF86VIDMODE
    0,           /* orig_modeinfo */
 #endif
@@ -185,6 +186,8 @@ static void _xwin_private_setup_driver_desc(GFX_DRIVER *drv);
 static BITMAP *_xwin_private_create_screen(GFX_DRIVER *drv, int w, int h,
 					   int vw, int vh, int depth, int fullscreen);
 static void _xwin_private_destroy_screen(void);
+static void _xwin_private_destroy_screen_data(void);
+static BITMAP *_xwin_private_create_screen_data(GFX_DRIVER *drv, int w, int h);
 static BITMAP *_xwin_private_create_screen_bitmap(GFX_DRIVER *drv,
 						  unsigned char *frame_buffer,
 						  int bytes_per_buffer_line);
@@ -847,42 +850,15 @@ static BITMAP *_xwin_private_create_screen(GFX_DRIVER *drv, int w, int h,
       XWarpPointer(_xwin.display, None, _xwin.window, 0, 0, 0, 0, w / 2, h / 2);
    }
    else {
-      XSizeHints *hints = XAllocSizeHints();;
-
       /* Resize managed window.  */
       XResizeWindow(_xwin.display, _xwin.wm_window, w, h);
-      
-      /* Set size and position hints for Window Manager.  */
-      if (hints) {
-         hints->flags = PMinSize | PMaxSize | PBaseSize;
-         hints->min_width  = hints->max_width  = hints->base_width  = w;
-         hints->min_height = hints->max_height = hints->base_height = h;
-         XSetWMNormalHints(_xwin.display, _xwin.wm_window, hints);
 
-         XFree(hints);
-      }
-      
       /* Map the window managed window.  */
       XMapWindow(_xwin.display, _xwin.wm_window);
       _xwin_wait_mapped(_xwin.wm_window);
    }
 
-   /* Create XImage with the size of virtual screen.  */
-   if (_xwin_private_create_ximage(vw, vh) != 0) {
-      ustrzcpy(allegro_error, ALLEGRO_ERROR_SIZE, get_config_text("Can not create XImage"));
-      return 0;
-   }
-
-   /* Prepare visual for further use.  */
-   _xwin_private_prepare_visual();
-
-   /* Test that frame buffer is fast (can be accessed directly).  */
-   _xwin.fast_visual_depth = _xwin_private_fast_visual_depth();
-
-   /* Create screen bitmap from frame buffer.  */
-   return _xwin_private_create_screen_bitmap(drv,
-					     (unsigned char *)_xwin.ximage->data + _xwin.ximage->xoffset,
-					     _xwin.ximage->bytes_per_line);
+   return _xwin_private_create_screen_data(drv, vw, vh);
 }
 
 BITMAP *_xwin_create_screen(GFX_DRIVER *drv, int w, int h,
@@ -905,22 +881,7 @@ BITMAP *_xwin_create_screen(GFX_DRIVER *drv, int w, int h,
  */
 static void _xwin_private_destroy_screen(void)
 {
-   if (_xwin.buffer_line != 0) {
-      _AL_FREE(_xwin.buffer_line);
-      _xwin.buffer_line = 0;
-   }
-
-   if (_xwin.screen_line != 0) {
-      _AL_FREE(_xwin.screen_line);
-      _xwin.screen_line = 0;
-   }
-
-   if (_xwin.screen_data != 0) {
-      _AL_FREE(_xwin.screen_data);
-      _xwin.screen_data = 0;
-   }
-
-   _xwin_private_destroy_ximage();
+   _xwin_private_destroy_screen_data();
 
    if (_xwin.mouse_grabbed) {
       XUngrabPointer(_xwin.display, CurrentTime);
@@ -956,6 +917,26 @@ static void _xwin_private_destroy_screen(void)
    (*_xwin_window_defaultor)();
 }
 
+static void _xwin_private_destroy_screen_data(void)
+{
+   if (_xwin.buffer_line != 0) {
+      _AL_FREE(_xwin.buffer_line);
+      _xwin.buffer_line = 0;
+   }
+
+   if (_xwin.screen_line != 0) {
+      _AL_FREE(_xwin.screen_line);
+      _xwin.screen_line = 0;
+   }
+
+   if (_xwin.screen_data != 0) {
+      _AL_FREE(_xwin.screen_data);
+      _xwin.screen_data = 0;
+   }
+
+   _xwin_private_destroy_ximage();
+}
+
 void _xwin_destroy_screen(void)
 {
    XLOCK();
@@ -963,6 +944,59 @@ void _xwin_destroy_screen(void)
    XUNLOCK();
 }
 
+
+
+static BITMAP *_xwin_private_rebuild_screen(int w, int h, int color_depth)
+{
+   _xwin_private_destroy_screen_data();
+
+   /* Save dimensions.  */
+   _xwin.window_width = w;
+   _xwin.window_height = h;
+   _xwin.screen_width = w;
+   _xwin.screen_height = h;
+   _xwin.screen_depth = color_depth;
+   _xwin.virtual_width = w;
+   _xwin.virtual_height = h;
+
+   /* Resize the (real) window */
+   XResizeWindow(_xwin.display, _xwin.window, w, h);
+
+   return _xwin_private_create_screen_data(gfx_driver, w, h);
+}
+
+BITMAP *_xwin_rebuild_screen(int w, int h, int color_depth)
+{
+   BITMAP *new_screen;
+
+   XLOCK();
+   new_screen = _xwin_private_rebuild_screen(w, h, color_depth);
+   XUNLOCK();
+
+   return new_screen;
+}
+
+
+
+static BITMAP *_xwin_private_create_screen_data(GFX_DRIVER *drv, int w, int h)
+{
+   /* Create XImage with the size of virtual screen.  */
+   if (_xwin_private_create_ximage(w, h) != 0) {
+      ustrzcpy(allegro_error, ALLEGRO_ERROR_SIZE, get_config_text("Can not create XImage"));
+      return NULL;
+   }
+
+   /* Prepare visual for further use.  */
+   _xwin_private_prepare_visual();
+
+   /* Test that frame buffer is fast (can be accessed directly).  */
+   _xwin.fast_visual_depth = _xwin_private_fast_visual_depth();
+
+   /* Create screen bitmap from frame buffer.  */
+   return _xwin_private_create_screen_bitmap(drv,
+					     (unsigned char *)_xwin.ximage->data + _xwin.ximage->xoffset,
+					     _xwin.ximage->bytes_per_line);
+}
 
 
 /* _xwin_create_screen_bitmap:
@@ -2428,6 +2462,27 @@ static void _xwin_private_process_event(XEvent *event)
                _xwin.close_button_callback();
          }
          break;
+      case ConfigureNotify: {
+	 int old_width = _xwin.window_width;
+	 int old_height = _xwin.window_height;
+	 int new_width = event->xconfigure.width;
+	 int new_height = event->xconfigure.height;
+
+	 if (_xwin.resize_callback &&
+	     ((old_width != new_width) ||
+	      (old_height != new_height))) {
+	    RESIZE_DISPLAY_EVENT ev;
+	    ev.old_w = old_width;
+	    ev.old_h = old_height;
+	    ev.new_w = new_width;
+	    ev.new_h = new_height;
+	    ev.is_maximized = 0;
+	    ev.is_restored = 0;
+
+	    _xwin.resize_callback(&ev);
+	 }
+         break;
+      }
    }
 }
 

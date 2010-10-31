@@ -621,7 +621,13 @@ int acknowledge_resize(void)
    TRACE(PREFIX_I "acknowledge_resize init.\n");
 
    if (gfx_driver->acknowledge_resize) {
-      BITMAP *new_screen = gfx_driver->acknowledge_resize();
+      BITMAP *new_screen;
+
+      /* Hide the mouse from current "screen" */
+      if (_mouse_installed)
+	 show_mouse(NULL);
+
+      new_screen = gfx_driver->acknowledge_resize();
       if (!new_screen) {
 	 TRACE(PREFIX_I "acknowledge_resize failed.\n");
 	 return -1;

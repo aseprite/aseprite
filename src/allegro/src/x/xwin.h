@@ -39,6 +39,7 @@ AL_FUNC(void, _xwin_destroy_window, (void));
 AL_FUNC(BITMAP*, _xwin_create_screen, (GFX_DRIVER *drv, int w, int h,
 				       int vw, int vh, int depth, int fullscreen));
 AL_FUNC(void, _xwin_destroy_screen, (void));
+AL_FUNC(BITMAP *, _xwin_rebuild_screen, (int w, int h, int color_depth));
 AL_FUNC(void, _xwin_set_palette_range, (AL_CONST PALETTE p, int from, int to, int vsync));
 AL_FUNC(void, _xwin_flush_buffers, (void));
 AL_FUNC(void, _xwin_vsync, (void));

@@ -139,7 +139,9 @@ extern struct _xwin_type
 #endif
 
    void (*close_button_callback)(void);
-   
+
+   void (*resize_callback)(RESIZE_DISPLAY_EVENT *ev);
+
    /* These are at the end of the struct to maintain ABI compatibility with
     * allegro-4.2.0 (if and only if compiled with the same configuration).
     * Notice that IMHO apps really should not be using _xwin, but we export it,

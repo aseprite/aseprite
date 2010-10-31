@@ -23,6 +23,7 @@
 
 static BITMAP *_xwin_gfxdrv_init(int w, int h, int vw, int vh, int color_depth);
 static void _xwin_gfxdrv_exit(BITMAP *bmp);
+static BITMAP *_xwin_acknowledge_resize(void);
 
 
 static GFX_DRIVER gfx_xwin =
@@ -51,7 +52,7 @@ static GFX_DRIVER gfx_xwin =
    NULL, NULL,
    NULL,    // AL_METHOD(void, set_blender_mode, (int mode, int r, int g, int b, int a));
    NULL,
-   NULL,			/* acknowledge_resize */
+   _xwin_acknowledge_resize,
    320, 200,
    TRUE,
    0, 0,
@@ -142,4 +143,20 @@ static void _xwin_gfxdrv_exit(BITMAP *bmp)
 static BITMAP *_xwin_fullscreen_gfxdrv_init(int w, int h, int vw, int vh, int color_depth)
 {
    return _xwin_create_screen(&gfx_xwin_fullscreen, w, h, vw, vh, color_depth, TRUE);
+}
+
+
+
+static BITMAP *_xwin_acknowledge_resize(void)
+{
+   int color_depth = bitmap_color_depth(screen);
+   XWindowAttributes getattr;
+   int w, h;
+
+   XGetWindowAttributes(_xwin.display, _xwin.wm_window, &getattr);
+
+   w = getattr.width;
+   h = getattr.height;
+
+   return _xwin_rebuild_screen(w, h, color_depth);
 }

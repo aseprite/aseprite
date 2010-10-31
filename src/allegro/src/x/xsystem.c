@@ -39,6 +39,7 @@ static int _xwin_sysdrv_init(void);
 static void _xwin_sysdrv_exit(void);
 static void _xwin_sysdrv_set_window_title(AL_CONST char *name);
 static int _xwin_sysdrv_set_close_button_callback(void (*proc)(void));
+static int _xwin_sysdrv_set_resize_callback(void (*proc)(RESIZE_DISPLAY_EVENT *ev));
 static void _xwin_sysdrv_message(AL_CONST char *msg);
 static int _xwin_sysdrv_display_switch_mode(int mode);
 static int _xwin_sysdrv_desktop_color_depth(void);
@@ -63,7 +64,7 @@ SYSTEM_DRIVER system_xwin =
    _unix_find_resource,
    _xwin_sysdrv_set_window_title,
    _xwin_sysdrv_set_close_button_callback,
-   NULL, /* set_resize_callback */
+   _xwin_sysdrv_set_resize_callback,
    _xwin_sysdrv_message,
    NULL, /* assert */
    NULL, /* save_console_state */
@@ -272,6 +273,15 @@ static void _xwin_sysdrv_set_window_title(AL_CONST char *name)
 static int _xwin_sysdrv_set_close_button_callback(void (*proc)(void))
 {
    _xwin.close_button_callback = proc;
+   
+   return 0;
+}
+
+
+
+static int _xwin_sysdrv_set_resize_callback(void (*proc)(RESIZE_DISPLAY_EVENT *ev))
+{
+   _xwin.resize_callback = proc;
    
    return 0;
 }
