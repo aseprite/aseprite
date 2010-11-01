@@ -85,9 +85,6 @@ AL_VAR(WIN_GFX_DRIVER *, win_gfx_driver);
 
 /* external window support */
 AL_FUNC(HWND, win_get_window, (void));
-AL_FUNC(void, win_set_window, (HWND wnd));
-AL_FUNC(void, win_set_wnd_create_proc, (AL_METHOD(HWND, proc, (WNDPROC))));
-AL_FUNC(void, win_set_msg_pre_proc, (AL_METHOD(int, proc, (HWND, UINT, WPARAM, LPARAM, int *))));
 
 /* GDI to DirectDraw routines */
 AL_FUNC(HDC, win_get_dc, (BITMAP *bmp));

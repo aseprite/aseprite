@@ -7,3 +7,5 @@ Changes:
 - Keyboard driver for Windows was modified to use WM_KEYDOWN/UP messages
   instead of DirectInput (like in Allegro 5).
 - Added resize support for Windows, X11, and Mac OS X ports.
+- Removed code and functions that are not used (Allegro GUI,
+  audio, MIDI, joystick, etc.).

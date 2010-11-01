@@ -50,8 +50,6 @@ int wnd_sysmenu = FALSE;
 static int last_wnd_x = -1;
 static int last_wnd_y = -1;
 
-static int window_is_initialized = FALSE;
-
 /* graphics */
 WIN_GFX_DRIVER *win_gfx_driver;
 CRITICAL_SECTION gfx_crit_sect;
@@ -69,24 +67,13 @@ void (*user_resize_proc)(RESIZE_DISPLAY_EVENT *ev) = NULL;
 
 /* window thread internals */
 #define ALLEGRO_WND_CLASS "AllegroWindow"
-static HWND user_wnd = NULL;
-static WNDPROC user_wnd_proc = NULL;
 static HANDLE wnd_thread = NULL;
-static HWND (*wnd_create_proc)(WNDPROC) = NULL;
 static int old_style = 0;
-
-static int (*wnd_msg_pre_proc)(HWND, UINT, WPARAM, LPARAM, int *) = NULL;
 
 /* custom window msgs */
 #define SWITCH_TIMER  1
 static UINT msg_call_proc = 0;
 static UINT msg_suicide = 0;
-
-/* window modules management */
-struct WINDOW_MODULES {
-   int keyboard;
-   int mouse;
-};
 
 /* Used in adjust_window(). */
 #ifndef CCHILDREN_TITLEBAR
@@ -97,50 +84,6 @@ typedef struct {
    DWORD rgstate[CCHILDREN_TITLEBAR + 1];
 } TITLEBARINFO, *PTITLEBARINFO, *LPTITLEBARINFO;
 #endif /* ifndef CCHILDREN_TITLEBAR */
-
-
-
-/* init_window_modules:
- *  Initialises the modules that are specified by the WM argument.
- */
-static int init_window_modules(struct WINDOW_MODULES *wm)
-{
-   if (wm->keyboard)
-      install_keyboard();
-
-   if (wm->mouse)
-      install_mouse();
-
-   return 0;
-}
-
-
-
-/* exit_window_modules:
- *  Removes the modules that depend upon the main window:
- *   - keyboard (DirectInput),
- *   - mouse (DirectInput),
- *  If WM is not NULL, record which modules are really removed.
- */
-static void exit_window_modules(struct WINDOW_MODULES *wm)
-{
-   if (wm)
-      memset(wm, 0, sizeof(*wm));
-
-   if (_keyboard_installed) {
-     if (wm)
-         wm->keyboard = TRUE;
-
-      remove_keyboard();
-   }
-
-   if (_mouse_installed) {
-      if (wm)
-         wm->mouse = TRUE;
-
-      remove_mouse();
-   }
-}
 
 
 
@@ -179,34 +122,19 @@ static LRESULT CALLBACK directx_wnd_proc(HWND wnd, UINT message, WPARAM wparam, 
       return 0;
    }
 
-   /* Call user callback if available */
-   if (wnd_msg_pre_proc){
-      int retval = 0;
-      if (wnd_msg_pre_proc(wnd, message, wparam, lparam, &retval) == 0)
-         return retval;
-   }
-
    switch (message) {
 
       case WM_CREATE:
-         if (!user_wnd_proc)
-            allegro_wnd = wnd;
+	 allegro_wnd = wnd;
          break;
 
       case WM_DESTROY:
-         if (user_wnd_proc) {
-            exit_window_modules(NULL);
-            _win_reset_switch_mode();
-         }
-         else {
-            PostQuitMessage(0);
-         }
-
+	 PostQuitMessage(0);
          allegro_wnd = NULL;
          break;
 
       case WM_SETCURSOR:
-         if (!user_wnd_proc || _mouse_installed) {
+         if (_mouse_installed) {
 	    int hittest = LOWORD(lparam);
 	    if (hittest == HTCLIENT) {
 	       mouse_set_syscursor();
@@ -325,7 +253,7 @@ static LRESULT CALLBACK directx_wnd_proc(HWND wnd, UINT message, WPARAM wparam, 
       }
 
       case WM_PAINT:
-         if (!user_wnd_proc || win_gfx_driver) {
+         if (win_gfx_driver) {
 	    PAINTSTRUCT ps;
             BeginPaint(wnd, &ps);
             if (win_gfx_driver && win_gfx_driver->paint)
@@ -364,12 +292,9 @@ static LRESULT CALLBACK directx_wnd_proc(HWND wnd, UINT message, WPARAM wparam, 
          return (MNC_CLOSE<<16)|(wparam&0xffff);
          
       case WM_CLOSE:
-         if (!user_wnd_proc) {
-            if (user_close_proc)
-               (*user_close_proc)();
-            return 0;
-         }
-         break;
+	 if (user_close_proc)
+	    (*user_close_proc)();
+	 return 0;
 
       case WM_LBUTTONDOWN:
       case WM_LBUTTONUP:
@@ -464,10 +389,7 @@ static LRESULT CALLBACK directx_wnd_proc(HWND wnd, UINT message, WPARAM wparam, 
    }
 
    /* pass message to default window proc */
-   if (user_wnd_proc)
-      return CallWindowProc(user_wnd_proc, wnd, message, wparam, lparam);
-   else
-      return DefWindowProc(wnd, message, wparam, lparam);
+   return DefWindowProc(wnd, message, wparam, lparam);
 }
 
 
@@ -542,11 +464,7 @@ static void wnd_thread_proc(HANDLE setup_event)
    _TRACE(PREFIX_I "window thread starts\n");
 
    /* setup window */
-   if (wnd_create_proc)
-      allegro_wnd = wnd_create_proc(directx_wnd_proc);
-   else
-      allegro_wnd = create_directx_window();
-
+   allegro_wnd = create_directx_window();
    if (!allegro_wnd)
       goto End;
 
@@ -565,8 +483,7 @@ static void wnd_thread_proc(HANDLE setup_event)
 
 
 /* init_directx_window:
- *  If the user called win_set_window, the user window will be hooked to receive
- *  messages from Allegro. Otherwise a thread is created to own the new window.
+ *  A thread is created to own the new window.
  */
 int init_directx_window(void)
 {
@@ -581,41 +498,22 @@ int init_directx_window(void)
    msg_call_proc = RegisterWindowMessage("Allegro call proc");
    msg_suicide = RegisterWindowMessage("Allegro window suicide");
 
-   if (user_wnd) {
-      /* hook the user window */
-      user_wnd_proc = (WNDPROC) SetWindowLong(user_wnd, GWL_WNDPROC, (long)directx_wnd_proc);
-      if (!user_wnd_proc)
-         return -1;
+   /* create window thread */
+   events[0] = CreateEvent(NULL, FALSE, FALSE, NULL);        /* acknowledges that thread is up */
+   events[1] = (HANDLE) _beginthread(wnd_thread_proc, 0, events[0]);
+   result = WaitForMultipleObjects(2, events, FALSE, INFINITE);
 
-      allegro_wnd = user_wnd;
+   CloseHandle(events[0]);
 
-      /* retrieve the window dimensions */
-      GetWindowRect(allegro_wnd, &win_rect.r);
-      ClientToScreen(allegro_wnd, &win_rect.p);
-      ClientToScreen(allegro_wnd, &win_rect.p + 1);
-      wnd_x = win_rect.r.left;
-      wnd_y = win_rect.r.top;
-      wnd_width = win_rect.r.right - win_rect.r.left;
-      wnd_height = win_rect.r.bottom - win_rect.r.top;
-   }
-   else {
-      /* create window thread */
-      events[0] = CreateEvent(NULL, FALSE, FALSE, NULL);        /* acknowledges that thread is up */
-      events[1] = (HANDLE) _beginthread(wnd_thread_proc, 0, events[0]);
-      result = WaitForMultipleObjects(2, events, FALSE, INFINITE);
+   switch (result) {
+   case WAIT_OBJECT_0:    /* window was created successfully */
+      wnd_thread = events[1];
+      SetThreadPriority(wnd_thread, THREAD_PRIORITY_ABOVE_NORMAL);
+      break;
 
-      CloseHandle(events[0]);
-
-      switch (result) {
-	 case WAIT_OBJECT_0:    /* window was created successfully */
-	    wnd_thread = events[1];
-	    SetThreadPriority(wnd_thread, THREAD_PRIORITY_ABOVE_NORMAL);
-	    break;
-
-	 default:               /* thread failed to create window */
-	    return -1;
-      } 
-   }
+   default:               /* thread failed to create window */
+      return -1;
+   } 
 
    /* initialize gfx critical section */
    InitializeCriticalSection(&gfx_crit_sect);
@@ -634,27 +532,16 @@ int init_directx_window(void)
  */
 void exit_directx_window(void)
 {
-   if (user_wnd) {
-      /* restore old window proc */
-      SetWindowLong(user_wnd, GWL_WNDPROC, (long)user_wnd_proc);
-      user_wnd_proc = NULL;
-      user_wnd = NULL;
-      allegro_wnd = NULL;
-   }
-   else {
-      /* Destroy the window: we cannot directly use DestroyWindow() because
-       * we are not running in the same thread as that of the window.
-       */
-      PostMessage(allegro_wnd, msg_suicide, 0, 0);
+   /* Destroy the window: we cannot directly use DestroyWindow() because
+    * we are not running in the same thread as that of the window.
+    */
+   PostMessage(allegro_wnd, msg_suicide, 0, 0);
 
-      /* wait until the window thread ends */
-      WaitForSingleObject(wnd_thread, INFINITE);
-      wnd_thread = NULL;
-   }
+   /* wait until the window thread ends */
+   WaitForSingleObject(wnd_thread, INFINITE);
+   wnd_thread = NULL;
 
    DeleteCriticalSection(&gfx_crit_sect);
-
-   window_is_initialized = FALSE;
 }
 
 
@@ -683,73 +570,71 @@ int adjust_window(int w, int h)
    int tb_height = 0;
    static int last_w=-1, last_h=-1;
 
-   if (!user_wnd) {
-      SystemParametersInfo(SPI_GETWORKAREA, 0, &working_area, 0);
+   SystemParametersInfo(SPI_GETWORKAREA, 0, &working_area, 0);
 
-      if ((last_w == -1) && (last_h == -1)) {
-         /* first window placement: try to center it */
-         last_wnd_x = (working_area.left + working_area.right - w)/2;
-         last_wnd_y = (working_area.top + working_area.bottom - h)/2;
+   if ((last_w == -1) && (last_h == -1)) {
+      /* first window placement: try to center it */
+      last_wnd_x = (working_area.left + working_area.right - w)/2;
+      last_wnd_y = (working_area.top + working_area.bottom - h)/2;
+   }
+   else {
+      /* try to get the height of the window's title bar */
+      user32_handle = GetModuleHandle("user32");
+      if (user32_handle) {
+	 get_title_bar_info
+	    = (func)GetProcAddress(user32_handle, "GetTitleBarInfo");
+	 if (get_title_bar_info) {
+	    tb_info.cbSize = sizeof(TITLEBARINFO);
+	    if (get_title_bar_info(allegro_wnd, &tb_info))
+	       tb_height
+		  = tb_info.rcTitleBar.bottom - tb_info.rcTitleBar.top;
+	 }
       }
-      else {
-         /* try to get the height of the window's title bar */
-         user32_handle = GetModuleHandle("user32");
-         if (user32_handle) {
-            get_title_bar_info
-               = (func)GetProcAddress(user32_handle, "GetTitleBarInfo");
-            if (get_title_bar_info) {
-               tb_info.cbSize = sizeof(TITLEBARINFO);
-               if (get_title_bar_info(allegro_wnd, &tb_info))
-                  tb_height
-                     = tb_info.rcTitleBar.bottom - tb_info.rcTitleBar.top;
-            }
-         }
-         if (!user32_handle || !get_title_bar_info)
-            tb_height = GetSystemMetrics(SM_CYSIZE);
+      if (!user32_handle || !get_title_bar_info)
+	 tb_height = GetSystemMetrics(SM_CYSIZE);
          
-	 /* try to center the window relative to its last position */
-	 last_wnd_x += (last_w - w)/2;
-	 last_wnd_y += (last_h - h)/2;
+      /* try to center the window relative to its last position */
+      last_wnd_x += (last_w - w)/2;
+      last_wnd_y += (last_h - h)/2;
 	 
-	 if (last_wnd_x + w >= working_area.right)
-	    last_wnd_x = working_area.right - w;
-	 if (last_wnd_y + h >= working_area.bottom)
-	    last_wnd_y = working_area.bottom - h;
-	 if (last_wnd_x < working_area.left)
-	    last_wnd_x = working_area.left;
-	 if (last_wnd_y - tb_height < working_area.top)
-	    last_wnd_y = working_area.top + tb_height;
-      }
+      if (last_wnd_x + w >= working_area.right)
+	 last_wnd_x = working_area.right - w;
+      if (last_wnd_y + h >= working_area.bottom)
+	 last_wnd_y = working_area.bottom - h;
+      if (last_wnd_x < working_area.left)
+	 last_wnd_x = working_area.left;
+      if (last_wnd_y - tb_height < working_area.top)
+	 last_wnd_y = working_area.top + tb_height;
+   }
 
 #ifdef ALLEGRO_COLORCONV_ALIGNED_WIDTH
-      last_wnd_x &= 0xfffffffc;
+   last_wnd_x &= 0xfffffffc;
 #endif
 
-      win_size.left = last_wnd_x;
-      win_size.top = last_wnd_y;
-      win_size.right = last_wnd_x+w;
-      win_size.bottom = last_wnd_y+h;
+   win_size.left = last_wnd_x;
+   win_size.top = last_wnd_y;
+   win_size.right = last_wnd_x+w;
+   win_size.bottom = last_wnd_y+h;
 
-      last_w = w;
-      last_h = h;
+   last_w = w;
+   last_h = h;
 
-      /* retrieve the size of the decorated window */
-      AdjustWindowRect(&win_size, GetWindowLong(allegro_wnd, GWL_STYLE), FALSE);
+   /* retrieve the size of the decorated window */
+   AdjustWindowRect(&win_size, GetWindowLong(allegro_wnd, GWL_STYLE), FALSE);
    
-      /* display the window */
-      MoveWindow(allegro_wnd, win_size.left, win_size.top,
-                 win_size.right - win_size.left, win_size.bottom - win_size.top, TRUE);
+   /* display the window */
+   MoveWindow(allegro_wnd, win_size.left, win_size.top,
+	      win_size.right - win_size.left, win_size.bottom - win_size.top, TRUE);
 
-      /* check that the actual window size is the one requested */
-      GetClientRect(allegro_wnd, &win_size);
-      if (((win_size.right - win_size.left) != w) || ((win_size.bottom - win_size.top) != h))
-         return -1;
+   /* check that the actual window size is the one requested */
+   GetClientRect(allegro_wnd, &win_size);
+   if (((win_size.right - win_size.left) != w) || ((win_size.bottom - win_size.top) != h))
+      return -1;
 
-      wnd_x = last_wnd_x;
-      wnd_y = last_wnd_y;
-      wnd_width = w;
-      wnd_height = h;
-   }
+   wnd_x = last_wnd_x;
+   wnd_y = last_wnd_y;
+   wnd_width = w;
+   wnd_height = h;
 
    return 0;
 }
@@ -768,64 +653,10 @@ void save_window_pos(void)
 
 
 
-/* win_set_window:
- *  Selects an user-defined window for Allegro or
- *  the built-in window if NULL is passed.
- */
-void win_set_window(HWND wnd)
-{
-   static int (*saved_scbc)(void (*proc)(void)) = NULL;
-   struct WINDOW_MODULES wm;
-
-   if (window_is_initialized || !wnd) {
-      exit_window_modules(&wm);
-      exit_directx_window();
-   }
-
-   user_wnd = wnd;
-
-   /* The user retains full control over the close button if he registers
-      a user-defined window. */
-   if (user_wnd) {
-      if (!saved_scbc)
-         saved_scbc = system_directx.set_close_button_callback;
-
-      system_directx.set_close_button_callback = NULL;
-   }
-   else {
-      if (saved_scbc)
-         system_directx.set_close_button_callback = saved_scbc;
-   }
-
-   if (window_is_initialized || !wnd) {
-      init_directx_window();
-      init_window_modules(&wm);
-   }
-   
-   window_is_initialized = TRUE;
-}
-
-
-
 /* win_get_window:
  *  Returns the Allegro window handle.
  */
 HWND win_get_window(void)
 {
    return allegro_wnd;
-}
-
-
-void win_set_msg_pre_proc(int (*proc)(HWND, UINT, WPARAM, LPARAM, int *))
-{
-   wnd_msg_pre_proc = proc;
-}
-
-
-/* win_set_wnd_create_proc:
- *  Sets a custom window creation proc.
- */
-void win_set_wnd_create_proc(HWND (*proc)(WNDPROC))
-{
-   wnd_create_proc = proc;
 }
