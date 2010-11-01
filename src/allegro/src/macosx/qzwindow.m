@@ -820,6 +820,7 @@ static BITMAP* osx_qz_window_acknowledge_resize(void)
 
    /* destroy the screen */
    private_osx_destroy_screen_data();
+   destroy_bitmap(pseudo_screen);
 
    /* change the size of the view */
    [qd_view setFrameSize: NSMakeSize(w, h)];

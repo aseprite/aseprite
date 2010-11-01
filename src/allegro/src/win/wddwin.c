@@ -782,9 +782,12 @@ static BITMAP *gfx_directx_acknowledge_resize(void)
       w -= (w % 4);
 
    _enter_gfx_critical();
+
+   /* Destroy old screen */
+   destroy_bitmap(gfx_directx_forefront_bitmap);
+   _destroy_directx_forefront_bitmap();
    
    /* Re-create the screen */
-   _destroy_directx_forefront_bitmap();
    new_screen = _create_directx_forefront_bitmap(w, h, color_depth);
 
    _exit_gfx_critical();

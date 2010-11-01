@@ -951,6 +951,7 @@ void _xwin_destroy_screen(void)
 static BITMAP *_xwin_private_rebuild_screen(int w, int h, int color_depth)
 {
    _xwin_private_destroy_screen_data();
+   destroy_bitmap(screen);
 
    /* Save dimensions.  */
    _xwin.window_width = w;
