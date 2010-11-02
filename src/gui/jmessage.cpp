@@ -58,8 +58,10 @@ JMessage jmessage_new_key_related(int type, int readkey_value)
   msg->key.propagate_to_parent = true;
 
 #if 0
-  printf("%i: %i %i [%c]\n", type, msg->key.scancode,
-	 msg->key.ascii, msg->key.ascii);
+  printf("%s: %i %i [%c]\n", type == JM_KEYPRESSED ? "JM_KEYPRESSED":
+						     "JM_KEYRELEASED",
+	 msg->key.scancode, msg->key.ascii, msg->key.ascii);
+  fflush(stdout);
 #endif
   return msg;
 }
