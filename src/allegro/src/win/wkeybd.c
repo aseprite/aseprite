@@ -150,6 +150,8 @@ void _al_win_kbd_handle_key_press(int scode, int vcode, BOOL repeated)
    if (vcode == VK_CAPITAL && repeated && key[KEY_CAPSLOCK])
       return;
 
+   ASSERT(vcode >= 0 && vcode < 256);
+
    mycode = hw_to_mycode[vcode];
    _handle_key_press(ccode, mycode);
 }
@@ -168,6 +170,8 @@ void _al_win_kbd_handle_key_release(int vcode)
      _al_win_kbd_update_shifts();
      return;
    }
+
+   ASSERT(vcode >= 0 && vcode < 256);
 
    mycode = hw_to_mycode[vcode];
    _handle_key_release(mycode);
