@@ -141,6 +141,9 @@ void Editor::editor_set_sprite(Sprite* sprite)
   ASSERT(m_pixelsMovement == NULL && "You cannot change the current sprite while you are moving pixels");
   ASSERT(m_state == EDITOR_STATE_STANDBY && "You can change the current sprite only in stand-by state");
 
+  if (m_cursor_thick)
+    editor_clean_cursor();
+
   // Change the sprite
   m_sprite = sprite;
   if (m_sprite) {
