@@ -132,9 +132,6 @@ void _al_win_kbd_handle_key_press(int scode, int vcode, BOOL repeated)
    if (!GetKeyboardState(&ks[0]))
      ccode = 0; /* shound't really happen */
    else if (ToUnicode(vcode, scode, ks, buf, 8, 0) == 1)
-     if (ToUnicode(vcode, scode, ks, buf, 8, 0) == 1)
-
-   if (ToUnicode(vcode, scode, ks, buf, 8, 0) == 1)
       ccode = buf[0];
    else
       ccode = 0;
