@@ -336,6 +336,8 @@ void Editor::editor_draw_cursor(int x, int y, bool refresh)
 
 void Editor::editor_move_cursor(int x, int y, bool refresh)
 {
+  ASSERT(m_sprite != NULL);
+
   int old_screen_x = m_cursor_screen_x;
   int old_screen_y = m_cursor_screen_y;
   int old_x = m_cursor_editor_x;
@@ -394,6 +396,7 @@ void Editor::editor_clean_cursor(bool refresh)
   int x, y;
 
   ASSERT(m_cursor_thick != 0);
+  ASSERT(m_sprite != NULL);
 
   clipping_region = jwidget_get_drawable_region(this, JI_GDR_CUTTOPWINDOWS);
 
