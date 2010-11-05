@@ -51,7 +51,6 @@ static void sys_directx_save_console_state(void);
 static void sys_directx_restore_console_state(void);
 static int sys_directx_desktop_color_depth(void);
 static int sys_directx_get_desktop_resolution(int *width, int *height);
-static void sys_directx_get_gfx_safe_mode(int *driver, struct GFX_MODE *mode);
 static void sys_directx_yield_timeslice(void);
 static int sys_directx_trace_handler(AL_CONST char *msg);
 
@@ -86,7 +85,7 @@ SYSTEM_DRIVER system_directx =
    NULL,                        /* AL_METHOD(void, display_switch_lock, (int lock)); */
    sys_directx_desktop_color_depth,
    sys_directx_get_desktop_resolution,
-   sys_directx_get_gfx_safe_mode,
+   NULL,			/* get_gfx_safe_mode */
    sys_directx_yield_timeslice,
    sys_directx_create_mutex,
    sys_directx_destroy_mutex,
@@ -429,19 +428,6 @@ static int sys_directx_get_desktop_resolution(int *width, int *height)
    ReleaseDC(NULL, dc);
 
    return 0;
-}
-
-
-
-/* sys_directx_get_gfx_safe_mode:
- *  Defines the safe graphics mode for this system.
- */
-static void sys_directx_get_gfx_safe_mode(int *driver, struct GFX_MODE *mode)
-{
-   *driver = GFX_GDI;
-   mode->width = 320;
-   mode->height = 200;
-   mode->bpp = 8;
 }
 
 

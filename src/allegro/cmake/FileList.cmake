@@ -96,15 +96,12 @@ set(ALLEGRO_SRC_WIN_FILES
         src/win/wddbmp.c
         src/win/wddbmpl.c
         src/win/wddraw.c
-        src/win/wddfull.c
         src/win/wddlock.c
         src/win/wddmode.c
-        src/win/wddovl.c
         src/win/wddwin.c
         src/win/wdxver.c
         src/win/wdispsw.c
         src/win/wfile.c
-        src/win/wgdi.c
         src/win/wgfxdrv.c
         src/win/wkeybd.c
         src/win/wmouse.c
