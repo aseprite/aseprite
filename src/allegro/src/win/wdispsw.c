@@ -32,9 +32,6 @@
 
 int _win_app_foreground = TRUE;
 
-static HANDLE foreground_event = NULL;
-static int allegro_thread_priority = THREAD_PRIORITY_NORMAL;
-
 
 
 /* _win_reset_switch_mode:
@@ -49,9 +46,6 @@ void _win_reset_switch_mode(void)
    set_display_switch_mode(SWITCH_BACKGROUND);
 
    _win_app_foreground = TRUE;
-   
-   /* This has a nice side-effect: releasing the blocked threads. */
-   SetEvent(foreground_event);
 }
 
 
@@ -60,7 +54,6 @@ void _win_reset_switch_mode(void)
  */
 void sys_directx_display_switch_init(void)
 {
-   foreground_event = CreateEvent(NULL, TRUE, TRUE, NULL);
    _win_reset_switch_mode();
 }
 
@@ -70,7 +63,6 @@ void sys_directx_display_switch_init(void)
  */
 void sys_directx_display_switch_exit(void)
 {
-   CloseHandle(foreground_event);
 }
 
 
@@ -107,8 +99,6 @@ int sys_directx_set_display_switch_mode(int mode)
  */
 void _win_switch_in(void)
 {
-   int mode;
-
    _TRACE(PREFIX_I "switch in\n");
 
    _win_app_foreground = TRUE;
@@ -118,17 +108,6 @@ void _win_switch_in(void)
 
    if (win_gfx_driver && win_gfx_driver->switch_in)
       win_gfx_driver->switch_in();
-
-   /* handle switch modes */
-   mode = get_display_switch_mode();
-
-   if ((mode == SWITCH_AMNESIA) || (mode == SWITCH_PAUSE)) {
-      _TRACE(PREFIX_I "AMNESIA or PAUSE mode recovery\n");
-      SetEvent(foreground_event);
-
-      /* restore old priority and wake up */
-      SetThreadPriority(allegro_thread, allegro_thread_priority);
-   }
 
    _switch_in();
 }
@@ -140,27 +119,12 @@ void _win_switch_in(void)
  */
 void _win_switch_out(void)
 {
-   int mode;
-
    _TRACE(PREFIX_I "switch out\n");
 
    _win_app_foreground = FALSE;
 
    if (win_gfx_driver && win_gfx_driver->switch_out)
       win_gfx_driver->switch_out();
-
-   /* handle switch modes */
-   mode = get_display_switch_mode();
-
-   if ((mode == SWITCH_AMNESIA) || (mode == SWITCH_PAUSE)) {
-      _TRACE(PREFIX_I "AMNESIA or PAUSE mode suspension\n");
-      ResetEvent(foreground_event);
-
-      /* if the thread doesn't stop, lower its priority only if another window is active */ 
-      allegro_thread_priority = GetThreadPriority(allegro_thread); 
-      if ((HINSTANCE)GetWindowLong(GetForegroundWindow(), GWL_HINSTANCE) != allegro_inst)
-	 SetThreadPriority(allegro_thread, THREAD_PRIORITY_LOWEST); 
-   }
 
    _switch_out();
 }
@@ -173,12 +137,5 @@ void _win_switch_out(void)
  */
 int _win_thread_switch_out(void)
 {
-   int mode = get_display_switch_mode();
-
-   if ((mode == SWITCH_AMNESIA) || (mode == SWITCH_PAUSE)) {
-      WaitForSingleObject(foreground_event, INFINITE);
-      return TRUE;
-   }
-
    return FALSE;
 }
