@@ -95,7 +95,6 @@ add_library(aseprite-library
   commands/cmd_check_updates.cpp
   commands/cmd_clear.cpp
   commands/cmd_close_file.cpp
-  commands/cmd_configure_screen.cpp
   commands/cmd_configure_tools.cpp
   commands/cmd_copy.cpp
   commands/cmd_copy_cel.cpp
