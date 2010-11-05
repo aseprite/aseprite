@@ -441,7 +441,7 @@ static HWND create_directx_window(void)
 /* wnd_thread_proc:
  *  Thread function that handles the messages of the directx window.
  */
-static void wnd_thread_proc(HANDLE setup_event)
+static DWORD WINAPI wnd_thread_proc(HANDLE setup_event)
 {
    MSG msg;
 
@@ -463,6 +463,8 @@ static void wnd_thread_proc(HANDLE setup_event)
  End:
    _TRACE(PREFIX_I "window thread exits\n");
    _win_thread_exit();
+
+   return 0;
 }
 
 
@@ -478,6 +480,7 @@ int init_directx_window(void)
    } win_rect;
    HANDLE events[2];
    long result;
+   DWORD threadId;
 
    /* setup globals */
    msg_call_proc = RegisterWindowMessage("Allegro call proc");
@@ -485,7 +488,9 @@ int init_directx_window(void)
 
    /* create window thread */
    events[0] = CreateEvent(NULL, FALSE, FALSE, NULL);        /* acknowledges that thread is up */
-   events[1] = (HANDLE) _beginthread(wnd_thread_proc, 0, events[0]);
+   events[1] = CreateThread(NULL, 0, wnd_thread_proc, events[0], CREATE_SUSPENDED, &threadId);
+   ResumeThread(events[1]);
+
    result = WaitForMultipleObjects(2, events, FALSE, INFINITE);
 
    CloseHandle(events[0]);
@@ -522,6 +527,7 @@ void exit_directx_window(void)
 
    /* wait until the window thread ends */
    WaitForSingleObject(wnd_thread, INFINITE);
+   CloseHandle(wnd_thread);
    wnd_thread = NULL;
 
    DeleteCriticalSection(&gfx_crit_sect);
