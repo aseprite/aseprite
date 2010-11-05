@@ -338,6 +338,7 @@ static LRESULT CALLBACK directx_wnd_proc(HWND wnd, UINT message, WPARAM wparam, 
          if (_mouse_installed) {
 	    POINTS p = MAKEPOINTS(lparam);
 	    _al_win_mouse_handle_move(wnd, p.x, p.y);
+	    return 0;
 	 }
          break;
 
