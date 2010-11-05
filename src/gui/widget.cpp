@@ -1339,9 +1339,8 @@ Size Widget::getPreferredSize()
        This can have both attributes (width and height) in
        zero, which means that it'll behave same as #getPreferredSize().
        If the width is great than zero the #onPreferredSize will try to
-       fit in that width (this is useful to fit @link Vaca::Label Label@endlink
-       or @link Vaca::Edit Edit@endlink controls in a specified width and
-       calculate the height it could occupy).
+       fit in that width (this is useful to fit Label or Edit controls
+       in a specified width and calculate the height it could occupy).
 
    @see getPreferredSize
 */

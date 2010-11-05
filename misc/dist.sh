@@ -63,13 +63,6 @@ tinyxml_files="third_party/tinyxml/*.txt	\
 	       third_party/tinyxml/*.cpp	\
 	       third_party/tinyxml/*.h"
 
-vaca_files="third_party/vaca/include/Vaca/*.h	\
-	    third_party/vaca/src/*.cpp		\
-	    third_party/vaca/src/allegro/*.h	\
-	    third_party/vaca/src/std/*.h	\
-	    third_party/vaca/src/unix/*.h	\
-	    third_party/vaca/src/win32/*.h"
-
 zlib_files="third_party/zlib/*.[ch]		\
 	    third_party/zlib/*.txt		\
 	    third_party/zlib/README"
@@ -167,7 +160,6 @@ cp --parents					\
     $libpng_files				\
     $loadpng_files				\
     $tinyxml_files				\
-    $vaca_files					\
     $zlib_files					\
     $ase_files					\
     "$dir/$distdir"

@@ -232,7 +232,7 @@ bool Frame::onProcessMessage(JMessage msg)
     case JM_CLOSE:
       // Fire Close signal
       {
-	Vaca::CloseEvent ev;
+	CloseEvent ev;
 	Close(ev);
       }
       break;

@@ -10,9 +10,7 @@
 #include "base/signal.h"
 #include "gui/widget.h"
 
-namespace Vaca {
-  class CloseEvent { };		// TODO
-}
+class CloseEvent { };		// TODO
 
 class Frame : public Widget
 {
@@ -54,7 +52,7 @@ public:
   bool is_wantfocus() const;
 
   // Signals
-  Signal1<void, Vaca::CloseEvent&> Close;
+  Signal1<void, CloseEvent&> Close;
 
 protected:
   bool onProcessMessage(JMessage msg);
