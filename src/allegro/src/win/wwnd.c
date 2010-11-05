@@ -475,10 +475,6 @@ static DWORD WINAPI wnd_thread_proc(HANDLE setup_event)
  */
 int init_directx_window(void)
 {
-   union {
-     POINT p;
-     RECT r;
-   } win_rect;
    HANDLE events[2];
    long result;
    DWORD threadId;
