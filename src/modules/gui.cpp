@@ -1235,7 +1235,7 @@ static bool manager_msg_proc(JWidget widget, JMessage msg)
 	      }
 
 	      toolbar_select_tool(app_get_toolbar(), select_this_tool);
-	      break;
+	      return true;
 	    }
 
 	    case Shortcut_ExecuteCommand: {
