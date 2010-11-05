@@ -66,7 +66,7 @@ static BOOL sizing = FALSE;
 void (*user_resize_proc)(RESIZE_DISPLAY_EVENT *ev) = NULL;
 
 /* window thread internals */
-#define ALLEGRO_WND_CLASS "AllegroWindow"
+#define ALLEGRO_WND_CLASS "ASEWindowClass"
 static HANDLE wnd_thread = NULL;
 static int old_style = 0;
 
