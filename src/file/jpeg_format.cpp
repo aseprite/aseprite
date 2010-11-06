@@ -89,7 +89,7 @@ static bool load_JPEG(FileOp *fop)
   JDIMENSION buffer_height;
   int c;
 
-  file = fopen(fop->filename, "rb");
+  file = fopen(fop->filename.c_str(), "rb");
   if (!file)
     return false;
 
@@ -232,7 +232,7 @@ static bool save_JPEG(FileOp *fop)
   int c;
 
   /* Open the file for write in it.  */
-  file = fopen(fop->filename, "wb");
+  file = fopen(fop->filename.c_str(), "wb");
   if (!file) {
     fop_error(fop, "Error creating file.\n");
     return false;

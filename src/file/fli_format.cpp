@@ -72,7 +72,7 @@ static bool load_FLI(FileOp *fop)
   FILE *f;
 
   /* open the file to read in binary mode */
-  f = fopen(fop->filename, "rb");
+  f = fopen(fop->filename.c_str(), "rb");
   if (!f)
     return false;
 
@@ -241,7 +241,7 @@ static bool save_FLI(FileOp *fop)
   fli_header.oframe1 = fli_header.oframe2 = 0;
 
   /* open the file to write in binary mode */
-  f = fopen(fop->filename, "wb");
+  f = fopen(fop->filename.c_str(), "wb");
   if (!f)
     return false;
 

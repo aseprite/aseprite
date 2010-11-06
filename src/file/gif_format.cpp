@@ -87,7 +87,7 @@ static bool load_GIF(FileOp *fop)
   bool ret = false;
   int i, c;
 
-  gif = gif_load_animation(fop->filename,
+  gif = gif_load_animation(fop->filename.c_str(),
 			   reinterpret_cast<void(*)(void*,float)>(fop_progress), fop);
   if (!gif) {
     fop_error(fop, "Error loading GIF file.\n");
@@ -439,7 +439,7 @@ static bool save_GIF(FileOp *fop)
     opal = npal;
   }
 
-  ret = gif_save_animation(fop->filename, gif,
+  ret = gif_save_animation(fop->filename.c_str(), gif,
 			   reinterpret_cast<void(*)(void*,float)>(fop_progress), fop);
   gif_destroy_animation(gif);
   return ret == 0 ? true: false;

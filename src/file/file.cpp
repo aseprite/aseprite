@@ -21,15 +21,13 @@
 #include <allegro.h>
 #include <string.h>
 
-#include "gui/jalert.h"
-#include "gui/jlist.h"
-
 #include "app.h"
 #include "base/mutex.h"
 #include "base/scoped_lock.h"
 #include "console.h"
 #include "file/file.h"
 #include "file/format_options.h"
+#include "gui/jalert.h"
 #include "modules/gui.h"
 #include "modules/palettes.h"
 #include "raster/raster.h"
@@ -112,9 +110,9 @@ Sprite *sprite_load(const char *filename)
   fop_operate(fop);
   fop_done(fop);
 
-  if (fop->error) {
+  if (fop->has_error()) {
     Console console;
-    console.printf(fop->error);
+    console.printf(fop->error.c_str());
   }
 
   sprite = fop->sprite;
@@ -134,12 +132,12 @@ int sprite_save(Sprite *sprite)
   fop_operate(fop);
   fop_done(fop);
 
-  if (fop->error) {
+  if (fop->has_error()) {
     Console console;
-    console.printf(fop->error);
+    console.printf(fop->error.c_str());
   }
 
-  ret = (fop->error == NULL) ? 0: -1;
+  ret = (!fop->has_error() ? 0: -1);
   fop_free(fop);
 
   return ret;
@@ -180,7 +178,7 @@ FileOp *fop_to_load_sprite(const char *filename, int flags)
     fop_prepare_for_sequence(fop);
 
     /* per now, we want load just one file */
-    jlist_append(fop->seq.filename_list, jstrdup(filename));
+    fop->seq.filename_list.push_back(filename);
 
     /* don't load the sequence (just the one file/one frame) */
     if (!(flags & FILE_LOAD_SEQUENCE_NONE)) {
@@ -203,8 +201,7 @@ FileOp *fop_to_load_sprite(const char *filename, int flags)
 	    break;
 
 	  /* add this file name to the list */
-	  jlist_append(fop->seq.filename_list,
-		       jstrdup(buf));
+	  fop->seq.filename_list.push_back(buf);
 	}
       }
 
@@ -212,26 +209,26 @@ FileOp *fop_to_load_sprite(const char *filename, int flags)
       if ((flags & FILE_LOAD_SEQUENCE_ASK) &&
 	  App::instance()->isGui()) {
 	/* really want load all files? */
-	if ((jlist_length(fop->seq.filename_list) > 1) &&
+	if ((fop->seq.filename_list.size() > 1) &&
 	    (jalert("Notice"
 		    "<<Possible animation with:"
 		    "<<%s"
 		    "<<Load the sequence of bitmaps?"
 		    "||&Agree||&Skip",
 		    get_filename(filename)) != 1)) {
+	 
 	  /* if the user replies "Skip", we need just one file name (the
 	     first one) */
-	  while (jlist_length(fop->seq.filename_list) > 1) {
-	    JLink link = jlist_last(fop->seq.filename_list);
-	    jfree(link->data);
-	    jlist_delete_link(fop->seq.filename_list, link);
+	  if (fop->seq.filename_list.size() > 1) {
+	    fop->seq.filename_list.erase(fop->seq.filename_list.begin()+1,
+					 fop->seq.filename_list.end());
 	  }
 	}
       }
     }
   }
   else
-    fop->filename = jstrdup(filename);
+    fop->filename = filename;
 
   /* load just one frame */
   if (flags & FILE_LOAD_ONE_FRAME)
@@ -390,8 +387,7 @@ FileOp *fop_to_save_sprite(Sprite *sprite)
 
     /* to save one frame */
     if (fop->sprite->getTotalFrames() == 1) {
-      jlist_append(fop->seq.filename_list,
-		   jstrdup(fop->sprite->getFilename()));
+      fop->seq.filename_list.push_back(fop->sprite->getFilename());
     }
     /* to save more frames */
     else {
@@ -410,12 +406,12 @@ FileOp *fop_to_save_sprite(Sprite *sprite)
       for (frame=0; frame<fop->sprite->getTotalFrames(); frame++) {
 	/* get the name for this frame */
 	usprintf(buf, "%s%0*d%s", left, width, start_from+frame, right);
-	jlist_append(fop->seq.filename_list, jstrdup(buf));
+	fop->seq.filename_list.push_back(buf);
       }
     }
   }
   else
-    fop->filename = jstrdup(fop->sprite->getFilename());
+    fop->filename = fop->sprite->getFilename();
 
   /* configure output format? */
   if (fop->format->get_options != NULL) {
@@ -452,10 +448,9 @@ void fop_operate(FileOp *fop)
       fop->format != NULL &&
       fop->format->load != NULL) {
     /* load a sequence */
-    if (fop->seq.filename_list != NULL) {
+    if (fop->is_sequence()) {
       int frame, frames, image_index = 0;
       Image *old_image;
-      JLink link;
       bool loadres;
 
       /* default palette */
@@ -481,7 +476,7 @@ void fop_operate(FileOp *fop)
       } while (0)
 
       /* load the sequence */
-      frames = jlist_length(fop->seq.filename_list);
+      frames = fop->seq.filename_list.size();
       frame = 0;
       old_image = NULL;
       
@@ -489,14 +484,16 @@ void fop_operate(FileOp *fop)
       fop->seq.progress_offset = 0.0f;
       fop->seq.progress_fraction = 1.0f / (float)frames;
 
-      JI_LIST_FOR_EACH(fop->seq.filename_list, link) {
-	fop->filename = reinterpret_cast<char*>(link->data);
+      std::vector<std::string>::iterator it = fop->seq.filename_list.begin();
+      std::vector<std::string>::iterator end = fop->seq.filename_list.end();
+      for (; it != end; ++it) {
+	fop->filename = it->c_str();
 
 	/* call the "load" procedure to read the first bitmap */
 	loadres = (*fop->format->load)(fop);
 	if (!loadres) {
 	  fop_error(fop, "Error loading frame %d from file \"%s\"\n",
-		    frame+1, fop->filename);
+		    frame+1, fop->filename.c_str());
 	}
 
 	/* for the first frame... */
@@ -551,7 +548,7 @@ void fop_operate(FileOp *fop)
 	frame++;
 	fop->seq.progress_offset += fop->seq.progress_fraction;
       }
-      fop->filename = jstrdup((char*)jlist_first_data(fop->seq.filename_list));
+      fop->filename = *fop->seq.filename_list.begin();
 
       // Final setup
       if (fop->sprite != NULL) {
@@ -571,7 +568,7 @@ void fop_operate(FileOp *fop)
       /* call the "load" procedure */
       if (!(*fop->format->load)(fop))
 	fop_error(fop, "Error loading sprite from file \"%s\"\n",
-		  fop->filename);
+		  fop->filename.c_str());
     }
 
     if (fop->sprite != NULL) {
@@ -582,10 +579,10 @@ void fop_operate(FileOp *fop)
       }
 
       /* set the filename */
-      if (fop->seq.filename_list)
-	fop->sprite->setFilename(reinterpret_cast<char*>(jlist_first_data(fop->seq.filename_list)));
+      if (fop->is_sequence())
+	fop->sprite->setFilename(fop->seq.filename_list.begin()->c_str());
       else
-	fop->sprite->setFilename(fop->filename);
+	fop->sprite->setFilename(fop->filename.c_str());
 
       // Quantize a palette for RGB images
       if (fop->sprite->getImgType() == IMAGE_RGB)
@@ -599,7 +596,7 @@ void fop_operate(FileOp *fop)
 	   fop->format != NULL &&
 	   fop->format->save != NULL) {
     /* save a sequence */
-    if (fop->seq.filename_list != NULL) {
+    if (fop->is_sequence()) {
       ASSERT(fop->format->flags & FILE_SUPPORT_SEQUENCES);
 
       /* create a temporary bitmap */
@@ -625,20 +622,18 @@ void fop_operate(FileOp *fop)
 	    ->copyColorsTo(fop->seq.palette);
 
 	  /* setup the filename to be used */
-	  fop->filename = reinterpret_cast<char*>
-	    (jlist_nth_data(fop->seq.filename_list,
-			    fop->sprite->getCurrentFrame()));
+	  fop->filename = fop->seq.filename_list[fop->sprite->getCurrentFrame()];
 
 	  /* call the "save" procedure... did it fail? */
 	  if (!(*fop->format->save)(fop)) {
 	    fop_error(fop, "Error saving frame %d in the file \"%s\"\n",
-		      fop->sprite->getCurrentFrame()+1, fop->filename);
+		      fop->sprite->getCurrentFrame()+1, fop->filename.c_str());
 	    break;
 	  }
 
 	  fop->seq.progress_offset += fop->seq.progress_fraction;
 	}
-	fop->filename = jstrdup(reinterpret_cast<char*>(jlist_first_data(fop->seq.filename_list)));
+	fop->filename = *fop->seq.filename_list.begin();
 
 	// Destroy the image
 	image_free(fop->seq.image);
@@ -655,7 +650,7 @@ void fop_operate(FileOp *fop)
       /* call the "save" procedure */
       if (!(*fop->format->save)(fop))
 	fop_error(fop, "Error saving the sprite in the file \"%s\"\n",
-		  fop->filename);
+		  fop->filename.c_str());
     }
   }
 
@@ -682,22 +677,6 @@ void fop_stop(FileOp *fop)
 
 void fop_free(FileOp *fop)
 {
-  if (fop->filename)
-    jfree(fop->filename);
-
-  if (fop->error)
-    jfree(fop->error);
-
-  if (fop->seq.filename_list) {
-    JLink link;
-
-    /* free old filenames strings */
-    JI_LIST_FOR_EACH(fop->seq.filename_list, link)
-      jfree(link->data);
-
-    jlist_free(fop->seq.filename_list);
-  }
-
   if (fop->seq.palette != NULL)
     delete fop->seq.palette;
 
@@ -784,20 +763,10 @@ void fop_error(FileOp *fop, const char *format, ...)
   uvszprintf(buf_error, sizeof(buf_error), format, ap);
   va_end(ap);
 
+  // Concatenate the new error
   {
     ScopedLock lock(*fop->mutex);
-
-    // Concatenate old errors with the new one
-    if (fop->error) {
-      char *old_error = fop->error;
-      fop->error = reinterpret_cast<char*>(jmalloc(ustrsizez(old_error) + ustrsizez(buf_error) + 1));
-      ustrcpy(fop->error, old_error);
-      ustrcat(fop->error, buf_error);
-      jfree(old_error);
-    }
-    /* first error */
-    else
-      fop->error = jstrdup(buf_error);
+    fop->error += buf_error;
   }
 }
 
@@ -807,7 +776,7 @@ void fop_progress(FileOp *fop, float progress)
 
   ScopedLock lock(*fop->mutex);
 
-  if (fop->seq.filename_list != NULL) {
+  if (fop->is_sequence()) {
     fop->progress =
       fop->seq.progress_offset +
       fop->seq.progress_fraction*progress;
@@ -858,16 +827,13 @@ static FileOp *fop_new(FileOpType type)
   fop->type = type;
   fop->format = NULL;
   fop->sprite = NULL;
-  fop->filename = NULL;
 
   fop->mutex = new Mutex();
   fop->progress = 0.0f;
-  fop->error = NULL;
   fop->done = false;
   fop->stop = false;
   fop->oneframe = false;
 
-  fop->seq.filename_list = NULL;
   fop->seq.palette = NULL;
   fop->seq.image = NULL;
   fop->seq.progress_offset = 0.0f;
@@ -881,7 +847,6 @@ static FileOp *fop_new(FileOpType type)
 
 static void fop_prepare_for_sequence(FileOp *fop)
 {
-  fop->seq.filename_list = jlist_new();
   fop->seq.palette = new Palette(0, 256);
   fop->seq.format_options = NULL;
 }

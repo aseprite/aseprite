@@ -199,7 +199,7 @@ static bool load_TGA(FileOp *fop)
   FILE *f;
   int type;
 
-  f = fopen(fop->filename, "rb");
+  f = fopen(fop->filename.c_str(), "rb");
   if (!f)
     return false;
 
@@ -405,7 +405,7 @@ static bool save_TGA(FileOp *fop)
   bool need_pal = (image->imgtype == IMAGE_INDEXED)? true: false;
   FILE *f;
 
-  f = fopen(fop->filename, "wb");
+  f = fopen(fop->filename.c_str(), "wb");
   if (!f) {
     fop_error(fop, "Error creating file.\n");
     return false;

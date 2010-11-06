@@ -76,7 +76,7 @@ struct BITMAPINFOHEADER
 
 static bool load_ICO(FileOp *fop)
 {
-  FILE* f = fopen(fop->filename, "rb");
+  FILE* f = fopen(fop->filename.c_str(), "rb");
   if (!f)
     return false;
 
@@ -229,7 +229,7 @@ static bool save_ICO(FileOp *fop)
   int c, x, y, b, m, v;
   int num = sprite->getTotalFrames();
 
-  FILE* f = fopen(fop->filename, "wb");
+  FILE* f = fopen(fop->filename.c_str(), "wb");
   if (!f)
     return false;
 

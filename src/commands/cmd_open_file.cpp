@@ -150,8 +150,8 @@ void OpenFileCommand::onExecute(Context* context)
     bool unrecent = false;
 
     if (fop) {
-      if (fop->error) {
-	console.printf(fop->error);
+      if (fop->has_error()) {
+	console.printf(fop->error.c_str());
 	fop_free(fop);
 
 	unrecent = true;
@@ -180,14 +180,14 @@ void OpenFileCommand::onExecute(Context* context)
 	thread.join();
 
 	// Show any error
-	if (fop->error)
-	  console.printf(fop->error);
+	if (fop->has_error())
+	  console.printf(fop->error.c_str());
 
 	Sprite *sprite = fop->sprite;
 	if (sprite) {
 	  UIContext* context = UIContext::instance();
 
-	  App::instance()->getRecentFiles()->addRecentFile(fop->filename);
+	  App::instance()->getRecentFiles()->addRecentFile(fop->filename.c_str());
 	  context->add_sprite(sprite);
 
 	  set_sprite_in_more_reliable_editor(sprite);

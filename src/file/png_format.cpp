@@ -67,7 +67,7 @@ static bool load_PNG(FileOp *fop)
   int imgtype;
   FILE *fp;
 
-  fp = fopen(fop->filename, "rb");
+  fp = fopen(fop->filename.c_str(), "rb");
   if (!fp)
     return false;
 
@@ -303,7 +303,7 @@ static bool save_PNG(FileOp *fop)
   FILE *fp;
 
   /* open the file */
-  fp = fopen(fop->filename, "wb");
+  fp = fopen(fop->filename.c_str(), "wb");
   if (fp == NULL)
     return false;
 

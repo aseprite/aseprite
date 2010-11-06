@@ -52,7 +52,7 @@ static bool load_PCX(FileOp *fop)
   int x, y;
   char ch = 0;
 
-  f = fopen(fop->filename, "rb");
+  f = fopen(fop->filename.c_str(), "rb");
   if (!f)
     return false;
 
@@ -187,7 +187,7 @@ static bool save_PCX(FileOp *fop)
   char runchar;
   char ch = 0;
 
-  f = fopen(fop->filename, "wb");
+  f = fopen(fop->filename.c_str(), "wb");
   if (!f) {
     fop_error(fop, "Error creating file.\n");
     return false;

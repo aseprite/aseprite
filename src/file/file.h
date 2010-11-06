@@ -19,8 +19,9 @@
 #ifndef FILE_FILE_H_INCLUDED
 #define FILE_FILE_H_INCLUDED
 
-#include "gui/jbase.h"
 #include <stdio.h>
+#include <vector>
+#include <string>
 
 #define FILE_SUPPORT_RGB		(1<<0)
 #define FILE_SUPPORT_RGBA		(1<<1)
@@ -77,12 +78,12 @@ struct FileOp
   FileOpType type;		/* operation type: 0=load, 1=save */
   FileFormat* format;
   Sprite* sprite;		/* loaded sprite, or sprite to be saved */
-  char* filename;		/* file-name to load/save */
+  std::string filename;		/* file-name to load/save */
 
   /* shared fields between threads */
   Mutex* mutex;			/* mutex to access to the next two fields */
   float progress;		/* progress (1.0 is ready) */
-  char* error;			/* error string */
+  std::string error;		/* error string */
   bool done : 1;		/* true if the operation finished */
   bool stop : 1;		/* force the break of the operation */
   bool oneframe : 1;		/* load just one frame (in formats
@@ -91,7 +92,7 @@ struct FileOp
 
   /* data for sequences */
   struct {
-    JList filename_list;	/* all file names to load/save */
+    std::vector<std::string> filename_list; /* all file names to load/save */
     Palette* palette;		/* palette of the sequence */
     Image* image;		/* image to be saved/loaded */
     /* for the progress bar */
@@ -104,6 +105,15 @@ struct FileOp
     Cel* last_cel;
     FormatOptions* format_options;
   } seq;
+
+  bool has_error() const {
+    return !this->error.empty();
+  }
+
+  bool is_sequence() const {
+    return !this->seq.filename_list.empty();
+  }
+
 };
 
 /* available extensions for each load/save operation */

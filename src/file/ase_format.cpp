@@ -135,7 +135,7 @@ static bool load_ASE(FileOp *fop)
   int c, frame;
   FILE *f;
 
-  f = fopen(fop->filename, "rb");
+  f = fopen(fop->filename.c_str(), "rb");
   if (!f)
     return false;
 
@@ -290,7 +290,7 @@ static bool save_ASE(FileOp *fop)
   int frame;
   FILE *f;
 
-  f = fopen(fop->filename, "wb");
+  f = fopen(fop->filename.c_str(), "wb");
   if (!f)
     return false;
 

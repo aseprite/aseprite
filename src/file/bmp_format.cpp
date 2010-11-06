@@ -577,7 +577,7 @@ static bool load_BMP(FileOp *fop)
   unsigned long biSize;
   int type, format;
 
-  f = fopen(fop->filename, "rb");
+  f = fopen(fop->filename.c_str(), "rb");
   if (!f)
     return false;
 
@@ -717,7 +717,7 @@ static bool save_BMP(FileOp *fop)
     bfSize = 54 + biSizeImage;       /* header + image data */
   }
 
-  f = fopen(fop->filename, "wb");
+  f = fopen(fop->filename.c_str(), "wb");
   if (!f) {
     fop_error(fop, "Error creating file.\n");
     return false;

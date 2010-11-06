@@ -121,9 +121,9 @@ static void save_sprite_in_background(Sprite* sprite, bool mark_as_saved)
   thread.join();
 
   /* show any error */
-  if (fop->error) {
+  if (fop->has_error()) {
     Console console;
-    console.printf(fop->error);
+    console.printf(fop->error.c_str());
   }
   /* no error? */
   else {

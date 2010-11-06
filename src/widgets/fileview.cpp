@@ -714,7 +714,7 @@ static bool fileview_generate_thumbnail(JWidget widget, IFileItem* fileitem)
   if (!fop)
     return true;
 
-  if (fop->error) {
+  if (fop->has_error()) {
     fop_free(fop);
   }
   else {
