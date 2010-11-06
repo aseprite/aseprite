@@ -1991,6 +1991,7 @@ static int get_raw_dirty_size(Dirty* dirty)
      DWORD		image ID
      BYTE		image type
      WORD[2]		w, h
+     DWORD		mask color
      for each line	("h" times)
        for each pixel ("w" times)
 	 BYTE[4]	for RGB images, or
@@ -2007,6 +2008,7 @@ static Image* read_raw_image(ase_uint8* raw_data)
   int imgtype;
   int width;
   int height;
+  ase_uint32 mask_color;
   Image* image;
   int c, size;
 
@@ -2017,6 +2019,7 @@ static Image* read_raw_image(ase_uint8* raw_data)
   read_raw_uint8(imgtype);	   /* imgtype */
   read_raw_uint16(width);	   /* width */
   read_raw_uint16(height);	   /* height */
+  read_raw_uint32(mask_color);	   /* mask color */
 
   image = image_new(imgtype, width, height);
   size = image_line_size(image, image->w);
@@ -2024,6 +2027,7 @@ static Image* read_raw_image(ase_uint8* raw_data)
   for (c=0; c<image->h; c++)
     read_raw_data(image->line[c], size);
 
+  image->mask_color = mask_color;
   image->_setGfxObjId(image_id);
   return image;
 }
@@ -2038,6 +2042,7 @@ static ase_uint8* write_raw_image(ase_uint8* raw_data, Image* image)
   write_raw_uint8(image->imgtype);	   /* imgtype */
   write_raw_uint16(image->w);		   /* width */
   write_raw_uint16(image->h);		   /* height */
+  write_raw_uint32(image->mask_color);	   /* mask color */
 
   size = image_line_size(image, image->w);
   for (c=0; c<image->h; c++)
@@ -2049,7 +2054,7 @@ static ase_uint8* write_raw_image(ase_uint8* raw_data, Image* image)
 static int get_raw_image_size(Image* image)
 {
   ASSERT(image != NULL);
-  return 4+1+2+2+image_line_size(image, image->w) * image->h;
+  return 4+1+2+2+4+image_line_size(image, image->w) * image->h;
 }
 
 /***********************************************************************
