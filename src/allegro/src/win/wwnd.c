@@ -495,6 +495,7 @@ int init_directx_window(void)
    switch (result) {
    case WAIT_OBJECT_0:    /* window was created successfully */
       wnd_thread = events[1];
+      SetThreadPriority(wnd_thread, THREAD_PRIORITY_ABOVE_NORMAL);
       break;
    default:               /* thread failed to create window */
       return -1;
