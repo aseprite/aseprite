@@ -48,7 +48,7 @@ public:
   void transformPoint(IToolLoop* loop, int x, int y)
   {
     Pen* pen = loop->getPen();
-    register PenScanline *scanline = pen->get_scanline();
+    std::vector<PenScanline>::const_iterator scanline = pen->get_scanline().begin();
     register int h = pen->get_size();
     register int c = h/2;
 

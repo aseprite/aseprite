@@ -21,8 +21,6 @@
 #include <allegro/base.h>
 #include <math.h>
 
-#include "gui/jbase.h"		// TODO remove this reference
-
 #include "raster/algo.h"
 #include "raster/pen.h"
 #include "raster/image.h"
@@ -33,7 +31,6 @@ Pen::Pen()
   m_size = 1;
   m_angle = 0;
   m_image = NULL;
-  m_scanline = NULL;
 
   regenerate_pen();
 }
@@ -44,7 +41,6 @@ Pen::Pen(PenType type, int size, int angle)
   m_size = size;
   m_angle = angle;
   m_image = NULL;
-  m_scanline = NULL;
 
   regenerate_pen();
 }
@@ -89,10 +85,7 @@ void Pen::clean_pen()
     m_image = NULL;
   }
 
-  if (m_scanline) {
-    jfree(m_scanline);
-    m_scanline = NULL;
-  }
+  m_scanline.clear();
 }
 
 static void algo_hline(int x1, int y, int x2, void *data)
@@ -151,7 +144,7 @@ void Pen::regenerate_pen()
     }
   }
 
-  m_scanline = jnew(PenScanline, m_size);
+  m_scanline.resize(m_size);
   for (y=0; y<m_size; y++) {
     m_scanline[y].state = false;
 

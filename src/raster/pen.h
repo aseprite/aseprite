@@ -20,6 +20,7 @@
 #define RASTER_PEN_H_INCLUDED
 
 #include "pen_type.h"
+#include <vector>
 
 class Image;
 
@@ -30,12 +31,6 @@ struct PenScanline
 
 class Pen
 {
-  PenType m_type;			/* type of pen */
-  int m_size;				/* size (diameter) */
-  int m_angle;				/* angle in degrees 0-360 */
-  Image* m_image;			/* image of the pen */
-  PenScanline* m_scanline;
-
 public:
   Pen();
   Pen(PenType type, int size, int angle);
@@ -46,7 +41,7 @@ public:
   int get_size() const { return m_size; }
   int get_angle() const { return m_angle; }
   Image* get_image() { return m_image; }
-  PenScanline* get_scanline() { return m_scanline; }
+  const std::vector<PenScanline>& get_scanline() const { return m_scanline; }
 
   void set_type(PenType type);
   void set_size(int size);
@@ -55,6 +50,12 @@ public:
 private:
   void clean_pen();
   void regenerate_pen();
+
+  PenType m_type;			/* type of pen */
+  int m_size;				/* size (diameter) */
+  int m_angle;				/* angle in degrees 0-360 */
+  Image* m_image;			/* image of the pen */
+  std::vector<PenScanline> m_scanline;
 };
 
 #endif
