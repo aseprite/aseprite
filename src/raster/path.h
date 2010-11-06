@@ -47,14 +47,10 @@ public:
   int size, end;
   struct _ArtBpath *bpath;
 
-  Path(const char* name);
-  Path(const Path& path);
+  explicit Path(const char* name);
+  explicit Path(const Path& path);
   virtual ~Path();
 };
-
-Path* path_new(const char* name);
-Path* path_new_copy(const Path* path);
-void path_free(Path* path);
 
 /* void path_union(Path* path, Path* op); */
 /* void path_intersect(Path* path, Path* op); */

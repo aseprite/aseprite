@@ -343,10 +343,8 @@ public:
   }
 
   void setPath(const Path* path) {
-    if (m_path)
-      path_free(m_path);
-
-    m_path = path_new_copy(path);
+    delete m_path;
+    m_path = new Path(*path);
   }
 
   PathsList getPathsRepository() {
@@ -540,16 +538,16 @@ SpriteImpl* SpriteImpl::copyBase(Sprite* new_sprite, const SpriteImpl* src_sprit
 
   // Copy path
   if (dst_sprite->m_path) {
-    path_free(dst_sprite->m_path);
+    delete dst_sprite->m_path;
     dst_sprite->m_path = NULL;
   }
 
   if (src_sprite->m_path)
-    dst_sprite->m_path = path_new_copy(src_sprite->m_path);
+    dst_sprite->m_path = new Path(*src_sprite->m_path);
 
   // Copy mask
   if (dst_sprite->m_mask) {
-    mask_free(dst_sprite->m_mask);
+    delete dst_sprite->m_mask;
     dst_sprite->m_mask = NULL;
   }
 
@@ -561,9 +559,8 @@ SpriteImpl* SpriteImpl::copyBase(Sprite* new_sprite, const SpriteImpl* src_sprit
     PathsList::const_iterator end = src_sprite->m_repository.paths.end();
     PathsList::const_iterator it = src_sprite->m_repository.paths.begin();
     for (; it != end; ++it) {
-      Path* path_copy = path_new_copy(*it);
-      if (path_copy)
-	dst_sprite->addPath(path_copy);
+      Path* path_copy = new Path(*(*it));
+      dst_sprite->addPath(path_copy);
     }
   }
 
@@ -571,9 +568,8 @@ SpriteImpl* SpriteImpl::copyBase(Sprite* new_sprite, const SpriteImpl* src_sprit
     MasksList::const_iterator end = src_sprite->m_repository.masks.end();
     MasksList::const_iterator it = src_sprite->m_repository.masks.begin();
     for (; it != end; ++it) {
-      Mask* mask_copy = mask_new_copy(*it);
-      if (mask_copy)
-	dst_sprite->addMask(mask_copy);
+      Mask* mask_copy = new Mask(*(*it));
+      dst_sprite->addMask(mask_copy);
     }
   }
 
@@ -627,7 +623,7 @@ SpriteImpl::~SpriteImpl()
     PathsList::iterator end = m_repository.paths.end();
     PathsList::iterator it = m_repository.paths.begin();
     for (; it != end; ++it)
-      path_free(*it);
+      delete *it;		// path
   }
 
   // Destroy masks
@@ -635,7 +631,7 @@ SpriteImpl::~SpriteImpl()
     MasksList::iterator end = m_repository.masks.end();
     MasksList::iterator it = m_repository.masks.begin();
     for (; it != end; ++it)
-      mask_free(*it);
+      delete *it;		// mask
   }
 
   // Destroy palettes

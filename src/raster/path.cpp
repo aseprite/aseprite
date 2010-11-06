@@ -20,8 +20,6 @@
 
 #include <string.h>
 
-#include "gui/jbase.h"		// TODO remove this reference
-
 #include "raster/blend.h"
 #include "raster/image.h"
 #include "raster/path.h"
@@ -75,23 +73,6 @@ Path::~Path()
 }
 
 //////////////////////////////////////////////////////////////////////
-
-Path* path_new(const char* name)
-{
-  return new Path(name);
-}
-
-Path* path_new_copy(const Path* path)
-{
-  ASSERT(path);
-  return new Path(*path);
-}
-
-void path_free(Path* path)
-{
-  ASSERT(path);
-  delete path;
-}
 
 void path_set_join(Path* path, int join)
 {
