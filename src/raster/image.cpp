@@ -155,6 +155,7 @@ Image* image_crop(const Image* image, int x, int y, int w, int h, int bgcolor)
   if (h < 1) throw std::invalid_argument("image_crop: Height is less than 1");
 
   Image* trim = image_new(image->imgtype, w, h);
+  trim->mask_color = image->mask_color;
 
   image_clear(trim, bgcolor);
   image_copy(trim, image, -x, -y);
