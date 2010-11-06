@@ -35,8 +35,8 @@ static void draw_path(Path* path, Image *image, int color, double brush_size, in
 
 Path::Path(const char* name)
   : GfxObj(GFXOBJ_PATH)
+  , name(name)
 {
-  this->name = name ? jstrdup(name) : NULL;
   this->join = PATH_JOIN_ROUND;
   this->cap = PATH_CAP_ROUND;
   this->size = 0;
@@ -49,6 +49,7 @@ Path::Path(const char* name)
 
 Path::Path(const Path& path)
  : GfxObj(path)
+ , name(path.name)
 {
   this->join = path.join;
   this->cap = path.cap;

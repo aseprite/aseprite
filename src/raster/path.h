@@ -20,6 +20,7 @@
 #define RASTER_PATH_H_INCLUDED
 
 #include "raster/gfxobj.h"
+#include <string>
 
 struct _ArtBpath;
 class Image;
@@ -41,7 +42,7 @@ enum {
 class Path : public GfxObj
 {
 public:
-  char *name;
+  std::string name;
   int join, cap;
   int size, end;
   struct _ArtBpath *bpath;
