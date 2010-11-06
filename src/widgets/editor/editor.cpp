@@ -1841,7 +1841,8 @@ public:
     if (m_cel == NULL) {
       // create the image
       m_cel_image = image_new(sprite->getImgType(), sprite->getWidth(), sprite->getHeight());
-      image_clear(m_cel_image, 0);
+      image_clear(m_cel_image,
+		  m_cel_image->mask_color);
 
       // create the cel
       m_cel = cel_new(sprite->getCurrentFrame(), 0);
@@ -1873,7 +1874,8 @@ public:
     // create two copies of the image region which we'll modify with the tool
     m_src_image = image_crop(m_cel_image,
 			     x1-m_cel->x,
-			     y1-m_cel->y, x2-x1, y2-y1, 0);
+			     y1-m_cel->y, x2-x1, y2-y1,
+			     m_cel_image->mask_color);
     m_dst_image = image_new_copy(m_src_image);
 
     m_mask = m_sprite->getMask();
