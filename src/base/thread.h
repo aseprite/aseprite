@@ -4,8 +4,8 @@
 // This source file is ditributed under a BSD-like license, please
 // read LICENSE.txt for more information.
 
-#ifndef GUI_THREAD_H_INCLUDED
-#define GUI_THREAD_H_INCLUDED
+#ifndef BASE_THREAD_H_INCLUDED
+#define BASE_THREAD_H_INCLUDED
 
 namespace base {		// Based on C++0x threads lib
 
