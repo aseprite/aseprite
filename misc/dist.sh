@@ -6,6 +6,11 @@ distdir=ase-$version
 zip="zip -9"
 zip_recursive_flag="-r"
 
+if [ -f ./7za.exe ] ; then
+  zip="./7za.exe a"
+  zip_recursive_flag=""
+fi
+
 freetype_files="third_party/freetype/ChangeLog				\
 		third_party/freetype/descrip.mms			\
 		third_party/freetype/INSTALL				\
