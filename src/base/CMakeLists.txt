@@ -7,6 +7,7 @@ add_library(base-lib
   mem_utils.cpp
   mutex.cpp
   path.cpp
+  serialization.cpp
   split_string.cpp
   string.cpp
   thread.cpp)
