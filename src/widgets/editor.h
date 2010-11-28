@@ -114,6 +114,12 @@ class Editor : public Widget
   // user is not moving pixels.
   PixelsMovement* m_pixelsMovement;
 
+  // This slot is used to disconnect the Editor from CurrentToolChange
+  // signal (because the editor can be destroyed and the application
+  // still continue running and generating CurrentToolChange
+  // signals).
+  Slot0<void>* m_currentToolChangeSlot;
+
 public:
   // in editor.c
 

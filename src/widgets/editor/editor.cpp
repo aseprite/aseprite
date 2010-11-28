@@ -105,7 +105,8 @@ Editor::Editor()
 
   jwidget_focusrest(this, true);
 
-  App::instance()->CurrentToolChange.connect(&Editor::onCurrentToolChange, this);
+  m_currentToolChangeSlot =
+    App::instance()->CurrentToolChange.connect(&Editor::onCurrentToolChange, this);
 }
 
 Editor::~Editor()
@@ -118,6 +119,10 @@ Editor::~Editor()
 
   // Destroy all decorators
   deleteDecorators();
+
+  // Remove this editor as listener of CurrentToolChange signal.
+  App::instance()->CurrentToolChange.disconnect(m_currentToolChangeSlot);
+  delete m_currentToolChangeSlot;
 }
 
 int editor_type()
