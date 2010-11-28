@@ -2,6 +2,14 @@
 NEWS
 ===================================
 
+0.8.2
+-----
+
++ Fixed a critical bug: split an editor, close it, and change tool (crash).
++ Fixed Paste command when we use it in an empty frame.
++ Fixed bug #3051174 (reported by Trent Gamblin): Loading two or
+  more times gui.xml file.
+
 0.8.1 beta
 ----------
 

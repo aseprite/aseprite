@@ -1,8 +1,8 @@
 allegro_icon ICON data/icons/ase072.ico
 
 1 VERSIONINFO
-  FILEVERSION 0,8,1,0
-  PRODUCTVERSION 0,8,1,0
+  FILEVERSION 0,8,2,0
+  PRODUCTVERSION 0,8,2,0
   FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
   FILEFLAGS 0x1L
@@ -18,13 +18,13 @@ BEGIN
         BLOCK "040904b0"
         BEGIN
             VALUE "Comments", "http://www.aseprite.org/"
-            VALUE "FileDescription", "Allegro Sprite Editor"
-            VALUE "FileVersion", "0, 8, 1, 0"
+            VALUE "FileDescription", "ASEPRITE"
+            VALUE "FileVersion", "0, 8, 2, 0"
             VALUE "InternalName", "aseprite"
             VALUE "LegalCopyright", "Copyright (C) 2001-2010 by David Capello"
             VALUE "OriginalFilename", "aseprite.exe"
-            VALUE "ProductName", "Allegro Sprite Editor"
-            VALUE "ProductVersion", "0, 8, 1, 0"
+            VALUE "ProductName", "ASEPRITE"
+            VALUE "ProductVersion", "0, 8, 2, 0"
         END
     END
     BLOCK "VarFileInfo"
