@@ -8,6 +8,7 @@
 #define BASE_SIGNAL_H_INCLUDED
 
 #include "base/slot.h"
+#include "base/remove_from_container.h"
 
 #include <vector>
 
@@ -60,7 +61,7 @@ public:
 
   void disconnect(SlotType* slot)
   {
-    remove_from_container(m_slots, slot);
+    base::remove_from_container(m_slots, slot);
   }
 
   void disconnectAll()
@@ -204,7 +205,7 @@ public:
 
   void disconnect(SlotType* slot)
   {
-    remove_from_container(m_slots, slot);
+    base::remove_from_container(m_slots, slot);
   }
 
   void disconnectAll()
@@ -348,7 +349,7 @@ public:
 
   void disconnect(SlotType* slot)
   {
-    remove_from_container(m_slots, slot);
+    base::remove_from_container(m_slots, slot);
   }
 
   void disconnectAll()
