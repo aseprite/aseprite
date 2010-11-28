@@ -256,7 +256,8 @@ add_executable(aseprite WIN32
   widgets/statebar.cpp
   widgets/tabs.cpp
   widgets/target.cpp
-  widgets/toolbar.cpp)
+  widgets/toolbar.cpp
+  resources_win32.rc)
 
 target_link_libraries(aseprite alleg ${libs} ${sys_libs})
 
