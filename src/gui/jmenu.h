@@ -9,24 +9,24 @@
 
 #include "gui/jbase.h"
 
-JWidget jmenu_new();
-JWidget jmenubar_new();
-JWidget jmenubox_new();
-JWidget jmenuitem_new(const char *text);
+Widget* jmenu_new();
+Widget* jmenubar_new();
+Widget* jmenubox_new();
+Widget* jmenuitem_new(const char *text);
 
-JWidget jmenubox_get_menu(JWidget menubox);
-JWidget jmenubar_get_menu(JWidget menubar);
-JWidget jmenuitem_get_submenu(JWidget menuitem);
-JAccel jmenuitem_get_accel(JWidget menuitem);
-bool jmenuitem_has_submenu_opened(JWidget menuitem);
+Widget* jmenubox_get_menu(Widget* menubox);
+Widget* jmenubar_get_menu(Widget* menubar);
+Widget* jmenuitem_get_submenu(Widget* menuitem);
+JAccel jmenuitem_get_accel(Widget* menuitem);
+bool jmenuitem_has_submenu_opened(Widget* menuitem);
 
-void jmenubox_set_menu(JWidget menubox, JWidget menu);
-void jmenubar_set_menu(JWidget menubar, JWidget menu);
-void jmenuitem_set_submenu(JWidget menuitem, JWidget menu);
-void jmenuitem_set_accel(JWidget menuitem, JAccel accel);
+void jmenubox_set_menu(Widget* menubox, Widget* menu);
+void jmenubar_set_menu(Widget* menubar, Widget* menu);
+void jmenuitem_set_submenu(Widget* menuitem, Widget* menu);
+void jmenuitem_set_accel(Widget* menuitem, JAccel accel);
 
-int jmenuitem_is_highlight(JWidget menuitem);
+int jmenuitem_is_highlight(Widget* menuitem);
 
-void jmenu_popup(JWidget menu, int x, int y);
+void jmenu_popup(Widget* menu, int x, int y);
 
 #endif
