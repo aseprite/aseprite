@@ -118,7 +118,7 @@ class Editor : public Widget
   // signal (because the editor can be destroyed and the application
   // still continue running and generating CurrentToolChange
   // signals).
-  Slot0<void>* m_currentToolChangeSlot;
+  Vaca::Slot0<void>* m_currentToolChangeSlot;
 
 public:
   // in editor.c
