@@ -51,8 +51,8 @@ void AboutCommand::onExecute(Context* context)
   FramePtr frame(new Frame(false, "About " PACKAGE));
   Widget* box1 = jbox_new(JI_VERTICAL);
   Widget* grid = jgrid_new(2, false);
-  Label* title = new Label(PACKAGE " | Allegro Sprite Editor v" VERSION);
-  Label* subtitle = new Label("A pixel art program");
+  Label* title = new Label(PACKAGE " v" VERSION);
+  Label* subtitle = new Label("Animated sprites editor && pixel art tool");
   Widget* authors_separator1 = ji_separator_new("Authors:", JI_HORIZONTAL | JI_TOP);
   Widget* authors_separator2 = ji_separator_new(NULL, JI_HORIZONTAL);
   Label* author1 = new LinkLabel("http://www.davidcapello.com.ar/", "David Capello");

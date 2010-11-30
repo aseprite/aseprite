@@ -24,8 +24,8 @@
 #define _CRT_SECURE_NO_WARNINGS
 
 // General information
-#define PACKAGE			"ASE"
-#define VERSION			"0.8.2-beta"
+#define PACKAGE			"ASEPRITE"
+#define VERSION			"0.9"
 #define ASE_BETA		1
 #define WEBSITE			"http://www.aseprite.org/"
 #define COPYRIGHT		"Copyright (C) 2001-2010 David Capello"
