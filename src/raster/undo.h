@@ -84,6 +84,7 @@ public:
   void undo_set_layer(Sprite* sprite);
   void undo_add_palette(Sprite* sprite, Palette* palette);
   void undo_remove_palette(Sprite* sprite, Palette* palette);
+  void undo_set_palette_colors(Sprite* sprite, Palette* palette, int from, int to);
   void undo_remap_palette(Sprite* sprite, int frame_from, int frame_to,
 			  const std::vector<int>& mapping);
   void undo_set_mask(Sprite* sprite);

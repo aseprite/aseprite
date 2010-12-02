@@ -74,6 +74,7 @@ enum {
   // palette management
   UNDO_TYPE_ADD_PALETTE,
   UNDO_TYPE_REMOVE_PALETTE,
+  UNDO_TYPE_SET_PALETTE_COLORS,
   UNDO_TYPE_REMAP_PALETTE,
 
   /* misc */
@@ -101,13 +102,14 @@ struct UndoChunkMoveLayer;
 struct UndoChunkSetLayer;
 struct UndoChunkAddPalette;
 struct UndoChunkRemovePalette;
+struct UndoChunkSetPaletteColors;
+struct UndoChunkRemapPalette;
 struct UndoChunkSetMask;
 struct UndoChunkSetImgType;
 struct UndoChunkSetSize;
 struct UndoChunkSetFrame;
 struct UndoChunkSetFrames;
 struct UndoChunkSetFrlen;
-struct UndoChunkRemapPalette;
 
 struct UndoChunk
 {
@@ -188,6 +190,9 @@ static void chunk_add_palette_invert(UndoStream* stream, UndoChunkAddPalette *ch
 static void chunk_remove_palette_new(UndoStream* stream, Sprite *sprite, Palette* palette);
 static void chunk_remove_palette_invert(UndoStream* stream, UndoChunkRemovePalette *chunk);
 
+static void chunk_set_palette_colors_new(UndoStream* stream, Sprite *sprite, Palette* palette, int from, int to);
+static void chunk_set_palette_colors_invert(UndoStream* stream, UndoChunkSetPaletteColors *chunk);
+
 static void chunk_remap_palette_new(UndoStream* stream, Sprite* sprite, int frame_from, int frame_to, const std::vector<int>& mapping);
 static void chunk_remap_palette_invert(UndoStream* stream, UndoChunkRemapPalette *chunk);
 
@@ -232,6 +237,7 @@ static UndoAction undo_actions[] = {
   DECL_UNDO_ACTION(set_layer),
   DECL_UNDO_ACTION(add_palette),
   DECL_UNDO_ACTION(remove_palette),
+  DECL_UNDO_ACTION(set_palette_colors),
   DECL_UNDO_ACTION(remap_palette),
   DECL_UNDO_ACTION(set_mask),
   DECL_UNDO_ACTION(set_imgtype),
@@ -498,6 +504,78 @@ void Undo::updateUndo()
     }
   }
 }
+
+/***********************************************************************
+
+  Raw data
+
+***********************************************************************/
+
+#define read_raw_uint32(dst)		\
+  {					\
+    memcpy(&dword, raw_data, 4);	\
+    dst = dword;			\
+    raw_data += 4;			\
+  }
+
+#define read_raw_uint16(dst)		\
+  {					\
+    memcpy(&word, raw_data, 2);		\
+    dst = word;				\
+    raw_data += 2;			\
+  }
+
+#define read_raw_int16(dst)		\
+  {					\
+    memcpy(&word, raw_data, 2);		\
+    dst = (int16_t)word;		\
+    raw_data += 2;			\
+  }
+
+#define read_raw_uint8(dst)		\
+  {					\
+    dst = *raw_data;			\
+    ++raw_data;				\
+  }
+
+#define read_raw_data(dst, size)	\
+  {					\
+    memcpy(dst, raw_data, size);	\
+    raw_data += size;			\
+  }
+
+#define write_raw_uint32(src)		\
+  {					\
+    dword = src;			\
+    memcpy(raw_data, &dword, 4);	\
+    raw_data += 4;			\
+  }
+
+#define write_raw_uint16(src)		\
+  {					\
+    word = src;				\
+    memcpy(raw_data, &word, 2);		\
+    raw_data += 2;			\
+  }
+
+#define write_raw_int16(src)		\
+  {					\
+    word = (int16_t)src;		\
+    memcpy(raw_data, &word, 2);		\
+    raw_data += 2;			\
+  }
+
+#define write_raw_uint8(src)		\
+  {					\
+    *raw_data = src;			\
+    ++raw_data;				\
+  }
+
+#define write_raw_data(src, size)	\
+  {					\
+    memcpy(raw_data, src, size);	\
+    raw_data += size;			\
+  }
 
 /***********************************************************************
 
@@ -1432,6 +1510,76 @@ static void chunk_remove_palette_invert(UndoStream* stream, UndoChunkRemovePalet
 
 /***********************************************************************
 
+  "set_palette_colors"
+
+     DWORD		sprite ID
+     DWORD		frame
+     BYTE               from
+     BYTE               to
+     DWORD[to-from+1]   palette entries
+
+***********************************************************************/
+
+struct UndoChunkSetPaletteColors
+{
+  UndoChunk head;
+  ase_uint32 sprite_id;
+  ase_uint32 frame;
+  ase_uint8 from;
+  ase_uint8 to;
+  ase_uint8 data[0];
+};
+
+void Undo::undo_set_palette_colors(Sprite *sprite, Palette* palette, int from, int to)
+{
+  chunk_set_palette_colors_new(m_undoStream, sprite, palette, from, to);
+  updateUndo();
+}
+
+static void chunk_set_palette_colors_new(UndoStream* stream, Sprite *sprite, Palette* palette, int from, int to)
+{
+  UndoChunkSetPaletteColors* chunk = (UndoChunkSetPaletteColors*)
+    undo_chunk_new(stream,
+		   UNDO_TYPE_SET_PALETTE_COLORS,
+		   sizeof(UndoChunkSetPaletteColors) + sizeof(ase_uint32)*(to-from+1));
+
+  chunk->sprite_id = sprite->getId();
+  chunk->frame = sprite->getCurrentFrame();
+  chunk->from = from;
+  chunk->to = to;
+
+  // Write (to-from+1) palette color entries
+  ase_uint32 dword;
+  ase_uint8* raw_data = chunk->data;
+  for (int i=from; i<=to; ++i)
+    write_raw_uint32(palette->getEntry(i));
+}
+
+static void chunk_set_palette_colors_invert(UndoStream* stream, UndoChunkSetPaletteColors *chunk)
+{
+  Sprite* sprite = (Sprite *)GfxObj::find(chunk->sprite_id);
+  if (sprite == NULL)
+    throw UndoException("chunk_set_palette_colors_invert: sprite not found");
+
+  Palette* palette = sprite->getPalette(chunk->frame);
+  if (palette == NULL)
+    throw UndoException("chunk_set_palette_colors_invert: palette not found");
+
+  // Add the chunk to invert the operation
+  chunk_set_palette_colors_new(stream, sprite, palette, chunk->from, chunk->to);
+
+  ase_uint32 dword;
+  ase_uint32 color;
+  ase_uint8* raw_data = chunk->data;
+
+  for (int i=(int)chunk->from; i<=(int)chunk->to; ++i) {
+    read_raw_uint32(color);
+    palette->setEntry(i, color);
+  }
+}
+
+/***********************************************************************
+
   "remap_palette"
 
      DWORD		sprite ID
@@ -1794,78 +1942,6 @@ static void undo_chunk_free(UndoChunk* chunk)
 {
   jfree(chunk);
 }
-
-/***********************************************************************
-
-  Raw data
-
-***********************************************************************/
-
-#define read_raw_uint32(dst)		\
-  {					\
-    memcpy(&dword, raw_data, 4);	\
-    dst = dword;			\
-    raw_data += 4;			\
-  }
-
-#define read_raw_uint16(dst)		\
-  {					\
-    memcpy(&word, raw_data, 2);		\
-    dst = word;				\
-    raw_data += 2;			\
-  }
-
-#define read_raw_int16(dst)		\
-  {					\
-    memcpy(&word, raw_data, 2);		\
-    dst = (int16_t)word;		\
-    raw_data += 2;			\
-  }
-
-#define read_raw_uint8(dst)		\
-  {					\
-    dst = *raw_data;			\
-    ++raw_data;				\
-  }
-
-#define read_raw_data(dst, size)	\
-  {					\
-    memcpy(dst, raw_data, size);	\
-    raw_data += size;			\
-  }
-
-#define write_raw_uint32(src)		\
-  {					\
-    dword = src;			\
-    memcpy(raw_data, &dword, 4);	\
-    raw_data += 4;			\
-  }
-
-#define write_raw_uint16(src)		\
-  {					\
-    word = src;				\
-    memcpy(raw_data, &word, 2);		\
-    raw_data += 2;			\
-  }
-
-#define write_raw_int16(src)		\
-  {					\
-    word = (int16_t)src;		\
-    memcpy(raw_data, &word, 2);		\
-    raw_data += 2;			\
-  }
-
-#define write_raw_uint8(src)		\
-  {					\
-    *raw_data = src;			\
-    ++raw_data;				\
-  }
-
-#define write_raw_data(src, size)	\
-  {					\
-    memcpy(raw_data, src, size);	\
-    raw_data += size;			\
-  }
 
 /***********************************************************************
 

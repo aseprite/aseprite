@@ -116,7 +116,7 @@ static bool hex_entry_change_hook(JWidget widget, void *data);
 static void update_entries_from_sliders();
 static void update_sliders_from_entries();
 static void update_hex_entry();
-static void update_current_sprite_palette();
+static void update_current_sprite_palette(const char* operationName);
 static void update_colorbar();
 static bool palette_editor_change_hook(JWidget widget, void *data);
 static bool select_rgb_hook(JWidget widget, void *data);
@@ -125,7 +125,7 @@ static bool expand_button_select_hook(JWidget widget, void *data);
 static void modify_all_selected_entries_in_palette(int r, int g, int b);
 static void on_color_changed(const Color& color);
 
-static void set_new_palette(Palette *palette);
+static void set_new_palette(Palette *palette, const char* operationName);
 
 PaletteEditorCommand::PaletteEditorCommand()
   : Command("palette_editor",
@@ -345,7 +345,7 @@ static void load_command(JWidget widget)
       jalert("Error<<Loading palette file||&Close");
     }
     else {
-      set_new_palette(palette);
+      set_new_palette(palette, "Load Palette");
       delete palette;
     }
   }
@@ -400,7 +400,7 @@ static void ramp_command(JWidget widget)
     }
   }
 
-  set_new_palette(dst_palette);
+  set_new_palette(dst_palette, "Color Ramp");
   delete dst_palette;
 }
 
@@ -539,7 +539,7 @@ static void sort_command(JWidget widget)
       }
 
       // Set the new palette in the sprite
-      set_new_palette(palette);
+      set_new_palette(palette, "Sort Palette");
 
       delete palette;
     }
@@ -719,7 +719,7 @@ static void quantize_command(JWidget widget)
   {
     SpriteWriter sprite_writer(sprite);
     sprite_quantize_ex(sprite_writer, palette);
-    set_new_palette(palette);
+    set_new_palette(palette, "Quantize Palette");
   }
   delete palette;
 }
@@ -739,7 +739,7 @@ static bool sliderRGB_change_hook(JWidget widget, void *data)
 
   update_entries_from_sliders();
   update_hex_entry();
-  update_current_sprite_palette();
+  update_current_sprite_palette("Color Change");
   update_colorbar();
   return false;
 }
@@ -760,7 +760,7 @@ static bool sliderHSV_change_hook(JWidget widget, void *data)
 
   update_entries_from_sliders();
   update_hex_entry();
-  update_current_sprite_palette();
+  update_current_sprite_palette("Color Change");
   update_colorbar();
   return false;
 }
@@ -783,7 +783,7 @@ static bool entryRGB_change_hook(JWidget widget, void *data)
 
   update_sliders_from_entries();
   update_hex_entry();
-  update_current_sprite_palette();
+  update_current_sprite_palette("Color Change");
   update_colorbar();
   return false;
 }
@@ -804,7 +804,7 @@ static bool entryHSV_change_hook(JWidget widget, void *data)
 
   update_sliders_from_entries();
   update_hex_entry();
-  update_current_sprite_palette();
+  update_current_sprite_palette("Color Change");
   update_colorbar();
   return false;
 }
@@ -843,7 +843,7 @@ static bool hex_entry_change_hook(JWidget widget, void *data)
   jslider_set_value(S_slider, 255.0 * s);
 
   update_entries_from_sliders();
-  update_current_sprite_palette();
+  update_current_sprite_palette("Color Change");
   update_colorbar();
   return false;
 }
@@ -878,12 +878,29 @@ static void update_hex_entry()
 		      jslider_get_value(B_slider));
 }
 
-static void update_current_sprite_palette()
+static void update_current_sprite_palette(const char* operationName)
 {
   if (UIContext::instance()->get_current_sprite()) {
     try {
       CurrentSpriteWriter sprite(UIContext::instance());
-      sprite->setPalette(get_current_palette(), false);
+      Palette* newPalette = get_current_palette(); // System current pal
+      Palette* currentSpritePalette = sprite->getPalette(sprite->getCurrentFrame()); // Sprite current pal
+      int from, to;
+
+      // Check differences between current sprite palette and current system palette
+      from = to = -1;
+      currentSpritePalette->countDiff(newPalette, &from, &to);
+
+      if (from >= 0 && to >= from) {
+	// Add undo information to save the range of pal entries that will be modified.
+	if (sprite->getUndo()->isEnabled()) {
+	  sprite->getUndo()->setLabel(operationName);
+	  sprite->getUndo()->undo_set_palette_colors(sprite, currentSpritePalette, from, to);
+	}
+
+	// Change the sprite palette
+	sprite->setPalette(newPalette, false);
+      }
     }
     catch (...) {
       // Ignore
@@ -1067,7 +1084,7 @@ static void on_color_changed(const Color& color)
   }
 }
 
-static void set_new_palette(Palette* palette)
+static void set_new_palette(Palette* palette, const char* operationName)
 {
   // Copy the palette
   palette->copyColorsTo(get_current_palette());
@@ -1076,7 +1093,7 @@ static void set_new_palette(Palette* palette)
   set_current_palette(palette, false);
 
   // Update the sprite palette
-  update_current_sprite_palette();
+  update_current_sprite_palette(operationName);
 
   // Redraw the entire screen
   jmanager_refresh_screen();
