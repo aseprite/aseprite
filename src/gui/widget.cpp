@@ -26,7 +26,7 @@ using namespace gfx;
 
 static inline void mark_dirty_flag(Widget* widget)
 {
-  while (widget && ((widget->flags & JI_DIRTY) == 0)) {
+  while (widget) {
     widget->flags |= JI_DIRTY;
     widget = widget->parent;
   }
