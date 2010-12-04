@@ -34,7 +34,6 @@ add_library(gui-lib
   jrect.cpp
   jregion.cpp
   jsep.cpp
-  jslider.cpp
   jstream.cpp
   jsystem.cpp
   jtextbox.cpp
@@ -44,5 +43,6 @@ add_library(gui-lib
   label.cpp
   preferred_size_event.cpp
   property.cpp
+  slider.cpp
   themes/jstandard_theme.cpp
   widget.cpp)

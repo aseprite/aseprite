@@ -23,7 +23,7 @@
 #include "gui/button.h"
 #include "gui/jhook.h"
 #include "gui/label.h"
-#include "gui/jslider.h"
+#include "gui/slider.h"
 #include "gui/widget.h"
 #include "gui/frame.h"
 

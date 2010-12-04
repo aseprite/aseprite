@@ -27,8 +27,8 @@
 #include "gui/label.h"
 #include "gui/jlist.h"
 #include "gui/jlistbox.h"
-#include "gui/jslider.h"
 #include "gui/jview.h"
+#include "gui/slider.h"
 #include "gui/widget.h"
 #include "gui/frame.h"
 

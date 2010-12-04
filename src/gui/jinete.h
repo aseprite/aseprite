@@ -7,11 +7,12 @@
 #ifndef GUI_JINETE_H_INCLUDED
 #define GUI_JINETE_H_INCLUDED
 
+#include "gui/button.h"
+#include "gui/frame.h"
 #include "gui/jaccel.h"
 #include "gui/jalert.h"
 #include "gui/jbase.h"
 #include "gui/jbox.h"
-#include "gui/button.h"
 #include "gui/jclipboard.h"
 #include "gui/jcombobox.h"
 #include "gui/jcustom_label.h"
@@ -21,7 +22,6 @@
 #include "gui/jgrid.h"
 #include "gui/jhook.h"
 #include "gui/jimage.h"
-#include "gui/label.h"
 #include "gui/jlink_label.h"
 #include "gui/jlist.h"
 #include "gui/jlistbox.h"
@@ -34,14 +34,14 @@
 #include "gui/jrect.h"
 #include "gui/jregion.h"
 #include "gui/jsep.h"
-#include "gui/jslider.h"
 #include "gui/jstream.h"
 #include "gui/jsystem.h"
 #include "gui/jtextbox.h"
 #include "gui/jtheme.h"
 #include "gui/jtooltips.h"
 #include "gui/jview.h"
+#include "gui/label.h"
+#include "gui/slider.h"
 #include "gui/widget.h"
-#include "gui/frame.h"
 
 #endif
