@@ -250,6 +250,13 @@ public:
   Widget* findChild(const char* name);
   Widget* findSibling(const char* name);
 
+  // Finds a child with the specified name and dynamic-casts it to
+  // type T.
+  template<class T>
+  T* findChildT(const char* name) {
+    return dynamic_cast<T*>(findChild(name));
+  }
+
   void dirty() {
     jwidget_dirty(this);
   }
