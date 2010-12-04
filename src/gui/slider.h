@@ -7,16 +7,40 @@
 #ifndef GUI_SLIDER_H_INCLUDED
 #define GUI_SLIDER_H_INCLUDED
 
-#include "gui/jbase.h"
+#include "base/signal.h"
+#include "gui/widget.h"
 
-JWidget jslider_new(int min, int max, int value);
+class Slider : public Widget
+{
+public:
+  Slider(int min, int max, int value);
 
-void jslider_set_range(JWidget slider, int min, int max);
+  void setRange(int min, int max);
 
-void jslider_set_value(JWidget slider, int value);
-int jslider_get_value(JWidget slider);
+  void setValue(int value);
+  int getValue() const;
 
-/* for themes */
-void jtheme_slider_info(JWidget slider, int *min, int *max, int *value);
+  void getSliderThemeInfo(int* min, int* max, int* value);
+  
+  // Signals
+  Signal0<void> Change;
+  Signal0<void> ButtonReleased;
+
+protected:
+  // Events
+  bool onProcessMessage(JMessage msg);
+  void onPreferredSize(PreferredSizeEvent& ev);
+
+  // New events
+  virtual void onChange();
+  virtual void onButtonReleased();
+
+private:
+  void slider_setcursor();
+
+  int m_min;
+  int m_max;
+  int m_value;
+};
 
 #endif

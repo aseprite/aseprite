@@ -44,13 +44,13 @@
 
 static ColorButton* button_color1;
 static ColorButton* button_color2;
-static JWidget slider_tolerance;
+static Slider* slider_tolerance;
 static JWidget preview;
 static CheckBox* check_preview;
 
 static bool color_change_hook(JWidget widget, void *data);
 static bool target_change_hook(JWidget widget, void *data);
-static bool slider_change_hook(JWidget widget, void *data);
+static void slider_change_hook(Slider* tolerance_slider);
 static void preview_change_hook(Widget* widget);
 static void make_preview();
 
@@ -117,8 +117,7 @@ void ReplaceColorCommand::onExecute(Context* context)
   target_button = target_button_new(sprite->getImgType(), false);
   target_button_set_target(target_button, effect.target);
 
-  jslider_set_value(slider_tolerance,
-		    get_config_int("ReplaceColor", "Tolerance", 0));
+  slider_tolerance->setValue(get_config_int("ReplaceColor", "Tolerance", 0));
   if (get_config_bool("ReplaceColor", "Preview", true))
     check_preview->setSelected(true);
 
@@ -130,7 +129,7 @@ void ReplaceColorCommand::onExecute(Context* context)
   HOOK(button_color1, SIGNAL_COLORBUTTON_CHANGE, color_change_hook, 1);
   HOOK(button_color2, SIGNAL_COLORBUTTON_CHANGE, color_change_hook, 2);
   HOOK(target_button, SIGNAL_TARGET_BUTTON_CHANGE, target_change_hook, 0);
-  HOOK(slider_tolerance, JI_SIGNAL_SLIDER_CHANGE, slider_change_hook, 0);
+  slider_tolerance->Change.connect(Bind<void>(&slider_change_hook, slider_tolerance));
   check_preview->Click.connect(Bind<void>(&preview_change_hook, check_preview));
 
   /* default position */
@@ -175,11 +174,10 @@ static bool target_change_hook(JWidget widget, void *data)
   return false;
 }
 
-static bool slider_change_hook(JWidget widget, void *data)
+static void slider_change_hook(Slider* tolerance_slider)
 {
-  set_config_int("ReplaceColor", "Tolerance", jslider_get_value(widget));
+  set_config_int("ReplaceColor", "Tolerance", tolerance_slider->getValue());
   make_preview();
-  return false;
 }
 
 static void preview_change_hook(Widget* widget)

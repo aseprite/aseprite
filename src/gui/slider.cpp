@@ -14,128 +14,97 @@
 #include "gui/jrect.h"
 #include "gui/jsystem.h"
 #include "gui/jtheme.h"
+#include "gui/preferred_size_event.h"
+#include "gui/slider.h"
 #include "gui/widget.h"
-
-typedef struct Slider
-{
-  int min;
-  int max;
-  int value;
-} Slider;
 
 static int slider_press_x;
 static int slider_press_value;
 static int slider_press_left;
 
-static bool slider_msg_proc(JWidget widget, JMessage msg);
-static void slider_request_size(JWidget widget, int *w, int *h);
-static void slider_setcursor(JWidget widget);
-
-JWidget jslider_new(int min, int max, int value)
+Slider::Slider(int min, int max, int value)
+  : Widget(JI_SLIDER)
 {
-  Widget* widget = new Widget(JI_SLIDER);
-  Slider* slider = jnew(Slider, 1);
+  m_min = min;
+  m_max = max;
+  m_value = MID(min, value, max);
 
-  slider->min = min;
-  slider->max = max;
-  slider->value = MID(min, value, max);
-
-  jwidget_add_hook(widget, JI_SLIDER, slider_msg_proc, slider);
-  jwidget_focusrest(widget, true);
-  jwidget_init_theme(widget);
-
-  return widget;
+  jwidget_focusrest(this, true);
+  jwidget_init_theme(this);
 }
 
-void jslider_set_range(JWidget widget, int min, int max)
+void Slider::setRange(int min, int max)
 {
-  Slider* slider = reinterpret_cast<Slider*>(jwidget_get_data(widget, JI_SLIDER));
+  m_min = min;
+  m_max = max;
+  m_value = MID(min, m_value, max);
 
-  slider->min = min;
-  slider->max = max;
-  slider->value = MID(min, slider->value, max);
-
-  jwidget_dirty(widget);
+  dirty();
 }
 
-void jslider_set_value(JWidget widget, int value)
+void Slider::setValue(int value)
 {
-  Slider* slider = reinterpret_cast<Slider*>(jwidget_get_data(widget, JI_SLIDER));
-  int old_value = slider->value;
+  int old_value = m_value;
 
-  slider->value = MID(slider->min, value, slider->max);
+  m_value = MID(m_min, value, m_max);
 
-  if (slider->value != old_value)
-    jwidget_dirty(widget);
+  if (m_value != old_value)
+    dirty();
 
-  /* it DOES NOT emit CHANGE signal! to avoid recursive calls */
+  // It DOES NOT emit CHANGE signal! to avoid recursive calls.
 }
 
-int jslider_get_value(JWidget widget)
+int Slider::getValue() const
 {
-  Slider* slider = reinterpret_cast<Slider*>(jwidget_get_data(widget, JI_SLIDER));
-
-  return slider->value;
+  return m_value;
 }
 
-void jtheme_slider_info(JWidget widget, int *min, int *max, int *value)
+void Slider::getSliderThemeInfo(int* min, int* max, int* value)
 {
-  Slider* slider = reinterpret_cast<Slider*>(jwidget_get_data(widget, JI_SLIDER));
-
-  if (min) *min = slider->min;
-  if (max) *max = slider->max;
-  if (value) *value = slider->value;
+  if (min) *min = m_min;
+  if (max) *max = m_max;
+  if (value) *value = m_value;
 }
 
-static bool slider_msg_proc(JWidget widget, JMessage msg)
+bool Slider::onProcessMessage(JMessage msg)
 {
-  Slider* slider = reinterpret_cast<Slider*>(jwidget_get_data(widget, JI_SLIDER));
-
   switch (msg->type) {
 
-    case JM_DESTROY:
-      jfree(slider);
-      break;
-
-    case JM_REQSIZE:
-      slider_request_size(widget, &msg->reqsize.w, &msg->reqsize.h);
-      return true;
-
     case JM_DRAW:
-      widget->theme->draw_slider(widget, &msg->draw.rect);
+      this->theme->draw_slider(this, &msg->draw.rect);
       return true;
 
     case JM_FOCUSENTER:
     case JM_FOCUSLEAVE:
-      if (widget->isEnabled())
-	jwidget_dirty(widget);
+      if (isEnabled())
+	dirty();
       break;
 
     case JM_BUTTONPRESSED:
-      if (!widget->isEnabled())
+      if (!isEnabled())
 	return true;
 
-      widget->setSelected(true);
-      widget->captureMouse();
+      setSelected(true);
+      captureMouse();
 
       slider_press_x = msg->mouse.x;
-      slider_press_value = slider->value;
+      slider_press_value = m_value;
       slider_press_left = msg->mouse.left;
 
-      slider_setcursor(widget);
+      slider_setcursor();
 
       /* continue to JM_MOTION */
 
     case JM_MOTION:
-      if (widget->hasCapture()) {
+      if (hasCapture()) {
 	int value, accuracy, range;
-	JRect rc = jwidget_get_child_rect(widget);
+	JRect rc = jwidget_get_child_rect(this);
 
-	range = slider->max - slider->min + 1;
+	range = m_max - m_min + 1;
 
 	/* with left click */
 	if (slider_press_left) {
-	  value = slider->min + range * (msg->mouse.x - rc->x1) / jrect_w(rc);
+	  value = m_min + range * (msg->mouse.x - rc->x1) / jrect_w(rc);
 	}
 	/* with right click */
 	else {
@@ -145,11 +114,11 @@ static bool slider_msg_proc(JWidget widget, JMessage msg)
 	    (msg->mouse.x - slider_press_x) / accuracy;
 	}
 
-	value = MID(slider->min, value, slider->max);
+	value = MID(m_min, value, m_max);
 
-	if (slider->value != value) {
-	  jslider_set_value(widget, value);
-	  jwidget_emit_signal(widget, JI_SIGNAL_SLIDER_CHANGE);
+	if (m_value != value) {
+	  this->setValue(value);
+	  onChange();
 	}
 
 	/* for left click */
@@ -167,7 +136,7 @@ static bool slider_msg_proc(JWidget widget, JMessage msg)
 	/* for right click */
 	else if (jmouse_control_infinite_scroll(rc)) {
 	  slider_press_x = jmouse_x(0);
-	  slider_press_value = slider->value;
+	  slider_press_value = m_value;
 	}
 
 	jrect_free(rc);
@@ -176,10 +145,10 @@ static bool slider_msg_proc(JWidget widget, JMessage msg)
       break;
 
     case JM_BUTTONRELEASED:
-      if (widget->hasCapture()) {
-	widget->setSelected(false);
-	widget->releaseMouse();
-	slider_setcursor(widget);
+      if (hasCapture()) {
+	setSelected(false);
+	releaseMouse();
+	slider_setcursor();
       }
       break;
 
@@ -197,15 +166,15 @@ static bool slider_msg_proc(JWidget widget, JMessage msg)
 /*       } */
 
       /* TODO theme stuff */
-      if (widget->isEnabled())
-	jwidget_dirty(widget);
+      if (isEnabled())
+	dirty();
       break;
 
     case JM_KEYPRESSED:
-      if (widget->hasFocus()) {
-	int min = slider->min;
-	int max = slider->max;
-	int value = slider->value;
+      if (hasFocus()) {
+	int min = m_min;
+	int max = m_max;
+	int value = m_value;
 
 	switch (msg->key.scancode) {
 	  case KEY_LEFT:  value = MAX(value-1, min); break;
@@ -215,12 +184,12 @@ static bool slider_msg_proc(JWidget widget, JMessage msg)
 	  case KEY_HOME:  value = min; break;
 	  case KEY_END:   value = max; break;
 	  default:
-	    return false;
+	    goto not_used;
 	}
 
-	if (slider->value != value) {
-	  jslider_set_value(widget, value);
-	  jwidget_emit_signal(widget, JI_SIGNAL_SLIDER_CHANGE);
+	if (m_value != value) {
+	  this->setValue(value);
+	  onChange();
 	}
 
 	return true;
@@ -228,49 +197,61 @@ static bool slider_msg_proc(JWidget widget, JMessage msg)
       break;
 
     case JM_WHEEL:
-      if (widget->isEnabled()) {
-	int value = slider->value + jmouse_z(0) - jmouse_z(1);
+      if (isEnabled()) {
+	int value = m_value + jmouse_z(0) - jmouse_z(1);
 
-	value = MID(slider->min, value, slider->max);
+	value = MID(m_min, value, m_max);
 
-	if (slider->value != value) {
-	  jslider_set_value(widget, value);
-	  jwidget_emit_signal(widget, JI_SIGNAL_SLIDER_CHANGE);
+	if (m_value != value) {
+	  this->setValue(value);
+	  onChange();
 	}
 	return true;
       }
       break;
 
     case JM_SETCURSOR:
-      slider_setcursor(widget);
+      slider_setcursor();
       return true;
   }
 
-  return false;
+not_used:;
+  return Widget::onProcessMessage(msg);
 }
 
-static void slider_request_size(JWidget widget, int *w, int *h)
+void Slider::onPreferredSize(PreferredSizeEvent& ev)
 {
-  Slider* slider = reinterpret_cast<Slider*>(jwidget_get_data(widget, JI_SLIDER));
-  int min_w, max_w;
+  int w, h, min_w, max_w;
   char buf[256];
 
-  usprintf(buf, "%d", slider->min);
-  min_w = ji_font_text_len(widget->getFont(), buf);
+  usprintf(buf, "%d", m_min);
+  min_w = ji_font_text_len(this->getFont(), buf);
 
-  usprintf(buf, "%d", slider->max);
-  max_w = ji_font_text_len(widget->getFont(), buf);
+  usprintf(buf, "%d", m_max);
+  max_w = ji_font_text_len(this->getFont(), buf);
 
-  *w = MAX(min_w, max_w);
-  *h = text_height(widget->getFont());
+  w = MAX(min_w, max_w);
+  h = text_height(this->getFont());
 
-  *w += widget->border_width.l + widget->border_width.r;
-  *h += widget->border_width.t + widget->border_width.b;
+  w += this->border_width.l + this->border_width.r;
+  h += this->border_width.t + this->border_width.b;
+
+  ev.setPreferredSize(w, h);
 }
 
-static void slider_setcursor(JWidget widget)
+void Slider::onChange()
 {
-  if (widget->hasCapture()) {
+  Change(); // Emit Change signal
+}
+
+void Slider::onButtonReleased()
+{
+  ButtonReleased();
+}
+
+void Slider::slider_setcursor()
+{
+  if (hasCapture()) {
     if (slider_press_left)
       jmouse_set_cursor(JI_CURSOR_NORMAL);
     else

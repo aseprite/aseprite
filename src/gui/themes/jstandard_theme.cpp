@@ -100,7 +100,7 @@ public:
   void draw_panel(JWidget widget, JRect clip);
   void draw_radio(ButtonBase* widget, JRect clip);
   void draw_separator(JWidget widget, JRect clip);
-  void draw_slider(JWidget widget, JRect clip);
+  void draw_slider(Slider* widget, JRect clip);
   void draw_combobox_entry(JWidget widget, JRect clip);
   void draw_combobox_button(ButtonBase* widget, JRect clip);
   void draw_textbox(JWidget widget, JRect clip);
@@ -1015,13 +1015,13 @@ static bool my_add_clip_rect(BITMAP *bitmap, int x1, int y1, int x2, int y2)
   return true;
 }
 
-void jstandard_theme::draw_slider(JWidget widget, JRect clip)
+void jstandard_theme::draw_slider(Slider* widget, JRect clip)
 {
   int x, x1, y1, x2, y2, bg, c1, c2;
   int min, max, value;
   char buf[256];
 
-  jtheme_slider_info(widget, &min, &max, &value);
+  widget->getSliderThemeInfo(&min, &max, &value);
 
   /* main pos */
   x1 = widget->rc->x1;

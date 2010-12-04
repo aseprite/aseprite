@@ -23,11 +23,12 @@
 #include "gui/jbase.h"
 #include "gui/widget.h"
 
-class Frame;
-class StatusBar;
-class Tool;
 class Button;
 class ColorButton;
+class Frame;
+class Slider;
+class StatusBar;
+class Tool;
 
 class Progress
 {
@@ -91,7 +92,7 @@ private:
 
   // Box of main commands
   Widget* m_commandsBox;
-  Widget* m_slider;			// Opacity slider
+  Slider* m_slider;			// Opacity slider
   Button* m_b_first;			// Go to first frame
   Button* m_b_prev;			// Go to previous frame
   Button* m_b_play;			// Play animation

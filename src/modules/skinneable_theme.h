@@ -461,7 +461,7 @@ public:
   void draw_panel(JWidget widget, JRect clip);
   void draw_radio(ButtonBase* widget, JRect clip);
   void draw_separator(JWidget widget, JRect clip);
-  void draw_slider(JWidget widget, JRect clip);
+  void draw_slider(Slider* widget, JRect clip);
   void draw_combobox_entry(JWidget widget, JRect clip);
   void draw_combobox_button(ButtonBase* widget, JRect clip);
   void draw_textbox(JWidget widget, JRect clip);

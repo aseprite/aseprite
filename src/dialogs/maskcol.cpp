@@ -18,19 +18,18 @@
 
 #include "config.h"
 
+#include "app.h"
+#include "app/color.h"
+#include "app/color_utils.h"
 #include "base/bind.h"
-#include "gui/jbox.h"
+#include "core/cfg.h"
 #include "gui/button.h"
+#include "gui/frame.h"
+#include "gui/jbox.h"
 #include "gui/jhook.h"
 #include "gui/label.h"
 #include "gui/slider.h"
 #include "gui/widget.h"
-#include "gui/frame.h"
-
-#include "app.h"
-#include "app/color.h"
-#include "app/color_utils.h"
-#include "core/cfg.h"
 #include "modules/editors.h"
 #include "modules/gui.h"
 #include "raster/image.h"
@@ -43,13 +42,11 @@
 
 static ColorButton* button_color;
 static CheckBox* check_preview;
-static Widget* slider_tolerance;
+static Slider* slider_tolerance;
 
 static void button_1_command(JWidget widget);
 static void button_2_command(JWidget widget);
 static bool color_change_hook(JWidget widget, void *data);
-static bool slider_change_hook(JWidget widget, void *data);
-static void preview_change_hook(Sprite* data);
 
 static Mask *gen_mask(const Sprite* sprite);
 static void mask_preview(Sprite* sprite);
@@ -85,7 +82,7 @@ void dialogs_mask_color(Sprite* sprite)
   button_1 = new Button("1");
   button_2 = new Button("2");
   label_tolerance = new Label("Tolerance:");
-  slider_tolerance = jslider_new(0, 255, get_config_int("MaskColor", "Tolerance", 0));
+  slider_tolerance = new Slider(0, 255, get_config_int("MaskColor", "Tolerance", 0));
   check_preview = new CheckBox("&Preview");
   button_ok = new Button("&OK");
   button_cancel = new Button("&Cancel");
@@ -102,8 +99,8 @@ void dialogs_mask_color(Sprite* sprite)
   button_cancel->Click.connect(Bind<void>(&Frame::closeWindow, window.get(), button_cancel));
 
   HOOK(button_color, SIGNAL_COLORBUTTON_CHANGE, color_change_hook, sprite);
-  HOOK(slider_tolerance, JI_SIGNAL_SLIDER_CHANGE, slider_change_hook, sprite);
-  check_preview->Click.connect(Bind<void>(&preview_change_hook, sprite));
+  slider_tolerance->Change.connect(Bind<void>(&mask_preview, sprite));
+  check_preview->Click.connect(Bind<void>(&mask_preview, sprite));
 
   jwidget_magnetic(button_ok, true);
   jwidget_expansive(button_color, true);
@@ -144,8 +141,7 @@ void dialogs_mask_color(Sprite* sprite)
     mask_free(mask);
 
     set_config_color("MaskColor", "Color", button_color->getColor());
-    set_config_int("MaskColor", "Tolerance",
-		   jslider_get_value(slider_tolerance));
+    set_config_int("MaskColor", "Tolerance", slider_tolerance->getValue());
     set_config_bool("MaskColor", "Preview", check_preview->isSelected());
   }
 
@@ -175,17 +171,6 @@ static bool color_change_hook(JWidget widget, void *data)
   return false;
 }
 
-static bool slider_change_hook(JWidget widget, void *data)
-{
-  mask_preview((Sprite*)data);
-  return false;
-}
-
-static void preview_change_hook(Sprite* sprite)
-{
-  mask_preview(sprite);
-}
-
 static Mask *gen_mask(const Sprite* sprite)
 {
   int xpos, ypos, color, tolerance;
@@ -193,7 +178,7 @@ static Mask *gen_mask(const Sprite* sprite)
   const Image* image = sprite->getCurrentImage(&xpos, &ypos, NULL);
 
   color = color_utils::color_for_image(button_color->getColor(), sprite->getImgType());
-  tolerance = jslider_get_value(slider_tolerance);
+  tolerance = slider_tolerance->getValue();
 
   Mask* mask = mask_new();
   mask_by_color(mask, image, color, tolerance);

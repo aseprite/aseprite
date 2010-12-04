@@ -12,6 +12,7 @@
 struct FONT;
 struct BITMAP;
 class ButtonBase;
+class Slider;
 
 class jtheme
 {
@@ -56,7 +57,7 @@ public:
   virtual void draw_panel(JWidget widget, JRect clip) = 0;
   virtual void draw_radio(ButtonBase* widget, JRect clip) = 0;
   virtual void draw_separator(JWidget widget, JRect clip) = 0;
-  virtual void draw_slider(JWidget widget, JRect clip) = 0;
+  virtual void draw_slider(Slider* widget, JRect clip) = 0;
   virtual void draw_combobox_entry(JWidget widget, JRect clip) = 0;
   virtual void draw_combobox_button(ButtonBase* widget, JRect clip) = 0;
   virtual void draw_textbox(JWidget widget, JRect clip) = 0;

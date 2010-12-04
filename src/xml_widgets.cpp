@@ -282,7 +282,7 @@ static Widget* convert_xmlelement_to_widget(TiXmlElement* elem, Widget* root)
     int min_value = min != NULL ? ustrtol(min, NULL, 10): 0;
     int max_value = max != NULL ? ustrtol(max, NULL, 10): 0;
 
-    widget = jslider_new(min_value, max_value, min_value);
+    widget = new Slider(min_value, max_value, min_value);
   }
   /* textbox */
   else if (ustrcmp(elem_name, "textbox") == 0) {

@@ -360,17 +360,18 @@ static FormatOptions *get_options_JPEG(FileOp *fop)
 
     /* widgets */
     FramePtr window(load_widget("jpeg_options.xml", "jpeg_options"));
-    JWidget slider_quality, ok;
+    Slider* slider_quality;
+    Widget* ok;
     get_widgets(window,
 		"quality", &slider_quality,
 		"ok", &ok, NULL);
 
-    jslider_set_value(slider_quality, jpeg_options->quality * 10.0f);
+    slider_quality->setValue(jpeg_options->quality * 10.0f);
 
     window->open_window_fg();
 
     if (window->get_killer() == ok) {
-      jpeg_options->quality = jslider_get_value(slider_quality) / 10.0f;
+      jpeg_options->quality = slider_quality->getValue() / 10.0f;
       set_config_float("JPEG", "Quality", jpeg_options->quality);
     }
     else {

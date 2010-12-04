@@ -64,7 +64,8 @@ bool CelPropertiesCommand::onEnabled(Context* context)
 void CelPropertiesCommand::onExecute(Context* context)
 {
   JWidget label_frame, label_pos, label_size;
-  JWidget slider_opacity, button_ok;
+  Widget* button_ok;
+  Slider* slider_opacity;
   char buf[1024];
   int memsize;
 
@@ -113,7 +114,7 @@ void CelPropertiesCommand::onExecute(Context* context)
     label_size->setText(buf);
 
     /* opacity */
-    jslider_set_value(slider_opacity, cel->opacity);
+    slider_opacity->setValue(cel->opacity);
     if (layer->is_background()) {
       slider_opacity->setEnabled(false);
       jwidget_add_tooltip_text(slider_opacity, "The `Background' layer is opaque,\n"
@@ -123,7 +124,7 @@ void CelPropertiesCommand::onExecute(Context* context)
   else {
     label_pos->setText("None");
     label_size->setText("Empty (0 bytes)");
-    jslider_set_value(slider_opacity, 0);
+    slider_opacity->setValue(0);
     slider_opacity->setEnabled(false);
   }
 
@@ -134,7 +135,7 @@ void CelPropertiesCommand::onExecute(Context* context)
     Layer* layer_writer = sprite_writer->getCurrentLayer();
     Cel* cel_writer = static_cast<LayerImage*>(layer_writer)->getCel(sprite->getCurrentFrame());
 
-    int new_opacity = jslider_get_value(slider_opacity);
+    int new_opacity = slider_opacity->getValue();
 
     /* the opacity was changed? */
     if (cel_writer != NULL &&

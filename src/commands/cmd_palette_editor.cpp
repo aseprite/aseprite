@@ -91,8 +91,8 @@ private:
 
 static Widget *R_label, *G_label, *B_label;
 static Widget *H_label, *S_label, *V_label;
-static Widget *R_slider, *G_slider, *B_slider;
-static Widget *H_slider, *S_slider, *V_slider;
+static Slider *R_slider, *G_slider, *B_slider;
+static Slider *H_slider, *S_slider, *V_slider;
 static Widget *R_entry, *G_entry, *B_entry;
 static Widget *H_entry, *S_entry, *V_entry;
 static Widget *hex_entry;
@@ -108,8 +108,8 @@ static void ramp_command(JWidget widget);
 static void sort_command(JWidget widget);
 static void quantize_command(JWidget widget);
 
-static bool sliderRGB_change_hook(JWidget widget, void *data);
-static bool sliderHSV_change_hook(JWidget widget, void *data);
+static void sliderRGB_change_hook(Slider* widget);
+static void sliderHSV_change_hook(Slider* widget);
 static bool entryRGB_change_hook(JWidget widget, void *data);
 static bool entryHSV_change_hook(JWidget widget, void *data);
 static bool hex_entry_change_hook(JWidget widget, void *data);
@@ -242,12 +242,12 @@ void PaletteEditorCommand::onExecute(Context* context)
   
     // Hook signals
     jwidget_add_hook(window, -1, window_msg_proc, NULL);
-    HOOK(R_slider, JI_SIGNAL_SLIDER_CHANGE, sliderRGB_change_hook, 0);
-    HOOK(G_slider, JI_SIGNAL_SLIDER_CHANGE, sliderRGB_change_hook, 0);
-    HOOK(B_slider, JI_SIGNAL_SLIDER_CHANGE, sliderRGB_change_hook, 0);
-    HOOK(H_slider, JI_SIGNAL_SLIDER_CHANGE, sliderHSV_change_hook, 0);
-    HOOK(S_slider, JI_SIGNAL_SLIDER_CHANGE, sliderHSV_change_hook, 0);
-    HOOK(V_slider, JI_SIGNAL_SLIDER_CHANGE, sliderHSV_change_hook, 0);
+    R_slider->Change.connect(Bind<void>(&sliderRGB_change_hook, R_slider));
+    G_slider->Change.connect(Bind<void>(&sliderRGB_change_hook, G_slider));
+    B_slider->Change.connect(Bind<void>(&sliderRGB_change_hook, B_slider));
+    H_slider->Change.connect(Bind<void>(&sliderHSV_change_hook, H_slider));
+    S_slider->Change.connect(Bind<void>(&sliderHSV_change_hook, S_slider));
+    V_slider->Change.connect(Bind<void>(&sliderHSV_change_hook, V_slider));
     HOOK(R_entry, JI_SIGNAL_ENTRY_CHANGE, entryRGB_change_hook, 0);
     HOOK(G_entry, JI_SIGNAL_ENTRY_CHANGE, entryRGB_change_hook, 0);
     HOOK(B_entry, JI_SIGNAL_ENTRY_CHANGE, entryRGB_change_hook, 0);
@@ -725,16 +725,16 @@ static void quantize_command(JWidget widget)
   delete palette;
 }
 
-static bool sliderRGB_change_hook(JWidget widget, void *data)
+static void sliderRGB_change_hook(Slider* widget)
 {
-  int r = jslider_get_value(R_slider);
-  int g = jslider_get_value(G_slider);
-  int b = jslider_get_value(B_slider);
+  int r = R_slider->getValue();
+  int g = G_slider->getValue();
+  int b = B_slider->getValue();
   Color color = Color::fromRgb(r, g, b);
 
-  jslider_set_value(H_slider, color.getHue());
-  jslider_set_value(V_slider, color.getValue());
-  jslider_set_value(S_slider, color.getSaturation());
+  H_slider->setValue(color.getHue());
+  V_slider->setValue(color.getValue());
+  S_slider->setValue(color.getSaturation());
 
   modify_rgb_of_selected_entries(r, g, b,
 				 widget == R_slider,
@@ -745,20 +745,19 @@ static bool sliderRGB_change_hook(JWidget widget, void *data)
   update_hex_entry();
   update_current_sprite_palette("Color Change");
   update_colorbar();
-  return false;
 }
 
-static bool sliderHSV_change_hook(JWidget widget, void *data)
+static void sliderHSV_change_hook(Slider* widget)
 {
-  int h = jslider_get_value(H_slider);
-  int s = jslider_get_value(S_slider);
-  int v = jslider_get_value(V_slider);
+  int h = H_slider->getValue();
+  int s = S_slider->getValue();
+  int v = V_slider->getValue();
   Color color = Color::fromHsv(h, s, v);
   int r, g, b;
 
-  jslider_set_value(R_slider, r = color.getRed());
-  jslider_set_value(G_slider, g = color.getGreen());
-  jslider_set_value(B_slider, b = color.getBlue());
+  R_slider->setValue(r = color.getRed());
+  G_slider->setValue(g = color.getGreen());
+  B_slider->setValue(b = color.getBlue());
 
   modify_hsv_of_selected_entries(h, s, v,
 				 widget == H_slider,
@@ -769,7 +768,6 @@ static bool sliderHSV_change_hook(JWidget widget, void *data)
   update_hex_entry();
   update_current_sprite_palette("Color Change");
   update_colorbar();
-  return false;
 }
 
 static bool entryRGB_change_hook(JWidget widget, void *data)
@@ -838,9 +836,9 @@ static bool hex_entry_change_hook(JWidget widget, void *data)
   // Convert text (Base 16) to integer
   int hex = strtol(text.c_str(), NULL, 16);
 
-  jslider_set_value(R_slider, r = ((hex & 0xff0000) >> 16));
-  jslider_set_value(G_slider, g = ((hex & 0xff00) >> 8));
-  jslider_set_value(B_slider, b = ((hex & 0xff)));
+  R_slider->setValue(r = ((hex & 0xff0000) >> 16));
+  G_slider->setValue(g = ((hex & 0xff00) >> 8));
+  B_slider->setValue(b = ((hex & 0xff)));
 
   rgb_to_hsv(r, g, b, &h, &s, &v);
 
@@ -851,9 +849,9 @@ static bool hex_entry_change_hook(JWidget widget, void *data)
     }
   }
 
-  jslider_set_value(H_slider, 255.0 * h / 360.0);
-  jslider_set_value(V_slider, 255.0 * v);
-  jslider_set_value(S_slider, 255.0 * s);
+  H_slider->setValue(255.0 * h / 360.0);
+  V_slider->setValue(255.0 * v);
+  S_slider->setValue(255.0 * s);
 
   update_entries_from_sliders();
   update_current_sprite_palette("Color Change");
@@ -863,32 +861,32 @@ static bool hex_entry_change_hook(JWidget widget, void *data)
 
 static void update_entries_from_sliders()
 {
-  R_entry->setTextf("%d", jslider_get_value(R_slider));
-  G_entry->setTextf("%d", jslider_get_value(G_slider));
-  B_entry->setTextf("%d", jslider_get_value(B_slider));
+  R_entry->setTextf("%d", R_slider->getValue());
+  G_entry->setTextf("%d", G_slider->getValue());
+  B_entry->setTextf("%d", B_slider->getValue());
 
-  H_entry->setTextf("%d", jslider_get_value(H_slider));
-  S_entry->setTextf("%d", jslider_get_value(S_slider));
-  V_entry->setTextf("%d", jslider_get_value(V_slider));
+  H_entry->setTextf("%d", H_slider->getValue());
+  S_entry->setTextf("%d", S_slider->getValue());
+  V_entry->setTextf("%d", V_slider->getValue());
 }
 
 static void update_sliders_from_entries()
 {
-  jslider_set_value(R_slider, R_entry->getTextInt());
-  jslider_set_value(G_slider, G_entry->getTextInt());
-  jslider_set_value(B_slider, B_entry->getTextInt());
+  R_slider->setValue(R_entry->getTextInt());
+  G_slider->setValue(G_entry->getTextInt());
+  B_slider->setValue(B_entry->getTextInt());
 
-  jslider_set_value(H_slider, H_entry->getTextInt());
-  jslider_set_value(S_slider, S_entry->getTextInt());
-  jslider_set_value(V_slider, V_entry->getTextInt());
+  H_slider->setValue(H_entry->getTextInt());
+  S_slider->setValue(S_entry->getTextInt());
+  V_slider->setValue(V_entry->getTextInt());
 }
 
 static void update_hex_entry()
 {
   hex_entry->setTextf("%02x%02x%02x",
-		      jslider_get_value(R_slider),
-		      jslider_get_value(G_slider),
-		      jslider_get_value(B_slider));
+		      R_slider->getValue(),
+		      G_slider->getValue(),
+		      B_slider->getValue());
 }
 
 static void update_current_sprite_palette(const char* operationName)
@@ -934,12 +932,12 @@ static void update_colorbar()
 
 static void update_sliders_from_color(const Color& color)
 {
-  jslider_set_value(R_slider, color.getRed());
-  jslider_set_value(G_slider, color.getGreen());
-  jslider_set_value(B_slider, color.getBlue());
-  jslider_set_value(H_slider, color.getHue());
-  jslider_set_value(S_slider, color.getSaturation());
-  jslider_set_value(V_slider, color.getValue());
+  R_slider->setValue(color.getRed());
+  G_slider->setValue(color.getGreen());
+  B_slider->setValue(color.getBlue());
+  H_slider->setValue(color.getHue());
+  S_slider->setValue(color.getSaturation());
+  V_slider->setValue(color.getValue());
 }
 
 static bool palette_editor_change_hook(JWidget widget, void *data)

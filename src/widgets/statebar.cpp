@@ -60,7 +60,7 @@ enum AniAction {
 static bool tipwindow_msg_proc(JWidget widget, JMessage msg);
 
 static bool transparent_color_change_hook(JWidget widget, void *data);
-static bool slider_change_hook(JWidget widget, void *data);
+static void slider_change_hook(Slider* slider);
 static void ani_button_command(Button* widget, AniAction action);
 
 static int statusbar_type()
@@ -107,7 +107,7 @@ StatusBar::StatusBar()
     Widget* box1 = jbox_new(JI_HORIZONTAL);
     Widget* box2 = jbox_new(JI_HORIZONTAL | JI_HOMOGENEOUS);
     Widget* box3 = jbox_new(JI_HORIZONTAL);
-    m_slider = jslider_new(0, 255, 255);
+    m_slider = new Slider(0, 255, 255);
 
     setup_mini_look(m_slider);
 
@@ -117,7 +117,7 @@ StatusBar::StatusBar()
     ICON_NEW(m_b_next, GFX_ANI_NEXT, ACTION_NEXT);
     ICON_NEW(m_b_last, GFX_ANI_LAST, ACTION_LAST);
 
-    HOOK(m_slider, JI_SIGNAL_SLIDER_CHANGE, slider_change_hook, 0);
+    m_slider->Change.connect(Bind<void>(&slider_change_hook, m_slider));
     jwidget_set_min_size(m_slider, JI_SCREEN_W/5, 0);
 
     jwidget_set_border(box1, 2*jguiscale(), 1*jguiscale(), 2*jguiscale(), 2*jguiscale());
@@ -742,7 +742,7 @@ static bool transparent_color_change_hook(JWidget widget, void *data)
   return true;
 }
 
-static bool slider_change_hook(JWidget widget, void *data)
+static void slider_change_hook(Slider* slider)
 {
   try {
     CurrentSpriteWriter sprite(UIContext::instance());
@@ -752,7 +752,7 @@ static bool slider_change_hook(JWidget widget, void *data)
 	Cel* cel = ((LayerImage*)sprite->getCurrentLayer())->getCel(sprite->getCurrentFrame());
 	if (cel) {
 	  // Update the opacity
-	  cel->opacity = jslider_get_value(widget);
+	  cel->opacity = slider->getValue();
 
 	  // Update the editors
 	  update_screen_for_sprite(sprite);
@@ -763,7 +763,6 @@ static bool slider_change_hook(JWidget widget, void *data)
   catch (LockedSpriteException&) {
     // do nothing
   }
-  return false;
 }
 
 static void ani_button_command(Button* widget, AniAction action)
@@ -795,11 +794,11 @@ void StatusBar::updateFromLayer()
 	sprite->getCurrentLayer()->is_image() &&
 	!sprite->getCurrentLayer()->is_background() &&
 	(cel = ((LayerImage*)sprite->getCurrentLayer())->getCel(sprite->getCurrentFrame()))) {
-      jslider_set_value(m_slider, MID(0, cel->opacity, 255));
+      m_slider->setValue(MID(0, cel->opacity, 255));
       m_slider->setEnabled(true);
     }
     else {
-      jslider_set_value(m_slider, 255);
+      m_slider->setValue(255);
       m_slider->setEnabled(false);
     }
   }

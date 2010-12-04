@@ -1107,13 +1107,13 @@ static bool my_add_clip_rect(BITMAP *bitmap, int x1, int y1, int x2, int y2)
   return true;
 }
 
-void SkinneableTheme::draw_slider(JWidget widget, JRect clip)
+void SkinneableTheme::draw_slider(Slider* widget, JRect clip)
 {
   int x, x1, y1, x2, y2;
   int min, max, value;
   char buf[256];
 
-  jtheme_slider_info(widget, &min, &max, &value);
+  widget->getSliderThemeInfo(&min, &max, &value);
 
   // Tool buttons are smaller
   bool isMiniLook = false;

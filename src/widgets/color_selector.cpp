@@ -70,7 +70,7 @@ static void colorselector_set_paledit_index(JWidget widget, int index,
 					    bool select_index_entry);
 
 static bool select_model_hook(Frame* frame, Model* selected_model);
-static bool slider_change_hook(JWidget widget, void* data);
+static void slider_change_hook(Slider* widget);
 static bool paledit_change_hook(JWidget widget, void* data);
 
 static Model models[] = {
@@ -167,9 +167,9 @@ static Widget* create_rgb_container()
   Label* rlabel = new Label("R");
   Label* glabel = new Label("G");
   Label* blabel = new Label("B");
-  Widget* rslider = jslider_new(0, 255, 0);
-  Widget* gslider = jslider_new(0, 255, 0);
-  Widget* bslider = jslider_new(0, 255, 0);
+  Slider* rslider = new Slider(0, 255, 0);
+  Slider* gslider = new Slider(0, 255, 0);
+  Slider* bslider = new Slider(0, 255, 0);
   jgrid_add_child(grid, rlabel, 1, 1, JI_RIGHT);
   jgrid_add_child(grid, rslider, 1, 1, JI_HORIZONTAL);
   jgrid_add_child(grid, glabel, 1, 1, JI_RIGHT);
@@ -181,9 +181,9 @@ static Widget* create_rgb_container()
   gslider->setName("rgb_g");
   bslider->setName("rgb_b");
 
-  HOOK(rslider, JI_SIGNAL_SLIDER_CHANGE, slider_change_hook, 0);
-  HOOK(gslider, JI_SIGNAL_SLIDER_CHANGE, slider_change_hook, 0);
-  HOOK(bslider, JI_SIGNAL_SLIDER_CHANGE, slider_change_hook, 0);
+  rslider->Change.connect(Bind<void>(&slider_change_hook, rslider));
+  gslider->Change.connect(Bind<void>(&slider_change_hook, gslider));
+  bslider->Change.connect(Bind<void>(&slider_change_hook, bslider));
 
   return grid;
 }
@@ -194,9 +194,9 @@ static Widget* create_hsv_container()
   Label* hlabel = new Label("H");
   Label* slabel = new Label("S");
   Label* vlabel = new Label("V");
-  Widget* hslider = jslider_new(0, 255, 0);
-  Widget* sslider = jslider_new(0, 255, 0);
-  Widget* vslider = jslider_new(0, 255, 0);
+  Slider* hslider = new Slider(0, 255, 0);
+  Slider* sslider = new Slider(0, 255, 0);
+  Slider* vslider = new Slider(0, 255, 0);
   jgrid_add_child(grid, hlabel, 1, 1, JI_RIGHT);
   jgrid_add_child(grid, hslider, 1, 1, JI_HORIZONTAL);
   jgrid_add_child(grid, slabel, 1, 1, JI_RIGHT);
@@ -208,9 +208,9 @@ static Widget* create_hsv_container()
   sslider->setName("hsv_s");
   vslider->setName("hsv_v");
 
-  HOOK(hslider, JI_SIGNAL_SLIDER_CHANGE, slider_change_hook, 0);
-  HOOK(sslider, JI_SIGNAL_SLIDER_CHANGE, slider_change_hook, 0);
-  HOOK(vslider, JI_SIGNAL_SLIDER_CHANGE, slider_change_hook, 0);
+  hslider->Change.connect(Bind<void>(&slider_change_hook, hslider));
+  sslider->Change.connect(Bind<void>(&slider_change_hook, sslider));
+  vslider->Change.connect(Bind<void>(&slider_change_hook, vslider));
 
   return grid;
 }
@@ -219,13 +219,13 @@ static Widget* create_gray_container()
 {
   Widget* grid = jgrid_new(2, false);
   Label* klabel = new Label("V");
-  Widget* vslider = jslider_new(0, 255, 0);
+  Slider* vslider = new Slider(0, 255, 0);
   jgrid_add_child(grid, klabel, 1, 1, JI_RIGHT);
   jgrid_add_child(grid, vslider, 1, 1, JI_HORIZONTAL);
 
   vslider->setName("gray_v");
 
-  HOOK(vslider, JI_SIGNAL_SLIDER_CHANGE, slider_change_hook, 0);
+  vslider->Change.connect(Bind<void>(&slider_change_hook, vslider));
 
   return grid;
 }
@@ -284,28 +284,28 @@ static void colorselector_set_color2(JWidget widget, const Color& color,
 {
   ColorSelector* colorselector = colorselector_data(widget);
   Model* m = colorselector->selected_model;
-  JWidget rgb_rslider = jwidget_find_name(widget, "rgb_r");
-  JWidget rgb_gslider = jwidget_find_name(widget, "rgb_g");
-  JWidget rgb_bslider = jwidget_find_name(widget, "rgb_b");
-  JWidget hsv_hslider = jwidget_find_name(widget, "hsv_h");
-  JWidget hsv_sslider = jwidget_find_name(widget, "hsv_s");
-  JWidget hsv_vslider = jwidget_find_name(widget, "hsv_v");
-  JWidget gray_vslider = jwidget_find_name(widget, "gray_v");
+  Slider* rgb_rslider = widget->findChildT<Slider>("rgb_r");
+  Slider* rgb_gslider = widget->findChildT<Slider>("rgb_g");
+  Slider* rgb_bslider = widget->findChildT<Slider>("rgb_b");
+  Slider* hsv_hslider = widget->findChildT<Slider>("hsv_h");
+  Slider* hsv_sslider = widget->findChildT<Slider>("hsv_s");
+  Slider* hsv_vslider = widget->findChildT<Slider>("hsv_v");
+  Slider* gray_vslider = widget->findChildT<Slider>("gray_v");
 
   colorselector->color = color;
 
   if (exclude_this_model != models+MODEL_RGB) {
-    jslider_set_value(rgb_rslider, color.getRed());
-    jslider_set_value(rgb_gslider, color.getGreen());
-    jslider_set_value(rgb_bslider, color.getBlue());
+    rgb_rslider->setValue(color.getRed());
+    rgb_gslider->setValue(color.getGreen());
+    rgb_bslider->setValue(color.getBlue());
   }
   if (exclude_this_model != models+MODEL_HSV) {
-    jslider_set_value(hsv_hslider, color.getHue());
-    jslider_set_value(hsv_sslider, color.getSaturation());
-    jslider_set_value(hsv_vslider, color.getValue());
+    hsv_hslider->setValue(color.getHue());
+    hsv_sslider->setValue(color.getSaturation());
+    hsv_vslider->setValue(color.getValue());
   }
   if (exclude_this_model != models+MODEL_GRAY) {
-    jslider_set_value(gray_vslider, color.getValue());
+    gray_vslider->setValue(color.getValue());
   }
   
   switch (color.getType()) {
@@ -424,7 +424,7 @@ static bool select_model_hook(Frame* frame, Model* selected_model)
   return true;
 }
 
-static bool slider_change_hook(JWidget widget, void* data)
+static void slider_change_hook(Slider* widget)
 {
   Frame* window = static_cast<Frame*>(widget->getRoot());
   ColorSelector* colorselector = colorselector_data(window);
@@ -434,28 +434,28 @@ static bool slider_change_hook(JWidget widget, void* data)
   
   switch (m->model) {
     case MODEL_RGB: {
-      JWidget rslider = jwidget_find_name(window, "rgb_r");
-      JWidget gslider = jwidget_find_name(window, "rgb_g");
-      JWidget bslider = jwidget_find_name(window, "rgb_b");
-      int r = jslider_get_value(rslider);
-      int g = jslider_get_value(gslider);
-      int b = jslider_get_value(bslider);
+      Slider* rslider = window->findChildT<Slider>("rgb_r");
+      Slider* gslider = window->findChildT<Slider>("rgb_g");
+      Slider* bslider = window->findChildT<Slider>("rgb_b");
+      int r = rslider->getValue();
+      int g = gslider->getValue();
+      int b = bslider->getValue();
       color = Color::fromRgb(r, g, b);
       break;
     }
     case MODEL_HSV: {
-      JWidget hslider = jwidget_find_name(window, "hsv_h");
-      JWidget sslider = jwidget_find_name(window, "hsv_s");
-      JWidget vslider = jwidget_find_name(window, "hsv_v");
-      int h = jslider_get_value(hslider);
-      int s = jslider_get_value(sslider);
-      int v = jslider_get_value(vslider);
+      Slider* hslider = window->findChildT<Slider>("hsv_h");
+      Slider* sslider = window->findChildT<Slider>("hsv_s");
+      Slider* vslider = window->findChildT<Slider>("hsv_v");
+      int h = hslider->getValue();
+      int s = sslider->getValue();
+      int v = vslider->getValue();
       color = Color::fromHsv(h, s, v);
       break;
     }
     case MODEL_GRAY: {
-      JWidget vslider = jwidget_find_name(window, "gray_v");
-      int v = jslider_get_value(vslider);
+      Slider* vslider = window->findChildT<Slider>("gray_v");
+      int v = vslider->getValue();
       color = Color::fromGray(v);
       break;
     }
@@ -472,7 +472,6 @@ static bool slider_change_hook(JWidget widget, void* data)
 
   colorselector_set_color2(window, color, false, false, m);
   jwidget_emit_signal(window, SIGNAL_COLORSELECTOR_COLOR_CHANGED);
-  return 0;
 }
 
 static bool paledit_change_hook(Widget* widget, void* data)
