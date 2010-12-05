@@ -304,9 +304,6 @@ Layer* Undoable::newLayer()
   // new layer
   LayerImage* layer = new LayerImage(m_sprite);
 
-  // configure layer name and blend mode
-  layer->set_blend_mode(BLEND_MODE_NORMAL);
-
   // add the layer in the sprite set
   if (isEnabled())
     m_sprite->getUndo()->undo_add_layer(m_sprite->getFolder(), layer);
@@ -438,7 +435,7 @@ void Undoable::backgroundFromLayer(LayerImage* layer, int bgcolor)
 		cel->x,
 		cel->y,
 		MID(0, cel->opacity, 255),
-		layer->get_blend_mode());
+		layer->getBlendMode());
 
     // now we have to copy the new image (bg_image) to the cel...
     setCelPosition(cel, 0, 0);

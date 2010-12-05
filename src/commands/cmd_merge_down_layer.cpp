@@ -157,7 +157,7 @@ void MergeDownLayerCommand::onExecute(Context* context)
 		    src_cel->x-x1,
 		    src_cel->y-y1,
 		    src_cel->opacity,
-		    static_cast<LayerImage*>(src_layer)->get_blend_mode());
+		    static_cast<LayerImage*>(src_layer)->getBlendMode());
 
 	if (sprite->getUndo()->isEnabled()) {
 	  sprite->getUndo()->undo_int(dst_cel, &dst_cel->x);

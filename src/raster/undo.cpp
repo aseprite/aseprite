@@ -2224,16 +2224,12 @@ static Layer* read_raw_layer(ase_uint8* raw_data)
   switch (layer_type) {
 
     case GFXOBJ_LAYER_IMAGE: {
-      int c, blend_mode, cels;
+      int c, cels;
 
-      read_raw_uint8(blend_mode); /* blend mode */
       read_raw_uint16(cels);	  /* cels */
 
       /* create layer */
       layer = new LayerImage(sprite);
-
-      /* set blend mode */
-      static_cast<LayerImage*>(layer)->set_blend_mode(blend_mode);
 
       /* read cels */
       for (c=0; c<cels; c++) {
@@ -2311,9 +2307,6 @@ static ase_uint8* write_raw_layer(ase_uint8* raw_data, Layer* layer)
   switch (layer->getType()) {
 
     case GFXOBJ_LAYER_IMAGE: {
-      // blend mode
-      write_raw_uint8(static_cast<LayerImage*>(layer)->get_blend_mode());
-
       // cels
       write_raw_uint16(static_cast<LayerImage*>(layer)->getCelsCount());
 

@@ -392,7 +392,7 @@ static void ink_hline32_jumble(int x1, int y, int x2, IToolLoop* loop)
     (RgbTraits,
      {
        JUMBLE_XY_IN_UV();
-       *dst_address = _rgba_blend_MERGE(*src_address, color, opacity);
+       *dst_address = _rgba_blend_merge(*src_address, color, opacity);
      }
      );
 }  
@@ -408,7 +408,7 @@ static void ink_hline16_jumble(int x1, int y, int x2, IToolLoop* loop)
     (GrayscaleTraits,
      {
        JUMBLE_XY_IN_UV();
-       *dst_address = _graya_blend_MERGE(*src_address, color, opacity);
+       *dst_address = _graya_blend_merge(*src_address, color, opacity);
      }
      );
 }  
@@ -429,7 +429,7 @@ static void ink_hline8_jumble(int x1, int y, int x2, IToolLoop* loop)
        JUMBLE_XY_IN_UV();
 
        tc = color != 0 ? pal->getEntry(color): 0;
-       c = _rgba_blend_MERGE(*src_address != 0 ? pal->getEntry(*src_address): 0,
+       c = _rgba_blend_merge(*src_address != 0 ? pal->getEntry(*src_address): 0,
 			     tc, opacity);
 
        if (_rgba_geta(c) >= 128)

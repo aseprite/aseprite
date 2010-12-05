@@ -641,14 +641,13 @@ static Layer *ase_file_read_layer_chunk(FILE *f, Sprite *sprite, Layer **previou
   int flags;
   int layer_type;
   int child_level;
-  int blend_mode;
 
   flags = fgetw(f);
   layer_type = fgetw(f);
   child_level = fgetw(f);
-  fgetw(f);			/* default_width */
-  fgetw(f);			/* default_height */
-  blend_mode = fgetw(f);
+  fgetw(f);			// default width
+  fgetw(f);			// default height
+  fgetw(f);			// blend mode
 
   ase_file_read_padding(f, 4);
   name = ase_file_read_string(f);
@@ -656,7 +655,6 @@ static Layer *ase_file_read_layer_chunk(FILE *f, Sprite *sprite, Layer **previou
   /* image layer */
   if (layer_type == 0) {
     layer = new LayerImage(sprite);
-    static_cast<LayerImage*>(layer)->set_blend_mode(blend_mode);
   }
   /* layer set */
   else if (layer_type == 1) {
@@ -704,10 +702,10 @@ static void ase_file_write_layer_chunk(FILE *f, Layer *layer)
   }
   fputw(child_level, f);
 
-  /* width, height and blend mode */
+  /* default width & height, and blend mode */
   fputw(0, f);
   fputw(0, f);
-  fputw(layer->is_image() ? static_cast<LayerImage*>(layer)->get_blend_mode(): 0, f);
+  fputw(layer->is_image() ? static_cast<LayerImage*>(layer)->getBlendMode(): 0, f);
 
   /* padding */
   ase_file_write_padding(f, 4);

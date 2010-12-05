@@ -60,10 +60,8 @@ bool LayerPropertiesCommand::onEnabled(Context* context)
 
 void LayerPropertiesCommand::onExecute(Context* context)
 {
-  JWidget label_bm, view_bm, list_bm;
   CurrentSpriteWriter sprite(context);
   Layer* layer = sprite->getCurrentLayer();
-  bool with_blend_modes = (layer->is_image() && sprite->getImgType() != IMAGE_INDEXED);
 
   FramePtr window(new Frame(false, "Layer Properties"));
   Widget* box1 = jbox_new(JI_VERTICAL);
@@ -77,46 +75,12 @@ void LayerPropertiesCommand::onExecute(Context* context)
   button_ok->Click.connect(Bind<void>(&Frame::closeWindow, window.get(), button_ok));
   button_cancel->Click.connect(Bind<void>(&Frame::closeWindow, window.get(), button_cancel));
 
-  if (with_blend_modes) {
-    label_bm = new Label("Blend mode:");
-    view_bm = jview_new();
-    list_bm = jlistbox_new();
-
-    jwidget_add_child(list_bm, jlistitem_new("Normal"));
-    jwidget_add_child(list_bm, jlistitem_new("Dissolve"));
-    jwidget_add_child(list_bm, jlistitem_new("Multiply"));
-    jwidget_add_child(list_bm, jlistitem_new("Screen"));
-    jwidget_add_child(list_bm, jlistitem_new("Overlay"));
-    jwidget_add_child(list_bm, jlistitem_new("Hard Light"));
-    jwidget_add_child(list_bm, jlistitem_new("Dodge"));
-    jwidget_add_child(list_bm, jlistitem_new("Burn"));
-    jwidget_add_child(list_bm, jlistitem_new("Darken"));
-    jwidget_add_child(list_bm, jlistitem_new("Lighten"));
-    jwidget_add_child(list_bm, jlistitem_new("Addition"));
-    jwidget_add_child(list_bm, jlistitem_new("Subtract"));
-    jwidget_add_child(list_bm, jlistitem_new("Difference"));
-    jwidget_add_child(list_bm, jlistitem_new("Hue"));
-    jwidget_add_child(list_bm, jlistitem_new("Saturation"));
-    jwidget_add_child(list_bm, jlistitem_new("Color"));
-    jwidget_add_child(list_bm, jlistitem_new("Luminosity"));
-
-    jlistbox_select_index(list_bm, static_cast<LayerImage*>(layer)->get_blend_mode());
-
-    jview_attach(view_bm, list_bm);
-    jwidget_set_min_size(view_bm, 128*jguiscale(), 64*jguiscale());
-    jwidget_expansive(view_bm, true);
-  }
-
   jwidget_set_min_size(entry_name, 128, 0);
   jwidget_expansive(entry_name, true);
 
   jwidget_add_child(box2, label_name);
   jwidget_add_child(box2, entry_name);
   jwidget_add_child(box1, box2);
-  if (with_blend_modes) {
-    jwidget_add_child(box1, label_bm);
-    jwidget_add_child(box1, view_bm);
-  }
   jwidget_add_child(box3, button_ok);
   jwidget_add_child(box3, button_cancel);
   jwidget_add_child(box1, box3);
@@ -129,9 +93,6 @@ void LayerPropertiesCommand::onExecute(Context* context)
 
   if (window->get_killer() == button_ok) {
     layer->setName(entry_name->getText());
-
-    if (with_blend_modes)
-      static_cast<LayerImage*>(layer)->set_blend_mode(jlistbox_get_selected_index(list_bm));
 
     update_screen_for_sprite(sprite);
   }

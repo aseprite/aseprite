@@ -24,22 +24,6 @@
 
 enum {
   BLEND_MODE_NORMAL,
-  BLEND_MODE_DISSOLVE,
-  BLEND_MODE_MULTIPLY,
-  BLEND_MODE_SCREEN,
-  BLEND_MODE_OVERLAY,
-  BLEND_MODE_HARD_LIGHT,
-  BLEND_MODE_DODGE,
-  BLEND_MODE_BURN,
-  BLEND_MODE_DARKEN,
-  BLEND_MODE_LIGHTEN,
-  BLEND_MODE_ADDITION,
-  BLEND_MODE_SUBTRACT,
-  BLEND_MODE_DIFFERENCE,
-  BLEND_MODE_HUE,
-  BLEND_MODE_SATURATION,
-  BLEND_MODE_COLOR,
-  BLEND_MODE_LUMINOSITY,
   BLEND_MODE_COPY,
   BLEND_MODE_MAX,
 };
@@ -50,30 +34,14 @@ extern BLEND_COLOR _rgba_blenders[];
 extern BLEND_COLOR _graya_blenders[];
 
 int _rgba_blend_normal(int back, int front, int opacity);
-int _rgba_blend_dissolve(int back, int front, int opacity);
-int _rgba_blend_multiply(int back, int front, int opacity);
-int _rgba_blend_screen(int back, int front, int opacity);
-int _rgba_blend_overlay(int back, int front, int opacity);
-int _rgba_blend_hard_light(int back, int front, int opacity);
-int _rgba_blend_dodge(int back, int front, int opacity);
-int _rgba_blend_burn(int back, int front, int opacity);
-int _rgba_blend_darken(int back, int front, int opacity);
-int _rgba_blend_lighten(int back, int front, int opacity);
-int _rgba_blend_addition(int back, int front, int opacity);
-int _rgba_blend_subtract(int back, int front, int opacity);
-int _rgba_blend_difference(int back, int front, int opacity);
-int _rgba_blend_hue(int back, int front, int opacity);
-int _rgba_blend_saturation(int back, int front, int opacity);
-int _rgba_blend_color(int back, int front, int opacity);
-int _rgba_blend_luminosity(int back, int front, int opacity);
 int _rgba_blend_copy(int back, int front, int opacity);
-int _rgba_blend_FORPATH(int back, int front, int opacity);
-int _rgba_blend_MERGE(int back, int front, int opacity);
+int _rgba_blend_forpath(int back, int front, int opacity);
+int _rgba_blend_merge(int back, int front, int opacity);
 
 int _graya_blend_normal(int back, int front, int opacity);
 int _graya_blend_copy(int back, int front, int opacity);
-int _graya_blend_FORPATH(int back, int front, int opacity);
-int _graya_blend_MERGE(int back, int front, int opacity);
+int _graya_blend_forpath(int back, int front, int opacity);
+int _graya_blend_merge(int back, int front, int opacity);
 
 void rgb_to_hsv_int(int *red, int *green, int *blue);
 void hsv_to_rgb_int(int *hue, int *saturation, int *value);

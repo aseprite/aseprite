@@ -1026,7 +1026,6 @@ Sprite* Sprite::createWithLayer(int imgtype, int width, int height, int ncolors)
 
     /* configure the first transparent layer */
     layer->setName("Layer 1");
-    layer->set_blend_mode(BLEND_MODE_NORMAL);
 
     /* add image in the layer stock */
     int index = sprite->getStock()->addImage(image);

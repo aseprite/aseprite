@@ -121,7 +121,8 @@ Layer Chunk (0x2004)
   WORD          Layer child level (see NOTE.1)
   WORD		Default layer width in pixels (ignored)
   WORD		Default layer height in pixels (ignored)
-  WORD		Blend mode (always 0 for layer set)
+  WORD		DEPRECATED This field is not used anymore.
+                Blend mode (always 0 for layer set)
                   BLEND_MODE_NORMAL     = 0
                   BLEND_MODE_DISSOLVE   = 1
 		  BLEND_MODE_MULTIPLY   = 2

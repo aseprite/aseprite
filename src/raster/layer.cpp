@@ -112,14 +112,11 @@ Layer* Layer::get_next() const
 LayerImage::LayerImage(Sprite* sprite)
   : Layer(GFXOBJ_LAYER_IMAGE, sprite)
 {
-  m_blend_mode = BLEND_MODE_NORMAL;
 }
 
 LayerImage::LayerImage(const LayerImage* src_layer, Sprite* dst_sprite)
   : Layer(src_layer, dst_sprite)
 {
-  set_blend_mode(src_layer->get_blend_mode());
-
   try {
     // copy cels
     CelConstIterator it = src_layer->getCelBegin();
@@ -188,11 +185,6 @@ void LayerImage::destroy_all_cels()
     cel_free(cel);
   }
   m_cels.clear();
-}
-
-void LayerImage::set_blend_mode(int blend_mode)
-{
-  m_blend_mode = blend_mode;
 }
 
 void LayerImage::getCels(CelList& cels)
@@ -458,7 +450,7 @@ void layer_render(const Layer* layer, Image* image, int x, int y, int frame)
 		    cel->x + x,
 		    cel->y + y,
 		    MID (0, cel->opacity, 255),
-		    static_cast<const LayerImage*>(layer)->get_blend_mode());
+		    static_cast<const LayerImage*>(layer)->getBlendMode());
       }
       break;
     }

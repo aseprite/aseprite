@@ -594,7 +594,7 @@ void RenderEngine::renderLayer(const Sprite *sprite,
 			 (cel->x << zoom) - source_x,
 			 (cel->y << zoom) - source_y,
 			 output_opacity,
-			 static_cast<const LayerImage*>(layer)->get_blend_mode(), zoom);
+			 static_cast<const LayerImage*>(layer)->getBlendMode(), zoom);
 	}
       }
       break;

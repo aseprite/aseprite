@@ -21,6 +21,7 @@
 
 #include <string>
 #include "raster/gfxobj.h"
+#include "raster/blend.h"
 
 class Cel;
 class Image;
@@ -95,8 +96,7 @@ public:
 
   int getMemSize() const;
 
-  int get_blend_mode() const { return m_blend_mode; }
-  void set_blend_mode(int blend_mode);
+  int getBlendMode() const { return BLEND_MODE_NORMAL; }
 
   void addCel(Cel *cel);
   void removeCel(Cel *cel);
@@ -118,7 +118,6 @@ public:
 private:
   void destroy_all_cels();
 
-  int m_blend_mode; // It indicates how this layer is merged in the final render.
   CelList m_cels;   // List of all cels inside this layer used by frames.
 };
 
