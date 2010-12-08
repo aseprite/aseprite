@@ -107,7 +107,7 @@ static bool colorviewer_msg_proc(JWidget widget, JMessage msg)
       break;
 
     case JM_REQSIZE: {
-      msg->reqsize.w = ji_font_text_len(widget->getFont(), "255,255,255,255");
+      msg->reqsize.w = ji_font_text_len(widget->getFont(), "XXX 255,255,255 (255)");
       msg->reqsize.h = jwidget_get_text_height(widget);
 
       msg->reqsize.w += widget->border_width.l + widget->border_width.r;

@@ -25,43 +25,54 @@
 
 #include "app/color.h"
 #include "app/color_utils.h"
+#include "gfx/hsv.h"
+#include "gfx/rgb.h"
+#include "modules/palettes.h"
 #include "raster/image.h"
 #include "raster/palette.h"
-#include "modules/palettes.h"
 
-#define MAKE_DATA(c1,c2,c3)	((c3) << 16) | ((c2) << 8) | (c1)
-#define GET_DATA_C1(c)		(((c) >> 0) & 0xff)
-#define GET_DATA_C2(c)		(((c) >> 8) & 0xff)
-#define GET_DATA_C3(c)		(((c) >> 16) & 0xff)
+using namespace gfx;
 
 // static
 Color Color::fromMask()
 {
-  return Color(Color::MaskType, 0);
+  return Color(Color::MaskType);
 }
 
 // static
 Color Color::fromRgb(int r, int g, int b)
 {
-  return Color(Color::RgbType, MAKE_DATA(r & 0xff, g & 0xff, b & 0xff));
+  Color color(Color::RgbType);
+  color.m_value.rgb.r = r;
+  color.m_value.rgb.g = g;
+  color.m_value.rgb.b = b;
+  return color;
 }
 
 // static
 Color Color::fromHsv(int h, int s, int v)
 {
-  return Color(Color::HsvType, MAKE_DATA(h & 0xff, s & 0xff, v & 0xff));
+  Color color(Color::HsvType);
+  color.m_value.hsv.h = h;
+  color.m_value.hsv.s = s;
+  color.m_value.hsv.v = v;
+  return color;
 }
 
 // static
 Color Color::fromGray(int g)
 {
-  return Color(Color::GrayType, g & 0xff);
+  Color color(Color::GrayType);
+  color.m_value.gray = g;
+  return color;
 }
 
 // static
 Color Color::fromIndex(int index)
 {
-  return Color(Color::IndexType, index & 0xff);
+  Color color(Color::IndexType);
+  color.m_value.index = index;
+  return color;
 }
 
 // static
@@ -141,7 +152,6 @@ Color Color::fromString(const std::string& str)
 std::string Color::toString() const
 {
   std::stringstream result;
-  int data;
 
   switch (getType()) {
 
@@ -150,33 +160,25 @@ std::string Color::toString() const
       break;
 
     case Color::RgbType:
-      data = getRgbData();
-
       result << "rgb{"
-	     << GET_DATA_C1(data) << ","
-	     << GET_DATA_C2(data) << ","
-	     << GET_DATA_C3(data) << "}";
+	     << m_value.rgb.r << ","
+	     << m_value.rgb.g << ","
+	     << m_value.rgb.b << "}";
       break;
 
     case Color::HsvType:
-      data = getHsvData();
-
       result << "hsv{"
-	     << GET_DATA_C1(data) << ","
-	     << GET_DATA_C2(data) << ","
-	     << GET_DATA_C3(data) << "}";
+	     << m_value.hsv.h << ","
+	     << m_value.hsv.s << ","
+	     << m_value.hsv.v << "}";
       break;
 
     case Color::GrayType:
-      data = getGrayData();
-
-      result << "gray{" << data << "}";
+      result << "gray{" << m_value.gray << "}";
       break;
 
     case Color::IndexType:
-      data = getIndexData();
-
-      result << "index{" << data << "}";
+      result << "index{" << m_value.index << "}";
       break;
 
   }
@@ -187,7 +189,6 @@ std::string Color::toString() const
 std::string Color::toFormalString(int imgtype, bool long_format) const
 {
   std::stringstream result;
-  int data;
 
   // Long format
   if (long_format) {
@@ -198,16 +199,14 @@ std::string Color::toFormalString(int imgtype, bool long_format) const
 	break;
 
       case Color::RgbType:
-	data = getRgbData();
 	if (imgtype == IMAGE_GRAYSCALE) {
-	  result << "Gray "
-		 << _graya_getv(color_utils::color_for_image(*this, imgtype));
+	  result << "Gray " << getGray();
 	}
 	else {
 	  result << "RGB "
-		 << GET_DATA_C1(data) << " "
-		 << GET_DATA_C2(data) << " "
-		 << GET_DATA_C3(data);
+		 << m_value.rgb.r << " "
+		 << m_value.rgb.g << " "
+		 << m_value.rgb.b;
 
 	  if (imgtype == IMAGE_INDEXED)
 	    result << " Index "
@@ -216,15 +215,14 @@ std::string Color::toFormalString(int imgtype, bool long_format) const
 	break;
 
       case Color::HsvType:
-	data = getHsvData();
 	if (imgtype == IMAGE_GRAYSCALE) {
-	  result << "Gray " << GET_DATA_C3(data);
+	  result << "Gray " << getGray();
 	}
 	else {
 	  result << "HSV "
-		 << GET_DATA_C1(data) << " "
-		 << GET_DATA_C2(data) << " "
-		 << GET_DATA_C3(data);
+		 << m_value.hsv.h << " "
+		 << m_value.hsv.s << " "
+		 << m_value.hsv.v;
   
 	  if (imgtype == IMAGE_INDEXED)
 	    result << " Index " << color_utils::color_for_image(*this, imgtype);
@@ -232,15 +230,14 @@ std::string Color::toFormalString(int imgtype, bool long_format) const
 	break;
 	
       case Color::GrayType:
-	data = getGrayData();
-	result << "Gray " << data;
+	result << "Gray " << m_value.gray;
 	break;
 
-      case Color::IndexType:
-	data = getIndexData();
-	if (data >= 0 && data < (int)get_current_palette()->size()) {
-	  ase_uint32 _c = get_current_palette()->getEntry(data);
-	  result << "Index " << data
+      case Color::IndexType: {
+	int i = m_value.index;
+	if (i >= 0 && i < (int)get_current_palette()->size()) {
+	  ase_uint32 _c = get_current_palette()->getEntry(i);
+	  result << "Index " << i
 		 << " (RGB "
 		 << (int)_rgba_getr(_c) << " "
 		 << (int)_rgba_getg(_c) << " "
@@ -248,10 +245,11 @@ std::string Color::toFormalString(int imgtype, bool long_format) const
 	}
 	else {
 	  result << "Index "
-		 << data
+		 << i
 		 << " (out of range)";
 	}
 	break;
+      }
 
       default:
 	ASSERT(false);
@@ -267,15 +265,14 @@ std::string Color::toFormalString(int imgtype, bool long_format) const
 	break;
 
       case Color::RgbType:
-	data = getRgbData();
 	if (imgtype == IMAGE_GRAYSCALE) {
-	  result << "V " << _graya_getv(color_utils::color_for_image(*this, imgtype));
+	  result << "V " << getGray();
 	}
 	else {
-	  result << "RGB " << std::hex << std::setfill('0')
-		 << std::setw(2) << GET_DATA_C1(data)
-		 << std::setw(2) << GET_DATA_C2(data)
-		 << std::setw(2) << GET_DATA_C3(data);
+	  result << "RGB #" << std::hex << std::setfill('0')
+		 << std::setw(2) << m_value.rgb.r
+		 << std::setw(2) << m_value.rgb.g
+		 << std::setw(2) << m_value.rgb.b;
 
 	  if (imgtype == IMAGE_INDEXED) {
 	    result << " (" << std::dec
@@ -285,31 +282,28 @@ std::string Color::toFormalString(int imgtype, bool long_format) const
 	break;
 
       case Color::HsvType:
-	data = getHsvData();
 	if (imgtype == IMAGE_GRAYSCALE) {
-	  result << "V " << GET_DATA_C3(data);
+	  result << "V " << getGray();
 	}
 	else {
-	  result << "HSV " << std::hex << std::setfill('0')
-		 << std::setw(2) << GET_DATA_C1(data)
-		 << std::setw(2) << GET_DATA_C2(data)
-		 << std::setw(2) << GET_DATA_C3(data);
+	  result << "HSV "
+		 << m_value.hsv.h << ","
+		 << m_value.hsv.s << ","
+		 << m_value.hsv.v;
 
 	  if (imgtype == IMAGE_INDEXED) {
-	    result << " (" << std::dec
+	    result << " ("
 		   << color_utils::color_for_image(*this, imgtype) << ")";
 	  }
 	}
 	break;
 
       case Color::GrayType:
-	data = getGrayData();
-	result << "V " << data;
+	result << "V " << m_value.gray;
 	break;
 
       case Color::IndexType:
-	data = getIndexData();
-	result << "I " << data;
+	result << "I " << m_value.index;
 	break;
 
       default:
@@ -321,6 +315,40 @@ std::string Color::toFormalString(int imgtype, bool long_format) const
   return result.str();
 }
 
+bool Color::operator==(const Color& other) const
+{
+  if (getType() != other.getType())
+    return false;
+
+  switch (getType()) {
+
+    case Color::MaskType:
+      return true;
+
+    case Color::RgbType:
+      return
+	m_value.rgb.r == other.m_value.rgb.r &&
+	m_value.rgb.g == other.m_value.rgb.g &&
+	m_value.rgb.b == other.m_value.rgb.b;
+
+    case Color::HsvType:
+      return
+	m_value.hsv.h == other.m_value.hsv.h &&
+	m_value.hsv.s == other.m_value.hsv.s &&
+	m_value.hsv.v == other.m_value.hsv.v;
+
+    case Color::GrayType:
+      return m_value.gray == other.m_value.gray;
+
+    case Color::IndexType:
+      return m_value.index == other.m_value.index;
+
+    default:
+      ASSERT(false);
+      return false;
+  }
+}
+
 // Returns false only if the color is a index and it is outside the
 // valid range (outside the maximum number of colors in the current
 // palette)
@@ -329,7 +357,7 @@ bool Color::isValid() const
   switch (getType()) {
 
     case Color::IndexType: {
-      int i = getIndexData();
+      int i = m_value.index;
       return (i >= 0 && i < get_current_palette()->size());
     }
 
@@ -345,22 +373,18 @@ int Color::getRed() const
       return 0;
 
     case Color::RgbType:
-      return GET_DATA_C1(getRgbData());
+      return m_value.rgb.r;
 
-    case Color::HsvType: {
-      int c = getHsvData();
-      int h = GET_DATA_C1(c);
-      int s = GET_DATA_C2(c);
-      int v = GET_DATA_C3(c);
-      hsv_to_rgb_int(&h, &s, &v);
-      return h;
-    }
+    case Color::HsvType:
+      return Rgb(Hsv(m_value.hsv.h,
+		     double(m_value.hsv.s) / 100.0,
+		     double(m_value.hsv.v) / 100.0)).red();
       
     case Color::GrayType:
-      return getGrayData();
+      return m_value.gray;
 
     case Color::IndexType: {
-      int i = getIndexData();
+      int i = m_value.index;
       ASSERT(i >= 0 && i < get_current_palette()->size());
 
       return _rgba_getr(get_current_palette()->getEntry(i));
@@ -380,22 +404,18 @@ int Color::getGreen() const
       return 0;
 
     case Color::RgbType:
-      return GET_DATA_C2(getRgbData());
+      return m_value.rgb.g;
 
-    case Color::HsvType: {
-      int c = getHsvData();
-      int h = GET_DATA_C1(c);
-      int s = GET_DATA_C2(c);
-      int v = GET_DATA_C3(c);
-      hsv_to_rgb_int(&h, &s, &v);
-      return s;
-    }
-      
+    case Color::HsvType:
+      return Rgb(Hsv(m_value.hsv.h,
+		     double(m_value.hsv.s) / 100.0,
+		     double(m_value.hsv.v) / 100.0)).green();
+
     case Color::GrayType:
-      return getGrayData();
+      return m_value.gray;
 
     case Color::IndexType: {
-      int i = getIndexData();
+      int i = m_value.index;
       ASSERT(i >= 0 && i < get_current_palette()->size());
 
       return _rgba_getg(get_current_palette()->getEntry(i));
@@ -415,22 +435,18 @@ int Color::getBlue() const
       return 0;
 
     case Color::RgbType:
-      return GET_DATA_C3(getRgbData());
+      return m_value.rgb.b;
 
-    case Color::HsvType: {
-      int c = getHsvData();
-      int h = GET_DATA_C1(c);
-      int s = GET_DATA_C2(c);
-      int v = GET_DATA_C3(c);
-      hsv_to_rgb_int(&h, &s, &v);
-      return v;
-    }
-      
+    case Color::HsvType:
+      return Rgb(Hsv(m_value.hsv.h,
+		     double(m_value.hsv.s) / 100.0,
+		     double(m_value.hsv.v) / 100.0)).blue();
+
     case Color::GrayType:
-      return getGrayData();
+      return m_value.gray;
 
     case Color::IndexType: {
-      int i = getIndexData();
+      int i = m_value.index;
       ASSERT(i >= 0 && i < get_current_palette()->size());
 
       return _rgba_getb(get_current_palette()->getEntry(i));
@@ -449,31 +465,26 @@ int Color::getHue() const
     case Color::MaskType:
       return 0;
 
-    case Color::RgbType: {
-      int c = getRgbData();
-      int r = GET_DATA_C1(c);
-      int g = GET_DATA_C2(c);
-      int b = GET_DATA_C3(c);
-      rgb_to_hsv_int(&r, &g, &b);
-      return r;
-    }
+    case Color::RgbType:
+      return Hsv(Rgb(m_value.rgb.r,
+		     m_value.rgb.g,
+		     m_value.rgb.b)).hueInt();
 
     case Color::HsvType:
-      return GET_DATA_C1(getHsvData());
+      return m_value.hsv.h;
 
     case Color::GrayType:
       return 0;
 
     case Color::IndexType: {
-      int i = getIndexData();
+      int i = m_value.index;
       ASSERT(i >= 0 && i < get_current_palette()->size());
 
       ase_uint32 c = get_current_palette()->getEntry(i);
-      int r = _rgba_getr(c);
-      int g = _rgba_getg(c);
-      int b = _rgba_getb(c);
-      rgb_to_hsv_int(&r, &g, &b);
-      return r;
+
+      return Hsv(Rgb(_rgba_getr(c),
+		     _rgba_getg(c),
+		     _rgba_getb(c))).hueInt();
     }
 
   }
@@ -489,31 +500,26 @@ int Color::getSaturation() const
     case Color::MaskType:
       return 0;
 
-    case Color::RgbType: {
-      int c = getRgbData();
-      int r = GET_DATA_C1(c);
-      int g = GET_DATA_C2(c);
-      int b = GET_DATA_C3(c);
-      rgb_to_hsv_int(&r, &g, &b);
-      return g;
-    }
+    case Color::RgbType:
+      return Hsv(Rgb(m_value.rgb.r,
+		     m_value.rgb.g,
+		     m_value.rgb.b)).saturationInt();
 
     case Color::HsvType:
-      return GET_DATA_C2(getHsvData());
+      return m_value.hsv.s;
 
     case Color::GrayType:
       return 0;
 
     case Color::IndexType: {
-      int i = getIndexData();
+      int i = m_value.index;
       ASSERT(i >= 0 && i < get_current_palette()->size());
 
       ase_uint32 c = get_current_palette()->getEntry(i);
-      int r = _rgba_getr(c);
-      int g = _rgba_getg(c);
-      int b = _rgba_getb(c);
-      rgb_to_hsv_int(&r, &g, &b);
-      return g;
+
+      return Hsv(Rgb(_rgba_getr(c),
+		     _rgba_getg(c),
+		     _rgba_getb(c))).saturationInt();
     }
 
   }
@@ -529,31 +535,61 @@ int Color::getValue() const
     case Color::MaskType:
       return 0;
 
-    case Color::RgbType: {
-      int c = getRgbData();
-      int r = GET_DATA_C1(c);
-      int g = GET_DATA_C2(c);
-      int b = GET_DATA_C3(c);
-      rgb_to_hsv_int(&r, &g, &b);
-      return b;
-    }
+    case Color::RgbType:
+      return Hsv(Rgb(m_value.rgb.r,
+		     m_value.rgb.g,
+		     m_value.rgb.b)).valueInt();
 
     case Color::HsvType:
-      return GET_DATA_C3(getHsvData());
+      return m_value.hsv.v;
       
     case Color::GrayType:
-      return getGrayData();
+      return 100 * m_value.gray / 255;
 
     case Color::IndexType: {
-      int i = getIndexData();
+      int i = m_value.index;
       ASSERT(i >= 0 && i < get_current_palette()->size());
 
       ase_uint32 c = get_current_palette()->getEntry(i);
-      int r = _rgba_getr(c);
-      int g = _rgba_getg(c);
-      int b = _rgba_getb(c);
-      rgb_to_hsv_int(&r, &g, &b);
-      return b;
+
+      return Hsv(Rgb(_rgba_getr(c),
+		     _rgba_getg(c),
+		     _rgba_getb(c))).valueInt();
+    }
+
+  }
+
+  ASSERT(false);
+  return -1;
+}
+
+int Color::getGray() const
+{
+  switch (getType()) {
+
+    case Color::MaskType:
+      return 0;
+
+    case Color::RgbType:
+      return 255 * Hsv(Rgb(m_value.rgb.r,
+			   m_value.rgb.g,
+			   m_value.rgb.b)).valueInt() / 100;
+
+    case Color::HsvType:
+      return 255 * m_value.hsv.v / 100;
+      
+    case Color::GrayType:
+      return m_value.gray;
+
+    case Color::IndexType: {
+      int i = m_value.index;
+      ASSERT(i >= 0 && i < get_current_palette()->size());
+
+      ase_uint32 c = get_current_palette()->getEntry(i);
+
+      return 255 * Hsv(Rgb(_rgba_getr(c),
+			   _rgba_getg(c),
+			   _rgba_getb(c))).valueInt() / 100;
     }
 
   }
@@ -580,10 +616,10 @@ int Color::getIndex() const
       break;
 
     case Color::GrayType:
-      return getGrayData();
+      return m_value.gray;
 
     case Color::IndexType:
-      return getIndexData();
+      return m_value.index;
 
   }
 

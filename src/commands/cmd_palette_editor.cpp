@@ -32,6 +32,8 @@
 #include "commands/params.h"
 #include "core/cfg.h"
 #include "dialogs/filesel.h"
+#include "gfx/hsv.h"
+#include "gfx/rgb.h"
 #include "gfx/size.h"
 #include "modules/editors.h"
 #include "modules/gui.h"
@@ -122,8 +124,8 @@ static bool palette_editor_change_hook(JWidget widget, void *data);
 static bool select_rgb_hook(JWidget widget, void *data);
 static bool select_hsv_hook(JWidget widget, void *data);
 static bool expand_button_select_hook(JWidget widget, void *data);
-static void modify_rgb_of_selected_entries(int dst_r, int dst_g, int dst_b, bool set_r, bool set_g, bool set_b);
-static void modify_hsv_of_selected_entries(int dst_h, int dst_s, int dst_v, bool set_h, bool set_s, bool set_v);
+static void modify_rgb_of_selected_entries(const Rgb& dst_rgb, bool set_r, bool set_g, bool set_b);
+static void modify_hsv_of_selected_entries(const Hsv& dst_hsv, bool set_h, bool set_s, bool set_v);
 static void on_color_changed(const Color& color);
 
 static void set_new_palette(Palette *palette, const char* operationName);
@@ -730,13 +732,14 @@ static void sliderRGB_change_hook(Slider* widget)
   int r = R_slider->getValue();
   int g = G_slider->getValue();
   int b = B_slider->getValue();
-  Color color = Color::fromRgb(r, g, b);
+  Rgb rgb(r, g, b);
+  Hsv hsv(rgb);
 
-  H_slider->setValue(color.getHue());
-  V_slider->setValue(color.getValue());
-  S_slider->setValue(color.getSaturation());
+  H_slider->setValue(hsv.hueInt());
+  S_slider->setValue(hsv.saturationInt());
+  V_slider->setValue(hsv.valueInt());
 
-  modify_rgb_of_selected_entries(r, g, b,
+  modify_rgb_of_selected_entries(rgb,
 				 widget == R_slider,
 				 widget == G_slider,
 				 widget == B_slider);
@@ -752,14 +755,15 @@ static void sliderHSV_change_hook(Slider* widget)
   int h = H_slider->getValue();
   int s = S_slider->getValue();
   int v = V_slider->getValue();
-  Color color = Color::fromHsv(h, s, v);
-  int r, g, b;
 
-  R_slider->setValue(r = color.getRed());
-  G_slider->setValue(g = color.getGreen());
-  B_slider->setValue(b = color.getBlue());
+  Hsv hsv(double(h), double(s) / 100.0, double(v) / 100.0);
+  Rgb rgb(hsv);
 
-  modify_hsv_of_selected_entries(h, s, v,
+  R_slider->setValue(rgb.red());
+  G_slider->setValue(rgb.green());
+  B_slider->setValue(rgb.blue());
+
+  modify_hsv_of_selected_entries(hsv,
 				 widget == H_slider,
 				 widget == S_slider,
 				 widget == V_slider);
@@ -778,13 +782,15 @@ static bool entryRGB_change_hook(JWidget widget, void *data)
   r = MID(0, r, 255);
   g = MID(0, g, 255);
   b = MID(0, b, 255);
-  Color color = Color::fromRgb(r, g, b);
 
-  H_entry->setTextf("%d", color.getHue());
-  V_entry->setTextf("%d", color.getValue());
-  S_entry->setTextf("%d", color.getSaturation());
+  Rgb rgb(r, g, b);
+  Hsv hsv(rgb);
 
-  modify_rgb_of_selected_entries(r, g, b,
+  H_entry->setTextf("%d", hsv.hueInt());
+  S_entry->setTextf("%d", hsv.saturationInt());
+  V_entry->setTextf("%d", hsv.valueInt());
+
+  modify_rgb_of_selected_entries(rgb,
 				 widget == R_slider,
 				 widget == G_slider,
 				 widget == B_slider);
@@ -801,14 +807,18 @@ static bool entryHSV_change_hook(JWidget widget, void *data)
   int h = H_entry->getTextInt();
   int s = S_entry->getTextInt();
   int v = V_entry->getTextInt();
-  Color color = Color::fromHsv(h, s, v);
-  int r, g, b;
+  h = MID(0, h, 360);
+  s = MID(0, s, 100);
+  v = MID(0, v, 100);
 
-  R_entry->setTextf("%d", r = color.getRed());
-  G_entry->setTextf("%d", g = color.getGreen());
-  B_entry->setTextf("%d", b = color.getBlue());
+  Hsv hsv(double(h), double(s) / 100.0, double(v) / 100.0);
+  Rgb rgb(hsv);
 
-  modify_hsv_of_selected_entries(h, s, v,
+  R_entry->setTextf("%d", rgb.red());
+  G_entry->setTextf("%d", rgb.green());
+  B_entry->setTextf("%d", rgb.blue());
+
+  modify_hsv_of_selected_entries(hsv,
 				 widget == H_entry,
 				 widget == S_entry,
 				 widget == V_entry);
@@ -825,7 +835,6 @@ static bool hex_entry_change_hook(JWidget widget, void *data)
   Palette* palette = get_current_palette();
   std::string text = hex_entry->getText();
   int r, g, b;
-  float h, s, v;
   bool array[256];
   int c;
 
@@ -840,7 +849,7 @@ static bool hex_entry_change_hook(JWidget widget, void *data)
   G_slider->setValue(g = ((hex & 0xff00) >> 8));
   B_slider->setValue(b = ((hex & 0xff)));
 
-  rgb_to_hsv(r, g, b, &h, &s, &v);
+  Hsv hsv(Rgb(r, g, b));
 
   palette_editor->getSelectedEntries(array);
   for (c=0; c<256; c++) {
@@ -849,9 +858,9 @@ static bool hex_entry_change_hook(JWidget widget, void *data)
     }
   }
 
-  H_slider->setValue(255.0 * h / 360.0);
-  V_slider->setValue(255.0 * v);
-  S_slider->setValue(255.0 * s);
+  H_slider->setValue(hsv.hueInt());
+  V_slider->setValue(hsv.saturationInt());
+  S_slider->setValue(hsv.valueInt());
 
   update_entries_from_sliders();
   update_current_sprite_palette("Color Change");
@@ -1067,7 +1076,7 @@ static bool expand_button_select_hook(JWidget widget, void *data)
   return true;
 }
 
-static void modify_rgb_of_selected_entries(int dst_r, int dst_g, int dst_b, bool set_r, bool set_g, bool set_b)
+static void modify_rgb_of_selected_entries(const Rgb& dst_rgb, bool set_r, bool set_g, bool set_b)
 {
   bool array[256];
   palette_editor->getSelectedEntries(array);
@@ -1081,21 +1090,20 @@ static void modify_rgb_of_selected_entries(int dst_r, int dst_g, int dst_b, bool
       src_color = palette->getEntry(c);
 
       // Setup the new RGB values depending the desired values in set_X component.
-      r = (set_r ? dst_r: _rgba_getr(src_color));
-      g = (set_g ? dst_g: _rgba_getg(src_color));
-      b = (set_b ? dst_b: _rgba_getb(src_color));
+      r = (set_r ? dst_rgb.red():   _rgba_getr(src_color));
+      g = (set_g ? dst_rgb.green(): _rgba_getg(src_color));
+      b = (set_b ? dst_rgb.blue():  _rgba_getb(src_color));
 
       palette->setEntry(c, _rgba(r, g, b, 255));
     }
   }
 }
 
-static void modify_hsv_of_selected_entries(int dst_h, int dst_s, int dst_v, bool set_h, bool set_s, bool set_v)
+static void modify_hsv_of_selected_entries(const Hsv& dst_hsv, bool set_h, bool set_s, bool set_v)
 {
   bool array[256];
   palette_editor->getSelectedEntries(array);
   ase_uint32 src_color;
-  int r, g, b;
 
   Palette* palette = get_current_palette();
   for (int c=0; c<256; c++) {
@@ -1103,23 +1111,23 @@ static void modify_hsv_of_selected_entries(int dst_h, int dst_s, int dst_v, bool
       src_color = palette->getEntry(c);
 
       // Get the current RGB values of the palette entry
-      r = _rgba_getr(src_color);
-      g = _rgba_getg(src_color);
-      b = _rgba_getb(src_color);
+      Rgb rgb(_rgba_getr(src_color),
+	      _rgba_getg(src_color),
+	      _rgba_getb(src_color));
 
-      // RGB -> HSV
-      rgb_to_hsv_int(&r, &g, &b);
+      // Convert RGB to HSV
+      Hsv hsv(rgb);
 
       // Only modify the desired HSV components
-      if (set_h) r = dst_h;
-      if (set_s) g = dst_s;
-      if (set_v) b = dst_v;
+      if (set_h) hsv.hue(dst_hsv.hue());
+      if (set_s) hsv.saturation(dst_hsv.saturation());
+      if (set_v) hsv.value(dst_hsv.value());
 
-      // HSV -> RGB
-      hsv_to_rgb_int(&r, &g, &b);
+      // Convert HSV to RGB
+      rgb = Rgb(hsv);
 
       // Update the palette entry
-      palette->setEntry(c, _rgba(r, g, b, 255));
+      palette->setEntry(c, _rgba(rgb.red(), rgb.green(), rgb.blue(), 255));
     }
   }
 }

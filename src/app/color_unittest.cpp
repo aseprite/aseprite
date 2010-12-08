@@ -32,9 +32,9 @@ TEST(Color, fromRgb)
 
 TEST(Color, fromHsv)
 {
-  EXPECT_EQ(32, Color::fromHsv(32, 16, 255).getHue());
-  EXPECT_EQ(16, Color::fromHsv(32, 16, 255).getSaturation());
-  EXPECT_EQ(255, Color::fromHsv(32, 16, 255).getValue());
+  EXPECT_EQ(60, Color::fromHsv(60, 5, 100).getHue());
+  EXPECT_EQ(5, Color::fromHsv(60, 5, 100).getSaturation());
+  EXPECT_EQ(100, Color::fromHsv(60, 5, 100).getValue());
 }
 
 TEST(Color, fromString)

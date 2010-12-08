@@ -21,9 +21,13 @@
 #include <allegro.h>
 #include <algorithm>
 
+#include "gfx/hsv.h"
+#include "gfx/rgb.h"
 #include "raster/image.h"
 #include "raster/palette.h"
 #include "util/col_file.h"
+
+using namespace gfx;
 
 //////////////////////////////////////////////////////////////////////
 
@@ -278,29 +282,25 @@ bool SortPalette::operator()(ase_uint32 c1, ase_uint32 c2)
     case SortPalette::HSV_Hue:
     case SortPalette::HSV_Saturation:
     case SortPalette::HSV_Value: {
-      int h1, s1, v1;
-      int h2, s2, v2;
-      h1 = _rgba_getr(c1);
-      s1 = _rgba_getg(c1);
-      v1 = _rgba_getb(c1);
-      h2 = _rgba_getr(c2);
-      s2 = _rgba_getg(c2);
-      v2 = _rgba_getb(c2);
-      rgb_to_hsv_int(&h1, &s1, &v1);
-      rgb_to_hsv_int(&h2, &s2, &v2);
+      Hsv hsv1(Rgb(_rgba_getr(c1),
+		   _rgba_getg(c1),
+		   _rgba_getb(c1)));
+      Hsv hsv2(Rgb(_rgba_getr(c2),
+		   _rgba_getg(c2),
+		   _rgba_getb(c2)));
 
       switch (m_channel) {
 	case SortPalette::HSV_Hue:
-	  value1 = h1;
-	  value2 = h2;
+	  value1 = hsv1.hueInt();
+	  value2 = hsv2.hueInt();
 	  break;
 	case SortPalette::HSV_Saturation:
-	  value1 = s1;
-	  value2 = s2;
+	  value1 = hsv1.saturationInt();
+	  value2 = hsv2.saturationInt();
 	  break;
 	case SortPalette::HSV_Value:
-	  value1 = v1;
-	  value2 = v2;
+	  value1 = hsv1.valueInt();
+	  value2 = hsv2.valueInt();
 	  break;
 	default:
 	  ASSERT(false);

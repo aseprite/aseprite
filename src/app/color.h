@@ -35,13 +35,11 @@ public:
   };
 
   // Default ctor is mask color
-  Color()
-    : m_value(fromMask().m_value) {
-  }
+  Color() : m_type(MaskType) { }
 
   static Color fromMask();
   static Color fromRgb(int r, int g, int b);
-  static Color fromHsv(int h, int s, int v);
+  static Color fromHsv(int h, int s, int v); // h=[0,360], s=[0,100], v=[0,100]
   static Color fromGray(int g);
   static Color fromIndex(int index);
 
@@ -52,52 +50,44 @@ public:
   std::string toString() const;
   std::string toFormalString(int imgtype, bool long_format) const;
 
-  bool operator==(const Color& other) const {
-    return m_value == other.m_value;
-  }
-
+  bool operator==(const Color& other) const;
   bool operator!=(const Color& other) const {
-    return m_value != other.m_value;
+    return !operator==(other);
   }
 
   Type getType() const {
-    return static_cast<Type>(m_value >> 24);
+    return m_type;
   }
 
   bool isValid() const;
 
+  // Getters
   int getRed() const;
   int getGreen() const;
   int getBlue() const;
   int getHue() const;
   int getSaturation() const;
   int getValue() const;
+  int getGray() const;
   int getIndex() const;
 
 private:
-  Color(Type type, uint32_t data)
-    : m_value((static_cast<int>(type) << 24) |
-	      (data & 0xffffff)) {
-    ASSERT((data & 0xff000000) == 0);
-  }
+  Color(Type type) : m_type(type) { }
 
-  uint32_t getRgbData() const {
-    return m_value & 0xffffff;
-  }
+  // Color type
+  Type m_type;
 
-  uint32_t getHsvData() const {
-    return m_value & 0xffffff;
-  }
-
-  uint8_t getGrayData() const {
-    return m_value & 0xff;
-  }
-
-  uint8_t getIndexData() const {
-    return m_value & 0xff;
-  }
-
-  uint32_t m_value;
+  // Color value
+  union {
+    struct {
+      int r, g, b;
+    } rgb;
+    struct {
+      int h, s, v;
+    } hsv;
+    int gray;
+    int index;
+  } m_value;
 };
 
 #endif

@@ -18,11 +18,15 @@
 
 #include "config.h"
 
+#include "gfx/hsv.h"
+#include "gfx/rgb.h"
 #include "raster/blend.h"
 #include "raster/image.h"
 #include "raster/quant.h"
 #include "raster/palette.h"
 #include "raster/rgbmap.h"
+
+using namespace gfx;
 
 Image *image_set_imgtype(const Image* image, int imgtype,
 			 int dithering_method,
@@ -63,11 +67,12 @@ Image *image_set_imgtype(const Image* image, int imgtype,
 	  gray_address = (ase_uint16*)new_image->dat;
 	  for (i=0; i<size; i++) {
 	    c = *rgb_address;
-	    r = _rgba_getr(c);
-	    g = _rgba_getg(c);
-	    b = _rgba_getb(c);
-	    rgb_to_hsv_int(&r, &g, &b);
-	    *gray_address = _graya(b, _rgba_geta(c));
+
+	    g = 255 * Hsv(Rgb(_rgba_getr(c),
+	    		      _rgba_getg(c),
+	    		      _rgba_getb(c))).valueInt() / 100;
+	    *gray_address = _graya(g, _rgba_geta(c));
+
 	    rgb_address++;
 	    gray_address++;
 	  }
@@ -152,8 +157,9 @@ Image *image_set_imgtype(const Image* image, int imgtype,
 	      r = _rgba_getr(palette->getEntry(c));
 	      g = _rgba_getg(palette->getEntry(c));
 	      b = _rgba_getb(palette->getEntry(c));
-	      rgb_to_hsv_int(&r, &g, &b);
-	      *gray_address = _graya(b, 255);
+
+	      g = 255 * Hsv(Rgb(r, g, b)).valueInt() / 100;
+	      *gray_address = _graya(g, 255);
 	    }
 	    idx_address++;
 	    gray_address++;

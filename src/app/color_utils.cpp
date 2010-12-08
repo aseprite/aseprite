@@ -22,11 +22,15 @@
 
 #include "app/color_utils.h"
 #include "app/color.h"
+#include "gfx/hsv.h"
+#include "gfx/rgb.h"
 #include "modules/palettes.h"
 #include "raster/image.h"
 #include "raster/layer.h"
 #include "raster/sprite.h"
 #include "raster/palette.h"
+
+using namespace gfx;
 
 // Internal functions
 namespace {
@@ -73,26 +77,15 @@ int color_utils::color_for_allegro(const Color& color, int depth)
       break;
 
     case Color::RgbType:
+    case Color::HsvType:
       c = makeacol_depth(depth,
 			 color.getRed(),
 			 color.getGreen(),
 			 color.getBlue(), 255);
       break;
 
-    case Color::HsvType: {
-      int h, s, v;
-
-      h = color.getHue();
-      s = color.getSaturation();
-      v = color.getValue();
-      hsv_to_rgb_int(&h, &s, &v);
-
-      c = makeacol_depth(depth, h, s, v, 255);
-      break;
-    }
-      
     case Color::GrayType:
-      c = color.getValue();
+      c = color.getGray();
       if (depth != 8)
 	c = makeacol_depth(depth, c, c, c, 255);
       break;
@@ -117,106 +110,21 @@ int color_utils::color_for_allegro(const Color& color, int depth)
 
 int color_utils::color_for_image(const Color& color, int imgtype)
 {
+  if (color.getType() == Color::MaskType)
+    return 0;
+
   int c = -1;
 
-  switch (color.getType()) {
-
-    case Color::MaskType:
-      switch (imgtype) {
-	case IMAGE_RGB:
-	  c = _rgba(0, 0, 0, 0);
-	  break;
-	case IMAGE_GRAYSCALE:
-	  c = _graya(0, 0);
-	  break;
-	case IMAGE_INDEXED:
-	  c = 0;
-	  break;
-      }
+  switch (imgtype) {
+    case IMAGE_RGB:
+      c = _rgba(color.getRed(), color.getGreen(), color.getBlue(), 255);
       break;
-
-    case Color::RgbType: {
-      int r, g, b;
-
-      r = color.getRed();
-      g = color.getGreen();
-      b = color.getBlue();
-
-      switch (imgtype) {
-	case IMAGE_RGB: {
-	  c = _rgba(r, g, b, 255);
-	  break;
-	}
-	case IMAGE_GRAYSCALE: {
-	  rgb_to_hsv_int(&r, &g, &b);
-	  c = _graya(b, 255);
-	  break;
-	}
-	case IMAGE_INDEXED:
-	  c = get_current_palette()->findBestfit(r, g, b);
-	  break;
-      }
+    case IMAGE_GRAYSCALE:
+      c = _graya(color.getGray(), 255);
       break;
-    }
-
-    case Color::HsvType: {
-      int h, s, v;
-
-      h = color.getHue();
-      s = color.getSaturation();
-      v = color.getValue();
-      
-      switch (imgtype) {
-	case IMAGE_RGB:
-	  hsv_to_rgb_int(&h, &s, &v);
-	  c = _rgba(h, s, v, 255);
-	  break;
-	case IMAGE_GRAYSCALE: {
-	  c = _graya(v, 255);
-	  break;
-	}
-	case IMAGE_INDEXED:
-	  hsv_to_rgb_int(&h, &s, &v);
-	  c = get_current_palette()->findBestfit(h, s, v);
-	  break;
-      }
+    case IMAGE_INDEXED:
+      c = get_current_palette()->findBestfit(color.getRed(), color.getGreen(), color.getBlue());
       break;
-    }
-      
-    case Color::GrayType:
-      switch (imgtype) {
-	case IMAGE_RGB:
-	  c = color.getValue();
-	  c = _rgba(c, c, c, 255);
-	  break;
-	case IMAGE_GRAYSCALE:
-	  c = color.getValue();
-	  break;
-	case IMAGE_INDEXED:
-	  c = color.getValue();
-	  c = get_current_palette()->findBestfit(c, c, c);
-	  break;
-      }
-      break;
-
-    case Color::IndexType:
-      switch (imgtype) {
-	case IMAGE_RGB: {
-	  ase_uint32 _c = get_current_palette()->getEntry(color.getIndex());
-	  c = _rgba(_rgba_getr(_c),
-		    _rgba_getg(_c),
-		    _rgba_getb(_c), 255);
-	  break;
-	}
-	case IMAGE_GRAYSCALE:
-	  c = _graya(color.getIndex(), 255);
-	  break;
-	case IMAGE_INDEXED:
-	  c = MID(0, color.getIndex(), get_current_palette()->size()-1);
-	  break;
-      }
-      break;
-
   }
 
   return c;

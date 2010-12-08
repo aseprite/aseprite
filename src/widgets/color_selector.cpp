@@ -194,9 +194,9 @@ static Widget* create_hsv_container()
   Label* hlabel = new Label("H");
   Label* slabel = new Label("S");
   Label* vlabel = new Label("V");
-  Slider* hslider = new Slider(0, 255, 0);
-  Slider* sslider = new Slider(0, 255, 0);
-  Slider* vslider = new Slider(0, 255, 0);
+  Slider* hslider = new Slider(0, 360, 0);
+  Slider* sslider = new Slider(0, 100, 0);
+  Slider* vslider = new Slider(0, 100, 0);
   jgrid_add_child(grid, hlabel, 1, 1, JI_RIGHT);
   jgrid_add_child(grid, hslider, 1, 1, JI_HORIZONTAL);
   jgrid_add_child(grid, slabel, 1, 1, JI_RIGHT);
@@ -305,7 +305,7 @@ static void colorselector_set_color2(JWidget widget, const Color& color,
     hsv_vslider->setValue(color.getValue());
   }
   if (exclude_this_model != models+MODEL_GRAY) {
-    gray_vslider->setValue(color.getValue());
+    gray_vslider->setValue(color.getGray());
   }
   
   switch (color.getType()) {

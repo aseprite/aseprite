@@ -30,15 +30,15 @@
 	  <entry  name="B_entry"  maxsize="3" />
 
 	  <label  name="H_label"  text="H" />
-	  <slider name="H_slider" min="0" max="255" cell_align="horizontal" />
+	  <slider name="H_slider" min="0" max="360" cell_align="horizontal" />
 	  <entry  name="H_entry"  maxsize="3" />
 
 	  <label  name="S_label"  text="S" />
-	  <slider name="S_slider" min="0" max="255" cell_align="horizontal" />
+	  <slider name="S_slider" min="0" max="100" cell_align="horizontal" />
 	  <entry  name="S_entry"  maxsize="3" />
 
 	  <label  name="V_label"  text="V" />
-	  <slider name="V_slider" min="0" max="255" cell_align="horizontal" />
+	  <slider name="V_slider" min="0" max="100" cell_align="horizontal" />
 	  <entry  name="V_entry"  maxsize="3" />
 
 	  <label name="hex_label" text="#" />
