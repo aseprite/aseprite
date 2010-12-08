@@ -89,7 +89,7 @@ public:
   void draw_box(JWidget widget, JRect clip);
   void draw_button(ButtonBase* widget, JRect clip);
   void draw_check(ButtonBase* widget, JRect clip);
-  void draw_entry(JWidget widget, JRect clip);
+  void draw_entry(Entry* widget, JRect clip);
   void draw_grid(JWidget widget, JRect clip);
   void draw_label(JWidget widget, JRect clip);
   void draw_link_label(JWidget widget, JRect clip);
@@ -101,7 +101,7 @@ public:
   void draw_radio(ButtonBase* widget, JRect clip);
   void draw_separator(JWidget widget, JRect clip);
   void draw_slider(Slider* widget, JRect clip);
-  void draw_combobox_entry(JWidget widget, JRect clip);
+  void draw_combobox_entry(Entry* widget, JRect clip);
   void draw_combobox_button(ButtonBase* widget, JRect clip);
   void draw_textbox(JWidget widget, JRect clip);
   void draw_view(JWidget widget, JRect clip);
@@ -115,7 +115,7 @@ private:
   void draw_textstring(const char *t, int fg_color, int bg_color,
 		       bool fill_bg, JWidget widget, const JRect rect,
 		       int selected_offset);
-  void draw_entry_cursor(JWidget widget, int x, int y);
+  void draw_entry_caret(Entry* widget, int x, int y);
   void draw_icons(int x, int y, JWidget widget, int edge_icon);
   void draw_edges(int x1, int y1, int x2, int y2, int c1, int c2);
 
@@ -587,16 +587,16 @@ void jstandard_theme::draw_grid(JWidget widget, JRect clip)
   jdraw_rectfill(clip, get_bg_color(widget));
 }
 
-void jstandard_theme::draw_entry(JWidget widget, JRect clip)
+void jstandard_theme::draw_entry(Entry* widget, JRect clip)
 {
-  bool password = jentry_is_password(widget);
-  int scroll, cursor, state, selbeg, selend;
+  bool password = widget->isPassword();
+  int scroll, caret, state, selbeg, selend;
   const char *text = widget->getText();
   int c, ch, x, y, w, fg, bg;
   int x1, y1, x2, y2;
-  int cursor_x;
+  int caret_x;
 
-  jtheme_entry_info(widget, &scroll, &cursor, &state, &selbeg, &selend);
+  widget->getEntryThemeInfo(&scroll, &caret, &state, &selbeg, &selend);
 
   /* main pos */
   x1 = widget->rc->x1;
@@ -651,22 +651,22 @@ void jstandard_theme::draw_entry(JWidget widget, JRect clip)
     if (x+w > widget->rc->x2-3)
       return;
 
-    cursor_x = x;
+    caret_x = x;
     ji_font_set_aa_mode(widget->getFont(), bg >= 0 ? bg: COLOR_BACKGROUND);
     widget->getFont()->vtable->render_char(widget->getFont(),
 					   ch, fg, bg, ji_screen, x, y);
     x += w;
 
-    /* cursor */
-    if ((c == cursor) && (state) && (widget->hasFocus()))
-      draw_entry_cursor(widget, cursor_x, y);
+    /* caret */
+    if ((c == caret) && (state) && (widget->hasFocus()))
+      draw_entry_caret(widget, caret_x, y);
   }
 
-  /* draw the cursor if it is next of the last character */
-  if ((c == cursor) && (state) &&
+  /* draw the caret if it is next of the last character */
+  if ((c == caret) && (state) &&
       (widget->hasFocus()) &&
       (widget->isEnabled()))
-    draw_entry_cursor(widget, x, y);
+    draw_entry_caret(widget, x, y);
 }
 
 void jstandard_theme::draw_label(JWidget widget, JRect clip)
@@ -1109,7 +1109,7 @@ void jstandard_theme::draw_slider(Slider* widget, JRect clip)
   }
 }
 
-void jstandard_theme::draw_combobox_entry(JWidget widget, JRect clip)
+void jstandard_theme::draw_combobox_entry(Entry* widget, JRect clip)
 {
   draw_entry(widget, clip);
 }
@@ -1334,7 +1334,7 @@ void jstandard_theme::draw_textstring(const char *t, int fg_color, int bg_color,
   }
 }
 
-void jstandard_theme::draw_entry_cursor(JWidget widget, int x, int y)
+void jstandard_theme::draw_entry_caret(Entry* widget, int x, int y)
 {
   int h = jwidget_get_text_height(widget);
 

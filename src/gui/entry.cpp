@@ -11,6 +11,7 @@
 #include <stdarg.h>
 #include <stdio.h>
 
+#include "gui/entry.h"
 #include "gui/jclipboard.h"
 #include "gui/jfont.h"
 #include "gui/jmanager.h"
@@ -18,55 +19,14 @@
 #include "gui/jrect.h"
 #include "gui/jsystem.h"
 #include "gui/jtheme.h"
+#include "gui/preferred_size_event.h"
 #include "gui/widget.h"
 
 #define CHARACTER_LENGTH(f, c) ((f)->vtable->char_length((f), (c)))
 
-namespace EntryCmd {
-  enum Type {
-    NoOp,
-    InsertChar,
-    ForwardChar,
-    ForwardWord,
-    BackwardChar,
-    BackwardWord,
-    BeginningOfLine,
-    EndOfLine,
-    DeleteForward,
-    DeleteBackward,
-    Cut,
-    Copy,
-    Paste,
-  };
-}
-
-typedef struct Entry
+Entry::Entry(size_t maxsize, const char *format, ...)
+  : Widget(JI_ENTRY)
 {
-  size_t maxsize;
-  int cursor;
-  int scroll;
-  int select;
-  int timer_id;
-  bool hidden : 1;
-  bool state : 1;		/* show or not the text cursor */
-  bool readonly : 1;
-  bool password : 1;
-  bool recent_focused : 1;
-} Entry;
-
-static bool entry_msg_proc(JWidget widget, JMessage msg);
-static void entry_request_size(JWidget widget, int *w, int *h);
-
-static int entry_get_cursor_from_mouse(JWidget widget, JMessage msg);
-
-static void entry_execute_cmd(JWidget widget, EntryCmd::Type cmd, int ascii, bool shift_pressed);
-static void entry_forward_word(JWidget widget);
-static void entry_backward_word(JWidget widget);
-
-JWidget jentry_new(size_t maxsize, const char *format, ...)
-{
-  Widget* widget = new Widget(JI_ENTRY);
-  Entry* entry = (Entry*)jnew(Entry, 1);
   char buf[4096];
 
   // formatted string
@@ -81,141 +41,120 @@ JWidget jentry_new(size_t maxsize, const char *format, ...)
     ustrcpy(buf, empty_string);
   }
 
-  jwidget_add_hook(widget, JI_ENTRY, entry_msg_proc, entry);
-
-  entry->maxsize = maxsize;
-  entry->cursor = 0;
-  entry->scroll = 0;
-  entry->select = 0;
-  entry->timer_id = jmanager_add_timer(widget, 500);
-  entry->hidden = false;
-  entry->state = false;
-  entry->password = false;
-  entry->readonly = false;
-  entry->recent_focused = false;
+  m_maxsize = maxsize;
+  m_caret = 0;
+  m_scroll = 0;
+  m_select = 0;
+  m_timer_id = jmanager_add_timer(this, 500);
+  m_hidden = false;
+  m_state = false;
+  m_password = false;
+  m_readonly = false;
+  m_recent_focused = false;
 
   /* TODO support for text alignment and multi-line */
   /* widget->align = JI_LEFT | JI_MIDDLE; */
-  widget->setText(buf);
+  setText(buf);
 
-  jwidget_focusrest(widget, true);
-  jwidget_init_theme(widget);
-
-  return widget;
+  jwidget_focusrest(this, true);
+  jwidget_init_theme(this);
 }
 
-void jentry_readonly(JWidget widget, bool state)
+Entry::~Entry()
 {
-  Entry* entry = reinterpret_cast<Entry*>(jwidget_get_data(widget, JI_ENTRY));
-
-  entry->readonly = state;
+  jmanager_remove_timer(m_timer_id);
 }
 
-void jentry_password(JWidget widget, bool state)
+bool Entry::isReadOnly() const
 {
-  Entry* entry = reinterpret_cast<Entry*>(jwidget_get_data(widget, JI_ENTRY));
-
-  entry->password = state;
+  return m_readonly;
 }
 
-bool jentry_is_readonly(JWidget widget)
+bool Entry::isPassword() const
 {
-  Entry* entry = reinterpret_cast<Entry*>(jwidget_get_data(widget, JI_ENTRY));
-
-  return entry->readonly;
+  return m_password;
 }
 
-bool jentry_is_password(JWidget widget)
+void Entry::setReadOnly(bool state)
 {
-  Entry* entry = reinterpret_cast<Entry*>(jwidget_get_data(widget, JI_ENTRY));
-
-  return entry->password;
+  m_readonly = state;
 }
 
-void jentry_show_cursor(JWidget widget)
+void Entry::setPassword(bool state)
 {
-  Entry* entry = reinterpret_cast<Entry*>(jwidget_get_data(widget, JI_ENTRY));
-
-  entry->hidden = false;
-
-  jwidget_dirty(widget);
+  m_password = state;
 }
 
-void jentry_hide_cursor(JWidget widget)
+void Entry::showCaret()
 {
-  Entry* entry = reinterpret_cast<Entry*>(jwidget_get_data(widget, JI_ENTRY));
-
-  entry->hidden = true;
-
-  jwidget_dirty(widget);
+  m_hidden = false;
+  dirty();
 }
 
-void jentry_set_cursor_pos(JWidget widget, int pos)
+void Entry::hideCaret()
 {
-  Entry* entry = reinterpret_cast<Entry*>(jwidget_get_data(widget, JI_ENTRY));
-  const char *text = widget->getText();
+  m_hidden = true;
+  dirty();
+}
+
+void Entry::setCaretPos(int pos)
+{
+  const char *text = this->getText();
   int x, c;
 
-  entry->cursor = pos;
+  m_caret = pos;
 
   /* backward scroll */
-  if (entry->cursor < entry->scroll)
-    entry->scroll = entry->cursor;
+  if (m_caret < m_scroll)
+    m_scroll = m_caret;
 
   /* forward scroll */
-  entry->scroll--;
+  m_scroll--;
   do {
-    x = widget->rc->x1 + widget->border_width.l;
-    for (c=++entry->scroll; ; c++) {
-      x += CHARACTER_LENGTH(widget->getFont(),
+    x = this->rc->x1 + this->border_width.l;
+    for (c=++m_scroll; ; c++) {
+      x += CHARACTER_LENGTH(this->getFont(),
 			    (c < ustrlen(text))? ugetat(text, c): ' ');
 
-      if (x >= widget->rc->x2-widget->border_width.r)
+      if (x >= this->rc->x2-this->border_width.r)
         break;
     }
-  } while (entry->cursor >= c);
+  } while (m_caret >= c);
 
-  jmanager_start_timer(entry->timer_id);
-  entry->state = true;
+  jmanager_start_timer(m_timer_id);
+  m_state = true;
 
-  jwidget_dirty(widget);
+  dirty();
 }
 
-void jentry_select_text(JWidget widget, int from, int to)
+void Entry::selectText(int from, int to)
 {
-  Entry* entry = reinterpret_cast<Entry*>(jwidget_get_data(widget, JI_ENTRY));
-  int end = ustrlen(widget->getText());
+  int end = ustrlen(this->getText());
 
-  entry->select = from;
-  jentry_set_cursor_pos(widget, from); // to move scroll
-  jentry_set_cursor_pos(widget, (to >= 0)? to: end+to+1);
+  m_select = from;
+  setCaretPos(from); // to move scroll
+  setCaretPos((to >= 0)? to: end+to+1);
 
-  jwidget_dirty(widget);
+  dirty();
 }
 
-void jentry_deselect_text(JWidget widget)
+void Entry::deselectText()
 {
-  Entry* entry = reinterpret_cast<Entry*>(jwidget_get_data(widget, JI_ENTRY));
-
-  entry->select = -1;
-
-  jwidget_dirty(widget);
+  m_select = -1;
+  dirty();
 }
 
-void jtheme_entry_info(JWidget widget,
-		       int *scroll, int *cursor, int *state,
-		       int *selbeg, int *selend)
+void Entry::getEntryThemeInfo(int* scroll, int* caret, int* state,
+			      int* selbeg, int* selend)
 {
-  Entry* entry = reinterpret_cast<Entry*>(jwidget_get_data(widget, JI_ENTRY));
+  if (scroll) *scroll = m_scroll;
+  if (caret) *caret = m_caret;
+  if (state) *state = !m_hidden && m_state;
 
-  if (scroll) *scroll = entry->scroll;
-  if (cursor) *cursor = entry->cursor;
-  if (state) *state = !entry->hidden && entry->state;
-
-  if ((entry->select >= 0) &&
-      (entry->cursor != entry->select)) {
-    *selbeg = MIN(entry->cursor, entry->select);
-    *selend = MAX(entry->cursor, entry->select)-1;
+  if ((m_select >= 0) &&
+      (m_caret != m_select)) {
+    *selbeg = MIN(m_caret, m_select);
+    *selend = MAX(m_caret, m_select)-1;
   }
   else {
     *selbeg = -1;
@@ -223,55 +162,44 @@ void jtheme_entry_info(JWidget widget,
   }
 }
 
-static bool entry_msg_proc(JWidget widget, JMessage msg)
+bool Entry::onProcessMessage(JMessage msg)
 {
-  Entry* entry = reinterpret_cast<Entry*>(jwidget_get_data(widget, JI_ENTRY));
-
   switch (msg->type) {
 
-    case JM_DESTROY:
-      jmanager_remove_timer(entry->timer_id);
-      jfree(entry);
-      break;
-
-    case JM_REQSIZE:
-      entry_request_size(widget, &msg->reqsize.w, &msg->reqsize.h);
-      return true;
-
     case JM_DRAW:
-      widget->theme->draw_entry(widget, &msg->draw.rect);
+      this->theme->draw_entry(this, &msg->draw.rect);
       return true;
 
     case JM_TIMER:
-      if (widget->hasFocus() &&
-	  msg->timer.timer_id == entry->timer_id) {
-	// blinking cursor
-	entry->state = entry->state ? false: true;
-	jwidget_dirty(widget);
+      if (this->hasFocus() &&
+	  msg->timer.timer_id == m_timer_id) {
+	// Blinking caret
+	m_state = m_state ? false: true;
+	dirty();
       }
       break;
 
     case JM_FOCUSENTER:
-      jmanager_start_timer(entry->timer_id);
+      jmanager_start_timer(m_timer_id);
 
-      entry->state = true;
-      jwidget_dirty(widget);
+      m_state = true;
+      dirty();
 
-      jentry_select_text(widget, 0, -1);
-      entry->recent_focused = true;
+      selectText(0, -1);
+      m_recent_focused = true;
       break;
 
     case JM_FOCUSLEAVE:
-      jwidget_dirty(widget);
+      dirty();
 
-      jmanager_stop_timer(entry->timer_id);
+      jmanager_stop_timer(m_timer_id);
       
-      jentry_deselect_text(widget);
-      entry->recent_focused = false;
+      deselectText();
+      m_recent_focused = false;
       break;
 
     case JM_KEYPRESSED:
-      if (widget->hasFocus() && !jentry_is_readonly(widget)) {
+      if (this->hasFocus() && !isReadOnly()) {
 	// Command to execute
 	EntryCmd::Type cmd = EntryCmd::NoOp;
 
@@ -335,81 +263,81 @@ static bool entry_msg_proc(JWidget widget, JMessage msg)
 	}
 
 	if (cmd == EntryCmd::NoOp)
-	  return false;
+	  break;
 
-	entry_execute_cmd(widget, cmd,
-			  msg->key.ascii,
-			  (msg->any.shifts & KB_SHIFT_FLAG) ? true: false);
+	executeCmd(cmd,
+		   msg->key.ascii,
+		   (msg->any.shifts & KB_SHIFT_FLAG) ? true: false);
 	return true;
       }
       break;
 
     case JM_BUTTONPRESSED:
-      widget->captureMouse();
+      this->captureMouse();
 
     case JM_MOTION:
-      if (widget->hasCapture()) {
-	const char *text = widget->getText();
-	bool move, dirty;
+      if (this->hasCapture()) {
+	const char *text = this->getText();
+	bool move, is_dirty;
 	int c, x;
 
 	move = true;
-	dirty = false;
+	is_dirty = false;
 
 	/* backward scroll */
-	if (msg->mouse.x < widget->rc->x1) {
-	  if (entry->scroll > 0) {
-	    entry->cursor = --entry->scroll;
+	if (msg->mouse.x < this->rc->x1) {
+	  if (m_scroll > 0) {
+	    m_caret = --m_scroll;
 	    move = false;
-	    dirty = true;
-	    jwidget_dirty(widget);
+	    is_dirty = true;
+	    dirty();
 	  }
 	}
 	/* forward scroll */
-	else if (msg->mouse.x >= widget->rc->x2) {
-	  if (entry->scroll < ustrlen(text)) {
-	    entry->scroll++;
-	    x = widget->rc->x1 + widget->border_width.l;
-	    for (c=entry->scroll; ; c++) {
-	      x += CHARACTER_LENGTH(widget->getFont(),
+	else if (msg->mouse.x >= this->rc->x2) {
+	  if (m_scroll < ustrlen(text)) {
+	    m_scroll++;
+	    x = this->rc->x1 + this->border_width.l;
+	    for (c=m_scroll; ; c++) {
+	      x += CHARACTER_LENGTH(this->getFont(),
 				   (c < ustrlen(text))? ugetat(text, c): ' ');
-	      if (x > widget->rc->x2-widget->border_width.r) {
+	      if (x > this->rc->x2-this->border_width.r) {
 		c--;
 		break;
 	      }
 	      else if (!ugetat (text, c))
 		break;
 	    }
-	    entry->cursor = c;
+	    m_caret = c;
 	    move = false;
-	    dirty = true;
-	    jwidget_dirty(widget);
+	    is_dirty = true;
+	    dirty();
 	  }
 	}
 
-	/* move cursor */
+	// Move caret
 	if (move) {
-	  c = entry_get_cursor_from_mouse(widget, msg);
+	  c = getCaretFromMouse(msg);
 
-	  if (entry->cursor != c) {
-	    entry->cursor = c;
-	    dirty = true;
-	    jwidget_dirty(widget);
+	  if (m_caret != c) {
+	    m_caret = c;
+	    is_dirty = true;
+	    dirty();
 	  }
 	}
 
-	/* move selection */
-	if (entry->recent_focused) {
-	  entry->recent_focused = false;
-	  entry->select = entry->cursor;
+	// Move selection
+	if (m_recent_focused) {
+	  m_recent_focused = false;
+	  m_select = m_caret;
 	}
 	else if (msg->type == JM_BUTTONPRESSED)
-	  entry->select = entry->cursor;
+	  m_select = m_caret;
 
-	/* show the cursor */
-	if (dirty) {
-	  jmanager_start_timer(entry->timer_id);
-	  entry->state = true;
+	// Show the caret
+	if (is_dirty) {
+	  jmanager_start_timer(m_timer_id);
+	  m_state = true;
 	}
 
 	return true;
@@ -417,83 +345,86 @@ static bool entry_msg_proc(JWidget widget, JMessage msg)
       break;
 
     case JM_BUTTONRELEASED:
-      if (widget->hasCapture())
-	widget->releaseMouse();
+      if (this->hasCapture())
+	this->releaseMouse();
       return true;
 
     case JM_DOUBLECLICK:
-      entry_forward_word(widget);
-      entry->select = entry->cursor;
-      entry_backward_word(widget);
-      jwidget_dirty(widget);
+      forwardWord();
+      m_select = m_caret;
+      backwardWord();
+      dirty();
       return true;
 
     case JM_MOUSEENTER:
     case JM_MOUSELEAVE:
       /* TODO theme stuff */
-      if (widget->isEnabled())
-	jwidget_dirty(widget);
+      if (this->isEnabled())
+	dirty();
       break;
   }
 
-  return false;
+  return Widget::onProcessMessage(msg);
 }
 
-static void entry_request_size(JWidget widget, int *w, int *h)
+void Entry::onPreferredSize(PreferredSizeEvent& ev)
 {
-  Entry* entry = reinterpret_cast<Entry*>(jwidget_get_data(widget, JI_ENTRY));
+  int w =
+    + border_width.l
+    + ji_font_char_len(getFont(), 'w') * MIN(m_maxsize, 6)
+    + 2 + border_width.r;
 
-  *w =
-    + widget->border_width.l
-    + ji_font_char_len(widget->getFont(), 'w') * MIN(entry->maxsize, 6)
-    + 2 + widget->border_width.r;
+  w = MIN(w, JI_SCREEN_W/2);
 
-  *w = MIN(*w, JI_SCREEN_W/2);
+  int h = 
+    + border_width.t
+    + text_height(getFont())
+    + border_width.b;
 
-  *h = 
-    + widget->border_width.t
-    + text_height(widget->getFont())
-    + widget->border_width.b;
+  ev.setPreferredSize(w, h);
 }
 
-static int entry_get_cursor_from_mouse(JWidget widget, JMessage msg)
+void Entry::onEntryChange()
 {
-  Entry* entry = reinterpret_cast<Entry*>(jwidget_get_data(widget, JI_ENTRY));
-  int c, x, w, mx, cursor = entry->cursor;
+  EntryChange();
+  jwidget_emit_signal(this, JI_SIGNAL_ENTRY_CHANGE);
+}
+
+int Entry::getCaretFromMouse(JMessage msg)
+{
+  int c, x, w, mx, caret = m_caret;
 
   mx = msg->mouse.x;
-  mx = MID(widget->rc->x1+widget->border_width.l,
+  mx = MID(this->rc->x1+this->border_width.l,
 	   mx,
-	   widget->rc->x2-widget->border_width.r-1);
+	   this->rc->x2-this->border_width.r-1);
 
-  x = widget->rc->x1 + widget->border_width.l;
-  for (c=entry->scroll; ugetat(widget->getText(), c); c++) {
-    w = CHARACTER_LENGTH(widget->getFont(), ugetat(widget->getText(), c));
-    if (x+w >= widget->rc->x2-widget->border_width.r)
+  x = this->rc->x1 + this->border_width.l;
+  for (c=m_scroll; ugetat(this->getText(), c); c++) {
+    w = CHARACTER_LENGTH(this->getFont(), ugetat(this->getText(), c));
+    if (x+w >= this->rc->x2-this->border_width.r)
       break;
     if ((mx >= x) && (mx < x+w)) {
-      cursor = c;
+      caret = c;
       break;
     }
     x += w;
   }
 
-  if (!ugetat(widget->getText(), c))
+  if (!ugetat(this->getText(), c))
     if ((mx >= x) &&
-	(mx <= widget->rc->x2-widget->border_width.r-1))
-      cursor = c;
+	(mx <= this->rc->x2-this->border_width.r-1))
+      caret = c;
 
-  return cursor;
+  return caret;
 }
 
-static void entry_execute_cmd(JWidget widget, EntryCmd::Type cmd,
-			      int ascii, bool shift_pressed)
+void Entry::executeCmd(EntryCmd::Type cmd, int ascii, bool shift_pressed)
 {
-  Entry* entry = reinterpret_cast<Entry*>(jwidget_get_data(widget, JI_ENTRY));
-  std::string text = widget->getText();
+  std::string text = this->getText();
   int c, selbeg, selend;
 
-  jtheme_entry_info(widget, NULL, NULL, NULL, &selbeg, &selend);
+  getEntryThemeInfo(NULL, NULL, NULL, &selbeg, &selend);
 
   switch (cmd) {
 
@@ -505,33 +436,33 @@ static void entry_execute_cmd(JWidget widget, EntryCmd::Type cmd,
       if (selbeg >= 0) {
 	text.erase(selbeg, selend-selbeg+1);
 
-	entry->cursor = selbeg;
+	m_caret = selbeg;
       }
 
       // put the character
-      if (text.size() < entry->maxsize)
-	text.insert(entry->cursor++, 1, ascii);
+      if (text.size() < m_maxsize)
+	text.insert(m_caret++, 1, ascii);
 
-      entry->select = -1;
+      m_select = -1;
       break;
 
     case EntryCmd::BackwardChar:
     case EntryCmd::BackwardWord:
       // selection
       if (shift_pressed) {
-	if (entry->select < 0)
-	  entry->select = entry->cursor;
+	if (m_select < 0)
+	  m_select = m_caret;
       }
       else
-	entry->select = -1;
+	m_select = -1;
 
       // backward word
       if (cmd == EntryCmd::BackwardWord) {
-	entry_backward_word(widget);
+	backwardWord();
       }
       // backward char
-      else if (entry->cursor > 0) {
-	entry->cursor--;
+      else if (m_caret > 0) {
+	m_caret--;
       }
       break;
 
@@ -539,44 +470,44 @@ static void entry_execute_cmd(JWidget widget, EntryCmd::Type cmd,
     case EntryCmd::ForwardWord:
       // selection
       if (shift_pressed) {
-	if (entry->select < 0)
-	  entry->select = entry->cursor;
+	if (m_select < 0)
+	  m_select = m_caret;
       }
       else
-	entry->select = -1;
+	m_select = -1;
 
       // forward word
       if (cmd == EntryCmd::ForwardWord) {
-	entry_forward_word(widget);
+	forwardWord();
       }
       // forward char
-      else if (entry->cursor < (int)text.size()) {
-	entry->cursor++;
+      else if (m_caret < (int)text.size()) {
+	m_caret++;
       }
       break;
 
     case EntryCmd::BeginningOfLine:
       // selection
       if (shift_pressed) {
-	if (entry->select < 0)
-	  entry->select = entry->cursor;
+	if (m_select < 0)
+	  m_select = m_caret;
       }
       else
-	entry->select = -1;
+	m_select = -1;
 
-      entry->cursor = 0;
+      m_caret = 0;
       break;
 
     case EntryCmd::EndOfLine:
       // selection
       if (shift_pressed) {
-	if (entry->select < 0)
-	  entry->select = entry->cursor;
+	if (m_select < 0)
+	  m_select = m_caret;
       }
       else
-	entry->select = -1;
+	m_select = -1;
 
-      entry->cursor = text.size();
+      m_caret = text.size();
       break;
 
     case EntryCmd::DeleteForward:
@@ -592,15 +523,15 @@ static void entry_execute_cmd(JWidget widget, EntryCmd::Type cmd,
 	// remove text
 	text.erase(selbeg, selend-selbeg+1);
 
-	entry->cursor = selbeg;
+	m_caret = selbeg;
       }
       // delete the next character
       else {
-	if (entry->cursor < (int)text.size())
-	  text.erase(entry->cursor, 1);
+	if (m_caret < (int)text.size())
+	  text.erase(m_caret, 1);
       }
 
-      entry->select = -1;
+      m_select = -1;
       break;
 
     case EntryCmd::Paste: {
@@ -611,18 +542,18 @@ static void entry_execute_cmd(JWidget widget, EntryCmd::Type cmd,
 	if (selbeg >= 0) {
 	  text.erase(selbeg, selend-selbeg+1);
 
-	  entry->cursor = selbeg;
-	  entry->select = -1;
+	  m_caret = selbeg;
+	  m_select = -1;
 	}
 
 	// paste text
 	for (c=0; c<ustrlen(clipboard); c++)
-	  if (text.size() < entry->maxsize)
-	    text.insert(entry->cursor+c, 1, ugetat(clipboard, c));
+	  if (text.size() < m_maxsize)
+	    text.insert(m_caret+c, 1, ugetat(clipboard, c));
 	  else
 	    break;
 
-	jentry_set_cursor_pos(widget, entry->cursor+c);
+	setCaretPos(m_caret+c);
       }
       break;
     }
@@ -639,70 +570,68 @@ static void entry_execute_cmd(JWidget widget, EntryCmd::Type cmd,
       if (selbeg >= 0) {
 	text.erase(selbeg, selend-selbeg+1);
 
-	entry->cursor = selbeg;
+	m_caret = selbeg;
       }
       // delete the previous character
       else {
-	if (entry->cursor > 0)
-	  text.erase(--entry->cursor, 1);
+	if (m_caret > 0)
+	  text.erase(--m_caret, 1);
       }
 
-      entry->select = -1;
+      m_select = -1;
       break;
   }
 
-  if (text != widget->getText()) {
-    widget->setText(text.c_str());
-    jwidget_emit_signal(widget, JI_SIGNAL_ENTRY_CHANGE);
+  if (text != this->getText()) {
+    this->setText(text.c_str());
+    onEntryChange();
   }
 
-  jentry_set_cursor_pos(widget, entry->cursor);
-  widget->dirty();
+  setCaretPos(m_caret);
+  dirty();
 }
 
 #define IS_WORD_CHAR(ch)				\
   (!((!ch) || (uisspace(ch)) ||				\
     ((ch) == '/') || ((ch) == OTHER_PATH_SEPARATOR)))
 
-static void entry_forward_word(JWidget widget)
+void Entry::forwardWord()
 {
-  Entry* entry = reinterpret_cast<Entry*>(jwidget_get_data(widget, JI_ENTRY));
   int ch;
 
-  for (; entry->cursor<ustrlen(widget->getText()); entry->cursor++) {
-    ch = ugetat(widget->getText(), entry->cursor);
+  for (; m_caret<ustrlen(this->getText()); m_caret++) {
+    ch = ugetat(this->getText(), m_caret);
     if (IS_WORD_CHAR (ch))
       break;
   }
 
-  for (; entry->cursor<ustrlen(widget->getText()); entry->cursor++) {
-    ch = ugetat(widget->getText(), entry->cursor);
+  for (; m_caret<ustrlen(this->getText()); m_caret++) {
+    ch = ugetat(this->getText(), m_caret);
     if (!IS_WORD_CHAR(ch)) {
-      entry->cursor++;
+      m_caret++;
       break;
     }
   }
 }
 
-static void entry_backward_word(JWidget widget)
+void Entry::backwardWord()
 {
-  Entry* entry = reinterpret_cast<Entry*>(jwidget_get_data(widget, JI_ENTRY));
   int ch;
 
-  for (entry->cursor--; entry->cursor >= 0; entry->cursor--) {
-    ch = ugetat(widget->getText(), entry->cursor);
+  for (m_caret--; m_caret >= 0; m_caret--) {
+    ch = ugetat(this->getText(), m_caret);
     if (IS_WORD_CHAR(ch))
       break;
   }
 
-  for (; entry->cursor >= 0; entry->cursor--) {
-    ch = ugetat(widget->getText(), entry->cursor);
+  for (; m_caret >= 0; m_caret--) {
+    ch = ugetat(this->getText(), m_caret);
     if (!IS_WORD_CHAR(ch)) {
-      entry->cursor++;
+      m_caret++;
       break;
     }
   }
 
-  if (entry->cursor < 0)
-    entry->cursor = 0;
+  if (m_caret < 0)
+    m_caret = 0;
 }

@@ -177,11 +177,11 @@ static Widget* convert_xmlelement_to_widget(TiXmlElement* elem, Widget* root)
     if (maxsize != NULL) {
       bool readonly = bool_attr_is_true(elem, "readonly");
 
-      widget = jentry_new(ustrtol(maxsize, NULL, 10),
-			  text ? TRANSLATE_ATTR(text): NULL);
+      widget = new Entry(ustrtol(maxsize, NULL, 10),
+			 text ? TRANSLATE_ATTR(text): NULL);
 
       if (readonly)
-	jentry_readonly(widget, true);
+	((Entry*)widget)->setReadOnly(true);
     }
   }
   /* grid */

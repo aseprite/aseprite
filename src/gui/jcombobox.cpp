@@ -32,7 +32,7 @@ static bool combobox_listbox_msg_proc(JWidget widget, JMessage msg);
 ComboBox::ComboBox()
   : Widget(JI_COMBOBOX)
 {
-  m_entry = jentry_new(256, "");
+  m_entry = new Entry(256, "");
   m_button = new Button("");
   m_window = NULL;
   m_selected = 0;
@@ -73,12 +73,12 @@ void ComboBox::setEditable(bool state)
   m_editable = state;
 
   if (state) {
-    jentry_readonly(m_entry, false);
-    jentry_show_cursor(m_entry);
+    m_entry->setReadOnly(false);
+    m_entry->showCaret();
   }
   else {
-    jentry_readonly(m_entry, true);
-    jentry_hide_cursor(m_entry);
+    m_entry->setReadOnly(true);
+    m_entry->hideCaret();
   }
 }
 
@@ -228,7 +228,7 @@ void ComboBox::setItemData(int itemIndex, void* data)
   item->data = data;
 }
 
-Widget* ComboBox::getEntryWidget()
+Entry* ComboBox::getEntryWidget()
 {
   return m_entry;
 }
@@ -350,8 +350,10 @@ static bool combobox_entry_msg_proc(JWidget widget, JMessage msg)
       break;
 
     case JM_DRAW:
-      widget->theme->draw_combobox_entry(widget, &msg->draw.rect);
+      widget->theme->draw_combobox_entry(static_cast<Entry*>(widget),
+					 &msg->draw.rect);
       return true;
+
   }
 
   return false;

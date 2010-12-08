@@ -7,25 +7,76 @@
 #ifndef GUI_ENTRY_H_INCLUDED
 #define GUI_ENTRY_H_INCLUDED
 
-#include "gui/jbase.h"
+#include "base/signal.h"
+#include "gui/widget.h"
 
-JWidget jentry_new(size_t maxsize, const char *format, ...);
+class Entry : public Widget
+{
+public:
+  Entry(size_t maxsize, const char *format, ...);
+  ~Entry();
 
-void jentry_readonly(JWidget entry, bool state);
-void jentry_password(JWidget entry, bool state);
-bool jentry_is_password(JWidget entry);
-bool jentry_is_readonly(JWidget entry);
+  bool isPassword() const;
+  bool isReadOnly() const;
+  void setReadOnly(bool state);
+  void setPassword(bool state);
 
-void jentry_show_cursor(JWidget entry);
-void jentry_hide_cursor(JWidget entry);
+  void showCaret();
+  void hideCaret();
 
-void jentry_set_cursor_pos(JWidget entry, int pos);
-void jentry_select_text(JWidget entry, int from, int to);
-void jentry_deselect_text(JWidget entry);
+  void setCaretPos(int pos);
+  void selectText(int from, int to);
+  void deselectText();
 
-/* for themes */
-void jtheme_entry_info(JWidget entry,
-		       int *scroll, int *cursor, int *state,
-		       int *selbeg, int *selend);
+  // for themes
+  void getEntryThemeInfo(int* scroll, int* caret, int* state,
+			 int* selbeg, int* selend);
+
+  // Signals
+  Signal0<void> EntryChange;
+
+protected:
+  // Events
+  bool onProcessMessage(JMessage msg);
+  void onPreferredSize(PreferredSizeEvent& ev);
+
+  // New Events
+  void onEntryChange();
+
+private:
+  struct EntryCmd {
+    enum Type {
+      NoOp,
+      InsertChar,
+      ForwardChar,
+      ForwardWord,
+      BackwardChar,
+      BackwardWord,
+      BeginningOfLine,
+      EndOfLine,
+      DeleteForward,
+      DeleteBackward,
+      Cut,
+      Copy,
+      Paste,
+    };
+  };
+
+  int getCaretFromMouse(JMessage msg);
+  void executeCmd(EntryCmd::Type cmd, int ascii, bool shift_pressed);
+  void forwardWord();
+  void backwardWord();
+
+  size_t m_maxsize;
+  int m_caret;
+  int m_scroll;
+  int m_select;
+  int m_timer_id;
+  bool m_hidden : 1;
+  bool m_state : 1;		// show or not the text caret
+  bool m_readonly : 1;
+  bool m_password : 1;
+  bool m_recent_focused : 1;
+};
 
 #endif

@@ -749,16 +749,16 @@ void SkinneableTheme::draw_grid(JWidget widget, JRect clip)
   jdraw_rectfill(clip, BGCOLOR);
 }
 
-void SkinneableTheme::draw_entry(JWidget widget, JRect clip)
+void SkinneableTheme::draw_entry(Entry* widget, JRect clip)
 {
-  bool password = jentry_is_password(widget);
-  int scroll, cursor, state, selbeg, selend;
+  bool password = widget->isPassword();
+  int scroll, caret, state, selbeg, selend;
   const char *text = widget->getText();
   int c, ch, x, y, w, fg, bg;
   int x1, y1, x2, y2;
-  int cursor_x;
+  int caret_x;
 
-  jtheme_entry_info(widget, &scroll, &cursor, &state, &selbeg, &selend);
+  widget->getEntryThemeInfo(&scroll, &caret, &state, &selbeg, &selend);
 
   /* main pos */
   x1 = widget->rc->x1;
@@ -803,22 +803,22 @@ void SkinneableTheme::draw_entry(JWidget widget, JRect clip)
     if (x+w > widget->rc->x2-3)
       return;
 
-    cursor_x = x;
+    caret_x = x;
     ji_font_set_aa_mode(widget->getFont(), bg >= 0 ? bg: COLOR_BACKGROUND);
     widget->getFont()->vtable->render_char(widget->getFont(),
 					   ch, fg, bg, ji_screen, x, y);
     x += w;
 
-    /* cursor */
-    if ((c == cursor) && (state) && (widget->hasFocus()))
-      draw_entry_cursor(widget, cursor_x, y);
+    /* caret */
+    if ((c == caret) && (state) && (widget->hasFocus()))
+      draw_entry_caret(widget, caret_x, y);
   }
 
-  /* draw the cursor if it is next of the last character */
-  if ((c == cursor) && (state) &&
+  /* draw the caret if it is next of the last character */
+  if ((c == caret) && (state) &&
       (widget->hasFocus()) &&
       (widget->isEnabled()))
-    draw_entry_cursor(widget, x, y);
+    draw_entry_caret(widget, x, y);
 }
 
 void SkinneableTheme::draw_label(JWidget widget, JRect clip)
@@ -1195,16 +1195,16 @@ void SkinneableTheme::draw_slider(Slider* widget, JRect clip)
   }
 }
 
-void SkinneableTheme::draw_combobox_entry(JWidget widget, JRect clip)
+void SkinneableTheme::draw_combobox_entry(Entry* widget, JRect clip)
 {
-  bool password = jentry_is_password(widget);
-  int scroll, cursor, state, selbeg, selend;
+  bool password = widget->isPassword();
+  int scroll, caret, state, selbeg, selend;
   const char *text = widget->getText();
   int c, ch, x, y, w, fg, bg;
   int x1, y1, x2, y2;
-  int cursor_x;
+  int caret_x;
 
-  jtheme_entry_info(widget, &scroll, &cursor, &state, &selbeg, &selend);
+  widget->getEntryThemeInfo(&scroll, &caret, &state, &selbeg, &selend);
 
   /* main pos */
   x1 = widget->rc->x1;
@@ -1249,22 +1249,22 @@ void SkinneableTheme::draw_combobox_entry(JWidget widget, JRect clip)
     if (x+w > widget->rc->x2-3)
       return;
 
-    cursor_x = x;
+    caret_x = x;
     ji_font_set_aa_mode(widget->getFont(), bg >= 0 ? bg: COLOR_BACKGROUND);
     widget->getFont()->vtable->render_char(widget->getFont(),
 					   ch, fg, bg, ji_screen, x, y);
     x += w;
 
-    /* cursor */
-    if ((c == cursor) && (state) && (widget->hasFocus()))
-      draw_entry_cursor(widget, cursor_x, y);
+    /* caret */
+    if ((c == caret) && (state) && (widget->hasFocus()))
+      draw_entry_caret(widget, caret_x, y);
   }
 
-  /* draw the cursor if it is next of the last character */
-  if ((c == cursor) && (state) &&
+  /* draw the caret if it is next of the last character */
+  if ((c == caret) && (state) &&
       (widget->hasFocus()) &&
       (widget->isEnabled()))
-    draw_entry_cursor(widget, x, y);
+    draw_entry_caret(widget, x, y);
 }
 
 void SkinneableTheme::draw_combobox_button(ButtonBase* widget, JRect clip)
@@ -1514,7 +1514,7 @@ void SkinneableTheme::draw_textstring(const char *t, int fg_color, int bg_color,
   }
 }
 
-void SkinneableTheme::draw_entry_cursor(JWidget widget, int x, int y)
+void SkinneableTheme::draw_entry_caret(Entry* widget, int x, int y)
 {
   int h = jwidget_get_text_height(widget);
 

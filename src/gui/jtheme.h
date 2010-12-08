@@ -9,9 +9,11 @@
 
 #include "gui/jbase.h"
 
-struct FONT;
 struct BITMAP;
+struct FONT;
+
 class ButtonBase;
+class Entry;
 class Slider;
 
 class jtheme
@@ -46,7 +48,7 @@ public:
   virtual void draw_box(JWidget widget, JRect clip) = 0;
   virtual void draw_button(ButtonBase* widget, JRect clip) = 0;
   virtual void draw_check(ButtonBase* widget, JRect clip) = 0;
-  virtual void draw_entry(JWidget widget, JRect clip) = 0;
+  virtual void draw_entry(Entry* widget, JRect clip) = 0;
   virtual void draw_grid(JWidget widget, JRect clip) = 0;
   virtual void draw_label(JWidget widget, JRect clip) = 0;
   virtual void draw_link_label(JWidget widget, JRect clip) = 0;
@@ -58,7 +60,7 @@ public:
   virtual void draw_radio(ButtonBase* widget, JRect clip) = 0;
   virtual void draw_separator(JWidget widget, JRect clip) = 0;
   virtual void draw_slider(Slider* widget, JRect clip) = 0;
-  virtual void draw_combobox_entry(JWidget widget, JRect clip) = 0;
+  virtual void draw_combobox_entry(Entry* widget, JRect clip) = 0;
   virtual void draw_combobox_button(ButtonBase* widget, JRect clip) = 0;
   virtual void draw_textbox(JWidget widget, JRect clip) = 0;
   virtual void draw_view(JWidget widget, JRect clip) = 0;

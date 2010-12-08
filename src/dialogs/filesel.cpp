@@ -90,7 +90,7 @@ base::string ase_file_selector(const base::string& message,
 {
   static Frame* window = NULL;
   Widget* fileview;
-  Widget* filename_entry;
+  Entry* filename_entry;
   ComboBox* filetype;
   base::string result;
 
@@ -145,13 +145,13 @@ base::string ase_file_selector(const base::string& message,
     window = static_cast<Frame*>(load_widget("file_selector.xml", "file_selector"));
 
     JWidget box = jwidget_find_name(window, "box");
-    Button* goback = dynamic_cast<Button*>(jwidget_find_name(window, "goback"));
-    Button* goforward = dynamic_cast<Button*>(jwidget_find_name(window, "goforward"));
-    Button* goup = dynamic_cast<Button*>(jwidget_find_name(window, "goup"));
-    JWidget location = jwidget_find_name(window, "location");
-    filetype = dynamic_cast<ComboBox*>(jwidget_find_name(window, "filetype"));
+    Button* goback = window->findChildT<Button>("goback");
+    Button* goforward = window->findChildT<Button>("goforward");
+    Button* goup = window->findChildT<Button>("goup");
+    JWidget location = window->findChild("location");
+    filetype = window->findChildT<ComboBox>("filetype");
     ASSERT(filetype != NULL);
-    filename_entry = jwidget_find_name(window, "filename");
+    filename_entry = window->findChildT<Entry>("filename");
 
     jwidget_focusrest(goback, false);
     jwidget_focusrest(goforward, false);
@@ -190,9 +190,9 @@ base::string ase_file_selector(const base::string& message,
   }
   else {
     fileview = jwidget_find_name(window, "fileview");
-    filetype = dynamic_cast<ComboBox*>(jwidget_find_name(window, "filetype"));
+    filetype = window->findChildT<ComboBox>("filetype");
     ASSERT(filetype != NULL);
-    filename_entry = jwidget_find_name(window, "filename");
+    filename_entry = window->findChildT<Entry>("filename");
 
     jwidget_signal_off(fileview);
     fileview_set_current_folder(fileview, start_folder);
@@ -220,7 +220,7 @@ base::string ase_file_selector(const base::string& message,
   // file name entry field
   filename_entry->setText(base::get_file_name(init_path).c_str());
   select_filetype_from_filename(window);
-  jentry_select_text(filename_entry, 0, -1);
+  filename_entry->selectText(0, -1);
 
   // setup the title of the window
   window->setText(message.c_str());
@@ -432,7 +432,7 @@ static void update_location(JWidget window)
     jwidget_signal_off(location);
     location->setSelectedItem(selected_index);
     location->getEntryWidget()->setText(current_folder->getDisplayName().c_str());
-    jentry_deselect_text(location->getEntryWidget());
+    location->getEntryWidget()->deselectText();
     jwidget_signal_on(location);
   }
 
@@ -649,7 +649,7 @@ static bool filetype_msg_proc(JWidget widget, JMessage msg)
       case JI_SIGNAL_COMBOBOX_SELECT: {
 	std::string ext = combobox->getItemText(combobox->getSelectedItem());
 	Frame* window = static_cast<Frame*>(combobox->getRoot());
-	Widget* entry = window->findChild("filename");
+	Entry* entry = window->findChildT<Entry>("filename");
 	char buf[MAX_PATH];
 	char* p;
 
@@ -658,7 +658,7 @@ static bool filetype_msg_proc(JWidget widget, JMessage msg)
 	if (p && *p != 0) {
 	  ustrcpy(p, ext.c_str());
 	  entry->setText(buf);
-	  jentry_select_text(entry, 0, -1);
+	  entry->selectText(0, -1);
 	}
 	break;
       }
@@ -704,9 +704,8 @@ static bool filename_msg_proc(JWidget widget, JMessage msg)
       // Is the pattern (left_part) in the child_name's beginning?
       if (it2 == left_part.end()) {
 	widget->setText(child_name.c_str());
-	jentry_select_text(widget,
-			   child_name.size(),
-			   left_part.size());
+	((Entry*)widget)->selectText(child_name.size(),
+				     left_part.size());
 	clear_keybuf();
 	return true;
       }

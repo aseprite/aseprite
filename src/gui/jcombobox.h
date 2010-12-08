@@ -11,8 +11,9 @@
 #include <vector>
 #include <string>
 
-class Frame;
 class Button;
+class Entry;
+class Frame;
 
 class ComboBox : public Widget
 {
@@ -45,7 +46,7 @@ public:
   void* getItemData(int itemIndex);
   void setItemData(int itemIndex, void* data);
 
-  Widget* getEntryWidget();
+  Entry* getEntryWidget();
   Button* getButtonWidget();
 
   void openListBox();
@@ -62,7 +63,7 @@ private:
 
   struct Item;
 
-  Widget* m_entry;
+  Entry* m_entry;
   Button* m_button;
   Frame* m_window;
   Widget* m_listbox;

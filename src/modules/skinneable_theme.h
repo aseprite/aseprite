@@ -450,7 +450,7 @@ public:
   void draw_box(JWidget widget, JRect clip);
   void draw_button(ButtonBase* widget, JRect clip);
   void draw_check(ButtonBase* widget, JRect clip);
-  void draw_entry(JWidget widget, JRect clip);
+  void draw_entry(Entry* widget, JRect clip);
   void draw_grid(JWidget widget, JRect clip);
   void draw_label(JWidget widget, JRect clip);
   void draw_link_label(JWidget widget, JRect clip);
@@ -462,7 +462,7 @@ public:
   void draw_radio(ButtonBase* widget, JRect clip);
   void draw_separator(JWidget widget, JRect clip);
   void draw_slider(Slider* widget, JRect clip);
-  void draw_combobox_entry(JWidget widget, JRect clip);
+  void draw_combobox_entry(Entry* widget, JRect clip);
   void draw_combobox_button(ButtonBase* widget, JRect clip);
   void draw_textbox(JWidget widget, JRect clip);
   void draw_view(JWidget widget, JRect clip);
@@ -542,7 +542,7 @@ private:
   void draw_textstring(const char *t, int fg_color, int bg_color,
 		       bool fill_bg, JWidget widget, const JRect rect,
 		       int selected_offset);
-  void draw_entry_cursor(JWidget widget, int x, int y);
+  void draw_entry_caret(Entry* widget, int x, int y);
   void draw_bevel_box(int x1, int y1, int x2, int y2, int c1, int c2, int *bevel);
   void less_bevel(int *bevel);
 
