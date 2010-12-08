@@ -4,6 +4,7 @@
 add_library(gui-lib
   button.cpp
   component.cpp
+  entry.cpp
   event.cpp
   frame.cpp
   jaccel.cpp
@@ -13,7 +14,6 @@ add_library(gui-lib
   jcombobox.cpp
   jcustom_label.cpp
   jdraw.cpp
-  jentry.cpp
   jfont.cpp
   jfontbmp.cpp
   jgrid.cpp

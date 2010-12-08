@@ -21,12 +21,12 @@
 #include <stdio.h>
 
 #include "base/bind.h"
-#include "gui/jbox.h"
 #include "gui/button.h"
-#include "gui/jentry.h"
+#include "gui/entry.h"
+#include "gui/frame.h"
+#include "gui/jbox.h"
 #include "gui/jhook.h"
 #include "gui/widget.h"
-#include "gui/frame.h"
 
 #include "commands/command.h"
 #include "commands/fx/effectbg.h"

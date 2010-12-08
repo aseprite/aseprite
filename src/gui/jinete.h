@@ -8,6 +8,7 @@
 #define GUI_JINETE_H_INCLUDED
 
 #include "gui/button.h"
+#include "gui/entry.h"
 #include "gui/frame.h"
 #include "gui/jaccel.h"
 #include "gui/jalert.h"
@@ -17,7 +18,6 @@
 #include "gui/jcombobox.h"
 #include "gui/jcustom_label.h"
 #include "gui/jdraw.h"
-#include "gui/jentry.h"
 #include "gui/jfont.h"
 #include "gui/jgrid.h"
 #include "gui/jhook.h"

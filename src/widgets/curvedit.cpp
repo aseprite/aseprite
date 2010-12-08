@@ -24,8 +24,9 @@
 #include <stdlib.h>
 
 #include "effect/colcurve.h"
+#include "gui/entry.h"
+#include "gui/frame.h"
 #include "gui/jalert.h"
-#include "gui/jentry.h"
 #include "gui/jlist.h"
 #include "gui/jmanager.h"
 #include "gui/jmessage.h"
@@ -33,7 +34,6 @@
 #include "gui/jsystem.h"
 #include "gui/jview.h"
 #include "gui/widget.h"
-#include "gui/frame.h"
 #include "modules/gui.h"
 #include "widgets/curvedit.h"
 

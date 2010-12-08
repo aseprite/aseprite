@@ -4,8 +4,8 @@
 // This source file is ditributed under a BSD-like license, please
 // read LICENSE.txt for more information.
 
-#ifndef GUI_JENTRY_H_INCLUDED
-#define GUI_JENTRY_H_INCLUDED
+#ifndef GUI_ENTRY_H_INCLUDED
+#define GUI_ENTRY_H_INCLUDED
 
 #include "gui/jbase.h"
 
