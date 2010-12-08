@@ -1,8 +1,15 @@
+For next release
+----------------
+
++ After creating or opening a sprite, it should be shown centered in the editor.
++ Mini-look for sliders in palette editor (add ISliderBackground to draw RGB/HSV sliders
+  with a customized background).
+
 Refactoring
 -----------
 
 - Separate the source code in independent libraries:
-  1) jinete -> third_party/vaca (it has the core for mutex/threads)
+  1) jinete -> gui
   2) sprite-core
   3) file-io
   4) undo (uses sprite-core)
@@ -10,11 +17,11 @@ Refactoring
 - editors_ -> MultiEditors class widget
 - rename core/cfg.h to cfg_file.h
 - convert all widgets to classes:
-  + match Jinete design with Vaca library (Vaca Fusion)
+  + match Jinete design with Vaca library.
   + move all functions (jwidget_*) to methods in Widget class.
   + the same for each widget (e.g. jbutton_* to Button widget)
   + AppHooks to Vaca::Signals
-  + Convert all JI_SIGNAL to Vaca::Signals
+  + Convert all JI_SIGNAL to base::Signals
 - all member functions should be named verbNoun instead of verb_noun or noun_verb.
 - all functions to handle an object should be converted to member functions:
   - e.g. jwidget_set_text -> Widget::setText
@@ -39,11 +46,8 @@ High priority work
   - pal-operations (sort, quantize, gamma by color-curves, etc.);
   - complete palette operations, and palette editor (it needs a slider
     or something to move between palette changes)
-- add undo support for palette changes.
 - if there is activated the Tools Configuration dialog box, the
   Shift+G and Shift+S should update it
-- when press Plus/Minus pad in the editor and the configuration tool
-  window is active, the slider of the "Brush Size" must be updated.
 - add two DrawClick2:
   - DrawClick2FreeHand
   - DrawClick2Shape
@@ -55,7 +59,6 @@ High priority work
 - fix algo_ellipsefill;
 - view_tiled() should support animation playback (partial support:
   with left and right keys).
-- make keys like 9, 0, + Pad, - Pad configurable.
 
 Wish-list
 ---------
