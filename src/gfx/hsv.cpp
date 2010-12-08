@@ -69,3 +69,18 @@ Hsv::Hsv(const Rgb& rgb)
   m_saturation = s;
   m_value = v;
 }
+
+int Hsv::hueInt() const
+{
+  return int(floor(m_hue + 0.5));
+}
+
+int Hsv::saturationInt() const
+{
+  return int(floor(m_hue*100.0 + 0.5));
+}
+
+int Hsv::valueInt() const
+{
+  return int(floor(m_value*100.0 + 0.5));
+}

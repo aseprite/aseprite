@@ -33,22 +33,25 @@ public:
   // RGB to HSV conversion
   explicit Hsv(const Rgb& rgb);
 
+  // Returns color's hue, a value from 0 to 360
   double hue() const {
     return m_hue;
   }
 
+  // Returns color's saturation, a value from 0 to 100
   double saturation() const {
     return m_saturation;
   }
 
+  // Returns color's brightness, a value from 0 to 100
   double value() const {
     return m_value;
   }
 
-  // Getters in "int" type, hue=[0,360), saturation=[0,100], value=[0,100]
-  int hueInt() const        { return int(m_hue+0.5); }
-  int saturationInt() const { return int(m_saturation*100.0+0.5); }
-  int valueInt() const      { return int(m_value*100.0+0.5); }
+  // Integer getters, hue=[0,360), saturation=[0,100], value=[0,100]
+  int hueInt() const;
+  int saturationInt() const;
+  int valueInt() const;
 
   void hue(double hue) {
     assert(hue >= 0.0 && hue <= 360.0);
@@ -65,11 +68,11 @@ public:
     m_value = value;
   }
 
+  // The comparison is done through the integer value of each component.
   bool operator==(const Hsv& other) const {
-    // Compare floating points as integers (saturation and value are compared in [0,255] range)
-    return (int(m_hue+0.5) == int(other.m_hue+0.5) && 
-	    int(m_saturation*255.0+0.5) == int(other.m_saturation*255.0+0.5) && 
-	    int(m_value*255.0+0.5) == int(other.m_value*255.0+0.5));
+    return (hueInt() == other.hueInt() &&
+	    saturationInt() == other.saturationInt() &&
+	    valueInt() == other.valueInt());
   }
 
   bool operator!=(const Hsv& other) const {
