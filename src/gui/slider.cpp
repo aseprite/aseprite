@@ -91,7 +91,7 @@ bool Slider::onProcessMessage(JMessage msg)
       slider_press_value = m_value;
       slider_press_left = msg->mouse.left;
 
-      slider_setcursor();
+      setupSliderCursor();
 
       /* continue to JM_MOTION */
 
@@ -148,7 +148,7 @@ bool Slider::onProcessMessage(JMessage msg)
       if (hasCapture()) {
 	setSelected(false);
 	releaseMouse();
-	slider_setcursor();
+	setupSliderCursor();
       }
       break;
 
@@ -211,7 +211,7 @@ bool Slider::onProcessMessage(JMessage msg)
       break;
 
     case JM_SETCURSOR:
-      slider_setcursor();
+      setupSliderCursor();
       return true;
   }
 
@@ -249,7 +249,7 @@ void Slider::onButtonReleased()
   ButtonReleased();
 }
 
-void Slider::slider_setcursor()
+void Slider::setupSliderCursor()
 {
   if (hasCapture()) {
     if (slider_press_left)

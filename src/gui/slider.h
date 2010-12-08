@@ -36,7 +36,7 @@ protected:
   virtual void onButtonReleased();
 
 private:
-  void slider_setcursor();
+  void setupSliderCursor();
 
   int m_min;
   int m_max;
