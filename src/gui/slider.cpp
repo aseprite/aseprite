@@ -149,6 +149,8 @@ bool Slider::onProcessMessage(JMessage msg)
 	setSelected(false);
 	releaseMouse();
 	setupSliderCursor();
+
+	onSliderReleased();
       }
       break;
 
@@ -244,9 +246,9 @@ void Slider::onChange()
   Change(); // Emit Change signal
 }
 
-void Slider::onButtonReleased()
+void Slider::onSliderReleased()
 {
-  ButtonReleased();
+  SliderReleased();
 }
 
 void Slider::setupSliderCursor()

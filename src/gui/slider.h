@@ -24,7 +24,7 @@ public:
   
   // Signals
   Signal0<void> Change;
-  Signal0<void> ButtonReleased;
+  Signal0<void> SliderReleased;
 
 protected:
   // Events
@@ -33,7 +33,7 @@ protected:
 
   // New events
   virtual void onChange();
-  virtual void onButtonReleased();
+  virtual void onSliderReleased();
 
 private:
   void setupSliderCursor();
