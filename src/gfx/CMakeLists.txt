@@ -2,6 +2,8 @@
 # Copyright (C) 2001-2010  David Capello
 
 add_library(gfx-lib
+  hsv.cpp
   point.cpp
   rect.cpp
+  rgb.cpp
   size.cpp)
