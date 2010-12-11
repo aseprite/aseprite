@@ -283,8 +283,7 @@ foreach(testsourcefile ${tests})
   target_link_libraries(${testname} gtest ${all_libs})
 
   # Add gtest include directory so we can #include <gtest/gtest.h> in tests source code
-  set_target_properties(${testname} PROPERTIES
-    COMPILE_FLAGS "-I${CMAKE_SOURCE_DIR}/third_party/gtest/include")
+  include_directories(${CMAKE_SOURCE_DIR}/third_party/gtest/include)
 
   add_custom_target(run_${testname}
     COMMAND ${testname})

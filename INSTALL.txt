@@ -57,4 +57,7 @@ have the source code in a directory called "ase-source-dir"):
    opening the solution, etc.
 
 4) When the project is compiled, you can copy "build/src/aseprite.exe"
-   file to "ase-source-dir" and execute it.
+   file to "ase-source-dir" and execute it. If you have used a Visual
+   Studio project, you can copy the whole "data/" directory to
+   "build/src/RelWithDebInfo/" so you can run/debug the program
+   from Visual Studio IDE.
