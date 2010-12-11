@@ -118,7 +118,7 @@ static bool load_ICO(FileOp *fop)
   const ICONDIRENTRY& entry = entries[0];
   int width = (entry.width == 0 ? 256: entry.width);
   int height = (entry.height == 0 ? 256: entry.height);
-  int numcolors = 1 << entry.bpp;
+  int numcolors = (entry.color_count == 0 ? 256: entry.color_count);
   int imgtype = IMAGE_INDEXED;
   if (entry.bpp > 8)
     imgtype = IMAGE_RGB;
@@ -176,7 +176,11 @@ static bool load_ICO(FileOp *fop)
 
 	case 8:
 	  c = fgetc(f);
-	  image_putpixel(image, x, y, c);
+	  ASSERT(c >= 0 && c < numcolors);
+	  if (c >= 0 && c < numcolors)
+	    image_putpixel(image, x, y, c);
+	  else
+	    image_putpixel(image, x, y, 0);
 	  break;
 
 	case 24:
