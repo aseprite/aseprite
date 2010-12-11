@@ -165,6 +165,7 @@ static bool load_ICO(FileOp *fop)
     }
 
     sprite->setPalette(pal, true);
+    delete pal;
   }
 
   // Read XOR MASK
