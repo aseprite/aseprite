@@ -83,8 +83,8 @@ void Editor::editor_click_done()
   clear_keybuf();
 }
 
-/* returns false when the user stop the click-loop: releases the
-   button or press the second click (depend of the mode) */
+// Returns false when the user stop the click-loop: releases the
+// button or press the second click (depend of the mode)
 int Editor::editor_click(int *x, int *y, int *update,
 			 void (*scroll_callback) (int before_change))
 {
@@ -108,8 +108,7 @@ int Editor::editor_click(int *x, int *y, int *update,
 
   *update = jmouse_poll();
 
-  if (!editor_cursor_is_subpixel())
-    screen_to_editor(click_last_x, click_last_y, &prev_x, &prev_y);
+  screen_to_editor(click_last_x, click_last_y, &prev_x, &prev_y);
 
   click_prev_last_b = click_last_b;
 
@@ -156,13 +155,13 @@ int Editor::editor_click(int *x, int *y, int *update,
 	(*scroll_callback)(false);
     }
 
-    /* if the cursor hasn't subpixel movement */
+    // If the cursor hasn't subpixel movement
     if (!editor_cursor_is_subpixel()) {
-      /* check if the mouse change to other pixel of the sprite */
+      // Check if the mouse change to other pixel of the sprite
       *update = ((prev_x != *x) || (prev_y != *y));
     }
     else {
-      /* check if the mouse change to other pixel of the screen */
+      // Check if the mouse change to other pixel of the screen
       *update = ((prev_x != click_last_x) || (prev_y != click_last_y));
     }
 
