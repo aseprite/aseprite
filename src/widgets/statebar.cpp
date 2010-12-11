@@ -458,9 +458,9 @@ bool StatusBar::onProcessMessage(JMessage msg)
 	  set_alpha_blender();
 	  draw_trans_sprite(doublebuffer, icon,
 			    x, (rc->y1+rc->y2)/2-icon->h/2);
-	}
 
-	x += icon->w + 4*jguiscale();
+	  x += icon->w + 4*jguiscale();
+	}
       }
 
       // Status bar text
