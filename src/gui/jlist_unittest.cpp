@@ -16,7 +16,7 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#include "tests/test.h"
+#include <gtest/gtest.h>
 #include "gui/jlist.h"
 
 TEST(JList, AppendAndClear)
@@ -196,4 +196,10 @@ TEST(JList, Find)
   EXPECT_EQ(jlist_nth_link(q, 0), jlist_find(q, (void*)10));
   EXPECT_EQ(jlist_nth_link(q, 1), jlist_find(q, (void*)20));
   EXPECT_EQ(jlist_nth_link(q, 2), jlist_find(q, (void*)30));
+}
+
+int main(int argc, char** argv)
+{
+  ::testing::InitGoogleTest(&argc, argv);
+  return RUN_ALL_TESTS();
 }

@@ -16,7 +16,7 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#include "tests/test.h"
+#include <gtest/gtest.h>
 #include "app/color.h"
 
 inline std::ostream& operator<<(std::ostream& os, const Color& color) {
@@ -49,4 +49,10 @@ TEST(Color, toString)
   EXPECT_EQ("rgb{0,0,0}", Color::fromRgb(0, 0, 0).toString());
   EXPECT_EQ("rgb{32,16,255}", Color::fromRgb(32, 16, 255).toString());
   EXPECT_EQ("hsv{32,64,99}", Color::fromHsv(32, 64, 99).toString());
+}
+
+int main(int argc, char** argv)
+{
+  ::testing::InitGoogleTest(&argc, argv);
+  return RUN_ALL_TESTS();
 }

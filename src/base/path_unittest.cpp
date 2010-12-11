@@ -4,7 +4,7 @@
 // This source file is ditributed under a BSD-like license, please
 // read LICENSE.txt for more information.
 
-#include "tests/test.h"
+#include <gtest/gtest.h>
 
 #include "base/path.h"
 
@@ -118,4 +118,10 @@ TEST(Path, HasFileExtension)
   EXPECT_FALSE(has_file_extension("hi.ase", "jpg,jpeg"));
   EXPECT_TRUE (has_file_extension("hi.ase", "jpg,jpeg,ase"));
   EXPECT_TRUE (has_file_extension("hi.ase", "ase,jpg,jpeg"));
+}
+
+int main(int argc, char** argv)
+{
+  ::testing::InitGoogleTest(&argc, argv);
+  return RUN_ALL_TESTS();
 }

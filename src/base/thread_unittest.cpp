@@ -4,7 +4,7 @@
 // This source file is ditributed under a BSD-like license, please
 // read LICENSE.txt for more information.
 
-#include "tests/test.h"
+#include <gtest/gtest.h>
 
 #include "base/thread.h"
 
@@ -68,3 +68,8 @@ TEST(Thread, TwoArgs)
   EXPECT_TRUE(flag);
 }
 
+int main(int argc, char** argv)
+{
+  ::testing::InitGoogleTest(&argc, argv);
+  return RUN_ALL_TESTS();
+}

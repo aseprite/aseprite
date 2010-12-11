@@ -4,7 +4,7 @@
 // This source file is ditributed under a BSD-like license, please
 // read LICENSE.txt for more information.
 
-#include "tests/test.h"
+#include <gtest/gtest.h>
 
 #include "gfx/hsv.h"
 #include "gfx/rgb.h"
@@ -40,3 +40,8 @@ TEST(Hsv, FromRgb)
   EXPECT_EQ(Hsv(360.0, 1.000, 1.000), Hsv(Rgb(255,   0,   0)));
 }
 
+int main(int argc, char** argv)
+{
+  ::testing::InitGoogleTest(&argc, argv);
+  return RUN_ALL_TESTS();
+}

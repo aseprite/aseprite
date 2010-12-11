@@ -4,7 +4,7 @@
 // This source file is ditributed under a BSD-like license, please
 // read LICENSE.txt for more information.
 
-#include "tests/test.h"
+#include <gtest/gtest.h>
 
 #include <string>
 #include <vector>
@@ -44,4 +44,10 @@ TEST(SplitString, MultipleSeparators)
   EXPECT_EQ("Hello", result[0]);
   EXPECT_EQ("Wo", result[1]);
   EXPECT_EQ("ld", result[2]);
+}
+
+int main(int argc, char** argv)
+{
+  ::testing::InitGoogleTest(&argc, argv);
+  return RUN_ALL_TESTS();
 }
