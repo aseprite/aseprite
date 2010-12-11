@@ -8,6 +8,7 @@
 
 #include "base/path.h"
 #include <algorithm>
+#include <iterator>
 
 using namespace base;
 
