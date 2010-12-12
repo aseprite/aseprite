@@ -335,7 +335,7 @@ static void sys_directx_message(AL_CONST char *msg)
 static void sys_directx_assert(AL_CONST char *msg)
 {
    OutputDebugString(msg);  /* thread safe */
-   abort();
+   DebugBreak();
 }
 
 
