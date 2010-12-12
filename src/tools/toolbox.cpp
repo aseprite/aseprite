@@ -224,6 +224,8 @@ void ToolBox::loadToolProperties(TiXmlElement* xmlTool, Tool* tool, int button, 
       tracepolicy_value = TOOL_TRACE_POLICY_ACCUMULATE;
     else if (strcmp(tracepolicy, "last") == 0)
       tracepolicy_value = TOOL_TRACE_POLICY_LAST;
+    else if (strcmp(tracepolicy, "overlap") == 0)
+      tracepolicy_value = TOOL_TRACE_POLICY_OVERLAP;
     else
       throw ase_exception("Invalid trace-policy '%s' specified in '%s' tool.\n", tracepolicy, tool_id);
   }

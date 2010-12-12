@@ -215,12 +215,20 @@ void ToolLoopManager::doLoopStep(bool last_step)
   switch (m_toolLoop->getTracePolicy()) {
 
     case TOOL_TRACE_POLICY_ACCUMULATE:
-      // do nothing
+      // Do nothing. We accumulate traces in the destination image.
       break;
 
     case TOOL_TRACE_POLICY_LAST:
+      // Copy source to destination (reset the previous trace). Useful
+      // for tools like Line and Ellipse tools (we kept the last trace only).
       image_clear(m_toolLoop->getDstImage(), 0);
       image_copy(m_toolLoop->getDstImage(), m_toolLoop->getSrcImage(), 0, 0);
+      break;
+
+    case TOOL_TRACE_POLICY_OVERLAP:
+      // Copy destination to source (yes, destination to source). In
+      // this way each new trace overlaps the previous one.
+      image_copy(m_toolLoop->getSrcImage(), m_toolLoop->getDstImage(), 0, 0);
       break;
   }
 

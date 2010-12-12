@@ -51,6 +51,7 @@ enum ToolTracePolicy
 {
   TOOL_TRACE_POLICY_ACCUMULATE,
   TOOL_TRACE_POLICY_LAST,
+  TOOL_TRACE_POLICY_OVERLAP,
 };
 
 // Class used to paint directly in the destination image (loop->getDstImage())

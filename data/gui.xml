@@ -443,7 +443,7 @@
 	    ink="paint"
 	    controller="freehand"
 	    pointshape="spray"
-	    tracepolicy="accumulative"
+	    tracepolicy="overlap"
 	    />
     </group>
 
@@ -578,7 +578,7 @@
 	    controller="freehand"
 	    pointshape="pen"
 	    intertwine="as_lines"
-	    tracepolicy="accumulative"
+	    tracepolicy="overlap"
 	    default_pen_size="16"
 	    />
       <tool id="jumble"
@@ -587,7 +587,7 @@
 	    controller="freehand"
 	    pointshape="pen"
 	    intertwine="as_lines"
-	    tracepolicy="accumulative"
+	    tracepolicy="overlap"
 	    default_pen_size="16"
 	    />
     </group>
