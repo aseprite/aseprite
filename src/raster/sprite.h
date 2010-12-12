@@ -99,20 +99,14 @@ public:
   ////////////////////////////////////////
   // Layers
 
-  const LayerFolder* getFolder() const;
-  LayerFolder* getFolder();
-
-  const LayerImage* getBackgroundLayer() const;
-  LayerImage* getBackgroundLayer();
-
-  const Layer* getCurrentLayer() const;
-  Layer* getCurrentLayer();
+  LayerFolder* getFolder() const;
+  LayerImage* getBackgroundLayer() const;
+  Layer* getCurrentLayer() const;
   void setCurrentLayer(Layer* layer);
 
   int countLayers() const;
 
-  const Layer* indexToLayer(int index) const;
-  Layer* indexToLayer(int index);
+  Layer* indexToLayer(int index) const;
   int layerToIndex(const Layer* layer) const;
 
   ////////////////////////////////////////
@@ -125,8 +119,7 @@ public:
   void resetPalettes();
   void deletePalette(Palette* pal);
 
-  const Palette* getCurrentPalette() const;
-  Palette* getCurrentPalette();
+  Palette* getCurrentPalette() const;
 
   RgbMap* getRgbMap();
   RgbMap* getRgbMap(int frame);
@@ -147,11 +140,9 @@ public:
   ////////////////////////////////////////
   // Images
 
-  const Stock* getStock() const;
-  Stock* getStock();
+  Stock* getStock() const;
 
-  const Image* getCurrentImage(int* x = NULL, int* y = NULL, int* opacity = NULL) const;
-  Image* getCurrentImage(int* x = NULL, int* y = NULL, int* opacity = NULL);
+  Image* getCurrentImage(int* x = NULL, int* y = NULL, int* opacity = NULL) const;
 
   void getCels(CelList& cels);
 
@@ -160,14 +151,12 @@ public:
   ////////////////////////////////////////
   // Undo
 
-  const Undo* getUndo() const;
-  Undo* getUndo();
+  Undo* getUndo() const;
 
   ////////////////////////////////////////
   // Mask
 
-  const Mask* getMask() const;
-  Mask* getMask();
+  Mask* getMask() const;
   void setMask(const Mask* mask);
 
   void addMask(Mask* mask);

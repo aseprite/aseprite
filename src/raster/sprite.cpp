@@ -108,22 +108,13 @@ public:
 
   int getMemSize() const;
 
-  const LayerFolder* getFolder() const {
+  LayerFolder* getFolder() const {
     return m_folder;
   }
 
-  LayerFolder* getFolder() {
-    return m_folder;
-  }
+  LayerImage* getBackgroundLayer() const;
 
-  const LayerImage* getBackgroundLayer() const;
-  LayerImage* getBackgroundLayer();
-
-  const Layer* getCurrentLayer() const {
-    return m_layer;
-  }
-
-  Layer* getCurrentLayer() {
+  Layer* getCurrentLayer() const {
     return m_layer;
   }
 
@@ -135,12 +126,7 @@ public:
     return getFolder()->get_layers_count();
   }
 
-  const Layer* indexToLayer(int index) const {
-    int index_count = -1;
-    return index2layer(getFolder(), index, &index_count);
-  }
-
-  Layer* indexToLayer(int index) {
+  Layer* indexToLayer(int index) const {
     int index_count = -1;
     return index2layer(getFolder(), index, &index_count);
   }
@@ -160,11 +146,7 @@ public:
   void resetPalettes();
   void deletePalette(Palette* pal);
 
-  const Palette* getCurrentPalette() const {
-    return getPalette(getCurrentFrame());
-  }
-
-  Palette* getCurrentPalette() {
+  Palette* getCurrentPalette() const {
     return getPalette(getCurrentFrame());
   }
 
@@ -209,41 +191,16 @@ public:
     m_frame = frame;
   }
 
-  const Stock* getStock() const {
+  Stock* getStock() const {
     return m_stock;
   }
 
-  Stock* getStock() {
-    return m_stock;
-  }
-
-  const Image* getCurrentImage(int* x, int* y, int* opacity) const {
-    const Image* image = NULL;
-
-    if (getCurrentLayer() != NULL &&
-	getCurrentLayer()->is_image()) {
-      const Cel* cel = static_cast<const LayerImage*>(getCurrentLayer())->getCel(getCurrentFrame());
-      if (cel) {
-	ASSERT((cel->image >= 0) &&
-	       (cel->image < getStock()->size()));
-
-	image = getStock()->getImage(cel->image);
-
-	if (x) *x = cel->x;
-	if (y) *y = cel->y;
-	if (opacity) *opacity = MID(0, cel->opacity, 255);
-      }
-    }
-
-    return image;
-  }
-
-  Image* getCurrentImage(int* x, int* y, int* opacity) {
+  Image* getCurrentImage(int* x, int* y, int* opacity) const {
     Image* image = NULL;
 
     if (getCurrentLayer() != NULL &&
 	getCurrentLayer()->is_image()) {
-      Cel* cel = static_cast<LayerImage*>(getCurrentLayer())->getCel(getCurrentFrame());
+      const Cel* cel = static_cast<const LayerImage*>(getCurrentLayer())->getCel(getCurrentFrame());
       if (cel) {
 	ASSERT((cel->image >= 0) &&
 	       (cel->image < getStock()->size()));
@@ -287,19 +244,11 @@ public:
     }
   }
 
-  const Undo* getUndo() const {
+  Undo* getUndo() const {
     return m_undo;
   }
 
-  Undo* getUndo() {
-    return m_undo;
-  }
-
-  const Mask* getMask() const {
-    return m_mask;
-  }
-
-  Mask* getMask() {
+  Mask* getMask() const {
     return m_mask;
   }
 
@@ -751,24 +700,15 @@ int SpriteImpl::getMemSize() const
   return size;
 }
 
-const LayerImage* SpriteImpl::getBackgroundLayer() const
-{
-  if (getFolder()->get_layers_count() > 0) {
-    const Layer* bglayer = *getFolder()->get_layer_begin();
-
-    if (bglayer->is_background())
-      return static_cast<const LayerImage*>(bglayer);
-  }
-  return NULL;
-}
-
-LayerImage* SpriteImpl::getBackgroundLayer()
+LayerImage* SpriteImpl::getBackgroundLayer() const
 {
   if (getFolder()->get_layers_count() > 0) {
     Layer* bglayer = *getFolder()->get_layer_begin();
 
-    if (bglayer->is_background())
+    if (bglayer->is_background()) {
+      ASSERT(bglayer->is_image());
       return static_cast<LayerImage*>(bglayer);
+    }
   }
   return NULL;
 }
@@ -1163,32 +1103,17 @@ int Sprite::getMemSize() const
 //////////////////////////////////////////////////////////////////////
 // Layers
 
-const LayerFolder* Sprite::getFolder() const
+LayerFolder* Sprite::getFolder() const
 {
   return m_impl->getFolder();
 }
 
-LayerFolder* Sprite::getFolder()
-{
-  return m_impl->getFolder();
-}
-
-const LayerImage* Sprite::getBackgroundLayer() const
+LayerImage* Sprite::getBackgroundLayer() const
 {
   return m_impl->getBackgroundLayer();
 }
 
-LayerImage* Sprite::getBackgroundLayer()
-{
-  return m_impl->getBackgroundLayer();
-}
-
-const Layer* Sprite::getCurrentLayer() const
-{
-  return m_impl->getCurrentLayer();
-}
-
-Layer* Sprite::getCurrentLayer()
+Layer* Sprite::getCurrentLayer() const
 {
   return m_impl->getCurrentLayer();
 }
@@ -1206,12 +1131,7 @@ int Sprite::countLayers() const
   return m_impl->countLayers();
 }
 
-const Layer* Sprite::indexToLayer(int index) const
-{
-  return m_impl->indexToLayer(index);
-}
-
-Layer* Sprite::indexToLayer(int index)
+Layer* Sprite::indexToLayer(int index) const
 {
   return m_impl->indexToLayer(index);
 }
@@ -1252,12 +1172,7 @@ void Sprite::deletePalette(Palette* pal)
   m_impl->deletePalette(pal);
 }
 
-const Palette* Sprite::getCurrentPalette() const
-{
-  return m_impl->getCurrentPalette();
-}
-
-Palette* Sprite::getCurrentPalette()
+Palette* Sprite::getCurrentPalette() const
 {
   return m_impl->getCurrentPalette();
 }
@@ -1319,22 +1234,12 @@ void Sprite::setCurrentFrame(int frame)
 //////////////////////////////////////////////////////////////////////
 // Images
 
-const Stock* Sprite::getStock() const
+Stock* Sprite::getStock() const
 {
   return m_impl->getStock();
 }
 
-Stock* Sprite::getStock()
-{
-  return m_impl->getStock();
-}
-
-const Image* Sprite::getCurrentImage(int* x, int* y, int* opacity) const
-{
-  return m_impl->getCurrentImage(x, y, opacity);
-}
-
-Image* Sprite::getCurrentImage(int* x, int* y, int* opacity)
+Image* Sprite::getCurrentImage(int* x, int* y, int* opacity) const
 {
   return m_impl->getCurrentImage(x, y, opacity);
 }
@@ -1352,12 +1257,7 @@ void Sprite::remapImages(int frame_from, int frame_to, const std::vector<int>& m
 //////////////////////////////////////////////////////////////////////
 // Undo
 
-const Undo* Sprite::getUndo() const
-{
-  return m_impl->getUndo();
-}
-
-Undo* Sprite::getUndo()
+Undo* Sprite::getUndo() const
 {
   return m_impl->getUndo();
 }
@@ -1365,12 +1265,7 @@ Undo* Sprite::getUndo()
 //////////////////////////////////////////////////////////////////////
 // Mask
 
-const Mask* Sprite::getMask() const
-{
-  return m_impl->getMask();
-}
-
-Mask* Sprite::getMask()
+Mask* Sprite::getMask() const
 {
   return m_impl->getMask();
 }
