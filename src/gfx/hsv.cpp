@@ -77,7 +77,7 @@ int Hsv::hueInt() const
 
 int Hsv::saturationInt() const
 {
-  return int(floor(m_hue*100.0 + 0.5));
+  return int(floor(m_saturation*100.0 + 0.5));
 }
 
 int Hsv::valueInt() const

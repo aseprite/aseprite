@@ -23,6 +23,17 @@ ostream& operator<<(ostream& os, const Hsv& hsv)
 	    << hsv.value() << ")";
 }
 
+TEST(Hsv, Ctor)
+{
+  EXPECT_EQ(35.0, Hsv(35.0, 0.50, 0.75).hue());
+  EXPECT_EQ(0.50, Hsv(35.0, 0.50, 0.75).saturation());
+  EXPECT_EQ(0.75, Hsv(35.0, 0.50, 0.75).value());
+  EXPECT_EQ(35, Hsv(35.0, 0.50, 0.75).hueInt());
+  EXPECT_EQ(50, Hsv(35.0, 0.50, 0.75).saturationInt());
+  EXPECT_EQ(75, Hsv(35.0, 0.50, 0.75).valueInt());
+  EXPECT_EQ(Hsv(0, 0, 0), Hsv());
+}
+
 TEST(Hsv, FromRgb)
 {
   EXPECT_EQ(Hsv(  0.0, 0.000, 0.000), Hsv(Rgb(  0,   0,   0)));
