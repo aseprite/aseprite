@@ -26,14 +26,18 @@ JM_MESSAGE(close_menuitem);
 JM_MESSAGE(close_popup);
 JM_MESSAGE(exe_menuitem);
 
-/**
- * bool select_first = msg->user.a;
- */
+// Extra fields for the JM_OPEN_MENUITEM message:
+// bool select_first = msg->user.a;
+//   If this value is true, it means that after opening the menu, we
+//   have to select the first item (i.e. highlighting it).
 #define JM_OPEN_MENUITEM  jm_open_menuitem()
 
-/**
- * bool last_of_close_chain = msg->user.a;
- */
+// Extra fields for the JM_CLOSE_MENUITEM message:
+// bool last_of_close_chain = msg->user.a;
+//   This fields is used to indicate the end of a sequence of
+//   JM_OPEN_MENU and JM_CLOSE_MENUITEM messages. If it is true
+//   the message is the last one of the chain, which means that no
+//   more JM_OPEN_MENU or JM_CLOSE_MENUITEM messages are in the queue.
 #define JM_CLOSE_MENUITEM jm_close_menuitem()
 
 #define JM_CLOSE_POPUP    jm_close_popup()
@@ -1247,6 +1251,7 @@ static void open_menuitem(Widget* menuitem, bool select_first)
   // Get the 'base'
   base = get_base(menuitem);
   ASSERT(base != NULL);
+  ASSERT(base->is_processing == false);
 
   // Reset flags
   base->close_all = false;
@@ -1293,12 +1298,17 @@ static void close_menuitem(Widget* menuitem, bool last_of_close_chain)
   jmessage_add_dest(msg, menuitem);
   jmanager_enqueue_message(msg);
 
-  // Get the 'base'
-  base = get_base(menuitem);
-  ASSERT(base != NULL);
+  // If this is the last message of the chain, here we have the
+  // responsibility to set is_processing flag to true.
+  if (last_of_close_chain) {
+    // Get the 'base'
+    base = get_base(menuitem);
+    ASSERT(base != NULL);
+    ASSERT(base->is_processing == false);
 
-  // Start processing
-  base->is_processing = true;
+    // Start processing
+    base->is_processing = true;
+  }
 }
 
 static void close_popup(Widget* menubox)
