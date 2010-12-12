@@ -43,7 +43,7 @@ void sprite_quantize(Sprite *sprite)
   delete palette;
 }
 
-void sprite_quantize_ex(Sprite *sprite, Palette *palette)
+void sprite_quantize_ex(const Sprite *sprite, Palette *palette)
 {
   Image* flat_image;
   Image** image_array;

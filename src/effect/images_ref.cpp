@@ -29,14 +29,14 @@
 #include "raster/sprite.h"
 #include "raster/stock.h"
 
-static ImageRef* images_ref_get_from_layer(Sprite* sprite, Layer* layer, int target, bool write);
+static ImageRef* images_ref_get_from_layer(Layer* layer, int target, bool write);
 
-ImageRef* images_ref_get_from_sprite(Sprite* sprite, int target, bool write)
+ImageRef* images_ref_get_from_sprite(const Sprite* sprite, int target, bool write)
 {
   Layer* layer = target & TARGET_ALL_LAYERS ? sprite->getFolder():
 					      sprite->getCurrentLayer();
 
-  return images_ref_get_from_layer(sprite, layer, target, write);
+  return images_ref_get_from_layer(layer, target, write);
 }
 
 void images_ref_free(ImageRef* image_ref)
@@ -49,7 +49,7 @@ void images_ref_free(ImageRef* image_ref)
   }
 }
 
-static ImageRef* images_ref_get_from_layer(Sprite* sprite, Layer* layer, int target, bool write)
+static ImageRef* images_ref_get_from_layer(Layer* layer, int target, bool write)
 {
 #define ADD_IMAGES(images)			\
   {						\
@@ -70,14 +70,15 @@ static ImageRef* images_ref_get_from_layer(Sprite* sprite, Layer* layer, int tar
   {								\
     ImageRef* image_ref = jnew(ImageRef, 1);			\
 								\
-    image_ref->image = layer->getSprite()->getStock()->getImage(cel->image); \
+    image_ref->image = sprite->getStock()->getImage(cel->image); \
     image_ref->layer = layer;					\
     image_ref->cel = cel;					\
     image_ref->next = NULL;					\
 								\
     ADD_IMAGES(image_ref);					\
   }
-  
+
+  const Sprite* sprite = layer->getSprite();
   ImageRef* first_image = NULL;
   ImageRef* last_image = NULL;
   int frame = sprite->getCurrentFrame();
@@ -112,7 +113,7 @@ static ImageRef* images_ref_get_from_layer(Sprite* sprite, Layer* layer, int tar
       LayerIterator end = static_cast<LayerFolder*>(layer)->get_layer_end();
 
       for (; it != end; ++it) {
-	sub_images = images_ref_get_from_layer(sprite, *it, target, write);
+	sub_images = images_ref_get_from_layer(*it, target, write);
 	if (sub_images != NULL)
 	  ADD_IMAGES(sub_images);
       }

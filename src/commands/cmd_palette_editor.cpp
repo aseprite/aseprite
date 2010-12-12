@@ -706,24 +706,26 @@ static bool sort_by_criteria(Palette* palette, int from, int to, JList selected_
 
 static void quantize_command(JWidget widget)
 {
-  const CurrentSpriteReader& sprite(UIContext::instance());
+  Palette* palette = NULL;
 
-  if (sprite == NULL) {
-    jalert("Error<<There is no sprite selected to quantize.||&OK");
-    return;
-  }
-
-  if (sprite->getImgType() != IMAGE_RGB) {
-    jalert("Error<<You can use this command only for RGB sprites||&OK");
-    return;
-  }
-
-  Palette* palette = new Palette(0, 256);
   {
-    SpriteWriter sprite_writer(sprite);
-    sprite_quantize_ex(sprite_writer, palette);
-    set_new_palette(palette, "Quantize Palette");
+    const CurrentSpriteReader& sprite(UIContext::instance());
+
+    if (sprite == NULL) {
+      jalert("Error<<There is no sprite selected to quantize.||&OK");
+      return;
+    }
+
+    if (sprite->getImgType() != IMAGE_RGB) {
+      jalert("Error<<You can use this command only for RGB sprites||&OK");
+      return;
+    }
+
+    palette = new Palette(0, 256);
+    sprite_quantize_ex(sprite, palette);
   }
+
+  set_new_palette(palette, "Quantize Palette");
   delete palette;
 }
 
@@ -922,8 +924,8 @@ static void update_current_sprite_palette(const char* operationName)
 	sprite->setPalette(newPalette, false);
       }
     }
-    catch (...) {
-      // Ignore
+    catch (ase_exception& e) {
+      e.show();
     }
   }
 

@@ -24,7 +24,7 @@ class Sprite;
 class Stock;
 
 void sprite_quantize(Sprite* sprite);
-void sprite_quantize_ex(Sprite* sprite, Palette* palette);
+void sprite_quantize_ex(const Sprite* sprite, Palette* palette);
 
 #endif
 

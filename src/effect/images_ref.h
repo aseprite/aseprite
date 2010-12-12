@@ -32,7 +32,7 @@ struct ImageRef
   ImageRef* next;
 };
 
-ImageRef* images_ref_get_from_sprite(Sprite* sprite, int target, bool write);
+ImageRef* images_ref_get_from_sprite(const Sprite* sprite, int target, bool write);
 void images_ref_free(ImageRef* image_ref);
 
 #endif
