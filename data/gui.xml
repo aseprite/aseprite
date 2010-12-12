@@ -118,13 +118,13 @@
     <!-- Keyboard shortcuts to select tools -->
     <tools>
       <key tool="rectangular_marquee" shortcut="M" />
-      <key tool="elliptical_marquee" shortcut="M" />
+      <key tool="elliptical_marquee" shortcut="Shift+M" />
       <key tool="lasso" shortcut="Q" />
-      <key tool="polygonal_lasso" shortcut="Q" />
+      <key tool="polygonal_lasso" shortcut="Shift+Q" />
       <key tool="magic_wand" shortcut="W" />
 
       <key tool="pencil" shortcut="B" />
-      <key tool="spray" shortcut="S" />
+      <key tool="spray" shortcut="Shift+B" />
 
       <key tool="eraser" shortcut="E" />
       <key tool="eyedropper" shortcut="I" />
@@ -135,15 +135,15 @@
       <key tool="paint_bucket" shortcut="G" />
 
       <key tool="line" shortcut="L" />
-      <key tool="curve" shortcut="Y" />
+      <key tool="curve" shortcut="Shift+L" />
 
       <key tool="rectangle" shortcut="U" />
       <key tool="filled_rectangle" shortcut="U" />
-      <key tool="ellipse" shortcut="U" />
-      <key tool="filled_ellipse" shortcut="U" />
+      <key tool="ellipse" shortcut="Shift+U" />
+      <key tool="filled_ellipse" shortcut="Shift+U" />
 
       <key tool="contour" shortcut="D" />
-      <key tool="polygon" shortcut="D" />
+      <key tool="polygon" shortcut="Shift+D" />
 
       <key tool="blur" shortcut="R" />
       <key tool="jumble" shortcut="R" />

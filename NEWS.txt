@@ -7,6 +7,14 @@ NEWS
 
 + Added support to resize the window in X11, Mac OS X, and Windows
   platforms.
++ Changes in keyboard shortcuts (some of these changes were
+  made to avoid tool-switching confusion):
+  - Elliptical Marquee: Shift+M (it was "M")
+  - Polygonal Lasso: Shift+Q (it was "Q")
+  - Ellipse: Shift+U (it was "U")
+  - Polygon: Shift+D (it was "D")
+  - Curve: Shift+L (it was "Y")
+  - Spray: Shift+B (it was "S")
 
 0.8.2
 -----
