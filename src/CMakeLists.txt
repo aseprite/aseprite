@@ -275,15 +275,15 @@ endif()
 
 file(GLOB_RECURSE tests *_unittest.cpp)
 
+# Add gtest include directory so we can #include <gtest/gtest.h> in tests source code
+include_directories(${CMAKE_SOURCE_DIR}/third_party/gtest/include)
+
 foreach(testsourcefile ${tests})
   get_filename_component(testname ${testsourcefile} NAME_WE)
 
   add_executable(${testname} ${testsourcefile})
 
   target_link_libraries(${testname} gtest ${all_libs})
-
-  # Add gtest include directory so we can #include <gtest/gtest.h> in tests source code
-  include_directories(${CMAKE_SOURCE_DIR}/third_party/gtest/include)
 
   add_custom_target(run_${testname}
     COMMAND ${testname})
