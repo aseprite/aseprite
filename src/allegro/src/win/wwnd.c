@@ -188,7 +188,7 @@ static LRESULT CALLBACK directx_wnd_proc(HWND wnd, UINT message, WPARAM wparam, 
          wnd_width = LOWORD(lparam);
          wnd_height = HIWORD(lparam);
 
-	 if (/* (wnd_width > 0 && wnd_height > 0) && */
+	 if ((wnd_width > 0 && wnd_height > 0) &&
 	     (sizing || (wparam == SIZE_MAXIMIZED ||
 			 wparam == SIZE_RESTORED))) {
 	    sizing = FALSE;
@@ -210,21 +210,29 @@ static LRESULT CALLBACK directx_wnd_proc(HWND wnd, UINT message, WPARAM wparam, 
       case WM_SIZING: {
 	 LPRECT rc = (LPRECT)lparam;
 	 int w = (rc->right - rc->left);
-	 int dw = (w % 4);
+	 int h = (rc->bottom - rc->top);
+	 int dw = (w % 16);
+	 int dh = (h % 16);
 
 	 switch (wparam) {
 
 	    case WMSZ_LEFT:
 	    case WMSZ_TOPLEFT:
 	    case WMSZ_BOTTOMLEFT: {
-	       rc->left += dw;
+	       if (w < 192)
+		 rc->left = rc->right - 192;
+	       else
+		 rc->left += dw;
 	       break;
 	    }
 
 	    case WMSZ_RIGHT:
 	    case WMSZ_TOPRIGHT:
 	    case WMSZ_BOTTOMRIGHT: {
-	       rc->right -= dw;
+	       if (w < 192)
+		 rc->right = rc->left + 192;
+	       else
+		 rc->right -= dw;
 	       break;
 	    }
 
@@ -233,6 +241,33 @@ static LRESULT CALLBACK directx_wnd_proc(HWND wnd, UINT message, WPARAM wparam, 
 	       /* Ignore */
 	       break;
 	 }
+
+	 switch (wparam) {
+
+	    case WMSZ_TOP:
+	    case WMSZ_TOPLEFT:
+	    case WMSZ_TOPRIGHT:
+	       if (h < 96)
+		 rc->top = rc->bottom - 96;
+	       else
+		 rc->top += dh;
+	       break;
+
+	    case WMSZ_BOTTOM:
+	    case WMSZ_BOTTOMLEFT:
+	    case WMSZ_BOTTOMRIGHT:
+	       if (h < 96)
+		 rc->bottom = rc->top + 96;
+	       else
+		 rc->bottom -= dh;
+	       break;
+
+	    case WMSZ_LEFT:
+	    case WMSZ_RIGHT:
+	       /* Ignore */
+	       break;
+	 }
+
 	 sizing = TRUE;
 	 return TRUE;
       }
