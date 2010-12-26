@@ -18,16 +18,15 @@
 
 #include "config.h"
 
-#include "effect/effect.h"
-#include "effect/images_ref.h"
-
 #include "gfx/hsv.h"
 #include "gfx/rgb.h"
 #include "raster/blend.h"
 #include "raster/image.h"
+#include "raster/images_collector.h"
 #include "raster/palette.h"
 #include "raster/quantization.h"
 #include "raster/rgbmap.h"
+#include "raster/sprite.h"
 
 using namespace gfx;
 
@@ -37,64 +36,49 @@ static Image* ordered_dithering(const Image* src_image,
 				const RgbMap* rgbmap,
 				const Palette* palette);
 
-static int create_palette_from_bitmaps(Image **image, int nimage, RGB *pal, int *bmp_i, int fill_other);
+static int create_palette_from_bitmaps(Image** image, int nimage, RGB* pal, int* bmp_i, int fill_other);
 
 Palette* quantization::create_palette_from_rgb(const Sprite* sprite)
 {
   Palette* palette = new Palette(0, 256);
   Image* flat_image;
-  Image** image_array;
-  ImageRef* p;
-  ImageRef* images;
-  int c, nimage;
 
-  images = images_ref_get_from_sprite(sprite, TARGET_ALL_LAYERS |
-					      TARGET_ALL_FRAMES, false);
-  if (images != NULL) {
-    /* add a flat image with the current sprite's frame rendered */
-    flat_image = image_new(sprite->getImgType(), sprite->getWidth(), sprite->getHeight());
-    image_clear(flat_image, 0);
-    sprite->render(flat_image, 0, 0);
+  ImagesCollector images(sprite,
+			 true,   // all layers
+			 true,   // all frames,
+			 false); // forWrite=false, read only
 
-    /* count images in the 'images' list */
-    c = 0;
-    for (p=images; p; p=p->next)
-      c++;
-    c++;			/* the 'flat_image' */
+  // Add a flat image with the current sprite's frame rendered
+  flat_image = image_new(sprite->getImgType(), sprite->getWidth(), sprite->getHeight());
+  image_clear(flat_image, 0);
+  sprite->render(flat_image, 0, 0);
 
-    /* create an array of images */
-    nimage = c;
-    image_array = (Image**)jmalloc(sizeof(Image*) * nimage);
+  // Create an array of images
+  size_t nimage = images.size() + 1; // +1 for flat_image
+  std::vector<Image*> image_array(nimage);
 
-    c = 0;
-    for (p=images; p; p=p->next)
-      image_array[c++] = p->image;
-    image_array[c++] = flat_image; /* the 'flat_image' */
+  size_t c = 0;
+  for (ImagesCollector::ItemsIterator it=images.begin(); it!=images.end(); ++it)
+    image_array[c++] = it->image();
+  image_array[c++] = flat_image; // The 'flat_image'
     
-    /* generate the optimized palette */
-    {
-      PALETTE rgbpal;
-      int *ibmp;
+  // Generate an optimized palette for all images
+  {
+    PALETTE rgbpal;
 
-      for (c=0; c<256; c++)
-	rgbpal[c].r = rgbpal[c].g = rgbpal[c].b = 255;
+    for (c=0; c<256; c++)
+      rgbpal[c].r = rgbpal[c].g = rgbpal[c].b = 255;
 
-      ibmp = (int*)jmalloc(sizeof(int) * nimage);
-      for (c=0; c<nimage; c++)
-	ibmp[c] = 128;
+    std::vector<int> ibmp(nimage);
+    for (c=0; c<nimage; c++)
+      ibmp[c] = 128;
 
-      create_palette_from_bitmaps(image_array, nimage, rgbpal, ibmp, true);
+    create_palette_from_bitmaps(&image_array[0], nimage, rgbpal, &ibmp[0], true);
 
-      palette->fromAllegro(rgbpal);
-
-      jfree(ibmp);
-    }
-
-    jfree(image_array);
-    image_free(flat_image);
-    images_ref_free(images);
+    palette->fromAllegro(rgbpal);
   }
 
+  delete flat_image;
   return palette;
 }
 
@@ -415,9 +399,7 @@ static PALETTE_NODE *create_node(unsigned int rl,
 {
   PALETTE_NODE *node;
   unsigned int rm,gm,bm;
-  node=(PALETTE_NODE*)jmalloc(sizeof(PALETTE_NODE));
-  if (!node)
-    return NULL;
+  node = new PALETTE_NODE;
   node->rl=rl;
   node->gl=gl;
   node->bl=bl;
@@ -470,7 +452,7 @@ static PALETTE_NODE *collapse_empty(PALETTE_NODE *node,unsigned int *n_colours)
     }
   }
   if (node->n1==0) {
-    jfree(node);
+    delete node;
     node=0;
   } else if (node->n2) (*n_colours)++;
   return node;
@@ -497,7 +479,7 @@ static PALETTE_NODE *collapse_nodes(PALETTE_NODE *node,unsigned int *n_colours,
     node->parent->Sr+=node->Sr;
     node->parent->Sg+=node->Sg;
     node->parent->Sb+=node->Sb;
-    jfree(node);
+    delete node;
     node=0;
   } else {
     for (b=0;b<2;b++) {
@@ -563,10 +545,10 @@ static void destroy_tree(PALETTE_NODE *tree)
       }
     }
   }
-  jfree(tree);
+  delete tree;
 }
 
-static int create_palette_from_bitmaps(Image **image, int nimage, RGB *pal, int *bmp_i, int fill_other)
+static int create_palette_from_bitmaps(Image** image, int nimage, RGB* pal, int* bmp_i, int fill_other)
 {
   int c_bmp,x,y,r,g,b;
   unsigned int n_colours=0;

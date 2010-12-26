@@ -170,7 +170,6 @@ add_library(aseprite-library
   effect/colcurve.cpp
   effect/convmatr.cpp
   effect/effect.cpp
-  effect/images_ref.cpp
   effect/invrtcol.cpp
   effect/median.cpp
   effect/replcol.cpp
@@ -202,6 +201,7 @@ add_library(aseprite-library
   raster/dirty.cpp
   raster/gfxobj.cpp
   raster/image.cpp
+  raster/images_collector.cpp
   raster/layer.cpp
   raster/mask.cpp
   raster/palette.cpp

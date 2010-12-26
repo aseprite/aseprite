@@ -35,10 +35,10 @@
 #include "effect/invrtcol.h"
 #include "effect/median.h"
 #include "effect/replcol.h"
-#include "effect/images_ref.h"
 #include "modules/editors.h"
 #include "raster/cel.h"
 #include "raster/image.h"
+#include "raster/images_collector.h"
 #include "raster/layer.h"
 #include "raster/mask.h"
 #include "raster/sprite.h"
@@ -70,7 +70,7 @@ static EffectData effects_data[] = {
 
 static EffectData *get_effect_data(const char *name);
 static void effect_init(Effect* effect, const Layer* layer, Image* image, int offset_x, int offset_y);
-static void effect_apply_to_image(Effect *effect, ImageRef *p, int x, int y);
+static void effect_apply_to_image(Effect* effect, Layer* layer, Image* image, int x, int y);
 static bool effect_update_mask(Effect* effect, Mask* mask, const Image* image);
 
 int init_module_effect()
@@ -294,47 +294,43 @@ void effect_flush(Effect *effect)
 
 void effect_apply_to_target(Effect *effect)
 {
-  ImageRef *p, *images;
   bool cancelled = false;
-  int nimages;
 
-  images = images_ref_get_from_sprite(effect->sprite, effect->target, true);
-  if (images == NULL)
+  ImagesCollector images(effect->sprite,
+			 (effect->target & TARGET_ALL_LAYERS) == TARGET_ALL_LAYERS,
+			 (effect->target & TARGET_ALL_FRAMES) == TARGET_ALL_FRAMES,
+			 true);	// we will write in each image
+  if (images.empty())
     return;
 
-  nimages = 0;
-  for (p=images; p; p=p->next)
-    nimages++;
-
-  /* open undo group of operations */
-  if (nimages > 1) {
+  // Open group of undo operations
+  if (images.size() > 1) {
     if (effect->sprite->getUndo()->isEnabled())
       effect->sprite->getUndo()->undo_open();
   }
   
   effect->progress_base = 0.0f;
-  effect->progress_width = 1.0f / nimages;
+  effect->progress_width = 1.0f / images.size();
 
-  /* for each target image */
-  for (p=images; p && !cancelled; p=p->next) {
-    effect_apply_to_image(effect, p, p->cel->x, p->cel->y);
+  // For each target image
+  for (ImagesCollector::ItemsIterator it = images.begin();
+       it != images.end() && !cancelled;
+       ++it) {
+    effect_apply_to_image(effect, it->layer(), it->image(), it->cel()->x, it->cel()->y);
 
-    /* there is a 'is_cancelled' hook? */
+    // There is a 'is_cancelled' hook?
     if (effect->is_cancelled != NULL)
       cancelled = (effect->is_cancelled)(effect->progress_data);
 
-    /* progress */
+    // Make progress
     effect->progress_base += effect->progress_width;
   }
 
-  /* close undo group of operations */
-  if (nimages > 1) {
+  // Close group of undo operations
+  if (images.size() > 1) {
     if (effect->sprite->getUndo()->isEnabled())
       effect->sprite->getUndo()->undo_close();
   }
-
-  /* free all ImageRefs */
-  images_ref_free(images);
 }
 
 static EffectData *get_effect_data(const char *name)
@@ -382,9 +378,9 @@ static void effect_init(Effect* effect, const Layer* layer, Image* image,
     effect->target &= ~TARGET_ALPHA_CHANNEL;
 }
 
-static void effect_apply_to_image(Effect* effect, ImageRef* p, int x, int y)
+static void effect_apply_to_image(Effect* effect, Layer* layer, Image* image, int x, int y)
 {
-  effect_init(effect, p->layer, p->image, x, y);
+  effect_init(effect, layer, image, x, y);
   effect_apply(effect);
 }
 
