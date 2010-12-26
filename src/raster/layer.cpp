@@ -20,7 +20,6 @@
 
 #include <algorithm>
 #include <string.h>
-#include <allegro/unicode.h>
 
 #include "raster/blend.h"
 #include "raster/cel.h"

@@ -19,7 +19,6 @@
 #ifndef RASTER_QUANTIZATION_H_INCLUDED
 #define RASTER_QUANTIZATION_H_INCLUDED
 
-#include <allegro/color.h>
 #include "raster/dithering_method.h"
 
 class Image;

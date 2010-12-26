@@ -18,7 +18,6 @@
 
 #include "config.h"
 
-#include <allegro/base.h>
 #include <math.h>
 
 #include "raster/algo.h"
