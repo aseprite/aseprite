@@ -207,7 +207,7 @@ add_library(aseprite-library
   raster/palette.cpp
   raster/path.cpp
   raster/pen.cpp
-  raster/quant.cpp
+  raster/quantization.cpp
   raster/rgbmap.cpp
   raster/rotate.cpp
   raster/sprite.cpp
@@ -225,7 +225,6 @@ add_library(aseprite-library
   util/misc.cpp
   util/msk_file.cpp
   util/pic_file.cpp
-  util/quantize.cpp
   util/render.cpp
   util/thmbnail.cpp
   widgets/color_bar.cpp

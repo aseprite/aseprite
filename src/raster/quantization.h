@@ -16,15 +16,30 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifndef UTIL_QUANTIZE_H_INCLUDED
-#define UTIL_QUANTIZE_H_INCLUDED
+#ifndef RASTER_QUANTIZATION_H_INCLUDED
+#define RASTER_QUANTIZATION_H_INCLUDED
 
+#include <allegro/color.h>
+#include "raster/dithering_method.h"
+
+class Image;
 class Palette;
+class RgbMap;
 class Sprite;
 class Stock;
 
-void sprite_quantize(Sprite* sprite);
-void sprite_quantize_ex(const Sprite* sprite, Palette* palette);
+namespace quantization {
+
+  // Creates a new palette suitable to quantize the given RGB sprite to Indexed color.
+  Palette* create_palette_from_rgb(const Sprite* sprite);
+
+  // Changes the "imgtype" of the image. The dithering method is used
+  // only when you want to convert from RGB to Indexed.
+  Image* convert_imgtype(const Image* image, int imgtype,
+			 DitheringMethod ditheringMethod,
+			 const RgbMap* rgbmap,
+			 const Palette* palette);
+
+}
 
 #endif
-

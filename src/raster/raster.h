@@ -30,7 +30,6 @@
 #include "raster/palette.h"
 #include "raster/path.h"
 #include "raster/pen.h"
-#include "raster/quant.h"
 #include "raster/rgbmap.h"
 #include "raster/rotate.h"
 #include "raster/sprite.h"

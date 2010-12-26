@@ -23,8 +23,8 @@
 
 #include "gui/jinete.h"
 
-#include "console.h"
 #include "app.h"
+#include "console.h"
 #include "modules/editors.h"
 #include "modules/gfx.h"
 #include "modules/gui.h"
@@ -33,7 +33,7 @@
 #include "raster/image.h"
 #include "raster/layer.h"
 #include "raster/palette.h"
-#include "raster/quant.h"
+#include "raster/quantization.h"
 #include "raster/rotate.h"
 #include "raster/sprite.h"
 #include "raster/stock.h"
@@ -243,8 +243,8 @@ void clipboard::paste(SpriteWriter& sprite)
     src_image = clipboard_image;
   else {
     RgbMap* rgbmap = sprite->getRgbMap();
-    src_image = image_set_imgtype(clipboard_image, sprite->getImgType(), DITHERING_NONE,
-				  rgbmap, sprite->getPalette(sprite->getCurrentFrame()));
+    src_image = quantization::convert_imgtype(clipboard_image, sprite->getImgType(), DITHERING_NONE,
+					      rgbmap, sprite->getPalette(sprite->getCurrentFrame()));
   }
 
   // Do the interactive-transform loop (where the user can move the floating image)

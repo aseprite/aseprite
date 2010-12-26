@@ -16,29 +16,13 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifndef RASTER_QUANT_H_INCLUDED
-#define RASTER_QUANT_H_INCLUDED
-
-#include <allegro/color.h>
+#ifndef RASTER_DITHERING_METHOD_H_INCLUDED
+#define RASTER_DITHERING_METHOD_H_INCLUDED
 
 // Dithering methods
-enum {
+enum DitheringMethod {
   DITHERING_NONE,
   DITHERING_ORDERED,
 };
-
-class Image;
-class Palette;
-class RgbMap;
-
-Image* image_set_imgtype(const Image* image, int imgtype,
-			 int dithering_method,
-			 const RgbMap* rgbmap,
-			 const Palette* palette);
-
-Image* image_rgb_to_indexed(const Image* src_image,
-			    int offsetx, int offsety,
-			    const RgbMap* rgbmap,
-			    const Palette* palette);
 
 #endif

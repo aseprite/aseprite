@@ -19,6 +19,8 @@
 #ifndef UNDOABLE_H_INCLUDED
 #define UNDOABLE_H_INCLUDED
 
+#include "raster/dithering_method.h"
+
 class Cel;
 class Mask;
 class Layer;
@@ -50,7 +52,7 @@ public:
   void setSpriteSize(int w, int h);
   void cropSprite(int x, int y, int w, int h, int bgcolor);
   void autocropSprite(int bgcolor);
-  void setImgType(int new_imgtype, int dithering_method);
+  void setImgType(int new_imgtype, DitheringMethod dithering_method);
 
   // for images in stock
   int addImageInStock(Image* image);

@@ -40,12 +40,12 @@
 #include "modules/palettes.h"
 #include "raster/image.h"
 #include "raster/palette.h"
+#include "raster/quantization.h"
 #include "raster/sprite.h"
 #include "raster/stock.h"
 #include "raster/undo.h"
 #include "sprite_wrappers.h"
 #include "ui_context.h"
-#include "util/quantize.h"
 #include "widgets/color_bar.h"
 #include "widgets/colview.h"
 #include "widgets/editor.h"
@@ -721,8 +721,7 @@ static void quantize_command(JWidget widget)
       return;
     }
 
-    palette = new Palette(0, 256);
-    sprite_quantize_ex(sprite, palette);
+    palette = quantization::create_palette_from_rgb(sprite);
   }
 
   set_new_palette(palette, "Quantize Palette");

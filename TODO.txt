@@ -4,6 +4,7 @@ For next release
 + After creating or opening a sprite, it should be shown centered in the editor.
 + Mini-look for sliders in palette editor (add ISliderBackground to draw RGB/HSV sliders
   with a customized background).
++ Move "effect/images_ref" to "raster" and refactor it to a class.
 
 Refactoring
 -----------

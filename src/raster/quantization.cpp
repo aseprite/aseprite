@@ -18,33 +18,30 @@
 
 #include "config.h"
 
-#include <allegro/color.h>
-
-#include "console.h"
 #include "effect/effect.h"
 #include "effect/images_ref.h"
+
+#include "gfx/hsv.h"
+#include "gfx/rgb.h"
+#include "raster/blend.h"
 #include "raster/image.h"
 #include "raster/palette.h"
-#include "raster/sprite.h"
-#include "util/quantize.h"
+#include "raster/quantization.h"
+#include "raster/rgbmap.h"
 
-static int quantize_bitmaps(Image **image, int nimage, RGB *pal, int *bmp_i, int fill_other);
+using namespace gfx;
 
-void sprite_quantize(Sprite *sprite)
+// Converts a RGB image to indexed with ordered dithering method.
+static Image* ordered_dithering(const Image* src_image,
+				int offsetx, int offsety,
+				const RgbMap* rgbmap,
+				const Palette* palette);
+
+static int create_palette_from_bitmaps(Image **image, int nimage, RGB *pal, int *bmp_i, int fill_other);
+
+Palette* quantization::create_palette_from_rgb(const Sprite* sprite)
 {
-  Palette* palette = new Palette(0, 256); // TODO sprite_quantize_ex should change the number of colors of this palette
-
-  sprite_quantize_ex(sprite, palette);
-
-  // Just one palette
-  sprite->resetPalettes();
-  sprite->setPalette(palette, false);
-
-  delete palette;
-}
-
-void sprite_quantize_ex(const Sprite *sprite, Palette *palette)
-{
+  Palette* palette = new Palette(0, 256);
   Image* flat_image;
   Image** image_array;
   ImageRef* p;
@@ -86,7 +83,7 @@ void sprite_quantize_ex(const Sprite *sprite, Palette *palette)
       for (c=0; c<nimage; c++)
 	ibmp[c] = 128;
 
-      quantize_bitmaps(image_array, nimage, rgbpal, ibmp, true);
+      create_palette_from_bitmaps(image_array, nimage, rgbpal, ibmp, true);
 
       palette->fromAllegro(rgbpal);
 
@@ -97,6 +94,254 @@ void sprite_quantize_ex(const Sprite *sprite, Palette *palette)
     image_free(flat_image);
     images_ref_free(images);
   }
+
+  return palette;
+}
+
+Image* quantization::convert_imgtype(const Image* image, int imgtype,
+				     DitheringMethod ditheringMethod,
+				     const RgbMap* rgbmap,
+				     const Palette* palette)
+{
+  ase_uint32* rgb_address;
+  ase_uint16* gray_address;
+  ase_uint8* idx_address;
+  ase_uint32 c;
+  int i, r, g, b, size;
+  Image *new_image;
+
+  // no convertion
+  if (image->imgtype == imgtype)
+    return NULL;
+  // RGB -> Indexed with ordered dithering
+  else if (image->imgtype == IMAGE_RGB &&
+	   imgtype == IMAGE_INDEXED &&
+	   ditheringMethod == DITHERING_ORDERED) {
+    return ordered_dithering(image, 0, 0, rgbmap, palette);
+  }
+
+  new_image = image_new(imgtype, image->w, image->h);
+  if (!new_image)
+    return NULL;
+
+  size = image->w*image->h;
+
+  switch (image->imgtype) {
+
+    case IMAGE_RGB:
+      rgb_address = (ase_uint32*)image->dat;
+
+      switch (new_image->imgtype) {
+	// RGB -> Grayscale
+	case IMAGE_GRAYSCALE:
+	  gray_address = (ase_uint16*)new_image->dat;
+	  for (i=0; i<size; i++) {
+	    c = *rgb_address;
+
+	    g = 255 * Hsv(Rgb(_rgba_getr(c),
+	    		      _rgba_getg(c),
+	    		      _rgba_getb(c))).valueInt() / 100;
+	    *gray_address = _graya(g, _rgba_geta(c));
+
+	    rgb_address++;
+	    gray_address++;
+	  }
+	  break;
+	// RGB -> Indexed
+	case IMAGE_INDEXED:
+	  idx_address = new_image->dat;
+	  for (i=0; i<size; i++) {
+	    c = *rgb_address;
+	    r = _rgba_getr(c);
+	    g = _rgba_getg(c);
+	    b = _rgba_getb(c);
+	    if (_rgba_geta(c) == 0)
+	      *idx_address = 0;
+	    else
+	      *idx_address = rgbmap->mapColor(r, g, b);
+	    rgb_address++;
+	    idx_address++;
+	  }
+	  break;
+      }
+      break;
+
+    case IMAGE_GRAYSCALE:
+      gray_address = (ase_uint16*)image->dat;
+
+      switch (new_image->imgtype) {
+	// Grayscale -> RGB
+	case IMAGE_RGB:
+	  rgb_address = (ase_uint32*)new_image->dat;
+	  for (i=0; i<size; i++) {
+	    c = *gray_address;
+	    g = _graya_getv(c);
+	    *rgb_address = _rgba(g, g, g, _graya_geta(c));
+	    gray_address++;
+	    rgb_address++;
+	  }
+	  break;
+	// Grayscale -> Indexed
+	case IMAGE_INDEXED:
+	  idx_address = new_image->dat;
+	  for (i=0; i<size; i++) {
+	    c = *gray_address;
+	    if (_graya_geta(c) == 0)
+	      *idx_address = 0;
+	    else
+	      *idx_address = _graya_getv(c);
+	    gray_address++;
+	    idx_address++;
+	  }
+	  break;
+      }
+      break;
+
+    case IMAGE_INDEXED:
+      idx_address = image->dat;
+
+      switch (new_image->imgtype) {
+	// Indexed -> RGB
+	case IMAGE_RGB:
+	  rgb_address = (ase_uint32*)new_image->dat;
+	  for (i=0; i<size; i++) {
+	    c = *idx_address;
+	    if (c == 0)
+	      *rgb_address = 0;
+	    else
+	      *rgb_address = _rgba(_rgba_getr(palette->getEntry(c)),
+				   _rgba_getg(palette->getEntry(c)),
+				   _rgba_getb(palette->getEntry(c)), 255);
+	    idx_address++;
+	    rgb_address++;
+	  }
+	  break;
+	// Indexed -> Grayscale
+	case IMAGE_GRAYSCALE:
+	  gray_address = (ase_uint16*)new_image->dat;
+	  for (i=0; i<size; i++) {
+	    c = *idx_address;
+	    if (c == 0)
+	      *gray_address = 0;
+	    else {
+	      r = _rgba_getr(palette->getEntry(c));
+	      g = _rgba_getg(palette->getEntry(c));
+	      b = _rgba_getb(palette->getEntry(c));
+
+	      g = 255 * Hsv(Rgb(r, g, b)).valueInt() / 100;
+	      *gray_address = _graya(g, 255);
+	    }
+	    idx_address++;
+	    gray_address++;
+	  }
+	  break;
+      }
+      break;
+  }
+
+  return new_image;
+}
+
+/* Based on Gary Oberbrunner: */
+/*----------------------------------------------------------------------
+ * Color image quantizer, from Paul Heckbert's paper in
+ * Computer Graphics, vol.16 #3, July 1982 (Siggraph proceedings),
+ * pp. 297-304.
+ * By Gary Oberbrunner, copyright c. 1988.
+ *----------------------------------------------------------------------
+ */
+
+/* Bayer-method ordered dither.	 The array line[] contains the
+ * intensity values for the line being processed.  As you can see, the
+ * ordered dither is much simpler than the error dispersion dither.
+ * It is also many times faster, but it is not as accurate and
+ * produces cross-hatch * patterns on the output.
+ */
+
+static int pattern[8][8] = {
+  {  0, 32,  8, 40,  2, 34, 10, 42 }, /* 8x8 Bayer ordered dithering  */
+  { 48, 16, 56, 24, 50, 18, 58, 26 }, /* pattern.  Each input pixel   */
+  { 12, 44,  4, 36, 14, 46,  6, 38 }, /* is scaled to the 0..63 range */
+  { 60, 28, 52, 20, 62, 30, 54, 22 }, /* before looking in this table */
+  {  3, 35, 11, 43,  1, 33,  9, 41 }, /* to determine the action.     */
+  { 51, 19, 59, 27, 49, 17, 57, 25 },
+  { 15, 47,  7, 39, 13, 45,  5, 37 },
+  { 63, 31, 55, 23, 61, 29, 53, 21 }
+};
+
+#define DIST(r1,g1,b1,r2,g2,b2) (3 * ((r1)-(r2)) * ((r1)-(r2)) +	\
+				 4 * ((g1)-(g2)) * ((g1)-(g2)) +	\
+				 2 * ((b1)-(b2)) * ((b1)-(b2)))
+
+static Image* ordered_dithering(const Image* src_image,
+				int offsetx, int offsety,
+				const RgbMap* rgbmap,
+				const Palette* palette)
+{
+  int oppr, oppg, oppb, oppnrcm;
+  Image *dst_image;
+  int dither_const;
+  int nr, ng, nb;
+  int r, g, b, a;
+  int nearestcm;
+  int c, x, y;
+
+  dst_image = image_new(IMAGE_INDEXED, src_image->w, src_image->h);
+  if (!dst_image)
+    return NULL;
+
+  for (y=0; y<src_image->h; y++) {
+    for (x=0; x<src_image->w; x++) {
+      c = image_getpixel_fast<RgbTraits>(src_image, x, y);
+
+      r = _rgba_getr(c);
+      g = _rgba_getg(c);
+      b = _rgba_getb(c);
+      a = _rgba_geta(c);
+
+      if (a != 0) {
+	nearestcm = rgbmap->mapColor(r, g, b);
+	/* rgb values for nearest color */
+	nr = _rgba_getr(palette->getEntry(nearestcm));
+	ng = _rgba_getg(palette->getEntry(nearestcm));
+	nb = _rgba_getb(palette->getEntry(nearestcm));
+	/* Color as far from rgb as nrngnb but in the other direction */
+	oppr = MID(0, 2*r - nr, 255);
+	oppg = MID(0, 2*g - ng, 255);
+	oppb = MID(0, 2*b - nb, 255);
+	/* Nearest match for opposite color: */
+	oppnrcm = rgbmap->mapColor(oppr, oppg, oppb);
+	/* If they're not the same, dither between them. */
+	/* Dither constant is measured by where the true
+	   color lies between the two nearest approximations.
+	   Since the most nearly opposite color is not necessarily
+	   on the line from the nearest through the true color,
+	   some triangulation error can be introduced.	In the worst
+	   case the r-nr distance can actually be less than the nr-oppr
+	   distance. */
+	if (oppnrcm != nearestcm) {
+	  oppr = _rgba_getr(palette->getEntry(oppnrcm));
+	  oppg = _rgba_getg(palette->getEntry(oppnrcm));
+	  oppb = _rgba_getb(palette->getEntry(oppnrcm));
+
+	  dither_const = DIST(nr, ng, nb, oppr, oppg, oppb);
+	  if (dither_const != 0) {
+	    dither_const = 64 * DIST(r, g, b, nr, ng, nb) / dither_const;
+	    dither_const = MIN(63, dither_const);
+
+	    if (pattern[(x+offsetx) & 7][(y+offsety) & 7] < dither_const)
+	      nearestcm = oppnrcm;
+	  }
+	}
+      }
+      else
+	nearestcm = 0;
+
+      image_putpixel_fast<IndexedTraits>(dst_image, x, y, nearestcm);
+    }
+  }
+
+  return dst_image;
 }
 
 /* quantize.c
@@ -117,26 +362,26 @@ void sprite_quantize_ex(const Sprite *sprite, Palette *palette)
  */
 
 #define TREE_DEPTH 2
-/* TREE_DEPTH should be  a power of 2.  The lower it is,  the deeper the tree
+/* TREE_DEPTH should be	 a power of 2.	The lower it is,  the deeper the tree
  * will go.  This will not usually affect  the accuracy of colours generated,
- * but with images with  very subtle changes of colour,  the variation can be
+ * but with images with	 very subtle changes of colour,	 the variation can be
  * lost with higher values of TREE_DEPTH.
  *
- * As these trees go deeper they use an extortionate amount of memory.  If it
+ * As these trees go deeper they use an extortionate amount of memory.	If it
  * runs out, you have no choice but to increase the value of TREE_DEPTH.
  */
 
-/* quantize_bitmaps:
- * generates an  optimised palette  for the  list of
- * bitmaps specified. All bitmaps must be true-colour.  The number of bitmaps
+/* create_palette_from_bitmaps:
+ * generates an	 optimised palette  for the  list of
+ * bitmaps specified. All bitmaps must be true-colour.	The number of bitmaps
  * must be passed in n_bmp, and bmp must point to an array of pointers to
- * BITMAP  structures.  bmp_i  should  point  to  an array  parallel  to bmp,
+ * BITMAP  structures.	bmp_i  should  point  to  an array  parallel  to bmp,
  * containing importance values for the bitmaps.  pal must point to a PALETTE
  * structure which will be filled with the optimised palette.
  *
  * pal will be scanned for predefined colours. Any entry where the .r element
  * is 255 will be considered a free entry. All others are taken as predefined
- * colours.  Predefined colours  will not  be changed,  and the  rest  of the
+ * colours.  Predefined colours	 will not  be changed,	and the	 rest  of the
  * palette will be unaffected by them. There may be copies of these colours.
  *
  * If in the bitmaps this routine finds any occurrence of the colour to which
@@ -147,7 +392,7 @@ void sprite_quantize_ex(const Sprite *sprite, Palette *palette)
  * fill_other != 0, they will be filled with black.  If fill_other == 0, they
  * will be left containing whatever values they contained before.
  *
- * This function  does not  convert the  bitmaps to  256-colour  format.  The
+ * This function  does not  convert the	 bitmaps to  256-colour	 format.  The
  * conversion must be done afterwards by the main program.
  */
 
@@ -162,11 +407,11 @@ typedef struct PALETTE_NODE
 static PALETTE_NODE *rgb_node[64][64][64];
 
 static PALETTE_NODE *create_node(unsigned int rl,
-                                 unsigned int gl,
-                                 unsigned int bl,
-                                 unsigned int rh,
-                                 unsigned int gh,
-                                 unsigned int bh,PALETTE_NODE *parent)
+				 unsigned int gl,
+				 unsigned int bl,
+				 unsigned int rh,
+				 unsigned int gh,
+				 unsigned int bh,PALETTE_NODE *parent)
 {
   PALETTE_NODE *node;
   unsigned int rm,gm,bm;
@@ -232,7 +477,7 @@ static PALETTE_NODE *collapse_empty(PALETTE_NODE *node,unsigned int *n_colours)
 }
 
 static PALETTE_NODE *collapse_nodes(PALETTE_NODE *node,unsigned int *n_colours,
-                                    unsigned int n_entries,unsigned int Ep)
+				    unsigned int n_entries,unsigned int Ep)
 {
   unsigned int b,g,r;
   if (node->E<=Ep) {
@@ -321,7 +566,7 @@ static void destroy_tree(PALETTE_NODE *tree)
   jfree(tree);
 }
 
-static int quantize_bitmaps(Image **image, int nimage, RGB *pal, int *bmp_i, int fill_other)
+static int create_palette_from_bitmaps(Image **image, int nimage, RGB *pal, int *bmp_i, int fill_other)
 {
   int c_bmp,x,y,r,g,b;
   unsigned int n_colours=0;
@@ -338,7 +583,7 @@ static int quantize_bitmaps(Image **image, int nimage, RGB *pal, int *bmp_i, int
   /*Scan the bitmaps*/
   /*  add_progress(nimage+1); */
   for (c_bmp=0;c_bmp<nimage;c_bmp++) {
-    /*    add_progress(image[c_bmp]->h); */
+    /*	  add_progress(image[c_bmp]->h); */
     for (y=0;y<image[c_bmp]->h;y++) {
       for (x=0;x<image[c_bmp]->w;x++) {
 	c=image[c_bmp]->getpixel(x,y);
@@ -360,8 +605,8 @@ static int quantize_bitmaps(Image **image, int nimage, RGB *pal, int *bmp_i, int
       }
       /*     do_progress(y); */
     }
-    /*    del_progress(); */
-    /*   do_progress(c_bmp); */
+    /*	  del_progress(); */
+    /*	 do_progress(c_bmp); */
   }
   /*Collapse empty nodes in the tree, and count leaves*/
   tree=collapse_empty(tree,&n_colours);
@@ -371,8 +616,8 @@ static int quantize_bitmaps(Image **image, int nimage, RGB *pal, int *bmp_i, int
   }
   /*Collapse nodes until there are few enough to fit in the palette*/
   if (n_colours > n_entries) {
-    /*   int n_colours1 = n_colours; */
-    /*   add_progress(n_colours1 - n_entries); */
+    /*	 int n_colours1 = n_colours; */
+    /*	 add_progress(n_colours1 - n_entries); */
     while (n_colours>n_entries) {
       Ep=0xFFFFFFFFul;
       minimum_Ep(tree,&Ep);
@@ -381,7 +626,7 @@ static int quantize_bitmaps(Image **image, int nimage, RGB *pal, int *bmp_i, int
       /*    if (n_colours > n_entries) */
       /*     do_progress(n_colours1 - n_colours); */
     }
-    /*   del_progress(); */
+    /*	 del_progress(); */
   }
   /*  del_progress(); */
   /* fill palette */

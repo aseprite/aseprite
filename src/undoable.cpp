@@ -22,7 +22,6 @@
 
 #include "gui/jlist.h"
 
-#include "sprite_wrappers.h"
 #include "raster/blend.h"
 #include "raster/cel.h"
 #include "raster/dirty.h"
@@ -30,10 +29,11 @@
 #include "raster/layer.h"
 #include "raster/mask.h"
 #include "raster/palette.h"
-#include "raster/quant.h"
+#include "raster/quantization.h"
 #include "raster/sprite.h"
 #include "raster/stock.h"
 #include "raster/undo.h"
+#include "sprite_wrappers.h"
 #include "undoable.h"
 
 /**
@@ -187,7 +187,7 @@ void Undoable::autocropSprite(int bgcolor)
   cropSprite(x1, y1, x2-x1+1, y2-y1+1, bgcolor);
 }
 
-void Undoable::setImgType(int new_imgtype, int dithering_method)
+void Undoable::setImgType(int new_imgtype, DitheringMethod dithering_method)
 {
   Image *old_image;
   Image *new_image;
@@ -210,9 +210,9 @@ void Undoable::setImgType(int new_imgtype, int dithering_method)
     if (!old_image)
       continue;
 
-    new_image = image_set_imgtype(old_image, new_imgtype, dithering_method, rgbmap,
-				  // TODO check this out
-				  m_sprite->getCurrentPalette());
+    new_image = quantization::convert_imgtype(old_image, new_imgtype, dithering_method, rgbmap,
+					      // TODO check this out
+					      m_sprite->getCurrentPalette());
     if (!new_image)
       return;		/* TODO error handling: not enough memory!
 			   we should undo all work done */

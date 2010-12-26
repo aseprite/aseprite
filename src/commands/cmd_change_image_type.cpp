@@ -26,7 +26,6 @@
 #include "modules/gui.h"
 #include "modules/palettes.h"
 #include "raster/image.h"
-#include "raster/quant.h"
 #include "raster/sprite.h"
 #include "sprite_wrappers.h"
 #include "undoable.h"
@@ -34,7 +33,7 @@
 class ChangeImageTypeCommand : public Command
 {
   int m_imgtype;
-  bool m_dithering;
+  DitheringMethod m_dithering;
 public:
   ChangeImageTypeCommand();
   Command* clone() const { return new ChangeImageTypeCommand(*this); }

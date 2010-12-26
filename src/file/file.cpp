@@ -31,7 +31,7 @@
 #include "modules/gui.h"
 #include "modules/palettes.h"
 #include "raster/raster.h"
-#include "util/quantize.h"
+#include "raster/quantization.h"
 #include "widgets/statebar.h"
 
 extern FileFormat format_ase;
@@ -584,9 +584,15 @@ void fop_operate(FileOp *fop)
       else
 	fop->sprite->setFilename(fop->filename.c_str());
 
-      // Quantize a palette for RGB images
-      if (fop->sprite->getImgType() == IMAGE_RGB)
-	sprite_quantize(fop->sprite);
+      // Creates a suitable palette for RGB images
+      if (fop->sprite->getImgType() == IMAGE_RGB) {
+	Palette* palette = quantization::create_palette_from_rgb(fop->sprite);
+
+	fop->sprite->resetPalettes();
+	fop->sprite->setPalette(palette, false);
+
+	delete palette;
+      }
 
       fop->sprite->markAsSaved();
     }
