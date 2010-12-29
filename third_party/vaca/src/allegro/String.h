@@ -47,22 +47,23 @@ template<> std::string Vaca::convert_to(const Char* const& from)
 
 template<> std::string Vaca::convert_to(const String& from)
 {
-  int len = from.size()+1;
-  std::auto_ptr<char> ansiBuf(new char[len]);
-  if (uconvert((const char*)from.c_str(), U_UNICODE, ansiBuf.get(), U_ASCII, len))
-    return std::string(ansiBuf.get());
-  else
-    return "";
+  std::vector<char> buf(from.size()+1);
+  size_t i;
+  for (i = 0; i < from.size(); ++i)
+    buf[i] = from[i];
+  buf[i] = 0;
+  return std::string(&buf[0]);
 }
 
 template<> String Vaca::convert_to(const char* const& from)
 {
   int len = strlen(from)+1;
-  std::auto_ptr<Char> wideBuf(new Char[len]);
-  if (uconvert(from, U_ASCII, (char*)wideBuf.get(), U_UNICODE, len))
-    return String(wideBuf.get());
-  else
-    return L"";
+  std::vector<Char> buf(len);
+  size_t i;
+  for (i = 0; from[i]; ++i)
+    buf[i] = from[i];
+  buf[i] = 0;
+  return String(&buf[0]);
 }
 
 template<> String Vaca::convert_to(const std::string& from)
