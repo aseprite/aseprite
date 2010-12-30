@@ -19,8 +19,10 @@
 #include "config.h"
 
 #include <allegro/file.h>
+#include <allegro/system.h>
 
 #include "app.h"
+#include "base/path.h"
 #include "modules/editors.h"
 #include "raster/sprite.h"
 #include "settings/ui_settings_impl.h"
@@ -71,9 +73,19 @@ void UIContext::on_remove_sprite(Sprite* sprite)
 
 void UIContext::on_set_current_sprite(Sprite* sprite)
 {
-  // base method
   Context::on_set_current_sprite(sprite);
 
-  // select the sprite in the tabs
+  // Select the sprite in the tabs.
   app_get_tabsbar()->selectTab(sprite);
+
+  // Change the main frame title.
+  base::string defaultTitle = PACKAGE " v" VERSION;
+  base::string title;
+  if (sprite) {
+    // Prepend the sprite's filename.
+    title += base::get_file_name(sprite->getFilename());
+    title += " - ";
+  }
+  title += defaultTitle;
+  set_window_title(title.c_str());
 }

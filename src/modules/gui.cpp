@@ -292,9 +292,6 @@ int init_module_gui()
 
 gfx_done:;
 
-  /* window title */
-  set_window_title(PACKAGE " v" VERSION);
-
   /* create the default-manager */
   manager = jmanager_new();
   jwidget_add_hook(manager, JI_WIDGET, manager_msg_proc, NULL);
