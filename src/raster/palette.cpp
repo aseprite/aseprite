@@ -122,7 +122,7 @@ int Palette::countDiff(const Palette* other, int* from, int* to) const
 
   if (max != min) {
     diff += max - min;
-    if (to) *to = max;
+    if (to) *to = max-1;
   }
 
   return diff;
