@@ -184,8 +184,10 @@ static bool load_PNG(FileOp *fop)
     return false;
   }
 
-  /* read palette */
+  // Transparent palette entries
+  std::vector<bool> trans_entries(256, false);
 
+  // Read the palette
   if (info_ptr->color_type == PNG_COLOR_TYPE_PALETTE &&
       png_get_PLTE(png_ptr, info_ptr, &palette, &num_palette)) {
     int c;
@@ -198,6 +200,20 @@ static bool load_PNG(FileOp *fop)
     }
     for (; c < 256; c++) {
       fop_sequence_set_color(fop, c, 0, 0, 0);
+    }
+
+    // Read transparent entries
+    png_bytep trans = NULL;	// Transparent palette entries
+    int num_trans = 0;
+
+    png_get_tRNS(png_ptr, info_ptr, &trans, &num_trans, NULL);
+
+    for (int i = 0; i < num_trans; ++i) {
+      int j = trans[i];
+      if (j >= 0 && j < (int)trans_entries.size()) {
+	trans_entries[j] = true;
+	fop->seq.has_alpha = true; // Is a transparent sprite
+      }
     }
   }
 
@@ -268,7 +284,15 @@ static bool load_PNG(FileOp *fop)
 
 	for (x=0; x<width; x++) {
 	  c = *(src_address++);
-	  *(dst_address++) = c;
+
+	  // All transparent values are converted to entry 0.
+	  // TODO Add support for multiple transparent palette entries in Indexed sprites.
+	  if (!trans_entries.empty() && trans_entries[c]) {
+	    *(dst_address++) = 0;
+	  }
+	  else {
+	    *(dst_address++) = c;
+	  }
 	}
       }
 
@@ -390,6 +414,16 @@ static bool save_PNG(FileOp *fop)
     }
 
     png_set_PLTE(png_ptr, info_ptr, palette, PNG_MAX_PALETTE_LENGTH);
+
+    // Index 0 will be the transparent color in the PNG file (only if
+    // the sprite does not have a background layer).
+    if (fop->sprite->getBackgroundLayer() == NULL) {
+      png_bytep trans = (png_bytep)png_malloc(png_ptr, 1);
+      trans[0] = 0;		// Entry 0 is transparent
+
+      png_set_tRNS(png_ptr, info_ptr, trans, 1, NULL);
+      png_free(png_ptr, trans);
+    }
   }
 
   /* Write the file header information. */
