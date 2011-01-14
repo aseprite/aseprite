@@ -86,8 +86,6 @@ Low priority stuff
   load/save_col_file.
 - fix the fli reader (both Allegro and Gfli): when a frame hasn't
   chunks means that it's looks like the last frame;
-- talk with Ben Davis, his "quantize.c" has memory leaks (test it
-  more, I don't think so);
 - talk with Elias Pschernig, his "do_ellipse_diameter" (algo_ellipse)
   has a bug with ellipses of some dimensions (I made a test, and a
   various sizes have errors).
