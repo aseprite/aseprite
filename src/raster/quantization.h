@@ -37,7 +37,8 @@ namespace quantization {
   Image* convert_imgtype(const Image* image, int imgtype,
 			 DitheringMethod ditheringMethod,
 			 const RgbMap* rgbmap,
-			 const Palette* palette);
+			 const Palette* palette,
+			 bool has_background_layer);
 
 }
 

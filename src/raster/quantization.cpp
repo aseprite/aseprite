@@ -78,7 +78,8 @@ Palette* quantization::create_palette_from_rgb(const Sprite* sprite)
 Image* quantization::convert_imgtype(const Image* image, int imgtype,
 				     DitheringMethod ditheringMethod,
 				     const RgbMap* rgbmap,
-				     const Palette* palette)
+				     const Palette* palette,
+				     bool has_background_layer)
 {
   ase_uint32* rgb_address;
   ase_uint16* gray_address;
@@ -109,6 +110,7 @@ Image* quantization::convert_imgtype(const Image* image, int imgtype,
       rgb_address = (ase_uint32*)image->dat;
 
       switch (new_image->imgtype) {
+
 	// RGB -> Grayscale
 	case IMAGE_GRAYSCALE:
 	  gray_address = (ase_uint16*)new_image->dat;
@@ -124,6 +126,7 @@ Image* quantization::convert_imgtype(const Image* image, int imgtype,
 	    gray_address++;
 	  }
 	  break;
+
 	// RGB -> Indexed
 	case IMAGE_INDEXED:
 	  idx_address = new_image->dat;
@@ -147,6 +150,7 @@ Image* quantization::convert_imgtype(const Image* image, int imgtype,
       gray_address = (ase_uint16*)image->dat;
 
       switch (new_image->imgtype) {
+
 	// Grayscale -> RGB
 	case IMAGE_RGB:
 	  rgb_address = (ase_uint32*)new_image->dat;
@@ -158,6 +162,7 @@ Image* quantization::convert_imgtype(const Image* image, int imgtype,
 	    rgb_address++;
 	  }
 	  break;
+
 	// Grayscale -> Indexed
 	case IMAGE_INDEXED:
 	  idx_address = new_image->dat;
@@ -178,12 +183,14 @@ Image* quantization::convert_imgtype(const Image* image, int imgtype,
       idx_address = image->dat;
 
       switch (new_image->imgtype) {
+
 	// Indexed -> RGB
 	case IMAGE_RGB:
 	  rgb_address = (ase_uint32*)new_image->dat;
 	  for (i=0; i<size; i++) {
 	    c = *idx_address;
-	    if (c == 0)
+
+	    if (c == 0 && !has_background_layer)
 	      *rgb_address = 0;
 	    else
 	      *rgb_address = _rgba(_rgba_getr(palette->getEntry(c)),
@@ -193,12 +200,14 @@ Image* quantization::convert_imgtype(const Image* image, int imgtype,
 	    rgb_address++;
 	  }
 	  break;
+
 	// Indexed -> Grayscale
 	case IMAGE_GRAYSCALE:
 	  gray_address = (ase_uint16*)new_image->dat;
 	  for (i=0; i<size; i++) {
 	    c = *idx_address;
-	    if (c == 0)
+
+	    if (c == 0 && !has_background_layer)
 	      *gray_address = 0;
 	    else {
 	      r = _rgba_getr(palette->getEntry(c));
@@ -212,6 +221,7 @@ Image* quantization::convert_imgtype(const Image* image, int imgtype,
 	    gray_address++;
 	  }
 	  break;
+
       }
       break;
   }

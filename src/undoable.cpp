@@ -212,7 +212,8 @@ void Undoable::setImgType(int new_imgtype, DitheringMethod dithering_method)
 
     new_image = quantization::convert_imgtype(old_image, new_imgtype, dithering_method, rgbmap,
 					      // TODO check this out
-					      m_sprite->getCurrentPalette());
+					      m_sprite->getCurrentPalette(),
+					      m_sprite->getBackgroundLayer() != NULL);
     if (!new_image)
       return;		/* TODO error handling: not enough memory!
 			   we should undo all work done */

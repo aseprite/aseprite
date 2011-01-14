@@ -244,7 +244,8 @@ void clipboard::paste(SpriteWriter& sprite)
   else {
     RgbMap* rgbmap = sprite->getRgbMap();
     src_image = quantization::convert_imgtype(clipboard_image, sprite->getImgType(), DITHERING_NONE,
-					      rgbmap, sprite->getPalette(sprite->getCurrentFrame()));
+					      rgbmap, sprite->getPalette(sprite->getCurrentFrame()),
+					      false);
   }
 
   // Do the interactive-transform loop (where the user can move the floating image)
