@@ -118,7 +118,13 @@ static bool load_GIF(FileOp *fop)
   }
 
   sprite->getFolder()->add_layer(layer);
-  layer->configureAsBackground();
+
+  // If the GIF image has a global palette (colors_count > 0), it has
+  // a valid background_index color.
+  if (gif->palette.colors_count > 0)
+    layer->configureAsBackground();
+  else
+    gif->background_index = 0;
 
   image_clear(current_image, gif->background_index);
   image_clear(current_image_old, gif->background_index);
