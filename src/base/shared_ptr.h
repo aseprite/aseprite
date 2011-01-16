@@ -7,10 +7,20 @@
 #ifndef BASE_SHARED_PTR_H_INCLUDED
 #define BASE_SHARED_PTR_H_INCLUDED
 
+template<class T>
+class DefaultSharedPtrDeleter
+{
+public:
+  static void destroy(T* ptr)
+  {
+    delete ptr;
+  }
+};
+
 // A class which wraps a pointer and keeps reference counting to
 // automatically delete the pointed object when it is no longer
 // used.
-template<class T>
+template<class T, class Deleter = DefaultSharedPtrDeleter<T> >
 class SharedPtr
 {
 public:
@@ -26,14 +36,14 @@ public:
     ref();
   }
 
-  SharedPtr(const SharedPtr<T>& other)
+  SharedPtr(const SharedPtr<T, Deleter>& other)
     : m_ptr(other.m_ptr)
     , m_refCount(other.m_refCount) {
     ref();
   }
 
-  template<class T2>
-  SharedPtr(const SharedPtr<T2>& other)
+  template<class T2, class Deleter2>
+  SharedPtr(const SharedPtr<T2, Deleter2>& other)
     : m_ptr(static_cast<T*>(other.m_ptr))
     , m_refCount(other.m_refCount) {
     ref();
@@ -52,7 +62,7 @@ public:
     }
   }
 
-  SharedPtr& operator=(const SharedPtr<T>& other) {
+  SharedPtr& operator=(const SharedPtr<T, Deleter>& other) {
     if (m_ptr != other.m_ptr) {
       unref();
       m_ptr = other.m_ptr;
@@ -62,8 +72,8 @@ public:
     return *this;
   }
 
-  template<class T2>
-  SharedPtr& operator=(const SharedPtr<T2>& other) {
+  template<class T2, class Deleter2>
+  SharedPtr& operator=(const SharedPtr<T2, Deleter2>& other) {
     if (m_ptr != static_cast<T*>(other.m_ptr)) {
       unref();
       m_ptr = static_cast<T*>(other.m_ptr);
@@ -92,7 +102,7 @@ private:
   void unref() {
     if (m_ptr) {
       if (--(*m_refCount) == 0) {
-	delete m_ptr;
+	Deleter::destroy(m_ptr);
 	delete m_refCount;
       }
       m_ptr = 0;
@@ -104,21 +114,21 @@ private:
   T* m_ptr;			// The pointee object.
   int* m_refCount;		// Number of references.
 
-  template<class T2> friend class SharedPtr;
+  template<class T2, class Deleter2> friend class SharedPtr;
 };
 
 // Compares if two shared-pointers points to the same place (object,
 // memory address).
-template<class T>
-bool operator==(const SharedPtr<T>& ptr1, const SharedPtr<T>& ptr2)
+template<class T, class Deleter>
+bool operator==(const SharedPtr<T, Deleter>& ptr1, const SharedPtr<T, Deleter>& ptr2)
 {
   return ptr1.get() == ptr2.get();
 }
 
 // Compares if two shared-pointers points to different places
 // (objects, memory addresses).
-template<class T>
-bool operator!=(const SharedPtr<T>& ptr1, const SharedPtr<T>& ptr2)
+template<class T, class Deleter>
+bool operator!=(const SharedPtr<T, Deleter>& ptr1, const SharedPtr<T, Deleter>& ptr2)
 {
   return ptr1.get() != ptr2.get();
 }
