@@ -23,25 +23,33 @@
 #include <allegro/color.h>
 
 #include "file/file.h"
+#include "file/file_format.h"
 #include "raster/raster.h"
 
-static bool load_PCX(FileOp *fop);
-static bool save_PCX(FileOp *fop);
-
-FileFormat format_pcx =
+class PcxFormat : public FileFormat
 {
-  "pcx",
-  "pcx",
-  load_PCX,
-  save_PCX,
-  NULL,
-  FILE_SUPPORT_RGB |
-  FILE_SUPPORT_GRAY |
-  FILE_SUPPORT_INDEXED |
-  FILE_SUPPORT_SEQUENCES
+  const char* onGetName() const { return "pcx"; }
+  const char* onGetExtensions() const { return "pcx"; }
+  int onGetFlags() const {
+    return
+      FILE_SUPPORT_LOAD |
+      FILE_SUPPORT_SAVE |
+      FILE_SUPPORT_RGB |
+      FILE_SUPPORT_GRAY |
+      FILE_SUPPORT_INDEXED |
+      FILE_SUPPORT_SEQUENCES;
+  }
+
+  bool onLoad(FileOp* fop);
+  bool onSave(FileOp* fop);
 };
 
-static bool load_PCX(FileOp *fop)
+FileFormat* CreatePcxFormat()
+{
+  return new PcxFormat;
+}
+
+bool PcxFormat::onLoad(FileOp* fop)
 {
   Image *image;
   FILE *f;
@@ -176,7 +184,7 @@ static bool load_PCX(FileOp *fop)
   }
 }
 
-static bool save_PCX(FileOp *fop)
+bool PcxFormat::onSave(FileOp* fop)
 {
   Image *image = fop->seq.image;
   FILE *f;

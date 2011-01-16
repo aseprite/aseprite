@@ -22,7 +22,7 @@
 #include "raster/gfxobj.h"
 #include <vector>
 
-struct FormatOptions;
+class FormatOptions;
 class Image;
 class Layer;
 class LayerFolder;

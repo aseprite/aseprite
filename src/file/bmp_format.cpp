@@ -23,24 +23,53 @@
 #include <allegro/color.h>
 
 #include "file/file.h"
+#include "file/file_format.h"
 #include "file/format_options.h"
 #include "raster/raster.h"
 
-static bool load_BMP(FileOp *fop);
-static bool save_BMP(FileOp *fop);
-
-FileFormat format_bmp =
+class BmpFormat : public FileFormat
 {
-  "bmp",
-  "bmp",
-  load_BMP,
-  save_BMP,
-  NULL,
-  FILE_SUPPORT_RGB |
-  FILE_SUPPORT_GRAY |
-  FILE_SUPPORT_INDEXED |
-  FILE_SUPPORT_SEQUENCES
+  enum {
+    BMP_OPTIONS_FORMAT_WINDOWS = 12,
+    BMP_OPTIONS_FORMAT_OS2 = 40,
+    BMP_OPTIONS_COMPRESSION_RGB = 0,
+    BMP_OPTIONS_COMPRESSION_RLE8 = 1,
+    BMP_OPTIONS_COMPRESSION_RLE4 = 2,
+    BMP_OPTIONS_COMPRESSION_BITFIELDS = 3
+  };
+
+  // Data for BMP files
+  class BmpOptions : public FormatOptions
+  {
+  public:
+    int format;			/* BMP format */
+    int compression;		/* BMP compression */
+    int bits_per_pixel;		/* bits per pixel */
+    ase_uint32 red_mask;	/* mask for red channel */
+    ase_uint32 green_mask;	/* mask for green channel */
+    ase_uint32 blue_mask;	/* mask for blue channel */
+  };
+
+  const char* onGetName() const { return "bmp"; }
+  const char* onGetExtensions() const { return "bmp"; }
+  int onGetFlags() const {
+    return
+      FILE_SUPPORT_LOAD |
+      FILE_SUPPORT_SAVE |
+      FILE_SUPPORT_RGB |
+      FILE_SUPPORT_GRAY |
+      FILE_SUPPORT_INDEXED |
+      FILE_SUPPORT_SEQUENCES;
+  }
+
+  bool onLoad(FileOp* fop);
+  bool onSave(FileOp* fop);
 };
+
+FileFormat* CreateBmpFormat()
+{
+  return new BmpFormat;
+}
 
 #define BI_RGB          0
 #define BI_RLE8         1
@@ -567,7 +596,7 @@ static int read_bitfields_image(FILE *f, Image *image, BITMAPINFOHEADER *infohea
   return 0;
 }
 
-static bool load_BMP(FileOp *fop)
+bool BmpFormat::onLoad(FileOp *fop)
 {
   unsigned long rmask, gmask, bmask;
   BITMAPFILEHEADER fileheader;
@@ -680,7 +709,7 @@ static bool load_BMP(FileOp *fop)
 
   /* setup the file-data */
   if (fop->seq.format_options == NULL) {
-    BmpOptions *bmp_options = bmp_options_new();
+    BmpOptions* bmp_options = new BmpOptions();
 
     bmp_options->format = format;
     bmp_options->compression = infoheader.biCompression;
@@ -689,14 +718,14 @@ static bool load_BMP(FileOp *fop)
     bmp_options->green_mask = gmask;
     bmp_options->blue_mask = bmask;
 
-    fop_sequence_set_format_options(fop, (FormatOptions *)bmp_options);
+    fop_sequence_set_format_options(fop, bmp_options);
   }
 
   fclose(f);
   return true;
 }
 
-static bool save_BMP(FileOp *fop)
+bool BmpFormat::onSave(FileOp *fop)
 {
   Image *image = fop->seq.image;
   FILE *f;

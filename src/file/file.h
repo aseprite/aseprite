@@ -23,22 +23,10 @@
 #include <vector>
 #include <string>
 
-#define FILE_SUPPORT_RGB		(1<<0)
-#define FILE_SUPPORT_RGBA		(1<<1)
-#define FILE_SUPPORT_GRAY		(1<<2)
-#define FILE_SUPPORT_GRAYA		(1<<3)
-#define FILE_SUPPORT_INDEXED		(1<<4)
-#define FILE_SUPPORT_LAYERS		(1<<5)
-#define FILE_SUPPORT_FRAMES		(1<<6)
-#define FILE_SUPPORT_PALETTES		(1<<7)
-#define FILE_SUPPORT_SEQUENCES		(1<<8)
-#define FILE_SUPPORT_MASKS_REPOSITORY	(1<<9)
-#define FILE_SUPPORT_PATHS_REPOSITORY	(1<<10)
-
-#define FILE_LOAD_SEQUENCE_NONE		(1<<0)
-#define FILE_LOAD_SEQUENCE_ASK		(1<<1)
-#define FILE_LOAD_SEQUENCE_YES		(1<<2)
-#define FILE_LOAD_ONE_FRAME		(1<<3)
+#define FILE_LOAD_SEQUENCE_NONE		0x00000001
+#define FILE_LOAD_SEQUENCE_ASK		0x00000002
+#define FILE_LOAD_SEQUENCE_YES		0x00000004
+#define FILE_LOAD_ONE_FRAME		0x00000008
 
 class Cel;
 class Image;
@@ -48,29 +36,12 @@ class Mutex;
 class Palette;
 class Sprite;
 
-struct FormatOptions;
-struct FileFormat;
-struct FileOp;
+class FileFormat;
+class FormatOptions;
 
 /* file operations */
 typedef enum { FileOpLoad,
 	       FileOpSave } FileOpType;
-
-typedef bool (*FileLoad)(FileOp *fop);
-typedef bool (*FileSave)(FileOp *fop);
-
-typedef FormatOptions*(*GetFormatOptions)(FileOp* fop);
-
-/* load or/and save a file format */
-struct FileFormat
-{
-  const char* name;	/* file format name */
-  const char* exts;	/* extensions (e.g. "jpeg,jpg") */
-  FileLoad load;	/* procedure to read a sprite in this format */
-  FileSave save;	/* procedure to write a sprite in this format */
-  GetFormatOptions get_options;	/* procedure to configure the output format */
-  int flags;
-};
 
 /* structure to load & save files */
 struct FileOp
@@ -135,7 +106,7 @@ void fop_done(FileOp *fop);
 void fop_stop(FileOp *fop);
 void fop_free(FileOp *fop);
 
-void fop_sequence_set_format_options(FileOp *fop, struct FormatOptions *format_options);
+void fop_sequence_set_format_options(FileOp *fop, FormatOptions* format_options);
 void fop_sequence_set_color(FileOp *fop, int index, int r, int g, int b);
 void fop_sequence_get_color(FileOp *fop, int index, int *r, int *g, int *b);
 Image* fop_sequence_image(FileOp *fi, int imgtype, int w, int h);

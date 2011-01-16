@@ -22,29 +22,36 @@
 #include <stdio.h>
 
 #include "file/file.h"
+#include "file/file_format.h"
 #include "file/fli/fli.h"
 #include "modules/palettes.h"
 #include "raster/raster.h"
 
-static bool load_FLI(FileOp *fop);
-static bool save_FLI(FileOp *fop);
-
 static int get_time_precision(Sprite *sprite);
 
-FileFormat format_fli =
+class FliFormat : public FileFormat
 {
-  "flc",
-  "flc,fli",
-  load_FLI,
-  save_FLI,
-  NULL,
-  FILE_SUPPORT_INDEXED |
-  FILE_SUPPORT_FRAMES |
-  FILE_SUPPORT_PALETTES
+  const char* onGetName() const { return "flc"; }
+  const char* onGetExtensions() const { return "flc,fli"; }
+  int onGetFlags() const {
+    return
+      FILE_SUPPORT_LOAD |
+      FILE_SUPPORT_SAVE |
+      FILE_SUPPORT_INDEXED |
+      FILE_SUPPORT_FRAMES |
+      FILE_SUPPORT_PALETTES;
+  }
+
+  bool onLoad(FileOp* fop);
+  bool onSave(FileOp* fop);
 };
 
-/* loads a FLI/FLC file */
-static bool load_FLI(FileOp *fop)
+FileFormat* CreateFliFormat()
+{
+  return new FliFormat;
+}
+
+bool FliFormat::onLoad(FileOp* fop)
 {
 #define SETPAL()						\
   do {								\
@@ -208,8 +215,7 @@ static bool load_FLI(FileOp *fop)
   return true;
 }
 
-/* saves a FLC file */
-static bool save_FLI(FileOp *fop)
+bool FliFormat::onSave(FileOp* fop)
 {
   Sprite *sprite = fop->sprite;
   unsigned char cmap[768];

@@ -39,6 +39,7 @@
 #include "core/file_system.h"
 #include "core/modules.h"
 #include "file/file.h"
+#include "file/file_formats_manager.h"
 #include "gui/jinete.h"
 #include "gui/jintern.h"
 #include "log.h"
@@ -130,6 +131,9 @@ App::App(int argc, char* argv[])
   m_isGui = !(m_checkArgs->isConsoleOnly());
   m_legacy = new LegacyModules(isGui() ? REQUIRE_INTERFACE: 0);
  
+  // Register well-known image file types.
+  FileFormatsManager::instance().registerAllFormats();
+
   // init editor cursor
   Editor::editor_cursor_init();
 

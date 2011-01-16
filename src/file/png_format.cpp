@@ -24,35 +24,43 @@
 #include "app.h"
 #include "core/cfg.h"
 #include "file/file.h"
+#include "file/file_format.h"
 #include "raster/raster.h"
 
 #define PNG_NO_TYPECAST_NULL
 #include "png.h"
 
-static bool load_PNG(FileOp *fop);
-static bool save_PNG(FileOp *fop);
-
-FileFormat format_png =
+class PngFormat : public FileFormat
 {
-  "png",
-  "png",
-  load_PNG,
-  save_PNG,
-  NULL,
-  FILE_SUPPORT_RGB |
-  FILE_SUPPORT_RGBA |
-  FILE_SUPPORT_GRAY |
-  FILE_SUPPORT_GRAYA |
-  FILE_SUPPORT_INDEXED |
-  FILE_SUPPORT_SEQUENCES
+  const char* onGetName() const { return "png"; }
+  const char* onGetExtensions() const { return "png"; }
+  int onGetFlags() const {
+    return
+      FILE_SUPPORT_LOAD |
+      FILE_SUPPORT_SAVE |
+      FILE_SUPPORT_RGB |
+      FILE_SUPPORT_RGBA |
+      FILE_SUPPORT_GRAY |
+      FILE_SUPPORT_GRAYA |
+      FILE_SUPPORT_INDEXED |
+      FILE_SUPPORT_SEQUENCES;
+  }
+
+  bool onLoad(FileOp* fop);
+  bool onSave(FileOp* fop);
 };
+
+FileFormat* CreatePngFormat()
+{
+  return new PngFormat;
+}
 
 static void report_png_error(png_structp png_ptr, png_const_charp error)
 {
   fop_error((FileOp *)png_ptr->error_ptr, "libpng: %s\n", error);
 }
 
-static bool load_PNG(FileOp *fop)
+bool PngFormat::onLoad(FileOp* fop)
 {
   png_uint_32 width, height, y;
   unsigned int sig_read = 0;
@@ -314,7 +322,7 @@ static bool load_PNG(FileOp *fop)
   return true;
 }
 
-static bool save_PNG(FileOp *fop)
+bool PngFormat::onSave(FileOp* fop)
 {
   Image *image = fop->seq.image;
   png_uint_32 width, height, y;

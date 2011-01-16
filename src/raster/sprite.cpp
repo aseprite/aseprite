@@ -301,9 +301,7 @@ public:
   }
 
   void setFormatOptions(FormatOptions* format_options) {
-    if (m_format_options)
-      jfree(m_format_options);
-
+    delete m_format_options;
     m_format_options = format_options;
   }
 
@@ -600,8 +598,7 @@ SpriteImpl::~SpriteImpl()
   delete m_mutex;
 
   // Destroy file format options
-  if (m_format_options)
-    format_options_free(m_format_options);
+  delete m_format_options;
 
   delete m_rgbMap;
 }

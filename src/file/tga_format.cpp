@@ -26,24 +26,32 @@
 #include "gui/jbase.h"
 
 #include "file/file.h"
+#include "file/file_format.h"
 #include "raster/raster.h"
 
-static bool load_TGA(FileOp *fop);
-static bool save_TGA(FileOp *fop);
-
-FileFormat format_tga =
+class TgaFormat : public FileFormat
 {
-  "tga",
-  "tga",
-  load_TGA,
-  save_TGA,
-  NULL,
-  FILE_SUPPORT_RGB |
-  FILE_SUPPORT_RGBA |
-  FILE_SUPPORT_GRAY |
-  FILE_SUPPORT_INDEXED |
-  FILE_SUPPORT_SEQUENCES
+  const char* onGetName() const { return "tga"; }
+  const char* onGetExtensions() const { return "tga"; }
+  int onGetFlags() const {
+    return
+      FILE_SUPPORT_LOAD |
+      FILE_SUPPORT_SAVE |
+      FILE_SUPPORT_RGB |
+      FILE_SUPPORT_RGBA |
+      FILE_SUPPORT_GRAY |
+      FILE_SUPPORT_INDEXED |
+      FILE_SUPPORT_SEQUENCES;
+  }
+
+  bool onLoad(FileOp* fop);
+  bool onSave(FileOp* fop);
 };
+
+FileFormat* CreateTgaFormat()
+{
+  return new TgaFormat;
+}
 
 /* rle_tga_read:
  *  Helper for reading 256 color RLE data from TGA files.
@@ -186,7 +194,7 @@ static void rle_tga_read16(ase_uint32 *address, int w, FILE *f)
  *  structure and storing the palette data in the specified palette (this
  *  should be an array of at least 256 RGB structures).
  */
-static bool load_TGA(FileOp *fop)
+bool TgaFormat::onLoad(FileOp* fop)
 {
   unsigned char image_id[256], image_palette[256][3], rgb[4];
   unsigned char id_length, palette_type, image_type, palette_entry_size;
@@ -396,7 +404,7 @@ static bool load_TGA(FileOp *fop)
  *  Writes a bitmap into a TGA file, using the specified palette (this
  *  should be an array of at least 256 RGB structures).
  */
-static bool save_TGA(FileOp *fop)
+bool TgaFormat::onSave(FileOp* fop)
 {
   Image *image = fop->seq.image;
   unsigned char image_palette[256][3];

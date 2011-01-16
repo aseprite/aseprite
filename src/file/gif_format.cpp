@@ -30,6 +30,7 @@
 #include "gui/jbase.h"
 
 #include "file/file.h"
+#include "file/file_format.h"
 #include "file/gif/format.h"
 #include "modules/palettes.h"
 #include "raster/raster.h"
@@ -38,20 +39,27 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-static bool load_GIF(FileOp *fop);
-static bool save_GIF(FileOp *fop);
-
-FileFormat format_gif =
+class GifFormat : public FileFormat
 {
-  "gif",
-  "gif",
-  load_GIF,
-  save_GIF,
-  NULL,
-  FILE_SUPPORT_INDEXED |
-  FILE_SUPPORT_FRAMES |
-  FILE_SUPPORT_PALETTES
+  const char* onGetName() const { return "gif"; }
+  const char* onGetExtensions() const { return "gif"; }
+  int onGetFlags() const {
+    return 
+      FILE_SUPPORT_LOAD |
+      FILE_SUPPORT_SAVE |
+      FILE_SUPPORT_INDEXED |
+      FILE_SUPPORT_FRAMES |
+      FILE_SUPPORT_PALETTES;
+  }
+
+  bool onLoad(FileOp* fop);
+  bool onSave(FileOp* fop);
 };
+
+FileFormat* CreateGifFormat()
+{
+  return new GifFormat;
+}
 
 static void render_gif_frame(GIF_FRAME *frame, Image *image,
 			     int x, int y, int w, int h)
@@ -70,10 +78,7 @@ static void render_gif_frame(GIF_FRAME *frame, Image *image,
   }
 }
 
-/* load_GIF:
- * Loads a GIF into a sprite.
- */
-static bool load_GIF(FileOp *fop)
+bool GifFormat::onLoad(FileOp* fop)
 {
   GIF_ANIMATION *gif = NULL;
   Sprite *sprite = NULL;
@@ -278,13 +283,8 @@ static int max_used_index(Image *image)
   return max;
 }
 
-/* save_gif:
- *  Writes a sprite into a GIF file.
- *
- *  TODO: transparent index is not stored. And reserve a single color
- *  as transparent.
- */
-static bool save_GIF(FileOp *fop)
+// TODO: transparent index is not stored. And reserve a single color as transparent.
+bool GifFormat::onSave(FileOp* fop)
 {
   Sprite *sprite = fop->sprite;
   GIF_ANIMATION *gif;

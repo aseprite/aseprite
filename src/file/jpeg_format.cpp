@@ -27,27 +27,44 @@
 #include "app.h"
 #include "core/cfg.h"
 #include "file/file.h"
+#include "file/file_format.h"
 #include "file/format_options.h"
 #include "modules/gui.h"
 #include "raster/raster.h"
 
 #include "jpeglib.h"
 
-static bool load_JPEG(FileOp *fop);
-static bool save_JPEG(FileOp *fop);
-static FormatOptions *get_options_JPEG(FileOp *fop);
-
-FileFormat format_jpeg =
+class JpegFormat : public FileFormat
 {
-  "jpeg",
-  "jpeg,jpg",
-  load_JPEG,
-  save_JPEG,
-  get_options_JPEG,
-  FILE_SUPPORT_RGB |
-  FILE_SUPPORT_GRAY |
-  FILE_SUPPORT_SEQUENCES
+  // Data for JPEG files
+  class JpegOptions : public FormatOptions
+  {
+  public:
+    float quality;		/* 1.0 maximum quality */
+  };
+
+  const char* onGetName() const { return "jpeg"; }
+  const char* onGetExtensions() const { return "jpeg,jpg"; }
+  int onGetFlags() const {
+    return 
+      FILE_SUPPORT_LOAD |
+      FILE_SUPPORT_SAVE |
+      FILE_SUPPORT_RGB |
+      FILE_SUPPORT_GRAY |
+      FILE_SUPPORT_SEQUENCES |
+      FILE_SUPPORT_GET_FORMAT_OPTIONS;
+  }
+
+  bool onLoad(FileOp* fop);
+  bool onSave(FileOp* fop);
+
+  FormatOptions* onGetFormatOptions(FileOp* fop);
 };
+
+FileFormat* CreateJpegFormat()
+{
+  return new JpegFormat;
+}
 
 struct error_mgr {
   struct jpeg_error_mgr head;
@@ -78,7 +95,7 @@ static void output_message(j_common_ptr cinfo)
   fop_error(((struct error_mgr *)cinfo->err)->fop, "%s\n", buffer);
 }
 
-static bool load_JPEG(FileOp *fop)
+bool JpegFormat::onLoad(FileOp* fop)
 {
   struct jpeg_decompress_struct cinfo;
   struct error_mgr jerr;
@@ -220,7 +237,7 @@ static bool load_JPEG(FileOp *fop)
   return true;
 }
 
-static bool save_JPEG(FileOp *fop)
+bool JpegFormat::onSave(FileOp* fop)
 {
   struct jpeg_compress_struct cinfo;
   struct error_mgr jerr;
@@ -344,12 +361,10 @@ static bool save_JPEG(FileOp *fop)
   return true;
 }
 
-/**
- * Shows the JPEG configuration dialog.
- */
-static FormatOptions *get_options_JPEG(FileOp *fop)
+// Shows the JPEG configuration dialog.
+FormatOptions* JpegFormat::onGetFormatOptions(FileOp* fop)
 {
-  JpegOptions* jpeg_options = jpeg_options_new();
+  JpegOptions* jpeg_options = new JpegOptions();
   try {
     // Configuration parameters
     jpeg_options->quality = get_config_float("JPEG", "Quality", 1.0f);
@@ -375,14 +390,14 @@ static FormatOptions *get_options_JPEG(FileOp *fop)
       set_config_float("JPEG", "Quality", jpeg_options->quality);
     }
     else {
-      format_options_free((FormatOptions *)jpeg_options);
+      delete jpeg_options;
       jpeg_options = NULL;
     }
 
-    return (FormatOptions *)jpeg_options;
+    return jpeg_options;
   }
   catch (ase_exception& e) {
-    format_options_free((FormatOptions *)jpeg_options);
+    delete jpeg_options;
 
     e.show();
     return NULL;

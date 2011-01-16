@@ -19,58 +19,13 @@
 #ifndef FILE_FORMAT_OPTIONS_H_INCLUDED
 #define FILE_FORMAT_OPTIONS_H_INCLUDED
 
-enum {
-  FORMAT_OPTIONS_BMP,
-  FORMAT_OPTIONS_JPEG,
-  FORMAT_OPTIONS_MAX
+// Extra options loaded from a file that can be useful to save the
+// file later in the same loaded format (e.g. same color depth, same
+// jpeg quality, etc.).
+class FormatOptions
+{
+public:
+  virtual ~FormatOptions() { }
 };
-
-/* data that can be in a file and could be useful to save the file
-   later in the same format */
-typedef struct FormatOptions
-{
-  int type;
-  int size;
-} FormatOptions;
-
-FormatOptions* format_options_new(int type, int size);
-void format_options_free(FormatOptions* filedata);
-
-/*********************************************************************
- Data for BMP files
- *********************************************************************/
-
-#define BMP_OPTIONS_FORMAT_WINDOWS		12
-#define BMP_OPTIONS_FORMAT_OS2			40
-
-#define BMP_OPTIONS_COMPRESSION_RGB		0
-#define BMP_OPTIONS_COMPRESSION_RLE8		1
-#define BMP_OPTIONS_COMPRESSION_RLE4		2
-#define BMP_OPTIONS_COMPRESSION_BITFIELDS	3
-
-typedef struct BmpOptions
-{
-  FormatOptions head;
-  int format;			/* BMP format */
-  int compression;		/* BMP compression */
-  int bits_per_pixel;		/* bits per pixel */
-  ase_uint32 red_mask;		/* mask for red channel */
-  ase_uint32 green_mask;	/* mask for green channel */
-  ase_uint32 blue_mask;		/* mask for blue channel */
-} BmpOptions;
-
-BmpOptions *bmp_options_new();
-
-/*********************************************************************
- Data for JPEG files
- *********************************************************************/
-
-typedef struct JpegOptions
-{
-  FormatOptions head;
-  float quality;		/* 1.0 maximum quality */
-} JpegOptions;
-
-JpegOptions* jpeg_options_new();
 
 #endif

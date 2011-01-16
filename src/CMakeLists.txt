@@ -176,9 +176,10 @@ add_library(aseprite-library
   file/ase_format.cpp
   file/bmp_format.cpp
   file/file.cpp
+  file/file_format.cpp
+  file/file_formats_manager.cpp
   file/fli/fli.cpp
   file/fli_format.cpp
-  file/format_options.cpp
   file/gif/format.cpp
   file/gif/lzw.cpp
   file/gif_format.cpp

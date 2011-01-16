@@ -26,6 +26,8 @@
 #include "base/scoped_lock.h"
 #include "console.h"
 #include "file/file.h"
+#include "file/file_format.h"
+#include "file/file_formats_manager.h"
 #include "file/format_options.h"
 #include "gui/jalert.h"
 #include "modules/gui.h"
@@ -33,30 +35,6 @@
 #include "raster/raster.h"
 #include "raster/quantization.h"
 #include "widgets/statebar.h"
-
-extern FileFormat format_ase;
-extern FileFormat format_bmp;
-extern FileFormat format_fli;
-extern FileFormat format_jpeg;
-extern FileFormat format_pcx;
-extern FileFormat format_tga;
-extern FileFormat format_gif;
-extern FileFormat format_ico;
-extern FileFormat format_png;
-
-static FileFormat *formats[] =
-{
-  &format_ase,
-  &format_bmp,
-  &format_fli,
-  &format_jpeg,
-  &format_pcx,
-  &format_tga,
-  &format_gif,
-  &format_ico,
-  &format_png,
-  NULL
-};
 
 static FileOp *fop_new(FileOpType type);
 static void fop_prepare_for_sequence(FileOp *fop);
@@ -66,35 +44,37 @@ static int split_filename(const char *filename, char *left, char *right, int *wi
 
 void get_readable_extensions(char* buf, int size)
 {
-  int c;
+  FileFormatsList::iterator it = FileFormatsManager::instance().begin();
+  FileFormatsList::iterator end = FileFormatsManager::instance().end();
 
   /* clear the string */
   ustrncpy(buf, empty_string, size);
 
   /* insert file format */
-  for (c=0; formats[c]; c++) {
-    if (formats[c]->load)
-      ustrncat(buf, formats[c]->exts, size);
-
-    if (formats[c+1] && formats[c]->load)
-      ustrncat(buf, ",", size);
+  for (; it != end; ++it) {
+    if ((*it)->support(FILE_SUPPORT_LOAD)) {
+      if (ustrcmp(buf, empty_string) != 0)
+      	ustrncat(buf, ",", size);
+      ustrncat(buf, (*it)->extensions(), size);
+    }
   }
 }
 
 void get_writable_extensions(char* buf, int size)
 {
-  int c;
+  FileFormatsList::iterator it = FileFormatsManager::instance().begin();
+  FileFormatsList::iterator end = FileFormatsManager::instance().end();
 
   /* clear the string */
   ustrncpy(buf, empty_string, size);
 
   /* insert file format */
-  for (c=0; formats[c]; c++) {
-    if (formats[c]->save)
-      ustrncat(buf, formats[c]->exts, size);
-
-    if (formats[c+1] && formats[c]->save)
-      ustrncat(buf, ",", size);
+  for (; it != end; ++it) {
+    if ((*it)->support(FILE_SUPPORT_SAVE)) {
+      if (ustrcmp(buf, empty_string) != 0)
+      	ustrncat(buf, ",", size);
+      ustrncat(buf, (*it)->extensions(), size);
+    }
   }
 }
 
@@ -167,13 +147,13 @@ FileOp *fop_to_load_sprite(const char *filename, int flags)
   /* get the format through the extension of the filename */
   fop->format = get_fileformat(extension);
   if (!fop->format ||
-      !fop->format->load) {
+      !fop->format->support(FILE_SUPPORT_LOAD)) {
     fop_error(fop, "ASE can't load \"%s\" files\n", extension);
     goto done;
   }
 
   /* use the "sequence" interface */
-  if (fop->format->flags & FILE_SUPPORT_SEQUENCES) {
+  if (fop->format->support(FILE_SUPPORT_SEQUENCES)) {
     /* prepare to load a sequence */
     fop_prepare_for_sequence(fop);
 
@@ -261,7 +241,7 @@ FileOp *fop_to_save_sprite(Sprite *sprite)
   /* get the format through the extension of the filename */
   fop->format = get_fileformat(extension);
   if (!fop->format ||
-      !fop->format->save) {
+      !fop->format->support(FILE_SUPPORT_SAVE)) {
     fop_error(fop, "ASE can't save \"%s\" files\n", extension);
     return fop;
   }
@@ -274,29 +254,29 @@ FileOp *fop_to_save_sprite(Sprite *sprite)
   switch (fop->sprite->getImgType()) {
 
     case IMAGE_RGB:
-      if (!(fop->format->flags & FILE_SUPPORT_RGB)) {
+      if (!(fop->format->support(FILE_SUPPORT_RGB))) {
 	usprintf(buf+ustrlen(buf), "<<- %s", "RGB format");
 	fatal = true;
       }
-      if (!(fop->format->flags & FILE_SUPPORT_RGBA) &&
+      if (!(fop->format->support(FILE_SUPPORT_RGBA)) &&
 	  fop->sprite->needAlpha()) {
 	usprintf(buf+ustrlen(buf), "<<- %s", "Alpha channel");
       }
       break;
 
     case IMAGE_GRAYSCALE:
-      if (!(fop->format->flags & FILE_SUPPORT_GRAY)) {
+      if (!(fop->format->support(FILE_SUPPORT_GRAY))) {
 	usprintf(buf+ustrlen(buf), "<<- Grayscale format");
 	fatal = true;
       }
-      if (!(fop->format->flags & FILE_SUPPORT_GRAYA) &&
+      if (!(fop->format->support(FILE_SUPPORT_GRAYA)) &&
 	  fop->sprite->needAlpha()) {
 	usprintf(buf+ustrlen(buf), "<<- Alpha channel");
       }
       break;
 
     case IMAGE_INDEXED:
-      if (!(fop->format->flags & FILE_SUPPORT_INDEXED)) {
+      if (!(fop->format->support(FILE_SUPPORT_INDEXED))) {
 	usprintf(buf+ustrlen(buf), "<<- Indexed format");
 	fatal = true;
       }
@@ -304,28 +284,29 @@ FileOp *fop_to_save_sprite(Sprite *sprite)
   }
 
   // check frames support
-  if (!(fop->format->flags & (FILE_SUPPORT_FRAMES |
-			      FILE_SUPPORT_SEQUENCES))) {
-    if (fop->sprite->getTotalFrames() > 1)
+  if (fop->sprite->getTotalFrames() > 1) {
+    if (!fop->format->support(FILE_SUPPORT_FRAMES) &&
+	!fop->format->support(FILE_SUPPORT_SEQUENCES)) {
       usprintf(buf+ustrlen(buf), "<<- Frames");
+    }
   }
 
   // layers support
   if (fop->sprite->getFolder()->get_layers_count() > 1) {
-    if (!(fop->format->flags & FILE_SUPPORT_LAYERS)) {
+    if (!(fop->format->support(FILE_SUPPORT_LAYERS))) {
       usprintf(buf+ustrlen(buf), "<<- Layers");
     }
   }
 
   // Palettes support.
   if (fop->sprite->getPalettes().size() > 1) {
-    if (!(fop->format->flags & (FILE_SUPPORT_PALETTES |
-				FILE_SUPPORT_SEQUENCES))) {
+    if (!fop->format->support(FILE_SUPPORT_PALETTES) &&
+	!fop->format->support(FILE_SUPPORT_SEQUENCES)) {
       usprintf(buf+ustrlen(buf), "<<- Palette changes between frames");
     }
   }
 
-  /* repositories */
+  // Repositories.
   MasksList masks = fop->sprite->getMasksRepository();
   if (!masks.empty()) {
     int count = 0;
@@ -340,13 +321,13 @@ FileOp *fop_to_save_sprite(Sprite *sprite)
       count++;
     }
 
-    if ((count > 0) && !(fop->format->flags & FILE_SUPPORT_MASKS_REPOSITORY)) {
+    if ((count > 0) && !(fop->format->support(FILE_SUPPORT_MASKS_REPOSITORY))) {
       usprintf(buf+ustrlen(buf), "<<- Mask Repository");
     }
   }
 
   if (!fop->sprite->getPathsRepository().empty()) {
-    if (!(fop->format->flags & FILE_SUPPORT_PATHS_REPOSITORY)) {
+    if (!(fop->format->support(FILE_SUPPORT_PATHS_REPOSITORY))) {
       usprintf(buf+ustrlen(buf), "<<- Path Repository");
     }
   }
@@ -360,12 +341,12 @@ FileOp *fop_to_save_sprite(Sprite *sprite)
       if (fatal)
 	ret = jalert("Error<<File format \"%s\" doesn't support:%s"
 		     "||&Close",
-		     fop->format->name, buf);
+		     fop->format->name(), buf);
       else
 	ret = jalert("Warning<<File format \"%s\" doesn't support:%s"
 		     "<<Do you want continue?"
 		     "||&Yes||&No",
-		     fop->format->name, buf);
+		     fop->format->name(), buf);
 
       /* operation can't be done (by fatal error) or the user cancel
 	 the operation */
@@ -381,8 +362,8 @@ FileOp *fop_to_save_sprite(Sprite *sprite)
     }
   }
 
-  /* use the "sequence" interface */
-  if (fop->format->flags & FILE_SUPPORT_SEQUENCES) {
+  // Use the "sequence" interface.
+  if (fop->format->support(FILE_SUPPORT_SEQUENCES)) {
     fop_prepare_for_sequence(fop);
 
     /* to save one frame */
@@ -414,10 +395,10 @@ FileOp *fop_to_save_sprite(Sprite *sprite)
     fop->filename = fop->sprite->getFilename();
 
   /* configure output format? */
-  if (fop->format->get_options != NULL) {
-    FormatOptions *format_options = (fop->format->get_options)(fop);
+  if (fop->format->support(FILE_SUPPORT_GET_FORMAT_OPTIONS)) {
+    FormatOptions* format_options = fop->format->getFormatOptions(fop);
 
-    /* does the user cancelled the operation? */
+    // Does the user cancelled the operation?
     if (format_options == NULL) {
       fop_free(fop);
       return NULL;
@@ -446,7 +427,7 @@ void fop_operate(FileOp *fop)
   /* load ***********************************************************/
   if (fop->type == FileOpLoad &&
       fop->format != NULL &&
-      fop->format->load != NULL) {
+      fop->format->support(FILE_SUPPORT_LOAD)) {
     /* load a sequence */
     if (fop->is_sequence()) {
       int frame, frames, image_index = 0;
@@ -490,7 +471,7 @@ void fop_operate(FileOp *fop)
 	fop->filename = it->c_str();
 
 	/* call the "load" procedure to read the first bitmap */
-	loadres = (*fop->format->load)(fop);
+	loadres = fop->format->load(fop);
 	if (!loadres) {
 	  fop_error(fop, "Error loading frame %d from file \"%s\"\n",
 		    frame+1, fop->filename.c_str());
@@ -566,7 +547,7 @@ void fop_operate(FileOp *fop)
     /* direct load from one file */
     else {
       /* call the "load" procedure */
-      if (!(*fop->format->load)(fop))
+      if (!fop->format->load(fop))
 	fop_error(fop, "Error loading sprite from file \"%s\"\n",
 		  fop->filename.c_str());
     }
@@ -600,10 +581,10 @@ void fop_operate(FileOp *fop)
   /* save ***********************************************************/
   else if (fop->type == FileOpSave &&
 	   fop->format != NULL &&
-	   fop->format->save != NULL) {
+	   fop->format->support(FILE_SUPPORT_SAVE)) {
     /* save a sequence */
     if (fop->is_sequence()) {
-      ASSERT(fop->format->flags & FILE_SUPPORT_SEQUENCES);
+      ASSERT(fop->format->support(FILE_SUPPORT_SEQUENCES));
 
       /* create a temporary bitmap */
       fop->seq.image = image_new(fop->sprite->getImgType(),
@@ -631,7 +612,7 @@ void fop_operate(FileOp *fop)
 	  fop->filename = fop->seq.filename_list[fop->sprite->getCurrentFrame()];
 
 	  /* call the "save" procedure... did it fail? */
-	  if (!(*fop->format->save)(fop)) {
+	  if (!fop->format->save(fop)) {
 	    fop_error(fop, "Error saving frame %d in the file \"%s\"\n",
 		      fop->sprite->getCurrentFrame()+1, fop->filename.c_str());
 	    break;
@@ -654,7 +635,7 @@ void fop_operate(FileOp *fop)
     /* direct save to a file */
     else {
       /* call the "save" procedure */
-      if (!(*fop->format->save)(fop))
+      if (!fop->format->save(fop))
 	fop_error(fop, "Error saving the sprite in the file \"%s\"\n",
 		  fop->filename.c_str());
     }
@@ -859,16 +840,17 @@ static void fop_prepare_for_sequence(FileOp *fop)
 
 static FileFormat *get_fileformat(const char *extension)
 {
+  FileFormatsList::iterator it = FileFormatsManager::instance().begin();
+  FileFormatsList::iterator end = FileFormatsManager::instance().end();
   char buf[512], *tok;
-  int c;
 
-  for (c=0; formats[c]; c++) {
-    ustrcpy(buf, formats[c]->exts);
+  for (; it != end; ++it) {
+    ustrcpy(buf, (*it)->extensions());
 
     for (tok=ustrtok(buf, ","); tok;
 	 tok=ustrtok(NULL, ",")) {
       if (ustricmp(extension, tok) == 0)
-	return formats[c];
+	return (*it);
     }
   }
 

@@ -23,22 +23,30 @@
 #include <allegro/color.h>
 
 #include "file/file.h"
+#include "file/file_format.h"
 #include "raster/raster.h"
 
-static bool load_ICO(FileOp* fop);
-static bool save_ICO(FileOp* fop);
-
-FileFormat format_ico =
+class IcoFormat : public FileFormat
 {
-  "ico",
-  "ico",
-  load_ICO,
-  save_ICO,
-  NULL,
-  FILE_SUPPORT_RGB |
-  FILE_SUPPORT_GRAY |
-  FILE_SUPPORT_INDEXED
+  const char* onGetName() const { return "ico"; }
+  const char* onGetExtensions() const { return "ico"; }
+  int onGetFlags() const {
+    return 
+      FILE_SUPPORT_LOAD |
+      FILE_SUPPORT_SAVE |
+      FILE_SUPPORT_RGB |
+      FILE_SUPPORT_GRAY |
+      FILE_SUPPORT_INDEXED;
+  }
+
+  bool onLoad(FileOp* fop);
+  bool onSave(FileOp* fop);
 };
+
+FileFormat* CreateIcoFormat()
+{
+  return new IcoFormat;
+}
 
 struct ICONDIR
 {
@@ -74,7 +82,7 @@ struct BITMAPINFOHEADER
   ase_uint32 clrImportant;
 };
 
-static bool load_ICO(FileOp *fop)
+bool IcoFormat::onLoad(FileOp* fop)
 {
   FILE* f = fopen(fop->filename.c_str(), "rb");
   if (!f)
@@ -226,7 +234,7 @@ static bool load_ICO(FileOp *fop)
   return true;
 }
 
-static bool save_ICO(FileOp *fop)
+bool IcoFormat::onSave(FileOp* fop)
 {
   Sprite *sprite = fop->sprite;
   int bpp, bw, bitsw;

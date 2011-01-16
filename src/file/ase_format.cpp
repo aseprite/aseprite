@@ -24,6 +24,7 @@
 #include "zlib.h"
 
 #include "file/file.h"
+#include "file/file_format.h"
 #include "raster/raster.h"
 
 #define ASE_FILE_MAGIC			0xA5E0
@@ -71,9 +72,6 @@ static ASE_FrameHeader *current_frame_header = NULL;
 static int chunk_type;
 static int chunk_start;
 
-static bool load_ASE(FileOp *fop);
-static bool save_ASE(FileOp *fop);
-
 static bool ase_file_read_header(FILE* f, ASE_Header* header);
 static void ase_file_prepare_header(FILE* f, ASE_Header* header, const Sprite* sprite);
 static void ase_file_write_header(FILE* f, ASE_Header* header);
@@ -103,26 +101,36 @@ static void ase_file_write_cel_chunk(FILE *f, Cel *cel, LayerImage *layer, Sprit
 static Mask *ase_file_read_mask_chunk(FILE *f);
 static void ase_file_write_mask_chunk(FILE *f, Mask *mask);
 
-FileFormat format_ase =
+class AseFormat : public FileFormat
 {
-  "ase,aseprite",
-  "ase,aseprite",
-  load_ASE,
-  save_ASE,
-  NULL,
-  FILE_SUPPORT_RGB |
-  FILE_SUPPORT_RGBA |
-  FILE_SUPPORT_GRAY |
-  FILE_SUPPORT_GRAYA |
-  FILE_SUPPORT_INDEXED |
-  FILE_SUPPORT_LAYERS |
-  FILE_SUPPORT_FRAMES |
-  FILE_SUPPORT_PALETTES |
-  FILE_SUPPORT_MASKS_REPOSITORY |
-  FILE_SUPPORT_PATHS_REPOSITORY
+  const char* onGetName() const { return "ase"; }
+  const char* onGetExtensions() const { return "ase,aseprite"; }
+  int onGetFlags() const {
+    return
+      FILE_SUPPORT_LOAD |
+      FILE_SUPPORT_SAVE |
+      FILE_SUPPORT_RGB |
+      FILE_SUPPORT_RGBA |
+      FILE_SUPPORT_GRAY |
+      FILE_SUPPORT_GRAYA |
+      FILE_SUPPORT_INDEXED |
+      FILE_SUPPORT_LAYERS |
+      FILE_SUPPORT_FRAMES |
+      FILE_SUPPORT_PALETTES |
+      FILE_SUPPORT_MASKS_REPOSITORY |
+      FILE_SUPPORT_PATHS_REPOSITORY;
+  }
+
+  bool onLoad(FileOp* fop);
+  bool onSave(FileOp* fop);
 };
 
-static bool load_ASE(FileOp *fop)
+FileFormat* CreateAseFormat()
+{
+  return new AseFormat;
+}
+
+bool AseFormat::onLoad(FileOp *fop)
 {
   Sprite *sprite = NULL;
   ASE_Header header;
@@ -282,7 +290,7 @@ static bool load_ASE(FileOp *fop)
   }
 }
 
-static bool save_ASE(FileOp *fop)
+bool AseFormat::onSave(FileOp *fop)
 {
   Sprite *sprite = fop->sprite;
   ASE_Header header;
