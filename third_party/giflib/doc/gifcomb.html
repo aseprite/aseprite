@@ -1,0 +1,57 @@
+<!doctype HTML public "-//W3O//DTD W3 HTML 2.0//EN">
+<HTML>
+<HEAD>
+<TITLE>gifcomb</TITLE>
+<link rev=made href=mailto:esr@snark.thyrsus.com>
+</HEAD>
+<BODY>
+Go to <a href="index.html">index page</a>.
+
+<CENTER><H1>gifcomb</H1></CENTER>
+
+A program to combine 2 GIF images of exactly the same size into one.
+The color maps are merged, but the result may not exceed 256 colors.
+A boolean mask GIF file can be used to set which pixel from two images
+to use at each location.  Otherwise any background color from first
+image is converted to second image color at that point.  Only the
+first image of each file is combined; again, all files' first images
+must be of exactly the same size.<P>
+
+<H1>Usage:</H1>
+
+<pre>
+gifcomb [-q] [-m MaskGIFFile] [-h] gif-file...
+</pre>
+
+Two GIF files must be specified; a third mask GIF file is optional.<P>
+
+<H1>Memory required:</H1>
+
+Line.
+
+<H1>Options:</H1>
+
+<DL>
+<DT> [-q]
+<DD> Quiet mode.  Default off on MSDOS, on under UNIX.  Controls printout
+   of running scan lines.  Use -q- to invert.<P>
+
+<DT> [-m MaskGIFFile]
+<DD> the MaskGIFfile can be regular GIF file whose first
+   image has same dimensions as the combined images.  Any non-background color
+   in it will select Image 1 Pixel to output, otherwise Image2 pixel will be
+   selected.  Usually this image will be boolean (two colors only) but
+   it does not have to be.<P>
+
+<DT> [-h]
+<DD> Print one line of command line help, similar to Usage above.<P>
+</DL>
+
+<H1>Author:</H1>
+
+Gershon Elber
+
+<HR>
+<ADDRESS>Eric S. Raymond <A HREF="mailto:esr@thyrsus.com">&lt;esr@snark.thyrsus.com&gt;</A></ADDRESS>
+</BODY>
+</HTML>

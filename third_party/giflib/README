@@ -1,0 +1,47 @@
+This is giflib version 4.1.2, a library for manipulating gif files.
+Latest versions of giflib are currently hosted at:
+    http://sourceforge.net/projects/libungif
+
+====
+Building this package should be as simple as:
+
+    ./configure
+    gmake
+    gmake install
+
+====
+Deprecation list.  Will be removed in giflib 5.0:
+* GIF_ERROR and GIF_MESSAGE are on the deprecation list as they are also
+  utility helper functions rather than essential to the functioning of the
+  library.
+* The qprintf methods of the library are now deprecated.  Do not use 
+  GifQuietPrint or GifQprintf.  These should have been pushed out into the
+  utility helper library instead of sitting around in the library proper at
+  the same time as the getarg functions were moved out.  Getting rid of these
+  will let us get rid of our dependence on stdarg.h/varargs.h (Which a Gif
+  reading library has no business requiring.)
+* In the SavedImage struct: int Function will be removed.  Use
+  SavedImage.ExtensionBlocks[x].Function instead.
+* In gifalloc.c: MakeExtension is deprecated as well.  Use AddExtensionBlock
+  instead.  (This and the previous int Function were deprecated because they
+  only handle one Extension per image.  The new code handles multiple
+  extensions.)
+* varargs style interface in qprintf and getarg: It's a mistake to have two
+  different interfaces that depend on compile time choices between varargs
+  and stdargs.  The future is to get rid of varargs style altogether.
+  (Also: these are probably going strictly into the utility functions so
+  the library won't have to worry about them at all.)
+====
+
+I have found that automake currently generates Makefile's containing some
+GNUmake specific syntax.  If you're having troubles building with your
+system provided make, please install GNU make and try rebuilding.
+
+====
+This package uses autoconf, automake, and libtool to create the configure
+script, so if you need to edit the configure.ac or change a makefile target
+you should read the DEVELOPER file for hints on recreating the distribution
+using these tools.
+
+Good luck!
+-Toshio Kuratomi <toshio@tiki-lounge.com>

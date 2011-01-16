@@ -1,0 +1,72 @@
+<!doctype HTML public "-//W3O//DTD W3 HTML 2.0//EN">
+<HTML>
+<HEAD>
+<TITLE>gifhisto</TITLE>
+<link rev=made href=mailto:esr@snark.thyrsus.com>
+</HEAD>
+<BODY>
+Go to <a href="index.html">index page</a>.
+
+<CENTER><H1>gifhisto</H1></CENTER>
+
+A program to create histogram of number of pixels using each color.  The output
+can be formatted into a GIF histogram file, or as text file - both go to
+stdout.<P>
+
+<H1>Usage:</H1>
+
+<pre>
+gifhisto [-q] [-t] [-s Width Height] [-n ImageNumber] [-b] [-h] gif-file
+</pre>
+
+If no gif-file is given, GifHisto will try to read a GIF file from stdin.<P>
+
+<H1>Memory required:</H1>
+
+Line.
+
+<H1>Options:</H1>
+
+<DL>
+<DT> [-q]
+<DD> Quiet mode.  Default off on MSDOS, on under UNIX. Controls printout
+   of running scan lines.  Use -q- to invert.<P>
+
+<DT> [-t]
+<DD> Force output to be text file of the following form: (colormap size)
+   lines each containing two integers: number of times color appeared, and
+   color index.  Lines are in increasing color index order. This output can be
+   fed directly to a sort program if ordering by color frequency
+   is desired.<P>
+
+   The colrmap picked is the one to be used for the image to generate
+   histogram for, as defined in GIF format.<P>
+
+<DT> [-s Width Height]
+<DD> Size of GIF histogram file.  The Height of the
+   histogram should be power of 2 dividable by number of colors in colormap.<P>
+
+   Width sets the resolution (accuracy if you like) of the histogram as
+   the maximum histogram bar is scaled to fit it.<P>
+
+<DT> [-n ImageNumber]
+<DD> Image number to test.  Default is one.<P>
+
+<DT> [-b]
+<DD> Zeros the background color count.  As only linear scale bars are
+   supported and usually the background appears much more often then other
+   colors, deleting the background count will improve the scaling of other
+   colors.
+
+<DT> [-h]
+<DD> Print one line of command line help, similar to Usage above.<P>
+</DL>
+
+<H1>Author:</H1>
+
+Gershon Elber
+
+<HR>
+<ADDRESS>Eric S. Raymond <A HREF="mailto:esr@thyrsus.com">&lt;esr@snark.thyrsus.com&gt;</A></ADDRESS>
+</BODY>
+</HTML>

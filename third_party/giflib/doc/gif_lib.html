@@ -1,0 +1,713 @@
+<!doctype HTML public "-//W3O//DTD W3 HTML 2.0//EN">
+<HTML>
+<HEAD>
+<TITLE>gif_lib</TITLE>
+<link rev=made href=mailto:esr@snark.thyrsus.com>
+</HEAD>
+<BODY>
+Go to <a href="index.html">index page</a>.
+
+<CENTER><H1>The GIFLIB Library</H1></CENTER>
+
+<CENTER><BLOCKQUOTE>
+Gershon Elber, May 1991<BR>
+Eric S. Raymond, Sep 1992<BR>
+Toshio Kuratomi, May 2004<br>
+</BLOCKQUOTE></CENTER>
+
+The Graphics Interchange Format(c) is the Copyright property of
+CompuServe Incorporated.  GIF(sm) is a Service Mark property of CompuServe
+Incorporated.<P>
+
+Gershon wrote: "This library was written because I couldn't find
+anything similar and I wanted one.  I was inspired by the RLE Utah tool kit,
+which I hoped to port to an IBM PC, but found it to be too machine specific,
+and its compression ratio too low.  I compromised on the GIF format, but I am
+not sure how long 8 bits per pixel will be enough."<P>
+
+This document explains the GIF library code in directory `lib'.  The
+code is collected into libgif.a which is used in all the utilities in
+`util'.  It can be used in any application needs to read/write the GIF
+file format.  This document does </em>not</em> explain the GIF file
+format and assumes you know it, at least to the level of the GIF file
+structure.<P>
+
+When a GIF file is opened, a GIF file descriptor is created which
+is a pointer to GifFileType structure as follows:<P>
+
+<pre><code>
+typedef struct GifFileType {
+    int SWidth, SHeight,			       /* Screen dimensions. */
+	SColorResolution, 		 /* How many colors can we generate? */
+	SBackGroundColor;		/* I hope you understand this one... */
+    ColorMapObject *SColorMap;			      /* NULL if not exists. */
+    int ImageCount;				  /* Number of current image */
+    GifImageDesc Image;			   /* Block describing current image */
+    struct SavedImage *SavedImages;	/* Use this to accumulate file state */
+    VoidPtr Private;	  /* The regular user should not mess with this one! */
+} GifFileType;
+</code></pre>
+
+This structure was copied from gif_lib.h - the header file for the GIF
+library.  Any application program that uses the libgif.a library should
+include it.  Members beginning with S refer to GIF Screen; others hold
+properties of the current image (a GIF file may have more than one image)
+or point to allocated store used by various routines.<P>
+
+The user almost never writes into this structure (exception: it may
+occasionally useful to alter things in the SavedImages array), but can read
+any of these items at any time it is valid (image information is invalid
+until first image was read/write).<P>
+
+As the library needs to keep its own internal data, a Private pointer
+to hidden data is included. Applications should ignore this item.<P>
+
+The library has no static data. This means that it is fully reentrant
+and any number of GIF files (up to memory limits) can be opened for
+read/write. Instead of the static data, internal structure pointed by the
+Private pointer is used.<P>
+
+The library allocates its own memory dynamically, on opening of files,
+and releases that once closed.  The user is never required to allocate
+any memory for any of the functions of this library nor to free them
+directly.<P>
+
+In order to reduce disk access, the file buffer is increased to
+FILE_BUFFER_SIZE (defined in gif_lib.h).  The library was compiled in large
+model on the PC as the memory allocated per file is quite big: about 17k for
+decoding (DGIF_LIB.C), and 32k for encoding (EGIF_LIB.C), excluding the
+FILE_BUFFER_SIZE.<P>
+
+Here is a module summary:<P>
+
+<DL>
+<DT>egif_lib.c <DD> Encoding routines, all prefixed with E.<P>
+
+<DT>dgif_lib.c <DD> Decoding routines, all prefixed with D.<P>
+
+<DT>dev2gif.c  <DD> Routines to convert specific device buffers into GIF files.<P>
+
+<DT>gifalloc.c <DD> Routines for colormap handling and GIF record allocation.<P>
+
+<DT>gif_font.c <DD> The 8x8 font table for the GIF utility font.<P>
+
+<DT>gif_err.c <DD> Error handler for the library.<P>
+</DL>
+
+The library includes a sixth file of hash-function code which is accessed
+internally only.<P>
+
+<P>Most of the routines return GIF_ERROR (see gif_lib.h) if something
+went wrong, GIF_OK otherwise.  After an error return, the code in the
+gif_err.c module can be used to do something about it.<P>
+
+In addition, a module to parse command line arguments is supplied.
+This module is called getarg.c and its headers are in getarg.h.  See the header
+of getarg.c for details on its usage.<P>
+
+<H1>Decoding (dgif_lib.c)</H1>
+
+The following functions are used to set up input from a GIF:<P>
+
+<pre><code>
+GifFileType *DGifOpenFileName(char *GifFileName)
+</code></pre>
+
+Open a new GIF file using the given GifFileName, and read its Screen
+information.
+</code></pre>
+
+If any error occurs, NULL is returned and the error handler can be
+used to get the exact error (see gif_err.c).
+</code></pre>
+
+The file is opened in binary mode, and its buffer size is set to
+FILE_BUFFER_SIZE bytes.
+</code></pre>
+
+<pre><code>
+GifFileType *DGifOpenFileHandle(int GifFileHandle)
+</code></pre>
+
+Open a new GIF file using the given GifFileHandle, and read its Screen
+information.<P>
+
+If any error occurs, NULL is returned and the error handler can be 
+used to get the exact error (see gif_err.c).<P>
+
+The file is opened in binary mode, and its buffer size is set to
+FILE_BUFFER_SIZE bytes.<P>
+
+Once you have acquired a handle on a GIF, there are two ways to read it in.
+The high-level function
+
+<pre><code>
+int DGifSlurp(GifFileType)
+</code></pre>
+
+reads the rest of a complete (possibly multi-image) GIF file from the
+indicated file handle into in-core allocated structures.  It returns
+GIF_OK on success, GIF_ERROR on failure.<P>
+
+Once you have done this, all image, raster, and extension-block data in the
+GIF is accessable in the SavedImages member (see the structures in fif_lib.h).
+When you have modified the image to taste, write it out with EGifSpew().<P>
+
+If you are handling large images on a memory-limited machine, you may need
+to use the following functions for sequential read.<P>
+
+<pre><code>
+int DGifGetScreenDesc(GifFileType *GifFile)
+</code></pre>
+
+Reads the screen information into the GifFile structure. Note this
+routine is automatically called once a file is opened, and therefore
+usually need not be called explicitly.<P>
+
+Returns GIF_ERROR if something went wrong, GIF_OK otherwise.<P>
+
+<pre><code>
+int DGifGetRecordType(GifFileType *GifFile, GifRecordType *GifType)
+</code></pre>
+
+As the GIF file can have different records in arbitrary order, this
+routine should be called once the file was open to detect the next
+record type, and act upon it.  It can return these types in GifType:<P>
+
+<DL>
+<DT>	1. UndefinedRecordType <DD> something is wrong!<P>
+
+<DT>	2. ScreenDescRecordType <DD> screen information.  As the screen info
+	   is automatically read in when the file is open, this should
+	   not happen.<P>
+
+<DT>	3. ImageDescRecordType <DD> next record is an image descriptor.<P>
+
+<DT>	4. ExtensionRecordType <DD> next record is extension block.<P>
+
+<DT>	5. TerminateRecordType <DD> last record reached, can close the file.<P>
+</DL>
+The first two types can usually be ignored. The function
+returns GIF_ERROR if something went wrong, GIF_OK otherwise.
+
+<pre><code>
+int DGifGetImageDesc(GifFileType *GifFile)
+</code></pre>
+
+Reads image information into the GifFile structure.
+Returns GIF_ERROR if something went wrong, GIF_OK otherwise.<P>
+
+<pre><code><A NAME="DGifGetLine">
+int DGifGetLine(GifFileType *GifFile, PixelType *GifLine, int GifLineLen)
+</A></code></pre>
+
+Load a block of pixels from the GIF file.  The line can be
+of any length.  More than that, this routine may be interleaved with
+DGifGetPixel until all pixels have been read.<P>
+
+Returns GIF_ERROR if something went wrong, GIF_OK otherwise.</P>
+
+<pre><code>
+int DGifGetPixel(GifFileType *GifFile, PixelType GifPixel)
+</code></pre>
+
+Loads one pixel from the GIF file.  This routine may be interleaved
+with <a href="#DGifGetLine">DGifGetLine</a>, until all pixels are
+read.  Because of the overhead per each call, use of this routine is
+not recommended.<P>
+
+Returns GIF_ERROR if something went wrong, GIF_OK otherwise.<P>
+
+<pre><code>
+int DGifGetComment(GifFileType *GifFile, char *GifComment)
+</code></pre>
+
+Load a comment from the GIF file.  Because DGifGetRecordType will
+only tell if the record is of type extension, this routine should be
+called iff it is known %100 that is must be a comment.<P>
+
+For the definition of a comment, see <a
+href="#EGifPutComment">EGifPutComment</a>.  Returns GIF_ERROR if
+something went wrong, GIF_OK otherwise.<P>
+
+<pre><code>
+int DGifGetExtension(
+        GifFileType *GifFile,
+        int *GifExtCode,
+        ByteType **GifExtension)
+</code></pre>
+
+Loads an extension block from the GIF file.  Extension blocks
+are optional in GIF files.  This routine should be followed by
+<a href="#DGifGetExtensionNext">DGifGetExtensionNext</a>.<P>
+
+Returns GIF_ERROR if something went wrong, GIF_OK otherwise.<P>
+
+<pre><code><A NAME="DGifGetExtensionNext">
+int DGifGetExtensionNext(GifFileType *GifFile, ByteType **GifExtension)
+</A> </code></pre>
+
+As extensions may contain more than one block, use this routine to
+continue after DGifGetExtension, until *GifExtension is NULL.<P>
+
+Returns GIF_ERROR if something went wrong, GIF_OK otherwise.<P>
+
+
+<pre><code>
+int DGifGetCode(
+        GifFileType *GifFile, 
+        int *GifCodeSize, ByteType **GifCodeBlock)
+</code></pre>
+
+It sometimes may be desired to read the compressed code as is
+without decoding it.  This routine does exactly that (with
+DGifGetCodeNext), and can be used instead of DGifGetLine.<P>
+
+This compressed code information can be written out using the
+EGifPutCode/EGifPutCodeNext sequence (see gifpos.c for example).
+Returns GIF_ERROR if something went wrong, GIF_OK otherwise.<P>
+
+<pre><code>
+int DGifGetCodeNext(GifFileType *GifFile, ByteType **GifCodeBlock)
+</code></pre>
+
+See DGifGetCode above.<P>
+	  
+<pre><code>
+int DGifGetLZCodes(GifFileType *GifFile, int *GifCode)
+</code></pre>
+
+This routine can be called instead of DGifGetLine/DGifGetPixel or
+DGifGetCode/DGifGetCodeNext to get the 12 bits LZ codes of the images.
+It will be used mainly for debugging purposes (see GifText.c for
+example).<P>
+
+Returns GIF_ERROR if something went wrong, GIF_OK otherwise.<P>
+
+<pre><code>
+int DGifCloseFile(GifFileType *GifFile)
+</code></pre>
+
+Close GIF file and free all memory allocated for it. GifFile should
+not be used after this routine has been called.<P>
+
+Returns GIF_ERROR if something went wrong, GIF_OK otherwise.<P>
+
+<H1>Encoding (egif_lib.c)</H1>
+
+There are two ways to write out a GIF.  The high-level function<P>
+
+<pre>
+int EGifSpew(GifFileType *GifFile, int GifFileHandle)
+</pre>
+
+Writes a complete (possibly multi-image) GIF file to the indicated file
+handle from in-core allocated structures created by a previous DGifSlurp()
+or equivalent operations.  Its arguments are a GIF file descriptor (as
+above) and an ordinary output file descriptor.<P>
+
+The file is written with a GIF87 stamp unless it contains one of the four
+special extension blocks defined in GIF89, in which case it is written
+with a GIF89 stamp.<P>
+
+If you are handling large images on a memory-limited machine, you may need
+to use the following functions for sequential write.<P>
+
+<pre><code>
+GifFileType *EGifOpenFileName(char *GifFileName, int GifTestExistance)
+</code></pre>
+
+Open a new GIF file using the given GifFileName.  If GifTestExistance
+is TRUE, and file exists, the file is not destroyed, and NULL
+returned.<P>
+
+If any error occurs, NULL is returned and the error handler can be
+used to get the exact error (see gif_err.c).<P>
+
+The file is opened in binary mode, and its buffer size is set to
+FILE_BUFFER_SIZE bytes.<P>
+
+<pre><code>
+GifFileType *EGifOpenFileHandle(int GifFileHandle)
+</code></pre>
+
+Open a new GIF file using the given GifFileHandle.<P>
+
+If any error occurs, NULL is returned and the error handler can be
+used to get the exact error (see gif_err.c).<P>
+
+The file is opened in binary mode, and its buffer size is set to
+FILE_BUFFER_SIZE bytes.<P>
+
+<pre><code>
+void EGifSetGifVersion(char *Version)
+</code></pre>
+
+Sets the GIF version of all files opened, until another call to this
+routine is made.  Version is a 3 characters string of the form "87a"
+or "89a".  No test is made to validate this string.<P>
+
+<pre><code>
+int EGifPutScreenDesc(GifFileType *GifFile,
+        int GifWidth, int GifHeight,
+        int GifColorRes, int GifBackGround,
+        ColorMapObject *GifColorMap)
+</code></pre>
+
+Update the GifFile Screen parameters, in GifFile structure and in
+the real file.  If error occurs, returns GIF_ERROR (see gif_lib.h),
+otherwise GIF_OK.<P>
+
+This routine should be called immediately after the GIF file was
+opened.<P>
+
+<pre><code>
+int EGifPutImageDesc(GifFileType *GifFile,
+        int GifLeft, int GifTop,
+        int Width, int GifHeight,
+        int GifInterlace,
+        ColorMapObject *GifColorMap)
+</code></pre>
+
+Update GifFile Image parameters, in GifFile structure and in the real
+file. if error occurs returns GIF_ERROR (see gif_lib.h), otherwise
+GIF_OK.<P>
+
+This routine should be called each time a new image must be
+dumped to the file.<P>
+
+<pre><code><A NAME="EGifPutLine">
+int EGifPutLine(GifFileType *GifFile, PixelType *GifLine, int GifLineLen)
+</A> </code></pre>
+
+Dumps a block of pixels out to the GIF file.  The slab can be
+of any length.  More than that, this routine may be interleaved with
+<a href="#EGifPutPixel"></a>, until all pixels have been sent.<P>
+
+Returns GIF_ERROR if something went wrong, GIF_OK otherwise.<P>
+
+<pre><code><A NAME="EGifPutPixel">
+int EGifPutPixel(GifFileType *GifFile, PixelType GifPixel)
+</A></code></pre>
+
+Dumps one pixel to the GIF file.  This routine may be interleaved with
+<a href="#EGifPutLine">EGifPutLine</a>, until all pixels were sent.
+Because of the overhead for each call, use of this routine is not
+recommended.<P>
+
+Returns GIF_ERROR if something went wrong, GIF_OK otherwise.<P>
+
+<pre><code><A NAME="EGifPutComment">
+int EGifPutComment(GifFileType *GifFile, char *GifComment)
+</A></code></pre>
+
+Uses extension GIF records to save a string as a comment is the file.
+The extension code is 'C' (for Comment).<P>
+
+Returns GIF_ERROR if something went wrong, GIF_OK otherwise.<P>
+
+<pre><code>
+int EGifPutExtension(
+        GifFileType *GifFile,
+        int GifExtCode,
+        int GifExtLen,
+        void *GifExtension)
+</code></pre>
+
+Dumps the given extension block into the GIF file. Extension blocks
+are optional in GIF file. Extension blocks of more than 255 bytes or
+more than one block are not supported in this function.  Please use
+EGifPutExtensionFirst, EGifPutExtensionNext, and EGifPutExtensionLast
+if your extension blocks may fall into this category.<P>
+
+Returns GIF_ERROR if something went wrong, GIF_OK otherwise.<P>
+
+<pre><code>
+int EGifPutExtensionFirst(
+        GifFileType * GifFile,
+        int GifExtCode,
+        int GifExtLen,
+        const VoidPtr GifExtension)
+</code></pre>
+Dumps the beginning of a GIF extension block to a GIF file.  Extension blocks
+are optional in GIF files.  This function outputs the meta information
+necessary to a GIF extension block and the extension data described in the
+GifExtension argument.<P>
+
+Further blocks of the GIF Extension should be dumped using
+EGifPutExtensionNext.  When finished with this extension block,
+EGifPutExtensionLast should be called to output the block termination.<P>
+
+Returns GIF_ERROR if something went wrong, GIF_OK otherwise.<P>
+
+<pre><code>
+int EGifPutExtensionNext(
+        GifFileType * GifFile,
+        int GifExtCode,
+        int GifExtLen,
+        const VoidPtr GifExtension)
+</code></pre>
+Dumps a subblock of a GIF extension to a GIF File.  Extension blocks are
+optional in GIF files.  This function will write the Extension Data in
+GifExtension to the file as a subblock of the preceding Extension Block.
+Repeat calling of this function until all data subblocks have been output.<P>
+
+Note that EGifPutExtensionFirst needs to be called before any calls to this
+function.  EGifPutExtensionLast should be called to finish the Extension
+block after all data subblocks have been output.<P>
+
+Returns GIF_ERROR if something went wrong, GIF_OK otherwise.<P>
+
+<pre><code>
+int EGifPutExtensionLast(
+        GifFileType * GifFile,
+        int GifExtCode,
+        int GifExtLen,
+        const VoidPtr GifExtension)
+</code></pre>
+Dumps an optional GIF extension data subblock and the GIF extension block
+terminator to a GIF File.  Extension blocks are optional in GIF files.  This
+function will write the Extension Data in GifExtension to the file as a
+subblock of the preceding Extension Block.  Then it will output the GIF
+extension block terminator to end the current Extension block.  As a special
+case, if GifExtLen is zero, the function will assume there isn't another
+data block to output and will simply write the block terminator.<P>
+
+Note that a call to EGifPutExtensionFirst is needed to open the GIF
+Extension Block prior to calling this function.<P>
+
+Returns GIF_ERROR if something went wrong, GIF_OK otherwise.<P>
+
+<pre><code>
+int EGifPutCode(
+        GifFileType *GifFile,
+        int *GifCodeSize,
+        ByteType **GifCodeBlock)
+</code></pre>
+
+It sometimes may be desired to write the compressed code as is
+without decoding it.  For example a filter for a GIF file that change
+only screen size (GifPos), does not need the exact pixel values.
+Piping out the compressed image as is makes this process much
+faster.<P>
+
+This routine does exactly that (with EGifPutCodeNext), and can be
+used instead of EGifPutLine.  You'll usually use this with the
+DGifGetCode/DgifGetCodeNext routines, which reads the compressed
+code, while EGifPutCode/EGifPutCodeNext write it out.  See gifpos.c
+for example.<P>
+
+Returns GIF_ERROR if something went wrong, GIF_OK otherwise.<P>
+
+<pre><code>
+int EGifPutCodeNext(GifFileType *GifFile, ByteType **GifCodeBlock)
+</code></pre>
+
+See EGifPutCode above.<P>
+
+<pre><code>
+int EGifCloseFile(GifFileType *GifFile)
+</code></pre>
+
+Close a GIF file and free all memory allocated for it.  gif-file$
+should not be used, once this routine was called.<P>
+
+Returns GIF_ERROR if something went wrong, GIF_OK otherwise.<P>
+
+<H1>Color map handling and allocation routines</H1>
+
+<pre><code>
+ColorMapObject *MakeMapObject(int ColorCount, GifColorType *ColorMap)
+</code></pre>
+
+Allocate storage for a color map object with the given number of
+RGB triplet slots.  If the second argument is non-NULL, initialize
+the color table portion of the new map from it.  Returns NULL if
+memory is exhausted or if the size is not a power of 2 <= 256.<P>
+
+<pre><code>
+void FreeMapObject(ColorMapObject *Object)
+</code></pre>
+
+Free the storage occupied by a ColorMapObject that is no longer needed.<P>
+
+<pre><code>
+ColorMapObject *UnionColorMap(
+        ColorMapObject *ColorIn1, ColorMapObject *ColorIn2,
+        GifPixelType ColorTransIn2[])
+</code></pre>
+
+Create the union of two given color maps and return it.  If the result
+won't fit into 256 colors, NULL is returned, the allocated union
+otherwise.  ColorIn1 is copied as it to ColorUnion, while colors from
+ColorIn2 are copied iff they didn't exist before.  ColorTransIn2 maps
+the old ColorIn2 into ColorUnion color map table.<P>
+
+<pre><code>
+SavedImage *GifAttachImage(GifFileType *GifFile)
+</code></pre>
+
+Add an image block to the SavedImages array.  The image block is
+initially zeroed out.  This image block will be seen by any following
+EGifSpew() calls.
+</code></pre>
+
+<H1>The GIF Utility Font</H1>
+
+The 8x8 utility font used in text2gif and gifcolor lives in the library
+module gif_font.c, in a table called AsciiTable.  The library header file
+includes suitable externs and defines.<P>
+
+The GIF utility font support includes entry points for drawing legends
+on in-core images, drawing boxes and rectangles, and boxing text.
+These entry points are as follows:<P>
+
+<pre><code>
+void DrawText(
+        SavedImage *Image,
+        const int x, const int y,
+        const char *legend,
+        const int color)
+</code></pre>
+
+Draw text using the 8x8 utility font on the saved image.  Upper left
+corner of the text is at image pixel (x, y).  Use the specified
+color index.<P>
+
+<pre><code>
+void DrawBox(SavedImage *Image,
+        const int x, const int y,
+        const int w, const int h,
+        const int color)
+</code></pre>
+
+Draw a box on the saved image.  Upper left corner of the box is at
+image pixels (x, y), width is w, height is h.  Use the specified color
+index.<P>
+
+<pre><code>
+void DrawRectangle(SavedImage *Image,
+        const int x, const int y,
+        const int w, const int h,
+        const int color)
+</code></pre>
+
+Draw a (filled) rectangle on the saved image.  Upper left corner of
+the box is at image pixels (x, y), width is w, height is h.  Use the
+specified color index.<P>
+
+<pre><code>
+void DrawBoxedText(SavedImage *Image,
+        const int x, const int y,
+        const char *legend,
+        const int border,
+        const int bg, const int fg)
+</code></pre>
+
+Draw text on a filled rectangle.  The rectangle will be sized to fit
+the text, with upper left hand corner at (x, y) on the saved image.
+The `border' argument specifies a pixel margin around the text.  The
+`bg' argument is the color table index to fill the rectangle with;
+`fg' is the color table index to draw the text with.<P>
+
+This function interprets some characters in the legend string
+specially.  A tab (\t) is interpreted as a command to center the
+following text in the box.  A carriage return (\r) is interpreted
+as a request for a line break.<P>
+
+<H1>Error Handling (egif_lib.c)</H1>
+
+<pre><code>
+void PrintGifError(void)
+</code></pre>
+
+Print a one-line diagnostic on the last giflib error to stderr.<P>
+
+<pre><code>
+int GifLastError(void)
+</code></pre>
+
+Return the number of the last giflib error, and clear the error.
+The error types are defined in gif_lib.h.<P>
+
+Note it is the user's responsibility to call the file closing
+routine, so the file will be closed (if was opened), and allocated
+memory will be released.<P>
+
+<H1>Device Specific (XXX2gif.c)</H1>
+
+<pre><code>
+int DumpScreen2Gif(char *FileName, int ReqGraphDriver, int ReqGraphMode1,
+						       int ReqGraphMode2)
+</code></pre>
+
+Dumps the whole device buffer as specified by GraphDriver and
+GraphMode (as defined in TC 2.0 graphics.h) into FileName as GIF file.
+Current devices supported:<P>
+
+<pre>
+	1. Hercules.
+
+	2. EGA, EGA64, EGAMONO (all modes - see TC graphics.h).
+
+	3. VGA (all modes - see TC graphics.h).
+
+	4. SVGA_SPECIAL. This mode is special and not supported by Borland
+	   graphics.h. ReqGraphDriver must be equal to 999, and ReqGraphMode
+	   is ignored. This modes assumes 800 by 600 in 16 colors.
+	  Returns GIF_ERROR if something went wrong, GIF_OK otherwise.
+
+	5. SGI 4D using gl graphic library - window dump.
+
+	6. X11 window dump.
+</pre>
+
+
+<H1>Command Line Parsing</H1>
+
+<pre><code>
+int GAGetArgs(int argc, char **argv, char *CtrlStr, ...)
+</code></pre>
+
+Main routine of this module.  Given argc & argv as received by
+the main procedure, the command line CtrlStr, and the addresses of
+all parameters, parse the command line, and update the parameters.<P>
+
+The CtrlStr defines what types of variables should follow. Look at the
+beginning of getarg.c for exact usage.<P>
+
+Returns 0 if successful, error number (as defined by getarg.h) otherwise.<P>
+
+<pre><code>
+void GAPrintErrMsg(int Error)
+</code></pre>
+
+If an error occurred in GAGetARgs, this routine may be used to print
+one line diagnostic to stderr.<P>
+
+<pre><code>
+void GAPrintHowTo(char *CtrlStr)
+</code></pre>
+
+Given the same CtrlStr as for GAGetArgs, can be used to print a one line
+'how to use'. <P>
+
+<H1>Skeletons of GIF filters</H1>
+
+If you are developing on a virtual-memory OS such as most flavors of
+UNIX, or are otherwise sure of having enough memory to keep all of GIFs you
+need to operate in core, writing a filter is trivial.   See the file
+gifspnge.c in util.<P>
+
+A sequential filter skeleton will usually look like the example file
+giffiltr.c in util.<P>
+
+<P>Please look at the utilities in the util directory for more ideas once
+you feel comfortable with these skeletons.  Also try to follow the coding
+standards of this package if you want the maintainer to officially add your new
+utility to it.<P>
+
+<HR>
+<ADDRESS>Eric S. Raymond <A HREF="mailto:esr@thyrsus.com">&lt;esr@snark.thyrsus.com&gt;</A></ADDRESS>
+</BODY>
+</HTML>

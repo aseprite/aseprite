@@ -1,0 +1,62 @@
+<!doctype HTML public "-//W3O//DTD W3 HTML 2.0//EN">
+<HTML>
+<HEAD>
+<TITLE>gifrotat</TITLE>
+<link rev=made href=mailto:esr@snark.thyrsus.com>
+</HEAD>
+<BODY>
+Go to <a href="index.html">index page</a>.
+
+<CENTER><H1>gifrotat</H1></CENTER>
+
+A program to rotate a GIF image by a specified angle.<P>
+
+<H1>Usage:</H1>
+
+<pre>
+gifrotat -a Angle [-q] [-s Width Height] [-h] gif-file
+</pre>
+
+If no gif-file is given, GifRotat will try to read a GIF file from stdin.<P>
+
+
+<H1>Memory required:</H1>
+
+Screen (of source image).<P>
+
+<H1>Options:</H1>
+
+<DL>
+<DT> -a Angle
+<DD> Specifies the angle to rotate in degrees with respect to
+   the X (horizontal) axis.<P>
+
+<DT> [-q]
+<DD> Quiet mode.  Defaults off on MSDOS, on under UNIX.  Controls printout
+   of running scan lines. Use -q- to invert.<P>
+
+<DT> [-s Width Height]
+<DD> Since the rotated image will have the same image size as
+   the original, some parts of the image will by clipped out and lost. By
+   specifing a (bigger) size explicitly using the `-s' option, these parts
+   may be saved.<P>
+
+<DT> [-h]
+<DD> Print one line of command line help, similar to Usage above.<P>
+</DL>
+
+<H1>Notes:</H1>
+
+The image is rotated around its center.  No filtering is performed on the
+output, which have the same color map as the input.  This is mainly since
+filtering would require color quantization which is very memory/time intensive
+and out of MSDOS memory limits even for small images.<P>
+
+<H1>Author:</H1>
+
+Gershon Elber
+
+<HR>
+<ADDRESS>Eric S. Raymond <A HREF="mailto:esr@thyrsus.com">&lt;esr@snark.thyrsus.com&gt;</A></ADDRESS>
+</BODY>
+</HTML>

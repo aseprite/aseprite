@@ -1,0 +1,75 @@
+#!/usr/bin/perl
+#
+# Split a GIF image into four or six pieces, dividing in half horizontally
+# and into halves or thirds vertically.  
+#
+# The -s option controls the number of pieces.  The -p option controls the
+# amount of overlap (in pixels) at the edges of pieces.
+
+# Set to flush on print.
+$| = 1;
+
+require 'getopts.pl';
+
+# How many pieces?
+$split = 4;
+&Getopts("s:p:");
+$split = $opt_i if $opt_i;
+$overlap = $opt_p if $opt_p;
+
+$nm=$ARGV[0];
+print "Bursting image $nm.gif...\n";
+
+$stats=`giftext $nm.gif | grep Width | head -n1`;
+$stats =~ /Width = ([0-9]+), Height = ([0-9]+)/;
+$width=$1;
+$height=$2;
+print "Width is $width, height $height\n";
+
+$overlap = 20;
+
+if ($split == 6)
+{
+	$a = int($width / 2) + $overlap;
+	$b = int($width / 2) - $overlap;
+	$c = int($width - 1);
+	$d = int($height / 3)     - $overlap;
+	$e = int($height / 3) * 2 - $overlap;
+	$f = int($height / 3)     + $overlap;
+	$g = int($height / 3) * 2 + $overlap;
+	$h = int($height - 1);
+
+	$regions[1] = "0   0    $a   $f";
+	$regions[2] = "0   $d   $a   $g";
+	$regions[3] = "0   $e   $a   $h";
+	$regions[4] = "$b  0    $c   $f";
+	$regions[5] = "$b  $d   $c   $g";
+	$regions[6] = "$b  $e   $c   $h";
+}
+elsif ($split == 4)
+{
+	$a = int($width / 2) + $overlap;
+	$b = int($width / 2) - $overlap;
+	$c = int($width - 1);
+	$d = int($height / 2) - $overlap;
+	$e = int($height / 2) + $overlap;
+	$f = int($height - 1);
+
+	$regions[1] = "0   0    $a   $e";
+	$regions[2] = "0   $d   $a   $f";
+	$regions[3] = "$b  0    $c   $e";
+	$regions[4] = "$b  $d   $c   $f";
+}
+else
+{
+	die("I don't know how to make that many pieces.\n");
+}
+
+for ($i = 1; $i <= $split; $i++)
+{
+	print "${nm}-${i}: ${regions[$i]}\n";
+	system("gifclip -i $regions[$i]   ${nm}.gif >${nm}-${i}.gif");
+}
+
+print "$nm done\n"
+

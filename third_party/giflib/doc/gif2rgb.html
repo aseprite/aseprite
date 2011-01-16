@@ -1,0 +1,55 @@
+<!doctype HTML public "-//W3O//DTD W3 HTML 2.0//EN">
+<HTML>
+<HEAD>
+<TITLE>gif2rgb</TITLE>
+<link rev=made href=mailto:esr@snark.thyrsus.com>
+</HEAD>
+<BODY>
+Go to <a href="index.html">index page</a>.
+
+<CENTER><H1>gif2rgb</H1></CENTER>
+
+A program to convert images saved as GIF to 24-bit RGB image(s).
+
+
+<H1>Usage:</H1>
+
+<pre>
+gif2rgb [-q] [-1] [-o OutFileName] [-h] gif-file
+</pre>
+
+If no gif-file is given, Gif2RGB will try to read a GIF file from stdin.<P>
+
+<H1>Memory required:</H1>
+
+Screen.
+
+<H1>Options:</H1>
+
+<DL>
+<DT> [-q]
+<DD> Quiet mode.  Defaults off on MSDOS, on under UNIX.  Controls printout
+   of running scan lines. Use -q- to invert.<P>
+
+<DT> [-1]
+<DD> Only one file in the format of RGBRGB... triplets (Each of R, G, B
+   is a byte) is being written.  This file size is 3 * Width * Height.
+   If stdout is used for output, this option is implicitly applied.
+   The default (if not `-1') is 3 files with the names OutFileName.R,
+   OutFileName.G, OutFileName.B, each of which is Width * Height bytes.<P>
+
+<DT> [-o OutFileName]
+<DD> specifies the name of the out file (see also `-1' above).<P>
+
+<DT> [-h]
+<DD> Print one line of command line help, similar to Usage above.<P>
+</DL>
+
+<H1>Author:</H1>
+
+Gershon Elber
+
+<HR>
+<ADDRESS>Eric S. Raymond <A HREF="mailto:esr@thyrsus.com">&lt;esr@snark.thyrsus.com&gt;</A></ADDRESS>
+</BODY>
+</HTML>

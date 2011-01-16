@@ -1,0 +1,56 @@
+<!doctype HTML public "-//W3O//DTD W3 HTML 2.0//EN">
+<HTML>
+<HEAD>
+<TITLE>gifinto</TITLE>
+<link rev=made href=mailto:esr@snark.thyrsus.com>
+</HEAD>
+<BODY>
+Go to <a href="index.html">index page</a>.
+
+<CENTER><H1>gifinto</H1></CENTER>
+
+A program to save stdin into a file with given name, iff the result file has
+size bigger than specified (see below).  This can be used to save result in
+same files name we started a chain of pipes.<P>
+
+<H1>Usage:</H1>
+
+<pre>
+gifinto [-q] [-s MinFileSize] [-h] gif-file
+</pre>
+
+Gifinto always reads a GIF file from stdin.<P>
+
+<H1>Memory required:</H1>
+
+Line.
+
+<H1>Options:</H1>
+
+<DL>
+<DT> [-q]
+<DD> Quiet mode.  Default off on MSDOS, on under UNIX.  Controls printout
+   of running scan lines.  Use -q- to invert.<P>
+
+<DT> [-s MinFileSize]
+<DD> If file is less than MinFileSize, it is deleted and
+   not renamed to given name.  This will prevent killing the file we
+   started with if the result is an empty file, or the pipeline did not
+   complete.<P>
+
+   The default file threshold size is 14 bytes which is 1 bigger than GIF file
+   stamp (6 bytes) and GIF file screen descriptor (7 bytes), so a GIF file with
+   only GIF stamp and screen descriptor will not be renamed.<P>
+
+<DT> [-h]
+<DD> Print one line of command line help, similar to Usage above.<P>
+</DL>
+
+<H1>Author:</H1>
+
+Gershon Elber
+
+<HR>
+<ADDRESS>Eric S. Raymond <A HREF="mailto:esr@thyrsus.com">&lt;esr@snark.thyrsus.com&gt;</A></ADDRESS>
+</BODY>
+</HTML>

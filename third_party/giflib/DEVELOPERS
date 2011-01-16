@@ -1,0 +1,29 @@
+Things to tell developers of libungif....
+
+=======
+Build Tools:
+libungif presently uses autoconf, automake, and libtool in order to build
+shared libraries for a wide variety of platforms.  The distributed tarball has
+files prebuilt from these tools.  The cvs repository does not.  If you want to
+build libungif you will need to have these tools available.  I currently run
+with the following versions:
+autoconf 2.57
+automake 1.7.8
+libtool 1.5
+
+(P.S. I use the autogen.sh script in the top level directory to generate
+configure, Makefile.in, etc using these tools.)
+
+=======
+cvs:
+I currently do my work in a subversion repository.  Since sourceforge is still
+using cvs and not subversion, there's nothing in the sourceforge tree.
+
+If someone else wants to do development we can definitely talk about the best
+way to share version control access.
+
+=======
+I create the distribution tar ball by using the `make dist` command.... After
+hacking all I want, I check my sources into cvs, checkout a clean tree, run
+./autogen.sh; make dist and then attempt to compile from the libungif-*.tar.gz
+file that is generated.

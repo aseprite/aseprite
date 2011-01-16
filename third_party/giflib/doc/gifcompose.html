@@ -1,0 +1,124 @@
+<!doctype HTML public "-//W3O//DTD W3 HTML 2.0//EN">
+<HTML>
+<HEAD>
+<TITLE>gifcompose</TITLE>
+<link rev=made href=mailto:esr@snark.thyrsus.com>
+</HEAD>
+<BODY>
+Go to <a href="index.html">index page</a>.
+
+<CENTER><H1>gifcompose</H1></CENTER>
+
+The gifcompose program uses the GIFLIB utility tools to support a minilanguage
+for describing GIF pasteup sequences.<P>
+
+<H1>Usage:</H1>
+
+<pre>
+gifcompose [-v] &lt;specfile
+</pre>
+
+<H1>Specification Syntax</H1>
+
+The gifcompose tool takes a series of text lines and interprets them as
+commands to do pasteup operations. The commands are:<P>
+
+<CENTER><H2>Generators</H2></CENTER>
+
+<DL>
+<DT><CODE>gif &lt;name&gt;</CODE><DD>
+	Paste in &lt;name&gt;.gif<P>
+
+<DT><CODE>raw &lt;name&gt; &lt;width&gt; &lt;height&gt;</CODE><DD>
+	Paste in the given raw-format file (no suffix supplied).  Raw format
+	is a stream of 8-bit indices into the EGA color map.  Accordingly, the
+	width and height must be specified, and the source must be exactly
+	width times height bytes long.<P>
+
+<DT><CODE>rgb &lt;name&gt; &lt;width&gt; &lt;height&gt;</CODE><DD>
+	Paste in the given RGB-format file (no suffix supplied).  Raw format
+	is a stream of 24-bit color values.  Accordingly, the width and height
+	must be specified, and the source must be exactly 3 times width times
+	height bytes long.<P>
+
+<DT><CODE>rle &lt;name&gt;</CODE><DD>
+	Paste in the given RLE-format file (no suffix supplied).  This converts
+	the Utah Raster Kit format to GIF.<P>
+
+<DT><CODE>text &lt;text&gt; [foreground &lt;index&gt;] [color &lt;r&gt; &lt;g&gt; &lt;b&gt;]</CODE><DD>
+	Copy 8x8 monospace font, with transparent background and index 1 as
+	foreground.  If the text string contains whitespaces, they must be
+	escaped or the string must be quoted (shell conventions).<P>
+
+	The optional suffix `foreground &lt;n&gt;' sets the foreground color index.
+	The optional suffix `color &lt;r&gt; &lt;g&gt; &lt;b&gt;' sets the RGB color to be used
+	for the foreground index.<P>
+</DL>
+
+Each generator operation may be followed by any combination of the
+following suffixes:
+
+<CENTER><H2>Modifiers</H2></CENTER>
+
+<DT><CODE>at &lt;x&gt; &lt;y&gt;</CODE><DD>
+	Place the image at the given (upper-left-hand-corner) coordinates
+	in the pasted-up result.<P>
+
+<DT><CODE>clip &lt;name&gt; &lt;top-x&gt; &lt;top-y&gt; &lt;bottom-x&gt; &lt;bottom-y&gt;</CODE><DD>
+	Clip image using the given rectange, paste it onto.<P>
+
+<DT><CODE>xflip</CODE><DD>
+	Flip the image around the X axis before placing it.<P>
+
+<DT><CODE>yflip</CODE><DD>
+	Flip the image around the Y axis before placing it.<P>
+
+<DT><CODE>left</CODE><DD>
+	Rotate the image 90 degrees counterclockwise before placing it.<P>
+
+<DT><CODE>right</CODE><DD>
+	Rotate the image 90 degrees clockwise before placing it.<P>
+
+<CENTER><H2>Target Operations</H2></CENTER>
+
+<DT><CODE>screen size &lt;x-size&gt; &lt;y-size&gt;</CODE><DD>
+	Set the global screen size of the final image.<P>
+
+<DT><CODE>screen position &lt;x&gt; &lt;y&gt;</CODE><DD>
+	Set the global screen position of the final image.<P>
+
+<CENTER><H2>Comments</H2></CENTER>
+
+Comments or comment lines may be preceded with `#' and will be ignored.<P>
+
+<H1>Memory required:</H1>
+
+Proportional to the size of the largest pasted image.<P>
+
+<H1>Options:</H1>
+
+<DL>
+<DT> [-v]
+<DD> Emit a report on each composition action to stderr as it happens.
+</DL>
+
+<H1>Bugs:</H1>
+
+The suffix sequence `left left' sometimes mysteriously fails to work, 
+probably due to some restriction in <a href="gifflip.html">gifflip</a>.<P>
+
+No support for resizing or odd-angle rotations yet.<P>
+
+The `color' suffix of text is a no-op, because the present version of
+<a href="gifovly.html">gifovly</a> throws away color tables.<P>
+
+Error checking is rudimentary.<P>
+
+<H1>Author:</H1>
+
+Eric S. Raymond &lt;esr@snark.thyrsus.com&gt;
+
+<HR>
+<ADDRESS>Eric S. Raymond <A HREF="mailto:esr@thyrsus.com">&lt;esr@snark.thyrsus.com&gt;</A></ADDRESS>
+</BODY>
+</HTML>

@@ -1,0 +1,86 @@
+<!doctype HTML public "-//W3O//DTD W3 HTML 2.0//EN">
+<HTML>
+<HEAD>
+<TITLE>gifbg</TITLE>
+<link rev=made href=mailto:esr@snark.thyrsus.com>
+</HEAD>
+<BODY>
+Go to <a href="index.html">index page</a>.
+
+<CENTER><H1>gifbg</H1></CENTER>
+
+A program to generate a single-color test pattern GIF with gradually changing
+intensity in any of the basic 8 directions.<P>
+
+<H1>Usage:</H1>
+
+<pre>
+gifbg [-q] [-d Dir] [-l #Lvls] [-c R G B] [-m MinI] [-M MaxI] [-s W H] [-h]
+</pre>
+
+The gifbg program reads no input, and will dump the created GIF file
+to stdout.<P>
+
+<H1>Memory required:</H1>
+
+Line.
+
+<H1>Options:</H1>
+
+<DL>
+<DT> [-q]
+<DD> Quiet mode.  Defaults off on MSDOS, on under UNIX.  Controls printout
+   of running scan lines. Use -q- to invert.<P>
+
+<DT> [-d Dir]
+<DD> Select direction the intensity of the background should increase.
+   Direction can be one of the 8 principal directions:<P>
+
+<pre>
+   "T" - for Top		"TR" - for Top Right
+   "R" - for Right		"BR" - for Bottom Right
+   "B" - for Bottom		"BL" - for Bottom Left
+   "L" - for left		"TL" - for Top Left
+</pre>
+
+   The compass directions may be use as synonyms for the above directions, so
+   for example "NE" is equal to "TR".<P>
+
+   Direction is case insensitive. The default direction is Top (North).<P>
+
+<DT> [-l #Lvls]
+<DD> Number of levels the color will be scaled to. Default is 16.<P>
+
+<DT> [-c R G B]
+<DD> What to use as the primary background color to scale.
+     This color is scaled between the minimum intensity (MinI) and maximum
+   intensity (MaxI) from one end of the screen to the other as defined by Dir.
+   See below (-m & -M) for MinI & MaxI. Default is Blue (0, 0, 255).<P>
+
+<DT> [-m MinI]
+<DD> Minimum intensity (in percent) to scale color.  Default 10%<P>
+
+<DT> [-M MaxI]
+<DD> Maximum intensity (in percent) to scale color.  Default 100%<P>
+
+<DT> [-s W H]
+<DD> Size of image to create.  Default 640 by 350.<P>
+
+<DT> [-h]
+<DD> Print one line of command line help, similar to Usage above.<P>
+</DL>
+
+<H1>Notes:</H1>
+
+If MinI == MaxI = 100 (%) and #Lvls == 2 then boolean mask image of specified
+size will be created - all foreground.  This can be used as a square mask for
+the <a href="gifcomb.html"></a>gifcomb utility.<P>
+
+<H1>Author:</H1>
+
+Gershon Elber
+
+<HR>
+<ADDRESS>Eric S. Raymond <A HREF="mailto:esr@thyrsus.com">&lt;esr@snark.thyrsus.com&gt;</A></ADDRESS>
+</BODY>
+</HTML>

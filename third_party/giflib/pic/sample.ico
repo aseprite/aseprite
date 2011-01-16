@@ -1,0 +1,86 @@
+#
+# Example icon file
+#
+screen width 640
+screen height 480
+screen colors 16
+screen background 0
+
+screen map
+	rgb   0   0   0	is .	# Black
+	rgb   0   0 170	is 1	# Blue
+	rgb   0 170   0	is 2	# Green
+	rgb   0 170 170	is 3	# Cyan
+	rgb 170   0   0	is 4	# Red
+	rgb 170   0 170	is 5	# Magenta
+	rgb 170 170   0	is 6	# Brown
+	rgb 170 170 170	is 7	# LightGray
+	rgb  85  85  85	is X	# DarkGray
+	rgb  85  85 255	is 9	# LightBlue
+	rgb  85 255  85	is A	# LightGreen
+	rgb  85 255 255	is #	# LightCyan
+	rgb 255  85  85	is C	# LightRed
+	rgb 255  85 255	is D	# LightMagenta
+	rgb 255 255  85	is E	# Yellow
+	rgb 255 255 255	is F	# White
+end
+
+include solid2.gif	# Use as 1st image
+
+#
+# Shield
+#
+image
+image top 30
+image left 50
+image bits 16 by 16
+################
+################
+##XXX######XXX##
+##XXXXXXXXXXXX##
+###XXXXXXXXXX###
+###XXXXXXXXXX###
+###XXXXXXXXXX###
+###XXXXXXXXXX###
+###XXXXXXXXXX###
+###XXXXXXXXXX###
+###XXXXXXXXXX###
+####XXXXXXXX####
+#####XXXXXX#####
+######XXXX######
+################
+################
+
+extension fe	# Matches conventions used elsewhere in giflib
+This is a klugey way of embedding a comment in the GIF.
+end
+
+#
+# Questionmark
+#
+image
+image top 30
+image left 500
+image bits 16 by 16
+......XXXXX.....
+.....XXXXXXX....
+....XXX..XXXX...
+...XXX....XXXX..
+...XXX....XXXX..
+....XX...XXXX...
+........XXXX....
+.......XXXX.....
+......XXXX......
+......XXXX......
+......XXXX......
+................
+.......XX.......
+......XXXX......
+......XXXX......
+.......XX.......
+
+# The following sets edit modes for GNU EMACS
+# Local Variables:
+# mode:picture
+# truncate-lines:t
+# End:

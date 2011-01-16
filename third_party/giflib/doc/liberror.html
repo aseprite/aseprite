@@ -1,0 +1,140 @@
+<!doctype HTML public "-//W3O//DTD W3 HTML 2.0//EN">
+<HTML>
+<HEAD>
+<TITLE>GIFLIB error codes</TITLE>
+<link rev=made href=mailto:esr@snark.thyrsus.com>
+</HEAD>
+<BODY>
+Go to <a href="index.html">index page</a>.
+
+<CENTER><H1>GIFLIB error codes</H1></CENTER>
+
+Errors as reported from the GIF_LIB library are divided to two major
+categoriess: the encoder (errors prefixed by E_GIF_ERR), and the
+decoder (errors prefixed by D_GIF_ERR).  This document explains them
+briefly:<P>
+
+<H1>Encoding errors:</H1>
+
+<DL>
+<DT><CODE>E_GIF_ERR_OpenFailed</CODE><DD>
+   Message printed using PrintGifError: "Failed to open given file"
+   IO error result when attempt to open the given GIF file.<P>
+
+<DT><CODE>E_GIF_ERR_WriteFailed</CODE><DD>
+   Message printed using PrintGifError: "Failed to Write to given file"
+   IO error result when attempt to write to the given GIF file.<P>
+
+<DT><CODE>E_GIF_ERR_HasScrnDscr</CODE><DD>
+   Message printed using PrintGifError: "Screen Descriptor already been set"
+   Attempt to write second screen descriptor to same GIF file. GIF file should
+   have exactly one screen descriptor which should be set directly after the
+   file is opened.<P>
+
+<DT><CODE>E_GIF_ERR_HasImagDscr</CODE><DD>
+   Message printed using PrintGifError: "Image Descriptor is still active"
+   Image descriptor should be sent before and image dump, and no second
+   image descriptor should be sent before current image dump ended. This error
+   occurred probably because current image was not complete.<P>
+
+<DT><CODE>E_GIF_ERR_NoColorMap</CODE><DD>
+   Message printed using PrintGifError: "Neither Global Nor Local color map"
+   An image must have either global (screen) or local (image) color map.
+   Neither were given in this case.<P>
+
+<DT><CODE>E_GIF_ERR_DataTooBig</CODE><DD>
+   Message printed using PrintGifError: "#Pixels bigger than Width * Height"
+   The number of pixels dumped for this image is bigger than specified by
+   image Height times image Width.<P>
+
+<DT><CODE>E_GIF_ERR_NotEnoughMem</CODE><DD>
+   Message printed using PrintGifError: "Fail to allocate required memory"
+   Once an attemp is made to open GIF file, special structures are allocated
+   to hold internal data for it. If allocation fails this error is returned.<P>
+
+<DT><CODE>E_GIF_ERR_DiskIsFull</CODE><DD>
+   Message printed using PrintGifError: "Write failed (disk full?)"
+   Writing encoded data failed.<P>
+
+<DT><CODE>E_GIF_ERR_CloseFailed</CODE><DD>
+   Message printed using PrintGifError: "Failed to close given file"
+   Closing file failed.<P>
+
+<DT><CODE> E_GIF_ERR_NotWriteable</CODE><DD>
+   Message printed using PrintGifError: "Given file was not opened for write"
+   GIF files can be opened both for read (DGIF part of library) and write
+   (EGIF part of library). This error occurs when a file is opened for read
+   (using DGIF) is given to one of the encoding (EGIF) routines.<P>
+</DL>
+
+<H1>Encoding errors:</H1>
+
+<DL>
+<DT><CODE>D_GIF_ERR_OpenFailed</CODE><DD>
+   Message printed using PrintGifError: "Failed to open given file"
+   IO error result when attempt to open the given GIF file.<P>
+
+<DT><CODE>D_GIF_ERR_ReadFailed</CODE><DD>
+   Message printed using PrintGifError: "Failed to Read from given file"
+   IO error result when attempt to write to the given GIF file.<P>
+
+<DT><CODE>D_GIF_ERR_Notgif-file$</CODE><DD>
+   Message printed using PrintGifError: "Given file is NOT GIF file"
+   GIF files should have special stamp identifies them as such, If that stamp
+   is not found, this error is issued.<P>
+
+<DT><CODE>D_GIF_ERR_NoScrnDscr</CODE><DD>
+   Message printed using PrintGifError: "No Screen Descriptor detected"
+   Each GIF file should have screen descriptor in its header. This error will
+   be generated if no such descriptor was found.<P>
+
+<DT><CODE>D_GIF_ERR_NoImagDscr</CODE><DD>
+   Message printed using PrintGifError: "No Image Descriptor detected"
+   Each image should have image descriptor in its header. This error will
+   be generated if no such descriptor was found.<P>
+
+<DT><CODE>D_GIF_ERR_NoColorMap</CODE><DD>
+   Message printed using PrintGifError: "Neither Global Nor Local color map"
+   An image must have either global (screen) or local (image) color map.
+   Neither were given in this case.<P>
+
+<DT><CODE>D_GIF_ERR_WrongRecord</CODE><DD>
+   Message printed using PrintGifError: "Wrong record type detected"
+   Each record in GIF file has special identifier, in its header. If the
+   record has wrong identifier, this error is generated.<P>
+
+<DT><CODE>D_GIF_ERR_DataTooBig</CODE><DD>
+   Message printed using PrintGifError: "#Pixels bigger than Width * Height"
+   The number of pixels dumped for this image is bigger than specified by
+   image Height times image Width.<P>
+
+<DT><CODE>D_GIF_ERR_NotEnoughMem</CODE><DD>
+   Message printed using PrintGifError: "Fail to allocate required memory"
+   Once an attemp is made to open GIF file, special structures are allocated
+   to hold internal data for it. If allocation fails this error is returned.<P>
+
+<DT><CODE>D_GIF_ERR_CloseFailed</CODE><DD>
+   Message printed using PrintGifError: "Failed to close given file"
+   Closing file failed.<P>
+
+<DT><CODE>D_GIF_ERR_NotReadable</CODE><DD>
+   Message printed using PrintGifError: "Given file was not opened for read"
+   GIF files can be opened both for read (DGIF part of library) and write
+   (EGIF part of library). This error occurs when a file is opened for write
+   (using EGIF) is given to one of the decoding (DGIF) routines.<P>
+
+<DT><CODE>D_GIF_ERR_ImageDefect</CODE><DD>
+   Message printed using PrintGifError: "Image is defective, decoding aborted"
+   This error is generated, once the decoding failed - probably image is
+   defect.<P>
+
+<DT><CODE>D_GIF_ERR_EOFTooSoon</CODE><DD>
+   Message printed using PrintGifError: "Image EOF detected, before image complete"
+   This error is generated once EOF code is detected in encoded image before
+   all the pixels (Width * Height) has be decoded.<P>
+</DL>
+
+<HR>
+<ADDRESS>Eric S. Raymond <A HREF="mailto:esr@thyrsus.com">&lt;esr@snark.thyrsus.com&gt;</A></ADDRESS>
+</BODY>
+</HTML>

@@ -1,0 +1,159 @@
+Version 4.1.6
+=============
+Brown paper bag release.  Fix a problem with header inclusion that could
+prevent the library from building on some platforms.
+
+Version 4.1.5
+=============
+This version has some important fixes for segfaults when working with corrupt
+files.  All users are strongly encouraged to upgrade.
+
+Code Fixes
+----------
+* Fix segfault in utilities due to referencing ColorMaps in GifFiles that had
+  no ColorMap present.
+* Fix gif2x11 to work on 24 bit displays.
+* Fix for giftext segfault when the GifFile does not store a global colormap.
+* Checks to fail gracefully when an image contains improper LZ codes.
+* Close file handles on failure in DGifOpenFileHandle()
+* Checks to operate on files in binary mode on WIN32 as well as MSDOS.
+
+Building
+--------
+* Add checks to make building on Win32 easier.
+* Allow turning off gl_s, rle, and X11 support from the configure command line.
+* Fix for finding a 32 bit integer type on some platforms.
+* Only enable -Wall if we're using gcc.
+
+Version 4.1.4
+=============
+This version fixes some bugs with deallocating ColorMaps.  Fix building on
+several platforms.  Fix x86_64 builds to not hang the encoder.
+
+* Fix several areas in decoding where we removed a ColorMap from our GifFile
+  but didn't set the pointer to NULL.  This could lead to double free's of
+  the ColorMap.
+* Fix a bug in dev2gif.c where we redefined some gl types incorrectly.
+* Fix a bug in the gif LZW encoder that was triggered on modern 64 bit
+  platforms.
+* Fix building on Windows.  Note -- there has been one API changing event for
+  Windows (renaming DrawText to DrawGifText.)  This should have conflicted with
+  Windows API and therefore caused the builds to fail previously.  If you had
+  it working with DrawText before, apologies, you'll need to change to
+  DrawGifText in your code.  This only affects Windows.
+* Add support for building on The Game Boy Advance.  Note: Due to the GBA's
+  limited memory, the API for the GBA uses short's in many places where the
+  other platforms use ints.  This shouldn't affect anyone unless you've
+  been able to get an older version of the code to run on GBA and want to
+  start using this version instead.  A recompile of your dependent code
+  will be necessary in this case.
+
+Version 4.1.3
+=============
+This version fixes some bugs in the Extension writing code in
+EGifPutExtensionFirst, Next, and Last.  Using these functions, it is possible
+to output extensions that contain multiple subblocks.  Additionally, library
+code has been updated to use these functions, making it safe to output
+long Comments, and multi-block extensions read in from another file.
+
+* giflib is now hosted on sourceforge with libungif:
+  http://sourceforge.net/projects/libungif
+* Make the EGifPutExtension{First,Next,Last} family of functions use WRITE
+  so user defined WRITE methods will output them correctly.
+* Modify EGifSpew and EGifPutComment to use EGifPutExtension{First,Next,Last}
+  so we won't output broken GIFs when dealing with GIFs with multiple
+  subblocks.
+* More -Wall fixes revealed while testing on Solaris and FreeBSD.
+* Updated the gif_lib.html documentation to not use EGifPutExtension when
+  dealing with multiple subblocks.  Use EGifPutExtension{First,Next,Last}
+  instead.
+* Some Windows code from the old CVS repository now available in the windows
+  subdirectory.  I don't have a Windows environment to test and maintain this
+  but maybe someone out there will find it useful.  Caveat hacker.
+
+Version 4.1.2
+===============
+* Numerous bug fixes from people on the old libungif mailing list.
+* GIF_ERROR and GIF_MESSAGE are on the deprecation list as they are also
+  utility helper functions rather than essential to the functioning of the
+  library.
+* Complete deprecation list is now in the README file
+* Audited the sources with gcc -Wall. Everything detectable has now been fixed.
+* Ran the library code through indent.
+  
+Version 4.1.1
+=============
+* Merge in many bug fixes that were sent in while I was hiking the
+  Appalachian Trail.
+* The qprintf methods of the library are now deprecated.  Do not use 
+  GifQuietPrint or GifQprintf.  These should have been pushed out into the
+  utility helper library instead of sitting around in the library proper at
+  the same time as the getarg functions were moved out.  Getting rid of these
+  will let us get rid of our dependence on stdarg.h/varargs.h (Which a Gif
+  reading library has no business requiring.)
+
+Version 4.1.0
+============
+* Several minor memory leaks in error conditions have been plugged.
+* New Function EGifOpen(void *userData, OutputFunc writeFunc) allows user
+  specified gif writing functions.
+* Old copyright notices in a few source files have been updated.  All library
+  copyrights should now reflect the copyright notice in the COPYING file.
+
+Version 4.0.0 -- giflib
+=======================
+This version of the giflib library merges Eric Raymond's giflib-3.0 release
+with the libungif-4.0 release to give people a binary compatible choice
+between the two libraries and gives me the chance to add bugfixes to giflib
+that have been incorporated in libungif.
+
+PLEASE READ THE FILE PATENT_PROBLEMS BEFORE USING THIS LIBRARY!
+
+Version 4.0.0
+=============
+Major fixes have been made to the code that handles Extensions.
+Unfortunately, this causes binary incompatibility with giflib-3.0 and
+libungif-3.x.  However, the API is still intact.  I am, however, deprecating
+the use of saveImage[x].Function.  Use
+saveImage[x].ExtensionBlocks[y].Function instead.
+
+Version 3.1.1
+=============
+ The following bugs which caused SegFaults have been fixed:
+ * When reading gif files with extensions, DGifSlurp would violate memory.
+ * When closing a gif that had a local colormap, DGifCloseFile would attempt
+   to free the colormap twice.
+ * Fix a potential memory leak in DGifSlurp.
+The following enhancements have been made:
+ * New function DGifOpen to allow specifying a user definable gif reading
+   function.
+
+Version 3.1.0
+=============
+ * Add a new function:
+        GifFileType *DGifOpen(void * userData, InputFunc readFunc)
+   to read the gif image from a user defined input function.
+ * A few bugfixes.
+
+Version 3.0
+===========
+Changes from Eric Raymond's libgif:
+ * A new gif encoder that makes uncompressed gifs rather than standard,
+   LZW-compressed gifs.  This is actually the major motivating factor behind
+   libungif; to provide third-party distributors a means to provide a gif
+   library without the patented LZW encoder.
+
+ * A new configure script to make compilation of the library on multiple
+   platforms easier.  The package should now build shared libraries on all
+   platforms supported by GNU libtool.
+
+ * Removed the getarg functions from libgif.  These were not part of the
+   public API and only used by the tools in the utils directory so I separated
+   them from the rest of the library.
+
+ * Fixed a few bugs in the tools in the utils directory.
+
+========
+Changes predating libungif 3.0 (news in the original libgif, in other words.)
+is in ONEWS
+

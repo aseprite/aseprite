@@ -1,0 +1,73 @@
+<!doctype HTML public "-//W3O//DTD W3 HTML 2.0//EN">
+<HTML>
+<HEAD>
+<TITLE>text2gif</TITLE>
+<link rev=made href=mailto:esr@snark.thyrsus.com>
+</HEAD>
+<BODY>
+Go to <a href="index.html">index page</a>.
+
+<CENTER><H1>text2gif</H1></CENTER>
+
+A program to generate GIF images out of regular text.  Text can be one line
+or multi-line, and is converted using 8 by 8 fixed font.<P>
+
+<H1>Usage:</H1>
+
+<pre>
+text2gif [-q] [-s ClrMapSize] [-f FGClr] [-c R G B] [-t "Text"] [-h]
+</pre>
+
+This program reads stdin if no text is provided on the command line (-t),
+and will dump the created GIF file to stdout.<P>
+
+<H1>Memory required:</H1>
+
+Line.
+
+<H1>Options:</H1>
+
+<DT> [-q]
+<DD> Quiet mode.  Defaults off on MSDOS, on under UNIX.  Controls printout
+   of running scan lines.  Use -q- to invert.<P>
+
+<DT>[-s ClrMapSize]
+<DD>Explicitly defines the size of the color map of the
+   resulting gif image.  Usually the image will be bicolor with fg as color
+   1, unless [-f] is explicitly given in case the color map size will be
+   big enough to hold it.  However it is sometimes convenient to set the
+   color map size to certain size while the fg color is small mainly so
+   this image may be merged with another (images must match color map size).<P>
+
+<DT>[-f FG]
+<DD> Select foreground index (background is always 0).  By default
+   it is one and therefore the image result is bicolored.
+   if FG is set to n then color map will be created with 2^k entries where
+   2^k > n for minimum k, assuming k <= 8.  This color map will be all zeros
+   except this forground index. This option is useful if this text image
+   should be integrated into other image colormap using their colors.<P>
+
+<DT> [-c R G B]
+<DD> The color to use as the foreground color.  White by default.<P>
+
+<DT> [-t "Text"]
+<DD> One line of text can be provided on the command
+   line.  Note you must encapsulate the Text within quotes if it has spaces
+   (The quotes themselves are not treated as part of the text).  If no -t
+   option is provided, stdin is read until end of file.<P>
+
+<DT> [-h]
+<DD> Print one line command line help, similar to Usage above.<P>
+
+<H1>Notes:</H1>
+
+There is a hardcoded limit of 100 the number of lines.<P>
+
+<H1>Author:</H1>
+
+Gershon Elber
+
+<HR>
+<ADDRESS>Eric S. Raymond <A HREF="mailto:esr@thyrsus.com">&lt;esr@snark.thyrsus.com&gt;</A></ADDRESS>
+</BODY>
+</HTML>

@@ -1,0 +1,77 @@
+<!doctype HTML public "-//W3O//DTD W3 HTML 2.0//EN">
+<HTML>
+<HEAD>
+<TITLE>gifclrmp</TITLE>
+<link rev=made href=mailto:esr@snark.thyrsus.com>
+</HEAD>
+<BODY>
+Go to <a href="index.html">index page</a>.
+
+<CENTER><H1>gifclrmp</H1></CENTER>
+
+A program to modify GIF image colormaps.  Any local colormap in a GIF file can
+be modified at a time, or the global screen one.<P>
+
+<H1>Usage:</H1>
+
+<pre>
+gifclrmap [-q] [-s] [-t trans] [-l map] [-g Gamma] [-i image] [-h] gif-file
+</pre>
+
+If no gif-file is given, GifClip will try to read a GIF file from stdin.<P>
+
+<H1>Memory required:</H1>
+
+Line.
+
+<H1>Options:</H1>
+
+<DL>
+<DT> [-q]
+<DD> Quiet mode.  Defaults off on MSDOS, on under UNIX.  Controls printout
+   of running scan lines.  Use -q- to invert.<P>
+
+<DT> [-s]
+<DD> Select the global screen color map.<P>
+
+<DT> [-l map]
+<DD> Load color map from this file instead of selected color map.<P>
+
+<DT> [-t trans]
+<DD> Change color index values.  The change is made to both
+   the selected color table and the raster bits of the selected image.  A
+   translation file is a list of pairs of `before' and `after' index values.
+   At present, the `before' index values must be in ascending order starting
+   from 0.<P>
+
+<DT> [-g Gamma]
+<DD> Apply gamma correction to selected color map.<P>
+
+<DT>[-i image]
+<DD> Select the color map of the numbered image.<P>
+
+<DT>[-h]
+<DD> Print one command line help, similar to Usage above.<P>
+</DL>
+
+<H1>Notes:</H1>
+
+<UL>
+<LI>
+The default operation is to dump out the selected color map in text
+format.<P>
+
+<LI>
+The file to load/dump is simply one color map entry per line.  Each such
+entry line has four integers: "ColorIndex Red Green Blue", where color
+index is in ascending order starting from 1.<P>
+</UL>
+
+<H1>Author:</H1>
+
+Gershon Elber
+
+<HR>
+<ADDRESS>Eric S. Raymond <A HREF="mailto:esr@thyrsus.com">&lt;esr@snark.thyrsus.com&gt;</A></ADDRESS>
+</BODY>
+</HTML>

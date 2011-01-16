@@ -1,0 +1,153 @@
+<!doctype HTML public "-//W3O//DTD W3 HTML 2.0//EN">
+<HTML>
+<HEAD>
+<TITLE>gif2herc</TITLE>
+<link rev=made href=mailto:esr@snark.thyrsus.com>
+</HEAD>
+<BODY>
+Go to <a href="index.html">index page</a>.
+
+<CENTER><H1>gif2herc</H1></CENTER>
+
+A program to display images saved as GIF files on an IBM PC Hercules
+graphic card.  The program operates as follows:<P>
+
+<OL>
+<LI>
+Read GIF file header and determine size of the image.<P>
+
+<LI>
+Dynamically allocate enough memory to hold all the image internally.
+One byte per pixel is always allocated, so a little bit more than
+width*height (of screen, not image) bytes are required.<P>
+
+<LI>
+Reads the image in.  Interlaced images are read correctly, although
+they are displayed sequentially.<P>
+
+<LI>
+Display first image using the defaults as set by the command line option.<P>
+
+<LI>
+Goes to interactive mode. For full description of the interactive mode
+see below.<P>
+</OL>
+
+<H1>Usage:</H1>
+
+<pre>
+gif2herc [-q] [-d dither] [-z zoom] [-t bw] [-m map] [-i] [-b] [-h] gif-file
+</pre>
+
+If no gif-file is given, gif2herc will try to read a GIF file from stdin.<P>
+
+
+<H1>Memory required:</H1>
+
+Screen.
+
+<H1>Options:</H1>
+
+<DT> [-q]
+<DD> Quiet mode.  Defaults off on MSDOS, on under UNIX. Controls printout
+   of running scan lines. Use -q- to invert.<P>
+
+<DT> [-d dither]
+<DD> Sets size of dithering matrix, where dither can be
+   2,3 or 4 only (for 2x2, 3x3 and 4x4 dithering matrices).  Default is 2.
+   Note: the image will be dithered only if the mapping (see -m)
+   selected dithering mode.<P>
+
+<DT> [-z zoom]
+<DD> Sets zoom factor of the image.  Zoom factor should be
+   power of 2 up to 256. Default is 1 (no zoom).<P>
+
+<DT> [-t bw]
+<DD> Sets threshold level for B&W mapping in percent.
+   This threshold level is used in the different mappings as selected via -m.
+   Default is 19%.<P>
+
+<DT> [-m map]
+<DD> Select method to map colors to B&W. Mapping can be:
+
+   <DL>
+   <DT>0<DD>
+   Every non-background color is considered foreground (white).
+
+   <DT>1<DD>
+   0.3 * RED + 0.59 * GREEN + 0.11 * YELLOW > BWThreshold is considered white.
+
+   <DT>2<DD>
+   Colors are mapped as in 1, and use dithering of size as defined using
+   -d option.  BWthreshold is used here as scaler.
+   </DL>
+
+Default is option 0, which is much faster than the other two.<P>
+
+<DT> [-i]
+<DD> Invert the image, i.e. black -> white, white -> black.<P>
+
+<DT> [-b]
+<DD> Disable beeps.  Every time the image is complete, or a wrong key was
+   presses, sound is generated. The -b option disables that.<P>
+
+<DT> [-h]
+<DD> Print one line of command line help, similar to Usage above.<P>
+</DL>
+
+<H1>Interactive mode:</H1>
+
+Once the image is displayed, the program goes into an interactive mode
+which recognizes the following commands:
+
+<DL>
+<DT> C - get Color and position
+<DD> In this submenu, a cursor appears and the location and color of the
+   pixel underneath it are printed. The 4 arrows may be used (shifted for
+   faster movement) to move the cursor. Any other key will abort this
+   submode.<P>
+
+
+<DT> D - zoom Down 
+<DD> Zoom down by factor of 2 unless current zoom factor is 1.<P>
+
+<DT>H - Increase dither matrix size
+<DD>...unless current size is maximum (4), in which case size is set
+    to minimum (2).<P>
+
+<DT>I - Invert
+<DD>Invert the image, i.e. white -> black, black -> white.<P>
+
+<DT>M - Method 
+<DD>Increment color -> BW mapping method, unless current method is maximum
+    (2), in which case method is set to minimum (0).<P>
+
+<DT> R - Redraw
+<DD> Redraw the image.<P>
+
+<DT> S - print Status 
+<DD> Print status of image and program.<P>
+
+<DT> U - zoom Up
+<DD> Zoom up by factor of 2 unless current zoom factor is 256.<P>
+
+<DT> arrow keys
+<DD> The 4 arrow keys can be used to pan in the desired direction, if the image
+   overflows in that direction.  If the image fits into the screen, arrow
+   keys are ignored.  The panning steps are 1/2 screen if not on image end.<P>
+
+<DT> SPC - abort
+<DD> Space bar may be used to abort current image drawing.<P>
+
+<DT> ESC - abort
+<DD> Escape may be used to abort current image drawing.<P>
+</DL>
+
+<H1>Author:</H1>
+
+Gershon Elber
+
+<HR>
+<ADDRESS>Eric S. Raymond <A HREF="mailto:esr@thyrsus.com">&lt;esr@snark.thyrsus.com&gt;</A></ADDRESS>
+</BODY>
+</HTML>

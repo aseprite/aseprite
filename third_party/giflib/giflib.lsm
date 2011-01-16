@@ -1,0 +1,25 @@
+Begin3
+Title:          giflib
+Version:        4.1.2
+Entered-date:   26MAY2004
+Description:    A library for reading and writing gif images.  This library
+                is an update of giflib-3.0 which has long languished without
+                bug-fixes and improvements.  It implements a superset of that
+                library's API but is not binary compatible with it.  It _is_
+                binary compatible with libungif-4.1.  Be warned that using
+                this library may require a license from Unisys (because of
+                their patent on LZW compression used in the gif format.)
+                Unless you really need to write compressed gifs, I would
+                suggest libungif (available from the same sites as this
+                library) as a better alternative.
+Keywords:       GIF library graphics utilities
+Author:         toshio@tiki-lounge.com (Toshio Kuratomi)
+Maintained-by:  toshio@tiki-lounge.com (Toshio Kuratomi)
+Primary-site:   download.sourceforge.net /libungif
+                553k giflib-4.1.2.tar.gz
+Alternate-site: 
+Original-site:  download.sourceforge.net /libungif
+                553k giflib-4.1.2.tar.gz
+Platforms:      
+Copying-policy: MIT
+End

@@ -1,0 +1,142 @@
+<!doctype HTML public "-//W3O//DTD W3 HTML 2.0//EN">
+<HTML>
+<HEAD>
+<TITLE>icon2gif</TITLE>
+<link rev=made href=mailto:esr@snark.thyrsus.com>
+</HEAD>
+<BODY>
+Go to <a href="index.html">index page</a>.
+
+<CENTER><H1>icon2gif</H1></CENTER>
+
+A program to convert a series of editable text GIF icon specifications and
+named GIF files into a multi-image GIF, usable as a graphic resource file.
+It can also dump existing GIFs in this format.<P>
+
+<H1>Usage:</H1>
+
+<pre>
+icon2gif [-q] [-a] [-d] [t TranslationTable] [-h] gif-file...
+</pre>
+
+If no gif-file is given, icon2gif will try to read a text input from stdin.<P>
+
+<H1>Specification Syntax</H1>
+
+Here is a syntax summary in informal BNF.  The token `NL' represents a
+required newline.<P>
+
+<pre>
+&lt;gif-spec&gt; ::= &lt;header-block&gt; &lt;image-block&gt;...
+
+&lt;header-block&gt; ::= &lt;header-declaration&gt;...
+
+&lt;header-declaration ::=
+		| screen width &lt;digits&gt; NL
+		| screen height &lt;digits&gt; NL
+		| screen colors &lt;digits&gt; NL
+		| screen background &lt;digits&gt; NL
+		| screen map &lt;color-table&gt; NL
+
+&lt;color-table&gt; ::= &lt;color-declaration&gt;... end NL
+
+&lt;color-declaration&gt; ::= rgb &lt;digits&gt; &lt;digits&gt; &lt;digits&gt; is &lt;key&gt; NL
+
+&lt;image-block&gt; ::= include &lt;file-name&gt; NL
+		| image NL
+			&lt;image-declaration&gt;...
+			&lt;raster-picture&gt;
+			[ &lt;extension&gt; ]
+
+&lt;image-declarations&gt; ::= image top &lt;digits&gt; NL
+			| image left &lt;digits&gt; NL
+			| image interlaced NL
+			| image map &lt;color-table&gt; NL
+			| image bits &lt;digits&gt; by &lt;digits&gt; NL &lt;raster-block&gt;
+
+&lt;extension&gt; := &lt;comment&gt; NL &lt;extension-block&gt; NL end NL
+		| &lt;plaintext&gt; NL &lt;extension-block&gt; NL end NL
+		| extension &lt;hex-digits&gt; NL &lt;extension-block&gt; NL end NL
+</pre>
+
+If the semantics of the `screen height', `screen width', `screen background',
+`image top', `image left' declarations aren't obvious to you, what are you
+doing with this software?<P>
+
+A color table declares color indices (in ascending order from 0) and
+assiciates them with key characters.  These characters can later be used in
+raster blocks.  As these must be printable and non-whitespace, you can only
+specify 94 colors per icon.  Life is like that sometimes.<P>
+
+A raster block is just a block of key characters.  It should be sized correctly
+for the `image bits' declaration that leads it.<P>
+
+The `comment' or `plaintext' keywords lead defined GIF89 extension
+record data (the other two GIF89 types, graphics control and application
+block, are not yet supported).  You can also say `extension' followed
+by a hexadecimal record type.  All of these extension declarations
+must be followed by an extension block, which is terminated by the
+keyword `end' on its own line.<P>
+
+An extension block is a series of text lines, each interpreted as a string of
+bytes to fill an argument block (the terminating newline is stripped).  Text
+may include standard C-style octal and hex escapes preceded by a backslash.<P>
+
+All <digits> tokens are interpreted as decimal numerals; <hex-digits>
+tokens are interpreted as two hex digits (a byte). All coordinates are
+zero-origin with the top left corner (0,0).  Range checking is weak and
+signedness checking nonexistent; caveat hacker!<P>
+
+In general, the amount of whitespace and order of declarations within a 
+header or image block is not significant, except that a raster picture
+must immediately follow its `image bits' bits declaration.<P>
+
+The `include' declaration includes a named GIF as the next image.  The global
+color maps of included GIFs are merged with the base table defined by any
+`screen color' declaration.  All images of an included multi-image GIF will
+be included in order.<P>
+
+Comments may be preceded with `#' and will be ignored.<P>
+
+<H1>Memory required:</H1>
+
+For the compilation mode, proportional to the size of the input file.  For
+dumping, proportional to the line size of the widest GIF.<P>
+
+<H1>Options:</H1>
+
+<DL>
+<DT> [-q]
+<DD> Quiet mode.  Defaults off on MSDOS, on under UNIX.  Controls printout
+   of running scan lines. Use -q- to invert.<P>
+
+<DT> [-d]
+<DD> Dump the input GIF file(s) into the text form described above.<P>
+
+<DT> [-t]
+<DD> Specify name characters to use when dumping raster blocks.  Only
+   valid with -d option.<P>
+
+<DT> [-h]
+<DD> Print one line of command line help, similar to Usage above.<P>
+</DL>
+
+<H1>Bugs:</H1>
+
+Because there are only 94 characters unambiguously usable for raster blocks,
+an attempt to dump a GIF with a larger color map will fail.<P>
+
+Error checking is rudimentary.<P>
+
+<H1>Example:</H1>
+
+A sample icon file called `sample.ico' is included in the pic directory.<P>
+
+<H1>Author:</H1>
+
+Eric S. Raymond &lt;esr@snark.thyrsus.com&gt;
+
+<HR>
+<ADDRESS>Eric S. Raymond <A HREF="mailto:esr@thyrsus.com">&lt;esr@snark.thyrsus.com&gt;</A></ADDRESS>
+</BODY>
+</HTML>

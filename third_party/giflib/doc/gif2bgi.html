@@ -1,0 +1,136 @@
+<!doctype HTML public "-//W3O//DTD W3 HTML 2.0//EN">
+<HTML>
+<HEAD>
+<TITLE>gif2bgi</TITLE>
+<link rev=made href=mailto:esr@snark.thyrsus.com>
+</HEAD>
+<BODY>
+Go to <a href="index.html">index page</a>.
+
+<CENTER><H1>gif2bgi</H1></CENTER>
+
+A program to display images saved as GIF files on IBM PC display devices using
+the BGI (Borland) driver interface.<P>
+
+The program operates as follows:<P>
+
+<OL>
+<LI>
+Reads the GIF file header and determines the image size.<P>
+
+<LI>
+Dynamically allocates enough memory to hold all the image internally.
+One byte per pixel is always allocated, so a little bit more than
+width*height (of screen, not image) bytes are required.<P>
+
+<LI>
+Reads all the image in.  Interlaced images are read in correctly, although
+they are displayed sequentially.<P>
+
+<LI>
+Display first image using the defaults as set by the command line option.<P>
+
+<LI>
+Goes to interactive mode.  For a full description of the interactive mode
+see below.<P>
+</OL>
+
+<H1>Usage:</H1>
+
+<pre>
+gif2bgi [-q] [-d BGI dir] [-u driver] [-z zoom] [-b] [-h] gif-file
+</pre>
+
+If no GIF is given, gif2bgi will try to read a GIF file from stdin.<P>
+
+<H1>Memory required:</H1>
+
+Screen.
+
+<H1>Options:</H1>
+<DL>
+<DT> [-q]
+<DD> Quiet mode. Default off on MSDOS, on under UNIX.  Controls printout
+   of running scan lines.  Use -q- to invert.<P>
+
+<DT> [-d BGI Directory]
+<DD> Where we should look for default drivers (as supplied by Borland). 
+   For example '-d c:/tc/bgi'.<P>
+
+<DT> [-u driver]
+<DD> Specifies a user-defined BGI driver.  If for example
+   you have a BGI driver for your special vga called MYVGA.BGI and you want
+   to run it in mode 2, then type '-u c:/tc/bgi/myvga.2'.  Note the absolute
+   path to the driver must be specified.  Also note that we use '/' and not
+   '\' so they won't be treated as options.<P>
+
+<DT> [-z zoom]
+<DD> Sets zoom factor of the view.  Zoom factor should be
+   power of 2 up to 256.  Default is 1 (no zoom).<P>
+
+<DT> [-h]
+<DD> Print one line of command-line help, similar to Usage above.<P>
+</DL>
+
+<H1>Interactive mode:</H1>
+
+Once the image is displayed, the gif2bgi program goes into interactive mode
+which recognizes the following commands:<P>
+
+<DL>
+<DT> C - get Color and position
+<DD> In this submenu, a cursor appears and the location and color of the
+   pixel underneath it are printed. The 4 arrows may be used (shifted for
+   faster movement) to move the cursor. Any other key will abort this submode.<P>
+
+<DT> D - zoom Down 
+<DD> Zoom down by factor of 2 unless current zoom factor is 1.<P>
+
+<DT> R - Redraw
+<DD> Redraw the image.<P>
+
+<DT> S - print Status 
+<DD> Print status of image and program.<P>
+
+<DT> U - zoom Up
+<DD> Zoom up by factor of 2 unless current zoom factor is 256.<P>
+
+<DT> arrow keys
+<DD> The 4 arrow keys can be used to pan in the desired direction, if the image
+   overflows in that direction.  If the image fits into the screen, arrow
+   keys are ignored.  The panning steps are 1/2 screen if not on image end.<P>
+
+<DT> SPC - abort
+<DD> Space bar may be used to abort current image drawing.<P>
+
+<DT> ESC - abort
+<DD> Escape may be used to abort current image drawing.
+</DL>
+
+
+<H1>Notes:</H1>
+
+This program is useless in a Unix environment and is not normally
+built there.<P>
+
+No color quantization is used in this program; thus, if a GIF image has more
+colors than the BGI driver support, this program will abort.<P>
+
+This driver is optimized for drivers with one byte per pixel (256 colors)
+and will run MUCH faster on such drivers.<P>
+
+<H1>Bugs:</H1>
+
+For some reason I could not figure out, on my ATI wonder card, int 10h call
+10h (AH = AL = 10h) to set the color registers sometimes result with wrong
+colors.  Direct access of the card registers gives correct results.<P>
+
+<H1>Author:</H1>
+
+Gershon Elber
+
+<HR>
+<ADDRESS>Eric S. Raymond <A HREF="mailto:esr@thyrsus.com">&lt;esr@snark.thyrsus.com&gt;</A></ADDRESS>
+</BODY>
+</HTML>
+

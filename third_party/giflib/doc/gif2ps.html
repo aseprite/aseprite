@@ -1,0 +1,71 @@
+<!doctype HTML public "-//W3O//DTD W3 HTML 2.0//EN">
+<HTML>
+<HEAD>
+<TITLE>gif2ps</TITLE>
+<link rev=made href=mailto:esr@snark.thyrsus.com>
+</HEAD>
+<BODY>
+Go to <a href="index.html">index page</a>.
+
+<CENTER><H1>gif2ps</H1></CENTER>
+
+GIF-to-PostScript conversion.<P>
+
+<H1>Usage:</H1>
+
+<pre>
+gif2ps [-q] [-x] [-y] [-s sx sy] [-p px py] [-i] [-n copies] [-h] gif-file
+</pre>
+
+If no gif-file is given, Gif2PS will try to read a GIF file from stdin.<P>
+
+
+<H1>Memory required:</H1>
+
+Line.
+
+<H1>Options:</H1>
+
+<DL>
+<DT> [-q]
+<DD> quiet mode.  Defaults off on MSDOS, on under UNIX.  Controls printout
+   of running scan lines.  Use -q- to invert.<P>
+
+<DT> [-x]
+<DD> Force image to be horizontal (`landscape mode').  By default image
+   will be positioned so it will be the biggest.  If -x is given image will be
+   scaled to be biggest possible horizontally.<P>
+
+<DT> [-y]
+<DD> Force vertical (`portrait mode'); analogous to -x.<P>
+
+<DT> [-s sx sy]
+<DD> Force image size to be sx by sy inches.
+   If image will exit page dimensions, it will scream and die.
+   Page dimensions are 8.5 by 11.0 inches but only 7.5 by 9.0 are assumed to
+   be printable.<P>
+
+<DT> [-p pc py]
+<DD> Force image lower left corner to be as px py.
+   If this would overrun the page's dimensions, it will scream and die.<P>
+
+<DT> [-i]
+<DD> Image will be inverted (Black -> White and vice versa).
+   Mapping from colors is done by 0.3 * RED + 0.59 * GREEN + 0.11 * BLUE
+   and sometimes inverting the image will look better.<P>
+
+<DT> [-n copies]
+<DD> Number of copies to print.  1 by default.<P>
+
+<DT> [-h]
+<DD> Print one line of command help, similar to Usage above.<P>
+</DL>
+
+<H1>Author:</H1>
+
+Gershon Elber
+
+<HR>
+<ADDRESS>Eric S. Raymond <A HREF="mailto:esr@thyrsus.com">&lt;esr@snark.thyrsus.com&gt;</A></ADDRESS>
+</BODY>
+</HTML>

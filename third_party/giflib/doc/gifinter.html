@@ -1,0 +1,51 @@
+<!doctype HTML public "-//W3O//DTD W3 HTML 2.0//EN">
+<HTML>
+<HEAD>
+<TITLE>gifinter</TITLE>
+<link rev=made href=mailto:esr@snark.thyrsus.com>
+</HEAD>
+<BODY>
+Go to <a href="index.html">index page</a>.
+
+<CENTER><H1>gifinter</H1></CENTER>
+
+A program to convert between interlaced and non-interlaced GIF images.<P>
+
+<H1>Usage:</H1>
+
+<pre>
+gifinter [-q] [-i] [-s] [-h] gif-file
+</pre>
+
+If no gif-file is given, GifInter will try to read a GIF file from stdin.<P>
+
+
+<H1>Memory required:</H1>
+
+Image.
+
+<H1>Options:</H1>
+
+<DL>
+<DT> [-q]
+<DD> Quiet mode.  Defaults off on MSDOS, on under UNIX.  Controls printout
+   of running scan lines.  Use -q- to invert.<P>
+
+<DT> [-i]
+<DD> Force all images in GIF file be interlaced.<P>
+
+<DT> [-s]
+<DD> Force all images in GIF file be sequential (default).<P>
+
+<DT> [-h]
+<DD> Print one line of command line help, similar to Usage above.<P>
+</DL>
+
+<H1>Author:</H1>
+
+Gershon Elber
+
+<HR>
+<ADDRESS>Eric S. Raymond <A HREF="mailto:esr@thyrsus.com">&lt;esr@snark.thyrsus.com&gt;</A></ADDRESS>
+</BODY>
+</HTML>

@@ -1,0 +1,58 @@
+<!doctype HTML public "-//W3O//DTD W3 HTML 2.0//EN">
+<HTML>
+<HEAD>
+<TITLE>rle2gif</TITLE>
+<link rev=made href=mailto:esr@snark.thyrsus.com>
+</HEAD>
+<BODY>
+Go to <a href="index.html">index page</a>.
+
+<CENTER><H1>rle2gif</H1></CENTER>
+
+A program to convert images saved as RLE (Utah raster toolkit) to GIF
+format.<P>
+
+<H1>Usage:</H1>
+
+<pre>
+rle2Gif [-q] [-c #Colors] [-h] RleFile
+</pre>
+
+If no RleFile is given, Rle2Gif will try to read an Rle file from stdin.<P>
+
+<H1>Memory required:</H1>
+
+Screen.
+
+<H1>Options:</H1>
+
+<DL>
+<DT> [-q]
+<DD> Quiet mode.  Defaults off on MSDOS, on under UNIX.  Controls printout
+   of running scan lines.  Use -q- to invert.<P>
+
+<DT> [-c #Colors]
+<DD> Select size of color map in the output Gif file. #Colors
+   should be given as the based 2 log of number of colors. Default is 8
+   which is 256 colors, and which is also the maximum.
+
+<DT> [-h]
+<DD> Print one line of command line help, similar to Usage above..<P>
+</DL>
+
+<H1>Notes:</H1>
+
+As the RLE format allows full 24 bits per pixel (8 per primary color)
+Colors must be quantized to the number of colors as set by the [-c]
+option, above.  This process is quite slow.  See the quantize.c file
+in the lib directory for the code for this quantization algorithm
+(median cut).<P>
+
+<H1>Author:</H1>
+
+Gershon Elber
+
+<HR>
+<ADDRESS>Eric S. Raymond <A HREF="mailto:esr@thyrsus.com">&lt;esr@snark.thyrsus.com&gt;</A></ADDRESS>
+</BODY>
+</HTML>

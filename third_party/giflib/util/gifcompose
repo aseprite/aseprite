@@ -1,0 +1,119 @@
+#!/bin/sh
+#
+# gifcompose --- a GIF compositor
+#
+# This script composes a GIF from a series of overlays described in an input
+# text file.
+#
+if [ "$1" = "-v" ]
+then
+	echo=echo
+else
+	echo=:
+fi
+
+trap "rm -fr comp$$ tmp$$ btmp$$; exit 0" 0 1 2 15
+
+mkdir comp$$;
+
+gen="x"
+while read line
+do
+	set -- $line
+	postproc='n'
+	name=$2
+	case $1 in
+	gif)
+		$echo "Pasting GIF file $2.gif" 1>&2;
+		cat $2.gif >tmp$$
+		shift; shift; postproc='y' ;;
+	raw)
+		$echo "Pasting raw file $2" 1>&2;
+		raw2gif -s $3 $4 <$2 >tmp$$
+		shift; shift; shift; shift; postproc='y' ;;
+	rgb)
+		$echo "Pasting RGB file $2" 1>&2;
+		rgb2gif -s $3 $4 <$2 >tmp$$
+		shift; shift; shift; shift; postproc='y' ;;
+	rle)
+		$echo "Pasting RLE file $2" 1>&2;
+		rle2gif $2 >tmp$$
+		shift; shift; postproc='y' ;;
+	text)
+		$echo "Generating text \`$2'" 1>&2;
+		case "$3" in
+		foreground)
+			text2gif -t "$2" -f $4 >tmp$$;
+			shift; shift;;
+		background)
+			text2gif -t "$2" -c $4 $5 $6 >tmp$$;
+			shift; shift; shift; shift;;
+		*)
+			text2gif -t "$2" >tmp$$;;
+		esac
+		shift; shift; postproc='y' ;;
+	screen)
+		case $2 in
+		size) resize="$3 $4";;
+		position) reposition="$3 $4";;
+		*) echo "Unknown screen operation" 1>&2
+		esac;;
+	esac
+
+	if [ $postproc = 'y' ]
+	then
+		while [ $# != 0 ]
+		do
+			case "$1" in
+			at)
+				$echo "Positioning \`$name' at $2 $3" 1>&2
+				gifpos -i $2 $3 <tmp$$ >btmp$$; mv btmp$$ tmp$$;
+				shift; shift; shift;;
+			clip)
+				$echo "Clipping \`$name' to size $2 $3 $4 $5" 1>&2
+				gifclip -i $2 $3 $4 $5 <tmp$$ >btmp$$; mv btmp$$ tmp$$;
+				shift; shift; shift; shift; shift;;
+			xflip)
+				$echo "Flipping \`$name' around the X axis" 1>&2;
+				gifflip -x <tmp$$ >btmp$$; mv btmp$$ tmp$$;
+				shift;;
+			yflip)
+				$echo "Flipping \`$name' around the Y axis" 1>&2;
+				gifflip -y <tmp$$ >btmp$$; mv btmp$$ tmp$$;
+				shift;;
+			left)
+				$echo "Rotating \`$name' left (counterclockwise)" 1>&2;
+				gifflip -l <tmp$$ >btmp$$; mv btmp$$ tmp$$;
+				shift;;
+			right)
+				$echo "Rotating \`$name' right (clockwise)" 1>&2;
+				gifflip -r <tmp$$ >btmp$$; mv btmp$$ tmp$$;
+				shift;;
+			''|\#*)
+				break;;
+			*)
+				echo "Unknown operator \`$1'" 1>&2
+				shift;;
+			esac
+		done
+
+		mv tmp$$ comp$$/${gen}.gif
+	fi
+
+	gen="${gen}x";
+done
+
+gifasm comp$$/*.gif | gifovly -t 0 >tmp$$
+if [ "$resize" ]
+then
+	gifpos -s $resize <tmp$$ >btmp$$; mv btmp$$ tmp$$;
+fi
+if [ "$reposition" ]
+then
+	gifpos -n $reposition <tmp$$ >btmp$$; mv btmp$$ tmp$$;
+fi
+cat tmp$$
+
+$echo "Done."
+
+# script ends here

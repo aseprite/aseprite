@@ -1,0 +1,71 @@
+<!doctype HTML public "-//W3O//DTD W3 HTML 2.0//EN">
+<HTML>
+<HEAD>
+<TITLE>giftext</TITLE>
+<link rev=made href=mailto:esr@snark.thyrsus.com>
+</HEAD>
+<BODY>
+Go to <a href="index.html">index page</a>.
+
+<CENTER><H1>giftext</H1></CENTER>
+
+A program to dump (text only) general information about GIF file.<P>
+
+<H1>Usage:</H1>
+
+<pre>
+giftext [-q] [-c] [-e] [-z] [-p] [-r] [-h] gif-file
+</pre>
+
+If no gif-file is given, GifText will try to read a GIF file from stdin.<P>
+
+As giftext can generate huge amounts of data, ^C will kill it, but 'q' will
+stop only the printing (of one of -e, -z, -p), while file integrity will still
+be checked.<P>
+
+<H1>Memory required:</H1>
+
+Line.
+
+<H1>Options:</H1>
+
+<DL>
+<DT> [-q]
+<DD> Quiet mode.  Defaults off on MSDOS, on under UNIX.  Controls printout
+   of running scan lines.  Use -q- to invert.<P>
+
+<DT> [-c]
+<DD> Dumps the color maps.<P>
+
+<DT> [-e]
+<DD> Dumps encoded bytes - the pixels after compressed using LZ
+   algorithm and chained to form bytes.  This is the form the data is saved
+   in the GIF file.  Dumps in hex - 2 digit per byte.<P>
+
+<DT> [-z]
+<DD> Dumps the LZ codes of the image.  Dumps in hex - 3 digits per
+   code (as we are limited to 12 bits).<P>
+
+<DT> [-p]
+<DD> Dumps the pixels of the image.  Dumps in hex - 2 digit per
+   pixel (<=byte).<P>
+
+<DT> [-r]
+<DD> Dumps raw pixels as one byte per pixel.  This option inhibits all
+   other options and only the pixels are dumped.  This option may be used to
+   convert GIF files into raw data.  Note: the color map can be extracted by
+   gifclrmp utility.  If more than one image is included in the file, all
+   images will be dumped in order.<P>
+
+<DT> [-h]
+<DD> Print one line of command line help, similar to Usage above.<P>
+</DL>
+
+<H1>Author:</H1>
+
+Gershon Elber
+
+<HR>
+<ADDRESS>Eric S. Raymond <A HREF="mailto:esr@thyrsus.com">&lt;esr@snark.thyrsus.com&gt;</A></ADDRESS>
+</BODY>
+</HTML>

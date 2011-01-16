@@ -1,0 +1,49 @@
+<!doctype HTML public "-//W3O//DTD W3 HTML 2.0//EN">
+<HTML>
+<HEAD>
+<TITLE>gifovly</TITLE>
+<link rev=made href=mailto:esr@snark.thyrsus.com>
+</HEAD>
+<BODY>
+Go to <a href="index.html">index page</a>.
+
+<CENTER><H1>gifovly</H1></CENTER>
+
+This program takes a multi-image GIF file and generates a single GIF
+consisting of all the images overlayed.  Each image's screen position
+is used.  Thus, you can use this together with <a
+href="gifpos.html">gifpos</a> and <a href="gifasm.html">gifasm</a> to
+paste together images.<P>
+
+<H1>Usage:</H1>
+
+<pre>
+gifovly [-s TransparentColor] [-h]
+</pre>
+
+The GIF to be operated is read in from stdin.  The result GIF is written to
+stdout.<P>
+
+<H1>Memory required:</H1>
+
+Proportional to the size of the input file.<P>
+
+<H1>Options:</H1>
+
+<DL>
+<DT> [-t num]
+<DD> If this index is given, any pixel in images after the first that
+   has this value is not copied.<P>
+
+<DT> [-h]
+<DD> Print one line of command line help, similar to Usage above..<P>
+</DL>
+
+<H1>Author:</H1>
+
+Eric S. Raymond &lt;esr@snark.thyrsus.com&gt;<P>
+
+<HR>
+<ADDRESS>Eric S. Raymond <A HREF="mailto:esr@thyrsus.com">&lt;esr@snark.thyrsus.com&gt;</A></ADDRESS>
+</BODY>
+</HTML>

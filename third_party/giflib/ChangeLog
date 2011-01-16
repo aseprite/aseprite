@@ -1,0 +1,661 @@
+2007-11-10 14:50  abadger1999
+
+	* NEWS, configure.ac, lib/Makefile.am, lib/egif_lib.c,
+	  lib/gif_hash.c: 4.1.6 update.  Errors in including headers could
+	  lead to build problems on some platforms.
+
+2007-11-10 13:16  abadger1999
+
+	* configure.ac: Bump release version in configure.ac.
+
+2007-11-10 13:15  abadger1999
+
+	* Makefile.am: Remove PATENT_PROBLEMS from build rules as well.
+
+2007-11-10 13:09  abadger1999
+
+	* NEWS, PATENT_PROBLEMS, lib/Makefile.am: Remove PATENT_PROBLEMS as
+	  it's no longer covered.  Update NEWS and Makefile.am for the new
+	  release.
+
+2007-11-10 10:46  abadger1999
+
+	* configure.ac, util/gif2epsn.c, util/gif2iris.c, util/gif2ps.c,
+	  util/gif2rgb.c, util/gif2rle.c, util/gif2x11.c: Find and fix
+	  segfaults in the gif2* programs due to referencing the ColorMap
+	  beforefinding out if hte GifFile produced a valid colormap or was
+	  corrupt.
+
+2007-11-10 09:30  abadger1999
+
+	* lib/dgif_lib.c: Add checks to fail gracefully when corrupted
+	  images are submitted that have improper LZ codes.
+
+2007-11-10 09:22  abadger1999
+
+	* lib/: dgif_lib.c, egif_lib.c: Further checks to compile correctly
+	  on WIN32.
+
+2007-11-09 20:28  abadger1999
+
+	* util/giftext.c: Fix a SegFault when a GifFile does not store a
+	  global colormap.
+
+2007-11-09 20:13  abadger1999
+
+	* util/gif2x11.c: Fix gif2x11 to work with modern, 24 bit displays.
+
+2007-11-09 14:18  abadger1999
+
+	* configure.ac: Check for headers as well as the libraries for rle,
+	  X11, and gl_s.
+
+2007-11-09 13:24  abadger1999
+
+	* configure.ac: Merge better fix for finding an unsignd 32 bit
+	  integer type.
+
+2007-11-09 13:01  abadger1999
+
+	* configure.ac: Add configure comman line switches to turn off X11,
+	  rle, and gl support.
+
+2007-11-09 12:36  abadger1999
+
+	* configure.ac, util/Makefile.am: Fixes to build under cygwin.
+
+2007-11-09 11:49  abadger1999
+
+	* configure.ac: Make GCC check more robust.  Add a needed automake
+	  check.
+
+2007-11-09 11:48  abadger1999
+
+	* lib/dgif_lib.c: Fix closing file handles on failure in
+	  DGifOpenFileHandle().
+
+2007-11-09 11:33  abadger1999
+
+	* lib/egif_lib.c: Save files in binary mode for WIN32 as well as
+	  MSDOS.
+
+2007-11-09 11:25  abadger1999
+
+	* lib/Makefile.ms: * Makefile for building under Visual C++ from
+	  Bug #981209.
+
+2005-11-13 20:14  abadger1999
+
+	* configure.ac, lib/Makefile.am, util/Makefile.am: Changes to
+	  conditionalize -Wall upon compiling with gcc.
+
+2005-11-06 08:45  abadger1999
+
+	* lib/: gif_hash.c, gif_hash.h: Add inttypes.h to the headers we
+	  could include to get a 32-it int type.
+
+2005-11-06 08:34  abadger1999
+
+	* configure.ac: Search for ISO/ANSI definitions of uint32_t in
+	  stdint.h _and_ inttypes.h before POSIX u_int32_t in sys/types.h
+	  as some systems have sys/types.h without the definition.
+	  Eventually we need to code a test that the expected UINT32
+	  definition exists in the header we select so order does not
+	  matter.
+
+2005-11-06 08:32  abadger1999
+
+	* AUTHORS, README: Modify so that it no longer appears that esr
+	  still maintains this package.
+
+= giflib-4.1.4 =
+
+2005-10-09 Toshio Kuratomi <toshio@tiki-lounge.com> - r94    
+    * Sync with libungif r93.
+    * ChangeLog: Update to r92.
+    * NEWS: Update with combined libungif/giflib changes.
+    
+2005-10-09 Toshio Kuratomi <toshio@tiki-lounge.com> - r92    
+    * lib/gif_lib.h: Change GifPrefixType to unsigned.
+    
+2005-10-09 Toshio Kuratomi <toshio@tiki-lounge.com> - r91    
+    * ChangeLog: Update to r90.
+    * NEWS: Update on GBA and Windows fixes.
+    
+2005-10-06 Toshio Kuratomi <toshio@tiki-lounge.com> - r90    
+    Changes from Lennie Araki:
+    * gba/giftest.mak: Prefix the names of defines for the GBA build with _GBA.
+    * lib/dgif_lib.c, lib/gif_lib_private.h, lib/gif_err.c:
+      - When Compiling for Game Boy Advance, file functions are not needed so
+        exclude DGifOpenFileName(), DGifOpenFileHandle(), DGifSlurp(), and
+        PrintGifError().
+      - On Game Boy Advance we need to reduce memory usage.  Change values to
+        short int where appropriate.
+    * lib/gif_lib.h:
+      - Handle te GBA changes by defining GifPrefixType and GifWord to int
+        unless compiling on GBA.  Then use unsigned short and short
+        respectively.
+      - Fix a problem with the API on _WIN32.  DrawText conflicts with the
+        Windows API.  Call it DrawGifText instead.
+      
+2005-09-27 Toshio Kuratomi <toshio@tiki-lounge.com> - r86    
+    * Sync with libungif r85.
+    
+2005-09-27 Toshio Kuratomi <toshio@tiki-lounge.com> - r82    
+    * AUTHORS: Add Daniel Eisenbud.  Obscure email addresses.
+    * libungif.spec: Bump to version 4.1.4.
+    * configure.ac: Bump to 4.1.4.  No longer check for ranlib.
+    * doc/lzgif.txt: Change dos line encoding to UNIX.
+    * lib/dgif_lib.c: (eisenbud)
+      - Set GifFile's ColorMaps to NULL when we free a colormap object.
+      - Detect some cases of corrupted GIFs which were crashing the library.
+    * lib/egif_lib.c: Set ColorMaps to NULL when we free a colormap object.
+    * lib/gifalloc.c: Set ColorMaps to NULL when we free a colormap object.
+    * lib/dev2gif.c: Fix redefinition problem on IRIX.
+    * NEWS: Update to 4.1.4
+    * util/gifcomb.c: Set a olorMap to NULL.
+    
+2004-07-11 Toshio Kuratomi <toshio@tiki-lounge.com> - r79    
+    * gif2iris.c: Fixes from Georg Schwarz <geos[AT]epost.de>.
+      - stdlib.h is available and needs to be included on IRIX.
+      - ColorMapSize was being set from non-existent variables.
+    
+2004-05-29 Toshio Kuratomi <toshio@tiki-lounge.com> - r76    
+    * Sync with libungif-4.1.3.
+
+2004-05-29 Toshio Kuratomi <toshio@tiki-lounge.com> - r74    
+    * ChangeLog, prop=lastlog: Sync with the subversion logs.
+    
+2004-05-29 Toshio Kuratomi <toshio@tiki-lounge.com> - r73    
+    * test-unx: Add a test of extension code.
+    * lib/egif_lib.c: Remove a debugging statement
+    
+2004-05-29 Toshio Kuratomi <toshio@tiki-lounge.com> - r72    
+    * Makefile.am, doc/Makefile.am, pic/Makefile.am: Change wildcarded entries
+      into explicit filenames so make distcheck will succeed.
+    
+2004-05-29 Toshio Kuratomi <toshio@tiki-lounge.com> - r71    
+    * ChangeLog, prop=lastlog: Sync the ChangeLog for the release.
+    
+2004-05-29 Toshio Kuratomi <toshio@tiki-lounge.com> - r70    
+    * AUTHORS: Add Lennie Araki to the list of contributers.
+    * windows: The windows subdirectory and all files under it are contributions
+      from Lennie Araki to provide a nice interface on MS Windows.
+    * README: Redundancy fix.
+    * doc/gif_lib.html: Add EGifPutExtension{First,Next,Last} to the documentation
+      so people know they should use it instead of EGifPutExtension.
+    * Makefile.am: Mark the windows files to be distributed.
+    * NEWS: Complete the NEWS item for 4.1.3.
+    
+2004-05-29 Toshio Kuratomi <toshio@tiki-lounge.com> - r69    
+    * libungif.spec: Some updates from the latest RedHat spec.
+    * configure.ac: Bump version to 4.1.3.
+    * lib/gifalloc.c: Add to my comments on ESR's note about Extension blocks.
+    * lib/egif_lib.c:
+      - EGifPutComment(): reimplemented using EGifPutExtensionFirst, Next, and
+        Last so that it won't break on unusually long comments.
+      - EGifPutExtension{First,Next,Last}: Changed fwrites to WRITE so any
+        user defined write function will get called properly.
+      - EGifPutExtensionLast: if the Extension block is empty (Zero length)
+        then don't attempt to output a last extension block, just output the 
+        block terminator.
+      - EGifPutExtension: Comment that this function does not work when there
+        are multiple subblocks in an Extension block.  Use the functions
+        EGifPutExtension{First,Next,Last} instead.
+      - EGifSpew: Reimplement to use EGifPutExtension{First,Next,Last} so we
+        don't output broken GIFs when there are multiple sub-blocks on an
+        extension.
+    * lib/Makefile.am: Bump version to 4.1.3.
+    * NEWS: Begin writing an entry for 4.1.3.
+    * util/icon2gif.c: Few casting fixes to make gcc -Wall happy.
+    * util/gif2ps.c: printf format string corrections.
+    
+2004-05-26 Toshio Kuratomi <toshio@tiki-lounge.com> - r67    
+    * Clean up some typos.
+    
+2004-05-25 Toshio Kuratomi <toshio@tiki-lounge.com> - r66
+    * Sync with libungif-4.1.2.
+
+2004-03-03 Toshio Kuratomi <toshio@tiki-lounge.com> - r64    
+    Last minute updates to the release notes in various files.
+
+2004-03-03 Toshio Kuratomi <toshio@tiki-lounge.com> - r63    
+    * Set property lastlog to remind me when I last synced the ChangeLog
+
+2004-03-03 Toshio Kuratomi <toshio@tiki-lounge.com> - r62    
+    * ChangeLog: Update
+
+2004-03-03 Toshio Kuratomi <toshio@tiki-lounge.com> - r61    
+    * configure.ac: Bump version to 4.1.2
+    
+2004-02-22 Toshio Kuratomi <toshio@tiki-lounge.com> - r59    
+    * configure.ac, lib/Makefile.am: Bump version.  Forgot to do this for 4.1.1...
+
+2004-02-22 Toshio Kuratomi <toshio@tiki-lounge.com> - r58    
+    * TODO: Take out -Wall as that's all ready now.
+
+2004-02-22 Toshio Kuratomi <toshio@tiki-lounge.com> - r57    
+    Merge changes to the code from branch indent-audit r55
+    * README: MakeExtension deprecation note.
+    * TODO: Bunch of things I need to fix or check that I saw while doing the
+      indentation of the code.
+    * lib/getarg.h: indent changes
+    * lib/dgif_lib.c: indent changes
+      - Move stdlib.h out of #ifdef's as it's included on all platforms.
+      - Add checks to be sure malloc and MakeMapObject succeed.
+    * lib/quantize.c: indent changes
+      - Move stdlib.h out of #ifdef's as it's included on all platforms.
+      - _GifError already pulled in through gif_lib_private.h.  Remove decl.
+      - Make Count in NewColorMapType be unsigned.
+      - Separated mallocs from conditionals in a few places.  Easier reading.
+    * lib/gifalloc.c: indent changes
+      - Added four FIXME's where I think the code might not be doing what we
+        want.  Need to do more research to figure out.
+      - Add note to MakeExtension that I think it needs to be deprecated.
+      - Separated mallocs from conditionals in a few places.  Easier reading.
+      - FreeLastSavedImage: New private function to free the last image in a
+        GifFile structure.  Used to back out when unable to completely
+        allocate a new SavedImage structure.
+      - check for NULL values before deallocating in Free* functions and make
+        sure all Free* functions set the pointer to NULL after they deallocate
+        the memory.
+    * lib/egif_lib.c: indent changes
+      - EGifPutScreenDesc: If we have no colormap, output a default value for
+	its size instead of trying to reference its unallocated BitsPerPixel
+	field. (Fixes bug noted in r46)
+    * lib/gif_lib.h: indent changes
+      - Condense the #else #if VARARGS to #elif VARARGS check.
+    * lib/qprintf.c: indent changes
+      - Condense the #else #if VARARGS to #elif VARARGS check.
+    * lib/dev2gif.c: indent changes
+    * lib/getarg.c: indent changes
+    * lib/gif_lib_private.h: indent changes
+    * lib/gif_font.c: indent changes
+    * lib/gif_err.c: indent changes
+    
+2004-02-22 Toshio Kuratomi <toshio@tiki-lounge.com> - r56    
+    * lib/Makefile.am, util/Makefile.am: Add -Wall to the compilation flags so
+      we can keep the code from acquiring too much bad style.
+    
+2004-02-20 Toshio Kuratomi <toshio@tiki-lounge.com> - r46    
+    * egif_lib.c: Note for a bug fix (Can wait until after indent because
+      there's no patch.)
+    * gif_lib.h, dev2gif.c: Change int type to explicit long type in
+      DumpScreen2Gif.
+    * util/gifinto.c: Give the fprintf back its %d format.
+      GifFile->ImageCount is used as the Image number.
+    
+2004-02-20 Toshio Kuratomi <toshio@tiki-lounge.com> - r45    
+    * README: add varargs to the deprecation list
+
+2004-02-20 Toshio Kuratomi <toshio@tiki-lounge.com> - r44    
+    * test-unx: Quote the program names.
+    * lib/dgif_lib.c:
+      - Make sure memory was allocated for the colormap
+      - Some reformatting of code but no syntactic changes.
+    * lib/gif_lib.h:
+      - C++ extern "C" fix
+      - Fix typo with EGifOpen
+    * lib/qprintf.c, lib/getarg.c: Update the varargs code.  Some users reported
+      that not all systems can handle the hybridized varargs parameter lists
+      we had.  Need to use old-style declarations instead.
+    
+2004-02-20 Toshio Kuratomi <toshio@tiki-lounge.com> - r43    
+    * NEWS: Note bugfixes and deprecations
+    * README: Deprecation list is now being compiled in this file.
+    * TODO: Notes about interlace bug, -Wall status, merging of old bug status
+    
+2004-02-19 Toshio Kuratomi <toshio@tiki-lounge.com> - r42    
+    * Makefile.am: Disable testing for now because gif2x11 is broken so none
+      of the tests _appear_ to complete successfully.
+    
+2004-02-19 Toshio Kuratomi <toshio@tiki-lounge.com> - r38    
+    Merge -Wall fixes from branches/Wall-audit r29
+    * configure.ac:
+      - Make the stdarg vs varargs check simpler by relying on
+        AC_CHECK_HEADERS() magic.
+      - Check for unistd.h
+    * dgif_lib.c, gif_lib.h, egif_lib.c, gifalloc.c, quantize.c, dev2gif.c,
+      getarg.c, gif_lib_private.h, gif_font.c gif_err.c, gifinto.c, icon2gif.c,
+      raw2gif.c, gifcolor.c, gifasm.c, gif2epsn.c, gif2iris.c, gifrotat.c,
+      gifovly.c, gif2x11.c, rle2gif.c, gif2rle.c, text2gif.c, gifspnge.c,
+      gifclrmp.c, giffiltr.c, giftext.c, gifinfo.c, rgb2gif.c, gif2rgb.c, gif2ps.c
+      - Changes to get rid of -Wall compile warnings.
+        + Casting of types
+        + New header includes for unistd.h and fcntl.h
+        + Explicit declaration of many types to unsigned
+        + Removed unused variables and functions
+        + Removed VersionStr from every library file.  Instead include it via
+          gif_lib_private.h
+    * gif_lib.h, gif_lib_private.h: Moved the VersionStr into gif_lib_private.h
+      and made it a #define instead of a static char *.
+    
+2004-02-19 Toshio Kuratomi <toshio@tiki-lounge.com> - r37    
+    Deprecation notes
+
+2004-02-19 Toshio Kuratomi <toshio@tiki-lounge.com> - r36    
+    Add notes about security things to do and giflib syncing
+
+2004-02-18 Toshio Kuratomi <toshio@tiki-lounge.com> - r32  
+  * TODO: Add notes about how to go about syncing Wall-audit and indent changes
+    into giflib.  It won't be pretty.
+  * svn:ignore: Change the tarball names from libungif to giflib
+
+2004-02-18 Toshio Kuratomi <toshio@tiki-lounge.com> - r31  
+  Add config.h include to gif_hash.c
+
+2004-02-17 Toshio Kuratomi <toshio@tiki-lounge.com> - r30  
+  Sync up with libungif 4.1.1
+
+2004-02-17 Toshio Kuratomi <toshio@tiki-lounge.com> - r26    
+    Updated ChangeLog
+
+2004-02-17 Toshio Kuratomi <toshio@tiki-lounge.com>
+	* Updated libungif.spec to look more like fedora core spec
+	* Updated version numbers in all files
+
+2004-02-17 Toshio Kuratomi <toshio@tiki-lounge.com>
+	* Add the libungif*.tar.bz2 distribution tarball to the ignored files
+	* configure.ac, lib/getarg.c, lib/getarg.h, lib/gif_lib.h, lib/qprintf.c:
+	  Prefer stdarg.h over vararg.h
+	* TODO: Add information about functions that will go away in 5.0
+	  (In reality, I don't think new software uses libungif, so there may never
+	  be a 5.0 release.)
+	* lib/gif_lib.h: Change version from 4.0 to 4.1
+	* NEWS: add deprecation warning for the qprintf stuff: GifQuietPrint var and 
+	  GifQprintf function.
+
+2004-02-16 Toshio Kuratomi <toshio@tiki-lounge.com>
+	* util/gif2iris.c, util/gif2rle.c, util/gifinfo.c: Fix problems with fprintf error statements in the utils
+
+2004-02-16 Toshio Kuratomi <toshio@tiki-lounge.com>
+	Add DEVELOPERS file to the distribution.
+
+2004-02-16 Toshio Kuratomi <toshio@tiki-lounge.com>
+	* AUTHORS, libungif.spec, libungif.lsm, README, BUGS, NEWS:
+	  Lots of changes to my email address and the website/download.  (libungif is
+	  moving to sourceforge.)
+	* TODO: Few notes on cleanups that need to happen.  State what needs to be done
+	  for 4.1.1 to be released.
+
+2004-02-15 Toshio Kuratomi <toshio@tiki-lounge.com>
+	Changes imported from last cvs checkout
+	* TODO: note to check return of malloc everywhere
+	* lib/dgif_lib.c, lib/egif_lib.c: Fix some deallocation bugs
+	* lib/gifalloc.c: Fix a colormap allocation problem
+	* lib/gif_font.c: Fix to drawing text
+
+2004-02-15 Toshio Kuratomi <toshio@tiki-lounge.com>
+	Added libgetarg.a to the ignore list.
+
+2004-02-15 Toshio Kuratomi <toshio@tiki-lounge.com>
+	Changes to the build infrastructure to build under current libtool, automake,
+	and libtool.
+	* configure.in: renamed to configure.ac
+	* acconfig.h: deleted.  Functionality moved into the configure.ac
+	* autogen.sh: now runs libtoolize --automake
+	* lib/Makefile.am, util/Makefile.am: CFLAGS=>AM_CFLAGS; INCLUDES=>AM_CPPFLAGS
+	* configure.ac:
+	  - initialization macros for automake and autoconf have changed
+	  - removed checks for C++ compiler and Awk
+	  - acconfig.h functionality moved here.
+	  - add other X11 libraries to the X11_LIB define
+
+2004-02-15 Toshio Kuratomi <toshio@tiki-lounge.com>
+	* Remove INSTALL file as it's autogenerated.\n* Add stamp-h1 to ignored files
+
+2004-02-15 Toshio Kuratomi <toshio@tiki-lounge.com>
+	Additional adds and deletes to make version 4.1.0b1
+
+2004-02-15 Toshio Kuratomi <toshio@tiki-lounge.com>
+	Import of version 4.1.0b1
+
+2004-02-15 Toshio Kuratomi <toshio@tiki-lounge.com> - r10  
+  Import giflib 4.1.0
+
+2004-02-15 Toshio Kuratomi <toshio@tiki-lounge.com> - r9  
+  Copy the 4.1.0 libungif release to be the base of the 4.1.0 giflib release.
+
+2004-02-15 Toshio Kuratomi <toshio@tiki-lounge.com> - r7  
+  Release 4.1.0
+
+2004-02-15 Toshio Kuratomi <toshio@tiki-lounge.com> - r6  
+  Import of version 4.1.0
+
+2004-02-15 Toshio Kuratomi <toshio@tiki-lounge.com> - r5  
+  Set ignore patterns on the project directories.
+
+2004-02-15 Toshio Kuratomi <toshio@tiki-lounge.com> - r3  
+  Remove a Makefile.in that was left in in the first commit.
+
+2004-02-14 Toshio Kuratomi <toshio@tiki-lounge.com> - r2  
+  Commit revision 3.1.0 to subversion
+
+2004-02-14 Toshio Kuratomi <toshio@tiki-lounge.com> - r1  
+  Initial SVN Repository Layout
+
+2000  6 Feb Toshio Kuratomi <badger@prtr-13.ucsc.edu>
+    * configure.in: Change to using config.h
+      - Every .c file: Change to using config.h.
+    * configure.in: added check for varargs header.
+    * lib/getarg.c: Changed the ifdef USE_VARARGS to ifdef HAVE_VARARGS_H.
+      - lib/getarg.h: Ditto.
+      - lib/gif_lib.h: Ditto.
+      - lib/qprintf.h: Ditto.
+
+2000  6 Feb Toshio Kuratomi <badger@prtr-13.ucsc.edu>
+    * lib/getarg.h: Prepend an underscore to the header file define.
+    * lib/gif_lib.h: Ditto
+    * lib/gif_lib_private.h: Ditto
+    * lib/getarg.c: ifdef'd MyMalloc so it actually won't define if it already
+      is.
+
+2000 3  Feb Toshio Kuratomi <badger@prtr-13.ucsc.edu>
+    * A new cvs repository based my private tree from home.  It now goes back
+      to giflib-3.0.
+    * Updated the cvs repository to make multiple developers possible.
+    * Merge all of Michael's patches into the distribution.
+    * DEVELOPER: Updated to reflect the new versions of
+      autoconf/automake/libtool we're using.
+    * libungif.spec: Updated a few things from the latest redhat spec file.
+
+1999 5  Dec Toshio Kuratomi <badger@prtr-13.ucsc.edu>
+        * Update links to the web pages as I have reorganized them somewhat.
+        * Add the welcome2.gif to the pic directory and a test that utilizes
+          it to test-unx.
+
+1999 17 Nov Toshio Kuratomi <badger@prtr-13.ucsc.edu>
+        * New cvs Repository.  Hopefully I've got everything that was in the
+          old one.  This one is available on anonymous cvs.
+        * Update to libtool 1.3.3, automake 1.4, and autoconf 2.13
+
+1999 23 May Michael R Brown <michael@arrakeen.demon.co.uk>
+        * Lots of 'const' qualifiers added, thanks Alexis
+          Wilke for finding these.
+
+1999 22 Mar Michael R Brown <michael@arrakeen.demon.co.uk>
+        * util/gif2x11.c: Patch by (who?) to fix lots of memory leeks.
+        * util/*.c:
+          lib/dgif_lib.c:
+          Makefile.in:
+          Patch by David Kaelbling to compile on IRIX 6.x. Basically fixing
+          lots of bad/missing parameter passing to printf, scanf and similar.
+        * Added pics/welcome2.gif, from Peter Merz which provokes a bug prior
+          to patch 19990224 to do with colour map management.  There is still
+          a problem with util/gifspnge processing this image, so it will not
+          be added to test-unx yet.
+
+1999 05 Mar Michael R Brown <michael@arrakeen.demon.co.uk>
+        * lib/getarg.c: Lines 107 and 189
+          Added ifdef's to use stdarg when available. On dec-alpha the
+          default code was causing programs to crash, probably because
+          it assumes a stack that grows-up.
+
+1999 24 Feb Michael R Brown <michael@arrakeen.demon.co.uk>
+        * lib/dgif_lib.c: Lines 363 and 367
+          Bug reported by Steve Sanders, where &'s where causing the
+          memcpy to overwrite the pointers. Fixed by removing the &'s
+          so that memcpy overwrote the memory pointed to.
+
+1999 09 Feb Toshio Kuratomi <badger@prtr-13.ucsc.edu>
+        * Release 4.1.0
+
+1999 09 Feb Toshio Kuratomi <badger@prtr-13.ucsc.edu>
+        * Merge libungif changes into the giflib tree:
+         - upgrade to libtool 1.2b
+         - util/Makefile.am: Minor change to allow compilation outside the
+           source_dir.
+         - lib/egif_lib.c: FILE_STATE_WRITE, FILE_STATE_SCREEN,
+           FILE_STATE_IMAGE, IS_WRITEABLE are now in gif_lib_private.h
+         - lib/dgif_lib.c: FILE_STATE_READ and IS_READABLE are now in
+           gif_lib_private.h
+         - lib/gif_lib_private.h: Above mentioned constants and macros are now
+           here.  FILE_STATE_READ is now 0x08 instead of 0x00.
+         - configure.in: Update version to 4.1.0
+         - lib/Makefile.am: Update libtool version to 5:0:1 (libtool)
+         - giflib.spec: Update for version 4.1.0 (Add libungif-4.1
+           compatibility stuff and change version.)
+         - giflib.lsm: Update for version 4.1.0
+         - lib/egif_lib.c: (WRITE)  change from a function to a macro.
+         - lib/dgif_lib.c: (DGifOpenFileName) close FileHandle on error.
+         - lib/dgif_lib.c: (DGifOpenFileHandle) make sure the FILE stream is
+           closed if we hit an error.
+         - lib/dev2gif.c, lib/quantize.c, lib/gif_err.c, lib/gif_lib_private.h:
+           Reflect Eric's copyright notice rather than Gershon's
+
+1999 14 Jan  Michael R Brown <michael@arrakeen.demon.co.uk>
+        * lib/gif_lib.h: Add OutputFunc type
+        * lib/gif_lib.h: Add EGifOpen for user supplied output function
+        * lib/egif_lib.c: (EGifOpenFileName) Fixed wasted memory when an
+          error occurs in EGifOpenFileHandle
+        * lib/egif_lib.c: Add EGifOpen, WRITE, and lots of changes to
+          support user supplied output function. Basically changing
+          all fwrite's to WRITE, and then all of the knock on effects.
+
+1998 17 Dec Toshio Kuratomi <badger@prtr-13.ucsc.edu>
+        * configure.in: Change references to libungif to giflib.
+        * libungif.lsm: Rename to giflib.lsm and change to reflect giflib
+          rather than libungif.
+        * libungif.spec: Rename to giflib.spec and change to reflect giflib
+          rather than libungif.
+        * UNCOMPRESSED_GIF: Removed from this branch.
+        * PATENT_PROBLEMS: Add file explaining Unisys's patent claims. 
+        * Makefile.am: Replace libungif with giflib.
+        * README: Adapted language to giflib.
+        * lib/Makefile.am: Changed references to libungif to libgif.
+        * util/Makefile.am: Changed references to libungif to libgif.
+
+1998 17 Dec Toshio Kuratomi <badger@prtr-13.ucsc.edu>
+        * lib/egif_lib.c: Merge LZW stuff into this branch of the library.
+          This includes numerous changes to initialize the hash table as well
+          as the code forthe encoder.
+        * lib/gif_hash.c: Functions needed for the LZW encoder.
+        * lib/gif_hash.h: Functions needed for the LZW encoder.
+        * lib/Makefile.am: Add gif_hash.c gif_hash.h to the list of sources.
+
+1998 15 Dec Toshio Kuratomi <badger@prtr-13.ucsc.edu>
+        * lib/dgif_lib.c: (DGifSlurp) Fix a Seg Fault when an image contains
+          no extension blocks.
+
+1998 14 Dec Toshio Kuratomi <badger@prtr-13.ucsc.edu>
+        * configure.in: Update version to 4.0
+        * lib/Makefile.am: Update libtool version to 4:0:0 (libtool)
+        * libungif.spec: Update for version 4.0 (not binary compatible with
+          giflib, change version.)
+        * lib/gif_lib_private.h: (PrivateType) New header for common stuff
+          private to the library.  Currently, this is only the Private struct.
+        * lib/dgif_lib.c: (PrivateType) Extract the Private struct to
+          gif_lib_private.h
+        * lib/egif_lib.c: (PrivateType) Extract the Private struct to
+          gif_lib_private.h
+        * lib/Makefile.am: Add gif_lib_private.h to the list of source files.
+        * lib/gif_lib.h: (ExtensionBlock) Add a Function entry to the
+          ExtensionBlock record.  Note that this is not entirely correct:
+          the GifLib ExtensionBlock structure is actually a data sub-block
+          record.  By adding the function entry here, we are pushing the
+          ExtensionBlockType in with the DataSubBlock.
+          Sometime in the future, we need to change the API to have true
+          ExtensionBlocks which have DataSubBlocks belonging to them.
+        * lib/gif_lib.h: (ExtensionBlock) Deprecate the use of Function in
+          the SavedImage struct.  Use ExtensionBlock's Function instead.
+        * lib/egif_lib.c: (EGifSpew) Changes to use the new Function variable.
+        * lib/dgif_lib.c: (DGifSlurp) Changes to put data into the new
+          Function variable.
+
+1998 3 Dec  Toshio Kuratomi <badger@prtr-13.ucsc.edu>
+        * lib/dgif_lib.c: (DGifSlurp) Three changes:
+          - No longer allocate SaveImage in this function.  All allocations
+            of SaveImage take place in DGifGetImageDesc.
+          - Extension blocks are now associated with the Image Block that is
+            read in subsequent to them, not before.  This should now be
+            conformant to the gif89a specification.
+          - Fix an off-by-one error when copying extension data from structure
+            to structure.
+        * lib/dgif_lib.c: (DGifGetImageDesc) Change the function to do its own
+          allocation of space for the SavedImage structure no matter what.
+        * lib/egif_lib.c: (EGifSpew) The function now spits out
+          ExtensionBlocks before the associated Image Block to conform with
+          the gif89a specification.
+        * lib/egif_lib.c: (EGifOpenFileHandle) Move the write of the
+          GifVersion (gif87a or gif89a) from this function into
+          EGifPutScreenDesc so that it can be controlled by EGifSpew.  Note
+          that this is still a hack as the GifVersion write doesn't really
+          belong in either of these functions.
+        * lib/egif_lib.c: (EGifPutScreenDesc) Moved writing the version
+          (gif87a or gif89a) into the file into this function from
+          EGifOpenFileHandle.
+        * test-unx: Now test the extension code.
+        * pic/x-trans.gif: New image with Comments and transparency to test
+          the extension code with.
+
+1998 29 Nov Toshio Kuratomi <badger@prtr-13.ucsc.edu>
+        * lib/dgif_lib.c: (DGifSlurp) Fix a few of the minor bugs plaguing
+          this function.  At this point, the function should no longer cause
+          a Seg Fault.  It is now losing all extension data however.  I know
+          how to hack a fix in, but I need to commit these changes first.
+        * lib/dgif_lib.c: (DGifGetImageDesc) Fix my bug fix: the colormap is
+          now only copied if it exists :-).
+
+1998 10 Nov Toshio Kuratomi <badger@prtr-13.ucsc.edu>
+        * test-unx: Add a test for DGifSlurp and EGifSpew
+
+1998 14 Oct Toshio Kuratomi <badger@prtr-13.ucsc.edu>
+        * lib/dgif_lib.c: (DGifGetImageDesc) Fix a bug where the Colormap for
+          the image description and the SaveImage were pointers to the same
+          structure, causing a SegV when DGifClosing the file.
+
+1998 9 Oct  Toshio Kuratomi <badger@prtr-13.ucsc.edu>
+        * lib/dgif_lib.c: (DGifSlurp) memory for the extensions was not being
+          allocated.  Now I call AddExtensionBlock when I add an extension to
+          the structure.  Additionally, fix a memory leak here.
+        * configure.in, NEWS, lib/Makefile.am: Update to version 3.1.1
+        * ltmain.sh, ltconfig: removed from the cvs repository
+        * BUGS: add the BUGS file to list unresolved BUGS.
+
+1998 9 Sep  Toshio Kuratomi <badger@prtr-13.ucsc.edu>
+        * libungif.spec: Fix wrong version in %files and %install section.
+
+1998 8 Sep  Toshio Kuratomi <badger@prtr-13.ucsc.edu>
+        * lib/gif_hash.c, lib/gif_hash.h: Removed these because a hash table
+          is not needed to create uncompressed gifs.
+        * lib/egif_lib.c: Remove all references to the hash functions.
+        * lib/Makefile.am: Remove gif_hash.c gif_hash.h from the source files.
+        * libungif.lsm: added this file
+ 
+1998 7 Sep  Toshio Kuratomi <badger@prtr-13.ucsc.edu>
+        * lib/dgif_lib.c, lib/gif_lib.h: (DGifOpen) Add callback to read gif
+          image through user supplied function (Peter Mehlitz).
+
+1998 6 Sep  Toshio Kuratomi <badger@prtr-13.ucsc.edu>
+        * util/*.{gif.rle}: removed files that were left by my testing
+          process and shouldn't have been in the distribution.
+        * UNCOMPRESSED_GIF: add section on why software that can decode
+          LZW compressed gifs (but not write them) is legal.
+        * .cvsignore: added .cvsignore files to ignore Makefiles and other
+          generated files in my cvs repository.
+        * Makefile.am's: Fixes to allow the dist* family of targets to work
+          correctly.  Preliminary support for make check as well.
+        * configure.in: Update version to 3.1.0
+        * lib/Makefile.am: Update libtool version to 4:0:1 libtool)
+        * libungif-3.0.spec: Update from Marc Ewing.
+        * Add int/pointer Alpha fixes from Dick Porter to many source files.

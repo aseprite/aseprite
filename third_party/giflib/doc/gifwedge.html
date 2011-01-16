@@ -1,0 +1,53 @@
+<!doctype HTML public "-//W3O//DTD W3 HTML 2.0//EN">
+<HTML>
+<HEAD>
+<TITLE>gifwedge</TITLE>
+<link rev=made href=mailto:esr@snark.thyrsus.com>
+</HEAD>
+<BODY>
+Go to <a href="index.html">index page</a>.
+
+<CENTER><H1>gifwedge</H1></CENTER>
+
+A program to create a test GIF image with intensity levels of the RGB colors
+YCM colors and white.<P>
+
+<H1>Usage:</H1>
+
+<pre>
+gifwedge [-q] [-l #Lvls] [-s SizeX SizeY] [-h]
+</pre>
+
+<H1>Memory required:</H1>
+
+Line.
+
+<H1>Options:</H1>
+
+<DL>
+<DT> [-q]
+<DD> Quiet mode.  Defaults off on MSDOS, on under UNIX.  Controls printout
+   of running scan lines.  Use -q- to invert.<P>
+
+<DT> [-l #Lvls]
+<DD> Set number of intensity levels per color.  This number must be
+   power of two up to 32, as Gif format can only have 256 color simultanuously
+   and 7 basic colors are to be displayed.<P>
+
+<DT> [-s SizeX SizeY]
+<DD> Force image size to be SizeX by SizeY pixels.
+   Image size will be rounded down to be a multiple of number of intensities
+   horizontally, and 7 (colors) vertically.<P>
+
+<DT> [-h]
+<DD> Print one line command line help, similar to Usage above.<P>
+</DL>
+
+<H1>Author:</H1>
+
+Gershon Elber
+
+<HR>
+<ADDRESS>Eric S. Raymond <A HREF="mailto:esr@thyrsus.com">&lt;esr@snark.thyrsus.com&gt;</A></ADDRESS>
+</BODY>
+</HTML>

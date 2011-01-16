@@ -1,0 +1,56 @@
+<!doctype HTML public "-//W3O//DTD W3 HTML 2.0//EN">
+<HTML>
+<HEAD>
+<TITLE>gif2rle</TITLE>
+<link rev=made href=mailto:esr@snark.thyrsus.com>
+</HEAD>
+<BODY>
+Go to <a href="index.html">index page</a>.
+
+<CENTER><H1>gif2rle</H1></CENTER>
+
+A program to convert images saved as GIF to RLE (Utah raster toolkit)
+format.<p>
+
+<H1>Usage:</H1>
+
+<pre>
+gif2rle [-q] [-a] [-h] gif-file
+</pre>
+
+If no gif-file is given, Gif2Rle will try to read a GIF file from stdin.<p>
+
+
+<H1>Memory required:</H1>
+
+Screen.
+
+<H1>Options:</H1>
+
+<DL>
+<DT> [-q]
+<DD> Quiet mode.  Defaults off on MSDOS, on under UNIX.  Controls printout
+   of running scan lines. Use -q- to invert.<P>
+
+<DT> [-a]
+<DD> Add alpha channel (see rle document) to the output data file.<P>
+
+<DT> [-h]
+<DD> Print one line command line help, similar to Usage above.<P>
+</DL>
+
+<H1>Notes:</H1>
+
+This routine must be linked with the RLE toolkit library librle.a and
+is not built by the normal distribution make.  If you want to convert
+images to RLE format, it is reasonable to assume you have this library
+available.<p>
+
+<H1>Author:</H1>
+
+Gershon Elber
+
+<HR>
+<ADDRESS>Eric S. Raymond <A HREF="mailto:esr@thyrsus.com">&lt;esr@snark.thyrsus.com&gt;</A></ADDRESS>
+</BODY>
+</HTML>

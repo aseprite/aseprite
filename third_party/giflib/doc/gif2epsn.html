@@ -1,0 +1,98 @@
+<!doctype HTML public "-//W3O//DTD W3 HTML 2.0//EN">
+<HTML>
+<HEAD>
+<TITLE>gif2bgi</TITLE>
+<link rev=made href=mailto:esr@snark.thyrsus.com>
+</HEAD>
+<BODY>
+Go to <a href="index.html">index page</a>.
+
+<CENTER><H1>gif2epsn</H1></CENTER>
+
+A program to dump images saved as GIF files on Epson type printers.<P>
+
+<H1>Usage:</H1>
+
+<pre>
+gif2epsn [-q] [-d dither] [-t bw] [-m map] [-i] [-n] [-p printer] [-h] gif-file
+</pre>
+
+If no gif-file is given, Gif2Epsn will try to read a GIF file from stdin.<p>
+
+
+<H1>Memory required:</H1>
+
+Screen.
+
+<H1>Options:</H1>
+
+<DL>
+<DT>[-q]
+<DD> Quiet mode.  Default off on MSDOS, on under UNIX. Controls printout
+   of running scan lines. Use -q- to invert.<P>
+
+<DT>[-d dither]
+<DD> Sets size of dithering matrix, where DitherSize can be
+   2,3 or 4 only (for 2x2, 3x3 and 4x4 dithering matrices).  Default is 2.
+   Note image will be displayed in this mode only if the mapping
+   option (see -m) selected this mode.<P>
+
+<DT> [-t bw]
+<DD> Sets threshold level for B&W mapping in percent.
+   This threshold level is used in the different mappings as selected via -m.
+   Default is 19%.<P>
+
+<DT> [-m map]
+<DD> Select method to map colors to B&W.  Mapping can be:
+
+	<DL>
+	<DT>0<DD>
+	Every none background color is considered foreground (white color but
+	is drawn as black by printer, unless -i is specified).<P>
+
+	<DT>1<DD> 
+	If 0.3 * RED + 0.59 * GREEN + 0.11 * YELLOW > BW the pixel is
+	considered white color.<P>
+
+	<DT>2<DD>
+	Colors are mapped as in 1, and use dithering of size as defined using
+	-d option.  BWthreshold is used here as scaler.<P>
+	</DL><P>
+
+The default is option 0.<P>
+
+<DT> [-i]
+<DD> Invert the image, i.e.  black -> white, white -> black.<P>
+
+<DT> [-n]
+<DD> Nicer image.  Uses double-density feature of Epson printer.  This
+	  takes more time (and kills your ink cartridge faster...) but results
+	  are usually better.<P>
+
+<DT> [-p printer]
+<DD> Under Unix, output goes to stdout by default; under DOS, the
+     default is LPT1:.  With this switch you can specify the output
+     target.<P>
+
+<DT> [-h]
+<DD> print one line of command line help, similar to Usage above.<P>
+</DL>
+
+<H1>Notes:</H1>
+
+The output has an aspect ratio of 1, so a square image will be square in
+hardcopy as well.<P>
+
+The widest image can be printed is 640 pixels, on 8 inch paper.  You
+probably will need to flip wider images, if height is less than that:
+`<a href="gifflip.html">gifflip</a> -r x29.gif | gif2epsn'.  Wider
+images will be clipped.<P>
+
+<H1>Author:</H1>
+
+Gershon Elber
+
+<HR>
+<ADDRESS>Eric S. Raymond <A HREF="mailto:esr@thyrsus.com">&lt;esr@snark.thyrsus.com&gt;</A></ADDRESS>
+</BODY>
+</HTML>

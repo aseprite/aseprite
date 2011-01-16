@@ -1,0 +1,59 @@
+<!doctype HTML public "-//W3O//DTD W3 HTML 2.0//EN">
+<HTML>
+<HEAD>
+<TITLE>gif2x11</TITLE>
+<link rev=made href=mailto:esr@snark.thyrsus.com>
+</HEAD>
+<BODY>
+Go to <a href="index.html">index page</a>.
+
+<CENTER><H1>gif2x11</H1></CENTER>
+
+A program to display images saved as GIF files under X window system.<P?
+
+<H1>Usage:</H1>
+
+<pre>
+gif2x11	[-q] [-p PosX PosY] [-d Display] [-f] [-h] gif-file
+</pre>
+
+If no gif-file is given, Gif2X11 will try to read a GIF file from stdin.
+Note: this program does <em>not</em> read the X resource data base.<P>
+
+<H1>Memory required:</H1>
+
+Screen.
+
+<H1>Options:</H1>
+
+<DL>
+<DT> [-q]
+<DD> Quiet mode.  Defaults off on MSDOS, on under UNIX.  Controls printout
+   of running scan lines.  Use -q- to invert.<P>
+
+<DT> [-p PosX PosY]
+<DD> Set the position of image on screen. By default the
+   program will prompt for position.<P>
+
+<DT> [-d Display]
+<DD> What X server should be connected to.<P>
+
+<DT> [-f]
+<DD> Force attempt to allocate exact colors.  This usually will result in a
+   very muddled image if not enough colors can be allocated; the rest of
+   them will be approximated by the closest one.  By default the least bits
+   of the colors are stripped until success (in allocation) which looks much
+   better.<P>
+
+<DT> [-h]
+<DD> Print one line command line help, similar to Usage above.<P>
+</DL>
+
+<H1>Author:</H1>
+
+Gershon Elber
+
+<HR>
+<ADDRESS>Eric S. Raymond <A HREF="mailto:esr@thyrsus.com">&lt;esr@snark.thyrsus.com&gt;</A></ADDRESS>
+</BODY>
+</HTML>

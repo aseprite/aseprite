@@ -1,0 +1,69 @@
+#!/bin/sh
+#
+# Tests for the GIFLIB utilities.
+# Usage:
+#	test-unx [display_prgm]
+#
+#   This test assumes the gif_lib utilities are available from one of the
+# path directories, and that GIF_DIR is set (directly or through command line)
+# to the directory holding these gif files:
+# 1. solid2.gif
+# 2. cover.gif
+# 3. porsche.gif
+#   In addition, set GIF_DISPLAY ( directly or through command line) to the
+# program to display gif files in our system.
+#
+# Gershon Elber, Feb 90.  Rewritten by Eric Raymond, December 1995.
+# Revised by Toshio Kuratomi December 1998.
+PATH=$PATH:./util:${SRCDIR}/util
+GIF_DIR=${SRCDIR}./pic
+GIF_DISPLAY=${1:-"xv -"}
+GIF_DISPLAY=${GIF_DISPLAY:-"gif2x11"}
+#GIF_DIR=${1:-./pic}
+#GIF_DISPLAY=${2:-gif2x11}
+
+echo "The Porsche."
+echo "$GIF_DISPLAY <$GIF_DIR/porsche.gif"
+
+echo "The Porsche composited with a generated background"
+util/gifbg -d tl -s 320 200 -c 255 255 255 -l 64 > bg1.gif
+util/gifcomb $GIF_DIR/porsche.gif bg1.gif | $GIF_DISPLAY
+rm -f bg1.gif
+
+echo "Color density report on the TNHD cover image"
+util/gifhisto -t $GIF_DIR/cover.gif | sort -r | more
+
+echo "Color histogram of the Porsche image"
+util/gifhisto -b -s 200 512 $GIF_DIR/porsche.gif | util/gifflip -l | $GIF_DISPLAY
+
+echo "The #2 solid flipped on its side"
+util/gifflip -r $GIF_DIR/solid2.gif | util/gifrsize | $GIF_DISPLAY
+
+echo "TNHD cover flipped on its side"
+util/gifflip -x $GIF_DIR/cover.gif | $GIF_DISPLAY
+
+echo "Scale the #2 solid by 0.45"
+cp $GIF_DIR/solid2.gif sall.gif
+util/gifrsize -s 0.45 sall.gif | $GIF_DISPLAY
+rm -f s?.gif sall.gif
+
+echo "Reposition the Porsche image"
+util/gifpos -s 720 348 -i 400 148 $GIF_DIR/porsche.gif | $GIF_DISPLAY
+
+echo "Resize the #2 solid image"
+util/gifrsize -S 800 600 $GIF_DIR/solid2.gif | $GIF_DISPLAY
+
+echo "Clip, crop, and resize the #2 solid image"
+util/gifclip -i 222 0 390 134 $GIF_DIR/solid2.gif | util/gifpos -s 169 135 | util/gifrsize -s 2.0 | $GIF_DISPLAY
+
+echo "Rotate the cover image by 45 degrees" 
+util/gifrotat -a 45 $GIF_DIR/cover.gif | $GIF_DISPLAY
+
+echo "Copy the Porsche image (test DGifSlurp and DGifSpew)"
+util/gifspnge <$GIF_DIR/porsche.gif | $GIF_DISPLAY
+
+echo "Copy a transparent image (test extensions)"
+util/gifspnge <$GIF_DIR/x-trans.gif |$GIF_DISPLAY
+
+# echo "Copy an animated gif, that has shared colour maps"
+util/gifspnge <$GIF_DIR/welcome2.gif | $GIF_DISPLAY

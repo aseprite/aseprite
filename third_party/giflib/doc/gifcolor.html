@@ -1,0 +1,60 @@
+<!doctype HTML public "-//W3O//DTD W3 HTML 2.0//EN">
+<HTML>
+<HEAD>
+<TITLE>gifcolor</TITLE>
+<link rev=made href=mailto:esr@snark.thyrsus.com>
+</HEAD>
+<BODY>
+Go to <a href="index.html">index page</a>.
+
+<CENTER><H1>gifcolor</H1></CENTER>
+
+A program to generate color test patterns.  Feed it a color map file (as
+generated, say, by the -s otion of GifClrMp) and it will generate a GIF
+containing lines of the form
+
+<pre>
+	Color %-3d: [%-3d, %-3d, %-3d]:
+</pre>
+
+where the first number is the zero-based color index, and the triple is the
+index's [Red, Green, Blue] value.  There will be one such line for each color.
+Each line will be set in a simple 8x8 font in the color it describes; thus,
+any lines corresponding to the GIF's background color will be blank.<p>
+
+<H1>Usage:</H1>
+
+<pre>
+gifcolor [-q] [-b Background] [-h] &ltColorMapFile
+</pre>
+
+As gifcolor can generate huge amounts of data, ^C will kill it, but 'q' will
+stop only the printing (of one of -e, -z, -p), while file integrity will still
+be checked.<P>
+
+<H1>Memory required:</H1>
+
+Line.
+
+<H1>Options:</H1>
+
+<DL>
+<DT> [-q]
+<DD> Quiet mode.  Defaults off on MSDOS, on under UNIX.  Controls printout
+   of running scan lines.  Use -q- to invert.<P>
+
+<DT> [-b]
+<DD> Set the image's backround color to a given numeric index.<P>
+
+<DT> [-h]
+<DD> Print one line of command line help, similar to Usage above.<P>
+</DL>
+
+<H1>Author:</H1>
+
+Gershon Elber
+
+<HR>
+<ADDRESS>Eric S. Raymond <A HREF="mailto:esr@thyrsus.com">&lt;esr@snark.thyrsus.com&gt;</A></ADDRESS>
+</BODY>
+</HTML>

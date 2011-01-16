@@ -1,0 +1,59 @@
+<!doctype HTML public "-//W3O//DTD W3 HTML 2.0//EN">
+<HTML>
+<HEAD>
+<TITLE>gifpos</TITLE>
+<link rev=made href=mailto:esr@snark.thyrsus.com>
+</HEAD>
+<BODY>
+Go to <a href="index.html">index page</a>.
+
+<CENTER><H1>gifpos</H1></CENTER>
+
+A program to change GIF screen size and/or reposition images.  No test is made
+to make sure changes will generate valid GIF files (i.e. images are still
+confined to screen etc.)<P>
+
+<H1>Usage:</H1>
+
+<pre>
+gifpos [-q] [-s Width Height] [-i Left Top] [-n n Left Top] [-h] gif-file
+</pre>
+
+If no gif-file is given, GifPos will try to read a GIF file from stdin.<P>
+
+<H1>Memory required:</H1>
+
+Line.
+
+<H1>Options:</H1>
+
+<DL>
+<DT> [-q]
+<DD> Quiet mode.  Default off on MSDOS, on under UNIX.  Controls printout
+   of running scan lines.  Use -q- to invert.<P>
+
+<DT> [-s Width Height]
+<DD> Set the new screen dimensions, so for example
+   `-s 1000 800' will set screen to width of 1000 and height of 800.<P>
+
+<DT> [-i Left Top]
+<DD> set image relative to screen position, so for example
+   `-i 100 80' will set image left position to 100 and top position to 80.
+   This sets the position of the first image only.<P>
+
+<DT> [-n n Left Top]
+<DD> set image n relative to screen position, so for
+   example '-n 3 100 80' will set the third image position as in 2.<P>
+
+<DT> [-h]
+<DD> Print one line of command line help, similar to Usage above.<P>
+</DL>
+
+<H1>Author:</H1>
+
+Gershon Elber
+
+<HR>
+<ADDRESS>Eric S. Raymond <A HREF="mailto:esr@thyrsus.com">&lt;esr@snark.thyrsus.com&gt;</A></ADDRESS>
+</BODY>
+</HTML>

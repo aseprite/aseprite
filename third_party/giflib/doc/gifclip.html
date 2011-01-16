@@ -1,0 +1,75 @@
+<!doctype HTML public "-//W3O//DTD W3 HTML 2.0//EN">
+<HTML>
+<HEAD>
+<TITLE>gifclip</TITLE>
+<link rev=made href=mailto:esr@snark.thyrsus.com>
+</HEAD>
+<BODY>
+Go to <a href="index.html">index page</a>.
+
+<CENTER><H1>gifclip</H1></CENTER>
+
+A program to clip images in GIF files.  Only one image in a GIF file can be
+modified at a time.  Neither the image position on screen nor the screen size
+is modified (use <a href="gifpos.html">gifpos</a> for that).<P>
+
+<H1>Usage:</H1>
+
+<pre>
+gifclip [-q] [-i Xmin Ymin Xmax Ymax] [-n n Xmin Ymin Xmax Ymax] [-c] [-h] gif-file
+</pre>
+
+If no gif-file is given, GifClip will try to read a GIF file from stdin.<P>
+
+<H1>Memory required:</H1>
+
+Line.
+
+<H1>Options:</H1>
+
+<DL>
+<DT> [-q]
+<DD> Quiet mode.  Default off on MSDOS, on under UNIX.  Controls printout
+   of running scan lines.  Use -q- to invert.<P>
+
+<DT> [-i Xmin Ymin Xmax Ymax]
+<DD> Clip first image to the dimensions as specified
+   by the 4 coordinates (Xmin Ymin Xmax Ymax) of a box clipping region.<P>
+
+   For example: '-i 11 22 33 44' will crop the box from top left [11,22]
+   to bottom right [33,44] out of the first image.<P>
+
+   If the first parameter is bigger than third one (Xmin > Xmax) they are
+   swapped.  Same for Y.<P>
+
+   The dimensions of the clipped image must be confined to original image
+   width and height.  Note the clipped image includes both the min & max
+   boundary; an image of width W can have coordinates 0 to W-1 (zero based).<P>
+
+   Only one of -i or -n can be specified.<P>
+
+<DT> [-n n Xmin Ymin Xmax Ymax]
+<DD> Same as -i above but for the nth image:
+   `-n 1 11 22 33 44' is exactly the same as the example in -i.  Only one of
+   -i or -n can be specified.<P>
+
+<DT> [-c]
+<DD> Complement.  This removes horizontal and/or vertical bands of the
+   image. For example `-c -i 638 3 658 13' would remove a horizontal band
+   11 pixels deep beginning at raster line 3, and a vertical band 21 pixels
+   right beginning at pixel 658.<P>
+
+<DT> [-h]
+<DD> Print one line of command line help, similar to Usage above.<P>
+</DL>
+
+Note: all coordinates are 0-based --- the top left corner is (0, 0).<P>
+
+<H1>Author:</H1>
+
+Gershon Elber
+
+<HR>
+<ADDRESS>Eric S. Raymond <A HREF="mailto:esr@thyrsus.com">&lt;esr@snark.thyrsus.com&gt;</A></ADDRESS>
+</BODY>
+</HTML>

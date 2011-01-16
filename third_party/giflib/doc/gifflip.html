@@ -1,0 +1,60 @@
+<!doctype HTML public "-//W3O//DTD W3 HTML 2.0//EN">
+<HTML>
+<HEAD>
+<TITLE>gifflip</TITLE>
+<link rev=made href=mailto:esr@snark.thyrsus.com>
+</HEAD>
+<BODY>
+Go to <a href="index.html">index page</a>.
+
+<CENTER><H1>gifflip</H1></CENTER>
+
+A program to flip (mirror) GIF file along X or Y axes, or rotate the GIF
+file 90 degrees to the left or to the right.<P>
+
+<H1>Usage:</H1>
+
+<pre>
+gifflip [-q] [-r] [-l] [-x] [-y] [-h] gif-file
+</pre>
+
+If no gif-file is given, GifFlip will try to read a GIF file from stdin.<P>
+
+<H1>Memory required:</H1>
+
+Image.
+
+<H1>Options:</H1>
+
+<DL>
+<DT> [-q]
+<DD> Quiet mode. Default off on MSDOS, on under UNIX.  Controls printout
+   of running scan lines.  Use -q- to invert.<P>
+
+<DT> [-r]
+<DD> Rotate the GIF file to the right.<P>
+
+<DT> [-l]
+<DD> Rotate the GIF file to the left.<P>
+
+<DT> [-x]
+<DD> Mirror the GIF file along the X axis.  Very useful if GIF file was
+   created from another format in with the first line in at image bottom.
+   Effectively exchanges first row with last.<P>
+
+<DT> [-y]
+<DD> Mirror the GIF file along Y axis.
+   Effectively exchanges first column with last.<P>
+
+<DT> [-h]
+<DD> Print one line of command line help, similar to Usage above.<P>
+</DL>
+
+<H1>Author:</H1>
+
+Gershon Elber
+
+<HR>
+<ADDRESS>Eric S. Raymond <A HREF="mailto:esr@thyrsus.com">&lt;esr@snark.thyrsus.com&gt;</A></ADDRESS>
+</BODY>
+</HTML>

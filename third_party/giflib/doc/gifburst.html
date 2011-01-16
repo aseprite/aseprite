@@ -1,0 +1,48 @@
+<!doctype HTML public "-//W3O//DTD W3 HTML 2.0//EN">
+<HTML>
+<HEAD>
+<TITLE>gifburst</TITLE>
+<link rev=made href=mailto:esr@snark.thyrsus.com>
+</HEAD>
+<BODY>
+Go to <a href="index.html">index page</a>.
+
+<CENTER><H1>gifburst</H1></CENTER>
+
+The gifburst program takes a named GIF file and breaks it into equal-sized
+tiles.  This is useful if a GIF is too large for your viewer, so you have 
+to look at it in sections.<P>
+
+<H1>Usage:</H1>
+
+<pre>
+gifburst [-s n] [-p b] gif-file
+</pre>
+
+<H1>Memory required:</H1>
+
+Proportional to the size of the largest pasted image.
+
+<H1>Options:</H1>
+
+<DT> [-s nnn]
+<DD> Specify the number of pieces.  Valid values are presently 4 (2x2)
+   and 6 (2x3).  Default is 4.
+
+<DT> [-p nnn]
+<DD> Specify the number of pixels of overlap between interior boundaries
+   of pieces.  Default 20.
+
+<H1>Note:</H1>
+
+The gifburst program is written on Perl, using the C utilities.  You must have 
+both the giflib utilities and Perl installed to run it.<P>
+
+<H1>Author:</H1>
+
+Eric S. Raymond &lt;esr@snark.thyrsus.com&gt;<P>
+
+<HR>
+<ADDRESS>Eric S. Raymond <A HREF="mailto:esr@thyrsus.com">&lt;esr@snark.thyrsus.com&gt;</A></ADDRESS>
+</BODY>
+</HTML>
