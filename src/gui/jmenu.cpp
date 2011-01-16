@@ -1037,14 +1037,16 @@ static bool menuitem_msg_proc(Widget* widget, JMessage msg)
 
     case JM_TIMER:
       if (msg->timer.timer_id == menuitem->submenu_timer) {
+	Base* base = get_base(widget);
+
 	ASSERT(HAS_SUBMENU(widget));
 
 	// Stop timer to open the popup
 	jmanager_remove_timer(menuitem->submenu_timer);
 	menuitem->submenu_timer = -1;
 
-	// If the submenu is closed, open it
-	if (menuitem->submenu_menubox == NULL)
+	// If the submenu is closed, and we are not processing messages, open it
+	if (menuitem->submenu_menubox == NULL && !base->is_processing)
 	  open_menuitem(widget, false);
       }
       break;
