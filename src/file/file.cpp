@@ -24,6 +24,7 @@
 #include "app.h"
 #include "base/mutex.h"
 #include "base/scoped_lock.h"
+#include "base/shared_ptr.h"
 #include "console.h"
 #include "file/file.h"
 #include "file/file_format.h"
@@ -570,12 +571,10 @@ void fop_operate(FileOp *fop)
       if (fop->sprite->getImgType() == IMAGE_RGB &&
 	  fop->sprite->getPalettes().size() <= 1 &&
 	  fop->sprite->getPalette(0)->isBlack()) {
-	Palette* palette = quantization::create_palette_from_rgb(fop->sprite);
+	SharedPtr<Palette> palette(quantization::create_palette_from_rgb(fop->sprite));
 
 	fop->sprite->resetPalettes();
 	fop->sprite->setPalette(palette, false);
-
-	delete palette;
       }
 
       fop->sprite->markAsSaved();
