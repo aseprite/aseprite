@@ -123,7 +123,10 @@ int color_utils::color_for_image(const Color& color, int imgtype)
       c = _graya(color.getGray(), 255);
       break;
     case IMAGE_INDEXED:
-      c = get_current_palette()->findBestfit(color.getRed(), color.getGreen(), color.getBlue());
+      if (color.getType() == Color::IndexType)
+	c = color.getIndex();
+      else
+	c = get_current_palette()->findBestfit(color.getRed(), color.getGreen(), color.getBlue());
       break;
   }
 
