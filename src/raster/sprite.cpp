@@ -841,6 +841,7 @@ void SpriteImpl::resetPalettes()
     while (it != end) {
       delete *it;		// palette
       it = m_palettes.erase(it);
+      end = m_palettes.end();
     }
   }
 }
