@@ -9,7 +9,7 @@ if(MSVC)
 endif(MSVC)
 
 # Third-party libraries
-set(libs3rdparty freetype libart_lgpl loadpng tinyxml)
+set(libs3rdparty freetype libart_lgpl loadpng tinyxml giflib)
 
 if(USE_SHARED_JPEGLIB)
   find_package(JPEG)
@@ -48,6 +48,7 @@ set(all_libs aseprite-library gui-lib gfx-lib base-lib ${libs3rdparty} allegro $
 # Directories where .h files can be found
 include_directories(
   . .. ../third_party
+  ${GIFLIB_DIR}/lib
   ${LIBFREETYPE_DIR}/include
   ${LIBJPEG_DIR}
   ${LIBPNG_DIR}
@@ -180,8 +181,6 @@ add_library(aseprite-library
   file/file_formats_manager.cpp
   file/fli/fli.cpp
   file/fli_format.cpp
-  file/gif/format.cpp
-  file/gif/lzw.cpp
   file/gif_format.cpp
   file/ico_format.cpp
   file/jpeg_format.cpp
