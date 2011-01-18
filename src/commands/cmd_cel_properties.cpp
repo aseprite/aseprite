@@ -66,7 +66,6 @@ void CelPropertiesCommand::onExecute(Context* context)
   JWidget label_frame, label_pos, label_size;
   Widget* button_ok;
   Slider* slider_opacity;
-  char buf[1024];
   int memsize;
 
   const CurrentSpriteReader sprite(context);
@@ -92,28 +91,24 @@ void CelPropertiesCommand::onExecute(Context* context)
     button_ok->setEnabled(false);
   }
 
-  usprintf(buf, "%d/%d", sprite->getCurrentFrame()+1, sprite->getTotalFrames());
-  label_frame->setText(buf);
+  label_frame->setTextf("%d/%d", sprite->getCurrentFrame()+1, sprite->getTotalFrames());
 
   if (cel != NULL) {
-    /* position */
-    usprintf(buf, "%d, %d", cel->x, cel->y);
-    label_pos->setText(buf);
+    // Position
+    label_pos->setTextf("%d, %d", cel->x, cel->y);
 
-    /* dimension (and memory size) */
+    // Dimension (and memory size)
     memsize =
       image_line_size(sprite->getStock()->getImage(cel->image),
 		      sprite->getStock()->getImage(cel->image)->w)*
       sprite->getStock()->getImage(cel->image)->h;
 
-    usprintf(buf, "%dx%d (%s)",
-	     sprite->getStock()->getImage(cel->image)->w,
-	     sprite->getStock()->getImage(cel->image)->h,
-	     get_pretty_memory_size(memsize).c_str());
+    label_size->setTextf("%dx%d (%s)",
+			 sprite->getStock()->getImage(cel->image)->w,
+			 sprite->getStock()->getImage(cel->image)->h,
+			 get_pretty_memory_size(memsize).c_str());
 
-    label_size->setText(buf);
-
-    /* opacity */
+    // Opacity
     slider_opacity->setValue(cel->opacity);
     if (layer->is_background()) {
       slider_opacity->setEnabled(false);
