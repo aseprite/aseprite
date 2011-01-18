@@ -128,6 +128,15 @@ int Palette::countDiff(const Palette* other, int* from, int* to) const
   return diff;
 }
 
+bool Palette::isBlack() const
+{
+  for (size_t c=0; c<m_colors.size(); ++c)
+    if (getEntry(c) != _rgba(0, 0, 0, 255))
+      return false;
+
+  return true;
+}
+
 void Palette::makeBlack()
 {
   std::fill(m_colors.begin(), m_colors.end(), _rgba(0, 0, 0, 255));

@@ -78,7 +78,10 @@ public:
 
   int countDiff(const Palette* other, int* from, int* to) const;
 
+  // Returns true if the palette is completelly black.
+  bool isBlack() const;
   void makeBlack();
+
   void makeHorzRamp(int from, int to);
   void makeVertRamp(int from, int to, int columns);
   void makeRectRamp(int from, int to, int columns);

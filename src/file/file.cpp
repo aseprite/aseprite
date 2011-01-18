@@ -394,7 +394,7 @@ FileOp *fop_to_save_sprite(Sprite *sprite)
   else
     fop->filename = fop->sprite->getFilename();
 
-  /* configure output format? */
+  // Configure output format?
   if (fop->format->support(FILE_SUPPORT_GET_FORMAT_OPTIONS)) {
     FormatOptions* format_options = fop->format->getFormatOptions(fop);
 
@@ -540,7 +540,8 @@ void fop_operate(FileOp *fop)
 	// Set the frames range
 	fop->sprite->setTotalFrames(frame);
 
-	// Set the frames range
+	// Sets special options from the specific format (e.g. BMP
+	// file can contain the number of bits per pixel).
 	fop->sprite->setFormatOptions(fop->seq.format_options);
       }
     }
@@ -566,7 +567,9 @@ void fop_operate(FileOp *fop)
 	fop->sprite->setFilename(fop->filename.c_str());
 
       // Creates a suitable palette for RGB images
-      if (fop->sprite->getImgType() == IMAGE_RGB) {
+      if (fop->sprite->getImgType() == IMAGE_RGB &&
+	  fop->sprite->getPalettes().size() <= 1 &&
+	  fop->sprite->getPalette(0)->isBlack()) {
 	Palette* palette = quantization::create_palette_from_rgb(fop->sprite);
 
 	fop->sprite->resetPalettes();
