@@ -94,6 +94,9 @@ public:
 
   bool needAlpha() const;
 
+  ase_uint32 getTransparentColor() const;
+  void setTransparentColor(ase_uint32 color);
+
   int getMemSize() const;
 
   ////////////////////////////////////////

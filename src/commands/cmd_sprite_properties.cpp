@@ -60,16 +60,16 @@ SpritePropertiesCommand::SpritePropertiesCommand()
 bool SpritePropertiesCommand::onEnabled(Context* context)
 {
   const CurrentSpriteReader sprite(context);
-  return
-    sprite != NULL;
+  return sprite != NULL;
 }
 
 void SpritePropertiesCommand::onExecute(Context* context)
 {
-  JWidget name, type, size, frames, ok;
+  JWidget name, type, size, frames, ok, box_transparent;
   Button* speed;
   base::string imgtype_text;
   char buf[256];
+  ColorButton* color_button = NULL;
 
   // Load the window widget
   FramePtr window(load_widget("sprite_properties.xml", "sprite_properties"));
@@ -79,7 +79,8 @@ void SpritePropertiesCommand::onExecute(Context* context)
 	      "size", &size,
 	      "frames", &frames,
 	      "speed", &speed,
-	      "ok", &ok, NULL);
+	      "ok", &ok,
+	      "box_transparent", &box_transparent, NULL);
 
   // Get sprite properties and fill frame fields
   {
@@ -121,7 +122,17 @@ void SpritePropertiesCommand::onExecute(Context* context)
     frames->setTextf("%d", sprite->getTotalFrames());
 
     // Speed button
-    speed->Click.connect(Bind<void>(&dialogs_frame_length, sprite, -1));
+    speed->Click.connect(Bind<void>(&dialogs_frame_length, Ref(sprite), -1));
+
+    if (sprite->getImgType() == IMAGE_INDEXED) {
+      color_button = new ColorButton(Color::fromIndex(sprite->getTransparentColor()),
+				     IMAGE_INDEXED);
+
+      jwidget_add_child(box_transparent, color_button);
+    }
+    else {
+      jwidget_add_child(box_transparent, new Label("(only for indexed images)"));
+    }
   }
 
   window->remap_window();
@@ -130,6 +141,22 @@ void SpritePropertiesCommand::onExecute(Context* context)
   load_window_pos(window, "SpriteProperties");
   window->setVisible(true);
   window->open_window_fg();
+
+  if (window->get_killer() == ok) {
+    if (color_button) {
+      CurrentSpriteWriter sprite(context);
+
+      // If the transparent color index has changed, we update the
+      // property in the sprite.
+      int index = color_button->getColor().getIndex();
+      if (index != sprite->getTransparentColor()) {
+	// TODO Add undo handling
+	sprite->setTransparentColor(color_button->getColor().getIndex());
+	update_screen_for_sprite(sprite);
+      }
+    }
+  }
+
   save_window_pos(window, "SpriteProperties");
 }
 

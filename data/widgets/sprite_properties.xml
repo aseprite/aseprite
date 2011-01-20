@@ -17,6 +17,9 @@
 
         <label text="Frames:" />
         <label text="" name="frames" />
+
+	<label text="Transparent Color:" />
+	<box horizontal="true" name="box_transparent" tooltip="Palette entry used as transparent color in each layer (only for indexed images)." />
       </grid>
     </box>
     <separator horizontal="true" />
@@ -24,6 +27,7 @@
       <button text="Constant Frame-Rate Speed" name="speed" />
       <box horizontal="true" expansive="true" />
       <button text="&amp;OK" closewindow="true" name="ok" magnetic="true" width="60" />
+      <button text="&amp;Cancel" closewindow="true" name="cancel" width="60" />
     </box>
   </box>
 </window>

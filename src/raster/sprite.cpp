@@ -106,6 +106,14 @@ public:
     return false;
   }
 
+  ase_uint32 getTransparentColor() const {
+    return m_transparentColor;
+  }
+
+  void setTransparentColor(ase_uint32 color) {
+    m_transparentColor = color;
+  }
+
   int getMemSize() const;
 
   LayerFolder* getFolder() const {
@@ -380,6 +388,9 @@ private:
 
   // Current rgb map
   RgbMap* m_rgbMap;
+
+  // Transparent color used in indexed images
+  ase_uint32 m_transparentColor;
 };
 
 SpriteImpl::SpriteImpl(Sprite* sprite, int imgtype, int width, int height, int ncolors)
@@ -445,6 +456,9 @@ SpriteImpl::SpriteImpl(Sprite* sprite, int imgtype, int width, int height, int n
 
   // Initial RGB map
   m_rgbMap = NULL;
+
+  // The transparent color for indexed images is 0 by default
+  m_transparentColor = 0;
 
   setPalette(&pal, true);
 }
@@ -1091,6 +1105,16 @@ void Sprite::markAsSaved()
 bool Sprite::needAlpha() const
 {
   return m_impl->needAlpha();
+}
+
+ase_uint32 Sprite::getTransparentColor() const
+{
+  return m_impl->getTransparentColor();
+}
+
+void Sprite::setTransparentColor(ase_uint32 color)
+{
+  m_impl->setTransparentColor(color);
 }
 
 int Sprite::getMemSize() const

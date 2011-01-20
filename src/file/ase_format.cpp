@@ -52,10 +52,11 @@ typedef struct ASE_Header
   ase_uint16 height;
   ase_uint16 depth;
   ase_uint32 flags;
-  ase_uint16 speed;	/* deprecated, use "duration" of FrameHeader */
+  ase_uint16 speed;	// Deprecated, use "duration" of FrameHeader
   ase_uint32 next;
   ase_uint32 frit;
-  ase_uint32 unknown;
+  ase_uint8 transparent_index;
+  ase_uint8 ignore[3];
   ase_uint16 ncolors;
 } ASE_Header;
 
@@ -67,7 +68,7 @@ typedef struct ASE_FrameHeader
   ase_uint16 duration;
 } ASE_FrameHeader;
 
-// TODO warning: the writing routines aren't thread-safe
+// TODO Warning: the writing routines aren't thread-safe
 static ASE_FrameHeader *current_frame_header = NULL;
 static int chunk_type;
 static int chunk_start;
@@ -153,7 +154,7 @@ bool AseFormat::onLoad(FileOp *fop)
     return false;
   }
 
-  /* create the new sprite */
+  // Create the new sprite
   sprite = new Sprite(header.depth == 32 ? IMAGE_RGB:
 		      header.depth == 16 ? IMAGE_GRAYSCALE: IMAGE_INDEXED,
 		      header.width, header.height, header.ncolors);
@@ -163,11 +164,14 @@ bool AseFormat::onLoad(FileOp *fop)
     return false;
   }
 
-  /* set frames and speed */
+  // Set frames and speed
   sprite->setTotalFrames(header.frames);
   sprite->setDurationForAllFrames(header.speed);
 
-  /* prepare variables for layer chunks */
+  // Set transparent entry
+  sprite->setTransparentColor(header.transparent_index);
+
+  // Prepare variables for layer chunks
   Layer* last_layer = sprite->getFolder();
   current_level = -1;
 
@@ -378,7 +382,10 @@ static bool ase_file_read_header(FILE *f, ASE_Header *header)
   header->speed      = fgetw(f);
   header->next       = fgetl(f);
   header->frit       = fgetl(f);
-  header->unknown    = fgetl(f);
+  header->transparent_index = fgetc(f);
+  header->ignore[0]  = fgetc(f);
+  header->ignore[1]  = fgetc(f);
+  header->ignore[2]  = fgetc(f);
   header->ncolors    = fgetw(f);
   if (header->ncolors == 0)	// 0 means 256 (old .ase files)
     header->ncolors = 256;
@@ -403,7 +410,10 @@ static void ase_file_prepare_header(FILE *f, ASE_Header *header, const Sprite* s
   header->speed = sprite->getFrameDuration(0);
   header->next = 0;
   header->frit = 0;
-  header->unknown = 0;
+  header->transparent_index = sprite->getTransparentColor();
+  header->ignore[0] = 0;
+  header->ignore[1] = 0;
+  header->ignore[2] = 0;
   header->ncolors = sprite->getPalette(0)->size();
 
   fseek(f, header->pos+128, SEEK_SET);
@@ -425,7 +435,10 @@ static void ase_file_write_header(FILE *f, ASE_Header *header)
   fputw(header->speed, f);
   fputl(header->next, f);
   fputl(header->frit, f);
-  fputl(header->unknown, f);
+  fputc(header->transparent_index, f);
+  fputc(header->ignore[0], f);
+  fputc(header->ignore[1], f);
+  fputc(header->ignore[2], f);
   fputw(header->ncolors, f);
 
   fseek(f, header->pos+header->size, SEEK_SET);

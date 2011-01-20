@@ -77,7 +77,10 @@ WORD		Speed (milliseconds between frame, like in FLC files)
                             field from each frame header
 DWORD		Set be 0
 DWORD		Set be 0
-DWORD		Ignore this field
+BYTE            Palette entry (index) which represent transparent
+                color in all non-background layers (only for Indexed
+                sprites).
+BYTE[3]         Ignore these bytes
 WORD		Number of colors (0 means 256 for old sprites)
 BYTE[94]	For future (set to zero)
 
@@ -240,18 +243,3 @@ File Format Changes
      header.  Then, if you found a frame with the frame-duration
      field > 0, you should update the duration of the frame with
      that value.
-
-  2) The format of ASE 0.6 beta has a header with a background color
-     after the two last reserved DWORD
-
-     ...
-     WORD	Speed (milliseconds between frame, like in FLC files)
-     DWORD	Set be 0
-     DWORD	Set be 0
-     DWORD	Background-color          <------ *
-     BYTE[96]	For future (set to zero)
-
-     * This field is deprecated, and now it should be 0 or his value
-       should be completely ignored. The only drawback is that the
-       sprite will have a transparent background instead of a colored
-       one.
