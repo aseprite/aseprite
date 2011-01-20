@@ -194,6 +194,8 @@ if(WIN32)
     list(APPEND PLATFORM_LIBS dbghelp)
   endif()
 
+  add_definitions(-D_WIN32_WINNT=0x0500)
+
 endif(WIN32)
 
 # -- Mac OS X --
