@@ -19,6 +19,8 @@
 #ifndef COMMANDS_COMMAND_H_INCLUDED
 #define COMMANDS_COMMAND_H_INCLUDED
 
+#include "commands/command_factory.h"
+
 enum CommandFlags {
   CmdUIOnlyFlag			 = 0x00000001,
   CmdRecordableFlag		 = 0x00000002,
@@ -26,9 +28,6 @@ enum CommandFlags {
 
 class Context;
 class Params;
-
-//////////////////////////////////////////////////////////////////////
-// Command
 
 class Command
 {
@@ -56,20 +55,6 @@ protected:
   virtual bool onEnabled(Context* context);
   virtual bool onChecked(Context* context);
   virtual void onExecute(Context* context);
-};
-
-//////////////////////////////////////////////////////////////////////
-// CommandFactory
-
-class CommandFactory
-{
-public:
-  #undef FOR_EACH_COMMAND
-  #define FOR_EACH_COMMAND(name) \
-    static Command* create_##name##_command();
-
-  #include "commands/commands_list.h"
-  #undef FOR_EACH_COMMAND
 };
 
 #endif
