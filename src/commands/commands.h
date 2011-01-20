@@ -47,7 +47,7 @@ public:
 
   static CommandsModule* instance();
 
-  Command* get_command_by_name(const char* name);
+  Command* getCommandByName(const char* name);
 };
 
 #endif

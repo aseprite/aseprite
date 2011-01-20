@@ -908,7 +908,7 @@ JAccel add_keyboard_shortcut_to_execute_command(const char* shortcut_string, con
 
   if (!shortcut) {
     shortcut = new Shortcut(Shortcut_ExecuteCommand);
-    shortcut->command = CommandsModule::instance()->get_command_by_name(command_name);
+    shortcut->command = CommandsModule::instance()->getCommandByName(command_name);
     shortcut->params = params ? params->clone(): new Params;
 
     shortcuts->push_back(shortcut);
@@ -1042,7 +1042,7 @@ bool Shortcut::is_pressed_from_key_array()
 
 static Shortcut* get_keyboard_shortcut_for_command(const char* command_name, Params* params)
 {
-  Command* command = CommandsModule::instance()->get_command_by_name(command_name);
+  Command* command = CommandsModule::instance()->getCommandByName(command_name);
   if (!command)
     return NULL;
 

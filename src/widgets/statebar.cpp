@@ -683,7 +683,7 @@ bool StatusBar::onProcessMessage(JMessage msg)
 	  else {
 	    // Call "Donate" command
 	    Command* donate = CommandsModule::instance()
-	      ->get_command_by_name(CommandId::Donate);
+	      ->getCommandByName(CommandId::Donate);
 
 	    Params params;
 	    UIContext::instance()->executeCommand(donate, &params);
@@ -770,12 +770,12 @@ static void ani_button_command(Button* widget, AniAction action)
   Command* cmd = NULL;
 
   switch (action) {
-    //case ACTION_LAYER: cmd = CommandsModule::instance()->get_command_by_name(CommandId::LayerProperties); break;
-    case ACTION_FIRST: cmd = CommandsModule::instance()->get_command_by_name(CommandId::GotoFirstFrame); break;
-    case ACTION_PREV: cmd = CommandsModule::instance()->get_command_by_name(CommandId::GotoPreviousFrame); break;
-    case ACTION_PLAY: cmd = CommandsModule::instance()->get_command_by_name(CommandId::PlayAnimation); break;
-    case ACTION_NEXT: cmd = CommandsModule::instance()->get_command_by_name(CommandId::GotoNextFrame); break;
-    case ACTION_LAST: cmd = CommandsModule::instance()->get_command_by_name(CommandId::GotoLastFrame); break;
+    //case ACTION_LAYER: cmd = CommandsModule::instance()->getCommandByName(CommandId::LayerProperties); break;
+    case ACTION_FIRST: cmd = CommandsModule::instance()->getCommandByName(CommandId::GotoFirstFrame); break;
+    case ACTION_PREV: cmd = CommandsModule::instance()->getCommandByName(CommandId::GotoPreviousFrame); break;
+    case ACTION_PLAY: cmd = CommandsModule::instance()->getCommandByName(CommandId::PlayAnimation); break;
+    case ACTION_NEXT: cmd = CommandsModule::instance()->getCommandByName(CommandId::GotoNextFrame); break;
+    case ACTION_LAST: cmd = CommandsModule::instance()->getCommandByName(CommandId::GotoLastFrame); break;
   }
 
   if (cmd)

@@ -137,7 +137,7 @@ static int load_root_menu()
     const char* command_key = xmlKey->Attribute("shortcut");
 
     if (command_name && command_key) {
-      Command* command = CommandsModule::instance()->get_command_by_name(command_name);
+      Command* command = CommandsModule::instance()->getCommandByName(command_name);
       if (command) {
 	// Read params
 	Params params;
@@ -290,7 +290,7 @@ static JWidget convert_xmlelem_to_menuitem(TiXmlElement* elem)
 
   const char* command_name = elem->Attribute("command");
   Command* command =
-    command_name ? CommandsModule::instance()->get_command_by_name(command_name):
+    command_name ? CommandsModule::instance()->getCommandByName(command_name):
 		   NULL;
 
   // load params

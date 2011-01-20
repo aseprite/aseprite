@@ -69,7 +69,7 @@ CommandsModule* CommandsModule::instance()
   return m_instance;
 }
 
-Command* CommandsModule::get_command_by_name(const char* name)
+Command* CommandsModule::getCommandByName(const char* name)
 {
   if (!name)
     return NULL;

@@ -1140,7 +1140,7 @@ bool Editor::onProcessMessage(JMessage msg)
 	// Call the eyedropper command
 	else if (current_tool->getInk(msg->mouse.right ? 1: 0)->isEyedropper()) {
 	  Command* eyedropper_cmd = 
-	    CommandsModule::instance()->get_command_by_name(CommandId::Eyedropper);
+	    CommandsModule::instance()->getCommandByName(CommandId::Eyedropper);
 
 	  Params params;
 	  params.set("target", msg->mouse.right ? "background": "foreground");
@@ -1441,7 +1441,7 @@ bool Editor::onProcessMessage(JMessage msg)
 
 	    case WHEEL_FRAME:
 	      if (m_state == EDITOR_STATE_STANDBY) {
-		Command* command = CommandsModule::instance()->get_command_by_name
+		Command* command = CommandsModule::instance()->getCommandByName
 		  ((dz < 0) ? CommandId::GotoNextFrame:
 			      CommandId::GotoPreviousFrame);
 		if (command)

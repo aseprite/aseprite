@@ -538,7 +538,7 @@ static bool anieditor_msg_proc(JWidget widget, JMessage msg)
 	      if (anieditor->clk_frame == anieditor->hot_frame) {
 		UIContext::instance()
 		  ->executeCommand(CommandsModule::instance()
-				   ->get_command_by_name(CommandId::FrameProperties));
+				   ->getCommandByName(CommandId::FrameProperties));
 	      }
 	      else {
 		const SpriteReader sprite((Sprite*)anieditor->sprite);

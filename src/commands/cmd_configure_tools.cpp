@@ -537,7 +537,7 @@ void ConfigureTools::onSetGridClick()
     }
     else {
       Command* grid_settings_cmd = 
-	CommandsModule::instance()->get_command_by_name(CommandId::GridSettings);
+	CommandsModule::instance()->getCommandByName(CommandId::GridSettings);
   
       UIContext::instance()->executeCommand(grid_settings_cmd, NULL);
     }

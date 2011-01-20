@@ -146,7 +146,7 @@ try_again:;
   // Does we need to save the sprite?
   if (save_it) {
     Command* save_command =
-      CommandsModule::instance()->get_command_by_name(CommandId::SaveFile);
+      CommandsModule::instance()->getCommandByName(CommandId::SaveFile);
     context->executeCommand(save_command);
 
     goto try_again;

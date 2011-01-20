@@ -395,7 +395,7 @@ bool app_realloc_recent_list()
     if (jmenuitem_has_submenu_opened(list_menuitem))
       return false;
 
-    Command* cmd_open_file = CommandsModule::instance()->get_command_by_name(CommandId::OpenFile);
+    Command* cmd_open_file = CommandsModule::instance()->getCommandByName(CommandId::OpenFile);
 
     Widget* submenu = jmenuitem_get_submenu(list_menuitem);
     if (submenu) {
@@ -484,7 +484,7 @@ void TabsBarHandler::clickTab(Tabs* tabs, void* data, int button)
   // middle-button: close the sprite
   if (data && (button & 4)) {
     Command* close_file_cmd =
-      CommandsModule::instance()->get_command_by_name(CommandId::CloseFile);
+      CommandsModule::instance()->getCommandByName(CommandId::CloseFile);
 
     UIContext::instance()->executeCommand(close_file_cmd, NULL);
   }

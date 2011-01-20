@@ -277,7 +277,7 @@ bool ToolBar::onProcessMessage(JMessage msg)
       toolrc = getToolGroupBounds(-1);
       if (msg->mouse.y >= toolrc.y && msg->mouse.y < toolrc.y+toolrc.h) {
 	Command* conf_tools_cmd = 
-	  CommandsModule::instance()->get_command_by_name(CommandId::ConfigureTools);
+	  CommandsModule::instance()->getCommandByName(CommandId::ConfigureTools);
 
 	UIContext::instance()->executeCommand(conf_tools_cmd);
       }
