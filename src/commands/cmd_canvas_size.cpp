@@ -46,7 +46,7 @@ protected:
 };
 
 CanvasSizeCommand::CanvasSizeCommand()
-  : Command("canvas_size",
+  : Command("CanvasSize",
 	    "Canvas Size",
 	    CmdRecordableFlag)
 {
@@ -122,7 +122,7 @@ void CanvasSizeCommand::onExecute(Context* context)
 //////////////////////////////////////////////////////////////////////
 // CommandFactory
 
-Command* CommandFactory::create_canvas_size_command()
+Command* CommandFactory::createCanvasSizeCommand()
 {
   return new CanvasSizeCommand;
 }

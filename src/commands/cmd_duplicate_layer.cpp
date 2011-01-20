@@ -46,7 +46,7 @@ protected:
 };
 
 DuplicateLayerCommand::DuplicateLayerCommand()
-  : Command("duplicate_layer",
+  : Command("DuplicateLayer",
 	    "Duplicate Layer",
 	    CmdRecordableFlag)
 {
@@ -108,7 +108,7 @@ static Layer* duplicate_layer(Sprite* sprite)
 //////////////////////////////////////////////////////////////////////
 // CommandFactory
 
-Command* CommandFactory::create_duplicate_layer_command()
+Command* CommandFactory::createDuplicateLayerCommand()
 {
   return new DuplicateLayerCommand;
 }

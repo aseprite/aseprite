@@ -64,7 +64,7 @@ protected:
 };
 
 InvertColorCommand::InvertColorCommand()
-  : Command("invert_color",
+  : Command("InvertColor",
 	    "Invert Color",
 	    CmdRecordableFlag)
 {
@@ -152,7 +152,7 @@ static void make_preview()
 //////////////////////////////////////////////////////////////////////
 // CommandFactory
 
-Command* CommandFactory::create_invert_color_command()
+Command* CommandFactory::createInvertColorCommand()
 {
   return new InvertColorCommand;
 }

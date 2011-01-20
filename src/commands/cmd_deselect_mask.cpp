@@ -40,7 +40,7 @@ protected:
 };
 
 DeselectMaskCommand::DeselectMaskCommand()
-  : Command("deselect_mask",
+  : Command("DeselectMask",
 	    "Deselect Mask",
 	    CmdRecordableFlag)
 {
@@ -67,7 +67,7 @@ void DeselectMaskCommand::onExecute(Context* context)
 //////////////////////////////////////////////////////////////////////
 // CommandFactory
 
-Command* CommandFactory::create_deselect_mask_command()
+Command* CommandFactory::createDeselectMaskCommand()
 {
   return new DeselectMaskCommand;
 }

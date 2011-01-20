@@ -43,7 +43,7 @@ protected:
 };
 
 GotoPreviousLayerCommand::GotoPreviousLayerCommand()
-  : Command("goto_previous_layer",
+  : Command("GotoPreviousLayer",
 	    "Goto Previous Layer",
 	    CmdUIOnlyFlag)
 {
@@ -92,7 +92,7 @@ protected:
 };
 
 GotoNextLayerCommand::GotoNextLayerCommand()
-  : Command("goto_next_layer",
+  : Command("GotoNextLayer",
 	    "Goto Next Layer",
 	    CmdUIOnlyFlag)
 {
@@ -129,12 +129,12 @@ void GotoNextLayerCommand::onExecute(Context* context)
 //////////////////////////////////////////////////////////////////////
 // CommandFactory
 
-Command* CommandFactory::create_goto_previous_layer_command()
+Command* CommandFactory::createGotoPreviousLayerCommand()
 {
   return new GotoPreviousLayerCommand;
 }
 
-Command* CommandFactory::create_goto_next_layer_command()
+Command* CommandFactory::createGotoNextLayerCommand()
 {
   return new GotoNextLayerCommand;
 }

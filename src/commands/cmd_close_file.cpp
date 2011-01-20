@@ -40,7 +40,7 @@ class CloseFileCommand : public Command
 {
 public:
   CloseFileCommand()
-    : Command("close_file",
+    : Command("CloseFile",
 	      "Close File",
 	      CmdUIOnlyFlag)
   {
@@ -72,7 +72,7 @@ class CloseAllFilesCommand : public Command
 {
 public:
   CloseAllFilesCommand()
-    : Command("close_all_files",
+    : Command("CloseAllFiles",
 	      "Close All Files",
 	      CmdRecordableFlag)
   {
@@ -146,7 +146,7 @@ try_again:;
   // Does we need to save the sprite?
   if (save_it) {
     Command* save_command =
-      CommandsModule::instance()->get_command_by_name(CommandId::save_file);
+      CommandsModule::instance()->get_command_by_name(CommandId::SaveFile);
     context->executeCommand(save_command);
 
     goto try_again;
@@ -166,12 +166,12 @@ try_again:;
 //////////////////////////////////////////////////////////////////////
 // CommandFactory
 
-Command* CommandFactory::create_close_file_command()
+Command* CommandFactory::createCloseFileCommand()
 {
   return new CloseFileCommand;
 }
 
-Command* CommandFactory::create_close_all_files_command()
+Command* CommandFactory::createCloseAllFilesCommand()
 {
   return new CloseAllFilesCommand;
 }

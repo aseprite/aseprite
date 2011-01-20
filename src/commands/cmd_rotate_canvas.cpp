@@ -167,7 +167,7 @@ protected:
 };
 
 RotateCanvasCommand::RotateCanvasCommand()
-  : Command("rotate_canvas",
+  : Command("RotateCanvas",
 	    "Rotate Canvas",
 	    CmdRecordableFlag)
 {
@@ -201,7 +201,7 @@ void RotateCanvasCommand::onExecute(Context* context)
 //////////////////////////////////////////////////////////////////////
 // CommandFactory
 
-Command* CommandFactory::create_rotate_canvas_command()
+Command* CommandFactory::createRotateCanvasCommand()
 {
   return new RotateCanvasCommand;
 }

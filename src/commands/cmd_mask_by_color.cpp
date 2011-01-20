@@ -39,7 +39,7 @@ protected:
 };
 
 MaskByColorCommand::MaskByColorCommand()
-  : Command("mask_by_color",
+  : Command("MaskByColor",
 	    "Mask By Color",
 	    CmdUIOnlyFlag)
 {
@@ -61,7 +61,7 @@ void MaskByColorCommand::onExecute(Context* context)
 //////////////////////////////////////////////////////////////////////
 // CommandFactory
 
-Command* CommandFactory::create_mask_by_color_command()
+Command* CommandFactory::createMaskByColorCommand()
 {
   return new MaskByColorCommand;
 }

@@ -47,7 +47,7 @@ protected:
 };
 
 CropSpriteCommand::CropSpriteCommand()
-  : Command("crop_sprite",
+  : Command("CropSprite",
 	    "Crop Sprite",
 	    CmdRecordableFlag)
 {
@@ -95,7 +95,7 @@ protected:
 };
 
 AutocropSpriteCommand::AutocropSpriteCommand()
-  : Command("autocrop_sprite",
+  : Command("AutocropSprite",
 	    "Autocrop Sprite",
 	    CmdRecordableFlag)
 {
@@ -124,12 +124,12 @@ void AutocropSpriteCommand::onExecute(Context* context)
 //////////////////////////////////////////////////////////////////////
 // CommandFactory
 
-Command* CommandFactory::create_crop_sprite_command()
+Command* CommandFactory::createCropSpriteCommand()
 {
   return new CropSpriteCommand;
 }
 
-Command* CommandFactory::create_autocrop_sprite_command()
+Command* CommandFactory::createAutocropSpriteCommand()
 {
   return new AutocropSpriteCommand;
 }

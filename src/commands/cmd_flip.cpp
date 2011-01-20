@@ -56,7 +56,7 @@ private:
 };
 
 FlipCommand::FlipCommand()
-  : Command("flip",
+  : Command("Flip",
 	    "Flip",
 	    CmdRecordableFlag)
 {
@@ -154,7 +154,7 @@ void FlipCommand::onExecute(Context* context)
 //////////////////////////////////////////////////////////////////////
 // CommandFactory
 
-Command* CommandFactory::create_flip_command()
+Command* CommandFactory::createFlipCommand()
 {
   return new FlipCommand;
 }

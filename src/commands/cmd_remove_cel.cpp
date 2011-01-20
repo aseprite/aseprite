@@ -41,7 +41,7 @@ protected:
 };
 
 RemoveCelCommand::RemoveCelCommand()
-  : Command("remove_cel",
+  : Command("RemoveCel",
 	    "Remove Cel",
 	    CmdRecordableFlag)
 {
@@ -74,7 +74,7 @@ void RemoveCelCommand::onExecute(Context* context)
 //////////////////////////////////////////////////////////////////////
 // CommandFactory
 
-Command* CommandFactory::create_remove_cel_command()
+Command* CommandFactory::createRemoveCelCommand()
 {
   return new RemoveCelCommand;
 }

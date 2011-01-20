@@ -42,7 +42,7 @@ protected:
 };
 
 FlattenLayersCommand::FlattenLayersCommand()
-  : Command("flatten_layers",
+  : Command("FlattenLayers",
 	    "Flatten Layers",
 	    CmdUIOnlyFlag)
 {
@@ -69,7 +69,7 @@ void FlattenLayersCommand::onExecute(Context* context)
 //////////////////////////////////////////////////////////////////////
 // CommandFactory
 
-Command* CommandFactory::create_flatten_layers_command()
+Command* CommandFactory::createFlattenLayersCommand()
 {
   return new FlattenLayersCommand;
 }

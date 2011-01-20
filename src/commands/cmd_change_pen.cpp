@@ -46,7 +46,7 @@ protected:
 };
 
 ChangePenCommand::ChangePenCommand()
-  : Command("change_pen",
+  : Command("ChangePen",
 	    "Change Pen",
 	    CmdUIOnlyFlag)
 {
@@ -84,7 +84,7 @@ void ChangePenCommand::onExecute(Context* context)
 //////////////////////////////////////////////////////////////////////
 // CommandFactory
 
-Command* CommandFactory::create_change_pen_command()
+Command* CommandFactory::createChangePenCommand()
 {
   return new ChangePenCommand;
 }

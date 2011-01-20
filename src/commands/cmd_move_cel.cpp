@@ -37,7 +37,7 @@ protected:
 };
 
 MoveCelCommand::MoveCelCommand()
-  : Command("move_cel",
+  : Command("MoveCel",
 	    "Move Cel",
 	    CmdUIOnlyFlag)
 {
@@ -57,7 +57,7 @@ void MoveCelCommand::onExecute(Context* context)
 //////////////////////////////////////////////////////////////////////
 // CommandFactory
 
-Command* CommandFactory::create_move_cel_command()
+Command* CommandFactory::createMoveCelCommand()
 {
   return new MoveCelCommand;
 }

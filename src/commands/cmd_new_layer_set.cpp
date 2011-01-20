@@ -42,7 +42,7 @@ protected:
 };
 
 NewLayerSetCommand::NewLayerSetCommand()
-  : Command("new_layer_set",
+  : Command("NewLayerSet",
 	    "New Layer Set",
 	    CmdRecordableFlag)
 {
@@ -79,7 +79,7 @@ void NewLayerSetCommand::onExecute(Context* context)
 //////////////////////////////////////////////////////////////////////
 // CommandFactory
 
-Command* CommandFactory::create_new_layer_set_command()
+Command* CommandFactory::createNewLayerSetCommand()
 {
   return new NewLayerSetCommand;
 }

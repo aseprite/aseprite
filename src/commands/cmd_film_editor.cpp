@@ -39,7 +39,7 @@ protected:
 };
 
 FilmEditorCommand::FilmEditorCommand()
-  : Command("film_editor",
+  : Command("FilmEditor",
 	    "Animation Editor",
 	    CmdUIOnlyFlag)
 {
@@ -59,7 +59,7 @@ void FilmEditorCommand::onExecute(Context* context)
 //////////////////////////////////////////////////////////////////////
 // CommandFactory
 
-Command* CommandFactory::create_film_editor_command()
+Command* CommandFactory::createFilmEditorCommand()
 {
   return new FilmEditorCommand;
 }

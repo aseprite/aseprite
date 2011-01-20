@@ -201,7 +201,7 @@ protected:
 };
 
 SaveFileCommand::SaveFileCommand()
-  : Command("save_file",
+  : Command("SaveFile",
 	    "Save File",
 	    CmdRecordableFlag)
 {
@@ -256,7 +256,7 @@ protected:
 };
 
 SaveFileAsCommand::SaveFileAsCommand()
-  : Command("save_file_as",
+  : Command("SaveFileAs",
 	    "Save File As",
 	    CmdRecordableFlag)
 {
@@ -290,7 +290,7 @@ protected:
 };
 
 SaveFileCopyAsCommand::SaveFileCopyAsCommand()
-  : Command("save_file_copy_as",
+  : Command("SaveFileCopyAs",
 	    "Save File Copy As",
 	    CmdRecordableFlag)
 {
@@ -319,17 +319,17 @@ void SaveFileCopyAsCommand::onExecute(Context* context)
 //////////////////////////////////////////////////////////////////////
 // CommandFactory
 
-Command* CommandFactory::create_save_file_command()
+Command* CommandFactory::createSaveFileCommand()
 {
   return new SaveFileCommand;
 }
 
-Command* CommandFactory::create_save_file_as_command()
+Command* CommandFactory::createSaveFileAsCommand()
 {
   return new SaveFileAsCommand;
 }
 
-Command* CommandFactory::create_save_file_copy_as_command()
+Command* CommandFactory::createSaveFileCopyAsCommand()
 {
   return new SaveFileCopyAsCommand;
 }

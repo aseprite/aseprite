@@ -44,7 +44,7 @@ protected:
 };
 
 ClearCommand::ClearCommand()
-  : Command("clear",
+  : Command("Clear",
 	    "Clear",
 	    CmdUIOnlyFlag)
 {
@@ -80,7 +80,7 @@ void ClearCommand::onExecute(Context* context)
 //////////////////////////////////////////////////////////////////////
 // CommandFactory
 
-Command* CommandFactory::create_clear_command()
+Command* CommandFactory::createClearCommand()
 {
   return new ClearCommand;
 }

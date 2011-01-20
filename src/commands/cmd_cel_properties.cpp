@@ -46,7 +46,7 @@ protected:
 };
 
 CelPropertiesCommand::CelPropertiesCommand()
-  : Command("cel_properties",
+  : Command("CelProperties",
 	    "Cel Properties",
 	    CmdUIOnlyFlag)
 {
@@ -151,7 +151,7 @@ void CelPropertiesCommand::onExecute(Context* context)
 //////////////////////////////////////////////////////////////////////
 // CommandFactory
 
-Command* CommandFactory::create_cel_properties_command()
+Command* CommandFactory::createCelPropertiesCommand()
 {
   return new CelPropertiesCommand;
 }

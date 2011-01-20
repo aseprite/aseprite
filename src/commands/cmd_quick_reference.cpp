@@ -38,7 +38,7 @@ protected:
 };
 
 QuickReferenceCommand::QuickReferenceCommand()
-  : Command("quick_reference",
+  : Command("QuickReference",
 	    "Quick Reference",
 	    CmdUIOnlyFlag)
 {
@@ -61,7 +61,7 @@ void QuickReferenceCommand::onExecute(Context* context)
 //////////////////////////////////////////////////////////////////////
 // CommandFactory
 
-Command* CommandFactory::create_quick_reference_command()
+Command* CommandFactory::createQuickReferenceCommand()
 {
   return new QuickReferenceCommand;
 }

@@ -40,7 +40,7 @@ protected:
 };
 
 CutCommand::CutCommand()
-  : Command("cut",
+  : Command("Cut",
 	    "Cut",
 	    CmdUIOnlyFlag)
 {
@@ -69,7 +69,7 @@ void CutCommand::onExecute(Context* context)
 //////////////////////////////////////////////////////////////////////
 // CommandFactory
 
-Command* CommandFactory::create_cut_command()
+Command* CommandFactory::createCutCommand()
 {
   return new CutCommand;
 }

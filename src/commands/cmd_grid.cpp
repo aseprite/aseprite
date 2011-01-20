@@ -40,7 +40,7 @@ class ShowGridCommand : public Command
 {
 public:
   ShowGridCommand()
-    : Command("show_grid",
+    : Command("ShowGrid",
 	      "Show Grid",
 	      CmdUIOnlyFlag)
   {
@@ -72,7 +72,7 @@ class SnapToGridCommand : public Command
 {
 public:
   SnapToGridCommand()
-    : Command("snap_to_grid",
+    : Command("SnapToGrid",
 	      "Snap to Grid",
 	      CmdUIOnlyFlag)
   {
@@ -118,7 +118,7 @@ protected:
 };
 
 GridSettingsCommand::GridSettingsCommand()
-  : Command("grid_settings",
+  : Command("GridSettings",
 	    "Grid Settings",
 	    CmdUIOnlyFlag)
 {
@@ -168,17 +168,17 @@ void GridSettingsCommand::onExecute(Context* context)
 //////////////////////////////////////////////////////////////////////
 // CommandFactory
 
-Command* CommandFactory::create_show_grid_command()
+Command* CommandFactory::createShowGridCommand()
 {
   return new ShowGridCommand;
 }
 
-Command* CommandFactory::create_snap_to_grid_command()
+Command* CommandFactory::createSnapToGridCommand()
 {
   return new SnapToGridCommand;
 }
 
-Command* CommandFactory::create_grid_settings_command()
+Command* CommandFactory::createGridSettingsCommand()
 {
   return new GridSettingsCommand;
 }

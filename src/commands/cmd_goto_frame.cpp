@@ -40,7 +40,7 @@ protected:
 };
 
 GotoFirstFrameCommand::GotoFirstFrameCommand()
-  : Command("goto_first_frame",
+  : Command("GotoFirstFrame",
 	    "Goto First Frame",
 	    CmdRecordableFlag)
 {
@@ -77,7 +77,7 @@ protected:
 };
 
 GotoPreviousFrameCommand::GotoPreviousFrameCommand()
-  : Command("goto_previous_frame",
+  : Command("GotoPreviousFrame",
 	    "Goto Previous Frame",
 	    CmdRecordableFlag)
 {
@@ -120,7 +120,7 @@ protected:
 };
 
 GotoNextFrameCommand::GotoNextFrameCommand()
-  : Command("goto_next_frame",
+  : Command("GotoNextFrame",
 	    "Goto Next Frame",
 	    CmdRecordableFlag)
 {
@@ -163,7 +163,7 @@ protected:
 };
 
 GotoLastFrameCommand::GotoLastFrameCommand()
-  : Command("goto_last_frame",
+  : Command("GotoLastFrame",
 	    "Goto Last Frame",
 	    CmdRecordableFlag)
 {
@@ -188,22 +188,22 @@ void GotoLastFrameCommand::onExecute(Context* context)
 //////////////////////////////////////////////////////////////////////
 // CommandFactory
 
-Command* CommandFactory::create_goto_first_frame_command()
+Command* CommandFactory::createGotoFirstFrameCommand()
 {
   return new GotoFirstFrameCommand;
 }
 
-Command* CommandFactory::create_goto_previous_frame_command()
+Command* CommandFactory::createGotoPreviousFrameCommand()
 {
   return new GotoPreviousFrameCommand;
 }
 
-Command* CommandFactory::create_goto_next_frame_command()
+Command* CommandFactory::createGotoNextFrameCommand()
 {
   return new GotoNextFrameCommand;
 }
 
-Command* CommandFactory::create_goto_last_frame_command()
+Command* CommandFactory::createGotoLastFrameCommand()
 {
   return new GotoLastFrameCommand;
 }

@@ -40,7 +40,7 @@ protected:
 };
 
 MaskAllCommand::MaskAllCommand()
-  : Command("mask_all",
+  : Command("MaskAll",
 	    "Mask All",
 	    CmdRecordableFlag)
 {
@@ -72,7 +72,7 @@ void MaskAllCommand::onExecute(Context* context)
 //////////////////////////////////////////////////////////////////////
 // CommandFactory
 
-Command* CommandFactory::create_mask_all_command()
+Command* CommandFactory::createMaskAllCommand()
 {
   return new MaskAllCommand;
 }

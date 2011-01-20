@@ -38,7 +38,7 @@ protected:
 };
 
 UndoCommand::UndoCommand()
-  : Command("undo",
+  : Command("Undo",
 	    "Undo",
 	    CmdUIOnlyFlag)
 {
@@ -68,7 +68,7 @@ void UndoCommand::onExecute(Context* context)
 //////////////////////////////////////////////////////////////////////
 // CommandFactory
 
-Command* CommandFactory::create_undo_command()
+Command* CommandFactory::createUndoCommand()
 {
   return new UndoCommand;
 }

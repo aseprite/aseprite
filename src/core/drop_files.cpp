@@ -78,7 +78,7 @@ void check_for_dropped_files()
     // open all files
 
     Command* cmd_open_file =
-      CommandsModule::instance()->get_command_by_name(CommandId::open_file);
+      CommandsModule::instance()->get_command_by_name(CommandId::OpenFile);
     Params params;
 
     for (std::vector<base::string>::iterator

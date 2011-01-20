@@ -50,7 +50,7 @@ protected:
 };
 
 SelectFileCommand::SelectFileCommand()
-  : Command("select_file",
+  : Command("SelectFile",
 	    "Select File",
 	    CmdUIOnlyFlag)
 {
@@ -106,7 +106,7 @@ void SelectFileCommand::onExecute(Context* context)
 //////////////////////////////////////////////////////////////////////
 // CommandFactory
 
-Command* CommandFactory::create_select_file_command()
+Command* CommandFactory::createSelectFileCommand()
 {
   return new SelectFileCommand;
 }

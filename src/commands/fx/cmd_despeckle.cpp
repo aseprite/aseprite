@@ -70,7 +70,7 @@ protected:
 };
 
 DespeckleCommand::DespeckleCommand()
-  : Command("despeckle",
+  : Command("Despeckle",
 	    "Despeckle",
 	    CmdRecordableFlag)
 {
@@ -206,7 +206,7 @@ static void make_preview()
 //////////////////////////////////////////////////////////////////////
 // CommandFactory
 
-Command* CommandFactory::create_despeckle_command()
+Command* CommandFactory::createDespeckleCommand()
 {
   return new DespeckleCommand;
 }

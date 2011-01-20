@@ -417,7 +417,7 @@ bool ColorBar::onProcessMessage(JMessage msg)
 
 	      case HOTCOLOR_FGCOLOR:
 	      case HOTCOLOR_BGCOLOR: {
-		Command* paledit_cmd = CommandsModule::instance()->get_command_by_name(CommandId::palette_editor);
+		Command* paledit_cmd = CommandsModule::instance()->get_command_by_name(CommandId::PaletteEditor);
 		Params params;
 		params.set("target", (m_hot == HOTCOLOR_FGCOLOR ? "foreground": "background"));
 		params.set("open", "true");

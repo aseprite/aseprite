@@ -137,7 +137,7 @@ static int load_root_menu()
     const char* command_key = xmlKey->Attribute("shortcut");
 
     if (command_name && command_key) {
-      Command *command = CommandsModule::instance()->get_command_by_name(command_name);
+      Command* command = CommandsModule::instance()->get_command_by_name(command_name);
       if (command) {
 	// Read params
 	Params params;

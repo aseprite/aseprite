@@ -35,7 +35,7 @@ protected:
 };
 
 CloseEditorCommand::CloseEditorCommand()
-  : Command("close_editor",
+  : Command("CloseEditor",
 	    "Close Editor",
 	    CmdUIOnlyFlag)
 {
@@ -60,7 +60,7 @@ protected:
 };
 
 MakeUniqueEditorCommand::MakeUniqueEditorCommand()
-  : Command("make_unique_editor",
+  : Command("MakeUniqueEditor",
 	    "Make Unique Editor",
 	    CmdUIOnlyFlag)
 {
@@ -85,7 +85,7 @@ protected:
 };
 
 SplitEditorHorizontallyCommand::SplitEditorHorizontallyCommand()
-  : Command("split_editor_horizontally",
+  : Command("SplitEditorHorizontally",
 	    "Split Editor Horizontally",
 	    CmdUIOnlyFlag)
 {
@@ -110,7 +110,7 @@ protected:
 };
 
 SplitEditorVerticallyCommand::SplitEditorVerticallyCommand()
-  : Command("split_editor_vertically",
+  : Command("SplitEditorVertically",
 	    "Split Editor Vertically",
 	    CmdUIOnlyFlag)
 {
@@ -124,22 +124,22 @@ void SplitEditorVerticallyCommand::onExecute(Context* context)
 //////////////////////////////////////////////////////////////////////
 // CommandFactory
 
-Command* CommandFactory::create_close_editor_command()
+Command* CommandFactory::createCloseEditorCommand()
 {
   return new CloseEditorCommand;
 }
 
-Command* CommandFactory::create_make_unique_editor_command()
+Command* CommandFactory::createMakeUniqueEditorCommand()
 {
   return new MakeUniqueEditorCommand;
 }
 
-Command* CommandFactory::create_split_editor_horizontally_command()
+Command* CommandFactory::createSplitEditorHorizontallyCommand()
 {
   return new SplitEditorHorizontallyCommand;
 }
 
-Command* CommandFactory::create_split_editor_vertically_command()
+Command* CommandFactory::createSplitEditorVerticallyCommand()
 {
   return new SplitEditorVerticallyCommand;
 }

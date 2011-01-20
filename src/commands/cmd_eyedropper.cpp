@@ -51,7 +51,7 @@ protected:
 };
 
 EyedropperCommand::EyedropperCommand()
-  : Command("eyedropper",
+  : Command("Eyedropper",
 	    "Eyedropper",
 	    CmdUIOnlyFlag)
 {
@@ -96,7 +96,7 @@ void EyedropperCommand::onExecute(Context* context)
 //////////////////////////////////////////////////////////////////////
 // CommandFactory
 
-Command* CommandFactory::create_eyedropper_command()
+Command* CommandFactory::createEyedropperCommand()
 {
   return new EyedropperCommand;
 }

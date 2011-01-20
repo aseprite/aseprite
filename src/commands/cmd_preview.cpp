@@ -55,7 +55,7 @@ protected:
 };
 
 PreviewCommand::PreviewCommand()
-  : Command("preview",
+  : Command("Preview",
 	    "Preview",
 	    CmdUIOnlyFlag)
 {
@@ -182,10 +182,10 @@ void PreviewCommand::onExecute(Context* context)
 
       // Change frame
       if (command != NULL &&
-	  (strcmp(command->short_name(), CommandId::goto_first_frame) == 0 ||
-	   strcmp(command->short_name(), CommandId::goto_previous_frame) == 0 ||
-	   strcmp(command->short_name(), CommandId::goto_next_frame) == 0 ||
-	   strcmp(command->short_name(), CommandId::goto_last_frame) == 0)) {
+	  (strcmp(command->short_name(), CommandId::GotoFirstFrame) == 0 ||
+	   strcmp(command->short_name(), CommandId::GotoPreviousFrame) == 0 ||
+	   strcmp(command->short_name(), CommandId::GotoNextFrame) == 0 ||
+	   strcmp(command->short_name(), CommandId::GotoLastFrame) == 0)) {
 	// Execute the command
 	context->executeCommand(command);
 
@@ -199,7 +199,7 @@ void PreviewCommand::onExecute(Context* context)
       }
       // Play the animation
       else if (command != NULL &&
-	       strcmp(command->short_name(), CommandId::play_animation) == 0) {
+	       strcmp(command->short_name(), CommandId::PlayAnimation) == 0) {
 	// TODO
       }
       // Change background color
@@ -242,7 +242,7 @@ void PreviewCommand::onExecute(Context* context)
 //////////////////////////////////////////////////////////////////////
 // CommandFactory
 
-Command* CommandFactory::create_preview_command()
+Command* CommandFactory::createPreviewCommand()
 {
   return new PreviewCommand;
 }

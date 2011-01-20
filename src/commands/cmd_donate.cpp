@@ -35,7 +35,7 @@ protected:
 };
 
 DonateCommand::DonateCommand()
-  : Command("donate",
+  : Command("Donate",
 	    "Donate",
 	    CmdUIOnlyFlag)
 {
@@ -53,7 +53,7 @@ void DonateCommand::onExecute(Context* context)
 //////////////////////////////////////////////////////////////////////
 // CommandFactory
 
-Command* CommandFactory::create_donate_command()
+Command* CommandFactory::createDonateCommand()
 {
   return new DonateCommand;
 }

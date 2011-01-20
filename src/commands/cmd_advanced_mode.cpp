@@ -44,7 +44,7 @@ private:
 bool AdvancedModeCommand::advanced_mode = false;
 
 AdvancedModeCommand::AdvancedModeCommand()
-  : Command("advanced_mode",
+  : Command("AdvancedMode",
 	    "Advanced Mode",
 	    CmdUIOnlyFlag)
 {
@@ -91,7 +91,7 @@ void AdvancedModeCommand::onExecute(Context* context)
 //////////////////////////////////////////////////////////////////////
 // CommandFactory
 
-Command* CommandFactory::create_advanced_mode_command()
+Command* CommandFactory::createAdvancedModeCommand()
 {
   return new AdvancedModeCommand;
 }

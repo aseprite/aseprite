@@ -41,7 +41,7 @@ protected:
 };
 
 RemoveFrameCommand::RemoveFrameCommand()
-  : Command("remove_frame",
+  : Command("RemoveFrame",
 	    "Remove Frame",
 	    CmdRecordableFlag)
 {
@@ -69,7 +69,7 @@ void RemoveFrameCommand::onExecute(Context* context)
 //////////////////////////////////////////////////////////////////////
 // CommandFactory
 
-Command* CommandFactory::create_remove_frame_command()
+Command* CommandFactory::createRemoveFrameCommand()
 {
   return new RemoveFrameCommand;
 }

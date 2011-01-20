@@ -40,7 +40,7 @@ protected:
 };
 
 PasteCommand::PasteCommand()
-  : Command("paste",
+  : Command("Paste",
 	    "Paste",
 	    CmdUIOnlyFlag)
 {
@@ -66,7 +66,7 @@ void PasteCommand::onExecute(Context* context)
 //////////////////////////////////////////////////////////////////////
 // CommandFactory
 
-Command* CommandFactory::create_paste_command()
+Command* CommandFactory::createPasteCommand()
 {
   return new PasteCommand;
 }

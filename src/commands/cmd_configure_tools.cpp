@@ -203,7 +203,7 @@ private:
 };
 
 ConfigureTools::ConfigureTools()
-  : Command("configure_tools",
+  : Command("ConfigureTools",
 	    "Configure Tools",
 	    CmdUIOnlyFlag)
 {
@@ -537,7 +537,7 @@ void ConfigureTools::onSetGridClick()
     }
     else {
       Command* grid_settings_cmd = 
-	CommandsModule::instance()->get_command_by_name(CommandId::grid_settings);
+	CommandsModule::instance()->get_command_by_name(CommandId::GridSettings);
   
       UIContext::instance()->executeCommand(grid_settings_cmd, NULL);
     }
@@ -556,7 +556,7 @@ void ConfigureTools::onOnionSkinClick()
 //////////////////////////////////////////////////////////////////////
 // CommandFactory
 
-Command* CommandFactory::create_configure_tools_command()
+Command* CommandFactory::createConfigureToolsCommand()
 {
   return new ConfigureTools;
 }

@@ -24,8 +24,8 @@
 struct CommandId
 {
 #undef FOR_EACH_COMMAND
-  #define FOR_EACH_COMMAND(name) \
-    static const char* name;
+  #define FOR_EACH_COMMAND(Name) \
+    static const char* Name;
   #include "commands/commands_list.h"
 #undef FOR_EACH_COMMAND
 };

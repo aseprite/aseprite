@@ -102,7 +102,7 @@ void NewCelCommand::onExecute(Context* context)
 //////////////////////////////////////////////////////////////////////
 // CommandFactory
 
-Command* CommandFactory::create_new_cel_command()
+Command* CommandFactory::createNewCelCommand()
 {
   return new NewCelCommand;
 }

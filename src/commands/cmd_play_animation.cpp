@@ -56,7 +56,7 @@ static void speed_timer_callback()
 END_OF_STATIC_FUNCTION(speed_timer_callback);
 
 PlayAnimationCommand::PlayAnimationCommand()
-  : Command("play_animation",
+  : Command("PlayAnimation",
 	    "Play Animation",
 	    CmdUIOnlyFlag)
 {
@@ -160,7 +160,7 @@ void PlayAnimationCommand::onExecute(Context* context)
 //////////////////////////////////////////////////////////////////////
 // CommandFactory
 
-Command* CommandFactory::create_play_animation_command()
+Command* CommandFactory::createPlayAnimationCommand()
 {
   return new PlayAnimationCommand;
 }

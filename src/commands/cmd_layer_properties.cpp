@@ -44,7 +44,7 @@ protected:
 };
 
 LayerPropertiesCommand::LayerPropertiesCommand()
-  : Command("layer_properties",
+  : Command("LayerProperties",
 	    "Layer Properties",
 	    CmdRecordableFlag)
 {
@@ -101,7 +101,7 @@ void LayerPropertiesCommand::onExecute(Context* context)
 //////////////////////////////////////////////////////////////////////
 // CommandFactory
 
-Command* CommandFactory::create_layer_properties_command()
+Command* CommandFactory::createLayerPropertiesCommand()
 {
   return new LayerPropertiesCommand;
 }

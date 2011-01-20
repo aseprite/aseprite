@@ -172,7 +172,7 @@ private:
 };
 
 SpriteSizeCommand::SpriteSizeCommand()
-  : Command("sprite_size",
+  : Command("SpriteSize",
 	    "Sprite Size",
 	    CmdRecordableFlag)
 {
@@ -314,7 +314,7 @@ static bool height_perc_change_hook(JWidget widget, void *data)
 //////////////////////////////////////////////////////////////////////
 // CommandFactory
 
-Command* CommandFactory::create_sprite_size_command()
+Command* CommandFactory::createSpriteSizeCommand()
 {
   return new SpriteSizeCommand;
 }

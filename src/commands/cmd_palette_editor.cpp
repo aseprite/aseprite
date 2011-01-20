@@ -131,7 +131,7 @@ static void on_color_changed(const Color& color);
 static void set_new_palette(Palette *palette, const char* operationName);
 
 PaletteEditorCommand::PaletteEditorCommand()
-  : Command("palette_editor",
+  : Command("PaletteEditor",
 	    "PaletteEditor",
 	    CmdRecordableFlag)
 {
@@ -1168,7 +1168,7 @@ static void set_new_palette(Palette* palette, const char* operationName)
 //////////////////////////////////////////////////////////////////////
 // CommandFactory
 
-Command* CommandFactory::create_palette_editor_command()
+Command* CommandFactory::createPaletteEditorCommand()
 {
   return new PaletteEditorCommand;
 }

@@ -48,7 +48,7 @@ protected:
 };
 
 RefreshCommand::RefreshCommand()
-  : Command("refresh",
+  : Command("Refresh",
 	    "Refresh",
 	    CmdUIOnlyFlag)
 {
@@ -91,7 +91,7 @@ void RefreshCommand::onExecute(Context* context)
 //////////////////////////////////////////////////////////////////////
 // CommandFactory
 
-Command* CommandFactory::create_refresh_command()
+Command* CommandFactory::createRefreshCommand()
 {
   return new RefreshCommand;
 }

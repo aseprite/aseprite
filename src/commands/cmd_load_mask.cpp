@@ -46,7 +46,7 @@ protected:
 };
 
 LoadMaskCommand::LoadMaskCommand()
-  : Command("load_mask",
+  : Command("LoadMask",
 	    "LoadMask",
 	    CmdRecordableFlag)
 {
@@ -99,7 +99,7 @@ void LoadMaskCommand::onExecute(Context* context)
 //////////////////////////////////////////////////////////////////////
 // CommandFactory
 
-Command* CommandFactory::create_load_mask_command()
+Command* CommandFactory::createLoadMaskCommand()
 {
   return new LoadMaskCommand;
 }

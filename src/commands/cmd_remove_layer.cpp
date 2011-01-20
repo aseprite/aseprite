@@ -45,7 +45,7 @@ protected:
 };
 
 RemoveLayerCommand::RemoveLayerCommand()
-  : Command("remove_layer",
+  : Command("RemoveLayer",
 	    "Remove Layer",
 	    CmdRecordableFlag)
 {
@@ -82,7 +82,7 @@ void RemoveLayerCommand::onExecute(Context* context)
 //////////////////////////////////////////////////////////////////////
 // CommandFactory
 
-Command* CommandFactory::create_remove_layer_command()
+Command* CommandFactory::createRemoveLayerCommand()
 {
   return new RemoveLayerCommand;
 }

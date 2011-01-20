@@ -59,7 +59,7 @@ static int _sprite_counter = 0;
 static Sprite* new_sprite(Context* context, int imgtype, int w, int h, int ncolors);
 
 NewFileCommand::NewFileCommand()
-  : Command("new_file",
+  : Command("NewFile",
 	    "New File",
 	    CmdRecordableFlag)
 {
@@ -201,7 +201,7 @@ static Sprite* new_sprite(Context* context, int imgtype, int w, int h, int ncolo
 //////////////////////////////////////////////////////////////////////
 // CommandFactory
 
-Command* CommandFactory::create_new_file_command()
+Command* CommandFactory::createNewFileCommand()
 {
   return new NewFileCommand;
 }

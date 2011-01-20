@@ -69,7 +69,7 @@ protected:
 };
 
 ReplaceColorCommand::ReplaceColorCommand()
-  : Command("replace_color",
+  : Command("ReplaceColor",
 	    "Replace Color",
 	    CmdRecordableFlag)
 {
@@ -206,7 +206,7 @@ static void make_preview()
 //////////////////////////////////////////////////////////////////////
 // CommandFactory
 
-Command* CommandFactory::create_replace_color_command()
+Command* CommandFactory::createReplaceColorCommand()
 {
   return new ReplaceColorCommand;
 }

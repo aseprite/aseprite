@@ -51,7 +51,7 @@ protected:
 };
 
 SpritePropertiesCommand::SpritePropertiesCommand()
-  : Command("sprite_properties",
+  : Command("SpriteProperties",
 	    "Sprite Properties",
 	    CmdUIOnlyFlag)
 {
@@ -163,7 +163,7 @@ void SpritePropertiesCommand::onExecute(Context* context)
 //////////////////////////////////////////////////////////////////////
 // CommandFactory
 
-Command* CommandFactory::create_sprite_properties_command()
+Command* CommandFactory::createSpritePropertiesCommand()
 {
   return new SpritePropertiesCommand;
 }

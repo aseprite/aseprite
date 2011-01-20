@@ -39,7 +39,7 @@ protected:
 };
 
 ExitCommand::ExitCommand()
-  : Command("exit",
+  : Command("Exit",
 	    "Exit",
 	    CmdUIOnlyFlag)
 {
@@ -67,7 +67,7 @@ void ExitCommand::onExecute(Context* context)
 //////////////////////////////////////////////////////////////////////
 // CommandFactory
 
-Command* CommandFactory::create_exit_command()
+Command* CommandFactory::createExitCommand()
 {
   return new ExitCommand;
 }

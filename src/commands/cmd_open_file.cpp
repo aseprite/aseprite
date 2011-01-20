@@ -117,7 +117,7 @@ static void monitor_free(void* _data)
 }
 
 OpenFileCommand::OpenFileCommand()
-  : Command("open_file",
+  : Command("OpenFile",
 	    "Open Sprite",
 	    CmdRecordableFlag)
 {
@@ -216,7 +216,7 @@ void OpenFileCommand::onExecute(Context* context)
 //////////////////////////////////////////////////////////////////////
 // CommandFactory
 
-Command* CommandFactory::create_open_file_command()
+Command* CommandFactory::createOpenFileCommand()
 {
   return new OpenFileCommand;
 }

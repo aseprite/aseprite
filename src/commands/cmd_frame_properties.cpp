@@ -44,7 +44,7 @@ class SpriteReader;
 void dialogs_frame_length(const SpriteReader& sprite, int sprite_frame);
 
 FramePropertiesCommand::FramePropertiesCommand()
-  : Command("frame_properties",
+  : Command("FrameProperties",
 	    "Frame Properties",
 	    CmdUIOnlyFlag)
 {
@@ -109,7 +109,7 @@ void dialogs_frame_length(const SpriteReader& sprite, int sprite_frame)
 //////////////////////////////////////////////////////////////////////
 // CommandFactory
 
-Command* CommandFactory::create_frame_properties_command()
+Command* CommandFactory::createFramePropertiesCommand()
 {
   return new FramePropertiesCommand;
 }

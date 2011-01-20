@@ -41,7 +41,7 @@ protected:
 };
 
 LayerFromBackgroundCommand::LayerFromBackgroundCommand()
-  : Command("layer_from_background",
+  : Command("LayerFromBackground",
 	    "Layer From Background",
 	    CmdRecordableFlag)
 {
@@ -73,7 +73,7 @@ void LayerFromBackgroundCommand::onExecute(Context* context)
 //////////////////////////////////////////////////////////////////////
 // CommandFactory
 
-Command* CommandFactory::create_layer_from_background_command()
+Command* CommandFactory::createLayerFromBackgroundCommand()
 {
   return new LayerFromBackgroundCommand;
 }

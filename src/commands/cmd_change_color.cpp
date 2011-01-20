@@ -49,7 +49,7 @@ protected:
 };
 
 ChangeColorCommand::ChangeColorCommand()
-  : Command("change_color",
+  : Command("ChangeColor",
 	    "Change Color",
 	    CmdUIOnlyFlag)
 {
@@ -107,7 +107,7 @@ void ChangeColorCommand::onExecute(Context* context)
 //////////////////////////////////////////////////////////////////////
 // CommandFactory
 
-Command* CommandFactory::create_change_color_command()
+Command* CommandFactory::createChangeColorCommand()
 {
   return new ChangeColorCommand;
 }

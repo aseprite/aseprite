@@ -40,7 +40,7 @@ protected:
 };
 
 AboutCommand::AboutCommand()
-  : Command("about",
+  : Command("About",
 	    "About",
 	    CmdUIOnlyFlag)
 {
@@ -105,7 +105,7 @@ void AboutCommand::onExecute(Context* context)
 //////////////////////////////////////////////////////////////////////
 // CommandFactory
 
-Command* CommandFactory::create_about_command()
+Command* CommandFactory::createAboutCommand()
 {
   return new AboutCommand;
 }

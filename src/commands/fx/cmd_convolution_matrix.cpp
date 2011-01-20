@@ -81,7 +81,7 @@ protected:
 };
 
 ConvolutionMatrixCommand::ConvolutionMatrixCommand()
-  : Command("convolution_matrix",
+  : Command("ConvolutionMatrix",
 	    "Convolution Matrix",
 	    CmdRecordableFlag)
 {
@@ -339,7 +339,7 @@ static void make_preview()
 //////////////////////////////////////////////////////////////////////
 // CommandFactory
 
-Command* CommandFactory::create_convolution_matrix_command()
+Command* CommandFactory::createConvolutionMatrixCommand()
 {
   return new ConvolutionMatrixCommand;
 }

@@ -25,8 +25,8 @@ class CommandFactory
 {
 public:
   #undef FOR_EACH_COMMAND
-  #define FOR_EACH_COMMAND(name) \
-    static Command* create_##name##_command();
+  #define FOR_EACH_COMMAND(Name) \
+    static Command* create##Name##Command();
 
   #include "commands/commands_list.h"
   #undef FOR_EACH_COMMAND

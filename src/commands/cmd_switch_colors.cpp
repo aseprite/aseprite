@@ -36,7 +36,7 @@ protected:
 };
 
 SwitchColorsCommand::SwitchColorsCommand()
-  : Command("switch_colors",
+  : Command("SwitchColors",
 	    "SwitchColors",
 	    CmdUIOnlyFlag)
 {
@@ -55,7 +55,7 @@ void SwitchColorsCommand::onExecute(Context* context)
 //////////////////////////////////////////////////////////////////////
 // CommandFactory
 
-Command* CommandFactory::create_switch_colors_command()
+Command* CommandFactory::createSwitchColorsCommand()
 {
   return new SwitchColorsCommand;
 }

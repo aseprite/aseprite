@@ -67,7 +67,7 @@ protected:
 };
 
 ColorCurveCommand::ColorCurveCommand()
-  : Command("color_curve",
+  : Command("ColorCurve",
 	    "Color Curve",
 	    CmdRecordableFlag)
 {
@@ -185,7 +185,7 @@ static void make_preview()
 //////////////////////////////////////////////////////////////////////
 // CommandFactory
 
-Command* CommandFactory::create_color_curve_command()
+Command* CommandFactory::createColorCurveCommand()
 {
   return new ColorCurveCommand;
 }

@@ -41,7 +41,7 @@ protected:
 };
 
 ScreenShotCommand::ScreenShotCommand()
-  : Command("screen_shot",
+  : Command("ScreenShot",
 	    "Screen Shot",
 	    CmdUIOnlyFlag)
 {
@@ -132,7 +132,7 @@ void ScreenShotCommand::onExecute(Context* context)
 //////////////////////////////////////////////////////////////////////
 // CommandFactory
 
-Command* CommandFactory::create_screen_shot_command()
+Command* CommandFactory::createScreenShotCommand()
 {
   return new ScreenShotCommand;
 }

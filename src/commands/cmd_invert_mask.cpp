@@ -42,7 +42,7 @@ protected:
 };
 
 InvertMaskCommand::InvertMaskCommand()
-  : Command("invert_mask",
+  : Command("InvertMask",
 	    "Invert Mask",
 	    CmdRecordableFlag)
 {
@@ -67,7 +67,7 @@ void InvertMaskCommand::onExecute(Context* context)
   if (!has_mask) {
     // so we select all
     Command* mask_all_cmd =
-      CommandsModule::instance()->get_command_by_name(CommandId::mask_all);
+      CommandsModule::instance()->get_command_by_name(CommandId::MaskAll);
     context->executeCommand(mask_all_cmd);
   }
   // invert the current mask
@@ -115,7 +115,7 @@ void InvertMaskCommand::onExecute(Context* context)
 //////////////////////////////////////////////////////////////////////
 // CommandFactory
 
-Command* CommandFactory::create_invert_mask_command()
+Command* CommandFactory::createInvertMaskCommand()
 {
   return new InvertMaskCommand;
 }

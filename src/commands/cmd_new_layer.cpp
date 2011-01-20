@@ -53,7 +53,7 @@ static std::string get_unique_layer_name(Sprite* sprite);
 static int get_max_layer_num(Layer* layer);
 
 NewLayerCommand::NewLayerCommand()
-  : Command("new_layer",
+  : Command("NewLayer",
 	    "New Layer",
 	    CmdRecordableFlag)
 {
@@ -146,7 +146,7 @@ static int get_max_layer_num(Layer* layer)
 //////////////////////////////////////////////////////////////////////
 // CommandFactory
 
-Command* CommandFactory::create_new_layer_command()
+Command* CommandFactory::createNewLayerCommand()
 {
   return new NewLayerCommand;
 }

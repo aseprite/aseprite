@@ -46,7 +46,7 @@ protected:
 };
 
 ChangeImageTypeCommand::ChangeImageTypeCommand()
-  : Command("change_image_type",
+  : Command("ChangeImageType",
 	    "Change Image Type",
 	    CmdUIOnlyFlag)
 {
@@ -115,7 +115,7 @@ void ChangeImageTypeCommand::onExecute(Context* context)
 //////////////////////////////////////////////////////////////////////
 // CommandFactory
 
-Command* CommandFactory::create_change_image_type_command()
+Command* CommandFactory::createChangeImageTypeCommand()
 {
   return new ChangeImageTypeCommand;
 }

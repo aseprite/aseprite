@@ -44,7 +44,7 @@ protected:
 };
 
 SaveMaskCommand::SaveMaskCommand()
-  : Command("save_mask",
+  : Command("SaveMask",
 	    "Save Mask",
 	    CmdUIOnlyFlag)
 {
@@ -97,7 +97,7 @@ void SaveMaskCommand::onExecute(Context* context)
 //////////////////////////////////////////////////////////////////////
 // CommandFactory
 
-Command* CommandFactory::create_save_mask_command()
+Command* CommandFactory::createSaveMaskCommand()
 {
   return new SaveMaskCommand;
 }

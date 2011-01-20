@@ -56,7 +56,7 @@ private:
 };
 
 OptionsCommand::OptionsCommand()
-  : Command("options",
+  : Command("Options",
 	    "Options",
 	    CmdUIOnlyFlag)
 {
@@ -186,7 +186,7 @@ void OptionsCommand::onResetCheckedBg()
 //////////////////////////////////////////////////////////////////////
 // CommandFactory
 
-Command* CommandFactory::create_options_command()
+Command* CommandFactory::createOptionsCommand()
 {
   return new OptionsCommand;
 }

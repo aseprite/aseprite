@@ -1239,7 +1239,7 @@ static bool manager_msg_proc(JWidget widget, JMessage msg)
 	      Command* command = shortcut->command;
 
 	      // the screen shot is available in everywhere
-	      if (strcmp(command->short_name(), CommandId::screen_shot) == 0) {
+	      if (strcmp(command->short_name(), CommandId::ScreenShot) == 0) {
 		UIContext::instance()->executeCommand(command, shortcut->params);
 		return true;
 	      }

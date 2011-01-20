@@ -40,7 +40,7 @@ protected:
 };
 
 CopyCommand::CopyCommand()
-  : Command("copy",
+  : Command("Copy",
 	    "Copy",
 	    CmdUIOnlyFlag)
 {
@@ -70,7 +70,7 @@ void CopyCommand::onExecute(Context* context)
 //////////////////////////////////////////////////////////////////////
 // CommandFactory
 
-Command* CommandFactory::create_copy_command()
+Command* CommandFactory::createCopyCommand()
 {
   return new CopyCommand;
 }

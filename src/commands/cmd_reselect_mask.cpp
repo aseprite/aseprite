@@ -40,7 +40,7 @@ protected:
 };
 
 ReselectMaskCommand::ReselectMaskCommand()
-  : Command("reselect_mask",
+  : Command("ReselectMask",
 	    "Reselect Mask",
 	    CmdRecordableFlag)
 {
@@ -82,7 +82,7 @@ void ReselectMaskCommand::onExecute(Context* context)
 //////////////////////////////////////////////////////////////////////
 // CommandFactory
 
-Command* CommandFactory::create_reselect_mask_command()
+Command* CommandFactory::createReselectMaskCommand()
 {
   return new ReselectMaskCommand;
 }

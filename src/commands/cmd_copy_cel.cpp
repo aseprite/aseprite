@@ -37,7 +37,7 @@ protected:
 };
 
 CopyCelCommand::CopyCelCommand()
-  : Command("copy_cel",
+  : Command("CopyCel",
 	    "Copy Cel",
 	    CmdUIOnlyFlag)
 {
@@ -57,7 +57,7 @@ void CopyCelCommand::onExecute(Context* context)
 //////////////////////////////////////////////////////////////////////
 // CommandFactory
 
-Command* CommandFactory::create_copy_cel_command()
+Command* CommandFactory::createCopyCelCommand()
 {
   return new CopyCelCommand;
 }

@@ -50,7 +50,7 @@ protected:
 };
 
 NewFrameCommand::NewFrameCommand()
-  : Command("new_frame",
+  : Command("NewFrame",
 	    "New Frame",
 	    CmdRecordableFlag)
 {
@@ -85,7 +85,7 @@ void NewFrameCommand::onExecute(Context* context)
 //////////////////////////////////////////////////////////////////////
 // CommandFactory
 
-Command* CommandFactory::create_new_frame_command()
+Command* CommandFactory::createNewFrameCommand()
 {
   return new NewFrameCommand;
 }

@@ -7,110 +7,110 @@
     <!-- Keyboard shortcuts for commands (menu options) -->
     <commands>
       <!-- File -->
-      <key command="new_file" shortcut="Ctrl+N" />
-      <key command="open_file" shortcut="Ctrl+O" />
-      <key command="save_file" shortcut="Ctrl+S" />
-      <key command="save_file_as" shortcut="Ctrl+Shift+S" />
-      <key command="save_file_copy_as" shortcut="Ctrl+Shift+C" />
-      <key command="close_file" shortcut="Ctrl+W" />
-      <key command="close_all_files" shortcut="Ctrl+Shift+W" />
-      <key command="screen_shot" shortcut="F12" />
-      <key command="exit" shortcut="Ctrl+Q" />
-      <key command="exit" shortcut="Esc" />
+      <key command="NewFile" shortcut="Ctrl+N" />
+      <key command="OpenFile" shortcut="Ctrl+O" />
+      <key command="SaveFile" shortcut="Ctrl+S" />
+      <key command="SaveFileAs" shortcut="Ctrl+Shift+S" />
+      <key command="SaveFileCopyAs" shortcut="Ctrl+Shift+C" />
+      <key command="CloseFile" shortcut="Ctrl+W" />
+      <key command="CloseAllFiles" shortcut="Ctrl+Shift+W" />
+      <key command="ScreenShot" shortcut="F12" />
+      <key command="Exit" shortcut="Ctrl+Q" />
+      <key command="Exit" shortcut="Esc" />
       <!-- Edit -->
-      <key command="undo" shortcut="Ctrl+Z" /> <key command="undo" shortcut="Ctrl+U" />
-      <key command="redo" shortcut="Ctrl+R" />
-      <key command="redo" shortcut="Ctrl+Shift+Z" />
-      <key command="cut" shortcut="Ctrl+X" /> <key command="cut" shortcut="Shift+Del" />
-      <key command="copy" shortcut="Ctrl+C" /> <key command="copy" shortcut="Ctrl+Ins" />
-      <key command="paste" shortcut="Ctrl+V" /> <key command="paste" shortcut="Shift+Ins" />
-      <key command="clear" shortcut="Del" /> <key command="clear" shortcut="Backspace" />
-      <key command="flip" shortcut="Shift+H">
+      <key command="Undo" shortcut="Ctrl+Z" /> <key command="Undo" shortcut="Ctrl+U" />
+      <key command="Redo" shortcut="Ctrl+R" />
+      <key command="Redo" shortcut="Ctrl+Shift+Z" />
+      <key command="Cut" shortcut="Ctrl+X" /> <key command="Cut" shortcut="Shift+Del" />
+      <key command="Copy" shortcut="Ctrl+C" /> <key command="Copy" shortcut="Ctrl+Ins" />
+      <key command="Paste" shortcut="Ctrl+V" /> <key command="Paste" shortcut="Shift+Ins" />
+      <key command="Clear" shortcut="Del" /> <key command="Clear" shortcut="Backspace" />
+      <key command="Flip" shortcut="Shift+H">
 	<param name="target" value="mask" />
 	<param name="orientation" value="horizontal" />
       </key>
-      <key command="flip" shortcut="Shift+V">
+      <key command="Flip" shortcut="Shift+V">
 	<param name="target" value="mask" />
 	<param name="orientation" value="vertical" />
       </key>
-      <key command="replace_color" shortcut="Shift+R" />
-      <key command="invert_color" shortcut="Ctrl+I" />
-      <key command="convolution_matrix" shortcut="F9" />
-      <key command="color_curve" shortcut="Ctrl+M" />
-      <key command="color_curve" shortcut="F10" />
-      <key command="configure_tools" shortcut="C" />
-      <key command="options" shortcut="Ctrl+Shift+O" />
+      <key command="ReplaceColor" shortcut="Shift+R" />
+      <key command="InvertColor" shortcut="Ctrl+I" />
+      <key command="ConvolutionMatrix" shortcut="F9" />
+      <key command="ColorCurve" shortcut="Ctrl+M" />
+      <key command="ColorCurve" shortcut="F10" />
+      <key command="ConfigureTools" shortcut="C" />
+      <key command="Options" shortcut="Ctrl+Shift+O" />
       <!-- Sprite -->
-      <key command="sprite_properties" shortcut="Ctrl+P" />
+      <key command="SpriteProperties" shortcut="Ctrl+P" />
       <!-- Layer -->
-      <key command="layer_properties" shortcut="Shift+P" />
-      <key command="new_layer" shortcut="Shift+N" />
-      <key command="goto_previous_layer" shortcut="Down" />
-      <key command="goto_next_layer" shortcut="Up" />
+      <key command="LayerProperties" shortcut="Shift+P" />
+      <key command="NewLayer" shortcut="Shift+N" />
+      <key command="GotoPreviousLayer" shortcut="Down" />
+      <key command="GotoNextLayer" shortcut="Up" />
       <!-- Frame -->
-      <key command="new_frame" shortcut="N" />
-      <key command="frame_properties" shortcut="P" />
-      <key command="goto_first_frame" shortcut="Home" />
-      <key command="goto_previous_frame" shortcut="Left" />
-      <key command="goto_next_frame" shortcut="Right" />
-      <key command="goto_last_frame" shortcut="End" />
-      <key command="play_animation" shortcut="Enter" />
+      <key command="NewFrame" shortcut="N" />
+      <key command="FrameProperties" shortcut="P" />
+      <key command="GotoFirstFrame" shortcut="Home" />
+      <key command="GotoPreviousFrame" shortcut="Left" />
+      <key command="GotoNextFrame" shortcut="Right" />
+      <key command="GotoLastFrame" shortcut="End" />
+      <key command="PlayAnimation" shortcut="Enter" />
       <!-- Select -->
-      <key command="mask_all" shortcut="Ctrl+A" />
-      <key command="deselect_mask" shortcut="Ctrl+D" />
-      <key command="reselect_mask" shortcut="Ctrl+Shift+D" />
-      <key command="invert_mask" shortcut="Ctrl+Shift+I" />
+      <key command="MaskAll" shortcut="Ctrl+A" />
+      <key command="DeselectMask" shortcut="Ctrl+D" />
+      <key command="ReselectMask" shortcut="Ctrl+Shift+D" />
+      <key command="InvertMask" shortcut="Ctrl+Shift+I" />
       <!-- View -->
-      <key command="refresh" shortcut="F5" />
-      <key command="make_unique_editor" shortcut="Ctrl+1" />
-      <key command="split_editor_vertically" shortcut="Ctrl+2" />
-      <key command="split_editor_horizontally" shortcut="Ctrl+3" />
-      <key command="close_editor" shortcut="Ctrl+4" />
-      <key command="preview" shortcut="F8" />
-      <key command="show_grid" shortcut="Shift+G" />
-      <key command="snap_to_grid" shortcut="Shift+S" />
-      <key command="film_editor" shortcut="Tab" />
-      <key command="palette_editor" shortcut="F4">
+      <key command="Refresh" shortcut="F5" />
+      <key command="MakeUniqueEditor" shortcut="Ctrl+1" />
+      <key command="SplitEditorVertically" shortcut="Ctrl+2" />
+      <key command="SplitEditorHorizontally" shortcut="Ctrl+3" />
+      <key command="CloseEditor" shortcut="Ctrl+4" />
+      <key command="Preview" shortcut="F8" />
+      <key command="ShowGrid" shortcut="Shift+G" />
+      <key command="SnapToGrid" shortcut="Shift+S" />
+      <key command="FilmEditor" shortcut="Tab" />
+      <key command="PaletteEditor" shortcut="F4">
 	<param name="switch" value="true" />
       </key>
       <!-- Others -->
-      <key command="switch_colors" shortcut="X" />
-      <key command="change_color" shortcut="9">
+      <key command="SwitchColors" shortcut="X" />
+      <key command="ChangeColor" shortcut="9">
 	<param name="target" value="foreground" />
 	<param name="change" value="decrement-index" />
       </key>
-      <key command="change_color" shortcut="0">
+      <key command="ChangeColor" shortcut="0">
 	<param name="target" value="foreground" />
 	<param name="change" value="increment-index" />
       </key>
-      <key command="change_color" shortcut="[">
+      <key command="ChangeColor" shortcut="[">
 	<param name="target" value="foreground" />
 	<param name="change" value="decrement-index" />
       </key>
-      <key command="change_color" shortcut="]">
+      <key command="ChangeColor" shortcut="]">
 	<param name="target" value="foreground" />
 	<param name="change" value="increment-index" />
       </key>
-      <key command="change_color" shortcut="Ctrl+9">
+      <key command="ChangeColor" shortcut="Ctrl+9">
 	<param name="target" value="background" />
 	<param name="change" value="decrement-index" />
       </key>
-      <key command="change_color" shortcut="Ctrl+0">
+      <key command="ChangeColor" shortcut="Ctrl+0">
 	<param name="target" value="background" />
 	<param name="change" value="increment-index" />
       </key>
 
       <!-- Modify pen size with +/- signs -->
-      <key command="change_pen" shortcut="+">
+      <key command="ChangePen" shortcut="+">
 	<param name="change" value="increment-size" />
       </key>
-      <key command="change_pen" shortcut="-">
+      <key command="ChangePen" shortcut="-">
 	<param name="change" value="decrement-size" />
       </key>
-      <key command="change_pen" shortcut="Plus Pad">
+      <key command="ChangePen" shortcut="Plus Pad">
 	<param name="change" value="increment-size" />
       </key>
-      <key command="change_pen" shortcut="Minus Pad">
+      <key command="ChangePen" shortcut="Minus Pad">
 	<param name="change" value="decrement-size" />
       </key>
     </commands>
@@ -163,194 +163,194 @@
     <!-- main bar menu -->
     <menu id="main_menu">
       <menu text="&amp;File">
-	<item command="new_file" text="&amp;New..." />
-	<item command="open_file" text="&amp;Open..." />
+	<item command="NewFile" text="&amp;New..." />
+	<item command="OpenFile" text="&amp;Open..." />
 	<item id="recent_list" text="Open &amp;Recent" />
 	<separator />
-	<item command="save_file" text="&amp;Save" />
-	<item command="save_file_as" text="Save &amp;As..." />
-	<item command="save_file_copy_as" text="Save Cop&amp;y As..." />
-	<item command="close_file" text="&amp;Close" />
-	<item command="close_all_files" text="Close All" />
+	<item command="SaveFile" text="&amp;Save" />
+	<item command="SaveFileAs" text="Save &amp;As..." />
+	<item command="SaveFileCopyAs" text="Save Cop&amp;y As..." />
+	<item command="CloseFile" text="&amp;Close" />
+	<item command="CloseAllFiles" text="Close All" />
 	<separator />
-	<item command="exit" text="E&amp;xit" />
+	<item command="Exit" text="E&amp;xit" />
       </menu>
       <menu text="&amp;Edit">
-	<item command="undo" text="&amp;Undo" />
-	<item command="redo" text="&amp;Redo" />
+	<item command="Undo" text="&amp;Undo" />
+	<item command="Redo" text="&amp;Redo" />
 	<separator />
-	<item command="cut" text="Cu&amp;t" />
-	<item command="copy" text="&amp;Copy" />
-	<item command="paste" text="&amp;Paste" />
-	<item command="clear" text="C&amp;lear" />
+	<item command="Cut" text="Cu&amp;t" />
+	<item command="Copy" text="&amp;Copy" />
+	<item command="Paste" text="&amp;Paste" />
+	<item command="Clear" text="C&amp;lear" />
 	<separator />
-	<item command="flip" text="Flip &amp;Horizontal">
+	<item command="Flip" text="Flip &amp;Horizontal">
 	  <param name="target" value="mask" />
 	  <param name="orientation" value="horizontal" />
 	</item>
-	<item command="flip" text="Flip &amp;Vertical">
+	<item command="Flip" text="Flip &amp;Vertical">
 	  <param name="target" value="mask" />
 	  <param name="orientation" value="vertical" />
 	</item>
 	<separator />
-	<item command="replace_color" text="R&amp;eplace Color..." />
-	<item command="invert_color" text="&amp;Invert" />
+	<item command="ReplaceColor" text="R&amp;eplace Color..." />
+	<item command="InvertColor" text="&amp;Invert" />
 	<menu text="F&amp;X" id="fx_popup">
-	  <item command="convolution_matrix" text="Convolution &amp;Matrix" />
-	  <item command="color_curve" text="&amp;Color Curve" />
+	  <item command="ConvolutionMatrix" text="Convolution &amp;Matrix" />
+	  <item command="ColorCurve" text="&amp;Color Curve" />
 	  <separator />
-	  <item command="despeckle" text="&amp;Despeckle (median filter)" />
+	  <item command="Despeckle" text="&amp;Despeckle (median filter)" />
 	</menu>
 	<separator />
-	<item command="configure_tools" text="Tool&amp;s" />
-	<item command="options" text="&amp;Options" />
+	<item command="ConfigureTools" text="Tool&amp;s" />
+	<item command="Options" text="&amp;Options" />
       </menu>
       <menu text="&amp;Sprite">
-	<item command="sprite_properties" text="&amp;Properties..." />
+	<item command="SpriteProperties" text="&amp;Properties..." />
 	<menu text="Color &amp;Mode">
-	  <item command="change_image_type" text="&amp;RGB Color">
+	  <item command="ChangeImageType" text="&amp;RGB Color">
 	    <param name="imgtype" value="rgb" />
 	  </item>
-	  <item command="change_image_type" text="&amp;Grayscale">
+	  <item command="ChangeImageType" text="&amp;Grayscale">
 	    <param name="imgtype" value="grayscale" />
 	  </item>
-	  <item command="change_image_type" text="&amp;Indexed (No Dithering)">
+	  <item command="ChangeImageType" text="&amp;Indexed (No Dithering)">
 	    <param name="imgtype" value="indexed" />
 	  </item>
-	  <item command="change_image_type" text="Indexed (Ordered &amp;Dither)">
+	  <item command="ChangeImageType" text="Indexed (Ordered &amp;Dither)">
 	    <param name="imgtype" value="indexed" />
 	    <param name="dithering" value="ordered" />
 	  </item>
 	</menu>
 	<separator />
-	<item command="duplicate_sprite" text="&amp;Duplicate..." />
+	<item command="DuplicateSprite" text="&amp;Duplicate..." />
 	<separator />
-	<item command="sprite_size" text="&amp;Sprite Size..." />
-	<item command="canvas_size" text="&amp;Canvas Size..." />
+	<item command="SpriteSize" text="&amp;Sprite Size..." />
+	<item command="CanvasSize" text="&amp;Canvas Size..." />
 	<menu text="&amp;Rotate Canvas">
-	  <item command="rotate_canvas" text="180">
+	  <item command="RotateCanvas" text="180">
 	    <param name="angle" value="180" />
 	  </item>
-	  <item command="rotate_canvas" text="90 CW">
+	  <item command="RotateCanvas" text="90 CW">
 	    <param name="angle" value="90" />
 	  </item>
-	  <item command="rotate_canvas" text="90 CCW">
+	  <item command="RotateCanvas" text="90 CCW">
 	    <param name="angle" value="-90" />
 	  </item>
 	  <separator />
-	  <item command="flip" text="Flip Canvas &amp;Horizontal">
+	  <item command="Flip" text="Flip Canvas &amp;Horizontal">
 	    <param name="target" value="canvas" />
 	    <param name="orientation" value="horizontal" />
 	  </item>
-	  <item command="flip" text="Flip Canvas &amp;Vertical">
+	  <item command="Flip" text="Flip Canvas &amp;Vertical">
 	    <param name="target" value="canvas" />
 	    <param name="orientation" value="vertical" />
 	  </item>
 	</menu>
 	<separator />
-	<item command="crop_sprite" text="Cr&amp;op" />
-	<item command="autocrop_sprite" text="&amp;Trim" />
+	<item command="CropSprite" text="Cr&amp;op" />
+	<item command="AutocropSprite" text="&amp;Trim" />
       </menu>
       <menu text="&amp;Layer">
-	<item command="layer_properties" text="&amp;Properties..." />
+	<item command="LayerProperties" text="&amp;Properties..." />
 	<separator />
-	<item command="new_layer" text="&amp;New Layer" />
-	<item command="remove_layer" text="&amp;Remove Layer" />
-	<item command="background_from_layer" text="&amp;Background from Layer" />
-	<item command="layer_from_background" text="&amp;Layer from Background" />
+	<item command="NewLayer" text="&amp;New Layer" />
+	<item command="RemoveLayer" text="&amp;Remove Layer" />
+	<item command="BackgroundFromLayer" text="&amp;Background from Layer" />
+	<item command="LayerFromBackground" text="&amp;Layer from Background" />
 	<separator />
-	<item command="duplicate_layer" text="&amp;Duplicate" />
-	<item command="merge_down_layer" text="&amp;Merge Down" />
-	<item command="flatten_layers" text="&amp;Flatten" />
+	<item command="DuplicateLayer" text="&amp;Duplicate" />
+	<item command="MergeDownLayer" text="&amp;Merge Down" />
+	<item command="FlattenLayers" text="&amp;Flatten" />
       </menu>
       <menu text="F&amp;rame">
-	<item command="frame_properties" text="Frame &amp;Properties..." />
-	<item command="cel_properties" text="&amp;Cel Properties..." />
+	<item command="FrameProperties" text="Frame &amp;Properties..." />
+	<item command="CelProperties" text="&amp;Cel Properties..." />
 	<separator />
-	<item command="new_frame" text="&amp;New Frame" />
-	<item command="remove_frame" text="&amp;Remove Frame" />
+	<item command="NewFrame" text="&amp;New Frame" />
+	<item command="RemoveFrame" text="&amp;Remove Frame" />
 	<separator />
 	<menu text="&amp;Jump to">
-	  <item command="goto_first_frame" text="&amp;First Frame" />
-	  <item command="goto_previous_frame" text="&amp;Previous Frame" />
-	  <item command="goto_next_frame" text="&amp;Next Frame" />
-	  <item command="goto_last_frame" text="&amp;Last Frame" />
+	  <item command="GotoFirstFrame" text="&amp;First Frame" />
+	  <item command="GotoPreviousFrame" text="&amp;Previous Frame" />
+	  <item command="GotoNextFrame" text="&amp;Next Frame" />
+	  <item command="GotoLastFrame" text="&amp;Last Frame" />
 	</menu>
-	<item command="play_animation" text="&amp;Play Animation" />
+	<item command="PlayAnimation" text="&amp;Play Animation" />
       </menu>
       <menu text="Selec&amp;t">
-	<item command="mask_all" text="&amp;All" />
-	<item command="deselect_mask" text="&amp;Deselect" />
-	<item command="reselect_mask" text="&amp;Reselect" />
-	<item command="invert_mask" text="&amp;Inverse" />
+	<item command="MaskAll" text="&amp;All" />
+	<item command="DeselectMask" text="&amp;Deselect" />
+	<item command="ReselectMask" text="&amp;Reselect" />
+	<item command="InvertMask" text="&amp;Inverse" />
 	<separator />
-	<item command="mask_by_color" text="&amp;Color Range" />
+	<item command="MaskByColor" text="&amp;Color Range" />
 	<separator />
-	<item command="load_mask" text="&amp;Load from MSK file" />
-	<item command="save_mask" text="&amp;Save to MSK file" />
+	<item command="LoadMask" text="&amp;Load from MSK file" />
+	<item command="SaveMask" text="&amp;Save to MSK file" />
       </menu>
       <menu text="&amp;View">
 	<menu text="Sprite &amp;Editor">
-	  <item command="make_unique_editor" text="Make &amp;Unique" />
+	  <item command="MakeUniqueEditor" text="Make &amp;Unique" />
 	  <separator />
-	  <item command="split_editor_vertically" text="Split &amp;Vertically" />
-	  <item command="split_editor_horizontally" text="Split &amp;Horizontally" />
+	  <item command="SplitEditorVertically" text="Split &amp;Vertically" />
+	  <item command="SplitEditorHorizontally" text="Split &amp;Horizontally" />
 	  <separator />
-	  <item command="close_editor" text="&amp;Close" />
+	  <item command="CloseEditor" text="&amp;Close" />
 	</menu>
 	<separator />
-	<item command="show_grid" text="Show &amp;Grid" />
-	<item command="snap_to_grid" text="&amp;Snap to Grid" />
-	<item command="grid_settings" text="Gri&amp;d Settings" />
+	<item command="ShowGrid" text="Show &amp;Grid" />
+	<item command="SnapToGrid" text="&amp;Snap to Grid" />
+	<item command="GridSettings" text="Gri&amp;d Settings" />
 	<separator />
-	<item command="film_editor" text="&amp;Animation Editor" />
-	<item command="palette_editor" text="&amp;Palette Editor">
-	  <param name="switch" value="true" />
+	<item command="FilmEditor" text="&amp;Animation Editor" />
+	<item command="PaletteEditor" text="&amp;Palette Editor">
+	  <param name="Switch" value="true" />
 	</item>
-	<item command="preview" text="Previe&amp;w" />
+	<item command="Preview" text="Previe&amp;w" />
 	<separator />
-	<item command="refresh" text="&amp;Refresh &amp;&amp; Reload Skin" />
-	<item command="screen_shot" text="&amp;Screen Shot" />
+	<item command="Refresh" text="&amp;Refresh &amp;&amp; Reload Skin" />
+	<item command="ScreenShot" text="&amp;Screen Shot" />
       </menu>
       <menu text="&amp;Help">
-	<item command="quick_reference" text="Quick &amp;Reference" />
+	<item command="QuickReference" text="Quick &amp;Reference" />
 	<separator />
-	<item command="donate" text="&amp;Donate" />
-	<item command="check_updates" text="&amp;Check for New Version" />
+	<item command="Donate" text="&amp;Donate" />
+	<item command="CheckUpdates" text="&amp;Check for New Version" />
 	<separator />
-	<item command="about" text="&amp;About" />
+	<item command="About" text="&amp;About" />
       </menu>
     </menu>
     
     <menu id="layer_popup">
-      <item command="layer_properties" text="&amp;Properties..." />
+      <item command="LayerProperties" text="&amp;Properties..." />
       <separator />
-      <item command="new_layer" text="&amp;New..." />
-      <item command="remove_layer" text="&amp;Remove" />
-      <item command="background_from_layer" text="&amp;Background from Layer" />
-      <item command="layer_from_background" text="&amp;Layer from Background" />
+      <item command="NewLayer" text="&amp;New..." />
+      <item command="RemoveLayer" text="&amp;Remove" />
+      <item command="BackgroundFromLayer" text="&amp;Background from Layer" />
+      <item command="LayerFromBackground" text="&amp;Layer from Background" />
       <separator />
-      <item command="duplicate_layer" text="&amp;Duplicate..." />
-      <item command="merge_down_layer" text="&amp;Merge Down" />
-      <item command="flatten_layers" text="&amp;Flatten" />
+      <item command="DuplicateLayer" text="&amp;Duplicate..." />
+      <item command="MergeDownLayer" text="&amp;Merge Down" />
+      <item command="FlattenLayers" text="&amp;Flatten" />
     </menu>
     
     <menu id="frame_popup">
-      <item command="frame_properties" text="&amp;Properties..." />
+      <item command="FrameProperties" text="&amp;Properties..." />
       <separator />
-      <item command="new_frame" text="&amp;New" />
-      <item command="remove_frame" text="&amp;Remove" />
+      <item command="NewFrame" text="&amp;New" />
+      <item command="RemoveFrame" text="&amp;Remove" />
     </menu>
     
     <menu id="cel_popup">
-      <item command="cel_properties" text="&amp;Properties..." />
+      <item command="CelProperties" text="&amp;Properties..." />
       <separator />
-      <item command="clear" text="&amp;Clear" />
+      <item command="Clear" text="&amp;Clear" />
     </menu>
     
     <menu id="cel_movement_popup">
-      <item command="move_cel" text="&amp;Move" />
-      <item command="copy_cel" text="&amp;Copy" />
+      <item command="MoveCel" text="&amp;Move" />
+      <item command="CopyCel" text="&amp;Copy" />
     </menu>
   </menus>
 

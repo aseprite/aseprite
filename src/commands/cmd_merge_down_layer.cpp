@@ -46,7 +46,7 @@ protected:
 };
 
 MergeDownLayerCommand::MergeDownLayerCommand()
-  : Command("merge_down_layer",
+  : Command("MergeDownLayer",
 	    "Merge Down Layer",
 	    CmdRecordableFlag)
 {
@@ -192,7 +192,7 @@ void MergeDownLayerCommand::onExecute(Context* context)
 //////////////////////////////////////////////////////////////////////
 // CommandFactory
 
-Command* CommandFactory::create_merge_down_layer_command()
+Command* CommandFactory::createMergeDownLayerCommand()
 {
   return new MergeDownLayerCommand;
 }

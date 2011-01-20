@@ -38,7 +38,7 @@ protected:
 };
 
 RedoCommand::RedoCommand()
-  : Command("redo",
+  : Command("Redo",
 	    "Redo",
 	    CmdUIOnlyFlag)
 {
@@ -68,7 +68,7 @@ void RedoCommand::onExecute(Context* context)
 //////////////////////////////////////////////////////////////////////
 // CommandFactory
 
-Command* CommandFactory::create_redo_command()
+Command* CommandFactory::createRedoCommand()
 {
   return new RedoCommand;
 }

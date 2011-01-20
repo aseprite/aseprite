@@ -30,8 +30,8 @@
 #include "commands/commands.h"
 
 #undef FOR_EACH_COMMAND
-  #define FOR_EACH_COMMAND(name) \
-    const char* CommandId::name = #name;
+  #define FOR_EACH_COMMAND(Name) \
+    const char* CommandId::Name = #Name;
   #include "commands/commands_list.h"
 #undef FOR_EACH_COMMAND
 
@@ -43,8 +43,8 @@ CommandsModule::CommandsModule()
   m_instance = this;
 
   #undef FOR_EACH_COMMAND
-  #define FOR_EACH_COMMAND(name) \
-    m_commands.push_back(CommandFactory::create_##name##_command());
+  #define FOR_EACH_COMMAND(Name) \
+    m_commands.push_back(CommandFactory::create##Name##Command());
 
   #include "commands/commands_list.h"
   #undef FOR_EACH_COMMAND

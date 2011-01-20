@@ -39,7 +39,7 @@ protected:
 };
 
 CheckUpdatesCommand::CheckUpdatesCommand()
-  : Command("check_updates",
+  : Command("CheckUpdates",
 	    "Check for New Version",
 	    CmdUIOnlyFlag)
 {
@@ -101,7 +101,7 @@ void CheckUpdatesCommand::onExecute(Context* context)
 //////////////////////////////////////////////////////////////////////
 // CommandFactory
 
-Command* CommandFactory::create_check_updates_command()
+Command* CommandFactory::createCheckUpdatesCommand()
 {
   return new CheckUpdatesCommand;
 }

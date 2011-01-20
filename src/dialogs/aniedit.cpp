@@ -538,7 +538,7 @@ static bool anieditor_msg_proc(JWidget widget, JMessage msg)
 	      if (anieditor->clk_frame == anieditor->hot_frame) {
 		UIContext::instance()
 		  ->executeCommand(CommandsModule::instance()
-				   ->get_command_by_name(CommandId::frame_properties));
+				   ->get_command_by_name(CommandId::FrameProperties));
 	      }
 	      else {
 		const SpriteReader sprite((Sprite*)anieditor->sprite);
@@ -690,14 +690,14 @@ static bool anieditor_msg_proc(JWidget widget, JMessage msg)
       Command *command = get_command_from_key_message(msg);
 
       /* close animation editor */
-      if ((command && (strcmp(command->short_name(), CommandId::film_editor) == 0)) ||
+      if ((command && (strcmp(command->short_name(), CommandId::FilmEditor) == 0)) ||
 	  (msg->key.scancode == KEY_ESC)) {
 	jwidget_close_window(widget);
 	return true;
       }
 
       /* undo */
-      if (command && strcmp(command->short_name(), CommandId::undo) == 0) {
+      if (command && strcmp(command->short_name(), CommandId::Undo) == 0) {
 	const SpriteReader sprite((Sprite*)anieditor->sprite);
 	if (sprite->getUndo()->canUndo()) {
 	  SpriteWriter sprite_writer(sprite);
@@ -712,7 +712,7 @@ static bool anieditor_msg_proc(JWidget widget, JMessage msg)
       }
 
       /* redo */
-      if (command && strcmp(command->short_name(), CommandId::redo) == 0) {
+      if (command && strcmp(command->short_name(), CommandId::Redo) == 0) {
 	const SpriteReader sprite((Sprite*)anieditor->sprite);
 	if (sprite->getUndo()->canRedo()) {
 	  SpriteWriter sprite_writer(sprite);
@@ -728,15 +728,15 @@ static bool anieditor_msg_proc(JWidget widget, JMessage msg)
 
       /* new_frame, remove_frame, new_cel, remove_cel */
       if (command != NULL) {
-	if (strcmp(command->short_name(), CommandId::new_frame) == 0 ||
-	    strcmp(command->short_name(), CommandId::remove_cel) == 0 ||
-	    strcmp(command->short_name(), CommandId::remove_frame) == 0 ||
-	    strcmp(command->short_name(), CommandId::goto_first_frame) == 0 ||
-	    strcmp(command->short_name(), CommandId::goto_previous_frame) == 0 ||
-	    strcmp(command->short_name(), CommandId::goto_previous_layer) == 0 ||
-	    strcmp(command->short_name(), CommandId::goto_next_frame) == 0 ||
-	    strcmp(command->short_name(), CommandId::goto_next_layer) == 0 ||
-	    strcmp(command->short_name(), CommandId::goto_last_frame) == 0) {
+	if (strcmp(command->short_name(), CommandId::NewFrame) == 0 ||
+	    strcmp(command->short_name(), CommandId::RemoveCel) == 0 ||
+	    strcmp(command->short_name(), CommandId::RemoveFrame) == 0 ||
+	    strcmp(command->short_name(), CommandId::GotoFirstFrame) == 0 ||
+	    strcmp(command->short_name(), CommandId::GotoPreviousFrame) == 0 ||
+	    strcmp(command->short_name(), CommandId::GotoPreviousLayer) == 0 ||
+	    strcmp(command->short_name(), CommandId::GotoNextFrame) == 0 ||
+	    strcmp(command->short_name(), CommandId::GotoNextLayer) == 0 ||
+	    strcmp(command->short_name(), CommandId::GotoLastFrame) == 0) {
 	  // execute the command
 	  UIContext::instance()->executeCommand(command);
 
@@ -745,8 +745,8 @@ static bool anieditor_msg_proc(JWidget widget, JMessage msg)
 	  return true;
 	}
 
-	if (strcmp(command->short_name(), CommandId::new_layer) == 0 ||
-	    strcmp(command->short_name(), CommandId::remove_layer) == 0) {
+	if (strcmp(command->short_name(), CommandId::NewLayer) == 0 ||
+	    strcmp(command->short_name(), CommandId::RemoveLayer) == 0) {
 	  // execute the command
 	  UIContext::instance()->executeCommand(command);
 

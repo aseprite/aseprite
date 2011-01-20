@@ -46,7 +46,7 @@ protected:
 };
 
 DuplicateSpriteCommand::DuplicateSpriteCommand()
-  : Command("duplicate_sprite",
+  : Command("DuplicateSprite",
 	    "Duplicate Sprite",
 	    CmdUIOnlyFlag)
 {
@@ -104,7 +104,7 @@ void DuplicateSpriteCommand::onExecute(Context* context)
 //////////////////////////////////////////////////////////////////////
 // CommandFactory
 
-Command* CommandFactory::create_duplicate_sprite_command()
+Command* CommandFactory::createDuplicateSpriteCommand()
 {
   return new DuplicateSpriteCommand;
 }
