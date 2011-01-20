@@ -46,33 +46,33 @@ class Sprite;
    TARGET_GRAY_CHANNEL		)
 
 
-class invalid_effect_exception : public ase_exception
+class invalid_effect_exception : public AseException
 {
 public:
   invalid_effect_exception(const char* effect_name) throw()
-    : ase_exception("Invalid effect specified: %s", effect_name) { }
+    : AseException("Invalid effect specified: %s", effect_name) { }
 };
 
-class invalid_imgtype_exception : public ase_exception
+class invalid_imgtype_exception : public AseException
 {
 public:
   invalid_imgtype_exception() throw()
-  : ase_exception("Invalid image type specified.") { }
+  : AseException("Invalid image type specified.") { }
 };
 
-class invalid_area_exception : public ase_exception
+class invalid_area_exception : public AseException
 {
 public:
   invalid_area_exception() throw()
-  : ase_exception("The current mask/area to apply the effect is completelly invalid.") { }
+  : AseException("The current mask/area to apply the effect is completelly invalid.") { }
 };
 
-class no_image_exception : public ase_exception
+class no_image_exception : public AseException
 {
 public:
   no_image_exception() throw()
-  : ase_exception("There are not an active image to apply the effect.\n"
-		  "Please select a layer/cel with an image and try again.") { }
+  : AseException("There are not an active image to apply the effect.\n"
+		 "Please select a layer/cel with an image and try again.") { }
 };
 
 struct EffectData;

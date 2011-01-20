@@ -36,22 +36,22 @@ class CheckBox;
 
 //////////////////////////////////////////////////////////////////////
 
-class widget_file_not_found : public ase_exception
+class widget_file_not_found : public AseException
 {
 public:
   widget_file_not_found(const char* file_name) throw()
-    : ase_exception("Cannot load file: %s\nPlease reinstall %s", file_name, PACKAGE) { }
+    : AseException("Cannot load file: %s\nPlease reinstall %s", file_name, PACKAGE) { }
 };
 
 /**
  * Exception thrown by find_widget() if a widget is not found.
  */
-class widget_not_found : public ase_exception
+class widget_not_found : public AseException
 {
 public:
   widget_not_found(const char* widget_name) throw()
-    : ase_exception("A data file is corrupted.\nPlease reinstall %s\n\n" 
-		    "Details: Widget not found: %s", PACKAGE, widget_name) { }
+    : AseException("A data file is corrupted.\nPlease reinstall %s\n\n" 
+		   "Details: Widget not found: %s", PACKAGE, widget_name) { }
 };
 
 //////////////////////////////////////////////////////////////////////

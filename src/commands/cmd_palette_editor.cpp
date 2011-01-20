@@ -547,7 +547,7 @@ static void sort_command(JWidget widget)
       delete palette;
     }
   }
-  catch (ase_exception& e) {
+  catch (AseException& e) {
     e.show();
   }
 }
@@ -923,7 +923,7 @@ static void update_current_sprite_palette(const char* operationName)
 	sprite->setPalette(newPalette, false);
       }
     }
-    catch (ase_exception& e) {
+    catch (AseException& e) {
       e.show();
     }
   }

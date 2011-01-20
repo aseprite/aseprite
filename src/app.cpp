@@ -146,8 +146,8 @@ App::App(int argc, char* argv[])
 
     std::auto_ptr<Palette> pal(Palette::load(palette_filename));
     if (pal.get() == NULL)
-      throw ase_exception("Error loading default palette from: %s",
-			  static_cast<const char*>(palette_filename));
+      throw AseException("Error loading default palette from: %s",
+			 static_cast<const char*>(palette_filename));
 
     set_default_palette(pal.get());
   }

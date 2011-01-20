@@ -182,7 +182,7 @@ void SkinneableTheme::reload_skin()
     }
   }
   if (!m_sheet_bmp)
-    throw ase_exception("Error loading %s file", sheet_filename.c_str());
+    throw AseException("Error loading %s file", sheet_filename.c_str());
 }
 
 std::string SkinneableTheme::get_font_filename() const
@@ -211,7 +211,7 @@ void SkinneableTheme::regen()
 
     TiXmlDocument doc;
     if (!doc.LoadFile(path))
-      throw ase_exception(&doc);
+      throw AseException(&doc);
 
     TiXmlHandle handle(&doc);
 
@@ -243,8 +243,8 @@ void SkinneableTheme::regen()
 	}
 
 	if (c == JI_CURSORS) {
-	  throw ase_exception("Unknown cursor specified in '%s':\n"
-			      "<cursor id='%s' ... />\n", xml_filename.c_str(), id.c_str());
+	  throw AseException("Unknown cursor specified in '%s':\n"
+			     "<cursor id='%s' ... />\n", xml_filename.c_str(), id.c_str());
 	}
 
 	xmlCursor = xmlCursor->NextSiblingElement();

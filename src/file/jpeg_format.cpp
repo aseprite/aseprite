@@ -396,7 +396,7 @@ FormatOptions* JpegFormat::onGetFormatOptions(FileOp* fop)
 
     return jpeg_options;
   }
-  catch (ase_exception& e) {
+  catch (AseException& e) {
     delete jpeg_options;
 
     e.show();

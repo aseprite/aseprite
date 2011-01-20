@@ -60,8 +60,8 @@ LegacyModules::LegacyModules(int requirements)
       PRINTF("Installing module: %s\n", module[c].name);
 
       if ((*module[c].init)() < 0)
-	throw ase_exception("Error initializing module: %s",
-			    static_cast<const char*>(module[c].name));
+	throw AseException("Error initializing module: %s",
+			   static_cast<const char*>(module[c].name));
 
       module[c].installed = true;
     }

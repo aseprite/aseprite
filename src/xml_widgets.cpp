@@ -49,7 +49,7 @@ Widget* load_widget_from_xmlfile(const char* xmlFilename, const char* widgetName
 
   TiXmlDocument doc;
   if (!doc.LoadFile(xmlFilename))
-    throw ase_exception(&doc);
+    throw AseException(&doc);
 
   // search the requested widget
   TiXmlHandle handle(&doc);

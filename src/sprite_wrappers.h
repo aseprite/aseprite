@@ -25,13 +25,13 @@
 #include "context.h"
 #include "raster/sprite.h"
 
-class LockedSpriteException : public ase_exception
+class LockedSpriteException : public AseException
 {
 public:
   LockedSpriteException() throw()
-  : ase_exception("Cannot read/write the sprite.\n"
-		  "The sprite is locked by a background task.\n"
-		  "Try again later.") { }
+  : AseException("Cannot read/write the sprite.\n"
+		 "The sprite is locked by a background task.\n"
+		 "Try again later.") { }
 };
 
 //////////////////////////////////////////////////////////////////////

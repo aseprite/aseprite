@@ -34,10 +34,10 @@ class Sprite;
 class Stock;
 class UndoStream;
 
-class UndoException : public ase_exception
+class UndoException : public AseException
 {
 public:
-  UndoException(const char* msg) throw() : ase_exception(msg) { }
+  UndoException(const char* msg) throw() : AseException(msg) { }
 };
 
 class Undo : public GfxObj

@@ -25,7 +25,7 @@
 #include "console.h"
 #include "tinyxml.h"
 
-ase_exception::ase_exception(const char* msg, ...) throw()
+AseException::AseException(const char* msg, ...) throw()
 {
   try {
     if (!ustrchr(msg, '%')) {
@@ -47,7 +47,7 @@ ase_exception::ase_exception(const char* msg, ...) throw()
   }
 }
 
-ase_exception::ase_exception(const std::string& msg) throw()
+AseException::AseException(const std::string& msg) throw()
 {
   try {
     m_msg = msg;
@@ -57,7 +57,7 @@ ase_exception::ase_exception(const std::string& msg) throw()
   }
 }
 
-ase_exception::ase_exception(TiXmlDocument* doc) throw()
+AseException::AseException(TiXmlDocument* doc) throw()
 {
   try {
     char buf[1024];
@@ -72,17 +72,17 @@ ase_exception::ase_exception(TiXmlDocument* doc) throw()
   }
 }
 
-ase_exception::~ase_exception() throw()
+AseException::~AseException() throw()
 {
 }
 
-void ase_exception::show()
+void AseException::show()
 {
   Console console;
   console.printf("A problem has occurred.\n\nDetails:\n%s", what());
 }
 
-const char* ase_exception::what() const throw()
+const char* AseException::what() const throw()
 {
   return m_msg.c_str();
 }

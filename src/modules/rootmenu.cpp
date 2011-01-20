@@ -110,8 +110,8 @@ static int load_root_menu()
 
   root_menu = load_menu_by_id(handle, "main_menu");
   if (!root_menu)
-    throw ase_exception("Error loading main menu from file:\n%s\nReinstall the application.",
-			static_cast<const char*>(path));
+    throw AseException("Error loading main menu from file:\n%s\nReinstall the application.",
+		       static_cast<const char*>(path));
 
   PRINTF("Main menu loaded.\n");
 
@@ -273,8 +273,8 @@ static JWidget convert_xmlelem_to_menu(TiXmlElement* elem)
     if (menuitem)
       jwidget_add_child(menu, menuitem);
     else
-      throw ase_exception("Error converting the element \"%s\" to a menu-item.\n",
-			  static_cast<const char*>(child->Value()));
+      throw AseException("Error converting the element \"%s\" to a menu-item.\n",
+			 static_cast<const char*>(child->Value()));
 
     child = child->NextSiblingElement();
   }
@@ -328,7 +328,7 @@ static JWidget convert_xmlelem_to_menuitem(TiXmlElement* elem)
     /* create the sub-menu */
     JWidget sub_menu = convert_xmlelem_to_menu(elem);
     if (!sub_menu)
-      throw ase_exception("Error reading the sub-menu\n");
+      throw AseException("Error reading the sub-menu\n");
 
     jmenuitem_set_submenu(menuitem, sub_menu);
   }

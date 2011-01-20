@@ -52,13 +52,13 @@ GuiXml::GuiXml()
 
     // Try to load the XML file
     if (!m_doc.LoadFile(path))
-      throw ase_exception(&m_doc);
+      throw AseException(&m_doc);
 
     // Done, we load the file successfully.
     return;
   }
 
-  throw ase_exception("gui.xml was not found");
+  throw AseException("gui.xml was not found");
 }
 
 TiXmlDocument& GuiXml::doc()

@@ -142,8 +142,8 @@ void Context::execute_command(Command* command, Params* params)
     if (command->isEnabled(this))
       command->execute(this);
   }
-  catch (ase_exception& e) {
-    PRINTF("ase_exception caught executing '%s' command\n%s\n",
+  catch (AseException& e) {
+    PRINTF("AseException caught executing '%s' command\n%s\n",
 	   command->short_name(), e.what());
 
     e.show();

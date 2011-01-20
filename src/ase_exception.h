@@ -25,14 +25,14 @@
 
 class TiXmlDocument;
 
-class ase_exception : public std::exception
+class AseException : public std::exception
 {
 public:
-  ase_exception() throw();
-  ase_exception(const char* msg, ...) throw();
-  ase_exception(const std::string& msg) throw();
-  ase_exception(TiXmlDocument* doc) throw();
-  virtual ~ase_exception() throw();
+  AseException() throw();
+  AseException(const char* msg, ...) throw();
+  AseException(const std::string& msg) throw();
+  AseException(TiXmlDocument* doc) throw();
+  virtual ~AseException() throw();
 
   virtual void show();
   const char* what() const throw();

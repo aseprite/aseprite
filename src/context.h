@@ -31,11 +31,11 @@ class Params;
 
 typedef std::list<Sprite*> SpriteList;
 
-class CommandPreconditionException : public ase_exception
+class CommandPreconditionException : public AseException
 {
 public:
   CommandPreconditionException() throw()
-  : ase_exception("Cannot execute the command because its pre-conditions are false.") { }
+  : AseException("Cannot execute the command because its pre-conditions are false.") { }
 };
 
 class Context

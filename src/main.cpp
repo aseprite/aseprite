@@ -71,7 +71,7 @@ int main(int argc, char* argv[])
 
     status = app.run();
   }
-  catch (ase_exception& e) {
+  catch (AseException& e) {
     e.show();
   }
   catch (std::exception& e) {
