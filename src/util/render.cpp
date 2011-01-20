@@ -21,7 +21,6 @@
 #include "app/color_utils.h"
 #include "core/cfg.h"
 #include "gui/jlist.h"
-#include "raster/image.h"
 #include "raster/raster.h"
 #include "settings/settings.h"
 #include "ui_context.h"
