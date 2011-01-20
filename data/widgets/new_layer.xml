@@ -1,5 +1,5 @@
 <!-- ASE - Allegro Sprite Editor -->
-<!-- Copyright (C) 2001-2010 by David Capello -->
+<!-- Copyright (C) 2001-2011 by David Capello -->
 <jinete>
 <window text="New Image Layer" name="new_layer">
   <box vertical="true">

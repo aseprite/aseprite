@@ -21,7 +21,7 @@ BEGIN
             VALUE "FileDescription", "ASEPRITE - Animated sprites editor & pixel art tool"
             VALUE "FileVersion", "0, 9, 0, 0"
             VALUE "InternalName", "aseprite"
-            VALUE "LegalCopyright", "Copyright (C) 2001-2010 by David Capello"
+            VALUE "LegalCopyright", "Copyright (C) 2001-2011 by David Capello"
             VALUE "OriginalFilename", "aseprite.exe"
             VALUE "ProductName", "ASEPRITE"
             VALUE "ProductVersion", "0, 9, 0, 0"
