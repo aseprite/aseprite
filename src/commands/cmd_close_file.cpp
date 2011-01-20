@@ -84,16 +84,16 @@ protected:
 
   bool onEnabled(Context* context)
   {
-    return !context->get_sprite_list().empty();
+    return !context->getSpriteList().empty();
   }
 
   void onExecute(Context* context)
   {
-    if (!context->get_current_sprite())
-      set_sprite_in_more_reliable_editor(context->get_first_sprite());
+    if (!context->getCurrentSprite())
+      set_sprite_in_more_reliable_editor(context->getFirstSprite());
 
     while (true) {
-      if (context->get_current_sprite() != NULL) {
+      if (context->getCurrentSprite() != NULL) {
 	if (!close_current_sprite(context))
 	  break;
       }
@@ -147,7 +147,7 @@ try_again:;
   if (save_it) {
     Command* save_command =
       CommandsModule::instance()->get_command_by_name(CommandId::save_file);
-    context->execute_command(save_command);
+    context->executeCommand(save_command);
 
     goto try_again;
   }

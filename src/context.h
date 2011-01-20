@@ -43,34 +43,35 @@ class Context
 public:
   virtual ~Context();
 
-  virtual bool is_ui_available() const		{ return false; }
-  virtual bool is_recording_macro() const	{ return false; }
-  virtual bool is_executing_macro() const	{ return false; }
-  virtual bool is_executing_script() const	{ return false; }
+  virtual bool isUiAvailable() const     { return false; }
+  virtual bool isRecordingMacro() const  { return false; }
+  virtual bool isExecutingMacro() const  { return false; }
+  virtual bool isExecutingScript() const { return false; }
 
   ISettings* getSettings() { return m_settings; }
 
-  const SpriteList& get_sprite_list() const;
-  Sprite* get_first_sprite() const;
-  Sprite* get_next_sprite(Sprite* sprite) const;
+  const SpriteList& getSpriteList() const;
+  Sprite* getFirstSprite() const;
+  Sprite* getNextSprite(Sprite* sprite) const;
 
-  void add_sprite(Sprite* sprite);
-  void remove_sprite(Sprite* sprite);
-  void send_sprite_to_top(Sprite* sprite);
+  // Appends the sprite to the context's sprites' list.
+  void addSprite(Sprite* sprite);
+  void removeSprite(Sprite* sprite);
+  void sendSpriteToTop(Sprite* sprite);
 
-  Sprite* get_current_sprite() const;
-  void set_current_sprite(Sprite* sprite);
+  Sprite* getCurrentSprite() const;
+  void setCurrentSprite(Sprite* sprite);
 
-  virtual void execute_command(Command* command, Params* params = NULL);
+  virtual void executeCommand(Command* command, Params* params = NULL);
 
 protected:
 
   // The "settings" are deleted automatically in the ~Context destructor
   Context(ISettings* settings);
 
-  virtual void on_add_sprite(Sprite* sprite);
-  virtual void on_remove_sprite(Sprite* sprite);
-  virtual void on_set_current_sprite(Sprite* sprite);
+  virtual void onAddSprite(Sprite* sprite);
+  virtual void onRemoveSprite(Sprite* sprite);
+  virtual void onSetCurrentSprite(Sprite* sprite);
 
 private:
 

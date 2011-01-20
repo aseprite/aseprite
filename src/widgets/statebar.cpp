@@ -575,7 +575,7 @@ bool StatusBar::onProcessMessage(JMessage msg)
     }
 
     case JM_MOUSEENTER: {
-      bool state = (UIContext::instance()->get_current_sprite() != NULL);
+      bool state = (UIContext::instance()->getCurrentSprite() != NULL);
 
       if (!jwidget_has_child(this, m_movePixelsBox)) {
 	if (!jwidget_has_child(this, m_commandsBox) && state) {
@@ -686,7 +686,7 @@ bool StatusBar::onProcessMessage(JMessage msg)
 	      ->get_command_by_name(CommandId::donate);
 
 	    Params params;
-	    UIContext::instance()->execute_command(donate, &params);
+	    UIContext::instance()->executeCommand(donate, &params);
 	  }
 	}
 	catch (LockedSpriteException&) {
@@ -779,7 +779,7 @@ static void ani_button_command(Button* widget, AniAction action)
   }
 
   if (cmd)
-    UIContext::instance()->execute_command(cmd);
+    UIContext::instance()->executeCommand(cmd);
 }
 
 void StatusBar::updateFromLayer()

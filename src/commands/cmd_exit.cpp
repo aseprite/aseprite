@@ -47,7 +47,7 @@ ExitCommand::ExitCommand()
 
 void ExitCommand::onExecute(Context* context)
 {
-  Sprite *sprite = context->get_first_sprite();
+  Sprite *sprite = context->getFirstSprite();
 
   while (sprite) {
     // check if this sprite is modified
@@ -57,7 +57,7 @@ void ExitCommand::onExecute(Context* context)
       }
       break;
     }
-    sprite = context->get_next_sprite(sprite);
+    sprite = context->getNextSprite(sprite);
   }
 
   /* close the window */

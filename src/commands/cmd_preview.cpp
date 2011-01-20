@@ -187,7 +187,7 @@ void PreviewCommand::onExecute(Context* context)
 	   strcmp(command->short_name(), CommandId::goto_next_frame) == 0 ||
 	   strcmp(command->short_name(), CommandId::goto_last_frame) == 0)) {
 	// Execute the command
-	context->execute_command(command);
+	context->executeCommand(command);
 
 	// Redraw
 	redraw = true;

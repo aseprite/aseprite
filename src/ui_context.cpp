@@ -44,10 +44,10 @@ UIContext::~UIContext()
   m_instance = NULL;
 }
 
-void UIContext::on_add_sprite(Sprite* sprite)
+void UIContext::onAddSprite(Sprite* sprite)
 {
   // base method
-  Context::on_add_sprite(sprite);
+  Context::onAddSprite(sprite);
 
   // add the tab for this sprite
   app_get_tabsbar()->addTab(get_filename(sprite->getFilename()), sprite);
@@ -56,10 +56,10 @@ void UIContext::on_add_sprite(Sprite* sprite)
   app_realloc_sprite_list();
 }
 
-void UIContext::on_remove_sprite(Sprite* sprite)
+void UIContext::onRemoveSprite(Sprite* sprite)
 {
   // base method
-  Context::on_remove_sprite(sprite);
+  Context::onRemoveSprite(sprite);
 
   // remove this sprite from tabs
   app_get_tabsbar()->removeTab(sprite);
@@ -71,9 +71,9 @@ void UIContext::on_remove_sprite(Sprite* sprite)
   editors_hide_sprite(sprite);
 }
 
-void UIContext::on_set_current_sprite(Sprite* sprite)
+void UIContext::onSetCurrentSprite(Sprite* sprite)
 {
-  Context::on_set_current_sprite(sprite);
+  Context::onSetCurrentSprite(sprite);
 
   // Select the sprite in the tabs.
   app_get_tabsbar()->selectTab(sprite);

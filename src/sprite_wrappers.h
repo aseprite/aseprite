@@ -211,7 +211,7 @@ class CurrentSpriteReader : public SpriteReader
 public:
 
   CurrentSpriteReader(Context* context)
-    : SpriteReader(context->get_current_sprite())
+    : SpriteReader(context->getCurrentSprite())
   {
   }
 
@@ -228,7 +228,7 @@ class CurrentSpriteWriter : public SpriteWriter
 public:
 
   CurrentSpriteWriter(Context* context)
-    : SpriteWriter(context->get_current_sprite())
+    : SpriteWriter(context->getCurrentSprite())
     , m_context(context)
   {
   }
@@ -241,7 +241,7 @@ public:
   {
     ASSERT(m_sprite != NULL);
 
-    m_context->remove_sprite(m_sprite);
+    m_context->removeSprite(m_sprite);
     unlock_writer();
 
     delete m_sprite;

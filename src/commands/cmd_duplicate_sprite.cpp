@@ -95,7 +95,7 @@ void DuplicateSpriteCommand::onExecute(Context* context)
     if (sprite_copy != NULL) {
       sprite_copy->setFilename(dst_name->getText());
 
-      context->add_sprite(sprite_copy);
+      context->addSprite(sprite_copy);
       set_sprite_in_more_reliable_editor(sprite_copy);
     }
   }

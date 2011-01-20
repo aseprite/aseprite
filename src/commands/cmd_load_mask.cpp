@@ -70,7 +70,7 @@ void LoadMaskCommand::onExecute(Context* context)
 
   base::string filename = m_filename;
 
-  if (context->is_ui_available()) {
+  if (context->isUiAvailable()) {
     filename = ase_file_selector("Load .msk File", filename, "msk");
     if (filename.empty())
       return;

@@ -487,7 +487,7 @@ static void sort_command(JWidget widget)
       std::vector<int> mapping;
       sort_by_criteria(palette, from, to, data.selected_criteria->children, mapping);
 
-      if (UIContext::instance()->get_current_sprite()) {
+      if (UIContext::instance()->getCurrentSprite()) {
 	// Remap all colors
 	if (mapping.size() > 0) {
 	  CurrentSpriteWriter sprite(UIContext::instance());
@@ -901,7 +901,7 @@ static void update_hex_entry()
 
 static void update_current_sprite_palette(const char* operationName)
 {
-  if (UIContext::instance()->get_current_sprite()) {
+  if (UIContext::instance()->getCurrentSprite()) {
     try {
       CurrentSpriteWriter sprite(UIContext::instance());
       Palette* newPalette = get_current_palette(); // System current pal

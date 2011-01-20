@@ -63,7 +63,7 @@ void CanvasSizeCommand::onExecute(Context* context)
 {
   CurrentSpriteWriter sprite(context);
 
-  if (context->is_ui_available()) {
+  if (context->isUiAvailable()) {
     JWidget left, top, right, bottom, ok;
 
     // load the window widget

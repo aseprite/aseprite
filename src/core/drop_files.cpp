@@ -84,7 +84,7 @@ void check_for_dropped_files()
     for (std::vector<base::string>::iterator
 	   it = files.begin(); it != files.end(); ++it) {
       params.set("filename", it->c_str());
-      UIContext::instance()->execute_command(cmd_open_file, &params);
+      UIContext::instance()->executeCommand(cmd_open_file, &params);
     }
   }
 }

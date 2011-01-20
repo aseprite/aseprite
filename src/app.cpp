@@ -257,12 +257,12 @@ int App::run()
 	  else {
 	    // Mount and select the sprite
 	    UIContext* context = UIContext::instance();
-	    context->add_sprite(sprite);
-	    context->set_current_sprite(sprite);
+	    context->addSprite(sprite);
+	    context->setCurrentSprite(sprite);
 
 	    if (isGui()) {
 	      // Show it
-	      set_sprite_in_more_reliable_editor(context->get_first_sprite());
+	      set_sprite_in_more_reliable_editor(context->getFirstSprite());
 
 	      // Recent file
 	      getRecentFiles()->addRecentFile(option->data().c_str());
@@ -368,7 +368,7 @@ void app_refresh_screen(const Sprite* sprite)
 void app_realloc_sprite_list()
 {
   UIContext* context = UIContext::instance();
-  const SpriteList& list = context->get_sprite_list();
+  const SpriteList& list = context->getSpriteList();
 
   // Insert all other sprites
   for (SpriteList::const_iterator
@@ -437,7 +437,7 @@ int app_get_current_image_type()
   Context* context = UIContext::instance();
   ASSERT(context != NULL);
 
-  Sprite* sprite = context->get_current_sprite();
+  Sprite* sprite = context->getCurrentSprite();
   if (sprite != NULL)
     return sprite->getImgType();
   else if (screen != NULL && bitmap_color_depth(screen) == 8)
@@ -486,7 +486,7 @@ void TabsBarHandler::clickTab(Tabs* tabs, void* data, int button)
     Command* close_file_cmd =
       CommandsModule::instance()->get_command_by_name(CommandId::close_file);
 
-    UIContext::instance()->execute_command(close_file_cmd, NULL);
+    UIContext::instance()->executeCommand(close_file_cmd, NULL);
   }
 }
 

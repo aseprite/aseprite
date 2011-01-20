@@ -177,7 +177,7 @@ void editors_draw_sprite_tiled(const Sprite* sprite, int x1, int y1, int x2, int
 void editors_hide_sprite(const Sprite* sprite)
 {
   UIContext* context = UIContext::instance();
-  bool refresh = (context->get_current_sprite() == sprite) ? true: false;
+  bool refresh = (context->getCurrentSprite() == sprite) ? true: false;
 
   for (EditorList::iterator it = editors.begin(); it != editors.end(); ++it) {
     Editor* editor = *it;
@@ -189,7 +189,7 @@ void editors_hide_sprite(const Sprite* sprite)
   if (refresh) {
     Sprite* sprite = current_editor->getSprite();
 
-    context->set_current_sprite(sprite);
+    context->setCurrentSprite(sprite);
     app_refresh_screen(sprite);
   }
 }
@@ -206,7 +206,7 @@ void set_current_editor(Editor* editor)
 
     UIContext* context = UIContext::instance();
     Sprite* sprite = current_editor->getSprite();
-    context->set_current_sprite(sprite);
+    context->setCurrentSprite(sprite);
 
     app_refresh_screen(sprite);
     app_realloc_sprite_list();
@@ -218,9 +218,9 @@ void set_sprite_in_current_editor(Sprite *sprite)
   if (current_editor) {
     UIContext* context = UIContext::instance();
     
-    context->set_current_sprite(sprite);
+    context->setCurrentSprite(sprite);
     if (sprite != NULL)
-      context->send_sprite_to_top(sprite);
+      context->sendSpriteToTop(sprite);
 
     current_editor->editor_set_sprite(sprite);
 
@@ -408,7 +408,7 @@ static int is_sprite_in_some_editor(Sprite* sprite)
 static Sprite* get_more_reliable_sprite()
 {
   UIContext* context = UIContext::instance();
-  const SpriteList& list = context->get_sprite_list();
+  const SpriteList& list = context->getSpriteList();
 
   for (SpriteList::const_iterator
 	 it = list.begin(); it != list.end(); ++it) {

@@ -1049,7 +1049,7 @@ bool Editor::onProcessMessage(JMessage msg)
 	Tool* current_tool = getCurrentEditorTool();
 
 	set_current_editor(this);
-	context->set_current_sprite(m_sprite);
+	context->setCurrentSprite(m_sprite);
 
 	// Start scroll loop
 	if (msg->mouse.middle ||
@@ -1145,7 +1145,7 @@ bool Editor::onProcessMessage(JMessage msg)
 	  Params params;
 	  params.set("target", msg->mouse.right ? "background": "foreground");
 
-	  UIContext::instance()->execute_command(eyedropper_cmd, &params);
+	  UIContext::instance()->executeCommand(eyedropper_cmd, &params);
 	  return true;
 	}
 	// Start the Tool-Loop
@@ -1444,7 +1444,7 @@ bool Editor::onProcessMessage(JMessage msg)
 		Command* command = CommandsModule::instance()->get_command_by_name
 		  ((dz < 0) ? CommandId::goto_next_frame: CommandId::goto_previous_frame);
 		if (command)
-		  UIContext::instance()->execute_command(command, NULL);
+		  UIContext::instance()->executeCommand(command, NULL);
 	      }
 	      break;
 

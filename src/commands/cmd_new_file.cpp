@@ -172,7 +172,7 @@ void NewFileCommand::onExecute(Context* context)
 	}
 
 	// Show the sprite to the user
-	context->add_sprite(sprite);
+	context->addSprite(sprite);
 	set_sprite_in_more_reliable_editor(sprite);
       }
     }

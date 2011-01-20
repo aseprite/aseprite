@@ -29,12 +29,12 @@ public:
   UIContext();
   virtual ~UIContext();
 
-  virtual bool is_ui_available() const { return true; }
+  virtual bool isUiAvailable() const { return true; }
 
 protected:
-  virtual void on_add_sprite(Sprite* sprite);
-  virtual void on_remove_sprite(Sprite* sprite);
-  virtual void on_set_current_sprite(Sprite* sprite);
+  virtual void onAddSprite(Sprite* sprite);
+  virtual void onRemoveSprite(Sprite* sprite);
+  virtual void onSetCurrentSprite(Sprite* sprite);
 
 private:
   static UIContext* m_instance;

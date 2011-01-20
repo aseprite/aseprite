@@ -43,12 +43,12 @@ Context::~Context()
   delete m_settings;
 }
 
-const SpriteList& Context::get_sprite_list() const
+const SpriteList& Context::getSpriteList() const
 {
   return m_sprites;
 }
 
-Sprite* Context::get_first_sprite() const
+Sprite* Context::getFirstSprite() const
 {
   if (!m_sprites.empty())
     return m_sprites.front();
@@ -56,7 +56,7 @@ Sprite* Context::get_first_sprite() const
     return NULL;
 }
 
-Sprite* Context::get_next_sprite(Sprite* sprite) const
+Sprite* Context::getNextSprite(Sprite* sprite) const
 {
   ASSERT(sprite != NULL);
 
@@ -70,20 +70,17 @@ Sprite* Context::get_next_sprite(Sprite* sprite) const
   return NULL;
 }
 
-/**
- * Append the sprite to the context's sprites' list.
- */
-void Context::add_sprite(Sprite* sprite)
+void Context::addSprite(Sprite* sprite)
 {
   ASSERT(sprite != NULL);
 
   m_sprites.push_front(sprite);
 
-  // generate on_add_sprite event
-  on_add_sprite(sprite);
+  // Generate onAddSprite event
+  onAddSprite(sprite);
 }
 
-void Context::remove_sprite(Sprite* sprite)
+void Context::removeSprite(Sprite* sprite)
 {
   ASSERT(sprite != NULL);
 
@@ -94,14 +91,14 @@ void Context::remove_sprite(Sprite* sprite)
   m_sprites.erase(it);
 
   // generate on_remove_sprite event
-  on_remove_sprite(sprite);
+  onRemoveSprite(sprite);
 
   // the current sprite cannot be the removed sprite anymore
   if (m_currentSprite == sprite)
-    set_current_sprite(NULL);
+    setCurrentSprite(NULL);
 }
 
-void Context::send_sprite_to_top(Sprite* sprite)
+void Context::sendSpriteToTop(Sprite* sprite)
 {
   ASSERT(sprite);
 
@@ -115,19 +112,19 @@ void Context::send_sprite_to_top(Sprite* sprite)
   m_sprites.push_front(sprite);
 }
 
-Sprite* Context::get_current_sprite() const
+Sprite* Context::getCurrentSprite() const
 {
   return m_currentSprite;
 }
 
-void Context::set_current_sprite(Sprite* sprite)
+void Context::setCurrentSprite(Sprite* sprite)
 {
   m_currentSprite = sprite;
 
-  on_set_current_sprite(sprite);
+  onSetCurrentSprite(sprite);
 }
 
-void Context::execute_command(Command* command, Params* params)
+void Context::executeCommand(Command* command, Params* params)
 {
   Console console;
 
@@ -168,17 +165,17 @@ void Context::execute_command(Command* command, Params* params)
 #endif
 }
 
-void Context::on_add_sprite(Sprite* sprite)
+void Context::onAddSprite(Sprite* sprite)
 {
   // do nothing
 }
 
-void Context::on_remove_sprite(Sprite* sprite)
+void Context::onRemoveSprite(Sprite* sprite)
 {
   // do nothing
 }
 
-void Context::on_set_current_sprite(Sprite* sprite)
+void Context::onSetCurrentSprite(Sprite* sprite)
 {
   // do nothing
 }

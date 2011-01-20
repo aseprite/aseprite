@@ -422,7 +422,7 @@ bool ColorBar::onProcessMessage(JMessage msg)
 		params.set("target", (m_hot == HOTCOLOR_FGCOLOR ? "foreground": "background"));
 		params.set("open", "true");
 
-		UIContext::instance()->execute_command(paledit_cmd, &params);
+		UIContext::instance()->executeCommand(paledit_cmd, &params);
 		break;
 	      }
 

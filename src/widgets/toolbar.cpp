@@ -279,7 +279,7 @@ bool ToolBar::onProcessMessage(JMessage msg)
 	Command* conf_tools_cmd = 
 	  CommandsModule::instance()->get_command_by_name(CommandId::configure_tools);
 
-	UIContext::instance()->execute_command(conf_tools_cmd);
+	UIContext::instance()->executeCommand(conf_tools_cmd);
       }
       break;
     }

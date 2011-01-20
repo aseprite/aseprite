@@ -1240,7 +1240,7 @@ static bool manager_msg_proc(JWidget widget, JMessage msg)
 
 	      // the screen shot is available in everywhere
 	      if (strcmp(command->short_name(), CommandId::screen_shot) == 0) {
-		UIContext::instance()->execute_command(command, shortcut->params);
+		UIContext::instance()->executeCommand(command, shortcut->params);
 		return true;
 	      }
 	      // all other keys are only available in the main-window
@@ -1258,7 +1258,7 @@ static bool manager_msg_proc(JWidget widget, JMessage msg)
 		  else if (child->is_desktop() && child == app_get_top_window()) {
 		    /* ok, so we can execute the command represented by the
 		       pressed-key in the message... */
-		    UIContext::instance()->execute_command(command, shortcut->params);
+		    UIContext::instance()->executeCommand(command, shortcut->params);
 		    return true;
 		  }
 		}

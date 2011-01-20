@@ -139,7 +139,7 @@ void OpenFileCommand::onExecute(Context* context)
   Console console;
 
   // interactive
-  if (context->is_ui_available() && m_filename.empty()) {
+  if (context->isUiAvailable() && m_filename.empty()) {
     char exts[4096];
     get_readable_extensions(exts, sizeof(exts));
     m_filename = ase_file_selector(friendly_name(), "", exts);
@@ -188,7 +188,7 @@ void OpenFileCommand::onExecute(Context* context)
 	  UIContext* context = UIContext::instance();
 
 	  App::instance()->getRecentFiles()->addRecentFile(fop->filename.c_str());
-	  context->add_sprite(sprite);
+	  context->addSprite(sprite);
 
 	  set_sprite_in_more_reliable_editor(sprite);
 	}

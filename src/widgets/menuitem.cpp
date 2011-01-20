@@ -133,7 +133,7 @@ static bool menuitem_msg_proc(JWidget widget, JMessage msg)
 	    menuitem->m_command->loadParams(menuitem->m_params);
 
 	  if (menuitem->m_command->isEnabled(context)) {
-	    context->execute_command(menuitem->m_command);
+	    context->executeCommand(menuitem->m_command);
 	    return true;
 	  }
 	}

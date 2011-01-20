@@ -539,7 +539,7 @@ void ConfigureTools::onSetGridClick()
       Command* grid_settings_cmd = 
 	CommandsModule::instance()->get_command_by_name(CommandId::grid_settings);
   
-      UIContext::instance()->execute_command(grid_settings_cmd, NULL);
+      UIContext::instance()->executeCommand(grid_settings_cmd, NULL);
     }
   }
   catch (LockedSpriteException& e) {

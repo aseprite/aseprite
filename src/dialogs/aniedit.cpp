@@ -163,7 +163,7 @@ bool animation_editor_is_movingcel()
  */
 void switch_between_animation_and_sprite_editor()
 {
-  const Sprite* sprite = UIContext::instance()->get_current_sprite();
+  const Sprite* sprite = UIContext::instance()->getCurrentSprite();
 
   /* create the window & the animation-editor */
   Frame* window = new Frame(true, NULL);
@@ -537,8 +537,8 @@ static bool anieditor_msg_proc(JWidget widget, JMessage msg)
 	    else if (msg->mouse.left) {
 	      if (anieditor->clk_frame == anieditor->hot_frame) {
 		UIContext::instance()
-		  ->execute_command(CommandsModule::instance()
-				    ->get_command_by_name(CommandId::frame_properties));
+		  ->executeCommand(CommandsModule::instance()
+				   ->get_command_by_name(CommandId::frame_properties));
 	      }
 	      else {
 		const SpriteReader sprite((Sprite*)anieditor->sprite);
@@ -738,7 +738,7 @@ static bool anieditor_msg_proc(JWidget widget, JMessage msg)
 	    strcmp(command->short_name(), CommandId::goto_next_layer) == 0 ||
 	    strcmp(command->short_name(), CommandId::goto_last_frame) == 0) {
 	  // execute the command
-	  UIContext::instance()->execute_command(command);
+	  UIContext::instance()->executeCommand(command);
 
 	  anieditor_show_current_cel(widget);
 	  jwidget_dirty(widget);
@@ -748,7 +748,7 @@ static bool anieditor_msg_proc(JWidget widget, JMessage msg)
 	if (strcmp(command->short_name(), CommandId::new_layer) == 0 ||
 	    strcmp(command->short_name(), CommandId::remove_layer) == 0) {
 	  // execute the command
-	  UIContext::instance()->execute_command(command);
+	  UIContext::instance()->executeCommand(command);
 
 	  anieditor_regenerate_layers(widget);
 	  anieditor_show_current_cel(widget);

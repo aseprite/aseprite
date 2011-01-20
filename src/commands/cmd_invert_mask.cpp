@@ -68,7 +68,7 @@ void InvertMaskCommand::onExecute(Context* context)
     // so we select all
     Command* mask_all_cmd =
       CommandsModule::instance()->get_command_by_name(CommandId::mask_all);
-    context->execute_command(mask_all_cmd);
+    context->executeCommand(mask_all_cmd);
   }
   // invert the current mask
   else {
