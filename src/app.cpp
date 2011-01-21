@@ -29,7 +29,7 @@
 
 #include "app.h"
 #include "app/color_utils.h"
-#include "ase_exception.h"
+#include "base/exception.h"
 #include "check_args.h"
 #include "commands/commands.h"
 #include "commands/params.h"
@@ -146,8 +146,8 @@ App::App(int argc, char* argv[])
 
     std::auto_ptr<Palette> pal(Palette::load(palette_filename));
     if (pal.get() == NULL)
-      throw AseException("Error loading default palette from: %s",
-			 static_cast<const char*>(palette_filename));
+      throw base::Exception("Error loading default palette from: %s",
+			    static_cast<const char*>(palette_filename));
 
     set_default_palette(pal.get());
   }

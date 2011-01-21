@@ -23,18 +23,18 @@
 #include <string.h>
 #include <vector>
 
-#include "base/bind.h"
-#include "gui/jinete.h"
-
 #include "app.h"
 #include "app/color.h"
+#include "base/bind.h"
 #include "commands/command.h"
 #include "commands/params.h"
+#include "console.h"
 #include "core/cfg.h"
 #include "dialogs/filesel.h"
 #include "gfx/hsv.h"
 #include "gfx/rgb.h"
 #include "gfx/size.h"
+#include "gui/jinete.h"
 #include "modules/editors.h"
 #include "modules/gui.h"
 #include "modules/palettes.h"
@@ -547,8 +547,8 @@ static void sort_command(JWidget widget)
       delete palette;
     }
   }
-  catch (AseException& e) {
-    e.show();
+  catch (base::Exception& e) {
+    Console::showException(e);
   }
 }
 
@@ -923,8 +923,8 @@ static void update_current_sprite_palette(const char* operationName)
 	sprite->setPalette(newPalette, false);
       }
     }
-    catch (AseException& e) {
-      e.show();
+    catch (base::Exception& e) {
+      Console::showException(e);
     }
   }
 

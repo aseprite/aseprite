@@ -23,7 +23,7 @@
 #include <allegro/fixed.h>
 #include <allegro/fmaths.h>
 
-#include "ase_exception.h"
+#include "base/exception.h"
 #include "gui_xml.h"
 #include "raster/algo.h"
 #include "raster/image.h"
@@ -132,7 +132,7 @@ void ToolBox::loadTools()
     PRINTF(" - New group '%s'\n", group_id);
 
     if (!group_id || !group_text)
-      throw AseException("The configuration file has a <group> without 'id' or 'text' attributes.");
+      throw base::Exception("The configuration file has a <group> without 'id' or 'text' attributes.");
 
     ToolGroup* tool_group = new ToolGroup(group_id, group_text);
 	
@@ -190,32 +190,32 @@ void ToolBox::loadToolProperties(TiXmlElement* xmlTool, Tool* tool, int button, 
     else if (strcmp(fill, "optional") == 0)
       fill_value = TOOL_FILL_OPTIONAL;
     else
-      throw AseException("Invalid fill '%s' specified in '%s' tool.\n", fill, tool_id);
+      throw base::Exception("Invalid fill '%s' specified in '%s' tool.\n", fill, tool_id);
   }
 
   // Find the ink
   std::map<std::string, ToolInk*>::iterator it_ink
     = m_inks.find(ink ? ink: "");
   if (it_ink == m_inks.end())
-    throw AseException("Invalid ink '%s' specified in '%s' tool.\n", ink, tool_id);
+    throw base::Exception("Invalid ink '%s' specified in '%s' tool.\n", ink, tool_id);
 
   // Find the controller
   std::map<std::string, ToolController*>::iterator it_controller
     = m_controllers.find(controller ? controller: "none");
   if (it_controller == m_controllers.end())
-    throw AseException("Invalid controller '%s' specified in '%s' tool.\n", controller, tool_id);
+    throw base::Exception("Invalid controller '%s' specified in '%s' tool.\n", controller, tool_id);
 
   // Find the point_shape
   std::map<std::string, ToolPointShape*>::iterator it_pointshaper
     = m_pointshapers.find(pointshape ? pointshape: "none");
   if (it_pointshaper == m_pointshapers.end())
-    throw AseException("Invalid point-shape '%s' specified in '%s' tool.\n", pointshape, tool_id);
+    throw base::Exception("Invalid point-shape '%s' specified in '%s' tool.\n", pointshape, tool_id);
 
   // Find the intertwiner
   std::map<std::string, ToolIntertwine*>::iterator it_intertwiner
     = m_intertwiners.find(intertwine ? intertwine: "none");
   if (it_intertwiner == m_intertwiners.end())
-    throw AseException("Invalid intertwiner '%s' specified in '%s' tool.\n", intertwine, tool_id);
+    throw base::Exception("Invalid intertwiner '%s' specified in '%s' tool.\n", intertwine, tool_id);
 
   // Trace policy
   ToolTracePolicy tracepolicy_value = TOOL_TRACE_POLICY_LAST;
@@ -227,7 +227,7 @@ void ToolBox::loadToolProperties(TiXmlElement* xmlTool, Tool* tool, int button, 
     else if (strcmp(tracepolicy, "overlap") == 0)
       tracepolicy_value = TOOL_TRACE_POLICY_OVERLAP;
     else
-      throw AseException("Invalid trace-policy '%s' specified in '%s' tool.\n", tracepolicy, tool_id);
+      throw base::Exception("Invalid trace-policy '%s' specified in '%s' tool.\n", tracepolicy, tool_id);
   }
 
   // Setup the tool properties

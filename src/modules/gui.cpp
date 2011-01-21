@@ -201,11 +201,11 @@ int init_module_gui()
 
   /* install the mouse */
   if (install_mouse() < 0)
-    throw AseException("Error installing mouse handler");
+    throw base::Exception("Error installing mouse handler");
 
   /* install the keyboard */
   if (install_keyboard() < 0)
-    throw AseException("Error installing keyboard handler");
+    throw base::Exception("Error installing keyboard handler");
 
   /* disable Ctrl+Shift+End in non-DOS */
 #if !defined(ALLEGRO_DOS)
@@ -262,7 +262,7 @@ int init_module_gui()
 
   for (;;) {
     if (bpp == 8)
-      throw AseException("You cannot use ASE in 8 bits per pixel");
+      throw base::Exception("You cannot use ASE in 8 bits per pixel");
 
     // Original
     set_color_depth(bpp);
@@ -279,8 +279,8 @@ int init_module_gui()
     }
 
     if (bpp == 15)
-      throw AseException("Error setting graphics mode\n%s\n"
-			 "Try \"ase -res WIDTHxHEIGHTxBPP\"\n", allegro_error);
+      throw base::Exception("Error setting graphics mode\n%s\n"
+			    "Try \"ase -res WIDTHxHEIGHTxBPP\"\n", allegro_error);
 
     for (c=0; try_depths[c]; ++c) {
       if (bpp == try_depths[c]) {

@@ -21,7 +21,6 @@
 #include <allegro.h>
 #include <allegro/internal/aintern.h>
 
-#include "ase_exception.h"
 #include "base/bind.h"
 #include "base/shared_ptr.h"
 #include "gui/jinete.h"
@@ -30,6 +29,7 @@
 #include "modules/gui.h"
 #include "modules/skinneable_theme.h"
 #include "resource_finder.h"
+#include "xml_exception.h"
 
 #include "tinyxml.h"
 
@@ -182,7 +182,7 @@ void SkinneableTheme::reload_skin()
     }
   }
   if (!m_sheet_bmp)
-    throw AseException("Error loading %s file", sheet_filename.c_str());
+    throw base::Exception("Error loading %s file", sheet_filename.c_str());
 }
 
 std::string SkinneableTheme::get_font_filename() const
@@ -211,7 +211,7 @@ void SkinneableTheme::regen()
 
     TiXmlDocument doc;
     if (!doc.LoadFile(path))
-      throw AseException(&doc);
+      throw XmlException(&doc);
 
     TiXmlHandle handle(&doc);
 
@@ -243,8 +243,8 @@ void SkinneableTheme::regen()
 	}
 
 	if (c == JI_CURSORS) {
-	  throw AseException("Unknown cursor specified in '%s':\n"
-			     "<cursor id='%s' ... />\n", xml_filename.c_str(), id.c_str());
+	  throw base::Exception("Unknown cursor specified in '%s':\n"
+				"<cursor id='%s' ... />\n", xml_filename.c_str(), id.c_str());
 	}
 
 	xmlCursor = xmlCursor->NextSiblingElement();

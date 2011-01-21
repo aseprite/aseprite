@@ -19,6 +19,8 @@
 #ifndef CONSOLE_H_INCLUDED
 #define CONSOLE_H_INCLUDED
 
+#include <exception>
+
 class Console
 {
 public:
@@ -26,6 +28,8 @@ public:
   ~Console();
 
   void printf(const char *format, ...);
+
+  static void showException(std::exception& e);
 };
 
 #endif

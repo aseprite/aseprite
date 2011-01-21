@@ -155,3 +155,10 @@ void Console::printf(const char *format, ...)
     fflush(stdout);
   }
 }
+
+// static
+void Console::showException(std::exception& e)
+{
+  Console console;
+  console.printf("A problem has occurred.\n\nDetails:\n%s", e.what());
+}

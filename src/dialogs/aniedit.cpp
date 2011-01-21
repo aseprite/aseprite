@@ -20,23 +20,22 @@
 
 #include <allegro.h>
 
-#include "gui/jinete.h"
-
-#include "gfx/rect.h"
-#include "gfx/point.h"
-
-#include "commands/commands.h"
 #include "commands/command.h"
+#include "commands/commands.h"
+#include "console.h"
+#include "gfx/point.h"
+#include "gfx/rect.h"
+#include "gui/jinete.h"
 #include "modules/gfx.h"
 #include "modules/gui.h"
-#include "modules/skinneable_theme.h"
 #include "modules/rootmenu.h"
+#include "modules/skinneable_theme.h"
 #include "raster/raster.h"
+#include "sprite_wrappers.h"
+#include "ui_context.h"
 #include "undoable.h"
 #include "util/celmove.h"
 #include "util/thmbnail.h"
-#include "sprite_wrappers.h"
-#include "ui_context.h"
 
 using namespace gfx;
 
@@ -591,7 +590,7 @@ static bool anieditor_msg_proc(JWidget widget, JMessage msg)
 		    sprite_writer->setCurrentLayer(anieditor->layers[anieditor->clk_layer]);
 		  }
 		  catch (LockedSpriteException& e) {
-		    e.show();
+		    Console::showException(e);
 		  }
 
 		  jwidget_dirty(widget);

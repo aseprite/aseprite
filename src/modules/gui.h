@@ -21,7 +21,7 @@
 
 #include <string>
 #include <list>
-#include "ase_exception.h"
+#include "base/exception.h"
 #include "gui/jbase.h"
 #include "gui/jaccel.h"
 
@@ -36,22 +36,22 @@ class CheckBox;
 
 //////////////////////////////////////////////////////////////////////
 
-class widget_file_not_found : public AseException
+class widget_file_not_found : public base::Exception
 {
 public:
   widget_file_not_found(const char* file_name) throw()
-    : AseException("Cannot load file: %s\nPlease reinstall %s", file_name, PACKAGE) { }
+    : base::Exception("Cannot load file: %s\nPlease reinstall %s", file_name, PACKAGE) { }
 };
 
 /**
  * Exception thrown by find_widget() if a widget is not found.
  */
-class widget_not_found : public AseException
+class widget_not_found : public base::Exception
 {
 public:
   widget_not_found(const char* widget_name) throw()
-    : AseException("A data file is corrupted.\nPlease reinstall %s\n\n" 
-		   "Details: Widget not found: %s", PACKAGE, widget_name) { }
+    : base::Exception("A data file is corrupted.\nPlease reinstall %s\n\n" 
+		      "Details: Widget not found: %s", PACKAGE, widget_name) { }
 };
 
 //////////////////////////////////////////////////////////////////////

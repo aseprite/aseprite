@@ -20,8 +20,8 @@
 #define CONTEXT_H_INCLUDED
 
 #include <list>
-#include "ase_exception.h"
 #include "base/disable_copying.h"
+#include "base/exception.h"
 #include "settings/settings.h"
 
 class Sprite;
@@ -31,11 +31,11 @@ class Params;
 
 typedef std::list<Sprite*> SpriteList;
 
-class CommandPreconditionException : public AseException
+class CommandPreconditionException : public base::Exception
 {
 public:
   CommandPreconditionException() throw()
-  : AseException("Cannot execute the command because its pre-conditions are false.") { }
+  : base::Exception("Cannot execute the command because its pre-conditions are false.") { }
 };
 
 class Context

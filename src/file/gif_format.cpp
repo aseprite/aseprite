@@ -140,13 +140,13 @@ bool GifFormat::onLoad(FileOp* fop)
     int frame_delay = -1;
     do {
       if (DGifGetRecordType(gif_file, &record_type) == GIF_ERROR)
-	throw AseException("Invalid GIF record in file.\n");
+	throw base::Exception("Invalid GIF record in file.\n");
 
       switch (record_type) {
 
 	case IMAGE_DESC_RECORD_TYPE: {
 	  if (DGifGetImageDesc(gif_file) == GIF_ERROR)
-	    throw AseException("Invalid GIF image descriptor.\n");
+	    throw base::Exception("Invalid GIF image descriptor.\n");
 
 	  // These are the bounds of the image to read.
 	  int frame_x = gif_file->Image.Left;
@@ -157,7 +157,7 @@ bool GifFormat::onLoad(FileOp* fop)
 	  if (frame_x < 0 || frame_y < 0 ||
 	      frame_x + frame_w > sprite_w ||
 	      frame_y + frame_h > sprite_h)
-	    throw AseException("Image %d is out of sprite bounds.\n", frame_num);
+	    throw base::Exception("Image %d is out of sprite bounds.\n", frame_num);
 
 	  // Add a new frame in the sprite.
 	  sprite->setTotalFrames(frame_num+1);
@@ -193,14 +193,14 @@ bool GifFormat::onLoad(FileOp* fop)
 	      for (int y = interlaced_offset[i]; y < frame_h; y += interlaced_jumps[i]) {
 		addr = image_address_fast<IndexedTraits>(frame_image, 0, y);
 	  	if (DGifGetLine(gif_file, addr, frame_w) == GIF_ERROR)
-		  throw AseException("Invalid interlaced image data.");
+		  throw base::Exception("Invalid interlaced image data.");
 	      }
 	  }
 	  else {
 	    for (int y = 0; y < frame_h; ++y) {
 	      addr = image_address_fast<IndexedTraits>(frame_image, 0, y);
 	      if (DGifGetLine(gif_file, addr, frame_w) == GIF_ERROR)
-		throw AseException("Invalid image data (%d).\n", GifLastError());
+		throw base::Exception("Invalid image data (%d).\n", GifLastError());
 	    }
 	  }
 
@@ -280,7 +280,7 @@ bool GifFormat::onLoad(FileOp* fop)
 	  int ext_code;
 
 	  if (DGifGetExtension(gif_file, &ext_code, &extension) == GIF_ERROR)
-	    throw AseException("Invalid GIF extension record.\n");
+	    throw base::Exception("Invalid GIF extension record.\n");
 
 	  if (ext_code == GRAPHICS_EXT_FUNC_CODE) {
 	    if (extension[0] >= 4) {
@@ -295,7 +295,7 @@ bool GifFormat::onLoad(FileOp* fop)
 
 	  while (extension != NULL) {
 	    if (DGifGetExtensionNext(gif_file, &extension) == GIF_ERROR)
-	      throw AseException("Invalid GIF extension record.\n");
+	      throw base::Exception("Invalid GIF extension record.\n");
 	  }
 	  break;
 	}
@@ -322,7 +322,7 @@ bool GifFormat::onSave(FileOp* fop)
 {
   SharedPtr<GifFileType, EGifDeleter> gif_file(EGifOpenFileName(fop->filename.c_str(), 0));
   if (!gif_file)
-    throw AseException("Error creating GIF file.\n");
+    throw base::Exception("Error creating GIF file.\n");
 
   Sprite *sprite = fop->sprite;
   int sprite_w = sprite->getWidth();
@@ -345,7 +345,7 @@ bool GifFormat::onSave(FileOp* fop)
   if (EGifPutScreenDesc(gif_file, sprite_w, sprite_h,
 			color_map->BitsPerPixel,
 			background_color, color_map) == GIF_ERROR)
-    throw AseException("Error writing GIF header.\n");
+    throw base::Exception("Error writing GIF header.\n");
 
   SharedPtr<Image> buffer_image;
   SharedPtr<Image> current_image(image_new(IMAGE_INDEXED, sprite_w, sprite_h));
@@ -431,16 +431,16 @@ bool GifFormat::onSave(FileOp* fop)
 
       memcpy(extension_bytes, "NETSCAPE2.0", 11);
       if (EGifPutExtensionFirst(gif_file, APPLICATION_EXT_FUNC_CODE, 11, extension_bytes) == GIF_ERROR)
-	throw AseException("Error writing GIF graphics extension record for frame %d.\n", frame_num);
+	throw base::Exception("Error writing GIF graphics extension record for frame %d.\n", frame_num);
 
       extension_bytes[0] = 1;
       extension_bytes[1] = (loop & 0xff);
       extension_bytes[2] = (loop >> 8) & 0xff;
       if (EGifPutExtensionNext(gif_file, APPLICATION_EXT_FUNC_CODE, 3, extension_bytes) == GIF_ERROR)
-	throw AseException("Error writing GIF graphics extension record for frame %d.\n", frame_num);
+	throw base::Exception("Error writing GIF graphics extension record for frame %d.\n", frame_num);
 
       if (EGifPutExtensionLast(gif_file, APPLICATION_EXT_FUNC_CODE, 0, NULL) == GIF_ERROR)
-	throw AseException("Error writing GIF graphics extension record for frame %d.\n", frame_num);
+	throw base::Exception("Error writing GIF graphics extension record for frame %d.\n", frame_num);
     }
 
     // Write graphics extension record (to save the duration of the
@@ -457,7 +457,7 @@ bool GifFormat::onSave(FileOp* fop)
       extension_bytes[3] = transparent_index;
 
       if (EGifPutExtension(gif_file, GRAPHICS_EXT_FUNC_CODE, 4, extension_bytes) == GIF_ERROR)
-	throw AseException("Error writing GIF graphics extension record for frame %d.\n", frame_num);
+	throw base::Exception("Error writing GIF graphics extension record for frame %d.\n", frame_num);
     }
 
     // Image color map
@@ -477,7 +477,7 @@ bool GifFormat::onSave(FileOp* fop)
 			 frame_x, frame_y,
 			 frame_w, frame_h, interlace ? 1: 0,
 			 image_color_map) == GIF_ERROR)
-      throw AseException("Error writing GIF frame %d.\n", frame_num);
+      throw base::Exception("Error writing GIF frame %d.\n", frame_num);
 
     // Write the image data (pixels).
     if (interlace) {
@@ -486,7 +486,7 @@ bool GifFormat::onSave(FileOp* fop)
 	for (int y = interlaced_offset[i]; y < frame_h; y += interlaced_jumps[i]) {
 	  IndexedTraits::address_t addr = image_address_fast<IndexedTraits>(current_image, frame_x, frame_y + y);
 	  if (EGifPutLine(gif_file, addr, frame_w) == GIF_ERROR)
-	    throw AseException("Error writing GIF image scanlines for frame %d.\n", frame_num);
+	    throw base::Exception("Error writing GIF image scanlines for frame %d.\n", frame_num);
 	}
     }
     else {
@@ -494,7 +494,7 @@ bool GifFormat::onSave(FileOp* fop)
       for (int y = 0; y < frame_h; ++y) {
 	IndexedTraits::address_t addr = image_address_fast<IndexedTraits>(current_image, frame_x, frame_y + y);
 	if (EGifPutLine(gif_file, addr, frame_w) == GIF_ERROR)
-	  throw AseException("Error writing GIF image scanlines for frame %d.\n", frame_num);
+	  throw base::Exception("Error writing GIF image scanlines for frame %d.\n", frame_num);
       }
     }
 

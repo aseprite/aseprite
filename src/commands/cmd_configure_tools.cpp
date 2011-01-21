@@ -20,13 +20,13 @@
 
 #include <allegro.h>
 
-#include "base/bind.h"
-#include "gui/jinete.h"
-
 #include "app.h"
+#include "base/bind.h"
 #include "commands/command.h"
 #include "commands/commands.h"
+#include "console.h"
 #include "gfx/size.h"
+#include "gui/jinete.h"
 #include "modules/editors.h"
 #include "modules/gfx.h"
 #include "modules/gui.h"
@@ -543,7 +543,7 @@ void ConfigureTools::onSetGridClick()
     }
   }
   catch (LockedSpriteException& e) {
-    e.show();
+    Console::showException(e);
   }
 }
 

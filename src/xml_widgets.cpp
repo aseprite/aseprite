@@ -24,10 +24,10 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "ase_exception.h"
 #include "base/bind.h"
 #include "gui/jinete.h"
 #include "modules/gui.h"
+#include "xml_exception.h"
 
 #include "tinyxml.h"
 
@@ -49,7 +49,7 @@ Widget* load_widget_from_xmlfile(const char* xmlFilename, const char* widgetName
 
   TiXmlDocument doc;
   if (!doc.LoadFile(xmlFilename))
-    throw AseException(&doc);
+    throw XmlException(&doc);
 
   // search the requested widget
   TiXmlHandle handle(&doc);

@@ -891,7 +891,7 @@ static void read_compressed_image(FILE* f, Image* image, size_t chunk_end, FileO
 
   err = inflateInit(&zstream);
   if (err != Z_OK)
-    throw AseException("ZLib error %d in inflateInit().", err);
+    throw base::Exception("ZLib error %d in inflateInit().", err);
 
   std::vector<ase_uint8> scanline(ImageTraits::scanline_size(image->w));
   std::vector<ase_uint8> uncompressed(image->h * ImageTraits::scanline_size(image->w));
@@ -922,12 +922,12 @@ static void read_compressed_image(FILE* f, Image* image, size_t chunk_end, FileO
 
       err = inflate(&zstream, Z_NO_FLUSH);
       if (err != Z_OK && err != Z_STREAM_END)
-	throw AseException("ZLib error %d in inflate().", err);
+	throw base::Exception("ZLib error %d in inflate().", err);
 
       size_t input_bytes = scanline.size() - zstream.avail_out;
       if (input_bytes > 0) {
 	if (uncompressed_offset+input_bytes > uncompressed.size())
-	  throw AseException("Bad compressed image.");
+	  throw base::Exception("Bad compressed image.");
 
       	std::copy(scanline.begin(), scanline.begin()+input_bytes,
 		  uncompressed.begin()+uncompressed_offset);
@@ -948,7 +948,7 @@ static void read_compressed_image(FILE* f, Image* image, size_t chunk_end, FileO
 
   err = inflateEnd(&zstream);
   if (err != Z_OK)
-    throw AseException("ZLib error %d in inflateEnd().", err);
+    throw base::Exception("ZLib error %d in inflateEnd().", err);
 }
 
 template<typename ImageTraits>
@@ -963,7 +963,7 @@ static void write_compressed_image(FILE* f, Image* image)
   zstream.opaque = (voidpf)0;
   err = deflateInit(&zstream, Z_DEFAULT_COMPRESSION);
   if (err != Z_OK)
-    throw AseException("ZLib error %d in deflateInit().", err);
+    throw base::Exception("ZLib error %d in deflateInit().", err);
 
   std::vector<ase_uint8> scanline(ImageTraits::scanline_size(image->w));
   std::vector<ase_uint8> compressed(4096);
@@ -982,20 +982,20 @@ static void write_compressed_image(FILE* f, Image* image)
       // Compress
       err = deflate(&zstream, (y < image->h-1 ? Z_NO_FLUSH: Z_FINISH));
       if (err != Z_OK && err != Z_STREAM_END)
-	throw AseException("ZLib error %d in deflate().", err);
+	throw base::Exception("ZLib error %d in deflate().", err);
 
       int output_bytes = compressed.size() - zstream.avail_out;
       if (output_bytes > 0) {
 	if ((fwrite(&compressed[0], 1, output_bytes, f) != (size_t)output_bytes)
 	    || ferror(f))
-	  throw AseException("Error writing compressed image pixels.\n");
+	  throw base::Exception("Error writing compressed image pixels.\n");
       }
     } while (zstream.avail_out == 0);
   }
 
   err = deflateEnd(&zstream);
   if (err != Z_OK)
-    throw AseException("ZLib error %d in deflateEnd().", err);
+    throw base::Exception("ZLib error %d in deflateEnd().", err);
 }
 
 //////////////////////////////////////////////////////////////////////

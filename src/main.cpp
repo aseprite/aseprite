@@ -19,10 +19,10 @@
 #include "config.h"
 
 #include <allegro.h>
-#include <stdio.h>
 
-#include "ase_exception.h"
+#include "base/exception.h"
 #include "app.h"
+#include "console.h"
 #include "loadpng.h"
 
 #ifdef WIN32
@@ -71,8 +71,8 @@ int main(int argc, char* argv[])
 
     status = app.run();
   }
-  catch (AseException& e) {
-    e.show();
+  catch (base::Exception& e) {
+    Console::showException(e);
   }
   catch (std::exception& e) {
     allegro_message("%s", e.what());

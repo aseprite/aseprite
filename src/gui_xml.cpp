@@ -20,9 +20,9 @@
 
 #include <allegro/file.h>
 
-#include "ase_exception.h"
 #include "gui_xml.h"
 #include "resource_finder.h"
+#include "xml_exception.h"
 
 // static
 GuiXml* GuiXml::instance()
@@ -52,13 +52,13 @@ GuiXml::GuiXml()
 
     // Try to load the XML file
     if (!m_doc.LoadFile(path))
-      throw AseException(&m_doc);
+      throw XmlException(&m_doc);
 
     // Done, we load the file successfully.
     return;
   }
 
-  throw AseException("gui.xml was not found");
+  throw base::Exception("gui.xml was not found");
 }
 
 TiXmlDocument& GuiXml::doc()

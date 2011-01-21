@@ -22,13 +22,13 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "gui/jinete.h"
-
 #include "app.h"
+#include "console.h"
 #include "core/cfg.h"
 #include "file/file.h"
 #include "file/file_format.h"
 #include "file/format_options.h"
+#include "gui/jinete.h"
 #include "modules/gui.h"
 #include "raster/raster.h"
 
@@ -396,10 +396,10 @@ FormatOptions* JpegFormat::onGetFormatOptions(FileOp* fop)
 
     return jpeg_options;
   }
-  catch (AseException& e) {
+  catch (base::Exception& e) {
     delete jpeg_options;
 
-    e.show();
+    Console::showException(e);
     return NULL;
   }
 }

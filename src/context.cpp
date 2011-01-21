@@ -139,11 +139,11 @@ void Context::executeCommand(Command* command, Params* params)
     if (command->isEnabled(this))
       command->execute(this);
   }
-  catch (AseException& e) {
-    PRINTF("AseException caught executing '%s' command\n%s\n",
+  catch (base::Exception& e) {
+    PRINTF("Exception caught executing '%s' command\n%s\n",
 	   command->short_name(), e.what());
 
-    e.show();
+    Console::showException(e);
   }
   catch (std::exception& e) {
     PRINTF("std::exception caught executing '%s' command\n%s\n",

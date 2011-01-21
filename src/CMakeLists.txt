@@ -69,7 +69,6 @@ add_subdirectory(gui)
 
 add_library(aseprite-library
   app.cpp
-  ase_exception.cpp
   check_args.cpp
   console.cpp
   context.cpp
@@ -82,6 +81,7 @@ add_library(aseprite-library
   resource_finder.cpp
   ui_context.cpp
   undoable.cpp
+  xml_exception.cpp
   xml_widgets.cpp
   app/color.cpp
   app/color_utils.cpp

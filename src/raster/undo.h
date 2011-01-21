@@ -21,8 +21,8 @@
 
 #include <vector>
 
+#include "base/exception.h"
 #include "raster/gfxobj.h"
-#include "ase_exception.h"
 
 class Cel;
 class Dirty;
@@ -34,10 +34,10 @@ class Sprite;
 class Stock;
 class UndoStream;
 
-class UndoException : public AseException
+class UndoException : public base::Exception
 {
 public:
-  UndoException(const char* msg) throw() : AseException(msg) { }
+  UndoException(const char* msg) throw() : base::Exception(msg) { }
 };
 
 class Undo : public GfxObj

@@ -21,17 +21,17 @@
 
 #include <list>
 #include <exception>
-#include "ase_exception.h"
+#include "base/exception.h"
 #include "context.h"
 #include "raster/sprite.h"
 
-class LockedSpriteException : public AseException
+class LockedSpriteException : public base::Exception
 {
 public:
   LockedSpriteException() throw()
-  : AseException("Cannot read/write the sprite.\n"
-		 "The sprite is locked by a background task.\n"
-		 "Try again later.") { }
+  : base::Exception("Cannot read/write the sprite.\n"
+		    "The sprite is locked by a background task.\n"
+		    "Try again later.") { }
 };
 
 //////////////////////////////////////////////////////////////////////
