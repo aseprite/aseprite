@@ -35,7 +35,7 @@
 #define ANI_REMOVING_TAB_TICKS    10
 #define ANI_SMOOTH_SCROLL_TICKS   20
 
-#define HAS_ARROWS(tabs) ((jwidget_get_parent(m_button_left) == (tabs)))
+#define HAS_ARROWS(tabs) ((m_button_left->getParent() == (tabs)))
 
 static bool tabs_button_msg_proc(JWidget widget, JMessage msg);
 
@@ -632,7 +632,7 @@ static bool tabs_button_msg_proc(JWidget widget, JMessage msg)
   JWidget parent;
   Tabs* tabs = NULL;
 
-  parent = jwidget_get_parent(widget);
+  parent = widget->getParent();
   if (parent)
     tabs = dynamic_cast<Tabs*>(parent);
 

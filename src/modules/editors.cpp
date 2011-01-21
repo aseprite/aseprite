@@ -48,7 +48,7 @@ static EditorList editors;
 static int is_sprite_in_some_editor(Sprite *sprite);
 static Sprite *get_more_reliable_sprite();
 static JWidget find_next_editor(JWidget widget);
-static int count_parents(JWidget widget);
+static int count_parents(Widget* widget);
 
 int init_module_editors()
 {
@@ -260,7 +260,7 @@ void split_editor(Editor* editor, int align)
   }
 
   JWidget view = jwidget_get_view(editor);
-  JWidget parent_box = jwidget_get_parent(view); /* box or panel */
+  JWidget parent_box = view->getParent(); // box or panel
 
   /* create a new box to contain both editors, and a new view to put
      the new editor */
@@ -313,7 +313,7 @@ void split_editor(Editor* editor, int align)
 void close_editor(Editor* editor)
 {
   JWidget view = jwidget_get_view(editor);
-  JWidget parent_box = jwidget_get_parent(view); /* box or panel */
+  JWidget parent_box = view->getParent(); // Box or panel
   JWidget other_widget;
 
   /* you can't remove all editors */
@@ -332,8 +332,7 @@ void close_editor(Editor* editor)
   other_widget = reinterpret_cast<JWidget>(jlist_first_data(parent_box->children));
 
   jwidget_remove_child(parent_box, other_widget);
-  jwidget_replace_child(jwidget_get_parent(parent_box),
-			  parent_box, other_widget);
+  jwidget_replace_child(parent_box->getParent(), parent_box, other_widget);
   jwidget_free(parent_box);
 
   /* find next editor to select */
@@ -367,7 +366,7 @@ void make_unique_editor(Editor* editor)
     return;
 
   /* remove the editor-view of its parent */
-  jwidget_remove_child(jwidget_get_parent(view), view);
+  jwidget_remove_child(view->getParent(), view);
 
   /* remove all children of main_editor_box */
   JI_LIST_FOR_EACH_SAFE(box_editors->children, link, next) {
@@ -436,10 +435,10 @@ static JWidget find_next_editor(JWidget widget)
   return editor;
 }
 
-static int count_parents(JWidget widget)
+static int count_parents(Widget* widget)
 {
   int count = 0;
-  while ((widget = jwidget_get_parent(widget)))
+  while ((widget = widget->getParent()))
     count++;
   return count;
 }

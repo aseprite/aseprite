@@ -114,7 +114,7 @@ bool PopupWindow::onProcessMessage(JMessage msg)
       /* if the user click outside the window, we have to close the
 	 tooltip window */
       if (m_filtering) {
-	Widget* picked = jwidget_pick(this, msg->mouse.x, msg->mouse.y);
+	Widget* picked = this->pick(msg->mouse.x, msg->mouse.y);
 	if (!picked || picked->getRoot() != this) {
 	  this->closeWindow(NULL);
 	}

@@ -283,7 +283,7 @@ void StatusBar::showTool(int msecs, Tool* tool)
 
 void StatusBar::showMovePixelsOptions()
 {
-  if (!jwidget_has_child(this, m_movePixelsBox)) {
+  if (!this->hasChild(m_movePixelsBox)) {
     jwidget_add_child(this, m_movePixelsBox);
     jwidget_dirty(this);
   }
@@ -291,7 +291,7 @@ void StatusBar::showMovePixelsOptions()
 
 void StatusBar::hideMovePixelsOptions()
 {
-  if (jwidget_has_child(this, m_movePixelsBox)) {
+  if (this->hasChild(m_movePixelsBox)) {
     jwidget_remove_child(this, m_movePixelsBox);
     jwidget_dirty(this);
   }
@@ -381,11 +381,11 @@ bool StatusBar::onProcessMessage(JMessage msg)
       return true;
 
     case JM_CLOSE:
-      if (!jwidget_has_child(this, m_commandsBox)) {
+      if (!this->hasChild(m_commandsBox)) {
 	// Append the "m_commandsBox" so it is destroyed in StatusBar dtor.
 	jwidget_add_child(this, m_commandsBox);
       }
-      if (!jwidget_has_child(this, m_movePixelsBox)) {
+      if (!this->hasChild(m_movePixelsBox)) {
 	// Append the "m_movePixelsBox" so it is destroyed in StatusBar dtor.
 	jwidget_add_child(this, m_movePixelsBox);
       }
@@ -577,8 +577,8 @@ bool StatusBar::onProcessMessage(JMessage msg)
     case JM_MOUSEENTER: {
       bool state = (UIContext::instance()->getCurrentSprite() != NULL);
 
-      if (!jwidget_has_child(this, m_movePixelsBox)) {
-	if (!jwidget_has_child(this, m_commandsBox) && state) {
+      if (!this->hasChild(m_movePixelsBox)) {
+	if (!this->hasChild(m_commandsBox) && state) {
 	  m_b_first->setEnabled(state);
 	  m_b_prev->setEnabled(state);
 	  m_b_play->setEnabled(state);
@@ -696,7 +696,7 @@ bool StatusBar::onProcessMessage(JMessage msg)
       break;
 
     case JM_MOUSELEAVE:
-      if (jwidget_has_child(this, m_commandsBox)) {
+      if (this->hasChild(m_commandsBox)) {
 	// If we want restore the state-bar and the slider doesn't have
 	// the capture...
 	if (jmanager_get_capture() != m_slider) {

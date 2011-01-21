@@ -716,14 +716,14 @@ void jmanager_set_focus(JWidget widget)
     JMessage msg;
 
     if (widget)
-      widget_parents = jwidget_get_parents(widget, false);
+      widget_parents = widget->getParents(false);
     else
       widget_parents = jlist_new();
 
     /* fetch the focus */
 
     if (focus_widget) {
-      JList focus_parents = jwidget_get_parents(focus_widget, true);
+      JList focus_parents = focus_widget->getParents(true);
       msg = jmessage_new(JM_FOCUSLEAVE);
 
       JI_LIST_FOR_EACH(focus_parents, link) {
@@ -786,14 +786,14 @@ void jmanager_set_mouse(JWidget widget)
     JMessage msg;
 
     if (widget)
-      widget_parents = jwidget_get_parents(widget, false);
+      widget_parents = widget->getParents(false);
     else
       widget_parents = jlist_new();
 
     /* fetch the mouse */
 
     if (mouse_widget) {
-      JList mouse_parents = jwidget_get_parents(mouse_widget, true);
+      JList mouse_parents = mouse_widget->getParents(true);
       msg = jmessage_new(JM_MOUSELEAVE);
 
       JI_LIST_FOR_EACH(mouse_parents, link) {
@@ -994,7 +994,7 @@ void _jmanager_close_window(JWidget manager, Frame* window, bool redraw_backgrou
   JMessage msg;
   JRegion reg1;
 
-  if (!jwidget_has_child(manager, window))
+  if (!manager->hasChild(window))
     return;
 
   if (redraw_background)

@@ -65,15 +65,6 @@ void jwidget_remove_child(JWidget widget, JWidget child);
 void jwidget_replace_child(JWidget widget, JWidget old_child,
 			   JWidget new_child);
 
-/* parents and children */
-
-JWidget jwidget_get_parent(JWidget widget);
-JWidget jwidget_get_manager(JWidget widget);
-JList jwidget_get_parents(JWidget widget, bool ascendant);
-JList jwidget_get_children(JWidget widget);
-JWidget jwidget_pick(JWidget widget, int x, int y);
-bool jwidget_has_child(JWidget widget, JWidget child);
-
 /* position and geometry */
 
 void jwidget_relayout(JWidget widget);

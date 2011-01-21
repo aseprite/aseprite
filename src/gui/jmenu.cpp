@@ -494,8 +494,7 @@ static bool menubox_msg_proc(Widget* widget, JMessage msg)
 	// the widget
 	if (msg->type == JM_BUTTONPRESSED
 	    && MBOX(widget)->base != NULL) {
-	  Widget* picked = jwidget_pick(ji_get_default_manager(),
-					msg->mouse.x, msg->mouse.y);
+	  Widget* picked = ji_get_default_manager()->pick(msg->mouse.x, msg->mouse.y);
 
 	  // If one of these conditions are accomplished we have to
 	  // close all menus (back to menu-bar or close the popuped
@@ -517,7 +516,7 @@ static bool menubox_msg_proc(Widget* widget, JMessage msg)
 	}
 
 	// Get the widget below the mouse cursor 
-	picked = jwidget_pick(menu, msg->mouse.x, msg->mouse.y);
+	picked = menu->pick(msg->mouse.x, msg->mouse.y);
 	if (picked) {
 	  if ((picked->type == JI_MENUITEM) &&
 	      !(picked->flags & JI_DISABLED)) {

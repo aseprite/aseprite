@@ -99,9 +99,7 @@ bool ColorButton::onProcessMessage(JMessage msg)
 
     case JM_MOTION:
       if (this->hasCapture()) {
-	JWidget picked = jwidget_pick(ji_get_default_manager(),
-				      msg->mouse.x,
-				      msg->mouse.y);
+	Widget* picked = ji_get_default_manager()->pick(msg->mouse.x, msg->mouse.y);
 	Color color = this->m_color;
 
 	if (picked && picked != this) {
@@ -232,7 +230,7 @@ void ColorButton::openSelectorDialog()
 
   window->position_window(x, y);
 
-  jmanager_dispatch_messages(jwidget_get_manager(window));
+  jmanager_dispatch_messages(window->getManager());
   jwidget_relayout(window);
 
   /* setup the hot-region */

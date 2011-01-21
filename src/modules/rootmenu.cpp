@@ -338,7 +338,7 @@ static JWidget convert_xmlelem_to_menuitem(TiXmlElement* elem)
 
 static void apply_shortcut_to_menuitems_with_command(JWidget menu, Command *command, Params* params, JAccel accel)
 {
-  JList children = jwidget_get_children(menu);
+  JList children = menu->getChildren();
   JWidget menuitem, submenu;
   JLink link;
 

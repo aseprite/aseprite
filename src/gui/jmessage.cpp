@@ -146,6 +146,6 @@ void jmessage_broadcast_to_parents(JMessage msg, JWidget widget)
 
   if (widget && widget->type != JI_MANAGER) {
     jmessage_add_dest(msg, widget);
-    jmessage_broadcast_to_parents(msg, jwidget_get_parent(widget));
+    jmessage_broadcast_to_parents(msg, widget->getParent());
   }
 }

@@ -201,15 +201,14 @@ static bool listbox_msg_proc(JWidget widget, JMessage msg)
 	  JWidget picked;
 
 	  if (view) {
-	    picked = jwidget_pick(jview_get_viewport(view),
-				  msg->mouse.x, msg->mouse.y);
+	    picked = jview_get_viewport(view)->pick(msg->mouse.x, msg->mouse.y);
 	  }
 	  else {
-	    picked = jwidget_pick(widget, msg->mouse.x, msg->mouse.y);
+	    picked = widget->pick(msg->mouse.x, msg->mouse.y);
 	  }
 
 	  /* if the picked widget is a child of the list, select it */
-	  if (picked && jwidget_has_child(widget, picked))
+	  if (picked && widget->hasChild(picked))
 	    jlistbox_select_child(widget, picked);
 	}
 

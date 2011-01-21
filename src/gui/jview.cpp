@@ -172,7 +172,7 @@ void jview_set_size(JWidget widget, int w, int h)
       }
     }
 
-    if (jwidget_has_child(widget, view->scrollbar_h)) {
+    if (widget->hasChild(view->scrollbar_h)) {
       rect = jrect_new(pos->x1, pos->y2,
 		       pos->x1+jrect_w(pos), pos->y2+BAR_SIZE);
       jwidget_set_rect(view->scrollbar_h, rect);
@@ -183,7 +183,7 @@ void jview_set_size(JWidget widget, int w, int h)
     else
       view->scrollbar_h->setVisible(false);
 
-    if (jwidget_has_child(widget, view->scrollbar_v)) {
+    if (widget->hasChild(view->scrollbar_v)) {
       rect = jrect_new(pos->x2, pos->y1,
 		       pos->x2+BAR_SIZE, pos->y1+jrect_h(pos));
       jwidget_set_rect(view->scrollbar_v, rect);
@@ -301,8 +301,8 @@ static void view_plain_update(JWidget widget)
   viewport_needed_size(view->viewport, &req_w, &req_h);
   jview_set_size(widget, req_w, req_h);
 
-  if ((jwidget_has_child(widget, view->scrollbar_h)) ||
-      (jwidget_has_child(widget, view->scrollbar_v))) {
+  if ((widget->hasChild(view->scrollbar_h)) ||
+      (widget->hasChild(view->scrollbar_v))) {
     viewport_needed_size(view->viewport, &req_w, &req_h);
     jview_set_size(widget, req_w, req_h);
   }

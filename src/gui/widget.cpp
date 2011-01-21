@@ -555,24 +555,6 @@ void jwidget_replace_child(JWidget widget, JWidget old_child, JWidget new_child)
 /**********************************************************************/
 /* parents and children */
 
-JWidget jwidget_get_parent(JWidget widget)
-{ return widget->getParent(); }
-
-JWidget jwidget_get_manager(JWidget widget)
-{ return widget->getManager(); }
-
-JList jwidget_get_parents(JWidget widget, bool ascendant)
-{ return widget->getParents(ascendant); }
-
-JList jwidget_get_children(JWidget widget)
-{ return widget->getChildren(); }
-
-JWidget jwidget_pick(JWidget widget, int x, int y)
-{ return widget->pick(x, y); }
-
-bool jwidget_has_child(JWidget widget, JWidget child)
-{ return widget->hasChild(child); }
-
 Widget* Widget::getRoot()
 {
   Widget* widget = this;
@@ -755,7 +737,7 @@ JRegion jwidget_get_drawable_region(JWidget widget, int flags)
   /* cut the top windows areas */
   if (flags & JI_GDR_CUTTOPWINDOWS) {
     window = widget->getRoot();
-    manager = window ? jwidget_get_manager(window): NULL;
+    manager = window ? window->getManager(): NULL;
 
     while (manager) {
       windows_list = manager->children;
