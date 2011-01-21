@@ -29,8 +29,8 @@
 #include "modules/gfx.h"
 #include "modules/gui.h"
 #include "modules/rootmenu.h"
-#include "modules/skinneable_theme.h"
 #include "raster/raster.h"
+#include "skin_theme.h"
 #include "sprite_wrappers.h"
 #include "ui_context.h"
 #include "undoable.h"
@@ -1115,7 +1115,7 @@ static void anieditor_draw_layer(JWidget widget, JRect clip, int layer_index)
 
 static void anieditor_draw_layer_padding(JWidget widget)
 {
-  SkinneableTheme* theme = static_cast<SkinneableTheme*>(widget->theme);
+  SkinTheme* theme = static_cast<SkinTheme*>(widget->theme);
   AniEditor* anieditor = anieditor_data(widget);
   int layer_index = anieditor->nlayers-1;
   int x1, y1, x2, y2;
@@ -1138,7 +1138,7 @@ static void anieditor_draw_layer_padding(JWidget widget)
 
 static void anieditor_draw_cel(JWidget widget, JRect clip, int layer_index, int frame)
 {
-  SkinneableTheme* theme = static_cast<SkinneableTheme*>(widget->theme);
+  SkinTheme* theme = static_cast<SkinTheme*>(widget->theme);
   AniEditor* anieditor = anieditor_data(widget);
   Layer *layer = anieditor->layers[layer_index];
   bool selected_layer = (layer == anieditor->sprite->getCurrentLayer());

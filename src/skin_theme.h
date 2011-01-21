@@ -16,8 +16,8 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifndef MODULES_SKINNEABLE_THEME_H_INCLUDED
-#define MODULES_SKINNEABLE_THEME_H_INCLUDED
+#ifndef SKIN_THEME_H_INCLUDED
+#define SKIN_THEME_H_INCLUDED
 
 #include <allegro/color.h>
 #include <map>
@@ -418,7 +418,9 @@ enum {
   PARTS
 };
 
-class SkinneableTheme : public jtheme
+// This is the GUI theme used by ASE (which use images from data/skins
+// directory).
+class SkinTheme : public jtheme
 {
   std::string m_selected_skin;
   BITMAP* m_sheet_bmp;
@@ -427,8 +429,8 @@ class SkinneableTheme : public jtheme
   std::map<std::string, BITMAP*> m_toolicon;
 
 public:
-  SkinneableTheme();
-  ~SkinneableTheme();
+  SkinTheme();
+  ~SkinTheme();
 
   void reload_skin();
 

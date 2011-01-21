@@ -34,11 +34,11 @@
 #include "modules/gfx.h"
 #include "modules/gui.h"
 #include "modules/palettes.h"
-#include "modules/skinneable_theme.h"
 #include "raster/image.h"
 #include "raster/palette.h"
 #include "raster/sprite.h"
 #include "raster/undo.h"
+#include "skin_theme.h"
 #include "sprite_wrappers.h"
 #include "ui_context.h"
 #include "widgets/color_bar.h"
@@ -172,7 +172,7 @@ bool ColorBar::onProcessMessage(JMessage msg)
       	ASSERT(m_colorsPerColumn*m_columns <= 256);
       }
 
-      SkinneableTheme* theme = static_cast<SkinneableTheme*>(this->theme);
+      SkinTheme* theme = static_cast<SkinTheme*>(this->theme);
       BITMAP *doublebuffer = create_bitmap(jrect_w(&msg->draw.rect),
 					   jrect_h(&msg->draw.rect));
       int imgtype = app_get_current_image_type();

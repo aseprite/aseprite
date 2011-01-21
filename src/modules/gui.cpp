@@ -44,9 +44,9 @@
 #include "modules/gui.h"
 #include "modules/palettes.h"
 #include "modules/rootmenu.h"
-#include "modules/skinneable_theme.h"
 #include "raster/sprite.h"
 #include "resource_finder.h"
+#include "skin_theme.h"
 #include "sprite_wrappers.h"
 #include "tools/toolbox.h"
 #include "ui_context.h"
@@ -297,7 +297,7 @@ gfx_done:;
   jwidget_add_hook(manager, JI_WIDGET, manager_msg_proc, NULL);
 
   /* setup the standard jinete theme for widgets */
-  ji_set_theme(ase_theme = new SkinneableTheme());
+  ji_set_theme(ase_theme = new SkinTheme());
 
   // Setup the handler for window-resize events
   set_resize_callback(resize_callback);
@@ -617,7 +617,7 @@ static void destroy_default_font()
 static void reload_default_font()
 {
   JTheme theme = ji_get_theme();
-  SkinneableTheme* skinneable_theme = static_cast<SkinneableTheme*>(theme);
+  SkinTheme* skin_theme = static_cast<SkinTheme*>(theme);
   const char *user_font;
 
   destroy_default_font();
@@ -629,8 +629,8 @@ static void reload_default_font()
   if ((user_font) && (*user_font))
     rf.addPath(user_font);
 
-  // TODO This should be in SkinneableTheme class
-  rf.findInDataDir(skinneable_theme->get_font_filename().c_str());
+  // TODO This should be in SkinTheme class
+  rf.findInDataDir(skin_theme->get_font_filename().c_str());
 
   // Try to load the font
   while (const char* path = rf.next()) {

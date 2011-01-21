@@ -27,8 +27,8 @@
 #include "gui/jintern.h"
 #include "loadpng.h"
 #include "modules/gui.h"
-#include "modules/skinneable_theme.h"
 #include "resource_finder.h"
+#include "skin_theme.h"
 #include "xml_exception.h"
 
 #include "tinyxml.h"
@@ -69,9 +69,9 @@ static struct
   { "eyedropper",	0, 0 },	// JI_CURSOR_EYEDROPPER
 };
 
-SkinneableTheme::SkinneableTheme()
+SkinTheme::SkinTheme()
 {
-  this->name = "Skinneable Theme";
+  this->name = "Skin Theme";
   m_selected_skin = get_config_string("Skin", "Selected", "default_skin");
 
   // Initialize all graphics in NULL (these bitmaps are loaded from the skin)
@@ -136,7 +136,7 @@ SkinneableTheme::SkinneableTheme()
   reload_skin();
 }
 
-SkinneableTheme::~SkinneableTheme()
+SkinTheme::~SkinTheme()
 {
   for (int c=0; c<JI_CURSORS; ++c)
     if (m_cursors[c])
@@ -155,7 +155,7 @@ SkinneableTheme::~SkinneableTheme()
 }
 
 // Call ji_regen_theme after this
-void SkinneableTheme::reload_skin()
+void SkinTheme::reload_skin()
 {
   if (m_sheet_bmp) {
     destroy_bitmap(m_sheet_bmp);
@@ -185,12 +185,12 @@ void SkinneableTheme::reload_skin()
     throw base::Exception("Error loading %s file", sheet_filename.c_str());
 }
 
-std::string SkinneableTheme::get_font_filename() const
+std::string SkinTheme::get_font_filename() const
 {
   return "skins/" + m_selected_skin + "/font.pcx";
 }
 
-void SkinneableTheme::regen()
+void SkinTheme::regen()
 {
   check_icon_size = 8 * jguiscale();
   radio_icon_size = 8 * jguiscale();
@@ -317,7 +317,7 @@ void SkinneableTheme::regen()
   }
 }
 
-BITMAP* SkinneableTheme::cropPartFromSheet(BITMAP* bmp, int x, int y, int w, int h, bool cursor)
+BITMAP* SkinTheme::cropPartFromSheet(BITMAP* bmp, int x, int y, int w, int h, bool cursor)
 {
   int colordepth = (cursor ? bitmap_color_depth(screen): 32);
 
@@ -346,7 +346,7 @@ BITMAP* SkinneableTheme::cropPartFromSheet(BITMAP* bmp, int x, int y, int w, int
   return ji_apply_guiscale(bmp);
 }
 
-BITMAP* SkinneableTheme::set_cursor(int type, int* focus_x, int* focus_y)
+BITMAP* SkinTheme::set_cursor(int type, int* focus_x, int* focus_y)
 {
   if (type == JI_CURSOR_NULL) {
     *focus_x = 0;
@@ -362,7 +362,7 @@ BITMAP* SkinneableTheme::set_cursor(int type, int* focus_x, int* focus_y)
   }
 }
 
-void SkinneableTheme::init_widget(JWidget widget)
+void SkinTheme::init_widget(JWidget widget)
 {
 #define BORDER(n)			\
   widget->border_width.l = (n);		\
@@ -528,7 +528,7 @@ void SkinneableTheme::init_widget(JWidget widget)
 	    Button* button = new Button("");
 	    setup_bevels(button, 0, 0, 0, 0);
 	    jwidget_add_hook(button, JI_WIDGET,
-			     &SkinneableTheme::theme_frame_button_msg_proc, NULL);
+			     &SkinTheme::theme_frame_button_msg_proc, NULL);
 	    jwidget_decorative(button, true);
 	    jwidget_add_child(widget, button);
 	    button->setName("theme_close_button");
@@ -552,12 +552,12 @@ void SkinneableTheme::init_widget(JWidget widget)
   }
 }
 
-JRegion SkinneableTheme::get_window_mask(JWidget widget)
+JRegion SkinTheme::get_window_mask(JWidget widget)
 {
   return jregion_new(widget->rc, 1);
 }
 
-void SkinneableTheme::map_decorative_widget(JWidget widget)
+void SkinTheme::map_decorative_widget(JWidget widget)
 {
   if (widget->name != NULL &&
       strcmp(widget->name, "theme_close_button") == 0) {
@@ -576,42 +576,42 @@ void SkinneableTheme::map_decorative_widget(JWidget widget)
   }
 }
 
-int SkinneableTheme::color_foreground()
+int SkinTheme::color_foreground()
 {
   return COLOR_FOREGROUND;
 }
 
-int SkinneableTheme::color_disabled()
+int SkinTheme::color_disabled()
 {
   return COLOR_DISABLED;
 }
 
-int SkinneableTheme::color_face()
+int SkinTheme::color_face()
 {
   return COLOR_FACE;
 }
 
-int SkinneableTheme::color_hotface()
+int SkinTheme::color_hotface()
 {
   return COLOR_HOTFACE;
 }
 
-int SkinneableTheme::color_selected()
+int SkinTheme::color_selected()
 {
   return COLOR_SELECTED;
 }
 
-int SkinneableTheme::color_background()
+int SkinTheme::color_background()
 {
   return COLOR_BACKGROUND;
 }
 
-void SkinneableTheme::draw_box(JWidget widget, JRect clip)
+void SkinTheme::draw_box(JWidget widget, JRect clip)
 {
   jdraw_rectfill(clip, BGCOLOR);
 }
 
-void SkinneableTheme::draw_button(ButtonBase* widget, JRect clip)
+void SkinTheme::draw_button(ButtonBase* widget, JRect clip)
 {
   BITMAP* icon_bmp = widget->getButtonIcon();
   int icon_align = widget->getButtonIconAlign();
@@ -703,7 +703,7 @@ void SkinneableTheme::draw_button(ButtonBase* widget, JRect clip)
   }
 }
 
-void SkinneableTheme::draw_check(ButtonBase* widget, JRect clip)
+void SkinTheme::draw_check(ButtonBase* widget, JRect clip)
 {
   struct jrect box, text, icon;
   int bg;
@@ -744,12 +744,12 @@ void SkinneableTheme::draw_check(ButtonBase* widget, JRect clip)
   }
 }
 
-void SkinneableTheme::draw_grid(JWidget widget, JRect clip)
+void SkinTheme::draw_grid(JWidget widget, JRect clip)
 {
   jdraw_rectfill(clip, BGCOLOR);
 }
 
-void SkinneableTheme::draw_entry(Entry* widget, JRect clip)
+void SkinTheme::draw_entry(Entry* widget, JRect clip)
 {
   bool password = widget->isPassword();
   int scroll, caret, state, selbeg, selend;
@@ -821,7 +821,7 @@ void SkinneableTheme::draw_entry(Entry* widget, JRect clip)
     draw_entry_caret(widget, x, y);
 }
 
-void SkinneableTheme::draw_label(JWidget widget, JRect clip)
+void SkinTheme::draw_label(JWidget widget, JRect clip)
 {
   int bg = BGCOLOR;
 
@@ -830,7 +830,7 @@ void SkinneableTheme::draw_label(JWidget widget, JRect clip)
   draw_textstring(NULL, -1, bg, false, widget, widget->rc, 0);
 }
 
-void SkinneableTheme::draw_link_label(JWidget widget, JRect clip)
+void SkinTheme::draw_link_label(JWidget widget, JRect clip)
 {
   int bg = BGCOLOR;
 
@@ -847,12 +847,12 @@ void SkinneableTheme::draw_link_label(JWidget widget, JRect clip)
   }
 }
 
-void SkinneableTheme::draw_listbox(JWidget widget, JRect clip)
+void SkinTheme::draw_listbox(JWidget widget, JRect clip)
 {
   jdraw_rectfill(widget->rc, COLOR_BACKGROUND);
 }
 
-void SkinneableTheme::draw_listitem(JWidget widget, JRect clip)
+void SkinTheme::draw_listitem(JWidget widget, JRect clip)
 {
   int fg, bg;
   int x, y;
@@ -892,12 +892,12 @@ void SkinneableTheme::draw_listitem(JWidget widget, JRect clip)
   }
 }
 
-void SkinneableTheme::draw_menu(JWidget widget, JRect clip)
+void SkinTheme::draw_menu(JWidget widget, JRect clip)
 {
   jdraw_rectfill(widget->rc, BGCOLOR);
 }
 
-void SkinneableTheme::draw_menuitem(JWidget widget, JRect clip)
+void SkinTheme::draw_menuitem(JWidget widget, JRect clip)
 {
   int c, bg, fg, bar;
   int x1, y1, x2, y2;
@@ -1009,12 +1009,12 @@ void SkinneableTheme::draw_menuitem(JWidget widget, JRect clip)
   }
 }
 
-void SkinneableTheme::draw_panel(JWidget widget, JRect clip)
+void SkinTheme::draw_panel(JWidget widget, JRect clip)
 {
   jdraw_rectfill(widget->rc, get_panel_face_color());
 }
 
-void SkinneableTheme::draw_radio(ButtonBase* widget, JRect clip)
+void SkinTheme::draw_radio(ButtonBase* widget, JRect clip)
 {
   struct jrect box, text, icon;
   int bg = BGCOLOR;
@@ -1055,7 +1055,7 @@ void SkinneableTheme::draw_radio(ButtonBase* widget, JRect clip)
   }
 }
 
-void SkinneableTheme::draw_separator(JWidget widget, JRect clip)
+void SkinTheme::draw_separator(JWidget widget, JRect clip)
 {
   int x1, y1, x2, y2;
 
@@ -1107,7 +1107,7 @@ static bool my_add_clip_rect(BITMAP *bitmap, int x1, int y1, int x2, int y2)
   return true;
 }
 
-void SkinneableTheme::draw_slider(Slider* widget, JRect clip)
+void SkinTheme::draw_slider(Slider* widget, JRect clip)
 {
   int x, x1, y1, x2, y2;
   int min, max, value;
@@ -1195,7 +1195,7 @@ void SkinneableTheme::draw_slider(Slider* widget, JRect clip)
   }
 }
 
-void SkinneableTheme::draw_combobox_entry(Entry* widget, JRect clip)
+void SkinTheme::draw_combobox_entry(Entry* widget, JRect clip)
 {
   bool password = widget->isPassword();
   int scroll, caret, state, selbeg, selend;
@@ -1267,7 +1267,7 @@ void SkinneableTheme::draw_combobox_entry(Entry* widget, JRect clip)
     draw_entry_caret(widget, x, y);
 }
 
-void SkinneableTheme::draw_combobox_button(ButtonBase* widget, JRect clip)
+void SkinTheme::draw_combobox_button(ButtonBase* widget, JRect clip)
 {
   BITMAP* icon_bmp = m_part[PART_COMBOBOX_ARROW];
   struct jrect icon;
@@ -1315,14 +1315,14 @@ void SkinneableTheme::draw_combobox_button(ButtonBase* widget, JRect clip)
   draw_trans_sprite(ji_screen, icon_bmp, icon.x1, icon.y1);
 }
 
-void SkinneableTheme::draw_textbox(JWidget widget, JRect clip)
+void SkinTheme::draw_textbox(JWidget widget, JRect clip)
 {
   _ji_theme_textbox_draw(ji_screen, widget, NULL, NULL,
 			 widget->theme->textbox_bg_color,
 			 widget->theme->textbox_fg_color);
 }
 
-void SkinneableTheme::draw_view(JWidget widget, JRect clip)
+void SkinTheme::draw_view(JWidget widget, JRect clip)
 {
   draw_bounds_nw(ji_screen,
 		 widget->rc->x1,
@@ -1334,7 +1334,7 @@ void SkinneableTheme::draw_view(JWidget widget, JRect clip)
 		 COLOR_BACKGROUND);
 }
 
-void SkinneableTheme::draw_view_scrollbar(JWidget widget, JRect clip)
+void SkinTheme::draw_view_scrollbar(JWidget widget, JRect clip)
 {
   int x1, y1, x2, y2;
   int u1, v1, u2, v2;
@@ -1373,12 +1373,12 @@ void SkinneableTheme::draw_view_scrollbar(JWidget widget, JRect clip)
 		 get_scrollbar_thumb_face_color());
 }
 
-void SkinneableTheme::draw_view_viewport(JWidget widget, JRect clip)
+void SkinTheme::draw_view_viewport(JWidget widget, JRect clip)
 {
   jdraw_rectfill(widget->rc, BGCOLOR);
 }
 
-void SkinneableTheme::draw_frame(Frame* window, JRect clip)
+void SkinTheme::draw_frame(Frame* window, JRect clip)
 {
   JRect pos = jwidget_get_rect(window);
   JRect cpos = jwidget_get_child_rect(window);
@@ -1420,7 +1420,7 @@ void SkinneableTheme::draw_frame(Frame* window, JRect clip)
   jrect_free(cpos);
 }
 
-void SkinneableTheme::draw_frame_button(ButtonBase* widget, JRect clip)
+void SkinTheme::draw_frame_button(ButtonBase* widget, JRect clip)
 {
   int part;
 
@@ -1435,7 +1435,7 @@ void SkinneableTheme::draw_frame_button(ButtonBase* widget, JRect clip)
   draw_trans_sprite(ji_screen, m_part[part], widget->rc->x1, widget->rc->y1);
 }
 
-int SkinneableTheme::get_bg_color(JWidget widget)
+int SkinTheme::get_bg_color(JWidget widget)
 {
   int c = jwidget_get_bg_color(widget);
   int decorative = jwidget_is_decorative(widget);
@@ -1444,7 +1444,7 @@ int SkinneableTheme::get_bg_color(JWidget widget)
 				   COLOR_FACE);
 }
 
-void SkinneableTheme::draw_textstring(const char *t, int fg_color, int bg_color,
+void SkinTheme::draw_textstring(const char *t, int fg_color, int bg_color,
 				       bool fill_bg, JWidget widget, const JRect rect,
 				       int selected_offset)
 {
@@ -1514,7 +1514,7 @@ void SkinneableTheme::draw_textstring(const char *t, int fg_color, int bg_color,
   }
 }
 
-void SkinneableTheme::draw_entry_caret(Entry* widget, int x, int y)
+void SkinTheme::draw_entry_caret(Entry* widget, int x, int y)
 {
   int h = jwidget_get_text_height(widget);
 
@@ -1522,7 +1522,7 @@ void SkinneableTheme::draw_entry_caret(Entry* widget, int x, int y)
   vline(ji_screen, x+1, y-1, y+h, COLOR_FOREGROUND);
 }
 
-BITMAP* SkinneableTheme::get_toolicon(const char* tool_id) const
+BITMAP* SkinTheme::get_toolicon(const char* tool_id) const
 {
   std::map<std::string, BITMAP*>::const_iterator it = m_toolicon.find(tool_id);
   if (it != m_toolicon.end())
@@ -1591,7 +1591,7 @@ BITMAP* SkinneableTheme::get_toolicon(const char* tool_id) const
     set_clip_rect(_bmp, cx1, cy1, cx2, cy2);				\
   }
 
-void SkinneableTheme::draw_bounds_array(BITMAP* bmp, int x1, int y1, int x2, int y2, int parts[8])
+void SkinTheme::draw_bounds_array(BITMAP* bmp, int x1, int y1, int x2, int y2, int parts[8])
 {
   int nw = parts[0];
   int n  = parts[1];
@@ -1608,7 +1608,7 @@ void SkinneableTheme::draw_bounds_array(BITMAP* bmp, int x1, int y1, int x2, int
 		       se, s, sw, w, draw_trans_sprite);
 }
 
-void SkinneableTheme::draw_bounds_nw(BITMAP* bmp, int x1, int y1, int x2, int y2, int nw, int bg)
+void SkinTheme::draw_bounds_nw(BITMAP* bmp, int x1, int y1, int x2, int y2, int nw, int bg)
 {
   set_alpha_blender();
   draw_bounds_template(bmp,
@@ -1626,7 +1626,7 @@ void SkinneableTheme::draw_bounds_nw(BITMAP* bmp, int x1, int y1, int x2, int y2
   }
 }
 
-void SkinneableTheme::draw_bounds_nw2(BITMAP* bmp, int x1, int y1, int x2, int y2, int x_mid, int nw1, int nw2, int bg1, int bg2)
+void SkinTheme::draw_bounds_nw2(BITMAP* bmp, int x1, int y1, int x2, int y2, int x_mid, int nw1, int nw2, int bg1, int bg2)
 {
   int cx1, cy1, cx2, cy2;
   get_clip_rect(bmp, &cx1, &cy1, &cx2, &cy2);
@@ -1642,7 +1642,7 @@ void SkinneableTheme::draw_bounds_nw2(BITMAP* bmp, int x1, int y1, int x2, int y
   set_clip_rect(bmp, cx1, cy1, cx2, cy2);
 }
 
-void SkinneableTheme::draw_part_as_hline(BITMAP* bmp, int x1, int y1, int x2, int y2, int part)
+void SkinTheme::draw_part_as_hline(BITMAP* bmp, int x1, int y1, int x2, int y2, int part)
 {
   int x;
 
@@ -1665,7 +1665,7 @@ void SkinneableTheme::draw_part_as_hline(BITMAP* bmp, int x1, int y1, int x2, in
   }
 }
 
-void SkinneableTheme::draw_part_as_vline(BITMAP* bmp, int x1, int y1, int x2, int y2, int part)
+void SkinTheme::draw_part_as_vline(BITMAP* bmp, int x1, int y1, int x2, int y2, int part)
 {
   int y;
 
@@ -1688,7 +1688,7 @@ void SkinneableTheme::draw_part_as_vline(BITMAP* bmp, int x1, int y1, int x2, in
   }
 }
 
-void SkinneableTheme::draw_bevel_box(int x1, int y1, int x2, int y2, int c1, int c2, int *bevel)
+void SkinTheme::draw_bevel_box(int x1, int y1, int x2, int y2, int c1, int c2, int *bevel)
 {
   hline(ji_screen, x1+bevel[0], y1, x2-bevel[1], c1); /* top */
   hline(ji_screen, x1+bevel[2], y2, x2-bevel[3], c2); /* bottom */
@@ -1703,7 +1703,7 @@ void SkinneableTheme::draw_bevel_box(int x1, int y1, int x2, int y2, int c1, int
   line(ji_screen, x2-bevel[3], y2, x2, y2-bevel[3], c2); /* bottom-right */
 }
 
-void SkinneableTheme::less_bevel(int *bevel)
+void SkinTheme::less_bevel(int *bevel)
 {
   if (bevel[0] > 0) --bevel[0];
   if (bevel[1] > 0) --bevel[1];
@@ -1712,7 +1712,7 @@ void SkinneableTheme::less_bevel(int *bevel)
 }
 
 /* controls the "X" button in a window to close it */
-bool SkinneableTheme::theme_frame_button_msg_proc(JWidget widget, JMessage msg)
+bool SkinTheme::theme_frame_button_msg_proc(JWidget widget, JMessage msg)
 {
   switch (msg->type) {
 
@@ -1725,7 +1725,7 @@ bool SkinneableTheme::theme_frame_button_msg_proc(JWidget widget, JMessage msg)
 	ButtonBase* button = dynamic_cast<ButtonBase*>(widget);
 	ASSERT(button && "theme_frame_button_msg_proc() must be hooked in a ButtonBase widget");
 
-	((SkinneableTheme*)widget->theme)->draw_frame_button(button, &msg->draw.rect);
+	((SkinTheme*)widget->theme)->draw_frame_button(button, &msg->draw.rect);
       }
       return true;
 

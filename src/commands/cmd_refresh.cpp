@@ -30,9 +30,9 @@
 
 #include "app.h"
 #include "commands/command.h"
-#include "modules/skinneable_theme.h"
-#include "widgets/statebar.h"
+#include "skin_theme.h"
 #include "sprite_wrappers.h"
+#include "widgets/statebar.h"
 
 //////////////////////////////////////////////////////////////////////
 // refresh
@@ -62,7 +62,7 @@ void RefreshCommand::onExecute(Context* context)
 
   // Reload skin
   {
-    SkinneableTheme* theme = (SkinneableTheme*)ji_get_theme();
+    SkinTheme* theme = (SkinTheme*)ji_get_theme();
     theme->reload_skin();
     ji_regen_theme();
   }

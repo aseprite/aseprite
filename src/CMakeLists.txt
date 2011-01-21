@@ -79,6 +79,7 @@ add_library(aseprite-library
   log.cpp
   recent_files.cpp
   resource_finder.cpp
+  skin_theme.cpp
   ui_context.cpp
   undoable.cpp
   xml_exception.cpp
@@ -192,7 +193,6 @@ add_library(aseprite-library
   modules/gui.cpp
   modules/palettes.cpp
   modules/rootmenu.cpp
-  modules/skinneable_theme.cpp
   raster/algo.cpp
   raster/algofill.cpp
   raster/algo_polygon.cpp

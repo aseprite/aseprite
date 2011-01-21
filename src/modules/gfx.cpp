@@ -35,10 +35,10 @@
 #include "modules/gfx.h"
 #include "modules/gui.h"
 #include "modules/palettes.h"
-#include "modules/skinneable_theme.h"
 #include "raster/blend.h"
 #include "raster/image.h"
 #include "raster/palette.h"
+#include "skin_theme.h"
 #include "widgets/editor.h"
 
 static BITMAP* gfx_bmps[GFX_BITMAP_COUNT];
@@ -497,7 +497,7 @@ void draw_color_button(BITMAP* bmp,
 		       bool outer_se, bool outer_s, bool outer_sw, bool outer_w,
 		       int imgtype, const Color& color, bool hot, bool drag)
 {
-  SkinneableTheme* theme = (SkinneableTheme*)ji_get_theme();
+  SkinTheme* theme = (SkinTheme*)ji_get_theme();
   int scale = jguiscale();
 
   // Draw background (the color)

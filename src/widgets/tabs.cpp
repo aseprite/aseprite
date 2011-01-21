@@ -26,7 +26,7 @@
 #include "gui/jintern.h"
 #include "modules/gfx.h"
 #include "modules/gui.h"
-#include "modules/skinneable_theme.h"
+#include "skin_theme.h"
 #include "widgets/tabs.h"
 
 #define ARROW_W		(12*jguiscale())
@@ -187,7 +187,7 @@ void* Tabs::getSelectedTab()
 
 bool Tabs::onProcessMessage(JMessage msg)
 {
-  SkinneableTheme* theme = static_cast<SkinneableTheme*>(this->theme);
+  SkinTheme* theme = static_cast<SkinTheme*>(this->theme);
 
   switch (msg->type) {
 
@@ -407,7 +407,7 @@ void Tabs::drawTab(BITMAP* bmp, JRect box, Tab* tab, int y_delta, bool selected)
   if (box->x1 >= this->rc->x2 || box->x2 <= this->rc->x1)
     return;
 
-  SkinneableTheme* theme = static_cast<SkinneableTheme*>(this->theme);
+  SkinTheme* theme = static_cast<SkinTheme*>(this->theme);
   int text_color;
   int face_color;
 
@@ -592,7 +592,7 @@ int Tabs::calcTabWidth(Tab* tab)
 {
   int border = 4*jguiscale();
 #ifdef CLOSE_BUTTON_IN_EACH_TAB
-  SkinneableTheme* theme = static_cast<SkinneableTheme*>(this->theme);
+  SkinTheme* theme = static_cast<SkinTheme*>(this->theme);
   int close_icon_w = theme->get_part(PART_WINDOW_CLOSE_BUTTON_NORMAL)->w;
   return (border + text_length(getFont(), tab->text.c_str()) + border + close_icon_w + border);
 #else

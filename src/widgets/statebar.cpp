@@ -33,12 +33,12 @@
 #include "modules/gfx.h"
 #include "modules/gui.h"
 #include "modules/palettes.h"
-#include "modules/skinneable_theme.h"
 #include "raster/cel.h"
 #include "raster/image.h"
 #include "raster/layer.h"
 #include "raster/sprite.h"
 #include "raster/undo.h"
+#include "skin_theme.h"
 #include "sprite_wrappers.h"
 #include "tools/tool.h"
 #include "ui_context.h"
@@ -392,7 +392,7 @@ bool StatusBar::onProcessMessage(JMessage msg)
       break;
 
     case JM_DRAW: {
-      SkinneableTheme* theme = static_cast<SkinneableTheme*>(this->theme);
+      SkinTheme* theme = static_cast<SkinTheme*>(this->theme);
       int text_color = ji_color_foreground();
       int face_color = ji_color_face();
       JRect rc = jwidget_get_rect(this);

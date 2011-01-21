@@ -34,9 +34,10 @@
 #include "modules/gfx.h"
 #include "modules/gui.h"
 #include "modules/palettes.h"
-#include "modules/skinneable_theme.h"
 #include "raster/raster.h"
 #include "settings/settings.h"
+#include "skin_theme.h"
+#include "sprite_wrappers.h"
 #include "tools/tool.h"
 #include "ui_context.h"
 #include "util/boundary.h"
@@ -46,7 +47,6 @@
 #include "widgets/editor.h"
 #include "widgets/editor/pixels_movement.h"
 #include "widgets/statebar.h"
-#include "sprite_wrappers.h"
 
 #define has_shifts(msg,shift)			\
   (((msg)->any.shifts & (shift)) == (shift))
@@ -63,7 +63,7 @@ static bool editor_view_msg_proc(JWidget widget, JMessage msg);
 JWidget editor_view_new()
 {
   JWidget widget = jview_new();
-  SkinneableTheme* theme = static_cast<SkinneableTheme*>(widget->theme);
+  SkinTheme* theme = static_cast<SkinTheme*>(widget->theme);
   int l = theme->get_part(PART_EDITOR_SELECTED_W)->w;
   int t = theme->get_part(PART_EDITOR_SELECTED_N)->h;
   int r = theme->get_part(PART_EDITOR_SELECTED_E)->w;
@@ -861,7 +861,7 @@ static bool editor_view_msg_proc(JWidget widget, JMessage msg)
 	JWidget viewport = jview_get_viewport(widget);
 	JWidget child = reinterpret_cast<JWidget>(jlist_first_data(viewport->children));
 	JRect pos = jwidget_get_rect(widget);
-	SkinneableTheme* theme = static_cast<SkinneableTheme*>(widget->theme);
+	SkinTheme* theme = static_cast<SkinTheme*>(widget->theme);
 
 	theme->draw_bounds_nw(ji_screen,
 			      pos->x1, pos->y1,
@@ -905,7 +905,7 @@ bool Editor::onProcessMessage(JMessage msg)
       break;
 
     case JM_DRAW: {
-      SkinneableTheme* theme = static_cast<SkinneableTheme*>(this->theme);
+      SkinTheme* theme = static_cast<SkinTheme*>(this->theme);
 
       if (m_old_cursor_thick == 0) {
       	m_old_cursor_thick = m_cursor_thick;
