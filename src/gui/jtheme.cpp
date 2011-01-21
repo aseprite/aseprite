@@ -72,17 +72,6 @@ void ji_set_theme(JTheme theme)
   }
 }
 
-void ji_set_standard_theme()
-{
-  if (!ji_standard_theme) {
-    ji_standard_theme = jtheme_new_standard();
-    if (!ji_standard_theme)
-      return;
-  }
-
-  ji_set_theme(ji_standard_theme);
-}
-
 JTheme ji_get_theme()
 {
   return ji_current_theme;

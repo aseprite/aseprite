@@ -44,5 +44,4 @@ add_library(gui-lib
   preferred_size_event.cpp
   property.cpp
   slider.cpp
-  themes/jstandard_theme.cpp
   widget.cpp)

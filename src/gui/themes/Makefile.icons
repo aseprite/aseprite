@@ -1,7 +1,0 @@
-pcx2data.exe: pcx2data.c
-	gcc -DPCX2DATA -o pcx2data pcx2data.c -lalleg -mconsole
-
-all: pcx2data.exe
-
-gen: all
-	./pcx2data.exe stand/*.pcx > jstandard_theme_icons.h

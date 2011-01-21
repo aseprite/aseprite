@@ -70,10 +70,7 @@ public:
 
 };
 
-JTheme jtheme_new_standard();
-
 void ji_set_theme(JTheme theme);
-void ji_set_standard_theme();
 JTheme ji_get_theme();
 void ji_regen_theme();
 
