@@ -16,8 +16,8 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifndef PEN_TYPE_H_INCLUDED
-#define PEN_TYPE_H_INCLUDED
+#ifndef RASTER_PEN_TYPE_H_INCLUDED
+#define RASTER_PEN_TYPE_H_INCLUDED
 
 enum PenType {
   PEN_TYPE_CIRCLE   = 0,

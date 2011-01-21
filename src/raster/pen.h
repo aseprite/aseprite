@@ -19,7 +19,7 @@
 #ifndef RASTER_PEN_H_INCLUDED
 #define RASTER_PEN_H_INCLUDED
 
-#include "pen_type.h"
+#include "raster/pen_type.h"
 #include <vector>
 
 class Image;
