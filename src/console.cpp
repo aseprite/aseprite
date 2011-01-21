@@ -131,7 +131,7 @@ void Console::printf(const char *format, ...)
       wid_console->remap_window();
       jwidget_set_rect(wid_console, rect);
       wid_console->center_window();
-      wid_console->dirty();
+      wid_console->invalidate();
 
       jrect_free(rect);
     }

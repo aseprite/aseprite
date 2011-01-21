@@ -196,7 +196,7 @@ void jview_set_size(JWidget widget, int w, int h)
   }
 
   /* setup viewport */
-  jwidget_dirty(widget);
+  widget->invalidate();
   jwidget_set_rect(view->viewport, pos);
   jview_set_scroll(widget, view->scroll_x, view->scroll_y);
 
@@ -222,7 +222,7 @@ void jview_set_scroll(JWidget widget, int x, int y)
     return;
 
   jwidget_set_rect(view->viewport, view->viewport->rc);
-  jwidget_dirty(widget);
+  widget->invalidate();
 }
 
 void jview_get_scroll(JWidget widget, int *x, int *y)
@@ -582,8 +582,8 @@ static bool scrollbar_msg_proc(JWidget widget, JMessage msg)
 
     case JM_MOUSEENTER:
     case JM_MOUSELEAVE:
-      /* TODO add something to avoid this (theme specific stuff) */
-      jwidget_invalidate(widget);
+      // TODO add something to avoid this (theme specific stuff)
+      widget->invalidate();
       break;
 
     case JM_DRAW:

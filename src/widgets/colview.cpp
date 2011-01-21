@@ -87,7 +87,7 @@ void colorviewer_set_color(JWidget widget, const Color& color)
   ColorViewer *colorviewer = colorviewer_data(widget);
 
   colorviewer->color = color;
-  jwidget_dirty(widget);
+  widget->invalidate();
 }
 
 static ColorViewer *colorviewer_data(JWidget widget)

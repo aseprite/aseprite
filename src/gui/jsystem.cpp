@@ -252,7 +252,7 @@ void jmouse_draw_cursor()
 			   x+sprite_cursor->w,
 			   y+sprite_cursor->h);
 
-    jwidget_invalidate_rect(ji_get_default_manager(), rect);
+    ji_get_default_manager()->invalidateRect(rect);
     /* rectfill(ji_screen, rect->x1, rect->y1, rect->x2-1, rect->y2-1, makecol(0, 0, 255)); */
     draw_sprite(ji_screen, sprite_cursor, x, y);
 

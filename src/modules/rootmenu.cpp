@@ -231,7 +231,7 @@ static int load_root_menu()
   if (app_get_menubar()) {
     jmenubar_set_menu(app_get_menubar(), root_menu);
     app_get_top_window()->remap_window();
-    jwidget_dirty(app_get_top_window());
+    app_get_top_window()->invalidate();
   }
 
   return 0;

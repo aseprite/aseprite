@@ -111,7 +111,7 @@ void Frame::remap_window()
   jrect_free(rect);
 
   jwidget_emit_signal(this, JI_SIGNAL_WINDOW_RESIZE);
-  jwidget_dirty(this);
+  invalidate();
 }
 
 void Frame::center_window()
@@ -141,7 +141,7 @@ void Frame::position_window(int x, int y)
 
   window_action = old_action;
 
-  dirty();
+  invalidate();
 }
 
 void Frame::move_window(JRect rect)
@@ -329,7 +329,7 @@ bool Frame::onProcessMessage(JMessage msg)
 	      jrect_free(rect);
 
 	      jwidget_emit_signal(this, JI_SIGNAL_WINDOW_RESIZE);
-	      jwidget_dirty(this);
+	      invalidate();
 	    }
 	  }
 	}
@@ -629,7 +629,7 @@ void Frame::move_window(JRect rect, bool use_blit)
   }
 
   jmanager_invalidate_region(manager, manager_refresh_region);
-  jwidget_invalidate_region(this, window_refresh_region);
+  this->invalidateRegion(window_refresh_region);
 
   jregion_free(old_drawable_region);
   jregion_free(new_drawable_region);

@@ -352,7 +352,7 @@ static void listbox_dirty_children(JWidget widget)
 
   if (!view) {
     JI_LIST_FOR_EACH(widget->children, link)
-      jwidget_dirty(reinterpret_cast<JWidget>(link->data));
+      reinterpret_cast<JWidget>(link->data)->invalidate();
   }
   else {
     vp = jview_get_viewport_position(view);
@@ -365,7 +365,7 @@ static void listbox_dirty_children(JWidget widget)
       else if (child->rc->y1 >= vp->y2)
 	break;
 
-      jwidget_dirty(child);
+      child->invalidate();
     }
 
     jrect_free(vp);

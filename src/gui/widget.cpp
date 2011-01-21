@@ -263,7 +263,7 @@ void Widget::setText(const char *text)
   this->setTextQuiet(text);
 
   jwidget_emit_signal(this, JI_SIGNAL_SET_TEXT);
-  dirty();
+  invalidate();
 }
 
 void Widget::setTextf(const char *format, ...)
@@ -307,7 +307,7 @@ void Widget::setFont(FONT* f)
   m_font = f;
 
   jwidget_emit_signal(this, JI_SIGNAL_SET_FONT);
-  dirty();
+  invalidate();
 }
 
 void Widget::setTheme(Theme* theme)
@@ -392,19 +392,13 @@ bool jwidget_is_focusrest(JWidget widget)
 /**********************************************************************/
 /* status properties */
 
-void jwidget_dirty(JWidget widget)
-{
-  ASSERT_VALID_WIDGET(widget);
-  jwidget_invalidate(widget);
-}
-
 void Widget::setVisible(bool state)
 {
   if (state) {
     if (this->flags & JI_HIDDEN) {
       this->flags &= ~JI_HIDDEN;
+      invalidate();
 
-      jwidget_dirty(this);
       jwidget_emit_signal(this, JI_SIGNAL_SHOW);
     }
   }
@@ -423,7 +417,7 @@ void Widget::setEnabled(bool state)
   if (state) {
     if (this->flags & JI_DISABLED) {
       this->flags &= ~JI_DISABLED;
-      jwidget_dirty(this);
+      invalidate();
 
       jwidget_emit_signal(this, JI_SIGNAL_ENABLE);
     }
@@ -433,7 +427,7 @@ void Widget::setEnabled(bool state)
       jmanager_free_widget(this); // Free from the manager
 
       this->flags |= JI_DISABLED;
-      jwidget_dirty(this);
+      invalidate();
 
       jwidget_emit_signal(this, JI_SIGNAL_DISABLE);
     }
@@ -445,7 +439,7 @@ void Widget::setSelected(bool state)
   if (state) {
     if (!(this->flags & JI_SELECTED)) {
       this->flags |= JI_SELECTED;
-      jwidget_dirty(this);
+      invalidate();
 
       jwidget_emit_signal(this, JI_SIGNAL_SELECT);
     }
@@ -453,7 +447,7 @@ void Widget::setSelected(bool state)
   else {
     if (this->flags & JI_SELECTED) {
       this->flags &= ~JI_SELECTED;
-      jwidget_dirty(this);
+      invalidate();
 
       jwidget_emit_signal(this, JI_SIGNAL_DESELECT);
     }
@@ -685,7 +679,7 @@ void Widget::setBounds(const Rect& rc)
 void jwidget_relayout(JWidget widget)
 {
   jwidget_set_rect(widget, widget->rc);
-  jwidget_dirty(widget);
+  widget->invalidate();
 }
 
 /* gets the position of the widget */
@@ -975,7 +969,7 @@ void jwidget_noborders(JWidget widget)
   widget->border_width.b = 0;
   widget->child_spacing = 0;
 
-  jwidget_dirty(widget);
+  widget->invalidate();
 }
 
 void jwidget_set_border(JWidget widget, int value)
@@ -987,7 +981,7 @@ void jwidget_set_border(JWidget widget, int value)
   widget->border_width.r = value;
   widget->border_width.b = value;
 
-  jwidget_dirty(widget);
+  widget->invalidate();
 }
 
 void jwidget_set_border(JWidget widget, int l, int t, int r, int b)
@@ -999,7 +993,7 @@ void jwidget_set_border(JWidget widget, int l, int t, int r, int b)
   widget->border_width.r = r;
   widget->border_width.b = b;
 
-  jwidget_dirty(widget);
+  widget->invalidate();
 }
 
 void jwidget_set_rect(JWidget widget, JRect rect)
@@ -1100,56 +1094,50 @@ void jwidget_flush_redraw(JWidget widget)
   }
 }
 
-void jwidget_invalidate(JWidget widget)
+void Widget::invalidate()
 {
-  ASSERT_VALID_WIDGET(widget);
-
-  if (widget->isVisible()) {
-    JRegion reg1 = jwidget_get_drawable_region(widget, JI_GDR_CUTTOPWINDOWS);
+  if (isVisible()) {
+    JRegion reg1 = jwidget_get_drawable_region(this, JI_GDR_CUTTOPWINDOWS);
     JLink link;
 
-    jregion_copy(widget->update_region, reg1);
+    jregion_copy(this->update_region, reg1);
     jregion_free(reg1);
 
-    mark_dirty_flag(widget);
+    mark_dirty_flag(this);
 
-    JI_LIST_FOR_EACH(widget->children, link)
-      jwidget_invalidate(reinterpret_cast<JWidget>(link->data));
+    JI_LIST_FOR_EACH(this->children, link)
+      reinterpret_cast<JWidget>(link->data)->invalidate();
   }
 }
 
-void jwidget_invalidate_rect(JWidget widget, const JRect rect)
+void Widget::invalidateRect(const JRect rect)
 {
-  ASSERT_VALID_WIDGET(widget);
-
-  if (widget->isVisible()) {
+  if (isVisible()) {
     JRegion reg1 = jregion_new(rect, 1);
-    jwidget_invalidate_region(widget, reg1);
+    invalidateRegion(reg1);
     jregion_free(reg1);
   }
 }
 
-void jwidget_invalidate_region(JWidget widget, const JRegion region)
+void Widget::invalidateRegion(const JRegion region)
 {
-  ASSERT_VALID_WIDGET(widget);
-
-  if (widget->isVisible() &&
-      jregion_rect_in(region, widget->rc) != JI_RGNOUT) {
+  if (isVisible() &&
+      jregion_rect_in(region, this->rc) != JI_RGNOUT) {
     JRegion reg1 = jregion_new(NULL, 0);
-    JRegion reg2 = jwidget_get_drawable_region(widget,
+    JRegion reg2 = jwidget_get_drawable_region(this,
 					       JI_GDR_CUTTOPWINDOWS);
     JLink link;
 
-    jregion_union(reg1, widget->update_region, region);
-    jregion_intersect(widget->update_region, reg1, reg2);
+    jregion_union(reg1, this->update_region, region);
+    jregion_intersect(this->update_region, reg1, reg2);
     jregion_free(reg2);
 
-    jregion_subtract(reg1, region, widget->update_region);
+    jregion_subtract(reg1, region, this->update_region);
 
-    mark_dirty_flag(widget);
+    mark_dirty_flag(this);
 
-    JI_LIST_FOR_EACH(widget->children, link)
-      jwidget_invalidate_region(reinterpret_cast<JWidget>(link->data), reg1);
+    JI_LIST_FOR_EACH(this->children, link)
+      reinterpret_cast<JWidget>(link->data)->invalidateRegion(reg1);
 
     jregion_free(reg1);
   }
@@ -1492,7 +1480,7 @@ bool Widget::onProcessMessage(JMessage msg)
       JLink link;
 
       JI_LIST_FOR_EACH(widget->children, link)
-	jwidget_dirty(reinterpret_cast<JWidget>(link->data));
+	reinterpret_cast<JWidget>(link->data)->invalidate();
 
       return true;
     }

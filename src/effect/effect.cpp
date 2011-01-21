@@ -287,7 +287,7 @@ void effect_flush(Effect *effect)
     jregion_intersect(reg1, reg1, reg2);
     jregion_free(reg2);
 
-    jwidget_invalidate_region(editor, reg1);
+    editor->invalidateRegion(reg1);
     jregion_free(reg1);
   }
 }

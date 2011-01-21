@@ -53,10 +53,6 @@ bool jwidget_is_expansive(JWidget widget);
 bool jwidget_is_decorative(JWidget widget);
 bool jwidget_is_focusrest(JWidget widget);
 
-/* status properties */
-
-void jwidget_dirty(JWidget widget);
-
 /* children handle */
 
 void jwidget_add_child(JWidget widget, JWidget child);
@@ -90,9 +86,6 @@ void jwidget_set_bg_color(JWidget widget, int color);
 /* drawing methods */
 
 void jwidget_flush_redraw(JWidget widget);
-void jwidget_invalidate(JWidget widget);
-void jwidget_invalidate_rect(JWidget widget, const JRect rect);
-void jwidget_invalidate_region(JWidget widget, const JRegion region);
 void jwidget_scroll(JWidget widget, JRegion region, int dx, int dy);
 
 /* signal handle */
@@ -162,8 +155,9 @@ public:
   /* for user */
   void *user_data[4];
 
-  //////////////////////////////////////////////////////////////////////
-  // Methods
+  // ===============================================================
+  // CTOR & DTOR
+  // ===============================================================
 
   Widget(int type);
   virtual ~Widget();
@@ -225,8 +219,9 @@ public:
   Theme* getTheme() const { return m_theme; }
   void setTheme(Theme* theme);
 
-  //////////////////////////////////////////////////////////////////////
-  // parents and children
+  // ===============================================================
+  // PARENTS & CHILDREN
+  // ===============================================================
 
   Widget* getRoot();
   Widget* getParent();
@@ -245,18 +240,24 @@ public:
     return dynamic_cast<T*>(findChild(name));
   }
 
-  void dirty() {
-    jwidget_dirty(this);
-  }
-
-  //////////////////////////////////////////////////////////////////////
-  // position and geometry
+  // ===============================================================
+  // POSITION & GEOMETRY
+  // ===============================================================
 
   gfx::Rect getBounds() const;
   void setBounds(const gfx::Rect& rc);
 
-  //////////////////////////////////////////////////////////////////////
-  // manager handler
+  // ===============================================================
+  // REFRESH ISSUES
+  // ===============================================================
+
+  void invalidate();
+  void invalidateRect(const JRect rect);
+  void invalidateRegion(const JRegion region);
+
+  // ===============================================================
+  // GUI MANAGER
+  // ===============================================================
 
   bool sendMessage(JMessage msg);
   void closeWindow();

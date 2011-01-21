@@ -118,7 +118,7 @@ int interactive_move_layer(int mode, bool use_undo, int (*callback)())
       cel->y = begin_y - start_y + new_y;
 
       /* update layer-bounds */
-      jwidget_dirty(editor);
+      editor->invalidate();
 
       /* update status bar */
       app_get_statusbar()->setStatusText

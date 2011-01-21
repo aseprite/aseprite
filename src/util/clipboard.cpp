@@ -503,7 +503,7 @@ static bool interactive_transform(Editor* editor,
 
 	jmouse_control_infinite_scroll(vp);
 
-	jwidget_dirty(view);
+	view->invalidate();
 	jwidget_flush_redraw(view);
 	UPDATE();
 

@@ -326,7 +326,7 @@ static bool anieditor_msg_proc(JWidget widget, JMessage msg)
 	    SpriteWriter sprite_writer(sprite);
 	    sprite_writer->setCurrentFrame(anieditor->clk_frame);
 	  }
-	  jwidget_dirty(widget); /* TODO replace this by redrawing old current frame and new current frame */
+	  widget->invalidate(); // TODO Replace this by redrawing old current frame and new current frame
 	  widget->captureMouse();
 	  anieditor->state = STATE_MOVING_FRAME;
 	  break;
@@ -431,7 +431,7 @@ static bool anieditor_msg_proc(JWidget widget, JMessage msg)
 	else if (anieditor->clk_part == A_PART_SEPARATOR) {
 	  hot_part = anieditor->clk_part;
 	  anieditor->separator_x = mx;
-	  jwidget_dirty(widget);
+	  widget->invalidate();
 	  return true;
 	}
       }
@@ -528,7 +528,7 @@ static bool anieditor_msg_proc(JWidget widget, JMessage msg)
 		  jmenu_popup(popup_menu, msg->mouse.x, msg->mouse.y);
 
 		  destroy_thumbnails();
-		  jwidget_dirty(widget);
+		  widget->invalidate();
 		}
 	      }
 	    }
@@ -551,7 +551,7 @@ static bool anieditor_msg_proc(JWidget widget, JMessage msg)
 		    undoable.moveFrameBefore(anieditor->clk_frame, anieditor->hot_frame);
 		    undoable.commit();
 		  }
-		  jwidget_dirty(widget);
+		  widget->invalidate();
 		}
 	      }
 	    }
@@ -565,7 +565,7 @@ static bool anieditor_msg_proc(JWidget widget, JMessage msg)
 	      	  jmenu_popup(popup_menu, msg->mouse.x, msg->mouse.y);
 
 		  destroy_thumbnails();
-		  jwidget_dirty(widget);
+		  widget->invalidate();
 		  anieditor_regenerate_layers(widget);
 	      	}
 	      }
@@ -593,7 +593,7 @@ static bool anieditor_msg_proc(JWidget widget, JMessage msg)
 		    Console::showException(e);
 		  }
 
-		  jwidget_dirty(widget);
+		  widget->invalidate();
 		  anieditor_regenerate_layers(widget);
 		}
 		else {
@@ -648,7 +648,7 @@ static bool anieditor_msg_proc(JWidget widget, JMessage msg)
 
 		destroy_thumbnails();
 		anieditor_regenerate_layers(widget);
-		jwidget_dirty(widget);
+		widget->invalidate();
 	      }
 	    }
 	    /* move the cel */
@@ -662,7 +662,7 @@ static bool anieditor_msg_proc(JWidget widget, JMessage msg)
 
 		destroy_thumbnails();
 		anieditor_regenerate_layers(widget);
-		jwidget_dirty(widget);
+		widget->invalidate();
 	      }
 	    }
 	    break;
@@ -705,7 +705,7 @@ static bool anieditor_msg_proc(JWidget widget, JMessage msg)
 	  destroy_thumbnails();
 	  anieditor_regenerate_layers(widget);
 	  anieditor_show_current_cel(widget);
-	  jwidget_dirty(widget);
+	  widget->invalidate();
 	}
 	return true;
       }
@@ -720,7 +720,7 @@ static bool anieditor_msg_proc(JWidget widget, JMessage msg)
 	  destroy_thumbnails();
 	  anieditor_regenerate_layers(widget);
 	  anieditor_show_current_cel(widget);
-	  jwidget_dirty(widget);
+	  widget->invalidate();
 	}
 	return true;
       }
@@ -740,7 +740,7 @@ static bool anieditor_msg_proc(JWidget widget, JMessage msg)
 	  UIContext::instance()->executeCommand(command);
 
 	  anieditor_show_current_cel(widget);
-	  jwidget_dirty(widget);
+	  widget->invalidate();
 	  return true;
 	}
 
@@ -751,7 +751,7 @@ static bool anieditor_msg_proc(JWidget widget, JMessage msg)
 
 	  anieditor_regenerate_layers(widget);
 	  anieditor_show_current_cel(widget);
-	  jwidget_dirty(widget);
+	  widget->invalidate();
 	  return true;
 	}
       }

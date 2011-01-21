@@ -112,7 +112,7 @@ ColorBar::~ColorBar()
 void ColorBar::setFgColor(const Color& color)
 {
   m_fgcolor = color;
-  dirty();
+  invalidate();
 
   updateStatusBar(m_fgcolor, 100);
   FgColorChange(m_fgcolor);
@@ -121,7 +121,7 @@ void ColorBar::setFgColor(const Color& color)
 void ColorBar::setBgColor(const Color& color)
 {
   m_bgcolor = color;
-  dirty();
+  invalidate();
 
   updateStatusBar(m_bgcolor, 100);
   BgColorChange(m_bgcolor);
@@ -310,7 +310,7 @@ bool ColorBar::onProcessMessage(JMessage msg)
 
       // Redraw 'hot' color
       if (m_hot != old_hot) {
-	dirty();
+	invalidate();
 
 	// Open the new hot-color to be edited
 	if ((m_hot != HOTCOLOR_NONE) &&
@@ -327,7 +327,7 @@ bool ColorBar::onProcessMessage(JMessage msg)
     case JM_MOUSELEAVE:
       if (m_hot != HOTCOLOR_NONE) {
 	m_hot = HOTCOLOR_NONE;
-	dirty();
+	invalidate();
       }
       app_get_statusbar()->clearText();
       break;
@@ -384,12 +384,12 @@ bool ColorBar::onProcessMessage(JMessage msg)
 	  if (get_config_bool("ColorBar", "CanGrow", false) ||
 	      (old_columns == 1 || m_columns == 1)) {
 	    app_get_top_window()->remap_window();
-	    app_get_top_window()->dirty();
+	    app_get_top_window()->invalidate();
 	  }
 	}
 
 	// Redraw the whole widget
-	dirty();
+	invalidate();
 
 	// Update the status bar
 	updateStatusBar(getColorByPosition(jmouse_x(0), jmouse_y(0)), 0);
@@ -404,7 +404,7 @@ bool ColorBar::onProcessMessage(JMessage msg)
 	    Color color = getHotColor(m_hot_drag);
 	    setHotColor(m_hot_drop, color);
 	  }
-	  dirty();
+	  invalidate();
 	}
 	/* pick the color */
 	else if (m_hot != HOTCOLOR_NONE) {

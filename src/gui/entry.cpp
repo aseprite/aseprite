@@ -88,13 +88,13 @@ void Entry::setPassword(bool state)
 void Entry::showCaret()
 {
   m_hidden = false;
-  dirty();
+  invalidate();
 }
 
 void Entry::hideCaret()
 {
   m_hidden = true;
-  dirty();
+  invalidate();
 }
 
 void Entry::setCaretPos(int pos)
@@ -124,7 +124,7 @@ void Entry::setCaretPos(int pos)
   jmanager_start_timer(m_timer_id);
   m_state = true;
 
-  dirty();
+  invalidate();
 }
 
 void Entry::selectText(int from, int to)
@@ -135,13 +135,13 @@ void Entry::selectText(int from, int to)
   setCaretPos(from); // to move scroll
   setCaretPos((to >= 0)? to: end+to+1);
 
-  dirty();
+  invalidate();
 }
 
 void Entry::deselectText()
 {
   m_select = -1;
-  dirty();
+  invalidate();
 }
 
 void Entry::getEntryThemeInfo(int* scroll, int* caret, int* state,
@@ -175,7 +175,7 @@ bool Entry::onProcessMessage(JMessage msg)
 	  msg->timer.timer_id == m_timer_id) {
 	// Blinking caret
 	m_state = m_state ? false: true;
-	dirty();
+	invalidate();
       }
       break;
 
@@ -183,14 +183,14 @@ bool Entry::onProcessMessage(JMessage msg)
       jmanager_start_timer(m_timer_id);
 
       m_state = true;
-      dirty();
+      invalidate();
 
       selectText(0, -1);
       m_recent_focused = true;
       break;
 
     case JM_FOCUSLEAVE:
-      dirty();
+      invalidate();
 
       jmanager_stop_timer(m_timer_id);
       
@@ -290,7 +290,7 @@ bool Entry::onProcessMessage(JMessage msg)
 	    m_caret = --m_scroll;
 	    move = false;
 	    is_dirty = true;
-	    dirty();
+	    invalidate();
 	  }
 	}
 	/* forward scroll */
@@ -311,7 +311,7 @@ bool Entry::onProcessMessage(JMessage msg)
 	    m_caret = c;
 	    move = false;
 	    is_dirty = true;
-	    dirty();
+	    invalidate();
 	  }
 	}
 
@@ -322,7 +322,7 @@ bool Entry::onProcessMessage(JMessage msg)
 	  if (m_caret != c) {
 	    m_caret = c;
 	    is_dirty = true;
-	    dirty();
+	    invalidate();
 	  }
 	}
 
@@ -353,14 +353,14 @@ bool Entry::onProcessMessage(JMessage msg)
       forwardWord();
       m_select = m_caret;
       backwardWord();
-      dirty();
+      invalidate();
       return true;
 
     case JM_MOUSEENTER:
     case JM_MOUSELEAVE:
       /* TODO theme stuff */
       if (this->isEnabled())
-	dirty();
+	invalidate();
       break;
   }
 
@@ -588,7 +588,7 @@ void Entry::executeCmd(EntryCmd::Type cmd, int ascii, bool shift_pressed)
   }
 
   setCaretPos(m_caret);
-  dirty();
+  invalidate();
 }
 
 #define IS_WORD_CHAR(ch)				\

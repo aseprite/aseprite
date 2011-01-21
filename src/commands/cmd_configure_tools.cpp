@@ -78,7 +78,7 @@ static void on_pen_size_after_change()
   brush_size->setValue(tool_settings->getPen()->getSize());
 
   // Regenerate the preview
-  brush_preview->dirty();
+  brush_preview->invalidate();
 }
 
 static void on_current_tool_change()
@@ -114,7 +114,7 @@ static void on_current_tool_change()
   group_button_select(brush_type, tool_settings->getPen()->getType());
 
   // Regenerate the preview
-  brush_preview->dirty();
+  brush_preview->invalidate();
 
   // True if the current tool needs opacity options
   bool hasOpacity = (current_tool->getInk(0)->isPaint() ||
@@ -157,7 +157,7 @@ static void on_current_tool_change()
     window->setBounds(window->getBounds()); // TODO layout() method is missing
 
   // Redraw the window
-  window->dirty();
+  window->invalidate();
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -405,7 +405,7 @@ static bool brush_type_change_hook(JWidget widget, void *data)
     ->getPen()
     ->setType(type);
 
-  jwidget_dirty((JWidget)data);
+  ((Widget*)data)->invalidate();
 
   app_get_statusbar()
     ->setStatusText(250,
@@ -429,7 +429,7 @@ void ConfigureTools::onBrushSizeSliderChange(Widget* brush_preview)
     ->getPen()
     ->setSize(m_brushSize->getValue());
 
-  brush_preview->dirty();
+  brush_preview->invalidate();
 }
 
 void ConfigureTools::onBrushAngleSliderChange(Widget* brush_preview)
@@ -444,7 +444,7 @@ void ConfigureTools::onBrushAngleSliderChange(Widget* brush_preview)
     ->getPen()
     ->setAngle(m_brushAngle->getValue());
 
-  brush_preview->dirty();
+  brush_preview->invalidate();
 }
 
 void ConfigureTools::onOpacitySliderChange()

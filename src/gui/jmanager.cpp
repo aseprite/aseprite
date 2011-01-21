@@ -272,7 +272,7 @@ bool jmanager_generate_messages(JWidget manager)
       window = reinterpret_cast<JWidget>(link->data);
 
       /* dirty the entire window and show it */
-      jwidget_dirty(window);
+      window->invalidate();
       window->setVisible(true);
 
       /* attract the focus to the magnetic widget... */
@@ -432,7 +432,7 @@ bool jmanager_generate_messages(JWidget manager)
 	}
 
 	generate_proc_windows_list();
-	jwidget_dirty(window);
+	window->invalidate();
       }
 
       /* put the focus */
@@ -917,7 +917,7 @@ void jmanager_remove_messages_for(JWidget widget)
 void jmanager_refresh_screen()
 {
   if (default_manager)
-    jwidget_invalidate(default_manager);
+    default_manager->invalidate();
 }
 
 void jmanager_add_msg_filter(int message, JWidget widget)
@@ -1047,7 +1047,7 @@ void _jmanager_close_window(JWidget manager, Frame* window, bool redraw_backgrou
 
   /* redraw background */
   if (reg1) {
-    jwidget_invalidate_region(manager, reg1);
+    manager->invalidateRegion(reg1);
     jregion_free(reg1);
   }
 
@@ -1309,7 +1309,7 @@ void jmanager_invalidate_region(JWidget widget, JRegion region)
     window = (Frame*)link->data;
 
     // invalidate regions of this window
-    jwidget_invalidate_region(window, reg1);
+    window->invalidateRegion(reg1);
 
     /* there is desktop? */
     if (window->is_desktop())
@@ -1324,7 +1324,7 @@ void jmanager_invalidate_region(JWidget widget, JRegion region)
 
   // invalidate areas outside windows (only when there are not a desktop window)
   if (link == widget->children->end)
-    jwidget_invalidate_region(widget, reg1);
+    widget->invalidateRegion(reg1);
 
   jregion_free(reg1);
   jregion_free(reg2);

@@ -111,7 +111,7 @@ void Tabs::addTab(const char* text, void* data)
   setScrollX(m_scrollX);
 
   startAni(ANI_ADDING_TAB);
-  //jwidget_dirty(this);
+  //invalidate();
 }
 
 void Tabs::removeTab(void* data)
@@ -162,7 +162,7 @@ void Tabs::setTabText(const char* text, void* data)
     if (m_selected == tab)
       makeTabVisible(tab);
     
-    jwidget_dirty(this);
+    invalidate();
   }
 }
 
@@ -173,7 +173,7 @@ void Tabs::selectTab(void* data)
   if (tab != NULL) {
     m_selected = tab;
     makeTabVisible(tab);
-    jwidget_dirty(this);
+    invalidate();
   }
 }
 
@@ -297,7 +297,7 @@ bool Tabs::onProcessMessage(JMessage msg)
     case JM_MOUSELEAVE:
       if (m_hot != NULL) {
 	m_hot = NULL;
-	jwidget_dirty(this);
+	invalidate();
       }
       return true;
 
@@ -305,7 +305,7 @@ bool Tabs::onProcessMessage(JMessage msg)
       if (m_hot != NULL) {
 	if (m_selected != m_hot) {
 	  m_selected = m_hot;
-	  jwidget_dirty(this);
+	  invalidate();
 	}
 
 	if (m_selected && m_handler)
@@ -363,13 +363,13 @@ bool Tabs::onProcessMessage(JMessage msg)
 	case ANI_ADDING_TAB: {
 	  if (m_ani_t == ANI_ADDING_TAB_TICKS)
 	    stopAni();
-	  dirty();
+	  invalidate();
 	  break;
 	}
 	case ANI_REMOVING_TAB: {
 	  if (m_ani_t == ANI_REMOVING_TAB_TICKS)
 	    stopAni();
-	  dirty();
+	  invalidate();
 	  break;
 	}
       }
@@ -516,7 +516,7 @@ void Tabs::setScrollX(int scroll_x)
   if (m_scrollX != scroll_x) {
     m_scrollX = scroll_x;
     calculateHot();
-    jwidget_dirty(this);
+    invalidate();
   }
 
   // We need scroll buttons?
@@ -525,7 +525,7 @@ void Tabs::setScrollX(int scroll_x)
     if (!HAS_ARROWS(this)) {
       jwidget_add_child(this, m_button_left);
       jwidget_add_child(this, m_button_right);
-      jwidget_dirty(this);
+      invalidate();
     }
 
     /* disable/enable buttons */
@@ -550,7 +550,7 @@ void Tabs::setScrollX(int scroll_x)
   else if (HAS_ARROWS(this)) {
     jwidget_remove_child(this, m_button_left);
     jwidget_remove_child(this, m_button_right);
-    jwidget_dirty(this);
+    invalidate();
   }
 }
 
@@ -581,7 +581,7 @@ void Tabs::calculateHot()
     if (m_handler)
       m_handler->mouseOverTab(this, m_hot ? m_hot->data: NULL);
 
-    jwidget_dirty(this);
+    invalidate();
   }
 
   jrect_free(rect);

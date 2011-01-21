@@ -175,7 +175,7 @@ static bool curve_editor_msg_proc(JWidget widget, JMessage msg)
 	  /* TODO undo? */
 	  curve_add_point(curve_editor->curve, point);
 
-	  jwidget_dirty(widget);
+	  widget->invalidate();
 	  jwidget_emit_signal(widget, SIGNAL_CURVE_EDITOR_CHANGE);
 	  break;
 	}
@@ -190,7 +190,7 @@ static bool curve_editor_msg_proc(JWidget widget, JMessage msg)
 	  /* TODO undo? */
 	  curve_remove_point(curve_editor->curve, point);
 
-	  jwidget_dirty(widget);
+	  widget->invalidate();
 	  jwidget_emit_signal(widget, SIGNAL_CURVE_EDITOR_CHANGE);
 	  break;
 	}
@@ -280,14 +280,14 @@ static bool curve_editor_msg_proc(JWidget widget, JMessage msg)
 					    SCR2EDIT_Y(msg->mouse.y),
 					    NULL, NULL);
 	if (curve_editor->edit_point) {
-	  jwidget_dirty(widget);
+	  widget->invalidate();
 	  jwidget_flush_redraw(widget);
 
 	  if (edit_node_manual(curve_editor->edit_point))
 	    jwidget_emit_signal(widget, SIGNAL_CURVE_EDITOR_CHANGE);
 
 	  curve_editor->edit_point = NULL;
-	  jwidget_dirty(widget);
+	  widget->invalidate();
 	}
 	
 	return true;
@@ -373,7 +373,7 @@ static bool curve_editor_msg_proc(JWidget widget, JMessage msg)
 	      /* TODO this should be optional */
 	      jwidget_emit_signal(widget, SIGNAL_CURVE_EDITOR_CHANGE);
 
-	      jwidget_dirty(widget);
+	      widget->invalidate();
 	    }
 	    break;
 	}
@@ -408,7 +408,7 @@ static bool curve_editor_msg_proc(JWidget widget, JMessage msg)
 	    jwidget_emit_signal(widget, SIGNAL_CURVE_EDITOR_CHANGE);
 
 	    curve_editor->edit_point = NULL;
-	    jwidget_dirty(widget);
+	    widget->invalidate();
 	    break;
 	}
 

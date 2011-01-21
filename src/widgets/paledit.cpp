@@ -86,7 +86,7 @@ void PalEdit::setColumns(int columns)
     if (view)
       jview_update(view);
 
-    jwidget_dirty(this);
+    invalidate();
   }
 }
 
@@ -109,7 +109,7 @@ void PalEdit::selectColor(int index)
     if ((index >= 0) && (index <= 255))
       update_scroll(index);
 
-    jwidget_dirty(this);
+    invalidate();
   }
 }
 
@@ -123,7 +123,7 @@ void PalEdit::selectRange(int begin, int end, int range_type)
   m_range_type = range_type;
 
   update_scroll(end);
-  jwidget_dirty(this);
+  invalidate();
 }
 
 static void swap_color(Palette* palette, int i1, int i2)

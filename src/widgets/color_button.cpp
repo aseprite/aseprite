@@ -70,7 +70,7 @@ Color ColorButton::getColor() const
 void ColorButton::setColor(const Color& color)
 {
   m_color = color;
-  dirty();
+  invalidate();
 }
 
 bool ColorButton::onProcessMessage(JMessage msg)

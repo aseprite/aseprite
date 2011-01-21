@@ -53,7 +53,7 @@ void jpanel_set_pos(JWidget widget, double pos)
 
   panel->pos = MID(0, pos, 100);
 
-  jwidget_dirty(widget);
+  widget->invalidate();
 }
 
 static bool panel_msg_proc(JWidget widget, JMessage msg)
@@ -139,7 +139,7 @@ static bool panel_msg_proc(JWidget widget, JMessage msg)
 	panel->pos = MID(0, panel->pos, 100);
 
 	jwidget_set_rect(widget, widget->rc);
-	jwidget_dirty(widget);
+	widget->invalidate();
 	return true;
       }
       break;

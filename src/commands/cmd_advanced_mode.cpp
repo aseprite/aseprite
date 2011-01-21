@@ -61,7 +61,7 @@ void AdvancedModeCommand::onExecute(Context* context)
   app_get_tabsbar()->setVisible(!advanced_mode);
 
   app_get_top_window()->remap_window();
-  app_get_top_window()->dirty();
+  app_get_top_window()->invalidate();
   
   if (advanced_mode &&
       get_config_bool("AdvancedMode", "Warning", true)) {

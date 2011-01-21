@@ -47,13 +47,13 @@ ButtonBase::~ButtonBase()
 void ButtonBase::setButtonIcon(BITMAP* icon)
 {
   m_icon = icon;
-  dirty();
+  invalidate();
 }
 
 void ButtonBase::setButtonIconAlign(int iconAlign)
 {
   m_iconAlign = iconAlign;
-  dirty();
+  invalidate();
 }
 
 BITMAP* ButtonBase::getButtonIcon()
@@ -106,7 +106,7 @@ bool ButtonBase::onProcessMessage(JMessage msg)
 	}
 
 	/* TODO theme specific stuff */
-	dirty();
+	invalidate();
       }
       break;
 
@@ -158,7 +158,7 @@ bool ButtonBase::onProcessMessage(JMessage msg)
 	      
 	      // Signal
 	      jwidget_emit_signal(this, JI_SIGNAL_CHECK_CHANGE);
-	      dirty();
+	      invalidate();
 	    }
 	    else if (m_behaviorType == JI_RADIO) {
 	      if (!this->isSelected()) {
@@ -238,7 +238,7 @@ bool ButtonBase::onProcessMessage(JMessage msg)
 		Event ev(this);
 		onClick(ev);
 
-		dirty();
+		invalidate();
 	      }
 	      break;
 
@@ -285,7 +285,7 @@ bool ButtonBase::onProcessMessage(JMessage msg)
     case JM_MOUSELEAVE:
       // TODO theme stuff
       if (this->isEnabled())
-	dirty();
+	invalidate();
       break;
   }
 

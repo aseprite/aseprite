@@ -582,8 +582,8 @@ static bool insert_criteria_hook(Widget* widget, void* _data)
     // Relayout
     data->available_criteria->setBounds(data->available_criteria->getBounds()); // TODO layout()
     data->selected_criteria->setBounds(data->selected_criteria->getBounds()); // TODO layout()
-    data->available_criteria->dirty();
-    data->selected_criteria->dirty();
+    data->available_criteria->invalidate();
+    data->selected_criteria->invalidate();
   }
 
   return true;
@@ -618,8 +618,8 @@ static bool remove_criteria_hook(Widget* widget, void* _data)
     // Relayout
     data->available_criteria->setBounds(data->available_criteria->getBounds()); // TODO layout()
     data->selected_criteria->setBounds(data->selected_criteria->getBounds()); // TODO layout()
-    data->available_criteria->dirty();
-    data->selected_criteria->dirty();
+    data->available_criteria->invalidate();
+    data->selected_criteria->invalidate();
   }
 
   return true;
@@ -928,7 +928,7 @@ static void update_current_sprite_palette(const char* operationName)
     }
   }
 
-  jwidget_dirty(palette_editor);
+  palette_editor->invalidate();
 
   if (!jmanager_timer_is_running(redraw_timer_id))
     jmanager_start_timer(redraw_timer_id);
@@ -937,7 +937,7 @@ static void update_current_sprite_palette(const char* operationName)
 
 static void update_colorbar()
 {
-  app_get_colorbar()->dirty();
+  app_get_colorbar()->invalidate();
 }
 
 static void update_sliders_from_color(const Color& color)
@@ -996,7 +996,7 @@ static bool select_rgb_hook(JWidget widget, void *data)
   V_entry->setVisible(false);
 
   window->setBounds(window->getBounds());
-  window->dirty();
+  window->invalidate();
 
   return true;
 }
@@ -1024,7 +1024,7 @@ static bool select_hsv_hook(JWidget widget, void *data)
   V_entry->setVisible(true);
 
   window->setBounds(window->getBounds());
-  window->dirty();
+  window->invalidate();
 
   return true;
 }
@@ -1073,7 +1073,7 @@ static bool expand_button_select_hook(JWidget widget, void *data)
   }
 
   // Redraw the window
-  window->dirty();
+  window->invalidate();
   return true;
 }
 

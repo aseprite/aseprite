@@ -73,7 +73,7 @@ void RemoveLayerCommand::onExecute(Context* context)
   }
   update_screen_for_sprite(sprite);
 
-  app_get_statusbar()->dirty();
+  app_get_statusbar()->invalidate();
   app_get_statusbar()
     ->showTip(1000, "Layer `%s' removed",
 	      layer_name.c_str());

@@ -41,7 +41,7 @@ bool LinkLabel::onProcessMessage(JMessage msg)
     case JM_MOUSELEAVE:
       // TODO theme stuff
       if (isEnabled())
-	jwidget_dirty(this);
+	invalidate();
       break;
 
     case JM_DRAW:

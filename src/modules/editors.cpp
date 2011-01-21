@@ -36,7 +36,7 @@
 
 #define FIXUP_TOP_WINDOW()			\
   app_get_top_window()->remap_window();		\
-  app_get_top_window()->dirty();
+  app_get_top_window()->invalidate();
 
 typedef std::vector<Editor*> EditorList;
 
@@ -84,7 +84,7 @@ void remove_editor(Editor* editor)
 void refresh_all_editors()
 {
   for (EditorList::iterator it = editors.begin(); it != editors.end(); ++it) {
-    jwidget_dirty(*it);
+    (*it)->invalidate();
   }
 }
 
@@ -198,11 +198,11 @@ void set_current_editor(Editor* editor)
 {
   if (current_editor != editor) {
     if (current_editor)
-      jwidget_dirty(jwidget_get_view(current_editor));
+      jwidget_get_view(current_editor)->invalidate();
 
     current_editor = editor;
 
-    jwidget_dirty(jwidget_get_view(current_editor));
+    jwidget_get_view(current_editor)->invalidate();
 
     UIContext* context = UIContext::instance();
     Sprite* sprite = current_editor->getSprite();
@@ -224,7 +224,7 @@ void set_sprite_in_current_editor(Sprite *sprite)
 
     current_editor->editor_set_sprite(sprite);
 
-    jwidget_dirty(jwidget_get_view(current_editor));
+    jwidget_get_view(current_editor)->invalidate();
 
     app_refresh_screen(sprite);
     app_realloc_sprite_list();

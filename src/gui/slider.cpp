@@ -39,7 +39,7 @@ void Slider::setRange(int min, int max)
   m_max = max;
   m_value = MID(min, m_value, max);
 
-  dirty();
+  invalidate();
 }
 
 void Slider::setValue(int value)
@@ -49,7 +49,7 @@ void Slider::setValue(int value)
   m_value = MID(m_min, value, m_max);
 
   if (m_value != old_value)
-    dirty();
+    invalidate();
 
   // It DOES NOT emit CHANGE signal! to avoid recursive calls.
 }
@@ -77,7 +77,7 @@ bool Slider::onProcessMessage(JMessage msg)
     case JM_FOCUSENTER:
     case JM_FOCUSLEAVE:
       if (isEnabled())
-	dirty();
+	invalidate();
       break;
 
     case JM_BUTTONPRESSED:
@@ -169,7 +169,7 @@ bool Slider::onProcessMessage(JMessage msg)
 
       /* TODO theme stuff */
       if (isEnabled())
-	dirty();
+	invalidate();
       break;
 
     case JM_KEYPRESSED:

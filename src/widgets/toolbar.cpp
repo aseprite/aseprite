@@ -268,7 +268,7 @@ bool ToolBar::onProcessMessage(JMessage msg)
 	toolrc = getToolGroupBounds(c);
 	if (msg->mouse.y >= toolrc.y && msg->mouse.y < toolrc.y+toolrc.h) {
 	  UIContext::instance()->getSettings()->setCurrentTool(tool);
-	  dirty();
+	  invalidate();
 
 	  openPopupWindow(c, tool_group);
 	}
@@ -320,7 +320,7 @@ bool ToolBar::onProcessMessage(JMessage msg)
 	  m_hot_conf != hot_conf) {
 	m_hot_tool = hot_tool;
 	m_hot_conf = hot_conf;
-	dirty();
+	invalidate();
 
 	if (m_hot_tool || m_hot_conf)
 	  openTipWindow(tip_index, m_hot_tool);
@@ -341,7 +341,7 @@ bool ToolBar::onProcessMessage(JMessage msg)
 
       m_hot_tool = NULL;
       m_hot_conf = false;
-      dirty();
+      invalidate();
 
       app_get_statusbar()->clearText();
       break;
@@ -421,7 +421,7 @@ void ToolBar::openPopupWindow(int group_index, ToolGroup* tool_group)
   // Redraw the overlapped area and save it to use it in the ToolStrip::onProcessMessage(JM_DRAW)
   {
     JRect rcTemp = jrect_new(rc.x, rc.y, rc.x+rc.w, rc.y+rc.h);
-    jwidget_invalidate_rect(ji_get_default_manager(),  rcTemp);
+    ji_get_default_manager()->invalidateRect(rcTemp);
     jrect_free(rcTemp);
 
     // Flush JM_DRAW messages and send them
@@ -524,7 +524,7 @@ void ToolBar::selectTool(Tool* tool)
   m_selected_in_group[tool->getGroup()] = tool;
 
   UIContext::instance()->getSettings()->setCurrentTool(tool);
-  dirty();
+  invalidate();
 }
 
 void ToolBar::onClosePopup()
@@ -536,7 +536,7 @@ void ToolBar::onClosePopup()
 
   m_open_on_hot = false;
   m_hot_tool = NULL;
-  dirty();
+  invalidate();
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -665,7 +665,7 @@ bool ToolStrip::onProcessMessage(JMessage msg)
       // Hot button changed
       if (m_hot_tool != hot_tool) {
 	m_hot_tool = hot_tool;
-	dirty();
+	invalidate();
 
 	// Show the tooltip for the hot tool
 	if (m_hot_tool)

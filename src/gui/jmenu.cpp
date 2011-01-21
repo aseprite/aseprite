@@ -849,7 +849,7 @@ static bool menuitem_msg_proc(Widget* widget, JMessage msg)
 
     case JM_MOUSEENTER:
       // TODO theme specific!!
-      jwidget_dirty(widget);
+      widget->invalidate();
 
       // When a menu item receives the mouse, start a timer to open the submenu...
       if (widget->isEnabled() && HAS_SUBMENU(widget)) {
@@ -862,7 +862,7 @@ static bool menuitem_msg_proc(Widget* widget, JMessage msg)
 
     case JM_MOUSELEAVE:
       // TODO theme specific!!
-      jwidget_dirty(widget);
+      widget->invalidate();
 
       // Stop timer to open the popup
       if (menuitem->submenu_timer >= 0) {
@@ -1171,7 +1171,7 @@ static void set_highlight(Widget* menu, Widget* menuitem, bool click, bool open_
       // Is it?
       if (MITEM(child)->highlight) {
 	MITEM(child)->highlight = false;
-	jwidget_dirty(child);
+	child->invalidate();
       }
     }
   }
@@ -1179,7 +1179,7 @@ static void set_highlight(Widget* menu, Widget* menuitem, bool click, bool open_
   if (menuitem) {
     if (!MITEM(menuitem)->highlight) {
       MITEM(menuitem)->highlight = true;
-      jwidget_dirty(menuitem);
+      menuitem->invalidate();
     }
 
     // Highlight parents

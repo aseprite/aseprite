@@ -860,7 +860,7 @@ void set_gfxicon_in_button(ButtonBase* button, int gfx_id)
 
   button->setButtonIcon(get_gfx(gfx_id));
 
-  jwidget_dirty(button);
+  button->invalidate();
 }
 
 static bool button_with_icon_msg_proc(JWidget widget, JMessage msg)

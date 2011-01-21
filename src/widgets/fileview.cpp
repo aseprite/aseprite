@@ -160,7 +160,7 @@ void fileview_set_current_folder(JWidget widget, IFileItem* folder)
 
   jwidget_emit_signal(widget, SIGNAL_FILEVIEW_CURRENT_FOLDER_CHANGED);
 
-  jwidget_dirty(widget);
+  widget->invalidate();
   jview_update(jwidget_get_view(widget));
 }
 
@@ -411,7 +411,7 @@ static bool fileview_msg_proc(JWidget widget, JMessage msg)
 	if (old_selected != fileview->selected) {
 	  fileview_generate_preview_of_selected_item(widget);
 
-	  jwidget_dirty(widget);
+	  widget->invalidate();
 	  jwidget_emit_signal(widget, SIGNAL_FILEVIEW_FILE_SELECTED);
 	}
       }
@@ -676,7 +676,7 @@ static void fileview_select_index(JWidget widget, int index)
   if (old_selected != fileview->selected) {
     fileview_make_selected_fileitem_visible(widget);
     
-    jwidget_dirty(widget);
+    widget->invalidate();
     jwidget_emit_signal(widget, SIGNAL_FILEVIEW_FILE_SELECTED);
   }
 
@@ -732,7 +732,7 @@ static bool fileview_generate_thumbnail(JWidget widget, IFileItem* fileitem)
 				      monitor_free_thumbnail_generation, data);
 
       fileview_data(widget)->monitors.push_back(data->monitor);
-      jwidget_dirty(widget);
+      widget->invalidate();
     }
     else {
       fop_free(fop);
@@ -843,14 +843,14 @@ static void monitor_thumbnail_generation(void *_data)
       /* is the selected file-item the one that now has a thumbnail? */
       if (fileview_get_selected(data->fileview) == data->fileitem) {
 	/* we have to dirty the file-view to show the thumbnail */
-	jwidget_dirty(data->fileview);
+	data->fileview->invalidate();
       }
     }
 
     remove_gui_monitor(data->monitor);
   }
   else {
-    jwidget_dirty(data->fileview);
+    data->fileview->invalidate();
   }
 }
 

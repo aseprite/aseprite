@@ -200,7 +200,7 @@ bool StatusBar::setStatusText(int msecs, const char *format, ...)
     m_state = SHOW_TEXT;
 
     this->setText(buf);
-    this->dirty();
+    this->invalidate();
 
     return true;
   }
@@ -245,7 +245,7 @@ void StatusBar::showTip(int msecs, const char *format, ...)
   // Set the text in status-bar (with inmediate timeout)
   m_timeout = ji_clock;
   this->setText(buf);
-  this->dirty();
+  this->invalidate();
 }
 
 void StatusBar::showColor(int msecs, const char* text, const Color& color, int alpha)
@@ -285,7 +285,7 @@ void StatusBar::showMovePixelsOptions()
 {
   if (!this->hasChild(m_movePixelsBox)) {
     jwidget_add_child(this, m_movePixelsBox);
-    jwidget_dirty(this);
+    invalidate();
   }
 }
 
@@ -293,7 +293,7 @@ void StatusBar::hideMovePixelsOptions()
 {
   if (this->hasChild(m_movePixelsBox)) {
     jwidget_remove_child(this, m_movePixelsBox);
-    jwidget_dirty(this);
+    invalidate();
   }
 }
 
@@ -309,7 +309,7 @@ Progress* StatusBar::addProgress()
 {
   Progress* progress = new Progress(this);
   jlist_append(m_progress, progress);
-  jwidget_dirty(this);
+  invalidate();
   return progress;
 }
 
@@ -318,7 +318,7 @@ void StatusBar::removeProgress(Progress* progress)
   ASSERT(progress->m_statusbar == this);
 
   jlist_remove(m_progress, progress);
-  jwidget_dirty(this);
+  invalidate();
 }
 
 Progress::Progress(StatusBar* statusbar)
@@ -339,7 +339,7 @@ void Progress::setPos(float pos)
 {
   if (m_pos != pos) {
     m_pos = pos;
-    m_statusbar->dirty();
+    m_statusbar->invalidate();
   }
 }
 
@@ -588,7 +588,7 @@ bool StatusBar::onProcessMessage(JMessage msg)
 	  updateFromLayer();
 
 	  jwidget_add_child(this, m_commandsBox);
-	  jwidget_dirty(this);
+	  invalidate();
 	}
 	else {
 	  // Status text for donations
@@ -649,7 +649,7 @@ bool StatusBar::onProcessMessage(JMessage msg)
 
 	if (m_hot_layer != hot_layer) {
 	  m_hot_layer = hot_layer;
-	  dirty();
+	  invalidate();
 	}
       }
       catch (LockedSpriteException&) {
@@ -677,7 +677,7 @@ bool StatusBar::onProcessMessage(JMessage msg)
 	      current_editor->flashCurrentLayer();
 
 	      // Redraw the status-bar
-	      dirty();
+	      invalidate();
 	    }
 	  }
 	  else {
@@ -704,12 +704,12 @@ bool StatusBar::onProcessMessage(JMessage msg)
 	  jmanager_free_focus();		// TODO Review this code
 
 	  jwidget_remove_child(this, m_commandsBox);
-	  jwidget_dirty(this);
+	  invalidate();
 	}
 
 	if (m_hot_layer >= 0) {
 	  m_hot_layer = -1;
-	  dirty();
+	  invalidate();
 	}
       }
       break;

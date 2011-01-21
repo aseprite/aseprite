@@ -170,7 +170,7 @@ void Editor::editor_set_sprite(Sprite* sprite)
   }
 
   // Redraw the entire editor (because we have a new sprite to draw)
-  dirty();
+  invalidate();
 }
 
 // Sets the scroll position of the editor
