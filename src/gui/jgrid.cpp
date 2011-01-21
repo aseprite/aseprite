@@ -152,7 +152,7 @@ static bool grid_msg_proc(JWidget widget, JMessage msg)
       return true;
 
     case JM_DRAW:
-      widget->theme->draw_grid(widget, &msg->draw.rect);
+      widget->getTheme()->draw_grid(widget, &msg->draw.rect);
       return true;
 
   }

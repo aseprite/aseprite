@@ -45,7 +45,7 @@ static bool textbox_msg_proc(JWidget widget, JMessage msg)
       return true;
 
     case JM_DRAW:
-      widget->theme->draw_textbox(widget, &msg->draw.rect);
+      widget->getTheme()->draw_textbox(widget, &msg->draw.rect);
       return true;
 
     case JM_SIGNAL:

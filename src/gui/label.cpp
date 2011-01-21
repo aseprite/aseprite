@@ -35,7 +35,7 @@ bool Label::onProcessMessage(JMessage msg)
       return true;
 
     case JM_DRAW:
-      this->theme->draw_label(this, &msg->draw.rect);
+      this->getTheme()->draw_label(this, &msg->draw.rect);
       return true;
   }
 

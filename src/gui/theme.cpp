@@ -56,15 +56,14 @@ void Theme::regenerate()
 
 void CurrentTheme::set(Theme* theme)
 {
-  JWidget manager = ji_get_default_manager();
-
   current_theme = theme;
 
   if (current_theme) {
     current_theme->regenerate();
 
-    if (manager && jwidget_get_theme(manager) == NULL)
-      jwidget_set_theme(manager, theme);
+    Widget* manager = ji_get_default_manager();
+    if (manager && !manager->getTheme())
+      manager->setTheme(theme);
   }
 }
 

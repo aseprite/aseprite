@@ -1079,7 +1079,7 @@ static bool manager_msg_proc(JWidget widget, JMessage msg)
       return true;
 
     case JM_DRAW:
-      jdraw_rectfill(&msg->draw.rect, widget->theme->desktop_color);
+      jdraw_rectfill(&msg->draw.rect, widget->getTheme()->desktop_color);
       return true;
 
     case JM_KEYPRESSED:

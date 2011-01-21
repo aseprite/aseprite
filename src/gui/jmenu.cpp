@@ -379,7 +379,7 @@ static bool menu_msg_proc(Widget* widget, JMessage msg)
       return true;
 
     case JM_DRAW:
-      widget->theme->draw_menu(widget, &msg->draw.rect);
+      widget->getTheme()->draw_menu(widget, &msg->draw.rect);
       return true;
 
   }
@@ -845,7 +845,7 @@ static bool menuitem_msg_proc(Widget* widget, JMessage msg)
       return true;
 
     case JM_DRAW:
-      widget->theme->draw_menuitem(widget, &msg->draw.rect);
+      widget->getTheme()->draw_menuitem(widget, &msg->draw.rect);
       return true;
 
     case JM_MOUSEENTER:

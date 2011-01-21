@@ -187,7 +187,7 @@ void* Tabs::getSelectedTab()
 
 bool Tabs::onProcessMessage(JMessage msg)
 {
-  SkinTheme* theme = static_cast<SkinTheme*>(this->theme);
+  SkinTheme* theme = static_cast<SkinTheme*>(this->getTheme());
 
   switch (msg->type) {
 
@@ -407,7 +407,7 @@ void Tabs::drawTab(BITMAP* bmp, JRect box, Tab* tab, int y_delta, bool selected)
   if (box->x1 >= this->rc->x2 || box->x2 <= this->rc->x1)
     return;
 
-  SkinTheme* theme = static_cast<SkinTheme*>(this->theme);
+  SkinTheme* theme = static_cast<SkinTheme*>(this->getTheme());
   int text_color;
   int face_color;
 

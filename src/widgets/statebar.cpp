@@ -392,7 +392,7 @@ bool StatusBar::onProcessMessage(JMessage msg)
       break;
 
     case JM_DRAW: {
-      SkinTheme* theme = static_cast<SkinTheme*>(this->theme);
+      SkinTheme* theme = static_cast<SkinTheme*>(this->getTheme());
       int text_color = ji_color_foreground();
       int face_color = ji_color_face();
       JRect rc = jwidget_get_rect(this);

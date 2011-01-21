@@ -17,7 +17,7 @@
 #include "gui/theme.h"
 #include "gui/widget.h"
 
-#define BAR_SIZE widget->theme->scrollbar_size
+#define BAR_SIZE widget->getTheme()->scrollbar_size
 
 using namespace gfx;
 
@@ -141,13 +141,13 @@ void jview_set_size(JWidget widget, int w, int h)
   jwidget_remove_child(widget, view->scrollbar_v);
 
   if (view->hasbars) {
-    if (CHECK (w, h, l, t, r, b)) {
+    if (CHECK(w, h, l, t, r, b)) {
       pos->y2 -= BAR_SIZE;
       jwidget_add_child(widget, view->scrollbar_h);
 
-      if (CHECK (h, w, t, l, b, r)) {
+      if (CHECK(h, w, t, l, b, r)) {
 	pos->x2 -= BAR_SIZE;
-	if (CHECK (w, h, l, t, r, b))
+	if (CHECK(w, h, l, t, r, b))
 	  jwidget_add_child(widget, view->scrollbar_v);
 	else {
 	  pos->x2 += BAR_SIZE;
@@ -156,13 +156,13 @@ void jview_set_size(JWidget widget, int w, int h)
 	}
       }
     }
-    else if (CHECK (h, w, t, l, b, r)) {
+    else if (CHECK(h, w, t, l, b, r)) {
       pos->x2 -= BAR_SIZE;
       jwidget_add_child(widget, view->scrollbar_v);
 
-      if (CHECK (w, h, l, t, r, b)) {
+      if (CHECK(w, h, l, t, r, b)) {
         pos->y2 -= BAR_SIZE;
-	if (CHECK (h, w, t, l, b, r))
+	if (CHECK(h, w, t, l, b, r))
 	  jwidget_add_child(widget, view->scrollbar_h);
 	else {
 	  pos->x2 += BAR_SIZE;
@@ -352,7 +352,7 @@ static bool view_msg_proc(JWidget widget, JMessage msg)
       return true;
 
     case JM_DRAW:
-      widget->theme->draw_view(widget, &msg->draw.rect);
+      widget->getTheme()->draw_view(widget, &msg->draw.rect);
       return true;
 
     case JM_FOCUSENTER:
@@ -394,7 +394,7 @@ static bool viewport_msg_proc(JWidget widget, JMessage msg)
       return true;
 
     case JM_DRAW:
-      widget->theme->draw_view_viewport(widget, &msg->draw.rect);
+      widget->getTheme()->draw_view_viewport(widget, &msg->draw.rect);
       return true;
   }
 
@@ -587,7 +587,7 @@ static bool scrollbar_msg_proc(JWidget widget, JMessage msg)
       break;
 
     case JM_DRAW:
-      widget->theme->draw_view_scrollbar(widget, &msg->draw.rect);
+      widget->getTheme()->draw_view_scrollbar(widget, &msg->draw.rect);
       return true;
   }
 

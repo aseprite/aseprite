@@ -160,7 +160,7 @@ static bool listbox_msg_proc(JWidget widget, JMessage msg)
       return true;
 
     case JM_DRAW:
-      widget->theme->draw_listbox(widget, &msg->draw.rect);
+      widget->getTheme()->draw_listbox(widget, &msg->draw.rect);
       return true;
 
     case JM_DIRTYCHILDREN:
@@ -396,7 +396,7 @@ static bool listitem_msg_proc(JWidget widget, JMessage msg)
     }
 
     case JM_DRAW:
-      widget->theme->draw_listitem(widget, &msg->draw.rect);
+      widget->getTheme()->draw_listitem(widget, &msg->draw.rect);
       return true;
   }
 

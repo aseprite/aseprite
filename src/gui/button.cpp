@@ -88,9 +88,9 @@ bool ButtonBase::onProcessMessage(JMessage msg)
 
     case JM_DRAW: {
       switch (m_drawType) {
-      	case JI_BUTTON: this->theme->draw_button(this, &msg->draw.rect); break;
-      	case JI_CHECK:  this->theme->draw_check(this, &msg->draw.rect); break;
-      	case JI_RADIO:  this->theme->draw_radio(this, &msg->draw.rect); break;
+      	case JI_BUTTON: getTheme()->draw_button(this, &msg->draw.rect); break;
+      	case JI_CHECK:  getTheme()->draw_check(this, &msg->draw.rect); break;
+      	case JI_RADIO:  getTheme()->draw_radio(this, &msg->draw.rect); break;
       }
       return true;
     }
@@ -306,13 +306,13 @@ void ButtonBase::onPreferredSize(PreferredSizeEvent& ev)
     switch (m_drawType) {
 
       case JI_CHECK:
-	icon_w = this->theme->check_icon_size;
-	icon_h = this->theme->check_icon_size;
+	icon_w = getTheme()->check_icon_size;
+	icon_h = getTheme()->check_icon_size;
 	break;
 
       case JI_RADIO:
-	icon_w = this->theme->radio_icon_size;
-	icon_h = this->theme->radio_icon_size;
+	icon_w = getTheme()->radio_icon_size;
+	icon_h = getTheme()->radio_icon_size;
 	break;
     }
   }

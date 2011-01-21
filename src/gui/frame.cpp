@@ -379,7 +379,7 @@ bool Frame::onProcessMessage(JMessage msg)
       break;
 
     case JM_DRAW:
-      this->theme->draw_frame(this, &msg->draw.rect);
+      getTheme()->draw_frame(this, &msg->draw.rect);
       return true;
 
   }
@@ -437,7 +437,7 @@ void Frame::window_set_position(JRect rect)
     child = (JWidget)link->data;
 
     if (jwidget_is_decorative(child))
-      child->theme->map_decorative_widget(child);
+      child->getTheme()->map_decorative_widget(child);
     else
       jwidget_set_rect(child, cpos);
   }

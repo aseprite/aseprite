@@ -71,7 +71,7 @@ bool Slider::onProcessMessage(JMessage msg)
   switch (msg->type) {
 
     case JM_DRAW:
-      this->theme->draw_slider(this, &msg->draw.rect);
+      this->getTheme()->draw_slider(this, &msg->draw.rect);
       return true;
 
     case JM_FOCUSENTER:

@@ -111,7 +111,7 @@ private:
 
 static Size getToolIconSize(Widget* widget)
 {
-  SkinTheme* theme = static_cast<SkinTheme*>(widget->theme);
+  SkinTheme* theme = static_cast<SkinTheme*>(widget->getTheme());
   BITMAP* icon = theme->get_toolicon("configuration");
   if (icon)
     return Size(icon->w, icon->h);
@@ -187,7 +187,7 @@ bool ToolBar::onProcessMessage(JMessage msg)
     case JM_DRAW: {
       BITMAP *doublebuffer = create_bitmap(jrect_w(&msg->draw.rect),
 					   jrect_h(&msg->draw.rect));
-      SkinTheme* theme = static_cast<SkinTheme*>(this->theme);
+      SkinTheme* theme = static_cast<SkinTheme*>(this->getTheme());
       ToolBox* toolbox = App::instance()->getToolBox();
       ToolGroupList::iterator it = toolbox->begin_group();
       int groups = toolbox->getGroupsCount();
@@ -594,7 +594,7 @@ bool ToolStrip::onProcessMessage(JMessage msg)
     case JM_DRAW: {
       BITMAP *doublebuffer = create_bitmap(jrect_w(&msg->draw.rect),
 					   jrect_h(&msg->draw.rect));
-      SkinTheme* theme = static_cast<SkinTheme*>(this->theme);
+      SkinTheme* theme = static_cast<SkinTheme*>(this->getTheme());
       ToolBox* toolbox = App::instance()->getToolBox();
       Rect toolrc;
       int index = 0;

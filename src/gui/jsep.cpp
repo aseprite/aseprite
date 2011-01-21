@@ -56,7 +56,7 @@ static bool separator_msg_proc(JWidget widget, JMessage msg)
     }
 
     case JM_DRAW:
-      widget->theme->draw_separator(widget, &msg->draw.rect);
+      widget->getTheme()->draw_separator(widget, &msg->draw.rect);
       return true;
   }
 

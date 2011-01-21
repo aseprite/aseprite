@@ -63,7 +63,7 @@ static bool editor_view_msg_proc(JWidget widget, JMessage msg);
 JWidget editor_view_new()
 {
   JWidget widget = jview_new();
-  SkinTheme* theme = static_cast<SkinTheme*>(widget->theme);
+  SkinTheme* theme = static_cast<SkinTheme*>(widget->getTheme());
   int l = theme->get_part(PART_EDITOR_SELECTED_W)->w;
   int t = theme->get_part(PART_EDITOR_SELECTED_N)->h;
   int r = theme->get_part(PART_EDITOR_SELECTED_E)->w;
@@ -861,7 +861,7 @@ static bool editor_view_msg_proc(JWidget widget, JMessage msg)
 	JWidget viewport = jview_get_viewport(widget);
 	JWidget child = reinterpret_cast<JWidget>(jlist_first_data(viewport->children));
 	JRect pos = jwidget_get_rect(widget);
-	SkinTheme* theme = static_cast<SkinTheme*>(widget->theme);
+	SkinTheme* theme = static_cast<SkinTheme*>(widget->getTheme());
 
 	theme->draw_bounds_nw(ji_screen,
 			      pos->x1, pos->y1,
@@ -905,7 +905,7 @@ bool Editor::onProcessMessage(JMessage msg)
       break;
 
     case JM_DRAW: {
-      SkinTheme* theme = static_cast<SkinTheme*>(this->theme);
+      SkinTheme* theme = static_cast<SkinTheme*>(this->getTheme());
 
       if (m_old_cursor_thick == 0) {
       	m_old_cursor_thick = m_cursor_thick;

@@ -45,7 +45,7 @@ bool LinkLabel::onProcessMessage(JMessage msg)
       break;
 
     case JM_DRAW:
-      this->theme->draw_link_label(this, &msg->draw.rect);
+      getTheme()->draw_link_label(this, &msg->draw.rect);
       return true;
 
     case JM_BUTTONRELEASED:

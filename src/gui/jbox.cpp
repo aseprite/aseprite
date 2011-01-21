@@ -45,7 +45,7 @@ static bool box_msg_proc(JWidget widget, JMessage msg)
       return true;
 
     case JM_DRAW:
-      widget->theme->draw_box(widget, &msg->draw.rect);
+      widget->getTheme()->draw_box(widget, &msg->draw.rect);
       return true;
 
   }

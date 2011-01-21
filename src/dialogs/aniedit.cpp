@@ -1115,7 +1115,7 @@ static void anieditor_draw_layer(JWidget widget, JRect clip, int layer_index)
 
 static void anieditor_draw_layer_padding(JWidget widget)
 {
-  SkinTheme* theme = static_cast<SkinTheme*>(widget->theme);
+  SkinTheme* theme = static_cast<SkinTheme*>(widget->getTheme());
   AniEditor* anieditor = anieditor_data(widget);
   int layer_index = anieditor->nlayers-1;
   int x1, y1, x2, y2;
@@ -1138,7 +1138,7 @@ static void anieditor_draw_layer_padding(JWidget widget)
 
 static void anieditor_draw_cel(JWidget widget, JRect clip, int layer_index, int frame)
 {
-  SkinTheme* theme = static_cast<SkinTheme*>(widget->theme);
+  SkinTheme* theme = static_cast<SkinTheme*>(widget->getTheme());
   AniEditor* anieditor = anieditor_data(widget);
   Layer *layer = anieditor->layers[layer_index];
   bool selected_layer = (layer == anieditor->sprite->getCurrentLayer());

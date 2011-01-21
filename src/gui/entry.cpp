@@ -167,7 +167,7 @@ bool Entry::onProcessMessage(JMessage msg)
   switch (msg->type) {
 
     case JM_DRAW:
-      this->theme->draw_entry(this, &msg->draw.rect);
+      getTheme()->draw_entry(this, &msg->draw.rect);
       return true;
 
     case JM_TIMER:

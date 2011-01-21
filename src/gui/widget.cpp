@@ -59,12 +59,12 @@ Widget::Widget(int type)
   this->max_h = INT_MAX;
   this->children = jlist_new();
   this->parent = NULL;
-  this->theme = CurrentTheme::get();
+  this->m_theme = CurrentTheme::get();
   this->hooks = jlist_new();
 
   this->m_align = 0;
   this->m_text = "";
-  this->m_font = this->theme ? this->theme->default_font: NULL;
+  this->m_font = this->m_theme ? this->m_theme->default_font: NULL;
   this->m_bg_color = -1;
 
   this->update_region = jregion_new(NULL, 0);
@@ -153,8 +153,8 @@ void jwidget_init_theme(JWidget widget)
 {
   ASSERT_VALID_WIDGET(widget);
 
-  if (widget->theme) {
-    widget->theme->init_widget(widget);
+  if (widget->getTheme()) {
+    widget->getTheme()->init_widget(widget);
 
     if (!(widget->flags & JI_INITIALIZED))
       widget->flags |= JI_INITIALIZED;
@@ -308,6 +308,14 @@ void Widget::setFont(FONT* f)
 
   jwidget_emit_signal(this, JI_SIGNAL_SET_FONT);
   dirty();
+}
+
+void Widget::setTheme(Theme* theme)
+{
+  m_theme = theme;
+
+  // TODO maybe some Style in Widget should be great
+  setFont(m_theme ? m_theme->default_font: NULL);
 }
 
 /**********************************************************************/
@@ -724,7 +732,7 @@ JRegion jwidget_get_region(JWidget widget)
   ASSERT_VALID_WIDGET(widget);
 
   if (widget->type == JI_FRAME)
-    region = widget->theme->get_window_mask(widget);
+    region = widget->getTheme()->get_window_mask(widget);
   else
     region = jregion_new(widget->rc, 1);
 
@@ -856,13 +864,6 @@ int jwidget_get_bg_color(JWidget widget)
   ASSERT_VALID_WIDGET(widget);
 
   return widget->getBgColor();
-}
-
-Theme* jwidget_get_theme(JWidget widget)
-{
-  ASSERT_VALID_WIDGET(widget);
-
-  return widget->theme;
 }
 
 int jwidget_get_text_length(JWidget widget)
@@ -1052,15 +1053,6 @@ void jwidget_set_bg_color(JWidget widget, int color)
   ASSERT_VALID_WIDGET(widget);
 
   widget->setBgColor(color);
-}
-
-void jwidget_set_theme(JWidget widget, Theme* theme)
-{
-  ASSERT_VALID_WIDGET(widget);
-
-  widget->theme = theme;
-  /* TODO mmhhh... maybe some JStyle in JWidget should be great */
-  widget->setFont(widget->theme ? widget->theme->default_font: NULL);
 }
 
 /**********************************************************************/

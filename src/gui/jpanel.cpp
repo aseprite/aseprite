@@ -76,7 +76,7 @@ static bool panel_msg_proc(JWidget widget, JMessage msg)
       return true;
 
     case JM_DRAW:
-      widget->theme->draw_panel(widget, &msg->draw.rect);
+      widget->getTheme()->draw_panel(widget, &msg->draw.rect);
       return true;
 
     case JM_BUTTONPRESSED: 

@@ -82,7 +82,6 @@ JRect jwidget_get_child_rect(JWidget widget);
 JRegion jwidget_get_region(JWidget widget);
 JRegion jwidget_get_drawable_region(JWidget widget, int flags);
 int jwidget_get_bg_color(JWidget widget);
-Theme* jwidget_get_theme(JWidget widget);
 int jwidget_get_text_length(JWidget widget);
 int jwidget_get_text_height(JWidget widget);
 void jwidget_get_texticon_info(JWidget widget,
@@ -96,7 +95,6 @@ void jwidget_set_rect(JWidget widget, JRect rect);
 void jwidget_set_min_size(JWidget widget, int w, int h);
 void jwidget_set_max_size(JWidget widget, int w, int h);
 void jwidget_set_bg_color(JWidget widget, int color);
-void jwidget_set_theme(JWidget widget, Theme* theme);
 
 /* drawing methods */
 
@@ -149,17 +147,17 @@ public:
   /* structures */
   JList children;		 /* sub-objects */
   JWidget parent;		 /* who is the parent? */
-  Theme* theme;			 // Widget's theme
 
   /* virtual properties */
   JList hooks;			/* hooks with msg_proc and specific data */
 
   /* common widget properties */
 private:
-  int m_align;			// widget alignment
-  std::string m_text;		// widget text
-  struct FONT *m_font;		// text font type
-  int m_bg_color;		// background color
+  Theme* m_theme;		// Widget's theme
+  int m_align;			// Widget alignment
+  std::string m_text;		// Widget text
+  struct FONT *m_font;		// Text font type
+  int m_bg_color;		// Background color
 public:
 
   /* drawable cycle */
@@ -213,29 +211,28 @@ public:
   bool isSelected() const;
   void setSelected(bool state);
 
-  // font
+  // ===============================================================
+  // LOOK & FEEL
+  // ===============================================================
 
   FONT* getFont();
   void setFont(FONT* font);
 
-  /**
-   * Gets the background color of the widget.
-   */
-  int getBgColor()
-  {
+  // Gets the background color of the widget.
+  int getBgColor() const {
     if (m_bg_color < 0 && parent)
       return parent->getBgColor();
     else
       return m_bg_color;
   }
 
-  /**
-   * Sets the background color of the widget.
-   */
-  void setBgColor(int bg_color)
-  {
+  // Sets the background color of the widget
+  void setBgColor(int bg_color) {
     m_bg_color = bg_color;
   }
+
+  Theme* getTheme() const { return m_theme; }
+  void setTheme(Theme* theme);
 
   //////////////////////////////////////////////////////////////////////
   // parents and children

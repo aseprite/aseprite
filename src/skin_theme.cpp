@@ -710,8 +710,8 @@ void SkinTheme::draw_check(ButtonBase* widget, JRect clip)
 
   jwidget_get_texticon_info(widget, &box, &text, &icon,
 			    widget->getButtonIconAlign(),
-			    widget->theme->check_icon_size,
-			    widget->theme->check_icon_size);
+			    this->check_icon_size,
+			    this->check_icon_size);
 
   // background
   jdraw_rectfill(widget->rc, bg = BGCOLOR);
@@ -1021,8 +1021,8 @@ void SkinTheme::draw_radio(ButtonBase* widget, JRect clip)
 
   jwidget_get_texticon_info(widget, &box, &text, &icon,
 			    widget->getButtonIconAlign(),
-			    widget->theme->radio_icon_size,
-			    widget->theme->radio_icon_size);
+			    this->radio_icon_size,
+			    this->radio_icon_size);
 
   /* background */
   jdraw_rectfill(widget->rc, bg);
@@ -1318,8 +1318,8 @@ void SkinTheme::draw_combobox_button(ButtonBase* widget, JRect clip)
 void SkinTheme::draw_textbox(JWidget widget, JRect clip)
 {
   _ji_theme_textbox_draw(ji_screen, widget, NULL, NULL,
-			 widget->theme->textbox_bg_color,
-			 widget->theme->textbox_fg_color);
+			 this->textbox_bg_color,
+			 this->textbox_fg_color);
 }
 
 void SkinTheme::draw_view(JWidget widget, JRect clip)
@@ -1413,7 +1413,7 @@ void SkinTheme::draw_frame(Frame* window, JRect clip)
   }
   // desktop
   else {
-    jdraw_rectfill(pos, window->theme->desktop_color);
+    jdraw_rectfill(pos, this->desktop_color);
   }
 
   jrect_free(pos);
@@ -1725,7 +1725,8 @@ bool SkinTheme::theme_frame_button_msg_proc(JWidget widget, JMessage msg)
 	ButtonBase* button = dynamic_cast<ButtonBase*>(widget);
 	ASSERT(button && "theme_frame_button_msg_proc() must be hooked in a ButtonBase widget");
 
-	((SkinTheme*)widget->theme)->draw_frame_button(button, &msg->draw.rect);
+	((SkinTheme*)button->getTheme())
+	  ->draw_frame_button(button, &msg->draw.rect);
       }
       return true;
 

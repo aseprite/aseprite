@@ -350,8 +350,8 @@ static bool combobox_entry_msg_proc(JWidget widget, JMessage msg)
       break;
 
     case JM_DRAW:
-      widget->theme->draw_combobox_entry(static_cast<Entry*>(widget),
-					 &msg->draw.rect);
+      widget->getTheme()->draw_combobox_entry(static_cast<Entry*>(widget),
+					      &msg->draw.rect);
       return true;
 
   }
@@ -364,7 +364,7 @@ static bool combobox_button_msg_proc(JWidget widget, JMessage msg)
   switch (msg->type) {
 
     case JM_DRAW:
-      widget->theme->draw_combobox_button((ButtonBase*)widget, &msg->draw.rect);
+      widget->getTheme()->draw_combobox_button((ButtonBase*)widget, &msg->draw.rect);
       return true;
 
   }
