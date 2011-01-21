@@ -7,8 +7,8 @@
 #include "config.h"
 
 #include "gui/jbase.h"
-#include "gui/jtheme.h"
 #include "gui/jclipboard.h"
+#include "gui/theme.h"
 
 #ifdef MEMLEAK
 void _jmemleak_init();
@@ -24,9 +24,6 @@ void _ji_system_exit();
 int _ji_font_init();
 void _ji_font_exit();
 
-int _ji_theme_init();
-void _ji_theme_exit();
-
 /**
  * Initializes the Jinete library.
  */
@@ -40,19 +37,17 @@ Jinete::Jinete()
   _ji_system_init();
   _ji_font_init();
   _ji_widgets_init();
-  _ji_theme_init();
 }
 
 Jinete::~Jinete()
 {
   // finish theme
-  ji_set_theme(NULL);
+  CurrentTheme::set(NULL);
 
   // destroy clipboard
   jclipboard_set_text(NULL);
 
   // shutdown system
-  _ji_theme_exit();
   _ji_widgets_exit();
   _ji_font_exit();
   _ji_system_exit();

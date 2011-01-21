@@ -38,7 +38,7 @@ void _jmanager_open_window(JWidget manager, Frame* frame);
 void _jmanager_close_window(JWidget manager, Frame* frame, bool redraw_background);
 
 //////////////////////////////////////////////////////////////////////
-// jtheme.c
+// theme.cpp
 
 void _ji_theme_draw_sprite_color(struct BITMAP *bmp, struct BITMAP *sprite,
 				 int x, int y, int color);

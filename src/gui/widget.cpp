@@ -59,7 +59,7 @@ Widget::Widget(int type)
   this->max_h = INT_MAX;
   this->children = jlist_new();
   this->parent = NULL;
-  this->theme = ji_get_theme();
+  this->theme = CurrentTheme::get();
   this->hooks = jlist_new();
 
   this->m_align = 0;
@@ -858,7 +858,7 @@ int jwidget_get_bg_color(JWidget widget)
   return widget->getBgColor();
 }
 
-JTheme jwidget_get_theme(JWidget widget)
+Theme* jwidget_get_theme(JWidget widget)
 {
   ASSERT_VALID_WIDGET(widget);
 
@@ -1054,7 +1054,7 @@ void jwidget_set_bg_color(JWidget widget, int color)
   widget->setBgColor(color);
 }
 
-void jwidget_set_theme(JWidget widget, JTheme theme)
+void jwidget_set_theme(JWidget widget, Theme* theme)
 {
   ASSERT_VALID_WIDGET(widget);
 

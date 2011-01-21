@@ -4,8 +4,8 @@
 // This source file is ditributed under a BSD-like license, please
 // read LICENSE.txt for more information.
 
-#ifndef GUI_JTHEME_H_INCLUDED
-#define GUI_JTHEME_H_INCLUDED
+#ifndef GUI_THEME_H_INCLUDED
+#define GUI_THEME_H_INCLUDED
 
 #include "gui/jbase.h"
 
@@ -16,7 +16,7 @@ class ButtonBase;
 class Entry;
 class Slider;
 
-class jtheme
+class Theme
 {
 public:
   const char* name;
@@ -29,10 +29,11 @@ public:
   int scrollbar_size;
   int guiscale;
 
-  jtheme();
-  virtual ~jtheme();
+  Theme();
+  virtual ~Theme();
+  
+  void regenerate();
 
-  virtual void regen() = 0;
   virtual BITMAP* set_cursor(int type, int *focus_x, int *focus_y) = 0;
   virtual void init_widget(JWidget widget) = 0;
   virtual JRegion get_window_mask(JWidget widget) = 0;
@@ -68,11 +69,16 @@ public:
   virtual void draw_view_viewport(JWidget widget, JRect clip) = 0;
   virtual void draw_frame(Frame* frame, JRect clip) = 0;
 
+protected:
+  virtual void onRegenerate() = 0;
+
 };
 
-void ji_set_theme(JTheme theme);
-JTheme ji_get_theme();
-void ji_regen_theme();
+namespace CurrentTheme
+{
+  void set(Theme* theme);
+  Theme* get();
+}
 
 int ji_color_foreground();
 int ji_color_disabled();
@@ -89,7 +95,7 @@ BITMAP* ji_apply_guiscale(BITMAP* original);
 // Every icon/graphics/font should be scaled to this factor.
 inline int jguiscale()
 {
-  return ji_get_theme() ? ji_get_theme()->guiscale: 1;
+  return CurrentTheme::get() ? CurrentTheme::get()->guiscale: 1;
 }
 
 #endif

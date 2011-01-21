@@ -8,15 +8,15 @@
 
 #include <allegro/keyboard.h>
 
+#include "gfx/size.h"
 #include "gui/jlist.h"
 #include "gui/jmanager.h"
 #include "gui/jmessage.h"
 #include "gui/jrect.h"
 #include "gui/jsystem.h"
-#include "gui/jtheme.h"
 #include "gui/jview.h"
+#include "gui/theme.h"
 #include "gui/widget.h"
-#include "gfx/size.h"
 
 using namespace gfx;
 

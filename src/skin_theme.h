@@ -25,8 +25,8 @@
 
 #include "gfx/rect.h"
 #include "gui/jrect.h"
-#include "gui/jtheme.h"
 #include "gui/property.h"
+#include "gui/theme.h"
 
 // Property to show widgets with a special look (e.g.: buttons or sliders with mini-borders)
 class SkinProperty : public Property
@@ -420,7 +420,7 @@ enum {
 
 // This is the GUI theme used by ASE (which use images from data/skins
 // directory).
-class SkinTheme : public jtheme
+class SkinTheme : public Theme
 {
   std::string m_selected_skin;
   BITMAP* m_sheet_bmp;
@@ -436,7 +436,6 @@ public:
 
   std::string get_font_filename() const;
 
-  void regen();
   BITMAP* set_cursor(int type, int* focus_x, int* focus_y);
   void init_widget(JWidget widget);
   JRegion get_window_mask(JWidget widget);
@@ -536,6 +535,10 @@ public:
   void draw_bounds_nw(BITMAP* bmp, const gfx::Rect& rc, int nw, int bg) {
     draw_bounds_nw(bmp, rc.x, rc.y, rc.x+rc.w-1, rc.y+rc.h-1, nw, bg);
   }
+
+protected:
+
+  void onRegenerate();
 
 private:
 

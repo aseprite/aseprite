@@ -9,8 +9,8 @@
 
 #include "gui/jlink_label.h"
 #include "gui/jmessage.h"
-#include "gui/jtheme.h"
 #include "gui/jsystem.h"
+#include "gui/theme.h"
 #include "launcher.h"
 
 LinkLabel::LinkLabel(const char* urlOrText)

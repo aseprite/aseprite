@@ -18,7 +18,7 @@
 #include "gui/jrect.h"
 #include "gui/jregion.h"
 #include "gui/jsystem.h"
-#include "gui/jtheme.h"
+#include "gui/theme.h"
 #include "gui/widget.h"
 
 /* Global output bitmap.  */
@@ -210,7 +210,7 @@ int jmouse_set_cursor(int type)
   if (m_cursor == type)
     return type;
   else {
-    JTheme theme = ji_get_theme();
+    Theme* theme = CurrentTheme::get();
     int old = m_cursor;
     m_cursor = type;
 

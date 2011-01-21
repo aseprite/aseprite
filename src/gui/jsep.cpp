@@ -6,12 +6,12 @@
 
 #include "config.h"
 
+#include "gfx/size.h"
 #include "gui/jlist.h"
 #include "gui/jmessage.h"
 #include "gui/jrect.h"
-#include "gui/jtheme.h"
+#include "gui/theme.h"
 #include "gui/widget.h"
-#include "gfx/size.h"
 
 using namespace gfx;
 

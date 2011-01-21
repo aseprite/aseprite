@@ -25,8 +25,8 @@
 #include <psapi.h>
 #endif
 
-#include "gui/jtheme.h"
 #include "gui/jsystem.h"
+#include "gui/theme.h"
 
 #include "app.h"
 #include "commands/command.h"
@@ -62,9 +62,9 @@ void RefreshCommand::onExecute(Context* context)
 
   // Reload skin
   {
-    SkinTheme* theme = (SkinTheme*)ji_get_theme();
+    SkinTheme* theme = (SkinTheme*)CurrentTheme::get();
     theme->reload_skin();
-    ji_regen_theme();
+    theme->regenerate();
   }
 
   {

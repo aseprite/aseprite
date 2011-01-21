@@ -6,9 +6,9 @@
 
 #include "config.h"
 
-#include "gui/label.h"
 #include "gui/jmessage.h"
-#include "gui/jtheme.h"
+#include "gui/label.h"
+#include "gui/theme.h"
 
 Label::Label(const char *text)
   : Widget(JI_LABEL)

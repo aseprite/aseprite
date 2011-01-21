@@ -82,7 +82,7 @@ JRect jwidget_get_child_rect(JWidget widget);
 JRegion jwidget_get_region(JWidget widget);
 JRegion jwidget_get_drawable_region(JWidget widget, int flags);
 int jwidget_get_bg_color(JWidget widget);
-JTheme jwidget_get_theme(JWidget widget);
+Theme* jwidget_get_theme(JWidget widget);
 int jwidget_get_text_length(JWidget widget);
 int jwidget_get_text_height(JWidget widget);
 void jwidget_get_texticon_info(JWidget widget,
@@ -96,7 +96,7 @@ void jwidget_set_rect(JWidget widget, JRect rect);
 void jwidget_set_min_size(JWidget widget, int w, int h);
 void jwidget_set_max_size(JWidget widget, int w, int h);
 void jwidget_set_bg_color(JWidget widget, int color);
-void jwidget_set_theme(JWidget widget, JTheme theme);
+void jwidget_set_theme(JWidget widget, Theme* theme);
 
 /* drawing methods */
 
@@ -149,7 +149,7 @@ public:
   /* structures */
   JList children;		 /* sub-objects */
   JWidget parent;		 /* who is the parent? */
-  JTheme theme;			 /* widget's theme */
+  Theme* theme;			 // Widget's theme
 
   /* virtual properties */
   JList hooks;			/* hooks with msg_proc and specific data */
@@ -167,7 +167,7 @@ public:
 
   /* more properties... */
 
-  /* for JTheme */
+  // Extra data for the theme
   void *theme_data[4];
 
   /* for user */

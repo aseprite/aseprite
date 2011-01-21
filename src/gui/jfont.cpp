@@ -15,7 +15,7 @@
 
 #include "gui/jfont.h"
 #include "gui/jintern.h"
-#include "gui/jtheme.h"
+#include "gui/theme.h"
 
 FONT* ji_font_load(const char* filepathname)
 {

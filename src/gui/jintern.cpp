@@ -8,10 +8,10 @@
 
 #include <vector>
 
-#include "gui/jmanager.h"
-#include "gui/jtheme.h"
-#include "gui/widget.h"
 #include "gui/frame.h"
+#include "gui/jmanager.h"
+#include "gui/theme.h"
+#include "gui/widget.h"
 
 static std::vector<JWidget>* widgets;
 
@@ -105,7 +105,7 @@ void _ji_reinit_theme_in_all_widgets()
   // Then we can reinitialize the theme of each widget
   for (c=0; c<widgets->size(); c++)
     if (_ji_is_valid_widget((*widgets)[c])) {
-      (*widgets)[c]->theme = ji_get_theme();
+      (*widgets)[c]->theme = CurrentTheme::get();
       jwidget_init_theme((*widgets)[c]);
     }
 

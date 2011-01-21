@@ -13,9 +13,9 @@
 #include "gui/jmessage.h"
 #include "gui/jrect.h"
 #include "gui/jsystem.h"
-#include "gui/jtheme.h"
 #include "gui/preferred_size_event.h"
 #include "gui/slider.h"
+#include "gui/theme.h"
 #include "gui/widget.h"
 
 static int slider_press_x;

@@ -47,10 +47,10 @@ struct jlist;
 union  jmessage;
 struct jrect;
 struct jregion;
-class  jtheme;
 
-class  Widget;
 class  Frame;
+class  Theme;
+class  Widget;
 
 /* alignment */
 #define JI_HORIZONTAL	0x0001
@@ -203,7 +203,6 @@ typedef union  jmessage*	JMessage;
 typedef struct jstream*		JStream;
 typedef struct jrect*		JRect;
 typedef struct jregion*		JRegion;
-typedef class  jtheme*		JTheme;
 typedef class  Widget*		JWidget;
 typedef struct jxml*		JXml;
 typedef struct jxmlattr*	JXmlAttr;

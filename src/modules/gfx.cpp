@@ -24,7 +24,7 @@
 #include "gui/jintern.h"
 #include "gui/jrect.h"
 #include "gui/jsystem.h"
-#include "gui/jtheme.h"
+#include "gui/theme.h"
 
 #include "app.h"
 #include "app/color_utils.h"
@@ -497,7 +497,7 @@ void draw_color_button(BITMAP* bmp,
 		       bool outer_se, bool outer_s, bool outer_sw, bool outer_w,
 		       int imgtype, const Color& color, bool hot, bool drag)
 {
-  SkinTheme* theme = (SkinTheme*)ji_get_theme();
+  SkinTheme* theme = (SkinTheme*)CurrentTheme::get();
   int scale = jguiscale();
 
   // Draw background (the color)

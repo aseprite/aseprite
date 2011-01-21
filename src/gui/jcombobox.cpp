@@ -43,7 +43,7 @@ ComboBox::ComboBox()
   m_entry->user_data[0] = this;
   m_button->user_data[0] = this;
 
-  /* TODO this separation should be from the JTheme */
+  // TODO this separation should be from the Theme*
   this->child_spacing = 0;
 
   jwidget_focusrest(this, true);

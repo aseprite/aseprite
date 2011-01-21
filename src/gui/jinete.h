@@ -37,11 +37,11 @@
 #include "gui/jstream.h"
 #include "gui/jsystem.h"
 #include "gui/jtextbox.h"
-#include "gui/jtheme.h"
 #include "gui/jtooltips.h"
 #include "gui/jview.h"
 #include "gui/label.h"
 #include "gui/slider.h"
+#include "gui/theme.h"
 #include "gui/widget.h"
 
 #endif

@@ -22,12 +22,12 @@
 #include <stdarg.h>
 
 #include "base/bind.h"
-#include "gui/jbox.h"
 #include "gui/button.h"
+#include "gui/jbox.h"
 #include "gui/jhook.h"
 #include "gui/jlist.h"
 #include "gui/jsystem.h"
-#include "gui/jtheme.h"
+#include "gui/theme.h"
 #include "gui/widget.h"
 #include "modules/gui.h"
 #include "widgets/groupbut.h"

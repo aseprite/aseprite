@@ -14,33 +14,19 @@
 #include "gui/jmanager.h"
 #include "gui/jrect.h"
 #include "gui/jsystem.h"
-#include "gui/jtheme.h"
 #include "gui/jview.h"
+#include "gui/theme.h"
 #include "gui/widget.h"
 
-static JTheme ji_current_theme = NULL;
-static JTheme ji_standard_theme = NULL;
+static Theme* current_theme = NULL;
 
 static void draw_text(BITMAP *bmp, FONT *f, const char *text, int x, int y,
 		      int fg_color, int bg_color, bool fill_bg);
 
-int _ji_theme_init()
-{
-  return 0;
-}
-
-void _ji_theme_exit()
-{
-  if (ji_standard_theme) {
-    delete ji_standard_theme;
-    ji_standard_theme = NULL;
-  }
-}
-
-jtheme::jtheme()
+Theme::Theme()
 {
   this->name = "Theme";
-  this->default_font = font;	/* default Allegro font */
+  this->default_font = font;	// Default Allegro font
   this->desktop_color = 0;
   this->textbox_fg_color = 0;
   this->textbox_bg_color = 0;
@@ -50,58 +36,56 @@ jtheme::jtheme()
   this->guiscale = 1;
 }
 
-jtheme::~jtheme()
+Theme::~Theme()
 {
-  if (ji_current_theme == this)
-    ji_set_theme(NULL);
+  if (current_theme == this)
+    CurrentTheme::set(NULL);
 }
 
-/**********************************************************************/
+void Theme::regenerate()
+{
+  int type = jmouse_get_cursor();
+  jmouse_set_cursor(JI_CURSOR_NULL);
 
-void ji_set_theme(JTheme theme)
+  onRegenerate();
+
+  jmouse_set_cursor(type);
+}
+
+//////////////////////////////////////////////////////////////////////
+
+void CurrentTheme::set(Theme* theme)
 {
   JWidget manager = ji_get_default_manager();
 
-  ji_current_theme = theme;
+  current_theme = theme;
 
-  if (ji_current_theme) {
-    ji_regen_theme();
+  if (current_theme) {
+    current_theme->regenerate();
 
     if (manager && jwidget_get_theme(manager) == NULL)
       jwidget_set_theme(manager, theme);
   }
 }
 
-JTheme ji_get_theme()
+Theme* CurrentTheme::get()
 {
-  return ji_current_theme;
-}
-
-void ji_regen_theme()
-{
-  if (ji_current_theme) {
-    int type = jmouse_get_cursor();
-    jmouse_set_cursor(JI_CURSOR_NULL);
-
-    ji_current_theme->regen();
-
-    jmouse_set_cursor(type);
-  }
+  return current_theme;
 }
 
 int ji_color_foreground()
 {
-  return ji_current_theme->color_foreground();
+  return current_theme->color_foreground();
 }
 
 int ji_color_disabled()
 {
-  return ji_current_theme->color_disabled();
+  return current_theme->color_disabled();
 }
 
 int ji_color_face()
 {
-  return ji_current_theme->color_face();
+  return current_theme->color_face();
 }
 
 int ji_color_facelight()
@@ -122,17 +106,17 @@ int ji_color_faceshadow()
 
 int ji_color_hotface()
 {
-  return ji_current_theme->color_hotface();
+  return current_theme->color_hotface();
 }
 
 int ji_color_selected()
 {
-  return ji_current_theme->color_selected();
+  return current_theme->color_selected();
 }
 
 int ji_color_background()
 {
-  return ji_current_theme->color_background();
+  return current_theme->color_background();
 }
 
 BITMAP* ji_apply_guiscale(BITMAP* original)

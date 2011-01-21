@@ -135,7 +135,7 @@ struct Monitor
 //////////////////////////////////////////////////////////////////////
 
 static JWidget manager = NULL;
-static JTheme ase_theme = NULL;
+static Theme* ase_theme = NULL;
 
 static int monitor_timer = -1;
 static MonitorList* monitors = NULL;
@@ -296,8 +296,8 @@ gfx_done:;
   manager = jmanager_new();
   jwidget_add_hook(manager, JI_WIDGET, manager_msg_proc, NULL);
 
-  /* setup the standard jinete theme for widgets */
-  ji_set_theme(ase_theme = new SkinTheme());
+  // Setup the GUI theme for all widgets
+  CurrentTheme::set(ase_theme = new SkinTheme());
 
   // Setup the handler for window-resize events
   set_resize_callback(resize_callback);
@@ -369,7 +369,7 @@ void exit_module_gui()
   destroy_default_font();
 
   // Now we can destroy theme
-  ji_set_theme(NULL);
+  CurrentTheme::set(NULL);
   delete ase_theme;
 
   remove_keyboard();
@@ -575,9 +575,9 @@ void gui_setup_screen(bool reload_font)
 
   // Update guiscale factor
   int old_guiscale = jguiscale();
-  ji_get_theme()->guiscale = (screen_scaling == 1 &&
-			      JI_SCREEN_W > 512 &&
-			      JI_SCREEN_H > 256) ? 2: 1;
+  CurrentTheme::get()->guiscale = (screen_scaling == 1 &&
+				   JI_SCREEN_W > 512 &&
+				   JI_SCREEN_H > 256) ? 2: 1;
 
   // If the guiscale have changed
   if (old_guiscale != jguiscale()) {
@@ -592,7 +592,7 @@ void gui_setup_screen(bool reload_font)
 
   // Regenerate the theme
   if (regen) {
-    ji_regen_theme();
+    CurrentTheme::get()->regenerate();
     reinit = true;
   }
 
@@ -605,7 +605,7 @@ void gui_setup_screen(bool reload_font)
 
 static void destroy_default_font()
 {
-  JTheme theme = ji_get_theme();
+  Theme* theme = CurrentTheme::get();
 
   // No font for now
   if (theme->default_font && theme->default_font != font)
@@ -616,7 +616,7 @@ static void destroy_default_font()
 
 static void reload_default_font()
 {
-  JTheme theme = ji_get_theme();
+  Theme* theme = CurrentTheme::get();
   SkinTheme* skin_theme = static_cast<SkinTheme*>(theme);
   const char *user_font;
 
@@ -1288,7 +1288,7 @@ static bool manager_msg_proc(JWidget widget, JMessage msg)
 static void on_palette_change_signal()
 {
   // Regenerate the theme
-  ji_regen_theme();
+  CurrentTheme::get()->regenerate();
 
   // Fixup the icons
   JLink link;

@@ -26,7 +26,7 @@
 #include "gui/jmessage.h"
 #include "gui/jrect.h"
 #include "gui/jsystem.h"
-#include "gui/jtheme.h"
+#include "gui/theme.h"
 #include "gui/widget.h"
 #include "modules/gfx.h"
 #include "modules/gui.h"

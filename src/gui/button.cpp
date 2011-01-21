@@ -13,14 +13,14 @@
 #include <queue>
 
 #include "gui/button.h"
+#include "gui/frame.h"
 #include "gui/jlist.h"
 #include "gui/jmanager.h"
 #include "gui/jmessage.h"
 #include "gui/jrect.h"
-#include "gui/jtheme.h"
-#include "gui/widget.h"
-#include "gui/frame.h"
 #include "gui/preferred_size_event.h"
+#include "gui/theme.h"
+#include "gui/widget.h"
 
 ButtonBase::ButtonBase(const char* text, int type, int behaviorType, int drawType)
   : Widget(type)

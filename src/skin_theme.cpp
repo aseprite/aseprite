@@ -190,7 +190,7 @@ std::string SkinTheme::get_font_filename() const
   return "skins/" + m_selected_skin + "/font.pcx";
 }
 
-void SkinTheme::regen()
+void SkinTheme::onRegenerate()
 {
   check_icon_size = 8 * jguiscale();
   radio_icon_size = 8 * jguiscale();

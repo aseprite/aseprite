@@ -15,8 +15,8 @@
 #include "gui/jmessage.h"
 #include "gui/jrect.h"
 #include "gui/jsystem.h"
-#include "gui/jtheme.h"
 #include "gui/jview.h"
+#include "gui/theme.h"
 #include "gui/widget.h"
 
 static bool textbox_msg_proc(JWidget widget, JMessage msg);
