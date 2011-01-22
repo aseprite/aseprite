@@ -29,7 +29,6 @@ add_library(gui-lib
   jmenu.cpp
   jmessage.cpp
   jpanel.cpp
-  jpopup_window.cpp
   jquickmenu.cpp
   jrect.cpp
   jregion.cpp
@@ -40,6 +39,7 @@ add_library(gui-lib
   jtooltips.cpp
   jview.cpp
   label.cpp
+  popup_frame.cpp
   preferred_size_event.cpp
   property.cpp
   slider.cpp

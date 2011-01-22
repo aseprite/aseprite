@@ -4,26 +4,27 @@
 // This source file is ditributed under a BSD-like license, please
 // read LICENSE.txt for more information.
 
-#ifndef GUI_JPOPUP_WINDOW_H_INCLUDED
-#define GUI_JPOPUP_WINDOW_H_INCLUDED
+#ifndef GUI_POPUP_FRAME_H_INCLUDED
+#define GUI_POPUP_FRAME_H_INCLUDED
 
 #include "gui/frame.h"
 
-class PopupWindow : public Frame
+class PopupFrame : public Frame
 {
-  bool m_close_on_buttonpressed;
-  JRegion m_hot_region;
-  bool m_filtering;
-
 public:
-  PopupWindow(const char* text, bool close_on_buttonpressed);
-  ~PopupWindow();
+  PopupFrame(const char* text, bool close_on_buttonpressed);
+  ~PopupFrame();
 
   void setHotRegion(JRegion region);
 
 protected:
   bool onProcessMessage(JMessage msg);
   void onPreferredSize(PreferredSizeEvent& ev);
+
+private:
+  bool m_close_on_buttonpressed;
+  JRegion m_hot_region;
+  bool m_filtering;
 };
 
 #endif

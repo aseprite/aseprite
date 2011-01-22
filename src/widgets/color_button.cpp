@@ -242,7 +242,7 @@ void ColorButton::openSelectorDialog()
     JRegion rgn = jregion_new(rc, 1);
     jrect_free(rc);
 
-    static_cast<PopupWindow*>(window)->setHotRegion(rgn);
+    static_cast<PopupFrame*>(window)->setHotRegion(rgn);
   }
 }
 

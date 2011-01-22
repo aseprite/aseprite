@@ -56,7 +56,7 @@ class ToolBar : public Widget
   bool m_open_on_hot;
 
   // Window displayed to show a tool-group
-  PopupWindow* m_popup_window;
+  PopupFrame* m_popupFrame;
 
   // Tool-tip window
   TipWindow* m_tipWindow;
@@ -79,14 +79,14 @@ protected:
 
 private:
   int getToolGroupIndex(ToolGroup* group);
-  void openPopupWindow(int group_index, ToolGroup* group);
+  void openPopupFrame(int group_index, ToolGroup* group);
   Rect getToolGroupBounds(int group_index);
   void openTipWindow(int group_index, Tool* tool);
   void onClosePopup();
 };
 
 // Class to show a group of tools (horizontally)
-// This widget is inside the ToolBar::m_popup_window
+// This widget is inside the ToolBar::m_popupFrame
 class ToolStrip : public Widget
 {
   ToolGroup* m_group;
@@ -148,7 +148,7 @@ ToolBar::ToolBar()
   m_hot_tool = NULL;
   m_hot_conf = false;
   m_open_on_hot = false;
-  m_popup_window = NULL;
+  m_popupFrame = NULL;
   m_tipWindow = NULL;
   m_tipTimerId = jmanager_add_timer(this, 300);
   m_tipOpened = false;
@@ -164,7 +164,7 @@ ToolBar::ToolBar()
 ToolBar::~ToolBar()
 {
   jmanager_remove_timer(m_tipTimerId);
-  delete m_popup_window;
+  delete m_popupFrame;
   delete m_tipWindow;
 }
 
@@ -270,7 +270,7 @@ bool ToolBar::onProcessMessage(JMessage msg)
 	  UIContext::instance()->getSettings()->setCurrentTool(tool);
 	  invalidate();
 
-	  openPopupWindow(c, tool_group);
+	  openPopupFrame(c, tool_group);
 	}
       }
 
@@ -303,7 +303,7 @@ bool ToolBar::onProcessMessage(JMessage msg)
 	  hot_tool = tool;
 
 	  if ((m_open_on_hot) && (m_hot_tool != hot_tool))
-	    openPopupWindow(c, tool_group);
+	    openPopupFrame(c, tool_group);
 
 	  tip_index = c;
 	  break;
@@ -336,7 +336,7 @@ bool ToolBar::onProcessMessage(JMessage msg)
     case JM_MOUSELEAVE:
       closeTipWindow();
 
-      if (!m_popup_window)
+      if (!m_popupFrame)
 	m_tipOpened = false;
 
       m_hot_tool = NULL;
@@ -375,13 +375,13 @@ int ToolBar::getToolGroupIndex(ToolGroup* group)
   return -1;
 }
 
-void ToolBar::openPopupWindow(int group_index, ToolGroup* tool_group)
+void ToolBar::openPopupFrame(int group_index, ToolGroup* tool_group)
 {
   // Close the current popup window
-  if (m_popup_window) {
-    m_popup_window->closeWindow(NULL);
-    delete m_popup_window;
-    m_popup_window = NULL;
+  if (m_popupFrame) {
+    m_popupFrame->closeWindow(NULL);
+    delete m_popupFrame;
+    m_popupFrame = NULL;
   }
 
   // Close tip window
@@ -400,11 +400,11 @@ void ToolBar::openPopupWindow(int group_index, ToolGroup* tool_group)
 
   // In case this tool contains more than just one tool, show the popup window
   m_open_on_hot = true;
-  m_popup_window = new PopupWindow(NULL, false);
-  m_popup_window->Close.connect(Bind<void, ToolBar, ToolBar>(&ToolBar::onClosePopup, this));
+  m_popupFrame = new PopupFrame(NULL, false);
+  m_popupFrame->Close.connect(Bind<void, ToolBar, ToolBar>(&ToolBar::onClosePopup, this));
 
   ToolStrip* toolstrip = new ToolStrip(tool_group, this);
-  jwidget_add_child(m_popup_window, toolstrip);
+  jwidget_add_child(m_popupFrame, toolstrip);
 
   Rect rc = getToolGroupBounds(group_index);
   int w = 0;
@@ -436,13 +436,13 @@ void ToolBar::openPopupWindow(int group_index, ToolGroup* tool_group)
   {
     jrect rc2 = { rc.x, rc.y, this->rc->x2, rc.y+rc.h };
     JRegion hotregion = jregion_new(&rc2, 1);
-    m_popup_window->setHotRegion(hotregion);
+    m_popupFrame->setHotRegion(hotregion);
   }
 
-  m_popup_window->set_autoremap(false);
-  m_popup_window->setBounds(rc);
+  m_popupFrame->set_autoremap(false);
+  m_popupFrame->setBounds(rc);
   toolstrip->setBounds(rc);
-  m_popup_window->open_window();
+  m_popupFrame->open_window();
 
   toolstrip->setBounds(rc);
 }

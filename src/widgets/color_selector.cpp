@@ -83,7 +83,7 @@ static Model models[] = {
 
 Frame* colorselector_new()
 {
-  Frame* window = new PopupWindow(NULL, false);
+  Frame* window = new PopupFrame(NULL, false);
   Widget* grid1 = jgrid_new(2, false);
   Widget* grid2 = jgrid_new(5, false);
   Widget* models_box = jbox_new(JI_HORIZONTAL);

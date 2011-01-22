@@ -15,7 +15,7 @@
 
 using namespace gfx;
 
-PopupWindow::PopupWindow(const char* text, bool close_on_buttonpressed)
+PopupFrame::PopupFrame(const char* text, bool close_on_buttonpressed)
   : Frame(false, text)
 {
   m_close_on_buttonpressed = close_on_buttonpressed;
@@ -36,7 +36,7 @@ PopupWindow::PopupWindow(const char* text, bool close_on_buttonpressed)
   jwidget_noborders(this);
 }
 
-PopupWindow::~PopupWindow()
+PopupFrame::~PopupFrame()
 {
   if (m_filtering) {
     m_filtering = false;
@@ -53,7 +53,7 @@ PopupWindow::~PopupWindow()
  * @param region The new hot-region. This pointer is holded by the @a widget.
  * So you cannot destroy it after calling this routine.
  */
-void PopupWindow::setHotRegion(JRegion region)
+void PopupFrame::setHotRegion(JRegion region)
 {
   ASSERT(region != NULL);
 
@@ -69,7 +69,7 @@ void PopupWindow::setHotRegion(JRegion region)
   m_hot_region = region;
 }
 
-bool PopupWindow::onProcessMessage(JMessage msg)
+bool PopupFrame::onProcessMessage(JMessage msg)
 {
   switch (msg->type) {
 
@@ -164,7 +164,7 @@ bool PopupWindow::onProcessMessage(JMessage msg)
   return Frame::onProcessMessage(msg);
 }
 
-void PopupWindow::onPreferredSize(PreferredSizeEvent& ev)
+void PopupFrame::onPreferredSize(PreferredSizeEvent& ev)
 {
   Size resultSize(0, 0);
 
