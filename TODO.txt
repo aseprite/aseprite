@@ -1,14 +1,27 @@
 For next release
 ----------------
 
++ "timers" collection in jmanager.cpp must be a std::vector<>.
 + After creating or opening a sprite, it should be shown centered in the editor.
 + Mini-look for sliders in palette editor (add ISliderBackground to draw RGB/HSV sliders
   with a customized background).
++ Fix palette editor to avoid generating a lot of consecutive Undo actions.
 + Move "effect/images_ref" to "raster" and refactor it to a class.
++ Convert jaccel::key_list to std::vector<>
++ Integrate "copy & paste" loop with selection moving loop.
++ Shade drawing mode.
++ Export/Import sprite sheets.
++ Rethink the color-bar to show the full palette and a RGB gradient.
++ Sort palette entries.
++ Add "Remap" button to palette editor after a palette entry is modified:
+  This button should apply a color curve to the whole sprite to remap
+  old indexes to the new positions. 
++ Support for non-zero index entries as transparent in Indexed sprites.
 
 Refactoring
 -----------
 
+- Eradicate JList.
 - Separate the source code in independent libraries:
   1) jinete -> gui
   2) sprite-core
@@ -32,7 +45,6 @@ High priority work
 
 + Selection tools do not have "move" functionality incorporated yet as we talked (they just add/subtract selection)
 + The following tools do not work: scroll, move.
-+ "shade" drawing mode
 - Fix paste behavior:
   + paste when there are no images (create one image or put the
     clipboard as the layer's image)
