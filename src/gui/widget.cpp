@@ -95,7 +95,7 @@ Widget::~Widget()
 
   /* send destroy message */
   msg = jmessage_new(JM_DESTROY);
-  jwidget_send_message(this, msg);
+  sendMessage(msg);
   jmessage_free(msg);
 
   /* break relationship with the manager */
@@ -1004,7 +1004,7 @@ void jwidget_set_rect(JWidget widget, JRect rect)
 
   msg = jmessage_new(JM_SETPOS);
   jrect_copy(&msg->setpos.rect, rect);
-  jwidget_send_message(widget, msg);
+  widget->sendMessage(msg);
   jmessage_free(msg);
 }
 
@@ -1205,7 +1205,7 @@ bool jwidget_emit_signal(JWidget widget, int signal_num)
     msg->signal.num = signal_num;
     msg->signal.from = widget;
 
-    ret = jwidget_send_message(widget, msg);
+    ret = widget->sendMessage(msg);
 
     /* send the signal to the window too */
     if (!ret && widget->type != JI_FRAME) {
@@ -1223,9 +1223,6 @@ bool jwidget_emit_signal(JWidget widget, int signal_num)
 
 /**********************************************************************/
 /* manager handler */
-
-bool jwidget_send_message(JWidget widget, JMessage msg)
-{ return widget->sendMessage(msg); }
 
 void jwidget_close_window(JWidget widget)
 { widget->closeWindow(); }
@@ -1448,7 +1445,7 @@ bool Widget::onProcessMessage(JMessage msg)
 
       /* broadcast the message to the children */
       JI_LIST_FOR_EACH(widget->children, link)
-	jwidget_send_message(reinterpret_cast<JWidget>(link->data), msg);
+	reinterpret_cast<JWidget>(link->data)->sendMessage(msg);
       break;
     }
 
@@ -1492,12 +1489,12 @@ bool Widget::onProcessMessage(JMessage msg)
 
 	/* broadcast the message to the children */
 	JI_LIST_FOR_EACH(widget->children, link)
-	  jwidget_send_message(reinterpret_cast<JWidget>(link->data), msg);
+	  reinterpret_cast<JWidget>(link->data)->sendMessage(msg);
       }
 
       /* propagate the message to the parent */
       if (msg->key.propagate_to_parent && widget->parent != NULL)
-	return jwidget_send_message(widget->parent, msg);
+	return widget->parent->sendMessage(msg);
       else
 	break;
 
@@ -1508,14 +1505,14 @@ bool Widget::onProcessMessage(JMessage msg)
     case JM_WHEEL:
       /* propagate the message to the parent */
       if (widget->parent != NULL)
-	return jwidget_send_message(widget->parent, msg);
+	return widget->parent->sendMessage(msg);
       else
 	break;
 
     case JM_SETCURSOR:
       /* propagate the message to the parent */
       if (widget->parent != NULL)
-	return jwidget_send_message(widget->parent, msg);
+	return widget->parent->sendMessage(msg);
       else {
 	jmouse_set_cursor(JI_CURSOR_NORMAL);
 	return true;
@@ -1543,7 +1540,7 @@ bool Widget::onProcessMessage(JMessage msg)
 void Widget::onPreferredSize(PreferredSizeEvent& ev)
 {
   JMessage msg = jmessage_new(JM_REQSIZE);
-  jwidget_send_message(this, msg);
+  sendMessage(msg);
   Size sz(msg->reqsize.w, msg->reqsize.h);
   jmessage_free(msg);
 

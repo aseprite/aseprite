@@ -97,7 +97,6 @@ bool jwidget_emit_signal(JWidget widget, int signal_num);
 
 /* manager handler */
 
-bool jwidget_send_message(JWidget widget, JMessage msg);
 void jwidget_close_window(JWidget widget);
 
 /* miscellaneous */

@@ -1096,7 +1096,7 @@ static bool manager_msg_proc(JWidget widget, JMessage msg)
 
 	/* send to the window */
 	JI_LIST_FOR_EACH(w->children, link2)
-	  if (jwidget_send_message(reinterpret_cast<JWidget>(link2->data), msg))
+	  if (reinterpret_cast<JWidget>(link2->data)->sendMessage(msg))
 	    return true;
 
 	if (w->is_foreground() ||
@@ -1265,7 +1265,7 @@ static void manager_pump_queue(JWidget widget_manager)
       }
 
       /* call message handler */
-      done = jwidget_send_message(widget, msg);
+      done = widget->sendMessage(msg);
 
       /* restore clip */
       if (msg->type == JM_DRAW) {
