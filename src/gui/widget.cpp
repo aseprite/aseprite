@@ -1224,9 +1224,6 @@ bool jwidget_emit_signal(JWidget widget, int signal_num)
 /**********************************************************************/
 /* manager handler */
 
-void jwidget_close_window(JWidget widget)
-{ widget->closeWindow(); }
-
 bool Widget::sendMessage(JMessage msg)
 {
   bool done = false;

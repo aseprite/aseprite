@@ -577,7 +577,7 @@ static bool fileview_msg_proc(JWidget widget, JMessage msg)
 
 	/* when a file is accepted */
       case SIGNAL_FILEVIEW_FILE_ACCEPT:
-	jwidget_close_window(widget);
+	widget->closeWindow();
 	break;
 
 	/* when the current folder change */

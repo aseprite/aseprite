@@ -170,7 +170,7 @@ static bool repo_listbox_msg_proc(JWidget widget, JMessage msg)
 	case JI_SIGNAL_LISTBOX_SELECT:
 	  if (repo_dlg->use_listitem)
 	    if (!(*repo_dlg->use_listitem)(repo_dlg))
-	      jwidget_close_window(widget);
+	      widget->closeWindow();
 	  break;
       }
       break;
@@ -183,7 +183,7 @@ static void use_command(Button* widget, RepoDlg* repo_dlg)
 {
   if (repo_dlg->use_listitem) {
     if (!(*repo_dlg->use_listitem)(repo_dlg))
-      jwidget_close_window(widget);
+      widget->closeWindow();
   }
 }
 
@@ -205,7 +205,7 @@ static void add_command(Button* widget, RepoDlg* repo_dlg)
     }
 
     if (!ret)
-      jwidget_close_window(widget);
+      widget->closeWindow();
   }
 }
 
@@ -246,6 +246,6 @@ static void delete_command(Button* widget, RepoDlg* repo_dlg)
     }
 
     if (!ret)
-      jwidget_close_window(widget);
+      widget->closeWindow();
   }
 }

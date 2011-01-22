@@ -691,7 +691,7 @@ static bool anieditor_msg_proc(JWidget widget, JMessage msg)
       /* close animation editor */
       if ((command && (strcmp(command->short_name(), CommandId::FilmEditor) == 0)) ||
 	  (msg->key.scancode == KEY_ESC)) {
-	jwidget_close_window(widget);
+	widget->closeWindow();
 	return true;
       }
 

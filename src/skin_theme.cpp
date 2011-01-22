@@ -1741,7 +1741,7 @@ bool SkinTheme::theme_frame_button_msg_proc(JWidget widget, JMessage msg)
       if (msg->key.scancode == KEY_ESC) {
 	if (widget->isSelected()) {
 	  widget->setSelected(false);
-	  jwidget_close_window(widget);
+	  widget->closeWindow();
 	  return true;
 	}
       }

@@ -95,10 +95,6 @@ void jwidget_signal_off(JWidget widget);
 
 bool jwidget_emit_signal(JWidget widget, int signal_num);
 
-/* manager handler */
-
-void jwidget_close_window(JWidget widget);
-
 /* miscellaneous */
 
 JWidget jwidget_find_name(JWidget widget, const char *name);
