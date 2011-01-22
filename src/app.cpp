@@ -42,6 +42,7 @@
 #include "file/file_formats_manager.h"
 #include "gui/jinete.h"
 #include "gui/jintern.h"
+#include "gui_xml.h"
 #include "log.h"
 #include "modules/editors.h"
 #include "modules/gfx.h"
@@ -318,6 +319,9 @@ App::~App()
     delete m_modules;
     delete m_loggerModule;
     delete m_configModule;
+
+    // Destroy the loaded gui.xml file.
+    delete GuiXml::instance();
   
     m_instance = NULL;
   }
