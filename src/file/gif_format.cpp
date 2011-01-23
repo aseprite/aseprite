@@ -306,6 +306,13 @@ bool GifFormat::onLoad(FileOp* fop)
 	default:
 	  break;
       }
+
+      // Just one frame?
+      if (frame_num > 0 && fop->oneframe)
+	break;
+
+      if (fop_is_stop(fop))
+	break;
     } while (record_type != TERMINATE_RECORD_TYPE);
   }
   catch (...) {
