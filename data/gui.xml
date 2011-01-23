@@ -49,7 +49,9 @@
       <key command="GotoNextLayer" shortcut="Up" />
       <!-- Frame -->
       <key command="NewFrame" shortcut="N" />
-      <key command="FrameProperties" shortcut="P" />
+      <key command="FrameProperties" shortcut="P">
+	<param name="frame" value="current" />
+      </key>
       <key command="GotoFirstFrame" shortcut="Home" />
       <key command="GotoPreviousFrame" shortcut="Left" />
       <key command="GotoNextFrame" shortcut="Right" />
@@ -264,7 +266,9 @@
 	<item command="FlattenLayers" text="&amp;Flatten" />
       </menu>
       <menu text="F&amp;rame">
-	<item command="FrameProperties" text="Frame &amp;Properties..." />
+	<item command="FrameProperties" text="Frame &amp;Properties...">
+	  <param name="frame" value="current" />
+	</item>
 	<item command="CelProperties" text="&amp;Cel Properties..." />
 	<separator />
 	<item command="NewFrame" text="&amp;New Frame" />
@@ -277,6 +281,10 @@
 	  <item command="GotoLastFrame" text="&amp;Last Frame" />
 	</menu>
 	<item command="PlayAnimation" text="&amp;Play Animation" />
+	<separator />
+	<item command="FrameProperties" text="Constant Frame Rate">
+	  <param name="frame" value="all" />
+	</item>
       </menu>
       <menu text="Selec&amp;t">
 	<item command="MaskAll" text="&amp;All" />
@@ -336,7 +344,9 @@
     </menu>
     
     <menu id="frame_popup">
-      <item command="FrameProperties" text="&amp;Properties..." />
+      <item command="FrameProperties" text="&amp;Properties...">
+	<param name="frame" value="current" />
+      </item>
       <separator />
       <item command="NewFrame" text="&amp;New" />
       <item command="RemoveFrame" text="&amp;Remove" />

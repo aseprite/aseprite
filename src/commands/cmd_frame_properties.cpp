@@ -20,7 +20,9 @@
 
 #include "gui/jinete.h"
 
+#include "base/convert_to.h"
 #include "commands/command.h"
+#include "commands/params.h"
 #include "modules/gui.h"
 #include "raster/sprite.h"
 #include "undoable.h"
@@ -36,12 +38,20 @@ public:
   Command* clone() { return new FramePropertiesCommand(*this); }
 
 protected:
+  void onLoadParams(Params* params);
   bool onEnabled(Context* context);
   void onExecute(Context* context);
-};
 
-class SpriteReader;
-void dialogs_frame_length(const SpriteReader& sprite, int sprite_frame);
+private:
+  enum {
+    CURRENT_FRAME = 0,
+    ALL_FRAMES = -1,
+  };
+
+  // Frame to be shown. It can be ALL_FRAMES, CURRENT_FRAME, or a
+  // number indicating a specific frame (1 is the first frame).
+  int m_frame;
+};
 
 FramePropertiesCommand::FramePropertiesCommand()
   : Command("FrameProperties",
@@ -50,24 +60,30 @@ FramePropertiesCommand::FramePropertiesCommand()
 {
 }
 
+void FramePropertiesCommand::onLoadParams(Params* params)
+{
+  std::string frame = params->get("frame");
+  if (frame == "all") {
+    m_frame = ALL_FRAMES;
+  }
+  else if (frame == "current") {
+    m_frame = CURRENT_FRAME;
+  }
+  else {
+    m_frame = base::convert_to<int>(frame);
+  }
+}
+
 bool FramePropertiesCommand::onEnabled(Context* context)
 {
   const CurrentSpriteReader sprite(context);
-  return
-    sprite != NULL;
+  return sprite != NULL;
 }
 
 void FramePropertiesCommand::onExecute(Context* context)
 {
   const CurrentSpriteReader sprite(context);
-  dialogs_frame_length(sprite, sprite->getCurrentFrame());
-}
-
-/* if sprite_frame < 0, set the frame length of all frames */
-void dialogs_frame_length(const SpriteReader& sprite, int sprite_frame)
-{
   JWidget frame, frlen, ok;
-  char buf[64];
 
   FramePtr window(load_widget("frame_duration.xml", "frame_duration"));
   get_widgets(window,
@@ -75,11 +91,25 @@ void dialogs_frame_length(const SpriteReader& sprite, int sprite_frame)
 	      "frlen", &frlen,
 	      "ok", &ok, NULL);
 
-  if (sprite_frame < 0)
-    strcpy(buf, "All");
+  int sprite_frame = 0;
+  switch (m_frame) {
+
+    case ALL_FRAMES:
+      break;
+
+    case CURRENT_FRAME:
+      sprite_frame = sprite->getCurrentFrame()+1;
+      break;
+
+    default:
+      sprite_frame = m_frame;
+      break;
+  }
+
+  if (m_frame == ALL_FRAMES)
+    frame->setText("All");
   else
-    sprintf(buf, "%d", sprite_frame+1);
-  frame->setText(buf);
+    frame->setTextf("%d", sprite_frame);
 
   frlen->setTextf("%d", sprite->getFrameDuration(sprite->getCurrentFrame()));
 
@@ -87,7 +117,7 @@ void dialogs_frame_length(const SpriteReader& sprite, int sprite_frame)
   if (window->get_killer() == ok) {
     int num = strtol(frlen->getText(), NULL, 10);
 
-    if (sprite_frame < 0) {
+    if (m_frame == ALL_FRAMES) {
       if (jalert("Warning"
 		 "<<Do you want to change the duration of all frames?"
 		 "||&Yes||&No") == 1) {
@@ -100,7 +130,7 @@ void dialogs_frame_length(const SpriteReader& sprite, int sprite_frame)
     else {
       SpriteWriter sprite_writer(sprite);
       Undoable undoable(sprite_writer, "Frame Duration");
-      undoable.setFrameDuration(sprite_frame, num);
+      undoable.setFrameDuration(sprite_frame-1, num);
       undoable.commit();
     }
   }

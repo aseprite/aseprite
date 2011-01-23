@@ -23,6 +23,7 @@
 #include "base/memory.h"
 #include "commands/command.h"
 #include "commands/commands.h"
+#include "commands/params.h"
 #include "console.h"
 #include "gfx/point.h"
 #include "gfx/rect.h"
@@ -536,9 +537,13 @@ static bool anieditor_msg_proc(JWidget widget, JMessage msg)
 	    /* show the frame's properties dialog */
 	    else if (msg->mouse.left) {
 	      if (anieditor->clk_frame == anieditor->hot_frame) {
-		UIContext::instance()
-		  ->executeCommand(CommandsModule::instance()
-				   ->getCommandByName(CommandId::FrameProperties));
+		// Execute FrameProperties command for current frame.
+		Command* command = CommandsModule::instance()
+		  ->getCommandByName(CommandId::FrameProperties);
+		Params params;
+		params.set("frame", "current");
+
+		UIContext::instance()->executeCommand(command, &params);
 	      }
 	      else {
 		const SpriteReader sprite((Sprite*)anieditor->sprite);

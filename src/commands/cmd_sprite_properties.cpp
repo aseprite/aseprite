@@ -33,9 +33,6 @@
 #include "sprite_wrappers.h"
 #include "widgets/color_button.h"
 
-/* TODO remove this */
-void dialogs_frame_length(const SpriteReader& sprite, int sprite_frpos);
-
 //////////////////////////////////////////////////////////////////////
 // sprite_properties
 
@@ -66,7 +63,6 @@ bool SpritePropertiesCommand::onEnabled(Context* context)
 void SpritePropertiesCommand::onExecute(Context* context)
 {
   JWidget name, type, size, frames, ok, box_transparent;
-  Button* speed;
   base::string imgtype_text;
   char buf[256];
   ColorButton* color_button = NULL;
@@ -78,7 +74,6 @@ void SpritePropertiesCommand::onExecute(Context* context)
 	      "type", &type,
 	      "size", &size,
 	      "frames", &frames,
-	      "speed", &speed,
 	      "ok", &ok,
 	      "box_transparent", &box_transparent, NULL);
 
@@ -120,9 +115,6 @@ void SpritePropertiesCommand::onExecute(Context* context)
 
     // How many frames
     frames->setTextf("%d", sprite->getTotalFrames());
-
-    // Speed button
-    speed->Click.connect(Bind<void>(&dialogs_frame_length, Ref(sprite), -1));
 
     if (sprite->getImgType() == IMAGE_INDEXED) {
       color_button = new ColorButton(Color::fromIndex(sprite->getTransparentColor()),
