@@ -12,7 +12,7 @@
 #ifdef REPORT_EVENTS
 #include <stdio.h>
 #endif
-
+#include <vector>
 #include <allegro.h>
 
 #include "base/memory.h"
@@ -70,8 +70,7 @@ static int want_close_stage;	   /* variable to handle the external
 
 static JWidget default_manager = NULL;
 
-static Timer **timers;		/* registered timers */
-static int n_timers;		/* number of timers */
+static std::vector<Timer*> timers; // Registered timers
 
 static JList new_windows;	/* windows that we should show */
 static JList proc_windows_list; /* current window's list in process */
@@ -163,10 +162,6 @@ JWidget jmanager_new()
       old_readed_key[c] = 0;
       key_repeated[c] = 0;
     }
-
-    /* timers */
-    timers = NULL;
-    n_timers = 0;
   }
 
   widget = new Widget(JI_MANAGER);
@@ -201,14 +196,10 @@ void jmanager_free(JWidget widget)
     /* destroy this widget */
     jwidget_free(widget);
 
-    /* destroy timers */
-    if (timers != NULL) {
-      for (c=0; c<n_timers; ++c)
-	if (timers[c] != NULL)
-	  delete timers[c];
-      base_free(timers);
-      n_timers = 0;
-    }
+    // Destroy timers
+    for (c=0; c<(int)timers.size(); ++c)
+      delete timers[c];
+    timers.clear();
 
     /* destroy filters */
     for (c=0; c<NFILTERS; ++c) {
@@ -502,12 +493,12 @@ bool jmanager_generate_messages(JWidget manager)
     }
   }
 
-  /* timers */
-  if (n_timers > 0) {
+  // Generate messages for timers
+  if (!timers.empty()) {
     int t = ji_clock;
     int count;
 
-    for (c=0; c<n_timers; ++c) {
+    for (c=0; c<(int)timers.size(); ++c) {
       if (timers[c] && timers[c]->last_time >= 0) {
 	count = 0;
 	while (t - timers[c]->last_time > timers[c]->interval) {
@@ -569,8 +560,8 @@ int jmanager_add_timer(JWidget widget, int interval)
 
   ASSERT_VALID_WIDGET(widget);
 
-  for (c=0; c<n_timers; ++c) {
-    /* there are an empty slot */
+  for (c=0; c<(int)timers.size(); ++c) {
+    // There are an empty slot
     if (timers[c] == NULL) {
       new_id = c;
       break;
@@ -578,8 +569,8 @@ int jmanager_add_timer(JWidget widget, int interval)
   }
 
   if (new_id < 0) {
-    new_id = n_timers++;
-    timers = (Timer**)base_realloc(timers, sizeof(Timer*) * n_timers);
+    new_id = timers.size();
+    timers.push_back(NULL);
   }
 
   Timer* timer = new Timer;
@@ -596,7 +587,7 @@ void jmanager_remove_timer(int timer_id)
   JMessage message;
   JLink link, next;
 
-  ASSERT(timer_id >= 0 && timer_id < n_timers);
+  ASSERT(timer_id >= 0 && timer_id < (int)timers.size());
   ASSERT(timers[timer_id] != NULL);
 
   delete timers[timer_id];
@@ -617,7 +608,7 @@ void jmanager_remove_timer(int timer_id)
 
 void jmanager_start_timer(int timer_id)
 {
-  ASSERT(timer_id >= 0 && timer_id < n_timers);
+  ASSERT(timer_id >= 0 && timer_id < (int)timers.size());
   ASSERT(timers[timer_id] != NULL);
 
   timers[timer_id]->last_time = ji_clock;
@@ -625,7 +616,7 @@ void jmanager_start_timer(int timer_id)
 
 void jmanager_stop_timer(int timer_id)
 {
-  ASSERT(timer_id >= 0 && timer_id < n_timers);
+  ASSERT(timer_id >= 0 && timer_id < (int)timers.size());
   ASSERT(timers[timer_id] != NULL);
 
   timers[timer_id]->last_time = -1;
@@ -633,7 +624,7 @@ void jmanager_stop_timer(int timer_id)
 
 void jmanager_set_timer_interval(int timer_id, int interval)
 {
-  ASSERT(timer_id >= 0 && timer_id < n_timers);
+  ASSERT(timer_id >= 0 && timer_id < (int)timers.size());
   ASSERT(timers[timer_id] != NULL);
 
   timers[timer_id]->interval = interval;
@@ -641,7 +632,7 @@ void jmanager_set_timer_interval(int timer_id, int interval)
 
 bool jmanager_timer_is_running(int timer_id)
 {
-  ASSERT(timer_id >= 0 && timer_id < n_timers);
+  ASSERT(timer_id >= 0 && timer_id < (int)timers.size());
   ASSERT(timers[timer_id] != NULL);
 
   return (timers[timer_id]->last_time >= 0);
