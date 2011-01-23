@@ -21,6 +21,7 @@
 #include <allegro.h>
 
 #include "base/exception.h"
+#include "base/memory.h"
 #include "app.h"
 #include "console.h"
 #include "loadpng.h"
@@ -35,6 +36,18 @@
 const char ase_ident[] =
     "$" PACKAGE ": " VERSION " " COPYRIGHT " $\n"
     "$Website: " WEBSITE " $\n";
+
+//////////////////////////////////////////////////////////////////////
+// Memory leak detector wrapper
+
+#ifdef MEMLEAK
+class MemLeak
+{
+public:
+  MemLeak() { base_memleak_init(); }
+  ~MemLeak() { base_memleak_exit(); }
+};
+#endif
 
 //////////////////////////////////////////////////////////////////////
 // Allegro libray initialization
@@ -66,13 +79,13 @@ int main(int argc, char* argv[])
   Allegro allegro;
 
   try {
+#ifdef MEMLEAK
+    MemLeak memleak;
+#endif
     Jinete jinete;
     App app(argc, argv);
 
     status = app.run();
-  }
-  catch (base::Exception& e) {
-    Console::showException(e);
   }
   catch (std::exception& e) {
     allegro_message("%s", e.what());

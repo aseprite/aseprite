@@ -23,6 +23,7 @@
 #include <stdlib.h>
 
 #include "app.h"
+#include "base/memory.h"
 #include "console.h"
 #include "core/cfg.h"
 #include "file/file.h"
@@ -154,7 +155,7 @@ bool JpegFormat::onLoad(FileOp* fop)
 
   /* create the buffer */
   buffer_height = cinfo.rec_outbuf_height;
-  buffer = (JSAMPARRAY)jmalloc(sizeof(JSAMPROW) * buffer_height);
+  buffer = (JSAMPARRAY)base_malloc(sizeof(JSAMPROW) * buffer_height);
   if (!buffer) {
     jpeg_destroy_decompress(&cinfo);
     fclose(file);
@@ -162,12 +163,12 @@ bool JpegFormat::onLoad(FileOp* fop)
   }
 
   for (c=0; c<(int)buffer_height; c++) {
-    buffer[c] = (JSAMPROW)jmalloc(sizeof(JSAMPLE) *
-				  cinfo.output_width * cinfo.output_components);
+    buffer[c] = (JSAMPROW)base_malloc(sizeof(JSAMPLE) *
+				      cinfo.output_width * cinfo.output_components);
     if (!buffer[c]) {
       for (c--; c>=0; c--)
-        jfree(buffer[c]);
-      jfree(buffer);
+        base_free(buffer[c]);
+      base_free(buffer);
       jpeg_destroy_decompress(&cinfo);
       fclose(file);
       return false;
@@ -227,8 +228,8 @@ bool JpegFormat::onLoad(FileOp* fop)
 
   /* destroy all data */
   for (c=0; c<(int)buffer_height; c++)
-    jfree(buffer[c]);
-  jfree(buffer);
+    base_free(buffer[c]);
+  base_free(buffer);
 
   jpeg_finish_decompress(&cinfo);
   jpeg_destroy_decompress(&cinfo);
@@ -286,7 +287,7 @@ bool JpegFormat::onSave(FileOp* fop)
 
   /* Create the buffer.  */
   buffer_height = 1;
-  buffer = (JSAMPARRAY)jmalloc(sizeof(JSAMPROW) * buffer_height);
+  buffer = (JSAMPARRAY)base_malloc(sizeof(JSAMPROW) * buffer_height);
   if (!buffer) {
     fop_error(fop, "Not enough memory for the buffer.\n");
     jpeg_destroy_compress(&cinfo);
@@ -295,13 +296,13 @@ bool JpegFormat::onSave(FileOp* fop)
   }
 
   for (c=0; c<(int)buffer_height; c++) {
-    buffer[c] = (JSAMPROW)jmalloc(sizeof(JSAMPLE) *
-				  cinfo.image_width * cinfo.num_components);
+    buffer[c] = (JSAMPROW)base_malloc(sizeof(JSAMPLE) *
+				      cinfo.image_width * cinfo.num_components);
     if (!buffer[c]) {
       fop_error(fop, "Not enough memory for buffer scanlines.\n");
       for (c--; c>=0; c--)
-        jfree(buffer[c]);
-      jfree(buffer);
+        base_free(buffer[c]);
+      base_free(buffer);
       jpeg_destroy_compress(&cinfo);
       fclose(file);
       return false;
@@ -345,8 +346,8 @@ bool JpegFormat::onSave(FileOp* fop)
 
   /* Destroy all data.  */
   for (c=0; c<(int)buffer_height; c++)
-    jfree(buffer[c]);
-  jfree(buffer);
+    base_free(buffer[c]);
+  base_free(buffer);
 
   /* Finish compression.  */
   jpeg_finish_compress(&cinfo);

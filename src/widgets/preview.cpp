@@ -37,10 +37,10 @@ static bool preview_msg_proc(JWidget widget, JMessage msg);
 /**
  * Invisible widget to control a effect-preview.
  */
-JWidget preview_new(Effect *effect)
+JWidget preview_new(Effect* effect)
 {
   Widget* widget = new Widget(preview_type());
-  Preview *preview = jnew(Preview, 1);
+  Preview* preview = new Preview;
 
   preview->effect = effect;
   preview->timer_id = -1;
@@ -90,7 +90,7 @@ static bool preview_msg_proc(JWidget widget, JMessage msg)
     case JM_DESTROY:
       if (preview->timer_id >= 0)
 	jmanager_remove_timer(preview->timer_id);
-      jfree(preview);
+      delete preview;
       break;
       
     case JM_OPEN:

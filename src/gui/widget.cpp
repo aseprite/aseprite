@@ -18,6 +18,7 @@
 #endif
 #include <allegro.h>
 
+#include "base/memory.h"
 #include "gui/jinete.h"
 #include "gui/jintern.h"
 #include "gui/preferred_size_event.h"
@@ -118,7 +119,7 @@ Widget::~Widget()
 
   /* destroy the name */
   if (this->name)
-    jfree(this->name);
+    base_free(this->name);
 
   /* destroy widget position */
   if (this->rc)
@@ -238,9 +239,9 @@ int Widget::getAlign() const
 void Widget::setName(const char *name)
 {
   if (this->name)
-    jfree(this->name);
+    base_free(this->name);
 
-  this->name = name ? jstrdup(name) : NULL;
+  this->name = name ? base_strdup(name) : NULL;
 }
 
 void Widget::setAlign(int align)

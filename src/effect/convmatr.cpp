@@ -22,11 +22,11 @@
 #include <stdio.h>
 #include <string.h>
 
-#include "gui/jlist.h"
-
+#include "base/memory.h"
 #include "core/cfg.h"
 #include "effect/convmatr.h"
 #include "effect/effect.h"
+#include "gui/jlist.h"
 #include "modules/palettes.h"
 #include "raster/image.h"
 #include "raster/palette.h"
@@ -39,7 +39,7 @@
 
 static struct {			/* TODO warning: not thread safe */
   JList matrices;
-  ConvMatr *convmatr;
+  ConvMatr* convmatr;
   TiledMode tiled;
   unsigned char **lines;
 } data;
@@ -60,17 +60,12 @@ void exit_convolution_matrix()
   jlist_free(data.matrices);
 
   if (data.lines != NULL)
-    jfree(data.lines);
+    base_free(data.lines);
 }
 
-ConvMatr *convmatr_new(int w, int h)
+ConvMatr* convmatr_new(int w, int h)
 {
-  ConvMatr *convmatr;
-  int c, size;
-
-  convmatr = (ConvMatr *)jnew(ConvMatr, 1);
-  if (!convmatr)
-    return NULL;
+  ConvMatr* convmatr = new ConvMatr;
 
   convmatr->name = NULL;
   convmatr->w = w;
@@ -78,15 +73,15 @@ ConvMatr *convmatr_new(int w, int h)
   convmatr->cx = convmatr->w/2;
   convmatr->cy = convmatr->h/2;
 
-  size = convmatr->w * convmatr->h;
+  int size = convmatr->w * convmatr->h;
 
-  convmatr->data = (int*)jmalloc(sizeof(int) * size);
+  convmatr->data = (int*)base_malloc(sizeof(int) * size);
   if (!convmatr->data) {
     convmatr_free(convmatr);
     return NULL;
   }
 
-  for (c=0; c<size; c++)
+  for (int c=0; c<size; c++)
     convmatr->data[c] = 0;
 
   convmatr->div = PRECISION;
@@ -104,12 +99,12 @@ ConvMatr *convmatr_new_string(const char *format)
 void convmatr_free(ConvMatr *convmatr)
 {
   if (convmatr->name)
-    jfree(convmatr->name);
+    base_free(convmatr->name);
     
   if (convmatr->data)
-    jfree(convmatr->data);
+    base_free(convmatr->data);
 
-  jfree(convmatr);
+  delete convmatr;
 }
 
 void set_convmatr(ConvMatr *convmatr, TiledMode tiled)
@@ -118,9 +113,9 @@ void set_convmatr(ConvMatr *convmatr, TiledMode tiled)
   data.tiled = tiled;
 
   if (data.lines != NULL)
-    jfree(data.lines);
+    base_free(data.lines);
 
-  data.lines = (unsigned char**)jmalloc(sizeof(unsigned char*) * convmatr->h);
+  data.lines = (unsigned char**)base_malloc(sizeof(unsigned char*) * convmatr->h);
 }
 
 ConvMatr* get_convmatr()
@@ -184,7 +179,7 @@ void reload_matrices_stock()
       /* read the matrix name */
       while (tok_read(f, buf, leavings, sizeof(leavings))) {
 	/* name of the matrix */
-	name = jstrdup(buf);
+	name = base_strdup(buf);
 
 	/* width and height */
 	READ_INT(w);
@@ -280,7 +275,7 @@ void reload_matrices_stock()
 
       /* destroy the last invalid matrix in case of error */
       if (name)
-	jfree(name);
+	base_free(name);
 
       if (convmatr)
 	convmatr_free(convmatr);

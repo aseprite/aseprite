@@ -40,12 +40,18 @@ struct Thumbnail
 {
   const Cel *cel;
   BITMAP* bmp;
+
+  Thumbnail(const Cel *cel, BITMAP* bmp)
+    : cel(cel), bmp(bmp) {
+  }
+
+  ~Thumbnail() {
+    destroy_bitmap(bmp);
+  }
 };
 
 static JList thumbnails = NULL;
 
-static Thumbnail* thumbnail_new(const Cel *cel, BITMAP* bmp);
-static void thumbnail_free(Thumbnail* thumbnail);
 static void thumbnail_render(BITMAP* bmp, const Image* image, bool has_alpha, const Palette* palette);
 
 void destroy_thumbnails()
@@ -54,7 +60,7 @@ void destroy_thumbnails()
     JLink link;
 
     JI_LIST_FOR_EACH(thumbnails, link)
-      thumbnail_free(reinterpret_cast<Thumbnail*>(link->data));
+      delete reinterpret_cast<Thumbnail*>(link->data);
 
     jlist_free(thumbnails);
     thumbnails = NULL;
@@ -86,7 +92,7 @@ BITMAP* generate_thumbnail(const Layer* layer, const Cel* cel, const Sprite *spr
 		   !layer->is_background(),
 		   sprite->getPalette(cel->frame));
 
-  thumbnail = thumbnail_new(cel, bmp);
+  thumbnail = new Thumbnail(cel, bmp);
   if (!thumbnail) {
     destroy_bitmap(bmp);
     return NULL;
@@ -94,26 +100,6 @@ BITMAP* generate_thumbnail(const Layer* layer, const Cel* cel, const Sprite *spr
 
   jlist_append(thumbnails, thumbnail);
   return thumbnail->bmp;
-}
-
-static Thumbnail* thumbnail_new(const Cel *cel, BITMAP* bmp)
-{
-  Thumbnail* thumbnail;
-
-  thumbnail = jnew(Thumbnail, 1);
-  if (!thumbnail)
-    return NULL;
-
-  thumbnail->cel = cel;
-  thumbnail->bmp = bmp;
-
-  return thumbnail;
-}
-
-static void thumbnail_free(Thumbnail* thumbnail)
-{
-  destroy_bitmap(thumbnail->bmp);
-  jfree(thumbnail);
 }
 
 static void thumbnail_render(BITMAP* bmp, const Image* image, bool has_alpha, const Palette* palette)

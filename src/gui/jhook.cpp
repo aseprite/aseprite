@@ -18,11 +18,7 @@
  */
 JHook jhook_new()
 {
-  JHook hook;
-
-  hook = jnew(struct jhook, 1);
-  if (!hook)
-    return NULL;
+  JHook hook = new jhook;
 
   hook->type = JI_WIDGET;
   hook->msg_proc = NULL;
@@ -38,6 +34,6 @@ JHook jhook_new()
  */
 void jhook_free(JHook hook)
 {
-  jfree(hook);
+  delete hook;
 }
 

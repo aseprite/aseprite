@@ -14,12 +14,12 @@
 #include "gui/theme.h"
 #include "gui/widget.h"
 
-typedef struct Panel
+using namespace gfx;
+
+struct Panel
 {
   double pos;
-} Panel;
-
-using namespace gfx;
+};
 
 static bool panel_msg_proc(JWidget widget, JMessage msg);
 static void panel_request_size(JWidget widget, int *w, int *h);
@@ -28,7 +28,7 @@ static void panel_set_position(JWidget widget, JRect rect);
 JWidget jpanel_new(int align)
 {
   Widget* widget = new Widget(JI_PANEL);
-  Panel *panel = jnew(Panel, 1);
+  Panel *panel = new Panel;
 
   jwidget_add_hook(widget, JI_PANEL, panel_msg_proc, panel);
   widget->setAlign(align);
@@ -63,7 +63,7 @@ static bool panel_msg_proc(JWidget widget, JMessage msg)
     case JM_DESTROY:
       {
 	Panel* panel = reinterpret_cast<Panel*>(jwidget_get_data(widget, JI_PANEL));
-	jfree(panel);
+	delete panel;
       }
       break;
 

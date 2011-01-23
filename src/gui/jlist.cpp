@@ -4,73 +4,34 @@
 // This source file is ditributed under a BSD-like license, please
 // read LICENSE.txt for more information.
 
-//#define USE_JUNKLIST
-
 #include "config.h"
 
 #include "gui/jlist.h"
 
-#ifdef USE_JUNKLIST		/* TODO warning not thread safe */
-static JList junklist = NULL;
-#endif
-
-JLink jlink_new(void *data)
-{
-#ifdef USE_JUNKLIST
-  JLink link;
-  if (!junklist || jlist_empty(junklist))
-    link = jnew0(struct jlink, 1);
-  else {
-    link = jlist_first(junklist);
-    jlist_remove_link(junklist, link);
-  }
-#else
-  JLink link = jnew0(struct jlink, 1);
-#endif
-  link->data = data;
-  return link;
-}
-
 JList jlist_new()
 {
-  JList list = jnew0(struct jlist, 1);
-  list->end = jlink_new(NULL);
+  JList list = new jlist;
+  list->end = new jlink(NULL);
   list->end->prev = list->end;
   list->end->next = list->end;
   list->length = 0;
   return list;
 }
 
-void jlink_free(JLink link)
-{
-#ifdef USE_JUNKLIST
-  if (!junklist)
-    junklist = jlist_new();
-  link->prev = junklist->end->prev;
-  link->next = junklist->end;
-  link->prev->next = link;
-  link->next->prev = link;
-  junklist->length++;
-#else
-  jfree(link);
-#endif
-}
-
 void jlist_free(JList list)
 {
   JLink link, next;
-  JI_LIST_FOR_EACH_SAFE(list, link, next) {
-    jlink_free(link);
-  }
-  jlink_free(list->end);
-  jfree(list);
+  JI_LIST_FOR_EACH_SAFE(list, link, next)
+    delete link;
+  delete list->end;
+  delete list;
 }
 
 void jlist_clear(JList list)
 {
   JLink link, next;
   JI_LIST_FOR_EACH_SAFE(list, link, next) {
-    jlink_free(link);
+    delete link;
   }
   list->end->prev = list->end;
   list->end->next = list->end;
@@ -79,7 +40,7 @@ void jlist_clear(JList list)
 
 void jlist_append(JList list, void *data)
 {
-  JLink link = jlink_new(data);
+  JLink link = new jlink(data);
   link->prev = list->end->prev;
   link->next = list->end;
   link->prev->next = link;
@@ -89,7 +50,7 @@ void jlist_append(JList list, void *data)
 
 void jlist_prepend(JList list, void *data)
 {
-  JLink link = jlink_new(data);
+  JLink link = new jlink(data);
   link->prev = list->end;
   link->next = list->end->next;
   link->prev->next = link;
@@ -116,7 +77,7 @@ void jlist_insert(JList list, void *data, int position)
     return;
   }
 
-  new_link = jlink_new(data);
+  new_link = new jlink(data);
   new_link->prev = tmp_link->prev;
   new_link->next = tmp_link;
   new_link->prev->next = new_link;
@@ -131,7 +92,7 @@ void jlist_insert_before(JList list, JLink sibling, void *data)
   else if (sibling) {
     JLink new_link;
 
-    new_link = jlink_new(data);
+    new_link = new jlink(data);
     new_link->prev = sibling->prev;
     new_link->next = sibling;
     new_link->prev->next = new_link;
@@ -149,7 +110,7 @@ void jlist_remove(JList list, const void *data)
     if (link->data == data) {
       link->prev->next = link->next;
       link->next->prev = link->prev;
-      jlink_free(link);
+      delete link;
       list->length--;
       return;
     }
@@ -163,7 +124,7 @@ void jlist_remove_all(JList list, const void *data)
     if (link->data == data) {
       link->prev->next = link->next;
       link->next->prev = link->prev;
-      jlink_free(link);
+      delete link;
       list->length--;
     }
   }
@@ -180,7 +141,7 @@ void jlist_delete_link(JList list, JLink link)
 {
   link->prev->next = link->next;
   link->next->prev = link->prev;
-  jlink_free(link);
+  delete link;
   list->length--;
 }
 
@@ -191,7 +152,7 @@ JList jlist_copy(JList list)
 
   JI_LIST_FOR_EACH(list, link) {
     /* it's like jlist_append(new_list, link->data) */
-    new_link = jlink_new(link->data);
+    new_link = new jlink(link->data);
     new_link->prev = new_list->end->prev;
     new_link->next = new_list->end;
     new_link->prev->next = new_link;

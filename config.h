@@ -52,11 +52,11 @@ typedef uint32_t	ase_uint32;
 #if defined __cplusplus && defined MEMLEAK
 
 #include <new>
-#include "gui/jbase.h"
+#include "base/memory.h"
 
 inline void* operator new(std::size_t size)
 {
-  void* ptr = jmalloc(size);
+  void* ptr = base_malloc(size);
   if (!ptr)
     throw std::bad_alloc();
   return ptr;
@@ -66,12 +66,12 @@ inline void operator delete(void* ptr)
 {
   if (!ptr)
     return;
-  jfree(ptr);
+  base_free(ptr);
 }
 
 inline void* operator new[](std::size_t size)
 {
-  void* ptr = jmalloc(size);
+  void* ptr = base_malloc(size);
   if (!ptr)
     throw std::bad_alloc();
   return ptr;
@@ -81,7 +81,7 @@ inline void operator delete[](void* ptr)
 {
   if (!ptr)
     return;
-  jfree(ptr);
+  base_free(ptr);
 }
 
 #endif

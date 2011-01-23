@@ -13,6 +13,7 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "base/memory.h"
 #include "gui/jfont.h"
 #include "gui/jintern.h"
 #include "gui/theme.h"
@@ -117,11 +118,11 @@ static void _font_uncache_glyphs(FONT* f)
       if (af->cached_glyphs[i].is_cached) {
         af->cached_glyphs[i].is_cached = false;
         if (af->cached_glyphs[i].bmp) {
-          jfree(af->cached_glyphs[i].bmp);
+          base_free(af->cached_glyphs[i].bmp);
           af->cached_glyphs[i].bmp = NULL;
         }
         if (af->cached_glyphs[i].aabmp) {
-          jfree(af->cached_glyphs[i].aabmp);
+          base_free(af->cached_glyphs[i].aabmp);
           af->cached_glyphs[i].aabmp = NULL;
         }
       }
@@ -136,7 +137,7 @@ static void _font_delete_glyphs(FONT* f)
   _font_uncache_glyphs(f);
 
   if (af->cached_glyphs) {
-    jfree(af->cached_glyphs);
+    base_free(af->cached_glyphs);
     af->cached_glyphs = NULL;
   }
 }
@@ -185,8 +186,8 @@ static void _font_cache_glyph(AL_CONST FONT* f, int glyph_number)
         af->cached_glyphs[glyph_number].top = bmp_glyph->top;
 
         /* allocate bitmap */
-        af->cached_glyphs[glyph_number].bmp =
-	  jnew(unsigned char, ft_bmp->width * ft_bmp->rows);
+        af->cached_glyphs[glyph_number].bmp = (unsigned char*)
+	  base_malloc(sizeof(unsigned char) * ft_bmp->width * ft_bmp->rows);
 
         /* monochrome drawing */
         {
@@ -248,8 +249,8 @@ static void _font_cache_glyph(AL_CONST FONT* f, int glyph_number)
         af->cached_glyphs[glyph_number].aatop = bmp_glyph->top;
 
         /* allocate bitmap */
-        af->cached_glyphs[glyph_number].aabmp =
-	  jnew(unsigned char, ft_bmp->width * ft_bmp->rows);
+        af->cached_glyphs[glyph_number].aabmp = (unsigned char*)
+	  base_malloc(sizeof(unsigned char) * ft_bmp->width * ft_bmp->rows);
 
         /* aa drawing */
         {
@@ -299,7 +300,8 @@ static void _font_new_cache_glyph(FONT* f)
   int i;
 
   if (!af->cached_glyphs)
-    af->cached_glyphs = jnew(struct CACHED_GLYPH, af->face->num_glyphs);
+    af->cached_glyphs = (CACHED_GLYPH*)
+      base_malloc(sizeof(CACHED_GLYPH) * af->face->num_glyphs);
 
   for (i=0; i<af->face->num_glyphs; i++) {
     af->cached_glyphs[i].is_cached = false;
@@ -337,13 +339,13 @@ FONT* ji_font_load_ttf(const char *filepathname)
   FONT* f;
 
   /* try to allocate the memory */
-  f = (FONT*)jmalloc(sizeof(FONT));
+  f = (FONT*)base_malloc(sizeof(FONT));
   if (!f)
     return NULL;
 
-  f->data = af = (FONT_AA_DATA*)jmalloc0(sizeof(FONT_AA_DATA));
+  f->data = af = (FONT_AA_DATA*)base_malloc0(sizeof(FONT_AA_DATA));
   if (!f->data) {
-    jfree(f);
+    base_free(f);
     return NULL;
   }
 
@@ -360,8 +362,8 @@ FONT* ji_font_load_ttf(const char *filepathname)
   /* load the font */
   error = FT_New_Face(ft_library, filepathname, 0, &af->face);
   if (error) {
-    jfree(af);
-    jfree(f);
+    base_free(af);
+    base_free(f);
     return NULL;
   }
 
@@ -374,13 +376,13 @@ FONT* ji_font_load_ttf(const char *filepathname)
   _font_new_cache_glyph(f);
 
   if (af->num_fixed_sizes < 0) {
-    af->fixed_sizes = (int*)jmalloc(sizeof(int));
+    af->fixed_sizes = (int*)base_malloc(sizeof(int));
     _font_reget_fixed_sizes(f);
 
     ji_font_set_size(f, 8);
   }
   else {
-    af->fixed_sizes = jnew(int, af->num_fixed_sizes + 1);
+    af->fixed_sizes = (int*)base_malloc(sizeof(int) * (af->num_fixed_sizes + 1));
     _font_reget_fixed_sizes(f);
 
     /* set as current size the first found fixed size */
@@ -879,14 +881,14 @@ static void aa_destroy(FONT* f)
   FT_Done_Face(af->face);
 
   if (af->fixed_sizes)
-    jfree(af->fixed_sizes);
+    base_free(af->fixed_sizes);
 
   /* deallocate the data */
   if (af->data)
-    jfree(af->data);
+    base_free(af->data);
 
-  jfree(af);
-  jfree(f);
+  base_free(af);
+  base_free(f);
 }
 
 /********

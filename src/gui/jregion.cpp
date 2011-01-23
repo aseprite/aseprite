@@ -6,18 +6,19 @@
 
 #include "config.h"
 
+#include <allegro.h>
+#include <limits.h>
+#include <stdlib.h>
 #include <string.h>
 
-#include <allegro.h>
-
-#include <stdlib.h>
-#define xalloc			jmalloc
-#define xfree			jfree
-#define xrealloc		jrealloc
-
+#include "base/memory.h"
 #include "gui/jbase.h"
 #include "gui/jrect.h"
 #include "gui/jregion.h"
+
+#define xalloc			base_malloc
+#define xfree			base_free
+#define xrealloc		base_realloc
 
 #define Bool			bool
 #define BoxRec			struct jrect
@@ -47,7 +48,6 @@ struct ji_point { int x, y; };
 #define DDXPointRec		struct ji_point
 #define DDXPointPtr		DDXPointRec *
 
-#include <limits.h>
 #if !defined(MAXSHORT) || !defined(MINSHORT) || \
   !defined(MAXINT) || !defined(MININT)
 /*

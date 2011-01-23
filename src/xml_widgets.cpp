@@ -25,6 +25,7 @@
 #include <string.h>
 
 #include "base/bind.h"
+#include "base/memory.h"
 #include "gui/jinete.h"
 #include "modules/gui.h"
 #include "xml_exception.h"
@@ -113,7 +114,7 @@ static Widget* convert_xmlelement_to_widget(TiXmlElement* elem, Widget* root)
 		       (top ? JI_TOP: (bottom ? JI_BOTTOM: JI_MIDDLE)));
 
       if (_bevel != NULL) {
-	char *bevel = jstrdup(_bevel);
+	char* bevel = base_strdup(_bevel);
 	int c, b[4];
 	char *tok;
 
@@ -126,7 +127,7 @@ static Widget* convert_xmlelement_to_widget(TiXmlElement* elem, Widget* root)
 	  if (c < 4)
 	    b[c] = ustrtol(tok, NULL, 10);
 	}
-	jfree(bevel);
+	base_free(bevel);
 
 	setup_bevels(widget, b[0], b[1], b[2], b[3]);
       }
@@ -409,7 +410,7 @@ static Widget* convert_xmlelement_to_widget(TiXmlElement* elem, Widget* root)
 
 static int convert_align_value_to_flags(const char *value)
 {
-  char *tok, *ptr = jstrdup(value);
+  char *tok, *ptr = base_strdup(value);
   int flags = 0;
 
   for (tok=ustrtok(ptr, " ");
@@ -444,6 +445,6 @@ static int convert_align_value_to_flags(const char *value)
     }
   }
 
-  jfree(ptr);
+  base_free(ptr);
   return flags;
 }

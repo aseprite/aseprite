@@ -739,9 +739,11 @@ static bool hook_msg_proc(JWidget widget, JMessage msg)
 {
   switch (msg->type) {
 
-    case JM_DESTROY:
-      jfree(jwidget_get_data(widget, hook_type()));
+    case JM_DESTROY: {
+      HookData* hook_data = reinterpret_cast<HookData*>(jwidget_get_data(widget, hook_type()));
+      delete hook_data;
       break;
+    }
 
     case JM_SIGNAL: {
       HookData* hook_data = reinterpret_cast<HookData*>(jwidget_get_data(widget, hook_type()));
@@ -764,7 +766,10 @@ void hook_signal(JWidget widget,
 		 bool (*signal_handler)(JWidget widget, void* data),
 		 void* data)
 {
-  HookData* hook_data = jnew(HookData, 1);
+  ASSERT(widget != NULL);
+  ASSERT(jwidget_get_data(widget, hook_type()) == NULL);
+
+  HookData* hook_data = new HookData;
 
   hook_data->signal_num = signal_num;
   hook_data->signal_handler = signal_handler;

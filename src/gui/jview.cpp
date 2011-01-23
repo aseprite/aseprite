@@ -21,7 +21,7 @@
 
 using namespace gfx;
 
-typedef struct View
+struct View
 {
   int max_w, max_h;	/* space which the widget need in the viewport */
   int scroll_x;		/* scrolling in x and y axis */
@@ -32,7 +32,7 @@ typedef struct View
   JWidget viewport;
   JWidget scrollbar_h;
   JWidget scrollbar_v;
-} View;
+};
 
 static void view_plain_update(JWidget widget);
 static bool view_msg_proc(JWidget widget, JMessage msg);
@@ -52,7 +52,7 @@ static void displace_widgets(JWidget widget, int x, int y);
 JWidget jview_new()
 {
   Widget* widget = new Widget(JI_VIEW);
-  View* view = jnew(View, 1);
+  View* view = new View;
 
   view->viewport = viewport_new();
   view->scrollbar_h = scrollbar_new(JI_HORIZONTAL);
@@ -323,7 +323,7 @@ static bool view_msg_proc(JWidget widget, JMessage msg)
       jwidget_free(view->scrollbar_h);
       jwidget_free(view->scrollbar_v);
 
-      jfree(view);
+      delete view;
       break;
     }
 

@@ -22,6 +22,7 @@
 #include <cmath>
 #include <stdio.h>
 #include <stdlib.h>
+#include <vector>
 
 #include "effect/colcurve.h"
 #include "gui/entry.h"
@@ -70,7 +71,7 @@ enum {
   STATUS_SCALING,
 };
 
-typedef struct CurveEditor
+struct CurveEditor
 {
   Curve *curve;
   int x1, y1;
@@ -79,7 +80,7 @@ typedef struct CurveEditor
   CurvePoint* edit_point;
   int *edit_x;
   int *edit_y;
-} CurveEditor;
+};
 
 static CurveEditor* curve_editor_data(JWidget widget);
 static bool curve_editor_msg_proc(JWidget widget, JMessage msg);
@@ -91,7 +92,7 @@ static int edit_node_manual(CurvePoint* point);
 JWidget curve_editor_new(Curve *curve, int x1, int y1, int x2, int y2)
 {
   JWidget widget = new Widget(curve_editor_type());
-  CurveEditor* curve_editor = jnew(CurveEditor, 1);
+  CurveEditor* curve_editor = new CurveEditor;
 
   jwidget_add_hook(widget, curve_editor_type(),
 		   curve_editor_msg_proc, curve_editor);
@@ -143,7 +144,7 @@ static bool curve_editor_msg_proc(JWidget widget, JMessage msg)
   switch (msg->type) {
 
     case JM_DESTROY:
-      jfree(curve_editor);
+      delete curve_editor;
       break;
 
     case JM_REQSIZE: {
@@ -205,7 +206,6 @@ static bool curve_editor_msg_proc(JWidget widget, JMessage msg)
       BITMAP *bmp;
       JLink link;
       CurvePoint* point;
-      int *values;
       int x, y, u;
 
       bmp = create_bitmap(jrect_w(widget->rc), jrect_h(widget->rc));
@@ -222,10 +222,10 @@ static bool curve_editor_msg_proc(JWidget widget, JMessage msg)
 	hline(bmp, 1, y*bmp->h/4, bmp->w-2, makecol (128, 128, 0));
 
       /* get curve values */
-      values = (int*)jmalloc(sizeof(int) * (curve_editor->x2-curve_editor->x1+1));
+      std::vector<int> values(curve_editor->x2-curve_editor->x1+1);
       curve_get_values(curve_editor->curve,
 		       curve_editor->x1,
-		       curve_editor->x2, values);
+		       curve_editor->x2, &values[0]);
 
       /* draw curve */
       for (x=widget->border_width.l;
@@ -239,8 +239,6 @@ static bool curve_editor_msg_proc(JWidget widget, JMessage msg)
 	putpixel(bmp, x, EDIT2SCR_Y(y)-widget->rc->y1,
 		 makecol(255, 255, 255));
       }
-
-      jfree(values);
 
       /* draw nodes */
       JI_LIST_FOR_EACH(curve_editor->curve->points, link) {

@@ -9,6 +9,7 @@
 #include <allegro/keyboard.h>
 #include <string.h>
 
+#include "base/memory.h"
 #include "gui/jlist.h"
 #include "gui/jmanager.h"
 #include "gui/jmessage.h"
@@ -24,9 +25,7 @@ int ji_register_message_type()
 
 JMessage jmessage_new(int type)
 {
-  JMessage msg;
-
-  msg = jnew0(union jmessage, 1);
+  JMessage msg = (union jmessage*)base_malloc0(sizeof(union jmessage));
   if (!msg)
     return NULL;
 
@@ -72,7 +71,7 @@ JMessage jmessage_new_copy(const JMessage msg)
 
   ASSERT(msg != NULL);
 
-  copy = jnew(union jmessage, 1);
+  copy = (union jmessage*)base_malloc(sizeof(union jmessage));
   if (!copy)
     return NULL;
 
@@ -90,7 +89,7 @@ JMessage jmessage_new_copy_without_dests(const JMessage msg)
 
   ASSERT(msg != NULL);
 
-  copy = jnew(union jmessage, 1);
+  copy = (union jmessage*)base_malloc(sizeof(union jmessage));
   if (!copy)
     return NULL;
 
@@ -107,7 +106,7 @@ void jmessage_free(JMessage msg)
   ASSERT(msg != NULL);
 
   jlist_free(msg->any.widgets);
-  jfree(msg);
+  base_free(msg);
 }
 
 void jmessage_add_dest(JMessage msg, JWidget widget)

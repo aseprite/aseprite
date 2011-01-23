@@ -213,20 +213,6 @@ typedef struct jxmltext*	JXmlText;
 typedef bool (*JMessageFunc)	 (JWidget widget, JMessage msg);
 typedef void (*JDrawFunc)	 (JWidget widget, JRect clip);
 
-/* without leak detection */
-void* jmalloc (unsigned long n_bytes);
-void* jmalloc0(unsigned long n_bytes);
-void* jrealloc(void* mem, unsigned long n_bytes);
-void  jfree   (void* mem);
-char* jstrdup (const char* string);
-
-#define jnew(struct_type, n_structs)					\
-    ((struct_type*)jmalloc(sizeof(struct_type) * (n_structs)))
-#define jnew0(struct_type, n_structs)					\
-    ((struct_type*)jmalloc0(sizeof(struct_type) * (n_structs)))
-#define jrenew(struct_type, mem, n_structs)				\
-    ((struct_type*)jrealloc((mem), (sizeof(struct_type) * (n_structs))))
-
 class Jinete
 {
 public:

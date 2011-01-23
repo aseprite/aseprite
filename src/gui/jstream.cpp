@@ -12,6 +12,7 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "base/memory.h"
 #include "gui/jinete.h"
 
 /* jinete stream file/string */
@@ -56,7 +57,7 @@ static int stream_string_tell(JStream stream);
 
 JStream jstream_new(int size)
 {
-  JStream stream = (JStream)jmalloc0(MAX(size, (int)sizeof(struct jstream)));
+  JStream stream = (JStream)base_malloc0(MAX(size, (int)sizeof(struct jstream)));
   if (!stream)
     return NULL;
 
@@ -98,9 +99,9 @@ JStream jstream_new_for_string(const char *buffer)
   stream->seek = stream_string_seek;
   stream->tell = stream_string_tell;
 
-  JSS->buf = buffer ? jstrdup(buffer): NULL;
+  JSS->buf = buffer ? base_strdup(buffer): NULL;
   if (buffer && !JSS->buf) {
-    jfree(stream);
+    base_free(stream);
     return NULL;
   }
 
@@ -117,7 +118,7 @@ void jstream_free(JStream stream)
   if (stream->close)
     (*stream->close)(stream);
 
-  jfree(stream);
+  base_free(stream);
 }
 
 bool jstream_eof(JStream stream)
@@ -233,7 +234,7 @@ static int stream_file_tell(JStream stream)
 static void stream_string_close(JStream stream)
 {
   if (JSS->buf)
-    jfree(JSS->buf);
+    base_free(JSS->buf);
 }
 
 static bool stream_string_eof(JStream stream)
@@ -280,7 +281,7 @@ static int stream_string_putc(JStream stream, int ch)
 {
   if (JSS->end >= JSS->size) {
     JSS->size += BLOCKSIZE;
-    JSS->buf = (char*)jrealloc(JSS->buf, JSS->size);
+    JSS->buf = (char*)base_realloc(JSS->buf, JSS->size);
     if (!JSS->buf) {
       JSS->size = 0;
       JSS->end = 0;

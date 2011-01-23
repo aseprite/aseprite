@@ -880,7 +880,7 @@ static void free_pidl(LPITEMIDLIST pidl)
 static base::string get_key_for_pidl(LPITEMIDLIST pidl)
 {
 #if 0
-  char *key = jmalloc(get_pidl_size(pidl)+1);
+  char *key = base_malloc(get_pidl_size(pidl)+1);
   UINT c, i = 0;
 
   while (pidl) {

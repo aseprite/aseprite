@@ -16,27 +16,21 @@
 /* #define REPORT_KEYS */
 #define PREPROCESS_KEYS
 
-
-
 struct jaccel
 {
   JList key_list;
 };
 
-typedef struct KeyCombo
+struct KeyCombo
 {
   int shifts;
   int ascii;
   int scancode;
-} KeyCombo;
+};
 
 JAccel jaccel_new()
 {
-  JAccel accel;
-
-  accel = jnew(struct jaccel, 1);
-  if (!accel)
-    return NULL;
+  JAccel accel = new jaccel;
 
   accel->key_list = jlist_new();
 
@@ -50,8 +44,6 @@ JAccel jaccel_new_copy(JAccel accel)
   JLink link;
 
   copy = jaccel_new();
-  if (!copy)
-    return NULL;
 
   JI_LIST_FOR_EACH(accel->key_list, link) {
     key = (KeyCombo *)link->data;
@@ -65,19 +57,15 @@ void jaccel_free(JAccel accel)
 {
   JLink link;
   JI_LIST_FOR_EACH(accel->key_list, link) {
-    jfree(link->data);
+    delete (KeyCombo*)link->data;
   }
   jlist_free(accel->key_list);
-  jfree(accel);
+  delete accel;
 }
 
 void jaccel_add_key(JAccel accel, int shifts, int ascii, int scancode)
 {
-  KeyCombo *key;
-
-  key = jnew(KeyCombo, 1);
-  if (!key)
-    return;
+  KeyCombo *key = new KeyCombo;
 
   key->shifts = shifts & (KB_SHIFT_FLAG | KB_CTRL_FLAG | KB_ALT_FLAG);
   key->ascii = ascii;

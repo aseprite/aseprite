@@ -43,10 +43,13 @@ typedef struct _BoundSeg
   unsigned visited : 1;
 } BoundSeg;
 
+// The returned pointer must be freed using base_free() function.
 BoundSeg* find_mask_boundary(const Image* maskPR, int* num_elems,
 			     BoundaryType type, int x1, int y1, int x2, int y2);
+
 BoundSeg* sort_boundary(BoundSeg* segs, int num_segs, int* num_groups);
 
+// Call this function when you don't use find_mask_boundary() anymore (e.g. atexit()).
 void boundary_exit();
 
 #ifdef __cplusplus

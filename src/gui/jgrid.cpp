@@ -10,6 +10,7 @@
 #include <string.h>
 #include <stdio.h>
 
+#include "base/memory.h"
 #include "gfx/size.h"
 #include "gui/jlist.h"
 #include "gui/jmessage.h"
@@ -58,7 +59,7 @@ static void grid_inc_row_size(Grid *grid, int row, int size);
 JWidget jgrid_new(int columns, bool same_width_columns)
 {
   Widget* widget = new Widget(JI_GRID);
-  Grid *grid = jnew(Grid, 1);
+  Grid *grid = new Grid;
   int col;
 
   ASSERT(columns > 0);
@@ -66,7 +67,7 @@ JWidget jgrid_new(int columns, bool same_width_columns)
   grid->same_width_columns = same_width_columns;
   grid->cols = columns;
   grid->rows = 0;
-  grid->colstrip = (Strip*)jmalloc(sizeof(Strip) * grid->cols);
+  grid->colstrip = (Strip*)base_malloc(sizeof(Strip) * grid->cols);
   grid->rowstrip = NULL;
   grid->cells = NULL;
 
@@ -130,17 +131,17 @@ static bool grid_msg_proc(JWidget widget, JMessage msg)
       if (grid->cells != NULL) {
 	int row;
 	for (row=0; row<grid->rows; ++row)
-	  jfree(grid->cells[row]);
-	jfree(grid->cells);
+	  base_free(grid->cells[row]);
+	base_free(grid->cells);
       }
 
       if (grid->colstrip != NULL)
-	jfree(grid->colstrip);
+	base_free(grid->colstrip);
 
       if (grid->rowstrip != NULL)
-	jfree(grid->rowstrip);
+	base_free(grid->rowstrip);
 
-      jfree(grid);
+      delete grid;
       break;
 
     case JM_REQSIZE:
@@ -530,11 +531,11 @@ static void grid_expand_rows(JWidget widget, int rows)
   int row;
 
   if (grid->rows < rows) {
-    grid->cells = (Cell**)jrealloc(grid->cells, sizeof(Cell*) * rows);
-    grid->rowstrip = (Strip*)jrealloc(grid->rowstrip, sizeof(Strip) * rows);
+    grid->cells = (Cell**)base_realloc(grid->cells, sizeof(Cell*) * rows);
+    grid->rowstrip = (Strip*)base_realloc(grid->rowstrip, sizeof(Strip) * rows);
 
     for (row=grid->rows; row<rows; ++row) {
-      grid->cells[row] = (Cell*)jmalloc(sizeof(Cell)*grid->cols);
+      grid->cells[row] = (Cell*)base_malloc(sizeof(Cell)*grid->cols);
       grid->rowstrip[row].size = 0;
       grid->rowstrip[row].expand_count = 0;
 

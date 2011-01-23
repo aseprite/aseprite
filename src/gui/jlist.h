@@ -11,20 +11,22 @@
 
 struct jlink
 {
-  void *data;
+  void* data;
   JLink prev;
   JLink next;
+
+  jlink(void* data) : data(data), prev(0), next(0) { }
 };
 
 struct jlist
 {
   JLink end;
   unsigned int length;
+
+  jlist() : end(0), length(0) { }
 };
 
-JLink jlink_new(void *data);
 JList jlist_new();
-void jlink_free(JLink link);
 void jlist_free(JList list);
 void jlist_clear(JList list);
 void jlist_append(JList list, void *data);

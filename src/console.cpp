@@ -23,6 +23,7 @@
 #include <stdio.h>
 
 #include "base/bind.h"
+#include "base/memory.h"
 #include "gui/jinete.h"
 
 #include "app.h"
@@ -138,9 +139,9 @@ void Console::printf(const char *format, ...)
 
     text = wid_textbox->getText();
     if (!text)
-      final = jstrdup(buf);
+      final = base_strdup(buf);
     else {
-      final = (char*)jmalloc(ustrlen(text) + ustrlen(buf) + 1);
+      final = (char*)base_malloc(ustrlen(text) + ustrlen(buf) + 1);
 
       ustrcpy(final, empty_string);
       ustrcat(final, text);
@@ -148,7 +149,7 @@ void Console::printf(const char *format, ...)
     }
 
     wid_textbox->setText(final);
-    jfree(final);
+    base_free(final);
   }
   else {
     fputs(buf, stdout);

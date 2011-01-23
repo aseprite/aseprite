@@ -25,7 +25,7 @@
 #include <stdio.h>
 #include <allegro/config.h>
 
-#include "gui/jbase.h"
+#include "base/memory.h"
 #include "raster/cel.h"
 #include "raster/dirty.h"
 #include "raster/image.h"
@@ -1925,7 +1925,7 @@ static UndoChunk* undo_chunk_new(UndoStream* stream, int type, int size)
 
   ASSERT(size >= (int)sizeof(UndoChunk));
 
-  chunk = (UndoChunk*)jmalloc0(size);
+  chunk = (UndoChunk*)base_malloc0(size);
   if (!chunk)
     return NULL;
 
@@ -1941,7 +1941,7 @@ static UndoChunk* undo_chunk_new(UndoStream* stream, int type, int size)
 
 static void undo_chunk_free(UndoChunk* chunk)
 {
-  jfree(chunk);
+  base_free(chunk);
 }
 
 /***********************************************************************

@@ -159,7 +159,7 @@ TEST(JList, RemoveLinkAndDeleteLink)
   jlist_delete_link(q, jlist_nth_link(q, 0));
   EXPECT_EQ(0, jlist_length(q));
 
-  jlink_free(b);
+  delete b;
   jlist_free(q);
 }
 

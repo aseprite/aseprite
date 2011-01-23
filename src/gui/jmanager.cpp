@@ -15,6 +15,7 @@
 
 #include <allegro.h>
 
+#include "base/memory.h"
 #include "gui/jinete.h"
 #include "gui/jintern.h"
 
@@ -41,18 +42,23 @@ enum {
   STAGE_CLOSE_ALL,
 };
 
-typedef struct Timer {
+struct Timer {
   JWidget widget;
   int interval;
   int last_time;
-} Timer;
+};
 
 #define NFILTERS	(JM_REGISTERED_MESSAGES+1)
 
-typedef struct Filter {
+struct Filter
+{
   int message;
   JWidget widget;
-} Filter;
+
+  Filter(int message, JWidget widget)
+    : message(message)
+    , widget(widget) { }
+};
 
 static int double_click_level;
 static int double_click_buttons;
@@ -99,8 +105,6 @@ static int some_parent_is_focusrest(JWidget widget);
 static JWidget find_magnetic_widget(JWidget widget);
 static JMessage new_mouse_msg(int type, JWidget destination);
 static void broadcast_key_msg(JWidget manager, JMessage msg);
-static Filter* filter_new(int message, JWidget widget);
-static void filter_free(Filter* filter);
 
 /* keyboard focus movement stuff */
 static bool move_focus(JWidget manager, JMessage msg);
@@ -201,15 +205,15 @@ void jmanager_free(JWidget widget)
     if (timers != NULL) {
       for (c=0; c<n_timers; ++c)
 	if (timers[c] != NULL)
-	  jfree(timers[c]);
-      jfree(timers);
+	  delete timers[c];
+      base_free(timers);
       n_timers = 0;
     }
 
     /* destroy filters */
     for (c=0; c<NFILTERS; ++c) {
       JI_LIST_FOR_EACH(msg_filters[c], link) {
-	filter_free(reinterpret_cast<Filter*>(link->data));
+	delete reinterpret_cast<Filter*>(link->data);
       }
       jlist_free(msg_filters[c]);
       msg_filters[c] = NULL;
@@ -561,7 +565,6 @@ void jmanager_dispatch_messages(JWidget manager)
  */
 int jmanager_add_timer(JWidget widget, int interval)
 {
-  Timer *timer;
   int c, new_id = -1;
 
   ASSERT_VALID_WIDGET(widget);
@@ -576,10 +579,10 @@ int jmanager_add_timer(JWidget widget, int interval)
 
   if (new_id < 0) {
     new_id = n_timers++;
-    timers = jrenew(Timer *, timers, n_timers);
+    timers = (Timer**)base_realloc(timers, sizeof(Timer*) * n_timers);
   }
 
-  timer = jnew(Timer, 1);
+  Timer* timer = new Timer;
   timer->widget = widget;
   timer->interval = interval;
   timer->last_time = -1;
@@ -596,7 +599,7 @@ void jmanager_remove_timer(int timer_id)
   ASSERT(timer_id >= 0 && timer_id < n_timers);
   ASSERT(timers[timer_id] != NULL);
 
-  jfree(timers[timer_id]);
+  delete timers[timer_id];
   timers[timer_id] = NULL;
 
   /* remove messages of this timer in the queue */
@@ -926,7 +929,7 @@ void jmanager_add_msg_filter(int message, JWidget widget)
   if (c >= JM_REGISTERED_MESSAGES)
     c = JM_REGISTERED_MESSAGES;
   
-  jlist_append(msg_filters[c], filter_new(message, widget));
+  jlist_append(msg_filters[c], new Filter(message, widget));
 }
 
 void jmanager_remove_msg_filter(int message, JWidget widget)
@@ -939,7 +942,7 @@ void jmanager_remove_msg_filter(int message, JWidget widget)
   JI_LIST_FOR_EACH_SAFE(msg_filters[c], link, next) {
     Filter* filter = reinterpret_cast<Filter*>(link->data);
     if (filter->widget == widget) {
-      filter_free(filter);
+      delete filter;
       jlist_delete_link(msg_filters[c], link);
     }
   }
@@ -954,7 +957,7 @@ void jmanager_remove_msg_filter_for(JWidget widget)
     JI_LIST_FOR_EACH_SAFE(msg_filters[c], link, next) {
       Filter* filter = reinterpret_cast<Filter*>(link->data);
       if (filter->widget == widget) {
-	filter_free(filter);
+	delete filter;
 	jlist_delete_link(msg_filters[c], link);
       }
     }
@@ -1452,23 +1455,6 @@ static void broadcast_key_msg(JWidget manager, JMessage msg)
   }
 }
 
-static Filter* filter_new(int message, JWidget widget)
-{
-  Filter* filter = (Filter*)jnew(Filter, 1);
-  if (!filter)
-    return NULL;
-
-  filter->message = message;
-  filter->widget = widget;
-
-  return filter;
-}
-
-static void filter_free(Filter* filter)
-{
-  jfree(filter);
-}
-
 /***********************************************************************
 			    Focus Movement
  ***********************************************************************/
@@ -1496,7 +1482,7 @@ static bool move_focus(JWidget manager, JMessage msg)
   /* one at least */
   if (count > 0) {
     /* list of widgets */
-    list = (JWidget*)jmalloc(sizeof(JWidget) * count);
+    list = (JWidget*)base_malloc(sizeof(JWidget) * count);
     if (!list)
       return ret;
 
@@ -1573,7 +1559,7 @@ static bool move_focus(JWidget manager, JMessage msg)
         break;
     }
 
-    jfree(list);
+    base_free(list);
 
     if ((focus) && (focus != focus_widget))
       jmanager_set_focus(focus);

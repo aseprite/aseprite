@@ -24,6 +24,7 @@
 #include "app.h"
 #include "app/color.h"
 #include "app/color_utils.h"
+#include "base/memory.h"
 #include "core/cfg.h"
 #include "gui/jbase.h"
 #include "gui/jlist.h"
@@ -214,7 +215,7 @@ void Editor::editor_cursor_exit()
   set_config_color("Tools", "CursorColor", cursor_color);
 
   if (cursor_bound.seg != NULL)
-    jfree(cursor_bound.seg);
+    base_free(cursor_bound.seg);
 
   delete current_pen;
   current_pen = NULL;
@@ -478,7 +479,7 @@ static void generate_cursor_boundaries()
     cursor_bound.pen_angle = pen_settings->getAngle();
 
     if (cursor_bound.seg != NULL)
-      jfree(cursor_bound.seg);
+      base_free(cursor_bound.seg);
 
     Pen* pen;
 

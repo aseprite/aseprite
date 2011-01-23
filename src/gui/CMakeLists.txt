@@ -25,7 +25,6 @@ add_library(gui-lib
   jlist.cpp
   jlistbox.cpp
   jmanager.cpp
-  jmem.cpp
   jmenu.cpp
   jmessage.cpp
   jpanel.cpp

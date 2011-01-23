@@ -10,11 +10,6 @@
 #include "gui/jclipboard.h"
 #include "gui/theme.h"
 
-#ifdef MEMLEAK
-void _jmemleak_init();
-void _jmemleak_exit();
-#endif
-
 int _ji_widgets_init();
 void _ji_widgets_exit();
 
@@ -29,10 +24,6 @@ void _ji_font_exit();
  */
 Jinete::Jinete()
 {
-#ifdef MEMLEAK
-  _jmemleak_init();
-#endif
-
   // initialize system
   _ji_system_init();
   _ji_font_init();
@@ -51,9 +42,4 @@ Jinete::~Jinete()
   _ji_widgets_exit();
   _ji_font_exit();
   _ji_system_exit();
-
-#ifdef MEMLEAK
-  _jmemleak_exit();
-#endif
 }
-

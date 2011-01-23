@@ -25,6 +25,7 @@
 #include "base/mutex.h"
 #include "base/scoped_lock.h"
 #include "base/shared_ptr.h"
+#include "base/string.h"
 #include "console.h"
 #include "file/file.h"
 #include "file/file_format.h"
@@ -33,8 +34,8 @@
 #include "gui/jalert.h"
 #include "modules/gui.h"
 #include "modules/palettes.h"
-#include "raster/raster.h"
 #include "raster/quantization.h"
+#include "raster/raster.h"
 #include "widgets/statebar.h"
 
 static FileOp *fop_new(FileOpType type);
@@ -126,7 +127,6 @@ int sprite_save(Sprite *sprite)
 
 FileOp *fop_to_load_sprite(const char *filename, int flags)
 {
-  char *extension;
   FileOp *fop;
 
   fop = fop_new(FileOpLoad);
@@ -134,10 +134,9 @@ FileOp *fop_to_load_sprite(const char *filename, int flags)
     return NULL;
 
   /* get the extension of the filename (in lower case) */
-  extension = jstrdup(get_extension(filename));
-  ustrlwr(extension);
+  std::string extension = base::string_to_lower(get_extension(filename));
 
-  PRINTF("Loading file \"%s\" (%s)\n", filename, extension);
+  PRINTF("Loading file \"%s\" (%s)\n", filename, extension.c_str());
 
   /* does file exist? */
   if (!file_exists(filename, FA_ALL, NULL)) {
@@ -146,10 +145,10 @@ FileOp *fop_to_load_sprite(const char *filename, int flags)
   }
 
   /* get the format through the extension of the filename */
-  fop->format = get_fileformat(extension);
+  fop->format = get_fileformat(extension.c_str());
   if (!fop->format ||
       !fop->format->support(FILE_SUPPORT_LOAD)) {
-    fop_error(fop, "ASE can't load \"%s\" files\n", extension);
+    fop_error(fop, "ASE can't load \"%s\" files\n", extension.c_str());
     goto done;
   }
 
@@ -216,7 +215,6 @@ FileOp *fop_to_load_sprite(const char *filename, int flags)
     fop->oneframe = true;
 
 done:;
-  jfree(extension);
   return fop;
 }
 

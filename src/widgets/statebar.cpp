@@ -162,7 +162,7 @@ StatusBar::~StatusBar()
   JLink link;
 
   JI_LIST_FOR_EACH(m_progress, link) {
-    jfree(link->data);
+    delete (Progress*)link->data;
   }
   jlist_free(m_progress);
 

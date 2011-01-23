@@ -20,6 +20,7 @@
 
 #include <allegro.h>
 
+#include "base/memory.h"
 #include "effect/effect.h"
 #include "modules/palettes.h"
 #include "raster/image.h"
@@ -45,9 +46,9 @@ void set_median_size(TiledMode tiled, int w, int h)
 
   for (c=0; c<4; c++) {
     if (data.channel[c])
-      jfree(data.channel[c]);
+      base_free(data.channel[c]);
 
-    data.channel[c] = (unsigned char*)jmalloc(sizeof(unsigned char) * data.ncolors);
+    data.channel[c] = (unsigned char*)base_malloc(sizeof(unsigned char) * data.ncolors);
   }
 }
 

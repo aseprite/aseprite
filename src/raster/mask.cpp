@@ -21,8 +21,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "gui/jbase.h"		// TODO remove this reference
-
+#include "base/memory.h"
 #include "raster/image.h"
 #include "raster/mask.h"
 
@@ -46,7 +45,7 @@ Mask::~Mask()
   ASSERT(m_freeze_count == 0);
 
   if (this->name)
-    jfree(this->name);
+    base_free(this->name);
 
   if (this->bitmap)
     image_free(this->bitmap);
@@ -106,9 +105,9 @@ void mask_free(Mask* mask)
 void mask_set_name(Mask* mask, const char *name)
 {
   if (mask->name)
-    jfree(mask->name);
+    base_free(mask->name);
 
-  mask->name = name ? jstrdup(name): NULL;
+  mask->name = name ? base_strdup(name): NULL;
 }
 
 void mask_copy(Mask* mask_dst, const Mask* mask_src)

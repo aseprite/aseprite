@@ -20,6 +20,7 @@
 
 #include <allegro.h>
 
+#include "base/memory.h"
 #include "commands/command.h"
 #include "commands/commands.h"
 #include "console.h"
@@ -240,7 +241,7 @@ static bool anieditor_msg_proc(JWidget widget, JMessage msg)
 
     case JM_DESTROY:
       if (anieditor->layers)
-	jfree(anieditor->layers);
+	base_free(anieditor->layers);
       delete anieditor;
       break;
 
@@ -1293,7 +1294,7 @@ static void anieditor_regenerate_layers(JWidget widget)
   int c;
 
   if (anieditor->layers != NULL) {
-    jfree(anieditor->layers);
+    base_free(anieditor->layers);
     anieditor->layers = NULL;
   }
 
@@ -1301,7 +1302,7 @@ static void anieditor_regenerate_layers(JWidget widget)
 
   /* here we build an array with all the layers */
   if (anieditor->nlayers > 0) {
-    anieditor->layers = (Layer**)jmalloc(sizeof(Layer*) * anieditor->nlayers);
+    anieditor->layers = (Layer**)base_malloc(sizeof(Layer*) * anieditor->nlayers);
 
     for (c=0; c<anieditor->nlayers; c++)
       anieditor->layers[c] = (Layer*)anieditor->sprite->indexToLayer(anieditor->nlayers-c-1);

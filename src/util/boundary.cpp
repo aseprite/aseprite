@@ -29,12 +29,16 @@
 /**********************************************************************/
 /* for ASE */
 #include <limits.h>
-#include "gui/jbase.h"
+#include "base/memory.h"
 #include "raster/image.h"
 #include "util/boundary.h"
 
-#define g_renew		jrenew
-#define g_new		jnew
+#define g_new(struct_type, n_structs) \
+  ((struct_type*)base_malloc(sizeof(struct_type) * (n_structs)))
+
+#define g_renew(struct_type, mem, n_structs) \
+  ((struct_type*)base_realloc((mem), (sizeof(struct_type) * (n_structs))))
+
 #define gint		int
 #define gboolean	bool
 #define G_MAXINT	INT_MAX
@@ -543,27 +547,27 @@ sort_boundary (BoundSeg *segs,
   return new_segs;
 }
 
-/* dacap: for ASE to avoid informed memory leaks */
+// Used to avoid memory leaks.
 void boundary_exit()
 {
   if (vert_segs != NULL) {
-    jfree(vert_segs);
+    base_free(vert_segs);
     vert_segs = NULL;
   }
   if (tmp_segs != NULL) {
-    jfree(tmp_segs);
+    base_free(tmp_segs);
     tmp_segs = NULL;
   }
   if (empty_segs_n != NULL) {
-    jfree(empty_segs_n);
+    base_free(empty_segs_n);
     empty_segs_n = NULL;
   }
   if (empty_segs_c != NULL) {
-    jfree(empty_segs_c);
+    base_free(empty_segs_c);
     empty_segs_c = NULL;
   }
   if (empty_segs_l != NULL) {
-    jfree(empty_segs_l);
+    base_free(empty_segs_l);
     empty_segs_l = NULL;
   }
 }

@@ -21,6 +21,7 @@
 #include <cstring>
 #include <vector>
 
+#include "base/memory.h"
 #include "base/mutex.h"
 #include "base/remove_from_container.h"
 #include "base/scoped_lock.h"
@@ -609,7 +610,7 @@ SpriteImpl::~SpriteImpl()
   delete m_mask;
   delete m_extraCel;
   delete m_extraImage;
-  if (m_bound.seg) jfree(m_bound.seg);
+  if (m_bound.seg) base_free(m_bound.seg);
   delete m_mutex;
 
   // Destroy file format options
@@ -761,7 +762,7 @@ void SpriteImpl::generateMaskBoundaries(Mask* mask)
     mask = m_mask;
 
   if (m_bound.seg) {
-    jfree(m_bound.seg);
+    base_free(m_bound.seg);
     m_bound.seg = NULL;
     m_bound.nseg = 0;
   }

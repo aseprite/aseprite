@@ -6,26 +6,26 @@
 
 #include "config.h"
 
-#ifdef ALLEGRO_WINDOWS
+#include <algorithm>
+#include <string>
+
+#ifdef WIN32
 #include <allegro.h>
 #include <winalleg.h>
 #endif
 
-#include "gui/jbase.h"
+#pragma warning(disable:4996)	// To void MSVC warning about std::copy() with unsafe arguments
 
-static char *clipboard_text = NULL;
+static std::string clipboard_text;
 
 static void lowlevel_set_clipboard_text(const char *text)
 {
-  if (clipboard_text)
-    jfree(clipboard_text);
-
-  clipboard_text = text ? jstrdup(text) : NULL;
+  clipboard_text = text ? text: "";
 }
 
 const char* jclipboard_get_text()
 {
-#ifdef ALLEGRO_WINDOWS
+#ifdef WIN32
   if (IsClipboardFormatAvailable(CF_TEXT)) {
     if (OpenClipboard(win_get_window())) {
       HGLOBAL hglobal = GetClipboardData(CF_TEXT);
@@ -41,26 +41,28 @@ const char* jclipboard_get_text()
   }
 #endif
 
-  return clipboard_text;
+  return clipboard_text.c_str();
 }
 
 void jclipboard_set_text(const char *text)
 {
   lowlevel_set_clipboard_text(text);
 
-#ifdef ALLEGRO_WINDOWS
+#ifdef WIN32
   if (IsClipboardFormatAvailable(CF_TEXT)) {
     if (OpenClipboard(win_get_window())) {
       EmptyClipboard();
 
-      if (clipboard_text) {
-	int len = ustrlen(clipboard_text);
+      if (!clipboard_text.empty()) {
+	int len = clipboard_text.size();
 
-	HGLOBAL hglobal = GlobalAlloc(GMEM_MOVEABLE, sizeof(char)*(len+1));
+	HGLOBAL hglobal = GlobalAlloc(GMEM_MOVEABLE |
+				      GMEM_ZEROINIT, sizeof(char)*(len+1));
+
 	LPSTR lpstr = static_cast<LPSTR>(GlobalLock(hglobal));
-	memcpy(lpstr, clipboard_text, len);
+	std::copy(clipboard_text.begin(), clipboard_text.end(), lpstr);
 	GlobalUnlock(hglobal);
- 
+
 	SetClipboardData(CF_TEXT, hglobal);
       }
       CloseClipboard();

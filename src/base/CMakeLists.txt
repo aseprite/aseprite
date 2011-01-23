@@ -6,6 +6,7 @@ add_library(base-lib
   errno_string.cpp
   exception.cpp
   mem_utils.cpp
+  memory.cpp
   mutex.cpp
   path.cpp
   serialization.cpp

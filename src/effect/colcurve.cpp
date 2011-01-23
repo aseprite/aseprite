@@ -18,10 +18,11 @@
 
 #include "config.h"
 
-#include "gui/jlist.h"
+#include <vector>
 
 #include "effect/colcurve.h"
 #include "effect/effect.h"
+#include "gui/jlist.h"
 #include "modules/palettes.h"
 #include "raster/image.h"
 #include "raster/palette.h"
@@ -34,11 +35,7 @@ static struct {
 
 CurvePoint *curve_point_new(int x, int y)
 {
-  CurvePoint *point;
-
-  point = jnew(CurvePoint, 1);
-  if (!point)
-    return NULL;
+  CurvePoint* point = new CurvePoint;
 
   point->x = x;
   point->y = y;
@@ -48,16 +45,12 @@ CurvePoint *curve_point_new(int x, int y)
 
 void curve_point_free(CurvePoint *point)
 {
-  jfree(point);
+  delete point;
 }
 
 Curve *curve_new(int type)
 {
-  Curve *curve;
-
-  curve = jnew(Curve, 1);
-  if (!curve)
-    return NULL;
+  Curve* curve = new Curve;
 
   curve->type = type;
   curve->points = jlist_new();
@@ -73,15 +66,15 @@ void curve_free(Curve *curve)
     curve_point_free(reinterpret_cast<CurvePoint*>(link->data));
 
   jlist_free(curve->points);
-  jfree(curve);
+  delete curve;
 }
 
-void curve_add_point(Curve *curve, CurvePoint *point)
+void curve_add_point(Curve* curve, CurvePoint* point)
 {
   JLink link;
 
   JI_LIST_FOR_EACH(curve->points, link)
-    if (((CurvePoint *)link->data)->x >= point->x)
+    if (((CurvePoint*)link->data)->x >= point->x)
       break;
 
   jlist_insert_before(curve->points, link, point);
@@ -103,10 +96,8 @@ static void
 spline_solve(int n, float x[], float y[], float y2[])
 {
   float p, sig;
-  float* u;
   int i, k;
-
-  u = (float*)jmalloc((n - 1) * sizeof(u[0]));
+  std::vector<float> u(n - 1);
 
   y2[0] = u[0] = 0.0;   /* set lower boundary condition to "natural" */
 
@@ -123,8 +114,6 @@ spline_solve(int n, float x[], float y[], float y2[])
   y2[n - 1] = 0.0;
   for (k = n - 2; k >= 0; --k)
     y2[k] = y2[k] * y2[k + 1] + u[k];
-
-  jfree(u);
 }
 
 static float
@@ -202,24 +191,24 @@ void curve_get_values(Curve *curve, int x1, int x2, int *values)
 
       case CURVE_SPLINE: {
 	/* dacap: almost all code from GTK+ 2.2.2 source code */
-	float rx, ry, dx, min_x, *mem, *xv, *yv, *y2v, prev;
+	float rx, ry, dx, min_x, *xv, *yv, *y2v, prev;
 	int dst, veclen = x2-x1+1;
 	JLink link;
 
 	min_x = 0;
 
-	mem = (float*)jmalloc(3 * num_points * sizeof(float));
-	xv  = mem;
-	yv  = mem + num_points;
-	y2v = mem + 2*num_points;
+	std::vector<float> mem(3 * num_points);
+	xv  = &mem[0];
+	yv  = &mem[num_points];
+	y2v = &mem[2*num_points];
 
 	prev = min_x - 1.0;
 	dst = 0;
 	JI_LIST_FOR_EACH(curve->points, link) {
 	  if (((CurvePoint *)link->data)->x > prev) {
-	    prev    = ((CurvePoint *)link->data)->x;
-	    xv[dst] = ((CurvePoint *)link->data)->x;
-	    yv[dst] = ((CurvePoint *)link->data)->y;
+	    prev    = ((CurvePoint*)link->data)->x;
+	    xv[dst] = ((CurvePoint*)link->data)->x;
+	    yv[dst] = ((CurvePoint*)link->data)->y;
 	    ++dst;
 	  }
 	}
@@ -239,8 +228,6 @@ void curve_get_values(Curve *curve, int x1, int x2, int *values)
 #endif
 	  values[x] = ry;
 	}
-
-	jfree(mem);
 	break;
       }
     }
@@ -297,7 +284,7 @@ void apply_color_curve4(Effect *effect)
   }
 }
 
-void apply_color_curve2 (Effect *effect)
+void apply_color_curve2(Effect *effect)
 {
   ase_uint16 *src_address;
   ase_uint16 *dst_address;

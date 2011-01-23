@@ -14,11 +14,11 @@
 #include "gui/jsep.h"
 #include "gui/widget.h"
 
-typedef struct QuickData
+struct QuickData
 {
   void (*quick_handler)(JWidget widget, int user_data);
   int user_data;
-} QuickData;
+};
 
 static void process_quickmenu(JWidget menu, JQuickMenu quick_menu);
 static bool quickmenu_msg_proc(JWidget widget, JMessage msg);
@@ -87,7 +87,7 @@ static void process_quickmenu(JWidget menu, JQuickMenu quick_menu)
       }
 
       if (quick_menu[c].quick_handler) {
-	QuickData *quick_data = jnew(QuickData, 1);
+	QuickData *quick_data = new QuickData;
 
 	quick_data->quick_handler = quick_menu[c].quick_handler;
 	quick_data->user_data = quick_menu[c].user_data;
@@ -114,7 +114,7 @@ static bool quickmenu_msg_proc(JWidget widget, JMessage msg)
   switch (msg->type) {
 
     case JM_DESTROY:
-      jfree(jwidget_get_data(widget, quickmenu_type()));
+      delete (QuickData*)(jwidget_get_data(widget, quickmenu_type()));
       break;
 
     case JM_SIGNAL:
@@ -128,4 +128,3 @@ static bool quickmenu_msg_proc(JWidget widget, JMessage msg)
 
   return false;
 }
-

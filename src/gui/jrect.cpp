@@ -10,11 +10,7 @@
 
 JRect jrect_new(int x1, int y1, int x2, int y2)
 {
-  JRect rect;
-
-  rect = jnew(struct jrect, 1);
-  if (!rect)
-    return NULL;
+  JRect rect = new jrect;
 
   rect->x1 = x1;
   rect->y1 = y1;
@@ -31,7 +27,7 @@ JRect jrect_new_copy(const JRect rect)
 
 void jrect_free(JRect rect)
 {
-  jfree(rect);
+  delete rect;
 }
 
 void jrect_copy(JRect dst, const JRect src)

@@ -138,7 +138,7 @@ static Widget* find_previtem(Widget* menu, Widget* menuitem);
 Widget* jmenu_new()
 {
   Widget* widget = new Widget(JI_MENU);
-  Menu *menu = jnew(Menu, 1);
+  Menu* menu = new Menu;
 
   menu->menuitem = NULL;
 
@@ -163,7 +163,7 @@ Widget* jmenubar_new()
 Widget* jmenubox_new()
 {
   Widget* widget = new Widget(JI_MENUBOX);
-  MenuBox *menubox = jnew(MenuBox, 1);
+  MenuBox* menubox = new MenuBox;
 
   menubox->base = NULL;
 
@@ -177,7 +177,7 @@ Widget* jmenubox_new()
 Widget* jmenuitem_new(const char *text)
 {
   Widget* widget = new Widget(JI_MENUITEM);
-  MenuItem *menuitem = jnew(MenuItem, 1);
+  MenuItem* menuitem = new MenuItem;
 
   menuitem->accel = NULL;
   menuitem->highlight = false;
@@ -366,7 +366,7 @@ static bool menu_msg_proc(Widget* widget, JMessage msg)
 	}
       }
 
-      jfree(menu);
+      delete menu;
       break;
     }
 
@@ -460,10 +460,8 @@ static bool menubox_msg_proc(Widget* widget, JMessage msg)
 	jmanager_remove_msg_filter(JM_BUTTONPRESSED, widget);
       }
 
-      if (menubox->base)
-	jfree(menubox->base);
-
-      jfree(menubox);
+      delete menubox->base;
+      delete menubox;
       break;
     }
 
@@ -836,7 +834,7 @@ static bool menuitem_msg_proc(Widget* widget, JMessage msg)
 	menuitem->submenu_timer = -1;
       }
 
-      jfree(menuitem);
+      delete menuitem;
       break;
 
     case JM_REQSIZE:
@@ -1125,7 +1123,7 @@ static Base *get_base(Widget* widget)
 
 static Base *create_base(Widget* widget)
 {
-  Base *base = jnew(Base, 1);
+  Base* base = new Base;
 
   base->was_clicked = false;
   base->is_filtering = false;

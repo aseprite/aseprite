@@ -6,6 +6,7 @@
 
 #include "config.h"
 
+#include <string>
 #include <allegro.h>
 
 #include "gfx/size.h"
@@ -15,14 +16,13 @@
 
 using namespace gfx;
 
-typedef struct TipData
+struct TipData
 {
   Widget* widget;	// Widget that shows the tooltip
   Frame* window;	// Frame where is the tooltip
-  char *text;
+  std::string text;
   int timer_id;
-} TipData;
-
+};
 
 static int tip_type();
 static bool tip_hook(JWidget widget, JMessage msg);
@@ -34,20 +34,17 @@ void jwidget_add_tooltip_text(JWidget widget, const char *text)
   ASSERT(text != NULL);
 
   if (tip == NULL) {
-    tip = jnew(TipData, 1);
+    tip = new TipData;
 
     tip->widget = widget;
     tip->window = NULL;
-    tip->text = jstrdup(text);
+    tip->text = text;
     tip->timer_id = -1;
 
     jwidget_add_hook(widget, tip_type(), tip_hook, tip);
   }
   else {
-    if (tip->text != NULL)
-      jfree(tip->text);
-
-    tip->text = jstrdup(text);
+    tip->text = text;
   }
 }
 
@@ -73,8 +70,7 @@ static bool tip_hook(JWidget widget, JMessage msg)
       if (tip->timer_id >= 0)
 	jmanager_remove_timer(tip->timer_id);
 
-      jfree(tip->text);
-      jfree(tip);
+      delete tip;
       break;
 
     case JM_MOUSEENTER:
@@ -100,7 +96,7 @@ static bool tip_hook(JWidget widget, JMessage msg)
     case JM_TIMER:
       if (msg->timer.timer_id == tip->timer_id) {
 	if (!tip->window) {
-	  Frame* window = new TipWindow(tip->text, true);
+	  Frame* window = new TipWindow(tip->text.c_str(), true);
 /* 	  int x = tip->widget->rc->x1; */
 /* 	  int y = tip->widget->rc->y2; */
 	  int x = jmouse_x(0)+12*jguiscale();

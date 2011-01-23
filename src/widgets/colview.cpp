@@ -46,7 +46,7 @@ static bool colorviewer_msg_proc(JWidget widget, JMessage msg);
 JWidget colorviewer_new(const Color& color, int imgtype)
 {
   Widget* widget = new Widget(colorviewer_type());
-  ColorViewer *colorviewer = jnew(ColorViewer, 1);
+  ColorViewer* colorviewer = new ColorViewer;
 
   colorviewer->color = color;
   colorviewer->imgtype = imgtype;
@@ -103,7 +103,7 @@ static bool colorviewer_msg_proc(JWidget widget, JMessage msg)
   switch (msg->type) {
 
     case JM_DESTROY:
-      jfree(colorviewer);
+      delete colorviewer;
       break;
 
     case JM_REQSIZE: {

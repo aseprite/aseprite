@@ -880,5 +880,5 @@ static void monitor_free_thumbnail_generation(void *_data)
   }
 
   fop_free(fop);
-  jfree(data);
+  delete data;
 }
