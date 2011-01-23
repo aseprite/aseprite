@@ -15,7 +15,6 @@
 #include <vector>
 #include <allegro.h>
 
-#include "base/memory.h"
 #include "gui/jinete.h"
 #include "gui/jintern.h"
 
@@ -1454,7 +1453,7 @@ static bool move_focus(JWidget manager, JMessage msg)
 {
   int (*cmp)(JWidget, int, int) = NULL;
   Widget* focus = NULL;
-  Widget* it, **list;
+  Widget* it;
   bool ret = false;
   Frame* window;
   int c, count;
@@ -1472,10 +1471,7 @@ static bool move_focus(JWidget manager, JMessage msg)
 
   /* one at least */
   if (count > 0) {
-    /* list of widgets */
-    list = (JWidget*)base_malloc(sizeof(JWidget) * count);
-    if (!list)
-      return ret;
+    std::vector<Widget*> list(count);
 
     c = 0;
 
@@ -1549,8 +1545,6 @@ static bool move_focus(JWidget manager, JMessage msg)
         ret = true;
         break;
     }
-
-    base_free(list);
 
     if ((focus) && (focus != focus_widget))
       jmanager_set_focus(focus);
