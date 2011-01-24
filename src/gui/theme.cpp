@@ -14,8 +14,8 @@
 #include "gui/jmanager.h"
 #include "gui/jrect.h"
 #include "gui/jsystem.h"
-#include "gui/jview.h"
 #include "gui/theme.h"
+#include "gui/view.h"
 #include "gui/widget.h"
 
 static Theme* current_theme = NULL;

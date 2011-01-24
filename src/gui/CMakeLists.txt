@@ -36,11 +36,11 @@ add_library(gui-lib
   jsystem.cpp
   jtextbox.cpp
   jtooltips.cpp
-  jview.cpp
   label.cpp
   popup_frame.cpp
   preferred_size_event.cpp
   property.cpp
   slider.cpp
   theme.cpp
+  view.cpp
   widget.cpp)

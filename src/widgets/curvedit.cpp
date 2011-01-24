@@ -33,7 +33,7 @@
 #include "gui/jmessage.h"
 #include "gui/jrect.h"
 #include "gui/jsystem.h"
-#include "gui/jview.h"
+#include "gui/view.h"
 #include "gui/widget.h"
 #include "modules/gui.h"
 #include "widgets/curvedit.h"

@@ -14,8 +14,8 @@
 #include "gui/jmessage.h"
 #include "gui/jrect.h"
 #include "gui/jsystem.h"
-#include "gui/jview.h"
 #include "gui/theme.h"
+#include "gui/view.h"
 #include "gui/widget.h"
 
 using namespace gfx;

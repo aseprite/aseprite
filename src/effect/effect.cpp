@@ -24,7 +24,7 @@
 #include "gui/jmanager.h"
 #include "gui/jrect.h"
 #include "gui/jregion.h"
-#include "gui/jview.h"
+#include "gui/view.h"
 #include "gui/widget.h"
 
 #include "console.h"

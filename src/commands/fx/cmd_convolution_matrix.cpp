@@ -21,16 +21,16 @@
 #include <string.h>
 
 #include "base/bind.h"
-#include "gui/jbox.h"
 #include "gui/button.h"
+#include "gui/frame.h"
+#include "gui/jbox.h"
 #include "gui/jhook.h"
-#include "gui/label.h"
 #include "gui/jlist.h"
 #include "gui/jlistbox.h"
-#include "gui/jview.h"
+#include "gui/label.h"
 #include "gui/slider.h"
+#include "gui/view.h"
 #include "gui/widget.h"
-#include "gui/frame.h"
 
 #include "app/color.h"
 #include "commands/command.h"
