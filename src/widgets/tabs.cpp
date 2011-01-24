@@ -26,7 +26,7 @@
 #include "gui/jintern.h"
 #include "modules/gfx.h"
 #include "modules/gui.h"
-#include "skin_theme.h"
+#include "skin/skin_theme.h"
 #include "widgets/tabs.h"
 
 #define ARROW_W		(12*jguiscale())

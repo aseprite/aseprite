@@ -25,6 +25,7 @@
 
 #include "app.h"
 #include "app/color.h"
+#include "app/color_utils.h"
 #include "base/bind.h"
 #include "commands/command.h"
 #include "commands/params.h"
@@ -44,6 +45,7 @@
 #include "raster/sprite.h"
 #include "raster/stock.h"
 #include "raster/undo.h"
+#include "skin/skin_slider_property.h"
 #include "sprite_wrappers.h"
 #include "ui_context.h"
 #include "widgets/color_bar.h"
@@ -67,6 +69,68 @@ static void on_exit_delete_this_widget()
   redraw_timer_id = -1;
 
   jwidget_free(window);
+}
+
+namespace {
+
+  // This class is used as property for RGB/HSV sliders to draw the
+  // background of them.
+  class ColorSliderBgPainter : public ISliderBgPainter
+  {
+  public:
+    enum Channel {
+      Red, Green, Blue,
+      Hue, Saturation, Value
+    };
+
+    ColorSliderBgPainter(Channel channel)
+      : m_channel(channel)
+    { }
+
+    void setColor(const Color& color) {
+      m_color = color;
+    }
+
+    void paint(Slider* slider, BITMAP* bmp, const gfx::Rect& rc) {
+      int depth = bitmap_color_depth(bmp);
+      BITMAP* bg = create_bitmap_ex(depth, rc.w, rc.h);
+
+      int color;
+      for (int x=0; x < rc.w; ++x) {
+	switch (m_channel) {
+	  case Red:
+	    color = makecol(255 * x / (rc.w-1), m_color.getGreen(), m_color.getBlue());
+	    break;
+	  case Green:
+	    color = makecol(m_color.getRed(), 255 * x / (rc.w-1), m_color.getBlue());
+	    break;
+	  case Blue:
+	    color = makecol(m_color.getRed(), m_color.getGreen(), 255 * x / (rc.w-1));
+	    break;
+	  case Hue:
+	    color = color_utils::color_for_allegro(Color::fromHsv(360 * x / (rc.w-1), m_color.getSaturation(), m_color.getValue()), depth);
+	    break;
+	  case Saturation:
+	    color = color_utils::color_for_allegro(Color::fromHsv(m_color.getHue(), 100 * x / (rc.w-1), m_color.getValue()), depth);
+	    break;
+	  case Value:
+	    color = color_utils::color_for_allegro(Color::fromHsv(m_color.getHue(), m_color.getSaturation(), 100 * x / (rc.w-1)), depth);
+	    break;
+	}
+
+	vline(bg, x, 0, rc.h-1, color);
+      }
+
+      blit(bg, bmp, 0, 0, rc.x, rc.y, rc.w, rc.h);
+      destroy_bitmap(bg);
+    }
+
+  private:
+    Channel m_channel;
+    BITMAP* m_cachedBg;
+    Color m_color;
+  };
+ 
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -118,6 +182,8 @@ static bool hex_entry_change_hook(JWidget widget, void *data);
 static void update_entries_from_sliders();
 static void update_sliders_from_entries();
 static void update_hex_entry();
+static void update_slider_bgcolor(Slider* slider, const Color& color);
+static void update_slider_bgcolors();
 static void update_current_sprite_palette(const char* operationName);
 static void update_colorbar();
 static bool palette_editor_change_hook(JWidget widget, void *data);
@@ -241,6 +307,14 @@ void PaletteEditorCommand::onExecute(Context* context)
 
     // Set palette editor columns
     palette_editor->setColumns(16);
+
+    // Setup slider bg painters
+    R_slider->setProperty(PropertyPtr(new SkinSliderProperty(new ColorSliderBgPainter(ColorSliderBgPainter::Red))));
+    G_slider->setProperty(PropertyPtr(new SkinSliderProperty(new ColorSliderBgPainter(ColorSliderBgPainter::Green))));
+    B_slider->setProperty(PropertyPtr(new SkinSliderProperty(new ColorSliderBgPainter(ColorSliderBgPainter::Blue))));
+    H_slider->setProperty(PropertyPtr(new SkinSliderProperty(new ColorSliderBgPainter(ColorSliderBgPainter::Hue))));
+    S_slider->setProperty(PropertyPtr(new SkinSliderProperty(new ColorSliderBgPainter(ColorSliderBgPainter::Saturation))));
+    V_slider->setProperty(PropertyPtr(new SkinSliderProperty(new ColorSliderBgPainter(ColorSliderBgPainter::Value))));
   
     // Hook signals
     jwidget_add_hook(window, -1, window_msg_proc, NULL);
@@ -747,6 +821,7 @@ static void sliderRGB_change_hook(Slider* widget)
 
   update_entries_from_sliders();
   update_hex_entry();
+  update_slider_bgcolors();
   update_current_sprite_palette("Color Change");
   update_colorbar();
 }
@@ -771,6 +846,7 @@ static void sliderHSV_change_hook(Slider* widget)
 
   update_entries_from_sliders();
   update_hex_entry();
+  update_slider_bgcolors();
   update_current_sprite_palette("Color Change");
   update_colorbar();
 }
@@ -798,6 +874,7 @@ static bool entryRGB_change_hook(JWidget widget, void *data)
 
   update_sliders_from_entries();
   update_hex_entry();
+  update_slider_bgcolors();
   update_current_sprite_palette("Color Change");
   update_colorbar();
   return false;
@@ -826,6 +903,7 @@ static bool entryHSV_change_hook(JWidget widget, void *data)
 
   update_sliders_from_entries();
   update_hex_entry();
+  update_slider_bgcolors();
   update_current_sprite_palette("Color Change");
   update_colorbar();
   return false;
@@ -864,6 +942,7 @@ static bool hex_entry_change_hook(JWidget widget, void *data)
   S_slider->setValue(hsv.valueInt());
 
   update_entries_from_sliders();
+  update_slider_bgcolors();
   update_current_sprite_palette("Color Change");
   update_colorbar();
   return false;
@@ -897,6 +976,29 @@ static void update_hex_entry()
 		      R_slider->getValue(),
 		      G_slider->getValue(),
 		      B_slider->getValue());
+}
+
+static void update_slider_bgcolor(Slider* slider, const Color& color)
+{
+  SharedPtr<SkinSliderProperty> sliderProperty(slider->getProperty("SkinProperty"));
+
+  static_cast<ColorSliderBgPainter*>(sliderProperty->getBgPainter())->setColor(color);
+
+  slider->invalidate();
+}
+
+static void update_slider_bgcolors()
+{
+  Color color(Color::fromRgb(R_slider->getValue(),
+			     G_slider->getValue(),
+			     B_slider->getValue()));
+
+  update_slider_bgcolor(R_slider, color);
+  update_slider_bgcolor(G_slider, color);
+  update_slider_bgcolor(B_slider, color);
+  update_slider_bgcolor(H_slider, color);
+  update_slider_bgcolor(S_slider, color);
+  update_slider_bgcolor(V_slider, color);
 }
 
 static void update_current_sprite_palette(const char* operationName)
@@ -970,6 +1072,7 @@ static bool palette_editor_change_hook(JWidget widget, void *data)
   update_sliders_from_color(color); // Update sliders
   update_entries_from_sliders();    // Update entries
   update_hex_entry();		    // Update hex field
+  update_slider_bgcolors();
   return false;
 }
 
@@ -1145,6 +1248,7 @@ static void on_color_changed(const Color& color)
     update_sliders_from_color(color); // Update sliders
     update_entries_from_sliders();    // Update entries
     update_hex_entry();		    // Update hex field
+    update_slider_bgcolors();
 
     jwidget_flush_redraw(window);
   }

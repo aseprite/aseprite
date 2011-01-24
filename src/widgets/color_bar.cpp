@@ -38,7 +38,7 @@
 #include "raster/palette.h"
 #include "raster/sprite.h"
 #include "raster/undo.h"
-#include "skin_theme.h"
+#include "skin/skin_theme.h"
 #include "sprite_wrappers.h"
 #include "ui_context.h"
 #include "widgets/color_bar.h"

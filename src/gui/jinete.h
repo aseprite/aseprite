@@ -40,6 +40,7 @@
 #include "gui/jview.h"
 #include "gui/label.h"
 #include "gui/popup_frame.h"
+#include "gui/property.h"
 #include "gui/slider.h"
 #include "gui/theme.h"
 #include "gui/widget.h"

@@ -25,38 +25,7 @@
 
 #include "gfx/rect.h"
 #include "gui/jrect.h"
-#include "gui/property.h"
 #include "gui/theme.h"
-
-// Property to show widgets with a special look (e.g.: buttons or sliders with mini-borders)
-class SkinProperty : public Property
-{
-public:
-  static const char* SkinPropertyName;
-
-  SkinProperty();
-  ~SkinProperty();
-
-  bool isMiniLook() const;
-  void setMiniLook(bool state);
-
-  int getUpperLeft() const;
-  int getUpperRight() const;
-  int getLowerLeft() const;
-  int getLowerRight() const;
-
-  void setUpperLeft(int value);
-  void setUpperRight(int value);
-  void setLowerLeft(int value);
-  void setLowerRight(int value);
-
-private:
-  bool m_isMiniLook;
-  int m_upperLeft;
-  int m_upperRight;
-  int m_lowerLeft;
-  int m_lowerRight;
-};
 
 // Available parts in the skin sheet
 enum {
@@ -253,6 +222,9 @@ enum {
   PART_MINI_SLIDER_EMPTY_FOCUSED_SW,
   PART_MINI_SLIDER_EMPTY_FOCUSED_W,
 
+  PART_MINI_SLIDER_THUMB,
+  PART_MINI_SLIDER_THUMB_FOCUSED,
+  
   PART_SEPARATOR_HORZ,
   PART_SEPARATOR_VERT,
 

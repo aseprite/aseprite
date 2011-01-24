@@ -23,12 +23,15 @@
 
 #include "base/bind.h"
 #include "base/shared_ptr.h"
+#include "gfx/rect.h"
 #include "gui/jinete.h"
 #include "gui/jintern.h"
 #include "loadpng.h"
 #include "modules/gui.h"
 #include "resource_finder.h"
-#include "skin_theme.h"
+#include "skin/skin_property.h"
+#include "skin/skin_slider_property.h"
+#include "skin/skin_theme.h"
 #include "xml_exception.h"
 
 #include "tinyxml.h"
@@ -110,6 +113,8 @@ SkinTheme::SkinTheme()
   sheet_mapping["mini_slider_empty"] = PART_MINI_SLIDER_EMPTY_NW;
   sheet_mapping["mini_slider_full_focused"] = PART_MINI_SLIDER_FULL_FOCUSED_NW;
   sheet_mapping["mini_slider_empty_focused"] = PART_MINI_SLIDER_EMPTY_FOCUSED_NW;
+  sheet_mapping["mini_slider_thumb"] = PART_MINI_SLIDER_THUMB;
+  sheet_mapping["mini_slider_thumb_focused"] = PART_MINI_SLIDER_THUMB_FOCUSED;
   sheet_mapping["separator_horz"] = PART_SEPARATOR_HORZ;
   sheet_mapping["separator_vert"] = PART_SEPARATOR_VERT;
   sheet_mapping["combobox_arrow"] = PART_COMBOBOX_ARROW;
@@ -1115,17 +1120,11 @@ void SkinTheme::draw_slider(Slider* widget, JRect clip)
 
   widget->getSliderThemeInfo(&min, &max, &value);
 
-  // Tool buttons are smaller
-  bool isMiniLook = false;
-  SharedPtr<SkinProperty> skinPropery = widget->getProperty(SkinProperty::SkinPropertyName);
-  if (skinPropery != NULL)
-    isMiniLook = skinPropery->isMiniLook();
-
   x1 = widget->rc->x1 + widget->border_width.l;
   y1 = widget->rc->y1 + widget->border_width.t;
   x2 = widget->rc->x2 - widget->border_width.r - 1;
   y2 = widget->rc->y2 - widget->border_width.b - 1;
-
+  
   if (min != max)
     x = x1 + (x2-x1) * (value-min) / (max-min);
   else
@@ -1136,35 +1135,81 @@ void SkinTheme::draw_slider(Slider* widget, JRect clip)
   x2 = widget->rc->x2 - 1;
   y2 = widget->rc->y2 - 1;
 
-  int full_part_nw;
-  int empty_part_nw;
+  // The mini-look is used for sliders with tiny borders.
+  bool isMiniLook = false;
 
-  if (isMiniLook) {
-    full_part_nw = widget->hasMouseOver() ? PART_MINI_SLIDER_FULL_FOCUSED_NW:
-					     PART_MINI_SLIDER_FULL_NW;
-    empty_part_nw = widget->hasMouseOver() ? PART_MINI_SLIDER_EMPTY_FOCUSED_NW:
-					      PART_MINI_SLIDER_EMPTY_NW;
+  // The BG painter is used for sliders without a number-indicator and
+  // customized background (e.g. RGB sliders)
+  ISliderBgPainter* bgPainter = NULL;
+
+  SharedPtr<SkinProperty> skinPropery = widget->getProperty(SkinProperty::SkinPropertyName);
+  if (skinPropery != NULL)
+    isMiniLook = skinPropery->isMiniLook();
+
+  if (SkinSliderProperty* sliderProperty = dynamic_cast<SkinSliderProperty*>(skinPropery.get()))
+    bgPainter = sliderProperty->getBgPainter();
+
+  // Draw customized background
+  if (bgPainter) {
+    int nw = PART_MINI_SLIDER_EMPTY_NW;
+    BITMAP* thumb = widget->hasFocus() ? m_part[PART_MINI_SLIDER_THUMB_FOCUSED]:
+					 m_part[PART_MINI_SLIDER_THUMB];
+
+    // Draw background
+    rectfill(ji_screen, x1, y1, x2, y2, BGCOLOR);
+
+    // Draw thumb
+    set_alpha_blender();
+    draw_trans_sprite(ji_screen, thumb, x-thumb->w/2, y1+1);
+
+    // Draw borders
+    x1 += 3 * jguiscale();
+    y1 += thumb->h + jguiscale();
+    x2 -= 3 * jguiscale();
+    y2 -= 1 * jguiscale();
+
+    draw_bounds_nw(ji_screen, x1, y1, x2, y2, nw, -1);
+
+    // Draw background
+    x1 += 1 * jguiscale();
+    y1 += 1 * jguiscale();
+    x2 -= 1 * jguiscale();
+    y2 -= 2 * jguiscale();
+
+    gfx::Rect rc(x1, y1, x2-x1+1, y2-y1+1);
+    if (rc.w > 0 && rc.h > 0)
+      bgPainter->paint(widget, ji_screen, rc);
   }
   else {
-    full_part_nw = widget->hasFocus() ? PART_SLIDER_FULL_FOCUSED_NW:
-					PART_SLIDER_FULL_NW;
-    empty_part_nw = widget->hasFocus() ? PART_SLIDER_EMPTY_FOCUSED_NW:
-					 PART_SLIDER_EMPTY_NW;
-  }
+    // Draw borders
+    int full_part_nw;
+    int empty_part_nw;
 
-  if (value == min)
-    draw_bounds_nw(ji_screen, x1, y1, x2, y2, empty_part_nw, get_slider_empty_face_color());
-  else if (value == max)
-    draw_bounds_nw(ji_screen, x1, y1, x2, y2, full_part_nw, get_slider_full_face_color());
-  else
-    draw_bounds_nw2(ji_screen,
-		    x1, y1, x2, y2, x,
-		    full_part_nw, empty_part_nw,
-		    get_slider_full_face_color(),
-		    get_slider_empty_face_color());
+    if (isMiniLook) {
+      full_part_nw = widget->hasMouseOver() ? PART_MINI_SLIDER_FULL_FOCUSED_NW:
+					      PART_MINI_SLIDER_FULL_NW;
+      empty_part_nw = widget->hasMouseOver() ? PART_MINI_SLIDER_EMPTY_FOCUSED_NW:
+					       PART_MINI_SLIDER_EMPTY_NW;
+    }
+    else {
+      full_part_nw = widget->hasFocus() ? PART_SLIDER_FULL_FOCUSED_NW:
+					  PART_SLIDER_FULL_NW;
+      empty_part_nw = widget->hasFocus() ? PART_SLIDER_EMPTY_FOCUSED_NW:
+					   PART_SLIDER_EMPTY_NW;
+    }
 
-  /* text */
-  {
+    if (value == min)
+      draw_bounds_nw(ji_screen, x1, y1, x2, y2, empty_part_nw, get_slider_empty_face_color());
+    else if (value == max)
+      draw_bounds_nw(ji_screen, x1, y1, x2, y2, full_part_nw, get_slider_full_face_color());
+    else
+      draw_bounds_nw2(ji_screen,
+		      x1, y1, x2, y2, x,
+		      full_part_nw, empty_part_nw,
+		      get_slider_full_face_color(),
+		      get_slider_empty_face_color());
+
+    // Draw text
     std::string old_text = widget->getText();
     JRect r;
     int cx1, cy1, cx2, cy2;
@@ -1749,72 +1794,4 @@ bool SkinTheme::theme_frame_button_msg_proc(JWidget widget, JMessage msg)
   }
 
   return false;
-}
-
-//////////////////////////////////////////////////////////////////////
-
-const char* SkinProperty::SkinPropertyName = "SkinProperty";
-
-SkinProperty::SkinProperty()
-  : Property(SkinPropertyName)
-{
-  m_isMiniLook = false;
-  m_upperLeft = 0;
-  m_upperRight = 0;
-  m_lowerLeft = 0;
-  m_lowerRight = 0;
-}
-
-SkinProperty::~SkinProperty()
-{
-}
-
-bool SkinProperty::isMiniLook() const
-{
-  return m_isMiniLook;
-}
-
-void SkinProperty::setMiniLook(bool state)
-{
-  m_isMiniLook = state;
-}
-
-int SkinProperty::getUpperLeft() const
-{
-  return m_upperLeft;
-}
-
-int SkinProperty::getUpperRight() const
-{
-  return m_upperRight;
-}
-
-int SkinProperty::getLowerLeft() const
-{
-  return m_lowerLeft;
-}
-
-int SkinProperty::getLowerRight() const
-{
-  return m_lowerRight;
-}
-
-void SkinProperty::setUpperLeft(int value)
-{
-  m_upperLeft = value;
-}
-
-void SkinProperty::setUpperRight(int value)
-{
-  m_upperRight = value;
-}
-
-void SkinProperty::setLowerLeft(int value)
-{
-  m_lowerLeft = value;
-}
-
-void SkinProperty::setLowerRight(int value)
-{
-  m_lowerRight = value;
 }

@@ -31,7 +31,7 @@
 #include "gui/jinete.h"
 #include "modules/gfx.h"
 #include "modules/gui.h"
-#include "skin_theme.h"
+#include "skin/skin_theme.h"
 #include "tools/toolbox.h"
 #include "ui_context.h"
 #include "widgets/groupbut.h"

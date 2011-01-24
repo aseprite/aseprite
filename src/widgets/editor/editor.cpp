@@ -36,7 +36,7 @@
 #include "modules/palettes.h"
 #include "raster/raster.h"
 #include "settings/settings.h"
-#include "skin_theme.h"
+#include "skin/skin_theme.h"
 #include "sprite_wrappers.h"
 #include "tools/tool.h"
 #include "ui_context.h"

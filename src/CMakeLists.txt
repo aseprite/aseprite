@@ -79,7 +79,6 @@ add_library(aseprite-library
   log.cpp
   recent_files.cpp
   resource_finder.cpp
-  skin_theme.cpp
   ui_context.cpp
   undoable.cpp
   xml_exception.cpp
@@ -214,6 +213,9 @@ add_library(aseprite-library
   raster/stock.cpp
   raster/undo.cpp
   settings/ui_settings_impl.cpp
+  skin/skin_theme.cpp
+  skin/skin_property.cpp
+  skin/skin_slider_property.cpp
   tools/tool.cpp
   tools/toolbox.cpp
   util/autocrop.cpp

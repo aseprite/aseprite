@@ -38,7 +38,7 @@
 #include "raster/blend.h"
 #include "raster/image.h"
 #include "raster/palette.h"
-#include "skin_theme.h"
+#include "skin/skin_theme.h"
 #include "widgets/editor.h"
 
 static BITMAP* gfx_bmps[GFX_BITMAP_COUNT];

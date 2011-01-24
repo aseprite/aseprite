@@ -32,7 +32,7 @@
 #include "modules/gui.h"
 #include "modules/rootmenu.h"
 #include "raster/raster.h"
-#include "skin_theme.h"
+#include "skin/skin_theme.h"
 #include "sprite_wrappers.h"
 #include "ui_context.h"
 #include "undoable.h"

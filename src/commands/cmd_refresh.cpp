@@ -30,7 +30,7 @@
 
 #include "app.h"
 #include "commands/command.h"
-#include "skin_theme.h"
+#include "skin/skin_theme.h"
 #include "sprite_wrappers.h"
 #include "widgets/statebar.h"
 
