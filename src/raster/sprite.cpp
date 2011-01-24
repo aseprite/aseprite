@@ -425,6 +425,7 @@ SpriteImpl::SpriteImpl(Sprite* sprite, int imgtype, int width, int height, int n
   m_preferred.scroll_x = 0;
   m_preferred.scroll_y = 0;
   m_preferred.zoom = 0;
+  m_preferred.virgin = true;
 
   // Generate palette
   Palette pal(0, ncolors);

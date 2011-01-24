@@ -41,6 +41,7 @@ struct PreferredEditorSettings
   int scroll_x;
   int scroll_y;
   int zoom;
+  bool virgin;
 };
 
 typedef std::vector<Palette*> PalettesList;

@@ -159,6 +159,20 @@ void Editor::editor_set_sprite(Sprite* sprite)
     m_zoom = preferred.zoom;
 
     editor_update();
+
+    if (preferred.virgin) {
+      JWidget view = jwidget_get_view(this);
+      JRect vp = jview_get_viewport_position(view);
+
+      preferred.virgin = false;
+      preferred.scroll_x = -jrect_w(vp)/2 + (sprite->getWidth()/2);
+      preferred.scroll_y = -jrect_h(vp)/2 + (sprite->getHeight()/2);
+
+      m_sprite->setPreferredEditorSettings(preferred);
+
+      jrect_free(vp);
+    }
+
     editor_set_scroll(m_offset_x + preferred.scroll_x,
 		      m_offset_y + preferred.scroll_y,
 		      false);
