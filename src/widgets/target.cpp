@@ -24,8 +24,8 @@
 #include "base/bind.h"
 #include "core/cfg.h"
 #include "effect/effect.h"
+#include "gui/box.h"
 #include "gui/button.h"
-#include "gui/jbox.h"
 #include "gui/jhook.h"
 #include "gui/theme.h"
 #include "gui/widget.h"
@@ -54,7 +54,7 @@ JWidget target_button_new(int imgtype, bool with_channels)
   }
 
   int default_targets = 0;
-  JWidget vbox, hbox;
+  Box* vbox, *hbox;
   CheckBox* r = NULL;
   CheckBox* g = NULL;
   CheckBox* b = NULL;
@@ -63,8 +63,8 @@ JWidget target_button_new(int imgtype, bool with_channels)
   CheckBox* index = NULL;
   Button* images = NULL;
 
-  vbox = jbox_new(JI_VERTICAL);
-  hbox = jbox_new(JI_HORIZONTAL | JI_HOMOGENEOUS);
+  vbox = new Box(JI_VERTICAL);
+  hbox = new Box(JI_HORIZONTAL | JI_HOMOGENEOUS);
 
   jwidget_noborders(vbox);
   jwidget_noborders(hbox);

@@ -86,7 +86,7 @@ Frame* colorselector_new()
   Frame* window = new PopupFrame(NULL, false);
   Widget* grid1 = jgrid_new(2, false);
   Widget* grid2 = jgrid_new(5, false);
-  Widget* models_box = jbox_new(JI_HORIZONTAL);
+  Box* models_box = new Box(JI_HORIZONTAL);
   PalEdit* pal = new PalEdit(false);
   Label* idx = new Label("None");
   Widget* child;

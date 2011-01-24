@@ -7,13 +7,13 @@
 #ifndef GUI_JINETE_H_INCLUDED
 #define GUI_JINETE_H_INCLUDED
 
+#include "gui/box.h"
 #include "gui/button.h"
 #include "gui/entry.h"
 #include "gui/frame.h"
 #include "gui/jaccel.h"
 #include "gui/jalert.h"
 #include "gui/jbase.h"
-#include "gui/jbox.h"
 #include "gui/jclipboard.h"
 #include "gui/jcombobox.h"
 #include "gui/jcustom_label.h"

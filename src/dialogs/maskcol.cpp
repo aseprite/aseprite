@@ -23,9 +23,9 @@
 #include "app/color_utils.h"
 #include "base/bind.h"
 #include "core/cfg.h"
+#include "gui/box.h"
 #include "gui/button.h"
 #include "gui/frame.h"
-#include "gui/jbox.h"
 #include "gui/jhook.h"
 #include "gui/label.h"
 #include "gui/slider.h"
@@ -53,7 +53,7 @@ static void mask_preview(Sprite* sprite);
 
 void dialogs_mask_color(Sprite* sprite)
 {
-  JWidget box1, box2, box3, box4;
+  Box* box1, *box2, *box3, *box4;
   Widget* label_color;
   Button* button_1;
   Button* button_2;
@@ -70,10 +70,10 @@ void dialogs_mask_color(Sprite* sprite)
     return;
 
   FramePtr window(new Frame(false, "Mask by Color"));
-  box1 = jbox_new(JI_VERTICAL);
-  box2 = jbox_new(JI_HORIZONTAL);
-  box3 = jbox_new(JI_HORIZONTAL);
-  box4 = jbox_new(JI_HORIZONTAL | JI_HOMOGENEOUS);
+  box1 = new Box(JI_VERTICAL);
+  box2 = new Box(JI_HORIZONTAL);
+  box3 = new Box(JI_HORIZONTAL);
+  box4 = new Box(JI_HORIZONTAL | JI_HOMOGENEOUS);
   label_color = new Label("Color:");
   button_color = new ColorButton
    (get_config_color("MaskColor", "Color",

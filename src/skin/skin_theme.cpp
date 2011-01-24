@@ -611,7 +611,7 @@ int SkinTheme::color_background()
   return COLOR_BACKGROUND;
 }
 
-void SkinTheme::draw_box(JWidget widget, JRect clip)
+void SkinTheme::draw_box(Box* widget, JRect clip)
 {
   jdraw_rectfill(clip, BGCOLOR);
 }

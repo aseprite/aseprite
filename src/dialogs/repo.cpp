@@ -41,8 +41,8 @@ static void delete_command(Button* widget, RepoDlg* repo_dlg);
 void ji_show_repo_dlg(RepoDlg *repo_dlg)
 {
   Frame* window = new Frame(false, repo_dlg->title);
-  Widget* box1 = jbox_new(JI_HORIZONTAL);
-  Widget* box2 = jbox_new(JI_VERTICAL);
+  Box* box1 = new Box(JI_HORIZONTAL);
+  Box* box2 = new Box(JI_VERTICAL);
   Widget* view = jview_new();
   repo_dlg->listbox = jlistbox_new();
   repo_dlg->button_use = new Button(repo_dlg->use_text);

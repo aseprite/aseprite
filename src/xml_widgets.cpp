@@ -93,9 +93,9 @@ static Widget* convert_xmlelement_to_widget(TiXmlElement* elem, Widget* root)
     bool vertical    = bool_attr_is_true(elem, "vertical");
     bool homogeneous = bool_attr_is_true(elem, "homogeneous");
 
-    widget = jbox_new((horizontal ? JI_HORIZONTAL:
-		       vertical ? JI_VERTICAL: 0) |
-		      (homogeneous ? JI_HOMOGENEOUS: 0));
+    widget = new Box((horizontal ? JI_HORIZONTAL:
+		      vertical ? JI_VERTICAL: 0) |
+		     (homogeneous ? JI_HOMOGENEOUS: 0));
   }
   /* button */
   else if (ustrcmp(elem_name, "button") == 0) {

@@ -104,9 +104,9 @@ StatusBar::StatusBar()
 
   // Construct the commands box
   {
-    Widget* box1 = jbox_new(JI_HORIZONTAL);
-    Widget* box2 = jbox_new(JI_HORIZONTAL | JI_HOMOGENEOUS);
-    Widget* box3 = jbox_new(JI_HORIZONTAL);
+    Box* box1 = new Box(JI_HORIZONTAL);
+    Box* box2 = new Box(JI_HORIZONTAL | JI_HOMOGENEOUS);
+    Box* box3 = new Box(JI_HORIZONTAL);
     m_slider = new Slider(0, 255, 255);
 
     setup_mini_look(m_slider);
@@ -140,10 +140,10 @@ StatusBar::StatusBar()
 
   // Construct move-pixels box
   {
-    Widget* filler = jbox_new(JI_HORIZONTAL);
+    Box* filler = new Box(JI_HORIZONTAL);
     jwidget_expansive(filler, true);
 
-    m_movePixelsBox = jbox_new(JI_HORIZONTAL);
+    m_movePixelsBox = new Box(JI_HORIZONTAL);
     m_transparentLabel = new Label("Transparent Color:");
     m_transparentColor = new ColorButton(Color::fromMask(), IMAGE_RGB);
 

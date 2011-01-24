@@ -12,6 +12,7 @@
 struct BITMAP;
 struct FONT;
 
+class Box;
 class ButtonBase;
 class Entry;
 class Slider;
@@ -46,7 +47,7 @@ public:
   virtual int color_selected() = 0;
   virtual int color_background() = 0;
 
-  virtual void draw_box(JWidget widget, JRect clip) = 0;
+  virtual void draw_box(Box* widget, JRect clip) = 0;
   virtual void draw_button(ButtonBase* widget, JRect clip) = 0;
   virtual void draw_check(ButtonBase* widget, JRect clip) = 0;
   virtual void draw_entry(Entry* widget, JRect clip) = 0;

@@ -64,9 +64,9 @@ void LayerPropertiesCommand::onExecute(Context* context)
   Layer* layer = sprite->getCurrentLayer();
 
   FramePtr window(new Frame(false, "Layer Properties"));
-  Widget* box1 = jbox_new(JI_VERTICAL);
-  Widget* box2 = jbox_new(JI_HORIZONTAL);
-  Widget* box3 = jbox_new(JI_HORIZONTAL + JI_HOMOGENEOUS);
+  Box* box1 = new Box(JI_VERTICAL);
+  Box* box2 = new Box(JI_HORIZONTAL);
+  Box* box3 = new Box(JI_HORIZONTAL + JI_HOMOGENEOUS);
   Widget* label_name = new Label("Name:");
   Entry* entry_name = new Entry(256, layer->getName().c_str());
   Button* button_ok = new Button("&OK");

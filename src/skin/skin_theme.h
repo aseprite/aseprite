@@ -420,7 +420,7 @@ public:
   int color_selected();
   int color_background();
 
-  void draw_box(JWidget widget, JRect clip);
+  void draw_box(Box* widget, JRect clip);
   void draw_button(ButtonBase* widget, JRect clip);
   void draw_check(ButtonBase* widget, JRect clip);
   void draw_entry(Entry* widget, JRect clip);

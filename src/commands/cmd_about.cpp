@@ -49,7 +49,7 @@ AboutCommand::AboutCommand()
 void AboutCommand::onExecute(Context* context)
 {
   FramePtr frame(new Frame(false, "About " PACKAGE));
-  Widget* box1 = jbox_new(JI_VERTICAL);
+  Box* box1 = new Box(JI_VERTICAL);
   Widget* grid = jgrid_new(2, false);
   Label* title = new Label(PACKAGE " v" VERSION);
   Label* subtitle = new Label("Animated sprites editor && pixel art tool");
@@ -61,9 +61,9 @@ void AboutCommand::onExecute(Context* context)
   Label* author2_desc = new Label("| Skin and Graphics");
   Label* author3 = new Label("Trent Gamblin");
   Label* author3_desc = new Label("| MAC OS X builds");
-  Widget* bottom_box1 = jbox_new(JI_HORIZONTAL);
-  Widget* bottom_box2 = jbox_new(JI_HORIZONTAL);
-  Widget* bottom_box3 = jbox_new(JI_HORIZONTAL);
+  Box* bottom_box1 = new Box(JI_HORIZONTAL);
+  Box* bottom_box2 = new Box(JI_HORIZONTAL);
+  Box* bottom_box3 = new Box(JI_HORIZONTAL);
   Label* copyright = new Label(COPYRIGHT);
   Label* website = new LinkLabel(WEBSITE);
   Button* close_button = new Button("&Close");

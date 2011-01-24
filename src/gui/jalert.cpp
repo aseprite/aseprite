@@ -120,7 +120,8 @@ int jalert(const char *format, ...)
 
 static Frame* create_alert(char *buf, JList *labels, JList *buttons)
 {
-  JWidget box1, box2, grid, box3, box4, box5;
+  Box* box1, *box2, *box3, *box4, *box5;
+  Widget* grid;
   Frame* window = NULL;
   bool title = true;
   bool label = false;
@@ -193,18 +194,18 @@ static Frame* create_alert(char *buf, JList *labels, JList *buttons)
   }
 
   if (window) {
-    box1 = jbox_new(JI_VERTICAL);
-    box2 = jbox_new(JI_VERTICAL);
+    box1 = new Box(JI_VERTICAL);
+    box2 = new Box(JI_VERTICAL);
     grid = jgrid_new(1, false);
-    box3 = jbox_new(JI_HORIZONTAL | JI_HOMOGENEOUS);
+    box3 = new Box(JI_HORIZONTAL | JI_HOMOGENEOUS);
 
     /* to identify by the user */
     box2->setName("labels");
     box3->setName("buttons");
 
     /* pseudo separators (only to fill blank space) */
-    box4 = jbox_new(0);
-    box5 = jbox_new(0);
+    box4 = new Box(0);
+    box5 = new Box(0);
 
     jwidget_expansive(box4, true);
     jwidget_expansive(box5, true);

@@ -22,8 +22,8 @@
 #include <stdarg.h>
 
 #include "base/bind.h"
+#include "gui/box.h"
 #include "gui/button.h"
-#include "gui/jbox.h"
 #include "gui/jhook.h"
 #include "gui/jlist.h"
 #include "gui/jsystem.h"
@@ -39,8 +39,8 @@ static bool radio_change_hook(JWidget vbox);
 
 JWidget group_button_new(int w, int h, int first_selected, ...)
 {
-  JWidget vbox = jbox_new(JI_VERTICAL | JI_HOMOGENEOUS);
-  JWidget hbox = NULL;
+  Box* vbox = new Box(JI_VERTICAL | JI_HOMOGENEOUS);
+  Box* hbox = NULL;
   RadioButton* radio;
   int x, y, icon;
   va_list ap;
@@ -53,7 +53,7 @@ JWidget group_button_new(int w, int h, int first_selected, ...)
 
   for (y=0; y<h; y++) {
     if (w > 1) {
-      hbox = jbox_new(JI_HORIZONTAL | JI_HOMOGENEOUS);
+      hbox = new Box(JI_HORIZONTAL | JI_HOMOGENEOUS);
       jwidget_noborders(hbox);
     }
 

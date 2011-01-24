@@ -2,6 +2,7 @@
 # Copyright (C) 2001-2011  David Capello
 
 add_library(gui-lib
+  box.cpp
   button.cpp
   component.cpp
   entry.cpp
@@ -9,7 +10,6 @@ add_library(gui-lib
   frame.cpp
   jaccel.cpp
   jalert.cpp
-  jbox.cpp
   jclipboard.cpp
   jcombobox.cpp
   jcustom_label.cpp

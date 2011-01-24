@@ -19,13 +19,12 @@
 #include "config.h"
 
 #include "base/bind.h"
-#include "gui/jbox.h"
 #include "gui/button.h"
+#include "gui/frame.h"
 #include "gui/jhook.h"
 #include "gui/label.h"
 #include "gui/slider.h"
 #include "gui/widget.h"
-#include "gui/frame.h"
 
 #include "app/color.h"
 #include "commands/command.h"

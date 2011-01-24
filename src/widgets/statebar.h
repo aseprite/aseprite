@@ -23,6 +23,7 @@
 #include "gui/jbase.h"
 #include "gui/widget.h"
 
+class Box;
 class Button;
 class ColorButton;
 class Frame;
@@ -100,7 +101,7 @@ private:
   Button* m_b_last;			// Go to last frame
 
   // Box with move-pixels commands (when the user drag-and-drop selected pixels using the editor)
-  Widget* m_movePixelsBox;
+  Box* m_movePixelsBox;
   Widget* m_transparentLabel;
   ColorButton* m_transparentColor;
 

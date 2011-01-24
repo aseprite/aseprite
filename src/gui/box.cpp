@@ -9,11 +9,12 @@
 #include "config.h"
 
 #include "gfx/size.h"
+#include "gui/box.h"
 #include "gui/jlist.h"
 #include "gui/jmessage.h"
 #include "gui/jrect.h"
+#include "gui/preferred_size_event.h"
 #include "gui/theme.h"
-#include "gui/widget.h"
 
 using namespace gfx;
 
@@ -21,72 +22,64 @@ static bool box_msg_proc(JWidget widget, JMessage msg);
 static void box_request_size(JWidget widget, int *w, int *h);
 static void box_set_position(JWidget widget, JRect rect);
 
-JWidget jbox_new(int align)
+Box::Box(int align)
+  : Widget(JI_BOX)
 {
-  Widget* widget = new Widget(JI_BOX);
-
-  jwidget_add_hook(widget, JI_BOX, box_msg_proc, NULL);
-  widget->setAlign(align);
-  jwidget_init_theme(widget);
-
-  return widget;
+  setAlign(align);
+  jwidget_init_theme(this);
 }
 
-static bool box_msg_proc(JWidget widget, JMessage msg)
+bool Box::onProcessMessage(JMessage msg)
 {
   switch (msg->type) {
 
-    case JM_REQSIZE:
-      box_request_size(widget, &msg->reqsize.w, &msg->reqsize.h);
-      return true;
-
     case JM_SETPOS:
-      box_set_position(widget, &msg->setpos.rect);
+      box_set_position(&msg->setpos.rect);
       return true;
 
     case JM_DRAW:
-      widget->getTheme()->draw_box(widget, &msg->draw.rect);
+      getTheme()->draw_box(this, &msg->draw.rect);
       return true;
 
   }
 
-  return false;
+  return Widget::onProcessMessage(msg);
 }
 
-static void box_request_size(JWidget widget, int *w, int *h)
+void Box::onPreferredSize(PreferredSizeEvent& ev)
 {
 #define GET_CHILD_SIZE(w, h)			\
   {						\
-    if (widget->getAlign() & JI_HOMOGENEOUS)	\
-      *w = MAX(*w, reqSize.w);			\
+    if (getAlign() & JI_HOMOGENEOUS)		\
+      w = MAX(w, reqSize.w);			\
     else					\
-      *w += reqSize.w;				\
+      w += reqSize.w;				\
 						\
-    *h = MAX(*h, reqSize.h);			\
+    h = MAX(h, reqSize.h);			\
   }
 
 #define FINAL_SIZE(w)					\
   {							\
-    if (widget->getAlign() & JI_HOMOGENEOUS)		\
-      *w *= nvis_children;				\
+    if (getAlign() & JI_HOMOGENEOUS)			\
+      w *= nvis_children;				\
 							\
-    *w += widget->child_spacing * (nvis_children-1);	\
+    w += child_spacing * (nvis_children-1);		\
   }
 
-  int nvis_children;
+  int w, h, nvis_children;
   JWidget child;
   JLink link;
 
   nvis_children = 0;
-  JI_LIST_FOR_EACH(widget->children, link) {
+  JI_LIST_FOR_EACH(this->children, link) {
     child = (JWidget)link->data;
     if (!(child->flags & JI_HIDDEN))
       nvis_children++;
   }
+  
+  w = h = 0;
 
-  *w = *h = 0;
-
-  JI_LIST_FOR_EACH(widget->children, link) {
+  JI_LIST_FOR_EACH(this->children, link) {
     child = (JWidget)link->data;
 
     if (child->flags & JI_HIDDEN)
@@ -94,7 +87,7 @@ static void box_request_size(JWidget widget, int *w, int *h)
 
     Size reqSize = child->getPreferredSize();
 
-    if (widget->getAlign() & JI_HORIZONTAL) {
+    if (this->getAlign() & JI_HORIZONTAL) {
       GET_CHILD_SIZE(w, h);
     }
     else {
@@ -103,7 +96,7 @@ static void box_request_size(JWidget widget, int *w, int *h)
   }
 
   if (nvis_children > 0) {
-    if (widget->getAlign() & JI_HORIZONTAL) {
+    if (this->getAlign() & JI_HORIZONTAL) {
       FINAL_SIZE(w);
     }
     else {
@@ -111,24 +104,26 @@ static void box_request_size(JWidget widget, int *w, int *h)
     }
   }
 
-  *w += widget->border_width.l + widget->border_width.r;
-  *h += widget->border_width.t + widget->border_width.b;
+  w += border_width.l + border_width.r;
+  h += border_width.t + border_width.b;
+
+  ev.setPreferredSize(Size(w, h));
 }
 
-static void box_set_position(JWidget widget, JRect rect)
+void Box::box_set_position(JRect rect)
 {
 #define FIXUP(x, y, w, h, l, t, r, b)					\
   {									\
     if (nvis_children > 0) {						\
-      if (widget->getAlign() & JI_HOMOGENEOUS) {			\
-	width = (jrect_##w(widget->rc)					\
-		 - widget->border_width.l				\
-		 - widget->border_width.r				\
-		 - widget->child_spacing * (nvis_children - 1));	\
+      if (getAlign() & JI_HOMOGENEOUS) {				\
+	width = (jrect_##w(this->rc)					\
+		 - this->border_width.l					\
+		 - this->border_width.r					\
+		 - this->child_spacing * (nvis_children - 1));		\
 	extra = width / nvis_children;					\
       }									\
       else if (nexpand_children > 0) {					\
-	width = jrect_##w(widget->rc) - reqSize.w;			\
+	width = jrect_##w(this->rc) - reqSize.w;			\
 	extra = width / nexpand_children;				\
       }									\
       else {								\
@@ -136,17 +131,17 @@ static void box_set_position(JWidget widget, JRect rect)
 	extra = 0;							\
       }									\
 									\
-      x = widget->rc->x##1 + widget->border_width.l;			\
-      y = widget->rc->y##1 + widget->border_width.t;			\
-      h = MAX(1, jrect_##h(widget->rc)					\
-		 - widget->border_width.t				\
-		 - widget->border_width.b);				\
-									\
-      JI_LIST_FOR_EACH(widget->children, link) {			\
+      x = this->rc->x##1 + this->border_width.l;			\
+      y = this->rc->y##1 + this->border_width.t;			\
+      h = MAX(1, jrect_##h(this->rc)					\
+		 - this->border_width.t					\
+		 - this->border_width.b);				\
+      									\
+      JI_LIST_FOR_EACH(this->children, link) {				\
 	child = (JWidget)link->data;					\
 									\
 	if (!(child->flags & JI_HIDDEN)) {				\
-	  if (widget->getAlign() & JI_HOMOGENEOUS) {			\
+	  if (this->getAlign() & JI_HOMOGENEOUS) {			\
 	    if (nvis_children == 1)					\
 	      child_width = width;					\
 	    else							\
@@ -173,21 +168,21 @@ static void box_set_position(JWidget widget, JRect rect)
 									\
 	  w = MAX(1, child_width);					\
 									\
-	  if (widget->getAlign() & JI_HORIZONTAL)			\
+	  if (this->getAlign() & JI_HORIZONTAL)				\
 	    jrect_replace(&cpos, x, y, x+w, y+h);			\
 	  else								\
 	    jrect_replace(&cpos, y, x, y+h, x+w);			\
 									\
 	  jwidget_set_rect(child, &cpos);				\
 									\
-	  x += child_width + widget->child_spacing;			\
+	  x += child_width + this->child_spacing;			\
 	}								\
       }									\
     }									\
   }
 
   struct jrect cpos;
-  JWidget child;
+  Widget* child;
   int nvis_children = 0;
   int nexpand_children = 0;
   int child_width;
@@ -196,9 +191,9 @@ static void box_set_position(JWidget widget, JRect rect)
   int extra;
   int x, y, w, h;
 
-  jrect_copy(widget->rc, rect);
+  jrect_copy(this->rc, rect);
 
-  JI_LIST_FOR_EACH(widget->children, link) {
+  JI_LIST_FOR_EACH(this->children, link) {
     child = (JWidget)link->data;
 
     if (!(child->flags & JI_HIDDEN)) {
@@ -208,9 +203,9 @@ static void box_set_position(JWidget widget, JRect rect)
     }
   }
 
-  Size reqSize = widget->getPreferredSize();
+  Size reqSize = this->getPreferredSize();
 
-  if (widget->getAlign() & JI_HORIZONTAL) {
+  if (this->getAlign() & JI_HORIZONTAL) {
     FIXUP(x, y, w, h, l, t, r, b);
   }
   else {
