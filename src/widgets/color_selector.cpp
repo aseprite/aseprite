@@ -84,8 +84,8 @@ static Model models[] = {
 Frame* colorselector_new()
 {
   Frame* window = new PopupFrame(NULL, false);
-  Widget* grid1 = jgrid_new(2, false);
-  Widget* grid2 = jgrid_new(5, false);
+  Grid* grid1 = new Grid(2, false);
+  Grid* grid2 = new Grid(5, false);
   Box* models_box = new Box(JI_HORIZONTAL);
   PalEdit* pal = new PalEdit(false);
   Label* idx = new Label("None");
@@ -123,14 +123,14 @@ Frame* colorselector_new()
     // Create the color-model container
     child = (*m->create)();
     child->setName(m->text);
-    jgrid_add_child(grid2, child, 1, 1, JI_HORIZONTAL | JI_TOP);
+    grid2->addChildInCell(child, 1, 1, JI_HORIZONTAL | JI_TOP);
   }
 
   /* add children */
-  jgrid_add_child(grid2, pal, 1, 1, JI_RIGHT | JI_TOP);
-  jgrid_add_child(grid1, models_box, 1, 1, JI_HORIZONTAL | JI_BOTTOM);
-  jgrid_add_child(grid1, idx, 1, 1, JI_RIGHT | JI_BOTTOM);
-  jgrid_add_child(grid1, grid2, 2, 1, JI_HORIZONTAL | JI_VERTICAL);
+  grid2->addChildInCell(pal, 1, 1, JI_RIGHT | JI_TOP);
+  grid1->addChildInCell(models_box, 1, 1, JI_HORIZONTAL | JI_BOTTOM);
+  grid1->addChildInCell(idx, 1, 1, JI_RIGHT | JI_BOTTOM);
+  grid1->addChildInCell(grid2, 2, 1, JI_HORIZONTAL | JI_VERTICAL);
   jwidget_add_child(window, grid1);
 
   /* hooks */
@@ -163,19 +163,19 @@ JWidget colorselector_get_paledit(JWidget widget)
 
 static Widget* create_rgb_container()
 {
-  Widget* grid = jgrid_new(2, false);
+  Grid* grid = new Grid(2, false);
   Label* rlabel = new Label("R");
   Label* glabel = new Label("G");
   Label* blabel = new Label("B");
   Slider* rslider = new Slider(0, 255, 0);
   Slider* gslider = new Slider(0, 255, 0);
   Slider* bslider = new Slider(0, 255, 0);
-  jgrid_add_child(grid, rlabel, 1, 1, JI_RIGHT);
-  jgrid_add_child(grid, rslider, 1, 1, JI_HORIZONTAL);
-  jgrid_add_child(grid, glabel, 1, 1, JI_RIGHT);
-  jgrid_add_child(grid, gslider, 1, 1, JI_HORIZONTAL);
-  jgrid_add_child(grid, blabel, 1, 1, JI_RIGHT);
-  jgrid_add_child(grid, bslider, 1, 1, JI_HORIZONTAL);
+  grid->addChildInCell(rlabel, 1, 1, JI_RIGHT);
+  grid->addChildInCell(rslider, 1, 1, JI_HORIZONTAL);
+  grid->addChildInCell(glabel, 1, 1, JI_RIGHT);
+  grid->addChildInCell(gslider, 1, 1, JI_HORIZONTAL);
+  grid->addChildInCell(blabel, 1, 1, JI_RIGHT);
+  grid->addChildInCell(bslider, 1, 1, JI_HORIZONTAL);
 
   rslider->setName("rgb_r");
   gslider->setName("rgb_g");
@@ -190,19 +190,19 @@ static Widget* create_rgb_container()
 
 static Widget* create_hsv_container()
 {
-  Widget* grid = jgrid_new(2, false);
+  Grid* grid = new Grid(2, false);
   Label* hlabel = new Label("H");
   Label* slabel = new Label("S");
   Label* vlabel = new Label("V");
   Slider* hslider = new Slider(0, 360, 0);
   Slider* sslider = new Slider(0, 100, 0);
   Slider* vslider = new Slider(0, 100, 0);
-  jgrid_add_child(grid, hlabel, 1, 1, JI_RIGHT);
-  jgrid_add_child(grid, hslider, 1, 1, JI_HORIZONTAL);
-  jgrid_add_child(grid, slabel, 1, 1, JI_RIGHT);
-  jgrid_add_child(grid, sslider, 1, 1, JI_HORIZONTAL);
-  jgrid_add_child(grid, vlabel, 1, 1, JI_RIGHT);
-  jgrid_add_child(grid, vslider, 1, 1, JI_HORIZONTAL);
+  grid->addChildInCell(hlabel, 1, 1, JI_RIGHT);
+  grid->addChildInCell(hslider, 1, 1, JI_HORIZONTAL);
+  grid->addChildInCell(slabel, 1, 1, JI_RIGHT);
+  grid->addChildInCell(sslider, 1, 1, JI_HORIZONTAL);
+  grid->addChildInCell(vlabel, 1, 1, JI_RIGHT);
+  grid->addChildInCell(vslider, 1, 1, JI_HORIZONTAL);
 
   hslider->setName("hsv_h");
   sslider->setName("hsv_s");
@@ -217,11 +217,11 @@ static Widget* create_hsv_container()
 
 static Widget* create_gray_container()
 {
-  Widget* grid = jgrid_new(2, false);
+  Grid* grid = new Grid(2, false);
   Label* klabel = new Label("V");
   Slider* vslider = new Slider(0, 255, 0);
-  jgrid_add_child(grid, klabel, 1, 1, JI_RIGHT);
-  jgrid_add_child(grid, vslider, 1, 1, JI_HORIZONTAL);
+  grid->addChildInCell(klabel, 1, 1, JI_RIGHT);
+  grid->addChildInCell(vslider, 1, 1, JI_HORIZONTAL);
 
   vslider->setName("gray_v");
 

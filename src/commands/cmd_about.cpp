@@ -50,7 +50,7 @@ void AboutCommand::onExecute(Context* context)
 {
   FramePtr frame(new Frame(false, "About " PACKAGE));
   Box* box1 = new Box(JI_VERTICAL);
-  Widget* grid = jgrid_new(2, false);
+  Grid* grid = new Grid(2, false);
   Label* title = new Label(PACKAGE " v" VERSION);
   Label* subtitle = new Label("Animated sprites editor && pixel art tool");
   Widget* authors_separator1 = ji_separator_new("Authors:", JI_HORIZONTAL | JI_TOP);
@@ -68,19 +68,19 @@ void AboutCommand::onExecute(Context* context)
   Label* website = new LinkLabel(WEBSITE);
   Button* close_button = new Button("&Close");
 
-  jgrid_add_child(grid, title, 2, 1, 0);
-  jgrid_add_child(grid, subtitle, 2, 1, 0);
-  jgrid_add_child(grid, authors_separator1, 2, 1, 0);
-  jgrid_add_child(grid, author1, 1, 1, 0);
-  jgrid_add_child(grid, author1_desc, 1, 1, 0);
-  jgrid_add_child(grid, author2, 1, 1, 0);
-  jgrid_add_child(grid, author2_desc, 1, 1, 0);
-  jgrid_add_child(grid, author3, 1, 1, 0);
-  jgrid_add_child(grid, author3_desc, 1, 1, 0);
-  jgrid_add_child(grid, authors_separator2, 2, 1, 0);
-  jgrid_add_child(grid, copyright, 2, 1, 0);
-  jgrid_add_child(grid, website, 2, 1, 0);
-  jgrid_add_child(grid, bottom_box1, 2, 1, 0);
+  grid->addChildInCell(title, 2, 1, 0);
+  grid->addChildInCell(subtitle, 2, 1, 0);
+  grid->addChildInCell(authors_separator1, 2, 1, 0);
+  grid->addChildInCell(author1, 1, 1, 0);
+  grid->addChildInCell(author1_desc, 1, 1, 0);
+  grid->addChildInCell(author2, 1, 1, 0);
+  grid->addChildInCell(author2_desc, 1, 1, 0);
+  grid->addChildInCell(author3, 1, 1, 0);
+  grid->addChildInCell(author3_desc, 1, 1, 0);
+  grid->addChildInCell(authors_separator2, 2, 1, 0);
+  grid->addChildInCell(copyright, 2, 1, 0);
+  grid->addChildInCell(website, 2, 1, 0);
+  grid->addChildInCell(bottom_box1, 2, 1, 0);
   
   jwidget_magnetic(close_button, true);
 

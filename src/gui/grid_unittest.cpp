@@ -22,20 +22,18 @@
 
 using namespace gfx;
 
-/**
- * Tests two widgets in a row, each one of 10x10 pixels.
- */
+// Tests two widgets in a row, each one of 10x10 pixels.
 TEST(JGrid, Simple2x1Grid)
 {
-  JWidget grid = jgrid_new(2, false);
-  JWidget w1 = new Widget(JI_WIDGET);
-  JWidget w2 = new Widget(JI_WIDGET);
+  Grid* grid = new Grid(2, false);
+  Widget* w1 = new Widget(JI_WIDGET);
+  Widget* w2 = new Widget(JI_WIDGET);
 
   jwidget_set_min_size(w1, 10, 10);
   jwidget_set_min_size(w2, 10, 10);
 
-  jgrid_add_child(grid, w1, 1, 1, 0);
-  jgrid_add_child(grid, w2, 1, 1, 0);
+  grid->addChildInCell(w1, 1, 1, 0);
+  grid->addChildInCell(w2, 1, 1, 0);
 
   // Test request-size
   Size reqSize = grid->getPreferredSize();
@@ -66,7 +64,7 @@ TEST(JGrid, Simple2x1Grid)
 
 TEST(JGrid, Expand2ndWidget)
 {
-  Widget* grid = jgrid_new(2, false);
+  Grid* grid = new Grid(2, false);
   Widget* w1 = new Widget(JI_WIDGET);
   Widget* w2 = new Widget(JI_WIDGET);
   JRect rect;
@@ -74,8 +72,8 @@ TEST(JGrid, Expand2ndWidget)
   jwidget_set_min_size(w1, 20, 20);
   jwidget_set_min_size(w2, 10, 10);
 
-  jgrid_add_child(grid, w1, 1, 1, 0);
-  jgrid_add_child(grid, w2, 1, 1, JI_HORIZONTAL | JI_TOP);
+  grid->addChildInCell(w1, 1, 1, 0);
+  grid->addChildInCell(w2, 1, 1, JI_HORIZONTAL | JI_TOP);
 
   // Test request size
   Size reqSize = grid->getPreferredSize();
@@ -102,16 +100,16 @@ TEST(JGrid, Expand2ndWidget)
 
 TEST(JGrid, SameWidth2x1Grid)
 {
-  JWidget grid = jgrid_new(2, true);
-  JWidget w1 = new Widget(JI_WIDGET);
-  JWidget w2 = new Widget(JI_WIDGET);
+  Grid* grid = new Grid(2, true);
+  Widget* w1 = new Widget(JI_WIDGET);
+  Widget* w2 = new Widget(JI_WIDGET);
   JRect rect;
 
   jwidget_set_min_size(w1, 20, 20);
   jwidget_set_min_size(w2, 10, 10);
 
-  jgrid_add_child(grid, w1, 1, 1, 0);
-  jgrid_add_child(grid, w2, 1, 1, 0);
+  grid->addChildInCell(w1, 1, 1, 0);
+  grid->addChildInCell(w2, 1, 1, 0);
 
   // Test request size
   Size reqSize = grid->getPreferredSize();
@@ -131,47 +129,43 @@ TEST(JGrid, SameWidth2x1Grid)
   delete grid;
 }
 
-/**
- * Tests the next layout (a grid of 3x3 cells):
- * 
- * <pre>
- *        2 (separator)
- *       _|_
- *      /   \
- *   10 2 0 2 10
- *  +---+-------+
- *  | 1 | 2     | 10
- *  +---+---+---+ --- 2 (separator)
- *  | 3     | 4 | 4
- *  |       |   | --- 2 (separator)
- *  |       |   | 4
- *  +-------+---+
- *
- *  1.align = 0
- *  2.align = JI_HORIZONTAL
- *  3.align = JI_HORIZONTAL | JI_VERTICAL
- *  4.align = JI_VERTICAL
- * </pre>
- *
- * When expand the grid:
- *
- * <pre>
- *  +---+----------------------------+
- *  | 1 | 2       		     |
- *  +---+------------------------+---+
- *  | 3                	       	 | 4 |
- *  |            		 |   |
- *  |            		 |   |
- *  |            		 |   |
- *  |				 |   |
- *  |				 |   |
- *  |				 |   |
- *  +----------------------------+---+
- * </pre>
- */
+// Tests the next layout (a grid of 3x3 cells):
+// 
+//        2 (separator)
+//       _|_
+//      /   \
+//   10 2 0 2 10
+//  +---+-------+
+//  | 1 | 2     | 10
+//  +---+---+---+ --- 2 (separator)
+//  | 3     | 4 | 4
+//  |       |   | --- 2 (separator)
+//  |       |   | 4
+//  +-------+---+
+//
+//  1.align = 0
+//  2.align = JI_HORIZONTAL
+//  3.align = JI_HORIZONTAL | JI_VERTICAL
+//  4.align = JI_VERTICAL
+//
+//
+// When we expand the grid we get the following layout:
+//
+//  +---+----------------------------+
+//  | 1 | 2       		     |
+//  +---+------------------------+---+
+//  | 3                	       	 | 4 |
+//  |            		 |   |
+//  |            		 |   |
+//  |            		 |   |
+//  |				 |   |
+//  |				 |   |
+//  |				 |   |
+//  +----------------------------+---+
+//
 TEST(JGrid, Intrincate3x3Grid)
 {
-  Widget* grid = jgrid_new(3, false);
+  Grid* grid = new Grid(3, false);
   Widget* w1 = new Widget(JI_WIDGET);
   Widget* w2 = new Widget(JI_WIDGET);
   Widget* w3 = new Widget(JI_WIDGET);
@@ -183,10 +177,10 @@ TEST(JGrid, Intrincate3x3Grid)
   jwidget_set_min_size(w3, 10, 10);
   jwidget_set_min_size(w4, 10, 10);
 
-  jgrid_add_child(grid, w1, 1, 1, 0);
-  jgrid_add_child(grid, w2, 2, 1, JI_HORIZONTAL);
-  jgrid_add_child(grid, w3, 2, 2, JI_HORIZONTAL | JI_VERTICAL);
-  jgrid_add_child(grid, w4, 1, 2, JI_VERTICAL);
+  grid->addChildInCell(w1, 1, 1, 0);
+  grid->addChildInCell(w2, 2, 1, JI_HORIZONTAL);
+  grid->addChildInCell(w3, 2, 2, JI_HORIZONTAL | JI_VERTICAL);
+  grid->addChildInCell(w4, 1, 2, JI_VERTICAL);
 
   // Test request size
   grid->child_spacing = 2;

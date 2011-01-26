@@ -50,7 +50,7 @@ Console::Console()
     return;
   else {
     Frame* window = new Frame(false, "Errors Console");
-    Widget* grid = jgrid_new(1, false);
+    Grid* grid = new Grid(1, false);
     Widget* view = jview_new();
     Widget* textbox = jtextbox_new(NULL, JI_WORDWRAP);
     Button* button = new Button("&Cancel");
@@ -65,8 +65,8 @@ Console::Console()
 
     jwidget_set_min_size(button, 60, 0);
 
-    jgrid_add_child(grid, view, 1, 1, JI_HORIZONTAL | JI_VERTICAL);
-    jgrid_add_child(grid, button, 1, 1, JI_CENTER);
+    grid->addChildInCell(view, 1, 1, JI_HORIZONTAL | JI_VERTICAL);
+    grid->addChildInCell(button, 1, 1, JI_CENTER);
     jwidget_add_child(window, grid);
 
     view->setVisible(false);

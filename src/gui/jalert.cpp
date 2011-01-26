@@ -121,7 +121,7 @@ int jalert(const char *format, ...)
 static Frame* create_alert(char *buf, JList *labels, JList *buttons)
 {
   Box* box1, *box2, *box3, *box4, *box5;
-  Widget* grid;
+  Grid* grid;
   Frame* window = NULL;
   bool title = true;
   bool label = false;
@@ -196,7 +196,7 @@ static Frame* create_alert(char *buf, JList *labels, JList *buttons)
   if (window) {
     box1 = new Box(JI_VERTICAL);
     box2 = new Box(JI_VERTICAL);
-    grid = jgrid_new(1, false);
+    grid = new Grid(1, false);
     box3 = new Box(JI_HORIZONTAL | JI_HOMOGENEOUS);
 
     /* to identify by the user */
@@ -221,7 +221,7 @@ static Frame* create_alert(char *buf, JList *labels, JList *buttons)
     jwidget_add_child(box1, box5);	/* filler */
     jwidget_add_child(box1, grid);	/* buttons */
 
-    jgrid_add_child(grid, box3, 1, 1, JI_CENTER | JI_BOTTOM);
+    grid->addChildInCell(box3, 1, 1, JI_CENTER | JI_BOTTOM);
 
     JI_LIST_FOR_EACH(*labels, link)
       jwidget_add_child(box2, (JWidget)link->data);

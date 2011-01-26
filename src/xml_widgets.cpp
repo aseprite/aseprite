@@ -191,8 +191,8 @@ static Widget* convert_xmlelement_to_widget(TiXmlElement* elem, Widget* root)
     bool same_width_columns = bool_attr_is_true(elem, "same_width_columns");
 
     if (columns != NULL) {
-      widget = jgrid_new(ustrtol(columns, NULL, 10),
-			 same_width_columns);
+      widget = new Grid(ustrtol(columns, NULL, 10),
+			same_width_columns);
     }
   }
   /* label */
@@ -388,8 +388,10 @@ static Widget* convert_xmlelement_to_widget(TiXmlElement* elem, Widget* root)
 	  int hspan = cell_hspan ? ustrtol(cell_hspan, NULL, 10): 1;
 	  int vspan = cell_vspan ? ustrtol(cell_vspan, NULL, 10): 1;
 	  int align = cell_align ? convert_align_value_to_flags(cell_align): 0;
+	  Grid* grid = dynamic_cast<Grid*>(widget);
+	  ASSERT(grid != NULL);
 
-	  jgrid_add_child(widget, child, hspan, vspan, align);
+	  grid->addChildInCell(child, hspan, vspan, align);
 	}
 	// Just add the child in any other kind of widget
 	else
