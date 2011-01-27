@@ -376,7 +376,7 @@ static bool fileview_msg_proc(JWidget widget, JMessage msg)
 			     makecol(194, 194, 194));
 
       jrect_free(vp);
-      break;
+      return true;
     }
 
     case JM_BUTTONPRESSED:

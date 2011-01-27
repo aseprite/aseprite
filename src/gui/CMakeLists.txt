@@ -9,6 +9,7 @@ add_library(gui-lib
   entry.cpp
   event.cpp
   frame.cpp
+  graphics.cpp
   grid.cpp
   image_view.cpp
   jaccel.cpp
@@ -37,6 +38,7 @@ add_library(gui-lib
   jtextbox.cpp
   jtooltips.cpp
   label.cpp
+  paint_event.cpp
   popup_frame.cpp
   preferred_size_event.cpp
   property.cpp

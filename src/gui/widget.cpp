@@ -19,8 +19,10 @@
 #include <allegro.h>
 
 #include "base/memory.h"
+#include "gui/graphics.h"
 #include "gui/jinete.h"
 #include "gui/jintern.h"
+#include "gui/paint_event.h"
 #include "gui/preferred_size_event.h"
 
 using namespace gfx;
@@ -1447,9 +1449,12 @@ bool Widget::onProcessMessage(JMessage msg)
       break;
     }
 
-    case JM_DRAW:
-      // do nothing
-      break;
+    case JM_DRAW: {
+      Graphics graphics(ji_screen, rc->x1, rc->y1);
+      PaintEvent ev(this, &graphics);
+      onPaint(ev); // Fire onPaint event
+      return ev.isPainted();
+    }
 
     case JM_REQSIZE:
       msg->reqsize.w = widget->min_w;
@@ -1543,4 +1548,9 @@ void Widget::onPreferredSize(PreferredSizeEvent& ev)
   jmessage_free(msg);
 
   ev.setPreferredSize(sz);
+}
+
+void Widget::onPaint(PaintEvent& ev)
+{
+  // Do nothing
 }

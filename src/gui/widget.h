@@ -15,6 +15,7 @@
 #include "gui/jrect.h"
 
 class PreferredSizeEvent;
+class PaintEvent;
 
 #ifndef NDEBUG
 #include "gui/jintern.h"
@@ -292,6 +293,7 @@ protected:
   // ===============================================================
 
   virtual void onPreferredSize(PreferredSizeEvent& ev);
+  virtual void onPaint(PaintEvent& ev);
 
 private:
   gfx::Size* m_preferredSize;

@@ -485,7 +485,7 @@ bool PalEdit::onProcessMessage(JMessage msg)
       blit(bmp, ji_screen,
 	   0, 0, this->rc->x1, this->rc->y1, bmp->w, bmp->h);
       destroy_bitmap(bmp);
-      break;
+      return true;
     }
 
     case JM_BUTTONPRESSED:
