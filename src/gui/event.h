@@ -12,20 +12,18 @@ class Component;
 // Base class for every kind of event.
 class Event
 {
-  // The component which generates the event.
-  Component* m_source;
-
 public:
-
   // Creates a new event specifying that it was generated from the
   // source component.
   Event(Component* source);
-
   virtual ~Event();
 
   // Returns the component which generated the event.
   Component* getSource();
 
+private:
+  // The component which generates the event.
+  Component* m_source;
 };
 
 #endif
