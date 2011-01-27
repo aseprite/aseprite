@@ -9,6 +9,7 @@ add_library(gui-lib
   event.cpp
   frame.cpp
   grid.cpp
+  image_view.cpp
   jaccel.cpp
   jalert.cpp
   jclipboard.cpp
@@ -18,7 +19,6 @@ add_library(gui-lib
   jfont.cpp
   jfontbmp.cpp
   jhook.cpp
-  jimage.cpp
   jinete.cpp
   jintern.cpp
   jlink_label.cpp
