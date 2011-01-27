@@ -4,8 +4,8 @@
 // This source file is ditributed under a BSD-like license, please
 // read LICENSE.txt for more information.
 
-#ifndef GUI_JALERT_H_INCLUDED
-#define GUI_JALERT_H_INCLUDED
+#ifndef GUI_ALERT_H_INCLUDED
+#define GUI_ALERT_H_INCLUDED
 
 class Frame;
 

@@ -25,9 +25,9 @@
 #include <vector>
 
 #include "effect/colcurve.h"
+#include "gui/alert.h"
 #include "gui/entry.h"
 #include "gui/frame.h"
-#include "gui/jalert.h"
 #include "gui/jlist.h"
 #include "gui/jmanager.h"
 #include "gui/jmessage.h"

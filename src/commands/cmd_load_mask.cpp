@@ -18,11 +18,10 @@
 
 #include "config.h"
 
-#include "gui/jalert.h"
-
 #include "commands/command.h"
 #include "commands/params.h"
 #include "dialogs/filesel.h"
+#include "gui/alert.h"
 #include "modules/gui.h" 
 #include "raster/mask.h"
 #include "raster/sprite.h"

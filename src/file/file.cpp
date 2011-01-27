@@ -31,7 +31,7 @@
 #include "file/file_format.h"
 #include "file/file_formats_manager.h"
 #include "file/format_options.h"
-#include "gui/jalert.h"
+#include "gui/alert.h"
 #include "modules/gui.h"
 #include "modules/palettes.h"
 #include "raster/quantization.h"

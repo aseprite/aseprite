@@ -20,14 +20,13 @@
 
 #include <allegro/file.h>
 
-#include "gui/jalert.h"
-
 #include "commands/command.h"
 #include "dialogs/filesel.h"
+#include "gui/alert.h"
 #include "raster/mask.h"
 #include "raster/sprite.h"
-#include "util/msk_file.h"
 #include "sprite_wrappers.h"
+#include "util/msk_file.h"
 
 //////////////////////////////////////////////////////////////////////
 // save_mask

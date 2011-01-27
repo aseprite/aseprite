@@ -7,6 +7,7 @@
 #ifndef GUI_JINETE_H_INCLUDED
 #define GUI_JINETE_H_INCLUDED
 
+#include "gui/alert.h"
 #include "gui/box.h"
 #include "gui/button.h"
 #include "gui/entry.h"
@@ -14,7 +15,6 @@
 #include "gui/grid.h"
 #include "gui/image_view.h"
 #include "gui/jaccel.h"
-#include "gui/jalert.h"
 #include "gui/jbase.h"
 #include "gui/jclipboard.h"
 #include "gui/jcombobox.h"

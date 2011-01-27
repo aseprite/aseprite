@@ -2,6 +2,7 @@
 # Copyright (C) 2001-2011  David Capello
 
 add_library(gui-lib
+  alert.cpp
   box.cpp
   button.cpp
   component.cpp
@@ -11,7 +12,6 @@ add_library(gui-lib
   grid.cpp
   image_view.cpp
   jaccel.cpp
-  jalert.cpp
   jclipboard.cpp
   jcombobox.cpp
   jcustom_label.cpp
