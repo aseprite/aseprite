@@ -22,7 +22,8 @@
 #include "launcher.h"
 
 #if defined ALLEGRO_WINDOWS
-#include <windows.h>
+  #define BITMAP WINDOWS_BITMAP
+  #include <windows.h>
 #endif
 
 void Launcher::openUrl(const std::string& url)
@@ -50,5 +51,5 @@ void Launcher::openFile(const std::string& file)
 #endif
 
   if (ret != 0)
-    jalert("Problem<<Cannot open:<<%s||&Close", file.c_str());
+    Alert::show("Problem<<Cannot open:<<%s||&Close", file.c_str());
 }

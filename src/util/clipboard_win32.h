@@ -181,7 +181,7 @@ static void get_win32_clipboard_bitmap(Image*& image, Palette*& palette)
   if (bi) {
     if (bi->bmiHeader.biCompression != BI_RGB &&
 	bi->bmiHeader.biCompression != BI_BITFIELDS) {
-      jalert("Error<<The current Windows clipboard format is not a bitmap.||&OK");
+      Alert::show("Error<<The current Windows clipboard format is not a bitmap.||&OK");
       return;
     }
 

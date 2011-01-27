@@ -50,7 +50,7 @@ struct ThreadData
   bool cancelled : 1;		/* was the effect cancelled by the user?  */
   Monitor* monitor;		/* monitor to update the progress-bar */
   Progress* progress;		/* the progress-bar */
-  Frame* alert_window;		/* alert for the user to cancel the
+  AlertPtr alert_window;	/* alert for the user to cancel the
 				   effect-progress if he wants */
 };
 
@@ -157,8 +157,8 @@ void effect_apply_to_target_with_progressbar(Effect* effect)
   data->done = false;
   data->cancelled = false;
   data->progress = app_get_statusbar()->addProgress();
-  data->alert_window = jalert_new(PACKAGE
-				  "<<Applying effect...||&Cancel");
+  data->alert_window = Alert::create(PACKAGE
+				     "<<Applying effect...||&Cancel");
   data->monitor = add_gui_monitor(monitor_effect_bg,
 				  monitor_free, data);
 
@@ -180,6 +180,5 @@ void effect_apply_to_target_with_progressbar(Effect* effect)
   thread.join();
 
   delete data->progress;
-  jwidget_free(data->alert_window);
   delete data;
 }

@@ -124,8 +124,8 @@ try_again:;
     // see if the sprite has changes
     while (sprite->isModified()) {
       // ask what want to do the user with the changes in the sprite
-      int ret = jalert("Warning<<Saving changes in:<<%s||&Save||Do&n't Save||&Cancel",
-		       get_filename(sprite->getFilename()));
+      int ret = Alert::show("Warning<<Saving changes in:<<%s||&Save||Do&n't Save||&Cancel",
+			    get_filename(sprite->getFilename()));
 
       if (ret == 1) {
 	// "save": save the changes

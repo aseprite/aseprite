@@ -35,7 +35,6 @@ Job::Job(const char* job_name)
   m_thread = NULL;
   m_progress = NULL;
   m_monitor = NULL;
-  m_alert_window = NULL;
   m_last_progress = 0.0f;
   m_done_flag = false;
   m_canceled_flag = false;
@@ -45,7 +44,7 @@ Job::Job(const char* job_name)
   m_monitor = add_gui_monitor(&Job::monitor_proc,
 			      &Job::monitor_free,
 			      (void*)this);
-  m_alert_window = jalert_new("%s<<Working...||&Cancel", job_name);
+  m_alert_window = Alert::create("%s<<Working...||&Cancel", job_name);
 }
 
 Job::~Job()
@@ -72,9 +71,6 @@ Job::~Job()
 
   if (m_mutex)
     delete m_mutex;
-
-  if (m_alert_window)
-    jwidget_free(m_alert_window);
 }
 
 void Job::startJob()

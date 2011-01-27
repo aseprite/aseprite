@@ -190,12 +190,12 @@ FileOp *fop_to_load_sprite(const char *filename, int flags)
 	  App::instance()->isGui()) {
 	/* really want load all files? */
 	if ((fop->seq.filename_list.size() > 1) &&
-	    (jalert("Notice"
-		    "<<Possible animation with:"
-		    "<<%s"
-		    "<<Load the sequence of bitmaps?"
-		    "||&Agree||&Skip",
-		    get_filename(filename)) != 1)) {
+	    (Alert::show("Notice"
+			 "<<Possible animation with:"
+			 "<<%s"
+			 "<<Load the sequence of bitmaps?"
+			 "||&Agree||&Skip",
+			 get_filename(filename)) != 1)) {
 	 
 	  /* if the user replies "Skip", we need just one file name (the
 	     first one) */
@@ -338,14 +338,14 @@ FileOp *fop_to_save_sprite(Sprite *sprite)
       int ret;
 
       if (fatal)
-	ret = jalert("Error<<File format \"%s\" doesn't support:%s"
-		     "||&Close",
-		     fop->format->name(), buf);
+	ret = Alert::show("Error<<File format \"%s\" doesn't support:%s"
+			  "||&Close",
+			  fop->format->name(), buf);
       else
-	ret = jalert("Warning<<File format \"%s\" doesn't support:%s"
-		     "<<Do you want continue?"
-		     "||&Yes||&No",
-		     fop->format->name(), buf);
+	ret = Alert::show("Warning<<File format \"%s\" doesn't support:%s"
+			  "<<Do you want continue?"
+			  "||&Yes||&No",
+			  fop->format->name(), buf);
 
       /* operation can't be done (by fatal error) or the user cancel
 	 the operation */

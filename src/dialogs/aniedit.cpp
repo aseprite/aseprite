@@ -603,7 +603,7 @@ static bool anieditor_msg_proc(JWidget widget, JMessage msg)
 		  anieditor_regenerate_layers(widget);
 		}
 		else {
-		  jalert(PACKAGE "<<You can't move the `Background' layer.||&OK");
+		  Alert::show(PACKAGE "<<You can't move the `Background' layer.||&OK");
 		}
 	      }
 	    }

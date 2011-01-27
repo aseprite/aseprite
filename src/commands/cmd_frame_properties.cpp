@@ -118,9 +118,9 @@ void FramePropertiesCommand::onExecute(Context* context)
     int num = strtol(frlen->getText(), NULL, 10);
 
     if (m_frame == ALL_FRAMES) {
-      if (jalert("Warning"
-		 "<<Do you want to change the duration of all frames?"
-		 "||&Yes||&No") == 1) {
+      if (Alert::show("Warning"
+		      "<<Do you want to change the duration of all frames?"
+		      "||&Yes||&No") == 1) {
 	SpriteWriter sprite_writer(sprite);
 	Undoable undoable(sprite_writer, "Constant Frame-Rate");
 	undoable.setConstantFrameRate(num);

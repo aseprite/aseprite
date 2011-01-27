@@ -57,7 +57,7 @@ struct OpenFileData
   Monitor *monitor;
   FileOp *fop;
   Progress *progress;
-  Frame* alert_window;
+  AlertPtr alert_window;
 };
 
 /**
@@ -162,9 +162,9 @@ void OpenFileCommand::onExecute(Context* context)
 
 	data->fop = fop;
 	data->progress = app_get_statusbar()->addProgress();
-	data->alert_window = jalert_new(PACKAGE
-					"<<Loading file:<<%s||&Cancel",
-					get_filename(m_filename.c_str()));
+	data->alert_window = Alert::create(PACKAGE
+					   "<<Loading file:<<%s||&Cancel",
+					   get_filename(m_filename.c_str()));
 
 	// Add a monitor to check the loading (FileOp) progress
 	data->monitor = add_gui_monitor(monitor_openfile_bg,
@@ -196,7 +196,6 @@ void OpenFileCommand::onExecute(Context* context)
 	  unrecent = true;
 
 	delete data->progress;
-	jwidget_free(data->alert_window);
 	fop_free(fop);
 	delete data;
       }

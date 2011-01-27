@@ -19,6 +19,8 @@
 #ifndef CORE_JOB_H_INCLUDED
 #define CORE_JOB_H_INCLUDED
 
+#include "gui/alert.h"
+
 namespace base { class thread; }
 
 class Frame;
@@ -71,7 +73,7 @@ private:
   Monitor* m_monitor;
   Progress* m_progress;
   Mutex* m_mutex;
-  Frame* m_alert_window;
+  AlertPtr m_alert_window;
   float m_last_progress;
   bool m_done_flag;
   bool m_canceled_flag;

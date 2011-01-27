@@ -419,7 +419,7 @@ static void load_command(JWidget widget)
   if (!filename.empty()) {
     palette = Palette::load(filename.c_str());
     if (!palette) {
-      jalert("Error<<Loading palette file||&Close");
+      Alert::show("Error<<Loading palette file||&Close");
     }
     else {
       set_new_palette(palette, "Load Palette");
@@ -437,8 +437,8 @@ static void save_command(JWidget widget)
   filename = ase_file_selector("Save Palette", "", "png,pcx,bmp,tga,col");
   if (!filename.empty()) {
     if (exists(filename.c_str())) {
-      ret = jalert("Warning<<File exists, overwrite it?<<%s||&Yes||&No||&Cancel",
-		   get_filename(filename.c_str()));
+      ret = Alert::show("Warning<<File exists, overwrite it?<<%s||&Yes||&No||&Cancel",
+			get_filename(filename.c_str()));
 
       if (ret == 2)
 	goto again;
@@ -448,7 +448,7 @@ static void save_command(JWidget widget)
 
     Palette* palette = get_current_palette();
     if (!palette->save(filename.c_str())) {
-      jalert("Error<<Saving palette file||&Close");
+      Alert::show("Error<<Saving palette file||&Close");
     }
   }
 }
@@ -503,7 +503,7 @@ static bool sort_by_criteria(Palette* palette, int from, int to, JList selected_
 
 static void sort_command(JWidget widget)
 {
-  if (jalert("ASE Beta<<Sort command is not available in this beta version.||&OK")) // TODO remove this
+  if (Alert::show("ASE Beta<<Sort command is not available in this beta version.||&OK")) // TODO remove this
     return;
 
   SortDlgData data;
@@ -786,12 +786,12 @@ static void quantize_command(JWidget widget)
     const CurrentSpriteReader& sprite(UIContext::instance());
 
     if (sprite == NULL) {
-      jalert("Error<<There is no sprite selected to quantize.||&OK");
+      Alert::show("Error<<There is no sprite selected to quantize.||&OK");
       return;
     }
 
     if (sprite->getImgType() != IMAGE_RGB) {
-      jalert("Error<<You can use this command only for RGB sprites||&OK");
+      Alert::show("Error<<You can use this command only for RGB sprites||&OK");
       return;
     }
 

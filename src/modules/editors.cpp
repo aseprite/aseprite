@@ -255,7 +255,7 @@ void set_sprite_in_more_reliable_editor(Sprite* sprite)
 void split_editor(Editor* editor, int align)
 {
   if (count_parents(editor) > 10) {
-    jalert("Error<<You cannot split this editor more||&Close");
+    Alert::show("Error<<You cannot split this editor more||&Close");
     return;
   }
 

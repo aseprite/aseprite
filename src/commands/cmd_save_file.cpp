@@ -33,13 +33,13 @@
 #include "sprite_wrappers.h"
 #include "widgets/statebar.h"
 
-typedef struct SaveFileData
+struct SaveFileData
 {
   Monitor *monitor;
   FileOp *fop;
   Progress *progress;
-  Frame* alert_window;
-} SaveFileData;
+  AlertPtr alert_window;
+};
 
 /**
  * Thread to do the hard work: save the file to the disk.
@@ -102,9 +102,9 @@ static void save_sprite_in_background(Sprite* sprite, bool mark_as_saved)
 
   data->fop = fop;
   data->progress = app_get_statusbar()->addProgress();
-  data->alert_window = jalert_new(PACKAGE
-				  "<<Saving file:<<%s||&Cancel",
-				  get_filename(sprite->getFilename()));
+  data->alert_window = Alert::create(PACKAGE
+				     "<<Saving file:<<%s||&Cancel",
+				     get_filename(sprite->getFilename()));
 
   /* add a monitor to check the saving (FileOp) progress */
   data->monitor = add_gui_monitor(monitor_savefile_bg,
@@ -137,7 +137,6 @@ static void save_sprite_in_background(Sprite* sprite, bool mark_as_saved)
   }
 
   delete data->progress;
-  jwidget_free(data->alert_window);
   fop_free(fop);
   delete data;
 }
@@ -164,8 +163,8 @@ static void save_as_dialog(Sprite* sprite, const char* dlg_title, bool mark_as_s
     /* does the file exist? */
     if (exists(filename.c_str())) {
       /* ask if the user wants overwrite the file? */
-      ret = jalert("Warning<<File exists, overwrite it?<<%s||&Yes||&No||&Cancel",
-		   get_filename(filename.c_str()));
+      ret = Alert::show("Warning<<File exists, overwrite it?<<%s||&Yes||&No||&Cancel",
+			get_filename(filename.c_str()));
     }
     else
       break;
