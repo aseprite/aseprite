@@ -28,7 +28,7 @@ check_function_exists("vprintf" HAVE_VPRINTF)
 check_function_exists("_doprnt" HAVE_DOPRNT)
 check_function_exists("strdup" HAVE_STRDUP)
 
-if(${HAVE_STDINT_H} or ${HAVE_INTTYPES_H})
+if(HAVE_STDINT_H OR HAVE_INTTYPES_H)
   set("UINT32" "uint32_t")
 else()
   set("UINT32" "unsigned int")
