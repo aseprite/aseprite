@@ -214,7 +214,7 @@ art_render_gradient_radial_render (ArtRenderCallback *self, ArtRender *render,
   double fx = gradient->fx;
   double fy = gradient->fy;
   double dx, dy;
-  double *affine = gradient->affine;
+  const double *affine = gradient->affine;
   double aff0 = affine[0];
   double aff1 = affine[1];
   const double a = z->a;
