@@ -314,7 +314,6 @@ static void draw_text(BITMAP *bmp, FONT *f, const char *text, int x, int y,
 {
   /* TODO optional anti-aliased textout */
   ji_font_set_aa_mode(f, bg_color);
-  text_mode(fill_bg ? bg_color: -1);
-  textout(bmp, f, text, x, y, fg_color);
+  textout_ex(bmp, f, text, x, y, fg_color, (fill_bg ? bg_color: -1));
   /* TODO */
 }

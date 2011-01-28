@@ -193,11 +193,10 @@ static Image* render_text(Sprite* sprite, FONT *f, const char *text, int color)
   if (!bmp)
     return NULL;
 
-  text_mode(-1);
   ji_font_set_aa_mode(f, -1);
 
   clear_to_color(bmp, makecol32 (255, 0, 255));
-  textout(bmp, f, text, 0, 0, makecol32 (255, 255, 255));
+  textout_ex(bmp, f, text, 0, 0, makecol32 (255, 255, 255), -1);
 
   image = image_new(sprite->getImgType(), w, h);
   if (!image) {

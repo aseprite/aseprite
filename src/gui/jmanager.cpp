@@ -526,8 +526,7 @@ bool jmanager_generate_messages(JWidget manager)
   jwidget_flush_redraw(manager);
 
   /* make some OSes happy */
-  yield_timeslice();
-  rest(1);
+  rest(0);
 
   if (!jlist_empty(msg_queue))
     return true;

@@ -179,8 +179,7 @@ void jdraw_text(BITMAP* bmp, FONT* font, const char *s, int x, int y,
 
   SETUP_ANTIALISING(font, bg_color, fill_bg);
 
-  text_mode(fill_bg ? bg_color: -1);
-  textout(bmp, font, tmp, x, y, fg_color);
+  textout_ex(bmp, font, tmp, x, y, fg_color, (fill_bg ? bg_color: -1));
 
   if (hline_pos >= 0) {
     c = ugetat(tmp, hline_pos);
