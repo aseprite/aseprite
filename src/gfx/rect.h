@@ -15,6 +15,7 @@ namespace gfx {
 
 class Point;
 class Size;
+class Border;
 
 class Rect			// A rectangle.
 {
@@ -77,6 +78,8 @@ public:
   Rect& offset(const Point& delta);
   Rect& inflate(int dw, int dh);
   Rect& inflate(const Size& delta);
+  Rect& inflate(const Border& br);
+  Rect& deflate(const Border& br);
 
   Rect& enlarge(int unit);
   Rect& shrink(int unit);
@@ -96,6 +99,11 @@ public:
 
   // Returns the intersection rectangle between this and rc rectangles.
   Rect createIntersect(const Rect& rc) const;
+
+  const Rect& operator+=(const Border& br);
+  const Rect& operator-=(const Border& br);
+  Rect operator+(const Border& br) const;
+  Rect operator-(const Border& br) const;
 
   bool operator==(const Rect& rc) const;
   bool operator!=(const Rect& rc) const;

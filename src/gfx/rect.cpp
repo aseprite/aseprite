@@ -7,6 +7,7 @@
 #include "gfx/rect.h"
 #include "gfx/point.h"
 #include "gfx/size.h"
+#include "gfx/border.h"
 
 #ifdef WIN32
   #define WIN32_LEAN_AND_MEAN
@@ -154,6 +155,24 @@ Rect& Rect::inflate(const Size& delta)
   return *this;
 }
 
+Rect& Rect::inflate(const Border& br)
+{
+  x -= br.left();
+  y -= br.top();
+  w += br.left() + br.right();
+  h += br.top() + br.bottom();
+  return *this;
+}
+
+Rect& Rect::deflate(const Border& br)
+{
+  x += br.left();
+  y += br.top();
+  w -= br.left() + br.right();
+  h -= br.top() + br.bottom();
+  return *this;
+}
+
 Rect& Rect::enlarge(int unit)
 {
   x -= unit;
@@ -221,6 +240,28 @@ Rect Rect::createIntersect(const Rect& rc) const
 		      y+h < rc.y+rc.h ? y+h: rc.y+rc.h));
   else
     return Rect();
+}
+
+const Rect& Rect::operator+=(const Border& br)
+{
+  inflate(br);
+  return *this;
+}
+
+const Rect& Rect::operator-=(const Border& br)
+{
+  deflate(br);
+  return *this;
+}
+
+Rect Rect::operator+(const Border& br) const
+{
+  return Rect(*this).inflate(br);
+}
+
+Rect Rect::operator-(const Border& br) const
+{
+  return Rect(*this).deflate(br);
 }
 
 bool Rect::operator==(const Rect& rc) const
