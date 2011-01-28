@@ -10,6 +10,7 @@
 #include <string>
 
 #include "gfx/rect.h"
+#include "gfx/border.h"
 #include "gui/component.h"
 #include "gui/jbase.h"
 #include "gui/jrect.h"
@@ -242,6 +243,9 @@ public:
 
   gfx::Rect getBounds() const;
   void setBounds(const gfx::Rect& rc);
+
+  gfx::Border getBorder() const;
+  void setBorder(const gfx::Border& border);
 
   // ===============================================================
   // REFRESH ISSUES

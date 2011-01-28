@@ -679,6 +679,19 @@ void Widget::setBounds(const Rect& rc)
   jwidget_set_rect(this, &jrc);
 }
 
+Border Widget::getBorder() const
+{
+  return Border(border_width.l, border_width.t, border_width.r, border_width.b);
+}
+
+void Widget::setBorder(const Border& br)
+{
+  border_width.l = br.left();
+  border_width.t = br.top();
+  border_width.r = br.right();
+  border_width.b = br.bottom();
+}
+
 void jwidget_relayout(JWidget widget)
 {
   jwidget_set_rect(widget, widget->rc);
