@@ -242,7 +242,7 @@ add_library(aseprite-library
   widgets/fileview.cpp
   widgets/groupbut.cpp
   widgets/menuitem.cpp
-  widgets/paledit.cpp
+  widgets/palette_view.cpp
   widgets/preview.cpp
   widgets/statebar.cpp
   widgets/tabs.cpp

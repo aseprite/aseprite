@@ -16,8 +16,8 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifndef WIDGETS_PALEDIT_H_INCLUDED
-#define WIDGETS_PALEDIT_H_INCLUDED
+#ifndef WIDGETS_PALETTE_VIEW_H_INCLUDED
+#define WIDGETS_PALETTE_VIEW_H_INCLUDED
 
 #include <allegro/color.h>
 
@@ -32,10 +32,10 @@ enum {
   PALETTE_EDITOR_RANGE_RECTANGULAR,
 };
 
-class PalEdit : public Widget
+class PaletteView : public Widget
 {
 public:
-  PalEdit(bool editable);
+  PaletteView(bool editable);
 
   int getRangeType();
 

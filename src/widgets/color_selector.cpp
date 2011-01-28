@@ -31,7 +31,7 @@
 #include "raster/image.h"
 #include "raster/palette.h"
 #include "widgets/color_selector.h"
-#include "widgets/paledit.h"
+#include "widgets/palette_view.h"
 
 enum {
   MODEL_RGB,
@@ -87,7 +87,7 @@ Frame* colorselector_new()
   Grid* grid1 = new Grid(2, false);
   Grid* grid2 = new Grid(5, false);
   Box* models_box = new Box(JI_HORIZONTAL);
-  PalEdit* pal = new PalEdit(false);
+  PaletteView* pal = new PaletteView(false);
   Label* idx = new Label("None");
   Widget* child;
   ColorSelector* colorselector = new ColorSelector;
@@ -262,7 +262,7 @@ static bool colorselector_msg_proc(JWidget widget, JMessage msg)
     case JM_SIGNAL:
       if (msg->signal.num == JI_SIGNAL_INIT_THEME) {
 	Widget* idx = widget->findChild("idx");
-	PalEdit* pal = static_cast<PalEdit*>(widget->findChild("pal"));
+	PaletteView* pal = static_cast<PaletteView*>(widget->findChild("pal"));
 	Widget* grid2 = widget->findChild("grid2");
 	int idxlen = ji_font_text_len(idx->getFont(), "Index=888");
 
@@ -363,7 +363,7 @@ static void colorselector_set_color2(JWidget widget, const Color& color,
 
 static void colorselector_set_paledit_index(JWidget widget, int index, bool select_index_entry)
 {
-  PalEdit* pal = static_cast<PalEdit*>(widget->findChild("pal"));
+  PaletteView* pal = static_cast<PaletteView*>(widget->findChild("pal"));
   Widget* idx = widget->findChild("idx");
   char buf[256];
 
@@ -477,7 +477,7 @@ static void slider_change_hook(Slider* widget)
 static bool paledit_change_hook(Widget* widget, void* data)
 {
   Frame* window = static_cast<Frame*>(widget->getRoot());
-  PalEdit* paledit = static_cast<PalEdit*>(widget);
+  PaletteView* paledit = static_cast<PaletteView*>(widget);
   bool array[256];
   Color color = colorselector_get_color(window);
   int i;

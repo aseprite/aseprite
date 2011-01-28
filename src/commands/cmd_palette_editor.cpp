@@ -51,7 +51,7 @@
 #include "widgets/color_bar.h"
 #include "widgets/colview.h"
 #include "widgets/editor.h"
-#include "widgets/paledit.h"
+#include "widgets/palette_view.h"
 #include "widgets/statebar.h"
 
 using namespace gfx;
@@ -162,7 +162,7 @@ static Slider *H_slider, *S_slider, *V_slider;
 static Widget *R_entry, *G_entry, *B_entry;
 static Widget *H_entry, *S_entry, *V_entry;
 static Widget *hex_entry;
-static PalEdit* palette_editor;
+static PaletteView* palette_editor;
 static Widget* more_options = NULL;
 static bool disable_colorbar_signals = false;
 
@@ -299,7 +299,7 @@ void PaletteEditorCommand::onExecute(Context* context)
       
   // Custom widgets
   if (first_time) {
-    palette_editor = new PalEdit(true);
+    palette_editor = new PaletteView(true);
     palette_editor->setBoxSize(4*jguiscale());
 
     jview_attach(palette_editor_view, palette_editor);

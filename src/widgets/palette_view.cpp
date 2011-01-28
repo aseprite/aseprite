@@ -35,11 +35,11 @@
 #include "raster/blend.h"
 #include "raster/image.h"
 #include "raster/palette.h"
-#include "widgets/paledit.h"
+#include "widgets/palette_view.h"
 
 #define COLOR_SIZE	(m_boxsize)
 
-static int paledit_type()
+static int palette_view_type()
 {
   static int type = 0;
   if (!type)
@@ -47,8 +47,8 @@ static int paledit_type()
   return type;
 }
 
-PalEdit::PalEdit(bool editable)
-  : Widget(paledit_type())
+PaletteView::PaletteView(bool editable)
+  : Widget(palette_view_type())
 {
   m_editable = editable;
   m_range_type = PALETTE_EDITOR_RANGE_NONE;
@@ -64,17 +64,17 @@ PalEdit::PalEdit(bool editable)
   this->child_spacing = 1 * jguiscale();
 }
 
-int PalEdit::getRangeType()
+int PaletteView::getRangeType()
 {
   return m_range_type;
 }
 
-int PalEdit::getColumns()
+int PaletteView::getColumns()
 {
   return m_columns;
 }
 
-void PalEdit::setColumns(int columns)
+void PaletteView::setColumns(int columns)
 {
   int old_columns = m_columns;
 
@@ -90,12 +90,12 @@ void PalEdit::setColumns(int columns)
   }
 }
 
-void PalEdit::setBoxSize(int boxsize)
+void PaletteView::setBoxSize(int boxsize)
 {
   m_boxsize = boxsize;
 }
 
-void PalEdit::selectColor(int index)
+void PaletteView::selectColor(int index)
 {
   ASSERT(index >= 0 && index <= 255);
 
@@ -113,7 +113,7 @@ void PalEdit::selectColor(int index)
   }
 }
 
-void PalEdit::selectRange(int begin, int end, int range_type)
+void PaletteView::selectRange(int begin, int end, int range_type)
 {
 /*   ASSERT(begin >= 0 && begin <= 255); */
 /*   ASSERT(end >= 0 && end <= 255); */
@@ -135,7 +135,7 @@ static void swap_color(Palette* palette, int i1, int i2)
   palette->setEntry(i1, c2);
 }
 
-void PalEdit::moveSelection(int x, int y)
+void PaletteView::moveSelection(int x, int y)
 {
   if (!m_editable)
     return;
@@ -266,17 +266,17 @@ void PalEdit::moveSelection(int x, int y)
   jmanager_refresh_screen();
 }
 
-int PalEdit::get1stColor()
+int PaletteView::get1stColor()
 {
   return m_color[0];
 }
 
-int PalEdit::get2ndColor()
+int PaletteView::get2ndColor()
 {
   return m_color[1];
 }
 
-void PalEdit::getSelectedEntries(bool array[256])
+void PaletteView::getSelectedEntries(bool array[256])
 {
   memset(array, false, sizeof(bool)*256);
 
@@ -326,7 +326,7 @@ void PalEdit::getSelectedEntries(bool array[256])
   }
 }
 
-bool PalEdit::onProcessMessage(JMessage msg)
+bool PaletteView::onProcessMessage(JMessage msg)
 {
   switch (msg->type) {
 
@@ -558,7 +558,7 @@ bool PalEdit::onProcessMessage(JMessage msg)
   return Widget::onProcessMessage(msg);
 }
 
-void PalEdit::request_size(int* w, int* h)
+void PaletteView::request_size(int* w, int* h)
 {
   div_t d = div(256, m_columns);
   int cols = m_columns;
@@ -571,7 +571,7 @@ void PalEdit::request_size(int* w, int* h)
     + rows*COLOR_SIZE + (rows-1)*this->child_spacing;
 }
 
-void PalEdit::update_scroll(int color)
+void PaletteView::update_scroll(int color)
 {
   Widget* view = jwidget_get_view(this);
   if (view != NULL) {
