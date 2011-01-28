@@ -1576,65 +1576,66 @@ BITMAP* SkinTheme::get_toolicon(const char* tool_id) const
     return NULL;
 }
 
-#define draw_bounds_template(_bmp, _nw, _n, _ne, _e, _se, _s, _sw, _w, draw_func) \
-  {									\
-    int x, y;								\
-    int cx1, cy1, cx2, cy2;						\
-    get_clip_rect(_bmp, &cx1, &cy1, &cx2, &cy2);			\
-									\
-    /* top */								\
-									\
-    draw_func(_bmp, m_part[_nw], x1, y1);				\
-									\
-    if (my_add_clip_rect(_bmp,						\
-			 x1+m_part[_nw]->w, y1,				\
-			 x2-m_part[_ne]->w, y2)) {			\
-      for (x = x1+m_part[_nw]->w;					\
-	   x <= x2-m_part[_ne]->w;					\
-	   x += m_part[_n]->w) {					\
-	draw_func(_bmp, m_part[_n], x, y1);				\
-      }									\
-    }									\
-    set_clip_rect(_bmp, cx1, cy1, cx2, cy2);				\
-									\
-    draw_func(_bmp, m_part[_ne], x2-m_part[_ne]->w+1, y1);		\
-									\
-    /* bottom */							\
-									\
-    draw_func(_bmp, m_part[_sw], x1, y2-m_part[_sw]->h+1);		\
-									\
-    if (my_add_clip_rect(_bmp,						\
-			 x1+m_part[_sw]->w, y1,				\
-			 x2-m_part[_se]->w, y2)) {			\
-      for (x = x1+m_part[_sw]->w;					\
-	   x <= x2-m_part[_se]->w;					\
-	   x += m_part[_s]->w) {					\
-	draw_func(_bmp, m_part[_s], x, y2-m_part[_s]->h+1);		\
-      }									\
-    }									\
-    set_clip_rect(_bmp, cx1, cy1, cx2, cy2);				\
-									\
-    draw_func(_bmp, m_part[_se], x2-m_part[_se]->w+1, y2-m_part[_se]->h+1); \
-									\
-    if (my_add_clip_rect(_bmp,						\
-			 x1, y1+m_part[_nw]->h,				\
-			 x2, y2-m_part[_sw]->h)) {			\
-      /* left */							\
-      for (y = y1+m_part[_nw]->h;					\
-	   y <= y2-m_part[_sw]->h;					\
-	   y += m_part[_w]->h) {					\
-	draw_func(_bmp, m_part[_w], x1, y);				\
-      }									\
-									\
-      /* right */							\
-      for (y = y1+m_part[_ne]->h;					\
-	   y <= y2-m_part[_se]->h;					\
-	   y += m_part[_e]->h) {					\
-	draw_func(_bmp, m_part[_e], x2-m_part[_e]->w+1, y);		\
-      }									\
-    }									\
-    set_clip_rect(_bmp, cx1, cy1, cx2, cy2);				\
+void SkinTheme::draw_bounds_template(BITMAP* bmp, int x1, int y1, int x2, int y2,
+				     int nw, int n, int ne, int e, int se, int s, int sw, int w)
+{
+  int x, y;
+  int cx1, cy1, cx2, cy2;
+  get_clip_rect(bmp, &cx1, &cy1, &cx2, &cy2);
+
+  /* top */
+
+  draw_trans_sprite(bmp, m_part[nw], x1, y1);
+
+  if (my_add_clip_rect(bmp,
+		       x1+m_part[nw]->w, y1,
+		       x2-m_part[ne]->w, y2)) {
+    for (x = x1+m_part[nw]->w;
+	 x <= x2-m_part[ne]->w;
+	 x += m_part[n]->w) {
+      draw_trans_sprite(bmp, m_part[n], x, y1);
+    }
   }
+  set_clip_rect(bmp, cx1, cy1, cx2, cy2);
+
+  draw_trans_sprite(bmp, m_part[ne], x2-m_part[ne]->w+1, y1);
+
+  /* bottom */
+
+  draw_trans_sprite(bmp, m_part[sw], x1, y2-m_part[sw]->h+1);
+
+  if (my_add_clip_rect(bmp,
+		       x1+m_part[sw]->w, y1,
+		       x2-m_part[se]->w, y2)) {
+    for (x = x1+m_part[sw]->w;
+	 x <= x2-m_part[se]->w;
+	 x += m_part[s]->w) {
+      draw_trans_sprite(bmp, m_part[s], x, y2-m_part[s]->h+1);
+    }
+  }
+  set_clip_rect(bmp, cx1, cy1, cx2, cy2);
+
+  draw_trans_sprite(bmp, m_part[se], x2-m_part[se]->w+1, y2-m_part[se]->h+1);
+
+  if (my_add_clip_rect(bmp,
+		       x1, y1+m_part[nw]->h,
+		       x2, y2-m_part[sw]->h)) {
+    /* left */
+    for (y = y1+m_part[nw]->h;
+	 y <= y2-m_part[sw]->h;
+	 y += m_part[w]->h) {
+      draw_trans_sprite(bmp, m_part[w], x1, y);
+    }
+
+    /* right */
+    for (y = y1+m_part[ne]->h;
+	 y <= y2-m_part[se]->h;
+	 y += m_part[e]->h) {
+      draw_trans_sprite(bmp, m_part[e], x2-m_part[e]->w+1, y);
+    }
+  }
+  set_clip_rect(bmp, cx1, cy1, cx2, cy2);
+}
 
 void SkinTheme::draw_bounds_array(BITMAP* bmp, int x1, int y1, int x2, int y2, int parts[8])
 {
@@ -1648,17 +1649,17 @@ void SkinTheme::draw_bounds_array(BITMAP* bmp, int x1, int y1, int x2, int y2, i
   int w  = parts[7];
 
   set_alpha_blender();
-  draw_bounds_template(bmp,
+  draw_bounds_template(bmp, x1, y1, x2, y2,
 		       nw, n, ne, e,
-		       se, s, sw, w, draw_trans_sprite);
+		       se, s, sw, w);
 }
 
 void SkinTheme::draw_bounds_nw(BITMAP* bmp, int x1, int y1, int x2, int y2, int nw, int bg)
 {
   set_alpha_blender();
-  draw_bounds_template(bmp,
+  draw_bounds_template(bmp, x1, y1, x2, y2,
 		       nw+0, nw+1, nw+2, nw+3,
-		       nw+4, nw+5, nw+6, nw+7, draw_trans_sprite);
+		       nw+4, nw+5, nw+6, nw+7);
 
   // Center 
   if (bg >= 0) {
