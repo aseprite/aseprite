@@ -20,7 +20,7 @@
 #define WIDGETS_COLVIEW_H_INCLUDED
 
 #include "app/color.h"
-#include "gui/jbase.h"
+#include "gui/base.h"
 
 // TODO use some JI_SIGNAL_USER
 #define SIGNAL_COLORVIEWER_SELECT   0x10002

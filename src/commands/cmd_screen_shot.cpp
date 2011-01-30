@@ -20,10 +20,9 @@
 
 #include <allegro.h>
 
-#include "gui/jsystem.h"
-
 #include "commands/command.h"
 #include "file/file.h"
+#include "gui/system.h"
 #include "raster/raster.h"
 #include "util/misc.h"
 

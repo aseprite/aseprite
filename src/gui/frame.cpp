@@ -12,8 +12,8 @@
 #include <allegro.h>
 
 #include "gfx/size.h"
-#include "gui/jinete.h"
-#include "gui/jintern.h"
+#include "gui/gui.h"
+#include "gui/intern.h"
 #include "gui/preferred_size_event.h"
 
 using namespace gfx;

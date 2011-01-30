@@ -19,7 +19,7 @@
 #ifndef CORE_MODULES_H_INCLUDED
 #define CORE_MODULES_H_INCLUDED
 
-#include "gui/jbase.h"
+#include "gui/base.h"
 
 #define REQUIRE_INTERFACE    1
 

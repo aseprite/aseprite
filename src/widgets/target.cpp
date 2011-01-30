@@ -26,7 +26,7 @@
 #include "effect/effect.h"
 #include "gui/box.h"
 #include "gui/button.h"
-#include "gui/jhook.h"
+#include "gui/hook.h"
 #include "gui/theme.h"
 #include "gui/widget.h"
 #include "modules/gfx.h"

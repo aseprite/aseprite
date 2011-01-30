@@ -26,7 +26,7 @@
 #include "console.h"
 #include "dialogs/filesel.h"
 #include "file/file.h"
-#include "gui/jinete.h"
+#include "gui/gui.h"
 #include "modules/gui.h"
 #include "raster/sprite.h"
 #include "recent_files.h"

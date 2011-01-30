@@ -23,7 +23,7 @@
 #include <stdio.h>
 #include <string.h>
 
-#include "gui/jinete.h"
+#include "gui/gui.h"
 
 #include "app.h"
 #include "commands/command.h"

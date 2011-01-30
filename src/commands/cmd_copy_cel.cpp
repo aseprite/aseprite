@@ -18,11 +18,10 @@
 
 #include "config.h"
 
-#include "gui/jbase.h"
-
 #include "commands/command.h"
-#include "sprite_wrappers.h"
 #include "dialogs/aniedit.h"
+#include "gui/base.h"
+#include "sprite_wrappers.h"
 #include "util/celmove.h"
 
 class CopyCelCommand : public Command

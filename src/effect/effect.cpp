@@ -21,9 +21,9 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "gui/jmanager.h"
-#include "gui/jrect.h"
-#include "gui/jregion.h"
+#include "gui/manager.h"
+#include "gui/rect.h"
+#include "gui/region.h"
 #include "gui/view.h"
 #include "gui/widget.h"
 

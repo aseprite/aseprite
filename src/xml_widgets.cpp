@@ -26,7 +26,7 @@
 
 #include "base/bind.h"
 #include "base/memory.h"
-#include "gui/jinete.h"
+#include "gui/gui.h"
 #include "modules/gui.h"
 #include "xml_exception.h"
 

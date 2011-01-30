@@ -18,12 +18,11 @@
 
 #include "config.h"
 
-#include "gui/jbase.h"
-
 #include "commands/command.h"
 #include "dialogs/aniedit.h"
-#include "util/celmove.h"
+#include "gui/base.h"
 #include "sprite_wrappers.h"
+#include "util/celmove.h"
 
 class MoveCelCommand : public Command
 {

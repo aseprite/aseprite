@@ -20,7 +20,7 @@
 
 #include <memory>
 #include <allegro.h>
-#include "gui/jinete.h"
+#include "gui/gui.h"
 
 #include "commands/command.h"
 #include "commands/commands.h"

@@ -22,7 +22,7 @@
 #include <allegro/unicode.h>
 
 #include "base/bind.h"
-#include "gui/jinete.h"
+#include "gui/gui.h"
 
 #include "core/cfg.h"
 #include "dialogs/repo.h"

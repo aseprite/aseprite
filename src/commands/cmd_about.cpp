@@ -21,7 +21,7 @@
 #include <allegro.h>
 
 #include "base/bind.h"
-#include "gui/jinete.h"
+#include "gui/gui.h"
 
 #include "commands/command.h"
 #include "modules/gui.h"

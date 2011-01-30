@@ -2,47 +2,47 @@
 # Copyright (C) 2001-2011  David Capello
 
 add_library(gui-lib
+  accel.cpp
   alert.cpp
   box.cpp
   button.cpp
+  clipboard.cpp
+  combobox.cpp
   component.cpp
+  custom_label.cpp
+  draw.cpp
   entry.cpp
   event.cpp
+  font.cpp
+  fontbmp.cpp
   frame.cpp
   graphics.cpp
   grid.cpp
+  gui.cpp
+  hook.cpp
   image_view.cpp
-  jaccel.cpp
-  jclipboard.cpp
-  jcombobox.cpp
-  jcustom_label.cpp
-  jdraw.cpp
-  jfont.cpp
-  jfontbmp.cpp
-  jhook.cpp
-  jinete.cpp
-  jintern.cpp
-  jlink_label.cpp
-  jlist.cpp
-  jlistbox.cpp
-  jmanager.cpp
-  jmenu.cpp
-  jmessage.cpp
-  jpanel.cpp
-  jquickmenu.cpp
-  jrect.cpp
-  jregion.cpp
-  jsep.cpp
-  jstream.cpp
-  jsystem.cpp
-  jtextbox.cpp
-  jtooltips.cpp
+  intern.cpp
   label.cpp
+  link_label.cpp
+  list.cpp
+  listbox.cpp
+  manager.cpp
+  menu.cpp
+  message.cpp
   paint_event.cpp
+  panel.cpp
   popup_frame.cpp
   preferred_size_event.cpp
   property.cpp
+  quickmenu.cpp
+  rect.cpp
+  region.cpp
+  separator.cpp
   slider.cpp
+  stream.cpp
+  system.cpp
+  textbox.cpp
   theme.cpp
+  tooltips.cpp
   view.cpp
   widget.cpp)

@@ -20,8 +20,8 @@
 
 #include "base/memory.h"
 #include "gui/graphics.h"
-#include "gui/jinete.h"
-#include "gui/jintern.h"
+#include "gui/gui.h"
+#include "gui/intern.h"
 #include "gui/paint_event.h"
 #include "gui/preferred_size_event.h"
 

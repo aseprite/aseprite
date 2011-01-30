@@ -22,7 +22,7 @@
 
 #include "app/color.h"
 #include "app/color_utils.h"
-#include "gui/jinete.h"
+#include "gui/gui.h"
 #include "gui/preferred_size_event.h"
 #include "modules/gfx.h"
 #include "modules/gui.h"

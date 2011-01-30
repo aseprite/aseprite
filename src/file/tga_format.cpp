@@ -23,7 +23,7 @@
 
 #include <allegro/color.h>
 
-#include "gui/jbase.h"
+#include "gui/base.h"
 
 #include "file/file.h"
 #include "file/file_format.h"

@@ -19,7 +19,7 @@
 #ifndef UTIL_CLIPBOARD_H_INCLUDED
 #define UTIL_CLIPBOARD_H_INCLUDED
 
-#include "gui/jbase.h"
+#include "gui/base.h"
 
 class Image;
 class SpriteReader;

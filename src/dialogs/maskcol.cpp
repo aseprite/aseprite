@@ -26,7 +26,7 @@
 #include "gui/box.h"
 #include "gui/button.h"
 #include "gui/frame.h"
-#include "gui/jhook.h"
+#include "gui/hook.h"
 #include "gui/label.h"
 #include "gui/slider.h"
 #include "gui/widget.h"

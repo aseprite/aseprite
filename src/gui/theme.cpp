@@ -9,11 +9,11 @@
 #include <allegro.h>
 #include <allegro/internal/aintern.h>
 
-#include "gui/jdraw.h"
-#include "gui/jfont.h"
-#include "gui/jmanager.h"
-#include "gui/jrect.h"
-#include "gui/jsystem.h"
+#include "gui/draw.h"
+#include "gui/font.h"
+#include "gui/manager.h"
+#include "gui/rect.h"
+#include "gui/system.h"
 #include "gui/theme.h"
 #include "gui/view.h"
 #include "gui/widget.h"

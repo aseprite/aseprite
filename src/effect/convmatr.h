@@ -19,7 +19,7 @@
 #ifndef EFFECT_CONVMATR_H_INCLUDED
 #define EFFECT_CONVMATR_H_INCLUDED
 
-#include "gui/jbase.h"
+#include "gui/base.h"
 #include "tiled_mode.h"
 
 struct Effect;

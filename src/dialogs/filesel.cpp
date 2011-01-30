@@ -35,7 +35,7 @@
 #include "base/split_string.h"
 #include "core/cfg.h"
 #include "file/file.h"
-#include "gui/jinete.h"
+#include "gui/gui.h"
 #include "modules/gfx.h"
 #include "modules/gui.h"
 #include "recent_files.h"

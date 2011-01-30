@@ -19,7 +19,7 @@
 #ifndef MODULES_ROOTMENU_H_INCLUDED
 #define MODULES_ROOTMENU_H_INCLUDED
 
-#include "gui/jbase.h"
+#include "gui/base.h"
 
 enum {
   ACCEL_FOR_UNDO,

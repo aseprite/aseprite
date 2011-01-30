@@ -10,10 +10,10 @@
 #include <allegro/gfx.h>
 
 #include "gui/image_view.h"
-#include "gui/jdraw.h"
-#include "gui/jmessage.h"
-#include "gui/jrect.h"
-#include "gui/jsystem.h"
+#include "gui/draw.h"
+#include "gui/message.h"
+#include "gui/rect.h"
+#include "gui/system.h"
 #include "gui/theme.h"
 
 static bool image_msg_proc(JWidget widget, JMessage msg);

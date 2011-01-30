@@ -18,7 +18,7 @@
 
 #include "config.h"
 
-#include "gui/jinete.h"
+#include "gui/gui.h"
 
 #include "commands/command.h"
 #include "modules/gui.h"

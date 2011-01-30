@@ -10,9 +10,9 @@
 
 #include "gfx/size.h"
 #include "gui/box.h"
-#include "gui/jlist.h"
-#include "gui/jmessage.h"
-#include "gui/jrect.h"
+#include "gui/list.h"
+#include "gui/message.h"
+#include "gui/rect.h"
 #include "gui/preferred_size_event.h"
 #include "gui/theme.h"
 

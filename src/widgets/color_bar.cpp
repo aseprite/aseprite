@@ -29,7 +29,7 @@
 #include "core/cfg.h"
 #include "gfx/point.h"
 #include "gfx/rect.h"
-#include "gui/jinete.h"
+#include "gui/gui.h"
 #include "modules/editors.h"
 #include "modules/gfx.h"
 #include "modules/gui.h"

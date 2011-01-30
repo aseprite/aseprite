@@ -7,7 +7,7 @@
 #ifndef GUI_THEME_H_INCLUDED
 #define GUI_THEME_H_INCLUDED
 
-#include "gui/jbase.h"
+#include "gui/base.h"
 
 struct BITMAP;
 struct FONT;

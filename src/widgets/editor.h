@@ -21,7 +21,7 @@
 
 #include "app/color.h"
 #include "base/signal.h"
-#include "gui/jbase.h"
+#include "gui/base.h"
 #include "gui/widget.h"
 
 #define MIN_ZOOM 0

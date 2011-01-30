@@ -18,12 +18,9 @@
 
 #include "config.h"
 
-#include <gui/jlist.h>
-
-#include "sprite_wrappers.h"
-#include "console.h"
 #include "app.h"
 #include "app/color.h"
+#include "console.h"
 #include "modules/gui.h"
 #include "raster/blend.h"
 #include "raster/cel.h"
@@ -32,6 +29,7 @@
 #include "raster/sprite.h"
 #include "raster/stock.h"
 #include "raster/undo.h"
+#include "sprite_wrappers.h"
 #include "util/celmove.h"
 
 /* these variables indicate what cel to move (and the sprite's

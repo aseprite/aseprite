@@ -20,10 +20,9 @@
 
 #include <allegro/unicode.h>
 
-#include "gui/jbase.h"
-
-#include "commands/command.h"
 #include "app.h"
+#include "commands/command.h"
+#include "gui/base.h"
 #include "widgets/color_bar.h"
 
 class SwitchColorsCommand : public Command

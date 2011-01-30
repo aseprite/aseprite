@@ -6,7 +6,7 @@
 
 #include "config.h"
 
-#include "gui/jmessage.h"
+#include "gui/message.h"
 #include "gui/label.h"
 #include "gui/theme.h"
 

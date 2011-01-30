@@ -24,7 +24,7 @@
 #include <string>
 
 #include "gfx/rect.h"
-#include "gui/jrect.h"
+#include "gui/rect.h"
 #include "gui/theme.h"
 
 // Available parts in the skin sheet

@@ -25,7 +25,7 @@
 #include <allegro.h>
 
 #ifdef TEST_GUI
-  #include "gui/jinete.h"
+  #include "gui/gui.h"
 #endif
 
 #ifdef main

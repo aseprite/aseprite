@@ -20,7 +20,7 @@
 
 #include <memory>
 
-#include "gui/jlist.h"
+#include "gui/list.h"
 
 #include "raster/blend.h"
 #include "raster/cel.h"

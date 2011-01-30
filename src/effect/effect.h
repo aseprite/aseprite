@@ -22,7 +22,7 @@
 #include <stdlib.h>
 #include <cstring>
 #include "sprite_wrappers.h"
-#include "gui/jbase.h"
+#include "gui/base.h"
 #include "tiled_mode.h"
 
 class Image;

@@ -22,7 +22,7 @@
 #include <allegro/draw.h>
 #include <allegro/gfx.h>
 
-#include "gui/jlist.h"
+#include "gui/list.h"
 #include "modules/gfx.h"
 #include "raster/blend.h"
 #include "raster/cel.h"

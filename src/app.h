@@ -21,7 +21,7 @@
 
 #include "base/signal.h"
 #include "base/string.h"
-#include "gui/jbase.h"
+#include "gui/base.h"
 
 #include <vector>
 

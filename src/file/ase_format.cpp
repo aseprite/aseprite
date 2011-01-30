@@ -20,7 +20,7 @@
 
 #include <stdio.h>
 
-#include "gui/jlist.h"
+#include "gui/list.h"
 #include "zlib.h"
 
 #include "file/file.h"

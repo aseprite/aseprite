@@ -26,7 +26,7 @@
 #include "core/cfg.h"
 #include "effect/convmatr.h"
 #include "effect/effect.h"
-#include "gui/jlist.h"
+#include "gui/list.h"
 #include "modules/palettes.h"
 #include "raster/image.h"
 #include "raster/palette.h"

@@ -19,7 +19,7 @@
 #ifndef COMMANDS_COMMANDS_H_INCLUDED
 #define COMMANDS_COMMANDS_H_INCLUDED
 
-#include "gui/jbase.h"
+#include "gui/base.h"
 
 struct CommandId
 {

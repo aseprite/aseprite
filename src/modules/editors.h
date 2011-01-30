@@ -19,7 +19,7 @@
 #ifndef MODULES_EDITORS_H_INCLUDED
 #define MODULES_EDITORS_H_INCLUDED
 
-#include "gui/jbase.h"
+#include "gui/base.h"
 #include "app/color.h"
 
 class Editor;

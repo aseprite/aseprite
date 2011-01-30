@@ -20,10 +20,9 @@
 
 #include <allegro/unicode.h>
 
-#include "gui/jlist.h"
-
 #include "commands/command.h"
 #include "commands/params.h"
+#include "gui/list.h"
 #include "modules/editors.h"
 #include "modules/gui.h"
 #include "raster/cel.h"
@@ -32,9 +31,9 @@
 #include "raster/sprite.h"
 #include "raster/stock.h"
 #include "raster/undo.h"
-#include "util/misc.h"
-#include "undoable.h"
 #include "sprite_wrappers.h"
+#include "undoable.h"
+#include "util/misc.h"
 
 class FlipCommand : public Command
 {

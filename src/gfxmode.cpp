@@ -20,7 +20,7 @@
 
 #include <allegro.h>
 
-#include "gui/jmanager.h"
+#include "gui/manager.h"
 #include "gui/frame.h"
 
 #include "app.h"

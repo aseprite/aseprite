@@ -19,8 +19,8 @@
 #include "config.h"
 
 #include "effect/effect.h"
-#include "gui/jmanager.h"
-#include "gui/jmessage.h"
+#include "gui/manager.h"
+#include "gui/message.h"
 #include "gui/widget.h"
 #include "raster/sprite.h"
 #include "util/render.h"

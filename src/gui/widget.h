@@ -12,14 +12,14 @@
 #include "gfx/rect.h"
 #include "gfx/border.h"
 #include "gui/component.h"
-#include "gui/jbase.h"
-#include "gui/jrect.h"
+#include "gui/base.h"
+#include "gui/rect.h"
 
 class PreferredSizeEvent;
 class PaintEvent;
 
 #ifndef NDEBUG
-#include "gui/jintern.h"
+#include "gui/intern.h"
 #define ASSERT_VALID_WIDGET(widget) ASSERT((widget) != NULL &&		\
 					   _ji_is_valid_widget((widget)))
 #else

@@ -20,7 +20,7 @@
 
 #include <allegro/unicode.h>
 
-#include "gui/jinete.h"
+#include "gui/gui.h"
 
 #include "app.h"
 #include "commands/command.h"

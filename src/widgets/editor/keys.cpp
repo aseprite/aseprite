@@ -22,8 +22,8 @@
 
 #include "app.h"
 #include "app/color.h"
-#include "gui/jrect.h"
-#include "gui/jsystem.h"
+#include "gui/rect.h"
+#include "gui/system.h"
 #include "gui/view.h"
 #include "gui/widget.h"
 #include "modules/editors.h"

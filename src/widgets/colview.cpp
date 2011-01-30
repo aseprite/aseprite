@@ -21,11 +21,11 @@
 #include <allegro.h>
 #include <string.h>
 
-#include "gui/jdraw.h"
-#include "gui/jfont.h"
-#include "gui/jmessage.h"
-#include "gui/jrect.h"
-#include "gui/jsystem.h"
+#include "gui/draw.h"
+#include "gui/font.h"
+#include "gui/message.h"
+#include "gui/rect.h"
+#include "gui/system.h"
 #include "gui/theme.h"
 #include "gui/widget.h"
 #include "modules/gfx.h"

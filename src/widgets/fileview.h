@@ -19,7 +19,7 @@
 #ifndef WIDGETS_FILEVIEW_H_INCLUDED
 #define WIDGETS_FILEVIEW_H_INCLUDED
 
-#include "gui/jbase.h"
+#include "gui/base.h"
 #include "base/string.h"
 #include "core/file_system.h"
 

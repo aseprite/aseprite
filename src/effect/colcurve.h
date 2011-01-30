@@ -19,7 +19,7 @@
 #ifndef EFFECT_COLCURVE_H_INCLUDED
 #define EFFECT_COLCURVE_H_INCLUDED
 
-#include "gui/jbase.h"
+#include "gui/base.h"
 
 struct Effect;
 

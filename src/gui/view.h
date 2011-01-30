@@ -7,7 +7,7 @@
 #ifndef GUI_VIEW_H_INCLUDED
 #define GUI_VIEW_H_INCLUDED
 
-#include "gui/jbase.h"
+#include "gui/base.h"
 
 JWidget jview_new();
 

@@ -22,7 +22,7 @@
 #include <allegro/file.h>
 #include <allegro/unicode.h>
 
-#include "gui/jrect.h"
+#include "gui/rect.h"
 
 #include "core/cfg.h"
 #include "resource_finder.h"

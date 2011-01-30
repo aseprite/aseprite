@@ -20,7 +20,7 @@
 #define MODULES_GFX_H_INCLUDED
 
 #include "app/color.h"
-#include "gui/jbase.h"
+#include "gui/base.h"
 
 namespace gfx { class Rect; }
 

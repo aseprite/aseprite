@@ -21,9 +21,9 @@
 #include <allegro.h>
 #include <allegro/internal/aintern.h>
 
-#include "gui/jintern.h"
-#include "gui/jrect.h"
-#include "gui/jsystem.h"
+#include "gui/intern.h"
+#include "gui/rect.h"
+#include "gui/system.h"
 #include "gui/theme.h"
 
 #include "app.h"

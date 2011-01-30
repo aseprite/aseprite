@@ -22,8 +22,8 @@
 #include <allegro.h>
 #include <cmath>
 
-#include "gui/jinete.h"
-#include "gui/jintern.h"
+#include "gui/gui.h"
+#include "gui/intern.h"
 #include "modules/gfx.h"
 #include "modules/gui.h"
 #include "skin/skin_theme.h"

@@ -24,7 +24,7 @@
 #include "app.h"
 #include "app/color.h"
 #include "base/bind.h"
-#include "gui/jinete.h"
+#include "gui/gui.h"
 #include "modules/gfx.h"
 #include "modules/gui.h"
 #include "modules/palettes.h"

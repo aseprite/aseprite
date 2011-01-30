@@ -29,7 +29,7 @@
 #include "file/file.h"
 #include "file/file_format.h"
 #include "file/format_options.h"
-#include "gui/jinete.h"
+#include "gui/gui.h"
 #include "modules/gui.h"
 #include "raster/raster.h"
 

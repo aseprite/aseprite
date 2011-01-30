@@ -19,7 +19,7 @@
 #ifndef WIDGETS_PREVIEW_H_INCLUDED
 #define WIDGETS_PREVIEW_H_INCLUDED
 
-#include "gui/jbase.h"
+#include "gui/base.h"
 
 struct Effect;
 

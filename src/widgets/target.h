@@ -19,7 +19,7 @@
 #ifndef WIDGETS_TARGET_H_INCLUDED
 #define WIDGETS_TARGET_H_INCLUDED
 
-#include "gui/jbase.h"
+#include "gui/base.h"
 
 /* TODO use some JI_SIGNAL_USER */
 #define SIGNAL_TARGET_BUTTON_CHANGE   0x10003

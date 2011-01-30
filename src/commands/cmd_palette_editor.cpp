@@ -35,7 +35,7 @@
 #include "gfx/hsv.h"
 #include "gfx/rgb.h"
 #include "gfx/size.h"
-#include "gui/jinete.h"
+#include "gui/gui.h"
 #include "modules/editors.h"
 #include "modules/gui.h"
 #include "modules/palettes.h"

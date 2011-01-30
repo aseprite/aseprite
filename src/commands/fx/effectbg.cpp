@@ -27,7 +27,7 @@
 #include "base/thread.h"
 #include "core/cfg.h"
 #include "effect/effect.h"
-#include "gui/jinete.h"
+#include "gui/gui.h"
 #include "modules/editors.h"
 #include "modules/gui.h"
 #include "raster/sprite.h"

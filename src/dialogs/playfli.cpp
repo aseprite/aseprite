@@ -22,8 +22,8 @@
 #include <stdio.h>
 #include <string.h>
 
-#include "gui/jmanager.h"
-#include "gui/jsystem.h"
+#include "gui/manager.h"
+#include "gui/system.h"
 
 #include "app.h"
 #include "file/fli/fli.h"

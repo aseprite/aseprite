@@ -25,11 +25,10 @@
 #include <psapi.h>
 #endif
 
-#include "gui/jsystem.h"
-#include "gui/theme.h"
-
 #include "app.h"
 #include "commands/command.h"
+#include "gui/system.h"
+#include "gui/theme.h"
 #include "skin/skin_theme.h"
 #include "sprite_wrappers.h"
 #include "widgets/statebar.h"

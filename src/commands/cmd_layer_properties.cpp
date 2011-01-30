@@ -19,7 +19,7 @@
 #include "config.h"
 
 #include "base/bind.h"
-#include "gui/jinete.h"
+#include "gui/gui.h"
 
 #include "app.h"
 #include "commands/command.h"

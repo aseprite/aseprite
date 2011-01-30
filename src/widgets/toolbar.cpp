@@ -28,7 +28,7 @@
 #include "commands/command.h"
 #include "commands/commands.h"
 #include "gfx/size.h"
-#include "gui/jinete.h"
+#include "gui/gui.h"
 #include "modules/gfx.h"
 #include "modules/gui.h"
 #include "skin/skin_theme.h"

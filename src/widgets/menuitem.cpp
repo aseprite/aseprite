@@ -24,9 +24,9 @@
 
 #include "commands/command.h"
 #include "commands/params.h"
-#include "gui/jhook.h"
-#include "gui/jmenu.h"
-#include "gui/jmessage.h"
+#include "gui/hook.h"
+#include "gui/menu.h"
+#include "gui/message.h"
 #include "gui/widget.h"
 #include "modules/gui.h"
 #include "ui_context.h"

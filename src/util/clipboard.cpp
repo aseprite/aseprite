@@ -21,7 +21,7 @@
 #include <allegro.h>
 #include <allegro/internal/aintern.h>
 
-#include "gui/jinete.h"
+#include "gui/gui.h"
 
 #include "app.h"
 #include "console.h"

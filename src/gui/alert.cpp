@@ -35,7 +35,7 @@
 #include <stdio.h>
 
 #include "base/bind.h"
-#include "gui/jinete.h"
+#include "gui/gui.h"
 
 Alert::Alert()
   : Frame(false, "")

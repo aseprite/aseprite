@@ -20,7 +20,7 @@
 #define WIDGETS_STATEBAR_H_INCLUDED
 
 #include "app/color.h"
-#include "gui/jbase.h"
+#include "gui/base.h"
 #include "gui/widget.h"
 
 class Box;

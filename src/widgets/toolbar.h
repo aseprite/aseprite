@@ -19,7 +19,7 @@
 #ifndef WIDGETS_TOOLBAR_H_INCLUDED
 #define WIDGETS_TOOLBAR_H_INCLUDED
 
-#include "gui/jbase.h"
+#include "gui/base.h"
 
 JWidget toolbar_new();
 

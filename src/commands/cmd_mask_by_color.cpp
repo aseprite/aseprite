@@ -18,10 +18,9 @@
 
 #include "config.h"
 
-#include "gui/jbase.h"
-
 #include "commands/command.h"
 #include "dialogs/maskcol.h"
+#include "gui/base.h"
 #include "sprite_wrappers.h"
 
 //////////////////////////////////////////////////////////////////////

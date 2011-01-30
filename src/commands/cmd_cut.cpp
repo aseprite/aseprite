@@ -18,14 +18,13 @@
 
 #include "config.h"
 
-#include "gui/jbase.h"
-
 #include "commands/command.h"
+#include "gui/base.h"
 #include "raster/layer.h"
 #include "raster/mask.h"
 #include "raster/sprite.h"
-#include "util/clipboard.h"
 #include "sprite_wrappers.h"
+#include "util/clipboard.h"
 #include "util/misc.h"
 
 class CutCommand : public Command

@@ -12,12 +12,12 @@
 #include <stdio.h>
 
 #include "gui/entry.h"
-#include "gui/jclipboard.h"
-#include "gui/jfont.h"
-#include "gui/jmanager.h"
-#include "gui/jmessage.h"
-#include "gui/jrect.h"
-#include "gui/jsystem.h"
+#include "gui/clipboard.h"
+#include "gui/font.h"
+#include "gui/manager.h"
+#include "gui/message.h"
+#include "gui/rect.h"
+#include "gui/system.h"
 #include "gui/preferred_size_event.h"
 #include "gui/theme.h"
 #include "gui/widget.h"

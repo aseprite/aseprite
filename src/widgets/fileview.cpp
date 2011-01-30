@@ -27,7 +27,7 @@
 #include "console.h"
 #include "dialogs/filesel.h"
 #include "file/file.h"
-#include "gui/jinete.h"
+#include "gui/gui.h"
 #include "modules/editors.h"
 #include "modules/gfx.h"
 #include "modules/gui.h"

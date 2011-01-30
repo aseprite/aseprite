@@ -20,7 +20,7 @@
 #define WIDGETS_COLOR_SELECTOR_H_INCLUDED
 
 #include "app/color.h"
-#include "gui/jbase.h"
+#include "gui/base.h"
 
 class Frame;
 

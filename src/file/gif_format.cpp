@@ -23,7 +23,7 @@
 #include "file/file_format.h"
 #include "raster/raster.h"
 #include "util/autocrop.h"
-#include "gui/jinete.h"
+#include "gui/gui.h"
 #include "modules/gui.h"
 
 #include <gif_lib.h>

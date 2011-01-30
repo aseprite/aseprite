@@ -23,10 +23,10 @@
 #include <string.h>
 
 #include "app/color.h"
-#include "gui/jmanager.h"
-#include "gui/jmessage.h"
-#include "gui/jrect.h"
-#include "gui/jsystem.h"
+#include "gui/manager.h"
+#include "gui/message.h"
+#include "gui/rect.h"
+#include "gui/system.h"
 #include "gui/theme.h"
 #include "gui/view.h"
 #include "gui/widget.h"
