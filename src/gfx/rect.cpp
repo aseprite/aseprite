@@ -155,21 +155,12 @@ Rect& Rect::inflate(const Size& delta)
   return *this;
 }
 
-Rect& Rect::inflate(const Border& br)
+Rect& Rect::enlarge(const Border& br)
 {
   x -= br.left();
   y -= br.top();
   w += br.left() + br.right();
   h += br.top() + br.bottom();
-  return *this;
-}
-
-Rect& Rect::deflate(const Border& br)
-{
-  x += br.left();
-  y += br.top();
-  w -= br.left() + br.right();
-  h -= br.top() + br.bottom();
   return *this;
 }
 
@@ -179,6 +170,15 @@ Rect& Rect::enlarge(int unit)
   y -= unit;
   w += unit<<1;
   h += unit<<1;
+  return *this;
+}
+
+Rect& Rect::shrink(const Border& br)
+{
+  x += br.left();
+  y += br.top();
+  w -= br.left() + br.right();
+  h -= br.top() + br.bottom();
   return *this;
 }
 
@@ -244,24 +244,24 @@ Rect Rect::createIntersect(const Rect& rc) const
 
 const Rect& Rect::operator+=(const Border& br)
 {
-  inflate(br);
+  enlarge(br);
   return *this;
 }
 
 const Rect& Rect::operator-=(const Border& br)
 {
-  deflate(br);
+  shrink(br);
   return *this;
 }
 
 Rect Rect::operator+(const Border& br) const
 {
-  return Rect(*this).inflate(br);
+  return Rect(*this).enlarge(br);
 }
 
 Rect Rect::operator-(const Border& br) const
 {
-  return Rect(*this).deflate(br);
+  return Rect(*this).shrink(br);
 }
 
 bool Rect::operator==(const Rect& rc) const

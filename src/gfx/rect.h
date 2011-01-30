@@ -78,11 +78,11 @@ public:
   Rect& offset(const Point& delta);
   Rect& inflate(int dw, int dh);
   Rect& inflate(const Size& delta);
-  Rect& inflate(const Border& br);
-  Rect& deflate(const Border& br);
 
   Rect& enlarge(int unit);
+  Rect& enlarge(const Border& br);
   Rect& shrink(int unit);
+  Rect& shrink(const Border& br);
 
   // Returns true if this rectangle encloses the pt point.
   bool contains(const Point& pt) const;
