@@ -25,6 +25,14 @@ public:
   void right(int right) { m_right = right; }
   void bottom(int bottom) { m_bottom = bottom; }
 
+  const Border& operator+=(int value);
+  const Border& operator-=(int value);
+  const Border& operator*=(int value);
+  const Border& operator/=(int value);
+  Border operator+(int value) const;
+  Border operator-(int value) const;
+  Border operator*(int value) const;
+  Border operator/(int value) const;
   Border operator-() const;
 
   bool operator==(const Border& br) const;

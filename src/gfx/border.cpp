@@ -24,6 +24,74 @@ Border::Border(int left, int top, int right, int bottom)
   m_bottom = bottom;
 }
 
+const Border& Border::operator+=(int value)
+{
+  m_left += value;
+  m_top += value;
+  m_right += value;
+  m_bottom += value;
+  return *this;
+}
+
+const Border& Border::operator-=(int value)
+{
+  m_left -= value;
+  m_top -= value;
+  m_right -= value;
+  m_bottom -= value;
+  return *this;
+}
+
+const Border& Border::operator*=(int value)
+{
+  m_left *= value;
+  m_top *= value;
+  m_right *= value;
+  m_bottom *= value;
+  return *this;
+}
+
+const Border& Border::operator/=(int value)
+{
+  m_left /= value;
+  m_top /= value;
+  m_right /= value;
+  m_bottom /= value;
+  return *this;
+}
+
+Border Border::operator+(int value) const
+{
+  return Border(m_left + value,
+		m_top + value,
+		m_right + value,
+		m_bottom + value);
+}
+
+Border Border::operator-(int value) const
+{
+  return Border(m_left - value,
+		m_top - value,
+		m_right - value,
+		m_bottom - value);
+}
+
+Border Border::operator*(int value) const
+{
+  return Border(m_left * value,
+		m_top * value,
+		m_right * value,
+		m_bottom * value);
+}
+
+Border Border::operator/(int value) const
+{
+  return Border(m_left / value,
+		m_top / value,
+		m_right / value,
+		m_bottom / value);
+}
+
 Border Border::operator-() const
 {
   return Border(-m_left, -m_top, -m_right, -m_bottom);
