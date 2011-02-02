@@ -313,7 +313,7 @@
 	<separator />
 	<item command="FilmEditor" text="&amp;Animation Editor" />
 	<item command="PaletteEditor" text="&amp;Palette Editor">
-	  <param name="Switch" value="true" />
+	  <param name="switch" value="true" />
 	</item>
 	<item command="Preview" text="Previe&amp;w" />
 	<separator />
