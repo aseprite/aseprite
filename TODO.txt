@@ -1,6 +1,7 @@
 For next release
 ----------------
 
++ Add feedback to "Shift+S" shortcut to switch "snap to grid".
 + Add Widget::setDoubleBuffered(bool) to double-buffer some widgets
   when ji_screen==real screen (palette editor sliders must contain
   this attribute on).
