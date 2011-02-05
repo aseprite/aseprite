@@ -36,6 +36,7 @@
 #include "gfx/rgb.h"
 #include "gfx/size.h"
 #include "gui/gui.h"
+#include "gui/graphics.h"
 #include "modules/editors.h"
 #include "modules/gui.h"
 #include "modules/palettes.h"
@@ -91,8 +92,8 @@ namespace {
       m_color = color;
     }
 
-    void paint(Slider* slider, BITMAP* bmp, const gfx::Rect& rc) {
-      int depth = bitmap_color_depth(bmp);
+    void paint(Slider* slider, Graphics* g, const gfx::Rect& rc) {
+      int depth = g->getBitsPerPixel();
       BITMAP* bg = create_bitmap_ex(depth, rc.w, rc.h);
 
       int color;
@@ -121,7 +122,7 @@ namespace {
 	vline(bg, x, 0, rc.h-1, color);
       }
 
-      blit(bg, bmp, 0, 0, rc.x, rc.y, rc.w, rc.h);
+      g->blit(bg, 0, 0, rc.x, rc.y, rc.w, rc.h);
       destroy_bitmap(bg);
     }
 

@@ -673,6 +673,11 @@ Rect Widget::getBounds() const
   return Rect(rc->x1, rc->y1, jrect_w(rc), jrect_h(rc));
 }
 
+Rect Widget::getClientBounds() const
+{
+  return Rect(0, 0, jrect_w(rc), jrect_h(rc));
+}
+
 void Widget::setBounds(const Rect& rc)
 {
   jrect jrc = { rc.x, rc.y, rc.x+rc.w, rc.y+rc.h };

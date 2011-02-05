@@ -27,6 +27,8 @@
 #include "gui/rect.h"
 #include "gui/theme.h"
 
+class Graphics;
+
 // Available parts in the skin sheet
 enum {
 
@@ -434,7 +436,7 @@ public:
   void draw_panel(JWidget widget, JRect clip);
   void draw_radio(ButtonBase* widget, JRect clip);
   void draw_separator(JWidget widget, JRect clip);
-  void draw_slider(Slider* widget, JRect clip);
+  void paintSlider(PaintEvent& ev);
   void draw_combobox_entry(Entry* widget, JRect clip);
   void draw_combobox_button(ButtonBase* widget, JRect clip);
   void draw_textbox(JWidget widget, JRect clip);
@@ -499,7 +501,8 @@ public:
   // helper functions to draw bounds/hlines with sheet parts
   void draw_bounds_array(BITMAP* bmp, int x1, int y1, int x2, int y2, int parts[8]);
   void draw_bounds_nw(BITMAP* bmp, int x1, int y1, int x2, int y2, int nw, int bg = -1);
-  void draw_bounds_nw2(BITMAP* bmp, int x1, int y1, int x2, int y2, int x_mid, int nw1, int nw2, int bg1, int bg2);
+  void draw_bounds_nw(Graphics* g, const gfx::Rect& rc, int nw, int bg = -1);
+  void draw_bounds_nw2(Graphics* g, const gfx::Rect& rc, int x_mid, int nw1, int nw2, int bg1, int bg2);
   void draw_part_as_hline(BITMAP* bmp, int x1, int y1, int x2, int y2, int part);
   void draw_part_as_vline(BITMAP* bmp, int x1, int y1, int x2, int y2, int part);
 
@@ -515,10 +518,16 @@ protected:
 private:
   void draw_bounds_template(BITMAP* bmp, int x1, int y1, int x2, int y2,
 			    int nw, int n, int ne, int e, int se, int s, int sw, int w);
+  void draw_bounds_template(Graphics* g, const gfx::Rect& rc,
+			    int nw, int n, int ne, int e, int se, int s, int sw, int w);
+
   BITMAP* cropPartFromSheet(BITMAP* bmp, int x, int y, int w, int h, bool cursor = false);
   int get_bg_color(JWidget widget);
   void draw_textstring(const char *t, int fg_color, int bg_color,
 		       bool fill_bg, JWidget widget, const JRect rect,
+		       int selected_offset);
+  void draw_textstring(Graphics* g, const char *t, int fg_color, int bg_color,
+		       bool fill_bg, JWidget widget, const gfx::Rect& rc,
 		       int selected_offset);
   void draw_entry_caret(Entry* widget, int x, int y);
   void draw_bevel_box(int x1, int y1, int x2, int y2, int c1, int c2, int *bevel);

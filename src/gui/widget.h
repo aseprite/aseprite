@@ -242,6 +242,7 @@ public:
   // ===============================================================
 
   gfx::Rect getBounds() const;
+  gfx::Rect getClientBounds() const;
   void setBounds(const gfx::Rect& rc);
 
   gfx::Border getBorder() const;

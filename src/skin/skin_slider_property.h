@@ -25,12 +25,12 @@
 namespace gfx { class Rect; }
 
 class Slider;
-struct BITMAP;
+class Graphics;
 
 class ISliderBgPainter
 {
 public:
-  virtual void paint(Slider* slider, BITMAP* bmp, const gfx::Rect& rc) = 0;
+  virtual void paint(Slider* slider, Graphics* graphics, const gfx::Rect& rc) = 0;
 };
 
 class SkinSliderProperty : public SkinProperty

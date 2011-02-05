@@ -70,10 +70,6 @@ bool Slider::onProcessMessage(JMessage msg)
 {
   switch (msg->type) {
 
-    case JM_DRAW:
-      this->getTheme()->draw_slider(this, &msg->draw.rect);
-      return true;
-
     case JM_FOCUSENTER:
     case JM_FOCUSLEAVE:
       if (isEnabled())
@@ -239,6 +235,11 @@ void Slider::onPreferredSize(PreferredSizeEvent& ev)
   h += this->border_width.t + this->border_width.b;
 
   ev.setPreferredSize(w, h);
+}
+
+void Slider::onPaint(PaintEvent& ev)
+{
+  getTheme()->paintSlider(ev);
 }
 
 void Slider::onChange()

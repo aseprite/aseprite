@@ -15,7 +15,7 @@ struct FONT;
 class Box;
 class ButtonBase;
 class Entry;
-class Slider;
+class PaintEvent;
 
 class Theme
 {
@@ -61,7 +61,7 @@ public:
   virtual void draw_panel(JWidget widget, JRect clip) = 0;
   virtual void draw_radio(ButtonBase* widget, JRect clip) = 0;
   virtual void draw_separator(JWidget widget, JRect clip) = 0;
-  virtual void draw_slider(Slider* widget, JRect clip) = 0;
+  virtual void paintSlider(PaintEvent& ev) = 0;
   virtual void draw_combobox_entry(Entry* widget, JRect clip) = 0;
   virtual void draw_combobox_button(ButtonBase* widget, JRect clip) = 0;
   virtual void draw_textbox(JWidget widget, JRect clip) = 0;
