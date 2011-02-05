@@ -252,6 +252,9 @@ public:
   // REFRESH ISSUES
   // ===============================================================
 
+  bool isDoubleBuffered();
+  void setDoubleBuffered(bool doubleBuffered);
+
   void invalidate();
   void invalidateRect(const JRect rect);
   void invalidateRegion(const JRegion region);
@@ -302,6 +305,7 @@ protected:
 
 private:
   gfx::Size* m_preferredSize;
+  bool m_doubleBuffered : 1;
 };
 
 #endif

@@ -26,6 +26,8 @@ public:
   void setClipBounds(const gfx::Rect& rc);
   bool intersectClipRect(const gfx::Rect& rc);
 
+  void drawVLine(int color, int x, int y, int h);
+
   void drawRect(int color, const gfx::Rect& rc);
   void fillRect(int color, const gfx::Rect& rc);
 

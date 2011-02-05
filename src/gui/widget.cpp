@@ -83,6 +83,7 @@ Widget::Widget(int type)
   this->user_data[3] = NULL;
 
   m_preferredSize = NULL;
+  m_doubleBuffered = false;
 }
 
 void jwidget_free(JWidget widget)
@@ -1115,6 +1116,16 @@ void jwidget_flush_redraw(JWidget widget)
   }
 }
 
+bool Widget::isDoubleBuffered()
+{
+  return m_doubleBuffered;
+}
+
+void Widget::setDoubleBuffered(bool doubleBuffered)
+{
+  m_doubleBuffered = doubleBuffered;
+}
+
 void Widget::invalidate()
 {
   if (isVisible()) {
@@ -1467,12 +1478,39 @@ bool Widget::onProcessMessage(JMessage msg)
       break;
     }
 
-    case JM_DRAW: {
-      Graphics graphics(ji_screen, rc->x1, rc->y1);
-      PaintEvent ev(this, &graphics);
-      onPaint(ev); // Fire onPaint event
-      return ev.isPainted();
-    }
+    case JM_DRAW:
+      // With double-buffering we create a temporary bitmap to draw
+      // the widget on it and then we blit the final result to the
+      // real screen. Anyway, if ji_screen is not the real hardware
+      // screen, we already are painting off-screen using ji_screen,
+      // so we don't need the temporary bitmap.
+      if (m_doubleBuffered && ji_screen == screen) {
+	ASSERT(jrect_w(&msg->draw.rect) > 0);
+	ASSERT(jrect_h(&msg->draw.rect) > 0);
+
+	BITMAP* bmp = create_bitmap_ex(bitmap_color_depth(ji_screen),
+				       jrect_w(&msg->draw.rect),
+				       jrect_h(&msg->draw.rect));
+
+	Graphics graphics(bmp, rc->x1-msg->draw.rect.x1, rc->y1-msg->draw.rect.y1);
+	PaintEvent ev(this, &graphics);
+	onPaint(ev); // Fire onPaint event
+
+	// Blit the temporary bitmap to the real screen
+	if (ev.isPainted())
+	  blit(bmp, ji_screen, 0, 0, msg->draw.rect.x1, msg->draw.rect.y1, bmp->w, bmp->h);
+
+	destroy_bitmap(bmp);
+	return ev.isPainted();
+      }
+      // Paint directly on ji_screen (in this case "ji_screen" can be
+      // the screen or a memory bitmap).
+      else {
+	Graphics graphics(ji_screen, rc->x1, rc->y1);
+	PaintEvent ev(this, &graphics);
+	onPaint(ev); // Fire onPaint event
+	return ev.isPainted();
+      }
 
     case JM_REQSIZE:
       msg->reqsize.w = widget->min_w;

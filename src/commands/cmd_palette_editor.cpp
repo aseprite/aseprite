@@ -94,8 +94,6 @@ namespace {
 
     void paint(Slider* slider, Graphics* g, const gfx::Rect& rc) {
       int depth = g->getBitsPerPixel();
-      BITMAP* bg = create_bitmap_ex(depth, rc.w, rc.h);
-
       int color;
       for (int x=0; x < rc.w; ++x) {
 	switch (m_channel) {
@@ -118,12 +116,8 @@ namespace {
 	    color = color_utils::color_for_allegro(Color::fromHsv(m_color.getHue(), m_color.getSaturation(), 100 * x / (rc.w-1)), depth);
 	    break;
 	}
-
-	vline(bg, x, 0, rc.h-1, color);
+	g->drawVLine(color, rc.x+x, rc.y, rc.h);
       }
-
-      g->blit(bg, 0, 0, rc.x, rc.y, rc.w, rc.h);
-      destroy_bitmap(bg);
     }
 
   private:
@@ -316,6 +310,13 @@ void PaletteEditorCommand::onExecute(Context* context)
     H_slider->setProperty(PropertyPtr(new SkinSliderProperty(new ColorSliderBgPainter(ColorSliderBgPainter::Hue))));
     S_slider->setProperty(PropertyPtr(new SkinSliderProperty(new ColorSliderBgPainter(ColorSliderBgPainter::Saturation))));
     V_slider->setProperty(PropertyPtr(new SkinSliderProperty(new ColorSliderBgPainter(ColorSliderBgPainter::Value))));
+
+    R_slider->setDoubleBuffered(true);
+    G_slider->setDoubleBuffered(true);
+    B_slider->setDoubleBuffered(true);
+    H_slider->setDoubleBuffered(true);
+    S_slider->setDoubleBuffered(true);
+    V_slider->setDoubleBuffered(true);
   
     // Hook signals
     jwidget_add_hook(window, -1, window_msg_proc, NULL);

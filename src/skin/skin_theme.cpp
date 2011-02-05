@@ -1162,7 +1162,10 @@ void SkinTheme::paintSlider(PaintEvent& ev)
     g->drawAlphaBitmap(thumb, x-thumb->w/2, rc.y);
 
     // Draw borders
-    rc.shrink(gfx::Border(3, thumb->h, 3, 1) * jguiscale());
+    rc.shrink(gfx::Border(3 * jguiscale(),
+			  thumb->h,
+			  3 * jguiscale(),
+			  1 * jguiscale()));
 
     draw_bounds_nw(g, rc, nw, -1);
 

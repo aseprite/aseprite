@@ -61,6 +61,14 @@ bool Graphics::intersectClipRect(const gfx::Rect& rc)
 	  m_bmp->ct < m_bmp->cb);
 }
 
+void Graphics::drawVLine(int color, int x, int y, int h)
+{
+  vline(m_bmp,
+	m_dx+x,
+	m_dy+y,
+	m_dy+y+h-1, color);
+}
+
 void Graphics::drawRect(int color, const gfx::Rect& rc)
 {
   rect(m_bmp,
