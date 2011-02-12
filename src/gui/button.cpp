@@ -86,15 +86,6 @@ bool ButtonBase::onProcessMessage(JMessage msg)
 {
   switch (msg->type) {
 
-    case JM_DRAW: {
-      switch (m_drawType) {
-      	case JI_BUTTON: getTheme()->draw_button(this, &msg->draw.rect); break;
-      	case JI_CHECK:  getTheme()->draw_check(this, &msg->draw.rect); break;
-      	case JI_RADIO:  getTheme()->draw_radio(this, &msg->draw.rect); break;
-      }
-      return true;
-    }
-
     case JM_FOCUSENTER:
     case JM_FOCUSLEAVE:
       if (this->isEnabled()) {
@@ -322,6 +313,15 @@ void ButtonBase::onPreferredSize(PreferredSizeEvent& ev)
 
   ev.setPreferredSize(this->border_width.l + jrect_w(&box) + this->border_width.r,
 		      this->border_width.t + jrect_h(&box) + this->border_width.b);
+}
+
+void ButtonBase::onPaint(PaintEvent& ev)
+{
+  switch (m_drawType) {
+    case JI_BUTTON: getTheme()->paintButton(ev); break;
+    case JI_CHECK:  getTheme()->paintCheckBox(ev); break;
+    case JI_RADIO:  getTheme()->paintRadioButton(ev); break;
+  }
 }
 
 void ButtonBase::generateButtonSelectSignal()

@@ -378,10 +378,6 @@ bool Frame::onProcessMessage(JMessage msg)
       }
       break;
 
-    case JM_DRAW:
-      getTheme()->draw_frame(this, &msg->draw.rect);
-      return true;
-
   }
 
   return Widget::onProcessMessage(msg);
@@ -420,6 +416,11 @@ void Frame::onPreferredSize(PreferredSizeEvent& ev)
     ev.setPreferredSize(this->border_width.l + maxSize.w + this->border_width.r,
 			this->border_width.t + maxSize.h + this->border_width.b);
   }
+}
+
+void Frame::onPaint(PaintEvent& ev)
+{
+  getTheme()->paintFrame(ev);
 }
 
 void Frame::window_set_position(JRect rect)

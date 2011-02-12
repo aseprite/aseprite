@@ -12,7 +12,6 @@
 struct BITMAP;
 struct FONT;
 
-class Box;
 class ButtonBase;
 class Entry;
 class PaintEvent;
@@ -47,19 +46,19 @@ public:
   virtual int color_selected() = 0;
   virtual int color_background() = 0;
 
-  virtual void draw_box(Box* widget, JRect clip) = 0;
-  virtual void draw_button(ButtonBase* widget, JRect clip) = 0;
-  virtual void draw_check(ButtonBase* widget, JRect clip) = 0;
-  virtual void draw_entry(Entry* widget, JRect clip) = 0;
-  virtual void draw_grid(JWidget widget, JRect clip) = 0;
-  virtual void draw_label(JWidget widget, JRect clip) = 0;
-  virtual void draw_link_label(JWidget widget, JRect clip) = 0;
+  virtual void paintBox(PaintEvent& ev) = 0;
+  virtual void paintButton(PaintEvent& ev) = 0;
+  virtual void paintCheckBox(PaintEvent& ev) = 0;
+  virtual void paintEntry(PaintEvent& ev) = 0;
+  virtual void paintGrid(PaintEvent& ev) = 0;
+  virtual void paintLabel(PaintEvent& ev) = 0;
+  virtual void paintLinkLabel(PaintEvent& ev) = 0;
   virtual void draw_listbox(JWidget widget, JRect clip) = 0;
   virtual void draw_listitem(JWidget widget, JRect clip) = 0;
   virtual void draw_menu(JWidget widget, JRect clip) = 0;
   virtual void draw_menuitem(JWidget widget, JRect clip) = 0;
   virtual void draw_panel(JWidget widget, JRect clip) = 0;
-  virtual void draw_radio(ButtonBase* widget, JRect clip) = 0;
+  virtual void paintRadioButton(PaintEvent& ev) = 0;
   virtual void draw_separator(JWidget widget, JRect clip) = 0;
   virtual void paintSlider(PaintEvent& ev) = 0;
   virtual void draw_combobox_entry(Entry* widget, JRect clip) = 0;
@@ -68,7 +67,7 @@ public:
   virtual void draw_view(JWidget widget, JRect clip) = 0;
   virtual void draw_view_scrollbar(JWidget widget, JRect clip) = 0;
   virtual void draw_view_viewport(JWidget widget, JRect clip) = 0;
-  virtual void draw_frame(Frame* frame, JRect clip) = 0;
+  virtual void paintFrame(PaintEvent& ev) = 0;
 
 protected:
   virtual void onRegenerate() = 0;

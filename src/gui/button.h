@@ -41,6 +41,7 @@ protected:
   // Events
   bool onProcessMessage(JMessage msg);
   void onPreferredSize(PreferredSizeEvent& ev);
+  void onPaint(PaintEvent& ev);
 
   // New events
   virtual void onClick(Event& ev);

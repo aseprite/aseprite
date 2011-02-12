@@ -616,13 +616,16 @@ int SkinTheme::color_background()
   return COLOR_BACKGROUND;
 }
 
-void SkinTheme::draw_box(Box* widget, JRect clip)
+void SkinTheme::paintBox(PaintEvent& ev)
 {
-  jdraw_rectfill(clip, BGCOLOR);
+  Widget* widget = static_cast<Widget*>(ev.getSource());
+  Graphics* g = ev.getGraphics();
+  g->fillRect(BGCOLOR, g->getClipBounds());
 }
 
-void SkinTheme::draw_button(ButtonBase* widget, JRect clip)
+void SkinTheme::paintButton(PaintEvent& ev)
 {
+  ButtonBase* widget = static_cast<ButtonBase*>(ev.getSource());
   BITMAP* icon_bmp = widget->getButtonIcon();
   int icon_align = widget->getButtonIconAlign();
   struct jrect box, text, icon;
@@ -713,8 +716,9 @@ void SkinTheme::draw_button(ButtonBase* widget, JRect clip)
   }
 }
 
-void SkinTheme::draw_check(ButtonBase* widget, JRect clip)
+void SkinTheme::paintCheckBox(PaintEvent& ev)
 {
+  ButtonBase* widget = static_cast<ButtonBase*>(ev.getSource());
   struct jrect box, text, icon;
   int bg;
 
@@ -754,13 +758,16 @@ void SkinTheme::draw_check(ButtonBase* widget, JRect clip)
   }
 }
 
-void SkinTheme::draw_grid(JWidget widget, JRect clip)
+void SkinTheme::paintGrid(PaintEvent& ev)
 {
-  jdraw_rectfill(clip, BGCOLOR);
+  Widget* widget = static_cast<Widget*>(ev.getSource());
+  Graphics* g = ev.getGraphics();
+  g->fillRect(BGCOLOR, g->getClipBounds());
 }
 
-void SkinTheme::draw_entry(Entry* widget, JRect clip)
+void SkinTheme::paintEntry(PaintEvent& ev)
 {
+  Entry* widget = static_cast<Entry*>(ev.getSource());
   bool password = widget->isPassword();
   int scroll, caret, state, selbeg, selend;
   const char *text = widget->getText();
@@ -831,8 +838,9 @@ void SkinTheme::draw_entry(Entry* widget, JRect clip)
     draw_entry_caret(widget, x, y);
 }
 
-void SkinTheme::draw_label(JWidget widget, JRect clip)
+void SkinTheme::paintLabel(PaintEvent& ev)
 {
+  Widget* widget = static_cast<Widget*>(ev.getSource());
   int bg = BGCOLOR;
 
   jdraw_rectfill(widget->rc, bg);
@@ -840,8 +848,9 @@ void SkinTheme::draw_label(JWidget widget, JRect clip)
   draw_textstring(NULL, -1, bg, false, widget, widget->rc, 0);
 }
 
-void SkinTheme::draw_link_label(JWidget widget, JRect clip)
+void SkinTheme::paintLinkLabel(PaintEvent& ev)
 {
+  Widget* widget = static_cast<Widget*>(ev.getSource());
   int bg = BGCOLOR;
 
   jdraw_rectfill(widget->rc, bg);
@@ -1024,8 +1033,9 @@ void SkinTheme::draw_panel(JWidget widget, JRect clip)
   jdraw_rectfill(widget->rc, get_panel_face_color());
 }
 
-void SkinTheme::draw_radio(ButtonBase* widget, JRect clip)
+void SkinTheme::paintRadioButton(PaintEvent& ev)
 {
+  ButtonBase* widget = static_cast<ButtonBase*>(ev.getSource());
   struct jrect box, text, icon;
   int bg = BGCOLOR;
 
@@ -1408,8 +1418,9 @@ void SkinTheme::draw_view_viewport(JWidget widget, JRect clip)
   jdraw_rectfill(widget->rc, BGCOLOR);
 }
 
-void SkinTheme::draw_frame(Frame* window, JRect clip)
+void SkinTheme::paintFrame(PaintEvent& ev)
 {
+  Frame* window = static_cast<Frame*>(ev.getSource());
   JRect pos = jwidget_get_rect(window);
   JRect cpos = jwidget_get_child_rect(window);
 

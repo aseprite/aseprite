@@ -20,6 +20,7 @@ public:
 protected:
   bool onProcessMessage(JMessage msg);
   void onPreferredSize(PreferredSizeEvent& ev);
+  void onPaint(PaintEvent& ev);
 
 private:
   bool m_close_on_buttonpressed;

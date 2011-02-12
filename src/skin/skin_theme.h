@@ -422,19 +422,19 @@ public:
   int color_selected();
   int color_background();
 
-  void draw_box(Box* widget, JRect clip);
-  void draw_button(ButtonBase* widget, JRect clip);
-  void draw_check(ButtonBase* widget, JRect clip);
-  void draw_entry(Entry* widget, JRect clip);
-  void draw_grid(JWidget widget, JRect clip);
-  void draw_label(JWidget widget, JRect clip);
-  void draw_link_label(JWidget widget, JRect clip);
+  void paintBox(PaintEvent& ev);
+  void paintButton(PaintEvent& ev);
+  void paintCheckBox(PaintEvent& ev);
+  void paintEntry(PaintEvent& ev);
+  void paintGrid(PaintEvent& ev);
+  void paintLabel(PaintEvent& ev);
+  void paintLinkLabel(PaintEvent& ev);
   void draw_listbox(JWidget widget, JRect clip);
   void draw_listitem(JWidget widget, JRect clip);
   void draw_menu(JWidget widget, JRect clip);
   void draw_menuitem(JWidget widget, JRect clip);
   void draw_panel(JWidget widget, JRect clip);
-  void draw_radio(ButtonBase* widget, JRect clip);
+  void paintRadioButton(PaintEvent& ev);
   void draw_separator(JWidget widget, JRect clip);
   void paintSlider(PaintEvent& ev);
   void draw_combobox_entry(Entry* widget, JRect clip);
@@ -443,7 +443,7 @@ public:
   void draw_view(JWidget widget, JRect clip);
   void draw_view_scrollbar(JWidget widget, JRect clip);
   void draw_view_viewport(JWidget widget, JRect clip);
-  void draw_frame(Frame* frame, JRect clip);
+  void paintFrame(PaintEvent& ev);
   void draw_frame_button(ButtonBase* widget, JRect clip);
 
   int get_button_normal_text_color() const { return makecol(0, 0, 0); }

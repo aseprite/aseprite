@@ -44,10 +44,6 @@ bool LinkLabel::onProcessMessage(JMessage msg)
 	invalidate();
       break;
 
-    case JM_DRAW:
-      getTheme()->draw_link_label(this, &msg->draw.rect);
-      return true;
-
     case JM_BUTTONRELEASED:
       if (isEnabled()) {
 	if (!m_url.empty())
@@ -58,4 +54,9 @@ bool LinkLabel::onProcessMessage(JMessage msg)
   }
 
   return CustomLabel::onProcessMessage(msg);
+}
+
+void LinkLabel::onPaint(PaintEvent& ev)
+{
+  getTheme()->paintLinkLabel(ev);
 }

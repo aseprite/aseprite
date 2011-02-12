@@ -16,6 +16,7 @@ public:
 
 protected:
   bool onProcessMessage(JMessage msg);
+  void onPaint(PaintEvent& ev);
 
 };
 

@@ -18,6 +18,7 @@ protected:
   // Events
   bool onProcessMessage(JMessage msg);
   void onPreferredSize(PreferredSizeEvent& ev);
+  void onPaint(PaintEvent& ev);
 
 private:
   void box_set_position(JRect rect);

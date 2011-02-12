@@ -139,26 +139,6 @@ bool PopupFrame::onProcessMessage(JMessage msg)
       }
       break;
 
-    case JM_DRAW: {
-      JRect pos = jwidget_get_rect(this);
-      int oldt;
-
-      jdraw_rect(pos, makecol(0, 0, 0));
-
-      jrect_shrink(pos, 1);
-      jdraw_rectfill(pos, this->getBgColor());
-
-      oldt = this->border_width.t;
-      this->border_width.t = 3 * jguiscale();
-      _ji_theme_textbox_draw(ji_screen, this, NULL, NULL,
-			     this->getBgColor(),
-			     ji_color_foreground());
-      this->border_width.t = oldt;
-
-      jrect_free(pos);
-      return true;
-    }
-
   }
 
   return Frame::onProcessMessage(msg);
@@ -191,4 +171,24 @@ void PopupFrame::onPreferredSize(PreferredSizeEvent& ev)
   }
 
   ev.setPreferredSize(resultSize);
+}
+
+void PopupFrame::onPaint(PaintEvent& ev)
+{
+  JRect pos = jwidget_get_rect(this);
+  int oldt;
+
+  jdraw_rect(pos, makecol(0, 0, 0));
+
+  jrect_shrink(pos, 1);
+  jdraw_rectfill(pos, this->getBgColor());
+
+  oldt = this->border_width.t;
+  this->border_width.t = 3 * jguiscale();
+  _ji_theme_textbox_draw(ji_screen, this, NULL, NULL,
+			 this->getBgColor(),
+			 ji_color_foreground());
+  this->border_width.t = oldt;
+
+  jrect_free(pos);
 }

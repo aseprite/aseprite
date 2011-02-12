@@ -57,6 +57,7 @@ public:
 protected:
   bool onProcessMessage(JMessage msg);
   void onPreferredSize(PreferredSizeEvent& ev);
+  void onPaint(PaintEvent& ev);
 
 private:
   void window_set_position(JRect rect);

@@ -166,10 +166,6 @@ bool Entry::onProcessMessage(JMessage msg)
 {
   switch (msg->type) {
 
-    case JM_DRAW:
-      getTheme()->draw_entry(this, &msg->draw.rect);
-      return true;
-
     case JM_TIMER:
       if (this->hasFocus() &&
 	  msg->timer.timer_id == m_timer_id) {
@@ -382,6 +378,11 @@ void Entry::onPreferredSize(PreferredSizeEvent& ev)
     + border_width.b;
 
   ev.setPreferredSize(w, h);
+}
+
+void Entry::onPaint(PaintEvent& ev)
+{
+  getTheme()->paintEntry(ev);
 }
 
 void Entry::onEntryChange()

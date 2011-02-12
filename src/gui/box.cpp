@@ -37,10 +37,6 @@ bool Box::onProcessMessage(JMessage msg)
       box_set_position(&msg->setpos.rect);
       return true;
 
-    case JM_DRAW:
-      getTheme()->draw_box(this, &msg->draw.rect);
-      return true;
-
   }
 
   return Widget::onProcessMessage(msg);
@@ -108,6 +104,11 @@ void Box::onPreferredSize(PreferredSizeEvent& ev)
   h += border_width.t + border_width.b;
 
   ev.setPreferredSize(Size(w, h));
+}
+
+void Box::onPaint(PaintEvent& ev)
+{
+  getTheme()->paintBox(ev);
 }
 
 void Box::box_set_position(JRect rect)

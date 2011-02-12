@@ -25,6 +25,7 @@ public:
 protected:
   bool onProcessMessage(JMessage msg);
   void onPreferredSize(PreferredSizeEvent& ev);
+  void onPaint(PaintEvent& ev);
 };
 
 void jwidget_add_tooltip_text(Widget* widget, const char *text);

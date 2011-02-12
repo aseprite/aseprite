@@ -34,10 +34,12 @@ bool Label::onProcessMessage(JMessage msg)
       msg->reqsize.h += this->border_width.t + this->border_width.b;
       return true;
 
-    case JM_DRAW:
-      this->getTheme()->draw_label(this, &msg->draw.rect);
-      return true;
   }
 
   return Widget::onProcessMessage(msg);
+}
+
+void Label::onPaint(PaintEvent& ev)
+{
+  getTheme()->paintLabel(ev);
 }

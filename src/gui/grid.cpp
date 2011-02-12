@@ -101,10 +101,6 @@ bool Grid::onProcessMessage(JMessage msg)
       setGridPosition(&msg->setpos.rect);
       return true;
 
-    case JM_DRAW:
-      getTheme()->draw_grid(this, &msg->draw.rect);
-      return true;
-
   }
 
   return Widget::onProcessMessage(msg);
@@ -126,6 +122,11 @@ void Grid::onPreferredSize(PreferredSizeEvent& ev)
   h += this->border_width.t + this->border_width.b;
 
   ev.setPreferredSize(Size(w, h));
+}
+
+void Grid::onPaint(PaintEvent& ev)
+{
+  getTheme()->paintGrid(ev);
 }
 
 void Grid::sumStripSize(const std::vector<Strip>& strip, int& size)

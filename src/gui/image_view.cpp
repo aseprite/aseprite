@@ -39,21 +39,21 @@ bool ImageView::onProcessMessage(JMessage msg)
       return true;
     }
 
-    case JM_DRAW: {
-      struct jrect box, text, icon;
-
-      jwidget_get_texticon_info(this, &box, &text, &icon,
-				getAlign(), m_bmp->w, m_bmp->h);
-
-      jdraw_rectexclude(rc, &icon,
-			jwidget_get_bg_color(this));
-
-      blit(m_bmp, ji_screen, 0, 0,
-	   icon.x1, icon.y1, jrect_w(&icon), jrect_h(&icon));
-
-      return true;
-    }
   }
 
   return Widget::onProcessMessage(msg);
+}
+
+void ImageView::onPaint(PaintEvent& ev)
+{
+  struct jrect box, text, icon;
+
+  jwidget_get_texticon_info(this, &box, &text, &icon,
+			    getAlign(), m_bmp->w, m_bmp->h);
+
+  jdraw_rectexclude(rc, &icon,
+		    jwidget_get_bg_color(this));
+
+  blit(m_bmp, ji_screen, 0, 0,
+       icon.x1, icon.y1, jrect_w(&icon), jrect_h(&icon));
 }

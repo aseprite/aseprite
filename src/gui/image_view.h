@@ -18,6 +18,7 @@ public:
 
 protected:
   bool onProcessMessage(JMessage msg);
+  void onPaint(PaintEvent& ev);
 
 private:
   BITMAP* m_bmp;
