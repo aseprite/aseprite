@@ -55,6 +55,14 @@ private:
   FONT* m_currentFont;
 };
 
+// Class to draw directly in the screen.
+class ScreenGraphics : public Graphics
+{
+public:
+  ScreenGraphics();
+  virtual ~ScreenGraphics();
+};
+
 // Class to temporary set the Graphics' clip region to a sub-rectangle
 // (in the life-time of the IntersectClip instance).
 class IntersectClip

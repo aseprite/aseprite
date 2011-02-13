@@ -124,3 +124,16 @@ gfx::Size Graphics::measureString(const std::string& str)
   return gfx::Size(ji_font_text_len(m_currentFont, str.c_str()),
 		   text_height(m_currentFont));
 }
+
+//////////////////////////////////////////////////////////////////////
+// ScreenGraphics
+
+ScreenGraphics::ScreenGraphics()
+  : Graphics(screen, 0, 0)
+{
+  setFont(font);		// Allegro default font
+}
+
+ScreenGraphics::~ScreenGraphics()
+{
+}
