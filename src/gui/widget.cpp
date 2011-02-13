@@ -1493,6 +1493,8 @@ bool Widget::onProcessMessage(JMessage msg)
 				       jrect_h(&msg->draw.rect));
 
 	Graphics graphics(bmp, rc->x1-msg->draw.rect.x1, rc->y1-msg->draw.rect.y1);
+	graphics.setFont(getFont());
+
 	PaintEvent ev(this, &graphics);
 	onPaint(ev); // Fire onPaint event
 
@@ -1507,6 +1509,8 @@ bool Widget::onProcessMessage(JMessage msg)
       // the screen or a memory bitmap).
       else {
 	Graphics graphics(ji_screen, rc->x1, rc->y1);
+	graphics.setFont(getFont());
+
 	PaintEvent ev(this, &graphics);
 	onPaint(ev); // Fire onPaint event
 	return ev.isPainted();
