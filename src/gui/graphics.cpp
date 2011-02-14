@@ -119,10 +119,106 @@ void Graphics::drawString(const std::string& str, int fg_color, int bg_color, bo
 	     fg_color, bg_color, fill_bg, 1 * jguiscale());
 }
 
+void Graphics::drawString(const std::string& str, int fg_color, int bg_color, const gfx::Rect& rc, int align)
+{
+  drawStringAlgorithm(str, fg_color, bg_color, rc, align, true);
+}
+
 gfx::Size Graphics::measureString(const std::string& str)
 {
   return gfx::Size(ji_font_text_len(m_currentFont, str.c_str()),
 		   text_height(m_currentFont));
+}
+
+gfx::Size Graphics::fitString(const std::string& str, int maxWidth, int align)
+{
+  return drawStringAlgorithm(str, 0, 0, gfx::Rect(0, 0, maxWidth, 0), align, false);
+}
+
+gfx::Size Graphics::drawStringAlgorithm(const std::string& str, int fg_color, int bg_color, const gfx::Rect& rc, int align, bool draw)
+{
+  gfx::Size calculatedSize(0, 0);
+  size_t beg, end, new_word_beg, old_end;
+  std::string line;
+  gfx::Point pt;
+
+  // Draw line-by-line
+  pt.y = rc.y;
+  for (beg=end=0; end != std::string::npos; ) {
+    pt.x = rc.x;
+
+    // Without word-wrap
+    if ((align & JI_WORDWRAP) == 0) {
+      end = str.find('\n', beg);
+    }
+    // With word-wrap
+    else {
+      old_end = std::string::npos;
+      for (new_word_beg=beg;;) {
+	end = str.find_first_of(" \n", new_word_beg);
+
+	// If we have already a word to print (old_end != npos), and
+	// we are out of the available width (rc.w) using the new "end",
+	if ((old_end != std::string::npos) &&
+	    (pt.x+measureString(str.substr(beg, end-beg)).w > rc.w)) {
+	  // We go back to the "old_end" and paint from "beg" to "end"
+	  end = old_end;
+	  break;
+	}
+	// If we have more words to print...
+	else if (end != std::string::npos) {
+	  // Force line break, now we have to paint from "beg" to "end"
+	  if (str[end] == '\n')
+	    break;
+
+	  // White-space, this is a beginning of a new word.
+	  new_word_beg = end+1;
+	}
+	// We are in the end of text
+	else
+	  break;
+
+	old_end = end;
+      }
+    }
+
+    // Get the entire line to be painted
+    line = str.substr(beg, end-beg);
+
+    gfx::Size lineSize = measureString(line);
+    calculatedSize.w = MAX(calculatedSize.w, lineSize.w);
+
+    // Render the text
+    if (draw) {
+      int xout;
+      if ((align & JI_CENTER) == JI_CENTER)
+	xout = pt.x + rc.w/2 - lineSize.w/2;
+      else if ((align & JI_RIGHT) == JI_RIGHT)
+	xout = pt.x + rc.w - lineSize.w;
+      else
+	xout = pt.x;
+
+      ji_font_set_aa_mode(m_currentFont, bg_color);
+      textout_ex(m_bmp, m_currentFont, line.c_str(), m_dx+xout, m_dy+pt.y, fg_color, bg_color);
+
+      jrectexclude(m_bmp,
+		   m_dx+rc.x, m_dy+pt.y, m_dx+rc.x+rc.w-1, m_dy+pt.y+lineSize.h-1,
+		   m_dx+xout, m_dy+pt.y, m_dx+xout+lineSize.w-1, m_dy+pt.y+lineSize.h-1, bg_color);
+    }
+
+    pt.y += lineSize.h;
+    beg = end+1;
+  }
+
+  calculatedSize.h += pt.y;
+
+  // Fill bottom area
+  if (draw) {
+    if (pt.y < rc.y+rc.h)
+      fillRect(bg_color, gfx::Rect(rc.x, pt.y, rc.w, rc.y+rc.h-pt.y));
+  }
+
+  return calculatedSize;
 }
 
 //////////////////////////////////////////////////////////////////////

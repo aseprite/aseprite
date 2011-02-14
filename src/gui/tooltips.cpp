@@ -10,8 +10,10 @@
 #include <allegro.h>
 
 #include "gfx/size.h"
+#include "gui/graphics.h"
 #include "gui/gui.h"
 #include "gui/intern.h"
+#include "gui/paint_event.h"
 #include "gui/preferred_size_event.h"
 
 using namespace gfx;
@@ -199,18 +201,12 @@ bool TipWindow::onProcessMessage(JMessage msg)
 
     case JM_SIGNAL:
       if (msg->signal.num == JI_SIGNAL_INIT_THEME) {
-	int w = 0, h = 0;
-
 	this->border_width.l = 3 * jguiscale();
 	this->border_width.t = 3 * jguiscale();
 	this->border_width.r = 3 * jguiscale();
 	this->border_width.b = 3 * jguiscale();
-
-	_ji_theme_textbox_draw(NULL, this, &w, &h, 0, 0);
-
-	this->border_width.t = h - 3 * jguiscale();
-
-	/* setup the background color */
+	
+	// Setup the background color.
 	setBgColor(makecol(255, 255, 200));
 	return true;
       }
@@ -262,10 +258,14 @@ bool TipWindow::onProcessMessage(JMessage msg)
 
 void TipWindow::onPreferredSize(PreferredSizeEvent& ev)
 {
-  Size resultSize(0, 0);
+  ScreenGraphics g;
+  g.setFont(getFont());
+  Size resultSize = g.fitString(getText(),
+				(getClientBounds() - getBorder()).w,
+				getAlign());
 
-  _ji_theme_textbox_draw(NULL, this, &resultSize.w, &resultSize.h, 0, 0);
-  resultSize.h = this->border_width.t + this->border_width.b;
+  resultSize.w += this->border_width.l + this->border_width.r;
+  resultSize.h += this->border_width.t + this->border_width.b;
 
   if (!jlist_empty(this->children)) {
     Size maxSize(0, 0);
@@ -282,7 +282,7 @@ void TipWindow::onPreferredSize(PreferredSizeEvent& ev)
       maxSize.h = MAX(maxSize.h, reqSize.h);
     }
 
-    resultSize.w = MAX(resultSize.w, this->border_width.l + maxSize.w + this->border_width.r);
+    resultSize.w = MAX(resultSize.w, border_width.l + maxSize.w + border_width.r);
     resultSize.h += maxSize.h;
   }
 
@@ -291,22 +291,16 @@ void TipWindow::onPreferredSize(PreferredSizeEvent& ev)
 
 void TipWindow::onPaint(PaintEvent& ev)
 {
-  JRect pos = jwidget_get_rect(this);
-  int oldt;
+  Graphics* g = ev.getGraphics();
+  Rect pos = getClientBounds();
 
   for (int i=0; i<jguiscale(); ++i) {
-    jdraw_rect(pos, makecol(0, 0, 0));
-    jrect_shrink(pos, 1);
+    g->drawRect(makecol(0, 0, 0), pos);
+    pos.shrink(1);
   }
 
-  jdraw_rectfill(pos, this->getBgColor());
+  g->fillRect(this->getBgColor(), pos);
+  pos.shrink(getBorder());
 
-  oldt = this->border_width.t;
-  this->border_width.t = 3 * jguiscale();
-  _ji_theme_textbox_draw(ji_screen, this, NULL, NULL,
-			 this->getBgColor(),
-			 ji_color_foreground());
-  this->border_width.t = oldt;
-
-  jrect_free(pos);
+  g->drawString(getText(), ji_color_foreground(), this->getBgColor(), pos, getAlign());
 }

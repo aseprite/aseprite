@@ -44,10 +44,14 @@ public:
   FONT* getFont();
 
   void drawString(const std::string& str, int fg_color, int bg_color, bool fillbg, const gfx::Point& pt);
+  void drawString(const std::string& str, int fg_color, int bg_color, const gfx::Rect& rc, int align);
 
   gfx::Size measureString(const std::string& str);
+  gfx::Size fitString(const std::string& str, int maxWidth, int align);
   
 private:
+  gfx::Size drawStringAlgorithm(const std::string& str, int fg_color, int bg_color, const gfx::Rect& rc, int align, bool draw);
+
   BITMAP* m_bmp;
   int m_dx;
   int m_dy;
