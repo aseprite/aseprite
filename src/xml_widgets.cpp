@@ -333,7 +333,7 @@ static Widget* convert_xmlelement_to_widget(TiXmlElement* elem, Widget* root)
       widget->setName(name);
 
     if (tooltip != NULL)
-      jwidget_add_tooltip_text(widget, tooltip);
+      jwidget_add_tooltip_text(widget, tooltip, JI_LEFT);
 
     if (selected)
       widget->setSelected(selected);

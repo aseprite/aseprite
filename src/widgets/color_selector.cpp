@@ -102,7 +102,7 @@ Frame* colorselector_new()
   colorselector->selected_model = &models[0];
 
   /* palette */
-  jwidget_add_tooltip_text(pal, "Use SHIFT or CTRL to select ranges");
+  jwidget_add_tooltip_text(pal, "Use SHIFT or CTRL to select ranges", JI_TOP);
 
   /* data for a better layout */
   grid1->child_spacing = 0;

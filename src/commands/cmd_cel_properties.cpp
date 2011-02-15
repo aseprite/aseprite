@@ -113,7 +113,8 @@ void CelPropertiesCommand::onExecute(Context* context)
     if (layer->is_background()) {
       slider_opacity->setEnabled(false);
       jwidget_add_tooltip_text(slider_opacity, "The `Background' layer is opaque,\n"
-					       "you can't change its opacity.");
+					       "you can't change its opacity.",
+			       JI_LEFT);
     }
   }
   else {

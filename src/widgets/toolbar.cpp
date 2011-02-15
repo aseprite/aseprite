@@ -489,6 +489,7 @@ void ToolBar::openTipWindow(int group_index, Tool* tool)
   }
 
   m_tipWindow = new TipWindow(tooltip.c_str(), true);
+  m_tipWindow->setArrowAlign(JI_TOP | JI_RIGHT);
   m_tipWindow->remap_window();
 
   Rect toolrc = getToolGroupBounds(group_index);

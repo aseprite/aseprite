@@ -1482,13 +1482,58 @@ void SkinTheme::paintTooltip(PaintEvent& ev)
 {
   TipWindow* widget = static_cast<TipWindow*>(ev.getSource());
   Graphics* g = ev.getGraphics();
-  gfx::Rect pos = widget->getClientBounds();
+  gfx::Rect rc = widget->getClientBounds();
   int bg = makecol(255, 255, 125);
 
-  draw_bounds_nw(g, pos, PART_TOOLTIP_NW, bg);
-  pos.shrink(widget->getBorder());
+  int nw = PART_TOOLTIP_NW;
+  int n  = PART_TOOLTIP_N;
+  int ne = PART_TOOLTIP_NE;
+  int e  = PART_TOOLTIP_E;
+  int se = PART_TOOLTIP_SE;
+  int s  = PART_TOOLTIP_S;
+  int sw = PART_TOOLTIP_SW;
+  int w  = PART_TOOLTIP_W;
 
-  g->drawString(widget->getText(), ji_color_foreground(), bg, pos, widget->getAlign());
+  switch (widget->getArrowAlign()) {
+    case JI_TOP | JI_LEFT:     nw = PART_TOOLTIP_ARROW_NW; break;
+    case JI_TOP | JI_RIGHT:    ne = PART_TOOLTIP_ARROW_NE; break;
+    case JI_BOTTOM | JI_LEFT:  sw = PART_TOOLTIP_ARROW_SW; break;
+    case JI_BOTTOM | JI_RIGHT: se = PART_TOOLTIP_ARROW_SE; break;
+  }
+
+  draw_bounds_template(g, rc, nw, n, ne, e, se, s, sw, w);
+
+  // Draw arrow in sides
+  BITMAP* arrow = NULL;
+  switch (widget->getArrowAlign()) {
+    case JI_TOP:
+      arrow = m_part[PART_TOOLTIP_ARROW_N];
+      g->drawAlphaBitmap(arrow, rc.x+rc.w/2-arrow->w/2, rc.y);
+      break;
+    case JI_BOTTOM:
+      arrow = m_part[PART_TOOLTIP_ARROW_S];
+      g->drawAlphaBitmap(arrow, rc.x+rc.w/2-arrow->w/2, rc.y+rc.h-arrow->h);
+      break;
+    case JI_LEFT:
+      arrow = m_part[PART_TOOLTIP_ARROW_W];
+      g->drawAlphaBitmap(arrow, rc.x, rc.y+rc.h/2-arrow->h/2);
+      break;
+    case JI_RIGHT:
+      arrow = m_part[PART_TOOLTIP_ARROW_E];
+      g->drawAlphaBitmap(arrow, rc.x+rc.w-arrow->w, rc.y+rc.h/2-arrow->h/2);
+      break;
+  }
+  
+
+  // Fill background
+  g->fillRect(bg, gfx::Rect(rc).shrink(gfx::Border(m_part[w]->w,
+						   m_part[n]->h,
+						   m_part[e]->w,
+						   m_part[s]->h)));
+
+  rc.shrink(widget->getBorder());
+
+  g->drawString(widget->getText(), ji_color_foreground(), bg, rc, widget->getAlign());
 }
 
 int SkinTheme::get_bg_color(JWidget widget)

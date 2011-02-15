@@ -24,12 +24,13 @@ struct TipData
   Frame* window;	// Frame where is the tooltip
   std::string text;
   int timer_id;
+  int arrowAlign;
 };
 
 static int tip_type();
 static bool tip_hook(JWidget widget, JMessage msg);
 
-void jwidget_add_tooltip_text(JWidget widget, const char *text)
+void jwidget_add_tooltip_text(JWidget widget, const char *text, int arrowAlign)
 {
   TipData* tip = reinterpret_cast<TipData*>(jwidget_get_data(widget, tip_type()));
 
@@ -42,6 +43,7 @@ void jwidget_add_tooltip_text(JWidget widget, const char *text)
     tip->window = NULL;
     tip->text = text;
     tip->timer_id = -1;
+    tip->arrowAlign = arrowAlign;
 
     jwidget_add_hook(widget, tip_type(), tip_hook, tip);
   }
@@ -98,24 +100,59 @@ static bool tip_hook(JWidget widget, JMessage msg)
     case JM_TIMER:
       if (msg->timer.timer_id == tip->timer_id) {
 	if (!tip->window) {
-	  Frame* window = new TipWindow(tip->text.c_str(), true);
-/* 	  int x = tip->widget->rc->x1; */
-/* 	  int y = tip->widget->rc->y2; */
+	  TipWindow* window = new TipWindow(tip->text.c_str(), true);
+	  gfx::Rect bounds = tip->widget->getBounds();
 	  int x = jmouse_x(0)+12*jguiscale();
 	  int y = jmouse_y(0)+12*jguiscale();
 	  int w, h;
 
 	  tip->window = window;
 
+	  window->setArrowAlign(tip->arrowAlign);
 	  window->remap_window();
 
 	  w = jrect_w(window->rc);
 	  h = jrect_h(window->rc);
 
-	  if (x+w > JI_SCREEN_W) {
-	    x = jmouse_x(0) - w - 4*jguiscale();
-	    y = jmouse_y(0);
+	  switch (tip->arrowAlign) {
+	    case JI_TOP | JI_LEFT:
+	      x = bounds.x + bounds.w;
+	      y = bounds.y + bounds.h;
+	      break;
+	    case JI_TOP | JI_RIGHT:
+	      x = bounds.x - w;
+	      y = bounds.y + bounds.h;
+	      break;
+	    case JI_BOTTOM | JI_LEFT:
+	      x = bounds.x + bounds.w;
+	      y = bounds.y - h;
+	      break;
+	    case JI_BOTTOM | JI_RIGHT:
+	      x = bounds.x - w;
+	      y = bounds.y - h;
+	      break;
+	    case JI_TOP:
+	      x = bounds.x + bounds.w/2 - w/2;
+	      y = bounds.y + bounds.h;
+	      break;
+	    case JI_BOTTOM:
+	      x = bounds.x + bounds.w/2 - w/2;
+	      y = bounds.y - h;
+	      break;
+	    case JI_LEFT:
+	      x = bounds.x + bounds.w;
+	      y = bounds.y + bounds.h/2 - h/2;
+	      break;
+	    case JI_RIGHT:
+	      x = bounds.x - w;
+	      y = bounds.y + bounds.h/2 - h/2;
+	      break;
 	  }
+
+	  // if (x+w > JI_SCREEN_W) {
+	  //   x = jmouse_x(0) - w - 4*jguiscale();
+	  //   y = jmouse_y(0);
+	  // }
 
 	  window->position_window(MID(0, x, JI_SCREEN_W-w),
 				  MID(0, y, JI_SCREEN_H-h));
@@ -140,6 +177,7 @@ TipWindow::TipWindow(const char *text, bool close_on_buttonpressed)
   m_close_on_buttonpressed = close_on_buttonpressed;
   m_hot_region = NULL;
   m_filtering = false;
+  m_arrowAlign = 0;
 
   set_sizeable(false);
   set_moveable(false);
@@ -186,6 +224,16 @@ void TipWindow::set_hotregion(JRegion region)
   m_hot_region = region;
 }
 
+int TipWindow::getArrowAlign() const
+{
+  return m_arrowAlign;
+}
+
+void TipWindow::setArrowAlign(int arrowAlign)
+{
+  m_arrowAlign = arrowAlign;
+}
+
 bool TipWindow::onProcessMessage(JMessage msg)
 {
   switch (msg->type) {
@@ -201,10 +249,10 @@ bool TipWindow::onProcessMessage(JMessage msg)
 
     case JM_SIGNAL:
       if (msg->signal.num == JI_SIGNAL_INIT_THEME) {
-	this->border_width.l = 4 * jguiscale();
-	this->border_width.t = 4 * jguiscale();
-	this->border_width.r = 4 * jguiscale();
-	this->border_width.b = 5 * jguiscale();
+	this->border_width.l = 6 * jguiscale();
+	this->border_width.t = 6 * jguiscale();
+	this->border_width.r = 6 * jguiscale();
+	this->border_width.b = 7 * jguiscale();
 	
 	// Setup the background color.
 	setBgColor(makecol(255, 255, 200));
