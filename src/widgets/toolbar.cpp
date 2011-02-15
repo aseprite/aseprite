@@ -81,6 +81,7 @@ private:
   int getToolGroupIndex(ToolGroup* group);
   void openPopupFrame(int group_index, ToolGroup* group);
   Rect getToolGroupBounds(int group_index);
+  Point getToolPositionInGroup(int group_index, Tool* tool);
   void openTipWindow(int group_index, Tool* tool);
   void onClosePopup();
 };
@@ -452,18 +453,39 @@ Rect ToolBar::getToolGroupBounds(int group_index)
   ToolBox* toolbox = App::instance()->getToolBox();
   int groups = toolbox->getGroupsCount();
   Size iconsize = getToolIconSize(this);
+  Rect rc(getBounds());
+  rc.shrink(getBorder());
 
-  if (group_index >= 0)
-    return Rect(rc->x1+border_width.l,
-		rc->y1+border_width.t+group_index*(iconsize.h-1*jguiscale()),
-		jrect_w(rc)-border_width.l-border_width.r,
-		group_index < groups-1 ? iconsize.h+1*jguiscale():
-					 iconsize.h+2*jguiscale());
-  else
-    return Rect(rc->x1+border_width.l,
-		rc->y1+border_width.t+groups*(iconsize.h-1*jguiscale())+ 8*jguiscale(),
-		jrect_w(rc)-border_width.l-border_width.r,
-		iconsize.h+2*jguiscale());
+  if (group_index >= 0) {
+    rc.y += group_index*(iconsize.h-1*jguiscale());
+    rc.h = group_index < groups-1 ? iconsize.h+1*jguiscale():
+				    iconsize.h+2*jguiscale();
+  }
+  else {
+    rc.y += groups*(iconsize.h-1*jguiscale())+ 8*jguiscale();
+    rc.h = iconsize.h+2*jguiscale();
+  }
+
+  return rc;
+}
+
+Point ToolBar::getToolPositionInGroup(int group_index, Tool* tool)
+{
+  ToolBox* toolbox = App::instance()->getToolBox();
+  int groups = toolbox->getGroupsCount();
+  Size iconsize = getToolIconSize(this);
+  int nth = 0;
+
+  for (ToolIterator it = toolbox->begin(); it != toolbox->end(); ++it) {
+    if (tool == *it)
+      break;
+
+    if ((*it)->getGroup() == tool->getGroup()) {
+      ++nth;
+    }
+  }
+
+  return Point(iconsize.w/2+iconsize.w*nth, iconsize.h);
 }
 
 void ToolBar::openTipWindow(ToolGroup* tool_group, Tool* tool)
@@ -493,9 +515,10 @@ void ToolBar::openTipWindow(int group_index, Tool* tool)
   m_tipWindow->remap_window();
 
   Rect toolrc = getToolGroupBounds(group_index);
+  Point arrow = tool ? getToolPositionInGroup(group_index, tool): Point(0, 0);
   int w = jrect_w(m_tipWindow->rc);
   int h = jrect_h(m_tipWindow->rc);
-  int x = toolrc.x - w;
+  int x = toolrc.x - w + (tool && m_popupFrame && m_popupFrame->isVisible() ? arrow.x-m_popupFrame->getBounds().w: 0);
   int y = toolrc.y + toolrc.h;
 
   m_tipWindow->position_window(MID(0, x, JI_SCREEN_W-w),
