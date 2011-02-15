@@ -30,8 +30,7 @@ JWidget jtextbox_new(const char *text, int align)
   jwidget_focusrest(widget, true);
   widget->setAlign(align);
   widget->setText(text);
-
-  jwidget_init_theme(widget);
+  widget->initTheme();
 
   return widget;
 }

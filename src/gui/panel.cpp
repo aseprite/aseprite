@@ -35,7 +35,7 @@ JWidget jpanel_new(int align)
 
   panel->pos = 50;
 
-  jwidget_init_theme(widget);
+  widget->initTheme();
 
   return widget;
 }

@@ -54,7 +54,7 @@ Frame::Frame(bool desktop, const char* text)
   setText(text);
   setAlign(JI_LEFT | JI_MIDDLE);
 
-  jwidget_init_theme(this);
+  initTheme();
 }
 
 Frame::~Frame()
@@ -239,7 +239,7 @@ bool Frame::onProcessMessage(JMessage msg)
 
     case JM_SIGNAL:
       if (msg->signal.num == JI_SIGNAL_SET_TEXT)
-	jwidget_init_theme(this);
+	initTheme();
       break;
 
     case JM_BUTTONPRESSED: {

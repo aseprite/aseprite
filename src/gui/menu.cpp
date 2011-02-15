@@ -143,7 +143,7 @@ Widget* jmenu_new()
   menu->menuitem = NULL;
 
   jwidget_add_hook(widget, JI_MENU, menu_msg_proc, menu);
-  jwidget_init_theme(widget);
+  widget->initTheme();
 
   return widget;
 }
@@ -155,7 +155,7 @@ Widget* jmenubar_new()
   create_base(widget);
 
   widget->type = JI_MENUBAR;
-  jwidget_init_theme(widget);
+  widget->initTheme();
 
   return widget;
 }
@@ -169,7 +169,7 @@ Widget* jmenubox_new()
 
   jwidget_add_hook(widget, JI_MENUBOX, menubox_msg_proc, menubox);
   jwidget_focusrest(widget, true);
-  jwidget_init_theme(widget);
+  widget->initTheme();
 
   return widget;
 }
@@ -187,7 +187,7 @@ Widget* jmenuitem_new(const char *text)
 
   jwidget_add_hook(widget, JI_MENUITEM, menuitem_msg_proc, menuitem);
   widget->setText(text);
-  jwidget_init_theme(widget);
+  widget->initTheme();
 
   return widget;
 }

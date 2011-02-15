@@ -26,7 +26,7 @@ Box::Box(int align)
   : Widget(JI_BOX)
 {
   setAlign(align);
-  jwidget_init_theme(this);
+  initTheme();
 }
 
 bool Box::onProcessMessage(JMessage msg)

@@ -24,7 +24,7 @@ JWidget ji_separator_new(const char* text, int align)
   jwidget_add_hook(widget, JI_SEPARATOR, separator_msg_proc, NULL);
   widget->setAlign(align);
   widget->setText(text);
-  jwidget_init_theme(widget);
+  widget->initTheme();
 
   return widget;
 }

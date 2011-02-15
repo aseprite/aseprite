@@ -75,7 +75,7 @@ Tabs::Tabs(ITabsHandler* handler)
   jwidget_add_hook(m_button_left, tabs_type(), tabs_button_msg_proc, (void *)-1);
   jwidget_add_hook(m_button_right, tabs_type(), tabs_button_msg_proc, (void *)+1);
 
-  jwidget_init_theme(this);
+  initTheme();
 }
 
 Tabs::~Tabs()

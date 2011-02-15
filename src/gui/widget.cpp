@@ -153,17 +153,15 @@ void jwidget_free_deferred(JWidget widget)
   jmanager_enqueue_message(msg);
 }
 
-void jwidget_init_theme(JWidget widget)
+void Widget::initTheme()
 {
-  ASSERT_VALID_WIDGET(widget);
+  if (m_theme) {
+    m_theme->init_widget(this);
 
-  if (widget->getTheme()) {
-    widget->getTheme()->init_widget(widget);
+    if (!(flags & JI_INITIALIZED))
+      flags |= JI_INITIALIZED;
 
-    if (!(widget->flags & JI_INITIALIZED))
-      widget->flags |= JI_INITIALIZED;
-
-    jwidget_emit_signal(widget, JI_SIGNAL_INIT_THEME);
+    jwidget_emit_signal(this, JI_SIGNAL_INIT_THEME);
   }
 }
 

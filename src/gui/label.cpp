@@ -15,7 +15,7 @@ Label::Label(const char *text)
 {
   this->setAlign(JI_LEFT | JI_MIDDLE);
   this->setText(text);
-  jwidget_init_theme(this);
+  initTheme();
 }
 
 bool Label::onProcessMessage(JMessage msg)

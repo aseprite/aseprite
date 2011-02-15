@@ -140,7 +140,7 @@ Frame* colorselector_new()
 
   HOOK(pal, SIGNAL_PALETTE_EDITOR_CHANGE, paledit_change_hook, 0);
 
-  jwidget_init_theme(window);
+  window->initTheme();
   return window;
 }
 

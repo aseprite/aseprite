@@ -30,7 +30,7 @@ Slider::Slider(int min, int max, int value)
   m_value = MID(min, value, max);
 
   jwidget_focusrest(this, true);
-  jwidget_init_theme(this);
+  initTheme();
 }
 
 void Slider::setRange(int min, int max)

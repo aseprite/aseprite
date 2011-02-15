@@ -57,7 +57,7 @@ Entry::Entry(size_t maxsize, const char *format, ...)
   setText(buf);
 
   jwidget_focusrest(this, true);
-  jwidget_init_theme(this);
+  initTheme();
 }
 
 Entry::~Entry()

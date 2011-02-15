@@ -68,7 +68,7 @@ JWidget jview_new()
   jwidget_add_child(widget, view->viewport);
   jview_set_size(widget, 0, 0);
 
-  jwidget_init_theme(widget);
+  widget->initTheme();
 
   return widget;
 }
@@ -375,7 +375,7 @@ static JWidget viewport_new()
   Widget* widget = new Widget(JI_VIEW_VIEWPORT);
 
   jwidget_add_hook(widget, JI_VIEW_VIEWPORT, viewport_msg_proc, NULL);
-  jwidget_init_theme(widget);
+  widget->initTheme();
 
   return widget;
 }
@@ -456,7 +456,7 @@ static JWidget scrollbar_new(int align)
 
   jwidget_add_hook(widget, JI_VIEW_SCROLLBAR, scrollbar_msg_proc, NULL);
   widget->setAlign(align);
-  jwidget_init_theme(widget);
+  widget->initTheme();
 
   return widget;
 }

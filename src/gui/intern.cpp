@@ -106,8 +106,7 @@ void _ji_reinit_theme_in_all_widgets()
   for (c=0; c<widgets->size(); c++)
     if (_ji_is_valid_widget((*widgets)[c])) {
       (*widgets)[c]->setTheme(CurrentTheme::get());
-
-      jwidget_init_theme((*widgets)[c]);
+      (*widgets)[c]->initTheme();
     }
 
   // Remap the windows

@@ -34,7 +34,7 @@ JWidget jlistbox_new()
 
   jwidget_add_hook(widget, JI_LISTBOX, listbox_msg_proc, NULL);
   jwidget_focusrest(widget, true);
-  jwidget_init_theme(widget);
+  widget->initTheme();
 
   return widget;
 }
@@ -46,7 +46,7 @@ JWidget jlistitem_new(const char *text)
   jwidget_add_hook(widget, JI_LISTITEM, listitem_msg_proc, NULL);
   widget->setAlign(JI_LEFT | JI_MIDDLE);
   widget->setText(text);
-  jwidget_init_theme(widget);
+  widget->initTheme();
 
   return widget;
 }

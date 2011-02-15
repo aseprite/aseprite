@@ -36,7 +36,7 @@ ButtonBase::ButtonBase(const char* text, int type, int behaviorType, int drawTyp
 
   // Initialize theme
   this->type = m_drawType;	// TODO Remove this nasty trick
-  jwidget_init_theme(this);
+  initTheme();
   this->type = type;
 }
 

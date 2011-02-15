@@ -46,7 +46,7 @@ Grid::Grid(int columns, bool same_width_columns)
     m_colstrip[col].expand_count = 0;
   }
 
-  jwidget_init_theme(this);
+  initTheme();
 }
 
 Grid::~Grid()

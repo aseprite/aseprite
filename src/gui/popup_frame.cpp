@@ -34,7 +34,7 @@ PopupFrame::PopupFrame(const char* text, bool close_on_buttonpressed)
   JI_LIST_FOR_EACH_SAFE(this->children, link, next)
     jwidget_free(reinterpret_cast<JWidget>(link->data));
 
-  jwidget_init_theme(this);
+  initTheme();
   jwidget_noborders(this);
 }
 

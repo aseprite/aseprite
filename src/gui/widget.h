@@ -34,8 +34,6 @@ int ji_register_widget_type();
 void jwidget_free(JWidget widget);
 void jwidget_free_deferred(JWidget widget);
 
-void jwidget_init_theme(JWidget widget);
-
 /* hooks */
 
 void jwidget_add_hook(JWidget widget, int type,
@@ -215,6 +213,8 @@ public:
 
   Theme* getTheme() const { return m_theme; }
   void setTheme(Theme* theme);
+
+  void initTheme();
 
   // ===============================================================
   // PARENTS & CHILDREN

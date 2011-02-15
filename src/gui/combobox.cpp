@@ -60,7 +60,7 @@ ComboBox::ComboBox()
 
   setEditable(m_editable);
 
-  jwidget_init_theme(this);
+  initTheme();
 }
 
 ComboBox::~ComboBox()
