@@ -68,6 +68,7 @@ public:
   virtual void draw_view_scrollbar(JWidget widget, JRect clip) = 0;
   virtual void draw_view_viewport(JWidget widget, JRect clip) = 0;
   virtual void paintFrame(PaintEvent& ev) = 0;
+  virtual void paintTooltip(PaintEvent& ev) = 0;
 
 protected:
   virtual void onRegenerate() = 0;

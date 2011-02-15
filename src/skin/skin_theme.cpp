@@ -142,6 +142,8 @@ SkinTheme::SkinTheme()
   sheet_mapping["colorbar_border_hotfg"] = PART_COLORBAR_BORDER_HOTFG_NW;
   sheet_mapping["scrollbar_bg"] = PART_SCROLLBAR_BG_NW;
   sheet_mapping["scrollbar_thumb"] = PART_SCROLLBAR_THUMB_NW;
+  sheet_mapping["tooltip"] = PART_TOOLTIP_NW;
+  sheet_mapping["tooltip_arrow"] = PART_TOOLTIP_ARROW_NW;
 
   reload_skin();
 }
@@ -1474,6 +1476,19 @@ void SkinTheme::draw_frame_button(ButtonBase* widget, JRect clip)
 
   set_alpha_blender();
   draw_trans_sprite(ji_screen, m_part[part], widget->rc->x1, widget->rc->y1);
+}
+
+void SkinTheme::paintTooltip(PaintEvent& ev)
+{
+  TipWindow* widget = static_cast<TipWindow*>(ev.getSource());
+  Graphics* g = ev.getGraphics();
+  gfx::Rect pos = widget->getClientBounds();
+  int bg = makecol(255, 255, 125);
+
+  draw_bounds_nw(g, pos, PART_TOOLTIP_NW, bg);
+  pos.shrink(widget->getBorder());
+
+  g->drawString(widget->getText(), ji_color_foreground(), bg, pos, widget->getAlign());
 }
 
 int SkinTheme::get_bg_color(JWidget widget)

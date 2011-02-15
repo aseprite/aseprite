@@ -201,10 +201,10 @@ bool TipWindow::onProcessMessage(JMessage msg)
 
     case JM_SIGNAL:
       if (msg->signal.num == JI_SIGNAL_INIT_THEME) {
-	this->border_width.l = 3 * jguiscale();
-	this->border_width.t = 3 * jguiscale();
-	this->border_width.r = 3 * jguiscale();
-	this->border_width.b = 3 * jguiscale();
+	this->border_width.l = 4 * jguiscale();
+	this->border_width.t = 4 * jguiscale();
+	this->border_width.r = 4 * jguiscale();
+	this->border_width.b = 5 * jguiscale();
 	
 	// Setup the background color.
 	setBgColor(makecol(255, 255, 200));
@@ -291,16 +291,5 @@ void TipWindow::onPreferredSize(PreferredSizeEvent& ev)
 
 void TipWindow::onPaint(PaintEvent& ev)
 {
-  Graphics* g = ev.getGraphics();
-  Rect pos = getClientBounds();
-
-  for (int i=0; i<jguiscale(); ++i) {
-    g->drawRect(makecol(0, 0, 0), pos);
-    pos.shrink(1);
-  }
-
-  g->fillRect(this->getBgColor(), pos);
-  pos.shrink(getBorder());
-
-  g->drawString(getText(), ji_color_foreground(), this->getBgColor(), pos, getAlign());
+  getTheme()->paintTooltip(ev);
 }

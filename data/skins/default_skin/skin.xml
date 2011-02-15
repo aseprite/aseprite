@@ -111,6 +111,8 @@
     <part id="colorbar_border_hotfg"		x="32" y="224" w1="5" w2="6" w3="5" h1="5" h2="6" h3="5" />
     <part id="scrollbar_bg"			x="64" y="144" w1="5" w2="6" w3="5" h1="5" h2="6" h3="5" />
     <part id="scrollbar_thumb"			x="64" y="160" w1="5" w2="6" w3="5" h1="5" h2="6" h3="5" />
+    <part id="tooltip"				x="112" y="224" w1="5" w2="6" w3="5" h1="5" h2="5" h3="6" />
+    <part id="tooltip_arrow"			x="128" y="224" w1="5" w2="6" w3="5" h1="5" h2="5" h3="6" />
   </parts>
 
 </skin>
