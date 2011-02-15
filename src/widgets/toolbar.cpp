@@ -515,6 +515,10 @@ void ToolBar::closeTipWindow()
     m_tipWindow->closeWindow(NULL);
     delete m_tipWindow;
     m_tipWindow = NULL;
+
+    // Flush JM_DRAW messages and send them
+    jwidget_flush_redraw(ji_get_default_manager());
+    jmanager_dispatch_messages(ji_get_default_manager());
   }
 }
 
