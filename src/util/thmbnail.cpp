@@ -50,20 +50,20 @@ struct Thumbnail
   }
 };
 
-static JList thumbnails = NULL;
+typedef std::vector<Thumbnail*> ThumbnailsList;
+
+static ThumbnailsList* thumbnails = NULL;
 
 static void thumbnail_render(BITMAP* bmp, const Image* image, bool has_alpha, const Palette* palette);
 
 void destroy_thumbnails()
 {
   if (thumbnails) {
-    JLink link;
+    for (ThumbnailsList::iterator it = thumbnails->begin(); it != thumbnails->end(); ++it)
+      delete *it;
 
-    JI_LIST_FOR_EACH(thumbnails, link)
-      delete reinterpret_cast<Thumbnail*>(link->data);
-
-    jlist_free(thumbnails);
-    thumbnails = NULL;
+    thumbnails->clear();
+    delete thumbnails;
   }
 }
 
@@ -71,14 +71,13 @@ BITMAP* generate_thumbnail(const Layer* layer, const Cel* cel, const Sprite *spr
 {
   Thumbnail* thumbnail;
   BITMAP* bmp;
-  JLink link;
 
   if (!thumbnails)
-    thumbnails = jlist_new();
+    thumbnails = new ThumbnailsList();
 
-  /* find the thumbnail */
-  JI_LIST_FOR_EACH(thumbnails, link) {
-    thumbnail = reinterpret_cast<Thumbnail*>(link->data);
+  // Find the thumbnail
+  for (ThumbnailsList::iterator it = thumbnails->begin(); it != thumbnails->end(); ++it) {
+    thumbnail = *it;
     if (thumbnail->cel == cel)
       return thumbnail->bmp;
   }
@@ -98,7 +97,7 @@ BITMAP* generate_thumbnail(const Layer* layer, const Cel* cel, const Sprite *spr
     return NULL;
   }
 
-  jlist_append(thumbnails, thumbnail);
+  thumbnails->push_back(thumbnail);
   return thumbnail->bmp;
 }
 
