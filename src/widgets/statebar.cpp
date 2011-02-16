@@ -22,6 +22,7 @@
 #include <cstdarg>
 #include <cstdio>
 #include <cstring>
+#include <algorithm>
 
 #include "app.h"
 #include "base/bind.h"
@@ -93,7 +94,6 @@ StatusBar::StatusBar()
 
   m_timeout = 0;
   m_state = SHOW_TEXT;
-  m_progress = jlist_new();
   m_tipwindow = NULL;
   m_hot_layer = -1;
 
@@ -159,15 +159,10 @@ StatusBar::StatusBar()
 
 StatusBar::~StatusBar()
 {
-  JLink link;
+  for (ProgressList::iterator it = m_progress.begin(); it != m_progress.end(); ++it)
+    delete *it;
 
-  JI_LIST_FOR_EACH(m_progress, link) {
-    delete (Progress*)link->data;
-  }
-  jlist_free(m_progress);
-
-  if (m_tipwindow != NULL)
-    jwidget_free(m_tipwindow);
+  delete m_tipwindow;		// widget
 }
 
 void StatusBar::onCurrentToolChange()
@@ -308,7 +303,7 @@ Color StatusBar::getTransparentColor()
 Progress* StatusBar::addProgress()
 {
   Progress* progress = new Progress(this);
-  jlist_append(m_progress, progress);
+  m_progress.push_back(progress);
   invalidate();
   return progress;
 }
@@ -317,7 +312,10 @@ void StatusBar::removeProgress(Progress* progress)
 {
   ASSERT(progress->m_statusbar == this);
 
-  jlist_remove(m_progress, progress);
+  ProgressList::iterator it = std::find(m_progress.begin(), m_progress.end(), progress);
+  ASSERT(it != m_progress.end());
+
+  m_progress.erase(it);
   invalidate();
 }
 
@@ -474,17 +472,16 @@ bool StatusBar::onProcessMessage(JMessage msg)
       }
 
       // Draw progress bar
-      if (!jlist_empty(m_progress)) {
+      if (!m_progress.empty()) {
 	int width = 64;
 	int y1, y2;
 	int x = rc->x2 - (width+4);
-	JLink link;
 
 	y1 = rc->y1;
 	y2 = rc->y2-1;
 
-	JI_LIST_FOR_EACH(m_progress, link) {
-	  Progress* progress = reinterpret_cast<Progress*>(link->data);
+	for (ProgressList::iterator it = m_progress.begin(); it != m_progress.end(); ++it) {
+	  Progress* progress = *it;
 
 	  draw_progress_bar(doublebuffer,
 			    x, y1, x+width-1, y2,

@@ -19,6 +19,8 @@
 #ifndef WIDGETS_STATEBAR_H_INCLUDED
 #define WIDGETS_STATEBAR_H_INCLUDED
 
+#include <vector>
+
 #include "app/color.h"
 #include "gui/base.h"
 #include "gui/widget.h"
@@ -78,6 +80,8 @@ private:
 
   enum State { SHOW_TEXT, SHOW_COLOR, SHOW_TOOL };
 
+  typedef std::vector<Progress*> ProgressList;
+
   int m_timeout;
   State m_state;
 
@@ -89,7 +93,7 @@ private:
   int m_alpha;
 
   // Progress bar
-  JList m_progress;
+  ProgressList m_progress;
 
   // Box of main commands
   Widget* m_commandsBox;
