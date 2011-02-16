@@ -8,6 +8,7 @@
 
 #include <allegro.h>
 #include <allegro/internal/aintern.h>
+#include <vector>
 
 #include "gui/draw.h"
 #include "gui/font.h"
@@ -220,37 +221,29 @@ void ji_move_region(JRegion region, int dx, int dy)
     jregion_translate(region, -dx, -dy);
   }
 
-  /* blit directly screen to screen *************************************/
+  // Blit directly screen to screen.
   if (is_linear_bitmap(ji_screen) && nrects == 1) {
     rc = JI_REGION_RECTS(region);
     blit(ji_screen, ji_screen,
 	 rc->x1, rc->y1,
 	 rc->x1+dx, rc->y1+dy, jrect_w(rc), jrect_h(rc));
   }
-  /* blit saving areas and copy them ************************************/
+  // Blit saving areas and copy them.
   else if (nrects > 1) {
-    /* TODO optimize this routine, it's really slow */
-    JList images = jlist_new();
-    BITMAP *bmp;
-    JLink link;
+    std::vector<BITMAP*> images(nrects);
+    BITMAP* bmp;
 
-    for (c=0, rc=JI_REGION_RECTS(region);
-	 c<nrects;
-	 c++, rc++) {
+    for (c=0, rc=JI_REGION_RECTS(region); c<nrects; ++c, ++rc) {
       bmp = create_bitmap(jrect_w(rc), jrect_h(rc));
       blit(ji_screen, bmp,
 	   rc->x1, rc->y1, 0, 0, bmp->w, bmp->h);
-      jlist_append(images, bmp);
+      images[c] = bmp;
     }
 
-    for (c=0, rc=JI_REGION_RECTS(region), link=jlist_first(images);
-	 c<nrects;
-	 c++, rc++, link=link->next) {
-      bmp = reinterpret_cast<BITMAP*>(link->data);
+    for (c=0, rc=JI_REGION_RECTS(region); c<nrects; ++c, ++rc) {
+      bmp = images[c];
       blit(bmp, ji_screen, 0, 0, rc->x1+dx, rc->y1+dy, bmp->w, bmp->h);
       destroy_bitmap(bmp);
     }
-
-    jlist_free(images);
   }
 }
