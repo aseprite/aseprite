@@ -46,7 +46,6 @@ static Slider* slider_tolerance;
 
 static void button_1_command(JWidget widget);
 static void button_2_command(JWidget widget);
-static bool color_change_hook(JWidget widget, void *data);
 
 static Mask *gen_mask(const Sprite* sprite);
 static void mask_preview(Sprite* sprite);
@@ -98,7 +97,7 @@ void dialogs_mask_color(Sprite* sprite)
   button_ok->Click.connect(Bind<void>(&Frame::closeWindow, window.get(), button_ok));
   button_cancel->Click.connect(Bind<void>(&Frame::closeWindow, window.get(), button_cancel));
 
-  HOOK(button_color, SIGNAL_COLORBUTTON_CHANGE, color_change_hook, sprite);
+  button_color->Change.connect(Bind<void>(&mask_preview, sprite));
   slider_tolerance->Change.connect(Bind<void>(&mask_preview, sprite));
   check_preview->Click.connect(Bind<void>(&mask_preview, sprite));
 
@@ -163,12 +162,6 @@ static void button_2_command(JWidget widget)
 {
   button_color->setColor(app_get_colorbar()->getBgColor());
   mask_preview((Sprite*)widget->user_data[1]);
-}
-
-static bool color_change_hook(JWidget widget, void *data)
-{
-  mask_preview((Sprite*)data);
-  return false;
 }
 
 static Mask *gen_mask(const Sprite* sprite)

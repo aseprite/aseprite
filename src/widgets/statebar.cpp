@@ -60,7 +60,6 @@ enum AniAction {
 
 static bool tipwindow_msg_proc(JWidget widget, JMessage msg);
 
-static bool transparent_color_change_hook(JWidget widget, void *data);
 static void slider_change_hook(Slider* slider);
 static void ani_button_command(Button* widget, AniAction action);
 
@@ -151,7 +150,7 @@ StatusBar::StatusBar()
     jwidget_add_child(m_movePixelsBox, m_transparentLabel);
     jwidget_add_child(m_movePixelsBox, m_transparentColor);
 
-    HOOK(m_transparentColor, SIGNAL_COLORBUTTON_CHANGE, transparent_color_change_hook, 1);
+    m_transparentColor->Change.connect(Bind<void>(&StatusBar::onTransparentColorChange, this));
   }
 
   App::instance()->CurrentToolChange.connect(&StatusBar::onCurrentToolChange, this);
@@ -174,6 +173,12 @@ void StatusBar::onCurrentToolChange()
       this->setTextf("%s Selected", currentTool->getText().c_str());
     }
   }
+}
+
+void StatusBar::onTransparentColorChange()
+{
+  if (current_editor)
+    current_editor->setMaskColorForPixelsMovement(getTransparentColor());
 }
 
 void StatusBar::clearText()
@@ -730,13 +735,6 @@ static bool tipwindow_msg_proc(JWidget widget, JMessage msg)
   }
 
   return false;
-}
-
-static bool transparent_color_change_hook(JWidget widget, void *data)
-{
-  if (current_editor)
-    current_editor->setMaskColorForPixelsMovement(app_get_statusbar()->getTransparentColor());
-  return true;
 }
 
 static void slider_change_hook(Slider* slider)

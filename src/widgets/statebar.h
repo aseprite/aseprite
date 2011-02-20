@@ -76,6 +76,7 @@ protected:
 
 private:
   void onCurrentToolChange();
+  void onTransparentColorChange();
   void updateFromLayer();
 
   enum State { SHOW_TEXT, SHOW_COLOR, SHOW_TOOL };

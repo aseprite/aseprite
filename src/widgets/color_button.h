@@ -20,12 +20,10 @@
 #define WIDGETS_COLOR_BUTTON_H_INCLUDED
 
 #include "app/color.h"
+#include "base/signal.h"
 #include "gui/button.h"
 
 class Frame;
-
-/* TODO use some JI_SIGNAL_USER */
-#define SIGNAL_COLORBUTTON_CHANGE   0x10001
 
 class ColorButton : public ButtonBase
 {
@@ -37,6 +35,9 @@ public:
 
   Color getColor() const;
   void setColor(const Color& color);
+
+  // Signals
+  Signal1<void, Color> Change;
 
 protected:
   // Events

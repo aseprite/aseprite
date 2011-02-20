@@ -48,8 +48,8 @@ static Slider* slider_tolerance;
 static JWidget preview;
 static CheckBox* check_preview;
 
-static bool color_change_hook(JWidget widget, void *data);
-static bool target_change_hook(JWidget widget, void *data);
+static void color_change_hook(Widget* widget, int num);
+static bool target_change_hook(Widget* widget, void *data);
 static void slider_change_hook(Slider* tolerance_slider);
 static void preview_change_hook(Widget* widget);
 static void make_preview();
@@ -126,8 +126,8 @@ void ReplaceColorCommand::onExecute(Context* context)
   jwidget_add_child(box_target, target_button);
   jwidget_add_child(window, preview);
 
-  HOOK(button_color1, SIGNAL_COLORBUTTON_CHANGE, color_change_hook, 1);
-  HOOK(button_color2, SIGNAL_COLORBUTTON_CHANGE, color_change_hook, 2);
+  button_color1->Change.connect(Bind<void>(&color_change_hook, button_color1, 1));
+  button_color2->Change.connect(Bind<void>(&color_change_hook, button_color2, 2));
   HOOK(target_button, SIGNAL_TARGET_BUTTON_CHANGE, target_change_hook, 0);
   slider_tolerance->Change.connect(Bind<void>(&slider_change_hook, slider_tolerance));
   check_preview->Click.connect(Bind<void>(&preview_change_hook, check_preview));
@@ -155,15 +155,14 @@ void ReplaceColorCommand::onExecute(Context* context)
   save_window_pos(window, "ReplaceColor");
 }
 
-static bool color_change_hook(JWidget widget, void *data)
+static void color_change_hook(Widget* widget, int num)
 {
   char buf[64];
 
-  sprintf(buf, "Color%u", (size_t)data);
+  sprintf(buf, "Color%u", num);
   set_config_color("ReplaceColor", buf, static_cast<ColorButton*>(widget)->getColor());
 
   make_preview();
-  return false;
 }
 
 static bool target_change_hook(JWidget widget, void *data)

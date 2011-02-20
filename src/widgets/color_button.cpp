@@ -70,6 +70,10 @@ Color ColorButton::getColor() const
 void ColorButton::setColor(const Color& color)
 {
   m_color = color;
+
+  // Emit signal
+  Change(color);
+
   invalidate();
 }
 
@@ -125,8 +129,7 @@ bool ColorButton::onProcessMessage(JMessage msg)
 
 	// Did the color change?
 	if (color != this->m_color) {
-	  this->setColor(color);
-	  jwidget_emit_signal(this, SIGNAL_COLORBUTTON_CHANGE);
+	  setColor(color);
 	}
       }
       break;
@@ -258,7 +261,6 @@ static bool tooltip_window_msg_proc(JWidget widget, JMessage msg)
 	Color color = colorselector_get_color(widget);
 
 	colorbutton_widget->setColor(color);
-	jwidget_emit_signal(colorbutton_widget, SIGNAL_COLORBUTTON_CHANGE);
       }
       break;
 
