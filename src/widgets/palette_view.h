@@ -21,6 +21,7 @@
 
 #include <allegro/color.h>
 
+#include "base/signal.h"
 #include "gui/widget.h"
 
 // TODO use some JI_SIGNAL_USER
@@ -51,6 +52,9 @@ public:
   int get1stColor();
   int get2ndColor();
   void getSelectedEntries(bool array[256]);
+
+  // Signals
+  Signal1<void, int> IndexChange;
 
 protected:
   bool onProcessMessage(JMessage msg);

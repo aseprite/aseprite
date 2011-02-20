@@ -533,7 +533,10 @@ bool PaletteView::onProcessMessage(JMessage msg)
 
 	      update_scroll(c);
 
+	      // Emit signals
 	      jwidget_emit_signal(this, SIGNAL_PALETTE_EDITOR_CHANGE);
+	      IndexChange(c);
+
 	      c = 256;
 	      break;
 	    }
