@@ -261,49 +261,38 @@ std::string Color::toFormalString(int imgtype, bool long_format) const
     switch (getType()) {
 
       case Color::MaskType:
-	result << "MASK";
+	result << "Mask";
 	break;
 
       case Color::RgbType:
 	if (imgtype == IMAGE_GRAYSCALE) {
-	  result << "V " << getGray();
+	  result << "Gry-" << getGray();
 	}
 	else {
-	  result << "RGB #" << std::hex << std::setfill('0')
+	  result << "#" << std::hex << std::setfill('0')
 		 << std::setw(2) << m_value.rgb.r
 		 << std::setw(2) << m_value.rgb.g
 		 << std::setw(2) << m_value.rgb.b;
-
-	  if (imgtype == IMAGE_INDEXED) {
-	    result << " (" << std::dec
-		   << color_utils::color_for_image(*this, imgtype) << ")";
-	  }
 	}
 	break;
 
       case Color::HsvType:
 	if (imgtype == IMAGE_GRAYSCALE) {
-	  result << "V " << getGray();
+	  result << "Gry-" << getGray();
 	}
 	else {
-	  result << "HSV "
-		 << m_value.hsv.h << ","
+	  result << m_value.hsv.h << ","
 		 << m_value.hsv.s << ","
 		 << m_value.hsv.v;
-
-	  if (imgtype == IMAGE_INDEXED) {
-	    result << " ("
-		   << color_utils::color_for_image(*this, imgtype) << ")";
-	  }
 	}
 	break;
 
       case Color::GrayType:
-	result << "V " << m_value.gray;
+	result << "Gry-" << m_value.gray;
 	break;
 
       case Color::IndexType:
-	result << "I " << m_value.index;
+	result << "Idx-" << m_value.index;
 	break;
 
       default:
