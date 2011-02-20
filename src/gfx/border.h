@@ -9,6 +9,8 @@
 
 namespace gfx {
 
+class Size;
+
 class Border
 {
 public:
@@ -25,10 +27,20 @@ public:
   void right(int right) { m_right = right; }
   void bottom(int bottom) { m_bottom = bottom; }
 
+  Size getSize() const;
+
+  const Border& operator+=(const Border& br);
+  const Border& operator-=(const Border& br);
+  const Border& operator*=(const Border& br);
+  const Border& operator/=(const Border& br);
   const Border& operator+=(int value);
   const Border& operator-=(int value);
   const Border& operator*=(int value);
   const Border& operator/=(int value);
+  Border operator+(const Border& br) const;
+  Border operator-(const Border& br) const;
+  Border operator*(const Border& br) const;
+  Border operator/(const Border& br) const;
   Border operator+(int value) const;
   Border operator-(int value) const;
   Border operator*(int value) const;
