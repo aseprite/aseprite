@@ -42,9 +42,9 @@ protected:
   // Events
   bool onProcessMessage(JMessage msg);
   void onPreferredSize(PreferredSizeEvent& ev);
+  void onPaint(PaintEvent& ev);
 
 private:
-  void draw();
   void openSelectorDialog();
   void closeSelectorDialog();
 

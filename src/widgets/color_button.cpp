@@ -77,10 +77,6 @@ bool ColorButton::onProcessMessage(JMessage msg)
 {
   switch (msg->type) {
 
-    case JM_DRAW:
-      draw();
-      return true;
-
     case JM_SIGNAL:
       if (msg->signal.num == JI_SIGNAL_BUTTON_SELECT) {
 	// If the popup window was not created or shown yet..
@@ -159,13 +155,14 @@ void ColorButton::onPreferredSize(PreferredSizeEvent& ev)
 		      jrect_h(&box) + this->border_width.t + this->border_width.b);
 }
 
-void ColorButton::draw()
+void ColorButton::onPaint(PaintEvent& ev) // TODO use "ev.getGraphics()"
 {
   struct jrect box, text, icon;
-
   jwidget_get_texticon_info(this, &box, &text, &icon, 0, 0, 0);
 
-  jdraw_rectfill(this->rc, ji_color_face());
+  int bg = getBgColor();
+  if (bg < 0) bg = ji_color_face();
+  jdraw_rectfill(this->rc, bg);
 
   Color color;
 
@@ -189,16 +186,15 @@ void ColorButton::draw()
      this->hasMouseOver(), false);
 
   // Draw text
-  std::string str =
-    this->m_color.toFormalString(this->m_imgtype, false);
+  std::string str = m_color.toFormalString(this->m_imgtype, false);
 
-  this->setTextQuiet(str.c_str());
+  setTextQuiet(str.c_str());
   jwidget_get_texticon_info(this, &box, &text, &icon, 0, 0, 0);
   
   int textcolor = color_utils::blackandwhite_neg(color.getRed(),
 						 color.getGreen(),
 						 color.getBlue());
-  jdraw_text(ji_screen, this->getFont(), this->getText(), text.x1, text.y1,
+  jdraw_text(ji_screen, getFont(), getText(), text.x1, text.y1,
 	     textcolor, -1, false, jguiscale());
 }
 
