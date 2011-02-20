@@ -41,7 +41,6 @@
 
 struct jaccel;
 struct jhook;
-struct jquickmenu;
 struct jlink;
 struct jlist;
 union  jmessage;
@@ -196,7 +195,6 @@ typedef void*			JThread;
 
 typedef struct jaccel*		JAccel;
 typedef struct jhook*		JHook;
-typedef struct jquickmenu*	JQuickMenu;
 typedef struct jlink*		JLink;
 typedef struct jlist*		JList;
 typedef union  jmessage*	JMessage;

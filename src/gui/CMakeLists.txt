@@ -34,7 +34,6 @@ add_library(gui-lib
   popup_frame.cpp
   preferred_size_event.cpp
   property.cpp
-  quickmenu.cpp
   rect.cpp
   region.cpp
   separator.cpp
