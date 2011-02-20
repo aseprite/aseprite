@@ -37,8 +37,6 @@
 #include "raster/palette.h"
 #include "widgets/palette_view.h"
 
-#define COLOR_SIZE	(m_boxsize)
-
 static int palette_view_type()
 {
   static int type = 0;
@@ -380,13 +378,13 @@ bool PaletteView::onProcessMessage(JMessage msg)
 	       _rgba_getg(palette->getEntry(c)),
 	       _rgba_getb(palette->getEntry(c)));
 
-	  rectfill(bmp, x, y, x+COLOR_SIZE-1, y+COLOR_SIZE-1, color);
+	  rectfill(bmp, x, y, x+m_boxsize-1, y+m_boxsize-1, color);
 
-	  x += COLOR_SIZE+this->child_spacing;
+	  x += m_boxsize+this->child_spacing;
 	  c++;
 	}
 
-	y += COLOR_SIZE+this->child_spacing;
+	y += m_boxsize+this->child_spacing;
       }
 
       /* draw the edges in the selected color */
@@ -418,10 +416,10 @@ bool PaletteView::onProcessMessage(JMessage msg)
 	  if (x2 < x1) { c = x2; x2 = x1; x1 = c; }
 
 	  rect(bmp,
-	       bl + x1*(cs+COLOR_SIZE)-1,
-	       bt + y1*(cs+COLOR_SIZE)-1,
-	       bl + x2*(cs+COLOR_SIZE)+COLOR_SIZE,
-	       bt + y2*(cs+COLOR_SIZE)+COLOR_SIZE, color);
+	       bl + x1*(cs+m_boxsize)-1,
+	       bt + y1*(cs+m_boxsize)-1,
+	       bl + x2*(cs+m_boxsize)+m_boxsize,
+	       bt + y2*(cs+m_boxsize)+m_boxsize, color);
 	}
 	/* draw the linear gamma */
 	else {
@@ -430,32 +428,32 @@ bool PaletteView::onProcessMessage(JMessage msg)
 	    for (x=0; x<cols; x++) {
 	      if ((c == index1) || ((x == 0) && (y > y1) && (y <= y2))) {
 		vline(bmp,
-		      bl + x*(cs+COLOR_SIZE)-1,
-		      bt + y*(cs+COLOR_SIZE)-1,
-		      bt + y*(cs+COLOR_SIZE)+COLOR_SIZE, color);
+		      bl + x*(cs+m_boxsize)-1,
+		      bt + y*(cs+m_boxsize)-1,
+		      bt + y*(cs+m_boxsize)+m_boxsize, color);
 	      }
 
 	      if ((c == index2) || ((x == cols-1) && (y >= y1) && (y < y2))) {
 		vline(bmp,
-		      bl + x*(cs+COLOR_SIZE)+COLOR_SIZE,
-		      bt + y*(cs+COLOR_SIZE)-1,
-		      bt + y*(cs+COLOR_SIZE)+COLOR_SIZE, color);
+		      bl + x*(cs+m_boxsize)+m_boxsize,
+		      bt + y*(cs+m_boxsize)-1,
+		      bt + y*(cs+m_boxsize)+m_boxsize, color);
 	      }
 
 	      if (y == y1) {
 		if (x >= x1) {
 		  if ((y < y2) || (x <= x2))
 		    hline(bmp,
-			  bl + x*(cs+COLOR_SIZE)-1,
-			  bt + y*(cs+COLOR_SIZE)-1,
-			  bl + x*(cs+COLOR_SIZE)+COLOR_SIZE, color);
+			  bl + x*(cs+m_boxsize)-1,
+			  bt + y*(cs+m_boxsize)-1,
+			  bl + x*(cs+m_boxsize)+m_boxsize, color);
 		}
 		else if (y < y2) {
 		  if ((y+1 < y2) || (x <= x2))
 		    hline(bmp,
-			  bl + x*(cs+COLOR_SIZE)-1,
-			  bt + y*(cs+COLOR_SIZE)+COLOR_SIZE,
-			  bl + x*(cs+COLOR_SIZE)+COLOR_SIZE, color);
+			  bl + x*(cs+m_boxsize)-1,
+			  bt + y*(cs+m_boxsize)+m_boxsize,
+			  bl + x*(cs+m_boxsize)+m_boxsize, color);
 		}
 	      }
 
@@ -463,16 +461,16 @@ bool PaletteView::onProcessMessage(JMessage msg)
 		if (x <= x2) {
 		  if ((y > y1) || (x >= x1))
 		    hline(bmp,
-			  bl + x*(cs+COLOR_SIZE)-1,
-			  bt + y*(cs+COLOR_SIZE)+COLOR_SIZE,
-			  bl + x*(cs+COLOR_SIZE)+COLOR_SIZE, color);
+			  bl + x*(cs+m_boxsize)-1,
+			  bt + y*(cs+m_boxsize)+m_boxsize,
+			  bl + x*(cs+m_boxsize)+m_boxsize, color);
 		}
 		else if (y > y1) {
 		  if ((y-1 > y1) || (x >= x1))	
 		    hline(bmp,
-			  bl + x*(cs+COLOR_SIZE)-1,
-			  bt + y*(cs+COLOR_SIZE)-1,
-			  bl + x*(cs+COLOR_SIZE)+COLOR_SIZE, color);
+			  bl + x*(cs+m_boxsize)-1,
+			  bt + y*(cs+m_boxsize)-1,
+			  bl + x*(cs+m_boxsize)+m_boxsize, color);
 		}
 	      }
 
@@ -521,8 +519,8 @@ bool PaletteView::onProcessMessage(JMessage msg)
 	    if (c >= palette->size())
 	      break;
 
-	    if ((mouse_x >= x) && (mouse_x <= x+COLOR_SIZE) &&
-		(mouse_y >= y) && (mouse_y <= y+COLOR_SIZE) &&
+	    if ((mouse_x >= x) && (mouse_x <= x+m_boxsize) &&
+		(mouse_y >= y) && (mouse_y <= y+m_boxsize) &&
 		(c != m_color[1])) {
 	      if (msg->any.shifts & KB_SHIFT_FLAG)
 		selectRange(m_color[0], c, PALETTE_EDITOR_RANGE_LINEAL);
@@ -541,11 +539,11 @@ bool PaletteView::onProcessMessage(JMessage msg)
 	      break;
 	    }
 
-	    x += COLOR_SIZE+this->child_spacing;
+	    x += m_boxsize+this->child_spacing;
 	    c++;
 	  }
 
-	  y += COLOR_SIZE+this->child_spacing;
+	  y += m_boxsize+this->child_spacing;
 	}
 
 	jrect_free(cpos);
@@ -568,10 +566,10 @@ void PaletteView::request_size(int* w, int* h)
   int rows = d.quot + ((d.rem)? 1: 0);
 
   *w = this->border_width.l + this->border_width.r +
-    + cols*COLOR_SIZE + (cols-1)*this->child_spacing;
+    + cols*m_boxsize + (cols-1)*this->child_spacing;
 
   *h = this->border_width.t + this->border_width.b +
-    + rows*COLOR_SIZE + (rows-1)*this->child_spacing;
+    + rows*m_boxsize + (rows-1)*this->child_spacing;
 }
 
 void PaletteView::update_scroll(int color)
@@ -588,18 +586,18 @@ void PaletteView::update_scroll(int color)
     d = div(256, m_columns);
     cols = m_columns;
 
-    y = (COLOR_SIZE+this->child_spacing) * (color / cols);
-    x = (COLOR_SIZE+this->child_spacing) * (color % cols);
+    y = (m_boxsize+this->child_spacing) * (color / cols);
+    x = (m_boxsize+this->child_spacing) * (color % cols);
 
     if (scroll_x > x)
       scroll_x = x;
-    else if (scroll_x+jrect_w(vp)-COLOR_SIZE-2 < x)
-      scroll_x = x-jrect_w(vp)+COLOR_SIZE+2;
+    else if (scroll_x+jrect_w(vp)-m_boxsize-2 < x)
+      scroll_x = x-jrect_w(vp)+m_boxsize+2;
 
     if (scroll_y > y)
       scroll_y = y;
-    else if (scroll_y+jrect_h(vp)-COLOR_SIZE-2 < y)
-      scroll_y = y-jrect_h(vp)+COLOR_SIZE+2;
+    else if (scroll_y+jrect_h(vp)-m_boxsize-2 < y)
+      scroll_y = y-jrect_h(vp)+m_boxsize+2;
 
     jview_set_scroll(view, scroll_x, scroll_y);
 
