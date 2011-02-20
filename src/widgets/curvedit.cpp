@@ -311,34 +311,18 @@ static bool curve_editor_msg_proc(JWidget widget, JMessage msg)
 	switch (curve_editor->status) {
 
 	  case STATUS_SCROLLING: {
-	    JWidget view = jwidget_get_view(widget);
-	    JRect vp = jview_get_viewport_position(view);
-	    int scroll_x, scroll_y;
+	    View* view = View::getView(widget);
+	    gfx::Rect vp = view->getViewportBounds();
+	    gfx::Point scroll = view->getViewScroll();
 
-	    jview_get_scroll(view, &scroll_x, &scroll_y);
-	    jview_set_scroll(view,
-			     scroll_x+jmouse_x(1)-jmouse_x(0),
-			     scroll_y+jmouse_y(1)-jmouse_y(0));
+	    scroll.x += jmouse_x(1)-jmouse_x(0);
+	    scroll.y += jmouse_y(1)-jmouse_y(0);
+
+	    view->setViewScroll(scroll);
 
 	    jmouse_control_infinite_scroll(vp);
-	    jrect_free(vp);
 	    break;
 	  }
-
-/* 	  case STATUS_SCALING: { */
-/* 	    JID view_id = jwidget_get_view(widget); */
-/* 	    JRect vp = jview_get_viewport_pos(view_id); */
-/* 	    int scroll_x, scroll_y; */
-
-/* 	    jview_get_scroll(view_id, &scroll_x, &scroll_y); */
-/* 	    jview_update(view_id); */
-/* 	    jview_set_scroll(view_id, */
-/* 				scroll_x-(vp.x+vp.w/2), */
-/* 				scroll_y-(vp.y+vp.h/2)); */
-
-/* 	    jmouse_control_infinite_scroll(vp.x, vp.y, vp.w, vp.h); */
-/* 	    break; */
-/* 	  } */
 
 	  case STATUS_MOVING_POINT:
 	    if (curve_editor->edit_point) {

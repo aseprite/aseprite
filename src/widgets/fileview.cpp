@@ -161,7 +161,7 @@ void fileview_set_current_folder(JWidget widget, IFileItem* folder)
   jwidget_emit_signal(widget, SIGNAL_FILEVIEW_CURRENT_FOLDER_CHANGED);
 
   widget->invalidate();
-  jview_update(jwidget_get_view(widget));
+  View::getView(widget)->updateView();
 }
 
 const FileItemList& fileview_get_filelist(JWidget widget)
@@ -233,8 +233,8 @@ static bool fileview_msg_proc(JWidget widget, JMessage msg)
       return true;
 
     case JM_DRAW: {
-      JWidget view = jwidget_get_view(widget);
-      JRect vp = jview_get_viewport_position(view);
+      View* view = View::getView(widget);
+      gfx::Rect vp = view->getViewportBounds();
       int iw, ih;
       int th = jwidget_get_text_height(widget);
       int x, y = widget->rc->y1;
@@ -359,9 +359,9 @@ static bool fileview_msg_proc(JWidget widget, JMessage msg)
 
       /* draw the thumbnail */
       if (thumbnail) {
-	x = vp->x2-2-thumbnail->w;
+	x = vp.x+vp.w-2-thumbnail->w;
 	y = thumbnail_y-thumbnail->h/2;
-	y = MID(vp->y1+2, y, vp->y2-3-thumbnail->h);
+	y = MID(vp.y+2, y, vp.y+vp.h-3-thumbnail->h);
 
 	blit(thumbnail, ji_screen, 0, 0, x, y, thumbnail->w, thumbnail->h);
 	rect(ji_screen,
@@ -371,11 +371,7 @@ static bool fileview_msg_proc(JWidget widget, JMessage msg)
 
       // is the current folder empty?
       if (fileview->list.empty())
-	draw_emptyset_symbol(ji_screen,
-			     Rect(vp->x1, vp->y1, jrect_w(vp), jrect_h(vp)),
-			     makecol(194, 194, 194));
-
-      jrect_free(vp);
+	draw_emptyset_symbol(ji_screen, vp, makecol(194, 194, 194));
       return true;
     }
 
@@ -426,7 +422,7 @@ static bool fileview_msg_proc(JWidget widget, JMessage msg)
     case JM_KEYPRESSED:
       if (widget->hasFocus()) {
 	int select = fileview_get_selected_index(widget);
-	JWidget view = jwidget_get_view(widget);
+	View* view = View::getView(widget);
 	int bottom = fileview->list.size();
 
 	switch (msg->key.scancode) {
@@ -451,23 +447,20 @@ static bool fileview_msg_proc(JWidget widget, JMessage msg)
 	  case KEY_PGUP:
 	  case KEY_PGDN: {
 	    int sgn = (msg->key.scancode == KEY_PGUP) ? -1: 1;
-	    JRect vp = jview_get_viewport_position(view);
+	    gfx::Rect vp = view->getViewportBounds();
 	    if (select < 0)
 	      select = 0;
-	    select += sgn * jrect_h(vp) / (2+jwidget_get_text_height(widget)+2);
-	    jrect_free(vp);
+	    select += sgn * vp.h / (2+jwidget_get_text_height(widget)+2);
 	    break;
 	  }
 	  case KEY_LEFT:
 	  case KEY_RIGHT:
 	    if (select >= 0) {
-	      JRect vp = jview_get_viewport_position(view);
+	      gfx::Rect vp = view->getViewportBounds();
 	      int sgn = (msg->key.scancode == KEY_LEFT) ? -1: 1;
-	      int scroll_x, scroll_y;
-
-	      jview_get_scroll(view, &scroll_x, &scroll_y);
-	      jview_set_scroll(view, scroll_x + jrect_w(vp)/2*sgn, scroll_y);
-	      jrect_free(vp);
+	      gfx::Point scroll = view->getViewScroll();
+	      scroll.x += vp.w/2*sgn;
+	      view->setViewScroll(scroll);
 	    }
 	    break;
 	  case KEY_ENTER:
@@ -532,16 +525,11 @@ static bool fileview_msg_proc(JWidget widget, JMessage msg)
       break;
 
     case JM_WHEEL: {
-      JWidget view = jwidget_get_view(widget);
+      View* view = View::getView(widget);
       if (view) {
-	int scroll_x, scroll_y;
-
-	jview_get_scroll(view, &scroll_x, &scroll_y);
-	jview_set_scroll(view,
-			 scroll_x,
-			 scroll_y +
-			 (jmouse_z(1) - jmouse_z(0))
-			 *(2+jwidget_get_text_height(widget)+2)*3);
+	gfx::Point scroll = view->getViewScroll();
+	scroll.y += (jmouse_z(1)-jmouse_z(0)) * 3*(2+jwidget_get_text_height(widget)+2);
+	view->setViewScroll(scroll);
       }
       break;
     }
@@ -599,14 +587,12 @@ static void fileview_get_fileitem_size(JWidget widget, IFileItem* fi, int *w, in
 static void fileview_make_selected_fileitem_visible(JWidget widget)
 {
   FileView* fileview = fileview_data(widget);
-  JWidget view = jwidget_get_view(widget);
-  JRect vp = jview_get_viewport_position(view);
+  View* view = View::getView(widget);
+  gfx::Rect vp = view->getViewportBounds();
+  gfx::Point scroll = view->getViewScroll();
   int iw, ih;
   int th = jwidget_get_text_height(widget);
   int y = widget->rc->y1;
-  int scroll_x, scroll_y;
-
-  jview_get_scroll(view, &scroll_x, &scroll_y);
 
   // rows
   for (FileItemList::iterator
@@ -616,18 +602,17 @@ static void fileview_make_selected_fileitem_visible(JWidget widget)
     fileview_get_fileitem_size(widget, fi, &iw, &ih);
 
     if (fi == fileview->selected) {
-      if (y < vp->y1)
-	jview_set_scroll(view, scroll_x, y - widget->rc->y1);
-      else if (y > vp->y2 - (2+th+2))
-	jview_set_scroll(view, scroll_x,
-			 y - widget->rc->y1 - jrect_h(vp) + (2+th+2));
+      if (y < vp.y)
+	scroll.y = y - widget->rc->y1;
+      else if (y > vp.y + vp.h - (2+th+2))
+	scroll.y = y - widget->rc->y1 - vp.h + (2+th+2);
+
+      view->setViewScroll(scroll);
       break;
     }
 
     y += ih;
   }
-
-  jrect_free(vp);
 }
 
 static void fileview_regenerate_list(JWidget widget)

@@ -118,33 +118,31 @@ int Editor::editor_click(int *x, int *y, int *update,
 
   /* the mouse was moved */
   if (*update) {
-    JWidget view = jwidget_get_view(this);
-    JRect vp = jview_get_viewport_position(view);
+    View* view = View::getView(this);
+    gfx::Rect vp = view->getViewportBounds();
 
     /* update scroll */
     if (jmouse_control_infinite_scroll(vp)) {
-      int scroll_x, scroll_y;
-
       if (scroll_callback)
 	(*scroll_callback)(true);
 
       /* smooth scroll movement */
       if (get_config_bool("Options", "MoveSmooth", true)) {
-	jmouse_set_position(MID(vp->x1+1, click_last_x, vp->x2-2),
-			    MID(vp->y1+1, click_last_y, vp->y2-2));
+	jmouse_set_position(MID(vp.x+1, click_last_x, vp.x+vp.w-2),
+			    MID(vp.y+1, click_last_y, vp.y+vp.h-2));
       }
       /* this is better for high resolutions: scroll movement by big steps */
       else {
 	jmouse_set_position((click_last_x != jmouse_x(0)) ?
-			    (click_last_x + (vp->x1+vp->x2)/2)/2: jmouse_x(0),
+			    (click_last_x + (vp.x+vp.w/2))/2: jmouse_x(0),
 
 			    (click_last_y != jmouse_y(0)) ?
-			    (click_last_y + (vp->y1+vp->y2)/2)/2: jmouse_y(0));
+			    (click_last_y + (vp.y+vp.h/2))/2: jmouse_y(0));
       }
 
-      jview_get_scroll(view, &scroll_x, &scroll_y);
-      editor_set_scroll(scroll_x+click_last_x-jmouse_x(0),
-			scroll_y+click_last_y-jmouse_y(0), true);
+      gfx::Point scroll = view->getViewScroll();
+      editor_set_scroll(scroll.x+click_last_x-jmouse_x(0),
+			scroll.y+click_last_y-jmouse_y(0), true);
 
       click_last_x = jmouse_x(0);
       click_last_y = jmouse_y(0);
@@ -162,8 +160,6 @@ int Editor::editor_click(int *x, int *y, int *update,
       // Check if the mouse change to other pixel of the screen
       *update = ((prev_x != click_last_x) || (prev_y != click_last_y));
     }
-
-    jrect_free(vp);
   }
 
   /* click-and-click mode */

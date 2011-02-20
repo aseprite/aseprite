@@ -1383,13 +1383,14 @@ void SkinTheme::draw_view(JWidget widget, JRect clip)
 		 COLOR_BACKGROUND);
 }
 
-void SkinTheme::draw_view_scrollbar(JWidget widget, JRect clip)
+void SkinTheme::draw_view_scrollbar(JWidget _widget, JRect clip)
 {
+  ScrollBar* widget = static_cast<ScrollBar*>(_widget);
   int x1, y1, x2, y2;
   int u1, v1, u2, v2;
   int pos, len;
-
-  jtheme_scrollbar_info(widget, &pos, &len);
+  
+  widget->getScrollBarThemeInfo(&pos, &len);
 
   x1 = widget->rc->x1;
   y1 = widget->rc->y1;

@@ -832,9 +832,11 @@ JRegion jwidget_get_drawable_region(JWidget widget, int flags)
   manager = window ? window->getManager(): NULL;
 
   while (manager) {
-    view = jwidget_get_view(manager);
-    if (view)
-      cpos = jview_get_viewport_position(view);
+    view = View::getView(manager);
+    if (view) {
+      Rect vp = static_cast<View*>(view)->getViewportBounds();
+      cpos = jrect_new(vp.x, vp.y, vp.x+vp.w, vp.y+vp.h);
+    }
     else
       cpos = jwidget_get_child_rect(manager);
 /*     if (!manager->parent) */

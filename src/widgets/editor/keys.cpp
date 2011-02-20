@@ -44,8 +44,8 @@ bool Editor::editor_keys_toset_zoom(int scancode)
       !key[KEY_LCONTROL] &&
       !key[KEY_RCONTROL] &&
       !key[KEY_ALT]) {
-    JWidget view = jwidget_get_view(this);
-    JRect vp = jview_get_viewport_position(view);
+    View* view = View::getView(this);
+    gfx::Rect vp = view->getViewportBounds();
     int x, y, zoom;
 
     x = 0;
@@ -66,8 +66,6 @@ bool Editor::editor_keys_toset_zoom(int scancode)
       editor_set_zoom_and_center_in_mouse(zoom, jmouse_x(0), jmouse_y(0));
       return true;
     }
-
-    jrect_free(vp);
   }
 
   return false;

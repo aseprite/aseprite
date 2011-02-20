@@ -8,6 +8,7 @@
 
 #include <allegro/keyboard.h>
 
+#include "gfx/point.h"
 #include "gfx/size.h"
 #include "gui/list.h"
 #include "gui/manager.h"
@@ -92,24 +93,21 @@ void jlistbox_select_child(JWidget widget, JWidget listitem)
   }
 
   if (listitem) {
-    JWidget view = jwidget_get_view(widget);
+    View* view = View::getView(widget);
 
     listitem->setSelected(true);
 
     if (view) {
-      JRect vp = jview_get_viewport_position(view);
-      int scroll_x, scroll_y;
+      gfx::Rect vp = view->getViewportBounds();
+      gfx::Point scroll = view->getViewScroll();
 
-      jview_get_scroll(view, &scroll_x, &scroll_y);
+      if (listitem->rc->y1 < vp.y)
+	  scroll.y = listitem->rc->y1 - widget->rc->y1;
+      else if (listitem->rc->y1 > vp.y + vp.h - jrect_h(listitem->rc))
+	scroll.y = (listitem->rc->y1 - widget->rc->y1
+		    - vp.h + jrect_h(listitem->rc));
 
-      if (listitem->rc->y1 < vp->y1)
-	jview_set_scroll(view, scroll_x, listitem->rc->y1 - widget->rc->y1);
-      else if (listitem->rc->y1 > vp->y2 - jrect_h(listitem->rc))
-	jview_set_scroll(view, scroll_x,
-			 listitem->rc->y1 - widget->rc->y1
-			 - jrect_h(vp) + jrect_h(listitem->rc));
-
-      jrect_free(vp);
+      view->setViewScroll(scroll);
     }
   }
 
@@ -131,19 +129,17 @@ int jlistbox_get_items_count(JWidget widget)
 /* setup the scroll to center the selected item in the viewport */
 void jlistbox_center_scroll(JWidget widget)
 {
-  JWidget view = jwidget_get_view(widget);
-  JWidget listitem = jlistbox_get_selected_child(widget);
+  View* view = View::getView(widget);
+  Widget* listitem = jlistbox_get_selected_child(widget);
 
   if (view && listitem) {
-    JRect vp = jview_get_viewport_position(view);
-    int scroll_x, scroll_y;
+    gfx::Rect vp = view->getViewportBounds();
+    gfx::Point scroll = view->getViewScroll();
 
-    jview_get_scroll(view, &scroll_x, &scroll_y);
-    jview_set_scroll(view,
-		     scroll_x,
-		     (listitem->rc->y1 - widget->rc->y1)
-		     - jrect_h(vp)/2 + jrect_h(listitem->rc)/2);
-    jrect_free(vp);
+    scroll.y = ((listitem->rc->y1 - widget->rc->y1)
+		- vp.h/2 + jrect_h(listitem->rc)/2);
+
+    view->setViewScroll(scroll);
   }
 }
 
@@ -177,31 +173,29 @@ static bool listbox_msg_proc(JWidget widget, JMessage msg)
     case JM_MOTION:
       if (widget->hasCapture()) {
 	int select = jlistbox_get_selected_index(widget);
-	JWidget view = jwidget_get_view(widget);
+	View* view = View::getView(widget);
 	bool pick_item = true;
 
 	if (view) {
-	  JRect vp = jview_get_viewport_position(view);
+	  gfx::Rect vp = view->getViewportBounds();
 
-	  if (msg->mouse.y < vp->y1) {
-	    int num = MAX(1, (vp->y1 - msg->mouse.y) / 8);
+	  if (msg->mouse.y < vp.y) {
+	    int num = MAX(1, (vp.y - msg->mouse.y) / 8);
 	    jlistbox_select_index(widget, select-num);
 	    pick_item = false;
 	  }
-	  else if (msg->mouse.y >= vp->y2) {
-	    int num = MAX(1, (msg->mouse.y - (vp->y2-1)) / 8);
+	  else if (msg->mouse.y >= vp.y + vp.h) {
+	    int num = MAX(1, (msg->mouse.y - (vp.y+vp.h-1)) / 8);
 	    jlistbox_select_index(widget, select+num);
 	    pick_item = false;
 	  }
-
-	  jrect_free(vp);
 	}
 
 	if (pick_item) {
 	  JWidget picked;
 
 	  if (view) {
-	    picked = jview_get_viewport(view)->pick(msg->mouse.x, msg->mouse.y);
+	    picked = view->getViewport()->pick(msg->mouse.x, msg->mouse.y);
 	  }
 	  else {
 	    picked = widget->pick(msg->mouse.x, msg->mouse.y);
@@ -221,16 +215,11 @@ static bool listbox_msg_proc(JWidget widget, JMessage msg)
       break;
 
     case JM_WHEEL: {
-      JWidget view = jwidget_get_view(widget);
+      View* view = View::getView(widget);
       if (view) {
-	int scroll_x, scroll_y;
-
-	jview_get_scroll(view, &scroll_x, &scroll_y);
-	jview_set_scroll(view,
-			 scroll_x,
-			 scroll_y +
-			 (jmouse_z(1) - jmouse_z(0))
-			 *jwidget_get_text_height(widget)*3);
+	gfx::Point scroll = view->getViewScroll();
+	scroll.y += (jmouse_z(1) - jmouse_z(0)) * jwidget_get_text_height(widget)*3;
+	view->setViewScroll(scroll);
       }
       break;
     }
@@ -238,7 +227,7 @@ static bool listbox_msg_proc(JWidget widget, JMessage msg)
     case JM_KEYPRESSED:
       if (widget->hasFocus() && !jlist_empty(widget->children)) {
 	int select = jlistbox_get_selected_index(widget);
-	JWidget view = jwidget_get_view(widget);
+	View* view = View::getView(widget);
 	int bottom = MAX(0, jlist_length(widget->children)-1);
 
 	switch (msg->key.scancode) {
@@ -256,18 +245,16 @@ static bool listbox_msg_proc(JWidget widget, JMessage msg)
 	    break;
 	  case KEY_PGUP:
 	    if (view) {
-	      JRect vp = jview_get_viewport_position(view);
-	      select -= jrect_h(vp) / jwidget_get_text_height(widget);
-	      jrect_free(vp);
+	      gfx::Rect vp = view->getViewportBounds();
+	      select -= vp.h / jwidget_get_text_height(widget);
 	    }
 	    else
 	      select = 0;
 	    break;
 	  case KEY_PGDN:
 	    if (view) {
-	      JRect vp = jview_get_viewport_position(view);
-	      select += jrect_h(vp) / jwidget_get_text_height(widget);
-	      jrect_free(vp);
+	      gfx::Rect vp = view->getViewportBounds();
+	      select += vp.h / jwidget_get_text_height(widget);
 	    }
 	    else
 	      select = bottom;
@@ -275,13 +262,13 @@ static bool listbox_msg_proc(JWidget widget, JMessage msg)
 	  case KEY_LEFT:
 	  case KEY_RIGHT:
 	    if (view) {
-	      JRect vp = jview_get_viewport_position(view);
+	      gfx::Rect vp = view->getViewportBounds();
+	      gfx::Point scroll = view->getViewScroll();
 	      int sgn = (msg->key.scancode == KEY_LEFT) ? -1: 1;
-	      int scroll_x, scroll_y;
 
-	      jview_get_scroll(view, &scroll_x, &scroll_y);
-	      jview_set_scroll(view, scroll_x + jrect_w(vp)/2*sgn, scroll_y);
-	      jrect_free(vp);
+	      scroll.x += vp.w/2*sgn;
+
+	      view->setViewScroll(scroll);
 	    }
 	    break;
 	  default:
@@ -345,30 +332,27 @@ static void listbox_set_position(JWidget widget, JRect rect)
 
 static void listbox_dirty_children(JWidget widget)
 {
-  JWidget view = jwidget_get_view(widget);
+  View* view = View::getView(widget);
   JWidget child;
   JLink link;
-  JRect vp;
 
   if (!view) {
     JI_LIST_FOR_EACH(widget->children, link)
       reinterpret_cast<JWidget>(link->data)->invalidate();
   }
   else {
-    vp = jview_get_viewport_position(view);
+    gfx::Rect vp = view->getViewportBounds();
 
     JI_LIST_FOR_EACH(widget->children, link) {
       child = reinterpret_cast<JWidget>(link->data);
 
-      if (child->rc->y2 <= vp->y1)
+      if (child->rc->y2 <= vp.y)
 	continue;
-      else if (child->rc->y1 >= vp->y2)
+      else if (child->rc->y1 >= vp.y+vp.h)
 	break;
 
       child->invalidate();
     }
-
-    jrect_free(vp);
   }
 }
 

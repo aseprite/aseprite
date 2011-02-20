@@ -9,6 +9,8 @@
 #include <allegro.h>
 #include <allegro/internal/aintern.h>
 
+#include "gfx/point.h"
+#include "gfx/size.h"
 #include "gui/draw.h"
 #include "gui/font.h"
 #include "gui/manager.h"
@@ -151,12 +153,12 @@ void _ji_theme_draw_sprite_color(BITMAP *bmp, BITMAP *sprite,
 void _ji_theme_textbox_draw(BITMAP *bmp, JWidget widget,
 			    int *w, int *h, int bg, int fg)
 {
-  JWidget view = jwidget_get_view(widget);
+  View* view = View::getView(widget);
   char *text = (char*)widget->getText(); // TODO warning: removing const modifier
   char *beg, *end;
   int x1, y1, x2, y2;
   int x, y, chr, len;
-  int scroll_x, scroll_y;
+  gfx::Point scroll;
   int viewport_w, viewport_h;
   int textheight = jwidget_get_text_height(widget);
   FONT *font = widget->getFont();
@@ -164,20 +166,19 @@ void _ji_theme_textbox_draw(BITMAP *bmp, JWidget widget,
   int width;
 
   if (view) {
-    JRect vp = jview_get_viewport_position(view);
-    x1 = vp->x1;
-    y1 = vp->y1;
-    viewport_w = jrect_w(vp);
-    viewport_h = jrect_h(vp);
-    jview_get_scroll(view, &scroll_x, &scroll_y);
-    jrect_free(vp);
+    gfx::Rect vp = view->getViewportBounds();
+    x1 = vp.x;
+    y1 = vp.y;
+    viewport_w = vp.w;
+    viewport_h = vp.h;
+    scroll = view->getViewScroll();
   }
   else {
     x1 = widget->rc->x1 + widget->border_width.l;
     y1 = widget->rc->y1 + widget->border_width.t;
     viewport_w = jrect_w(widget->rc) - widget->border_width.l - widget->border_width.r;
     viewport_h = jrect_h(widget->rc) - widget->border_width.t - widget->border_width.b;
-    scroll_x = scroll_y = 0;
+    scroll.x = scroll.y = 0;
   }
   x2 = x1+viewport_w-1;
   y2 = y1+viewport_h-1;
@@ -202,9 +203,8 @@ void _ji_theme_textbox_draw(BITMAP *bmp, JWidget widget,
 #else
       /* make good use of the complete text-box */
       if (view) {
-	int w, h;
-	jview_get_max_size(view, &w, &h);
-	width = MAX(viewport_w, w);
+	gfx::Size maxSize = view->getScrollableSize();
+	width = MAX(viewport_w, maxSize.w);
       }
       else {
 	width = viewport_w;
@@ -214,9 +214,9 @@ void _ji_theme_textbox_draw(BITMAP *bmp, JWidget widget,
   }
 
   /* draw line-by-line */
-  y = y1 - scroll_y;
+  y = y1 - scroll.y;
   for (beg=end=text; end; ) {
-    x = x1 - scroll_x;
+    x = x1 - scroll.x;
 
     /* without word-wrap */
     if (!(widget->getAlign() & JI_WORDWRAP)) {
@@ -237,7 +237,7 @@ void _ji_theme_textbox_draw(BITMAP *bmp, JWidget widget,
 	}
 
 	/* to here we can print */
-	if ((old_end) && (x+text_length(font, beg) > x1-scroll_x+width)) {
+	if ((old_end) && (x+text_length(font, beg) > x1-scroll.x+width)) {
 	  if (end)
 	    *end = chr;
 
@@ -297,7 +297,7 @@ void _ji_theme_textbox_draw(BITMAP *bmp, JWidget widget,
 
   /* height */
   if (h)
-    *h = (y-y1+scroll_y);
+    *h = (y-y1+scroll.y);
 
   if (w) *w += widget->border_width.l + widget->border_width.r;
   if (h) *h += widget->border_width.t + widget->border_width.b;

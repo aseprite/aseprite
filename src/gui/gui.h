@@ -39,6 +39,7 @@
 #include "gui/property.h"
 #include "gui/rect.h"
 #include "gui/region.h"
+#include "gui/scroll_bar.h"
 #include "gui/separator.h"
 #include "gui/slider.h"
 #include "gui/stream.h"
@@ -47,6 +48,7 @@
 #include "gui/theme.h"
 #include "gui/tooltips.h"
 #include "gui/view.h"
+#include "gui/viewport.h"
 #include "gui/widget.h"
 
 #endif

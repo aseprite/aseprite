@@ -130,7 +130,7 @@ bool Slider::onProcessMessage(JMessage msg)
 	    jmouse_set_position(x, jmouse_y(0));
 	}
 	/* for right click */
-	else if (jmouse_control_infinite_scroll(rc)) {
+	else if (jmouse_control_infinite_scroll(getBounds() - getBorder())) {
 	  slider_press_x = jmouse_x(0);
 	  slider_press_value = m_value;
 	}

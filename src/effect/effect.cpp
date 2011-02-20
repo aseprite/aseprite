@@ -174,14 +174,12 @@ void effect_begin_for_preview(Effect *effect)
 
   {
     Editor* editor = current_editor;
-    JRect vp = jview_get_viewport_position(jwidget_get_view(editor));
+    gfx::Rect vp = View::getView(editor)->getViewportBounds();
     int x1, y1, x2, y2;
     int x, y, w, h;
 
-    editor->screen_to_editor(vp->x1, vp->y1, &x1, &y1);
-    editor->screen_to_editor(vp->x2-1, vp->y2-1, &x2, &y2);
-
-    jrect_free(vp);
+    editor->screen_to_editor(vp.x, vp.y, &x1, &y1);
+    editor->screen_to_editor(vp.x+vp.w-1, vp.y+vp.h-1, &x2, &y2);
 
     if (x1 < 0) x1 = 0;
     if (y1 < 0) y1 = 0;

@@ -9,6 +9,7 @@
 #include <allegro/keyboard.h>
 #include <math.h>
 
+#include "gfx/point.h"
 #include "gui/hook.h"
 #include "gui/intern.h"
 #include "gui/manager.h"
@@ -49,71 +50,72 @@ static bool textbox_msg_proc(JWidget widget, JMessage msg)
 
     case JM_SIGNAL:
       if (msg->signal.num == JI_SIGNAL_SET_TEXT) {
-	JWidget view = jwidget_get_view(widget);
+	View* view = View::getView(widget);
 	if (view)
-	  jview_update(view);
+	  view->updateView();
       }
       break;
 
     case JM_KEYPRESSED:
       if (widget->hasFocus()) {
-	JWidget view = jwidget_get_view(widget);
+	View* view = View::getView(widget);
 	if (view) {
-	  JRect vp = jview_get_viewport_position(view);
+	  gfx::Rect vp = view->getViewportBounds();
+	  gfx::Point scroll = view->getViewScroll();
 	  int textheight = jwidget_get_text_height(widget);
-	  int scroll_x, scroll_y;
-
-	  jview_get_scroll(view, &scroll_x, &scroll_y);
-
+	  
 	  switch (msg->key.scancode) {
 
 	    case KEY_LEFT:
-	      jview_set_scroll(view, scroll_x-jrect_w(vp)/2, scroll_y);
+	      scroll.x -= vp.w/2;
+	      view->setViewScroll(scroll);
 	      break;
 
 	    case KEY_RIGHT:
-	      jview_set_scroll(view, scroll_x+jrect_w(vp)/2, scroll_y);
+	      scroll.x += vp.w/2;
+	      view->setViewScroll(scroll);
 	      break;
 
 	    case KEY_UP:
-	      jview_set_scroll(view, scroll_x, scroll_y-jrect_h(vp)/2);
+	      scroll.y -= vp.h/2;
+	      view->setViewScroll(scroll);
 	      break;
 
 	    case KEY_DOWN:
-	      jview_set_scroll(view, scroll_x, scroll_y+jrect_h(vp)/2);
+	      scroll.y += vp.h/2;
+	      view->setViewScroll(scroll);
 	      break;
 
 	    case KEY_PGUP:
-	      jview_set_scroll(view, scroll_x,
-			       scroll_y-(jrect_h(vp)-textheight));
+	      scroll.y -= (vp.h-textheight);
+	      view->setViewScroll(scroll);
 	      break;
 
 	    case KEY_PGDN:
-	      jview_set_scroll(view, scroll_x,
-			       scroll_y+(jrect_h(vp)-textheight));
+	      scroll.y += (vp.h-textheight);
+	      view->setViewScroll(scroll);
 	      break;
 
 	    case KEY_HOME:
-	      jview_set_scroll(view, scroll_x, 0);
+	      scroll.y = 0;
+	      view->setViewScroll(scroll);
 	      break;
 
 	    case KEY_END:
-	      jview_set_scroll(view, scroll_x,
-			       jrect_h(widget->rc) - jrect_h(vp));
+	      scroll.y = jrect_h(widget->rc) - vp.h;
+	      view->setViewScroll(scroll);
 	      break;
 
 	    default:
-	      jrect_free(vp);
 	      return false;
 	  }
-	  jrect_free(vp);
 	}
 	return true;
       }
       break;
 
     case JM_BUTTONPRESSED: {
-      JWidget view = jwidget_get_view(widget);
+      View* view = View::getView(widget);
       if (view) {
 	widget->captureMouse();
 	jmouse_set_cursor(JI_CURSOR_SCROLL);
@@ -123,24 +125,23 @@ static bool textbox_msg_proc(JWidget widget, JMessage msg)
     }
 
     case JM_MOTION: {
-      JWidget view = jwidget_get_view(widget);
+      View* view = View::getView(widget);
       if (view && widget->hasCapture()) {
-	JRect vp = jview_get_viewport_position(view);
-	int scroll_x, scroll_y;
+	gfx::Rect vp = view->getViewportBounds();
+	gfx::Point scroll = view->getViewScroll();
 
-	jview_get_scroll(view, &scroll_x, &scroll_y);
-	jview_set_scroll(view,
-			 scroll_x + jmouse_x(1) - jmouse_x(0),
-			 scroll_y + jmouse_y(1) - jmouse_y(0));
+	scroll.x += jmouse_x(1) - jmouse_x(0);
+	scroll.y += jmouse_y(1) - jmouse_y(0);
+
+	view->setViewScroll(scroll);
 
 	jmouse_control_infinite_scroll(vp);
-	jrect_free(vp);
       }
       break;
     }
 
     case JM_BUTTONRELEASED: {
-      JWidget view = jwidget_get_view(widget);
+      View* view = View::getView(widget);
       if (view && widget->hasCapture()) {
 	widget->releaseMouse();
 	jmouse_set_cursor(JI_CURSOR_NORMAL);
@@ -150,16 +151,13 @@ static bool textbox_msg_proc(JWidget widget, JMessage msg)
     }
 
     case JM_WHEEL: {
-      JWidget view = jwidget_get_view(widget);
+      View* view = View::getView(widget);
       if (view) {
-	int scroll_x, scroll_y;
+	gfx::Point scroll = view->getViewScroll();
 
-	jview_get_scroll(view, &scroll_x, &scroll_y);
-	jview_set_scroll(view,
-			 scroll_x,
-			 scroll_y +
-			 (jmouse_z(1) - jmouse_z(0))
-			 *jwidget_get_text_height(widget)*3);
+	scroll.y += (jmouse_z(1) - jmouse_z(0)) * jwidget_get_text_height(widget)*3;
+
+	view->setViewScroll(scroll);
       }
       break;
     }
@@ -179,13 +177,11 @@ static void textbox_request_size(JWidget widget, int *w, int *h)
   _ji_theme_textbox_draw(NULL, widget, w, h, 0, 0);
 
   if (widget->getAlign() & JI_WORDWRAP) {
-    JWidget view = jwidget_get_view(widget);
+    View* view = View::getView(widget);
     int width, min = *w;
 
     if (view) {
-      JRect vp = jview_get_viewport_position(view);
-      width = jrect_w(vp);
-      jrect_free(vp);
+      width = view->getViewportBounds().w;
     }
     else {
       width = jrect_w(widget->rc);

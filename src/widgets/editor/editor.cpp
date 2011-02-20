@@ -60,9 +60,9 @@ using namespace gfx;
 
 static bool editor_view_msg_proc(JWidget widget, JMessage msg);
 
-JWidget editor_view_new()
+View* editor_view_new()
 {
-  JWidget widget = jview_new();
+  View* widget = new View();
   SkinTheme* theme = static_cast<SkinTheme*>(widget->getTheme());
   int l = theme->get_part(PART_EDITOR_SELECTED_W)->w;
   int t = theme->get_part(PART_EDITOR_SELECTED_N)->h;
@@ -70,7 +70,7 @@ JWidget editor_view_new()
   int b = theme->get_part(PART_EDITOR_SELECTED_S)->h;
 
   jwidget_set_border(widget, l, t, r, b);
-  jview_without_bars(widget);
+  widget->hideScrollBars();
   jwidget_add_hook(widget, JI_WIDGET, editor_view_msg_proc, NULL);
 
   return widget;
@@ -161,16 +161,14 @@ void Editor::editor_set_sprite(Sprite* sprite)
     editor_update();
 
     if (preferred.virgin) {
-      JWidget view = jwidget_get_view(this);
-      JRect vp = jview_get_viewport_position(view);
+      View* view = View::getView(this);
+      Rect vp = view->getViewportBounds();
 
       preferred.virgin = false;
-      preferred.scroll_x = -jrect_w(vp)/2 + (sprite->getWidth()/2);
-      preferred.scroll_y = -jrect_h(vp)/2 + (sprite->getHeight()/2);
+      preferred.scroll_x = -vp.w/2 + (sprite->getWidth()/2);
+      preferred.scroll_y = -vp.h/2 + (sprite->getHeight()/2);
 
       m_sprite->setPreferredEditorSettings(preferred);
-
-      jrect_free(vp);
     }
 
     editor_set_scroll(m_offset_x + preferred.scroll_x,
@@ -190,8 +188,8 @@ void Editor::editor_set_sprite(Sprite* sprite)
 // Sets the scroll position of the editor
 void Editor::editor_set_scroll(int x, int y, int use_refresh_region)
 {
-  JWidget view = jwidget_get_view(this);
-  int old_scroll_x, old_scroll_y;
+  View* view = View::getView(this);
+  Point oldScroll;
   JRegion region = NULL;
   int thick = m_cursor_thick;
 
@@ -200,10 +198,10 @@ void Editor::editor_set_scroll(int x, int y, int use_refresh_region)
 
   if (use_refresh_region) {
     region = jwidget_get_drawable_region(this, JI_GDR_CUTTOPWINDOWS);
-    jview_get_scroll(view, &old_scroll_x, &old_scroll_y);
+    oldScroll = view->getViewScroll();
   }
 
-  jview_set_scroll(view, x, y);
+  view->setViewScroll(Point(x, y));
 
   if (m_sprite) {
     PreferredEditorSettings preferred;
@@ -216,14 +214,12 @@ void Editor::editor_set_scroll(int x, int y, int use_refresh_region)
   }
 
   if (use_refresh_region) {
-    int new_scroll_x, new_scroll_y;
-
-    jview_get_scroll(view, &new_scroll_x, &new_scroll_y);
+    Point newScroll = view->getViewScroll();
 
     // Move screen with blits
     jwidget_scroll(this, region,
-		   old_scroll_x - new_scroll_x,
-		   old_scroll_y - new_scroll_y);
+		   oldScroll.x - newScroll.x,
+		   oldScroll.y - newScroll.y);
     
     jregion_free(region);
     /* m_widget->flags &= ~JI_DIRTY; */
@@ -241,8 +237,7 @@ void Editor::editor_set_scroll(int x, int y, int use_refresh_region)
 
 void Editor::editor_update()
 {
-  JWidget view = jwidget_get_view(this);
-  jview_update(view);
+  View::getView(this)->updateView();
 }
 
 /**
@@ -253,43 +248,42 @@ void Editor::editor_update()
  */
 void Editor::editor_draw_sprite(int x1, int y1, int x2, int y2)
 {
-  JWidget view = jwidget_get_view(this);
-  JRect vp = jview_get_viewport_position(view);
+  View* view = View::getView(this);
+  Rect vp = view->getViewportBounds();
   int source_x, source_y, dest_x, dest_y, width, height;
-  int scroll_x, scroll_y;
 
   // Get scroll
 
-  jview_get_scroll(view, &scroll_x, &scroll_y);
+  Point scroll = view->getViewScroll();
 
   // Output information
 
   source_x = x1 << m_zoom;
   source_y = y1 << m_zoom;
-  dest_x   = vp->x1 - scroll_x + m_offset_x + source_x;
-  dest_y   = vp->y1 - scroll_y + m_offset_y + source_y;
+  dest_x   = vp.x - scroll.x + m_offset_x + source_x;
+  dest_y   = vp.y - scroll.y + m_offset_y + source_y;
   width    = (x2 - x1 + 1) << m_zoom;
   height   = (y2 - y1 + 1) << m_zoom;
 
   // Clip from viewport
 
-  if (dest_x < vp->x1) {
-    source_x += vp->x1 - dest_x;
-    width -= vp->x1 - dest_x;
-    dest_x = vp->x1;
+  if (dest_x < vp.x) {
+    source_x += vp.x - dest_x;
+    width -= vp.x - dest_x;
+    dest_x = vp.x;
   }
 
-  if (dest_y < vp->y1) {
-    source_y += vp->y1 - dest_y;
-    height -= vp->y1 - dest_y;
-    dest_y = vp->y1;
+  if (dest_y < vp.y) {
+    source_y += vp.y - dest_y;
+    height -= vp.y - dest_y;
+    dest_y = vp.y;
   }
 
-  if (dest_x+width-1 > vp->x2-1)
-    width = vp->x2-dest_x;
+  if (dest_x+width-1 > vp.x + vp.w-1)
+    width = vp.x + vp.w - dest_x;
 
-  if (dest_y+height-1 > vp->y2-1)
-    height = vp->y2-dest_y;
+  if (dest_y+height-1 > vp.y + vp.h-1)
+    height = vp.y + vp.h - dest_y;
 
   // Clip from screen
 
@@ -364,8 +358,6 @@ void Editor::editor_draw_sprite(int x1, int y1, int x2, int y2)
     }
   }
 
-  jrect_free(vp);
-
   // Draw grids
   ISettings* settings = UIContext::instance()->getSettings();
 
@@ -416,18 +408,16 @@ void Editor::editor_draw_sprite_safe(int x1, int y1, int x2, int y2)
  */
 void Editor::editor_draw_mask()
 {
-  JWidget view = jwidget_get_view(this);
-  JRect vp = jview_get_viewport_position(view);
-  int scroll_x, scroll_y;
+  View* view = View::getView(this);
+  Rect vp = view->getViewportBounds();
+  Point scroll = view->getViewScroll();
   int x1, y1, x2, y2;
   int c, x, y;
 
-  jview_get_scroll(view, &scroll_x, &scroll_y);
-
   dotted_mode(m_offset_count);
 
-  x = vp->x1 - scroll_x + m_offset_x;
-  y = vp->y1 - scroll_y + m_offset_y;
+  x = vp.x - scroll.x + m_offset_x;
+  y = vp.y - scroll.y + m_offset_y;
 
   int nseg = m_sprite->getBoundariesSegmentsCount();
   const _BoundSeg* seg = m_sprite->getBoundariesSegments();
@@ -469,8 +459,6 @@ void Editor::editor_draw_mask()
   }
 
   dotted_mode(-1);
-
-  jrect_free(vp);
 }
 
 void Editor::editor_draw_mask_safe()
@@ -515,17 +503,15 @@ void Editor::drawGrid(const Rect& gridBounds, const Color& color)
     return;
 
   int grid_color = color_utils::color_for_allegro(color, bitmap_color_depth(ji_screen));
-  JWidget view = jwidget_get_view(this);
-  JRect vp = jview_get_viewport_position(view);
-  int scroll_x, scroll_y;
+  View* view = View::getView(this);
+  Rect vp = view->getViewportBounds();
+  Point scroll = view->getViewScroll();
   int x1, y1, x2, y2;
   int u1, v1, u2, v2;
   int c;
 
-  jview_get_scroll(view, &scroll_x, &scroll_y);
-
-  scroll_x = vp->x1 - scroll_x + m_offset_x;
-  scroll_y = vp->y1 - scroll_y + m_offset_y;
+  scroll.x = vp.x - scroll.x + m_offset_x;
+  scroll.y = vp.y - scroll.y + m_offset_y;
 
   x1 = ji_screen->cl;
   y1 = ji_screen->ct;
@@ -549,20 +535,18 @@ void Editor::drawGrid(const Rect& gridBounds, const Color& color)
   grid.h <<= m_zoom;
 
   // Horizontal lines
-  x1 = scroll_x+grid.x+u1*grid.w;
-  x2 = scroll_x+grid.x+u2*grid.w;
+  x1 = scroll.x+grid.x+u1*grid.w;
+  x2 = scroll.x+grid.x+u2*grid.w;
 
   for (c=v1; c<=v2; c++)
-    hline(ji_screen, x1, scroll_y+grid.y+c*grid.h, x2, grid_color);
+    hline(ji_screen, x1, scroll.y+grid.y+c*grid.h, x2, grid_color);
 
   // Vertical lines
-  y1 = scroll_y+grid.y+v1*grid.h;
-  y2 = scroll_y+grid.y+v2*grid.h;
+  y1 = scroll.y+grid.y+v1*grid.h;
+  y2 = scroll.y+grid.y+v2*grid.h;
 
   for (c=u1; c<=u2; c++)
-    vline(ji_screen, scroll_x+grid.x+c*grid.w, y1, y2, grid_color);
-
-  jrect_free(vp);
+    vline(ji_screen, scroll.x+grid.x+c*grid.w, y1, y2, grid_color);
 }
 
 void Editor::flashCurrentLayer()
@@ -649,11 +633,10 @@ void Editor::turnOnSelectionModifiers()
 */
 void Editor::controlInfiniteScroll(JMessage msg)
 {
-  JWidget view = jwidget_get_view(this);
-  JRect vp = jview_get_viewport_position(view);
+  View* view = View::getView(this);
+  Rect vp = view->getViewportBounds();
 
   if (jmouse_control_infinite_scroll(vp)) {
-    int scroll_x, scroll_y;
     int old_x = msg->mouse.x;
     int old_y = msg->mouse.y;
 
@@ -662,27 +645,22 @@ void Editor::controlInfiniteScroll(JMessage msg)
 
     // Smooth scroll movement
     if (get_config_bool("Options", "MoveSmooth", TRUE)) {
-      jmouse_set_position(MID(vp->x1+1, old_x, vp->x2-2),
-			  MID(vp->y1+1, old_y, vp->y2-2));
+      jmouse_set_position(MID(vp.x+1, old_x, vp.x+vp.w-2),
+			  MID(vp.y+1, old_y, vp.y+vp.h-2));
     }
     // This is better for high resolutions: scroll movement by big steps
     else {
-      jmouse_set_position((old_x != msg->mouse.x) ?
-			  (old_x + (vp->x1+vp->x2)/2)/2: msg->mouse.x,
-
-			  (old_y != msg->mouse.y) ?
-			  (old_y + (vp->y1+vp->y2)/2)/2: msg->mouse.y);
+      jmouse_set_position((old_x != msg->mouse.x) ? (old_x + (vp.x+vp.w/2))/2: msg->mouse.x,
+			  (old_y != msg->mouse.y) ? (old_y + (vp.y+vp.h/2))/2: msg->mouse.y);
     }
 
     msg->mouse.x = jmouse_x(0);
     msg->mouse.y = jmouse_y(0);
 
-    jview_get_scroll(view, &scroll_x, &scroll_y);
-    editor_set_scroll(scroll_x+old_x-msg->mouse.x,
-		      scroll_y+old_y-msg->mouse.y, true);
+    Point scroll = view->getViewScroll();
+    editor_set_scroll(scroll.x+old_x-msg->mouse.x,
+		      scroll.y+old_y-msg->mouse.y, true);
   }
-
-  jrect_free(vp);
 }
 
 void Editor::dropPixels()
@@ -718,30 +696,22 @@ Tool* Editor::getCurrentEditorTool()
 
 void Editor::screen_to_editor(int xin, int yin, int *xout, int *yout)
 {
-  JWidget view = jwidget_get_view(this);
-  JRect vp = jview_get_viewport_position(view);
-  int scroll_x, scroll_y;
+  View* view = View::getView(this);
+  Rect vp = view->getViewportBounds();
+  Point scroll = view->getViewScroll();
 
-  jview_get_scroll(view, &scroll_x, &scroll_y);
-
-  *xout = (xin - vp->x1 + scroll_x - m_offset_x) >> m_zoom;
-  *yout = (yin - vp->y1 + scroll_y - m_offset_y) >> m_zoom;
-
-  jrect_free(vp);
+  *xout = (xin - vp.x + scroll.x - m_offset_x) >> m_zoom;
+  *yout = (yin - vp.y + scroll.y - m_offset_y) >> m_zoom;
 }
 
 void Editor::editor_to_screen(int xin, int yin, int *xout, int *yout)
 {
-  JWidget view = jwidget_get_view(this);
-  JRect vp = jview_get_viewport_position(view);
-  int scroll_x, scroll_y;
+  View* view = View::getView(this);
+  Rect vp = view->getViewportBounds();
+  Point scroll = view->getViewScroll();
 
-  jview_get_scroll(view, &scroll_x, &scroll_y);
-
-  *xout = (vp->x1 - scroll_x + m_offset_x + (xin << m_zoom));
-  *yout = (vp->y1 - scroll_y + m_offset_y + (yin << m_zoom));
-
-  jrect_free(vp);
+  *xout = (vp.x - scroll.x + m_offset_x + (xin << m_zoom));
+  *yout = (vp.y - scroll.y + m_offset_y + (yin << m_zoom));
 }
 
 void Editor::show_drawing_cursor()
@@ -867,13 +837,13 @@ static bool editor_view_msg_proc(JWidget widget, JMessage msg)
       // This avoid the displacement of the widgets in the viewport
 
       jrect_copy(widget->rc, &msg->setpos.rect);
-      jview_update(widget);
+      static_cast<View*>(widget)->updateView();
       return true;
 
     case JM_DRAW:
       {
-	JWidget viewport = jview_get_viewport(widget);
-	JWidget child = reinterpret_cast<JWidget>(jlist_first_data(viewport->children));
+	Widget* viewport = static_cast<View*>(widget)->getViewport();
+	Widget* child = reinterpret_cast<JWidget>(jlist_first_data(viewport->children));
 	JRect pos = jwidget_get_rect(widget);
 	SkinTheme* theme = static_cast<SkinTheme*>(widget->getTheme());
 
@@ -930,15 +900,11 @@ bool Editor::onProcessMessage(JMessage msg)
 
       // Editor without sprite
       if (!m_sprite) {
-	JWidget view = jwidget_get_view(this);
-	JRect vp = jview_get_viewport_position(view);
+	View* view = View::getView(this);
+	Rect vp = view->getViewportBounds();
 
 	jdraw_rectfill(vp, theme->get_editor_face_color());
-	draw_emptyset_symbol(ji_screen,
-			     Rect(vp->x1, vp->y1, jrect_w(vp), jrect_h(vp)),
-			     makecol(64, 64, 64));
-
-	jrect_free(vp);
+	draw_emptyset_symbol(ji_screen, vp, makecol(64, 64, 64));
       }
       // Editor with sprite
       else {
@@ -988,10 +954,9 @@ bool Editor::onProcessMessage(JMessage msg)
 	  // The sprite is locked to be read... we can draw an opaque
 	  // background only.
 
-	  JWidget view = jwidget_get_view(this);
-	  JRect vp = jview_get_viewport_position(view);
+	  View* view = View::getView(this);
+	  Rect vp = view->getViewportBounds();
 	  jdraw_rectfill(vp, theme->get_editor_face_color());
-	  jrect_free(vp);
 	}
       }
       
@@ -1199,16 +1164,14 @@ bool Editor::onProcessMessage(JMessage msg)
 
       // Move the scroll
       if (m_state == EDITOR_STATE_SCROLLING) {
-	JWidget view = jwidget_get_view(this);
-	JRect vp = jview_get_viewport_position(view);
-	int scroll_x, scroll_y;
+	View* view = View::getView(this);
+	Rect vp = view->getViewportBounds();
+	Point scroll = view->getViewScroll();
 
-	jview_get_scroll(view, &scroll_x, &scroll_y);
-	editor_set_scroll(scroll_x+jmouse_x(1)-jmouse_x(0),
-			  scroll_y+jmouse_y(1)-jmouse_y(0), true);
+	editor_set_scroll(scroll.x+jmouse_x(1)-jmouse_x(0),
+			  scroll.y+jmouse_y(1)-jmouse_y(0), true);
 
 	jmouse_control_infinite_scroll(vp);
-	jrect_free(vp);
 
 	{
 	  int x, y;
@@ -1472,18 +1435,18 @@ bool Editor::onProcessMessage(JMessage msg)
 
 	    case WHEEL_HSCROLL:
 	    case WHEEL_VSCROLL: {
-	      JWidget view = jwidget_get_view(this);
-	      JRect vp = jview_get_viewport_position(view);
-	      int scroll_x, scroll_y;
+	      View* view = View::getView(this);
+	      Rect vp = view->getViewportBounds();
+	      Point scroll;
 	      int dx = 0;
 	      int dy = 0;
 	      int thick = m_cursor_thick;
 
 	      if (wheelAction == WHEEL_HSCROLL) {
-		dx = dz * jrect_w(vp);
+		dx = dz * vp.w;
 	      }
 	      else {
-		dy = dz * jrect_h(vp);
+		dy = dz * vp.h;
 	      }
 
 	      if (scrollBigSteps) {
@@ -1495,17 +1458,15 @@ bool Editor::onProcessMessage(JMessage msg)
 		dy /= 10;
 	      }
 		
-	      jview_get_scroll(view, &scroll_x, &scroll_y);
+	      scroll = view->getViewScroll();
 
 	      jmouse_hide();
 	      if (thick)
 		editor_clean_cursor();
-	      editor_set_scroll(scroll_x+dx, scroll_y+dy, true);
+	      editor_set_scroll(scroll.x+dx, scroll.y+dy, true);
 	      if (thick)
 		editor_draw_cursor(jmouse_x(0), jmouse_y(0));
 	      jmouse_show();
-
-	      jrect_free(vp);
 	      break;
 	    }
 
@@ -1544,16 +1505,14 @@ void Editor::onCurrentToolChange()
 void Editor::editor_request_size(int *w, int *h)
 {
   if (m_sprite) {
-    JWidget view = jwidget_get_view(this);
-    JRect vp = jview_get_viewport_position(view);
+    View* view = View::getView(this);
+    Rect vp = view->getViewportBounds();
 
-    m_offset_x = jrect_w(vp)/2 - 1;
-    m_offset_y = jrect_h(vp)/2 - 1;
+    m_offset_x = vp.w/2 - 1;
+    m_offset_y = vp.h/2 - 1;
 
     *w = (m_sprite->getWidth() << m_zoom) + m_offset_x*2;
     *h = (m_sprite->getHeight() << m_zoom) + m_offset_y*2;
-
-    jrect_free(vp);
   }
   else {
     *w = 4;
@@ -1701,8 +1660,8 @@ void Editor::editor_update_candraw()
 
 void Editor::editor_set_zoom_and_center_in_mouse(int zoom, int mouse_x, int mouse_y)
 {
-  JWidget view = jwidget_get_view(this);
-  JRect vp = jview_get_viewport_position(view);
+  View* view = View::getView(this);
+  Rect vp = view->getViewportBounds();
   int x, y;
   bool centerMouse = get_config_bool("Editor", "CenterMouseInZoom", false);
   int mx, my;
@@ -1711,16 +1670,16 @@ void Editor::editor_set_zoom_and_center_in_mouse(int zoom, int mouse_x, int mous
   screen_to_editor(mouse_x, mouse_y, &x, &y);
 
   if (centerMouse) {
-    mx = (vp->x1+vp->x2)/2;
-    my = (vp->y1+vp->y2)/2;
+    mx = vp.x+vp.w/2;
+    my = vp.y+vp.h/2;
   }
   else {
     mx = mouse_x;
     my = mouse_y;
   }
 
-  x = m_offset_x - (mx - vp->x1) + ((1<<zoom)>>1) + (x << zoom);
-  y = m_offset_y - (my - vp->y1) + ((1<<zoom)>>1) + (y << zoom);
+  x = m_offset_x - (mx - vp.x) + ((1<<zoom)>>1) + (x << zoom);
+  y = m_offset_y - (my - vp.y) + ((1<<zoom)>>1) + (y << zoom);
 
   if ((m_zoom != zoom) ||
       (m_cursor_editor_x != mx) ||
@@ -1736,7 +1695,6 @@ void Editor::editor_set_zoom_and_center_in_mouse(int zoom, int mouse_x, int mous
       jmouse_set_position(mx, my);
   }
   show_drawing_cursor();
-  jrect_free(vp);
 }
 
 //////////////////////////////////////////////////////////////////////

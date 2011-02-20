@@ -43,7 +43,7 @@ void ji_show_repo_dlg(RepoDlg *repo_dlg)
   Frame* window = new Frame(false, repo_dlg->title);
   Box* box1 = new Box(JI_HORIZONTAL);
   Box* box2 = new Box(JI_VERTICAL);
-  Widget* view = jview_new();
+  View* view = new View();
   repo_dlg->listbox = jlistbox_new();
   repo_dlg->button_use = new Button(repo_dlg->use_text);
   repo_dlg->button_add = new Button("&Add");
@@ -61,7 +61,7 @@ void ji_show_repo_dlg(RepoDlg *repo_dlg)
   jwidget_magnetic(repo_dlg->button_use, true);
 
   jwidget_expansive(view, true);
-  jview_attach(view, repo_dlg->listbox);
+  view->attachToView(repo_dlg->listbox);
   jwidget_set_min_size(view, JI_SCREEN_W*25/100, JI_SCREEN_H*25/100);
 
   /* fill the list */
@@ -111,7 +111,7 @@ static void fill_listbox(RepoDlg *repo_dlg)
   if (repo_dlg->load_listbox)
     (*repo_dlg->load_listbox)(repo_dlg);
 
-  jview_update(jwidget_get_view(repo_dlg->listbox));
+  View::getView(repo_dlg->listbox)->updateView();
 }
 
 static void kill_listbox(RepoDlg *repo_dlg)
@@ -197,7 +197,7 @@ static void add_command(Button* widget, RepoDlg* repo_dlg)
 
     if (added) {
       /* update the list-box */
-      jview_update(jwidget_get_view(repo_dlg->listbox));
+      View::getView(repo_dlg->listbox)->updateView();
 
       /* select the last item */
       jlistbox_select_index(repo_dlg->listbox,
@@ -242,7 +242,7 @@ static void delete_command(Button* widget, RepoDlg* repo_dlg)
       }
 
       /* update the list-box */
-      jview_update(jwidget_get_view(repo_dlg->listbox));
+      View::getView(repo_dlg->listbox)->updateView();
     }
 
     if (!ret)

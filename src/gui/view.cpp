@@ -17,637 +17,276 @@
 #include "gui/view.h"
 #include "gui/widget.h"
 
-#define BAR_SIZE widget->getTheme()->scrollbar_size
+#define BAR_SIZE getTheme()->scrollbar_size
 
 using namespace gfx;
 
-struct View
+View::View()
+  : Widget(JI_VIEW)
+  , m_scrollbar_h(JI_HORIZONTAL)
+  , m_scrollbar_v(JI_VERTICAL)
 {
-  int max_w, max_h;	/* space which the widget need in the viewport */
-  int scroll_x;		/* scrolling in x and y axis */
-  int scroll_y;
-  unsigned hasbars : 1;
-  /* --internal use-- */
-  int wherepos, whereclick;
-  JWidget viewport;
-  JWidget scrollbar_h;
-  JWidget scrollbar_v;
-};
+  m_hasBars = true;
 
-static void view_plain_update(JWidget widget);
-static bool view_msg_proc(JWidget widget, JMessage msg);
+  jwidget_focusrest(this, true);
+  jwidget_add_child(this, &m_viewport);
+  setScrollableSize(Size(0, 0));
 
-static JWidget viewport_new();
-static bool viewport_msg_proc(JWidget widget, JMessage msg);
-static void viewport_needed_size(JWidget widget, int *w, int *h);
-static void viewport_set_position(JWidget widget, JRect rect);
-
-static JWidget scrollbar_new(int align);
-static bool scrollbar_msg_proc(JWidget widget, JMessage msg);
-static void scrollbar_info(JWidget widget, int *_pos, int *_len,
-			   int *_bar_size, int *_viewport_size);
-
-static void displace_widgets(JWidget widget, int x, int y);
-
-JWidget jview_new()
-{
-  Widget* widget = new Widget(JI_VIEW);
-  View* view = new View;
-
-  view->viewport = viewport_new();
-  view->scrollbar_h = scrollbar_new(JI_HORIZONTAL);
-  view->scrollbar_v = scrollbar_new(JI_VERTICAL);
-  view->hasbars = true;
-  view->wherepos = 0;
-  view->whereclick = 0;
-  view->scroll_x = 0;
-  view->scroll_y = 0;
-
-  jwidget_add_hook(widget, JI_VIEW, view_msg_proc, view);
-  jwidget_focusrest(widget, true);
-  jwidget_add_child(widget, view->viewport);
-  jview_set_size(widget, 0, 0);
-
-  widget->initTheme();
-
-  return widget;
+  initTheme();
 }
 
-bool jview_has_bars(JWidget widget)
+bool View::hasScrollBars()
 {
-  View* view = reinterpret_cast<View*>(jwidget_get_data(widget, JI_VIEW));
-
-  return view->hasbars;
+  return m_hasBars;
 }
 
-void jview_attach(JWidget widget, JWidget viewable_widget)
+void View::attachToView(Widget* viewable_widget)
 {
-  View* view = reinterpret_cast<View*>(jwidget_get_data(widget, JI_VIEW));
-
-  jwidget_add_child(view->viewport, viewable_widget);
+  jwidget_add_child(&m_viewport, viewable_widget);
   /* TODO */
-  /* jwidget_emit_signal(widget, JI_SIGNAL_VIEW_ATTACH); */
+  /* jwidget_emit_signal(this, JI_SIGNAL_VIEW_ATTACH); */
 }
 
-void jview_maxsize(JWidget widget)
+void View::makeVisibleAllScrollableArea()
 {
-  View* view = reinterpret_cast<View*>(jwidget_get_data(widget, JI_VIEW));
-  int req_w, req_h;
+  Size reqSize = m_viewport.calculateNeededSize();
 
-  viewport_needed_size(view->viewport, &req_w, &req_h);
+  this->min_w =
+    + this->border_width.l
+    + m_viewport.border_width.l
+    + reqSize.w
+    + m_viewport.border_width.r
+    + this->border_width.r;
 
-  widget->min_w =
-    + widget->border_width.l
-    + view->viewport->border_width.l
-    + req_w
-    + view->viewport->border_width.r
-    + widget->border_width.r;
-
-  widget->min_h =
-    + widget->border_width.t
-    + view->viewport->border_width.t
-    + req_h
-    + view->viewport->border_width.b
-    + widget->border_width.b;
+  this->min_h =
+    + this->border_width.t
+    + m_viewport.border_width.t
+    + reqSize.h
+    + m_viewport.border_width.b
+    + this->border_width.b;
 }
 
-void jview_without_bars(JWidget widget)
+void View::hideScrollBars()
 {
-  View* view = reinterpret_cast<View*>(jwidget_get_data(widget, JI_VIEW));
+  m_hasBars = false;
 
-  view->hasbars = false;
-
-  jview_update(widget);
+  updateView();
 }
 
-void jview_set_size(JWidget widget, int w, int h)
+Size View::getScrollableSize()
 {
-#define CHECK(w, h, l, t, r, b)						\
-  ((view->max_##w > jrect_##w(view->viewport->rc)			\
-                    - view->viewport->border_width.l			\
-		    - view->viewport->border_width.r) &&		\
+  return Size(m_scrollbar_h.getSize(),
+	      m_scrollbar_v.getSize());
+}
+
+void View::setScrollableSize(const Size& sz)
+{
+#define CHECK(w, h, l, t, r, b)					\
+  ((sz.w > jrect_##w(m_viewport.rc)				\
+                    - m_viewport.border_width.l			\
+		    - m_viewport.border_width.r) &&		\
    (BAR_SIZE < jrect_##w(pos)) && (BAR_SIZE < jrect_##h(pos)))
 
-  View* view = reinterpret_cast<View*>(jwidget_get_data(widget, JI_VIEW));
   JRect pos, rect;
 
-  view->max_w = w;
-  view->max_h = h;
+  m_scrollbar_h.setSize(sz.w);
+  m_scrollbar_v.setSize(sz.h);
 
-  pos = jwidget_get_child_rect(widget);
+  pos = jwidget_get_child_rect(this);
 
   /* setup scroll-bars */
-  jwidget_remove_child(widget, view->scrollbar_h);
-  jwidget_remove_child(widget, view->scrollbar_v);
+  jwidget_remove_child(this, &m_scrollbar_h);
+  jwidget_remove_child(this, &m_scrollbar_v);
 
-  if (view->hasbars) {
+  if (m_hasBars) {
     if (CHECK(w, h, l, t, r, b)) {
       pos->y2 -= BAR_SIZE;
-      jwidget_add_child(widget, view->scrollbar_h);
+      jwidget_add_child(this, &m_scrollbar_h);
 
       if (CHECK(h, w, t, l, b, r)) {
 	pos->x2 -= BAR_SIZE;
 	if (CHECK(w, h, l, t, r, b))
-	  jwidget_add_child(widget, view->scrollbar_v);
+	  jwidget_add_child(this, &m_scrollbar_v);
 	else {
 	  pos->x2 += BAR_SIZE;
 	  pos->y2 += BAR_SIZE;
-	  jwidget_remove_child(widget, view->scrollbar_h);
+	  jwidget_remove_child(this, &m_scrollbar_h);
 	}
       }
     }
     else if (CHECK(h, w, t, l, b, r)) {
       pos->x2 -= BAR_SIZE;
-      jwidget_add_child(widget, view->scrollbar_v);
+      jwidget_add_child(this, &m_scrollbar_v);
 
       if (CHECK(w, h, l, t, r, b)) {
         pos->y2 -= BAR_SIZE;
 	if (CHECK(h, w, t, l, b, r))
-	  jwidget_add_child(widget, view->scrollbar_h);
+	  jwidget_add_child(this, &m_scrollbar_h);
 	else {
 	  pos->x2 += BAR_SIZE;
 	  pos->y2 += BAR_SIZE;
-	  jwidget_remove_child(widget, view->scrollbar_v);
+	  jwidget_remove_child(this, &m_scrollbar_v);
 	}
       }
     }
 
-    if (widget->hasChild(view->scrollbar_h)) {
+    if (this->hasChild(&m_scrollbar_h)) {
       rect = jrect_new(pos->x1, pos->y2,
 		       pos->x1+jrect_w(pos), pos->y2+BAR_SIZE);
-      jwidget_set_rect(view->scrollbar_h, rect);
+      jwidget_set_rect(&m_scrollbar_h, rect);
       jrect_free(rect);
 
-      view->scrollbar_h->setVisible(true);
+      m_scrollbar_h.setVisible(true);
     }
     else
-      view->scrollbar_h->setVisible(false);
+      m_scrollbar_h.setVisible(false);
 
-    if (widget->hasChild(view->scrollbar_v)) {
+    if (this->hasChild(&m_scrollbar_v)) {
       rect = jrect_new(pos->x2, pos->y1,
 		       pos->x2+BAR_SIZE, pos->y1+jrect_h(pos));
-      jwidget_set_rect(view->scrollbar_v, rect);
+      jwidget_set_rect(&m_scrollbar_v, rect);
       jrect_free(rect);
 
-      view->scrollbar_v->setVisible(true);
+      m_scrollbar_v.setVisible(true);
     }
     else
-      view->scrollbar_v->setVisible(false);
+      m_scrollbar_v.setVisible(false);
   }
 
-  /* setup viewport */
-  widget->invalidate();
-  jwidget_set_rect(view->viewport, pos);
-  jview_set_scroll(widget, view->scroll_x, view->scroll_y);
+  // Setup viewport
+  this->invalidate();
+  jwidget_set_rect(&m_viewport, pos);
+  setViewScroll(getViewScroll()); // Setup the same scroll-point
 
   jrect_free(pos);
 }
 
-void jview_set_scroll(JWidget widget, int x, int y)
+Size View::getVisibleSize()
 {
-  View* view = reinterpret_cast<View*>(jwidget_get_data(widget, JI_VIEW));
-  int old_x = view->scroll_x;
-  int old_y = view->scroll_y;
-  int avail_w = jrect_w(view->viewport->rc)
-    - view->viewport->border_width.l
-    - view->viewport->border_width.r;
-  int avail_h = jrect_h(view->viewport->rc)
-    - view->viewport->border_width.t
-    - view->viewport->border_width.b;
+  return Size(jrect_w(m_viewport.rc) - m_viewport.border_width.l - m_viewport.border_width.r,
+	      jrect_h(m_viewport.rc) - m_viewport.border_width.t - m_viewport.border_width.b);
+}
 
-  view->scroll_x = MID(0, x, MAX(0, view->max_w - avail_w));
-  view->scroll_y = MID(0, y, MAX(0, view->max_h - avail_h));
+Point View::getViewScroll()
+{
+  return Point(m_scrollbar_h.getPos(),
+	       m_scrollbar_v.getPos());
+}
 
-  if ((view->scroll_x == old_x) && (view->scroll_y == old_y))
+void View::setViewScroll(const Point& pt)
+{
+  Point oldScroll = getViewScroll();
+  Size maxsize = getScrollableSize();
+  Size visible = getVisibleSize();
+  Point newScroll(MID(0, pt.x, MAX(0, maxsize.w - visible.w)),
+		  MID(0, pt.y, MAX(0, maxsize.h - visible.h)));
+
+  if (newScroll == oldScroll)
     return;
 
-  jwidget_set_rect(view->viewport, view->viewport->rc);
-  widget->invalidate();
+  m_scrollbar_h.setPos(newScroll.x);
+  m_scrollbar_v.setPos(newScroll.y);
+
+  jwidget_set_rect(&m_viewport, m_viewport.rc);
+  this->invalidate();
 }
 
-void jview_get_scroll(JWidget widget, int *x, int *y)
+void View::updateView()
 {
-  View* view = reinterpret_cast<View*>(jwidget_get_data(widget, JI_VIEW));
+  Widget* vw = reinterpret_cast<Widget*>(jlist_first_data(m_viewport.children));
+  Point scroll = getViewScroll();
 
-  *x = view->scroll_x;
-  *y = view->scroll_y;
-}
+  // Set minimum (remove scroll-bars)
+  setScrollableSize(Size(0, 0));
 
-void jview_get_max_size(JWidget widget, int *w, int *h)
-{
-  View* view = reinterpret_cast<View*>(jwidget_get_data(widget, JI_VIEW));
+  // Set needed size
+  setScrollableSize(m_viewport.calculateNeededSize());
 
-  *w = view->max_w;
-  *h = view->max_h;
-}
-
-void jview_update(JWidget widget)
-{
-  View* view = reinterpret_cast<View*>(jwidget_get_data(widget, JI_VIEW));
-  JWidget vw = reinterpret_cast<JWidget>(jlist_first_data(view->viewport->children));
-/*   int center_x = vw ? vw->rect->x+vw->rect->w/2: 0; */
-/*   int center_y = vw ? vw->rect->y+vw->rect->h/2: 0; */
-  int scroll_x = view->scroll_x;
-  int scroll_y = view->scroll_y;
-
-  view_plain_update(widget);
+  // If there are scroll-bars, we have to setup the scrollable-size
+  // again (because they remove visible space, maybe now we need a
+  // vertical or horizontal bar too).
+  if (hasChild(&m_scrollbar_h) || hasChild(&m_scrollbar_v))
+    setScrollableSize(m_viewport.calculateNeededSize());
 
   if (vw)
-    jview_set_scroll(widget,
-		       scroll_x, scroll_y);
-/* 			view->scroll_x + (vw->rect->x + vw->rect->w/2) - center_x, */
-/* 			view->scroll_y + (vw->rect->y + vw->rect->h/2) - center_y); */
+    setViewScroll(scroll);
   else
-    jview_set_scroll(widget, 0, 0);
+    setViewScroll(Point(0, 0));
 }
 
-JWidget jview_get_viewport(JWidget widget)
+Viewport* View::getViewport()
 {
-  View* view = reinterpret_cast<View*>(jwidget_get_data(widget, JI_VIEW));
-
-  return view->viewport;
+  return &m_viewport;
 }
 
-JRect jview_get_viewport_position(JWidget widget)
+Rect View::getViewportBounds()
 {
-  View* view = reinterpret_cast<View*>(jwidget_get_data(widget, JI_VIEW));
-
-  return jwidget_get_child_rect(view->viewport);
+  return m_viewport.getBounds() - m_viewport.getBorder();
 }
 
-void jtheme_scrollbar_info(JWidget widget, int *pos, int *len)
+// static
+View* View::getView(Widget* widget)
 {
-  scrollbar_info(widget, pos, len, NULL, NULL);
-}
-
-/* for viewable widgets */
-JWidget jwidget_get_view(JWidget widget)
-{
-  if ((widget->parent) && (widget->parent->parent) &&
-      ((widget->parent->type == JI_VIEW_VIEWPORT)) &&
-      ((widget->parent->parent->type == JI_VIEW)))
-    return widget->parent->parent;
+  if ((widget->getParent()) &&
+      (widget->getParent()->type == JI_VIEW_VIEWPORT) &&
+      (widget->getParent()->getParent()) &&
+      (widget->getParent()->getParent()->type == JI_VIEW))
+    return static_cast<View*>(widget->getParent()->getParent());
   else
     return 0;
 }
 
-static void view_plain_update(JWidget widget)
-{
-  View* view = reinterpret_cast<View*>(jwidget_get_data(widget, JI_VIEW));
-  int req_w, req_h;
-
-  jview_set_size(widget, 0, 0);
-
-  viewport_needed_size(view->viewport, &req_w, &req_h);
-  jview_set_size(widget, req_w, req_h);
-
-  if ((widget->hasChild(view->scrollbar_h)) ||
-      (widget->hasChild(view->scrollbar_v))) {
-    viewport_needed_size(view->viewport, &req_w, &req_h);
-    jview_set_size(widget, req_w, req_h);
-  }
-}
-
-static bool view_msg_proc(JWidget widget, JMessage msg)
+bool View::onProcessMessage(JMessage msg)
 {
   switch (msg->type) {
 
-    case JM_DESTROY: {
-      View* view = reinterpret_cast<View*>(jwidget_get_data(widget, JI_VIEW));
-
-      jwidget_remove_child(widget, view->viewport);
-      jwidget_remove_child(widget, view->scrollbar_h);
-      jwidget_remove_child(widget, view->scrollbar_v);
-
-      jwidget_free(view->viewport);
-      jwidget_free(view->scrollbar_h);
-      jwidget_free(view->scrollbar_v);
-
-      delete view;
-      break;
-    }
-
     case JM_REQSIZE: {
-      View* view = reinterpret_cast<View*>(jwidget_get_data(widget, JI_VIEW));
-
-      Size viewSize = view->viewport->getPreferredSize();
+      Size viewSize = m_viewport.getPreferredSize();
       msg->reqsize.w = viewSize.w;
       msg->reqsize.h = viewSize.h;
 
-      msg->reqsize.w += widget->border_width.l + widget->border_width.r;
-      msg->reqsize.h += widget->border_width.t + widget->border_width.b;
+      msg->reqsize.w += this->border_width.l + this->border_width.r;
+      msg->reqsize.h += this->border_width.t + this->border_width.b;
       return true;
     }
 
     case JM_SETPOS:
       if (!_jwindow_is_moving()) { /* dirty trick */
-	jrect_copy(widget->rc, &msg->setpos.rect);
-	jview_update(widget);
+	jrect_copy(this->rc, &msg->setpos.rect);
+	updateView();
       }
       else {
-	displace_widgets(widget,
-			 msg->setpos.rect.x1 - widget->rc->x1,
-			 msg->setpos.rect.y1 - widget->rc->y1);
+	displaceWidgets(this,
+			msg->setpos.rect.x1 - this->rc->x1,
+			msg->setpos.rect.y1 - this->rc->y1);
       }
       return true;
 
     case JM_DRAW:
-      widget->getTheme()->draw_view(widget, &msg->draw.rect);
+      getTheme()->draw_view(this, &msg->draw.rect);
       return true;
 
     case JM_FOCUSENTER:
     case JM_FOCUSLEAVE:
       /* TODO add something to avoid this (theme specific stuff) */
       {
-	JRegion reg1 = jwidget_get_drawable_region(widget,
-						   JI_GDR_CUTTOPWINDOWS);
-	jregion_union(widget->update_region, widget->update_region, reg1);
+	JRegion reg1 = jwidget_get_drawable_region(this, JI_GDR_CUTTOPWINDOWS);
+	jregion_union(this->update_region, this->update_region, reg1);
 	jregion_free(reg1);
       }
       break;
   }
 
-  return false;
+  return Widget::onProcessMessage(msg);
 }
 
-static JWidget viewport_new()
-{
-  Widget* widget = new Widget(JI_VIEW_VIEWPORT);
-
-  jwidget_add_hook(widget, JI_VIEW_VIEWPORT, viewport_msg_proc, NULL);
-  widget->initTheme();
-
-  return widget;
-}
-
-static bool viewport_msg_proc(JWidget widget, JMessage msg)
-{
-  switch (msg->type) {
-
-    case JM_REQSIZE:
-      msg->reqsize.w = widget->border_width.l + 1 + widget->border_width.r;
-      msg->reqsize.h = widget->border_width.t + 1 + widget->border_width.b;
-      return true;
-
-    case JM_SETPOS:
-      viewport_set_position(widget, &msg->setpos.rect);
-      return true;
-
-    case JM_DRAW:
-      widget->getTheme()->draw_view_viewport(widget, &msg->draw.rect);
-      return true;
-  }
-
-  return false;
-}
-
-static void viewport_needed_size(JWidget widget, int *w, int *h)
-{
-  Size reqSize;
-  JLink link;
-
-  *w = *h = 0;
-
-  JI_LIST_FOR_EACH(widget->children, link) {
-    reqSize = ((Widget*)link->data)->getPreferredSize();
-
-    *w = MAX(*w, reqSize.w);
-    *h = MAX(*h, reqSize.h);
-  }
-}
-
-static void viewport_set_position(JWidget widget, JRect rect)
-{
-  int scroll_x, scroll_y;
-  Size reqSize;
-  JWidget child;
-  JRect cpos;
-  JLink link;
-
-  jrect_copy(widget->rc, rect);
-
-  jview_get_scroll(widget->parent, &scroll_x, &scroll_y);
-
-  cpos = jrect_new(0, 0, 0, 0);
-  cpos->x1 = widget->rc->x1 + widget->border_width.l - scroll_x;
-  cpos->y1 = widget->rc->y1 + widget->border_width.t - scroll_y;
-
-  JI_LIST_FOR_EACH(widget->children, link) {
-    child = (JWidget)link->data;
-    reqSize = child->getPreferredSize();
-
-    cpos->x2 = cpos->x1 + MAX(reqSize.w, jrect_w(widget->rc)
-					 - widget->border_width.l
-					 - widget->border_width.r);
-
-    cpos->y2 = cpos->y1 + MAX(reqSize.h, jrect_h(widget->rc)
-					 - widget->border_width.t
-					 - widget->border_width.b);
-
-    jwidget_set_rect(child, cpos);
-  }
-
-  jrect_free(cpos);
-}
-
-static JWidget scrollbar_new(int align)
-{
-  Widget* widget = new Widget(JI_VIEW_SCROLLBAR);
-
-  jwidget_add_hook(widget, JI_VIEW_SCROLLBAR, scrollbar_msg_proc, NULL);
-  widget->setAlign(align);
-  widget->initTheme();
-
-  return widget;
-}
-
-static bool scrollbar_msg_proc(JWidget widget, JMessage msg)
-{
-#define MOUSE_IN(x1, y1, x2, y2) \
-  ((msg->mouse.x >= (x1)) && (msg->mouse.x <= (x2)) && \
-   (msg->mouse.y >= (y1)) && (msg->mouse.y <= (y2)))
-
-  switch (msg->type) {
-
-    case JM_BUTTONPRESSED: {
-      View* view = reinterpret_cast<View*>(jwidget_get_data(widget->parent, JI_VIEW));
-      int x1, y1, x2, y2;
-      int u1, v1, u2, v2;
-      bool ret = false;
-      int pos, len;
-
-      jtheme_scrollbar_info(widget, &pos, &len);
-
-      view->wherepos = pos;
-      view->whereclick = widget->getAlign() & JI_HORIZONTAL ? msg->mouse.x:
-							      msg->mouse.y;
-
-      x1 = widget->rc->x1;
-      y1 = widget->rc->y1;
-      x2 = widget->rc->x2-1;
-      y2 = widget->rc->y2-1;
-
-      u1 = x1 + widget->border_width.l;
-      v1 = y1 + widget->border_width.t;
-      u2 = x2 - widget->border_width.r;
-      v2 = y2 - widget->border_width.b;
-
-      if (widget->getAlign() & JI_HORIZONTAL) {
-	/* in the bar */
-	if (MOUSE_IN(u1+pos, v1, u1+pos+len-1, v2)) {
-	  /* capture mouse */
-	}
-	/* left */
-	else if (MOUSE_IN(x1, y1, u1+pos-1, y2)) {
-	  jview_set_scroll(widget->parent,
-			   view->scroll_x - jrect_w(view->viewport->rc)/2,
-			   view->scroll_y);
-	  ret = true;
-	}
-	/* right */
-	else if (MOUSE_IN(u1+pos+len, y1, x2, y2)) {
-	  jview_set_scroll(widget->parent,
-			   view->scroll_x + jrect_w(view->viewport->rc)/2,
-			   view->scroll_y);
-	  ret = true;
-	}
-      }
-      else {
-	/* in the bar */
-	if (MOUSE_IN(u1, v1+pos, u2, v1+pos+len-1)) {
-	  /* capture mouse */
-	}
-	/* left */
-	else if (MOUSE_IN(x1, y1, x2, v1+pos-1)) {
-	  jview_set_scroll(widget->parent,
-			   view->scroll_x,
-			   view->scroll_y - jrect_h(view->viewport->rc)/2);
-	  ret = true;
-	}
-	/* right */
-	else if (MOUSE_IN(x1, v1+pos+len, x2, y2)) {
-	  jview_set_scroll(widget->parent,
-			   view->scroll_x,
-			   view->scroll_y + jrect_h(view->viewport->rc)/2);
-	  ret = true;
-	}
-      }
-
-      if (ret)
-	return ret;
-
-      widget->setSelected(true);
-      widget->captureMouse();
-
-      // continue to JM_MOTION handler...
-    }
-
-    case JM_MOTION:
-      if (widget->hasCapture()) {
-	View* view = reinterpret_cast<View*>(jwidget_get_data(widget->parent, JI_VIEW));
-	int pos, len, bar_size, viewport_size;
-	int old_pos;
-
-	scrollbar_info(widget, &pos, &len,
-		       &bar_size, &viewport_size);
-	old_pos = pos;
-
-	if (bar_size > len) {
-	  if (widget->getAlign() & JI_HORIZONTAL) {
-	    pos = (view->wherepos + msg->mouse.x - view->whereclick);
-	    pos = MID(0, pos, bar_size - len);
-
-	    jview_set_scroll
-	      (widget->parent,
-	       (view->max_w - viewport_size) * pos / (bar_size - len),
-	       view->scroll_y);
-	  }
-	  else {
-	    pos = (view->wherepos + msg->mouse.y - view->whereclick);
-	    pos = MID(0, pos, bar_size - len);
-
-	    jview_set_scroll
-	      (widget->parent,
-	       view->scroll_x,
-	       (view->max_h - viewport_size) * pos / (bar_size - len));
-	  }
-	}
-      }
-      break;
-
-    case JM_BUTTONRELEASED:
-      widget->setSelected(false);
-      widget->releaseMouse();
-      break;
-
-    case JM_MOUSEENTER:
-    case JM_MOUSELEAVE:
-      // TODO add something to avoid this (theme specific stuff)
-      widget->invalidate();
-      break;
-
-    case JM_DRAW:
-      widget->getTheme()->draw_view_scrollbar(widget, &msg->draw.rect);
-      return true;
-  }
-
-  return false;
-}
-
-static void scrollbar_info(JWidget widget, int *_pos, int *_len,
-			   int *_bar_size, int *_viewport_size)
-{
-  View* view = reinterpret_cast<View*>(jwidget_get_data(widget->parent, JI_VIEW));
-  int bar_size, viewport_size;
-  int pos, len, max, scroll;
-  int border_width;
-
-  if (widget->getAlign() & JI_HORIZONTAL) {
-    max = view->max_w;
-    scroll = view->scroll_x;
-    bar_size = jrect_w(widget->rc)
-      - widget->border_width.l
-      - widget->border_width.r;
-    viewport_size = jrect_w(view->viewport->rc)
-      - view->viewport->border_width.l
-      - view->viewport->border_width.r;
-    border_width = widget->border_width.t + widget->border_width.b;
-  }
-  else {
-    max = view->max_h;
-    scroll = view->scroll_y;
-    bar_size = jrect_h(widget->rc)
-      - widget->border_width.t
-      - widget->border_width.b;
-    viewport_size = jrect_h(view->viewport->rc)
-      - view->viewport->border_width.t
-      - view->viewport->border_width.b;
-    border_width = widget->border_width.l + widget->border_width.r;
-  }
-
-  if (max <= viewport_size) {
-    len = bar_size;
-    pos = 0;
-  }
-  else {
-    len = bar_size - (max-viewport_size);
-    len = MID(BAR_SIZE*2-border_width, len, bar_size);
-    pos = (bar_size-len) * scroll / (max-viewport_size);
-    pos = MID(0, pos, bar_size-len);
-  }
-
-  if (_pos) *_pos = pos;
-  if (_len) *_len = len;
-  if (_bar_size) *_bar_size = bar_size;
-  if (_viewport_size) *_viewport_size = viewport_size;
-}
-
-static void displace_widgets(JWidget widget, int x, int y)
+// static
+void View::displaceWidgets(Widget* widget, int x, int y)
 {
   JLink link;
 
   jrect_displace(widget->rc, x, y);
 
   JI_LIST_FOR_EACH(widget->children, link)
-    displace_widgets(reinterpret_cast<JWidget>(link->data), x, y);
+    displaceWidgets(reinterpret_cast<JWidget>(link->data), x, y);
 }

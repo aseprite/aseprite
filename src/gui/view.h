@@ -7,30 +7,53 @@
 #ifndef GUI_VIEW_H_INCLUDED
 #define GUI_VIEW_H_INCLUDED
 
-#include "gui/base.h"
+#include "gfx/point.h"
+#include "gfx/size.h"
+#include "gui/scroll_bar.h"
+#include "gui/viewport.h"
+#include "gui/widget.h"
 
-JWidget jview_new();
+class View : public Widget
+{
+public:
+  View();
 
-bool jview_has_bars(JWidget view);
+  bool hasScrollBars();
 
-void jview_attach(JWidget view, JWidget viewable_widget);
-void jview_maxsize(JWidget view);
-void jview_without_bars(JWidget view);
+  void attachToView(Widget* viewableWidget);
+  void hideScrollBars();
+  void makeVisibleAllScrollableArea();
 
-void jview_set_size(JWidget view, int w, int h);
-void jview_set_scroll(JWidget view, int x, int y);
-void jview_get_scroll(JWidget view, int *x, int *y);
-void jview_get_max_size(JWidget view, int *w, int *h);
+  // Returns the maximum viewable size requested by the attached
+  // widget in the viewport.
+  gfx::Size getScrollableSize();
+  void setScrollableSize(const gfx::Size& sz);
 
-void jview_update(JWidget view);
+  // Returns the visible/available size to see the attached widget.
+  gfx::Size getVisibleSize();
 
-JWidget jview_get_viewport(JWidget view);
-JRect jview_get_viewport_position(JWidget view);
+  gfx::Point getViewScroll();
+  void setViewScroll(const gfx::Point& pt);
 
-/* for themes */
-void jtheme_scrollbar_info(JWidget scrollbar, int *pos, int *len);
+  void updateView();
 
-/* for viewable widgets */
-JWidget jwidget_get_view(JWidget viewable_widget);
+  Viewport* getViewport();
+  gfx::Rect getViewportBounds();
+
+  // For viewable widgets
+  static View* getView(Widget* viewableWidget);
+
+protected:
+  // Events
+  bool onProcessMessage(JMessage msg);
+
+private:
+  static void displaceWidgets(Widget* widget, int x, int y);
+
+  bool m_hasBars;
+  Viewport m_viewport;
+  ScrollBar m_scrollbar_h;
+  ScrollBar m_scrollbar_v;
+};
 
 #endif

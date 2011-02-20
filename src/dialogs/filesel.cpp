@@ -169,7 +169,7 @@ base::string ase_file_selector(const base::string& message,
     goforward->Click.connect(Bind<void>(&goforward_command, goforward));
     goup->Click.connect(Bind<void>(&goup_command, goup));
 
-    JWidget view = jview_new();
+    View* view = new View();
     fileview = fileview_new(start_folder, exts);
 
     jwidget_add_hook(fileview, -1, fileview_msg_proc, NULL);
@@ -179,7 +179,7 @@ base::string ase_file_selector(const base::string& message,
 
     fileview->setName("fileview");
 
-    jview_attach(view, fileview);
+    view->attachToView(fileview);
     jwidget_expansive(view, true);
 
     jwidget_add_child(box, view);
@@ -229,7 +229,7 @@ base::string ase_file_selector(const base::string& message,
   JWidget ok = jwidget_find_name(window, "ok");
 
   // update the view
-  jview_update(jwidget_get_view(fileview));
+  View::getView(fileview)->updateView();
 
   // open the window and run... the user press ok?
 again:

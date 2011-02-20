@@ -398,24 +398,24 @@ int jmouse_y(int antique) { return m_y[antique & 1]; }
 int jmouse_z(int antique) { return m_z[antique & 1]; }
 int jmouse_b(int antique) { return m_b[antique & 1]; }
 
-bool jmouse_control_infinite_scroll(JRect rect)
+bool jmouse_control_infinite_scroll(const gfx::Rect& rect)
 {
   int x, y, u, v;
 
   u = jmouse_x(0);
   v = jmouse_y(0);
 
-  if (u <= rect->x1)
-    x = rect->x2-2;
-  else if (u >= rect->x2-1)
-    x = rect->x1+1;
+  if (u <= rect.x)
+    x = rect.x+rect.w-2;
+  else if (u >= rect.x+rect.w-1)
+    x = rect.x+1;
   else
     x = u;
 
-  if (v <= rect->y1)
-    y = rect->y2-2;
-  else if (v >= rect->y2-1)
-    y = rect->y1+1;
+  if (v <= rect.y)
+    y = rect.y+rect.h-2;
+  else if (v >= rect.y+rect.h-1)
+    y = rect.y+1;
   else
     y = v;
 

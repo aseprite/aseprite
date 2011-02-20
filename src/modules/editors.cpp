@@ -47,7 +47,7 @@ static EditorList editors;
 
 static int is_sprite_in_some_editor(Sprite *sprite);
 static Sprite *get_more_reliable_sprite();
-static JWidget find_next_editor(JWidget widget);
+static Widget* find_next_editor(Widget* widget);
 static int count_parents(Widget* widget);
 
 int init_module_editors()
@@ -198,11 +198,11 @@ void set_current_editor(Editor* editor)
 {
   if (current_editor != editor) {
     if (current_editor)
-      jwidget_get_view(current_editor)->invalidate();
+      View::getView(current_editor)->invalidate();
 
     current_editor = editor;
 
-    jwidget_get_view(current_editor)->invalidate();
+    View::getView(current_editor)->invalidate();
 
     UIContext* context = UIContext::instance();
     Sprite* sprite = current_editor->getSprite();
@@ -224,7 +224,7 @@ void set_sprite_in_current_editor(Sprite *sprite)
 
     current_editor->editor_set_sprite(sprite);
 
-    jwidget_get_view(current_editor)->invalidate();
+    View::getView(current_editor)->invalidate();
 
     app_refresh_screen(sprite);
     app_realloc_sprite_list();
@@ -259,20 +259,20 @@ void split_editor(Editor* editor, int align)
     return;
   }
 
-  JWidget view = jwidget_get_view(editor);
+  View* view = View::getView(editor);
   JWidget parent_box = view->getParent(); // box or panel
 
   /* create a new box to contain both editors, and a new view to put
      the new editor */
   JWidget new_panel = jpanel_new(align);
-  JWidget new_view = editor_view_new();
+  View* new_view = editor_view_new();
   Editor* new_editor = create_new_editor();
 
   /* insert the "new_box" in the same location that the view */
   jwidget_replace_child(parent_box, view, new_panel);
 
   /* append the new editor */
-  jview_attach(new_view, new_editor);
+  new_view->attachToView(new_editor);
 
   /* set the sprite for the new editor */
   new_editor->editor_set_sprite(editor->getSprite());
@@ -288,14 +288,10 @@ void split_editor(Editor* editor, int align)
 
   /* same position */
   {
-    int scroll_x, scroll_y;
-
-    jview_get_scroll(view, &scroll_x, &scroll_y);
-    jview_set_scroll(new_view, scroll_x, scroll_y);
+    new_view->setViewScroll(view->getViewScroll());
 
     jrect_copy(new_view->rc, view->rc);
-    jrect_copy(jview_get_viewport(new_view)->rc,
-	       jview_get_viewport(view)->rc);
+    jrect_copy(new_view->getViewport()->rc, view->getViewport()->rc);
     jrect_copy(new_editor->rc, editor->rc);
 
     new_editor->editor_set_offset_x(editor->editor_get_offset_x());
@@ -312,7 +308,7 @@ void split_editor(Editor* editor, int align)
 
 void close_editor(Editor* editor)
 {
-  JWidget view = jwidget_get_view(editor);
+  View* view = View::getView(editor);
   JWidget parent_box = view->getParent(); // Box or panel
   JWidget other_widget;
 
@@ -357,7 +353,7 @@ void close_editor(Editor* editor)
 
 void make_unique_editor(Editor* editor)
 {
-  JWidget view = jwidget_get_view(editor);
+  View* view = View::getView(editor);
   JLink link, next;
   JWidget child;
 
@@ -419,13 +415,14 @@ static Sprite* get_more_reliable_sprite()
   return NULL;
 }
 
-static JWidget find_next_editor(JWidget widget)
+static Widget* find_next_editor(Widget* widget)
 {
-  JWidget editor = NULL;
+  Widget* editor = NULL;
   JLink link;
 
-  if (widget->type == JI_VIEW)
-    editor = reinterpret_cast<JWidget>(jlist_first_data(jview_get_viewport(widget)->children));
+  if (widget->type == JI_VIEW) {
+    editor = reinterpret_cast<Widget*>(jlist_first_data(static_cast<View*>(widget)->getViewport()->children));
+  }
   else {
     JI_LIST_FOR_EACH(widget->children, link)
       if ((editor = find_next_editor(reinterpret_cast<JWidget>(link->data))))

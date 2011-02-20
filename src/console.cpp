@@ -51,7 +51,7 @@ Console::Console()
   else {
     Frame* window = new Frame(false, "Errors Console");
     Grid* grid = new Grid(1, false);
-    Widget* view = jview_new();
+    View* view = new View();
     Widget* textbox = jtextbox_new(NULL, JI_WORDWRAP);
     Button* button = new Button("&Cancel");
 
@@ -61,7 +61,7 @@ Console::Console()
     // The "button" closes the console
     button->Click.connect(Bind<void>(&Frame::closeWindow, window, button));
 
-    jview_attach(view, textbox);
+    view->attachToView(textbox);
 
     jwidget_set_min_size(button, 60, 0);
 

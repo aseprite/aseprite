@@ -7,6 +7,7 @@
 #ifndef GUI_SYSTEM_H_INCLUDED
 #define GUI_SYSTEM_H_INCLUDED
 
+#include "gfx/rect.h"
 #include "gui/base.h"
 
 struct BITMAP;
@@ -78,6 +79,6 @@ int jmouse_x(int antique);
 int jmouse_y(int antique);
 int jmouse_z(int antique);
 
-bool jmouse_control_infinite_scroll(JRect rect);
+bool jmouse_control_infinite_scroll(const gfx::Rect& rect);
 
 #endif

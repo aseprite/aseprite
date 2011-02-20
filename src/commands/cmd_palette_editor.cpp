@@ -223,7 +223,7 @@ void PaletteEditorCommand::onLoadParams(Params* params)
 
 void PaletteEditorCommand::onExecute(Context* context)
 {
-  Widget* palette_editor_view;
+  View* palette_editor_view;
   Widget* select_rgb;
   Widget* select_hsv;
   Button* expand_button;
@@ -297,8 +297,8 @@ void PaletteEditorCommand::onExecute(Context* context)
     palette_editor = new PaletteView(true);
     palette_editor->setBoxSize(4*jguiscale());
 
-    jview_attach(palette_editor_view, palette_editor);
-    jview_maxsize(palette_editor_view);
+    palette_editor_view->attachToView(palette_editor);
+    palette_editor_view->makeVisibleAllScrollableArea();
 
     // Set palette editor columns
     palette_editor->setColumns(16);

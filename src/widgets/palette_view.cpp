@@ -23,6 +23,7 @@
 #include <string.h>
 
 #include "app/color.h"
+#include "gfx/point.h"
 #include "gui/manager.h"
 #include "gui/message.h"
 #include "gui/rect.h"
@@ -80,9 +81,9 @@ void PaletteView::setColumns(int columns)
   m_columns = columns;
 
   if (m_columns != old_columns) {
-    Widget* view = jwidget_get_view(this);
+    View* view = View::getView(this);
     if (view)
-      jview_update(view);
+      view->updateView();
 
     invalidate();
   }
@@ -556,15 +557,11 @@ bool PaletteView::onProcessMessage(JMessage msg)
       return true;
 
     case JM_WHEEL: {
-      JWidget view = jwidget_get_view(this);
+      View* view = View::getView(this);
       if (view) {
-	int scroll_x, scroll_y;
-
-	jview_get_scroll(view, &scroll_x, &scroll_y);
-	jview_set_scroll(view,
-			 scroll_x,
-			 scroll_y +
-			 (jmouse_z(1) - jmouse_z(0)) * 3*m_boxsize);
+	gfx::Point scroll = view->getViewScroll();
+	scroll.y += (jmouse_z(1)-jmouse_z(0)) * 3 * m_boxsize;
+	view->setViewScroll(scroll);
       }
       break;
     }
@@ -589,33 +586,32 @@ void PaletteView::request_size(int* w, int* h)
 
 void PaletteView::update_scroll(int color)
 {
-  Widget* view = jwidget_get_view(this);
-  if (view != NULL) {
-    JRect vp = jview_get_viewport_position(view);
-    int scroll_x, scroll_y;
-    int x, y, cols;
-    div_t d;
+  View* view = View::getView(this);
+  if (!view)
+    return;
 
-    jview_get_scroll(view, &scroll_x, &scroll_y);
+  gfx::Rect vp = view->getViewportBounds();
+  gfx::Point scroll;
+  int x, y, cols;
+  div_t d;
 
-    d = div(256, m_columns);
-    cols = m_columns;
+  scroll = view->getViewScroll();
 
-    y = (m_boxsize+this->child_spacing) * (color / cols);
-    x = (m_boxsize+this->child_spacing) * (color % cols);
+  d = div(256, m_columns);
+  cols = m_columns;
 
-    if (scroll_x > x)
-      scroll_x = x;
-    else if (scroll_x+jrect_w(vp)-m_boxsize-2 < x)
-      scroll_x = x-jrect_w(vp)+m_boxsize+2;
+  y = (m_boxsize+this->child_spacing) * (color / cols);
+  x = (m_boxsize+this->child_spacing) * (color % cols);
 
-    if (scroll_y > y)
-      scroll_y = y;
-    else if (scroll_y+jrect_h(vp)-m_boxsize-2 < y)
-      scroll_y = y-jrect_h(vp)+m_boxsize+2;
+  if (scroll.x > x)
+    scroll.x = x;
+  else if (scroll.x+vp.w-m_boxsize-2 < x)
+    scroll.x = x-vp.w+m_boxsize+2;
 
-    jview_set_scroll(view, scroll_x, scroll_y);
+  if (scroll.y > y)
+    scroll.y = y;
+  else if (scroll.y+vp.h-m_boxsize-2 < y)
+    scroll.y = y-vp.h+m_boxsize+2;
 
-    jrect_free(vp);
-  }
+  view->setViewScroll(scroll);
 }

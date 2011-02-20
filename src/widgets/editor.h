@@ -33,6 +33,7 @@ class IToolLoop;
 class ToolLoopManager;
 class PixelsMovement;
 class Tool;
+class View;
 
 class Editor : public Widget
 {
@@ -226,7 +227,7 @@ private:
 			     void (*pixel)(BITMAP *bmp, int x, int y, int color));
 };
 
-JWidget editor_view_new();
+View* editor_view_new();
 int editor_type();
 
 #endif

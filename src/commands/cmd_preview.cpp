@@ -82,8 +82,7 @@ void PreviewCommand::onExecute(Context* context)
 
   SpriteWriter sprite(editor->getSprite());
   const Palette* pal = sprite->getCurrentPalette();
-  JWidget view = jwidget_get_view(editor);
-  int scroll_x, scroll_y;
+  View* view = View::getView(editor);
   int u, v, x, y;
   int index_bg_color = -1;
   TiledMode tiled = context->getSettings()->getTiledMode();
@@ -94,8 +93,8 @@ void PreviewCommand::onExecute(Context* context)
   // Clear extras (e.g. pen preview)
   sprite->destroyExtraCel();
 
-  JRect vp = jview_get_viewport_position(view);
-  jview_get_scroll(view, &scroll_x, &scroll_y);
+  gfx::Rect vp = view->getViewportBounds();
+  gfx::Point scroll = view->getViewScroll();
 
   int old_mouse_x = jmouse_x(0);
   int old_mouse_y = jmouse_y(0);
@@ -103,8 +102,8 @@ void PreviewCommand::onExecute(Context* context)
   jmouse_set_cursor(JI_CURSOR_NULL);
   jmouse_set_position(JI_SCREEN_W/2, JI_SCREEN_H/2);
 
-  int pos_x = - scroll_x + vp->x1 + editor->editor_get_offset_x();
-  int pos_y = - scroll_y + vp->y1 + editor->editor_get_offset_y();
+  int pos_x = - scroll.x + vp.x + editor->editor_get_offset_x();
+  int pos_y = - scroll.y + vp.y + editor->editor_get_offset_y();
   int delta_x = 0;
   int delta_y = 0;
 
@@ -236,7 +235,6 @@ void PreviewCommand::onExecute(Context* context)
   jmouse_set_cursor(JI_CURSOR_NORMAL);
 
   jmanager_refresh_screen();
-  jrect_free(vp);
 }
 
 //////////////////////////////////////////////////////////////////////

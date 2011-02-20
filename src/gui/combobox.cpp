@@ -274,7 +274,7 @@ bool ComboBox::onProcessMessage(JMessage msg)
 
     case JM_BUTTONPRESSED:
       if (m_window != NULL) {
-	if (!jwidget_get_view(m_listbox)->hasMouse()) {
+	if (!View::getView(m_listbox)->hasMouse()) {
 	  closeListBox();
 	  return true;
 	}
@@ -440,7 +440,7 @@ void ComboBox::openListBox()
 {
   if (!m_window) {
     m_window = new Frame(false, NULL);
-    Widget* view = jview_new();
+    View* view = new View();
     m_listbox = jlistbox_new();
 
     m_listbox->user_data[0] = this;
@@ -456,7 +456,7 @@ void ComboBox::openListBox()
     m_window->set_ontop(true);
     jwidget_noborders(m_window);
 
-    Widget* viewport = jview_get_viewport(view);
+    Widget* viewport = view->getViewport();
     int size = getItemCount();
     jwidget_set_min_size
       (viewport,
@@ -466,7 +466,7 @@ void ComboBox::openListBox()
        +viewport->border_width.b);
 
     jwidget_add_child(m_window, view);
-    jview_attach(view, m_listbox);
+    view->attachToView(m_listbox);
 
     jwidget_signal_off(m_listbox);
     jlistbox_select_index(m_listbox, m_selected);

@@ -161,7 +161,7 @@ int App::run()
 {
   // Initialize GUI interface
   if (isGui()) {
-    Widget* view;
+    View* view;
     Editor* editor;
 
     PRINTF("GUI mode\n");
@@ -197,7 +197,7 @@ int App::run()
     jwidget_expansive(view, true);
 
     /* prepare the first editor */
-    jview_attach(view, editor);
+    view->attachToView(editor);
 
     /* setup the menus */
     jmenubar_set_menu(menubar, get_root_menu());

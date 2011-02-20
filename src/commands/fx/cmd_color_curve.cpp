@@ -83,9 +83,11 @@ bool ColorCurveCommand::onEnabled(Context* context)
 void ColorCurveCommand::onExecute(Context* context)
 {
   const CurrentSpriteReader sprite(context);
-  JWidget button_ok;
-  JWidget view_curve, curve_editor;
-  JWidget box_target, target_button;
+  Widget* button_ok;
+  Widget* curve_editor;
+  Widget* box_target;
+  Widget* target_button;
+  View* view_curve;
 
   if (!the_curve) {
     /* default curve */
@@ -118,7 +120,7 @@ void ColorCurveCommand::onExecute(Context* context)
   if (get_config_bool("ColorCurve", "Preview", true))
     check_preview->setSelected(true);
 
-  jview_attach(view_curve, curve_editor);
+  view_curve->attachToView(curve_editor);
   jwidget_set_min_size(view_curve, 128, 64);
 
   jwidget_add_child(box_target, target_button);

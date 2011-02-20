@@ -250,19 +250,17 @@ void clipboard::paste(SpriteWriter& sprite)
 
   // Do the interactive-transform loop (where the user can move the floating image)
   {
-    JWidget view = jwidget_get_view(current_editor);
-    JRect vp = jview_get_viewport_position(view);
+    View* view = View::getView(current_editor);
+    gfx::Rect vp = view->getViewportBounds();
     int x, y, x1, y1, x2, y2;
 
-    current_editor->screen_to_editor(vp->x1, vp->y1, &x1, &y1);
-    current_editor->screen_to_editor(vp->x2-1, vp->y2-1, &x2, &y2);
+    current_editor->screen_to_editor(vp.x, vp.y, &x1, &y1);
+    current_editor->screen_to_editor(vp.x+vp.w-1, vp.y+vp.h-1, &x2, &y2);
     x = (x1+x2)/2-src_image->w/2;
     y = (y1+y2)/2-src_image->h/2;
 
     paste = interactive_transform(current_editor,
 				  dst_image, src_image, x, y, xout, yout);
-
-    jrect_free(vp);
   }
 
   if (paste) {
@@ -324,12 +322,12 @@ static bool interactive_transform(Editor* editor,
 
 #define REDRAW()							\
   jmouse_hide();							\
-  blit(bmp1, bmp2, vp->x1, vp->y1, 0, 0, jrect_w(vp), jrect_h(vp));	\
+  blit(bmp1, bmp2, vp.x, vp.y, 0, 0, vp.w, vp.h);			\
   draw_box(bmp2,							\
-	   0, 0, jrect_w(vp)-1, jrect_h(vp)-1,				\
-	   x1-vp->x1, y1-vp->y1, x2-vp->x1, y2-vp->y1,			\
-	   preview, mode, angle, cx-vp->x1, cy-vp->y1);			\
-  blit(bmp2, ji_screen, 0, 0, vp->x1, vp->y1, jrect_w(vp), jrect_h(vp)); \
+	   0, 0, vp.w-1, vp.h-1,					\
+	   x1-vp.x, y1-vp.y, x2-vp.x, y2-vp.y,				\
+	   preview, mode, angle, cx-vp.x, cy-vp.y);			\
+  blit(bmp2, ji_screen, 0, 0, vp.x, vp.y, vp.w, vp.h);			\
   update_status_bar(editor, image, x1, y1, x2, y2, angle);		\
   jmouse_show();
 
@@ -338,7 +336,7 @@ static bool interactive_transform(Editor* editor,
   int action = ACTION_SETMODE;
   int mode = SCALE_MODE;
   BITMAP *bmp1, *bmp2, *preview, *old_screen;
-  JRect vp = jview_get_viewport_position(jwidget_get_view(editor));
+  gfx::Rect vp = View::getView(editor)->getViewportBounds();
   int done = DONE_NONE;
   fixed angle = 0;
   int cx, cy;
@@ -354,7 +352,7 @@ static bool interactive_transform(Editor* editor,
   /* generate a bitmap to save the viewport content and other to make
      double-buffered */
   bmp1 = create_bitmap(JI_SCREEN_W, JI_SCREEN_H);
-  bmp2 = create_bitmap(jrect_w(vp), jrect_h(vp));
+  bmp2 = create_bitmap(vp.w, vp.h);
 
   jmouse_hide();
   blit(ji_screen, bmp1, 0, 0, 0, 0, JI_SCREEN_W, JI_SCREEN_H);
@@ -484,8 +482,7 @@ static bool interactive_transform(Editor* editor,
       /* left button+shift || middle button = scroll movement */
       if ((jmouse_b(0) == 1 && (key[KEY_LSHIFT] || key[KEY_RSHIFT])) ||
 	  (jmouse_b(0) == 4)) {
-	JWidget view = jwidget_get_view(editor);
-	int scroll_x, scroll_y;
+	View* view = View::getView(editor);
 
 	x = jmouse_x(0) - jmouse_x(1);
 	y = jmouse_y(0) - jmouse_y(1);
@@ -495,8 +492,8 @@ static bool interactive_transform(Editor* editor,
 
 	/* TODO */
 
-	jview_get_scroll(view, &scroll_x, &scroll_y);
-	editor->editor_set_scroll(scroll_x-x, scroll_y-y, true);
+	gfx::Point scroll = view->getViewScroll();
+	editor->editor_set_scroll(scroll.x-x, scroll.y-y, true);
 
 /* 	editor_to_screen (widget, x1, y1, &x1, &y1); */
 /* 	editor_to_screen (widget, x2, y2, &x2, &y2); */
@@ -711,7 +708,6 @@ static bool interactive_transform(Editor* editor,
   /* restore the cursor */
   editor->show_drawing_cursor();
 
-  jrect_free(vp);
   return done == DONE_PASTE;
 }
 

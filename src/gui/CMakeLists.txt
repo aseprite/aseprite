@@ -36,6 +36,7 @@ add_library(gui-lib
   property.cpp
   rect.cpp
   region.cpp
+  scroll_bar.cpp
   separator.cpp
   slider.cpp
   stream.cpp
@@ -44,4 +45,5 @@ add_library(gui-lib
   theme.cpp
   tooltips.cpp
   view.cpp
+  viewport.cpp
   widget.cpp)

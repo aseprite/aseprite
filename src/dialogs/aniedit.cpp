@@ -424,7 +424,7 @@ static bool anieditor_msg_proc(JWidget widget, JMessage msg)
 			       anieditor->scroll_x+jmouse_x(1)-jmouse_x(0),
 			       anieditor->scroll_y+jmouse_y(1)-jmouse_y(0), true);
 
-	  jmouse_control_infinite_scroll(widget->rc);
+	  jmouse_control_infinite_scroll(widget->getBounds());
 	  return true;
 	}
 	/* if the mouse pressed the mouse's button in the separator, we

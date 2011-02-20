@@ -97,7 +97,8 @@ void ConvolutionMatrixCommand::onExecute(Context* context)
 {
   const CurrentSpriteReader sprite(context);
   Widget* button_ok;
-  Widget* view_convmatr, *list_convmatr;
+  View* view_convmatr;
+  Widget *list_convmatr;
   Widget* box_target;
   Button* reload, *generate;
 
@@ -126,7 +127,7 @@ void ConvolutionMatrixCommand::onExecute(Context* context)
   if (context->getSettings()->getTiledMode() != TILED_NONE)
     check_tiled->setSelected(true);
 
-  jview_attach(view_convmatr, list_convmatr);
+  view_convmatr->attachToView(list_convmatr);
   jwidget_set_min_size(view_convmatr, 128, 64);
 
   jwidget_add_child(box_target, target_button);
@@ -222,7 +223,7 @@ static bool reload_select_hook(Widget* listbox)
   /* re-fill the list */
   listbox_fill_convmatg(listbox);
   listbox_select_current_convmatr(listbox);
-  jview_update(jwidget_get_view(listbox));
+  View::getView(listbox)->updateView();
 
   return true;			/* do not close */
 }
@@ -262,8 +263,8 @@ static bool generate_select_hook()
   curvedit_x = curve_editor_new(curve_x, -200, -200, 200, 200);
   curvedit_y = curve_editor_new(curve_y, -200, -200, 200, 200);
 
-  jview_attach(view_x, curvedit_x);
-  jview_attach(view_y, curvedit_y);
+  view_x->attachToView(curvedit_x);
+  view_y->attachToView(curvedit_y);
 
   jwidget_set_min_size(view_x, 64, 64);
   jwidget_set_min_size(view_y, 64, 64);

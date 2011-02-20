@@ -296,7 +296,7 @@ static Widget* convert_xmlelement_to_widget(TiXmlElement* elem, Widget* root)
   }
   /* view */
   else if (ustrcmp(elem_name, "view") == 0) {
-    widget = jview_new();
+    widget = new View();
   }
   /* window */
   else if (ustrcmp(elem_name, "window") == 0) {
@@ -377,7 +377,7 @@ static Widget* convert_xmlelement_to_widget(TiXmlElement* elem, Widget* root)
       if (child) {
 	// Attach the child in the view
 	if (widget->type == JI_VIEW) {
-	  jview_attach(widget, child);
+	  static_cast<View*>(widget)->attachToView(child);
 	  break;
 	}
 	// Add the child in the grid
@@ -403,7 +403,7 @@ static Widget* convert_xmlelement_to_widget(TiXmlElement* elem, Widget* root)
     if (widget->type == JI_VIEW) {
       bool maxsize = bool_attr_is_true(elem, "maxsize");
       if (maxsize)
-	jview_maxsize(widget);
+	static_cast<View*>(widget)->makeVisibleAllScrollableArea();
     }
   }
 

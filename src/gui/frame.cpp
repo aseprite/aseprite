@@ -338,7 +338,7 @@ bool Frame::onProcessMessage(JMessage msg)
       /* TODO */
 /*       { */
 /* 	JWidget manager = get_manager(); */
-/* 	JWidget view = jwidget_get_view(manager); */
+/* 	View* view = View::getView(manager); */
 /* 	if (view) { */
 /* 	  jview_update(view); */
 /* 	} */
