@@ -50,7 +50,6 @@
 #include "sprite_wrappers.h"
 #include "ui_context.h"
 #include "widgets/color_bar.h"
-#include "widgets/colview.h"
 #include "widgets/editor.h"
 #include "widgets/palette_view.h"
 #include "widgets/statebar.h"
