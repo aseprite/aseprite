@@ -13,9 +13,21 @@
 Label::Label(const char *text)
   : Widget(JI_LABEL)
 {
-  this->setAlign(JI_LEFT | JI_MIDDLE);
-  this->setText(text);
+  setAlign(JI_LEFT | JI_MIDDLE);
+  setText(text);
   initTheme();
+
+  m_textColor = ji_color_foreground();
+}
+
+int Label::getTextColor() const
+{
+  return m_textColor;
+}
+
+void Label::setTextColor(int color)
+{
+  m_textColor = color;
 }
 
 bool Label::onProcessMessage(JMessage msg)

@@ -14,10 +14,15 @@ class Label : public Widget
 public:
   Label(const char *text);
 
+  int getTextColor() const;
+  void setTextColor(int color);
+
 protected:
   bool onProcessMessage(JMessage msg);
   void onPaint(PaintEvent& ev);
 
+private:
+  int m_textColor;
 };
 
 #endif

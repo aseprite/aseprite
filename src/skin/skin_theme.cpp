@@ -27,8 +27,6 @@
 #include "gfx/point.h"
 #include "gfx/rect.h"
 #include "gfx/size.h"
-#include "gui/paint_event.h"
-#include "gui/graphics.h"
 #include "gui/gui.h"
 #include "gui/intern.h"
 #include "loadpng.h"
@@ -842,12 +840,21 @@ void SkinTheme::paintEntry(PaintEvent& ev)
 
 void SkinTheme::paintLabel(PaintEvent& ev)
 {
-  Widget* widget = static_cast<Widget*>(ev.getSource());
+  Graphics* g = ev.getGraphics();
+  Label* widget = static_cast<Label*>(ev.getSource());
+  struct jrect text;
   int bg = BGCOLOR;
+  int fg = widget->getTextColor();
+  gfx::Rect rc = widget->getClientBounds();
 
-  jdraw_rectfill(widget->rc, bg);
+  g->fillRect(bg, rc);
+  rc.shrink(widget->getBorder());
 
-  draw_textstring(NULL, -1, bg, false, widget, widget->rc, 0);
+  jwidget_get_texticon_info(widget, NULL, &text, NULL, 0, 0, 0);
+
+  g->drawString(widget->getText(), fg, bg, false,
+		// TODO "text" coordinates are absolute and we are drawing on client area
+		gfx::Point(text.x1, text.y1) - gfx::Point(widget->rc->x1, widget->rc->y1));
 }
 
 void SkinTheme::paintLinkLabel(PaintEvent& ev)
