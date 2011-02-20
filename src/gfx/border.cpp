@@ -25,6 +25,14 @@ Border::Border(int left, int top, int right, int bottom)
   m_bottom = bottom;
 }
 
+Border::Border(int allSides)
+{
+  m_left = allSides;
+  m_top = allSides;
+  m_right = allSides;
+  m_bottom = allSides;
+}
+
 Size Border::getSize() const
 {
   return Size(m_left + m_right, m_top + m_bottom);

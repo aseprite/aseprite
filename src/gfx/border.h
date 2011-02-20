@@ -16,6 +16,7 @@ class Border
 public:
   Border();
   Border(int left, int top, int right, int bottom);
+  explicit Border(int allSides);
 
   int left() const { return m_left; };
   int top() const { return m_top; };
