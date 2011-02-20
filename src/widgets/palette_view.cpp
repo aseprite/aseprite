@@ -554,6 +554,21 @@ bool PaletteView::onProcessMessage(JMessage msg)
     case JM_BUTTONRELEASED:
       releaseMouse();
       return true;
+
+    case JM_WHEEL: {
+      JWidget view = jwidget_get_view(this);
+      if (view) {
+	int scroll_x, scroll_y;
+
+	jview_get_scroll(view, &scroll_x, &scroll_y);
+	jview_set_scroll(view,
+			 scroll_x,
+			 scroll_y +
+			 (jmouse_z(1) - jmouse_z(0)) * 3*m_boxsize);
+      }
+      break;
+    }
+
   }
 
   return Widget::onProcessMessage(msg);
