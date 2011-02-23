@@ -1,12 +1,9 @@
 <!-- ASE - Allegro Sprite Editor -->
 <!-- Copyright (C) 2001-2011 by David Capello -->
 <jinete>
-<window text="Palette" name="palette_editor">
+<window text="Palette Editor (F4)" name="palette_editor">
   <box vertical="true">
     <box horizontal="true" expansive="true">
-      <box vertical="true">
-	<view name="palette_editor" /> <!-- custom-widget -->
-      </box>
       <box vertical="true" expansive="true">
 	<box horizontal="true" childspacing="0" noborders="true">
 	  <radio group="1" text="RGB" name="select_rgb" looklike="button" selected="true" />

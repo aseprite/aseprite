@@ -32,12 +32,13 @@ public:
   ~ColorButton();
 
   int getImgType() const;
+  void setImgType(int imgtype);
 
   Color getColor() const;
   void setColor(const Color& color);
 
   // Signals
-  Signal1<void, Color> Change;
+  Signal1<void, const Color&> Change;
 
 protected:
   // Events

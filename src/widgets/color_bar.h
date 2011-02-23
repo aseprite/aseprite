@@ -21,66 +21,55 @@
 
 #include "app/color.h"
 #include "base/signal.h"
-#include "gui/widget.h"
+#include "gui/box.h"
+#include "gui/button.h"
+#include "gui/view.h"
+#include "widgets/color_button.h"
+#include "widgets/palette_view.h"
 
-class ColorBar : public Widget
+class PaletteView;
+class ColorButton;
+
+class ColorBar : public Box
 {
-  typedef enum {
-    HOTCOLOR_NONE = -3,
-    HOTCOLOR_FGCOLOR = -2,
-    HOTCOLOR_BGCOLOR = -1,
-  } hotcolor_t;
-
 public:
   ColorBar(int align);
   ~ColorBar();
 
-  Color getFgColor() const { return m_fgcolor; }
-  Color getBgColor() const { return m_bgcolor; }
+  void setImgType(int imgtype);
+
+  Color getFgColor();
+  Color getBgColor();
   void setFgColor(const Color& color);
   void setBgColor(const Color& color);
 
-  Color getColorByPosition(int x, int y);
+  PaletteView* getPaletteView();
 
   // Signals
   Signal1<void, const Color&> FgColorChange;
   Signal1<void, const Color&> BgColorChange;
 
 protected:
-  bool onProcessMessage(JMessage msg);
+  void onPaletteButtonClick();
+  void onPaletteIndexChange(int index);
+  void onFgColorButtonChange(const Color& color);
+  void onBgColorButtonChange(const Color& color);
+  void onColorButtonChange(const Color& color);
 
 private:
-  int getEntriesCount() const {
-    return m_columns*m_colorsPerColumn;
-  }
+  class ScrollableView : public View
+  {
+  public:
+    ScrollableView();
+  protected:
+    bool onProcessMessage(JMessage msg);
+  };
 
-  Color getEntryColor(int i) const {
-    return Color::fromIndex(i+m_firstIndex);
-  }
-
-  Color getHotColor(hotcolor_t hot);
-  void setHotColor(hotcolor_t hot, const Color& color);
-  gfx::Rect getColumnBounds(int column) const;
-  gfx::Rect getEntryBounds(int index) const;
-  gfx::Rect getFgBounds() const;
-  gfx::Rect getBgBounds() const;
-  void updateStatusBar(const Color& color, int msecs);
-
-  int m_firstIndex;
-  int m_columns;
-  int m_colorsPerColumn;
-  int m_entrySize;
-  Color m_fgcolor;
-  Color m_bgcolor;
-  hotcolor_t m_hot;
-  hotcolor_t m_hot_editing;
-
-  // Drag & drop colors
-  hotcolor_t m_hot_drag;
-  hotcolor_t m_hot_drop;
-
+  Button m_paletteButton;
+  ScrollableView m_scrollableView;
+  PaletteView m_paletteView;
+  ColorButton m_fgColor;
+  ColorButton m_bgColor;
 };
-
-int colorbar_type();
 
 #endif

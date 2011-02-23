@@ -156,9 +156,7 @@ static Slider *H_slider, *S_slider, *V_slider;
 static Widget *R_entry, *G_entry, *B_entry;
 static Widget *H_entry, *S_entry, *V_entry;
 static Widget *hex_entry;
-static PaletteView* palette_editor;
 static Widget* more_options = NULL;
-static bool disable_colorbar_signals = false;
 
 static bool window_msg_proc(JWidget widget, JMessage msg);
 static bool window_close_hook(JWidget widget, void *data);
@@ -180,7 +178,6 @@ static void update_slider_bgcolor(Slider* slider, const Color& color);
 static void update_slider_bgcolors();
 static void update_current_sprite_palette(const char* operationName);
 static void update_colorbar();
-static bool palette_editor_change_hook(JWidget widget, void *data);
 static bool select_rgb_hook(JWidget widget, void *data);
 static bool select_hsv_hook(JWidget widget, void *data);
 static bool expand_button_select_hook(JWidget widget, void *data);
@@ -222,7 +219,6 @@ void PaletteEditorCommand::onLoadParams(Params* params)
 
 void PaletteEditorCommand::onExecute(Context* context)
 {
-  View* palette_editor_view;
   Widget* select_rgb;
   Widget* select_hsv;
   Button* expand_button;
@@ -288,20 +284,10 @@ void PaletteEditorCommand::onExecute(Context* context)
 	      "save", &button_save,
 	      "ramp", &button_ramp,
 	      "sort", &button_sort,
-	      "quantize", &button_quantize,
-	      "palette_editor", &palette_editor_view, NULL);
+	      "quantize", &button_quantize, NULL);
       
   // Custom widgets
   if (first_time) {
-    palette_editor = new PaletteView(true);
-    palette_editor->setBoxSize(4*jguiscale());
-
-    palette_editor_view->attachToView(palette_editor);
-    palette_editor_view->makeVisibleAllScrollableArea();
-
-    // Set palette editor columns
-    palette_editor->setColumns(16);
-
     // Setup slider bg painters
     R_slider->setProperty(PropertyPtr(new SkinSliderProperty(new ColorSliderBgPainter(ColorSliderBgPainter::Red))));
     G_slider->setProperty(PropertyPtr(new SkinSliderProperty(new ColorSliderBgPainter(ColorSliderBgPainter::Green))));
@@ -332,7 +318,6 @@ void PaletteEditorCommand::onExecute(Context* context)
     HOOK(S_entry, JI_SIGNAL_ENTRY_CHANGE, entryHSV_change_hook, 0);
     HOOK(V_entry, JI_SIGNAL_ENTRY_CHANGE, entryHSV_change_hook, 0);
     HOOK(hex_entry, JI_SIGNAL_ENTRY_CHANGE, hex_entry_change_hook, 0);
-    HOOK(palette_editor, SIGNAL_PALETTE_EDITOR_CHANGE, palette_editor_change_hook, 0);
     HOOK(select_rgb, JI_SIGNAL_RADIO_CHANGE, select_rgb_hook, 0);
     HOOK(select_hsv, JI_SIGNAL_RADIO_CHANGE, select_hsv_hook, 0);
     HOOK(expand_button, JI_SIGNAL_BUTTON_SELECT, expand_button_select_hook, 0);
@@ -456,6 +441,7 @@ static void save_command(JWidget widget)
 
 static void ramp_command(JWidget widget)
 {
+  PaletteView* palette_editor = app_get_colorbar()->getPaletteView();
   int range_type = palette_editor->getRangeType();
   int i1 = palette_editor->get1stColor();
   int i2 = palette_editor->get2ndColor();
@@ -504,6 +490,8 @@ static bool sort_by_criteria(Palette* palette, int from, int to, JList selected_
 
 static void sort_command(JWidget widget)
 {
+  PaletteView* palette_editor = app_get_colorbar()->getPaletteView();
+
   if (Alert::show("ASE Beta<<Sort command is not available in this beta version.||&OK")) // TODO remove this
     return;
 
@@ -915,7 +903,6 @@ static bool hex_entry_change_hook(JWidget widget, void *data)
   Palette* palette = get_current_palette();
   std::string text = hex_entry->getText();
   int r, g, b;
-  bool array[256];
   int c;
 
   // Fill with zeros at the end of the text
@@ -931,6 +918,8 @@ static bool hex_entry_change_hook(JWidget widget, void *data)
 
   Hsv hsv(Rgb(r, g, b));
 
+  bool array[256];
+  PaletteView* palette_editor = app_get_colorbar()->getPaletteView();
   palette_editor->getSelectedEntries(array);
   for (c=0; c<256; c++) {
     if (array[c]) {
@@ -939,8 +928,8 @@ static bool hex_entry_change_hook(JWidget widget, void *data)
   }
 
   H_slider->setValue(hsv.hueInt());
-  V_slider->setValue(hsv.saturationInt());
-  S_slider->setValue(hsv.valueInt());
+  S_slider->setValue(hsv.saturationInt());
+  V_slider->setValue(hsv.valueInt());
 
   update_entries_from_sliders();
   update_slider_bgcolors();
@@ -1031,6 +1020,7 @@ static void update_current_sprite_palette(const char* operationName)
     }
   }
 
+  PaletteView* palette_editor = app_get_colorbar()->getPaletteView();
   palette_editor->invalidate();
 
   if (!jmanager_timer_is_running(redraw_timer_id))
@@ -1051,30 +1041,6 @@ static void update_sliders_from_color(const Color& color)
   H_slider->setValue(color.getHue());
   S_slider->setValue(color.getSaturation());
   V_slider->setValue(color.getValue());
-}
-
-static bool palette_editor_change_hook(JWidget widget, void *data)
-{
-  Color color = Color::fromIndex(palette_editor->get2ndColor());
-
-  // colorviewer_set_color(colorviewer, color);
-
-  {
-    disable_colorbar_signals = true;
-
-    if (jmouse_b(0) & 2)
-      app_get_colorbar()->setBgColor(color);
-    else
-      app_get_colorbar()->setFgColor(color);
-
-    disable_colorbar_signals = false;
-  }
-
-  update_sliders_from_color(color); // Update sliders
-  update_entries_from_sliders();    // Update entries
-  update_hex_entry();		    // Update hex field
-  update_slider_bgcolors();
-  return false;
 }
 
 static bool select_rgb_hook(JWidget widget, void *data)
@@ -1184,7 +1150,9 @@ static bool expand_button_select_hook(JWidget widget, void *data)
 static void modify_rgb_of_selected_entries(const Rgb& dst_rgb, bool set_r, bool set_g, bool set_b)
 {
   bool array[256];
+  PaletteView* palette_editor = app_get_colorbar()->getPaletteView();
   palette_editor->getSelectedEntries(array);
+
   ase_uint32 src_color;
   int r, g, b;
 
@@ -1207,9 +1175,10 @@ static void modify_rgb_of_selected_entries(const Rgb& dst_rgb, bool set_r, bool 
 static void modify_hsv_of_selected_entries(const Hsv& dst_hsv, bool set_h, bool set_s, bool set_v)
 {
   bool array[256];
+  PaletteView* palette_editor = app_get_colorbar()->getPaletteView();
   palette_editor->getSelectedEntries(array);
-  ase_uint32 src_color;
 
+  ase_uint32 src_color;
   Palette* palette = get_current_palette();
   for (int c=0; c<256; c++) {
     if (array[c]) {
@@ -1239,16 +1208,10 @@ static void modify_hsv_of_selected_entries(const Hsv& dst_hsv, bool set_h, bool 
 
 static void on_color_changed(const Color& color)
 {
-  if (disable_colorbar_signals)
-    return;
-
   if (color.isValid() && color.getType() == Color::IndexType) {
-    int index = color.getIndex();
-    palette_editor->selectColor(index);
-
     update_sliders_from_color(color); // Update sliders
     update_entries_from_sliders();    // Update entries
-    update_hex_entry();		    // Update hex field
+    update_hex_entry();		      // Update hex field
     update_slider_bgcolors();
 
     jwidget_flush_redraw(window);

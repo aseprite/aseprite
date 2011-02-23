@@ -53,6 +53,8 @@ public:
   int get2ndColor();
   void getSelectedEntries(bool array[256]);
 
+  Color getColorByPosition(int x, int y);
+
   // Signals
   Signal1<void, int> IndexChange;
 
@@ -69,5 +71,7 @@ private:
   int m_boxsize;
   int m_color[2];
 };
+
+int palette_view_type();
 
 #endif

@@ -27,6 +27,7 @@
 #include "raster/sprite.h"
 #include "settings/ui_settings_impl.h"
 #include "ui_context.h"
+#include "widgets/color_bar.h"
 #include "widgets/tabs.h"
 
 UIContext* UIContext::m_instance = NULL;
@@ -77,6 +78,9 @@ void UIContext::onSetCurrentSprite(Sprite* sprite)
 
   // Select the sprite in the tabs.
   app_get_tabsbar()->selectTab(sprite);
+
+  // Change the image-type of color bar.
+  app_get_colorbar()->setImgType(app_get_current_image_type());
 
   // Change the main frame title.
   base::string defaultTitle = PACKAGE " v" VERSION;

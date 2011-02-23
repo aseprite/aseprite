@@ -20,6 +20,7 @@
 
 #include <allegro.h>
 
+#include "app.h"
 #include "app/color.h"
 #include "app/color_utils.h"
 #include "gui/gui.h"
@@ -31,6 +32,7 @@
 #include "widgets/color_button.h"
 #include "widgets/color_selector.h"
 #include "widgets/editor.h"
+#include "widgets/statebar.h"
 
 static bool tooltip_window_msg_proc(JWidget widget, JMessage msg);
 
@@ -62,6 +64,12 @@ int ColorButton::getImgType() const
   return m_imgtype;
 }
 
+void ColorButton::setImgType(int imgtype)
+{
+  m_imgtype = imgtype;
+  invalidate();
+}
+
 Color ColorButton::getColor() const
 {
   return m_color;
@@ -80,6 +88,14 @@ void ColorButton::setColor(const Color& color)
 bool ColorButton::onProcessMessage(JMessage msg)
 {
   switch (msg->type) {
+
+    case JM_MOUSEENTER:
+      app_get_statusbar()->showColor(0, "", m_color, 255);
+      break;
+
+    case JM_MOUSELEAVE:
+      app_get_statusbar()->clearText();
+      break;
 
     case JM_SIGNAL:
       if (msg->signal.num == JI_SIGNAL_BUTTON_SELECT) {
@@ -108,8 +124,8 @@ bool ColorButton::onProcessMessage(JMessage msg)
 	    color = pickedColBut->getColor();
 	  }
 	  // Pick a color from the color-bar
-	  else if (picked->type == colorbar_type()) {
-	    color = ((ColorBar*)picked)->getColorByPosition(msg->mouse.x, msg->mouse.y);
+	  else if (picked->type == palette_view_type()) {
+	    color = ((PaletteView*)picked)->getColorByPosition(msg->mouse.x, msg->mouse.y);
 	  }
 	  // Pick a color from a editor
 	  else if (picked->type == editor_type()) {
@@ -194,9 +210,10 @@ void ColorButton::onPaint(PaintEvent& ev) // TODO use "ev.getGraphics()"
   setTextQuiet(str.c_str());
   jwidget_get_texticon_info(this, &box, &text, &icon, 0, 0, 0);
   
-  int textcolor = color_utils::blackandwhite_neg(color.getRed(),
-						 color.getGreen(),
-						 color.getBlue());
+  int textcolor = makecol(255, 255, 255);
+  if (color.isValid())
+    textcolor = color_utils::blackandwhite_neg(color.getRed(), color.getGreen(), color.getBlue());
+
   jdraw_text(ji_screen, getFont(), getText(), text.x1, text.y1,
 	     textcolor, -1, false, jguiscale());
 }

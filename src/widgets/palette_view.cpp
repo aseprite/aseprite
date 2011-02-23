@@ -22,6 +22,7 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "app.h"
 #include "app/color.h"
 #include "gfx/point.h"
 #include "gui/manager.h"
@@ -37,8 +38,9 @@
 #include "raster/image.h"
 #include "raster/palette.h"
 #include "widgets/palette_view.h"
+#include "widgets/statebar.h"
 
-static int palette_view_type()
+int palette_view_type()
 {
   static int type = 0;
   if (!type)
@@ -325,6 +327,44 @@ void PaletteView::getSelectedEntries(bool array[256])
   }
 }
 
+Color PaletteView::getColorByPosition(int target_x, int target_y)
+{
+  Palette* palette = get_current_palette();
+  JRect cpos = jwidget_get_child_rect(this);
+  div_t d = div(256, m_columns);
+  int cols = m_columns;
+  int rows = d.quot + ((d.rem)? 1: 0);
+  int req_w, req_h;
+  int x, y, u, v;
+  int c;
+
+  request_size(&req_w, &req_h);
+
+  y = cpos->y1;
+  c = 0;
+
+  for (v=0; v<rows; v++) {
+    x = cpos->x1;
+
+    for (u=0; u<cols; u++) {
+      if (c >= palette->size())
+	break;
+
+      if ((target_x >= x) && (target_x <= x+m_boxsize) &&
+	  (target_y >= y) && (target_y <= y+m_boxsize))
+	return Color::fromIndex(c);
+
+      x += m_boxsize+this->child_spacing;
+      c++;
+    }
+
+    y += m_boxsize+this->child_spacing;
+  }
+
+  jrect_free(cpos);
+  return Color::fromMask();
+}
+
 bool PaletteView::onProcessMessage(JMessage msg)
 {
   switch (msg->type) {
@@ -491,66 +531,44 @@ bool PaletteView::onProcessMessage(JMessage msg)
       captureMouse();
       /* continue... */
 
-    case JM_MOTION:
-      if (hasCapture()) {
-	JRect cpos = jwidget_get_child_rect(this);
-	div_t d = div(256, m_columns);
-	int cols = m_columns;
-	int rows = d.quot + ((d.rem)? 1: 0);
-	int mouse_x, mouse_y;
-	int req_w, req_h;
-	int x, y, u, v;
-	int c;
-	Palette* palette = get_current_palette();
+    case JM_MOTION: {
+      JRect cpos = jwidget_get_child_rect(this);
 
-	request_size(&req_w, &req_h);
+      int req_w, req_h;
+      request_size(&req_w, &req_h);
 
-	mouse_x = MID(cpos->x1, msg->mouse.x,
-		      cpos->x1+req_w-this->border_width.r-1);
-	mouse_y = MID(cpos->y1, msg->mouse.y,
-		      cpos->y1+req_h-this->border_width.b-1);
+      int mouse_x = MID(cpos->x1, msg->mouse.x, cpos->x1+req_w-this->border_width.r-1);
+      int mouse_y = MID(cpos->y1, msg->mouse.y, cpos->y1+req_h-this->border_width.b-1);
 
-	y = cpos->y1;
-	c = 0;
+      jrect_free(cpos);
 
-	for (v=0; v<rows; v++) {
-	  x = cpos->x1;
+      Color color = getColorByPosition(mouse_x, mouse_y);
+      if (color.getType() == Color::IndexType) {
+	app_get_statusbar()->showColor(0, "", color, 255);
 
-	  for (u=0; u<cols; u++) {
-	    if (c >= palette->size())
-	      break;
+	if (hasCapture() && color.getIndex() != m_color[1]) {
+	  int idx = color.getIndex();
 
-	    if ((mouse_x >= x) && (mouse_x <= x+m_boxsize) &&
-		(mouse_y >= y) && (mouse_y <= y+m_boxsize) &&
-		(c != m_color[1])) {
-	      if (msg->any.shifts & KB_SHIFT_FLAG)
-		selectRange(m_color[0], c, PALETTE_EDITOR_RANGE_LINEAL);
-	      else if (msg->any.shifts & KB_CTRL_FLAG)
-		selectRange(m_color[0], c, PALETTE_EDITOR_RANGE_RECTANGULAR);
-	      else
-		selectColor(c);
+	  if (msg->any.shifts & KB_SHIFT_FLAG)
+	    selectRange(m_color[0], idx, PALETTE_EDITOR_RANGE_LINEAL);
+	  else if (msg->any.shifts & KB_CTRL_FLAG)
+	    selectRange(m_color[0], idx, PALETTE_EDITOR_RANGE_RECTANGULAR);
+	  else
+	    selectColor(idx);
 
-	      update_scroll(c);
+	  update_scroll(idx);
 
-	      // Emit signals
-	      jwidget_emit_signal(this, SIGNAL_PALETTE_EDITOR_CHANGE);
-	      IndexChange(c);
-
-	      c = 256;
-	      break;
-	    }
-
-	    x += m_boxsize+this->child_spacing;
-	    c++;
-	  }
-
-	  y += m_boxsize+this->child_spacing;
+	  // Emit signals
+	  jwidget_emit_signal(this, SIGNAL_PALETTE_EDITOR_CHANGE);
+	  IndexChange(idx);
 	}
-
-	jrect_free(cpos);
-	return true;
       }
+
+      if (hasCapture())
+	return true;
+
       break;
+    }
 
     case JM_BUTTONRELEASED:
       releaseMouse();
@@ -565,6 +583,10 @@ bool PaletteView::onProcessMessage(JMessage msg)
       }
       break;
     }
+
+    case JM_MOUSELEAVE:
+      app_get_statusbar()->clearText();
+      break;
 
   }
 

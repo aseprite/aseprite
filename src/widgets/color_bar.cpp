@@ -21,554 +21,192 @@
 #include <allegro.h>
 #include <cstring>
 
-#include "app.h"
 #include "app/color.h"
+#include "base/bind.h"
 #include "commands/commands.h"
 #include "commands/params.h"
-#include "console.h"
 #include "core/cfg.h"
-#include "gfx/point.h"
-#include "gfx/rect.h"
-#include "gui/gui.h"
-#include "modules/editors.h"
-#include "modules/gfx.h"
+#include "gui/list.h"
+#include "gui/message.h"
 #include "modules/gui.h"
-#include "modules/palettes.h"
 #include "raster/image.h"
-#include "raster/palette.h"
-#include "raster/sprite.h"
-#include "raster/undo.h"
 #include "skin/skin_theme.h"
-#include "sprite_wrappers.h"
 #include "ui_context.h"
 #include "widgets/color_bar.h"
-#include "widgets/color_selector.h"
 #include "widgets/statebar.h"
 
-#define COLORBAR_MAX_COLORS	256
-#define ENTRYSIZE_MIN		12
-#define ENTRYSIZE_MAX		64
+//////////////////////////////////////////////////////////////////////
+// ColorBar::ScrollableView class
 
-// Pixels
-#define FGBUTTON_SIZE		(16*jguiscale())
-#define BGBUTTON_SIZE	        (18*jguiscale())
-
-using namespace gfx;
-
-int colorbar_type()
+ColorBar::ScrollableView::ScrollableView()
 {
-  static int type = 0;
-  if (!type)
-    type = ji_register_widget_type();
-  return type;
+  SkinTheme* theme = static_cast<SkinTheme*>(getTheme());
+  int l = theme->get_part(PART_EDITOR_SELECTED_W)->w;
+  int t = theme->get_part(PART_EDITOR_SELECTED_N)->h;
+  int r = theme->get_part(PART_EDITOR_SELECTED_E)->w;
+  int b = theme->get_part(PART_EDITOR_SELECTED_S)->h;
+
+  jwidget_set_border(this, l, t, r, b);
+}
+
+bool ColorBar::ScrollableView::onProcessMessage(JMessage msg)
+{
+  switch (msg->type) {
+
+    case JM_DRAW:
+      {
+	Viewport* viewport = getViewport();
+	Widget* child = reinterpret_cast<Widget*>(jlist_first_data(viewport->children));
+	SkinTheme* theme = static_cast<SkinTheme*>(getTheme());
+
+	theme->draw_bounds_nw(ji_screen,
+			      rc->x1, rc->y1,
+			      rc->x2-1, rc->y2-1,
+			      hasFocus() ? PART_EDITOR_SELECTED_NW:
+					   PART_EDITOR_NORMAL_NW, false);
+      }
+      return true;
+
+  }
+  return View::onProcessMessage(msg);
 }
 
 //////////////////////////////////////////////////////////////////////
 // ColorBar class
 
 ColorBar::ColorBar(int align)
-  : Widget(colorbar_type())
-  , m_fgcolor(Color::fromIndex(15))
-  , m_bgcolor(Color::fromIndex(0))
+  : Box(align)
+  , m_paletteButton("EDIT PAL")
+  , m_paletteView(false)
+  , m_fgColor(Color::fromIndex(15), IMAGE_INDEXED)
+  , m_bgColor(Color::fromIndex(0), IMAGE_INDEXED)
 {
-  m_entrySize = 16;
-  m_firstIndex = 0;
-  m_columns = 2;
-  m_colorsPerColumn = 12;
-  m_hot = HOTCOLOR_NONE;
-  m_hot_editing = HOTCOLOR_NONE;
-  m_hot_drag = HOTCOLOR_NONE;
-  m_hot_drop = HOTCOLOR_NONE;
+  setBorder(gfx::Border(1*jguiscale()));
+  child_spacing = 1*jguiscale();
 
-  jwidget_focusrest(this, true);
-  this->setAlign(align);
+  m_paletteView.setBoxSize(6*jguiscale());
+  m_paletteView.setColumns(4);
+  m_fgColor.setPreferredSize(0, m_fgColor.getPreferredSize().h);
+  m_bgColor.setPreferredSize(0, m_bgColor.getPreferredSize().h);
 
-  this->border_width.l = 2;
-  this->border_width.t = 2;
-  this->border_width.r = 2;
-  this->border_width.b = 2;
+  m_scrollableView.attachToView(&m_paletteView);
+  int w = (m_scrollableView.getBorder().getSize().w + 
+	   m_scrollableView.getViewport()->getBorder().getSize().w + 
+	   m_paletteView.getPreferredSize().w +
+	   getTheme()->scrollbar_size);
+
+  jwidget_set_min_size(&m_scrollableView, w, 0);
+
+  jwidget_expansive(&m_scrollableView, true);
+
+  jwidget_add_child(this, &m_paletteButton);
+  jwidget_add_child(this, &m_scrollableView);
+  jwidget_add_child(this, &m_fgColor);
+  jwidget_add_child(this, &m_bgColor);
+  
+  this->border_width.l = 2*jguiscale();
+  this->border_width.t = 2*jguiscale();
+  this->border_width.r = 2*jguiscale();
+  this->border_width.b = 2*jguiscale();
+  this->child_spacing = 2*jguiscale();
+
+  m_paletteView.IndexChange.connect(&ColorBar::onPaletteIndexChange, this);
+  m_fgColor.Change.connect(&ColorBar::onFgColorButtonChange, this);
+  m_bgColor.Change.connect(&ColorBar::onBgColorButtonChange, this);
 
   // Get selected colors
-  m_fgcolor = get_config_color("ColorBar", "FG", m_fgcolor);
-  m_bgcolor = get_config_color("ColorBar", "BG", m_bgcolor);
+  setFgColor(get_config_color("ColorBar", "FG", getFgColor()));
+  setBgColor(get_config_color("ColorBar", "BG", getBgColor()));
 
-  // Get color-bar configuration
-  m_columns = get_config_int("ColorBar", "Columns", m_columns);
-  m_columns = MID(1, m_columns, 4);
+  // Change color-bar background color (not ColorBar::setBgColor)
+  Widget::setBgColor(((SkinTheme*)getTheme())->get_tab_selected_face_color());
+  m_paletteView.setBgColor(((SkinTheme*)getTheme())->get_tab_selected_face_color());
 
-  m_entrySize = get_config_int("ColorBar", "EntrySize", m_entrySize);
-  m_entrySize = MID(ENTRYSIZE_MIN, m_entrySize, ENTRYSIZE_MAX);
+  // Change labels foreground color
+  setup_mini_look(&m_paletteButton);
+  m_paletteButton.Click.connect(Bind<void>(&ColorBar::onPaletteButtonClick, this));
+
+  setDoubleBuffered(true);
 }
 
 ColorBar::~ColorBar()
 {
-  set_config_color("ColorBar", "FG", m_fgcolor);
-  set_config_color("ColorBar", "BG", m_bgcolor);
-  set_config_int("ColorBar", "Columns", m_columns);
-  set_config_int("ColorBar", "EntrySize", m_entrySize);
+  set_config_color("ColorBar", "FG", getFgColor());
+  set_config_color("ColorBar", "BG", getBgColor());
+}
+
+void ColorBar::setImgType(int imgtype)
+{
+  m_fgColor.setImgType(imgtype);
+  m_bgColor.setImgType(imgtype);
+}
+
+Color ColorBar::getFgColor()
+{
+  return m_fgColor.getColor();
+}
+
+Color ColorBar::getBgColor()
+{
+  return m_bgColor.getColor();
 }
 
 void ColorBar::setFgColor(const Color& color)
 {
-  m_fgcolor = color;
-  invalidate();
-
-  updateStatusBar(m_fgcolor, 100);
-  FgColorChange(m_fgcolor);
+  m_fgColor.setColor(color);
+  FgColorChange(color);
 }
 
 void ColorBar::setBgColor(const Color& color)
 {
-  m_bgcolor = color;
-  invalidate();
-
-  updateStatusBar(m_bgcolor, 100);
-  BgColorChange(m_bgcolor);
+  m_bgColor.setColor(color);
+  BgColorChange(color);
 }
 
-Color ColorBar::getColorByPosition(int x, int y)
+PaletteView* ColorBar::getPaletteView()
 {
-  for (int i=0; i<getEntriesCount(); ++i) {
-    if (getEntryBounds(i).contains(Point(x, y)))
-      return getEntryColor(i);
-  }
-
-  // In foreground color
-  if (getFgBounds().contains(Point(x, y)))
-    return m_fgcolor;
-
-  // In background color
-  if (getBgBounds().contains(Point(x, y)))
-    return m_bgcolor;
-
-  return Color::fromMask();
+  return &m_paletteView;
 }
 
-bool ColorBar::onProcessMessage(JMessage msg)
+// Switches the palette-editor
+void ColorBar::onPaletteButtonClick()
 {
-  switch (msg->type) {
+  Command* cmd_show_palette_editor = CommandsModule::instance()->getCommandByName(CommandId::PaletteEditor);
+  Params params;
+  params.set("switch", "true");
 
-    case JM_REQSIZE:
-      if (get_config_bool("ColorBar", "CanGrow", false))
-	msg->reqsize.w = 20*jguiscale() * m_columns;
-      else
-	msg->reqsize.w = 20*jguiscale() * MIN(2, m_columns);
-      msg->reqsize.h = 20*jguiscale();
-      return true;
-
-    case JM_DRAW: {
-      // Update the number of colors per column
-      {
-      	m_colorsPerColumn = getColumnBounds(1).h / (m_entrySize*jguiscale());
-      	m_colorsPerColumn = MAX(1, m_colorsPerColumn);
-	
-      	if (m_colorsPerColumn*m_columns > 256) {
-      	  m_colorsPerColumn = 256 / m_columns;
-      	  if (m_colorsPerColumn*m_columns > 256)
-      	    m_colorsPerColumn--;
-      	}
-
-      	ASSERT(m_colorsPerColumn*m_columns <= 256);
-      }
-
-      SkinTheme* theme = static_cast<SkinTheme*>(this->getTheme());
-      BITMAP *doublebuffer = create_bitmap(jrect_w(&msg->draw.rect),
-					   jrect_h(&msg->draw.rect));
-      int imgtype = app_get_current_image_type();
-      // int bg = theme->get_panel_face_color();
-      int bg = theme->get_tab_selected_face_color();
-
-      clear_to_color(doublebuffer, bg);
-
-      for (int i=0; i<getEntriesCount(); ++i) {
-	Rect entryBounds = getEntryBounds(i);
-
-	// The button is not even visible
-	if (!entryBounds.intersects(Rect(msg->draw.rect.x1,
-					 msg->draw.rect.y1,
-					 jrect_w(&msg->draw.rect),
-					 jrect_h(&msg->draw.rect))))
-	  continue;
-
-	entryBounds.offset(-msg->draw.rect.x1,
-			   -msg->draw.rect.y1);
-
-	int col = (i / m_colorsPerColumn);
-	int row = (i % m_colorsPerColumn);
-	Color color = Color::fromIndex(m_firstIndex + i);
-
-	draw_color_button(doublebuffer, entryBounds,
-			  row == 0 && col == 0,			 // nw
-			  row == 0,				// n
-			  row == 0 && col == m_columns-1,	// ne
-			  col == m_columns-1,			// e
-			  row == m_colorsPerColumn-1 && col == m_columns-1, // se
-			  row == m_colorsPerColumn-1,		// s
-			  row == m_colorsPerColumn-1 && col == 0, // sw
-			  col == 0,				 // w
-			  imgtype,
-			  color,
-			  (i == m_hot ||
-			   i == m_hot_editing),
-			  (m_hot_drag == i &&
-			   m_hot_drag != m_hot_drop));
-	
-	if (m_bgcolor == color) {
-	  theme->draw_bounds_nw(doublebuffer,
-				entryBounds.x, entryBounds.y,
-				entryBounds.x+entryBounds.w-1,
-				entryBounds.y+entryBounds.h-1 - (row == m_colorsPerColumn-1 ? jguiscale(): 0),
-				PART_COLORBAR_BORDER_BG_NW, -1);
-	}
-	if (m_fgcolor == color) {
-	  theme->draw_bounds_nw(doublebuffer,
-				entryBounds.x, entryBounds.y,
-				entryBounds.x+entryBounds.w-1,
-				entryBounds.y+entryBounds.h-1 - (row == m_colorsPerColumn-1 ? jguiscale(): 0),
-				PART_COLORBAR_BORDER_FG_NW, -1);
-	}
-      }
-
-      // Draw foreground color
-      Rect fgBounds = getFgBounds().offset(-msg->draw.rect.x1,
-					   -msg->draw.rect.y1);
-      draw_color_button(doublebuffer, fgBounds,
-			true, true, true, true,
-			false, false, false, true,
-			imgtype, m_fgcolor,
-			(m_hot         == HOTCOLOR_FGCOLOR ||
-			 m_hot_editing == HOTCOLOR_FGCOLOR),
-			(m_hot_drag == HOTCOLOR_FGCOLOR &&
-			 m_hot_drag != m_hot_drop));
-
-      // Draw background color
-      Rect bgBounds = getBgBounds().offset(-msg->draw.rect.x1,
-					   -msg->draw.rect.y1);
-      draw_color_button(doublebuffer, bgBounds,
-			false, false, false, true,
-			true, true, true, true,
-			imgtype, m_bgcolor,
-			(m_hot         == HOTCOLOR_BGCOLOR ||
-			 m_hot_editing == HOTCOLOR_BGCOLOR),
-			(m_hot_drag == HOTCOLOR_BGCOLOR &&
-			 m_hot_drag != m_hot_drop));
-
-      blit(doublebuffer, ji_screen, 0, 0,
-	   msg->draw.rect.x1,
-	   msg->draw.rect.y1,
-	   doublebuffer->w,
-	   doublebuffer->h);
-      destroy_bitmap(doublebuffer);
-      return true;
-    }
-
-    case JM_BUTTONPRESSED:
-      captureMouse();
-
-      m_hot_drag = m_hot;
-      m_hot_drop = m_hot;
-
-    case JM_MOUSEENTER:
-    case JM_MOTION: {
-      int old_hot = m_hot;
-      int hot_v1 = 0;
-      int hot_v2 = 0;
-
-      m_hot = HOTCOLOR_NONE;
-
-      for (int i=0; i<getEntriesCount(); ++i) {
-	Rect entryBounds = getEntryBounds(i);
-
-	if (entryBounds.contains(Point(msg->mouse.x, msg->mouse.y))) {
-	  if (m_hot != i) {
-	    m_hot = static_cast<hotcolor_t>(i);
-	    hot_v1 = entryBounds.y;
-	    hot_v2 = entryBounds.y+entryBounds.h-1;
-	    break;
-	  }
-	}
-      }
-
-      Rect fgBounds = getFgBounds();
-      if (fgBounds.contains(Point(msg->mouse.x, msg->mouse.y))) {
-	m_hot = HOTCOLOR_FGCOLOR;
-	hot_v1 = fgBounds.y;
-	hot_v2 = fgBounds.y+fgBounds.h-1;
-      }
-
-      Rect bgBounds = getBgBounds();
-      if (bgBounds.contains(Point(msg->mouse.x, msg->mouse.y))) {
-	m_hot = HOTCOLOR_BGCOLOR;
-	hot_v1 = bgBounds.y;
-	hot_v2 = bgBounds.y+bgBounds.h-1;
-      }
-
-      // Drop target
-      if (m_hot_drag != HOTCOLOR_NONE)
-	m_hot_drop = m_hot;
-
-      // Redraw 'hot' color
-      if (m_hot != old_hot) {
-	invalidate();
-
-	// Open the new hot-color to be edited
-	if ((m_hot != HOTCOLOR_NONE) &&
-	    (m_hot_drag == m_hot_drop)) {
-	  Color color = getHotColor(m_hot);
-
-	  updateStatusBar(color, 0);
-	}
-      }
-
-      return true;
-    }
-
-    case JM_MOUSELEAVE:
-      if (m_hot != HOTCOLOR_NONE) {
-	m_hot = HOTCOLOR_NONE;
-	invalidate();
-      }
-      app_get_statusbar()->clearText();
-      break;
-
-    case JM_WHEEL:
-      {
-	int delta = jmouse_z(1) - jmouse_z(0);
-
-	// Without Ctrl or Alt
-	if (!(msg->any.shifts & (KB_ALT_FLAG |
-				 KB_CTRL_FLAG))) {
-	  if (msg->any.shifts & KB_SHIFT_FLAG)
-	    delta *= m_colorsPerColumn;
-
-	  if (((int)m_firstIndex)+delta < 0)
-	    m_firstIndex = 0;
-	  else if (((int)m_firstIndex)+delta > 256-getEntriesCount())
-	    m_firstIndex = 256-getEntriesCount();
-	  else
-	    m_firstIndex += delta;
-	}
-
-	// With Ctrl only
-	if ((msg->any.shifts & (KB_ALT_FLAG |
-				KB_CTRL_FLAG |
-				KB_SHIFT_FLAG)) == KB_CTRL_FLAG) {
-	  int newColorsPerColumn = m_colorsPerColumn;
-
-	  while (m_entrySize >= ENTRYSIZE_MIN &&
-		 m_entrySize <= ENTRYSIZE_MAX &&
-		 newColorsPerColumn == m_colorsPerColumn) {
-	    // Increment or decrement m_entrySize until m_colorsPerColumnn changes
-	    m_entrySize += delta;
-	    newColorsPerColumn = getColumnBounds(1).h / (m_entrySize*jguiscale());
-	  }
-
-	  // Limit "m_entrySize" value
-	  m_entrySize = MID(ENTRYSIZE_MIN, m_entrySize, ENTRYSIZE_MAX);
-	}
-
-	// With Alt only
-	if ((msg->any.shifts & (KB_ALT_FLAG |
-				KB_CTRL_FLAG |
-				KB_SHIFT_FLAG)) == KB_ALT_FLAG) {
-	  int old_columns = m_columns;
-
-	  if (m_columns+delta < 1)
-	    m_columns = 1;
-	  else if (m_columns+delta > 4)
-	    m_columns = 4;
-	  else
-	    m_columns += delta;
-
-	  if (get_config_bool("ColorBar", "CanGrow", false) ||
-	      (old_columns == 1 || m_columns == 1)) {
-	    app_get_top_window()->remap_window();
-	    app_get_top_window()->invalidate();
-	  }
-	}
-
-	// Redraw the whole widget
-	invalidate();
-
-	// Update the status bar
-	updateStatusBar(getColorByPosition(jmouse_x(0), jmouse_y(0)), 0);
-      }
-      break;
-
-    case JM_BUTTONRELEASED:
-      if (hasCapture()) {
-	/* drag and drop a color */
-	if (m_hot_drag != m_hot_drop) {
-	  if (m_hot_drop != HOTCOLOR_NONE) {
-	    Color color = getHotColor(m_hot_drag);
-	    setHotColor(m_hot_drop, color);
-	  }
-	  invalidate();
-	}
-	/* pick the color */
-	else if (m_hot != HOTCOLOR_NONE) {
-	  Color color = getHotColor(m_hot);
-
-	  // Check if the color is invalid (e.g. index out of range)
-	  if (color.isValid()) {
-
-	    switch (m_hot) {
-
-	      case HOTCOLOR_FGCOLOR:
-	      case HOTCOLOR_BGCOLOR: {
-		Command* paledit_cmd = CommandsModule::instance()->getCommandByName(CommandId::PaletteEditor);
-		Params params;
-		params.set("target", (m_hot == HOTCOLOR_FGCOLOR ? "foreground": "background"));
-		params.set("open", "true");
-
-		UIContext::instance()->executeCommand(paledit_cmd, &params);
-		break;
-	      }
-
-	      default: {
-		Color color = getHotColor(m_hot);
-
-		if (msg->mouse.left) {
-		  this->setFgColor(color);
-		}
-		if (msg->mouse.right) {
-		  this->setBgColor(color);
-		}
-		break;
-	      }
-	    }
-	  }
-	}
-
-	m_hot_drag = HOTCOLOR_NONE;
-	m_hot_drop = HOTCOLOR_NONE;
-
-	releaseMouse();
-      }
-      break;
-
-    case JM_SETCURSOR:
-      if (m_hot_drag != HOTCOLOR_NONE &&
-	  m_hot_drag != m_hot_drop) {
-	jmouse_set_cursor(JI_CURSOR_MOVE);
-	return true;
-      }
-      else if (m_hot >= 0) {
-	jmouse_set_cursor(JI_CURSOR_EYEDROPPER);
-	return true;
-      }
-      break;
-
-  }
-
-  return Widget::onProcessMessage(msg);
+  UIContext::instance()->executeCommand(cmd_show_palette_editor, &params);
 }
 
-Color ColorBar::getHotColor(hotcolor_t hot)
+void ColorBar::onPaletteIndexChange(int index)
 {
-  switch (hot) {
-    case HOTCOLOR_NONE:     return Color::fromMask();
-    case HOTCOLOR_FGCOLOR:  return m_fgcolor;
-    case HOTCOLOR_BGCOLOR:  return m_bgcolor;
-    default:
-      ASSERT(hot >= 0 && hot < getEntriesCount());
-      return getEntryColor(hot);
-  }
+  Color color = Color::fromIndex(index);
+
+  if (jmouse_b(0) & 2) // TODO create a PaletteChangeEvent and take left/right mouse button from there
+    setBgColor(color);
+  else
+    setFgColor(color);
 }
 
-void ColorBar::setHotColor(hotcolor_t hot, const Color& color)
+void ColorBar::onFgColorButtonChange(const Color& color)
 {
-  switch (hot) {
-    case HOTCOLOR_NONE:
-      ASSERT(false);
-      break;
-    case HOTCOLOR_FGCOLOR:
-      setFgColor(color);
-      break;
-    case HOTCOLOR_BGCOLOR:
-      setBgColor(color);
-      break;
-    default:
-      ASSERT(hot >= 0 && hot < getEntriesCount());
-#if 0
-      m_color[hot] = color;
-
-      if (hot == 0 || hot == m_ncolor-1) {
-	color_t c1 = m_color[0];
-	color_t c2 = m_color[m_ncolor-1];
-	int r1 = c1.getRed();
-	int g1 = c1.getGreen();
-	int b1 = c1.getBlue();
-	int r2 = c2.getRed();
-	int g2 = c2.getGreen();
-	int b2 = c2.getBlue();
-	int c, r, g, b;
-
-	for (c=1; c<m_ncolor-1; ++c) {
-	  r = r1 + (r2-r1) * c / m_ncolor;
-	  g = g1 + (g2-g1) * c / m_ncolor;
-	  b = b1 + (b2-b1) * c / m_ncolor;
-	  m_color[c] = Color::fromRgb(r, g, b);
-	}
-      }
-#endif
-      break;
-  }
+  FgColorChange(color);
+  onColorButtonChange(color);
 }
 
-Rect ColorBar::getColumnBounds(int column) const
+void ColorBar::onBgColorButtonChange(const Color& color)
 {
-  Rect rc = getBounds().shrink(jguiscale());
-  Rect fgRc = getFgBounds();
-
-  rc.w /= m_columns;
-  rc.x += (rc.w * column);
-  rc.h  = (fgRc.y - rc.y);
-
-  return rc;
+  BgColorChange(color);
+  onColorButtonChange(color);
 }
 
-Rect ColorBar::getEntryBounds(int index) const
+void ColorBar::onColorButtonChange(const Color& color)
 {
-  int row = (index % m_colorsPerColumn);
-  int col = (index / m_colorsPerColumn);
-  Rect rc = getColumnBounds(col);
+  if (color.getType() == Color::IndexType) {
+    int index = color.getIndex();
 
-  rc.h -= 2*jguiscale();
-
-  rc.y += row * rc.h / m_colorsPerColumn;
-  rc.h = ((row+1) * rc.h / m_colorsPerColumn) - (row * rc.h / m_colorsPerColumn);
-
-  if (row == m_colorsPerColumn-1)
-    rc.h += 2*jguiscale();
-
-  return rc;
-}
-
-Rect ColorBar::getFgBounds() const
-{
-  Rect rc = getBounds().shrink(jguiscale());
-
-  return Rect(rc.x, rc.y+rc.h-BGBUTTON_SIZE-FGBUTTON_SIZE,
-	      rc.w, FGBUTTON_SIZE);
-}
-
-Rect ColorBar::getBgBounds() const
-{
-  Rect rc = getBounds().shrink(jguiscale());
-
-  return Rect(rc.x, rc.y+rc.h-BGBUTTON_SIZE,
-	      rc.w, BGBUTTON_SIZE);
-}
-
-void ColorBar::updateStatusBar(const Color& color, int msecs)
-{
-  if (color.isValid()) {
-    app_get_statusbar()
-      ->showColor(msecs, "", color, 255);
-  }
-  else {
-    app_get_statusbar()
-      ->clearText();
+    // Change palette editor color only if it is not the selected entry
+    if (m_paletteView.get2ndColor() != index)
+      m_paletteView.selectColor(index);
   }
 }
