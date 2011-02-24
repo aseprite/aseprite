@@ -15,10 +15,12 @@ class Slider : public Widget
 public:
   Slider(int min, int max, int value);
 
-  void setRange(int min, int max);
+  int getMinValue() const { return m_min; }
+  int getMaxValue() const { return m_max; }
+  int getValue() const    { return m_value; }
 
+  void setRange(int min, int max);
   void setValue(int value);
-  int getValue() const;
 
   void getSliderThemeInfo(int* min, int* max, int* value);
   

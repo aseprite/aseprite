@@ -54,11 +54,6 @@ void Slider::setValue(int value)
   // It DOES NOT emit CHANGE signal! to avoid recursive calls.
 }
 
-int Slider::getValue() const
-{
-  return m_value;
-}
-
 void Slider::getSliderThemeInfo(int* min, int* max, int* value)
 {
   if (min) *min = m_min;
