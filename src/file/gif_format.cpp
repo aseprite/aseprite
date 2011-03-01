@@ -410,6 +410,7 @@ bool GifFormat::onSave(FileOp* fop)
     }
     // If the sprite is Indexed, we can render directly into "current_image".
     else {
+      image_clear(current_image, 0);
       layer_render(sprite->getFolder(), current_image, 0, 0, frame_num);
     }
 
