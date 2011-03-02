@@ -64,6 +64,7 @@ void destroy_thumbnails()
 
     thumbnails->clear();
     delete thumbnails;
+    thumbnails = NULL;
   }
 }
 
