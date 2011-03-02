@@ -24,6 +24,8 @@
 #include "app.h"
 #include "app/color.h"
 #include "base/bind.h"
+#include "gfx/border.h"
+#include "gfx/size.h"
 #include "gui/gui.h"
 #include "modules/gfx.h"
 #include "modules/gui.h"
@@ -33,463 +35,157 @@
 #include "widgets/color_selector.h"
 #include "widgets/palette_view.h"
 
-enum {
-  MODEL_RGB,
-  MODEL_HSV,
-  MODEL_GRAY,
-  MODEL_MASK
-};
-
-struct Model
+ColorSelector::ColorSelector()
+  : PopupFrame("Color Selector", false)
+  , m_color(Color::fromMask())
+  , m_vbox(JI_VERTICAL)
+  , m_topBox(JI_HORIZONTAL)
+  , m_colorPalette(false)
+  , m_indexButton("Index", 1, JI_BUTTON)
+  , m_rgbButton("RGB", 1, JI_BUTTON)
+  , m_hsvButton("HSV", 1, JI_BUTTON)
+  , m_grayButton("Gray", 1, JI_BUTTON)
+  , m_maskButton("Mask", 1, JI_BUTTON)
+  , m_maskLabel("Transparent Color Selected")
+  , m_disableHexUpdate(false)
 {
-  const char *text;
-  int model;
-  Widget* (*create)();
-};
+  m_topBox.setBorder(gfx::Border(0));
+  m_topBox.child_spacing = 0;
 
-struct ColorSelector
-{
-  Color color;
-  Model* selected_model;
-  std::vector<Widget*> model_buttons;
-};
+  m_colorPalette.setColumns(40);
+  m_colorPalette.setBoxSize(6*jguiscale());
+  m_colorPaletteContainer.attachToView(&m_colorPalette);
+ 
+  jwidget_expansive(&m_colorPaletteContainer, true);
 
-static Widget* create_rgb_container();
-static Widget* create_hsv_container();
-static Widget* create_gray_container();
-static Widget* create_mask_container();
+  setup_mini_look(&m_indexButton);
+  setup_mini_look(&m_rgbButton);
+  setup_mini_look(&m_hsvButton);
+  setup_mini_look(&m_grayButton);
+  setup_mini_look(&m_maskButton);
 
-static int colorselector_type();
-static ColorSelector* colorselector_data(JWidget widget);
-static bool colorselector_msg_proc(JWidget widget, JMessage msg);
-static void colorselector_set_color2(JWidget widget, const Color& color,
-				     bool update_index_entry,
-				     bool select_index_entry,
-				     Model* exclude_this_model);
-static void colorselector_set_paledit_index(JWidget widget, int index,
-					    bool select_index_entry);
+  jwidget_add_child(&m_topBox, &m_indexButton);
+  jwidget_add_child(&m_topBox, &m_rgbButton);
+  jwidget_add_child(&m_topBox, &m_hsvButton);
+  jwidget_add_child(&m_topBox, &m_grayButton);
+  jwidget_add_child(&m_topBox, &m_maskButton);
+  jwidget_add_child(&m_topBox, &m_hexColorEntry);
+  jwidget_add_child(&m_vbox, &m_topBox);
+  jwidget_add_child(&m_vbox, &m_colorPaletteContainer);
+  jwidget_add_child(&m_vbox, &m_rgbSliders);
+  jwidget_add_child(&m_vbox, &m_hsvSliders);
+  jwidget_add_child(&m_vbox, &m_graySlider);
+  jwidget_add_child(&m_vbox, &m_maskLabel);
+  jwidget_add_child(this, &m_vbox);
 
-static bool select_model_hook(Frame* frame, Model* selected_model);
-static void slider_change_hook(Slider* widget);
-static bool paledit_change_hook(JWidget widget, void* data);
+  m_indexButton.Click.connect(&ColorSelector::onColorTypeButtonClick, this);
+  m_rgbButton.Click.connect(&ColorSelector::onColorTypeButtonClick, this);
+  m_hsvButton.Click.connect(&ColorSelector::onColorTypeButtonClick, this);
+  m_grayButton.Click.connect(&ColorSelector::onColorTypeButtonClick, this);
+  m_maskButton.Click.connect(&ColorSelector::onColorTypeButtonClick, this);
 
-static Model models[] = {
-  { "RGB",	MODEL_RGB,	create_rgb_container },
-  { "HSV",	MODEL_HSV,	create_hsv_container },
-  { "Gray",	MODEL_GRAY,	create_gray_container },
-  { "Mask",	MODEL_MASK,	create_mask_container },
-  { NULL,	0,		NULL }
-};
+  m_colorPalette.IndexChange.connect(&ColorSelector::onColorPaletteIndexChange, this);
+  m_rgbSliders.ColorChange.connect(&ColorSelector::onColorSlidersChange, this);
+  m_hsvSliders.ColorChange.connect(&ColorSelector::onColorSlidersChange, this);
+  m_graySlider.ColorChange.connect(&ColorSelector::onColorSlidersChange, this);
+  m_hexColorEntry.ColorChange.connect(&ColorSelector::onColorHexEntryChange, this);
 
-Frame* colorselector_new()
-{
-  Frame* window = new PopupFrame(NULL, false);
-  Grid* grid1 = new Grid(2, false);
-  Grid* grid2 = new Grid(5, false);
-  Box* models_box = new Box(JI_HORIZONTAL);
-  PaletteView* pal = new PaletteView(false);
-  Label* idx = new Label("None");
-  Widget* child;
-  ColorSelector* colorselector = new ColorSelector;
-  Model* m;
+  selectColorType(Color::RgbType);
+  setPreferredSize(gfx::Size(300*jguiscale(), getPreferredSize().h));
 
-  pal->setName("pal");
-  idx->setName("idx");
-  grid2->setName("grid2");
-
-  /* color selector */
-  colorselector->color = Color::fromMask();
-  colorselector->selected_model = &models[0];
-
-  /* palette */
-  jwidget_add_tooltip_text(pal, "Use SHIFT or CTRL to select ranges", JI_TOP);
-
-  /* data for a better layout */
-  grid1->child_spacing = 0;
-  grid2->border_width.t = 3 * jguiscale();
-  jwidget_expansive(grid2, true);
-
-  jwidget_noborders(models_box);
-
-  // Append one button for each color-model
-  for (m=models; m->text!=NULL; ++m) {
-    // Create the color-model button to select it
-    RadioButton* model_button = new RadioButton(m->text, 1, JI_BUTTON);
-    colorselector->model_buttons.push_back(model_button);
-    setup_mini_look(model_button);
-    model_button->Click.connect(Bind<bool>(&select_model_hook, window, m));
-    jwidget_add_child(models_box, model_button);
-    
-    // Create the color-model container
-    child = (*m->create)();
-    child->setName(m->text);
-    grid2->addChildInCell(child, 1, 1, JI_HORIZONTAL | JI_TOP);
-  }
-
-  /* add children */
-  grid2->addChildInCell(pal, 1, 1, JI_RIGHT | JI_TOP);
-  grid1->addChildInCell(models_box, 1, 1, JI_HORIZONTAL | JI_BOTTOM);
-  grid1->addChildInCell(idx, 1, 1, JI_RIGHT | JI_BOTTOM);
-  grid1->addChildInCell(grid2, 2, 1, JI_HORIZONTAL | JI_VERTICAL);
-  jwidget_add_child(window, grid1);
-
-  /* hooks */
-  jwidget_add_hook(window,
-		   colorselector_type(),
-		   colorselector_msg_proc, colorselector);
-
-  HOOK(pal, SIGNAL_PALETTE_EDITOR_CHANGE, paledit_change_hook, 0);
-
-  window->initTheme();
-  return window;
+  initTheme();
 }
 
-void colorselector_set_color(JWidget widget, const Color& color)
+void ColorSelector::setColor(const Color& color)
 {
-  colorselector_set_color2(widget, color, true, true, NULL);
+  m_color = color;
+
+  if (color.getType() == Color::IndexType)
+    m_colorPalette.selectColor(color.getIndex());
+
+  m_rgbSliders.setColor(m_color);
+  m_hsvSliders.setColor(m_color);
+  m_graySlider.setColor(m_color);
+  if (!m_disableHexUpdate)
+    m_hexColorEntry.setColor(m_color);
+
+  selectColorType(m_color.getType());
 }
 
-Color colorselector_get_color(JWidget widget)
+Color ColorSelector::getColor() const
 {
-  ColorSelector* colorselector = colorselector_data(widget);
-
-  return colorselector->color;
+  return m_color;
 }
 
-JWidget colorselector_get_paledit(JWidget widget)
+void ColorSelector::onColorPaletteIndexChange(int index)
 {
-  return jwidget_find_name(widget, "pal");
+  setColorWithSignal(Color::fromIndex(index));
 }
 
-static Widget* create_rgb_container()
+void ColorSelector::onColorSlidersChange(const Color& color)
 {
-  Grid* grid = new Grid(2, false);
-  Label* rlabel = new Label("R");
-  Label* glabel = new Label("G");
-  Label* blabel = new Label("B");
-  Slider* rslider = new Slider(0, 255, 0);
-  Slider* gslider = new Slider(0, 255, 0);
-  Slider* bslider = new Slider(0, 255, 0);
-  grid->addChildInCell(rlabel, 1, 1, JI_RIGHT);
-  grid->addChildInCell(rslider, 1, 1, JI_HORIZONTAL);
-  grid->addChildInCell(glabel, 1, 1, JI_RIGHT);
-  grid->addChildInCell(gslider, 1, 1, JI_HORIZONTAL);
-  grid->addChildInCell(blabel, 1, 1, JI_RIGHT);
-  grid->addChildInCell(bslider, 1, 1, JI_HORIZONTAL);
+  setColorWithSignal(color);
 
-  rslider->setName("rgb_r");
-  gslider->setName("rgb_g");
-  bslider->setName("rgb_b");
-
-  rslider->Change.connect(Bind<void>(&slider_change_hook, rslider));
-  gslider->Change.connect(Bind<void>(&slider_change_hook, gslider));
-  bslider->Change.connect(Bind<void>(&slider_change_hook, bslider));
-
-  return grid;
-}
-
-static Widget* create_hsv_container()
-{
-  Grid* grid = new Grid(2, false);
-  Label* hlabel = new Label("H");
-  Label* slabel = new Label("S");
-  Label* vlabel = new Label("V");
-  Slider* hslider = new Slider(0, 360, 0);
-  Slider* sslider = new Slider(0, 100, 0);
-  Slider* vslider = new Slider(0, 100, 0);
-  grid->addChildInCell(hlabel, 1, 1, JI_RIGHT);
-  grid->addChildInCell(hslider, 1, 1, JI_HORIZONTAL);
-  grid->addChildInCell(slabel, 1, 1, JI_RIGHT);
-  grid->addChildInCell(sslider, 1, 1, JI_HORIZONTAL);
-  grid->addChildInCell(vlabel, 1, 1, JI_RIGHT);
-  grid->addChildInCell(vslider, 1, 1, JI_HORIZONTAL);
-
-  hslider->setName("hsv_h");
-  sslider->setName("hsv_s");
-  vslider->setName("hsv_v");
-
-  hslider->Change.connect(Bind<void>(&slider_change_hook, hslider));
-  sslider->Change.connect(Bind<void>(&slider_change_hook, sslider));
-  vslider->Change.connect(Bind<void>(&slider_change_hook, vslider));
-
-  return grid;
-}
-
-static Widget* create_gray_container()
-{
-  Grid* grid = new Grid(2, false);
-  Label* klabel = new Label("V");
-  Slider* vslider = new Slider(0, 255, 0);
-  grid->addChildInCell(klabel, 1, 1, JI_RIGHT);
-  grid->addChildInCell(vslider, 1, 1, JI_HORIZONTAL);
-
-  vslider->setName("gray_v");
-
-  vslider->Change.connect(Bind<void>(&slider_change_hook, vslider));
-
-  return grid;
-}
-
-static Widget* create_mask_container()
-{
-  return new Label("Mask color selected");
-}
-
-static int colorselector_type()
-{
-  static int type = 0;
-  if (!type)
-    type = ji_register_widget_type();
-  return type;
-}
-
-static ColorSelector* colorselector_data(JWidget widget)
-{
-  return reinterpret_cast<ColorSelector*>
-    (jwidget_get_data(widget, colorselector_type()));
-}
-
-static bool colorselector_msg_proc(JWidget widget, JMessage msg)
-{
-  ColorSelector* colorselector = colorselector_data(widget);
-
-  switch (msg->type) {
-
-    case JM_DESTROY:
-      delete colorselector;
-      break;
-
-    case JM_SIGNAL:
-      if (msg->signal.num == JI_SIGNAL_INIT_THEME) {
-	Widget* idx = widget->findChild("idx");
-	PaletteView* pal = static_cast<PaletteView*>(widget->findChild("pal"));
-	Widget* grid2 = widget->findChild("grid2");
-	int idxlen = ji_font_text_len(idx->getFont(), "Index=888");
-
-	jwidget_set_min_size(idx, idxlen, 0);
-	pal->setBoxSize(4*jguiscale());
-	jwidget_set_min_size(grid2, 200*jguiscale(), 0);
-      }
-      break;
-
-  }
-
-  return false;
-}
-
-static void colorselector_set_color2(JWidget widget, const Color& color,
-				     bool update_index_entry,
-				     bool select_index_entry,
-				     Model* exclude_this_model)
-{
-  ColorSelector* colorselector = colorselector_data(widget);
-  Model* m = colorselector->selected_model;
-  Slider* rgb_rslider = widget->findChildT<Slider>("rgb_r");
-  Slider* rgb_gslider = widget->findChildT<Slider>("rgb_g");
-  Slider* rgb_bslider = widget->findChildT<Slider>("rgb_b");
-  Slider* hsv_hslider = widget->findChildT<Slider>("hsv_h");
-  Slider* hsv_sslider = widget->findChildT<Slider>("hsv_s");
-  Slider* hsv_vslider = widget->findChildT<Slider>("hsv_v");
-  Slider* gray_vslider = widget->findChildT<Slider>("gray_v");
-
-  colorselector->color = color;
-
-  if (exclude_this_model != models+MODEL_RGB) {
-    rgb_rslider->setValue(color.getRed());
-    rgb_gslider->setValue(color.getGreen());
-    rgb_bslider->setValue(color.getBlue());
-  }
-  if (exclude_this_model != models+MODEL_HSV) {
-    hsv_hslider->setValue(color.getHue());
-    hsv_sslider->setValue(color.getSaturation());
-    hsv_vslider->setValue(color.getValue());
-  }
-  if (exclude_this_model != models+MODEL_GRAY) {
-    gray_vslider->setValue(color.getGray());
-  }
-  
-  switch (color.getType()) {
-    case Color::MaskType:
-      m = models+MODEL_MASK;
-      break;
-    case Color::RgbType:
-      m = models+MODEL_RGB;
-      break;
-    case Color::IndexType:
-      if (m != models+MODEL_RGB &&
-	  m != models+MODEL_HSV) {
-	m = models+MODEL_RGB;
-      }
-      break;
-    case Color::HsvType:
-      m = models+MODEL_HSV;
-      break;
-    case Color::GrayType:
-      m = models+MODEL_GRAY;
-      break;
-    default:
-      ASSERT(false);
-  }
-
-  // // Select the RGB button
-  // jwidget_select(colorselector->rgb_button);
-  colorselector->model_buttons[m->model]->setSelected(true);
-
-  // Call the hook
-  select_model_hook(dynamic_cast<Frame*>(widget->getRoot()), m);
-
-  if (update_index_entry) {
-    switch (color.getType()) {
-      case Color::IndexType:
-	colorselector_set_paledit_index(widget, color.getIndex(), select_index_entry);
-	break;
-      case Color::MaskType:
-	colorselector_set_paledit_index(widget, 0, true);
-	break;
-      default: {
-	int r = color.getRed();
-	int g = color.getGreen();
-	int b = color.getBlue();
-	int i = get_current_palette()->findBestfit(r, g, b);
-	if (i >= 0 && i < 256)
-	  colorselector_set_paledit_index(widget, i, true);
-	else
-	  colorselector_set_paledit_index(widget, -1, true);
-	break;
-      }
-    }
-  }
-}
-
-static void colorselector_set_paledit_index(JWidget widget, int index, bool select_index_entry)
-{
-  PaletteView* pal = static_cast<PaletteView*>(widget->findChild("pal"));
-  Widget* idx = widget->findChild("idx");
-  char buf[256];
-
-  if (index >= 0) {
-    if (select_index_entry)
-      pal->selectColor(index);
-
-    sprintf(buf, "Index=%d", index);
-  }
-  else {
-    if (select_index_entry)
-      pal->selectRange(-1, -1, PALETTE_EDITOR_RANGE_NONE);
-
-    sprintf(buf, "None");
-  }
-
-  idx->setText(buf);
-}
-
-static bool select_model_hook(Frame* frame, Model* selected_model)
-{
-  ASSERT(frame != NULL);
-
-  ColorSelector* colorselector = colorselector_data(frame);
-  JWidget child;
-  Model* m;
-  bool something_change = false;
-
-  colorselector->selected_model = selected_model;
-  
-  for (m=models; m->text!=NULL; ++m) {
-    child = jwidget_find_name(frame, m->text);
-
-    if (m == selected_model) {
-      if (child->flags & JI_HIDDEN) {
-	child->setVisible(true);
-	something_change = true;
-      }
-    }
-    else {
-      if (!(child->flags & JI_HIDDEN)) {
-	child->setVisible(false);
-	something_change = true;
-      }
-    }
-  }
-
-  if (something_change) {
-    // Select the mask color
-    if (selected_model->model == MODEL_MASK) {
-      colorselector_set_color2(frame, Color::fromMask(), false, false, NULL);
-      jwidget_emit_signal(frame, SIGNAL_COLORSELECTOR_COLOR_CHANGED);
-    }
-
-    jwidget_relayout(frame);
-  }
-
-  return true;
-}
-
-static void slider_change_hook(Slider* widget)
-{
-  Frame* window = static_cast<Frame*>(widget->getRoot());
-  ColorSelector* colorselector = colorselector_data(window);
-  Model* m = colorselector->selected_model;
-  Color color = colorselector->color;
-  int i, r, g, b;
-  
-  switch (m->model) {
-    case MODEL_RGB: {
-      Slider* rslider = window->findChildT<Slider>("rgb_r");
-      Slider* gslider = window->findChildT<Slider>("rgb_g");
-      Slider* bslider = window->findChildT<Slider>("rgb_b");
-      int r = rslider->getValue();
-      int g = gslider->getValue();
-      int b = bslider->getValue();
-      color = Color::fromRgb(r, g, b);
-      break;
-    }
-    case MODEL_HSV: {
-      Slider* hslider = window->findChildT<Slider>("hsv_h");
-      Slider* sslider = window->findChildT<Slider>("hsv_s");
-      Slider* vslider = window->findChildT<Slider>("hsv_v");
-      int h = hslider->getValue();
-      int s = sslider->getValue();
-      int v = vslider->getValue();
-      color = Color::fromHsv(h, s, v);
-      break;
-    }
-    case MODEL_GRAY: {
-      Slider* vslider = window->findChildT<Slider>("gray_v");
-      int v = vslider->getValue();
-      color = Color::fromGray(v);
-      break;
-    }
-  }
-
-  r = color.getRed();
-  g = color.getGreen();
-  b = color.getBlue();
+  // Find bestfit palette entry
+  int r = color.getRed();
+  int g = color.getGreen();
+  int b = color.getBlue();
   
   // Search for the closest color to the RGB values
-  i = get_current_palette()->findBestfit(r, g, b);
+  int i = get_current_palette()->findBestfit(r, g, b);
   if (i >= 0 && i < 256)
-    colorselector_set_paledit_index(window, i, true);
-
-  colorselector_set_color2(window, color, false, false, m);
-  jwidget_emit_signal(window, SIGNAL_COLORSELECTOR_COLOR_CHANGED);
+    m_colorPalette.selectColor(i);
 }
 
-static bool paledit_change_hook(Widget* widget, void* data)
+void ColorSelector::onColorHexEntryChange(const Color& color)
 {
-  Frame* window = static_cast<Frame*>(widget->getRoot());
-  PaletteView* paledit = static_cast<PaletteView*>(widget);
-  bool array[256];
-  Color color = colorselector_get_color(window);
-  int i;
+  // Disable updating the hex entry so we don't override what the user
+  // is writting in the text field.
+  m_disableHexUpdate = true;
 
-  paledit->getSelectedEntries(array);
-  for (i=0; i<256; ++i)
-    if (array[i]) {
-      color = Color::fromIndex(i);
-      break;
-    }
+  onColorSlidersChange(color);
 
-  colorselector_set_color2(window, color, true, false, NULL);
-  jwidget_emit_signal(window, SIGNAL_COLORSELECTOR_COLOR_CHANGED);
-  return 0;
+  m_disableHexUpdate = false;
+}
+
+void ColorSelector::onColorTypeButtonClick(Event& ev)
+{
+  RadioButton* source = static_cast<RadioButton*>(ev.getSource());
+
+  if (source == &m_indexButton) selectColorType(Color::IndexType);
+  else if (source == &m_rgbButton) selectColorType(Color::RgbType);
+  else if (source == &m_hsvButton) selectColorType(Color::HsvType);
+  else if (source == &m_grayButton) selectColorType(Color::GrayType);
+  else if (source == &m_maskButton) {
+    // Select mask color directly when the radio button is pressed
+    setColorWithSignal(Color::fromMask());
+  }
+}
+
+void ColorSelector::setColorWithSignal(const Color& color)
+{
+  setColor(color);
+
+  // Fire ColorChange signal
+  ColorChange(color);
+}
+
+void ColorSelector::selectColorType(Color::Type type)
+{
+  m_colorPaletteContainer.setVisible(type == Color::IndexType);
+  m_rgbSliders.setVisible(type == Color::RgbType);
+  m_hsvSliders.setVisible(type == Color::HsvType);
+  m_graySlider.setVisible(type == Color::GrayType);
+  m_maskLabel.setVisible(type == Color::MaskType);
+
+  switch (type) {
+    case Color::IndexType: m_indexButton.setSelected(true); break;
+    case Color::RgbType:   m_rgbButton.setSelected(true); break;
+    case Color::HsvType:   m_hsvButton.setSelected(true); break;
+    case Color::GrayType:  m_grayButton.setSelected(true); break;
+    case Color::MaskType:  m_maskButton.setSelected(true); break;
+  }
+  
+  m_vbox.setBounds(m_vbox.getBounds()); // TODO add Widget::relayout member function
+  m_vbox.invalidate();
 }

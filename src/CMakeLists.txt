@@ -232,6 +232,7 @@ add_library(aseprite-library
   widgets/color_bar.cpp
   widgets/color_button.cpp
   widgets/color_selector.cpp
+  widgets/color_sliders.cpp
   widgets/curvedit.cpp
   widgets/editor/click.cpp
   widgets/editor/cursor.cpp
@@ -240,6 +241,7 @@ add_library(aseprite-library
   widgets/editor/pixels_movement.cpp
   widgets/fileview.cpp
   widgets/groupbut.cpp
+  widgets/hex_color_entry.cpp
   widgets/menuitem.cpp
   widgets/palette_view.cpp
   widgets/preview.cpp

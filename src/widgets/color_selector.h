@@ -20,18 +20,58 @@
 #define WIDGETS_COLOR_SELECTOR_H_INCLUDED
 
 #include "app/color.h"
-#include "gui/base.h"
+#include "base/signal.h"
+#include "gui/button.h"
+#include "gui/grid.h"
+#include "gui/label.h"
+#include "gui/popup_frame.h"
+#include "gui/view.h"
+#include "widgets/color_sliders.h"
+#include "widgets/hex_color_entry.h"
+#include "widgets/palette_view.h"
 
-class Frame;
+class ColorSelector : public PopupFrame
+{
+public:
+  ColorSelector();
 
-// TODO use some JI_SIGNAL_USER
-#define SIGNAL_COLORSELECTOR_COLOR_CHANGED	0x10009
+  void setColor(const Color& color);
+  Color getColor() const;
 
-Frame* colorselector_new();
+  // Signals
+  Signal1<void, const Color&> ColorChange;
+  
+protected:
+  void onColorPaletteIndexChange(int index);
+  void onColorSlidersChange(const Color& color);
+  void onColorHexEntryChange(const Color& color);
+  void onColorTypeButtonClick(Event& ev);
 
-void colorselector_set_color(Widget* widget, const Color& color);
-Color colorselector_get_color(Widget* widget);
+private:
+  void selectColorType(Color::Type type);
+  void setColorWithSignal(const Color& color);
 
-Widget* colorselector_get_paledit(Widget* widget);
+  Box m_vbox;
+  Box m_topBox;
+  Color m_color;
+  View m_colorPaletteContainer;
+  PaletteView m_colorPalette;
+  RadioButton m_indexButton;
+  RadioButton m_rgbButton;
+  RadioButton m_hsvButton;
+  RadioButton m_grayButton;
+  RadioButton m_maskButton;
+  HexColorEntry m_hexColorEntry;
+  RgbSliders m_rgbSliders;
+  HsvSliders m_hsvSliders;
+  GraySlider m_graySlider;
+  Label m_maskLabel;
+
+  // This variable is used to avoid updating the m_hexColorEntry text
+  // when the color change is generated from a
+  // HexColorEntry::ColorChange signal. In this way we don't override
+  // what the user is writting in the text field.
+  bool m_disableHexUpdate;
+};
 
 #endif

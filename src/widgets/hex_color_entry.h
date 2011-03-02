@@ -16,44 +16,32 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifndef WIDGETS_COLOR_BUTTON_H_INCLUDED
-#define WIDGETS_COLOR_BUTTON_H_INCLUDED
+#ifndef WIDGETS_HEX_COLOR_ENTRY_H_INCLUDED
+#define WIDGETS_HEX_COLOR_ENTRY_H_INCLUDED
 
 #include "app/color.h"
 #include "base/signal.h"
-#include "gui/button.h"
+#include "gui/box.h"
+#include "gui/entry.h"
+#include "gui/label.h"
 
-class ColorSelector;
-
-class ColorButton : public ButtonBase
+// Little widget to show a color in hexadecimal format (as HTML).
+class HexColorEntry : public Box
 {
 public:
-  ColorButton(const Color& color, int imgtype);
-  ~ColorButton();
+  HexColorEntry();
 
-  int getImgType() const;
-  void setImgType(int imgtype);
-
-  Color getColor() const;
   void setColor(const Color& color);
 
   // Signals
-  Signal1<void, const Color&> Change;
+  Signal1<void, const Color&> ColorChange;
 
 protected:
-  // Events
-  bool onProcessMessage(JMessage msg);
-  void onPreferredSize(PreferredSizeEvent& ev);
-  void onPaint(PaintEvent& ev);
+  void onEntryChange();
 
 private:
-  void openSelectorDialog();
-  void closeSelectorDialog();
-  void onFrameColorChange(const Color& color);
-
-  Color m_color;
-  int m_imgtype;
-  ColorSelector* m_frame;
+  Label m_label;
+  Entry m_entry;
 };
 
 #endif

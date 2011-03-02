@@ -34,8 +34,6 @@
 #include "widgets/editor.h"
 #include "widgets/statebar.h"
 
-static bool tooltip_window_msg_proc(JWidget widget, JMessage msg);
-
 static int colorbutton_type()
 {
   static int type = 0;
@@ -48,15 +46,14 @@ ColorButton::ColorButton(const Color& color, int imgtype)
   : ButtonBase("", colorbutton_type(), JI_BUTTON, JI_BUTTON)
   , m_color(color)
   , m_imgtype(imgtype)
-  , m_tooltip_window(NULL)
+  , m_frame(NULL)
 {
   jwidget_focusrest(this, true);
 }
 
 ColorButton::~ColorButton()
 {
-  if (m_tooltip_window != NULL)
-    delete m_tooltip_window;	// widget, frame
+  delete m_frame;	// widget, frame
 }
 
 int ColorButton::getImgType() const
@@ -100,8 +97,7 @@ bool ColorButton::onProcessMessage(JMessage msg)
     case JM_SIGNAL:
       if (msg->signal.num == JI_SIGNAL_BUTTON_SELECT) {
 	// If the popup window was not created or shown yet..
-	if (this->m_tooltip_window == NULL ||
-	    !this->m_tooltip_window->isVisible()) {
+	if (m_frame == NULL || !m_frame->isVisible()) {
 	  // Open it
 	  openSelectorDialog();
 	}
@@ -114,9 +110,9 @@ bool ColorButton::onProcessMessage(JMessage msg)
       break;
 
     case JM_MOTION:
-      if (this->hasCapture()) {
+      if (hasCapture()) {
 	Widget* picked = ji_get_default_manager()->pick(msg->mouse.x, msg->mouse.y);
-	Color color = this->m_color;
+	Color color = m_color;
 
 	if (picked && picked != this) {
 	  // Pick a color from another color-button
@@ -144,14 +140,14 @@ bool ColorButton::onProcessMessage(JMessage msg)
 	}
 
 	// Did the color change?
-	if (color != this->m_color) {
+	if (color != m_color) {
 	  setColor(color);
 	}
       }
       break;
 
     case JM_SETCURSOR:
-      if (this->hasCapture()) {
+      if (hasCapture()) {
 	jmouse_set_cursor(JI_CURSOR_EYEDROPPER);
 	return true;
       }
@@ -170,8 +166,8 @@ void ColorButton::onPreferredSize(PreferredSizeEvent& ev)
 
   box.x2 = box.x1+64;
 
-  ev.setPreferredSize(jrect_w(&box) + this->border_width.l + this->border_width.r,
-		      jrect_h(&box) + this->border_width.t + this->border_width.b);
+  ev.setPreferredSize(jrect_w(&box) + border_width.l + border_width.r,
+		      jrect_h(&box) + border_width.t + border_width.b);
 }
 
 void ColorButton::onPaint(PaintEvent& ev) // TODO use "ev.getGraphics()"
@@ -186,7 +182,7 @@ void ColorButton::onPaint(PaintEvent& ev) // TODO use "ev.getGraphics()"
   Color color;
 
   // When the button is pushed, show the negative
-  if (this->isSelected()) {
+  if (isSelected()) {
     color = Color::fromRgb(255-m_color.getRed(),
 			   255-m_color.getGreen(),
 			   255-m_color.getBlue());
@@ -220,68 +216,48 @@ void ColorButton::onPaint(PaintEvent& ev) // TODO use "ev.getGraphics()"
 
 void ColorButton::openSelectorDialog()
 {
-  Frame* window;
   int x, y;
 
-  if (m_tooltip_window == NULL) {
-    window = colorselector_new();
-    window->user_data[0] = this;
-    jwidget_add_hook(window, -1, tooltip_window_msg_proc, NULL);
-
-    m_tooltip_window = window;
-  }
-  else {
-    window = m_tooltip_window;
+  if (m_frame == NULL) {
+    m_frame = new ColorSelector();
+    m_frame->user_data[0] = this;
+    m_frame->ColorChange.connect(&ColorButton::onFrameColorChange, this);
   }
 
-  colorselector_set_color(window, m_color);
+  m_frame->setColor(m_color);
+  m_frame->open_window();
 
-  window->open_window();
-
-  x = MID(0, this->rc->x1, JI_SCREEN_W-jrect_w(window->rc));
-  if (this->rc->y2 <= JI_SCREEN_H-jrect_h(window->rc))
+  x = MID(0, this->rc->x1, JI_SCREEN_W-jrect_w(m_frame->rc));
+  if (this->rc->y2 <= JI_SCREEN_H-jrect_h(m_frame->rc))
     y = MAX(0, this->rc->y2);
   else
-    y = MAX(0, this->rc->y1-jrect_h(window->rc));
+    y = MAX(0, this->rc->y1-jrect_h(m_frame->rc));
 
-  window->position_window(x, y);
+  m_frame->position_window(x, y);
 
-  jmanager_dispatch_messages(window->getManager());
-  jwidget_relayout(window);
+  jmanager_dispatch_messages(m_frame->getManager());
+  jwidget_relayout(m_frame);
 
   /* setup the hot-region */
   {
-    JRect rc = jrect_new(MIN(this->rc->x1, window->rc->x1)-8,
-			 MIN(this->rc->y1, window->rc->y1)-8,
-			 MAX(this->rc->x2, window->rc->x2)+8,
-			 MAX(this->rc->y2, window->rc->y2)+8);
+    JRect rc = jrect_new(MIN(this->rc->x1, m_frame->rc->x1)-8,
+			 MIN(this->rc->y1, m_frame->rc->y1)-8,
+			 MAX(this->rc->x2, m_frame->rc->x2)+8,
+			 MAX(this->rc->y2, m_frame->rc->y2)+8);
     JRegion rgn = jregion_new(rc, 1);
     jrect_free(rc);
 
-    static_cast<PopupFrame*>(window)->setHotRegion(rgn);
+    static_cast<PopupFrame*>(m_frame)->setHotRegion(rgn);
   }
 }
 
 void ColorButton::closeSelectorDialog()
 {
-  if (m_tooltip_window != NULL)
-    m_tooltip_window->closeWindow(NULL);
+  if (m_frame != NULL)
+    m_frame->closeWindow(NULL);
 }
 
-static bool tooltip_window_msg_proc(JWidget widget, JMessage msg)
+void ColorButton::onFrameColorChange(const Color& color)
 {
-  switch (msg->type) {
-
-    case JM_SIGNAL:
-      if (msg->signal.num == SIGNAL_COLORSELECTOR_COLOR_CHANGED) {
-	ColorButton* colorbutton_widget = (ColorButton*)widget->user_data[0];
-	Color color = colorselector_get_color(widget);
-
-	colorbutton_widget->setColor(color);
-      }
-      break;
-
-  }
-  
-  return false;
+  setColor(color);
 }
