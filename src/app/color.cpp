@@ -220,7 +220,7 @@ std::string Color::toFormalString(int imgtype, bool long_format) const
 	}
 	else {
 	  result << "HSV "
-		 << m_value.hsv.h << " "
+		 << m_value.hsv.h << "\xB0 "
 		 << m_value.hsv.s << " "
 		 << m_value.hsv.v;
   
@@ -281,7 +281,7 @@ std::string Color::toFormalString(int imgtype, bool long_format) const
 	  result << "Gry-" << getGray();
 	}
 	else {
-	  result << m_value.hsv.h << ","
+	  result << m_value.hsv.h << "\xB0"
 		 << m_value.hsv.s << ","
 		 << m_value.hsv.v;
 	}
