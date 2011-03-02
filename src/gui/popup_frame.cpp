@@ -100,9 +100,13 @@ bool PopupFrame::onProcessMessage(JMessage msg)
       break;
 
     case JM_KEYPRESSED:
-      if (m_filtering && msg->key.scancode < KEY_MODIFIERS)
+      if (m_filtering &&
+	  (msg->key.scancode == KEY_ESC ||
+	   msg->key.scancode == KEY_ENTER ||
+	   msg->key.scancode == KEY_ENTER_PAD)) {
 	closeWindow(NULL);
-      break;
+      }
+      return false;
 
     case JM_BUTTONPRESSED:
       /* if the user click outside the window, we have to close the
