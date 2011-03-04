@@ -50,85 +50,73 @@
 #include "sprite_wrappers.h"
 #include "ui_context.h"
 #include "widgets/color_bar.h"
+#include "widgets/color_sliders.h"
 #include "widgets/editor.h"
 #include "widgets/palette_view.h"
+#include "widgets/hex_color_entry.h"
 #include "widgets/statebar.h"
 
 using namespace gfx;
 
-static Frame* window = NULL;
-static int redraw_timer_id = -1;
-static bool redraw_all = false;
-
-// Slot for App::Exit signal 
-static void on_exit_delete_this_widget()
+class PaletteEntryEditor : public Frame
 {
-  ASSERT(window != NULL);
+public:
+  PaletteEntryEditor();
+  ~PaletteEntryEditor();
 
-  jmanager_remove_timer(redraw_timer_id);
-  redraw_timer_id = -1;
+  void setColor(const Color& color);
 
-  jwidget_free(window);
-}
+protected:
+  bool onProcessMessage(JMessage msg);
 
-namespace {
+  void onExit();
+  void onCloseFrame();
+  void onFgBgColorChange(const Color& color);
+  void onColorSlidersChange(ColorSlidersChangeEvent& ev);
+  void onColorHexEntryChange(const Color& color);
+  void onColorTypeButtonClick(Event& ev);
+  void onMoreOptionsClick(Event& ev);
+  void onLoadCommand(Event& ev);
+  void onSaveCommand(Event& ev);
+  void onRampCommand(Event& ev);
+  void onQuantizeCommand(Event& ev);
+    
+private:
+  void selectColorType(Color::Type type);
+  void setPaletteEntry(const Color& color);
+  void setPaletteEntryChannel(const Color& color, ColorSliders::Channel channel);
+  void setNewPalette(Palette* palette, const char* operationName);
+  void updateCurrentSpritePalette(const char* operationName);
+  void updateColorBar();
 
-  // This class is used as property for RGB/HSV sliders to draw the
-  // background of them.
-  class ColorSliderBgPainter : public ISliderBgPainter
-  {
-  public:
-    enum Channel {
-      Red, Green, Blue,
-      Hue, Saturation, Value
-    };
+  Box m_vbox;
+  Box m_topBox;
+  Box m_bottomBox;
+  RadioButton m_rgbButton;
+  RadioButton m_hsvButton;
+  HexColorEntry m_hexColorEntry;
+  Button m_moreOptions;
+  RgbSliders m_rgbSliders;
+  HsvSliders m_hsvSliders;
+  Button m_loadButton;
+  Button m_saveButton;
+  Button m_rampButton;
+  Button m_quantizeButton;
 
-    ColorSliderBgPainter(Channel channel)
-      : m_channel(channel)
-    { }
+  // This variable is used to avoid updating the m_hexColorEntry text
+  // when the color change is generated from a
+  // HexColorEntry::ColorChange signal. In this way we don't override
+  // what the user is writting in the text field.
+  bool m_disableHexUpdate;
 
-    void setColor(const Color& color) {
-      m_color = color;
-    }
-
-    void paint(Slider* slider, Graphics* g, const gfx::Rect& rc) {
-      int depth = g->getBitsPerPixel();
-      int color;
-      for (int x=0; x < rc.w; ++x) {
-	switch (m_channel) {
-	  case Red:
-	    color = makecol(255 * x / (rc.w-1), m_color.getGreen(), m_color.getBlue());
-	    break;
-	  case Green:
-	    color = makecol(m_color.getRed(), 255 * x / (rc.w-1), m_color.getBlue());
-	    break;
-	  case Blue:
-	    color = makecol(m_color.getRed(), m_color.getGreen(), 255 * x / (rc.w-1));
-	    break;
-	  case Hue:
-	    color = color_utils::color_for_allegro(Color::fromHsv(360 * x / (rc.w-1), m_color.getSaturation(), m_color.getValue()), depth);
-	    break;
-	  case Saturation:
-	    color = color_utils::color_for_allegro(Color::fromHsv(m_color.getHue(), 100 * x / (rc.w-1), m_color.getValue()), depth);
-	    break;
-	  case Value:
-	    color = color_utils::color_for_allegro(Color::fromHsv(m_color.getHue(), m_color.getSaturation(), 100 * x / (rc.w-1)), depth);
-	    break;
-	}
-	g->drawVLine(color, rc.x+x, rc.y, rc.h);
-      }
-    }
-
-  private:
-    Channel m_channel;
-    BITMAP* m_cachedBg;
-    Color m_color;
-  };
- 
-}
+  int m_redrawTimerId;
+  bool m_redrawAll;
+};
 
 //////////////////////////////////////////////////////////////////////
-// palette_editor
+// PaletteEditorCommand
+
+static PaletteEntryEditor* g_frame = NULL;
 
 class PaletteEditorCommand : public Command
 {
@@ -146,46 +134,6 @@ private:
   bool m_switch;
   bool m_background;
 };
-
-// #define get_sprite(wgt) (*(const SpriteReader*)(wgt->getRoot())->user_data[0])
-
-static Widget *R_label, *G_label, *B_label;
-static Widget *H_label, *S_label, *V_label;
-static Slider *R_slider, *G_slider, *B_slider;
-static Slider *H_slider, *S_slider, *V_slider;
-static Widget *R_entry, *G_entry, *B_entry;
-static Widget *H_entry, *S_entry, *V_entry;
-static Widget *hex_entry;
-static Widget* more_options = NULL;
-
-static bool window_msg_proc(JWidget widget, JMessage msg);
-static bool window_close_hook(JWidget widget, void *data);
-static void load_command(JWidget widget);
-static void save_command(JWidget widget);
-static void ramp_command(JWidget widget);
-static void sort_command(JWidget widget);
-static void quantize_command(JWidget widget);
-
-static void sliderRGB_change_hook(Slider* widget);
-static void sliderHSV_change_hook(Slider* widget);
-static bool entryRGB_change_hook(JWidget widget, void *data);
-static bool entryHSV_change_hook(JWidget widget, void *data);
-static bool hex_entry_change_hook(JWidget widget, void *data);
-static void update_entries_from_sliders();
-static void update_sliders_from_entries();
-static void update_hex_entry();
-static void update_slider_bgcolor(Slider* slider, const Color& color);
-static void update_slider_bgcolors();
-static void update_current_sprite_palette(const char* operationName);
-static void update_colorbar();
-static bool select_rgb_hook(JWidget widget, void *data);
-static bool select_hsv_hook(JWidget widget, void *data);
-static bool expand_button_select_hook(JWidget widget, void *data);
-static void modify_rgb_of_selected_entries(const Rgb& dst_rgb, bool set_r, bool set_g, bool set_b);
-static void modify_hsv_of_selected_entries(const Hsv& dst_hsv, bool set_h, bool set_s, bool set_v);
-static void on_color_changed(const Color& color);
-
-static void set_new_palette(Palette *palette, const char* operationName);
 
 PaletteEditorCommand::PaletteEditorCommand()
   : Command("PaletteEditor",
@@ -219,122 +167,39 @@ void PaletteEditorCommand::onLoadParams(Params* params)
 
 void PaletteEditorCommand::onExecute(Context* context)
 {
-  Widget* select_rgb;
-  Widget* select_hsv;
-  Button* expand_button;
-  Button* button_load;
-  Button* button_save;
-  Button* button_ramp;
-  Button* button_sort;
-  Button* button_quantize;
-  bool first_time = false;
-
-  // If the window was never loaded yet, load it
-  if (!window) {
+  // If this is the first time the command is execute...
+  if (!g_frame) {
+    // If the command says "Close the palette editor" and it is not
+    // created yet, we just do nothing.
     if (m_close)
-      return;			// Do nothing (the user want to close and inexistent window)
+      return;
 
-    // Load the palette editor window
-    window = static_cast<Frame*>(load_widget("palette_editor.xml", "palette_editor"));
-    redraw_timer_id = jmanager_add_timer(window, 250);
-
-    first_time = true;
-
-    // Append hooks
-    window->Close.connect(Bind<bool>(&window_close_hook, (JWidget)window, (void*)0));
-
-    // Hook fg/bg color changes (by eyedropper mainly)
-    app_get_colorbar()->FgColorChange.connect(&on_color_changed);
-    app_get_colorbar()->BgColorChange.connect(&on_color_changed);
-
-    // Hook App::Exit signal
-    App::instance()->Exit.connect(&on_exit_delete_this_widget);
+    // If this is "open" or "switch", we have to create the frame.
+    g_frame = new PaletteEntryEditor();
   }
-  // If the window is opened, close it (only in "switch" mode)
-  else if (window->isVisible() && (m_switch || m_close)) {
-    window->closeWindow(NULL);
+  // If the frame is already created and it's visible, close it (only in "switch" or "close" modes)
+  else if (g_frame->isVisible() && (m_switch || m_close)) {
+    // Hide the frame
+    g_frame->closeWindow(NULL);
     return;
   }
 
-  get_widgets(window,
-	      "R_label",  &R_label,
-	      "R_slider", &R_slider,
-	      "R_entry",  &R_entry,
-	      "G_label",  &G_label,
-	      "G_slider", &G_slider,
-	      "G_entry",  &G_entry,
-	      "B_label",  &B_label,
-	      "B_slider", &B_slider,
-	      "B_entry",  &B_entry,
-	      "H_label",  &H_label,
-	      "H_slider", &H_slider,
-	      "H_entry",  &H_entry,
-	      "S_label",  &S_label,
-	      "S_slider", &S_slider,
-	      "S_entry",  &S_entry,
-	      "V_label",  &V_label,
-	      "V_slider", &V_slider,
-	      "V_entry",  &V_entry,
-	      "hex_entry", &hex_entry,
-	      "select_rgb", &select_rgb,
-	      "select_hsv", &select_hsv,
-	      "expand", &expand_button,
-	      "more_options", &more_options,
-	      "load", &button_load,
-	      "save", &button_save,
-	      "ramp", &button_ramp,
-	      "sort", &button_sort,
-	      "quantize", &button_quantize, NULL);
-      
-  // Custom widgets
-  if (first_time) {
-    // Setup slider bg painters
-    R_slider->setProperty(PropertyPtr(new SkinSliderProperty(new ColorSliderBgPainter(ColorSliderBgPainter::Red))));
-    G_slider->setProperty(PropertyPtr(new SkinSliderProperty(new ColorSliderBgPainter(ColorSliderBgPainter::Green))));
-    B_slider->setProperty(PropertyPtr(new SkinSliderProperty(new ColorSliderBgPainter(ColorSliderBgPainter::Blue))));
-    H_slider->setProperty(PropertyPtr(new SkinSliderProperty(new ColorSliderBgPainter(ColorSliderBgPainter::Hue))));
-    S_slider->setProperty(PropertyPtr(new SkinSliderProperty(new ColorSliderBgPainter(ColorSliderBgPainter::Saturation))));
-    V_slider->setProperty(PropertyPtr(new SkinSliderProperty(new ColorSliderBgPainter(ColorSliderBgPainter::Value))));
+  if (m_switch || m_open) {
+    if (!g_frame->isVisible()) {
+      // Default bounds
+      g_frame->remap_window();
 
-    R_slider->setDoubleBuffered(true);
-    G_slider->setDoubleBuffered(true);
-    B_slider->setDoubleBuffered(true);
-    H_slider->setDoubleBuffered(true);
-    S_slider->setDoubleBuffered(true);
-    V_slider->setDoubleBuffered(true);
-  
-    // Hook signals
-    jwidget_add_hook(window, -1, window_msg_proc, NULL);
-    R_slider->Change.connect(Bind<void>(&sliderRGB_change_hook, R_slider));
-    G_slider->Change.connect(Bind<void>(&sliderRGB_change_hook, G_slider));
-    B_slider->Change.connect(Bind<void>(&sliderRGB_change_hook, B_slider));
-    H_slider->Change.connect(Bind<void>(&sliderHSV_change_hook, H_slider));
-    S_slider->Change.connect(Bind<void>(&sliderHSV_change_hook, S_slider));
-    V_slider->Change.connect(Bind<void>(&sliderHSV_change_hook, V_slider));
-    HOOK(R_entry, JI_SIGNAL_ENTRY_CHANGE, entryRGB_change_hook, 0);
-    HOOK(G_entry, JI_SIGNAL_ENTRY_CHANGE, entryRGB_change_hook, 0);
-    HOOK(B_entry, JI_SIGNAL_ENTRY_CHANGE, entryRGB_change_hook, 0);
-    HOOK(H_entry, JI_SIGNAL_ENTRY_CHANGE, entryHSV_change_hook, 0);
-    HOOK(S_entry, JI_SIGNAL_ENTRY_CHANGE, entryHSV_change_hook, 0);
-    HOOK(V_entry, JI_SIGNAL_ENTRY_CHANGE, entryHSV_change_hook, 0);
-    HOOK(hex_entry, JI_SIGNAL_ENTRY_CHANGE, hex_entry_change_hook, 0);
-    HOOK(select_rgb, JI_SIGNAL_RADIO_CHANGE, select_rgb_hook, 0);
-    HOOK(select_hsv, JI_SIGNAL_RADIO_CHANGE, select_hsv_hook, 0);
-    HOOK(expand_button, JI_SIGNAL_BUTTON_SELECT, expand_button_select_hook, 0);
-    
-    setup_mini_look(select_rgb);
-    setup_mini_look(select_hsv);
+      int width = MAX(jrect_w(g_frame->rc), JI_SCREEN_W/2);
+      g_frame->setBounds(Rect(JI_SCREEN_W - width - jrect_w(app_get_toolbar()->rc),
+			      JI_SCREEN_H - jrect_h(g_frame->rc) - jrect_h(app_get_statusbar()->rc),
+			      width, jrect_h(g_frame->rc)));
 
-    // Hide (or show) the "More Options" depending the saved value in .cfg file
-    more_options->setVisible(get_config_bool("PaletteEditor", "ShowMoreOptions", false));
+      // Load window configuration
+      load_window_pos(g_frame, "PaletteEditor");
+    }
 
-    button_load->Click.connect(Bind<void>(&load_command, button_load));
-    button_save->Click.connect(Bind<void>(&save_command, button_save));
-    button_ramp->Click.connect(Bind<void>(&ramp_command, button_ramp));
-    button_sort->Click.connect(Bind<void>(&sort_command, button_sort));
-    button_quantize->Click.connect(Bind<void>(&quantize_command, button_quantize));
-
-    select_rgb_hook(NULL, NULL);
+    // Run the frame in background.
+    g_frame->open_window_bg();
   }
 
   // Show the specified target color
@@ -343,36 +208,125 @@ void PaletteEditorCommand::onExecute(Context* context)
       (m_background ? context->getSettings()->getBgColor():
   		      context->getSettings()->getFgColor());
 
-    on_color_changed(color);
-  }
-
-  if (m_switch || m_open) {
-    if (!window->isVisible()) {
-      // Default bounds
-      window->remap_window();
-
-      int width = MAX(jrect_w(window->rc), JI_SCREEN_W/2);
-      window->setBounds(Rect(JI_SCREEN_W - width - jrect_w(app_get_toolbar()->rc),
-			     JI_SCREEN_H - jrect_h(window->rc) - jrect_h(app_get_statusbar()->rc),
-			     width, jrect_h(window->rc)));
-
-      // Load window configuration
-      load_window_pos(window, "PaletteEditor");
-    }
-
-    // Run the window in background
-    window->open_window_bg();
+    g_frame->setColor(color);
   }
 }
 
-static bool window_msg_proc(JWidget widget, JMessage msg)
+//////////////////////////////////////////////////////////////////////
+// PaletteEntryEditor implementation
+//
+// Based on ColorSelector class.
+
+PaletteEntryEditor::PaletteEntryEditor()
+  : Frame(false, "Palette Editor (F4)")
+  , m_vbox(JI_VERTICAL)
+  , m_topBox(JI_HORIZONTAL)
+  , m_bottomBox(JI_HORIZONTAL)
+  , m_rgbButton("RGB", 1, JI_BUTTON)
+  , m_hsvButton("HSV", 1, JI_BUTTON)
+  , m_moreOptions("+")
+  , m_loadButton("Load")
+  , m_saveButton("Save")
+  , m_rampButton("Ramp")
+  , m_quantizeButton("Quantize")
+  , m_disableHexUpdate(false)
+  , m_redrawAll(false)
+{
+  m_redrawTimerId = jmanager_add_timer(this, 250);
+
+  m_topBox.setBorder(gfx::Border(0));
+  m_topBox.child_spacing = 0;
+  m_bottomBox.setBorder(gfx::Border(0));
+
+  setup_mini_look(&m_rgbButton);
+  setup_mini_look(&m_hsvButton);
+  setup_mini_look(&m_moreOptions);
+  setup_mini_look(&m_loadButton);
+  setup_mini_look(&m_saveButton);
+  setup_mini_look(&m_rampButton);
+  setup_mini_look(&m_quantizeButton);
+
+  // Top box
+  jwidget_add_child(&m_topBox, &m_rgbButton);
+  jwidget_add_child(&m_topBox, &m_hsvButton);
+  jwidget_add_child(&m_topBox, &m_hexColorEntry);
+  {
+    Box* filler = new Box(JI_HORIZONTAL);
+    jwidget_expansive(filler, true);
+    jwidget_add_child(&m_topBox, filler);
+  }
+  jwidget_add_child(&m_topBox, &m_moreOptions);
+
+  // Bottom box
+  {
+    Box* box = new Box(JI_HORIZONTAL);
+    box->child_spacing = 0;
+    jwidget_add_child(box, &m_loadButton);
+    jwidget_add_child(box, &m_saveButton);
+    jwidget_add_child(&m_bottomBox, box);
+  }
+  jwidget_add_child(&m_bottomBox, &m_rampButton);
+  jwidget_add_child(&m_bottomBox, &m_quantizeButton);
+
+  // Main vertical box
+  jwidget_add_child(&m_vbox, &m_topBox);
+  jwidget_add_child(&m_vbox, &m_rgbSliders);
+  jwidget_add_child(&m_vbox, &m_hsvSliders);
+  jwidget_add_child(&m_vbox, &m_bottomBox);
+  jwidget_add_child(this, &m_vbox);
+
+  // Hide (or show) the "More Options" depending the saved value in .cfg file
+  m_bottomBox.setVisible(get_config_bool("PaletteEditor", "ShowMoreOptions", false));
+
+  m_rgbButton.Click.connect(&PaletteEntryEditor::onColorTypeButtonClick, this);
+  m_hsvButton.Click.connect(&PaletteEntryEditor::onColorTypeButtonClick, this);
+  m_moreOptions.Click.connect(&PaletteEntryEditor::onMoreOptionsClick, this);
+  m_loadButton.Click.connect(&PaletteEntryEditor::onLoadCommand, this);
+  m_saveButton.Click.connect(&PaletteEntryEditor::onSaveCommand, this);
+  m_rampButton.Click.connect(&PaletteEntryEditor::onRampCommand, this);
+  m_quantizeButton.Click.connect(&PaletteEntryEditor::onQuantizeCommand, this);
+
+  m_rgbSliders.ColorChange.connect(&PaletteEntryEditor::onColorSlidersChange, this);
+  m_hsvSliders.ColorChange.connect(&PaletteEntryEditor::onColorSlidersChange, this);
+  m_hexColorEntry.ColorChange.connect(&PaletteEntryEditor::onColorHexEntryChange, this);
+
+  selectColorType(Color::RgbType);
+
+  // We hook fg/bg color changes (by eyedropper mainly) to update the selected entry color
+  app_get_colorbar()->FgColorChange.connect(&PaletteEntryEditor::onFgBgColorChange, this);
+  app_get_colorbar()->BgColorChange.connect(&PaletteEntryEditor::onFgBgColorChange, this);
+
+  // We hook the Frame::Close event to save the frame position before closing it.
+  this->Close.connect(Bind<void>(&PaletteEntryEditor::onCloseFrame, this));
+
+  // We hook App::Exit signal to destroy the g_frame singleton at exit.
+  App::instance()->Exit.connect(&PaletteEntryEditor::onExit, this);
+
+  initTheme();
+}
+
+PaletteEntryEditor::~PaletteEntryEditor()
+{
+  jmanager_remove_timer(m_redrawTimerId);
+  m_redrawTimerId = -1;
+}
+
+void PaletteEntryEditor::setColor(const Color& color)
+{
+  m_rgbSliders.setColor(color);
+  m_hsvSliders.setColor(color);
+  if (!m_disableHexUpdate)
+    m_hexColorEntry.setColor(color);
+}
+
+bool PaletteEntryEditor::onProcessMessage(JMessage msg)
 {
   if (msg->type == JM_TIMER &&
-      msg->timer.timer_id == redraw_timer_id) {
+      msg->timer.timer_id == m_redrawTimerId) {
     // Redraw all editors
-    if (redraw_all) {
-      redraw_all = false;
-      jmanager_stop_timer(redraw_timer_id);
+    if (m_redrawAll) {
+      m_redrawAll = false;
+      jmanager_stop_timer(m_redrawTimerId);
 
       try {
 	const CurrentSpriteReader sprite(UIContext::instance());
@@ -384,21 +338,109 @@ static bool window_msg_proc(JWidget widget, JMessage msg)
     }
     // Redraw just the current editor
     else {
-      redraw_all = true;
+      m_redrawAll = true;
       current_editor->editor_update();
     }
   }
-  return false;
+  return Frame::onProcessMessage(msg);
 }
 
-static bool window_close_hook(JWidget widget, void *data)
+void PaletteEntryEditor::onExit()
+{
+  delete this;
+}
+
+void PaletteEntryEditor::onCloseFrame()
 {
   // Save window configuration
-  save_window_pos(window, "PaletteEditor");
-  return false;
+  save_window_pos(this, "PaletteEditor");
 }
 
-static void load_command(JWidget widget)
+void PaletteEntryEditor::onFgBgColorChange(const Color& color)
+{
+  if (color.isValid() && color.getType() == Color::IndexType) {
+    setColor(color);
+  }
+}
+
+void PaletteEntryEditor::onColorSlidersChange(ColorSlidersChangeEvent& ev)
+{
+  setColor(ev.getColor());
+  setPaletteEntryChannel(ev.getColor(), ev.getModifiedChannel());
+  updateCurrentSpritePalette("Color Change");
+  updateColorBar();
+}
+
+void PaletteEntryEditor::onColorHexEntryChange(const Color& color)
+{
+  // Disable updating the hex entry so we don't override what the user
+  // is writting in the text field.
+  m_disableHexUpdate = true;
+
+  setColor(color);
+  setPaletteEntry(color);
+  updateCurrentSpritePalette("Color Change");
+  updateColorBar();
+
+  m_disableHexUpdate = false;
+}
+
+void PaletteEntryEditor::onColorTypeButtonClick(Event& ev)
+{
+  RadioButton* source = static_cast<RadioButton*>(ev.getSource());
+
+  if (source == &m_rgbButton) selectColorType(Color::RgbType);
+  else if (source == &m_hsvButton) selectColorType(Color::HsvType);
+}
+
+void PaletteEntryEditor::onMoreOptionsClick(Event& ev)
+{
+  Size reqSize;
+
+  if (m_bottomBox.isVisible()) {
+    set_config_bool("PaletteEditor", "ShowMoreOptions", false);
+    m_bottomBox.setVisible(false);
+
+    // Get the required size of the "More options" panel
+    reqSize = m_bottomBox.getPreferredSize();
+    reqSize.h += 4;
+
+    // Remove the space occupied by the "More options" panel
+    {
+      JRect rect = jrect_new(rc->x1, rc->y1,
+			     rc->x2, rc->y2 - reqSize.h);
+      move_window(rect);
+      jrect_free(rect);
+    }
+  }
+  else {
+    set_config_bool("PaletteEditor", "ShowMoreOptions", true);
+    m_bottomBox.setVisible(true);
+
+    // Get the required size of the whole window
+    reqSize = getPreferredSize();
+
+    // Add space for the "more_options" panel
+    if (jrect_h(rc) < reqSize.h) {
+      JRect rect = jrect_new(rc->x1, rc->y1,
+			     rc->x2, rc->y1 + reqSize.h);
+
+      // Show the expanded area inside the screen
+      if (rect->y2 > JI_SCREEN_H)
+	jrect_displace(rect, 0, JI_SCREEN_H - rect->y2);
+      
+      move_window(rect);
+      jrect_free(rect);
+    }
+    else
+      setBounds(getBounds()); // TODO layout() method is missing
+  }
+
+  // Redraw the window
+  invalidate();
+}
+
+void PaletteEntryEditor::onLoadCommand(Event& ev)
 {
   Palette *palette;
   base::string filename = ase_file_selector("Load Palette", "", "png,pcx,bmp,tga,lbm,col");
@@ -408,13 +450,13 @@ static void load_command(JWidget widget)
       Alert::show("Error<<Loading palette file||&Close");
     }
     else {
-      set_new_palette(palette, "Load Palette");
+      setNewPalette(palette, "Load Palette");
       delete palette;
     }
   }
 }
 
-static void save_command(JWidget widget)
+void PaletteEntryEditor::onSaveCommand(Event& ev)
 {
   base::string filename;
   int ret;
@@ -439,7 +481,7 @@ static void save_command(JWidget widget)
   }
 }
 
-static void ramp_command(JWidget widget)
+void PaletteEntryEditor::onRampCommand(Event& ev)
 {
   PaletteView* palette_editor = app_get_colorbar()->getPaletteView();
   int range_type = palette_editor->getRangeType();
@@ -464,310 +506,11 @@ static void ramp_command(JWidget widget)
     }
   }
 
-  set_new_palette(dst_palette, "Color Ramp");
+  setNewPalette(dst_palette, "Color Ramp");
   delete dst_palette;
 }
 
-//////////////////////////////////////////////////////////////////////
-// Sort Options Begin
-
-struct SortDlgData
-{
-  Widget* available_criteria;
-  Widget* selected_criteria;
-  Widget* insert_criteria;
-  Widget* remove_criteria;
-  Widget* asc;
-  Widget* des;
-  Widget* first;
-  Widget* last;
-  Widget* ok_button;
-};
-
-static bool insert_criteria_hook(Widget* widget, void* data);
-static bool remove_criteria_hook(Widget* widget, void* data);
-static bool sort_by_criteria(Palette* palette, int from, int to, JList selected_listitems, std::vector<int>& mapping);
-
-static void sort_command(JWidget widget)
-{
-  PaletteView* palette_editor = app_get_colorbar()->getPaletteView();
-
-  if (Alert::show("ASE Beta<<Sort command is not available in this beta version.||&OK")) // TODO remove this
-    return;
-
-  SortDlgData data;
-
-  try {
-    // Load the sort criteria window
-    FramePtr dlg(load_widget("palette_editor.xml", "sort_criteria"));
-
-    get_widgets(dlg,
-		"available_criteria", &data.available_criteria,
-		"selected_criteria", &data.selected_criteria,
-		"insert_criteria", &data.insert_criteria,
-		"remove_criteria", &data.remove_criteria,
-		"asc", &data.asc,
-		"des",  &data.des,
-		"first", &data.first,
-		"last",  &data.last,
-		"ok_button", &data.ok_button, NULL);
-
-    // Selected Ascending by default
-    data.asc->setSelected(true);
-
-    // Range to sort
-    int i1 = palette_editor->get1stColor();
-    int i2 = palette_editor->get2ndColor();
-    if (i1 == i2) {		// Sort all palette entries
-      i1 = 0;
-      i2 = get_current_palette()->size()-1;
-    }
-    else if (i1 > i2) {
-      std::swap(i1, i2);
-    }
-    data.first->setTextf("%d", i1);
-    data.last->setTextf("%d", i2);
-
-    HOOK(data.insert_criteria, JI_SIGNAL_BUTTON_SELECT, insert_criteria_hook, &data);
-    HOOK(data.remove_criteria, JI_SIGNAL_BUTTON_SELECT, remove_criteria_hook, &data);
-
-    // If there is a selected <listitem> in available criteria
-    // <listbox>, insert it as default criteria to sort colors
-    if (jlistbox_get_selected_child(data.available_criteria))
-      insert_criteria_hook(data.insert_criteria, (void*)&data);
-
-    // Open the window
-    dlg->open_window_fg();
-
-    if (dlg->get_killer() == data.ok_button) {
-      Palette* palette = new Palette(*get_current_palette());
-      int from = data.first->getTextInt();
-      int to = data.last->getTextInt();
-
-      from = MID(0, from, palette->size()-1);
-      to = MID(from, to, palette->size()-1);
-
-      std::vector<int> mapping;
-      sort_by_criteria(palette, from, to, data.selected_criteria->children, mapping);
-
-      if (UIContext::instance()->getCurrentSprite()) {
-	// Remap all colors
-	if (mapping.size() > 0) {
-	  CurrentSpriteWriter sprite(UIContext::instance());
-	  Palette* frame_palette = sprite->getCurrentPalette();
-	  int frame_begin = 0;
-	  int frame_end = 0;
-	  int frame = 0;
-	  while (frame < sprite->getTotalFrames()) {
-	    if (sprite->getPalette(frame) == frame_palette) {
-	      frame_begin = frame;
-	      break;
-	    }
-	    ++frame;
-	  }
-	  while (frame < sprite->getTotalFrames()) {
-	    if (sprite->getPalette(frame) != frame_palette)
-	      break;
-	    ++frame;
-	  }
-	  frame_end = frame;
-
-	  //////////////////////////////////////////////////////////////////////
-	  // TODO The following code is unreadable, move this to Undoable class
-
-	  if (sprite->getUndo()->isEnabled()) {
-	    sprite->getUndo()->setLabel("Sort Palette");
-	    sprite->getUndo()->undo_open();
-
-	    // Remove the current palette in the current frame
-	    sprite->getUndo()->undo_remove_palette(sprite, frame_palette);
-	  }
-
-	  // Delete the current palette
-	  sprite->deletePalette(frame_palette);
-
-	  // Setup the new palette in the sprite
-	  palette->setFrame(frame_begin);
-	  sprite->setPalette(palette, true);
-
-	  if (sprite->getUndo()->isEnabled()) {
-	    // Add undo information about the new added palette
-	    sprite->getUndo()->undo_add_palette(sprite, sprite->getPalette(frame_begin));
-
-	    // Add undo information about image remapping
-	    sprite->getUndo()->undo_remap_palette(sprite, frame_begin, frame_end-1, mapping);
-	    sprite->getUndo()->undo_close();
-	  }
-
-	  // Remap images (to the new palette indexes)
-	  sprite->remapImages(frame_begin, frame_end-1, mapping);
-	}
-      }
-
-      // Set the new palette in the sprite
-      set_new_palette(palette, "Sort Palette");
-
-      delete palette;
-    }
-  }
-  catch (base::Exception& e) {
-    Console::showException(e);
-  }
-}
-
-static bool insert_criteria_hook(Widget* widget, void* _data)
-{
-  SortDlgData* data = (SortDlgData*)_data;
-
-  // Move the selected item to the 
-  Widget* item = jlistbox_get_selected_child(data->available_criteria);
-  if (item) {
-    std::string new_criteria(item->getText());
-    new_criteria += " - ";
-    new_criteria += (data->asc->isSelected() ? data->asc->getText():
-					       data->des->getText());
-
-    // Remove the criteria
-    int removed_index = jlistbox_get_selected_index(data->available_criteria);
-    jwidget_remove_child(data->available_criteria, item);
-
-    int count = jlistbox_get_items_count(data->available_criteria);
-    if (count > 0) {
-      jlistbox_select_index(data->available_criteria,
-			    removed_index < count ? removed_index: count-1);
-    }
-
-    // Add to the selected criteria
-    item->setText(new_criteria.c_str());
-    jwidget_add_child(data->selected_criteria, item);
-    jlistbox_select_child(data->selected_criteria, item);
-
-    // Relayout
-    data->available_criteria->setBounds(data->available_criteria->getBounds()); // TODO layout()
-    data->selected_criteria->setBounds(data->selected_criteria->getBounds()); // TODO layout()
-    data->available_criteria->invalidate();
-    data->selected_criteria->invalidate();
-  }
-
-  return true;
-}
-
-static bool remove_criteria_hook(Widget* widget, void* _data)
-{
-  SortDlgData* data = (SortDlgData*)_data;
-
-  // Move the selected item to the 
-  Widget* item = jlistbox_get_selected_child(data->selected_criteria);
-  if (item) {
-    std::string criteria_text(item->getText());
-    int index = criteria_text.find('-');
-    criteria_text = criteria_text.substr(0, index-1);
-
-    // Remove from the selected criteria
-    int removed_index = jlistbox_get_selected_index(data->selected_criteria);
-    jwidget_remove_child(data->selected_criteria, item);
-
-    int count = jlistbox_get_items_count(data->selected_criteria);
-    if (count > 0) {
-      jlistbox_select_index(data->selected_criteria,
-			    removed_index < count ? removed_index: count-1);
-    }
-
-    // Add to the available criteria
-    item->setText(criteria_text.c_str());
-    jwidget_add_child(data->available_criteria, item);
-    jlistbox_select_child(data->available_criteria, item);
-
-    // Relayout
-    data->available_criteria->setBounds(data->available_criteria->getBounds()); // TODO layout()
-    data->selected_criteria->setBounds(data->selected_criteria->getBounds()); // TODO layout()
-    data->available_criteria->invalidate();
-    data->selected_criteria->invalidate();
-  }
-
-  return true;
-}
-
-static bool sort_by_criteria(Palette* palette, int from, int to, JList selected_listitems, std::vector<int>& mapping)
-{
-  SortPalette* sort_palette = NULL;
-  JLink link;
-
-  JI_LIST_FOR_EACH(selected_listitems, link) {
-    Widget* item = (Widget*)link->data;
-    std::string item_text = item->getText();
-    SortPalette::Channel channel = SortPalette::YUV_Luma;
-    bool ascending = false;
-
-    if (item_text.find("RGB") != std::string::npos) {
-      if (item_text.find("Red") != std::string::npos) {
-	channel = SortPalette::RGB_Red;
-      }
-      else if (item_text.find("Green") != std::string::npos) {
-	channel = SortPalette::RGB_Green;
-      }
-      else if (item_text.find("Blue") != std::string::npos) {
-	channel = SortPalette::RGB_Blue;
-      }
-      else
-	ASSERT(false);
-    }
-    else if (item_text.find("HSV") != std::string::npos) {
-      if (item_text.find("Hue") != std::string::npos) {
-	channel = SortPalette::HSV_Hue;
-      }
-      else if (item_text.find("Saturation") != std::string::npos) {
-	channel = SortPalette::HSV_Saturation;
-      }
-      else if (item_text.find("Value") != std::string::npos) {
-	channel = SortPalette::HSV_Value;
-      }
-      else
-	ASSERT(false);
-    }
-    else if (item_text.find("HSL") != std::string::npos) {
-      if (item_text.find("Lightness") != std::string::npos) {
-	channel = SortPalette::HSL_Lightness;
-      }
-      else
-	ASSERT(false);
-    }
-    else if (item_text.find("YUV") != std::string::npos) {
-      if (item_text.find("Luma") != std::string::npos) {
-	channel = SortPalette::YUV_Luma;
-      }
-      else
-	ASSERT(false);
-    }
-    else
-      ASSERT(false);
-
-    if (item_text.find("Ascending") != std::string::npos)
-      ascending = true;
-    else if (item_text.find("Descending") != std::string::npos)
-      ascending = false;
-    else
-      ASSERT(false);
-
-    SortPalette* chain = new SortPalette(channel, ascending);
-    if (sort_palette)
-      sort_palette->addChain(chain);
-    else
-      sort_palette = chain;
-  }
-
-  if (sort_palette) {
-    palette->sort(from, to, sort_palette, mapping);
-    delete sort_palette;
-  }
-
-  return false;
-}
-
-// Sort Options End
-//////////////////////////////////////////////////////////////////////
-
-static void quantize_command(JWidget widget)
+void PaletteEntryEditor::onQuantizeCommand(Event& ev)
 {
   Palette* palette = NULL;
 
@@ -787,211 +530,123 @@ static void quantize_command(JWidget widget)
     palette = quantization::create_palette_from_rgb(sprite);
   }
 
-  set_new_palette(palette, "Quantize Palette");
+  setNewPalette(palette, "Quantize Palette");
   delete palette;
 }
 
-static void sliderRGB_change_hook(Slider* widget)
+void PaletteEntryEditor::setPaletteEntry(const Color& color)
 {
-  int r = R_slider->getValue();
-  int g = G_slider->getValue();
-  int b = B_slider->getValue();
-  Rgb rgb(r, g, b);
-  Hsv hsv(rgb);
-
-  H_slider->setValue(hsv.hueInt());
-  S_slider->setValue(hsv.saturationInt());
-  V_slider->setValue(hsv.valueInt());
-
-  modify_rgb_of_selected_entries(rgb,
-				 widget == R_slider,
-				 widget == G_slider,
-				 widget == B_slider);
-
-  update_entries_from_sliders();
-  update_hex_entry();
-  update_slider_bgcolors();
-  update_current_sprite_palette("Color Change");
-  update_colorbar();
-}
-
-static void sliderHSV_change_hook(Slider* widget)
-{
-  int h = H_slider->getValue();
-  int s = S_slider->getValue();
-  int v = V_slider->getValue();
-
-  Hsv hsv(double(h), double(s) / 100.0, double(v) / 100.0);
-  Rgb rgb(hsv);
-
-  R_slider->setValue(rgb.red());
-  G_slider->setValue(rgb.green());
-  B_slider->setValue(rgb.blue());
-
-  modify_hsv_of_selected_entries(hsv,
-				 widget == H_slider,
-				 widget == S_slider,
-				 widget == V_slider);
-
-  update_entries_from_sliders();
-  update_hex_entry();
-  update_slider_bgcolors();
-  update_current_sprite_palette("Color Change");
-  update_colorbar();
-}
-
-static bool entryRGB_change_hook(JWidget widget, void *data)
-{
-  int r = R_entry->getTextInt();
-  int g = G_entry->getTextInt();
-  int b = B_entry->getTextInt();
-  r = MID(0, r, 255);
-  g = MID(0, g, 255);
-  b = MID(0, b, 255);
-
-  Rgb rgb(r, g, b);
-  Hsv hsv(rgb);
-
-  H_entry->setTextf("%d", hsv.hueInt());
-  S_entry->setTextf("%d", hsv.saturationInt());
-  V_entry->setTextf("%d", hsv.valueInt());
-
-  modify_rgb_of_selected_entries(rgb,
-				 widget == R_slider,
-				 widget == G_slider,
-				 widget == B_slider);
-
-  update_sliders_from_entries();
-  update_hex_entry();
-  update_slider_bgcolors();
-  update_current_sprite_palette("Color Change");
-  update_colorbar();
-  return false;
-}
-
-static bool entryHSV_change_hook(JWidget widget, void *data)
-{
-  int h = H_entry->getTextInt();
-  int s = S_entry->getTextInt();
-  int v = V_entry->getTextInt();
-  h = MID(0, h, 360);
-  s = MID(0, s, 100);
-  v = MID(0, v, 100);
-
-  Hsv hsv(double(h), double(s) / 100.0, double(v) / 100.0);
-  Rgb rgb(hsv);
-
-  R_entry->setTextf("%d", rgb.red());
-  G_entry->setTextf("%d", rgb.green());
-  B_entry->setTextf("%d", rgb.blue());
-
-  modify_hsv_of_selected_entries(hsv,
-				 widget == H_entry,
-				 widget == S_entry,
-				 widget == V_entry);
-
-  update_sliders_from_entries();
-  update_hex_entry();
-  update_slider_bgcolors();
-  update_current_sprite_palette("Color Change");
-  update_colorbar();
-  return false;
-}
-
-static bool hex_entry_change_hook(JWidget widget, void *data)
-{
-  Palette* palette = get_current_palette();
-  std::string text = hex_entry->getText();
-  int r, g, b;
-  int c;
-
-  // Fill with zeros at the end of the text
-  while (text.size() < 6)
-    text.push_back('0');
-
-  // Convert text (Base 16) to integer
-  int hex = strtol(text.c_str(), NULL, 16);
-
-  R_slider->setValue(r = ((hex & 0xff0000) >> 16));
-  G_slider->setValue(g = ((hex & 0xff00) >> 8));
-  B_slider->setValue(b = ((hex & 0xff)));
-
-  Hsv hsv(Rgb(r, g, b));
-
   bool array[256];
-  PaletteView* palette_editor = app_get_colorbar()->getPaletteView();
-  palette_editor->getSelectedEntries(array);
-  for (c=0; c<256; c++) {
+  PaletteView* palView = app_get_colorbar()->getPaletteView();
+  palView->getSelectedEntries(array);
+
+  ase_uint32 new_pal_color = _rgba(color.getRed(),
+				   color.getGreen(),
+				   color.getBlue(), 255);
+
+  Palette* palette = get_current_palette();
+  for (int c=0; c<palette->size(); c++) {
+    if (array[c])
+      palette->setEntry(c, new_pal_color);
+  }
+}
+
+void PaletteEntryEditor::setPaletteEntryChannel(const Color& color, ColorSliders::Channel channel)
+{
+  bool array[256];
+  PaletteView* palView = app_get_colorbar()->getPaletteView();
+  palView->getSelectedEntries(array);
+
+  ase_uint32 src_color;
+  int r, g, b;
+
+  Palette* palette = get_current_palette();
+  for (int c=0; c<palette->size(); c++) {
     if (array[c]) {
+      // Get the current RGB values of the palette entry
+      src_color = palette->getEntry(c);
+      r = _rgba_getr(src_color);
+      g = _rgba_getg(src_color);
+      b = _rgba_getb(src_color);
+
+      switch (color.getType()) {
+
+        case Color::RgbType:
+	  // Setup the new RGB values depending of the modified channel.
+	  switch (channel) {
+	    case ColorSliders::Red:
+	      r = color.getRed();
+	    case ColorSliders::Green:
+	      g = color.getGreen();
+	      break;
+	    case ColorSliders::Blue:
+	      b = color.getBlue();
+	      break;
+	  }
+	  break;
+
+        case Color::HsvType:
+	  {
+	    // Convert RGB to HSV
+	    Hsv hsv(Rgb(r, g, b));
+
+	    // Only modify the desired HSV channel
+	    switch (channel) {
+	      case ColorSliders::Hue:
+		hsv.hue(color.getHue());
+		break;
+	      case ColorSliders::Saturation:
+		hsv.saturation(double(color.getSaturation()) / 100.0);
+		break;
+	      case ColorSliders::Value:
+		hsv.value(double(color.getValue()) / 100.0);
+		break;
+	    }
+
+	    // Convert HSV back to RGB
+	    Rgb rgb(hsv);
+	    r = rgb.red();
+	    g = rgb.green();
+	    b = rgb.blue();
+	  }
+	  break;
+      }
+
       palette->setEntry(c, _rgba(r, g, b, 255));
     }
   }
-
-  H_slider->setValue(hsv.hueInt());
-  S_slider->setValue(hsv.saturationInt());
-  V_slider->setValue(hsv.valueInt());
-
-  update_entries_from_sliders();
-  update_slider_bgcolors();
-  update_current_sprite_palette("Color Change");
-  update_colorbar();
-  return false;
 }
 
-static void update_entries_from_sliders()
+void PaletteEntryEditor::selectColorType(Color::Type type)
 {
-  R_entry->setTextf("%d", R_slider->getValue());
-  G_entry->setTextf("%d", G_slider->getValue());
-  B_entry->setTextf("%d", B_slider->getValue());
+  m_rgbSliders.setVisible(type == Color::RgbType);
+  m_hsvSliders.setVisible(type == Color::HsvType);
 
-  H_entry->setTextf("%d", H_slider->getValue());
-  S_entry->setTextf("%d", S_slider->getValue());
-  V_entry->setTextf("%d", V_slider->getValue());
+  switch (type) {
+    case Color::RgbType: m_rgbButton.setSelected(true); break;
+    case Color::HsvType: m_hsvButton.setSelected(true); break;
+  }
+  
+  m_vbox.setBounds(m_vbox.getBounds()); // TODO add Widget::relayout member function
+  m_vbox.invalidate();
 }
 
-static void update_sliders_from_entries()
+void PaletteEntryEditor::setNewPalette(Palette* palette, const char* operationName)
 {
-  R_slider->setValue(R_entry->getTextInt());
-  G_slider->setValue(G_entry->getTextInt());
-  B_slider->setValue(B_entry->getTextInt());
+  // Copy the palette
+  palette->copyColorsTo(get_current_palette());
 
-  H_slider->setValue(H_entry->getTextInt());
-  S_slider->setValue(S_entry->getTextInt());
-  V_slider->setValue(V_entry->getTextInt());
+  // Set the palette calling the hooks
+  set_current_palette(palette, false);
+
+  // Update the sprite palette
+  updateCurrentSpritePalette(operationName);
+
+  // Redraw the entire screen
+  jmanager_refresh_screen();
 }
 
-static void update_hex_entry()
-{
-  hex_entry->setTextf("%02x%02x%02x",
-		      R_slider->getValue(),
-		      G_slider->getValue(),
-		      B_slider->getValue());
-}
-
-static void update_slider_bgcolor(Slider* slider, const Color& color)
-{
-  SharedPtr<SkinSliderProperty> sliderProperty(slider->getProperty("SkinProperty"));
-
-  static_cast<ColorSliderBgPainter*>(sliderProperty->getBgPainter())->setColor(color);
-
-  slider->invalidate();
-}
-
-static void update_slider_bgcolors()
-{
-  Color color(Color::fromRgb(R_slider->getValue(),
-			     G_slider->getValue(),
-			     B_slider->getValue()));
-
-  update_slider_bgcolor(R_slider, color);
-  update_slider_bgcolor(G_slider, color);
-  update_slider_bgcolor(B_slider, color);
-  update_slider_bgcolor(H_slider, color);
-  update_slider_bgcolor(S_slider, color);
-  update_slider_bgcolor(V_slider, color);
-}
-
-static void update_current_sprite_palette(const char* operationName)
+void PaletteEntryEditor::updateCurrentSpritePalette(const char* operationName)
 {
   if (UIContext::instance()->getCurrentSprite()) {
     try {
@@ -1023,214 +678,15 @@ static void update_current_sprite_palette(const char* operationName)
   PaletteView* palette_editor = app_get_colorbar()->getPaletteView();
   palette_editor->invalidate();
 
-  if (!jmanager_timer_is_running(redraw_timer_id))
-    jmanager_start_timer(redraw_timer_id);
-  redraw_all = false;
+  if (!jmanager_timer_is_running(m_redrawTimerId))
+    jmanager_start_timer(m_redrawTimerId);
+
+  m_redrawAll = false;
 }
 
-static void update_colorbar()
+void PaletteEntryEditor::updateColorBar()
 {
   app_get_colorbar()->invalidate();
-}
-
-static void update_sliders_from_color(const Color& color)
-{
-  R_slider->setValue(color.getRed());
-  G_slider->setValue(color.getGreen());
-  B_slider->setValue(color.getBlue());
-  H_slider->setValue(color.getHue());
-  S_slider->setValue(color.getSaturation());
-  V_slider->setValue(color.getValue());
-}
-
-static bool select_rgb_hook(JWidget widget, void *data)
-{
-  R_label->setVisible(true);
-  R_slider->setVisible(true);
-  R_entry->setVisible(true);
-  G_label->setVisible(true);
-  G_slider->setVisible(true);
-  G_entry->setVisible(true);
-  B_label->setVisible(true);
-  B_slider->setVisible(true);
-  B_entry->setVisible(true);
-
-  H_label->setVisible(false);
-  H_slider->setVisible(false);
-  H_entry->setVisible(false);
-  S_label->setVisible(false);
-  S_slider->setVisible(false);
-  S_entry->setVisible(false);
-  V_label->setVisible(false);
-  V_slider->setVisible(false);
-  V_entry->setVisible(false);
-
-  window->setBounds(window->getBounds());
-  window->invalidate();
-
-  return true;
-}
-
-static bool select_hsv_hook(JWidget widget, void *data)
-{
-  R_label->setVisible(false);
-  R_slider->setVisible(false);
-  R_entry->setVisible(false);
-  G_label->setVisible(false);
-  G_slider->setVisible(false);
-  G_entry->setVisible(false);
-  B_label->setVisible(false);
-  B_slider->setVisible(false);
-  B_entry->setVisible(false);
-
-  H_label->setVisible(true);
-  H_slider->setVisible(true);
-  H_entry->setVisible(true);
-  S_label->setVisible(true);
-  S_slider->setVisible(true);
-  S_entry->setVisible(true);
-  V_label->setVisible(true);
-  V_slider->setVisible(true);
-  V_entry->setVisible(true);
-
-  window->setBounds(window->getBounds());
-  window->invalidate();
-
-  return true;
-}
-
-static bool expand_button_select_hook(JWidget widget, void *data)
-{
-  Size reqSize;
-
-  if (more_options->isVisible()) {
-    set_config_bool("PaletteEditor", "ShowMoreOptions", false);
-    more_options->setVisible(false);
-
-    // Get the required size of the "More options" panel
-    reqSize = more_options->getPreferredSize();
-    reqSize.h += 4;
-
-    // Remove the space occupied by the "More options" panel
-    {
-      JRect rect = jrect_new(window->rc->x1, window->rc->y1,
-			     window->rc->x2, window->rc->y2 - reqSize.h);
-      window->move_window(rect);
-      jrect_free(rect);
-    }
-  }
-  else {
-    set_config_bool("PaletteEditor", "ShowMoreOptions", true);
-    more_options->setVisible(true);
-
-    // Get the required size of the whole window
-    reqSize = window->getPreferredSize();
-
-    // Add space for the "more_options" panel
-    if (jrect_h(window->rc) < reqSize.h) {
-      JRect rect = jrect_new(window->rc->x1, window->rc->y1,
-			     window->rc->x2, window->rc->y1 + reqSize.h);
-
-      // Show the expanded area inside the screen
-      if (rect->y2 > JI_SCREEN_H)
-	jrect_displace(rect, 0, JI_SCREEN_H - rect->y2);
-      
-      window->move_window(rect);
-      jrect_free(rect);
-    }
-    else
-      window->setBounds(window->getBounds()); // TODO layout() method is missing
-  }
-
-  // Redraw the window
-  window->invalidate();
-  return true;
-}
-
-static void modify_rgb_of_selected_entries(const Rgb& dst_rgb, bool set_r, bool set_g, bool set_b)
-{
-  bool array[256];
-  PaletteView* palette_editor = app_get_colorbar()->getPaletteView();
-  palette_editor->getSelectedEntries(array);
-
-  ase_uint32 src_color;
-  int r, g, b;
-
-  Palette* palette = get_current_palette();
-  for (int c=0; c<256; c++) {
-    if (array[c]) {
-      // Get the current color entry (RGB components)
-      src_color = palette->getEntry(c);
-
-      // Setup the new RGB values depending the desired values in set_X component.
-      r = (set_r ? dst_rgb.red():   _rgba_getr(src_color));
-      g = (set_g ? dst_rgb.green(): _rgba_getg(src_color));
-      b = (set_b ? dst_rgb.blue():  _rgba_getb(src_color));
-
-      palette->setEntry(c, _rgba(r, g, b, 255));
-    }
-  }
-}
-
-static void modify_hsv_of_selected_entries(const Hsv& dst_hsv, bool set_h, bool set_s, bool set_v)
-{
-  bool array[256];
-  PaletteView* palette_editor = app_get_colorbar()->getPaletteView();
-  palette_editor->getSelectedEntries(array);
-
-  ase_uint32 src_color;
-  Palette* palette = get_current_palette();
-  for (int c=0; c<256; c++) {
-    if (array[c]) {
-      src_color = palette->getEntry(c);
-
-      // Get the current RGB values of the palette entry
-      Rgb rgb(_rgba_getr(src_color),
-	      _rgba_getg(src_color),
-	      _rgba_getb(src_color));
-
-      // Convert RGB to HSV
-      Hsv hsv(rgb);
-
-      // Only modify the desired HSV components
-      if (set_h) hsv.hue(dst_hsv.hue());
-      if (set_s) hsv.saturation(dst_hsv.saturation());
-      if (set_v) hsv.value(dst_hsv.value());
-
-      // Convert HSV to RGB
-      rgb = Rgb(hsv);
-
-      // Update the palette entry
-      palette->setEntry(c, _rgba(rgb.red(), rgb.green(), rgb.blue(), 255));
-    }
-  }
-}
-
-static void on_color_changed(const Color& color)
-{
-  if (color.isValid() && color.getType() == Color::IndexType) {
-    update_sliders_from_color(color); // Update sliders
-    update_entries_from_sliders();    // Update entries
-    update_hex_entry();		      // Update hex field
-    update_slider_bgcolors();
-
-    jwidget_flush_redraw(window);
-  }
-}
-
-static void set_new_palette(Palette* palette, const char* operationName)
-{
-  // Copy the palette
-  palette->copyColorsTo(get_current_palette());
-
-  // Set the palette calling the hooks
-  set_current_palette(palette, false);
-
-  // Update the sprite palette
-  update_current_sprite_palette(operationName);
-
-  // Redraw the entire screen
-  jmanager_refresh_screen();
 }
 
 //////////////////////////////////////////////////////////////////////
