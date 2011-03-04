@@ -122,19 +122,10 @@ void ColorSelector::onColorPaletteIndexChange(int index)
   setColorWithSignal(Color::fromIndex(index));
 }
 
-void ColorSelector::onColorSlidersChange(const Color& color)
+void ColorSelector::onColorSlidersChange(ColorSlidersChangeEvent& ev)
 {
-  setColorWithSignal(color);
-
-  // Find bestfit palette entry
-  int r = color.getRed();
-  int g = color.getGreen();
-  int b = color.getBlue();
-  
-  // Search for the closest color to the RGB values
-  int i = get_current_palette()->findBestfit(r, g, b);
-  if (i >= 0 && i < 256)
-    m_colorPalette.selectColor(i);
+  setColorWithSignal(ev.getColor());
+  findBestfitIndex(ev.getColor());
 }
 
 void ColorSelector::onColorHexEntryChange(const Color& color)
@@ -143,7 +134,8 @@ void ColorSelector::onColorHexEntryChange(const Color& color)
   // is writting in the text field.
   m_disableHexUpdate = true;
 
-  onColorSlidersChange(color);
+  setColorWithSignal(color);
+  findBestfitIndex(color);
 
   m_disableHexUpdate = false;
 }
@@ -160,6 +152,19 @@ void ColorSelector::onColorTypeButtonClick(Event& ev)
     // Select mask color directly when the radio button is pressed
     setColorWithSignal(Color::fromMask());
   }
+}
+
+void ColorSelector::findBestfitIndex(const Color& color)
+{
+  // Find bestfit palette entry
+  int r = color.getRed();
+  int g = color.getGreen();
+  int b = color.getBlue();
+  
+  // Search for the closest color to the RGB values
+  int i = get_current_palette()->findBestfit(r, g, b);
+  if (i >= 0 && i < 256)
+    m_colorPalette.selectColor(i);
 }
 
 void ColorSelector::setColorWithSignal(const Color& color)

@@ -43,13 +43,14 @@ public:
   
 protected:
   void onColorPaletteIndexChange(int index);
-  void onColorSlidersChange(const Color& color);
+  void onColorSlidersChange(ColorSlidersChangeEvent& ev);
   void onColorHexEntryChange(const Color& color);
   void onColorTypeButtonClick(Event& ev);
 
 private:
   void selectColorType(Color::Type type);
   void setColorWithSignal(const Color& color);
+  void findBestfitIndex(const Color& color);
 
   Box m_vbox;
   Box m_topBox;

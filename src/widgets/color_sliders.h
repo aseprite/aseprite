@@ -21,6 +21,7 @@
 
 #include "app/color.h"
 #include "base/signal.h"
+#include "gui/event.h"
 #include "gui/grid.h"
 #include "gui/widget.h"
 
@@ -29,6 +30,11 @@
 class Label;
 class Slider;
 class Entry;
+
+class ColorSlidersChangeEvent;
+
+//////////////////////////////////////////////////////////////////////
+// ColorSliders class
 
 class ColorSliders : public Widget
 {
@@ -43,7 +49,7 @@ public:
   void setColor(const Color& color);
 
   // Signals
-  Signal1<void, const Color&> ColorChange;
+  Signal1<void, ColorSlidersChangeEvent&> ColorChange;
 
 protected:
   void onPreferredSize(PreferredSizeEvent& ev);
@@ -59,7 +65,7 @@ protected:
 private:
   void onSliderChange(int i);
   void onEntryChange(int i);
-  void onControlChange();
+  void onControlChange(int i);
 
   void updateSlidersBgColor(const Color& color);
   void updateSliderBgColor(Slider* slider, const Color& color);
@@ -67,8 +73,12 @@ private:
   std::vector<Label*> m_label;
   std::vector<Slider*> m_slider;
   std::vector<Entry*> m_entry;
+  std::vector<Channel> m_channel;
   Grid m_grid;
 };
+
+//////////////////////////////////////////////////////////////////////
+// Derived-classes
 
 class RgbSliders : public ColorSliders
 {
@@ -98,6 +108,26 @@ public:
 private:
   virtual void onSetColor(const Color& color);
   virtual Color getColorFromSliders();
+};
+
+//////////////////////////////////////////////////////////////////////
+// Events
+
+class ColorSlidersChangeEvent : public Event
+{
+public:
+  ColorSlidersChangeEvent(const Color& color, ColorSliders::Channel channel, Component* source)
+    : Event(source)
+    , m_color(color)
+    , m_channel(channel) { }
+
+  Color getColor() const { return m_color; }
+
+  ColorSliders::Channel getModifiedChannel() const { return m_channel; }
+
+private:
+  Color m_color;
+  ColorSliders::Channel m_channel;
 };
 
 #endif

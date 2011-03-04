@@ -122,6 +122,7 @@ void ColorSliders::addSlider(Channel channel, const char* labelText, int min, in
   m_label.push_back(label);
   m_slider.push_back(slider);
   m_entry.push_back(entry);
+  m_channel.push_back(channel);
 
   slider->setProperty(PropertyPtr(new SkinSliderProperty(new ColorSliderBgPainter(channel))));
   slider->setDoubleBuffered(true);
@@ -153,7 +154,7 @@ void ColorSliders::onSliderChange(int i)
   // Update the entry related to the changed slider widget.
   m_entry[i]->setTextf("%d", m_slider[i]->getValue());
 
-  onControlChange();
+  onControlChange(i);
 }
 
 void ColorSliders::onEntryChange(int i)
@@ -167,10 +168,10 @@ void ColorSliders::onEntryChange(int i)
 
   m_slider[i]->setValue(value);
 
-  onControlChange();
+  onControlChange(i);
 }
 
-void ColorSliders::onControlChange()
+void ColorSliders::onControlChange(int i)
 {
   // Call derived class impl of getColorFromSliders() to update the
   // background color of sliders.
@@ -179,7 +180,8 @@ void ColorSliders::onControlChange()
   updateSlidersBgColor(color);
 
   // Fire ColorChange() signal
-  ColorChange(color);
+  ColorSlidersChangeEvent ev(color, m_channel[i], this);
+  ColorChange(ev);
 }
 
 void ColorSliders::updateSlidersBgColor(const Color& color)
