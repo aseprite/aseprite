@@ -202,20 +202,20 @@ void Editor::editor_set_scroll(int x, int y, int use_refresh_region)
   }
 
   view->setViewScroll(Point(x, y));
+  Point newScroll = view->getViewScroll();
 
   if (m_sprite) {
     PreferredEditorSettings preferred;
 
-    preferred.scroll_x = x - m_offset_x;
-    preferred.scroll_y = y - m_offset_y;
+    preferred.virgin = false;
+    preferred.scroll_x = newScroll.x - m_offset_x;
+    preferred.scroll_y = newScroll.y - m_offset_y;
     preferred.zoom = m_zoom;
 
     m_sprite->setPreferredEditorSettings(preferred);
   }
 
   if (use_refresh_region) {
-    Point newScroll = view->getViewScroll();
-
     // Move screen with blits
     jwidget_scroll(this, region,
 		   oldScroll.x - newScroll.x,
