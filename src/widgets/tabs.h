@@ -25,9 +25,7 @@
 class Tabs;
 class Button;
 
-/**
-   Interface used to control notifications from the Tabs widget.
- */
+// Interface used to control notifications from the Tabs widget.
 class ITabsHandler
 {
 public:
@@ -44,11 +42,9 @@ public:
   virtual void mouseOverTab(Tabs* tabs, void* data) = 0;
 };
 
-/**
-   Tabs control.
-
-   Used in ASE to show opened files/sprites.
- */
+// Tabs control.
+//
+// Used to show opened files/sprites.
 class Tabs : public Widget
 {
   struct Tab

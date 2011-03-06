@@ -233,10 +233,10 @@ void set_sprite_in_current_editor(Sprite *sprite)
 
 void set_sprite_in_more_reliable_editor(Sprite* sprite)
 {
-  /* the current editor */
+  // The current editor
   Editor* best = current_editor;
 
-  /* search for any empty editor */
+  // Search for any empty editor
   if (best->getSprite()) {
     for (EditorList::iterator it = editors.begin(); it != editors.end(); ++it) {
       Editor* editor = *it;
