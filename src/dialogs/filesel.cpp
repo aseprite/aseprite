@@ -39,6 +39,7 @@
 #include "modules/gfx.h"
 #include "modules/gui.h"
 #include "recent_files.h"
+#include "skin/skin_parts.h"
 #include "widgets/fileview.h"
 
 #if (DEVICE_SEPARATOR != 0) && (DEVICE_SEPARATOR != '\0')
@@ -157,9 +158,21 @@ base::string ase_file_selector(const base::string& message,
     jwidget_focusrest(goforward, false);
     jwidget_focusrest(goup, false);
 
-    add_gfxicon_to_button(goback, GFX_ARROW_LEFT, JI_CENTER | JI_MIDDLE);
-    add_gfxicon_to_button(goforward, GFX_ARROW_RIGHT, JI_CENTER | JI_MIDDLE);
-    add_gfxicon_to_button(goup, GFX_ARROW_UP, JI_CENTER | JI_MIDDLE);
+    set_gfxicon_to_button(goback,
+			  PART_COMBOBOX_ARROW_LEFT,
+			  PART_COMBOBOX_ARROW_LEFT_SELECTED,
+			  PART_COMBOBOX_ARROW_LEFT_DISABLED,
+			  JI_CENTER | JI_MIDDLE);
+    set_gfxicon_to_button(goforward,
+			  PART_COMBOBOX_ARROW_RIGHT,
+			  PART_COMBOBOX_ARROW_RIGHT_SELECTED,
+			  PART_COMBOBOX_ARROW_RIGHT_DISABLED,
+			  JI_CENTER | JI_MIDDLE);
+    set_gfxicon_to_button(goup,
+			  PART_COMBOBOX_ARROW_UP,
+			  PART_COMBOBOX_ARROW_UP_SELECTED,
+			  PART_COMBOBOX_ARROW_UP_DISABLED,
+			  JI_CENTER | JI_MIDDLE);
 
     setup_mini_look(goback);
     setup_mini_look(goforward);

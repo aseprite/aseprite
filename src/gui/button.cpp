@@ -24,46 +24,24 @@
 
 ButtonBase::ButtonBase(const char* text, int type, int behaviorType, int drawType)
   : Widget(type)
+  , m_behaviorType(behaviorType)
+  , m_drawType(drawType)
+  , m_iconInterface(NULL)
 {
-  m_behaviorType = behaviorType;
-  m_drawType = drawType;
-  m_icon = NULL;
-  m_iconAlign = JI_LEFT | JI_MIDDLE;
-
   this->setAlign(JI_CENTER | JI_MIDDLE);
   this->setText(text);
   jwidget_focusrest(this, true);
 
   // Initialize theme
-  this->type = m_drawType;	// TODO Remove this nasty trick
+  this->type = m_drawType;	// TODO Fix this nasty trick
   initTheme();
   this->type = type;
 }
 
 ButtonBase::~ButtonBase()
 {
-}
-
-void ButtonBase::setButtonIcon(BITMAP* icon)
-{
-  m_icon = icon;
-  invalidate();
-}
-
-void ButtonBase::setButtonIconAlign(int iconAlign)
-{
-  m_iconAlign = iconAlign;
-  invalidate();
-}
-
-BITMAP* ButtonBase::getButtonIcon()
-{
-  return m_icon;
-}
-
-int ButtonBase::getButtonIconAlign()
-{
-  return m_iconAlign;
+  if (m_iconInterface)
+    m_iconInterface->destroy();
 }
 
 int ButtonBase::getBehaviorType() const
@@ -74,6 +52,16 @@ int ButtonBase::getBehaviorType() const
 int ButtonBase::getDrawType() const
 {
   return m_drawType;
+}
+
+void ButtonBase::setIconInterface(IButtonIcon* iconInterface)
+{
+  if (m_iconInterface)
+    m_iconInterface->destroy();
+
+  m_iconInterface = iconInterface;
+
+  invalidate();
 }
 
 void ButtonBase::onClick(Event& ev)
@@ -286,30 +274,11 @@ bool ButtonBase::onProcessMessage(JMessage msg)
 void ButtonBase::onPreferredSize(PreferredSizeEvent& ev)
 {
   struct jrect box, text, icon;
-  int icon_w = 0;
-  int icon_h = 0;
-
-  if (m_icon) {
-    icon_w = m_icon->w;
-    icon_h = m_icon->h;
-  }
-  else {
-    switch (m_drawType) {
-
-      case JI_CHECK:
-	icon_w = getTheme()->check_icon_size;
-	icon_h = getTheme()->check_icon_size;
-	break;
-
-      case JI_RADIO:
-	icon_w = getTheme()->radio_icon_size;
-	icon_h = getTheme()->radio_icon_size;
-	break;
-    }
-  }
 
   jwidget_get_texticon_info(this, &box, &text, &icon,
-			    m_iconAlign, icon_w, icon_h);
+			    m_iconInterface ? m_iconInterface->getIconAlign(): 0,
+			    m_iconInterface ? m_iconInterface->getWidth(): 0,
+			    m_iconInterface ? m_iconInterface->getHeight(): 0);
 
   ev.setPreferredSize(this->border_width.l + jrect_w(&box) + this->border_width.r,
 		      this->border_width.t + jrect_h(&box) + this->border_width.b);

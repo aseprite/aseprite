@@ -28,9 +28,10 @@
 #include "gui/theme.h"
 #include "gui/system.h"
 
-class Graphics;
-
 #include "skin_parts.h"
+
+class Graphics;
+class IButtonIcon;
 
 // This is the GUI theme used by ASE (which use images from data/skins
 // directory).
@@ -78,7 +79,7 @@ public:
   void draw_separator(JWidget widget, JRect clip);
   void paintSlider(PaintEvent& ev);
   void draw_combobox_entry(Entry* widget, JRect clip);
-  void draw_combobox_button(ButtonBase* widget, JRect clip);
+  void paintComboBoxButton(PaintEvent& ev);
   void draw_textbox(JWidget widget, JRect clip);
   void draw_view(JWidget widget, JRect clip);
   void draw_view_scrollbar(JWidget widget, JRect clip);
@@ -173,6 +174,8 @@ private:
   void draw_entry_caret(Entry* widget, int x, int y);
   void draw_bevel_box(int x1, int y1, int x2, int y2, int c1, int c2, int *bevel);
   void less_bevel(int *bevel);
+
+  void paintIcon(Widget* widget, Graphics* g, IButtonIcon* iconInterface, int x, int y);
 
   static bool theme_frame_button_msg_proc(JWidget widget, JMessage msg);
   static bool theme_combobox_button_msg_proc(JWidget widget, JMessage msg);

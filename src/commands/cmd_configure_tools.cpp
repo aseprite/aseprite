@@ -36,6 +36,7 @@
 #include "raster/pen.h"
 #include "raster/sprite.h"
 #include "settings/settings.h"
+#include "skin/skin_parts.h"
 #include "sprite_wrappers.h"
 #include "tools/tool.h"
 #include "ui_context.h"
@@ -276,9 +277,9 @@ void ConfigureTools::onExecute(Context* context)
     PenType type = tool_settings->getPen()->getType();
 
     brush_type = group_button_new(3, 1, type,
-				  GFX_BRUSH_CIRCLE,
-				  GFX_BRUSH_SQUARE,
-				  GFX_BRUSH_LINE);
+				  PART_BRUSH_CIRCLE,
+				  PART_BRUSH_SQUARE,
+				  PART_BRUSH_LINE);
 
     brush_type->setName("brush_type");
   }

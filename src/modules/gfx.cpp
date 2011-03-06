@@ -41,74 +41,7 @@
 #include "skin/skin_theme.h"
 #include "widgets/editor.h"
 
-static BITMAP* gfx_bmps[GFX_BITMAP_COUNT];
-
-#include "modules/gfxdata.cpp"
-
 using namespace gfx;
-
-static void convert_data_to_bitmap(DATA *data, BITMAP** bmp)
-{
-  int scale = jguiscale();
-  const char *p;
-  int x, y;
-  int black = makecol(0, 0, 0);
-  int gray = makecol(128, 128, 128);
-  int white = makecol(255, 255, 255);
-  int mask;
-
-  *bmp = create_bitmap(data->w * scale,
-		       data->h * scale);
-  mask = bitmap_mask_color(*bmp);
-
-  p = data->line;
-  for (y=0; y<(*bmp)->h; y+=scale) {
-    for (x=0; x<(*bmp)->w; x+=scale) {
-      rectfill(*bmp, x, y, x+scale-1, y+scale-1,
-	       (*p == '#') ? black:
-	       (*p == '%') ? gray:
-	       (*p == '.') ? white: mask);
-      p++;
-    }
-  }
-}
-
-// Slot for App::PaletteChange signal
-static void on_palette_change_signal()
-{
-  for (int c=0; c<GFX_BITMAP_COUNT; c++) {
-    if (gfx_bmps[c])
-      destroy_bitmap(gfx_bmps[c]);
-
-    gfx_bmps[c] = NULL;
-  }
-}
-
-int init_module_graphics()
-{
-  for (int c=0; c<GFX_BITMAP_COUNT; c++)
-    gfx_bmps[c] = NULL;
-
-  App::instance()->PaletteChange.connect(&on_palette_change_signal);
-  return 0;
-}
-
-void exit_module_graphics()
-{
-  for (int c=0; c<GFX_BITMAP_COUNT; c++)
-    if (gfx_bmps[c]) {
-      destroy_bitmap(gfx_bmps[c]);
-      gfx_bmps[c] = NULL;
-    }
-}
-
-BITMAP* get_gfx(int id)
-{
-  if (!gfx_bmps[id])
-    convert_data_to_bitmap(&gfx_data[id], &gfx_bmps[id]);
-
-  return gfx_bmps[id];
-}
 
 void dotted_mode(int offset)
 {

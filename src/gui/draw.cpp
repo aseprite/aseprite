@@ -197,19 +197,6 @@ void jdraw_text(BITMAP* bmp, FONT* font, const char *s, int x, int y,
   }
 }
 
-void jdraw_inverted_sprite(BITMAP *bmp, BITMAP *sprite, int x, int y)
-{
-  if (bitmap_color_depth(bmp) == 8) {
-    draw_character_ex(bmp, sprite, x, y, makecol(255, 255, 255), -1);
-  }
-  else {
-    drawing_mode(DRAW_MODE_TRANS, NULL, 0, 0);
-    set_invert_blender(0, 0, 0, 255);
-    draw_lit_sprite(bmp, sprite, x, y, 255);
-    drawing_mode(DRAW_MODE_SOLID, NULL, 0, 0);
-  }
-}
-
 void ji_move_region(JRegion region, int dx, int dy)
 {
   int c, nrects = JI_REGION_NUM_RECTS(region);

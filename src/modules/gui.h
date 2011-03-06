@@ -94,8 +94,10 @@ void get_widgets(Widget* window, ...);
 void setup_mini_look(Widget* widget);
 void setup_bevels(Widget* widget, int b1, int b2, int b3, int b4);
 
-void add_gfxicon_to_button(ButtonBase* button, int gfx_id, int icon_align);
-void set_gfxicon_in_button(ButtonBase* button, int gfx_id);
+void set_gfxicon_to_button(ButtonBase* button,
+			   int normal_part_id,
+			   int selected_part_id,
+			   int disabled_part_id, int icon_align);
 
 RadioButton* radio_button_new(int radio_group, int b1, int b2, int b3, int b4);
 CheckBox* check_button_new(const char* text, int b1, int b2, int b3, int b4);

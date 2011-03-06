@@ -69,8 +69,15 @@ Tabs::Tabs(ITabsHandler* handler)
   jwidget_focusrest(m_button_left, false);
   jwidget_focusrest(m_button_right, false);
   
-  add_gfxicon_to_button(m_button_left, GFX_ARROW_LEFT, JI_CENTER | JI_MIDDLE);
-  add_gfxicon_to_button(m_button_right, GFX_ARROW_RIGHT, JI_CENTER | JI_MIDDLE);
+  set_gfxicon_to_button(m_button_left,
+			PART_COMBOBOX_ARROW_LEFT,
+			PART_COMBOBOX_ARROW_LEFT_SELECTED,
+			PART_COMBOBOX_ARROW_LEFT_DISABLED, JI_CENTER | JI_MIDDLE);
+
+  set_gfxicon_to_button(m_button_right,
+			PART_COMBOBOX_ARROW_RIGHT,
+			PART_COMBOBOX_ARROW_RIGHT_SELECTED,
+			PART_COMBOBOX_ARROW_RIGHT_DISABLED, JI_CENTER | JI_MIDDLE);
 
   jwidget_add_hook(m_button_left, tabs_type(), tabs_button_msg_proc, (void *)-1);
   jwidget_add_hook(m_button_right, tabs_type(), tabs_button_msg_proc, (void *)+1);

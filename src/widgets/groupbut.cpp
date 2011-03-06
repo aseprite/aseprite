@@ -72,7 +72,7 @@ JWidget group_button_new(int w, int h, int first_selected, ...)
       radio->setName(buf);
 
       if (icon >= 0)
-	add_gfxicon_to_button(radio, icon, JI_CENTER | JI_MIDDLE);
+	set_gfxicon_to_button(radio, icon, icon+1, icon, JI_CENTER | JI_MIDDLE);
 
       radio->Click.connect(Bind<bool>(&radio_change_hook, vbox));
 

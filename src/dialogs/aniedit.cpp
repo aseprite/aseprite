@@ -150,7 +150,8 @@ static void anieditor_clean_clk(JWidget widget);
 static void anieditor_set_scroll(JWidget widget, int x, int y, bool use_refresh_region);
 static int anieditor_get_layer_index(JWidget widget, const Layer* layer);
 
-static void icon_rect(BITMAP* icon, int x1, int y1, int x2, int y2, bool is_selected, bool is_hot, bool is_clk);
+static void icon_rect(BITMAP* icon_normal, BITMAP* icon_selected, int x1, int y1, int x2, int y2,
+		      bool is_selected, bool is_hot, bool is_clk);
 
 bool animation_editor_is_movingcel()
 {
@@ -461,10 +462,11 @@ static bool anieditor_msg_proc(JWidget widget, JMessage msg)
 		     - HDRSIZE
 		     + anieditor->scroll_y) / LAYSIZE;
 	
-	/* is the mouse on a layer's label? */
+	// Is the mouse on a layer's label?
 	if (mx < anieditor->separator_x) {
-	  BITMAP* icon1 = get_gfx(GFX_BOX_SHOW);
-	  BITMAP* icon2 = get_gfx(GFX_BOX_UNLOCK);
+	  SkinTheme* theme = static_cast<SkinTheme*>(widget->getTheme());
+	  BITMAP* icon1 = theme->get_part(PART_LAYER_VISIBLE);
+	  BITMAP* icon2 = theme->get_part(PART_LAYER_EDITABLE);
 	  int x1, y1, x2, y2, y_mid;
 
 	  x1 = 0;
@@ -1026,8 +1028,7 @@ static void anieditor_draw_layer(JWidget widget, JRect clip, int layer_index)
 {
   AniEditor* anieditor = anieditor_data(widget);
   Layer *layer = anieditor->layers[layer_index];
-  BITMAP *icon1 = get_gfx(layer->is_readable() ? GFX_BOX_SHOW: GFX_BOX_HIDE);
-  BITMAP *icon2 = get_gfx(layer->is_writable() ? GFX_BOX_UNLOCK: GFX_BOX_LOCK);
+  SkinTheme* theme = static_cast<SkinTheme*>(widget->getTheme());
   bool selected_layer = (layer == anieditor->sprite->getCurrentLayer());
   bool is_hot = (anieditor->hot_part == A_PART_LAYER && anieditor->hot_layer == layer_index);
   bool is_clk = (anieditor->clk_part == A_PART_LAYER && anieditor->clk_layer == layer_index);
@@ -1036,6 +1037,10 @@ static void anieditor_draw_layer(JWidget widget, JRect clip, int layer_index)
 			  (is_clk ? ji_color_selected():
 				    ji_color_face()));
   int fg = selected_layer ? ji_color_background(): ji_color_foreground();
+  BITMAP* icon1 = theme->get_part(layer->is_readable() ? PART_LAYER_VISIBLE: PART_LAYER_HIDDEN);
+  BITMAP* icon2 = theme->get_part(layer->is_writable() ? PART_LAYER_EDITABLE: PART_LAYER_LOCKED);
+  BITMAP* icon1_selected = theme->get_part(layer->is_readable() ? PART_LAYER_VISIBLE_SELECTED: PART_LAYER_HIDDEN_SELECTED);
+  BITMAP* icon2_selected = theme->get_part(layer->is_writable() ? PART_LAYER_EDITABLE_SELECTED: PART_LAYER_LOCKED_SELECTED);
   int x1, y1, x2, y2, y_mid;
   int cx1, cy1, cx2, cy2;
   int u;
@@ -1075,7 +1080,7 @@ static void anieditor_draw_layer(JWidget widget, JRect clip, int layer_index)
   u = x1+ICONSEP;
   
   /* draw the eye (readable flag) */
-  icon_rect(icon1,
+  icon_rect(icon1, icon1_selected,
 	    u,
 	    y_mid-icon1->h/2-ICONBORDER,
 	    u+ICONBORDER+icon1->w+ICONBORDER-1,
@@ -1089,7 +1094,7 @@ static void anieditor_draw_layer(JWidget widget, JRect clip, int layer_index)
   u += u+ICONBORDER+icon1->w+ICONBORDER;
 
   /* draw the padlock (writable flag) */
-  icon_rect(icon2,
+  icon_rect(icon2, icon2_selected,
 	    u,
 	    y_mid-icon1->h/2-ICONBORDER,
 	    u+ICONBORDER+icon2->w+ICONBORDER-1,
@@ -1102,12 +1107,12 @@ static void anieditor_draw_layer(JWidget widget, JRect clip, int layer_index)
 
   u += ICONBORDER+icon2->w+ICONBORDER+ICONSEP;
 
-  /* draw the layer's name */
+  // Draw the layer's name.
   jdraw_text(ji_screen, widget->getFont(), layer->getName().c_str(),
 	     u, y_mid - ji_font_get_size(widget->getFont())/2,
 	     fg, bg, true, jguiscale());
 
-  /* the background should be underlined */
+  // The background should be underlined.
   if (layer->is_background()) {
     hline(ji_screen,
 	  u,
@@ -1131,7 +1136,7 @@ static void anieditor_draw_layer_padding(JWidget widget)
   x2 = x1 + anieditor->separator_x - 1;
   y2 = y1 + LAYSIZE - 1;
 
-  /* padding in the bottom side */
+  // Padding in the bottom side.
   if (y2+1 <= widget->rc->y2-1) {
     rectfill(ji_screen, x1, y2+1, x2, widget->rc->y2-1,
 	     theme->get_editor_face_color());
@@ -1499,12 +1504,12 @@ static int anieditor_get_layer_index(JWidget widget, const Layer* layer)
   return -1;
 }
 
-/* auxiliary routine to draw an icon in the layer-part */
-static void icon_rect(BITMAP *icon, int x1, int y1, int x2, int y2,
+// Auxiliary routine to draw an icon in the layer-part.
+static void icon_rect(BITMAP* icon_normal, BITMAP* icon_selected, int x1, int y1, int x2, int y2,
 		      bool is_selected, bool is_hot, bool is_clk)
 {
   int icon_x = x1+ICONBORDER;
-  int icon_y = (y1+y2)/2-icon->h/2;
+  int icon_y = (y1+y2)/2-icon_normal->h/2;
   int facelight = is_hot && is_clk ? ji_color_faceshadow(): ji_color_facelight();
   int faceshadow = is_hot && is_clk ? ji_color_facelight(): ji_color_faceshadow();
 
@@ -1517,8 +1522,9 @@ static void icon_rect(BITMAP *icon, int x1, int y1, int x2, int y2,
 	       ji_color_hotface());
   }
 
+  set_alpha_blender();
   if (is_selected)
-    jdraw_inverted_sprite(ji_screen, icon, icon_x, icon_y);
+    draw_trans_sprite(ji_screen, icon_selected, icon_x, icon_y);
   else
-    draw_sprite(ji_screen, icon, icon_x, icon_y);
+    draw_trans_sprite(ji_screen, icon_normal, icon_x, icon_y);
 }

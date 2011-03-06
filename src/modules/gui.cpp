@@ -46,6 +46,7 @@
 #include "modules/rootmenu.h"
 #include "raster/sprite.h"
 #include "resource_finder.h"
+#include "skin/button_icon_impl.h"
 #include "skin/skin_property.h"
 #include "skin/skin_theme.h"
 #include "sprite_wrappers.h"
@@ -148,8 +149,6 @@ static volatile int next_idle_flags = 0;
 
 static volatile int restored_width = 0;
 static volatile int restored_height = 0;
-
-static JList icon_buttons;
 
 /* default GUI screen configuration */
 static bool double_buffering;
@@ -324,9 +323,6 @@ gfx_done:;
   // Hook for palette change to regenerate the theme
   App::instance()->PaletteChange.connect(&on_palette_change_signal);
 
-  /* icon buttons */
-  icon_buttons = jlist_new();
-
   return 0;
 }
 
@@ -360,9 +356,6 @@ void exit_module_gui()
       destroy_bitmap(old_bmp);
     ji_screen_created = false;
   }
-
-  jlist_free(icon_buttons);
-  icon_buttons = NULL;
 
   jmanager_free(manager);
 
@@ -839,41 +832,21 @@ void setup_bevels(Widget* widget, int b1, int b2, int b3, int b4)
   widget->setProperty(skinProp);
 }
 
-/**********************************************************************/
-/* Icon in buttons */
-
-/* adds a button in the list of "icon_buttons" to restore the icon
-   when the palette changes, the "user_data[3]" is used to save the
-   "gfx_id" (the same ID that is used in "get_gfx()" from
-   "modules/gfx.c"), also this routine adds a hook to
-   JI_SIGNAL_DESTROY to remove the button from the "icon_buttons"
-   list when the widget is free */
-void add_gfxicon_to_button(ButtonBase* button, int gfx_id, int icon_align)
+// Sets the IconInterface pointer interface of the button to show the
+// specified set of icons. Each icon is a part of the SkinTheme.
+void set_gfxicon_to_button(ButtonBase* button,
+			   int normal_part_id,
+			   int selected_part_id,
+			   int disabled_part_id, int icon_align)
 {
-  button->user_data[3] = (void*)gfx_id;
+  ButtonIconImpl* buttonIcon =
+    new ButtonIconImpl(static_cast<SkinTheme*>(button->getTheme()),
+		       normal_part_id,
+		       selected_part_id,
+		       disabled_part_id,
+		       icon_align);
 
-  jwidget_add_hook(button, JI_WIDGET, button_with_icon_msg_proc, NULL);
-
-  button->setButtonIcon(get_gfx(gfx_id));
-  button->setButtonIconAlign(icon_align);
-
-  jlist_append(icon_buttons, button);
-}
-
-void set_gfxicon_in_button(ButtonBase* button, int gfx_id)
-{
-  button->user_data[3] = (void*)gfx_id;
-
-  button->setButtonIcon(get_gfx(gfx_id));
-
-  button->invalidate();
-}
-
-static bool button_with_icon_msg_proc(JWidget widget, JMessage msg)
-{
-  if (msg->type == JM_DESTROY)
-    jlist_remove(icon_buttons, widget);
-  return false;
+  button->setIconInterface(buttonIcon);
 }
 
 /**********************************************************************/
@@ -1295,11 +1268,4 @@ static void on_palette_change_signal()
 {
   // Regenerate the theme
   CurrentTheme::get()->regenerate();
-
-  // Fixup the icons
-  JLink link;
-  JI_LIST_FOR_EACH(icon_buttons, link) {
-    ButtonBase* button = reinterpret_cast<ButtonBase*>(link->data);
-    button->setButtonIcon(get_gfx((size_t)button->user_data[3]));
-  }
 }

@@ -86,7 +86,7 @@ StatusBar::StatusBar()
 #define ICON_NEW(name, icon, action)					\
   {									\
     BUTTON_NEW((name), NULL, (action));					\
-    add_gfxicon_to_button((name), (icon), JI_CENTER | JI_MIDDLE);	\
+    set_gfxicon_to_button((name), icon, icon##_SELECTED, icon##_DISABLED, JI_CENTER | JI_MIDDLE); \
   }
 
   jwidget_focusrest(this, true);
@@ -110,11 +110,11 @@ StatusBar::StatusBar()
 
     setup_mini_look(m_slider);
 
-    ICON_NEW(m_b_first, GFX_ANI_FIRST, ACTION_FIRST);
-    ICON_NEW(m_b_prev, GFX_ANI_PREV, ACTION_PREV);
-    ICON_NEW(m_b_play, GFX_ANI_PLAY, ACTION_PLAY);
-    ICON_NEW(m_b_next, GFX_ANI_NEXT, ACTION_NEXT);
-    ICON_NEW(m_b_last, GFX_ANI_LAST, ACTION_LAST);
+    ICON_NEW(m_b_first, PART_ANI_FIRST, ACTION_FIRST);
+    ICON_NEW(m_b_prev, PART_ANI_PREVIOUS, ACTION_PREV);
+    ICON_NEW(m_b_play, PART_ANI_PLAY, ACTION_PLAY);
+    ICON_NEW(m_b_next, PART_ANI_NEXT, ACTION_NEXT);
+    ICON_NEW(m_b_last, PART_ANI_LAST, ACTION_LAST);
 
     m_slider->Change.connect(Bind<void>(&slider_change_hook, m_slider));
     jwidget_set_min_size(m_slider, JI_SCREEN_W/5, 0);

@@ -24,8 +24,6 @@ public:
   int desktop_color;
   int textbox_fg_color;
   int textbox_bg_color;
-  int check_icon_size;
-  int radio_icon_size;
   int scrollbar_size;
   int guiscale;
 
@@ -62,7 +60,7 @@ public:
   virtual void draw_separator(JWidget widget, JRect clip) = 0;
   virtual void paintSlider(PaintEvent& ev) = 0;
   virtual void draw_combobox_entry(Entry* widget, JRect clip) = 0;
-  virtual void draw_combobox_button(ButtonBase* widget, JRect clip) = 0;
+  virtual void paintComboBoxButton(PaintEvent& ev) = 0;
   virtual void draw_textbox(JWidget widget, JRect clip) = 0;
   virtual void draw_view(JWidget widget, JRect clip) = 0;
   virtual void draw_view_scrollbar(JWidget widget, JRect clip) = 0;

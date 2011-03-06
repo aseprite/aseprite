@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <skin name="Default Skin"
-      author="Ilija Melentijevic"
+      author="Ilija Melentijevic &amp; David Capello"
       url="http://ilkke.blogspot.com/">
 
   <cursors>
@@ -91,10 +91,22 @@
     <part id="mini_slider_thumb_focused"	x="48" y="176" w="5" h="6" />
     <part id="separator_horz"			x="32" y="80" w="9" h="5" />
     <part id="separator_vert"			x="32" y="96" w="5" h="9" />
-    <part id="combobox_arrow"			x="96" y="32" w="16" h="16" />
+    <part id="combobox_arrow_down"		x="100" y="148" w="9" h="9" />
+    <part id="combobox_arrow_down_selected"	x="116" y="148" w="9" h="9" />
+    <part id="combobox_arrow_down_disabled"	x="132" y="148" w="9" h="9" />
+    <part id="combobox_arrow_up"		x="100" y="163" w="9" h="9" />
+    <part id="combobox_arrow_up_selected"	x="116" y="163" w="9" h="9" />
+    <part id="combobox_arrow_up_disabled"	x="132" y="163" w="9" h="9" />
+    <part id="combobox_arrow_left"		x="99" y="180" w="9" h="9" />
+    <part id="combobox_arrow_left_selected"	x="115" y="180" w="9" h="9" />
+    <part id="combobox_arrow_left_disabled"	x="131" y="180" w="9" h="9" />
+    <part id="combobox_arrow_right"		x="99" y="196" w="9" h="9" />
+    <part id="combobox_arrow_right_selected"	x="115" y="196" w="9" h="9" />
+    <part id="combobox_arrow_right_disabled"	x="131" y="196" w="9" h="9" />
     <part id="toolbutton_normal"		x="96" y="0" w1="3" w2="10" w3="3" h1="3" h2="9" h3="4" />
     <part id="toolbutton_hot"			x="112" y="0" w1="3" w2="10" w3="3" h1="3" h2="9" h3="4" />
     <part id="toolbutton_last"			x="96" y="16" w1="3" w2="10" w3="3" h1="3" h2="9" h3="4" />
+    <part id="toolbutton_pushed"		x="112" y="16" w1="3" w2="10" w3="3" h1="3" h2="9" h3="4" />
     <part id="tab_normal"			x="2" y="112" w1="4" w2="5" w3="5" h1="4" h2="6" h3="2" />
     <part id="tab_selected"			x="16" y="112" w1="4" w2="7" w3="5" h1="4" h2="6" h3="2" />
     <part id="tab_bottom_selected"		x="16" y="124" w1="4" w2="7" w3="5" h1="2" h2="1" h3="2" />
@@ -111,8 +123,51 @@
     <part id="colorbar_border_hotfg"		x="32" y="224" w1="5" w2="6" w3="5" h1="5" h2="6" h3="5" />
     <part id="scrollbar_bg"			x="64" y="144" w1="5" w2="6" w3="5" h1="5" h2="6" h3="5" />
     <part id="scrollbar_thumb"			x="64" y="160" w1="5" w2="6" w3="5" h1="5" h2="6" h3="5" />
-    <part id="tooltip"				x="112" y="224" w1="5" w2="6" w3="5" h1="5" h2="5" h3="6" />
-    <part id="tooltip_arrow"			x="128" y="224" w1="5" w2="6" w3="5" h1="5" h2="5" h3="6" />
+    <part id="tooltip"				x="112" y="64" w1="5" w2="6" w3="5" h1="5" h2="5" h3="6" />
+    <part id="tooltip_arrow"			x="128" y="64" w1="5" w2="6" w3="5" h1="5" h2="5" h3="6" />
+    <part id="ani_first"			x="144" y="192" w="8" h="8" />
+    <part id="ani_first_selected"		x="144" y="200" w="8" h="8" />
+    <part id="ani_first_disabled"		x="144" y="192" w="8" h="8" />
+    <part id="ani_previous"			x="160" y="192" w="8" h="8" />
+    <part id="ani_previous_selected"		x="160" y="200" w="8" h="8" />
+    <part id="ani_previous_disabled"		x="168" y="192" w="8" h="8" />
+    <part id="ani_play"				x="176" y="192" w="8" h="8" />
+    <part id="ani_play_selected"		x="176" y="200" w="8" h="8" />
+    <part id="ani_play_disabled"		x="184" y="192" w="8" h="8" />
+    <part id="ani_next"				x="192" y="192" w="8" h="8" />
+    <part id="ani_next_selected"		x="192" y="200" w="8" h="8" />
+    <part id="ani_next_disabled"		x="200" y="192" w="8" h="8" />
+    <part id="ani_last"				x="208" y="192" w="8" h="8" />
+    <part id="ani_last_selected"		x="208" y="200" w="8" h="8" />
+    <part id="ani_last_disabled"		x="216" y="192" w="8" h="8" />
+    <part id="target_one"			x="144" y="224" w="32" h="16" />
+    <part id="target_one_selected"		x="144" y="240" w="32" h="16" />
+    <part id="target_frames"			x="176" y="224" w="32" h="16" />
+    <part id="target_frames_selected"		x="176" y="240" w="32" h="16" />
+    <part id="target_layers"			x="208" y="224" w="32" h="16" />
+    <part id="target_layers_selected"		x="208" y="240" w="32" h="16" />
+    <part id="target_frames_layers"		x="240" y="224" w="32" h="16" />
+    <part id="target_frames_layers_selected"	x="240" y="240" w="32" h="16" />
+    <part id="brush_circle"			x="144" y="144" w="7" h="7" />
+    <part id="brush_circle_selected"		x="144" y="152" w="7" h="7" />
+    <part id="brush_square"			x="160" y="144" w="7" h="7" />
+    <part id="brush_square_selected"		x="160" y="152" w="7" h="7" />
+    <part id="brush_line"			x="176" y="144" w="6" h="6" />
+    <part id="brush_line_selected"		x="176" y="152" w="6" h="6" />
+    <part id="scale_arrow_1"			x="96" y="224" w="11" h="11" />
+    <part id="scale_arrow_2"			x="112" y="224" w="7" h="12" />
+    <part id="scale_arrow_3"			x="128" y="224" w="12" h="7" />
+    <part id="rotate_arrow_1"			x="96" y="240" w="11" h="11" />
+    <part id="rotate_arrow_2"			x="112" y="240" w="15" h="10" />
+    <part id="rotate_arrow_3"			x="128" y="240" w="10" h="15" />
+    <part id="layer_visible"			x="144" y="160" w="8" h="8" />
+    <part id="layer_visible_selected"		x="144" y="168" w="8" h="8" />
+    <part id="layer_hidden"			x="160" y="160" w="8" h="8" />
+    <part id="layer_hidden_selected"		x="160" y="168" w="8" h="8" />
+    <part id="layer_editable"			x="144" y="176" w="8" h="8" />
+    <part id="layer_editable_selected"		x="144" y="184" w="8" h="8" />
+    <part id="layer_locked"			x="160" y="176" w="8" h="8" />
+    <part id="layer_locked_selected"		x="160" y="184" w="8" h="8" />
   </parts>
 
 </skin>

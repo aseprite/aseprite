@@ -32,11 +32,13 @@
 #include "modules/gfx.h"
 #include "modules/gui.h"
 #include "raster/image.h"
+#include "skin/skin_parts.h"
 #include "widgets/target.h"
 
 static bool channel_change_hook(ButtonBase* widget, Widget* data);
 static bool images_change_hook(ButtonBase* widget, Widget* data);
-static int get_target_image_gfx(int target);
+static int get_target_normal_icon(int target);
+static int get_target_selected_icon(int target);
 
 /**
  * Creates a new button to handle "targets" to apply some effect in
@@ -108,7 +110,9 @@ JWidget target_button_new(int imgtype, bool with_channels)
 	       with_channels ? 0: 2,
 	       with_channels ? 0: 2, 2, 2);
   setup_mini_look(images);
-  add_gfxicon_to_button(images, get_target_image_gfx(default_targets),
+  set_gfxicon_to_button(images,
+			get_target_normal_icon(default_targets),
+			get_target_selected_icon(default_targets), -1,
 			JI_CENTER | JI_MIDDLE);
 
   /* make hierarchy */
@@ -199,23 +203,40 @@ static bool images_change_hook(ButtonBase* widget, Widget* target_button)
     target |= TARGET_ALL_FRAMES;
   }
 
-  set_gfxicon_in_button(widget, get_target_image_gfx(target));
+  set_gfxicon_to_button(widget,
+			get_target_normal_icon(target),
+			get_target_selected_icon(target), -1,
+			JI_CENTER | JI_MIDDLE);
 
   target_button->user_data[0] = (void *)target;
   jwidget_emit_signal(target_button, SIGNAL_TARGET_BUTTON_CHANGE);
   return true;
 }
 
-static int get_target_image_gfx(int target)
+static int get_target_normal_icon(int target)
 {
   if (target & TARGET_ALL_FRAMES) {
-    return target & TARGET_ALL_LAYERS ?
-      GFX_TARGET_FRAMES_LAYERS:
-      GFX_TARGET_FRAMES;
+    return (target & TARGET_ALL_LAYERS) ?
+      PART_TARGET_FRAMES_LAYERS:
+      PART_TARGET_FRAMES;
   }
   else {
-    return target & TARGET_ALL_LAYERS ?
-      GFX_TARGET_LAYERS:
-      GFX_TARGET_ONE;
+    return (target & TARGET_ALL_LAYERS) ?
+      PART_TARGET_LAYERS:
+      PART_TARGET_ONE;
+  }
+}
+
+static int get_target_selected_icon(int target)
+{
+  if (target & TARGET_ALL_FRAMES) {
+    return (target & TARGET_ALL_LAYERS) ?
+      PART_TARGET_FRAMES_LAYERS_SELECTED:
+      PART_TARGET_FRAMES_SELECTED;
+  }
+  else {
+    return (target & TARGET_ALL_LAYERS) ?
+      PART_TARGET_LAYERS_SELECTED:
+      PART_TARGET_ONE_SELECTED;
   }
 }

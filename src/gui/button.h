@@ -15,6 +15,19 @@ struct BITMAP;
 
 class Event;
 
+class IButtonIcon
+{
+public:
+  virtual ~IButtonIcon() { }
+  virtual void destroy() = 0;
+  virtual int getWidth() = 0;
+  virtual int getHeight() = 0;
+  virtual BITMAP* getNormalIcon() = 0;
+  virtual BITMAP* getSelectedIcon() = 0;
+  virtual BITMAP* getDisabledIcon() = 0;
+  virtual int getIconAlign() = 0;
+};
+
 // Generic button
 class ButtonBase : public Widget
 {
@@ -25,14 +38,15 @@ public:
 	     int drawType);
   virtual ~ButtonBase();
 
-  void setButtonIcon(BITMAP* icon);
-  void setButtonIconAlign(int iconAlign);
-
-  BITMAP* getButtonIcon();
-  int getButtonIconAlign();
-
   int getBehaviorType() const;
   int getDrawType() const;
+
+  // Sets the interface used to get icons for the button depending its
+  // state. This interface is deleted automatically in the ButtonBase dtor.
+  void setIconInterface(IButtonIcon* iconInterface);
+
+  // Used by the current theme to draw the button icon.
+  IButtonIcon* getIconInterface() const { return m_iconInterface; }
 
   // Signals
   Signal1<void, Event&> Click;
@@ -52,8 +66,7 @@ private:
   bool m_pressedStatus;
   int m_behaviorType;
   int m_drawType;
-  BITMAP* m_icon;
-  int m_iconAlign;
+  IButtonIcon* m_iconInterface;
 };
 
 // Pushable button to execute commands

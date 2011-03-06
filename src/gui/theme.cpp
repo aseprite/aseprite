@@ -32,8 +32,6 @@ Theme::Theme()
   this->desktop_color = 0;
   this->textbox_fg_color = 0;
   this->textbox_bg_color = 0;
-  this->check_icon_size = 0;
-  this->radio_icon_size = 0;
   this->scrollbar_size = 0;
   this->guiscale = 1;
 }

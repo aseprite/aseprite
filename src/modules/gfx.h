@@ -37,50 +37,7 @@ struct BITMAP;
 	  getg(color1)+(getg(color2)-getg(color1))*step/max,	\
 	  getb(color1)+(getb(color2)-getb(color1))*step/max)
 
-/* graphics ids */
-enum {
-  GFX_ANI_FIRST,
-  GFX_ANI_PREV,
-  GFX_ANI_PLAY,
-  GFX_ANI_NEXT,
-  GFX_ANI_LAST,
-
-  GFX_TARGET_ONE,
-  GFX_TARGET_FRAMES,
-  GFX_TARGET_LAYERS,
-  GFX_TARGET_FRAMES_LAYERS,
-
-  GFX_BRUSH_CIRCLE,
-  GFX_BRUSH_SQUARE,
-  GFX_BRUSH_LINE,
-
-  GFX_SCALE_1,
-  GFX_SCALE_2,
-  GFX_SCALE_3,
-
-  GFX_ROTATE_1,
-  GFX_ROTATE_2,
-  GFX_ROTATE_3,
-
-  GFX_ARROW_LEFT,
-  GFX_ARROW_RIGHT,
-  GFX_ARROW_UP,
-  GFX_ARROW_DOWN,
-
-  GFX_BOX_SHOW,
-  GFX_BOX_HIDE,
-  GFX_BOX_LOCK,
-  GFX_BOX_UNLOCK,
-
-  GFX_BITMAP_COUNT,
-};
-
 typedef struct RectTracker RectTracker;
-
-int init_module_graphics();
-void exit_module_graphics();
-
-BITMAP* get_gfx(int id);
 
 void dotted_mode(int offset);
 void simple_dotted_mode(BITMAP* bmp, int fg, int bg);

@@ -32,6 +32,7 @@
 #include "loadpng.h"
 #include "modules/gui.h"
 #include "resource_finder.h"
+#include "skin/button_icon_impl.h"
 #include "skin/skin_property.h"
 #include "skin/skin_slider_property.h"
 #include "skin/skin_theme.h"
@@ -120,10 +121,22 @@ SkinTheme::SkinTheme()
   sheet_mapping["mini_slider_thumb_focused"] = PART_MINI_SLIDER_THUMB_FOCUSED;
   sheet_mapping["separator_horz"] = PART_SEPARATOR_HORZ;
   sheet_mapping["separator_vert"] = PART_SEPARATOR_VERT;
-  sheet_mapping["combobox_arrow"] = PART_COMBOBOX_ARROW;
+  sheet_mapping["combobox_arrow_down"] = PART_COMBOBOX_ARROW_DOWN;
+  sheet_mapping["combobox_arrow_down_selected"] = PART_COMBOBOX_ARROW_DOWN_SELECTED;
+  sheet_mapping["combobox_arrow_down_disabled"] = PART_COMBOBOX_ARROW_DOWN_DISABLED;
+  sheet_mapping["combobox_arrow_up"] = PART_COMBOBOX_ARROW_UP;
+  sheet_mapping["combobox_arrow_up_selected"] = PART_COMBOBOX_ARROW_UP_SELECTED;
+  sheet_mapping["combobox_arrow_up_disabled"] = PART_COMBOBOX_ARROW_UP_DISABLED;
+  sheet_mapping["combobox_arrow_left"] = PART_COMBOBOX_ARROW_LEFT;
+  sheet_mapping["combobox_arrow_left_selected"] = PART_COMBOBOX_ARROW_LEFT_SELECTED;
+  sheet_mapping["combobox_arrow_left_disabled"] = PART_COMBOBOX_ARROW_LEFT_DISABLED;
+  sheet_mapping["combobox_arrow_right"] = PART_COMBOBOX_ARROW_RIGHT;
+  sheet_mapping["combobox_arrow_right_selected"] = PART_COMBOBOX_ARROW_RIGHT_SELECTED;
+  sheet_mapping["combobox_arrow_right_disabled"] = PART_COMBOBOX_ARROW_RIGHT_DISABLED;
   sheet_mapping["toolbutton_normal"] = PART_TOOLBUTTON_NORMAL_NW;
   sheet_mapping["toolbutton_hot"] = PART_TOOLBUTTON_HOT_NW;
   sheet_mapping["toolbutton_last"] = PART_TOOLBUTTON_LAST_NW;
+  sheet_mapping["toolbutton_pushed"] = PART_TOOLBUTTON_PUSHED_NW;
   sheet_mapping["tab_normal"] = PART_TAB_NORMAL_NW;
   sheet_mapping["tab_selected"] = PART_TAB_SELECTED_NW;
   sheet_mapping["tab_bottom_selected"] = PART_TAB_BOTTOM_SELECTED_NW;
@@ -142,6 +155,49 @@ SkinTheme::SkinTheme()
   sheet_mapping["scrollbar_thumb"] = PART_SCROLLBAR_THUMB_NW;
   sheet_mapping["tooltip"] = PART_TOOLTIP_NW;
   sheet_mapping["tooltip_arrow"] = PART_TOOLTIP_ARROW_NW;
+  sheet_mapping["ani_first"] = PART_ANI_FIRST;
+  sheet_mapping["ani_first_selected"] = PART_ANI_FIRST_SELECTED;
+  sheet_mapping["ani_first_disabled"] = PART_ANI_FIRST_DISABLED;
+  sheet_mapping["ani_previous"] = PART_ANI_PREVIOUS;
+  sheet_mapping["ani_previous_selected"] = PART_ANI_PREVIOUS_SELECTED;
+  sheet_mapping["ani_previous_disabled"] = PART_ANI_PREVIOUS_DISABLED;
+  sheet_mapping["ani_play"] = PART_ANI_PLAY;
+  sheet_mapping["ani_play_selected"] = PART_ANI_PLAY_SELECTED;
+  sheet_mapping["ani_play_disabled"] = PART_ANI_PLAY_DISABLED;
+  sheet_mapping["ani_next"] = PART_ANI_NEXT;
+  sheet_mapping["ani_next_selected"] = PART_ANI_NEXT_SELECTED;
+  sheet_mapping["ani_next_disabled"] = PART_ANI_NEXT_DISABLED;
+  sheet_mapping["ani_last"] = PART_ANI_LAST;
+  sheet_mapping["ani_last_selected"] = PART_ANI_LAST_SELECTED;
+  sheet_mapping["ani_last_disabled"] = PART_ANI_LAST_DISABLED;
+  sheet_mapping["target_one"] = PART_TARGET_ONE;
+  sheet_mapping["target_one_selected"] = PART_TARGET_ONE_SELECTED;
+  sheet_mapping["target_frames"] = PART_TARGET_FRAMES;
+  sheet_mapping["target_frames_selected"] = PART_TARGET_FRAMES_SELECTED;
+  sheet_mapping["target_layers"] = PART_TARGET_LAYERS;
+  sheet_mapping["target_layers_selected"] = PART_TARGET_LAYERS_SELECTED;
+  sheet_mapping["target_frames_layers"] = PART_TARGET_FRAMES_LAYERS;
+  sheet_mapping["target_frames_layers_selected"] = PART_TARGET_FRAMES_LAYERS_SELECTED;
+  sheet_mapping["brush_circle"] = PART_BRUSH_CIRCLE;
+  sheet_mapping["brush_circle_selected"] = PART_BRUSH_CIRCLE_SELECTED;
+  sheet_mapping["brush_square"] = PART_BRUSH_SQUARE;
+  sheet_mapping["brush_square_selected"] = PART_BRUSH_SQUARE_SELECTED;
+  sheet_mapping["brush_line"] = PART_BRUSH_LINE;
+  sheet_mapping["brush_line_selected"] = PART_BRUSH_LINE_SELECTED;
+  sheet_mapping["scale_arrow_1"] = PART_SCALE_ARROW_1;
+  sheet_mapping["scale_arrow_2"] = PART_SCALE_ARROW_2;
+  sheet_mapping["scale_arrow_3"] = PART_SCALE_ARROW_3;
+  sheet_mapping["rotate_arrow_1"] = PART_ROTATE_ARROW_1;
+  sheet_mapping["rotate_arrow_2"] = PART_ROTATE_ARROW_2;
+  sheet_mapping["rotate_arrow_3"] = PART_ROTATE_ARROW_3;
+  sheet_mapping["layer_visible"] = PART_LAYER_VISIBLE;
+  sheet_mapping["layer_visible_selected"] = PART_LAYER_VISIBLE_SELECTED;
+  sheet_mapping["layer_hidden"] = PART_LAYER_HIDDEN;
+  sheet_mapping["layer_hidden_selected"] = PART_LAYER_HIDDEN_SELECTED;
+  sheet_mapping["layer_editable"] = PART_LAYER_EDITABLE;
+  sheet_mapping["layer_editable_selected"] = PART_LAYER_EDITABLE_SELECTED;
+  sheet_mapping["layer_locked"] = PART_LAYER_LOCKED;
+  sheet_mapping["layer_locked_selected"] = PART_LAYER_LOCKED_SELECTED;
 
   reload_skin();
 }
@@ -202,8 +258,6 @@ std::string SkinTheme::get_font_filename() const
 
 void SkinTheme::onRegenerate()
 {
-  check_icon_size = 8 * jguiscale();
-  radio_icon_size = 8 * jguiscale();
   scrollbar_size = 12 * jguiscale();
 
   desktop_color = COLOR_DISABLED;
@@ -295,7 +349,13 @@ void SkinTheme::onRegenerate()
 	int y = strtol(xmlPart->Attribute("y"), NULL, 10);
 	int w = xmlPart->Attribute("w") ? strtol(xmlPart->Attribute("w"), NULL, 10): 0;
 	int h = xmlPart->Attribute("h") ? strtol(xmlPart->Attribute("h"), NULL, 10): 0;
-	int c = sheet_mapping[part_id];
+	std::map<std::string, int>::iterator it = sheet_mapping.find(part_id);
+	if (it == sheet_mapping.end()) {
+	  throw base::Exception("Unknown part specified in '%s':\n"
+				"<part id='%s' ... />\n", xml_filename.c_str(), part_id);
+	}
+
+	int c = it->second;
 
 	if (w > 0 && h > 0) {
 	  // Crop the part from the sheet
@@ -406,6 +466,13 @@ void SkinTheme::init_widget(JWidget widget)
     case JI_CHECK:
       BORDER(2 * scale);
       widget->child_spacing = 4 * scale;
+
+      static_cast<ButtonBase*>(widget)->setIconInterface
+	(new ButtonIconImpl(static_cast<SkinTheme*>(widget->getTheme()),
+			    PART_CHECK_NORMAL,
+			    PART_CHECK_SELECTED,
+			    PART_CHECK_DISABLED,
+			    JI_LEFT | JI_MIDDLE));
       break;
 
     case JI_ENTRY:
@@ -447,6 +514,13 @@ void SkinTheme::init_widget(JWidget widget)
 	button->child_spacing = 0;
 	button->min_w = 15 * jguiscale();
 	button->min_h = 16 * jguiscale();
+
+	static_cast<ButtonBase*>(button)->setIconInterface
+	  (new ButtonIconImpl(static_cast<SkinTheme*>(button->getTheme()),
+			      PART_COMBOBOX_ARROW_DOWN,
+			      PART_COMBOBOX_ARROW_DOWN_SELECTED,
+			      PART_COMBOBOX_ARROW_DOWN_DISABLED,
+			      JI_CENTER | JI_MIDDLE));
       }
       break;
 
@@ -470,6 +544,13 @@ void SkinTheme::init_widget(JWidget widget)
     case JI_RADIO:
       BORDER(2 * scale);
       widget->child_spacing = 4 * scale;
+
+      static_cast<ButtonBase*>(widget)->setIconInterface
+	(new ButtonIconImpl(static_cast<SkinTheme*>(widget->getTheme()),
+			    PART_RADIO_NORMAL,
+			    PART_RADIO_SELECTED,
+			    PART_RADIO_DISABLED,
+			    JI_LEFT | JI_MIDDLE));
       break;
 
     case JI_SEPARATOR:
@@ -626,17 +707,16 @@ void SkinTheme::paintBox(PaintEvent& ev)
 void SkinTheme::paintButton(PaintEvent& ev)
 {
   ButtonBase* widget = static_cast<ButtonBase*>(ev.getSource());
-  BITMAP* icon_bmp = widget->getButtonIcon();
-  int icon_align = widget->getButtonIconAlign();
+  IButtonIcon* iconInterface = widget->getIconInterface();
   struct jrect box, text, icon;
   int x1, y1, x2, y2;
   int fg, bg, part_nw;
   JRect crect;
 
   jwidget_get_texticon_info(widget, &box, &text, &icon,
-			    icon_align,
-			    icon_bmp ? icon_bmp->w : 0,
-			    icon_bmp ? icon_bmp->h : 0);
+			    iconInterface ? iconInterface->getIconAlign(): 0,
+			    iconInterface ? iconInterface->getWidth() : 0,
+			    iconInterface ? iconInterface->getHeight() : 0);
 
   // Tool buttons are smaller
   bool isMiniLook = false;
@@ -688,44 +768,28 @@ void SkinTheme::paintButton(PaintEvent& ev)
   draw_textstring(NULL, fg, bg, false, widget, crect, get_button_selected_offset());
   jrect_free(crect);
 
-  // icon
-  if (icon_bmp) {
+  // Paint the icon
+  if (iconInterface) {
     if (widget->isSelected())
       jrect_displace(&icon,
 		     get_button_selected_offset(),
 		     get_button_selected_offset());
 
-    // enabled
-    if (widget->isEnabled()) {
-      // selected
-      if (widget->isSelected()) {
-	jdraw_inverted_sprite(ji_screen, icon_bmp, icon.x1, icon.y1);
-      }
-      // non-selected
-      else {
-	draw_sprite(ji_screen, icon_bmp, icon.x1, icon.y1);
-      }
-    }
-    // disabled
-    else {
-      _ji_theme_draw_sprite_color(ji_screen, icon_bmp, icon.x1+jguiscale(), icon.y1+jguiscale(),
-				  COLOR_BACKGROUND);
-      _ji_theme_draw_sprite_color(ji_screen, icon_bmp, icon.x1, icon.y1,
-				  COLOR_DISABLED);
-    }
+    paintIcon(widget, ev.getGraphics(), iconInterface, icon.x1-widget->rc->x1, icon.y1-widget->rc->y1);
   }
 }
 
 void SkinTheme::paintCheckBox(PaintEvent& ev)
 {
   ButtonBase* widget = static_cast<ButtonBase*>(ev.getSource());
+  IButtonIcon* iconInterface = widget->getIconInterface();
   struct jrect box, text, icon;
   int bg;
 
   jwidget_get_texticon_info(widget, &box, &text, &icon,
-			    widget->getButtonIconAlign(),
-			    this->check_icon_size,
-			    this->check_icon_size);
+			    iconInterface ? iconInterface->getIconAlign(): 0,
+			    iconInterface ? iconInterface->getWidth() : 0,
+			    iconInterface ? iconInterface->getHeight() : 0);
 
   // background
   jdraw_rectfill(widget->rc, bg = BGCOLOR);
@@ -741,12 +805,9 @@ void SkinTheme::paintCheckBox(PaintEvent& ev)
   /* text */
   draw_textstring(NULL, -1, bg, false, widget, &text, 0);
 
-  /* icon */
-  set_alpha_blender();
-  draw_trans_sprite(ji_screen,
-		    widget->isSelected() ? m_part[PART_CHECK_SELECTED]:
-					   m_part[PART_CHECK_NORMAL],
-		    icon.x1, icon.y1);
+  // Paint the icon
+  if (iconInterface)
+    paintIcon(widget, ev.getGraphics(), iconInterface, icon.x1-widget->rc->x1, icon.y1-widget->rc->y1);
 
   // draw focus
   if (widget->hasFocus()) {
@@ -1045,13 +1106,14 @@ void SkinTheme::draw_panel(JWidget widget, JRect clip)
 void SkinTheme::paintRadioButton(PaintEvent& ev)
 {
   ButtonBase* widget = static_cast<ButtonBase*>(ev.getSource());
+  IButtonIcon* iconInterface = widget->getIconInterface();
   struct jrect box, text, icon;
   int bg = BGCOLOR;
 
   jwidget_get_texticon_info(widget, &box, &text, &icon,
-			    widget->getButtonIconAlign(),
-			    this->radio_icon_size,
-			    this->radio_icon_size);
+			    iconInterface ? iconInterface->getIconAlign(): 0,
+			    iconInterface ? iconInterface->getWidth() : 0,
+			    iconInterface ? iconInterface->getHeight() : 0);
 
   /* background */
   jdraw_rectfill(widget->rc, bg);
@@ -1067,12 +1129,9 @@ void SkinTheme::paintRadioButton(PaintEvent& ev)
   /* text */
   draw_textstring(NULL, -1, bg, false, widget, &text, 0);
 
-  /* icon */
-  set_alpha_blender();
-  draw_trans_sprite(ji_screen,
-		    widget->isSelected() ? m_part[PART_RADIO_SELECTED]:
-					   m_part[PART_RADIO_NORMAL],
-		    icon.x1, icon.y1);
+  // Paint the icon
+  if (iconInterface)
+    paintIcon(widget, ev.getGraphics(), iconInterface, icon.x1-widget->rc->x1, icon.y1-widget->rc->y1);
 
   // draw focus
   if (widget->hasFocus()) {
@@ -1316,52 +1375,44 @@ void SkinTheme::draw_combobox_entry(Entry* widget, JRect clip)
     draw_entry_caret(widget, x, y);
 }
 
-void SkinTheme::draw_combobox_button(ButtonBase* widget, JRect clip)
+void SkinTheme::paintComboBoxButton(PaintEvent& ev)
 {
-  BITMAP* icon_bmp = m_part[PART_COMBOBOX_ARROW];
-  struct jrect icon;
-  int x1, y1, x2, y2;
-  int fg, bg, part_nw;
+  Button* widget = static_cast<Button*>(ev.getSource());
+  Graphics* g = ev.getGraphics();
+  IButtonIcon* iconInterface = widget->getIconInterface();
+  int bg, part_nw;
 
-  /* with mouse */
-  if (widget->isSelected() ||
-      (widget->isEnabled() && widget->hasMouseOver())) {
-    fg = get_button_hot_text_color();
+  if (widget->isSelected()) {
+    bg = get_button_selected_face_color();
+    part_nw = PART_TOOLBUTTON_PUSHED_NW;
+  }
+  // With mouse
+  else if (widget->isEnabled() && widget->hasMouseOver()) {
     bg = get_button_hot_face_color();
     part_nw = PART_TOOLBUTTON_HOT_NW;
   }
-  /* without mouse */
+  // Without mouse
   else {
-    fg = get_button_normal_text_color();
     bg = get_button_normal_face_color();
     part_nw = PART_TOOLBUTTON_LAST_NW;
   }
 
-  /* widget position */
-  x1 = widget->rc->x1;
-  y1 = widget->rc->y1;
-  x2 = widget->rc->x2-1;
-  y2 = widget->rc->y2-1;
+  gfx::Rect rc = widget->getClientBounds();
 
   // external background
-  rectfill(ji_screen, x1, y1, x2, y2, BGCOLOR);
+  g->fillRect(BGCOLOR, rc);
 
   // draw borders
-  draw_bounds_nw(ji_screen, x1, y1, x2, y2, part_nw, bg);
+  draw_bounds_nw(g, rc, part_nw, bg);
 
-  // icon
-  icon.x1 = (x1+x2)/2 - icon_bmp->w/2;
-  icon.y1 = (y1+y2)/2 - icon_bmp->h/2;
-  icon.x2 = icon.x1 + icon_bmp->w;
-  icon.y2 = icon.y1 + icon_bmp->h;
+  // Paint the icon
+  if (iconInterface) {
+    // Icon
+    int x = rc.x + rc.w/2 - iconInterface->getWidth()/2;
+    int y = rc.y + rc.h/2 - iconInterface->getHeight()/2;
 
-  if (widget->isSelected())
-    jrect_displace(&icon,
-		   get_button_selected_offset(),
-		   get_button_selected_offset());
-
-  set_alpha_blender();
-  draw_trans_sprite(ji_screen, icon_bmp, icon.x1, icon.y1);
+    paintIcon(widget, ev.getGraphics(), iconInterface, x, y);
+  }
 }
 
 void SkinTheme::draw_textbox(JWidget widget, JRect clip)
@@ -1952,6 +2003,26 @@ void SkinTheme::less_bevel(int *bevel)
   if (bevel[1] > 0) --bevel[1];
   if (bevel[2] > 0) --bevel[2];
   if (bevel[3] > 0) --bevel[3];
+}
+
+void SkinTheme::paintIcon(Widget* widget, Graphics* g, IButtonIcon* iconInterface, int x, int y)
+{
+  BITMAP* icon_bmp = NULL;
+
+  // enabled
+  if (widget->isEnabled()) {
+    if (widget->isSelected())	// selected
+      icon_bmp = iconInterface->getSelectedIcon();
+    else
+      icon_bmp = iconInterface->getNormalIcon();
+  }
+  // disabled
+  else {
+    icon_bmp = iconInterface->getDisabledIcon();
+  }
+
+  if (icon_bmp)
+    g->drawAlphaBitmap(icon_bmp, x, y);
 }
 
 /* controls the "X" button in a window to close it */

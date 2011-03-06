@@ -213,6 +213,7 @@ add_library(aseprite-library
   raster/stock.cpp
   raster/undo.cpp
   settings/ui_settings_impl.cpp
+  skin/button_icon_impl.cpp
   skin/skin_theme.cpp
   skin/skin_property.cpp
   skin/skin_slider_property.cpp

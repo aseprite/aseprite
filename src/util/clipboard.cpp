@@ -39,6 +39,8 @@
 #include "raster/stock.h"
 #include "raster/undo.h"
 #include "settings/settings.h"
+#include "skin/skin_parts.h"
+#include "skin/skin_theme.h"
 #include "sprite_wrappers.h"
 #include "ui_context.h"
 #include "undoable.h"
@@ -780,49 +782,50 @@ static void draw_box(BITMAP *bmp,
 
 static void draw_icon(BITMAP *bmp, int x, int y, int mode, fixed angle)
 {
-  BITMAP *gfx;
+  SkinTheme* theme = static_cast<SkinTheme*>(CurrentTheme::get());
+  BITMAP* gfx;
 
   angle &= (255<<16);
 
-  /* 0 degree */
+  // 0 degree
   if ((angle > ((256-16)<<16)) || (angle <= ((0+16)<<16))) {
-    gfx = get_gfx (mode == SCALE_MODE ? GFX_SCALE_3: GFX_ROTATE_3);
-    draw_sprite_h_flip (bmp, gfx, x, y-gfx->h/2);
+    gfx = theme->get_part(mode == SCALE_MODE ? PART_SCALE_ARROW_3: PART_ROTATE_ARROW_3);
+    draw_sprite_ex(bmp, gfx, x, y-gfx->h/2, DRAW_SPRITE_TRANS, DRAW_SPRITE_H_FLIP);
   }
-  /* 45 degree */
+  // 45 degree
   else if ((angle >= ((32-16)<<16)) && (angle <= ((32+16)<<16))) {
-    gfx = get_gfx (mode == SCALE_MODE ? GFX_SCALE_1: GFX_ROTATE_1);
-    draw_sprite_h_flip (bmp, gfx, x, y-gfx->h);
+    gfx = theme->get_part(mode == SCALE_MODE ? PART_SCALE_ARROW_1: PART_ROTATE_ARROW_1);
+    draw_sprite_ex(bmp, gfx, x, y-gfx->h, DRAW_SPRITE_TRANS, DRAW_SPRITE_H_FLIP);
   }
-  /* 90 degree */
+  // 90 degree
   else if ((angle >= ((64-16)<<16)) && (angle <= ((64+16)<<16))) {
-    gfx = get_gfx (mode == SCALE_MODE ? GFX_SCALE_2: GFX_ROTATE_2);
-    draw_sprite (bmp, gfx, x-gfx->w/2, y-gfx->h);
+    gfx = theme->get_part(mode == SCALE_MODE ? PART_SCALE_ARROW_2: PART_ROTATE_ARROW_2);
+    draw_sprite_ex(bmp, gfx, x-gfx->w/2, y-gfx->h, DRAW_SPRITE_TRANS, DRAW_SPRITE_NO_FLIP);
   }
-  /* 135 degree */
+  // 135 degree
   else if ((angle >= ((96-16)<<16)) && (angle <= ((96+16)<<16))) {
-    gfx = get_gfx (mode == SCALE_MODE ? GFX_SCALE_1: GFX_ROTATE_1);
-    draw_sprite (bmp, gfx, x-gfx->w, y-gfx->h);
+    gfx = theme->get_part(mode == SCALE_MODE ? PART_SCALE_ARROW_1: PART_ROTATE_ARROW_1);
+    draw_sprite_ex(bmp, gfx, x-gfx->w, y-gfx->h, DRAW_SPRITE_TRANS, DRAW_SPRITE_NO_FLIP);
   }
-  /* 180 degree */
+  // 180 degree
   else if ((angle >= ((128-16)<<16)) && (angle <= ((128+16)<<16))) {
-    gfx = get_gfx (mode == SCALE_MODE ? GFX_SCALE_3: GFX_ROTATE_3);
-    draw_sprite (bmp, gfx, x-gfx->w, y-gfx->h/2);
+    gfx = theme->get_part(mode == SCALE_MODE ? PART_SCALE_ARROW_3: PART_ROTATE_ARROW_3);
+    draw_sprite_ex(bmp, gfx, x-gfx->w, y-gfx->h/2, DRAW_SPRITE_TRANS, DRAW_SPRITE_NO_FLIP);
   }
-  /* 225 degree */
+  // 225 degree
   else if ((angle >= ((160-16)<<16)) && (angle <= ((160+16)<<16))) {
-    gfx = get_gfx (mode == SCALE_MODE ? GFX_SCALE_1: GFX_ROTATE_1);
-    draw_sprite_v_flip (bmp, gfx, x-gfx->w, y);
+    gfx = theme->get_part(mode == SCALE_MODE ? PART_SCALE_ARROW_1: PART_ROTATE_ARROW_1);
+    draw_sprite_ex(bmp, gfx, x-gfx->w, y, DRAW_SPRITE_TRANS, DRAW_SPRITE_V_FLIP);
   }
-  /* 270 degree */
+  // 270 degree
   else if ((angle >= ((192-16)<<16)) && (angle <= ((192+16)<<16))) {
-    gfx = get_gfx (mode == SCALE_MODE ? GFX_SCALE_2: GFX_ROTATE_2);
-    draw_sprite_v_flip (bmp, gfx, x-gfx->w/2, y);
+    gfx = theme->get_part(mode == SCALE_MODE ? PART_SCALE_ARROW_2: PART_ROTATE_ARROW_2);
+    draw_sprite_ex(bmp, gfx, x-gfx->w/2, y, DRAW_SPRITE_TRANS, DRAW_SPRITE_V_FLIP);
   }
-  /* 315 degree */
+  // 315 degree
   else if ((angle >= ((224-16)<<16)) && (angle <= ((224+16)<<16))) {
-    gfx = get_gfx (mode == SCALE_MODE ? GFX_SCALE_1: GFX_ROTATE_1);
-    draw_sprite_vh_flip (bmp, gfx, x, y);
+    gfx = theme->get_part(mode == SCALE_MODE ? PART_SCALE_ARROW_1: PART_ROTATE_ARROW_1);
+    draw_sprite_ex(bmp, gfx, x, y, DRAW_SPRITE_TRANS, DRAW_SPRITE_VH_FLIP);
   }
 }
 

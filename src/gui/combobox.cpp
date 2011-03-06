@@ -14,6 +14,17 @@
 
 using namespace gfx;
 
+class ComboBoxButton : public Button
+{
+public:
+  ComboBoxButton() : Button("") { }
+
+  void onPaint(PaintEvent& ev)
+  {
+    getTheme()->paintComboBoxButton(ev);
+  }
+};
+
 struct ComboBox::Item
 {
   std::string text;
@@ -26,14 +37,13 @@ struct ComboBox::Item
   (index >= 0 && index < combobox->getItemCount())
 
 static bool combobox_entry_msg_proc(JWidget widget, JMessage msg);
-static bool combobox_button_msg_proc(JWidget widget, JMessage msg);
 static bool combobox_listbox_msg_proc(JWidget widget, JMessage msg);
 
 ComboBox::ComboBox()
   : Widget(JI_COMBOBOX)
 {
   m_entry = new Entry(256, "");
-  m_button = new Button("");
+  m_button = new ComboBoxButton();
   m_window = NULL;
   m_selected = 0;
   m_editable = false;
@@ -48,7 +58,6 @@ ComboBox::ComboBox()
 
   jwidget_focusrest(this, true);
   jwidget_add_hook(m_entry, JI_WIDGET, combobox_entry_msg_proc, NULL);
-  jwidget_add_hook(m_button, JI_WIDGET, combobox_button_msg_proc, NULL);
 
   jwidget_expansive(m_entry, true);
 
@@ -356,18 +365,6 @@ static bool combobox_entry_msg_proc(JWidget widget, JMessage msg)
 
   }
 
-  return false;
-}
-
-static bool combobox_button_msg_proc(JWidget widget, JMessage msg)
-{
-  switch (msg->type) {
-
-    case JM_DRAW:
-      widget->getTheme()->draw_combobox_button((ButtonBase*)widget, &msg->draw.rect);
-      return true;
-
-  }
   return false;
 }
 
