@@ -26,7 +26,6 @@
 #include "base/remove_from_container.h"
 #include "base/scoped_lock.h"
 #include "file/format_options.h"
-#include "gui/base.h"
 #include "raster/raster.h"
 #include "util/boundary.h"
 
