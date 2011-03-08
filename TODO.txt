@@ -3,7 +3,6 @@ For next release
 
 + Add feedback to "Shift+S" shortcut to switch "snap to grid".
 + Fix palette editor to avoid generating a lot of consecutive Undo actions.
-+ Move "effect/images_ref" to "raster" and refactor it to a class.
 + Convert jaccel::key_list to std::vector<>
 + Integrate "copy & paste" loop with selection moving loop.
 + Shade drawing mode.
@@ -14,6 +13,13 @@ For next release
   This button should apply a color curve to the whole sprite to remap
   old indexes to the new positions. 
 + Support for non-zero index entries as transparent in Indexed sprites.
++ Move launcher.cpp to base/ lib adding an extension point for "gui" lib.
++ Remove src/dialogs/vectmap,repo,playfli,drawtext.
++ Move src/dialogs/aniedit,filesel to src/widgets (remove dialogs/ directory).
++ Move everything from src/app/ to src/
++ Move everything from src/core/ to src/
++ Merge everything related to configuration/settings in one class
+  (admit configuration per file). Use cfg.cpp and settings/ dir.
 
 Refactoring
 -----------
