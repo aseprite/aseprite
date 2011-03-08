@@ -909,7 +909,8 @@ bool Editor::onProcessMessage(JMessage msg)
       // Editor with sprite
       else {
 	try {
-	  //SpriteReader spriteReader(m_sprite);
+	  // Lock the sprite to read/render it.
+	  SpriteReader spriteReader(m_sprite);
 	  int x1, y1, x2, y2;
 
 	  // Draw the background outside of sprite's bounds
@@ -951,7 +952,7 @@ bool Editor::onProcessMessage(JMessage msg)
 	  }
 	}
 	catch (const LockedSpriteException&) {
-	  // The sprite is locked to be read... we can draw an opaque
+	  // The sprite is locked to be read, so we can draw an opaque
 	  // background only.
 
 	  View* view = View::getView(this);
