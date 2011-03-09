@@ -265,11 +265,14 @@ bool jmanager_generate_messages(JWidget manager)
     JI_LIST_FOR_EACH(new_windows, link) {
       window = reinterpret_cast<JWidget>(link->data);
 
-      /* dirty the entire window and show it */
-      window->invalidate();
-      window->setVisible(true);
+      // Relayout
+      window->layout();
 
-      /* attract the focus to the magnetic widget... */
+      // Dirty the entire window and show it
+      window->setVisible(true);
+      window->invalidate();
+
+      // Attract the focus to the magnetic widget...
       /* 1) get the magnetic widget */
       magnet = find_magnetic_widget(window->getRoot());
       /* 2) if magnetic widget exists and it doesn't have the focus */
