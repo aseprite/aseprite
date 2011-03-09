@@ -627,7 +627,7 @@ void PaletteEntryEditor::selectColorType(Color::Type type)
     case Color::HsvType: m_hsvButton.setSelected(true); break;
   }
   
-  m_vbox.setBounds(m_vbox.getBounds()); // TODO add Widget::relayout member function
+  m_vbox.layout();
   m_vbox.invalidate();
 }
 

@@ -191,6 +191,6 @@ void ColorSelector::selectColorType(Color::Type type)
     case Color::MaskType:  m_maskButton.setSelected(true); break;
   }
   
-  m_vbox.setBounds(m_vbox.getBounds()); // TODO add Widget::relayout member function
+  m_vbox.layout();
   m_vbox.invalidate();
 }
