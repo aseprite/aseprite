@@ -29,7 +29,7 @@ public:
 
   void printf(const char *format, ...);
 
-  static void showException(std::exception& e);
+  static void showException(const std::exception& e);
 };
 
 #endif

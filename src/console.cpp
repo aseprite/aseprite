@@ -158,7 +158,7 @@ void Console::printf(const char *format, ...)
 }
 
 // static
-void Console::showException(std::exception& e)
+void Console::showException(const std::exception& e)
 {
   Console console;
   console.printf("A problem has occurred.\n\nDetails:\n%s", e.what());
