@@ -63,7 +63,6 @@ void jwidget_replace_child(JWidget widget, JWidget old_child,
 
 /* position and geometry */
 
-void jwidget_relayout(JWidget widget);
 JRect jwidget_get_rect(JWidget widget);
 JRect jwidget_get_child_rect(JWidget widget);
 JRegion jwidget_get_region(JWidget widget);
@@ -236,6 +235,12 @@ public:
   T* findChildT(const char* name) {
     return dynamic_cast<T*>(findChild(name));
   }
+
+  // ===============================================================
+  // LAYOUT & CONSTRAINT
+  // ===============================================================
+
+  void layout();
 
   // ===============================================================
   // POSITION & GEOMETRY

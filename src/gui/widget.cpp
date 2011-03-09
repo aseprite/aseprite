@@ -664,6 +664,16 @@ Widget* Widget::findSibling(const char* name)
   return getRoot()->findChild(name);
 }
 
+// ===============================================================
+// LAYOUT & CONSTRAINT
+// ===============================================================
+
+void Widget::layout()
+{
+  jwidget_set_rect(this, rc);
+  invalidate();
+}
+
 /**********************************************************************/
 /* position and geometry */
 
@@ -694,12 +704,6 @@ void Widget::setBorder(const Border& br)
   border_width.t = br.top();
   border_width.r = br.right();
   border_width.b = br.bottom();
-}
-
-void jwidget_relayout(JWidget widget)
-{
-  jwidget_set_rect(widget, widget->rc);
-  widget->invalidate();
 }
 
 /* gets the position of the widget */

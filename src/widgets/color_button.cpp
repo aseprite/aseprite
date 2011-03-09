@@ -236,7 +236,7 @@ void ColorButton::openSelectorDialog()
   m_frame->position_window(x, y);
 
   jmanager_dispatch_messages(m_frame->getManager());
-  jwidget_relayout(m_frame);
+  m_frame->layout();
 
   /* setup the hot-region */
   {
