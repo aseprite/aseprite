@@ -667,9 +667,9 @@ void save_window_pos(JWidget window, const char *section)
   set_config_rect(section, "WindowPos", window->getBounds());
 }
 
-JWidget load_widget(const char* filename, const char* name)
+Widget* load_widget(const char* filename, const char* name)
 {
-  JWidget widget;
+  Widget* widget;
   char buf[512];
   bool found = false;
 
