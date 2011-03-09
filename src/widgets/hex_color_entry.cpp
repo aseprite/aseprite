@@ -53,7 +53,6 @@ void HexColorEntry::onEntryChange()
 {
   std::string text = m_entry.getText();
   int r, g, b;
-  int c;
 
   // Fill with zeros at the end of the text
   while (text.size() < 6)
