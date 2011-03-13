@@ -33,25 +33,25 @@ Context::Context(ISettings* settings)
 
 Context::~Context()
 {
-  for (SpriteList::iterator
-	 it = m_sprites.begin(); it != m_sprites.end(); ++it) {
+  for (Documents::iterator
+	 it = m_documents.begin(), end = m_documents.end(); it != end; ++it) {
     Sprite* sprite = *it;
     delete sprite;
   }
-  m_sprites.clear();
+  m_documents.clear();
 
   delete m_settings;
 }
 
-const SpriteList& Context::getSpriteList() const
+const Documents& Context::getDocuments() const
 {
-  return m_sprites;
+  return m_documents;
 }
 
 Sprite* Context::getFirstSprite() const
 {
-  if (!m_sprites.empty())
-    return m_sprites.front();
+  if (!m_documents.empty())
+    return m_documents.front();
   else
     return NULL;
 }
@@ -60,11 +60,11 @@ Sprite* Context::getNextSprite(Sprite* sprite) const
 {
   ASSERT(sprite != NULL);
 
-  SpriteList::const_iterator it = std::find(m_sprites.begin(), m_sprites.end(), sprite);
+  Documents::const_iterator it = std::find(m_documents.begin(), m_documents.end(), sprite);
 
-  if (it != m_sprites.end()) {
+  if (it != m_documents.end()) {
     ++it;
-    if (it != m_sprites.end())
+    if (it != m_documents.end())
       return *it;
   }
   return NULL;
@@ -74,7 +74,7 @@ void Context::addSprite(Sprite* sprite)
 {
   ASSERT(sprite != NULL);
 
-  m_sprites.push_front(sprite);
+  m_documents.push_front(sprite);
 
   // Generate onAddSprite event
   onAddSprite(sprite);
@@ -84,11 +84,11 @@ void Context::removeSprite(Sprite* sprite)
 {
   ASSERT(sprite != NULL);
 
-  SpriteList::iterator it = std::find(m_sprites.begin(), m_sprites.end(), sprite);
-  ASSERT(it != m_sprites.end());
+  Documents::iterator it = std::find(m_documents.begin(), m_documents.end(), sprite);
+  ASSERT(it != m_documents.end());
 
   // remove the item from the sprites list
-  m_sprites.erase(it);
+  m_documents.erase(it);
 
   // generate on_remove_sprite event
   onRemoveSprite(sprite);
@@ -102,14 +102,14 @@ void Context::sendSpriteToTop(Sprite* sprite)
 {
   ASSERT(sprite);
 
-  SpriteList::iterator it = std::find(m_sprites.begin(), m_sprites.end(), sprite);
-  ASSERT(it != m_sprites.end());
+  Documents::iterator it = std::find(m_documents.begin(), m_documents.end(), sprite);
+  ASSERT(it != m_documents.end());
 
   // remove the item from the sprites list
-  m_sprites.erase(it);
+  m_documents.erase(it);
 
   // add it again
-  m_sprites.push_front(sprite);
+  m_documents.push_front(sprite);
 }
 
 Sprite* Context::getCurrentSprite() const

@@ -372,11 +372,11 @@ void app_refresh_screen(const Sprite* sprite)
 void app_realloc_sprite_list()
 {
   UIContext* context = UIContext::instance();
-  const SpriteList& list = context->getSpriteList();
+  const Documents& docs = context->getDocuments();
 
   // Insert all other sprites
-  for (SpriteList::const_iterator
-	 it = list.begin(); it != list.end(); ++it) {
+  for (Documents::const_iterator
+	 it = docs.begin(), end = docs.end(); it != end; ++it) {
     Sprite* sprite = *it;
     tabsbar->setTabText(get_filename(sprite->getFilename()), sprite);
   }

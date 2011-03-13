@@ -403,10 +403,10 @@ static int is_sprite_in_some_editor(Sprite* sprite)
 static Sprite* get_more_reliable_sprite()
 {
   UIContext* context = UIContext::instance();
-  const SpriteList& list = context->getSpriteList();
+  const Documents& docs = context->getDocuments();
 
-  for (SpriteList::const_iterator
-	 it = list.begin(); it != list.end(); ++it) {
+  for (Documents::const_iterator
+	 it = docs.begin(), end = docs.end(); it != end; ++it) {
     Sprite* sprite = *it;
     if (!(is_sprite_in_some_editor(sprite)))
       return sprite;

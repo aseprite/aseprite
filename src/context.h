@@ -29,7 +29,7 @@ class SpriteReader;
 class Command;
 class Params;
 
-typedef std::list<Sprite*> SpriteList;
+typedef std::list<Sprite*> Documents;
 
 class CommandPreconditionException : public base::Exception
 {
@@ -50,7 +50,7 @@ public:
 
   ISettings* getSettings() { return m_settings; }
 
-  const SpriteList& getSpriteList() const;
+  const Documents& getDocuments() const;
   Sprite* getFirstSprite() const;
   Sprite* getNextSprite(Sprite* sprite) const;
 
@@ -79,7 +79,7 @@ private:
   Context();
 
   // List of all sprites.
-  SpriteList m_sprites;
+  Documents m_documents;
 
   // Current selected sprite to operate.
   Sprite* m_currentSprite;

@@ -84,7 +84,7 @@ protected:
 
   bool onEnabled(Context* context)
   {
-    return !context->getSpriteList().empty();
+    return !context->getDocuments().empty();
   }
 
   void onExecute(Context* context)
