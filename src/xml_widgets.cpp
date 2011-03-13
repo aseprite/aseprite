@@ -24,10 +24,12 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "app.h"
 #include "base/bind.h"
 #include "base/memory.h"
 #include "gui/gui.h"
 #include "modules/gui.h"
+#include "widgets/color_button.h"
 #include "xml_exception.h"
 
 #include "tinyxml.h"
@@ -310,6 +312,10 @@ static Widget* convert_xmlelement_to_widget(TiXmlElement* elem, Widget* root)
       else
 	widget = new Frame(false, TRANSLATE_ATTR(text));
     }
+  }
+  /* colorpicker */
+  else if (ustrcmp(elem_name, "colorpicker") == 0) {
+    widget = new ColorButton(Color::fromMask(), app_get_current_image_type());
   }
 
   // Was the widget created?
