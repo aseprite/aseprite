@@ -38,7 +38,7 @@
 #include "raster/image.h"
 #include "raster/layer.h"
 #include "raster/sprite.h"
-#include "raster/undo.h"
+#include "raster/undo_history.h"
 #include "skin/skin_theme.h"
 #include "sprite_wrappers.h"
 #include "tools/tool.h"

@@ -18,7 +18,7 @@
 
 #include "app.h"		// TODO avoid to include this file
 #include "app/color_utils.h"
-#include "raster/undo.h"
+#include "raster/undo_history.h"
 
 #include "tools/ink_processing.h"
 #include "context.h"

@@ -253,7 +253,7 @@ public:
     }
   }
 
-  Undo* getUndo() const {
+  UndoHistory* getUndo() const {
     return m_undo;
   }
 
@@ -358,7 +358,7 @@ private:
   Layer* m_layer;			 // current layer
   Path* m_path;				 // working path
   Mask* m_mask;				 // selected mask region
-  Undo* m_undo;				 // undo stack
+  UndoHistory* m_undo;			 // undo stack
   struct {
     PathsList paths;			// paths
     MasksList masks;			// masks
@@ -412,7 +412,7 @@ SpriteImpl::SpriteImpl(Sprite* sprite, int imgtype, int width, int height, int n
   m_layer = NULL;
   m_path = NULL;
   m_mask = mask_new();
-  m_undo = new Undo(m_self);
+  m_undo = new UndoHistory(m_self);
   m_extraCel = NULL;
   m_extraImage = NULL;
 
@@ -1281,7 +1281,7 @@ void Sprite::remapImages(int frame_from, int frame_to, const std::vector<int>& m
 //////////////////////////////////////////////////////////////////////
 // Undo
 
-Undo* Sprite::getUndo() const
+UndoHistory* Sprite::getUndo() const
 {
   return m_impl->getUndo();
 }

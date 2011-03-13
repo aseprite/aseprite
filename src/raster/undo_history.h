@@ -40,11 +40,11 @@ public:
   UndoException(const char* msg) throw() : base::Exception(msg) { }
 };
 
-class Undo : public GfxObj
+class UndoHistory : public GfxObj
 {
 public:
-  Undo(Sprite* sprite);
-  virtual ~Undo();
+  UndoHistory(Sprite* sprite);
+  virtual ~UndoHistory();
 
   bool isEnabled() const;
   void setEnabled(bool state);

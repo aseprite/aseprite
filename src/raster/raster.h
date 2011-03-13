@@ -34,6 +34,6 @@
 #include "raster/rotate.h"
 #include "raster/sprite.h"
 #include "raster/stock.h"
-#include "raster/undo.h"
+#include "raster/undo_history.h"
 
 #endif

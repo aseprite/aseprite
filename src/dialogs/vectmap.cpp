@@ -25,7 +25,7 @@
 #include "modules/gui.h"
 #include "raster/image.h"
 #include "raster/sprite.h"
-#include "raster/undo.h"
+#include "raster/undo_history.h"
 #include "util/misc.h"
 
 static void project(Image *image, int x, int y, double dmax, double *out_x, double *out_y)

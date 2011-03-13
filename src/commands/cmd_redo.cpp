@@ -22,7 +22,7 @@
 #include "app.h"
 #include "modules/gui.h"
 #include "raster/sprite.h"
-#include "raster/undo.h"
+#include "raster/undo_history.h"
 #include "widgets/statebar.h"
 #include "sprite_wrappers.h"
 

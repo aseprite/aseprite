@@ -45,7 +45,7 @@
 #include "raster/quantization.h"
 #include "raster/sprite.h"
 #include "raster/stock.h"
-#include "raster/undo.h"
+#include "raster/undo_history.h"
 #include "skin/skin_slider_property.h"
 #include "sprite_wrappers.h"
 #include "ui_context.h"

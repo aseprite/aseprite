@@ -24,7 +24,7 @@ class UndoStream
 public:
   typedef ChunksList::iterator iterator;
 
-  UndoStream(Undo* undo)
+  UndoStream(UndoHistory* undo)
   {
     m_undo = undo;
     m_size = 0;
@@ -35,7 +35,7 @@ public:
     clear();
   }
 
-  Undo* getUndo() const
+  UndoHistory* getUndo() const
   {
     return m_undo;
   }
@@ -88,7 +88,7 @@ public:
   }
 
 private:
-  Undo* m_undo;
+  UndoHistory* m_undo;
   ChunksList m_chunks;
   int m_size;
 };

@@ -25,7 +25,6 @@
 #include "modules/gui.h"
 #include "raster/layer.h"
 #include "raster/sprite.h"
-#include "raster/undo.h"
 #include "undoable.h"
 #include "sprite_wrappers.h"
 #include "widgets/statebar.h"

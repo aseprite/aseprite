@@ -37,7 +37,7 @@
 #include "raster/rotate.h"
 #include "raster/sprite.h"
 #include "raster/stock.h"
-#include "raster/undo.h"
+#include "raster/undo_history.h"
 #include "settings/settings.h"
 #include "skin/skin_parts.h"
 #include "skin/skin_theme.h"

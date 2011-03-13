@@ -31,7 +31,7 @@ class Mask;
 class Palette;
 class Path;
 class Stock;
-class Undo;
+class UndoHistory;
 class Sprite;
 class RgbMap;
 struct _BoundSeg;
@@ -155,7 +155,7 @@ public:
   ////////////////////////////////////////
   // Undo
 
-  Undo* getUndo() const;
+  UndoHistory* getUndo() const;
 
   ////////////////////////////////////////
   // Mask

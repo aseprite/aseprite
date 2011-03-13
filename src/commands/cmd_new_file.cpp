@@ -36,7 +36,6 @@
 #include "raster/layer.h"
 #include "raster/palette.h"
 #include "raster/sprite.h"
-#include "raster/undo.h"
 #include "util/misc.h"
 #include "widgets/color_bar.h"
 #include "app/color_utils.h"

@@ -24,7 +24,7 @@
 #include "raster/image.h"
 #include "raster/mask.h"
 #include "raster/sprite.h"
-#include "raster/undo.h"
+#include "raster/undo_history.h"
 #include "sprite_wrappers.h"
 
 //////////////////////////////////////////////////////////////////////

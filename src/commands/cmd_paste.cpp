@@ -21,7 +21,6 @@
 #include "commands/command.h"
 #include "raster/layer.h"
 #include "raster/sprite.h"
-#include "raster/undo.h"
 #include "util/clipboard.h"
 #include "sprite_wrappers.h"
 

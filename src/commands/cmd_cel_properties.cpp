@@ -31,7 +31,7 @@
 #include "raster/layer.h"
 #include "raster/sprite.h"
 #include "raster/stock.h"
-#include "raster/undo.h"
+#include "raster/undo_history.h"
 #include "sprite_wrappers.h"
 
 class CelPropertiesCommand : public Command

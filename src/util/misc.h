@@ -20,13 +20,10 @@
 #define UTIL_MISC_H_INCLUDED
 
 #include "app/color.h"
-#include "widgets/editor.h"	/* for movement modes */
+#include "widgets/editor.h"	// For movement modes
 
-class Frame;
 class Image;
-class Layer;
 class Sprite;
-class Undo;
 
 Image* NewImageFromMask(const Sprite* src);
 

@@ -27,7 +27,7 @@
 #include "raster/layer.h"
 #include "raster/sprite.h"
 #include "raster/stock.h"
-#include "raster/undo.h"
+#include "raster/undo_history.h"
 
 static bool has_cels(const Layer* layer, int frame);
 
