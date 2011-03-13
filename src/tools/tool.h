@@ -19,16 +19,15 @@
 #ifndef TOOLS_TOOL_H_INCLUDED
 #define TOOLS_TOOL_H_INCLUDED
 
-#include <string>
 #include <list>
+#include <string>
 #include <vector>
 
+#include "filters/tiled_mode.h"
 #include "gfx/point.h"
 #include "gfx/rect.h"
 #include "gui/message.h"
 #include "gui/rect.h"
-
-#include "tiled_mode.h"
 
 class Context;
 class Sprite;

@@ -16,7 +16,7 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#include "effect/effect.h"
+#include "filters/neighboring_pixels.h"
 #include "modules/palettes.h"
 #include "raster/palette.h"
 #include "raster/rgbmap.h"
@@ -158,49 +158,89 @@ static void ink_hline8_transparent(int x1, int y, int x2, IToolLoop* loop)
 // Blur Ink
 //////////////////////////////////////////////////////////////////////
 
+namespace {
+  struct BlurGetPixelsDelegateRgba
+  {
+    int count, r, g, b, a;
+
+    void reset() { count = r = g = b = a = 0; }
+
+    void operator()(RgbTraits::pixel_t color)
+    {
+      if (_rgba_geta(color) != 0) {
+	r += _rgba_getr(color);
+	g += _rgba_getg(color);
+	b += _rgba_getb(color);
+	a += _rgba_geta(color);
+	++count;
+      }
+    }
+  };
+
+  struct BlurGetPixelsDelegateGrayscale
+  {
+    int count, v, a;
+
+    void reset() { count = v = a = 0; }
+
+    void operator()(GrayscaleTraits::pixel_t color)
+    {
+      if (_graya_geta(color) > 0) {
+	v += _graya_getv(color);
+	a += _graya_geta(color);
+	++count;
+      }
+    }
+  };
+
+  struct BlurGetPixelsDelegateIndexed
+  {
+    const Palette* pal;
+    int count, r, g, b, a;
+
+    BlurGetPixelsDelegateIndexed(const Palette* pal) : pal(pal) { }
+
+    void reset() { count = r = g = b = a = 0; }
+
+    void operator()(IndexedTraits::pixel_t color)
+    {
+      a += (color == 0 ? 0: 255);
+
+      color = pal->getEntry(color);
+      r += _rgba_getr(color);
+      g += _rgba_getg(color);
+      b += _rgba_getb(color);
+      count++;
+    }
+  };
+};
+
 static void ink_hline32_blur(int x1, int y, int x2, IToolLoop* loop)
 {
-  int c, r, g, b, a;
   int opacity = loop->getOpacity();
-  TiledMode tiled = loop->getTiledMode();
-  Image* src = loop->getSrcImage();
-  int getx, gety;
-  int addx, addy;
-  int dx, dy, color;
-  ase_uint32 *src_address2;
+  TiledMode tiledMode = loop->getTiledMode();
+  const Image* src = loop->getSrcImage();
+  BlurGetPixelsDelegateRgba delegate;
 
   DEFINE_INK_PROCESSING_SRCDST
     (RgbTraits,
      {
-       c = 0;
-       r = g = b = a = 0;
+       delegate.reset();
+       get_neighboring_pixels<RgbTraits>(src, x, y, 3, 3, 1, 1, tiledMode, delegate);
 
-       GET_MATRIX_DATA
-	 (ase_uint32, src, src_address2,
-	  3, 3, 1, 1, tiled,
-	  color = *src_address2;
-	  if (_rgba_geta(color) != 0) {
-	    r += _rgba_getr(color);
-	    g += _rgba_getg(color);
-	    b += _rgba_getb(color);
-	    a += _rgba_geta(color);
-	    ++c;
-	  }
-	  );
+       if (delegate.count > 0) {
+	 delegate.r /= delegate.count;
+	 delegate.g /= delegate.count;
+	 delegate.b /= delegate.count;
+	 delegate.a /= 9;
 
-       if (c > 0) {
-	 r /= c;
-	 g /= c;
-	 b /= c;
-	 a /= 9;
-
-	 c = *src_address;
-	 r = _rgba_getr(c) + (r-_rgba_getr(c)) * opacity / 255;
-	 g = _rgba_getg(c) + (g-_rgba_getg(c)) * opacity / 255;
-	 b = _rgba_getb(c) + (b-_rgba_getb(c)) * opacity / 255;
-	 a = _rgba_geta(c) + (a-_rgba_geta(c)) * opacity / 255;
+	 RgbTraits::pixel_t c = *src_address;
+	 delegate.r = _rgba_getr(c) + (delegate.r-_rgba_getr(c)) * opacity / 255;
+	 delegate.g = _rgba_getg(c) + (delegate.g-_rgba_getg(c)) * opacity / 255;
+	 delegate.b = _rgba_getb(c) + (delegate.b-_rgba_getb(c)) * opacity / 255;
+	 delegate.a = _rgba_geta(c) + (delegate.a-_rgba_geta(c)) * opacity / 255;
 	 
-	 *dst_address = _rgba(r, g, b, a);
+	 *dst_address = _rgba(delegate.r, delegate.g, delegate.b, delegate.a);
        }
        else {
 	 *dst_address = *src_address;
@@ -210,41 +250,26 @@ static void ink_hline32_blur(int x1, int y, int x2, IToolLoop* loop)
 
 static void ink_hline16_blur(int x1, int y, int x2, IToolLoop* loop)
 {
-  int c, v, a;
   int opacity = loop->getOpacity();
-  TiledMode tiled = loop->getTiledMode();
-  Image* src = loop->getSrcImage();
-  int getx, gety;
-  int addx, addy;
-  int dx, dy, color;
-  ase_uint16 *src_address2;
+  TiledMode tiledMode = loop->getTiledMode();
+  const Image* src = loop->getSrcImage();
+  BlurGetPixelsDelegateGrayscale delegate;
 
   DEFINE_INK_PROCESSING_SRCDST
     (GrayscaleTraits,
      {
-       c = 0;
-       v = a = 0;
+       delegate.reset();
+       get_neighboring_pixels<GrayscaleTraits>(src, x, y, 3, 3, 1, 1, tiledMode, delegate);
 
-       GET_MATRIX_DATA
-	 (ase_uint16, src, src_address2,
-	  3, 3, 1, 1, tiled,
-	  color = *src_address2;
-	  if (_graya_geta(color) > 0) {
-	    v += _graya_getv(color);
-	    a += _graya_geta(color);
-	  }
-	  c++;
-	  );
+       if (delegate.count > 0) {
+	 delegate.v /= delegate.count;
+	 delegate.a /= 9;
 
-       if (c > 0) {
-	 v /= c;
-	 a /= 9;
+	 GrayscaleTraits::pixel_t c = *src_address;
+	 delegate.v = _graya_getv(c) + (delegate.v-_graya_getv(c)) * opacity / 255;
+	 delegate.a = _graya_geta(c) + (delegate.a-_graya_geta(c)) * opacity / 255;
 
-	 c = *src_address;
-	 v = _graya_getv(c) + (v-_graya_getv(c)) * opacity / 255;
-	 a = _graya_geta(c) + (a-_graya_geta(c)) * opacity / 255;
-	 
-	 *dst_address = _graya(v, a);
+	 *dst_address = _graya(delegate.v, delegate.a);
        }
        else {
 	 *dst_address = *src_address;
@@ -254,48 +279,30 @@ static void ink_hline16_blur(int x1, int y, int x2, IToolLoop* loop)
 
 static void ink_hline8_blur(int x1, int y, int x2, IToolLoop* loop)
 {
-  Palette *pal = get_current_palette();
+  const Palette *pal = get_current_palette();
   RgbMap* rgbmap = loop->getSprite()->getRgbMap();
-  int c, r, g, b, a;
   int opacity = loop->getOpacity();
-  TiledMode tiled = loop->getTiledMode();
-  Image* src = loop->getSrcImage();
-  int getx, gety;
-  int addx, addy;
-  int dx, dy, color;
-  ase_uint8 *src_address2;
+  TiledMode tiledMode = loop->getTiledMode();
+  const Image* src = loop->getSrcImage();
+  BlurGetPixelsDelegateIndexed delegate(pal);
   
   DEFINE_INK_PROCESSING_SRCDST
     (IndexedTraits,
      {
-       c = 0;
-       r = g = b = a = 0;
+       delegate.reset();
+       get_neighboring_pixels<IndexedTraits>(src, x, y, 3, 3, 1, 1, tiledMode, delegate);
 
-       GET_MATRIX_DATA
-	 (ase_uint8, src, src_address2,
-	  3, 3, 1, 1, tiled,
+       if (delegate.count > 0 && delegate.a/9 >= 128) {
+	 delegate.r /= delegate.count;
+	 delegate.g /= delegate.count;
+	 delegate.b /= delegate.count;
 
-	  color = *src_address2;
-	  a += (color == 0 ? 0: 255);
+	 IndexedTraits::pixel_t c = *src_address;
+	 delegate.r = _rgba_getr(c) + (delegate.r-_rgba_getr(c)) * opacity / 255;
+	 delegate.g = _rgba_getg(c) + (delegate.g-_rgba_getg(c)) * opacity / 255;
+	 delegate.b = _rgba_getb(c) + (delegate.b-_rgba_getb(c)) * opacity / 255;
 
-	  color = pal->getEntry(color);
-	  r += _rgba_getr(color);
-	  g += _rgba_getg(color);
-	  b += _rgba_getb(color);
-	  c++;
-	  );
-
-       if (c > 0 && a/9 >= 128) {
-	 r /= c;
-	 g /= c;
-	 b /= c;
-
-	 c = pal->getEntry(*src_address);
-	 r = _rgba_getr(c) + (r-_rgba_getr(c)) * opacity / 255;
-	 g = _rgba_getg(c) + (g-_rgba_getg(c)) * opacity / 255;
-	 b = _rgba_getb(c) + (b-_rgba_getb(c)) * opacity / 255;
-
-	 *dst_address = rgbmap->mapColor(r, g, b);
+	 *dst_address = rgbmap->mapColor(delegate.r, delegate.g, delegate.b);
        }
        else {
 	 *dst_address = *src_address;
@@ -336,7 +343,7 @@ static void ink_hline16_replace(int x1, int y, int x2, IToolLoop* loop)
 static void ink_hline8_replace(int x1, int y, int x2, IToolLoop* loop)
 {
   int color1 = loop->getPrimaryColor();
-  Palette *pal = get_current_palette();
+  const Palette *pal = get_current_palette();
   RgbMap* rgbmap = loop->getSprite()->getRgbMap();
   ase_uint32 c;
   ase_uint32 tc = pal->getEntry(loop->getSecondaryColor());

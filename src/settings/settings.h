@@ -19,9 +19,9 @@
 #ifndef SETTINGS_SETTINGS_H_INCLUDED
 #define SETTINGS_SETTINGS_H_INCLUDED
 
-#include "gfx/rect.h"
 #include "app/color.h"
-#include "tiled_mode.h"
+#include "filters/tiled_mode.h"
+#include "gfx/rect.h"
 #include "raster/pen_type.h"
 
 class IToolSettings;

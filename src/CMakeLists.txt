@@ -43,7 +43,7 @@ else()
 endif()
 
 # All libraries for .exe files
-set(all_libs aseprite-library gui-lib gfx-lib base-lib ${libs3rdparty} allegro ${sys_libs})
+set(all_libs filters-lib aseprite-library gui-lib gfx-lib base-lib ${libs3rdparty} allegro ${sys_libs})
 
 # Directories where .h files can be found
 include_directories(
@@ -63,6 +63,7 @@ add_subdirectory(allegro)
 add_subdirectory(base)
 add_subdirectory(gfx)
 add_subdirectory(gui)
+add_subdirectory(filters)
 
 ######################################################################
 # aseprite library
@@ -151,12 +152,18 @@ add_library(aseprite-library
   commands/cmd_undo.cpp
   commands/command.cpp
   commands/commands.cpp
-  commands/fx/cmd_color_curve.cpp
-  commands/fx/cmd_convolution_matrix.cpp
-  commands/fx/cmd_despeckle.cpp
-  commands/fx/cmd_invert_color.cpp
-  commands/fx/cmd_replace_color.cpp
-  commands/fx/effectbg.cpp
+  commands/filters/cmd_color_curve.cpp
+  commands/filters/cmd_convolution_matrix.cpp
+  commands/filters/cmd_despeckle.cpp
+  commands/filters/cmd_invert_color.cpp
+  commands/filters/cmd_replace_color.cpp
+  commands/filters/color_curve_editor.cpp
+  commands/filters/convolution_matrix_stock.cpp
+  commands/filters/filter_manager_impl.cpp
+  commands/filters/filter_preview.cpp
+  commands/filters/filter_target_buttons.cpp
+  commands/filters/filter_window.cpp
+  commands/filters/filter_worker.cpp
   core/cfg.cpp
   core/drop_files.cpp
   core/file_system.cpp
@@ -168,12 +175,6 @@ add_library(aseprite-library
   dialogs/playfli.cpp
   dialogs/repo.cpp
   dialogs/vectmap.cpp
-  effect/colcurve.cpp
-  effect/convmatr.cpp
-  effect/effect.cpp
-  effect/invrtcol.cpp
-  effect/median.cpp
-  effect/replcol.cpp
   file/ase_format.cpp
   file/bmp_format.cpp
   file/file.cpp
@@ -234,7 +235,6 @@ add_library(aseprite-library
   widgets/color_button.cpp
   widgets/color_selector.cpp
   widgets/color_sliders.cpp
-  widgets/curvedit.cpp
   widgets/editor/click.cpp
   widgets/editor/cursor.cpp
   widgets/editor/editor.cpp
@@ -245,10 +245,8 @@ add_library(aseprite-library
   widgets/hex_color_entry.cpp
   widgets/menuitem.cpp
   widgets/palette_view.cpp
-  widgets/preview.cpp
   widgets/statebar.cpp
   widgets/tabs.cpp
-  widgets/target.cpp
   widgets/toolbar.cpp)
 
 ######################################################################

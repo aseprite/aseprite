@@ -1,0 +1,10 @@
+<!-- ASE - Allegro Sprite Editor -->
+<!-- Copyright (C) 2001-2011 by David Capello -->
+<jinete>
+  <grid columns="2" name="controls">
+    <label text="Width:" />
+    <entry name="width" maxsize="4" cell_align="horizontal" />
+    <label text="Height:" />
+    <entry name="height" maxsize="4" cell_align="horizontal" />
+  </grid>
+</jinete>

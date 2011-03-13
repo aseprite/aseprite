@@ -1,64 +1,12 @@
 <!-- ASE - Allegro Sprite Editor -->
 <!-- Copyright (C) 2001-2011 by David Capello -->
 <jinete>
-<window text="Convolution Matrix" name="convolution_matrix">
-  <box vertical="true">
-    <box horizontal="true" expansive="true">
-      <view expansive="true" name="view" /><!-- custom widget -->
-      <box vertical="true">
-        <button text="&amp;OK" closewindow="true" name="button_ok" magnetic="true" />
-        <button text="&amp;Cancel" closewindow="true" />
-        <box name="target" />
-        <check text="&amp;Preview" name="preview" />
-        <check text="&amp;Tiled" name="tiled" />
-      </box>
-    </box>
+  <box vertical="true" name="controls" expansive="true">
+    <view expansive="true" name="view" minwidth="128" minheight="64">
+      <listbox name="stock" />
+    </view>
     <box horizontal="true">
       <button text="&amp;Reload Stock" name="reload" />
-      <button text="&amp;Generate" name="generate" />
     </box>
   </box>
-</window>
-<window text="Generate New Matrix" name="generate_convolution_matrix">
-  <box vertical="true">
-    <box horizontal="true" expansive="true" homogeneous="true">
-      <box vertical="true" expansive="true">
-        <label text="X axis" />
-        <view expansive="true" name="view_x" /><!-- custom widget -->
-      </box>
-      <box vertical="true" expansive="true">
-        <label text="Y axis" />
-        <view expansive="true" name="view_y" /><!-- custom widget -->
-      </box>
-    </box>
-    <box horizontal="true" homogeneous="true">
-      <box horizontal="true">
-        <box vertical="true" homogeneous="true">
-          <label text="Width:" />
-          <label text="Height:" />
-	</box>
-        <box vertical="true" homogeneous="true" expansive="true">
-          <slider min="1" max="31" name="width" />
-          <slider min="1" max="31" name="height" />
-	</box>
-        <box vertical="true" homogeneous="true">
-          <label text="Div:" />
-          <label text="Bias:" />
-	</box>
-        <box vertical="true" homogeneous="true" expansive="true">
-          <entry maxsize="32" name="div" />
-          <entry maxsize="32" name="bias" />
-	</box>
-        <box vertical="true" homogeneous="true">
-          <check text="Auto" name="div_auto" />
-          <check text="Auto" name="bias_auto" />
-	</box>
-      </box>
-    </box>
-    <box horizontal="true" homogeneous="true">
-      <button text="&amp;OK" closewindow="true" name="button_ok" magnetic="true" />
-      <button text="&amp;Cancel" closewindow="true" />
-    </box>
-  </box>
-</window>
 </jinete>

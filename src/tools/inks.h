@@ -21,6 +21,7 @@
 #include "raster/undo.h"
 
 #include "tools/ink_processing.h"
+#include "context.h"
 
 
 // Ink used for tools which paint with primary/secondary
@@ -51,8 +52,8 @@ public:
       case WithBg:
 	{
 	  int color = color_utils::color_for_layer(m_type == WithFg ? 
-						     loop->getContext()->getSettings()->getFgColor():
-						     loop->getContext()->getSettings()->getBgColor(),
+						   loop->getContext()->getSettings()->getFgColor():
+						   loop->getContext()->getSettings()->getBgColor(),
 						   loop->getLayer());
 	  loop->setPrimaryColor(color);
 	  loop->setSecondaryColor(color);

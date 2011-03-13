@@ -19,7 +19,6 @@
 #include "config.h"
 
 #include "core/modules.h"
-#include "effect/effect.h"
 #include "modules/editors.h"
 #include "modules/gui.h"
 #include "modules/palettes.h"
@@ -43,7 +42,6 @@ static Module module[] =
      first ones.  */
 
   DEF_MODULE(palette,		0),
-  DEF_MODULE(effect,		0),
   DEF_MODULE(gui,		REQUIRE_INTERFACE),
   DEF_MODULE(rootmenu,		REQUIRE_INTERFACE),
   DEF_MODULE(editors,		REQUIRE_INTERFACE),

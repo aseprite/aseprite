@@ -1,25 +1,16 @@
 <!-- ASE - Allegro Sprite Editor -->
 <!-- Copyright (C) 2001-2011 by David Capello -->
 <jinete>
-<window text="Replace Color" name="replace_color">
-  <box horizontal="true">
-    <box vertical="true" expansive="true">
-      <box horizontal="true" expansive="true">
-        <box vertical="true" homogeneous="true">
-          <label text="From:" />
-          <label text="To:" />
-        </box>
-        <box vertical="true" homogeneous="true" expansive="true" name="color_buttons_box" />
-      </box>
-      <label text="Tolerance:" />
-      <slider min="0" max="255" name="tolerance" />
+  <box vertical="true" expansive="true" name="controls">
+    <box horizontal="true" expansive="true">
+      <grid columns="2" name="controls">
+	<label text="From:" />
+	<colorpicker name="from" cell_align="horizontal" />
+	<label text="To:" />
+	<colorpicker name="to" cell_align="horizontal" />
+      </grid>
     </box>
-    <box vertical="true">
-      <button text="&amp;OK" closewindow="true" name="button_ok" magnetic="true" />
-      <button text="&amp;Cancel" closewindow="true" />
-      <box name="target" />
-      <check text="&amp;Preview" name="preview" />
-    </box>
+    <label text="Tolerance:" />
+    <slider min="0" max="255" name="tolerance" />
   </box>
-</window>
 </jinete>
