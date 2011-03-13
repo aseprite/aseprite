@@ -515,7 +515,7 @@ void PaletteEntryEditor::onQuantizeCommand(Event& ev)
   Palette* palette = NULL;
 
   {
-    const CurrentSpriteReader& sprite(UIContext::instance());
+    const CurrentSpriteReader sprite(UIContext::instance());
 
     if (sprite == NULL) {
       Alert::show("Error<<There is no sprite selected to quantize.||&OK");

@@ -210,7 +210,7 @@ class CurrentSpriteReader : public SpriteReader
 {
 public:
 
-  CurrentSpriteReader(Context* context)
+  explicit CurrentSpriteReader(Context* context)
     : SpriteReader(context->getCurrentSprite())
   {
   }
@@ -227,7 +227,7 @@ class CurrentSpriteWriter : public SpriteWriter
 
 public:
 
-  CurrentSpriteWriter(Context* context)
+  explicit CurrentSpriteWriter(Context* context)
     : SpriteWriter(context->getCurrentSprite())
     , m_context(context)
   {
