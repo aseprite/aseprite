@@ -19,17 +19,15 @@
 #ifndef CONTEXT_H_INCLUDED
 #define CONTEXT_H_INCLUDED
 
-#include <list>
 #include "base/disable_copying.h"
 #include "base/exception.h"
+#include "documents.h"
 #include "settings/settings.h"
 
 class Sprite;
 class SpriteReader;
 class Command;
 class Params;
-
-typedef std::list<Sprite*> Documents;
 
 class CommandPreconditionException : public base::Exception
 {

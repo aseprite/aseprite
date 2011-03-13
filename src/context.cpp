@@ -18,12 +18,12 @@
 
 #include "config.h"
 
-#include <algorithm>
-
 #include "console.h"
 #include "context.h"
 #include "commands/command.h"
 #include "raster/sprite.h"
+
+#include <algorithm>
 
 Context::Context(ISettings* settings)
 {
@@ -33,13 +33,6 @@ Context::Context(ISettings* settings)
 
 Context::~Context()
 {
-  for (Documents::iterator
-	 it = m_documents.begin(), end = m_documents.end(); it != end; ++it) {
-    Sprite* sprite = *it;
-    delete sprite;
-  }
-  m_documents.clear();
-
   delete m_settings;
 }
 
@@ -51,7 +44,7 @@ const Documents& Context::getDocuments() const
 Sprite* Context::getFirstSprite() const
 {
   if (!m_documents.empty())
-    return m_documents.front();
+    return m_documents.getByIndex(0);
   else
     return NULL;
 }
@@ -74,7 +67,7 @@ void Context::addSprite(Sprite* sprite)
 {
   ASSERT(sprite != NULL);
 
-  m_documents.push_front(sprite);
+  m_documents.addDocument(sprite);
 
   // Generate onAddSprite event
   onAddSprite(sprite);
@@ -84,11 +77,8 @@ void Context::removeSprite(Sprite* sprite)
 {
   ASSERT(sprite != NULL);
 
-  Documents::iterator it = std::find(m_documents.begin(), m_documents.end(), sprite);
-  ASSERT(it != m_documents.end());
-
-  // remove the item from the sprites list
-  m_documents.erase(it);
+  // Remove the item from the sprites list.
+  m_documents.removeDocument(sprite);
 
   // generate on_remove_sprite event
   onRemoveSprite(sprite);
@@ -100,16 +90,9 @@ void Context::removeSprite(Sprite* sprite)
 
 void Context::sendSpriteToTop(Sprite* sprite)
 {
-  ASSERT(sprite);
+  ASSERT(sprite != NULL);
 
-  Documents::iterator it = std::find(m_documents.begin(), m_documents.end(), sprite);
-  ASSERT(it != m_documents.end());
-
-  // remove the item from the sprites list
-  m_documents.erase(it);
-
-  // add it again
-  m_documents.push_front(sprite);
+  m_documents.moveDocument(sprite, 0);
 }
 
 Sprite* Context::getCurrentSprite() const
