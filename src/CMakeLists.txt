@@ -275,23 +275,34 @@ endif()
 ######################################################################
 # Unit tests
 
-file(GLOB_RECURSE tests *_unittest.cpp)
+function(find_unittests dir dependencies)
+  file(GLOB tests ${CMAKE_CURRENT_SOURCE_DIR}/${dir}/*_unittest.cpp)
+  list(REMOVE_AT ARGV 0)
 
-# Add gtest include directory so we can #include <gtest/gtest.h> in tests source code
-include_directories(${CMAKE_SOURCE_DIR}/third_party/gtest/include)
+  # Add gtest include directory so we can #include <gtest/gtest.h> in tests source code
+  include_directories(${CMAKE_SOURCE_DIR}/third_party/gtest/include)
 
-foreach(testsourcefile ${tests})
-  get_filename_component(testname ${testsourcefile} NAME_WE)
+  foreach(testsourcefile ${tests})
+    get_filename_component(testname ${testsourcefile} NAME_WE)
 
-  add_executable(${testname} ${testsourcefile})
+    add_executable(${testname} ${testsourcefile})
 
-  target_link_libraries(${testname} gtest ${all_libs})
+    target_link_libraries(${testname} gtest ${ARGV})
 
-  add_custom_target(run_${testname}
-    COMMAND ${testname})
+    add_custom_target(run_${testname}
+      COMMAND ${testname}
+      DEPENDS ${testname})
 
-  set(all_runs ${all_runs} run_${testname})
-endforeach()
+    set(local_runs ${local_runs} run_${testname})
+  endforeach()
+  set(all_runs ${all_runs} ${local_runs} PARENT_SCOPE)
+endfunction()
+
+find_unittests(base base-lib ${sys_libs})
+find_unittests(gfx gfx-lib base-lib ${sys_libs})
+find_unittests(gui gui-lib gfx-lib base-lib ${libs3rdparty} allegro ${sys_libs})
+find_unittests(app ${all_libs})
+find_unittests(. ${all_libs})
 
 # To run tests
 add_custom_target(run_all_unittests DEPENDS ${all_runs})
