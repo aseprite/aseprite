@@ -59,7 +59,17 @@ public:
   {
     if (m_ptr)
       m_deleter(m_ptr);
+
     m_ptr = ptr;
+  }
+
+  void reset(pointer ptr, deleter_type deleter)
+  {
+    if (m_ptr)
+      m_deleter(m_ptr);
+
+    m_ptr = ptr;
+    m_deleter = deleter;
   }
 
   pointer release()
