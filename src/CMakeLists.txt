@@ -175,7 +175,6 @@ add_library(aseprite-library
   dialogs/maskcol.cpp
   dialogs/playfli.cpp
   dialogs/repo.cpp
-  dialogs/vectmap.cpp
   file/ase_format.cpp
   file/bmp_format.cpp
   file/file.cpp

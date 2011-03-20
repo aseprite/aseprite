@@ -14,7 +14,7 @@ For next release
   old indexes to the new positions. 
 + Support for non-zero index entries as transparent in Indexed sprites.
 + Move launcher.cpp to base/ lib adding an extension point for "gui" lib.
-+ Remove src/dialogs/vectmap,repo,playfli,drawtext.
++ Remove src/dialogs/repo,playfli,drawtext.
 + Move src/dialogs/aniedit,filesel to src/widgets (remove dialogs/ directory).
 + Move everything from src/app/ to src/
 + Move everything from src/core/ to src/
