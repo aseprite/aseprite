@@ -22,6 +22,7 @@
 
 #include "commands/filters/convolution_matrix_stock.h"
 
+#include "base/unique_ptr.h"
 #include "filters/convolution_matrix.h"
 #include "resource_finder.h"
 #include "util/filetoks.h"
@@ -70,7 +71,7 @@ void ConvolutionMatrixStock::reloadStock()
   char *s, buf[256], leavings[4096];
   int i, c, x, y, w, h, div, bias;
   SharedPtr<ConvolutionMatrix> matrix;
-  SharedPtr<FILE, FileDestroyer> f;
+  UniquePtr<FILE, int(*)(FILE*)> f;
   std::string name;
 
   cleanStock();
@@ -81,7 +82,7 @@ void ConvolutionMatrixStock::reloadStock()
 
     while (const char* path = rf.next()) {
       // Open matrices stock file
-      f.reset(fopen(path, "r"));
+      f.reset(fopen(path, "r"), fclose);
       if (!f)
 	continue;
 

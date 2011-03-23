@@ -31,7 +31,7 @@
 #include "raster/sprite.h"
 #include "raster/stock.h"
 #include "raster/undo_history.h"
-#include "sprite_wrappers.h"
+#include "document_wrappers.h"
 #include "undoable.h"
 #include "util/misc.h"
 
@@ -76,21 +76,22 @@ void FlipCommand::onLoadParams(Params* params)
 
 bool FlipCommand::onEnabled(Context* context)
 {
-  const CurrentSpriteReader sprite(context);
-  return
-    sprite != NULL;
+  const ActiveDocumentReader document(context);
+  return document != NULL;
 }
 
 void FlipCommand::onExecute(Context* context)
 {
-  CurrentSpriteWriter sprite(context);
+  ActiveDocumentWriter document(context);
+  Sprite* sprite = document->getSprite();
 
   {
-    Undoable undoable(sprite, m_flip_mask ?
-			      (m_flip_horizontal ? "Flip Horizontal":
-						   "Flip Vertical"):
-			      (m_flip_horizontal ? "Flip Canvas Horizontal":
-						   "Flip Canvas Vertical"));
+    Undoable undoable(document,
+		      m_flip_mask ?
+		      (m_flip_horizontal ? "Flip Horizontal":
+					   "Flip Vertical"):
+		      (m_flip_horizontal ? "Flip Canvas Horizontal":
+					   "Flip Canvas Vertical"));
 
     if (m_flip_mask) {
       Image* image;
@@ -147,7 +148,7 @@ void FlipCommand::onExecute(Context* context)
     undoable.commit();
   }
 
-  update_screen_for_sprite(sprite);
+  update_screen_for_document(document);
 }
 
 //////////////////////////////////////////////////////////////////////

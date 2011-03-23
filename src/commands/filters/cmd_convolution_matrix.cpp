@@ -40,7 +40,7 @@
 #include "modules/gui.h"
 #include "raster/mask.h"
 #include "raster/sprite.h"
-#include "sprite_wrappers.h"
+#include "document_wrappers.h"
 
 static const char* ConfigSection = "ConvolutionMatrix";
 
@@ -184,7 +184,8 @@ ConvolutionMatrixCommand::ConvolutionMatrixCommand()
 
 bool ConvolutionMatrixCommand::onEnabled(Context* context)
 {
-  const CurrentSpriteReader sprite(context);
+  const ActiveDocumentReader document(context);
+  const Sprite* sprite(document ? document->getSprite(): 0);
   return sprite != NULL;
 }
 
@@ -203,7 +204,7 @@ void ConvolutionMatrixCommand::onExecute(Context* context)
   if (matrix != 0)
     filter.setMatrix(matrix);
 
-  FilterManagerImpl filterMgr(context->getCurrentSprite(), &filter);
+  FilterManagerImpl filterMgr(context->getActiveDocument(), &filter);
 
   ConvolutionMatrixWindow window(filter, filterMgr, m_stock);
   if (window.doModal()) {

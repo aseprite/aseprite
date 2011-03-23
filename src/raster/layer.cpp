@@ -48,19 +48,6 @@ Layer::Layer(GfxObjType type, Sprite* sprite)
     LAYER_IS_WRITABLE;
 }
 
-Layer::Layer(const Layer* src_layer, Sprite* dst_sprite)
-  : GfxObj(src_layer->getType())
-{
-  m_sprite = dst_sprite;
-  m_parent = NULL;
-  m_flags =
-    LAYER_IS_READABLE |
-    LAYER_IS_WRITABLE;
-
-  setName(src_layer->getName());
-  m_flags = src_layer->m_flags;
-}
-
 Layer::~Layer()
 {
 }
@@ -111,39 +98,6 @@ Layer* Layer::get_next() const
 LayerImage::LayerImage(Sprite* sprite)
   : Layer(GFXOBJ_LAYER_IMAGE, sprite)
 {
-}
-
-LayerImage::LayerImage(const LayerImage* src_layer, Sprite* dst_sprite)
-  : Layer(src_layer, dst_sprite)
-{
-  try {
-    // copy cels
-    CelConstIterator it = src_layer->getCelBegin();
-    CelConstIterator end = src_layer->getCelEnd();
-
-    for (; it != end; ++it) {
-      const Cel* cel = *it;
-      Cel* cel_copy = cel_new_copy(cel);
-
-      ASSERT((cel->image >= 0) &&
-	     (cel->image < src_layer->getSprite()->getStock()->size()));
-
-      Image* image = src_layer->getSprite()->getStock()->getImage(cel->image);
-      ASSERT(image != NULL);
-
-      Image* image_copy = image_new_copy(image);
-
-      cel_copy->image = dst_sprite->getStock()->addImage(image_copy);
-      if (dst_sprite->getUndo()->isEnabled())
-	dst_sprite->getUndo()->undo_add_image(dst_sprite->getStock(), cel_copy->image);
-
-      addCel(cel_copy);
-    }
-  }
-  catch (...) {
-    destroy_all_cels();
-    throw;
-  }
 }
 
 LayerImage::~LayerImage()
@@ -276,27 +230,6 @@ LayerFolder::LayerFolder(Sprite* sprite)
   : Layer(GFXOBJ_LAYER_FOLDER, sprite)
 {
   setName("Layer Set");
-}
-
-LayerFolder::LayerFolder(const LayerFolder* src_layer, Sprite* dst_sprite)
-  : Layer(src_layer, dst_sprite)
-{
-  try {
-    LayerConstIterator it = src_layer->get_layer_begin();
-    LayerConstIterator end = src_layer->get_layer_end();
-
-    for (; it != end; ++it) {
-      // duplicate the child
-      Layer* child_copy = (*it)->duplicate_for(dst_sprite);
-
-      // add the new child in the layer copy
-      add_layer(child_copy);
-    }
-  }
-  catch (...) {
-    destroyAllLayers();
-    throw;
-  }
 }
 
 LayerFolder::~LayerFolder()

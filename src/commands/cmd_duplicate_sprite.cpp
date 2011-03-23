@@ -29,7 +29,7 @@
 #include "modules/editors.h"
 #include "modules/gui.h"
 #include "raster/sprite.h"
-#include "sprite_wrappers.h"
+#include "document_wrappers.h"
 
 //////////////////////////////////////////////////////////////////////
 // duplicate_sprite
@@ -54,14 +54,15 @@ DuplicateSpriteCommand::DuplicateSpriteCommand()
 
 bool DuplicateSpriteCommand::onEnabled(Context* context)
 {
-  const CurrentSpriteReader sprite(context);
+  const ActiveDocumentReader document(context);
+  const Sprite* sprite(document ? document->getSprite(): 0);
   return sprite != NULL;
 }
 
 void DuplicateSpriteCommand::onExecute(Context* context)
 {
   JWidget src_name, dst_name, flatten;
-  const CurrentSpriteReader sprite(context);
+  const ActiveDocumentReader document(context);
   char buf[1024];
 
   /* load the window widget */
@@ -71,9 +72,9 @@ void DuplicateSpriteCommand::onExecute(Context* context)
   dst_name = jwidget_find_name(window, "dst_name");
   flatten = jwidget_find_name(window, "flatten");
 
-  src_name->setText(get_filename(sprite->getFilename()));
+  src_name->setText(get_filename(document->getFilename()));
 
-  sprintf(buf, "%s Copy", sprite->getFilename());
+  sprintf(buf, "%s Copy", document->getFilename());
   dst_name->setText(buf);
 
   if (get_config_bool("DuplicateSprite", "Flatten", false))
@@ -85,19 +86,17 @@ void DuplicateSpriteCommand::onExecute(Context* context)
   if (window->get_killer() == jwidget_find_name(window, "ok")) {
     set_config_bool("DuplicateSprite", "Flatten", flatten->isSelected());
 
-    // make a copy of the current sprite
-    Sprite *sprite_copy;
+    // make a copy of the document
+    Document* docCopy;
     if (flatten->isSelected())
-      sprite_copy = Sprite::createFlattenCopy(*sprite);
+      docCopy = document->duplicate(DuplicateWithFlattenLayers);
     else
-      sprite_copy = new Sprite(*sprite);
+      docCopy = document->duplicate(DuplicateExactCopy);
 
-    if (sprite_copy != NULL) {
-      sprite_copy->setFilename(dst_name->getText());
+    docCopy->setFilename(dst_name->getText());
 
-      context->addSprite(sprite_copy);
-      set_sprite_in_more_reliable_editor(sprite_copy);
-    }
+    context->addDocument(docCopy);
+    set_document_in_more_reliable_editor(docCopy);
   }
 }
 

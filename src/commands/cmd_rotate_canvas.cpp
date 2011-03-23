@@ -32,7 +32,7 @@
 #include "raster/mask.h"
 #include "raster/sprite.h"
 #include "raster/stock.h"
-#include "sprite_wrappers.h"
+#include "document_wrappers.h"
 #include "undoable.h"
 #include "widgets/color_bar.h"
 
@@ -55,14 +55,16 @@ protected:
 
 class RotateCanvasJob : public Job
 {
-  SpriteWriter m_sprite;
+  DocumentWriter m_document;
+  Sprite* m_sprite;
   int m_angle;
 
 public:
 
-  RotateCanvasJob(const SpriteReader& sprite, int angle)
+  RotateCanvasJob(const DocumentReader& document, int angle)
     : Job("Rotate Canvas")
-    , m_sprite(sprite)
+    , m_document(document)
+    , m_sprite(m_document->getSprite())
   {
     m_angle = angle;
   }
@@ -74,7 +76,7 @@ protected:
    */
   virtual void onJob()
   {
-    Undoable undoable(m_sprite, "Rotate Canvas");
+    Undoable undoable(m_document, "Rotate Canvas");
 
     // get all sprite cels
     CelList cels;
@@ -153,7 +155,7 @@ protected:
       mask_free(new_mask);
 
       // regenerate mask
-      m_sprite->generateMaskBoundaries();
+      m_document->generateMaskBoundaries();
     }
 
     // change the sprite's size
@@ -183,19 +185,20 @@ void RotateCanvasCommand::onLoadParams(Params* params)
 
 bool RotateCanvasCommand::onEnabled(Context* context)
 {
-  const CurrentSpriteReader sprite(context);
+  const ActiveDocumentReader document(context);
+  const Sprite* sprite(document ? document->getSprite(): 0);
   return sprite != NULL;
 }
 
 void RotateCanvasCommand::onExecute(Context* context)
 {
-  CurrentSpriteReader sprite(context);
+  ActiveDocumentReader document(context);
   {
-    RotateCanvasJob job(sprite, m_angle);
+    RotateCanvasJob job(document, m_angle);
     job.startJob();
   }
-  sprite->generateMaskBoundaries();
-  update_screen_for_sprite(sprite);
+  document->generateMaskBoundaries();
+  update_screen_for_document(document);
 }
 
 //////////////////////////////////////////////////////////////////////

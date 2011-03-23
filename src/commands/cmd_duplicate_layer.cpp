@@ -27,12 +27,10 @@
 #include "raster/layer.h"
 #include "raster/sprite.h"
 #include "raster/undo_history.h"
-#include "sprite_wrappers.h"
-
-static Layer *duplicate_layer(Sprite* sprite);
+#include "document_wrappers.h"
 
 //////////////////////////////////////////////////////////////////////
-// duplicate_layer
+// Duplicate Layer command
 
 class DuplicateLayerCommand : public Command
 {
@@ -54,55 +52,46 @@ DuplicateLayerCommand::DuplicateLayerCommand()
 
 bool DuplicateLayerCommand::onEnabled(Context* context)
 {
-  const CurrentSpriteReader sprite(context);
+  const ActiveDocumentReader document(context);
+  const Sprite* sprite(document ? document->getSprite(): 0);
   return sprite && sprite->getCurrentLayer();
 }
 
 void DuplicateLayerCommand::onExecute(Context* context)
 {
-  CurrentSpriteWriter sprite(context);
-  if (duplicate_layer(sprite) != NULL)
-    update_screen_for_sprite(sprite);
-}
+#if 0				// TODO IMPLEMENT THIS
+  ActiveDocumentWriter document(context);
+  Sprite* sprite = document->getSprite();
+  UndoHistory* undo = document->getUndoHistory();
+  Undoable undoable(document, "Layer Duplication");
 
-static Layer* duplicate_layer(Sprite* sprite)
-{
-  /* open undo */
-  if (sprite->getUndo()->isEnabled()) {
-    sprite->getUndo()->setLabel("Layer Duplication");
-    sprite->getUndo()->undo_open();
+  // Clone the layer
+  UniquePtr<Layer> newLayerPtr(sprite->getCurrentLayer()->clone());
+  newLayerPtr->set_background(false);
+  newLayerPtr->set_moveable(true);
+  newLayerPtr->setName(layer_copy->getName() + " Copy");
+
+  // Add the new layer in the sprite.
+  if (undo->isEnabled())
+    undo->undo_add_layer(sprite->getCurrentLayer()->get_parent(), newLayerPtr);
+
+  sprite->getCurrentLayer()->get_parent()->add_layer(newLayerPtr);
+
+  // Release the pointer as it is owned by the sprite now
+  Layer* newLayer = newLayerPtr.release();
+
+  if (undo->isEnabled()) {
+    undo->undo_move_layer(newLayer);
+    undo->undo_set_layer(sprite);
   }
 
-  Layer* layer_copy = sprite->getCurrentLayer()->duplicate_for(sprite);
-  if (!layer_copy) {
-    if (sprite->getUndo()->isEnabled())
-      sprite->getUndo()->undo_close();
+  undoable.commit();
 
-    Console console;
-    console.printf("Not enough memory");
-    return NULL;
-  }
+  sprite->getCurrentLayer()->get_parent()->move_layer(newLayer, sprite->getCurrentLayer());
+  sprite->setCurrentLayer(newLayer);
 
-  layer_copy->set_background(false);
-  layer_copy->set_moveable(true);
-  layer_copy->setName(layer_copy->getName() + " Copy");
-
-  /* add the new layer in the sprite */
-  if (sprite->getUndo()->isEnabled())
-    sprite->getUndo()->undo_add_layer(sprite->getCurrentLayer()->get_parent(), layer_copy);
-
-  sprite->getCurrentLayer()->get_parent()->add_layer(layer_copy);
-
-  if (sprite->getUndo()->isEnabled()) {
-    sprite->getUndo()->undo_move_layer(layer_copy);
-    sprite->getUndo()->undo_set_layer(sprite);
-    sprite->getUndo()->undo_close();
-  }
-
-  sprite->getCurrentLayer()->get_parent()->move_layer(layer_copy, sprite->getCurrentLayer());
-  sprite->setCurrentLayer(layer_copy);
-
-  return layer_copy;
+  update_screen_for_document(document);
+#endif
 }
 
 //////////////////////////////////////////////////////////////////////

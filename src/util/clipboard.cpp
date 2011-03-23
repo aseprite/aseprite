@@ -41,7 +41,7 @@
 #include "settings/settings.h"
 #include "skin/skin_parts.h"
 #include "skin/skin_theme.h"
-#include "sprite_wrappers.h"
+#include "document_wrappers.h"
 #include "ui_context.h"
 #include "undoable.h"
 #include "util/clipboard.h"
@@ -151,10 +151,13 @@ bool clipboard::can_paste()
   return clipboard_image != NULL;
 }
 
-void clipboard::cut(SpriteWriter& sprite)
+void clipboard::cut(DocumentWriter& document)
 {
-  ASSERT(sprite != NULL);
-  ASSERT(sprite->getCurrentLayer() != NULL);
+  ASSERT(document != NULL);
+  ASSERT(document->getSprite() != NULL);
+  ASSERT(document->getSprite()->getCurrentLayer() != NULL);
+
+  Sprite* sprite = document->getSprite();
 
   if (!copy_from_sprite(sprite)) {
     Console console;
@@ -162,21 +165,21 @@ void clipboard::cut(SpriteWriter& sprite)
   }
   else {
     {
-      Undoable undoable(sprite, "Cut");
+      Undoable undoable(document, "Cut");
       undoable.clearMask(app_get_color_to_clear_layer(sprite->getCurrentLayer()));
       undoable.deselectMask();
       undoable.commit();
     }
-    sprite->generateMaskBoundaries();
-    update_screen_for_sprite(sprite);
+    document->generateMaskBoundaries();
+    update_screen_for_document(document);
   }
 }
 
-void clipboard::copy(const SpriteReader& sprite)
+void clipboard::copy(const DocumentReader& document)
 {
-  ASSERT(sprite != NULL);
+  ASSERT(document != NULL);
 
-  if (!copy_from_sprite(sprite)) {
+  if (!copy_from_sprite(document->getSprite())) {
     Console console;
     console.printf("Can't copying an image portion from the current layer\n");
   }
@@ -188,9 +191,10 @@ void clipboard::copy_image(Image* image, Palette* pal)
 		pal ? new Palette(*pal): NULL, true);
 }
 
-void clipboard::paste(SpriteWriter& sprite)
+void clipboard::paste(DocumentWriter& document)
 {
-  Undoable undoable(sprite, "Paste");
+  Undoable undoable(document, "Paste");
+  UndoHistory* undo = document->getUndoHistory();
   int xout[4], yout[4];
   int dst_x, dst_y;
   Image *src_image;
@@ -209,7 +213,10 @@ void clipboard::paste(SpriteWriter& sprite)
   if (clipboard_image == NULL)
     return;
 
-  ASSERT(sprite != NULL);
+  ASSERT(document != NULL);
+  ASSERT(document->getSprite() != NULL);
+
+  Sprite* sprite = document->getSprite();
 
   // Destination image (where to put this image)
   dst_image = sprite->getCurrentImage(&dst_x, &dst_y);
@@ -226,8 +233,8 @@ void clipboard::paste(SpriteWriter& sprite)
 
     // Add the new image in the stock
     int dst_image_index = sprite->getStock()->addImage(dst_image);
-    if (sprite->getUndo()->isEnabled())
-      sprite->getUndo()->undo_add_image(sprite->getStock(), dst_image_index);
+    if (undo->isEnabled())
+      undo->undo_add_image(sprite->getStock(), dst_image_index);
 
     // Create the new cel in the current frame with the recently
     // created image
@@ -285,8 +292,8 @@ void clipboard::paste(SpriteWriter& sprite)
 
     if (w >= 1 && h >= 1) {
       /* undo region */
-      if (sprite->getUndo()->isEnabled())
-	sprite->getUndo()->undo_image(dst_image, u1, v1, w, h);
+      if (undo->isEnabled())
+	undo->undo_image(dst_image, u1, v1, w, h);
 
       /* draw the transformed image */
       image_parallelogram(dst_image, src_image,
@@ -300,7 +307,8 @@ void clipboard::paste(SpriteWriter& sprite)
 
   if (src_image != clipboard_image)
       image_free(src_image);
-  update_screen_for_sprite(sprite);
+
+  update_screen_for_document(document);
 }
 
 /**********************************************************************/

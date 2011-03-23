@@ -18,14 +18,15 @@
 
 #include "config.h"
 
-#include <stdio.h>
-
-#include "gui/list.h"
-#include "zlib.h"
-
+#include "document.h"
 #include "file/file.h"
 #include "file/file_format.h"
+#include "file/format_options.h"
+#include "gui/list.h"
 #include "raster/raster.h"
+#include "zlib.h"
+
+#include <stdio.h>
 
 #define ASE_FILE_MAGIC			0xA5E0
 #define ASE_FILE_FRAME_MAGIC		0xF1FA
@@ -281,7 +282,7 @@ bool AseFormat::onLoad(FileOp *fop)
       break;
   }
 
-  fop->sprite = sprite;
+  fop->document = new Document(sprite);
 
   if (ferror(f)) {
     fop_error(fop, "Error reading file.\n");
@@ -296,7 +297,7 @@ bool AseFormat::onLoad(FileOp *fop)
 
 bool AseFormat::onSave(FileOp *fop)
 {
-  Sprite *sprite = fop->sprite;
+  Sprite* sprite = fop->document->getSprite();
   ASE_Header header;
   ASE_FrameHeader frame_header;
   int frame;

@@ -21,10 +21,11 @@
 
 #include "app/color.h"
 
+class Document;
 class Image;
 class Layer;
-class Sprite;
 class Palette;
+class Sprite;
 
 class RenderEngine
 {
@@ -56,7 +57,8 @@ public:
   //////////////////////////////////////////////////////////////////////
   // Main function used by sprite-editors to render the sprite
 
-  static Image* renderSprite(const Sprite* sprite,
+  static Image* renderSprite(const Document* document,
+			     const Sprite* sprite,
 			     int source_x, int source_y,
 			     int width, int height,
 			     int frpos, int zoom,
@@ -73,7 +75,8 @@ public:
 			  int x, int y, int zoom);
 
 private:
-  static void renderLayer(const Sprite* sprite,
+  static void renderLayer(const Document* document,
+			  const Sprite* sprite,
 			  const Layer* layer,
 			  Image* image,
 			  int source_x, int source_y,

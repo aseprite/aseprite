@@ -23,7 +23,7 @@
 #include "raster/layer.h"
 #include "raster/mask.h"
 #include "raster/sprite.h"
-#include "sprite_wrappers.h"
+#include "document_wrappers.h"
 #include "util/clipboard.h"
 #include "util/misc.h"
 
@@ -47,7 +47,9 @@ CutCommand::CutCommand()
 
 bool CutCommand::onEnabled(Context* context)
 {
-  const CurrentSpriteReader sprite(context);
+  const ActiveDocumentReader document(context);
+  const Sprite* sprite(document ? document->getSprite(): 0);
+
   if ((sprite) &&
       (sprite->getCurrentLayer()) &&
       (sprite->getCurrentLayer()->is_readable()) &&
@@ -61,8 +63,8 @@ bool CutCommand::onEnabled(Context* context)
 
 void CutCommand::onExecute(Context* context)
 {
-  CurrentSpriteWriter sprite(context);
-  clipboard::cut(sprite);
+  ActiveDocumentWriter document(context);
+  clipboard::cut(document);
 }
 
 //////////////////////////////////////////////////////////////////////

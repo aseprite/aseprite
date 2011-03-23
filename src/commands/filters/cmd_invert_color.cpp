@@ -34,7 +34,7 @@
 #include "raster/image.h"
 #include "raster/mask.h"
 #include "raster/sprite.h"
-#include "sprite_wrappers.h"
+#include "document_wrappers.h"
 #include "widgets/color_button.h"
 
 static const char* ConfigSection = "InvertColor";
@@ -80,14 +80,15 @@ InvertColorCommand::InvertColorCommand()
 
 bool InvertColorCommand::onEnabled(Context* context)
 {
-  const CurrentSpriteReader sprite(context);
+  const ActiveDocumentReader document(context);
+  const Sprite* sprite(document ? document->getSprite(): 0);
   return sprite != NULL;
 }
 
 void InvertColorCommand::onExecute(Context* context)
 {
   InvertColorFilter filter;
-  FilterManagerImpl filterMgr(context->getCurrentSprite(), &filter);
+  FilterManagerImpl filterMgr(context->getActiveDocument(), &filter);
   filterMgr.setTarget(TARGET_RED_CHANNEL |
 		      TARGET_GREEN_CHANNEL |
 		      TARGET_BLUE_CHANNEL |

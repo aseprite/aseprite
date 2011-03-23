@@ -19,12 +19,13 @@
 #include "config.h"
 
 #include "app.h"
+#include "document.h"
+#include "document_wrappers.h"
 #include "modules/gui.h"
 #include "raster/cel.h"
 #include "raster/image.h"
 #include "raster/mask.h"
 #include "raster/sprite.h"
-#include "sprite_wrappers.h"
 #include "undoable.h"
 #include "widgets/editor/pixels_movement.h"
 
@@ -32,7 +33,8 @@ using namespace gfx;
 
 class PixelsMovementImpl
 {
-  SpriteWriter m_sprite_writer;
+  DocumentWriter m_documentWriter;
+  Sprite* m_sprite;
   Undoable m_undoable;
   int m_initial_x, m_initial_y;
   int m_catch_x, m_catch_y;
@@ -40,17 +42,18 @@ class PixelsMovementImpl
   bool m_isDragging;
 
 public:
-  PixelsMovementImpl(Sprite* sprite, const Image* moveThis, int initial_x, int initial_y, int opacity)
-    : m_sprite_writer(sprite)
-    , m_undoable(m_sprite_writer, "Pixels Movement")
+  PixelsMovementImpl(Document* document, Sprite* sprite, const Image* moveThis, int initial_x, int initial_y, int opacity)
+    : m_documentWriter(document)
+    , m_sprite(sprite)
+    , m_undoable(m_documentWriter, "Pixels Movement")
     , m_initial_x(initial_x)
     , m_initial_y(initial_y)
     , m_firstDrop(true)
     , m_isDragging(false)
   {
-    m_sprite_writer->prepareExtraCel(initial_x, initial_y, moveThis->w, moveThis->h, opacity);
+    m_documentWriter->prepareExtraCel(initial_x, initial_y, moveThis->w, moveThis->h, opacity);
 
-    Image* extraImage = m_sprite_writer->getExtraCelImage();
+    Image* extraImage = m_documentWriter->getExtraCelImage();
     image_copy(extraImage, moveThis, 0, 0);
   }
 
@@ -60,7 +63,7 @@ public:
 
   void cutMask()
   {
-    m_undoable.clearMask(app_get_color_to_clear_layer(m_sprite_writer->getCurrentLayer()));
+    m_undoable.clearMask(app_get_color_to_clear_layer(m_sprite->getCurrentLayer()));
 
     copyMask();
   }
@@ -69,10 +72,10 @@ public:
   {
     // Hide the mask (do not deselect it, it will be moved them using m_undoable.setMaskPosition)
     Mask* empty_mask = new Mask();
-    m_sprite_writer->generateMaskBoundaries(empty_mask);
+    m_documentWriter->generateMaskBoundaries(empty_mask);
     delete empty_mask;
 
-    update_screen_for_sprite(m_sprite_writer);
+    update_screen_for_document(m_documentWriter);
   }
 
   void catchImage(int x, int y)
@@ -85,7 +88,7 @@ public:
   void catchImageAgain(int x, int y)
   {
     // Create a new Undoable to move the pixels to other position
-    Cel* cel = m_sprite_writer->getExtraCel();
+    Cel* cel = m_documentWriter->getExtraCel();
     m_initial_x = cel->x;
     m_initial_y = cel->y;
     m_isDragging = true;
@@ -95,16 +98,16 @@ public:
 
     // Hide the mask (do not deselect it, it will be moved them using m_undoable.setMaskPosition)
     Mask* empty_mask = new Mask();
-    m_sprite_writer->generateMaskBoundaries(empty_mask);
+    m_documentWriter->generateMaskBoundaries(empty_mask);
     delete empty_mask;
 
-    update_screen_for_sprite(m_sprite_writer);
+    update_screen_for_document(m_documentWriter);
   }
 
   Rect moveImage(int x, int y)
   {
-    Cel* cel = m_sprite_writer->getExtraCel();
-    Image* image = m_sprite_writer->getExtraCelImage();
+    Cel* cel = m_documentWriter->getExtraCel();
+    Image* image = m_documentWriter->getExtraCelImage();
     int x1, y1, x2, y2;
     int u1, v1, u2, v2;
 
@@ -137,7 +140,7 @@ public:
   {
     m_isDragging = false;
 
-    Cel* cel = m_sprite_writer->getExtraCel();
+    Cel* cel = m_documentWriter->getExtraCel();
 
     // Show the mask again in the new position
     if (m_firstDrop) {
@@ -145,20 +148,20 @@ public:
       m_undoable.setMaskPosition(cel->x, cel->y);
     }
     else {
-      m_sprite_writer->getMask()->x = cel->x;
-      m_sprite_writer->getMask()->y = cel->y;
+      m_sprite->getMask()->x = cel->x;
+      m_sprite->getMask()->y = cel->y;
     }
-    m_sprite_writer->generateMaskBoundaries();
+    m_documentWriter->generateMaskBoundaries();
 
-    update_screen_for_sprite(m_sprite_writer);
+    update_screen_for_document(m_documentWriter);
   }
 
   void dropImage()
   {
     m_isDragging = false;
 
-    Cel* cel = m_sprite_writer->getExtraCel();
-    Image* image = m_sprite_writer->getExtraCelImage();
+    Cel* cel = m_documentWriter->getExtraCel();
+    Image* image = m_documentWriter->getExtraCelImage();
 
     m_undoable.pasteImage(image, cel->x, cel->y, cel->opacity);
     m_undoable.commit();
@@ -171,8 +174,8 @@ public:
 
   Rect getImageBounds()
   {
-    Cel* cel = m_sprite_writer->getExtraCel();
-    Image* image = m_sprite_writer->getExtraCelImage();
+    Cel* cel = m_documentWriter->getExtraCel();
+    Image* image = m_documentWriter->getExtraCelImage();
 
     ASSERT(cel != NULL);
     ASSERT(image != NULL);
@@ -182,13 +185,13 @@ public:
 
   void setMaskColor(ase_uint32 mask_color)
   {
-    Image* image = m_sprite_writer->getExtraCelImage();
+    Image* image = m_documentWriter->getExtraCelImage();
 
     ASSERT(image != NULL);
 
     image->mask_color = mask_color;
 
-    update_screen_for_sprite(m_sprite_writer);
+    update_screen_for_document(m_documentWriter);
   }
 
 };
@@ -196,9 +199,9 @@ public:
 //////////////////////////////////////////////////////////////////////
 // PixelsMovement
 
-PixelsMovement::PixelsMovement(Sprite* sprite, const Image* moveThis, int x, int y, int opacity)
+PixelsMovement::PixelsMovement(Document* document, Sprite* sprite, const Image* moveThis, int x, int y, int opacity)
 {
-  m_impl = new PixelsMovementImpl(sprite, moveThis, x, y, opacity);
+  m_impl = new PixelsMovementImpl(document, sprite, moveThis, x, y, opacity);
 }
 
 PixelsMovement::~PixelsMovement()

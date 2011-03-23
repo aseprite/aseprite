@@ -19,6 +19,8 @@
 #ifndef FILE_FILE_H_INCLUDED
 #define FILE_FILE_H_INCLUDED
 
+#include "base/shared_ptr.h"
+
 #include <stdio.h>
 #include <vector>
 #include <string>
@@ -28,53 +30,53 @@
 #define FILE_LOAD_SEQUENCE_YES		0x00000004
 #define FILE_LOAD_ONE_FRAME		0x00000008
 
+class Document;
 class Cel;
 class Image;
 class Layer;
 class LayerImage;
 class Mutex;
 class Palette;
-class Sprite;
 
 class FileFormat;
 class FormatOptions;
 
-/* file operations */
+// File operations.
 typedef enum { FileOpLoad,
 	       FileOpSave } FileOpType;
 
-/* structure to load & save files */
+// Structure to load & save files.
 struct FileOp
 {
-  FileOpType type;		/* operation type: 0=load, 1=save */
+  FileOpType type;		// Operation type: 0=load, 1=save.
   FileFormat* format;
-  Sprite* sprite;		/* loaded sprite, or sprite to be saved */
-  std::string filename;		/* file-name to load/save */
+  Document* document;		// Loaded document, or document to be saved.
+  std::string filename;		// File-name to load/save.
 
-  /* shared fields between threads */
-  Mutex* mutex;			/* mutex to access to the next two fields */
-  float progress;		/* progress (1.0 is ready) */
-  std::string error;		/* error string */
-  bool done : 1;		/* true if the operation finished */
-  bool stop : 1;		/* force the break of the operation */
-  bool oneframe : 1;		/* load just one frame (in formats
-				   that support animation like
-				   GIF/FLI/ASE) */
+  // Shared fields between threads.
+  Mutex* mutex;			// Mutex to access to the next two fields.
+  float progress;		// Progress (1.0 is ready).
+  std::string error;		// Error string.
+  bool done : 1;		// True if the operation finished.
+  bool stop : 1;		// Force the break of the operation.
+  bool oneframe : 1;		// Load just one frame (in formats
+				// that support animation like
+				// GIF/FLI/ASE).
 
-  /* data for sequences */
+  // Data for sequences.
   struct {
-    std::vector<std::string> filename_list; /* all file names to load/save */
-    Palette* palette;		/* palette of the sequence */
-    Image* image;		/* image to be saved/loaded */
-    /* for the progress bar */
-    float progress_offset;	/* progress offset from the current frame */
-    float progress_fraction;	/* progress fraction for one frame */
-    /* to load sequences */
+    std::vector<std::string> filename_list; // All file names to load/save.
+    Palette* palette;		// Palette of the sequence.
+    Image* image;		// Image to be saved/loaded.
+    // For the progress bar.
+    float progress_offset;	// Progress offset from the current frame.
+    float progress_fraction;	// Progress fraction for one frame.
+    // To load sequences.
     int frame;
     bool has_alpha;
     LayerImage* layer;
     Cel* last_cel;
-    FormatOptions* format_options;
+    SharedPtr<FormatOptions> format_options;
   } seq;
 
   bool has_error() const {
@@ -87,40 +89,40 @@ struct FileOp
 
 };
 
-/* available extensions for each load/save operation */
+// Available extensions for each load/save operation.
 
 void get_readable_extensions(char* buf, int size);
 void get_writable_extensions(char* buf, int size);
 
-/* high-level routines to load/save sprites */
+// High-level routines to load/save documents.
 
-Sprite* sprite_load(const char* filename);
-int sprite_save(Sprite* sprite);
+Document* load_document(const char* filename);
+int save_document(Document* document);
 
-/* low-level routines to load/save sprites */
+// Low-level routines to load/save documents.
 
-FileOp *fop_to_load_sprite(const char *filename, int flags);
-FileOp *fop_to_save_sprite(Sprite* sprite);
-void fop_operate(FileOp *fop);
-void fop_done(FileOp *fop);
-void fop_stop(FileOp *fop);
-void fop_free(FileOp *fop);
+FileOp* fop_to_load_document(const char* filename, int flags);
+FileOp* fop_to_save_document(Document* document);
+void fop_operate(FileOp* fop);
+void fop_done(FileOp* fop);
+void fop_stop(FileOp* fop);
+void fop_free(FileOp* fop);
 
-void fop_sequence_set_format_options(FileOp *fop, FormatOptions* format_options);
-void fop_sequence_set_color(FileOp *fop, int index, int r, int g, int b);
-void fop_sequence_get_color(FileOp *fop, int index, int *r, int *g, int *b);
-Image* fop_sequence_image(FileOp *fi, int imgtype, int w, int h);
+void fop_sequence_set_format_options(FileOp* fop, const SharedPtr<FormatOptions>& format_options);
+void fop_sequence_set_color(FileOp* fop, int index, int r, int g, int b);
+void fop_sequence_get_color(FileOp* fop, int index, int *r, int *g, int *b);
+Image* fop_sequence_image(FileOp* fi, int imgtype, int w, int h);
 
-void fop_error(FileOp *fop, const char *error, ...);
-void fop_progress(FileOp *fop, float progress);
+void fop_error(FileOp* fop, const char *error, ...);
+void fop_progress(FileOp* fop, float progress);
 
-float fop_get_progress(FileOp *fop);
-bool fop_is_done(FileOp *fop);
-bool fop_is_stop(FileOp *fop);
+float fop_get_progress(FileOp* fop);
+bool fop_is_done(FileOp* fop);
+bool fop_is_stop(FileOp* fop);
 
-int fgetw(FILE *file);
-long fgetl(FILE *file);
-int fputw(int w, FILE *file);
-int fputl(long l, FILE *file);
+int fgetw(FILE* file);
+long fgetl(FILE* file);
+int fputw(int w, FILE* file);
+int fputl(long l, FILE* file);
 
 #endif

@@ -25,7 +25,7 @@
 #include "raster/mask.h"
 #include "raster/sprite.h"
 #include "raster/undo_history.h"
-#include "sprite_wrappers.h"
+#include "document_wrappers.h"
 #include "undoable.h"
 #include "widgets/color_bar.h"
 
@@ -52,7 +52,8 @@ ClearCommand::ClearCommand()
 
 bool ClearCommand::onEnabled(Context* context)
 {
-  const CurrentSpriteReader sprite(context);
+  const ActiveDocumentReader document(context);
+  const Sprite* sprite(document ? document->getSprite(): 0);
   return
     sprite != NULL &&
     sprite->getCurrentLayer() != NULL &&
@@ -63,18 +64,19 @@ bool ClearCommand::onEnabled(Context* context)
 
 void ClearCommand::onExecute(Context* context)
 {
-  CurrentSpriteWriter sprite(context);
+  ActiveDocumentWriter document(context);
+  Sprite* sprite(document->getSprite());
   bool empty_mask = sprite->getMask()->is_empty();
   {
-    Undoable undoable(sprite, "Clear");
+    Undoable undoable(document, "Clear");
     undoable.clearMask(app_get_color_to_clear_layer(sprite->getCurrentLayer()));
     if (!empty_mask)
       undoable.deselectMask();
     undoable.commit();
   }
   if (!empty_mask)
-    sprite->generateMaskBoundaries();
-  update_screen_for_sprite(sprite);
+    document->generateMaskBoundaries();
+  update_screen_for_document(document);
 }
 
 //////////////////////////////////////////////////////////////////////

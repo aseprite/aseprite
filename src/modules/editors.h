@@ -19,15 +19,15 @@
 #ifndef MODULES_EDITORS_H_INCLUDED
 #define MODULES_EDITORS_H_INCLUDED
 
-#include "gui/base.h"
 #include "app/color.h"
+#include "gui/base.h"
 
+class Document;
 class Editor;
+class Sprite;
 
 extern Editor* current_editor;
 extern JWidget box_editors;
-
-class Sprite;
 
 int init_module_editors();
 void exit_module_editors();
@@ -38,13 +38,13 @@ void remove_editor(Editor* editor);
 void set_current_editor(Editor* editor);
 
 void refresh_all_editors();
-void update_editors_with_sprite(const Sprite* sprite);
+void update_editors_with_document(const Document* document);
 void editors_draw_sprite(const Sprite* sprite, int x1, int y1, int x2, int y2);
 void editors_draw_sprite_tiled(const Sprite* sprite, int x1, int y1, int x2, int y2);
-void editors_hide_sprite(const Sprite* sprite);
+void editors_hide_document(const Document* document);
 
-void set_sprite_in_current_editor(Sprite* sprite);
-void set_sprite_in_more_reliable_editor(Sprite* sprite);
+void set_document_in_current_editor(Document* document);
+void set_document_in_more_reliable_editor(Document* document);
 
 void split_editor(Editor* editor, int align);
 void close_editor(Editor* editor);

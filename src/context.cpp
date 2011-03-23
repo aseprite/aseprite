@@ -18,16 +18,16 @@
 
 #include "config.h"
 
-#include "console.h"
 #include "context.h"
+
 #include "commands/command.h"
-#include "raster/sprite.h"
+#include "console.h"
+#include "document.h"
 
 #include <algorithm>
 
 Context::Context(ISettings* settings)
 {
-  m_currentSprite = NULL;
   m_settings = settings;
 }
 
@@ -41,7 +41,7 @@ const Documents& Context::getDocuments() const
   return m_documents;
 }
 
-Sprite* Context::getFirstSprite() const
+Document* Context::getFirstDocument() const
 {
   if (!m_documents.empty())
     return m_documents.getByIndex(0);
@@ -49,11 +49,11 @@ Sprite* Context::getFirstSprite() const
     return NULL;
 }
 
-Sprite* Context::getNextSprite(Sprite* sprite) const
+Document* Context::getNextDocument(Document* document) const
 {
-  ASSERT(sprite != NULL);
+  ASSERT(document != NULL);
 
-  Documents::const_iterator it = std::find(m_documents.begin(), m_documents.end(), sprite);
+  Documents::const_iterator it = std::find(m_documents.begin(), m_documents.end(), document);
 
   if (it != m_documents.end()) {
     ++it;
@@ -63,48 +63,48 @@ Sprite* Context::getNextSprite(Sprite* sprite) const
   return NULL;
 }
 
-void Context::addSprite(Sprite* sprite)
+void Context::addDocument(Document* document)
 {
-  ASSERT(sprite != NULL);
+  ASSERT(document != NULL);
 
-  m_documents.addDocument(sprite);
+  m_documents.addDocument(document);
 
-  // Generate onAddSprite event
-  onAddSprite(sprite);
+  // Generate onAddDocument event
+  onAddDocument(document);
 }
 
-void Context::removeSprite(Sprite* sprite)
+void Context::removeDocument(Document* document)
 {
-  ASSERT(sprite != NULL);
+  ASSERT(document != NULL);
 
-  // Remove the item from the sprites list.
-  m_documents.removeDocument(sprite);
+  // Remove the item from the documents list.
+  m_documents.removeDocument(document);
 
-  // generate on_remove_sprite event
-  onRemoveSprite(sprite);
+  // generate onRemoveDocument event
+  onRemoveDocument(document);
 
-  // the current sprite cannot be the removed sprite anymore
-  if (m_currentSprite == sprite)
-    setCurrentSprite(NULL);
+  // The active document cannot be the removed one.
+  if (m_activeDocument == document)
+    setActiveDocument(NULL);
 }
 
-void Context::sendSpriteToTop(Sprite* sprite)
+void Context::sendDocumentToTop(Document* document)
 {
-  ASSERT(sprite != NULL);
+  ASSERT(document != NULL);
 
-  m_documents.moveDocument(sprite, 0);
+  m_documents.moveDocument(document, 0);
 }
 
-Sprite* Context::getCurrentSprite() const
+Document* Context::getActiveDocument() const
 {
-  return m_currentSprite;
+  return m_activeDocument;
 }
 
-void Context::setCurrentSprite(Sprite* sprite)
+void Context::setActiveDocument(Document* document)
 {
-  m_currentSprite = sprite;
+  m_activeDocument = document;
 
-  onSetCurrentSprite(sprite);
+  onSetActiveDocument(document);
 }
 
 void Context::executeCommand(Command* command, Params* params)
@@ -148,17 +148,17 @@ void Context::executeCommand(Command* command, Params* params)
 #endif
 }
 
-void Context::onAddSprite(Sprite* sprite)
+void Context::onAddDocument(Document* document)
 {
   // do nothing
 }
 
-void Context::onRemoveSprite(Sprite* sprite)
+void Context::onRemoveDocument(Document* document)
 {
   // do nothing
 }
 
-void Context::onSetCurrentSprite(Sprite* sprite)
+void Context::onSetActiveDocument(Document* document)
 {
   // do nothing
 }

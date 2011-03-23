@@ -30,7 +30,7 @@
 #include "gui/system.h"
 #include "gui/theme.h"
 #include "skin/skin_theme.h"
-#include "sprite_wrappers.h"
+#include "document_wrappers.h"
 #include "widgets/statebar.h"
 
 //////////////////////////////////////////////////////////////////////
@@ -67,8 +67,8 @@ void RefreshCommand::onExecute(Context* context)
   }
 
   {
-    const CurrentSpriteReader sprite(context);
-    app_refresh_screen(sprite);
+    const ActiveDocumentReader document(context);
+    app_refresh_screen(document);
   }
 
   // Print memory information

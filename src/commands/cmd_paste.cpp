@@ -22,7 +22,7 @@
 #include "raster/layer.h"
 #include "raster/sprite.h"
 #include "util/clipboard.h"
-#include "sprite_wrappers.h"
+#include "document_wrappers.h"
 
 //////////////////////////////////////////////////////////////////////
 // paste
@@ -47,7 +47,8 @@ PasteCommand::PasteCommand()
 
 bool PasteCommand::onEnabled(Context* context)
 {
-  const CurrentSpriteReader sprite(context);
+  const ActiveDocumentReader document(context);
+  const Sprite* sprite(document ? document->getSprite(): 0);
   return
     sprite != NULL &&
     sprite->getCurrentLayer() &&
@@ -58,8 +59,8 @@ bool PasteCommand::onEnabled(Context* context)
 
 void PasteCommand::onExecute(Context* context)
 {
-  CurrentSpriteWriter sprite(context);
-  clipboard::paste(sprite);
+  ActiveDocumentWriter document(context);
+  clipboard::paste(document);
 }
 
 //////////////////////////////////////////////////////////////////////

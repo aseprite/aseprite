@@ -32,7 +32,7 @@
 #include "raster/sprite.h"
 #include "raster/stock.h"
 #include "raster/undo_history.h"
-#include "sprite_wrappers.h"
+#include "document_wrappers.h"
 
 class CelPropertiesCommand : public Command
 {
@@ -54,7 +54,8 @@ CelPropertiesCommand::CelPropertiesCommand()
 
 bool CelPropertiesCommand::onEnabled(Context* context)
 {
-  const CurrentSpriteReader sprite(context);
+  const ActiveDocumentReader document(context);
+  const Sprite* sprite(document ? document->getSprite(): 0);
   return
     sprite &&
     sprite->getCurrentLayer() &&
@@ -68,7 +69,8 @@ void CelPropertiesCommand::onExecute(Context* context)
   Slider* slider_opacity;
   int memsize;
 
-  const CurrentSpriteReader sprite(context);
+  const ActiveDocumentReader document(context);
+  const Sprite* sprite = document->getSprite();
   const Layer* layer = sprite->getCurrentLayer();
 
   // Get current cel (can be NULL)
@@ -127,24 +129,26 @@ void CelPropertiesCommand::onExecute(Context* context)
   window->open_window_fg();
 
   if (window->get_killer() == button_ok) {
-    SpriteWriter sprite_writer(sprite);
+    DocumentWriter document_writer(document);
+    Sprite* sprite_writer = document_writer->getSprite();
     Layer* layer_writer = sprite_writer->getCurrentLayer();
     Cel* cel_writer = static_cast<LayerImage*>(layer_writer)->getCel(sprite->getCurrentFrame());
+    UndoHistory* undo = document_writer->getUndoHistory();
 
     int new_opacity = slider_opacity->getValue();
 
     /* the opacity was changed? */
     if (cel_writer != NULL &&
 	cel_writer->opacity != new_opacity) {
-      if (sprite_writer->getUndo()->isEnabled()) {
-	sprite_writer->getUndo()->setLabel("Cel Opacity Change");
-	sprite_writer->getUndo()->undo_int(cel_writer, &cel_writer->opacity);
+      if (undo->isEnabled()) {
+	undo->setLabel("Cel Opacity Change");
+	undo->undo_int(cel_writer, &cel_writer->opacity);
       }
 
       /* change cel opacity */
       cel_set_opacity(cel_writer, new_opacity);
 
-      update_screen_for_sprite(sprite);
+      update_screen_for_document(document);
     }
   }
 }

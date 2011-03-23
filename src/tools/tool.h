@@ -30,12 +30,13 @@
 #include "gui/rect.h"
 
 class Context;
-class Sprite;
+class Document;
 class Image;
 class Layer;
 class Mask;
-class Tool;
 class Pen;
+class Sprite;
+class Tool;
 
 class IToolLoop;
 
@@ -234,6 +235,9 @@ public:
 
   // Returns the pen which will be used with the tool
   virtual Pen* getPen() = 0;
+
+  // Returns the document to which belongs the sprite.
+  virtual Document* getDocument() = 0;
 
   // Returns the sprite where we will draw on
   virtual Sprite* getSprite() = 0;

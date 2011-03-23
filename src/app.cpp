@@ -18,18 +18,11 @@
 
 #include "config.h"
 
-#include <allegro.h>
-/* #include <allegro/internal/aintern.h> */
-#include <memory>
-#include <stdarg.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <time.h>
-
 #include "app.h"
+
 #include "app/color_utils.h"
 #include "base/exception.h"
+#include "base/unique_ptr.h"
 #include "check_args.h"
 #include "commands/commands.h"
 #include "commands/params.h"
@@ -64,6 +57,15 @@
 #include "widgets/statebar.h"
 #include "widgets/tabs.h"
 #include "widgets/toolbar.h"
+
+#include <allegro.h>
+/* #include <allegro/internal/aintern.h> */
+#include <memory>
+#include <stdarg.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <time.h>
 
 #ifdef ALLEGRO_WINDOWS
   #include <winalleg.h>
@@ -145,7 +147,7 @@ App::App(int argc, char* argv[])
   if (palette_filename) {
     PRINTF("Loading custom palette file: %s\n", palette_filename);
 
-    std::auto_ptr<Palette> pal(Palette::load(palette_filename));
+    UniquePtr<Palette> pal(Palette::load(palette_filename));
     if (pal.get() == NULL)
       throw base::Exception("Error loading default palette from: %s",
 			    static_cast<const char*>(palette_filename));
@@ -216,8 +218,8 @@ int App::run()
     /* prepare the window */
     top_window->remap_window();
 
-    /* rebuild menus */
-    app_realloc_sprite_list();
+    // Create the list of tabs
+    app_rebuild_documents_tabs();
     app_realloc_recent_list();
 
     /* set current editor */
@@ -249,21 +251,21 @@ int App::run()
       switch (option->type()) {
 
 	case CheckArgs::Option::OpenSprite: {
-	  /* load the sprite */
-	  Sprite* sprite = sprite_load(option->data().c_str());
-	  if (!sprite) {
+	  // Load the sprite
+	  Document* document = load_document(option->data().c_str());
+	  if (!document) {
 	    if (!isGui())
 	      console.printf("Error loading file \"%s\"\n", option->data().c_str());
 	  }
 	  else {
 	    // Mount and select the sprite
 	    UIContext* context = UIContext::instance();
-	    context->addSprite(sprite);
-	    context->setCurrentSprite(sprite);
+	    context->addDocument(document);
+	    context->setActiveDocument(document);
 
 	    if (isGui()) {
 	      // Show it
-	      set_sprite_in_more_reliable_editor(context->getFirstSprite());
+	      set_document_in_more_reliable_editor(context->getFirstDocument());
 
 	      // Recent file
 	      getRecentFiles()->addRecentFile(option->data().c_str());
@@ -353,12 +355,12 @@ RecentFiles* App::getRecentFiles() const
 /**
  * Updates palette and redraw the screen.
  */
-void app_refresh_screen(const Sprite* sprite)
+void app_refresh_screen(const Document* document)
 {
   ASSERT(screen != NULL);
 
-  if (sprite)
-    set_current_palette(sprite->getCurrentPalette(), false);
+  if (document && document->getSprite())
+    set_current_palette(document->getSprite()->getCurrentPalette(), false);
   else
     set_current_palette(NULL, false);
 
@@ -369,7 +371,7 @@ void app_refresh_screen(const Sprite* sprite)
 /**
  * Regenerates the label for each tab in the @em tabsbar.
  */
-void app_realloc_sprite_list()
+void app_rebuild_documents_tabs()
 {
   UIContext* context = UIContext::instance();
   const Documents& docs = context->getDocuments();
@@ -377,8 +379,8 @@ void app_realloc_sprite_list()
   // Insert all other sprites
   for (Documents::const_iterator
 	 it = docs.begin(), end = docs.end(); it != end; ++it) {
-    Sprite* sprite = *it;
-    tabsbar->setTabText(get_filename(sprite->getFilename()), sprite);
+    Document* document = *it;
+    tabsbar->setTabText(get_filename(document->getFilename()), document);
   }
 }
 
@@ -441,9 +443,9 @@ int app_get_current_image_type()
   Context* context = UIContext::instance();
   ASSERT(context != NULL);
 
-  Sprite* sprite = context->getCurrentSprite();
-  if (sprite != NULL)
-    return sprite->getImgType();
+  Document* document = context->getActiveDocument();
+  if (document != NULL)
+    return document->getSprite()->getImgType();
   else if (screen != NULL && bitmap_color_depth(screen) == 8)
     return IMAGE_INDEXED;
   else
@@ -480,10 +482,10 @@ int app_get_color_to_clear_layer(Layer* layer)
 
 void TabsBarHandler::clickTab(Tabs* tabs, void* data, int button)
 {
-  Sprite* sprite = (Sprite*)data;
+  Document* document = (Document*)data;
 
   // put as current sprite
-  set_sprite_in_more_reliable_editor(sprite);
+  set_document_in_more_reliable_editor(document);
 
   // middle-button: close the sprite
   if (data && (button & 4)) {
@@ -497,11 +499,11 @@ void TabsBarHandler::clickTab(Tabs* tabs, void* data, int button)
 void TabsBarHandler::mouseOverTab(Tabs* tabs, void* data)
 {
   // Note: data can be NULL
-  Sprite* sprite = (Sprite*)data;
+  Document* document = (Document*)data;
 
   if (data) {
     app_get_statusbar()->setStatusText(250, "%s",
-				       static_cast<const char*>(sprite->getFilename()));
+				       static_cast<const char*>(document->getFilename()));
   }
   else {
     app_get_statusbar()->clearText();

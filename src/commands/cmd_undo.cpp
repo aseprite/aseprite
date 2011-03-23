@@ -24,7 +24,7 @@
 #include "raster/sprite.h"
 #include "raster/undo_history.h"
 #include "widgets/statebar.h"
-#include "sprite_wrappers.h"
+#include "document_wrappers.h"
 
 class UndoCommand : public Command
 {
@@ -46,23 +46,25 @@ UndoCommand::UndoCommand()
 
 bool UndoCommand::onEnabled(Context* context)
 {
-  const CurrentSpriteReader sprite(context);
+  const ActiveDocumentReader document(context);
   return
-    sprite != NULL &&
-    sprite->getUndo()->canUndo();
+    document != NULL &&
+    document->getUndoHistory()->canUndo();
 }
 
 void UndoCommand::onExecute(Context* context)
 {
-  CurrentSpriteWriter sprite(context);
+  ActiveDocumentWriter document(context);
 
   app_get_statusbar()
     ->showTip(1000, "Undid %s",
-	      sprite->getUndo()->getNextUndoLabel());
+	      document->getUndoHistory()->getNextUndoLabel());
 
-  sprite->getUndo()->doUndo();
-  sprite->generateMaskBoundaries();
-  update_screen_for_sprite(sprite);
+  document->getUndoHistory()->doUndo();
+  document->generateMaskBoundaries();
+  document->destroyExtraCel(); // Regenerate extras
+
+  update_screen_for_document(document);
 }
 
 //////////////////////////////////////////////////////////////////////

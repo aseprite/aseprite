@@ -26,7 +26,7 @@
 #include "raster/layer.h"
 #include "raster/sprite.h"
 #include "undoable.h"
-#include "sprite_wrappers.h"
+#include "document_wrappers.h"
 #include "widgets/statebar.h"
 
 //////////////////////////////////////////////////////////////////////
@@ -52,7 +52,8 @@ RemoveLayerCommand::RemoveLayerCommand()
 
 bool RemoveLayerCommand::onEnabled(Context* context)
 {
-  const CurrentSpriteReader sprite(context);
+  const ActiveDocumentReader document(context);
+  const Sprite* sprite(document ? document->getSprite(): 0);
   return
     sprite != NULL &&
     sprite->getCurrentLayer() != NULL;
@@ -61,16 +62,17 @@ bool RemoveLayerCommand::onEnabled(Context* context)
 void RemoveLayerCommand::onExecute(Context* context)
 {
   std::string layer_name;
-  CurrentSpriteWriter sprite(context);
+  ActiveDocumentWriter document(context);
+  Sprite* sprite(document->getSprite());
   {
-    Undoable undoable(sprite, "Remove Layer");
+    Undoable undoable(document, "Remove Layer");
 
     layer_name = sprite->getCurrentLayer()->getName();
 
     undoable.removeLayer(sprite->getCurrentLayer());
     undoable.commit();
   }
-  update_screen_for_sprite(sprite);
+  update_screen_for_document(document);
 
   app_get_statusbar()->invalidate();
   app_get_statusbar()

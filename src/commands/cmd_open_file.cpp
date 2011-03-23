@@ -27,6 +27,7 @@
 #include "commands/params.h"
 #include "console.h"
 #include "dialogs/filesel.h"
+#include "document.h"
 #include "file/file.h"
 #include "gui/gui.h"
 #include "modules/editors.h"
@@ -74,9 +75,9 @@ static void openfile_bg(FileOp* fop)
     fop_error(fop, "Error loading file:\n%s", e.what());
   }
 
-  if (fop_is_stop(fop) && fop->sprite) {
-    delete fop->sprite;
-    fop->sprite = NULL;
+  if (fop_is_stop(fop) && fop->document) {
+    delete fop->document;
+    fop->document = NULL;
   }
 
   fop_done(fop);
@@ -142,11 +143,11 @@ void OpenFileCommand::onExecute(Context* context)
   if (context->isUiAvailable() && m_filename.empty()) {
     char exts[4096];
     get_readable_extensions(exts, sizeof(exts));
-    m_filename = ase_file_selector(friendly_name(), "", exts);
+    m_filename = ase_file_selector("Open", "", exts);
   }
 
   if (!m_filename.empty()) {
-    FileOp *fop = fop_to_load_sprite(m_filename.c_str(), FILE_LOAD_SEQUENCE_ASK);
+    FileOp *fop = fop_to_load_document(m_filename.c_str(), FILE_LOAD_SEQUENCE_ASK);
     bool unrecent = false;
 
     if (fop) {
@@ -183,14 +184,14 @@ void OpenFileCommand::onExecute(Context* context)
 	if (fop->has_error())
 	  console.printf(fop->error.c_str());
 
-	Sprite *sprite = fop->sprite;
-	if (sprite) {
+	Document* document = fop->document;
+	if (document) {
 	  UIContext* context = UIContext::instance();
 
 	  App::instance()->getRecentFiles()->addRecentFile(fop->filename.c_str());
-	  context->addSprite(sprite);
+	  context->addDocument(document);
 
-	  set_sprite_in_more_reliable_editor(sprite);
+	  set_document_in_more_reliable_editor(document);
 	}
 	else if (!fop_is_stop(fop))
 	  unrecent = true;

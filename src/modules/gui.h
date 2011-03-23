@@ -25,14 +25,15 @@
 #include "gui/base.h"
 #include "gui/accel.h"
 
+class ButtonBase;
+class CheckBox;
 class Command;
+class Document;
+class Frame;
 class Params;
+class RadioButton;
 class Tool;
 class Widget;
-class Frame;
-class ButtonBase;
-class RadioButton;
-class CheckBox;
 
 //////////////////////////////////////////////////////////////////////
 
@@ -69,7 +70,7 @@ void exit_module_gui();
 int get_screen_scaling();
 void set_screen_scaling(int scaling);
 
-void update_screen_for_sprite(const Sprite* sprite);
+void update_screen_for_document(const Document* document);
 
 void gui_run();
 void gui_feedback();

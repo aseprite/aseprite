@@ -24,7 +24,7 @@
 #include "raster/sprite.h"
 #include "undoable.h"
 #include "widgets/color_bar.h"
-#include "sprite_wrappers.h"
+#include "document_wrappers.h"
 #include "app/color_utils.h"
 
 //////////////////////////////////////////////////////////////////////
@@ -50,20 +50,21 @@ FlattenLayersCommand::FlattenLayersCommand()
 
 bool FlattenLayersCommand::onEnabled(Context* context)
 {
-  const CurrentSpriteReader sprite(context);
-  return sprite != NULL;
+  const ActiveDocumentReader document(context);
+  return document != NULL;
 }
 
 void FlattenLayersCommand::onExecute(Context* context)
 {
-  CurrentSpriteWriter sprite(context);
+  ActiveDocumentWriter document(context);
+  Sprite* sprite = document->getSprite();
   int bgcolor = color_utils::color_for_image(app_get_colorbar()->getBgColor(), sprite->getImgType());
   {
-    Undoable undoable(sprite, "Flatten Layers");
+    Undoable undoable(document, "Flatten Layers");
     undoable.flattenLayers(bgcolor);
     undoable.commit();
   }
-  update_screen_for_sprite(sprite);
+  update_screen_for_document(document);
 }
 
 //////////////////////////////////////////////////////////////////////

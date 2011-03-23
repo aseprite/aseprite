@@ -47,7 +47,7 @@
 #include "raster/stock.h"
 #include "raster/undo_history.h"
 #include "skin/skin_slider_property.h"
-#include "sprite_wrappers.h"
+#include "document_wrappers.h"
 #include "ui_context.h"
 #include "widgets/color_bar.h"
 #include "widgets/color_sliders.h"
@@ -329,8 +329,8 @@ bool PaletteEntryEditor::onProcessMessage(JMessage msg)
       jmanager_stop_timer(m_redrawTimerId);
 
       try {
-	const CurrentSpriteReader sprite(UIContext::instance());
-	update_editors_with_sprite(sprite);
+	const ActiveDocumentReader document(UIContext::instance());
+	update_editors_with_document(document);
       }
       catch (...) {
 	// Do nothing
@@ -515,7 +515,8 @@ void PaletteEntryEditor::onQuantizeCommand(Event& ev)
   Palette* palette = NULL;
 
   {
-    const CurrentSpriteReader sprite(UIContext::instance());
+    const ActiveDocumentReader document(UIContext::instance());
+    const Sprite* sprite(document ? document->getSprite(): NULL);
 
     if (sprite == NULL) {
       Alert::show("Error<<There is no sprite selected to quantize.||&OK");
@@ -648,9 +649,12 @@ void PaletteEntryEditor::setNewPalette(Palette* palette, const char* operationNa
 
 void PaletteEntryEditor::updateCurrentSpritePalette(const char* operationName)
 {
-  if (UIContext::instance()->getCurrentSprite()) {
+  if (UIContext::instance()->getActiveDocument() &&
+      UIContext::instance()->getActiveDocument()->getSprite()) {
     try {
-      CurrentSpriteWriter sprite(UIContext::instance());
+      ActiveDocumentWriter document(UIContext::instance());
+      Sprite* sprite(document->getSprite());
+      UndoHistory* undo = document->getUndoHistory();
       Palette* newPalette = get_current_palette(); // System current pal
       Palette* currentSpritePalette = sprite->getPalette(sprite->getCurrentFrame()); // Sprite current pal
       int from, to;
@@ -661,9 +665,9 @@ void PaletteEntryEditor::updateCurrentSpritePalette(const char* operationName)
 
       if (from >= 0 && to >= from) {
 	// Add undo information to save the range of pal entries that will be modified.
-	if (sprite->getUndo()->isEnabled()) {
-	  sprite->getUndo()->setLabel(operationName);
-	  sprite->getUndo()->undo_set_palette_colors(sprite, currentSpritePalette, from, to);
+	if (undo->isEnabled()) {
+	  undo->setLabel(operationName);
+	  undo->undo_set_palette_colors(sprite, currentSpritePalette, from, to);
 	}
 
 	// Change the sprite palette

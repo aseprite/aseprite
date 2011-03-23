@@ -41,7 +41,7 @@ class JpegFormat : public FileFormat
   class JpegOptions : public FormatOptions
   {
   public:
-    float quality;		/* 1.0 maximum quality */
+    float quality;		// 1.0 maximum quality.
   };
 
   const char* onGetName() const { return "jpeg"; }
@@ -59,7 +59,7 @@ class JpegFormat : public FileFormat
   bool onLoad(FileOp* fop);
   bool onSave(FileOp* fop);
 
-  FormatOptions* onGetFormatOptions(FileOp* fop);
+  SharedPtr<FormatOptions> onGetFormatOptions(FileOp* fop);
 };
 
 FileFormat* CreateJpegFormat()
@@ -70,15 +70,15 @@ FileFormat* CreateJpegFormat()
 struct error_mgr {
   struct jpeg_error_mgr head;
   jmp_buf setjmp_buffer;
-  FileOp *fop;
+  FileOp* fop;
 };
 
 static void error_exit(j_common_ptr cinfo)
 {
-  /* Display the message.  */
+  // Display the message.
   (*cinfo->err->output_message)(cinfo);
 
-  /* Return control to the setjmp point.  */
+  // Return control to the setjmp point.
   longjmp(((struct error_mgr *)cinfo->err)->setjmp_buffer, 1);
 }
 
@@ -86,13 +86,13 @@ static void output_message(j_common_ptr cinfo)
 {
   char buffer[JMSG_LENGTH_MAX];
 
-  /* Format the message.  */
+  // Format the message.
   (*cinfo->err->format_message)(cinfo, buffer);
 
-  /* Put in the log file if.  */
+  // Put in the log file if.
   PRINTF("JPEG library: \"%s\"\n", buffer);
 
-  /* Leave the message for the application.  */
+  // Leave the message for the application.
   fop_error(((struct error_mgr *)cinfo->err)->fop, "%s\n", buffer);
 }
 
@@ -111,14 +111,14 @@ bool JpegFormat::onLoad(FileOp* fop)
   if (!file)
     return false;
 
-  /* initialize the JPEG decompression object with error handling */
+  // Initialize the JPEG decompression object with error handling.
   jerr.fop = fop;
   cinfo.err = jpeg_std_error(&jerr.head);
 
   jerr.head.error_exit = error_exit;
   jerr.head.output_message = output_message;
 
-  /* establish the setjmp return context for error_exit to use */
+  // Establish the setjmp return context for error_exit to use.
   if (setjmp(jerr.setjmp_buffer)) {
     jpeg_destroy_decompress(&cinfo);
     fclose(file);
@@ -127,10 +127,10 @@ bool JpegFormat::onLoad(FileOp* fop)
 
   jpeg_create_decompress(&cinfo);
 
-  /* specify data source for decompression */
+  // Specify data source for decompression.
   jpeg_stdio_src(&cinfo, file);
 
-  /* read file header, set default decompression parameters */
+  // Read file header, set default decompression parameters.
   jpeg_read_header(&cinfo, true);
 
   if (cinfo.jpeg_color_space == JCS_GRAYSCALE)
@@ -138,10 +138,10 @@ bool JpegFormat::onLoad(FileOp* fop)
   else
     cinfo.out_color_space = JCS_RGB;
 
-  /* start decompressor */
+  // Start decompressor.
   jpeg_start_decompress(&cinfo);
 
-  /* create the image */
+  // Create the image.
   image = fop_sequence_image(fop,
 			     (cinfo.out_color_space == JCS_RGB ? IMAGE_RGB:
 								 IMAGE_GRAYSCALE),
@@ -153,7 +153,7 @@ bool JpegFormat::onLoad(FileOp* fop)
     return false;
   }
 
-  /* create the buffer */
+  // Create the buffer.
   buffer_height = cinfo.rec_outbuf_height;
   buffer = (JSAMPARRAY)base_malloc(sizeof(JSAMPROW) * buffer_height);
   if (!buffer) {
@@ -175,14 +175,14 @@ bool JpegFormat::onLoad(FileOp* fop)
     }
   }
 
-  /* generate a grayscale palette if is necessary */
+  // Generate a grayscale palette if is necessary.
   if (image->imgtype == IMAGE_GRAYSCALE)
     for (c=0; c<256; c++)
       fop_sequence_set_color(fop, c, c, c, c);
 
-  /* read each scan line */
+  // Read each scan line.
   while (cinfo.output_scanline < cinfo.output_height) {
-    /* TODO */
+    // TODO
 /*     if (plugin_want_close())  */
 /*       break; */
 
@@ -246,25 +246,25 @@ bool JpegFormat::onSave(FileOp* fop)
   FILE *file;
   JSAMPARRAY buffer;
   JDIMENSION buffer_height;
-  JpegOptions *jpeg_options = (JpegOptions *)fop->seq.format_options;
+  SharedPtr<JpegOptions> jpeg_options = fop->seq.format_options;
   int c;
 
-  /* Open the file for write in it.  */
+  // Open the file for write in it.
   file = fopen(fop->filename.c_str(), "wb");
   if (!file) {
     fop_error(fop, "Error creating file.\n");
     return false;
   }
 
-  /* Allocate and initialize JPEG compression object.  */
+  // Allocate and initialize JPEG compression object.
   jerr.fop = fop;
   cinfo.err = jpeg_std_error(&jerr.head);
   jpeg_create_compress(&cinfo);
 
-  /* Specify data destination file.  */
+  // SPECIFY data destination file.
   jpeg_stdio_dest(&cinfo, file);
 
-  /* Set parameters for compression.  */
+  // SET parameters for compression.
   cinfo.image_width = image->w;
   cinfo.image_height = image->h;
 
@@ -282,10 +282,10 @@ bool JpegFormat::onSave(FileOp* fop)
   cinfo.dct_method = JDCT_ISLOW;
   cinfo.smoothing_factor = 0;
 
-  /* Start compressor.  */
+  // START compressor.
   jpeg_start_compress(&cinfo, true);
 
-  /* Create the buffer.  */
+  // CREATE the buffer.
   buffer_height = 1;
   buffer = (JSAMPARRAY)base_malloc(sizeof(JSAMPROW) * buffer_height);
   if (!buffer) {
@@ -309,9 +309,9 @@ bool JpegFormat::onSave(FileOp* fop)
     }
   }
 
-  /* Write each scan line.  */
+  // Write each scan line.
   while (cinfo.next_scanline < cinfo.image_height) {
-    /* RGB */
+    // RGB
     if (image->imgtype == IMAGE_RGB) {
       ase_uint32 *src_address;
       ase_uint8 *dst_address;
@@ -327,7 +327,7 @@ bool JpegFormat::onSave(FileOp* fop)
         }
       }
     }
-    /* Grayscale */
+    // Grayscale.
     else {
       ase_uint16 *src_address;
       ase_uint8 *dst_address;
@@ -344,37 +344,37 @@ bool JpegFormat::onSave(FileOp* fop)
     fop_progress(fop, (float)(cinfo.next_scanline+1) / (float)(cinfo.image_height));
   }
 
-  /* Destroy all data.  */
+  // Destroy all data.
   for (c=0; c<(int)buffer_height; c++)
     base_free(buffer[c]);
   base_free(buffer);
 
-  /* Finish compression.  */
+  // Finish compression.
   jpeg_finish_compress(&cinfo);
 
-  /* Release JPEG compression object.  */
+  // Release JPEG compression object.
   jpeg_destroy_compress(&cinfo);
 
-  /* We can close the output file.  */
+  // We can close the output file.
   fclose(file);
 
-  /* All fine.  */
+  // All fine.
   return true;
 }
 
 // Shows the JPEG configuration dialog.
-FormatOptions* JpegFormat::onGetFormatOptions(FileOp* fop)
+SharedPtr<FormatOptions> JpegFormat::onGetFormatOptions(FileOp* fop)
 {
-  JpegOptions* jpeg_options = new JpegOptions();
+  SharedPtr<JpegOptions> jpeg_options(new JpegOptions());
   try {
     // Configuration parameters
     jpeg_options->quality = get_config_float("JPEG", "Quality", 1.0f);
 
     // Interactive mode
     if (!App::instance()->isGui())
-      return (FormatOptions*)jpeg_options;
+      return jpeg_options;
 
-    /* widgets */
+    // Load the window to ask to the user the JPEG options he wants.
     FramePtr window(load_widget("jpeg_options.xml", "jpeg_options"));
     Slider* slider_quality;
     Widget* ok;
@@ -391,16 +391,13 @@ FormatOptions* JpegFormat::onGetFormatOptions(FileOp* fop)
       set_config_float("JPEG", "Quality", jpeg_options->quality);
     }
     else {
-      delete jpeg_options;
-      jpeg_options = NULL;
+      jpeg_options.reset(NULL);
     }
 
     return jpeg_options;
   }
   catch (base::Exception& e) {
-    delete jpeg_options;
-
     Console::showException(e);
-    return NULL;
+    return SharedPtr<JpegOptions>(0);
   }
 }

@@ -24,6 +24,7 @@
 #include "raster/blend.h"
 
 class Palette;
+
 class Pen;
 class RgbMap;
 

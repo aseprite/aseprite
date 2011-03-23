@@ -24,9 +24,8 @@
 #include "documents.h"
 #include "settings/settings.h"
 
-class Sprite;
-class SpriteReader;
 class Command;
+class Document;
 class Params;
 
 class CommandPreconditionException : public base::Exception
@@ -49,16 +48,16 @@ public:
   ISettings* getSettings() { return m_settings; }
 
   const Documents& getDocuments() const;
-  Sprite* getFirstSprite() const;
-  Sprite* getNextSprite(Sprite* sprite) const;
+  Document* getFirstDocument() const;
+  Document* getNextDocument(Document* document) const;
 
-  // Appends the sprite to the context's sprites' list.
-  void addSprite(Sprite* sprite);
-  void removeSprite(Sprite* sprite);
-  void sendSpriteToTop(Sprite* sprite);
+  // Appends the document to the context's documents' list.
+  void addDocument(Document* document);
+  void removeDocument(Document* document);
+  void sendDocumentToTop(Document* document);
 
-  Sprite* getCurrentSprite() const;
-  void setCurrentSprite(Sprite* sprite);
+  Document* getActiveDocument() const;
+  void setActiveDocument(Document* document);
 
   virtual void executeCommand(Command* command, Params* params = NULL);
 
@@ -67,20 +66,20 @@ protected:
   // The "settings" are deleted automatically in the ~Context destructor
   Context(ISettings* settings);
 
-  virtual void onAddSprite(Sprite* sprite);
-  virtual void onRemoveSprite(Sprite* sprite);
-  virtual void onSetCurrentSprite(Sprite* sprite);
+  virtual void onAddDocument(Document* document);
+  virtual void onRemoveDocument(Document* document);
+  virtual void onSetActiveDocument(Document* document);
 
 private:
 
   // Without default constructor
   Context();
 
-  // List of all sprites.
+  // List of all documents.
   Documents m_documents;
 
-  // Current selected sprite to operate.
-  Sprite* m_currentSprite;
+  // Active/selected document to operate.
+  Document* m_activeDocument;
 
   // Settings in this context.
   ISettings* m_settings;

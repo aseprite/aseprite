@@ -27,7 +27,7 @@
 #include "raster/layer.h"
 #include "raster/sprite.h"
 #include "undoable.h"
-#include "sprite_wrappers.h"
+#include "document_wrappers.h"
 #include "widgets/statebar.h"
 
 //////////////////////////////////////////////////////////////////////
@@ -71,14 +71,15 @@ void NewLayerCommand::onLoadParams(Params* params)
 
 bool NewLayerCommand::onEnabled(Context* context)
 {
-  const CurrentSpriteReader sprite(context);
-  return
-    sprite != NULL;
+  const ActiveDocumentReader document(context);
+  const Sprite* sprite(document ? document->getSprite(): 0);
+  return sprite != NULL;
 }
 
 void NewLayerCommand::onExecute(Context* context)
 {
-  CurrentSpriteWriter sprite(context);
+  ActiveDocumentWriter document(context);
+  Sprite* sprite(document->getSprite());
   std::string name;
 
   // Default name (m_name is a name specified in params)
@@ -105,12 +106,12 @@ void NewLayerCommand::onExecute(Context* context)
 
   Layer* layer;
   {
-    Undoable undoable(sprite, "New Layer");
+    Undoable undoable(document, "New Layer");
     layer = undoable.newLayer();
     undoable.commit();
   }
   layer->setName(name);
-  update_screen_for_sprite(sprite);
+  update_screen_for_document(document);
 
   app_get_statusbar()->invalidate();
   app_get_statusbar()->showTip(1000, "Layer `%s' created", name.c_str());

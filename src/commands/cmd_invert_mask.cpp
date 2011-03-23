@@ -25,7 +25,7 @@
 #include "raster/mask.h"
 #include "raster/sprite.h"
 #include "raster/undo_history.h"
-#include "sprite_wrappers.h"
+#include "document_wrappers.h"
 
 //////////////////////////////////////////////////////////////////////
 // invert_mask
@@ -50,15 +50,16 @@ InvertMaskCommand::InvertMaskCommand()
 
 bool InvertMaskCommand::onEnabled(Context* context)
 {
-  const CurrentSpriteReader sprite(context);
-  return sprite != NULL;
+  const ActiveDocumentReader document(context);
+  return document != NULL && document->getSprite() != NULL;
 }
 
 void InvertMaskCommand::onExecute(Context* context)
 {
   bool has_mask = false;
   {
-    const CurrentSpriteReader sprite(context);
+    const ActiveDocumentReader document(context);
+    const Sprite* sprite(document->getSprite());
     if (sprite->getMask()->bitmap)
       has_mask = true;
   }
@@ -72,12 +73,14 @@ void InvertMaskCommand::onExecute(Context* context)
   }
   // invert the current mask
   else {
-    CurrentSpriteWriter sprite(context);
+    ActiveDocumentWriter document(context);
+    Sprite* sprite(document->getSprite());
+    UndoHistory* undo = document->getUndoHistory();
 
     /* undo */
-    if (sprite->getUndo()->isEnabled()) {
-      sprite->getUndo()->setLabel("Mask Invert");
-      sprite->getUndo()->undo_set_mask(sprite);
+    if (undo->isEnabled()) {
+      undo->setLabel("Mask Invert");
+      undo->undo_set_mask(sprite);
     }
 
     /* create a new mask */
@@ -107,8 +110,8 @@ void InvertMaskCommand::onExecute(Context* context)
     sprite->setMask(mask);
     mask_free(mask);
 
-    sprite->generateMaskBoundaries();
-    update_screen_for_sprite(sprite);
+    document->generateMaskBoundaries();
+    update_screen_for_document(document);
   }
 }
 

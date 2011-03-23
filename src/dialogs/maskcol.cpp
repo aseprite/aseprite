@@ -47,11 +47,12 @@ static Slider* slider_tolerance;
 static void button_1_command(JWidget widget);
 static void button_2_command(JWidget widget);
 
-static Mask *gen_mask(const Sprite* sprite);
-static void mask_preview(Sprite* sprite);
+static Mask* gen_mask(const Sprite* sprite);
+static void mask_preview(Document* document);
 
-void dialogs_mask_color(Sprite* sprite)
+void dialogs_mask_color(Document* document)
 {
+  Sprite* sprite = document->getSprite();
   Box* box1, *box2, *box3, *box4;
   Widget* label_color;
   Button* button_1;
@@ -89,17 +90,17 @@ void dialogs_mask_color(Sprite* sprite)
   if (get_config_bool("MaskColor", "Preview", true))
     check_preview->setSelected(true);
 
-  button_1->user_data[1] = sprite;
-  button_2->user_data[1] = sprite;
+  button_1->user_data[1] = document;
+  button_2->user_data[1] = document;
 
   button_1->Click.connect(Bind<void>(&button_1_command, button_1));
   button_2->Click.connect(Bind<void>(&button_2_command, button_2));
   button_ok->Click.connect(Bind<void>(&Frame::closeWindow, window.get(), button_ok));
   button_cancel->Click.connect(Bind<void>(&Frame::closeWindow, window.get(), button_cancel));
 
-  button_color->Change.connect(Bind<void>(&mask_preview, sprite));
-  slider_tolerance->Change.connect(Bind<void>(&mask_preview, sprite));
-  check_preview->Click.connect(Bind<void>(&mask_preview, sprite));
+  button_color->Change.connect(Bind<void>(&mask_preview, document));
+  slider_tolerance->Change.connect(Bind<void>(&mask_preview, document));
+  check_preview->Click.connect(Bind<void>(&mask_preview, document));
 
   jwidget_magnetic(button_ok, true);
   jwidget_expansive(button_color, true);
@@ -117,7 +118,7 @@ void dialogs_mask_color(Sprite* sprite)
   window->center_window();
 
   /* mask first preview */
-  mask_preview(sprite);
+  mask_preview(document);
 
   /* load window configuration */
   load_window_pos(window, "MaskColor");
@@ -126,12 +127,13 @@ void dialogs_mask_color(Sprite* sprite)
   window->open_window_fg();
 
   if (window->get_killer() == button_ok) {
-    Mask *mask;
+    UndoHistory* undo = document->getUndoHistory();
+    Mask* mask;
 
     /* undo */
-    if (sprite->getUndo()->isEnabled()) {
-      sprite->getUndo()->setLabel("Mask by Color");
-      sprite->getUndo()->undo_set_mask(sprite);
+    if (undo->isEnabled()) {
+      undo->setLabel("Mask by Color");
+      undo->undo_set_mask(sprite);
     }
 
     /* change the mask */
@@ -145,8 +147,8 @@ void dialogs_mask_color(Sprite* sprite)
   }
 
   /* update boundaries and editors */
-  sprite->generateMaskBoundaries();
-  update_screen_for_sprite(sprite);
+  document->generateMaskBoundaries();
+  update_screen_for_document(document);
 
   /* save window configuration */
   save_window_pos(window, "MaskColor");
@@ -155,13 +157,13 @@ void dialogs_mask_color(Sprite* sprite)
 static void button_1_command(JWidget widget)
 {
   button_color->setColor(app_get_colorbar()->getFgColor());
-  mask_preview((Sprite*)widget->user_data[1]);
+  mask_preview((Document*)widget->user_data[1]);
 }
 
 static void button_2_command(JWidget widget)
 {
   button_color->setColor(app_get_colorbar()->getBgColor());
-  mask_preview((Sprite*)widget->user_data[1]);
+  mask_preview((Document*)widget->user_data[1]);
 }
 
 static Mask *gen_mask(const Sprite* sprite)
@@ -180,13 +182,13 @@ static Mask *gen_mask(const Sprite* sprite)
   return mask;
 }
 
-static void mask_preview(Sprite* sprite)
+static void mask_preview(Document* document)
 {
   if (check_preview->isSelected()) {
-    Mask* mask = gen_mask(sprite);
+    Mask* mask = gen_mask(document->getSprite());
 
-    sprite->generateMaskBoundaries(mask);
-    update_screen_for_sprite(sprite);
+    document->generateMaskBoundaries(mask);
+    update_screen_for_document(document);
 
     mask_free(mask);
   }

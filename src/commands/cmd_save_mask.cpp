@@ -25,7 +25,7 @@
 #include "gui/alert.h"
 #include "raster/mask.h"
 #include "raster/sprite.h"
-#include "sprite_wrappers.h"
+#include "document_wrappers.h"
 #include "util/msk_file.h"
 
 //////////////////////////////////////////////////////////////////////
@@ -51,7 +51,8 @@ SaveMaskCommand::SaveMaskCommand()
 
 bool SaveMaskCommand::onEnabled(Context* context)
 {
-  const CurrentSpriteReader sprite(context);
+  const ActiveDocumentReader document(context);
+  const Sprite* sprite(document ? document->getSprite(): NULL);
   if (!sprite)
     return false;
   else
@@ -61,7 +62,8 @@ bool SaveMaskCommand::onEnabled(Context* context)
 
 void SaveMaskCommand::onExecute(Context* context)
 {
-  const CurrentSpriteReader sprite(context);
+  const ActiveDocumentReader document(context);
+  const Sprite* sprite(document ? document->getSprite(): NULL);
   base::string filename = "default.msk";
   int ret;
 

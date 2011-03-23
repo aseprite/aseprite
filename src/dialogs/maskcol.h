@@ -19,8 +19,8 @@
 #ifndef DIALOGS_MASKCOL_H_INCLUDED
 #define DIALOGS_MASKCOL_H_INCLUDED
 
-class Sprite;
+class Document;
 
-void dialogs_mask_color(Sprite* sprite);
+void dialogs_mask_color(Document* document);
 
 #endif

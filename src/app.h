@@ -28,13 +28,13 @@
 class CheckArgs;
 class ColorBar;
 class ConfigModule;
+class Document;
 class Frame;
 class Layer;
 class LegacyModules;
 class LoggerModule;
 class Params;
 class RecentFiles;
-class Sprite;
 class StatusBar;
 class Tabs;
 class ToolBox;
@@ -84,9 +84,9 @@ private:
   std::vector<base::string> m_args;
 };
 
-void app_refresh_screen(const Sprite* sprite);
+void app_refresh_screen(const Document* document);
 
-void app_realloc_sprite_list();
+void app_rebuild_documents_tabs();
 bool app_realloc_recent_list();
 
 int app_get_current_image_type();

@@ -85,7 +85,9 @@ Image* NewImageFromMask(const Sprite* src_sprite)
 int interactive_move_layer(int mode, bool use_undo, int (*callback)())
 {
   Editor* editor = current_editor;
-  Sprite* sprite = editor->getSprite();
+  Document* document = editor->getDocument();
+  UndoHistory* undo = document->getUndoHistory();
+  Sprite* sprite = document->getSprite();
 
   ASSERT(sprite->getCurrentLayer()->is_image());
 
@@ -151,12 +153,12 @@ int interactive_move_layer(int mode, bool use_undo, int (*callback)())
   
   /* the position was changed */
   if (!editor->editor_click_cancel()) {
-    if (use_undo && sprite->getUndo()->isEnabled()) {
-      sprite->getUndo()->setLabel("Cel Movement");
-      sprite->getUndo()->undo_open();
-      sprite->getUndo()->undo_int(cel, &cel->x);
-      sprite->getUndo()->undo_int(cel, &cel->y);
-      sprite->getUndo()->undo_close();
+    if (use_undo && undo->isEnabled()) {
+      undo->setLabel("Cel Movement");
+      undo->undo_open();
+      undo->undo_int(cel, &cel->x);
+      undo->undo_int(cel, &cel->y);
+      undo->undo_close();
     }
 
     cel_set_position(cel, new_x, new_y);
@@ -168,7 +170,7 @@ int interactive_move_layer(int mode, bool use_undo, int (*callback)())
   }
 
   /* redraw the sprite in all editors */
-  update_screen_for_sprite(sprite);
+  update_screen_for_document(document);
 
   /* restore the cursor */
   editor->show_drawing_cursor();

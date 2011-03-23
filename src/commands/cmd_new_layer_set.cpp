@@ -25,7 +25,7 @@
 #include "modules/gui.h"
 #include "raster/layer.h"
 #include "raster/sprite.h"
-#include "sprite_wrappers.h"
+#include "document_wrappers.h"
 
 //////////////////////////////////////////////////////////////////////
 // new_layer_set
@@ -50,14 +50,15 @@ NewLayerSetCommand::NewLayerSetCommand()
 
 bool NewLayerSetCommand::onEnabled(Context* context)
 {
-  const CurrentSpriteReader sprite(context);
-  return
-    sprite != NULL;
+  const ActiveDocumentReader document(context);
+  const Sprite* sprite(document ? document->getSprite(): 0);
+  return sprite != NULL;
 }
 
 void NewLayerSetCommand::onExecute(Context* context)
 {
-  CurrentSpriteWriter sprite(context);
+  ActiveDocumentWriter document(context);
+  Sprite* sprite(document->getSprite());
 
   // load the window widget
   FramePtr window(load_widget("new_layer.xml", "new_layer_set"));
@@ -72,7 +73,7 @@ void NewLayerSetCommand::onExecute(Context* context)
     sprite->getFolder()->add_layer(layer);
     sprite->setCurrentLayer(layer);
 
-    update_screen_for_sprite(sprite);
+    update_screen_for_document(document);
   }
 }
 

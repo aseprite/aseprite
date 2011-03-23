@@ -35,7 +35,7 @@
 #include "raster/mask.h"
 #include "raster/sprite.h"
 #include "settings/settings.h"
-#include "sprite_wrappers.h"
+#include "document_wrappers.h"
 
 static const char* ConfigSection = "Despeckle";
 
@@ -108,7 +108,8 @@ DespeckleCommand::DespeckleCommand()
 
 bool DespeckleCommand::onEnabled(Context* context)
 {
-  const CurrentSpriteReader sprite(context);
+  const ActiveDocumentReader document(context);
+  const Sprite* sprite(document ? document->getSprite(): 0);
   return sprite != NULL;
 }
 
@@ -119,7 +120,7 @@ void DespeckleCommand::onExecute(Context* context)
   filter.setSize(get_config_int(ConfigSection, "Width", 3),
 		 get_config_int(ConfigSection, "Height", 3));
 
-  FilterManagerImpl filterMgr(context->getCurrentSprite(), &filter);
+  FilterManagerImpl filterMgr(context->getActiveDocument(), &filter);
   filterMgr.setTarget(TARGET_RED_CHANNEL |
 		      TARGET_GREEN_CHANNEL |
 		      TARGET_BLUE_CHANNEL |

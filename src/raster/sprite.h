@@ -19,10 +19,10 @@
 #ifndef RASTER_SPRITE_H_INCLUDED
 #define RASTER_SPRITE_H_INCLUDED
 
+#include "base/disable_copying.h"
 #include "raster/gfxobj.h"
 #include <vector>
 
-class FormatOptions;
 class Image;
 class Layer;
 class LayerFolder;
@@ -31,26 +31,14 @@ class Mask;
 class Palette;
 class Path;
 class Stock;
-class UndoHistory;
 class Sprite;
 class RgbMap;
-struct _BoundSeg;
-
-struct PreferredEditorSettings
-{
-  int scroll_x;
-  int scroll_y;
-  int zoom;
-  bool virgin;
-};
 
 typedef std::vector<Palette*> PalettesList;
 typedef std::vector<Mask*> MasksList;
 typedef std::vector<Path*> PathsList;
 
-/**
- * The main structure used in the whole program to handle a sprite.
- */
+// The main structure used in the whole program to handle a sprite.
 class Sprite : public GfxObj
 {
 public:
@@ -59,22 +47,7 @@ public:
   // Constructors/Destructor
 
   Sprite(int imgtype, int width, int height, int ncolors);
-  Sprite(const Sprite& original);
   virtual ~Sprite();
-
-  ////////////////////////////////////////
-  // Special constructors
-
-  static Sprite* createFlattenCopy(const Sprite& original);
-  static Sprite* createWithLayer(int imgtype, int width, int height, int ncolors);
-
-  ////////////////////////////////////////
-  // Multi-threading ("sprite wrappers" use this)
-
-  bool lock(bool write);
-  bool lockToWrite();
-  void unlockToRead();
-  void unlock();
 
   ////////////////////////////////////////
   // Main properties
@@ -85,13 +58,6 @@ public:
   int getWidth() const;
   int getHeight() const;
   void setSize(int width, int height);
-
-  const char* getFilename() const;
-  void setFilename(const char* filename);
-
-  bool isModified() const;
-  bool isAssociatedToFile() const;
-  void markAsSaved();
 
   bool needAlpha() const;
 
@@ -153,11 +119,6 @@ public:
   void remapImages(int frame_from, int frame_to, const std::vector<int>& mapping);
 
   ////////////////////////////////////////
-  // Undo
-
-  UndoHistory* getUndo() const;
-
-  ////////////////////////////////////////
   // Mask
 
   Mask* getMask() const;
@@ -166,8 +127,6 @@ public:
   void addMask(Mask* mask);
   void removeMask(Mask* mask);
   Mask* requestMask(const char* name) const;
-
-  void generateMaskBoundaries(Mask* mask = NULL);
 
   MasksList getMasksRepository();
 
@@ -181,40 +140,16 @@ public:
   PathsList getPathsRepository();
 
   ////////////////////////////////////////
-  // Loaded options from file
-
-  void setFormatOptions(FormatOptions* format_options);
-
-  ////////////////////////////////////////
   // Drawing
 
   void render(Image* image, int x, int y) const;
   int getPixel(int x, int y) const;
 
-  ////////////////////////////////////////
-  // Preferred editor settings
-
-  PreferredEditorSettings getPreferredEditorSettings() const;
-  void setPreferredEditorSettings(const PreferredEditorSettings& settings);
-
-  ////////////////////////////////////////
-  // Boundaries
-
-  int getBoundariesSegmentsCount() const;
-  const _BoundSeg* getBoundariesSegments() const;
-
-  ////////////////////////////////////////
-  // Extra Cel (it is used to draw pen preview, pixels in movement,
-  // etc.)
-
-  void prepareExtraCel(int x, int y, int w, int h, int opacity);
-  void destroyExtraCel();
-  Cel* getExtraCel() const;
-  Image* getExtraCelImage() const;
-
 private:
   Sprite();
   class SpriteImpl* m_impl;
+
+  DISABLE_COPYING(Sprite);
 };
 
 #endif

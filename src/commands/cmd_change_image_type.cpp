@@ -27,7 +27,7 @@
 #include "modules/palettes.h"
 #include "raster/image.h"
 #include "raster/sprite.h"
-#include "sprite_wrappers.h"
+#include "document_wrappers.h"
 #include "undoable.h"
 
 class ChangeImageTypeCommand : public Command
@@ -70,7 +70,8 @@ void ChangeImageTypeCommand::onLoadParams(Params* params)
 
 bool ChangeImageTypeCommand::onEnabled(Context* context)
 {
-  const CurrentSpriteReader sprite(context);
+  const ActiveDocumentReader document(context);
+  const Sprite* sprite(document ? document->getSprite(): 0);
 
   if (sprite != NULL &&
       sprite->getImgType() == IMAGE_INDEXED &&
@@ -84,7 +85,8 @@ bool ChangeImageTypeCommand::onEnabled(Context* context)
 
 bool ChangeImageTypeCommand::onChecked(Context* context)
 {
-  const CurrentSpriteReader sprite(context);
+  const ActiveDocumentReader document(context);
+  const Sprite* sprite(document ? document->getSprite(): 0);
 
   if (sprite != NULL &&
       sprite->getImgType() == IMAGE_INDEXED &&
@@ -99,17 +101,13 @@ bool ChangeImageTypeCommand::onChecked(Context* context)
 
 void ChangeImageTypeCommand::onExecute(Context* context)
 {
-  CurrentSpriteWriter sprite(context);
+  ActiveDocumentWriter document(context);
   {
-    Undoable undoable(sprite, "Color Mode Change");
+    Undoable undoable(document, "Color Mode Change");
     undoable.setImgType(m_imgtype, m_dithering);
-
-    // Regenerate extras
-    sprite->destroyExtraCel();
-
     undoable.commit();
   }
-  app_refresh_screen(sprite);
+  app_refresh_screen(document);
 }
 
 //////////////////////////////////////////////////////////////////////

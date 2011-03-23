@@ -18,26 +18,22 @@
 
 #include "config.h"
 
-#include <allegro/debug.h>
-#include <allegro/unicode.h>
-
-#include "gui/gui.h"
-
-#include "ui_context.h"
+#include "app.h"
 #include "commands/command.h"
 #include "commands/params.h"
-#include "app.h"
+#include "document_wrappers.h"
+#include "gui/gui.h"
 #include "modules/editors.h"
-#include "raster/sprite.h"
-#include "sprite_wrappers.h"
+#include "ui_context.h"
+
+#include <allegro/debug.h>
+#include <allegro/unicode.h>
 
 //////////////////////////////////////////////////////////////////////
 // select_file
 
 class SelectFileCommand : public Command
 {
-  GfxObjId m_sprite_id;
-
 public:
   SelectFileCommand();
   Command* clone() { return new SelectFileCommand(*this); }
@@ -47,6 +43,9 @@ protected:
   bool onEnabled(Context* context);
   bool onChecked(Context* context);
   void onExecute(Context* context);
+
+private:
+  DocumentId m_documentId;
 };
 
 SelectFileCommand::SelectFileCommand()
@@ -54,52 +53,48 @@ SelectFileCommand::SelectFileCommand()
 	    "Select File",
 	    CmdUIOnlyFlag)
 {
-  m_sprite_id = 0;
+  m_documentId = WithoutDocumentId;
 }
 
 void SelectFileCommand::onLoadParams(Params* params)
 {
-  if (params->has_param("sprite_id")) {
-    m_sprite_id = ustrtol(params->get("sprite_id").c_str(), NULL, 10);
+  if (params->has_param("document_id")) {
+    m_documentId = (DocumentId)ustrtol(params->get("document_id").c_str(), NULL, 10);
   }
 }
 
 bool SelectFileCommand::onEnabled(Context* context)
 {
-  /* m_sprite_id != 0, the ID specifies a GfxObj */
-  if (m_sprite_id > 0) {
-    GfxObj* gfxobj = GfxObj::find(m_sprite_id);
-    return gfxobj && gfxobj->getType() == GFXOBJ_SPRITE;
+  // m_documentId != 0, the ID specifies a Document
+  if (m_documentId != WithoutDocumentId) {
+    Document* document = context->getDocuments().getById(m_documentId);
+    return document != NULL;
   }
-  /* m_sprite_id=0, means the select "Nothing" option  */
+  // m_documentId=0, means the select "Nothing" option
   else
     return true;
 }
 
 bool SelectFileCommand::onChecked(Context* context)
 {
-  const CurrentSpriteReader sprite(context);
+  const ActiveDocumentReader document(context);
 
-  if (m_sprite_id > 0) {
-    GfxObj* gfxobj = GfxObj::find(m_sprite_id);
-    return
-      gfxobj && gfxobj->getType() == GFXOBJ_SPRITE &&
-      sprite == (Sprite *)gfxobj;
-  }
+  if (m_documentId != WithoutDocumentId)
+    return document == context->getDocuments().getById(m_documentId);
   else
-    return sprite == NULL;
+    return document == NULL;
 }
 
 void SelectFileCommand::onExecute(Context* context)
 {
-  if (m_sprite_id > 0) {
-    GfxObj* gfxobj = GfxObj::find(m_sprite_id);
-    ASSERT(gfxobj != NULL);
+  if (m_documentId != WithoutDocumentId) {
+    Document* document = context->getDocuments().getById(m_documentId);
+    ASSERT(document != NULL);
 
-    set_sprite_in_more_reliable_editor((Sprite*)gfxobj);
+    set_document_in_more_reliable_editor(document);
   }
   else {
-    set_sprite_in_more_reliable_editor(NULL);
+    set_document_in_more_reliable_editor(NULL);
   }
 }
 

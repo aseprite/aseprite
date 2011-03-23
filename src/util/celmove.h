@@ -22,13 +22,13 @@
 class Cel;
 class Layer;
 class Sprite;
-class SpriteWriter;
+class DocumentWriter;
 
 void set_frame_to_handle(Layer* src_layer, int src_frame,
 			 Layer* dst_layer, int dst_frame);
 
-void move_cel(SpriteWriter& sprite);
-void copy_cel(SpriteWriter& sprite);
+void move_cel(DocumentWriter& document);
+void copy_cel(DocumentWriter& document);
 
 #endif
 

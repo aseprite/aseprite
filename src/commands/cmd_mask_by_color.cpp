@@ -21,7 +21,7 @@
 #include "commands/command.h"
 #include "dialogs/maskcol.h"
 #include "gui/base.h"
-#include "sprite_wrappers.h"
+#include "document_wrappers.h"
 
 //////////////////////////////////////////////////////////////////////
 // mask_by_color
@@ -46,15 +46,15 @@ MaskByColorCommand::MaskByColorCommand()
 
 bool MaskByColorCommand::onEnabled(Context* context)
 {
-  const CurrentSpriteReader sprite(context);
-  return
-    sprite != NULL;
+  const ActiveDocumentReader document(context);
+  const Sprite* sprite(document ? document->getSprite(): 0);
+  return sprite != NULL;
 }
 
 void MaskByColorCommand::onExecute(Context* context)
 {
-  CurrentSpriteWriter sprite(context);
-  dialogs_mask_color(sprite);
+  ActiveDocumentWriter document(context);
+  dialogs_mask_color(document);
 }
 
 //////////////////////////////////////////////////////////////////////

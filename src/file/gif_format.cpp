@@ -18,13 +18,15 @@
 
 #include "config.h"
 
-#include "base/shared_ptr.h"
+#include "base/unique_ptr.h"
+#include "document.h"
 #include "file/file.h"
 #include "file/file_format.h"
-#include "raster/raster.h"
-#include "util/autocrop.h"
+#include "file/format_options.h"
 #include "gui/gui.h"
 #include "modules/gui.h"
+#include "raster/raster.h"
+#include "util/autocrop.h"
 
 #include <gif_lib.h>
 
@@ -61,30 +63,13 @@ FileFormat* CreateGifFormat()
   return new GifFormat;
 }
 
-class DGifDeleter
-{
-public:
-  static void destroy(GifFileType* gif_file)
-  {
-    DGifCloseFile(gif_file);
-  }
-};
-
-class EGifDeleter
-{
-public:
-  static void destroy(GifFileType* gif_file)
-  {
-    EGifCloseFile(gif_file);
-  }
-};
-
 static int interlaced_offset[] = { 0, 4, 2, 1 };
 static int interlaced_jumps[] = { 8, 8, 4, 2 };
 
 bool GifFormat::onLoad(FileOp* fop)
 {
-  SharedPtr<GifFileType, DGifDeleter> gif_file(DGifOpenFileName(fop->filename.c_str()));
+  UniquePtr<GifFileType, int(*)(GifFileType*)> gif_file(DGifOpenFileName(fop->filename.c_str()),
+							DGifCloseFile);
   if (!gif_file) {
     fop_error(fop, "Error loading GIF header.\n");
     return false;
@@ -96,242 +81,237 @@ bool GifFormat::onLoad(FileOp* fop)
   // The previous image is used to support the special disposal method
   // of GIF frames DISPOSAL_METHOD_RESTORE_PREVIOUS (number 3 in
   // Graphics Extension)
-  SharedPtr<Image> current_image(image_new(IMAGE_RGB, sprite_w, sprite_h));
-  SharedPtr<Image> previous_image(image_new(IMAGE_RGB, sprite_w, sprite_h));
-  SharedPtr<Palette> current_palette(new Palette(0, 256));
-  SharedPtr<Palette> previous_palette(new Palette(0, 256));
+  UniquePtr<Image> current_image(image_new(IMAGE_RGB, sprite_w, sprite_h));
+  UniquePtr<Image> previous_image(image_new(IMAGE_RGB, sprite_w, sprite_h));
+  UniquePtr<Palette> current_palette(new Palette(0, 256));
+  UniquePtr<Palette> previous_palette(new Palette(0, 256));
 
-  Sprite* sprite = NULL;
-  try {
-    // Create the sprite with the GIF dimension
-    sprite = new Sprite(IMAGE_RGB, sprite_w, sprite_h, 256);
+  // Create the sprite with the GIF dimension
+  UniquePtr<Sprite> sprite(new Sprite(IMAGE_RGB, sprite_w, sprite_h, 256));
 
-    // Create the main layer
-    LayerImage* layer = new LayerImage(sprite);
-    sprite->getFolder()->add_layer(layer);
+  // Create the main layer
+  LayerImage* layer = new LayerImage(sprite);
+  sprite->getFolder()->add_layer(layer);
 
-    // If the GIF image has a global palette, it has a valid
-    // background color (so the GIF is not transparent).
-    int bgcolor_index;
-    if (gif_file->SColorMap != NULL) {
-      bgcolor_index = gif_file->SBackGroundColor;
+  // If the GIF image has a global palette, it has a valid
+  // background color (so the GIF is not transparent).
+  int bgcolor_index;
+  if (gif_file->SColorMap != NULL) {
+    bgcolor_index = gif_file->SBackGroundColor;
 
-      // Setup the first palette using the global color map.
-      ColorMapObject* colormap = gif_file->SColorMap;
-      for (int i=0; i<colormap->ColorCount; ++i) {
-	current_palette->setEntry(i, _rgba(colormap->Colors[i].Red,
-					   colormap->Colors[i].Green,
-					   colormap->Colors[i].Blue, 255));
-      }
+    // Setup the first palette using the global color map.
+    ColorMapObject* colormap = gif_file->SColorMap;
+    for (int i=0; i<colormap->ColorCount; ++i) {
+      current_palette->setEntry(i, _rgba(colormap->Colors[i].Red,
+					 colormap->Colors[i].Green,
+					 colormap->Colors[i].Blue, 255));
     }
-    else {
-      bgcolor_index = 0;
-    }
+  }
+  else {
+    bgcolor_index = 0;
+  }
 
-    // Clear both images with the transparent color (alpha = 0).
-    image_clear(current_image, _rgba(0, 0, 0, 0));
-    image_clear(previous_image, _rgba(0, 0, 0, 0));
+  // Clear both images with the transparent color (alpha = 0).
+  image_clear(current_image, _rgba(0, 0, 0, 0));
+  image_clear(previous_image, _rgba(0, 0, 0, 0));
 
-    // Scan the content of the GIF file (read record by record)
-    GifRecordType record_type;
-    int frame_num = 0;
-    DisposalMethod disposal_method = DISPOSAL_METHOD_NONE;
-    int transparent_index = -1;
-    int frame_delay = -1;
-    do {
-      if (DGifGetRecordType(gif_file, &record_type) == GIF_ERROR)
-	throw base::Exception("Invalid GIF record in file.\n");
+  // Scan the content of the GIF file (read record by record)
+  GifRecordType record_type;
+  int frame_num = 0;
+  DisposalMethod disposal_method = DISPOSAL_METHOD_NONE;
+  int transparent_index = -1;
+  int frame_delay = -1;
+  do {
+    if (DGifGetRecordType(gif_file, &record_type) == GIF_ERROR)
+      throw base::Exception("Invalid GIF record in file.\n");
 
-      switch (record_type) {
+    switch (record_type) {
 
-	case IMAGE_DESC_RECORD_TYPE: {
-	  if (DGifGetImageDesc(gif_file) == GIF_ERROR)
-	    throw base::Exception("Invalid GIF image descriptor.\n");
+      case IMAGE_DESC_RECORD_TYPE: {
+	if (DGifGetImageDesc(gif_file) == GIF_ERROR)
+	  throw base::Exception("Invalid GIF image descriptor.\n");
 
-	  // These are the bounds of the image to read.
-	  int frame_x = gif_file->Image.Left;
-	  int frame_y = gif_file->Image.Top;
-	  int frame_w = gif_file->Image.Width;
-	  int frame_h = gif_file->Image.Height;
+	// These are the bounds of the image to read.
+	int frame_x = gif_file->Image.Left;
+	int frame_y = gif_file->Image.Top;
+	int frame_w = gif_file->Image.Width;
+	int frame_h = gif_file->Image.Height;
 
-	  if (frame_x < 0 || frame_y < 0 ||
-	      frame_x + frame_w > sprite_w ||
-	      frame_y + frame_h > sprite_h)
-	    throw base::Exception("Image %d is out of sprite bounds.\n", frame_num);
+	if (frame_x < 0 || frame_y < 0 ||
+				     frame_x + frame_w > sprite_w ||
+	    frame_y + frame_h > sprite_h)
+	  throw base::Exception("Image %d is out of sprite bounds.\n", frame_num);
 
-	  // Add a new frame in the sprite.
-	  sprite->setTotalFrames(frame_num+1);
+	// Add a new frame in the sprite.
+	sprite->setTotalFrames(frame_num+1);
 
-	  // Set frame delay (1/100th seconds to milliseconds)
-	  if (frame_delay >= 0)
-	    sprite->setFrameDuration(frame_num, frame_delay*10);
+	// Set frame delay (1/100th seconds to milliseconds)
+	if (frame_delay >= 0)
+	  sprite->setFrameDuration(frame_num, frame_delay*10);
 
-	  // Update palette for this frame (the first frame always need a palette).
-	  if (gif_file->Image.ColorMap) {
-	    ColorMapObject* colormap = gif_file->Image.ColorMap;
-	    for (int i=0; i<colormap->ColorCount; ++i) {
-	      current_palette->setEntry(i, _rgba(colormap->Colors[i].Red,
-						 colormap->Colors[i].Green,
-						 colormap->Colors[i].Blue, 255));
-	    }
+	// Update palette for this frame (the first frame always need a palette).
+	if (gif_file->Image.ColorMap) {
+	  ColorMapObject* colormap = gif_file->Image.ColorMap;
+	  for (int i=0; i<colormap->ColorCount; ++i) {
+	    current_palette->setEntry(i, _rgba(colormap->Colors[i].Red,
+					       colormap->Colors[i].Green,
+					       colormap->Colors[i].Blue, 255));
 	  }
+	}
 
-	  if (frame_num == 0 || previous_palette->countDiff(current_palette, NULL, NULL)) {
-	    current_palette->setFrame(frame_num);
-	    sprite->setPalette(current_palette, true);
+	if (frame_num == 0 || previous_palette->countDiff(current_palette, NULL, NULL)) {
+	  current_palette->setFrame(frame_num);
+	  sprite->setPalette(current_palette, true);
 
-	    current_palette->copyColorsTo(previous_palette);
-	  }
+	  current_palette->copyColorsTo(previous_palette);
+	}
 
-	  // Create a temporary image to load frame pixels.
-	  SharedPtr<Image> frame_image(image_new(IMAGE_INDEXED, frame_w, frame_h));
-	  IndexedTraits::address_t addr;
+	// Create a temporary image to load frame pixels.
+	UniquePtr<Image> frame_image(image_new(IMAGE_INDEXED, frame_w, frame_h));
+	IndexedTraits::address_t addr;
 
-	  if (gif_file->Image.Interlace) {
-	    // Need to perform 4 passes on the images.
-	    for (int i=0; i<4; ++i)
-	      for (int y = interlaced_offset[i]; y < frame_h; y += interlaced_jumps[i]) {
-		addr = image_address_fast<IndexedTraits>(frame_image, 0, y);
-	  	if (DGifGetLine(gif_file, addr, frame_w) == GIF_ERROR)
-		  throw base::Exception("Invalid interlaced image data.");
-	      }
-	  }
-	  else {
-	    for (int y = 0; y < frame_h; ++y) {
+	if (gif_file->Image.Interlace) {
+	  // Need to perform 4 passes on the images.
+	  for (int i=0; i<4; ++i)
+	    for (int y = interlaced_offset[i]; y < frame_h; y += interlaced_jumps[i]) {
 	      addr = image_address_fast<IndexedTraits>(frame_image, 0, y);
 	      if (DGifGetLine(gif_file, addr, frame_w) == GIF_ERROR)
-		throw base::Exception("Invalid image data (%d).\n", GifLastError());
+		throw base::Exception("Invalid interlaced image data.");
 	    }
+	}
+	else {
+	  for (int y = 0; y < frame_h; ++y) {
+	    addr = image_address_fast<IndexedTraits>(frame_image, 0, y);
+	    if (DGifGetLine(gif_file, addr, frame_w) == GIF_ERROR)
+	      throw base::Exception("Invalid image data (%d).\n", GifLastError());
+	  }
+	}
+
+	// Convert the indexed image to RGB
+	for (int y = 0; y < frame_h; ++y)
+	  for (int x = 0; x < frame_w; ++x) {
+	    int pixel_index = image_getpixel_fast<IndexedTraits>(frame_image, x, y);
+	    if (pixel_index != transparent_index)
+	      image_putpixel_fast<RgbTraits>(current_image,
+					     frame_x + x,
+					     frame_y + y,
+					     current_palette->getEntry(pixel_index));
 	  }
 
-	  // Convert the indexed image to RGB
-	  for (int y = 0; y < frame_h; ++y)
-	    for (int x = 0; x < frame_w; ++x) {
-	      int pixel_index = image_getpixel_fast<IndexedTraits>(frame_image, x, y);
-	      if (pixel_index != transparent_index)
-		image_putpixel_fast<RgbTraits>(current_image,
-					       frame_x + x,
-					       frame_y + y,
-					       current_palette->getEntry(pixel_index));
-	    }
-
-	  // Create a new Cel and a image with the whole content of "current_image"
-	  Cel* cel = cel_new(frame_num, 0);
+	// Create a new Cel and a image with the whole content of "current_image"
+	Cel* cel = cel_new(frame_num, 0);
+	try {
+	  Image* cel_image = image_new_copy(current_image);
 	  try {
-	    Image* cel_image = image_new_copy(current_image);
-	    try {
-	      // Add the image in the sprite's stock and update the cel's
-	      // reference to the new stock's image.
-	      cel->image = sprite->getStock()->addImage(cel_image);
-	    }
-	    catch (...) {
-	      delete cel_image;
-	      throw;
-	    }
-
-	    layer->addCel(cel);
+	    // Add the image in the sprite's stock and update the cel's
+	    // reference to the new stock's image.
+	    cel->image = sprite->getStock()->addImage(cel_image);
 	  }
 	  catch (...) {
-	    delete cel;
+	    delete cel_image;
 	    throw;
 	  }
 
-	  // The current_image was already copied to represent the
-	  // current frame (frame_num), so now we have to clear the
-	  // area occupied by frame_image using the desired disposal
-	  // method.
-	  switch (disposal_method) {
-
-	    case DISPOSAL_METHOD_NONE:
-	    case DISPOSAL_METHOD_DO_NOT_DISPOSE:
-	      // Do nothing
-	      break;
-
-	    case DISPOSAL_METHOD_RESTORE_BGCOLOR:
-	      image_rectfill(current_image,
-			     frame_x, frame_y,
-			     frame_x+frame_w-1,
-			     frame_y+frame_h-1,
-			     _rgba(0, 0, 0, 0));
-	      break;
-
-	    case DISPOSAL_METHOD_RESTORE_PREVIOUS:
-	      image_copy(current_image, previous_image, 0, 0);
-	      break;
-	  }
-
-	  // Update previous_image with current_image only if the
-	  // disposal method is not "restore previous" (which means
-	  // that we have already updated current_image from
-	  // previous_image).
-	  if (disposal_method != DISPOSAL_METHOD_RESTORE_PREVIOUS)
-	    image_copy(previous_image, current_image, 0, 0);
-
-	  ++frame_num;
-
-	  disposal_method = DISPOSAL_METHOD_NONE;
-	  transparent_index = -1;
-	  frame_delay = -1;
-	  break;
+	  layer->addCel(cel);
+	}
+	catch (...) {
+	  delete cel;
+	  throw;
 	}
 
-	case EXTENSION_RECORD_TYPE: {
-	  GifByteType* extension;
-	  int ext_code;
+	// The current_image was already copied to represent the
+	// current frame (frame_num), so now we have to clear the
+	// area occupied by frame_image using the desired disposal
+	// method.
+	switch (disposal_method) {
 
-	  if (DGifGetExtension(gif_file, &ext_code, &extension) == GIF_ERROR)
-	    throw base::Exception("Invalid GIF extension record.\n");
+	  case DISPOSAL_METHOD_NONE:
+	  case DISPOSAL_METHOD_DO_NOT_DISPOSE:
+	    // Do nothing
+	    break;
 
-	  if (ext_code == GRAPHICS_EXT_FUNC_CODE) {
-	    if (extension[0] >= 4) {
-	      disposal_method   = (DisposalMethod)((extension[1] >> 2) & 7);
-	      transparent_index = (extension[1] & 1) ? extension[4]: -1;
-	      frame_delay       = (extension[3] << 8) | extension[2];
+	  case DISPOSAL_METHOD_RESTORE_BGCOLOR:
+	    image_rectfill(current_image,
+			   frame_x, frame_y,
+			   frame_x+frame_w-1,
+			   frame_y+frame_h-1,
+			   _rgba(0, 0, 0, 0));
+	    break;
 
-	      TRACE("Disposal method: %d\nTransparent index: %d\nFrame delay: %d\n",
-	            disposal_method, transparent_index, frame_delay);
-	    }
-	  }
-
-	  while (extension != NULL) {
-	    if (DGifGetExtensionNext(gif_file, &extension) == GIF_ERROR)
-	      throw base::Exception("Invalid GIF extension record.\n");
-	  }
-	  break;
+	  case DISPOSAL_METHOD_RESTORE_PREVIOUS:
+	    image_copy(current_image, previous_image, 0, 0);
+	    break;
 	}
 
-	case TERMINATE_RECORD_TYPE:
-	  break;
+	// Update previous_image with current_image only if the
+	// disposal method is not "restore previous" (which means
+	// that we have already updated current_image from
+	// previous_image).
+	if (disposal_method != DISPOSAL_METHOD_RESTORE_PREVIOUS)
+	  image_copy(previous_image, current_image, 0, 0);
 
-	default:
-	  break;
+	++frame_num;
+
+	disposal_method = DISPOSAL_METHOD_NONE;
+	transparent_index = -1;
+	frame_delay = -1;
+	break;
       }
 
-      // Just one frame?
-      if (frame_num > 0 && fop->oneframe)
+      case EXTENSION_RECORD_TYPE: {
+	GifByteType* extension;
+	int ext_code;
+
+	if (DGifGetExtension(gif_file, &ext_code, &extension) == GIF_ERROR)
+	  throw base::Exception("Invalid GIF extension record.\n");
+
+	if (ext_code == GRAPHICS_EXT_FUNC_CODE) {
+	  if (extension[0] >= 4) {
+	    disposal_method   = (DisposalMethod)((extension[1] >> 2) & 7);
+	    transparent_index = (extension[1] & 1) ? extension[4]: -1;
+	    frame_delay       = (extension[3] << 8) | extension[2];
+
+	    TRACE("Disposal method: %d\nTransparent index: %d\nFrame delay: %d\n",
+		  disposal_method, transparent_index, frame_delay);
+	  }
+	}
+
+	while (extension != NULL) {
+	  if (DGifGetExtensionNext(gif_file, &extension) == GIF_ERROR)
+	    throw base::Exception("Invalid GIF extension record.\n");
+	}
+	break;
+      }
+
+      case TERMINATE_RECORD_TYPE:
 	break;
 
-      if (fop_is_stop(fop))
+      default:
 	break;
-    } while (record_type != TERMINATE_RECORD_TYPE);
-  }
-  catch (...) {
-    delete sprite;
-    throw;
-  }
+    }
 
-  fop->sprite = sprite;
-  sprite = NULL;
+    // Just one frame?
+    if (frame_num > 0 && fop->oneframe)
+      break;
+
+    if (fop_is_stop(fop))
+      break;
+  } while (record_type != TERMINATE_RECORD_TYPE);
+
+  fop->document = new Document(sprite);
+  sprite.release(); 		// Now the sprite is owned by fop->document
+
   return true;
 }
 
 bool GifFormat::onSave(FileOp* fop)
 {
-  SharedPtr<GifFileType, EGifDeleter> gif_file(EGifOpenFileName(fop->filename.c_str(), 0));
+  UniquePtr<GifFileType, int(*)(GifFileType*)> gif_file(EGifOpenFileName(fop->filename.c_str(), 0),
+							EGifCloseFile);
   if (!gif_file)
     throw base::Exception("Error creating GIF file.\n");
 
-  Sprite *sprite = fop->sprite;
+  Sprite* sprite = fop->document->getSprite();
   int sprite_w = sprite->getWidth();
   int sprite_h = sprite->getHeight();
   int sprite_imgtype = sprite->getImgType();
@@ -354,9 +334,9 @@ bool GifFormat::onSave(FileOp* fop)
 			background_color, color_map) == GIF_ERROR)
     throw base::Exception("Error writing GIF header.\n");
 
-  SharedPtr<Image> buffer_image;
-  SharedPtr<Image> current_image(image_new(IMAGE_INDEXED, sprite_w, sprite_h));
-  SharedPtr<Image> previous_image(image_new(IMAGE_INDEXED, sprite_w, sprite_h));
+  UniquePtr<Image> buffer_image;
+  UniquePtr<Image> current_image(image_new(IMAGE_INDEXED, sprite_w, sprite_h));
+  UniquePtr<Image> previous_image(image_new(IMAGE_INDEXED, sprite_w, sprite_h));
   int frame_x, frame_y, frame_w, frame_h;
   int u1, v1, u2, v2;
   int i1, j1, i2, j2;

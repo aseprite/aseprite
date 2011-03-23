@@ -22,7 +22,7 @@
 #include "modules/gui.h"
 #include "raster/mask.h"
 #include "raster/sprite.h"
-#include "sprite_wrappers.h"
+#include "document_wrappers.h"
 #include "undoable.h"
 
 //////////////////////////////////////////////////////////////////////
@@ -48,20 +48,21 @@ DeselectMaskCommand::DeselectMaskCommand()
 
 bool DeselectMaskCommand::onEnabled(Context* context)
 {
-  const CurrentSpriteReader sprite(context);
+  const ActiveDocumentReader document(context);
+  const Sprite* sprite(document ? document->getSprite(): 0);
   return sprite && !sprite->getMask()->is_empty();
 }
 
 void DeselectMaskCommand::onExecute(Context* context)
 {
-  CurrentSpriteWriter sprite(context);
+  ActiveDocumentWriter document(context);
   {
-    Undoable undoable(sprite, "Mask Deselection");
+    Undoable undoable(document, "Mask Deselection");
     undoable.deselectMask();
     undoable.commit();
   }
-  sprite->generateMaskBoundaries();
-  update_screen_for_sprite(sprite);
+  document->generateMaskBoundaries();
+  update_screen_for_document(document);
 }
 
 //////////////////////////////////////////////////////////////////////

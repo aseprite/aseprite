@@ -34,7 +34,7 @@
 #include "raster/image.h"
 #include "raster/mask.h"
 #include "raster/sprite.h"
-#include "sprite_wrappers.h"
+#include "document_wrappers.h"
 #include "widgets/color_bar.h"
 #include "widgets/color_button.h"
 
@@ -145,20 +145,22 @@ ReplaceColorCommand::ReplaceColorCommand()
 
 bool ReplaceColorCommand::onEnabled(Context* context)
 {
-  const CurrentSpriteReader sprite(context);
+  const ActiveDocumentReader document(context);
+  const Sprite* sprite(document ? document->getSprite(): 0);
   return sprite != NULL;
 }
 
 void ReplaceColorCommand::onExecute(Context* context)
 {
-  Sprite* sprite = context->getCurrentSprite();
+  Document* document = context->getActiveDocument();
+  Sprite* sprite(document->getSprite());
 
   ReplaceColorFilterWrapper filter(sprite->getCurrentLayer());
   filter.setFrom(get_config_color(ConfigSection, "Color1", app_get_colorbar()->getFgColor()));
   filter.setTo(get_config_color(ConfigSection, "Color2", app_get_colorbar()->getBgColor()));
   filter.setTolerance(get_config_int(ConfigSection, "Tolerance", 0));
 
-  FilterManagerImpl filterMgr(sprite, &filter);
+  FilterManagerImpl filterMgr(document, &filter);
   filterMgr.setTarget(TARGET_RED_CHANNEL |
 		      TARGET_GREEN_CHANNEL |
 		      TARGET_BLUE_CHANNEL |

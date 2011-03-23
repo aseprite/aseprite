@@ -43,8 +43,9 @@
 
 using namespace std;
 
-FilterManagerImpl::FilterManagerImpl(Sprite* sprite, Filter* filter)
-  : m_sprite(sprite)
+FilterManagerImpl::FilterManagerImpl(Document* document, Filter* filter)
+  : m_document(document)
+  , m_sprite(document->getSprite())
   , m_filter(filter)
   , m_progressDelegate(NULL)
 {
@@ -65,7 +66,7 @@ FilterManagerImpl::FilterManagerImpl(Sprite* sprite, Filter* filter)
   if (image == NULL)
     throw NoImageException();
 
-  init(sprite->getCurrentLayer(), image, offset_x, offset_y);
+  init(m_sprite->getCurrentLayer(), image, offset_x, offset_y);
 }
 
 FilterManagerImpl::~FilterManagerImpl()
@@ -80,6 +81,11 @@ FilterManagerImpl::~FilterManagerImpl()
 void FilterManagerImpl::setProgressDelegate(IProgressDelegate* progressDelegate)
 {
   m_progressDelegate = progressDelegate;
+}
+
+int FilterManagerImpl::getImgType() const
+{
+  return m_sprite->getImgType();
 }
 
 void FilterManagerImpl::setTarget(int target)
@@ -197,10 +203,12 @@ void FilterManagerImpl::apply()
   }
 
   if (!cancelled) {
+    UndoHistory* undo = m_document->getUndoHistory();
+
     // Undo stuff
-    if (m_sprite->getUndo()->isEnabled()) {
-      m_sprite->getUndo()->setLabel(m_filter->getName());
-      m_sprite->getUndo()->undo_image(m_src, m_x, m_y, m_w, m_h);
+    if (undo->isEnabled()) {
+      undo->setLabel(m_filter->getName());
+      undo->undo_image(m_src, m_x, m_y, m_w, m_h);
     }
 
     // Copy "dst" to "src"
@@ -220,13 +228,14 @@ void FilterManagerImpl::applyToTarget()
     return;
 
   // Initialize writting operation
-  SpriteReader reader(m_sprite);
-  SpriteWriter writer(reader);
+  DocumentReader doc_reader(m_document);
+  DocumentWriter doc_writer(doc_reader);
+  UndoHistory* undo = m_document->getUndoHistory();
 
   // Open group of undo operations
   if (images.size() > 1) {
-    if (m_sprite->getUndo()->isEnabled())
-      m_sprite->getUndo()->undo_open();
+    if (undo->isEnabled())
+      undo->undo_open();
   }
   
   m_progressBase = 0.0f;
@@ -248,8 +257,8 @@ void FilterManagerImpl::applyToTarget()
 
   // Close group of undo operations
   if (images.size() > 1) {
-    if (m_sprite->getUndo()->isEnabled())
-      m_sprite->getUndo()->undo_close();
+    if (undo->isEnabled())
+      undo->undo_close();
   }
 }
 

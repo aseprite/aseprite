@@ -19,12 +19,17 @@
 #include "config.h"
 
 #include "documents.h"
+
+#include "base/mutex.h"
+#include "document.h"
 #include "raster/sprite.h"
+#include "raster/undo_history.h"
 
 #include <algorithm>
 
 Documents::Documents()
 {
+  m_idCounter = 0;
 }
 
 Documents::~Documents()
@@ -32,34 +37,46 @@ Documents::~Documents()
   deleteAll();
 }
 
-void Documents::addDocument(Sprite* sprite)
+void Documents::addDocument(Document* document)
 {
-  ASSERT(sprite != NULL);
+  ASSERT(document != NULL);
+  ASSERT(document->getId() == WithoutDocumentId);
 
-  m_documents.insert(begin(), sprite);
+  m_documents.insert(begin(), document);
+
+  document->setId(++m_idCounter);
 }
 
-void Documents::removeDocument(Sprite* sprite)
+void Documents::removeDocument(Document* document)
 {
-  iterator it = std::find(begin(), end(), sprite);
+  iterator it = std::find(begin(), end(), document);
   ASSERT(it != end());
 
   if (it != end())
     m_documents.erase(it);
 }
 
-void Documents::moveDocument(Sprite* sprite, int index)
+void Documents::moveDocument(Document* document, int index)
 {
-  removeDocument(sprite);
+  removeDocument(document);
 
-  m_documents.insert(begin()+index, sprite);
+  m_documents.insert(begin()+index, document);
 }
 
 void Documents::deleteAll()
 {
   for (iterator it = begin(), end = this->end(); it != end; ++it) {
-    Sprite* sprite = *it;
-    delete sprite;
+    Document* document = *it;
+    delete document;
   }
   m_documents.clear();
+}
+
+Document* Documents::getById(DocumentId id) const
+{
+  for (const_iterator it = begin(), end = this->end(); it != end; ++it) {
+    if ((*it)->getId() == id)
+      return *it;
+  }
+  return NULL;
 }

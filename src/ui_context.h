@@ -32,9 +32,9 @@ public:
   virtual bool isUiAvailable() const { return true; }
 
 protected:
-  virtual void onAddSprite(Sprite* sprite);
-  virtual void onRemoveSprite(Sprite* sprite);
-  virtual void onSetCurrentSprite(Sprite* sprite);
+  virtual void onAddDocument(Document* document);
+  virtual void onRemoveDocument(Document* document);
+  virtual void onSetActiveDocument(Document* document);
 
 private:
   static UIContext* m_instance;

@@ -96,7 +96,7 @@ void NewCelCommand::onExecute(Context* context)
   if (undo_is_enabled(current_sprite->undo))
     undo_close(current_sprite->undo);
 
-  update_screen_for_sprite(current_sprite);
+  update_screen_for_document(current_sprite);
 }
 
 //////////////////////////////////////////////////////////////////////

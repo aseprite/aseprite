@@ -30,7 +30,7 @@
 #include "raster/palette.h"
 #include "raster/sprite.h"
 #include "widgets/editor.h"
-#include "sprite_wrappers.h"
+#include "document_wrappers.h"
 
 //////////////////////////////////////////////////////////////////////
 // play_animation
@@ -64,14 +64,15 @@ PlayAnimationCommand::PlayAnimationCommand()
 
 bool PlayAnimationCommand::onEnabled(Context* context)
 {
-  const CurrentSpriteReader sprite(context);
-  return
-    sprite != NULL;
+  const ActiveDocumentReader document(context);
+  const Sprite* sprite(document ? document->getSprite(): 0);
+  return sprite != NULL;
 }
 
 void PlayAnimationCommand::onExecute(Context* context)
 {
-  CurrentSpriteWriter sprite(context);
+  ActiveDocumentWriter document(context);
+  Sprite* sprite(document->getSprite());
   int old_frame, msecs;
   bool done = false;
   bool onionskin_state = context->getSettings()->getUseOnionskin();
@@ -97,7 +98,7 @@ void PlayAnimationCommand::onExecute(Context* context)
   clear_bitmap(ji_screen);
 
   // Clear extras (e.g. pen preview)
-  sprite->destroyExtraCel();
+  document->destroyExtraCel();
 
   // Do animation
   oldpal = NULL;

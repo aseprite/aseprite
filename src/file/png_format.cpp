@@ -18,14 +18,16 @@
 
 #include "config.h"
 
-#include <stdio.h>
-#include <stdlib.h>
-
 #include "app.h"
 #include "core/cfg.h"
+#include "document.h"
 #include "file/file.h"
 #include "file/file_format.h"
+#include "file/format_options.h"
 #include "raster/raster.h"
+
+#include <stdio.h>
+#include <stdlib.h>
 
 #define PNG_NO_TYPECAST_NULL
 #include "png.h"
@@ -386,12 +388,12 @@ bool PngFormat::onSave(FileOp* fop)
 
   switch (image->imgtype) {
     case IMAGE_RGB:
-      color_type = fop->sprite->needAlpha() ?
+      color_type = fop->document->getSprite()->needAlpha() ?
 	PNG_COLOR_TYPE_RGB_ALPHA:
 	PNG_COLOR_TYPE_RGB;
       break;
     case IMAGE_GRAYSCALE:
-      color_type = fop->sprite->needAlpha() ?
+      color_type = fop->document->getSprite()->needAlpha() ?
 	PNG_COLOR_TYPE_GRAY_ALPHA:
 	PNG_COLOR_TYPE_GRAY;
       break;
@@ -425,7 +427,7 @@ bool PngFormat::onSave(FileOp* fop)
 
     // Index 0 will be the transparent color in the PNG file (only if
     // the sprite does not have a background layer).
-    if (fop->sprite->getBackgroundLayer() == NULL) {
+    if (fop->document->getSprite()->getBackgroundLayer() == NULL) {
       png_bytep trans = (png_bytep)png_malloc(png_ptr, 1);
       trans[0] = 0;		// Entry 0 is transparent
 

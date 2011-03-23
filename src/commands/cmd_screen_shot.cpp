@@ -20,6 +20,7 @@
 
 #include <allegro.h>
 
+#include "base/unique_ptr.h"
 #include "commands/command.h"
 #include "file/file.h"
 #include "gui/system.h"
@@ -78,16 +79,18 @@ void ScreenShotCommand::onExecute(Context* context)
   /* creates a sprite with one layer, one image to save the bitmap as a PNG */
   {
     int imgtype = bitmap_color_depth(bmp) == 8 ? IMAGE_INDEXED: IMAGE_RGB;
-    Sprite* sprite = Sprite::createWithLayer(imgtype, bmp->w, bmp->h, 256);
+    UniquePtr<Document> document(Document::createBasicDocument(imgtype, bmp->w, bmp->h, 256));
+    Sprite* sprite = document->getSprite();
     Image* image = sprite->getCurrentImage();
     int x, y, r, g, b;
 
-    Palette *pal = new Palette(0, 256);
-    pal->fromAllegro(rgbpal);
-    sprite->setPalette(pal, true);
-    delete pal;
+    {
+      UniquePtr<Palette> pal(new Palette(0, 256));
+      pal->fromAllegro(rgbpal);
+      sprite->setPalette(pal, true);
+    }
 
-    /* convert Allegro "BITMAP" to ASE "Image" */
+    // Convert Allegro "BITMAP" to ASE "Image".
     if (imgtype == IMAGE_RGB) {
       ase_uint32 *address;
 
@@ -113,18 +116,15 @@ void ScreenShotCommand::onExecute(Context* context)
       }
     }
 
-    /* save the sprite */
-    sprite->setFilename(buf);
-    sprite_save(sprite);
-
-    /* destroy the sprite */
-    delete sprite;
+    // Save the document.
+    document->setFilename(buf);
+    save_document(document);
   }
 
-  /* destroy the bitmap */
+  // Destroy the bitmap.
   destroy_bitmap(bmp);
 
-  /* restore the freeze flag by the previous value */
+  // Restore the freeze flag by the previous value.
   freeze_mouse_flag = old_flag;
 }
 

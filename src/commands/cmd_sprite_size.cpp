@@ -33,7 +33,7 @@
 #include "raster/mask.h"
 #include "raster/sprite.h"
 #include "raster/stock.h"
-#include "sprite_wrappers.h"
+#include "document_wrappers.h"
 #include "ui_context.h"
 #include "undoable.h"
 
@@ -41,7 +41,8 @@
 
 class SpriteSizeJob : public Job
 {
-  SpriteWriter m_sprite;
+  DocumentWriter m_document;
+  Sprite* m_sprite;
   int m_new_width;
   int m_new_height;
   ResizeMethod m_resize_method;
@@ -51,9 +52,10 @@ class SpriteSizeJob : public Job
 
 public:
 
-  SpriteSizeJob(const SpriteReader& sprite, int new_width, int new_height, ResizeMethod resize_method)
+  SpriteSizeJob(const DocumentReader& document, int new_width, int new_height, ResizeMethod resize_method)
     : Job("Sprite Size")
-    , m_sprite(sprite)
+    , m_document(document)
+    , m_sprite(m_document->getSprite())
   {
     m_new_width = new_width;
     m_new_height = new_height;
@@ -67,7 +69,7 @@ protected:
    */
   virtual void onJob()
   {
-    Undoable undoable(m_sprite, "Sprite Size");
+    Undoable undoable(m_document, "Sprite Size");
 
     // Get all sprite cels
     CelList cels;
@@ -134,7 +136,7 @@ protected:
       mask_free(new_mask);
 
       // regenerate mask
-      m_sprite->generateMaskBoundaries();
+      m_document->generateMaskBoundaries();
     }
 
     // resize sprite
@@ -180,16 +182,17 @@ SpriteSizeCommand::SpriteSizeCommand()
 
 bool SpriteSizeCommand::onEnabled(Context* context)
 {
-  const CurrentSpriteReader sprite(context);
-  return
-    sprite != NULL;
+  const ActiveDocumentReader document(context);
+  const Sprite* sprite(document ? document->getSprite(): 0);
+  return sprite != NULL;
 }
 
 void SpriteSizeCommand::onExecute(Context* context)
 {
   JWidget width_px, height_px, width_perc, height_perc, ok;
   ComboBox* method;
-  const CurrentSpriteReader sprite(context);
+  const ActiveDocumentReader document(context);
+  const Sprite* sprite(document ? document->getSprite(): 0);
 
   // load the window widget
   FramePtr window(load_widget("sprite_size.xml", "sprite_size"));
@@ -233,17 +236,17 @@ void SpriteSizeCommand::onExecute(Context* context)
     set_config_int("SpriteSize", "Method", resize_method);
 
     {
-      SpriteSizeJob job(sprite, new_width, new_height, resize_method);
+      SpriteSizeJob job(document, new_width, new_height, resize_method);
       job.startJob();
     }
 
-    update_screen_for_sprite(sprite);
+    update_screen_for_document(document);
   }
 }
 
 void SpriteSizeCommand::onLockRatioClick()
 {
-  const CurrentSpriteReader sprite(UIContext::instance()); // TODO use the context in sprite size command
+  const ActiveDocumentReader document(UIContext::instance()); // TODO use the context in sprite size command
 
   if (m_lockRatio->isSelected())
     width_px_change_hook(m_lockRatio->findSibling("width_px"), NULL);
@@ -251,7 +254,8 @@ void SpriteSizeCommand::onLockRatioClick()
 
 static bool width_px_change_hook(JWidget widget, void *data)
 {
-  const CurrentSpriteReader sprite(UIContext::instance()); // TODO use the context in sprite size command
+  const ActiveDocumentReader document(UIContext::instance()); // TODO use the context in sprite size command
+  const Sprite* sprite(document->getSprite());
   int width = widget->getTextInt();
   double perc = 100.0 * width / sprite->getWidth();
 
@@ -267,7 +271,8 @@ static bool width_px_change_hook(JWidget widget, void *data)
 
 static bool height_px_change_hook(JWidget widget, void *data)
 {
-  const CurrentSpriteReader sprite(UIContext::instance()); // TODO use the context in sprite size command
+  const ActiveDocumentReader document(UIContext::instance()); // TODO use the context in sprite size command
+  const Sprite* sprite(document->getSprite());
   int height = widget->getTextInt();
   double perc = 100.0 * height / sprite->getHeight();
 
@@ -283,7 +288,8 @@ static bool height_px_change_hook(JWidget widget, void *data)
 
 static bool width_perc_change_hook(JWidget widget, void *data)
 {
-  const CurrentSpriteReader sprite(UIContext::instance()); // TODO use the context in sprite size command
+  const ActiveDocumentReader document(UIContext::instance()); // TODO use the context in sprite size command
+  const Sprite* sprite(document->getSprite());
   double width = widget->getTextDouble();
 
   widget->findSibling("width_px")->setTextf("%d", (int)(sprite->getWidth() * width / 100));
@@ -298,7 +304,8 @@ static bool width_perc_change_hook(JWidget widget, void *data)
 
 static bool height_perc_change_hook(JWidget widget, void *data)
 {
-  const CurrentSpriteReader sprite(UIContext::instance()); // TODO use the context in sprite size command
+  const ActiveDocumentReader document(UIContext::instance()); // TODO use the context in sprite size command
+  const Sprite* sprite(document->getSprite());
   double height = widget->getTextDouble();
 
   widget->findSibling("height_px")->setTextf("%d", (int)(sprite->getHeight() * height / 100));

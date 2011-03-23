@@ -29,7 +29,7 @@
 #include "widgets/color_bar.h"
 #include "util/autocrop.h"
 #include "util/misc.h"
-#include "sprite_wrappers.h"
+#include "document_wrappers.h"
 #include "app/color_utils.h"
 
 //////////////////////////////////////////////////////////////////////
@@ -55,7 +55,8 @@ CropSpriteCommand::CropSpriteCommand()
 
 bool CropSpriteCommand::onEnabled(Context* context)
 {
-  const CurrentSpriteReader sprite(context);
+  const ActiveDocumentReader document(context);
+  const Sprite* sprite(document ? document->getSprite(): 0);
   return
     sprite != NULL &&
     sprite->getMask() != NULL &&
@@ -64,9 +65,10 @@ bool CropSpriteCommand::onEnabled(Context* context)
 
 void CropSpriteCommand::onExecute(Context* context)
 {
-  CurrentSpriteWriter sprite(context);
+  ActiveDocumentWriter document(context);
+  Sprite* sprite(document->getSprite());
   {
-    Undoable undoable(sprite, "Sprite Crop");
+    Undoable undoable(document, "Sprite Crop");
     int bgcolor = color_utils::color_for_image(app_get_colorbar()->getBgColor(), sprite->getImgType());
 
     undoable.cropSprite(sprite->getMask()->x,
@@ -76,8 +78,8 @@ void CropSpriteCommand::onExecute(Context* context)
 			bgcolor);
     undoable.commit();
   }
-  sprite->generateMaskBoundaries();
-  update_screen_for_sprite(sprite);
+  document->generateMaskBoundaries();
+  update_screen_for_document(document);
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -103,22 +105,24 @@ AutocropSpriteCommand::AutocropSpriteCommand()
 
 bool AutocropSpriteCommand::onEnabled(Context* context)
 {
-  const CurrentSpriteReader sprite(context);
+  const ActiveDocumentReader document(context);
+  const Sprite* sprite(document ? document->getSprite(): 0);
   return sprite != NULL;
 }
 
 void AutocropSpriteCommand::onExecute(Context* context)
 {
-  CurrentSpriteWriter sprite(context);
+  ActiveDocumentWriter document(context);
+  Sprite* sprite(document->getSprite());
   {
     int bgcolor = color_utils::color_for_image(app_get_colorbar()->getBgColor(), sprite->getImgType());
 
-    Undoable undoable(sprite, "Sprite Autocrop");
+    Undoable undoable(document, "Sprite Autocrop");
     undoable.autocropSprite(bgcolor);
     undoable.commit();
   }
-  sprite->generateMaskBoundaries();
-  update_screen_for_sprite(sprite);
+  document->generateMaskBoundaries();
+  update_screen_for_document(document);
 }
 
 //////////////////////////////////////////////////////////////////////

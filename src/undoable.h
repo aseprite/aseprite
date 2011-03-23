@@ -22,11 +22,14 @@
 #include "raster/dithering_method.h"
 
 class Cel;
-class Mask;
+class Document;
+class DocumentWriter;
+class Image;
 class Layer;
 class LayerImage;
+class Mask;
 class Sprite;
-class SpriteWriter;
+class UndoHistory;
 
 /**
  * Class with high-level set of routines to modify a sprite.
@@ -37,7 +40,7 @@ class SpriteWriter;
 class Undoable
 {
 public:
-  Undoable(SpriteWriter& sprite, const char* label);
+  Undoable(DocumentWriter& document, const char* label);
   virtual ~Undoable();
 
   inline Sprite* getSprite() const { return m_sprite;  }
@@ -104,7 +107,9 @@ public:
   void deselectMask();
 
 private:
+  Document* m_document;
   Sprite* m_sprite;
+  UndoHistory* m_undoHistory;
   bool m_committed;
   bool m_enabledFlag;
 };

@@ -20,11 +20,13 @@
 
 #include "config.h"
 
-#include <allegro/color.h>
-
+#include "document.h"
 #include "file/file.h"
 #include "file/file_format.h"
+#include "file/format_options.h"
 #include "raster/raster.h"
+
+#include <allegro/color.h>
 
 class IcoFormat : public FileFormat
 {
@@ -230,13 +232,13 @@ bool IcoFormat::onLoad(FileOp* fop)
   // Close the file
   fclose(f);
   
-  fop->sprite = sprite;
+  fop->document = new Document(sprite);
   return true;
 }
 
 bool IcoFormat::onSave(FileOp* fop)
 {
-  Sprite *sprite = fop->sprite;
+  Sprite* sprite = fop->document->getSprite();
   int bpp, bw, bitsw;
   int size, offset, n, i;
   int c, x, y, b, m, v;
@@ -255,7 +257,7 @@ bool IcoFormat::onSave(FileOp* fop)
 
   // Entries
   for (n=0; n<num; ++n) {
-    bpp = (fop->sprite->getImgType() == IMAGE_INDEXED) ? 8 : 24;
+    bpp = (sprite->getImgType() == IMAGE_INDEXED) ? 8 : 24;
     bw = (((sprite->getWidth() * bpp / 8) + 3) / 4) * 4;
     bitsw = ((((sprite->getWidth() + 7) / 8) + 3) / 4) * 4;
     size = sprite->getHeight() * (bw + bitsw) + 40;
@@ -284,7 +286,7 @@ bool IcoFormat::onSave(FileOp* fop)
     image_clear(image, 0);
     layer_render(sprite->getFolder(), image, 0, 0, n);
 
-    bpp = (fop->sprite->getImgType() == IMAGE_INDEXED) ? 8 : 24;
+    bpp = (sprite->getImgType() == IMAGE_INDEXED) ? 8 : 24;
     bw = (((image->w * bpp / 8) + 3) / 4) * 4;
     bitsw = ((((image->w + 7) / 8) + 3) / 4) * 4;
     size = image->h * (bw + bitsw) + 40;

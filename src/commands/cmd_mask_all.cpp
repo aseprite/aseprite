@@ -23,7 +23,7 @@
 #include "raster/mask.h"
 #include "raster/sprite.h"
 #include "raster/undo_history.h"
-#include "sprite_wrappers.h"
+#include "document_wrappers.h"
 
 //////////////////////////////////////////////////////////////////////
 // mask_all
@@ -48,25 +48,28 @@ MaskAllCommand::MaskAllCommand()
 
 bool MaskAllCommand::onEnabled(Context* context)
 {
-  const CurrentSpriteReader sprite(context);
+  const ActiveDocumentReader document(context);
+  const Sprite* sprite(document ? document->getSprite(): 0);
   return sprite != NULL;
 }
   
 void MaskAllCommand::onExecute(Context* context)
 {
-  CurrentSpriteWriter sprite(context);
+  ActiveDocumentWriter document(context);
+  Sprite* sprite(document->getSprite());
+  UndoHistory* undo(document->getUndoHistory());
 
   /* undo */
-  if (sprite->getUndo()->isEnabled()) {
-    sprite->getUndo()->setLabel("Mask All");
-    sprite->getUndo()->undo_set_mask(sprite);
+  if (undo->isEnabled()) {
+    undo->setLabel("Mask All");
+    undo->undo_set_mask(sprite);
   }
 
   /* change the selection */
   mask_replace(sprite->getMask(), 0, 0, sprite->getWidth(), sprite->getHeight());
 
-  sprite->generateMaskBoundaries();
-  update_screen_for_sprite(sprite);
+  document->generateMaskBoundaries();
+  update_screen_for_document(document);
 }
 
 //////////////////////////////////////////////////////////////////////

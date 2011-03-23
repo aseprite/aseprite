@@ -37,7 +37,7 @@
 #include "raster/sprite.h"
 #include "settings/settings.h"
 #include "skin/skin_parts.h"
-#include "sprite_wrappers.h"
+#include "document_wrappers.h"
 #include "tools/tool.h"
 #include "ui_context.h"
 #include "widgets/color_button.h"
@@ -525,7 +525,8 @@ void ConfigureTools::onSetGridClick()
 {
   try {
     // TODO use the same context as in ConfigureTools::onExecute
-    const CurrentSpriteReader sprite(UIContext::instance());
+    const ActiveDocumentReader document(UIContext::instance());
+    const Sprite* sprite(document ? document->getSprite(): 0);
 
     if (sprite && sprite->getMask() && sprite->getMask()->bitmap) {
       Rect bounds(sprite->getMask()->x, sprite->getMask()->y,
@@ -543,7 +544,7 @@ void ConfigureTools::onSetGridClick()
       UIContext::instance()->executeCommand(grid_settings_cmd, NULL);
     }
   }
-  catch (LockedSpriteException& e) {
+  catch (LockedDocumentException& e) {
     Console::showException(e);
   }
 }

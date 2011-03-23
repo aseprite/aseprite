@@ -35,7 +35,7 @@
 #include "util/render.h"
 #include "widgets/editor.h"
 #include "widgets/statebar.h"
-#include "sprite_wrappers.h"
+#include "document_wrappers.h"
 
 #define PREVIEW_TILED		1
 #define PREVIEW_FIT_ON_SCREEN	2
@@ -63,9 +63,9 @@ PreviewCommand::PreviewCommand()
 
 bool PreviewCommand::onEnabled(Context* context)
 {
-  const CurrentSpriteReader sprite(context);
-  return
-    sprite != NULL;
+  const ActiveDocumentReader document(context);
+  const Sprite* sprite(document ? document->getSprite(): 0);
+  return sprite != NULL;
 }
 
 
@@ -80,7 +80,8 @@ void PreviewCommand::onExecute(Context* context)
   if (!editor || !editor->getSprite())
     return;
 
-  SpriteWriter sprite(editor->getSprite());
+  DocumentWriter document(editor->getDocument());
+  Sprite* sprite(document->getSprite());
   const Palette* pal = sprite->getCurrentPalette();
   View* view = View::getView(editor);
   int u, v, x, y;
@@ -91,7 +92,7 @@ void PreviewCommand::onExecute(Context* context)
   jmanager_free_mouse();
 
   // Clear extras (e.g. pen preview)
-  sprite->destroyExtraCel();
+  document->destroyExtraCel();
 
   gfx::Rect vp = view->getViewportBounds();
   gfx::Point scroll = view->getViewScroll();
@@ -130,7 +131,8 @@ void PreviewCommand::onExecute(Context* context)
 
     // Render sprite and leave the result in 'render' variable
     if (render == NULL)
-      render = RenderEngine::renderSprite(sprite, 0, 0, sprite->getWidth(), sprite->getHeight(),
+      render = RenderEngine::renderSprite(document, sprite,
+					  0, 0, sprite->getWidth(), sprite->getHeight(),
 					  sprite->getCurrentFrame(), 0, false);
 
     // Redraw the screen

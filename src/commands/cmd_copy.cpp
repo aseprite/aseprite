@@ -23,7 +23,7 @@
 #include "raster/layer.h"
 #include "raster/mask.h"
 #include "raster/sprite.h"
-#include "sprite_wrappers.h"
+#include "document_wrappers.h"
 #include "util/clipboard.h"
 #include "util/misc.h"
 
@@ -47,7 +47,8 @@ CopyCommand::CopyCommand()
 
 bool CopyCommand::onEnabled(Context* context)
 {
-  const CurrentSpriteReader sprite(context);
+  const ActiveDocumentReader document(context);
+  const Sprite* sprite(document ? document->getSprite(): 0);
 
   if ((sprite) &&
       (sprite->getCurrentLayer()) &&
@@ -62,8 +63,8 @@ bool CopyCommand::onEnabled(Context* context)
 
 void CopyCommand::onExecute(Context* context)
 {
-  const CurrentSpriteReader sprite(context);
-  clipboard::copy(sprite);
+  const ActiveDocumentReader document(context);
+  clipboard::copy(document);
 }
 
 //////////////////////////////////////////////////////////////////////

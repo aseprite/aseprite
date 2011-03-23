@@ -23,7 +23,7 @@
 #include "modules/editors.h"
 #include "raster/sprite.h"
 #include "widgets/editor.h"
-#include "sprite_wrappers.h"
+#include "document_wrappers.h"
 
 //////////////////////////////////////////////////////////////////////
 // goto_first_frame
@@ -48,16 +48,18 @@ GotoFirstFrameCommand::GotoFirstFrameCommand()
 
 bool GotoFirstFrameCommand::onEnabled(Context* context)
 {
-  const CurrentSpriteReader sprite(context);
-  return sprite != NULL;
+  const ActiveDocumentReader document(context);
+  return document != NULL;
 }
 
 void GotoFirstFrameCommand::onExecute(Context* context)
 {
-  CurrentSpriteWriter sprite(context);
+  ActiveDocumentWriter document(context);
+  Sprite* sprite = document->getSprite();
+
   sprite->setCurrentFrame(0);
 
-  update_screen_for_sprite(sprite);
+  update_screen_for_document(document);
   current_editor->editor_update_statusbar_for_standby();
 }
 
@@ -85,14 +87,14 @@ GotoPreviousFrameCommand::GotoPreviousFrameCommand()
 
 bool GotoPreviousFrameCommand::onEnabled(Context* context)
 {
-  const CurrentSpriteReader sprite(context);
-  return
-    sprite != NULL;
+  const ActiveDocumentReader document(context);
+  return document != NULL;
 }
 
 void GotoPreviousFrameCommand::onExecute(Context* context)
 {
-  CurrentSpriteWriter sprite(context);
+  ActiveDocumentWriter document(context);
+  Sprite* sprite = document->getSprite();
   int frame = sprite->getCurrentFrame();
 
   if (frame > 0)
@@ -100,7 +102,7 @@ void GotoPreviousFrameCommand::onExecute(Context* context)
   else
     sprite->setCurrentFrame(sprite->getTotalFrames()-1);
 
-  update_screen_for_sprite(sprite);
+  update_screen_for_document(document);
   current_editor->editor_update_statusbar_for_standby();
 }
 
@@ -128,14 +130,14 @@ GotoNextFrameCommand::GotoNextFrameCommand()
 
 bool GotoNextFrameCommand::onEnabled(Context* context)
 {
-  const CurrentSpriteReader sprite(context);
-  return
-    sprite != NULL;
+  const ActiveDocumentReader document(context);
+  return document != NULL;
 }
 
 void GotoNextFrameCommand::onExecute(Context* context)
 {
-  CurrentSpriteWriter sprite(context);
+  ActiveDocumentWriter document(context);
+  Sprite* sprite = document->getSprite();
   int frame = sprite->getCurrentFrame();
 
   if (frame < sprite->getTotalFrames()-1)
@@ -143,7 +145,7 @@ void GotoNextFrameCommand::onExecute(Context* context)
   else
     sprite->setCurrentFrame(0);
 
-  update_screen_for_sprite(sprite);
+  update_screen_for_document(document);
   current_editor->editor_update_statusbar_for_standby();
 }
 
@@ -171,17 +173,17 @@ GotoLastFrameCommand::GotoLastFrameCommand()
 
 bool GotoLastFrameCommand::onEnabled(Context* context)
 {
-  const CurrentSpriteReader sprite(context);
-  return
-    sprite != NULL;
+  const ActiveDocumentReader document(context);
+  return document != NULL;
 }
 
 void GotoLastFrameCommand::onExecute(Context* context)
 {
-  CurrentSpriteWriter sprite(context);
+  ActiveDocumentWriter document(context);
+  Sprite* sprite = document->getSprite();
   sprite->setCurrentFrame(sprite->getTotalFrames()-1);
 
-  update_screen_for_sprite(sprite);
+  update_screen_for_document(document);
   current_editor->editor_update_statusbar_for_standby();
 }
 

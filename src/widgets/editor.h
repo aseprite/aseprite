@@ -21,6 +21,7 @@
 
 #include "app/color.h"
 #include "base/signal.h"
+#include "document.h"
 #include "gui/base.h"
 #include "gui/widget.h"
 
@@ -28,11 +29,11 @@
 #define MAX_ZOOM 5
 
 class Context;
-class Sprite;
 class IToolLoop;
-class ToolLoopManager;
 class PixelsMovement;
+class Sprite;
 class Tool;
+class ToolLoopManager;
 class View;
 
 class Editor : public Widget
@@ -75,8 +76,9 @@ class Editor : public Widget
 
   // Main properties
   State m_state;		// Editor main state
-  Sprite* m_sprite;		// Current sprite in the editor
-  int m_zoom;			// Current zoom in the editor
+  Document* m_document;		// Active document in the editor
+  Sprite* m_sprite;		// Active sprite in the editor
+  int m_zoom;			// Zoom in the editor
 
   // Drawing cursor
   int m_cursor_thick;
@@ -127,16 +129,19 @@ public:
   Editor();
   ~Editor();
 
+  Document* getDocument() { return m_document; }
+  void setDocument(Document* document);
+
+  Sprite* getSprite() { return m_sprite; }
+
   int editor_get_zoom() const { return m_zoom; }
   int editor_get_offset_x() const { return m_offset_x; }
   int editor_get_offset_y() const { return m_offset_y; }
-  Sprite* getSprite() { return m_sprite; }
   int editor_get_cursor_thick() { return m_cursor_thick; }
 
   void editor_set_zoom(int zoom) { m_zoom = zoom; }
   void editor_set_offset_x(int x) { m_offset_x = x; }
   void editor_set_offset_y(int y) { m_offset_y = y; }
-  void editor_set_sprite(Sprite* sprite);
 
   void editor_set_scroll(int x, int y, int use_refresh_region);
   void editor_update();

@@ -21,7 +21,7 @@
 #include "commands/command.h"
 #include "dialogs/aniedit.h"
 #include "gui/base.h"
-#include "sprite_wrappers.h"
+#include "document_wrappers.h"
 #include "util/celmove.h"
 
 class CopyCelCommand : public Command
@@ -49,8 +49,8 @@ bool CopyCelCommand::onEnabled(Context* context)
 
 void CopyCelCommand::onExecute(Context* context)
 {
-  CurrentSpriteWriter sprite(context);
-  copy_cel(sprite);
+  ActiveDocumentWriter document(context);
+  copy_cel(document);
 }
 
 //////////////////////////////////////////////////////////////////////

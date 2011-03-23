@@ -22,9 +22,12 @@
 #include <allegro/system.h>
 
 #include "app.h"
+#include "base/mutex.h"
 #include "base/path.h"
+#include "document.h"
 #include "modules/editors.h"
 #include "raster/sprite.h"
+#include "raster/undo_history.h"
 #include "settings/ui_settings_impl.h"
 #include "ui_context.h"
 #include "widgets/color_bar.h"
@@ -45,39 +48,39 @@ UIContext::~UIContext()
   m_instance = NULL;
 }
 
-void UIContext::onAddSprite(Sprite* sprite)
+void UIContext::onAddDocument(Document* document)
 {
   // base method
-  Context::onAddSprite(sprite);
+  Context::onAddDocument(document);
 
   // add the tab for this sprite
-  app_get_tabsbar()->addTab(get_filename(sprite->getFilename()), sprite);
+  app_get_tabsbar()->addTab(get_filename(document->getFilename()), document);
 
-  // rebuild the menu list of sprites
-  app_realloc_sprite_list();
+  // Rebuild the list of tabs
+  app_rebuild_documents_tabs();
 }
 
-void UIContext::onRemoveSprite(Sprite* sprite)
+void UIContext::onRemoveDocument(Document* document)
 {
   // base method
-  Context::onRemoveSprite(sprite);
+  Context::onRemoveDocument(document);
 
-  // remove this sprite from tabs
-  app_get_tabsbar()->removeTab(sprite);
+  // Remove this document from tabs
+  app_get_tabsbar()->removeTab(document);
 
-  // rebuild the menu list of sprites
-  app_realloc_sprite_list();
+  // Rebuild the tabs
+  app_rebuild_documents_tabs();
 
-  // select other sprites in the editors where are this sprite
-  editors_hide_sprite(sprite);
+  // Select other documents in the editors where are this sprite
+  editors_hide_document(document);
 }
 
-void UIContext::onSetCurrentSprite(Sprite* sprite)
+void UIContext::onSetActiveDocument(Document* document)
 {
-  Context::onSetCurrentSprite(sprite);
+  Context::onSetActiveDocument(document);
 
-  // Select the sprite in the tabs.
-  app_get_tabsbar()->selectTab(sprite);
+  // Select the document in the tabs.
+  app_get_tabsbar()->selectTab(document);
 
   // Change the image-type of color bar.
   app_get_colorbar()->setImgType(app_get_current_image_type());
@@ -85,9 +88,9 @@ void UIContext::onSetCurrentSprite(Sprite* sprite)
   // Change the main frame title.
   base::string defaultTitle = PACKAGE " v" VERSION;
   base::string title;
-  if (sprite) {
-    // Prepend the sprite's filename.
-    title += base::get_file_name(sprite->getFilename());
+  if (document) {
+    // Prepend the document's filename.
+    title += base::get_file_name(document->getFilename());
     title += " - ";
   }
   title += defaultTitle;

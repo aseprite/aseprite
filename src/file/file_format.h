@@ -19,6 +19,8 @@
 #ifndef FILE_FILE_FORMAT_H_INCLUDED
 #define FILE_FILE_FORMAT_H_INCLUDED
 
+#include "base/shared_ptr.h"
+
 #include <vector>
 
 #define FILE_SUPPORT_LOAD		0x00000001
@@ -56,7 +58,7 @@ public:
 
   // Returns extra options for this format. It can return != NULL
   // only if flags() returns FILE_SUPPORT_GET_FORMAT_OPTIONS.
-  FormatOptions* getFormatOptions(FileOp* fop) {
+  SharedPtr<FormatOptions> getFormatOptions(FileOp* fop) {
     return onGetFormatOptions(fop);
   }
   
@@ -73,8 +75,8 @@ protected:
   virtual bool onLoad(FileOp* fop) = 0;
   virtual bool onSave(FileOp* fop) = 0;
 
-  virtual FormatOptions* onGetFormatOptions(FileOp* fop) {
-    return 0;
+  virtual SharedPtr<FormatOptions> onGetFormatOptions(FileOp* fop) {
+    return SharedPtr<FormatOptions>(0);
   }
 
 };

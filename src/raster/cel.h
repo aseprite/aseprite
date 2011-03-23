@@ -26,10 +26,10 @@ class LayerImage;
 class Cel : public GfxObj
 {
 public:
-  int frame;			/* frame position */
-  int image;			/* image index of stock */
-  int x, y;			/* X/Y screen position */
-  int opacity;			/* opacity level */
+  int frame;			// Frame position
+  int image;			// Image index of stock
+  int x, y;			// X/Y screen position
+  int opacity;			// Opacity level
 
   Cel(int frame, int image);
   Cel(const Cel& cel);

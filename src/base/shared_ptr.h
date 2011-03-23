@@ -7,128 +7,242 @@
 #ifndef BASE_SHARED_PTR_H_INCLUDED
 #define BASE_SHARED_PTR_H_INCLUDED
 
+// This class counts references for a SharedPtr.
+class SharedPtrRefCounterBase
+{
+public:
+  SharedPtrRefCounterBase() : m_count(0) { }
+  virtual ~SharedPtrRefCounterBase() { }
+
+  void add_ref()
+  {
+    ++m_count;
+  }
+
+  bool release()
+  {
+    --m_count;
+    if (m_count == 0) {
+      delete this;
+      return true;
+    }
+    else
+      return false;
+  }
+
+  long use_count() const
+  {
+    return m_count;
+  }
+
+private:
+  long m_count;		// Number of references.
+};
+
+// Default deleter used by shared pointer (it calls "delete"
+// operator).
 template<class T>
 class DefaultSharedPtrDeleter
 {
 public:
-  static void destroy(T* ptr)
+  void operator()(T* ptr)
   {
     delete ptr;
   }
 };
 
-// A class which wraps a pointer and keeps reference counting to
-// automatically delete the pointed object when it is no longer
-// used.
-template<class T, class Deleter = DefaultSharedPtrDeleter<T> >
+// A reference counter with a custom deleter.
+template<class T, class Deleter>
+class SharedPtrRefCounterImpl : public SharedPtrRefCounterBase
+{
+public:
+  SharedPtrRefCounterImpl(T* ptr, Deleter deleter)
+    : m_ptr(ptr)
+    , m_deleter(deleter)
+  {
+  }
+
+  ~SharedPtrRefCounterImpl()
+  {
+    m_deleter(m_ptr);
+  }
+
+private:
+  T* m_ptr;
+  Deleter m_deleter;		// Used to destroy the pointer.
+};
+
+// Wraps a pointer and keeps reference counting to automatically
+// delete the pointed object when it is no longer used.
+template<class T>
 class SharedPtr
 {
 public:
+  typedef T element_type;
 
   SharedPtr()
     : m_ptr(0)
-    , m_refCount(0) {
+    , m_refCount(0)
+  {
   }
 
+  // Constructor with default deleter.
   explicit SharedPtr(T* ptr)
-    : m_ptr(ptr)
-    , m_refCount(ptr ? new int(0): 0) {
-    ref();
+  {
+    try {
+      m_refCount = new SharedPtrRefCounterImpl<T, DefaultSharedPtrDeleter<T> >(ptr, DefaultSharedPtrDeleter<T>());
+    }
+    catch (...) {
+      DefaultSharedPtrDeleter<T>()(ptr);
+      throw;
+    }
+    m_ptr = ptr;
+    add_ref();
   }
 
-  SharedPtr(const SharedPtr<T, Deleter>& other)
+  // Constructor with customized deleter.
+  template<class Deleter>
+  SharedPtr(T* ptr, Deleter deleter)
+  {
+    try {
+      m_refCount = new SharedPtrRefCounterImpl<T, Deleter>(ptr, deleter);
+    }
+    catch (...) {
+      deleter(ptr);
+      throw;
+    }
+    m_ptr = ptr;
+    add_ref();
+  }
+
+  // Copy other pointer
+  SharedPtr(const SharedPtr<T>& other)
     : m_ptr(other.m_ptr)
-    , m_refCount(other.m_refCount) {
-    ref();
+    , m_refCount(other.m_refCount)
+  {
+    add_ref();
   }
 
-  template<class T2, class Deleter2>
-  SharedPtr(const SharedPtr<T2, Deleter2>& other)
-    : m_ptr(static_cast<T*>(other.m_ptr))
-    , m_refCount(other.m_refCount) {
-    ref();
+  // Copy other pointer (of static_casteable type)
+  template<class Y>
+  SharedPtr(const SharedPtr<Y>& other)
+    : m_ptr(static_cast<T*>(const_cast<Y*>(other.m_ptr)))
+    , m_refCount(const_cast<SharedPtrRefCounterBase*>(other.m_refCount))
+  {
+    add_ref();
   }
 
-  virtual ~SharedPtr() {
-    unref();
+  // Releases one reference from the pointee.
+  virtual ~SharedPtr()
+  {
+    release();
   }
 
-  void reset(T* ptr = 0) {
+  void reset(T* ptr = 0)
+  {
     if (m_ptr != ptr) {
-      unref();
-      m_ptr = ptr;
-      m_refCount = (ptr ? new int(0): 0);
-      ref();
+      release();
+      if (ptr) {
+	try {
+	  m_refCount = new SharedPtrRefCounterImpl<T, DefaultSharedPtrDeleter<T> >(ptr, DefaultSharedPtrDeleter<T>());
+	}
+	catch (...) {
+	  DefaultSharedPtrDeleter<T>()(ptr);
+	  throw;
+	}
+	m_ptr = ptr;
+	add_ref();
+      }
     }
   }
 
-  SharedPtr& operator=(const SharedPtr<T, Deleter>& other) {
+  template<class Deleter>
+  void reset(T* ptr, Deleter deleter)
+  {
+    if (m_ptr != ptr) {
+      release();
+      if (ptr) {
+	try {
+	  m_refCount = new SharedPtrRefCounterImpl<T, Deleter>(ptr, deleter);
+	}
+	catch (...) {
+	  deleter(ptr);
+	  throw;
+	}
+	m_ptr = ptr;
+	add_ref();
+      }
+    }
+  }
+
+  SharedPtr& operator=(const SharedPtr<T>& other)
+  {
     if (m_ptr != other.m_ptr) {
-      unref();
+      release();
       m_ptr = other.m_ptr;
       m_refCount = other.m_refCount;
-      ref();
+      add_ref();
     }
     return *this;
   }
 
-  template<class T2, class Deleter2>
-  SharedPtr& operator=(const SharedPtr<T2, Deleter2>& other) {
+  template<class Y>
+  SharedPtr& operator=(const SharedPtr<Y>& other)
+  {
     if (m_ptr != static_cast<T*>(other.m_ptr)) {
-      unref();
-      m_ptr = static_cast<T*>(other.m_ptr);
-      m_refCount = other.m_refCount;
-      ref();
+      release();
+      m_ptr = static_cast<T*>(const_cast<Y*>(other.m_ptr));
+      m_refCount = const_cast<SharedPtrRefCounterBase*>(other.m_refCount);
+      add_ref();
     }
     return *this;
   }
 
-  inline T* get() const { return m_ptr; }
-  inline T& operator*() const { return *m_ptr; }
-  inline T* operator->() const { return m_ptr; }
-  inline operator T*() const { return m_ptr; }
+  T* get() const { return m_ptr; }
+  T& operator*() const { return *m_ptr; }
+  T* operator->() const { return m_ptr; }
+  operator T*() const { return m_ptr; }
 
-  int getRefCount() const { return m_refCount ? *m_refCount: 0; }
+  long use_count() const { return (m_refCount ? m_refCount->use_count(): 0); }
+  bool unique() const { return use_count() == 1; }
 
 private:
 
   // Adds a reference to the pointee.
-  void ref() {
-    if (m_ptr)
-      ++(*m_refCount);
+  void add_ref()
+  {
+    if (m_refCount)
+      m_refCount->add_ref();
   }
 
   // Removes the reference to the pointee.
-  void unref() {
-    if (m_ptr) {
-      if (--(*m_refCount) == 0) {
-	Deleter::destroy(m_ptr);
-	delete m_refCount;
-      }
+  void release()
+  {
+    if (m_refCount && m_refCount->release()) {
       m_ptr = 0;
       m_refCount = 0;
     }
   }
 
   
-  T* m_ptr;			// The pointee object.
-  int* m_refCount;		// Number of references.
+  T* m_ptr;			       // The pointee object.
+  SharedPtrRefCounterBase* m_refCount; // Number of references.
 
-  template<class T2, class Deleter2> friend class SharedPtr;
+  template<class> friend class SharedPtr;
 };
 
 // Compares if two shared-pointers points to the same place (object,
 // memory address).
-template<class T, class Deleter>
-bool operator==(const SharedPtr<T, Deleter>& ptr1, const SharedPtr<T, Deleter>& ptr2)
+template<class T>
+bool operator==(const SharedPtr<T>& ptr1, const SharedPtr<T>& ptr2)
 {
   return ptr1.get() == ptr2.get();
 }
 
 // Compares if two shared-pointers points to different places
 // (objects, memory addresses).
-template<class T, class Deleter>
-bool operator!=(const SharedPtr<T, Deleter>& ptr1, const SharedPtr<T, Deleter>& ptr2)
+template<class T>
+bool operator!=(const SharedPtr<T>& ptr1, const SharedPtr<T>& ptr2)
 {
   return ptr1.get() != ptr2.get();
 }

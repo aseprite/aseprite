@@ -113,7 +113,7 @@ bool FilterWindow::doModal()
   }
 
   // Always update editors
-  update_screen_for_sprite(m_filterMgr->getSprite());
+  update_screen_for_document(m_filterMgr->getDocument());
 
   return result;
 }

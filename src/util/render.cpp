@@ -18,13 +18,15 @@
 
 #include "config.h"
 
+#include "util/render.h"
+
 #include "app/color_utils.h"
 #include "core/cfg.h"
+#include "document.h"
 #include "gui/list.h"
 #include "raster/raster.h"
 #include "settings/settings.h"
 #include "ui_context.h"
-#include "util/render.h"
 
 //////////////////////////////////////////////////////////////////////
 // Zoomed merge
@@ -364,7 +366,8 @@ void RenderEngine::setPreviewImage(Layer *layer, Image *image)
    zoom applied (sorce_x<<zoom, source_y<<zoom, width<<zoom, etc.)
  */
 // static
-Image* RenderEngine::renderSprite(const Sprite* sprite,
+Image* RenderEngine::renderSprite(const Document* document,
+				  const Sprite* sprite,
 				  int source_x, int source_y,
 				  int width, int height,
 				  int frame, int zoom,
@@ -412,8 +415,8 @@ Image* RenderEngine::renderSprite(const Sprite* sprite,
   if (settings->getUseOnionskin()) {
     // Draw background layer of the current frame with opacity=255
     global_opacity = 255;
-    renderLayer(sprite, sprite->getFolder(), image, source_x, source_y,
-		frame, zoom, zoomed_func, true, false);
+    renderLayer(document, sprite, sprite->getFolder(), image,
+		source_x, source_y, frame, zoom, zoomed_func, true, false);
 
     // Draw transparent layers of the previous/next frames with different opacity (<255) (it is the onion-skinning)
     {
@@ -431,20 +434,20 @@ Image* RenderEngine::renderSprite(const Sprite* sprite,
 	  global_opacity = opacity_base - opacity_step * ((f - frame)-1);
 
 	if (global_opacity > 0)
-	  renderLayer(sprite, sprite->getFolder(), image, source_x, source_y,
-		      f, zoom, zoomed_func, false, true);
+	  renderLayer(document, sprite, sprite->getFolder(), image,
+		      source_x, source_y, f, zoom, zoomed_func, false, true);
       }
     }
 
     // Draw transparent layers of the current frame with opacity=255
     global_opacity = 255;
-    renderLayer(sprite, sprite->getFolder(), image, source_x, source_y,
-		frame, zoom, zoomed_func, false, true);
+    renderLayer(document, sprite, sprite->getFolder(), image,
+		source_x, source_y, frame, zoom, zoomed_func, false, true);
   }
   // Onion-skin is disabled: just draw the current frame
   else {
-    renderLayer(sprite, sprite->getFolder(), image, source_x, source_y,
-		frame, zoom, zoomed_func, true, true);
+    renderLayer(document, sprite, sprite->getFolder(), image,
+		source_x, source_y, frame, zoom, zoomed_func, true, true);
   }
 
   return image;
@@ -545,8 +548,9 @@ void RenderEngine::renderImage(Image* rgb_image, Image* src_image, const Palette
 }
 
 // static
-void RenderEngine::renderLayer(const Sprite *sprite,
-			       const Layer *layer,
+void RenderEngine::renderLayer(const Document* document,
+			       const Sprite* sprite,
+			       const Layer* layer,
 			       Image *image,
 			       int source_x, int source_y,
 			       int frame, int zoom,
@@ -604,7 +608,7 @@ void RenderEngine::renderLayer(const Sprite *sprite,
       LayerConstIterator end = static_cast<const LayerFolder*>(layer)->get_layer_end();
 
       for (; it != end; ++it) {
-	renderLayer(sprite, *it, image,
+	renderLayer(document, sprite, *it, image,
 		    source_x, source_y,
 		    frame, zoom, zoomed_func,
 		    render_background,
@@ -616,10 +620,12 @@ void RenderEngine::renderLayer(const Sprite *sprite,
   }
 
   // Draw extras
-  if (layer == sprite->getCurrentLayer() && sprite->getExtraCel() != NULL) {
-    Cel* extraCel = sprite->getExtraCel();
+  if (layer == sprite->getCurrentLayer() &&
+      document->getExtraCel() != NULL) {
+    Cel* extraCel = document->getExtraCel();
     if (extraCel->opacity > 0) {
-      Image* extraImage = sprite->getExtraCelImage();
+      Image* extraImage = document->getExtraCelImage();
+
       (*zoomed_func)(image, extraImage, sprite->getPalette(frame),
 		     (extraCel->x << zoom) - source_x,
 		     (extraCel->y << zoom) - source_y,

@@ -27,11 +27,11 @@
 #include "app.h"
 #include "modules/editors.h"
 #include "raster/sprite.h"
-#include "sprite_wrappers.h"
+#include "document_wrappers.h"
 #include "ui_context.h"
 #include "widgets/statebar.h"
 
-static bool close_current_sprite(Context* context);
+static bool close_active_document(Context* context);
 
 //////////////////////////////////////////////////////////////////////
 // close_file
@@ -52,13 +52,14 @@ protected:
 
   bool onEnabled(Context* context)
   {
-    const CurrentSpriteReader sprite(context);
+    const ActiveDocumentReader document(context);
+    const Sprite* sprite(document ? document->getSprite(): 0);
     return sprite != NULL;
   }
 
   void onExecute(Context* context)
   {
-    close_current_sprite(context);
+    close_active_document(context);
   }
 
 private:
@@ -89,12 +90,12 @@ protected:
 
   void onExecute(Context* context)
   {
-    if (!context->getCurrentSprite())
-      set_sprite_in_more_reliable_editor(context->getFirstSprite());
+    if (!context->getActiveDocument())
+      set_document_in_more_reliable_editor(context->getFirstDocument());
 
     while (true) {
-      if (context->getCurrentSprite() != NULL) {
-	if (!close_current_sprite(context))
+      if (context->getActiveDocument() != NULL) {
+	if (!close_active_document(context))
 	  break;
       }
       else
@@ -107,58 +108,62 @@ protected:
 //////////////////////////////////////////////////////////////////////
 
 /**
- * Closes the current sprite, asking to the user if to save it if it's
+ * Closes the active document, asking to the user to save it if it is
  * modified.
  */
-static bool close_current_sprite(Context* context)
+static bool close_active_document(Context* context)
 {
   bool save_it;
+  bool try_again = true;
 
-try_again:;
-  // This flag indicates if we have to sabe the sprite before to destroy it
-  save_it = false;
-  {
-    // The sprite is locked as reader temporaly
-    CurrentSpriteReader sprite(context);
+  while (try_again) {
+    // This flag indicates if we have to sabe the sprite before to destroy it
+    save_it = false;
+    {
+      // The sprite is locked as reader temporaly
+      ActiveDocumentReader document(context);
 
-    // see if the sprite has changes
-    while (sprite->isModified()) {
-      // ask what want to do the user with the changes in the sprite
-      int ret = Alert::show("Warning<<Saving changes in:<<%s||&Save||Do&n't Save||&Cancel",
-			    get_filename(sprite->getFilename()));
+      // see if the sprite has changes
+      while (document->isModified()) {
+	// ask what want to do the user with the changes in the sprite
+	int ret = Alert::show("Warning<<Saving changes in:<<%s||&Save||Do&n't Save||&Cancel",
+			      get_filename(document->getFilename()));
 
-      if (ret == 1) {
-	// "save": save the changes
-	save_it = true;
-	break;
-      }
-      else if (ret != 2) {
-	// "cancel" or "ESC" */
-	return false; // we back doing nothing
-      }
-      else {
-	// "discard"
-	break;
+	if (ret == 1) {
+	  // "save": save the changes
+	  save_it = true;
+	  break;
+	}
+	else if (ret != 2) {
+	  // "cancel" or "ESC" */
+	  return false; // we back doing nothing
+	}
+	else {
+	  // "discard"
+	  break;
+	}
       }
     }
-  }
 
-  // Does we need to save the sprite?
-  if (save_it) {
-    Command* save_command =
-      CommandsModule::instance()->getCommandByName(CommandId::SaveFile);
-    context->executeCommand(save_command);
+    // Does we need to save the sprite?
+    if (save_it) {
+      Command* save_command =
+	CommandsModule::instance()->getCommandByName(CommandId::SaveFile);
+      context->executeCommand(save_command);
 
-    goto try_again;
+      try_again = true;
+    }
+    else
+      try_again = false;
   }
 
   // Destroy the sprite (locking it as writer)
   {
-    CurrentSpriteWriter sprite(context);
+    ActiveDocumentWriter document(context);
     app_get_statusbar()
       ->setStatusText(0, "Sprite '%s' closed.",
-		      get_filename(sprite->getFilename()));
-    sprite.destroy();
+		      get_filename(document->getFilename()));
+    document.deleteDocument();
   }
   return true;
 }

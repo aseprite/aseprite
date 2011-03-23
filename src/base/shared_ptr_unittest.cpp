@@ -14,27 +14,28 @@ TEST(SharedPtr, IntPtr)
   EXPECT_EQ(5, *a);
 }
 
-TEST(SharedPtr, RefCount)
+TEST(SharedPtr, UseCount)
 {
   SharedPtr<int> a(new int(5));
-  EXPECT_EQ(1, a.getRefCount());
+  EXPECT_EQ(1, a.use_count());
+  EXPECT_TRUE(a.unique());
   a.reset();
-  EXPECT_EQ(0, a.getRefCount());
+  EXPECT_EQ(0, a.use_count());
 
   SharedPtr<int> b(new int(5));
   {
     SharedPtr<int> c(b);
-    EXPECT_EQ(2, b.getRefCount());
-    EXPECT_EQ(2, c.getRefCount());
+    EXPECT_EQ(2, b.use_count());
+    EXPECT_EQ(2, c.use_count());
     a = c;
-    EXPECT_EQ(3, a.getRefCount());
-    EXPECT_EQ(3, b.getRefCount());
-    EXPECT_EQ(3, c.getRefCount());
+    EXPECT_EQ(3, a.use_count());
+    EXPECT_EQ(3, b.use_count());
+    EXPECT_EQ(3, c.use_count());
     a.reset();
-    EXPECT_EQ(2, b.getRefCount());
-    EXPECT_EQ(2, c.getRefCount());
+    EXPECT_EQ(2, b.use_count());
+    EXPECT_EQ(2, c.use_count());
   }
-  EXPECT_EQ(1, b.getRefCount());
+  EXPECT_EQ(1, b.use_count());
 }
 
 
@@ -59,16 +60,43 @@ TEST(SharedPtr, DeleteIsCalled)
 
 class A { };
 class B : public A { };
+class C : public A { };
 
 TEST(SharedPtr, Hierarchy)
 {
-  SharedPtr<A> a(new B);
-  SharedPtr<B> b = a;
-  SharedPtr<A> c = a;
-  SharedPtr<A> d = b;
-  EXPECT_EQ(4, a.getRefCount());
-}
+  {
+    SharedPtr<A> a(new B);
+    SharedPtr<B> b = a;
+    SharedPtr<A> c = a;
+    SharedPtr<A> d = b;
+    EXPECT_EQ(4, a.use_count());
+  }
 
+  {
+    SharedPtr<B> b(new B);
+    EXPECT_TRUE(b.unique());
+
+    SharedPtr<C> c(new C);
+    EXPECT_TRUE(c.unique());
+
+    SharedPtr<A> a = b;
+    EXPECT_EQ(2, a.use_count());
+    EXPECT_EQ(2, b.use_count());
+    EXPECT_FALSE(b.unique());
+
+    a = c;
+    EXPECT_EQ(2, a.use_count());
+    EXPECT_EQ(1, b.use_count());
+    EXPECT_EQ(2, c.use_count());
+
+    a = b;
+    EXPECT_EQ(2, a.use_count());
+    EXPECT_EQ(2, b.use_count());
+    EXPECT_EQ(1, c.use_count());
+
+    EXPECT_TRUE(c.unique());
+  }
+}
 
 TEST(SharedPtr, Compare)
 {

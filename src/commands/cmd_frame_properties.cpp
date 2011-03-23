@@ -26,7 +26,7 @@
 #include "modules/gui.h"
 #include "raster/sprite.h"
 #include "undoable.h"
-#include "sprite_wrappers.h"
+#include "document_wrappers.h"
 
 //////////////////////////////////////////////////////////////////////
 // frame_properties
@@ -76,13 +76,14 @@ void FramePropertiesCommand::onLoadParams(Params* params)
 
 bool FramePropertiesCommand::onEnabled(Context* context)
 {
-  const CurrentSpriteReader sprite(context);
-  return sprite != NULL;
+  const ActiveDocumentReader document(context);
+  return document != NULL;
 }
 
 void FramePropertiesCommand::onExecute(Context* context)
 {
-  const CurrentSpriteReader sprite(context);
+  const ActiveDocumentReader document(context);
+  const Sprite* sprite = document->getSprite();
   JWidget frame, frlen, ok;
 
   FramePtr window(load_widget("frame_duration.xml", "frame_duration"));
@@ -121,15 +122,15 @@ void FramePropertiesCommand::onExecute(Context* context)
       if (Alert::show("Warning"
 		      "<<Do you want to change the duration of all frames?"
 		      "||&Yes||&No") == 1) {
-	SpriteWriter sprite_writer(sprite);
-	Undoable undoable(sprite_writer, "Constant Frame-Rate");
+	DocumentWriter document_writer(document);
+	Undoable undoable(document_writer, "Constant Frame-Rate");
 	undoable.setConstantFrameRate(num);
 	undoable.commit();
       }
     }
     else {
-      SpriteWriter sprite_writer(sprite);
-      Undoable undoable(sprite_writer, "Frame Duration");
+      DocumentWriter document_writer(document);
+      Undoable undoable(document_writer, "Frame Duration");
       undoable.setFrameDuration(sprite_frame-1, num);
       undoable.commit();
     }

@@ -18,17 +18,14 @@
 
 #include "config.h"
 
-#include <allegro/config.h>
-#include <allegro/unicode.h>
-
-#include "gui/gui.h"
-
-#include "ui_context.h"
+#include "app.h"
+#include "app/color.h"
+#include "app/color_utils.h"
+#include "base/unique_ptr.h"
 #include "commands/command.h"
 #include "console.h"
-#include "app.h"
 #include "core/cfg.h"
-#include "app/color.h"
+#include "gui/gui.h"
 #include "modules/editors.h"
 #include "modules/gui.h"
 #include "modules/palettes.h"
@@ -36,9 +33,12 @@
 #include "raster/layer.h"
 #include "raster/palette.h"
 #include "raster/sprite.h"
+#include "ui_context.h"
 #include "util/misc.h"
 #include "widgets/color_bar.h"
-#include "app/color_utils.h"
+
+#include <allegro/config.h>
+#include <allegro/unicode.h>
 
 //////////////////////////////////////////////////////////////////////
 // new_file
@@ -55,8 +55,6 @@ protected:
 
 static int _sprite_counter = 0;
 
-static Sprite* new_sprite(Context* context, int imgtype, int w, int h, int ncolors);
-
 NewFileCommand::NewFileCommand()
   : Command("NewFile",
 	    "New File",
@@ -72,7 +70,6 @@ void NewFileCommand::onExecute(Context* context)
   JWidget width, height, radio1, radio2, radio3, colors, ok, bg_box;
   int imgtype, w, h, bg, ncolors;
   char buf[1024];
-  Sprite *sprite;
   Color bg_table[] = {
     Color::fromMask(),
     Color::fromRgb(0, 0, 0),
@@ -151,50 +148,39 @@ void NewFileCommand::onExecute(Context* context)
       set_config_int("NewSprite", "Background", bg);
 
       // Create the new sprite
-      sprite = new_sprite(UIContext::instance(), imgtype, w, h,
-			  imgtype == IMAGE_INDEXED ? ncolors: 256);
-      if (!sprite) {
-	Console console;
-	console.printf("Not enough memory to allocate the sprite\n");
+      ASSERT(imgtype == IMAGE_RGB || imgtype == IMAGE_GRAYSCALE || imgtype == IMAGE_INDEXED);
+      ASSERT(w >= 1 && w <= 9999);
+      ASSERT(h >= 1 && h <= 9999);
+
+      UniquePtr<Document> document(
+	Document::createBasicDocument(imgtype, w, h,
+				      (imgtype == IMAGE_INDEXED ? ncolors: 256)));
+      Sprite* sprite(document->getSprite());
+
+      get_default_palette()->copyColorsTo(sprite->getCurrentPalette());
+
+      usprintf(buf, "Sprite-%04d", ++_sprite_counter);
+      document->setFilename(buf);
+
+      // If the background color isn't transparent, we have to
+      // convert the `Layer 1' in a `Background'
+      if (color.getType() != Color::MaskType) {
+	Sprite* sprite = document->getSprite();
+
+	ASSERT(sprite->getCurrentLayer() && sprite->getCurrentLayer()->is_image());
+	
+	static_cast<LayerImage*>(sprite->getCurrentLayer())->configureAsBackground();
+	image_clear(sprite->getCurrentImage(), color_utils::color_for_image(color, imgtype));
       }
-      else {
-	usprintf(buf, "Sprite-%04d", ++_sprite_counter);
-	sprite->setFilename(buf);
+      
+      // Show the sprite to the user
+      context->addDocument(document);
 
-	// If the background color isn't transparent, we have to
-	// convert the `Layer 1' in a `Background'
-	if (color.getType() != Color::MaskType) {
-	  ASSERT(sprite->getCurrentLayer() && sprite->getCurrentLayer()->is_image());
-
-	  static_cast<LayerImage*>(sprite->getCurrentLayer())->configureAsBackground();
-	  image_clear(sprite->getCurrentImage(), color_utils::color_for_image(color, imgtype));
-	}
-
-	// Show the sprite to the user
-	context->addSprite(sprite);
-	set_sprite_in_more_reliable_editor(sprite);
-      }
+      // Release the document as it is already owned by the context.
+      // And put the document in a reliable editor.
+      set_document_in_more_reliable_editor(document.release());
     }
   }
-}
-
-/**
- * Creates a new sprite with the given dimension with one transparent
- * layer called "Layer 1".
- *
- * @param imgtype Color mode, one of the following values: IMAGE_RGB, IMAGE_GRAYSCALE, IMAGE_INDEXED
- * @param w Width of the sprite
- * @param h Height of the sprite
- */
-static Sprite* new_sprite(Context* context, int imgtype, int w, int h, int ncolors)
-{
-  ASSERT(imgtype == IMAGE_RGB || imgtype == IMAGE_GRAYSCALE || imgtype == IMAGE_INDEXED);
-  ASSERT(w >= 1 && w <= 9999);
-  ASSERT(h >= 1 && h <= 9999);
-
-  Sprite* sprite = Sprite::createWithLayer(imgtype, w, h, ncolors);
-  get_default_palette()->copyColorsTo(sprite->getCurrentPalette());
-  return sprite;
 }
 
 //////////////////////////////////////////////////////////////////////

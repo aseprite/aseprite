@@ -20,11 +20,12 @@
 
 #include "config.h"
 
-#include <allegro/color.h>
-
 #include "file/file.h"
 #include "file/file_format.h"
+#include "file/format_options.h"
 #include "raster/raster.h"
+
+#include <allegro/color.h>
 
 class PcxFormat : public FileFormat
 {

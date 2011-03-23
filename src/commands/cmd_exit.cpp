@@ -18,12 +18,11 @@
 
 #include "config.h"
 
-#include "gui/gui.h"
-
+#include "app.h"
 #include "commands/command.h"
 #include "context.h"
-#include "app.h"
-#include "raster/sprite.h"
+#include "document.h"
+#include "gui/alert.h"
 
 //////////////////////////////////////////////////////////////////////
 // exit
@@ -47,20 +46,20 @@ ExitCommand::ExitCommand()
 
 void ExitCommand::onExecute(Context* context)
 {
-  Sprite *sprite = context->getFirstSprite();
+  Document* document = context->getFirstDocument();
 
-  while (sprite) {
-    // check if this sprite is modified
-    if (sprite->isModified()) {
+  while (document) {
+    // Check if this sprite is modified
+    if (document->isModified()) {
       if (Alert::show("Warning<<There are sprites with changes.<<Do you want quit anyway?||&Yes||&No") != 1) {
 	return;
       }
       break;
     }
-    sprite = context->getNextSprite(sprite);
+    document = context->getNextDocument(document);
   }
 
-  /* close the window */
+  // Close the window
   app_get_top_window()->closeWindow(NULL);
 }
 

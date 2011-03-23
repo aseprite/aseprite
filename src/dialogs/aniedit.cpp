@@ -18,13 +18,13 @@
 
 #include "config.h"
 
-#include <allegro.h>
-
 #include "base/memory.h"
 #include "commands/command.h"
 #include "commands/commands.h"
 #include "commands/params.h"
 #include "console.h"
+#include "document.h"
+#include "document_wrappers.h"
 #include "gfx/point.h"
 #include "gfx/rect.h"
 #include "gui/gui.h"
@@ -33,11 +33,12 @@
 #include "modules/rootmenu.h"
 #include "raster/raster.h"
 #include "skin/skin_theme.h"
-#include "sprite_wrappers.h"
 #include "ui_context.h"
 #include "undoable.h"
 #include "util/celmove.h"
 #include "util/thmbnail.h"
+
+#include <allegro.h>
 
 using namespace gfx;
 
@@ -100,6 +101,7 @@ enum {
 
 struct AniEditor
 {
+  const Document* document;
   const Sprite* sprite;
   int state;
   Layer** layers;
@@ -123,7 +125,7 @@ struct AniEditor
 
 static JWidget current_anieditor = NULL;
 
-static JWidget anieditor_new(const Sprite* sprite);
+static JWidget anieditor_new(const Document* document, const Sprite* sprite);
 static int anieditor_type();
 static AniEditor* anieditor_data(JWidget widget);
 static bool anieditor_msg_proc(JWidget widget, JMessage msg);
@@ -160,48 +162,47 @@ bool animation_editor_is_movingcel()
     anieditor_data(current_anieditor)->state == STATE_MOVING_CEL;
 }
 
-/**
- * Shows the animation editor for the current sprite.
- */
+// Shows the animation editor for the current sprite.
 void switch_between_animation_and_sprite_editor()
 {
-  const Sprite* sprite = UIContext::instance()->getCurrentSprite();
+  const Document* document = UIContext::instance()->getActiveDocument();
+  const Sprite* sprite = document->getSprite();
 
-  /* create the window & the animation-editor */
+  // Create the window & the animation-editor
   Frame* window = new Frame(true, NULL);
-  Widget* anieditor = anieditor_new(sprite);
+  Widget* anieditor = anieditor_new(document, sprite);
   current_anieditor = anieditor;
 
   jwidget_add_child(window, anieditor);
   window->remap_window();
 
-  /* show the current cel */
+  // Show the current cel
   int layer = anieditor_get_layer_index(anieditor, sprite->getCurrentLayer());
   if (layer >= 0)
     anieditor_center_cel(anieditor, layer, sprite->getCurrentFrame());
 
-  /* show the window */
+  // Show the window
   window->open_window_fg();
 
-  /* destroy the window */
+  // Destroy the window
   jwidget_free(window);
   current_anieditor = NULL;
 
-  /* destroy thumbnails */
+  // Destroy thumbnails
   destroy_thumbnails();
 
-  update_screen_for_sprite(sprite);
+  update_screen_for_document(document);
 }
 
-/*********************************************************************
-   The Animation Editor
- *********************************************************************/
+//////////////////////////////////////////////////////////////////////
+// The Animation Editor
 
-static JWidget anieditor_new(const Sprite* sprite)
+static JWidget anieditor_new(const Document* document, const Sprite* sprite)
 {
   Widget* widget = new Widget(anieditor_type());
   AniEditor* anieditor = new AniEditor;
 
+  anieditor->document = document;
   anieditor->sprite = sprite;
   anieditor->state = STATE_STANDBY;
   anieditor->layers = NULL;
@@ -325,23 +326,25 @@ static bool anieditor_msg_proc(JWidget widget, JMessage msg)
 	  break;
 	case A_PART_HEADER_FRAME:
 	  {
-	    const SpriteReader sprite((Sprite*)anieditor->sprite);
-	    SpriteWriter sprite_writer(sprite);
-	    sprite_writer->setCurrentFrame(anieditor->clk_frame);
+	    const DocumentReader document(const_cast<Document*>(anieditor->document));
+	    DocumentWriter document_writer(document);
+	    document_writer->getSprite()->setCurrentFrame(anieditor->clk_frame);
 	  }
 	  widget->invalidate(); // TODO Replace this by redrawing old current frame and new current frame
 	  widget->captureMouse();
 	  anieditor->state = STATE_MOVING_FRAME;
 	  break;
 	case A_PART_LAYER: {
-	  const SpriteReader sprite((Sprite*)anieditor->sprite);
+	  const DocumentReader document(const_cast<Document*>(anieditor->document));
+	  const Sprite* sprite = anieditor->sprite;
 	  int old_layer = anieditor_get_layer_index(widget, sprite->getCurrentLayer());
 	  int frame = anieditor->sprite->getCurrentFrame();
 
 	  /* did the user select another layer? */
 	  if (old_layer != anieditor->clk_layer) {
 	    {
-	      SpriteWriter sprite_writer(sprite);
+	      DocumentWriter document_writer(document);
+	      Sprite* sprite_writer = const_cast<Sprite*>(anieditor->sprite);
 	      sprite_writer->setCurrentLayer(anieditor->layers[anieditor->clk_layer]);
 	    }
 
@@ -367,7 +370,8 @@ static bool anieditor_msg_proc(JWidget widget, JMessage msg)
 	  widget->captureMouse();
 	  break;
 	case A_PART_CEL: {
-	  const SpriteReader sprite((Sprite*)anieditor->sprite);
+	  const DocumentReader document(const_cast<Document*>(anieditor->document));
+	  const Sprite* sprite = document->getSprite();
 	  int old_layer = anieditor_get_layer_index(widget, sprite->getCurrentLayer());
 	  int old_frame = sprite->getCurrentFrame();
 
@@ -375,7 +379,8 @@ static bool anieditor_msg_proc(JWidget widget, JMessage msg)
 	  if (old_layer != anieditor->clk_layer ||
 	      old_frame != anieditor->clk_frame) {
 	    {
-	      SpriteWriter sprite_writer(sprite);
+	      DocumentWriter document_writer(document);
+	      Sprite* sprite_writer = document_writer->getSprite();
 	      sprite_writer->setCurrentLayer(anieditor->layers[anieditor->clk_layer]);
 	      sprite_writer->setCurrentFrame(anieditor->clk_frame);
 	    }
@@ -548,14 +553,15 @@ static bool anieditor_msg_proc(JWidget widget, JMessage msg)
 		UIContext::instance()->executeCommand(command, &params);
 	      }
 	      else {
-		const SpriteReader sprite((Sprite*)anieditor->sprite);
+		const DocumentReader document(const_cast<Document*>(anieditor->document));
+		const Sprite* sprite = anieditor->sprite;
 
 		if (anieditor->hot_frame >= 0 &&
 		    anieditor->hot_frame < sprite->getTotalFrames() &&
 		    anieditor->hot_frame != anieditor->clk_frame+1) {
 		  {
-		    SpriteWriter sprite_writer(sprite);
-		    Undoable undoable(sprite_writer, "Move Frame");
+		    DocumentWriter document_writer(document);
+		    Undoable undoable(document_writer, "Move Frame");
 		    undoable.moveFrameBefore(anieditor->clk_frame, anieditor->hot_frame);
 		    undoable.commit();
 		  }
@@ -587,9 +593,11 @@ static bool anieditor_msg_proc(JWidget widget, JMessage msg)
 		if (!anieditor->layers[anieditor->clk_layer]->is_background()) {
 		  // move the clicked-layer after the hot-layer
 		  try {
-		    const SpriteReader sprite((Sprite*)anieditor->sprite);
-		    SpriteWriter sprite_writer(sprite);
-		    Undoable undoable(sprite_writer, "Move Layer");
+		    const DocumentReader document(const_cast<Document*>(anieditor->document));
+		    DocumentWriter document_writer(document);
+		    Sprite* sprite_writer = const_cast<Sprite*>(anieditor->sprite);
+
+		    Undoable undoable(document_writer, "Move Layer");
 		    undoable.moveLayerAfter(anieditor->layers[anieditor->clk_layer],
 					    anieditor->layers[anieditor->hot_layer]);
 		    undoable.commit();
@@ -597,7 +605,7 @@ static bool anieditor_msg_proc(JWidget widget, JMessage msg)
 		    /* select the new layer */
 		    sprite_writer->setCurrentLayer(anieditor->layers[anieditor->clk_layer]);
 		  }
-		  catch (LockedSpriteException& e) {
+		  catch (LockedDocumentException& e) {
 		    Console::showException(e);
 		  }
 
@@ -663,9 +671,9 @@ static bool anieditor_msg_proc(JWidget widget, JMessage msg)
 	    else if (msg->mouse.left) {
 	      if (movement) {
 		{
-		  const SpriteReader sprite((Sprite*)anieditor->sprite);
-		  SpriteWriter sprite_writer(sprite);
-		  move_cel(sprite_writer);
+		  const DocumentReader document(const_cast<Document*>(anieditor->document));
+		  DocumentWriter document_writer(document);
+		  move_cel(document_writer);
 		}
 
 		destroy_thumbnails();
@@ -705,10 +713,14 @@ static bool anieditor_msg_proc(JWidget widget, JMessage msg)
 
       /* undo */
       if (command && strcmp(command->short_name(), CommandId::Undo) == 0) {
-	const SpriteReader sprite((Sprite*)anieditor->sprite);
-	if (sprite->getUndo()->canUndo()) {
-	  SpriteWriter sprite_writer(sprite);
-	  sprite_writer->getUndo()->doUndo();
+	const DocumentReader document(const_cast<Document*>(anieditor->document));
+	const UndoHistory* undo = document->getUndoHistory();
+
+	if (undo->canUndo()) {
+	  DocumentWriter document_writer(document);
+	  UndoHistory* undo_writer = document_writer->getUndoHistory();
+
+	  undo_writer->doUndo();
 
 	  destroy_thumbnails();
 	  anieditor_regenerate_layers(widget);
@@ -720,10 +732,14 @@ static bool anieditor_msg_proc(JWidget widget, JMessage msg)
 
       /* redo */
       if (command && strcmp(command->short_name(), CommandId::Redo) == 0) {
-	const SpriteReader sprite((Sprite*)anieditor->sprite);
-	if (sprite->getUndo()->canRedo()) {
-	  SpriteWriter sprite_writer(sprite);
-	  sprite_writer->getUndo()->doRedo();
+	const DocumentReader document(const_cast<Document*>(anieditor->document));
+	const UndoHistory* undo = document->getUndoHistory();
+
+	if (undo->canRedo()) {
+	  DocumentWriter document_writer(document);
+	  UndoHistory* undo_writer = document_writer->getUndoHistory();
+
+	  undo_writer->doRedo();
 
 	  destroy_thumbnails();
 	  anieditor_regenerate_layers(widget);

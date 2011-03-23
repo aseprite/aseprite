@@ -49,7 +49,7 @@
 #include "skin/button_icon_impl.h"
 #include "skin/skin_property.h"
 #include "skin/skin_theme.h"
-#include "sprite_wrappers.h"
+#include "document_wrappers.h"
 #include "tools/toolbox.h"
 #include "ui_context.h"
 #include "widgets/editor.h"
@@ -433,26 +433,28 @@ void set_screen_scaling(int scaling)
   screen_scaling = scaling;
 }
 
-void update_screen_for_sprite(const Sprite* sprite)
+void update_screen_for_document(const Document* document)
 {
-  /* without sprite */
-  if (!sprite) {
-    /* well, change to the default palette */
+  // Without document.
+  if (!document) {
+    // Well, change to the default palette.
     if (set_current_palette(NULL, false)) {
-      /* if the palette changes, refresh the whole screen */
+      // If the palette changes, refresh the whole screen.
       jmanager_refresh_screen();
     }
   }
-  /* with a sprite */
+  // With a document.
   else {
-    /* select the palette of the sprite */
+    const Sprite* sprite = document->getSprite();
+
+    // Select the palette of the sprite.
     if (set_current_palette(sprite->getPalette(sprite->getCurrentFrame()), false)) {
-      /* if the palette changes, refresh the whole screen */
+      // If the palette changes, refresh the whole screen.
       jmanager_refresh_screen();
     }
     else {
-      /* if it's the same palette update only the editors with the sprite */
-      update_editors_with_sprite(sprite);
+      // If it's the same palette update only the editors with the sprite.
+      update_editors_with_document(document);
     }
   }
 }
@@ -485,8 +487,8 @@ void gui_feedback()
     next_idle_flags ^= REFRESH_FULL_SCREEN;
 
     try {
-      const CurrentSpriteReader sprite(UIContext::instance());
-      update_screen_for_sprite(sprite);
+      const ActiveDocumentReader document(UIContext::instance());
+      update_screen_for_document(document);
     }
     catch (...) {
       // do nothing

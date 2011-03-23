@@ -30,7 +30,7 @@
 #include "modules/gui.h"
 #include "raster/sprite.h"
 #include "recent_files.h"
-#include "sprite_wrappers.h"
+#include "document_wrappers.h"
 #include "widgets/statebar.h"
 
 struct SaveFileData
@@ -91,9 +91,9 @@ static void monitor_free(void *_data)
   }
 }
 
-static void save_sprite_in_background(Sprite* sprite, bool mark_as_saved)
+static void save_document_in_background(Document* document, bool mark_as_saved)
 {
-  FileOp *fop = fop_to_save_sprite(sprite);
+  FileOp *fop = fop_to_save_document(document);
   if (!fop)
     return;
 
@@ -104,7 +104,7 @@ static void save_sprite_in_background(Sprite* sprite, bool mark_as_saved)
   data->progress = app_get_statusbar()->addProgress();
   data->alert_window = Alert::create(PACKAGE
 				     "<<Saving file:<<%s||&Cancel",
-				     get_filename(sprite->getFilename()));
+				     get_filename(document->getFilename()));
 
   /* add a monitor to check the saving (FileOp) progress */
   data->monitor = add_gui_monitor(monitor_savefile_bg,
@@ -127,13 +127,13 @@ static void save_sprite_in_background(Sprite* sprite, bool mark_as_saved)
   }
   /* no error? */
   else {
-    App::instance()->getRecentFiles()->addRecentFile(sprite->getFilename());
+    App::instance()->getRecentFiles()->addRecentFile(document->getFilename());
     if (mark_as_saved)
-      sprite->markAsSaved();
+      document->markAsSaved();
 
     app_get_statusbar()
       ->setStatusText(2000, "File %s, saved.",
-		      get_filename(sprite->getFilename()));
+		      get_filename(document->getFilename()));
   }
 
   delete data->progress;
@@ -143,14 +143,14 @@ static void save_sprite_in_background(Sprite* sprite, bool mark_as_saved)
 
 /*********************************************************************/
 
-static void save_as_dialog(Sprite* sprite, const char* dlg_title, bool mark_as_saved)
+static void save_as_dialog(Document* document, const char* dlg_title, bool mark_as_saved)
 {
   char exts[4096];
   base::string filename;
   base::string newfilename;
   int ret;
 
-  filename = sprite->getFilename();
+  filename = document->getFilename();
   get_writable_extensions(exts, sizeof(exts));
 
   for (;;) {
@@ -179,10 +179,10 @@ static void save_as_dialog(Sprite* sprite, const char* dlg_title, bool mark_as_s
     /* "no": we must back to select other file-name */
   }
 
-  sprite->setFilename(filename.c_str());
-  app_realloc_sprite_list();
+  document->setFilename(filename.c_str());
+  app_rebuild_documents_tabs();
 
-  save_sprite_in_background(sprite, mark_as_saved);
+  save_document_in_background(document, mark_as_saved);
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -206,37 +206,30 @@ SaveFileCommand::SaveFileCommand()
 {
 }
 
-/**
- * Returns true if there is a current sprite to save.
- *
- * [main thread]
- */
+// Returns true if there is a current sprite to save.
+// [main thread]
 bool SaveFileCommand::onEnabled(Context* context)
 {
-  const CurrentSpriteReader sprite(context);
-  return
-    sprite != NULL;
+  const ActiveDocumentReader document(context);
+  return document != NULL;
 }
 
-/**
- * Saves the current sprite in a file.
- * 
- * [main thread]
- */
+// Saves the active document in a file.
+// [main thread]
 void SaveFileCommand::onExecute(Context* context)
 {
-  CurrentSpriteWriter sprite(context);
+  ActiveDocumentWriter document(context);
 
-  /* if the sprite is associated to a file in the file-system, we can
-     save it directly without user interaction */
-  if (sprite->isAssociatedToFile()) {
-    save_sprite_in_background(sprite, true);
+  // If the document is associated to a file in the file-system, we can
+  // save it directly without user interaction.
+  if (document->isAssociatedToFile()) {
+    save_document_in_background(document, true);
   }
-  /* if the sprite isn't associated to a file, we must to show the
-     save-as dialog to the user to select for first time the file-name
-     for this sprite */
+  // If the document isn't associated to a file, we must to show the
+  // save-as dialog to the user to select for first time the file-name
+  // for this document.
   else {
-    save_as_dialog(sprite, "Save Sprite", true);
+    save_as_dialog(document, "Save File", true);
   }
 }
 
@@ -263,15 +256,15 @@ SaveFileAsCommand::SaveFileAsCommand()
 
 bool SaveFileAsCommand::onEnabled(Context* context)
 {
-  const CurrentSpriteReader sprite(context);
-  return
-    sprite != NULL;
+  const ActiveDocumentReader document(context);
+  const Sprite* sprite(document ? document->getSprite(): 0);
+  return sprite != NULL;
 }
 
 void SaveFileAsCommand::onExecute(Context* context)
 {
-  CurrentSpriteWriter sprite(context);
-  save_as_dialog(sprite, "Save Sprite As", true);
+  ActiveDocumentWriter document(context);
+  save_as_dialog(document, "Save As", true);
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -297,22 +290,22 @@ SaveFileCopyAsCommand::SaveFileCopyAsCommand()
 
 bool SaveFileCopyAsCommand::onEnabled(Context* context)
 {
-  const CurrentSpriteReader sprite(context);
-  return
-    sprite != NULL;
+  const ActiveDocumentReader document(context);
+  const Sprite* sprite(document ? document->getSprite(): 0);
+  return sprite != NULL;
 }
 
 void SaveFileCopyAsCommand::onExecute(Context* context)
 {
-  CurrentSpriteWriter sprite(context);
-  base::string old_filename = sprite->getFilename();
+  ActiveDocumentWriter document(context);
+  base::string old_filename = document->getFilename();
 
   // show "Save As" dialog
-  save_as_dialog(sprite, "Save Sprite Copy As", false);
+  save_as_dialog(document, "Save Copy As", false);
 
-  // restore the file name
-  sprite->setFilename(old_filename.c_str());
-  app_realloc_sprite_list();
+  // Restore the file name.
+  document->setFilename(old_filename.c_str());
+  app_rebuild_documents_tabs();
 }
 
 //////////////////////////////////////////////////////////////////////

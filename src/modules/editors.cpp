@@ -23,7 +23,7 @@
 
 #include "gui/gui.h"
 
-#include "sprite_wrappers.h"
+#include "document_wrappers.h"
 #include "ui_context.h"
 #include "app.h"
 #include "modules/editors.h"
@@ -45,8 +45,8 @@ Widget* box_editors = NULL;
 
 static EditorList editors;
 
-static int is_sprite_in_some_editor(Sprite *sprite);
-static Sprite *get_more_reliable_sprite();
+static int is_document_in_some_editor(Document* document);
+static Document* get_more_reliable_document();
 static Widget* find_next_editor(Widget* widget);
 static int count_parents(Widget* widget);
 
@@ -67,11 +67,8 @@ Editor* create_new_editor()
   return editor;
 }
 
-/**
- * Removes the specified editor from the "editors" list.
- *
- * It does not delete the editor.
- */
+// Removes the specified editor from the "editors" list.
+// It does not delete the editor.
 void remove_editor(Editor* editor)
 {
   EditorList::iterator it = std::find(editors.begin(), editors.end(), editor);
@@ -88,12 +85,12 @@ void refresh_all_editors()
   }
 }
 
-void update_editors_with_sprite(const Sprite* sprite)
+void update_editors_with_document(const Document* document)
 {
   for (EditorList::iterator it = editors.begin(); it != editors.end(); ++it) {
     Editor* editor = *it;
 
-    if (sprite == editor->getSprite())
+    if (document == editor->getDocument())
       editor->editor_update();
   }
 }
@@ -108,12 +105,11 @@ void editors_draw_sprite(const Sprite* sprite, int x1, int y1, int x2, int y2)
   }
 }
 
-/* TODO improve this (with JRegion or something, and without
-   recursivity) */
+// TODO improve this (with JRegion or something, and without recursivity).
 void editors_draw_sprite_tiled(const Sprite* sprite, int x1, int y1, int x2, int y2)
 {
-  int cx1, cy1, cx2, cy2;	/* cel rectangle */
-  int lx1, ly1, lx2, ly2;	/* limited rectangle to the cel rectangle */
+  int cx1, cy1, cx2, cy2;	// Cel rectangle.
+  int lx1, ly1, lx2, ly2;	// Limited rectangle to the cel rectangle.
 #ifdef TILED_IN_LAYER
   Image *image = GetImage2(sprite, &cx1, &cy1, NULL);
   cx2 = cx1+image->w-1;
@@ -130,24 +126,24 @@ void editors_draw_sprite_tiled(const Sprite* sprite, int x1, int y1, int x2, int
   lx2 = MIN(x2, cx2);
   ly2 = MIN(y2, cy2);
 
-  /* draw the rectangles inside the editor */
+  // Draw the rectangles inside the editor.
   editors_draw_sprite(sprite, lx1, ly1, lx2, ly2);
 
-  /* left */
+  // Left.
   if (x1 < cx1 && lx2 < cx2) {
     editors_draw_sprite_tiled(sprite,
 			      MAX(lx2+1, cx2+1+(x1-cx1)), y1,
 			      cx2, y2);
   }
 
-  /* top */
+  // Top.
   if (y1 < cy1 && ly2 < cy2) {
     editors_draw_sprite_tiled(sprite,
 			      x1, MAX(ly2+1, cy2+1+(y1-cx1)),
 			      x2, cy2);
   }
 
-  /* right */
+  // Right.
   if (x2 >= cx2+1 && lx1 > cx1) {
 #ifdef TILED_IN_LAYER
     editors_draw_sprite_tiled(sprite,
@@ -160,7 +156,7 @@ void editors_draw_sprite_tiled(const Sprite* sprite, int x1, int y1, int x2, int
 #endif
   }
 
-  /* bottom */
+  // Bottom.
   if (y2 >= cy2+1 && ly1 > cy1) {
 #if TILED_IN_LAYER
     editors_draw_sprite_tiled(sprite,
@@ -174,23 +170,25 @@ void editors_draw_sprite_tiled(const Sprite* sprite, int x1, int y1, int x2, int
   }
 }
 
-void editors_hide_sprite(const Sprite* sprite)
+void editors_hide_document(const Document* document)
 {
   UIContext* context = UIContext::instance();
-  bool refresh = (context->getCurrentSprite() == sprite) ? true: false;
+  Document* activeDocument = context->getActiveDocument();
+  Sprite* activeSprite = (activeDocument ? activeDocument->getSprite(): NULL);
+  bool refresh = (activeSprite == document->getSprite()) ? true: false;
 
   for (EditorList::iterator it = editors.begin(); it != editors.end(); ++it) {
     Editor* editor = *it;
 
-    if (sprite == editor->getSprite())
-      editor->editor_set_sprite(get_more_reliable_sprite());
+    if (document == editor->getDocument())
+      editor->setDocument(get_more_reliable_document());
   }
 
   if (refresh) {
-    Sprite* sprite = current_editor->getSprite();
+    Document* document = current_editor->getDocument();
 
-    context->setCurrentSprite(sprite);
-    app_refresh_screen(sprite);
+    context->setActiveDocument(document);
+    app_refresh_screen(document);
   }
 }
 
@@ -205,43 +203,43 @@ void set_current_editor(Editor* editor)
     View::getView(current_editor)->invalidate();
 
     UIContext* context = UIContext::instance();
-    Sprite* sprite = current_editor->getSprite();
-    context->setCurrentSprite(sprite);
+    Document* document = current_editor->getDocument();
+    context->setActiveDocument(document);
 
-    app_refresh_screen(sprite);
-    app_realloc_sprite_list();
+    app_refresh_screen(document);
+    app_rebuild_documents_tabs();
   }
 }
 
-void set_sprite_in_current_editor(Sprite *sprite)
+void set_document_in_current_editor(Document* document)
 {
   if (current_editor) {
     UIContext* context = UIContext::instance();
     
-    context->setCurrentSprite(sprite);
-    if (sprite != NULL)
-      context->sendSpriteToTop(sprite);
+    context->setActiveDocument(document);
+    if (document != NULL)
+      context->sendDocumentToTop(document);
 
-    current_editor->editor_set_sprite(sprite);
+    current_editor->setDocument(document);
 
     View::getView(current_editor)->invalidate();
 
-    app_refresh_screen(sprite);
-    app_realloc_sprite_list();
+    app_refresh_screen(document);
+    app_rebuild_documents_tabs();
   }
 }
 
-void set_sprite_in_more_reliable_editor(Sprite* sprite)
+void set_document_in_more_reliable_editor(Document* document)
 {
   // The current editor
   Editor* best = current_editor;
 
   // Search for any empty editor
-  if (best->getSprite()) {
+  if (best->getDocument()) {
     for (EditorList::iterator it = editors.begin(); it != editors.end(); ++it) {
       Editor* editor = *it;
 
-      if (!editor->getSprite()) {
+      if (!editor->getDocument()) {
 	best = editor;
 	break;
       }
@@ -249,7 +247,7 @@ void set_sprite_in_more_reliable_editor(Sprite* sprite)
   }
 
   set_current_editor(best);
-  set_sprite_in_current_editor(sprite);
+  set_document_in_current_editor(document);
 }
 
 void split_editor(Editor* editor, int align)
@@ -260,33 +258,32 @@ void split_editor(Editor* editor, int align)
   }
 
   View* view = View::getView(editor);
-  JWidget parent_box = view->getParent(); // box or panel
+  JWidget parent_box = view->getParent(); // Box or panel.
 
-  /* create a new box to contain both editors, and a new view to put
-     the new editor */
+  // Create a new box to contain both editors, and a new view to put the new editor.
   JWidget new_panel = jpanel_new(align);
   View* new_view = editor_view_new();
   Editor* new_editor = create_new_editor();
 
-  /* insert the "new_box" in the same location that the view */
+  // Insert the "new_box" in the same location that the view.
   jwidget_replace_child(parent_box, view, new_panel);
 
-  /* append the new editor */
+  // Append the new editor.
   new_view->attachToView(new_editor);
 
-  /* set the sprite for the new editor */
-  new_editor->editor_set_sprite(editor->getSprite());
+  // Set the sprite for the new editor.
+  new_editor->setDocument(editor->getDocument());
   new_editor->editor_set_zoom(editor->editor_get_zoom());
 
-  /* expansive widgets */
+  // Expansive widgets.
   jwidget_expansive(new_panel, true);
   jwidget_expansive(new_view, true);
 
-  /* append both views to the "new_panel" */
+  // Append both views to the "new_panel".
   jwidget_add_child(new_panel, view);
   jwidget_add_child(new_panel, new_view);
 
-  /* same position */
+  // Same position.
   {
     new_view->setViewScroll(view->getViewScroll());
 
@@ -298,10 +295,10 @@ void split_editor(Editor* editor, int align)
     new_editor->editor_set_offset_y(editor->editor_get_offset_y());
   }
 
-  /* fixup window */
+  // Fixup window.
   FIXUP_TOP_WINDOW();
 
-  /* update both editors */
+  // Update both editors.
   editor->editor_update();
   new_editor->editor_update();
 }
@@ -312,26 +309,26 @@ void close_editor(Editor* editor)
   JWidget parent_box = view->getParent(); // Box or panel
   JWidget other_widget;
 
-  /* you can't remove all editors */
+  // You can't remove all editors.
   if (editors.size() == 1)
     return;
 
-  /* deselect the editor */
+  // Deselect the editor.
   if (editor == current_editor)
     current_editor = 0;
 
-  /* remove this editor */
+  // Remove this editor.
   jwidget_remove_child(parent_box, view);
   jwidget_free(view);
 
-  /* fixup the parent */
+  // Fixup the parent.
   other_widget = reinterpret_cast<JWidget>(jlist_first_data(parent_box->children));
 
   jwidget_remove_child(parent_box, other_widget);
   jwidget_replace_child(parent_box->getParent(), parent_box, other_widget);
   jwidget_free(parent_box);
 
-  /* find next editor to select */
+  // Find next editor to select.
   if (!current_editor) {
     JWidget next_editor = find_next_editor(other_widget);
     if (next_editor) {
@@ -341,10 +338,10 @@ void close_editor(Editor* editor)
     }
   }
 
-  /* fixup window */
+  // Fixup window.
   FIXUP_TOP_WINDOW();
 
-  /* update all editors */
+  // Update all editors.
   for (EditorList::iterator it = editors.begin(); it != editors.end(); ++it) {
     Editor* editor = *it;
     editor->editor_update();
@@ -357,14 +354,14 @@ void make_unique_editor(Editor* editor)
   JLink link, next;
   JWidget child;
 
-  /* it's the unique editor */
+  // It's the unique editor.
   if (editors.size() == 1)
     return;
 
-  /* remove the editor-view of its parent */
+  // Remove the editor-view of its parent.
   jwidget_remove_child(view->getParent(), view);
 
-  /* remove all children of main_editor_box */
+  // Remove all children of main_editor_box.
   JI_LIST_FOR_EACH_SAFE(box_editors->children, link, next) {
     child = (JWidget)link->data;
 
@@ -372,44 +369,41 @@ void make_unique_editor(Editor* editor)
     delete child; // widget
   }
 
-  /* append the editor to main box */
+  // Append the editor to main box.
   jwidget_add_child(box_editors, view);
 
-  /* new current editor */
+  // New current editor.
   set_current_editor(editor);
 
-  /* fixup window */
+  // Fixup window.
   FIXUP_TOP_WINDOW();
 
-  /* update new editor */
+  // Update new editor.
   editor->editor_update();
 }
 
-static int is_sprite_in_some_editor(Sprite* sprite)
+static int is_document_in_some_editor(Document* document)
 {
   for (EditorList::iterator it = editors.begin(); it != editors.end(); ++it) {
     Editor* editor = *it;
 
-    if (sprite == editor->getSprite())
+    if (document == editor->getDocument())
       return true;
   }
   return false;
 }
 
-/**
- * Returns the next sprite that should be show if we close the current
- * one.
- */
-static Sprite* get_more_reliable_sprite()
+// Returns the next sprite that should be show if we close the current one.
+static Document* get_more_reliable_document()
 {
   UIContext* context = UIContext::instance();
   const Documents& docs = context->getDocuments();
 
   for (Documents::const_iterator
 	 it = docs.begin(), end = docs.end(); it != end; ++it) {
-    Sprite* sprite = *it;
-    if (!(is_sprite_in_some_editor(sprite)))
-      return sprite;
+    Document* document = *it;
+    if (!(is_document_in_some_editor(document)))
+      return document;
   }
 
   return NULL;

@@ -26,7 +26,7 @@
 #include "raster/mask.h"
 #include "raster/sprite.h"
 #include "raster/undo_history.h"
-#include "sprite_wrappers.h"
+#include "document_wrappers.h"
 #include "util/msk_file.h"
 
 class LoadMaskCommand : public Command
@@ -59,13 +59,16 @@ void LoadMaskCommand::onLoadParams(Params* params)
 
 bool LoadMaskCommand::onEnabled(Context* context)
 {
-  const CurrentSpriteReader sprite(context);
+  const ActiveDocumentReader document(context);
+  const Sprite* sprite(document ? document->getSprite(): 0);
   return sprite != NULL;
 }
 
 void LoadMaskCommand::onExecute(Context* context)
 {
-  CurrentSpriteWriter sprite(context);
+  ActiveDocumentWriter document(context);
+  Sprite* sprite(document->getSprite());
+  UndoHistory* undo(document->getUndoHistory());
 
   base::string filename = m_filename;
 
@@ -82,17 +85,17 @@ void LoadMaskCommand::onExecute(Context* context)
     throw base::Exception("Error loading .msk file: %s",
 			  static_cast<const char*>(m_filename.c_str()));
 
-  // undo
-  if (sprite->getUndo()->isEnabled()) {
-    sprite->getUndo()->setLabel("Mask Load");
-    sprite->getUndo()->undo_set_mask(sprite);
+  // Add the mask change into the undo history.
+  if (undo->isEnabled()) {
+    undo->setLabel("Mask Load");
+    undo->undo_set_mask(sprite);
   }
 
   sprite->setMask(mask);
   mask_free(mask);
 
-  sprite->generateMaskBoundaries();
-  update_screen_for_sprite(sprite);
+  document->generateMaskBoundaries();
+  update_screen_for_document(document);
 }
 
 //////////////////////////////////////////////////////////////////////

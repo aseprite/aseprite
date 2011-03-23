@@ -40,7 +40,7 @@
 #include "raster/sprite.h"
 #include "raster/undo_history.h"
 #include "skin/skin_theme.h"
-#include "sprite_wrappers.h"
+#include "document_wrappers.h"
 #include "tools/tool.h"
 #include "ui_context.h"
 #include "util/misc.h"
@@ -503,7 +503,8 @@ bool StatusBar::onProcessMessage(JMessage msg)
 	try {
 	  --rc->y2;
 
-	  const CurrentSpriteReader sprite(UIContext::instance());
+	  const ActiveDocumentReader document(UIContext::instance());
+	  const Sprite* sprite(document ? document->getSprite(): NULL);
 	  if (sprite) {
 	    const LayerFolder* folder = sprite->getFolder();
 	    LayerConstIterator it = folder->get_layer_begin();
@@ -560,7 +561,7 @@ bool StatusBar::onProcessMessage(JMessage msg)
 				    theme->get_button_normal_text_color(), -1);
 	  }
 	}
-	catch (LockedSpriteException&) {
+	catch (LockedDocumentException&) {
 	  // Do nothing...
 	}
       }
@@ -577,7 +578,7 @@ bool StatusBar::onProcessMessage(JMessage msg)
     }
 
     case JM_MOUSEENTER: {
-      bool state = (UIContext::instance()->getCurrentSprite() != NULL);
+      bool state = (UIContext::instance()->getActiveDocument() != NULL);
 
       if (!this->hasChild(m_movePixelsBox)) {
 	if (!this->hasChild(m_commandsBox) && state) {
@@ -617,7 +618,8 @@ bool StatusBar::onProcessMessage(JMessage msg)
 
 	int hot_layer = -1;
 
-	const CurrentSpriteReader sprite(UIContext::instance());
+	const ActiveDocumentReader document(UIContext::instance());
+	const Sprite* sprite(document ? document->getSprite(): NULL);
 	// Check which sprite's layer has the mouse over
 	if (sprite) {
 	  const LayerFolder* folder = sprite->getFolder();
@@ -654,7 +656,7 @@ bool StatusBar::onProcessMessage(JMessage msg)
 	  invalidate();
 	}
       }
-      catch (LockedSpriteException&) {
+      catch (LockedDocumentException&) {
 	// Do nothing...
       }
 
@@ -666,7 +668,8 @@ bool StatusBar::onProcessMessage(JMessage msg)
       // When the user press the mouse-button over a hot-layer-button...
       if (m_hot_layer >= 0) {
 	try {
-	  CurrentSpriteWriter sprite(UIContext::instance());
+	  ActiveDocumentWriter document(UIContext::instance());
+	  Sprite* sprite(document ? document->getSprite(): NULL);
 	  if (sprite) {
 	    Layer* layer = sprite->indexToLayer(m_hot_layer);
 	    if (layer) {
@@ -691,7 +694,7 @@ bool StatusBar::onProcessMessage(JMessage msg)
 	    UIContext::instance()->executeCommand(donate, &params);
 	  }
 	}
-	catch (LockedSpriteException&) {
+	catch (LockedDocumentException&) {
 	  // Do nothing...
 	}
       }
@@ -740,7 +743,8 @@ static bool tipwindow_msg_proc(JWidget widget, JMessage msg)
 static void slider_change_hook(Slider* slider)
 {
   try {
-    CurrentSpriteWriter sprite(UIContext::instance());
+    ActiveDocumentWriter document(UIContext::instance());
+    Sprite* sprite(document ? document->getSprite(): NULL);
     if (sprite) {
       if ((sprite->getCurrentLayer()) &&
 	  (sprite->getCurrentLayer()->is_image())) {
@@ -750,12 +754,12 @@ static void slider_change_hook(Slider* slider)
 	  cel->opacity = slider->getValue();
 
 	  // Update the editors
-	  update_screen_for_sprite(sprite);
+	  update_screen_for_document(document);
 	}
       }
     }
   }
-  catch (LockedSpriteException&) {
+  catch (LockedDocumentException&) {
     // do nothing
   }
 }
@@ -780,7 +784,8 @@ static void ani_button_command(Button* widget, AniAction action)
 void StatusBar::updateFromLayer()
 {
   try {
-    const CurrentSpriteReader sprite(UIContext::instance());
+    const ActiveDocumentReader document(UIContext::instance());
+    const Sprite* sprite(document ? document->getSprite(): NULL);
     Cel *cel;
 
     // Opacity layer
@@ -797,7 +802,7 @@ void StatusBar::updateFromLayer()
       m_slider->setEnabled(false);
     }
   }
-  catch (LockedSpriteException&) {
+  catch (LockedDocumentException&) {
     // Disable all
     m_slider->setEnabled(false);
   }

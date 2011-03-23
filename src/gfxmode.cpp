@@ -28,7 +28,7 @@
 #include "console.h"
 #include "modules/gui.h"
 #include "modules/palettes.h"
-#include "sprite_wrappers.h"
+#include "document_wrappers.h"
 #include "ui_context.h"
 
 //////////////////////////////////////////////////////////////////////
@@ -71,8 +71,8 @@ bool GfxMode::setGfxMode() const
 
   // Restore palette all screen stuff
   {
-    const CurrentSpriteReader sprite(UIContext::instance());
-    app_refresh_screen(sprite);
+    const ActiveDocumentReader document(UIContext::instance());
+    app_refresh_screen(document);
   }
 
   // Redraw top window

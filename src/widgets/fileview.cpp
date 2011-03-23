@@ -18,14 +18,14 @@
 
 #include "config.h"
 
-#include <algorithm>
-#include <allegro.h>
+#include "widgets/fileview.h"
 
 #include "app.h"
 #include "base/thread.h"
 #include "commands/commands.h"
 #include "console.h"
 #include "dialogs/filesel.h"
+#include "document.h"
 #include "file/file.h"
 #include "gui/gui.h"
 #include "modules/editors.h"
@@ -36,8 +36,10 @@
 #include "raster/palette.h"
 #include "raster/rotate.h"
 #include "raster/sprite.h"
-#include "widgets/fileview.h"
 #include "widgets/statebar.h"
+
+#include <algorithm>
+#include <allegro.h>
 
 #define MAX_THUMBNAIL_SIZE		128
 #define ISEARCH_KEYPRESS_INTERVAL_MSECS	500
@@ -693,9 +695,9 @@ static bool fileview_generate_thumbnail(JWidget widget, IFileItem* fileitem)
     return false;
 
   FileOp* fop =
-    fop_to_load_sprite(fileitem->getFileName().c_str(),
-		       FILE_LOAD_SEQUENCE_NONE |
-		       FILE_LOAD_ONE_FRAME);
+    fop_to_load_document(fileitem->getFileName().c_str(),
+			 FILE_LOAD_SEQUENCE_NONE |
+			 FILE_LOAD_ONE_FRAME);
   if (!fop)
     return true;
 
@@ -746,54 +748,48 @@ static void fileview_stop_threads(FileView* fileview)
   fileview->monitors.clear();
 }
 
-/**
- * Thread to do the hard work: load the file from the disk (in
- * background).
- *
- * [loading thread]
- */
+// Thread to do the hard work: load the file from the disk (in
+// background).
+//
+// [loading thread]
 static void openfile_bg(ThumbnailData* data)
 {
-  FileOp *fop = (FileOp*)data->fop;
-  Sprite *sprite;
+  FileOp* fop = (FileOp*)data->fop;
   int thumb_w, thumb_h;
-  Image *image;
+  Image* image;
 
-  /* load the file */
+  // Load the file.
   fop_operate(fop);
 
-  sprite = fop->sprite;
-  if (sprite) {
-    if (fop_is_stop(fop))
-      delete fop->sprite;
-    else {
-      // The palette to convert the Image to a BITMAP
-      data->palette = new Palette(*sprite->getPalette(0));
+  Sprite* sprite = (fop->document && fop->document->getSprite()) ? fop->document->getSprite():
+								   NULL;
+  if (!fop_is_stop(fop) && sprite) {
+    // The palette to convert the Image to a BITMAP
+    data->palette = new Palette(*sprite->getPalette(0));
 
-      // Render the 'sprite' in one plain 'image'
-      image = image_new(sprite->getImgType(), sprite->getWidth(), sprite->getHeight());
-      image_clear(image, 0);
-      sprite->render(image, 0, 0);
-      delete sprite;
+    // Render the 'sprite' in one plain 'image'
+    image = image_new(sprite->getImgType(), sprite->getWidth(), sprite->getHeight());
+    image_clear(image, 0);
+    sprite->render(image, 0, 0);
 
-      // Calculate the thumbnail size
-      thumb_w = MAX_THUMBNAIL_SIZE * image->w / MAX(image->w, image->h);
-      thumb_h = MAX_THUMBNAIL_SIZE * image->h / MAX(image->w, image->h);
-      if (MAX(thumb_w, thumb_h) > MAX(image->w, image->h)) {
-	thumb_w = image->w;
-	thumb_h = image->h;
-      }
-      thumb_w = MID(1, thumb_w, MAX_THUMBNAIL_SIZE);
-      thumb_h = MID(1, thumb_h, MAX_THUMBNAIL_SIZE);
-
-      // Stretch the 'image'
-      data->thumbnail = image_new(image->imgtype, thumb_w, thumb_h);
-      image_clear(data->thumbnail, 0);
-      image_scale(data->thumbnail, image, 0, 0, thumb_w, thumb_h);
-      image_free(image);
+    // Calculate the thumbnail size
+    thumb_w = MAX_THUMBNAIL_SIZE * image->w / MAX(image->w, image->h);
+    thumb_h = MAX_THUMBNAIL_SIZE * image->h / MAX(image->w, image->h);
+    if (MAX(thumb_w, thumb_h) > MAX(image->w, image->h)) {
+      thumb_w = image->w;
+      thumb_h = image->h;
     }
+    thumb_w = MID(1, thumb_w, MAX_THUMBNAIL_SIZE);
+    thumb_h = MID(1, thumb_h, MAX_THUMBNAIL_SIZE);
+
+    // Stretch the 'image'
+    data->thumbnail = image_new(image->imgtype, thumb_w, thumb_h);
+    image_clear(data->thumbnail, 0);
+    image_scale(data->thumbnail, image, 0, 0, thumb_w, thumb_h);
+    image_free(image);
   }
 
+  delete fop->document;
   fop_done(fop);
 }
 

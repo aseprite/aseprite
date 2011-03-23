@@ -23,8 +23,9 @@
 #include "commands/command.h"
 #include "modules/gui.h"
 #include "raster/layer.h"
+#include "raster/sprite.h"
 #include "undoable.h"
-#include "sprite_wrappers.h"
+#include "document_wrappers.h"
 
 //////////////////////////////////////////////////////////////////////
 // layer_from_background
@@ -49,7 +50,8 @@ LayerFromBackgroundCommand::LayerFromBackgroundCommand()
 
 bool LayerFromBackgroundCommand::onEnabled(Context* context)
 {
-  const CurrentSpriteReader sprite(context);
+  const ActiveDocumentReader document(context);
+  const Sprite* sprite(document ? document->getSprite(): 0);
   return
     sprite &&
     sprite->getCurrentLayer() &&
@@ -61,13 +63,13 @@ bool LayerFromBackgroundCommand::onEnabled(Context* context)
 
 void LayerFromBackgroundCommand::onExecute(Context* context)
 {
-  CurrentSpriteWriter sprite(context);
+  ActiveDocumentWriter document(context);
   {
-    Undoable undoable(sprite, "Layer from Background");
+    Undoable undoable(document, "Layer from Background");
     undoable.layerFromBackground();
     undoable.commit();
   }
-  update_screen_for_sprite(sprite);
+  update_screen_for_document(document);
 }
 
 //////////////////////////////////////////////////////////////////////

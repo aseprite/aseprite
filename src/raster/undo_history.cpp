@@ -1719,17 +1719,13 @@ static void chunk_set_imgtype_new(UndoStream* stream, Sprite* sprite)
   chunk->imgtype = sprite->getImgType();
 }
 
-static void chunk_set_imgtype_invert(UndoStream* stream, UndoChunkSetImgType *chunk)
+static void chunk_set_imgtype_invert(UndoStream* stream, UndoChunkSetImgType* chunk)
 {
-  Sprite *sprite = (Sprite *)GfxObj::find(chunk->sprite_id);
+  Sprite* sprite = (Sprite*)GfxObj::find(chunk->sprite_id);
 
   if (sprite) {
     chunk_set_imgtype_new(stream, sprite);
     sprite->setImgType(chunk->imgtype);
-
-    // Regenerate extras
-    sprite->destroyExtraCel();
-
   }
 }
 

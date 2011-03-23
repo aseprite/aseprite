@@ -20,12 +20,12 @@
 
 #include "config.h"
 
-#include <allegro/color.h>
-
 #include "file/file.h"
 #include "file/file_format.h"
 #include "file/format_options.h"
 #include "raster/raster.h"
+
+#include <allegro/color.h>
 
 class BmpFormat : public FileFormat
 {
@@ -42,12 +42,12 @@ class BmpFormat : public FileFormat
   class BmpOptions : public FormatOptions
   {
   public:
-    int format;			/* BMP format */
-    int compression;		/* BMP compression */
-    int bits_per_pixel;		/* bits per pixel */
-    ase_uint32 red_mask;	/* mask for red channel */
-    ase_uint32 green_mask;	/* mask for green channel */
-    ase_uint32 blue_mask;	/* mask for blue channel */
+    int format;			// bmp format.
+    int compression;		// bmp compression.
+    int bits_per_pixel;		// Bits per pixel.
+    ase_uint32 red_mask;	// Mask for red channel.
+    ase_uint32 green_mask;	// Mask for green channel.
+    ase_uint32 blue_mask;	// Mask for blue channel.
   };
 
   const char* onGetName() const { return "bmp"; }
@@ -88,9 +88,8 @@ typedef struct BITMAPFILEHEADER
   ase_uint32 bfOffBits;
 } BITMAPFILEHEADER;
 
-/* Used for both OS/2 and Windows BMP. 
- * Contains only the parameters needed to load the image 
- */
+// Used for both OS/2 and Windows BMP. 
+// Contains only the parameters needed to load the image.
 typedef struct BITMAPINFOHEADER
 {
   ase_uint32 biWidth;
@@ -99,7 +98,7 @@ typedef struct BITMAPINFOHEADER
   ase_uint32 biCompression;
 } BITMAPINFOHEADER;
 
-typedef struct WINBMPINFOHEADER  /* size: 40 */
+typedef struct WINBMPINFOHEADER  // Size: 40.
 {
   ase_uint32 biWidth;
   ase_uint32 biHeight;
@@ -113,7 +112,7 @@ typedef struct WINBMPINFOHEADER  /* size: 40 */
   ase_uint32 biClrImportant;
 } WINBMPINFOHEADER;
 
-typedef struct OS2BMPINFOHEADER  /* size: 12 */
+typedef struct OS2BMPINFOHEADER  // Size: 12.
 {
   ase_uint16 biWidth;
   ase_uint16 biHeight;
@@ -707,9 +706,9 @@ bool BmpFormat::onLoad(FileOp *fop)
     return false;
   }
 
-  /* setup the file-data */
+  // Setup the file-data.
   if (fop->seq.format_options == NULL) {
-    BmpOptions* bmp_options = new BmpOptions();
+    SharedPtr<BmpOptions> bmp_options(new BmpOptions());
 
     bmp_options->format = format;
     bmp_options->compression = infoheader.biCompression;

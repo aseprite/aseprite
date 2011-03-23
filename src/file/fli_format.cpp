@@ -18,14 +18,16 @@
 
 #include "config.h"
 
-#include <allegro/color.h>
-#include <stdio.h>
-
+#include "document.h"
 #include "file/file.h"
 #include "file/file_format.h"
 #include "file/fli/fli.h"
+#include "file/format_options.h"
 #include "modules/palettes.h"
 #include "raster/raster.h"
+
+#include <allegro/color.h>
+#include <stdio.h>
 
 static int get_time_precision(Sprite *sprite);
 
@@ -211,13 +213,13 @@ bool FliFormat::onLoad(FileOp* fop)
   image_free(old);
   delete pal;
 
-  fop->sprite = sprite;
+  fop->document = new Document(sprite);
   return true;
 }
 
 bool FliFormat::onSave(FileOp* fop)
 {
-  Sprite *sprite = fop->sprite;
+  Sprite* sprite = fop->document->getSprite();
   unsigned char cmap[768];
   unsigned char omap[768];
   s_fli_header fli_header;

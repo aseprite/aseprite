@@ -32,7 +32,7 @@
 #include "modules/gui.h"
 #include "raster/mask.h"
 #include "raster/sprite.h"
-#include "sprite_wrappers.h"
+#include "document_wrappers.h"
 #include "widgets/color_button.h"
 
 static ColorCurve* the_curve = NULL;
@@ -107,7 +107,8 @@ ColorCurveCommand::ColorCurveCommand()
 
 bool ColorCurveCommand::onEnabled(Context* context)
 {
-  const CurrentSpriteReader sprite(context);
+  const ActiveDocumentReader document(context);
+  const Sprite* sprite(document ? document->getSprite(): 0);
   return sprite != NULL;
 }
 
@@ -127,7 +128,7 @@ void ColorCurveCommand::onExecute(Context* context)
   ColorCurveFilter filter;
   filter.setCurve(the_curve);
 
-  FilterManagerImpl filterMgr(context->getCurrentSprite(), &filter);
+  FilterManagerImpl filterMgr(context->getActiveDocument(), &filter);
   filterMgr.setTarget(TARGET_RED_CHANNEL |
 		      TARGET_GREEN_CHANNEL |
 		      TARGET_BLUE_CHANNEL |

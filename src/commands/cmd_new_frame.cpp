@@ -31,7 +31,7 @@
 #include "raster/sprite.h"
 #include "undoable.h"
 #include "widgets/statebar.h"
-#include "sprite_wrappers.h"
+#include "document_wrappers.h"
 
 #include <stdexcept>
 
@@ -58,7 +58,8 @@ NewFrameCommand::NewFrameCommand()
 
 bool NewFrameCommand::onEnabled(Context* context)
 {
-  const CurrentSpriteReader sprite(context);
+  const ActiveDocumentReader document(context);
+  const Sprite* sprite(document ? document->getSprite(): NULL);
   return
     sprite != NULL &&
     sprite->getCurrentLayer() != NULL &&
@@ -69,13 +70,14 @@ bool NewFrameCommand::onEnabled(Context* context)
 
 void NewFrameCommand::onExecute(Context* context)
 {
-  CurrentSpriteWriter sprite(context);
+  ActiveDocumentWriter document(context);
+  Sprite* sprite(document->getSprite());
   {
-    Undoable undoable(sprite, "New Frame");
+    Undoable undoable(document, "New Frame");
     undoable.newFrame();
     undoable.commit();
   }
-  update_screen_for_sprite(sprite);
+  update_screen_for_document(document);
   app_get_statusbar()
     ->showTip(1000, "New frame %d/%d",
 	      sprite->getCurrentFrame()+1,

@@ -24,7 +24,7 @@
 #include "raster/layer.h"
 #include "raster/sprite.h"
 #include "undoable.h"
-#include "sprite_wrappers.h"
+#include "document_wrappers.h"
 
 //////////////////////////////////////////////////////////////////////
 // remove_cel
@@ -49,7 +49,8 @@ RemoveCelCommand::RemoveCelCommand()
 
 bool RemoveCelCommand::onEnabled(Context* context)
 {
-  const CurrentSpriteReader sprite(context);
+  const ActiveDocumentReader document(context);
+  const Sprite* sprite(document ? document->getSprite(): NULL);
   return
     sprite &&
     sprite->getCurrentLayer() &&
@@ -61,14 +62,15 @@ bool RemoveCelCommand::onEnabled(Context* context)
 
 void RemoveCelCommand::onExecute(Context* context)
 {
-  CurrentSpriteWriter sprite(context);
+  ActiveDocumentWriter document(context);
+  Sprite* sprite(document->getSprite());
   Cel* cel = static_cast<LayerImage*>(sprite->getCurrentLayer())->getCel(sprite->getCurrentFrame());
   {
-    Undoable undoable(sprite, "Remove Cel");
+    Undoable undoable(document, "Remove Cel");
     undoable.removeCel(static_cast<LayerImage*>(sprite->getCurrentLayer()), cel);
     undoable.commit();
   }
-  update_screen_for_sprite(sprite);
+  update_screen_for_document(document);
 }
 
 //////////////////////////////////////////////////////////////////////

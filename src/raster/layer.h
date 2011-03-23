@@ -42,8 +42,6 @@ class Layer : public GfxObj
 {
 protected:
   Layer(GfxObjType type, Sprite* sprite);
-  Layer(Sprite* sprite);
-  Layer(const Layer* src_layer, Sprite* dst_sprite);
 
 public:
   virtual ~Layer();
@@ -72,7 +70,6 @@ public:
   void set_writable(bool b) { if (b) m_flags |= LAYER_IS_WRITABLE; else m_flags &= ~LAYER_IS_WRITABLE; }
 
   virtual void getCels(CelList& cels) = 0;
-  virtual Layer* duplicate_for(Sprite* sprite) const = 0;
 
   // TODO remove these methods (from C backward-compatibility)
   unsigned short* flags_addr() { return &m_flags; }
@@ -82,6 +79,9 @@ private:
   Sprite* m_sprite;		// owner of the layer
   LayerFolder* m_parent;	// parent layer
   unsigned short m_flags;
+
+  // Disable assigment
+  Layer& operator=(const Layer& other);
 };
 
 //////////////////////////////////////////////////////////////////////
@@ -90,8 +90,8 @@ private:
 class LayerImage : public Layer
 {
 public:
-  LayerImage(Sprite* sprite);
-  LayerImage(const LayerImage* copy, Sprite* sprite);
+  explicit LayerImage(Sprite* sprite);
+  LayerImage(const LayerImage* src_layer, Sprite* dst_sprite);
   virtual ~LayerImage();
 
   int getMemSize() const;
@@ -113,8 +113,6 @@ public:
   CelConstIterator getCelEnd() const { return m_cels.end(); }
   int getCelsCount() const { return m_cels.size(); }
 
-  LayerImage* duplicate_for(Sprite* sprite) const { return new LayerImage(this, sprite); }
-
 private:
   void destroy_all_cels();
 
@@ -127,8 +125,7 @@ private:
 class LayerFolder : public Layer
 {
 public:
-  LayerFolder(Sprite* sprite);
-  LayerFolder(const LayerFolder* copy, Sprite* sprite);
+  explicit LayerFolder(Sprite* sprite);
   virtual ~LayerFolder();
 
   int getMemSize() const;
@@ -145,8 +142,6 @@ public:
   void move_layer(Layer* layer, Layer* after);
 
   void getCels(CelList& cels);
-
-  LayerFolder* duplicate_for(Sprite* sprite) const { return new LayerFolder(this, sprite); }
 
 private:
   void destroyAllLayers();

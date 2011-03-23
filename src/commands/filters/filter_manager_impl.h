@@ -25,7 +25,7 @@
 #include "base/exception.h"
 #include "filters/filter_indexed_data.h"
 #include "filters/filter_manager.h"
-#include "sprite_wrappers.h"
+#include "document_wrappers.h"
 
 class Filter;
 class Image;
@@ -65,12 +65,12 @@ public:
     virtual bool isCancelled() = 0;
   };
 
-  FilterManagerImpl(Sprite* sprite, Filter* filter);
+  FilterManagerImpl(Document* document, Filter* filter);
   ~FilterManagerImpl();
 
   void setProgressDelegate(IProgressDelegate* progressDelegate);
 
-  int getImgType() const { return m_sprite->getImgType(); };
+  int getImgType() const;
 
   void setTarget(Target target);
 
@@ -80,6 +80,7 @@ public:
   void apply();
   void applyToTarget();
 
+  Document* getDocument() const { return m_document; }
   Sprite* getSprite() const { return m_sprite; }
   Image* getDestinationImage() const { return m_dst; }
 
@@ -106,6 +107,7 @@ private:
   void applyToImage(Layer* layer, Image* image, int x, int y);
   bool updateMask(Mask* mask, const Image* image);
 
+  Document* m_document;
   Sprite* m_sprite;
   Filter* m_filter;
   Image* m_src;

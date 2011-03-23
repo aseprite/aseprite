@@ -16,12 +16,13 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
+#include "tools/ink_processing.h"
+
 #include "app.h"		// TODO avoid to include this file
 #include "app/color_utils.h"
-#include "raster/undo_history.h"
-
-#include "tools/ink_processing.h"
 #include "context.h"
+#include "document.h"
+#include "raster/undo_history.h"
 
 
 // Ink used for tools which paint with primary/secondary
@@ -258,8 +259,8 @@ public:
     m_modify_selection = state;
 
     if (state) {
-      if (loop->getSprite()->getUndo()->isEnabled())
-	loop->getSprite()->getUndo()->undo_set_mask(loop->getSprite());
+      if (loop->getDocument()->getUndoHistory()->isEnabled())
+	loop->getDocument()->getUndoHistory()->undo_set_mask(loop->getSprite());
 
       loop->getMask()->freeze();
       loop->getMask()->reserve(0, 0, loop->getSprite()->getWidth(), loop->getSprite()->getHeight());

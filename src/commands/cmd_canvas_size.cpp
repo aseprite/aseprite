@@ -27,7 +27,7 @@
 #include "raster/image.h"
 #include "raster/mask.h"
 #include "raster/sprite.h"
-#include "sprite_wrappers.h"
+#include "document_wrappers.h"
 #include "undoable.h"
 #include "widgets/color_bar.h"
 #include "app/color_utils.h"
@@ -55,13 +55,15 @@ CanvasSizeCommand::CanvasSizeCommand()
 
 bool CanvasSizeCommand::onEnabled(Context* context)
 {
-  const CurrentSpriteReader sprite(context);
+  const ActiveDocumentReader document(context);
+  const Sprite* sprite(document ? document->getSprite(): 0);
   return sprite != NULL;
 }
 
 void CanvasSizeCommand::onExecute(Context* context)
 {
-  CurrentSpriteWriter sprite(context);
+  ActiveDocumentWriter document(context);
+  Sprite* sprite(document->getSprite());
 
   if (context->isUiAvailable()) {
     JWidget left, top, right, bottom, ok;
@@ -108,15 +110,15 @@ void CanvasSizeCommand::onExecute(Context* context)
   if (y2 <= y1) y2 = y1+1;
 
   {
-    Undoable undoable(sprite, "Canvas Size");
+    Undoable undoable(document, "Canvas Size");
     int bgcolor = color_utils::color_for_image(context->getSettings()->getBgColor(), sprite->getImgType());
     bgcolor = color_utils::fixup_color_for_background(sprite->getImgType(), bgcolor);
 
     undoable.cropSprite(x1, y1, x2-x1, y2-y1, bgcolor);
     undoable.commit();
   }
-  sprite->generateMaskBoundaries();
-  update_screen_for_sprite(sprite);
+  document->generateMaskBoundaries();
+  update_screen_for_document(document);
 }
 
 //////////////////////////////////////////////////////////////////////

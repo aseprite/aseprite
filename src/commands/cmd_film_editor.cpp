@@ -22,7 +22,7 @@
 
 #include "commands/command.h"
 #include "dialogs/aniedit.h"
-#include "sprite_wrappers.h"
+#include "document_wrappers.h"
 
 //////////////////////////////////////////////////////////////////////
 // film_editor
@@ -47,7 +47,8 @@ FilmEditorCommand::FilmEditorCommand()
 
 bool FilmEditorCommand::onEnabled(Context* context)
 {
-  const CurrentSpriteReader sprite(context);
+  const ActiveDocumentReader document(context);
+  const Sprite* sprite(document ? document->getSprite(): 0);
   return sprite != NULL;
 }
 

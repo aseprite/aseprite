@@ -23,7 +23,7 @@
 #include "raster/mask.h"
 #include "raster/sprite.h"
 #include "raster/undo_history.h"
-#include "sprite_wrappers.h"
+#include "document_wrappers.h"
 
 //////////////////////////////////////////////////////////////////////
 // reselect_mask
@@ -48,7 +48,8 @@ ReselectMaskCommand::ReselectMaskCommand()
 
 bool ReselectMaskCommand::onEnabled(Context* context)
 {
-  const CurrentSpriteReader sprite(context);
+  const ActiveDocumentReader document(context);
+  const Sprite* sprite(document ? document->getSprite(): 0);
   return
     sprite != NULL &&
     sprite->requestMask("*deselected*") != NULL;
@@ -56,27 +57,28 @@ bool ReselectMaskCommand::onEnabled(Context* context)
 
 void ReselectMaskCommand::onExecute(Context* context)
 {
-  CurrentSpriteWriter sprite(context);
-  Mask *mask;
+  ActiveDocumentWriter document(context);
+  Sprite* sprite(document->getSprite());
+  UndoHistory* undo = document->getUndoHistory();
 
   // Request *deselected* mask
-  mask = sprite->requestMask("*deselected*");
+  Mask* mask = sprite->requestMask("*deselected*");
 
-  /* undo */
-  if (sprite->getUndo()->isEnabled()) {
-    sprite->getUndo()->setLabel("Mask Reselection");
-    sprite->getUndo()->undo_set_mask(sprite);
+  // Undo
+  if (undo->isEnabled()) {
+    undo->setLabel("Mask Reselection");
+    undo->undo_set_mask(sprite);
   }
 
-  /* set the mask */
+  // Set the mask.
   sprite->setMask(mask);
 
-  /* remove the *deselected* mask */
+  // Remove the *deselected* mask.
   sprite->removeMask(mask);
   mask_free(mask);
 
-  sprite->generateMaskBoundaries();
-  update_screen_for_sprite(sprite);
+  document->generateMaskBoundaries();
+  update_screen_for_document(document);
 }
 
 //////////////////////////////////////////////////////////////////////

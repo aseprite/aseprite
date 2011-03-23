@@ -27,7 +27,7 @@
 #include "raster/image.h"
 #include "raster/layer.h"
 #include "raster/sprite.h"
-#include "sprite_wrappers.h"
+#include "document_wrappers.h"
 
 //////////////////////////////////////////////////////////////////////
 // layer_properties
@@ -52,7 +52,8 @@ LayerPropertiesCommand::LayerPropertiesCommand()
 
 bool LayerPropertiesCommand::onEnabled(Context* context)
 {
-  const CurrentSpriteReader sprite(context);
+  const ActiveDocumentReader document(context);
+  const Sprite* sprite(document ? document->getSprite(): 0);
   return
     sprite != NULL &&
     sprite->getCurrentLayer() != NULL;
@@ -60,7 +61,8 @@ bool LayerPropertiesCommand::onEnabled(Context* context)
 
 void LayerPropertiesCommand::onExecute(Context* context)
 {
-  CurrentSpriteWriter sprite(context);
+  ActiveDocumentWriter document(context);
+  Sprite* sprite(document->getSprite());
   Layer* layer = sprite->getCurrentLayer();
 
   FramePtr window(new Frame(false, "Layer Properties"));
@@ -94,7 +96,7 @@ void LayerPropertiesCommand::onExecute(Context* context)
   if (window->get_killer() == button_ok) {
     layer->setName(entry_name->getText());
 
-    update_screen_for_sprite(sprite);
+    update_screen_for_document(document);
   }
 }
 

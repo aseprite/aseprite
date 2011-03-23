@@ -21,7 +21,7 @@
 #include "commands/command.h"
 #include "dialogs/aniedit.h"
 #include "gui/base.h"
-#include "sprite_wrappers.h"
+#include "document_wrappers.h"
 #include "util/celmove.h"
 
 class MoveCelCommand : public Command
@@ -49,8 +49,8 @@ bool MoveCelCommand::onEnabled(Context* context)
 
 void MoveCelCommand::onExecute(Context* context)
 {
-  CurrentSpriteWriter sprite(context);
-  move_cel(sprite);
+  ActiveDocumentWriter document(context);
+  move_cel(document);
 }
 
 //////////////////////////////////////////////////////////////////////

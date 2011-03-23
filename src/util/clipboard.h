@@ -22,17 +22,17 @@
 #include "gui/base.h"
 
 class Image;
-class SpriteReader;
-class SpriteWriter;
+class DocumentReader;
+class DocumentWriter;
 
 namespace clipboard {
 
   bool can_paste();
 
-  void cut(SpriteWriter& sprite);
-  void copy(const SpriteReader& sprite);
+  void cut(DocumentWriter& document);
+  void copy(const DocumentReader& document);
   void copy_image(Image* image, Palette* palette);
-  void paste(SpriteWriter& sprite);
+  void paste(DocumentWriter& document);
 
 } // namespace clipboard
 

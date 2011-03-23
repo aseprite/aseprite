@@ -289,10 +289,10 @@ void Editor::editor_draw_cursor(int x, int y, bool refresh)
     Pen* pen = editor_get_current_pen();
 
     // Create the extra cel to show the pen preview
-    m_sprite->prepareExtraCel(x-pen->get_size()/2,
-			      y-pen->get_size()/2,
-			      pen->get_size(), pen->get_size(),
-			      tool_settings->getOpacity());
+    m_document->prepareExtraCel(x-pen->get_size()/2,
+				y-pen->get_size()/2,
+				pen->get_size(), pen->get_size(),
+				tool_settings->getOpacity());
 
     // In 'indexed' images, if the current color is 0, we have to use
     // a different mask color (different from 0) to draw the extra layer
@@ -303,7 +303,7 @@ void Editor::editor_draw_cursor(int x, int y, bool refresh)
       new_mask_color = 0;
     }
 
-    Image* extraImage = m_sprite->getExtraCelImage();
+    Image* extraImage = m_document->getExtraCelImage();
     if (extraImage->mask_color != new_mask_color)
       image_clear(extraImage, extraImage->mask_color = new_mask_color);
     image_putpen(extraImage, pen, pen->get_size()/2, pen->get_size()/2, pen_color, extraImage->mask_color);
@@ -423,10 +423,10 @@ void Editor::editor_clean_cursor(bool refresh)
       m_state != EDITOR_STATE_DRAWING) {
     Pen* pen = editor_get_current_pen();
 
-    m_sprite->prepareExtraCel(x-pen->get_size()/2,
-			      y-pen->get_size()/2,
-			      pen->get_size(), pen->get_size(),
-			      0); // Opacity = 0
+    m_document->prepareExtraCel(x-pen->get_size()/2,
+				y-pen->get_size()/2,
+				pen->get_size(), pen->get_size(),
+				0); // Opacity = 0
 
     if (refresh) {
       editors_draw_sprite(m_sprite,

@@ -30,7 +30,7 @@
 #include "raster/image.h"
 #include "raster/palette.h"
 #include "raster/sprite.h"
-#include "sprite_wrappers.h"
+#include "document_wrappers.h"
 #include "widgets/color_button.h"
 
 //////////////////////////////////////////////////////////////////////
@@ -56,7 +56,8 @@ SpritePropertiesCommand::SpritePropertiesCommand()
 
 bool SpritePropertiesCommand::onEnabled(Context* context)
 {
-  const CurrentSpriteReader sprite(context);
+  const ActiveDocumentReader document(context);
+  const Sprite* sprite(document ? document->getSprite(): 0);
   return sprite != NULL;
 }
 
@@ -79,7 +80,8 @@ void SpritePropertiesCommand::onExecute(Context* context)
 
   // Get sprite properties and fill frame fields
   {
-    const CurrentSpriteReader sprite(context);
+    const ActiveDocumentReader document(context);
+    const Sprite* sprite(document ? document->getSprite(): NULL);
 
     // Update widgets values
     switch (sprite->getImgType()) {
@@ -100,7 +102,7 @@ void SpritePropertiesCommand::onExecute(Context* context)
     }
 
     // Filename
-    name->setText(sprite->getFilename());
+    name->setText(document->getFilename());
 
     // Color mode
     type->setText(imgtype_text.c_str());
@@ -136,7 +138,8 @@ void SpritePropertiesCommand::onExecute(Context* context)
 
   if (window->get_killer() == ok) {
     if (color_button) {
-      CurrentSpriteWriter sprite(context);
+      ActiveDocumentWriter document(context);
+      Sprite* sprite(document->getSprite());
 
       // If the transparent color index has changed, we update the
       // property in the sprite.
@@ -144,7 +147,7 @@ void SpritePropertiesCommand::onExecute(Context* context)
       if (index != sprite->getTransparentColor()) {
 	// TODO Add undo handling
 	sprite->setTransparentColor(color_button->getColor().getIndex());
-	update_screen_for_sprite(sprite);
+	update_screen_for_document(document);
       }
     }
   }

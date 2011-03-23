@@ -20,16 +20,17 @@
 #define DOCUMENTS_H_INCLUDED
 
 #include "base/disable_copying.h"
+#include "document_id.h"
 
 #include <vector>
 
-class Sprite;
+class Document;
 
 class Documents
 {
 public:
-  typedef std::vector<Sprite*>::iterator iterator;
-  typedef std::vector<Sprite*>::const_iterator const_iterator;
+  typedef std::vector<Document*>::iterator iterator;
+  typedef std::vector<Document*>::const_iterator const_iterator;
 
   Documents();
   ~Documents();
@@ -44,26 +45,28 @@ public:
 
   // Adds a new document to the list. If the destructor is called the
   // document is deleted automatically.
-  void addDocument(Sprite* sprite);
+  void addDocument(Document* document);
 
   // Removes a document from the list without deleting it. You must to
   // delete the document after removing it.
-  void removeDocument(Sprite* sprite);
+  void removeDocument(Document* document);
 
   // Moves the document to the given location in the same
   // list. E.g. It is used to reorder documents when they are selected
   // as active.
-  void moveDocument(Sprite* sprite, int index);
-
-  // Deletes all documents in the list (calling "delete" operation).
-  void deleteAll();
+  void moveDocument(Document* document, int index);
  
-  Sprite* getByIndex(int index) const { return m_documents[index]; }
+  Document* getByIndex(int index) const { return m_documents[index]; }
+  Document* getById(DocumentId id) const;
 
 private:
-  std::vector<Sprite*> m_documents;
+  // Deletes all documents in the list (calling "delete" operation).
+  void deleteAll();
 
-  DISABLE_COPYING(Documents)
+  std::vector<Document*> m_documents;
+  DocumentId m_idCounter;
+
+  DISABLE_COPYING(Documents);
 };
 
 #endif

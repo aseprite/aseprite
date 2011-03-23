@@ -24,7 +24,7 @@
 #include "raster/sprite.h"
 #include "raster/undo_history.h"
 #include "widgets/statebar.h"
-#include "sprite_wrappers.h"
+#include "document_wrappers.h"
 
 class RedoCommand : public Command
 {
@@ -46,23 +46,25 @@ RedoCommand::RedoCommand()
 
 bool RedoCommand::onEnabled(Context* context)
 {
-  const CurrentSpriteReader sprite(context);
+  const ActiveDocumentReader document(context);
   return
-    sprite != NULL &&
-    sprite->getUndo()->canRedo();
+    document != NULL &&
+    document->getUndoHistory()->canRedo();
 }
 
 void RedoCommand::onExecute(Context* context)
 {
-  CurrentSpriteWriter sprite(context);
+  ActiveDocumentWriter document(context);
 
   app_get_statusbar()
     ->showTip(1000, "Redid %s",
-	      sprite->getUndo()->getNextRedoLabel());
+	      document->getUndoHistory()->getNextRedoLabel());
 
-  sprite->getUndo()->doRedo();
-  sprite->generateMaskBoundaries();
-  update_screen_for_sprite(sprite);
+  document->getUndoHistory()->doRedo();
+  document->generateMaskBoundaries();
+  document->destroyExtraCel(); // Regenerate extras
+
+  update_screen_for_document(document);
 }
 
 //////////////////////////////////////////////////////////////////////

@@ -22,7 +22,7 @@
 #include "modules/gui.h"
 #include "raster/layer.h"
 #include "raster/sprite.h"
-#include "sprite_wrappers.h"
+#include "document_wrappers.h"
 #include "undoable.h"
 #include "widgets/color_bar.h"
 #include "app/color_utils.h"
@@ -47,7 +47,8 @@ BackgroundFromLayerCommand::BackgroundFromLayerCommand()
 
 bool BackgroundFromLayerCommand::onEnabled(Context* context)
 {
-  const CurrentSpriteReader sprite(context);
+  const ActiveDocumentReader document(context);
+  const Sprite* sprite(document ? document->getSprite(): 0);
   return
     sprite != NULL &&
     sprite->getCurrentLayer() != NULL &&
@@ -59,7 +60,8 @@ bool BackgroundFromLayerCommand::onEnabled(Context* context)
 
 void BackgroundFromLayerCommand::onExecute(Context* context)
 {
-  CurrentSpriteWriter sprite(context);
+  ActiveDocumentWriter document(context);
+  Sprite* sprite(document->getSprite());
 
   // each frame of the layer to be converted as `Background' must be
   // cleared using the selected background color in the color-bar
@@ -67,11 +69,11 @@ void BackgroundFromLayerCommand::onExecute(Context* context)
   bgcolor = color_utils::fixup_color_for_background(sprite->getImgType(), bgcolor);
 
   {
-    Undoable undoable(sprite, "Background from Layer");
+    Undoable undoable(document, "Background from Layer");
     undoable.backgroundFromLayer(static_cast<LayerImage*>(sprite->getCurrentLayer()), bgcolor);
     undoable.commit();
   }
-  update_screen_for_sprite(sprite);
+  update_screen_for_document(document);
 }
 
 //////////////////////////////////////////////////////////////////////

@@ -24,7 +24,7 @@
 #include "modules/gui.h"
 #include "raster/sprite.h"
 #include "undoable.h"
-#include "sprite_wrappers.h"
+#include "document_wrappers.h"
 
 //////////////////////////////////////////////////////////////////////
 // remove_frame
@@ -49,7 +49,8 @@ RemoveFrameCommand::RemoveFrameCommand()
 
 bool RemoveFrameCommand::onEnabled(Context* context)
 {
-  const CurrentSpriteReader sprite(context);
+  const ActiveDocumentReader document(context);
+  const Sprite* sprite(document ? document->getSprite(): NULL);
   return
     sprite != NULL &&
     sprite->getTotalFrames() > 1;
@@ -57,13 +58,14 @@ bool RemoveFrameCommand::onEnabled(Context* context)
 
 void RemoveFrameCommand::onExecute(Context* context)
 {
-  CurrentSpriteWriter sprite(context);
+  ActiveDocumentWriter document(context);
+  const Sprite* sprite(document->getSprite());
   {
-    Undoable undoable(sprite, "Remove Frame");
+    Undoable undoable(document, "Remove Frame");
     undoable.removeFrame(sprite->getCurrentFrame());
     undoable.commit();
   }
-  update_screen_for_sprite(sprite);
+  update_screen_for_document(document);
 }
 
 //////////////////////////////////////////////////////////////////////
