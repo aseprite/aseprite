@@ -18,13 +18,12 @@
 
 #include "config.h"
 
-#include "gui/gui.h"
-
 #include "commands/command.h"
+#include "document_wrappers.h"
+#include "gui/gui.h"
 #include "modules/gui.h"
 #include "raster/sprite.h"
-#include "undoable.h"
-#include "document_wrappers.h"
+#include "undo_transaction.h"
 
 //////////////////////////////////////////////////////////////////////
 // remove_frame
@@ -61,9 +60,9 @@ void RemoveFrameCommand::onExecute(Context* context)
   ActiveDocumentWriter document(context);
   const Sprite* sprite(document->getSprite());
   {
-    Undoable undoable(document, "Remove Frame");
-    undoable.removeFrame(sprite->getCurrentFrame());
-    undoable.commit();
+    UndoTransaction undoTransaction(document, "Remove Frame");
+    undoTransaction.removeFrame(sprite->getCurrentFrame());
+    undoTransaction.commit();
   }
   update_screen_for_document(document);
 }

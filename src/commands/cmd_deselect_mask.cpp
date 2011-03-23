@@ -19,11 +19,11 @@
 #include "config.h"
 
 #include "commands/command.h"
+#include "document_wrappers.h"
 #include "modules/gui.h"
 #include "raster/mask.h"
 #include "raster/sprite.h"
-#include "document_wrappers.h"
-#include "undoable.h"
+#include "undo_transaction.h"
 
 //////////////////////////////////////////////////////////////////////
 // deselect_mask
@@ -57,9 +57,9 @@ void DeselectMaskCommand::onExecute(Context* context)
 {
   ActiveDocumentWriter document(context);
   {
-    Undoable undoable(document, "Mask Deselection");
-    undoable.deselectMask();
-    undoable.commit();
+    UndoTransaction undoTransaction(document, "Mask Deselection");
+    undoTransaction.deselectMask();
+    undoTransaction.commit();
   }
   document->generateMaskBoundaries();
   update_screen_for_document(document);

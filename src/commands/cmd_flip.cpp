@@ -18,10 +18,9 @@
 
 #include "config.h"
 
-#include <allegro/unicode.h>
-
 #include "commands/command.h"
 #include "commands/params.h"
+#include "document_wrappers.h"
 #include "gui/list.h"
 #include "modules/editors.h"
 #include "modules/gui.h"
@@ -31,9 +30,10 @@
 #include "raster/sprite.h"
 #include "raster/stock.h"
 #include "raster/undo_history.h"
-#include "document_wrappers.h"
-#include "undoable.h"
+#include "undo_transaction.h"
 #include "util/misc.h"
+
+#include <allegro/unicode.h>
 
 class FlipCommand : public Command
 {
@@ -86,12 +86,12 @@ void FlipCommand::onExecute(Context* context)
   Sprite* sprite = document->getSprite();
 
   {
-    Undoable undoable(document,
-		      m_flip_mask ?
-		      (m_flip_horizontal ? "Flip Horizontal":
-					   "Flip Vertical"):
-		      (m_flip_horizontal ? "Flip Canvas Horizontal":
-					   "Flip Canvas Vertical"));
+    UndoTransaction undoTransaction(document,
+				    m_flip_mask ?
+				    (m_flip_horizontal ? "Flip Horizontal":
+							 "Flip Vertical"):
+				    (m_flip_horizontal ? "Flip Canvas Horizontal":
+							 "Flip Canvas Vertical"));
 
     if (m_flip_mask) {
       Image* image;
@@ -123,8 +123,8 @@ void FlipCommand::onExecute(Context* context)
 	y2 = MID(0, y2, image->h-1);
       }
 
-      undoable.flipImage(image, x1, y1, x2, y2, 
-			 m_flip_horizontal, m_flip_vertical);
+      undoTransaction.flipImage(image, x1, y1, x2, y2, 
+				m_flip_horizontal, m_flip_vertical);
     }
     else {
       // get all sprite cels
@@ -136,16 +136,17 @@ void FlipCommand::onExecute(Context* context)
 	Cel* cel = *it;
 	Image* image = sprite->getStock()->getImage(cel->image);
 
-	undoable.setCelPosition(cel,
-				m_flip_horizontal ? sprite->getWidth() - image->w - cel->x: cel->x,
-				m_flip_vertical ? sprite->getHeight() - image->h - cel->y: cel->y);
+	undoTransaction.setCelPosition
+	  (cel,
+	   m_flip_horizontal ? sprite->getWidth() - image->w - cel->x: cel->x,
+	   m_flip_vertical ? sprite->getHeight() - image->h - cel->y: cel->y);
 
-	undoable.flipImage(image, 0, 0, image->w-1, image->h-1,
-			   m_flip_horizontal, m_flip_vertical);
+	undoTransaction.flipImage(image, 0, 0, image->w-1, image->h-1,
+				  m_flip_horizontal, m_flip_vertical);
       }
     }
 
-    undoable.commit();
+    undoTransaction.commit();
   }
 
   update_screen_for_document(document);

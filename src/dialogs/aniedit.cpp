@@ -34,7 +34,7 @@
 #include "raster/raster.h"
 #include "skin/skin_theme.h"
 #include "ui_context.h"
-#include "undoable.h"
+#include "undo_transaction.h"
 #include "util/celmove.h"
 #include "util/thmbnail.h"
 
@@ -561,9 +561,9 @@ static bool anieditor_msg_proc(JWidget widget, JMessage msg)
 		    anieditor->hot_frame != anieditor->clk_frame+1) {
 		  {
 		    DocumentWriter document_writer(document);
-		    Undoable undoable(document_writer, "Move Frame");
-		    undoable.moveFrameBefore(anieditor->clk_frame, anieditor->hot_frame);
-		    undoable.commit();
+		    UndoTransaction undoTransaction(document_writer, "Move Frame");
+		    undoTransaction.moveFrameBefore(anieditor->clk_frame, anieditor->hot_frame);
+		    undoTransaction.commit();
 		  }
 		  widget->invalidate();
 		}
@@ -597,10 +597,10 @@ static bool anieditor_msg_proc(JWidget widget, JMessage msg)
 		    DocumentWriter document_writer(document);
 		    Sprite* sprite_writer = const_cast<Sprite*>(anieditor->sprite);
 
-		    Undoable undoable(document_writer, "Move Layer");
-		    undoable.moveLayerAfter(anieditor->layers[anieditor->clk_layer],
-					    anieditor->layers[anieditor->hot_layer]);
-		    undoable.commit();
+		    UndoTransaction undoTransaction(document_writer, "Move Layer");
+		    undoTransaction.moveLayerAfter(anieditor->layers[anieditor->clk_layer],
+						   anieditor->layers[anieditor->hot_layer]);
+		    undoTransaction.commit();
 
 		    /* select the new layer */
 		    sprite_writer->setCurrentLayer(anieditor->layers[anieditor->clk_layer]);

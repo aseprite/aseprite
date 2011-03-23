@@ -20,13 +20,13 @@
 
 #include "app.h"
 #include "commands/command.h"
+#include "document_wrappers.h"
 #include "modules/gui.h"
 #include "raster/layer.h"
 #include "raster/mask.h"
 #include "raster/sprite.h"
 #include "raster/undo_history.h"
-#include "document_wrappers.h"
-#include "undoable.h"
+#include "undo_transaction.h"
 #include "widgets/color_bar.h"
 
 //////////////////////////////////////////////////////////////////////
@@ -68,11 +68,11 @@ void ClearCommand::onExecute(Context* context)
   Sprite* sprite(document->getSprite());
   bool empty_mask = sprite->getMask()->is_empty();
   {
-    Undoable undoable(document, "Clear");
-    undoable.clearMask(app_get_color_to_clear_layer(sprite->getCurrentLayer()));
+    UndoTransaction undoTransaction(document, "Clear");
+    undoTransaction.clearMask(app_get_color_to_clear_layer(sprite->getCurrentLayer()));
     if (!empty_mask)
-      undoable.deselectMask();
-    undoable.commit();
+      undoTransaction.deselectMask();
+    undoTransaction.commit();
   }
   if (!empty_mask)
     document->generateMaskBoundaries();

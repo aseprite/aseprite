@@ -18,7 +18,7 @@
 
 #include "config.h"
 
-#include "undoable.h"
+#include "undo_transaction.h"
 
 #include "base/unique_ptr.h"
 #include "document_wrappers.h"
@@ -35,13 +35,7 @@
 #include "raster/stock.h"
 #include "raster/undo_history.h"
 
-/**
- * Starts a undoable sequence of operations.
- *
- * All the operations will be grouped in the sprite's undo as an
- * atomic operation.
- */
-Undoable::Undoable(DocumentWriter& document, const char* label)
+UndoTransaction::UndoTransaction(DocumentWriter& document, const char* label)
 {
   ASSERT(label != NULL);
 
@@ -57,37 +51,30 @@ Undoable::Undoable(DocumentWriter& document, const char* label)
   }
 }
 
-Undoable::~Undoable()
+UndoTransaction::~UndoTransaction()
 {
   if (isEnabled()) {
-    // close the undo information
+    // Close the undo information.
     m_undoHistory->undo_close();
 
-    // if it isn't committed, we have to rollback all changes
+    // If it isn't committed, we have to rollback all changes.
     if (!m_committed) {
-      // undo the group of operations
+      // Undo the group of operations.
       m_undoHistory->doUndo();
 
-      // clear the redo (sorry to the user, here we lost the old redo
-      // information)
+      // Clear the redo (sorry to the user, here we lost the old redo
+      // information).
       m_undoHistory->clearRedo();
     }
   }
 }
 
-/**
- * This must be called to commit all the changes, so the undo will be
- * finally added in the sprite.
- *
- * If you don't use this routine, all the changes will be discarded
- * (if the sprite's undo was enabled when the Undoable was created).
- */
-void Undoable::commit()
+void UndoTransaction::commit()
 {
   m_committed = true;
 }
 
-void Undoable::setNumberOfFrames(int frames)
+void UndoTransaction::setNumberOfFrames(int frames)
 {
   ASSERT(frames >= 1);
 
@@ -99,7 +86,7 @@ void Undoable::setNumberOfFrames(int frames)
   m_sprite->setTotalFrames(frames);
 }
 
-void Undoable::setCurrentFrame(int frame)
+void UndoTransaction::setCurrentFrame(int frame)
 {
   ASSERT(frame >= 0);
 
@@ -115,7 +102,7 @@ void Undoable::setCurrentFrame(int frame)
  * @param layer
  *   The layer to select. Can be NULL.
  */
-void Undoable::setCurrentLayer(Layer* layer)
+void UndoTransaction::setCurrentLayer(Layer* layer)
 {
   if (isEnabled())
     m_undoHistory->undo_set_layer(m_sprite);
@@ -123,7 +110,7 @@ void Undoable::setCurrentLayer(Layer* layer)
   m_sprite->setCurrentLayer(layer);
 }
 
-void Undoable::setSpriteSize(int w, int h)
+void UndoTransaction::setSpriteSize(int w, int h)
 {
   ASSERT(w > 0);
   ASSERT(h > 0);
@@ -134,7 +121,7 @@ void Undoable::setSpriteSize(int w, int h)
   m_sprite->setSize(w, h);
 }
 
-void Undoable::cropSprite(int x, int y, int w, int h, int bgcolor)
+void UndoTransaction::cropSprite(int x, int y, int w, int h, int bgcolor)
 {
   setSpriteSize(w, h);
 
@@ -148,7 +135,7 @@ void Undoable::cropSprite(int x, int y, int w, int h, int bgcolor)
     setMaskPosition(m_sprite->getMask()->x-x, m_sprite->getMask()->y-y);
 }
 
-void Undoable::autocropSprite(int bgcolor)
+void UndoTransaction::autocropSprite(int bgcolor)
 {
   int old_frame = m_sprite->getCurrentFrame();
   int x1, y1, x2, y2;
@@ -188,7 +175,7 @@ void Undoable::autocropSprite(int bgcolor)
   cropSprite(x1, y1, x2-x1+1, y2-y1+1, bgcolor);
 }
 
-void Undoable::setImgType(int new_imgtype, DitheringMethod dithering_method)
+void UndoTransaction::setImgType(int new_imgtype, DitheringMethod dithering_method)
 {
   Image *old_image;
   Image *new_image;
@@ -252,7 +239,7 @@ void Undoable::setImgType(int new_imgtype, DitheringMethod dithering_method)
  * @return
  *   The image index in the stock.
  */
-int Undoable::addImageInStock(Image* image)
+int UndoTransaction::addImageInStock(Image* image)
 {
   ASSERT(image);
 
@@ -268,7 +255,7 @@ int Undoable::addImageInStock(Image* image)
 /**
  * Removes and destroys the specified image in the stock.
  */
-void Undoable::removeImageFromStock(int image_index)
+void UndoTransaction::removeImageFromStock(int image_index)
 {
   ASSERT(image_index >= 0);
 
@@ -282,7 +269,7 @@ void Undoable::removeImageFromStock(int image_index)
   image_free(image);
 }
 
-void Undoable::replaceStockImage(int image_index, Image* new_image)
+void UndoTransaction::replaceStockImage(int image_index, Image* new_image)
 {
   // get the current image in the 'image_index' position
   Image* old_image = m_sprite->getStock()->getImage(image_index);
@@ -301,7 +288,7 @@ void Undoable::replaceStockImage(int image_index, Image* new_image)
 /**
  * Creates a new transparent layer.
  */
-Layer* Undoable::newLayer()
+Layer* UndoTransaction::newLayer()
 {
   // new layer
   LayerImage* layer = new LayerImage(m_sprite);
@@ -321,7 +308,7 @@ Layer* Undoable::newLayer()
 /**
  * Removes and destroys the specified layer.
  */
-void Undoable::removeLayer(Layer* layer)
+void UndoTransaction::removeLayer(Layer* layer)
 {
   ASSERT(layer);
 
@@ -354,7 +341,7 @@ void Undoable::removeLayer(Layer* layer)
   delete layer;
 }
 
-void Undoable::moveLayerAfter(Layer* layer, Layer* after_this)
+void UndoTransaction::moveLayerAfter(Layer* layer, Layer* after_this)
 {
   if (isEnabled())
     m_undoHistory->undo_move_layer(layer);
@@ -362,7 +349,7 @@ void Undoable::moveLayerAfter(Layer* layer, Layer* after_this)
   layer->get_parent()->move_layer(layer, after_this);
 }
 
-void Undoable::cropLayer(Layer* layer, int x, int y, int w, int h, int bgcolor)
+void UndoTransaction::cropLayer(Layer* layer, int x, int y, int w, int h, int bgcolor)
 {
   if (!layer->is_image())
     return;
@@ -379,7 +366,7 @@ void Undoable::cropLayer(Layer* layer, int x, int y, int w, int h, int bgcolor)
 /**
  * Moves every frame in @a layer with the offset (@a dx, @a dy).
  */
-void Undoable::displaceLayers(Layer* layer, int dx, int dy)
+void UndoTransaction::displaceLayers(Layer* layer, int dx, int dy)
 {
   switch (layer->getType()) {
 
@@ -404,7 +391,7 @@ void Undoable::displaceLayers(Layer* layer, int dx, int dy)
   }
 }
 
-void Undoable::backgroundFromLayer(LayerImage* layer, int bgcolor)
+void UndoTransaction::backgroundFromLayer(LayerImage* layer, int bgcolor)
 {
   ASSERT(layer);
   ASSERT(layer->is_image());
@@ -474,7 +461,7 @@ void Undoable::backgroundFromLayer(LayerImage* layer, int bgcolor)
   configureLayerAsBackground(layer);
 }
 
-void Undoable::layerFromBackground()
+void UndoTransaction::layerFromBackground()
 {
   ASSERT(m_sprite->getBackgroundLayer() != NULL);
   ASSERT(m_sprite->getCurrentLayer() != NULL);
@@ -497,7 +484,7 @@ void Undoable::layerFromBackground()
   m_sprite->getCurrentLayer()->setName("Layer 0");
 }
 
-void Undoable::flattenLayers(int bgcolor)
+void UndoTransaction::flattenLayers(int bgcolor)
 {
   Image* cel_image;
   Cel* cel;
@@ -591,7 +578,7 @@ void Undoable::flattenLayers(int bgcolor)
   }
 }
 
-void Undoable::configureLayerAsBackground(LayerImage* layer)
+void UndoTransaction::configureLayerAsBackground(LayerImage* layer)
 {
   if (isEnabled()) {
     m_undoHistory->undo_data(layer, layer->flags_addr(), sizeof(*layer->flags_addr()));
@@ -602,7 +589,7 @@ void Undoable::configureLayerAsBackground(LayerImage* layer)
   layer->configureAsBackground();
 }
 
-void Undoable::newFrame()
+void UndoTransaction::newFrame()
 {
   // add a new cel to every layer
   newFrameForLayer(m_sprite->getFolder(),
@@ -615,7 +602,7 @@ void Undoable::newFrame()
   setCurrentFrame(m_sprite->getCurrentFrame()+1);
 }
 
-void Undoable::newFrameForLayer(Layer* layer, int frame)
+void UndoTransaction::newFrameForLayer(Layer* layer, int frame)
 {
   ASSERT(layer);
   ASSERT(frame >= 0);
@@ -645,7 +632,7 @@ void Undoable::newFrameForLayer(Layer* layer, int frame)
   }
 }
 
-void Undoable::removeFrame(int frame)
+void UndoTransaction::removeFrame(int frame)
 {
   ASSERT(frame >= 0);
 
@@ -664,7 +651,7 @@ void Undoable::removeFrame(int frame)
   setNumberOfFrames(newTotalFrames);
 }
 
-void Undoable::removeFrameOfLayer(Layer* layer, int frame)
+void UndoTransaction::removeFrameOfLayer(Layer* layer, int frame)
 {
   ASSERT(layer);
   ASSERT(frame >= 0);
@@ -695,7 +682,7 @@ void Undoable::removeFrameOfLayer(Layer* layer, int frame)
 /**
  * Copies the previous cel of @a frame to @frame.
  */
-void Undoable::copyPreviousFrame(Layer* layer, int frame)
+void UndoTransaction::copyPreviousFrame(Layer* layer, int frame)
 {
   ASSERT(layer);
   ASSERT(frame > 0);
@@ -724,7 +711,7 @@ void Undoable::copyPreviousFrame(Layer* layer, int frame)
   addCel(static_cast<LayerImage*>(layer), dst_cel);
 }
 
-void Undoable::addCel(LayerImage* layer, Cel* cel)
+void UndoTransaction::addCel(LayerImage* layer, Cel* cel)
 {
   ASSERT(layer);
   ASSERT(cel);
@@ -735,7 +722,7 @@ void Undoable::addCel(LayerImage* layer, Cel* cel)
   layer->addCel(cel);
 }
 
-void Undoable::removeCel(LayerImage* layer, Cel* cel)
+void UndoTransaction::removeCel(LayerImage* layer, Cel* cel)
 {
   ASSERT(layer);
   ASSERT(cel);
@@ -766,7 +753,7 @@ void Undoable::removeCel(LayerImage* layer, Cel* cel)
   cel_free(cel);
 }
 
-void Undoable::setCelFramePosition(Cel* cel, int frame)
+void UndoTransaction::setCelFramePosition(Cel* cel, int frame)
 {
   ASSERT(cel);
   ASSERT(frame >= 0);
@@ -777,7 +764,7 @@ void Undoable::setCelFramePosition(Cel* cel, int frame)
   cel->frame = frame;
 }
 
-void Undoable::setCelPosition(Cel* cel, int x, int y)
+void UndoTransaction::setCelPosition(Cel* cel, int x, int y)
 {
   ASSERT(cel);
 
@@ -790,7 +777,7 @@ void Undoable::setCelPosition(Cel* cel, int x, int y)
   cel->y = y;
 }
 
-void Undoable::setFrameDuration(int frame, int msecs)
+void UndoTransaction::setFrameDuration(int frame, int msecs)
 {
   if (isEnabled())
     m_undoHistory->undo_set_frlen(m_sprite, frame);
@@ -798,7 +785,7 @@ void Undoable::setFrameDuration(int frame, int msecs)
   m_sprite->setFrameDuration(frame, msecs);
 }
 
-void Undoable::setConstantFrameRate(int msecs)
+void UndoTransaction::setConstantFrameRate(int msecs)
 {
   if (isEnabled()) {
     for (int fr=0; fr<m_sprite->getTotalFrames(); ++fr)
@@ -808,7 +795,7 @@ void Undoable::setConstantFrameRate(int msecs)
   m_sprite->setDurationForAllFrames(msecs);
 }
 
-void Undoable::moveFrameBefore(int frame, int before_frame)
+void UndoTransaction::moveFrameBefore(int frame, int before_frame)
 {
   if (frame != before_frame &&
       frame >= 0 &&
@@ -839,7 +826,7 @@ void Undoable::moveFrameBefore(int frame, int before_frame)
   }
 }
 
-void Undoable::moveFrameBeforeLayer(Layer* layer, int frame, int before_frame)
+void UndoTransaction::moveFrameBeforeLayer(Layer* layer, int frame, int before_frame)
 {
   ASSERT(layer);
 
@@ -892,7 +879,7 @@ void Undoable::moveFrameBeforeLayer(Layer* layer, int frame, int before_frame)
   }
 }
 
-Cel* Undoable::getCurrentCel()
+Cel* UndoTransaction::getCurrentCel()
 {
   if (m_sprite->getCurrentLayer() && m_sprite->getCurrentLayer()->is_image())
     return static_cast<LayerImage*>(m_sprite->getCurrentLayer())->getCel(m_sprite->getCurrentFrame());
@@ -900,7 +887,7 @@ Cel* Undoable::getCurrentCel()
     return NULL;
 }
 
-void Undoable::cropCel(Cel* cel, int x, int y, int w, int h, int bgcolor)
+void UndoTransaction::cropCel(Cel* cel, int x, int y, int w, int h, int bgcolor)
 {
   Image* cel_image = m_sprite->getStock()->getImage(cel->image);
   ASSERT(cel_image);
@@ -915,7 +902,7 @@ void Undoable::cropCel(Cel* cel, int x, int y, int w, int h, int bgcolor)
   setCelPosition(cel, x, y);
 }
 
-Image* Undoable::getCelImage(Cel* cel)
+Image* UndoTransaction::getCelImage(Cel* cel)
 {
   if (cel && cel->image >= 0 && cel->image < m_sprite->getStock()->size())
     return m_sprite->getStock()->getImage(cel->image);
@@ -924,7 +911,7 @@ Image* Undoable::getCelImage(Cel* cel)
 }
 
 // clears the mask region in the current sprite with the specified background color
-void Undoable::clearMask(int bgcolor)
+void UndoTransaction::clearMask(int bgcolor)
 {
   Cel* cel = getCurrentCel();
   if (!cel)
@@ -985,7 +972,7 @@ void Undoable::clearMask(int bgcolor)
   }
 }
 
-void Undoable::flipImage(Image* image, int x1, int y1, int x2, int y2,
+void UndoTransaction::flipImage(Image* image, int x1, int y1, int x2, int y2,
 			 bool flip_horizontal, bool flip_vertical)
 {
   // insert the undo operation
@@ -1011,7 +998,7 @@ void Undoable::flipImage(Image* image, int x1, int y1, int x2, int y2,
   image_free(area);
 }
 
-void Undoable::pasteImage(const Image* src_image, int x, int y, int opacity)
+void UndoTransaction::pasteImage(const Image* src_image, int x, int y, int opacity)
 {
   const Layer* layer = m_sprite->getCurrentLayer();
 
@@ -1030,7 +1017,7 @@ void Undoable::pasteImage(const Image* src_image, int x, int y, int opacity)
   replaceStockImage(cel->image, cel_image2); // TODO fix this, improve, avoid replacing the whole image
 }
 
-void Undoable::copyToCurrentMask(Mask* mask)
+void UndoTransaction::copyToCurrentMask(Mask* mask)
 {
   ASSERT(m_sprite->getMask());
   ASSERT(mask);
@@ -1041,7 +1028,7 @@ void Undoable::copyToCurrentMask(Mask* mask)
   mask_copy(m_sprite->getMask(), mask);
 }
 
-void Undoable::setMaskPosition(int x, int y)
+void UndoTransaction::setMaskPosition(int x, int y)
 {
   ASSERT(m_sprite->getMask());
 
@@ -1054,7 +1041,7 @@ void Undoable::setMaskPosition(int x, int y)
   m_sprite->getMask()->y = y;
 }
 
-void Undoable::deselectMask()
+void UndoTransaction::deselectMask()
 {
   // Destroy the *deselected* mask
   Mask* mask = m_sprite->requestMask("*deselected*");

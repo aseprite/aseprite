@@ -83,7 +83,7 @@ add_library(aseprite-library
   recent_files.cpp
   resource_finder.cpp
   ui_context.cpp
-  undoable.cpp
+  undo_transaction.cpp
   xml_exception.cpp
   xml_widgets.cpp
   app/color.cpp

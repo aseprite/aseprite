@@ -18,14 +18,13 @@
 
 #include "config.h"
 
-#include "gui/gui.h"
-
 #include "commands/command.h"
+#include "document_wrappers.h"
+#include "gui/gui.h"
 #include "modules/gui.h"
 #include "raster/layer.h"
 #include "raster/sprite.h"
-#include "undoable.h"
-#include "document_wrappers.h"
+#include "undo_transaction.h"
 
 //////////////////////////////////////////////////////////////////////
 // layer_from_background
@@ -65,9 +64,9 @@ void LayerFromBackgroundCommand::onExecute(Context* context)
 {
   ActiveDocumentWriter document(context);
   {
-    Undoable undoable(document, "Layer from Background");
-    undoable.layerFromBackground();
-    undoable.commit();
+    UndoTransaction undoTransaction(document, "Layer from Background");
+    undoTransaction.layerFromBackground();
+    undoTransaction.commit();
   }
   update_screen_for_document(document);
 }

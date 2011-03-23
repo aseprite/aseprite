@@ -23,7 +23,7 @@
 #include "raster/cel.h"
 #include "raster/layer.h"
 #include "raster/sprite.h"
-#include "undoable.h"
+#include "undo_transaction.h"
 #include "document_wrappers.h"
 
 //////////////////////////////////////////////////////////////////////
@@ -66,9 +66,9 @@ void RemoveCelCommand::onExecute(Context* context)
   Sprite* sprite(document->getSprite());
   Cel* cel = static_cast<LayerImage*>(sprite->getCurrentLayer())->getCel(sprite->getCurrentFrame());
   {
-    Undoable undoable(document, "Remove Cel");
-    undoable.removeCel(static_cast<LayerImage*>(sprite->getCurrentLayer()), cel);
-    undoable.commit();
+    UndoTransaction undoTransaction(document, "Remove Cel");
+    undoTransaction.removeCel(static_cast<LayerImage*>(sprite->getCurrentLayer()), cel);
+    undoTransaction.commit();
   }
   update_screen_for_document(document);
 }

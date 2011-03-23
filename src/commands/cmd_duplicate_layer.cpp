@@ -63,7 +63,7 @@ void DuplicateLayerCommand::onExecute(Context* context)
   ActiveDocumentWriter document(context);
   Sprite* sprite = document->getSprite();
   UndoHistory* undo = document->getUndoHistory();
-  Undoable undoable(document, "Layer Duplication");
+  UndoTransaction undoTransaction(document, "Layer Duplication");
 
   // Clone the layer
   UniquePtr<Layer> newLayerPtr(sprite->getCurrentLayer()->clone());
@@ -85,7 +85,7 @@ void DuplicateLayerCommand::onExecute(Context* context)
     undo->undo_set_layer(sprite);
   }
 
-  undoable.commit();
+  undoTransaction.commit();
 
   sprite->getCurrentLayer()->get_parent()->move_layer(newLayer, sprite->getCurrentLayer());
   sprite->setCurrentLayer(newLayer);

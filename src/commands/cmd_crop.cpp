@@ -18,19 +18,19 @@
 
 #include "config.h"
 
-#include "commands/command.h"
 #include "app.h"
+#include "app/color_utils.h"
+#include "commands/command.h"
+#include "document_wrappers.h"
 #include "modules/gui.h"
 #include "raster/image.h"
 #include "raster/layer.h"
 #include "raster/mask.h"
 #include "raster/sprite.h"
-#include "undoable.h"
-#include "widgets/color_bar.h"
+#include "undo_transaction.h"
 #include "util/autocrop.h"
 #include "util/misc.h"
-#include "document_wrappers.h"
-#include "app/color_utils.h"
+#include "widgets/color_bar.h"
 
 //////////////////////////////////////////////////////////////////////
 // crop_sprite
@@ -68,15 +68,15 @@ void CropSpriteCommand::onExecute(Context* context)
   ActiveDocumentWriter document(context);
   Sprite* sprite(document->getSprite());
   {
-    Undoable undoable(document, "Sprite Crop");
+    UndoTransaction undoTransaction(document, "Sprite Crop");
     int bgcolor = color_utils::color_for_image(app_get_colorbar()->getBgColor(), sprite->getImgType());
 
-    undoable.cropSprite(sprite->getMask()->x,
-			sprite->getMask()->y,
-			sprite->getMask()->w,
-			sprite->getMask()->h,
-			bgcolor);
-    undoable.commit();
+    undoTransaction.cropSprite(sprite->getMask()->x,
+			       sprite->getMask()->y,
+			       sprite->getMask()->w,
+			       sprite->getMask()->h,
+			       bgcolor);
+    undoTransaction.commit();
   }
   document->generateMaskBoundaries();
   update_screen_for_document(document);
@@ -117,9 +117,9 @@ void AutocropSpriteCommand::onExecute(Context* context)
   {
     int bgcolor = color_utils::color_for_image(app_get_colorbar()->getBgColor(), sprite->getImgType());
 
-    Undoable undoable(document, "Sprite Autocrop");
-    undoable.autocropSprite(bgcolor);
-    undoable.commit();
+    UndoTransaction undoTransaction(document, "Sprite Autocrop");
+    undoTransaction.autocropSprite(bgcolor);
+    undoTransaction.commit();
   }
   document->generateMaskBoundaries();
   update_screen_for_document(document);

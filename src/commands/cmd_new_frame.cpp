@@ -18,20 +18,19 @@
 
 #include "config.h"
 
-#include "gui/gui.h"
-
+#include "app.h"
+#include "app/color.h"
 #include "commands/command.h"
 #include "console.h"
-#include "app/color.h"
-#include "app.h"
+#include "document_wrappers.h"
+#include "gui/gui.h"
 #include "modules/gui.h"
 #include "raster/cel.h"
 #include "raster/image.h"
 #include "raster/layer.h"
 #include "raster/sprite.h"
-#include "undoable.h"
+#include "undo_transaction.h"
 #include "widgets/statebar.h"
-#include "document_wrappers.h"
 
 #include <stdexcept>
 
@@ -73,9 +72,9 @@ void NewFrameCommand::onExecute(Context* context)
   ActiveDocumentWriter document(context);
   Sprite* sprite(document->getSprite());
   {
-    Undoable undoable(document, "New Frame");
-    undoable.newFrame();
-    undoable.commit();
+    UndoTransaction undoTransaction(document, "New Frame");
+    undoTransaction.newFrame();
+    undoTransaction.commit();
   }
   update_screen_for_document(document);
   app_get_statusbar()

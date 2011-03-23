@@ -18,15 +18,14 @@
 
 #include "config.h"
 
-#include "gui/gui.h"
-
 #include "base/convert_to.h"
 #include "commands/command.h"
 #include "commands/params.h"
+#include "document_wrappers.h"
+#include "gui/gui.h"
 #include "modules/gui.h"
 #include "raster/sprite.h"
-#include "undoable.h"
-#include "document_wrappers.h"
+#include "undo_transaction.h"
 
 //////////////////////////////////////////////////////////////////////
 // frame_properties
@@ -123,16 +122,16 @@ void FramePropertiesCommand::onExecute(Context* context)
 		      "<<Do you want to change the duration of all frames?"
 		      "||&Yes||&No") == 1) {
 	DocumentWriter document_writer(document);
-	Undoable undoable(document_writer, "Constant Frame-Rate");
-	undoable.setConstantFrameRate(num);
-	undoable.commit();
+	UndoTransaction undoTransaction(document_writer, "Constant Frame-Rate");
+	undoTransaction.setConstantFrameRate(num);
+	undoTransaction.commit();
       }
     }
     else {
       DocumentWriter document_writer(document);
-      Undoable undoable(document_writer, "Frame Duration");
-      undoable.setFrameDuration(sprite_frame-1, num);
-      undoable.commit();
+      UndoTransaction undoTransaction(document_writer, "Frame Duration");
+      undoTransaction.setFrameDuration(sprite_frame-1, num);
+      undoTransaction.commit();
     }
   }
 }

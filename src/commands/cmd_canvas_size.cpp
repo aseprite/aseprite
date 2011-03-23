@@ -18,19 +18,18 @@
 
 #include "config.h"
 
-#include <allegro/unicode.h>
-
-#include "gui/gui.h"
-
+#include "app/color_utils.h"
 #include "commands/command.h"
+#include "document_wrappers.h"
+#include "gui/gui.h"
 #include "modules/gui.h"
 #include "raster/image.h"
 #include "raster/mask.h"
 #include "raster/sprite.h"
-#include "document_wrappers.h"
-#include "undoable.h"
+#include "undo_transaction.h"
 #include "widgets/color_bar.h"
-#include "app/color_utils.h"
+
+#include <allegro/unicode.h>
 
 class CanvasSizeCommand : public Command
 {
@@ -110,12 +109,12 @@ void CanvasSizeCommand::onExecute(Context* context)
   if (y2 <= y1) y2 = y1+1;
 
   {
-    Undoable undoable(document, "Canvas Size");
+    UndoTransaction undoTransaction(document, "Canvas Size");
     int bgcolor = color_utils::color_for_image(context->getSettings()->getBgColor(), sprite->getImgType());
     bgcolor = color_utils::fixup_color_for_background(sprite->getImgType(), bgcolor);
 
-    undoable.cropSprite(x1, y1, x2-x1, y2-y1, bgcolor);
-    undoable.commit();
+    undoTransaction.cropSprite(x1, y1, x2-x1, y2-y1, bgcolor);
+    undoTransaction.commit();
   }
   document->generateMaskBoundaries();
   update_screen_for_document(document);

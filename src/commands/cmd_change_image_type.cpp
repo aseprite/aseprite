@@ -18,17 +18,17 @@
 
 #include "config.h"
 
-#include <allegro/unicode.h>
-
+#include "app.h"
 #include "commands/command.h"
 #include "commands/params.h"
-#include "app.h"
+#include "document_wrappers.h"
 #include "modules/gui.h"
 #include "modules/palettes.h"
 #include "raster/image.h"
 #include "raster/sprite.h"
-#include "document_wrappers.h"
-#include "undoable.h"
+#include "undo_transaction.h"
+
+#include <allegro/unicode.h>
 
 class ChangeImageTypeCommand : public Command
 {
@@ -103,9 +103,9 @@ void ChangeImageTypeCommand::onExecute(Context* context)
 {
   ActiveDocumentWriter document(context);
   {
-    Undoable undoable(document, "Color Mode Change");
-    undoable.setImgType(m_imgtype, m_dithering);
-    undoable.commit();
+    UndoTransaction undoTransaction(document, "Color Mode Change");
+    undoTransaction.setImgType(m_imgtype, m_dithering);
+    undoTransaction.commit();
   }
   app_refresh_screen(document);
 }

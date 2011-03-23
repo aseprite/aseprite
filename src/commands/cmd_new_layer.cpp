@@ -18,16 +18,15 @@
 
 #include "config.h"
 
-#include "gui/gui.h"
-
+#include "app.h"
 #include "commands/command.h"
 #include "commands/params.h"
-#include "app.h"
+#include "document_wrappers.h"
+#include "gui/gui.h"
 #include "modules/gui.h"
 #include "raster/layer.h"
 #include "raster/sprite.h"
-#include "undoable.h"
-#include "document_wrappers.h"
+#include "undo_transaction.h"
 #include "widgets/statebar.h"
 
 //////////////////////////////////////////////////////////////////////
@@ -106,9 +105,9 @@ void NewLayerCommand::onExecute(Context* context)
 
   Layer* layer;
   {
-    Undoable undoable(document, "New Layer");
-    layer = undoable.newLayer();
-    undoable.commit();
+    UndoTransaction undoTransaction(document, "New Layer");
+    layer = undoTransaction.newLayer();
+    undoTransaction.commit();
   }
   layer->setName(name);
   update_screen_for_document(document);

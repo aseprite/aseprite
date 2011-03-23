@@ -18,13 +18,10 @@
 
 #include "config.h"
 
-#include <allegro.h>
-#include <allegro/internal/aintern.h>
-
-#include "gui/gui.h"
-
 #include "app.h"
 #include "console.h"
+#include "document_wrappers.h"
+#include "gui/gui.h"
 #include "modules/editors.h"
 #include "modules/gfx.h"
 #include "modules/gui.h"
@@ -41,13 +38,15 @@
 #include "settings/settings.h"
 #include "skin/skin_parts.h"
 #include "skin/skin_theme.h"
-#include "document_wrappers.h"
 #include "ui_context.h"
-#include "undoable.h"
+#include "undo_transaction.h"
 #include "util/clipboard.h"
 #include "util/misc.h"
 #include "widgets/color_bar.h"
 #include "widgets/statebar.h"
+
+#include <allegro.h>
+#include <allegro/internal/aintern.h>
 
 #if defined ALLEGRO_WINDOWS
   #include <winalleg.h>
@@ -165,10 +164,10 @@ void clipboard::cut(DocumentWriter& document)
   }
   else {
     {
-      Undoable undoable(document, "Cut");
-      undoable.clearMask(app_get_color_to_clear_layer(sprite->getCurrentLayer()));
-      undoable.deselectMask();
-      undoable.commit();
+      UndoTransaction undoTransaction(document, "Cut");
+      undoTransaction.clearMask(app_get_color_to_clear_layer(sprite->getCurrentLayer()));
+      undoTransaction.deselectMask();
+      undoTransaction.commit();
     }
     document->generateMaskBoundaries();
     update_screen_for_document(document);
@@ -193,7 +192,7 @@ void clipboard::copy_image(Image* image, Palette* pal)
 
 void clipboard::paste(DocumentWriter& document)
 {
-  Undoable undoable(document, "Paste");
+  UndoTransaction undoTransaction(document, "Paste");
   UndoHistory* undo = document->getUndoHistory();
   int xout[4], yout[4];
   int dst_x, dst_y;
@@ -241,7 +240,7 @@ void clipboard::paste(DocumentWriter& document)
     Cel* cel = cel_new(sprite->getCurrentFrame(), dst_image_index);
 
     // Add the cel to the layer
-    undoable.addCel(layer, cel);
+    undoTransaction.addCel(layer, cel);
 
     // Default destination position
     dst_x = dst_y = 0;
@@ -302,7 +301,7 @@ void clipboard::paste(DocumentWriter& document)
     }
 
     // Commit the "paste" operation
-    undoable.commit();
+    undoTransaction.commit();
   }
 
   if (src_image != clipboard_image)

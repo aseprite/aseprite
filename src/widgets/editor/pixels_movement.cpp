@@ -26,7 +26,7 @@
 #include "raster/image.h"
 #include "raster/mask.h"
 #include "raster/sprite.h"
-#include "undoable.h"
+#include "undo_transaction.h"
 #include "widgets/editor/pixels_movement.h"
 
 using namespace gfx;
@@ -35,7 +35,7 @@ class PixelsMovementImpl
 {
   DocumentWriter m_documentWriter;
   Sprite* m_sprite;
-  Undoable m_undoable;
+  UndoTransaction m_undoTransaction;
   int m_initial_x, m_initial_y;
   int m_catch_x, m_catch_y;
   bool m_firstDrop;
@@ -45,7 +45,7 @@ public:
   PixelsMovementImpl(Document* document, Sprite* sprite, const Image* moveThis, int initial_x, int initial_y, int opacity)
     : m_documentWriter(document)
     , m_sprite(sprite)
-    , m_undoable(m_documentWriter, "Pixels Movement")
+    , m_undoTransaction(m_documentWriter, "Pixels Movement")
     , m_initial_x(initial_x)
     , m_initial_y(initial_y)
     , m_firstDrop(true)
@@ -63,14 +63,14 @@ public:
 
   void cutMask()
   {
-    m_undoable.clearMask(app_get_color_to_clear_layer(m_sprite->getCurrentLayer()));
+    m_undoTransaction.clearMask(app_get_color_to_clear_layer(m_sprite->getCurrentLayer()));
 
     copyMask();
   }
 
   void copyMask()
   {
-    // Hide the mask (do not deselect it, it will be moved them using m_undoable.setMaskPosition)
+    // Hide the mask (do not deselect it, it will be moved them using m_undoTransaction.setMaskPosition)
     Mask* empty_mask = new Mask();
     m_documentWriter->generateMaskBoundaries(empty_mask);
     delete empty_mask;
@@ -87,7 +87,7 @@ public:
 
   void catchImageAgain(int x, int y)
   {
-    // Create a new Undoable to move the pixels to other position
+    // Create a new UndoTransaction to move the pixels to other position
     Cel* cel = m_documentWriter->getExtraCel();
     m_initial_x = cel->x;
     m_initial_y = cel->y;
@@ -96,7 +96,7 @@ public:
     m_catch_x = x;
     m_catch_y = y;
 
-    // Hide the mask (do not deselect it, it will be moved them using m_undoable.setMaskPosition)
+    // Hide the mask (do not deselect it, it will be moved them using m_undoTransaction.setMaskPosition)
     Mask* empty_mask = new Mask();
     m_documentWriter->generateMaskBoundaries(empty_mask);
     delete empty_mask;
@@ -145,7 +145,7 @@ public:
     // Show the mask again in the new position
     if (m_firstDrop) {
       m_firstDrop = false;
-      m_undoable.setMaskPosition(cel->x, cel->y);
+      m_undoTransaction.setMaskPosition(cel->x, cel->y);
     }
     else {
       m_sprite->getMask()->x = cel->x;
@@ -163,8 +163,8 @@ public:
     Cel* cel = m_documentWriter->getExtraCel();
     Image* image = m_documentWriter->getExtraCelImage();
 
-    m_undoable.pasteImage(image, cel->x, cel->y, cel->opacity);
-    m_undoable.commit();
+    m_undoTransaction.pasteImage(image, cel->x, cel->y, cel->opacity);
+    m_undoTransaction.commit();
   }
 
   bool isDragging()

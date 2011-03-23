@@ -16,8 +16,8 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifndef UNDOABLE_H_INCLUDED
-#define UNDOABLE_H_INCLUDED
+#ifndef UNDO_TRANSACTION_H_INCLUDED
+#define UNDO_TRANSACTION_H_INCLUDED
 
 #include "raster/dithering_method.h"
 
@@ -37,15 +37,25 @@ class UndoHistory;
  * In this class, all modifications in the sprite have an undo
  * counterpart (if the sprite's undo is enabled).
  */
-class Undoable
+class UndoTransaction
 {
 public:
-  Undoable(DocumentWriter& document, const char* label);
-  virtual ~Undoable();
+
+  // Starts a undoable sequence of operations in a transaction that
+  // can be committed or rollbacked.  All the operations will be
+  // grouped in the sprite's undo as an atomic operation.
+  UndoTransaction(DocumentWriter& document, const char* label);
+  virtual ~UndoTransaction();
 
   inline Sprite* getSprite() const { return m_sprite;  }
   inline bool isEnabled() const { return m_enabledFlag; }
 
+  // This must be called to commit all the changes, so the undo will
+  // be finally added in the sprite.
+  //
+  // If you don't use this routine, all the changes will be discarded
+  // (if the sprite's undo was enabled when the UndoTransaction was
+  // created).
   void commit();
 
   // for sprite

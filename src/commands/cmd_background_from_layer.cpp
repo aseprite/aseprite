@@ -18,14 +18,14 @@
 
 #include "config.h"
 
+#include "app/color_utils.h"
 #include "commands/command.h"
+#include "document_wrappers.h"
 #include "modules/gui.h"
 #include "raster/layer.h"
 #include "raster/sprite.h"
-#include "document_wrappers.h"
-#include "undoable.h"
+#include "undo_transaction.h"
 #include "widgets/color_bar.h"
-#include "app/color_utils.h"
 
 class BackgroundFromLayerCommand : public Command
 {
@@ -69,9 +69,9 @@ void BackgroundFromLayerCommand::onExecute(Context* context)
   bgcolor = color_utils::fixup_color_for_background(sprite->getImgType(), bgcolor);
 
   {
-    Undoable undoable(document, "Background from Layer");
-    undoable.backgroundFromLayer(static_cast<LayerImage*>(sprite->getCurrentLayer()), bgcolor);
-    undoable.commit();
+    UndoTransaction undo_transaction(document, "Background from Layer");
+    undo_transaction.backgroundFromLayer(static_cast<LayerImage*>(sprite->getCurrentLayer()), bgcolor);
+    undo_transaction.commit();
   }
   update_screen_for_document(document);
 }

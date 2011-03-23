@@ -18,13 +18,11 @@
 
 #include "config.h"
 
-#include <allegro/unicode.h>
-
-#include "gui/gui.h"
-
 #include "app.h"
 #include "commands/command.h"
 #include "commands/params.h"
+#include "document_wrappers.h"
+#include "gui/gui.h"
 #include "job.h"
 #include "modules/gui.h"
 #include "raster/cel.h"
@@ -32,9 +30,10 @@
 #include "raster/mask.h"
 #include "raster/sprite.h"
 #include "raster/stock.h"
-#include "document_wrappers.h"
-#include "undoable.h"
+#include "undo_transaction.h"
 #include "widgets/color_bar.h"
+
+#include <allegro/unicode.h>
 
 //////////////////////////////////////////////////////////////////////
 // rotate_canvas
@@ -76,7 +75,7 @@ protected:
    */
   virtual void onJob()
   {
-    Undoable undoable(m_document, "Rotate Canvas");
+    UndoTransaction undoTransaction(m_document, "Rotate Canvas");
 
     // get all sprite cels
     CelList cels;
@@ -90,15 +89,15 @@ protected:
       // change it location
       switch (m_angle) {
 	case 180:
-	  undoable.setCelPosition(cel,
-				  m_sprite->getWidth() - cel->x - image->w,
-				  m_sprite->getHeight() - cel->y - image->h);
+	  undoTransaction.setCelPosition(cel,
+					 m_sprite->getWidth() - cel->x - image->w,
+					 m_sprite->getHeight() - cel->y - image->h);
 	  break;
 	case 90:
-	  undoable.setCelPosition(cel, m_sprite->getHeight() - cel->y - image->h, cel->x);
+	  undoTransaction.setCelPosition(cel, m_sprite->getHeight() - cel->y - image->h, cel->x);
 	  break;
 	case -90:
-	  undoable.setCelPosition(cel, cel->y, m_sprite->getWidth() - cel->x - image->w);
+	  undoTransaction.setCelPosition(cel, cel->y, m_sprite->getWidth() - cel->x - image->w);
 	  break;
       }
     }
@@ -115,13 +114,13 @@ protected:
 				   m_angle == 180 ? image->h: image->w);
       image_rotate(image, new_image, m_angle);
 
-      undoable.replaceStockImage(i, new_image);
+      undoTransaction.replaceStockImage(i, new_image);
 
       jobProgress((float)i / m_sprite->getStock()->size());
 
       // cancel all the operation?
       if (isCanceled())
-	return;	       // Undoable destructor will undo all operations
+	return;	       // UndoTransaction destructor will undo all operations
     }
 
     // rotate mask
@@ -151,7 +150,7 @@ protected:
       image_rotate(m_sprite->getMask()->bitmap, new_mask->bitmap, m_angle);
 
       // copy new mask
-      undoable.copyToCurrentMask(new_mask);
+      undoTransaction.copyToCurrentMask(new_mask);
       mask_free(new_mask);
 
       // regenerate mask
@@ -160,10 +159,10 @@ protected:
 
     // change the sprite's size
     if (m_angle != 180)
-      undoable.setSpriteSize(m_sprite->getHeight(), m_sprite->getWidth());
+      undoTransaction.setSpriteSize(m_sprite->getHeight(), m_sprite->getWidth());
 
     // commit changes
-    undoable.commit();
+    undoTransaction.commit();
   }
 
 };

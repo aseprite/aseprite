@@ -18,15 +18,14 @@
 
 #include "config.h"
 
-#include "gui/widget.h"
-
 #include "app.h"
 #include "commands/command.h"
+#include "document_wrappers.h"
+#include "gui/widget.h"
 #include "modules/gui.h"
 #include "raster/layer.h"
 #include "raster/sprite.h"
-#include "undoable.h"
-#include "document_wrappers.h"
+#include "undo_transaction.h"
 #include "widgets/statebar.h"
 
 //////////////////////////////////////////////////////////////////////
@@ -65,12 +64,12 @@ void RemoveLayerCommand::onExecute(Context* context)
   ActiveDocumentWriter document(context);
   Sprite* sprite(document->getSprite());
   {
-    Undoable undoable(document, "Remove Layer");
+    UndoTransaction undoTransaction(document, "Remove Layer");
 
     layer_name = sprite->getCurrentLayer()->getName();
 
-    undoable.removeLayer(sprite->getCurrentLayer());
-    undoable.commit();
+    undoTransaction.removeLayer(sprite->getCurrentLayer());
+    undoTransaction.commit();
   }
   update_screen_for_document(document);
 

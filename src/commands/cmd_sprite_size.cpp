@@ -18,13 +18,11 @@
 
 #include "config.h"
 
-#include <allegro/unicode.h>
-
 #include "base/bind.h"
-#include "gui/gui.h"
-
 #include "commands/command.h"
 #include "core/cfg.h"
+#include "document_wrappers.h"
+#include "gui/gui.h"
 #include "job.h"
 #include "modules/gui.h"
 #include "modules/palettes.h"
@@ -33,9 +31,10 @@
 #include "raster/mask.h"
 #include "raster/sprite.h"
 #include "raster/stock.h"
-#include "document_wrappers.h"
 #include "ui_context.h"
-#include "undoable.h"
+#include "undo_transaction.h"
+
+#include <allegro/unicode.h>
 
 #define PERC_FORMAT	"%.1f%%"
 
@@ -69,7 +68,7 @@ protected:
    */
   virtual void onJob()
   {
-    Undoable undoable(m_document, "Sprite Size");
+    UndoTransaction undoTransaction(m_document, "Sprite Size");
 
     // Get all sprite cels
     CelList cels;
@@ -81,7 +80,7 @@ protected:
       Cel* cel = *it;
 
       // Change its location
-      undoable.setCelPosition(cel, scale_x(cel->x), scale_y(cel->y));
+      undoTransaction.setCelPosition(cel, scale_x(cel->x), scale_y(cel->y));
 
       // Get cel's image
       Image* image = m_sprite->getStock()->getImage(cel->image);
@@ -99,13 +98,13 @@ protected:
 		   m_sprite->getPalette(cel->frame),
 		   m_sprite->getRgbMap(cel->frame));
 
-      undoable.replaceStockImage(cel->image, new_image);
+      undoTransaction.replaceStockImage(cel->image, new_image);
 
       jobProgress((float)progress / cels.size());
 
       // cancel all the operation?
       if (isCanceled())
-	return;	       // Undoable destructor will undo all operations
+	return;	       // UndoTransaction destructor will undo all operations
     }
 
     // resize mask
@@ -132,7 +131,7 @@ protected:
 		     new_mask->w, new_mask->h);
 
       // copy new mask
-      undoable.copyToCurrentMask(new_mask);
+      undoTransaction.copyToCurrentMask(new_mask);
       mask_free(new_mask);
 
       // regenerate mask
@@ -140,10 +139,10 @@ protected:
     }
 
     // resize sprite
-    undoable.setSpriteSize(m_new_width, m_new_height);
+    undoTransaction.setSpriteSize(m_new_width, m_new_height);
 
     // commit changes
-    undoable.commit();
+    undoTransaction.commit();
   }
 
 };

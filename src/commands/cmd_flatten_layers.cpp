@@ -18,14 +18,14 @@
 
 #include "config.h"
 
-#include "commands/command.h"
 #include "app.h"
+#include "app/color_utils.h"
+#include "commands/command.h"
+#include "document_wrappers.h"
 #include "modules/gui.h"
 #include "raster/sprite.h"
-#include "undoable.h"
+#include "undo_transaction.h"
 #include "widgets/color_bar.h"
-#include "document_wrappers.h"
-#include "app/color_utils.h"
 
 //////////////////////////////////////////////////////////////////////
 // flatten_layers
@@ -60,9 +60,9 @@ void FlattenLayersCommand::onExecute(Context* context)
   Sprite* sprite = document->getSprite();
   int bgcolor = color_utils::color_for_image(app_get_colorbar()->getBgColor(), sprite->getImgType());
   {
-    Undoable undoable(document, "Flatten Layers");
-    undoable.flattenLayers(bgcolor);
-    undoable.commit();
+    UndoTransaction undoTransaction(document, "Flatten Layers");
+    undoTransaction.flattenLayers(bgcolor);
+    undoTransaction.commit();
   }
   update_screen_for_document(document);
 }
