@@ -51,21 +51,22 @@ InvertMaskCommand::InvertMaskCommand()
 bool InvertMaskCommand::onEnabled(Context* context)
 {
   const ActiveDocumentReader document(context);
-  return document != NULL && document->getSprite() != NULL;
+  return
+    document != NULL &&
+    document->getSprite() != NULL;
 }
 
 void InvertMaskCommand::onExecute(Context* context)
 {
-  bool has_mask = false;
+  bool hasMask = false;
   {
     const ActiveDocumentReader document(context);
-    const Sprite* sprite(document->getSprite());
-    if (sprite->getMask()->bitmap)
-      has_mask = true;
+    if (document->isMaskVisible())
+      hasMask = true;
   }
 
   // without mask?...
-  if (!has_mask) {
+  if (!hasMask) {
     // so we select all
     Command* mask_all_cmd =
       CommandsModule::instance()->getCommandByName(CommandId::MaskAll);
@@ -80,7 +81,7 @@ void InvertMaskCommand::onExecute(Context* context)
     /* undo */
     if (undo->isEnabled()) {
       undo->setLabel("Mask Invert");
-      undo->undo_set_mask(sprite);
+      undo->undo_set_mask(document);
     }
 
     /* create a new mask */
@@ -91,23 +92,23 @@ void InvertMaskCommand::onExecute(Context* context)
 
     /* remove in the new mask the current sprite marked region */
     image_rectfill(mask->bitmap,
-		   sprite->getMask()->x, sprite->getMask()->y,
-		   sprite->getMask()->x + sprite->getMask()->w-1,
-		   sprite->getMask()->y + sprite->getMask()->h-1, 0);
+		   document->getMask()->x, document->getMask()->y,
+		   document->getMask()->x + document->getMask()->w-1,
+		   document->getMask()->y + document->getMask()->h-1, 0);
 
     /* invert the current mask in the sprite */
-    mask_invert(sprite->getMask());
-    if (sprite->getMask()->bitmap) {
+    mask_invert(document->getMask());
+    if (document->getMask()->bitmap) {
       /* copy the inverted region in the new mask */
-      image_copy(mask->bitmap, sprite->getMask()->bitmap,
-		 sprite->getMask()->x, sprite->getMask()->y);
+      image_copy(mask->bitmap, document->getMask()->bitmap,
+		 document->getMask()->x, document->getMask()->y);
     }
 
     /* we need only need the area inside the sprite */
     mask_intersect(mask, 0, 0, sprite->getWidth(), sprite->getHeight());
 
     /* set the new mask */
-    sprite->setMask(mask);
+    document->setMask(mask);
     mask_free(mask);
 
     document->generateMaskBoundaries();

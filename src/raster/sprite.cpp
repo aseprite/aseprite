@@ -18,13 +18,13 @@
 
 #include "config.h"
 
-#include <cstring>
-#include <vector>
-
 #include "base/memory.h"
 #include "base/remove_from_container.h"
 #include "file/format_options.h"
 #include "raster/raster.h"
+
+#include <cstring>
+#include <vector>
 
 #ifdef _MSC_VER
   #pragma warning(disable: 4355)
@@ -221,56 +221,6 @@ public:
     }
   }
 
-  Mask* getMask() const {
-    return m_mask;
-  }
-
-  void setMask(const Mask* mask) {
-    if (m_mask)
-      mask_free(m_mask);
-
-    m_mask = mask_new_copy(mask);
-  }
-
-  void addMask(Mask* mask) {
-    if (!mask->name) // You can't add masks to repository without name
-      return;
-    
-    if (requestMask(mask->name)) // You can't add a mask that already exists
-      return;
-
-    // And add the new mask
-    m_repository.masks.push_back(mask);
-  }
-
-  void removeMask(Mask* mask) {
-    // Remove the mask from the repository
-    base::remove_from_container(m_repository.masks, mask);
-  }
-
-  Mask* requestMask(const char* name) const;
-
-  MasksList getMasksRepository() {
-    return m_repository.masks;
-  }
-
-  void addPath(Path* path) {
-    m_repository.paths.push_back(path);
-  }
-
-  void removePath(Path* path) {
-    base::remove_from_container(m_repository.paths, path);
-  }
-
-  void setPath(const Path* path) {
-    delete m_path;
-    m_path = new Path(*path);
-  }
-
-  PathsList getPathsRepository() {
-    return m_repository.paths;
-  }
-
   void render(Image* image, int x, int y) const {
     image_rectfill(image, x, y, x+m_width-1, y+m_height-1, 0);
     layer_render(getFolder(), image, x, y, getCurrentFrame());
@@ -290,12 +240,6 @@ private:
   Stock* m_stock;			 // stock to get images
   LayerFolder* m_folder;		 // main folder of layers
   Layer* m_layer;			 // current layer
-  Path* m_path;				 // working path
-  Mask* m_mask;				 // selected mask region
-  struct {
-    PathsList paths;			// paths
-    MasksList masks;			// masks
-  } m_repository;
 
   // Current rgb map
   RgbMap* m_rgbMap;
@@ -318,8 +262,6 @@ SpriteImpl::SpriteImpl(Sprite* sprite, int imgtype, int width, int height, int n
   m_stock = new Stock(imgtype);
   m_folder = new LayerFolder(m_self);
   m_layer = NULL;
-  m_path = NULL;
-  m_mask = mask_new();
 
   // Generate palette
   Palette pal(0, ncolors);
@@ -361,22 +303,6 @@ SpriteImpl::~SpriteImpl()
   if (m_stock)
     delete m_stock;
 
-  // Destroy paths
-  {
-    PathsList::iterator end = m_repository.paths.end();
-    PathsList::iterator it = m_repository.paths.begin();
-    for (; it != end; ++it)
-      delete *it;		// path
-  }
-
-  // Destroy masks
-  {
-    MasksList::iterator end = m_repository.masks.end();
-    MasksList::iterator it = m_repository.masks.begin();
-    for (; it != end; ++it)
-      delete *it;		// mask
-  }
-
   // Destroy palettes
   {
     PalettesList::iterator end = m_palettes.end();
@@ -385,8 +311,7 @@ SpriteImpl::~SpriteImpl()
       delete *it;		// palette
   }
 
-  // Destroy undo, mask, etc.
-  delete m_mask;
+  // Destroy RGB map
   delete m_rgbMap;
 }
 
@@ -429,20 +354,6 @@ void SpriteImpl::setTotalFrames(int frames)
   }
 
   m_frames = frames;
-}
-
-Mask *SpriteImpl::requestMask(const char *name) const
-{
-  MasksList::const_iterator end = m_repository.masks.end();
-  MasksList::const_iterator it = m_repository.masks.begin();
-
-  for (; it != end; ++it) {
-    Mask* mask = *it;
-    if (strcmp(mask->name, name) == 0)
-      return mask;
-  }
-
-  return NULL;
 }
 
 int SpriteImpl::getPixel(int x, int y) const
@@ -758,83 +669,6 @@ void Sprite::getCels(CelList& cels)
 void Sprite::remapImages(int frame_from, int frame_to, const std::vector<int>& mapping)
 {
   m_impl->remapImages(frame_from, frame_to, mapping);
-}
-
-//////////////////////////////////////////////////////////////////////
-// Mask
-
-Mask* Sprite::getMask() const
-{
-  return m_impl->getMask();
-}
-
-/**
- * Changes the current mask (makes a copy of "mask")
- */
-void Sprite::setMask(const Mask* mask)
-{
-  m_impl->setMask(mask);
-}
-
-/**
- * Adds a mask to the sprites's repository
- */
-void Sprite::addMask(Mask* mask)
-{
-  m_impl->addMask(mask);
-}
-
-/**
- * Removes a mask from the sprites's repository
- */
-void Sprite::removeMask(Mask* mask)
-{
-  m_impl->removeMask(mask);
-}
-
-/**
- * Returns a mask from the sprite's repository searching it by its name
- */
-Mask* Sprite::requestMask(const char* name) const
-{
-  return m_impl->requestMask(name);
-}
-
-MasksList Sprite::getMasksRepository()
-{
-  return m_impl->getMasksRepository();
-}
-
-//////////////////////////////////////////////////////////////////////
-// Path
-
-/**
- * Adds a path to the sprites's repository
- */
-void Sprite::addPath(Path* path)
-{
-  m_impl->addPath(path);
-}
-
-/**
- * Removes a path from the sprites's repository
- */
-void Sprite::removePath(Path* path)
-{
-  m_impl->removePath(path);
-}
-
-/**
- * Changes the current path (makes a copy of "path")
- */
-void Sprite::setPath(const Path* path)
-{
-  m_impl->setPath(path);
-}
-
-PathsList Sprite::getPathsRepository()
-{
-  return m_impl->getPathsRepository();
 }
 
 //////////////////////////////////////////////////////////////////////

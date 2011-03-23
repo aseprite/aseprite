@@ -49,35 +49,30 @@ ReselectMaskCommand::ReselectMaskCommand()
 bool ReselectMaskCommand::onEnabled(Context* context)
 {
   const ActiveDocumentReader document(context);
-  const Sprite* sprite(document ? document->getSprite(): 0);
   return
-    sprite != NULL &&
-    sprite->requestMask("*deselected*") != NULL;
+     document &&		      // The document does exist
+    !document->isMaskVisible() &&     // The mask is hidden
+     document->getMask() &&	      // The mask does exist
+    !document->getMask()->is_empty(); // But it is not empty
 }
 
 void ReselectMaskCommand::onExecute(Context* context)
 {
   ActiveDocumentWriter document(context);
-  Sprite* sprite(document->getSprite());
   UndoHistory* undo = document->getUndoHistory();
 
-  // Request *deselected* mask
-  Mask* mask = sprite->requestMask("*deselected*");
+  // TODO IMPLEMENT THIS Add an undo action in the history to reverse the change of a Document's int field
 
   // Undo
   if (undo->isEnabled()) {
     undo->setLabel("Mask Reselection");
-    undo->undo_set_mask(sprite);
+    //undo->undo_set_mask(document);
   }
 
-  // Set the mask.
-  sprite->setMask(mask);
-
-  // Remove the *deselected* mask.
-  sprite->removeMask(mask);
-  mask_free(mask);
-
+  // Make the mask visible again.
+  document->setMaskVisible(true);
   document->generateMaskBoundaries();
+
   update_screen_for_document(document);
 }
 

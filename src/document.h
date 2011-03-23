@@ -111,6 +111,28 @@ public:
   Image* getExtraCelImage() const;
 
   //////////////////////////////////////////////////////////////////////
+  // Mask
+
+  // Returns the current mask, it can be empty. The mask could be not
+  // empty but hidden to the user if the setMaskVisible(false) was
+  // used called before.
+  Mask* getMask() const;
+
+  // Sets the current mask. The new mask will be visible by default,
+  // so you don't need to call setMaskVisible(true).
+  void setMask(const Mask* mask);
+
+  // Returns true only when the mask is not empty, and was not yet
+  // hidden using setMaskVisible (e.g. when the user "deselect the
+  // mask").
+  bool isMaskVisible() const;
+
+  // Changes the visibility state of the mask (it is useful only if
+  // the getMask() is not empty and the user can see that the mask is
+  // being hidden and shown to him).
+  void setMaskVisible(bool visible);
+
+  //////////////////////////////////////////////////////////////////////
   // Clonning
 
   Document* duplicate(DuplicateType type) const;
@@ -171,6 +193,10 @@ private:
 
   // Image of the extra cel.
   Image* m_extraImage;
+
+  // Current mask.
+  Mask* m_mask;
+  bool m_maskVisible;
 
   DISABLE_COPYING(Document);
 };

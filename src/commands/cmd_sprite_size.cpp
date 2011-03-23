@@ -107,18 +107,18 @@ protected:
 	return;	       // UndoTransaction destructor will undo all operations
     }
 
-    // resize mask
-    if (m_sprite->getMask()->bitmap) {
-      Image* old_bitmap = image_crop(m_sprite->getMask()->bitmap, -1, -1,
-				     m_sprite->getMask()->bitmap->w+2,
-				     m_sprite->getMask()->bitmap->h+2, 0);
+    // Resize mask
+    if (m_document->isMaskVisible()) {
+      Image* old_bitmap = image_crop(m_document->getMask()->bitmap, -1, -1,
+				     m_document->getMask()->bitmap->w+2,
+				     m_document->getMask()->bitmap->h+2, 0);
 
       int w = scale_x(old_bitmap->w);
       int h = scale_y(old_bitmap->h);
       Mask* new_mask = mask_new();
       mask_replace(new_mask,
-		   scale_x(m_sprite->getMask()->x-1),
-		   scale_y(m_sprite->getMask()->y-1), MAX(1, w), MAX(1, h));
+		   scale_x(m_document->getMask()->x-1),
+		   scale_y(m_document->getMask()->y-1), MAX(1, w), MAX(1, h));
       image_resize(old_bitmap, new_mask->bitmap,
 		   m_resize_method,
 		   m_sprite->getCurrentPalette(), // Ignored

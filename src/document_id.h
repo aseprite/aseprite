@@ -19,7 +19,7 @@
 #ifndef DOCUMENT_ID_H_INCLUDED
 #define DOCUMENT_ID_H_INCLUDED
 
-typedef unsigned int DocumentId;
+typedef ase_uint32 DocumentId;
 
 const DocumentId WithoutDocumentId = 0;
 

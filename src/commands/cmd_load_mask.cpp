@@ -88,10 +88,10 @@ void LoadMaskCommand::onExecute(Context* context)
   // Add the mask change into the undo history.
   if (undo->isEnabled()) {
     undo->setLabel("Mask Load");
-    undo->undo_set_mask(sprite);
+    undo->undo_set_mask(document);
   }
 
-  sprite->setMask(mask);
+  document->setMask(mask);
   mask_free(mask);
 
   document->generateMaskBoundaries();

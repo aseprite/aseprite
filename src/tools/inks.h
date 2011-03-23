@@ -260,13 +260,14 @@ public:
 
     if (state) {
       if (loop->getDocument()->getUndoHistory()->isEnabled())
-	loop->getDocument()->getUndoHistory()->undo_set_mask(loop->getSprite());
+	loop->getDocument()->getUndoHistory()->undo_set_mask(loop->getDocument());
 
       loop->getMask()->freeze();
       loop->getMask()->reserve(0, 0, loop->getSprite()->getWidth(), loop->getSprite()->getHeight());
     }
     else {
       loop->getMask()->unfreeze();
+      loop->getDocument()->setMaskVisible(true);
     }
   }
 

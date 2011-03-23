@@ -119,27 +119,6 @@ public:
   void remapImages(int frame_from, int frame_to, const std::vector<int>& mapping);
 
   ////////////////////////////////////////
-  // Mask
-
-  Mask* getMask() const;
-  void setMask(const Mask* mask);
-
-  void addMask(Mask* mask);
-  void removeMask(Mask* mask);
-  Mask* requestMask(const char* name) const;
-
-  MasksList getMasksRepository();
-
-  ////////////////////////////////////////
-  // Path
-
-  void addPath(Path* path);
-  void removePath(Path* path);
-  void setPath(const Path* path);
-
-  PathsList getPathsRepository();
-
-  ////////////////////////////////////////
   // Drawing
 
   void render(Image* image, int x, int y) const;

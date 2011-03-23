@@ -36,37 +36,37 @@
 #include "widgets/editor.h"
 #include "widgets/statebar.h"
 
-Image* NewImageFromMask(const Sprite* src_sprite)
+Image* NewImageFromMask(const Document* srcDocument)
 {
+  const Sprite* srcSprite = srcDocument->getSprite();
+  const Mask* srcMask = srcDocument->getMask();
   const ase_uint8* address;
   int x, y, u, v, getx, gety;
   Image *dst;
-  const Image *src = src_sprite->getCurrentImage(&x, &y);
+  const Image *src = srcSprite->getCurrentImage(&x, &y);
   div_t d;
 
-  ASSERT(src_sprite);
-  ASSERT(src_sprite->getMask());
-  ASSERT(src_sprite->getMask()->bitmap);
+  ASSERT(srcSprite);
+  ASSERT(srcMask);
+  ASSERT(srcMask->bitmap);
   ASSERT(src);
 
-  dst = image_new(src_sprite->getImgType(),
-		  src_sprite->getMask()->w,
-		  src_sprite->getMask()->h);
+  dst = image_new(srcSprite->getImgType(), srcMask->w, srcMask->h);
   if (!dst)
     return NULL;
 
-  /* clear the new image */
+  // Clear the new image
   image_clear(dst, 0);
 
-  /* copy the masked zones */
-  for (v=0; v<src_sprite->getMask()->h; v++) {
+  // Copy the masked zones
+  for (v=0; v<srcMask->h; v++) {
     d = div(0, 8);
-    address = ((const ase_uint8 **)src_sprite->getMask()->bitmap->line)[v]+d.quot;
+    address = ((const ase_uint8 **)srcMask->bitmap->line)[v]+d.quot;
 
-    for (u=0; u<src_sprite->getMask()->w; u++) {
+    for (u=0; u<srcMask->w; u++) {
       if ((*address & (1<<d.rem))) {
-	getx = u+src_sprite->getMask()->x-x;
-	gety = v+src_sprite->getMask()->y-y;
+	getx = u+srcMask->x-x;
+	gety = v+srcMask->y-y;
 
 	if ((getx >= 0) && (getx < src->w) &&
 	    (gety >= 0) && (gety < src->h))
@@ -80,8 +80,8 @@ Image* NewImageFromMask(const Sprite* src_sprite)
   return dst;
 }
 
-/* Gives to the user the possibility to move the sprite's layer in the
-   current editor, returns true if the position was changed.  */
+// Gives to the user the possibility to move the sprite's layer in the
+// current editor, returns true if the position was changed.
 int interactive_move_layer(int mode, bool use_undo, int (*callback)())
 {
   Editor* editor = current_editor;

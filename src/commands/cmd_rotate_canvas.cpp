@@ -124,30 +124,31 @@ protected:
     }
 
     // rotate mask
-    if (m_sprite->getMask()->bitmap) {
+    if (m_document->isMaskVisible()) {
+      Mask* origMask = m_document->getMask();
       Mask* new_mask = mask_new();
       int x = 0, y = 0;
 
       switch (m_angle) {
 	case 180:
-	  x = m_sprite->getWidth() - m_sprite->getMask()->x - m_sprite->getMask()->w;
-	  y = m_sprite->getHeight() - m_sprite->getMask()->y - m_sprite->getMask()->h;
+	  x = m_sprite->getWidth() - origMask->x - origMask->w;
+	  y = m_sprite->getHeight() - origMask->y - origMask->h;
 	  break;
 	case 90:
-	  x = m_sprite->getHeight() - m_sprite->getMask()->y - m_sprite->getMask()->h;
-	  y = m_sprite->getMask()->x;
+	  x = m_sprite->getHeight() - origMask->y - origMask->h;
+	  y = origMask->x;
 	  break;
 	case -90:
-	  x = m_sprite->getMask()->y;
-	  y = m_sprite->getWidth() - m_sprite->getMask()->x - m_sprite->getMask()->w;
+	  x = origMask->y;
+	  y = m_sprite->getWidth() - origMask->x - origMask->w;
 	  break;
       }
 
       // create the new rotated mask
       mask_replace(new_mask, x, y,
-		   m_angle == 180 ? m_sprite->getMask()->w: m_sprite->getMask()->h,
-		   m_angle == 180 ? m_sprite->getMask()->h: m_sprite->getMask()->w);
-      image_rotate(m_sprite->getMask()->bitmap, new_mask->bitmap, m_angle);
+		   m_angle == 180 ? origMask->w: origMask->h,
+		   m_angle == 180 ? origMask->h: origMask->w);
+      image_rotate(origMask->bitmap, new_mask->bitmap, m_angle);
 
       // copy new mask
       undoTransaction.copyToCurrentMask(new_mask);

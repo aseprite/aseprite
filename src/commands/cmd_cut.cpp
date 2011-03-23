@@ -54,8 +54,7 @@ bool CutCommand::onEnabled(Context* context)
       (sprite->getCurrentLayer()) &&
       (sprite->getCurrentLayer()->is_readable()) &&
       (sprite->getCurrentLayer()->is_writable()) &&
-      (sprite->getMask()) &&
-      (sprite->getMask()->bitmap))
+      (document->isMaskVisible()))
     return sprite->getCurrentImage() ? true: false;
   else
     return false;

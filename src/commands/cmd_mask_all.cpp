@@ -59,14 +59,15 @@ void MaskAllCommand::onExecute(Context* context)
   Sprite* sprite(document->getSprite());
   UndoHistory* undo(document->getUndoHistory());
 
-  /* undo */
+  // Undo
   if (undo->isEnabled()) {
     undo->setLabel("Mask All");
-    undo->undo_set_mask(sprite);
+    undo->undo_set_mask(document);
   }
 
-  /* change the selection */
-  mask_replace(sprite->getMask(), 0, 0, sprite->getWidth(), sprite->getHeight());
+  // Change the selection
+  mask_replace(document->getMask(), 0, 0, sprite->getWidth(), sprite->getHeight());
+  document->setMaskVisible(true);
 
   document->generateMaskBoundaries();
   update_screen_for_document(document);

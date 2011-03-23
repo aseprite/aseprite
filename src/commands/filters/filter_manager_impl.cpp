@@ -102,7 +102,7 @@ void FilterManagerImpl::setTarget(int target)
 void FilterManagerImpl::begin()
 {
   m_row = 0;
-  m_mask = m_sprite->getMask();
+  m_mask = m_document->getMask();
 
   updateMask(m_mask, m_src);
 }
@@ -114,8 +114,8 @@ void FilterManagerImpl::beginForPreview()
     m_preview_mask = NULL;
   }
 
-  if ((m_sprite->getMask()) && (m_sprite->getMask()->bitmap))
-    m_preview_mask = mask_new_copy(m_sprite->getMask());
+  if (m_document->isMaskVisible())
+    m_preview_mask = mask_new_copy(m_document->getMask());
   else {
     m_preview_mask = mask_new();
     mask_replace(m_preview_mask,
@@ -340,7 +340,7 @@ void FilterManagerImpl::init(const Layer* layer, Image* image, int offset_x, int
   m_offset_x = offset_x;
   m_offset_y = offset_y;
 
-  if (!updateMask(m_sprite->getMask(), image))
+  if (!updateMask(m_document->getMask(), image))
     throw InvalidAreaException();
 
   if (m_preview_mask) {

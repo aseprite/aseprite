@@ -131,8 +131,8 @@ void UndoTransaction::cropSprite(int x, int y, int w, int h, int bgcolor)
   if (background_layer)
     cropLayer(background_layer, 0, 0, m_sprite->getWidth(), m_sprite->getHeight(), bgcolor);
 
-  if (!m_sprite->getMask()->is_empty())
-    setMaskPosition(m_sprite->getMask()->x-x, m_sprite->getMask()->y-y);
+  if (!m_document->getMask()->is_empty())
+    setMaskPosition(m_document->getMask()->x-x, m_document->getMask()->y-y);
 }
 
 void UndoTransaction::autocropSprite(int bgcolor)
@@ -921,9 +921,11 @@ void UndoTransaction::clearMask(int bgcolor)
   if (!image)
     return;
 
+  Mask* mask = m_document->getMask();
+
   // if the mask is empty then we have to clear the entire image
   // in the cel
-  if (m_sprite->getMask()->is_empty()) {
+  if (mask->is_empty()) {
     // if the layer is the background then we clear the image
     if (m_sprite->getCurrentLayer()->is_background()) {
       if (isEnabled())
@@ -939,13 +941,13 @@ void UndoTransaction::clearMask(int bgcolor)
     }
   }
   else {
-    int offset_x = m_sprite->getMask()->x-cel->x;
-    int offset_y = m_sprite->getMask()->y-cel->y;
+    int offset_x = mask->x-cel->x;
+    int offset_y = mask->y-cel->y;
     int u, v, putx, puty;
     int x1 = MAX(0, offset_x);
     int y1 = MAX(0, offset_y);
-    int x2 = MIN(image->w-1, offset_x+m_sprite->getMask()->w-1);
-    int y2 = MIN(image->h-1, offset_y+m_sprite->getMask()->h-1);
+    int x2 = MIN(image->w-1, offset_x+mask->w-1);
+    int y2 = MIN(image->h-1, offset_y+mask->h-1);
 
     // do nothing
     if (x1 > x2 || y1 > y2)
@@ -955,11 +957,11 @@ void UndoTransaction::clearMask(int bgcolor)
       m_undoHistory->undo_image(image, x1, y1, x2-x1+1, y2-y1+1);
 
     // clear the masked zones
-    for (v=0; v<m_sprite->getMask()->h; v++) {
+    for (v=0; v<mask->h; v++) {
       div_t d = div(0, 8);
-      ase_uint8* address = ((ase_uint8 **)m_sprite->getMask()->bitmap->line)[v]+d.quot;
+      ase_uint8* address = ((ase_uint8 **)mask->bitmap->line)[v]+d.quot;
 
-      for (u=0; u<m_sprite->getMask()->w; u++) {
+      for (u=0; u<mask->w; u++) {
 	if ((*address & (1<<d.rem))) {
 	  putx = u + offset_x;
 	  puty = v + offset_y;
@@ -1019,45 +1021,33 @@ void UndoTransaction::pasteImage(const Image* src_image, int x, int y, int opaci
 
 void UndoTransaction::copyToCurrentMask(Mask* mask)
 {
-  ASSERT(m_sprite->getMask());
+  ASSERT(m_document->getMask());
   ASSERT(mask);
 
   if (isEnabled())
-    m_undoHistory->undo_set_mask(m_sprite);
+    m_undoHistory->undo_set_mask(m_document);
 
-  mask_copy(m_sprite->getMask(), mask);
+  mask_copy(m_document->getMask(), mask);
 }
 
 void UndoTransaction::setMaskPosition(int x, int y)
 {
-  ASSERT(m_sprite->getMask());
+  ASSERT(m_document->getMask());
 
   if (isEnabled()) {
-    m_undoHistory->undo_int(m_sprite->getMask(), &m_sprite->getMask()->x);
-    m_undoHistory->undo_int(m_sprite->getMask(), &m_sprite->getMask()->y);
+    m_undoHistory->undo_int(m_document->getMask(), &m_document->getMask()->x);
+    m_undoHistory->undo_int(m_document->getMask(), &m_document->getMask()->y);
   }
 
-  m_sprite->getMask()->x = x;
-  m_sprite->getMask()->y = y;
+  m_document->getMask()->x = x;
+  m_document->getMask()->y = y;
 }
 
 void UndoTransaction::deselectMask()
 {
-  // Destroy the *deselected* mask
-  Mask* mask = m_sprite->requestMask("*deselected*");
-  if (mask) {
-    m_sprite->removeMask(mask);
-    mask_free(mask);
-  }
+  // TODO IMPLEMENT THIS (add support to save values in UndoHistory from any object)
+  // if (isEnabled())
+  //   m_undoHistory->undo_int(m_document);
 
-  // Save the selection in the repository
-  mask = mask_new_copy(m_sprite->getMask());
-  mask_set_name(mask, "*deselected*");
-  m_sprite->addMask(mask);
-
-  if (isEnabled())
-    m_undoHistory->undo_set_mask(m_sprite);
-
-  /// Deselect the mask
-  mask_none(m_sprite->getMask());
+  m_document->setMaskVisible(false);
 }

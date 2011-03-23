@@ -23,6 +23,8 @@
 #include "app/color_utils.h"
 #include "base/bind.h"
 #include "core/cfg.h"
+#include "document.h"
+#include "document_wrappers.h"
 #include "gui/box.h"
 #include "gui/button.h"
 #include "gui/frame.h"
@@ -44,14 +46,15 @@ static ColorButton* button_color;
 static CheckBox* check_preview;
 static Slider* slider_tolerance;
 
-static void button_1_command(JWidget widget);
-static void button_2_command(JWidget widget);
+static void button_1_command(Widget* widget, const DocumentReader& document);
+static void button_2_command(Widget* widget, const DocumentReader& document);
 
 static Mask* gen_mask(const Sprite* sprite);
-static void mask_preview(Document* document);
+static void mask_preview(const DocumentReader& document);
 
 void dialogs_mask_color(Document* document)
 {
+  DocumentReader documentReader(document);
   Sprite* sprite = document->getSprite();
   Box* box1, *box2, *box3, *box4;
   Widget* label_color;
@@ -90,17 +93,14 @@ void dialogs_mask_color(Document* document)
   if (get_config_bool("MaskColor", "Preview", true))
     check_preview->setSelected(true);
 
-  button_1->user_data[1] = document;
-  button_2->user_data[1] = document;
-
-  button_1->Click.connect(Bind<void>(&button_1_command, button_1));
-  button_2->Click.connect(Bind<void>(&button_2_command, button_2));
+  button_1->Click.connect(Bind<void>(&button_1_command, button_1, Ref(documentReader)));
+  button_2->Click.connect(Bind<void>(&button_2_command, button_2, Ref(documentReader)));
   button_ok->Click.connect(Bind<void>(&Frame::closeWindow, window.get(), button_ok));
   button_cancel->Click.connect(Bind<void>(&Frame::closeWindow, window.get(), button_cancel));
 
-  button_color->Change.connect(Bind<void>(&mask_preview, document));
-  slider_tolerance->Change.connect(Bind<void>(&mask_preview, document));
-  check_preview->Click.connect(Bind<void>(&mask_preview, document));
+  button_color->Change.connect(Bind<void>(&mask_preview, Ref(documentReader)));
+  slider_tolerance->Change.connect(Bind<void>(&mask_preview, Ref(documentReader)));
+  check_preview->Click.connect(Bind<void>(&mask_preview, Ref(documentReader)));
 
   jwidget_magnetic(button_ok, true);
   jwidget_expansive(button_color, true);
@@ -118,7 +118,7 @@ void dialogs_mask_color(Document* document)
   window->center_window();
 
   /* mask first preview */
-  mask_preview(document);
+  mask_preview(documentReader);
 
   /* load window configuration */
   load_window_pos(window, "MaskColor");
@@ -127,18 +127,19 @@ void dialogs_mask_color(Document* document)
   window->open_window_fg();
 
   if (window->get_killer() == button_ok) {
+    DocumentWriter documentWriter(documentReader);
     UndoHistory* undo = document->getUndoHistory();
     Mask* mask;
 
     /* undo */
     if (undo->isEnabled()) {
       undo->setLabel("Mask by Color");
-      undo->undo_set_mask(sprite);
+      undo->undo_set_mask(document);
     }
 
     /* change the mask */
     mask = gen_mask(sprite);
-    sprite->setMask(mask);
+    document->setMask(mask);
     mask_free(mask);
 
     set_config_color("MaskColor", "Color", button_color->getColor());
@@ -154,16 +155,16 @@ void dialogs_mask_color(Document* document)
   save_window_pos(window, "MaskColor");
 }
 
-static void button_1_command(JWidget widget)
+static void button_1_command(Widget* widget, const DocumentReader& document)
 {
   button_color->setColor(app_get_colorbar()->getFgColor());
-  mask_preview((Document*)widget->user_data[1]);
+  mask_preview(document);
 }
 
-static void button_2_command(JWidget widget)
+static void button_2_command(Widget* widget, const DocumentReader& document)
 {
   button_color->setColor(app_get_colorbar()->getBgColor());
-  mask_preview((Document*)widget->user_data[1]);
+  mask_preview(document);
 }
 
 static Mask *gen_mask(const Sprite* sprite)
@@ -182,14 +183,16 @@ static Mask *gen_mask(const Sprite* sprite)
   return mask;
 }
 
-static void mask_preview(Document* document)
+static void mask_preview(const DocumentReader& document)
 {
   if (check_preview->isSelected()) {
     Mask* mask = gen_mask(document->getSprite());
-
-    document->generateMaskBoundaries(mask);
-    update_screen_for_document(document);
-
+    {
+      DocumentWriter documentWriter(document);
+      documentWriter->generateMaskBoundaries(mask);
+    }
     mask_free(mask);
+
+    update_screen_for_document(document);
   }
 }

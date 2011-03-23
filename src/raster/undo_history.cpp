@@ -18,14 +18,10 @@
 
 #include "config.h"
 
-#include <vector>
-#include <list>
-#include <errno.h>
-#include <limits.h>
-#include <stdio.h>
-#include <allegro/config.h>
-
 #include "base/memory.h"
+#include "context.h"
+#include "document.h"
+#include "documents.h"
 #include "raster/cel.h"
 #include "raster/dirty.h"
 #include "raster/image.h"
@@ -35,14 +31,22 @@
 #include "raster/sprite.h"
 #include "raster/stock.h"
 #include "raster/undo_history.h"
+#include "ui_context.h"
 
-/* undo state */
+#include <allegro/config.h>
+#include <errno.h>
+#include <limits.h>
+#include <list>
+#include <stdio.h>
+#include <vector>
+
+// Undo state
 enum {
   DO_UNDO,
   DO_REDO,
 };
 
-// undo types
+// Undo types
 enum {
   // group
   UNDO_TYPE_OPEN,
@@ -78,7 +82,7 @@ enum {
   UNDO_TYPE_SET_PALETTE_COLORS,
   UNDO_TYPE_REMAP_PALETTE,
 
-  /* misc */
+  // misc
   UNDO_TYPE_SET_MASK,
   UNDO_TYPE_SET_IMGTYPE,
   UNDO_TYPE_SET_SIZE,
@@ -135,7 +139,7 @@ struct UndoAction
 static int count_undo_groups(UndoStream* undo_stream);
 static bool out_of_group(UndoStream* undo_stream);
 
-/* Undo actions */
+// Undo actions
 
 static void chunk_open_new(UndoStream* stream);
 static void chunk_open_invert(UndoStream* stream, UndoChunk* chunk);
@@ -197,7 +201,7 @@ static void chunk_set_palette_colors_invert(UndoStream* stream, UndoChunkSetPale
 static void chunk_remap_palette_new(UndoStream* stream, Sprite* sprite, int frame_from, int frame_to, const std::vector<int>& mapping);
 static void chunk_remap_palette_invert(UndoStream* stream, UndoChunkRemapPalette *chunk);
 
-static void chunk_set_mask_new(UndoStream* stream, Sprite *sprite);
+static void chunk_set_mask_new(UndoStream* stream, Document* document);
 static void chunk_set_mask_invert(UndoStream* stream, UndoChunkSetMask* chunk);
 
 static void chunk_set_imgtype_new(UndoStream* stream, Sprite *sprite);
@@ -218,7 +222,7 @@ static void chunk_set_frlen_invert(UndoStream* stream, UndoChunkSetFrlen *chunk)
 #define DECL_UNDO_ACTION(name) \
   { #name, (void (*)(UndoStream* , UndoChunk*))chunk_##name##_invert }
 
-/* warning: in the same order as in UNDO_TYPEs */
+// WARNING: in the same order as in UNDO_TYPEs
 static UndoAction undo_actions[] = {
   DECL_UNDO_ACTION(open),
   DECL_UNDO_ACTION(close),
@@ -248,7 +252,7 @@ static UndoAction undo_actions[] = {
   DECL_UNDO_ACTION(set_frlen),
 };
 
-/* Raw data */
+// Raw data
 
 static Dirty *read_raw_dirty(ase_uint8* raw_data);
 static ase_uint8* write_raw_dirty(ase_uint8* raw_data, Dirty* dirty);
@@ -1643,7 +1647,7 @@ static void chunk_remap_palette_invert(UndoStream* stream, UndoChunkRemapPalette
 
   "set_mask"
 
-     DWORD		sprite ID
+     DWORD		document ID
      MASK_DATA		see read/write_raw_mask
 
 ***********************************************************************/
@@ -1651,37 +1655,37 @@ static void chunk_remap_palette_invert(UndoStream* stream, UndoChunkRemapPalette
 struct UndoChunkSetMask
 {
   UndoChunk head;
-  ase_uint32 sprite_id;
+  ase_uint32 doc_id;
   ase_uint8 data[0];
 };
 
-void UndoHistory::undo_set_mask(Sprite *sprite)
+void UndoHistory::undo_set_mask(Document* document)
 {
-  chunk_set_mask_new(m_undoStream, sprite);
+  chunk_set_mask_new(m_undoStream, document);
   updateUndo();
 }
 
-static void chunk_set_mask_new(UndoStream* stream, Sprite *sprite)
+static void chunk_set_mask_new(UndoStream* stream, Document* document)
 {
-  UndoChunkSetMask* chunk = (UndoChunkSetMask* )
+  UndoChunkSetMask* chunk = (UndoChunkSetMask*)
     undo_chunk_new(stream,
 		   UNDO_TYPE_SET_MASK,
-		   sizeof(UndoChunkSetMask)+get_raw_mask_size(sprite->getMask()));
+		   sizeof(UndoChunkSetMask)+get_raw_mask_size(document->getMask()));
 
-  chunk->sprite_id = sprite->getId();
-  write_raw_mask(chunk->data, sprite->getMask());
+  chunk->doc_id = document->getId();
+  write_raw_mask(chunk->data, document->getMask());
 }
 
 static void chunk_set_mask_invert(UndoStream* stream, UndoChunkSetMask* chunk)
 {
-  Sprite *sprite = (Sprite *)GfxObj::find(chunk->sprite_id);
+  Document* document = UIContext::instance()->getDocuments().getById(chunk->doc_id);
+  ASSERT(document != NULL);
 
-  if (sprite) {
+  if (document != NULL) {
     Mask* mask = read_raw_mask(chunk->data);
 
-    chunk_set_mask_new(stream, sprite);
-    mask_copy(sprite->getMask(), mask);
-
+    chunk_set_mask_new(stream, document);
+    mask_copy(document->getMask(), mask);
     mask_free(mask);
   }
 }

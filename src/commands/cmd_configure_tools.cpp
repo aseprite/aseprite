@@ -526,11 +526,10 @@ void ConfigureTools::onSetGridClick()
   try {
     // TODO use the same context as in ConfigureTools::onExecute
     const ActiveDocumentReader document(UIContext::instance());
-    const Sprite* sprite(document ? document->getSprite(): 0);
 
-    if (sprite && sprite->getMask() && sprite->getMask()->bitmap) {
-      Rect bounds(sprite->getMask()->x, sprite->getMask()->y,
-		  sprite->getMask()->w, sprite->getMask()->h);
+    if (document && document->isMaskVisible()) {
+      const Mask* mask(document->getMask());
+      Rect bounds(mask->x, mask->y, mask->w, mask->h);
 
       UIContext::instance()->getSettings()->setGridBounds(bounds);
 

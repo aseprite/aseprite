@@ -307,32 +307,6 @@ FileOp* fop_to_save_document(Document* document)
     }
   }
 
-  // Repositories.
-  MasksList masks = fop->document->getSprite()->getMasksRepository();
-  if (!masks.empty()) {
-    int count = 0;
-
-    for (MasksList::iterator it = masks.begin(); it != masks.end(); ++it) {
-      Mask* mask = *it;
-
-      // Names starting with '*' are ignored
-      if (mask->name && *mask->name == '*')
-	continue;
-
-      count++;
-    }
-
-    if ((count > 0) && !(fop->format->support(FILE_SUPPORT_MASKS_REPOSITORY))) {
-      usprintf(buf+ustrlen(buf), "<<- Mask Repository");
-    }
-  }
-
-  if (!fop->document->getSprite()->getPathsRepository().empty()) {
-    if (!(fop->format->support(FILE_SUPPORT_PATHS_REPOSITORY))) {
-      usprintf(buf+ustrlen(buf), "<<- Path Repository");
-    }
-  }
-
   /* show the confirmation alert */
   if (ugetc(buf)) {
     /* interative */

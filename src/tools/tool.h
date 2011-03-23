@@ -251,6 +251,9 @@ public:
   // Should return an image where we can write pixels
   virtual Image* getDstImage() = 0;
 
+  // Returns true if we should use the mask to limit the paint area.
+  virtual bool useMask() = 0;
+
   // Current mask to limit paint area
   virtual Mask* getMask() = 0;
 

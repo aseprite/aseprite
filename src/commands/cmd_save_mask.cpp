@@ -52,18 +52,12 @@ SaveMaskCommand::SaveMaskCommand()
 bool SaveMaskCommand::onEnabled(Context* context)
 {
   const ActiveDocumentReader document(context);
-  const Sprite* sprite(document ? document->getSprite(): NULL);
-  if (!sprite)
-    return false;
-  else
-    return (sprite->getMask() &&
-	    sprite->getMask()->bitmap) ? true: false;
+  return document && document->isMaskVisible();
 }
 
 void SaveMaskCommand::onExecute(Context* context)
 {
   const ActiveDocumentReader document(context);
-  const Sprite* sprite(document ? document->getSprite(): NULL);
   base::string filename = "default.msk";
   int ret;
 
@@ -91,7 +85,7 @@ void SaveMaskCommand::onExecute(Context* context)
     /* "no": we must back to select other file-name */
   }
 
-  if (save_msk_file(sprite->getMask(), filename.c_str()) != 0)
+  if (save_msk_file(document->getMask(), filename.c_str()) != 0)
     Alert::show("Error<<Error saving .msk file<<%s||&Close", filename.c_str());
 }
 

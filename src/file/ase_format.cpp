@@ -118,9 +118,7 @@ class AseFormat : public FileFormat
       FILE_SUPPORT_INDEXED |
       FILE_SUPPORT_LAYERS |
       FILE_SUPPORT_FRAMES |
-      FILE_SUPPORT_PALETTES |
-      FILE_SUPPORT_MASKS_REPOSITORY |
-      FILE_SUPPORT_PATHS_REPOSITORY;
+      FILE_SUPPORT_PALETTES;
   }
 
   bool onLoad(FileOp* fop);
@@ -250,7 +248,7 @@ bool AseFormat::onLoad(FileOp *fop)
 
 	    mask = ase_file_read_mask_chunk(f);
 	    if (mask)
-	      sprite->addMask(mask);
+	      delete mask;	// TODO add the mask in some place?
 	    else
 	      fop_error(fop, "Warning: error loading a mask chunk\n");
 
@@ -334,11 +332,6 @@ bool AseFormat::onSave(FileOp *fop)
       /* write layer chunks */
       for (; it != end; ++it)
 	ase_file_write_layers(f, *it);
-
-      // Write all masks.
-      MasksList masks = sprite->getMasksRepository();
-      for (MasksList::iterator it = masks.begin(); it != masks.end(); ++it)
-	ase_file_write_mask_chunk(f, *it);
     }
 
     /* write cel chunks */

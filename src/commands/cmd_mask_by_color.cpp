@@ -53,8 +53,7 @@ bool MaskByColorCommand::onEnabled(Context* context)
 
 void MaskByColorCommand::onExecute(Context* context)
 {
-  ActiveDocumentWriter document(context);
-  dialogs_mask_color(document);
+  dialogs_mask_color(context->getActiveDocument());
 }
 
 //////////////////////////////////////////////////////////////////////

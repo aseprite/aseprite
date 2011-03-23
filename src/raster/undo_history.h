@@ -19,13 +19,14 @@
 #ifndef RASTER_UNDO_H_INCLUDED
 #define RASTER_UNDO_H_INCLUDED
 
-#include <vector>
-
 #include "base/exception.h"
 #include "raster/gfxobj.h"
 
+#include <vector>
+
 class Cel;
 class Dirty;
+class Document;
 class Image;
 class Layer;
 class Mask;
@@ -87,7 +88,7 @@ public:
   void undo_set_palette_colors(Sprite* sprite, Palette* palette, int from, int to);
   void undo_remap_palette(Sprite* sprite, int frame_from, int frame_to,
 			  const std::vector<int>& mapping);
-  void undo_set_mask(Sprite* sprite);
+  void undo_set_mask(Document* document);
   void undo_set_imgtype(Sprite* sprite);
   void undo_set_size(Sprite* sprite);
   void undo_set_frame(Sprite* sprite);

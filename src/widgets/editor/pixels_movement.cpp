@@ -148,8 +148,8 @@ public:
       m_undoTransaction.setMaskPosition(cel->x, cel->y);
     }
     else {
-      m_sprite->getMask()->x = cel->x;
-      m_sprite->getMask()->y = cel->y;
+      m_documentWriter->getMask()->x = cel->x;
+      m_documentWriter->getMask()->y = cel->y;
     }
     m_documentWriter->generateMaskBoundaries();
 

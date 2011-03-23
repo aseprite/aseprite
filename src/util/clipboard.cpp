@@ -78,7 +78,7 @@ enum {
 };
 
 static void set_clipboard(Image* image, Palette* palette, bool set_system_clipboard);
-static bool copy_from_sprite(const Sprite* sprite);
+static bool copy_from_document(const Document* document);
 
 static bool interactive_transform(Editor* widget, Image *dest_image, Image *image,
 				  int x, int y, int xout[4], int yout[4]);
@@ -129,14 +129,16 @@ static void set_clipboard(Image* image, Palette* palette, bool set_system_clipbo
 #endif
 }
 
-static bool copy_from_sprite(const Sprite* sprite)
+static bool copy_from_document(const Document* document)
 {
-  ASSERT(sprite != NULL);
-  Image* image = NewImageFromMask(sprite);
+  ASSERT(document != NULL);
+  ASSERT(document->isMaskVisible());
+
+  Image* image = NewImageFromMask(document);
   if (!image)
     return false;
 
-  const Palette* pal = sprite->getPalette(sprite->getCurrentFrame());
+  const Palette* pal = document->getSprite()->getPalette(document->getSprite()->getCurrentFrame());
   set_clipboard(image, pal ? new Palette(*pal): NULL, true);
   return true;
 }
@@ -156,14 +158,14 @@ void clipboard::cut(DocumentWriter& document)
   ASSERT(document->getSprite() != NULL);
   ASSERT(document->getSprite()->getCurrentLayer() != NULL);
 
-  Sprite* sprite = document->getSprite();
-
-  if (!copy_from_sprite(sprite)) {
+  if (!copy_from_document(document)) {
     Console console;
     console.printf("Can't copying an image portion from the current layer\n");
   }
   else {
     {
+      Sprite* sprite = document->getSprite();
+
       UndoTransaction undoTransaction(document, "Cut");
       undoTransaction.clearMask(app_get_color_to_clear_layer(sprite->getCurrentLayer()));
       undoTransaction.deselectMask();
@@ -178,7 +180,7 @@ void clipboard::copy(const DocumentReader& document)
 {
   ASSERT(document != NULL);
 
-  if (!copy_from_sprite(document->getSprite())) {
+  if (!copy_from_document(document)) {
     Console console;
     console.printf("Can't copying an image portion from the current layer\n");
   }

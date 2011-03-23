@@ -33,8 +33,8 @@
   addresses_define							\
   register int x;							\
 									\
-  /* with mask */							\
-  if (!loop->getMask()->is_empty()) {					\
+  /* Use mask */							\
+  if (loop->useMask()) {						\
     Point maskOrigin(loop->getMaskOrigin());				\
 									\
     if ((y < maskOrigin.y) || (y >= maskOrigin.y+loop->getMask()->h))	\

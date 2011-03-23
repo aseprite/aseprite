@@ -617,11 +617,12 @@ void Editor::turnOnSelectionModifiers()
 {
   deleteDecorators();
 
+  Mask* mask = m_document->getMask();
   int x1, y1, x2, y2;
 
-  editor_to_screen(m_sprite->getMask()->x, m_sprite->getMask()->y, &x1, &y1);
-  editor_to_screen(m_sprite->getMask()->x+m_sprite->getMask()->w-1,
-		   m_sprite->getMask()->y+m_sprite->getMask()->h-1, &x2, &y2);
+  editor_to_screen(mask->x, mask->y, &x1, &y1);
+  editor_to_screen(mask->x+mask->w-1,
+		   mask->y+mask->h-1, &x2, &y2);
 
   addDecorator(new Decorator(Decorator::SELECTION_NW, Rect(x1-8,        y1-8, 8, 8)));
   addDecorator(new Decorator(Decorator::SELECTION_N,  Rect((x1+x2)/2-4, y1-8, 8, 8)));
@@ -769,7 +770,7 @@ void Editor::editor_update_statusbar_for_standby()
   }
   // For other tools
   else {
-    Mask* mask = m_sprite->getMask();
+    Mask* mask = m_document->getMask();
 
     app_get_statusbar()->setStatusText
       (0, "Pos %d %d, Size %d %d, Frame %d",
@@ -1100,9 +1101,9 @@ bool Editor::onProcessMessage(JMessage msg)
 	    }
 
 	    // Copy the mask to the extra cel image
-	    Image* tmpImage = NewImageFromMask(m_sprite);
-	    x = m_sprite->getMask()->x;
-	    y = m_sprite->getMask()->y;
+	    Image* tmpImage = NewImageFromMask(m_document);
+	    x = m_document->getMask()->x;
+	    y = m_document->getMask()->y;
 	    m_pixelsMovement = new PixelsMovement(m_document, m_sprite, tmpImage, x, y, opacity);
 	    delete tmpImage;
 
@@ -1564,7 +1565,8 @@ void Editor::editor_setcursor(int x, int y)
 	    
 	  // Move selection
 	  if (m_pixelsMovement->isDragging() ||
-	      m_sprite->getMask()->contains_point(x, y)) {
+	      m_document->isMaskVisible() &&
+	      m_document->getMask()->contains_point(x, y)) {
 	    hide_drawing_cursor();
 	    jmouse_set_cursor(JI_CURSOR_MOVE);
 
@@ -1595,7 +1597,8 @@ void Editor::editor_setcursor(int x, int y)
 	      screen_to_editor(jmouse_x(0), jmouse_y(0), &x, &y);
 	    
 	      // Move pixels
-	      if (m_sprite->getMask()->contains_point(x, y)) {
+	      if (m_document->isMaskVisible() &&
+		  m_document->getMask()->contains_point(x, y)) {
 		hide_drawing_cursor();
 		if (key[KEY_LCONTROL] ||
 		    key[KEY_RCONTROL]) // TODO configurable keys
@@ -1760,6 +1763,7 @@ class ToolLoopImpl : public IToolLoop
   TiledMode m_tiled_mode;
   Image* m_src_image;
   Image* m_dst_image;
+  bool m_useMask;
   Mask* m_mask;
   Point m_maskOrigin;
   int m_opacity;
@@ -1779,21 +1783,20 @@ public:
 	       Sprite* sprite,
 	       Layer* layer,
 	       int button, const Color& primary_color, const Color& secondary_color)
+    : m_editor(editor)
+    , m_context(context)
+    , m_tool(tool)
+    , m_document(document)
+    , m_sprite(sprite)
+    , m_layer(layer)
+    , m_cel(NULL)
+    , m_cel_image(NULL)
+    , m_cel_created(false)
+    , m_canceled(false)
+    , m_button(button)
+    , m_primary_color(color_utils::color_for_layer(primary_color, layer))
+    , m_secondary_color(color_utils::color_for_layer(secondary_color, layer))
   {
-    m_editor = editor;
-    m_context = context;
-    m_tool = tool;
-    m_document = document;
-    m_sprite = sprite;
-    m_layer = layer;
-    m_cel = NULL;
-    m_cel_image = NULL;
-    m_cel_created = false;
-    m_canceled = false;
-    m_button = button;
-    m_primary_color = color_utils::color_for_layer(primary_color, layer);
-    m_secondary_color = color_utils::color_for_layer(secondary_color, layer);
-
     // Settings
     ISettings* settings = m_context->getSettings();
 
@@ -1871,7 +1874,15 @@ public:
 			     m_cel_image->mask_color);
     m_dst_image = image_new_copy(m_src_image);
 
-    m_mask = m_sprite->getMask();
+    m_useMask = m_document->isMaskVisible();
+
+    // Selection ink
+    if (getInk()->isSelection() && !m_document->isMaskVisible()) {
+      Mask emptyMask;
+      m_document->setMask(&emptyMask);
+    }
+
+    m_mask = m_document->getMask();
     m_maskOrigin = (!m_mask->is_empty() ? Point(m_mask->x-x1, m_mask->y-y1):
 					  Point(0, 0));
 
@@ -2015,6 +2026,7 @@ public:
   Layer* getLayer() { return m_layer; }
   Image* getSrcImage() { return m_src_image; }
   Image* getDstImage() { return m_dst_image; }
+  bool useMask() { return m_useMask; }
   Mask* getMask() { return m_mask; }
   Point getMaskOrigin() { return m_maskOrigin; }
   int getMouseButton() { return m_button; }

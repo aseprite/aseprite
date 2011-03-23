@@ -56,26 +56,19 @@ CropSpriteCommand::CropSpriteCommand()
 bool CropSpriteCommand::onEnabled(Context* context)
 {
   const ActiveDocumentReader document(context);
-  const Sprite* sprite(document ? document->getSprite(): 0);
-  return
-    sprite != NULL &&
-    sprite->getMask() != NULL &&
-    sprite->getMask()->bitmap != NULL;
+  return document && document->isMaskVisible();
 }
 
 void CropSpriteCommand::onExecute(Context* context)
 {
   ActiveDocumentWriter document(context);
-  Sprite* sprite(document->getSprite());
+  const Sprite* sprite(document->getSprite());
+  const Mask* mask(document->getMask());
   {
     UndoTransaction undoTransaction(document, "Sprite Crop");
     int bgcolor = color_utils::color_for_image(app_get_colorbar()->getBgColor(), sprite->getImgType());
 
-    undoTransaction.cropSprite(sprite->getMask()->x,
-			       sprite->getMask()->y,
-			       sprite->getMask()->w,
-			       sprite->getMask()->h,
-			       bgcolor);
+    undoTransaction.cropSprite(mask->x, mask->y, mask->w, mask->h, bgcolor);
     undoTransaction.commit();
   }
   document->generateMaskBoundaries();

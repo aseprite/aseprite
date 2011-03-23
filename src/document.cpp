@@ -58,6 +58,10 @@ Document::Document(Sprite* sprite)
   m_preferred.scroll_y = 0;
   m_preferred.zoom = 0;
   m_preferred.virgin = true;
+
+  // Mask
+  m_mask = new Mask();
+  m_maskVisible = true;
 }
 
 Document::~Document()
@@ -70,6 +74,7 @@ Document::~Document()
   delete m_mutex;
   delete m_undoHistory;
   delete m_sprite;
+  delete m_mask;
 }
 
 Document* Document::createBasicDocument(int imgtype, int width, int height, int ncolors)
@@ -183,14 +188,18 @@ const _BoundSeg* Document::getBoundariesSegments() const
 
 void Document::generateMaskBoundaries(Mask* mask)
 {
-  // No mask specified? Use the current one in the document
-  if (!mask)
-    mask = m_sprite->getMask();
-
   if (m_bound.seg) {
     base_free(m_bound.seg);
     m_bound.seg = NULL;
     m_bound.nseg = 0;
+  }
+
+  // No mask specified? Use the current one in the document
+  if (!mask) {
+    if (!isMaskVisible())	// The mask is hidden
+      return;			// Done, without boundaries
+    else
+      mask = getMask();		// Use the document mask
   }
 
   ASSERT(mask != NULL);
@@ -250,6 +259,36 @@ Cel* Document::getExtraCel() const
 Image* Document::getExtraCelImage() const
 {
   return m_extraImage;
+}
+
+//////////////////////////////////////////////////////////////////////
+// Mask
+
+Mask* Document::getMask() const
+{
+  return m_mask;
+}
+
+void Document::setMask(const Mask* mask)
+{
+  if (m_mask)
+    mask_free(m_mask);
+
+  m_mask = mask_new_copy(mask);
+  m_maskVisible = true;
+}
+
+bool Document::isMaskVisible() const
+{
+  return
+    m_maskVisible &&		// The mask was not hidden by the user explicitly
+    m_mask &&			// The mask does exist
+    !m_mask->is_empty();	// The mask is not empty
+}
+
+void Document::setMaskVisible(bool visible)
+{
+  m_maskVisible = visible;
 }
 
 //////////////////////////////////////////////////////////////////////

@@ -66,15 +66,15 @@ void ClearCommand::onExecute(Context* context)
 {
   ActiveDocumentWriter document(context);
   Sprite* sprite(document->getSprite());
-  bool empty_mask = sprite->getMask()->is_empty();
+  bool visibleMask = document->isMaskVisible();
   {
     UndoTransaction undoTransaction(document, "Clear");
     undoTransaction.clearMask(app_get_color_to_clear_layer(sprite->getCurrentLayer()));
-    if (!empty_mask)
+    if (visibleMask)
       undoTransaction.deselectMask();
     undoTransaction.commit();
   }
-  if (!empty_mask)
+  if (visibleMask)
     document->generateMaskBoundaries();
   update_screen_for_document(document);
 }

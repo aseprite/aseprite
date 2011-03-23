@@ -101,8 +101,9 @@ void FlipCommand::onExecute(Context* context)
       image = sprite->getCurrentImage(&x, &y);
       if (!image)
 	return;
-      // mask is empty?
-      if (sprite->getMask()->is_empty()) {
+
+      // Mask is empty?
+      if (!document->isMaskVisible()) {
 	// so we flip the entire image
 	x1 = 0;
 	y1 = 0;
@@ -111,10 +112,10 @@ void FlipCommand::onExecute(Context* context)
       }
       else {
 	// apply the cel offset
-	x1 = sprite->getMask()->x - x;
-	y1 = sprite->getMask()->y - y;
-	x2 = sprite->getMask()->x + sprite->getMask()->w - 1 - x;
-	y2 = sprite->getMask()->y + sprite->getMask()->h - 1 - y;
+	x1 = document->getMask()->x - x;
+	y1 = document->getMask()->y - y;
+	x2 = document->getMask()->x + document->getMask()->w - 1 - x;
+	y2 = document->getMask()->y + document->getMask()->h - 1 - y;
 
 	// clip
 	x1 = MID(0, x1, image->w-1);

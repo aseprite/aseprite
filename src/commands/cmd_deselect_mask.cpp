@@ -49,8 +49,7 @@ DeselectMaskCommand::DeselectMaskCommand()
 bool DeselectMaskCommand::onEnabled(Context* context)
 {
   const ActiveDocumentReader document(context);
-  const Sprite* sprite(document ? document->getSprite(): 0);
-  return sprite && !sprite->getMask()->is_empty();
+  return document && document->isMaskVisible();
 }
 
 void DeselectMaskCommand::onExecute(Context* context)

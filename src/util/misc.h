@@ -23,9 +23,9 @@
 #include "widgets/editor.h"	// For movement modes
 
 class Image;
-class Sprite;
+class Document;
 
-Image* NewImageFromMask(const Sprite* src);
+Image* NewImageFromMask(const Document* srcDocument);
 
 int interactive_move_layer(int mode, bool use_undo, int (*callback)());
 
