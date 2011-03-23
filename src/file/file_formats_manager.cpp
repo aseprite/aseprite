@@ -22,6 +22,7 @@
 
 #include "file/file_formats_manager.h"
 #include "file/file_format.h"
+#include "file/format_options.h"
 
 extern FileFormat* CreateAseFormat();
 extern FileFormat* CreateBmpFormat();

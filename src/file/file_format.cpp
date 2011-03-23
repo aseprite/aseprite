@@ -18,9 +18,10 @@
 
 #include "config.h"
 
-#include <algorithm>
-
 #include "file/file_format.h"
+#include "file/format_options.h"
+
+#include <algorithm>
 
 FileFormat::FileFormat()
 {
