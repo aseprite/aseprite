@@ -32,6 +32,7 @@
 #include "modules/gui.h"
 #include "modules/palettes.h"
 #include "raster/raster.h"
+#include "undo/undo_history.h"
 #include "util/misc.h"
 #include "widgets/editor.h"
 #include "widgets/statebar.h"

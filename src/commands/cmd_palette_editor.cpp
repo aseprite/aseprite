@@ -18,11 +18,6 @@
 
 #include "config.h"
 
-#include <allegro.h>
-#include <stdio.h>
-#include <string.h>
-#include <vector>
-
 #include "app.h"
 #include "app/color.h"
 #include "app/color_utils.h"
@@ -32,11 +27,12 @@
 #include "console.h"
 #include "core/cfg.h"
 #include "dialogs/filesel.h"
+#include "document_wrappers.h"
 #include "gfx/hsv.h"
 #include "gfx/rgb.h"
 #include "gfx/size.h"
-#include "gui/gui.h"
 #include "gui/graphics.h"
+#include "gui/gui.h"
 #include "modules/editors.h"
 #include "modules/gui.h"
 #include "modules/palettes.h"
@@ -45,16 +41,20 @@
 #include "raster/quantization.h"
 #include "raster/sprite.h"
 #include "raster/stock.h"
-#include "raster/undo_history.h"
 #include "skin/skin_slider_property.h"
-#include "document_wrappers.h"
 #include "ui_context.h"
+#include "undo/undo_history.h"
 #include "widgets/color_bar.h"
 #include "widgets/color_sliders.h"
 #include "widgets/editor.h"
-#include "widgets/palette_view.h"
 #include "widgets/hex_color_entry.h"
+#include "widgets/palette_view.h"
 #include "widgets/statebar.h"
+
+#include <allegro.h>
+#include <stdio.h>
+#include <string.h>
+#include <vector>
 
 using namespace gfx;
 

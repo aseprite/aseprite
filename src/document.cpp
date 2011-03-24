@@ -31,7 +31,7 @@
 #include "raster/palette.h"
 #include "raster/sprite.h"
 #include "raster/stock.h"
-#include "raster/undo_history.h"
+#include "undo/undo_history.h"
 #include "util/boundary.h"
 
 Document::Document(Sprite* sprite)

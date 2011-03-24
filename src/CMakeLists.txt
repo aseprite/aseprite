@@ -213,7 +213,6 @@ add_library(aseprite-library
   raster/rotate.cpp
   raster/sprite.cpp
   raster/stock.cpp
-  raster/undo_history.cpp
   settings/ui_settings_impl.cpp
   skin/button_icon_impl.cpp
   skin/skin_theme.cpp
@@ -221,6 +220,7 @@ add_library(aseprite-library
   skin/skin_slider_property.cpp
   tools/tool.cpp
   tools/toolbox.cpp
+  undo/undo_history.cpp
   util/autocrop.cpp
   util/boundary.cpp
   util/celmove.cpp

@@ -16,8 +16,8 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifndef RASTER_UNDO_STREAM_H_INCLUDED
-#define RASTER_UNDO_STREAM_H_INCLUDED
+#ifndef UNDO_UNDO_STREAM_H_INCLUDED
+#define UNDO_UNDO_STREAM_H_INCLUDED
 
 class UndoStream
 {

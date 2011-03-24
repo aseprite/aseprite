@@ -18,16 +18,11 @@
 
 #include "config.h"
 
-#include <allegro.h>
-#include <cstdarg>
-#include <cstdio>
-#include <cstring>
-#include <algorithm>
-
 #include "app.h"
 #include "base/bind.h"
 #include "commands/commands.h"
 #include "commands/params.h"
+#include "document_wrappers.h"
 #include "gfx/size.h"
 #include "gui/gui.h"
 #include "modules/editors.h"
@@ -38,15 +33,20 @@
 #include "raster/image.h"
 #include "raster/layer.h"
 #include "raster/sprite.h"
-#include "raster/undo_history.h"
 #include "skin/skin_theme.h"
-#include "document_wrappers.h"
 #include "tools/tool.h"
 #include "ui_context.h"
+#include "undo/undo_history.h"
 #include "util/misc.h"
 #include "widgets/color_button.h"
 #include "widgets/editor.h"
 #include "widgets/statebar.h"
+
+#include <algorithm>
+#include <allegro.h>
+#include <cstdarg>
+#include <cstdio>
+#include <cstring>
 
 using namespace gfx;
 

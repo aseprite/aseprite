@@ -18,13 +18,13 @@
 
 #include "config.h"
 
-#include "commands/command.h"
 #include "app.h"
+#include "commands/command.h"
+#include "document_wrappers.h"
 #include "modules/gui.h"
 #include "raster/sprite.h"
-#include "raster/undo_history.h"
+#include "undo/undo_history.h"
 #include "widgets/statebar.h"
-#include "document_wrappers.h"
 
 class UndoCommand : public Command
 {

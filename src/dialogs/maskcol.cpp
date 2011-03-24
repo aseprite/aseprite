@@ -37,7 +37,7 @@
 #include "raster/image.h"
 #include "raster/mask.h"
 #include "raster/sprite.h"
-#include "raster/undo_history.h"
+#include "undo/undo_history.h"
 #include "util/misc.h"
 #include "widgets/color_bar.h"
 #include "widgets/color_button.h"

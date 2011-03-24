@@ -18,16 +18,15 @@
 
 #include "config.h"
 
-#include "gui/gui.h"
-
+#include "app.h"
 #include "commands/command.h"
 #include "console.h"
-#include "app.h"
+#include "document_wrappers.h"
+#include "gui/gui.h"
 #include "modules/gui.h"
 #include "raster/layer.h"
 #include "raster/sprite.h"
-#include "raster/undo_history.h"
-#include "document_wrappers.h"
+#include "undo/undo_history.h"
 
 //////////////////////////////////////////////////////////////////////
 // Duplicate Layer command

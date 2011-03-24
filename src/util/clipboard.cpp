@@ -34,11 +34,11 @@
 #include "raster/rotate.h"
 #include "raster/sprite.h"
 #include "raster/stock.h"
-#include "raster/undo_history.h"
 #include "settings/settings.h"
 #include "skin/skin_parts.h"
 #include "skin/skin_theme.h"
 #include "ui_context.h"
+#include "undo/undo_history.h"
 #include "undo_transaction.h"
 #include "util/clipboard.h"
 #include "util/misc.h"
@@ -50,6 +50,7 @@
 
 #if defined ALLEGRO_WINDOWS
   #include <winalleg.h>
+
   #include "util/clipboard_win32.h"
 #endif
 

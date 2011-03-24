@@ -18,6 +18,7 @@
 
 #include "config.h"
 
+#include "base/exception.h"
 #include "document.h"
 #include "file/file.h"
 #include "file/file_format.h"

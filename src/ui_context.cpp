@@ -18,20 +18,20 @@
 
 #include "config.h"
 
-#include <allegro/file.h>
-#include <allegro/system.h>
-
 #include "app.h"
 #include "base/mutex.h"
 #include "base/path.h"
 #include "document.h"
 #include "modules/editors.h"
 #include "raster/sprite.h"
-#include "raster/undo_history.h"
 #include "settings/ui_settings_impl.h"
 #include "ui_context.h"
+#include "undo/undo_history.h"
 #include "widgets/color_bar.h"
 #include "widgets/tabs.h"
+
+#include <allegro/file.h>
+#include <allegro/system.h>
 
 UIContext* UIContext::m_instance = NULL;
 

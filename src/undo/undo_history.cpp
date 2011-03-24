@@ -30,8 +30,8 @@
 #include "raster/palette.h"
 #include "raster/sprite.h"
 #include "raster/stock.h"
-#include "raster/undo_history.h"
 #include "ui_context.h"
+#include "undo/undo_history.h"
 
 #include <allegro/config.h>
 #include <errno.h>

@@ -34,6 +34,7 @@
 #include "raster/raster.h"
 #include "skin/skin_theme.h"
 #include "ui_context.h"
+#include "undo/undo_history.h"
 #include "undo_transaction.h"
 #include "util/celmove.h"
 #include "util/thmbnail.h"

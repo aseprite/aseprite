@@ -25,7 +25,7 @@
 #include "raster/layer.h"
 #include "raster/mask.h"
 #include "raster/sprite.h"
-#include "raster/undo_history.h"
+#include "undo/undo_history.h"
 #include "undo_transaction.h"
 #include "widgets/color_bar.h"
 

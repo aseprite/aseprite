@@ -18,18 +18,17 @@
 
 #include "config.h"
 
-#include "gui/gui.h"
-
-#include "commands/command.h"
 #include "app.h"
+#include "commands/command.h"
+#include "document_wrappers.h"
+#include "gui/gui.h"
 #include "modules/gui.h"
 #include "raster/cel.h"
 #include "raster/image.h"
 #include "raster/layer.h"
 #include "raster/sprite.h"
 #include "raster/stock.h"
-#include "raster/undo_history.h"
-#include "document_wrappers.h"
+#include "undo/undo_history.h"
 
 //////////////////////////////////////////////////////////////////////
 // merge_down_layer

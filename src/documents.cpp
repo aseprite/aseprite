@@ -23,7 +23,7 @@
 #include "base/mutex.h"
 #include "document.h"
 #include "raster/sprite.h"
-#include "raster/undo_history.h"
+#include "undo/undo_history.h"
 
 #include <algorithm>
 

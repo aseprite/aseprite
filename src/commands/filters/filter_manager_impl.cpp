@@ -35,7 +35,7 @@
 #include "raster/mask.h"
 #include "raster/sprite.h"
 #include "raster/stock.h"
-#include "raster/undo_history.h"
+#include "undo/undo_history.h"
 #include "widgets/editor.h"
 
 #include <cstdlib>

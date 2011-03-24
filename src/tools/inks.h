@@ -22,7 +22,7 @@
 #include "app/color_utils.h"
 #include "context.h"
 #include "document.h"
-#include "raster/undo_history.h"
+#include "undo/undo_history.h"
 
 
 // Ink used for tools which paint with primary/secondary

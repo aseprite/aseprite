@@ -33,7 +33,7 @@
 #include "raster/quantization.h"
 #include "raster/sprite.h"
 #include "raster/stock.h"
-#include "raster/undo_history.h"
+#include "undo/undo_history.h"
 
 UndoTransaction::UndoTransaction(Document* document, const char* label)
 {

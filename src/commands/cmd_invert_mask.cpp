@@ -20,12 +20,12 @@
 
 #include "commands/command.h"
 #include "commands/commands.h"
+#include "document_wrappers.h"
 #include "modules/gui.h"
 #include "raster/image.h"
 #include "raster/mask.h"
 #include "raster/sprite.h"
-#include "raster/undo_history.h"
-#include "document_wrappers.h"
+#include "undo/undo_history.h"
 
 //////////////////////////////////////////////////////////////////////
 // invert_mask
