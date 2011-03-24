@@ -33,7 +33,7 @@ using namespace gfx;
 
 class PixelsMovementImpl
 {
-  DocumentWriter m_documentWriter;
+  const DocumentReader m_documentReader;
   Sprite* m_sprite;
   UndoTransaction m_undoTransaction;
   int m_initial_x, m_initial_y;
@@ -43,17 +43,18 @@ class PixelsMovementImpl
 
 public:
   PixelsMovementImpl(Document* document, Sprite* sprite, const Image* moveThis, int initial_x, int initial_y, int opacity)
-    : m_documentWriter(document)
+    : m_documentReader(document)
     , m_sprite(sprite)
-    , m_undoTransaction(m_documentWriter, "Pixels Movement")
+    , m_undoTransaction(document, "Pixels Movement")
     , m_initial_x(initial_x)
     , m_initial_y(initial_y)
     , m_firstDrop(true)
     , m_isDragging(false)
   {
-    m_documentWriter->prepareExtraCel(initial_x, initial_y, moveThis->w, moveThis->h, opacity);
+    DocumentWriter documentWriter(m_documentReader);
+    documentWriter->prepareExtraCel(initial_x, initial_y, moveThis->w, moveThis->h, opacity);
 
-    Image* extraImage = m_documentWriter->getExtraCelImage();
+    Image* extraImage = documentWriter->getExtraCelImage();
     image_copy(extraImage, moveThis, 0, 0);
   }
 
@@ -63,7 +64,10 @@ public:
 
   void cutMask()
   {
-    m_undoTransaction.clearMask(app_get_color_to_clear_layer(m_sprite->getCurrentLayer()));
+    {
+      DocumentWriter documentWriter(m_documentReader);
+      m_undoTransaction.clearMask(app_get_color_to_clear_layer(m_sprite->getCurrentLayer()));
+    }
 
     copyMask();
   }
@@ -71,11 +75,13 @@ public:
   void copyMask()
   {
     // Hide the mask (do not deselect it, it will be moved them using m_undoTransaction.setMaskPosition)
-    Mask* empty_mask = new Mask();
-    m_documentWriter->generateMaskBoundaries(empty_mask);
-    delete empty_mask;
+    Mask emptyMask;
+    {
+      DocumentWriter documentWriter(m_documentReader);
+      documentWriter->generateMaskBoundaries(&emptyMask);
+    }
 
-    update_screen_for_document(m_documentWriter);
+    update_screen_for_document(m_documentReader);
   }
 
   void catchImage(int x, int y)
@@ -88,7 +94,7 @@ public:
   void catchImageAgain(int x, int y)
   {
     // Create a new UndoTransaction to move the pixels to other position
-    Cel* cel = m_documentWriter->getExtraCel();
+    const Cel* cel = m_documentReader->getExtraCel();
     m_initial_x = cel->x;
     m_initial_y = cel->y;
     m_isDragging = true;
@@ -97,17 +103,20 @@ public:
     m_catch_y = y;
 
     // Hide the mask (do not deselect it, it will be moved them using m_undoTransaction.setMaskPosition)
-    Mask* empty_mask = new Mask();
-    m_documentWriter->generateMaskBoundaries(empty_mask);
-    delete empty_mask;
+    Mask emptyMask;
+    {
+      DocumentWriter documentWriter(m_documentReader);
+      documentWriter->generateMaskBoundaries(&emptyMask);
+    }
 
-    update_screen_for_document(m_documentWriter);
+    update_screen_for_document(m_documentReader);
   }
 
   Rect moveImage(int x, int y)
   {
-    Cel* cel = m_documentWriter->getExtraCel();
-    Image* image = m_documentWriter->getExtraCelImage();
+    DocumentWriter documentWriter(m_documentReader);
+    Cel* cel = documentWriter->getExtraCel();
+    Image* image = documentWriter->getExtraCelImage();
     int x1, y1, x2, y2;
     int u1, v1, u2, v2;
 
@@ -140,31 +149,38 @@ public:
   {
     m_isDragging = false;
 
-    Cel* cel = m_documentWriter->getExtraCel();
+    const Cel* cel = m_documentReader->getExtraCel();
 
-    // Show the mask again in the new position
-    if (m_firstDrop) {
-      m_firstDrop = false;
-      m_undoTransaction.setMaskPosition(cel->x, cel->y);
-    }
-    else {
-      m_documentWriter->getMask()->x = cel->x;
-      m_documentWriter->getMask()->y = cel->y;
-    }
-    m_documentWriter->generateMaskBoundaries();
+    {
+      DocumentWriter documentWriter(m_documentReader);
 
-    update_screen_for_document(m_documentWriter);
+      // Show the mask again in the new position
+      if (m_firstDrop) {
+	m_firstDrop = false;
+	m_undoTransaction.setMaskPosition(cel->x, cel->y);
+      }
+      else {
+	documentWriter->getMask()->x = cel->x;
+	documentWriter->getMask()->y = cel->y;
+      }
+      documentWriter->generateMaskBoundaries();
+    }
+
+    update_screen_for_document(m_documentReader);
   }
 
   void dropImage()
   {
     m_isDragging = false;
 
-    Cel* cel = m_documentWriter->getExtraCel();
-    Image* image = m_documentWriter->getExtraCelImage();
+    const Cel* cel = m_documentReader->getExtraCel();
+    const Image* image = m_documentReader->getExtraCelImage();
 
-    m_undoTransaction.pasteImage(image, cel->x, cel->y, cel->opacity);
-    m_undoTransaction.commit();
+    {
+      DocumentWriter documentWriter(m_documentReader);
+      m_undoTransaction.pasteImage(image, cel->x, cel->y, cel->opacity);
+      m_undoTransaction.commit();
+    }
   }
 
   bool isDragging()
@@ -174,8 +190,8 @@ public:
 
   Rect getImageBounds()
   {
-    Cel* cel = m_documentWriter->getExtraCel();
-    Image* image = m_documentWriter->getExtraCelImage();
+    const Cel* cel = m_documentReader->getExtraCel();
+    const Image* image = m_documentReader->getExtraCelImage();
 
     ASSERT(cel != NULL);
     ASSERT(image != NULL);
@@ -185,13 +201,16 @@ public:
 
   void setMaskColor(ase_uint32 mask_color)
   {
-    Image* image = m_documentWriter->getExtraCelImage();
+    {
+      DocumentWriter documentWriter(m_documentReader);
+      Image* image = documentWriter->getExtraCelImage();
 
-    ASSERT(image != NULL);
+      ASSERT(image != NULL);
 
-    image->mask_color = mask_color;
+      image->mask_color = mask_color;
+    }
 
-    update_screen_for_document(m_documentWriter);
+    update_screen_for_document(m_documentReader);
   }
 
 };

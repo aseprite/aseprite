@@ -35,7 +35,7 @@
 #include "raster/stock.h"
 #include "raster/undo_history.h"
 
-UndoTransaction::UndoTransaction(DocumentWriter& document, const char* label)
+UndoTransaction::UndoTransaction(Document* document, const char* label)
 {
   ASSERT(label != NULL);
 

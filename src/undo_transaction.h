@@ -23,7 +23,6 @@
 
 class Cel;
 class Document;
-class DocumentWriter;
 class Image;
 class Layer;
 class LayerImage;
@@ -31,12 +30,21 @@ class Mask;
 class Sprite;
 class UndoHistory;
 
-/**
- * Class with high-level set of routines to modify a sprite.
- *
- * In this class, all modifications in the sprite have an undo
- * counterpart (if the sprite's undo is enabled).
- */
+// High-level class to group a set of operations to modify the
+// document atomically, adding information in the undo history to
+// rollback the whole operation if something fails (with an
+// exceptions) in the middle of the procedure.
+//
+// You have to wrap every call to an undo transaction with a
+// DocumentWriter. The preferred usage is as the following:
+// 
+// {
+//   DocumentWriter documentWriter(document);
+//   UndoTransaction undoTransaction(documentWriter, "My big operation");
+//   ...
+//   undoTransaction.commit();
+// }
+// 
 class UndoTransaction
 {
 public:
@@ -44,7 +52,7 @@ public:
   // Starts a undoable sequence of operations in a transaction that
   // can be committed or rollbacked.  All the operations will be
   // grouped in the sprite's undo as an atomic operation.
-  UndoTransaction(DocumentWriter& document, const char* label);
+  UndoTransaction(Document* document, const char* label);
   virtual ~UndoTransaction();
 
   inline Sprite* getSprite() const { return m_sprite;  }
