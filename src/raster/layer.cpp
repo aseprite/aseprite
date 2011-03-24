@@ -18,13 +18,13 @@
 
 #include "config.h"
 
+#include "raster/layer.h"
+
 #include "raster/blend.h"
 #include "raster/cel.h"
 #include "raster/image.h"
-#include "raster/layer.h"
 #include "raster/sprite.h"
 #include "raster/stock.h"
-#include "undo/undo_history.h"
 
 #include <algorithm>
 #include <string.h>

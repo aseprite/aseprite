@@ -18,13 +18,14 @@
 
 #include "config.h"
 
-#include <cstring>
-#include <map>
-#include <utility>
+#include "raster/gfxobj.h"
 
 #include "base/mutex.h"
 #include "base/scoped_lock.h"
-#include "raster/gfxobj.h"
+
+#include <cstring>
+#include <map>
+#include <utility>
 
 static Mutex* objects_mutex;
 static GfxObjId object_id = 0;		         // Last object ID created

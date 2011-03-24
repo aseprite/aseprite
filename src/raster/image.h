@@ -127,6 +127,6 @@ inline void* image_address(Image* image, int x, int y)
   return ((void *)(image->line[y] + image_line_size(image, x)));
 }
 
-#include "image_traits.h"
+#include "raster/image_traits.h"
 
 #endif
