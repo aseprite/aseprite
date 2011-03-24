@@ -20,16 +20,17 @@
 #define UNDO_UNDO_HISTORY_H_INCLUDED
 
 #include "base/exception.h"
-#include "raster/gfxobj.h"
 
 #include <vector>
 
 class Cel;
 class Dirty;
 class Document;
+class GfxObj;
 class Image;
 class Layer;
 class Mask;
+class ObjectsContainer;
 class Palette;
 class Sprite;
 class Stock;
@@ -41,10 +42,10 @@ public:
   UndoException(const char* msg) throw() : base::Exception(msg) { }
 };
 
-class UndoHistory : public GfxObj
+class UndoHistory
 {
 public:
-  UndoHistory(Sprite* sprite);
+  UndoHistory(ObjectsContainer* objects);
   virtual ~UndoHistory();
 
   bool isEnabled() const;
@@ -69,7 +70,7 @@ public:
 
   void undo_open();
   void undo_close();
-  void undo_data(GfxObj *gfxobj, void *data, int size);
+  void undo_data(void* object, void* fieldAddress, int fieldSize);
   void undo_image(Image *image, int x, int y, int w, int h);
   void undo_flip(Image *image, int x1, int y1, int x2, int y2, bool horz);
   void undo_dirty(Image* image, Dirty *dirty);
@@ -103,12 +104,14 @@ public:
     undo_data(gfxobj, (void*)(value_address), sizeof(double));
   }
 
+  ObjectsContainer* getObjects() const { return m_objects; }
+
 private:
   void runUndo(int state);
   void discardTail();
   void updateUndo();
 
-  Sprite* m_sprite;		// Related sprite
+  ObjectsContainer* m_objects;	// Container of objects to insert & retrieve objects by ID
   UndoStream* m_undoStream;
   UndoStream* m_redoStream;
   int m_diffCount;

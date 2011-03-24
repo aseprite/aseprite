@@ -20,7 +20,6 @@
 #define RASTER_GFXOBJ_H_INCLUDED
 
 #include <list>
-#include "raster/gfxobj_id.h"
 
 enum GfxObjType {
   GFXOBJ_CEL,
@@ -32,7 +31,6 @@ enum GfxObjType {
   GFXOBJ_PATH,
   GFXOBJ_SPRITE,
   GFXOBJ_STOCK,
-  GFXOBJ_UNDO,
   GFXOBJ_RGBMAP,
 };
 
@@ -54,35 +52,16 @@ public:
   GfxObj(const GfxObj& gfxobj);
   virtual ~GfxObj();
 
-  GfxObjId getId() const { return m_id; }
   GfxObjType getType() const { return m_type; }
 
   // Returns the approximate amount of memory (in bytes) which this
   // object use.
   virtual int getMemSize() const;
 
-  // Returns a GfxObj by its ID. If it is not found, returns NULL.
-  static GfxObj* find(GfxObjId id);
-
-  // Changes the ID of an existent GfxObj. This function is used by
-  // Undo to change the ID of objects that were back to life (and
-  // should not be used in other places).
-  void _setGfxObjId(GfxObjId id);
-
 private:
-  void assign_id();
-
   GfxObjType m_type;
-  GfxObjId m_id;
 
   GfxObj& operator=(const GfxObj&);
-};
-
-class RasterModule
-{
-public:
-  RasterModule();
-  ~RasterModule();
 };
 
 #endif

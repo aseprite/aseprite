@@ -80,7 +80,6 @@ public:
   // ASE Modules
   FileSystemModule m_file_system_module;
   ToolBox m_toolbox;
-  RasterModule m_raster;
   CommandsModule m_commands_modules;
   UIContext m_ui_context;
   RecentFiles m_recent_files;

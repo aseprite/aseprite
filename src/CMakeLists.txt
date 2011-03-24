@@ -80,6 +80,7 @@ add_library(aseprite-library
   job.cpp
   launcher.cpp
   log.cpp
+  objects_container_impl.cpp
   recent_files.cpp
   resource_finder.cpp
   ui_context.cpp

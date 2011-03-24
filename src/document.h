@@ -21,6 +21,7 @@
 
 #include "base/disable_copying.h"
 #include "base/shared_ptr.h"
+#include "base/unique_ptr.h"
 #include "document_id.h"
 
 #include <string>
@@ -30,6 +31,7 @@ class FormatOptions;
 class Image;
 class Mask;
 class Mutex;
+class ObjectsContainer;
 class Sprite;
 class UndoHistory;
 struct _BoundSeg;
@@ -158,8 +160,9 @@ private:
   // Unique identifier for this document (it is assigned by Documents class).
   DocumentId m_id;
 
-  Sprite* m_sprite;
-  UndoHistory* m_undoHistory;
+  UniquePtr<Sprite> m_sprite;
+  UniquePtr<ObjectsContainer> m_objects;
+  UniquePtr<UndoHistory> m_undoHistory;
 
   // Document's file name (from where it was loaded, where it is saved).
   std::string m_filename;
@@ -195,7 +198,7 @@ private:
   Image* m_extraImage;
 
   // Current mask.
-  Mask* m_mask;
+  UniquePtr<Mask> m_mask;
   bool m_maskVisible;
 
   DISABLE_COPYING(Document);

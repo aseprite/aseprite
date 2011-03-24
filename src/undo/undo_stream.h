@@ -40,6 +40,11 @@ public:
     return m_undo;
   }
 
+  ObjectsContainer* getObjects() const
+  {
+    return m_undo->getObjects();
+  }
+
   iterator begin() { return m_chunks.begin(); }
   iterator end() { return m_chunks.end(); }
   bool empty() const { return m_chunks.empty(); }

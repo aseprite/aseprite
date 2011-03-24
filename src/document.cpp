@@ -25,6 +25,7 @@
 #include "base/scoped_lock.h"
 #include "base/unique_ptr.h"
 #include "file/format_options.h"
+#include "objects_container_impl.h"
 #include "raster/cel.h"
 #include "raster/layer.h"
 #include "raster/mask.h"
@@ -37,7 +38,8 @@
 Document::Document(Sprite* sprite)
   : m_id(WithoutDocumentId)
   , m_sprite(sprite)
-  , m_undoHistory(new UndoHistory(sprite))
+  , m_objects(new ObjectsContainerImpl)
+  , m_undoHistory(new UndoHistory(m_objects))
   , m_filename("Sprite")
   , m_associated_to_file(false)
   , m_mutex(new Mutex)
@@ -48,6 +50,9 @@ Document::Document(Sprite* sprite)
     // Extra cel
   , m_extraCel(NULL)
   , m_extraImage(NULL)
+  // Mask
+  , m_mask(new Mask())
+  , m_maskVisible(true)
 {
   // Boundary stuff
   m_bound.nseg = 0;
@@ -58,10 +63,6 @@ Document::Document(Sprite* sprite)
   m_preferred.scroll_y = 0;
   m_preferred.zoom = 0;
   m_preferred.virgin = true;
-
-  // Mask
-  m_mask = new Mask();
-  m_maskVisible = true;
 }
 
 Document::~Document()
@@ -70,11 +71,6 @@ Document::~Document()
     base_free(m_bound.seg);
 
   destroyExtraCel();
-
-  delete m_mutex;
-  delete m_undoHistory;
-  delete m_sprite;
-  delete m_mask;
 }
 
 Document* Document::createBasicDocument(int imgtype, int width, int height, int ncolors)
@@ -271,10 +267,7 @@ Mask* Document::getMask() const
 
 void Document::setMask(const Mask* mask)
 {
-  if (m_mask)
-    mask_free(m_mask);
-
-  m_mask = mask_new_copy(mask);
+  m_mask.reset(mask_new_copy(mask));
   m_maskVisible = true;
 }
 

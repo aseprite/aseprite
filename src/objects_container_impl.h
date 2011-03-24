@@ -16,25 +16,30 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#include "config.h"
+#ifndef DOC_OBJECTS_CONTAINER_H_INCLUDED
+#define DOC_OBJECTS_CONTAINER_H_INCLUDED
 
-#include "raster/gfxobj.h"
+#include "undo/objects_container.h"
 
-GfxObj::GfxObj(GfxObjType type)
+#include <map>
+
+class ObjectsContainerImpl : public ObjectsContainer
 {
-  m_type = type;
-}
+public:
+  ObjectsContainerImpl();
+  ~ObjectsContainerImpl();
 
-GfxObj::GfxObj(const GfxObj& gfxobj)
-{
-  m_type = gfxobj.m_type;
-}
+  // ObjectsContainer Implementation
 
-GfxObj::~GfxObj()
-{
-}
+  ObjectId addObject(void* object);
+  void insertObject(ObjectId id, void* object);
+  void removeObject(ObjectId id);
+  void* getObject(ObjectId id);
 
-int GfxObj::getMemSize() const
-{
-  return sizeof(GfxObj);
-}
+private:
+  ObjectId m_idCounter;
+  std::map<ObjectId, void*> m_idToPtr;
+  std::map<void*, ObjectId> m_ptrToId;
+};
+
+#endif

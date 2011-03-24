@@ -18,17 +18,18 @@
 
 #include "config.h"
 
-#include <allegro.h>
+#include "raster/rgbmap.h"
 
 #include "raster/palette.h"
-#include "raster/rgbmap.h"
+
+#include <allegro.h>
 
 class RgbMapImpl
 {
 public:
   RgbMapImpl() {
     m_allegMap = new RGB_MAP;
-    m_palette_id = 0;
+    m_palette = NULL;
     m_modifications = 0;
   }
 
@@ -37,12 +38,12 @@ public:
   }
 
   bool match(const Palette* palette) const {
-    return (m_palette_id == palette->getId() &&
+    return (m_palette == palette &&
 	    m_modifications == palette->getModifications());
   }
 
   void regenerate(const Palette* palette) {
-    m_palette_id = palette->getId();
+    m_palette = palette;
     m_modifications = palette->getModifications();
 
     PALETTE allegPal;
@@ -68,7 +69,7 @@ public:
 
 private:
   RGB_MAP* m_allegMap;
-  GfxObjId m_palette_id;
+  const Palette* m_palette;
   int m_modifications;
 };
 
