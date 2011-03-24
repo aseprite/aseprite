@@ -389,25 +389,6 @@ SpriteImpl* SpriteImpl::copyBase(Sprite* new_sprite, const SpriteImpl* src_sprit
   if (src_sprite->m_mask)
     dst_sprite->m_mask = mask_new_copy(src_sprite->m_mask);
 
-  /* copy repositories */
-  {
-    PathsList::const_iterator end = src_sprite->m_repository.paths.end();
-    PathsList::const_iterator it = src_sprite->m_repository.paths.begin();
-    for (; it != end; ++it) {
-      Path* path_copy = new Path(*(*it));
-      dst_sprite->addPath(path_copy);
-    }
-  }
-
-  {
-    MasksList::const_iterator end = src_sprite->m_repository.masks.end();
-    MasksList::const_iterator it = src_sprite->m_repository.masks.begin();
-    for (; it != end; ++it) {
-      Mask* mask_copy = new Mask(*(*it));
-      dst_sprite->addMask(mask_copy);
-    }
-  }
-
   return dst_sprite;
 }
 
