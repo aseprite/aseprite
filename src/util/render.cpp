@@ -35,7 +35,7 @@ template<class DstTraits, class SrcTraits>
 class BlenderHelper
 {
   BLEND_COLOR m_blend_color;
-  ase_uint32 m_mask_color;
+  uint32_t m_mask_color;
 public:
   BlenderHelper(const Image* src, const Palette* pal, int blend_mode)
   {
@@ -58,7 +58,7 @@ template<>
 class BlenderHelper<RgbTraits, GrayscaleTraits>
 {
   BLEND_COLOR m_blend_color;
-  ase_uint32 m_mask_color;
+  uint32_t m_mask_color;
 public:
   BlenderHelper(const Image* src, const Palette* pal, int blend_mode)
   {
@@ -84,7 +84,7 @@ class BlenderHelper<RgbTraits, IndexedTraits>
 {
   const Palette* m_pal;
   int m_blend_mode;
-  ase_uint32 m_mask_color;
+  uint32_t m_mask_color;
 public:
   BlenderHelper(const Image* src, const Palette* pal, int blend_mode)
   {
@@ -376,7 +376,7 @@ Image* RenderEngine::renderSprite(const Document* document,
   void (*zoomed_func)(Image*, const Image*, const Palette*, int, int, int, int, int);
   const LayerImage* background = sprite->getBackgroundLayer();
   bool need_checked_bg = (background != NULL ? !background->is_readable(): true);
-  ase_uint32 bg_color = 0;
+  uint32_t bg_color = 0;
   Image *image;
 
   switch (sprite->getImgType()) {

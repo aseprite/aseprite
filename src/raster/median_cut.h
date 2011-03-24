@@ -89,7 +89,7 @@ namespace quantization {
 
     // Returns the color enclosed by the box calculating the mean of
     // all histogram's points inside the box.
-    ase_uint32 meanColor(const Histogram& histogram) const
+    uint32_t meanColor(const Histogram& histogram) const
     {
       size_t r = 0, g = 0, b = 0;
       size_t count = 0;
@@ -253,7 +253,7 @@ namespace quantization {
   // quantization for frame buffer display,”, Computer Graphics,
   // 16(3), pp. 297-307 (1982)
   template<class Histogram>
-  void median_cut(const Histogram& histogram, size_t maxBoxes, std::vector<ase_uint32>& result)
+  void median_cut(const Histogram& histogram, size_t maxBoxes, std::vector<uint32_t>& result)
   {
     // We need a priority queue to split bigger boxes first (see Box::operator<).
     std::priority_queue<Box<Histogram> > boxes;

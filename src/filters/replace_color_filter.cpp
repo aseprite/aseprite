@@ -50,8 +50,8 @@ const char* ReplaceColorFilter::getName()
 
 void ReplaceColorFilter::applyToRgba(FilterManager* filterMgr)
 {
-  const ase_uint32* src_address = (ase_uint32*)filterMgr->getSourceAddress();
-  ase_uint32* dst_address = (ase_uint32*)filterMgr->getDestinationAddress();
+  const uint32_t* src_address = (uint32_t*)filterMgr->getSourceAddress();
+  uint32_t* dst_address = (uint32_t*)filterMgr->getDestinationAddress();
   int w = filterMgr->getWidth();
   int src_r, src_g, src_b, src_a;
   int dst_r, dst_g, dst_b, dst_a;
@@ -88,8 +88,8 @@ void ReplaceColorFilter::applyToRgba(FilterManager* filterMgr)
 
 void ReplaceColorFilter::applyToGrayscale(FilterManager* filterMgr)
 {
-  const ase_uint16* src_address = (ase_uint16*)filterMgr->getSourceAddress();
-  ase_uint16* dst_address = (ase_uint16*)filterMgr->getDestinationAddress();
+  const uint16_t* src_address = (uint16_t*)filterMgr->getSourceAddress();
+  uint16_t* dst_address = (uint16_t*)filterMgr->getDestinationAddress();
   int w = filterMgr->getWidth();
   int src_k, src_a;
   int dst_k, dst_a;
@@ -120,8 +120,8 @@ void ReplaceColorFilter::applyToGrayscale(FilterManager* filterMgr)
 
 void ReplaceColorFilter::applyToIndexed(FilterManager* filterMgr)
 {
-  const ase_uint8* src_address = (ase_uint8*)filterMgr->getSourceAddress();
-  ase_uint8* dst_address = (ase_uint8*)filterMgr->getDestinationAddress();
+  const uint8_t* src_address = (uint8_t*)filterMgr->getSourceAddress();
+  uint8_t* dst_address = (uint8_t*)filterMgr->getDestinationAddress();
   int w = filterMgr->getWidth();
   int x, c;
 

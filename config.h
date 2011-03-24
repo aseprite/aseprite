@@ -42,10 +42,6 @@ void verbose_printf(const char* format, ...);
 #include <allegro/base.h>
 #include <allegro/debug.h>	// ASSERT
 
-typedef uint8_t		ase_uint8;
-typedef uint16_t	ase_uint16;
-typedef uint32_t	ase_uint32;
-
 //////////////////////////////////////////////////////////////////////
 // Overloaded new/delete operators to detect memory-leaks
 

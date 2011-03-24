@@ -45,9 +45,9 @@ class BmpFormat : public FileFormat
     int format;			// bmp format.
     int compression;		// bmp compression.
     int bits_per_pixel;		// Bits per pixel.
-    ase_uint32 red_mask;	// Mask for red channel.
-    ase_uint32 green_mask;	// Mask for green channel.
-    ase_uint32 blue_mask;	// Mask for blue channel.
+    uint32_t red_mask;		// Mask for red channel.
+    uint32_t green_mask;	// Mask for green channel.
+    uint32_t blue_mask;		// Mask for blue channel.
   };
 
   const char* onGetName() const { return "bmp"; }
@@ -81,43 +81,43 @@ FileFormat* CreateBmpFormat()
 
 typedef struct BITMAPFILEHEADER
 {
-  ase_uint32 bfType;
-  ase_uint32 bfSize;
-  ase_uint16 bfReserved1;
-  ase_uint16 bfReserved2;
-  ase_uint32 bfOffBits;
+  uint32_t bfType;
+  uint32_t bfSize;
+  uint16_t bfReserved1;
+  uint16_t bfReserved2;
+  uint32_t bfOffBits;
 } BITMAPFILEHEADER;
 
 // Used for both OS/2 and Windows BMP. 
 // Contains only the parameters needed to load the image.
 typedef struct BITMAPINFOHEADER
 {
-  ase_uint32 biWidth;
-  ase_uint32 biHeight;
-  ase_uint16 biBitCount;
-  ase_uint32 biCompression;
+  uint32_t biWidth;
+  uint32_t biHeight;
+  uint16_t biBitCount;
+  uint32_t biCompression;
 } BITMAPINFOHEADER;
 
 typedef struct WINBMPINFOHEADER  // Size: 40.
 {
-  ase_uint32 biWidth;
-  ase_uint32 biHeight;
-  ase_uint16 biPlanes;
-  ase_uint16 biBitCount;
-  ase_uint32 biCompression;
-  ase_uint32 biSizeImage;
-  ase_uint32 biXPelsPerMeter;
-  ase_uint32 biYPelsPerMeter;
-  ase_uint32 biClrUsed;
-  ase_uint32 biClrImportant;
+  uint32_t biWidth;
+  uint32_t biHeight;
+  uint16_t biPlanes;
+  uint16_t biBitCount;
+  uint32_t biCompression;
+  uint32_t biSizeImage;
+  uint32_t biXPelsPerMeter;
+  uint32_t biYPelsPerMeter;
+  uint32_t biClrUsed;
+  uint32_t biClrImportant;
 } WINBMPINFOHEADER;
 
 typedef struct OS2BMPINFOHEADER  // Size: 12.
 {
-  ase_uint16 biWidth;
-  ase_uint16 biHeight;
-  ase_uint16 biPlanes;
-  ase_uint16 biBitCount;
+  uint16_t biWidth;
+  uint16_t biHeight;
+  uint16_t biPlanes;
+  uint16_t biBitCount;
 } OS2BMPINFOHEADER;
 
 /* read_bmfileheader:

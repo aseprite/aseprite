@@ -662,7 +662,7 @@ void fop_sequence_set_color(FileOp *fop, int index, int r, int g, int b)
 
 void fop_sequence_get_color(FileOp *fop, int index, int *r, int *g, int *b)
 {
-  ase_uint32 c = fop->seq.palette->getEntry(index);
+  uint32_t c = fop->seq.palette->getEntry(index);
 
   *r = _rgba_getr(c);
   *g = _rgba_getg(c);

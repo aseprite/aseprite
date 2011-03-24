@@ -21,7 +21,7 @@
 
 #include "base/exception.h"
 
-typedef ase_uint32 ObjectId;
+typedef uint32_t ObjectId;
 
 // Thrown when you use ObjectsContainer::insertObject() with an
 // existent ID or pointer.

@@ -87,7 +87,7 @@ void Palette::setFrame(int frame)
   m_frame = frame;
 }
 
-void Palette::setEntry(int i, ase_uint32 color)
+void Palette::setEntry(int i, uint32_t color)
 {
   ASSERT(i >= 0 && i < size());
   ASSERT(_rgba_geta(color) == 255);
@@ -267,7 +267,7 @@ void SortPalette::addChain(SortPalette* chain)
     m_chain = chain;
 }
 
-bool SortPalette::operator()(ase_uint32 c1, ase_uint32 c2)
+bool SortPalette::operator()(uint32_t c1, uint32_t c2)
 {
   int value1 = 0, value2 = 0;
 
@@ -350,7 +350,7 @@ bool SortPalette::operator()(ase_uint32 c1, ase_uint32 c2)
 
 struct PalEntryWithIndex {
   int index;
-  ase_uint32 color;
+  uint32_t color;
 };
 
 struct PalEntryWithIndexPredicate {
@@ -529,7 +529,7 @@ int Palette::findBestfit(int r, int g, int b) const
 
   i = 1;
   while (i < size()) {
-    ase_uint32 rgb = m_colors[i];
+    uint32_t rgb = m_colors[i];
 
     coldiff = (col_diff + 0) [ ((_rgba_getg(rgb)>>3) - g) & 0x7F ];
     if (coldiff < lowest) {

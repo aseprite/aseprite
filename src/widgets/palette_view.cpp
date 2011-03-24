@@ -129,8 +129,8 @@ void PaletteView::selectRange(int begin, int end, int range_type)
 
 static void swap_color(Palette* palette, int i1, int i2)
 {
-  ase_uint32 c1 = palette->getEntry(i1);
-  ase_uint32 c2 = palette->getEntry(i2);
+  uint32_t c1 = palette->getEntry(i1);
+  uint32_t c2 = palette->getEntry(i2);
 
   palette->setEntry(i2, c1);
   palette->setEntry(i1, c2);

@@ -169,8 +169,8 @@ static Image* render_text(Sprite* sprite, FONT *f, const char *text, int color)
 #define DO(type, colfunc)				\
   {							\
     register int c;					\
-    ase_uint32 *src = (ase_uint32 *)bmp->dat;		\
-    type *dst = (type *)image->dat;			\
+    uint32_t* src = (uint32_t*)bmp->dat;		\
+    type* dst = (type*)image->dat;			\
     for (i=0; i<pixels; i++) {				\
       c = *src;						\
       *dst = colfunc;					\
@@ -210,17 +210,17 @@ static Image* render_text(Sprite* sprite, FONT *f, const char *text, int color)
   switch (image->imgtype) {
 
     case IMAGE_RGB:
-      DO(ase_uint32, _rgba(_rgba_getr(color),
-			   _rgba_getg(color),
-			   _rgba_getb(color), getg32(c)));
+      DO(uint32_t, _rgba(_rgba_getr(color),
+			 _rgba_getg(color),
+			 _rgba_getb(color), getg32(c)));
       break;
 
     case IMAGE_GRAYSCALE:
-      DO(ase_uint16, _graya(_graya_getv(color), getg32(c)));
+      DO(uint16_t, _graya(_graya_getv(color), getg32(c)));
       break;
 
     case IMAGE_INDEXED:
-      DO(ase_uint8, c == makecol32(255, 0, 255) ? 0: color);
+      DO(uint8_t, c == makecol32(255, 0, 255) ? 0: color);
       break;
   }
 

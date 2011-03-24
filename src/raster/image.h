@@ -48,9 +48,9 @@ class Image : public GfxObj
 public:
   int imgtype;
   int w, h;
-  ase_uint8* dat;		// pixmap data
-  ase_uint8** line;		// start of each scanline
-  ase_uint32 mask_color;	// skipped color in merge process
+  uint8_t* dat;			// Pixmap data.
+  uint8_t** line;		// Start of each scanline.
+  uint32_t mask_color;		// Skipped color in merge process.
 
   Image(int imgtype, int w, int h);
   virtual ~Image();

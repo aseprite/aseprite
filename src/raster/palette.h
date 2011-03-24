@@ -42,7 +42,7 @@ public:
 
   void addChain(SortPalette* chain);
 
-  bool operator()(ase_uint32 c1, ase_uint32 c2);
+  bool operator()(uint32_t c1, uint32_t c2);
 
 private:
   Channel m_channel;
@@ -67,12 +67,12 @@ public:
   int getFrame() const { return m_frame; }
   void setFrame(int frame);
 
-  ase_uint32 getEntry(int i) const {
+  uint32_t getEntry(int i) const {
     ASSERT(i >= 0 && i < size());
     return m_colors[i];
   }
 
-  void setEntry(int i, ase_uint32 color);
+  void setEntry(int i, uint32_t color);
 
   void copyColorsTo(Palette* dst) const;
 
@@ -97,7 +97,7 @@ public:
 
 private:
   int m_frame;
-  std::vector<ase_uint32> m_colors;
+  std::vector<uint32_t> m_colors;
   int m_modifications;
 };
 

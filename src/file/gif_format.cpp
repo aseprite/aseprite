@@ -363,7 +363,7 @@ bool GifFormat::onSave(FileOp* fop)
 	case IMAGE_RGB:
 	  for (int y = 0; y < sprite_h; ++y)
 	    for (int x = 0; x < sprite_w; ++x) {
-	      ase_uint32 pixel_value = image_getpixel_fast<RgbTraits>(buffer_image, x, y);
+	      uint32_t pixel_value = image_getpixel_fast<RgbTraits>(buffer_image, x, y);
 	      image_putpixel_fast<IndexedTraits>(current_image, x, y,
 						 (_rgba_geta(pixel_value) >= 128) ?
 						 current_palette->findBestfit(_rgba_getr(pixel_value),
@@ -377,7 +377,7 @@ bool GifFormat::onSave(FileOp* fop)
 	case IMAGE_GRAYSCALE:
 	  for (int y = 0; y < sprite_h; ++y)
 	    for (int x = 0; x < sprite_w; ++x) {
-	      ase_uint16 pixel_value = image_getpixel_fast<GrayscaleTraits>(buffer_image, x, y);
+	      uint16_t pixel_value = image_getpixel_fast<GrayscaleTraits>(buffer_image, x, y);
 	      image_putpixel_fast<IndexedTraits>(current_image, x, y,
 						 (_graya_geta(pixel_value) >= 128) ?
 						 current_palette->findBestfit(_graya_getv(pixel_value),

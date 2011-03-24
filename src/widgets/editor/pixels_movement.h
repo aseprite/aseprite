@@ -41,7 +41,7 @@ public:
 
   gfx::Rect getImageBounds();
 
-  void setMaskColor(ase_uint32 mask_color);
+  void setMaskColor(uint32_t mask_color);
 
 private:
   class PixelsMovementImpl* m_impl;

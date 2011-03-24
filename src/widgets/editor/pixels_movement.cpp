@@ -199,7 +199,7 @@ public:
     return Rect(cel->x, cel->y, image->w, image->h);
   }
 
-  void setMaskColor(ase_uint32 mask_color)
+  void setMaskColor(uint32_t mask_color)
   {
     {
       DocumentWriter documentWriter(m_documentReader);
@@ -273,7 +273,7 @@ Rect PixelsMovement::getImageBounds()
   return m_impl->getImageBounds();
 }
 
-void PixelsMovement::setMaskColor(ase_uint32 mask_color)
+void PixelsMovement::setMaskColor(uint32_t mask_color)
 {
   m_impl->setMaskColor(mask_color);
 }

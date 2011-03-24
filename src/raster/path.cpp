@@ -217,8 +217,8 @@ typedef struct _ArtBitmapSVPData ArtBitmapSVPData;
 
 struct _ArtBitmapSVPData
 {
-  Image *image;
-  ase_uint8 *address;
+  Image* image;
+  uint8_t* address;
   int shift;
   int x0, x1;
   int color;
@@ -227,7 +227,7 @@ struct _ArtBitmapSVPData
 
 static void blend_rgb_hline(Image *image, int x1, int y, int x2, int rgb, int a)
 {
-  ase_uint32 *address = ((ase_uint32 **)image->line)[y]+x1;
+  uint32_t* address = ((uint32_t**)image->line)[y]+x1;
   int x;
 
   for (x=x1; x<=x2; x++) {
@@ -238,7 +238,7 @@ static void blend_rgb_hline(Image *image, int x1, int y, int x2, int rgb, int a)
 
 static void blend_grayscale_hline(Image *image, int x1, int y, int x2, int k, int a)
 {
-  ase_uint16 *address = ((ase_uint16 **)image->line)[y]+x1;
+  uint16_t* address = ((uint16_t**)image->line)[y]+x1;
   int x;
 
   for (x=x1; x<=x2; x++) {
@@ -249,7 +249,7 @@ static void blend_grayscale_hline(Image *image, int x1, int y, int x2, int k, in
 
 static void blend_indexed_hline(Image *image, int x1, int y, int x2, int i, int a)
 {
-  ase_uint8 *address = ((ase_uint8 **)image->line)[y]+x1;
+  uint8_t* address = ((uint8_t**)image->line)[y]+x1;
   int x;
 
   if (a > 128)
@@ -353,7 +353,7 @@ static void art_image_svp_aa (const ArtSVP *svp,
   }
 
   data.image = image;
-  data.address = ((ase_uint8 *)image->line[y0]) + (x0<<data.shift);
+  data.address = ((uint8_t*)image->line[y0]) + (x0<<data.shift);
   data.x0 = x0;
   data.x1 = x1+1;
   data.color = color;

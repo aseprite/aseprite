@@ -47,27 +47,27 @@ typedef struct ASE_Header
 {
   long pos;
 
-  ase_uint32 size;
-  ase_uint16 magic;
-  ase_uint16 frames;
-  ase_uint16 width;
-  ase_uint16 height;
-  ase_uint16 depth;
-  ase_uint32 flags;
-  ase_uint16 speed;	// Deprecated, use "duration" of FrameHeader
-  ase_uint32 next;
-  ase_uint32 frit;
-  ase_uint8 transparent_index;
-  ase_uint8 ignore[3];
-  ase_uint16 ncolors;
+  uint32_t size;
+  uint16_t magic;
+  uint16_t frames;
+  uint16_t width;
+  uint16_t height;
+  uint16_t depth;
+  uint32_t flags;
+  uint16_t speed;	// Deprecated, use "duration" of FrameHeader
+  uint32_t next;
+  uint32_t frit;
+  uint8_t transparent_index;
+  uint8_t ignore[3];
+  uint16_t ncolors;
 } ASE_Header;
 
 typedef struct ASE_FrameHeader
 {
-  ase_uint32 size;
-  ase_uint16 magic;
-  ase_uint16 chunks;
-  ase_uint16 duration;
+  uint32_t size;
+  uint16_t magic;
+  uint16_t chunks;
+  uint16_t duration;
 } ASE_FrameHeader;
 
 // TODO Warning: the writing routines aren't thread-safe
@@ -744,8 +744,8 @@ class PixelIO
 public:
   typename ImageTraits::pixel_t read_pixel(FILE* f);
   void write_pixel(FILE* f, typename ImageTraits::pixel_t c);
-  void read_scanline(typename ImageTraits::address_t address, int w, ase_uint8* buffer);
-  void write_scanline(typename ImageTraits::address_t address, int w, ase_uint8* buffer);
+  void read_scanline(typename ImageTraits::address_t address, int w, uint8_t* buffer);
+  void write_scanline(typename ImageTraits::address_t address, int w, uint8_t* buffer);
 };
 
 template<>
@@ -766,7 +766,7 @@ public:
     fputc(_rgba_getb(c), f);
     fputc(_rgba_geta(c), f);
   }
-  void read_scanline(RgbTraits::address_t address, int w, ase_uint8* buffer)
+  void read_scanline(RgbTraits::address_t address, int w, uint8_t* buffer)
   {
     for (int x=0; x<w; ++x) {
       r = *(buffer++);
@@ -776,7 +776,7 @@ public:
       *(address++) = _rgba(r, g, b, a);
     }
   }
-  void write_scanline(RgbTraits::address_t address, int w, ase_uint8* buffer)
+  void write_scanline(RgbTraits::address_t address, int w, uint8_t* buffer)
   {
     for (int x=0; x<w; ++x) {
       *(buffer++) = _rgba_getr(*address);
@@ -802,7 +802,7 @@ public:
     fputc(_graya_getv(c), f);
     fputc(_graya_geta(c), f);
   }
-  void read_scanline(GrayscaleTraits::address_t address, int w, ase_uint8* buffer)
+  void read_scanline(GrayscaleTraits::address_t address, int w, uint8_t* buffer)
   {
     for (int x=0; x<w; ++x) {
       k = *(buffer++);
@@ -810,7 +810,7 @@ public:
       *(address++) = _graya(k, a);
     }
   }
-  void write_scanline(GrayscaleTraits::address_t address, int w, ase_uint8* buffer)
+  void write_scanline(GrayscaleTraits::address_t address, int w, uint8_t* buffer)
   {
     for (int x=0; x<w; ++x) {
       *(buffer++) = _graya_getv(*address);
@@ -830,11 +830,11 @@ public:
   void write_pixel(FILE* f, IndexedTraits::pixel_t c) {
     fputc(c, f);
   }
-  void read_scanline(IndexedTraits::address_t address, int w, ase_uint8* buffer)
+  void read_scanline(IndexedTraits::address_t address, int w, uint8_t* buffer)
   {
     memcpy(address, buffer, w);
   }
-  void write_scanline(IndexedTraits::address_t address, int w, ase_uint8* buffer)
+  void write_scanline(IndexedTraits::address_t address, int w, uint8_t* buffer)
   {
     memcpy(buffer, address, w);
   }
@@ -888,9 +888,9 @@ static void read_compressed_image(FILE* f, Image* image, size_t chunk_end, FileO
   if (err != Z_OK)
     throw base::Exception("ZLib error %d in inflateInit().", err);
 
-  std::vector<ase_uint8> scanline(ImageTraits::scanline_size(image->w));
-  std::vector<ase_uint8> uncompressed(image->h * ImageTraits::scanline_size(image->w));
-  std::vector<ase_uint8> compressed(4096);
+  std::vector<uint8_t> scanline(ImageTraits::scanline_size(image->w));
+  std::vector<uint8_t> uncompressed(image->h * ImageTraits::scanline_size(image->w));
+  std::vector<uint8_t> compressed(4096);
   int uncompressed_offset = 0;
   
   while (true) {
@@ -960,8 +960,8 @@ static void write_compressed_image(FILE* f, Image* image)
   if (err != Z_OK)
     throw base::Exception("ZLib error %d in deflateInit().", err);
 
-  std::vector<ase_uint8> scanline(ImageTraits::scanline_size(image->w));
-  std::vector<ase_uint8> compressed(4096);
+  std::vector<uint8_t> scanline(ImageTraits::scanline_size(image->w));
+  std::vector<uint8_t> compressed(4096);
 
   for (y=0; y<image->h; y++) {
     typename ImageTraits::address_t address = image_address_fast<ImageTraits>(image, 0, y);

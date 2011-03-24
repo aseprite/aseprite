@@ -958,7 +958,7 @@ void UndoTransaction::clearMask(int bgcolor)
     // clear the masked zones
     for (v=0; v<mask->h; v++) {
       div_t d = div(0, 8);
-      ase_uint8* address = ((ase_uint8 **)mask->bitmap->line)[v]+d.quot;
+      uint8_t* address = ((uint8_t**)mask->bitmap->line)[v]+d.quot;
 
       for (u=0; u<mask->w; u++) {
 	if ((*address & (1<<d.rem))) {

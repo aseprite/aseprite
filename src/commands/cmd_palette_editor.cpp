@@ -541,9 +541,9 @@ void PaletteEntryEditor::setPaletteEntry(const Color& color)
   PaletteView* palView = app_get_colorbar()->getPaletteView();
   palView->getSelectedEntries(array);
 
-  ase_uint32 new_pal_color = _rgba(color.getRed(),
-				   color.getGreen(),
-				   color.getBlue(), 255);
+  uint32_t new_pal_color = _rgba(color.getRed(),
+				 color.getGreen(),
+				 color.getBlue(), 255);
 
   Palette* palette = get_current_palette();
   for (int c=0; c<palette->size(); c++) {
@@ -558,7 +558,7 @@ void PaletteEntryEditor::setPaletteEntryChannel(const Color& color, ColorSliders
   PaletteView* palView = app_get_colorbar()->getPaletteView();
   palView->getSelectedEntries(array);
 
-  ase_uint32 src_color;
+  uint32_t src_color;
   int r, g, b;
 
   Palette* palette = get_current_palette();

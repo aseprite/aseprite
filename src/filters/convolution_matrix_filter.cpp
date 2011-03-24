@@ -49,7 +49,7 @@ namespace {
 
   struct GetPixelsDelegate
   {
-    ase_uint32 color;
+    uint32_t color;
     int div;
     const int* matrixData;
 
@@ -148,9 +148,9 @@ void ConvolutionMatrixFilter::applyToRgba(FilterManager* filterMgr)
     return;
 
   const Image* src = filterMgr->getSourceImage();
-  ase_uint32* dst_address = (ase_uint32*)filterMgr->getDestinationAddress();
+  uint32_t* dst_address = (uint32_t*)filterMgr->getDestinationAddress();
   Target target = filterMgr->getTarget();
-  ase_uint32 color;
+  uint32_t color;
   GetPixelsDelegateRgba delegate;
   int x = filterMgr->getX();
   int x2 = x+filterMgr->getWidth();
@@ -215,9 +215,9 @@ void ConvolutionMatrixFilter::applyToGrayscale(FilterManager* filterMgr)
     return;
 
   const Image* src = filterMgr->getSourceImage();
-  ase_uint16* dst_address = (ase_uint16*)filterMgr->getDestinationAddress();
+  uint16_t* dst_address = (uint16_t*)filterMgr->getDestinationAddress();
   Target target = filterMgr->getTarget();
-  ase_uint16 color;
+  uint16_t color;
   GetPixelsDelegateGrayscale delegate;
   int x = filterMgr->getX();
   int x2 = x+filterMgr->getWidth();
@@ -268,11 +268,11 @@ void ConvolutionMatrixFilter::applyToIndexed(FilterManager* filterMgr)
     return;
 
   const Image* src = filterMgr->getSourceImage();
-  ase_uint8* dst_address = (ase_uint8*)filterMgr->getDestinationAddress();
+  uint8_t* dst_address = (uint8_t*)filterMgr->getDestinationAddress();
   const Palette* pal = filterMgr->getIndexedData()->getPalette();
   const RgbMap* rgbmap = filterMgr->getIndexedData()->getRgbMap();
   Target target = filterMgr->getTarget();
-  ase_uint8 color;
+  uint8_t color;
   GetPixelsDelegateIndexed delegate(pal);
   int x = filterMgr->getX();
   int x2 = x+filterMgr->getWidth();

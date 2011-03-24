@@ -127,7 +127,7 @@ bool Sprite::needAlpha() const
   return false;
 }
 
-void Sprite::setTransparentColor(ase_uint32 color)
+void Sprite::setTransparentColor(uint32_t color)
 {
   m_transparentColor = color;
 }

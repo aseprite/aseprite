@@ -27,27 +27,27 @@
 #define _rgba_b_shift	16
 #define _rgba_a_shift	24
 
-inline ase_uint8 _rgba_getr(ase_uint32 c)
+inline uint8_t _rgba_getr(uint32_t c)
 {
   return (c >> _rgba_r_shift) & 0xff;
 }
 
-inline ase_uint8 _rgba_getg(ase_uint32 c)
+inline uint8_t _rgba_getg(uint32_t c)
 {
   return (c >> _rgba_g_shift) & 0xff;
 }
 
-inline ase_uint8 _rgba_getb(ase_uint32 c)
+inline uint8_t _rgba_getb(uint32_t c)
 {
   return (c >> _rgba_b_shift) & 0xff;
 }
 
-inline ase_uint8 _rgba_geta(ase_uint32 c)
+inline uint8_t _rgba_geta(uint32_t c)
 {
   return (c >> _rgba_a_shift) & 0xff;
 }
 
-inline ase_uint32 _rgba(ase_uint8 r, ase_uint8 g, ase_uint8 b, ase_uint8 a)
+inline uint32_t _rgba(uint8_t r, uint8_t g, uint8_t b, uint8_t a)
 {
   return ((r << _rgba_r_shift) |
 	  (g << _rgba_g_shift) |
@@ -66,7 +66,7 @@ struct RgbTraits
     is_binary = false,
   };
 
-  typedef ase_uint32 pixel_t;
+  typedef uint32_t pixel_t;
   typedef pixel_t* address_t;
   typedef const pixel_t* const_address_t;
 
@@ -88,17 +88,17 @@ struct RgbTraits
 #define _graya_v_shift	0
 #define _graya_a_shift	8
 
-inline ase_uint8 _graya_getv(ase_uint16 c)
+inline uint8_t _graya_getv(uint16_t c)
 {
   return (c >> _graya_v_shift) & 0xff;
 }
 
-inline ase_uint8 _graya_geta(ase_uint16 c)
+inline uint8_t _graya_geta(uint16_t c)
 {
   return (c >> _graya_a_shift) & 0xff;
 }
 
-inline ase_uint16 _graya(ase_uint8 v, ase_uint8 a)
+inline uint16_t _graya(uint8_t v, uint8_t a)
 {
   return ((v << _graya_v_shift) |
 	  (a << _graya_a_shift));
@@ -115,7 +115,7 @@ struct GrayscaleTraits
     is_binary = false,
   };
 
-  typedef ase_uint16 pixel_t;
+  typedef uint16_t pixel_t;
   typedef pixel_t* address_t;
   typedef const pixel_t* const_address_t;
 
@@ -145,7 +145,7 @@ struct IndexedTraits
     is_binary = false,
   };
 
-  typedef ase_uint8 pixel_t;
+  typedef uint8_t pixel_t;
   typedef pixel_t* address_t;
   typedef const pixel_t* const_address_t;
 
@@ -169,7 +169,7 @@ struct BitmapTraits
     is_binary = true,
   };
 
-  typedef ase_uint8 pixel_t;
+  typedef uint8_t pixel_t;
   typedef pixel_t* address_t;
   typedef const pixel_t* const_address_t;
 

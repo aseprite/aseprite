@@ -41,7 +41,7 @@ Image* NewImageFromMask(const Document* srcDocument)
 {
   const Sprite* srcSprite = srcDocument->getSprite();
   const Mask* srcMask = srcDocument->getMask();
-  const ase_uint8* address;
+  const uint8_t* address;
   int x, y, u, v, getx, gety;
   Image *dst;
   const Image *src = srcSprite->getCurrentImage(&x, &y);
@@ -62,7 +62,7 @@ Image* NewImageFromMask(const Document* srcDocument)
   // Copy the masked zones
   for (v=0; v<srcMask->h; v++) {
     d = div(0, 8);
-    address = ((const ase_uint8 **)srcMask->bitmap->line)[v]+d.quot;
+    address = ((const uint8_t**)srcMask->bitmap->line)[v]+d.quot;
 
     for (u=0; u<srcMask->w; u++) {
       if ((*address & (1<<d.rem))) {

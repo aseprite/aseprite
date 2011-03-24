@@ -26,9 +26,9 @@
 #define CF_DIBV5            17
 #endif
 
-static ase_uint32 get_shift_from_mask(ase_uint32 mask)
+static uint32_t get_shift_from_mask(uint32_t mask)
 {
-  ase_uint32 shift = 0;
+  uint32_t shift = 0;
   for (shift=0; shift<32; ++shift)
     if (mask & (1 << shift))
       return shift;
@@ -66,17 +66,17 @@ static void set_win32_clipboard_bitmap(Image* image, Palette* palette)
 
   switch (image->imgtype) {
     case IMAGE_RGB:
-      scanline = sizeof(ase_uint32) * image->w;
+      scanline = sizeof(uint32_t) * image->w;
       color_depth = 32;
       break;
     case IMAGE_GRAYSCALE:
        // this is right! Grayscaled is copied as RGBA in Win32 Clipboard
-      scanline = sizeof(ase_uint32) * image->w;
+      scanline = sizeof(uint32_t) * image->w;
       color_depth = 32;
       break;
     case IMAGE_INDEXED:
       padding = (4-(image->w&3))&3;
-      scanline = sizeof(ase_uint8) * image->w;
+      scanline = sizeof(uint8_t) * image->w;
       scanline += padding;
       color_depth = 8;
       palette_entries = palette->size();
@@ -109,8 +109,8 @@ static void set_win32_clipboard_bitmap(Image* image, Palette* palette)
   // write pixels
   switch (image->imgtype) {
     case IMAGE_RGB: {
-      ase_uint32* dst = (ase_uint32*)(((ase_uint8*)bi)+bi->bV5Size);
-      ase_uint32 c;
+      uint32_t* dst = (uint32_t*)(((uint8_t*)bi)+bi->bV5Size);
+      uint32_t c;
       for (int y=image->h-1; y>=0; --y)
 	for (int x=0; x<image->w; ++x) {
 	  c = image_getpixel_fast<RgbTraits>(image, x, y);
@@ -122,8 +122,8 @@ static void set_win32_clipboard_bitmap(Image* image, Palette* palette)
       break;
     }
     case IMAGE_GRAYSCALE: {
-      ase_uint32* dst = (ase_uint32*)(((ase_uint8*)bi)+bi->bV5Size);
-      ase_uint16 c;
+      uint32_t* dst = (uint32_t*)(((uint8_t*)bi)+bi->bV5Size);
+      uint16_t c;
       for (int y=image->h-1; y>=0; --y)
 	for (int x=0; x<image->w; ++x) {
 	  c = image_getpixel_fast<GrayscaleTraits>(image, x, y);
@@ -136,7 +136,7 @@ static void set_win32_clipboard_bitmap(Image* image, Palette* palette)
     }
     case IMAGE_INDEXED: {
       Palette* palette = get_current_palette();
-      RGBQUAD* rgbquad = (RGBQUAD*)(((ase_uint8*)bi)+bi->bV5Size);
+      RGBQUAD* rgbquad = (RGBQUAD*)(((uint8_t*)bi)+bi->bV5Size);
       for (int i=0; i<palette->size(); ++i) {
 	rgbquad->rgbRed   = _rgba_getr(palette->getEntry(i));
 	rgbquad->rgbGreen = _rgba_getg(palette->getEntry(i));
@@ -144,7 +144,7 @@ static void set_win32_clipboard_bitmap(Image* image, Palette* palette)
 	rgbquad++;
       }
 
-      ase_uint8* dst = (ase_uint8*)(((ase_uint8*)bi)+bi->bV5Size
+      uint8_t* dst = (uint8_t*)(((uint8_t*)bi)+bi->bV5Size
 				    + palette_entries*sizeof(RGBQUAD));
       for (int y=image->h-1; y>=0; --y) {
 	for (int x=0; x<image->w; ++x) {
@@ -197,18 +197,18 @@ static void get_win32_clipboard_bitmap(Image*& image, Palette*& palette)
 	// 32 BPP
 	case 32:
 	  if (bi->bmiHeader.biCompression == BI_BITFIELDS) {
-	    ase_uint32* src = (ase_uint32*)(((ase_uint8*)bi)+bi->bmiHeader.biSize+sizeof(RGBQUAD)*3);
-	    ase_uint32 c;
+	    uint32_t* src = (uint32_t*)(((uint8_t*)bi)+bi->bmiHeader.biSize+sizeof(RGBQUAD)*3);
+	    uint32_t c;
 
-	    ase_uint32 r_mask = (ase_uint32)*((ase_uint32*)&bi->bmiColors[0]);
-	    ase_uint32 g_mask = (ase_uint32)*((ase_uint32*)&bi->bmiColors[1]);
-	    ase_uint32 b_mask = (ase_uint32)*((ase_uint32*)&bi->bmiColors[2]);
-	    ase_uint32 r_shift = get_shift_from_mask(r_mask);
-	    ase_uint32 g_shift = get_shift_from_mask(g_mask);
-	    ase_uint32 b_shift = get_shift_from_mask(b_mask);
+	    uint32_t r_mask = (uint32_t)*((uint32_t*)&bi->bmiColors[0]);
+	    uint32_t g_mask = (uint32_t)*((uint32_t*)&bi->bmiColors[1]);
+	    uint32_t b_mask = (uint32_t)*((uint32_t*)&bi->bmiColors[2]);
+	    uint32_t r_shift = get_shift_from_mask(r_mask);
+	    uint32_t g_shift = get_shift_from_mask(g_mask);
+	    uint32_t b_shift = get_shift_from_mask(b_mask);
 
 	    for (int y=image->h-1; y>=0; --y) {
-	      ase_uint32* dst = (ase_uint32*)image->line[y];
+	      uint32_t* dst = (uint32_t*)image->line[y];
 
 	      for (int x=0; x<image->w; ++x) {
 		c = *(src++);
@@ -219,11 +219,11 @@ static void get_win32_clipboard_bitmap(Image*& image, Palette*& palette)
 	    }
 	  }
 	  else if (bi->bmiHeader.biCompression == BI_RGB) {
-	    ase_uint32* src = (ase_uint32*)(((ase_uint8*)bi)+bi->bmiHeader.biSize);
-	    ase_uint32 c;
+	    uint32_t* src = (uint32_t*)(((uint8_t*)bi)+bi->bmiHeader.biSize);
+	    uint32_t c;
 
 	    for (int y=image->h-1; y>=0; --y) {
-	      ase_uint32* dst = (ase_uint32*)image->line[y];
+	      uint32_t* dst = (uint32_t*)image->line[y];
 
 	      for (int x=0; x<image->w; ++x) {
 		c = *(src++);
@@ -239,12 +239,12 @@ static void get_win32_clipboard_bitmap(Image*& image, Palette*& palette)
 
 	// 24 BPP
 	case 24: {
-	  ase_uint8* src = (((ase_uint8*)bi)+bi->bmiHeader.biSize);
-	  ase_uint8 r, g, b;
+	  uint8_t* src = (((uint8_t*)bi)+bi->bmiHeader.biSize);
+	  uint8_t r, g, b;
 	  int padding = (4-((image->w*3)&3))&3;
 
 	  for (int y=image->h-1; y>=0; --y) {
-	    ase_uint32* dst = (ase_uint32*)image->line[y];
+	    uint32_t* dst = (uint32_t*)image->line[y];
 
 	    for (int x=0; x<image->w; ++x) {
 	      b = *(src++);
@@ -261,8 +261,8 @@ static void get_win32_clipboard_bitmap(Image*& image, Palette*& palette)
 	// 16 BPP
 	case 16: {
 	  // TODO I am not sure if this really works
-	  ase_uint8* src = (((ase_uint8*)bi)+bi->bmiHeader.biSize);
-	  ase_uint8 b1, b2, r, g, b;
+	  uint8_t* src = (((uint8_t*)bi)+bi->bmiHeader.biSize);
+	  uint8_t b1, b2, r, g, b;
 	  int padding = (4-((image->w*2)&3))&3;
 
 	  for (int y=image->h-1; y>=0; --y) {
@@ -290,7 +290,7 @@ static void get_win32_clipboard_bitmap(Image*& image, Palette*& palette)
 				       bi->bmiColors[c].rgbBlue, 255));
 	  }
 
-	  ase_uint8* src = (((ase_uint8*)bi)+bi->bmiHeader.biSize+sizeof(RGBQUAD)*colors);
+	  uint8_t* src = (((uint8_t*)bi)+bi->bmiHeader.biSize+sizeof(RGBQUAD)*colors);
 	  int padding = (4-(image->w&3))&3;
 
 	  for (int y=image->h-1; y>=0; --y) {

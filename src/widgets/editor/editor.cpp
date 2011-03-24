@@ -570,7 +570,7 @@ void Editor::flashCurrentLayer()
       for (u=0; u<flash_image->w; ++u) {
 	if (u-x >= 0 && u-x < src_image->w &&
 	    v-y >= 0 && v-y < src_image->h) {
-	  ase_uint32 color = image_getpixel(src_image, u-x, v-y);
+	  uint32_t color = image_getpixel(src_image, u-x, v-y);
 	  if (color != src_image->mask_color) {
 	    Color ccc = Color::fromRgb(255, 255, 255);
 	    image_putpixel(flash_image, u, v,
@@ -755,7 +755,7 @@ void Editor::editor_update_statusbar_for_standby()
   // For eye-dropper
   else if (current_tool->getInk(0)->isEyedropper()) {
     int imgtype = m_sprite->getImgType();
-    ase_uint32 pixel = m_sprite->getPixel(x, y);
+    uint32_t pixel = m_sprite->getPixel(x, y);
     Color color = Color::fromImage(imgtype, pixel);
 
     int alpha = 255;

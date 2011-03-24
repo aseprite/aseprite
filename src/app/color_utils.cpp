@@ -95,7 +95,7 @@ int color_utils::color_for_allegro(const Color& color, int depth)
       if (depth != 8) {
 	ASSERT(c >= 0 && c < (int)get_current_palette()->size());
 
-	ase_uint32 _c = get_current_palette()->getEntry(c);
+	uint32_t _c = get_current_palette()->getEntry(c);
 	c = makeacol_depth(depth,
 			   _rgba_getr(_c),
 			   _rgba_getg(_c),

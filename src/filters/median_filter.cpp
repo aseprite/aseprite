@@ -63,10 +63,10 @@ const char* MedianFilter::getName()
 namespace {
   struct GetPixelsDelegateRgba
   {
-    std::vector<std::vector<ase_uint8> >& channel;
+    std::vector<std::vector<uint8_t> >& channel;
     int c;
 
-    GetPixelsDelegateRgba(std::vector<std::vector<ase_uint8> >& channel) : channel(channel) { }
+    GetPixelsDelegateRgba(std::vector<std::vector<uint8_t> >& channel) : channel(channel) { }
 
     void reset() { c = 0; }
 
@@ -82,10 +82,10 @@ namespace {
 
   struct GetPixelsDelegateGrayscale
   {
-    std::vector<std::vector<ase_uint8> >& channel;
+    std::vector<std::vector<uint8_t> >& channel;
     int c;
 
-    GetPixelsDelegateGrayscale(std::vector<std::vector<ase_uint8> >& channel) : channel(channel) { }
+    GetPixelsDelegateGrayscale(std::vector<std::vector<uint8_t> >& channel) : channel(channel) { }
 
     void reset() { c = 0; }
 
@@ -100,11 +100,11 @@ namespace {
   struct GetPixelsDelegateIndexed
   {
     const Palette* pal;
-    std::vector<std::vector<ase_uint8> >& channel;
+    std::vector<std::vector<uint8_t> >& channel;
     Target target;
     int c;
 
-    GetPixelsDelegateIndexed(const Palette* pal, std::vector<std::vector<ase_uint8> >& channel, Target target)
+    GetPixelsDelegateIndexed(const Palette* pal, std::vector<std::vector<uint8_t> >& channel, Target target)
       : pal(pal), channel(channel), target(target) { }
 
     void reset() { c = 0; }
@@ -127,7 +127,7 @@ namespace {
 void MedianFilter::applyToRgba(FilterManager* filterMgr)
 {
   const Image* src = filterMgr->getSourceImage();
-  ase_uint32* dst_address = (ase_uint32*)filterMgr->getDestinationAddress();
+  uint32_t* dst_address = (uint32_t*)filterMgr->getDestinationAddress();
   Target target = filterMgr->getTarget();
   int color;
   int r, g, b, a;
@@ -184,7 +184,7 @@ void MedianFilter::applyToRgba(FilterManager* filterMgr)
 void MedianFilter::applyToGrayscale(FilterManager* filterMgr)
 {
   const Image* src = filterMgr->getSourceImage();
-  ase_uint16* dst_address = (ase_uint16*)filterMgr->getDestinationAddress();
+  uint16_t* dst_address = (uint16_t*)filterMgr->getDestinationAddress();
   Target target = filterMgr->getTarget();
   int color, k, a;
   GetPixelsDelegateGrayscale delegate(m_channel);
@@ -226,7 +226,7 @@ void MedianFilter::applyToGrayscale(FilterManager* filterMgr)
 void MedianFilter::applyToIndexed(FilterManager* filterMgr)
 {
   const Image* src = filterMgr->getSourceImage();
-  ase_uint8* dst_address = (ase_uint8*)filterMgr->getDestinationAddress();
+  uint8_t* dst_address = (uint8_t*)filterMgr->getDestinationAddress();
   const Palette* pal = filterMgr->getIndexedData()->getPalette();
   const RgbMap* rgbmap = filterMgr->getIndexedData()->getRgbMap();
   Target target = filterMgr->getTarget();

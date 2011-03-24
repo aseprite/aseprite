@@ -109,7 +109,7 @@ static void ink_hline8_opaque(int x1, int y, int x2, IToolLoop* loop)
     (IndexedTraits,
      *dst_address = c			);
 
-  /* memset(((ase_uint8 **)data->dst_image->line)[y]+x1, data->color, x2-x1+1); */
+  /* memset(((uint8_t**)data->dst_image->line)[y]+x1, data->color, x2-x1+1); */
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -140,8 +140,8 @@ static void ink_hline8_transparent(int x1, int y, int x2, IToolLoop* loop)
 {
   Palette* pal = get_current_palette();
   RgbMap* rgbmap = loop->getSprite()->getRgbMap();
-  ase_uint32 c;
-  ase_uint32 tc = pal->getEntry(loop->getPrimaryColor());
+  uint32_t c;
+  uint32_t tc = pal->getEntry(loop->getPrimaryColor());
   int opacity = loop->getOpacity();
 
   DEFINE_INK_PROCESSING_SRCDST
@@ -316,8 +316,8 @@ static void ink_hline8_blur(int x1, int y, int x2, IToolLoop* loop)
 
 static void ink_hline32_replace(int x1, int y, int x2, IToolLoop* loop)
 {
-  ase_uint32 color1 = loop->getPrimaryColor();
-  ase_uint32 color2 = loop->getSecondaryColor();
+  uint32_t color1 = loop->getPrimaryColor();
+  uint32_t color2 = loop->getSecondaryColor();
   int opacity = loop->getOpacity();
 
   DEFINE_INK_PROCESSING_SRCDST
@@ -345,8 +345,8 @@ static void ink_hline8_replace(int x1, int y, int x2, IToolLoop* loop)
   int color1 = loop->getPrimaryColor();
   const Palette *pal = get_current_palette();
   RgbMap* rgbmap = loop->getSprite()->getRgbMap();
-  ase_uint32 c;
-  ase_uint32 tc = pal->getEntry(loop->getSecondaryColor());
+  uint32_t c;
+  uint32_t tc = pal->getEntry(loop->getSecondaryColor());
   int opacity = loop->getOpacity();
 
   DEFINE_INK_PROCESSING_SRCDST
@@ -424,7 +424,7 @@ static void ink_hline8_jumble(int x1, int y, int x2, IToolLoop* loop)
 {
   const Palette *pal = get_current_palette();
   const RgbMap* rgbmap = loop->getSprite()->getRgbMap();
-  ase_uint32 c, tc;
+  uint32_t c, tc;
   int opacity = loop->getOpacity();
   Point speed(loop->getSpeed() / 4);
   TiledMode tiled = loop->getTiledMode();

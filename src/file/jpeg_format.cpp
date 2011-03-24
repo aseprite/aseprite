@@ -190,13 +190,13 @@ bool JpegFormat::onLoad(FileOp* fop)
 
     /* RGB */
     if (image->imgtype == IMAGE_RGB) {
-      ase_uint8 *src_address;
-      ase_uint32 *dst_address;
+      uint8_t* src_address;
+      uint32_t* dst_address;
       int x, y, r, g, b;
 
       for (y=0; y<(int)num_scanlines; y++) {
-        src_address = ((ase_uint8 **)buffer)[y];
-        dst_address = ((ase_uint32 **)image->line)[cinfo.output_scanline-1+y];
+        src_address = ((uint8_t**)buffer)[y];
+        dst_address = ((uint32_t**)image->line)[cinfo.output_scanline-1+y];
 
         for (x=0; x<image->w; x++) {
           r = *(src_address++);
@@ -208,13 +208,13 @@ bool JpegFormat::onLoad(FileOp* fop)
     }
     /* Grayscale */
     else {
-      ase_uint8 *src_address;
-      ase_uint16 *dst_address;
+      uint8_t* src_address;
+      uint16_t* dst_address;
       int x, y;
 
       for (y=0; y<(int)num_scanlines; y++) {
-        src_address = ((ase_uint8 **)buffer)[y];
-        dst_address = ((ase_uint16 **)image->line)[cinfo.output_scanline-1+y];
+        src_address = ((uint8_t**)buffer)[y];
+        dst_address = ((uint16_t**)image->line)[cinfo.output_scanline-1+y];
 
         for (x=0; x<image->w; x++)
           *(dst_address++) = _graya(*(src_address++), 255);
@@ -313,12 +313,12 @@ bool JpegFormat::onSave(FileOp* fop)
   while (cinfo.next_scanline < cinfo.image_height) {
     // RGB
     if (image->imgtype == IMAGE_RGB) {
-      ase_uint32 *src_address;
-      ase_uint8 *dst_address;
+      uint32_t* src_address;
+      uint8_t* dst_address;
       int x, y;
       for (y=0; y<(int)buffer_height; y++) {
-        src_address = ((ase_uint32 **)image->line)[cinfo.next_scanline+y];
-        dst_address = ((ase_uint8 **)buffer)[y];
+        src_address = ((uint32_t**)image->line)[cinfo.next_scanline+y];
+        dst_address = ((uint8_t**)buffer)[y];
         for (x=0; x<image->w; x++) {
           c = *(src_address++);
           *(dst_address++) = _rgba_getr(c);
@@ -329,12 +329,12 @@ bool JpegFormat::onSave(FileOp* fop)
     }
     // Grayscale.
     else {
-      ase_uint16 *src_address;
-      ase_uint8 *dst_address;
+      uint16_t* src_address;
+      uint8_t* dst_address;
       int x, y;
       for (y=0; y<(int)buffer_height; y++) {
-        src_address = ((ase_uint16 **)image->line)[cinfo.next_scanline+y];
-        dst_address = ((ase_uint8 **)buffer)[y];
+        src_address = ((uint16_t**)image->line)[cinfo.next_scanline+y];
+        dst_address = ((uint8_t**)buffer)[y];
         for (x=0; x<image->w; x++)
           *(dst_address++) = _graya_getv(*(src_address++));
       }

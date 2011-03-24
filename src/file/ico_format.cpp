@@ -52,36 +52,36 @@ FileFormat* CreateIcoFormat()
 
 struct ICONDIR
 {
-  ase_uint16 reserved;
-  ase_uint16 type;
-  ase_uint16 entries;
+  uint16_t reserved;
+  uint16_t type;
+  uint16_t entries;
 };
 
 struct ICONDIRENTRY
 {
-  ase_uint8  width;
-  ase_uint8  height;
-  ase_uint8  color_count;
-  ase_uint8  reserved;
-  ase_uint16 planes;
-  ase_uint16 bpp;
-  ase_uint32 image_size;
-  ase_uint32 image_offset;
+  uint8_t  width;
+  uint8_t  height;
+  uint8_t  color_count;
+  uint8_t  reserved;
+  uint16_t planes;
+  uint16_t bpp;
+  uint32_t image_size;
+  uint32_t image_offset;
 };
 
 struct BITMAPINFOHEADER
 {
-  ase_uint32 size;
-  ase_uint32 width;
-  ase_uint32 height;
-  ase_uint16 planes;
-  ase_uint16 bpp;
-  ase_uint32 compression;
-  ase_uint32 imageSize;
-  ase_uint32 xPelsPerMeter;
-  ase_uint32 yPelsPerMeter;
-  ase_uint32 clrUsed;
-  ase_uint32 clrImportant;
+  uint32_t size;
+  uint32_t width;
+  uint32_t height;
+  uint16_t planes;
+  uint16_t bpp;
+  uint32_t compression;
+  uint32_t imageSize;
+  uint32_t xPelsPerMeter;
+  uint32_t yPelsPerMeter;
+  uint32_t clrUsed;
+  uint32_t clrImportant;
 };
 
 bool IcoFormat::onLoad(FileOp* fop)
@@ -111,7 +111,7 @@ bool IcoFormat::onLoad(FileOp* fop)
   // Read all entries
   std::vector<ICONDIRENTRY> entries;
   entries.reserve(header.entries);
-  for (ase_uint16 n=0; n<header.entries; ++n) {
+  for (uint16_t n=0; n<header.entries; ++n) {
     ICONDIRENTRY entry;
     entry.width		 = fgetc(f);	 // width
     entry.height	 = fgetc(f);	 // height

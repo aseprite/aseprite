@@ -47,7 +47,7 @@ private:
   int m_width;
   int m_height;
   int m_ncolors;
-  std::vector<std::vector<ase_uint8> > m_channel;
+  std::vector<std::vector<uint8_t> > m_channel;
 };
 
 #endif

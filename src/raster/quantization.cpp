@@ -81,10 +81,10 @@ Image* quantization::convert_imgtype(const Image* image, int imgtype,
 				     const Palette* palette,
 				     bool has_background_layer)
 {
-  ase_uint32* rgb_address;
-  ase_uint16* gray_address;
-  ase_uint8* idx_address;
-  ase_uint32 c;
+  uint32_t* rgb_address;
+  uint16_t* gray_address;
+  uint8_t* idx_address;
+  uint32_t c;
   int i, r, g, b, size;
   Image *new_image;
 
@@ -107,13 +107,13 @@ Image* quantization::convert_imgtype(const Image* image, int imgtype,
   switch (image->imgtype) {
 
     case IMAGE_RGB:
-      rgb_address = (ase_uint32*)image->dat;
+      rgb_address = (uint32_t*)image->dat;
 
       switch (new_image->imgtype) {
 
 	// RGB -> Grayscale
 	case IMAGE_GRAYSCALE:
-	  gray_address = (ase_uint16*)new_image->dat;
+	  gray_address = (uint16_t*)new_image->dat;
 	  for (i=0; i<size; i++) {
 	    c = *rgb_address;
 
@@ -147,13 +147,13 @@ Image* quantization::convert_imgtype(const Image* image, int imgtype,
       break;
 
     case IMAGE_GRAYSCALE:
-      gray_address = (ase_uint16*)image->dat;
+      gray_address = (uint16_t*)image->dat;
 
       switch (new_image->imgtype) {
 
 	// Grayscale -> RGB
 	case IMAGE_RGB:
-	  rgb_address = (ase_uint32*)new_image->dat;
+	  rgb_address = (uint32_t*)new_image->dat;
 	  for (i=0; i<size; i++) {
 	    c = *gray_address;
 	    g = _graya_getv(c);
@@ -186,7 +186,7 @@ Image* quantization::convert_imgtype(const Image* image, int imgtype,
 
 	// Indexed -> RGB
 	case IMAGE_RGB:
-	  rgb_address = (ase_uint32*)new_image->dat;
+	  rgb_address = (uint32_t*)new_image->dat;
 	  for (i=0; i<size; i++) {
 	    c = *idx_address;
 
@@ -203,7 +203,7 @@ Image* quantization::convert_imgtype(const Image* image, int imgtype,
 
 	// Indexed -> Grayscale
 	case IMAGE_GRAYSCALE:
-	  gray_address = (ase_uint16*)new_image->dat;
+	  gray_address = (uint16_t*)new_image->dat;
 	  for (i=0; i<size; i++) {
 	    c = *idx_address;
 
@@ -338,7 +338,7 @@ static Image* ordered_dithering(const Image* src_image,
 static void create_palette_from_bitmaps(const std::vector<Image*>& images, Palette* palette, bool has_background_layer)
 {
   quantization::ColorHistogram<5, 6, 5> histogram;
-  ase_uint32 color;
+  uint32_t color;
   RgbTraits::address_t address;
 
   // If the sprite has a background layer, the first entry can be

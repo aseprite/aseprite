@@ -256,28 +256,28 @@ static UndoAction undo_actions[] = {
 
 // Raw data
 
-static Dirty *read_raw_dirty(ase_uint8* raw_data);
-static ase_uint8* write_raw_dirty(ase_uint8* raw_data, Dirty* dirty);
+static Dirty *read_raw_dirty(uint8_t* raw_data);
+static uint8_t* write_raw_dirty(uint8_t* raw_data, Dirty* dirty);
 static int get_raw_dirty_size(Dirty *dirty);
 
-static Image* read_raw_image(ObjectsContainer* objects, ase_uint8* raw_data);
-static ase_uint8* write_raw_image(ObjectsContainer* objects, ase_uint8* raw_data, Image* image);
+static Image* read_raw_image(ObjectsContainer* objects, uint8_t* raw_data);
+static uint8_t* write_raw_image(ObjectsContainer* objects, uint8_t* raw_data, Image* image);
 static int get_raw_image_size(Image* image);
 
-static Cel* read_raw_cel(ObjectsContainer* objects, ase_uint8* raw_data);
-static ase_uint8* write_raw_cel(ObjectsContainer* objects, ase_uint8* raw_data, Cel* cel);
+static Cel* read_raw_cel(ObjectsContainer* objects, uint8_t* raw_data);
+static uint8_t* write_raw_cel(ObjectsContainer* objects, uint8_t* raw_data, Cel* cel);
 static int get_raw_cel_size(Cel* cel);
 
-static Layer* read_raw_layer(ObjectsContainer* objects, ase_uint8* raw_data);
-static ase_uint8* write_raw_layer(ObjectsContainer* objects, ase_uint8* raw_data, Layer* layer);
+static Layer* read_raw_layer(ObjectsContainer* objects, uint8_t* raw_data);
+static uint8_t* write_raw_layer(ObjectsContainer* objects, uint8_t* raw_data, Layer* layer);
 static int get_raw_layer_size(Layer* layer);
 
-static Palette* read_raw_palette(ase_uint8* raw_data);
-static ase_uint8* write_raw_palette(ase_uint8* raw_data, Palette* palette);
+static Palette* read_raw_palette(uint8_t* raw_data);
+static uint8_t* write_raw_palette(uint8_t* raw_data, Palette* palette);
 static int get_raw_palette_size(Palette* palette);
 
-static Mask* read_raw_mask(ase_uint8* raw_data);
-static ase_uint8* write_raw_mask(ase_uint8* raw_data, Mask* mask);
+static Mask* read_raw_mask(uint8_t* raw_data);
+static uint8_t* write_raw_mask(uint8_t* raw_data, Mask* mask);
 static int get_raw_mask_size(Mask* mask);
 
 //////////////////////////////////////////////////////////////////////
@@ -650,9 +650,9 @@ struct UndoChunkData
 {
   UndoChunk head;
   ObjectId objectId;
-  ase_uint32 fieldOffset;
-  ase_uint32 fieldSize;
-  ase_uint8 fieldData[0];
+  uint32_t fieldOffset;
+  uint32_t fieldSize;
+  uint8_t fieldData[0];
 };
 
 void UndoHistory::undo_data(void* object, void* fieldAddress, int fieldSize)
@@ -663,8 +663,8 @@ void UndoHistory::undo_data(void* object, void* fieldAddress, int fieldSize)
 
 static void chunk_data_new(UndoStream* stream, void* object, void* fieldAddress, int fieldSize)
 {
-  ase_uint32 fieldOffset = (ase_uint32)(((ase_uint8*)fieldAddress) -
-					((ase_uint8*)object));
+  uint32_t fieldOffset = (uint32_t)(((uint8_t*)fieldAddress) -
+				    ((uint8_t*)object));
 
   ASSERT(fieldSize >= 1);
 
@@ -685,7 +685,7 @@ static void chunk_data_invert(UndoStream* stream, UndoChunkData *chunk)
   unsigned int offset = chunk->fieldOffset;
   unsigned int size = chunk->fieldSize;
   void* object = stream->getObjects()->getObject(chunk->objectId);
-  void* field = (void*)(((ase_uint8*)object) + offset);
+  void* field = (void*)(((uint8_t*)object) + offset);
 
   // Save the current data
   chunk_data_new(stream, object, field, size);
@@ -713,9 +713,9 @@ struct UndoChunkImage
 {
   UndoChunk head;
   ObjectId image_id;
-  ase_uint8 imgtype;
-  ase_uint16 x, y, w, h; 
-  ase_uint8 data[0];
+  uint8_t imgtype;
+  uint16_t x, y, w, h; 
+  uint8_t data[0];
 };
 
 void UndoHistory::undo_image(Image* image, int x, int y, int w, int h)
@@ -727,7 +727,7 @@ void UndoHistory::undo_image(Image* image, int x, int y, int w, int h)
 static void chunk_image_new(UndoStream* stream, Image* image, int x, int y, int w, int h)
 {
   UndoChunkImage* chunk;
-  ase_uint8* ptr;
+  uint8_t* ptr;
   int v, size;
 
   ASSERT(w >= 1 && h >= 1);
@@ -764,7 +764,7 @@ static void chunk_image_invert(UndoStream* stream, UndoChunkImage* chunk)
     throw UndoException("Image type does not match");
 
   int x, y, w, h;
-  ase_uint8* ptr;
+  uint8_t* ptr;
   int v, size;
 
   x = chunk->x;
@@ -800,9 +800,9 @@ struct UndoChunkFlip
 {
   UndoChunk head;
   ObjectId image_id;
-  ase_uint8 imgtype;
-  ase_uint16 x1, y1, x2, y2; 
-  ase_uint8 horz;
+  uint8_t imgtype;
+  uint16_t x1, y1, x2, y2; 
+  uint8_t horz;
 };
 
 void UndoHistory::undo_flip(Image* image, int x1, int y1, int x2, int y2, bool horz)
@@ -869,7 +869,7 @@ struct UndoChunkDirty
 {
   UndoChunk head;
   ObjectId image_id;
-  ase_uint8 data[0];
+  uint8_t data[0];
 };
 
 void UndoHistory::undo_dirty(Image* image, Dirty* dirty)
@@ -918,7 +918,7 @@ struct UndoChunkAddImage
 {
   UndoChunk head;
   ObjectId stock_id;
-  ase_uint32 image_index;
+  uint32_t image_index;
 };
 
 void UndoHistory::undo_add_image(Stock *stock, int image_index)
@@ -968,8 +968,8 @@ struct UndoChunkRemoveImage
 {
   UndoChunk head;
   ObjectId stock_id;
-  ase_uint32 image_index;
-  ase_uint8 data[0];
+  uint32_t image_index;
+  uint8_t data[0];
 };
 
 void UndoHistory::undo_remove_image(Stock *stock, int image_index)
@@ -1022,8 +1022,8 @@ struct UndoChunkReplaceImage
 {
   UndoChunk head;
   ObjectId stock_id;
-  ase_uint32 image_index;
-  ase_uint8 data[0];
+  uint32_t image_index;
+  uint8_t data[0];
 };
 
 void UndoHistory::undo_replace_image(Stock *stock, int image_index)
@@ -1125,7 +1125,7 @@ struct UndoChunkRemoveCel
 {
   UndoChunk head;
   ObjectId layer_id;
-  ase_uint8 data[0];
+  uint8_t data[0];
 };
 
 void UndoHistory::undo_remove_cel(Layer* layer, Cel* cel)
@@ -1171,8 +1171,8 @@ struct UndoChunkSetLayerName
 {
   UndoChunk head;
   ObjectId layer_id;
-  ase_uint16 name_length;
-  ase_uint8 name_text[0];
+  uint16_t name_length;
+  uint8_t name_text[0];
 };
 
 void UndoHistory::undo_set_layer_name(Layer* layer)
@@ -1273,7 +1273,7 @@ struct UndoChunkRemoveLayer
   UndoChunk head;
   ObjectId folder_id;
   ObjectId after_id;
-  ase_uint8 data[0];
+  uint8_t data[0];
 };
 
 void UndoHistory::undo_remove_layer(Layer* layer)
@@ -1456,7 +1456,7 @@ struct UndoChunkRemovePalette
 {
   UndoChunk head;
   ObjectId sprite_id;
-  ase_uint8 data[0];
+  uint8_t data[0];
 };
 
 void UndoHistory::undo_remove_palette(Sprite *sprite, Palette* palette)
@@ -1503,10 +1503,10 @@ struct UndoChunkSetPaletteColors
 {
   UndoChunk head;
   ObjectId sprite_id;
-  ase_uint32 frame;
-  ase_uint8 from;
-  ase_uint8 to;
-  ase_uint8 data[0];
+  uint32_t frame;
+  uint8_t from;
+  uint8_t to;
+  uint8_t data[0];
 };
 
 void UndoHistory::undo_set_palette_colors(Sprite *sprite, Palette* palette, int from, int to)
@@ -1520,7 +1520,7 @@ static void chunk_set_palette_colors_new(UndoStream* stream, Sprite *sprite, Pal
   UndoChunkSetPaletteColors* chunk = (UndoChunkSetPaletteColors*)
     undo_chunk_new(stream,
 		   UNDO_TYPE_SET_PALETTE_COLORS,
-		   sizeof(UndoChunkSetPaletteColors) + sizeof(ase_uint32)*(to-from+1));
+		   sizeof(UndoChunkSetPaletteColors) + sizeof(uint32_t)*(to-from+1));
 
   chunk->sprite_id = stream->getObjects()->addObject(sprite);
   chunk->frame = sprite->getCurrentFrame();
@@ -1528,8 +1528,8 @@ static void chunk_set_palette_colors_new(UndoStream* stream, Sprite *sprite, Pal
   chunk->to = to;
 
   // Write (to-from+1) palette color entries
-  ase_uint32 dword;
-  ase_uint8* raw_data = chunk->data;
+  uint32_t dword;
+  uint8_t* raw_data = chunk->data;
   for (int i=from; i<=to; ++i)
     write_raw_uint32(palette->getEntry(i));
 }
@@ -1544,9 +1544,9 @@ static void chunk_set_palette_colors_invert(UndoStream* stream, UndoChunkSetPale
   // Add the chunk to invert the operation
   chunk_set_palette_colors_new(stream, sprite, palette, chunk->from, chunk->to);
 
-  ase_uint32 dword;
-  ase_uint32 color;
-  ase_uint8* raw_data = chunk->data;
+  uint32_t dword;
+  uint32_t color;
+  uint8_t* raw_data = chunk->data;
 
   for (int i=(int)chunk->from; i<=(int)chunk->to; ++i) {
     read_raw_uint32(color);
@@ -1569,9 +1569,9 @@ struct UndoChunkRemapPalette
 {
   UndoChunk head;
   ObjectId sprite_id;
-  ase_uint32 frame_from;
-  ase_uint32 frame_to;
-  ase_uint8 mapping[256];
+  uint32_t frame_from;
+  uint32_t frame_to;
+  uint8_t mapping[256];
 };
 
 void UndoHistory::undo_remap_palette(Sprite* sprite, int frame_from, int frame_to, const std::vector<int>& mapping)
@@ -1625,7 +1625,7 @@ struct UndoChunkSetMask
 {
   UndoChunk head;
   ObjectId doc_id;
-  ase_uint8 data[0];
+  uint8_t data[0];
 };
 
 void UndoHistory::undo_set_mask(Document* document)
@@ -1672,7 +1672,7 @@ struct UndoChunkSetImgType
 {
   UndoChunk head;
   ObjectId sprite_id;
-  ase_uint32 imgtype;
+  uint32_t imgtype;
 };
 
 void UndoHistory::undo_set_imgtype(Sprite* sprite)
@@ -1716,8 +1716,8 @@ struct UndoChunkSetSize
 {
   UndoChunk head;
   ObjectId sprite_id;
-  ase_uint32 width;
-  ase_uint32 height;
+  uint32_t width;
+  uint32_t height;
 };
 
 void UndoHistory::undo_set_size(Sprite* sprite)
@@ -1761,7 +1761,7 @@ struct UndoChunkSetFrame
 {
   UndoChunk head;
   ObjectId sprite_id;
-  ase_uint32 frame;
+  uint32_t frame;
 };
 
 void UndoHistory::undo_set_frame(Sprite* sprite)
@@ -1804,7 +1804,7 @@ struct UndoChunkSetFrames
 {
   UndoChunk head;
   ObjectId sprite_id;
-  ase_uint32 frames;
+  uint32_t frames;
 };
 
 void UndoHistory::undo_set_frames(Sprite *sprite)
@@ -1848,8 +1848,8 @@ struct UndoChunkSetFrlen
 {
   UndoChunk head;
   ObjectId sprite_id;
-  ase_uint32 frame;
-  ase_uint32 duration;
+  uint32_t frame;
+  uint32_t duration;
 };
 
 void UndoHistory::undo_set_frlen(Sprite *sprite, int frame)
@@ -1931,9 +1931,9 @@ static void undo_chunk_free(UndoChunk* chunk)
 
 ***********************************************************************/
 
-static Dirty *read_raw_dirty(ase_uint8* raw_data)
+static Dirty *read_raw_dirty(uint8_t* raw_data)
 {
-  ase_uint16 word;
+  uint16_t word;
   int x1, y1, x2, y2, size;
   int u, v, x, y, w;
   int imgtype;
@@ -1984,9 +1984,9 @@ static Dirty *read_raw_dirty(ase_uint8* raw_data)
   return dirty;
 }
 
-static ase_uint8* write_raw_dirty(ase_uint8* raw_data, Dirty* dirty)
+static uint8_t* write_raw_dirty(uint8_t* raw_data, Dirty* dirty)
 {
-  ase_uint16 word;
+  uint16_t word;
 
   write_raw_uint8(dirty->getImgType());
   write_raw_uint16(dirty->x1());
@@ -2046,15 +2046,15 @@ static int get_raw_dirty_size(Dirty* dirty)
 
 ***********************************************************************/
 
-static Image* read_raw_image(ObjectsContainer* objects, ase_uint8* raw_data)
+static Image* read_raw_image(ObjectsContainer* objects, uint8_t* raw_data)
 {
-  ase_uint32 dword;
-  ase_uint16 word;
+  uint32_t dword;
+  uint16_t word;
   ObjectId image_id;
   int imgtype;
   int width;
   int height;
-  ase_uint32 mask_color;
+  uint32_t mask_color;
   Image* image;
   int c, size;
 
@@ -2079,11 +2079,11 @@ static Image* read_raw_image(ObjectsContainer* objects, ase_uint8* raw_data)
   return image;
 }
 
-static ase_uint8* write_raw_image(ObjectsContainer* objects, ase_uint8* raw_data, Image* image)
+static uint8_t* write_raw_image(ObjectsContainer* objects, uint8_t* raw_data, Image* image)
 {
   ObjectId image_id = objects->addObject(image);
-  ase_uint32 dword;
-  ase_uint16 word;
+  uint32_t dword;
+  uint16_t word;
   int c, size;
 
   write_raw_uint32(image_id);		   // ID
@@ -2118,10 +2118,10 @@ static int get_raw_image_size(Image* image)
 
 ***********************************************************************/
 
-static Cel* read_raw_cel(ObjectsContainer* objects, ase_uint8* raw_data)
+static Cel* read_raw_cel(ObjectsContainer* objects, uint8_t* raw_data)
 {
-  ase_uint32 dword;
-  ase_uint16 word;
+  uint32_t dword;
+  uint16_t word;
   int frame, image, x, y, opacity;
   ObjectId cel_id;
   Cel* cel;
@@ -2141,11 +2141,11 @@ static Cel* read_raw_cel(ObjectsContainer* objects, ase_uint8* raw_data)
   return cel;
 }
 
-static ase_uint8* write_raw_cel(ObjectsContainer* objects, ase_uint8* raw_data, Cel* cel)
+static uint8_t* write_raw_cel(ObjectsContainer* objects, uint8_t* raw_data, Cel* cel)
 {
   ObjectId cel_id = objects->addObject(cel);
-  ase_uint32 dword;
-  ase_uint16 word;
+  uint32_t dword;
+  uint16_t word;
 
   write_raw_uint32(cel_id);
   write_raw_uint16(cel->frame);
@@ -2169,10 +2169,10 @@ static int get_raw_cel_size(Cel* cel)
 
 ***********************************************************************/
 
-static Layer* read_raw_layer(ObjectsContainer* objects, ase_uint8* raw_data)
+static Layer* read_raw_layer(ObjectsContainer* objects, uint8_t* raw_data)
 {
-  ase_uint32 dword;
-  ase_uint16 word;
+  uint32_t dword;
+  uint16_t word;
   ObjectId layer_id, sprite_id;
   std::vector<char> name(1);
   int name_length, flags, layer_type;
@@ -2209,7 +2209,7 @@ static Layer* read_raw_layer(ObjectsContainer* objects, ase_uint8* raw_data)
       /* read cels */
       for (c=0; c<cels; c++) {
 	Cel* cel;
-	ase_uint8 has_image;
+	uint8_t has_image;
 
 	// Read the cel
 	cel = read_raw_cel(objects, raw_data);
@@ -2263,11 +2263,11 @@ static Layer* read_raw_layer(ObjectsContainer* objects, ase_uint8* raw_data)
   return layer;
 }
 
-static ase_uint8* write_raw_layer(ObjectsContainer* objects, ase_uint8* raw_data, Layer* layer)
+static uint8_t* write_raw_layer(ObjectsContainer* objects, uint8_t* raw_data, Layer* layer)
 {
   ObjectId layer_id = objects->addObject(layer);
-  ase_uint32 dword;
-  ase_uint16 word;
+  uint32_t dword;
+  uint16_t word;
   std::string name = layer->getName();
 
   write_raw_uint32(layer_id);				    // ID
@@ -2371,11 +2371,11 @@ static int get_raw_layer_size(Layer* layer)
 
 ***********************************************************************/
 
-static Palette* read_raw_palette(ase_uint8* raw_data)
+static Palette* read_raw_palette(uint8_t* raw_data)
 {
-  ase_uint32 dword;
-  ase_uint16 word;
-  ase_uint32 color;
+  uint32_t dword;
+  uint16_t word;
+  uint32_t color;
   int frame, ncolors;
   Palette* palette;
 
@@ -2394,11 +2394,11 @@ static Palette* read_raw_palette(ase_uint8* raw_data)
   return palette;
 }
 
-static ase_uint8* write_raw_palette(ase_uint8* raw_data, Palette* palette)
+static uint8_t* write_raw_palette(uint8_t* raw_data, Palette* palette)
 {
-  ase_uint32 dword;
-  ase_uint16 word;
-  ase_uint32 color;
+  uint32_t dword;
+  uint16_t word;
+  uint32_t color;
 
   write_raw_uint16(palette->getFrame()); // frame
   write_raw_uint16(palette->size());	 // number of colors
@@ -2429,9 +2429,9 @@ static int get_raw_palette_size(Palette* palette)
 
 ***********************************************************************/
 
-static Mask* read_raw_mask(ase_uint8* raw_data)
+static Mask* read_raw_mask(uint8_t* raw_data)
 {
-  ase_uint16 word;
+  uint16_t word;
   int x, y, w, h;
   int c, size;
   Mask* mask;
@@ -2456,9 +2456,9 @@ static Mask* read_raw_mask(ase_uint8* raw_data)
   return mask;
 }
 
-static ase_uint8* write_raw_mask(ase_uint8* raw_data, Mask* mask)
+static uint8_t* write_raw_mask(uint8_t* raw_data, Mask* mask)
 {
-  ase_uint16 word;
+  uint16_t word;
   int c, size = (mask->w+7)/8;
 
   write_raw_uint16(mask->x);	/* xpos */

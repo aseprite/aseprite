@@ -48,7 +48,7 @@ static int flood_count;          /* number of flooded segments */
 
 #define FLOOD_LINE(c)            (((FLOODED_LINE *)_scratch_mem) + c)
 
-static inline bool color_equal_32(ase_uint32 c1, ase_uint32 c2, int tolerance)
+static inline bool color_equal_32(uint32_t c1, uint32_t c2, int tolerance)
 {
   if (tolerance == 0)
     return (c1 == c2) || (_rgba_geta(c1) == 0 && _rgba_geta(c2) == 0);
@@ -72,7 +72,7 @@ static inline bool color_equal_32(ase_uint32 c1, ase_uint32 c2, int tolerance)
   }
 }
 
-static inline bool color_equal_16(ase_uint16 c1, ase_uint16 c2, int tolerance)
+static inline bool color_equal_16(uint16_t c1, uint16_t c2, int tolerance)
 {
   if (tolerance == 0)
     return (c1 == c2) || (_graya_geta(c1) == 0 && _graya_geta(c2) == 0);
@@ -90,7 +90,7 @@ static inline bool color_equal_16(ase_uint16 c1, ase_uint16 c2, int tolerance)
   }
 }
 
-static inline bool color_equal_8(ase_uint8 c1, ase_uint8 c2, int tolerance)
+static inline bool color_equal_8(uint8_t c1, uint8_t c2, int tolerance)
 {
   if (tolerance == 0)
     return (c1 == c2);
@@ -116,7 +116,7 @@ static int flooder (Image *image, int x, int y,
 
     case IMAGE_RGB:
       {
-        ase_uint32 *address = ((ase_uint32 **)image->line)[y];
+        uint32_t* address = ((uint32_t**)image->line)[y];
 
         /* check start pixel */
         if (!color_equal_32((int)*(address+x), src_color, tolerance))
@@ -138,7 +138,7 @@ static int flooder (Image *image, int x, int y,
 
     case IMAGE_GRAYSCALE:
       {
-        ase_uint16 *address = ((ase_uint16 **)image->line)[y];
+        uint16_t* address = ((uint16_t**)image->line)[y];
 
         /* check start pixel */
         if (!color_equal_16((int)*(address+x), src_color, tolerance))
@@ -160,7 +160,7 @@ static int flooder (Image *image, int x, int y,
 
     case IMAGE_INDEXED:
       {
-        ase_uint8 *address = ((ase_uint8 **)image->line)[y];
+        uint8_t* address = ((uint8_t**)image->line)[y];
 
         /* check start pixel */
         if (!color_equal_8((int)*(address+x), src_color, tolerance))

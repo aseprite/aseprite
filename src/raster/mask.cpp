@@ -148,13 +148,13 @@ void mask_none(Mask* mask)
 void mask_invert(Mask* mask)
 {
   if (mask->bitmap) {
-    ase_uint8 *address;
+    uint8_t* address;
     int u, v;
     div_t d;
 
     for (v=0; v<mask->h; v++) {
       d.quot = d.rem = 0;
-      address = ((ase_uint8 **)mask->bitmap->line)[v];
+      address = ((uint8_t**)mask->bitmap->line)[v];
       for (u=0; u<mask->w; u++) {
 	*address ^= (1<<d.rem);
 	_image_bitmap_next_bit(d, address);
@@ -237,8 +237,8 @@ void mask_by_color(Mask* mask, const Image *src, int color, int fuzziness)
   switch (src->imgtype) {
 
     case IMAGE_RGB: {
-      ase_uint32 *src_address;
-      ase_uint8 *dst_address;
+      uint32_t* src_address;
+      uint8_t* dst_address;
       int src_r, src_g, src_b, src_a;
       int dst_r, dst_g, dst_b, dst_a;
       int u, v, c;
@@ -250,8 +250,8 @@ void mask_by_color(Mask* mask, const Image *src, int color, int fuzziness)
       dst_a = _rgba_geta(color);
 
       for (v=0; v<src->h; v++) {
-	src_address = ((ase_uint32 **)src->line)[v];
-	dst_address = ((ase_uint8 **)dst->line)[v];
+	src_address = ((uint32_t**)src->line)[v];
+	dst_address = ((uint8_t**)dst->line)[v];
 
 	d = div (0, 8);
 
@@ -275,8 +275,8 @@ void mask_by_color(Mask* mask, const Image *src, int color, int fuzziness)
     } break;
 
     case IMAGE_GRAYSCALE: {
-      ase_uint16 *src_address;
-      ase_uint8 *dst_address;
+      uint16_t* src_address;
+      uint8_t* dst_address;
       int src_k, src_a;
       int dst_k, dst_a;
       int u, v, c;
@@ -286,8 +286,8 @@ void mask_by_color(Mask* mask, const Image *src, int color, int fuzziness)
       dst_a = _graya_geta(color);
 
       for (v=0; v<src->h; v++) {
-	src_address = ((ase_uint16 **)src->line)[v];
-	dst_address = ((ase_uint8 **)dst->line)[v];
+	src_address = ((uint16_t**)src->line)[v];
+	dst_address = ((uint8_t**)dst->line)[v];
 
 	d = div (0, 8);
 
@@ -307,14 +307,14 @@ void mask_by_color(Mask* mask, const Image *src, int color, int fuzziness)
     } break;
 
     case IMAGE_INDEXED: {
-      ase_uint8 *src_address;
-      ase_uint8 *dst_address;
+      uint8_t* src_address;
+      uint8_t* dst_address;
       int u, v, c;
       div_t d;
 
       for (v=0; v<src->h; v++) {
-	src_address = ((ase_uint8 **)src->line)[v];
-	dst_address = ((ase_uint8 **)dst->line)[v];
+	src_address = ((uint8_t**)src->line)[v];
+	dst_address = ((uint8_t**)dst->line)[v];
 
 	d = div (0, 8);
 

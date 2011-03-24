@@ -236,7 +236,7 @@ std::string Color::toFormalString(int imgtype, bool long_format) const
       case Color::IndexType: {
 	int i = m_value.index;
 	if (i >= 0 && i < (int)get_current_palette()->size()) {
-	  ase_uint32 _c = get_current_palette()->getEntry(i);
+	  uint32_t _c = get_current_palette()->getEntry(i);
 	  result << "Index " << i
 		 << " (RGB "
 		 << (int)_rgba_getr(_c) << " "
@@ -469,7 +469,7 @@ int Color::getHue() const
       int i = m_value.index;
       ASSERT(i >= 0 && i < get_current_palette()->size());
 
-      ase_uint32 c = get_current_palette()->getEntry(i);
+      uint32_t c = get_current_palette()->getEntry(i);
 
       return Hsv(Rgb(_rgba_getr(c),
 		     _rgba_getg(c),
@@ -504,7 +504,7 @@ int Color::getSaturation() const
       int i = m_value.index;
       ASSERT(i >= 0 && i < get_current_palette()->size());
 
-      ase_uint32 c = get_current_palette()->getEntry(i);
+      uint32_t c = get_current_palette()->getEntry(i);
 
       return Hsv(Rgb(_rgba_getr(c),
 		     _rgba_getg(c),
@@ -539,7 +539,7 @@ int Color::getValue() const
       int i = m_value.index;
       ASSERT(i >= 0 && i < get_current_palette()->size());
 
-      ase_uint32 c = get_current_palette()->getEntry(i);
+      uint32_t c = get_current_palette()->getEntry(i);
 
       return Hsv(Rgb(_rgba_getr(c),
 		     _rgba_getg(c),
@@ -574,7 +574,7 @@ int Color::getGray() const
       int i = m_value.index;
       ASSERT(i >= 0 && i < get_current_palette()->size());
 
-      ase_uint32 c = get_current_palette()->getEntry(i);
+      uint32_t c = get_current_palette()->getEntry(i);
 
       return 255 * Hsv(Rgb(_rgba_getr(c),
 			   _rgba_getg(c),

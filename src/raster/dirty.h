@@ -40,7 +40,7 @@ public:
 
   struct Col {
     int x, w;
-    std::vector<ase_uint8> data;
+    std::vector<uint8_t> data;
 
     Col(int x, int w) : x(x), w(w) { }
   };

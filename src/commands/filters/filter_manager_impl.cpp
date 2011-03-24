@@ -168,7 +168,7 @@ bool FilterManagerImpl::applyStep()
   if ((m_row >= 0) && (m_row < m_h)) {
     if ((m_mask) && (m_mask->bitmap)) {
       m_d = div(m_x-m_mask->x+m_offset_x, 8);
-      m_mask_address = ((ase_uint8 **)m_mask->bitmap->line)[m_row+m_y-m_mask->y+m_offset_y]+m_d.quot;
+      m_mask_address = ((uint8_t**)m_mask->bitmap->line)[m_row+m_y-m_mask->y+m_offset_y]+m_d.quot;
     }
     else
       m_mask_address = NULL;
@@ -293,9 +293,9 @@ void FilterManagerImpl::flush()
 const void* FilterManagerImpl::getSourceAddress()
 {
   switch (m_sprite->getImgType()) {
-    case IMAGE_RGB:       return ((ase_uint32**)m_src->line)[m_row+m_y]+m_x;
-    case IMAGE_GRAYSCALE: return ((ase_uint16**)m_src->line)[m_row+m_y]+m_x;
-    case IMAGE_INDEXED:   return ((ase_uint8**)m_src->line)[m_row+m_y]+m_x;
+    case IMAGE_RGB:       return ((uint32_t**)m_src->line)[m_row+m_y]+m_x;
+    case IMAGE_GRAYSCALE: return ((uint16_t**)m_src->line)[m_row+m_y]+m_x;
+    case IMAGE_INDEXED:   return ((uint8_t**)m_src->line)[m_row+m_y]+m_x;
   }
   return NULL;
 }
@@ -303,9 +303,9 @@ const void* FilterManagerImpl::getSourceAddress()
 void* FilterManagerImpl::getDestinationAddress()
 {
   switch (m_sprite->getImgType()) {
-    case IMAGE_RGB:       return ((ase_uint32**)m_dst->line)[m_row+m_y]+m_x;
-    case IMAGE_GRAYSCALE: return ((ase_uint16**)m_dst->line)[m_row+m_y]+m_x;
-    case IMAGE_INDEXED:   return ((ase_uint8**)m_dst->line)[m_row+m_y]+m_x;
+    case IMAGE_RGB:       return ((uint32_t**)m_dst->line)[m_row+m_y]+m_x;
+    case IMAGE_GRAYSCALE: return ((uint16_t**)m_dst->line)[m_row+m_y]+m_x;
+    case IMAGE_INDEXED:   return ((uint8_t**)m_dst->line)[m_row+m_y]+m_x;
   }
   return NULL;
 }

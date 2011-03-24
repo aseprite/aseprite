@@ -92,10 +92,10 @@ void ScreenShotCommand::onExecute(Context* context)
 
     // Convert Allegro "BITMAP" to ASE "Image".
     if (imgtype == IMAGE_RGB) {
-      ase_uint32 *address;
+      uint32_t* address;
 
       for (y=0; y<image->h; ++y) {
-	address = (ase_uint32 *)image->line[y];
+	address = (uint32_t*)image->line[y];
 	for (x=0; x<image->w; ++x) {
 	  c = getpixel(bmp, x, y);
 	  r = getr(c);
@@ -106,10 +106,10 @@ void ScreenShotCommand::onExecute(Context* context)
       }
     }
     else if (imgtype == IMAGE_INDEXED) {
-      ase_uint8 *address;
+      uint8_t* address;
 
       for (y=0; y<image->h; ++y) {
-	address = (ase_uint8 *)image->line[y];
+	address = (uint8_t*)image->line[y];
 	for (x=0; x<image->w; ++x) {
 	  *(address++) = getpixel(bmp, x, y);
 	}

@@ -130,14 +130,14 @@ bool PcxFormat::onLoad(FileOp* fop)
       if (bpp == 8) {
         while (c--) {
           if (x < image->w)
-            *(((ase_uint8 **)image->line)[y]+x) = ch;
+            *(((uint8_t**)image->line)[y]+x) = ch;
           x++;
         }
       }
       else {
         while (c--) {
           if (xx < image->w)
-            *(((ase_uint32 **)image->line)[y]+xx) |= (ch & 0xff) << po;
+            *(((uint32_t**)image->line)[y]+xx) |= (ch & 0xff) << po;
           x++;
           if (x == bytes_per_line) {
             xx = 0;

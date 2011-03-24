@@ -110,7 +110,7 @@ bool save_col_file(const Palette *pal, const char *filename)
   fputw(PROCOL_MAGIC_NUMBER, f);   /* file format identifier */
   fputw(0, f);			   /* version file */
 
-  ase_uint32 c;
+  uint32_t c;
   for (int i=0; i<256; i++) {
     c = pal->getEntry(i);
 

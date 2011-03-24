@@ -63,8 +63,8 @@ public:
   // alpha channel in the render.
   bool needAlpha() const;
 
-  ase_uint32 getTransparentColor() const { return m_transparentColor; }
-  void setTransparentColor(ase_uint32 color);
+  uint32_t getTransparentColor() const { return m_transparentColor; }
+  void setTransparentColor(uint32_t color);
 
   int getMemSize() const;
 
@@ -154,7 +154,7 @@ private:
   RgbMap* m_rgbMap;
 
   // Transparent color used in indexed images
-  ase_uint32 m_transparentColor;
+  uint32_t m_transparentColor;
 
   // Disable default constructor and copying
   Sprite();

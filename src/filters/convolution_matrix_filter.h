@@ -47,7 +47,7 @@ public:
 private:
   SharedPtr<ConvolutionMatrix> m_matrix;
   TiledMode m_tiledMode;
-  std::vector<ase_uint8*> m_lines;
+  std::vector<uint8_t*> m_lines;
 };
 
 #endif

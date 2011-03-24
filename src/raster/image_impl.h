@@ -55,9 +55,9 @@ public:
   {
     int bytes_per_line = Traits::scanline_size(w);
 
-    dat = new ase_uint8[bytes_per_line*h];
+    dat = new uint8_t[bytes_per_line*h];
     try {
-      line = (ase_uint8**)new address_t*[h];
+      line = (uint8_t**)new address_t*[h];
     }
     catch (...) {
       delete[] dat;
@@ -67,7 +67,7 @@ public:
     address_t addr = raw_pixels();
     for (int y=0; y<h; ++y) {
       ((address_t*)line)[y] = addr;
-      addr = (address_t)(((ase_uint8*)addr) + bytes_per_line);
+      addr = (address_t)(((uint8_t*)addr) + bytes_per_line);
     }
   }
 
@@ -144,7 +144,7 @@ public:
   virtual void merge(const Image* src, int x, int y, int opacity, int blend_mode)
   {
     BLEND_COLOR blender = Traits::get_blender(blend_mode);
-    register ase_uint32 mask_color = src->mask_color;
+    register uint32_t mask_color = src->mask_color;
     Image* dst = this;
     address_t src_address;
     address_t dst_address;
@@ -750,7 +750,7 @@ void ImageImpl<IndexedTraits>::to_allegro(BITMAP *bmp, int _x, int _y, const Pal
   unsigned long bmp_address;
   int depth = bitmap_color_depth(bmp);
   int x, y;
-  ase_uint32 c;
+  uint32_t c;
 
   bmp_select(bmp);
 

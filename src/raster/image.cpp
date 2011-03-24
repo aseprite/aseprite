@@ -347,7 +347,7 @@ void image_fixup_transparent_colors(Image* image)
   switch (image->imgtype) {
 
     case IMAGE_RGB: {
-      ase_uint32 c;
+      uint32_t c;
       int r, g, b, count;
 
       for (y=0; y<image->h; ++y) {
@@ -386,7 +386,7 @@ void image_fixup_transparent_colors(Image* image)
     }
 
     case IMAGE_GRAYSCALE: {
-      ase_uint16 c;
+      uint16_t c;
       int k, count;
 
       for (y=0; y<image->h; ++y) {
@@ -436,7 +436,7 @@ void image_resize(const Image* src, Image* dst, ResizeMethod method, const Palet
 
     // TODO optimize this
     case RESIZE_METHOD_NEAREST_NEIGHBOR: {
-      ase_uint32 color;
+      uint32_t color;
       double u, v, du, dv;
       int x, y;
   
@@ -458,7 +458,7 @@ void image_resize(const Image* src, Image* dst, ResizeMethod method, const Palet
 
     // TODO optimize this
     case RESIZE_METHOD_BILINEAR: {
-      ase_uint32 color[4], dst_color = 0;
+      uint32_t color[4], dst_color = 0;
       double u, v, du, dv;
       int u_floor, u_floor2;
       int v_floor, v_floor2;
@@ -568,8 +568,8 @@ int image_count_diff(const Image* i1, const Image* i2)
 
     case IMAGE_RGB:
       {
-	ase_uint32 *address1 = (ase_uint32 *)i1->dat;
-	ase_uint32 *address2 = (ase_uint32 *)i2->dat;
+	uint32_t* address1 = (uint32_t*)i1->dat;
+	uint32_t* address2 = (uint32_t*)i2->dat;
 	for (c=0; c<size; c++)
 	  if (*(address1++) != *(address2++))
 	    diff++;
@@ -578,8 +578,8 @@ int image_count_diff(const Image* i1, const Image* i2)
 
     case IMAGE_GRAYSCALE:
       {
-	ase_uint16 *address1 = (ase_uint16 *)i1->dat;
-	ase_uint16 *address2 = (ase_uint16 *)i2->dat;
+	uint16_t* address1 = (uint16_t*)i1->dat;
+	uint16_t* address2 = (uint16_t*)i2->dat;
 	for (c=0; c<size; c++)
 	  if (*(address1++) != *(address2++))
 	    diff++;
@@ -588,8 +588,8 @@ int image_count_diff(const Image* i1, const Image* i2)
 
     case IMAGE_INDEXED:
       {
-	ase_uint8 *address1 = (ase_uint8 *)i1->dat;
-	ase_uint8 *address2 = (ase_uint8 *)i2->dat;
+	uint8_t* address1 = (uint8_t*)i1->dat;
+	uint8_t* address2 = (uint8_t*)i2->dat;
 	for (c=0; c<size; c++)
 	  if (*(address1++) != *(address2++))
 	    diff++;
@@ -599,8 +599,8 @@ int image_count_diff(const Image* i1, const Image* i2)
     case IMAGE_BITMAP:
       /* TODO test it */
       {
-	ase_uint8 *address1 = (ase_uint8 *)i1->dat;
-	ase_uint8 *address2 = (ase_uint8 *)i2->dat;
+	uint8_t* address1 = (uint8_t*)i1->dat;
+	uint8_t* address2 = (uint8_t*)i2->dat;
 	div_t d1 = div (0, 8);
 	div_t d2 = div (0, 8);
 	for (c=0; c<size; c++) {
