@@ -102,7 +102,7 @@ LayerImage::LayerImage(Sprite* sprite)
 
 LayerImage::~LayerImage()
 {
-  destroy_all_cels();
+  destroyAllCels();
 }
 
 int LayerImage::getMemSize() const
@@ -122,7 +122,7 @@ int LayerImage::getMemSize() const
   return size;
 }
 
-void LayerImage::destroy_all_cels()
+void LayerImage::destroyAllCels()
 {
   CelIterator it = getCelBegin();
   CelIterator end = getCelEnd();

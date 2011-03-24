@@ -114,7 +114,7 @@ public:
   int getCelsCount() const { return m_cels.size(); }
 
 private:
-  void destroy_all_cels();
+  void destroyAllCels();
 
   CelList m_cels;   // List of all cels inside this layer used by frames.
 };
