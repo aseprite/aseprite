@@ -156,16 +156,15 @@ public:
 
   ~DocumentWriter() 
   {
-    unlock_writer();
+    unlockWriter();
   }
 
   DocumentWriter& operator=(const DocumentReader& copy)
   {
-    unlock_writer();
+    unlockWriter();
 
     DocumentWrapper::operator=(copy);
 
-    m_locked = false;
     if (m_document) {
       m_from_reader = true;
 
@@ -180,13 +179,14 @@ public:
 
 protected:
 
-  void unlock_writer()
+  void unlockWriter()
   {
     if (m_document && m_locked) {
       if (m_from_reader)
 	m_document->unlockToRead();
       else
 	m_document->unlock();
+      m_locked = false;
     }
   }
 
@@ -233,7 +233,7 @@ public:
     ASSERT(m_document != NULL);
 
     m_context->removeDocument(m_document);
-    unlock_writer();
+    unlockWriter();
 
     delete m_document;
     m_document = NULL;
