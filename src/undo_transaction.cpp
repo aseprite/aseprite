@@ -21,8 +21,7 @@
 #include "undo_transaction.h"
 
 #include "base/unique_ptr.h"
-#include "document_wrappers.h"
-#include "gui/list.h"
+#include "document.h"
 #include "raster/blend.h"
 #include "raster/cel.h"
 #include "raster/dirty.h"
