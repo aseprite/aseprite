@@ -8,7 +8,8 @@
 
 #include "base/serialization.h"
 
-using namespace base::serialization;
+namespace base {
+namespace serialization {
 
 std::ostream& write8(std::ostream& os, uint8_t byte)
 {
@@ -88,3 +89,6 @@ uint32_t big_endian::read32(std::istream& is)
   b1 = is.get();
   return ((b4 << 24) | (b3 << 16) | (b2 << 8) | b1);
 }
+
+} // namespace serialization
+} // namespace base
