@@ -126,7 +126,7 @@ private:
   void drawSeparator(JRect clip);
   void drawLayer(JRect clip, int layer_index);
   void drawLayerPadding();
-  void drawCel(JRect clip, int layer_index, int frame);
+  void drawCel(JRect clip, int layer_index, int frame, Cel* cel);
   bool drawPart(int part, int layer, int frame);
   void regenerateLayers();
   void hotThis(int hot_part, int hot_layer, int hot_frame);
@@ -263,9 +263,25 @@ bool AnimationEditor::onProcessMessage(JMessage msg)
       for (layer=first_layer; layer<=last_layer; layer++) {
 	drawLayer(clip, layer);
 
+	// Get the first CelIterator to be drawn (it is the first cel with cel->frame >= first_frame)
+	CelIterator it, end;
+	Layer* layerPtr = m_layers[layer];
+	if (layerPtr->is_image()) {
+	  it = static_cast<LayerImage*>(layerPtr)->getCelBegin();
+	  end = static_cast<LayerImage*>(layerPtr)->getCelEnd();
+	  for (; it != end && (*it)->frame < first_frame; ++it)
+	    ;
+	}
+
 	// Draw every visible cel for each layer.
-	for (frame=first_frame; frame<=last_frame; frame++)
-	  drawCel(clip, layer, frame);
+	for (frame=first_frame; frame<=last_frame; ++frame) {
+	  Cel* cel = (layerPtr->is_image() && it != end && (*it)->frame == frame ? *it: NULL);
+
+	  drawCel(clip, layer, frame, cel);
+
+	  if (cel)
+	    ++it;		// Go to next cel
+	}
       }
 
       drawLayerPadding();
@@ -1133,7 +1149,7 @@ void AnimationEditor::drawLayerPadding()
   }
 }
 
-void AnimationEditor::drawCel(JRect clip, int layer_index, int frame)
+void AnimationEditor::drawCel(JRect clip, int layer_index, int frame, Cel* cel)
 {
   SkinTheme* theme = static_cast<SkinTheme*>(this->getTheme());
   Layer *layer = m_layers[layer_index];
@@ -1149,7 +1165,6 @@ void AnimationEditor::drawCel(JRect clip, int layer_index, int frame)
   int x1, y1, x2, y2;
   int cx1, cy1, cx2, cy2;
   BITMAP *thumbnail;
-  Cel *cel;
 
   get_clip_rect(ji_screen, &cx1, &cy1, &cx2, &cy2);
 
@@ -1190,9 +1205,6 @@ void AnimationEditor::drawCel(JRect clip, int layer_index, int frame)
     }
   }
   hline(ji_screen, x1, y2, x2, ji_color_foreground());
-
-  // Get the cel of this layer in this frame.
-  cel = layer->is_image() ? static_cast<LayerImage*>(layer)->getCel(frame): NULL;
 
   // Empty cel?.
   if (cel == NULL ||
@@ -1272,7 +1284,9 @@ bool AnimationEditor::drawPart(int part, int layer, int frame)
     case A_PART_CEL:
       if (layer >= 0 && layer < m_nlayers &&
 	  frame >= 0 && frame < m_sprite->getTotalFrames()) {
-	drawCel(this->rc, layer, frame);
+	Cel* cel = (m_layers[layer]->is_image() ? static_cast<LayerImage*>(m_layers[layer])->getCel(frame): NULL);
+
+	drawCel(this->rc, layer, frame, cel);
 	return true;
       }
       break;
