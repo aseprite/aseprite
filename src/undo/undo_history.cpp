@@ -13,6 +13,7 @@
 #include "undo/undoers_stack.h"
 
 #include <allegro/config.h>	// TODO remove this when get_config_int() is removed from here
+#include <limits>
 
 using namespace undo;
 
@@ -193,12 +194,18 @@ void UndoHistory::pushUndoer(Undoer* undoer)
   // * When a change is produced, Document calls getUndoHistory()->setUndoLimit().
   int undo_size_limit = (int)get_config_int("Options", "UndoSizeLimit", 8)*1024*1024;
 
+  // Reset the "redo" stack.
+  clearRedo();
+
+  // Check if we've removed the saved state, in this case it's
+  // impossible to reach that state now, so we have to put a value in
+  // m_diffSaved impossible to be equal to m_diffCount.
+  if (m_diffCount < m_diffSaved)
+    m_diffSaved = std::numeric_limits<int>::min();
+
   // More differences.
   if (m_modification == ModifyDocument)
     m_diffCount++;
-
-  // Reset the "redo" stack.
-  clearRedo();
 
   // If we are outside a group, we can shrink the tail of the undo if
   // it has passed the undo-limit.
