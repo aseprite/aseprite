@@ -8,6 +8,7 @@
 
 #include "undo/undo_history.h"
 
+#include "raster/palette.h"
 #include "undo/undoers_stack.h"
 #include "undoers/add_cel.h"
 #include "undoers/add_image.h"
@@ -122,12 +123,12 @@ void UndoHistory::undo_set_layer(Sprite* sprite)
 
 void UndoHistory::undo_add_palette(Sprite* sprite, Palette* palette)
 {
-  pushUndoer(new undoers::AddPalette(getObjects(), sprite, palette));
+  pushUndoer(new undoers::AddPalette(getObjects(), sprite, palette->getFrame()));
 }
 
 void UndoHistory::undo_remove_palette(Sprite* sprite, Palette* palette)
 {
-  pushUndoer(new undoers::RemovePalette(getObjects(), sprite, palette));
+  pushUndoer(new undoers::RemovePalette(getObjects(), sprite, palette->getFrame()));
 }
 
 void UndoHistory::undo_set_palette_colors(Sprite* sprite, Palette* palette, int from, int to)

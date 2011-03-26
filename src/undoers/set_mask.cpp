@@ -26,7 +26,6 @@
 #include "raster/mask_io.h"
 #include "undo/objects_container.h"
 #include "undo/undoers_collector.h"
-#include "undoers/object_io.h"
 
 using namespace undo;
 using namespace undoers;
@@ -36,7 +35,7 @@ SetMask::SetMask(ObjectsContainer* objects, Document* document)
   , m_isMaskVisible(document->isMaskVisible())
 {
   if (m_isMaskVisible)
-    write_object(objects, m_stream, document->getMask(), raster::write_mask);
+    raster::write_mask(m_stream, document->getMask());
 }
 
 void SetMask::dispose()
@@ -52,7 +51,7 @@ void SetMask::revert(ObjectsContainer* objects, UndoersCollector* redoers)
   redoers->pushUndoer(new SetMask(objects, document));
 
   if (m_isMaskVisible) {
-    UniquePtr<Mask> mask(read_object<Mask>(objects, m_stream, raster::read_mask));
+    UniquePtr<Mask> mask(raster::read_mask(m_stream));
 
     document->setMask(mask);
 

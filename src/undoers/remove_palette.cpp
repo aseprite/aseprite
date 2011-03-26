@@ -20,21 +20,21 @@
 
 #include "undoers/remove_palette.h"
 
+#include "base/unique_ptr.h"
 #include "raster/palette.h"
 #include "raster/palette_io.h"
 #include "raster/sprite.h"
 #include "undo/objects_container.h"
 #include "undo/undoers_collector.h"
 #include "undoers/add_palette.h"
-#include "undoers/object_io.h"
 
 using namespace undo;
 using namespace undoers;
 
-RemovePalette::RemovePalette(ObjectsContainer* objects, Sprite* sprite, Palette* palette)
+RemovePalette::RemovePalette(ObjectsContainer* objects, Sprite* sprite, int paletteFrame)
   : m_spriteId(objects->addObject(sprite))
 {
-  write_object(objects, m_stream, palette, raster::write_palette);
+  raster::write_palette(m_stream, sprite->getPalette(paletteFrame));
 }
 
 void RemovePalette::dispose()
@@ -45,10 +45,10 @@ void RemovePalette::dispose()
 void RemovePalette::revert(ObjectsContainer* objects, UndoersCollector* redoers)
 {
   Sprite* sprite = objects->getObjectT<Sprite>(m_spriteId);
-  UniquePtr<Palette> palette(read_object<Palette>(objects, m_stream, raster::read_palette));
+  UniquePtr<Palette> palette(raster::read_palette(m_stream));
   
   // Push an AddPalette as redoer
-  redoers->pushUndoer(new AddPalette(objects, sprite, palette));
+  redoers->pushUndoer(new AddPalette(objects, sprite, palette->getFrame()));
 
   sprite->setPalette(palette, true);
 

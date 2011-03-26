@@ -24,7 +24,6 @@
 
 #include <sstream>
 
-class Palette;
 class Sprite;
 
 namespace undoers {
@@ -32,7 +31,7 @@ namespace undoers {
 class RemovePalette : public UndoerBase
 {
 public:
-  RemovePalette(undo::ObjectsContainer* objects, Sprite* sprite, Palette* palette);
+  RemovePalette(undo::ObjectsContainer* objects, Sprite* sprite, int paletteFrame);
 
   void dispose() OVERRIDE;
   int getMemSize() const OVERRIDE { return sizeof(*this) + getStreamSize(); }

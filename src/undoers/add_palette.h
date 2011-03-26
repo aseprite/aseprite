@@ -22,7 +22,6 @@
 #include "undo/object_id.h"
 #include "undoers/undoer_base.h"
 
-class Palette;
 class Sprite;
 
 namespace undoers {
@@ -30,7 +29,7 @@ namespace undoers {
 class AddPalette : public UndoerBase
 {
 public:
-  AddPalette(undo::ObjectsContainer* objects, Sprite* sprite, Palette* palette);
+  AddPalette(undo::ObjectsContainer* objects, Sprite* sprite, int palette_frame);
 
   void dispose() OVERRIDE;
   int getMemSize() const OVERRIDE { return sizeof(*this); }
@@ -38,7 +37,7 @@ public:
 
 private:
   undo::ObjectId m_spriteId;
-  undo::ObjectId m_paletteId;
+  int m_paletteFrame;
 };
 
 } // namespace undoers
