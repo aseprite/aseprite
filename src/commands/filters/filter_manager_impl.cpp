@@ -102,7 +102,7 @@ void FilterManagerImpl::setTarget(int target)
 void FilterManagerImpl::begin()
 {
   m_row = 0;
-  m_mask = m_document->getMask();
+  m_mask = (m_document->isMaskVisible() ? m_document->getMask(): NULL);
 
   updateMask(m_mask, m_src);
 }
