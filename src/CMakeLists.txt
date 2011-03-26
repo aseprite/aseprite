@@ -108,6 +108,7 @@ add_library(aseprite-library
   commands/cmd_crop.cpp
   commands/cmd_cut.cpp
   commands/cmd_deselect_mask.cpp
+  commands/cmd_developer_console.cpp
   commands/cmd_donate.cpp
   commands/cmd_duplicate_layer.cpp
   commands/cmd_duplicate_sprite.cpp
