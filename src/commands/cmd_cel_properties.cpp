@@ -132,7 +132,7 @@ void CelPropertiesCommand::onExecute(Context* context)
     Sprite* sprite_writer = document_writer->getSprite();
     Layer* layer_writer = sprite_writer->getCurrentLayer();
     Cel* cel_writer = static_cast<LayerImage*>(layer_writer)->getCel(sprite->getCurrentFrame());
-    UndoHistory* undo = document_writer->getUndoHistory();
+    undo::UndoHistory* undo = document_writer->getUndoHistory();
 
     int new_opacity = slider_opacity->getValue();
 

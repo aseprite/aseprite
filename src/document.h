@@ -31,10 +31,13 @@ class FormatOptions;
 class Image;
 class Mask;
 class Mutex;
-class ObjectsContainer;
 class Sprite;
-class UndoHistory;
 struct _BoundSeg;
+
+namespace undo {
+  class ObjectsContainer;
+  class UndoHistory;
+}
 
 struct PreferredEditorSettings
 {
@@ -70,10 +73,10 @@ public:
   void setId(DocumentId id) { m_id = id; }
 
   const Sprite* getSprite() const { return m_sprite; }
-  const UndoHistory* getUndoHistory() const { return m_undoHistory; }
+  const undo::UndoHistory* getUndoHistory() const { return m_undoHistory; }
 
   Sprite* getSprite() { return m_sprite; }
-  UndoHistory* getUndoHistory() { return m_undoHistory; }
+  undo::UndoHistory* getUndoHistory() { return m_undoHistory; }
 
   //////////////////////////////////////////////////////////////////////
   // File related properties
@@ -160,9 +163,18 @@ private:
   // Unique identifier for this document (it is assigned by Documents class).
   DocumentId m_id;
 
+  // The main sprite.
   UniquePtr<Sprite> m_sprite;
-  UniquePtr<ObjectsContainer> m_objects;
-  UniquePtr<UndoHistory> m_undoHistory;
+
+  // Collection of objects used by UndoHistory to reference deleted
+  // objects that are re-created by an Undoer. The container keeps an
+  // ID that is saved in the serialization process, and loaded in the
+  // deserialization process. The ID can be used by different undoers
+  // to keep references to deleted objects.
+  UniquePtr<undo::ObjectsContainer> m_objects;
+
+  // Stack of undoers to undo operations.
+  UniquePtr<undo::UndoHistory> m_undoHistory;
 
   // Document's file name (from where it was loaded, where it is saved).
   std::string m_filename;

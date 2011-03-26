@@ -1907,7 +1907,7 @@ public:
   ~ToolLoopImpl()
   {
     if (!m_canceled) {
-      UndoHistory* undo = m_document->getUndoHistory();
+      undo::UndoHistory* undo = m_document->getUndoHistory();
 
       // Paint ink
       if (getInk()->isPaint()) {

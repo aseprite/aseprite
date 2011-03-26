@@ -59,14 +59,12 @@ bool ReselectMaskCommand::onEnabled(Context* context)
 void ReselectMaskCommand::onExecute(Context* context)
 {
   ActiveDocumentWriter document(context);
-  UndoHistory* undo = document->getUndoHistory();
-
-  // TODO IMPLEMENT THIS Add an undo action in the history to reverse the change of a Document's int field
+  undo::UndoHistory* undo = document->getUndoHistory();
 
   // Undo
   if (undo->isEnabled()) {
     undo->setLabel("Mask Reselection");
-    //undo->undo_set_mask(document);
+    undo->undo_set_mask(document);
   }
 
   // Make the mask visible again.

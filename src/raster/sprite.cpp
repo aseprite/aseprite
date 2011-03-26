@@ -373,7 +373,7 @@ void Sprite::getCels(CelList& cels)
   getFolder()->getCels(cels);
 }
 
-void Sprite::remapImages(int frame_from, int frame_to, const std::vector<int>& mapping)
+void Sprite::remapImages(int frame_from, int frame_to, const std::vector<uint8_t>& mapping)
 {
   ASSERT(m_imgtype == IMAGE_INDEXED);
   ASSERT(mapping.size() == 256);

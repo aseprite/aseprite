@@ -20,6 +20,8 @@
 
 #include "objects_container_impl.h"
 
+using namespace undo;
+
 ObjectsContainerImpl::ObjectsContainerImpl()
 {
   m_idCounter = 0;

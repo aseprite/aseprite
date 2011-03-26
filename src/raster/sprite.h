@@ -125,7 +125,7 @@ public:
 
   void getCels(CelList& cels);
 
-  void remapImages(int frame_from, int frame_to, const std::vector<int>& mapping);
+  void remapImages(int frame_from, int frame_to, const std::vector<uint8_t>& mapping);
 
   ////////////////////////////////////////
   // Drawing

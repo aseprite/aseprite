@@ -1044,9 +1044,8 @@ void UndoTransaction::setMaskPosition(int x, int y)
 
 void UndoTransaction::deselectMask()
 {
-  // TODO IMPLEMENT THIS (add support to save values in UndoHistory from any object)
-  // if (isEnabled())
-  //   m_undoHistory->undo_int(m_document);
+  if (isEnabled())
+    m_undoHistory->undo_set_mask(m_document);
 
   m_document->setMaskVisible(false);
 }

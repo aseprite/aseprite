@@ -87,7 +87,7 @@ int interactive_move_layer(int mode, bool use_undo, int (*callback)())
 {
   Editor* editor = current_editor;
   Document* document = editor->getDocument();
-  UndoHistory* undo = document->getUndoHistory();
+  undo::UndoHistory* undo = document->getUndoHistory();
   Sprite* sprite = document->getSprite();
 
   ASSERT(sprite->getCurrentLayer()->is_image());

@@ -128,7 +128,7 @@ void dialogs_mask_color(Document* document)
 
   if (window->get_killer() == button_ok) {
     DocumentWriter documentWriter(documentReader);
-    UndoHistory* undo = document->getUndoHistory();
+    undo::UndoHistory* undo = document->getUndoHistory();
     Mask* mask;
 
     /* undo */

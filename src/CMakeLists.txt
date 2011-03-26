@@ -43,7 +43,8 @@ else()
 endif()
 
 # All libraries for .exe files
-set(all_libs filters-lib aseprite-library gui-lib gfx-lib base-lib ${libs3rdparty} allegro ${sys_libs})
+set(all_libs aseprite-library undo-lib filters-lib gui-lib gfx-lib base-lib
+  ${libs3rdparty} allegro ${sys_libs})
 
 # Directories where .h files can be found
 include_directories(
@@ -64,6 +65,7 @@ add_subdirectory(base)
 add_subdirectory(gfx)
 add_subdirectory(gui)
 add_subdirectory(filters)
+add_subdirectory(undo)
 
 ######################################################################
 # aseprite library
@@ -200,13 +202,19 @@ add_library(aseprite-library
   raster/algo_polygon.cpp
   raster/blend.cpp
   raster/cel.cpp
+  raster/cel_io.cpp
   raster/dirty.cpp
+  raster/dirty_io.cpp
   raster/gfxobj.cpp
   raster/image.cpp
+  raster/image_io.cpp
   raster/images_collector.cpp
   raster/layer.cpp
+  raster/layer_io.cpp
   raster/mask.cpp
+  raster/mask_io.cpp
   raster/palette.cpp
+  raster/palette_io.cpp
   raster/path.cpp
   raster/pen.cpp
   raster/quantization.cpp
@@ -221,7 +229,32 @@ add_library(aseprite-library
   skin/skin_slider_property.cpp
   tools/tool.cpp
   tools/toolbox.cpp
-  undo/undo_history.cpp
+  undoers/add_cel.cpp
+  undoers/add_image.cpp
+  undoers/add_layer.cpp
+  undoers/add_palette.cpp
+  undoers/close_group.cpp
+  undoers/dirty_area.cpp
+  undoers/flip_image.cpp
+  undoers/image_area.cpp
+  undoers/move_layer.cpp
+  undoers/open_group.cpp
+  undoers/raw_data.cpp
+  undoers/remap_palette.cpp
+  undoers/remove_cel.cpp
+  undoers/remove_image.cpp
+  undoers/remove_layer.cpp
+  undoers/remove_palette.cpp
+  undoers/replace_image.cpp
+  undoers/set_current_frame.cpp
+  undoers/set_current_layer.cpp
+  undoers/set_frame_duration.cpp
+  undoers/set_imgtype.cpp
+  undoers/set_layer_name.cpp
+  undoers/set_mask.cpp
+  undoers/set_palette_colors.cpp
+  undoers/set_sprite_size.cpp
+  undoers/set_total_frames.cpp
   util/autocrop.cpp
   util/boundary.cpp
   util/celmove.cpp

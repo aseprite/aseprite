@@ -23,7 +23,7 @@
 
 #include <map>
 
-class ObjectsContainerImpl : public ObjectsContainer
+class ObjectsContainerImpl : public undo::ObjectsContainer
 {
 public:
   ObjectsContainerImpl();
@@ -31,15 +31,15 @@ public:
 
   // ObjectsContainer Implementation
 
-  ObjectId addObject(void* object);
-  void insertObject(ObjectId id, void* object);
-  void removeObject(ObjectId id);
-  void* getObject(ObjectId id);
+  undo::ObjectId addObject(void* object);
+  void insertObject(undo::ObjectId id, void* object);
+  void removeObject(undo::ObjectId id);
+  void* getObject(undo::ObjectId id);
 
 private:
-  ObjectId m_idCounter;
-  std::map<ObjectId, void*> m_idToPtr;
-  std::map<void*, ObjectId> m_ptrToId;
+  undo::ObjectId m_idCounter;
+  std::map<undo::ObjectId, void*> m_idToPtr;
+  std::map<void*, undo::ObjectId> m_ptrToId;
 };
 
 #endif

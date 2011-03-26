@@ -715,11 +715,11 @@ static bool anieditor_msg_proc(JWidget widget, JMessage msg)
       /* undo */
       if (command && strcmp(command->short_name(), CommandId::Undo) == 0) {
 	const DocumentReader document(const_cast<Document*>(anieditor->document));
-	const UndoHistory* undo = document->getUndoHistory();
+	const undo::UndoHistory* undo = document->getUndoHistory();
 
 	if (undo->canUndo()) {
 	  DocumentWriter document_writer(document);
-	  UndoHistory* undo_writer = document_writer->getUndoHistory();
+	  undo::UndoHistory* undo_writer = document_writer->getUndoHistory();
 
 	  undo_writer->doUndo();
 
@@ -734,11 +734,11 @@ static bool anieditor_msg_proc(JWidget widget, JMessage msg)
       /* redo */
       if (command && strcmp(command->short_name(), CommandId::Redo) == 0) {
 	const DocumentReader document(const_cast<Document*>(anieditor->document));
-	const UndoHistory* undo = document->getUndoHistory();
+	const undo::UndoHistory* undo = document->getUndoHistory();
 
 	if (undo->canRedo()) {
 	  DocumentWriter document_writer(document);
-	  UndoHistory* undo_writer = document_writer->getUndoHistory();
+	  undo::UndoHistory* undo_writer = document_writer->getUndoHistory();
 
 	  undo_writer->doRedo();
 

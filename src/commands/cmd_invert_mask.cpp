@@ -76,7 +76,7 @@ void InvertMaskCommand::onExecute(Context* context)
   else {
     ActiveDocumentWriter document(context);
     Sprite* sprite(document->getSprite());
-    UndoHistory* undo = document->getUndoHistory();
+    undo::UndoHistory* undo = document->getUndoHistory();
 
     /* undo */
     if (undo->isEnabled()) {

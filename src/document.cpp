@@ -35,6 +35,8 @@
 #include "undo/undo_history.h"
 #include "util/boundary.h"
 
+using namespace undo;
+
 Document::Document(Sprite* sprite)
   : m_id(WithoutDocumentId)
   , m_sprite(sprite)

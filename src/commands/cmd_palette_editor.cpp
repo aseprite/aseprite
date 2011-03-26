@@ -654,7 +654,7 @@ void PaletteEntryEditor::updateCurrentSpritePalette(const char* operationName)
     try {
       ActiveDocumentWriter document(UIContext::instance());
       Sprite* sprite(document->getSprite());
-      UndoHistory* undo = document->getUndoHistory();
+      undo::UndoHistory* undo = document->getUndoHistory();
       Palette* newPalette = get_current_palette(); // System current pal
       Palette* currentSpritePalette = sprite->getPalette(sprite->getCurrentFrame()); // Sprite current pal
       int from, to;

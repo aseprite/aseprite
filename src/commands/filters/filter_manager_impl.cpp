@@ -203,7 +203,7 @@ void FilterManagerImpl::apply()
   }
 
   if (!cancelled) {
-    UndoHistory* undo = m_document->getUndoHistory();
+    undo::UndoHistory* undo = m_document->getUndoHistory();
 
     // Undo stuff
     if (undo->isEnabled()) {
@@ -230,7 +230,7 @@ void FilterManagerImpl::applyToTarget()
   // Initialize writting operation
   DocumentReader doc_reader(m_document);
   DocumentWriter doc_writer(doc_reader);
-  UndoHistory* undo = m_document->getUndoHistory();
+  undo::UndoHistory* undo = m_document->getUndoHistory();
 
   // Open group of undo operations
   if (images.size() > 1) {

@@ -28,7 +28,10 @@ class Layer;
 class LayerImage;
 class Mask;
 class Sprite;
-class UndoHistory;
+
+namespace undo {
+  class UndoHistory;
+}
 
 // High-level class to group a set of operations to modify the
 // document atomically, adding information in the undo history to
@@ -127,7 +130,7 @@ public:
 private:
   Document* m_document;
   Sprite* m_sprite;
-  UndoHistory* m_undoHistory;
+  undo::UndoHistory* m_undoHistory;
   bool m_committed;
   bool m_enabledFlag;
 };

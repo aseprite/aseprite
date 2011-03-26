@@ -40,7 +40,7 @@ static Layer* dst_layer = NULL;
 static int src_frame = 0;
 static int dst_frame = 0;
 
-static void remove_cel(Sprite* sprite, UndoHistory* undo, LayerImage *layer, Cel *cel);
+static void remove_cel(Sprite* sprite, undo::UndoHistory* undo, LayerImage *layer, Cel *cel);
 
 void set_frame_to_handle(Layer *_src_layer, int _src_frame,
 			 Layer *_dst_layer, int _dst_frame)
@@ -54,7 +54,7 @@ void set_frame_to_handle(Layer *_src_layer, int _src_frame,
 void move_cel(DocumentWriter& document)
 {
   Sprite* sprite = document->getSprite();
-  UndoHistory* undo = document->getUndoHistory();
+  undo::UndoHistory* undo = document->getUndoHistory();
   Cel *src_cel, *dst_cel;
 
   ASSERT(src_layer != NULL);
@@ -148,7 +148,7 @@ void move_cel(DocumentWriter& document)
 void copy_cel(DocumentWriter& document)
 {
   Sprite* sprite = document->getSprite();
-  UndoHistory* undo = document->getUndoHistory();
+  undo::UndoHistory* undo = document->getUndoHistory();
   Cel *src_cel, *dst_cel;
 
   ASSERT(src_layer != NULL);
@@ -231,7 +231,7 @@ void copy_cel(DocumentWriter& document)
   set_frame_to_handle(NULL, 0, NULL, 0);
 }
 
-static void remove_cel(Sprite* sprite, UndoHistory* undo, LayerImage *layer, Cel *cel)
+static void remove_cel(Sprite* sprite, undo::UndoHistory* undo, LayerImage *layer, Cel *cel)
 {
   Image *image;
   Cel *it;

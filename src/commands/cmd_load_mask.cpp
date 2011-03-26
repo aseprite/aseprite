@@ -68,7 +68,7 @@ void LoadMaskCommand::onExecute(Context* context)
 {
   ActiveDocumentWriter document(context);
   Sprite* sprite(document->getSprite());
-  UndoHistory* undo(document->getUndoHistory());
+  undo::UndoHistory* undo(document->getUndoHistory());
 
   base::string filename = m_filename;
 

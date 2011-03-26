@@ -1,28 +1,17 @@
-/* ASE - Allegro Sprite Editor
- * Copyright (C) 2001-2011  David Capello
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- */
+// ASEPRITE Undo Library
+// Copyright (C) 2001-2011  David Capello
+//
+// This source file is ditributed under a BSD-like license, please
+// read LICENSE.txt for more information.
 
 #ifndef UNDO_UNDO_HISTORY_H_INCLUDED
 #define UNDO_UNDO_HISTORY_H_INCLUDED
 
-#include "base/exception.h"
+#include "undo/undoers_collector.h"
 
 #include <vector>
 
+// TODO Remove this (it is here only for backward compatibility)
 class Cel;
 class Dirty;
 class Document;
@@ -30,19 +19,16 @@ class GfxObj;
 class Image;
 class Layer;
 class Mask;
-class ObjectsContainer;
 class Palette;
 class Sprite;
 class Stock;
-class UndoStream;
 
-class UndoException : public base::Exception
-{
-public:
-  UndoException(const char* msg) throw() : base::Exception(msg) { }
-};
+namespace undo {
 
-class UndoHistory
+class ObjectsContainer;
+class UndoersStack;
+
+class UndoHistory : public UndoersCollector
 {
 public:
   UndoHistory(ObjectsContainer* objects);
@@ -68,6 +54,12 @@ public:
   bool isSavedState() const;
   void markSavedState();
 
+  ObjectsContainer* getObjects() const { return m_objects; }
+
+  // UndoersCollector interface
+  void pushUndoer(Undoer* undoer);
+
+  // Backward compatibility methods
   void undo_open();
   void undo_close();
   void undo_data(void* object, void* fieldAddress, int fieldSize);
@@ -87,8 +79,7 @@ public:
   void undo_add_palette(Sprite* sprite, Palette* palette);
   void undo_remove_palette(Sprite* sprite, Palette* palette);
   void undo_set_palette_colors(Sprite* sprite, Palette* palette, int from, int to);
-  void undo_remap_palette(Sprite* sprite, int frame_from, int frame_to,
-			  const std::vector<int>& mapping);
+  void undo_remap_palette(Sprite* sprite, int frame_from, int frame_to, const std::vector<uint8_t>& mapping);
   void undo_set_mask(Document* document);
   void undo_set_imgtype(Sprite* sprite);
   void undo_set_size(Sprite* sprite);
@@ -104,20 +95,22 @@ public:
     undo_data(gfxobj, (void*)(value_address), sizeof(double));
   }
 
-  ObjectsContainer* getObjects() const { return m_objects; }
-
 private:
-  void runUndo(int state);
+  enum Direction { UndoDirection, RedoDirection };
+
+  void runUndo(Direction direction);
   void discardTail();
   void updateUndo();
 
   ObjectsContainer* m_objects;	// Container of objects to insert & retrieve objects by ID
-  UndoStream* m_undoStream;
-  UndoStream* m_redoStream;
+  UndoersStack* m_undoers;
+  UndoersStack* m_redoers;
   int m_diffCount;
   int m_diffSaved;
   bool m_enabled;		// Is undo enabled?
   const char* m_label;		// Current label to be applied to all next undo operations.
 };
 
-#endif
+} // namespace undo
+
+#endif	// UNDO_UNDO_HISTORY_H_INCLUDED

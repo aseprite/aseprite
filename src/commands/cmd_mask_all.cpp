@@ -57,7 +57,7 @@ void MaskAllCommand::onExecute(Context* context)
 {
   ActiveDocumentWriter document(context);
   Sprite* sprite(document->getSprite());
-  UndoHistory* undo(document->getUndoHistory());
+  undo::UndoHistory* undo(document->getUndoHistory());
 
   // Undo
   if (undo->isEnabled()) {

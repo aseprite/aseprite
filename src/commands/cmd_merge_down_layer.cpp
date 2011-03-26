@@ -73,7 +73,7 @@ void MergeDownLayerCommand::onExecute(Context* context)
 {
   ActiveDocumentWriter document(context);
   Sprite* sprite(document->getSprite());
-  UndoHistory* undo(document->getUndoHistory());
+  undo::UndoHistory* undo(document->getUndoHistory());
   Layer *src_layer, *dst_layer;
   Cel *src_cel, *dst_cel;
   Image *src_image, *dst_image;

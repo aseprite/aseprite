@@ -196,7 +196,7 @@ void clipboard::copy_image(Image* image, Palette* pal)
 void clipboard::paste(DocumentWriter& document)
 {
   UndoTransaction undoTransaction(document, "Paste");
-  UndoHistory* undo = document->getUndoHistory();
+  undo::UndoHistory* undo = document->getUndoHistory();
   int xout[4], yout[4];
   int dst_x, dst_y;
   Image *src_image;
