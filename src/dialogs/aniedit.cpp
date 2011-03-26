@@ -18,6 +18,7 @@
 
 #include "config.h"
 
+#include "base/compiler_specific.h"
 #include "base/memory.h"
 #include "commands/command.h"
 #include "commands/commands.h"
@@ -60,34 +61,25 @@ using namespace gfx;
    [2] Padlock-icon
  */
 
-/* size of the thumbnail in the screen (width x height), the really
-   size of the thumbnail bitmap is specified in the
-   'generate_thumbnail' routine */
+// Size of the thumbnail in the screen (width x height), the really
+// size of the thumbnail bitmap is specified in the
+// 'generate_thumbnail' routine.
 #define THUMBSIZE	(32*jguiscale())
 
-/* height of the headers */
-#define HDRSIZE		(3 + text_height(widget->getFont())*2 + 3 + 3)
+// Height of the headers.
+#define HDRSIZE		(3 + text_height(this->getFont())*2 + 3 + 3)
 
-/* width of the frames */
+// Width of the frames.
 #define FRMSIZE		(3 + THUMBSIZE + 3)
 
-/* height of the layers */
-#define LAYSIZE		(3 + MAX(text_height(widget->getFont()), THUMBSIZE) + 4)
+// Height of the layers.
+#define LAYSIZE		(3 + MAX(text_height(this->getFont()), THUMBSIZE) + 4)
 
-/* space between icons and other information in the layer */
+// Space between icons and other information in the layer.
 #define ICONSEP		(2*jguiscale())
 
-/* space between the icon-bitmap and the edge of the surrounding button */
+// Space between the icon-bitmap and the edge of the surrounding button.
 #define ICONBORDER	(4*jguiscale())
-
-enum {
-  STATE_STANDBY,
-  STATE_SCROLLING,
-  STATE_MOVING_SEPARATOR,
-  STATE_MOVING_LAYER,
-  STATE_MOVING_CEL,
-  STATE_MOVING_FRAME,
-};
 
 enum {
   A_PART_NOTHING,
@@ -100,58 +92,73 @@ enum {
   A_PART_CEL
 };
 
-struct AniEditor
+class AnimationEditor : public Widget
 {
-  const Document* document;
-  const Sprite* sprite;
-  int state;
-  Layer** layers;
-  int nlayers;
-  int scroll_x;
-  int scroll_y;
-  int separator_x;
-  int separator_w;
-  /* the 'hot' part is where the mouse is on top of */
-  int hot_part;
-  int hot_layer;
-  int hot_frame;
-  /* the 'clk' part is where the mouse's button was pressed (maybe for
-     a drag & drop operation) */
-  int clk_part;
-  int clk_layer;
-  int clk_frame;
-  /* keys */
-  bool space_pressed;
+public:
+  enum State {
+    STATE_STANDBY,
+    STATE_SCROLLING,
+    STATE_MOVING_SEPARATOR,
+    STATE_MOVING_LAYER,
+    STATE_MOVING_CEL,
+    STATE_MOVING_FRAME,
+  };
+
+  AnimationEditor(const Document* document, const Sprite* sprite);
+  ~AnimationEditor();
+
+  void centerCurrentCel();
+  State getState() const { return m_state; }
+
+protected:
+  bool onProcessMessage(JMessage msg) OVERRIDE;
+
+private:
+  void setCursor(int x, int y);
+  void getDrawableLayers(JRect clip, int* first_layer, int* last_layer);
+  void getDrawableFrames(JRect clip, int* first_frame, int* last_frame);
+  void drawHeader(JRect clip);
+  void drawHeaderFrame(JRect clip, int frame);
+  void drawHeaderPart(JRect clip, int x1, int y1, int x2, int y2,
+		      bool is_hot, bool is_clk,
+		      const char* line1, int align1,
+		      const char* line2, int align2);
+  void drawSeparator(JRect clip);
+  void drawLayer(JRect clip, int layer_index);
+  void drawLayerPadding();
+  void drawCel(JRect clip, int layer_index, int frame);
+  bool drawPart(int part, int layer, int frame);
+  void regenerateLayers();
+  void hotThis(int hot_part, int hot_layer, int hot_frame);
+  void centerCel(int layer, int frame);
+  void showCel(int layer, int frame);
+  void showCurrentCel();
+  void cleanClk();
+  void setScroll(int x, int y, bool use_refresh_region);
+  int getLayerIndex(const Layer* layer);
+
+  const Document* m_document;
+  const Sprite* m_sprite;
+  State m_state;
+  Layer** m_layers;
+  int m_nlayers;
+  int m_scroll_x;
+  int m_scroll_y;
+  int m_separator_x;
+  int m_separator_w;
+  // The 'hot' part is where the mouse is on top of
+  int m_hot_part;
+  int m_hot_layer;
+  int m_hot_frame;
+  // The 'clk' part is where the mouse's button was pressed (maybe for a drag & drop operation)
+  int m_clk_part;
+  int m_clk_layer;
+  int m_clk_frame;
+  // Keys
+  bool m_space_pressed;
 };
 
-static JWidget current_anieditor = NULL;
-
-static JWidget anieditor_new(const Document* document, const Sprite* sprite);
-static int anieditor_type();
-static AniEditor* anieditor_data(JWidget widget);
-static bool anieditor_msg_proc(JWidget widget, JMessage msg);
-static void anieditor_setcursor(JWidget widget, int x, int y);
-static void anieditor_get_drawable_layers(JWidget widget, JRect clip, int* first_layer, int* last_layer);
-static void anieditor_get_drawable_frames(JWidget widget, JRect clip, int* first_frame, int* last_frame);
-static void anieditor_draw_header(JWidget widget, JRect clip);
-static void anieditor_draw_header_frame(JWidget widget, JRect clip, int frame);
-static void anieditor_draw_header_part(JWidget widget, JRect clip, int x1, int y1, int x2, int y2,
-				       bool is_hot, bool is_clk,
-				       const char* line1, int align1,
-				       const char* line2, int align2);
-static void anieditor_draw_separator(JWidget widget, JRect clip);
-static void anieditor_draw_layer(JWidget widget, JRect clip, int layer_index);
-static void anieditor_draw_layer_padding(JWidget widget);
-static void anieditor_draw_cel(JWidget widget, JRect clip, int layer_index, int frame);
-static bool anieditor_draw_part(JWidget widget, int part, int layer, int frame);
-static void anieditor_regenerate_layers(JWidget widget);
-static void anieditor_hot_this(JWidget widget, int hot_part, int hot_layer, int hot_frame);
-static void anieditor_center_cel(JWidget widget, int layer, int frame);
-static void anieditor_show_cel(JWidget widget, int layer, int frame);
-static void anieditor_show_current_cel(JWidget widget);
-static void anieditor_clean_clk(JWidget widget);
-static void anieditor_set_scroll(JWidget widget, int x, int y, bool use_refresh_region);
-static int anieditor_get_layer_index(JWidget widget, const Layer* layer);
+static AnimationEditor* current_anieditor = NULL;
 
 static void icon_rect(BITMAP* icon_normal, BITMAP* icon_selected, int x1, int y1, int x2, int y2,
 		      bool is_selected, bool is_hot, bool is_clk);
@@ -160,7 +167,7 @@ bool animation_editor_is_movingcel()
 {
   return
     current_anieditor != NULL &&
-    anieditor_data(current_anieditor)->state == STATE_MOVING_CEL;
+    current_anieditor->getState() == AnimationEditor::STATE_MOVING_CEL;
 }
 
 // Shows the animation editor for the current sprite.
@@ -170,24 +177,22 @@ void switch_between_animation_and_sprite_editor()
   const Sprite* sprite = document->getSprite();
 
   // Create the window & the animation-editor
-  Frame* window = new Frame(true, NULL);
-  Widget* anieditor = anieditor_new(document, sprite);
-  current_anieditor = anieditor;
+  {
+    UniquePtr<Frame> window(new Frame(true, NULL));
+    AnimationEditor* anieditor = new AnimationEditor(document, sprite);
+    current_anieditor = anieditor;
 
-  jwidget_add_child(window, anieditor);
-  window->remap_window();
+    jwidget_add_child(window, anieditor);
+    window->remap_window();
 
-  // Show the current cel
-  int layer = anieditor_get_layer_index(anieditor, sprite->getCurrentLayer());
-  if (layer >= 0)
-    anieditor_center_cel(anieditor, layer, sprite->getCurrentFrame());
+    anieditor->centerCurrentCel();
 
-  // Show the window
-  window->open_window_fg();
+    // Show the window
+    window->open_window_fg();
 
-  // Destroy the window
-  jwidget_free(window);
-  current_anieditor = NULL;
+    // No more animation editor
+    current_anieditor = NULL;
+  }
 
   // Destroy thumbnails
   destroy_thumbnails();
@@ -198,95 +203,72 @@ void switch_between_animation_and_sprite_editor()
 //////////////////////////////////////////////////////////////////////
 // The Animation Editor
 
-static JWidget anieditor_new(const Document* document, const Sprite* sprite)
+AnimationEditor::AnimationEditor(const Document* document, const Sprite* sprite)
+  : Widget(JI_WIDGET)
 {
-  Widget* widget = new Widget(anieditor_type());
-  AniEditor* anieditor = new AniEditor;
+  m_document = document;
+  m_sprite = sprite;
+  m_state = STATE_STANDBY;
+  m_layers = NULL;
+  m_nlayers = 0;
+  m_scroll_x = 0;
+  m_scroll_y = 0;
+  m_separator_x = 100 * jguiscale();
+  m_separator_w = 1;
+  m_hot_part = A_PART_NOTHING;
+  m_clk_part = A_PART_NOTHING;
+  m_space_pressed = false;
 
-  anieditor->document = document;
-  anieditor->sprite = sprite;
-  anieditor->state = STATE_STANDBY;
-  anieditor->layers = NULL;
-  anieditor->nlayers = 0;
-  anieditor->scroll_x = 0;
-  anieditor->scroll_y = 0;
-  anieditor->separator_x = 100 * jguiscale();
-  anieditor->separator_w = 1;
-  anieditor->hot_part = A_PART_NOTHING;
-  anieditor->clk_part = A_PART_NOTHING;
-  anieditor->space_pressed = false;
+  jwidget_focusrest(this, true);
 
-  jwidget_add_hook(widget, anieditor_type(), anieditor_msg_proc, anieditor);
-  jwidget_focusrest(widget, true);
-
-  anieditor_regenerate_layers(widget);
-
-  return widget;
+  regenerateLayers();
 }
 
-static int anieditor_type()
+AnimationEditor::~AnimationEditor()
 {
-  static int type = 0;
-  if (!type)
-    type = ji_register_widget_type();
-  return type;
+  if (m_layers)
+    base_free(m_layers);
 }
 
-static AniEditor* anieditor_data(JWidget widget)
+bool AnimationEditor::onProcessMessage(JMessage msg)
 {
-  return reinterpret_cast<AniEditor*>(jwidget_get_data(widget, anieditor_type()));
-}
-
-static bool anieditor_msg_proc(JWidget widget, JMessage msg)
-{
-  AniEditor* anieditor = anieditor_data(widget);
-
   switch (msg->type) {
 
-    case JM_DESTROY:
-      if (anieditor->layers)
-	base_free(anieditor->layers);
-      delete anieditor;
-      break;
-
     case JM_REQSIZE:
-      /* this doesn't matter, the AniEditor'll use the entire screen
-	 anyway */
+      // This doesn't matter, the AniEditor'll use the entire screen
+      // anyway.
       msg->reqsize.w = 32;
       msg->reqsize.h = 32;
       return true;
-
-    /* case JM_CLOSE: */
-    /*   break; */
 
     case JM_DRAW: {
       JRect clip = &msg->draw.rect;
       int layer, first_layer, last_layer;
       int frame, first_frame, last_frame;
 
-      anieditor_get_drawable_layers(widget, clip, &first_layer, &last_layer);
-      anieditor_get_drawable_frames(widget, clip, &first_frame, &last_frame);
+      getDrawableLayers(clip, &first_layer, &last_layer);
+      getDrawableFrames(clip, &first_frame, &last_frame);
 
-      /* draw the header for layers */
-      anieditor_draw_header(widget, clip);
+      // Draw the header for layers.
+      drawHeader(clip);
 
-      /* draw the header for each visible frame */
+      // Draw the header for each visible frame.
       for (frame=first_frame; frame<=last_frame; frame++)
-	anieditor_draw_header_frame(widget, clip, frame);
+	drawHeaderFrame(clip, frame);
 
-      /* draw the separator */
-      anieditor_draw_separator(widget, clip);
+      // Draw the separator.
+      drawSeparator(clip);
 
-      /* draw each visible layer */
+      // Draw each visible layer.
       for (layer=first_layer; layer<=last_layer; layer++) {
-	anieditor_draw_layer(widget, clip, layer);
+	drawLayer(clip, layer);
 
-	/* draw every visible cel for each layer */
+	// Draw every visible cel for each layer.
 	for (frame=first_frame; frame<=last_frame; frame++)
-	  anieditor_draw_cel(widget, clip, layer, frame);
+	  drawCel(clip, layer, frame);
       }
 
-      anieditor_draw_layer_padding(widget);
+      drawLayerPadding();
 
       return true;
     }
@@ -295,126 +277,125 @@ static bool anieditor_msg_proc(JWidget widget, JMessage msg)
       break;
 
     case JM_MOUSEENTER:
-      if (key[KEY_SPACE]) anieditor->space_pressed = true;
+      if (key[KEY_SPACE]) m_space_pressed = true;
       break;
 
     case JM_MOUSELEAVE:
-      if (anieditor->space_pressed) anieditor->space_pressed = false;
+      if (m_space_pressed) m_space_pressed = false;
       break;
 
     case JM_BUTTONPRESSED:
-      if (msg->mouse.middle || anieditor->space_pressed) {
-	widget->captureMouse();
-	anieditor->state = STATE_SCROLLING;
+      if (msg->mouse.middle || m_space_pressed) {
+	captureMouse();
+	m_state = STATE_SCROLLING;
 	return true;
       }
 
-      /* clicked-part = hot-part */
-      anieditor->clk_part = anieditor->hot_part;
-      anieditor->clk_layer = anieditor->hot_layer;
-      anieditor->clk_frame = anieditor->hot_frame;
+      // Clicked-part = hot-part.
+      m_clk_part = m_hot_part;
+      m_clk_layer = m_hot_layer;
+      m_clk_frame = m_hot_frame;
 	
-      switch (anieditor->hot_part) {
+      switch (m_hot_part) {
 	case A_PART_NOTHING:
-	  /* do nothing */
+	  // Do nothing.
 	  break;
 	case A_PART_SEPARATOR:
-	  widget->captureMouse();
-	  anieditor->state = STATE_MOVING_SEPARATOR;
+	  captureMouse();
+	  m_state = STATE_MOVING_SEPARATOR;
 	  break;
 	case A_PART_HEADER_LAYER:
-	  /* do nothing */
+	  // Do nothing.
 	  break;
 	case A_PART_HEADER_FRAME:
 	  {
-	    const DocumentReader document(const_cast<Document*>(anieditor->document));
+	    const DocumentReader document(const_cast<Document*>(m_document));
 	    DocumentWriter document_writer(document);
-	    document_writer->getSprite()->setCurrentFrame(anieditor->clk_frame);
+	    document_writer->getSprite()->setCurrentFrame(m_clk_frame);
 	  }
-	  widget->invalidate(); // TODO Replace this by redrawing old current frame and new current frame
-	  widget->captureMouse();
-	  anieditor->state = STATE_MOVING_FRAME;
+	  invalidate(); // TODO Replace this by redrawing old current frame and new current frame
+	  captureMouse();
+	  m_state = STATE_MOVING_FRAME;
 	  break;
 	case A_PART_LAYER: {
-	  const DocumentReader document(const_cast<Document*>(anieditor->document));
-	  const Sprite* sprite = anieditor->sprite;
-	  int old_layer = anieditor_get_layer_index(widget, sprite->getCurrentLayer());
-	  int frame = anieditor->sprite->getCurrentFrame();
+	  const DocumentReader document(const_cast<Document*>(m_document));
+	  const Sprite* sprite = m_sprite;
+	  int old_layer = getLayerIndex(sprite->getCurrentLayer());
+	  int frame = m_sprite->getCurrentFrame();
 
-	  /* did the user select another layer? */
-	  if (old_layer != anieditor->clk_layer) {
+	  // Did the user select another layer?
+	  if (old_layer != m_clk_layer) {
 	    {
 	      DocumentWriter document_writer(document);
-	      Sprite* sprite_writer = const_cast<Sprite*>(anieditor->sprite);
-	      sprite_writer->setCurrentLayer(anieditor->layers[anieditor->clk_layer]);
+	      Sprite* sprite_writer = const_cast<Sprite*>(m_sprite);
+	      sprite_writer->setCurrentLayer(m_layers[m_clk_layer]);
 	    }
 
 	    jmouse_hide();
-	    /* redraw the old & new selected cel */
-	    anieditor_draw_part(widget, A_PART_CEL, old_layer, frame);
-	    anieditor_draw_part(widget, A_PART_CEL, anieditor->clk_layer, frame);
-	    /* redraw the old selected layer */
-	    anieditor_draw_part(widget, A_PART_LAYER, old_layer, frame);
+	    // Redraw the old & new selected cel.
+	    drawPart(A_PART_CEL, old_layer, frame);
+	    drawPart(A_PART_CEL, m_clk_layer, frame);
+	    // Redraw the old selected layer.
+	    drawPart(A_PART_LAYER, old_layer, frame);
 	    jmouse_show();
 	  }
 
-	  /* change the scroll to show the new selected cel */
-	  anieditor_show_cel(widget, anieditor->clk_layer, sprite->getCurrentFrame());
-	  widget->captureMouse();
-	  anieditor->state = STATE_MOVING_LAYER;
+	  // Change the scroll to show the new selected cel.
+	  showCel(m_clk_layer, sprite->getCurrentFrame());
+	  captureMouse();
+	  m_state = STATE_MOVING_LAYER;
 	  break;
 	}
 	case A_PART_LAYER_EYE_ICON:
-	  widget->captureMouse();
+	  captureMouse();
 	  break;
 	case A_PART_LAYER_LOCK_ICON:
-	  widget->captureMouse();
+	  captureMouse();
 	  break;
 	case A_PART_CEL: {
-	  const DocumentReader document(const_cast<Document*>(anieditor->document));
+	  const DocumentReader document(const_cast<Document*>(m_document));
 	  const Sprite* sprite = document->getSprite();
-	  int old_layer = anieditor_get_layer_index(widget, sprite->getCurrentLayer());
+	  int old_layer = getLayerIndex(sprite->getCurrentLayer());
 	  int old_frame = sprite->getCurrentFrame();
 
-	  /* select the new clicked-part */
-	  if (old_layer != anieditor->clk_layer ||
-	      old_frame != anieditor->clk_frame) {
+	  // Select the new clicked-part.
+	  if (old_layer != m_clk_layer ||
+	      old_frame != m_clk_frame) {
 	    {
 	      DocumentWriter document_writer(document);
 	      Sprite* sprite_writer = document_writer->getSprite();
-	      sprite_writer->setCurrentLayer(anieditor->layers[anieditor->clk_layer]);
-	      sprite_writer->setCurrentFrame(anieditor->clk_frame);
+	      sprite_writer->setCurrentLayer(m_layers[m_clk_layer]);
+	      sprite_writer->setCurrentFrame(m_clk_frame);
 	    }
 
 	    jmouse_hide();
-	    /* redraw the old & new selected layer */
-	    if (old_layer != anieditor->clk_layer) {
-	      anieditor_draw_part(widget, A_PART_LAYER, old_layer, old_frame);
-	      anieditor_draw_part(widget, A_PART_LAYER,
-				  anieditor->clk_layer,
-				  anieditor->clk_frame);
+	    // Redraw the old & new selected layer.
+	    if (old_layer != m_clk_layer) {
+	      drawPart(A_PART_LAYER, old_layer, old_frame);
+	      drawPart(A_PART_LAYER,
+		       m_clk_layer,
+		       m_clk_frame);
 	    }
-	    /* redraw the old selected cel */
-	    anieditor_draw_part(widget, A_PART_CEL, old_layer, old_frame);
+	    // Redraw the old selected cel.
+	    drawPart(A_PART_CEL, old_layer, old_frame);
 	    jmouse_show();
 	  }
 
-	  /* change the scroll to show the new selected cel */
-	  anieditor_show_cel(widget, anieditor->clk_layer, sprite->getCurrentFrame());
+	  // Change the scroll to show the new selected cel.
+	  showCel(m_clk_layer, sprite->getCurrentFrame());
 
-	  /* capture the mouse (to move the cel) */
-	  widget->captureMouse();
-	  anieditor->state = STATE_MOVING_CEL;
+	  // Capture the mouse (to move the cel).
+	  captureMouse();
+	  m_state = STATE_MOVING_CEL;
 	  break;
 	}
       }
 
-      /* redraw the new selected part (header, layer or cel) */
+      // Redraw the new selected part (header, layer or cel).
       jmouse_hide();
-      anieditor_draw_part(widget,
-			  anieditor->clk_part,
-			  anieditor->clk_layer,
-			  anieditor->clk_frame);
+      drawPart(m_clk_part,
+	       m_clk_layer,
+	       m_clk_frame);
       jmouse_show();
       break;
       
@@ -422,62 +403,61 @@ static bool anieditor_msg_proc(JWidget widget, JMessage msg)
       int hot_part = A_PART_NOTHING;
       int hot_layer = -1;
       int hot_frame = -1;
-      int mx = msg->mouse.x - widget->rc->x1;
-      int my = msg->mouse.y - widget->rc->y1;
+      int mx = msg->mouse.x - rc->x1;
+      int my = msg->mouse.y - rc->y1;
 
-      if (widget->hasCapture()) {
-	if (anieditor->state == STATE_SCROLLING) {
-	  anieditor_set_scroll(widget,
-			       anieditor->scroll_x+jmouse_x(1)-jmouse_x(0),
-			       anieditor->scroll_y+jmouse_y(1)-jmouse_y(0), true);
+      if (hasCapture()) {
+	if (m_state == STATE_SCROLLING) {
+	  setScroll(m_scroll_x+jmouse_x(1)-jmouse_x(0),
+		    m_scroll_y+jmouse_y(1)-jmouse_y(0), true);
 
-	  jmouse_control_infinite_scroll(widget->getBounds());
+	  jmouse_control_infinite_scroll(getBounds());
 	  return true;
 	}
-	/* if the mouse pressed the mouse's button in the separator, we
-	   shouldn't change the hot (so the separator can be tracked to
-	   the mouse's released) */
-	else if (anieditor->clk_part == A_PART_SEPARATOR) {
-	  hot_part = anieditor->clk_part;
-	  anieditor->separator_x = mx;
-	  widget->invalidate();
+	// If the mouse pressed the mouse's button in the separator,
+	// we shouldn't change the hot (so the separator can be
+	// tracked to the mouse's released).
+	else if (m_clk_part == A_PART_SEPARATOR) {
+	  hot_part = m_clk_part;
+	  m_separator_x = mx;
+	  invalidate();
 	  return true;
 	}
       }
 
-      /* is the mouse on the separator= */
-      if (mx > anieditor->separator_x-4 && mx < anieditor->separator_x+4)  {
+      // Is the mouse on the separator.
+      if (mx > m_separator_x-4 && mx < m_separator_x+4)  {
 	hot_part = A_PART_SEPARATOR;
       }
-      /* is the mouse on the headers? */
+      // Is the mouse on the headers?
       else if (my < HDRSIZE) {
-	/* is on the layers' header? */
-	if (mx < anieditor->separator_x)
+	// Is on the layers' header?
+	if (mx < m_separator_x)
 	  hot_part = A_PART_HEADER_LAYER;
-	/* is on a frame header? */
+	// Is on a frame header?
 	else {
 	  hot_part = A_PART_HEADER_FRAME;
 	  hot_frame = (mx
-		       - anieditor->separator_x
-		       - anieditor->separator_w
-		       + anieditor->scroll_x) / FRMSIZE;
+		       - m_separator_x
+		       - m_separator_w
+		       + m_scroll_x) / FRMSIZE;
 	}
       }
       else {
 	hot_layer = (my
 		     - HDRSIZE
-		     + anieditor->scroll_y) / LAYSIZE;
+		     + m_scroll_y) / LAYSIZE;
 	
 	// Is the mouse on a layer's label?
-	if (mx < anieditor->separator_x) {
-	  SkinTheme* theme = static_cast<SkinTheme*>(widget->getTheme());
+	if (mx < m_separator_x) {
+	  SkinTheme* theme = static_cast<SkinTheme*>(getTheme());
 	  BITMAP* icon1 = theme->get_part(PART_LAYER_VISIBLE);
 	  BITMAP* icon2 = theme->get_part(PART_LAYER_EDITABLE);
 	  int x1, y1, x2, y2, y_mid;
 
 	  x1 = 0;
-	  y1 = HDRSIZE + LAYSIZE*hot_layer - anieditor->scroll_y;
-	  x2 = x1 + anieditor->separator_x - 1;
+	  y1 = HDRSIZE + LAYSIZE*hot_layer - m_scroll_y;
+	  x2 = x1 + m_separator_x - 1;
 	  y2 = y1 + LAYSIZE - 1;
 	  y_mid = (y1+y2) / 2;
 
@@ -499,52 +479,52 @@ static bool anieditor_msg_proc(JWidget widget, JMessage msg)
 	else {
 	  hot_part = A_PART_CEL;
 	  hot_frame = (mx
-		       - anieditor->separator_x
-		       - anieditor->separator_w
-		       + anieditor->scroll_x) / FRMSIZE;
+		       - m_separator_x
+		       - m_separator_w
+		       + m_scroll_x) / FRMSIZE;
 	}
       }
 
-      /* set the new 'hot' thing */
-      anieditor_hot_this(widget, hot_part, hot_layer, hot_frame);
+      // Set the new 'hot' thing.
+      hotThis(hot_part, hot_layer, hot_frame);
       return true;
     }
 
     case JM_BUTTONRELEASED:
-      if (widget->hasCapture()) {
-	widget->releaseMouse();
+      if (hasCapture()) {
+	releaseMouse();
 
-	if (anieditor->state == STATE_SCROLLING) {
-	  anieditor->state = STATE_STANDBY;
+	if (m_state == STATE_SCROLLING) {
+	  m_state = STATE_STANDBY;
 	  return true;
 	}
 
-	switch (anieditor->hot_part) {
+	switch (m_hot_part) {
 	  case A_PART_NOTHING:
-	    /* do nothing */
+	    // Do nothing.
 	    break;
 	  case A_PART_SEPARATOR:
-	    /* do nothing */
+	    // Do nothing.
 	    break;
 	  case A_PART_HEADER_LAYER:
-	    /* do nothing */
+	    // Do nothing.
 	    break;
 	  case A_PART_HEADER_FRAME:
-	    /* show the frame pop-up menu */
+	    // Show the frame pop-up menu.
 	    if (msg->mouse.right) {
-	      if (anieditor->clk_frame == anieditor->hot_frame) {
+	      if (m_clk_frame == m_hot_frame) {
 		JWidget popup_menu = get_frame_popup_menu();
 		if (popup_menu != NULL) {
 		  jmenu_popup(popup_menu, msg->mouse.x, msg->mouse.y);
 
 		  destroy_thumbnails();
-		  widget->invalidate();
+		  invalidate();
 		}
 	      }
 	    }
-	    /* show the frame's properties dialog */
+	    // Show the frame's properties dialog.
 	    else if (msg->mouse.left) {
-	      if (anieditor->clk_frame == anieditor->hot_frame) {
+	      if (m_clk_frame == m_hot_frame) {
 		// Execute FrameProperties command for current frame.
 		Command* command = CommandsModule::instance()
 		  ->getCommandByName(CommandId::FrameProperties);
@@ -554,64 +534,64 @@ static bool anieditor_msg_proc(JWidget widget, JMessage msg)
 		UIContext::instance()->executeCommand(command, &params);
 	      }
 	      else {
-		const DocumentReader document(const_cast<Document*>(anieditor->document));
-		const Sprite* sprite = anieditor->sprite;
+		const DocumentReader document(const_cast<Document*>(m_document));
+		const Sprite* sprite = m_sprite;
 
-		if (anieditor->hot_frame >= 0 &&
-		    anieditor->hot_frame < sprite->getTotalFrames() &&
-		    anieditor->hot_frame != anieditor->clk_frame+1) {
+		if (m_hot_frame >= 0 &&
+		    m_hot_frame < sprite->getTotalFrames() &&
+		    m_hot_frame != m_clk_frame+1) {
 		  {
 		    DocumentWriter document_writer(document);
 		    UndoTransaction undoTransaction(document_writer, "Move Frame");
-		    undoTransaction.moveFrameBefore(anieditor->clk_frame, anieditor->hot_frame);
+		    undoTransaction.moveFrameBefore(m_clk_frame, m_hot_frame);
 		    undoTransaction.commit();
 		  }
-		  widget->invalidate();
+		  invalidate();
 		}
 	      }
 	    }
 	    break;
 	  case A_PART_LAYER:
-	    /* show the layer pop-up menu */
+	    // Show the layer pop-up menu.
 	    if (msg->mouse.right) {
-	      if (anieditor->clk_layer == anieditor->hot_layer) {
+	      if (m_clk_layer == m_hot_layer) {
 	      	JWidget popup_menu = get_layer_popup_menu();
 	      	if (popup_menu != NULL) {
 	      	  jmenu_popup(popup_menu, msg->mouse.x, msg->mouse.y);
 
 		  destroy_thumbnails();
-		  widget->invalidate();
-		  anieditor_regenerate_layers(widget);
+		  invalidate();
+		  regenerateLayers();
 	      	}
 	      }
 	    }
-	    /* move a layer */
+	    // Move a layer.
 	    else if (msg->mouse.left) {
-	      if (anieditor->hot_layer >= 0 &&
-		  anieditor->hot_layer < anieditor->nlayers &&
-		  anieditor->hot_layer != anieditor->clk_layer &&
-		  anieditor->hot_layer != anieditor->clk_layer+1) {
-		if (!anieditor->layers[anieditor->clk_layer]->is_background()) {
+	      if (m_hot_layer >= 0 &&
+		  m_hot_layer < m_nlayers &&
+		  m_hot_layer != m_clk_layer &&
+		  m_hot_layer != m_clk_layer+1) {
+		if (!m_layers[m_clk_layer]->is_background()) {
 		  // move the clicked-layer after the hot-layer
 		  try {
-		    const DocumentReader document(const_cast<Document*>(anieditor->document));
+		    const DocumentReader document(const_cast<Document*>(m_document));
 		    DocumentWriter document_writer(document);
-		    Sprite* sprite_writer = const_cast<Sprite*>(anieditor->sprite);
+		    Sprite* sprite_writer = const_cast<Sprite*>(m_sprite);
 
 		    UndoTransaction undoTransaction(document_writer, "Move Layer");
-		    undoTransaction.moveLayerAfter(anieditor->layers[anieditor->clk_layer],
-						   anieditor->layers[anieditor->hot_layer]);
+		    undoTransaction.moveLayerAfter(m_layers[m_clk_layer],
+						   m_layers[m_hot_layer]);
 		    undoTransaction.commit();
 
-		    /* select the new layer */
-		    sprite_writer->setCurrentLayer(anieditor->layers[anieditor->clk_layer]);
+		    // Select the new layer.
+		    sprite_writer->setCurrentLayer(m_layers[m_clk_layer]);
 		  }
 		  catch (LockedDocumentException& e) {
 		    Console::showException(e);
 		  }
 
-		  widget->invalidate();
-		  anieditor_regenerate_layers(widget);
+		  invalidate();
+		  regenerateLayers();
 		}
 		else {
 		  Alert::show(PACKAGE "<<You can't move the `Background' layer.||&OK");
@@ -620,43 +600,43 @@ static bool anieditor_msg_proc(JWidget widget, JMessage msg)
 	    }
 	    break;
 	  case A_PART_LAYER_EYE_ICON:
-	    /* hide/show layer */
-	    if (anieditor->hot_layer == anieditor->clk_layer &&
-		anieditor->hot_layer >= 0 &&
-		anieditor->hot_layer < anieditor->nlayers) {
-	      Layer* layer = anieditor->layers[anieditor->clk_layer];
+	    // Hide/show layer.
+	    if (m_hot_layer == m_clk_layer &&
+		m_hot_layer >= 0 &&
+		m_hot_layer < m_nlayers) {
+	      Layer* layer = m_layers[m_clk_layer];
 	      ASSERT(layer != NULL);
 	      layer->set_readable(!layer->is_readable());
 	    }
 	    break;
 	  case A_PART_LAYER_LOCK_ICON:
-	    /* lock/unlock layer */
-	    if (anieditor->hot_layer == anieditor->clk_layer &&
-		anieditor->hot_layer >= 0 &&
-		anieditor->hot_layer < anieditor->nlayers) {
-	      Layer* layer = anieditor->layers[anieditor->clk_layer];
+	    // Lock/unlock layer.
+	    if (m_hot_layer == m_clk_layer &&
+		m_hot_layer >= 0 &&
+		m_hot_layer < m_nlayers) {
+	      Layer* layer = m_layers[m_clk_layer];
 	      ASSERT(layer != NULL);
 	      layer->set_writable(!layer->is_writable());
 	    }
 	    break;
 	  case A_PART_CEL: {
 	    bool movement =
-	      anieditor->clk_part == A_PART_CEL &&
-	      anieditor->hot_part == A_PART_CEL &&
-	      (anieditor->clk_layer != anieditor->hot_layer ||
-	       anieditor->clk_frame != anieditor->hot_frame);
+	      m_clk_part == A_PART_CEL &&
+	      m_hot_part == A_PART_CEL &&
+	      (m_clk_layer != m_hot_layer ||
+	       m_clk_frame != m_hot_frame);
 
 	    if (movement) {
 	      set_frame_to_handle
-		(/* source cel */
-		 anieditor->layers[anieditor->clk_layer],
-		 anieditor->clk_frame,
-		 /* destination cel */
-		 anieditor->layers[anieditor->hot_layer],
-		 anieditor->hot_frame);
+		(// Source cel.
+		 m_layers[m_clk_layer],
+		 m_clk_frame,
+		 // Destination cel.
+		 m_layers[m_hot_layer],
+		 m_hot_frame);
 	    }
 
-	    /* show the cel pop-up menu */
+	    // Show the cel pop-up menu.
 	    if (msg->mouse.right) {
 	      JWidget popup_menu = movement ? get_cel_movement_popup_menu():
 					      get_cel_popup_menu();
@@ -664,40 +644,39 @@ static bool anieditor_msg_proc(JWidget widget, JMessage msg)
 		jmenu_popup(popup_menu, msg->mouse.x, msg->mouse.y);
 
 		destroy_thumbnails();
-		anieditor_regenerate_layers(widget);
-		widget->invalidate();
+		regenerateLayers();
+		invalidate();
 	      }
 	    }
-	    /* move the cel */
+	    // Move the cel.
 	    else if (msg->mouse.left) {
 	      if (movement) {
 		{
-		  const DocumentReader document(const_cast<Document*>(anieditor->document));
+		  const DocumentReader document(const_cast<Document*>(m_document));
 		  DocumentWriter document_writer(document);
 		  move_cel(document_writer);
 		}
 
 		destroy_thumbnails();
-		anieditor_regenerate_layers(widget);
-		widget->invalidate();
+		regenerateLayers();
+		invalidate();
 	      }
 	    }
 	    break;
 	  }
 	}
 
-	/* clean the clicked-part & redraw the hot-part */
+	// Clean the clicked-part & redraw the hot-part.
 	jmouse_hide();
-	anieditor_clean_clk(widget);
-	anieditor_draw_part(widget,
-			    anieditor->hot_part,
-			    anieditor->hot_layer,
-			    anieditor->hot_frame);
+	cleanClk();
+	drawPart(m_hot_part,
+		 m_hot_layer,
+		 m_hot_frame);
 	jmouse_show();
 
-	/* restore the cursor */
-	anieditor->state = STATE_STANDBY;
-	anieditor_setcursor(widget, msg->mouse.x, msg->mouse.y);
+	// Restore the cursor.
+	m_state = STATE_STANDBY;
+	setCursor(msg->mouse.x, msg->mouse.y);
 	return true;
       }
       break;
@@ -705,16 +684,16 @@ static bool anieditor_msg_proc(JWidget widget, JMessage msg)
     case JM_KEYPRESSED: {
       Command *command = get_command_from_key_message(msg);
 
-      /* close animation editor */
+      // Close animation editor.
       if ((command && (strcmp(command->short_name(), CommandId::FilmEditor) == 0)) ||
 	  (msg->key.scancode == KEY_ESC)) {
-	widget->closeWindow();
+	closeWindow();
 	return true;
       }
 
-      /* undo */
+      // Undo.
       if (command && strcmp(command->short_name(), CommandId::Undo) == 0) {
-	const DocumentReader document(const_cast<Document*>(anieditor->document));
+	const DocumentReader document(const_cast<Document*>(m_document));
 	const undo::UndoHistory* undo = document->getUndoHistory();
 
 	if (undo->canUndo()) {
@@ -724,16 +703,16 @@ static bool anieditor_msg_proc(JWidget widget, JMessage msg)
 	  undo_writer->doUndo();
 
 	  destroy_thumbnails();
-	  anieditor_regenerate_layers(widget);
-	  anieditor_show_current_cel(widget);
-	  widget->invalidate();
+	  regenerateLayers();
+	  showCurrentCel();
+	  invalidate();
 	}
 	return true;
       }
 
-      /* redo */
+      // Redo.
       if (command && strcmp(command->short_name(), CommandId::Redo) == 0) {
-	const DocumentReader document(const_cast<Document*>(anieditor->document));
+	const DocumentReader document(const_cast<Document*>(m_document));
 	const undo::UndoHistory* undo = document->getUndoHistory();
 
 	if (undo->canRedo()) {
@@ -743,14 +722,14 @@ static bool anieditor_msg_proc(JWidget widget, JMessage msg)
 	  undo_writer->doRedo();
 
 	  destroy_thumbnails();
-	  anieditor_regenerate_layers(widget);
-	  anieditor_show_current_cel(widget);
-	  widget->invalidate();
+	  regenerateLayers();
+	  showCurrentCel();
+	  invalidate();
 	}
 	return true;
       }
 
-      /* new_frame, remove_frame, new_cel, remove_cel */
+      // New_frame, remove_frame, new_cel, remove_cel.
       if (command != NULL) {
 	if (strcmp(command->short_name(), CommandId::NewFrame) == 0 ||
 	    strcmp(command->short_name(), CommandId::RemoveCel) == 0 ||
@@ -764,8 +743,8 @@ static bool anieditor_msg_proc(JWidget widget, JMessage msg)
 	  // execute the command
 	  UIContext::instance()->executeCommand(command);
 
-	  anieditor_show_current_cel(widget);
-	  widget->invalidate();
+	  showCurrentCel();
+	  invalidate();
 	  return true;
 	}
 
@@ -774,17 +753,17 @@ static bool anieditor_msg_proc(JWidget widget, JMessage msg)
 	  // execute the command
 	  UIContext::instance()->executeCommand(command);
 
-	  anieditor_regenerate_layers(widget);
-	  anieditor_show_current_cel(widget);
-	  widget->invalidate();
+	  regenerateLayers();
+	  showCurrentCel();
+	  invalidate();
 	  return true;
 	}
       }
 
       switch (msg->key.scancode) {
 	case KEY_SPACE:
-	  anieditor->space_pressed = true;
-	  anieditor_setcursor(widget, jmouse_x(0), jmouse_y(0));
+	  m_space_pressed = true;
+	  setCursor(jmouse_x(0), jmouse_y(0));
 	  return true;
       }
 
@@ -795,12 +774,12 @@ static bool anieditor_msg_proc(JWidget widget, JMessage msg)
       switch (msg->key.scancode) {
 
 	case KEY_SPACE:
-	  if (anieditor->space_pressed) {
-	    /* we have to clear all the KEY_SPACE in buffer */
+	  if (m_space_pressed) {
+	    // We have to clear all the KEY_SPACE in buffer.
 	    clear_keybuf();
 
-	    anieditor->space_pressed = false;
-	    anieditor_setcursor(widget, jmouse_x(0), jmouse_y(0));
+	    m_space_pressed = false;
+	    setCursor(jmouse_x(0), jmouse_y(0));
 	    return true;
 	  }
 	  break;
@@ -822,110 +801,102 @@ static bool anieditor_msg_proc(JWidget widget, JMessage msg)
       	dy *= 3;
       }
 
-      anieditor_set_scroll(widget,
-			   anieditor->scroll_x+dx,
-			   anieditor->scroll_y+dy, true);
+      setScroll(m_scroll_x+dx,
+		m_scroll_y+dy, true);
       break;
     }
 
     case JM_SETCURSOR:
-      anieditor_setcursor(widget, msg->mouse.x, msg->mouse.y);
+      setCursor(msg->mouse.x, msg->mouse.y);
       return true;
 
   }
 
-  return false;
+  return Widget::onProcessMessage(msg);
 }
 
-static void anieditor_setcursor(JWidget widget, int x, int y)
+void AnimationEditor::setCursor(int x, int y)
 {
-  AniEditor* anieditor = anieditor_data(widget);
-  int mx = x - widget->rc->x1;
-//int my = y - widget->rc->y1;
+  int mx = x - rc->x1;
+//int my = y - this->rc->y1;
 
-  /* is the mouse in the separator */
-  if (mx > anieditor->separator_x-2 && mx < anieditor->separator_x+2)  {
+  // Is the mouse in the separator.
+  if (mx > m_separator_x-2 && mx < m_separator_x+2)  {
     jmouse_set_cursor(JI_CURSOR_SIZE_L);
   }
-  /* scrolling */
-  else if (anieditor->state == STATE_SCROLLING ||
-	   anieditor->space_pressed) {
+  // Scrolling.
+  else if (m_state == STATE_SCROLLING ||
+	   m_space_pressed) {
     jmouse_set_cursor(JI_CURSOR_SCROLL);
   }
-  /* moving a frame */
-  else if (anieditor->state == STATE_MOVING_FRAME &&
-	   anieditor->clk_part == A_PART_HEADER_FRAME &&
-	   anieditor->hot_part == A_PART_HEADER_FRAME &&
-	   anieditor->clk_frame != anieditor->hot_frame) {
+  // Moving a frame.
+  else if (m_state == STATE_MOVING_FRAME &&
+	   m_clk_part == A_PART_HEADER_FRAME &&
+	   m_hot_part == A_PART_HEADER_FRAME &&
+	   m_clk_frame != m_hot_frame) {
     jmouse_set_cursor(JI_CURSOR_MOVE);
   }
-  /* moving a layer */
-  else if (anieditor->state == STATE_MOVING_LAYER &&
-	   anieditor->clk_part == A_PART_LAYER &&
-	   anieditor->hot_part == A_PART_LAYER &&
-	   anieditor->clk_layer != anieditor->hot_layer) {
-    if (anieditor->layers[anieditor->clk_layer]->is_background())
+  // Moving a layer.
+  else if (m_state == STATE_MOVING_LAYER &&
+	   m_clk_part == A_PART_LAYER &&
+	   m_hot_part == A_PART_LAYER &&
+	   m_clk_layer != m_hot_layer) {
+    if (m_layers[m_clk_layer]->is_background())
       jmouse_set_cursor(JI_CURSOR_FORBIDDEN);
     else
       jmouse_set_cursor(JI_CURSOR_MOVE);
   }
-  /* moving a cel */
-  else if (anieditor->state == STATE_MOVING_CEL &&
-	   anieditor->clk_part == A_PART_CEL &&
-	   anieditor->hot_part == A_PART_CEL &&
-	   (anieditor->clk_frame != anieditor->hot_frame ||
-	    anieditor->clk_layer != anieditor->hot_layer)) {
+  // Moving a cel.
+  else if (m_state == STATE_MOVING_CEL &&
+	   m_clk_part == A_PART_CEL &&
+	   m_hot_part == A_PART_CEL &&
+	   (m_clk_frame != m_hot_frame ||
+	    m_clk_layer != m_hot_layer)) {
     jmouse_set_cursor(JI_CURSOR_MOVE);
   }
-  /* normal state */
+  // Normal state.
   else {
     jmouse_set_cursor(JI_CURSOR_NORMAL);
   }
 }
 
-static void anieditor_get_drawable_layers(JWidget widget, JRect clip, int *first_layer, int *last_layer)
+void AnimationEditor::getDrawableLayers(JRect clip, int *first_layer, int *last_layer)
 {
-  AniEditor* anieditor = anieditor_data(widget);
-
   *first_layer = 0;
-  *last_layer = anieditor->nlayers-1;
+  *last_layer = m_nlayers-1;
 }
 
-static void anieditor_get_drawable_frames(JWidget widget, JRect clip, int *first_frame, int *last_frame)
+void AnimationEditor::getDrawableFrames(JRect clip, int *first_frame, int *last_frame)
 {
-  AniEditor* anieditor = anieditor_data(widget);
-
   *first_frame = 0;
-  *last_frame = anieditor->sprite->getTotalFrames()-1;
+  *last_frame = m_sprite->getTotalFrames()-1;
 }
 
-static void anieditor_draw_header(JWidget widget, JRect clip)
+void AnimationEditor::drawHeader(JRect clip)
 {
-  AniEditor* anieditor = anieditor_data(widget);
-  /* bool is_hot = (anieditor->hot_part == A_PART_HEADER_LAYER); */
-  /* bool is_clk = (anieditor->clk_part == A_PART_HEADER_LAYER); */
+  // bool is_hot = (m_hot_part == A_PART_HEADER_LAYER);
+  // bool is_clk = (m_clk_part == A_PART_HEADER_LAYER);
   int x1, y1, x2, y2;
 
-  x1 = widget->rc->x1;
-  y1 = widget->rc->y1;
-  x2 = x1 + anieditor->separator_x - 1;
+  x1 = this->rc->x1;
+  y1 = this->rc->y1;
+  x2 = x1 + m_separator_x - 1;
   y2 = y1 + HDRSIZE - 1;
 
-  /* draw the header for the layers */
-  anieditor_draw_header_part(widget, clip, x1, y1, x2, y2,
-			     /* is_hot, is_clk, */
-			     false, false,
-			     "Frames >>", 1,
-			     "Layers", -1);
+  // Draw the header for the layers.
+  drawHeaderPart(clip, x1, y1, x2, y2,
+		 // is_hot, is_clk,
+		 false, false,
+		 "Frames >>", 1,
+		 "Layers", -1);
 }
 
-static void anieditor_draw_header_frame(JWidget widget, JRect clip, int frame)
+void AnimationEditor::drawHeaderFrame(JRect clip, int frame)
 {
-  AniEditor* anieditor = anieditor_data(widget);
-  bool is_hot = (anieditor->hot_part == A_PART_HEADER_FRAME &&
-		 anieditor->hot_frame == frame);
-  bool is_clk = (anieditor->clk_part == A_PART_HEADER_FRAME &&
-		 anieditor->clk_frame == frame);
+  bool is_hot = (m_hot_part == A_PART_HEADER_FRAME &&
+		 m_hot_frame == frame);
+  bool is_clk = (m_clk_part == A_PART_HEADER_FRAME &&
+		 m_clk_frame == frame);
   int x1, y1, x2, y2;
   int cx1, cy1, cx2, cy2;
   char buf1[256];
@@ -933,49 +904,49 @@ static void anieditor_draw_header_frame(JWidget widget, JRect clip, int frame)
 
   get_clip_rect(ji_screen, &cx1, &cy1, &cx2, &cy2);
 
-  x1 = widget->rc->x1 + anieditor->separator_x + anieditor->separator_w
-    + FRMSIZE*frame - anieditor->scroll_x;
-  y1 = widget->rc->y1;
+  x1 = this->rc->x1 + m_separator_x + m_separator_w
+    + FRMSIZE*frame - m_scroll_x;
+  y1 = this->rc->y1;
   x2 = x1 + FRMSIZE - 1;
   y2 = y1 + HDRSIZE - 1;
 
   add_clip_rect(ji_screen,
-		widget->rc->x1 + anieditor->separator_x + anieditor->separator_w,
-		y1, widget->rc->x2-1, y2);
+		this->rc->x1 + m_separator_x + m_separator_w,
+		y1, this->rc->x2-1, y2);
 
-  /* draw the header for the layers */
+  // Draw the header for the layers.
   usprintf(buf1, "%d", frame+1);
-  usprintf(buf2, "%d", anieditor->sprite->getFrameDuration(frame));
-  anieditor_draw_header_part(widget, clip, x1, y1, x2, y2,
-			     is_hot, is_clk,
-			     buf1, 0,
-			     buf2, 0);
+  usprintf(buf2, "%d", m_sprite->getFrameDuration(frame));
+  drawHeaderPart(clip, x1, y1, x2, y2,
+		 is_hot, is_clk,
+		 buf1, 0,
+		 buf2, 0);
 
-  /* if this header wasn't clicked but there are another frame's
-     header clicked, we have to draw some indicators to show that the
-     user can move frames */
+  // If this header wasn't clicked but there are another frame's
+  // header clicked, we have to draw some indicators to show that the
+  // user can move frames.
   if (is_hot && !is_clk &&
-      anieditor->clk_part == A_PART_HEADER_FRAME) {
+      m_clk_part == A_PART_HEADER_FRAME) {
     rectfill(ji_screen, x1+1, y1+1, x1+4, y2-1, ji_color_selected());
   }
 
-  /* padding in the right side */
-  if (frame == anieditor->sprite->getTotalFrames()-1) {
-    if (x2+1 <= widget->rc->x2-1) {
-      /* right side */
+  // Padding in the right side.
+  if (frame == m_sprite->getTotalFrames()-1) {
+    if (x2+1 <= this->rc->x2-1) {
+      // Right side.
       vline(ji_screen, x2+1, y1, y2, ji_color_foreground());
-      if (x2+2 <= widget->rc->x2-1)
-	rectfill(ji_screen, x2+2, y1, widget->rc->x2-1, y2, ji_color_face());
+      if (x2+2 <= this->rc->x2-1)
+	rectfill(ji_screen, x2+2, y1, this->rc->x2-1, y2, ji_color_face());
     }
   }
 
   set_clip_rect(ji_screen, cx1, cy1, cx2, cy2);
 }
 
-static void anieditor_draw_header_part(JWidget widget, JRect clip, int x1, int y1, int x2, int y2,
-				       bool is_hot, bool is_clk,
-				       const char *line1, int align1,
-				       const char *line2, int align2)
+void AnimationEditor::drawHeaderPart(JRect clip, int x1, int y1, int x2, int y2,
+				     bool is_hot, bool is_clk,
+				     const char *line1, int align1,
+				     const char *line2, int align2)
 {
   int x, fg, face, facelight, faceshadow;
 
@@ -989,22 +960,22 @@ static void anieditor_draw_header_part(JWidget widget, JRect clip, int x1, int y
   facelight = is_hot && is_clk ? ji_color_faceshadow(): ji_color_facelight();
   faceshadow = is_hot && is_clk ? ji_color_facelight(): ji_color_faceshadow();
 
-  /* draw the border of this text */
+  // Draw the border of this text.
   jrectedge(ji_screen, x1, y1, x2, y2, facelight, faceshadow);
 
-  /* fill the background of the part */
+  // Fill the background of the part.
   rectfill(ji_screen, x1+1, y1+1, x2-1, y2-1, face);
 
-  /* draw the text inside this header */
+  // Draw the text inside this header.
   if (line1 != NULL) {
     if (align1 < 0)
       x = x1+3;
     else if (align1 == 0)
-      x = (x1+x2)/2 - text_length(widget->getFont(), line1)/2;
+      x = (x1+x2)/2 - text_length(this->getFont(), line1)/2;
     else
-      x = x2 - 3 - text_length(widget->getFont(), line1);
+      x = x2 - 3 - text_length(this->getFont(), line1);
       
-    jdraw_text(ji_screen, widget->getFont(), line1, x, y1+3,
+    jdraw_text(ji_screen, this->getFont(), line1, x, y1+3,
 	       fg, face, true, jguiscale());
   }
 
@@ -1012,26 +983,25 @@ static void anieditor_draw_header_part(JWidget widget, JRect clip, int x1, int y
     if (align2 < 0)
       x = x1+3;
     else if (align2 == 0)
-      x = (x1+x2)/2 - text_length(widget->getFont(), line2)/2;
+      x = (x1+x2)/2 - text_length(this->getFont(), line2)/2;
     else
-      x = x2 - 3 - text_length(widget->getFont(), line2);
+      x = x2 - 3 - text_length(this->getFont(), line2);
     
-    jdraw_text(ji_screen, widget->getFont(), line2,
-	       x, y1+3+ji_font_get_size(widget->getFont())+3,
+    jdraw_text(ji_screen, this->getFont(), line2,
+	       x, y1+3+ji_font_get_size(this->getFont())+3,
 	       fg, face, true, jguiscale());
   }
 }
 
-static void anieditor_draw_separator(JWidget widget, JRect clip)
+void AnimationEditor::drawSeparator(JRect clip)
 {
-  AniEditor* anieditor = anieditor_data(widget);
-  bool is_hot = (anieditor->hot_part == A_PART_SEPARATOR);
+  bool is_hot = (m_hot_part == A_PART_SEPARATOR);
   int x1, y1, x2, y2;
 
-  x1 = widget->rc->x1 + anieditor->separator_x;
-  y1 = widget->rc->y1;
-  x2 = widget->rc->x1 + anieditor->separator_x + anieditor->separator_w - 1;
-  y2 = widget->rc->y2 - 1;
+  x1 = this->rc->x1 + m_separator_x;
+  y1 = this->rc->y1;
+  x2 = this->rc->x1 + m_separator_x + m_separator_w - 1;
+  y2 = this->rc->y2 - 1;
 
   if ((x2 < clip->x1) || (x1 >= clip->x2) ||
       (y2 < clip->y1) || (y1 >= clip->y2))
@@ -1041,14 +1011,13 @@ static void anieditor_draw_separator(JWidget widget, JRect clip)
 					ji_color_foreground());
 }
 
-static void anieditor_draw_layer(JWidget widget, JRect clip, int layer_index)
+void AnimationEditor::drawLayer(JRect clip, int layer_index)
 {
-  AniEditor* anieditor = anieditor_data(widget);
-  Layer *layer = anieditor->layers[layer_index];
-  SkinTheme* theme = static_cast<SkinTheme*>(widget->getTheme());
-  bool selected_layer = (layer == anieditor->sprite->getCurrentLayer());
-  bool is_hot = (anieditor->hot_part == A_PART_LAYER && anieditor->hot_layer == layer_index);
-  bool is_clk = (anieditor->clk_part == A_PART_LAYER && anieditor->clk_layer == layer_index);
+  Layer *layer = m_layers[layer_index];
+  SkinTheme* theme = static_cast<SkinTheme*>(this->getTheme());
+  bool selected_layer = (layer == m_sprite->getCurrentLayer());
+  bool is_hot = (m_hot_part == A_PART_LAYER && m_hot_layer == layer_index);
+  bool is_clk = (m_clk_part == A_PART_LAYER && m_clk_layer == layer_index);
   int bg = selected_layer ?
     ji_color_selected(): (is_hot ? ji_color_hotface():
 			  (is_clk ? ji_color_selected():
@@ -1064,17 +1033,17 @@ static void anieditor_draw_layer(JWidget widget, JRect clip, int layer_index)
 
   get_clip_rect(ji_screen, &cx1, &cy1, &cx2, &cy2);
   
-  x1 = widget->rc->x1;
-  y1 = widget->rc->y1 + HDRSIZE + LAYSIZE*layer_index - anieditor->scroll_y;
-  x2 = x1 + anieditor->separator_x - 1;
+  x1 = this->rc->x1;
+  y1 = this->rc->y1 + HDRSIZE + LAYSIZE*layer_index - m_scroll_y;
+  x2 = x1 + m_separator_x - 1;
   y2 = y1 + LAYSIZE - 1;
   y_mid = (y1+y2) / 2;
 
   add_clip_rect(ji_screen,
-		widget->rc->x1,
-		widget->rc->y1 + HDRSIZE,
-		widget->rc->x1 + anieditor->separator_x - 1,
-		widget->rc->y2-1);
+		this->rc->x1,
+		this->rc->y1 + HDRSIZE,
+		this->rc->x1 + m_separator_x - 1,
+		this->rc->y2-1);
 
   if (is_hot) {
     jrectedge(ji_screen, x1, y1, x2, y2-1, ji_color_facelight(), ji_color_faceshadow());
@@ -1085,97 +1054,96 @@ static void anieditor_draw_layer(JWidget widget, JRect clip, int layer_index)
   }
   hline(ji_screen, x1, y2, x2, ji_color_foreground());
 
-  /* if this layer wasn't clicked but there are another layer clicked,
-     we have to draw some indicators to show that the user can move
-     layers */
+  // If this layer wasn't clicked but there are another layer clicked,
+  // we have to draw some indicators to show that the user can move
+  // layers.
   if (is_hot && !is_clk &&
-      anieditor->clk_part == A_PART_LAYER) {
+      m_clk_part == A_PART_LAYER) {
     rectfill(ji_screen, x1+1, y1+1, x2-1, y1+5, ji_color_selected());
   }
 
-  /* u = the position where to put the next element (like eye-icon, lock-icon, layer-name) */
+  // u = the position where to put the next element (like eye-icon,
+  //     lock-icon, layer-name)
   u = x1+ICONSEP;
   
-  /* draw the eye (readable flag) */
+  // Draw the eye (readable flag).
   icon_rect(icon1, icon1_selected,
 	    u,
 	    y_mid-icon1->h/2-ICONBORDER,
 	    u+ICONBORDER+icon1->w+ICONBORDER-1,
 	    y_mid-icon1->h/2+icon1->h+ICONBORDER-1,
 	    selected_layer,
-	    (anieditor->hot_part == A_PART_LAYER_EYE_ICON &&
-	     anieditor->hot_layer == layer_index),
-	    (anieditor->clk_part == A_PART_LAYER_EYE_ICON &&
-	     anieditor->clk_layer == layer_index));
+	    (m_hot_part == A_PART_LAYER_EYE_ICON &&
+	     m_hot_layer == layer_index),
+	    (m_clk_part == A_PART_LAYER_EYE_ICON &&
+	     m_clk_layer == layer_index));
 
   u += u+ICONBORDER+icon1->w+ICONBORDER;
 
-  /* draw the padlock (writable flag) */
+  // Draw the padlock (writable flag).
   icon_rect(icon2, icon2_selected,
 	    u,
 	    y_mid-icon1->h/2-ICONBORDER,
 	    u+ICONBORDER+icon2->w+ICONBORDER-1,
 	    y_mid-icon1->h/2+icon1->h-1+ICONBORDER,
 	    selected_layer,
-	    (anieditor->hot_part == A_PART_LAYER_LOCK_ICON &&
-	     anieditor->hot_layer == layer_index),
-	    (anieditor->clk_part == A_PART_LAYER_LOCK_ICON &&
-	     anieditor->clk_layer == layer_index));
+	    (m_hot_part == A_PART_LAYER_LOCK_ICON &&
+	     m_hot_layer == layer_index),
+	    (m_clk_part == A_PART_LAYER_LOCK_ICON &&
+	     m_clk_layer == layer_index));
 
   u += ICONBORDER+icon2->w+ICONBORDER+ICONSEP;
 
   // Draw the layer's name.
-  jdraw_text(ji_screen, widget->getFont(), layer->getName().c_str(),
-	     u, y_mid - ji_font_get_size(widget->getFont())/2,
+  jdraw_text(ji_screen, this->getFont(), layer->getName().c_str(),
+	     u, y_mid - ji_font_get_size(this->getFont())/2,
 	     fg, bg, true, jguiscale());
 
   // The background should be underlined.
   if (layer->is_background()) {
     hline(ji_screen,
 	  u,
-	  y_mid - ji_font_get_size(widget->getFont())/2 + ji_font_get_size(widget->getFont()) + 1,
-	  u + text_length(widget->getFont(), layer->getName().c_str()),
+	  y_mid - ji_font_get_size(this->getFont())/2 + ji_font_get_size(this->getFont()) + 1,
+	  u + text_length(this->getFont(), layer->getName().c_str()),
 	  fg);
   }
 
   set_clip_rect(ji_screen, cx1, cy1, cx2, cy2);
 }
 
-static void anieditor_draw_layer_padding(JWidget widget)
+void AnimationEditor::drawLayerPadding()
 {
-  SkinTheme* theme = static_cast<SkinTheme*>(widget->getTheme());
-  AniEditor* anieditor = anieditor_data(widget);
-  int layer_index = anieditor->nlayers-1;
+  SkinTheme* theme = static_cast<SkinTheme*>(this->getTheme());
+  int layer_index = m_nlayers-1;
   int x1, y1, x2, y2;
   
-  x1 = widget->rc->x1;
-  y1 = widget->rc->y1 + HDRSIZE + LAYSIZE*layer_index - anieditor->scroll_y;
-  x2 = x1 + anieditor->separator_x - 1;
+  x1 = this->rc->x1;
+  y1 = this->rc->y1 + HDRSIZE + LAYSIZE*layer_index - m_scroll_y;
+  x2 = x1 + m_separator_x - 1;
   y2 = y1 + LAYSIZE - 1;
 
   // Padding in the bottom side.
-  if (y2+1 <= widget->rc->y2-1) {
-    rectfill(ji_screen, x1, y2+1, x2, widget->rc->y2-1,
+  if (y2+1 <= this->rc->y2-1) {
+    rectfill(ji_screen, x1, y2+1, x2, this->rc->y2-1,
 	     theme->get_editor_face_color());
     rectfill(ji_screen,
-	     x2+1+anieditor->separator_w, y2+1,
-	     widget->rc->x2-1, widget->rc->y2-1,
+	     x2+1+m_separator_w, y2+1,
+	     this->rc->x2-1, this->rc->y2-1,
 	     theme->get_editor_face_color());
   }
 }
 
-static void anieditor_draw_cel(JWidget widget, JRect clip, int layer_index, int frame)
+void AnimationEditor::drawCel(JRect clip, int layer_index, int frame)
 {
-  SkinTheme* theme = static_cast<SkinTheme*>(widget->getTheme());
-  AniEditor* anieditor = anieditor_data(widget);
-  Layer *layer = anieditor->layers[layer_index];
-  bool selected_layer = (layer == anieditor->sprite->getCurrentLayer());
-  bool is_hot = (anieditor->hot_part == A_PART_CEL &&
-		 anieditor->hot_layer == layer_index &&
-		 anieditor->hot_frame == frame);
-  bool is_clk = (anieditor->clk_part == A_PART_CEL &&
-		 anieditor->clk_layer == layer_index &&
-		 anieditor->clk_frame == frame);
+  SkinTheme* theme = static_cast<SkinTheme*>(this->getTheme());
+  Layer *layer = m_layers[layer_index];
+  bool selected_layer = (layer == m_sprite->getCurrentLayer());
+  bool is_hot = (m_hot_part == A_PART_CEL &&
+		 m_hot_layer == layer_index &&
+		 m_hot_frame == frame);
+  bool is_clk = (m_clk_part == A_PART_CEL &&
+		 m_clk_layer == layer_index &&
+		 m_clk_frame == frame);
   int bg = is_hot ? ji_color_hotface():
 		    ji_color_face();
   int x1, y1, x2, y2;
@@ -1185,24 +1153,24 @@ static void anieditor_draw_cel(JWidget widget, JRect clip, int layer_index, int 
 
   get_clip_rect(ji_screen, &cx1, &cy1, &cx2, &cy2);
 
-  x1 = widget->rc->x1 + anieditor->separator_x + anieditor->separator_w
-    + FRMSIZE*frame - anieditor->scroll_x;
-  y1 = widget->rc->y1 + HDRSIZE
-    + LAYSIZE*layer_index - anieditor->scroll_y;
+  x1 = this->rc->x1 + m_separator_x + m_separator_w
+    + FRMSIZE*frame - m_scroll_x;
+  y1 = this->rc->y1 + HDRSIZE
+    + LAYSIZE*layer_index - m_scroll_y;
   x2 = x1 + FRMSIZE - 1;
   y2 = y1 + LAYSIZE - 1;
 
   add_clip_rect(ji_screen,
-		widget->rc->x1 + anieditor->separator_x + anieditor->separator_w,
-		widget->rc->y1 + HDRSIZE,
-		widget->rc->x2-1,
-		widget->rc->y2-1);
+		this->rc->x1 + m_separator_x + m_separator_w,
+		this->rc->y1 + HDRSIZE,
+		this->rc->x2-1,
+		this->rc->y2-1);
 
   Rect thumbnail_rect(Point(x1+3, y1+3), Point(x2-2, y2-2));
 
-  /* draw the box for the cel */
-  if (selected_layer && frame == anieditor->sprite->getCurrentFrame()) {
-    /* current cel */
+  // Draw the box for the cel.
+  if (selected_layer && frame == m_sprite->getCurrentFrame()) {
+    // Current cel.
     if (is_hot)
       jrectedge(ji_screen, x1, y1, x2, y2-1,
 		ji_color_facelight(), ji_color_faceshadow());
@@ -1223,19 +1191,19 @@ static void anieditor_draw_cel(JWidget widget, JRect clip, int layer_index, int 
   }
   hline(ji_screen, x1, y2, x2, ji_color_foreground());
 
-  /* get the cel of this layer in this frame */
+  // Get the cel of this layer in this frame.
   cel = layer->is_image() ? static_cast<LayerImage*>(layer)->getCel(frame): NULL;
 
-  /* empty cel? */
+  // Empty cel?.
   if (cel == NULL ||
       // TODO why a cel can't have an associated image?
-      anieditor->sprite->getStock()->getImage(cel->image) == NULL) {
+      m_sprite->getStock()->getImage(cel->image) == NULL) {
 
     jdraw_rectfill(thumbnail_rect, bg);
     draw_emptyset_symbol(ji_screen, thumbnail_rect, ji_color_disabled());
   }
   else {
-    thumbnail = generate_thumbnail(layer, cel, anieditor->sprite);
+    thumbnail = generate_thumbnail(layer, cel, m_sprite);
     if (thumbnail != NULL) {
       stretch_blit(thumbnail, ji_screen,
 		   0, 0, thumbnail->w, thumbnail->h,
@@ -1244,10 +1212,10 @@ static void anieditor_draw_cel(JWidget widget, JRect clip, int layer_index, int 
     }
   }
 
-  /* if this cel is hot and other cel was clicked, we have to draw
-     some indicators to show that the user can move cels */
+  // If this cel is hot and other cel was clicked, we have to draw
+  // some indicators to show that the user can move cels.
   if (is_hot && !is_clk &&
-      anieditor->clk_part == A_PART_CEL) {
+      m_clk_part == A_PART_CEL) {
     rectfill(ji_screen, x1+1, y1+1, x1+FRMSIZE/3, y1+4, ji_color_selected());
     rectfill(ji_screen, x1+1, y1+5, x1+4, y1+FRMSIZE/3, ji_color_selected());
 
@@ -1261,13 +1229,13 @@ static void anieditor_draw_cel(JWidget widget, JRect clip, int layer_index, int 
     rectfill(ji_screen, x2-4, y2-FRMSIZE/3, x2-1, y2-5, ji_color_selected());
   }
 
-  /* padding in the right side */
-  if (frame == anieditor->sprite->getTotalFrames()-1) {
-    if (x2+1 <= widget->rc->x2-1) {
-      /* right side */
+  // Padding in the right side.
+  if (frame == m_sprite->getTotalFrames()-1) {
+    if (x2+1 <= this->rc->x2-1) {
+      // Right side.
       vline(ji_screen, x2+1, y1, y2, ji_color_foreground());
-      if (x2+2 <= widget->rc->x2-1)
-	rectfill(ji_screen, x2+2, y1, widget->rc->x2-1, y2,
+      if (x2+2 <= this->rc->x2-1)
+	rectfill(ji_screen, x2+2, y1, this->rc->x2-1, y2,
 		 theme->get_editor_face_color());
     }
   }
@@ -1275,38 +1243,36 @@ static void anieditor_draw_cel(JWidget widget, JRect clip, int layer_index, int 
   set_clip_rect(ji_screen, cx1, cy1, cx2, cy2);
 }
 
-static bool anieditor_draw_part(JWidget widget, int part, int layer, int frame)
+bool AnimationEditor::drawPart(int part, int layer, int frame)
 {
-  AniEditor* anieditor = anieditor_data(widget);
-
   switch (part) {
     case A_PART_NOTHING:
-      /* do nothing */
+      // Do nothing.
       return true;
     case A_PART_SEPARATOR:
-      anieditor_draw_separator(widget, widget->rc);
+      drawSeparator(this->rc);
       return true;
     case A_PART_HEADER_LAYER:
-      anieditor_draw_header(widget, widget->rc);
+      drawHeader(this->rc);
       return true;
     case A_PART_HEADER_FRAME:
-      if (frame >= 0 && frame < anieditor->sprite->getTotalFrames()) {
-	anieditor_draw_header_frame(widget, widget->rc, frame);
+      if (frame >= 0 && frame < m_sprite->getTotalFrames()) {
+	drawHeaderFrame(this->rc, frame);
 	return true;
       }
       break;
     case A_PART_LAYER:
     case A_PART_LAYER_EYE_ICON:
     case A_PART_LAYER_LOCK_ICON:
-      if (layer >= 0 && layer < anieditor->nlayers) {
-	anieditor_draw_layer(widget, widget->rc, layer);
+      if (layer >= 0 && layer < m_nlayers) {
+	drawLayer(this->rc, layer);
 	return true;
       }
       break;
     case A_PART_CEL:
-      if (layer >= 0 && layer < anieditor->nlayers &&
-	  frame >= 0 && frame < anieditor->sprite->getTotalFrames()) {
-	anieditor_draw_cel(widget, widget->rc, layer, frame);
+      if (layer >= 0 && layer < m_nlayers &&
+	  frame >= 0 && frame < m_sprite->getTotalFrames()) {
+	drawCel(this->rc, layer, frame);
 	return true;
       }
       break;
@@ -1315,127 +1281,125 @@ static bool anieditor_draw_part(JWidget widget, int part, int layer, int frame)
   return false;
 }
 
-static void anieditor_regenerate_layers(JWidget widget)
+void AnimationEditor::regenerateLayers()
 {
-  AniEditor* anieditor = anieditor_data(widget);
   int c;
 
-  if (anieditor->layers != NULL) {
-    base_free(anieditor->layers);
-    anieditor->layers = NULL;
+  if (m_layers != NULL) {
+    base_free(m_layers);
+    m_layers = NULL;
   }
 
-  anieditor->nlayers = anieditor->sprite->countLayers();
+  m_nlayers = m_sprite->countLayers();
 
-  /* here we build an array with all the layers */
-  if (anieditor->nlayers > 0) {
-    anieditor->layers = (Layer**)base_malloc(sizeof(Layer*) * anieditor->nlayers);
+  // Here we build an array with all the layers.
+  if (m_nlayers > 0) {
+    m_layers = (Layer**)base_malloc(sizeof(Layer*) * m_nlayers);
 
-    for (c=0; c<anieditor->nlayers; c++)
-      anieditor->layers[c] = (Layer*)anieditor->sprite->indexToLayer(anieditor->nlayers-c-1);
+    for (c=0; c<m_nlayers; c++)
+      m_layers[c] = (Layer*)m_sprite->indexToLayer(m_nlayers-c-1);
   }
 }
 
-static void anieditor_hot_this(JWidget widget, int hot_part, int hot_layer, int hot_frame)
+void AnimationEditor::hotThis(int hot_part, int hot_layer, int hot_frame)
 {
-  AniEditor* anieditor = anieditor_data(widget);
   int old_hot_part;
 
-  /* if the part, layer or frame change */
-  if (hot_part != anieditor->hot_part ||
-      hot_layer != anieditor->hot_layer ||
-      hot_frame != anieditor->hot_frame) {
+  // If the part, layer or frame change.
+  if (hot_part != m_hot_part ||
+      hot_layer != m_hot_layer ||
+      hot_frame != m_hot_frame) {
     jmouse_hide();
 
-    /* clean the old 'hot' thing */
-    old_hot_part = anieditor->hot_part;
-    anieditor->hot_part = A_PART_NOTHING;
+    // Clean the old 'hot' thing.
+    old_hot_part = m_hot_part;
+    m_hot_part = A_PART_NOTHING;
 
-    anieditor_draw_part(widget,
-			old_hot_part,
-			anieditor->hot_layer,
-			anieditor->hot_frame);
+    drawPart(old_hot_part,
+	     m_hot_layer,
+	     m_hot_frame);
 
-    /* draw the new 'hot' thing */
-    anieditor->hot_part = hot_part;
-    anieditor->hot_layer = hot_layer;
-    anieditor->hot_frame = hot_frame;
+    // Draw the new 'hot' thing.
+    m_hot_part = hot_part;
+    m_hot_layer = hot_layer;
+    m_hot_frame = hot_frame;
 
-    if (!anieditor_draw_part(widget, hot_part, hot_layer, hot_frame)) {
-      anieditor->hot_part = A_PART_NOTHING;
+    if (!drawPart(hot_part, hot_layer, hot_frame)) {
+      m_hot_part = A_PART_NOTHING;
     }
 
     jmouse_show();
   }
 }
 
-static void anieditor_center_cel(JWidget widget, int layer, int frame)
+void AnimationEditor::centerCel(int layer, int frame)
 {
-  AniEditor* anieditor = anieditor_data(widget);
-  int target_x = (widget->rc->x1 + anieditor->separator_x + anieditor->separator_w + widget->rc->x2)/2 - FRMSIZE/2;
-  int target_y = (widget->rc->y1 + HDRSIZE + widget->rc->y2)/2 - LAYSIZE/2;
-  int scroll_x = widget->rc->x1 + anieditor->separator_x + anieditor->separator_w + FRMSIZE*frame - target_x;
-  int scroll_y = widget->rc->y1 + HDRSIZE + LAYSIZE*layer - target_y;
+  int target_x = (this->rc->x1 + m_separator_x + m_separator_w + this->rc->x2)/2 - FRMSIZE/2;
+  int target_y = (this->rc->y1 + HDRSIZE + this->rc->y2)/2 - LAYSIZE/2;
+  int scroll_x = this->rc->x1 + m_separator_x + m_separator_w + FRMSIZE*frame - target_x;
+  int scroll_y = this->rc->y1 + HDRSIZE + LAYSIZE*layer - target_y;
 
-  anieditor_set_scroll(widget, scroll_x, scroll_y, false);
+  setScroll(scroll_x, scroll_y, false);
 }
 
-static void anieditor_show_cel(JWidget widget, int layer, int frame)
+void AnimationEditor::showCel(int layer, int frame)
 {
-  AniEditor* anieditor = anieditor_data(widget);
   int scroll_x, scroll_y;
   int x1, y1, x2, y2;
 
-  x1 = widget->rc->x1 + anieditor->separator_x + anieditor->separator_w + FRMSIZE*frame - anieditor->scroll_x;
-  y1 = widget->rc->y1 + HDRSIZE + LAYSIZE*layer - anieditor->scroll_y;
+  x1 = this->rc->x1 + m_separator_x + m_separator_w + FRMSIZE*frame - m_scroll_x;
+  y1 = this->rc->y1 + HDRSIZE + LAYSIZE*layer - m_scroll_y;
   x2 = x1 + FRMSIZE - 1;
   y2 = y1 + LAYSIZE - 1;
 
-  scroll_x = anieditor->scroll_x;
-  scroll_y = anieditor->scroll_y;
+  scroll_x = m_scroll_x;
+  scroll_y = m_scroll_y;
 
-  if (x1 < widget->rc->x1 + anieditor->separator_x + anieditor->separator_w) {
-    scroll_x -= (widget->rc->x1 + anieditor->separator_x + anieditor->separator_w) - (x1);
+  if (x1 < this->rc->x1 + m_separator_x + m_separator_w) {
+    scroll_x -= (this->rc->x1 + m_separator_x + m_separator_w) - (x1);
   }
-  else if (x2 > widget->rc->x2-1) {
-    scroll_x += (x2) - (widget->rc->x2-1);
-  }
-
-  if (y1 < widget->rc->y1 + HDRSIZE) {
-    scroll_y -= (widget->rc->y1 + HDRSIZE) - (y1);
-  }
-  else if (y2 > widget->rc->y2-1) {
-    scroll_y += (y2) - (widget->rc->y2-1);
+  else if (x2 > this->rc->x2-1) {
+    scroll_x += (x2) - (this->rc->x2-1);
   }
 
-  if (scroll_x != anieditor->scroll_x ||
-      scroll_y != anieditor->scroll_y)
-    anieditor_set_scroll(widget, scroll_x, scroll_y, true);
+  if (y1 < this->rc->y1 + HDRSIZE) {
+    scroll_y -= (this->rc->y1 + HDRSIZE) - (y1);
+  }
+  else if (y2 > this->rc->y2-1) {
+    scroll_y += (y2) - (this->rc->y2-1);
+  }
+
+  if (scroll_x != m_scroll_x ||
+      scroll_y != m_scroll_y)
+    setScroll(scroll_x, scroll_y, true);
 }
 
-static void anieditor_show_current_cel(JWidget widget)
+void AnimationEditor::centerCurrentCel()
 {
-  AniEditor* anieditor = anieditor_data(widget);
-  int layer = anieditor_get_layer_index(widget, anieditor->sprite->getCurrentLayer());
+  int layer = getLayerIndex(m_sprite->getCurrentLayer());
   if (layer >= 0)
-    anieditor_show_cel(widget, layer, anieditor->sprite->getCurrentFrame());
+    centerCel(layer, m_sprite->getCurrentFrame());
 }
 
-static void anieditor_clean_clk(JWidget widget)
+void AnimationEditor::showCurrentCel()
 {
-  AniEditor* anieditor = anieditor_data(widget);
-  int clk_part = anieditor->clk_part;
-  anieditor->clk_part = A_PART_NOTHING;
+  int layer = getLayerIndex(m_sprite->getCurrentLayer());
+  if (layer >= 0)
+    showCel(layer, m_sprite->getCurrentFrame());
+}
+
+void AnimationEditor::cleanClk()
+{
+  int clk_part = m_clk_part;
+  m_clk_part = A_PART_NOTHING;
   
-  anieditor_draw_part(widget,
-		      clk_part,
-		      anieditor->clk_layer,
-		      anieditor->clk_frame);
+  drawPart(clk_part,
+	   m_clk_layer,
+	   m_clk_frame);
 }
 
-static void anieditor_set_scroll(JWidget widget, int x, int y, bool use_refresh_region)
+void AnimationEditor::setScroll(int x, int y, bool use_refresh_region)
 {
-  AniEditor* anieditor = anieditor_data(widget);
   int old_scroll_x = 0;
   int old_scroll_y = 0;
   int max_scroll_x;
@@ -1443,22 +1407,22 @@ static void anieditor_set_scroll(JWidget widget, int x, int y, bool use_refresh_
   JRegion region = NULL;
 
   if (use_refresh_region) {
-    region = jwidget_get_drawable_region(widget, JI_GDR_CUTTOPWINDOWS);
-    old_scroll_x = anieditor->scroll_x;
-    old_scroll_y = anieditor->scroll_y;
+    region = jwidget_get_drawable_region(this, JI_GDR_CUTTOPWINDOWS);
+    old_scroll_x = m_scroll_x;
+    old_scroll_y = m_scroll_y;
   }
 
-  max_scroll_x = anieditor->sprite->getTotalFrames() * FRMSIZE - jrect_w(widget->rc)/2;
-  max_scroll_y = anieditor->nlayers * LAYSIZE - jrect_h(widget->rc)/2;
+  max_scroll_x = m_sprite->getTotalFrames() * FRMSIZE - jrect_w(this->rc)/2;
+  max_scroll_y = m_nlayers * LAYSIZE - jrect_h(this->rc)/2;
   max_scroll_x = MAX(0, max_scroll_x);
   max_scroll_y = MAX(0, max_scroll_y);
 
-  anieditor->scroll_x = MID(0, x, max_scroll_x);
-  anieditor->scroll_y = MID(0, y, max_scroll_y);
+  m_scroll_x = MID(0, x, max_scroll_x);
+  m_scroll_y = MID(0, y, max_scroll_y);
 
   if (use_refresh_region) {
-    int new_scroll_x = anieditor->scroll_x;
-    int new_scroll_y = anieditor->scroll_y;
+    int new_scroll_x = m_scroll_x;
+    int new_scroll_y = m_scroll_y;
     int dx = old_scroll_x - new_scroll_x;
     int dy = old_scroll_y - new_scroll_y;
     JRegion reg1 = jregion_new(NULL, 0);
@@ -1467,38 +1431,38 @@ static void anieditor_set_scroll(JWidget widget, int x, int y, bool use_refresh_
 
     jmouse_hide();
 
-    /* scroll layers */
+    // Scroll layers.
     jrect_replace(rect2,
-		  widget->rc->x1,
-		  widget->rc->y1 + HDRSIZE,
-		  widget->rc->x1 + anieditor->separator_x,
-		  widget->rc->y2);
+		  this->rc->x1,
+		  this->rc->y1 + HDRSIZE,
+		  this->rc->x1 + m_separator_x,
+		  this->rc->y2);
     jregion_reset(reg2, rect2);
     jregion_copy(reg1, region);
     jregion_intersect(reg1, reg1, reg2);
-    jwidget_scroll(widget, reg1, 0, dy);
+    jwidget_scroll(this, reg1, 0, dy);
 
-    /* scroll header-frame */
+    // Scroll header-frame.
     jrect_replace(rect2,
-		  widget->rc->x1 + anieditor->separator_x + anieditor->separator_w,
-		  widget->rc->y1,
-		  widget->rc->x2,
-		  widget->rc->y1 + HDRSIZE);
+		  this->rc->x1 + m_separator_x + m_separator_w,
+		  this->rc->y1,
+		  this->rc->x2,
+		  this->rc->y1 + HDRSIZE);
     jregion_reset(reg2, rect2);
     jregion_copy(reg1, region);
     jregion_intersect(reg1, reg1, reg2);
-    jwidget_scroll(widget, reg1, dx, 0);
+    jwidget_scroll(this, reg1, dx, 0);
 
-    /* scroll cels */
+    // Scroll cels.
     jrect_replace(rect2,
-		  widget->rc->x1 + anieditor->separator_x + anieditor->separator_w,
-		  widget->rc->y1 + HDRSIZE,
-		  widget->rc->x2,
-		  widget->rc->y2);
+		  this->rc->x1 + m_separator_x + m_separator_w,
+		  this->rc->y1 + HDRSIZE,
+		  this->rc->x2,
+		  this->rc->y2);
     jregion_reset(reg2, rect2);
     jregion_copy(reg1, region);
     jregion_intersect(reg1, reg1, reg2);
-    jwidget_scroll(widget, reg1, dx, dy);
+    jwidget_scroll(this, reg1, dx, dy);
 
     jmouse_show();
 
@@ -1509,13 +1473,12 @@ static void anieditor_set_scroll(JWidget widget, int x, int y, bool use_refresh_
   }
 }
 
-static int anieditor_get_layer_index(JWidget widget, const Layer* layer)
+int AnimationEditor::getLayerIndex(const Layer* layer)
 {
-  AniEditor* anieditor = anieditor_data(widget);
   int i;
 
-  for (i=0; i<anieditor->nlayers; i++)
-    if (anieditor->layers[i] == layer)
+  for (i=0; i<m_nlayers; i++)
+    if (m_layers[i] == layer)
       return i;
 
   return -1;
