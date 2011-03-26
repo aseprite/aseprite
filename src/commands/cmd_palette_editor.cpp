@@ -667,6 +667,7 @@ void PaletteEntryEditor::updateCurrentSpritePalette(const char* operationName)
 	// Add undo information to save the range of pal entries that will be modified.
 	if (undo->isEnabled()) {
 	  undo->setLabel(operationName);
+	  undo->setModification(undo::ModifyDocument);
 	  undo->undo_set_palette_colors(sprite, currentSpritePalette, from, to);
 	}
 

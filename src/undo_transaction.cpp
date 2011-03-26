@@ -34,7 +34,7 @@
 #include "raster/stock.h"
 #include "undo/undo_history.h"
 
-UndoTransaction::UndoTransaction(Document* document, const char* label)
+UndoTransaction::UndoTransaction(Document* document, const char* label, undo::Modification modification)
 {
   ASSERT(label != NULL);
 
@@ -46,6 +46,7 @@ UndoTransaction::UndoTransaction(Document* document, const char* label)
 
   if (isEnabled()) {
     m_undoHistory->setLabel(label);
+    m_undoHistory->setModification(modification);
     m_undoHistory->undo_open();
   }
 }

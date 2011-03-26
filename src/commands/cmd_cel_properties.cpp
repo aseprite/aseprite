@@ -141,6 +141,7 @@ void CelPropertiesCommand::onExecute(Context* context)
 	cel_writer->opacity != new_opacity) {
       if (undo->isEnabled()) {
 	undo->setLabel("Cel Opacity Change");
+	undo->setModification(undo::ModifyDocument);
 	undo->undo_int(cel_writer, &cel_writer->opacity);
       }
 

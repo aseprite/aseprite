@@ -81,6 +81,7 @@ void InvertMaskCommand::onExecute(Context* context)
     /* undo */
     if (undo->isEnabled()) {
       undo->setLabel("Mask Invert");
+      undo->setModification(undo::DoesntModifyDocument);
       undo->undo_set_mask(document);
     }
 

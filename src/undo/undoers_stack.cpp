@@ -50,7 +50,8 @@ void UndoersStack::pushUndoer(Undoer* undoer)
   ASSERT(undoer != NULL);
 
   try {
-    Item* item = new Item(m_undoHistory->getLabel(), undoer);
+    Item* item = new Item(m_undoHistory->getLabel(),
+			  m_undoHistory->getModification(), undoer);
     try {
       m_items.insert(begin(), item);
     }

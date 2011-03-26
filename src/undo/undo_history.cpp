@@ -23,6 +23,7 @@ UndoHistory::UndoHistory(ObjectsContainer* objects)
   m_diffSaved = 0;
   m_enabled = true;
   m_label = NULL;
+  m_modification = ModifyDocument;
 
   m_undoers = new UndoersStack(this);
   try {
@@ -86,6 +87,16 @@ void UndoHistory::setLabel(const char* label)
   m_label = label;
 }
 
+Modification UndoHistory::getModification()
+{
+  return m_modification;
+}
+
+void UndoHistory::setModification(Modification mod)
+{
+  m_modification = mod;
+}
+
 const char* UndoHistory::getNextUndoLabel() const
 {
   ASSERT(canUndo());
@@ -120,8 +131,13 @@ void UndoHistory::runUndo(Direction direction)
 
   do {
     const char* itemLabel = NULL;
-    if (!undoers->empty())
-      itemLabel = (*undoers->begin())->getLabel();
+    Modification itemModification = DoesntModifyDocument;
+
+    if (!undoers->empty()) {
+      UndoersStack::Item* item = *undoers->begin();
+      itemLabel = item->getLabel();
+      itemModification = item->getModification();
+    }
 
     Undoer* undoer = undoers->popUndoer(UndoersStack::PopFromHead);
     if (!undoer)
@@ -138,10 +154,12 @@ void UndoHistory::runUndo(Direction direction)
     // Delete the undoer
     undoer->dispose();
 
-    if (direction == UndoDirection)
-      m_diffCount--;
-    else if (direction == RedoDirection)
-      m_diffCount++;
+    if (itemModification == ModifyDocument) {
+      if (direction == UndoDirection)
+	m_diffCount--;
+      else if (direction == RedoDirection)
+	m_diffCount++;
+    }
   } while (level);
 }
 
@@ -176,7 +194,8 @@ void UndoHistory::pushUndoer(Undoer* undoer)
   int undo_size_limit = (int)get_config_int("Options", "UndoSizeLimit", 8)*1024*1024;
 
   // More differences.
-  m_diffCount++;
+  if (m_modification == ModifyDocument)
+    m_diffCount++;
 
   // Reset the "redo" stack.
   clearRedo();

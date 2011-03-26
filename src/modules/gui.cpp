@@ -456,6 +456,9 @@ void update_screen_for_document(const Document* document)
       // If it's the same palette update only the editors with the sprite.
       update_editors_with_document(document);
     }
+
+    // Update the tabs (maybe the modified status has been changed).
+    app_update_document_tab(document);
   }
 }
 

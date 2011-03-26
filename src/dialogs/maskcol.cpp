@@ -134,6 +134,7 @@ void dialogs_mask_color(Document* document)
     /* undo */
     if (undo->isEnabled()) {
       undo->setLabel("Mask by Color");
+      undo->setModification(undo::DoesntModifyDocument);
       undo->undo_set_mask(document);
     }
 

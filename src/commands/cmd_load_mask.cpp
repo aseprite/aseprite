@@ -88,6 +88,7 @@ void LoadMaskCommand::onExecute(Context* context)
   // Add the mask change into the undo history.
   if (undo->isEnabled()) {
     undo->setLabel("Mask Load");
+    undo->setModification(undo::DoesntModifyDocument);
     undo->undo_set_mask(document);
   }
 

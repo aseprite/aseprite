@@ -84,6 +84,7 @@ void MergeDownLayerCommand::onExecute(Context* context)
 
   if (undo->isEnabled()) {
     undo->setLabel("Merge Down Layer");
+    undo->setModification(undo::ModifyDocument);
     undo->undo_open();
   }
 

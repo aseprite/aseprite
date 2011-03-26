@@ -56,7 +56,7 @@ void DeselectMaskCommand::onExecute(Context* context)
 {
   ActiveDocumentWriter document(context);
   {
-    UndoTransaction undoTransaction(document, "Mask Deselection");
+    UndoTransaction undoTransaction(document, "Mask Deselection", undo::DoesntModifyDocument);
     undoTransaction.deselectMask();
     undoTransaction.commit();
   }

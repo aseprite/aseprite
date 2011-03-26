@@ -156,6 +156,7 @@ int interactive_move_layer(int mode, bool use_undo, int (*callback)())
   if (!editor->editor_click_cancel()) {
     if (use_undo && undo->isEnabled()) {
       undo->setLabel("Cel Movement");
+      undo->setModification(undo::ModifyDocument);
       undo->undo_open();
       undo->undo_int(cel, &cel->x);
       undo->undo_int(cel, &cel->y);

@@ -72,6 +72,7 @@ void move_cel(DocumentWriter& document)
 
   if (undo->isEnabled()) {
     undo->setLabel("Move Cel");
+    undo->setModification(undo::ModifyDocument);
     undo->undo_open();
 
     undo->undo_set_layer(sprite);
@@ -161,6 +162,7 @@ void copy_cel(DocumentWriter& document)
 
   if (undo->isEnabled()) {
     undo->setLabel("Move Cel");
+    undo->setModification(undo::ModifyDocument);
     undo->undo_open();
 
     undo->undo_set_layer(sprite);

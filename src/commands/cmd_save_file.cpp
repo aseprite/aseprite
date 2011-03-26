@@ -139,6 +139,10 @@ static void save_document_in_background(Document* document, bool mark_as_saved)
   delete data->progress;
   fop_free(fop);
   delete data;
+
+  // Update the tab for the document. In this moment, the document is
+  // already marked as saved, so the * is not shown in the tab.
+  app_update_document_tab(document);
 }
 
 /*********************************************************************/
@@ -179,9 +183,10 @@ static void save_as_dialog(Document* document, const char* dlg_title, bool mark_
     /* "no": we must back to select other file-name */
   }
 
+  // Change the document file name
   document->setFilename(filename.c_str());
-  app_rebuild_documents_tabs();
 
+  // Save the document
   save_document_in_background(document, mark_as_saved);
 }
 
@@ -305,7 +310,6 @@ void SaveFileCopyAsCommand::onExecute(Context* context)
 
   // Restore the file name.
   document->setFilename(old_filename.c_str());
-  app_rebuild_documents_tabs();
 }
 
 //////////////////////////////////////////////////////////////////////

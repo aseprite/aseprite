@@ -20,6 +20,7 @@
 #define UNDO_TRANSACTION_H_INCLUDED
 
 #include "raster/dithering_method.h"
+#include "undo/modification.h"
 
 class Cel;
 class Document;
@@ -55,7 +56,7 @@ public:
   // Starts a undoable sequence of operations in a transaction that
   // can be committed or rollbacked.  All the operations will be
   // grouped in the sprite's undo as an atomic operation.
-  UndoTransaction(Document* document, const char* label);
+  UndoTransaction(Document* document, const char* label, undo::Modification mod = undo::ModifyDocument);
   virtual ~UndoTransaction();
 
   inline Sprite* getSprite() const { return m_sprite;  }

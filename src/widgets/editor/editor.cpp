@@ -1900,8 +1900,17 @@ public:
     m_offset.y = -y1;
 
     // Set undo label for any kind of undo used in the whole loop
-    if (m_document->getUndoHistory()->isEnabled())
+    if (m_document->getUndoHistory()->isEnabled()) {
       m_document->getUndoHistory()->setLabel(m_tool->getText().c_str());
+
+      if (getInk()->isSelection() ||
+	  getInk()->isEyedropper() ||
+	  getInk()->isScrollMovement()) {
+	m_document->getUndoHistory()->setModification(undo::DoesntModifyDocument);
+      }
+      else
+	m_document->getUndoHistory()->setModification(undo::ModifyDocument);
+    }
   }
 
   ~ToolLoopImpl()

@@ -64,6 +64,7 @@ void ReselectMaskCommand::onExecute(Context* context)
   // Undo
   if (undo->isEnabled()) {
     undo->setLabel("Mask Reselection");
+    undo->setModification(undo::DoesntModifyDocument);
     undo->undo_set_mask(document);
   }
 

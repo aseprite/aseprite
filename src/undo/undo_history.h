@@ -7,6 +7,7 @@
 #ifndef UNDO_UNDO_HISTORY_H_INCLUDED
 #define UNDO_UNDO_HISTORY_H_INCLUDED
 
+#include "undo/modification.h"
 #include "undo/undoers_collector.h"
 
 #include <vector>
@@ -45,8 +46,15 @@ public:
 
   void clearRedo();
 
+  // Current label for next added Undoers.
   const char* getLabel();
   void setLabel(const char* label);
+
+  // Change the "modify saved status" flag to be assigned for next
+  // added items. When it is activated means that each added Undoer
+  // modifies the "saved status" of the document.
+  Modification getModification();
+  void setModification(Modification mod);
 
   const char* getNextUndoLabel() const;
   const char* getNextRedoLabel() const;
@@ -109,6 +117,7 @@ private:
   int m_diffSaved;
   bool m_enabled;		// Is undo enabled?
   const char* m_label;		// Current label to be applied to all next undo operations.
+  Modification m_modification;  // Current label to be applied to all next undo operations.
 };
 
 } // namespace undo

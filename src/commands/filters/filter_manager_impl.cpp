@@ -208,6 +208,7 @@ void FilterManagerImpl::apply()
     // Undo stuff
     if (undo->isEnabled()) {
       undo->setLabel(m_filter->getName());
+      undo->setModification(undo::ModifyDocument);
       undo->undo_image(m_src, m_x, m_y, m_w, m_h);
     }
 

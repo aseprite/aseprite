@@ -62,6 +62,7 @@ void MaskAllCommand::onExecute(Context* context)
   // Undo
   if (undo->isEnabled()) {
     undo->setLabel("Mask All");
+    undo->setModification(undo::DoesntModifyDocument);
     undo->undo_set_mask(document);
   }
 

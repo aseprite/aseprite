@@ -378,9 +378,20 @@ void app_rebuild_documents_tabs()
   // Insert all other sprites
   for (Documents::const_iterator
 	 it = docs.begin(), end = docs.end(); it != end; ++it) {
-    Document* document = *it;
-    tabsbar->setTabText(get_filename(document->getFilename()), document);
+    const Document* document = *it;
+    app_update_document_tab(document);
   }
+}
+
+void app_update_document_tab(const Document* document)
+{
+  std::string str = get_filename(document->getFilename());
+
+  // Add an asterisk if the document is modified.
+  if (document->isModified())
+    str += "*";
+
+  tabsbar->setTabText(str.c_str(), const_cast<Document*>(document));
 }
 
 /**
