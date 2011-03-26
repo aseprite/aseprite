@@ -193,16 +193,7 @@ const Cel* LayerImage::getCel(int frame) const
 
 Cel* LayerImage::getCel(int frame)
 {
-  CelIterator it = getCelBegin();
-  CelIterator end = getCelEnd();
-
-  for (; it != end; ++it) {
-    Cel* cel = *it;
-    if (cel->frame == frame)
-      return cel;
-  }
-
-  return NULL;
+  return const_cast<Cel*>(static_cast<const LayerImage*>(this)->getCel(frame));
 }
 
 /**
