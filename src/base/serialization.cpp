@@ -8,6 +8,8 @@
 
 #include "base/serialization.h"
 
+#include <iostream>
+
 namespace base {
 namespace serialization {
 

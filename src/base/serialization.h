@@ -7,10 +7,9 @@
 #ifndef BASE_SERIALIZATION_H_INCLUDED
 #define BASE_SERIALIZATION_H_INCLUDED
 
-#include <iostream>
+#include <iosfwd>
 
 namespace base {
-
 namespace serialization {
 
   std::ostream& write8(std::ostream& os, uint8_t byte);
@@ -35,7 +34,6 @@ namespace serialization {
   } // big_endian namespace
 
 } // serialization namespace
-
 } // base namespace
 
 #endif
