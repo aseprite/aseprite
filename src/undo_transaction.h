@@ -93,10 +93,7 @@ public:
   void backgroundFromLayer(LayerImage* layer, int bgcolor);
   void layerFromBackground();
   void flattenLayers(int bgcolor);
-private:
-  void configureLayerAsBackground(LayerImage* layer);
 
-public:
   // for frames
   void newFrame();
   void newFrameForLayer(Layer* layer, int frame);
@@ -129,9 +126,14 @@ public:
   void deselectMask();
 
 private:
+  void configureLayerAsBackground(LayerImage* layer);
+  void closeUndoGroup();
+  void rollback();
+
   Document* m_document;
   Sprite* m_sprite;
   undo::UndoHistory* m_undoHistory;
+  bool m_closed;
   bool m_committed;
   bool m_enabledFlag;
 };

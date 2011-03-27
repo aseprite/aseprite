@@ -41,6 +41,7 @@ UndoTransaction::UndoTransaction(Document* document, const char* label, undo::Mo
   m_document = document;
   m_sprite = document->getSprite();
   m_undoHistory = document->getUndoHistory();
+  m_closed = false;
   m_committed = false;
   m_enabledFlag = m_undoHistory->isEnabled();
 
@@ -53,25 +54,61 @@ UndoTransaction::UndoTransaction(Document* document, const char* label, undo::Mo
 
 UndoTransaction::~UndoTransaction()
 {
+  try {
+    if (isEnabled()) {
+      // If it isn't committed, we have to rollback all changes.
+      if (!m_committed && !m_closed)
+	rollback();
+
+      ASSERT(m_closed);
+    }
+  }
+  catch (...) {
+    // Just avoid throwing an exception in the dtor (just in case
+    // rollback() failed).
+
+    // TODO logging error
+  }
+}
+
+void UndoTransaction::closeUndoGroup()
+{
+  ASSERT(!m_closed);
+
   if (isEnabled()) {
     // Close the undo information.
     m_undoHistory->undo_close();
-
-    // If it isn't committed, we have to rollback all changes.
-    if (!m_committed) {
-      // Undo the group of operations.
-      m_undoHistory->doUndo();
-
-      // Clear the redo (sorry to the user, here we lost the old redo
-      // information).
-      m_undoHistory->clearRedo();
-    }
+    m_closed = true;
   }
 }
 
 void UndoTransaction::commit()
 {
-  m_committed = true;
+  ASSERT(!m_closed);
+  ASSERT(!m_committed);
+
+  if (isEnabled()) {
+    closeUndoGroup();
+
+    m_committed = true;
+  }
+}
+
+void UndoTransaction::rollback()
+{
+  ASSERT(!m_closed);
+  ASSERT(!m_committed);
+
+  if (isEnabled()) {
+    closeUndoGroup();
+
+    // Undo the group of operations.
+    m_undoHistory->doUndo();
+
+    // Clear the redo (sorry to the user, here we lost the old redo
+    // information).
+    m_undoHistory->clearRedo();
+  }
 }
 
 void UndoTransaction::setNumberOfFrames(int frames)
