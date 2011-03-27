@@ -16,34 +16,30 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#include "config.h"
+#ifndef UNDOERS_SET_SPRITE_IMGTYPE_H_INCLUDED
+#define UNDOERS_SET_SPRITE_IMGTYPE_H_INCLUDED
 
-#include "undoers/set_imgtype.h"
+#include "undo/object_id.h"
+#include "undoers/undoer_base.h"
 
-#include "raster/sprite.h"
-#include "undo/objects_container.h"
-#include "undo/undoers_collector.h"
+class Sprite;
 
-using namespace undo;
-using namespace undoers;
+namespace undoers {
 
-SetImgType::SetImgType(ObjectsContainer* objects, Sprite* sprite)
-  : m_spriteId(objects->addObject(sprite))
-  , m_imgtype(sprite->getImgType())
+class SetSpriteImgType : public UndoerBase
 {
-}
+public:
+  SetSpriteImgType(undo::ObjectsContainer* objects, Sprite* sprite);
 
-void SetImgType::dispose()
-{
-  delete this;
-}
+  void dispose() OVERRIDE;
+  int getMemSize() const OVERRIDE { return sizeof(*this); }
+  void revert(undo::ObjectsContainer* objects, undo::UndoersCollector* redoers) OVERRIDE;
 
-void SetImgType::revert(ObjectsContainer* objects, UndoersCollector* redoers)
-{
-  Sprite* sprite = objects->getObjectT<Sprite>(m_spriteId);
+private:
+  undo::ObjectId m_spriteId;
+  uint32_t m_imgtype;
+};
 
-  // Push another SetImgType as redoer
-  redoers->pushUndoer(new SetImgType(objects, sprite));
+} // namespace undoers
 
-  sprite->setImgType(m_imgtype);
-}
+#endif	// UNDOERS_SET_SPRITE_IMGTYPE_H_INCLUDED

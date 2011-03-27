@@ -241,21 +241,26 @@ add_library(aseprite-library
   undoers/image_area.cpp
   undoers/move_layer.cpp
   undoers/open_group.cpp
-  undoers/raw_data.cpp
   undoers/remap_palette.cpp
   undoers/remove_cel.cpp
   undoers/remove_image.cpp
   undoers/remove_layer.cpp
   undoers/remove_palette.cpp
   undoers/replace_image.cpp
+  undoers/set_cel_frame.cpp
+  undoers/set_cel_opacity.cpp
+  undoers/set_cel_position.cpp
   undoers/set_current_frame.cpp
   undoers/set_current_layer.cpp
   undoers/set_frame_duration.cpp
-  undoers/set_imgtype.cpp
+  undoers/set_layer_flags.cpp
   undoers/set_layer_name.cpp
   undoers/set_mask.cpp
+  undoers/set_mask_position.cpp
   undoers/set_palette_colors.cpp
+  undoers/set_sprite_imgtype.cpp
   undoers/set_sprite_size.cpp
+  undoers/set_stock_imgtype.cpp
   undoers/set_total_frames.cpp
   util/autocrop.cpp
   util/boundary.cpp

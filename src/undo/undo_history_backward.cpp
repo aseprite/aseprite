@@ -20,7 +20,6 @@
 #include "undoers/image_area.h"
 #include "undoers/move_layer.h"
 #include "undoers/open_group.h"
-#include "undoers/raw_data.h"
 #include "undoers/remap_palette.h"
 #include "undoers/remove_cel.h"
 #include "undoers/remove_image.h"
@@ -30,10 +29,10 @@
 #include "undoers/set_current_frame.h"
 #include "undoers/set_current_layer.h"
 #include "undoers/set_frame_duration.h"
-#include "undoers/set_imgtype.h"
 #include "undoers/set_layer_name.h"
 #include "undoers/set_mask.h"
 #include "undoers/set_palette_colors.h"
+#include "undoers/set_sprite_imgtype.h"
 #include "undoers/set_sprite_size.h"
 #include "undoers/set_total_frames.h"
 
@@ -47,11 +46,6 @@ void UndoHistory::undo_open()
 void UndoHistory::undo_close()
 {
   pushUndoer(new undoers::CloseGroup());
-}
-
-void UndoHistory::undo_data(void* object, void* fieldAddress, int fieldSize)
-{
-  pushUndoer(new undoers::RawData(getObjects(), object, fieldAddress, fieldSize));
 }
 
 void UndoHistory::undo_image(Image* image, int x, int y, int w, int h)
@@ -148,7 +142,7 @@ void UndoHistory::undo_set_mask(Document* document)
 
 void UndoHistory::undo_set_imgtype(Sprite* sprite)
 {
-  pushUndoer(new undoers::SetImgType(getObjects(), sprite));
+  pushUndoer(new undoers::SetSpriteImgType(getObjects(), sprite));
 }
 
 void UndoHistory::undo_set_size(Sprite* sprite)

@@ -32,6 +32,9 @@
 #include "raster/sprite.h"
 #include "raster/stock.h"
 #include "undo/undo_history.h"
+#include "undoers/set_cel_frame.h"
+#include "undoers/set_cel_opacity.h"
+#include "undoers/set_cel_position.h"
 
 /* these variables indicate what cel to move (and the sprite's
    frame indicates where to move it) */
@@ -91,7 +94,7 @@ void move_cel(DocumentWriter& document)
   if (src_cel != NULL) {
     if (src_layer == dst_layer) {
       if (undo->isEnabled())
-	undo->undo_int(src_cel, &src_cel->frame);
+	undo->pushUndoer(new undoers::SetCelFrame(undo->getObjects(), src_cel));
 
       src_cel->frame = dst_frame;
     }
@@ -117,9 +120,8 @@ void move_cel(DocumentWriter& document)
 
 	if (undo->isEnabled()) {
 	  undo->undo_replace_image(sprite->getStock(), src_cel->image);
-	  undo->undo_int(src_cel, &src_cel->x);
-	  undo->undo_int(src_cel, &src_cel->y);
-	  undo->undo_int(src_cel, &src_cel->opacity);
+	  undo->pushUndoer(new undoers::SetCelPosition(undo->getObjects(), src_cel));
+	  undo->pushUndoer(new undoers::SetCelOpacity(undo->getObjects(), src_cel));
 	}
 
 	image_clear(dst_image, app_get_color_to_clear_layer(dst_layer));

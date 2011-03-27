@@ -33,6 +33,7 @@
 #include "modules/palettes.h"
 #include "raster/raster.h"
 #include "undo/undo_history.h"
+#include "undoers/set_cel_position.h"
 #include "util/misc.h"
 #include "widgets/editor/editor.h"
 #include "widgets/statebar.h"
@@ -157,10 +158,8 @@ int interactive_move_layer(int mode, bool use_undo, int (*callback)())
     if (use_undo && undo->isEnabled()) {
       undo->setLabel("Cel Movement");
       undo->setModification(undo::ModifyDocument);
-      undo->undo_open();
-      undo->undo_int(cel, &cel->x);
-      undo->undo_int(cel, &cel->y);
-      undo->undo_close();
+
+      undo->pushUndoer(new undoers::SetCelPosition(undo->getObjects(), cel));
     }
 
     cel_set_position(cel, new_x, new_y);

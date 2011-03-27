@@ -18,35 +18,32 @@
 
 #include "config.h"
 
-#include "undoers/raw_data.h"
+#include "undoers/set_stock_imgtype.h"
 
+#include "raster/stock.h"
 #include "undo/objects_container.h"
 #include "undo/undoers_collector.h"
 
 using namespace undo;
 using namespace undoers;
 
-RawData::RawData(ObjectsContainer* objects, void* object, void* fieldAddress, int fieldSize)
-  : m_objectId(objects->addObject(object))
-  , m_offset((uint32_t)(((uint8_t*)fieldAddress) - ((uint8_t*)object)))
-  , m_data(fieldSize)
+SetStockImgType::SetStockImgType(ObjectsContainer* objects, Stock* stock)
+  : m_stockId(objects->addObject(stock))
+  , m_imgtype(stock->getImgType())
 {
-  memcpy(&m_data[0], fieldAddress, m_data.size());
 }
 
-void RawData::dispose()
+void SetStockImgType::dispose()
 {
   delete this;
 }
 
-void RawData::revert(ObjectsContainer* objects, UndoersCollector* redoers)
+void SetStockImgType::revert(ObjectsContainer* objects, UndoersCollector* redoers)
 {
-  void* object = objects->getObject(m_objectId);
-  void* fieldAddress = (void*)(((uint8_t*)object) + m_offset);
+  Stock* stock = objects->getObjectT<Stock>(m_stockId);
 
-  // Save the current data
-  redoers->pushUndoer(new RawData(objects, object, fieldAddress, m_data.size()));
+  // Push another SetStockImgType as redoer
+  redoers->pushUndoer(new SetStockImgType(objects, stock));
 
-  // Copy back the old data
-  memcpy(fieldAddress, &m_data[0], m_data.size());
+  stock->setImgType(m_imgtype);
 }

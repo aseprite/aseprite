@@ -679,7 +679,7 @@ static Layer *ase_file_read_layer_chunk(FILE *f, Sprite *sprite, Layer **previou
 
   if (layer) {
     // flags
-    *layer->flags_addr() = flags;
+    layer->setFlags(flags);
 
     // name
     layer->setName(name.c_str());
@@ -703,8 +703,8 @@ static void ase_file_write_layer_chunk(FILE *f, Layer *layer)
 {
   ase_file_write_start_chunk(f, ASE_FILE_CHUNK_LAYER);
 
-  /* flags */
-  fputw(*layer->flags_addr(), f);
+  // Flags
+  fputw(layer->getFlags(), f);
 
   /* layer type */
   fputw(layer->is_image() ? 0: (layer->is_folder() ? 1: -1), f);

@@ -30,13 +30,15 @@ class Layer;
 class LayerImage;
 class LayerFolder;
 
-#define LAYER_IS_READABLE	0x0001
-#define LAYER_IS_WRITABLE	0x0002
-#define LAYER_IS_LOCKMOVE	0x0004
-#define LAYER_IS_BACKGROUND	0x0008
-
 //////////////////////////////////////////////////////////////////////
 // Layer class
+
+enum {
+  LAYER_IS_READABLE = 0x0001,
+  LAYER_IS_WRITABLE = 0x0002,
+  LAYER_IS_LOCKMOVE = 0x0004,
+  LAYER_IS_BACKGROUND = 0x0008,
+};
 
 class Layer : public GfxObj
 {
@@ -69,10 +71,10 @@ public:
   void set_readable(bool b) { if (b) m_flags |= LAYER_IS_READABLE; else m_flags &= ~LAYER_IS_READABLE; }
   void set_writable(bool b) { if (b) m_flags |= LAYER_IS_WRITABLE; else m_flags &= ~LAYER_IS_WRITABLE; }
 
-  virtual void getCels(CelList& cels) = 0;
+  uint32_t getFlags() const { return m_flags; }
+  void setFlags(uint32_t flags) { m_flags = flags; }
 
-  // TODO remove these methods (from C backward-compatibility)
-  unsigned short* flags_addr() { return &m_flags; }
+  virtual void getCels(CelList& cels) = 0;
 
 private:
   std::string m_name;		// layer name

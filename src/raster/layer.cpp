@@ -208,7 +208,8 @@ void LayerImage::configureAsBackground()
   ASSERT(getSprite() != NULL);
   ASSERT(getSprite()->getBackgroundLayer() == NULL);
 
-  *flags_addr() |= LAYER_IS_LOCKMOVE | LAYER_IS_BACKGROUND;
+  set_moveable(false);
+  set_background(true);
   setName("Background");
 
   getSprite()->getFolder()->move_layer(this, NULL);

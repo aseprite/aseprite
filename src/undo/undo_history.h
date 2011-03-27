@@ -70,7 +70,6 @@ public:
   // Backward compatibility methods
   void undo_open();
   void undo_close();
-  void undo_data(void* object, void* fieldAddress, int fieldSize);
   void undo_image(Image *image, int x, int y, int w, int h);
   void undo_flip(Image *image, int x1, int y1, int x2, int y2, bool horz);
   void undo_dirty(Image* image, Dirty *dirty);
@@ -94,14 +93,6 @@ public:
   void undo_set_frame(Sprite* sprite);
   void undo_set_frames(Sprite* sprite);
   void undo_set_frlen(Sprite* sprite, int frame);
-
-  void undo_int(GfxObj* gfxobj, int* value_address) {
-    undo_data(gfxobj, (void*)(value_address), sizeof(int));
-  }
-
-  void undo_double(GfxObj* gfxobj, double* value_address) {
-    undo_data(gfxobj, (void*)(value_address), sizeof(double));
-  }
 
 private:
   enum Direction { UndoDirection, RedoDirection };

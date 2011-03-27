@@ -16,31 +16,32 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifndef UNDOERS_RAW_DATA_H_INCLUDED
-#define UNDOERS_RAW_DATA_H_INCLUDED
+#ifndef UNDOERS_SET_LAYER_FLAGS_H_INCLUDED
+#define UNDOERS_SET_LAYER_FLAGS_H_INCLUDED
 
 #include "undo/object_id.h"
 #include "undoers/undoer_base.h"
 
-#include <vector>
+#include <string>
+
+class Layer;
 
 namespace undoers {
 
-class RawData : public UndoerBase
+class SetLayerFlags : public UndoerBase
 {
 public:
-  RawData(undo::ObjectsContainer* objects, void* object, void* fieldAddress, int fieldSize);
+  SetLayerFlags(undo::ObjectsContainer* objects, Layer* layer);
 
   void dispose() OVERRIDE;
-  int getMemSize() const OVERRIDE { return sizeof(*this) + m_data.size(); }
+  int getMemSize() const OVERRIDE { return sizeof(*this); }
   void revert(undo::ObjectsContainer* objects, undo::UndoersCollector* redoers) OVERRIDE;
 
 private:
-  undo::ObjectId m_objectId;
-  uint32_t m_offset;
-  std::vector<uint8_t> m_data;
+  undo::ObjectId m_layerId;
+  uint32_t m_flags;
 };
 
 } // namespace undoers
 
-#endif	// UNDOERS_RAW_DATA_H_INCLUDED
+#endif	// UNDOERS_SET_LAYER_FLAGS_H_INCLUDED

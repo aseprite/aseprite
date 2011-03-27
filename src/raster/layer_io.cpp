@@ -45,7 +45,7 @@ void write_layer(std::ostream& os, LayerSubObjectsSerializer* subObjects, Layer*
   if (!name.empty())
     os.write(name.c_str(), name.size());	       // Name
 
-  write8(os, *layer->flags_addr());		       // Flags
+  write32(os, layer->getFlags());		       // Flags
   write16(os, layer->getType());		       // Type
 
   switch (layer->getType()) {
@@ -86,9 +86,6 @@ void write_layer(std::ostream& os, LayerSubObjectsSerializer* subObjects, Layer*
 
 Layer* read_layer(std::istream& is, LayerSubObjectsSerializer* subObjects, Sprite* sprite)
 {
-  int flags, layer_type;
-  UniquePtr<Layer> layer;
-
   uint16_t name_length = read16(is);		    // Name length
   std::vector<char> name(name_length+1);
   if (name_length > 0) {
@@ -98,8 +95,10 @@ Layer* read_layer(std::istream& is, LayerSubObjectsSerializer* subObjects, Sprit
   else
     name[0] = 0;
 
-  flags = read8(is);				    // Flags
-  layer_type = read16(is);			    // Type
+  uint32_t flags = read32(is);			   // Flags
+  uint16_t layer_type = read16(is);		   // Type
+
+  UniquePtr<Layer> layer;
 
   switch (layer_type) {
 
@@ -147,7 +146,7 @@ Layer* read_layer(std::istream& is, LayerSubObjectsSerializer* subObjects, Sprit
 
   if (layer != NULL) {
     layer->setName(&name[0]);
-    *layer->flags_addr() = flags;
+    layer->setFlags(flags);
   }
 
   return layer.release();

@@ -33,6 +33,11 @@
 #include "raster/sprite.h"
 #include "raster/stock.h"
 #include "undo/undo_history.h"
+#include "undoers/set_cel_frame.h"
+#include "undoers/set_cel_position.h"
+#include "undoers/set_layer_flags.h"
+#include "undoers/set_mask_position.h"
+#include "undoers/set_stock_imgtype.h"
 
 UndoTransaction::UndoTransaction(Document* document, const char* label, undo::Modification modification)
 {
@@ -221,9 +226,9 @@ void UndoTransaction::setImgType(int new_imgtype, DitheringMethod dithering_meth
   if (m_sprite->getImgType() == new_imgtype)
     return;
 
-  /* change imgtype of the stock of images */
+  // Change imgtype of the stock of images.
   if (isEnabled())
-    m_undoHistory->undo_int(m_sprite->getStock(), &m_sprite->getStock()->m_imgtype);
+    m_undoHistory->pushUndoer(new undoers::SetStockImgType(m_undoHistory->getObjects(), m_sprite->getStock()));
 
   m_sprite->getStock()->setImgType(new_imgtype);
 
@@ -508,10 +513,8 @@ void UndoTransaction::layerFromBackground()
   ASSERT(m_sprite->getCurrentLayer()->is_background());
 
   if (isEnabled()) {
-    m_undoHistory->undo_data(
-	      m_sprite->getCurrentLayer(),
-	      m_sprite->getCurrentLayer()->flags_addr(),
-	      sizeof(*m_sprite->getCurrentLayer()->flags_addr()));
+    m_undoHistory->pushUndoer(new undoers::SetLayerFlags(m_undoHistory->getObjects(),
+							 m_sprite->getCurrentLayer()));
 
     m_undoHistory->undo_set_layer_name(m_sprite->getCurrentLayer());
   }
@@ -618,7 +621,7 @@ void UndoTransaction::flattenLayers(int bgcolor)
 void UndoTransaction::configureLayerAsBackground(LayerImage* layer)
 {
   if (isEnabled()) {
-    m_undoHistory->undo_data(layer, layer->flags_addr(), sizeof(*layer->flags_addr()));
+    m_undoHistory->pushUndoer(new undoers::SetLayerFlags(m_undoHistory->getObjects(), layer));
     m_undoHistory->undo_set_layer_name(layer);
     m_undoHistory->undo_move_layer(layer);
   }
@@ -796,7 +799,7 @@ void UndoTransaction::setCelFramePosition(Cel* cel, int frame)
   ASSERT(frame >= 0);
 
   if (isEnabled())
-    m_undoHistory->undo_int(cel, &cel->frame);
+    m_undoHistory->pushUndoer(new undoers::SetCelFrame(m_undoHistory->getObjects(), cel));
 
   cel->frame = frame;
 }
@@ -805,10 +808,8 @@ void UndoTransaction::setCelPosition(Cel* cel, int x, int y)
 {
   ASSERT(cel);
 
-  if (isEnabled()) {
-    m_undoHistory->undo_int(cel, &cel->x);
-    m_undoHistory->undo_int(cel, &cel->y);
-  }
+  if (isEnabled())
+    m_undoHistory->pushUndoer(new undoers::SetCelPosition(m_undoHistory->getObjects(), cel));
 
   cel->x = x;
   cel->y = y;
@@ -1071,10 +1072,8 @@ void UndoTransaction::setMaskPosition(int x, int y)
 {
   ASSERT(m_document->getMask());
 
-  if (isEnabled()) {
-    m_undoHistory->undo_int(m_document->getMask(), &m_document->getMask()->x);
-    m_undoHistory->undo_int(m_document->getMask(), &m_document->getMask()->y);
-  }
+  if (isEnabled())
+    m_undoHistory->pushUndoer(new undoers::SetMaskPosition(m_undoHistory->getObjects(), m_document));
 
   m_document->getMask()->x = x;
   m_document->getMask()->y = y;

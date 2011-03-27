@@ -41,6 +41,7 @@
 #include "tools/tool.h"
 #include "ui_context.h"
 #include "undo/undo_history.h"
+#include "undoers/set_cel_position.h"
 #include "util/boundary.h"
 #include "util/misc.h"
 #include "util/render.h"
@@ -1967,16 +1968,16 @@ public:
 	  if (undo->isEnabled()) {
 	    undo->undo_open();
 
-	    if (m_cel->x != m_old_cel_x) {
+	    if (m_cel->x != m_old_cel_x ||
+		m_cel->y != m_old_cel_y) {
 	      int x = m_cel->x;
-	      m_cel->x = m_old_cel_x;
-	      undo->undo_int(m_cel, &m_cel->x);
-	      m_cel->x = x;
-	    }
-	    if (m_cel->y != m_old_cel_y) {
 	      int y = m_cel->y;
 	      m_cel->y = m_old_cel_y;
-	      undo->undo_int(m_cel, &m_cel->y);
+	      m_cel->x = m_old_cel_x;
+
+	      undo->pushUndoer(new undoers::SetCelPosition(undo->getObjects(), m_cel));
+
+	      m_cel->x = x;
 	      m_cel->y = y;
 	    }
 

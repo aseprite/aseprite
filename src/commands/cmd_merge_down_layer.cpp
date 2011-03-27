@@ -29,6 +29,7 @@
 #include "raster/sprite.h"
 #include "raster/stock.h"
 #include "undo/undo_history.h"
+#include "undoers/set_cel_position.h"
 
 //////////////////////////////////////////////////////////////////////
 // merge_down_layer
@@ -162,10 +163,8 @@ void MergeDownLayerCommand::onExecute(Context* context)
 		    src_cel->opacity,
 		    static_cast<LayerImage*>(src_layer)->getBlendMode());
 
-	if (undo->isEnabled()) {
-	  undo->undo_int(dst_cel, &dst_cel->x);
-	  undo->undo_int(dst_cel, &dst_cel->y);
-	}
+	if (undo->isEnabled())
+	  undo->pushUndoer(new undoers::SetCelPosition(undo->getObjects(), dst_cel));
 
 	cel_set_position(dst_cel, x1, y1);
 

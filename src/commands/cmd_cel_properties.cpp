@@ -30,6 +30,7 @@
 #include "raster/sprite.h"
 #include "raster/stock.h"
 #include "undo/undo_history.h"
+#include "undoers/set_cel_opacity.h"
 
 #include <allegro/unicode.h>
 
@@ -138,7 +139,8 @@ void CelPropertiesCommand::onExecute(Context* context)
       if (undo->isEnabled()) {
 	undo->setLabel("Cel Opacity Change");
 	undo->setModification(undo::ModifyDocument);
-	undo->undo_int(cel_writer, &cel_writer->opacity);
+
+	undo->pushUndoer(new undoers::SetCelOpacity(undo->getObjects(), cel_writer));
       }
 
       /* change cel opacity */
