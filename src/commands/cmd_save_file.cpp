@@ -139,15 +139,11 @@ static void save_document_in_background(Document* document, bool mark_as_saved)
   delete data->progress;
   fop_free(fop);
   delete data;
-
-  // Update the tab for the document. In this moment, the document is
-  // already marked as saved, so the * is not shown in the tab.
-  app_update_document_tab(document);
 }
 
 /*********************************************************************/
 
-static void save_as_dialog(Document* document, const char* dlg_title, bool mark_as_saved)
+static void save_as_dialog(const DocumentReader& document, const char* dlg_title, bool mark_as_saved)
 {
   char exts[4096];
   base::string filename;
@@ -183,11 +179,15 @@ static void save_as_dialog(Document* document, const char* dlg_title, bool mark_
     /* "no": we must back to select other file-name */
   }
 
-  // Change the document file name
-  document->setFilename(filename.c_str());
+  {
+    DocumentWriter documentWriter(document);
 
-  // Save the document
-  save_document_in_background(document, mark_as_saved);
+    // Change the document file name
+    documentWriter->setFilename(filename.c_str());
+
+    // Save the document
+    save_document_in_background(documentWriter, mark_as_saved);
+  }
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -223,12 +223,14 @@ bool SaveFileCommand::onEnabled(Context* context)
 // [main thread]
 void SaveFileCommand::onExecute(Context* context)
 {
-  ActiveDocumentWriter document(context);
+  const ActiveDocumentReader document(context);
 
   // If the document is associated to a file in the file-system, we can
   // save it directly without user interaction.
   if (document->isAssociatedToFile()) {
-    save_document_in_background(document, true);
+    DocumentWriter documentWriter(document);
+
+    save_document_in_background(documentWriter, true);
   }
   // If the document isn't associated to a file, we must to show the
   // save-as dialog to the user to select for first time the file-name
@@ -236,6 +238,8 @@ void SaveFileCommand::onExecute(Context* context)
   else {
     save_as_dialog(document, "Save File", true);
   }
+
+  update_screen_for_document(document);
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -268,8 +272,9 @@ bool SaveFileAsCommand::onEnabled(Context* context)
 
 void SaveFileAsCommand::onExecute(Context* context)
 {
-  ActiveDocumentWriter document(context);
+  const ActiveDocumentReader document(context);
   save_as_dialog(document, "Save As", true);
+  update_screen_for_document(document);
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -302,14 +307,19 @@ bool SaveFileCopyAsCommand::onEnabled(Context* context)
 
 void SaveFileCopyAsCommand::onExecute(Context* context)
 {
-  ActiveDocumentWriter document(context);
+  const ActiveDocumentReader document(context);
   base::string old_filename = document->getFilename();
 
   // show "Save As" dialog
   save_as_dialog(document, "Save Copy As", false);
 
   // Restore the file name.
-  document->setFilename(old_filename.c_str());
+  {
+    DocumentWriter documentWriter(document);
+    documentWriter->setFilename(old_filename.c_str());
+  }
+
+  update_screen_for_document(document);
 }
 
 //////////////////////////////////////////////////////////////////////

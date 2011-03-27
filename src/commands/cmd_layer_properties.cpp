@@ -61,9 +61,9 @@ bool LayerPropertiesCommand::onEnabled(Context* context)
 
 void LayerPropertiesCommand::onExecute(Context* context)
 {
-  ActiveDocumentWriter document(context);
-  Sprite* sprite(document->getSprite());
-  Layer* layer = sprite->getCurrentLayer();
+  const ActiveDocumentReader document(context);
+  const Sprite* sprite(document->getSprite());
+  const Layer* layer = sprite->getCurrentLayer();
 
   FramePtr window(new Frame(false, "Layer Properties"));
   Box* box1 = new Box(JI_VERTICAL);
@@ -94,7 +94,9 @@ void LayerPropertiesCommand::onExecute(Context* context)
   window->open_window_fg();
 
   if (window->get_killer() == button_ok) {
-    layer->setName(entry_name->getText());
+    DocumentWriter documentWriter(document);
+
+    const_cast<Layer*>(layer)->setName(entry_name->getText());
 
     update_screen_for_document(document);
   }

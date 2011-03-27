@@ -61,8 +61,8 @@ bool CanvasSizeCommand::onEnabled(Context* context)
 
 void CanvasSizeCommand::onExecute(Context* context)
 {
-  ActiveDocumentWriter document(context);
-  Sprite* sprite(document->getSprite());
+  const ActiveDocumentReader document(context);
+  const Sprite* sprite(document->getSprite());
 
   if (context->isUiAvailable()) {
     JWidget left, top, right, bottom, ok;
@@ -109,14 +109,17 @@ void CanvasSizeCommand::onExecute(Context* context)
   if (y2 <= y1) y2 = y1+1;
 
   {
-    UndoTransaction undoTransaction(document, "Canvas Size");
+    DocumentWriter documentWriter(document);
+    UndoTransaction undoTransaction(documentWriter, "Canvas Size");
     int bgcolor = color_utils::color_for_image(context->getSettings()->getBgColor(), sprite->getImgType());
     bgcolor = color_utils::fixup_color_for_background(sprite->getImgType(), bgcolor);
 
     undoTransaction.cropSprite(x1, y1, x2-x1, y2-y1, bgcolor);
     undoTransaction.commit();
+
+    documentWriter->generateMaskBoundaries();
   }
-  document->generateMaskBoundaries();
+
   update_screen_for_document(document);
 }
 

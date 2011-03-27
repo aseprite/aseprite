@@ -60,15 +60,12 @@ void LoadMaskCommand::onLoadParams(Params* params)
 bool LoadMaskCommand::onEnabled(Context* context)
 {
   const ActiveDocumentReader document(context);
-  const Sprite* sprite(document ? document->getSprite(): 0);
-  return sprite != NULL;
+  return document != NULL;
 }
 
 void LoadMaskCommand::onExecute(Context* context)
 {
-  ActiveDocumentWriter document(context);
-  Sprite* sprite(document->getSprite());
-  undo::UndoHistory* undo(document->getUndoHistory());
+  const ActiveDocumentReader document(context);
 
   base::string filename = m_filename;
 
@@ -85,17 +82,23 @@ void LoadMaskCommand::onExecute(Context* context)
     throw base::Exception("Error loading .msk file: %s",
 			  static_cast<const char*>(m_filename.c_str()));
 
-  // Add the mask change into the undo history.
-  if (undo->isEnabled()) {
-    undo->setLabel("Mask Load");
-    undo->setModification(undo::DoesntModifyDocument);
-    undo->undo_set_mask(document);
+  {
+    DocumentWriter documentWriter(document);
+    undo::UndoHistory* undo(documentWriter->getUndoHistory());
+
+    // Add the mask change into the undo history.
+    if (undo->isEnabled()) {
+      undo->setLabel("Mask Load");
+      undo->setModification(undo::DoesntModifyDocument);
+      undo->undo_set_mask(documentWriter);
+    }
+
+    documentWriter->setMask(mask);
+    mask_free(mask);
+
+    documentWriter->generateMaskBoundaries();
   }
 
-  document->setMask(mask);
-  mask_free(mask);
-
-  document->generateMaskBoundaries();
   update_screen_for_document(document);
 }
 
