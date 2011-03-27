@@ -36,7 +36,7 @@
 #include "raster/sprite.h"
 #include "raster/stock.h"
 #include "undo/undo_history.h"
-#include "widgets/editor.h"
+#include "widgets/editor/editor.h"
 
 #include <cstdlib>
 #include <cstring>

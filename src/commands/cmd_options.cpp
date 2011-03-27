@@ -32,7 +32,7 @@
 #include "raster/image.h"
 #include "util/render.h"
 #include "widgets/color_button.h"
-#include "widgets/editor.h"
+#include "widgets/editor/editor.h"
 
 //////////////////////////////////////////////////////////////////////
 // options

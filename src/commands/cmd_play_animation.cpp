@@ -29,7 +29,7 @@
 #include "raster/image.h"
 #include "raster/palette.h"
 #include "raster/sprite.h"
-#include "widgets/editor.h"
+#include "widgets/editor/editor.h"
 #include "document_wrappers.h"
 
 //////////////////////////////////////////////////////////////////////

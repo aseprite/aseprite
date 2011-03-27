@@ -41,7 +41,7 @@
 #include "tools/tool.h"
 #include "ui_context.h"
 #include "widgets/color_button.h"
-#include "widgets/editor.h"
+#include "widgets/editor/editor.h"
 #include "widgets/groupbut.h"
 #include "widgets/statebar.h"
 

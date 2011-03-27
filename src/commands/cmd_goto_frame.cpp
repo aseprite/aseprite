@@ -22,7 +22,7 @@
 #include "modules/gui.h"
 #include "modules/editors.h"
 #include "raster/sprite.h"
-#include "widgets/editor.h"
+#include "widgets/editor/editor.h"
 #include "document_wrappers.h"
 
 //////////////////////////////////////////////////////////////////////

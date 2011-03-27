@@ -20,7 +20,7 @@
 #define UTIL_MISC_H_INCLUDED
 
 #include "app/color.h"
-#include "widgets/editor.h"	// For movement modes
+#include "widgets/editor/editor.h"	// For movement modes
 
 class Image;
 class Document;

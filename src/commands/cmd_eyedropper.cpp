@@ -29,7 +29,7 @@
 #include "raster/sprite.h"
 #include "raster/image.h"
 #include "widgets/color_bar.h"
-#include "widgets/editor.h"
+#include "widgets/editor/editor.h"
 
 //////////////////////////////////////////////////////////////////////
 // eyedropper

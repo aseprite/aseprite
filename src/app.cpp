@@ -52,7 +52,7 @@
 #include "util/boundary.h"
 #include "util/render.h"
 #include "widgets/color_bar.h"
-#include "widgets/editor.h"
+#include "widgets/editor/editor.h"
 #include "widgets/menuitem.h"
 #include "widgets/statebar.h"
 #include "widgets/tabs.h"

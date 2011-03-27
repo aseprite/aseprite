@@ -24,7 +24,7 @@
 #include "modules/editors.h"
 #include "raster/layer.h"
 #include "raster/sprite.h"
-#include "widgets/editor.h"
+#include "widgets/editor/editor.h"
 #include "widgets/statebar.h"
 #include "document_wrappers.h"
 

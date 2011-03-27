@@ -32,7 +32,7 @@
 #include "raster/image.h"
 #include "raster/sprite.h"
 #include "util/misc.h"
-#include "widgets/editor.h"
+#include "widgets/editor/editor.h"
 
 #define FIXUP_TOP_WINDOW()			\
   app_get_top_window()->remap_window();		\

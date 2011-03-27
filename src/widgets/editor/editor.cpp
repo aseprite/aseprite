@@ -45,7 +45,7 @@
 #include "util/misc.h"
 #include "util/render.h"
 #include "widgets/color_bar.h"
-#include "widgets/editor.h"
+#include "widgets/editor/editor.h"
 #include "widgets/editor/pixels_movement.h"
 #include "widgets/statebar.h"
 

@@ -31,7 +31,7 @@
 #include "modules/editors.h"
 #include "modules/gui.h"
 #include "raster/sprite.h"
-#include "widgets/editor.h"
+#include "widgets/editor/editor.h"
 #include "widgets/statebar.h"
 
 // Applies filters in two threads: a background worker thread to

@@ -39,7 +39,7 @@
 #include "undo/undo_history.h"
 #include "util/misc.h"
 #include "widgets/color_button.h"
-#include "widgets/editor.h"
+#include "widgets/editor/editor.h"
 #include "widgets/statebar.h"
 
 #include <algorithm>

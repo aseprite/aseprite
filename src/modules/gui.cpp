@@ -52,7 +52,7 @@
 #include "document_wrappers.h"
 #include "tools/toolbox.h"
 #include "ui_context.h"
-#include "widgets/editor.h"
+#include "widgets/editor/editor.h"
 #include "widgets/statebar.h"
 #include "widgets/toolbar.h"
 #include "xml_widgets.h"

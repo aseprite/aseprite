@@ -33,7 +33,7 @@
 #include "raster/palette.h"
 #include "raster/sprite.h"
 #include "util/render.h"
-#include "widgets/editor.h"
+#include "widgets/editor/editor.h"
 #include "widgets/statebar.h"
 #include "document_wrappers.h"
 

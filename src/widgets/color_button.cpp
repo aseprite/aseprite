@@ -31,7 +31,7 @@
 #include "widgets/color_bar.h"
 #include "widgets/color_button.h"
 #include "widgets/color_selector.h"
-#include "widgets/editor.h"
+#include "widgets/editor/editor.h"
 #include "widgets/statebar.h"
 
 static int colorbutton_type()

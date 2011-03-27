@@ -40,7 +40,7 @@
 #include "tools/tool.h"
 #include "ui_context.h"
 #include "util/boundary.h"
-#include "widgets/editor.h"
+#include "widgets/editor/editor.h"
 
 #ifdef WIN32
 #undef max

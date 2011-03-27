@@ -46,7 +46,7 @@
 #include "undo/undo_history.h"
 #include "widgets/color_bar.h"
 #include "widgets/color_sliders.h"
-#include "widgets/editor.h"
+#include "widgets/editor/editor.h"
 #include "widgets/hex_color_entry.h"
 #include "widgets/palette_view.h"
 #include "widgets/statebar.h"

@@ -27,7 +27,7 @@
 #include "gui/view.h"
 #include "gui/widget.h"
 #include "modules/gui.h"
-#include "widgets/editor.h"
+#include "widgets/editor/editor.h"
 
 /**********************************************************************/
 /* editor-click interface */

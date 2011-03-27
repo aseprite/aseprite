@@ -39,7 +39,7 @@
 #include "raster/image.h"
 #include "raster/palette.h"
 #include "skin/skin_theme.h"
-#include "widgets/editor.h"
+#include "widgets/editor/editor.h"
 
 using namespace gfx;
 

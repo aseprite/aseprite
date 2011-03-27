@@ -33,7 +33,7 @@
 #include "settings/settings.h"
 #include "ui_context.h"
 #include "widgets/color_bar.h"
-#include "widgets/editor.h"
+#include "widgets/editor/editor.h"
 
 bool Editor::editor_keys_toset_zoom(int scancode)
 {

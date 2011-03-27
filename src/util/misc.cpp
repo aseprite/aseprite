@@ -34,7 +34,7 @@
 #include "raster/raster.h"
 #include "undo/undo_history.h"
 #include "util/misc.h"
-#include "widgets/editor.h"
+#include "widgets/editor/editor.h"
 #include "widgets/statebar.h"
 
 Image* NewImageFromMask(const Document* srcDocument)
