@@ -82,14 +82,14 @@ public:
   explicit DocumentReader(Document* document)
     : DocumentWrapper(document)
   {
-    if (m_document && !m_document->lock(false))
+    if (m_document && !m_document->lock(Document::ReadLock))
       throw LockedDocumentException();
   }
 
   explicit DocumentReader(const DocumentReader& copy)
     : DocumentWrapper(copy)
   {
-    if (m_document && !m_document->lock(false))
+    if (m_document && !m_document->lock(Document::ReadLock))
       throw LockedDocumentException();
   }
 
@@ -102,7 +102,7 @@ public:
     DocumentWrapper::operator=(copy);
 
     // relock the document
-    if (m_document && !m_document->lock(false))
+    if (m_document && !m_document->lock(Document::ReadLock))
       throw LockedDocumentException();
 
     return *this;
@@ -134,7 +134,7 @@ public:
     , m_locked(false)
   {
     if (m_document) {
-      if (!m_document->lock(true))
+      if (!m_document->lock(Document::WriteLock))
 	throw LockedDocumentException();
 
       m_locked = true;

@@ -422,27 +422,30 @@ SpriteImpl* SpriteImpl::copyLayers(SpriteImpl* dst_sprite, const SpriteImpl* src
 //////////////////////////////////////////////////////////////////////
 // Multi-threading ("sprite wrappers" use this)
 
-bool Document::lock(bool write)
+bool Document::lock(LockType lockType)
 {
   ScopedLock lock(*m_mutex);
 
-  // read-only
-  if (!write) {
-    // If no body is writting the sprite...
-    if (!m_write_lock) {
-      // We can read it
-      ++m_read_locks;
-      return true;
-    }
-  }
-  // read and write
-  else {
-    // If no body is reading and writting...
-    if (m_read_locks == 0 && !m_write_lock) {
-      // We can start writting the sprite...
-      m_write_lock = true;
-      return true;
-    }
+  switch (lockType) {
+
+    case ReadLock:
+      // If no body is writting the sprite...
+      if (!m_write_lock) {
+	// We can read it
+	++m_read_locks;
+	return true;
+      }
+      break;
+
+    case WriteLock:
+      // If no body is reading and writting...
+      if (m_read_locks == 0 && !m_write_lock) {
+	// We can start writting the sprite...
+	m_write_lock = true;
+	return true;
+      }
+      break;
+
   }
 
   return false;

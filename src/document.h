@@ -59,6 +59,11 @@ class Document
 {
 public:
 
+  enum LockType {
+    ReadLock,
+    WriteLock
+  };
+
   // Creates a document with one sprite, with one transparent layer,
   // and one frame.
   static Document* createBasicDocument(int imgtype, int width, int height, int ncolors);
@@ -145,9 +150,9 @@ public:
   //////////////////////////////////////////////////////////////////////
   // Multi-threading ("sprite wrappers" use this)
 
-  // Lock the sprite to read or write it, returning true if the sprite
-  // can be accessed in the desired mode.
-  bool lock(bool write);
+  // Locks the sprite to read or write on it, returning true if the
+  // sprite can be accessed in the desired mode.
+  bool lock(LockType lockType);
 
   // If you've locked the sprite to read, using this method you can
   // raise your access level to write it.
