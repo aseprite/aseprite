@@ -206,10 +206,10 @@ namespace {
     {
       a += (color == 0 ? 0: 255);
 
-      color = pal->getEntry(color);
-      r += _rgba_getr(color);
-      g += _rgba_getg(color);
-      b += _rgba_getb(color);
+      uint32_t color32 = pal->getEntry(color);
+      r += _rgba_getr(color32);
+      g += _rgba_getg(color32);
+      b += _rgba_getb(color32);
       count++;
     }
   };
