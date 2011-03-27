@@ -70,8 +70,8 @@ void ChangeImageTypeCommand::onLoadParams(Params* params)
 
 bool ChangeImageTypeCommand::onEnabled(Context* context)
 {
-  const ActiveDocumentReader document(context);
-  const Sprite* sprite(document ? document->getSprite(): 0);
+  ActiveDocumentWriter document(context);
+  Sprite* sprite(document ? document->getSprite(): 0);
 
   if (sprite != NULL &&
       sprite->getImgType() == IMAGE_INDEXED &&
@@ -79,8 +79,7 @@ bool ChangeImageTypeCommand::onEnabled(Context* context)
       m_dithering == DITHERING_ORDERED)
     return false;
 
-  return
-    sprite != NULL;
+  return sprite != NULL;
 }
 
 bool ChangeImageTypeCommand::onChecked(Context* context)

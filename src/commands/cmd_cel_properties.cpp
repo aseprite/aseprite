@@ -53,12 +53,8 @@ CelPropertiesCommand::CelPropertiesCommand()
 
 bool CelPropertiesCommand::onEnabled(Context* context)
 {
-  const ActiveDocumentReader document(context);
-  const Sprite* sprite(document ? document->getSprite(): 0);
-  return
-    sprite &&
-    sprite->getCurrentLayer() &&
-    sprite->getCurrentLayer()->is_image();
+  return context->checkFlags(ContextFlags::ActiveDocumentIsWritable |
+			     ContextFlags::ActiveLayerIsImage);
 }
 
 void CelPropertiesCommand::onExecute(Context* context)

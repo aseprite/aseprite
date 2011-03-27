@@ -51,8 +51,7 @@ SaveMaskCommand::SaveMaskCommand()
 
 bool SaveMaskCommand::onEnabled(Context* context)
 {
-  const ActiveDocumentReader document(context);
-  return document && document->isMaskVisible();
+  return context->checkFlags(ContextFlags::ActiveDocumentIsReadable);
 }
 
 void SaveMaskCommand::onExecute(Context* context)

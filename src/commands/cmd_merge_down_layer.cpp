@@ -53,16 +53,16 @@ MergeDownLayerCommand::MergeDownLayerCommand()
 
 bool MergeDownLayerCommand::onEnabled(Context* context)
 {
-  const ActiveDocumentReader document(context);
-  const Sprite* sprite(document ? document->getSprite(): 0);
+  ActiveDocumentWriter document(context);
+  Sprite* sprite(document ? document->getSprite(): 0);
   if (!sprite)
     return false;
 
-  const Layer* src_layer = sprite->getCurrentLayer();
+  Layer* src_layer = sprite->getCurrentLayer();
   if (!src_layer || !src_layer->is_image())
     return false;
 
-  const Layer* dst_layer = sprite->getCurrentLayer()->get_prev();
+  Layer* dst_layer = sprite->getCurrentLayer()->get_prev();
   if (!dst_layer || !dst_layer->is_image())
     return false;
 

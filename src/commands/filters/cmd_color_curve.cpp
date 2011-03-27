@@ -107,9 +107,8 @@ ColorCurveCommand::ColorCurveCommand()
 
 bool ColorCurveCommand::onEnabled(Context* context)
 {
-  const ActiveDocumentReader document(context);
-  const Sprite* sprite(document ? document->getSprite(): 0);
-  return sprite != NULL;
+  return context->checkFlags(ContextFlags::ActiveDocumentIsWritable |
+			     ContextFlags::HasActiveSprite);
 }
 
 void ColorCurveCommand::onExecute(Context* context)

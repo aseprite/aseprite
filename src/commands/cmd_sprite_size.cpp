@@ -181,9 +181,8 @@ SpriteSizeCommand::SpriteSizeCommand()
 
 bool SpriteSizeCommand::onEnabled(Context* context)
 {
-  const ActiveDocumentReader document(context);
-  const Sprite* sprite(document ? document->getSprite(): 0);
-  return sprite != NULL;
+  return context->checkFlags(ContextFlags::ActiveDocumentIsWritable |
+			     ContextFlags::HasActiveSprite);
 }
 
 void SpriteSizeCommand::onExecute(Context* context)

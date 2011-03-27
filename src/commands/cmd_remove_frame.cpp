@@ -48,10 +48,10 @@ RemoveFrameCommand::RemoveFrameCommand()
 
 bool RemoveFrameCommand::onEnabled(Context* context)
 {
-  const ActiveDocumentReader document(context);
-  const Sprite* sprite(document ? document->getSprite(): NULL);
+  ActiveDocumentWriter document(context);
+  Sprite* sprite(document ? document->getSprite(): NULL);
   return
-    sprite != NULL &&
+    sprite &&
     sprite->getTotalFrames() > 1;
 }
 

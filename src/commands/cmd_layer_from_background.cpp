@@ -49,15 +49,13 @@ LayerFromBackgroundCommand::LayerFromBackgroundCommand()
 
 bool LayerFromBackgroundCommand::onEnabled(Context* context)
 {
-  const ActiveDocumentReader document(context);
-  const Sprite* sprite(document ? document->getSprite(): 0);
-  return
-    sprite &&
-    sprite->getCurrentLayer() &&
-    sprite->getCurrentLayer()->is_image() &&
-    sprite->getCurrentLayer()->is_readable() &&
-    sprite->getCurrentLayer()->is_writable() &&
-    sprite->getCurrentLayer()->is_background();
+  return context->checkFlags(ContextFlags::ActiveDocumentIsWritable |
+			     ContextFlags::HasActiveSprite |
+			     ContextFlags::HasActiveLayer |
+			     ContextFlags::ActiveLayerIsReadable |
+			     ContextFlags::ActiveLayerIsWritable |
+			     ContextFlags::ActiveLayerIsImage |
+			     ContextFlags::ActiveLayerIsBackground);
 }
 
 void LayerFromBackgroundCommand::onExecute(Context* context)

@@ -50,8 +50,7 @@ FlattenLayersCommand::FlattenLayersCommand()
 
 bool FlattenLayersCommand::onEnabled(Context* context)
 {
-  const ActiveDocumentReader document(context);
-  return document != NULL;
+  return context->checkFlags(ContextFlags::ActiveDocumentIsWritable);
 }
 
 void FlattenLayersCommand::onExecute(Context* context)

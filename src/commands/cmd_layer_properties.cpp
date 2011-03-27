@@ -52,11 +52,8 @@ LayerPropertiesCommand::LayerPropertiesCommand()
 
 bool LayerPropertiesCommand::onEnabled(Context* context)
 {
-  const ActiveDocumentReader document(context);
-  const Sprite* sprite(document ? document->getSprite(): 0);
-  return
-    sprite != NULL &&
-    sprite->getCurrentLayer() != NULL;
+  return context->checkFlags(ContextFlags::ActiveDocumentIsWritable |
+			     ContextFlags::HasActiveLayer);
 }
 
 void LayerPropertiesCommand::onExecute(Context* context)

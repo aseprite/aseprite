@@ -139,6 +139,16 @@ static bool menuitem_msg_proc(JWidget widget, JMessage msg)
 	}
       }
       break;
+
+    default:
+      if (msg->type == jm_open_menuitem()) {
+	// Update the context flags after opening the menuitem's
+	// submenu to update the "enabled" flag of each command
+	// correctly.
+	Context* context = UIContext::instance();
+	context->updateFlags();
+      }
+      break;
   }
 
   return false;

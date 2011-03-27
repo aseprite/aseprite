@@ -116,6 +116,8 @@ void Context::executeCommand(Command* command, Params* params)
   PRINTF("Executing '%s' command.\n", command->short_name());
 
   try {
+    m_flags.update(this);
+
     if (params)
       command->loadParams(params);
 

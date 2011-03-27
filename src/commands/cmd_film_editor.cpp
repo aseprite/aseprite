@@ -47,9 +47,7 @@ FilmEditorCommand::FilmEditorCommand()
 
 bool FilmEditorCommand::onEnabled(Context* context)
 {
-  const ActiveDocumentReader document(context);
-  const Sprite* sprite(document ? document->getSprite(): 0);
-  return sprite != NULL;
+  return context->checkFlags(ContextFlags::ActiveDocumentIsWritable);
 }
 
 void FilmEditorCommand::onExecute(Context* context)

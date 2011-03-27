@@ -47,17 +47,11 @@ CopyCommand::CopyCommand()
 
 bool CopyCommand::onEnabled(Context* context)
 {
-  const ActiveDocumentReader document(context);
-  const Sprite* sprite(document ? document->getSprite(): 0);
-
-  if ((sprite) &&
-      (sprite->getCurrentLayer()) &&
-      (sprite->getCurrentLayer()->is_readable()) &&
-      (sprite->getCurrentLayer()->is_writable()) &&
-      (document->isMaskVisible()))
-    return sprite->getCurrentImage() ? true: false;
-  else
-    return false;
+  return context->checkFlags(ContextFlags::ActiveDocumentIsWritable |
+			     ContextFlags::ActiveLayerIsReadable |
+			     ContextFlags::ActiveLayerIsWritable |
+			     ContextFlags::HasActiveImage |
+			     ContextFlags::HasVisibleMask);
 }
 
 void CopyCommand::onExecute(Context* context)

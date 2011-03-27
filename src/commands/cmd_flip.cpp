@@ -76,8 +76,7 @@ void FlipCommand::onLoadParams(Params* params)
 
 bool FlipCommand::onEnabled(Context* context)
 {
-  const ActiveDocumentReader document(context);
-  return document != NULL;
+  return context->checkFlags(ContextFlags::ActiveDocumentIsWritable);
 }
 
 void FlipCommand::onExecute(Context* context)

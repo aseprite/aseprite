@@ -46,7 +46,7 @@ UndoCommand::UndoCommand()
 
 bool UndoCommand::onEnabled(Context* context)
 {
-  const ActiveDocumentReader document(context);
+  ActiveDocumentWriter document(context);
   return
     document != NULL &&
     document->getUndoHistory()->canUndo();

@@ -59,8 +59,7 @@ void LoadMaskCommand::onLoadParams(Params* params)
 
 bool LoadMaskCommand::onEnabled(Context* context)
 {
-  const ActiveDocumentReader document(context);
-  return document != NULL;
+  return context->checkFlags(ContextFlags::ActiveDocumentIsWritable);
 }
 
 void LoadMaskCommand::onExecute(Context* context)

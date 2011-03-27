@@ -52,14 +52,10 @@ ClearCommand::ClearCommand()
 
 bool ClearCommand::onEnabled(Context* context)
 {
-  const ActiveDocumentReader document(context);
-  const Sprite* sprite(document ? document->getSprite(): 0);
-  return
-    sprite != NULL &&
-    sprite->getCurrentLayer() != NULL &&
-    sprite->getCurrentLayer()->is_image() &&
-    sprite->getCurrentLayer()->is_readable() &&
-    sprite->getCurrentLayer()->is_writable();
+  return context->checkFlags(ContextFlags::ActiveDocumentIsWritable |
+			     ContextFlags::ActiveLayerIsReadable |
+			     ContextFlags::ActiveLayerIsWritable |
+			     ContextFlags::ActiveLayerIsImage);
 }
 
 void ClearCommand::onExecute(Context* context)

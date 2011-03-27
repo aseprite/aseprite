@@ -49,15 +49,11 @@ RemoveCelCommand::RemoveCelCommand()
 
 bool RemoveCelCommand::onEnabled(Context* context)
 {
-  const ActiveDocumentReader document(context);
-  const Sprite* sprite(document ? document->getSprite(): NULL);
-  return
-    sprite &&
-    sprite->getCurrentLayer() &&
-    sprite->getCurrentLayer()->is_readable() &&
-    sprite->getCurrentLayer()->is_writable() &&
-    sprite->getCurrentLayer()->is_image() &&
-    static_cast<const LayerImage*>(sprite->getCurrentLayer())->getCel(sprite->getCurrentFrame());
+  return context->checkFlags(ContextFlags::ActiveDocumentIsWritable |
+			     ContextFlags::ActiveLayerIsReadable |
+			     ContextFlags::ActiveLayerIsWritable |
+			     ContextFlags::ActiveLayerIsImage |
+			     ContextFlags::HasActiveCel);
 }
 
 void RemoveCelCommand::onExecute(Context* context)

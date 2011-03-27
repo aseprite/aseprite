@@ -57,14 +57,12 @@ NewFrameCommand::NewFrameCommand()
 
 bool NewFrameCommand::onEnabled(Context* context)
 {
-  const ActiveDocumentReader document(context);
-  const Sprite* sprite(document ? document->getSprite(): NULL);
-  return
-    sprite != NULL &&
-    sprite->getCurrentLayer() != NULL &&
-    sprite->getCurrentLayer()->is_readable() &&
-    sprite->getCurrentLayer()->is_writable() &&
-    sprite->getCurrentLayer()->is_image();
+  return context->checkFlags(ContextFlags::ActiveDocumentIsWritable |
+			     ContextFlags::HasActiveSprite |
+			     ContextFlags::HasActiveLayer |
+			     ContextFlags::ActiveLayerIsReadable |
+			     ContextFlags::ActiveLayerIsWritable |
+			     ContextFlags::ActiveLayerIsImage);
 }
 
 void NewFrameCommand::onExecute(Context* context)

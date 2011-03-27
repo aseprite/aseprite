@@ -75,8 +75,7 @@ void FramePropertiesCommand::onLoadParams(Params* params)
 
 bool FramePropertiesCommand::onEnabled(Context* context)
 {
-  const ActiveDocumentReader document(context);
-  return document != NULL;
+  return context->checkFlags(ContextFlags::ActiveDocumentIsWritable);
 }
 
 void FramePropertiesCommand::onExecute(Context* context)

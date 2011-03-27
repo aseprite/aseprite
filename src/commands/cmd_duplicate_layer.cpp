@@ -51,9 +51,8 @@ DuplicateLayerCommand::DuplicateLayerCommand()
 
 bool DuplicateLayerCommand::onEnabled(Context* context)
 {
-  const ActiveDocumentReader document(context);
-  const Sprite* sprite(document ? document->getSprite(): 0);
-  return sprite && sprite->getCurrentLayer();
+  return context->checkFlags(ContextFlags::ActiveDocumentIsWritable |
+			     ContextFlags::HasActiveLayer);
 }
 
 void DuplicateLayerCommand::onExecute(Context* context)

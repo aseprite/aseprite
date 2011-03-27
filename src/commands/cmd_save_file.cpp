@@ -215,8 +215,7 @@ SaveFileCommand::SaveFileCommand()
 // [main thread]
 bool SaveFileCommand::onEnabled(Context* context)
 {
-  const ActiveDocumentReader document(context);
-  return document != NULL;
+  return context->checkFlags(ContextFlags::ActiveDocumentIsWritable);
 }
 
 // Saves the active document in a file.
@@ -265,9 +264,7 @@ SaveFileAsCommand::SaveFileAsCommand()
 
 bool SaveFileAsCommand::onEnabled(Context* context)
 {
-  const ActiveDocumentReader document(context);
-  const Sprite* sprite(document ? document->getSprite(): 0);
-  return sprite != NULL;
+  return context->checkFlags(ContextFlags::ActiveDocumentIsWritable);
 }
 
 void SaveFileAsCommand::onExecute(Context* context)
@@ -300,9 +297,7 @@ SaveFileCopyAsCommand::SaveFileCopyAsCommand()
 
 bool SaveFileCopyAsCommand::onEnabled(Context* context)
 {
-  const ActiveDocumentReader document(context);
-  const Sprite* sprite(document ? document->getSprite(): 0);
-  return sprite != NULL;
+  return context->checkFlags(ContextFlags::ActiveDocumentIsWritable);
 }
 
 void SaveFileCopyAsCommand::onExecute(Context* context)

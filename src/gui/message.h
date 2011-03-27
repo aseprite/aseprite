@@ -13,7 +13,7 @@
 /* TODO add mutexes */
 #define JM_MESSAGE(name)				\
   static int _jm_##name = 0;				\
-  static int jm_##name()				\
+  int jm_##name()					\
   {							\
     if (!_jm_##name)					\
       _jm_##name = ji_register_message_type();		\

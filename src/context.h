@@ -21,6 +21,7 @@
 
 #include "base/disable_copying.h"
 #include "base/exception.h"
+#include "context_flags.h"
 #include "documents.h"
 #include "settings/settings.h"
 
@@ -50,6 +51,9 @@ public:
   const Documents& getDocuments() const;
   Document* getFirstDocument() const;
   Document* getNextDocument(Document* document) const;
+
+  bool checkFlags(uint32_t flags) const { return m_flags.check(flags); }
+  void updateFlags() { m_flags.update(this); }
 
   // Appends the document to the context's documents' list.
   void addDocument(Document* document);
@@ -83,6 +87,9 @@ private:
 
   // Settings in this context.
   ISettings* m_settings;
+
+  // Last updated flags.
+  ContextFlags m_flags;
 
   DISABLE_COPYING(Context);
 

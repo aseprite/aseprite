@@ -75,6 +75,7 @@ add_library(aseprite-library
   check_args.cpp
   console.cpp
   context.cpp
+  context_flags.cpp
   document.cpp
   documents.cpp
   gfxmode.cpp

@@ -47,14 +47,12 @@ PasteCommand::PasteCommand()
 
 bool PasteCommand::onEnabled(Context* context)
 {
-  const ActiveDocumentReader document(context);
-  const Sprite* sprite(document ? document->getSprite(): 0);
   return
-    sprite != NULL &&
-    sprite->getCurrentLayer() &&
-    sprite->getCurrentLayer()->is_image() &&
-    sprite->getCurrentLayer()->is_writable() &&
-    clipboard::can_paste();
+    clipboard::can_paste() &&
+    context->checkFlags(ContextFlags::ActiveDocumentIsWritable |
+			ContextFlags::ActiveLayerIsReadable |
+			ContextFlags::ActiveLayerIsWritable |
+			ContextFlags::ActiveLayerIsImage);
 }
 
 void PasteCommand::onExecute(Context* context)

@@ -48,7 +48,7 @@ ReselectMaskCommand::ReselectMaskCommand()
 
 bool ReselectMaskCommand::onEnabled(Context* context)
 {
-  const ActiveDocumentReader document(context);
+  ActiveDocumentWriter document(context);
   return
      document &&		      // The document does exist
     !document->isMaskVisible() &&     // The mask is hidden

@@ -55,8 +55,8 @@ CropSpriteCommand::CropSpriteCommand()
 
 bool CropSpriteCommand::onEnabled(Context* context)
 {
-  const ActiveDocumentReader document(context);
-  return document && document->isMaskVisible();
+  return context->checkFlags(ContextFlags::ActiveDocumentIsWritable |
+			     ContextFlags::HasVisibleMask);
 }
 
 void CropSpriteCommand::onExecute(Context* context)
@@ -98,9 +98,8 @@ AutocropSpriteCommand::AutocropSpriteCommand()
 
 bool AutocropSpriteCommand::onEnabled(Context* context)
 {
-  const ActiveDocumentReader document(context);
-  const Sprite* sprite(document ? document->getSprite(): 0);
-  return sprite != NULL;
+  return context->checkFlags(ContextFlags::ActiveDocumentIsWritable |
+			     ContextFlags::HasActiveSprite);
 }
 
 void AutocropSpriteCommand::onExecute(Context* context)

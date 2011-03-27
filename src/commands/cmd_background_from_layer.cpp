@@ -47,15 +47,13 @@ BackgroundFromLayerCommand::BackgroundFromLayerCommand()
 
 bool BackgroundFromLayerCommand::onEnabled(Context* context)
 {
-  const ActiveDocumentReader document(context);
-  const Sprite* sprite(document ? document->getSprite(): 0);
   return
-    sprite != NULL &&
-    sprite->getCurrentLayer() != NULL &&
-    sprite->getBackgroundLayer() == NULL &&
-    sprite->getCurrentLayer()->is_image() &&
-    sprite->getCurrentLayer()->is_readable() &&
-    sprite->getCurrentLayer()->is_writable();
+    context->checkFlags(ContextFlags::ActiveDocumentIsWritable |
+			ContextFlags::ActiveLayerIsReadable |
+			ContextFlags::ActiveLayerIsWritable |
+			ContextFlags::HasActiveImage) &&
+    // Doesn't have a background layer
+    !context->checkFlags(ContextFlags::HasBackgroundLayer);
 }
 
 void BackgroundFromLayerCommand::onExecute(Context* context)

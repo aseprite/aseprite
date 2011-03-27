@@ -48,8 +48,8 @@ DeselectMaskCommand::DeselectMaskCommand()
 
 bool DeselectMaskCommand::onEnabled(Context* context)
 {
-  const ActiveDocumentReader document(context);
-  return document && document->isMaskVisible();
+  return context->checkFlags(ContextFlags::ActiveDocumentIsWritable |
+			     ContextFlags::HasVisibleMask);
 }
 
 void DeselectMaskCommand::onExecute(Context* context)

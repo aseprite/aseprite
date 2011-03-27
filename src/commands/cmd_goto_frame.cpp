@@ -48,8 +48,7 @@ GotoFirstFrameCommand::GotoFirstFrameCommand()
 
 bool GotoFirstFrameCommand::onEnabled(Context* context)
 {
-  const ActiveDocumentReader document(context);
-  return document != NULL;
+  return context->checkFlags(ContextFlags::ActiveDocumentIsReadable);
 }
 
 void GotoFirstFrameCommand::onExecute(Context* context)
@@ -87,8 +86,7 @@ GotoPreviousFrameCommand::GotoPreviousFrameCommand()
 
 bool GotoPreviousFrameCommand::onEnabled(Context* context)
 {
-  const ActiveDocumentReader document(context);
-  return document != NULL;
+  return context->checkFlags(ContextFlags::ActiveDocumentIsReadable);
 }
 
 void GotoPreviousFrameCommand::onExecute(Context* context)
@@ -130,8 +128,7 @@ GotoNextFrameCommand::GotoNextFrameCommand()
 
 bool GotoNextFrameCommand::onEnabled(Context* context)
 {
-  const ActiveDocumentReader document(context);
-  return document != NULL;
+  return context->checkFlags(ContextFlags::ActiveDocumentIsReadable);
 }
 
 void GotoNextFrameCommand::onExecute(Context* context)
@@ -173,8 +170,7 @@ GotoLastFrameCommand::GotoLastFrameCommand()
 
 bool GotoLastFrameCommand::onEnabled(Context* context)
 {
-  const ActiveDocumentReader document(context);
-  return document != NULL;
+  return context->checkFlags(ContextFlags::ActiveDocumentIsReadable);
 }
 
 void GotoLastFrameCommand::onExecute(Context* context)

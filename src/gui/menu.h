@@ -29,4 +29,9 @@ int jmenuitem_is_highlight(Widget* menuitem);
 
 void jmenu_popup(Widget* menu, int x, int y);
 
+int jm_open_menuitem();
+int jm_close_menuitem();
+int jm_close_popup();
+int jm_exe_menuitem();
+
 #endif

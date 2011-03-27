@@ -50,10 +50,8 @@ InvertMaskCommand::InvertMaskCommand()
 
 bool InvertMaskCommand::onEnabled(Context* context)
 {
-  const ActiveDocumentReader document(context);
-  return
-    document != NULL &&
-    document->getSprite() != NULL;
+  return context->checkFlags(ContextFlags::ActiveDocumentIsWritable |
+			     ContextFlags::HasActiveSprite);
 }
 
 void InvertMaskCommand::onExecute(Context* context)
