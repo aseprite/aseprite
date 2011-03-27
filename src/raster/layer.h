@@ -91,7 +91,6 @@ class LayerImage : public Layer
 {
 public:
   explicit LayerImage(Sprite* sprite);
-  LayerImage(const LayerImage* src_layer, Sprite* dst_sprite);
   virtual ~LayerImage();
 
   int getMemSize() const;
