@@ -79,7 +79,6 @@ public:
   Undoer* popUndoer(PopFrom popFrom);
 
   int countUndoGroups() const;
-  bool isOutOfGroup() const;
 
 private:
   UndoHistory* m_undoHistory;

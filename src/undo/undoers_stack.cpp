@@ -115,25 +115,3 @@ int UndoersStack::countUndoGroups() const
 
   return groups;
 }
-
-bool UndoersStack::isOutOfGroup() const
-{
-  int level = 0;
-
-  const_iterator it = begin();
-  while (it != end()) {
-    level = 0;
-
-    do {
-      const Undoer* undoer = (*it)->getUndoer();
-      ++it;
-
-      if (undoer->isOpenGroup())
-	level++;
-      else if (undoer->isCloseGroup())
-	level--;
-    } while (level && (it != end()));
-  }
-
-  return level == 0;
-}

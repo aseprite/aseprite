@@ -113,6 +113,7 @@ private:
   ObjectsContainer* m_objects;	// Container of objects to insert & retrieve objects by ID
   UndoersStack* m_undoers;
   UndoersStack* m_redoers;
+  int m_groupLevel;
   int m_diffCount;
   int m_diffSaved;
   bool m_enabled;		// Is undo enabled?

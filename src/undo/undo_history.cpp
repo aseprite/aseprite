@@ -13,13 +13,13 @@
 #include "undo/undoers_stack.h"
 
 #include <allegro/config.h>	// TODO remove this when get_config_int() is removed from here
-#include <limits>
 
 using namespace undo;
 
 UndoHistory::UndoHistory(ObjectsContainer* objects)
   : m_objects(objects)
 {
+  m_groupLevel = 0;
   m_diffCount = 0;
   m_diffSaved = 0;
   m_enabled = true;
@@ -76,6 +76,13 @@ void UndoHistory::clearRedo()
 {
   if (!m_redoers->empty())
     m_redoers->clear();
+
+  // Check if the saved state was in the redoers, in this case we've
+  // just removed the saved state and now it is impossible to reach
+  // that state again, so we have to put a value in m_diffSaved
+  // impossible to be equal to m_diffCount.
+  if (m_diffCount < m_diffSaved)
+    m_diffSaved = -1;
 }
 
 const char* UndoHistory::getLabel()
@@ -145,6 +152,8 @@ void UndoHistory::runUndo(Direction direction)
       break;
 
     setLabel(itemLabel);
+    setModification(itemModification);
+
     undoer->revert(getObjects(), redoers);
 
     if (undoer->isOpenGroup())
@@ -155,7 +164,8 @@ void UndoHistory::runUndo(Direction direction)
     // Delete the undoer
     undoer->dispose();
 
-    if (itemModification == ModifyDocument) {
+    // Adjust m_diffCount (just one time, when the level backs to zero)
+    if (level == 0 && itemModification == ModifyDocument) {
       if (direction == UndoDirection)
 	m_diffCount--;
       else if (direction == RedoDirection)
@@ -184,9 +194,6 @@ void UndoHistory::discardTail()
 
 void UndoHistory::pushUndoer(Undoer* undoer)
 {
-  // Add the undoer in the undoers stack
-  m_undoers->pushUndoer(undoer);
-
   // TODO Replace this with the following implementation:
   // * Add the undo limit to UndoHistory class as a normal member (non-static).
   // * Add App signals to listen changes in settings
@@ -194,25 +201,29 @@ void UndoHistory::pushUndoer(Undoer* undoer)
   // * When a change is produced, Document calls getUndoHistory()->setUndoLimit().
   int undo_size_limit = (int)get_config_int("Options", "UndoSizeLimit", 8)*1024*1024;
 
+  // Add the undoer in the undoers stack
+  m_undoers->pushUndoer(undoer);
+
   // Reset the "redo" stack.
   clearRedo();
 
-  // Check if we've removed the saved state, in this case it's
-  // impossible to reach that state now, so we have to put a value in
-  // m_diffSaved impossible to be equal to m_diffCount.
-  if (m_diffCount < m_diffSaved)
-    m_diffSaved = std::numeric_limits<int>::min();
-
-  // More differences.
-  if (m_modification == ModifyDocument)
-    m_diffCount++;
+  // Adjust m_groupLevel
+  if (undoer->isOpenGroup()) {
+    ++m_groupLevel;
+  }
+  else if (undoer->isCloseGroup()) {
+    --m_groupLevel;
+  }
 
   // If we are outside a group, we can shrink the tail of the undo if
   // it has passed the undo-limit.
-  if (m_undoers->isOutOfGroup()) {
-    int groups = m_undoers->countUndoGroups();
+  if (m_groupLevel == 0) {
+    // More differences.
+    if (m_modification == ModifyDocument)
+      m_diffCount++;
 
-    // "undo" is too big?
+    // Is undo history too big?
+    int groups = m_undoers->countUndoGroups();
     while (groups > 1 && m_undoers->getMemSize() > undo_size_limit) {
       discardTail();
       groups--;
