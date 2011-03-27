@@ -297,10 +297,10 @@ static void ink_hline8_blur(int x1, int y, int x2, IToolLoop* loop)
 	 delegate.g /= delegate.count;
 	 delegate.b /= delegate.count;
 
-	 IndexedTraits::pixel_t c = *src_address;
-	 delegate.r = _rgba_getr(c) + (delegate.r-_rgba_getr(c)) * opacity / 255;
-	 delegate.g = _rgba_getg(c) + (delegate.g-_rgba_getg(c)) * opacity / 255;
-	 delegate.b = _rgba_getb(c) + (delegate.b-_rgba_getb(c)) * opacity / 255;
+	 uint32_t color32 = pal->getEntry(*src_address);
+	 delegate.r = _rgba_getr(color32) + (delegate.r-_rgba_getr(color32)) * opacity / 255;
+	 delegate.g = _rgba_getg(color32) + (delegate.g-_rgba_getg(color32)) * opacity / 255;
+	 delegate.b = _rgba_getb(color32) + (delegate.b-_rgba_getb(color32)) * opacity / 255;
 
 	 *dst_address = rgbmap->mapColor(delegate.r, delegate.g, delegate.b);
        }
