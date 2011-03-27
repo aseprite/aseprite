@@ -77,7 +77,6 @@ public:
   void begin();
   void beginForPreview();
   bool applyStep();
-  void apply();
   void applyToTarget();
 
   Document* getDocument() const { return m_document; }
@@ -104,6 +103,7 @@ public:
   
 private:
   void init(const Layer* layer, Image* image, int offset_x, int offset_y);
+  void apply();
   void applyToImage(Layer* layer, Image* image, int x, int y);
   bool updateMask(Mask* mask, const Image* image);
 
