@@ -18,12 +18,11 @@
 
 #include "config.h"
 
-#include <allegro.h>
-#include <map>
-#include <string>
+#include "widgets/toolbar.h"
 
 #include "app.h"
 #include "base/bind.h"
+#include "base/compiler_specific.h"
 #include "base/signal.h"
 #include "commands/command.h"
 #include "commands/commands.h"
@@ -36,7 +35,10 @@
 #include "ui_context.h"
 #include "widgets/groupbut.h"
 #include "widgets/statebar.h"
-#include "widgets/toolbar.h"
+
+#include <allegro.h>
+#include <map>
+#include <string>
 
 using namespace gfx;
 
@@ -75,7 +77,7 @@ public:
   void closeTipWindow();
 
 protected:
-  bool onProcessMessage(JMessage msg);
+  bool onProcessMessage(JMessage msg) OVERRIDE;
 
 private:
   int getToolGroupIndex(ToolGroup* group);
@@ -104,7 +106,7 @@ public:
   Signal1<void, Tool*> ToolSelected;
 
 protected:
-  bool onProcessMessage(JMessage msg);
+  bool onProcessMessage(JMessage msg) OVERRIDE;
 
 private:
   Rect getToolBounds(int index);

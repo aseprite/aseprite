@@ -7,8 +7,10 @@
 #ifndef GUI_LINK_LABEL_H_INCLUDED
 #define GUI_LINK_LABEL_H_INCLUDED
 
+#include "base/compiler_specific.h"
 #include "base/signal.h"
 #include "gui/custom_label.h"
+
 #include <string>
 
 class LinkLabel : public CustomLabel
@@ -22,8 +24,8 @@ public:
   Signal0<void> Click;
 
 protected:
-  bool onProcessMessage(JMessage msg);
-  void onPaint(PaintEvent& ev);
+  bool onProcessMessage(JMessage msg) OVERRIDE;
+  void onPaint(PaintEvent& ev) OVERRIDE;
 
 };
 

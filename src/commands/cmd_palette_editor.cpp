@@ -22,6 +22,7 @@
 #include "app/color.h"
 #include "app/color_utils.h"
 #include "base/bind.h"
+#include "base/compiler_specific.h"
 #include "commands/command.h"
 #include "commands/params.h"
 #include "console.h"
@@ -67,7 +68,7 @@ public:
   void setColor(const Color& color);
 
 protected:
-  bool onProcessMessage(JMessage msg);
+  bool onProcessMessage(JMessage msg) OVERRIDE;
 
   void onExit();
   void onCloseFrame();

@@ -19,10 +19,11 @@
 #ifndef WIDGETS_PALETTE_VIEW_H_INCLUDED
 #define WIDGETS_PALETTE_VIEW_H_INCLUDED
 
-#include <allegro/color.h>
-
+#include "base/compiler_specific.h"
 #include "base/signal.h"
 #include "gui/widget.h"
+
+#include <allegro/color.h>
 
 // TODO use some JI_SIGNAL_USER
 #define SIGNAL_PALETTE_EDITOR_CHANGE   0x10005
@@ -59,7 +60,7 @@ public:
   Signal1<void, int> IndexChange;
 
 protected:
-  bool onProcessMessage(JMessage msg);
+  bool onProcessMessage(JMessage msg) OVERRIDE;
 
 private:
   void request_size(int* w, int* h);

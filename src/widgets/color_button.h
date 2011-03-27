@@ -20,6 +20,7 @@
 #define WIDGETS_COLOR_BUTTON_H_INCLUDED
 
 #include "app/color.h"
+#include "base/compiler_specific.h"
 #include "base/signal.h"
 #include "gui/button.h"
 
@@ -42,9 +43,9 @@ public:
 
 protected:
   // Events
-  bool onProcessMessage(JMessage msg);
-  void onPreferredSize(PreferredSizeEvent& ev);
-  void onPaint(PaintEvent& ev);
+  bool onProcessMessage(JMessage msg) OVERRIDE;
+  void onPreferredSize(PreferredSizeEvent& ev) OVERRIDE;
+  void onPaint(PaintEvent& ev) OVERRIDE;
 
 private:
   void openSelectorDialog();

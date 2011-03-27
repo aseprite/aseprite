@@ -20,6 +20,7 @@
 #define WIDGETS_EDITOR_H_INCLUDED
 
 #include "app/color.h"
+#include "base/compiler_specific.h"
 #include "base/signal.h"
 #include "document.h"
 #include "gui/base.h"
@@ -205,7 +206,7 @@ public:
   int editor_click_cancel();
 
 protected:
-  bool onProcessMessage(JMessage msg);
+  bool onProcessMessage(JMessage msg) OVERRIDE;
   void onCurrentToolChange();
 
 private:

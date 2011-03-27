@@ -21,6 +21,8 @@
 
 #include "gui/base.h"
 
+class Tool;
+
 JWidget toolbar_new();
 
 bool toolbar_is_tool_visible(JWidget toolbar, Tool* tool);

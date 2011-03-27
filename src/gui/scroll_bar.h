@@ -7,6 +7,7 @@
 #ifndef GUI_SCROLL_BAR_H_INCLUDED
 #define GUI_SCROLL_BAR_H_INCLUDED
 
+#include "base/compiler_specific.h"
 #include "gui/widget.h"
 
 class ScrollBar : public Widget
@@ -25,7 +26,7 @@ public:
 
 protected:
   // Events
-  bool onProcessMessage(JMessage msg);
+  bool onProcessMessage(JMessage msg) OVERRIDE;
 
 private:
   void getScrollBarInfo(int* _pos, int* _len, int* _bar_size, int* _viewport_size);

@@ -7,6 +7,7 @@
 #ifndef GUI_VIEW_H_INCLUDED
 #define GUI_VIEW_H_INCLUDED
 
+#include "base/compiler_specific.h"
 #include "gfx/point.h"
 #include "gfx/size.h"
 #include "gui/scroll_bar.h"
@@ -45,7 +46,7 @@ public:
 
 protected:
   // Events
-  bool onProcessMessage(JMessage msg);
+  bool onProcessMessage(JMessage msg) OVERRIDE;
 
 private:
   static void displaceWidgets(Widget* widget, int x, int y);

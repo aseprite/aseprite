@@ -7,6 +7,7 @@
 #ifndef GUI_IMAGE_VIEW_H_INCLUDED
 #define GUI_IMAGE_VIEW_H_INCLUDED
 
+#include "base/compiler_specific.h"
 #include "gui/widget.h"
 
 struct BITMAP;
@@ -17,8 +18,8 @@ public:
    ImageView(BITMAP* bmp, int align);
 
 protected:
-  bool onProcessMessage(JMessage msg);
-  void onPaint(PaintEvent& ev);
+  bool onProcessMessage(JMessage msg) OVERRIDE;
+  void onPaint(PaintEvent& ev) OVERRIDE;
 
 private:
   BITMAP* m_bmp;

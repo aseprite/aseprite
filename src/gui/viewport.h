@@ -7,6 +7,7 @@
 #ifndef GUI_VIEWPORT_H_INCLUDED
 #define GUI_VIEWPORT_H_INCLUDED
 
+#include "base/compiler_specific.h"
 #include "gui/widget.h"
 
 class Viewport : public Widget
@@ -18,7 +19,7 @@ public:
 
 protected:
   // Events
-  bool onProcessMessage(JMessage msg);
+  bool onProcessMessage(JMessage msg) OVERRIDE;
 
 private:
   void set_position(JRect rect);

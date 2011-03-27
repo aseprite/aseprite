@@ -19,6 +19,7 @@
 #ifndef COMMANDS_FILTERS_FILTER_PREVIEW_H_INCLUDED
 #define COMMANDS_FILTERS_FILTER_PREVIEW_H_INCLUDED
 
+#include "base/compiler_specific.h"
 #include "gui/widget.h"
 
 class FilterManagerImpl;
@@ -35,7 +36,7 @@ public:
   FilterManagerImpl* getFilterManager() const;
 
 protected:
-  bool onProcessMessage(JMessage msg);
+  bool onProcessMessage(JMessage msg) OVERRIDE;
 
 private:
   FilterManagerImpl* m_filterMgr;

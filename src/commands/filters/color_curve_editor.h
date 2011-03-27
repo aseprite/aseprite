@@ -19,6 +19,7 @@
 #ifndef COMMANDS_FILTERS_COLOR_CURVE_EDITOR_H_INCLUDED
 #define COMMANDS_FILTERS_COLOR_CURVE_EDITOR_H_INCLUDED
 
+#include "base/compiler_specific.h"
 #include "base/signal.h"
 #include "gfx/point.h"
 #include "gui/widget.h"
@@ -35,7 +36,7 @@ public:
   Signal0<void> CurveEditorChange;
 
 protected:
-  bool onProcessMessage(JMessage msg);
+  bool onProcessMessage(JMessage msg) OVERRIDE;
 
 private:
   gfx::Point* getClosestPoint(int x, int y, int** edit_x, int** edit_y);

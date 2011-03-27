@@ -7,6 +7,7 @@
 #ifndef GUI_FRAME_H_INCLUDED
 #define GUI_FRAME_H_INCLUDED
 
+#include "base/compiler_specific.h"
 #include "base/signal.h"
 #include "gui/widget.h"
 
@@ -55,9 +56,9 @@ public:
   Signal1<void, CloseEvent&> Close;
 
 protected:
-  bool onProcessMessage(JMessage msg);
-  void onPreferredSize(PreferredSizeEvent& ev);
-  void onPaint(PaintEvent& ev);
+  bool onProcessMessage(JMessage msg) OVERRIDE;
+  void onPreferredSize(PreferredSizeEvent& ev) OVERRIDE;
+  void onPaint(PaintEvent& ev) OVERRIDE;
 
 private:
   void window_set_position(JRect rect);

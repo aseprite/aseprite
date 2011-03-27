@@ -7,8 +7,10 @@
 #ifndef GUI_BUTTON_H_INCLUDED
 #define GUI_BUTTON_H_INCLUDED
 
+#include "base/compiler_specific.h"
 #include "base/signal.h"
 #include "gui/widget.h"
+
 #include <vector>
 
 struct BITMAP;
@@ -53,9 +55,9 @@ public:
 
 protected:
   // Events
-  bool onProcessMessage(JMessage msg);
-  void onPreferredSize(PreferredSizeEvent& ev);
-  void onPaint(PaintEvent& ev);
+  bool onProcessMessage(JMessage msg) OVERRIDE;
+  void onPreferredSize(PreferredSizeEvent& ev) OVERRIDE;
+  void onPaint(PaintEvent& ev) OVERRIDE;
 
   // New events
   virtual void onClick(Event& ev);
@@ -99,7 +101,7 @@ public:
 
 protected:
   // Events
-  bool onProcessMessage(JMessage msg);
+  bool onProcessMessage(JMessage msg) OVERRIDE;
 
 private:
   int m_radioGroup;

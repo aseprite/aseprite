@@ -7,6 +7,7 @@
 #ifndef GUI_LABEL_H_INCLUDED
 #define GUI_LABEL_H_INCLUDED
 
+#include "base/compiler_specific.h"
 #include "gui/widget.h"
 
 class Label : public Widget
@@ -18,8 +19,8 @@ public:
   void setTextColor(int color);
 
 protected:
-  bool onProcessMessage(JMessage msg);
-  void onPaint(PaintEvent& ev);
+  bool onProcessMessage(JMessage msg) OVERRIDE;
+  void onPaint(PaintEvent& ev) OVERRIDE;
 
 private:
   int m_textColor;

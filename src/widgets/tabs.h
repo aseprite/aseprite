@@ -19,7 +19,9 @@
 #ifndef WIDGETS_TABS_H_INCLUDED
 #define WIDGETS_TABS_H_INCLUDED
 
+#include "base/compiler_specific.h"
 #include "gui/widget.h"
+
 #include <vector>
 
 class Tabs;
@@ -83,7 +85,7 @@ public:
   void stopScrolling();
 
 protected:
-  bool onProcessMessage(JMessage msg);
+  bool onProcessMessage(JMessage msg) OVERRIDE;
 
 private:
   void startAni(Ani ani);

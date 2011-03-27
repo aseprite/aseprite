@@ -22,6 +22,7 @@
 #include <vector>
 
 #include "app/color.h"
+#include "base/compiler_specific.h"
 #include "gui/base.h"
 #include "gui/widget.h"
 
@@ -72,7 +73,7 @@ public:
   void removeProgress(Progress* progress);
 
 protected:
-  bool onProcessMessage(JMessage msg);
+  bool onProcessMessage(JMessage msg) OVERRIDE;
 
 private:
   void onCurrentToolChange();

@@ -20,6 +20,7 @@
 #define WIDGETS_COLOR_BAR_H_INCLUDED
 
 #include "app/color.h"
+#include "base/compiler_specific.h"
 #include "base/signal.h"
 #include "gui/box.h"
 #include "gui/button.h"
@@ -62,7 +63,7 @@ private:
   public:
     ScrollableView();
   protected:
-    bool onProcessMessage(JMessage msg);
+    bool onProcessMessage(JMessage msg) OVERRIDE;
   };
 
   Button m_paletteButton;

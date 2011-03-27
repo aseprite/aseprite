@@ -6,11 +6,12 @@
 
 #include "config.h"
 
-#include <allegro.h>
-
+#include "base/compiler_specific.h"
 #include "gfx/size.h"
 #include "gui/gui.h"
 #include "gui/preferred_size_event.h"
+
+#include <allegro.h>
 
 using namespace gfx;
 
@@ -19,7 +20,7 @@ class ComboBoxButton : public Button
 public:
   ComboBoxButton() : Button("") { }
 
-  void onPaint(PaintEvent& ev)
+  void onPaint(PaintEvent& ev) OVERRIDE
   {
     getTheme()->paintComboBoxButton(ev);
   }

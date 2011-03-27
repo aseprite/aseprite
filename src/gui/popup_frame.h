@@ -7,6 +7,7 @@
 #ifndef GUI_POPUP_FRAME_H_INCLUDED
 #define GUI_POPUP_FRAME_H_INCLUDED
 
+#include "base/compiler_specific.h"
 #include "gui/frame.h"
 
 class PopupFrame : public Frame
@@ -18,9 +19,9 @@ public:
   void setHotRegion(JRegion region);
 
 protected:
-  bool onProcessMessage(JMessage msg);
-  void onPreferredSize(PreferredSizeEvent& ev);
-  void onPaint(PaintEvent& ev);
+  bool onProcessMessage(JMessage msg) OVERRIDE;
+  void onPreferredSize(PreferredSizeEvent& ev) OVERRIDE;
+  void onPaint(PaintEvent& ev) OVERRIDE;
 
 private:
   bool m_close_on_buttonpressed;

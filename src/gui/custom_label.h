@@ -7,6 +7,7 @@
 #ifndef GUI_CUSTOM_LABEL_H_INCLUDED
 #define GUI_CUSTOM_LABEL_H_INCLUDED
 
+#include "base/compiler_specific.h"
 #include "gui/label.h"
 
 class CustomLabel : public Label
@@ -15,7 +16,7 @@ public:
   CustomLabel(const char *text);
 
 protected:
-  bool onProcessMessage(JMessage msg);
+  bool onProcessMessage(JMessage msg) OVERRIDE;
 
 };
 

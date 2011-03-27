@@ -7,9 +7,11 @@
 #ifndef GUI_COMBOBOX_H_INCLUDED
 #define GUI_COMBOBOX_H_INCLUDED
 
+#include "base/compiler_specific.h"
 #include "gui/widget.h"
-#include <vector>
+
 #include <string>
+#include <vector>
 
 class Button;
 class Entry;
@@ -55,8 +57,8 @@ public:
   JRect getListBoxPos();
 
 protected:
-  bool onProcessMessage(JMessage msg);
-  void onPreferredSize(PreferredSizeEvent& ev);
+  bool onProcessMessage(JMessage msg) OVERRIDE;
+  void onPreferredSize(PreferredSizeEvent& ev) OVERRIDE;
 
 private:
   void onButtonClick(Event& ev);
