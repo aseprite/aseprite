@@ -86,7 +86,6 @@ class Editor : public Widget
   int m_cursor_screen_y;
   int m_cursor_editor_x; /* position in the editor (model) */
   int m_cursor_editor_y;
-  int m_old_cursor_thick;
   bool m_cursor_candraw : 1;
 
   // True if the cursor is inside the mask/selection

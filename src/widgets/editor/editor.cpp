@@ -90,7 +90,6 @@ Editor::Editor()
   m_cursor_screen_y = 0;
   m_cursor_editor_x = 0;
   m_cursor_editor_y = 0;
-  m_old_cursor_thick = 0;
 
   m_cursor_candraw = false;
   m_insideSelection = false;
@@ -900,10 +899,7 @@ bool Editor::onProcessMessage(JMessage msg)
     case JM_DRAW: {
       SkinTheme* theme = static_cast<SkinTheme*>(this->getTheme());
 
-      if (m_old_cursor_thick == 0) {
-      	m_old_cursor_thick = m_cursor_thick;
-      }
-
+      int old_cursor_thick = m_cursor_thick;
       if (m_cursor_thick)
       	editor_clean_cursor();
 
@@ -955,8 +951,7 @@ bool Editor::onProcessMessage(JMessage msg)
 	    (*it)->drawDecorator(this, ji_screen);
 	  }
 
-	  if (msg->draw.count == 0
-	      && m_old_cursor_thick != 0) {
+	  if (old_cursor_thick != 0) {
 	    editor_draw_cursor(jmouse_x(0), jmouse_y(0));
 	  }
 	}
@@ -969,9 +964,6 @@ bool Editor::onProcessMessage(JMessage msg)
 	  jdraw_rectfill(vp, theme->get_editor_face_color());
 	}
       }
-      
-      if (msg->draw.count == 0)
-      	m_old_cursor_thick = 0;
 
       return true;
     }
