@@ -138,8 +138,9 @@ void ColorSliders::addSlider(Channel channel, const char* labelText, int min, in
 void ColorSliders::setSliderValue(int sliderIndex, int value)
 {
   Slider* slider = m_slider[sliderIndex];
-
   slider->setValue(value);
+
+  updateEntryText(sliderIndex);
 }
 
 int ColorSliders::getSliderValue(int sliderIndex) const
@@ -151,9 +152,7 @@ int ColorSliders::getSliderValue(int sliderIndex) const
 
 void ColorSliders::onSliderChange(int i)
 {
-  // Update the entry related to the changed slider widget.
-  m_entry[i]->setTextf("%d", m_slider[i]->getValue());
-
+  updateEntryText(i);
   onControlChange(i);
 }
 
@@ -182,6 +181,12 @@ void ColorSliders::onControlChange(int i)
   // Fire ColorChange() signal
   ColorSlidersChangeEvent ev(color, m_channel[i], this);
   ColorChange(ev);
+}
+
+// Updates the entry related to the changed slider widget.
+void ColorSliders::updateEntryText(int entryIndex)
+{
+  m_entry[entryIndex]->setTextf("%d", m_slider[entryIndex]->getValue());
 }
 
 void ColorSliders::updateSlidersBgColor(const Color& color)

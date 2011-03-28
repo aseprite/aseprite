@@ -67,6 +67,7 @@ private:
   void onEntryChange(int i);
   void onControlChange(int i);
 
+  void updateEntryText(int entryIndex);
   void updateSlidersBgColor(const Color& color);
   void updateSliderBgColor(Slider* slider, const Color& color);
 
