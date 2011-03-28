@@ -66,6 +66,7 @@ private:
   void limit_size(int* w, int* h);
   void move_window(JRect rect, bool use_blit);
 
+  int m_windowAction;
 };
 
 #endif

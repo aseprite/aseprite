@@ -251,15 +251,8 @@ bool View::onProcessMessage(JMessage msg)
     }
 
     case JM_SETPOS:
-      if (!_jwindow_is_moving()) { /* dirty trick */
-	jrect_copy(this->rc, &msg->setpos.rect);
-	updateView();
-      }
-      else {
-	displaceWidgets(this,
-			msg->setpos.rect.x1 - this->rc->x1,
-			msg->setpos.rect.y1 - this->rc->y1);
-      }
+      jrect_copy(this->rc, &msg->setpos.rect);
+      updateView();
       return true;
 
     case JM_DRAW:

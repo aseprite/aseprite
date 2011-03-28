@@ -29,14 +29,8 @@ enum {
 
 static JRect click_pos = NULL;
 static int press_x, press_y;
-static int window_action = WINDOW_NONE;
 
 static void displace_widgets(JWidget widget, int x, int y);
-
-bool _jwindow_is_moving()
-{
-  return (window_action == WINDOW_MOVE) ? true: false;
-}
 
 Frame::Frame(bool desktop, const char* text)
   : Widget(JI_FRAME)
@@ -127,10 +121,7 @@ void Frame::center_window()
 
 void Frame::position_window(int x, int y)
 {
-  int old_action = window_action;
   JRect rect;
-
-  window_action = WINDOW_MOVE;
 
   if (m_is_autoremap)
     remap_window();
@@ -138,8 +129,6 @@ void Frame::position_window(int x, int y)
   rect = jrect_new(x, y, x+jrect_w(this->rc), y+jrect_h(this->rc));
   jwidget_set_rect(this, rect);
   jrect_free(rect);
-
-  window_action = old_action;
 
   invalidate();
 }
@@ -248,8 +237,9 @@ bool Frame::onProcessMessage(JMessage msg)
 
       press_x = msg->mouse.x;
       press_y = msg->mouse.y;
-      window_action = this->get_action(press_x, press_y);
-      if (window_action != WINDOW_NONE) {
+      m_windowAction = this->get_action(press_x, press_y);
+
+      if (m_windowAction != WINDOW_NONE) {
 	if (click_pos == NULL)
 	  click_pos = jrect_new_copy(this->rc);
 	else
@@ -272,7 +262,7 @@ bool Frame::onProcessMessage(JMessage msg)
 	  click_pos = NULL;
 	}
 
-	window_action = WINDOW_NONE;
+	m_windowAction = WINDOW_NONE;
 	return true;
       }
       break;
@@ -281,10 +271,10 @@ bool Frame::onProcessMessage(JMessage msg)
       if (!m_is_moveable)
 	break;
 
-      /* does it have the mouse captured? */
+      // Does it have the mouse captured?
       if (hasCapture()) {
-	/* reposition/resize */
-	if (window_action == WINDOW_MOVE) {
+	// Reposition/resize
+	if (m_windowAction == WINDOW_MOVE) {
 	  int x = click_pos->x1 + (msg->mouse.x - press_x);
 	  int y = click_pos->y1 + (msg->mouse.y - press_y);
 	  JRect rect = jrect_new(x, y,
@@ -299,26 +289,26 @@ bool Frame::onProcessMessage(JMessage msg)
 	  w = jrect_w(click_pos);
 	  h = jrect_h(click_pos);
 
-	  if (window_action & WINDOW_RESIZE_LEFT)
+	  if (m_windowAction & WINDOW_RESIZE_LEFT)
 	    w += press_x - msg->mouse.x;
-	  else if (window_action & WINDOW_RESIZE_RIGHT)
+	  else if (m_windowAction & WINDOW_RESIZE_RIGHT)
 	    w += msg->mouse.x - press_x;
 
-	  if (window_action & WINDOW_RESIZE_TOP)
+	  if (m_windowAction & WINDOW_RESIZE_TOP)
 	    h += (press_y - msg->mouse.y);
-	  else if (window_action & WINDOW_RESIZE_BOTTOM)
+	  else if (m_windowAction & WINDOW_RESIZE_BOTTOM)
 	    h += (msg->mouse.y - press_y);
 
 	  this->limit_size(&w, &h);
 
 	  if ((jrect_w(this->rc) != w) ||
 	      (jrect_h(this->rc) != h)) {
-	    if (window_action & WINDOW_RESIZE_LEFT)
+	    if (m_windowAction & WINDOW_RESIZE_LEFT)
 	      x = click_pos->x1 - (w - jrect_w(click_pos));
 	    else
 	      x = this->rc->x1;
 
-	    if (window_action & WINDOW_RESIZE_TOP)
+	    if (m_windowAction & WINDOW_RESIZE_TOP)
 	      y = click_pos->y1 - (h - jrect_h(click_pos));
 	    else
 	      y = this->rc->y1;
