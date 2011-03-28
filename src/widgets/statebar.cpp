@@ -495,7 +495,8 @@ bool StatusBar::onProcessMessage(JMessage msg)
 	  x -= width+4;
 	}
       }
-      else {
+      // Show layers only when we are not moving pixels
+      else if (!this->hasChild(m_movePixelsBox)) {
 	// Available width for layers buttons
 	int width = jrect_w(rc)/4;
 
