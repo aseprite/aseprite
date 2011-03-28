@@ -101,8 +101,8 @@ Document* Document::createBasicDocument(int imgtype, int width, int height, int 
 
     // Create the cel.
     {
-      UniquePtr<Cel> cel(cel_new(0, indexInStock));
-      cel_set_position(cel, 0, 0);
+      UniquePtr<Cel> cel(new Cel(0, indexInStock));
+      cel->setPosition(0, 0);
 
       // Add the cel in the layer.
       layer->addCel(cel);
@@ -234,9 +234,8 @@ void Document::prepareExtraCel(int x, int y, int w, int h, int opacity)
   if (!m_extraCel)
     m_extraCel = new Cel(0, 0);	// Ignored fields for this cell (frame, and image index)
 
-  m_extraCel->x = x;
-  m_extraCel->y = y;
-  m_extraCel->opacity = opacity; 
+  m_extraCel->setPosition(x, y);
+  m_extraCel->setOpacity(opacity);
 
   if (!m_extraImage ||
       m_extraImage->imgtype != getSprite()->getImgType() ||
@@ -297,20 +296,20 @@ void Document::copyLayerContent(const LayerImage* sourceLayer, LayerImage* destL
 
   for (; it != end; ++it) {
     const Cel* sourceCel = *it;
-    Cel* newCel = cel_new_copy(sourceCel);
+    Cel* newCel = new Cel(*sourceCel);
 
-    ASSERT((sourceCel->image >= 0) &&
-	   (sourceCel->image < sourceLayer->getSprite()->getStock()->size()));
+    ASSERT((sourceCel->getImage() >= 0) &&
+	   (sourceCel->getImage() < sourceLayer->getSprite()->getStock()->size()));
 
-    const Image* sourceImage = sourceLayer->getSprite()->getStock()->getImage(sourceCel->image);
+    const Image* sourceImage = sourceLayer->getSprite()->getStock()->getImage(sourceCel->getImage());
     ASSERT(sourceImage != NULL);
 
     Image* newImage = image_new_copy(sourceImage);
 
-    newCel->image = destLayer->getSprite()->getStock()->addImage(newImage);
+    newCel->setImage(destLayer->getSprite()->getStock()->addImage(newImage));
 
     if (m_undoHistory->isEnabled())
-      m_undoHistory->undo_add_image(destLayer->getSprite()->getStock(), newCel->image);
+      m_undoHistory->undo_add_image(destLayer->getSprite()->getStock(), newCel->getImage());
 
     destLayer->addCel(newCel);
   }

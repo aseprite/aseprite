@@ -240,7 +240,7 @@ void clipboard::paste(DocumentWriter& document)
 
     // Create the new cel in the current frame with the recently
     // created image
-    Cel* cel = cel_new(sprite->getCurrentFrame(), dst_image_index);
+    Cel* cel = new Cel(sprite->getCurrentFrame(), dst_image_index);
 
     // Add the cel to the layer
     undoTransaction.addCel(layer, cel);

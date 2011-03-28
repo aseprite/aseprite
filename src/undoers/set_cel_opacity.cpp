@@ -29,7 +29,7 @@ using namespace undoers;
 
 SetCelOpacity::SetCelOpacity(ObjectsContainer* objects, Cel* cel)
   : m_celId(objects->addObject(cel))
-  , m_opacity(cel->opacity)
+  , m_opacity(cel->getOpacity())
 {
 }
 
@@ -45,5 +45,5 @@ void SetCelOpacity::revert(ObjectsContainer* objects, UndoersCollector* redoers)
   // Push another SetCelOpacity as redoer
   redoers->pushUndoer(new SetCelOpacity(objects, cel));
 
-  cel->opacity = m_opacity;
+  cel->setOpacity(m_opacity);
 }

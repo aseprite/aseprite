@@ -93,21 +93,21 @@ void CelPropertiesCommand::onExecute(Context* context)
 
   if (cel != NULL) {
     // Position
-    label_pos->setTextf("%d, %d", cel->x, cel->y);
+    label_pos->setTextf("%d, %d", cel->getX(), cel->getY());
 
     // Dimension (and memory size)
     memsize =
-      image_line_size(sprite->getStock()->getImage(cel->image),
-		      sprite->getStock()->getImage(cel->image)->w)*
-      sprite->getStock()->getImage(cel->image)->h;
+      image_line_size(sprite->getStock()->getImage(cel->getImage()),
+		      sprite->getStock()->getImage(cel->getImage())->w)*
+      sprite->getStock()->getImage(cel->getImage())->h;
 
     label_size->setTextf("%dx%d (%s)",
-			 sprite->getStock()->getImage(cel->image)->w,
-			 sprite->getStock()->getImage(cel->image)->h,
+			 sprite->getStock()->getImage(cel->getImage())->w,
+			 sprite->getStock()->getImage(cel->getImage())->h,
 			 get_pretty_memory_size(memsize).c_str());
 
     // Opacity
-    slider_opacity->setValue(cel->opacity);
+    slider_opacity->setValue(cel->getOpacity());
     if (layer->is_background()) {
       slider_opacity->setEnabled(false);
       jwidget_add_tooltip_text(slider_opacity, "The `Background' layer is opaque,\n"
@@ -133,9 +133,9 @@ void CelPropertiesCommand::onExecute(Context* context)
 
     int new_opacity = slider_opacity->getValue();
 
-    /* the opacity was changed? */
+    // The opacity was changed?
     if (cel_writer != NULL &&
-	cel_writer->opacity != new_opacity) {
+	cel_writer->getOpacity() != new_opacity) {
       if (undo->isEnabled()) {
 	undo->setLabel("Cel Opacity Change");
 	undo->setModification(undo::ModifyDocument);
@@ -143,8 +143,8 @@ void CelPropertiesCommand::onExecute(Context* context)
 	undo->pushUndoer(new undoers::SetCelOpacity(undo->getObjects(), cel_writer));
       }
 
-      /* change cel opacity */
-      cel_set_opacity(cel_writer, new_opacity);
+      // Change cel opacity.
+      cel_writer->setOpacity(new_opacity);
 
       update_screen_for_document(document);
     }

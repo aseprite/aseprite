@@ -354,14 +354,14 @@ Image* Sprite::getCurrentImage(int* x, int* y, int* opacity) const
       getCurrentLayer()->is_image()) {
     const Cel* cel = static_cast<const LayerImage*>(getCurrentLayer())->getCel(getCurrentFrame());
     if (cel) {
-      ASSERT((cel->image >= 0) &&
-	     (cel->image < getStock()->size()));
+      ASSERT((cel->getImage() >= 0) &&
+	     (cel->getImage() < getStock()->size()));
 
-      image = getStock()->getImage(cel->image);
+      image = getStock()->getImage(cel->getImage());
 
-      if (x) *x = cel->x;
-      if (y) *y = cel->y;
-      if (opacity) *opacity = MID(0, cel->opacity, 255);
+      if (x) *x = cel->getX();
+      if (y) *y = cel->getY();
+      if (opacity) *opacity = MID(0, cel->getOpacity(), 255);
     }
   }
 
@@ -385,9 +385,9 @@ void Sprite::remapImages(int frame_from, int frame_to, const std::vector<uint8_t
     Cel* cel = *it;
 
     // Remap this Cel because is inside the specified range
-    if (cel->frame >= frame_from && 
-	cel->frame <= frame_to) {
-      Image* image = getStock()->getImage(cel->image);
+    if (cel->getFrame() >= frame_from && 
+	cel->getFrame() <= frame_to) {
+      Image* image = getStock()->getImage(cel->getImage());
 
       for (int y=0; y<image->h; ++y) {
 	IndexedTraits::address_t ptr = image_address_fast<IndexedTraits>(image, 0, y);

@@ -43,11 +43,11 @@ void write_cel(std::ostream& os, Cel* cel)
   // ObjectId cel_id = objects->addObject(cel);
   // write_raw_uint32(cel_id);
 
-  write16(os, cel->frame);
-  write16(os, cel->image);
-  write16(os, (int16_t)cel->x);
-  write16(os, (int16_t)cel->y);
-  write16(os, cel->opacity);
+  write16(os, cel->getFrame());
+  write16(os, cel->getImage());
+  write16(os, (int16_t)cel->getX());
+  write16(os, (int16_t)cel->getY());
+  write16(os, cel->getOpacity());
 
   // objects->removeObject(cel_id);
 }
@@ -62,10 +62,10 @@ Cel* read_cel(std::istream& is)
   int y = (int16_t)read16(is);
   int opacity = read16(is);
 
-  UniquePtr<Cel> cel(cel_new(frame, imageIndex));
+  UniquePtr<Cel> cel(new Cel(frame, imageIndex));
 
-  cel_set_position(cel, x, y);
-  cel_set_opacity(cel, opacity);
+  cel->setPosition(x, y);
+  cel->setOpacity(opacity);
 
   // objects->insertObject(cel_id, cel);
   return cel.release();

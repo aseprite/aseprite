@@ -155,11 +155,7 @@ bool FliFormat::onLoad(FileOp* fop)
 	break;
       }
 
-      cel = cel_new(frpos_out, index);
-      if (!cel) {
-	fop_error(fop, "Not enough memory\n");
-	break;
-      }
+      cel = new Cel(frpos_out, index);
       layer->addCel(cel);
 
       /* first frame or the palette changes */
@@ -172,13 +168,8 @@ bool FliFormat::onLoad(FileOp* fop)
       frpos_out++;
       SETPAL();
 
-      /* add link */
-      cel = cel_new(frpos_out, index);
-      if (!cel) {
-	fop_error(fop, _("Not enough memory\n"));
-	break;
-      }
-
+      // Add link
+      cel = new Cel(frpos_out, index);
       layer_add_cel(layer, cel);
     }
 #endif

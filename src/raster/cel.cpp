@@ -19,80 +19,27 @@
 #include "config.h"
 
 #include "raster/cel.h"
-#include "raster/layer.h"
-
-//////////////////////////////////////////////////////////////////////
 
 Cel::Cel(int frame, int image)
   : GfxObj(GFXOBJ_CEL)
 {
-  this->frame = frame;
-  this->image = image;
-  this->x = 0;
-  this->y = 0;
-  this->opacity = 255;
+  m_frame = frame;
+  m_image = image;
+  m_x = 0;
+  m_y = 0;
+  m_opacity = 255;
 }
 
 Cel::Cel(const Cel& cel)
   : GfxObj(cel)
 {
-  this->frame = cel.frame;
-  this->image = cel.image;
-  this->x = cel.x;
-  this->y = cel.y;
-  this->opacity = cel.opacity;
+  m_frame = cel.m_frame;
+  m_image = cel.m_image;
+  m_x = cel.m_x;
+  m_y = cel.m_y;
+  m_opacity = cel.m_opacity;
 }
 
 Cel::~Cel()
 {
 }
-
-int Cel::getMemSize() const
-{
-  return sizeof(Cel);
-}
-
-//////////////////////////////////////////////////////////////////////
-
-Cel* cel_new(int frame, int image)
-{
-  return new Cel(frame, image);
-}
-
-Cel* cel_new_copy(const Cel* cel)
-{
-  ASSERT(cel);
-  return new Cel(*cel);
-}
-
-void cel_free(Cel* cel)
-{
-  ASSERT(cel);
-  delete cel;
-}
-
-/**
- * @warning You have to remove the cel from the layer before to change
- *          the frame position.
- */
-void cel_set_frame(Cel* cel, int frame)
-{
-  cel->frame = frame;
-}
-
-void cel_set_image(Cel* cel, int image)
-{
-  cel->image = image;
-}
-
-void cel_set_position(Cel* cel, int x, int y)
-{
-  cel->x = x;
-  cel->y = y;
-}
-
-void cel_set_opacity(Cel* cel, int opacity)
-{
-  cel->opacity = opacity;
-}
-

@@ -1022,10 +1022,10 @@ static Cel *ase_file_read_cel_chunk(FILE *f, Sprite *sprite, int frame, int imgt
     return NULL;
   }
 
-  /* create the new frame */
-  cel = cel_new(frame, 0);
-  cel_set_position(cel, x, y);
-  cel_set_opacity(cel, opacity);
+  // Create the new frame.
+  cel = new Cel(frame, 0);
+  cel->setPosition(x, y);
+  cel->setOpacity(opacity);
 
   switch (cel_type) {
 
@@ -1037,7 +1037,7 @@ static Cel *ase_file_read_cel_chunk(FILE *f, Sprite *sprite, int frame, int imgt
       if (w > 0 && h > 0) {
 	Image* image = image_new(imgtype, w, h);
 	if (!image) {
-	  cel_free(cel);
+	  delete cel;
 	  // Not enough memory for frame's image
 	  return NULL;
 	}
@@ -1058,7 +1058,7 @@ static Cel *ase_file_read_cel_chunk(FILE *f, Sprite *sprite, int frame, int imgt
 	    break;
 	}
 
-	cel->image = sprite->getStock()->addImage(image);
+	cel->setImage(sprite->getStock()->addImage(image));
       }
       break;
     }
@@ -1070,11 +1070,11 @@ static Cel *ase_file_read_cel_chunk(FILE *f, Sprite *sprite, int frame, int imgt
 
       if (link) {
 	// Create a copy of the linked cel (avoid using links cel)
-	Image* image = image_new_copy(sprite->getStock()->getImage(link->image));
-	cel->image = sprite->getStock()->addImage(image);
+	Image* image = image_new_copy(sprite->getStock()->getImage(link->getImage()));
+	cel->setImage(sprite->getStock()->addImage(image));
       }
       else {
-	cel_free(cel);
+	delete cel;
 	// Linked cel doesn't found
 	return NULL;
       }
@@ -1089,7 +1089,7 @@ static Cel *ase_file_read_cel_chunk(FILE *f, Sprite *sprite, int frame, int imgt
       if (w > 0 && h > 0) {
 	Image* image = image_new(imgtype, w, h);
 	if (!image) {
-	  cel_free(cel);
+	  delete cel;
 	  // Not enough memory for frame's image
 	  return NULL;
 	}
@@ -1110,7 +1110,7 @@ static Cel *ase_file_read_cel_chunk(FILE *f, Sprite *sprite, int frame, int imgt
 	    break;
 	}
 
-	cel->image = sprite->getStock()->addImage(image);
+	cel->setImage(sprite->getStock()->addImage(image));
       }
       break;
     }
@@ -1129,16 +1129,16 @@ static void ase_file_write_cel_chunk(FILE *f, Cel *cel, LayerImage *layer, Sprit
   ase_file_write_start_chunk(f, ASE_FILE_CHUNK_CEL);
 
   fputw(layer_index, f);
-  fputw(cel->x, f);
-  fputw(cel->y, f);
-  fputc(cel->opacity, f);
+  fputw(cel->getX(), f);
+  fputw(cel->getY(), f);
+  fputc(cel->getOpacity(), f);
   fputw(cel_type, f);
   ase_file_write_padding(f, 7);
 
   switch (cel_type) {
 
     case ASE_FILE_RAW_CEL: {
-      Image* image = sprite->getStock()->getImage(cel->image);
+      Image* image = sprite->getStock()->getImage(cel->getImage());
 
       if (image) {
 	// Width and height
@@ -1176,7 +1176,7 @@ static void ase_file_write_cel_chunk(FILE *f, Cel *cel, LayerImage *layer, Sprit
       break;
 
     case ASE_FILE_COMPRESSED_CEL: {
-      Image* image = sprite->getStock()->getImage(cel->image);
+      Image* image = sprite->getStock()->getImage(cel->getImage());
 
       if (image) {
 	// Width and height

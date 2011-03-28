@@ -80,10 +80,10 @@ protected:
       Cel* cel = *it;
 
       // Change its location
-      undoTransaction.setCelPosition(cel, scale_x(cel->x), scale_y(cel->y));
+      undoTransaction.setCelPosition(cel, scale_x(cel->getX()), scale_y(cel->getY()));
 
       // Get cel's image
-      Image* image = m_sprite->getStock()->getImage(cel->image);
+      Image* image = m_sprite->getStock()->getImage(cel->getImage());
       if (!image)
 	continue;
 
@@ -95,10 +95,10 @@ protected:
       image_fixup_transparent_colors(image);
       image_resize(image, new_image,
 		   m_resize_method,
-		   m_sprite->getPalette(cel->frame),
-		   m_sprite->getRgbMap(cel->frame));
+		   m_sprite->getPalette(cel->getFrame()),
+		   m_sprite->getRgbMap(cel->getFrame()));
 
-      undoTransaction.replaceStockImage(cel->image, new_image);
+      undoTransaction.replaceStockImage(cel->getImage(), new_image);
 
       jobProgress((float)progress / cels.size());
 

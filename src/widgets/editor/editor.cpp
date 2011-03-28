@@ -1825,7 +1825,7 @@ public:
     if (m_layer->is_image()) {
       m_cel = static_cast<LayerImage*>(sprite->getCurrentLayer())->getCel(sprite->getCurrentFrame());
       if (m_cel)
-	m_cel_image = sprite->getStock()->getImage(m_cel->image);
+	m_cel_image = sprite->getStock()->getImage(m_cel->getImage());
     }
 
     if (m_cel == NULL) {
@@ -1835,24 +1835,24 @@ public:
 		  m_cel_image->mask_color);
 
       // create the cel
-      m_cel = cel_new(sprite->getCurrentFrame(), 0);
+      m_cel = new Cel(sprite->getCurrentFrame(), 0);
       static_cast<LayerImage*>(sprite->getCurrentLayer())->addCel(m_cel);
 
       m_cel_created = true;
     }
 
-    m_old_cel_x = m_cel->x;
-    m_old_cel_y = m_cel->y;
+    m_old_cel_x = m_cel->getX();
+    m_old_cel_y = m_cel->getY();
 
     // region to draw
     int x1, y1, x2, y2;
 
     // non-tiled
     if (m_tiled_mode == TILED_NONE) {
-      x1 = MIN(m_cel->x, 0);
-      y1 = MIN(m_cel->y, 0);
-      x2 = MAX(m_cel->x+m_cel_image->w, m_sprite->getWidth());
-      y2 = MAX(m_cel->y+m_cel_image->h, m_sprite->getHeight());
+      x1 = MIN(m_cel->getX(), 0);
+      y1 = MIN(m_cel->getY(), 0);
+      x2 = MAX(m_cel->getX()+m_cel_image->w, m_sprite->getWidth());
+      y2 = MAX(m_cel->getY()+m_cel_image->h, m_sprite->getHeight());
     }
     else { 			// tiled
       x1 = 0;
@@ -1863,8 +1863,8 @@ public:
 
     // create two copies of the image region which we'll modify with the tool
     m_src_image = image_crop(m_cel_image,
-			     x1-m_cel->x,
-			     y1-m_cel->y, x2-x1, y2-y1,
+			     x1-m_cel->getX(),
+			     y1-m_cel->getY(), x2-x1, y2-y1,
 			     m_cel_image->mask_color);
     m_dst_image = image_new_copy(m_src_image);
 
@@ -1887,8 +1887,7 @@ public:
 
     // we have to modify the cel position because it's used in the
     // `render_sprite' routine to draw the `dst_image'
-    m_cel->x = x1;
-    m_cel->y = y1;
+    m_cel->setPosition(x1, y1);
     m_offset.x = -x1;
     m_offset.y = -y1;
 
@@ -1915,8 +1914,8 @@ public:
       if (getInk()->isPaint()) {
 	// If the size of each image is the same, we can create an
 	// undo with only the differences between both images.
-	if (m_cel->x == m_old_cel_x &&
-	    m_cel->y == m_old_cel_y &&
+	if (m_cel->getX() == m_old_cel_x &&
+	    m_cel->getY() == m_old_cel_y &&
 	    m_cel_image->w == m_dst_image->w &&
 	    m_cel_image->h == m_dst_image->h) {
 	  // Was the 'cel_image' created in the start of the tool-loop?.
@@ -1927,7 +1926,7 @@ public:
 	    image_copy(m_cel_image, m_dst_image, 0, 0);
 
 	    // Add the 'cel_image' in the images' stock of the sprite.
-	    m_cel->image = m_sprite->getStock()->addImage(m_cel_image);
+	    m_cel->setImage(m_sprite->getStock()->addImage(m_cel_image));
 
 	    // Is the undo enabled?.
 	    if (undo->isEnabled()) {
@@ -1937,7 +1936,7 @@ public:
 	      // We create the undo information (for the new cel_image
 	      // in the stock and the new cel in the layer)...
 	      undo->undo_open();
-	      undo->undo_add_image(m_sprite->getStock(), m_cel->image);
+	      undo->undo_add_image(m_sprite->getStock(), m_cel->getImage());
 	      undo->undo_add_cel(m_sprite->getCurrentLayer(), m_cel);
 	      undo->undo_close();
 
@@ -1968,25 +1967,23 @@ public:
 	  if (undo->isEnabled()) {
 	    undo->undo_open();
 
-	    if (m_cel->x != m_old_cel_x ||
-		m_cel->y != m_old_cel_y) {
-	      int x = m_cel->x;
-	      int y = m_cel->y;
-	      m_cel->y = m_old_cel_y;
-	      m_cel->x = m_old_cel_x;
+	    if (m_cel->getX() != m_old_cel_x ||
+		m_cel->getY() != m_old_cel_y) {
+	      int x = m_cel->getX();
+	      int y = m_cel->getY();
+	      m_cel->setPosition(m_old_cel_x, m_old_cel_y);
 
 	      undo->pushUndoer(new undoers::SetCelPosition(undo->getObjects(), m_cel));
 
-	      m_cel->x = x;
-	      m_cel->y = y;
+	      m_cel->setPosition(x, y);
 	    }
 
-	    undo->undo_replace_image(m_sprite->getStock(), m_cel->image);
+	    undo->undo_replace_image(m_sprite->getStock(), m_cel->getImage());
 	    undo->undo_close();
 	  }
 
 	  // Replace the image in the stock.
-	  m_sprite->getStock()->replaceImage(m_cel->image, m_dst_image);
+	  m_sprite->getStock()->replaceImage(m_cel->getImage(), m_dst_image);
 
 	  // Destroy the old cel image.
 	  image_free(m_cel_image);
@@ -2005,8 +2002,7 @@ public:
     if (m_canceled || !getInk()->isPaint()) {
       // Here we destroy the temporary 'cel' created and restore all as it was before
 
-      m_cel->x = m_old_cel_x;
-      m_cel->y = m_old_cel_y;
+      m_cel->setPosition(m_old_cel_x, m_old_cel_y);
 
       if (m_cel_created) {
 	static_cast<LayerImage*>(m_layer)->removeCel(m_cel);

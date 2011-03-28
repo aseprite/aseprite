@@ -417,7 +417,7 @@ void UndoTransaction::displaceLayers(Layer* layer, int dx, int dy)
       CelIterator end = ((LayerImage*)layer)->getCelEnd();
       for (; it != end; ++it) {
 	Cel* cel = *it;
-	setCelPosition(cel, cel->x+dx, cel->y+dy);
+	setCelPosition(cel, cel->getX()+dx, cel->getY()+dy);
       }
       break;
     }
@@ -454,18 +454,18 @@ void UndoTransaction::backgroundFromLayer(LayerImage* layer, int bgcolor)
 
   for (; it != end; ++it) {
     Cel* cel = *it;
-    ASSERT((cel->image > 0) &&
-	   (cel->image < m_sprite->getStock()->size()));
+    ASSERT((cel->getImage() > 0) &&
+	   (cel->getImage() < m_sprite->getStock()->size()));
 
     // get the image from the sprite's stock of images
-    Image* cel_image = m_sprite->getStock()->getImage(cel->image);
+    Image* cel_image = m_sprite->getStock()->getImage(cel->getImage());
     ASSERT(cel_image);
 
     image_clear(bg_image, bgcolor);
     image_merge(bg_image, cel_image,
-		cel->x,
-		cel->y,
-		MID(0, cel->opacity, 255),
+		cel->getX(),
+		cel->getY(),
+		MID(0, cel->getOpacity(), 255),
 		layer->getBlendMode());
 
     // now we have to copy the new image (bg_image) to the cel...
@@ -480,7 +480,7 @@ void UndoTransaction::backgroundFromLayer(LayerImage* layer, int bgcolor)
       image_copy(cel_image, bg_image, 0, 0);
     }
     else {
-      replaceStockImage(cel->image, image_new_copy(bg_image));
+      replaceStockImage(cel->getImage(), image_new_copy(bg_image));
     }
   }
 
@@ -495,7 +495,7 @@ void UndoTransaction::backgroundFromLayer(LayerImage* layer, int bgcolor)
       int image_index = addImageInStock(cel_image);
 
       // Create the new cel and add it to the new background layer
-      cel = cel_new(frame, image_index);
+      cel = new Cel(frame, image_index);
       addCel(layer, cel);
     }
   }
@@ -561,7 +561,7 @@ void UndoTransaction::flattenLayers(int bgcolor)
 
     cel = background->getCel(frame);
     if (cel) {
-      cel_image = m_sprite->getStock()->getImage(cel->image);
+      cel_image = m_sprite->getStock()->getImage(cel->getImage());
       ASSERT(cel_image != NULL);
 
       /* we have to save the current state of `cel_image' in the undo */
@@ -579,7 +579,7 @@ void UndoTransaction::flattenLayers(int bgcolor)
       /* TODO error handling: if (!cel_image) { ... } */
 
       /* here we create the new cel (with the new image `cel_image') */
-      cel = cel_new(frame, m_sprite->getStock()->addImage(cel_image));
+      cel = new Cel(frame, m_sprite->getStock()->addImage(cel_image));
       /* TODO error handling: if (!cel) { ... } */
 
       /* and finally we add the cel in the background */
@@ -654,7 +654,7 @@ void UndoTransaction::newFrameForLayer(Layer* layer, int frame)
       for (int c=m_sprite->getTotalFrames()-1; c>=frame; --c) {
 	Cel* cel = static_cast<LayerImage*>(layer)->getCel(c);
 	if (cel)
-	  setCelFramePosition(cel, cel->frame+1);
+	  setCelFramePosition(cel, cel->getFrame()+1);
       }
 
       copyPreviousFrame(layer, frame);
@@ -704,7 +704,7 @@ void UndoTransaction::removeFrameOfLayer(Layer* layer, int frame)
 
       for (++frame; frame<m_sprite->getTotalFrames(); ++frame)
 	if (Cel* cel = static_cast<LayerImage*>(layer)->getCel(frame))
-	  setCelFramePosition(cel, cel->frame-1);
+	  setCelFramePosition(cel, cel->getFrame()-1);
       break;
 
     case GFXOBJ_LAYER_FOLDER: {
@@ -729,7 +729,7 @@ void UndoTransaction::copyPreviousFrame(Layer* layer, int frame)
 
   // create a copy of the previous cel
   Cel* src_cel = static_cast<LayerImage*>(layer)->getCel(frame-1);
-  Image* src_image = src_cel ? m_sprite->getStock()->getImage(src_cel->image):
+  Image* src_image = src_cel ? m_sprite->getStock()->getImage(src_cel->getImage()):
 			       NULL;
 
   // nothing to copy, it will be a transparent cel
@@ -741,10 +741,10 @@ void UndoTransaction::copyPreviousFrame(Layer* layer, int frame)
   int image_index = addImageInStock(dst_image);
 
   // create the new cel
-  Cel* dst_cel = cel_new(frame, image_index);
+  Cel* dst_cel = new Cel(frame, image_index);
   if (src_cel) {		// copy the data from the previous cel
-    cel_set_position(dst_cel, src_cel->x, src_cel->y);
-    cel_set_opacity(dst_cel, src_cel->opacity);
+    dst_cel->setPosition(src_cel->getX(), src_cel->getY());
+    dst_cel->setOpacity(src_cel->getOpacity());
   }
 
   // add the cel in the layer
@@ -772,7 +772,7 @@ void UndoTransaction::removeCel(LayerImage* layer, Cel* cel)
   bool used = false;
   for (int frame=0; frame<m_sprite->getTotalFrames(); ++frame) {
     Cel* it = layer->getCel(frame);
-    if (it && it != cel && it->image == cel->image) {
+    if (it && it != cel && it->getImage() == cel->getImage()) {
       used = true;
       break;
     }
@@ -781,7 +781,7 @@ void UndoTransaction::removeCel(LayerImage* layer, Cel* cel)
   // if the image is only used by this cel,
   // we can remove the image from the stock
   if (!used)
-    removeImageFromStock(cel->image);
+    removeImageFromStock(cel->getImage());
 
   if (isEnabled())
     m_undoHistory->undo_remove_cel(layer, cel);
@@ -790,7 +790,7 @@ void UndoTransaction::removeCel(LayerImage* layer, Cel* cel)
   layer->removeCel(cel);
 
   // and here we destroy the cel
-  cel_free(cel);
+  delete cel;
 }
 
 void UndoTransaction::setCelFramePosition(Cel* cel, int frame)
@@ -801,7 +801,7 @@ void UndoTransaction::setCelFramePosition(Cel* cel, int frame)
   if (isEnabled())
     m_undoHistory->pushUndoer(new undoers::SetCelFrame(m_undoHistory->getObjects(), cel));
 
-  cel->frame = frame;
+  cel->setFrame(frame);
 }
 
 void UndoTransaction::setCelPosition(Cel* cel, int x, int y)
@@ -811,8 +811,7 @@ void UndoTransaction::setCelPosition(Cel* cel, int x, int y)
   if (isEnabled())
     m_undoHistory->pushUndoer(new undoers::SetCelPosition(m_undoHistory->getObjects(), cel));
 
-  cel->x = x;
-  cel->y = y;
+  cel->setPosition(x, y);
 }
 
 void UndoTransaction::setFrameDuration(int frame, int msecs)
@@ -876,30 +875,30 @@ void UndoTransaction::moveFrameBeforeLayer(Layer* layer, int frame, int before_f
 
       for (; it != end; ++it) {
 	Cel* cel = *it;
-	int new_frame = cel->frame;
+	int new_frame = cel->getFrame();
 
 	// moving the frame to the future
 	if (frame < before_frame) {
-	  if (cel->frame == frame) {
+	  if (cel->getFrame() == frame) {
 	    new_frame = before_frame-1;
 	  }
-	  else if (cel->frame > frame &&
-		   cel->frame < before_frame) {
+	  else if (cel->getFrame() > frame &&
+		   cel->getFrame() < before_frame) {
 	    new_frame--;
 	  }
 	}
 	// moving the frame to the past
 	else if (before_frame < frame) {
-	  if (cel->frame == frame) {
+	  if (cel->getFrame() == frame) {
 	    new_frame = before_frame;
 	  }
-	  else if (cel->frame >= before_frame &&
-		   cel->frame < frame) {
+	  else if (cel->getFrame() >= before_frame &&
+		   cel->getFrame() < frame) {
 	    new_frame++;
 	  }
 	}
 
-	if (cel->frame != new_frame)
+	if (cel->getFrame() != new_frame)
 	  setCelFramePosition(cel, new_frame);
       }
       break;
@@ -927,14 +926,14 @@ Cel* UndoTransaction::getCurrentCel()
 
 void UndoTransaction::cropCel(Cel* cel, int x, int y, int w, int h, int bgcolor)
 {
-  Image* cel_image = m_sprite->getStock()->getImage(cel->image);
+  Image* cel_image = m_sprite->getStock()->getImage(cel->getImage());
   ASSERT(cel_image);
     
   // create the new image through a crop
-  Image* new_image = image_crop(cel_image, x-cel->x, y-cel->y, w, h, bgcolor);
+  Image* new_image = image_crop(cel_image, x-cel->getX(), y-cel->getY(), w, h, bgcolor);
 
   // replace the image in the stock that is pointed by the cel
-  replaceStockImage(cel->image, new_image);
+  replaceStockImage(cel->getImage(), new_image);
 
   // update the cel's position
   setCelPosition(cel, x, y);
@@ -942,8 +941,8 @@ void UndoTransaction::cropCel(Cel* cel, int x, int y, int w, int h, int bgcolor)
 
 Image* UndoTransaction::getCelImage(Cel* cel)
 {
-  if (cel && cel->image >= 0 && cel->image < m_sprite->getStock()->size())
-    return m_sprite->getStock()->getImage(cel->image);
+  if (cel && cel->getImage() >= 0 && cel->getImage() < m_sprite->getStock()->size())
+    return m_sprite->getStock()->getImage(cel->getImage());
   else
     return NULL;
 }
@@ -979,8 +978,8 @@ void UndoTransaction::clearMask(int bgcolor)
     }
   }
   else {
-    int offset_x = mask->x-cel->x;
-    int offset_y = mask->y-cel->y;
+    int offset_x = mask->x-cel->getX();
+    int offset_y = mask->y-cel->getY();
     int u, v, putx, puty;
     int x1 = MAX(0, offset_x);
     int y1 = MAX(0, offset_y);
@@ -1050,11 +1049,11 @@ void UndoTransaction::pasteImage(const Image* src_image, int x, int y, int opaci
   Cel* cel = ((LayerImage*)layer)->getCel(m_sprite->getCurrentFrame());
   ASSERT(cel);
 
-  Image* cel_image = m_sprite->getStock()->getImage(cel->image);
+  Image* cel_image = m_sprite->getStock()->getImage(cel->getImage());
   Image* cel_image2 = image_new_copy(cel_image);
-  image_merge(cel_image2, src_image, x-cel->x, y-cel->y, opacity, BLEND_MODE_NORMAL);
+  image_merge(cel_image2, src_image, x-cel->getX(), y-cel->getY(), opacity, BLEND_MODE_NORMAL);
 
-  replaceStockImage(cel->image, cel_image2); // TODO fix this, improve, avoid replacing the whole image
+  replaceStockImage(cel->getImage(), cel_image2); // TODO fix this, improve, avoid replacing the whole image
 }
 
 void UndoTransaction::copyToCurrentMask(Mask* mask)

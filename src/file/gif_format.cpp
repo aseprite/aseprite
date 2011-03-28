@@ -199,13 +199,13 @@ bool GifFormat::onLoad(FileOp* fop)
 	  }
 
 	// Create a new Cel and a image with the whole content of "current_image"
-	Cel* cel = cel_new(frame_num, 0);
+	Cel* cel = new Cel(frame_num, 0);
 	try {
 	  Image* cel_image = image_new_copy(current_image);
 	  try {
 	    // Add the image in the sprite's stock and update the cel's
 	    // reference to the new stock's image.
-	    cel->image = sprite->getStock()->addImage(cel_image);
+	    cel->setImage(sprite->getStock()->addImage(cel_image));
 	  }
 	  catch (...) {
 	    delete cel_image;

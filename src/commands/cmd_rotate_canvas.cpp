@@ -84,20 +84,20 @@ protected:
     // for each cel...
     for (CelIterator it = cels.begin(); it != cels.end(); ++it) {
       Cel* cel = *it;
-      Image* image = m_sprite->getStock()->getImage(cel->image);
+      Image* image = m_sprite->getStock()->getImage(cel->getImage());
 
       // change it location
       switch (m_angle) {
 	case 180:
 	  undoTransaction.setCelPosition(cel,
-					 m_sprite->getWidth() - cel->x - image->w,
-					 m_sprite->getHeight() - cel->y - image->h);
+					 m_sprite->getWidth() - cel->getX() - image->w,
+					 m_sprite->getHeight() - cel->getY() - image->h);
 	  break;
 	case 90:
-	  undoTransaction.setCelPosition(cel, m_sprite->getHeight() - cel->y - image->h, cel->x);
+	  undoTransaction.setCelPosition(cel, m_sprite->getHeight() - cel->getY() - image->h, cel->getX());
 	  break;
 	case -90:
-	  undoTransaction.setCelPosition(cel, cel->y, m_sprite->getWidth() - cel->x - image->w);
+	  undoTransaction.setCelPosition(cel, cel->getY(), m_sprite->getWidth() - cel->getX() - image->w);
 	  break;
       }
     }

@@ -96,12 +96,12 @@ void MergeDownLayerCommand::onExecute(Context* context)
 
     /* get images */
     if (src_cel != NULL)
-      src_image = sprite->getStock()->getImage(src_cel->image);
+      src_image = sprite->getStock()->getImage(src_cel->getImage());
     else
       src_image = NULL;
 
     if (dst_cel != NULL)
-      dst_image = sprite->getStock()->getImage(dst_cel->image);
+      dst_image = sprite->getStock()->getImage(dst_cel->getImage());
     else
       dst_image = NULL;
 
@@ -120,9 +120,9 @@ void MergeDownLayerCommand::onExecute(Context* context)
 	  undo->undo_add_image(sprite->getStock(), index);
 
 	/* creating a copy of the cell */
-	dst_cel = cel_new(frpos, index);
-	cel_set_position(dst_cel, src_cel->x, src_cel->y);
-	cel_set_opacity(dst_cel, src_cel->opacity);
+	dst_cel = new Cel(frpos, index);
+	dst_cel->setPosition(src_cel->getX(), src_cel->getY());
+	dst_cel->setOpacity(src_cel->getOpacity());
 
 	if (undo->isEnabled())
 	  undo->undo_add_cel(dst_layer, dst_cel);
@@ -144,33 +144,34 @@ void MergeDownLayerCommand::onExecute(Context* context)
 	}
 	/* merge down in a transparent layer */
 	else {
-	  x1 = MIN(src_cel->x, dst_cel->x);
-	  y1 = MIN(src_cel->y, dst_cel->y);
-	  x2 = MAX(src_cel->x+src_image->w-1, dst_cel->x+dst_image->w-1);
-	  y2 = MAX(src_cel->y+src_image->h-1, dst_cel->y+dst_image->h-1);
+	  x1 = MIN(src_cel->getX(), dst_cel->getX());
+	  y1 = MIN(src_cel->getY(), dst_cel->getY());
+	  x2 = MAX(src_cel->getX()+src_image->w-1, dst_cel->getX()+dst_image->w-1);
+	  y2 = MAX(src_cel->getY()+src_image->h-1, dst_cel->getY()+dst_image->h-1);
 	  bgcolor = 0;
 	}
 
 	new_image = image_crop(dst_image,
-			       x1-dst_cel->x,
-			       y1-dst_cel->y,
+			       x1-dst_cel->getX(),
+			       y1-dst_cel->getY(),
 			       x2-x1+1, y2-y1+1, bgcolor);
 
 	/* merge src_image in new_image */
 	image_merge(new_image, src_image,
-		    src_cel->x-x1,
-		    src_cel->y-y1,
-		    src_cel->opacity,
+		    src_cel->getX()-x1,
+		    src_cel->getY()-y1,
+		    src_cel->getOpacity(),
 		    static_cast<LayerImage*>(src_layer)->getBlendMode());
 
 	if (undo->isEnabled())
 	  undo->pushUndoer(new undoers::SetCelPosition(undo->getObjects(), dst_cel));
 
-	cel_set_position(dst_cel, x1, y1);
+	dst_cel->setPosition(x1, y1);
 
 	if (undo->isEnabled())
-	  undo->undo_replace_image(sprite->getStock(), dst_cel->image);
-	sprite->getStock()->replaceImage(dst_cel->image, new_image);
+	  undo->undo_replace_image(sprite->getStock(), dst_cel->getImage());
+
+	sprite->getStock()->replaceImage(dst_cel->getImage(), new_image);
 
 	image_free(dst_image);
       }

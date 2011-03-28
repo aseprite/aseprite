@@ -80,7 +80,7 @@ void ImagesCollector::collectFromLayer(Layer* layer)
 
 void ImagesCollector::collectImage(Layer* layer, Cel* cel)
 {
-  Image* image = layer->getSprite()->getStock()->getImage(cel->image);
+  Image* image = layer->getSprite()->getStock()->getImage(cel->getImage());
 
   m_items.push_back(Item(layer, cel, image));
 }

@@ -134,12 +134,12 @@ void FlipCommand::onExecute(Context* context)
       // for each cel...
       for (CelIterator it = cels.begin(); it != cels.end(); ++it) {
 	Cel* cel = *it;
-	Image* image = sprite->getStock()->getImage(cel->image);
+	Image* image = sprite->getStock()->getImage(cel->getImage());
 
 	undoTransaction.setCelPosition
 	  (cel,
-	   m_flip_horizontal ? sprite->getWidth() - image->w - cel->x: cel->x,
-	   m_flip_vertical ? sprite->getHeight() - image->h - cel->y: cel->y);
+	   m_flip_horizontal ? sprite->getWidth() - image->w - cel->getX(): cel->getX(),
+	   m_flip_vertical ? sprite->getHeight() - image->h - cel->getY(): cel->getY());
 
 	undoTransaction.flipImage(image, 0, 0, image->w-1, image->h-1,
 				  m_flip_horizontal, m_flip_vertical);

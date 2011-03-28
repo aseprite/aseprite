@@ -48,5 +48,5 @@ void AddCel::revert(ObjectsContainer* objects, UndoersCollector* redoers)
   redoers->pushUndoer(new RemoveCel(objects, layer, cel));
 
   layer->removeCel(cel);
-  cel_free(cel);
+  delete cel;
 }

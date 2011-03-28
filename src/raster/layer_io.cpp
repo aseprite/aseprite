@@ -61,7 +61,7 @@ void write_layer(std::ostream& os, LayerSubObjectsSerializer* subObjects, Layer*
 	Cel* cel = *it;
 	subObjects->write_cel(os, cel);
 
-	Image* image = layer->getSprite()->getStock()->getImage(cel->image);
+	Image* image = layer->getSprite()->getStock()->getImage(cel->getImage());
 	ASSERT(image != NULL);
 
 	subObjects->write_image(os, image);
@@ -118,7 +118,7 @@ Layer* read_layer(std::istream& is, LayerSubObjectsSerializer* subObjects, Sprit
 	// Read the cel's image
 	Image* image = subObjects->read_image(is);
 
-	sprite->getStock()->replaceImage(cel->image, image);
+	sprite->getStock()->replaceImage(cel->getImage(), image);
       }
       break;
     }

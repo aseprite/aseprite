@@ -269,13 +269,13 @@ bool AnimationEditor::onProcessMessage(JMessage msg)
 	if (layerPtr->is_image()) {
 	  it = static_cast<LayerImage*>(layerPtr)->getCelBegin();
 	  end = static_cast<LayerImage*>(layerPtr)->getCelEnd();
-	  for (; it != end && (*it)->frame < first_frame; ++it)
+	  for (; it != end && (*it)->getFrame() < first_frame; ++it)
 	    ;
 	}
 
 	// Draw every visible cel for each layer.
 	for (frame=first_frame; frame<=last_frame; ++frame) {
-	  Cel* cel = (layerPtr->is_image() && it != end && (*it)->frame == frame ? *it: NULL);
+	  Cel* cel = (layerPtr->is_image() && it != end && (*it)->getFrame() == frame ? *it: NULL);
 
 	  drawCel(clip, layer, frame, cel);
 
@@ -1209,7 +1209,7 @@ void AnimationEditor::drawCel(JRect clip, int layer_index, int frame, Cel* cel)
   // Empty cel?.
   if (cel == NULL ||
       // TODO why a cel can't have an associated image?
-      m_sprite->getStock()->getImage(cel->image) == NULL) {
+      m_sprite->getStock()->getImage(cel->getImage()) == NULL) {
 
     jdraw_rectfill(thumbnail_rect, bg);
     draw_emptyset_symbol(ji_screen, thumbnail_rect, ji_color_disabled());

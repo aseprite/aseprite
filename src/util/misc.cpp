@@ -108,8 +108,8 @@ int interactive_move_layer(int mode, bool use_undo, int (*callback)())
   if (!cel)
     return false;
 
-  begin_x = cel->x;
-  begin_y = cel->y;
+  begin_x = cel->getX();
+  begin_y = cel->getY();
 
   editor->hide_drawing_cursor();
   jmouse_set_cursor(JI_CURSOR_MOVE);
@@ -118,20 +118,20 @@ int interactive_move_layer(int mode, bool use_undo, int (*callback)())
 
   do {
     if (update) {
-      cel->x = begin_x - start_x + new_x;
-      cel->y = begin_y - start_y + new_y;
+      cel->setPosition(begin_x - start_x + new_x,
+		       begin_y - start_y + new_y);
 
-      /* update layer-bounds */
+      // Update layer-bounds.
       editor->invalidate();
 
-      /* update status bar */
+      // Update status bar.
       app_get_statusbar()->setStatusText
 	(0,
 	 "Pos %3d %3d Offset %3d %3d",
-	 (int)cel->x,
-	 (int)cel->y,
-	 (int)(cel->x - begin_x),
-	 (int)(cel->y - begin_y));
+	 (int)cel->getX(),
+	 (int)cel->getY(),
+	 (int)(cel->getX() - begin_x),
+	 (int)(cel->getY() - begin_y));
 
       /* update clock */
       quiet_clock = ji_clock;
@@ -149,9 +149,9 @@ int interactive_move_layer(int mode, bool use_undo, int (*callback)())
     gui_feedback();
   } while (editor->editor_click(&new_x, &new_y, &update, NULL));
 
-  new_x = cel->x;
-  new_y = cel->y;
-  cel_set_position(cel, begin_x, begin_y);
+  new_x = cel->getX();
+  new_y = cel->getY();
+  cel->setPosition(begin_x, begin_y);
   
   /* the position was changed */
   if (!editor->editor_click_cancel()) {
@@ -162,7 +162,7 @@ int interactive_move_layer(int mode, bool use_undo, int (*callback)())
       undo->pushUndoer(new undoers::SetCelPosition(undo->getObjects(), cel));
     }
 
-    cel_set_position(cel, new_x, new_y);
+    cel->setPosition(new_x, new_y);
     ret = true;
   }
   /* the position wasn't changed */

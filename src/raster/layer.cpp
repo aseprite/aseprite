@@ -116,7 +116,7 @@ int LayerImage::getMemSize() const
     const Cel* cel = *it;
     size += cel->getMemSize();
 
-    const Image* image = getSprite()->getStock()->getImage(cel->image);
+    const Image* image = getSprite()->getStock()->getImage(cel->getImage());
     size += image->getMemSize();
   }
 
@@ -130,13 +130,13 @@ void LayerImage::destroyAllCels()
 
   for (; it != end; ++it) {
     Cel* cel = *it;
-    Image* image = getSprite()->getStock()->getImage(cel->image);
+    Image* image = getSprite()->getStock()->getImage(cel->getImage());
 
     ASSERT(image != NULL);
 
     getSprite()->getStock()->removeImage(image);
     image_free(image);
-    cel_free(cel);
+    delete cel;
   }
   m_cels.clear();
 }
@@ -156,7 +156,7 @@ void LayerImage::addCel(Cel *cel)
   CelIterator end = getCelEnd();
 
   for (; it != end; ++it) {
-    if ((*it)->frame > cel->frame)
+    if ((*it)->getFrame() > cel->getFrame())
       break;
   }
 
@@ -185,7 +185,7 @@ const Cel* LayerImage::getCel(int frame) const
 
   for (; it != end; ++it) {
     const Cel* cel = *it;
-    if (cel->frame == frame)
+    if (cel->getFrame() == frame)
       return cel;
   }
 
@@ -328,8 +328,8 @@ LayerImage* layer_new_flatten_copy(Sprite* dst_sprite, const Layer* src_layer,
 
       try {
 	// Create the new cel for the output layer (add the image to stock too).
-	Cel* cel = cel_new(frame, flatLayer->getSprite()->getStock()->addImage(image));
-	cel_set_position(cel, x, y);
+	Cel* cel = new Cel(frame, flatLayer->getSprite()->getStock()->addImage(image));
+	cel->setPosition(x, y);
 
 	// Clear the image and render this frame.
 	image_clear(image, 0);
@@ -358,16 +358,16 @@ void layer_render(const Layer* layer, Image* image, int x, int y, int frame)
       Image* src_image;
 
       if (cel) {
-	ASSERT((cel->image >= 0) &&
-	       (cel->image < layer->getSprite()->getStock()->size()));
+	ASSERT((cel->getImage() >= 0) &&
+	       (cel->getImage() < layer->getSprite()->getStock()->size()));
 
-	src_image = layer->getSprite()->getStock()->getImage(cel->image);
+	src_image = layer->getSprite()->getStock()->getImage(cel->getImage());
 	ASSERT(src_image != NULL);
 
 	image_merge(image, src_image,
-		    cel->x + x,
-		    cel->y + y,
-		    MID (0, cel->opacity, 255),
+		    cel->getX() + x,
+		    cel->getY() + y,
+		    MID (0, cel->getOpacity(), 255),
 		    static_cast<const LayerImage*>(layer)->getBlendMode());
       }
       break;

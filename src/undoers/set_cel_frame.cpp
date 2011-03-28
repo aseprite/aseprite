@@ -29,7 +29,7 @@ using namespace undoers;
 
 SetCelFrame::SetCelFrame(ObjectsContainer* objects, Cel* cel)
   : m_celId(objects->addObject(cel))
-  , m_frame(cel->frame)
+  , m_frame(cel->getFrame())
 {
 }
 
@@ -45,5 +45,5 @@ void SetCelFrame::revert(ObjectsContainer* objects, UndoersCollector* redoers)
   // Push another SetCelFrame as redoer
   redoers->pushUndoer(new SetCelFrame(objects, cel));
 
-  cel->frame = m_frame;
+  cel->setFrame(m_frame);
 }

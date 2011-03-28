@@ -418,7 +418,7 @@ void fop_operate(FileOp *fop)
 	  ->getSprite()							\
 	  ->getStock()->addImage(fop->seq.image);			\
 									\
-	fop->seq.last_cel->image = image_index;				\
+	fop->seq.last_cel->setImage(image_index);			\
 	fop->seq.layer->addCel(fop->seq.last_cel);			\
 									\
 	if (fop->document->getSprite()->getPalette(frame)		\
@@ -458,7 +458,7 @@ void fop_operate(FileOp *fop)
 	  // Error reading the first frame
 	  if (!loadres || !fop->document || !fop->seq.last_cel) {
 	    if (fop->seq.image) image_free(fop->seq.image);
-	    if (fop->seq.last_cel) cel_free(fop->seq.last_cel);
+	    if (fop->seq.last_cel) delete fop->seq.last_cel;
 	    if (fop->document) {
 	      delete fop->document;
 	      fop->document = NULL;
@@ -476,7 +476,7 @@ void fop_operate(FileOp *fop)
 	  /* all done (or maybe not enough memory) */
 	  if (!loadres || !fop->seq.last_cel) {
 	    if (fop->seq.image) image_free(fop->seq.image);
-	    if (fop->seq.last_cel) cel_free(fop->seq.last_cel);
+	    if (fop->seq.last_cel) delete fop->seq.last_cel;
 
 	    break;
 	  }
@@ -707,7 +707,7 @@ Image* fop_sequence_image(FileOp* fop, int imgtype, int w, int h)
   Image* image = image_new(imgtype, w, h);
 
   fop->seq.image = image;
-  fop->seq.last_cel = cel_new(fop->seq.frame++, 0);
+  fop->seq.last_cel = new Cel(fop->seq.frame++, 0);
 
   return image;
 }

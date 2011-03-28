@@ -141,7 +141,7 @@ bool IcoFormat::onLoad(FileOp* fop)
   // Create the first image/cel
   Image* image = image_new(imgtype, width, height);
   int image_index = sprite->getStock()->addImage(image);
-  Cel* cel = cel_new(0, image_index);
+  Cel* cel = new Cel(0, image_index);
   layer->addCel(cel);
 
   // Go to the entry start in the file

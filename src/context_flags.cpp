@@ -74,7 +74,7 @@ void ContextFlags::update(Context* context)
 	    if (cel) {
 	      m_flags |= HasActiveCel;
 
-	      if (sprite->getStock()->getImage(cel->image))
+	      if (sprite->getStock()->getImage(cel->getImage()))
 		m_flags |= HasActiveImage;
 	    }
 	  }

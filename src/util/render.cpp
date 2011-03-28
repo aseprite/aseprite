@@ -580,9 +580,9 @@ void RenderEngine::renderLayer(const Document* document,
 	  src_image = rastering_image;
 	}
 	/* if not, we use the original cel-image from the images' stock */
-	else if ((cel->image >= 0) &&
-		 (cel->image < layer->getSprite()->getStock()->size()))
-	  src_image = layer->getSprite()->getStock()->getImage(cel->image);
+	else if ((cel->getImage() >= 0) &&
+		 (cel->getImage() < layer->getSprite()->getStock()->size()))
+	  src_image = layer->getSprite()->getStock()->getImage(cel->getImage());
 	else
 	  src_image = NULL;
 
@@ -590,12 +590,12 @@ void RenderEngine::renderLayer(const Document* document,
 	  int output_opacity;
 	  register int t;
 
-	  output_opacity = MID(0, cel->opacity, 255);
+	  output_opacity = MID(0, cel->getOpacity(), 255);
 	  output_opacity = INT_MULT(output_opacity, global_opacity, t);
 
 	  (*zoomed_func)(image, src_image, sprite->getPalette(frame),
-			 (cel->x << zoom) - source_x,
-			 (cel->y << zoom) - source_y,
+			 (cel->getX() << zoom) - source_x,
+			 (cel->getY() << zoom) - source_y,
 			 output_opacity,
 			 static_cast<const LayerImage*>(layer)->getBlendMode(), zoom);
 	}
@@ -623,13 +623,13 @@ void RenderEngine::renderLayer(const Document* document,
   if (layer == sprite->getCurrentLayer() &&
       document->getExtraCel() != NULL) {
     Cel* extraCel = document->getExtraCel();
-    if (extraCel->opacity > 0) {
+    if (extraCel->getOpacity() > 0) {
       Image* extraImage = document->getExtraCelImage();
 
       (*zoomed_func)(image, extraImage, sprite->getPalette(frame),
-		     (extraCel->x << zoom) - source_x,
-		     (extraCel->y << zoom) - source_y,
-		     extraCel->opacity, BLEND_MODE_NORMAL, zoom);
+		     (extraCel->getX() << zoom) - source_x,
+		     (extraCel->getY() << zoom) - source_y,
+		     extraCel->getOpacity(), BLEND_MODE_NORMAL, zoom);
     }
   }
 }

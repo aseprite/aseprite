@@ -752,7 +752,7 @@ static void slider_change_hook(Slider* slider)
 	Cel* cel = ((LayerImage*)sprite->getCurrentLayer())->getCel(sprite->getCurrentFrame());
 	if (cel) {
 	  // Update the opacity
-	  cel->opacity = slider->getValue();
+	  cel->setOpacity(slider->getValue());
 
 	  // Update the editors
 	  update_screen_for_document(document);
@@ -795,7 +795,7 @@ void StatusBar::updateFromLayer()
 	sprite->getCurrentLayer()->is_image() &&
 	!sprite->getCurrentLayer()->is_background() &&
 	(cel = ((LayerImage*)sprite->getCurrentLayer())->getCel(sprite->getCurrentFrame()))) {
-      m_slider->setValue(MID(0, cel->opacity, 255));
+      m_slider->setValue(MID(0, cel->getOpacity(), 255));
       m_slider->setEnabled(true);
     }
     else {

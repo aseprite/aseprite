@@ -95,8 +95,8 @@ public:
   {
     // Create a new UndoTransaction to move the pixels to other position
     const Cel* cel = m_documentReader->getExtraCel();
-    m_initial_x = cel->x;
-    m_initial_y = cel->y;
+    m_initial_x = cel->getX();
+    m_initial_y = cel->getY();
     m_isDragging = true;
 
     m_catch_x = x;
@@ -120,25 +120,24 @@ public:
     int x1, y1, x2, y2;
     int u1, v1, u2, v2;
 
-    x1 = cel->x;
-    y1 = cel->y;
-    x2 = cel->x + image->w;
-    y2 = cel->y + image->h;
+    x1 = cel->getX();
+    y1 = cel->getY();
+    x2 = cel->getX() + image->w;
+    y2 = cel->getY() + image->h;
 
     int new_x = m_initial_x + x - m_catch_x;
     int new_y = m_initial_y + y - m_catch_y;
 
     // No movement
-    if (cel->x == new_x && cel->y == new_y)
+    if (cel->getX() == new_x && cel->getY() == new_y)
       return Rect();
 
-    cel->x = new_x;
-    cel->y = new_y;
+    cel->setPosition(new_x, new_y);
 
-    u1 = cel->x;
-    v1 = cel->y;
-    u2 = cel->x + image->w;
-    v2 = cel->y + image->h;
+    u1 = cel->getX();
+    v1 = cel->getY();
+    u2 = cel->getX() + image->w;
+    v2 = cel->getY() + image->h;
 
     return Rect(MIN(x1, u1), MIN(y1, v1),
 		MAX(x2, u2) - MIN(x1, u1) + 1,
@@ -157,11 +156,11 @@ public:
       // Show the mask again in the new position
       if (m_firstDrop) {
 	m_firstDrop = false;
-	m_undoTransaction.setMaskPosition(cel->x, cel->y);
+	m_undoTransaction.setMaskPosition(cel->getX(), cel->getY());
       }
       else {
-	documentWriter->getMask()->x = cel->x;
-	documentWriter->getMask()->y = cel->y;
+	documentWriter->getMask()->x = cel->getX();
+	documentWriter->getMask()->y = cel->getY();
       }
       documentWriter->generateMaskBoundaries();
     }
@@ -178,7 +177,7 @@ public:
 
     {
       DocumentWriter documentWriter(m_documentReader);
-      m_undoTransaction.pasteImage(image, cel->x, cel->y, cel->opacity);
+      m_undoTransaction.pasteImage(image, cel->getX(), cel->getY(), cel->getOpacity());
       m_undoTransaction.commit();
     }
   }
@@ -196,7 +195,7 @@ public:
     ASSERT(cel != NULL);
     ASSERT(image != NULL);
 
-    return Rect(cel->x, cel->y, image->w, image->h);
+    return Rect(cel->getX(), cel->getY(), image->w, image->h);
   }
 
   void setMaskColor(uint32_t mask_color)

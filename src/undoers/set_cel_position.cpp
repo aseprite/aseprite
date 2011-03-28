@@ -29,8 +29,8 @@ using namespace undoers;
 
 SetCelPosition::SetCelPosition(ObjectsContainer* objects, Cel* cel)
   : m_celId(objects->addObject(cel))
-  , m_x(cel->x)
-  , m_y(cel->y)
+  , m_x(cel->getX())
+  , m_y(cel->getY())
 {
 }
 
@@ -46,6 +46,5 @@ void SetCelPosition::revert(ObjectsContainer* objects, UndoersCollector* redoers
   // Push another SetCelPosition as redoer
   redoers->pushUndoer(new SetCelPosition(objects, cel));
 
-  cel->x = m_x;
-  cel->y = m_y;
+  cel->setPosition(m_x, m_y);
 }

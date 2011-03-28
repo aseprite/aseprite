@@ -246,7 +246,7 @@ void FilterManagerImpl::applyToTarget()
   for (ImagesCollector::ItemsIterator it = images.begin();
        it != images.end() && !cancelled;
        ++it) {
-    applyToImage(it->layer(), it->image(), it->cel()->x, it->cel()->y);
+    applyToImage(it->layer(), it->image(), it->cel()->getX(), it->cel()->getY());
 
     // Is there a delegate to know if the process was cancelled by the user?
     if (m_progressDelegate)

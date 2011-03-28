@@ -26,26 +26,30 @@ class LayerImage;
 class Cel : public GfxObj
 {
 public:
-  int frame;			// Frame position
-  int image;			// Image index of stock
-  int x, y;			// X/Y screen position
-  int opacity;			// Opacity level
-
   Cel(int frame, int image);
   Cel(const Cel& cel);
   virtual ~Cel();
 
-  int getMemSize() const;
+  int getFrame() const { return m_frame; }
+  int getImage() const { return m_image; }
+  int getX() const { return m_x; }
+  int getY() const { return m_y; }
+  int getOpacity() const { return m_opacity; }
 
+  void setFrame(int frame) { m_frame = frame; }
+  void setImage(int image) { m_image = image; }
+  void setPosition(int x, int y) { m_x = x; m_y = y; }
+  void setOpacity(int opacity) { m_opacity = opacity; }
+
+  int getMemSize() const {
+    return sizeof(Cel);
+  }
+
+private:
+  int m_frame;			// Frame position
+  int m_image;			// Image index of stock
+  int m_x, m_y;			// X/Y screen position
+  int m_opacity;		// Opacity level
 };
-
-Cel* cel_new(int frame, int image);
-Cel* cel_new_copy(const Cel* cel);
-void cel_free(Cel* cel);
-
-void cel_set_frame(Cel* cel, int frame);
-void cel_set_image(Cel* cel, int image);
-void cel_set_position(Cel* cel, int x, int y);
-void cel_set_opacity(Cel* cel, int opacity);
 
 #endif
