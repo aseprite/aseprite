@@ -287,7 +287,34 @@ void Document::setMaskVisible(bool visible)
 }
 
 //////////////////////////////////////////////////////////////////////
-// Clonning
+// Copying
+
+void Document::copyLayerContent(const LayerImage* sourceLayer, LayerImage* destLayer) const
+{
+  // copy cels
+  CelConstIterator it = sourceLayer->getCelBegin();
+  CelConstIterator end = sourceLayer->getCelEnd();
+
+  for (; it != end; ++it) {
+    const Cel* sourceCel = *it;
+    Cel* newCel = cel_new_copy(sourceCel);
+
+    ASSERT((sourceCel->image >= 0) &&
+	   (sourceCel->image < sourceLayer->getSprite()->getStock()->size()));
+
+    const Image* sourceImage = sourceLayer->getSprite()->getStock()->getImage(sourceCel->image);
+    ASSERT(sourceImage != NULL);
+
+    Image* newImage = image_new_copy(sourceImage);
+
+    newCel->image = destLayer->getSprite()->getStock()->addImage(newImage);
+
+    if (m_undoHistory->isEnabled())
+      m_undoHistory->undo_add_image(destLayer->getSprite()->getStock(), newCel->image);
+
+    destLayer->addCel(newCel);
+  }
+}
 
 Document* Document::duplicate(DuplicateType type) const
 {

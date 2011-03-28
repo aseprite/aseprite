@@ -27,6 +27,7 @@
 #include "raster/layer.h"
 #include "raster/sprite.h"
 #include "undo/undo_history.h"
+#include "undo_transaction.h"
 
 //////////////////////////////////////////////////////////////////////
 // Duplicate Layer command
@@ -52,28 +53,32 @@ DuplicateLayerCommand::DuplicateLayerCommand()
 bool DuplicateLayerCommand::onEnabled(Context* context)
 {
   return context->checkFlags(ContextFlags::ActiveDocumentIsWritable |
-			     ContextFlags::HasActiveLayer);
+			     ContextFlags::HasActiveLayer |
+			     ContextFlags::ActiveLayerIsImage);
 }
 
 void DuplicateLayerCommand::onExecute(Context* context)
 {
-#if 0				// TODO IMPLEMENT THIS
   ActiveDocumentWriter document(context);
   Sprite* sprite = document->getSprite();
-  UndoHistory* undo = document->getUndoHistory();
+  undo::UndoHistory* undo = document->getUndoHistory();
   UndoTransaction undoTransaction(document, "Layer Duplication");
+  LayerImage* sourceLayer = static_cast<LayerImage*>(sprite->getCurrentLayer());
 
-  // Clone the layer
-  UniquePtr<Layer> newLayerPtr(sprite->getCurrentLayer()->clone());
-  newLayerPtr->set_background(false);
-  newLayerPtr->set_moveable(true);
-  newLayerPtr->setName(layer_copy->getName() + " Copy");
+  // Create a new layer
+  UniquePtr<LayerImage> newLayerPtr(new LayerImage(sprite));
+
+  // Copy the layer name
+  newLayerPtr->setName(sourceLayer->getName() + " Copy");
+
+  // Copy the layer content (cels + images)
+  document->copyLayerContent(sourceLayer, newLayerPtr);
 
   // Add the new layer in the sprite.
   if (undo->isEnabled())
-    undo->undo_add_layer(sprite->getCurrentLayer()->get_parent(), newLayerPtr);
+    undo->undo_add_layer(sourceLayer->get_parent(), newLayerPtr);
 
-  sprite->getCurrentLayer()->get_parent()->add_layer(newLayerPtr);
+  sourceLayer->get_parent()->add_layer(newLayerPtr);
 
   // Release the pointer as it is owned by the sprite now
   Layer* newLayer = newLayerPtr.release();
@@ -85,11 +90,10 @@ void DuplicateLayerCommand::onExecute(Context* context)
 
   undoTransaction.commit();
 
-  sprite->getCurrentLayer()->get_parent()->move_layer(newLayer, sprite->getCurrentLayer());
+  sourceLayer->get_parent()->move_layer(newLayer, sourceLayer);
   sprite->setCurrentLayer(newLayer);
 
   update_screen_for_document(document);
-#endif
 }
 
 //////////////////////////////////////////////////////////////////////

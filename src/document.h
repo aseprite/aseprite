@@ -29,6 +29,7 @@
 class Cel;
 class FormatOptions;
 class Image;
+class LayerImage;
 class Mask;
 class Mutex;
 class Sprite;
@@ -143,8 +144,9 @@ public:
   void setMaskVisible(bool visible);
 
   //////////////////////////////////////////////////////////////////////
-  // Clonning
+  // Copying
 
+  void copyLayerContent(const LayerImage* sourceLayer, LayerImage* destLayer) const;
   Document* duplicate(DuplicateType type) const;
 
   //////////////////////////////////////////////////////////////////////
