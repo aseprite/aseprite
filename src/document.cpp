@@ -323,128 +323,64 @@ Document* Document::duplicate(DuplicateType type) const
 					  sourceSprite->getWidth(),
 					  sourceSprite->getHeight(), sourceSprite->getPalette(0)->size()));
 
-  // TODO IMPLEMENT THIS
-  
-  UniquePtr<Document> documentCopy(new Document(spriteCopy));
-  spriteCopy.release();
-  return documentCopy;
-}
+  spriteCopy->setTotalFrames(sourceSprite->getTotalFrames());
+  spriteCopy->setCurrentFrame(sourceSprite->getCurrentFrame());
 
-#if 0
-Sprite* Sprite::createFlattenCopy(const Sprite& src_sprite)
-{
-  Sprite* dst_sprite = new Sprite();
-  SpriteImpl* dst_sprite_impl = SpriteImpl::copyBase(dst_sprite, src_sprite.m_impl);
-  dst_sprite->m_impl = dst_sprite_impl;
-
-  // Flatten layers
-  ASSERT(src_sprite.getFolder() != NULL);
-
-  Layer* flat_layer;
-  try {
-    flat_layer = layer_new_flatten_copy(dst_sprite,
-					src_sprite.getFolder(),
-					0, 0, src_sprite.getWidth(), src_sprite.getHeight(),
-					0, src_sprite.getTotalFrames()-1);
-  }
-  catch (const std::bad_alloc&) {
-    delete dst_sprite;
-    throw;
-  }
-
-  // Add and select the new flat layer
-  dst_sprite->getFolder()->add_layer(flat_layer);
-  dst_sprite->setCurrentLayer(flat_layer);
-
-  return dst_sprite;
-}
-
-/**
- * Makes a copy "sprite" without the layers (only with the empty layer set)
- */
-SpriteImpl* SpriteImpl::copyBase(Sprite* new_sprite, const SpriteImpl* src_sprite)
-{
-  SpriteImpl* dst_sprite = new SpriteImpl(new_sprite,
-					  src_sprite->m_imgtype,
-					  src_sprite->m_width, src_sprite->m_height,
-					  src_sprite->getPalette(0)->size());
-
-
-  // Delete the original empty stock from the dst_sprite
-  delete dst_sprite->m_stock;
-
-  // Clone the src_sprite stock
-  dst_sprite->m_stock = new Stock(*src_sprite->m_stock);
-
-  // Copy general properties
-  dst_sprite->m_filename = src_sprite->m_filename;
-  dst_sprite->setTotalFrames(src_sprite->m_frames);
-  std::copy(src_sprite->m_frlens.begin(),
-	    src_sprite->m_frlens.end(),
-	    dst_sprite->m_frlens.begin());
+  // Copy frames duration
+  for (int i = 0; i < sourceSprite->getTotalFrames(); ++i)
+    spriteCopy->setFrameDuration(i, sourceSprite->getFrameDuration(i));
 
   // Copy color palettes
   {
-    PalettesList::const_iterator end = src_sprite->m_palettes.end();
-    PalettesList::const_iterator it = src_sprite->m_palettes.begin();
+    PalettesList::const_iterator it = sourceSprite->getPalettes().begin();
+    PalettesList::const_iterator end = sourceSprite->getPalettes().end();
     for (; it != end; ++it) {
-      Palette* pal = *it;
-      dst_sprite->setPalette(pal, true);
+      const Palette* pal = *it;
+      spriteCopy->setPalette(pal, true);
     }
   }
 
-  // Copy path
-  if (dst_sprite->m_path) {
-    delete dst_sprite->m_path;
-    dst_sprite->m_path = NULL;
+  switch (type) {
+
+    case DuplicateExactCopy:
+      {
+	// TODO IMPLEMENT THIS
+      }
+      break;
+
+    case DuplicateWithFlattenLayers:
+      {
+	// Flatten layers
+	ASSERT(sourceSprite->getFolder() != NULL);
+
+	LayerImage* flatLayer = layer_new_flatten_copy
+	    (spriteCopy,
+	     sourceSprite->getFolder(),
+	     0, 0, sourceSprite->getWidth(), sourceSprite->getHeight(),
+	     0, sourceSprite->getTotalFrames()-1);
+
+	// Add and select the new flat layer
+	spriteCopy->getFolder()->add_layer(flatLayer);
+	spriteCopy->setCurrentLayer(flatLayer);
+
+	// Configure the layer as background only if the original
+	// sprite has a background layer.
+	if (sourceSprite->getBackgroundLayer() == NULL)
+	  flatLayer->configureAsBackground();
+      }
+      break;
   }
 
-  if (src_sprite->m_path)
-    dst_sprite->m_path = new Path(*src_sprite->m_path);
+  UniquePtr<Document> documentCopy(new Document(spriteCopy));
+  spriteCopy.release();
 
-  // Copy mask
-  if (dst_sprite->m_mask) {
-    delete dst_sprite->m_mask;
-    dst_sprite->m_mask = NULL;
-  }
+  documentCopy->setMask(getMask());
+  documentCopy->m_maskVisible = m_maskVisible;
+  documentCopy->m_preferred = m_preferred;
+  documentCopy->generateMaskBoundaries();
 
-  if (src_sprite->m_mask)
-    dst_sprite->m_mask = mask_new_copy(src_sprite->m_mask);
-
-  return dst_sprite;
+  return documentCopy.release();
 }
-
-SpriteImpl* SpriteImpl::copyLayers(SpriteImpl* dst_sprite, const SpriteImpl* src_sprite)
-{
-  // Copy layers
-  if (dst_sprite->m_folder) {
-    delete dst_sprite->m_folder; // delete
-    dst_sprite->m_folder = NULL;
-  }
-
-  ASSERT(src_sprite->getFolder() != NULL);
-
-  // Disable undo temporarily
-  dst_sprite->getUndo()->setEnabled(false);
-  dst_sprite->m_folder = src_sprite->getFolder()->duplicate_for(dst_sprite->m_self);
-  dst_sprite->getUndo()->setEnabled(true);
-
-  if (dst_sprite->m_folder == NULL) {
-    delete dst_sprite;
-    return NULL;
-  }
-
-  // Selected layer
-  if (src_sprite->getCurrentLayer() != NULL) { 
-    int selected_layer = src_sprite->layerToIndex(src_sprite->getCurrentLayer());
-    dst_sprite->setCurrentLayer(dst_sprite->indexToLayer(selected_layer));
-  }
-
-  dst_sprite->generateMaskBoundaries();
-  return dst_sprite;
-}
-
-#endif
 
 //////////////////////////////////////////////////////////////////////
 // Multi-threading ("sprite wrappers" use this)

@@ -147,6 +147,7 @@ public:
   // Copying
 
   void copyLayerContent(const LayerImage* sourceLayer, LayerImage* destLayer) const;
+
   Document* duplicate(DuplicateType type) const;
 
   //////////////////////////////////////////////////////////////////////

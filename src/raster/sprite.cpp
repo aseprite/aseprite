@@ -219,12 +219,12 @@ Palette* Sprite::getPalette(int frame) const
   return found;
 }
 
-PalettesList Sprite::getPalettes() const
+const PalettesList& Sprite::getPalettes() const
 {
   return m_palettes;
 }
 
-void Sprite::setPalette(Palette* pal, bool truncate)
+void Sprite::setPalette(const Palette* pal, bool truncate)
 {
   ASSERT(pal != NULL);
 

@@ -131,7 +131,7 @@ public:
 
   int getMemSize() const;
 
-  LayerList get_layers_list() { return m_layers; }
+  const LayerList& get_layers_list() { return m_layers; }
   LayerIterator get_layer_begin() { return m_layers.begin(); }
   LayerIterator get_layer_end() { return m_layers.end(); }
   LayerConstIterator get_layer_begin() const { return m_layers.begin(); }
@@ -150,8 +150,8 @@ private:
   LayerList m_layers;
 };
 
-Layer* layer_new_flatten_copy(Sprite* dst_sprite, const Layer* src_layer,
-			      int x, int y, int w, int h, int frmin, int frmax);
+LayerImage* layer_new_flatten_copy(Sprite* dst_sprite, const Layer* src_layer,
+				   int x, int y, int w, int h, int frmin, int frmax);
 
 void layer_render(const Layer* layer, Image *image, int x, int y, int frame);
 

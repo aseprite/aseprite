@@ -20,6 +20,7 @@
 
 #include "raster/layer.h"
 
+#include "base/unique_ptr.h"
 #include "raster/blend.h"
 #include "raster/cel.h"
 #include "raster/image.h"
@@ -314,42 +315,35 @@ void LayerFolder::move_layer(Layer* layer, Layer* after)
  * @param dst_sprite The sprite where to put the new flattened layer.
  * @param src_layer Generally a set of layers to be flattened.
  */
-Layer* layer_new_flatten_copy(Sprite* dst_sprite, const Layer* src_layer,
-			      int x, int y, int w, int h, int frmin, int frmax)
+LayerImage* layer_new_flatten_copy(Sprite* dst_sprite, const Layer* src_layer,
+				   int x, int y, int w, int h, int frmin, int frmax)
 {
-  LayerImage* flat_layer = new LayerImage(dst_sprite);
+  UniquePtr<LayerImage> flatLayer(new LayerImage(dst_sprite));
 
-  try {
-    for (int frame=frmin; frame<=frmax; frame++) {
-      /* does this frame have cels to render? */
-      if (has_cels(src_layer, frame)) {
-	/* create a new image */
-	Image* image = image_new(flat_layer->getSprite()->getImgType(), w, h);
+  for (int frame=frmin; frame<=frmax; frame++) {
+    // Does this frame have cels to render?
+    if (has_cels(src_layer, frame)) {
+      // Create a new image
+      Image* image = image_new(flatLayer->getSprite()->getImgType(), w, h);
 
-	try {
-	  /* create the new cel for the output layer (add the image to
-	     stock too) */
-	  Cel* cel = cel_new(frame, flat_layer->getSprite()->getStock()->addImage(image));
-	  cel_set_position(cel, x, y);
+      try {
+	// Create the new cel for the output layer (add the image to stock too).
+	Cel* cel = cel_new(frame, flatLayer->getSprite()->getStock()->addImage(image));
+	cel_set_position(cel, x, y);
 
-	  /* clear the image and render this frame */
-	  image_clear(image, 0);
-	  layer_render(src_layer, image, -x, -y, frame);
-	  flat_layer->addCel(cel);
-	}
-	catch (...) {
-	  delete image;
-	  throw;
-	}
+	// Clear the image and render this frame.
+	image_clear(image, 0);
+	layer_render(src_layer, image, -x, -y, frame);
+	flatLayer->addCel(cel);
+      }
+      catch (...) {
+	delete image;
+	throw;
       }
     }
   }
-  catch (...) {
-    delete flat_layer;
-    throw;
-  }
 
-  return flat_layer;
+  return flatLayer.release();
 }
 
 void layer_render(const Layer* layer, Image* image, int x, int y, int frame)

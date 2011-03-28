@@ -85,9 +85,9 @@ public:
   // Palettes
 
   Palette* getPalette(int frame) const;
-  PalettesList getPalettes() const;
+  const PalettesList& getPalettes() const;
 
-  void setPalette(Palette* pal, bool truncate);
+  void setPalette(const Palette* pal, bool truncate);
 
   // Removes all palettes from the sprites except the first one.
   void resetPalettes();

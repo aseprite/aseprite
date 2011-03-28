@@ -597,7 +597,7 @@ void UndoTransaction::flattenLayers(int bgcolor)
     m_sprite->setCurrentLayer(background);
   }
 
-  /* remove old layers */
+  // Remove old layers.
   LayerList layers = m_sprite->getFolder()->get_layers_list();
   LayerIterator it = layers.begin();
   LayerIterator end = layers.end();
@@ -606,13 +606,13 @@ void UndoTransaction::flattenLayers(int bgcolor)
     if (*it != background) {
       Layer* old_layer = *it;
 
-      // remove the layer
+      // Remove the layer
       if (isEnabled())
 	m_undoHistory->undo_remove_layer(old_layer);
 
       m_sprite->getFolder()->remove_layer(old_layer);
 
-      // destroy the layer
+      // Destroy the layer
       delete old_layer;
     }
   }
