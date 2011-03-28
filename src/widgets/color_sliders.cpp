@@ -232,7 +232,7 @@ HsvSliders::HsvSliders()
 {
   addSlider(Hue,        "H", 0, 360);
   addSlider(Saturation, "S", 0, 100);
-  addSlider(Value,      "V", 0, 100);
+  addSlider(Value,      "B", 0, 100);
 }
 
 void HsvSliders::onSetColor(const Color& color)
