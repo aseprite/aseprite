@@ -29,7 +29,7 @@
 class Cel;
 class FormatOptions;
 class Image;
-class LayerImage;
+class Layer;
 class Mask;
 class Mutex;
 class Sprite;
@@ -146,8 +146,7 @@ public:
   //////////////////////////////////////////////////////////////////////
   // Copying
 
-  void copyLayerContent(const LayerImage* sourceLayer, LayerImage* destLayer) const;
-
+  void copyLayerContent(const Layer* sourceLayer, Document* destDoc, Layer* destLayer) const;
   Document* duplicate(DuplicateType type) const;
 
   //////////////////////////////////////////////////////////////////////

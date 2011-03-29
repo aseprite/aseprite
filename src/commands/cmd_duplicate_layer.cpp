@@ -68,11 +68,11 @@ void DuplicateLayerCommand::onExecute(Context* context)
   // Create a new layer
   UniquePtr<LayerImage> newLayerPtr(new LayerImage(sprite));
 
-  // Copy the layer name
-  newLayerPtr->setName(sourceLayer->getName() + " Copy");
-
   // Copy the layer content (cels + images)
-  document->copyLayerContent(sourceLayer, newLayerPtr);
+  document->copyLayerContent(sourceLayer, document, newLayerPtr);
+
+  // Copy the layer name
+  newLayerPtr->setName(newLayerPtr->getName() + " Copy");
 
   // Add the new layer in the sprite.
   if (undo->isEnabled())

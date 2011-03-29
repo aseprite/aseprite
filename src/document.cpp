@@ -288,39 +288,87 @@ void Document::setMaskVisible(bool visible)
 //////////////////////////////////////////////////////////////////////
 // Copying
 
-void Document::copyLayerContent(const LayerImage* sourceLayer, LayerImage* destLayer) const
+void Document::copyLayerContent(const Layer* sourceLayer0, Document* destDoc, Layer* destLayer0) const
 {
-  // copy cels
-  CelConstIterator it = sourceLayer->getCelBegin();
-  CelConstIterator end = sourceLayer->getCelEnd();
+  // Copy the layer name
+  destLayer0->setName(sourceLayer0->getName());
 
-  for (; it != end; ++it) {
-    const Cel* sourceCel = *it;
-    Cel* newCel = new Cel(*sourceCel);
+  if (sourceLayer0->is_image() && destLayer0->is_image()) {
+    const LayerImage* sourceLayer = static_cast<const LayerImage*>(sourceLayer0);
+    LayerImage* destLayer = static_cast<LayerImage*>(destLayer0);
 
-    ASSERT((sourceCel->getImage() >= 0) &&
-	   (sourceCel->getImage() < sourceLayer->getSprite()->getStock()->size()));
+    // copy cels
+    CelConstIterator it = sourceLayer->getCelBegin();
+    CelConstIterator end = sourceLayer->getCelEnd();
 
-    const Image* sourceImage = sourceLayer->getSprite()->getStock()->getImage(sourceCel->getImage());
-    ASSERT(sourceImage != NULL);
+    for (; it != end; ++it) {
+      const Cel* sourceCel = *it;
+      UniquePtr<Cel> newCel(new Cel(*sourceCel));
 
-    Image* newImage = image_new_copy(sourceImage);
+      ASSERT((sourceCel->getImage() >= 0) &&
+	     (sourceCel->getImage() < sourceLayer->getSprite()->getStock()->size()));
 
-    newCel->setImage(destLayer->getSprite()->getStock()->addImage(newImage));
+      const Image* sourceImage = sourceLayer->getSprite()->getStock()->getImage(sourceCel->getImage());
+      ASSERT(sourceImage != NULL);
 
-    if (m_undoHistory->isEnabled())
-      m_undoHistory->undo_add_image(destLayer->getSprite()->getStock(), newCel->getImage());
+      Image* newImage = image_new_copy(sourceImage);
 
-    destLayer->addCel(newCel);
+      newCel->setImage(destLayer->getSprite()->getStock()->addImage(newImage));
+
+      if (destDoc->getUndoHistory()->isEnabled())
+	destDoc->getUndoHistory()->undo_add_image(destLayer->getSprite()->getStock(),
+						  newCel->getImage());
+
+      destLayer->addCel(newCel);
+      newCel.release();
+    }
+  }
+  else if (sourceLayer0->is_folder() && destLayer0->is_folder()) {
+    const LayerFolder* sourceLayer = static_cast<const LayerFolder*>(sourceLayer0);
+    LayerFolder* destLayer = static_cast<LayerFolder*>(destLayer0);
+
+    LayerConstIterator it = sourceLayer->get_layer_begin();
+    LayerConstIterator end = sourceLayer->get_layer_end();
+
+    for (; it != end; ++it) {
+      Layer* sourceChild = *it;
+      UniquePtr<Layer> destChild(NULL);
+
+      if (sourceChild->is_image()) {
+	destChild.reset(new LayerImage(destLayer->getSprite()));
+	copyLayerContent(sourceChild, destDoc, destChild);
+      }
+      else if (sourceChild->is_folder()) {
+	destChild.reset(new LayerFolder(destLayer->getSprite()));
+	copyLayerContent(sourceChild, destDoc, destChild);
+      }
+      else {
+	ASSERT(false);
+      }
+
+      ASSERT(destChild != NULL);
+
+      // Add the new layer in the sprite.
+      if (destDoc->getUndoHistory()->isEnabled())
+	destDoc->getUndoHistory()->undo_add_layer(destLayer, destChild);
+
+      destLayer->add_layer(destChild);
+      destChild.release();
+    }
+  }
+  else  {
+    ASSERT(false && "Trying to copy two incompatible layers");
   }
 }
 
 Document* Document::duplicate(DuplicateType type) const
 {
   const Sprite* sourceSprite = getSprite();
-  UniquePtr<Sprite> spriteCopy(new Sprite(sourceSprite->getImgType(),
-					  sourceSprite->getWidth(),
-					  sourceSprite->getHeight(), sourceSprite->getPalette(0)->size()));
+  UniquePtr<Sprite> spriteCopyPtr(new Sprite(sourceSprite->getImgType(),
+					     sourceSprite->getWidth(),
+					     sourceSprite->getHeight(), sourceSprite->getPalette(0)->size()));
+  UniquePtr<Document> documentCopy(new Document(spriteCopyPtr));
+  Sprite* spriteCopy = spriteCopyPtr.release();
 
   spriteCopy->setTotalFrames(sourceSprite->getTotalFrames());
   spriteCopy->setCurrentFrame(sourceSprite->getCurrentFrame());
@@ -342,9 +390,20 @@ Document* Document::duplicate(DuplicateType type) const
   switch (type) {
 
     case DuplicateExactCopy:
+      // Disable the undo
+      documentCopy->getUndoHistory()->setEnabled(false);
+
+      // Copy the layer folder
+      copyLayerContent(getSprite()->getFolder(), documentCopy, spriteCopy->getFolder());
+
+      // Set as current layer the same layer as the source
       {
-	// TODO IMPLEMENT THIS
+	int index = sourceSprite->layerToIndex(sourceSprite->getCurrentLayer());
+	spriteCopy->setCurrentLayer(spriteCopy->indexToLayer(index));
       }
+
+      // Re-enable the undo
+      documentCopy->getUndoHistory()->setEnabled(true);
       break;
 
     case DuplicateWithFlattenLayers:
@@ -369,9 +428,6 @@ Document* Document::duplicate(DuplicateType type) const
       }
       break;
   }
-
-  UniquePtr<Document> documentCopy(new Document(spriteCopy));
-  spriteCopy.release();
 
   documentCopy->setMask(getMask());
   documentCopy->m_maskVisible = m_maskVisible;
