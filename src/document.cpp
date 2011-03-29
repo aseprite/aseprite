@@ -364,7 +364,7 @@ Document* Document::duplicate(DuplicateType type) const
 
 	// Configure the layer as background only if the original
 	// sprite has a background layer.
-	if (sourceSprite->getBackgroundLayer() == NULL)
+	if (sourceSprite->getBackgroundLayer() != NULL)
 	  flatLayer->configureAsBackground();
       }
       break;
