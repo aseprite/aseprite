@@ -77,13 +77,13 @@ void LayerPropertiesCommand::onExecute(Context* context)
   jwidget_set_min_size(entry_name, 128, 0);
   jwidget_expansive(entry_name, true);
 
-  jwidget_add_child(box2, label_name);
-  jwidget_add_child(box2, entry_name);
-  jwidget_add_child(box1, box2);
-  jwidget_add_child(box3, button_ok);
-  jwidget_add_child(box3, button_cancel);
-  jwidget_add_child(box1, box3);
-  jwidget_add_child(window, box1);
+  box2->addChild(label_name);
+  box2->addChild(entry_name);
+  box1->addChild(box2);
+  box3->addChild(button_ok);
+  box3->addChild(button_cancel);
+  box1->addChild(box3);
+  window->addChild(box1);
 
   jwidget_magnetic(entry_name, true);
   jwidget_magnetic(button_ok, true);

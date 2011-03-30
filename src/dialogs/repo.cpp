@@ -75,13 +75,13 @@ void ji_show_repo_dlg(RepoDlg *repo_dlg)
   }
 
   /* hierarchy */
-  jwidget_add_child(box2, repo_dlg->button_use);
-  jwidget_add_child(box2, repo_dlg->button_add);
-  jwidget_add_child(box2, repo_dlg->button_delete);
-  jwidget_add_child(box2, button_close);
-  jwidget_add_child(box1, box2);
-  jwidget_add_child(box1, view);
-  jwidget_add_child(window, box1);
+  box2->addChild(repo_dlg->button_use);
+  box2->addChild(repo_dlg->button_add);
+  box2->addChild(repo_dlg->button_delete);
+  box2->addChild(button_close);
+  box1->addChild(box2);
+  box1->addChild(view);
+  window->addChild(box1);
 
   /* default position */
   window->remap_window();
@@ -128,7 +128,7 @@ static void kill_listbox(RepoDlg *repo_dlg)
   JI_LIST_FOR_EACH_SAFE(listbox->children, link, next) {
     listitem = reinterpret_cast<JWidget>(link->data);
 
-    jwidget_remove_child(repo_dlg->listbox, listitem);
+    repo_dlg->listbox->removeChild(listitem);
 
     if (repo_dlg->free_listitem) {
       repo_dlg->listitem = listitem;
@@ -221,7 +221,7 @@ static void delete_command(Button* widget, RepoDlg* repo_dlg)
       index = jlistbox_get_selected_index(repo_dlg->listbox);
 
       /* delete "repo_dlg->listitem" */
-      jwidget_remove_child(repo_dlg->listbox, repo_dlg->listitem);
+      repo_dlg->listbox->removeChild(repo_dlg->listitem);
 
       if (repo_dlg->free_listitem)
 	(*repo_dlg->free_listitem) (repo_dlg);

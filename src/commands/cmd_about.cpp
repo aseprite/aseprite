@@ -87,9 +87,12 @@ void AboutCommand::onExecute(Context* context)
   jwidget_expansive(bottom_box2, true);
   jwidget_expansive(bottom_box3, true);
 
-  jwidget_add_children(bottom_box1, bottom_box2, close_button, bottom_box3, NULL);
-  jwidget_add_child(box1, grid);
-  jwidget_add_child(frame, box1);
+  bottom_box1->addChild(bottom_box2);
+  bottom_box1->addChild(close_button);
+  bottom_box1->addChild(bottom_box3);
+
+  box1->addChild(grid);
+  frame->addChild(box1);
 
   jwidget_set_border(close_button,
   		     close_button->border_width.l + 16*jguiscale(),

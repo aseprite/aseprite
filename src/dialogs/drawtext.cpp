@@ -82,7 +82,7 @@ void dialogs_draw_text(Sprite* sprite)
 		      colorbar_get_fg_color(app_get_colorbar())),
      sprite->imgtype);
 
-  jwidget_add_child(color_box, color_but);
+  color_box->addChild(color_but);
 
   /* entries */
   usprintf(buf, "%d", get_config_int("DrawText", "Size", 8));

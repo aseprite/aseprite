@@ -29,7 +29,7 @@ View::View()
   m_hasBars = true;
 
   jwidget_focusrest(this, true);
-  jwidget_add_child(this, &m_viewport);
+  addChild(&m_viewport);
   setScrollableSize(Size(0, 0));
 
   initTheme();
@@ -42,7 +42,7 @@ bool View::hasScrollBars()
 
 void View::attachToView(Widget* viewable_widget)
 {
-  jwidget_add_child(&m_viewport, viewable_widget);
+  m_viewport.addChild(viewable_widget);
   /* TODO */
   /* jwidget_emit_signal(this, JI_SIGNAL_VIEW_ATTACH); */
 }
@@ -94,43 +94,43 @@ void View::setScrollableSize(const Size& sz)
 
   pos = jwidget_get_child_rect(this);
 
-  /* setup scroll-bars */
-  jwidget_remove_child(this, &m_scrollbar_h);
-  jwidget_remove_child(this, &m_scrollbar_v);
+  // Setup scroll-bars
+  removeChild(&m_scrollbar_h);
+  removeChild(&m_scrollbar_v);
 
   if (m_hasBars) {
     if (CHECK(w, h, l, t, r, b)) {
       pos->y2 -= BAR_SIZE;
-      jwidget_add_child(this, &m_scrollbar_h);
+      addChild(&m_scrollbar_h);
 
       if (CHECK(h, w, t, l, b, r)) {
 	pos->x2 -= BAR_SIZE;
 	if (CHECK(w, h, l, t, r, b))
-	  jwidget_add_child(this, &m_scrollbar_v);
+	  addChild(&m_scrollbar_v);
 	else {
 	  pos->x2 += BAR_SIZE;
 	  pos->y2 += BAR_SIZE;
-	  jwidget_remove_child(this, &m_scrollbar_h);
+	  removeChild(&m_scrollbar_h);
 	}
       }
     }
     else if (CHECK(h, w, t, l, b, r)) {
       pos->x2 -= BAR_SIZE;
-      jwidget_add_child(this, &m_scrollbar_v);
+      addChild(&m_scrollbar_v);
 
       if (CHECK(w, h, l, t, r, b)) {
         pos->y2 -= BAR_SIZE;
 	if (CHECK(h, w, t, l, b, r))
-	  jwidget_add_child(this, &m_scrollbar_h);
+	  addChild(&m_scrollbar_h);
 	else {
 	  pos->x2 += BAR_SIZE;
 	  pos->y2 += BAR_SIZE;
-	  jwidget_remove_child(this, &m_scrollbar_v);
+	  removeChild(&m_scrollbar_v);
 	}
       }
     }
 
-    if (this->hasChild(&m_scrollbar_h)) {
+    if (hasChild(&m_scrollbar_h)) {
       rect = jrect_new(pos->x1, pos->y2,
 		       pos->x1+jrect_w(pos), pos->y2+BAR_SIZE);
       jwidget_set_rect(&m_scrollbar_h, rect);
@@ -141,7 +141,7 @@ void View::setScrollableSize(const Size& sz)
     else
       m_scrollbar_h.setVisible(false);
 
-    if (this->hasChild(&m_scrollbar_v)) {
+    if (hasChild(&m_scrollbar_v)) {
       rect = jrect_new(pos->x2, pos->y1,
 		       pos->x2+BAR_SIZE, pos->y1+jrect_h(pos));
       jwidget_set_rect(&m_scrollbar_v, rect);
@@ -154,7 +154,7 @@ void View::setScrollableSize(const Size& sz)
   }
 
   // Setup viewport
-  this->invalidate();
+  invalidate();
   jwidget_set_rect(&m_viewport, pos);
   setViewScroll(getViewScroll()); // Setup the same scroll-point
 
@@ -188,7 +188,7 @@ void View::setViewScroll(const Point& pt)
   m_scrollbar_v.setPos(newScroll.y);
 
   jwidget_set_rect(&m_viewport, m_viewport.rc);
-  this->invalidate();
+  invalidate();
 }
 
 void View::updateView()

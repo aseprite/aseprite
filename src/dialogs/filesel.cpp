@@ -195,7 +195,7 @@ base::string ase_file_selector(const base::string& message,
     view->attachToView(fileview);
     jwidget_expansive(view, true);
 
-    jwidget_add_child(box, view);
+    box->addChild(view);
 
     jwidget_set_min_size(window, JI_SCREEN_W*9/10, JI_SCREEN_H*9/10);
     window->remap_window();

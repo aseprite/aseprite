@@ -40,7 +40,7 @@ FilterTargetButtons::FilterTargetButtons(int imgtype, bool withChannels)
 #define ADD(box, widget, hook)						\
   if (widget) {								\
     jwidget_set_border(widget, 2 * jguiscale());			\
-    jwidget_add_child(box, widget);					\
+    box->addChild(widget);						\
     widget->Click.connect(Bind<void>(&FilterTargetButtons::hook, this, widget)); \
   }
 
@@ -110,7 +110,7 @@ FilterTargetButtons::FilterTargetButtons(int imgtype, bool withChannels)
   ADD(hbox, a, onChannelChange);
 
   if (withChannels)
-    jwidget_add_child(this, hbox);
+    addChild(hbox);
   else
     jwidget_free(hbox);
 

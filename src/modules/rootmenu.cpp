@@ -271,7 +271,7 @@ static JWidget convert_xmlelem_to_menu(TiXmlElement* elem)
   while (child) {
     JWidget menuitem = convert_xmlelem_to_menuitem(child);
     if (menuitem)
-      jwidget_add_child(menu, menuitem);
+      menu->addChild(menuitem);
     else
       throw base::Exception("Error converting the element \"%s\" to a menu-item.\n",
 			    static_cast<const char*>(child->Value()));

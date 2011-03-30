@@ -30,8 +30,8 @@ HexColorEntry::HexColorEntry()
   , m_label("#")
   , m_entry(6, "")
 {
-  jwidget_add_child(this, &m_label);
-  jwidget_add_child(this, &m_entry);
+  addChild(&m_label);
+  addChild(&m_entry);
 
   m_entry.EntryChange.connect(&HexColorEntry::onEntryChange, this);
 

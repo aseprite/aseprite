@@ -64,27 +64,25 @@ ColorSelector::ColorSelector()
   setup_mini_look(&m_grayButton);
   setup_mini_look(&m_maskButton);
 
-  jwidget_add_child(&m_topBox, &m_indexButton);
-  jwidget_add_child(&m_topBox, &m_rgbButton);
-  jwidget_add_child(&m_topBox, &m_hsvButton);
-  jwidget_add_child(&m_topBox, &m_grayButton);
-  jwidget_add_child(&m_topBox, &m_maskButton);
-  jwidget_add_child(&m_topBox, &m_hexColorEntry);
+  m_topBox.addChild(&m_indexButton);
+  m_topBox.addChild(&m_rgbButton);
+  m_topBox.addChild(&m_hsvButton);
+  m_topBox.addChild(&m_grayButton);
+  m_topBox.addChild(&m_maskButton);
+  m_topBox.addChild(&m_hexColorEntry);
   {
-    Box* filler = new Box(JI_HORIZONTAL);
     Box* miniVbox = new Box(JI_VERTICAL);
-    jwidget_expansive(filler, true);
-    jwidget_add_child(&m_topBox, filler);
-    jwidget_add_child(&m_topBox, miniVbox);
-    jwidget_add_child(miniVbox, getPin());
+    miniVbox->addChild(getPin());
+    m_topBox.addChild(new BoxFiller);
+    m_topBox.addChild(miniVbox);
   }
-  jwidget_add_child(&m_vbox, &m_topBox);
-  jwidget_add_child(&m_vbox, &m_colorPaletteContainer);
-  jwidget_add_child(&m_vbox, &m_rgbSliders);
-  jwidget_add_child(&m_vbox, &m_hsvSliders);
-  jwidget_add_child(&m_vbox, &m_graySlider);
-  jwidget_add_child(&m_vbox, &m_maskLabel);
-  jwidget_add_child(this, &m_vbox);
+  m_vbox.addChild(&m_topBox);
+  m_vbox.addChild(&m_colorPaletteContainer);
+  m_vbox.addChild(&m_rgbSliders);
+  m_vbox.addChild(&m_hsvSliders);
+  m_vbox.addChild(&m_graySlider);
+  m_vbox.addChild(&m_maskLabel);
+  addChild(&m_vbox);
 
   m_indexButton.Click.connect(&ColorSelector::onColorTypeButtonClick, this);
   m_rgbButton.Click.connect(&ColorSelector::onColorTypeButtonClick, this);
@@ -106,7 +104,7 @@ ColorSelector::ColorSelector()
 
 ColorSelector::~ColorSelector()
 {
-  jwidget_remove_child(getPin()->getParent(), getPin());
+  getPin()->getParent()->removeChild(getPin());
 }
 
 void ColorSelector::setColor(const Color& color)

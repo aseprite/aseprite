@@ -64,7 +64,7 @@ public:
 		"stock", &m_stockListBox,
 		"reload", &m_reloadButton, NULL);
 
-    jwidget_add_child(getContainer(), m_controlsWidget);
+    getContainer()->addChild(m_controlsWidget);
 
     m_reloadButton->Click.connect(&ConvolutionMatrixWindow::onReloadStock, this);
     // TODO convert listbox to c++ class ListBox
@@ -94,7 +94,7 @@ private:
     // Clean the list
     JI_LIST_FOR_EACH_SAFE(m_stockListBox->children, link, next) {
       Widget* listitem = reinterpret_cast<Widget*>(link->data);
-      jwidget_remove_child(m_stockListBox, listitem);
+      m_stockListBox->removeChild(listitem);
       jwidget_free(listitem);
     }
 
@@ -102,7 +102,7 @@ private:
 	 it != end; ++it) {
       SharedPtr<ConvolutionMatrix> matrix = *it; 
       Widget* listitem = jlistitem_new(matrix->getName()); // TODO convert listitem to a class
-      jwidget_add_child(m_stockListBox, listitem);
+      m_stockListBox->addChild(listitem);
     }
 
     selectMatrixByName(oldSelected);

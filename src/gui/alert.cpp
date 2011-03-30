@@ -192,20 +192,20 @@ void Alert::processString(char* buf, std::vector<Widget*>& labels, std::vector<W
 
   // Setup parent <-> children relationship
 
-  jwidget_add_child(this, box1);
+  addChild(box1);
 
-  jwidget_add_child(box1, box4);	// Filler
-  jwidget_add_child(box1, box2);	// Labels
-  jwidget_add_child(box1, box5);	// Filler
-  jwidget_add_child(box1, grid);	// Buttons
+  box1->addChild(box4);	// Filler
+  box1->addChild(box2);	// Labels
+  box1->addChild(box5);	// Filler
+  box1->addChild(grid);	// Buttons
 
   grid->addChildInCell(box3, 1, 1, JI_CENTER | JI_BOTTOM);
 
   for (std::vector<Widget*>::iterator it = labels.begin(); it != labels.end(); ++it)
-    jwidget_add_child(box2, *it);
+    box2->addChild(*it);
 
   for (std::vector<Widget*>::iterator it = buttons.begin(); it != buttons.end(); ++it)
-    jwidget_add_child(box3, *it);
+    box3->addChild(*it);
 
   // Default button is the last one
   if (!buttons.empty())

@@ -99,10 +99,10 @@ ColorBar::ColorBar(int align)
 
   jwidget_expansive(&m_scrollableView, true);
 
-  jwidget_add_child(this, &m_paletteButton);
-  jwidget_add_child(this, &m_scrollableView);
-  jwidget_add_child(this, &m_fgColor);
-  jwidget_add_child(this, &m_bgColor);
+  addChild(&m_paletteButton);
+  addChild(&m_scrollableView);
+  addChild(&m_fgColor);
+  addChild(&m_bgColor);
   
   this->border_width.l = 2*jguiscale();
   this->border_width.t = 2*jguiscale();

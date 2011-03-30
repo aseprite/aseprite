@@ -300,8 +300,8 @@ void ConfigureTools::onExecute(Context* context)
 
   if (first_time) {
     // Append children
-    jwidget_add_child(brush_preview_box, brush_preview);
-    jwidget_add_child(brush_type_box, brush_type);
+    brush_preview_box->addChild(brush_preview);
+    brush_type_box->addChild(brush_type);
 
     // Slots
     window->Close.connect(Bind<bool>(&window_close_hook, (JWidget)window, (void*)0));

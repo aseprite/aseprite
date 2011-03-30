@@ -121,10 +121,10 @@ void SpritePropertiesCommand::onExecute(Context* context)
       color_button = new ColorButton(Color::fromIndex(sprite->getTransparentColor()),
 				     IMAGE_INDEXED);
 
-      jwidget_add_child(box_transparent, color_button);
+      box_transparent->addChild(color_button);
     }
     else {
-      jwidget_add_child(box_transparent, new Label("(only for indexed images)"));
+      box_transparent->addChild(new Label("(only for indexed images)"));
     }
   }
 

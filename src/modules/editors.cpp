@@ -266,7 +266,7 @@ void split_editor(Editor* editor, int align)
   Editor* new_editor = create_new_editor();
 
   // Insert the "new_box" in the same location that the view.
-  jwidget_replace_child(parent_box, view, new_panel);
+  parent_box->replaceChild(view, new_panel);
 
   // Append the new editor.
   new_view->attachToView(new_editor);
@@ -280,8 +280,8 @@ void split_editor(Editor* editor, int align)
   jwidget_expansive(new_view, true);
 
   // Append both views to the "new_panel".
-  jwidget_add_child(new_panel, view);
-  jwidget_add_child(new_panel, new_view);
+  new_panel->addChild(view);
+  new_panel->addChild(new_view);
 
   // Same position.
   {
@@ -318,14 +318,14 @@ void close_editor(Editor* editor)
     current_editor = 0;
 
   // Remove this editor.
-  jwidget_remove_child(parent_box, view);
+  parent_box->removeChild(view);
   jwidget_free(view);
 
   // Fixup the parent.
   other_widget = reinterpret_cast<JWidget>(jlist_first_data(parent_box->children));
 
-  jwidget_remove_child(parent_box, other_widget);
-  jwidget_replace_child(parent_box->getParent(), parent_box, other_widget);
+  parent_box->removeChild(other_widget);
+  parent_box->getParent()->replaceChild(parent_box, other_widget);
   jwidget_free(parent_box);
 
   // Find next editor to select.
@@ -359,18 +359,18 @@ void make_unique_editor(Editor* editor)
     return;
 
   // Remove the editor-view of its parent.
-  jwidget_remove_child(view->getParent(), view);
+  view->getParent()->removeChild(view);
 
   // Remove all children of main_editor_box.
   JI_LIST_FOR_EACH_SAFE(box_editors->children, link, next) {
     child = (JWidget)link->data;
 
-    jwidget_remove_child(box_editors, child);
+    box_editors->removeChild(child);
     delete child; // widget
   }
 
   // Append the editor to main box.
-  jwidget_add_child(box_editors, view);
+  box_editors->addChild(view);
 
   // New current editor.
   set_current_editor(editor);

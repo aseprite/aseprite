@@ -65,8 +65,8 @@ ComboBox::ComboBox()
   // When the "m_button" is clicked ("Click" signal) call onButtonClick() method
   m_button->Click.connect(&ComboBox::onButtonClick, this);
 
-  jwidget_add_child(this, m_entry);
-  jwidget_add_child(this, m_button);
+  addChild(m_entry);
+  addChild(m_button);
 
   setEditable(m_editable);
 
@@ -448,7 +448,7 @@ void ComboBox::openListBox()
     std::vector<Item*>::iterator it, end = m_items.end();
     for (it = m_items.begin(); it != end; ++it) {
       Item* item = *it;
-      jwidget_add_child(m_listbox, jlistitem_new(item->text.c_str()));
+      m_listbox->addChild(jlistitem_new(item->text.c_str()));
     }
 
     m_window->set_ontop(true);
@@ -463,7 +463,7 @@ void ComboBox::openListBox()
        +(2*jguiscale()+jwidget_get_text_height(m_listbox))*MID(1, size, 16)+
        +viewport->border_width.b);
 
-    jwidget_add_child(m_window, view);
+    m_window->addChild(view);
     view->attachToView(m_listbox);
 
     jwidget_signal_off(m_listbox);

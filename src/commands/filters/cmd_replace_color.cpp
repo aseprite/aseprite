@@ -84,7 +84,7 @@ public:
 		"to", &m_toButton,
 		"tolerance", &m_toleranceSlider, NULL);
     
-    jwidget_add_child(getContainer(), m_controlsWidget);
+    getContainer()->addChild(m_controlsWidget);
 
     m_fromButton->setColor(m_filter.getFrom());
     m_toButton->setColor(m_filter.getTo());

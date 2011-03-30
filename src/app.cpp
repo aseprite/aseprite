@@ -207,12 +207,12 @@ int App::run()
     app_default_statusbar_message();
 
     /* add the widgets in the boxes */
-    if (box_menubar) jwidget_add_child(box_menubar, menubar);
-    if (box_editors) jwidget_add_child(box_editors, view);
-    if (box_colorbar) jwidget_add_child(box_colorbar, colorbar);
-    if (box_toolbar) jwidget_add_child(box_toolbar, toolbar);
-    if (box_statusbar) jwidget_add_child(box_statusbar, statusbar);
-    if (box_tabsbar) jwidget_add_child(box_tabsbar, tabsbar);
+    if (box_menubar) box_menubar->addChild(menubar);
+    if (box_editors) box_editors->addChild(view);
+    if (box_colorbar) box_colorbar->addChild(colorbar);
+    if (box_toolbar) box_toolbar->addChild(toolbar);
+    if (box_statusbar) box_statusbar->addChild(statusbar);
+    if (box_tabsbar) box_tabsbar->addChild(tabsbar);
 
     /* prepare the window */
     top_window->remap_window();
@@ -435,13 +435,13 @@ bool app_realloc_recent_list()
 	params.set("filename", filename);
 
 	menuitem = menuitem_new(get_filename(filename), cmd_open_file, &params);
-	jwidget_add_child(submenu, menuitem);
+	submenu->addChild(menuitem);
       }
     }
     else {
       menuitem = menuitem_new("Nothing", NULL, NULL);
       menuitem->setEnabled(false);
-      jwidget_add_child(submenu, menuitem);
+      submenu->addChild(menuitem);
     }
   }
 

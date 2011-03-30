@@ -53,14 +53,6 @@ bool jwidget_is_expansive(JWidget widget);
 bool jwidget_is_decorative(JWidget widget);
 bool jwidget_is_focusrest(JWidget widget);
 
-/* children handle */
-
-void jwidget_add_child(JWidget widget, JWidget child);
-void jwidget_add_children(JWidget widget, ...);
-void jwidget_remove_child(JWidget widget, JWidget child);
-void jwidget_replace_child(JWidget widget, JWidget old_child,
-			   JWidget new_child);
-
 /* position and geometry */
 
 JRect jwidget_get_rect(JWidget widget);
@@ -222,11 +214,20 @@ public:
   Widget* getRoot();
   Widget* getParent();
   Widget* getManager();
+
+  // Returns a list of parents (you must free the list), if
+  // "ascendant" is true the list is build from child to parents, else
+  // the list is from parent to children.
   JList getParents(bool ascendant);
+
+  // Returns a list of children (you must free the list).
   JList getChildren();
+
   Widget* pick(int x, int y);
   bool hasChild(Widget* child);
   Widget* findChild(const char* name);
+
+  // Returns a widget in the same window that is located "sibling".
   Widget* findSibling(const char* name);
 
   // Finds a child with the specified name and dynamic-casts it to
@@ -235,6 +236,10 @@ public:
   T* findChildT(const char* name) {
     return dynamic_cast<T*>(findChild(name));
   }
+
+  void addChild(Widget* child);
+  void removeChild(Widget* child);
+  void replaceChild(Widget* oldChild, Widget* newChild);
 
   // ===============================================================
   // LAYOUT & CONSTRAINT

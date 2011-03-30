@@ -182,7 +182,7 @@ void switch_between_animation_and_sprite_editor()
     AnimationEditor* anieditor = new AnimationEditor(document, sprite);
     current_anieditor = anieditor;
 
-    jwidget_add_child(window, anieditor);
+    window->addChild(anieditor);
     window->remap_window();
 
     anieditor->centerCurrentCel();

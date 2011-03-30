@@ -407,7 +407,7 @@ void ToolBar::openPopupFrame(int group_index, ToolGroup* tool_group)
   m_popupFrame->Close.connect(Bind<void, ToolBar, ToolBar>(&ToolBar::onClosePopup, this));
 
   ToolStrip* toolstrip = new ToolStrip(tool_group, this);
-  jwidget_add_child(m_popupFrame, toolstrip);
+  m_popupFrame->addChild(toolstrip);
 
   Rect rc = getToolGroupBounds(group_index);
   int w = 0;

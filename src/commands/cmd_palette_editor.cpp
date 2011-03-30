@@ -248,33 +248,29 @@ PaletteEntryEditor::PaletteEntryEditor()
   setup_mini_look(&m_quantizeButton);
 
   // Top box
-  jwidget_add_child(&m_topBox, &m_rgbButton);
-  jwidget_add_child(&m_topBox, &m_hsvButton);
-  jwidget_add_child(&m_topBox, &m_hexColorEntry);
-  {
-    Box* filler = new Box(JI_HORIZONTAL);
-    jwidget_expansive(filler, true);
-    jwidget_add_child(&m_topBox, filler);
-  }
-  jwidget_add_child(&m_topBox, &m_moreOptions);
+  m_topBox.addChild(&m_rgbButton);
+  m_topBox.addChild(&m_hsvButton);
+  m_topBox.addChild(&m_hexColorEntry);
+  m_topBox.addChild(new BoxFiller);
+  m_topBox.addChild(&m_moreOptions);
 
   // Bottom box
   {
     Box* box = new Box(JI_HORIZONTAL);
     box->child_spacing = 0;
-    jwidget_add_child(box, &m_loadButton);
-    jwidget_add_child(box, &m_saveButton);
-    jwidget_add_child(&m_bottomBox, box);
+    box->addChild(&m_loadButton);
+    box->addChild(&m_saveButton);
+    m_bottomBox.addChild(box);
   }
-  jwidget_add_child(&m_bottomBox, &m_rampButton);
-  jwidget_add_child(&m_bottomBox, &m_quantizeButton);
+  m_bottomBox.addChild(&m_rampButton);
+  m_bottomBox.addChild(&m_quantizeButton);
 
   // Main vertical box
-  jwidget_add_child(&m_vbox, &m_topBox);
-  jwidget_add_child(&m_vbox, &m_rgbSliders);
-  jwidget_add_child(&m_vbox, &m_hsvSliders);
-  jwidget_add_child(&m_vbox, &m_bottomBox);
-  jwidget_add_child(this, &m_vbox);
+  m_vbox.addChild(&m_topBox);
+  m_vbox.addChild(&m_rgbSliders);
+  m_vbox.addChild(&m_hsvSliders);
+  m_vbox.addChild(&m_bottomBox);
+  addChild(&m_vbox);
 
   // Hide (or show) the "More Options" depending the saved value in .cfg file
   m_bottomBox.setVisible(get_config_bool("PaletteEditor", "ShowMoreOptions", false));

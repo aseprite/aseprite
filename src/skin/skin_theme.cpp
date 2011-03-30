@@ -623,7 +623,7 @@ void SkinTheme::init_widget(JWidget widget)
 	    jwidget_add_hook(button, JI_WIDGET,
 			     &SkinTheme::theme_frame_button_msg_proc, NULL);
 	    jwidget_decorative(button, true);
-	    jwidget_add_child(widget, button);
+	    widget->addChild(button);
 	    button->setName("theme_close_button");
 	    button->Click.connect(Bind<void>(&Frame::closeWindow, (Frame*)widget, button));
 	  }

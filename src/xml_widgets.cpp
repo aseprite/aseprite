@@ -418,7 +418,7 @@ static Widget* convert_xmlelement_to_widget(TiXmlElement* elem, Widget* root)
 	}
 	// Just add the child in any other kind of widget
 	else
-	  jwidget_add_child(widget, child);
+	  widget->addChild(child);
       }
       child_elem = child_elem->NextSiblingElement();
     }

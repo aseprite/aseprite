@@ -109,7 +109,7 @@ Widget::~Widget()
 
   /* remove from parent */
   if (this->parent)
-    jwidget_remove_child(this->parent, this);
+    this->parent->removeChild(this);
 
   /* remove children */
   JI_LIST_FOR_EACH_SAFE(this->children, link, next)
@@ -489,67 +489,9 @@ bool Widget::isSelected() const
   return (this->flags & JI_SELECTED) ? true: false;
 }
 
-/**********************************************************************/
-/* children handle */
-
-void jwidget_add_child(JWidget widget, JWidget child)
-{
-  ASSERT_VALID_WIDGET(widget);
-  ASSERT_VALID_WIDGET(child);
-
-  jlist_append(widget->children, child);
-  child->parent = widget;
-
-  jwidget_emit_signal(widget, JI_SIGNAL_ADD_CHILD);
-}
-
-void jwidget_add_children(JWidget widget, ...)
-{
-  JWidget child;
-  va_list ap;
-
-  ASSERT_VALID_WIDGET(widget);
-
-  va_start(ap, widget);
-
-  while ((child=va_arg(ap, JWidget)) != NULL)
-    jwidget_add_child(widget, child);
-
-  va_end(ap);
-}
-
-void jwidget_remove_child(JWidget widget, JWidget child)
-{
-  ASSERT_VALID_WIDGET(widget);
-  ASSERT_VALID_WIDGET(child);
-
-  jlist_remove(widget->children, child);
-  child->parent = NULL;
-}
-
-void jwidget_replace_child(JWidget widget, JWidget old_child, JWidget new_child)
-{
-  JLink before;
-
-  ASSERT_VALID_WIDGET(widget);
-  ASSERT_VALID_WIDGET(old_child);
-  ASSERT_VALID_WIDGET(new_child);
-
-  before = jlist_find(widget->children, old_child);
-  if (!before)
-    return;
-  before = before->next;
-
-  jwidget_remove_child(widget, old_child);
-
-  jlist_insert_before(widget->children, before, new_child);
-  new_child->parent = widget;
-
-  jwidget_emit_signal(widget, JI_SIGNAL_ADD_CHILD);
-}
-
-/**********************************************************************/
-/* parents and children */
+// ===============================================================
+// PARENTS & CHILDREN
+// ===============================================================
 
 Widget* Widget::getRoot()
 {
@@ -584,9 +526,6 @@ Widget* Widget::getManager()
   return ji_get_default_manager();
 }
 
-/* returns a list of parents (you must free the list), if "ascendant"
-   is true the list is build from child to parents, else the list is
-   from parent to children */
 JList Widget::getParents(bool ascendant)
 {
   JList list = jlist_new();
@@ -603,7 +542,6 @@ JList Widget::getParents(bool ascendant)
   return list;
 }
 
-/* returns a list of children (you must free the list) */
 JList Widget::getChildren()
 {
   return jlist_copy(this->children);
@@ -656,12 +594,48 @@ Widget* Widget::findChild(const char* name)
   return 0;
 }
 
-/**
- * Returns a widget in the same window that is located "sibling".
- */
 Widget* Widget::findSibling(const char* name)
 {
   return getRoot()->findChild(name);
+}
+
+void Widget::addChild(Widget* child)
+{
+  ASSERT_VALID_WIDGET(this);
+  ASSERT_VALID_WIDGET(child);
+
+  jlist_append(children, child);
+  child->parent = this;
+
+  jwidget_emit_signal(this, JI_SIGNAL_ADD_CHILD);
+}
+
+void Widget::removeChild(Widget* child)
+{
+  ASSERT_VALID_WIDGET(this);
+  ASSERT_VALID_WIDGET(child);
+
+  jlist_remove(children, child);
+  child->parent = NULL;
+}
+
+void Widget::replaceChild(Widget* oldChild, Widget* newChild)
+{
+  ASSERT_VALID_WIDGET(oldChild);
+  ASSERT_VALID_WIDGET(newChild);
+
+  JLink before = jlist_find(children, oldChild);
+  if (!before)
+    return;
+
+  before = before->next;
+
+  removeChild(oldChild);
+
+  jlist_insert_before(children, before, newChild);
+  newChild->parent = this;
+
+  jwidget_emit_signal(this, JI_SIGNAL_ADD_CHILD);
 }
 
 // ===============================================================

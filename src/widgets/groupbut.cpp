@@ -80,15 +80,15 @@ JWidget group_button_new(int w, int h, int first_selected, ...)
 	radio->setSelected(true);
 
       if (hbox)
-	jwidget_add_child(hbox, radio);
+	hbox->addChild(radio);
       else
-	jwidget_add_child(vbox, radio);
+	vbox->addChild(radio);
 
       c++;
     }
 
     if (hbox)
-      jwidget_add_child(vbox, hbox);
+      vbox->addChild(hbox);
   }
 
   va_end(ap);

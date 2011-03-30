@@ -85,7 +85,7 @@ void Grid::addChildInCell(Widget* child, int hspan, int vspan, int align)
   ASSERT(hspan > 0);
   ASSERT(vspan > 0);
 
-  jwidget_add_child(this, child);
+  addChild(child);
 
   if (!putWidgetInCell(child, hspan, vspan, align)) {
     expandRows(m_rowstrip.size()+1);

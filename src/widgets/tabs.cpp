@@ -530,8 +530,8 @@ void Tabs::setScrollX(int scroll_x)
   if (max_x > 0) {
     // Add childs
     if (!HAS_ARROWS(this)) {
-      jwidget_add_child(this, m_button_left);
-      jwidget_add_child(this, m_button_right);
+      addChild(m_button_left);
+      addChild(m_button_right);
       invalidate();
     }
 
@@ -555,8 +555,8 @@ void Tabs::setScrollX(int scroll_x)
   }
   // Remove buttons
   else if (HAS_ARROWS(this)) {
-    jwidget_remove_child(this, m_button_left);
-    jwidget_remove_child(this, m_button_right);
+    removeChild(m_button_left);
+    removeChild(m_button_right);
     invalidate();
   }
 }

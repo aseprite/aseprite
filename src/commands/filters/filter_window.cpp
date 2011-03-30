@@ -52,22 +52,22 @@ FilterWindow::FilterWindow(const char* title, const char* cfgSection,
 
   jwidget_expansive(&m_container, true);
 
-  jwidget_add_child(&m_hbox, &m_container);
-  jwidget_add_child(&m_hbox, &m_vbox);
+  m_hbox.addChild(&m_container);
+  m_hbox.addChild(&m_vbox);
 
-  jwidget_add_child(&m_vbox, &m_okButton);
-  jwidget_add_child(&m_vbox, &m_cancelButton);
-  jwidget_add_child(&m_vbox, &m_targetButton);
-  jwidget_add_child(&m_vbox, &m_showPreview);
+  m_vbox.addChild(&m_okButton);
+  m_vbox.addChild(&m_cancelButton);
+  m_vbox.addChild(&m_targetButton);
+  m_vbox.addChild(&m_showPreview);
 
-  jwidget_add_child(this, &m_preview);
-  jwidget_add_child(this, &m_hbox);
+  addChild(&m_preview);
+  addChild(&m_hbox);
   
   if (m_tiledCheck) {
     m_tiledCheck->setSelected(tiledMode != TILED_NONE);
     m_tiledCheck->Click.connect(Bind<void>(&FilterWindow::onTiledChange, this));
 
-    jwidget_add_child(&m_vbox, m_tiledCheck);
+    m_vbox.addChild(m_tiledCheck);
   }
 
   // Load "Preview" check status.

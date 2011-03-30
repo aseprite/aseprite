@@ -67,7 +67,7 @@ Console::Console()
 
     grid->addChildInCell(view, 1, 1, JI_HORIZONTAL | JI_VERTICAL);
     grid->addChildInCell(button, 1, 1, JI_CENTER);
-    jwidget_add_child(window, grid);
+    window->addChild(grid);
 
     view->setVisible(false);
     jwidget_magnetic(button, true);

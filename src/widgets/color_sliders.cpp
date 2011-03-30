@@ -94,7 +94,7 @@ ColorSliders::ColorSliders()
   : Widget(JI_WIDGET)
   , m_grid(3, false)
 {
-  jwidget_add_child(this, &m_grid);
+  addChild(&m_grid);
 }
 
 ColorSliders::~ColorSliders()

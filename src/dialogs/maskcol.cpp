@@ -107,23 +107,31 @@ void dialogs_mask_color(Document* document)
   jwidget_expansive(slider_tolerance, true);
   jwidget_expansive(box2, true);
 
-  jwidget_add_child(window, box1);
-  jwidget_add_children(box1, box2, box3, check_preview, box4, NULL);
-  jwidget_add_children(box2, label_color, button_color, button_1, button_2, NULL);
-  jwidget_add_children(box3, label_tolerance, slider_tolerance, NULL);
-  jwidget_add_children(box4, button_ok, button_cancel, NULL);
+  window->addChild(box1);
+  box1->addChild(box2);
+  box1->addChild(box3);
+  box1->addChild(check_preview);
+  box1->addChild(box4);
+  box2->addChild(label_color);
+  box2->addChild(button_color);
+  box2->addChild(button_1);
+  box2->addChild(button_2);
+  box3->addChild(label_tolerance);
+  box3->addChild(slider_tolerance);
+  box4->addChild(button_ok);
+  box4->addChild(button_cancel);
 
-  /* default position */
+  // Default position
   window->remap_window();
   window->center_window();
 
-  /* mask first preview */
+  // Mask first preview
   mask_preview(documentReader);
 
-  /* load window configuration */
+  // Load window configuration
   load_window_pos(window, "MaskColor");
 
-  /* open the window */
+  // Open the window
   window->open_window_fg();
 
   if (window->get_killer() == button_ok) {

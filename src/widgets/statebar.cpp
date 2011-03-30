@@ -124,15 +124,15 @@ StatusBar::StatusBar()
     jwidget_noborders(box3);
     jwidget_expansive(box3, true);
 
-    jwidget_add_child(box2, m_b_first);
-    jwidget_add_child(box2, m_b_prev);
-    jwidget_add_child(box2, m_b_play);
-    jwidget_add_child(box2, m_b_next);
-    jwidget_add_child(box2, m_b_last);
+    box2->addChild(m_b_first);
+    box2->addChild(m_b_prev);
+    box2->addChild(m_b_play);
+    box2->addChild(m_b_next);
+    box2->addChild(m_b_last);
 
-    jwidget_add_child(box1, box3);
-    jwidget_add_child(box1, box2);
-    jwidget_add_child(box1, m_slider);
+    box1->addChild(box3);
+    box1->addChild(box2);
+    box1->addChild(m_slider);
 
     m_commandsBox = box1;
   }
@@ -146,9 +146,9 @@ StatusBar::StatusBar()
     m_transparentLabel = new Label("Transparent Color:");
     m_transparentColor = new ColorButton(Color::fromMask(), IMAGE_RGB);
 
-    jwidget_add_child(m_movePixelsBox, filler);
-    jwidget_add_child(m_movePixelsBox, m_transparentLabel);
-    jwidget_add_child(m_movePixelsBox, m_transparentColor);
+    m_movePixelsBox->addChild(filler);
+    m_movePixelsBox->addChild(m_transparentLabel);
+    m_movePixelsBox->addChild(m_transparentColor);
 
     m_transparentColor->Change.connect(Bind<void>(&StatusBar::onTransparentColorChange, this));
   }
@@ -283,16 +283,16 @@ void StatusBar::showTool(int msecs, Tool* tool)
 
 void StatusBar::showMovePixelsOptions()
 {
-  if (!this->hasChild(m_movePixelsBox)) {
-    jwidget_add_child(this, m_movePixelsBox);
+  if (!hasChild(m_movePixelsBox)) {
+    addChild(m_movePixelsBox);
     invalidate();
   }
 }
 
 void StatusBar::hideMovePixelsOptions()
 {
-  if (this->hasChild(m_movePixelsBox)) {
-    jwidget_remove_child(this, m_movePixelsBox);
+  if (hasChild(m_movePixelsBox)) {
+    removeChild(m_movePixelsBox);
     invalidate();
   }
 }
@@ -384,13 +384,13 @@ bool StatusBar::onProcessMessage(JMessage msg)
       return true;
 
     case JM_CLOSE:
-      if (!this->hasChild(m_commandsBox)) {
+      if (!hasChild(m_commandsBox)) {
 	// Append the "m_commandsBox" so it is destroyed in StatusBar dtor.
-	jwidget_add_child(this, m_commandsBox);
+	addChild(m_commandsBox);
       }
-      if (!this->hasChild(m_movePixelsBox)) {
+      if (!hasChild(m_movePixelsBox)) {
 	// Append the "m_movePixelsBox" so it is destroyed in StatusBar dtor.
-	jwidget_add_child(this, m_movePixelsBox);
+	addChild(m_movePixelsBox);
       }
       break;
 
@@ -591,7 +591,7 @@ bool StatusBar::onProcessMessage(JMessage msg)
 
 	  updateFromLayer();
 
-	  jwidget_add_child(this, m_commandsBox);
+	  addChild(m_commandsBox);
 	  invalidate();
 	}
 	else {
@@ -709,7 +709,7 @@ bool StatusBar::onProcessMessage(JMessage msg)
 	  // ...exit from command mode
 	  jmanager_free_focus();		// TODO Review this code
 
-	  jwidget_remove_child(this, m_commandsBox);
+	  removeChild(m_commandsBox);
 	  invalidate();
 	}
 

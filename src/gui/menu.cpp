@@ -242,11 +242,11 @@ void jmenubox_set_menu(Widget* widget, Widget* widget_menu)
 
   old_menu = jmenubox_get_menu(widget);
   if (old_menu)
-    jwidget_remove_child(widget, old_menu);
+    widget->removeChild(old_menu);
 
   if (widget_menu) {
     ASSERT_VALID_WIDGET(widget_menu);
-    jwidget_add_child(widget, widget_menu);
+    widget->addChild(widget_menu);
   }
 }
 
@@ -324,7 +324,7 @@ void jmenu_popup(Widget* menu, int x, int y)
 
   // Set children
   jmenubox_set_menu(menubox, menu);
-  jwidget_add_child(window, menubox);
+  window->addChild(menubox);
 
   window->remap_window();
 
@@ -895,7 +895,7 @@ static bool menuitem_msg_proc(Widget* widget, JMessage msg)
 
 	// Set children
 	jmenubox_set_menu(menubox, menuitem->submenu);
-	jwidget_add_child(window, menubox);
+	window->addChild(menubox);
 
 	window->remap_window();
 

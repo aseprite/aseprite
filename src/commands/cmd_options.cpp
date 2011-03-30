@@ -97,17 +97,17 @@ void OptionsCommand::onExecute(Context* context)
   // Cursor color
   cursor_color = new ColorButton(Editor::get_cursor_color(), IMAGE_RGB);
   cursor_color->setName("cursor_color");
-  jwidget_add_child(cursor_color_box, cursor_color);
+  cursor_color_box->addChild(cursor_color);
 
   // Grid color
   grid_color = new ColorButton(context->getSettings()->getGridColor(), IMAGE_RGB);
   grid_color->setName("grid_color");
-  jwidget_add_child(grid_color_box, grid_color);
+  grid_color_box->addChild(grid_color);
 
   // Pixel grid color
   pixel_grid_color = new ColorButton(context->getSettings()->getPixelGridColor(), IMAGE_RGB);
   pixel_grid_color->setName("pixel_grid_color");
-  jwidget_add_child(pixel_grid_color_box, pixel_grid_color);
+  pixel_grid_color_box->addChild(pixel_grid_color);
 
   // Others
   if (get_config_bool("Options", "MoveClick2", false))
@@ -134,8 +134,8 @@ void OptionsCommand::onExecute(Context* context)
   m_checked_bg_color1 = new ColorButton(RenderEngine::getCheckedBgColor1(), IMAGE_RGB);
   m_checked_bg_color2 = new ColorButton(RenderEngine::getCheckedBgColor2(), IMAGE_RGB);
 
-  jwidget_add_child(checked_bg_color1_box, m_checked_bg_color1);
-  jwidget_add_child(checked_bg_color2_box, m_checked_bg_color2);
+  checked_bg_color1_box->addChild(m_checked_bg_color1);
+  checked_bg_color2_box->addChild(m_checked_bg_color2);
 
   // Reset button
   checked_bg_reset->Click.connect(Bind<void>(&OptionsCommand::onResetCheckedBg, this));

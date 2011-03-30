@@ -34,8 +34,8 @@ public:
     : Frame(false, "Developer Console")
     , m_vbox(JI_VERTICAL)
   {
-    jwidget_add_child(&m_vbox, &m_docs);
-    jwidget_add_child(this, &m_vbox);
+    m_vbox.addChild(&m_docs);
+    addChild(&m_vbox);
 
     remap_window();
     center_window();

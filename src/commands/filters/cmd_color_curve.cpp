@@ -60,7 +60,7 @@ public:
     jwidget_expansive(&m_view, true);
     jwidget_set_min_size(&m_view, 128, 64);
 
-    jwidget_add_child(getContainer(), &m_view);
+    getContainer()->addChild(&m_view);
 
     m_editor.CurveEditorChange.connect(&ColorCurveWindow::onCurveChange, this);
   }

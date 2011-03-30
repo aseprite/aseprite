@@ -57,7 +57,7 @@ public:
 		"width", &m_widthEntry,
 		"height", &m_heightEntry, NULL);
 
-    jwidget_add_child(getContainer(), m_controlsWidget);
+    getContainer()->addChild(m_controlsWidget);
 
     m_widthEntry->setTextf("%d", m_filter.getWidth());
     m_heightEntry->setTextf("%d", m_filter.getHeight());
