@@ -40,15 +40,10 @@ PopupFrame::PopupFrame(const char* text, bool close_on_buttonpressed)
 
 PopupFrame::~PopupFrame()
 {
-  if (m_filtering) {
-    m_filtering = false;
-    jmanager_remove_msg_filter(JM_MOTION, this);
-    jmanager_remove_msg_filter(JM_BUTTONPRESSED, this);
-    jmanager_remove_msg_filter(JM_KEYPRESSED, this);
-  }
-  if (m_hot_region != NULL) {
+  stopFilteringMessages();
+
+  if (m_hot_region != NULL)
     jregion_free(m_hot_region);
-  }
 }
 
 /**
@@ -62,13 +57,21 @@ void PopupFrame::setHotRegion(JRegion region)
   if (m_hot_region != NULL)
     jregion_free(m_hot_region);
 
-  if (!m_filtering) {
-    m_filtering = true;
-    jmanager_add_msg_filter(JM_MOTION, this);
-    jmanager_add_msg_filter(JM_BUTTONPRESSED, this);
-    jmanager_add_msg_filter(JM_KEYPRESSED, this);
-  }
+  startFilteringMessages();
+
   m_hot_region = region;
+}
+
+void PopupFrame::makeFloating()
+{
+  stopFilteringMessages();
+  set_moveable(true);
+}
+
+void PopupFrame::makeFixed()
+{
+  startFilteringMessages();
+  set_moveable(false);
 }
 
 bool PopupFrame::onProcessMessage(JMessage msg)
@@ -76,12 +79,7 @@ bool PopupFrame::onProcessMessage(JMessage msg)
   switch (msg->type) {
 
     case JM_CLOSE:
-      if (m_filtering) {
-	m_filtering = false;
-	jmanager_remove_msg_filter(JM_MOTION, this);
-	jmanager_remove_msg_filter(JM_BUTTONPRESSED, this);
-	jmanager_remove_msg_filter(JM_KEYPRESSED, this);
-      }
+      stopFilteringMessages();
       break;
 
     case JM_SIGNAL:
@@ -95,7 +93,7 @@ bool PopupFrame::onProcessMessage(JMessage msg)
       break;
 
     case JM_MOUSELEAVE:
-      if (m_hot_region == NULL)
+      if (m_hot_region == NULL && !is_moveable())
 	closeWindow(NULL);
       break;
 
@@ -109,31 +107,30 @@ bool PopupFrame::onProcessMessage(JMessage msg)
       return false;
 
     case JM_BUTTONPRESSED:
-      /* if the user click outside the window, we have to close the
-	 tooltip window */
+      // If the user click outside the window, we have to close the
+      // tooltip window.
       if (m_filtering) {
 	Widget* picked = this->pick(msg->mouse.x, msg->mouse.y);
 	if (!picked || picked->getRoot() != this) {
-	  this->closeWindow(NULL);
+	  closeWindow(NULL);
 	}
       }
 
-      /* this is used when the user click inside a small text
-	 tooltip */
+      // This is used when the user click inside a small text tooltip.
       if (m_close_on_buttonpressed)
-	this->closeWindow(NULL);
+	closeWindow(NULL);
       break;
 
     case JM_MOTION:
-      if (m_hot_region != NULL &&
+      if (!is_moveable() &&
+	  m_hot_region != NULL &&
 	  jmanager_get_capture() == NULL) {
 	struct jrect box;
 
-	/* if the mouse is outside the hot-region we have to close the window */
-	if (!jregion_point_in(m_hot_region,
-			      msg->mouse.x, msg->mouse.y, &box)) {
-	  this->closeWindow(NULL);
-	}
+	// If the mouse is outside the hot-region we have to close the
+	// window.
+	if (!jregion_point_in(m_hot_region, msg->mouse.x, msg->mouse.y, &box))
+	  closeWindow(NULL);
       }
       break;
 
@@ -190,4 +187,24 @@ void PopupFrame::onPaint(PaintEvent& ev)
   pos.shrink(getBorder());
 
   g->drawString(getText(), ji_color_foreground(), this->getBgColor(), pos, getAlign());
+}
+
+void PopupFrame::startFilteringMessages()
+{
+  if (!m_filtering) {
+    m_filtering = true;
+    jmanager_add_msg_filter(JM_MOTION, this);
+    jmanager_add_msg_filter(JM_BUTTONPRESSED, this);
+    jmanager_add_msg_filter(JM_KEYPRESSED, this);
+  }
+}
+
+void PopupFrame::stopFilteringMessages()
+{
+  if (m_filtering) {
+    m_filtering = false;
+    jmanager_remove_msg_filter(JM_MOTION, this);
+    jmanager_remove_msg_filter(JM_BUTTONPRESSED, this);
+    jmanager_remove_msg_filter(JM_KEYPRESSED, this);
+  }
 }

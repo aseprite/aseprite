@@ -287,6 +287,7 @@ add_library(aseprite-library
   widgets/hex_color_entry.cpp
   widgets/menuitem.cpp
   widgets/palette_view.cpp
+  widgets/popup_frame_pin.cpp
   widgets/statebar.cpp
   widgets/tabs.cpp
   widgets/toolbar.cpp)

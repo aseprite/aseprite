@@ -198,6 +198,8 @@ SkinTheme::SkinTheme()
   sheet_mapping["layer_editable_selected"] = PART_LAYER_EDITABLE_SELECTED;
   sheet_mapping["layer_locked"] = PART_LAYER_LOCKED;
   sheet_mapping["layer_locked_selected"] = PART_LAYER_LOCKED_SELECTED;
+  sheet_mapping["unpinned"] = PART_UNPINNED;
+  sheet_mapping["pinned"] = PART_PINNED;
 
   reload_skin();
 }
@@ -719,24 +721,24 @@ void SkinTheme::paintButton(PaintEvent& ev)
 			    iconInterface ? iconInterface->getHeight() : 0);
 
   // Tool buttons are smaller
-  bool isMiniLook = false;
+  LookType look = NormalLook;
   SharedPtr<SkinProperty> skinPropery = widget->getProperty(SkinProperty::SkinPropertyName);
   if (skinPropery != NULL)
-    isMiniLook = skinPropery->isMiniLook();
+    look = skinPropery->getLook();
 
   // selected
   if (widget->isSelected()) {
     fg = get_button_selected_text_color();
     bg = get_button_selected_face_color();
-    part_nw = isMiniLook ? PART_TOOLBUTTON_NORMAL_NW:
-			   PART_BUTTON_SELECTED_NW;
+    part_nw = (look == MiniLook ? PART_TOOLBUTTON_NORMAL_NW:
+				  PART_BUTTON_SELECTED_NW);
   }
   // with mouse
   else if (widget->isEnabled() && widget->hasMouseOver()) {
     fg = get_button_hot_text_color();
     bg = get_button_hot_face_color();
-    part_nw = isMiniLook ? PART_TOOLBUTTON_HOT_NW:
-			   PART_BUTTON_HOT_NW;
+    part_nw = (look == MiniLook ? PART_TOOLBUTTON_HOT_NW:
+				  PART_BUTTON_HOT_NW);
   }
   // without mouse
   else {
@@ -744,11 +746,11 @@ void SkinTheme::paintButton(PaintEvent& ev)
     bg = get_button_normal_face_color();
 
     if (widget->hasFocus())
-      part_nw = isMiniLook ? PART_TOOLBUTTON_HOT_NW:
-			     PART_BUTTON_FOCUSED_NW;
+      part_nw = (look == MiniLook ? PART_TOOLBUTTON_HOT_NW:
+				    PART_BUTTON_FOCUSED_NW);
     else
-      part_nw = isMiniLook ? PART_TOOLBUTTON_NORMAL_NW:
-			     PART_BUTTON_NORMAL_NW;
+      part_nw = (look == MiniLook ? PART_TOOLBUTTON_NORMAL_NW:
+				    PART_BUTTON_NORMAL_NW);
   }
 
   // widget position
@@ -791,10 +793,16 @@ void SkinTheme::paintCheckBox(PaintEvent& ev)
 			    iconInterface ? iconInterface->getWidth() : 0,
 			    iconInterface ? iconInterface->getHeight() : 0);
 
-  // background
+  // Check box look
+  LookType look = NormalLook;
+  SharedPtr<SkinProperty> skinPropery = widget->getProperty(SkinProperty::SkinPropertyName);
+  if (skinPropery != NULL)
+    look = skinPropery->getLook();
+
+  // Background
   jdraw_rectfill(widget->rc, bg = BGCOLOR);
 
-  // mouse
+  // Mouse
   if (widget->isEnabled()) {
     if (widget->hasMouseOver())
       jdraw_rectfill(widget->rc, bg = get_check_hot_face_color());
@@ -802,7 +810,7 @@ void SkinTheme::paintCheckBox(PaintEvent& ev)
       jdraw_rectfill(widget->rc, bg = get_check_focus_face_color());
   }
 
-  /* text */
+  // Text
   draw_textstring(NULL, -1, bg, false, widget, &text, 0);
 
   // Paint the icon
@@ -810,7 +818,7 @@ void SkinTheme::paintCheckBox(PaintEvent& ev)
     paintIcon(widget, ev.getGraphics(), iconInterface, icon.x1-widget->rc->x1, icon.y1-widget->rc->y1);
 
   // draw focus
-  if (widget->hasFocus()) {
+  if (look != WithoutBordersLook && widget->hasFocus()) {
     draw_bounds_nw(ji_screen,
 		   widget->rc->x1,
 		   widget->rc->y1,
@@ -1222,7 +1230,7 @@ void SkinTheme::paintSlider(PaintEvent& ev)
 
   SharedPtr<SkinProperty> skinPropery = widget->getProperty(SkinProperty::SkinPropertyName);
   if (skinPropery != NULL)
-    isMiniLook = skinPropery->isMiniLook();
+    isMiniLook = (skinPropery->getLook() == MiniLook);
 
   if (SkinSliderProperty* sliderProperty = dynamic_cast<SkinSliderProperty*>(skinPropery.get()))
     bgPainter = sliderProperty->getBgPainter();

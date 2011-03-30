@@ -24,16 +24,17 @@
 #include "gui/button.h"
 #include "gui/grid.h"
 #include "gui/label.h"
-#include "gui/popup_frame.h"
 #include "gui/view.h"
 #include "widgets/color_sliders.h"
+#include "widgets/popup_frame_pin.h"
 #include "widgets/hex_color_entry.h"
 #include "widgets/palette_view.h"
 
-class ColorSelector : public PopupFrame
+class ColorSelector : public PopupFramePin
 {
 public:
   ColorSelector();
+  ~ColorSelector();
 
   void setColor(const Color& color);
   Color getColor() const;

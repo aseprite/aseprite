@@ -402,18 +402,24 @@ bool jmanager_generate_messages(JWidget manager)
       }
     }
 
-    /* Z-Order:
-       Send the window to top (only when you click in a window
-       that aren't the desktop) */
+    // Handle Z order: Send the window to top (only when you click in
+    // a window that aren't the desktop).
     if (msg->type == JM_BUTTONPRESSED &&
 	!capture_widget && mouse_widget) {
+      // The clicked window
       Frame* window = static_cast<Frame*>(mouse_widget->getRoot());
       JWidget win_manager = window ? window->getManager(): NULL;
 
       if ((window) &&
+	  // We cannot change Z-order of desktop windows
 	  (!window->is_desktop()) &&
+	  // We cannot change Z order of foreground windows because a
+	  // foreground window can launch other background windows
+	  // which should be kept on top of the foreground one.
+	  (!window->is_foreground()) &&
+	  // If the window is not already the top window of the manager.
 	  (window != TOPWND(win_manager))) {
-	/* put it in the top of the list */
+	// Put it in the top of the list
 	jlist_remove(win_manager->children, window);
 
 	if (window->is_ontop())
@@ -432,7 +438,7 @@ bool jmanager_generate_messages(JWidget manager)
 	window->invalidate();
       }
 
-      /* put the focus */
+      // Put the focus
       jmanager_set_focus(mouse_widget);
     }
 

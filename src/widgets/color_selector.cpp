@@ -36,7 +36,7 @@
 #include "widgets/palette_view.h"
 
 ColorSelector::ColorSelector()
-  : PopupFrame("Color Selector", false)
+  : PopupFramePin("Color Selector", false)
   , m_color(Color::fromMask())
   , m_vbox(JI_VERTICAL)
   , m_topBox(JI_HORIZONTAL)
@@ -70,6 +70,14 @@ ColorSelector::ColorSelector()
   jwidget_add_child(&m_topBox, &m_grayButton);
   jwidget_add_child(&m_topBox, &m_maskButton);
   jwidget_add_child(&m_topBox, &m_hexColorEntry);
+  {
+    Box* filler = new Box(JI_HORIZONTAL);
+    Box* miniVbox = new Box(JI_VERTICAL);
+    jwidget_expansive(filler, true);
+    jwidget_add_child(&m_topBox, filler);
+    jwidget_add_child(&m_topBox, miniVbox);
+    jwidget_add_child(miniVbox, getPin());
+  }
   jwidget_add_child(&m_vbox, &m_topBox);
   jwidget_add_child(&m_vbox, &m_colorPaletteContainer);
   jwidget_add_child(&m_vbox, &m_rgbSliders);
@@ -94,6 +102,11 @@ ColorSelector::ColorSelector()
   setPreferredSize(gfx::Size(300*jguiscale(), getPreferredSize().h));
 
   initTheme();
+}
+
+ColorSelector::~ColorSelector()
+{
+  jwidget_remove_child(getPin()->getParent(), getPin());
 }
 
 void ColorSelector::setColor(const Color& color)

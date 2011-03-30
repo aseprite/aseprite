@@ -18,12 +18,18 @@ public:
 
   void setHotRegion(JRegion region);
 
+  void makeFloating();
+  void makeFixed();
+
 protected:
   bool onProcessMessage(JMessage msg) OVERRIDE;
   void onPreferredSize(PreferredSizeEvent& ev) OVERRIDE;
   void onPaint(PaintEvent& ev) OVERRIDE;
 
 private:
+  void startFilteringMessages();
+  void stopFilteringMessages();
+
   bool m_close_on_buttonpressed;
   JRegion m_hot_region;
   bool m_filtering;

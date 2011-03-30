@@ -86,6 +86,11 @@ bool ColorButton::onProcessMessage(JMessage msg)
 {
   switch (msg->type) {
 
+    case JM_CLOSE:
+      if (m_frame && m_frame->isVisible())
+	m_frame->closeWindow(NULL);
+      break;
+
     case JM_MOUSEENTER:
       app_get_statusbar()->showColor(0, "", m_color, 255);
       break;
@@ -101,7 +106,7 @@ bool ColorButton::onProcessMessage(JMessage msg)
 	  // Open it
 	  openSelectorDialog();
 	}
-	else {
+	else if (!m_frame->is_moveable()) {
 	  // If it is visible, close it
 	  closeSelectorDialog();
 	}

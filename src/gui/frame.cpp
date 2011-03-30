@@ -5,7 +5,6 @@
 // read LICENSE.txt for more information.
 
 #define REDRAW_MOVEMENT
-#define MOTION_CURSOR JI_CURSOR_NORMAL
 
 #include "config.h"
 
@@ -84,6 +83,81 @@ void Frame::set_ontop(bool state)
 void Frame::set_wantfocus(bool state)
 {
   m_is_wantfocus = state;
+}
+
+HitTest Frame::hitTest(const gfx::Point& point)
+{
+  HitTestEvent ev(this, point, HitTestNowhere);
+  onHitTest(ev);
+  return ev.getHit();
+}
+
+void Frame::onHitTest(HitTestEvent& ev)
+{
+  HitTest ht = HitTestNowhere;
+
+  if (!m_is_moveable) {
+    ev.setHit(ht);
+    return;
+  }
+
+  int x = ev.getPoint().x;
+  int y = ev.getPoint().y;
+  JRect pos = jwidget_get_rect(this);
+  JRect cpos = jwidget_get_child_rect(this);
+
+  // Move
+  if ((this->hasText())
+      && (((x >= cpos->x1) &&
+	   (x < cpos->x2) &&
+	   (y >= pos->y1+this->border_width.b) &&
+	   (y < cpos->y1)))) {
+    ht = HitTestCaption;
+  }
+  // Resize
+  else if (m_is_sizeable) {
+    if ((x >= pos->x1) && (x < cpos->x1)) {
+      if ((y >= pos->y1) && (y < cpos->y1))
+	ht = HitTestBorderNW;
+      else if ((y > cpos->y2-1) && (y <= pos->y2-1))
+	ht = HitTestBorderSW;
+      else
+	ht = HitTestBorderW;
+    }
+    else if ((y >= pos->y1) && (y < cpos->y1)) {
+      if ((x >= pos->x1) && (x < cpos->x1))
+	ht = HitTestBorderNW;
+      else if ((x > cpos->x2-1) && (x <= pos->x2-1))
+	ht = HitTestBorderNE;
+      else
+	ht = HitTestBorderN;
+    }
+    else if ((x > cpos->x2-1) && (x <= pos->x2-1)) {
+      if ((y >= pos->y1) && (y < cpos->y1))
+	ht = HitTestBorderNE;
+      else if ((y > cpos->y2-1) && (y <= pos->y2-1))
+	ht = HitTestBorderSE;
+      else
+	ht = HitTestBorderE;
+    }
+    else if ((y > cpos->y2-1) && (y <= pos->y2-1)) {
+      if ((x >= pos->x1) && (x < cpos->x1))
+	ht = HitTestBorderSW;
+      else if ((x > cpos->x2-1) && (x <= pos->x2-1))
+	ht = HitTestBorderSE;
+      else
+	ht = HitTestBorderS;
+    }
+  }
+  else {
+    // Client area
+    ht = HitTestClient;
+  }
+
+  jrect_free(pos);
+  jrect_free(cpos);
+
+  ev.setHit(ht);
 }
 
 void Frame::remap_window()
@@ -186,26 +260,6 @@ bool Frame::is_toplevel()
     return false;
 }
 
-bool Frame::is_foreground() const
-{
-  return m_is_foreground;
-}
-
-bool Frame::is_desktop() const
-{
-  return m_is_desktop;
-}
-
-bool Frame::is_ontop() const
-{
-  return m_is_ontop;
-}
-
-bool Frame::is_wantfocus() const
-{
-  return m_is_wantfocus;
-}
-
 bool Frame::onProcessMessage(JMessage msg)
 {
   switch (msg->type) {
@@ -237,9 +291,10 @@ bool Frame::onProcessMessage(JMessage msg)
 
       press_x = msg->mouse.x;
       press_y = msg->mouse.y;
-      m_windowAction = this->get_action(press_x, press_y);
+      m_hitTest = hitTest(gfx::Point(press_x, press_y));
 
-      if (m_windowAction != WINDOW_NONE) {
+      if (m_hitTest != HitTestNowhere &&
+	  m_hitTest != HitTestClient) {
 	if (click_pos == NULL)
 	  click_pos = jrect_new_copy(this->rc);
 	else
@@ -262,7 +317,7 @@ bool Frame::onProcessMessage(JMessage msg)
 	  click_pos = NULL;
 	}
 
-	m_windowAction = WINDOW_NONE;
+	m_hitTest = HitTestNowhere;
 	return true;
       }
       break;
@@ -274,7 +329,7 @@ bool Frame::onProcessMessage(JMessage msg)
       // Does it have the mouse captured?
       if (hasCapture()) {
 	// Reposition/resize
-	if (m_windowAction == WINDOW_MOVE) {
+	if (m_hitTest == HitTestCaption) {
 	  int x = click_pos->x1 + (msg->mouse.x - press_x);
 	  int y = click_pos->y1 + (msg->mouse.y - press_y);
 	  JRect rect = jrect_new(x, y,
@@ -289,26 +344,43 @@ bool Frame::onProcessMessage(JMessage msg)
 	  w = jrect_w(click_pos);
 	  h = jrect_h(click_pos);
 
-	  if (m_windowAction & WINDOW_RESIZE_LEFT)
-	    w += press_x - msg->mouse.x;
-	  else if (m_windowAction & WINDOW_RESIZE_RIGHT)
-	    w += msg->mouse.x - press_x;
+	  bool hitLeft = (m_hitTest == HitTestBorderNW ||
+			  m_hitTest == HitTestBorderW ||
+			  m_hitTest == HitTestBorderSW);
+	  bool hitTop = (m_hitTest == HitTestBorderNW ||
+			 m_hitTest == HitTestBorderN ||
+			 m_hitTest == HitTestBorderNE);
+	  bool hitRight = (m_hitTest == HitTestBorderNE ||
+			   m_hitTest == HitTestBorderE ||
+			   m_hitTest == HitTestBorderSE);
+	  bool hitBottom = (m_hitTest == HitTestBorderSW ||
+			    m_hitTest == HitTestBorderS ||
+			    m_hitTest == HitTestBorderSE);
 
-	  if (m_windowAction & WINDOW_RESIZE_TOP)
+	  if (hitLeft) {
+	    w += press_x - msg->mouse.x;
+	  }
+	  else if (hitRight) {
+	    w += msg->mouse.x - press_x;
+	  }
+
+	  if (hitTop) {
 	    h += (press_y - msg->mouse.y);
-	  else if (m_windowAction & WINDOW_RESIZE_BOTTOM)
+	  }
+	  else if (hitBottom) {
 	    h += (msg->mouse.y - press_y);
+	  }
 
 	  this->limit_size(&w, &h);
 
 	  if ((jrect_w(this->rc) != w) ||
 	      (jrect_h(this->rc) != h)) {
-	    if (m_windowAction & WINDOW_RESIZE_LEFT)
+	    if (hitLeft)
 	      x = click_pos->x1 - (w - jrect_w(click_pos));
 	    else
 	      x = this->rc->x1;
 
-	    if (m_windowAction & WINDOW_RESIZE_TOP)
+	    if (hitTop)
 	      y = click_pos->y1 - (h - jrect_h(click_pos));
 	    else
 	      y = this->rc->y1;
@@ -324,44 +396,52 @@ bool Frame::onProcessMessage(JMessage msg)
 	  }
 	}
       }
-
-      /* TODO */
-/*       { */
-/* 	JWidget manager = get_manager(); */
-/* 	View* view = View::getView(manager); */
-/* 	if (view) { */
-/* 	  jview_update(view); */
-/* 	} */
-/*       } */
       break;
 
     case JM_SETCURSOR:
       if (m_is_moveable) {
-	int action = this->get_action(msg->mouse.x, msg->mouse.y);
+	HitTest ht = hitTest(gfx::Point(msg->mouse.x, msg->mouse.y));
 	int cursor = JI_CURSOR_NORMAL;
 
-	if (action == WINDOW_MOVE)
-	  cursor = MOTION_CURSOR;
-	else if (action & WINDOW_RESIZE_LEFT) {
-	  if (action & WINDOW_RESIZE_TOP)
+	switch (ht) {
+
+	  case HitTestCaption:
+	    cursor = JI_CURSOR_NORMAL;
+	    break;
+
+	  case HitTestBorderNW:
 	    cursor = JI_CURSOR_SIZE_TL;
-	  else if (action & WINDOW_RESIZE_BOTTOM)
-	    cursor = JI_CURSOR_SIZE_BL;
-	  else
+	    break;
+
+	  case HitTestBorderW:
 	    cursor = JI_CURSOR_SIZE_L;
-	}
-	else if (action & WINDOW_RESIZE_RIGHT) {
-	  if (action & WINDOW_RESIZE_TOP)
+	    break;
+
+	  case HitTestBorderSW:
+	    cursor = JI_CURSOR_SIZE_BL;
+	    break;
+
+	  case HitTestBorderNE:
 	    cursor = JI_CURSOR_SIZE_TR;
-	  else if (action & WINDOW_RESIZE_BOTTOM)
-	    cursor = JI_CURSOR_SIZE_BR;
-	  else
+	    break;
+
+	  case HitTestBorderE:
 	    cursor = JI_CURSOR_SIZE_R;
+	    break;
+
+	  case HitTestBorderSE:
+	    cursor = JI_CURSOR_SIZE_BR;
+	    break;
+
+	  case HitTestBorderN:
+	    cursor = JI_CURSOR_SIZE_T;
+	    break;
+
+	  case HitTestBorderS:
+	    cursor = JI_CURSOR_SIZE_B;
+	    break;
+
 	}
-	else if (action & WINDOW_RESIZE_TOP)
-	  cursor = JI_CURSOR_SIZE_T;
-	else if (action & WINDOW_RESIZE_BOTTOM)
-	  cursor = JI_CURSOR_SIZE_B;
 
 	jmouse_set_cursor(cursor);
 	return true;
@@ -434,79 +514,6 @@ void Frame::window_set_position(JRect rect)
   }
 
   jrect_free(cpos);
-}
-
-int Frame::get_action(int x, int y)
-{
-  int action = WINDOW_NONE;
-  JRect pos;
-  JRect cpos;
-
-  if (!m_is_moveable)
-    return action;
-
-  pos = jwidget_get_rect(this);
-  cpos = jwidget_get_child_rect(this);
-
-  /* move */
-  if ((this->hasText())
-      && (((x >= cpos->x1) &&
-	   (x < cpos->x2) &&
-	   (y >= pos->y1+this->border_width.b) &&
-	   (y < cpos->y1))
-	  || (key[KEY_ALT]))) {
-    action = WINDOW_MOVE;
-  }
-  /* resize */
-  else if (m_is_sizeable) {
-    /* left *****************************************/
-    if ((x >= pos->x1) && (x < cpos->x1)) {
-      action |= WINDOW_RESIZE_LEFT;
-      /* top */
-      if ((y >= pos->y1) && (y < cpos->y1)) {
-	action |= WINDOW_RESIZE_TOP;
-      }
-      /* bottom */
-      else if ((y > cpos->y2-1) && (y <= pos->y2-1))
-	action |= WINDOW_RESIZE_BOTTOM;
-    }
-    /* top *****************************************/
-    else if ((y >= pos->y1) && (y < cpos->y1)) {
-      action |= WINDOW_RESIZE_TOP;
-      /* left */
-      if ((x >= pos->x1) && (x < cpos->x1))
-	action |= WINDOW_RESIZE_LEFT;
-      /* right */
-      else if ((x > cpos->x2-1) && (x <= pos->x2-1))
-	action |= WINDOW_RESIZE_RIGHT;
-    }
-    /* right *****************************************/
-    else if ((x > cpos->x2-1) && (x <= pos->x2-1)) {
-      action |= WINDOW_RESIZE_RIGHT;
-      /* top */
-      if ((y >= pos->y1) && (y < cpos->y1)) {
-	action |= WINDOW_RESIZE_TOP;
-      }
-      /* bottom */
-      else if ((y > cpos->y2-1) && (y <= pos->y2-1))
-	action |= WINDOW_RESIZE_BOTTOM;
-    }
-    /* bottom *****************************************/
-    else if ((y > cpos->y2-1) && (y <= pos->y2-1)) {
-      action |= WINDOW_RESIZE_BOTTOM;
-      /* left */
-      if ((x >= pos->x1) && (x < cpos->x1))
-	action |= WINDOW_RESIZE_LEFT;
-      /* right */
-      else if ((x > cpos->x2-1) && (x <= pos->x2-1))
-	action |= WINDOW_RESIZE_RIGHT;
-    }
-  }
-
-  jrect_free(pos);
-  jrect_free(cpos);
-
-  return action;
 }
 
 void Frame::limit_size(int *w, int *h)

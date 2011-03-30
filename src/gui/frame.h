@@ -9,21 +9,15 @@
 
 #include "base/compiler_specific.h"
 #include "base/signal.h"
+#include "gfx/point.h"
+#include "gui/event.h"
+#include "gui/hit_test_event.h"
 #include "gui/widget.h"
 
 class CloseEvent { };		// TODO
 
 class Frame : public Widget
 {
-  JWidget m_killer;
-  bool m_is_desktop : 1;
-  bool m_is_moveable : 1;
-  bool m_is_sizeable : 1;
-  bool m_is_ontop : 1;
-  bool m_is_wantfocus : 1;
-  bool m_is_foreground : 1;
-  bool m_is_autoremap : 1;
-
 public:
   Frame(bool is_desktop, const char* text);
   ~Frame();
@@ -47,18 +41,22 @@ public:
   void closeWindow(Widget* killer);
 
   bool is_toplevel();
-  bool is_foreground() const;
-  bool is_desktop() const;
-  bool is_ontop() const;
-  bool is_wantfocus() const;
+  bool is_foreground() const { return m_is_foreground; }
+  bool is_desktop() const { return m_is_desktop; }
+  bool is_ontop() const { return m_is_ontop; }
+  bool is_wantfocus() const { return m_is_wantfocus; }
+  bool is_moveable() const { return m_is_moveable; }
+
+  HitTest hitTest(const gfx::Point& point);
 
   // Signals
   Signal1<void, CloseEvent&> Close;
 
 protected:
-  bool onProcessMessage(JMessage msg) OVERRIDE;
-  void onPreferredSize(PreferredSizeEvent& ev) OVERRIDE;
-  void onPaint(PaintEvent& ev) OVERRIDE;
+  virtual bool onProcessMessage(JMessage msg) OVERRIDE;
+  virtual void onPreferredSize(PreferredSizeEvent& ev) OVERRIDE;
+  virtual void onPaint(PaintEvent& ev) OVERRIDE;
+  virtual void onHitTest(HitTestEvent& ev);
 
 private:
   void window_set_position(JRect rect);
@@ -66,7 +64,15 @@ private:
   void limit_size(int* w, int* h);
   void move_window(JRect rect, bool use_blit);
 
-  int m_windowAction;
+  JWidget m_killer;
+  bool m_is_desktop : 1;
+  bool m_is_moveable : 1;
+  bool m_is_sizeable : 1;
+  bool m_is_ontop : 1;
+  bool m_is_wantfocus : 1;
+  bool m_is_foreground : 1;
+  bool m_is_autoremap : 1;
+  int m_hitTest;
 };
 
 #endif

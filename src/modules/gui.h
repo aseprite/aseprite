@@ -24,6 +24,7 @@
 #include "base/exception.h"
 #include "gui/base.h"
 #include "gui/accel.h"
+#include "skin/skin_property.h"
 
 class ButtonBase;
 class CheckBox;
@@ -93,6 +94,7 @@ void hook_signal(Widget* widget,
 void get_widgets(Widget* window, ...);
 
 void setup_mini_look(Widget* widget);
+void setup_look(Widget* widget, LookType lookType);
 void setup_bevels(Widget* widget, int b1, int b2, int b3, int b4);
 
 void set_gfxicon_to_button(ButtonBase* button,

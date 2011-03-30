@@ -168,6 +168,8 @@
     <part id="layer_editable_selected"		x="144" y="184" w="8" h="8" />
     <part id="layer_locked"			x="160" y="176" w="8" h="8" />
     <part id="layer_locked_selected"		x="160" y="184" w="8" h="8" />
+    <part id="unpinned"				x="192" y="144" w="8" h="8" />
+    <part id="pinned"				x="200" y="144" w="8" h="8" />
   </parts>
 
 </skin>

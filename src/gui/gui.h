@@ -23,6 +23,7 @@
 #include "gui/frame.h"
 #include "gui/graphics.h"
 #include "gui/grid.h"
+#include "gui/hit_test_event.h"
 #include "gui/hook.h"
 #include "gui/image_view.h"
 #include "gui/label.h"

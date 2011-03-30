@@ -811,13 +811,18 @@ void get_widgets(JWidget window, ...)
 
 void setup_mini_look(Widget* widget)
 {
+  setup_look(widget, MiniLook);
+}
+
+void setup_look(Widget* widget, LookType lookType)
+{
   SharedPtr<SkinProperty> skinProp;
 
   skinProp = widget->getProperty(SkinProperty::SkinPropertyName);
   if (skinProp == NULL)
     skinProp.reset(new SkinProperty);
 
-  skinProp->setMiniLook(true);
+  skinProp->setLook(lookType);
   widget->setProperty(skinProp);
 }
 

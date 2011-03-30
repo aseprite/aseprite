@@ -16,22 +16,30 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#include "config.h"
+#ifndef WIDGETS_POPUP_FRAME_PIN_H_INCLUDED
+#define WIDGETS_POPUP_FRAME_PIN_H_INCLUDED
 
-#include "skin/skin_property.h"
+#include "gui/button.h"
+#include "gui/popup_frame.h"
 
-const char* SkinProperty::SkinPropertyName = "SkinProperty";
-
-SkinProperty::SkinProperty()
-  : Property(SkinPropertyName)
+class PopupFramePin : public PopupFrame
 {
-  m_look = NormalLook;
-  m_upperLeft = 0;
-  m_upperRight = 0;
-  m_lowerLeft = 0;
-  m_lowerRight = 0;
-}
+public:
+  PopupFramePin(const char* text, bool close_on_buttonpressed);
 
-SkinProperty::~SkinProperty()
-{
-}
+protected:
+  virtual bool onProcessMessage(JMessage msg) OVERRIDE;
+  virtual void onHitTest(HitTestEvent& ev) OVERRIDE;
+
+  // The pin. Your derived class must add this pin in some place of
+  // the frame as a children, and you must to remove the pin from the
+  // parent in your class's dtor.
+  CheckBox* getPin() { return &m_pin; }
+
+private:
+  void onPinClick(Event& ev);
+  
+  CheckBox m_pin;
+};
+
+#endif
