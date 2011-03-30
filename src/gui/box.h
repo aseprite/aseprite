@@ -25,4 +25,24 @@ private:
   void box_set_position(JRect rect);
 };
 
+class VBox : public Box
+{
+public:
+  VBox() : Box(JI_VERTICAL) { }
+};
+
+class HBox : public Box
+{
+public:
+  HBox() : Box(JI_HORIZONTAL) { }
+};
+
+class BoxFiller : public Box
+{
+public:
+  BoxFiller() : Box(JI_HORIZONTAL) {
+    jwidget_expansive(this, true);
+  }
+};
+
 #endif

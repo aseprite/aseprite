@@ -89,7 +89,7 @@ static Widget* convert_xmlelement_to_widget(TiXmlElement* elem, Widget* root)
 
   /* TODO error handling: add a message if the widget is bad specified */
 
-  /* box */
+  // Boxes
   if (ustrcmp(elem_name, "box") == 0) {
     bool horizontal  = bool_attr_is_true(elem, "horizontal");
     bool vertical    = bool_attr_is_true(elem, "vertical");
@@ -99,7 +99,24 @@ static Widget* convert_xmlelement_to_widget(TiXmlElement* elem, Widget* root)
 		      vertical ? JI_VERTICAL: 0) |
 		     (homogeneous ? JI_HOMOGENEOUS: 0));
   }
-  /* button */
+  else if (ustrcmp(elem_name, "vbox") == 0) {
+    bool homogeneous = bool_attr_is_true(elem, "homogeneous");
+
+    widget = new VBox();
+    if (homogeneous)
+      widget->setAlign(widget->getAlign() | JI_HOMOGENEOUS);
+  }
+  else if (ustrcmp(elem_name, "hbox") == 0) {
+    bool homogeneous = bool_attr_is_true(elem, "homogeneous");
+
+    widget = new HBox();
+    if (homogeneous)
+      widget->setAlign(widget->getAlign() | JI_HOMOGENEOUS);
+  }
+  else if (ustrcmp(elem_name, "boxfiller") == 0) {
+    widget = new BoxFiller();
+  }
+  // Button
   else if (ustrcmp(elem_name, "button") == 0) {
     const char *text = elem->Attribute("text");
 
@@ -142,7 +159,7 @@ static Widget* convert_xmlelement_to_widget(TiXmlElement* elem, Widget* root)
       }
     }
   }
-  /* check */
+  // Check
   else if (ustrcmp(elem_name, "check") == 0) {
     const char *text = elem->Attribute("text");
     const char *looklike = elem->Attribute("looklike");
