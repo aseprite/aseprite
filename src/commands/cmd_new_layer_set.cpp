@@ -64,8 +64,8 @@ void NewLayerSetCommand::onExecute(Context* context)
 
   window->open_window_fg();
 
-  if (window->get_killer() == jwidget_find_name(window, "ok")) {
-    const char *name = jwidget_find_name(window, "name")->getText();
+  if (window->get_killer() == window->findChild("ok")) {
+    const char *name = window->findChild("name")->getText();
     Layer* layer = new LayerFolder(sprite);
 
     layer->setName(name);

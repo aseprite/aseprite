@@ -88,7 +88,6 @@ bool jwidget_emit_signal(JWidget widget, int signal_num);
 
 /* miscellaneous */
 
-JWidget jwidget_find_name(JWidget widget, const char *name);
 bool jwidget_check_underscored(JWidget widget, int scancode);
 
 //////////////////////////////////////////////////////////////////////

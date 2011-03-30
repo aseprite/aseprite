@@ -66,9 +66,9 @@ void DuplicateSpriteCommand::onExecute(Context* context)
   /* load the window widget */
   FramePtr window(load_widget("duplicate_sprite.xml", "duplicate_sprite"));
 
-  src_name = jwidget_find_name(window, "src_name");
-  dst_name = jwidget_find_name(window, "dst_name");
-  flatten = jwidget_find_name(window, "flatten");
+  src_name = window->findChild("src_name");
+  dst_name = window->findChild("dst_name");
+  flatten = window->findChild("flatten");
 
   src_name->setText(get_filename(document->getFilename()));
 
@@ -81,7 +81,7 @@ void DuplicateSpriteCommand::onExecute(Context* context)
   /* open the window */
   window->open_window_fg();
 
-  if (window->get_killer() == jwidget_find_name(window, "ok")) {
+  if (window->get_killer() == window->findChild("ok")) {
     set_config_bool("DuplicateSprite", "Flatten", flatten->isSelected());
 
     // make a copy of the document

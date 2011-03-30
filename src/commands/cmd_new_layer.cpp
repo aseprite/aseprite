@@ -96,10 +96,10 @@ void NewLayerCommand::onExecute(Context* context)
 
     window->open_window_fg();
 
-    if (window->get_killer() != jwidget_find_name(window, "ok"))
+    if (window->get_killer() != window->findChild("ok"))
       return;
 
-    name = jwidget_find_name(window, "name")->getText();
+    name = window->findChild("name")->getText();
   }
 
   Layer* layer;

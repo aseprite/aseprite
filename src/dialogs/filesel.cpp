@@ -58,19 +58,19 @@ static bool navigation_locked = false;	/* if true the navigation_history isn't
 					   changes (used when the back/forward
 					   buttons are pushed) */
 
-static void update_location(JWidget window);
-static void update_navigation_buttons(JWidget window);
+static void update_location(Widget* window);
+static void update_navigation_buttons(Widget* window);
 static void add_in_navigation_history(IFileItem* folder);
-static void select_filetype_from_filename(JWidget window);
+static void select_filetype_from_filename(Widget* window);
 
-static void goback_command(JWidget widget);
-static void goforward_command(JWidget widget);
-static void goup_command(JWidget widget);
+static void goback_command(Widget* widget);
+static void goforward_command(Widget* widget);
+static void goup_command(Widget* widget);
 
-static bool fileview_msg_proc(JWidget widget, JMessage msg);
-static bool location_msg_proc(JWidget widget, JMessage msg);
-static bool filetype_msg_proc(JWidget widget, JMessage msg);
-static bool filename_msg_proc(JWidget widget, JMessage msg);
+static bool fileview_msg_proc(Widget* widget, JMessage msg);
+static bool location_msg_proc(Widget* widget, JMessage msg);
+static bool filetype_msg_proc(Widget* widget, JMessage msg);
+static bool filename_msg_proc(Widget* widget, JMessage msg);
 
 // Slot for App::Exit signal 
 static void on_exit_delete_navigation_history()
@@ -145,11 +145,11 @@ base::string ase_file_selector(const base::string& message,
     // load the window widget
     window = static_cast<Frame*>(load_widget("file_selector.xml", "file_selector"));
 
-    JWidget box = jwidget_find_name(window, "box");
+    Widget* box = window->findChild("box");
     Button* goback = window->findChildT<Button>("goback");
     Button* goforward = window->findChildT<Button>("goforward");
     Button* goup = window->findChildT<Button>("goup");
-    JWidget location = window->findChild("location");
+    Widget* location = window->findChild("location");
     filetype = window->findChildT<ComboBox>("filetype");
     ASSERT(filetype != NULL);
     filename_entry = window->findChildT<Entry>("filename");
@@ -202,7 +202,7 @@ base::string ase_file_selector(const base::string& message,
     window->center_window();
   }
   else {
-    fileview = jwidget_find_name(window, "fileview");
+    fileview = window->findChild("fileview");
     filetype = window->findChildT<ComboBox>("filetype");
     ASSERT(filetype != NULL);
     filename_entry = window->findChildT<Entry>("filename");
@@ -239,7 +239,7 @@ base::string ase_file_selector(const base::string& message,
   window->setText(message.c_str());
 
   // get the ok-button
-  JWidget ok = jwidget_find_name(window, "ok");
+  Widget* ok = window->findChild("ok");
 
   // update the view
   View::getView(fileview)->updateView();
@@ -373,10 +373,10 @@ again:
  * Updates the content of the combo-box that shows the current
  * location in the file-system.
  */
-static void update_location(JWidget window)
+static void update_location(Widget* window)
 {
-  JWidget fileview = jwidget_find_name(window, "fileview");
-  ComboBox* location = dynamic_cast<ComboBox*>(jwidget_find_name(window, "location"));
+  Widget* fileview = window->findChild("fileview");
+  ComboBox* location = dynamic_cast<ComboBox*>(window->findChild("location"));
   ASSERT(location != NULL);
 
   IFileItem* current_folder = fileview_get_current_folder(fileview);
@@ -452,12 +452,12 @@ static void update_location(JWidget window)
   jlist_free(locations);
 }
 
-static void update_navigation_buttons(JWidget window)
+static void update_navigation_buttons(Widget* window)
 {
-  JWidget fileview = jwidget_find_name(window, "fileview");
-  JWidget goback = jwidget_find_name(window, "goback");
-  JWidget goforward = jwidget_find_name(window, "goforward");
-  JWidget goup = jwidget_find_name(window, "goup");
+  Widget* fileview = window->findChild("fileview");
+  Widget* goback = window->findChild("goback");
+  Widget* goforward = window->findChild("goforward");
+  Widget* goup = window->findChild("goup");
   IFileItem* current_folder = fileview_get_current_folder(fileview);
 
   /* update the state of the go back button: if the navigation-history
@@ -507,10 +507,10 @@ static void add_in_navigation_history(IFileItem* folder)
   }
 }
 
-static void select_filetype_from_filename(JWidget window)
+static void select_filetype_from_filename(Widget* window)
 {
-  JWidget entry = jwidget_find_name(window, "filename");
-  ComboBox* filetype = dynamic_cast<ComboBox*>(jwidget_find_name(window, "filetype"));
+  Widget* entry = window->findChild("filename");
+  ComboBox* filetype = dynamic_cast<ComboBox*>(window->findChild("filetype"));
   ASSERT(filetype != NULL);
 
   const char *filename = entry->getText();
@@ -524,9 +524,9 @@ static void select_filetype_from_filename(JWidget window)
   }
 }
 
-static void goback_command(JWidget widget)
+static void goback_command(Widget* widget)
 {
-  JWidget fileview = widget->findSibling("fileview");
+  Widget* fileview = widget->findSibling("fileview");
 
   if (jlist_length(navigation_history) > 1) {
     if (!navigation_position)
@@ -543,9 +543,9 @@ static void goback_command(JWidget widget)
   }
 }
 
-static void goforward_command(JWidget widget)
+static void goforward_command(Widget* widget)
 {
-  JWidget fileview = widget->findSibling("fileview");
+  Widget* fileview = widget->findSibling("fileview");
 
   if (jlist_length(navigation_history) > 1) {
     if (!navigation_position)
@@ -562,14 +562,14 @@ static void goforward_command(JWidget widget)
   }
 }
 
-static void goup_command(JWidget widget)
+static void goup_command(Widget* widget)
 {
-  JWidget fileview = widget->findSibling("fileview");
+  Widget* fileview = widget->findSibling("fileview");
   fileview_goup(fileview);
 }
 
 /* hook for the 'fileview' widget in the dialog */
-static bool fileview_msg_proc(JWidget widget, JMessage msg)
+static bool fileview_msg_proc(Widget* widget, JMessage msg)
 {
   if (msg->type == JM_SIGNAL) {
     switch (msg->signal.num) {
@@ -611,7 +611,7 @@ static bool fileview_msg_proc(JWidget widget, JMessage msg)
 }
 
 // Hook for the 'location' combo-box
-static bool location_msg_proc(JWidget widget, JMessage msg)
+static bool location_msg_proc(Widget* widget, JMessage msg)
 {
   if (msg->type == JM_SIGNAL) {
     ComboBox* combobox = dynamic_cast<ComboBox*>(widget);
@@ -649,7 +649,7 @@ static bool location_msg_proc(JWidget widget, JMessage msg)
 }
 
 // Hook for the 'filetype' combo-box
-static bool filetype_msg_proc(JWidget widget, JMessage msg)
+static bool filetype_msg_proc(Widget* widget, JMessage msg)
 {
   if (msg->type == JM_SIGNAL) {
     ComboBox* combobox = dynamic_cast<ComboBox*>(widget);
@@ -681,7 +681,7 @@ static bool filetype_msg_proc(JWidget widget, JMessage msg)
   return false;
 }
 
-static bool filename_msg_proc(JWidget widget, JMessage msg)
+static bool filename_msg_proc(Widget* widget, JMessage msg)
 {
   if (msg->type == JM_KEYRELEASED && msg->key.ascii >= 32) {
     // Check if all keys are released

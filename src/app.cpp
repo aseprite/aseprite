@@ -174,12 +174,12 @@ int App::run()
     // Load main window
     top_window = static_cast<Frame*>(load_widget("main_window.xml", "main_window"));
 
-    box_menubar = jwidget_find_name(top_window, "menubar");
-    box_editors = jwidget_find_name(top_window, "editor");
-    box_colorbar = jwidget_find_name(top_window, "colorbar");
-    box_toolbar = jwidget_find_name(top_window, "toolbar");
-    box_statusbar = jwidget_find_name(top_window, "statusbar");
-    box_tabsbar = jwidget_find_name(top_window, "tabsbar");
+    box_menubar = top_window->findChild("menubar");
+    box_editors = top_window->findChild("editor");
+    box_colorbar = top_window->findChild("colorbar");
+    box_toolbar = top_window->findChild("toolbar");
+    box_statusbar = top_window->findChild("statusbar");
+    box_tabsbar = top_window->findChild("tabsbar");
 
     menubar = jmenubar_new();
     statusbar = new StatusBar();

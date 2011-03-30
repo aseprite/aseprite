@@ -264,7 +264,7 @@ void ConfigureTools::onExecute(Context* context)
 		     brush_preview_msg_proc, NULL);
   }
   else {
-    brush_preview = jwidget_find_name(window, "brush_preview");
+    brush_preview = window->findChild("brush_preview");
   }
 
   // Current settings

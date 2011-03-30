@@ -1401,12 +1401,6 @@ bool Widget::hasCapture()
 /**********************************************************************/
 /* miscellaneous */
 
-JWidget jwidget_find_name(JWidget widget, const char *name)
-{
-  ASSERT_VALID_WIDGET(widget);
-  return widget->findChild(name);
-}
-
 bool jwidget_check_underscored(JWidget widget, int scancode)
 {
   int c, ascii;

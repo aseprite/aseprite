@@ -705,7 +705,7 @@ Widget* load_widget(const char* filename, const char* name)
 
 JWidget find_widget(JWidget widget, const char *name)
 {
-  JWidget child = jwidget_find_name(widget, name);
+  Widget* child = widget->findChild(name);
   if (!child)
     throw widget_not_found(name);
 
@@ -802,7 +802,7 @@ void get_widgets(JWidget window, ...)
     if (!widget)
       break;
 
-    *widget = jwidget_find_name(window, name);
+    *widget = window->findChild(name);
     if (!*widget)
       throw widget_not_found(name);
   }

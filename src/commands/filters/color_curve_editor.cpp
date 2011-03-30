@@ -358,9 +358,9 @@ int ColorCurveEditor::editNodeManually(gfx::Point& point)
 
   FramePtr window(load_widget("color_curve.xml", "point_properties"));
 
-  entry_x = jwidget_find_name(window, "x");
-  entry_y = jwidget_find_name(window, "y");
-  button_ok = jwidget_find_name(window, "button_ok");
+  entry_x = window->findChild("x");
+  entry_y = window->findChild("y");
+  button_ok = window->findChild("button_ok");
 
   entry_x->setTextf("%d", point.x);
   entry_y->setTextf("%d", point.y);
