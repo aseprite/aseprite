@@ -33,7 +33,7 @@ inline void get_neighboring_pixels(const Image* sourceImage, int x, int y,
 				   int width, int height,
 				   int centerX, int centerY,
 				   TiledMode tiledMode,
-				   typename Delegate& delegate)
+				   Delegate& delegate)
 {
   int dx, dy;
 
