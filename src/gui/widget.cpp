@@ -547,6 +547,38 @@ JList Widget::getChildren()
   return jlist_copy(this->children);
 }
 
+Widget* Widget::getNextSibling()
+{
+  if (!parent)
+    return NULL;
+
+  JLink link = jlist_find(parent->children, this);
+  ASSERT(link != NULL);
+  if (!link)
+    return NULL;
+
+  if (link == jlist_last(parent->children))
+    return NULL;
+
+  return reinterpret_cast<Widget*>(link->next->data);
+}
+
+Widget* Widget::getPreviousSibling()
+{
+  if (!parent)
+    return NULL;
+
+  JLink link = jlist_find(parent->children, this);
+  ASSERT(link != NULL);
+  if (!link)
+    return NULL;
+
+  if (link == jlist_first(parent->children))
+    return NULL;
+
+  return reinterpret_cast<Widget*>(link->prev->data);
+}
+
 Widget* Widget::pick(int x, int y)
 {
   Widget* inside, *picked = NULL;
@@ -1263,6 +1295,11 @@ void Widget::closeWindow()
     frame->closeWindow(this);
 }
 
+void Widget::broadcastMouseMessage(WidgetsList& targets)
+{
+  onBroadcastMouseMessage(targets);
+}
+
 // ===============================================================
 // SIZE & POSITION
 // ===============================================================
@@ -1583,6 +1620,11 @@ void Widget::onPreferredSize(PreferredSizeEvent& ev)
 }
 
 void Widget::onPaint(PaintEvent& ev)
+{
+  // Do nothing
+}
+
+void Widget::onBroadcastMouseMessage(WidgetsList& targets)
 {
   // Do nothing
 }

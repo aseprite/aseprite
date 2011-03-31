@@ -51,5 +51,6 @@
 #include "gui/view.h"
 #include "gui/viewport.h"
 #include "gui/widget.h"
+#include "gui/widgets_list.h"
 
 #endif

@@ -14,9 +14,10 @@
 #include "gui/component.h"
 #include "gui/base.h"
 #include "gui/rect.h"
+#include "gui/widgets_list.h"
 
-class PreferredSizeEvent;
 class PaintEvent;
+class PreferredSizeEvent;
 
 #ifndef NDEBUG
 #include "gui/intern.h"
@@ -28,6 +29,8 @@ class PaintEvent;
 
 struct FONT;
 struct BITMAP;
+
+typedef std::vector<Widget*> WidgetsList;
 
 int ji_register_widget_type();
 
@@ -222,6 +225,10 @@ public:
   // Returns a list of children (you must free the list).
   JList getChildren();
 
+  // Returns the next or previous siblings.
+  Widget* getNextSibling();
+  Widget* getPreviousSibling();
+
   Widget* pick(int x, int y);
   bool hasChild(Widget* child);
   Widget* findChild(const char* name);
@@ -275,6 +282,8 @@ public:
   bool sendMessage(JMessage msg);
   void closeWindow();
 
+  void broadcastMouseMessage(WidgetsList& targets);
+
   // ===============================================================
   // SIZE & POSITION
   // ===============================================================
@@ -311,6 +320,7 @@ protected:
 
   virtual void onPreferredSize(PreferredSizeEvent& ev);
   virtual void onPaint(PaintEvent& ev);
+  virtual void onBroadcastMouseMessage(WidgetsList& targets);
 
 private:
   gfx::Size* m_preferredSize;

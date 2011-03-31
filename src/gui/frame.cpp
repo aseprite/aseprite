@@ -493,6 +493,20 @@ void Frame::onPaint(PaintEvent& ev)
   getTheme()->paintFrame(ev);
 }
 
+void Frame::onBroadcastMouseMessage(WidgetsList& targets)
+{
+  targets.push_back(this);
+
+  // Continue sending the message to siblings frames until a desktop
+  // or foreground frame.
+  if (is_foreground() || is_desktop())
+    return;
+
+  Widget* sibling = getNextSibling();
+  if (sibling)
+    sibling->broadcastMouseMessage(targets);
+}
+
 void Frame::window_set_position(JRect rect)
 {
   JWidget child;

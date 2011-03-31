@@ -57,6 +57,7 @@ protected:
   virtual void onPreferredSize(PreferredSizeEvent& ev) OVERRIDE;
   virtual void onPaint(PaintEvent& ev) OVERRIDE;
   virtual void onHitTest(HitTestEvent& ev);
+  virtual void onBroadcastMouseMessage(WidgetsList& targets);
 
 private:
   void window_set_position(JRect rect);
