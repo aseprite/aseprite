@@ -20,8 +20,7 @@
 
 #include "config.h"
 
-#include <allegro.h>
-#include <stdio.h>
+#include "widgets/editor/editor.h"
 
 #include "app.h"
 #include "app/color.h"
@@ -41,14 +40,22 @@
 #include "tools/tool.h"
 #include "ui_context.h"
 #include "undo/undo_history.h"
+#include "undoers/add_cel.h"
+#include "undoers/add_image.h"
+#include "undoers/close_group.h"
+#include "undoers/dirty_area.h"
+#include "undoers/open_group.h"
+#include "undoers/replace_image.h"
 #include "undoers/set_cel_position.h"
 #include "util/boundary.h"
 #include "util/misc.h"
 #include "util/render.h"
 #include "widgets/color_bar.h"
-#include "widgets/editor/editor.h"
 #include "widgets/editor/pixels_movement.h"
 #include "widgets/statebar.h"
+
+#include <allegro.h>
+#include <stdio.h>
 
 #define has_shifts(msg,shift)			\
   (((msg)->any.shifts & (shift)) == (shift))
@@ -1935,10 +1942,12 @@ public:
 
 	      // We create the undo information (for the new cel_image
 	      // in the stock and the new cel in the layer)...
-	      undo->undo_open();
-	      undo->undo_add_image(m_sprite->getStock(), m_cel->getImage());
-	      undo->undo_add_cel(m_sprite->getCurrentLayer(), m_cel);
-	      undo->undo_close();
+	      undo->pushUndoer(new undoers::OpenGroup());
+	      undo->pushUndoer(new undoers::AddImage(undo->getObjects(),
+		  m_sprite->getStock(), m_cel->getImage()));
+	      undo->pushUndoer(new undoers::AddCel(undo->getObjects(),
+		  m_sprite->getCurrentLayer(), m_cel));
+	      undo->pushUndoer(new undoers::CloseGroup());
 
 	      // And finally we add the cel again in the layer.
 	      static_cast<LayerImage*>(m_sprite->getCurrentLayer())->addCel(m_cel);
@@ -1952,7 +1961,8 @@ public:
 
 	      dirty->saveImagePixels(m_cel_image);
 	      if (dirty != NULL)
-		undo->undo_dirty(m_cel_image, dirty);
+		undo->pushUndoer(new undoers::DirtyArea(undo->getObjects(),
+		    m_cel_image, dirty));
 
 	      delete dirty;
 	    }
@@ -1965,7 +1975,7 @@ public:
 	// replace the entire image.
 	else {
 	  if (undo->isEnabled()) {
-	    undo->undo_open();
+	    undo->pushUndoer(new undoers::OpenGroup());
 
 	    if (m_cel->getX() != m_old_cel_x ||
 		m_cel->getY() != m_old_cel_y) {
@@ -1978,8 +1988,9 @@ public:
 	      m_cel->setPosition(x, y);
 	    }
 
-	    undo->undo_replace_image(m_sprite->getStock(), m_cel->getImage());
-	    undo->undo_close();
+	    undo->pushUndoer(new undoers::ReplaceImage(undo->getObjects(),
+		m_sprite->getStock(), m_cel->getImage()));
+	    undo->pushUndoer(new undoers::CloseGroup());
 	  }
 
 	  // Replace the image in the stock.

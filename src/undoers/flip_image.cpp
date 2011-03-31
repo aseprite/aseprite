@@ -29,11 +29,11 @@
 using namespace undo;
 using namespace undoers;
 
-FlipImage::FlipImage(ObjectsContainer* objects, Image* image, int x, int y, int w, int h, FlipType flipType)
+FlipImage::FlipImage(ObjectsContainer* objects, Image* image, int x, int y, int w, int h, int flipFlags)
   : m_imageId(objects->addObject(image))
   , m_imgtype(image->imgtype)
   , m_x(x), m_y(y), m_w(w), m_h(h)
-  , m_flipType(flipType)
+  , m_flipFlags(flipFlags)
 {
   ASSERT(w >= 1 && h >= 1);
   ASSERT(x >= 0 && y >= 0 && x+w <= image->w && y+h <= image->h);
@@ -51,7 +51,7 @@ void FlipImage::revert(ObjectsContainer* objects, UndoersCollector* redoers)
   if (image->imgtype != m_imgtype)
     throw UndoException("Image type does not match");
 
-  redoers->pushUndoer(new FlipImage(objects, image, m_x, m_y, m_w, m_h, m_flipType));
+  redoers->pushUndoer(new FlipImage(objects, image, m_x, m_y, m_w, m_h, m_flipFlags));
 
   UniquePtr<Image> area(image_crop(image, m_x, m_y, m_w, m_h, 0));
   int x, y;
@@ -61,7 +61,7 @@ void FlipImage::revert(ObjectsContainer* objects, UndoersCollector* redoers)
   for (y=0; y<m_h; ++y)
     for (x=0; x<m_w; ++x)
       image_putpixel(image,
-		     m_flipType == FlipHorizontal ? x2-x: m_x+x,
-		     m_flipType == FlipVertical   ? y2-y: m_y+y,
-		     image_getpixel(area, x, y));
+	((m_flipFlags & FlipHorizontal) == FlipHorizontal ? x2-x: m_x+x),
+	((m_flipFlags & FlipVertical) == FlipVertical     ? y2-y: m_y+y),
+	image_getpixel(area, x, y));
 }

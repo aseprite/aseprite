@@ -36,6 +36,9 @@
 #include "raster/sprite.h"
 #include "raster/stock.h"
 #include "undo/undo_history.h"
+#include "undoers/close_group.h"
+#include "undoers/image_area.h"
+#include "undoers/open_group.h"
 #include "widgets/editor/editor.h"
 
 #include <cstdlib>
@@ -209,7 +212,7 @@ void FilterManagerImpl::apply()
     if (undo->isEnabled()) {
       undo->setLabel(m_filter->getName());
       undo->setModification(undo::ModifyDocument);
-      undo->undo_image(m_src, m_x, m_y, m_w, m_h);
+      undo->pushUndoer(new undoers::ImageArea(undo->getObjects(), m_src, m_x, m_y, m_w, m_h));
     }
 
     // Copy "dst" to "src"
@@ -236,7 +239,7 @@ void FilterManagerImpl::applyToTarget()
   // Open group of undo operations
   if (images.size() > 1) {
     if (undo->isEnabled())
-      undo->undo_open();
+      undo->pushUndoer(new undoers::OpenGroup());
   }
   
   m_progressBase = 0.0f;
@@ -259,7 +262,7 @@ void FilterManagerImpl::applyToTarget()
   // Close group of undo operations
   if (images.size() > 1) {
     if (undo->isEnabled())
-      undo->undo_close();
+      undo->pushUndoer(new undoers::CloseGroup());
   }
 }
 

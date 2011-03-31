@@ -45,6 +45,7 @@
 #include "skin/skin_slider_property.h"
 #include "ui_context.h"
 #include "undo/undo_history.h"
+#include "undoers/set_palette_colors.h"
 #include "widgets/color_bar.h"
 #include "widgets/color_sliders.h"
 #include "widgets/editor/editor.h"
@@ -665,7 +666,8 @@ void PaletteEntryEditor::updateCurrentSpritePalette(const char* operationName)
 	if (undo->isEnabled()) {
 	  undo->setLabel(operationName);
 	  undo->setModification(undo::ModifyDocument);
-	  undo->undo_set_palette_colors(sprite, currentSpritePalette, from, to);
+	  undo->pushUndoer(new undoers::SetPaletteColors(undo->getObjects(),
+	      sprite, currentSpritePalette, from, to));
 	}
 
 	// Change the sprite palette

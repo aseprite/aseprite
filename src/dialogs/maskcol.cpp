@@ -38,6 +38,7 @@
 #include "raster/mask.h"
 #include "raster/sprite.h"
 #include "undo/undo_history.h"
+#include "undoers/set_mask.h"
 #include "util/misc.h"
 #include "widgets/color_bar.h"
 #include "widgets/color_button.h"
@@ -143,7 +144,7 @@ void dialogs_mask_color(Document* document)
     if (undo->isEnabled()) {
       undo->setLabel("Mask by Color");
       undo->setModification(undo::DoesntModifyDocument);
-      undo->undo_set_mask(document);
+      undo->pushUndoer(new undoers::SetMask(undo->getObjects(), document));
     }
 
     /* change the mask */

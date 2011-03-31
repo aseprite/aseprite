@@ -40,6 +40,8 @@
 #include "ui_context.h"
 #include "undo/undo_history.h"
 #include "undo_transaction.h"
+#include "undoers/add_image.h"
+#include "undoers/image_area.h"
 #include "util/clipboard.h"
 #include "util/misc.h"
 #include "widgets/color_bar.h"
@@ -236,7 +238,8 @@ void clipboard::paste(DocumentWriter& document)
     // Add the new image in the stock
     int dst_image_index = sprite->getStock()->addImage(dst_image);
     if (undo->isEnabled())
-      undo->undo_add_image(sprite->getStock(), dst_image_index);
+      undo->pushUndoer(new undoers::AddImage(undo->getObjects(),
+	  sprite->getStock(), dst_image_index));
 
     // Create the new cel in the current frame with the recently
     // created image
@@ -293,11 +296,12 @@ void clipboard::paste(DocumentWriter& document)
     h = v2-v1+1;
 
     if (w >= 1 && h >= 1) {
-      /* undo region */
+      // Add information to hold the modified region in the image.
       if (undo->isEnabled())
-	undo->undo_image(dst_image, u1, v1, w, h);
+	undo->pushUndoer(new undoers::ImageArea(undo->getObjects(),
+	    dst_image, u1, v1, w, h));
 
-      /* draw the transformed image */
+      // Draw the transformed image.
       image_parallelogram(dst_image, src_image,
 			  xout[0], yout[0], xout[1], yout[1],
 			  xout[2], yout[2], xout[3], yout[3]);

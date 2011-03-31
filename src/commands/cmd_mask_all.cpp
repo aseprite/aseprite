@@ -24,6 +24,7 @@
 #include "raster/mask.h"
 #include "raster/sprite.h"
 #include "undo/undo_history.h"
+#include "undoers/set_mask.h"
 
 //////////////////////////////////////////////////////////////////////
 // mask_all
@@ -62,7 +63,7 @@ void MaskAllCommand::onExecute(Context* context)
   if (undo->isEnabled()) {
     undo->setLabel("Mask All");
     undo->setModification(undo::DoesntModifyDocument);
-    undo->undo_set_mask(document);
+    undo->pushUndoer(new undoers::SetMask(undo->getObjects(), document));
   }
 
   // Change the selection

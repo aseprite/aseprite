@@ -24,6 +24,7 @@
 #include "raster/mask.h"
 #include "raster/sprite.h"
 #include "undo/undo_history.h"
+#include "undoers/set_mask.h"
 
 //////////////////////////////////////////////////////////////////////
 // reselect_mask
@@ -65,7 +66,7 @@ void ReselectMaskCommand::onExecute(Context* context)
   if (undo->isEnabled()) {
     undo->setLabel("Mask Reselection");
     undo->setModification(undo::DoesntModifyDocument);
-    undo->undo_set_mask(document);
+    undo->pushUndoer(new undoers::SetMask(undo->getObjects(), document));
   }
 
   // Make the mask visible again.

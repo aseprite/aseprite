@@ -29,9 +29,9 @@ namespace undoers {
 class FlipImage : public UndoerBase
 {
 public:
-  enum FlipType { FlipHorizontal, FlipVertical };
+  enum FlipFlags { FlipHorizontal = 1, FlipVertical = 2 };
 
-  FlipImage(undo::ObjectsContainer* objects, Image* image, int x, int y, int w, int h, FlipType flipType);
+  FlipImage(undo::ObjectsContainer* objects, Image* image, int x, int y, int w, int h, int flipFlags);
 
   void dispose() OVERRIDE;
   int getMemSize() const OVERRIDE { return sizeof(*this); }
@@ -41,7 +41,7 @@ private:
   undo::ObjectId m_imageId;
   uint8_t m_imgtype;
   uint16_t m_x, m_y, m_w, m_h;
-  FlipType m_flipType;
+  uint8_t m_flipFlags;
 };
 
 } // namespace undoers

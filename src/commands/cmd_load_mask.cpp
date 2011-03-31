@@ -27,6 +27,7 @@
 #include "raster/mask.h"
 #include "raster/sprite.h"
 #include "undo/undo_history.h"
+#include "undoers/set_mask.h"
 #include "util/msk_file.h"
 
 class LoadMaskCommand : public Command
@@ -89,7 +90,7 @@ void LoadMaskCommand::onExecute(Context* context)
     if (undo->isEnabled()) {
       undo->setLabel("Mask Load");
       undo->setModification(undo::DoesntModifyDocument);
-      undo->undo_set_mask(documentWriter);
+      undo->pushUndoer(new undoers::SetMask(undo->getObjects(), documentWriter));
     }
 
     documentWriter->setMask(mask);

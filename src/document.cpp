@@ -33,6 +33,8 @@
 #include "raster/sprite.h"
 #include "raster/stock.h"
 #include "undo/undo_history.h"
+#include "undoers/add_image.h"
+#include "undoers/add_layer.h"
 #include "util/boundary.h"
 
 using namespace undo;
@@ -290,6 +292,8 @@ void Document::setMaskVisible(bool visible)
 
 void Document::copyLayerContent(const Layer* sourceLayer0, Document* destDoc, Layer* destLayer0) const
 {
+  UndoHistory* undo = destDoc->getUndoHistory();
+
   // Copy the layer name
   destLayer0->setName(sourceLayer0->getName());
 
@@ -312,12 +316,13 @@ void Document::copyLayerContent(const Layer* sourceLayer0, Document* destDoc, La
       ASSERT(sourceImage != NULL);
 
       Image* newImage = image_new_copy(sourceImage);
-
       newCel->setImage(destLayer->getSprite()->getStock()->addImage(newImage));
 
-      if (destDoc->getUndoHistory()->isEnabled())
-	destDoc->getUndoHistory()->undo_add_image(destLayer->getSprite()->getStock(),
-						  newCel->getImage());
+      if (undo->isEnabled()) {
+	undo->pushUndoer(new undoers::AddImage(undo->getObjects(),
+	    destLayer->getSprite()->getStock(),
+	    newCel->getImage()));
+      }
 
       destLayer->addCel(newCel);
       newCel.release();
@@ -349,8 +354,9 @@ void Document::copyLayerContent(const Layer* sourceLayer0, Document* destDoc, La
       ASSERT(destChild != NULL);
 
       // Add the new layer in the sprite.
-      if (destDoc->getUndoHistory()->isEnabled())
-	destDoc->getUndoHistory()->undo_add_layer(destLayer, destChild);
+      if (undo->isEnabled())
+	undo->pushUndoer(new undoers::AddLayer(undo->getObjects(),
+	    destLayer, destChild));
 
       destLayer->add_layer(destChild);
       destChild.release();

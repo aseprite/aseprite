@@ -23,6 +23,7 @@
 #include "context.h"
 #include "document.h"
 #include "undo/undo_history.h"
+#include "undoers/set_mask.h"
 
 
 // Ink used for tools which paint with primary/secondary
@@ -259,8 +260,9 @@ public:
     m_modify_selection = state;
 
     if (state) {
-      if (loop->getDocument()->getUndoHistory()->isEnabled())
-	loop->getDocument()->getUndoHistory()->undo_set_mask(loop->getDocument());
+      undo::UndoHistory* undo = loop->getDocument()->getUndoHistory();
+      if (undo->isEnabled())
+	undo->pushUndoer(new undoers::SetMask(undo->getObjects(), loop->getDocument()));
 
       loop->getMask()->freeze();
       loop->getMask()->reserve(0, 0, loop->getSprite()->getWidth(), loop->getSprite()->getHeight());

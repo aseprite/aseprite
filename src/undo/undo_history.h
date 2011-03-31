@@ -12,18 +12,6 @@
 
 #include <vector>
 
-// TODO Remove this (it is here only for backward compatibility)
-class Cel;
-class Dirty;
-class Document;
-class GfxObj;
-class Image;
-class Layer;
-class Mask;
-class Palette;
-class Sprite;
-class Stock;
-
 namespace undo {
 
 class ObjectsContainer;
@@ -66,33 +54,6 @@ public:
 
   // UndoersCollector interface
   void pushUndoer(Undoer* undoer);
-
-  // Backward compatibility methods
-  void undo_open();
-  void undo_close();
-  void undo_image(Image *image, int x, int y, int w, int h);
-  void undo_flip(Image *image, int x1, int y1, int x2, int y2, bool horz);
-  void undo_dirty(Image* image, Dirty *dirty);
-  void undo_add_image(Stock *stock, int image_index);
-  void undo_remove_image(Stock *stock, int image_index);
-  void undo_replace_image(Stock *stock, int image_index);
-  void undo_set_layer_name(Layer *layer);
-  void undo_add_cel(Layer *layer, Cel *cel);
-  void undo_remove_cel(Layer *layer, Cel *cel);
-  void undo_add_layer(Layer *set, Layer *layer);
-  void undo_remove_layer(Layer *layer);
-  void undo_move_layer(Layer *layer);
-  void undo_set_layer(Sprite* sprite);
-  void undo_add_palette(Sprite* sprite, Palette* palette);
-  void undo_remove_palette(Sprite* sprite, Palette* palette);
-  void undo_set_palette_colors(Sprite* sprite, Palette* palette, int from, int to);
-  void undo_remap_palette(Sprite* sprite, int frame_from, int frame_to, const std::vector<uint8_t>& mapping);
-  void undo_set_mask(Document* document);
-  void undo_set_imgtype(Sprite* sprite);
-  void undo_set_size(Sprite* sprite);
-  void undo_set_frame(Sprite* sprite);
-  void undo_set_frames(Sprite* sprite);
-  void undo_set_frlen(Sprite* sprite, int frame);
 
 private:
   enum Direction { UndoDirection, RedoDirection };

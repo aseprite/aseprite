@@ -28,6 +28,9 @@
 #include "raster/sprite.h"
 #include "undo/undo_history.h"
 #include "undo_transaction.h"
+#include "undoers/add_layer.h"
+#include "undoers/move_layer.h"
+#include "undoers/set_current_layer.h"
 
 //////////////////////////////////////////////////////////////////////
 // Duplicate Layer command
@@ -68,15 +71,23 @@ void DuplicateLayerCommand::onExecute(Context* context)
   // Create a new layer
   UniquePtr<LayerImage> newLayerPtr(new LayerImage(sprite));
 
+  // Disable undo because the layer content is added as a whole with
+  // AddLayer() undoer.
+  document->getUndoHistory()->setEnabled(false);
+
   // Copy the layer content (cels + images)
   document->copyLayerContent(sourceLayer, document, newLayerPtr);
+
+  // Restore enabled status.
+  document->getUndoHistory()->setEnabled(undoTransaction.isEnabled());
 
   // Copy the layer name
   newLayerPtr->setName(newLayerPtr->getName() + " Copy");
 
   // Add the new layer in the sprite.
   if (undo->isEnabled())
-    undo->undo_add_layer(sourceLayer->get_parent(), newLayerPtr);
+    undo->pushUndoer(new undoers::AddLayer(undo->getObjects(),
+	sourceLayer->get_parent(), newLayerPtr));
 
   sourceLayer->get_parent()->add_layer(newLayerPtr);
 
@@ -84,8 +95,8 @@ void DuplicateLayerCommand::onExecute(Context* context)
   Layer* newLayer = newLayerPtr.release();
 
   if (undo->isEnabled()) {
-    undo->undo_move_layer(newLayer);
-    undo->undo_set_layer(sprite);
+    undo->pushUndoer(new undoers::MoveLayer(undo->getObjects(), newLayer));
+    undo->pushUndoer(new undoers::SetCurrentLayer(undo->getObjects(), sprite));
   }
 
   undoTransaction.commit();
