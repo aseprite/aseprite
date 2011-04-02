@@ -25,6 +25,7 @@
 #include "document.h"
 #include "gui/base.h"
 #include "gui/widget.h"
+#include "widgets/editor/editor_listeners.h"
 
 #define MIN_ZOOM 0
 #define MAX_ZOOM 5
@@ -42,59 +43,6 @@ namespace tools {
 
 class Editor : public Widget
 {
-
-  // editor states
-  enum State {
-    EDITOR_STATE_STANDBY,
-    EDITOR_STATE_SCROLLING,
-    EDITOR_STATE_DRAWING,
-  };
-
-  // Main properties
-  State m_state;		// Editor main state
-  Document* m_document;		// Active document in the editor
-  Sprite* m_sprite;		// Active sprite in the editor
-  int m_zoom;			// Zoom in the editor
-
-  // Drawing cursor
-  int m_cursor_thick;
-  int m_cursor_screen_x; /* position in the screen (view) */
-  int m_cursor_screen_y;
-  int m_cursor_editor_x; /* position in the editor (model) */
-  int m_cursor_editor_y;
-  bool m_cursor_candraw : 1;
-
-  // True if the cursor is inside the mask/selection
-  bool m_insideSelection : 1;
-
-  // Current selected quicktool (this genererally should be NULL if
-  // the user is not pressing any keyboard key).
-  tools::Tool* m_quicktool;
-
-  /* offset for the sprite */
-  int m_offset_x;
-  int m_offset_y;
-
-  /* marching ants stuff */
-  int m_mask_timer_id;
-  int m_offset_count;
-
-  /* region that must be updated */
-  JRegion m_refresh_region;
-
-  // Tool-loop manager
-  tools::ToolLoopManager* m_toolLoopManager;
-
-  // Helper member to move selection. If this member is NULL it means the
-  // user is not moving pixels.
-  PixelsMovement* m_pixelsMovement;
-
-  // This slot is used to disconnect the Editor from CurrentToolChange
-  // signal (because the editor can be destroyed and the application
-  // still continue running and generating CurrentToolChange
-  // signals).
-  Slot0<void>* m_currentToolChangeSlot;
-
 public:
   // in editor.c
 
@@ -140,6 +88,9 @@ public:
 
   void showDrawingCursor();
   void hideDrawingCursor();
+
+  void addListener(EditorListener* listener);
+  void removeListener(EditorListener* listener);
 
   void editor_update_statusbar_for_standby();
 
@@ -205,6 +156,61 @@ private:
   void for_each_pixel_of_pen(int screen_x, int screen_y,
 			     int sprite_x, int sprite_y, int color,
 			     void (*pixel)(BITMAP *bmp, int x, int y, int color));
+
+  // editor states
+  enum State {
+    EDITOR_STATE_STANDBY,
+    EDITOR_STATE_SCROLLING,
+    EDITOR_STATE_DRAWING,
+  };
+
+  // Main properties
+  State m_state;		// Editor main state
+  Document* m_document;		// Active document in the editor
+  Sprite* m_sprite;		// Active sprite in the editor
+  int m_zoom;			// Zoom in the editor
+
+  // Drawing cursor
+  int m_cursor_thick;
+  int m_cursor_screen_x; /* position in the screen (view) */
+  int m_cursor_screen_y;
+  int m_cursor_editor_x; /* position in the editor (model) */
+  int m_cursor_editor_y;
+  bool m_cursor_candraw : 1;
+
+  // True if the cursor is inside the mask/selection
+  bool m_insideSelection : 1;
+
+  // Current selected quicktool (this genererally should be NULL if
+  // the user is not pressing any keyboard key).
+  tools::Tool* m_quicktool;
+
+  /* offset for the sprite */
+  int m_offset_x;
+  int m_offset_y;
+
+  /* marching ants stuff */
+  int m_mask_timer_id;
+  int m_offset_count;
+
+  /* region that must be updated */
+  JRegion m_refresh_region;
+
+  // Tool-loop manager
+  tools::ToolLoopManager* m_toolLoopManager;
+
+  // Helper member to move selection. If this member is NULL it means the
+  // user is not moving pixels.
+  PixelsMovement* m_pixelsMovement;
+
+  // This slot is used to disconnect the Editor from CurrentToolChange
+  // signal (because the editor can be destroyed and the application
+  // still continue running and generating CurrentToolChange
+  // signals).
+  Slot0<void>* m_currentToolChangeSlot;
+
+  EditorListeners m_listeners;
+
 };
 
 View* editor_view_new();

@@ -715,6 +715,16 @@ void Editor::hideDrawingCursor()
   }
 }
 
+void Editor::addListener(EditorListener* listener)
+{
+  m_listeners.addListener(listener);
+}
+
+void Editor::removeListener(EditorListener* listener)
+{
+  m_listeners.removeListener(listener);
+}
+
 void Editor::editor_update_statusbar_for_standby()
 {
   Tool* current_tool = getCurrentEditorTool();
@@ -1630,6 +1640,9 @@ void Editor::setZoomAndCenterInMouse(int zoom, int mouse_x, int mouse_y)
 
     if (centerMouse)
       jmouse_set_position(mx, my);
+
+    // Notify listeners
+    m_listeners.notifyScrollChanged(this);
   }
   showDrawingCursor();
 }
