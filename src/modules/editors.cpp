@@ -96,8 +96,11 @@ public:
   }
 
   void scrollChanged(Editor* editor) OVERRIDE {
-    // Show the mini editor
-    if (editor->getZoom() > 0) {
+    // Show the mini editor if it wasn't created yet and the user
+    // zoomed in, or if the mini-editor was created and the zoom of
+    // both editors is not the same.
+    if ((!mini_editor && editor->getZoom() > 0) ||
+	(mini_editor && mini_editor->getZoom() != editor->getZoom())) {
       // If the mini frame does not exist, create it
       if (!mini_editor_frame)
 	create_mini_editor_frame();
