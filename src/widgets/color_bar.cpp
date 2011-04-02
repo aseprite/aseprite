@@ -49,7 +49,7 @@ ColorBar::ScrollableView::ScrollableView()
   jwidget_set_border(this, l, t, r, b);
 }
 
-bool ColorBar::ScrollableView::onProcessMessage(JMessage msg)
+bool ColorBar::ScrollableView::onProcessMessage(Message* msg)
 {
   switch (msg->type) {
 

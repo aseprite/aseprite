@@ -28,7 +28,7 @@ public:
   PopupFramePin(const char* text, bool close_on_buttonpressed);
 
 protected:
-  virtual bool onProcessMessage(JMessage msg) OVERRIDE;
+  virtual bool onProcessMessage(Message* msg) OVERRIDE;
   virtual void onHitTest(HitTestEvent& ev) OVERRIDE;
 
   // The pin. Your derived class must add this pin in some place of

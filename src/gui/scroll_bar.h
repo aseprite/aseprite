@@ -26,7 +26,7 @@ public:
 
 protected:
   // Events
-  bool onProcessMessage(JMessage msg) OVERRIDE;
+  bool onProcessMessage(Message* msg) OVERRIDE;
 
 private:
   void getScrollBarInfo(int* _pos, int* _len, int* _bar_size, int* _viewport_size);

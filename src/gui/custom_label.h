@@ -16,7 +16,7 @@ public:
   CustomLabel(const char *text);
 
 protected:
-  bool onProcessMessage(JMessage msg) OVERRIDE;
+  bool onProcessMessage(Message* msg) OVERRIDE;
 
 };
 

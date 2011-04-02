@@ -52,7 +52,7 @@ using namespace tools;
 
 static Frame* window = NULL;
 
-static bool brush_preview_msg_proc(JWidget widget, JMessage msg);
+static bool brush_preview_msg_proc(JWidget widget, Message* msg);
 
 static bool window_close_hook(JWidget widget, void *data);
 static bool brush_type_change_hook(JWidget widget, void *data);
@@ -345,7 +345,7 @@ void ConfigureTools::onExecute(Context* context)
   window->open_window_bg();
 }
 
-static bool brush_preview_msg_proc(JWidget widget, JMessage msg)
+static bool brush_preview_msg_proc(JWidget widget, Message* msg)
 {
   switch (msg->type) {
 

@@ -74,7 +74,7 @@ void PopupFrame::makeFixed()
   set_moveable(false);
 }
 
-bool PopupFrame::onProcessMessage(JMessage msg)
+bool PopupFrame::onProcessMessage(Message* msg)
 {
   switch (msg->type) {
 

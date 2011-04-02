@@ -61,7 +61,7 @@ void Slider::getSliderThemeInfo(int* min, int* max, int* value)
   if (value) *value = m_value;
 }
 
-bool Slider::onProcessMessage(JMessage msg)
+bool Slider::onProcessMessage(Message* msg)
 {
   switch (msg->type) {
 

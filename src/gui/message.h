@@ -20,7 +20,7 @@
     return _jm_##name;					\
   }							\
 
-struct jmessage_any
+struct MessageAny
 {
   int type;		/* type of message */
   JList widgets;	/* destination widgets */
@@ -28,15 +28,15 @@ struct jmessage_any
   int shifts;		/* key shifts pressed when message was created */
 };
 
-struct jmessage_deffree		/* deferred jwidget_free call */
+struct MessageDefFree		/* deferred jwidget_free call */
 {
-  struct jmessage_any any;
+  MessageAny any;
   JWidget widget_to_free;
 };
 
-struct jmessage_key
+struct MessageKey
 {
-  struct jmessage_any any;
+  MessageAny any;
   unsigned scancode : 8;	/* Allegro scancode */
   unsigned ascii : 8;		/* ASCII code */
   unsigned repeat;		/* repeat=0 means the first time the key is pressed */
@@ -44,16 +44,16 @@ struct jmessage_key
   bool propagate_to_parent : 1;
 };
 
-struct jmessage_draw
+struct MessageDraw
 {
-  struct jmessage_any any;
+  MessageAny any;
   int count;			/* cound=0 if it's last msg of draw-chain */
   struct jrect rect;		/* area to draw */
 };
 
-struct jmessage_mouse
+struct MessageMouse
 {
-  struct jmessage_any any;
+  MessageAny any;
   int x, y;			/* mouse position */
   unsigned flags : 4;		/* all buttons */
   bool left : 1;		/* left button */
@@ -61,73 +61,73 @@ struct jmessage_mouse
   bool middle : 1;		/* middle button */
 };
 
-struct jmessage_signal
+struct MessageSignal
 {
-  struct jmessage_any any;
+  MessageAny any;
   int num;			/* signal number */
   JWidget from;			/* signal generator */
 };
 
-struct jmessage_timer
+struct MessageTimer
 {
-  struct jmessage_any any;
+  MessageAny any;
   int count;			/* accumulated calls */
   int timer_id;			/* number of timer */
 };
 
-struct jmessage_setpos
+struct MessageSetPos
 {
-  struct jmessage_any any;
+  MessageAny any;
   struct jrect rect;		/* set position */
 };
 
-struct jmessage_reqsize
+struct MessageReqSize
 {
-  struct jmessage_any any;
+  MessageAny any;
   int w, h;			/* requested size */
 };
 
-struct jmessage_drawrgn
+struct MessageDrawRgn
 {
-  struct jmessage_any any;
+  MessageAny any;
   JRegion region;		/* region to redraw */
 };
 
-struct jmessage_user
+struct MessageUser
 {
-  struct jmessage_any any;
+  MessageAny any;
   int a, b, c;
   void *dp;
 };
 
-union jmessage
+union Message
 {
   int type;
-  struct jmessage_any any;
-  struct jmessage_deffree deffree;
-  struct jmessage_key key;
-  struct jmessage_draw draw;
-  struct jmessage_mouse mouse;
-  struct jmessage_signal signal;
-  struct jmessage_timer timer;
-  struct jmessage_setpos setpos;
-  struct jmessage_reqsize reqsize;
-  struct jmessage_drawrgn drawrgn;
-  struct jmessage_user user;
+  MessageAny any;
+  MessageDefFree deffree;
+  MessageKey key;
+  MessageDraw draw;
+  MessageMouse mouse;
+  MessageSignal signal;
+  MessageTimer timer;
+  MessageSetPos setpos;
+  MessageReqSize reqsize;
+  MessageDrawRgn drawrgn;
+  MessageUser user;
 };
 
 int ji_register_message_type();
 
-JMessage jmessage_new(int type);
-JMessage jmessage_new_key_related(int type, int readkey_value);
-JMessage jmessage_new_copy(const JMessage msg);
-JMessage jmessage_new_copy_without_dests(const JMessage msg);
-void jmessage_free(JMessage msg);
+Message* jmessage_new(int type);
+Message* jmessage_new_key_related(int type, int readkey_value);
+Message* jmessage_new_copy(const Message* msg);
+Message* jmessage_new_copy_without_dests(const Message* msg);
+void jmessage_free(Message* msg);
 
-void jmessage_add_dest(JMessage msg, JWidget widget);
-void jmessage_add_pre_dest(JMessage msg, JWidget widget);
+void jmessage_add_dest(Message* msg, JWidget widget);
+void jmessage_add_pre_dest(Message* msg, JWidget widget);
 
-void jmessage_broadcast_to_children(JMessage msg, JWidget widget);
-void jmessage_broadcast_to_parents(JMessage msg, JWidget widget);
+void jmessage_broadcast_to_children(Message* msg, JWidget widget);
+void jmessage_broadcast_to_parents(Message* msg, JWidget widget);
 
 #endif

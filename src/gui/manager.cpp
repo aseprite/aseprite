@@ -109,21 +109,21 @@ static char old_readed_key[KEY_MAX]; /* keyboard status of previous
 static unsigned key_repeated[KEY_MAX];
 
 /* manager widget */
-static bool manager_msg_proc(JWidget widget, JMessage msg);
+static bool manager_msg_proc(JWidget widget, Message* msg);
 static void manager_request_size(JWidget widget, int *w, int *h);
 static void manager_set_position(JWidget widget, JRect rect);
 static void manager_pump_queue(JWidget widget);
 
 /* auxiliary */
 static void generate_setcursor_message();
-static void remove_msgs_for(JWidget widget, JMessage msg);
+static void remove_msgs_for(JWidget widget, Message* msg);
 static int some_parent_is_focusrest(JWidget widget);
 static JWidget find_magnetic_widget(JWidget widget);
-static JMessage new_mouse_msg(int type, JWidget destination);
-static void broadcast_key_msg(JWidget manager, JMessage msg);
+static Message* new_mouse_msg(int type, JWidget destination);
+static void broadcast_key_msg(JWidget manager, Message* msg);
 
 /* keyboard focus movement stuff */
-static bool move_focus(JWidget manager, JMessage msg);
+static bool move_focus(JWidget manager, Message* msg);
 static int count_widgets_accept_focus(JWidget widget);
 static bool childs_accept_focus(JWidget widget, bool first);
 static JWidget next_widget(JWidget widget);
@@ -258,7 +258,7 @@ bool jmanager_generate_messages(JWidget manager)
   JWidget widget;
   JWidget window;
   int mousemove;
-  JMessage msg;
+  Message* msg;
   JLink link;
   int c;
 
@@ -561,7 +561,7 @@ bool jmanager_generate_messages(JWidget manager)
 
 void jmanager_dispatch_messages(JWidget manager)
 {
-  JMessage msg;
+  Message* msg;
 
   ASSERT(manager != NULL);
   
@@ -607,7 +607,7 @@ int jmanager_add_timer(JWidget widget, int interval)
 
 void jmanager_remove_timer(int timer_id)
 {
-  JMessage message;
+  Message* message;
   JLink link, next;
 
   ASSERT(timer_id >= 0 && timer_id < (int)timers.size());
@@ -618,12 +618,12 @@ void jmanager_remove_timer(int timer_id)
 
   /* remove messages of this timer in the queue */
   JI_LIST_FOR_EACH_SAFE(msg_queue, link, next) {
-    message = reinterpret_cast<JMessage>(link->data);
+    message = reinterpret_cast<Message*>(link->data);
     if (!message->any.used &&
 	message->any.type == JM_TIMER &&
 	message->timer.timer_id == timer_id) {
       printf("REMOVING A TIMER MESSAGE FROM THE QUEUE!!\n"); fflush(stdout);
-      jmessage_free(reinterpret_cast<JMessage>(link->data));
+      jmessage_free(reinterpret_cast<Message*>(link->data));
       jlist_delete_link(msg_queue, link);
     }
   }
@@ -666,7 +666,7 @@ bool jmanager_timer_is_running(int timer_id)
  *            routine. The message will be automatically freed through
  *            @ref jmessage_free
  */
-void jmanager_enqueue_message(JMessage msg)
+void jmanager_enqueue_message(Message* msg)
 {
   int c;
 
@@ -730,7 +730,7 @@ void jmanager_set_focus(JWidget widget)
     JList widget_parents = NULL;
     JWidget common_parent = NULL;
     JLink link, link2;
-    JMessage msg;
+    Message* msg;
 
     if (widget)
       widget_parents = widget->getParents(false);
@@ -800,7 +800,7 @@ void jmanager_set_mouse(JWidget widget)
     JList widget_parents = NULL;
     JWidget common_parent = NULL;
     JLink link, link2;
-    JMessage msg;
+    Message* msg;
 
     if (widget)
       widget_parents = widget->getParents(false);
@@ -919,7 +919,7 @@ void jmanager_free_widget(JWidget widget)
     jmanager_free_focus();
 }
 
-void jmanager_remove_message(JMessage msg)
+void jmanager_remove_message(Message* msg)
 {
   jlist_remove(msg_queue, msg);
 }
@@ -928,7 +928,7 @@ void jmanager_remove_messages_for(JWidget widget)
 {
   JLink link;
   JI_LIST_FOR_EACH(msg_queue, link)
-    remove_msgs_for(widget, reinterpret_cast<JMessage>(link->data));
+    remove_msgs_for(widget, reinterpret_cast<Message*>(link->data));
 }
 
 void jmanager_refresh_screen()
@@ -981,7 +981,7 @@ void jmanager_remove_msg_filter_for(JWidget widget)
 /* configures the window for begin the loop */
 void _jmanager_open_window(JWidget manager, Frame* window)
 {
-  JMessage msg;
+  Message* msg;
 
   // free all widgets of special states
   if (window->is_wantfocus()) {
@@ -1008,7 +1008,7 @@ void _jmanager_open_window(JWidget manager, Frame* window)
 
 void _jmanager_close_window(JWidget manager, Frame* window, bool redraw_background)
 {
-  JMessage msg;
+  Message* msg;
   JRegion reg1;
 
   if (!manager->hasChild(window))
@@ -1075,7 +1075,7 @@ void _jmanager_close_window(JWidget manager, Frame* window, bool redraw_backgrou
 				Manager
  **********************************************************************/
 
-static bool manager_msg_proc(JWidget widget, JMessage msg)
+static bool manager_msg_proc(JWidget widget, Message* msg)
 {
   switch (msg->type) {
 
@@ -1182,9 +1182,9 @@ static void manager_set_position(JWidget widget, JRect rect)
 
 static void manager_pump_queue(JWidget widget_manager)
 {
-  JMessage msg, first_msg;
+  Message* msg, *first_msg;
   JLink link, link2, next;
-  JWidget widget;
+  Widget* widget;
   bool done;
 #ifdef LIMIT_DISPATCH_TIME
   int t = ji_clock;
@@ -1202,7 +1202,7 @@ static void manager_pump_queue(JWidget widget_manager)
 #endif
 
     /* the message to process */
-    msg = reinterpret_cast<JMessage>(link->data);
+    msg = reinterpret_cast<Message*>(link->data);
 
     /* go to next message */
     if (msg->any.used) {
@@ -1353,7 +1353,7 @@ void jmanager_invalidate_region(JWidget widget, JRegion region)
 static void generate_setcursor_message()
 {
   JWidget dst;
-  JMessage msg;
+  Message* msg;
   
   if (capture_widget)
     dst = capture_widget;
@@ -1368,7 +1368,7 @@ static void generate_setcursor_message()
     jmouse_set_cursor(JI_CURSOR_NORMAL);
 }
 
-static void remove_msgs_for(JWidget widget, JMessage msg)
+static void remove_msgs_for(JWidget widget, Message* msg)
 {
   JLink link, next;
 
@@ -1406,9 +1406,9 @@ static JWidget find_magnetic_widget(JWidget widget)
     return NULL;
 }
 
-static JMessage new_mouse_msg(int type, JWidget widget)
+static Message* new_mouse_msg(int type, JWidget widget)
 {
-  JMessage msg = jmessage_new(type);
+  Message* msg = jmessage_new(type);
   if (!msg)
     return NULL;
 
@@ -1427,7 +1427,7 @@ static JMessage new_mouse_msg(int type, JWidget widget)
   return msg;
 }
 
-static void broadcast_key_msg(JWidget manager, JMessage msg)
+static void broadcast_key_msg(JWidget manager, Message* msg)
 {
   /* send the message to the widget with capture */
   if (capture_widget) {
@@ -1447,7 +1447,7 @@ static void broadcast_key_msg(JWidget manager, JMessage msg)
 			    Focus Movement
  ***********************************************************************/
 
-static bool move_focus(JWidget manager, JMessage msg)
+static bool move_focus(JWidget manager, Message* msg)
 {
   int (*cmp)(JWidget, int, int) = NULL;
   Widget* focus = NULL;

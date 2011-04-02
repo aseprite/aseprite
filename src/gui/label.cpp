@@ -30,7 +30,7 @@ void Label::setTextColor(int color)
   m_textColor = color;
 }
 
-bool Label::onProcessMessage(JMessage msg)
+bool Label::onProcessMessage(Message* msg)
 {
   switch (msg->type) {
 

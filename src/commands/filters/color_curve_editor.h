@@ -36,7 +36,7 @@ public:
   Signal0<void> CurveEditorChange;
 
 protected:
-  bool onProcessMessage(JMessage msg) OVERRIDE;
+  bool onProcessMessage(Message* msg) OVERRIDE;
 
 private:
   gfx::Point* getClosestPoint(int x, int y, int** edit_x, int** edit_y);

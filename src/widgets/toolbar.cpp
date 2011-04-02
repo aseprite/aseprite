@@ -78,7 +78,7 @@ public:
   void closeTipWindow();
 
 protected:
-  bool onProcessMessage(JMessage msg) OVERRIDE;
+  bool onProcessMessage(Message* msg) OVERRIDE;
 
 private:
   int getToolGroupIndex(ToolGroup* group);
@@ -107,7 +107,7 @@ public:
   Signal1<void, Tool*> ToolSelected;
 
 protected:
-  bool onProcessMessage(JMessage msg) OVERRIDE;
+  bool onProcessMessage(Message* msg) OVERRIDE;
 
 private:
   Rect getToolBounds(int index);
@@ -177,7 +177,7 @@ bool ToolBar::isToolVisible(Tool* tool)
   return (m_selected_in_group[tool->getGroup()] == tool);
 }
 
-bool ToolBar::onProcessMessage(JMessage msg)
+bool ToolBar::onProcessMessage(Message* msg)
 {
   switch (msg->type) {
 
@@ -610,7 +610,7 @@ void ToolStrip::saveOverlappedArea(const Rect& bounds)
        bounds.w, bounds.h);
 }
 
-bool ToolStrip::onProcessMessage(JMessage msg)
+bool ToolStrip::onProcessMessage(Message* msg)
 {
   switch (msg->type) {
 

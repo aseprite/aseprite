@@ -43,7 +43,7 @@ void ScrollBar::getScrollBarThemeInfo(int* pos, int* len)
   getScrollBarInfo(pos, len, NULL, NULL);
 }
 
-bool ScrollBar::onProcessMessage(JMessage msg)
+bool ScrollBar::onProcessMessage(Message* msg)
 {
 #define MOUSE_IN(x1, y1, x2, y2) \
   ((msg->mouse.x >= (x1)) && (msg->mouse.x <= (x2)) && \

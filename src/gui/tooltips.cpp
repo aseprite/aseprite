@@ -28,7 +28,7 @@ struct TipData
 };
 
 static int tip_type();
-static bool tip_hook(JWidget widget, JMessage msg);
+static bool tip_hook(JWidget widget, Message* msg);
 
 void jwidget_add_tooltip_text(JWidget widget, const char *text, int arrowAlign)
 {
@@ -64,7 +64,7 @@ static int tip_type()
 }
 
 /* hook for the widget in which we added a tooltip */
-static bool tip_hook(JWidget widget, JMessage msg)
+static bool tip_hook(JWidget widget, Message* msg)
 {
   TipData* tip = reinterpret_cast<TipData*>(jwidget_get_data(widget, tip_type()));
 
@@ -234,7 +234,7 @@ void TipWindow::setArrowAlign(int arrowAlign)
   m_arrowAlign = arrowAlign;
 }
 
-bool TipWindow::onProcessMessage(JMessage msg)
+bool TipWindow::onProcessMessage(Message* msg)
 {
   switch (msg->type) {
 

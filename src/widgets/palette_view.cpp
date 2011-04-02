@@ -365,7 +365,7 @@ Color PaletteView::getColorByPosition(int target_x, int target_y)
   return Color::fromMask();
 }
 
-bool PaletteView::onProcessMessage(JMessage msg)
+bool PaletteView::onProcessMessage(Message* msg)
 {
   switch (msg->type) {
 

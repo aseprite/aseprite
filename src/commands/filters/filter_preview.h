@@ -36,7 +36,7 @@ public:
   FilterManagerImpl* getFilterManager() const;
 
 protected:
-  bool onProcessMessage(JMessage msg) OVERRIDE;
+  bool onProcessMessage(Message* msg) OVERRIDE;
 
 private:
   FilterManagerImpl* m_filterMgr;

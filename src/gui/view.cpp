@@ -236,7 +236,7 @@ View* View::getView(Widget* widget)
     return 0;
 }
 
-bool View::onProcessMessage(JMessage msg)
+bool View::onProcessMessage(Message* msg)
 {
   switch (msg->type) {
 

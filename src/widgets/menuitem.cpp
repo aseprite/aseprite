@@ -50,7 +50,7 @@ struct MenuItem
 };
 
 static int menuitem_type();
-static bool menuitem_msg_proc(JWidget widget, JMessage msg);
+static bool menuitem_msg_proc(JWidget widget, Message* msg);
 
 /**
  * A widget that represent a menu item of the application.
@@ -94,7 +94,7 @@ static int menuitem_type()
   return type;
 }
 
-static bool menuitem_msg_proc(JWidget widget, JMessage msg)
+static bool menuitem_msg_proc(JWidget widget, Message* msg)
 {
   switch (msg->type) {
 

@@ -113,7 +113,7 @@ JAccel add_keyboard_shortcut_to_execute_command(const char* shortcut, const char
 JAccel add_keyboard_shortcut_to_change_tool(const char* shortcut, tools::Tool* tool);
 JAccel add_keyboard_shortcut_to_quicktool(const char* shortcut, tools::Tool* tool);
 
-Command* get_command_from_key_message(JMessage msg);
+Command* get_command_from_key_message(Message* msg);
 JAccel get_accel_to_execute_command(const char* command, Params* params = NULL);
 JAccel get_accel_to_change_tool(tools::Tool* tool);
 tools::Tool* get_selected_quicktool();

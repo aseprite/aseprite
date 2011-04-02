@@ -64,7 +64,7 @@ FilterManagerImpl* FilterPreview::getFilterManager() const
   return m_filterMgr;
 }
 
-bool FilterPreview::onProcessMessage(JMessage msg)
+bool FilterPreview::onProcessMessage(Message* msg)
 {
   switch (msg->type) {
       

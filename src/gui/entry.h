@@ -38,7 +38,7 @@ public:
 
 protected:
   // Events
-  bool onProcessMessage(JMessage msg) OVERRIDE;
+  bool onProcessMessage(Message* msg) OVERRIDE;
   void onPreferredSize(PreferredSizeEvent& ev) OVERRIDE;
   void onPaint(PaintEvent& ev) OVERRIDE;
 
@@ -64,7 +64,7 @@ private:
     };
   };
 
-  int getCaretFromMouse(JMessage msg);
+  int getCaretFromMouse(Message* msg);
   void executeCmd(EntryCmd::Type cmd, int ascii, bool shift_pressed);
   void forwardWord();
   void backwardWord();

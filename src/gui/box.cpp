@@ -18,7 +18,7 @@
 
 using namespace gfx;
 
-static bool box_msg_proc(JWidget widget, JMessage msg);
+static bool box_msg_proc(JWidget widget, Message* msg);
 static void box_request_size(JWidget widget, int *w, int *h);
 static void box_set_position(JWidget widget, JRect rect);
 
@@ -29,7 +29,7 @@ Box::Box(int align)
   initTheme();
 }
 
-bool Box::onProcessMessage(JMessage msg)
+bool Box::onProcessMessage(Message* msg)
 {
   switch (msg->type) {
 

@@ -15,7 +15,7 @@
 
 using namespace gfx;
 
-static bool separator_msg_proc(JWidget widget, JMessage msg);
+static bool separator_msg_proc(JWidget widget, Message* msg);
 
 JWidget ji_separator_new(const char* text, int align)
 {
@@ -29,7 +29,7 @@ JWidget ji_separator_new(const char* text, int align)
   return widget;
 }
 
-static bool separator_msg_proc(JWidget widget, JMessage msg)
+static bool separator_msg_proc(JWidget widget, Message* msg)
 {
   switch (msg->type) {
 

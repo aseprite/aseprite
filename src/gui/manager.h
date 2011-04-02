@@ -29,7 +29,7 @@ bool jmanager_timer_is_running(int timer_id);
 
 /* routines that uses the ji_get_default_manager() */
 
-void jmanager_enqueue_message(JMessage msg);
+void jmanager_enqueue_message(Message* msg);
 
 JWidget jmanager_get_top_window();
 
@@ -46,7 +46,7 @@ void jmanager_free_focus();
 void jmanager_free_mouse();
 void jmanager_free_capture();
 void jmanager_free_widget(JWidget widget);
-void jmanager_remove_message(JMessage msg);
+void jmanager_remove_message(Message* msg);
 void jmanager_remove_messages_for(JWidget widget);
 void jmanager_refresh_screen();
 

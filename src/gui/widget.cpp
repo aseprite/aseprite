@@ -95,7 +95,7 @@ void jwidget_free(JWidget widget)
 Widget::~Widget()
 {
   JLink link, next;
-  JMessage msg;
+  Message* msg;
 
   /* send destroy message */
   msg = jmessage_new(JM_DESTROY);
@@ -142,7 +142,7 @@ Widget::~Widget()
 
 void jwidget_free_deferred(JWidget widget)
 {
-  JMessage msg;
+  Message* msg;
 
   ASSERT_VALID_WIDGET(widget);
 
@@ -174,7 +174,7 @@ void Widget::initTheme()
  * @see jhook
  */
 void jwidget_add_hook(JWidget widget, int type,
-		      JMessageFunc msg_proc, void *data)
+		      MessageFunc msg_proc, void *data)
 {
   JHook hook;
 
@@ -1030,7 +1030,7 @@ void jwidget_set_border(JWidget widget, int l, int t, int r, int b)
 
 void jwidget_set_rect(JWidget widget, JRect rect)
 {
-  JMessage msg;
+  Message* msg;
 
   ASSERT_VALID_WIDGET(widget);
 
@@ -1070,7 +1070,7 @@ void jwidget_flush_redraw(JWidget widget)
 {
   std::queue<Widget*> processing;
   int c, nrects;
-  JMessage msg;
+  Message* msg;
   JLink link;
   JRect rc;
 
@@ -1236,7 +1236,7 @@ bool jwidget_emit_signal(JWidget widget, int signal_num)
   ASSERT_VALID_WIDGET(widget);
 
   if (!widget->emit_signals) {
-    JMessage msg;
+    Message* msg;
     bool ret;
 
 #ifdef REPORT_SIGNALS
@@ -1266,7 +1266,7 @@ bool jwidget_emit_signal(JWidget widget, int signal_num)
 /**********************************************************************/
 /* manager handler */
 
-bool Widget::sendMessage(JMessage msg)
+bool Widget::sendMessage(Message* msg)
 {
   bool done = false;
   JHook hook;
@@ -1467,7 +1467,7 @@ bool jwidget_check_underscored(JWidget widget, int scancode)
 /**********************************************************************/
 /* widget message procedure */
 
-bool Widget::onProcessMessage(JMessage msg)
+bool Widget::onProcessMessage(Message* msg)
 {
   JWidget widget = this;
 
@@ -1611,7 +1611,7 @@ bool Widget::onProcessMessage(JMessage msg)
 */
 void Widget::onPreferredSize(PreferredSizeEvent& ev)
 {
-  JMessage msg = jmessage_new(JM_REQSIZE);
+  Message* msg = jmessage_new(JM_REQSIZE);
   sendMessage(msg);
   Size sz(msg->reqsize.w, msg->reqsize.h);
   jmessage_free(msg);

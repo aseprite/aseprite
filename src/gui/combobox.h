@@ -57,7 +57,7 @@ public:
   JRect getListBoxPos();
 
 protected:
-  bool onProcessMessage(JMessage msg) OVERRIDE;
+  bool onProcessMessage(Message* msg) OVERRIDE;
   void onPreferredSize(PreferredSizeEvent& ev) OVERRIDE;
 
 private:

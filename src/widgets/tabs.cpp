@@ -37,7 +37,7 @@
 
 #define HAS_ARROWS(tabs) ((m_button_left->getParent() == (tabs)))
 
-static bool tabs_button_msg_proc(JWidget widget, JMessage msg);
+static bool tabs_button_msg_proc(JWidget widget, Message* msg);
 
 static int tabs_type()
 {
@@ -192,7 +192,7 @@ void* Tabs::getSelectedTab()
     return NULL;
 }
 
-bool Tabs::onProcessMessage(JMessage msg)
+bool Tabs::onProcessMessage(Message* msg)
 {
   SkinTheme* theme = static_cast<SkinTheme*>(this->getTheme());
 
@@ -634,7 +634,7 @@ void Tabs::stopAni()
   jmanager_stop_timer(m_timerId);
 }
 
-static bool tabs_button_msg_proc(JWidget widget, JMessage msg)
+static bool tabs_button_msg_proc(JWidget widget, Message* msg)
 {
   JWidget parent;
   Tabs* tabs = NULL;

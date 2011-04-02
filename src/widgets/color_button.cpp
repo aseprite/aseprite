@@ -85,7 +85,7 @@ void ColorButton::setColor(const Color& color)
   invalidate();
 }
 
-bool ColorButton::onProcessMessage(JMessage msg)
+bool ColorButton::onProcessMessage(Message* msg)
 {
   switch (msg->type) {
 

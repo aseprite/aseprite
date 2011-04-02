@@ -58,7 +58,7 @@ enum AniAction {
   ACTION_LAST,
 };
 
-static bool tipwindow_msg_proc(JWidget widget, JMessage msg);
+static bool tipwindow_msg_proc(JWidget widget, Message* msg);
 
 static void slider_change_hook(Slider* slider);
 static void ani_button_command(Button* widget, AniAction action);
@@ -354,7 +354,7 @@ float Progress::getPos() const
 //////////////////////////////////////////////////////////////////////
 // StatusBar message handler
 
-bool StatusBar::onProcessMessage(JMessage msg)
+bool StatusBar::onProcessMessage(Message* msg)
 {
   switch (msg->type) {
 
@@ -725,7 +725,7 @@ bool StatusBar::onProcessMessage(JMessage msg)
   return Widget::onProcessMessage(msg);
 }
 
-static bool tipwindow_msg_proc(JWidget widget, JMessage msg)
+static bool tipwindow_msg_proc(JWidget widget, Message* msg)
 {
   switch (msg->type) {
 

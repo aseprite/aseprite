@@ -77,7 +77,7 @@ typedef struct ThumbnailData
 } ThumbnailData;
 
 static FileView* fileview_data(JWidget widget);
-static bool fileview_msg_proc(JWidget widget, JMessage msg);
+static bool fileview_msg_proc(JWidget widget, Message* msg);
 static void fileview_get_fileitem_size(JWidget widget, IFileItem* fi, int *w, int *h);
 static void fileview_make_selected_fileitem_visible(JWidget widget);
 static void fileview_regenerate_list(JWidget widget);
@@ -192,7 +192,7 @@ static FileView* fileview_data(JWidget widget)
   return reinterpret_cast<FileView*>(jwidget_get_data(widget, fileview_type()));
 }
 
-static bool fileview_msg_proc(JWidget widget, JMessage msg)
+static bool fileview_msg_proc(JWidget widget, Message* msg)
 {
   FileView* fileview = fileview_data(widget);
 

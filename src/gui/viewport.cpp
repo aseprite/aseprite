@@ -22,7 +22,7 @@ Viewport::Viewport()
   initTheme();
 }
 
-bool Viewport::onProcessMessage(JMessage msg)
+bool Viewport::onProcessMessage(Message* msg)
 {
   switch (msg->type) {
 

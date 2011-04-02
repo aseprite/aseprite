@@ -93,7 +93,7 @@ void Grid::addChildInCell(Widget* child, int hspan, int vspan, int align)
   }
 }
 
-bool Grid::onProcessMessage(JMessage msg)
+bool Grid::onProcessMessage(Message* msg)
 {
   switch (msg->type) {
 

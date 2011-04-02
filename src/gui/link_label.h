@@ -24,7 +24,7 @@ public:
   Signal0<void> Click;
 
 protected:
-  bool onProcessMessage(JMessage msg) OVERRIDE;
+  bool onProcessMessage(Message* msg) OVERRIDE;
   void onPaint(PaintEvent& ev) OVERRIDE;
 
 };

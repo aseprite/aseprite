@@ -2046,7 +2046,7 @@ void SkinTheme::paintIcon(Widget* widget, Graphics* g, IButtonIcon* iconInterfac
 }
 
 /* controls the "X" button in a window to close it */
-bool SkinTheme::theme_frame_button_msg_proc(JWidget widget, JMessage msg)
+bool SkinTheme::theme_frame_button_msg_proc(JWidget widget, Message* msg)
 {
   switch (msg->type) {
 

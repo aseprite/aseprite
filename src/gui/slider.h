@@ -31,7 +31,7 @@ public:
 
 protected:
   // Events
-  bool onProcessMessage(JMessage msg) OVERRIDE;
+  bool onProcessMessage(Message* msg) OVERRIDE;
   void onPreferredSize(PreferredSizeEvent& ev) OVERRIDE;
   void onPaint(PaintEvent& ev) OVERRIDE;
 

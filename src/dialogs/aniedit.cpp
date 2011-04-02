@@ -111,7 +111,7 @@ public:
   State getState() const { return m_state; }
 
 protected:
-  bool onProcessMessage(JMessage msg) OVERRIDE;
+  bool onProcessMessage(Message* msg) OVERRIDE;
 
 private:
   void setCursor(int x, int y);
@@ -230,7 +230,7 @@ AnimationEditor::~AnimationEditor()
     base_free(m_layers);
 }
 
-bool AnimationEditor::onProcessMessage(JMessage msg)
+bool AnimationEditor::onProcessMessage(Message* msg)
 {
   switch (msg->type) {
 

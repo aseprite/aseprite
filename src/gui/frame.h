@@ -53,7 +53,7 @@ public:
   Signal1<void, CloseEvent&> Close;
 
 protected:
-  virtual bool onProcessMessage(JMessage msg) OVERRIDE;
+  virtual bool onProcessMessage(Message* msg) OVERRIDE;
   virtual void onPreferredSize(PreferredSizeEvent& ev) OVERRIDE;
   virtual void onPaint(PaintEvent& ev) OVERRIDE;
   virtual void onHitTest(HitTestEvent& ev);

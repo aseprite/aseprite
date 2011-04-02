@@ -23,9 +23,9 @@ int ji_register_message_type()
   return registered_messages++;
 }
 
-JMessage jmessage_new(int type)
+Message* jmessage_new(int type)
 {
-  JMessage msg = (union jmessage*)base_malloc0(sizeof(union jmessage));
+  Message* msg = (Message*)base_malloc0(sizeof(Message));
   if (!msg)
     return NULL;
 
@@ -46,9 +46,9 @@ JMessage jmessage_new(int type)
   return msg;
 }
 
-JMessage jmessage_new_key_related(int type, int readkey_value)
+Message* jmessage_new_key_related(int type, int readkey_value)
 {
-  JMessage msg = jmessage_new(type);
+  Message* msg = jmessage_new(type);
 
   msg->key.scancode = (readkey_value >> 8) & 0xff;
   msg->key.ascii = readkey_value & 0xff;
@@ -65,17 +65,17 @@ JMessage jmessage_new_key_related(int type, int readkey_value)
   return msg;
 }
 
-JMessage jmessage_new_copy(const JMessage msg)
+Message* jmessage_new_copy(const Message* msg)
 {
-  JMessage copy;
+  Message* copy;
 
   ASSERT(msg != NULL);
 
-  copy = (union jmessage*)base_malloc(sizeof(union jmessage));
+  copy = (Message*)base_malloc(sizeof(Message));
   if (!copy)
     return NULL;
 
-  memcpy(copy, msg, sizeof(union jmessage));
+  memcpy(copy, msg, sizeof(Message));
 
   copy->any.widgets = jlist_copy(msg->any.widgets);
   copy->any.used = false;
@@ -83,17 +83,15 @@ JMessage jmessage_new_copy(const JMessage msg)
   return copy;
 }
 
-JMessage jmessage_new_copy_without_dests(const JMessage msg)
+Message* jmessage_new_copy_without_dests(const Message* msg)
 {
-  JMessage copy;
-
   ASSERT(msg != NULL);
 
-  copy = (union jmessage*)base_malloc(sizeof(union jmessage));
+  Message* copy = (Message*)base_malloc(sizeof(Message));
   if (!copy)
     return NULL;
 
-  memcpy(copy, msg, sizeof(union jmessage));
+  memcpy(copy, msg, sizeof(Message));
 
   copy->any.widgets = jlist_new();
   copy->any.used = false;
@@ -101,7 +99,7 @@ JMessage jmessage_new_copy_without_dests(const JMessage msg)
   return copy;
 }
 
-void jmessage_free(JMessage msg)
+void jmessage_free(Message* msg)
 {
   ASSERT(msg != NULL);
 
@@ -109,7 +107,7 @@ void jmessage_free(JMessage msg)
   base_free(msg);
 }
 
-void jmessage_add_dest(JMessage msg, JWidget widget)
+void jmessage_add_dest(Message* msg, JWidget widget)
 {
   ASSERT(msg != NULL);
   ASSERT_VALID_WIDGET(widget);
@@ -117,7 +115,7 @@ void jmessage_add_dest(JMessage msg, JWidget widget)
   jlist_append(msg->any.widgets, widget);
 }
 
-void jmessage_add_pre_dest(JMessage msg, JWidget widget)
+void jmessage_add_pre_dest(Message* msg, JWidget widget)
 {
   ASSERT(msg != NULL);
   ASSERT_VALID_WIDGET(widget);
@@ -125,7 +123,7 @@ void jmessage_add_pre_dest(JMessage msg, JWidget widget)
   jlist_prepend(msg->any.widgets, widget);
 }
 
-void jmessage_broadcast_to_children(JMessage msg, JWidget widget)
+void jmessage_broadcast_to_children(Message* msg, JWidget widget)
 {
   JLink link;
 
@@ -138,7 +136,7 @@ void jmessage_broadcast_to_children(JMessage msg, JWidget widget)
   jmessage_add_dest(msg, widget);
 }
 
-void jmessage_broadcast_to_parents(JMessage msg, JWidget widget)
+void jmessage_broadcast_to_parents(Message* msg, JWidget widget)
 {
   ASSERT(msg != NULL);
   ASSERT_VALID_WIDGET(widget);

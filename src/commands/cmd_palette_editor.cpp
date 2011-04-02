@@ -69,7 +69,7 @@ public:
   void setColor(const Color& color);
 
 protected:
-  bool onProcessMessage(JMessage msg) OVERRIDE;
+  bool onProcessMessage(Message* msg) OVERRIDE;
 
   void onExit();
   void onCloseFrame();
@@ -317,7 +317,7 @@ void PaletteEntryEditor::setColor(const Color& color)
     m_hexColorEntry.setColor(color);
 }
 
-bool PaletteEntryEditor::onProcessMessage(JMessage msg)
+bool PaletteEntryEditor::onProcessMessage(Message* msg)
 {
   if (msg->type == JM_TIMER &&
       msg->timer.timer_id == m_redrawTimerId) {

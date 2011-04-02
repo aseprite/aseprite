@@ -21,7 +21,7 @@ struct Panel
   double pos;
 };
 
-static bool panel_msg_proc(JWidget widget, JMessage msg);
+static bool panel_msg_proc(JWidget widget, Message* msg);
 static void panel_request_size(JWidget widget, int *w, int *h);
 static void panel_set_position(JWidget widget, JRect rect);
 
@@ -56,7 +56,7 @@ void jpanel_set_pos(JWidget widget, double pos)
   widget->invalidate();
 }
 
-static bool panel_msg_proc(JWidget widget, JMessage msg)
+static bool panel_msg_proc(JWidget widget, Message* msg)
 {
   switch (msg->type) {
 

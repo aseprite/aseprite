@@ -109,7 +109,7 @@ struct Shortcut
   ~Shortcut();
 
   void add_shortcut(const char* shortcut_string);
-  bool is_pressed(JMessage msg);
+  bool is_pressed(Message* msg);
   bool is_pressed_from_key_array();
 
 };
@@ -160,8 +160,8 @@ static void reload_default_font();
 static void load_gui_config(int& w, int& h, int& bpp, bool& fullscreen, bool& maximized);
 static void save_gui_config();
 
-static bool button_with_icon_msg_proc(JWidget widget, JMessage msg);
-static bool manager_msg_proc(JWidget widget, JMessage msg);
+static bool button_with_icon_msg_proc(JWidget widget, Message* msg);
+static bool manager_msg_proc(JWidget widget, Message* msg);
 
 static void on_palette_change_signal();
 
@@ -695,7 +695,7 @@ static int hook_type()
   return type;
 }
 
-static bool hook_msg_proc(JWidget widget, JMessage msg)
+static bool hook_msg_proc(JWidget widget, Message* msg)
 {
   switch (msg->type) {
 
@@ -898,7 +898,7 @@ JAccel add_keyboard_shortcut_to_quicktool(const char* shortcut_string, tools::To
   return shortcut->accel;
 }
 
-Command* get_command_from_key_message(JMessage msg)
+Command* get_command_from_key_message(Message* msg)
 {
   for (std::vector<Shortcut*>::iterator
 	 it = shortcuts->begin(); it != shortcuts->end(); ++it) {
@@ -971,7 +971,7 @@ void Shortcut::add_shortcut(const char* shortcut_string)
   jaccel_add_keys_from_string(this->accel, buf);
 }
 
-bool Shortcut::is_pressed(JMessage msg)
+bool Shortcut::is_pressed(Message* msg)
 {
   if (accel) {
     return jaccel_check(accel,
@@ -1087,7 +1087,7 @@ void* get_monitor_data(Monitor* monitor)
 }
 
 // Manager event handler.
-static bool manager_msg_proc(JWidget widget, JMessage msg)
+static bool manager_msg_proc(JWidget widget, Message* msg)
 {
   switch (msg->type) {
 

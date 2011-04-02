@@ -33,13 +33,13 @@ struct jaccel;
 struct jhook;
 struct jlink;
 struct jlist;
-union  jmessage;
 struct jrect;
 struct jregion;
 
-class  Frame;
-class  Theme;
-class  Widget;
+class Frame;
+class Theme;
+class Widget;
+union Message;
 
 // Alignment.
 #define JI_HORIZONTAL	0x0001
@@ -187,7 +187,6 @@ typedef struct jaccel*		JAccel;
 typedef struct jhook*		JHook;
 typedef struct jlink*		JLink;
 typedef struct jlist*		JList;
-typedef union  jmessage*	JMessage;
 typedef struct jstream*		JStream;
 typedef struct jrect*		JRect;
 typedef struct jregion*		JRegion;
@@ -198,7 +197,7 @@ typedef struct jxmlnode*	JXmlNode;
 typedef struct jxmlelem*	JXmlElem;
 typedef struct jxmltext*	JXmlText;
 
-typedef bool (*JMessageFunc)	 (JWidget widget, JMessage msg);
+typedef bool (*MessageFunc)	 (JWidget widget, Message* msg);
 typedef void (*JDrawFunc)	 (JWidget widget, JRect clip);
 
 class Jinete

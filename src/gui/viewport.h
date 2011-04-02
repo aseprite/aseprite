@@ -19,7 +19,7 @@ public:
 
 protected:
   // Events
-  bool onProcessMessage(JMessage msg) OVERRIDE;
+  bool onProcessMessage(Message* msg) OVERRIDE;
 
 private:
   void set_position(JRect rect);

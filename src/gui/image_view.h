@@ -18,7 +18,7 @@ public:
    ImageView(BITMAP* bmp, int align);
 
 protected:
-  bool onProcessMessage(JMessage msg) OVERRIDE;
+  bool onProcessMessage(Message* msg) OVERRIDE;
   void onPaint(PaintEvent& ev) OVERRIDE;
 
 private:

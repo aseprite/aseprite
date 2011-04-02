@@ -162,7 +162,7 @@ void Entry::getEntryThemeInfo(int* scroll, int* caret, int* state,
   }
 }
 
-bool Entry::onProcessMessage(JMessage msg)
+bool Entry::onProcessMessage(Message* msg)
 {
   switch (msg->type) {
 
@@ -391,7 +391,7 @@ void Entry::onEntryChange()
   jwidget_emit_signal(this, JI_SIGNAL_ENTRY_CHANGE);
 }
 
-int Entry::getCaretFromMouse(JMessage msg)
+int Entry::getCaretFromMouse(Message* msg)
 {
   int c, x, w, mx, caret = m_caret;
 

@@ -67,10 +67,10 @@ static void goback_command(Widget* widget);
 static void goforward_command(Widget* widget);
 static void goup_command(Widget* widget);
 
-static bool fileview_msg_proc(Widget* widget, JMessage msg);
-static bool location_msg_proc(Widget* widget, JMessage msg);
-static bool filetype_msg_proc(Widget* widget, JMessage msg);
-static bool filename_msg_proc(Widget* widget, JMessage msg);
+static bool fileview_msg_proc(Widget* widget, Message* msg);
+static bool location_msg_proc(Widget* widget, Message* msg);
+static bool filetype_msg_proc(Widget* widget, Message* msg);
+static bool filename_msg_proc(Widget* widget, Message* msg);
 
 // Slot for App::Exit signal 
 static void on_exit_delete_navigation_history()
@@ -569,7 +569,7 @@ static void goup_command(Widget* widget)
 }
 
 /* hook for the 'fileview' widget in the dialog */
-static bool fileview_msg_proc(Widget* widget, JMessage msg)
+static bool fileview_msg_proc(Widget* widget, Message* msg)
 {
   if (msg->type == JM_SIGNAL) {
     switch (msg->signal.num) {
@@ -611,7 +611,7 @@ static bool fileview_msg_proc(Widget* widget, JMessage msg)
 }
 
 // Hook for the 'location' combo-box
-static bool location_msg_proc(Widget* widget, JMessage msg)
+static bool location_msg_proc(Widget* widget, Message* msg)
 {
   if (msg->type == JM_SIGNAL) {
     ComboBox* combobox = dynamic_cast<ComboBox*>(widget);
@@ -649,7 +649,7 @@ static bool location_msg_proc(Widget* widget, JMessage msg)
 }
 
 // Hook for the 'filetype' combo-box
-static bool filetype_msg_proc(Widget* widget, JMessage msg)
+static bool filetype_msg_proc(Widget* widget, Message* msg)
 {
   if (msg->type == JM_SIGNAL) {
     ComboBox* combobox = dynamic_cast<ComboBox*>(widget);
@@ -681,7 +681,7 @@ static bool filetype_msg_proc(Widget* widget, JMessage msg)
   return false;
 }
 
-static bool filename_msg_proc(Widget* widget, JMessage msg)
+static bool filename_msg_proc(Widget* widget, Message* msg)
 {
   if (msg->type == JM_KEYRELEASED && msg->key.ascii >= 32) {
     // Check if all keys are released

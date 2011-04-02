@@ -70,7 +70,7 @@ void ButtonBase::onClick(Event& ev)
   Click(ev);
 }
 
-bool ButtonBase::onProcessMessage(JMessage msg)
+bool ButtonBase::onProcessMessage(Message* msg)
 {
   switch (msg->type) {
 
@@ -374,7 +374,7 @@ void RadioButton::deselectRadioGroup()
   }
 }
 
-bool RadioButton::onProcessMessage(JMessage msg)
+bool RadioButton::onProcessMessage(Message* msg)
 {
   switch (msg->type) {
 

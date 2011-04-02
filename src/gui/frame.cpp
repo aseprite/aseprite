@@ -260,7 +260,7 @@ bool Frame::is_toplevel()
     return false;
 }
 
-bool Frame::onProcessMessage(JMessage msg)
+bool Frame::onProcessMessage(Message* msg)
 {
   switch (msg->type) {
 
@@ -547,7 +547,7 @@ void Frame::move_window(JRect rect, bool use_blit)
   JRegion window_refresh_region;
   JRect old_pos;
   JRect man_pos;
-  JMessage msg;
+  Message* msg;
 
   jmanager_dispatch_messages(manager);
 

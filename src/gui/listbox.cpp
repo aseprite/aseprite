@@ -21,12 +21,12 @@
 
 using namespace gfx;
 
-static bool listbox_msg_proc(JWidget widget, JMessage msg);
+static bool listbox_msg_proc(JWidget widget, Message* msg);
 static void listbox_request_size(JWidget widget, int *w, int *h);
 static void listbox_set_position(JWidget widget, JRect rect);
 static void listbox_dirty_children(JWidget widget);
 
-static bool listitem_msg_proc(JWidget widget, JMessage msg);
+static bool listitem_msg_proc(JWidget widget, Message* msg);
 static void listitem_request_size(JWidget widget, int *w, int *h);
 
 JWidget jlistbox_new()
@@ -143,7 +143,7 @@ void jlistbox_center_scroll(JWidget widget)
   }
 }
 
-static bool listbox_msg_proc(JWidget widget, JMessage msg)
+static bool listbox_msg_proc(JWidget widget, Message* msg)
 {
   switch (msg->type) {
 
@@ -356,7 +356,7 @@ static void listbox_dirty_children(JWidget widget)
   }
 }
 
-static bool listitem_msg_proc(JWidget widget, JMessage msg)
+static bool listitem_msg_proc(JWidget widget, Message* msg)
 {
   switch (msg->type) {
 

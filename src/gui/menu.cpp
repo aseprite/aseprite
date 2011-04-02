@@ -103,15 +103,15 @@ struct MenuItem
   int submenu_timer;		// Timer to open the submenu
 };
 
-static bool menu_msg_proc(Widget* widget, JMessage msg);
+static bool menu_msg_proc(Widget* widget, Message* msg);
 static void menu_request_size(Widget* widget, int *w, int *h);
 static void menu_set_position(Widget* widget, JRect rect);
 
-static bool menubox_msg_proc(Widget* widget, JMessage msg);
+static bool menubox_msg_proc(Widget* widget, Message* msg);
 static void menubox_request_size(Widget* widget, int *w, int *h);
 static void menubox_set_position(Widget* widget, JRect rect);
 
-static bool menuitem_msg_proc(Widget* widget, JMessage msg);
+static bool menuitem_msg_proc(Widget* widget, Message* msg);
 static void menuitem_request_size(Widget* widget, int *w, int *h);
 
 static Widget* get_base_menubox(Widget* widget);
@@ -127,10 +127,10 @@ static void close_menuitem(Widget* menuitem, bool last_of_close_chain);
 static void close_popup(Widget* menubox);
 static void close_all(Widget* menu);
 static void exe_menuitem(Widget* menuitem);
-static bool window_msg_proc(Widget* widget, JMessage msg);
+static bool window_msg_proc(Widget* widget, Message* msg);
 
 static Widget* check_for_letter(Widget* menu, int ascii);
-static Widget* check_for_accel(Widget* menu, JMessage msg);
+static Widget* check_for_accel(Widget* menu, Message* msg);
 
 static Widget* find_nextitem(Widget* menu, Widget* menuitem);
 static Widget* find_previtem(Widget* menu, Widget* menuitem);
@@ -349,7 +349,7 @@ void jmenu_popup(Widget* menu, int x, int y)
   jwidget_free(window);
 }
 
-static bool menu_msg_proc(Widget* widget, JMessage msg)
+static bool menu_msg_proc(Widget* widget, Message* msg)
 {
   switch (msg->type) {
 
@@ -444,7 +444,7 @@ static void menu_set_position(Widget* widget, JRect rect)
   jrect_free(cpos);
 }
 
-static bool menubox_msg_proc(Widget* widget, JMessage msg)
+static bool menubox_msg_proc(Widget* widget, Message* msg)
 {
   Widget* menu = jmenubox_get_menu(widget);
 
@@ -813,7 +813,7 @@ static void menubox_set_position(Widget* widget, JRect rect)
   }
 }
 
-static bool menuitem_msg_proc(Widget* widget, JMessage msg)
+static bool menuitem_msg_proc(Widget* widget, Message* msg)
 {
   MenuItem *menuitem = MITEM(widget);
 
@@ -1214,7 +1214,7 @@ static void open_menuitem(Widget* menuitem, bool select_first)
 {
   Widget* menu;
   Widget* child;
-  JMessage msg;
+  Message* msg;
   JLink link;
   Base *base;
 
@@ -1269,7 +1269,7 @@ static void open_menuitem(Widget* menuitem, bool select_first)
 static void close_menuitem(Widget* menuitem, bool last_of_close_chain)
 {
   Widget* menu, *child;
-  JMessage msg;
+  Message* msg;
   JLink link;
   Base *base;
 
@@ -1312,7 +1312,7 @@ static void close_menuitem(Widget* menuitem, bool last_of_close_chain)
 
 static void close_popup(Widget* menubox)
 {
-  JMessage msg = jmessage_new(JM_CLOSE_POPUP);
+  Message* msg = jmessage_new(JM_CLOSE_POPUP);
   jmessage_add_dest(msg, menubox);
   jmanager_enqueue_message(msg);
 }
@@ -1367,12 +1367,12 @@ static void close_all(Widget* menu)
 static void exe_menuitem(Widget* menuitem)
 {
   // Send the message
-  JMessage msg = jmessage_new(JM_EXE_MENUITEM);
+  Message* msg = jmessage_new(JM_EXE_MENUITEM);
   jmessage_add_dest(msg, menuitem);
   jmanager_enqueue_message(msg);
 }
 
-static bool window_msg_proc(Widget* widget, JMessage msg)
+static bool window_msg_proc(Widget* widget, Message* msg)
 {
   switch (msg->type) {
 
@@ -1407,7 +1407,7 @@ static Widget* check_for_letter(Widget* menu, int ascii)
   return NULL;
 }
 
-static Widget* check_for_accel(Widget* menu, JMessage msg)
+static Widget* check_for_accel(Widget* menu, Message* msg)
 {
   Widget* menuitem;
   JLink link;

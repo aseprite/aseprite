@@ -74,7 +74,7 @@ public:
   void removeProgress(Progress* progress);
 
 protected:
-  bool onProcessMessage(JMessage msg) OVERRIDE;
+  bool onProcessMessage(Message* msg) OVERRIDE;
 
 private:
   void onCurrentToolChange();

@@ -20,7 +20,7 @@
 #include "gui/view.h"
 #include "gui/widget.h"
 
-static bool textbox_msg_proc(JWidget widget, JMessage msg);
+static bool textbox_msg_proc(JWidget widget, Message* msg);
 static void textbox_request_size(JWidget widget, int *w, int *h);
 
 JWidget jtextbox_new(const char *text, int align)
@@ -36,7 +36,7 @@ JWidget jtextbox_new(const char *text, int align)
   return widget;
 }
 
-static bool textbox_msg_proc(JWidget widget, JMessage msg)
+static bool textbox_msg_proc(JWidget widget, Message* msg)
 {
   switch (msg->type) {
 

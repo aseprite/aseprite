@@ -15,17 +15,17 @@
  * Because each widget could has various hooks, each one has a unique
  * type-id (you can use the @ref ji_register_widget_type routine to
  * get one), and an associated routine to process messages
- * (JMessageFunc).
+ * (MessageFunc).
  *
  * Also, the hook can have extra associated data to be used by the
  * routine @c msg_proc.
  *
- * @see ji_register_widget_type, JMessageFunc
+ * @see ji_register_widget_type, MessageFunc
  */
 struct jhook
 {
   int type;
-  JMessageFunc msg_proc;
+  MessageFunc msg_proc;
   void *data;
 };
 

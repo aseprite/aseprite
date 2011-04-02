@@ -63,7 +63,7 @@ private:
   public:
     ScrollableView();
   protected:
-    bool onProcessMessage(JMessage msg) OVERRIDE;
+    bool onProcessMessage(Message* msg) OVERRIDE;
   };
 
   Button m_paletteButton;

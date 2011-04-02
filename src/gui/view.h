@@ -46,7 +46,7 @@ public:
 
 protected:
   // Events
-  bool onProcessMessage(JMessage msg) OVERRIDE;
+  bool onProcessMessage(Message* msg) OVERRIDE;
 
 private:
   static void displaceWidgets(Widget* widget, int x, int y);

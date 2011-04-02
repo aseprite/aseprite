@@ -71,9 +71,9 @@
 using namespace gfx;
 using namespace tools;
 
-static bool editor_view_msg_proc(JWidget widget, JMessage msg);
+static bool editor_view_msg_proc(JWidget widget, Message* msg);
 
-static ToolLoopManager::Pointer pointer_from_msg(JMessage msg)
+static ToolLoopManager::Pointer pointer_from_msg(Message* msg)
 {
   ToolLoopManager::Pointer::Button button =
     (msg->mouse.right ? ToolLoopManager::Pointer::Right:
@@ -612,7 +612,7 @@ void Editor::setMaskColorForPixelsMovement(const Color& color)
    
    @param msg A mouse message received in Editor::onProcessMessage()
 */
-void Editor::controlInfiniteScroll(JMessage msg)
+void Editor::controlInfiniteScroll(Message* msg)
 {
   View* view = View::getView(this);
   Rect vp = view->getViewportBounds();
@@ -780,7 +780,7 @@ void Editor::editor_update_quicktool()
 //////////////////////////////////////////////////////////////////////
 // Message handler for the a view widget that contains an editor
 
-static bool editor_view_msg_proc(JWidget widget, JMessage msg)
+static bool editor_view_msg_proc(JWidget widget, Message* msg)
 {
   switch (msg->type) {
 
@@ -823,7 +823,7 @@ enum WHEEL_ACTION { WHEEL_NONE,
 		    WHEEL_BG,
 		    WHEEL_FRAME };
 
-bool Editor::onProcessMessage(JMessage msg)
+bool Editor::onProcessMessage(Message* msg)
 {
   ASSERT((m_state == EDITOR_STATE_DRAWING && m_toolLoopManager != NULL) ||
 	 (m_state != EDITOR_STATE_DRAWING && m_toolLoopManager == NULL));
@@ -1983,7 +1983,7 @@ public:
   }
 };
 
-ToolLoop* Editor::createToolLoopImpl(Context* context, JMessage msg)
+ToolLoop* Editor::createToolLoopImpl(Context* context, Message* msg)
 {
   Tool* current_tool = context->getSettings()->getCurrentTool();
   if (!current_tool)

@@ -37,8 +37,8 @@ struct ComboBox::Item
 #define IS_VALID_ITEM(combobox, index)				\
   (index >= 0 && index < combobox->getItemCount())
 
-static bool combobox_entry_msg_proc(JWidget widget, JMessage msg);
-static bool combobox_listbox_msg_proc(JWidget widget, JMessage msg);
+static bool combobox_entry_msg_proc(JWidget widget, Message* msg);
+static bool combobox_listbox_msg_proc(JWidget widget, Message* msg);
 
 ComboBox::ComboBox()
   : Widget(JI_COMBOBOX)
@@ -248,7 +248,7 @@ Button* ComboBox::getButtonWidget()
   return m_button;
 }
 
-bool ComboBox::onProcessMessage(JMessage msg)
+bool ComboBox::onProcessMessage(Message* msg)
 {
   switch (msg->type) {
 
@@ -321,7 +321,7 @@ void ComboBox::onPreferredSize(PreferredSizeEvent& ev)
   ev.setPreferredSize(reqSize);
 }
 
-static bool combobox_entry_msg_proc(JWidget widget, JMessage msg)
+static bool combobox_entry_msg_proc(JWidget widget, Message* msg)
 {
   ComboBox* combobox = reinterpret_cast<ComboBox*>(widget->user_data[0]);
 
@@ -369,7 +369,7 @@ static bool combobox_entry_msg_proc(JWidget widget, JMessage msg)
   return false;
 }
 
-static bool combobox_listbox_msg_proc(JWidget widget, JMessage msg)
+static bool combobox_listbox_msg_proc(JWidget widget, Message* msg)
 {
   ComboBox* combobox = reinterpret_cast<ComboBox*>(widget->user_data[0]);
 

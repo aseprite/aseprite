@@ -184,13 +184,13 @@ public:
   int editor_click_cancel();
 
 protected:
-  bool onProcessMessage(JMessage msg) OVERRIDE;
+  bool onProcessMessage(Message* msg) OVERRIDE;
   void onCurrentToolChange();
 
 private:
   void drawGrid(const gfx::Rect& gridBounds, const Color& color);
 
-  void controlInfiniteScroll(JMessage msg);
+  void controlInfiniteScroll(Message* msg);
   void dropPixels();
 
   tools::Tool* getCurrentEditorTool();
@@ -200,7 +200,7 @@ private:
   void editor_update_candraw();
   void setZoomAndCenterInMouse(int zoom, int mouse_x, int mouse_y);
 
-  tools::ToolLoop* createToolLoopImpl(Context* context, JMessage msg);
+  tools::ToolLoop* createToolLoopImpl(Context* context, Message* msg);
 
   void for_each_pixel_of_pen(int screen_x, int screen_y,
 			     int sprite_x, int sprite_y, int color,

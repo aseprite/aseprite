@@ -14,7 +14,7 @@ CustomLabel::CustomLabel(const char *text)
 {
 }
 
-bool CustomLabel::onProcessMessage(JMessage msg)
+bool CustomLabel::onProcessMessage(Message* msg)
 {
   return Label::onProcessMessage(msg);
 }

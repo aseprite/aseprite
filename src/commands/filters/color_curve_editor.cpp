@@ -92,7 +92,7 @@ ColorCurveEditor::ColorCurveEditor(ColorCurve* curve, int x1, int y1, int x2, in
   /* m_curve->type = CURVE_SPLINE; */
 }
 
-bool ColorCurveEditor::onProcessMessage(JMessage msg)
+bool ColorCurveEditor::onProcessMessage(Message* msg)
 {
   switch (msg->type) {
 

@@ -60,7 +60,7 @@ public:
   Signal1<void, int> IndexChange;
 
 protected:
-  bool onProcessMessage(JMessage msg) OVERRIDE;
+  bool onProcessMessage(Message* msg) OVERRIDE;
 
 private:
   void request_size(int* w, int* h);

@@ -25,7 +25,7 @@ LinkLabel::LinkLabel(const char* url, const char* text)
 {
 }
 
-bool LinkLabel::onProcessMessage(JMessage msg)
+bool LinkLabel::onProcessMessage(Message* msg)
 {
   switch (msg->type) {
 

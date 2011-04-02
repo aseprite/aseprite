@@ -60,7 +60,7 @@ void PopupFramePin::onPinClick(Event& ev)
   }
 }
 
-bool PopupFramePin::onProcessMessage(JMessage msg)
+bool PopupFramePin::onProcessMessage(Message* msg)
 {
   switch (msg->type) {
 

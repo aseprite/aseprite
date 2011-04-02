@@ -40,7 +40,7 @@ void jwidget_free_deferred(JWidget widget);
 /* hooks */
 
 void jwidget_add_hook(JWidget widget, int type,
-		      JMessageFunc msg_proc, void *data);
+		      MessageFunc msg_proc, void *data);
 JHook jwidget_get_hook(JWidget widget, int type);
 void *jwidget_get_data(JWidget widget, int type);
  
@@ -279,7 +279,7 @@ public:
   // GUI MANAGER
   // ===============================================================
 
-  bool sendMessage(JMessage msg);
+  bool sendMessage(Message* msg);
   void closeWindow();
 
   void broadcastMouseMessage(WidgetsList& targets);
@@ -312,7 +312,7 @@ protected:
   // MESSAGE PROCESSING
   // ===============================================================
 
-  virtual bool onProcessMessage(JMessage msg);
+  virtual bool onProcessMessage(Message* msg);
 
   // ===============================================================
   // EVENTS
