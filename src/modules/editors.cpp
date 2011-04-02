@@ -18,37 +18,108 @@
 
 #include "config.h"
 
-#include <vector>
-#include <algorithm>
-
-#include "gui/gui.h"
-
-#include "document_wrappers.h"
-#include "ui_context.h"
-#include "app.h"
 #include "modules/editors.h"
+
+#include "app.h"
+#include "document_wrappers.h"
+#include "gui/gui.h"
 #include "modules/gui.h"
 #include "modules/palettes.h"
 #include "raster/image.h"
 #include "raster/sprite.h"
+#include "ui_context.h"
 #include "util/misc.h"
 #include "widgets/editor/editor.h"
+#include "widgets/editor/editor_view.h"
+#include "widgets/popup_frame_pin.h"
+#include "widgets/statebar.h"
+
+#include <algorithm>
+#include <vector>
 
 #define FIXUP_TOP_WINDOW()			\
   app_get_top_window()->remap_window();		\
   app_get_top_window()->invalidate();
 
-typedef std::vector<Editor*> EditorList;
+class EditorItem
+{
+public:
+  enum Type { Normal, Mini };
+
+  EditorItem(Editor* editor, Type type)
+    : m_editor(editor)
+    , m_type(type)
+  { }
+
+  Editor* getEditor() const { return m_editor; }
+  Type getType() const { return m_type; }
+
+private:
+  Editor* m_editor;
+  Type m_type;
+};
+
+typedef std::vector<EditorItem> EditorList;
 
 Editor* current_editor = NULL;
 Widget* box_editors = NULL;
 
 static EditorList editors;
 
+static Frame* mini_editor_frame = NULL;
+static Editor* mini_editor = NULL;
+
 static int is_document_in_some_editor(Document* document);
 static Document* get_more_reliable_document();
 static Widget* find_next_editor(Widget* widget);
 static int count_parents(Widget* widget);
+
+static void create_mini_editor_frame();
+static void hide_mini_editor_frame();
+static void update_mini_editor_frame(Editor* editor);
+
+class WrappedEditor : public Editor,
+		      public EditorListener
+{
+public:
+  WrappedEditor() {
+    addListener(this);
+  }
+
+  ~WrappedEditor() {
+    removeListener(this);
+  }
+
+  // EditorListener implementation
+  void dispose() {
+    // Do nothing
+  }
+
+  void scrollChanged(Editor* editor) OVERRIDE {
+    // Show the mini editor
+    if (editor->getZoom() > 0) {
+      // If the mini frame does not exist, create it
+      if (!mini_editor_frame)
+	create_mini_editor_frame();
+
+      if (!mini_editor_frame->isVisible())
+	mini_editor_frame->open_window_bg();
+
+      update_mini_editor_frame(editor);
+    }
+    // Hide the mini editor
+    else {
+      hide_mini_editor_frame();
+    }
+  }
+
+  void documentChanged(Editor* editor) OVERRIDE {
+    if (editor == current_editor) {
+      update_mini_editor_frame(editor);
+    }
+  }
+
+};
 
 int init_module_editors()
 {
@@ -57,13 +128,19 @@ int init_module_editors()
 
 void exit_module_editors()
 {
-  editors.clear();
+  if (mini_editor_frame) {
+    save_window_pos(mini_editor_frame, "MiniEditor");
+    delete mini_editor_frame;
+    mini_editor_frame = NULL;
+  }
+
+  ASSERT(editors.empty());
 }
 
 Editor* create_new_editor()
 {
-  Editor* editor = new Editor();
-  editors.push_back(editor);
+  Editor* editor = new WrappedEditor();
+  editors.push_back(EditorItem(editor, EditorItem::Normal));
   return editor;
 }
 
@@ -71,24 +148,29 @@ Editor* create_new_editor()
 // It does not delete the editor.
 void remove_editor(Editor* editor)
 {
-  EditorList::iterator it = std::find(editors.begin(), editors.end(), editor);
+  for (EditorList::iterator
+	 it = editors.begin(),
+	 end = editors.end(); it != end; ++it) {
+    if (it->getEditor() == editor) {
+      editors.erase(it);
+      return;
+    }
+  }
 
-  ASSERT(it != editors.end());
-
-  editors.erase(it);
+  ASSERT(false && "Editor not found in the list");
 }
 
 void refresh_all_editors()
 {
   for (EditorList::iterator it = editors.begin(); it != editors.end(); ++it) {
-    (*it)->invalidate();
+    it->getEditor()->invalidate();
   }
 }
 
 void update_editors_with_document(const Document* document)
 {
   for (EditorList::iterator it = editors.begin(); it != editors.end(); ++it) {
-    Editor* editor = *it;
+    Editor* editor = it->getEditor();
 
     if (document == editor->getDocument())
       editor->updateEditor();
@@ -98,9 +180,9 @@ void update_editors_with_document(const Document* document)
 void editors_draw_sprite(const Sprite* sprite, int x1, int y1, int x2, int y2)
 {
   for (EditorList::iterator it = editors.begin(); it != editors.end(); ++it) {
-    Editor* editor = *it;
+    Editor* editor = it->getEditor();
 
-    if (sprite == editor->getSprite())
+    if (sprite == editor->getSprite() && editor->isVisible())
       editor->drawSpriteSafe(x1, y1, x2, y2);
   }
 }
@@ -178,7 +260,7 @@ void editors_hide_document(const Document* document)
   bool refresh = (activeSprite == document->getSprite()) ? true: false;
 
   for (EditorList::iterator it = editors.begin(); it != editors.end(); ++it) {
-    Editor* editor = *it;
+    Editor* editor = it->getEditor();
 
     if (document == editor->getDocument())
       editor->setDocument(get_more_reliable_document());
@@ -208,6 +290,8 @@ void set_current_editor(Editor* editor)
 
     app_refresh_screen(document);
     app_rebuild_documents_tabs();
+
+    update_mini_editor_frame(editor);
   }
 }
 
@@ -237,7 +321,11 @@ void set_document_in_more_reliable_editor(Document* document)
   // Search for any empty editor
   if (best->getDocument()) {
     for (EditorList::iterator it = editors.begin(); it != editors.end(); ++it) {
-      Editor* editor = *it;
+      // Avoid using abnormal editors (mini, etc.)
+      if (it->getType() != EditorItem::Normal)
+	continue;
+
+      Editor* editor = it->getEditor();
 
       if (!editor->getDocument()) {
 	best = editor;
@@ -262,7 +350,7 @@ void split_editor(Editor* editor, int align)
 
   // Create a new box to contain both editors, and a new view to put the new editor.
   JWidget new_panel = jpanel_new(align);
-  View* new_view = editor_view_new();
+  View* new_view = new EditorView(EditorView::CurrentEditorMode);
   Editor* new_editor = create_new_editor();
 
   // Insert the "new_box" in the same location that the view.
@@ -343,7 +431,7 @@ void close_editor(Editor* editor)
 
   // Update all editors.
   for (EditorList::iterator it = editors.begin(); it != editors.end(); ++it) {
-    Editor* editor = *it;
+    Editor* editor = it->getEditor();
     editor->updateEditor();
   }
 }
@@ -385,7 +473,7 @@ void make_unique_editor(Editor* editor)
 static int is_document_in_some_editor(Document* document)
 {
   for (EditorList::iterator it = editors.begin(); it != editors.end(); ++it) {
-    Editor* editor = *it;
+    Editor* editor = it->getEditor();
 
     if (document == editor->getDocument())
       return true;
@@ -432,4 +520,66 @@ static int count_parents(Widget* widget)
   while ((widget = widget->getParent()))
     count++;
   return count;
+}
+
+static void create_mini_editor_frame()
+{
+  // Create mini-editor
+  mini_editor_frame = new Frame(false, "Preview");
+  mini_editor_frame->child_spacing = 0;
+  mini_editor_frame->set_autoremap(false);
+  mini_editor_frame->set_wantfocus(false);
+
+  View* newView = new EditorView(EditorView::AlwaysSelected);
+  jwidget_expansive(newView, true);
+
+  mini_editor = new Editor();
+  editors.push_back(EditorItem(mini_editor, EditorItem::Mini));
+
+  newView->attachToView(mini_editor);
+
+  mini_editor_frame->addChild(newView);
+
+  // Default bounds
+  int width = JI_SCREEN_W/4;
+  int height = JI_SCREEN_H/4;
+  mini_editor_frame->setBounds
+    (gfx::Rect(JI_SCREEN_W - width - jrect_w(app_get_toolbar()->rc),
+	       JI_SCREEN_H - height - jrect_h(app_get_statusbar()->rc),
+	       width, height));
+
+  load_window_pos(mini_editor_frame, "MiniEditor");
+}
+
+static void hide_mini_editor_frame()
+{
+  if (mini_editor_frame &&
+      mini_editor_frame->isVisible()) {
+    mini_editor_frame->closeWindow(NULL);
+  }
+}
+
+static void update_mini_editor_frame(Editor* editor)
+{
+  if (!mini_editor)
+    return;
+
+  Document* document = editor->getDocument();
+
+  if (document && document->getSprite()) {
+    gfx::Rect visibleBounds = editor->getVisibleSpriteBounds();
+    gfx::Point pt = visibleBounds.getCenter();
+
+    // Set the same location as in the given editor.
+    if (mini_editor->getDocument() != document) {
+      mini_editor->setDocument(document);
+      mini_editor->setZoom(0);
+    }
+
+    mini_editor->centerInSpritePoint(pt.x, pt.y);
+  }
+  else {
+    // When the editor does not have a document, we hide the mini-editor.
+    hide_mini_editor_frame();
+  }
 }

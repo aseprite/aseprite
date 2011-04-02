@@ -27,6 +27,7 @@ public:
   virtual ~EditorListener() { }
   virtual void dispose() = 0;
   virtual void scrollChanged(Editor* editor) = 0;
+  virtual void documentChanged(Editor* editor) = 0;
 };
 
 #endif	// WIDGETS_EDITOR_LISTENER_H_INCLUDED

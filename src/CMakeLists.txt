@@ -283,6 +283,7 @@ add_library(aseprite-library
   widgets/editor/cursor.cpp
   widgets/editor/editor.cpp
   widgets/editor/editor_listeners.cpp
+  widgets/editor/editor_view.cpp
   widgets/editor/keys.cpp
   widgets/editor/pixels_movement.cpp
   widgets/fileview.cpp

@@ -53,6 +53,7 @@
 #include "util/render.h"
 #include "widgets/color_bar.h"
 #include "widgets/editor/editor.h"
+#include "widgets/editor/editor_view.h"
 #include "widgets/menuitem.h"
 #include "widgets/statebar.h"
 #include "widgets/tabs.h"
@@ -184,7 +185,7 @@ int App::run()
     colorbar = new ColorBar(box_colorbar->getAlign());
     toolbar = toolbar_new();
     tabsbar = new Tabs(m_tabsDelegate = new AppTabsDelegate());
-    view = editor_view_new();
+    view = new EditorView(EditorView::CurrentEditorMode);
     editor = create_new_editor();
 
     // configure all widgets to expansives

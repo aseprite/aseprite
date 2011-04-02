@@ -41,3 +41,8 @@ void EditorListeners::notifyScrollChanged(Editor* editor)
 {
   m_listeners.notify(&EditorListener::scrollChanged, editor);
 }
+
+void EditorListeners::notifyDocumentChanged(Editor* editor)
+{
+  m_listeners.notify(&EditorListener::documentChanged, editor);
+}

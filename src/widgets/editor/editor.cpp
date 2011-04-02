@@ -71,8 +71,6 @@
 using namespace gfx;
 using namespace tools;
 
-static bool editor_view_msg_proc(JWidget widget, Message* msg);
-
 static ToolLoopManager::Pointer pointer_from_msg(Message* msg)
 {
   ToolLoopManager::Pointer::Button button =
@@ -81,22 +79,6 @@ static ToolLoopManager::Pointer pointer_from_msg(Message* msg)
 			  ToolLoopManager::Pointer::Left));
 
   return ToolLoopManager::Pointer(msg->mouse.x, msg->mouse.y, button);
-}
-
-View* editor_view_new()
-{
-  View* widget = new View();
-  SkinTheme* theme = static_cast<SkinTheme*>(widget->getTheme());
-  int l = theme->get_part(PART_EDITOR_SELECTED_W)->w;
-  int t = theme->get_part(PART_EDITOR_SELECTED_N)->h;
-  int r = theme->get_part(PART_EDITOR_SELECTED_E)->w;
-  int b = theme->get_part(PART_EDITOR_SELECTED_S)->h;
-
-  jwidget_set_border(widget, l, t, r, b);
-  widget->hideScrollBars();
-  jwidget_add_hook(widget, JI_WIDGET, editor_view_msg_proc, NULL);
-
-  return widget;
 }
 
 Editor::Editor()
@@ -207,6 +189,9 @@ void Editor::setDocument(Document* document)
 
   // Redraw the entire editor (because we have a new sprite to draw)
   invalidate();
+
+  // Notify listeners
+  m_listeners.notifyDocumentChanged(this);
 }
 
 // Sets the scroll position of the editor
@@ -246,17 +231,13 @@ void Editor::setEditorScroll(int x, int y, int use_refresh_region)
 		   oldScroll.y - newScroll.y);
     
     jregion_free(region);
-    /* m_widget->flags &= ~JI_DIRTY; */
   }
-/*   else { */
-/*     if (m_refresh_region) { */
-/*       jregion_free (m_refresh_region); */
-/*       m_refresh_region = NULL; */
-/*     } */
-/*   } */
 
   if (thick)
     editor_draw_cursor(m_cursor_screen_x, m_cursor_screen_y);
+
+  // Notify listeners
+  m_listeners.notifyScrollChanged(this);
 }
 
 void Editor::updateEditor()
@@ -725,6 +706,43 @@ void Editor::removeListener(EditorListener* listener)
   m_listeners.removeListener(listener);
 }
 
+// Returns the visible area of the active sprite.
+gfx::Rect Editor::getVisibleSpriteBounds()
+{
+  // Return an empty rectangle if there is not a active sprite.
+  if (!m_sprite) return gfx::Rect();
+
+  View* view = View::getView(this);
+  Rect vp = view->getViewportBounds();
+  int x1, y1, x2, y2;
+
+  screenToEditor(vp.x, vp.y, &x1, &y1);
+  screenToEditor(vp.x+vp.w-1, vp.y+vp.h-1, &x2, &y2);
+
+  return Rect(x1, y1, x2-x1+1, y2-y1+1);
+}
+
+// Changes the scroll to see the given point as the center of the editor.
+void Editor::centerInSpritePoint(int x, int y)
+{
+  View* view = View::getView(this);
+  Rect vp = view->getViewportBounds();
+
+  hideDrawingCursor();
+
+  x = m_offset_x - (vp.w/2) + ((1<<m_zoom)>>1) + (x << m_zoom);
+  y = m_offset_y - (vp.h/2) + ((1<<m_zoom)>>1) + (y << m_zoom);
+
+  updateEditor();
+  setEditorScroll(x, y, false);
+
+  showDrawingCursor();
+  invalidate();
+
+  // Notify listeners
+  m_listeners.notifyScrollChanged(this);
+}
+
 void Editor::editor_update_statusbar_for_standby()
 {
   Tool* current_tool = getCurrentEditorTool();
@@ -785,41 +803,6 @@ void Editor::editor_update_quicktool()
   // the new tool can display something different in the status bar (e.g. Eyedropper)
   if (old_quicktool != m_quicktool)
     editor_update_statusbar_for_standby();
-}
-
-//////////////////////////////////////////////////////////////////////
-// Message handler for the a view widget that contains an editor
-
-static bool editor_view_msg_proc(JWidget widget, Message* msg)
-{
-  switch (msg->type) {
-
-    case JM_SETPOS:
-      // This avoid the displacement of the widgets in the viewport
-
-      jrect_copy(widget->rc, &msg->setpos.rect);
-      static_cast<View*>(widget)->updateView();
-      return true;
-
-    case JM_DRAW:
-      {
-	Widget* viewport = static_cast<View*>(widget)->getViewport();
-	Widget* child = reinterpret_cast<JWidget>(jlist_first_data(viewport->children));
-	JRect pos = jwidget_get_rect(widget);
-	SkinTheme* theme = static_cast<SkinTheme*>(widget->getTheme());
-
-	theme->draw_bounds_nw(ji_screen,
-			      pos->x1, pos->y1,
-			      pos->x2-1, pos->y2-1,
-			      (child == current_editor) ? PART_EDITOR_SELECTED_NW:
-							  PART_EDITOR_NORMAL_NW, false);
-
-	jrect_free(pos);
-      }
-      return true;
-
-  }
-  return false;
 }
 
 //////////////////////////////////////////////////////////////////////

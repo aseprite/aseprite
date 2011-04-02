@@ -33,6 +33,7 @@ public:
   void removeListener(EditorListener* listener);
 
   void notifyScrollChanged(Editor* editor);
+  void notifyDocumentChanged(Editor* editor);
 
 private:
   Listeners<EditorListener> m_listeners;

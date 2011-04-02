@@ -92,6 +92,12 @@ public:
   void addListener(EditorListener* listener);
   void removeListener(EditorListener* listener);
 
+  // Returns the visible area of the active sprite.
+  gfx::Rect getVisibleSpriteBounds();
+
+  // Changes the scroll to see the given point as the center of the editor.
+  void centerInSpritePoint(int x, int y);
+
   void editor_update_statusbar_for_standby();
 
   // in cursor.c
@@ -213,7 +219,6 @@ private:
 
 };
 
-View* editor_view_new();
 int editor_type();
 
 #endif
