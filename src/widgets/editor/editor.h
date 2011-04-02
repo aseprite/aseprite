@@ -103,36 +103,42 @@ public:
 
   Sprite* getSprite() { return m_sprite; }
 
-  int editor_get_zoom() const { return m_zoom; }
-  int editor_get_offset_x() const { return m_offset_x; }
-  int editor_get_offset_y() const { return m_offset_y; }
-  int editor_get_cursor_thick() { return m_cursor_thick; }
+  int getZoom() const { return m_zoom; }
+  int getOffsetX() const { return m_offset_x; }
+  int getOffsetY() const { return m_offset_y; }
+  int getCursorThick() { return m_cursor_thick; }
 
-  void editor_set_zoom(int zoom) { m_zoom = zoom; }
-  void editor_set_offset_x(int x) { m_offset_x = x; }
-  void editor_set_offset_y(int y) { m_offset_y = y; }
+  void setZoom(int zoom) { m_zoom = zoom; }
+  void setOffsetX(int x) { m_offset_x = x; }
+  void setOffsetY(int y) { m_offset_y = y; }
 
-  void editor_set_scroll(int x, int y, int use_refresh_region);
-  void editor_update();
+  void setEditorScroll(int x, int y, int use_refresh_region);
 
-  void editor_draw_sprite(int x1, int y1, int x2, int y2);
-  void editor_draw_sprite_safe(int x1, int y1, int x2, int y2);
+  // Updates the Editor's view.
+  void updateEditor();
 
-  void editor_draw_mask();
-  void editor_draw_mask_safe();
+  // Draws the specified portion of sprite in the editor.
+  // Warning: You should setup the clip of the ji_screen before
+  // calling this routine.
+  void drawSprite(int x1, int y1, int x2, int y2);
+
+  // Draws the sprite taking care of the whole clipping region.
+  // For each rectangle calls Editor::drawSprite.
+  void drawSpriteSafe(int x1, int y1, int x2, int y2);
+
+  void drawMask();
+  void drawMaskSafe();
 
   void flashCurrentLayer();
   void setMaskColorForPixelsMovement(const Color& color);
 
-  void screen_to_editor(int xin, int yin, int *xout, int *yout);
-  void editor_to_screen(int xin, int yin, int *xout, int *yout);
+  void screenToEditor(int xin, int yin, int *xout, int *yout);
+  void editorToScreen(int xin, int yin, int *xout, int *yout);
 
-  void show_drawing_cursor();
-  void hide_drawing_cursor();
+  void showDrawingCursor();
+  void hideDrawingCursor();
 
   void editor_update_statusbar_for_standby();
-
-  void editor_refresh_region();
 
   // in cursor.c
 
@@ -189,7 +195,7 @@ private:
   void editor_request_size(int *w, int *h);
   void editor_setcursor(int x, int y);
   void editor_update_candraw();
-  void editor_set_zoom_and_center_in_mouse(int zoom, int mouse_x, int mouse_y);
+  void setZoomAndCenterInMouse(int zoom, int mouse_x, int mouse_y);
 
   IToolLoop* createToolLoopImpl(Context* context, JMessage msg);
 

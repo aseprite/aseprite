@@ -268,8 +268,8 @@ void clipboard::paste(DocumentWriter& document)
     gfx::Rect vp = view->getViewportBounds();
     int x, y, x1, y1, x2, y2;
 
-    current_editor->screen_to_editor(vp.x, vp.y, &x1, &y1);
-    current_editor->screen_to_editor(vp.x+vp.w-1, vp.y+vp.h-1, &x2, &y2);
+    current_editor->screenToEditor(vp.x, vp.y, &x1, &y1);
+    current_editor->screenToEditor(vp.x+vp.w-1, vp.y+vp.h-1, &x2, &y2);
     x = (x1+x2)/2-src_image->w/2;
     y = (y1+y2)/2-src_image->h/2;
 
@@ -358,10 +358,10 @@ static bool interactive_transform(Editor* editor,
   int cx, cy;
   int mask_color;
 
-  editor->hide_drawing_cursor();
+  editor->hideDrawingCursor();
 
-  editor->editor_to_screen(x, y, &x1, &y1);
-  editor->editor_to_screen(x+image->w, y+image->h, &x2, &y2);
+  editor->editorToScreen(x, y, &x1, &y1);
+  editor->editorToScreen(x+image->w, y+image->h, &x2, &y2);
   cx = (x1+x2)/2;
   cy = (y1+y2)/2;
 
@@ -503,16 +503,16 @@ static bool interactive_transform(Editor* editor,
 	x = jmouse_x(0) - jmouse_x(1);
 	y = jmouse_y(0) - jmouse_y(1);
 
-/* 	screen_to_editor (widget, x1, y1, &x1, &y1); */
-/* 	screen_to_editor (widget, x2, y2, &x2, &y2); */
+/* 	screenToEditor (widget, x1, y1, &x1, &y1); */
+/* 	screenToEditor (widget, x2, y2, &x2, &y2); */
 
 	/* TODO */
 
 	gfx::Point scroll = view->getViewScroll();
-	editor->editor_set_scroll(scroll.x-x, scroll.y-y, true);
+	editor->setEditorScroll(scroll.x-x, scroll.y-y, true);
 
-/* 	editor_to_screen (widget, x1, y1, &x1, &y1); */
-/* 	editor_to_screen (widget, x2, y2, &x2, &y2); */
+/* 	editorToScreen(widget, x1, y1, &x1, &y1); */
+/* 	editorToScreen(widget, x2, y2, &x2, &y2); */
 
 	jmouse_control_infinite_scroll(vp);
 
@@ -658,8 +658,8 @@ static bool interactive_transform(Editor* editor,
 		break;
 	    }
 
-	    editor->screen_to_editor(x1, y1, &x1, &y1);
-	    editor->screen_to_editor(x2, y2, &x2, &y2);
+	    editor->screenToEditor(x1, y1, &x1, &y1);
+	    editor->screenToEditor(x2, y2, &x2, &y2);
 
 	    // if (UIContext::instance()->getSettings()->get_snap_to_grid() && angle == 0) {
 	    //   int ox = x1;
@@ -669,8 +669,8 @@ static bool interactive_transform(Editor* editor,
 	    //   y2 += y1 - oy;
 	    // }
 
-	    editor->editor_to_screen(x1, y1, &x1, &y1);
-	    editor->editor_to_screen(x2, y2, &x2, &y2);
+	    editor->editorToScreen(x1, y1, &x1, &y1);
+	    editor->editorToScreen(x2, y2, &x2, &y2);
 
 	    /* redraw the screen */
 	    REDRAW();
@@ -712,7 +712,7 @@ static bool interactive_transform(Editor* editor,
     int c;
     apply_rotation(x1, y1, x2, y2, angle, cx, cy, xout, yout);
     for (c=0; c<4; c++)
-      editor->screen_to_editor(xout[c], yout[c], xout+c, yout+c);
+      editor->screenToEditor(xout[c], yout[c], xout+c, yout+c);
   }
 
   destroy_bitmap(bmp1);
@@ -722,7 +722,7 @@ static bool interactive_transform(Editor* editor,
   clear_keybuf();
 
   /* restore the cursor */
-  editor->show_drawing_cursor();
+  editor->showDrawingCursor();
 
   return done == DONE_PASTE;
 }
@@ -874,8 +874,8 @@ static void update_status_bar(Editor* editor, Image *image,
   int u1, v1, u2, v2;
   int iangle = 360*(fixtoi (angle & (255<<16)))/256;
 
-  editor->screen_to_editor(x1, y1, &u1, &v1);
-  editor->screen_to_editor(x2, y2, &u2, &v2);
+  editor->screenToEditor(x1, y1, &u1, &v1);
+  editor->screenToEditor(x2, y2, &u2, &v2);
 
   app_get_statusbar()->setStatusText
     (0,

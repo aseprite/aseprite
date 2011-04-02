@@ -113,7 +113,7 @@ void PlayAnimationCommand::onExecute(Context* context)
       oldpal = newpal;
     }
 
-    current_editor->editor_draw_sprite_safe(0, 0, sprite->getWidth(), sprite->getHeight());
+    current_editor->drawSpriteSafe(0, 0, sprite->getWidth(), sprite->getHeight());
 
     do {
       poll_mouse();

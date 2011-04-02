@@ -57,7 +57,7 @@ void Editor::editor_click_start(int mode, int *x, int *y, int *b)
 
   click_prev_last_b = click_last_b;
 
-  screen_to_editor(click_start_x, click_start_y, x, y);
+  screenToEditor(click_start_x, click_start_y, x, y);
   *b = click_start_b;
 
   captureMouse();
@@ -72,7 +72,7 @@ void Editor::editor_click_continue(int mode, int *x, int *y)
   click_start_y = click_last_y = jmouse_y(0);
   click_start_b = click_last_b = click_prev_last_b;
 
-  screen_to_editor(click_start_x, click_start_y, x, y);
+  screenToEditor(click_start_x, click_start_y, x, y);
 }
 
 void Editor::editor_click_done()
@@ -106,7 +106,7 @@ int Editor::editor_click(int *x, int *y, int *update,
 
   *update = jmouse_poll();
 
-  screen_to_editor(click_last_x, click_last_y, &prev_x, &prev_y);
+  screenToEditor(click_last_x, click_last_y, &prev_x, &prev_y);
 
   click_prev_last_b = click_last_b;
 
@@ -114,7 +114,7 @@ int Editor::editor_click(int *x, int *y, int *update,
   click_last_y = jmouse_y(0);
   click_last_b = jmouse_b(0);
 
-  screen_to_editor(click_last_x, click_last_y, x, y);
+  screenToEditor(click_last_x, click_last_y, x, y);
 
   /* the mouse was moved */
   if (*update) {
@@ -141,8 +141,8 @@ int Editor::editor_click(int *x, int *y, int *update,
       }
 
       gfx::Point scroll = view->getViewScroll();
-      editor_set_scroll(scroll.x+click_last_x-jmouse_x(0),
-			scroll.y+click_last_y-jmouse_y(0), true);
+      setEditorScroll(scroll.x+click_last_x-jmouse_x(0),
+		      scroll.y+click_last_y-jmouse_y(0), true);
 
       click_last_x = jmouse_x(0);
       click_last_y = jmouse_y(0);

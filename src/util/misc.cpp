@@ -111,7 +111,7 @@ int interactive_move_layer(int mode, bool use_undo, int (*callback)())
   begin_x = cel->getX();
   begin_y = cel->getY();
 
-  editor->hide_drawing_cursor();
+  editor->hideDrawingCursor();
   jmouse_set_cursor(JI_CURSOR_MOVE);
 
   editor->editor_click_start(mode, &start_x, &start_y, &start_b);
@@ -174,7 +174,7 @@ int interactive_move_layer(int mode, bool use_undo, int (*callback)())
   update_screen_for_document(document);
 
   /* restore the cursor */
-  editor->show_drawing_cursor();
+  editor->showDrawingCursor();
 
   editor->editor_click_done();
 

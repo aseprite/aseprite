@@ -155,9 +155,9 @@ static void on_pen_size_before_change()
 {
   ASSERT(current_editor != NULL);
 
-  pen_size_thick = current_editor->editor_get_cursor_thick();
+  pen_size_thick = current_editor->getCursorThick();
   if (pen_size_thick)
-    current_editor->hide_drawing_cursor();
+    current_editor->hideDrawingCursor();
 }
 
 static void on_pen_size_after_change()
@@ -166,7 +166,7 @@ static void on_pen_size_after_change()
 
   // Show drawing cursor
   if (current_editor->getSprite() && pen_size_thick > 0)
-    current_editor->show_drawing_cursor();
+    current_editor->showDrawingCursor();
 }
 
 static Pen* editor_get_current_pen()
@@ -250,7 +250,7 @@ void Editor::editor_draw_cursor(int x, int y, bool refresh)
   m_cursor_screen_y = y;
 
   /* get cursor position in the editor */
-  screen_to_editor(x, y, &x, &y);
+  screenToEditor(x, y, &x, &y);
 
   // Get the current tool
   Tool* current_tool = UIContext::instance()
@@ -568,12 +568,12 @@ static void editor_cursor_cross(Editor* editor, int x, int y, int color, int thi
     0, 0, 1, 1, 0, 0,
   };
   int u, v, xout, yout;
-  int zoom = editor->editor_get_zoom();
+  int zoom = editor->getZoom();
 
   for (v=0; v<6; v++) {
     for (u=0; u<6; u++) {
       if (cursor_cross[v*6+u]) {
-	editor->editor_to_screen(x, y, &xout, &yout);
+	editor->editorToScreen(x, y, &xout, &yout);
 
 	xout += ((u<3) ?
 		 u-((thickness>>1)<<zoom)-3:
@@ -605,8 +605,8 @@ static void editor_cursor_bounds(Editor *editor, int x, int y, int color, void (
     x2 = seg->x2 - cursor_bound.pen_size/2;
     y2 = seg->y2 - cursor_bound.pen_size/2;
 
-    editor->editor_to_screen(x+x1, y+y1, &x1, &y1);
-    editor->editor_to_screen(x+x2, y+y2, &x2, &y2);
+    editor->editorToScreen(x+x1, y+y1, &x1, &y1);
+    editor->editorToScreen(x+x2, y+y2, &x2, &y2);
 
     if (seg->open) {		/* outside */
       if (x1 == x2) {

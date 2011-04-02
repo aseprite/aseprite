@@ -337,7 +337,7 @@ bool PaletteEntryEditor::onProcessMessage(JMessage msg)
     // Redraw just the current editor
     else {
       m_redrawAll = true;
-      current_editor->editor_update();
+      current_editor->updateEditor();
     }
   }
   return Frame::onProcessMessage(msg);

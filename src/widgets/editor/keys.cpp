@@ -63,7 +63,7 @@ bool Editor::editor_keys_toset_zoom(int scancode)
 
     // Change zoom
     if (zoom >= 0) {
-      editor_set_zoom_and_center_in_mouse(zoom, jmouse_x(0), jmouse_y(0));
+      setZoomAndCenterInMouse(zoom, jmouse_x(0), jmouse_y(0));
       return true;
     }
   }

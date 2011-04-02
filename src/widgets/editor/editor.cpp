@@ -166,7 +166,7 @@ void Editor::setDocument(Document* document)
     // Change the editor's configuration using the retrieved doc's settings
     m_zoom = preferred.zoom;
 
-    editor_update();
+    updateEditor();
 
     if (preferred.virgin) {
       View* view = View::getView(this);
@@ -179,16 +179,16 @@ void Editor::setDocument(Document* document)
       m_document->setPreferredEditorSettings(preferred);
     }
 
-    editor_set_scroll(m_offset_x + preferred.scroll_x,
-		      m_offset_y + preferred.scroll_y,
-		      false);
+    setEditorScroll(m_offset_x + preferred.scroll_x,
+		    m_offset_y + preferred.scroll_y,
+		    false);
   }
   // In this case document is NULL
   else {
     m_sprite = NULL;
 
-    editor_update();
-    editor_set_scroll(0, 0, false); // No scroll
+    updateEditor();
+    setEditorScroll(0, 0, false); // No scroll
   }
 
   // Redraw the entire editor (because we have a new sprite to draw)
@@ -196,7 +196,7 @@ void Editor::setDocument(Document* document)
 }
 
 // Sets the scroll position of the editor
-void Editor::editor_set_scroll(int x, int y, int use_refresh_region)
+void Editor::setEditorScroll(int x, int y, int use_refresh_region)
 {
   View* view = View::getView(this);
   Point oldScroll;
@@ -245,18 +245,12 @@ void Editor::editor_set_scroll(int x, int y, int use_refresh_region)
     editor_draw_cursor(m_cursor_screen_x, m_cursor_screen_y);
 }
 
-void Editor::editor_update()
+void Editor::updateEditor()
 {
   View::getView(this)->updateView();
 }
 
-/**
- * Draws the specified portion of sprite in the editor.
- *
- * @warning You should setup the clip of the @ref ji_screen before
- *          calling this routine.
- */
-void Editor::editor_draw_sprite(int x1, int y1, int x2, int y2)
+void Editor::drawSprite(int x1, int y1, int x2, int y2)
 {
   View* view = View::getView(this);
   Rect vp = view->getViewportBounds();
@@ -385,12 +379,7 @@ void Editor::editor_draw_sprite(int x1, int y1, int x2, int y2)
 		   settings->getGridColor());
 }
 
-/**
- * Draws the sprite taking care of the whole clipping region.
- *
- * For each rectangle calls @ref editor_draw_sprite.
- */
-void Editor::editor_draw_sprite_safe(int x1, int y1, int x2, int y2)
+void Editor::drawSpriteSafe(int x1, int y1, int x2, int y2)
 {
   JRegion region = jwidget_get_drawable_region(this, JI_GDR_CUTTOPWINDOWS);
   int c, nrects = JI_REGION_NUM_RECTS(region);
@@ -403,7 +392,7 @@ void Editor::editor_draw_sprite_safe(int x1, int y1, int x2, int y2)
        c<nrects;
        c++, rc++) {
     add_clip_rect(ji_screen, rc->x1, rc->y1, rc->x2-1, rc->y2-1);
-    editor_draw_sprite(x1, y1, x2, y2);
+    drawSprite(x1, y1, x2, y2);
     set_clip_rect(ji_screen, cx1, cy1, cx2, cy2);
   }
 
@@ -417,7 +406,7 @@ void Editor::editor_draw_sprite_safe(int x1, int y1, int x2, int y2)
  * regenerate boundaries, use the sprite_generate_mask_boundaries()
  * routine.
  */
-void Editor::editor_draw_mask()
+void Editor::drawMask()
 {
   View* view = View::getView(this);
   Rect vp = view->getViewportBounds();
@@ -472,7 +461,7 @@ void Editor::editor_draw_mask()
   dotted_mode(-1);
 }
 
-void Editor::editor_draw_mask_safe()
+void Editor::drawMaskSafe()
 {
   if (m_document && m_document->getBoundariesSegments()) {
     int thick = m_cursor_thick;
@@ -492,7 +481,7 @@ void Editor::editor_draw_mask_safe()
 	 c<nrects;
 	 c++, rc++) {
       set_clip_rect(ji_screen, rc->x1, rc->y1, rc->x2-1, rc->y2-1);
-      editor_draw_mask();
+      drawMask();
     }
     set_clip_rect(ji_screen, 0, 0, JI_SCREEN_W-1, JI_SCREEN_H-1);
     jregion_free(region);
@@ -529,8 +518,8 @@ void Editor::drawGrid(const Rect& gridBounds, const Color& color)
   x2 = ji_screen->cr-1;
   y2 = ji_screen->cb-1;
 
-  screen_to_editor(x1, y1, &u1, &v1);
-  screen_to_editor(x2, y2, &u2, &v2);
+  screenToEditor(x1, y1, &u1, &v1);
+  screenToEditor(x2, y2, &u2, &v2);
 
   grid.setOrigin(Point((grid.x % grid.w) - grid.w,
 		       (grid.y % grid.h) - grid.h));
@@ -584,14 +573,14 @@ void Editor::flashCurrentLayer()
       }
     }
 
-    editor_draw_sprite(0, 0, m_sprite->getWidth()-1, m_sprite->getHeight()-1);
+    drawSprite(0, 0, m_sprite->getWidth()-1, m_sprite->getHeight()-1);
     gui_flip_screen();
 
     vsync();
     rest(100);
 
     image_clear(flash_image, flash_image->mask_color);
-    editor_draw_sprite(0, 0, m_sprite->getWidth()-1, m_sprite->getHeight()-1);
+    drawSprite(0, 0, m_sprite->getWidth()-1, m_sprite->getHeight()-1);
   }
 }
 
@@ -636,8 +625,8 @@ void Editor::controlInfiniteScroll(JMessage msg)
     msg->mouse.y = jmouse_y(0);
 
     Point scroll = view->getViewScroll();
-    editor_set_scroll(scroll.x+old_x-msg->mouse.x,
-		      scroll.y+old_y-msg->mouse.y, true);
+    setEditorScroll(scroll.x+old_x-msg->mouse.x,
+		    scroll.y+old_y-msg->mouse.y, true);
   }
 }
 
@@ -672,7 +661,7 @@ Tool* Editor::getCurrentEditorTool()
   }
 }
 
-void Editor::screen_to_editor(int xin, int yin, int *xout, int *yout)
+void Editor::screenToEditor(int xin, int yin, int *xout, int *yout)
 {
   View* view = View::getView(this);
   Rect vp = view->getViewportBounds();
@@ -682,7 +671,7 @@ void Editor::screen_to_editor(int xin, int yin, int *xout, int *yout)
   *yout = (yin - vp.y + scroll.y - m_offset_y) >> m_zoom;
 }
 
-void Editor::editor_to_screen(int xin, int yin, int *xout, int *yout)
+void Editor::editorToScreen(int xin, int yin, int *xout, int *yout)
 {
   View* view = View::getView(this);
   Rect vp = view->getViewportBounds();
@@ -692,7 +681,7 @@ void Editor::editor_to_screen(int xin, int yin, int *xout, int *yout)
   *yout = (vp.y - scroll.y + m_offset_y + (yin << m_zoom));
 }
 
-void Editor::show_drawing_cursor()
+void Editor::showDrawingCursor()
 {
   ASSERT(m_sprite != NULL);
 
@@ -703,7 +692,7 @@ void Editor::show_drawing_cursor()
   }
 }
 
-void Editor::hide_drawing_cursor()
+void Editor::hideDrawingCursor()
 {
   if (m_cursor_thick) {
     jmouse_hide();
@@ -716,7 +705,7 @@ void Editor::editor_update_statusbar_for_standby()
 {
   Tool* current_tool = getCurrentEditorTool();
   int x, y;
-  screen_to_editor(jmouse_x(0), jmouse_y(0), &x, &y);
+  screenToEditor(jmouse_x(0), jmouse_y(0), &x, &y);
 
   if (!m_sprite) {
     app_get_statusbar()->clearText();
@@ -772,36 +761,6 @@ void Editor::editor_update_quicktool()
   // the new tool can display something different in the status bar (e.g. Eyedropper)
   if (old_quicktool != m_quicktool)
     editor_update_statusbar_for_standby();
-}
-
-void Editor::editor_refresh_region()
-{
-  if (this->update_region) {
-    int thick = m_cursor_thick;
-
-    if (thick)
-      editor_clean_cursor();
-    else
-      jmouse_hide();
-
-    // TODO check if this work!!!!
-/*     jwidget_redraw_region */
-/*       (jwindow_get_manager (jwidget_get_window (widget)), */
-/*        m_refresh_region); */
-/*     jwidget_redraw_region (widget, m_refresh_region); */
-    jwidget_flush_redraw(this);
-    jmanager_dispatch_messages(ji_get_default_manager());
-
-/*     if (m_refresh_region) { */
-/*       jregion_free (m_refresh_region); */
-/*       m_refresh_region = NULL; */
-/*     } */
-
-    if (thick)
-      editor_draw_cursor(m_cursor_screen_x, m_cursor_screen_y);
-    else
-      jmouse_show();
-  }
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -900,7 +859,7 @@ bool Editor::onProcessMessage(JMessage msg)
 		       x1-1, y1-1, x2+1, y2+2, theme->get_editor_face_color());
 
 	  // Draw the sprite in the editor
-	  editor_draw_sprite(0, 0, m_sprite->getWidth()-1, m_sprite->getHeight()-1);
+	  drawSprite(0, 0, m_sprite->getWidth()-1, m_sprite->getHeight()-1);
 
 	  // Draw the sprite boundary
 	  rect(ji_screen, x1-1, y1-1, x2+1, y2+1, theme->get_editor_sprite_border());
@@ -908,7 +867,7 @@ bool Editor::onProcessMessage(JMessage msg)
 
 	  // Draw the mask boundaries
 	  if (m_document->getBoundariesSegments()) {
-	    editor_draw_mask();
+	    drawMask();
 	    jmanager_start_timer(m_mask_timer_id);
 	  }
 	  else {
@@ -935,7 +894,7 @@ bool Editor::onProcessMessage(JMessage msg)
     case JM_TIMER:
       if (msg->timer.timer_id == m_mask_timer_id) {
 	if (m_sprite) {
-	  editor_draw_mask_safe();
+	  drawMaskSafe();
 
 	  // Set offset to make selection-movement effect
 	  if (m_offset_count < 7)
@@ -955,7 +914,7 @@ bool Editor::onProcessMessage(JMessage msg)
       break;
 
     case JM_MOUSELEAVE:
-      hide_drawing_cursor();
+      hideDrawingCursor();
       app_get_statusbar()->clearText();
       break;
 
@@ -1011,7 +970,7 @@ bool Editor::onProcessMessage(JMessage msg)
 	  if (m_insideSelection) {
 	    // Re-catch the image
 	    int x, y;
-	    screen_to_editor(msg->mouse.x, msg->mouse.y, &x, &y);
+	    screenToEditor(msg->mouse.x, msg->mouse.y, &x, &y);
 	    m_pixelsMovement->catchImageAgain(x, y);
 
 	    captureMouse();
@@ -1070,7 +1029,7 @@ bool Editor::onProcessMessage(JMessage msg)
 	    else
 	      m_pixelsMovement->cutMask();
 
-	    screen_to_editor(msg->mouse.x, msg->mouse.y, &x, &y);
+	    screenToEditor(msg->mouse.x, msg->mouse.y, &x, &y);
 	    m_pixelsMovement->catchImage(x, y);
 
 	    // Setup mask color
@@ -1134,14 +1093,14 @@ bool Editor::onProcessMessage(JMessage msg)
 	Rect vp = view->getViewportBounds();
 	Point scroll = view->getViewScroll();
 
-	editor_set_scroll(scroll.x+jmouse_x(1)-jmouse_x(0),
-			  scroll.y+jmouse_y(1)-jmouse_y(0), true);
+	setEditorScroll(scroll.x+jmouse_x(1)-jmouse_x(0),
+			scroll.y+jmouse_y(1)-jmouse_y(0), true);
 
 	jmouse_control_infinite_scroll(vp);
 
 	{
 	  int x, y;
-	  screen_to_editor(jmouse_x(0), jmouse_y(0), &x, &y);
+	  screenToEditor(jmouse_x(0), jmouse_y(0), &x, &y);
 	  app_get_statusbar()->setStatusText
 	    (0, "Pos %3d %3d (Size %3d %3d)", x, y,
 	     m_sprite->getWidth(), m_sprite->getHeight());
@@ -1156,7 +1115,7 @@ bool Editor::onProcessMessage(JMessage msg)
 
 	  // Get the position of the mouse in the sprite 
 	  int x, y;
-	  screen_to_editor(msg->mouse.x, msg->mouse.y, &x, &y);
+	  screenToEditor(msg->mouse.x, msg->mouse.y, &x, &y);
 
 	  // Drag the image to that position
 	  Rect bounds = m_pixelsMovement->moveImage(x, y);
@@ -1395,7 +1354,7 @@ bool Editor::onProcessMessage(JMessage msg)
 	    case WHEEL_ZOOM: {
 	      int zoom = MID(MIN_ZOOM, m_zoom-dz, MAX_ZOOM);
 	      if (m_zoom != zoom)
-		editor_set_zoom_and_center_in_mouse(zoom, msg->mouse.x, msg->mouse.y);
+		setZoomAndCenterInMouse(zoom, msg->mouse.x, msg->mouse.y);
 	      break;
 	    }
 
@@ -1429,7 +1388,7 @@ bool Editor::onProcessMessage(JMessage msg)
 	      jmouse_hide();
 	      if (thick)
 		editor_clean_cursor();
-	      editor_set_scroll(scroll.x+dx, scroll.y+dy, true);
+	      setEditorScroll(scroll.x+dx, scroll.y+dy, true);
 	      if (thick)
 		editor_draw_cursor(jmouse_x(0), jmouse_y(0));
 	      jmouse_show();
@@ -1493,19 +1452,19 @@ void Editor::editor_setcursor(int x, int y)
   switch (m_state) {
 
     case EDITOR_STATE_SCROLLING:
-      hide_drawing_cursor();
+      hideDrawingCursor();
       jmouse_set_cursor(JI_CURSOR_SCROLL);
       break;
 
     case EDITOR_STATE_DRAWING:
       if (current_tool->getInk(0)->isEyedropper()) {
-	hide_drawing_cursor();
+	hideDrawingCursor();
 	jmouse_set_cursor(JI_CURSOR_EYEDROPPER);
 	return;
       }
       else {
 	jmouse_set_cursor(JI_CURSOR_NULL);
-	show_drawing_cursor();
+	showDrawingCursor();
       }
       break;
 
@@ -1518,13 +1477,13 @@ void Editor::editor_setcursor(int x, int y)
 	// Pixels movement
 	if (m_pixelsMovement) {
 	  int x, y;
-	  screen_to_editor(jmouse_x(0), jmouse_y(0), &x, &y);
+	  screenToEditor(jmouse_x(0), jmouse_y(0), &x, &y);
 	    
 	  // Move selection
 	  if (m_pixelsMovement->isDragging() ||
 	      m_document->isMaskVisible() &&
 	      m_document->getMask()->contains_point(x, y)) {
-	    hide_drawing_cursor();
+	    hideDrawingCursor();
 	    jmouse_set_cursor(JI_CURSOR_MOVE);
 
 	    if (!m_insideSelection)
@@ -1538,11 +1497,11 @@ void Editor::editor_setcursor(int x, int y)
 	  // Draw
 	  if (m_cursor_candraw) {
 	    jmouse_set_cursor(JI_CURSOR_NULL);
-	    show_drawing_cursor();
+	    showDrawingCursor();
 	  }
 	  // Forbidden
 	  else {
-	    hide_drawing_cursor();
+	    hideDrawingCursor();
 	    jmouse_set_cursor(JI_CURSOR_FORBIDDEN);
 	  }
 	}
@@ -1551,12 +1510,12 @@ void Editor::editor_setcursor(int x, int y)
 	    // If the current tool change selection (e.g. rectangular marquee, etc.)
 	    if (current_tool->getInk(0)->isSelection()) {
 	      int x, y;
-	      screen_to_editor(jmouse_x(0), jmouse_y(0), &x, &y);
+	      screenToEditor(jmouse_x(0), jmouse_y(0), &x, &y);
 	    
 	      // Move pixels
 	      if (m_document->isMaskVisible() &&
 		  m_document->getMask()->contains_point(x, y)) {
-		hide_drawing_cursor();
+		hideDrawingCursor();
 		if (key[KEY_LCONTROL] ||
 		    key[KEY_RCONTROL]) // TODO configurable keys
 		  jmouse_set_cursor(JI_CURSOR_NORMAL_ADD);
@@ -1569,17 +1528,17 @@ void Editor::editor_setcursor(int x, int y)
 	      }
 	    }
 	    else if (current_tool->getInk(0)->isEyedropper()) {
-	      hide_drawing_cursor();
+	      hideDrawingCursor();
 	      jmouse_set_cursor(JI_CURSOR_EYEDROPPER);
 	      return;
 	    }
 	    else if (current_tool->getInk(0)->isScrollMovement()) {
-	      hide_drawing_cursor();
+	      hideDrawingCursor();
 	      jmouse_set_cursor(JI_CURSOR_SCROLL);
 	      return;
 	    }
 	    else if (current_tool->getInk(0)->isCelMovement()) {
-	      hide_drawing_cursor();
+	      hideDrawingCursor();
 	      jmouse_set_cursor(JI_CURSOR_MOVE);
 	      return;
 	    }
@@ -1591,17 +1550,17 @@ void Editor::editor_setcursor(int x, int y)
 	  // Draw
 	  if (m_cursor_candraw) {
 	    jmouse_set_cursor(JI_CURSOR_NULL);
-	    show_drawing_cursor();
+	    showDrawingCursor();
 	  }
 	  // Forbidden
 	  else {
-	    hide_drawing_cursor();
+	    hideDrawingCursor();
 	    jmouse_set_cursor(JI_CURSOR_FORBIDDEN);
 	  }
 	}
       }
       else {
-	hide_drawing_cursor();
+	hideDrawingCursor();
 	jmouse_set_cursor(JI_CURSOR_NORMAL);
       }
       break;
@@ -1622,7 +1581,7 @@ void Editor::editor_update_candraw()
      );
 }
 
-void Editor::editor_set_zoom_and_center_in_mouse(int zoom, int mouse_x, int mouse_y)
+void Editor::setZoomAndCenterInMouse(int zoom, int mouse_x, int mouse_y)
 {
   View* view = View::getView(this);
   Rect vp = view->getViewportBounds();
@@ -1630,8 +1589,8 @@ void Editor::editor_set_zoom_and_center_in_mouse(int zoom, int mouse_x, int mous
   bool centerMouse = get_config_bool("Editor", "CenterMouseInZoom", false);
   int mx, my;
 
-  hide_drawing_cursor();
-  screen_to_editor(mouse_x, mouse_y, &x, &y);
+  hideDrawingCursor();
+  screenToEditor(mouse_x, mouse_y, &x, &y);
 
   if (centerMouse) {
     mx = vp.x+vp.w/2;
@@ -1652,13 +1611,13 @@ void Editor::editor_set_zoom_and_center_in_mouse(int zoom, int mouse_x, int mous
 
     m_zoom = zoom;
 
-    editor_update();
-    editor_set_scroll(x, y, use_refresh_region);
+    updateEditor();
+    setEditorScroll(x, y, use_refresh_region);
 
     if (centerMouse)
       jmouse_set_position(mx, my);
   }
-  show_drawing_cursor();
+  showDrawingCursor();
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -1987,8 +1946,8 @@ public:
   Point screenToSprite(const Point& screenPoint)
   {
     Point spritePoint;
-    m_editor->screen_to_editor(screenPoint.x, screenPoint.y,
-			       &spritePoint.x, &spritePoint.y);
+    m_editor->screenToEditor(screenPoint.x, screenPoint.y,
+			     &spritePoint.x, &spritePoint.y);
     return spritePoint;
   }
 

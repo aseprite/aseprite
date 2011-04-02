@@ -91,7 +91,7 @@ void update_editors_with_document(const Document* document)
     Editor* editor = *it;
 
     if (document == editor->getDocument())
-      editor->editor_update();
+      editor->updateEditor();
   }
 }
 
@@ -101,7 +101,7 @@ void editors_draw_sprite(const Sprite* sprite, int x1, int y1, int x2, int y2)
     Editor* editor = *it;
 
     if (sprite == editor->getSprite())
-      editor->editor_draw_sprite_safe(x1, y1, x2, y2);
+      editor->drawSpriteSafe(x1, y1, x2, y2);
   }
 }
 
@@ -273,7 +273,7 @@ void split_editor(Editor* editor, int align)
 
   // Set the sprite for the new editor.
   new_editor->setDocument(editor->getDocument());
-  new_editor->editor_set_zoom(editor->editor_get_zoom());
+  new_editor->setZoom(editor->getZoom());
 
   // Expansive widgets.
   jwidget_expansive(new_panel, true);
@@ -291,16 +291,16 @@ void split_editor(Editor* editor, int align)
     jrect_copy(new_view->getViewport()->rc, view->getViewport()->rc);
     jrect_copy(new_editor->rc, editor->rc);
 
-    new_editor->editor_set_offset_x(editor->editor_get_offset_x());
-    new_editor->editor_set_offset_y(editor->editor_get_offset_y());
+    new_editor->setOffsetX(editor->getOffsetX());
+    new_editor->setOffsetY(editor->getOffsetY());
   }
 
   // Fixup window.
   FIXUP_TOP_WINDOW();
 
   // Update both editors.
-  editor->editor_update();
-  new_editor->editor_update();
+  editor->updateEditor();
+  new_editor->updateEditor();
 }
 
 void close_editor(Editor* editor)
@@ -344,7 +344,7 @@ void close_editor(Editor* editor)
   // Update all editors.
   for (EditorList::iterator it = editors.begin(); it != editors.end(); ++it) {
     Editor* editor = *it;
-    editor->editor_update();
+    editor->updateEditor();
   }
 }
 
@@ -379,7 +379,7 @@ void make_unique_editor(Editor* editor)
   FIXUP_TOP_WINDOW();
 
   // Update new editor.
-  editor->editor_update();
+  editor->updateEditor();
 }
 
 static int is_document_in_some_editor(Document* document)

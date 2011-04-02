@@ -137,7 +137,7 @@ bool ColorButton::onProcessMessage(JMessage msg)
 	    if (sprite) {
 	      x = msg->mouse.x;
 	      y = msg->mouse.y;
-	      editor->screen_to_editor(x, y, &x, &y);
+	      editor->screenToEditor(x, y, &x, &y);
 	      imgcolor = sprite->getPixel(x, y);
 	      color = Color::fromImage(sprite->getImgType(), imgcolor);
 	    }

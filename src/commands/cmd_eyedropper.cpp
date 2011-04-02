@@ -78,7 +78,7 @@ void EyedropperCommand::onExecute(Context* context)
 
   // pixel position to get
   int x, y;
-  editor->screen_to_editor(jmouse_x(0), jmouse_y(0), &x, &y);
+  editor->screenToEditor(jmouse_x(0), jmouse_y(0), &x, &y);
 
   // get the color from the image
   Color color = Color::fromImage(sprite->getImgType(),

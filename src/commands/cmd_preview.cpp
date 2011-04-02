@@ -102,12 +102,12 @@ void PreviewCommand::onExecute(Context* context)
   jmouse_set_cursor(JI_CURSOR_NULL);
   jmouse_set_position(JI_SCREEN_W/2, JI_SCREEN_H/2);
 
-  int pos_x = - scroll.x + vp.x + editor->editor_get_offset_x();
-  int pos_y = - scroll.y + vp.y + editor->editor_get_offset_y();
+  int pos_x = - scroll.x + vp.x + editor->getOffsetX();
+  int pos_y = - scroll.y + vp.y + editor->getOffsetY();
   int delta_x = 0;
   int delta_y = 0;
 
-  int zoom = editor->editor_get_zoom();
+  int zoom = editor->getZoom();
   int w = sprite->getWidth() << zoom;
   int h = sprite->getHeight() << zoom;
 

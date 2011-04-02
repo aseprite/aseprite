@@ -135,8 +135,8 @@ void FilterManagerImpl::beginForPreview()
     int x1, y1, x2, y2;
     int x, y, w, h;
 
-    editor->screen_to_editor(vp.x, vp.y, &x1, &y1);
-    editor->screen_to_editor(vp.x+vp.w-1, vp.y+vp.h-1, &x2, &y2);
+    editor->screenToEditor(vp.x, vp.y, &x1, &y1);
+    editor->screenToEditor(vp.x+vp.w-1, vp.y+vp.h-1, &x2, &y2);
 
     if (x1 < 0) x1 = 0;
     if (y1 < 0) y1 = 0;
@@ -275,11 +275,11 @@ void FilterManagerImpl::flush()
 
     reg1 = jregion_new(NULL, 0);
 
-    editor->editor_to_screen(m_x+m_offset_x,
-			     m_y+m_offset_y+m_row-1,
-			     &rect.x1, &rect.y1);
-    rect.x2 = rect.x1 + (m_w << editor->editor_get_zoom());
-    rect.y2 = rect.y1 + (1 << editor->editor_get_zoom());
+    editor->editorToScreen(m_x+m_offset_x,
+			   m_y+m_offset_y+m_row-1,
+			   &rect.x1, &rect.y1);
+    rect.x2 = rect.x1 + (m_w << editor->getZoom());
+    rect.y2 = rect.y1 + (1 << editor->getZoom());
 
     reg2 = jregion_new(&rect, 1);
     jregion_union(reg1, reg1, reg2);
