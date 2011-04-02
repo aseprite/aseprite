@@ -277,6 +277,19 @@ void editors_hide_document(const Document* document)
 void set_current_editor(Editor* editor)
 {
   if (current_editor != editor) {
+    // Here we check if the specified editor in the parameter is the
+    // mini-editor, in this case, we cannot put the mini-editor as the
+    // current one.
+    for (EditorList::iterator it = editors.begin(); it != editors.end(); ++it) {
+      if (it->getEditor() == editor) {
+	if (it->getType() != EditorItem::Normal) {
+	  // Avoid setting the mini-editor as the current one
+	  return;
+	}
+	break;
+      }
+    }
+
     if (current_editor)
       View::getView(current_editor)->invalidate();
 
