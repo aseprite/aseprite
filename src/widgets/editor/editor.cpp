@@ -69,6 +69,16 @@ using namespace gfx;
 
 static bool editor_view_msg_proc(JWidget widget, JMessage msg);
 
+static ToolLoopManager::Pointer pointer_from_msg(JMessage msg)
+{
+  ToolLoopManager::Pointer::Button button =
+    (msg->mouse.right ? ToolLoopManager::Pointer::Right:
+     (msg->mouse.middle ? ToolLoopManager::Pointer::Middle:
+			  ToolLoopManager::Pointer::Left));
+
+  return ToolLoopManager::Pointer(msg->mouse.x, msg->mouse.y, button);
+}
+
 View* editor_view_new()
 {
   View* widget = new View();
@@ -926,11 +936,11 @@ bool Editor::onProcessMessage(JMessage msg)
       if (m_state == EDITOR_STATE_DRAWING) {
 	ASSERT(m_toolLoopManager != NULL);
 
-	m_toolLoopManager->pressButton(msg);
+	m_toolLoopManager->pressButton(pointer_from_msg(msg));
 
 	// Cancel drawing loop
 	if (m_toolLoopManager->isCanceled()) {
-	  m_toolLoopManager->releaseLoop(msg);
+	  m_toolLoopManager->releaseLoop(pointer_from_msg(msg));
 
 	  delete m_toolLoopManager;
 	  m_toolLoopManager = NULL;
@@ -1071,8 +1081,8 @@ bool Editor::onProcessMessage(JMessage msg)
 
 	  m_state = EDITOR_STATE_DRAWING;
 
-	  m_toolLoopManager->prepareLoop(msg);
-	  m_toolLoopManager->pressButton(msg);
+	  m_toolLoopManager->prepareLoop(pointer_from_msg(msg));
+	  m_toolLoopManager->pressButton(pointer_from_msg(msg));
 
 	  // Redraw it (without pen preview)
 	  if (thick)
@@ -1173,7 +1183,7 @@ bool Editor::onProcessMessage(JMessage msg)
 
 	// notify mouse movement to the tool
 	ASSERT(m_toolLoopManager != NULL);
-	m_toolLoopManager->movement(msg);
+	m_toolLoopManager->movement(pointer_from_msg(msg));
 
 	// draw the cursor again
 	if (thick)
@@ -1210,10 +1220,10 @@ bool Editor::onProcessMessage(JMessage msg)
       if (m_state == EDITOR_STATE_DRAWING) {
 	ASSERT(m_toolLoopManager != NULL);
 
-	if (m_toolLoopManager->releaseButton(msg))
+	if (m_toolLoopManager->releaseButton(pointer_from_msg(msg)))
 	  return true;
 
-	m_toolLoopManager->releaseLoop(msg);
+	m_toolLoopManager->releaseLoop(pointer_from_msg(msg));
 
 	delete m_toolLoopManager;
 	m_toolLoopManager = NULL;

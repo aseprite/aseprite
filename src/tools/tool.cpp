@@ -115,7 +115,7 @@ ToolLoopManager::~ToolLoopManager()
   delete m_toolLoop;
 }
 
-void ToolLoopManager::prepareLoop(JMessage msg)
+void ToolLoopManager::prepareLoop(const Pointer& pointer)
 {
   // Start with no points at all
   m_points.clear();
@@ -133,24 +133,24 @@ void ToolLoopManager::prepareLoop(JMessage msg)
 				m_toolLoop->getDstImage());
 }
 
-void ToolLoopManager::releaseLoop(JMessage msg)
+void ToolLoopManager::releaseLoop(const Pointer& pointer)
 {
   // No more preview image
   RenderEngine::setPreviewImage(NULL, NULL);
 }
 
-void ToolLoopManager::pressButton(JMessage msg)
+void ToolLoopManager::pressButton(const Pointer& pointer)
 {
   // If the user pressed the other mouse button...
-  if ((m_toolLoop->getMouseButton() == 0 && msg->mouse.right) ||
-      (m_toolLoop->getMouseButton() == 1 && msg->mouse.left)) {
+  if ((m_toolLoop->getMouseButton() == 0 && pointer.getButton() == Pointer::Right) ||
+      (m_toolLoop->getMouseButton() == 1 && pointer.getButton() == Pointer::Left)) {
     // Cancel the tool-loop (the destination image should be completelly discarded)
     m_toolLoop->cancel();
     return;
   }
 
   // Convert the screen point to a sprite point
-  Point spritePoint = m_toolLoop->screenToSprite(Point(msg->mouse.x, msg->mouse.y));
+  Point spritePoint = m_toolLoop->screenToSprite(Point(pointer.getX(), pointer.getY()));
   m_toolLoop->setSpeed(Point(0, 0));
   m_oldPoint = spritePoint;
   snapToGrid(true, spritePoint);
@@ -164,9 +164,9 @@ void ToolLoopManager::pressButton(JMessage msg)
   doLoopStep(false);
 }
 
-bool ToolLoopManager::releaseButton(JMessage msg)
+bool ToolLoopManager::releaseButton(const Pointer& pointer)
 {
-  Point spritePoint = m_toolLoop->screenToSprite(Point(msg->mouse.x, msg->mouse.y));
+  Point spritePoint = m_toolLoop->screenToSprite(Point(pointer.getX(), pointer.getY()));
   snapToGrid(true, spritePoint);
 
   bool res = m_toolLoop->getController()->releaseButton(m_points, spritePoint);
@@ -180,10 +180,10 @@ bool ToolLoopManager::releaseButton(JMessage msg)
   return res;
 }
 
-void ToolLoopManager::movement(JMessage msg)
+void ToolLoopManager::movement(const Pointer& pointer)
 {
   // Convert the screen point to a sprite point
-  Point spritePoint = m_toolLoop->screenToSprite(Point(msg->mouse.x, msg->mouse.y));
+  Point spritePoint = m_toolLoop->screenToSprite(Point(pointer.getX(), pointer.getY()));
   // Calculate the speed (new sprite point - old sprite point)
   m_toolLoop->setSpeed(spritePoint - m_oldPoint);
   m_oldPoint = spritePoint;

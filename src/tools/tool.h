@@ -26,8 +26,6 @@
 #include "filters/tiled_mode.h"
 #include "gfx/point.h"
 #include "gfx/rect.h"
-#include "gui/message.h"
-#include "gui/rect.h"
 
 class Context;
 class Document;
@@ -363,6 +361,25 @@ class ToolLoopManager
   
 public:
 
+  // Simple container of mouse events information.
+  class Pointer
+  {
+  public:
+    enum Button { Left, Middle, Right };
+
+    Pointer(int x, int y, Button button)
+      : m_x(x), m_y(y), m_button(button) { }
+
+    int getX() const { return m_x; }
+    int getY() const { return m_y; }
+    Button getButton() const { return m_button; }
+
+  private:
+    int m_x, m_y;
+    Button m_button;
+  };
+
+  // Contructs a manager for the IToolLoop delegate.
   ToolLoopManager(IToolLoop* toolLoop);
   virtual ~ToolLoopManager();
 
@@ -370,22 +387,22 @@ public:
 
   // Should be called when the user start a tool-trace (pressing the
   // left or right button for first time in the editor).
-  void prepareLoop(JMessage msg);
+  void prepareLoop(const Pointer& pointer);
 
   // Called when the loop is over.
-  void releaseLoop(JMessage msg);
+  void releaseLoop(const Pointer& pointer);
 
   // Should be called each time the user presses a mouse button.
-  void pressButton(JMessage msg);
+  void pressButton(const Pointer& pointer);
 
   // Should be called each time the user releases a mouse button.
   //
   // Returns true if the tool-loop should continue, or false
   // if the editor should release the mouse capture.
-  bool releaseButton(JMessage msg);
+  bool releaseButton(const Pointer& pointer);
 
   // Should be called each time the user moves the mouse inside the editor.
-  void movement(JMessage msg);
+  void movement(const Pointer& pointer);
 
 private:
   void doLoopStep(bool last_step);
