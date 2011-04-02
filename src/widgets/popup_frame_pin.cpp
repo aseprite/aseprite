@@ -82,6 +82,13 @@ void PopupFramePin::onHitTest(HitTestEvent& ev)
 {
   PopupFrame::onHitTest(ev);
 
-  if (m_pin.isSelected() && ev.getHit() == HitTestClient)
-    ev.setHit(HitTestCaption);
+  if (m_pin.isSelected() &&
+      ev.getHit() == HitTestClient) {
+    if (ev.getPoint().x <= rc->x1+2)
+      ev.setHit(HitTestBorderW);
+    else if (ev.getPoint().x >= rc->x2-3)
+      ev.setHit(HitTestBorderE);
+    else
+      ev.setHit(HitTestCaption);
+  }
 }
