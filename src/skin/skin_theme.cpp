@@ -255,7 +255,7 @@ void SkinTheme::reload_skin()
 
 std::string SkinTheme::get_font_filename() const
 {
-  return "skins/" + m_selected_skin + "/font.pcx";
+  return "skins/" + m_selected_skin + "/font.png";
 }
 
 void SkinTheme::onRegenerate()
