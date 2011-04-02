@@ -42,14 +42,16 @@ class SkinTheme : public Theme
   BITMAP* m_cursors[JI_CURSORS];
   BITMAP* m_part[PARTS];
   std::map<std::string, BITMAP*> m_toolicon;
+  FONT* m_minifont;
 
 public:
   SkinTheme();
   ~SkinTheme();
 
-  void reload_skin();
+  FONT* getMiniFont() const { return m_minifont; }
 
-  std::string get_font_filename() const;
+  void reload_skin();
+  void reload_fonts();
 
   BITMAP* set_cursor(int type, int* focus_x, int* focus_y);
   void init_widget(JWidget widget);
@@ -179,6 +181,8 @@ private:
 
   static bool theme_frame_button_msg_proc(JWidget widget, JMessage msg);
   static bool theme_combobox_button_msg_proc(JWidget widget, JMessage msg);
+
+  static FONT* loadFont(const char* userFont, const std::string& path);
 
 };
 

@@ -80,6 +80,7 @@ SkinTheme::SkinTheme()
 {
   this->name = "Skin Theme";
   m_selected_skin = get_config_string("Skin", "Selected", "default");
+  m_minifont = font;
 
   // Initialize all graphics in NULL (these bitmaps are loaded from the skin)
   m_sheet_bmp = NULL;
@@ -220,6 +221,10 @@ SkinTheme::~SkinTheme()
 
   destroy_bitmap(m_sheet_bmp);
   sheet_mapping.clear();
+
+  // Destroy the minifont
+  if (m_minifont && m_minifont != font)
+    destroy_font(m_minifont);
 }
 
 // Call ji_regen_theme after this
@@ -253,9 +258,16 @@ void SkinTheme::reload_skin()
     throw base::Exception("Error loading %s file", sheet_filename.c_str());
 }
 
-std::string SkinTheme::get_font_filename() const
+void SkinTheme::reload_fonts()
 {
-  return "skins/" + m_selected_skin + "/font.png";
+  if (default_font && default_font != font)
+    destroy_font(default_font);
+
+  if (m_minifont && m_minifont != font)
+    destroy_font(m_minifont);
+
+  default_font = loadFont("UserFont", "skins/" + m_selected_skin + "/font.png");
+  m_minifont = loadFont("UserMiniFont", "skins/" + m_selected_skin + "/minifont.png");
 }
 
 void SkinTheme::onRegenerate()
@@ -2071,4 +2083,28 @@ bool SkinTheme::theme_frame_button_msg_proc(JWidget widget, JMessage msg)
   }
 
   return false;
+}
+
+FONT* SkinTheme::loadFont(const char* userFont, const std::string& path)
+{
+  // Directories
+  ResourceFinder rf;
+
+  const char* user_font = get_config_string("Options", userFont, "");
+  if (user_font && *user_font)
+    rf.addPath(user_font);
+
+  rf.findInDataDir(path.c_str());
+
+  // Try to load the font
+  while (const char* path = rf.next()) {
+    FONT* font = ji_font_load(path);
+    if (font) {
+      if (ji_font_is_scalable(font))
+	ji_font_set_size(font, 8*jguiscale());
+      return font;
+    }
+  }
+
+  return font;			// Use Allegro font by default
 }

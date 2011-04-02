@@ -21,8 +21,8 @@
 #include <stdio.h>
 #include <allegro.h>
 #if defined ALLEGRO_WINDOWS && defined DEBUGMODE
-#include <winalleg.h>
-#include <psapi.h>
+  #include <winalleg.h>
+  #include <psapi.h>
 #endif
 
 #include "app.h"

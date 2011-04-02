@@ -150,14 +150,13 @@ static volatile int next_idle_flags = 0;
 static volatile int restored_width = 0;
 static volatile int restored_height = 0;
 
-/* default GUI screen configuration */
+// Default GUI screen configuration
 static bool double_buffering;
 static int screen_scaling;
 
-static void destroy_default_font();
 static void reload_default_font();
 
-/* load & save graphics configuration */
+// Load & save graphics configuration
 static void load_gui_config(int& w, int& h, int& bpp, bool& fullscreen, bool& maximized);
 static void save_gui_config();
 
@@ -358,9 +357,6 @@ void exit_module_gui()
   }
 
   jmanager_free(manager);
-
-  // Destroy the default font of the current theme
-  destroy_default_font();
 
   // Now we can destroy theme
   CurrentTheme::set(NULL);
@@ -602,48 +598,13 @@ void gui_setup_screen(bool reload_font)
   save_gui_config();
 }
 
-static void destroy_default_font()
-{
-  Theme* theme = CurrentTheme::get();
-
-  // No font for now
-  if (theme->default_font && theme->default_font != font)
-    destroy_font(theme->default_font);
-
-  theme->default_font = NULL;
-}
-
 static void reload_default_font()
 {
   Theme* theme = CurrentTheme::get();
   SkinTheme* skin_theme = static_cast<SkinTheme*>(theme);
-  const char *user_font;
 
-  destroy_default_font();
-
-  // Directories
-  ResourceFinder rf;
-
-  user_font = get_config_string("Options", "UserFont", "");
-  if ((user_font) && (*user_font))
-    rf.addPath(user_font);
-
-  // TODO This should be in SkinTheme class
-  rf.findInDataDir(skin_theme->get_font_filename().c_str());
-
-  // Try to load the font
-  while (const char* path = rf.next()) {
-    theme->default_font = ji_font_load(path);
-    if (theme->default_font) {
-      if (ji_font_is_scalable(theme->default_font))
-	ji_font_set_size(theme->default_font, 8*jguiscale());
-      break;
-    }
-  }
-
-  // default font: the Allegro one
-  if (!theme->default_font)
-    theme->default_font = font;
+  // Reload theme fonts
+  skin_theme->reload_fonts();
 
   // Set all widgets fonts
   _ji_set_font_of_all_widgets(theme->default_font);

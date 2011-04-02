@@ -38,6 +38,9 @@ Theme::Theme()
 
 Theme::~Theme()
 {
+  if (default_font && default_font != font)
+    destroy_font(default_font);
+
   if (current_theme == this)
     CurrentTheme::set(NULL);
 }

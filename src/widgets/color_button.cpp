@@ -28,6 +28,7 @@
 #include "modules/gfx.h"
 #include "modules/gui.h"
 #include "raster/sprite.h"
+#include "skin/skin_theme.h"
 #include "widgets/color_bar.h"
 #include "widgets/color_button.h"
 #include "widgets/color_selector.h"
@@ -49,6 +50,8 @@ ColorButton::ColorButton(const Color& color, int imgtype)
   , m_frame(NULL)
 {
   jwidget_focusrest(this, true);
+
+  setFont(static_cast<SkinTheme*>(getTheme())->getMiniFont());
 }
 
 ColorButton::~ColorButton()
