@@ -127,9 +127,6 @@ Editor::~Editor()
   // Destroy tool-loop manager if it is created
   delete m_toolLoopManager;
 
-  // Destroy all decorators
-  deleteDecorators();
-
   // Remove this editor as listener of CurrentToolChange signal.
   App::instance()->CurrentToolChange.disconnect(m_currentToolChangeSlot);
   delete m_currentToolChangeSlot;
@@ -607,41 +604,6 @@ void Editor::setMaskColorForPixelsMovement(const Color& color)
   m_pixelsMovement->setMaskColor(color_utils::color_for_image(color, imgtype));
 }
 
-void Editor::deleteDecorators()
-{
-  for (std::vector<Decorator*>::iterator
-	 it=m_decorators.begin(); it!=m_decorators.end(); ++it)
-    delete *it;
-
-  m_decorators.clear();
-}
-
-void Editor::addDecorator(Decorator* decorator)
-{
-  m_decorators.push_back(decorator);
-}
-
-void Editor::turnOnSelectionModifiers()
-{
-  deleteDecorators();
-
-  Mask* mask = m_document->getMask();
-  int x1, y1, x2, y2;
-
-  editor_to_screen(mask->x, mask->y, &x1, &y1);
-  editor_to_screen(mask->x+mask->w-1,
-		   mask->y+mask->h-1, &x2, &y2);
-
-  addDecorator(new Decorator(Decorator::SELECTION_NW, Rect(x1-8,        y1-8, 8, 8)));
-  addDecorator(new Decorator(Decorator::SELECTION_N,  Rect((x1+x2)/2-4, y1-8, 8, 8)));
-  addDecorator(new Decorator(Decorator::SELECTION_NE, Rect(x2,          y1-8, 8, 8)));
-  addDecorator(new Decorator(Decorator::SELECTION_E,  Rect(x2,          (y1+y2)/2-4, 8, 8)));
-  addDecorator(new Decorator(Decorator::SELECTION_SE, Rect(x2,          y2, 8, 8)));
-  addDecorator(new Decorator(Decorator::SELECTION_S,  Rect((x1+x2)/2-4, y2, 8, 8)));
-  addDecorator(new Decorator(Decorator::SELECTION_SW, Rect(x1-8,        y2, 8, 8)));
-  addDecorator(new Decorator(Decorator::SELECTION_W,  Rect(x1-8,        (y1+y2)/2-4, 8, 8)));
-}
-
 /**
    Control scroll when cursor goes out of the editor
    
@@ -951,12 +913,6 @@ bool Editor::onProcessMessage(JMessage msg)
 	  }
 	  else {
 	    jmanager_stop_timer(m_mask_timer_id);
-	  }
-
-	  // Draw decorators
-	  for (std::vector<Decorator*>::iterator
-		 it=m_decorators.begin(); it!=m_decorators.end(); ++it) {
-	    (*it)->drawDecorator(this, ji_screen);
 	  }
 
 	  if (old_cursor_thick != 0) {
@@ -1607,10 +1563,8 @@ void Editor::editor_setcursor(int x, int y)
 		else
 		  jmouse_set_cursor(JI_CURSOR_MOVE);
 
-		if (!m_insideSelection) {
+		if (!m_insideSelection)
 		  m_insideSelection = true;
-		  //turnOnSelectionModifiers();
-		}
 		return;
 	      }
 	    }
@@ -1631,10 +1585,8 @@ void Editor::editor_setcursor(int x, int y)
 	    }
 	  }
 
-	  if (m_insideSelection) {
+	  if (m_insideSelection)
 	    m_insideSelection = false;
-	    //deleteDecorators();
-	  }
 
 	  // Draw
 	  if (m_cursor_candraw) {
@@ -1707,37 +1659,6 @@ void Editor::editor_set_zoom_and_center_in_mouse(int zoom, int mouse_x, int mous
       jmouse_set_position(mx, my);
   }
   show_drawing_cursor();
-}
-
-//////////////////////////////////////////////////////////////////////
-// Decorator implementation
-
-Editor::Decorator::Decorator(Type type, const Rect& bounds)
-{
-  m_type = type;
-  m_bounds = bounds;
-}
-
-Editor::Decorator::~Decorator()
-{
-}
-
-void Editor::Decorator::drawDecorator(Editor* editor, BITMAP* bmp)
-{
-  rect(bmp,
-       m_bounds.x, m_bounds.y,
-       m_bounds.x+m_bounds.w-1,
-       m_bounds.y+m_bounds.h-1, makecol(255, 255, 255));
-
-  rectfill(bmp,
-	   m_bounds.x+1, m_bounds.y+1,
-	   m_bounds.x+m_bounds.w-2, m_bounds.y+m_bounds.h-2,
-	   makecol(0, 0, 0));
-}
-
-bool Editor::Decorator::isInsideDecorator(int x, int y)
-{
-  return (m_bounds.contains(Point(x, y)));
 }
 
 //////////////////////////////////////////////////////////////////////

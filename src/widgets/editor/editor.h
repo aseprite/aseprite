@@ -40,34 +40,6 @@ class View;
 class Editor : public Widget
 {
 
-  // Editor's decorators. These are useful to add some extra-graphics
-  // visualizators in the editor to show feedback and get user events (click)
-  class Decorator
-  {
-  public:
-    enum Type {
-      SELECTION_NW,
-      SELECTION_N,
-      SELECTION_NE,
-      SELECTION_E,
-      SELECTION_SE,
-      SELECTION_S,
-      SELECTION_SW,
-      SELECTION_W,
-    };
-  private:
-    Type m_type;
-    gfx::Rect m_bounds;
-  public:
-    Decorator(Type type, const gfx::Rect& bounds);
-    ~Decorator();
-
-    void drawDecorator(Editor*editor, BITMAP* bmp);
-    bool isInsideDecorator(int x, int y);
-
-    Signal0<void> Click;
-  };
-
   // editor states
   enum State {
     EDITOR_STATE_STANDBY,
@@ -109,9 +81,6 @@ class Editor : public Widget
 
   // Tool-loop manager
   ToolLoopManager* m_toolLoopManager;
-
-  // Decorators
-  std::vector<Decorator*> m_decorators;
 
   // Helper member to move selection. If this member is NULL it means the
   // user is not moving pixels.
@@ -212,9 +181,6 @@ protected:
 private:
   void drawGrid(const gfx::Rect& gridBounds, const Color& color);
 
-  void addDecorator(Decorator* decorator);
-  void deleteDecorators();
-  void turnOnSelectionModifiers();
   void controlInfiniteScroll(JMessage msg);
   void dropPixels();
 
