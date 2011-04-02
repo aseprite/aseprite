@@ -79,7 +79,7 @@ static struct
 SkinTheme::SkinTheme()
 {
   this->name = "Skin Theme";
-  m_selected_skin = get_config_string("Skin", "Selected", "default_skin");
+  m_selected_skin = get_config_string("Skin", "Selected", "default");
 
   // Initialize all graphics in NULL (these bitmaps are loaded from the skin)
   m_sheet_bmp = NULL;
