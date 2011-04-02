@@ -16,15 +16,18 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifndef TOOLS_TOOLBOX_H_INCLUDED
-#define TOOLS_TOOLBOX_H_INCLUDED
+#ifndef TOOLS_TOOL_BOX_H_INCLUDED
+#define TOOLS_TOOL_BOX_H_INCLUDED
 
 #include <string>
 #include <list>
 #include <map>
+
 #include "tools/tool.h"
 
 class TiXmlElement;
+
+namespace tools {
 
 typedef std::list<Tool*> ToolList;
 typedef ToolList::iterator ToolIterator;
@@ -35,14 +38,6 @@ typedef std::list<ToolGroup*> ToolGroupList;
 // Loads and maintains the group of tools specified in the gui.xml file
 class ToolBox
 {
-  std::map<std::string, ToolInk*> m_inks;
-  std::map<std::string, ToolController*> m_controllers;
-  std::map<std::string, ToolPointShape*> m_pointshapers;
-  std::map<std::string, ToolIntertwine*> m_intertwiners;
-
-  ToolGroupList m_groups;
-  ToolList m_tools;
-
 public:
   ToolBox();
   ~ToolBox();
@@ -61,8 +56,17 @@ public:
 private:
   void loadTools();
   void loadToolProperties(TiXmlElement* xmlTool, Tool* tool, int button, const std::string& suffix);
-  
+
+  std::map<std::string, Ink*> m_inks;
+  std::map<std::string, Controller*> m_controllers;
+  std::map<std::string, PointShape*> m_pointshapers;
+  std::map<std::string, Intertwine*> m_intertwiners;
+
+  ToolGroupList m_groups;
+  ToolList m_tools;
 };
 
-#endif
+} // namespace tools
+
+#endif	// TOOLS_TOOL_BOX_H_INCLUDED
 

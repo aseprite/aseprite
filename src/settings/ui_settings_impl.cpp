@@ -18,16 +18,18 @@
 
 #include "config.h"
 
-#include <allegro/color.h>
-#include <string>
+#include "settings/ui_settings_impl.h"
 
 #include "app.h"
 #include "core/cfg.h"
-#include "settings/ui_settings_impl.h"
-#include "ui_context.h"
+#include "tools/point_shape.h"
 #include "tools/tool.h"
-#include "tools/toolbox.h"
+#include "tools/tool_box.h"
+#include "ui_context.h"
 #include "widgets/color_bar.h"
+
+#include <allegro/color.h>
+#include <string>
 
 using namespace gfx;
 
@@ -87,7 +89,7 @@ Color UISettingsImpl::getBgColor()
   return app_get_colorbar()->getBgColor();
 }
 
-Tool* UISettingsImpl::getCurrentTool()
+tools::Tool* UISettingsImpl::getCurrentTool()
 {
   if (!m_currentTool)
     m_currentTool = App::instance()->getToolBox()->getToolById("pencil");
@@ -110,7 +112,7 @@ void UISettingsImpl::setBgColor(const Color& color)
   app_get_colorbar()->setFgColor(color);
 }
 
-void UISettingsImpl::setCurrentTool(Tool* tool)
+void UISettingsImpl::setCurrentTool(tools::Tool* tool)
 {
   if (m_currentTool != tool) {
     // Fire PenSizeBeforeChange signal (maybe the new selected tool has a different pen size)
@@ -308,7 +310,7 @@ public:
 
 class UIToolSettingsImpl : public IToolSettings
 {
-  Tool* m_tool;
+  tools::Tool* m_tool;
   UIPenSettingsImpl m_pen;
   int m_opacity;
   int m_tolerance;
@@ -319,7 +321,7 @@ class UIToolSettingsImpl : public IToolSettings
 
 public:
 
-  UIToolSettingsImpl(Tool* tool)
+  UIToolSettingsImpl(tools::Tool* tool)
     : m_tool(tool)
   {
     std::string cfg_section(getCfgSection());
@@ -387,7 +389,7 @@ private:
   }
 };
 
-IToolSettings* UISettingsImpl::getToolSettings(Tool* tool)
+IToolSettings* UISettingsImpl::getToolSettings(tools::Tool* tool)
 {
   ASSERT(tool != NULL);
 

@@ -16,16 +16,33 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifndef WIDGETS_TOOLBAR_H_INCLUDED
-#define WIDGETS_TOOLBAR_H_INCLUDED
+#ifndef TOOLS_INTERTWINE_H_INCLUDED
+#define TOOLS_INTERTWINE_H_INCLUDED
 
-#include "gui/base.h"
+#include "gfx/point.h"
 
-namespace tools { class Tool; }
+#include <vector>
 
-JWidget toolbar_new();
+namespace tools {
 
-bool toolbar_is_tool_visible(JWidget toolbar, tools::Tool* tool);
-void toolbar_select_tool(JWidget toolbar, tools::Tool* tool);
+class ToolLoop;
 
-#endif
+class Intertwine
+{
+public:
+  typedef std::vector<gfx::Point> Points;
+
+  virtual ~Intertwine() { }
+  virtual bool snapByAngle() { return false; }
+  virtual void joinPoints(ToolLoop* loop, const Points& points) = 0;
+  virtual void fillPoints(ToolLoop* loop, const Points& points) = 0;
+
+protected:
+  static void doPointshapePoint(int x, int y, ToolLoop* loop);
+  static void doPointshapeHline(int x1, int y, int x2, ToolLoop* loop);
+  static void doPointshapeLine(int x1, int y1, int x2, int y2, ToolLoop* loop);
+};
+
+} // namespace tools
+
+#endif	// TOOLS_INTERTWINE_H_INCLUDED

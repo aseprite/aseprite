@@ -37,7 +37,8 @@ class Params;
 class RecentFiles;
 class StatusBar;
 class Tabs;
-class ToolBox;
+
+namespace tools { class ToolBox; }
 
 class App
 {
@@ -60,7 +61,7 @@ public:
   int run();
 
   LoggerModule* getLogger() const;
-  ToolBox* getToolBox() const;
+  tools::ToolBox* getToolBox() const;
   RecentFiles* getRecentFiles() const;
 
   // App Signals

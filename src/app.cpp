@@ -47,7 +47,7 @@
 #include "raster/palette.h"
 #include "raster/sprite.h"
 #include "recent_files.h"
-#include "tools/toolbox.h"
+#include "tools/tool_box.h"
 #include "ui_context.h"
 #include "util/boundary.h"
 #include "util/render.h"
@@ -79,7 +79,7 @@ class App::Modules
 public:
   // ASE Modules
   FileSystemModule m_file_system_module;
-  ToolBox m_toolbox;
+  tools::ToolBox m_toolbox;
   CommandsModule m_commands_modules;
   UIContext m_ui_context;
   RecentFiles m_recent_files;
@@ -339,7 +339,7 @@ LoggerModule* App::getLogger() const
   return m_loggerModule;
 }
 
-ToolBox* App::getToolBox() const
+tools::ToolBox* App::getToolBox() const
 {
   ASSERT(m_modules != NULL);
   return &m_modules->m_toolbox;

@@ -26,7 +26,8 @@
 
 class IToolSettings;
 class IPenSettings;
-class Tool;
+
+namespace tools { class Tool; }
 
 // Settings used in tool <-> drawing <-> editor stuff
 class ISettings
@@ -38,12 +39,12 @@ public:
 
   virtual Color getFgColor() = 0;
   virtual Color getBgColor() = 0;
-  virtual Tool* getCurrentTool() = 0;
+  virtual tools::Tool* getCurrentTool() = 0;
   virtual TiledMode getTiledMode() = 0;
 
   virtual void setFgColor(const Color& color) = 0;
   virtual void setBgColor(const Color& color) = 0;
-  virtual void setCurrentTool(Tool* tool) = 0;
+  virtual void setCurrentTool(tools::Tool* tool) = 0;
   virtual void setTiledMode(TiledMode mode) = 0;
 
   // Grid settings
@@ -82,7 +83,7 @@ public:
 
   // Tools settings
 
-  virtual IToolSettings* getToolSettings(Tool* tool) = 0;
+  virtual IToolSettings* getToolSettings(tools::Tool* tool) = 0;
   
 };
 

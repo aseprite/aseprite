@@ -18,9 +18,6 @@
 
 #include "config.h"
 
-#include <allegro.h>
-#include <algorithm>
-
 #include "app.h"
 #include "app/color.h"
 #include "app/color_utils.h"
@@ -37,10 +34,14 @@
 #include "raster/layer.h"
 #include "raster/pen.h"
 #include "raster/sprite.h"
+#include "tools/ink.h"
 #include "tools/tool.h"
 #include "ui_context.h"
 #include "util/boundary.h"
 #include "widgets/editor/editor.h"
+
+#include <algorithm>
+#include <allegro.h>
 
 #ifdef WIN32
 #undef max
@@ -172,7 +173,7 @@ static void on_pen_size_after_change()
 static Pen* editor_get_current_pen()
 {
   // Create the current pen from settings
-  Tool* current_tool = UIContext::instance()
+  tools::Tool* current_tool = UIContext::instance()
     ->getSettings()
     ->getCurrentTool();
 
@@ -253,7 +254,7 @@ void Editor::editor_draw_cursor(int x, int y, bool refresh)
   screenToEditor(x, y, &x, &y);
 
   // Get the current tool
-  Tool* current_tool = UIContext::instance()
+  tools::Tool* current_tool = UIContext::instance()
     ->getSettings()
     ->getCurrentTool();
 
@@ -461,14 +462,16 @@ bool Editor::editor_cursor_is_subpixel()
 
 static void generate_cursor_boundaries()
 {
-  Tool* current_tool = UIContext::instance()
+  tools::Tool* current_tool = UIContext::instance()
     ->getSettings()
     ->getCurrentTool();
 
-  IPenSettings* pen_settings = UIContext::instance()
-    ->getSettings()
-    ->getToolSettings(current_tool)
-    ->getPen();
+  IPenSettings* pen_settings = NULL;
+  if (current_tool)
+    pen_settings = UIContext::instance()
+      ->getSettings()
+      ->getToolSettings(current_tool)
+      ->getPen();
 
   if (cursor_bound.seg == NULL || 
       cursor_bound.pen_type != pen_settings->getType() ||
@@ -483,12 +486,7 @@ static void generate_cursor_boundaries()
 
     Pen* pen;
 
-    UIContext* context = UIContext::instance();
-    Tool* current_tool = context->getSettings()->getCurrentTool();
-    if (current_tool) {
-      IPenSettings* pen_settings = context->getSettings()
-	->getToolSettings(current_tool)->getPen();
-      ASSERT(pen_settings != NULL);
+    if (pen_settings) {
       pen = new Pen(pen_settings->getType(),
 		    pen_settings->getSize(),
 		    pen_settings->getAngle());

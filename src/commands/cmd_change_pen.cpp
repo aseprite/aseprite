@@ -62,7 +62,7 @@ void ChangePenCommand::onLoadParams(Params* params)
 
 void ChangePenCommand::onExecute(Context* context)
 {
-  Tool* current_tool = context->getSettings()->getCurrentTool();
+  tools::Tool* current_tool = context->getSettings()->getCurrentTool();
   IToolSettings* tool_settings = context->getSettings()->getToolSettings(current_tool);
   IPenSettings* pen = tool_settings->getPen();
 

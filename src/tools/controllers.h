@@ -24,22 +24,22 @@
 #endif
 
 // Controls clicks for tools like pencil
-class FreehandController : public ToolController
+class FreehandController : public Controller
 {
 public:
-  void pressButton(std::vector<Point>& points, const Point& point)
+  void pressButton(Points& points, const Point& point)
   {
     points.push_back(point);
   }
-  bool releaseButton(std::vector<Point>& points, const Point& point)
+  bool releaseButton(Points& points, const Point& point)
   {
     return false;
   }
-  void movement(IToolLoop* loop, std::vector<Point>& points, const Point& point)
+  void movement(ToolLoop* loop, Points& points, const Point& point)
   {
     points.push_back(point);
   }
-  void getPointsToInterwine(const std::vector<Point>& input, std::vector<Point>& output)
+  void getPointsToInterwine(const Points& input, Points& output)
   {
     if (input.size() == 1) {
       output.push_back(input[0]);
@@ -49,7 +49,7 @@ public:
       output.push_back(input[input.size()-1]);
     }
   }
-  void getStatusBarText(const std::vector<Point>& points, std::string& text)
+  void getStatusBarText(const Points& points, std::string& text)
   {
     char buf[1024];
     sprintf(buf, "Start %3d %3d End %3d %3d",
@@ -61,22 +61,22 @@ public:
 };
 
 // Controls clicks for tools like line
-class TwoPointsController : public ToolController
+class TwoPointsController : public Controller
 {
   Point m_center;
 public:
-  void pressButton(std::vector<Point>& points, const Point& point)
+  void pressButton(Points& points, const Point& point)
   {
     m_center = point;
 
     points.push_back(point);
     points.push_back(point);
   }
-  bool releaseButton(std::vector<Point>& points, const Point& point)
+  bool releaseButton(Points& points, const Point& point)
   {
     return false;
   }
-  void movement(IToolLoop* loop, std::vector<Point>& points, const Point& point)
+  void movement(ToolLoop* loop, Points& points, const Point& point)
   {
     points[1] = point;
 
@@ -136,12 +136,12 @@ public:
     else
       points[0] = m_center;
   }
-  void getPointsToInterwine(const std::vector<Point>& input, std::vector<Point>& output)
+  void getPointsToInterwine(const Points& input, Points& output)
   {
     output.push_back(input[0]);
     output.push_back(input[1]);
   }
-  void getStatusBarText(const std::vector<Point>& points, std::string& text)
+  void getStatusBarText(const Points& points, std::string& text)
   {
     char buf[1024];
     sprintf(buf, "Start %3d %3d End %3d %3d (Size %3d %3d) Angle %.1f",
@@ -156,15 +156,15 @@ public:
 };
 
 // Controls clicks for tools like polygon
-class PointByPointController : public ToolController
+class PointByPointController : public Controller
 {
 public:
-  void pressButton(std::vector<Point>& points, const Point& point)
+  void pressButton(Points& points, const Point& point)
   {
     points.push_back(point);
     points.push_back(point);
   }
-  bool releaseButton(std::vector<Point>& points, const Point& point)
+  bool releaseButton(Points& points, const Point& point)
   {
     if (points[points.size()-2] == point &&
     	points[points.size()-1] == point)
@@ -172,15 +172,15 @@ public:
     else
       return true;		// Continue adding points
   }
-  void movement(IToolLoop* loop, std::vector<Point>& points, const Point& point)
+  void movement(ToolLoop* loop, Points& points, const Point& point)
   {
     points[points.size()-1] = point;
   }
-  void getPointsToInterwine(const std::vector<Point>& input, std::vector<Point>& output)
+  void getPointsToInterwine(const Points& input, Points& output)
   {
     output = input;
   }
-  void getStatusBarText(const std::vector<Point>& points, std::string& text)
+  void getStatusBarText(const Points& points, std::string& text)
   {
     char buf[1024];
     sprintf(buf, "Start %3d %3d End %3d %3d",
@@ -191,30 +191,30 @@ public:
   }
 };
 
-class OnePointController : public ToolController
+class OnePointController : public Controller
 {
 public:
   // Do not apply grid to "one point tools" (e.g. magic wand, flood fill, etc.)
   bool canSnapToGrid() { return false; }
 
-  void pressButton(std::vector<Point>& points, const Point& point)
+  void pressButton(Points& points, const Point& point)
   {
     if (points.size() == 0)
       points.push_back(point);
   }
-  bool releaseButton(std::vector<Point>& points, const Point& point)
+  bool releaseButton(Points& points, const Point& point)
   {
     return false;
   }
-  void movement(IToolLoop* loop, std::vector<Point>& points, const Point& point)
+  void movement(ToolLoop* loop, Points& points, const Point& point)
   {
     // Do nothing
   }
-  void getPointsToInterwine(const std::vector<Point>& input, std::vector<Point>& output)
+  void getPointsToInterwine(const Points& input, Points& output)
   {
     output = input;
   }
-  void getStatusBarText(const std::vector<Point>& points, std::string& text)
+  void getStatusBarText(const Points& points, std::string& text)
   {
     char buf[1024];
     sprintf(buf, "Pos %3d %3d", points[0].x, points[0].y);
@@ -222,11 +222,11 @@ public:
   }
 };
 
-class FourPointsController : public ToolController
+class FourPointsController : public Controller
 {
   int m_clickCounter;
 public:
-  void pressButton(std::vector<Point>& points, const Point& point)
+  void pressButton(Points& points, const Point& point)
   {
     if (points.size() == 0) {
       points.resize(4, point);
@@ -235,12 +235,12 @@ public:
     else
       m_clickCounter++;
   }
-  bool releaseButton(std::vector<Point>& points, const Point& point)
+  bool releaseButton(Points& points, const Point& point)
   {
     m_clickCounter++;
     return m_clickCounter < 4;
   }
-  void movement(IToolLoop* loop, std::vector<Point>& points, const Point& point)
+  void movement(ToolLoop* loop, Points& points, const Point& point)
   {
     switch (m_clickCounter) {
       case 0:
@@ -257,11 +257,11 @@ public:
 	break;
     }
   }
-  void getPointsToInterwine(const std::vector<Point>& input, std::vector<Point>& output)
+  void getPointsToInterwine(const Points& input, Points& output)
   {
     output = input;
   }
-  void getStatusBarText(const std::vector<Point>& points, std::string& text)
+  void getStatusBarText(const Points& points, std::string& text)
   {
     char buf[1024];
     sprintf(buf, "Start %3d %3d End %3d %3d (%3d %3d - %3d %3d)",

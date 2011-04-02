@@ -37,7 +37,10 @@
 #include "raster/raster.h"
 #include "settings/settings.h"
 #include "skin/skin_theme.h"
+#include "tools/ink.h"
 #include "tools/tool.h"
+#include "tools/tool_loop.h"
+#include "tools/tool_loop_manager.h"
 #include "ui_context.h"
 #include "undo/undo_history.h"
 #include "undoers/add_cel.h"
@@ -66,6 +69,7 @@
 		         KB_CTRL_FLAG)) == (shift))
 
 using namespace gfx;
+using namespace tools;
 
 static bool editor_view_msg_proc(JWidget widget, JMessage msg);
 
@@ -1066,7 +1070,7 @@ bool Editor::onProcessMessage(JMessage msg)
 	else if (m_sprite->getCurrentLayer()) {
 	  ASSERT(m_toolLoopManager == NULL);
 
-	  IToolLoop* toolLoop = createToolLoopImpl(UIContext::instance(), msg);
+	  ToolLoop* toolLoop = createToolLoopImpl(UIContext::instance(), msg);
 	  if (!toolLoop)
 	    return true;	// Return without capturing mouse
 
@@ -1631,9 +1635,9 @@ void Editor::setZoomAndCenterInMouse(int zoom, int mouse_x, int mouse_y)
 }
 
 //////////////////////////////////////////////////////////////////////
-// IToolLoop implementation
+// ToolLoop implementation
 
-class ToolLoopImpl : public IToolLoop
+class ToolLoopImpl : public ToolLoop
 {
   Editor* m_editor;
   Context* m_context;
@@ -1694,13 +1698,13 @@ public:
     m_tiled_mode = settings->getTiledMode();
 
     switch (tool->getFill(m_button)) {
-      case TOOL_FILL_NONE:
+      case FillNone:
 	m_filled = false;
 	break;
-      case TOOL_FILL_ALWAYS:
+      case FillAlways:
 	m_filled = true;
 	break;
-      case TOOL_FILL_OPTIONAL:
+      case FillOptional:
 	m_filled = settings->getToolSettings(m_tool)->getFilled();
 	break;
     }
@@ -1944,11 +1948,11 @@ public:
   Point getOffset() { return m_offset; }
   void setSpeed(const Point& speed) { m_speed = speed; }
   Point getSpeed() { return m_speed; }
-  ToolInk* getInk() { return m_tool->getInk(m_button); }
-  ToolController* getController() { return m_tool->getController(m_button); }
-  ToolPointShape* getPointShape() { return m_tool->getPointShape(m_button); }
-  ToolIntertwine* getIntertwine() { return m_tool->getIntertwine(m_button); }
-  ToolTracePolicy getTracePolicy() { return m_tool->getTracePolicy(m_button); }
+  Ink* getInk() { return m_tool->getInk(m_button); }
+  Controller* getController() { return m_tool->getController(m_button); }
+  PointShape* getPointShape() { return m_tool->getPointShape(m_button); }
+  Intertwine* getIntertwine() { return m_tool->getIntertwine(m_button); }
+  TracePolicy getTracePolicy() { return m_tool->getTracePolicy(m_button); }
 
   void cancel() { m_canceled = true; }
   bool isCanceled() { return m_canceled; }
@@ -1977,10 +1981,9 @@ public:
   {
     app_get_statusbar()->setStatusText(0, text);
   }
-
 };
 
-IToolLoop* Editor::createToolLoopImpl(Context* context, JMessage msg)
+ToolLoop* Editor::createToolLoopImpl(Context* context, JMessage msg)
 {
   Tool* current_tool = context->getSettings()->getCurrentTool();
   if (!current_tool)

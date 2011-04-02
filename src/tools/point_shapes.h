@@ -16,36 +16,36 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-class NonePointShape : public ToolPointShape
+class NonePointShape : public PointShape
 {
 public:
-  void transformPoint(IToolLoop* loop, int x, int y)
+  void transformPoint(ToolLoop* loop, int x, int y)
   {
     // Do nothing
   }
-  void getModifiedArea(IToolLoop* loop, int x, int y, Rect& area)
+  void getModifiedArea(ToolLoop* loop, int x, int y, Rect& area)
   {
     // Do nothing
   }
 };
 
-class PixelPointShape : public ToolPointShape
+class PixelPointShape : public PointShape
 {
 public:
-  void transformPoint(IToolLoop* loop, int x, int y)
+  void transformPoint(ToolLoop* loop, int x, int y)
   {
     doInkHline(x, y, x, loop);
   }
-  void getModifiedArea(IToolLoop* loop, int x, int y, Rect& area)
+  void getModifiedArea(ToolLoop* loop, int x, int y, Rect& area)
   {
     area = Rect(x, y, 1, 1);
   }
 };
 
-class PenPointShape : public ToolPointShape
+class PenPointShape : public PointShape
 {
 public:
-  void transformPoint(IToolLoop* loop, int x, int y)
+  void transformPoint(ToolLoop* loop, int x, int y)
   {
     Pen* pen = loop->getPen();
     std::vector<PenScanline>::const_iterator scanline = pen->get_scanline().begin();
@@ -61,7 +61,7 @@ public:
       ++scanline;
     }
   }
-  void getModifiedArea(IToolLoop* loop, int x, int y, Rect& area)
+  void getModifiedArea(ToolLoop* loop, int x, int y, Rect& area)
   {
     Pen* pen = loop->getPen();
     int size = pen->get_size();
@@ -69,22 +69,22 @@ public:
   }
 };
 
-class FloodFillPointShape : public ToolPointShape
+class FloodFillPointShape : public PointShape
 {
 public:
   bool isFloodFill() { return true; }
 
-  void transformPoint(IToolLoop* loop, int x, int y)
+  void transformPoint(ToolLoop* loop, int x, int y)
   {
     algo_floodfill(loop->getSrcImage(), x, y, loop->getTolerance(), loop, (AlgoHLine)doInkHline);
   }
-  void getModifiedArea(IToolLoop* loop, int x, int y, Rect& area)
+  void getModifiedArea(ToolLoop* loop, int x, int y, Rect& area)
   {
     area = Rect(0, 0, 9999, 9999);
   }
 };
 
-class SprayPointShape : public ToolPointShape
+class SprayPointShape : public PointShape
 {
   PenPointShape m_subPointShape;
 
@@ -92,7 +92,7 @@ public:
 
   bool isSpray() { return true; }
 
-  void transformPoint(IToolLoop* loop, int x, int y)
+  void transformPoint(ToolLoop* loop, int x, int y)
   {
     int spray_width = loop->getSprayWidth();
     int spray_speed = loop->getSpraySpeed();
@@ -123,7 +123,7 @@ public:
 #endif
   }
 
-  void getModifiedArea(IToolLoop* loop, int x, int y, Rect& area)
+  void getModifiedArea(ToolLoop* loop, int x, int y, Rect& area)
   {
     int spray_width = loop->getSprayWidth();
     Point p1(x-spray_width, y-spray_width);

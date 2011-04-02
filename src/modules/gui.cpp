@@ -50,7 +50,7 @@
 #include "skin/skin_property.h"
 #include "skin/skin_theme.h"
 #include "document_wrappers.h"
-#include "tools/toolbox.h"
+#include "tools/tool_box.h"
 #include "ui_context.h"
 #include "widgets/editor/editor.h"
 #include "widgets/statebar.h"
@@ -101,7 +101,7 @@ struct Shortcut
   ShortcutType type;
   union {
     Command* command;
-    Tool* tool;
+    tools::Tool* tool;
   };
   Params* params;
 
@@ -115,8 +115,8 @@ struct Shortcut
 };
 
 static Shortcut* get_keyboard_shortcut_for_command(const char* command_name, Params* params);
-static Shortcut* get_keyboard_shortcut_for_tool(Tool* tool);
-static Shortcut* get_keyboard_shortcut_for_quicktool(Tool* tool);
+static Shortcut* get_keyboard_shortcut_for_tool(tools::Tool* tool);
+static Shortcut* get_keyboard_shortcut_for_quicktool(tools::Tool* tool);
 
 //////////////////////////////////////////////////////////////////////
 
@@ -907,7 +907,7 @@ JAccel add_keyboard_shortcut_to_execute_command(const char* shortcut_string, con
   return shortcut->accel;
 }
 
-JAccel add_keyboard_shortcut_to_change_tool(const char* shortcut_string, Tool* tool)
+JAccel add_keyboard_shortcut_to_change_tool(const char* shortcut_string, tools::Tool* tool)
 {
   Shortcut* shortcut = get_keyboard_shortcut_for_tool(tool);
 
@@ -922,7 +922,7 @@ JAccel add_keyboard_shortcut_to_change_tool(const char* shortcut_string, Tool* t
   return shortcut->accel;
 }
 
-JAccel add_keyboard_shortcut_to_quicktool(const char* shortcut_string, Tool* tool)
+JAccel add_keyboard_shortcut_to_quicktool(const char* shortcut_string, tools::Tool* tool)
 {
   Shortcut* shortcut = get_keyboard_shortcut_for_quicktool(tool);
 
@@ -962,7 +962,7 @@ JAccel get_accel_to_execute_command(const char* command_name, Params* params)
     return NULL;
 }
 
-JAccel get_accel_to_change_tool(Tool* tool)
+JAccel get_accel_to_change_tool(tools::Tool* tool)
 {
   Shortcut* shortcut = get_keyboard_shortcut_for_tool(tool);
   if (shortcut)
@@ -971,12 +971,12 @@ JAccel get_accel_to_change_tool(Tool* tool)
     return NULL;
 }
 
-Tool* get_selected_quicktool()
+tools::Tool* get_selected_quicktool()
 {
-  ToolBox* toolbox = App::instance()->getToolBox();
+  tools::ToolBox* toolbox = App::instance()->getToolBox();
 
   // Iterate over all tools
-  for (ToolIterator it = toolbox->begin(); it != toolbox->end(); ++it) {
+  for (tools::ToolIterator it = toolbox->begin(); it != toolbox->end(); ++it) {
     Shortcut* shortcut = get_keyboard_shortcut_for_quicktool(*it);
 
     // Collect all tools with the pressed keyboard-shortcut
@@ -1050,7 +1050,7 @@ static Shortcut* get_keyboard_shortcut_for_command(const char* command_name, Par
   return NULL;
 }
 
-static Shortcut* get_keyboard_shortcut_for_tool(Tool* tool)
+static Shortcut* get_keyboard_shortcut_for_tool(tools::Tool* tool)
 {
   for (std::vector<Shortcut*>::iterator
 	 it = shortcuts->begin(); it != shortcuts->end(); ++it) {
@@ -1065,7 +1065,7 @@ static Shortcut* get_keyboard_shortcut_for_tool(Tool* tool)
   return NULL;
 }
 
-static Shortcut* get_keyboard_shortcut_for_quicktool(Tool* tool)
+static Shortcut* get_keyboard_shortcut_for_quicktool(tools::Tool* tool)
 {
   for (std::vector<Shortcut*>::iterator
 	 it = shortcuts->begin(); it != shortcuts->end(); ++it) {
@@ -1182,13 +1182,13 @@ static bool manager_msg_proc(JWidget widget, JMessage msg)
 	  switch (shortcut->type) {
 
 	    case Shortcut_ChangeTool: {
-	      Tool* current_tool = UIContext::instance()->getSettings()->getCurrentTool();
-	      Tool* select_this_tool = shortcut->tool;
-	      ToolBox* toolbox = App::instance()->getToolBox();
-	      std::vector<Tool*> possibles;
+	      tools::Tool* current_tool = UIContext::instance()->getSettings()->getCurrentTool();
+	      tools::Tool* select_this_tool = shortcut->tool;
+	      tools::ToolBox* toolbox = App::instance()->getToolBox();
+	      std::vector<tools::Tool*> possibles;
 
 	      // Iterate over all tools
-	      for (ToolIterator it = toolbox->begin(); it != toolbox->end(); ++it) {
+	      for (tools::ToolIterator it = toolbox->begin(); it != toolbox->end(); ++it) {
 		Shortcut* shortcut = get_keyboard_shortcut_for_tool(*it);
 
 		// Collect all tools with the pressed keyboard-shortcut

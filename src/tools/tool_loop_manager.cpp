@@ -18,94 +18,21 @@
 
 #include "config.h"
 
-#include "raster/algo.h"
-#include "raster/image.h"
-#include "tools/tool.h"
-#include "util/render.h"
+#include "tools/tool_loop_manager.h"
+
 #include "context.h"
+#include "raster/image.h"
+#include "tools/controller.h"
+#include "tools/ink.h"
+#include "tools/intertwine.h"
+#include "tools/point_shape.h"
+#include "tools/tool_loop.h"
+#include "util/render.h"
 
 using namespace gfx;
+using namespace tools;
 
-//////////////////////////////////////////////////////////////////////
-// ToolPointShape class
-
-void ToolPointShape::doInkHline(int x1, int y, int x2, IToolLoop* loop)
-{
-  register int w, size;	// width or height
-  register int x;
-
-  // Tiled in Y axis
-  if (loop->getTiledMode() & TILED_Y_AXIS) {
-    size = loop->getDstImage()->h;	// size = image height
-    if (y < 0)
-      y = size - (-(y+1) % size) - 1;
-    else
-      y = y % size;
-  }
-  else if (y < 0 || y >= loop->getDstImage()->h)
-      return;
-
-  // Tiled in X axis
-  if (loop->getTiledMode() & TILED_X_AXIS) {
-    if (x1 > x2)
-      return;
-
-    size = loop->getDstImage()->w;	// size = image width
-    w = x2-x1+1;
-    if (w >= size)
-      loop->getInk()->inkHline(0, y, size-1, loop);
-    else {
-      x = x1;
-      if (x < 0)
-  	x = size - (-(x+1) % size) - 1;
-      else
-  	x = x % size;
-
-      if (x+w-1 <= size-1)
-	loop->getInk()->inkHline(x, y, x+w-1, loop);
-      else {
-	loop->getInk()->inkHline(x, y, size-1, loop);
-	loop->getInk()->inkHline(0, y, w-(size-x)-1, loop);
-      }
-    }
-  }
-  // Clipped in X axis
-  else {
-    if (x1 < 0)
-      x1 = 0;
-
-    if (x2 >= loop->getDstImage()->w)
-      x2 = loop->getDstImage()->w-1;
-
-    if (x2-x1+1 < 1)
-      return;
-
-    loop->getInk()->inkHline(x1, y, x2, loop);
-  }
-}
-
-//////////////////////////////////////////////////////////////////////
-// ToolIntertwine class
-
-void ToolIntertwine::doPointshapePoint(int x, int y, IToolLoop* loop)
-{
-  loop->getPointShape()->transformPoint(loop, x, y);
-}
-
-void ToolIntertwine::doPointshapeHline(int x1, int y, int x2, IToolLoop* loop)
-{
-  algo_line(x1, y, x2, y, loop, (AlgoPixel)doPointshapePoint);
-}
-
-void ToolIntertwine::doPointshapeLine(int x1, int y1, int x2, int y2, IToolLoop* loop)
-{
-  algo_line(x1, y1, x2, y2, loop, (AlgoPixel)doPointshapePoint);
-}
-
-//////////////////////////////////////////////////////////////////////
-// ToolLoopManager class
-
-ToolLoopManager::ToolLoopManager(IToolLoop* toolLoop)
+ToolLoopManager::ToolLoopManager(ToolLoop* toolLoop)
   : m_toolLoop(toolLoop)
 {
 }
@@ -113,6 +40,11 @@ ToolLoopManager::ToolLoopManager(IToolLoop* toolLoop)
 ToolLoopManager::~ToolLoopManager()
 {
   delete m_toolLoop;
+}
+
+bool ToolLoopManager::isCanceled() const
+{
+ return m_toolLoop->isCanceled();
 }
 
 void ToolLoopManager::prepareLoop(const Pointer& pointer)
@@ -202,7 +134,7 @@ void ToolLoopManager::doLoopStep(bool last_step)
 {
   static Rect old_dirty_area;	// TODO Not thread safe
 
-  std::vector<Point> points_to_interwine;
+  Points points_to_interwine;
   if (!last_step)
     m_toolLoop->getController()->getPointsToInterwine(m_points, points_to_interwine);
   else
@@ -214,18 +146,18 @@ void ToolLoopManager::doLoopStep(bool last_step)
 
   switch (m_toolLoop->getTracePolicy()) {
 
-    case TOOL_TRACE_POLICY_ACCUMULATE:
+    case TracePolicyAccumulate:
       // Do nothing. We accumulate traces in the destination image.
       break;
 
-    case TOOL_TRACE_POLICY_LAST:
+    case TracePolicyLast:
       // Copy source to destination (reset the previous trace). Useful
       // for tools like Line and Ellipse tools (we kept the last trace only).
       image_clear(m_toolLoop->getDstImage(), 0);
       image_copy(m_toolLoop->getDstImage(), m_toolLoop->getSrcImage(), 0, 0);
       break;
 
-    case TOOL_TRACE_POLICY_OVERLAP:
+    case TracePolicyOverlap:
       // Copy destination to source (yes, destination to source). In
       // this way each new trace overlaps the previous one.
       image_copy(m_toolLoop->getSrcImage(), m_toolLoop->getDstImage(), 0, 0);
@@ -243,7 +175,7 @@ void ToolLoopManager::doLoopStep(bool last_step)
   calculateDirtyArea(m_toolLoop, points_to_interwine, dirty_area);
 
   Rect new_dirty_area;
-  if (m_toolLoop->getTracePolicy() == TOOL_TRACE_POLICY_LAST) {
+  if (m_toolLoop->getTracePolicy() == TracePolicyLast) {
     new_dirty_area = old_dirty_area.createUnion(dirty_area);
     old_dirty_area = dirty_area;
   }
@@ -283,7 +215,7 @@ void ToolLoopManager::snapToGrid(bool flexible, Point& point)
   point.y = dy.rem + d.quot*h + ((d.rem > h/2)? h-flexible: 0);
 }
 
-void ToolLoopManager::calculateDirtyArea(IToolLoop* loop, const std::vector<Point>& points, Rect& dirty_area)
+void ToolLoopManager::calculateDirtyArea(ToolLoop* loop, const Points& points, Rect& dirty_area)
 {
   Point minpt, maxpt;
   calculateMinMax(points, minpt, maxpt);
@@ -295,7 +227,7 @@ void ToolLoopManager::calculateDirtyArea(IToolLoop* loop, const std::vector<Poin
   dirty_area = r1.createUnion(r2);
 }
 
-void ToolLoopManager::calculateMinMax(const std::vector<Point>& points, Point& minpt, Point& maxpt)
+void ToolLoopManager::calculateMinMax(const Points& points, Point& minpt, Point& maxpt)
 {
   ASSERT(points.size() > 0);
 

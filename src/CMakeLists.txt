@@ -229,8 +229,10 @@ add_library(aseprite-library
   skin/skin_theme.cpp
   skin/skin_property.cpp
   skin/skin_slider_property.cpp
-  tools/tool.cpp
-  tools/toolbox.cpp
+  tools/intertwine.cpp
+  tools/point_shape.cpp
+  tools/tool_box.cpp
+  tools/tool_loop_manager.cpp
   undoers/add_cel.cpp
   undoers/add_image.cpp
   undoers/add_layer.cpp

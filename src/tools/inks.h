@@ -28,7 +28,7 @@
 
 // Ink used for tools which paint with primary/secondary
 // (or foreground/background colors)
-class PaintInk : public ToolInk
+class PaintInk : public Ink
 {
 public:
   enum Type { Normal, WithFg, WithBg };
@@ -42,7 +42,7 @@ public:
 
   bool isPaint() const { return true; }
 
-  void prepareInk(IToolLoop* loop)
+  void prepareInk(ToolLoop* loop)
   {
     switch (m_type) {
 
@@ -68,14 +68,14 @@ public:
       ink_processing[INK_TRANSPARENT][MID(0, loop->getSprite()->getImgType(), 2)];
   }
 
-  void inkHline(int x1, int y, int x2, IToolLoop* loop)
+  void inkHline(int x1, int y, int x2, ToolLoop* loop)
   {
     (*m_proc)(x1, y, x2, loop);
   }
 };
 
 
-class PickInk : public ToolInk
+class PickInk : public Ink
 {
 public:
   enum Target { Fg, Bg };
@@ -88,12 +88,12 @@ public:
 
   bool isEyedropper() const { return true; }
 
-  void prepareInk(IToolLoop* loop)
+  void prepareInk(ToolLoop* loop)
   {
     // Do nothing
   }
 
-  void inkHline(int x1, int y, int x2, IToolLoop* loop)
+  void inkHline(int x1, int y, int x2, ToolLoop* loop)
   {
     // Do nothing
   }
@@ -101,18 +101,18 @@ public:
 };
 
 
-class ScrollInk : public ToolInk
+class ScrollInk : public Ink
 {
 public:
 
   bool isScrollMovement() const { return true; }
 
-  void prepareInk(IToolLoop* loop)
+  void prepareInk(ToolLoop* loop)
   {
     // Do nothing
   }
 
-  void inkHline(int x1, int y, int x2, IToolLoop* loop)
+  void inkHline(int x1, int y, int x2, ToolLoop* loop)
   {
     // Do nothing
   }
@@ -120,24 +120,24 @@ public:
 };
 
 
-class MoveInk : public ToolInk
+class MoveInk : public Ink
 {
 public:
   bool isCelMovement() const { return true; }
 
-  void prepareInk(IToolLoop* loop)
+  void prepareInk(ToolLoop* loop)
   {
     // Do nothing
   }
 
-  void inkHline(int x1, int y, int x2, IToolLoop* loop)
+  void inkHline(int x1, int y, int x2, ToolLoop* loop)
   {
     // Do nothing
   }
 };
 
 
-class EraserInk : public ToolInk
+class EraserInk : public Ink
 {
 public:
   enum Type { Eraser, ReplaceFgWithBg, ReplaceBgWithFg };
@@ -152,7 +152,7 @@ public:
   bool isPaint() const { return true; }
   bool isEffect() const { return true; }
 
-  void prepareInk(IToolLoop* loop)
+  void prepareInk(ToolLoop* loop)
   {
     switch (m_type) {
 
@@ -184,14 +184,14 @@ public:
     }
   }
 
-  void inkHline(int x1, int y, int x2, IToolLoop* loop)
+  void inkHline(int x1, int y, int x2, ToolLoop* loop)
   {
     (*m_proc)(x1, y, x2, loop);
   }
 };
 
 
-class BlurInk : public ToolInk
+class BlurInk : public Ink
 {
   AlgoHLine m_proc;
 
@@ -199,19 +199,19 @@ public:
   bool isPaint() const { return true; }
   bool isEffect() const { return true; }
 
-  void prepareInk(IToolLoop* loop)
+  void prepareInk(ToolLoop* loop)
   {
     m_proc = ink_processing[INK_BLUR][MID(0, loop->getSprite()->getImgType(), 2)];
   }
 
-  void inkHline(int x1, int y, int x2, IToolLoop* loop)
+  void inkHline(int x1, int y, int x2, ToolLoop* loop)
   {
     (*m_proc)(x1, y, x2, loop);
   }
 };
 
 
-class JumbleInk : public ToolInk
+class JumbleInk : public Ink
 {
   AlgoHLine m_proc;
 
@@ -219,12 +219,12 @@ public:
   bool isPaint() const { return true; }
   bool isEffect() const { return true; }
 
-  void prepareInk(IToolLoop* loop)
+  void prepareInk(ToolLoop* loop)
   {
     m_proc = ink_processing[INK_JUMBLE][MID(0, loop->getSprite()->getImgType(), 2)];
   }
 
-  void inkHline(int x1, int y, int x2, IToolLoop* loop)
+  void inkHline(int x1, int y, int x2, ToolLoop* loop)
   {
     (*m_proc)(x1, y, x2, loop);
   }
@@ -232,7 +232,7 @@ public:
 
 
 // Ink used for selection tools (like Rectangle Marquee, Lasso, Magic Wand, etc.)
-class SelectionInk : public ToolInk
+class SelectionInk : public Ink
 {
   bool m_modify_selection;
 
@@ -241,7 +241,7 @@ public:
   
   bool isSelection() const { return true; }
 
-  void inkHline(int x1, int y, int x2, IToolLoop* loop)
+  void inkHline(int x1, int y, int x2, ToolLoop* loop)
   {
     if (m_modify_selection) {
       Point offset = loop->getOffset();
@@ -255,7 +255,7 @@ public:
       image_hline(loop->getDstImage(), x1, y, x2, loop->getPrimaryColor());
   }
 
-  void setFinalStep(IToolLoop* loop, bool state)
+  void setFinalStep(ToolLoop* loop, bool state)
   {
     m_modify_selection = state;
 

@@ -30,12 +30,15 @@
 #define MAX_ZOOM 5
 
 class Context;
-class IToolLoop;
 class PixelsMovement;
 class Sprite;
-class Tool;
-class ToolLoopManager;
 class View;
+
+namespace tools {
+  class Tool;
+  class ToolLoop;
+  class ToolLoopManager;
+}
 
 class Editor : public Widget
 {
@@ -66,7 +69,7 @@ class Editor : public Widget
 
   // Current selected quicktool (this genererally should be NULL if
   // the user is not pressing any keyboard key).
-  Tool* m_quicktool;
+  tools::Tool* m_quicktool;
 
   /* offset for the sprite */
   int m_offset_x;
@@ -80,7 +83,7 @@ class Editor : public Widget
   JRegion m_refresh_region;
 
   // Tool-loop manager
-  ToolLoopManager* m_toolLoopManager;
+  tools::ToolLoopManager* m_toolLoopManager;
 
   // Helper member to move selection. If this member is NULL it means the
   // user is not moving pixels.
@@ -190,14 +193,14 @@ private:
   void controlInfiniteScroll(JMessage msg);
   void dropPixels();
 
-  Tool* getCurrentEditorTool();
+  tools::Tool* getCurrentEditorTool();
 
   void editor_request_size(int *w, int *h);
   void editor_setcursor(int x, int y);
   void editor_update_candraw();
   void setZoomAndCenterInMouse(int zoom, int mouse_x, int mouse_y);
 
-  IToolLoop* createToolLoopImpl(Context* context, JMessage msg);
+  tools::ToolLoop* createToolLoopImpl(Context* context, JMessage msg);
 
   void for_each_pixel_of_pen(int screen_x, int screen_y,
 			     int sprite_x, int sprite_y, int color,

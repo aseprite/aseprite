@@ -83,7 +83,7 @@
 // Opaque Ink
 //////////////////////////////////////////////////////////////////////
 
-static void ink_hline32_opaque(int x1, int y, int x2, IToolLoop* loop)
+static void ink_hline32_opaque(int x1, int y, int x2, ToolLoop* loop)
 {
   int c = loop->getPrimaryColor();
 
@@ -92,7 +92,7 @@ static void ink_hline32_opaque(int x1, int y, int x2, IToolLoop* loop)
      *dst_address = c			);
 }
 
-static void ink_hline16_opaque(int x1, int y, int x2, IToolLoop* loop)
+static void ink_hline16_opaque(int x1, int y, int x2, ToolLoop* loop)
 {
   int c = loop->getPrimaryColor();
 
@@ -101,7 +101,7 @@ static void ink_hline16_opaque(int x1, int y, int x2, IToolLoop* loop)
      *dst_address = c			);
 }
 
-static void ink_hline8_opaque(int x1, int y, int x2, IToolLoop* loop)
+static void ink_hline8_opaque(int x1, int y, int x2, ToolLoop* loop)
 {
   int c = loop->getPrimaryColor();
 
@@ -116,7 +116,7 @@ static void ink_hline8_opaque(int x1, int y, int x2, IToolLoop* loop)
 // Transparent Ink
 //////////////////////////////////////////////////////////////////////
 
-static void ink_hline32_transparent(int x1, int y, int x2, IToolLoop* loop)
+static void ink_hline32_transparent(int x1, int y, int x2, ToolLoop* loop)
 {
   int color = loop->getPrimaryColor();
   int opacity = loop->getOpacity();
@@ -126,7 +126,7 @@ static void ink_hline32_transparent(int x1, int y, int x2, IToolLoop* loop)
      *dst_address = _rgba_blend_normal(*src_address, color, opacity));
 }  
 
-static void ink_hline16_transparent(int x1, int y, int x2, IToolLoop* loop)
+static void ink_hline16_transparent(int x1, int y, int x2, ToolLoop* loop)
 {
   int color = loop->getPrimaryColor();
   int opacity = loop->getOpacity();
@@ -136,7 +136,7 @@ static void ink_hline16_transparent(int x1, int y, int x2, IToolLoop* loop)
      *dst_address = _graya_blend_normal(*src_address, color, opacity));
 }  
 
-static void ink_hline8_transparent(int x1, int y, int x2, IToolLoop* loop)
+static void ink_hline8_transparent(int x1, int y, int x2, ToolLoop* loop)
 {
   Palette* pal = get_current_palette();
   RgbMap* rgbmap = loop->getSprite()->getRgbMap();
@@ -215,7 +215,7 @@ namespace {
   };
 };
 
-static void ink_hline32_blur(int x1, int y, int x2, IToolLoop* loop)
+static void ink_hline32_blur(int x1, int y, int x2, ToolLoop* loop)
 {
   int opacity = loop->getOpacity();
   TiledMode tiledMode = loop->getTiledMode();
@@ -248,7 +248,7 @@ static void ink_hline32_blur(int x1, int y, int x2, IToolLoop* loop)
      });
 }  
 
-static void ink_hline16_blur(int x1, int y, int x2, IToolLoop* loop)
+static void ink_hline16_blur(int x1, int y, int x2, ToolLoop* loop)
 {
   int opacity = loop->getOpacity();
   TiledMode tiledMode = loop->getTiledMode();
@@ -277,7 +277,7 @@ static void ink_hline16_blur(int x1, int y, int x2, IToolLoop* loop)
      });
 }  
 
-static void ink_hline8_blur(int x1, int y, int x2, IToolLoop* loop)
+static void ink_hline8_blur(int x1, int y, int x2, ToolLoop* loop)
 {
   const Palette *pal = get_current_palette();
   RgbMap* rgbmap = loop->getSprite()->getRgbMap();
@@ -314,7 +314,7 @@ static void ink_hline8_blur(int x1, int y, int x2, IToolLoop* loop)
 // Replace Ink
 //////////////////////////////////////////////////////////////////////
 
-static void ink_hline32_replace(int x1, int y, int x2, IToolLoop* loop)
+static void ink_hline32_replace(int x1, int y, int x2, ToolLoop* loop)
 {
   uint32_t color1 = loop->getPrimaryColor();
   uint32_t color2 = loop->getSecondaryColor();
@@ -327,7 +327,7 @@ static void ink_hline32_replace(int x1, int y, int x2, IToolLoop* loop)
      });
 }  
 
-static void ink_hline16_replace(int x1, int y, int x2, IToolLoop* loop)
+static void ink_hline16_replace(int x1, int y, int x2, ToolLoop* loop)
 {
   int color1 = loop->getPrimaryColor();
   int color2 = loop->getSecondaryColor();
@@ -340,7 +340,7 @@ static void ink_hline16_replace(int x1, int y, int x2, IToolLoop* loop)
      });
 }  
 
-static void ink_hline8_replace(int x1, int y, int x2, IToolLoop* loop)
+static void ink_hline8_replace(int x1, int y, int x2, ToolLoop* loop)
 {
   int color1 = loop->getPrimaryColor();
   const Palette *pal = get_current_palette();
@@ -388,7 +388,7 @@ static void ink_hline8_replace(int x1, int y, int x2, IToolLoop* loop)
   }									\
   color = image_getpixel(loop->getSrcImage(), u, v);
 
-static void ink_hline32_jumble(int x1, int y, int x2, IToolLoop* loop)
+static void ink_hline32_jumble(int x1, int y, int x2, ToolLoop* loop)
 {
   int opacity = loop->getOpacity();
   Point speed(loop->getSpeed() / 4);
@@ -404,7 +404,7 @@ static void ink_hline32_jumble(int x1, int y, int x2, IToolLoop* loop)
      );
 }  
 
-static void ink_hline16_jumble(int x1, int y, int x2, IToolLoop* loop)
+static void ink_hline16_jumble(int x1, int y, int x2, ToolLoop* loop)
 {
   int opacity = loop->getOpacity();
   Point speed(loop->getSpeed() / 4);
@@ -420,7 +420,7 @@ static void ink_hline16_jumble(int x1, int y, int x2, IToolLoop* loop)
      );
 }  
 
-static void ink_hline8_jumble(int x1, int y, int x2, IToolLoop* loop)
+static void ink_hline8_jumble(int x1, int y, int x2, ToolLoop* loop)
 {
   const Palette *pal = get_current_palette();
   const RgbMap* rgbmap = loop->getSprite()->getRgbMap();

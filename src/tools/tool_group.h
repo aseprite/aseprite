@@ -16,16 +16,30 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifndef WIDGETS_TOOLBAR_H_INCLUDED
-#define WIDGETS_TOOLBAR_H_INCLUDED
+#ifndef TOOLS_TOOL_GROUP_H_INCLUDED
+#define TOOLS_TOOL_GROUP_H_INCLUDED
 
-#include "gui/base.h"
+#include <string>
 
-namespace tools { class Tool; }
+namespace tools {
 
-JWidget toolbar_new();
+// A group of tools.
+class ToolGroup
+{
+public:
+  ToolGroup(const char* name,
+	    const char* label) : m_name(name)
+			       , m_label(label) { }
 
-bool toolbar_is_tool_visible(JWidget toolbar, tools::Tool* tool);
-void toolbar_select_tool(JWidget toolbar, tools::Tool* tool);
+  const std::string& getName() const { return m_name; }
+  const std::string& getLabel() const { return m_label; }
 
-#endif
+private:
+  std::string m_name;
+  std::string m_label;
+};
+
+} // namespace tools
+
+#endif	// TOOLS_TOOL_GROUP_H_INCLUDED
+

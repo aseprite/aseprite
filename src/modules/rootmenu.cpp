@@ -33,7 +33,7 @@
 #include "gui_xml.h"
 #include "modules/gui.h"
 #include "modules/rootmenu.h"
-#include "tools/toolbox.h"
+#include "tools/tool_box.h"
 #include "util/filetoks.h"
 #include "widgets/menuitem.h"
 
@@ -190,7 +190,7 @@ static int load_root_menu()
     const char* tool_key = xmlKey->Attribute("shortcut");
 
     if (tool_id && tool_key) {
-      Tool* tool = App::instance()->getToolBox()->getToolById(tool_id);
+      tools::Tool* tool = App::instance()->getToolBox()->getToolById(tool_id);
       if (tool) {
 	PRINTF(" - Shortcut for tool `%s': <%s>\n", tool_id, tool_key);
 	add_keyboard_shortcut_to_change_tool(tool_key, tool);
@@ -217,7 +217,7 @@ static int load_root_menu()
     const char* tool_key = xmlKey->Attribute("shortcut");
 
     if (tool_id && tool_key) {
-      Tool* tool = App::instance()->getToolBox()->getToolById(tool_id);
+      tools::Tool* tool = App::instance()->getToolBox()->getToolById(tool_id);
       if (tool) {
 	PRINTF(" - Shortcut for quicktool `%s': <%s>\n", tool_id, tool_key);
 	add_keyboard_shortcut_to_quicktool(tool_key, tool);

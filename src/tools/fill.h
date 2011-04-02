@@ -16,16 +16,18 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifndef WIDGETS_TOOLBAR_H_INCLUDED
-#define WIDGETS_TOOLBAR_H_INCLUDED
+#ifndef TOOLS_FILL_H_INCLUDED
+#define TOOLS_FILL_H_INCLUDED
 
-#include "gui/base.h"
+namespace tools {
 
-namespace tools { class Tool; }
+enum Fill
+{
+  FillNone,
+  FillAlways,
+  FillOptional,
+};
 
-JWidget toolbar_new();
+} // namespace tools
 
-bool toolbar_is_tool_visible(JWidget toolbar, tools::Tool* tool);
-void toolbar_select_tool(JWidget toolbar, tools::Tool* tool);
-
-#endif
+#endif	// TOOLS_FILL_H_INCLUDED

@@ -18,21 +18,27 @@
 
 #include "config.h"
 
-#include <algorithm>
-#include <allegro/file.h>
-#include <allegro/fixed.h>
-#include <allegro/fmaths.h>
-
 #include "base/exception.h"
 #include "gui_xml.h"
 #include "raster/algo.h"
 #include "raster/image.h"
 #include "raster/mask.h"
 #include "raster/pen.h"
-#include "raster/sprite.h"
-#include "tools/toolbox.h"
+#include "tools/controller.h"
+#include "tools/ink.h"
+#include "tools/intertwine.h"
+#include "tools/point_shape.h"
+#include "tools/tool_box.h"
+#include "tools/tool_group.h"
+#include "tools/tool_loop.h"
+
+#include <algorithm>
+#include <allegro/file.h>
+#include <allegro/fixed.h>
+#include <allegro/fmaths.h>
 
 using namespace gfx;
+using namespace tools;
 
 #include "tools/controllers.h"
 #include "tools/inks.h"
@@ -181,51 +187,51 @@ void ToolBox::loadToolProperties(TiXmlElement* xmlTool, Tool* tool, int button, 
   if (!tracepolicy) tracepolicy = xmlTool->Attribute("tracepolicy");
 
   // Fill
-  ToolFill fill_value = TOOL_FILL_NONE;
+  Fill fill_value = FillNone;
   if (fill) {
     if (strcmp(fill, "none") == 0)
-      fill_value = TOOL_FILL_NONE;
+      fill_value = FillNone;
     else if (strcmp(fill, "always") == 0)
-      fill_value = TOOL_FILL_ALWAYS;
+      fill_value = FillAlways;
     else if (strcmp(fill, "optional") == 0)
-      fill_value = TOOL_FILL_OPTIONAL;
+      fill_value = FillOptional;
     else
       throw base::Exception("Invalid fill '%s' specified in '%s' tool.\n", fill, tool_id);
   }
 
   // Find the ink
-  std::map<std::string, ToolInk*>::iterator it_ink
+  std::map<std::string, Ink*>::iterator it_ink
     = m_inks.find(ink ? ink: "");
   if (it_ink == m_inks.end())
     throw base::Exception("Invalid ink '%s' specified in '%s' tool.\n", ink, tool_id);
 
   // Find the controller
-  std::map<std::string, ToolController*>::iterator it_controller
+  std::map<std::string, Controller*>::iterator it_controller
     = m_controllers.find(controller ? controller: "none");
   if (it_controller == m_controllers.end())
     throw base::Exception("Invalid controller '%s' specified in '%s' tool.\n", controller, tool_id);
 
   // Find the point_shape
-  std::map<std::string, ToolPointShape*>::iterator it_pointshaper
+  std::map<std::string, PointShape*>::iterator it_pointshaper
     = m_pointshapers.find(pointshape ? pointshape: "none");
   if (it_pointshaper == m_pointshapers.end())
     throw base::Exception("Invalid point-shape '%s' specified in '%s' tool.\n", pointshape, tool_id);
 
   // Find the intertwiner
-  std::map<std::string, ToolIntertwine*>::iterator it_intertwiner
+  std::map<std::string, Intertwine*>::iterator it_intertwiner
     = m_intertwiners.find(intertwine ? intertwine: "none");
   if (it_intertwiner == m_intertwiners.end())
     throw base::Exception("Invalid intertwiner '%s' specified in '%s' tool.\n", intertwine, tool_id);
 
   // Trace policy
-  ToolTracePolicy tracepolicy_value = TOOL_TRACE_POLICY_LAST;
+  TracePolicy tracepolicy_value = TracePolicyLast;
   if (tracepolicy) {
     if (strcmp(tracepolicy, "accumulative") == 0)
-      tracepolicy_value = TOOL_TRACE_POLICY_ACCUMULATE;
+      tracepolicy_value = TracePolicyAccumulate;
     else if (strcmp(tracepolicy, "last") == 0)
-      tracepolicy_value = TOOL_TRACE_POLICY_LAST;
+      tracepolicy_value = TracePolicyLast;
     else if (strcmp(tracepolicy, "overlap") == 0)
-      tracepolicy_value = TOOL_TRACE_POLICY_OVERLAP;
+      tracepolicy_value = TracePolicyOverlap;
     else
       throw base::Exception("Invalid trace-policy '%s' specified in '%s' tool.\n", tracepolicy, tool_id);
   }

@@ -32,7 +32,8 @@ class ColorButton;
 class Frame;
 class Slider;
 class StatusBar;
-class Tool;
+
+namespace tools { class Tool; }
 
 class Progress
 {
@@ -61,7 +62,7 @@ public:
   bool setStatusText(int msecs, const char *format, ...);
   void showTip(int msecs, const char *format, ...);
   void showColor(int msecs, const char* text, const Color& color, int alpha);
-  void showTool(int msecs, Tool* tool);
+  void showTool(int msecs, tools::Tool* tool);
 
   void showMovePixelsOptions();
   void hideMovePixelsOptions();
@@ -88,7 +89,7 @@ private:
   State m_state;
 
   // Showing a tool
-  Tool* m_tool;
+  tools::Tool* m_tool;
 
   // Showing a color
   Color m_color;

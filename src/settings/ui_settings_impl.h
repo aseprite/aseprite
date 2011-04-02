@@ -33,12 +33,12 @@ public:
 
   Color getFgColor();
   Color getBgColor();
-  Tool* getCurrentTool();
+  tools::Tool* getCurrentTool();
   TiledMode getTiledMode();
 
   void setFgColor(const Color& color);
   void setBgColor(const Color& color);
-  void setCurrentTool(Tool* tool);
+  void setCurrentTool(tools::Tool* tool);
   void setTiledMode(TiledMode mode);
 
   // Grid settings
@@ -77,10 +77,10 @@ public:
 
   // Tools settings
 
-  IToolSettings* getToolSettings(Tool* tool);
+  IToolSettings* getToolSettings(tools::Tool* tool);
 
 private:
-  Tool* m_currentTool;
+  tools::Tool* m_currentTool;
   TiledMode m_tiledMode;
   bool m_use_onionskin;
   int m_prev_frames_onionskin;

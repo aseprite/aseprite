@@ -167,10 +167,10 @@ StatusBar::~StatusBar()
 void StatusBar::onCurrentToolChange()
 {
   if (isVisible()) {
-    Tool* currentTool = UIContext::instance()->getSettings()->getCurrentTool();
+    tools::Tool* currentTool = UIContext::instance()->getSettings()->getCurrentTool();
     if (currentTool) {
-      this->showTool(500, currentTool);
-      this->setTextf("%s Selected", currentTool->getText().c_str());
+      showTool(500, currentTool);
+      setTextf("%s Selected", currentTool->getText().c_str());
     }
   }
 }
@@ -257,7 +257,7 @@ void StatusBar::showColor(int msecs, const char* text, const Color& color, int a
   }
 }
 
-void StatusBar::showTool(int msecs, Tool* tool)
+void StatusBar::showTool(int msecs, tools::Tool* tool)
 {
   ASSERT(tool != NULL);
 

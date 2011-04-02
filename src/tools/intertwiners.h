@@ -16,28 +16,28 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-class IntertwineNone : public ToolIntertwine
+class IntertwineNone : public Intertwine
 {
 public:
 
-  void joinPoints(IToolLoop* loop, const std::vector<Point>& points)
+  void joinPoints(ToolLoop* loop, const Points& points)
   {
     for (size_t c=0; c<points.size(); ++c)
       doPointshapePoint(points[c].x, points[c].y, loop);
   }
 
-  void fillPoints(IToolLoop* loop, const std::vector<Point>& points)
+  void fillPoints(ToolLoop* loop, const Points& points)
   {
     joinPoints(loop, points);
   }
 };
 
-class IntertwineAsLines : public ToolIntertwine
+class IntertwineAsLines : public Intertwine
 {
 public:
   bool snapByAngle() { return true; }
 
-  void joinPoints(IToolLoop* loop, const std::vector<Point>& points)
+  void joinPoints(ToolLoop* loop, const Points& points)
   {
     if (points.size() == 0)
       return;
@@ -64,7 +64,7 @@ public:
     }
   }
 
-  void fillPoints(IToolLoop* loop, const std::vector<Point>& points)
+  void fillPoints(ToolLoop* loop, const Points& points)
   {
     if (points.size() < 3) {
       joinPoints(loop, points);
@@ -79,11 +79,11 @@ public:
   }
 };
 
-class IntertwineAsRectangles : public ToolIntertwine
+class IntertwineAsRectangles : public Intertwine
 {
 public:
 
-  void joinPoints(IToolLoop* loop, const std::vector<Point>& points)
+  void joinPoints(ToolLoop* loop, const Points& points)
   {
     if (points.size() == 0)
       return;
@@ -113,7 +113,7 @@ public:
     }
   }
 
-  void fillPoints(IToolLoop* loop, const std::vector<Point>& points)
+  void fillPoints(ToolLoop* loop, const Points& points)
   {
     if (points.size() < 2) {
       joinPoints(loop, points);
@@ -136,11 +136,11 @@ public:
   }
 };
 
-class IntertwineAsEllipses : public ToolIntertwine
+class IntertwineAsEllipses : public Intertwine
 {
 public:
 
-  void joinPoints(IToolLoop* loop, const std::vector<Point>& points)
+  void joinPoints(ToolLoop* loop, const Points& points)
   {
     if (points.size() == 0)
       return;
@@ -163,7 +163,7 @@ public:
     }
   }
 
-  void fillPoints(IToolLoop* loop, const std::vector<Point>& points)
+  void fillPoints(ToolLoop* loop, const Points& points)
   {
     if (points.size() < 2) {
       joinPoints(loop, points);
@@ -184,11 +184,11 @@ public:
   }
 };
 
-class IntertwineAsBezier : public ToolIntertwine
+class IntertwineAsBezier : public Intertwine
 {
 public:
 
-  void joinPoints(IToolLoop* loop, const std::vector<Point>& points)
+  void joinPoints(ToolLoop* loop, const Points& points)
   {
     if (points.size() == 0)
       return;
@@ -216,7 +216,7 @@ public:
     }
   }
 
-  void fillPoints(IToolLoop* loop, const std::vector<Point>& points)
+  void fillPoints(ToolLoop* loop, const Points& points)
   {
     joinPoints(loop, points);
   }

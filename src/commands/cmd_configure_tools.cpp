@@ -18,13 +18,12 @@
 
 #include "config.h"
 
-#include <allegro.h>
-
 #include "app.h"
 #include "base/bind.h"
 #include "commands/command.h"
 #include "commands/commands.h"
 #include "console.h"
+#include "document_wrappers.h"
 #include "gfx/size.h"
 #include "gui/gui.h"
 #include "modules/editors.h"
@@ -37,7 +36,8 @@
 #include "raster/sprite.h"
 #include "settings/settings.h"
 #include "skin/skin_parts.h"
-#include "document_wrappers.h"
+#include "tools/ink.h"
+#include "tools/point_shape.h"
 #include "tools/tool.h"
 #include "ui_context.h"
 #include "widgets/color_button.h"
@@ -45,7 +45,10 @@
 #include "widgets/groupbut.h"
 #include "widgets/statebar.h"
 
+#include <allegro.h>
+
 using namespace gfx;
+using namespace tools;
 
 static Frame* window = NULL;
 
