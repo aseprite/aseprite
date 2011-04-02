@@ -85,7 +85,7 @@ public:
   RecentFiles m_recent_files;
 };
 
-class TabsBarHandler : public ITabsHandler
+class AppTabsDelegate : public TabsDelegate
 {
 public:
   void clickTab(Tabs* tabs, void* data, int button);
@@ -107,8 +107,6 @@ static Widget* toolbar = NULL;	      /* the tool bar widget */
 static Tabs* tabsbar = NULL;	      // The tabs bar widget
 
 static char *palette_filename = NULL;
-
-static TabsBarHandler* tabsHandler = NULL;
 
 // Initializes the application loading the modules, setting the
 // graphics mode, loading the configuration and resources, etc.
@@ -185,7 +183,7 @@ int App::run()
     statusbar = new StatusBar();
     colorbar = new ColorBar(box_colorbar->getAlign());
     toolbar = toolbar_new();
-    tabsbar = new Tabs(tabsHandler = new TabsBarHandler());
+    tabsbar = new Tabs(m_tabsDelegate = new AppTabsDelegate());
     view = editor_view_new();
     editor = create_new_editor();
 
@@ -315,7 +313,7 @@ App::~App()
     Editor::editor_cursor_exit();
     boundary_exit();
 
-    delete tabsHandler;
+    delete m_tabsDelegate;
     delete m_legacy;
     delete m_modules;
     delete m_loggerModule;
@@ -488,9 +486,9 @@ int app_get_color_to_clear_layer(Layer* layer)
 }
 
 //////////////////////////////////////////////////////////////////////
-// TabsBarHandler
+// AppTabsDelegate
 
-void TabsBarHandler::clickTab(Tabs* tabs, void* data, int button)
+void AppTabsDelegate::clickTab(Tabs* tabs, void* data, int button)
 {
   Document* document = (Document*)data;
 
@@ -506,7 +504,7 @@ void TabsBarHandler::clickTab(Tabs* tabs, void* data, int button)
   }
 }
 
-void TabsBarHandler::mouseOverTab(Tabs* tabs, void* data)
+void AppTabsDelegate::mouseOverTab(Tabs* tabs, void* data)
 {
   // Note: data can be NULL
   Document* document = (Document*)data;

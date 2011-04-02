@@ -28,10 +28,10 @@ class Tabs;
 class Button;
 
 // Interface used to control notifications from the Tabs widget.
-class ITabsHandler
+class TabsDelegate
 {
 public:
-  virtual ~ITabsHandler() { }
+  virtual ~TabsDelegate() { }
 
   // Called when the user presses a mouse button over a tab
   // button & 1  => left click
@@ -70,7 +70,7 @@ class Tabs : public Widget
 	     ANI_SMOOTH_SCROLL };
 
 public:
-  Tabs(ITabsHandler* handler);
+  Tabs(TabsDelegate* delegate);
   ~Tabs();
 
   void addTab(const char* text, void* data);
@@ -117,8 +117,8 @@ private:
   Button* m_button_left;
   Button* m_button_right;
 
-  // Handler to send notifications
-  ITabsHandler* m_handler;
+  // Delegate of notifications
+  TabsDelegate* m_delegate;
 };
 
 #endif

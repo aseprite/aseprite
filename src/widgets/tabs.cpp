@@ -47,9 +47,9 @@ static int tabs_type()
   return type;
 }
 
-Tabs::Tabs(ITabsHandler* handler)
+Tabs::Tabs(TabsDelegate* delegate)
   : Widget(tabs_type())
-  , m_handler(handler)
+  , m_delegate(delegate)
 {
   m_hot = NULL;
   m_selected = NULL;
@@ -315,10 +315,10 @@ bool Tabs::onProcessMessage(Message* msg)
 	  invalidate();
 	}
 
-	if (m_selected && m_handler)
-	  m_handler->clickTab(this,
-			      m_selected->data,
-			      msg->mouse.flags);
+	if (m_selected && m_delegate)
+	  m_delegate->clickTab(this,
+			       m_selected->data,
+			       msg->mouse.flags);
       }
       return true;
 
@@ -585,8 +585,8 @@ void Tabs::calculateHot()
   if (m_hot != hot) {
     m_hot = hot;
 
-    if (m_handler)
-      m_handler->mouseOverTab(this, m_hot ? m_hot->data: NULL);
+    if (m_delegate)
+      m_delegate->mouseOverTab(this, m_hot ? m_hot->data: NULL);
 
     invalidate();
   }

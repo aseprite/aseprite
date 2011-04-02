@@ -25,6 +25,7 @@
 
 #include <vector>
 
+class AppTabsDelegate;
 class CheckArgs;
 class ColorBar;
 class ConfigModule;
@@ -83,6 +84,7 @@ private:
   LegacyModules* m_legacy;
   bool m_isGui;
   std::vector<base::string> m_args;
+  AppTabsDelegate* m_tabsDelegate;
 };
 
 void app_refresh_screen(const Document* document);
