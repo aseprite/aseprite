@@ -202,6 +202,7 @@ void PaletteEditorCommand::onExecute(Context* context)
 
     // Run the frame in background.
     g_frame->open_window_bg();
+    app_get_colorbar()->setPaletteEditorButtonState(true);
   }
 
   // Show the specified target color
@@ -352,6 +353,9 @@ void PaletteEntryEditor::onCloseFrame()
 {
   // Save window configuration
   save_window_pos(this, "PaletteEditor");
+
+  // Uncheck the "Edit Palette" button.
+  app_get_colorbar()->setPaletteEditorButtonState(false);
 }
 
 void PaletteEntryEditor::onFgBgColorChange(const Color& color)

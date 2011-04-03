@@ -76,7 +76,7 @@ bool ColorBar::ScrollableView::onProcessMessage(Message* msg)
 
 ColorBar::ColorBar(int align)
   : Box(align)
-  , m_paletteButton("EDIT PAL")
+  , m_paletteButton("Edit Palette", JI_BUTTON)
   , m_paletteView(false)
   , m_fgColor(Color::fromIndex(15), IMAGE_INDEXED)
   , m_bgColor(Color::fromIndex(0), IMAGE_INDEXED)
@@ -124,6 +124,7 @@ ColorBar::ColorBar(int align)
 
   // Change labels foreground color
   setup_mini_look(&m_paletteButton);
+  m_paletteButton.setFont(((SkinTheme*)getTheme())->getMiniFont());
   m_paletteButton.Click.connect(Bind<void>(&ColorBar::onPaletteButtonClick, this));
 
   setDoubleBuffered(true);
@@ -166,6 +167,11 @@ void ColorBar::setBgColor(const Color& color)
 PaletteView* ColorBar::getPaletteView()
 {
   return &m_paletteView;
+}
+
+void ColorBar::setPaletteEditorButtonState(bool state)
+{
+  m_paletteButton.setSelected(state);
 }
 
 // Switches the palette-editor

@@ -46,6 +46,10 @@ public:
 
   PaletteView* getPaletteView();
 
+  // Used by the Palette Editor command to change the status of button
+  // when the visibility of the dialog changes.
+  void setPaletteEditorButtonState(bool state);
+
   // Signals
   Signal1<void, const Color&> FgColorChange;
   Signal1<void, const Color&> BgColorChange;
@@ -66,7 +70,7 @@ private:
     bool onProcessMessage(Message* msg) OVERRIDE;
   };
 
-  Button m_paletteButton;
+  CheckBox m_paletteButton;
   ScrollableView m_scrollableView;
   PaletteView m_paletteView;
   ColorButton m_fgColor;
