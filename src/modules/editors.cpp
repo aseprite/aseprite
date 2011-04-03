@@ -541,7 +541,7 @@ static int count_parents(Widget* widget)
 static void create_mini_editor_frame()
 {
   // Create mini-editor
-  mini_editor_frame = new Frame(false, "Preview");
+  mini_editor_frame = new Frame(false, "Mini-Editor");
   mini_editor_frame->child_spacing = 0;
   mini_editor_frame->set_autoremap(false);
   mini_editor_frame->set_wantfocus(false);
