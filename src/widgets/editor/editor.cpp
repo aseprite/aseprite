@@ -69,16 +69,15 @@
 		         KB_CTRL_FLAG)) == (shift))
 
 using namespace gfx;
-using namespace tools;
 
-static ToolLoopManager::Pointer pointer_from_msg(Message* msg)
+static tools::ToolLoopManager::Pointer pointer_from_msg(Message* msg)
 {
-  ToolLoopManager::Pointer::Button button =
-    (msg->mouse.right ? ToolLoopManager::Pointer::Right:
-     (msg->mouse.middle ? ToolLoopManager::Pointer::Middle:
-			  ToolLoopManager::Pointer::Left));
+  tools::ToolLoopManager::Pointer::Button button =
+    (msg->mouse.right ? tools::ToolLoopManager::Pointer::Right:
+     (msg->mouse.middle ? tools::ToolLoopManager::Pointer::Middle:
+			  tools::ToolLoopManager::Pointer::Left));
 
-  return ToolLoopManager::Pointer(msg->mouse.x, msg->mouse.y, button);
+  return tools::ToolLoopManager::Pointer(msg->mouse.x, msg->mouse.y, button);
 }
 
 Editor::Editor()
@@ -646,7 +645,7 @@ void Editor::dropPixels()
   editor_update_statusbar_for_standby();
 }
 
-Tool* Editor::getCurrentEditorTool()
+tools::Tool* Editor::getCurrentEditorTool()
 {
   if (m_quicktool)
     return m_quicktool;
@@ -745,7 +744,7 @@ void Editor::centerInSpritePoint(int x, int y)
 
 void Editor::editor_update_statusbar_for_standby()
 {
-  Tool* current_tool = getCurrentEditorTool();
+  tools::Tool* current_tool = getCurrentEditorTool();
   int x, y;
   screenToEditor(jmouse_x(0), jmouse_y(0), &x, &y);
 
@@ -795,7 +794,7 @@ void Editor::editor_update_statusbar_for_pixel_movement()
 
 void Editor::editor_update_quicktool()
 {
-  Tool* old_quicktool = m_quicktool;
+  tools::Tool* old_quicktool = m_quicktool;
 
   m_quicktool = get_selected_quicktool();
 
@@ -957,7 +956,7 @@ bool Editor::onProcessMessage(Message* msg)
 
       if (!hasCapture()) {
 	UIContext* context = UIContext::instance();
-	Tool* current_tool = getCurrentEditorTool();
+	tools::Tool* current_tool = getCurrentEditorTool();
 
 	set_current_editor(this);
 	context->setActiveDocument(m_document);
@@ -1063,11 +1062,11 @@ bool Editor::onProcessMessage(Message* msg)
 	else if (m_sprite->getCurrentLayer()) {
 	  ASSERT(m_toolLoopManager == NULL);
 
-	  ToolLoop* toolLoop = createToolLoopImpl(UIContext::instance(), msg);
+	  tools::ToolLoop* toolLoop = createToolLoopImpl(UIContext::instance(), msg);
 	  if (!toolLoop)
 	    return true;	// Return without capturing mouse
 
-	  m_toolLoopManager = new ToolLoopManager(toolLoop);
+	  m_toolLoopManager = new tools::ToolLoopManager(toolLoop);
 	  if (!m_toolLoopManager)
 	    return true;	// Return without capturing mouse
 
@@ -1419,7 +1418,7 @@ bool Editor::onProcessMessage(Message* msg)
 // When the current tool is changed
 void Editor::onCurrentToolChange()
 {
-  Tool* current_tool = getCurrentEditorTool();
+  tools::Tool* current_tool = getCurrentEditorTool();
 
   // If the user changed the tool when he/she is moving pixels,
   // we have to drop the pixels only if the new tool is not selection...
@@ -1454,7 +1453,7 @@ void Editor::editor_request_size(int *w, int *h)
 
 void Editor::editor_setcursor(int x, int y)
 {
-  Tool* current_tool = getCurrentEditorTool();
+  tools::Tool* current_tool = getCurrentEditorTool();
 
   switch (m_state) {
 
@@ -1477,7 +1476,7 @@ void Editor::editor_setcursor(int x, int y)
 
     case EDITOR_STATE_STANDBY:
       if (m_sprite) {
-	Tool* current_tool = getCurrentEditorTool();
+	tools::Tool* current_tool = getCurrentEditorTool();
 
 	editor_update_candraw(); // TODO remove this
 
@@ -1633,11 +1632,11 @@ void Editor::setZoomAndCenterInMouse(int zoom, int mouse_x, int mouse_y)
 //////////////////////////////////////////////////////////////////////
 // ToolLoop implementation
 
-class ToolLoopImpl : public ToolLoop
+class ToolLoopImpl : public tools::ToolLoop
 {
   Editor* m_editor;
   Context* m_context;
-  Tool* m_tool;
+  tools::Tool* m_tool;
   Pen* m_pen;
   Document* m_document;
   Sprite* m_sprite;
@@ -1669,7 +1668,7 @@ class ToolLoopImpl : public ToolLoop
 public:
   ToolLoopImpl(Editor* editor,
 	       Context* context,
-	       Tool* tool,
+	       tools::Tool* tool,
 	       Document* document,
 	       Sprite* sprite,
 	       Layer* layer,
@@ -1694,13 +1693,13 @@ public:
     m_tiled_mode = settings->getTiledMode();
 
     switch (tool->getFill(m_button)) {
-      case FillNone:
+      case tools::FillNone:
 	m_filled = false;
 	break;
-      case FillAlways:
+      case tools::FillAlways:
 	m_filled = true;
 	break;
-      case FillOptional:
+      case tools::FillOptional:
 	m_filled = settings->getToolSettings(m_tool)->getFilled();
 	break;
     }
@@ -1919,7 +1918,7 @@ public:
 
   // IToolLoop interface
   Context* getContext() { return m_context; }
-  Tool* getTool() { return m_tool; }
+  tools::Tool* getTool() { return m_tool; }
   Pen* getPen() { return m_pen; }
   Document* getDocument() { return m_document; }
   Sprite* getSprite() { return m_sprite; }
@@ -1944,11 +1943,11 @@ public:
   Point getOffset() { return m_offset; }
   void setSpeed(const Point& speed) { m_speed = speed; }
   Point getSpeed() { return m_speed; }
-  Ink* getInk() { return m_tool->getInk(m_button); }
-  Controller* getController() { return m_tool->getController(m_button); }
-  PointShape* getPointShape() { return m_tool->getPointShape(m_button); }
-  Intertwine* getIntertwine() { return m_tool->getIntertwine(m_button); }
-  TracePolicy getTracePolicy() { return m_tool->getTracePolicy(m_button); }
+  tools::Ink* getInk() { return m_tool->getInk(m_button); }
+  tools::Controller* getController() { return m_tool->getController(m_button); }
+  tools::PointShape* getPointShape() { return m_tool->getPointShape(m_button); }
+  tools::Intertwine* getIntertwine() { return m_tool->getIntertwine(m_button); }
+  tools::TracePolicy getTracePolicy() { return m_tool->getTracePolicy(m_button); }
 
   void cancel() { m_canceled = true; }
   bool isCanceled() { return m_canceled; }
@@ -1979,9 +1978,9 @@ public:
   }
 };
 
-ToolLoop* Editor::createToolLoopImpl(Context* context, Message* msg)
+tools::ToolLoop* Editor::createToolLoopImpl(Context* context, Message* msg)
 {
-  Tool* current_tool = context->getSettings()->getCurrentTool();
+  tools::Tool* current_tool = context->getSettings()->getCurrentTool();
   if (!current_tool)
     return NULL;
 
