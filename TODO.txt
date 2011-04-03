@@ -1,6 +1,7 @@
 For next release
 ----------------
 
++ Add IntEntry class in src/gui/ with spin-buttons.
 + Add feedback to "Shift+S" shortcut to switch "snap to grid".
 + Fix palette editor to avoid generating a lot of consecutive Undo actions.
 + Convert jaccel::key_list to std::vector<>
