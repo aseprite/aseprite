@@ -65,12 +65,6 @@
 
 //////////////////////////////////////////////////////////////////////
 
-#ifdef ALLEGRO_WINDOWS
-#  define DEF_SCALE 2
-#else
-#  define DEF_SCALE 1
-#endif
-
 using namespace gfx;
 
 static struct
@@ -78,9 +72,9 @@ static struct
   int width;
   int height;
   int scale;
-} try_resolutions[] = { { 1024, 768, DEF_SCALE },
-			{  800, 600, DEF_SCALE },
-			{  640, 480, DEF_SCALE },
+} try_resolutions[] = { { 1024, 768, 2 },
+			{  800, 600, 2 },
+			{  640, 480, 2 },
 			{  320, 240, 1 },
 			{  320, 200, 1 },
 			{    0,   0, 0 } };
@@ -388,7 +382,7 @@ static void load_gui_config(int& w, int& h, int& bpp, bool& fullscreen, bool& ma
   h = get_config_int("GfxMode", "Height", 0);
   bpp = get_config_int("GfxMode", "Depth", 0);
   fullscreen = get_config_bool("GfxMode", "FullScreen", false);
-  screen_scaling = get_config_int("GfxMode", "Scale", 1);
+  screen_scaling = get_config_int("GfxMode", "ScreenScale", 2);
   screen_scaling = MID(1, screen_scaling, 4);
   maximized = get_config_bool("GfxMode", "Maximized", false);
 
@@ -416,7 +410,7 @@ static void save_gui_config()
   if (gfx_driver)
     set_config_bool("GfxMode", "FullScreen", gfx_driver->windowed ? false: true);
 
-  set_config_int("GfxMode", "Scale", screen_scaling);
+  set_config_int("GfxMode", "ScreenScale", screen_scaling);
 }
 
 int get_screen_scaling()
