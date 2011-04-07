@@ -457,7 +457,9 @@ void Editor::drawMask()
 
 void Editor::drawMaskSafe()
 {
-  if (m_document && m_document->getBoundariesSegments()) {
+  if (isVisible() &&
+      m_document &&
+      m_document->getBoundariesSegments()) {
     int thick = m_cursor_thick;
 
     JRegion region = jwidget_get_drawable_region(this, JI_GDR_CUTTOPWINDOWS);
