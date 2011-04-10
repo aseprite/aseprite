@@ -1453,21 +1453,24 @@ static bool move_focus(JWidget manager, Message* msg)
   Widget* focus = NULL;
   Widget* it;
   bool ret = false;
-  Frame* window;
+  Frame* window = NULL;
   int c, count;
 
-  /* who have the focus */
-  if (focus_widget)
-    window = static_cast<Frame*>(focus_widget->getRoot());
-  else if (!jlist_empty(manager->children))
+  // Who have the focus
+  if (focus_widget) {
+    window = dynamic_cast<Frame*>(focus_widget->getRoot());
+  }
+  else if (!jlist_empty(manager->children)) {
     window = TOPWND(manager);
-  else
-    return ret;
+  }
 
-  /* how many child-widget want the focus in this widget? */
+  if (!window)
+    return false;
+
+  // How many child-widget want the focus in this widget?
   count = count_widgets_accept_focus(window);
 
-  /* one at least */
+  // One at least
   if (count > 0) {
     std::vector<Widget*> list(count);
 
@@ -1553,6 +1556,8 @@ static bool move_focus(JWidget manager, Message* msg)
 
 static int count_widgets_accept_focus(JWidget widget)
 {
+  ASSERT(widget != NULL);
+
   int count = 0;
   JLink link;
 
