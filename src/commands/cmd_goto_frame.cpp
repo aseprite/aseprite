@@ -59,7 +59,7 @@ void GotoFirstFrameCommand::onExecute(Context* context)
   sprite->setCurrentFrame(0);
 
   update_screen_for_document(document);
-  current_editor->editor_update_statusbar_for_standby();
+  current_editor->updateStatusBar();
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -101,7 +101,7 @@ void GotoPreviousFrameCommand::onExecute(Context* context)
     sprite->setCurrentFrame(sprite->getTotalFrames()-1);
 
   update_screen_for_document(document);
-  current_editor->editor_update_statusbar_for_standby();
+  current_editor->updateStatusBar();
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -143,7 +143,7 @@ void GotoNextFrameCommand::onExecute(Context* context)
     sprite->setCurrentFrame(0);
 
   update_screen_for_document(document);
-  current_editor->editor_update_statusbar_for_standby();
+  current_editor->updateStatusBar();
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -180,7 +180,7 @@ void GotoLastFrameCommand::onExecute(Context* context)
   sprite->setCurrentFrame(sprite->getTotalFrames()-1);
 
   update_screen_for_document(document);
-  current_editor->editor_update_statusbar_for_standby();
+  current_editor->updateStatusBar();
 }
 
 //////////////////////////////////////////////////////////////////////

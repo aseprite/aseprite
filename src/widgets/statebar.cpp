@@ -164,6 +164,16 @@ StatusBar::~StatusBar()
   delete m_tipwindow;		// widget
 }
 
+void StatusBar::addListener(StatusBarListener* listener)
+{
+  m_listeners.addListener(listener);
+}
+
+void StatusBar::removeListener(StatusBarListener* listener)
+{
+  m_listeners.removeListener(listener);
+}
+
 void StatusBar::onCurrentToolChange()
 {
   if (isVisible()) {
@@ -177,8 +187,8 @@ void StatusBar::onCurrentToolChange()
 
 void StatusBar::onTransparentColorChange()
 {
-  if (current_editor)
-    current_editor->setMaskColorForPixelsMovement(getTransparentColor());
+  m_listeners.notify<const Color&>(&StatusBarListener::onChangeTransparentColor,
+				   getTransparentColor());
 }
 
 void StatusBar::clearText()

@@ -279,8 +279,7 @@ void Editor::editor_draw_cursor(int x, int y, bool refresh)
     generate_cursor_boundaries();
 
   // draw pixel/pen preview
-  if (cursor_type & CURSOR_PENCIL &&
-      m_state != EDITOR_STATE_DRAWING) {
+  if (cursor_type & CURSOR_PENCIL && m_state->requirePenPreview()) {
     IToolSettings* tool_settings = UIContext::instance()
       ->getSettings()
       ->getToolSettings(current_tool);
@@ -364,8 +363,7 @@ void Editor::editor_move_cursor(int x, int y, bool refresh)
     ji_screen->clip = TRUE;
     release_bitmap(ji_screen);
     
-    if (cursor_type & CURSOR_PENCIL &&
-	m_state != EDITOR_STATE_DRAWING) {
+    if (cursor_type & CURSOR_PENCIL && m_state->requirePenPreview()) {
       Pen* pen = editor_get_current_pen();
       editors_draw_sprite(m_sprite,
 			  std::min(new_x, old_x)-pen->get_size()/2,
@@ -420,8 +418,7 @@ void Editor::editor_clean_cursor(bool refresh)
   }
 
   // clean pixel/pen preview
-  if (cursor_type & CURSOR_PENCIL &&
-      m_state != EDITOR_STATE_DRAWING) {
+  if (cursor_type & CURSOR_PENCIL && m_state->requirePenPreview()) {
     Pen* pen = editor_get_current_pen();
 
     m_document->prepareExtraCel(x-pen->get_size()/2,

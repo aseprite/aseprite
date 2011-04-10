@@ -26,6 +26,7 @@
 #include "gui/base.h"
 #include "gui/widget.h"
 #include "widgets/editor/editor_listeners.h"
+#include "widgets/editor/editor_state.h"
 
 #define MIN_ZOOM 0
 #define MAX_ZOOM 5
@@ -37,8 +38,6 @@ class View;
 
 namespace tools {
   class Tool;
-  class ToolLoop;
-  class ToolLoopManager;
 }
 
 class Editor : public Widget
@@ -48,6 +47,11 @@ public:
 
   Editor();
   ~Editor();
+
+  EditorState* getState() const { return m_state; }
+
+  // Changes the state of the editor. Deletes the old state.
+  void setState(EditorState* state);
 
   Document* getDocument() { return m_document; }
   void setDocument(Document* document);
@@ -81,13 +85,13 @@ public:
   void drawMaskSafe();
 
   void flashCurrentLayer();
-  void setMaskColorForPixelsMovement(const Color& color);
 
   void screenToEditor(int xin, int yin, int *xout, int *yout);
   void editorToScreen(int xin, int yin, int *xout, int *yout);
 
   void showDrawingCursor();
   void hideDrawingCursor();
+  void moveDrawingCursor();
 
   void addListener(EditorListener* listener);
   void removeListener(EditorListener* listener);
@@ -97,8 +101,23 @@ public:
 
   // Changes the scroll to see the given point as the center of the editor.
   void centerInSpritePoint(int x, int y);
+  
+  void updateStatusBar();
 
-  void editor_update_statusbar_for_standby();
+  // Control scroll when cursor goes out of the editor.
+  void controlInfiniteScroll(Message* msg);
+
+  tools::Tool* getCurrentEditorTool();
+
+  // Returns true if we are able to draw in the current doc/sprite/layer/cel.
+  bool canDraw();
+
+  // Returns true if the cursor is inside the active mask/selection.
+  bool isInsideSelection();
+
+  void setZoomAndCenterInMouse(int zoom, int mouse_x, int mouse_y);
+
+  bool processKeysToSetZoom(int scancode);
 
   // in cursor.c
 
@@ -111,18 +130,11 @@ public:
   static void editor_cursor_exit();
 
 private:
-
-  void editor_update_statusbar_for_pixel_movement();
   void editor_update_quicktool();
-
   void editor_draw_cursor(int x, int y, bool refresh = true);
   void editor_move_cursor(int x, int y, bool refresh = true);
   void editor_clean_cursor(bool refresh = true);
   bool editor_cursor_is_subpixel();
-
-  // keys.c
-
-  bool editor_keys_toset_zoom(int scancode);
 
 public:
 
@@ -147,45 +159,27 @@ protected:
 private:
   void drawGrid(const gfx::Rect& gridBounds, const Color& color);
 
-  void controlInfiniteScroll(Message* msg);
-  void dropPixels();
-
-  tools::Tool* getCurrentEditorTool();
-
   void editor_request_size(int *w, int *h);
-  void editor_setcursor(int x, int y);
-  void editor_update_candraw();
-  void setZoomAndCenterInMouse(int zoom, int mouse_x, int mouse_y);
-
-  tools::ToolLoop* createToolLoopImpl(Context* context, Message* msg);
+  void editor_setcursor();
 
   void for_each_pixel_of_pen(int screen_x, int screen_y,
 			     int sprite_x, int sprite_y, int color,
 			     void (*pixel)(BITMAP *bmp, int x, int y, int color));
 
-  // editor states
-  enum State {
-    EDITOR_STATE_STANDBY,
-    EDITOR_STATE_SCROLLING,
-    EDITOR_STATE_DRAWING,
-  };
-
-  // Main properties
-  State m_state;		// Editor main state
+  // Current editor state (it can be shared between several editors to
+  // the same document). This member cannot be NULL.
+  EditorState* m_state;
+  
   Document* m_document;		// Active document in the editor
   Sprite* m_sprite;		// Active sprite in the editor
   int m_zoom;			// Zoom in the editor
 
   // Drawing cursor
   int m_cursor_thick;
-  int m_cursor_screen_x; /* position in the screen (view) */
+  int m_cursor_screen_x; // Position in the screen (view)
   int m_cursor_screen_y;
-  int m_cursor_editor_x; /* position in the editor (model) */
+  int m_cursor_editor_x; // Position in the editor (model)
   int m_cursor_editor_y;
-  bool m_cursor_candraw : 1;
-
-  // True if the cursor is inside the mask/selection
-  bool m_insideSelection : 1;
 
   // Current selected quicktool (this genererally should be NULL if
   // the user is not pressing any keyboard key).
@@ -195,19 +189,9 @@ private:
   int m_offset_x;
   int m_offset_y;
 
-  /* marching ants stuff */
+  // Marching ants stuff
   int m_mask_timer_id;
   int m_offset_count;
-
-  /* region that must be updated */
-  JRegion m_refresh_region;
-
-  // Tool-loop manager
-  tools::ToolLoopManager* m_toolLoopManager;
-
-  // Helper member to move selection. If this member is NULL it means the
-  // user is not moving pixels.
-  PixelsMovement* m_pixelsMovement;
 
   // This slot is used to disconnect the Editor from CurrentToolChange
   // signal (because the editor can be destroyed and the application

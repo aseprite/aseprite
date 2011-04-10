@@ -281,11 +281,16 @@ add_library(aseprite-library
   widgets/color_sliders.cpp
   widgets/editor/click.cpp
   widgets/editor/cursor.cpp
+  widgets/editor/drawing_state.cpp
   widgets/editor/editor.cpp
   widgets/editor/editor_listeners.cpp
   widgets/editor/editor_view.cpp
   widgets/editor/keys.cpp
+  widgets/editor/moving_pixels_state.cpp
   widgets/editor/pixels_movement.cpp
+  widgets/editor/scrolling_state.cpp
+  widgets/editor/standby_state.cpp
+  widgets/editor/tool_loop_impl.cpp
   widgets/fileview.cpp
   widgets/groupbut.cpp
   widgets/hex_color_entry.cpp

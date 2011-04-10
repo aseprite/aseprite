@@ -16,28 +16,17 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifndef WIDGETS_EDITOR_LISTENERS_H_INCLUDED
-#define WIDGETS_EDITOR_LISTENERS_H_INCLUDED
+#ifndef WIDGETS_EDITOR_TOOL_LOOP_IMPL_H_INCLUDED
+#define WIDGETS_EDITOR_TOOL_LOOP_IMPL_H_INCLUDED
 
-#include "listeners.h"
-#include "widgets/editor/editor_listener.h"
+namespace tools {
+  class ToolLoop;
+}
 
+class Context;
 class Editor;
+union Message;
 
-class EditorListeners
-{
-public:
-  EditorListeners();
+tools::ToolLoop* create_tool_loop(Editor* editor, Context* context, Message* msg);
 
-  void addListener(EditorListener* listener);
-  void removeListener(EditorListener* listener);
-
-  void notifyStateChanged(Editor* editor);
-  void notifyScrollChanged(Editor* editor);
-  void notifyDocumentChanged(Editor* editor);
-
-private:
-  Listeners<EditorListener> m_listeners;
-};
-
-#endif	// WIDGETS_EDITOR_LISTENERS_H_INCLUDED
+#endif

@@ -35,7 +35,7 @@
 #include "widgets/color_bar.h"
 #include "widgets/editor/editor.h"
 
-bool Editor::editor_keys_toset_zoom(int scancode)
+bool Editor::processKeysToSetZoom(int scancode)
 {
   if ((m_sprite) &&
       (this->hasMouse()) &&

@@ -37,6 +37,11 @@ void EditorListeners::removeListener(EditorListener* listener)
   m_listeners.removeListener(listener);
 }
 
+void EditorListeners::notifyStateChanged(Editor* editor)
+{
+  m_listeners.notify(&EditorListener::stateChanged, editor);
+}
+
 void EditorListeners::notifyScrollChanged(Editor* editor)
 {
   m_listeners.notify(&EditorListener::scrollChanged, editor);

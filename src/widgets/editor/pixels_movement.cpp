@@ -179,6 +179,8 @@ public:
       DocumentWriter documentWriter(m_documentReader);
       m_undoTransaction.pasteImage(image, cel->getX(), cel->getY(), cel->getOpacity());
       m_undoTransaction.commit();
+
+      documentWriter->destroyExtraCel();
     }
   }
 

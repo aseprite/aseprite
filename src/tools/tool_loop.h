@@ -41,7 +41,7 @@ class PointShape;
 class Tool;
 
 // Interface to communicate the sprite editor with the tool when the user
-// start using a tool to paint, select, pick color, etc.
+// starts using a tool to paint, select, pick color, etc.
 //
 // All this information should be provided by the editor and consumed
 // by the tool (+controller+intertwiner+pointshape+ink).

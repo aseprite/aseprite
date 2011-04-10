@@ -39,7 +39,6 @@ ToolLoopManager::ToolLoopManager(ToolLoop* toolLoop)
 
 ToolLoopManager::~ToolLoopManager()
 {
-  delete m_toolLoop;
 }
 
 bool ToolLoopManager::isCanceled() const

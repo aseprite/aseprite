@@ -26,7 +26,14 @@ class EditorListener
 public:
   virtual ~EditorListener() { }
   virtual void dispose() = 0;
+
+  // Called when the editor's state changes.
+  virtual void stateChanged(Editor* editor) = 0;
+
+  // Called when the scroll or zoom of the editor changes.
   virtual void scrollChanged(Editor* editor) = 0;
+
+  // Called when the document shown in the editor changes.
   virtual void documentChanged(Editor* editor) = 0;
 };
 

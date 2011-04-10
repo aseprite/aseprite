@@ -117,9 +117,12 @@ public:
   }
 
   void documentChanged(Editor* editor) OVERRIDE {
-    if (editor == current_editor) {
+    if (editor == current_editor)
       update_mini_editor_frame(editor);
-    }
+  }
+
+  void stateChanged(Editor* editor) OVERRIDE {
+    // Do nothing
   }
 
 };
@@ -133,6 +136,7 @@ void exit_module_editors()
 {
   if (mini_editor_frame) {
     save_window_pos(mini_editor_frame, "MiniEditor");
+
     delete mini_editor_frame;
     mini_editor_frame = NULL;
   }
@@ -590,6 +594,7 @@ static void update_mini_editor_frame(Editor* editor)
     if (mini_editor->getDocument() != document) {
       mini_editor->setDocument(document);
       mini_editor->setZoom(0);
+      mini_editor->setState(new EditorState);
     }
 
     mini_editor->centerInSpritePoint(pt.x, pt.y);

@@ -25,6 +25,7 @@
 #include "base/compiler_specific.h"
 #include "gui/base.h"
 #include "gui/widget.h"
+#include "listeners.h"
 
 class Box;
 class Button;
@@ -51,11 +52,24 @@ private:
   float m_pos;
 };
 
+class StatusBarListener
+{
+public:
+  virtual ~StatusBarListener() { }
+  virtual void dispose() = 0;
+  virtual void onChangeTransparentColor(const Color& color) = 0;
+};
+
+typedef Listeners<StatusBarListener> StatusBarListeners;
+
 class StatusBar : public Widget
 {
 public:
   StatusBar();
   ~StatusBar();
+
+  void addListener(StatusBarListener* listener);
+  void removeListener(StatusBarListener* listener);
 
   void clearText();
 
@@ -116,6 +130,8 @@ private:
   Frame* m_tipwindow;
 
   int m_hot_layer;
+
+  StatusBarListeners m_listeners;
 };
 
 #endif

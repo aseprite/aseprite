@@ -37,53 +37,23 @@
 #include "raster/raster.h"
 #include "settings/settings.h"
 #include "skin/skin_theme.h"
-#include "tools/ink.h"
-#include "tools/tool.h"
-#include "tools/tool_loop.h"
-#include "tools/tool_loop_manager.h"
 #include "ui_context.h"
-#include "undo/undo_history.h"
-#include "undoers/add_cel.h"
-#include "undoers/add_image.h"
-#include "undoers/close_group.h"
-#include "undoers/dirty_area.h"
-#include "undoers/open_group.h"
-#include "undoers/replace_image.h"
-#include "undoers/set_cel_position.h"
 #include "util/boundary.h"
 #include "util/misc.h"
 #include "util/render.h"
 #include "widgets/color_bar.h"
-#include "widgets/editor/pixels_movement.h"
+#include "widgets/editor/standby_state.h"
 #include "widgets/statebar.h"
 
 #include <allegro.h>
 #include <stdio.h>
 
-#define has_shifts(msg,shift)			\
-  (((msg)->any.shifts & (shift)) == (shift))
-
-#define has_only_shifts(msg,shift)		\
-  (((msg)->any.shifts & (KB_SHIFT_FLAG |	\
-		         KB_ALT_FLAG |		\
-		         KB_CTRL_FLAG)) == (shift))
-
 using namespace gfx;
-
-static tools::ToolLoopManager::Pointer pointer_from_msg(Message* msg)
-{
-  tools::ToolLoopManager::Pointer::Button button =
-    (msg->mouse.right ? tools::ToolLoopManager::Pointer::Right:
-     (msg->mouse.middle ? tools::ToolLoopManager::Pointer::Middle:
-			  tools::ToolLoopManager::Pointer::Left));
-
-  return tools::ToolLoopManager::Pointer(msg->mouse.x, msg->mouse.y, button);
-}
 
 Editor::Editor()
   : Widget(editor_type())
+  , m_state(new StandbyState())
 {
-  m_state = EDITOR_STATE_STANDBY;
   m_document = NULL;
   m_sprite = NULL;
   m_zoom = 0;
@@ -94,19 +64,12 @@ Editor::Editor()
   m_cursor_editor_x = 0;
   m_cursor_editor_y = 0;
 
-  m_cursor_candraw = false;
-  m_insideSelection = false;
-
   m_quicktool = NULL;
 
   m_offset_x = 0;
   m_offset_y = 0;
   m_mask_timer_id = jmanager_add_timer(this, 100);
   m_offset_count = 0;
-
-  m_refresh_region = NULL;
-  m_toolLoopManager = NULL;
-  m_pixelsMovement = NULL;
 
   jwidget_focusrest(this, true);
 
@@ -118,9 +81,6 @@ Editor::~Editor()
 {
   jmanager_remove_timer(m_mask_timer_id);
   remove_editor(this);
-
-  // Destroy tool-loop manager if it is created
-  delete m_toolLoopManager;
 
   // Remove this editor as listener of CurrentToolChange signal.
   App::instance()->CurrentToolChange.disconnect(m_currentToolChangeSlot);
@@ -135,17 +95,50 @@ int editor_type()
   return type;
 }
 
+void Editor::setState(EditorState* newState)
+{
+  try {
+    hideDrawingCursor();
+
+    // Fire before change state event, set the state, and fire after
+    // change state event.
+    m_state->onBeforeChangeState(this);
+  }
+  catch (...) {
+    delete newState; // An exception was thrown before we use the newState.
+    throw;
+  }
+
+  // Delete old state (it cannot thrown exceptions)
+  delete m_state;
+
+  // Change to the new state.
+  m_state = newState;
+  m_state->onAfterChangeState(this);
+
+  // Redraw all the editors with the same document of this editor
+  update_screen_for_document(m_document);
+
+  // Clear keyboard buffer just in case (to avoid sending keys to the
+  // new state).
+  clear_keybuf();
+
+  // Notify listeners
+  m_listeners.notifyStateChanged(this);
+
+  // Setup the new mouse cursor
+  editor_setcursor();
+
+  updateStatusBar();
+}
+
 void Editor::setDocument(Document* document)
 {
   if (this->hasMouse())
     jmanager_free_mouse();	// TODO Why is this here? Review this code
 
-  // Do we need to drop files?
-  if (m_pixelsMovement)
-    dropPixels();
-
-  ASSERT(m_pixelsMovement == NULL && "You cannot change the current sprite while you are moving pixels");
-  ASSERT(m_state == EDITOR_STATE_STANDBY && "You can change the current sprite only in stand-by state");
+  // Reset current state.
+  setState(new StandbyState);
 
   if (m_cursor_thick)
     editor_clean_cursor();
@@ -580,20 +573,6 @@ void Editor::flashCurrentLayer()
   }
 }
 
-void Editor::setMaskColorForPixelsMovement(const Color& color)
-{
-  ASSERT(m_sprite != NULL);
-  ASSERT(m_pixelsMovement != NULL);
-  
-  int imgtype = m_sprite->getImgType();
-  m_pixelsMovement->setMaskColor(color_utils::color_for_image(color, imgtype));
-}
-
-/**
-   Control scroll when cursor goes out of the editor
-   
-   @param msg A mouse message received in Editor::onProcessMessage()
-*/
 void Editor::controlInfiniteScroll(Message* msg)
 {
   View* view = View::getView(this);
@@ -624,27 +603,6 @@ void Editor::controlInfiniteScroll(Message* msg)
     setEditorScroll(scroll.x+old_x-msg->mouse.x,
 		    scroll.y+old_y-msg->mouse.y, true);
   }
-}
-
-void Editor::dropPixels()
-{
-  ASSERT(m_pixelsMovement != NULL);
-
-  if (m_pixelsMovement->isDragging())
-    m_pixelsMovement->dropImageTemporarily();
-
-  // Drop pixels if the user press a button outside the selection
-  m_pixelsMovement->dropImage();
-  delete m_pixelsMovement;
-  m_pixelsMovement = NULL;
-
-  m_document->destroyExtraCel();
-
-  m_state = EDITOR_STATE_STANDBY;
-  releaseMouse();
-
-  app_get_statusbar()->hideMovePixelsOptions();
-  editor_update_statusbar_for_standby();
 }
 
 tools::Tool* Editor::getCurrentEditorTool()
@@ -681,7 +639,7 @@ void Editor::showDrawingCursor()
 {
   ASSERT(m_sprite != NULL);
 
-  if (!m_cursor_thick && m_cursor_candraw) {
+  if (!m_cursor_thick && canDraw()) {
     jmouse_hide();
     editor_draw_cursor(jmouse_x(0), jmouse_y(0));
     jmouse_show();
@@ -694,6 +652,25 @@ void Editor::hideDrawingCursor()
     jmouse_hide();
     editor_clean_cursor();
     jmouse_show();
+  }
+}
+
+void Editor::moveDrawingCursor()
+{
+  // Draw cursor
+  if (m_cursor_thick) {
+    int x, y;
+
+    x = jmouse_x(0);
+    y = jmouse_y(0);
+
+    // Redraw it only when the mouse change to other pixel (not
+    // when the mouse moves only).
+    if ((m_cursor_screen_x != x) || (m_cursor_screen_y != y)) {
+      jmouse_hide();
+      editor_move_cursor(x, y);
+      jmouse_show();
+    }
   }
 }
 
@@ -744,54 +721,10 @@ void Editor::centerInSpritePoint(int x, int y)
   m_listeners.notifyScrollChanged(this);
 }
 
-void Editor::editor_update_statusbar_for_standby()
+void Editor::updateStatusBar()
 {
-  tools::Tool* current_tool = getCurrentEditorTool();
-  int x, y;
-  screenToEditor(jmouse_x(0), jmouse_y(0), &x, &y);
-
-  if (!m_sprite) {
-    app_get_statusbar()->clearText();
-  }
-  // For eye-dropper
-  else if (current_tool->getInk(0)->isEyedropper()) {
-    int imgtype = m_sprite->getImgType();
-    uint32_t pixel = m_sprite->getPixel(x, y);
-    Color color = Color::fromImage(imgtype, pixel);
-
-    int alpha = 255;
-    switch (imgtype) {
-      case IMAGE_RGB: alpha = _rgba_geta(pixel); break;
-      case IMAGE_GRAYSCALE: alpha = _graya_geta(pixel); break;
-    }
-
-    char buf[256];
-    usprintf(buf, "- Pos %d %d", x, y);
-
-    app_get_statusbar()->showColor(0, buf, color, alpha);
-  }
-  // For other tools
-  else {
-    Mask* mask = m_document->getMask();
-
-    app_get_statusbar()->setStatusText
-      (0, "Pos %d %d, Size %d %d, Frame %d",
-       x, y,
-       ((mask && mask->bitmap)? mask->w: m_sprite->getWidth()),
-       ((mask && mask->bitmap)? mask->h: m_sprite->getHeight()),
-       m_sprite->getCurrentFrame()+1);
-  }
-}
-
-// Update status bar for when the user is dragging pixels
-void Editor::editor_update_statusbar_for_pixel_movement()
-{
-  ASSERT(m_pixelsMovement != NULL);
-
-  Rect bounds = m_pixelsMovement->getImageBounds();
-  app_get_statusbar()->setStatusText
-    (100, "Pos %d %d, Size %d %d",
-     bounds.x, bounds.y, bounds.w, bounds.h);
+  // Setup status bar using the current editor's state
+  m_state->onUpdateStatusBar(this);
 }
 
 void Editor::editor_update_quicktool()
@@ -803,35 +736,19 @@ void Editor::editor_update_quicktool()
   // If the tool has changed, we must to update the status bar because
   // the new tool can display something different in the status bar (e.g. Eyedropper)
   if (old_quicktool != m_quicktool)
-    editor_update_statusbar_for_standby();
+    updateStatusBar();
 }
 
 //////////////////////////////////////////////////////////////////////
 // Message handler for the editor
 
-enum WHEEL_ACTION { WHEEL_NONE,
-		    WHEEL_ZOOM,
-		    WHEEL_VSCROLL,
-		    WHEEL_HSCROLL,
-		    WHEEL_FG,
-		    WHEEL_BG,
-		    WHEEL_FRAME };
-
 bool Editor::onProcessMessage(Message* msg)
 {
-  ASSERT((m_state == EDITOR_STATE_DRAWING && m_toolLoopManager != NULL) ||
-	 (m_state != EDITOR_STATE_DRAWING && m_toolLoopManager == NULL));
-
   switch (msg->type) {
 
     case JM_REQSIZE:
       editor_request_size(&msg->reqsize.w, &msg->reqsize.h);
       return true;
-
-    case JM_CLOSE:
-      // if (m_refresh_region)
-      // 	jregion_free(m_refresh_region);
-      break;
 
     case JM_DRAW: {
       SkinTheme* theme = static_cast<SkinTheme*>(this->getTheme());
@@ -914,10 +831,6 @@ bool Editor::onProcessMessage(Message* msg)
       break;
 
     case JM_MOUSEENTER:
-      // When the mouse enter to the editor, we can calculate the
-      // 'cursor_candraw' field to avoid a heavy if-condition in the
-      // 'editor_setcursor' routine
-      editor_update_candraw();
       editor_update_quicktool();
       break;
 
@@ -927,357 +840,48 @@ bool Editor::onProcessMessage(Message* msg)
       break;
 
     case JM_BUTTONPRESSED:
-      if (!m_sprite)
-	break;
-
-      // Drawing loop
-      if (m_state == EDITOR_STATE_DRAWING) {
-	ASSERT(m_toolLoopManager != NULL);
-
-	m_toolLoopManager->pressButton(pointer_from_msg(msg));
-
-	// Cancel drawing loop
-	if (m_toolLoopManager->isCanceled()) {
-	  m_toolLoopManager->releaseLoop(pointer_from_msg(msg));
-
-	  delete m_toolLoopManager;
-	  m_toolLoopManager = NULL;
-	  m_state = EDITOR_STATE_STANDBY;
-
-	  // Redraw all the editors with this sprite
-	  update_screen_for_document(m_document);
-
-	  clear_keybuf();
-
-	  editor_setcursor(msg->mouse.x, msg->mouse.y);
-
-	  releaseMouse();
-	  return true;
-	}
-      }
-
-      if (!hasCapture()) {
-	UIContext* context = UIContext::instance();
-	tools::Tool* current_tool = getCurrentEditorTool();
-
-	set_current_editor(this);
-	context->setActiveDocument(m_document);
-
-	// Start scroll loop
-	if (msg->mouse.middle ||
-	    current_tool->getInk(msg->mouse.right ? 1: 0)->isScrollMovement()) {
-	  m_state = EDITOR_STATE_SCROLLING;
-
-	  editor_setcursor(msg->mouse.x, msg->mouse.y);
-	  captureMouse();
-	  return true;
-	}
-
-	if (m_pixelsMovement) {
-	  // Start "moving pixels" loop
-	  if (m_insideSelection) {
-	    // Re-catch the image
-	    int x, y;
-	    screenToEditor(msg->mouse.x, msg->mouse.y, &x, &y);
-	    m_pixelsMovement->catchImageAgain(x, y);
-
-	    captureMouse();
-	    return true;
-	  }
-	  // End "moving pixels" loop
-	  else {
-	    // Drop pixels (e.g. to start drawing)
-	    dropPixels();
-	  }
-	}
-
-	// Move frames position
-	if (current_tool->getInk(msg->mouse.right ? 1: 0)->isCelMovement()) {
-	  if ((m_sprite->getCurrentLayer()) &&
-	      (m_sprite->getCurrentLayer()->getType() == GFXOBJ_LAYER_IMAGE)) {
-	    // TODO you can move the `Background' with tiled mode
-	    if (m_sprite->getCurrentLayer()->is_background()) {
-	      Alert::show(PACKAGE
-			  "<<You can't move the `Background' layer."
-			  "||&Close");
-	    }
-	    else if (!m_sprite->getCurrentLayer()->is_moveable()) {
-	      Alert::show(PACKAGE "<<The layer movement is locked.||&Close");
-	    }
-	    else {
-	      bool click2 = get_config_bool("Options", "MoveClick2", FALSE);
-	      interactive_move_layer(click2 ? MODE_CLICKANDCLICK:
-					      MODE_CLICKANDRELEASE,
-				     TRUE, NULL); // TODO remove this routine
-	    }
-	  }
-	}
-	// Move selected pixels
-	else if (m_insideSelection &&
-		 current_tool->getInk(0)->isSelection() &&
-		 msg->mouse.left) {
-	  int x, y, opacity;
-	  Image* image = m_sprite->getCurrentImage(&x, &y, &opacity);
-	  if (image) {
-	    if (!m_sprite->getCurrentLayer()->is_writable()) {
-	      Alert::show(PACKAGE "<<The layer is locked.||&Close");
-	      return true;
-	    }
-
-	    // Copy the mask to the extra cel image
-	    Image* tmpImage = NewImageFromMask(m_document);
-	    x = m_document->getMask()->x;
-	    y = m_document->getMask()->y;
-	    m_pixelsMovement = new PixelsMovement(m_document, m_sprite, tmpImage, x, y, opacity);
-	    delete tmpImage;
-
-	    // If the CTRL key is pressed start dragging a copy of the selection
-	    if (key[KEY_LCONTROL] || key[KEY_RCONTROL]) // TODO configurable
-	      m_pixelsMovement->copyMask();
-	    else
-	      m_pixelsMovement->cutMask();
-
-	    screenToEditor(msg->mouse.x, msg->mouse.y, &x, &y);
-	    m_pixelsMovement->catchImage(x, y);
-
-	    // Setup mask color
-	    setMaskColorForPixelsMovement(app_get_statusbar()->getTransparentColor());
-
-	    // Update status bar
-	    editor_update_statusbar_for_pixel_movement();
-	    app_get_statusbar()->showMovePixelsOptions();
-	  }
-	  captureMouse();
-	}
-	// Call the eyedropper command
-	else if (current_tool->getInk(msg->mouse.right ? 1: 0)->isEyedropper()) {
-	  Command* eyedropper_cmd = 
-	    CommandsModule::instance()->getCommandByName(CommandId::Eyedropper);
-
-	  Params params;
-	  params.set("target", msg->mouse.right ? "background": "foreground");
-
-	  UIContext::instance()->executeCommand(eyedropper_cmd, &params);
-	  return true;
-	}
-	// Start the Tool-Loop
-	else if (m_sprite->getCurrentLayer()) {
-	  ASSERT(m_toolLoopManager == NULL);
-
-	  tools::ToolLoop* toolLoop = createToolLoopImpl(UIContext::instance(), msg);
-	  if (!toolLoop)
-	    return true;	// Return without capturing mouse
-
-	  m_toolLoopManager = new tools::ToolLoopManager(toolLoop);
-	  if (!m_toolLoopManager)
-	    return true;	// Return without capturing mouse
-
-	  // Clean the cursor (mainly to clean the pen preview)
-	  int thick = m_cursor_thick;
-	  if (thick)
-	    editor_clean_cursor();
-
-	  m_state = EDITOR_STATE_DRAWING;
-
-	  m_toolLoopManager->prepareLoop(pointer_from_msg(msg));
-	  m_toolLoopManager->pressButton(pointer_from_msg(msg));
-
-	  // Redraw it (without pen preview)
-	  if (thick)
-	    editor_draw_cursor(msg->mouse.x, msg->mouse.y);
-
-	  captureMouse();
-	}
-      }
-      return true;
+      if (m_sprite)
+	return m_state->onMouseDown(this, msg);
+      break;
 
     case JM_MOTION:
-      if (!m_sprite)
-	break;
-
-      // Move the scroll
-      if (m_state == EDITOR_STATE_SCROLLING) {
-	View* view = View::getView(this);
-	Rect vp = view->getViewportBounds();
-	Point scroll = view->getViewScroll();
-
-	setEditorScroll(scroll.x+jmouse_x(1)-jmouse_x(0),
-			scroll.y+jmouse_y(1)-jmouse_y(0), true);
-
-	jmouse_control_infinite_scroll(vp);
-
-	{
-	  int x, y;
-	  screenToEditor(jmouse_x(0), jmouse_y(0), &x, &y);
-	  app_get_statusbar()->setStatusText
-	    (0, "Pos %3d %3d (Size %3d %3d)", x, y,
-	     m_sprite->getWidth(), m_sprite->getHeight());
-	}
-      }
-      // Moving pixels
-      else if (m_pixelsMovement) {
-	// If there is a button pressed
-	if (m_pixelsMovement->isDragging()) {
-	  // Infinite scroll
-	  controlInfiniteScroll(msg);
-
-	  // Get the position of the mouse in the sprite 
-	  int x, y;
-	  screenToEditor(msg->mouse.x, msg->mouse.y, &x, &y);
-
-	  // Drag the image to that position
-	  Rect bounds = m_pixelsMovement->moveImage(x, y);
-
-	  // If "bounds" is empty is because the cel was not moved
-	  if (!bounds.isEmpty()) {
-	    // Redraw the extra cel in the new position
-	    jmouse_hide();
-	    editors_draw_sprite_tiled(m_sprite,
-				      bounds.x, bounds.y,
-				      bounds.x+bounds.w-1,
-				      bounds.y+bounds.h-1);
-	    jmouse_show();
-	  }
-	}
-	else {
-	  // Draw cursor
-	  if (m_cursor_thick) {
-	    int x, y;
-
-	    x = msg->mouse.x;
-	    y = msg->mouse.y;
-
-	    // Redraw it only when the mouse change to other pixel (not
-	    // when the mouse moves only).
-	    if ((m_cursor_screen_x != x) || (m_cursor_screen_y != y)) {
-	      jmouse_hide();
-	      editor_move_cursor(x, y);
-	      jmouse_show();
-	    }
-	  }
-	}
-
-	editor_update_statusbar_for_pixel_movement();
-      }
-      // In tool-loop
-      else if (m_state == EDITOR_STATE_DRAWING) {
-	acquire_bitmap(ji_screen);
-
-	ASSERT(m_toolLoopManager != NULL);
-
-	// Clean the area occupied by the cursor in the screen
-	if (m_cursor_thick)
-	  editor_clean_cursor();
-
-	ASSERT(m_toolLoopManager != NULL);
-
-	// Infinite scroll
-	controlInfiniteScroll(msg);
-
-	// Clean the area occupied by the cursor in the screen
-	int thick = m_cursor_thick; 
-	if (thick)
-	  editor_clean_cursor();
-
-	// notify mouse movement to the tool
-	ASSERT(m_toolLoopManager != NULL);
-	m_toolLoopManager->movement(pointer_from_msg(msg));
-
-	// draw the cursor again
-	if (thick)
-	  editor_draw_cursor(msg->mouse.x, msg->mouse.y);
-
-	release_bitmap(ji_screen);
-      }
-      else if (m_state == EDITOR_STATE_STANDBY) {
-	// Draw cursor
-	if (m_cursor_thick) {
-	  int x, y;
-
-	  x = msg->mouse.x;
-	  y = msg->mouse.y;
-
-	  // Redraw it only when the mouse change to other pixel (not
-	  // when the mouse moves only).
-	  if ((m_cursor_screen_x != x) || (m_cursor_screen_y != y)) {
-	    jmouse_hide();
-	    editor_move_cursor(x, y);
-	    jmouse_show();
-	  }
-	}
-
-	editor_update_statusbar_for_standby();
-      }
-      return true;
+      if (m_sprite)
+	return m_state->onMouseMove(this, msg);
+      break;
 
     case JM_BUTTONRELEASED:
-      if (!m_sprite)
-	break;
-
-      // Drawing
-      if (m_state == EDITOR_STATE_DRAWING) {
-	ASSERT(m_toolLoopManager != NULL);
-
-	if (m_toolLoopManager->releaseButton(pointer_from_msg(msg)))
+      if (m_sprite) {
+	if (m_state->onMouseUp(this, msg))
 	  return true;
-
-	m_toolLoopManager->releaseLoop(pointer_from_msg(msg));
-
-	delete m_toolLoopManager;
-	m_toolLoopManager = NULL;
-	m_state = EDITOR_STATE_STANDBY;
-
-	// redraw all the editors with this sprite
-	update_screen_for_document(m_document);
-
-	clear_keybuf();
       }
-      else if (m_state != EDITOR_STATE_STANDBY) {
-	ASSERT(m_toolLoopManager == NULL);
-	m_state = EDITOR_STATE_STANDBY;
-      }
-      // Moving pixels
-      else if (m_pixelsMovement) {
-	// Drop the image temporarily in this location (where the user releases the mouse)
-	m_pixelsMovement->dropImageTemporarily();
-      }
-
-      editor_setcursor(msg->mouse.x, msg->mouse.y);
-      editor_update_statusbar_for_standby();
-      releaseMouse();
-      return true;
+      break;
 
     case JM_KEYPRESSED:
-      if (m_state == EDITOR_STATE_STANDBY ||
-	  m_state == EDITOR_STATE_DRAWING) {
-	if (editor_keys_toset_zoom(msg->key.scancode))
-	  return true;
-      }
+      if (m_sprite) {
+	bool used = m_state->onKeyDown(this, msg);
 
-      if (this->hasMouse()) {
-	editor_update_quicktool();
-
-	if (msg->key.scancode == KEY_LCONTROL || // TODO configurable
-	    msg->key.scancode == KEY_RCONTROL) {
-	  // If the user press the CTRL key when he is dragging pixels (but not pressing the mouse buttons)...
-	  if (!jmouse_b(0) && m_pixelsMovement) {
-	    // Drop pixels (sure the user will press the mouse button to start dragging a copy)
-	    dropPixels();
-	  }
+	if (hasMouse()) {
+	  editor_update_quicktool();
+	  editor_setcursor();
 	}
 
-	editor_setcursor(jmouse_x(0), jmouse_y(0));
+	if (used)
+	  return true;
       }
-
-      // When we are drawing, we "eat" all pressed keys
-      if (m_state == EDITOR_STATE_DRAWING)
-	return true;
-
       break;
 
     case JM_KEYRELEASED:
-      editor_update_quicktool();
-      editor_setcursor(jmouse_x(0), jmouse_y(0));
+      if (m_sprite) {
+	bool used = m_state->onKeyUp(this, msg);
+
+	if (hasMouse()) {
+	  editor_update_quicktool();
+	  editor_setcursor();
+	}
+
+	if (used)
+	  return true;
+      }
       break;
 
     case JM_FOCUSLEAVE:
@@ -1287,131 +891,15 @@ bool Editor::onProcessMessage(Message* msg)
       break;
 
     case JM_WHEEL:
-      if (m_state == EDITOR_STATE_STANDBY ||
-	  m_state == EDITOR_STATE_DRAWING) {
-	// There are and sprite in the editor and the mouse is inside
-	if (m_sprite && this->hasMouse()) {
-	  int dz = jmouse_z(1) - jmouse_z(0);
-	  WHEEL_ACTION wheelAction = WHEEL_NONE;
-	  bool scrollBigSteps = false;
-
-	  // Without modifiers
-	  if (!(msg->any.shifts & (KB_SHIFT_FLAG | KB_ALT_FLAG | KB_CTRL_FLAG))) {
-	    wheelAction = WHEEL_ZOOM;
-	  }
-	  else {
-#if 1				// TODO make it configurable
-	    if (has_shifts(msg, KB_ALT_FLAG)) {
-	      if (has_shifts(msg, KB_SHIFT_FLAG))
-		wheelAction = WHEEL_BG;
-	      else
-		wheelAction = WHEEL_FG;
-	    }
-	    else if (has_shifts(msg, KB_CTRL_FLAG)) {
-	      wheelAction = WHEEL_FRAME;
-	    }
-#else
-	    if (has_shifts(msg, KB_CTRL_FLAG))
-	      wheelAction = WHEEL_HSCROLL;
-	    else
-	      wheelAction = WHEEL_VSCROLL;
-
-	    if (has_shifts(msg, KB_SHIFT_FLAG))
-	      scrollBigSteps = true;
-#endif
-	  }
-
-	  switch (wheelAction) {
-
-	    case WHEEL_NONE:
-	      // Do nothing
-	      break;
-
-	    case WHEEL_FG:
-	      if (m_state == EDITOR_STATE_STANDBY) {
-		int newIndex = 0;
-		if (app_get_colorbar()->getFgColor().getType() == Color::IndexType) {
-		  newIndex = app_get_colorbar()->getFgColor().getIndex() + dz;
-		  newIndex = MID(0, newIndex, 255);
-		}
-		app_get_colorbar()->setFgColor(Color::fromIndex(newIndex));
-	      }
-	      break;
-
-	    case WHEEL_BG:
-	      if (m_state == EDITOR_STATE_STANDBY) {
-		int newIndex = 0;
-		if (app_get_colorbar()->getBgColor().getType() == Color::IndexType) {
-		  newIndex = app_get_colorbar()->getBgColor().getIndex() + dz;
-		  newIndex = MID(0, newIndex, 255);
-		}
-		app_get_colorbar()->setBgColor(Color::fromIndex(newIndex));
-	      }
-	      break;
-
-	    case WHEEL_FRAME:
-	      if (m_state == EDITOR_STATE_STANDBY) {
-		Command* command = CommandsModule::instance()->getCommandByName
-		  ((dz < 0) ? CommandId::GotoNextFrame:
-			      CommandId::GotoPreviousFrame);
-		if (command)
-		  UIContext::instance()->executeCommand(command, NULL);
-	      }
-	      break;
-
-	    case WHEEL_ZOOM: {
-	      int zoom = MID(MIN_ZOOM, m_zoom-dz, MAX_ZOOM);
-	      if (m_zoom != zoom)
-		setZoomAndCenterInMouse(zoom, msg->mouse.x, msg->mouse.y);
-	      break;
-	    }
-
-	    case WHEEL_HSCROLL:
-	    case WHEEL_VSCROLL: {
-	      View* view = View::getView(this);
-	      Rect vp = view->getViewportBounds();
-	      Point scroll;
-	      int dx = 0;
-	      int dy = 0;
-	      int thick = m_cursor_thick;
-
-	      if (wheelAction == WHEEL_HSCROLL) {
-		dx = dz * vp.w;
-	      }
-	      else {
-		dy = dz * vp.h;
-	      }
-
-	      if (scrollBigSteps) {
-		dx /= 2;
-		dy /= 2;
-	      }
-	      else {
-		dx /= 10;
-		dy /= 10;
-	      }
-		
-	      scroll = view->getViewScroll();
-
-	      jmouse_hide();
-	      if (thick)
-		editor_clean_cursor();
-	      setEditorScroll(scroll.x+dx, scroll.y+dy, true);
-	      if (thick)
-		editor_draw_cursor(jmouse_x(0), jmouse_y(0));
-	      jmouse_show();
-	      break;
-	    }
-
-	  }
-	}
+      if (m_sprite && hasMouse()) {
+	if (m_state->onMouseWheel(this, msg))
+	  return true;
       }
       break;
 
     case JM_SETCURSOR:
-      editor_setcursor(msg->mouse.x, msg->mouse.y);
+      editor_setcursor();
       return true;
-
   }
 
   return Widget::onProcessMessage(msg);
@@ -1420,16 +908,7 @@ bool Editor::onProcessMessage(Message* msg)
 // When the current tool is changed
 void Editor::onCurrentToolChange()
 {
-  tools::Tool* current_tool = getCurrentEditorTool();
-
-  // If the user changed the tool when he/she is moving pixels,
-  // we have to drop the pixels only if the new tool is not selection...
-  if (m_pixelsMovement &&
-      (!current_tool->getInk(0)->isSelection() ||
-       !current_tool->getInk(1)->isSelection())) {
-    // We have to drop pixels
-    dropPixels();
-  }
+  m_state->onCurrentToolChange(this);
 }
 
 /**
@@ -1453,133 +932,21 @@ void Editor::editor_request_size(int *w, int *h)
   }
 }
 
-void Editor::editor_setcursor(int x, int y)
+void Editor::editor_setcursor()
 {
-  tools::Tool* current_tool = getCurrentEditorTool();
+  bool used = false;
+  if (m_sprite)
+    used = m_state->onSetCursor(this);
 
-  switch (m_state) {
-
-    case EDITOR_STATE_SCROLLING:
-      hideDrawingCursor();
-      jmouse_set_cursor(JI_CURSOR_SCROLL);
-      break;
-
-    case EDITOR_STATE_DRAWING:
-      if (current_tool->getInk(0)->isEyedropper()) {
-	hideDrawingCursor();
-	jmouse_set_cursor(JI_CURSOR_EYEDROPPER);
-	return;
-      }
-      else {
-	jmouse_set_cursor(JI_CURSOR_NULL);
-	showDrawingCursor();
-      }
-      break;
-
-    case EDITOR_STATE_STANDBY:
-      if (m_sprite) {
-	tools::Tool* current_tool = getCurrentEditorTool();
-
-	editor_update_candraw(); // TODO remove this
-
-	// Pixels movement
-	if (m_pixelsMovement) {
-	  int x, y;
-	  screenToEditor(jmouse_x(0), jmouse_y(0), &x, &y);
-	    
-	  // Move selection
-	  if (m_pixelsMovement->isDragging() ||
-	      m_document->isMaskVisible() &&
-	      m_document->getMask()->contains_point(x, y)) {
-	    hideDrawingCursor();
-	    jmouse_set_cursor(JI_CURSOR_MOVE);
-
-	    if (!m_insideSelection)
-	      m_insideSelection = true;
-	    return;
-	  }
-
-	  if (m_insideSelection)
-	    m_insideSelection = false;
-
-	  // Draw
-	  if (m_cursor_candraw) {
-	    jmouse_set_cursor(JI_CURSOR_NULL);
-	    showDrawingCursor();
-	  }
-	  // Forbidden
-	  else {
-	    hideDrawingCursor();
-	    jmouse_set_cursor(JI_CURSOR_FORBIDDEN);
-	  }
-	}
-	else {
-	  if (current_tool) {
-	    // If the current tool change selection (e.g. rectangular marquee, etc.)
-	    if (current_tool->getInk(0)->isSelection()) {
-	      int x, y;
-	      screenToEditor(jmouse_x(0), jmouse_y(0), &x, &y);
-	    
-	      // Move pixels
-	      if (m_document->isMaskVisible() &&
-		  m_document->getMask()->contains_point(x, y)) {
-		hideDrawingCursor();
-		if (key[KEY_LCONTROL] ||
-		    key[KEY_RCONTROL]) // TODO configurable keys
-		  jmouse_set_cursor(JI_CURSOR_NORMAL_ADD);
-		else
-		  jmouse_set_cursor(JI_CURSOR_MOVE);
-
-		if (!m_insideSelection)
-		  m_insideSelection = true;
-		return;
-	      }
-	    }
-	    else if (current_tool->getInk(0)->isEyedropper()) {
-	      hideDrawingCursor();
-	      jmouse_set_cursor(JI_CURSOR_EYEDROPPER);
-	      return;
-	    }
-	    else if (current_tool->getInk(0)->isScrollMovement()) {
-	      hideDrawingCursor();
-	      jmouse_set_cursor(JI_CURSOR_SCROLL);
-	      return;
-	    }
-	    else if (current_tool->getInk(0)->isCelMovement()) {
-	      hideDrawingCursor();
-	      jmouse_set_cursor(JI_CURSOR_MOVE);
-	      return;
-	    }
-	  }
-
-	  if (m_insideSelection)
-	    m_insideSelection = false;
-
-	  // Draw
-	  if (m_cursor_candraw) {
-	    jmouse_set_cursor(JI_CURSOR_NULL);
-	    showDrawingCursor();
-	  }
-	  // Forbidden
-	  else {
-	    hideDrawingCursor();
-	    jmouse_set_cursor(JI_CURSOR_FORBIDDEN);
-	  }
-	}
-      }
-      else {
-	hideDrawingCursor();
-	jmouse_set_cursor(JI_CURSOR_NORMAL);
-      }
-      break;
-
+  if (!used) {
+    hideDrawingCursor();
+    jmouse_set_cursor(JI_CURSOR_NORMAL);
   }
 }
 
-/* TODO this routine should be called in a change of context */
-void Editor::editor_update_candraw()
+bool Editor::canDraw()
 {
-  m_cursor_candraw =
+  return
     (m_sprite != NULL &&
      m_sprite->getCurrentLayer() != NULL &&
      m_sprite->getCurrentLayer()->is_image() &&
@@ -1587,6 +954,16 @@ void Editor::editor_update_candraw()
      m_sprite->getCurrentLayer()->is_writable() /* && */
      /* layer_get_cel(m_sprite->layer, m_sprite->frame) != NULL */
      );
+}
+
+bool Editor::isInsideSelection()
+{
+  int x, y;
+  screenToEditor(jmouse_x(0), jmouse_y(0), &x, &y);
+  return
+    m_document != NULL &&
+    m_document->isMaskVisible() &&
+    m_document->getMask()->contains_point(x, y);
 }
 
 void Editor::setZoomAndCenterInMouse(int zoom, int mouse_x, int mouse_y)
@@ -1629,410 +1006,4 @@ void Editor::setZoomAndCenterInMouse(int zoom, int mouse_x, int mouse_y)
     m_listeners.notifyScrollChanged(this);
   }
   showDrawingCursor();
-}
-
-//////////////////////////////////////////////////////////////////////
-// ToolLoop implementation
-
-class ToolLoopImpl : public tools::ToolLoop
-{
-  Editor* m_editor;
-  Context* m_context;
-  tools::Tool* m_tool;
-  Pen* m_pen;
-  Document* m_document;
-  Sprite* m_sprite;
-  Layer* m_layer;
-  Cel* m_cel;
-  Image* m_cel_image;
-  bool m_cel_created;
-  int m_old_cel_x;
-  int m_old_cel_y;
-  bool m_filled;
-  bool m_previewFilled;
-  int m_sprayWidth;
-  int m_spraySpeed;
-  TiledMode m_tiled_mode;
-  Image* m_src_image;
-  Image* m_dst_image;
-  bool m_useMask;
-  Mask* m_mask;
-  Point m_maskOrigin;
-  int m_opacity;
-  int m_tolerance;
-  Point m_offset;
-  Point m_speed;
-  bool m_canceled;
-  int m_button;
-  int m_primary_color;
-  int m_secondary_color;
-
-public:
-  ToolLoopImpl(Editor* editor,
-	       Context* context,
-	       tools::Tool* tool,
-	       Document* document,
-	       Sprite* sprite,
-	       Layer* layer,
-	       int button, const Color& primary_color, const Color& secondary_color)
-    : m_editor(editor)
-    , m_context(context)
-    , m_tool(tool)
-    , m_document(document)
-    , m_sprite(sprite)
-    , m_layer(layer)
-    , m_cel(NULL)
-    , m_cel_image(NULL)
-    , m_cel_created(false)
-    , m_canceled(false)
-    , m_button(button)
-    , m_primary_color(color_utils::color_for_layer(primary_color, layer))
-    , m_secondary_color(color_utils::color_for_layer(secondary_color, layer))
-  {
-    // Settings
-    ISettings* settings = m_context->getSettings();
-
-    m_tiled_mode = settings->getTiledMode();
-
-    switch (tool->getFill(m_button)) {
-      case tools::FillNone:
-	m_filled = false;
-	break;
-      case tools::FillAlways:
-	m_filled = true;
-	break;
-      case tools::FillOptional:
-	m_filled = settings->getToolSettings(m_tool)->getFilled();
-	break;
-    }
-    m_previewFilled = settings->getToolSettings(m_tool)->getPreviewFilled();
-
-    m_sprayWidth = settings->getToolSettings(m_tool)->getSprayWidth();
-    m_spraySpeed = settings->getToolSettings(m_tool)->getSpraySpeed();
-
-    // Create the pen
-    IPenSettings* pen_settings = settings->getToolSettings(m_tool)->getPen();
-    ASSERT(pen_settings != NULL);
-
-    m_pen = new Pen(pen_settings->getType(),
-		    pen_settings->getSize(),
-		    pen_settings->getAngle());
-    
-    // Get cel and image where we can draw
-
-    if (m_layer->is_image()) {
-      m_cel = static_cast<LayerImage*>(sprite->getCurrentLayer())->getCel(sprite->getCurrentFrame());
-      if (m_cel)
-	m_cel_image = sprite->getStock()->getImage(m_cel->getImage());
-    }
-
-    if (m_cel == NULL) {
-      // create the image
-      m_cel_image = image_new(sprite->getImgType(), sprite->getWidth(), sprite->getHeight());
-      image_clear(m_cel_image,
-		  m_cel_image->mask_color);
-
-      // create the cel
-      m_cel = new Cel(sprite->getCurrentFrame(), 0);
-      static_cast<LayerImage*>(sprite->getCurrentLayer())->addCel(m_cel);
-
-      m_cel_created = true;
-    }
-
-    m_old_cel_x = m_cel->getX();
-    m_old_cel_y = m_cel->getY();
-
-    // region to draw
-    int x1, y1, x2, y2;
-
-    // non-tiled
-    if (m_tiled_mode == TILED_NONE) {
-      x1 = MIN(m_cel->getX(), 0);
-      y1 = MIN(m_cel->getY(), 0);
-      x2 = MAX(m_cel->getX()+m_cel_image->w, m_sprite->getWidth());
-      y2 = MAX(m_cel->getY()+m_cel_image->h, m_sprite->getHeight());
-    }
-    else { 			// tiled
-      x1 = 0;
-      y1 = 0;
-      x2 = m_sprite->getWidth();
-      y2 = m_sprite->getHeight();
-    }
-
-    // create two copies of the image region which we'll modify with the tool
-    m_src_image = image_crop(m_cel_image,
-			     x1-m_cel->getX(),
-			     y1-m_cel->getY(), x2-x1, y2-y1,
-			     m_cel_image->mask_color);
-    m_dst_image = image_new_copy(m_src_image);
-
-    m_useMask = m_document->isMaskVisible();
-
-    // Selection ink
-    if (getInk()->isSelection() && !m_document->isMaskVisible()) {
-      Mask emptyMask;
-      m_document->setMask(&emptyMask);
-    }
-
-    m_mask = m_document->getMask();
-    m_maskOrigin = (!m_mask->is_empty() ? Point(m_mask->x-x1, m_mask->y-y1):
-					  Point(0, 0));
-
-    m_opacity = settings->getToolSettings(m_tool)->getOpacity();
-    m_tolerance = settings->getToolSettings(m_tool)->getTolerance();
-    m_speed.x = 0;
-    m_speed.y = 0;
-
-    // we have to modify the cel position because it's used in the
-    // `render_sprite' routine to draw the `dst_image'
-    m_cel->setPosition(x1, y1);
-    m_offset.x = -x1;
-    m_offset.y = -y1;
-
-    // Set undo label for any kind of undo used in the whole loop
-    if (m_document->getUndoHistory()->isEnabled()) {
-      m_document->getUndoHistory()->setLabel(m_tool->getText().c_str());
-
-      if (getInk()->isSelection() ||
-	  getInk()->isEyedropper() ||
-	  getInk()->isScrollMovement()) {
-	m_document->getUndoHistory()->setModification(undo::DoesntModifyDocument);
-      }
-      else
-	m_document->getUndoHistory()->setModification(undo::ModifyDocument);
-    }
-  }
-
-  ~ToolLoopImpl()
-  {
-    if (!m_canceled) {
-      undo::UndoHistory* undo = m_document->getUndoHistory();
-
-      // Paint ink
-      if (getInk()->isPaint()) {
-	// If the size of each image is the same, we can create an
-	// undo with only the differences between both images.
-	if (m_cel->getX() == m_old_cel_x &&
-	    m_cel->getY() == m_old_cel_y &&
-	    m_cel_image->w == m_dst_image->w &&
-	    m_cel_image->h == m_dst_image->h) {
-	  // Was the 'cel_image' created in the start of the tool-loop?.
-	  if (m_cel_created) {
-	    // Then we can keep the 'cel_image'...
-	  
-	    // We copy the 'destination' image to the 'cel_image'.
-	    image_copy(m_cel_image, m_dst_image, 0, 0);
-
-	    // Add the 'cel_image' in the images' stock of the sprite.
-	    m_cel->setImage(m_sprite->getStock()->addImage(m_cel_image));
-
-	    // Is the undo enabled?.
-	    if (undo->isEnabled()) {
-	      // We can temporary remove the cel.
-	      static_cast<LayerImage*>(m_sprite->getCurrentLayer())->removeCel(m_cel);
-
-	      // We create the undo information (for the new cel_image
-	      // in the stock and the new cel in the layer)...
-	      undo->pushUndoer(new undoers::OpenGroup());
-	      undo->pushUndoer(new undoers::AddImage(undo->getObjects(),
-		  m_sprite->getStock(), m_cel->getImage()));
-	      undo->pushUndoer(new undoers::AddCel(undo->getObjects(),
-		  m_sprite->getCurrentLayer(), m_cel));
-	      undo->pushUndoer(new undoers::CloseGroup());
-
-	      // And finally we add the cel again in the layer.
-	      static_cast<LayerImage*>(m_sprite->getCurrentLayer())->addCel(m_cel);
-	    }
-	  }
-	  else {
-	    // Undo the dirty region.
-	    if (undo->isEnabled()) {
-	      Dirty* dirty = new Dirty(m_cel_image, m_dst_image);
-	      // TODO error handling
-
-	      dirty->saveImagePixels(m_cel_image);
-	      if (dirty != NULL)
-		undo->pushUndoer(new undoers::DirtyArea(undo->getObjects(),
-		    m_cel_image, dirty));
-
-	      delete dirty;
-	    }
-
-	    // Copy the 'dst_image' to the cel_image.
-	    image_copy(m_cel_image, m_dst_image, 0, 0);
-	  }
-	}
-	// If the size of both images are different, we have to
-	// replace the entire image.
-	else {
-	  if (undo->isEnabled()) {
-	    undo->pushUndoer(new undoers::OpenGroup());
-
-	    if (m_cel->getX() != m_old_cel_x ||
-		m_cel->getY() != m_old_cel_y) {
-	      int x = m_cel->getX();
-	      int y = m_cel->getY();
-	      m_cel->setPosition(m_old_cel_x, m_old_cel_y);
-
-	      undo->pushUndoer(new undoers::SetCelPosition(undo->getObjects(), m_cel));
-
-	      m_cel->setPosition(x, y);
-	    }
-
-	    undo->pushUndoer(new undoers::ReplaceImage(undo->getObjects(),
-		m_sprite->getStock(), m_cel->getImage()));
-	    undo->pushUndoer(new undoers::CloseGroup());
-	  }
-
-	  // Replace the image in the stock.
-	  m_sprite->getStock()->replaceImage(m_cel->getImage(), m_dst_image);
-
-	  // Destroy the old cel image.
-	  image_free(m_cel_image);
-
-	  // Now the `dst_image' is used, so we haven't to destroy it.
-	  m_dst_image = NULL;
-	}
-      }
-
-      // Selection ink
-      if (getInk()->isSelection())
-	m_document->generateMaskBoundaries();
-    }
-
-    // If the trace was not canceled or it is not a 'paint' ink...
-    if (m_canceled || !getInk()->isPaint()) {
-      // Here we destroy the temporary 'cel' created and restore all as it was before
-
-      m_cel->setPosition(m_old_cel_x, m_old_cel_y);
-
-      if (m_cel_created) {
-	static_cast<LayerImage*>(m_layer)->removeCel(m_cel);
-	delete m_cel;
-	delete m_cel_image;
-      }
-    }
-
-    delete m_src_image;
-    delete m_dst_image;
-    delete m_pen;
-  }
-
-  // IToolLoop interface
-  Context* getContext() { return m_context; }
-  tools::Tool* getTool() { return m_tool; }
-  Pen* getPen() { return m_pen; }
-  Document* getDocument() { return m_document; }
-  Sprite* getSprite() { return m_sprite; }
-  Layer* getLayer() { return m_layer; }
-  Image* getSrcImage() { return m_src_image; }
-  Image* getDstImage() { return m_dst_image; }
-  bool useMask() { return m_useMask; }
-  Mask* getMask() { return m_mask; }
-  Point getMaskOrigin() { return m_maskOrigin; }
-  int getMouseButton() { return m_button; }
-  int getPrimaryColor() { return m_primary_color; }
-  void setPrimaryColor(int color) { m_primary_color = color; }
-  int getSecondaryColor() { return m_secondary_color; }
-  void setSecondaryColor(int color) { m_secondary_color = color; }
-  int getOpacity() { return m_opacity; }
-  int getTolerance() { return m_tolerance; }
-  TiledMode getTiledMode() { return m_tiled_mode; }
-  bool getFilled() { return m_filled; }
-  bool getPreviewFilled() { return m_previewFilled; }
-  int getSprayWidth() { return m_sprayWidth; }
-  int getSpraySpeed() { return m_spraySpeed; }
-  Point getOffset() { return m_offset; }
-  void setSpeed(const Point& speed) { m_speed = speed; }
-  Point getSpeed() { return m_speed; }
-  tools::Ink* getInk() { return m_tool->getInk(m_button); }
-  tools::Controller* getController() { return m_tool->getController(m_button); }
-  tools::PointShape* getPointShape() { return m_tool->getPointShape(m_button); }
-  tools::Intertwine* getIntertwine() { return m_tool->getIntertwine(m_button); }
-  tools::TracePolicy getTracePolicy() { return m_tool->getTracePolicy(m_button); }
-
-  void cancel() { m_canceled = true; }
-  bool isCanceled() { return m_canceled; }
-
-  Point screenToSprite(const Point& screenPoint)
-  {
-    Point spritePoint;
-    m_editor->screenToEditor(screenPoint.x, screenPoint.y,
-			     &spritePoint.x, &spritePoint.y);
-    return spritePoint;
-  }
-
-  void updateArea(const Rect& dirty_area)
-  {
-    int x1 = dirty_area.x-m_offset.x;
-    int y1 = dirty_area.y-m_offset.y;
-    int x2 = dirty_area.x-m_offset.x+dirty_area.w-1;
-    int y2 = dirty_area.y-m_offset.y+dirty_area.h-1;
-
-    acquire_bitmap(ji_screen);
-    editors_draw_sprite_tiled(m_sprite, x1, y1, x2, y2);
-    release_bitmap(ji_screen);
-  }
-
-  void updateStatusBar(const char* text)
-  {
-    app_get_statusbar()->setStatusText(0, text);
-  }
-};
-
-tools::ToolLoop* Editor::createToolLoopImpl(Context* context, Message* msg)
-{
-  tools::Tool* current_tool = context->getSettings()->getCurrentTool();
-  if (!current_tool)
-    return NULL;
-
-  Sprite* sprite = getSprite();
-  Layer* layer = sprite->getCurrentLayer();
-
-  if (!layer) {
-    Alert::show(PACKAGE "<<The current sprite does not have any layer.||&Close");
-    return NULL;
-  }
-
-  // If the active layer is not visible.
-  if (!layer->is_readable()) {
-    Alert::show(PACKAGE
-		"<<The current layer is hidden,"
-		"<<make it visible and try again"
-		"||&Close");
-    return NULL;
-  }
-  // If the active layer is read-only.
-  else if (!layer->is_writable()) {
-    Alert::show(PACKAGE
-		"<<The current layer is locked,"
-		"<<unlock it and try again"
-		"||&Close");
-    return NULL;
-  }
-
-  // Get fg/bg colors
-  ColorBar* colorbar = app_get_colorbar();
-  Color fg = colorbar->getFgColor();
-  Color bg = colorbar->getBgColor();
-
-  if (!fg.isValid() || !bg.isValid()) {
-    Alert::show(PACKAGE
-		"<<The current selected foreground and/or background color"
-		"<<is out of range. Select valid colors in the color-bar."
-		"||&Close");
-    return NULL;
-  }
-
-  // Create the new tool loop
-  ToolLoopImpl* tool_loop = new ToolLoopImpl(this,
-					     context,
-					     current_tool,
-					     getDocument(),
-					     sprite, layer,
-					     msg->mouse.left ? 0: 1,
-					     msg->mouse.left ? fg: bg,
-					     msg->mouse.left ? bg: fg);
-
-  return tool_loop;
 }
