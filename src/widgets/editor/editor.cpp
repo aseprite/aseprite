@@ -205,7 +205,7 @@ void Editor::setEditorScroll(int x, int y, int use_refresh_region)
   view->setViewScroll(Point(x, y));
   Point newScroll = view->getViewScroll();
 
-  if (m_document) {
+  if (m_document && changePreferredSettings()) {
     PreferredEditorSettings preferred;
 
     preferred.virgin = false;

@@ -127,6 +127,17 @@ public:
 
 };
 
+class MiniEditor : public Editor
+{
+public:
+  MiniEditor() {
+  }
+
+  bool changePreferredSettings() OVERRIDE {
+    return false;
+  }
+};
+
 int init_module_editors()
 {
   return 0;
@@ -553,7 +564,7 @@ static void create_mini_editor_frame()
   View* newView = new EditorView(EditorView::AlwaysSelected);
   jwidget_expansive(newView, true);
 
-  mini_editor = new Editor();
+  mini_editor = new MiniEditor();
   editors.push_back(EditorItem(mini_editor, EditorItem::Mini));
 
   newView->attachToView(mini_editor);

@@ -156,6 +156,12 @@ protected:
   bool onProcessMessage(Message* msg) OVERRIDE;
   void onCurrentToolChange();
 
+  // Returns true if this editor should change the preferred document
+  // settings.
+  virtual bool changePreferredSettings() {
+    return true;
+  }
+
 private:
   void drawGrid(const gfx::Rect& gridBounds, const Color& color);
 
