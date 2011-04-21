@@ -108,6 +108,13 @@ bool SelectBoxState::onMouseMove(Editor* editor, Message* msg)
 
 bool SelectBoxState::onSetCursor(Editor* editor)
 {
+  if (m_movingRuler >= 0) {
+    switch (m_rulers[m_movingRuler].getOrientation()) {
+      case Ruler::Horizontal: jmouse_set_cursor(JI_CURSOR_SIZE_T); return true;
+      case Ruler::Vertical: jmouse_set_cursor(JI_CURSOR_SIZE_L); return true;
+    }
+  }
+
   int x = jmouse_x(0);
   int y = jmouse_y(0);
 
