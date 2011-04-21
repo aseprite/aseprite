@@ -151,11 +151,9 @@ static Widget* convert_xmlelement_to_widget(TiXmlElement* elem, Widget* root)
 	setup_bevels(widget, b[0], b[1], b[2], b[3]);
       }
 
-      if (closewindow && root) {
-	if (Frame* frame = dynamic_cast<Frame*>(root)) {
-	  static_cast<Button*>(widget)->
-	    Click.connect(Bind<void>(&Frame::closeWindow, frame, widget));
-	}
+      if (closewindow) {
+	static_cast<Button*>(widget)
+	  ->Click.connect(Bind<void>(&Widget::closeWindow, widget));
       }
     }
   }
