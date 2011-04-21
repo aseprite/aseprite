@@ -86,8 +86,10 @@ public:
 
   void flashCurrentLayer();
 
-  void screenToEditor(int xin, int yin, int *xout, int *yout);
-  void editorToScreen(int xin, int yin, int *xout, int *yout);
+  void screenToEditor(int xin, int yin, int* xout, int* yout);
+  void screenToEditor(const gfx::Rect& in, gfx::Rect* out);
+  void editorToScreen(int xin, int yin, int* xout, int* yout);
+  void editorToScreen(const gfx::Rect& in, gfx::Rect* out);
 
   void showDrawingCursor();
   void hideDrawingCursor();

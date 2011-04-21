@@ -487,55 +487,46 @@ void Editor::drawMaskSafe()
 
 void Editor::drawGrid(const Rect& gridBounds, const Color& color)
 {
+  // Copy the grid bounds
   Rect grid(gridBounds);
   if (grid.w < 1 || grid.h < 1)
     return;
 
-  int grid_color = color_utils::color_for_allegro(color, bitmap_color_depth(ji_screen));
-  View* view = View::getView(this);
-  Rect vp = view->getViewportBounds();
-  Point scroll = view->getViewScroll();
-  int x1, y1, x2, y2;
-  int u1, v1, u2, v2;
-  int c;
+  // Move the grid bounds to a non-negative position.
+  if (grid.x < 0) grid.x += (ABS(grid.x)/grid.w+1) * grid.w;
+  if (grid.y < 0) grid.y += (ABS(grid.y)/grid.h+1) * grid.h;
 
-  scroll.x = vp.x - scroll.x + m_offset_x;
-  scroll.y = vp.y - scroll.y + m_offset_y;
-
-  x1 = ji_screen->cl;
-  y1 = ji_screen->ct;
-  x2 = ji_screen->cr-1;
-  y2 = ji_screen->cb-1;
-
-  screenToEditor(x1, y1, &u1, &v1);
-  screenToEditor(x2, y2, &u2, &v2);
-
+  // Change the grid position to the first grid's tile
   grid.setOrigin(Point((grid.x % grid.w) - grid.w,
 		       (grid.y % grid.h) - grid.h));
+  if (grid.x < 0) grid.x += grid.w;
+  if (grid.y < 0) grid.y += grid.h;
 
-  u1 = ((u1-grid.x) / grid.w) - 1;
-  v1 = ((v1-grid.y) / grid.h) - 1;
-  u2 = ((u2-grid.x) / grid.w) + 1;
-  v2 = ((v2-grid.y) / grid.h) + 1;
+  // Convert the "grid" rectangle to screen coordinates
+  editorToScreen(grid, &grid);
 
-  grid.x <<= m_zoom;
-  grid.y <<= m_zoom;
-  grid.w <<= m_zoom;
-  grid.h <<= m_zoom;
+  // Get the grid's color
+  int grid_color = color_utils::color_for_allegro(color, bitmap_color_depth(ji_screen));
 
-  // Horizontal lines
-  x1 = scroll.x+grid.x+u1*grid.w;
-  x2 = scroll.x+grid.x+u2*grid.w;
+  // Get the position of the sprite in the screen.
+  Rect spriteRect;
+  editorToScreen(Rect(0, 0, m_sprite->getWidth(), m_sprite->getHeight()), &spriteRect);
 
-  for (c=v1; c<=v2; c++)
-    hline(ji_screen, x1, scroll.y+grid.y+c*grid.h, x2, grid_color);
+  // Draw horizontal lines
+  int x1 = spriteRect.x;
+  int y1 = grid.y;
+  int x2 = spriteRect.x+spriteRect.w;
+  int y2 = spriteRect.y+spriteRect.h;
 
-  // Vertical lines
-  y1 = scroll.y+grid.y+v1*grid.h;
-  y2 = scroll.y+grid.y+v2*grid.h;
+  for (int c=y1; c<=y2; c+=grid.h)
+    hline(ji_screen, x1, c, x2, grid_color);
 
-  for (c=u1; c<=u2; c++)
-    vline(ji_screen, scroll.x+grid.x+c*grid.w, y1, y2, grid_color);
+  // Draw vertical lines
+  x1 = grid.x;
+  y1 = spriteRect.y;
+
+  for (int c=x1; c<=x2; c+=grid.w)
+    vline(ji_screen, c, y1, y2, grid_color);
 }
 
 void Editor::flashCurrentLayer()
@@ -615,7 +606,7 @@ tools::Tool* Editor::getCurrentEditorTool()
   }
 }
 
-void Editor::screenToEditor(int xin, int yin, int *xout, int *yout)
+void Editor::screenToEditor(int xin, int yin, int* xout, int* yout)
 {
   View* view = View::getView(this);
   Rect vp = view->getViewportBounds();
@@ -625,7 +616,15 @@ void Editor::screenToEditor(int xin, int yin, int *xout, int *yout)
   *yout = (yin - vp.y + scroll.y - m_offset_y) >> m_zoom;
 }
 
-void Editor::editorToScreen(int xin, int yin, int *xout, int *yout)
+void Editor::screenToEditor(const Rect& in, Rect* out)
+{
+  int x1, y1, x2, y2;
+  screenToEditor(in.x, in.y, &x1, &y1);
+  screenToEditor(in.x+in.w, in.y+in.h, &x2, &y2);
+  *out = Rect(x1, y1, x2 - x1, y2 - y1);
+}
+
+void Editor::editorToScreen(int xin, int yin, int* xout, int* yout)
 {
   View* view = View::getView(this);
   Rect vp = view->getViewportBounds();
@@ -633,6 +632,14 @@ void Editor::editorToScreen(int xin, int yin, int *xout, int *yout)
 
   *xout = (vp.x - scroll.x + m_offset_x + (xin << m_zoom));
   *yout = (vp.y - scroll.y + m_offset_y + (yin << m_zoom));
+}
+
+void Editor::editorToScreen(const Rect& in, Rect* out)
+{
+  int x1, y1, x2, y2;
+  editorToScreen(in.x, in.y, &x1, &y1);
+  editorToScreen(in.x+in.w, in.y+in.h, &x2, &y2);
+  *out = Rect(x1, y1, x2 - x1, y2 - y1);
 }
 
 void Editor::showDrawingCursor()
