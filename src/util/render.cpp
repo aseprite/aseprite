@@ -122,7 +122,7 @@ static void merge_zoomed_image(Image* dst, const Image* src, const Palette* pal,
   int src_x, src_y, src_w, src_h;
   int dst_x, dst_y, dst_w, dst_h;
   int box_x, box_y, box_w, box_h;
-  int offsetx, offsety;
+  int first_box_w, first_box_h;
   int line_h, bottom;
 
   box_w = 1<<zoom;
@@ -143,21 +143,21 @@ static void merge_zoomed_image(Image* dst, const Image* src, const Palette* pal,
     src_x += (-dst_x)>>zoom;
     src_w -= (-dst_x)>>zoom;
     dst_w -= (-dst_x);
-    offsetx = box_w - ((-dst_x) % box_w);
+    first_box_w = box_w - ((-dst_x) % box_w);
     dst_x = 0;
   }
   else
-    offsetx = 0;
+    first_box_w = 0;
 
   if (dst_y < 0) {
     src_y += (-dst_y)>>zoom;
     src_h -= (-dst_y)>>zoom;
     dst_h -= (-dst_y);
-    offsety = box_h - ((-dst_y) % box_h);
+    first_box_h = box_h - ((-dst_y) % box_h);
     dst_y = 0;
   }
   else
-    offsety = 0;
+    first_box_h = 0;
 
   if (dst_x+dst_w > dst->w) {
     src_w -= (dst_x+dst_w-dst->w) >> zoom;
@@ -202,8 +202,8 @@ static void merge_zoomed_image(Image* dst, const Image* src, const Palette* pal,
       blender(scanline_address, dst_address, src_address, opacity);
 
       src_address++;
-      if (x == 0 && offsetx > 0)
-	dst_address += offsetx;
+      if ((x == 0) && (first_box_w > 0))
+	dst_address += first_box_w;
       else
 	dst_address += box_w;
       scanline_address++;
@@ -213,8 +213,8 @@ static void merge_zoomed_image(Image* dst, const Image* src, const Palette* pal,
     }
     
     // get the 'height' of the line to be painted in 'dst'
-    if ((offsety > 0) && (y == 0))
-      line_h = offsety;
+    if ((y == 0) && (first_box_h > 0))
+      line_h = first_box_h;
     else
       line_h = box_h;
 
@@ -227,8 +227,8 @@ static void merge_zoomed_image(Image* dst, const Image* src, const Palette* pal,
       x = 0;
 
       // first pixel
-      if (offsetx > 0) {
-        for (box_x=0; box_x<offsetx; box_x++) {
+      if (first_box_w > 0) {
+        for (box_x=0; box_x<first_box_w; box_x++) {
 	  ASSERT(scanline_address >= scanline);
 	  ASSERT(scanline_address <  scanline + src_w);
 	  ASSERT(dst_address >= image_address_fast<DstTraits>(dst, dst_x, dst_y));
