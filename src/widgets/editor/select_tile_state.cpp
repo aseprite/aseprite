@@ -35,10 +35,24 @@ SelectTileState::SelectTileState(SelectTileDelegate* delegate, const gfx::Rect& 
   , m_rulers(4)
   , m_movingRuler(-1)
 {
-  m_rulers[H1] = Ruler(Ruler::Horizontal, rc.y);
-  m_rulers[H2] = Ruler(Ruler::Horizontal, rc.y+rc.h);
-  m_rulers[V1] = Ruler(Ruler::Vertical, rc.x);
-  m_rulers[V2] = Ruler(Ruler::Vertical, rc.x+rc.w);
+  setBoxBounds(rc);
+}
+
+gfx::Rect SelectTileState::getBoxBounds() const
+{
+  int x1 = std::min(m_rulers[V1].getPosition(), m_rulers[V2].getPosition());
+  int y1 = std::min(m_rulers[H1].getPosition(), m_rulers[H2].getPosition());
+  int x2 = std::max(m_rulers[V1].getPosition(), m_rulers[V2].getPosition());
+  int y2 = std::max(m_rulers[H1].getPosition(), m_rulers[H2].getPosition());
+  return gfx::Rect(x1, y1, x2 - x1, y2 - y1);
+}
+
+void SelectTileState::setBoxBounds(const gfx::Rect& box)
+{
+  m_rulers[H1] = Ruler(Ruler::Horizontal, box.y);
+  m_rulers[H2] = Ruler(Ruler::Horizontal, box.y+box.h);
+  m_rulers[V1] = Ruler(Ruler::Vertical, box.x);
+  m_rulers[V2] = Ruler(Ruler::Vertical, box.x+box.w);
 }
 
 bool SelectTileState::onMouseDown(Editor* editor, Message* msg)
@@ -164,15 +178,6 @@ void SelectTileState::postRenderDecorator(EditorPostRender* render)
 	break;
     }
   }
-}
-  
-gfx::Rect SelectTileState::getBoxBounds() const
-{
-  int x1 = std::min(m_rulers[V1].getPosition(), m_rulers[V2].getPosition());
-  int y1 = std::min(m_rulers[H1].getPosition(), m_rulers[H2].getPosition());
-  int x2 = std::max(m_rulers[V1].getPosition(), m_rulers[V2].getPosition());
-  int y2 = std::max(m_rulers[H1].getPosition(), m_rulers[H2].getPosition());
-  return gfx::Rect(x1, y1, x2 - x1, y2 - y1);
 }
 
 bool SelectTileState::touchRuler(Editor* editor, Ruler& ruler, int x, int y)

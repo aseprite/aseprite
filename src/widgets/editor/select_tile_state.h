@@ -41,6 +41,10 @@ class SelectTileState : public StandbyState
 public:
   SelectTileState(SelectTileDelegate* delegate, const gfx::Rect& rc);
 
+  // Returns the bounding box arranged by the rulers.
+  gfx::Rect getBoxBounds() const;
+  void setBoxBounds(const gfx::Rect& rc);
+
   // EditorState overrides
   virtual bool onMouseDown(Editor* editor, Message* msg) OVERRIDE;
   virtual bool onMouseUp(Editor* editor, Message* msg) OVERRIDE;
@@ -58,9 +62,6 @@ public:
 
 private:
   typedef std::vector<Ruler> Rulers;
-
-  // Returns the bounding box arranged by the rulers.
-  gfx::Rect getBoxBounds() const;
 
   // Returns true if the position screen position (x, y) is touching
   // the given ruler.

@@ -19,6 +19,7 @@
 #include "config.h"
 
 #include "app/color_utils.h"
+#include "base/bind.h"
 #include "base/unique_ptr.h"
 #include "commands/command.h"
 #include "document_wrappers.h"
@@ -35,6 +36,9 @@
 
 #include <allegro/unicode.h>
 
+// Disable warning about usage of "this" in initializer list.
+#pragma warning(disable:4355)
+
 // Frame used to show canvas parameters.
 class CanvasSizeFrame : public Frame
 		      , public SelectTileDelegate
@@ -44,8 +48,9 @@ public:
     : Frame(false, "Canvas Size")
     , m_editor(current_editor)
     , m_rect(-left, -top,
-	     current_editor->getSprite()->getWidth() + right,
-	     current_editor->getSprite()->getHeight() + bottom)
+	     current_editor->getSprite()->getWidth() + left + right,
+	     current_editor->getSprite()->getHeight() + top + bottom)
+    , m_selectTileState(new SelectTileState(this, m_rect))
   {
     m_mainBox = load_widget("canvas_size.xml", "main_box");
     get_widgets(m_mainBox,
@@ -62,7 +67,12 @@ public:
     m_top->setTextf("%d", top);
     m_bottom->setTextf("%d", bottom);
 
-    m_editor->setDefaultState(EditorStatePtr(new SelectTileState(this, m_rect)));
+    m_left  ->EntryChange.connect(Bind<void>(&CanvasSizeFrame::onEntriesChange, this));
+    m_right ->EntryChange.connect(Bind<void>(&CanvasSizeFrame::onEntriesChange, this));
+    m_top   ->EntryChange.connect(Bind<void>(&CanvasSizeFrame::onEntriesChange, this));
+    m_bottom->EntryChange.connect(Bind<void>(&CanvasSizeFrame::onEntriesChange, this));
+
+    m_editor->setDefaultState(m_selectTileState);
   }
 
   ~CanvasSizeFrame()
@@ -77,6 +87,7 @@ public:
   int getTop()    const { return m_top->getTextInt(); }
   int getBottom() const { return m_bottom->getTextInt(); }
 
+protected:
   // SelectTileDelegate impleentation
   virtual void onChangeRectangle(const gfx::Rect& rect) OVERRIDE
   {
@@ -88,7 +99,21 @@ public:
     m_bottom->setTextf("%d", (m_rect.y + m_rect.h) - current_editor->getSprite()->getHeight());
   }
 
-protected:
+  void onEntriesChange()
+  {
+    int left = getLeft();
+    int top = getTop();
+
+    m_rect = gfx::Rect(-left, -top,
+		       m_editor->getSprite()->getWidth() + left + getRight(),
+		       m_editor->getSprite()->getHeight() + top + getBottom());
+
+    static_cast<SelectTileState*>(m_selectTileState.get())->setBoxBounds(m_rect);
+
+    // Redraw new rulers position
+    m_editor->invalidate();
+  }
+
   virtual void onBroadcastMouseMessage(WidgetsList& targets) OVERRIDE
   {
     Frame::onBroadcastMouseMessage(targets);
@@ -100,12 +125,13 @@ protected:
 private:
   Editor* m_editor;
   Widget* m_mainBox;
-  Widget* m_left;
-  Widget* m_right;
-  Widget* m_top;
-  Widget* m_bottom;
+  Entry* m_left;
+  Entry* m_right;
+  Entry* m_top;
+  Entry* m_bottom;
   Widget* m_ok;
   gfx::Rect m_rect;
+  EditorStatePtr m_selectTileState;
 };
 
 //////////////////////////////////////////////////////////////////////
