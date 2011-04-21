@@ -18,7 +18,7 @@
 
 #include "config.h"
 
-#include "widgets/editor/select_tile_state.h"
+#include "widgets/editor/select_box_state.h"
 
 #include "gfx/rect.h"
 #include "gui/message.h"
@@ -30,7 +30,7 @@
 
 #include <allegro/color.h>
 
-SelectTileState::SelectTileState(SelectTileDelegate* delegate, const gfx::Rect& rc)
+SelectBoxState::SelectBoxState(SelectBoxDelegate* delegate, const gfx::Rect& rc)
   : m_delegate(delegate)
   , m_rulers(4)
   , m_movingRuler(-1)
@@ -38,7 +38,7 @@ SelectTileState::SelectTileState(SelectTileDelegate* delegate, const gfx::Rect& 
   setBoxBounds(rc);
 }
 
-gfx::Rect SelectTileState::getBoxBounds() const
+gfx::Rect SelectBoxState::getBoxBounds() const
 {
   int x1 = std::min(m_rulers[V1].getPosition(), m_rulers[V2].getPosition());
   int y1 = std::min(m_rulers[H1].getPosition(), m_rulers[H2].getPosition());
@@ -47,7 +47,7 @@ gfx::Rect SelectTileState::getBoxBounds() const
   return gfx::Rect(x1, y1, x2 - x1, y2 - y1);
 }
 
-void SelectTileState::setBoxBounds(const gfx::Rect& box)
+void SelectBoxState::setBoxBounds(const gfx::Rect& box)
 {
   m_rulers[H1] = Ruler(Ruler::Horizontal, box.y);
   m_rulers[H2] = Ruler(Ruler::Horizontal, box.y+box.h);
@@ -55,7 +55,7 @@ void SelectTileState::setBoxBounds(const gfx::Rect& box)
   m_rulers[V2] = Ruler(Ruler::Vertical, box.x+box.w);
 }
 
-bool SelectTileState::onMouseDown(Editor* editor, Message* msg)
+bool SelectBoxState::onMouseDown(Editor* editor, Message* msg)
 {
   if (msg->mouse.left || msg->mouse.right) {
     m_movingRuler = -1;
@@ -74,13 +74,13 @@ bool SelectTileState::onMouseDown(Editor* editor, Message* msg)
   return StandbyState::onMouseDown(editor, msg);
 }
 
-bool SelectTileState::onMouseUp(Editor* editor, Message* msg)
+bool SelectBoxState::onMouseUp(Editor* editor, Message* msg)
 {
   m_movingRuler = -1;
   return StandbyState::onMouseUp(editor, msg);
 }
 
-bool SelectTileState::onMouseMove(Editor* editor, Message* msg)
+bool SelectBoxState::onMouseMove(Editor* editor, Message* msg)
 {
   if (m_movingRuler >= 0) {
     int u, v;
@@ -106,7 +106,7 @@ bool SelectTileState::onMouseMove(Editor* editor, Message* msg)
   return StandbyState::onMouseMove(editor, msg);
 }
 
-bool SelectTileState::onSetCursor(Editor* editor)
+bool SelectBoxState::onSetCursor(Editor* editor)
 {
   int x = jmouse_x(0);
   int y = jmouse_y(0);
@@ -127,12 +127,12 @@ bool SelectTileState::onSetCursor(Editor* editor)
   return false;
 }
 
-EditorDecorator* SelectTileState::getDecorator()
+EditorDecorator* SelectBoxState::getDecorator()
 {
   return this;
 }
 
-void SelectTileState::preRenderDecorator(EditorPreRender* render)
+void SelectBoxState::preRenderDecorator(EditorPreRender* render)
 {
   gfx::Rect rc = getBoxBounds();
   Image* image = render->getImage();
@@ -157,7 +157,7 @@ void SelectTileState::preRenderDecorator(EditorPreRender* render)
     render->fillRect(gfx::Rect(rc.x+rc.w, rc.y, sprite_w-(rc.x+rc.w), rc.h), _rgba(0, 0, 0, 255), 128);
 }
 
-void SelectTileState::postRenderDecorator(EditorPostRender* render)
+void SelectBoxState::postRenderDecorator(EditorPostRender* render)
 {
   Editor* editor = render->getEditor();
   int zoom = editor->getZoom();
@@ -180,7 +180,7 @@ void SelectTileState::postRenderDecorator(EditorPostRender* render)
   }
 }
 
-bool SelectTileState::touchRuler(Editor* editor, Ruler& ruler, int x, int y)
+bool SelectBoxState::touchRuler(Editor* editor, Ruler& ruler, int x, int y)
 {
   int u, v;
   editor->editorToScreen(ruler.getPosition(), ruler.getPosition(), &u, &v);

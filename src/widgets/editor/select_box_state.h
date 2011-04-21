@@ -16,8 +16,8 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifndef WIDGETS_EDITOR_SELECT_TILE_STATE_H_INCLUDED
-#define WIDGETS_EDITOR_SELECT_TILE_STATE_H_INCLUDED
+#ifndef WIDGETS_EDITOR_SELECT_BOX_STATE_H_INCLUDED
+#define WIDGETS_EDITOR_SELECT_BOX_STATE_H_INCLUDED
 
 #include "base/compiler_specific.h"
 #include "widgets/editor/editor_decorator.h"
@@ -26,20 +26,20 @@
 
 #include <vector>
 
-class SelectTileDelegate
+class SelectBoxDelegate
 {
 public:
-  virtual ~SelectTileDelegate() { }
+  virtual ~SelectBoxDelegate() { }
   virtual void onChangeRectangle(const gfx::Rect& rect) = 0;
 };
 
-class SelectTileState : public StandbyState
-		      , public EditorDecorator
+class SelectBoxState : public StandbyState
+		     , public EditorDecorator
 {
   enum { H1, H2, V1, V2 };
 
 public:
-  SelectTileState(SelectTileDelegate* delegate, const gfx::Rect& rc);
+  SelectBoxState(SelectBoxDelegate* delegate, const gfx::Rect& rc);
 
   // Returns the bounding box arranged by the rulers.
   gfx::Rect getBoxBounds() const;
@@ -67,9 +67,9 @@ private:
   // the given ruler.
   bool touchRuler(Editor* editor, Ruler& ruler, int x, int y);
 
-  SelectTileDelegate* m_delegate;
+  SelectBoxDelegate* m_delegate;
   Rulers m_rulers;
   int m_movingRuler;
 };
 
-#endif	// WIDGETS_EDITOR_STANDBY_STATE_H_INCLUDED
+#endif	// WIDGETS_EDITOR_SELECT_BOX_STATE_H_INCLUDED

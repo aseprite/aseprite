@@ -19,7 +19,7 @@
 #ifndef WIDGETS_EDITOR_RULER_H_INCLUDED
 #define WIDGETS_EDITOR_RULER_H_INCLUDED
 
-// A ruler inside the editor. It is used by SelectTileState to show
+// A ruler inside the editor. It is used by SelectBoxState to show
 // rulers that can be dragged by the user.
 class Ruler
 {

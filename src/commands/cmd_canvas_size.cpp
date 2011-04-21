@@ -32,7 +32,7 @@
 #include "undo_transaction.h"
 #include "widgets/color_bar.h"
 #include "widgets/editor/editor.h"
-#include "widgets/editor/select_tile_state.h"
+#include "widgets/editor/select_box_state.h"
 
 #include <allegro/unicode.h>
 
@@ -41,7 +41,7 @@
 
 // Frame used to show canvas parameters.
 class CanvasSizeFrame : public Frame
-		      , public SelectTileDelegate
+		      , public SelectBoxDelegate
 {
 public:
   CanvasSizeFrame(int left, int top, int right, int bottom)
@@ -50,7 +50,7 @@ public:
     , m_rect(-left, -top,
 	     current_editor->getSprite()->getWidth() + left + right,
 	     current_editor->getSprite()->getHeight() + top + bottom)
-    , m_selectTileState(new SelectTileState(this, m_rect))
+    , m_selectBoxState(new SelectBoxState(this, m_rect))
   {
     m_mainBox = load_widget("canvas_size.xml", "main_box");
     get_widgets(m_mainBox,
@@ -72,7 +72,7 @@ public:
     m_top   ->EntryChange.connect(Bind<void>(&CanvasSizeFrame::onEntriesChange, this));
     m_bottom->EntryChange.connect(Bind<void>(&CanvasSizeFrame::onEntriesChange, this));
 
-    m_editor->setDefaultState(m_selectTileState);
+    m_editor->setDefaultState(m_selectBoxState);
   }
 
   ~CanvasSizeFrame()
@@ -88,7 +88,7 @@ public:
   int getBottom() const { return m_bottom->getTextInt(); }
 
 protected:
-  // SelectTileDelegate impleentation
+  // SelectBoxDelegate impleentation
   virtual void onChangeRectangle(const gfx::Rect& rect) OVERRIDE
   {
     m_rect = rect;
@@ -108,7 +108,7 @@ protected:
 		       m_editor->getSprite()->getWidth() + left + getRight(),
 		       m_editor->getSprite()->getHeight() + top + getBottom());
 
-    static_cast<SelectTileState*>(m_selectTileState.get())->setBoxBounds(m_rect);
+    static_cast<SelectBoxState*>(m_selectBoxState.get())->setBoxBounds(m_rect);
 
     // Redraw new rulers position
     m_editor->invalidate();
@@ -131,7 +131,7 @@ private:
   Entry* m_bottom;
   Widget* m_ok;
   gfx::Rect m_rect;
-  EditorStatePtr m_selectTileState;
+  EditorStatePtr m_selectBoxState;
 };
 
 //////////////////////////////////////////////////////////////////////
