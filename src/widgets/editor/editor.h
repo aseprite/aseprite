@@ -21,6 +21,7 @@
 
 #include "app/color.h"
 #include "base/compiler_specific.h"
+#include "base/shared_ptr.h"
 #include "base/signal.h"
 #include "document.h"
 #include "gui/base.h"
@@ -40,6 +41,8 @@ namespace tools {
   class Tool;
 }
 
+typedef SharedPtr<EditorState> EditorStatePtr;
+
 class Editor : public Widget
 {
 public:
@@ -48,10 +51,14 @@ public:
   Editor();
   ~Editor();
 
-  EditorState* getState() const { return m_state; }
+  EditorStatePtr getDefaultState() { return m_defaultState; }
+  EditorStatePtr getState() { return m_state; }
 
-  // Changes the state of the editor. Deletes the old state.
-  void setState(EditorState* state);
+  // Changes the state of the editor and uses it as the default one.
+  void setDefaultState(const EditorStatePtr& newState);
+
+  // Changes the state of the editor.
+  void setState(const EditorStatePtr& newState);
 
   Document* getDocument() { return m_document; }
   void setDocument(Document* document);
@@ -174,9 +181,15 @@ private:
 			     int sprite_x, int sprite_y, int color,
 			     void (*pixel)(BITMAP *bmp, int x, int y, int color));
 
+  // Default state when the editor is in standby (generally
+  // StandbyState).  Transitory states should back to the default
+  // state (e.g. ScrollingState returns to the default state when the
+  // mouse button is released).
+  EditorStatePtr m_defaultState;
+
   // Current editor state (it can be shared between several editors to
   // the same document). This member cannot be NULL.
-  EditorState* m_state;
+  EditorStatePtr m_state;
   
   Document* m_document;		// Active document in the editor
   Sprite* m_sprite;		// Active sprite in the editor

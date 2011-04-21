@@ -605,7 +605,7 @@ static void update_mini_editor_frame(Editor* editor)
     if (mini_editor->getDocument() != document) {
       mini_editor->setDocument(document);
       mini_editor->setZoom(0);
-      mini_editor->setState(new EditorState);
+      mini_editor->setState(EditorStatePtr(new EditorState));
     }
 
     mini_editor->centerInSpritePoint(pt.x, pt.y);

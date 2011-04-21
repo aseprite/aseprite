@@ -267,8 +267,8 @@ void MovingPixelsState::setTransparentColor(const Color& color)
 
 void MovingPixelsState::dropPixels(Editor* editor)
 {
-  // Just change to standby state (we'll receive an
-  // onBeforeChangeState event).
-  editor->setState(new StandbyState);
+  // Just change to default state (StandbyState generally). We'll
+  // receive an onBeforeChangeState event after this call.
+  editor->setState(editor->getDefaultState());
 }
 

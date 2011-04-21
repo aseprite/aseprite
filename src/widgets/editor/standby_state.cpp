@@ -85,7 +85,7 @@ bool StandbyState::onMouseDown(Editor* editor, Message* msg)
   // Start scroll loop
   if (msg->mouse.middle ||
       current_tool->getInk(msg->mouse.right ? 1: 0)->isScrollMovement()) {
-    editor->setState(new ScrollingState());
+    editor->setState(EditorStatePtr(new ScrollingState()));
     editor->captureMouse();
     return true;
   }
@@ -126,7 +126,7 @@ bool StandbyState::onMouseDown(Editor* editor, Message* msg)
       }
 
       // Change to MovingPixelsState
-      editor->setState(new MovingPixelsState(editor, msg, image, x, y, opacity));
+      editor->setState(EditorStatePtr(new MovingPixelsState(editor, msg, image, x, y, opacity)));
     }
   }
   // Call the eyedropper command
@@ -144,7 +144,7 @@ bool StandbyState::onMouseDown(Editor* editor, Message* msg)
   else if (sprite->getCurrentLayer()) {
     tools::ToolLoop* toolLoop = create_tool_loop(editor, context, msg);
     if (toolLoop)
-      editor->setState(new DrawingState(toolLoop, editor, msg));
+      editor->setState(EditorStatePtr(new DrawingState(toolLoop, editor, msg)));
   }
 
   return true;

@@ -52,7 +52,8 @@ using namespace gfx;
 
 Editor::Editor()
   : Widget(editor_type())
-  , m_state(new StandbyState())
+  , m_defaultState(EditorStatePtr(new StandbyState()))
+  , m_state(m_defaultState)
 {
   m_document = NULL;
   m_sprite = NULL;
@@ -95,22 +96,19 @@ int editor_type()
   return type;
 }
 
-void Editor::setState(EditorState* newState)
+void Editor::setDefaultState(const EditorStatePtr& newState)
 {
-  try {
-    hideDrawingCursor();
+  m_defaultState = newState;
+  setState(newState);
+}
 
-    // Fire before change state event, set the state, and fire after
-    // change state event.
-    m_state->onBeforeChangeState(this);
-  }
-  catch (...) {
-    delete newState; // An exception was thrown before we use the newState.
-    throw;
-  }
+void Editor::setState(const EditorStatePtr& newState)
+{
+  hideDrawingCursor();
 
-  // Delete old state (it cannot thrown exceptions)
-  delete m_state;
+  // Fire before change state event, set the state, and fire after
+  // change state event.
+  m_state->onBeforeChangeState(this);
 
   // Change to the new state.
   m_state = newState;
@@ -134,11 +132,11 @@ void Editor::setState(EditorState* newState)
 
 void Editor::setDocument(Document* document)
 {
-  if (this->hasMouse())
-    jmanager_free_mouse();	// TODO Why is this here? Review this code
+  //if (this->hasMouse())
+  //jmanager_free_mouse();	// TODO Why is this here? Review this code
 
   // Reset current state.
-  setState(new StandbyState);
+  setDefaultState(EditorStatePtr(new StandbyState));
 
   if (m_cursor_thick)
     editor_clean_cursor();

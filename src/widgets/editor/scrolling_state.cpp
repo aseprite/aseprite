@@ -28,7 +28,6 @@
 #include "modules/editors.h"
 #include "raster/sprite.h"
 #include "widgets/editor/editor.h"
-#include "widgets/editor/standby_state.h"
 #include "widgets/statebar.h"
 
 ScrollingState::ScrollingState()
@@ -46,7 +45,7 @@ bool ScrollingState::onMouseDown(Editor* editor, Message* msg)
 
 bool ScrollingState::onMouseUp(Editor* editor, Message* msg)
 {
-  editor->setState(new StandbyState);
+  editor->setState(editor->getDefaultState());
   editor->releaseMouse();
   return true;
 }

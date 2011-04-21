@@ -27,7 +27,6 @@
 #include "tools/tool_loop.h"
 #include "tools/tool_loop_manager.h"
 #include "widgets/editor/editor.h"
-#include "widgets/editor/standby_state.h"
 
 #include <allegro.h>
 
@@ -81,7 +80,7 @@ bool DrawingState::onMouseDown(Editor* editor, Message* msg)
     m_toolLoopManager = NULL;
 
     // Change to standby state
-    editor->setState(new StandbyState());
+    editor->setState(editor->getDefaultState());
     editor->releaseMouse();
   }
 
@@ -99,7 +98,7 @@ bool DrawingState::onMouseUp(Editor* editor, Message* msg)
   m_toolLoopManager->releaseLoop(pointer_from_msg(msg));
 
   // Back to standby state.
-  editor->setState(new StandbyState);
+  editor->setState(editor->getDefaultState());
   editor->releaseMouse();
   return true;
 }
