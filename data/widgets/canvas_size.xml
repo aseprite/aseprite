@@ -1,8 +1,7 @@
 <!-- ASE - Allegro Sprite Editor -->
 <!-- Copyright (C) 2001-2011 by David Capello -->
 <jinete>
-<window text="Canvas Size [work-in-progress]" name="canvas_size">
-  <box vertical="true">
+  <box vertical="true" name="main_box">
     <box horizontal="true">
       <box vertical="true" homogeneous="true">
 	<label text="Left:" />
@@ -30,5 +29,4 @@
       </box>
     </box>
   </box>
-</window>
 </jinete>

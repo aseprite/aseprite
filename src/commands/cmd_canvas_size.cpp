@@ -19,17 +19,96 @@
 #include "config.h"
 
 #include "app/color_utils.h"
+#include "base/unique_ptr.h"
 #include "commands/command.h"
 #include "document_wrappers.h"
 #include "gui/gui.h"
+#include "modules/editors.h"
 #include "modules/gui.h"
 #include "raster/image.h"
 #include "raster/mask.h"
 #include "raster/sprite.h"
 #include "undo_transaction.h"
 #include "widgets/color_bar.h"
+#include "widgets/editor/editor.h"
+#include "widgets/editor/select_tile_state.h"
 
 #include <allegro/unicode.h>
+
+// Frame used to show canvas parameters.
+class CanvasSizeFrame : public Frame
+		      , public SelectTileDelegate
+{
+public:
+  CanvasSizeFrame(int left, int top, int right, int bottom)
+    : Frame(false, "Canvas Size")
+    , m_editor(current_editor)
+    , m_rect(-left, -top,
+	     current_editor->getSprite()->getWidth() + right,
+	     current_editor->getSprite()->getHeight() + bottom)
+  {
+    m_mainBox = load_widget("canvas_size.xml", "main_box");
+    get_widgets(m_mainBox,
+		"left", &m_left,
+		"top", &m_top,
+		"right", &m_right,
+		"bottom", &m_bottom,
+		"ok", &m_ok, NULL);
+
+    addChild(m_mainBox);
+
+    m_left->setTextf("%d", left);
+    m_right->setTextf("%d", right);
+    m_top->setTextf("%d", top);
+    m_bottom->setTextf("%d", bottom);
+
+    m_editor->setDefaultState(EditorStatePtr(new SelectTileState(this, m_rect)));
+  }
+
+  ~CanvasSizeFrame()
+  {
+    m_editor->setDefaultState(EditorStatePtr(new StandbyState));
+  }
+
+  bool pressedOk() { return get_killer() == m_ok; }
+
+  int getLeft()   const { return m_left->getTextInt(); }
+  int getRight()  const { return m_right->getTextInt(); }
+  int getTop()    const { return m_top->getTextInt(); }
+  int getBottom() const { return m_bottom->getTextInt(); }
+
+  // SelectTileDelegate impleentation
+  virtual void onChangeRectangle(const gfx::Rect& rect) OVERRIDE
+  {
+    m_rect = rect;
+
+    m_left->setTextf("%d", -m_rect.x);
+    m_top->setTextf("%d", -m_rect.y);
+    m_right->setTextf("%d", (m_rect.x + m_rect.w) - current_editor->getSprite()->getWidth());
+    m_bottom->setTextf("%d", (m_rect.y + m_rect.h) - current_editor->getSprite()->getHeight());
+  }
+
+protected:
+  virtual void onBroadcastMouseMessage(WidgetsList& targets) OVERRIDE
+  {
+    Frame::onBroadcastMouseMessage(targets);
+
+    // Add the editor as receptor of mouse events too.
+    targets.push_back(View::getView(m_editor));
+  }
+
+private:
+  Editor* m_editor;
+  Widget* m_mainBox;
+  Widget* m_left;
+  Widget* m_right;
+  Widget* m_top;
+  Widget* m_bottom;
+  Widget* m_ok;
+  gfx::Rect m_rect;
+};
+
+//////////////////////////////////////////////////////////////////////
 
 class CanvasSizeCommand : public Command
 {
@@ -64,40 +143,27 @@ void CanvasSizeCommand::onExecute(Context* context)
   const Sprite* sprite(document->getSprite());
 
   if (context->isUiAvailable()) {
-    JWidget left, top, right, bottom, ok;
-
     // load the window widget
-    FramePtr window(load_widget("canvas_size.xml", "canvas_size"));
-    get_widgets(window,
-		"left", &left,
-		"top", &top,
-		"right", &right,
-		"bottom", &bottom,
-		"ok", &ok, NULL);
+    UniquePtr<CanvasSizeFrame> window(new CanvasSizeFrame(0, 0, 0, 0));
 
     window->remap_window();
     window->center_window();
-
-    left->setTextf("%d", m_left);
-    right->setTextf("%d", m_right);
-    top->setTextf("%d", m_top);
-    bottom->setTextf("%d", m_bottom);
 
     load_window_pos(window, "CanvasSize");
     window->setVisible(true);
     window->open_window_fg();
     save_window_pos(window, "CanvasSize");
 
-    if (window->get_killer() != ok)
+    if (!window->pressedOk())
       return;
 
-    m_left = left->getTextInt();
-    m_right = right->getTextInt();
-    m_top = top->getTextInt();
-    m_bottom = bottom->getTextInt();
+    m_left   = window->getLeft();
+    m_right  = window->getRight();
+    m_top    = window->getTop();
+    m_bottom = window->getBottom();
   }
 
-  // resize canvas
+  // Resize canvas
 
   int x1 = -m_left;
   int y1 = -m_top;

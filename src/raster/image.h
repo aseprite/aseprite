@@ -64,6 +64,7 @@ public:
   virtual void merge(const Image* src, int x, int y, int opacity, int blend_mode) = 0;
   virtual void hline(int x1, int y, int x2, int color) = 0;
   virtual void rectfill(int x1, int y1, int x2, int y2, int color) = 0;
+  virtual void rectblend(int x1, int y1, int x2, int y2, int color, int opacity) = 0;
   virtual void to_allegro(BITMAP* bmp, int x, int y, const Palette* palette) const = 0;
 };
 
@@ -90,6 +91,7 @@ void image_hline(Image* image, int x1, int y, int x2, int color);
 void image_vline(Image* image, int x, int y1, int y2, int color);
 void image_rect(Image* image, int x1, int y1, int x2, int y2, int color);
 void image_rectfill(Image* image, int x1, int y1, int x2, int y2, int color);
+void image_rectblend(Image* image, int x1, int y1, int x2, int y2, int color, int opacity);
 void image_line(Image* image, int x1, int y1, int x2, int y2, int color);
 void image_ellipse(Image* image, int x1, int y1, int x2, int y2, int color);
 void image_ellipsefill(Image* image, int x1, int y1, int x2, int y2, int color);

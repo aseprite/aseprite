@@ -296,6 +296,33 @@ void image_rectfill(Image* image, int x1, int y1, int x2, int y2, int color)
   image->rectfill(x1, y1, x2, y2, color);
 }
 
+void image_rectblend(Image* image, int x1, int y1, int x2, int y2, int color, int opacity)
+{
+  int t;
+
+  if (x1 > x2) {
+    t = x1;
+    x1 = x2;
+    x2 = t;
+  }
+
+  if (y1 > y2) {
+    t = y1;
+    y1 = y2;
+    y2 = t;
+  }
+
+  if ((x2 < 0) || (x1 >= image->w) || (y2 < 0) || (y1 >= image->h))
+    return;
+
+  if (x1 < 0) x1 = 0;
+  if (y1 < 0) y1 = 0;
+  if (x2 >= image->w) x2 = image->w-1;
+  if (y2 >= image->h) y2 = image->h-1;
+
+  image->rectblend(x1, y1, x2, y2, color, opacity);
+}
+
 typedef struct Data
 {
   Image* image;

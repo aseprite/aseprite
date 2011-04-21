@@ -19,6 +19,7 @@
 #ifndef RASTER_IMAGE_IMPL_H_INCLUDED
 #define RASTER_IMAGE_IMPL_H_INCLUDED
 
+#include "raster/blend.h"
 #include "raster/image.h"
 #include "raster/palette.h"
 
@@ -221,12 +222,32 @@ public:
     }
   }
 
+  virtual void rectblend(int x1, int y1, int x2, int y2, int color, int opacity)
+  {
+    rectfill(x1, y1, x2, y2, color);
+  }
+
   virtual void to_allegro(BITMAP* bmp, int x, int y, const Palette* palette) const;
 
 };
 
 //////////////////////////////////////////////////////////////////////
 // Specializations
+
+template<>
+void ImageImpl<RgbTraits>::rectblend(int x1, int y1, int x2, int y2, int color, int opacity)
+{
+  address_t addr;
+  int x, y;
+
+  for (y=y1; y<=y2; ++y) {
+    addr = line_address(y)+x1;
+    for (x=x1; x<=x2; ++x) {
+      *addr = _rgba_blend_normal(*addr, color, opacity);
+      ++addr;
+    }
+  }
+}
 
 template<>
 void ImageImpl<IndexedTraits>::clear(int color)

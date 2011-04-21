@@ -20,6 +20,7 @@
 #define WIDGETS_EDITOR_EDITOR_STATE_H_INCLUDED
 
 class Editor;
+class EditorDecorator;
 union Message;
 
 // Represents one state of the sprite's editor (Editor class).  This
@@ -75,6 +76,9 @@ public:
   // Returns true if the this state requires the pen-preview as
   // drawing cursor.
   virtual bool requirePenPreview() { return false; }
+
+  // Called after the sprite is painted.
+  virtual EditorDecorator* getDecorator() { return NULL; }
 
 };
 

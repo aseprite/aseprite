@@ -42,6 +42,7 @@
 #include "util/misc.h"
 #include "util/render.h"
 #include "widgets/color_bar.h"
+#include "widgets/editor/editor_decorator.h"
 #include "widgets/editor/standby_state.h"
 #include "widgets/statebar.h"
 
@@ -49,6 +50,68 @@
 #include <stdio.h>
 
 using namespace gfx;
+
+class EditorPreRenderImpl : public EditorPreRender
+{
+public:
+  EditorPreRenderImpl(Editor* editor, Image* image, Point& offset, int zoom)
+    : m_editor(editor)
+    , m_image(image)
+    , m_offset(offset)
+    , m_zoom(zoom)
+  {
+  }
+
+  Editor* getEditor() OVERRIDE
+  {
+    return m_editor;
+  }
+
+  Image* getImage() OVERRIDE
+  {
+    return m_image;
+  }
+
+  void fillRect(const gfx::Rect& rect, uint32_t rgbaColor, int opacity) OVERRIDE
+  {
+    image_rectblend(m_image,
+		    m_offset.x + (rect.x << m_zoom),
+		    m_offset.y + (rect.y << m_zoom),
+		    m_offset.x + ((rect.x+rect.w) << m_zoom) - 1,
+		    m_offset.y + ((rect.y+rect.h) << m_zoom) - 1, rgbaColor, opacity);
+  }
+
+private:
+  Editor* m_editor;
+  Image* m_image;
+  Point m_offset;
+  int m_zoom;
+};
+
+class EditorPostRenderImpl : public EditorPostRender
+{
+public:
+  EditorPostRenderImpl(Editor* editor)
+    : m_editor(editor)
+  {
+  }
+
+  Editor* getEditor()
+  {
+    return m_editor;
+  }
+
+  void drawLine(int x1, int y1, int x2, int y2, int screenColor)
+  {
+    int u1, v1, u2, v2;
+    m_editor->editorToScreen(x1, y1, &u1, &v1);
+    m_editor->editorToScreen(x2, y2, &u2, &v2);
+    line(ji_screen, u1, v1, u2, v2, screenColor);
+  }
+
+private:
+  Editor* m_editor;
+};
 
 Editor::Editor()
   : Widget(editor_type())
@@ -328,6 +391,13 @@ void Editor::drawSprite(int x1, int y1, int x2, int y2)
 						 m_zoom, true);
 
     if (rendered) {
+      // Pre-render decorator.
+      if (EditorDecorator* decorator = m_defaultState->getDecorator()) {
+      	EditorPreRenderImpl preRender(this, rendered,
+      				      Point(-source_x, -source_y), m_zoom);
+      	decorator->preRenderDecorator(&preRender);
+      }
+
 #ifdef DRAWSPRITE_DOUBLEBUFFERED
       BITMAP *bmp = create_bitmap(width, height);
 
@@ -362,6 +432,12 @@ void Editor::drawSprite(int x1, int y1, int x2, int y2)
   if (settings->getGridVisible())
     this->drawGrid(settings->getGridBounds(),
 		   settings->getGridColor());
+
+  // Post-render decorator.
+  if (EditorDecorator* decorator = m_defaultState->getDecorator()) {
+    EditorPostRenderImpl postRender(this);
+    decorator->postRenderDecorator(&postRender);
+  }
 }
 
 void Editor::drawSpriteSafe(int x1, int y1, int x2, int y2)
@@ -690,10 +766,10 @@ void Editor::removeListener(EditorListener* listener)
 }
 
 // Returns the visible area of the active sprite.
-gfx::Rect Editor::getVisibleSpriteBounds()
+Rect Editor::getVisibleSpriteBounds()
 {
   // Return an empty rectangle if there is not a active sprite.
-  if (!m_sprite) return gfx::Rect();
+  if (!m_sprite) return Rect();
 
   View* view = View::getView(this);
   Rect vp = view->getViewportBounds();

@@ -289,6 +289,7 @@ add_library(aseprite-library
   widgets/editor/moving_pixels_state.cpp
   widgets/editor/pixels_movement.cpp
   widgets/editor/scrolling_state.cpp
+  widgets/editor/select_tile_state.cpp
   widgets/editor/standby_state.cpp
   widgets/editor/tool_loop_impl.cpp
   widgets/fileview.cpp
