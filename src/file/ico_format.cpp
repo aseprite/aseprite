@@ -143,6 +143,7 @@ bool IcoFormat::onLoad(FileOp* fop)
   int image_index = sprite->getStock()->addImage(image);
   Cel* cel = new Cel(0, image_index);
   layer->addCel(cel);
+  image_clear(image, 0);
 
   // Go to the entry start in the file
   fseek(f, entry.image_offset, SEEK_SET);
