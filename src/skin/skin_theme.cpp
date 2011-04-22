@@ -201,6 +201,14 @@ SkinTheme::SkinTheme()
   sheet_mapping["layer_locked_selected"] = PART_LAYER_LOCKED_SELECTED;
   sheet_mapping["unpinned"] = PART_UNPINNED;
   sheet_mapping["pinned"] = PART_PINNED;
+  sheet_mapping["drop_down_button_left_normal"] = PART_DROP_DOWN_BUTTON_LEFT_NORMAL_NW;
+  sheet_mapping["drop_down_button_left_hot"] = PART_DROP_DOWN_BUTTON_LEFT_HOT_NW;
+  sheet_mapping["drop_down_button_left_focused"] = PART_DROP_DOWN_BUTTON_LEFT_FOCUSED_NW;
+  sheet_mapping["drop_down_button_left_selected"] = PART_DROP_DOWN_BUTTON_LEFT_SELECTED_NW;
+  sheet_mapping["drop_down_button_right_normal"] = PART_DROP_DOWN_BUTTON_RIGHT_NORMAL_NW;
+  sheet_mapping["drop_down_button_right_hot"] = PART_DROP_DOWN_BUTTON_RIGHT_HOT_NW;
+  sheet_mapping["drop_down_button_right_focused"] = PART_DROP_DOWN_BUTTON_RIGHT_FOCUSED_NW;
+  sheet_mapping["drop_down_button_right_selected"] = PART_DROP_DOWN_BUTTON_RIGHT_SELECTED_NW;
 
   reload_skin();
 }
@@ -738,31 +746,39 @@ void SkinTheme::paintButton(PaintEvent& ev)
   if (skinPropery != NULL)
     look = skinPropery->getLook();
 
-  // selected
+  // Selected
   if (widget->isSelected()) {
     fg = get_button_selected_text_color();
     bg = get_button_selected_face_color();
     part_nw = (look == MiniLook ? PART_TOOLBUTTON_NORMAL_NW:
-				  PART_BUTTON_SELECTED_NW);
+	       look == LeftButtonLook ? PART_DROP_DOWN_BUTTON_LEFT_SELECTED_NW:
+	       look == RightButtonLook ? PART_DROP_DOWN_BUTTON_RIGHT_SELECTED_NW:
+					 PART_BUTTON_SELECTED_NW);
   }
-  // with mouse
+  // With mouse
   else if (widget->isEnabled() && widget->hasMouseOver()) {
     fg = get_button_hot_text_color();
     bg = get_button_hot_face_color();
     part_nw = (look == MiniLook ? PART_TOOLBUTTON_HOT_NW:
-				  PART_BUTTON_HOT_NW);
+	       look == LeftButtonLook ? PART_DROP_DOWN_BUTTON_LEFT_HOT_NW:
+	       look == RightButtonLook ? PART_DROP_DOWN_BUTTON_RIGHT_HOT_NW:
+					 PART_BUTTON_HOT_NW);
   }
-  // without mouse
+  // Without mouse
   else {
     fg = get_button_normal_text_color();
     bg = get_button_normal_face_color();
 
     if (widget->hasFocus())
       part_nw = (look == MiniLook ? PART_TOOLBUTTON_HOT_NW:
-				    PART_BUTTON_FOCUSED_NW);
+		 look == LeftButtonLook ? PART_DROP_DOWN_BUTTON_LEFT_FOCUSED_NW:
+		 look == RightButtonLook ? PART_DROP_DOWN_BUTTON_RIGHT_FOCUSED_NW:
+					   PART_BUTTON_FOCUSED_NW);
     else
       part_nw = (look == MiniLook ? PART_TOOLBUTTON_NORMAL_NW:
-				    PART_BUTTON_NORMAL_NW);
+		 look == LeftButtonLook ? PART_DROP_DOWN_BUTTON_LEFT_NORMAL_NW:
+		 look == RightButtonLook ? PART_DROP_DOWN_BUTTON_RIGHT_NORMAL_NW:
+					   PART_BUTTON_NORMAL_NW);
   }
 
   // widget position

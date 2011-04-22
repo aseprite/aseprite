@@ -25,6 +25,8 @@ enum LookType {
   NormalLook,
   MiniLook,
   WithoutBordersLook,
+  LeftButtonLook,
+  RightButtonLook,
 };
 
 // Property to show widgets with a special look (e.g.: buttons or sliders with mini-borders)

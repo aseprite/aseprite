@@ -61,9 +61,9 @@
     <part id="radio_normal"			x="32" y="32" w="8" h="8" />
     <part id="radio_selected"			x="32" y="48" w="8" h="8" />
     <part id="radio_disabled"			x="32" y="32" w="8" h="8" />
-    <part id="check_normal"			x="48" y="32" w="8" h="8" />
-    <part id="check_selected"			x="48" y="48" w="8" h="8" />
-    <part id="check_disabled"			x="48" y="32" w="8" h="8" />
+    <part id="check_normal"			x="48" y="64" w="8" h="8" />
+    <part id="check_selected"			x="48" y="80" w="8" h="8" />
+    <part id="check_disabled"			x="48" y="64" w="8" h="8" />
     <part id="check_focus"			x="32" y="64" w1="2" w2="6" w3="2" h1="2" h2="6" h3="2" />
     <part id="radio_focus"			x="32" y="64" w1="2" w2="6" w3="2" h1="2" h2="6" h3="2" />
     <part id="button_normal"			x="48" y="0" w1="4" w2="6" w3="4" h1="4" h2="6" h3="6" />
@@ -170,6 +170,14 @@
     <part id="layer_locked_selected"		x="160" y="184" w="8" h="8" />
     <part id="unpinned"				x="192" y="144" w="8" h="8" />
     <part id="pinned"				x="200" y="144" w="8" h="8" />
+    <part id="drop_down_button_left_normal"	x="48" y="32" w1="3" w2="2" w3="3" h1="4" h2="6" h3="6" />
+    <part id="drop_down_button_left_hot"	x="64" y="32" w1="3" w2="2" w3="3" h1="4" h2="6" h3="6" />
+    <part id="drop_down_button_left_focused"	x="48" y="48" w1="3" w2="2" w3="3" h1="4" h2="6" h3="6" />
+    <part id="drop_down_button_left_selected"	x="64" y="48" w1="3" w2="2" w3="3" h1="4" h2="6" h3="6" />
+    <part id="drop_down_button_right_normal"	x="56" y="32" w1="2" w2="1" w3="3" h1="4" h2="6" h3="6" />
+    <part id="drop_down_button_right_hot"	x="72" y="32" w1="2" w2="1" w3="3" h1="4" h2="6" h3="6" />
+    <part id="drop_down_button_right_focused"	x="55" y="48" w1="2" w2="2" w3="3" h1="4" h2="6" h3="6" />
+    <part id="drop_down_button_right_selected"	x="71" y="48" w1="2" w2="2" w3="3" h1="4" h2="6" h3="6" />
   </parts>
 
 </skin>
