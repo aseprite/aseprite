@@ -300,7 +300,7 @@ add_library(aseprite-library
   widgets/fileview.cpp
   widgets/groupbut.cpp
   widgets/hex_color_entry.cpp
-  widgets/menuitem.cpp
+  widgets/menuitem2.cpp
   widgets/palette_view.cpp
   widgets/popup_frame_pin.cpp
   widgets/statebar.cpp

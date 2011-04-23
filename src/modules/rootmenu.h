@@ -21,6 +21,9 @@
 
 #include "gui/base.h"
 
+class Menu;
+class MenuItem;
+
 enum {
   ACCEL_FOR_UNDO,
   ACCEL_FOR_REDO,
@@ -32,14 +35,12 @@ enum {
 int init_module_rootmenu();
 void exit_module_rootmenu();
 
-JWidget get_root_menu();
+Menu* get_root_menu();
 
-JWidget get_recent_list_menuitem();
-JWidget get_layer_popup_menu();
-JWidget get_frame_popup_menu();
-JWidget get_cel_popup_menu();
-JWidget get_cel_movement_popup_menu();
-
-/* void show_fx_popup_menu(); */
+MenuItem* get_recent_list_menuitem();
+Menu* get_layer_popup_menu();
+Menu* get_frame_popup_menu();
+Menu* get_cel_popup_menu();
+Menu* get_cel_movement_popup_menu();
 
 #endif

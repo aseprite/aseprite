@@ -35,23 +35,23 @@
 #include "modules/rootmenu.h"
 #include "tools/tool_box.h"
 #include "util/filetoks.h"
-#include "widgets/menuitem.h"
+#include "widgets/menuitem2.h"
 
 #include "tinyxml.h"
 
-static JWidget root_menu;
+static Menu* root_menu;
 
-static JWidget recent_list_menuitem;
-static JWidget layer_popup_menu;
-static JWidget frame_popup_menu;
-static JWidget cel_popup_menu;
-static JWidget cel_movement_popup_menu;
+static MenuItem* recent_list_menuitem;
+static Menu* layer_popup_menu;
+static Menu* frame_popup_menu;
+static Menu* cel_popup_menu;
+static Menu* cel_movement_popup_menu;
 
 static int load_root_menu();
-static JWidget load_menu_by_id(TiXmlHandle& handle, const char *id);
-static JWidget convert_xmlelem_to_menu(TiXmlElement* elem);
-static JWidget convert_xmlelem_to_menuitem(TiXmlElement* elem);
-static void apply_shortcut_to_menuitems_with_command(JWidget menu, Command* command, Params* params, JAccel accel);
+static Menu* load_menu_by_id(TiXmlHandle& handle, const char *id);
+static Menu* convert_xmlelem_to_menu(TiXmlElement* elem);
+static Widget* convert_xmlelem_to_menuitem(TiXmlElement* elem);
+static void apply_shortcut_to_menuitems_with_command(Menu* menu, Command* command, Params* params, JAccel accel);
 
 int init_module_rootmenu()
 {
@@ -74,18 +74,18 @@ void exit_module_rootmenu()
   delete cel_movement_popup_menu;
 }
 
-JWidget get_root_menu() { return root_menu; }
+Menu* get_root_menu() { return root_menu; }
 
-JWidget get_recent_list_menuitem() { return recent_list_menuitem; }
-JWidget get_layer_popup_menu() { return layer_popup_menu; }
-JWidget get_frame_popup_menu() { return frame_popup_menu; }
-JWidget get_cel_popup_menu() { return cel_popup_menu; }
-JWidget get_cel_movement_popup_menu() { return cel_movement_popup_menu; }
+MenuItem* get_recent_list_menuitem() { return recent_list_menuitem; }
+Menu* get_layer_popup_menu() { return layer_popup_menu; }
+Menu* get_frame_popup_menu() { return frame_popup_menu; }
+Menu* get_cel_popup_menu() { return cel_popup_menu; }
+Menu* get_cel_movement_popup_menu() { return cel_movement_popup_menu; }
 
 static int load_root_menu()
 {
   if (app_get_menubar())
-    jmenubar_set_menu(app_get_menubar(), NULL);
+    app_get_menubar()->setMenu(NULL);
 
   // destroy `root-menu'
   delete root_menu;		// widget
@@ -229,7 +229,7 @@ static int load_root_menu()
 
   // Sets the "menu" of the "menu-bar" to the new "root-menu"
   if (app_get_menubar()) {
-    jmenubar_set_menu(app_get_menubar(), root_menu);
+    app_get_menubar()->setMenu(root_menu);
     app_get_top_window()->remap_window();
     app_get_top_window()->invalidate();
   }
@@ -237,7 +237,7 @@ static int load_root_menu()
   return 0;
 }
 
-static JWidget load_menu_by_id(TiXmlHandle& handle, const char* id)
+static Menu* load_menu_by_id(TiXmlHandle& handle, const char* id)
 {
   ASSERT(id != NULL);
 
@@ -261,15 +261,15 @@ static JWidget load_menu_by_id(TiXmlHandle& handle, const char* id)
   return NULL;
 }
 
-static JWidget convert_xmlelem_to_menu(TiXmlElement* elem)
+static Menu* convert_xmlelem_to_menu(TiXmlElement* elem)
 {
-  JWidget menu = jmenu_new();
+  Menu* menu = new Menu();
 
   //PRINTF("convert_xmlelem_to_menu(%s, %s, %s)\n", elem->Value(), elem->Attribute("id"), elem->Attribute("text"));
 
   TiXmlElement* child = elem->FirstChildElement();
   while (child) {
-    JWidget menuitem = convert_xmlelem_to_menuitem(child);
+    Widget* menuitem = convert_xmlelem_to_menuitem(child);
     if (menuitem)
       menu->addChild(menuitem);
     else
@@ -282,7 +282,7 @@ static JWidget convert_xmlelem_to_menu(TiXmlElement* elem)
   return menu;
 }
 
-static JWidget convert_xmlelem_to_menuitem(TiXmlElement* elem)
+static Widget* convert_xmlelem_to_menuitem(TiXmlElement* elem)
 {
   // is it a <separator>?
   if (strcmp(elem->Value(), "separator") == 0)
@@ -309,8 +309,8 @@ static JWidget convert_xmlelem_to_menuitem(TiXmlElement* elem)
   }
 
   /* create the item */
-  JWidget menuitem = menuitem_new(elem->Attribute("text"),
-				  command, command ? &params: NULL);
+  MenuItem2* menuitem = new MenuItem2(elem->Attribute("text"),
+				      command, command ? &params: NULL);
   if (!menuitem)
     return NULL;
 
@@ -323,42 +323,43 @@ static JWidget convert_xmlelem_to_menuitem(TiXmlElement* elem)
     }
   }
 
-  /* has it a sub-menu (<menu>)? */
+  // Has it a sub-menu (<menu>)?
   if (strcmp(elem->Value(), "menu") == 0) {
-    /* create the sub-menu */
-    JWidget sub_menu = convert_xmlelem_to_menu(elem);
-    if (!sub_menu)
+    // Create the sub-menu
+    Menu* subMenu = convert_xmlelem_to_menu(elem);
+    if (!subMenu)
       throw base::Exception("Error reading the sub-menu\n");
 
-    jmenuitem_set_submenu(menuitem, sub_menu);
+    menuitem->setSubmenu(subMenu);
   }
 
   return menuitem;
 }
 
-static void apply_shortcut_to_menuitems_with_command(JWidget menu, Command *command, Params* params, JAccel accel)
+static void apply_shortcut_to_menuitems_with_command(Menu* menu, Command *command, Params* params, JAccel accel)
 {
   JList children = menu->getChildren();
-  JWidget menuitem, submenu;
   JLink link;
 
   JI_LIST_FOR_EACH(children, link) {
-    menuitem = (JWidget)link->data;
+    Widget* child = (Widget*)link->data;
 
-    if (menuitem->getType() == JI_MENUITEM) {
-      Command* mi_command = menuitem_get_command(menuitem);
-      Params* mi_params = menuitem_get_params(menuitem);
+    if (child->getType() == JI_MENUITEM) {
+      ASSERT(dynamic_cast<MenuItem2*>(child) != NULL);
+
+      MenuItem2* menuitem = static_cast<MenuItem2*>(child);
+      Command* mi_command = menuitem->getCommand();
+      Params* mi_params = menuitem->getParams();
 
       if (mi_command &&
 	  ustricmp(mi_command->short_name(), command->short_name()) == 0 &&
 	  ((mi_params && *mi_params == *params) ||
 	   (Params() == *params))) {
 	// Set the accelerator to be shown in this menu-item
-	jmenuitem_set_accel(menuitem, jaccel_new_copy(accel));
+	menuitem->setAccel(jaccel_new_copy(accel));
       }
 
-      submenu = jmenuitem_get_submenu(menuitem);
-      if (submenu)
+      if (Menu* submenu = menuitem->getSubmenu())
 	apply_shortcut_to_menuitems_with_command(submenu, command, params, accel);
     }
   }

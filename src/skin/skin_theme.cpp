@@ -1017,12 +1017,12 @@ void SkinTheme::draw_listitem(JWidget widget, JRect clip)
   }
 }
 
-void SkinTheme::draw_menu(JWidget widget, JRect clip)
+void SkinTheme::draw_menu(Menu* widget, JRect clip)
 {
   jdraw_rectfill(widget->rc, BGCOLOR);
 }
 
-void SkinTheme::draw_menuitem(JWidget widget, JRect clip)
+void SkinTheme::draw_menuitem(MenuItem* widget, JRect clip)
 {
   int c, bg, fg, bar;
   int x1, y1, x2, y2;
@@ -1040,7 +1040,7 @@ void SkinTheme::draw_menuitem(JWidget widget, JRect clip)
     bg = get_menuitem_normal_face_color();
   }
   else {
-    if (jmenuitem_is_highlight(widget)) {
+    if (widget->isHighlighted()) {
       fg = get_menuitem_highlight_text_color();
       bg = get_menuitem_highlight_face_color();
     }
@@ -1090,7 +1090,7 @@ void SkinTheme::draw_menuitem(JWidget widget, JRect clip)
   /* for menu-box */
   if (!bar) {
     /* draw the arrown (to indicate which this menu has a sub-menu) */
-    if (jmenuitem_get_submenu(widget)) {
+    if (widget->getSubmenu()) {
       int scale = jguiscale();
 
       /* enabled */
@@ -1116,14 +1116,14 @@ void SkinTheme::draw_menuitem(JWidget widget, JRect clip)
       }
     }
     /* draw the keyboard shortcut */
-    else if (jmenuitem_get_accel(widget)) {
+    else if (widget->getAccel()) {
       int old_align = widget->getAlign();
       char buf[256];
 
       pos = jwidget_get_rect(widget);
       pos->x2 -= widget->child_spacing/4;
 
-      jaccel_to_string(jmenuitem_get_accel(widget), buf);
+      jaccel_to_string(widget->getAccel(), buf);
 
       widget->setAlign(JI_RIGHT | JI_MIDDLE);
       draw_textstring(buf, fg, bg, false, widget, pos, 0);

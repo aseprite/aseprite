@@ -74,8 +74,8 @@ public:
   void paintLinkLabel(PaintEvent& ev);
   void draw_listbox(JWidget widget, JRect clip);
   void draw_listitem(JWidget widget, JRect clip);
-  void draw_menu(JWidget widget, JRect clip);
-  void draw_menuitem(JWidget widget, JRect clip);
+  void draw_menu(Menu* menu, JRect clip);
+  void draw_menuitem(MenuItem* menuitem, JRect clip);
   void draw_panel(JWidget widget, JRect clip);
   void paintRadioButton(PaintEvent& ev);
   void draw_separator(JWidget widget, JRect clip);

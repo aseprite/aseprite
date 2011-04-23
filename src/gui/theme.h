@@ -14,6 +14,8 @@ struct FONT;
 
 class ButtonBase;
 class Entry;
+class Menu;
+class MenuItem;
 class PaintEvent;
 
 class Theme
@@ -53,8 +55,8 @@ public:
   virtual void paintLinkLabel(PaintEvent& ev) = 0;
   virtual void draw_listbox(JWidget widget, JRect clip) = 0;
   virtual void draw_listitem(JWidget widget, JRect clip) = 0;
-  virtual void draw_menu(JWidget widget, JRect clip) = 0;
-  virtual void draw_menuitem(JWidget widget, JRect clip) = 0;
+  virtual void draw_menu(Menu* menu, JRect clip) = 0;
+  virtual void draw_menuitem(MenuItem* menuitem, JRect clip) = 0;
   virtual void draw_panel(JWidget widget, JRect clip) = 0;
   virtual void paintRadioButton(PaintEvent& ev) = 0;
   virtual void draw_separator(JWidget widget, JRect clip) = 0;

@@ -19,14 +19,31 @@
 #ifndef WIDGETS_MENUITEM_H_INCLUDED
 #define WIDGETS_MENUITEM_H_INCLUDED
 
-#include "gui/base.h"
+#include "gui/menu.h"
 
 class Command;
 class Params;
 
-JWidget menuitem_new(const char* text, Command* command, Params* params);
+// A widget that represent a menu item of the application.
+//
+// It's like a MenuItme, but it has a extra properties: the name of
+// the command to be executed when it's clicked (also that command is
+// used to check the availability of the command).
+class MenuItem2 : public MenuItem
+{
+public:
+  MenuItem2(const char* text, Command* command, Params* params);
+  ~MenuItem2();
 
-Command* menuitem_get_command(JWidget menuitem);
-Params* menuitem_get_params(JWidget menuitem);
+  Command* getCommand() { return m_command; }
+  Params* getParams() { return m_params; }
+
+protected:
+  bool onProcessMessage(Message* msg) OVERRIDE;
+
+private:
+  Command* m_command;
+  Params* m_params;
+};
 
 #endif

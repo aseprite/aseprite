@@ -529,9 +529,9 @@ bool AnimationEditor::onProcessMessage(Message* msg)
 	    // Show the frame pop-up menu.
 	    if (msg->mouse.right) {
 	      if (m_clk_frame == m_hot_frame) {
-		JWidget popup_menu = get_frame_popup_menu();
+		Menu* popup_menu = get_frame_popup_menu();
 		if (popup_menu != NULL) {
-		  jmenu_popup(popup_menu, msg->mouse.x, msg->mouse.y);
+		  popup_menu->showPopup(msg->mouse.x, msg->mouse.y);
 
 		  destroy_thumbnails();
 		  invalidate();
@@ -571,9 +571,9 @@ bool AnimationEditor::onProcessMessage(Message* msg)
 	    // Show the layer pop-up menu.
 	    if (msg->mouse.right) {
 	      if (m_clk_layer == m_hot_layer) {
-	      	JWidget popup_menu = get_layer_popup_menu();
+	      	Menu* popup_menu = get_layer_popup_menu();
 	      	if (popup_menu != NULL) {
-	      	  jmenu_popup(popup_menu, msg->mouse.x, msg->mouse.y);
+	      	  popup_menu->showPopup(msg->mouse.x, msg->mouse.y);
 
 		  destroy_thumbnails();
 		  invalidate();
@@ -654,10 +654,10 @@ bool AnimationEditor::onProcessMessage(Message* msg)
 
 	    // Show the cel pop-up menu.
 	    if (msg->mouse.right) {
-	      JWidget popup_menu = movement ? get_cel_movement_popup_menu():
-					      get_cel_popup_menu();
+	      Menu* popup_menu = movement ? get_cel_movement_popup_menu():
+					    get_cel_popup_menu();
 	      if (popup_menu != NULL) {
-		jmenu_popup(popup_menu, msg->mouse.x, msg->mouse.y);
+		popup_menu->showPopup(msg->mouse.x, msg->mouse.y);
 
 		destroy_thumbnails();
 		regenerateLayers();

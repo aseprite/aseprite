@@ -34,6 +34,7 @@ class Frame;
 class Layer;
 class LegacyModules;
 class LoggerModule;
+class MenuBar;
 class Params;
 class RecentFiles;
 class StatusBar;
@@ -96,7 +97,7 @@ bool app_realloc_recent_list();
 int app_get_current_image_type();
 
 Frame* app_get_top_window();
-Widget* app_get_menubar();
+MenuBar* app_get_menubar();
 StatusBar* app_get_statusbar();
 ColorBar* app_get_colorbar();
 Widget* app_get_toolbar();

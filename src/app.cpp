@@ -54,7 +54,7 @@
 #include "widgets/color_bar.h"
 #include "widgets/editor/editor.h"
 #include "widgets/editor/editor_view.h"
-#include "widgets/menuitem.h"
+#include "widgets/menuitem2.h"
 #include "widgets/statebar.h"
 #include "widgets/tabs.h"
 #include "widgets/toolbar.h"
@@ -101,7 +101,7 @@ static Widget* box_colorbar = NULL;   /* box where the color bar is */
 static Widget* box_toolbar = NULL;    /* box where the tools bar is */
 static Widget* box_statusbar = NULL;  /* box where the status bar is */
 static Widget* box_tabsbar = NULL;    /* box where the tabs bar is */
-static Widget* menubar = NULL;	      /* the menu bar widget */
+static MenuBar* menubar = NULL;	      /* the menu bar widget */
 static StatusBar* statusbar = NULL;   /* the status bar widget */
 static ColorBar* colorbar = NULL;     /* the color bar widget */
 static Widget* toolbar = NULL;	      /* the tool bar widget */
@@ -180,7 +180,7 @@ int App::run()
     box_statusbar = top_window->findChild("statusbar");
     box_tabsbar = top_window->findChild("tabsbar");
 
-    menubar = jmenubar_new();
+    menubar = new MenuBar();
     statusbar = new StatusBar();
     colorbar = new ColorBar(box_colorbar->getAlign());
     toolbar = toolbar_new();
@@ -200,7 +200,7 @@ int App::run()
     view->attachToView(editor);
 
     /* setup the menus */
-    jmenubar_set_menu(menubar, get_root_menu());
+    menubar->setMenu(get_root_menu());
 
     /* start text of status bar */
     app_default_statusbar_message();
@@ -288,7 +288,7 @@ int App::run()
 
     // Remove the root-menu from the menu-bar (because the rootmenu
     // module should destroy it).
-    jmenubar_set_menu(menubar, NULL);
+    menubar->setMenu(NULL);
 
     // Destroy the top-window
     jwidget_free(top_window);
@@ -402,25 +402,25 @@ void app_update_document_tab(const Document* document)
  */
 bool app_realloc_recent_list()
 {
-  Widget* list_menuitem = get_recent_list_menuitem();
-  Widget* menuitem;
+  MenuItem* list_menuitem = get_recent_list_menuitem();
+  MenuItem* menuitem;
 
   /* update the recent file list menu item */
   if (list_menuitem) {
-    if (jmenuitem_has_submenu_opened(list_menuitem))
+    if (list_menuitem->hasSubmenuOpened())
       return false;
 
     Command* cmd_open_file = CommandsModule::instance()->getCommandByName(CommandId::OpenFile);
 
-    Widget* submenu = jmenuitem_get_submenu(list_menuitem);
+    Menu* submenu = list_menuitem->getSubmenu();
     if (submenu) {
-      jmenuitem_set_submenu(list_menuitem, NULL);
+      list_menuitem->setSubmenu(NULL);
       jwidget_free(submenu);
     }
 
     // Build the menu of recent files
-    submenu = jmenu_new();
-    jmenuitem_set_submenu(list_menuitem, submenu);
+    submenu = new Menu();
+    list_menuitem->setSubmenu(submenu);
 
     RecentFiles::const_iterator it = App::instance()->getRecentFiles()->begin();
     RecentFiles::const_iterator end = App::instance()->getRecentFiles()->end();
@@ -433,12 +433,12 @@ bool app_realloc_recent_list()
 
 	params.set("filename", filename);
 
-	menuitem = menuitem_new(get_filename(filename), cmd_open_file, &params);
+	menuitem = new MenuItem2(get_filename(filename), cmd_open_file, &params);
 	submenu->addChild(menuitem);
       }
     }
     else {
-      menuitem = menuitem_new("Nothing", NULL, NULL);
+      menuitem = new MenuItem2("Nothing", NULL, NULL);
       menuitem->setEnabled(false);
       submenu->addChild(menuitem);
     }
@@ -462,7 +462,7 @@ int app_get_current_image_type()
 }
 
 Frame* app_get_top_window() { return top_window; }
-Widget* app_get_menubar() { return menubar; }
+MenuBar* app_get_menubar() { return menubar; }
 StatusBar* app_get_statusbar() { return statusbar; }
 ColorBar* app_get_colorbar() { return colorbar; }
 Widget* app_get_toolbar() { return toolbar; }
