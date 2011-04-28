@@ -54,7 +54,7 @@ using namespace gfx;
 class EditorPreRenderImpl : public EditorPreRender
 {
 public:
-  EditorPreRenderImpl(Editor* editor, Image* image, Point& offset, int zoom)
+  EditorPreRenderImpl(Editor* editor, Image* image, const Point& offset, int zoom)
     : m_editor(editor)
     , m_image(image)
     , m_offset(offset)
