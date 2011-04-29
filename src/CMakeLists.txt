@@ -42,6 +42,10 @@ else()
   set(libs3rdparty ${libs3rdparty} libpng)
 endif()
 
+if (CMAKE_USE_PTHREADS_INIT)
+  set(sys_libs ${sys_libs} ${CMAKE_THREAD_LIBS_INIT})
+endif()
+
 # All libraries for .exe files
 set(all_libs aseprite-library undo-lib filters-lib gui-lib gfx-lib base-lib
   ${libs3rdparty} allegro ${sys_libs})
