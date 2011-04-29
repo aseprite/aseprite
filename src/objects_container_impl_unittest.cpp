@@ -22,6 +22,8 @@
 
 #include "objects_container_impl.h"
 
+using namespace undo;
+
 TEST(ObjectsContainerImpl, AddObjectReturnsSameIdForSameObject)
 {
   ObjectsContainerImpl objs;
