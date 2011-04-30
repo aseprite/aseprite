@@ -428,8 +428,13 @@ void close_editor(Editor* editor)
   JWidget parent_box = view->getParent(); // Box or panel
   JWidget other_widget;
 
-  // You can't remove all editors.
-  if (editors.size() == 1)
+  // You can't remove all (normal) editors.
+  int normalEditors = 0;
+  for (EditorList::iterator it = editors.begin(); it != editors.end(); ++it) {
+    if (it->getType() == EditorItem::Normal)
+      normalEditors++;
+  }
+  if (normalEditors == 1) // In this case we avoid to remove the last normal editor
     return;
 
   // Deselect the editor.
