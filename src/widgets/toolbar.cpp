@@ -30,6 +30,7 @@
 #include "gui/gui.h"
 #include "modules/gfx.h"
 #include "modules/gui.h"
+#include "modules/editors.h"
 #include "skin/skin_theme.h"
 #include "tools/tool_box.h"
 #include "ui_context.h"
@@ -49,11 +50,11 @@ class ToolBar : public Widget
   // What tool is selected for each tool-group
   std::map<const ToolGroup*, Tool*> m_selected_in_group;
 
+  // Index of the tool group or special button highlighted.
+  int m_hot_index;
+
   // What tool has the mouse above
   Tool* m_hot_tool;
-
-  // Does the configuration button have the mouse above?
-  bool m_hot_conf;
 
   // True if the popup-window must be opened when a tool-button is hot
   bool m_open_on_hot;
@@ -68,6 +69,10 @@ class ToolBar : public Widget
   bool m_tipOpened;
 
 public:
+  static const int NoneIndex = -1;
+  static const int ConfigureToolIndex = -2;
+  static const int MiniEditorVisibilityIndex = -3;
+
   ToolBar();
   ~ToolBar();
 
@@ -150,7 +155,7 @@ ToolBar::ToolBar()
   this->border_width.b = 0;
 
   m_hot_tool = NULL;
-  m_hot_conf = false;
+  m_hot_index = NoneIndex;
   m_open_on_hot = false;
   m_popupFrame = NULL;
   m_tipWindow = NULL;
@@ -205,7 +210,7 @@ bool ToolBar::onProcessMessage(Message* msg)
 	int face, nw;
 
 	if (UIContext::instance()->getSettings()->getCurrentTool() == tool ||
-	    m_hot_tool == tool) {
+	    m_hot_index == c) {
 	  nw = PART_TOOLBUTTON_HOT_NW;
 	  face = theme->get_button_hot_face_color();
 	}
@@ -229,16 +234,17 @@ bool ToolBar::onProcessMessage(Message* msg)
 	}
       }
 
-      toolrc = getToolGroupBounds(-1);
+      // Draw button to show tool configuration
+      toolrc = getToolGroupBounds(ConfigureToolIndex);
       toolrc.offset(-msg->draw.rect.x1, -msg->draw.rect.y1);
+      bool isHot = (m_hot_index == ConfigureToolIndex);
       theme->draw_bounds_nw(doublebuffer,
 			    toolrc,
-			    m_hot_conf ? PART_TOOLBUTTON_HOT_NW:
-					 PART_TOOLBUTTON_LAST_NW,
-			    m_hot_conf ? theme->get_button_hot_face_color():
-					 theme->get_button_normal_face_color());
+			    isHot ? PART_TOOLBUTTON_HOT_NW:
+				    PART_TOOLBUTTON_LAST_NW,
+			    isHot ? theme->get_button_hot_face_color():
+				    theme->get_button_normal_face_color());
 
-      // Draw the tool icon
       BITMAP* icon = theme->get_toolicon("configuration");
       if (icon) {
 	set_alpha_blender();
@@ -247,6 +253,27 @@ bool ToolBar::onProcessMessage(Message* msg)
 			  toolrc.y+toolrc.h/2-icon->h/2);
       }
 
+      // Draw button to show/hide mini editor
+      toolrc = getToolGroupBounds(MiniEditorVisibilityIndex);
+      toolrc.offset(-msg->draw.rect.x1, -msg->draw.rect.y1);
+      isHot = (m_hot_index == MiniEditorVisibilityIndex ||
+	       is_mini_editor_enabled());
+      theme->draw_bounds_nw(doublebuffer,
+			    toolrc,
+			    isHot ? PART_TOOLBUTTON_HOT_NW:
+				    PART_TOOLBUTTON_LAST_NW,
+			    isHot ? theme->get_button_hot_face_color():
+				    theme->get_button_normal_face_color());
+
+      icon = theme->get_toolicon("minieditor");
+      if (icon) {
+	set_alpha_blender();
+	draw_trans_sprite(doublebuffer, icon,
+			  toolrc.x+toolrc.w/2-icon->w/2,
+			  toolrc.y+toolrc.h/2-icon->h/2);
+      }
+
+      // Blit result to screen
       blit(doublebuffer, ji_screen, 0, 0,
 	   msg->draw.rect.x1,
 	   msg->draw.rect.y1,
@@ -278,12 +305,18 @@ bool ToolBar::onProcessMessage(Message* msg)
 	}
       }
 
-      toolrc = getToolGroupBounds(-1);
+      toolrc = getToolGroupBounds(ConfigureToolIndex);
       if (msg->mouse.y >= toolrc.y && msg->mouse.y < toolrc.y+toolrc.h) {
 	Command* conf_tools_cmd = 
 	  CommandsModule::instance()->getCommandByName(CommandId::ConfigureTools);
 
 	UIContext::instance()->executeCommand(conf_tools_cmd);
+      }
+
+      toolrc = getToolGroupBounds(MiniEditorVisibilityIndex);
+      if (msg->mouse.y >= toolrc.y && msg->mouse.y < toolrc.y+toolrc.h) {
+	// Switch the state of the mini editor
+	enable_mini_editor(!is_mini_editor_enabled());
       }
       break;
     }
@@ -291,10 +324,9 @@ bool ToolBar::onProcessMessage(Message* msg)
     case JM_MOTION: {
       ToolBox* toolbox = App::instance()->getToolBox();
       int groups = toolbox->getGroupsCount();
-      Tool* hot_tool = NULL;
-      bool hot_conf = false;
+      Tool* new_hot_tool = NULL;
+      int new_hot_index = NoneIndex;
       Rect toolrc;
-      int tip_index = -1;
 
       ToolGroupList::iterator it = toolbox->begin_group();
 
@@ -304,30 +336,34 @@ bool ToolBar::onProcessMessage(Message* msg)
 
 	toolrc = getToolGroupBounds(c);
 	if (msg->mouse.y >= toolrc.y && msg->mouse.y < toolrc.y+toolrc.h) {
-	  hot_tool = tool;
+	  new_hot_tool = tool;
+	  new_hot_index = c;
 
-	  if ((m_open_on_hot) && (m_hot_tool != hot_tool))
+	  if ((m_open_on_hot) && (m_hot_tool != new_hot_tool))
 	    openPopupFrame(c, tool_group);
-
-	  tip_index = c;
 	  break;
 	}
       }
 
-      toolrc = getToolGroupBounds(-1);
+      toolrc = getToolGroupBounds(ConfigureToolIndex);
       if (msg->mouse.y >= toolrc.y && msg->mouse.y < toolrc.y+toolrc.h) {
-	hot_conf = true;
+	new_hot_index = ConfigureToolIndex;
+      }
+
+      toolrc = getToolGroupBounds(MiniEditorVisibilityIndex);
+      if (msg->mouse.y >= toolrc.y && msg->mouse.y < toolrc.y+toolrc.h) {
+	new_hot_index = MiniEditorVisibilityIndex;
       }
 
       // hot button changed
-      if (m_hot_tool != hot_tool ||
-	  m_hot_conf != hot_conf) {
-	m_hot_tool = hot_tool;
-	m_hot_conf = hot_conf;
+      if (new_hot_tool != m_hot_tool ||
+	  new_hot_index != m_hot_index) {
+	m_hot_tool = new_hot_tool;
+	m_hot_index = new_hot_index;
 	invalidate();
 
-	if (m_hot_tool || m_hot_conf)
-	  openTipWindow(tip_index, m_hot_tool);
+	if (m_hot_index != NoneIndex)
+	  openTipWindow(m_hot_index, m_hot_tool);
 	else
 	  closeTipWindow();
 
@@ -344,7 +380,7 @@ bool ToolBar::onProcessMessage(Message* msg)
 	m_tipOpened = false;
 
       m_hot_tool = NULL;
-      m_hot_conf = false;
+      m_hot_index = NoneIndex;
       invalidate();
 
       app_get_statusbar()->clearText();
@@ -459,14 +495,23 @@ Rect ToolBar::getToolGroupBounds(int group_index)
   Rect rc(getBounds());
   rc.shrink(getBorder());
 
-  if (group_index >= 0) {
-    rc.y += group_index*(iconsize.h-1*jguiscale());
-    rc.h = group_index < groups-1 ? iconsize.h+1*jguiscale():
-				    iconsize.h+2*jguiscale();
-  }
-  else {
-    rc.y += groups*(iconsize.h-1*jguiscale())+ 8*jguiscale();
-    rc.h = iconsize.h+2*jguiscale();
+  switch (group_index) {
+
+    case ConfigureToolIndex:
+      rc.y += groups*(iconsize.h-1*jguiscale())+ 8*jguiscale();
+      rc.h = iconsize.h+2*jguiscale();
+      break;
+
+    case MiniEditorVisibilityIndex:
+      rc.y += rc.h - iconsize.h - 2*jguiscale();
+      rc.h = iconsize.h+2*jguiscale();
+      break;
+
+    default:
+      rc.y += group_index*(iconsize.h-1*jguiscale());
+      rc.h = group_index < groups-1 ? iconsize.h+1*jguiscale():
+				      iconsize.h+2*jguiscale();
+      break;
   }
 
   return rc;
@@ -502,7 +547,7 @@ void ToolBar::openTipWindow(int group_index, Tool* tool)
     closeTipWindow();
 
   std::string tooltip;
-  if (tool) {
+  if (tool && group_index >= 0) {
     tooltip = tool->getText();
     if (tool->getTips().size() > 0) {
       tooltip += ":\n";
@@ -518,9 +563,17 @@ void ToolBar::openTipWindow(int group_index, Tool* tool)
       tooltip += buf;
     }
   }
-  else {
+  else if (group_index == ConfigureToolIndex) {
     tooltip = "Configure Tool";
   }
+  else if (group_index == MiniEditorVisibilityIndex) {
+    if (is_mini_editor_enabled())
+      tooltip = "Disable Mini-Editor";
+    else
+      tooltip = "Enable Mini-Editor";
+  }
+  else
+    return;
 
   m_tipWindow = new TipWindow(tooltip.c_str(), true);
   m_tipWindow->setArrowAlign(JI_TOP | JI_RIGHT);

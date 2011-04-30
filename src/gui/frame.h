@@ -10,11 +10,12 @@
 #include "base/compiler_specific.h"
 #include "base/signal.h"
 #include "gfx/point.h"
+#include "gui/close_event.h"
 #include "gui/event.h"
 #include "gui/hit_test_event.h"
 #include "gui/widget.h"
 
-class CloseEvent { };		// TODO
+class CloseEvent;
 
 class Frame : public Widget
 {

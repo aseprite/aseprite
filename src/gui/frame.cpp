@@ -275,7 +275,17 @@ bool Frame::onProcessMessage(Message* msg)
     case JM_CLOSE:
       // Fire Close signal
       {
-	CloseEvent ev;
+	CloseEvent::Trigger trigger;
+	if (m_killer &&
+	    m_killer->getName() &&
+	    strcmp(m_killer->getName(), "theme_close_button") == 0) {
+	  trigger = CloseEvent::ByUser;
+	}
+	else {
+	  trigger = CloseEvent::ByCode;
+	}
+
+	CloseEvent ev(this, trigger);
 	Close(ev);
       }
       break;

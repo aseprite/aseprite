@@ -50,5 +50,8 @@ void split_editor(Editor* editor, int align);
 void close_editor(Editor* editor);
 void make_unique_editor(Editor* editor);
 
+bool is_mini_editor_enabled();
+void enable_mini_editor(bool state);
+
 #endif
 

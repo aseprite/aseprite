@@ -21,6 +21,7 @@
 #include "modules/editors.h"
 
 #include "app.h"
+#include "core/cfg.h"
 #include "document_wrappers.h"
 #include "gui/gui.h"
 #include "modules/gui.h"
@@ -67,6 +68,7 @@ Widget* box_editors = NULL;
 static EditorList editors;
 
 static Frame* mini_editor_frame = NULL;
+static bool mini_editor_enabled = true; // True if the user wants to use the mini editor
 static Editor* mini_editor = NULL;
 
 static int is_document_in_some_editor(Document* document);
@@ -77,6 +79,7 @@ static int count_parents(Widget* widget);
 static void create_mini_editor_frame();
 static void hide_mini_editor_frame();
 static void update_mini_editor_frame(Editor* editor);
+static void on_mini_editor_frame_close(CloseEvent& ev);
 
 class WrappedEditor : public Editor,
 		      public EditorListener
@@ -96,24 +99,7 @@ public:
   }
 
   void scrollChanged(Editor* editor) OVERRIDE {
-    // Show the mini editor if it wasn't created yet and the user
-    // zoomed in, or if the mini-editor was created and the zoom of
-    // both editors is not the same.
-    if ((!mini_editor && editor->getZoom() > 0) ||
-	(mini_editor && mini_editor->getZoom() != editor->getZoom())) {
-      // If the mini frame does not exist, create it
-      if (!mini_editor_frame)
-	create_mini_editor_frame();
-
-      if (!mini_editor_frame->isVisible())
-	mini_editor_frame->open_window_bg();
-
-      update_mini_editor_frame(editor);
-    }
-    // Hide the mini editor
-    else {
-      hide_mini_editor_frame();
-    }
+    update_mini_editor_frame(editor);
   }
 
   void documentChanged(Editor* editor) OVERRIDE {
@@ -140,11 +126,14 @@ public:
 
 int init_module_editors()
 {
+  mini_editor_enabled = get_config_bool("MiniEditor", "Enabled", true);
   return 0;
 }
 
 void exit_module_editors()
 {
+  set_config_bool("MiniEditor", "Enabled", mini_editor_enabled);
+
   if (mini_editor_frame) {
     save_window_pos(mini_editor_frame, "MiniEditor");
 
@@ -506,6 +495,18 @@ void make_unique_editor(Editor* editor)
   editor->updateEditor();
 }
 
+bool is_mini_editor_enabled()
+{
+  return mini_editor_enabled;
+}
+
+void enable_mini_editor(bool state)
+{
+  mini_editor_enabled = state;
+
+  update_mini_editor_frame(current_editor);
+}
+
 static int is_document_in_some_editor(Document* document)
 {
   for (EditorList::iterator it = editors.begin(); it != editors.end(); ++it) {
@@ -566,9 +567,14 @@ static void create_mini_editor_frame()
   mini_editor_frame->set_autoremap(false);
   mini_editor_frame->set_wantfocus(false);
 
+  // Hook Close button to disable mini-editor when the frame is closed.
+  mini_editor_frame->Close.connect(&on_mini_editor_frame_close);
+
+  // Create the new for the mini editor
   View* newView = new EditorView(EditorView::AlwaysSelected);
   jwidget_expansive(newView, true);
 
+  // Create mini editor
   mini_editor = new MiniEditor();
   editors.push_back(EditorItem(mini_editor, EditorItem::Mini));
 
@@ -597,12 +603,26 @@ static void hide_mini_editor_frame()
 
 static void update_mini_editor_frame(Editor* editor)
 {
-  if (!mini_editor)
+  if (!mini_editor_enabled || !editor) {
+    hide_mini_editor_frame();
     return;
+  }
 
   Document* document = editor->getDocument();
 
-  if (document && document->getSprite()) {
+  // Show the mini editor if it wasn't created yet and the user
+  // zoomed in, or if the mini-editor was created and the zoom of
+  // both editors is not the same.
+  if (document && document->getSprite() &&
+      ((!mini_editor && editor->getZoom() > 0) ||
+       (mini_editor && mini_editor->getZoom() != editor->getZoom()))) {
+    // If the mini frame does not exist, create it
+    if (!mini_editor_frame)
+      create_mini_editor_frame();
+
+    if (!mini_editor_frame->isVisible())
+      mini_editor_frame->open_window_bg();
+
     gfx::Rect visibleBounds = editor->getVisibleSpriteBounds();
     gfx::Point pt = visibleBounds.getCenter();
 
@@ -616,7 +636,20 @@ static void update_mini_editor_frame(Editor* editor)
     mini_editor->centerInSpritePoint(pt.x, pt.y);
   }
   else {
-    // When the editor does not have a document, we hide the mini-editor.
     hide_mini_editor_frame();
+  }
+}
+
+static void on_mini_editor_frame_close(CloseEvent& ev)
+{
+  if (ev.getTrigger() == CloseEvent::ByUser) {
+    // Here we don't use "enable_mini_editor" to change the state of
+    // "mini_editor_enabled" because we're coming from a close event
+    // of the frame.
+    mini_editor_enabled = false;
+
+    // Redraw the tool bar because it shows the mini editor enabled state.
+    // TODO abstract this event
+    app_get_toolbar()->invalidate();
   }
 }

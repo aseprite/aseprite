@@ -55,6 +55,7 @@
     <tool id="jumble"			x="176" y="112" w="16" h="16" />
 
     <tool id="configuration"		x="144" y="128" w="16" h="16" />
+    <tool id="minieditor"		x="160" y="128" w="16" h="16" />
   </tools>
 
   <parts>
