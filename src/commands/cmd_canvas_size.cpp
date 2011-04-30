@@ -50,7 +50,9 @@ public:
     , m_rect(-left, -top,
 	     current_editor->getSprite()->getWidth() + left + right,
 	     current_editor->getSprite()->getHeight() + top + bottom)
-    , m_selectBoxState(new SelectBoxState(this, m_rect))
+    , m_selectBoxState(new SelectBoxState(this, m_rect,
+					  SelectBoxState::PaintRulers |
+					  SelectBoxState::PaintDarkOutside))
   {
     m_mainBox = load_widget("canvas_size.xml", "main_box");
     get_widgets(m_mainBox,

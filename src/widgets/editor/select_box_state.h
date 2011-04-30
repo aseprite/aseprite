@@ -39,7 +39,14 @@ class SelectBoxState : public StandbyState
   enum { H1, H2, V1, V2 };
 
 public:
-  SelectBoxState(SelectBoxDelegate* delegate, const gfx::Rect& rc);
+  typedef int PaintFlags;
+  static const int PaintRulers = 1;
+  static const int PaintDarkOutside = 2;
+  static const int PaintGrid = 4;
+
+  SelectBoxState(SelectBoxDelegate* delegate,
+		 const gfx::Rect& rc,
+		 PaintFlags paintFlags);
 
   // Returns the bounding box arranged by the rulers.
   gfx::Rect getBoxBounds() const;
@@ -67,9 +74,12 @@ private:
   // the given ruler.
   bool touchRuler(Editor* editor, Ruler& ruler, int x, int y);
 
+  bool hasPaintFlag(PaintFlags flag) const;
+
   SelectBoxDelegate* m_delegate;
   Rulers m_rulers;
   int m_movingRuler;
+  PaintFlags m_paintFlags;
 };
 
 #endif	// WIDGETS_EDITOR_SELECT_BOX_STATE_H_INCLUDED
