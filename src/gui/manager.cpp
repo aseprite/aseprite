@@ -96,10 +96,9 @@ static WidgetsList mouse_widgets_list; // List of widgets to send mouse events
 static JList msg_queue;		      // Messages queue
 static JList msg_filters[NFILTERS];   // Filters for every enqueued message
 
-static JWidget focus_widget;	/* the widget with the focus */
-static JWidget mouse_widget;	/* the widget with the mouse */
-static JWidget capture_widget;	/* the widget that captures the
-				   mouse */
+static Widget* focus_widget;	// The widget with the focus
+static Widget* mouse_widget;	// The widget with the mouse
+static Widget* capture_widget;	// The widget that captures the mouse
 
 static bool first_time_poll;    /* true when we don't enter in poll yet */
 
@@ -1429,15 +1428,15 @@ static Message* new_mouse_msg(int type, JWidget widget)
 
 static void broadcast_key_msg(JWidget manager, Message* msg)
 {
-  /* send the message to the widget with capture */
+  // Send the message to the widget with capture
   if (capture_widget) {
     jmessage_add_dest(msg, capture_widget);
   }
-  /* send the msg to the focused widget */
+  // Send the msg to the focused widget
   else if (focus_widget) {
     jmessage_add_dest(msg, focus_widget);
   }
-  /* finally, send the message to the manager, it'll know what to do */
+  // Finally, send the message to the manager, it'll know what to do
   else {
     jmessage_add_dest(msg, manager);
   }

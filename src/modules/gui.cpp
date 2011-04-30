@@ -159,9 +159,7 @@ static bool manager_msg_proc(JWidget widget, Message* msg);
 
 static void on_palette_change_signal();
 
-/**
- * Used by set_display_switch_callback(SWITCH_IN, ...).
- */
+// Used by set_display_switch_callback(SWITCH_IN, ...).
 static void display_switch_in_callback()
 {
   next_idle_flags |= REFRESH_FULL_SCREEN;
@@ -179,9 +177,7 @@ static void resize_callback(RESIZE_DISPLAY_EVENT *ev)
    next_idle_flags |= SYSTEM_WINDOW_RESIZE;
 }
 
-/**
- * Initializes GUI.
- */
+// Initializes GUI.
 int init_module_gui()
 {
   int min_possible_dsk_res = 0;
@@ -192,38 +188,38 @@ int init_module_gui()
   monitors = new MonitorList;
   shortcuts = new std::vector<Shortcut*>;
 
-  /* install the mouse */
+  // Install the mouse
   if (install_mouse() < 0)
     throw base::Exception("Error installing mouse handler");
 
-  /* install the keyboard */
+  // Install the keyboard
   if (install_keyboard() < 0)
     throw base::Exception("Error installing keyboard handler");
 
-  /* disable Ctrl+Shift+End in non-DOS */
+  // Disable Ctrl+Shift+End in non-DOS
 #if !defined(ALLEGRO_DOS)
   three_finger_flag = false;
 #endif
-  three_finger_flag = true;	/* TODO remove this line */
+  three_finger_flag = true;	// TODO remove this line
 
-  /* set the graphics mode... */
+  // Set the graphics mode...
   load_gui_config(w, h, bpp, fullscreen, maximized);
 
   autodetect = fullscreen ? GFX_AUTODETECT_FULLSCREEN:
 			    GFX_AUTODETECT_WINDOWED;
 
-  /* default resolution */
+  // Default resolution
   if (!w || !h) {
     bool has_desktop = false;
     int dsk_w, dsk_h;
 
     has_desktop = get_desktop_resolution(&dsk_w, &dsk_h) == 0;
 
-    /* we must extract some space for the windows borders */
+    // We must extract some space for the windows borders
     dsk_w -= 16;
     dsk_h -= 32;
 
-    /* try to get desktop resolution */
+    // Try to get desktop resolution
     if (has_desktop) {
       for (c=0; try_resolutions[c].width; ++c) {
 	if (try_resolutions[c].width <= dsk_w &&
@@ -237,7 +233,7 @@ int init_module_gui()
 	}
       }
     }
-    /* full screen */
+    // Full screen
     else {
       fullscreen = true;
       w = 320;
@@ -246,7 +242,7 @@ int init_module_gui()
     }
   }
 
-  /* default color depth */
+  // Default color depth
   if (!bpp) {
     bpp = desktop_color_depth();
     if (!bpp)
@@ -285,7 +281,7 @@ int init_module_gui()
 
 gfx_done:;
 
-  /* create the default-manager */
+  // Create the default-manager
   manager = jmanager_new();
   jwidget_add_hook(manager, JI_WIDGET, manager_msg_proc, NULL);
 
@@ -301,16 +297,16 @@ gfx_done:;
   }
   #endif
 
-  /* configure ji_screen */
+  // Configure ji_screen
   gui_setup_screen(true);
 
-  /* add a hook to display-switch so when the user returns to the
-     screen it's completelly refreshed/redrawn */
+  // Add a hook to display-switch so when the user returns to the
+  // screen it's completelly refreshed/redrawn.
   LOCK_VARIABLE(next_idle_flags);
   LOCK_FUNCTION(display_switch_in_callback);
   set_display_switch_callback(SWITCH_IN, display_switch_in_callback);
 
-  /* set graphics options for next time */
+  // Set graphics options for next time
   save_gui_config();
 
   // Hook for palette change to regenerate the theme
@@ -470,7 +466,7 @@ void gui_feedback()
     jmanager_refresh_screen();
   }
 
-  /* menu stuff */
+  // Menu stuff
   if (next_idle_flags & REBUILD_RECENT_LIST) {
     if (app_realloc_recent_list())
       next_idle_flags ^= REBUILD_RECENT_LIST;
@@ -529,12 +525,8 @@ void gui_flip_screen()
     lastWorkingGfxMode.updateWithCurrentMode();
 }
 
-/**
- * Sets the ji_screen variable.
- * 
- * This routine should be called everytime you changes the graphics
- * mode.
- */
+// Sets the ji_screen variable. This routine should be called
+// everytime you changes the graphics mode.
 void gui_setup_screen(bool reload_font)
 {
   bool regen = false;
@@ -672,8 +664,8 @@ void schedule_rebuild_recent_list()
   next_idle_flags |= REBUILD_RECENT_LIST;
 }
 
-/**********************************************************************/
-/* hook signals */
+//////////////////////////////////////////////////////////////////////
+// Hook signals
 
 typedef struct HookData {
   int signal_num;
@@ -712,9 +704,7 @@ static bool hook_msg_proc(JWidget widget, Message* msg)
   return false;
 }
 
-/**
- * @warning You can't use this function for the same widget two times.
- */
+// @warning You can't use this function for the same widget two times.
 void hook_signal(JWidget widget,
 		 int signal_num,
 		 bool (*signal_handler)(JWidget widget, void* data),
@@ -814,9 +804,9 @@ void set_gfxicon_to_button(ButtonBase* button,
   button->setIconInterface(buttonIcon);
 }
 
-/**********************************************************************/
-/* Button style (convert radio or check buttons and draw it like
-   normal buttons) */
+//////////////////////////////////////////////////////////////////////
+// Button style (convert radio or check buttons and draw it like
+// normal buttons)
 
 RadioButton* radio_button_new(int radio_group, int b1, int b2, int b3, int b4)
 {
@@ -1035,11 +1025,9 @@ static Shortcut* get_keyboard_shortcut_for_quicktool(tools::Tool* tool)
   return NULL;
 }
 
-/**
- * Adds a routine to be called each 100 milliseconds to monitor
- * whatever you want. It's mainly used to monitor the progress of a
- * file-operation (see @ref fop_operate)
- */
+// Adds a routine to be called each 100 milliseconds to monitor
+// whatever you want. It's mainly used to monitor the progress of a
+// file-operation (see @ref fop_operate)
 Monitor* add_gui_monitor(void (*proc)(void *),
 			 void (*free)(void *), void *data)
 {
@@ -1055,9 +1043,7 @@ Monitor* add_gui_monitor(void (*proc)(void *),
   return monitor;
 }
 
-/**
- * Removes and frees a previously added monitor.
- */
+// Removes and frees a previously added monitor.
 void remove_gui_monitor(Monitor* monitor)
 {
   MonitorList::iterator it =
@@ -1088,7 +1074,7 @@ static bool manager_msg_proc(JWidget widget, Message* msg)
     case JM_QUEUEPROCESSING:
       gui_feedback();
 
-      /* open dropped files */
+      // Open dropped files
       check_for_dropped_files();
       break;
 
@@ -1185,26 +1171,26 @@ static bool manager_msg_proc(JWidget widget, Message* msg)
 	    case Shortcut_ExecuteCommand: {
 	      Command* command = shortcut->command;
 
-	      // the screen shot is available in everywhere
+	      // The screen shot is available in everywhere
 	      if (strcmp(command->short_name(), CommandId::ScreenShot) == 0) {
 		UIContext::instance()->executeCommand(command, shortcut->params);
 		return true;
 	      }
-	      // all other keys are only available in the main-window
+	      // All other keys are only available in the main-window
 	      else {
 		JLink link;
 
 		JI_LIST_FOR_EACH(widget->children, link) {
 		  Frame* child = reinterpret_cast<Frame*>(link->data);
 
-		  /* there are a foreground window executing? */
+		  // There are a foreground window executing?
 		  if (child->is_foreground()) {
 		    break;
 		  }
-		  /* is it the desktop and the top-window= */
+		  // Is it the desktop and the top-window=
 		  else if (child->is_desktop() && child == app_get_top_window()) {
-		    /* ok, so we can execute the command represented by the
-		       pressed-key in the message... */
+		    // OK, so we can execute the command represented
+		    // by the pressed-key in the message...
 		    UIContext::instance()->executeCommand(command, shortcut->params);
 		    return true;
 		  }

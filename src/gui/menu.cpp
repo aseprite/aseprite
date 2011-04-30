@@ -492,7 +492,7 @@ bool MenuBox::onProcessMessage(Message* msg)
 	  JLink link;
 	  bool used = false;
 
-	  /* search a child with highlight or the submenu opened */
+	  // Search a child with highlight or the submenu opened
 	  JI_LIST_FOR_EACH(menu->children, link) {
 	    Widget* child = (Widget*)link->data;
 	    if (child->type != JI_MENUITEM)
@@ -508,22 +508,22 @@ bool MenuBox::onProcessMessage(Message* msg)
 	  switch (msg->key.scancode) {
 
 	    case KEY_ESC:
-	      /* in menu-bar */
+	      // In menu-bar
 	      if (this->type == JI_MENUBAR) {
 		if (highlight) {
 		  cancelMenuLoop();
 		  used = true;
 		}
 	      }
-	      /* in menu-boxes */
+	      // In menu-boxes
 	      else {
 		if (child_with_submenu_opened) {
 		  child_with_submenu_opened->closeSubmenu(true);
 		  used = true;
 		}
-		/* go to parent */
+		// Go to parent
 		else if (menu->m_menuitem) {
-		  /* just retrogress one parent-level */
+		  // Just retrogress one parent-level
 		  menu->m_menuitem->closeSubmenu(true);
 		  used = true;
 		}
@@ -531,14 +531,14 @@ bool MenuBox::onProcessMessage(Message* msg)
 	      break;
 
 	    case KEY_UP:
-              /* in menu-bar */
+              // In menu-bar
 	      if (this->type == JI_MENUBAR) {
 		if (child_with_submenu_opened)
 		  child_with_submenu_opened->closeSubmenu(true);
               }
-              /* in menu-boxes */
+              // In menu-boxes
               else {
-                /* go to previous */
+                // Go to previous
                 highlight = find_previtem(menu, highlight);
 		menu->highlightItem(highlight, false, false, false);
               }
@@ -546,14 +546,14 @@ bool MenuBox::onProcessMessage(Message* msg)
 	      break;
 
             case KEY_DOWN:
-              /* in menu-bar */
+              // In menu-bar
 	      if (this->type == JI_MENUBAR) {
-                /* select the active menu */
+                // Select the active menu
 		menu->highlightItem(highlight, true, true, true);
               }
-              /* in menu-boxes */
+              // In menu-boxes
               else {
-                /* go to next */
+                // Go to next
                 highlight = find_nextitem(menu, highlight);
 		menu->highlightItem(highlight, false, false, false);
               }
@@ -561,31 +561,31 @@ bool MenuBox::onProcessMessage(Message* msg)
 	      break;
 
 	    case KEY_LEFT:
-              /* in menu-bar */
+              // In menu-bar
 	      if (this->type == JI_MENUBAR) {
-                /* go to previous */
+                // Go to previous
                 highlight = find_previtem(menu, highlight);
 		menu->highlightItem(highlight, false, false, false);
               }
-              /* in menu-boxes */
+              // In menu-boxes
 	      else {
-                /* go to parent */
+                // Go to parent
                 if (menu->m_menuitem) {
                   Widget* parent = menu->m_menuitem->parent->parent;
 
-                  /* go to the previous item in the parent */
+                  // Go to the previous item in the parent
 
-                  /* if the parent is the menu-bar */
+                  // If the parent is the menu-bar
                   if (parent->type == JI_MENUBAR) {
 		    menu = static_cast<MenuBar*>(parent)->getMenu();
                     MenuItem* menuitem = find_previtem(menu, menu->getHighlightedItem());
 
-                    /* go to previous item in the parent */
+                    // Go to previous item in the parent
 		    menu->highlightItem(menuitem, false, true, true);
                   }
-                  /* if the parent isn't the menu-bar */
+                  // If the parent isn't the menu-bar
                   else {
-                    /* just retrogress one parent-level */
+                    // Just retrogress one parent-level
 		    menu->m_menuitem->closeSubmenu(true);
 		  }
                 }
@@ -594,15 +594,15 @@ bool MenuBox::onProcessMessage(Message* msg)
 	      break;
 
 	    case KEY_RIGHT:
-              /* in menu-bar */
+              // In menu-bar
 	      if (this->type == JI_MENUBAR) {
-                /* go to next */
+                // Go to next
                 highlight = find_nextitem(menu, highlight);
 		menu->highlightItem(highlight, false, false, false);
               }
-              /* in menu-boxes */
+              // In menu-boxes
               else {
-                /* enter in sub-menu */
+                // Enter in sub-menu
                 if ((highlight) && highlight->hasSubmenu()) {
 		  menu->highlightItem(highlight, true, true, true);
                 }
