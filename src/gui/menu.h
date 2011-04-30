@@ -62,6 +62,10 @@ public:
     return m_base;
   }
 
+  // Closes all menu-boxes and goes back to the normal state of the
+  // menu-bar.
+  void cancelMenuLoop();
+
 protected:
   virtual bool onProcessMessage(Message* msg) OVERRIDE;
   MenuBaseData* createBase();

@@ -1134,6 +1134,9 @@ static bool manager_msg_proc(JWidget widget, Message* msg)
 	Shortcut* shortcut = *it;
 
 	if (shortcut->is_pressed(msg)) {
+	  // Cancel menu-bar loops (to close any popup menu)
+	  app_get_menubar()->cancelMenuLoop();
+
 	  switch (shortcut->type) {
 
 	    case Shortcut_ChangeTool: {

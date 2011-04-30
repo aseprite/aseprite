@@ -474,9 +474,10 @@ bool MenuBox::onProcessMessage(Message* msg)
 
 	get_base(this)->was_clicked = false;
 
-	// Check for ALT+some letter in menubar and some letter in menuboxes
-	if (((this->type == JI_MENUBOX) && (!msg->any.shifts)) ||
-	    ((this->type == JI_MENUBAR) && (msg->any.shifts & KB_ALT_FLAG))) {
+	// Check for ALT+some underlined letter
+	if (((this->type == JI_MENUBOX) && (msg->any.shifts == 0 || // Inside menu-boxes we can use letters without Alt modifier pressed
+					    msg->any.shifts == KB_ALT_FLAG)) ||
+	    ((this->type == JI_MENUBAR) && (msg->any.shifts == KB_ALT_FLAG))) {
 	  selected = check_for_letter(menu, scancode_to_ascii(msg->key.scancode));
 	  if (selected) {
 	    menu->highlightItem(selected, true, true, true);
@@ -503,17 +504,14 @@ bool MenuBox::onProcessMessage(Message* msg)
 
 	  if (!highlight && child_with_submenu_opened)
 	    highlight = child_with_submenu_opened;
-	  
+
 	  switch (msg->key.scancode) {
 
 	    case KEY_ESC:
 	      /* in menu-bar */
 	      if (this->type == JI_MENUBAR) {
 		if (highlight) {
-		  menu->closeAll();
-
-		  /* fetch the focus */
-		  jmanager_free_focus();
+		  cancelMenuLoop();
 		  used = true;
 		}
 	      }
@@ -632,7 +630,14 @@ bool MenuBox::onProcessMessage(Message* msg)
 	      break;
 	  }
 
-	  return used;
+	  // Return true if we've already consumed the key.
+	  if (used) {
+	    return true;
+	  }
+	  // If the user presses the ALT key we close everything.
+	  else if (msg->key.scancode == KEY_ALT) {
+	    cancelMenuLoop();
+	  }
 	}
       }
       break;
@@ -1190,6 +1195,16 @@ void MenuBox::closePopup()
   Message* msg = jmessage_new(JM_CLOSE_POPUP);
   jmessage_add_dest(msg, this);
   jmanager_enqueue_message(msg);
+}
+
+void MenuBox::cancelMenuLoop()
+{
+  Menu* menu = getMenu();
+  if (menu)
+    menu->closeAll();
+
+  // Lost focus
+  jmanager_free_focus();
 }
 
 void MenuItem::executeClick()
