@@ -24,6 +24,8 @@ Refactoring
 -----------
 
 - Eradicate JList.
+- Replace JRect & jrect with gfx::Rect.
+- Create gfx::Region to replace JRegion & jregion.
 - Separate the source code in independent libraries:
   1) jinete -> gui
   2) sprite-core
