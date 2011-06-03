@@ -9,7 +9,7 @@ if(MSVC)
 endif(MSVC)
 
 # Third-party libraries
-set(libs3rdparty freetype libart_lgpl loadpng tinyxml giflib)
+set(libs3rdparty libcurl freetype libart_lgpl loadpng tinyxml giflib)
 
 if(USE_SHARED_JPEGLIB)
   find_package(JPEG)

@@ -21,6 +21,7 @@ if(NOT USE_SHARED_LIBPNG)
   add_subdirectory(libpng)
 endif()
 
+add_subdirectory(curl)
 add_subdirectory(giflib)
 add_subdirectory(gtest)
 add_subdirectory(freetype)

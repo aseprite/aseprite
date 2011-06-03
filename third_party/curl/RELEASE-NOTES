@@ -1,0 +1,32 @@
+Curl and libcurl 7.21.6
+
+ Public curl releases:         122
+ Command line options:         144
+ curl_easy_setopt() options:   186
+ Public functions in libcurl:  58
+ Known libcurl bindings:       39
+ Contributors:                 865
+
+This release includes the following changes:
+
+ o Added --tr-encoding and CURLOPT_TRANSFER_ENCODING
+
+This release includes the following bugfixes:
+
+ o curl-config: fix --version
+ o curl_easy_setopt.3: CURLOPT_PROXYTYPE clarification
+ o use HTTPS properly after CONNECT
+ o SFTP: close file before post quote operations
+
+This release includes the following known bugs:
+
+ o see docs/KNOWN_BUGS (http://curl.haxx.se/docs/knownbugs.html)
+
+This release would not have looked like this without help, code, reports and
+advice from friends like these:
+
+ Patrick Monnerat, Dan Fandrich, Gisle Vanem, Guenter Knauf,
+ Rajesh Naganathan, Josue Andrade Gomes, Ryan Schmidt, Fabian Keil,
+ Julien Chaffraix
+
+        Thanks! (and sorry if I forgot to mention someone)
