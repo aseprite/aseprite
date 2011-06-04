@@ -12,4 +12,5 @@ add_library(base-lib
   serialization.cpp
   split_string.cpp
   string.cpp
-  thread.cpp)
+  thread.cpp
+  version.cpp)
