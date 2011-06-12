@@ -65,6 +65,7 @@ endif(COMPILER_MSVC)
 ######################################################################
 # Directories
 
+set(CURL_DIR		${CMAKE_SOURCE_DIR}/third_party/curl)
 set(GIFLIB_DIR		${CMAKE_SOURCE_DIR}/third_party/giflib)
 set(LIBFREETYPE_DIR	${CMAKE_SOURCE_DIR}/third_party/freetype)
 set(LIBJPEG_DIR		${CMAKE_SOURCE_DIR}/third_party/jpeg)
