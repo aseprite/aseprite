@@ -23,6 +23,7 @@
 #include <stdlib.h>
 
 #include "app.h"
+#include "base/compiler_specific.h"
 #include "base/memory.h"
 #include "console.h"
 #include "core/cfg.h"
@@ -59,7 +60,7 @@ class JpegFormat : public FileFormat
   bool onLoad(FileOp* fop);
   bool onSave(FileOp* fop);
 
-  SharedPtr<FormatOptions> onGetFormatOptions(FileOp* fop);
+  SharedPtr<FormatOptions> onGetFormatOptions(FileOp* fop) OVERRIDE;
 };
 
 FileFormat* CreateJpegFormat()
