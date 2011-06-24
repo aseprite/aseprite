@@ -1,6 +1,9 @@
 For next release
 ----------------
 
++ Add a flag (compiler flag or a flag in gui.xml) to set fullscreen
+  mode as the default one (for special devices where fullscreen is
+  preferred).
 + Add IntEntry class in src/gui/ with spin-buttons.
 + Add feedback to "Shift+S" shortcut to switch "snap to grid".
 + Fix palette editor to avoid generating a lot of consecutive Undo actions.
@@ -19,6 +22,7 @@ For next release
 + Move src/dialogs/aniedit,filesel to src/widgets (remove dialogs/ directory).
 + Merge everything related to configuration/settings in one class
   (allow configuration per document). Use cfg.cpp and settings/ dir.
++ Refactor src/file/ in several layers.
 
 Refactoring
 -----------
@@ -26,12 +30,6 @@ Refactoring
 - Eradicate JList.
 - Replace JRect & jrect with gfx::Rect.
 - Create gfx::Region to replace JRegion & jregion.
-- Separate the source code in independent libraries:
-  1) jinete -> gui
-  2) sprite-core
-  3) file-io
-  4) undo (uses sprite-core)
-  5) aseprite (the application)
 - editors_ -> MultiEditors class widget
 - rename core/cfg.h to cfg_file.h
 - convert all widgets to classes:
