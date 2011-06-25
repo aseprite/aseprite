@@ -93,6 +93,7 @@ static std::vector<Timer*> timers; // Registered timers
 
 static JList new_windows;	      // Windows that we should show
 static WidgetsList mouse_widgets_list; // List of widgets to send mouse events
+static WidgetsList garbage;
 static JList msg_queue;		      // Messages queue
 static JList msg_filters[NFILTERS];   // Filters for every enqueued message
 
@@ -136,6 +137,16 @@ static void allegro_window_close_hook()
 {
   if (want_close_stage == STAGE_NORMAL)
     want_close_stage = STAGE_WANT_CLOSE;
+}
+
+static void collect_garbage()
+{
+  for (WidgetsList::iterator
+	 it = garbage.begin(),
+	 end = garbage.end(); it != end; ++it) {
+    delete *it;
+  }
+  garbage.clear();
 }
 
 JWidget ji_get_default_manager()
@@ -204,6 +215,8 @@ void jmanager_free(JWidget widget)
   /* there are some messages in queue? */
   jmanager_dispatch_messages(widget);
 
+  collect_garbage();
+
   /* finish with main manager */
   if (default_manager == widget) {
     /* no more cursor */
@@ -243,8 +256,12 @@ void jmanager_free(JWidget widget)
 void jmanager_run(JWidget widget)
 {
   while (!jlist_empty(widget->children)) {
-    if (jmanager_generate_messages(widget))
+    if (jmanager_generate_messages(widget)) {
       jmanager_dispatch_messages(widget);
+    }
+    else if (!garbage.empty()) {
+      collect_garbage();
+    }
   }
 }
 
@@ -569,6 +586,11 @@ void jmanager_dispatch_messages(JWidget manager)
   jmanager_enqueue_message(msg);
 
   manager_pump_queue(manager);
+}
+
+void jmanager_add_to_garbage(Widget* widget)
+{
+  garbage.push_back(widget);
 }
 
 /**
@@ -1077,13 +1099,6 @@ void _jmanager_close_window(JWidget manager, Frame* window, bool redraw_backgrou
 static bool manager_msg_proc(JWidget widget, Message* msg)
 {
   switch (msg->type) {
-
-    case JM_DEFERREDFREE:
-      ASSERT_VALID_WIDGET(msg->deffree.widget_to_free);
-      ASSERT(msg->deffree.widget_to_free != widget);
-
-      jwidget_free(msg->deffree.widget_to_free);
-      return true;
 
     case JM_REQSIZE:
       manager_request_size(widget, &msg->reqsize.w, &msg->reqsize.h);

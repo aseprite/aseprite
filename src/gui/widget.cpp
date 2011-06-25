@@ -34,7 +34,6 @@ static inline void mark_dirty_flag(Widget* widget)
     widget = widget->parent;
   }
 }
-  
 
 int ji_register_widget_type()
 {
@@ -140,17 +139,9 @@ Widget::~Widget()
   _ji_remove_widget(this);
 }
 
-void jwidget_free_deferred(JWidget widget)
+void Widget::deferDelete()
 {
-  Message* msg;
-
-  ASSERT_VALID_WIDGET(widget);
-
-  msg = jmessage_new(JM_DEFERREDFREE);
-  msg->deffree.widget_to_free = widget;
-  /* TODO use the manager of 'widget' */
-  jmessage_add_dest(msg, ji_get_default_manager());
-  jmanager_enqueue_message(msg);
+  jmanager_add_to_garbage(this);
 }
 
 void Widget::initTheme()

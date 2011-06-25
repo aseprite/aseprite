@@ -1220,7 +1220,7 @@ static bool window_msg_proc(Widget* widget, Message* msg)
   switch (msg->type) {
 
     case JM_CLOSE:
-      jwidget_free_deferred(widget);
+      widget->deferDelete();
       break;
 
   }

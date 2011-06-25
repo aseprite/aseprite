@@ -92,7 +92,9 @@ void app_refresh_screen(const Document* document);
 
 void app_rebuild_documents_tabs();
 void app_update_document_tab(const Document* document);
-bool app_realloc_recent_list();
+
+// Updates the list of recent files.
+bool app_rebuild_recent_list();
 
 int app_get_current_image_type();
 

@@ -28,12 +28,6 @@ struct MessageAny
   int shifts;		/* key shifts pressed when message was created */
 };
 
-struct MessageDefFree		/* deferred jwidget_free call */
-{
-  MessageAny any;
-  JWidget widget_to_free;
-};
-
 struct MessageKey
 {
   MessageAny any;
@@ -104,7 +98,6 @@ union Message
 {
   int type;
   MessageAny any;
-  MessageDefFree deffree;
   MessageKey key;
   MessageDraw draw;
   MessageMouse mouse;

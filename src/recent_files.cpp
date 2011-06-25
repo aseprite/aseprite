@@ -24,7 +24,6 @@
 
 #include "app.h"
 #include "core/cfg.h"
-#include "modules/gui.h"
 #include "recent_files.h"
 
 RecentFiles::RecentFiles()
@@ -77,7 +76,8 @@ void RecentFiles::addRecentFile(const char* filename)
     // Move it to the first position
     m_files.erase(it);
     m_files.insert(m_files.begin(), filename);
-    schedule_rebuild_recent_list();
+
+    app_rebuild_recent_list();
     return;
   }
 
@@ -90,7 +90,7 @@ void RecentFiles::addRecentFile(const char* filename)
   }
 
   m_files.insert(m_files.begin(), filename);
-  schedule_rebuild_recent_list();
+  app_rebuild_recent_list();
 }
 
 void RecentFiles::removeRecentFile(const char* filename)
@@ -99,7 +99,6 @@ void RecentFiles::removeRecentFile(const char* filename)
 
   if (it != m_files.end()) {
     m_files.erase(it);
-
-    schedule_rebuild_recent_list();
+    app_rebuild_recent_list();
   }
 }

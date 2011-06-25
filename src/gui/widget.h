@@ -35,7 +35,6 @@ typedef std::vector<Widget*> WidgetsList;
 int ji_register_widget_type();
 
 void jwidget_free(JWidget widget);
-void jwidget_free_deferred(JWidget widget);
 
 /* hooks */
 
@@ -149,6 +148,10 @@ public:
 
   Widget(int type);
   virtual ~Widget();
+
+  // Safe way to delete a widget when it is not in the manager message
+  // queue anymore.
+  void deferDelete();
 
   // main properties
 

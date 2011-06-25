@@ -4,6 +4,8 @@
 // This source file is ditributed under a BSD-like license, please
 // read LICENSE.txt for more information.
 
+#include "config.h"
+
 #include "base/shared_ptr.h"
 #include "gui/component.h"
 #include "gui/property.h"

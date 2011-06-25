@@ -18,6 +18,8 @@ void jmanager_run(JWidget manager);
 bool jmanager_generate_messages(JWidget manager);
 void jmanager_dispatch_messages(JWidget manager);
 
+void jmanager_add_to_garbage(Widget* widget);
+
 /* timers */
 
 int jmanager_add_timer(JWidget widget, int interval);

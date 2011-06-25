@@ -218,7 +218,7 @@ int App::run()
 
     // Create the list of tabs
     app_rebuild_documents_tabs();
-    app_realloc_recent_list();
+    app_rebuild_recent_list();
 
     /* set current editor */
     set_current_editor(editor);
@@ -393,19 +393,12 @@ void app_update_document_tab(const Document* document)
   tabsbar->setTabText(str.c_str(), const_cast<Document*>(document));
 }
 
-/**
- * Updates the recent list menu.
- *
- * @warning This routine can't be used when a menu callback was
- * called, because, it destroy the menus, you should use
- * schedule_rebuild_recent_list() instead (src/modules/gui.c).
- */
-bool app_realloc_recent_list()
+bool app_rebuild_recent_list()
 {
   MenuItem* list_menuitem = get_recent_list_menuitem();
   MenuItem* menuitem;
 
-  /* update the recent file list menu item */
+  // Update the recent file list menu item
   if (list_menuitem) {
     if (list_menuitem->hasSubmenuOpened())
       return false;
@@ -415,7 +408,7 @@ bool app_realloc_recent_list()
     Menu* submenu = list_menuitem->getSubmenu();
     if (submenu) {
       list_menuitem->setSubmenu(NULL);
-      jwidget_free(submenu);
+      submenu->deferDelete();
     }
 
     // Build the menu of recent files

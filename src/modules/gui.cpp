@@ -57,9 +57,8 @@
 #include "widgets/toolbar.h"
 #include "xml_widgets.h"
 
-#define REBUILD_RECENT_LIST	2
-#define REFRESH_FULL_SCREEN	4
-#define SYSTEM_WINDOW_RESIZE    8
+#define REFRESH_FULL_SCREEN	1
+#define SYSTEM_WINDOW_RESIZE    2
 
 #define MONITOR_TIMER_MSECS	100
 
@@ -466,12 +465,6 @@ void gui_feedback()
     jmanager_refresh_screen();
   }
 
-  // Menu stuff
-  if (next_idle_flags & REBUILD_RECENT_LIST) {
-    if (app_realloc_recent_list())
-      next_idle_flags ^= REBUILD_RECENT_LIST;
-  }
-
   if (next_idle_flags & REFRESH_FULL_SCREEN) {
     next_idle_flags ^= REFRESH_FULL_SCREEN;
 
@@ -657,11 +650,6 @@ JWidget find_widget(JWidget widget, const char *name)
     throw widget_not_found(name);
 
   return child;
-}
-
-void schedule_rebuild_recent_list()
-{
-  next_idle_flags |= REBUILD_RECENT_LIST;
 }
 
 //////////////////////////////////////////////////////////////////////

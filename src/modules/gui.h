@@ -85,8 +85,6 @@ void save_window_pos(Widget* window, const char *section);
 Widget* load_widget(const char *filename, const char *name);
 Widget* find_widget(Widget* widget, const char *name);
 
-void schedule_rebuild_recent_list();
-
 void hook_signal(Widget* widget,
 		 int signal_num,
 		 bool (*signal_handler)(Widget* widget, void *data),
