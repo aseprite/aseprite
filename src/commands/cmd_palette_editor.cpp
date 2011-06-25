@@ -327,6 +327,10 @@ bool PaletteEntryEditor::onProcessMessage(Message* msg)
       m_redrawAll = false;
       jmanager_stop_timer(m_redrawTimerId);
 
+      // Call all listener of PaletteChange event.
+      App::instance()->PaletteChange();
+
+      // Redraw all editors
       try {
 	const ActiveDocumentReader document(UIContext::instance());
 	update_editors_with_document(document);
