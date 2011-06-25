@@ -79,6 +79,10 @@ void ColorButton::setColor(const Color& color)
 {
   m_color = color;
 
+  // Change the color in its related frame
+  if (m_frame)
+    m_frame->setColor(m_color, ColorSelector::DoNotChangeType);
+
   // Emit signal
   Change(color);
 
@@ -232,7 +236,7 @@ void ColorButton::openSelectorDialog()
     m_frame->ColorChange.connect(&ColorButton::onFrameColorChange, this);
   }
 
-  m_frame->setColor(m_color);
+  m_frame->setColor(m_color, ColorSelector::ChangeType);
   m_frame->open_window();
 
   x = MID(0, this->rc->x1, JI_SCREEN_W-jrect_w(m_frame->rc));

@@ -99,15 +99,21 @@ ColorSelector::ColorSelector()
   selectColorType(Color::RgbType);
   setPreferredSize(gfx::Size(300*jguiscale(), getPreferredSize().h));
 
+  m_onPaletteChangeSlot =
+    App::instance()->PaletteChange.connect(&ColorSelector::onPaletteChange, this);
+
   initTheme();
 }
 
 ColorSelector::~ColorSelector()
 {
+  App::instance()->PaletteChange.disconnect(m_onPaletteChangeSlot);
+  delete m_onPaletteChangeSlot;
+
   getPin()->getParent()->removeChild(getPin());
 }
 
-void ColorSelector::setColor(const Color& color)
+void ColorSelector::setColor(const Color& color, SetColorOptions options)
 {
   m_color = color;
 
@@ -120,7 +126,8 @@ void ColorSelector::setColor(const Color& color)
   if (!m_disableHexUpdate)
     m_hexColorEntry.setColor(m_color);
 
-  selectColorType(m_color.getType());
+  if (options == ChangeType)
+    selectColorType(m_color.getType());
 }
 
 Color ColorSelector::getColor() const
@@ -165,6 +172,12 @@ void ColorSelector::onColorTypeButtonClick(Event& ev)
   }
 }
 
+void ColorSelector::onPaletteChange()
+{
+  setColor(getColor(), DoNotChangeType);
+  invalidate();
+}
+
 void ColorSelector::findBestfitIndex(const Color& color)
 {
   // Find bestfit palette entry
@@ -180,7 +193,7 @@ void ColorSelector::findBestfitIndex(const Color& color)
 
 void ColorSelector::setColorWithSignal(const Color& color)
 {
-  setColor(color);
+  setColor(color, ChangeType);
 
   // Fire ColorChange signal
   ColorChange(color);

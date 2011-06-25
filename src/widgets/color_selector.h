@@ -33,10 +33,15 @@
 class ColorSelector : public PopupFramePin
 {
 public:
+  enum SetColorOptions {
+    ChangeType,
+    DoNotChangeType
+  };
+
   ColorSelector();
   ~ColorSelector();
 
-  void setColor(const Color& color);
+  void setColor(const Color& color, SetColorOptions options);
   Color getColor() const;
 
   // Signals
@@ -47,6 +52,7 @@ protected:
   void onColorSlidersChange(ColorSlidersChangeEvent& ev);
   void onColorHexEntryChange(const Color& color);
   void onColorTypeButtonClick(Event& ev);
+  void onPaletteChange();
 
 private:
   void selectColorType(Color::Type type);
@@ -68,6 +74,7 @@ private:
   HsvSliders m_hsvSliders;
   GraySlider m_graySlider;
   Label m_maskLabel;
+  Signal0<void>::SlotType* m_onPaletteChangeSlot;
 
   // This variable is used to avoid updating the m_hexColorEntry text
   // when the color change is generated from a
