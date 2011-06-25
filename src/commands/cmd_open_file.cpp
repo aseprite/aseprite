@@ -180,6 +180,9 @@ void OpenFileCommand::onExecute(Context* context)
 	fop_stop(data->fop);
 	thread.join();
 
+	// Post-load processing, it is called from the GUI because may require user intervention.
+	fop_post_load(fop);
+
 	// Show any error
 	if (fop->has_error())
 	  console.printf(fop->error.c_str());

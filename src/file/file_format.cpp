@@ -52,3 +52,13 @@ bool FileFormat::save(FileOp* fop)
   ASSERT(support(FILE_SUPPORT_SAVE));
   return onSave(fop);
 }
+
+bool FileFormat::postLoad(FileOp* fop)
+{
+  return onPostLoad(fop);
+}
+
+void FileFormat::destroyData(FileOp* fop)
+{
+  onDestroyData(fop);
+}

@@ -54,6 +54,13 @@ public:
   bool load(FileOp* fop);
   bool save(FileOp* fop);
 
+  // Does post-load operation which require user intervention.
+  // Returns false cancelled the operation.
+  bool postLoad(FileOp* fop);
+
+  // Destroys the custom data stored in "fop->format_data" field.
+  void destroyData(FileOp* fop);
+
   // Returns extra options for this format. It can return != NULL
   // only if flags() returns FILE_SUPPORT_GET_FORMAT_OPTIONS.
   SharedPtr<FormatOptions> getFormatOptions(FileOp* fop) {
@@ -71,7 +78,9 @@ protected:
   virtual int onGetFlags() const = 0;
 
   virtual bool onLoad(FileOp* fop) = 0;
+  virtual bool onPostLoad(FileOp* fop) { return true; }
   virtual bool onSave(FileOp* fop) = 0;
+  virtual void onDestroyData(FileOp* fop) { }
 
   virtual SharedPtr<FormatOptions> onGetFormatOptions(FileOp* fop) {
     return SharedPtr<FormatOptions>(0);

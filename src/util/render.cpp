@@ -392,7 +392,7 @@ Image* RenderEngine::renderSprite(const Document* document,
     case IMAGE_INDEXED:
       zoomed_func = merge_zoomed_image<RgbTraits, IndexedTraits>;
       if (!need_checked_bg)
-	bg_color = sprite->getPalette(frame)->getEntry(0);
+	bg_color = sprite->getPalette(frame)->getEntry(sprite->getTransparentColor());
       break;
 
     default:
@@ -571,7 +571,7 @@ void RenderEngine::renderLayer(const Document* document,
 
       const Cel* cel = static_cast<const LayerImage*>(layer)->getCel(frame);
       if (cel != NULL) {
-	const Image* src_image;
+	Image* src_image;
 
 	/* is the 'rastering_image' setted to be used with this layer? */
 	if ((frame == sprite->getCurrentFrame()) &&
@@ -592,6 +592,8 @@ void RenderEngine::renderLayer(const Document* document,
 
 	  output_opacity = MID(0, cel->getOpacity(), 255);
 	  output_opacity = INT_MULT(output_opacity, global_opacity, t);
+
+	  src_image->mask_color = sprite->getTransparentColor();
 
 	  (*zoomed_func)(image, src_image, sprite->getPalette(frame),
 			 (cel->getX() << zoom) - source_x,

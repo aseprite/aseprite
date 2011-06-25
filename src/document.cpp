@@ -126,6 +126,12 @@ Document* Document::createBasicDocument(int imgtype, int width, int height, int 
   return document.release();	// Release the document (it does not throw) returning the raw pointer
 }
 
+void Document::addSprite(Sprite* sprite)
+{
+  ASSERT(m_sprite == NULL);	// TODO add support for more sprites in the future (e.g. for .ico files)
+  m_sprite.reset(sprite);
+}
+
 const char* Document::getFilename() const
 {
   return m_filename.c_str();

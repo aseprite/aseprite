@@ -84,6 +84,8 @@ public:
   Sprite* getSprite() { return m_sprite; }
   undo::UndoHistory* getUndoHistory() { return m_undoHistory; }
 
+  void addSprite(Sprite* sprite);
+
   //////////////////////////////////////////////////////////////////////
   // File related properties
 

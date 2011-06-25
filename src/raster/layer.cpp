@@ -364,6 +364,8 @@ void layer_render(const Layer* layer, Image* image, int x, int y, int frame)
 	src_image = layer->getSprite()->getStock()->getImage(cel->getImage());
 	ASSERT(src_image != NULL);
 
+	src_image->mask_color = layer->getSprite()->getTransparentColor();
+
 	image_merge(image, src_image,
 		    cel->getX() + x,
 		    cel->getY() + y,

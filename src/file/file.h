@@ -50,6 +50,7 @@ struct FileOp
 {
   FileOpType type;		// Operation type: 0=load, 1=save.
   FileFormat* format;
+  void* format_data;		// Custom data for the FileFormat::onLoad/onSave operations.
   Document* document;		// Loaded document, or document to be saved.
   std::string filename;		// File-name to load/save.
 
@@ -107,6 +108,9 @@ void fop_operate(FileOp* fop);
 void fop_done(FileOp* fop);
 void fop_stop(FileOp* fop);
 void fop_free(FileOp* fop);
+
+// Does extra post-load processing which may require user intervention.
+void fop_post_load(FileOp* fop);
 
 void fop_sequence_set_format_options(FileOp* fop, const SharedPtr<FormatOptions>& format_options);
 void fop_sequence_set_color(FileOp* fop, int index, int r, int g, int b);

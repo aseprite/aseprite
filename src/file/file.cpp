@@ -94,6 +94,8 @@ Document* load_document(const char* filename)
   fop_operate(fop);
   fop_done(fop);
 
+  fop_post_load(fop);
+
   if (fop->has_error()) {
     Console console;
     console.printf(fop->error.c_str());
@@ -528,32 +530,6 @@ void fop_operate(FileOp *fop)
 	fop_error(fop, "Error loading sprite from file \"%s\"\n",
 		  fop->filename.c_str());
     }
-
-    if (fop->document != NULL && fop->document->getSprite() != NULL) {
-      // Select the last layer
-      if (fop->document->getSprite()->getFolder()->get_layers_count() > 0) {
-	LayerIterator last_layer = --fop->document->getSprite()->getFolder()->get_layer_end();
-	fop->document->getSprite()->setCurrentLayer(*last_layer);
-      }
-
-      // Set the filename.
-      if (fop->is_sequence())
-	fop->document->setFilename(fop->seq.filename_list.begin()->c_str());
-      else
-	fop->document->setFilename(fop->filename.c_str());
-
-      // Creates a suitable palette for RGB images
-      if (fop->document->getSprite()->getImgType() == IMAGE_RGB &&
-	  fop->document->getSprite()->getPalettes().size() <= 1 &&
-	  fop->document->getSprite()->getPalette(0)->isBlack()) {
-	SharedPtr<Palette> palette(quantization::create_palette_from_rgb(fop->document->getSprite()));
-
-	fop->document->getSprite()->resetPalettes();
-	fop->document->getSprite()->setPalette(palette, false);
-      }
-
-      fop->document->markAsSaved();
-    }
   }
   // Save //////////////////////////////////////////////////////////////////////
   else if (fop->type == FileOpSave &&
@@ -640,6 +616,8 @@ void fop_stop(FileOp *fop)
 
 void fop_free(FileOp *fop)
 {
+  fop->format->destroyData(fop);
+
   if (fop->seq.palette != NULL)
     delete fop->seq.palette;
 
@@ -647,6 +625,47 @@ void fop_free(FileOp *fop)
     delete fop->mutex;
 
   delete fop;
+}
+
+void fop_post_load(FileOp* fop)
+{
+  if (fop->document == NULL)
+    return;
+
+  // Set the filename.
+  if (fop->is_sequence())
+    fop->document->setFilename(fop->seq.filename_list.begin()->c_str());
+  else
+    fop->document->setFilename(fop->filename.c_str());
+
+  bool result = fop->format->postLoad(fop);
+  if (!result) {
+    // Destroy the document
+    delete fop->document;
+    fop->document = NULL;
+
+    return;
+  }
+
+  if (fop->document->getSprite() != NULL) {
+    // Select the last layer
+    if (fop->document->getSprite()->getFolder()->get_layers_count() > 0) {
+      LayerIterator last_layer = --fop->document->getSprite()->getFolder()->get_layer_end();
+      fop->document->getSprite()->setCurrentLayer(*last_layer);
+    }
+
+    // Creates a suitable palette for RGB images
+    if (fop->document->getSprite()->getImgType() == IMAGE_RGB &&
+	fop->document->getSprite()->getPalettes().size() <= 1 &&
+	fop->document->getSprite()->getPalette(0)->isBlack()) {
+      SharedPtr<Palette> palette(quantization::create_palette_from_rgb(fop->document->getSprite()));
+
+      fop->document->getSprite()->resetPalettes();
+      fop->document->getSprite()->setPalette(palette, false);
+    }
+  }
+
+  fop->document->markAsSaved();
 }
 
 void fop_sequence_set_format_options(FileOp* fop, const SharedPtr<FormatOptions>& format_options)
@@ -782,6 +801,7 @@ static FileOp* fop_new(FileOpType type)
 
   fop->type = type;
   fop->format = NULL;
+  fop->format_data = NULL;
   fop->document = NULL;
 
   fop->mutex = new Mutex();
