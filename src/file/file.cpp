@@ -616,7 +616,8 @@ void fop_stop(FileOp *fop)
 
 void fop_free(FileOp *fop)
 {
-  fop->format->destroyData(fop);
+  if (fop->format)
+    fop->format->destroyData(fop);
 
   if (fop->seq.palette != NULL)
     delete fop->seq.palette;
