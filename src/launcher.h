@@ -26,6 +26,7 @@ class Launcher
 public:
   static void openUrl(const std::string& url);
   static void openFile(const std::string& file);
+  static void openFolder(const std::string& file);
 };
 
 #endif

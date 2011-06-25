@@ -139,6 +139,8 @@ add_library(aseprite-library
   commands/cmd_new_layer.cpp
   commands/cmd_new_layer_set.cpp
   commands/cmd_open_file.cpp
+  commands/cmd_open_in_folder.cpp
+  commands/cmd_open_with_app.cpp
   commands/cmd_options.cpp
   commands/cmd_palette_editor.cpp
   commands/cmd_paste.cpp

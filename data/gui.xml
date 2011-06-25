@@ -330,7 +330,14 @@
 	<item command="About" text="&amp;About" />
       </menu>
     </menu>
-    
+
+    <menu id="document_tab_popup">
+      <item command="CloseFile" text="&amp;Close" />
+      <separator />
+      <item command="OpenInFolder" text="Open In &amp;Folder" />
+      <item command="OpenWithApp" text="Open With Associated &amp;Application" />
+    </menu>
+
     <menu id="layer_popup">
       <item command="LayerProperties" text="&amp;Properties..." />
       <separator />

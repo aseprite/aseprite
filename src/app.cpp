@@ -491,17 +491,29 @@ int app_get_color_to_clear_layer(Layer* layer)
 
 void AppTabsDelegate::clickTab(Tabs* tabs, void* data, int button)
 {
-  Document* document = (Document*)data;
+  Document* document = reinterpret_cast<Document*>(data);
 
   // put as current sprite
   set_document_in_more_reliable_editor(document);
 
-  // middle-button: close the sprite
-  if (data && (button & 4)) {
-    Command* close_file_cmd =
-      CommandsModule::instance()->getCommandByName(CommandId::CloseFile);
+  if (document) {
+    Context* context = UIContext::instance();
+    context->updateFlags();
 
-    UIContext::instance()->executeCommand(close_file_cmd, NULL);
+    // right-button: popup-menu
+    if (button & 2) {
+      Menu* popup_menu = get_document_tab_popup_menu();
+      if (popup_menu != NULL) {
+	popup_menu->showPopup(jmouse_x(0), jmouse_y(0));
+      }
+    }
+    // middle-button: close the sprite
+    else if (button & 4) {
+      Command* close_file_cmd =
+	CommandsModule::instance()->getCommandByName(CommandId::CloseFile);
+
+      context->executeCommand(close_file_cmd, NULL);
+    }
   }
 }
 

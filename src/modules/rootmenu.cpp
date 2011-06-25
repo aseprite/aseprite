@@ -42,6 +42,7 @@
 static Menu* root_menu;
 
 static MenuItem* recent_list_menuitem;
+static Menu* document_tab_popup_menu;
 static Menu* layer_popup_menu;
 static Menu* frame_popup_menu;
 static Menu* cel_popup_menu;
@@ -56,6 +57,7 @@ static void apply_shortcut_to_menuitems_with_command(Menu* menu, Command* comman
 int init_module_rootmenu()
 {
   root_menu = NULL;
+  document_tab_popup_menu = NULL;
   layer_popup_menu = NULL;
   frame_popup_menu = NULL;
   cel_popup_menu = NULL;
@@ -68,6 +70,7 @@ int init_module_rootmenu()
 void exit_module_rootmenu()
 {
   delete root_menu;
+  delete document_tab_popup_menu;
   delete layer_popup_menu;
   delete frame_popup_menu;
   delete cel_popup_menu;
@@ -77,6 +80,7 @@ void exit_module_rootmenu()
 Menu* get_root_menu() { return root_menu; }
 
 MenuItem* get_recent_list_menuitem() { return recent_list_menuitem; }
+Menu* get_document_tab_popup_menu() { return document_tab_popup_menu; }
 Menu* get_layer_popup_menu() { return layer_popup_menu; }
 Menu* get_frame_popup_menu() { return frame_popup_menu; }
 Menu* get_cel_popup_menu() { return cel_popup_menu; }
@@ -93,6 +97,7 @@ static int load_root_menu()
   // create a new empty-menu
   root_menu = NULL;
   recent_list_menuitem = NULL;
+  document_tab_popup_menu = NULL;
   layer_popup_menu = NULL;
   frame_popup_menu = NULL;
   cel_popup_menu = NULL;
@@ -115,6 +120,7 @@ static int load_root_menu()
 
   PRINTF("Main menu loaded.\n");
 
+  document_tab_popup_menu = load_menu_by_id(handle, "document_tab_popup");
   layer_popup_menu = load_menu_by_id(handle, "layer_popup");
   frame_popup_menu = load_menu_by_id(handle, "frame_popup");
   cel_popup_menu = load_menu_by_id(handle, "cel_popup");

@@ -18,12 +18,47 @@
 
 #include "config.h"
 
+#include "base/exception.h"
 #include "gui/alert.h"
 #include "launcher.h"
 
 #if defined ALLEGRO_WINDOWS
-  #define BITMAP WINDOWS_BITMAP
-  #include <windows.h>
+#define BITMAP WINDOWS_BITMAP
+#include <windows.h>
+
+static void win32_shell_execute(const char* verb, const char* file, const char* params)
+{
+  SHELLEXECUTEINFO sh;
+  ZeroMemory((LPVOID)&sh, sizeof(sh));
+  sh.cbSize = sizeof(sh);
+  sh.fMask = SEE_MASK_DEFAULT;
+  sh.lpVerb = verb;
+  sh.lpFile = file;
+  sh.lpParameters = params;
+  sh.nShow = SW_SHOWNORMAL;
+
+  if (!ShellExecuteEx(&sh)) {
+    int ret = GetLastError();
+    if (ret != 0) {
+      DWORD flags =
+	FORMAT_MESSAGE_ALLOCATE_BUFFER |
+	FORMAT_MESSAGE_FROM_SYSTEM |
+	FORMAT_MESSAGE_IGNORE_INSERTS;
+      LPSTR msgbuf;
+
+      if (FormatMessageA(flags, NULL, ret,
+			 MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
+			 reinterpret_cast<LPSTR>(&msgbuf),
+			 0, NULL)) {
+	Alert::show("Problem<<Cannot open:<<%s<<%s||&Close", file, msgbuf);
+	LocalFree(msgbuf);
+
+	ret = 0;
+      }
+    }
+  }
+}
+
 #endif
 
 void Launcher::openUrl(const std::string& url)
@@ -37,8 +72,8 @@ void Launcher::openFile(const std::string& file)
 
 #if defined ALLEGRO_WINDOWS
 
-  ShellExecute(NULL, "open", file.c_str(), NULL, NULL, SW_SHOWNORMAL);
-  ret = 0;	   // TODO Use ShellExecuteEx to know the return value
+  win32_shell_execute("open", file.c_str(), NULL);
+  ret = 0;
 
 #elif defined ALLEGRO_MACOSX
 
@@ -52,4 +87,21 @@ void Launcher::openFile(const std::string& file)
 
   if (ret != 0)
     Alert::show("Problem<<Cannot open:<<%s||&Close", file.c_str());
+}
+
+void Launcher::openFolder(const std::string& file)
+{
+#if defined ALLEGRO_WINDOWS
+
+  win32_shell_execute(NULL, "explorer", ("/e,/select,\"" + file + "\"").c_str());
+
+#elif defined ALLEGRO_MACOSX
+
+  Alert::show("Problem<<This command is not supported on Mac OS X||&Close");
+
+#else  // Linux
+
+  Alert::show("Problem<<This command is not supported on Linux||&Close");
+
+#endif
 }
