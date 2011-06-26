@@ -50,29 +50,19 @@ int palette_view_type()
 
 PaletteView::PaletteView(bool editable)
   : Widget(palette_view_type())
+  , m_currentEntry(-1)
+  , m_rangeAnchor(-1)
+  , m_selectedEntries(256, false)
 {
   m_editable = editable;
-  m_range_type = PALETTE_EDITOR_RANGE_NONE;
   m_columns = 16;
   m_boxsize = 6;
-  m_color[0] = -1;
-  m_color[1] = -1;
 
   jwidget_focusrest(this, true);
 
   this->border_width.l = this->border_width.r = 1 * jguiscale();
   this->border_width.t = this->border_width.b = 1 * jguiscale();
   this->child_spacing = 1 * jguiscale();
-}
-
-int PaletteView::getRangeType()
-{
-  return m_range_type;
-}
-
-int PaletteView::getColumns()
-{
-  return m_columns;
 }
 
 void PaletteView::setColumns(int columns)
@@ -96,235 +86,74 @@ void PaletteView::setBoxSize(int boxsize)
   m_boxsize = boxsize;
 }
 
+void PaletteView::clearSelection()
+{
+  std::fill(m_selectedEntries.begin(),
+	    m_selectedEntries.end(), false);
+}
+
 void PaletteView::selectColor(int index)
 {
   ASSERT(index >= 0 && index <= 255);
 
-  if ((m_color[0] != index) ||
-      (m_color[1] != index) ||
-      (m_range_type != PALETTE_EDITOR_RANGE_NONE)) {
-    m_color[0] = index;
-    m_color[1] = index;
-    m_range_type = PALETTE_EDITOR_RANGE_NONE;
+  if (m_currentEntry != index || !m_selectedEntries[index]) {
+    m_currentEntry = index;
+    m_rangeAnchor = index;
+    m_selectedEntries[index] = true;
 
-    if ((index >= 0) && (index <= 255))
-      update_scroll(index);
-
+    update_scroll(m_currentEntry);
     invalidate();
   }
 }
 
-void PaletteView::selectRange(int begin, int end, int range_type)
+void PaletteView::selectRange(int index1, int index2)
 {
-/*   ASSERT(begin >= 0 && begin <= 255); */
-/*   ASSERT(end >= 0 && end <= 255); */
+  m_rangeAnchor = index1;
+  m_currentEntry = index2;
 
-  m_color[0] = begin;
-  m_color[1] = end;
-  m_range_type = range_type;
+  std::fill(m_selectedEntries.begin()+std::min(index1, index2),
+  	    m_selectedEntries.begin()+std::max(index1, index2)+1, true);
 
-  update_scroll(end);
+  update_scroll(index2);
   invalidate();
 }
 
-static void swap_color(Palette* palette, int i1, int i2)
+int PaletteView::getSelectedEntry() const
 {
-  uint32_t c1 = palette->getEntry(i1);
-  uint32_t c2 = palette->getEntry(i2);
-
-  palette->setEntry(i2, c1);
-  palette->setEntry(i1, c2);
+  return m_currentEntry;
 }
 
-void PaletteView::moveSelection(int x, int y)
+bool PaletteView::getSelectedRange(int& index1, int& index2) const
 {
-  if (!m_editable)
-    return;
+  int i, i2, j;
 
-  switch (m_range_type) {
-
-    case PALETTE_EDITOR_RANGE_LINEAL: {
-      int c1 = MIN(m_color[0], m_color[1]);
-      int c2 = MAX(m_color[0], m_color[1]);
-      int c;
-
-      /* left */
-      if (x < 0) {
-	if (c1 > 0) {
-	  for (c=c1; c<=c2; c++)
-	    swap_color(get_current_palette(), c, c-1);
-
-	  m_color[0]--;
-	  m_color[1]--;
-	}
-      }
-      /* right */
-      else if (x > 0) {
-	if (c2 < 255) {
-	  for (c=c2; c>=c1; c--)
-	    swap_color(get_current_palette(), c, c+1);
-
-	  m_color[0]++;
-	  m_color[1]++;
-	}
-      }
-      /* up */
-      else if (y < 0) {
-	/* TODO this should be implemented? */
-      }
-      /* down */
-      else if (y > 0) {
-	/* TODO this should be implemented? */
-      }
+  // Find the first selected entry
+  for (i=0; i<(int)m_selectedEntries.size(); ++i)
+    if (m_selectedEntries[i])
       break;
-    }
 
-    case PALETTE_EDITOR_RANGE_NONE:
-    case PALETTE_EDITOR_RANGE_RECTANGULAR: {
-      int cols = m_columns;
-      int index1 = m_color[0];
-      int index2 = m_color[1];
-      int c, u, v, x1, y1, x2, y2;
-
-      /* swap */
-      if (index1 > index2) {
-	c = index1;
-	index1 = index2;
-	index2 = c;
-      }
-
-      x1 = index1 % cols;
-      y1 = index1 / cols;
-      x2 = index2 % cols;
-      y2 = index2 / cols;
-
-      if (x2 < x1) { c = x2; x2 = x1; x1 = c; }
-      if (y2 < y1) { c = y2; y2 = y1; y1 = c; }
-
-      /* left */
-      if (x < 0) {
-	if ((x1 > 0) && ((y1*cols+x1-1) >= 0)) {
-	  for (v=y1; v<=y2; v++)
-	    for (u=x1; u<=x2; u++)
-	      swap_color(get_current_palette(),
-			 (v*cols + u),
-			 (v*cols + (u-1)));
-
-	  m_color[0]--;
-	  m_color[1]--;
-	}
-      }
-      /* right */
-      else if (x > 0) {
-	if ((x2 < cols-1) && ((y2*cols+x2+1) <= 255)) {
-	  for (v=y1; v<=y2; v++)
-	    for (u=x2; u>=x1; u--)
-	      swap_color(get_current_palette(),
-			 (v*cols + u),
-			 (v*cols + (u+1)));
-
-	  m_color[0]++;
-	  m_color[1]++;
-	}
-      }
-      /* up */
-      else if (y < 0) {
-	if (((y1-1)*cols+x1) >= 0) {
-	  for (v=y1; v<=y2; v++)
-	    for (u=x1; u<=x2; u++)
-	      swap_color(get_current_palette(),
-			 (v*cols + u),
-			 ((v-1)*cols + u));
-
-	  m_color[0] -= cols;
-	  m_color[1] -= cols;
-	}
-      }
-      /* down */
-      else if (y > 0) {
-	if (((y2+1)*cols+x2) <= 255) {
-	  for (v=y2; v>=y1; v--)
-	    for (u=x1; u<=x2; u++)
-	      swap_color(get_current_palette(),
-			 (v*cols + u),
-			 ((v+1)*cols + u));
-
-	  m_color[0] += cols;
-	  m_color[1] += cols;
-	}
-      }
+  // Find the first unselected entry after i
+  for (i2=i+1; i2<(int)m_selectedEntries.size(); ++i2)
+    if (!m_selectedEntries[i2])
       break;
-    }
+
+  // Find the last selected entry
+  for (j=m_selectedEntries.size()-1; j>=0; --j)
+    if (m_selectedEntries[j])
+      break;
+
+  if (j-i+1 == i2-i) {
+    index1 = i;
+    index2 = j;
+    return true;
   }
-
-  /* fixup the scroll */
-  update_scroll(m_color[1]);
-
-  /* set the palette */
-  //set_current_palette(m_palette, false);
-
-  /* refresh the screen */
-  jmanager_refresh_screen();
+  else
+    return false;
 }
 
-int PaletteView::get1stColor()
+void PaletteView::getSelectedEntries(SelectedEntries& entries) const
 {
-  return m_color[0];
-}
-
-int PaletteView::get2ndColor()
-{
-  return m_color[1];
-}
-
-void PaletteView::getSelectedEntries(bool array[256])
-{
-  memset(array, false, sizeof(bool)*256);
-
-  switch (m_range_type) {
-
-    case PALETTE_EDITOR_RANGE_NONE:
-      if (m_color[1] >= 0)
-	array[m_color[1]] = true;
-      break;
-
-    case PALETTE_EDITOR_RANGE_LINEAL: {
-      int c1 = MIN(m_color[0], m_color[1]);
-      int c2 = MAX(m_color[0], m_color[1]);
-      int c;
-
-      for (c=c1; c<=c2; c++)
-	array[c] = true;
-      break;
-    }
-
-    case PALETTE_EDITOR_RANGE_RECTANGULAR: {
-      int cols = m_columns;
-      int index1 = m_color[0];
-      int index2 = m_color[1];
-      int c, x, y, x1, y1, x2, y2;
-
-      /* swap */
-      if (index1 > index2) {
-	c = index1;
-	index1 = index2;
-	index2 = c;
-      }
-
-      x1 = index1 % cols;
-      y1 = index1 / cols;
-      x2 = index2 % cols;
-      y2 = index2 / cols;
-
-      if (x2 < x1) { c = x2; x2 = x1; x1 = c; }
-      if (y2 < y1) { c = y2; y2 = y1; y1 = c; }
-
-      for (y=y1; y<=y2; y++)
-	for (x=x1; x<=x2; x++)
-	  array[y*cols + x] = true;
-      break;
-    }
-  }
+  entries = m_selectedEntries;
 }
 
 Color PaletteView::getColorByPosition(int target_x, int target_y)
@@ -373,29 +202,15 @@ bool PaletteView::onProcessMessage(Message* msg)
       request_size(&msg->reqsize.w, &msg->reqsize.h);
       return true;
 
-    // case JM_KEYPRESSED:
-    //   if (jwidget_has_focus(this)) {
-    // 	/* other keys */
-    // 	if ((m_color[1] >= 0) && (m_color[1] <= 255)) {
-    // 	  switch (msg->key.scancode) {
-    // 	    case KEY_LEFT:  moveSelection(-1, 0); return true;
-    // 	    case KEY_RIGHT: moveSelection(+1, 0); return true;
-    // 	    case KEY_UP:    moveSelection(0, -1); return true;
-    // 	    case KEY_DOWN:  moveSelection(0, +1); return true;
-    // 	  }
-    // 	}
-    //   }
-    //   break;
-
     case JM_DRAW: {
       div_t d = div(256, m_columns);
       int cols = m_columns;
       int rows = d.quot + ((d.rem)? 1: 0);
-      int x1, y1, x2, y2;
       int x, y, u, v;
       int c, color;
       BITMAP *bmp;
       Palette* palette = get_current_palette();
+      int bordercolor = makecol(255, 255, 255);
 
       bmp = create_bitmap(jrect_w(this->rc), jrect_h(this->rc));
       clear_to_color(bmp, makecol(0 , 0, 0));
@@ -421,104 +236,23 @@ bool PaletteView::onProcessMessage(Message* msg)
 
 	  rectfill(bmp, x, y, x+m_boxsize-1, y+m_boxsize-1, color);
 
+	  if (m_selectedEntries[c]) {
+	    bool top    = (c >= m_columns            && c-m_columns >= 0  ? m_selectedEntries[c-m_columns]: false);
+	    bool bottom = (c < 256-m_columns         && c+m_columns < 256 ? m_selectedEntries[c+m_columns]: false);
+	    bool left   = ((c%m_columns)>0           && c-1         >= 0  ? m_selectedEntries[c-1]: false);
+	    bool right  = ((c%m_columns)<m_columns-1 && c+1         < 256 ? m_selectedEntries[c+1]: false);
+
+	    if (!top) hline(bmp, x-1, y-1, x+m_boxsize, bordercolor);
+	    if (!bottom) hline(bmp, x-1, y+m_boxsize, x+m_boxsize, bordercolor);
+	    if (!left) vline(bmp, x-1, y-1, y+m_boxsize, bordercolor);
+	    if (!right) vline(bmp, x+m_boxsize, y-1, y+m_boxsize, bordercolor);
+	  }
+
 	  x += m_boxsize+this->child_spacing;
 	  c++;
 	}
 
 	y += m_boxsize+this->child_spacing;
-      }
-
-      /* draw the edges in the selected color */
-      if (m_color[0] >= 0) {
-	int index1 = m_color[0];
-	int index2 = m_color[1];
-	int bl = this->border_width.l;
-	int bt = this->border_width.t;
-	int cs = this->child_spacing;
-	int color = makecol (255, 255, 255);
-
-	/* swap */
-	if (index1 > index2) {
-	  c = index1;
-	  index1 = index2;
-	  index2 = c;
-	}
-
-	/* selection position */
-	x1 = index1 % cols;
-	y1 = index1 / cols;
-	x2 = index2 % cols;
-	y2 = index2 / cols;
-
-	if (y2 < y1) { c = y2; y2 = y1; y1 = c; }
-
-	/* draw the rectangular gamma or just the cursor */
-	if (m_range_type != PALETTE_EDITOR_RANGE_LINEAL) {
-	  if (x2 < x1) { c = x2; x2 = x1; x1 = c; }
-
-	  rect(bmp,
-	       bl + x1*(cs+m_boxsize)-1,
-	       bt + y1*(cs+m_boxsize)-1,
-	       bl + x2*(cs+m_boxsize)+m_boxsize,
-	       bt + y2*(cs+m_boxsize)+m_boxsize, color);
-	}
-	/* draw the linear gamma */
-	else {
-	  c = 0;
-	  for (y=0; y<rows; y++) {
-	    for (x=0; x<cols; x++) {
-	      if ((c == index1) || ((x == 0) && (y > y1) && (y <= y2))) {
-		vline(bmp,
-		      bl + x*(cs+m_boxsize)-1,
-		      bt + y*(cs+m_boxsize)-1,
-		      bt + y*(cs+m_boxsize)+m_boxsize, color);
-	      }
-
-	      if ((c == index2) || ((x == cols-1) && (y >= y1) && (y < y2))) {
-		vline(bmp,
-		      bl + x*(cs+m_boxsize)+m_boxsize,
-		      bt + y*(cs+m_boxsize)-1,
-		      bt + y*(cs+m_boxsize)+m_boxsize, color);
-	      }
-
-	      if (y == y1) {
-		if (x >= x1) {
-		  if ((y < y2) || (x <= x2))
-		    hline(bmp,
-			  bl + x*(cs+m_boxsize)-1,
-			  bt + y*(cs+m_boxsize)-1,
-			  bl + x*(cs+m_boxsize)+m_boxsize, color);
-		}
-		else if (y < y2) {
-		  if ((y+1 < y2) || (x <= x2))
-		    hline(bmp,
-			  bl + x*(cs+m_boxsize)-1,
-			  bt + y*(cs+m_boxsize)+m_boxsize,
-			  bl + x*(cs+m_boxsize)+m_boxsize, color);
-		}
-	      }
-
-	      if (y == y2) {
-		if (x <= x2) {
-		  if ((y > y1) || (x >= x1))
-		    hline(bmp,
-			  bl + x*(cs+m_boxsize)-1,
-			  bt + y*(cs+m_boxsize)+m_boxsize,
-			  bl + x*(cs+m_boxsize)+m_boxsize, color);
-		}
-		else if (y > y1) {
-		  if ((y-1 > y1) || (x >= x1))	
-		    hline(bmp,
-			  bl + x*(cs+m_boxsize)-1,
-			  bt + y*(cs+m_boxsize)-1,
-			  bl + x*(cs+m_boxsize)+m_boxsize, color);
-		}
-	      }
-
-	      c++;
-	    }
-	  }
-	}
       }
 
       blit(bmp, ji_screen,
@@ -544,19 +278,18 @@ bool PaletteView::onProcessMessage(Message* msg)
 
       Color color = getColorByPosition(mouse_x, mouse_y);
       if (color.getType() == Color::IndexType) {
+	int idx = color.getIndex();
+
 	app_get_statusbar()->showColor(0, "", color, 255);
 
-	if (hasCapture() && color.getIndex() != m_color[1]) {
-	  int idx = color.getIndex();
+	if (hasCapture() && idx != m_currentEntry) {
+	  if (!(msg->any.shifts & KB_CTRL_FLAG))
+	    clearSelection();
 
 	  if (msg->any.shifts & KB_SHIFT_FLAG)
-	    selectRange(m_color[0], idx, PALETTE_EDITOR_RANGE_LINEAL);
-	  else if (msg->any.shifts & KB_CTRL_FLAG)
-	    selectRange(m_color[0], idx, PALETTE_EDITOR_RANGE_RECTANGULAR);
+	    selectRange(m_rangeAnchor, idx);
 	  else
 	    selectColor(idx);
-
-	  update_scroll(idx);
 
 	  // Emit signals
 	  jwidget_emit_signal(this, SIGNAL_PALETTE_EDITOR_CHANGE);

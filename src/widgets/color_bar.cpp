@@ -80,6 +80,7 @@ ColorBar::ColorBar(int align)
   , m_paletteView(false)
   , m_fgColor(Color::fromIndex(15), IMAGE_INDEXED)
   , m_bgColor(Color::fromIndex(0), IMAGE_INDEXED)
+  , m_lock(false)
 {
   setBorder(gfx::Border(1*jguiscale()));
   child_spacing = 1*jguiscale();
@@ -128,6 +129,8 @@ ColorBar::ColorBar(int align)
   m_paletteButton.Click.connect(Bind<void>(&ColorBar::onPaletteButtonClick, this));
 
   setDoubleBuffered(true);
+
+  onColorButtonChange(getFgColor());
 }
 
 ColorBar::~ColorBar()
@@ -186,22 +189,32 @@ void ColorBar::onPaletteButtonClick()
 
 void ColorBar::onPaletteIndexChange(int index)
 {
+  m_lock = true;
+
   Color color = Color::fromIndex(index);
 
   if (jmouse_b(0) & 2) // TODO create a PaletteChangeEvent and take left/right mouse button from there
     setBgColor(color);
   else
     setFgColor(color);
+
+  m_lock = false;
 }
 
 void ColorBar::onFgColorButtonChange(const Color& color)
 {
+  if (!m_lock)
+    m_paletteView.clearSelection();
+
   FgColorChange(color);
   onColorButtonChange(color);
 }
 
 void ColorBar::onBgColorButtonChange(const Color& color)
 {
+  if (!m_lock)
+    m_paletteView.clearSelection();
+
   BgColorChange(color);
   onColorButtonChange(color);
 }
@@ -212,7 +225,7 @@ void ColorBar::onColorButtonChange(const Color& color)
     int index = color.getIndex();
 
     // Change palette editor color only if it is not the selected entry
-    if (m_paletteView.get2ndColor() != index)
+    if (m_paletteView.getSelectedEntry() != index)
       m_paletteView.selectColor(index);
   }
 }

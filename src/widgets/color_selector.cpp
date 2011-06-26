@@ -117,8 +117,10 @@ void ColorSelector::setColor(const Color& color, SetColorOptions options)
 {
   m_color = color;
 
-  if (color.getType() == Color::IndexType)
+  if (color.getType() == Color::IndexType) {
+    m_colorPalette.clearSelection();
     m_colorPalette.selectColor(color.getIndex());
+  }
 
   m_rgbSliders.setColor(m_color);
   m_hsvSliders.setColor(m_color);
@@ -187,8 +189,10 @@ void ColorSelector::findBestfitIndex(const Color& color)
   
   // Search for the closest color to the RGB values
   int i = get_current_palette()->findBestfit(r, g, b);
-  if (i >= 0 && i < 256)
+  if (i >= 0 && i < 256) {
+    m_colorPalette.clearSelection();
     m_colorPalette.selectColor(i);
+  }
 }
 
 void ColorSelector::setColorWithSignal(const Color& color)

@@ -24,35 +24,29 @@
 #include "gui/widget.h"
 
 #include <allegro/color.h>
+#include <vector>
 
 // TODO use some JI_SIGNAL_USER
 #define SIGNAL_PALETTE_EDITOR_CHANGE   0x10005
 
-enum {
-  PALETTE_EDITOR_RANGE_NONE,
-  PALETTE_EDITOR_RANGE_LINEAL,
-  PALETTE_EDITOR_RANGE_RECTANGULAR,
-};
-
 class PaletteView : public Widget
 {
 public:
+  typedef std::vector<bool> SelectedEntries;
+
   PaletteView(bool editable);
 
-  int getRangeType();
-
-  int getColumns();
+  int getColumns() const { return m_columns; }
   void setColumns(int columns);
   void setBoxSize(int boxsize);
 
+  void clearSelection();
   void selectColor(int index);
-  void selectRange(int begin, int end, int range_type);
+  void selectRange(int index1, int index2);
 
-  void moveSelection(int x, int y);
-
-  int get1stColor();
-  int get2ndColor();
-  void getSelectedEntries(bool array[256]);
+  int getSelectedEntry() const;
+  bool getSelectedRange(int& index1, int& index2) const;
+  void getSelectedEntries(SelectedEntries& entries) const;
 
   Color getColorByPosition(int x, int y);
 
@@ -67,10 +61,11 @@ private:
   void update_scroll(int color);
 
   bool m_editable;
-  unsigned m_range_type;
-  unsigned m_columns;
+  int m_columns;
   int m_boxsize;
-  int m_color[2];
+  int m_currentEntry;
+  int m_rangeAnchor;
+  SelectedEntries m_selectedEntries;
 };
 
 int palette_view_type();

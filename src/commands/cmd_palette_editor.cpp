@@ -321,20 +321,33 @@ void PaletteEntryEditor::setColor(const Color& color)
     m_hexColorEntry.setColor(color);
 
   PaletteView* palette_editor = app_get_colorbar()->getPaletteView();
-  int range_type = palette_editor->getRangeType();
-  int i1 = palette_editor->get1stColor();
-  int i2 = palette_editor->get2ndColor();
+  PaletteView::SelectedEntries entries;
+  palette_editor->getSelectedEntries(entries);
+  int i, j, i2;
 
-  switch (range_type) {
-    case PALETTE_EDITOR_RANGE_NONE:
-      m_entryLabel.setTextf(" Entry: %d", i2);
+  // Find the first selected entry
+  for (i=0; i<(int)entries.size(); ++i)
+    if (entries[i])
       break;
-    case PALETTE_EDITOR_RANGE_LINEAL:
-      m_entryLabel.setTextf(" Range: %d-%d", i1, i2);
+
+  // Find the first unselected entry after i
+  for (i2=i+1; i2<(int)entries.size(); ++i2)
+    if (!entries[i2])
       break;
-    case PALETTE_EDITOR_RANGE_RECTANGULAR:
-      m_entryLabel.setText(" Multiple Entries");
+
+  // Find the last selected entry
+  for (j=entries.size()-1; j>=0; --j)
+    if (entries[j])
       break;
+
+  if (i == j) {
+    m_entryLabel.setTextf(" Entry: %d", i);
+  }
+  else if (j-i+1 == i2-i) {
+    m_entryLabel.setTextf(" Range: %d-%d", i, j);
+  }
+  else {
+    m_entryLabel.setText(" Multiple Entries");
   }
 
   m_topBox.layout();
@@ -512,27 +525,16 @@ void PaletteEntryEditor::onSaveCommand(Event& ev)
 void PaletteEntryEditor::onRampCommand(Event& ev)
 {
   PaletteView* palette_editor = app_get_colorbar()->getPaletteView();
-  int range_type = palette_editor->getRangeType();
-  int i1 = palette_editor->get1stColor();
-  int i2 = palette_editor->get2ndColor();
+  int index1, index2;
+
+  if (!palette_editor->getSelectedRange(index1, index2))
+    return;
+
   Palette* src_palette = get_current_palette();
   Palette* dst_palette = new Palette(0, 256);
-  bool array[256];
 
-  palette_editor->getSelectedEntries(array);
   src_palette->copyColorsTo(dst_palette);
-
-  if ((i1 >= 0) && (i2 >= 0)) {
-    // Make the ramp
-    if (range_type == PALETTE_EDITOR_RANGE_LINEAL) {
-      // Lineal ramp
-      dst_palette->makeHorzRamp(i1, i2);
-    }
-    else if (range_type == PALETTE_EDITOR_RANGE_RECTANGULAR) {
-      // Rectangular ramp
-      dst_palette->makeRectRamp(i1, i2, palette_editor->getColumns());
-    }
-  }
+  dst_palette->makeHorzRamp(index1, index2);
 
   setNewPalette(dst_palette, "Color Ramp");
   delete dst_palette;
@@ -565,9 +567,9 @@ void PaletteEntryEditor::onQuantizeCommand(Event& ev)
 
 void PaletteEntryEditor::setPaletteEntry(const Color& color)
 {
-  bool array[256];
   PaletteView* palView = app_get_colorbar()->getPaletteView();
-  palView->getSelectedEntries(array);
+  PaletteView::SelectedEntries entries;
+  palView->getSelectedEntries(entries);
 
   uint32_t new_pal_color = _rgba(color.getRed(),
 				 color.getGreen(),
@@ -575,23 +577,23 @@ void PaletteEntryEditor::setPaletteEntry(const Color& color)
 
   Palette* palette = get_current_palette();
   for (int c=0; c<palette->size(); c++) {
-    if (array[c])
+    if (entries[c])
       palette->setEntry(c, new_pal_color);
   }
 }
 
 void PaletteEntryEditor::setPaletteEntryChannel(const Color& color, ColorSliders::Channel channel)
 {
-  bool array[256];
   PaletteView* palView = app_get_colorbar()->getPaletteView();
-  palView->getSelectedEntries(array);
+  PaletteView::SelectedEntries entries;
+  palView->getSelectedEntries(entries);
 
   uint32_t src_color;
   int r, g, b;
 
   Palette* palette = get_current_palette();
   for (int c=0; c<palette->size(); c++) {
-    if (array[c]) {
+    if (entries[c]) {
       // Get the current RGB values of the palette entry
       src_color = palette->getEntry(c);
       r = _rgba_getr(src_color);

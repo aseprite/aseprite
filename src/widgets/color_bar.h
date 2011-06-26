@@ -75,6 +75,7 @@ private:
   PaletteView m_paletteView;
   ColorButton m_fgColor;
   ColorButton m_bgColor;
+  bool m_lock;
 };
 
 #endif
