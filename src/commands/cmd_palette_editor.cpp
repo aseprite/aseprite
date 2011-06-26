@@ -97,6 +97,7 @@ private:
   RadioButton m_rgbButton;
   RadioButton m_hsvButton;
   HexColorEntry m_hexColorEntry;
+  Label m_entryLabel;
   Button m_moreOptions;
   RgbSliders m_rgbSliders;
   HsvSliders m_hsvSliders;
@@ -227,6 +228,7 @@ PaletteEntryEditor::PaletteEntryEditor()
   , m_bottomBox(JI_HORIZONTAL)
   , m_rgbButton("RGB", 1, JI_BUTTON)
   , m_hsvButton("HSV", 1, JI_BUTTON)
+  , m_entryLabel("")
   , m_moreOptions("+")
   , m_loadButton("Load")
   , m_saveButton("Save")
@@ -253,6 +255,7 @@ PaletteEntryEditor::PaletteEntryEditor()
   m_topBox.addChild(&m_rgbButton);
   m_topBox.addChild(&m_hsvButton);
   m_topBox.addChild(&m_hexColorEntry);
+  m_topBox.addChild(&m_entryLabel);
   m_topBox.addChild(new BoxFiller);
   m_topBox.addChild(&m_moreOptions);
 
@@ -316,6 +319,25 @@ void PaletteEntryEditor::setColor(const Color& color)
   m_hsvSliders.setColor(color);
   if (!m_disableHexUpdate)
     m_hexColorEntry.setColor(color);
+
+  PaletteView* palette_editor = app_get_colorbar()->getPaletteView();
+  int range_type = palette_editor->getRangeType();
+  int i1 = palette_editor->get1stColor();
+  int i2 = palette_editor->get2ndColor();
+
+  switch (range_type) {
+    case PALETTE_EDITOR_RANGE_NONE:
+      m_entryLabel.setTextf(" Entry: %d", i2);
+      break;
+    case PALETTE_EDITOR_RANGE_LINEAL:
+      m_entryLabel.setTextf(" Range: %d-%d", i1, i2);
+      break;
+    case PALETTE_EDITOR_RANGE_RECTANGULAR:
+      m_entryLabel.setText(" Multiple Entries");
+      break;
+  }
+
+  m_topBox.layout();
 }
 
 bool PaletteEntryEditor::onProcessMessage(Message* msg)
