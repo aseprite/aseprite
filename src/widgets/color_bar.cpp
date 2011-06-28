@@ -115,9 +115,14 @@ ColorBar::ColorBar(int align)
   m_fgColor.Change.connect(&ColorBar::onFgColorButtonChange, this);
   m_bgColor.Change.connect(&ColorBar::onBgColorButtonChange, this);
 
-  // Get selected colors
-  setFgColor(get_config_color("ColorBar", "FG", getFgColor()));
+  // Set background color reading its value from the configuration.
   setBgColor(get_config_color("ColorBar", "BG", getBgColor()));
+
+  // Clear the selection of the BG color in the palette.
+  m_paletteView.clearSelection();
+
+  // Set foreground color reading its value from the configuration.
+  setFgColor(get_config_color("ColorBar", "FG", getFgColor()));
 
   // Change color-bar background color (not ColorBar::setBgColor)
   Widget::setBgColor(((SkinTheme*)getTheme())->get_tab_selected_face_color());
