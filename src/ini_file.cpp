@@ -18,14 +18,14 @@
 
 #include "config.h"
 
+#include "ini_file.h"
+
+#include "gui/rect.h"
+#include "resource_finder.h"
+
 #include <allegro/config.h>
 #include <allegro/file.h>
 #include <allegro/unicode.h>
-
-#include "gui/rect.h"
-
-#include "core/cfg.h"
-#include "resource_finder.h"
 
 using namespace gfx;
 

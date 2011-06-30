@@ -22,14 +22,14 @@
 
 #include "gui/gui.h"
 
-#include "ui_context.h"
-#include "commands/command.h"
 #include "app.h"
-#include "core/cfg.h"
+#include "commands/command.h"
+#include "document_wrappers.h"
+#include "ini_file.h"
 #include "modules/editors.h"
 #include "modules/gui.h"
 #include "raster/sprite.h"
-#include "document_wrappers.h"
+#include "ui_context.h"
 
 //////////////////////////////////////////////////////////////////////
 // duplicate_sprite

@@ -20,13 +20,13 @@
 
 #include "commands/filters/filter_manager_impl.h"
 
-#include "core/cfg.h"
 #include "filters/filter.h"
 #include "gui/manager.h"
 #include "gui/rect.h"
 #include "gui/region.h"
 #include "gui/view.h"
 #include "gui/widget.h"
+#include "ini_file.h"
 #include "modules/editors.h"
 #include "raster/cel.h"
 #include "raster/image.h"

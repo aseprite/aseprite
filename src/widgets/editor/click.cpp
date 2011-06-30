@@ -20,12 +20,12 @@
 
 #include <allegro/keyboard.h>
 
-#include "core/cfg.h"
 #include "gui/manager.h"
 #include "gui/rect.h"
 #include "gui/system.h"
 #include "gui/view.h"
 #include "gui/widget.h"
+#include "ini_file.h"
 #include "modules/gui.h"
 #include "widgets/editor/editor.h"
 

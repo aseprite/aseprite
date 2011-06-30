@@ -16,27 +16,24 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifndef CORE_CFG_H_INCLUDED
-#define CORE_CFG_H_INCLUDED
+#ifndef MODULES_H_INCLUDED
+#define MODULES_H_INCLUDED
 
-#include <allegro/config.h>
-#include "gfx/rect.h"
-#include "app/color.h"
+#include "gui/base.h"
 
-class ConfigModule
+#define REQUIRE_INTERFACE    1
+
+/**
+ * Class to install and uninstall old modules.
+ *
+ * Legacy modules are programmed in C code and should be refactored to
+ * C++ classes.
+ */
+class LegacyModules
 {
 public:
-  ConfigModule();
-  ~ConfigModule();
+  LegacyModules(int requirements);
+  ~LegacyModules();
 };
-
-bool get_config_bool(const char *section, const char *name, bool value);
-void set_config_bool(const char *section, const char *name, bool value);
-
-gfx::Rect get_config_rect(const char *section, const char *name, const gfx::Rect& rect);
-void set_config_rect(const char *section, const char *name, const gfx::Rect& rect);
-
-Color get_config_color(const char *section, const char *name, const Color& value);
-void set_config_color(const char *section, const char *name, const Color& value);
 
 #endif

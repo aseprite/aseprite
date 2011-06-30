@@ -20,9 +20,9 @@
 
 #include "gui/gui.h"
 
-#include "commands/command.h"
 #include "app.h"
-#include "core/cfg.h"
+#include "commands/command.h"
+#include "ini_file.h"
 #include "modules/gui.h"
 #include "widgets/color_bar.h"
 #include "widgets/statebar.h"

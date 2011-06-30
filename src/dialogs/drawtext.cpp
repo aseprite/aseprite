@@ -23,10 +23,10 @@
 #include "gui/gui.h"
 
 #include "app.h"
-#include "console.h"
-#include "core/cfg.h"
 #include "app/color.h"
+#include "console.h"
 #include "dialogs/filesel.h"
+#include "ini_file.h"
 #include "modules/gui.h"
 #include "modules/palettes.h"
 #include "raster/blend.h"

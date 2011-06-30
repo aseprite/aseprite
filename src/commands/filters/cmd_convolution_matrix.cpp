@@ -26,7 +26,7 @@
 #include "commands/filters/convolution_matrix_stock.h"
 #include "commands/filters/filter_manager_impl.h"
 #include "commands/filters/filter_window.h"
-#include "core/cfg.h"
+#include "document_wrappers.h"
 #include "filters/convolution_matrix.h"
 #include "filters/convolution_matrix_filter.h"
 #include "gui/button.h"
@@ -37,10 +37,10 @@
 #include "gui/slider.h"
 #include "gui/view.h"
 #include "gui/widget.h"
+#include "ini_file.h"
 #include "modules/gui.h"
 #include "raster/mask.h"
 #include "raster/sprite.h"
-#include "document_wrappers.h"
 
 static const char* ConfigSection = "ConvolutionMatrix";
 

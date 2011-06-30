@@ -19,11 +19,11 @@
 #include "config.h"
 
 #include "app.h"
-#include "core/cfg.h"
 #include "document.h"
 #include "file/file.h"
 #include "file/file_format.h"
 #include "file/format_options.h"
+#include "ini_file.h"
 #include "raster/raster.h"
 
 #include <stdio.h>

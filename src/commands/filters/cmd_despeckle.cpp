@@ -24,18 +24,18 @@
 #include "commands/command.h"
 #include "commands/filters/filter_manager_impl.h"
 #include "commands/filters/filter_window.h"
-#include "core/cfg.h"
+#include "document_wrappers.h"
 #include "filters/median_filter.h"
 #include "gui/button.h"
 #include "gui/entry.h"
 #include "gui/frame.h"
 #include "gui/grid.h"
 #include "gui/widget.h"
+#include "ini_file.h"
 #include "modules/gui.h"
 #include "raster/mask.h"
 #include "raster/sprite.h"
 #include "settings/settings.h"
-#include "document_wrappers.h"
 
 static const char* ConfigSection = "Despeckle";
 

@@ -26,7 +26,7 @@
 #include "app.h"
 #include "commands/command.h"
 #include "context.h"
-#include "core/cfg.h"
+#include "ini_file.h"
 #include "modules/editors.h"
 #include "modules/gui.h"
 #include "raster/image.h"

@@ -16,25 +16,12 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifndef CORE_MODULES_H_INCLUDED
-#define CORE_MODULES_H_INCLUDED
+#ifndef DROP_FILES_H_INCLUDED
+#define DROP_FILES_H_INCLUDED
 
-#include "gui/base.h"
+void install_drop_files();
+void uninstall_drop_files();
 
-#define REQUIRE_INTERFACE    1
-
-/**
- * Class to install and uninstall old modules.
- *
- * Legacy modules are programmed in C code and should be refactored to
- * C++ classes.
- */
-class LegacyModules
-{
-public:
-  LegacyModules(int requirements);
-  ~LegacyModules();
-};
+void check_for_dropped_files();
 
 #endif
-

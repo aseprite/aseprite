@@ -55,7 +55,7 @@ void install_drop_files()
 void uninstall_drop_files()
 {
   unsubclass_hwnd();
-  
+
   delete dropped_files_mutex;
   dropped_files_mutex = NULL;
 

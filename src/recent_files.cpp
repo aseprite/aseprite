@@ -18,13 +18,14 @@
 
 #include "config.h"
 
-#include <cstdio>
-#include <cstring>
-#include <algorithm>
+#include "recent_files.h"
 
 #include "app.h"
-#include "core/cfg.h"
-#include "recent_files.h"
+#include "ini_file.h"
+
+#include <algorithm>
+#include <cstdio>
+#include <cstring>
 
 RecentFiles::RecentFiles()
   : m_limit(16)

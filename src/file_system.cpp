@@ -56,7 +56,7 @@
 #endif
 
 #include "base/path.h"
-#include "core/file_system.h"
+#include "file_system.h"
 
 //////////////////////////////////////////////////////////////////////
 
@@ -216,7 +216,7 @@ FileSystemModule::FileSystemModule()
 
   PRINTF("File system module installed\n");
 }
- 
+
 /**
  * Shutdowns the file-system module.
  */
@@ -321,7 +321,7 @@ IFileItem* FileSystemModule::getRootFileItem()
 
 /**
  * Returns the FileItem through the specified @a path.
- * 
+ *
  * @warning You have to call path.fix_separators() before.
  */
 IFileItem* FileSystemModule::getFileItemFromPath(const base::string& path)
@@ -825,7 +825,7 @@ static LPITEMIDLIST get_next_pidl(LPITEMIDLIST pidl)
   }
 
   return NULL;
-} 
+}
 
 static LPITEMIDLIST get_last_pidl(LPITEMIDLIST pidl)
 {

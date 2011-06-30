@@ -23,11 +23,11 @@
 
 #include "app.h"
 #include "app/color.h"
-#include "core/cfg.h"
 #include "gui/list.h"
 #include "gui/manager.h"
 #include "gui/system.h"
 #include "gui/widget.h"
+#include "ini_file.h"
 #include "modules/editors.h"
 #include "modules/gui.h"
 #include "modules/palettes.h"

@@ -21,9 +21,9 @@
 #include "modules/editors.h"
 
 #include "app.h"
-#include "core/cfg.h"
 #include "document_wrappers.h"
 #include "gui/gui.h"
+#include "ini_file.h"
 #include "modules/gui.h"
 #include "modules/palettes.h"
 #include "raster/image.h"

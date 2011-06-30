@@ -24,8 +24,8 @@
 #include "base/bind.h"
 #include "gui/gui.h"
 
-#include "core/cfg.h"
 #include "dialogs/repo.h"
+#include "ini_file.h"
 #include "modules/gui.h"
 
 static void fill_listbox(RepoDlg *repo_dlg);

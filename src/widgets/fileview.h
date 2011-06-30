@@ -19,9 +19,9 @@
 #ifndef WIDGETS_FILEVIEW_H_INCLUDED
 #define WIDGETS_FILEVIEW_H_INCLUDED
 
-#include "gui/base.h"
 #include "base/string.h"
-#include "core/file_system.h"
+#include "file_system.h"
+#include "gui/base.h"
 
 /* TODO use some JI_SIGNAL_USER */
 #define SIGNAL_FILEVIEW_FILE_SELECTED		0x10006

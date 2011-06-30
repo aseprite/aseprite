@@ -26,11 +26,11 @@
 #include "base/compiler_specific.h"
 #include "base/memory.h"
 #include "console.h"
-#include "core/cfg.h"
 #include "file/file.h"
 #include "file/file_format.h"
 #include "file/format_options.h"
 #include "gui/gui.h"
+#include "ini_file.h"
 #include "modules/gui.h"
 #include "raster/raster.h"
 

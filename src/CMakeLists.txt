@@ -82,11 +82,15 @@ add_library(aseprite-library
   context_flags.cpp
   document.cpp
   documents.cpp
+  drop_files.cpp
+  file_system.cpp
   gfxmode.cpp
   gui_xml.cpp
+  ini_file.cpp
   job.cpp
   launcher.cpp
   log.cpp
+  modules.cpp
   objects_container_impl.cpp
   recent_files.cpp
   resource_finder.cpp
@@ -177,10 +181,6 @@ add_library(aseprite-library
   commands/filters/filter_target_buttons.cpp
   commands/filters/filter_window.cpp
   commands/filters/filter_worker.cpp
-  core/cfg.cpp
-  core/drop_files.cpp
-  core/file_system.cpp
-  core/modules.cpp
   dialogs/aniedit.cpp
   dialogs/drawtext.cpp
   dialogs/filesel.cpp

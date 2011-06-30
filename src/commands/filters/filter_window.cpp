@@ -23,7 +23,7 @@
 #include "base/bind.h"
 #include "commands/filters/filter_manager_impl.h"
 #include "commands/filters/filter_worker.h"
-#include "core/cfg.h"
+#include "ini_file.h"
 #include "modules/gui.h"
 
 FilterWindow::FilterWindow(const char* title, const char* cfgSection,

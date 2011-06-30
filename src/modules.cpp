@@ -18,7 +18,7 @@
 
 #include "config.h"
 
-#include "core/modules.h"
+#include "modules.h"
 #include "modules/editors.h"
 #include "modules/gui.h"
 #include "modules/palettes.h"

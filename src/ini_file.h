@@ -16,13 +16,27 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifndef CORE_DROP_FILES_H_INCLUDED
-#define CORE_DROP_FILES_H_INCLUDED
+#ifndef INI_FILE_H_INCLUDED
+#define INI_FILE_H_INCLUDED
 
-void install_drop_files();
-void uninstall_drop_files();
+#include <allegro/config.h>
+#include "gfx/rect.h"
+#include "app/color.h"
 
-void check_for_dropped_files();
+class ConfigModule
+{
+public:
+  ConfigModule();
+  ~ConfigModule();
+};
+
+bool get_config_bool(const char *section, const char *name, bool value);
+void set_config_bool(const char *section, const char *name, bool value);
+
+gfx::Rect get_config_rect(const char *section, const char *name, const gfx::Rect& rect);
+void set_config_rect(const char *section, const char *name, const gfx::Rect& rect);
+
+Color get_config_color(const char *section, const char *name, const Color& value);
+void set_config_color(const char *section, const char *name, const Color& value);
 
 #endif
-

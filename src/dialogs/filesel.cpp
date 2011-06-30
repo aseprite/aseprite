@@ -33,9 +33,9 @@
 #include "base/bind.h"
 #include "base/path.h"
 #include "base/split_string.h"
-#include "core/cfg.h"
 #include "file/file.h"
 #include "gui/gui.h"
+#include "ini_file.h"
 #include "modules/gfx.h"
 #include "modules/gui.h"
 #include "recent_files.h"
@@ -82,7 +82,7 @@ static void on_exit_delete_navigation_history()
  * Shows the dialog to select a file in ASE.
  * 
  * Mainly it uses:
- * - the 'core/file_system' routines.
+ * - the 'file_system' routines.
  * - the 'widgets/fileview' widget.
  */
 base::string ase_file_selector(const base::string& message,

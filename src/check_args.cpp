@@ -18,12 +18,13 @@
 
 #include "config.h"
 
+#include "check_args.h"
+
 #include "base/convert_to.h"
 #include "base/split_string.h"
 #include "base/string.h"
-#include "check_args.h"
 #include "console.h"
-#include "core/cfg.h"
+#include "ini_file.h"
 
 CheckArgs::CheckArgs(const std::vector<base::string>& args)
   : m_consoleOnly(false)

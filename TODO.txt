@@ -31,7 +31,6 @@ Refactoring
 - Replace JRect & jrect with gfx::Rect.
 - Create gfx::Region to replace JRegion & jregion.
 - editors_ -> MultiEditors class widget
-- rename core/cfg.h to cfg_file.h
 - convert all widgets to classes:
   + match Jinete design with Vaca library.
   + move all functions (jwidget_*) to methods in Widget class.

@@ -16,8 +16,8 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifndef CORE_JOB_H_INCLUDED
-#define CORE_JOB_H_INCLUDED
+#ifndef JOB_H_INCLUDED
+#define JOB_H_INCLUDED
 
 #include "gui/alert.h"
 

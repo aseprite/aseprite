@@ -20,9 +20,9 @@
 
 #include "base/bind.h"
 #include "commands/command.h"
-#include "core/cfg.h"
 #include "document_wrappers.h"
 #include "gui/gui.h"
+#include "ini_file.h"
 #include "job.h"
 #include "modules/gui.h"
 #include "modules/palettes.h"

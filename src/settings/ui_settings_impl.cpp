@@ -21,7 +21,7 @@
 #include "settings/ui_settings_impl.h"
 
 #include "app.h"
-#include "core/cfg.h"
+#include "ini_file.h"
 #include "tools/point_shape.h"
 #include "tools/tool.h"
 #include "tools/tool_box.h"
