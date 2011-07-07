@@ -50,13 +50,41 @@
 #  define MAX_PATH 4096		/* TODO this is needed for Linux, is it correct? */
 #endif
 
-/* Variables used only to maintain the history of navigation. */
-static JLink navigation_position = NULL; /* current position in the navigation history */
-static JList navigation_history = NULL;	/* set of FileItems navigated */
-static bool navigation_locked = false;	/* if true the navigation_history isn't
-					   modified if the current folder
-					   changes (used when the back/forward
-					   buttons are pushed) */
+template<class Container>
+class NullableIterator
+{
+public:
+  typedef typename Container::iterator iterator;
+
+  NullableIterator() : m_isNull(true) { }
+
+  void reset() { m_isNull = true; }
+
+  bool isNull() const { return m_isNull; }
+  bool isValid() const { return !m_isNull; }
+
+  iterator getIterator() {
+    ASSERT(!m_isNull);
+    return m_iterator;
+  }
+
+  void setIterator(iterator& it) {
+    m_isNull = false;
+    m_iterator = it;
+  }
+
+private:
+  bool m_isNull;
+  typename Container::iterator m_iterator;
+};
+
+// Variables used only to maintain the history of navigation.
+static FileItemList* navigation_history = NULL;	// Set of FileItems navigated
+static NullableIterator<FileItemList> navigation_position; // Current position in the navigation history
+static bool navigation_locked = false;	// If true the navigation_history isn't
+					// modified if the current folder changes
+					//(used when the back/forward buttons
+					// are pushed)
 
 static void update_location(Widget* window);
 static void update_navigation_buttons(Widget* window);
@@ -75,7 +103,7 @@ static bool filename_msg_proc(Widget* widget, Message* msg);
 // Slot for App::Exit signal 
 static void on_exit_delete_navigation_history()
 {
-  jlist_free(navigation_history);
+  delete navigation_history;
 }
 
 /**
@@ -98,7 +126,7 @@ base::string ase_file_selector(const base::string& message,
   FileSystemModule::instance()->refresh();
 
   if (!navigation_history) {
-    navigation_history = jlist_new();
+    navigation_history = new FileItemList();
     App::instance()->Exit.connect(&on_exit_delete_navigation_history);
   }
 
@@ -213,7 +241,7 @@ base::string ase_file_selector(const base::string& message,
   }
 
   // current location
-  navigation_position = NULL;
+  navigation_position.reset();
   add_in_navigation_history(fileview_get_current_folder(fileview));
   
   // fill the location combo-box
@@ -460,22 +488,21 @@ static void update_navigation_buttons(Widget* window)
   Widget* goup = window->findChild("goup");
   IFileItem* current_folder = fileview_get_current_folder(fileview);
 
-  /* update the state of the go back button: if the navigation-history
-     has two elements and the navigation-position isn't the first
-     one */
-  goback->setEnabled(jlist_length(navigation_history) > 1 &&
-		     (!navigation_position ||
-		      navigation_position != jlist_first(navigation_history)));
+  // Update the state of the go back button: if the navigation-history
+  // has two elements and the navigation-position isn't the first one.
+  goback->setEnabled(navigation_history->size() > 1 &&
+		     (navigation_position.isNull() ||
+		      navigation_position.getIterator() != navigation_history->begin()));
 
-  /* update the state of the go forward button: if the
-     navigation-history has two elements and the navigation-position
-     isn't the last one */
-  goforward->setEnabled(jlist_length(navigation_history) > 1 &&
-			(!navigation_position ||
-			 navigation_position != jlist_last(navigation_history)));
+  // Update the state of the go forward button: if the
+  // navigation-history has two elements and the navigation-position
+  // isn't the last one.
+  goforward->setEnabled(navigation_history->size() > 1 &&
+			(navigation_position.isNull() ||
+			 navigation_position.getIterator() != navigation_history->end()-1));
 
-  /* update the state of the go up button: if the current-folder isn't
-     the root-item */
+  // Update the state of the go up button: if the current-folder isn't
+  // the root-item
   goup->setEnabled(current_folder != FileSystemModule::instance()->getRootFileItem());
 }
 
@@ -484,26 +511,19 @@ static void add_in_navigation_history(IFileItem* folder)
   ASSERT(folder != NULL);
   ASSERT(folder->isFolder());
 
-  /* remove the history from the current position */
-  if (navigation_position) {
-    JLink next;
-    for (navigation_position = navigation_position->next;
-	 navigation_position != navigation_history->end;
-	 navigation_position = next) {
-      next = navigation_position->next;
-      jlist_delete_link(navigation_history,
-			navigation_position);
-    }
-    navigation_position = NULL;
+  // Remove the history from the current position
+  if (navigation_position.isValid()) {
+    navigation_history->erase(navigation_position.getIterator()+1, navigation_history->end());
+    navigation_position.reset();
   }
 
-  /* if the history is empty or if the last item isn't the folder that
-     we are visiting... */
-  if (jlist_empty(navigation_history) ||
-      jlist_last_data(navigation_history) != folder) {
-    /* ...we can add the location in the history */
-    jlist_append(navigation_history, folder);
-    navigation_position = jlist_last(navigation_history);
+  // If the history is empty or if the last item isn't the folder that
+  // we are visiting...
+  if (navigation_history->empty() ||
+      navigation_history->back() != folder) {
+    // We can add the location in the history
+    navigation_history->push_back(folder);
+    navigation_position.setIterator(navigation_history->end()-1);
   }
 }
 
@@ -528,16 +548,15 @@ static void goback_command(Widget* widget)
 {
   Widget* fileview = widget->findSibling("fileview");
 
-  if (jlist_length(navigation_history) > 1) {
-    if (!navigation_position)
-      navigation_position = jlist_last(navigation_history);
+  if (navigation_history->size() > 1) {
+    if (navigation_position.isNull())
+      navigation_position.setIterator(navigation_history->end()-1);
 
-    if (navigation_position->prev != navigation_history->end) {
-      navigation_position = navigation_position->prev;
+    if (navigation_position.getIterator() != navigation_history->begin()) {
+      navigation_position.setIterator(navigation_position.getIterator()-1);
 
       navigation_locked = true;
-      fileview_set_current_folder(fileview,
-				  reinterpret_cast<IFileItem*>(navigation_position->data));
+      fileview_set_current_folder(fileview, *navigation_position.getIterator());
       navigation_locked = false;
     }
   }
@@ -548,15 +567,14 @@ static void goforward_command(Widget* widget)
   Widget* fileview = widget->findSibling("fileview");
 
   if (jlist_length(navigation_history) > 1) {
-    if (!navigation_position)
-      navigation_position = jlist_first(navigation_history);
+    if (navigation_position.isNull())
+      navigation_position.setIterator(navigation_history->begin());
 
-    if (navigation_position->next != navigation_history->end) {
-      navigation_position = navigation_position->next;
+    if (navigation_position.getIterator() != navigation_history->end()-1) {
+      navigation_position.setIterator(navigation_position.getIterator()+1);
 
       navigation_locked = true;
-      fileview_set_current_folder(fileview,
-				  reinterpret_cast<IFileItem*>(navigation_position->data));
+      fileview_set_current_folder(fileview, *navigation_position.getIterator());
       navigation_locked = false;
     }
   }
