@@ -426,7 +426,7 @@ IFileItem* FileItem::getParent() const
 
 const FileItemList& FileItem::getChildren()
 {
-  /* is the file-item a folder? */
+  // Is the file-item a folder?
   if (IS_FOLDER(this) &&
       // if the children list is empty, or the file-system version
       // change (it's like to say: the current this->children list
@@ -544,6 +544,8 @@ const FileItemList& FileItem::getChildren()
       child = static_cast<FileItem*>(*it);
       if (child->removed) {
 	it = this->children.erase(it);
+
+	fileitems_map->erase(fileitems_map->find(child->keyname));
 	delete child;
       }
       else
