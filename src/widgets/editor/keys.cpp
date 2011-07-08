@@ -16,6 +16,10 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
+#define PREFIX_I "keys INFO: "
+#define PREFIX_W "keys WARNING: "
+#define PREFIX_E "keys ERROR: "
+
 #include "config.h"
 
 #include <allegro/keyboard.h>
@@ -36,8 +40,11 @@
 #include "widgets/colbar.h"
 #include "widgets/editor.h"
 
-bool Editor::editor_keys_toset_zoom(int scancode)
+bool Editor::editor_keys_toset_zoom(int scancode, int ascii)
 {
+  TRACE(PREFIX_I "editor_keys_toset_zoom %i, '%c'; %i, %i; %i.\n", scancode, ascii,
+	(int)!!m_sprite, (int)this->hasMouse(), (int)key_shifts);
+
   if ((m_sprite) &&
       (this->hasMouse()) &&
       !(key_shifts & (KB_SHIFT_FLAG | KB_CTRL_FLAG | KB_ALT_FLAG))) {
@@ -49,17 +56,18 @@ bool Editor::editor_keys_toset_zoom(int scancode)
     y = 0;
     zoom = -1;
 
-    switch (scancode) { // TODO make these keys configurable
-      case KEY_1: zoom = 0; break;
-      case KEY_2: zoom = 1; break;
-      case KEY_3: zoom = 2; break;
-      case KEY_4: zoom = 3; break;
-      case KEY_5: zoom = 4; break;
-      case KEY_6: zoom = 5; break;
+    switch (ascii) {
+      case '1': zoom = 0; break;
+      case '2': zoom = 1; break;
+      case '3': zoom = 2; break;
+      case '4': zoom = 3; break;
+      case '5': zoom = 4; break;
+      case '6': zoom = 5; break;
     }
 
     // Change zoom
     if (zoom >= 0) {
+      TRACE(PREFIX_I "setting zoom to %i.\n", zoom);
       editor_set_zoom_and_center_in_mouse(zoom, jmouse_x(0), jmouse_y(0));
       return true;
     }

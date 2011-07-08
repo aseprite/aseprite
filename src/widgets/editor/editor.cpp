@@ -1318,7 +1318,7 @@ bool Editor::onProcessMessage(JMessage msg)
     case JM_KEYPRESSED:
       if (m_state == EDITOR_STATE_STANDBY ||
 	  m_state == EDITOR_STATE_DRAWING) {
-	if (editor_keys_toset_zoom(msg->key.scancode))
+	if (editor_keys_toset_zoom(msg->key.scancode, msg->key.ascii))
 	  return true;
       }
 

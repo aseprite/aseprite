@@ -180,7 +180,7 @@ private:
 
   // keys.c
 
-  bool editor_keys_toset_zoom(int scancode);
+  bool editor_keys_toset_zoom(int scancode, int ascii);
 
 public:
 
