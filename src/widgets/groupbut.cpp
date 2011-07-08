@@ -66,7 +66,7 @@ JWidget group_button_new(int w, int h, int first_selected, ...)
 			       x ==   0 && y == h-1 ? 2: 0,
 			       x == w-1 && y == h-1 ? 2: 0);
 
-      radio->user_data[1] = (void *)c;
+      radio->user_data[1] = (void*)c;
 
       usprintf(buf, "radio%d", c);
       radio->setName(buf);
@@ -101,7 +101,7 @@ int group_button_get_selected(JWidget group)
   JWidget sel = find_selected(group);
 
   if (sel)
-    return (int)sel->user_data[1];
+    return (long)sel->user_data[1];
   else
     return -1;
 }
@@ -110,7 +110,7 @@ void group_button_select(JWidget group, int index)
 {
   JWidget sel = find_selected(group);
 
-  if (!sel || (int)sel->user_data[1] != index) {
+  if (!sel || (long)sel->user_data[1] != index) {
     sel->setSelected(false);
     select_button(group, index);
   }
@@ -137,7 +137,7 @@ static int select_button(JWidget widget, int index)
   JLink link;
 
   if (widget->type == JI_RADIO) {
-    if ((int)widget->user_data[1] == index) {
+    if ((long)widget->user_data[1] == index) {
       widget->setSelected(true);
       return true;
     }
