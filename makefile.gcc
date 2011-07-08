@@ -53,6 +53,10 @@ ifdef HAVE_RESIZE_PATCH
   CFLAGS += -DHAVE_RESIZE_PATCH
 endif
 
+ifdef FULLSCREEN_PLATFORM
+  CFLAGS += -DFULLSCREEN_PLATFORM
+endif
+
 ######################################################################
 # Rules to make third party libraries
 

@@ -214,9 +214,11 @@ int init_module_gui()
 
     has_desktop = get_desktop_resolution(&dsk_w, &dsk_h) == 0;
 
+#ifndef FULLSCREEN_PLATFORM
     /* we must extract some space for the windows borders */
     dsk_w -= 16;
     dsk_h -= 32;
+#endif
 
     /* try to get desktop resolution */
     if (has_desktop) {
@@ -391,7 +393,13 @@ static void load_gui_config(int& w, int& h, int& bpp, bool& fullscreen, bool& ma
   w = get_config_int("GfxMode", "Width", 0);
   h = get_config_int("GfxMode", "Height", 0);
   bpp = get_config_int("GfxMode", "Depth", 0);
-  fullscreen = get_config_bool("GfxMode", "FullScreen", false);
+  fullscreen = get_config_bool("GfxMode", "FullScreen",
+#ifdef FULLSCREEN_PLATFORM
+			       true
+#else
+			       false
+#endif
+			       );
   screen_scaling = get_config_int("GfxMode", "ScreenScale", 2);
   screen_scaling = MID(1, screen_scaling, 4);
 
