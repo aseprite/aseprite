@@ -40,6 +40,7 @@
 #include <vector>
 
 #include <algorithm>
+#include <iterator>
 #include <memory>
 
 using namespace Vaca;
