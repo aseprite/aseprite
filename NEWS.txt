@@ -2,6 +2,12 @@
 NEWS
 ===================================
 
+0.8.3
+-----
+
++ Fix bugs when the program is closed in some special cases.
++ Fix compilation problems in some platforms.
+
 0.8.2
 -----
 
