@@ -10,6 +10,8 @@ add_library(base-lib
   mutex.cpp
   path.cpp
   serialization.cpp
+  sha1.cpp
+  sha1_rfc3174.c
   split_string.cpp
   string.cpp
   thread.cpp

@@ -11,6 +11,7 @@
 
 namespace base {
 
+  class Sha1;
   class Version;
 
   // Undefined convertion
@@ -21,6 +22,9 @@ namespace base {
 
   template<> int convert_to(const base::string& from);
   template<> base::string convert_to(const int& from);
+
+  template<> Sha1 convert_to(const base::string& from);
+  template<> base::string convert_to(const Sha1& from);
 
   template<> Version convert_to(const base::string& from);
   template<> base::string convert_to(const Version& from);
