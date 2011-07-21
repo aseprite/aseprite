@@ -15,11 +15,12 @@
 
 class LinkLabel : public CustomLabel
 {
-  std::string m_url;
-
 public:
   LinkLabel(const char* urlOrText);
   LinkLabel(const char* url, const char* text);
+
+  const char* getUrl() const { return m_url.c_str(); }
+  void setUrl(const char* url);
 
   Signal0<void> Click;
 
@@ -27,6 +28,7 @@ protected:
   bool onProcessMessage(Message* msg) OVERRIDE;
   void onPaint(PaintEvent& ev) OVERRIDE;
 
+  std::string m_url;
 };
 
 #endif
