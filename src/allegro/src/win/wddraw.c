@@ -50,7 +50,12 @@ int init_directx(void)
    HWND allegro_wnd = win_get_window();
 
    /* first we have to set up the DirectDraw1 interface... */
-   hr = DirectDrawCreate(NULL, &directdraw1, NULL);
+   hr = CoCreateInstance(&CLSID_DirectDraw, NULL, CLSCTX_ALL, &IID_IDirectDraw, &directdraw1);
+   if (FAILED(hr))
+      return -1;
+
+   /* ...then query the DirectDraw2 interface */
+   hr = IDirectDraw_Initialize(directdraw1, NULL);
    if (FAILED(hr))
       return -1;
 
