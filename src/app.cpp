@@ -20,6 +20,7 @@
 
 #include "app.h"
 
+#include "app/check_update.h"
 #include "app/color_utils.h"
 #include "base/exception.h"
 #include "base/unique_ptr.h"
@@ -157,8 +158,12 @@ App::App(int argc, char* argv[])
   set_current_palette(NULL, true);
 }
 
+
+
 int App::run()
 {
+  app::CheckUpdateThreadLauncher checkUpdate;
+
   // Initialize GUI interface
   if (isGui()) {
     View* view;
@@ -282,6 +287,10 @@ int App::run()
     // Support to drop files from Windows explorer
     install_drop_files();
 
+    // Launch the thread to check for updates.
+    checkUpdate.launch();
+
+    // Run the GUI main message loop
     gui_run();
 
     uninstall_drop_files();

@@ -51,7 +51,7 @@ if (CMAKE_USE_PTHREADS_INIT)
 endif()
 
 # All libraries for .exe files
-set(all_libs aseprite-library undo-lib filters-lib gui-lib gfx-lib net-lib base-lib
+set(all_libs aseprite-library undo-lib updater-lib filters-lib gui-lib gfx-lib net-lib base-lib
   ${libs3rdparty} allegro ${sys_libs})
 
 # Directories where .h files can be found
@@ -76,6 +76,7 @@ add_subdirectory(gfx)
 add_subdirectory(gui)
 add_subdirectory(net)
 add_subdirectory(undo)
+add_subdirectory(updater)
 
 ######################################################################
 # aseprite library
@@ -100,6 +101,7 @@ add_library(aseprite-library
   undo_transaction.cpp
   xml_exception.cpp
   xml_widgets.cpp
+  app/check_update.cpp
   app/color.cpp
   app/color_utils.cpp
   commands/cmd_about.cpp
@@ -110,7 +112,6 @@ add_library(aseprite-library
   commands/cmd_change_color.cpp
   commands/cmd_change_image_type.cpp
   commands/cmd_change_pen.cpp
-  commands/cmd_check_updates.cpp
   commands/cmd_clear.cpp
   commands/cmd_close_file.cpp
   commands/cmd_configure_tools.cpp
