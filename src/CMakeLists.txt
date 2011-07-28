@@ -135,7 +135,6 @@ add_library(aseprite-library
   commands/cmd_cut.cpp
   commands/cmd_deselect_mask.cpp
   commands/cmd_developer_console.cpp
-  commands/cmd_donate.cpp
   commands/cmd_duplicate_layer.cpp
   commands/cmd_duplicate_sprite.cpp
   commands/cmd_exit.cpp
@@ -148,6 +147,7 @@ add_library(aseprite-library
   commands/cmd_goto_layer.cpp
   commands/cmd_grid.cpp
   commands/cmd_invert_mask.cpp
+  commands/cmd_launch.cpp
   commands/cmd_layer_from_background.cpp
   commands/cmd_layer_properties.cpp
   commands/cmd_load_mask.cpp
@@ -167,7 +167,6 @@ add_library(aseprite-library
   commands/cmd_paste.cpp
   commands/cmd_play_animation.cpp
   commands/cmd_preview.cpp
-  commands/cmd_quick_reference.cpp
   commands/cmd_redo.cpp
   commands/cmd_refresh.cpp
   commands/cmd_remove_cel.cpp

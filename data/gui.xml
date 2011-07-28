@@ -322,9 +322,23 @@
 	<item command="ScreenShot" text="&amp;Screen Shot" />
       </menu>
       <menu text="&amp;Help">
-	<item command="QuickReference" text="Quick &amp;Reference" />
+	<item command="Launch" text="Quick &amp;Reference">
+	  <param name="type" value="docs" />
+	  <param name="path" value="quickref.pdf" />
+	</item>
+	<item command="Launch" text="Wiki">
+	  <param name="type" value="url" />
+	  <param name="path" value="http://code.google.com/p/aseprite/wiki/Home" />
+	</item>
 	<separator />
-	<item command="Donate" text="&amp;Donate" />
+	<item command="Launch" text="Release Notes">
+	  <param name="type" value="url" />
+	  <param name="path" value="http://code.google.com/p/aseprite/wiki/ReleaseNotes" />
+	</item>
+	<item command="Launch" text="&amp;Donate">
+	  <param name="type" value="url" />
+	  <param name="path" value="http://www.aseprite.org/donate/" />
+	</item>
 	<separator />
 	<item command="About" text="&amp;About" />
       </menu>
