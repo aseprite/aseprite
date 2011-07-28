@@ -68,7 +68,7 @@ public:
     return m_iterator;
   }
 
-  void setIterator(iterator& it) {
+  void setIterator(const iterator& it) {
     m_isNull = false;
     m_iterator = it;
   }
