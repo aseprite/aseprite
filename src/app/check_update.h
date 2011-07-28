@@ -55,6 +55,7 @@ namespace app {
     updater::Uuid m_uuid;
     UniquePtr<base::thread> m_thread;
     UniquePtr<CheckUpdateBackgroundJob> m_bgJob;
+    bool m_doCheck;
     bool m_received;
     updater::CheckUpdateResponse m_response;
     Monitor* m_guiMonitor;

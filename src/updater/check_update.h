@@ -55,11 +55,16 @@ namespace updater {
     // UUID.
     Uuid getUuid() const { return m_uuid; }
 
+    // Returns the number of days that this client should wait for the
+    // next "check for updates".
+    int getWaitDays() const { return m_waitDays; }
+
   private:
     Type m_type;
     base::Version m_version;
     std::string m_url;
     Uuid m_uuid;
+    int m_waitDays;
   };
 
   // Delegate called by CheckUpdate when the request to the server is

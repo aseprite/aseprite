@@ -37,6 +37,7 @@ namespace updater {
 
 CheckUpdateResponse::CheckUpdateResponse()
   : m_type(Unknown)
+  , m_waitDays(0)
 {
 }
 
@@ -44,11 +45,13 @@ CheckUpdateResponse::CheckUpdateResponse(const CheckUpdateResponse& other)
   : m_type(other.m_type)
   , m_version(other.m_version)
   , m_url(other.m_url)
+  , m_waitDays(0)
 {
 }
     
 CheckUpdateResponse::CheckUpdateResponse(const std::string& responseBody)
   : m_type(Unknown)
+  , m_waitDays(0)
 {
   TiXmlDocument doc;
   doc.Parse(responseBody.c_str());
@@ -65,6 +68,7 @@ CheckUpdateResponse::CheckUpdateResponse(const std::string& responseBody)
   const char* type_attr = xmlUpdate->Attribute("type");
   const char* url_attr = xmlUpdate->Attribute("url");
   const char* uuid_attr = xmlUpdate->Attribute("uuid");
+  const char* waitdays_attr = xmlUpdate->Attribute("waitdays");
 
   if (latest_attr && strcmp(latest_attr, "1") == 0)
     m_type = NoUpdate;
@@ -84,6 +88,9 @@ CheckUpdateResponse::CheckUpdateResponse(const std::string& responseBody)
 
   if (uuid_attr)
     m_uuid = uuid_attr;
+
+  if (waitdays_attr)
+    m_waitDays = base::convert_to<int>(std::string(waitdays_attr));
 }
 
 class CheckUpdate::CheckUpdateImpl

@@ -29,6 +29,7 @@
 #include "widgets/statebar.h"
 
 #include <sstream>
+#include <ctime>
 
 namespace app {
 
@@ -82,11 +83,27 @@ private:
 };
 
 CheckUpdateThreadLauncher::CheckUpdateThreadLauncher()
-  : m_received(false)
+  : m_doCheck(true)
+  , m_received(false)
   , m_guiMonitor(NULL)
   , m_inits(get_config_int("Updater", "Inits", 0))
   , m_exits(get_config_int("Updater", "Exits", 0))
 {
+  // Get how many days we have to wait for the next "check for update"
+  int waitDays = get_config_int("Updater", "WaitDays", 0);
+  if (waitDays > 0) {
+    // Get the date of the last "check for updates"
+    time_t lastCheck = (time_t)get_config_int("Updater", "LastCheck", 0);
+    time_t now = std::time(NULL);
+
+    // Verify if we are in the "WaitDays" period...
+    if (now < lastCheck+60*60*24*waitDays &&
+	now > lastCheck) {	                         // <- Avoid broken clocks
+      // So we do not check for updates.
+      m_doCheck = false;
+    }
+  }
+
   // Minimal stats: number of initializations
   set_config_int("Updater", "Inits", get_config_int("Updater", "Inits", 0)+1);
   flush_config_file();
@@ -113,6 +130,11 @@ CheckUpdateThreadLauncher::~CheckUpdateThreadLauncher()
     
 void CheckUpdateThreadLauncher::launch()
 {
+  // In this case we are in the "wait days" period, so we don't check
+  // for updates.
+  if (!m_doCheck)
+    return;
+
   if (m_uuid.empty())
     m_uuid = get_config_string("Updater", "Uuid", "");
 
@@ -153,8 +175,14 @@ void CheckUpdateThreadLauncher::monitorActivity()
   if (!m_response.getUuid().empty()) {
     m_uuid = m_response.getUuid();
     set_config_string("Updater", "Uuid", m_uuid.c_str());
-    flush_config_file();
   }
+
+  // Set the date of the last "check for updates" and the "WaitDays" parameter.
+  set_config_int("Updater", "LastCheck", (int)std::time(NULL));
+  set_config_int("Updater", "WaitDays", m_response.getWaitDays());
+
+  // Save the config file right now
+  flush_config_file();
 
   // Remove the monitor
   remove_gui_monitor(m_guiMonitor);
