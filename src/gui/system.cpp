@@ -366,11 +366,7 @@ void jmouse_set_position(int x, int y)
 
 void jmouse_capture()
 {
-#if defined(ALLEGRO_WINDOWS)
-
-  SetCapture(win_get_window());
-
-#elif defined(ALLEGRO_UNIX)
+#if defined(ALLEGRO_UNIX)
 
   XGrabPointer(_xwin.display, _xwin.window, False,
 	       PointerMotionMask | ButtonPressMask | ButtonReleaseMask,
@@ -382,11 +378,7 @@ void jmouse_capture()
 
 void jmouse_release()
 {
-#if defined(ALLEGRO_WINDOWS)
-
-  ::ReleaseCapture();
-
-#elif defined(ALLEGRO_UNIX)
+#if defined(ALLEGRO_UNIX)
 
   XUngrabPointer(_xwin.display, CurrentTime);
 

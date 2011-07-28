@@ -251,6 +251,8 @@ static int mouse_winapi_select_system_cursor(int cursor)
 
 void _al_win_mouse_handle_button(HWND hwnd, int button, BOOL down, int x, int y, BOOL abs)
 {
+  int last_mouse_b;
+
    _enter_critical();
 
    if (down)
@@ -258,7 +260,20 @@ void _al_win_mouse_handle_button(HWND hwnd, int button, BOOL down, int x, int y,
    else
       _mouse_b &= ~(1 << (button-1));
 
+   last_mouse_b = _mouse_b;
+
    _exit_critical();
+
+   /* If there is a mouse button pressed we capture the mouse, in any
+      other cases we release it. */
+   if (last_mouse_b) {
+     if (GetCapture() != hwnd)
+       SetCapture(hwnd);
+   }
+   else {
+     if (GetCapture() == hwnd)
+       ReleaseCapture();
+   }
 
    _handle_mouse_input();
 }
