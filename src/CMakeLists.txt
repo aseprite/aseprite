@@ -9,7 +9,7 @@ if(MSVC)
 endif(MSVC)
 
 # Third-party libraries
-set(libs3rdparty libcurl freetype libart_lgpl loadpng tinyxml giflib)
+set(libs3rdparty freetype libart_lgpl loadpng tinyxml giflib)
 
 if(USE_SHARED_JPEGLIB)
   find_package(JPEG)
@@ -50,9 +50,18 @@ if (CMAKE_USE_PTHREADS_INIT)
   set(sys_libs ${sys_libs} ${CMAKE_THREAD_LIBS_INIT})
 endif()
 
+# Libraries in this directory
+set(aseprite_libraries aseprite-library undo-lib filters-lib gui-lib
+  gfx-lib net-lib base-lib)
+
+if(ENABLE_UPDATER)
+  set(libs3rdparty ${libs3rdparty} libcurl)
+  set(aseprite_libraries ${aseprite_libraries} updater-lib)
+  add_definitions(-DENABLE_UPDATER)
+endif()
+
 # All libraries for .exe files
-set(all_libs aseprite-library undo-lib updater-lib filters-lib gui-lib gfx-lib net-lib base-lib
-  ${libs3rdparty} allegro ${sys_libs})
+set(all_libs ${aseprite_libraries} ${libs3rdparty} allegro ${sys_libs})
 
 # Directories where .h files can be found
 include_directories(
@@ -76,7 +85,9 @@ add_subdirectory(gfx)
 add_subdirectory(gui)
 add_subdirectory(net)
 add_subdirectory(undo)
-add_subdirectory(updater)
+if(ENABLE_UPDATER)
+  add_subdirectory(updater)
+endif()
 
 ######################################################################
 # aseprite library

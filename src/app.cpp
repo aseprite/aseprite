@@ -162,7 +162,9 @@ App::App(int argc, char* argv[])
 
 int App::run()
 {
+#ifdef ENABLE_UPDATER
   app::CheckUpdateThreadLauncher checkUpdate;
+#endif
 
   // Initialize GUI interface
   if (isGui()) {
@@ -287,8 +289,10 @@ int App::run()
     // Support to drop files from Windows explorer
     install_drop_files();
 
+#ifdef ENABLE_UPDATER
     // Launch the thread to check for updates.
     checkUpdate.launch();
+#endif
 
     // Run the GUI main message loop
     gui_run();

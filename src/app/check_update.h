@@ -19,6 +19,8 @@
 #ifndef APP_CHECK_UPDATE_H_INCLUDED
 #define APP_CHECK_UPDATE_H_INCLUDED
 
+#ifdef ENABLE_UPDATER
+
 #include "base/thread.h"
 #include "base/unique_ptr.h"
 #include "updater/check_update.h"
@@ -64,5 +66,6 @@ namespace app {
 
 }
 
-#endif
+#endif // ENABLE_UPDATER
 
+#endif // APP_CHECK_UPDATE_H_INCLUDED

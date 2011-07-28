@@ -18,6 +18,8 @@
 
 #include "config.h"
 
+#ifdef ENABLE_UPDATER
+
 #include "app/check_update.h"
 
 #include "app.h"
@@ -182,3 +184,5 @@ void CheckUpdateThreadLauncher::checkForUpdates()
 }
 
 }
+
+#endif // ENABLE_UPDATER
