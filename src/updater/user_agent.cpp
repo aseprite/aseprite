@@ -90,7 +90,7 @@ std::string getUserAgent()
 
   struct utsname utsn;
   uname(&utsn);
-  userAgent << utsn.sysname << " " utsn.release;
+  userAgent << utsn.sysname << " " << utsn.release;
 
 #endif
 

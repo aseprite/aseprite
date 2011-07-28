@@ -51,12 +51,11 @@ if (CMAKE_USE_PTHREADS_INIT)
 endif()
 
 # Libraries in this directory
-set(aseprite_libraries aseprite-library undo-lib filters-lib gui-lib
-  gfx-lib net-lib base-lib)
+set(aseprite_libraries aseprite-library undo-lib filters-lib gui-lib gfx-lib base-lib)
 
 if(ENABLE_UPDATER)
   set(libs3rdparty ${libs3rdparty} libcurl)
-  set(aseprite_libraries ${aseprite_libraries} updater-lib)
+  set(aseprite_libraries ${aseprite_libraries} updater-lib net-lib)
   add_definitions(-DENABLE_UPDATER)
 endif()
 
