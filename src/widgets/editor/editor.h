@@ -164,6 +164,7 @@ public:
 protected:
   bool onProcessMessage(Message* msg) OVERRIDE;
   void onCurrentToolChange();
+  void onFgColorChange();
 
   // Returns true if this editor should change the preferred document
   // settings.
@@ -219,6 +220,8 @@ private:
   // still continue running and generating CurrentToolChange
   // signals).
   Slot0<void>* m_currentToolChangeSlot;
+
+  Slot1<void, const Color&>* m_fgColorChangeSlot;
 
   EditorListeners m_listeners;
 

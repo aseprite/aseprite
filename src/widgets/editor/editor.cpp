@@ -25,6 +25,7 @@
 #include "app.h"
 #include "app/color.h"
 #include "app/color_utils.h"
+#include "base/bind.h"
 #include "commands/commands.h"
 #include "commands/params.h"
 #include "document_wrappers.h"
@@ -139,6 +140,9 @@ Editor::Editor()
 
   m_currentToolChangeSlot =
     App::instance()->CurrentToolChange.connect(&Editor::onCurrentToolChange, this);
+
+  m_fgColorChangeSlot =
+    app_get_colorbar()->FgColorChange.connect(Bind<void>(&Editor::onFgColorChange, this));
 }
 
 Editor::~Editor()
@@ -149,6 +153,10 @@ Editor::~Editor()
   // Remove this editor as listener of CurrentToolChange signal.
   App::instance()->CurrentToolChange.disconnect(m_currentToolChangeSlot);
   delete m_currentToolChangeSlot;
+
+  // Remove this editor as listener of FgColorChange
+  app_get_colorbar()->FgColorChange.disconnect(m_fgColorChangeSlot);
+  delete m_fgColorChangeSlot;
 }
 
 int editor_type()
@@ -990,6 +998,14 @@ bool Editor::onProcessMessage(Message* msg)
 void Editor::onCurrentToolChange()
 {
   m_state->onCurrentToolChange(this);
+}
+
+void Editor::onFgColorChange()
+{
+  if (m_cursor_thick) {
+    hideDrawingCursor();
+    showDrawingCursor();
+  }
 }
 
 /**
