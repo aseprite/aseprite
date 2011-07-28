@@ -24,12 +24,12 @@
 
 #include "app.h"
 #include "base/bind.h"
-#include "core/cfg.h"
+#include "ini_file.h"
 #include "modules/gui.h"
 #include "widgets/statebar.h"
 
-#include <sstream>
 #include <ctime>
+#include <sstream>
 
 namespace app {
 
