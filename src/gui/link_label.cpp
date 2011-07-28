@@ -25,6 +25,11 @@ LinkLabel::LinkLabel(const char* url, const char* text)
 {
 }
 
+void LinkLabel::setUrl(const char* url)
+{
+  m_url = url;
+}
+
 bool LinkLabel::onProcessMessage(Message* msg)
 {
   switch (msg->type) {

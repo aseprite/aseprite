@@ -121,6 +121,10 @@ static void flush_config(CONFIG *cfg)
 void flush_config_file(void)
 {
    flush_config(config[0]);
+
+   /* [dacap] Flush the overriden file */
+   if (config_override)
+      flush_config(config_override);
 }
 
 

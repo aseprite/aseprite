@@ -42,17 +42,31 @@ else()
   set(libs3rdparty ${libs3rdparty} libpng)
 endif()
 
+if(CURL_STATICLIB)
+  add_definitions(-DCURL_STATICLIB)
+endif()
+
 if (CMAKE_USE_PTHREADS_INIT)
   set(sys_libs ${sys_libs} ${CMAKE_THREAD_LIBS_INIT})
 endif()
 
+# Libraries in this directory
+set(aseprite_libraries aseprite-library undo-lib filters-lib gui-lib
+  gfx-lib net-lib base-lib)
+
+if(ENABLE_UPDATER)
+  set(libs3rdparty ${libs3rdparty} libcurl)
+  set(aseprite_libraries ${aseprite_libraries} updater-lib)
+  add_definitions(-DENABLE_UPDATER)
+endif()
+
 # All libraries for .exe files
-set(all_libs aseprite-library undo-lib filters-lib gui-lib gfx-lib base-lib
-  ${libs3rdparty} allegro ${sys_libs})
+set(all_libs ${aseprite_libraries} ${libs3rdparty} allegro ${sys_libs})
 
 # Directories where .h files can be found
 include_directories(
   . .. ../third_party
+  ${CURL_DIR}/include
   ${GIFLIB_DIR}/lib
   ${LIBFREETYPE_DIR}/include
   ${LIBJPEG_DIR}
@@ -66,10 +80,14 @@ include_directories(
 
 add_subdirectory(allegro)
 add_subdirectory(base)
+add_subdirectory(filters)
 add_subdirectory(gfx)
 add_subdirectory(gui)
-add_subdirectory(filters)
+add_subdirectory(net)
 add_subdirectory(undo)
+if(ENABLE_UPDATER)
+  add_subdirectory(updater)
+endif()
 
 ######################################################################
 # aseprite library
@@ -98,6 +116,7 @@ add_library(aseprite-library
   undo_transaction.cpp
   xml_exception.cpp
   xml_widgets.cpp
+  app/check_update.cpp
   app/color.cpp
   app/color_utils.cpp
   commands/cmd_about.cpp
@@ -108,7 +127,6 @@ add_library(aseprite-library
   commands/cmd_change_color.cpp
   commands/cmd_change_image_type.cpp
   commands/cmd_change_pen.cpp
-  commands/cmd_check_updates.cpp
   commands/cmd_clear.cpp
   commands/cmd_close_file.cpp
   commands/cmd_configure_tools.cpp
@@ -320,14 +338,14 @@ add_executable(aseprite WIN32 main.cpp ${win32_resources})
 
 target_link_libraries(aseprite ${all_libs})
 
-INSTALL(TARGETS aseprite
+install(TARGETS aseprite
   RUNTIME DESTINATION bin)
 
-INSTALL(DIRECTORY ../data
+install(DIRECTORY ../data
   DESTINATION share/aseprite)
 
 if(EXISTS ../docs/quickref.pdf)
-  INSTALL(FILES ../docs/quickref.pdf
+  install(FILES ../docs/quickref.pdf
     DESTINATION share/aseprite/docs/quickref.pdf)
 endif()
 

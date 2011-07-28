@@ -20,10 +20,12 @@
 #define WIDGETS_STATEBAR_H_INCLUDED
 
 #include <vector>
+#include <string>
 
 #include "app/color.h"
 #include "base/compiler_specific.h"
 #include "gui/base.h"
+#include "gui/link_label.h"
 #include "gui/widget.h"
 #include "listeners.h"
 
@@ -87,6 +89,9 @@ public:
   Progress* addProgress();
   void removeProgress(Progress* progress);
 
+  // Method to show notifications (each notification can contain a link).
+  void showNotification(const char* text, const char* link);
+
 protected:
   bool onProcessMessage(Message* msg) OVERRIDE;
 
@@ -120,6 +125,10 @@ private:
   Button* m_b_play;			// Play animation
   Button* m_b_next;			// Go to next frame
   Button* m_b_last;			// Go to last frame
+
+  // Box of notifications.
+  Widget* m_notificationsBox;
+  LinkLabel* m_linkLabel;
 
   // Box with move-pixels commands (when the user drag-and-drop selected pixels using the editor)
   Box* m_movePixelsBox;

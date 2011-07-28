@@ -26,8 +26,10 @@ set(CMAKE_CONFIGURATION_TYPES "${CMAKE_BUILD_TYPE}" CACHE INTERNAL "internal")
 project(aseprite C CXX)
 
 ######################################################################
-# Options (these can be specified in cmake command line or modifying CMakeCache.txt)
+# Options (these can be specified in cmake command line or modifying
+# CMakeCache.txt)
 
+option(ENABLE_UPDATER     "Enable automatic check for updates" on)
 option(USE_STATIC_LIBC    "Use static version of C and C++ runtimes" off)
 option(USE_SHARED_JPEGLIB "Use your installed copy of jpeglib" off)
 option(USE_SHARED_ZLIB    "Use your installed copy of zlib" off)
@@ -65,6 +67,7 @@ endif(COMPILER_MSVC)
 ######################################################################
 # Directories
 
+set(CURL_DIR		${CMAKE_SOURCE_DIR}/third_party/curl)
 set(GIFLIB_DIR		${CMAKE_SOURCE_DIR}/third_party/giflib)
 set(LIBFREETYPE_DIR	${CMAKE_SOURCE_DIR}/third_party/freetype)
 set(LIBJPEG_DIR		${CMAKE_SOURCE_DIR}/third_party/jpeg)

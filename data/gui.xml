@@ -325,7 +325,6 @@
 	<item command="QuickReference" text="Quick &amp;Reference" />
 	<separator />
 	<item command="Donate" text="&amp;Donate" />
-	<item command="CheckUpdates" text="&amp;Check for New Version" />
 	<separator />
 	<item command="About" text="&amp;About" />
       </menu>

@@ -137,6 +137,22 @@ StatusBar::StatusBar()
     m_commandsBox = box1;
   }
 
+  // Create the box to show notifications.
+  {
+    Box* box1 = new Box(JI_HORIZONTAL);
+    Box* box2 = new Box(JI_VERTICAL);
+
+    jwidget_set_border(box1, 2*jguiscale(), 1*jguiscale(), 2*jguiscale(), 2*jguiscale());
+    jwidget_noborders(box2);
+    jwidget_expansive(box2, true);
+
+    m_linkLabel = new LinkLabel((std::string(WEBSITE) + "donate/").c_str(), "Support This Project");
+
+    box1->addChild(box2);
+    box1->addChild(m_linkLabel);
+    m_notificationsBox = box1;
+  }
+
   // Construct move-pixels box
   {
     Box* filler = new Box(JI_HORIZONTAL);
@@ -153,6 +169,8 @@ StatusBar::StatusBar()
     m_transparentColor->Change.connect(Bind<void>(&StatusBar::onTransparentColorChange, this));
   }
 
+  addChild(m_notificationsBox);
+
   App::instance()->CurrentToolChange.connect(&StatusBar::onCurrentToolChange, this);
 }
 
@@ -162,6 +180,9 @@ StatusBar::~StatusBar()
     delete *it;
 
   delete m_tipwindow;		// widget
+  delete m_movePixelsBox;
+  delete m_commandsBox;
+  delete m_notificationsBox;
 }
 
 void StatusBar::addListener(StatusBarListener* listener)
@@ -209,8 +230,8 @@ bool StatusBar::setStatusText(int msecs, const char *format, ...)
     m_timeout = ji_clock + msecs;
     m_state = SHOW_TEXT;
 
-    this->setText(buf);
-    this->invalidate();
+    setText(buf);
+    invalidate();
 
     return true;
   }
@@ -254,8 +275,8 @@ void StatusBar::showTip(int msecs, const char *format, ...)
 
   // Set the text in status-bar (with inmediate timeout)
   m_timeout = ji_clock;
-  this->setText(buf);
-  this->invalidate();
+  setText(buf);
+  invalidate();
 }
 
 void StatusBar::showColor(int msecs, const char* text, const Color& color, int alpha)
@@ -310,6 +331,14 @@ void StatusBar::hideMovePixelsOptions()
 Color StatusBar::getTransparentColor()
 {
   return m_transparentColor->getColor();
+}
+
+void StatusBar::showNotification(const char* text, const char* link)
+{
+  m_linkLabel->setText(text);
+  m_linkLabel->setUrl(link);
+  layout();
+  invalidate();
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -379,6 +408,12 @@ bool StatusBar::onProcessMessage(Message* msg)
       jrect_copy(this->rc, &msg->setpos.rect);
       {
 	JRect rc = jrect_new_copy(this->rc);
+	rc->x1 = rc->x2 - m_notificationsBox->getPreferredSize().w;
+	jwidget_set_rect(m_notificationsBox, rc);
+	jrect_free(rc);
+      }
+      {
+	JRect rc = jrect_new_copy(this->rc);
 	rc->x2 -= jrect_w(rc)/4 + 4*jguiscale();
 	jwidget_set_rect(m_commandsBox, rc);
 	jrect_free(rc);
@@ -392,17 +427,6 @@ bool StatusBar::onProcessMessage(Message* msg)
 	jrect_free(rc);
       }
       return true;
-
-    case JM_CLOSE:
-      if (!hasChild(m_commandsBox)) {
-	// Append the "m_commandsBox" so it is destroyed in StatusBar dtor.
-	addChild(m_commandsBox);
-      }
-      if (!hasChild(m_movePixelsBox)) {
-	// Append the "m_movePixelsBox" so it is destroyed in StatusBar dtor.
-	addChild(m_movePixelsBox);
-      }
-      break;
 
     case JM_DRAW: {
       SkinTheme* theme = static_cast<SkinTheme*>(this->getTheme());
@@ -506,7 +530,7 @@ bool StatusBar::onProcessMessage(Message* msg)
 	}
       }
       // Show layers only when we are not moving pixels
-      else if (!this->hasChild(m_movePixelsBox)) {
+      else if (!hasChild(m_movePixelsBox)) {
 	// Available width for layers buttons
 	int width = jrect_w(rc)/4;
 
@@ -517,6 +541,11 @@ bool StatusBar::onProcessMessage(Message* msg)
 	  const ActiveDocumentReader document(UIContext::instance());
 	  const Sprite* sprite(document ? document->getSprite(): NULL);
 	  if (sprite) {
+	    if (hasChild(m_notificationsBox)) {
+	      removeChild(m_notificationsBox);
+	      invalidate();
+	    }
+
 	    const LayerFolder* folder = sprite->getFolder();
 	    LayerConstIterator it = folder->get_layer_begin();
 	    LayerConstIterator end = folder->get_layer_end();
@@ -554,22 +583,10 @@ bool StatusBar::onProcessMessage(Message* msg)
 	    }
 	  }
 	  else {
-	    int x1 = rc->x2-width;
-	    int x2 = rc->x2;
-	    bool hot = (0 == m_hot_layer);
-
-	    theme->draw_bounds_nw(doublebuffer,
-				  x1, rc->y1, x2, rc->y2,
-				  hot ? PART_TOOLBUTTON_HOT_NW:
-					PART_TOOLBUTTON_NORMAL_NW,
-				  hot ? theme->get_button_hot_face_color():
-					theme->get_button_normal_face_color());
-
-	    textout_centre_ex(doublebuffer, this->getFont(), "Donate",
-			      (x1+x2)/2,
-			      (rc->y1+rc->y2)/2-text_height(this->getFont())/2,
-			      hot ? theme->get_button_hot_text_color():
-				    theme->get_button_normal_text_color(), -1);
+	    if (!hasChild(m_notificationsBox)) {
+	      addChild(m_notificationsBox);
+	      invalidate();
+	    }
 	  }
 	}
 	catch (LockedDocumentException&) {
@@ -591,8 +608,8 @@ bool StatusBar::onProcessMessage(Message* msg)
     case JM_MOUSEENTER: {
       bool state = (UIContext::instance()->getActiveDocument() != NULL);
 
-      if (!this->hasChild(m_movePixelsBox)) {
-	if (!this->hasChild(m_commandsBox) && state) {
+      if (!hasChild(m_movePixelsBox)) {
+	if (state && !hasChild(m_commandsBox)) {
 	  m_b_first->setEnabled(state);
 	  m_b_prev->setEnabled(state);
 	  m_b_play->setEnabled(state);
@@ -601,12 +618,15 @@ bool StatusBar::onProcessMessage(Message* msg)
 
 	  updateFromLayer();
 
+	  if (hasChild(m_notificationsBox))
+	    removeChild(m_notificationsBox);
+
 	  addChild(m_commandsBox);
 	  invalidate();
 	}
-	else {
-	  // Status text for donations
-	  setStatusText(0, "Click the \"Donate\" button to support ASE development");
+	else if (!state && !hasChild(m_notificationsBox)) {
+	  addChild(m_notificationsBox);
+	  invalidate();
 	}
       }
       break;
@@ -696,14 +716,6 @@ bool StatusBar::onProcessMessage(Message* msg)
 	      invalidate();
 	    }
 	  }
-	  else {
-	    // Call "Donate" command
-	    Command* donate = CommandsModule::instance()
-	      ->getCommandByName(CommandId::Donate);
-
-	    Params params;
-	    UIContext::instance()->executeCommand(donate, &params);
-	  }
 	}
 	catch (LockedDocumentException&) {
 	  // Do nothing...
@@ -712,7 +724,7 @@ bool StatusBar::onProcessMessage(Message* msg)
       break;
 
     case JM_MOUSELEAVE:
-      if (this->hasChild(m_commandsBox)) {
+      if (hasChild(m_commandsBox)) {
 	// If we want restore the state-bar and the slider doesn't have
 	// the capture...
 	if (jmanager_get_capture() != m_slider) {
@@ -818,3 +830,4 @@ void StatusBar::updateFromLayer()
     m_slider->setEnabled(false);
   }
 }
+
