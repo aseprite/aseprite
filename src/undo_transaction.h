@@ -85,7 +85,7 @@ public:
   void replaceStockImage(int image_index, Image* new_image);
 
   // for layers
-  Layer* newLayer();
+  LayerImage* newLayer();
   void removeLayer(Layer* layer);
   void moveLayerAfter(Layer *layer, Layer *after_this);
   void cropLayer(Layer* layer, int x, int y, int w, int h, int bgcolor);

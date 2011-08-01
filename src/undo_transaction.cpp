@@ -357,7 +357,7 @@ void UndoTransaction::replaceStockImage(int image_index, Image* new_image)
 /**
  * Creates a new transparent layer.
  */
-Layer* UndoTransaction::newLayer()
+LayerImage* UndoTransaction::newLayer()
 {
   // new layer
   LayerImage* layer = new LayerImage(m_sprite);
