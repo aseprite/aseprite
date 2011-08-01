@@ -297,11 +297,16 @@ int App::run()
     // Run the GUI main message loop
     gui_run();
 
+    // Uninstall support to drop files
     uninstall_drop_files();
 
     // Remove the root-menu from the menu-bar (because the rootmenu
     // module should destroy it).
     menubar->setMenu(NULL);
+
+    // Delete all editors first because they used signals from other
+    // widgets (e.g. color bar).
+    jwidget_free(box_editors);
 
     // Destroy the top-window
     jwidget_free(top_window);
