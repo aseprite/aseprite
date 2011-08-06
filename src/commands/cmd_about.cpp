@@ -55,7 +55,7 @@ void AboutCommand::onExecute(Context* context)
   Label* subtitle = new Label("Animated sprites editor && pixel art tool");
   Widget* authors_separator1 = ji_separator_new("Authors:", JI_HORIZONTAL | JI_TOP);
   Widget* authors_separator2 = ji_separator_new(NULL, JI_HORIZONTAL);
-  Label* author1 = new LinkLabel("http://www.davidcapello.com.ar/", "David Capello");
+  Label* author1 = new LinkLabel("http://dacap.com.ar/", "David Capello");
   Label* author1_desc = new Label("| Programming");
   Label* author2 = new LinkLabel("http://ilkke.blogspot.com/", "Ilija Melentijevic");
   Label* author2_desc = new Label("| Skin and Graphics");
