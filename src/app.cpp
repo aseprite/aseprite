@@ -132,6 +132,9 @@ App::App(int argc, char* argv[])
   m_modules = new Modules();
   m_isGui = !(m_checkArgs->isConsoleOnly());
   m_legacy = new LegacyModules(isGui() ? REQUIRE_INTERFACE: 0);
+
+  // Initialize editors.
+  init_module_editors();
  
   // Register well-known image file types.
   FileFormatsManager::instance().registerAllFormats();
@@ -307,6 +310,9 @@ int App::run()
     // Delete all editors first because they used signals from other
     // widgets (e.g. color bar).
     jwidget_free(box_editors);
+
+    // Destroy mini-editor.
+    exit_module_editors();
 
     // Destroy the top-window
     jwidget_free(top_window);

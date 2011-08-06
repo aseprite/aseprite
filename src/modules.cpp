@@ -19,7 +19,6 @@
 #include "config.h"
 
 #include "modules.h"
-#include "modules/editors.h"
 #include "modules/gui.h"
 #include "modules/palettes.h"
 #include "modules/rootmenu.h"
@@ -44,7 +43,6 @@ static Module module[] =
   DEF_MODULE(palette,		0),
   DEF_MODULE(gui,		REQUIRE_INTERFACE),
   DEF_MODULE(rootmenu,		REQUIRE_INTERFACE),
-  DEF_MODULE(editors,		REQUIRE_INTERFACE),
 };
 
 static int modules = sizeof(module) / sizeof(Module);
