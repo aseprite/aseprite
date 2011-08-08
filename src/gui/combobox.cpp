@@ -379,11 +379,8 @@ static bool combobox_listbox_msg_proc(JWidget widget, Message* msg)
       if (msg->signal.num == JI_SIGNAL_LISTBOX_CHANGE) {
 	int index = jlistbox_get_selected_index(widget);
 
-	if (IS_VALID_ITEM(combobox, index)) {
+	if (IS_VALID_ITEM(combobox, index))
 	  combobox->setSelectedItem(index);
-
-	  jwidget_emit_signal(combobox, JI_SIGNAL_COMBOBOX_CHANGE);
-	}
       }
       break;
 
