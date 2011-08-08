@@ -8,6 +8,7 @@
 #define GUI_COMBOBOX_H_INCLUDED
 
 #include "base/compiler_specific.h"
+#include "base/signal.h"
 #include "gui/widget.h"
 
 #include <string>
@@ -55,6 +56,9 @@ public:
   void closeListBox();
   void switchListBox();
   JRect getListBoxPos();
+
+  // Signals
+  Signal0<void> Change;
 
 protected:
   bool onProcessMessage(Message* msg) OVERRIDE;

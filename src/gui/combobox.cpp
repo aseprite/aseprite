@@ -390,8 +390,10 @@ static bool combobox_listbox_msg_proc(JWidget widget, Message* msg)
 
 	combobox->closeListBox();
 
-	if (IS_VALID_ITEM(combobox, index))
+	if (IS_VALID_ITEM(combobox, index)) {
+	  combobox->Change();
 	  jwidget_emit_signal(combobox, JI_SIGNAL_COMBOBOX_SELECT);
+	}
       }
       return true;
 
