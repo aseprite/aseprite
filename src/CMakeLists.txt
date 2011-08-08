@@ -138,6 +138,7 @@ add_library(aseprite-library
   commands/cmd_duplicate_layer.cpp
   commands/cmd_duplicate_sprite.cpp
   commands/cmd_exit.cpp
+  commands/cmd_export_sprite_sheet.cpp
   commands/cmd_eyedropper.cpp
   commands/cmd_film_editor.cpp
   commands/cmd_flatten_layers.cpp

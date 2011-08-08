@@ -177,6 +177,7 @@
 	<item command="CloseAllFiles" text="Close All" />
 	<separator />
 	<item command="ImportSpriteSheet" text="&amp;Import Sprite Sheet" />
+	<item command="ExportSpriteSheet" text="&amp;Export Sprite Sheet" />
 	<separator />
 	<item command="Exit" text="E&amp;xit" />
       </menu>
