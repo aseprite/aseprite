@@ -76,8 +76,17 @@ public:
     m_grid.addChildInCell(&m_y, 1, 1, 0);
     m_grid.addChildInCell(new Label("Height"), 1, 1, 0);
     m_grid.addChildInCell(&m_height, 1, 1, 0);
-    m_grid.addChildInCell(&m_import, 4, 1, 0);
-    m_grid.addChildInCell(&m_cancel, 4, 1, 0);
+
+    {
+      Box* hbox1 = new Box(JI_HORIZONTAL);
+      Box* hbox2 = new Box(JI_HORIZONTAL | JI_HOMOGENEOUS);
+      hbox1->addChild(new BoxFiller);
+      hbox1->addChild(hbox2);
+      hbox2->addChild(&m_import);
+      hbox2->addChild(&m_cancel);
+      jwidget_set_min_size(&m_import, 60, 0);
+      m_grid.addChildInCell(hbox1, 4, 1, 0);
+    }
 
     m_selectFile.Click.connect(&ImportSpriteSheetFrame::onSelectFile, this);
     m_selectFile.DropDownClick.connect(&ImportSpriteSheetFrame::onDropDown, this);
@@ -212,6 +221,7 @@ protected:
       throw;
     }
 
+    update_screen_for_document(m_document);
     closeWindow(NULL);
   }
 
