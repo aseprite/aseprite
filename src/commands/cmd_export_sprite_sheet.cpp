@@ -195,6 +195,8 @@ protected:
       update_screen_for_document(m_document);
     }
 
+    // This flag indicates if we've to undo the last action (so we
+    // back to the original sprite dimensions).
     bool undo = false;
 
     // Do the "Export Action"
@@ -207,6 +209,9 @@ protected:
 
 	  m_context->executeCommand(command);
 	}
+
+	// Always go back, as we are using "Save Copy As", so the user
+	// wants to continue editing the original sprite.
 	undo = true;
 	break;
 
@@ -217,6 +222,10 @@ protected:
 
 	  m_context->executeCommand(command);
 	}
+
+	// If the command was cancelled, we go back to the original
+	// state, if the sprite sheet was saved then we don't undo
+	// because the user wants to edit the sprite sheet.
 	undo = (m_document->isModified());
 	break;
 
@@ -227,10 +236,14 @@ protected:
 
 	  m_context->executeCommand(command);
 	}
+
+	// Same case as "Save As"
 	undo = (m_document->isModified());
 	break;
 
       case DoNotSave:
+	// Do not undo as the user wants to edit the sprite sheet
+	// before to save the file.
 	undo = false;
 	break;
     }
@@ -241,8 +254,7 @@ protected:
       m_document->generateMaskBoundaries();
       m_document->destroyExtraCel(); // Regenerate extras
 
-      // Redraw the document just in case it has changed (the
-      // transaction was rollbacked).
+      // Redraw the sprite.
       update_screen_for_document(m_document);
     }
 
