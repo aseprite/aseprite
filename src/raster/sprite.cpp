@@ -403,7 +403,9 @@ void Sprite::remapImages(int frame_from, int frame_to, const std::vector<uint8_t
 
 void Sprite::render(Image* image, int x, int y) const
 {
-  image_rectfill(image, x, y, x+m_width-1, y+m_height-1, 0);
+  image_rectfill(image, x, y, x+m_width-1, y+m_height-1,
+		 (m_imgtype == IMAGE_INDEXED ? getTransparentColor(): 0));
+
   layer_render(getFolder(), image, x, y, getCurrentFrame());
 }
 
@@ -413,8 +415,8 @@ int Sprite::getPixel(int x, int y) const
 
   if ((x >= 0) && (y >= 0) && (x < m_width) && (y < m_height)) {
     Image* image = image_new(m_imgtype, 1, 1);
-    image_clear(image, 0);
-    this->render(image, -x, -y);
+    image_clear(image, (m_imgtype == IMAGE_INDEXED ? getTransparentColor(): 0));
+    render(image, -x, -y);
     color = image_getpixel(image, 0, 0);
     image_free(image);
   }

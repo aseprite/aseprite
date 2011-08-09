@@ -127,9 +127,10 @@ public:
 
   void remapImages(int frame_from, int frame_to, const std::vector<uint8_t>& mapping);
 
-  ////////////////////////////////////////
-  // Drawing
-
+  // Draws the sprite in the given image at the given position. Before
+  // drawing the sprite, this function clears (with the sprite's
+  // background color) the rectangle area that will occupy the drawn
+  // sprite.
   void render(Image* image, int x, int y) const;
 
   // Gets a pixel from the sprite in the specified position. If in the

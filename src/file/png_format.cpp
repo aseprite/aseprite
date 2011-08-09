@@ -195,7 +195,8 @@ bool PngFormat::onLoad(FileOp* fop)
   }
 
   // Transparent palette entries
-  std::vector<bool> trans_entries(256, false);
+  std::vector<uint8_t> pal_alphas(256, 255);
+  int mask_entry = -1;
 
   // Read the palette
   if (info_ptr->color_type == PNG_COLOR_TYPE_PALETTE &&
@@ -212,20 +213,29 @@ bool PngFormat::onLoad(FileOp* fop)
       fop_sequence_set_color(fop, c, 0, 0, 0);
     }
 
-    // Read transparent entries
+    // Read alpha values for palette entries
     png_bytep trans = NULL;	// Transparent palette entries
     int num_trans = 0;
 
     png_get_tRNS(png_ptr, info_ptr, &trans, &num_trans, NULL);
 
     for (int i = 0; i < num_trans; ++i) {
-      int j = trans[i];
-      if (j >= 0 && j < (int)trans_entries.size()) {
-	trans_entries[j] = true;
+      pal_alphas[i] = trans[i];
+
+      if (pal_alphas[i] < 128) {
 	fop->seq.has_alpha = true; // Is a transparent sprite
+
+	if (mask_entry < 0)
+	  mask_entry = i;
       }
     }
+
+    // Set the transparent color to the first transparent entry found
+    if (mask_entry >= 0)
+      fop->document->getSprite()->setTransparentColor(mask_entry);
   }
+
+  mask_entry = fop->document->getSprite()->getTransparentColor();
 
   /* Allocate the memory to hold the image using the fields of info_ptr. */
 
@@ -295,10 +305,8 @@ bool PngFormat::onLoad(FileOp* fop)
 	for (x=0; x<width; x++) {
 	  c = *(src_address++);
 
-	  // All transparent values are converted to entry 0.
-	  // TODO Add support for multiple transparent palette entries in Indexed sprites.
-	  if (!trans_entries.empty() && trans_entries[c]) {
-	    *(dst_address++) = 0;
+	  if (pal_alphas[c] < 128) {
+	    *(dst_address++) = mask_entry;
 	  }
 	  else {
 	    *(dst_address++) = c;
@@ -412,10 +420,8 @@ bool PngFormat::onSave(FileOp* fop)
 #error PNG_MAX_PALETTE_LENGTH should be 256
 #endif
 
-    /* set the palette if there is one.  REQUIRED for indexed-color images */
-    palette = (png_colorp)png_malloc(png_ptr, PNG_MAX_PALETTE_LENGTH
-					      * png_sizeof(png_color));
-    /* ... set palette colors ... */
+    // Save the color palette.
+    palette = (png_colorp)png_malloc(png_ptr, PNG_MAX_PALETTE_LENGTH * png_sizeof(png_color));
     for (c = 0; c < PNG_MAX_PALETTE_LENGTH; c++) {
       fop_sequence_get_color(fop, c, &r, &g, &b);
       palette[c].red   = r;
@@ -425,13 +431,18 @@ bool PngFormat::onSave(FileOp* fop)
 
     png_set_PLTE(png_ptr, info_ptr, palette, PNG_MAX_PALETTE_LENGTH);
 
-    // Index 0 will be the transparent color in the PNG file (only if
-    // the sprite does not have a background layer).
+    // If the sprite does not have a background layer, we include the
+    // alpha information of palette entries to indicate which is the
+    // transparent color.
     if (fop->document->getSprite()->getBackgroundLayer() == NULL) {
-      png_bytep trans = (png_bytep)png_malloc(png_ptr, 1);
-      trans[0] = 0;		// Entry 0 is transparent
+      int mask_entry = fop->document->getSprite()->getTransparentColor();
+      int num_trans = mask_entry+1;
+      png_bytep trans = (png_bytep)png_malloc(png_ptr, num_trans);
 
-      png_set_tRNS(png_ptr, info_ptr, trans, 1, NULL);
+      for (c = 0; c < num_trans; ++c)
+	trans[c] = (c == mask_entry ? 0: 255);
+
+      png_set_tRNS(png_ptr, info_ptr, trans, num_trans, NULL);
       png_free(png_ptr, trans);
     }
   }

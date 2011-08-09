@@ -553,10 +553,8 @@ void fop_operate(FileOp *fop)
 
 	// For each frame in the sprite.
 	for (int frame=0; frame < sprite->getTotalFrames(); ++frame) {
+	  // Draw the "frame" in "fop->seq.image"
 	  sprite->setCurrentFrame(frame);
-
-	  // Draw all the sprite in this frame in the image.
-	  image_clear(fop->seq.image, 0);
 	  sprite->render(fop->seq.image, 0, 0);
 
 	  // Setup the palette.

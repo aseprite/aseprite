@@ -795,7 +795,6 @@ static void monitor_thumbnail_generation(void *_data)
 
 	// Render the 'sprite' in one plain 'image'
 	image = image_new(sprite->getImgType(), sprite->getWidth(), sprite->getHeight());
-	image_clear(image, 0);
 	sprite->render(image, 0, 0);
 
 	// Calculate the thumbnail size

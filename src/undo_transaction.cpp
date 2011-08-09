@@ -215,8 +215,6 @@ void UndoTransaction::autocropSprite(int bgcolor)
 
   for (int frame=0; frame<m_sprite->getTotalFrames(); ++frame) {
     m_sprite->setCurrentFrame(frame);
-
-    image_clear(image, 0);
     m_sprite->render(image, 0, 0);
 
     // TODO configurable (what color pixel to use as "refpixel",
