@@ -10,13 +10,11 @@ For next release
 + Convert jaccel::key_list to std::vector<>
 + Integrate "copy & paste" loop with selection moving loop.
 + Shade drawing mode.
-+ Export/Import sprite sheets.
-+ Rethink the color-bar to show the full palette and a RGB gradient.
++ Add color swatches bar.
 + Sort palette entries.
 + Add "Remap" button to palette editor after a palette entry is modified:
   This button should apply a color curve to the whole sprite to remap
   old indexes to the new positions. 
-+ Support for non-zero index entries as transparent in Indexed sprites.
 + Move launcher.cpp to base/ lib adding an extension point for "gui" lib.
 + Remove src/dialogs/repo,playfli,drawtext.
 + Move src/dialogs/aniedit,filesel to src/widgets (remove dialogs/ directory).
@@ -100,6 +98,3 @@ Low priority stuff
 - talk with Elias Pschernig, his "do_ellipse_diameter" (algo_ellipse)
   has a bug with ellipses of some dimensions (I made a test, and a
   various sizes have errors).
-- optimize the *_to_allegro image methods (I profiled ASE, and these
-  are the more slow routines in all the program);
-- remove the jquickmenu.c
