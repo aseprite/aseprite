@@ -1,9 +1,6 @@
 For next release
 ----------------
 
-+ Add a flag (compiler flag or a flag in gui.xml) to set fullscreen
-  mode as the default one (for special devices where fullscreen is
-  preferred).
 + Add IntEntry class in src/gui/ with spin-buttons.
 + Add feedback to "Shift+S" shortcut to switch "snap to grid".
 + Fix palette editor to avoid generating a lot of consecutive Undo actions.
