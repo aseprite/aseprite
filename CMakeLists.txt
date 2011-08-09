@@ -29,12 +29,12 @@ project(aseprite C CXX)
 # Options (these can be specified in cmake command line or modifying
 # CMakeCache.txt)
 
-option(ENABLE_UPDATER     "Enable automatic check for updates" on)
 option(USE_STATIC_LIBC    "Use static version of C and C++ runtimes" off)
 option(USE_SHARED_JPEGLIB "Use your installed copy of jpeglib" off)
 option(USE_SHARED_ZLIB    "Use your installed copy of zlib" off)
 option(USE_SHARED_LIBPNG  "Use your installed copy of libpng" off)
 option(ENABLE_MEMLEAK     "Enable memory-leaks detector (only for developers)" off)
+option(ENABLE_UPDATER     "Enable automatic check for updates" on)
 
 ######################################################################
 # Profile build type
