@@ -79,8 +79,11 @@ void PreviewCommand::onExecute(Context* context)
   if (!editor || !editor->getSprite())
     return;
 
-  DocumentWriter document(editor->getDocument());
-  Sprite* sprite(document->getSprite());
+  // Do not use DocumentWriter (do not lock the document) because we
+  // will call other sub-commands (e.g. previous frame, next frame,
+  // etc.).
+  Document* document = editor->getDocument();
+  Sprite* sprite = document->getSprite();
   const Palette* pal = sprite->getCurrentPalette();
   View* view = View::getView(editor);
   int u, v, x, y;
@@ -129,10 +132,11 @@ void PreviewCommand::onExecute(Context* context)
     }
 
     // Render sprite and leave the result in 'render' variable
-    if (render == NULL)
+    if (render == NULL) {
       render = RenderEngine::renderSprite(document, sprite,
 					  0, 0, sprite->getWidth(), sprite->getHeight(),
 					  sprite->getCurrentFrame(), 0, false);
+    }
 
     // Redraw the screen
     if (redraw) {
