@@ -90,6 +90,7 @@ private:
   void setNewPalette(Palette* palette, const char* operationName);
   void updateCurrentSpritePalette(const char* operationName);
   void updateColorBar();
+  void onPalChange();
 
   Box m_vbox;
   Box m_topBox;
@@ -114,6 +115,8 @@ private:
 
   int m_redrawTimerId;
   bool m_redrawAll;
+
+  Signal0<void>::SlotType* m_palChangeSlot;
 };
 
 //////////////////////////////////////////////////////////////////////
@@ -128,8 +131,8 @@ public:
   Command* clone() { return new PaletteEditorCommand(*this); }
 
 protected:
-  void onLoadParams(Params* params);
-  void onExecute(Context* context);
+  void onLoadParams(Params* params) OVERRIDE;
+  void onExecute(Context* context) OVERRIDE;
 
 private:
   bool m_open;
@@ -304,6 +307,10 @@ PaletteEntryEditor::PaletteEntryEditor()
   // We hook App::Exit signal to destroy the g_frame singleton at exit.
   App::instance()->Exit.connect(&PaletteEntryEditor::onExit, this);
 
+  // Hook for palette change to redraw the palette editor frame
+  m_palChangeSlot =
+    App::instance()->PaletteChange.connect(&PaletteEntryEditor::onPalChange, this);
+
   initTheme();
 }
 
@@ -311,6 +318,8 @@ PaletteEntryEditor::~PaletteEntryEditor()
 {
   jmanager_remove_timer(m_redrawTimerId);
   m_redrawTimerId = -1;
+
+  App::instance()->PaletteChange.disconnect(m_palChangeSlot);
 }
 
 void PaletteEntryEditor::setColor(const Color& color)
@@ -723,6 +732,15 @@ void PaletteEntryEditor::updateCurrentSpritePalette(const char* operationName)
 void PaletteEntryEditor::updateColorBar()
 {
   app_get_colorbar()->invalidate();
+}
+
+void PaletteEntryEditor::onPalChange()
+{
+  PaletteView* palette_editor = app_get_colorbar()->getPaletteView();
+  setColor(Color::fromIndex(palette_editor->getSelectedEntry()));
+
+  // Redraw the window
+  invalidate();
 }
 
 //////////////////////////////////////////////////////////////////////
