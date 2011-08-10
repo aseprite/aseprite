@@ -83,6 +83,8 @@ public:
 private:
   UndoHistory* m_undoHistory;
   Items m_items;
+
+  // Bytes occupied by all undoers in the stack.
   int m_size;
 };
 

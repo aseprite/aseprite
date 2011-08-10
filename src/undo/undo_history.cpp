@@ -194,16 +194,36 @@ void UndoHistory::discardTail()
 
 void UndoHistory::pushUndoer(Undoer* undoer)
 {
-  // TODO Replace this with the following implementation:
-  // * Add the undo limit to UndoHistory class as a normal member (non-static).
-  // * Add App signals to listen changes in settings
-  // * Document should listen changes in the undo limit, 
-  // * When a change is produced, Document calls getUndoHistory()->setUndoLimit().
-  int undo_size_limit = (int)get_config_int("Options", "UndoSizeLimit", 8)*1024*1024;
-
   // Add the undoer in the undoers stack
   m_undoers->pushUndoer(undoer);
 
+  postUndoerAddedEvent(undoer);
+}
+
+bool UndoHistory::graftUndoerInLastGroup(Undoer* undoer)
+{
+  Undoer* lastUndoer = m_undoers->popUndoer(UndoersStack::PopFromHead);
+  bool result;
+
+  if (lastUndoer == NULL || !lastUndoer->isCloseGroup()) {
+    if (lastUndoer)
+      m_undoers->pushUndoer(lastUndoer);
+    m_undoers->pushUndoer(undoer);
+
+    result = false;
+  }
+  else {
+    m_undoers->pushUndoer(undoer);
+    m_undoers->pushUndoer(lastUndoer);
+    result = true;
+  }
+
+  postUndoerAddedEvent(undoer);
+  return result;
+}
+
+void UndoHistory::postUndoerAddedEvent(Undoer* undoer)
+{
   // Reset the "redo" stack.
   clearRedo();
 
@@ -222,11 +242,27 @@ void UndoHistory::pushUndoer(Undoer* undoer)
     if (m_modification == ModifyDocument)
       m_diffCount++;
 
-    // Is undo history too big?
-    int groups = m_undoers->countUndoGroups();
-    while (groups > 1 && m_undoers->getMemSize() > undo_size_limit) {
-      discardTail();
-      groups--;
-    }
+    checkSizeLimit();
   }
+}
+
+// Discards undoers in in case the UndoHistory is bigger than the given limit.
+void UndoHistory::checkSizeLimit()
+{
+  // Is undo history too big?
+  int groups = m_undoers->countUndoGroups();
+  while (groups > 1 && m_undoers->getMemSize() > getUndoSizeLimit()) {
+    discardTail();
+    groups--;
+  }
+}
+
+int UndoHistory::getUndoSizeLimit()
+{
+  // TODO Replace this with the following implementation:
+  // * Add the undo limit to UndoHistory class as a normal member (non-static).
+  // * Add App signals to listen changes in settings
+  // * Document should listen changes in the undo limit, 
+  // * When a change is produced, Document calls getUndoHistory()->setUndoLimit().
+  return (int)get_config_int("Options", "UndoSizeLimit", 8)*1024*1024;
 }

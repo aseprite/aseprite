@@ -55,12 +55,19 @@ public:
   // UndoersCollector interface
   void pushUndoer(Undoer* undoer);
 
+  // Special method to add new undoers inside the last added group.
+  // Returns true if the undoer was added in a group.
+  bool graftUndoerInLastGroup(Undoer* undoer);
+
 private:
   enum Direction { UndoDirection, RedoDirection };
 
   void runUndo(Direction direction);
   void discardTail();
   void updateUndo();
+  void postUndoerAddedEvent(Undoer* undoer);
+  void checkSizeLimit();
+  static int getUndoSizeLimit();
 
   ObjectsContainer* m_objects;	// Container of objects to insert & retrieve objects by ID
   UndoersStack* m_undoers;
