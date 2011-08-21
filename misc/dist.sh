@@ -60,8 +60,6 @@ $1/docs/*.pdf"
 if [ ! -f $distdir-win32.zip ] ; then
 
     cd "$dir/.."
-    #make -f makefile.vc CONFIGURED=1 RELEASE=1 STATIC_ALLEG_LINK=1 clean
-    #make -f makefile.vc CONFIGURED=1 RELEASE=1 STATIC_ALLEG_LINK=1
     def_common_files .
     mkdir "$dir/$distdir-win32"
 
