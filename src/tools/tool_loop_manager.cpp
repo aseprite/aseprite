@@ -216,14 +216,18 @@ void ToolLoopManager::snapToGrid(bool flexible, Point& point)
 
 void ToolLoopManager::calculateDirtyArea(ToolLoop* loop, const Points& points, Rect& dirty_area)
 {
-  Point minpt, maxpt;
-  calculateMinMax(points, minpt, maxpt);
+  if (points.size() > 0) {
+    Point minpt, maxpt;
+    calculateMinMax(points, minpt, maxpt);
 
-  // Expand the dirty-area with the pen width
-  Rect r1, r2;
-  loop->getPointShape()->getModifiedArea(loop, minpt.x, minpt.y, r1);
-  loop->getPointShape()->getModifiedArea(loop, maxpt.x, maxpt.y, r2);
-  dirty_area = r1.createUnion(r2);
+    // Expand the dirty-area with the pen width
+    Rect r1, r2;
+    loop->getPointShape()->getModifiedArea(loop, minpt.x, minpt.y, r1);
+    loop->getPointShape()->getModifiedArea(loop, maxpt.x, maxpt.y, r2);
+    dirty_area = r1.createUnion(r2);
+  }
+  else
+    dirty_area = Rect();
 }
 
 void ToolLoopManager::calculateMinMax(const Points& points, Point& minpt, Point& maxpt)

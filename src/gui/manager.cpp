@@ -1428,12 +1428,11 @@ static Message* new_mouse_msg(int type, JWidget widget)
 
   msg->mouse.x = jmouse_x(0);
   msg->mouse.y = jmouse_y(0);
-  msg->mouse.flags =
-    type == JM_BUTTONRELEASED ? jmouse_b(1):
-				jmouse_b(0);
-  msg->mouse.left = msg->mouse.flags & 1 ? true: false;
-  msg->mouse.right = msg->mouse.flags & 2 ? true: false;
-  msg->mouse.middle = msg->mouse.flags & 4 ? true: false;
+  msg->mouse.flags = (type == JM_BUTTONRELEASED ? jmouse_b(1):
+						  jmouse_b(0));
+  msg->mouse.left = ((jmouse_b(0) & 1) != (jmouse_b(1) & 1));
+  msg->mouse.right = ((jmouse_b(0) & 2) != (jmouse_b(1) & 2));
+  msg->mouse.middle = ((jmouse_b(0) & 4) != (jmouse_b(1) & 4));
 
   if (widget != NULL)
     jmessage_add_dest(msg, widget);
