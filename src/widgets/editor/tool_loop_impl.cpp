@@ -81,7 +81,7 @@ class ToolLoopImpl : public tools::ToolLoop
   gfx::Point m_offset;
   gfx::Point m_speed;
   bool m_canceled;
-  int m_button;
+  tools::ToolLoop::Button m_button;
   int m_primary_color;
   int m_secondary_color;
 
@@ -92,7 +92,9 @@ public:
 	       Document* document,
 	       Sprite* sprite,
 	       Layer* layer,
-	       int button, const Color& primary_color, const Color& secondary_color)
+	       tools::ToolLoop::Button button,
+	       const Color& primary_color,
+	       const Color& secondary_color)
     : m_editor(editor)
     , m_context(context)
     , m_tool(tool)
@@ -348,7 +350,7 @@ public:
   bool useMask() { return m_useMask; }
   Mask* getMask() { return m_mask; }
   gfx::Point getMaskOrigin() { return m_maskOrigin; }
-  int getMouseButton() { return m_button; }
+  ToolLoop::Button getMouseButton() { return m_button; }
   int getPrimaryColor() { return m_primary_color; }
   void setPrimaryColor(int color) { m_primary_color = color; }
   int getSecondaryColor() { return m_secondary_color; }
@@ -449,7 +451,8 @@ tools::ToolLoop* create_tool_loop(Editor* editor, Context* context, Message* msg
 		     current_tool,
 		     editor->getDocument(),
 		     sprite, layer,
-		     msg->mouse.left ? 0: 1,
+		     msg->mouse.left ? tools::ToolLoop::Left:
+				       tools::ToolLoop::Right,
 		     msg->mouse.left ? fg: bg,
 		     msg->mouse.left ? bg: fg);
 }

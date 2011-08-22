@@ -73,8 +73,8 @@ void ToolLoopManager::releaseLoop(const Pointer& pointer)
 void ToolLoopManager::pressButton(const Pointer& pointer)
 {
   // If the user pressed the other mouse button...
-  if ((m_toolLoop->getMouseButton() == 0 && pointer.getButton() == Pointer::Right) ||
-      (m_toolLoop->getMouseButton() == 1 && pointer.getButton() == Pointer::Left)) {
+  if ((m_toolLoop->getMouseButton() == ToolLoop::Left && pointer.getButton() == Pointer::Right) ||
+      (m_toolLoop->getMouseButton() == ToolLoop::Right && pointer.getButton() == Pointer::Left)) {
     // Cancel the tool-loop (the destination image should be completelly discarded)
     m_toolLoop->cancel();
     return;

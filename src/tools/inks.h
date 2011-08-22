@@ -246,9 +246,9 @@ public:
     if (m_modify_selection) {
       Point offset = loop->getOffset();
 
-      if (loop->getMouseButton() == 0)
+      if (loop->getMouseButton() == ToolLoop::Left)
 	loop->getMask()->add(x1-offset.x, y-offset.y, x2-x1+1, 1);
-      else if (loop->getMouseButton() == 1)
+      else if (loop->getMouseButton() == ToolLoop::Right)
 	mask_subtract(loop->getMask(), x1-offset.x, y-offset.y, x2-x1+1, 1);
     }
     else

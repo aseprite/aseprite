@@ -48,6 +48,8 @@ class Tool;
 class ToolLoop
 {
 public:
+  enum Button { Left = 0, Right = 1 };
+
   virtual ~ToolLoop() { }
 
   // Returns the context where we want to draw on (generally UIContext::instance() singleton)
@@ -83,11 +85,11 @@ public:
   // Gets mask X,Y origin coordinates
   virtual gfx::Point getMaskOrigin() = 0;
 
-  // Return the mouse button which start the tool-loop (0 = left
-  // button, 1 = right button). It can be used by some tools that
-  // instead of using the primary/secondary color uses the pressed
-  // button for different behavior (like selection tools)
-  virtual int getMouseButton() = 0;
+  // Return the mouse button which start the tool-loop. It can be used
+  // by some tools that instead of using the primary/secondary color
+  // uses the pressed button for different behavior (like selection
+  // tools).
+  virtual Button getMouseButton() = 0;
 
   // Primary color to draw (e.g. foreground if the user start drawing
   // with the left button, or background color if he used the right
