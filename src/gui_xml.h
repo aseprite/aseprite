@@ -19,6 +19,7 @@
 #ifndef GUI_XML_INCLUDED
 #define GUI_XML_INCLUDED
 
+#include <string>
 #include "tinyxml.h"
 
 // Singleton class to load and access "gui.xml" file.
@@ -37,6 +38,8 @@ public:
   const char* filename() {
     return m_doc.Value();
   }
+
+  std::string version();
 
 private:
   GuiXml();

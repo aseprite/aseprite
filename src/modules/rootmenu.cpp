@@ -52,6 +52,7 @@ static int load_root_menu();
 static Menu* load_menu_by_id(TiXmlHandle& handle, const char *id);
 static Menu* convert_xmlelem_to_menu(TiXmlElement* elem);
 static Widget* convert_xmlelem_to_menuitem(TiXmlElement* elem);
+static Widget* create_invalid_version_menuitem();
 static void apply_shortcut_to_menuitems_with_command(Menu* menu, Command* command, Params* params, JAccel accel);
 
 int init_module_rootmenu()
@@ -117,6 +118,10 @@ static int load_root_menu()
   if (!root_menu)
     throw base::Exception("Error loading main menu from file:\n%s\nReinstall the application.",
 			  static_cast<const char*>(path));
+
+  // Add a warning element because the user is not using the last well-known gui.xml file.
+  if (GuiXml::instance()->version() != VERSION)
+    root_menu->insertChild(0, create_invalid_version_menuitem());
 
   PRINTF("Main menu loaded.\n");
 
@@ -339,6 +344,20 @@ static Widget* convert_xmlelem_to_menuitem(TiXmlElement* elem)
     menuitem->setSubmenu(subMenu);
   }
 
+  return menuitem;
+}
+
+static Widget* create_invalid_version_menuitem()
+{
+  MenuItem2* menuitem = new MenuItem2("WARNING!", NULL, NULL);
+  Menu* subMenu = new Menu();
+  subMenu->addChild(new MenuItem2(PACKAGE " is using a customized gui.xml (maybe from your HOME directory).", NULL, NULL));
+  subMenu->addChild(new MenuItem2("You should update your customized gui.xml file to the new version to get", NULL, NULL));
+  subMenu->addChild(new MenuItem2("the latest commands available.", NULL, NULL));
+  subMenu->addChild(ji_separator_new(NULL, JI_HORIZONTAL));
+  subMenu->addChild(new MenuItem2("You can bypass this validation adding the correct version", NULL, NULL));
+  subMenu->addChild(new MenuItem2("number in <gui version=\"" VERSION "\"> element.", NULL, NULL));
+  menuitem->setSubmenu(subMenu);
   return menuitem;
 }
 

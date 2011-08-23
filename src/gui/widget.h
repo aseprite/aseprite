@@ -249,6 +249,7 @@ public:
   void addChild(Widget* child);
   void removeChild(Widget* child);
   void replaceChild(Widget* oldChild, Widget* newChild);
+  void insertChild(int index, Widget* child);
 
   // ===============================================================
   // LAYOUT & CONSTRAINT

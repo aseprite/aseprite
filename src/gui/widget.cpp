@@ -661,6 +661,17 @@ void Widget::replaceChild(Widget* oldChild, Widget* newChild)
   jwidget_emit_signal(this, JI_SIGNAL_ADD_CHILD);
 }
 
+void Widget::insertChild(int index, Widget* child)
+{
+  ASSERT_VALID_WIDGET(this);
+  ASSERT_VALID_WIDGET(child);
+
+  jlist_insert(children, child, index);
+  child->parent = this;
+
+  jwidget_emit_signal(this, JI_SIGNAL_ADD_CHILD);
+}
+
 // ===============================================================
 // LAYOUT & CONSTRAINT
 // ===============================================================

@@ -65,3 +65,16 @@ TiXmlDocument& GuiXml::doc()
 {
   return m_doc;
 }
+
+std::string GuiXml::version()
+{
+  TiXmlHandle handle(&m_doc);
+  TiXmlElement* xmlKey = handle.FirstChild("gui").ToElement();
+
+  if (xmlKey && xmlKey->Attribute("version")) {
+    const char* guixml_version = xmlKey->Attribute("version");
+    return guixml_version;
+  }
+  else
+    return "";
+}
