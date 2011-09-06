@@ -2,7 +2,7 @@
 
 dir="`pwd`"
 version=0.9
-distdir=ase-$version
+distdir=aseprite-$version
 zip="zip -9"
 zip_recursive_flag="-r"
 
