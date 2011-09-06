@@ -334,7 +334,11 @@ if(WIN32)
   set(win32_resources resources_win32.rc)
 endif(WIN32)
 
-add_executable(aseprite WIN32 main.cpp ${win32_resources})
+if(UNIX)
+  set(x11_resources xpm_icon.c)
+endif(UNIX)
+
+add_executable(aseprite WIN32 main.cpp ${win32_resources} ${x11_resources})
 
 target_link_libraries(aseprite ${all_libs})
 
