@@ -20,11 +20,13 @@
 
 #include <allegro.h>
 
+#include "app.h"
 #include "base/exception.h"
 #include "base/memory.h"
-#include "app.h"
+#include "base/memory_dump.h"
 #include "console.h"
 #include "loadpng.h"
+#include "resource_finder.h"
 
 #ifdef WIN32
 #include <winalleg.h>
@@ -68,6 +70,18 @@ public:
   }
 };
 
+static bool get_memory_dump_filename(std::string& filename)
+{
+#ifdef WIN32
+  ResourceFinder rf;
+  rf.findInBinDir("aseprite-memory.dmp");
+  filename = rf.first();
+  return true;
+#else
+  return false;
+#endif
+}
+
 // ASE entry point
 int main(int argc, char* argv[])
 {
@@ -75,28 +89,22 @@ int main(int argc, char* argv[])
   CoInitialize(NULL);
 #endif
 
-  int status = 1;		// 1 = error
+  base::MemoryDump memoryDump;
   Allegro allegro;
-
-  try {
 #ifdef MEMLEAK
-    MemLeak memleak;
+  MemLeak memleak;
 #endif
-    Jinete jinete;
-    App app(argc, argv);
+  Jinete jinete;
+  App app(argc, argv);
 
-    status = app.run();
+  // Change the name of the memory dump file
+  {
+    std::string filename;
+    if (get_memory_dump_filename(filename))
+      memoryDump.setFileName(filename);
   }
-  catch (std::exception& e) {
-    allegro_message("%s", e.what());
-  }
-#ifndef DEBUGMODE
-  catch (...) {
-    allegro_message("Uncaught exception");
-  }
-#endif
 
-  return status;
+  return app.run();
 }
 
 END_OF_MAIN();

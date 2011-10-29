@@ -189,11 +189,8 @@ if(WIN32)
     shlwapi
     psapi
     wininet
+    dbghelp
     )
-
-  if(MSVC AND ENABLE_MEMLEAK)
-    list(APPEND PLATFORM_LIBS dbghelp)
-  endif()
 
   add_definitions(-D_WIN32_WINNT=0x0500)
 

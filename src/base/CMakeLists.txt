@@ -7,6 +7,7 @@ add_library(base-lib
   exception.cpp
   mem_utils.cpp
   memory.cpp
+  memory_dump.cpp
   mutex.cpp
   path.cpp
   serialization.cpp
