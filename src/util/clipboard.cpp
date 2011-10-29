@@ -20,6 +20,7 @@
 
 #include "app.h"
 #include "console.h"
+#include "document.h"
 #include "document_wrappers.h"
 #include "gui/gui.h"
 #include "modules/editors.h"
@@ -45,6 +46,7 @@
 #include "util/clipboard.h"
 #include "util/misc.h"
 #include "widgets/color_bar.h"
+#include "widgets/editor/editor.h"
 #include "widgets/statebar.h"
 
 #include <allegro.h>

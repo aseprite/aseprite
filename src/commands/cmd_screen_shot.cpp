@@ -22,6 +22,7 @@
 
 #include "base/unique_ptr.h"
 #include "commands/command.h"
+#include "document.h"
 #include "file/file.h"
 #include "gui/system.h"
 #include "raster/raster.h"

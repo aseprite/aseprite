@@ -24,6 +24,7 @@
 #include "base/unique_ptr.h"
 #include "commands/command.h"
 #include "console.h"
+#include "document.h"
 #include "gui/gui.h"
 #include "ini_file.h"
 #include "modules/editors.h"
@@ -34,7 +35,6 @@
 #include "raster/palette.h"
 #include "raster/sprite.h"
 #include "ui_context.h"
-#include "util/misc.h"
 #include "widgets/color_bar.h"
 
 #include <allegro/config.h>

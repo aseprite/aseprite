@@ -16,13 +16,32 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifndef UTIL_MISC_H_INCLUDED
-#define UTIL_MISC_H_INCLUDED
+#ifndef WIDGETS_EDITOR_MOVING_CEL_STATE_H_INCLUDED
+#define WIDGETS_EDITOR_MOVING_CEL_STATE_H_INCLUDED
 
-class Image;
-class Document;
+#include "base/compiler_specific.h"
+#include "widgets/editor/standby_state.h"
 
-Image* NewImageFromMask(const Document* srcDocument);
+class Cel;
+class Editor;
 
-#endif
+class MovingCelState : public StandbyState
+{
+public:
+  MovingCelState(Editor* editor, Message* msg);
+  virtual ~MovingCelState();
 
+  virtual bool onMouseUp(Editor* editor, Message* msg) OVERRIDE;
+  virtual bool onMouseMove(Editor* editor, Message* msg) OVERRIDE;
+  virtual bool onUpdateStatusBar(Editor* editor) OVERRIDE;
+
+private:
+  Cel* m_cel;
+  int m_celStartX;
+  int m_celStartY;
+  int m_mouseStartX;
+  int m_mouseStartY;
+  bool m_canceled;
+};
+
+#endif	// WIDGETS_EDITOR_MOVING_CEL_STATE_H_INCLUDED

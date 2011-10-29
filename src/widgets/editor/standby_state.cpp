@@ -36,10 +36,10 @@
 #include "tools/ink.h"
 #include "tools/tool.h"
 #include "ui_context.h"
-#include "util/misc.h"
 #include "widgets/color_bar.h"
 #include "widgets/editor/drawing_state.h"
 #include "widgets/editor/editor.h"
+#include "widgets/editor/moving_cel_state.h"
 #include "widgets/editor/moving_pixels_state.h"
 #include "widgets/editor/scrolling_state.h"
 #include "widgets/editor/tool_loop_impl.h"
@@ -75,6 +75,7 @@ bool StandbyState::onMouseDown(Editor* editor, Message* msg)
 
   UIContext* context = UIContext::instance();
   tools::Tool* current_tool = editor->getCurrentEditorTool();
+  tools::Ink* clicked_ink = current_tool->getInk(msg->mouse.right ? 1: 0);
   Sprite* sprite = editor->getSprite();
 
   // Each time an editor is clicked the current editor and the active
@@ -83,15 +84,14 @@ bool StandbyState::onMouseDown(Editor* editor, Message* msg)
   context->setActiveDocument(editor->getDocument());
 
   // Start scroll loop
-  if (msg->mouse.middle ||
-      current_tool->getInk(msg->mouse.right ? 1: 0)->isScrollMovement()) {
+  if (msg->mouse.middle || clicked_ink->isScrollMovement()) {
     editor->setState(EditorStatePtr(new ScrollingState()));
     editor->captureMouse();
     return true;
   }
 
-  // Move frames position
-  if (current_tool->getInk(msg->mouse.right ? 1: 0)->isCelMovement()) {
+  // Move cel X,Y coordinates
+  if (clicked_ink->isCelMovement()) {
     if ((sprite->getCurrentLayer()) &&
 	(sprite->getCurrentLayer()->getType() == GFXOBJ_LAYER_IMAGE)) {
       // TODO you can move the `Background' with tiled mode
@@ -104,12 +104,8 @@ bool StandbyState::onMouseDown(Editor* editor, Message* msg)
 	Alert::show(PACKAGE "<<The layer movement is locked.||&Close");
       }
       else {
-	bool click2 = get_config_bool("Options", "MoveClick2", FALSE);
-
-	// TODO replace "interactive_move_layer" with a new EditorState
-	interactive_move_layer(click2 ? Editor::MODE_CLICKANDCLICK:
-					Editor::MODE_CLICKANDRELEASE,
-			       TRUE, NULL);
+	// Change to MovingCelState
+	editor->setState(EditorStatePtr(new MovingCelState(editor, msg)));
       }
     }
   }
@@ -130,7 +126,7 @@ bool StandbyState::onMouseDown(Editor* editor, Message* msg)
     }
   }
   // Call the eyedropper command
-  else if (current_tool->getInk(msg->mouse.right ? 1: 0)->isEyedropper()) {
+  else if (clicked_ink->isEyedropper()) {
     Command* eyedropper_cmd = 
       CommandsModule::instance()->getCommandByName(CommandId::Eyedropper);
 

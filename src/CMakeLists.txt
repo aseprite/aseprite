@@ -311,6 +311,7 @@ add_library(aseprite-library
   widgets/editor/editor_listeners.cpp
   widgets/editor/editor_view.cpp
   widgets/editor/keys.cpp
+  widgets/editor/moving_cel_state.cpp
   widgets/editor/moving_pixels_state.cpp
   widgets/editor/pixels_movement.cpp
   widgets/editor/scrolling_state.cpp
