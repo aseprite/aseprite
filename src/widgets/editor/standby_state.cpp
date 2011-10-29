@@ -280,8 +280,10 @@ bool StandbyState::onSetCursor(Editor* editor)
   tools::Tool* current_tool = editor->getCurrentEditorTool();
 
   if (current_tool) {
+    tools::Ink* current_ink = current_tool->getInk(0);
+
     // If the current tool change selection (e.g. rectangular marquee, etc.)
-    if (current_tool->getInk(0)->isSelection()) {
+    if (current_ink->isSelection()) {
       // Move pixels
       if (editor->isInsideSelection()) {
 	editor->hideDrawingCursor();
@@ -295,17 +297,17 @@ bool StandbyState::onSetCursor(Editor* editor)
 	return true;
       }
     }
-    else if (current_tool->getInk(0)->isEyedropper()) {
+    else if (current_ink->isEyedropper()) {
       editor->hideDrawingCursor();
       jmouse_set_cursor(JI_CURSOR_EYEDROPPER);
       return true;
     }
-    else if (current_tool->getInk(0)->isScrollMovement()) {
+    else if (current_ink->isScrollMovement()) {
       editor->hideDrawingCursor();
       jmouse_set_cursor(JI_CURSOR_SCROLL);
       return true;
     }
-    else if (current_tool->getInk(0)->isCelMovement()) {
+    else if (current_ink->isCelMovement()) {
       editor->hideDrawingCursor();
       jmouse_set_cursor(JI_CURSOR_MOVE);
       return true;
@@ -339,7 +341,7 @@ bool StandbyState::onKeyUp(Editor* editor, Message* msg)
 bool StandbyState::onUpdateStatusBar(Editor* editor)
 {
   tools::Tool* current_tool = editor->getCurrentEditorTool();
-  Sprite* sprite = editor->getSprite();
+  const Sprite* sprite = editor->getSprite();
   int x, y;
 
   editor->screenToEditor(jmouse_x(0), jmouse_y(0), &x, &y);
