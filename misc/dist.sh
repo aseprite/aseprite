@@ -1,7 +1,7 @@
 #! /bin/sh
 
 dir="`pwd`"
-version=0.9
+version=0.9.1
 distdir=aseprite-$version
 zip="zip -9"
 zip_recursive_flag="-r"
