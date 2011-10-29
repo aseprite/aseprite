@@ -36,13 +36,19 @@
 
 #ifdef ALLEGRO_WINDOWS
 
-static WNDPROC base_wnd_proc = NULL;
+#ifdef STRICT
+  typedef WNDPROC wndproc_t;
+#else
+  typedef FARPROC wndproc_t;
+#endif
+
+static wndproc_t base_wnd_proc = NULL;
 static std::vector<base::string>* dropped_files;
 static Mutex* dropped_files_mutex = NULL;
 
 static void subclass_hwnd();
 static void unsubclass_hwnd();
-static LRESULT ase_wnd_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam);
+static LRESULT CALLBACK ase_wnd_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam);
 
 void install_drop_files()
 {
@@ -98,7 +104,7 @@ static void subclass_hwnd()
 		GetWindowLong(hwnd, GWL_EXSTYLE) | WS_EX_ACCEPTFILES);
 
   // set the GWL_WNDPROC to globalWndProc
-  base_wnd_proc = (WNDPROC)SetWindowLongPtr(hwnd, GWLP_WNDPROC, (LONG_PTR)ase_wnd_proc);
+  base_wnd_proc = (wndproc_t)SetWindowLongPtr(hwnd, GWLP_WNDPROC, (LONG_PTR)ase_wnd_proc);
 }
 
 static void unsubclass_hwnd()
@@ -110,7 +116,7 @@ static void unsubclass_hwnd()
   base_wnd_proc = NULL;
 }
 
-static LRESULT ase_wnd_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
+static LRESULT CALLBACK ase_wnd_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
 {
   switch (msg) {
 
@@ -136,7 +142,7 @@ static LRESULT ase_wnd_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
       break;
 
   }
-  return (*base_wnd_proc)(hwnd, msg, wparam, lparam);
+  return ::CallWindowProc(base_wnd_proc, hwnd, msg, wparam, lparam);
 }
 
 #else
