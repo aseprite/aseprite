@@ -43,6 +43,7 @@
 #include "util/misc.h"
 #include "util/render.h"
 #include "widgets/color_bar.h"
+#include "widgets/editor/editor_customization_delegate.h"
 #include "widgets/editor/editor_decorator.h"
 #include "widgets/editor/standby_state.h"
 #include "widgets/statebar.h"
@@ -118,6 +119,7 @@ Editor::Editor()
   : Widget(editor_type())
   , m_defaultState(EditorStatePtr(new StandbyState()))
   , m_state(m_defaultState)
+  , m_customizationDelegate(NULL)
 {
   m_document = NULL;
   m_sprite = NULL;
@@ -147,6 +149,8 @@ Editor::Editor()
 
 Editor::~Editor()
 {
+  setCustomizationDelegate(NULL);
+
   jmanager_remove_timer(m_mask_timer_id);
   remove_editor(this);
 
@@ -773,6 +777,14 @@ void Editor::removeListener(EditorListener* listener)
   m_listeners.removeListener(listener);
 }
 
+void Editor::setCustomizationDelegate(EditorCustomizationDelegate* delegate)
+{
+  if (m_customizationDelegate)
+    m_customizationDelegate->dispose();
+
+  m_customizationDelegate = delegate;
+}
+
 // Returns the visible area of the active sprite.
 Rect Editor::getVisibleSpriteBounds()
 {
@@ -818,14 +830,18 @@ void Editor::updateStatusBar()
 
 void Editor::editor_update_quicktool()
 {
-  tools::Tool* old_quicktool = m_quicktool;
+  if (m_customizationDelegate) {
+    UIContext* context = UIContext::instance();
+    tools::Tool* current_tool = context->getSettings()->getCurrentTool();
+    tools::Tool* old_quicktool = m_quicktool;
 
-  m_quicktool = get_selected_quicktool();
+    m_quicktool = m_customizationDelegate->getQuickTool(current_tool);
 
-  // If the tool has changed, we must to update the status bar because
-  // the new tool can display something different in the status bar (e.g. Eyedropper)
-  if (old_quicktool != m_quicktool)
-    updateStatusBar();
+    // If the tool has changed, we must to update the status bar because
+    // the new tool can display something different in the status bar (e.g. Eyedropper)
+    if (old_quicktool != m_quicktool)
+      updateStatusBar();
+  }
 }
 
 //////////////////////////////////////////////////////////////////////

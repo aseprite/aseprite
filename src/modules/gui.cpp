@@ -29,13 +29,14 @@
 #endif
 
 #include "app.h"
+#include "base/memory.h"
 #include "base/shared_ptr.h"
 #include "commands/command.h"
 #include "commands/commands.h"
 #include "commands/params.h"
 #include "console.h"
-#include "drop_files.h"
 #include "document_wrappers.h"
+#include "drop_files.h"
 #include "gfxmode.h"
 #include "gui/gui.h"
 #include "gui/intern.h"
@@ -50,6 +51,7 @@
 #include "skin/button_icon_impl.h"
 #include "skin/skin_property.h"
 #include "skin/skin_theme.h"
+#include "tools/ink.h"
 #include "tools/tool_box.h"
 #include "ui_context.h"
 #include "widgets/editor/editor.h"
@@ -61,6 +63,8 @@
 #define SYSTEM_WINDOW_RESIZE    2
 
 #define MONITOR_TIMER_MSECS	100
+
+#define SPRITEDITOR_ACTION_COPYSELECTION "CopySelection"
 
 //////////////////////////////////////////////////////////////////////
 
@@ -86,7 +90,8 @@ static GfxMode lastWorkingGfxMode;
 
 enum ShortcutType { Shortcut_ExecuteCommand,
 		    Shortcut_ChangeTool,
-		    Shortcut_EditorQuicktool };
+		    Shortcut_EditorQuicktool,
+		    Shortcut_SpriteEditor };
 
 struct Shortcut
 {
@@ -95,6 +100,7 @@ struct Shortcut
   union {
     Command* command;
     tools::Tool* tool;
+    char* action;
   };
   Params* params;
 
@@ -110,6 +116,7 @@ struct Shortcut
 static Shortcut* get_keyboard_shortcut_for_command(const char* command_name, Params* params);
 static Shortcut* get_keyboard_shortcut_for_tool(tools::Tool* tool);
 static Shortcut* get_keyboard_shortcut_for_quicktool(tools::Tool* tool);
+static Shortcut* get_keyboard_shortcut_for_spriteeditor(const char* action_name);
 
 //////////////////////////////////////////////////////////////////////
 
@@ -835,7 +842,6 @@ CheckBox* check_button_new(const char *text, int b1, int b2, int b3, int b4)
 JAccel add_keyboard_shortcut_to_execute_command(const char* shortcut_string, const char* command_name, Params* params)
 {
   Shortcut* shortcut = get_keyboard_shortcut_for_command(command_name, params);
-
   if (!shortcut) {
     shortcut = new Shortcut(Shortcut_ExecuteCommand);
     shortcut->command = CommandsModule::instance()->getCommandByName(command_name);
@@ -851,7 +857,6 @@ JAccel add_keyboard_shortcut_to_execute_command(const char* shortcut_string, con
 JAccel add_keyboard_shortcut_to_change_tool(const char* shortcut_string, tools::Tool* tool)
 {
   Shortcut* shortcut = get_keyboard_shortcut_for_tool(tool);
-
   if (!shortcut) {
     shortcut = new Shortcut(Shortcut_ChangeTool);
     shortcut->tool = tool;
@@ -866,10 +871,23 @@ JAccel add_keyboard_shortcut_to_change_tool(const char* shortcut_string, tools::
 JAccel add_keyboard_shortcut_to_quicktool(const char* shortcut_string, tools::Tool* tool)
 {
   Shortcut* shortcut = get_keyboard_shortcut_for_quicktool(tool);
-
   if (!shortcut) {
     shortcut = new Shortcut(Shortcut_EditorQuicktool);
     shortcut->tool = tool;
+
+    shortcuts->push_back(shortcut);
+  }
+
+  shortcut->add_shortcut(shortcut_string);
+  return shortcut->accel;
+}
+
+JAccel add_keyboard_shortcut_to_spriteeditor(const char* shortcut_string, const char* action_name)
+{
+  Shortcut* shortcut = get_keyboard_shortcut_for_spriteeditor(action_name);
+  if (!shortcut) {
+    shortcut = new Shortcut(Shortcut_SpriteEditor);
+    shortcut->action = base_strdup(action_name);
 
     shortcuts->push_back(shortcut);
   }
@@ -912,8 +930,23 @@ JAccel get_accel_to_change_tool(tools::Tool* tool)
     return NULL;
 }
 
-tools::Tool* get_selected_quicktool()
+JAccel get_accel_to_copy_selection()
 {
+  Shortcut* shortcut = get_keyboard_shortcut_for_spriteeditor(SPRITEDITOR_ACTION_COPYSELECTION);
+  if (shortcut)
+    return shortcut->accel;
+  else
+    return NULL;
+}
+
+tools::Tool* get_selected_quicktool(tools::Tool* currentTool)
+{
+  if (currentTool && currentTool->getInk(0)->isSelection()) {
+    JAccel copyselection_accel = get_accel_to_copy_selection();
+    if (copyselection_accel && jaccel_check_from_key(copyselection_accel))
+      return NULL;
+  }
+
   tools::ToolBox* toolbox = App::instance()->getToolBox();
 
   // Iterate over all tools
@@ -941,6 +974,8 @@ Shortcut::Shortcut(ShortcutType type)
 Shortcut::~Shortcut()
 {
   delete params;
+  if (type == Shortcut_SpriteEditor)
+    base_free(action);
   jaccel_free(accel);
 }
 
@@ -1014,6 +1049,21 @@ static Shortcut* get_keyboard_shortcut_for_quicktool(tools::Tool* tool)
 
     if (shortcut->type == Shortcut_EditorQuicktool &&
 	shortcut->tool == tool) {
+      return shortcut;
+    }
+  }
+
+  return NULL;
+}
+
+static Shortcut* get_keyboard_shortcut_for_spriteeditor(const char* action_name)
+{
+  for (std::vector<Shortcut*>::iterator
+	 it = shortcuts->begin(); it != shortcuts->end(); ++it) {
+    Shortcut* shortcut = *it;
+
+    if (shortcut->type == Shortcut_SpriteEditor &&
+	strcmp(shortcut->action, action_name) == 0) {
       return shortcut;
     }
   }

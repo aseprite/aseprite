@@ -184,12 +184,8 @@ static int load_root_menu()
     xmlKey = xmlKey->NextSiblingElement();
   }
 
-  /**************************************************/
-  /* load keyboard shortcuts for tools              */
-  /**************************************************/
-
+  // Load keyboard shortcuts for tools
   PRINTF(" - Loading tools keyboard shortcuts from \"%s\"...\n", path);
-
   // <gui><keyboard><tools><key>
   xmlKey = handle
     .FirstChild("gui")
@@ -207,16 +203,10 @@ static int load_root_menu()
 	add_keyboard_shortcut_to_change_tool(tool_key, tool);
       }
     }
-
     xmlKey = xmlKey->NextSiblingElement();
   }
 
-  /**************************************************/
-  /* load keyboard shortcuts for quicktools         */
-  /**************************************************/
-
-  PRINTF(" - Loading tools keyboard shortcuts from \"%s\"...\n", path);
-
+  // Load keyboard shortcuts for quicktools
   // <gui><keyboard><quicktools><key>
   xmlKey = handle
     .FirstChild("gui")
@@ -234,7 +224,24 @@ static int load_root_menu()
 	add_keyboard_shortcut_to_quicktool(tool_key, tool);
       }
     }
+    xmlKey = xmlKey->NextSiblingElement();
+  }
 
+  // Load special keyboard shortcuts for sprite editor customization
+  // <gui><keyboard><spriteeditor>
+  xmlKey = handle
+    .FirstChild("gui")
+    .FirstChild("keyboard")
+    .FirstChild("spriteeditor")
+    .FirstChild("key").ToElement();
+  while (xmlKey) {
+    const char* tool_action = xmlKey->Attribute("action");
+    const char* tool_key = xmlKey->Attribute("shortcut");
+
+    if (tool_action && tool_key) {
+      PRINTF(" - Shortcut for sprite editor `%s': <%s>\n", tool_action, tool_key);
+      add_keyboard_shortcut_to_spriteeditor(tool_key, tool_action);
+    }
     xmlKey = xmlKey->NextSiblingElement();
   }
 

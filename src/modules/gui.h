@@ -110,11 +110,14 @@ CheckBox* check_button_new(const char* text, int b1, int b2, int b3, int b4);
 JAccel add_keyboard_shortcut_to_execute_command(const char* shortcut, const char* command_name, Params* params);
 JAccel add_keyboard_shortcut_to_change_tool(const char* shortcut, tools::Tool* tool);
 JAccel add_keyboard_shortcut_to_quicktool(const char* shortcut, tools::Tool* tool);
+JAccel add_keyboard_shortcut_to_spriteeditor(const char* shortcut, const char* action_name);
 
 Command* get_command_from_key_message(Message* msg);
 JAccel get_accel_to_execute_command(const char* command, Params* params = NULL);
 JAccel get_accel_to_change_tool(tools::Tool* tool);
-tools::Tool* get_selected_quicktool();
+JAccel get_accel_to_copy_selection();
+
+tools::Tool* get_selected_quicktool(tools::Tool* currentTool);
 
 //////////////////////////////////////////////////////////////////////
 // Monitors

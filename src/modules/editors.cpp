@@ -31,6 +31,7 @@
 #include "ui_context.h"
 #include "util/misc.h"
 #include "widgets/editor/editor.h"
+#include "widgets/editor/editor_customization_delegate.h"
 #include "widgets/editor/editor_view.h"
 #include "widgets/popup_frame_pin.h"
 #include "widgets/statebar.h"
@@ -82,19 +83,22 @@ static void update_mini_editor_frame(Editor* editor);
 static void on_mini_editor_frame_close(CloseEvent& ev);
 
 class WrappedEditor : public Editor,
-		      public EditorListener
+		      public EditorListener,
+		      public EditorCustomizationDelegate
 {
 public:
   WrappedEditor() {
     addListener(this);
+    setCustomizationDelegate(this);
   }
 
   ~WrappedEditor() {
     removeListener(this);
+    setCustomizationDelegate(NULL);
   }
 
   // EditorListener implementation
-  void dispose() {
+  void dispose() OVERRIDE {
     // Do nothing
   }
 
@@ -109,6 +113,19 @@ public:
 
   void stateChanged(Editor* editor) OVERRIDE {
     // Do nothing
+  }
+
+  // EditorCustomizationDelegate implementation
+  tools::Tool* getQuickTool(tools::Tool* currentTool) OVERRIDE {
+    return get_selected_quicktool(currentTool);
+  }
+
+  bool isCopySelectionKeyPressed() OVERRIDE {
+    JAccel accel = get_accel_to_copy_selection();
+    if (accel)
+      return jaccel_check_from_key(accel);
+    else
+      return false;
   }
 
 };

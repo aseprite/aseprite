@@ -39,6 +39,7 @@
 #include "widgets/color_bar.h"
 #include "widgets/editor/drawing_state.h"
 #include "widgets/editor/editor.h"
+#include "widgets/editor/editor_customization_delegate.h"
 #include "widgets/editor/moving_cel_state.h"
 #include "widgets/editor/moving_pixels_state.h"
 #include "widgets/editor/scrolling_state.h"
@@ -286,10 +287,11 @@ bool StandbyState::onSetCursor(Editor* editor)
     if (current_ink->isSelection()) {
       // Move pixels
       if (editor->isInsideSelection()) {
+	EditorCustomizationDelegate* customization = editor->getCustomizationDelegate();
+
 	editor->hideDrawingCursor();
 
-	if (key[KEY_LCONTROL] ||
-	    key[KEY_RCONTROL]) // TODO configurable keys
+	if (customization && customization->isCopySelectionKeyPressed())
 	  jmouse_set_cursor(JI_CURSOR_NORMAL_ADD);
 	else
 	  jmouse_set_cursor(JI_CURSOR_MOVE);

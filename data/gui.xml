@@ -160,6 +160,13 @@
       <key tool="hand" shortcut="Space" />
     </quicktools>
 
+    <!-- Special keyboard shortcuts for the sprite editor -->
+    <spriteeditor>
+      <!-- When you drag-and-drop the selection, pressing this
+           keyboard shortcut you can copy instead of move -->
+      <key action="CopySelection" shortcut="Ctrl" />
+    </spriteeditor>
+
   </keyboard>
   
   <menus>

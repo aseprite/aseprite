@@ -33,6 +33,7 @@
 #define MAX_ZOOM 5
 
 class Context;
+class EditorCustomizationDelegate;
 class PixelsMovement;
 class Sprite;
 class View;
@@ -104,6 +105,12 @@ public:
 
   void addListener(EditorListener* listener);
   void removeListener(EditorListener* listener);
+
+  void setCustomizationDelegate(EditorCustomizationDelegate* delegate);
+
+  EditorCustomizationDelegate* getCustomizationDelegate() {
+    return m_customizationDelegate;
+  }
 
   // Returns the visible area of the active sprite.
   gfx::Rect getVisibleSpriteBounds();
@@ -224,6 +231,8 @@ private:
   Slot1<void, const Color&>* m_fgColorChangeSlot;
 
   EditorListeners m_listeners;
+
+  EditorCustomizationDelegate* m_customizationDelegate;
 
 };
 

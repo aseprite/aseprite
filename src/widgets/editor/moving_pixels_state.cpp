@@ -33,6 +33,7 @@
 #include "tools/tool.h"
 #include "util/misc.h"
 #include "widgets/editor/editor.h"
+#include "widgets/editor/editor_customization_delegate.h"
 #include "widgets/editor/pixels_movement.h"
 #include "widgets/editor/standby_state.h"
 #include "widgets/statebar.h"
@@ -41,6 +42,8 @@
 
 MovingPixelsState::MovingPixelsState(Editor* editor, Message* msg, Image* imge, int x, int y, int opacity)
 {
+  EditorCustomizationDelegate* customization = editor->getCustomizationDelegate();
+
   // Copy the mask to the extra cel image
   Document* document = editor->getDocument();
   Sprite* sprite = editor->getSprite();
@@ -50,8 +53,8 @@ MovingPixelsState::MovingPixelsState(Editor* editor, Message* msg, Image* imge, 
   m_pixelsMovement = new PixelsMovement(document, sprite, tmpImage, x, y, opacity);
   delete tmpImage;
 
-  // If the CTRL key is pressed start dragging a copy of the selection
-  if (key[KEY_LCONTROL] || key[KEY_RCONTROL]) // TODO configurable
+  // If the Ctrl key is pressed start dragging a copy of the selection
+  if (customization && customization->isCopySelectionKeyPressed())
     m_pixelsMovement->copyMask();
   else
     m_pixelsMovement->cutMask();
@@ -205,9 +208,9 @@ bool MovingPixelsState::onSetCursor(Editor* editor)
 bool MovingPixelsState::onKeyDown(Editor* editor, Message* msg)
 {
   ASSERT(m_pixelsMovement != NULL);
+  EditorCustomizationDelegate* customization = editor->getCustomizationDelegate();
 
-  if (msg->key.scancode == KEY_LCONTROL || // TODO configurable
-      msg->key.scancode == KEY_RCONTROL) {
+  if (customization && customization->isCopySelectionKeyPressed()) {
     // If the user press the CTRL key when he is dragging pixels (but
     // not pressing the mouse buttons).
     if (!jmouse_b(0) && m_pixelsMovement) {
