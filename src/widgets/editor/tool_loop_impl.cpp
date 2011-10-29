@@ -23,6 +23,7 @@
 #include "app.h"
 #include "app/color.h"
 #include "app/color_utils.h"
+#include "base/unique_ptr.h"
 #include "context.h"
 #include "gui/gui.h"
 #include "modules/editors.h"
@@ -267,15 +268,12 @@ public:
 	  else {
 	    // Undo the dirty region.
 	    if (undo->isEnabled()) {
-	      Dirty* dirty = new Dirty(m_cel_image, m_dst_image);
-	      // TODO error handling
+	      UniquePtr<Dirty> dirty(new Dirty(m_cel_image, m_dst_image));
 
 	      dirty->saveImagePixels(m_cel_image);
 	      if (dirty != NULL)
 		undo->pushUndoer(new undoers::DirtyArea(undo->getObjects(),
-		    m_cel_image, dirty));
-
-	      delete dirty;
+							m_cel_image, dirty));
 	    }
 
 	    // Copy the 'dst_image' to the cel_image.
