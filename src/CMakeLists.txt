@@ -293,6 +293,7 @@ add_library(aseprite-library
   util/celmove.cpp
   util/clipboard.cpp
   util/col_file.cpp
+  util/expand_cel_canvas.cpp
   util/filetoks.cpp
   util/misc.cpp
   util/msk_file.cpp
