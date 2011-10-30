@@ -27,6 +27,7 @@
 #include "raster/mask.h"
 #include "raster/sprite.h"
 #include "undo_transaction.h"
+#include "util/expand_cel_canvas.h"
 #include "widgets/editor/pixels_movement.h"
 
 using namespace gfx;
@@ -177,7 +178,19 @@ public:
 
     {
       DocumentWriter documentWriter(m_documentReader);
-      m_undoTransaction.pasteImage(image, cel->getX(), cel->getY(), cel->getOpacity());
+      {
+	// Expand the canvas to paste the image in the fully visible
+	// portion of sprite.
+	ExpandCelCanvas expandCelCanvas(documentWriter, m_sprite,
+					m_sprite->getCurrentLayer(), TILED_NONE);
+
+	image_merge(expandCelCanvas.getDestCanvas(), image,
+		    cel->getX()-expandCelCanvas.getCel()->getX(),
+		    cel->getY()-expandCelCanvas.getCel()->getY(),
+		    cel->getOpacity(), BLEND_MODE_NORMAL);
+
+	expandCelCanvas.commit();
+      }
       m_undoTransaction.commit();
 
       documentWriter->destroyExtraCel();
