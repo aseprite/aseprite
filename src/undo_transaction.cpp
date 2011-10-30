@@ -995,10 +995,10 @@ void UndoTransaction::clearMask(int bgcolor)
 
   Mask* mask = m_document->getMask();
 
-  // if the mask is empty then we have to clear the entire image
-  // in the cel
-  if (mask->is_empty()) {
-    // if the layer is the background then we clear the image
+  // If the mask is empty or is not visible then we have to clear the
+  // entire image in the cel.
+  if (!m_document->isMaskVisible()) {
+    // If the layer is the background then we clear the image.
     if (m_sprite->getCurrentLayer()->is_background()) {
       if (isEnabled())
 	m_undoHistory->pushUndoer(new undoers::ImageArea(m_undoHistory->getObjects(),
@@ -1007,8 +1007,8 @@ void UndoTransaction::clearMask(int bgcolor)
       // clear all
       image_clear(image, bgcolor);
     }
-    // if the layer is transparent we can remove the cel (and its
-    // associated image)
+    // If the layer is transparent we can remove the cel (and its
+    // associated image).
     else {
       removeCel(static_cast<LayerImage*>(m_sprite->getCurrentLayer()), cel);
     }
