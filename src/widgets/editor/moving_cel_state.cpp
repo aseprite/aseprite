@@ -69,12 +69,12 @@ MovingCelState::~MovingCelState()
 
 bool MovingCelState::onMouseUp(Editor* editor, Message* msg)
 {
+  Document* document = editor->getDocument();
+
   // Here we put back the cel into its original coordinate (so we can
   // add an undoer before).
   if (m_celStartX != m_celNewX ||
       m_celStartY != m_celNewY) {
-    Document* document = editor->getDocument();
-
     // Put the cel in the original position.
     if (m_cel)
       m_cel->setPosition(m_celStartX, m_celStartY);
@@ -94,11 +94,12 @@ bool MovingCelState::onMouseUp(Editor* editor, Message* msg)
 
        undoTransaction.commit();
      }
+  }
 
-    if (m_maskVisible) {
-      document->setMaskVisible(m_maskVisible);
-      document->generateMaskBoundaries();
-    }
+  // Restore the mask visibility.
+  if (m_maskVisible) {
+    document->setMaskVisible(m_maskVisible);
+    document->generateMaskBoundaries();
   }
 
   editor->setState(editor->getDefaultState());
