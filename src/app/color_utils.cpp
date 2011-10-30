@@ -135,9 +135,17 @@ int color_utils::color_for_image(const Color& color, int imgtype)
 
 int color_utils::color_for_layer(const Color& color, Layer* layer)
 {
-  int imgtype = layer->getSprite()->getImgType();
+  int pixel_color;
 
-  return fixup_color_for_layer(layer, color_for_image(color, imgtype));
+  if (color.getType() == Color::MaskType) {
+    pixel_color = layer->getSprite()->getTransparentColor();
+  }
+  else {
+    int imgtype = layer->getSprite()->getImgType();
+    pixel_color = color_for_image(color, imgtype);
+  }
+
+  return fixup_color_for_layer(layer, pixel_color);
 }
 
 int color_utils::fixup_color_for_layer(Layer *layer, int color)

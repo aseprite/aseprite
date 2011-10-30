@@ -56,8 +56,7 @@ ExpandCelCanvas::ExpandCelCanvas(Document* document, Sprite* sprite, Layer* laye
   if (m_cel == NULL) {
     // Create the image
     m_celImage = image_new(m_sprite->getImgType(), m_sprite->getWidth(), m_sprite->getHeight());
-    image_clear(m_celImage,
-		m_celImage->mask_color);
+    image_clear(m_celImage, sprite->getTransparentColor());
 
     // create the cel
     m_cel = new Cel(m_sprite->getCurrentFrame(), 0);
@@ -89,7 +88,7 @@ ExpandCelCanvas::ExpandCelCanvas(Document* document, Sprite* sprite, Layer* laye
   m_srcImage = image_crop(m_celImage,
 			  x1-m_cel->getX(),
 			  y1-m_cel->getY(), x2-x1, y2-y1,
-			  m_celImage->mask_color);
+			  m_sprite->getTransparentColor());
 
   m_dstImage = image_new_copy(m_srcImage);
 
