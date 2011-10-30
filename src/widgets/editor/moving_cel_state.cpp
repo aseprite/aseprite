@@ -24,9 +24,9 @@
 #include "gui/message.h"
 #include "raster/cel.h"
 #include "raster/layer.h"
+#include "raster/mask.h"
 #include "raster/sprite.h"
-#include "undo/undo_history.h"
-#include "undoers/set_cel_position.h"
+#include "undo_transaction.h"
 #include "widgets/editor/editor.h"
 #include "widgets/statebar.h"
 
@@ -41,12 +41,26 @@ MovingCelState::MovingCelState(Editor* editor, Message* msg)
   LayerImage* layer = static_cast<LayerImage*>(sprite->getCurrentLayer());
 
   m_cel = layer->getCel(sprite->getCurrentFrame());
-  m_celStartX = m_cel->getX();
-  m_celStartY = m_cel->getY();
+  if (m_cel) {
+    m_celStartX = m_cel->getX();
+    m_celStartY = m_cel->getY();
+  }
+  else {
+    m_celStartX = 0;
+    m_celStartY = 0;
+  }
+  m_celNewX = m_celStartX;
+  m_celNewY = m_celStartY;
 
   editor->screenToEditor(msg->mouse.x, msg->mouse.y, &m_mouseStartX, &m_mouseStartY);
-
   editor->captureMouse();
+
+  // Hide the mask (temporarily, until mouse-up event)
+  m_maskVisible = document->isMaskVisible();
+  if (m_maskVisible) {
+    document->setMaskVisible(false);
+    document->generateMaskBoundaries();
+  }
 }
 
 MovingCelState::~MovingCelState()
@@ -57,30 +71,34 @@ bool MovingCelState::onMouseUp(Editor* editor, Message* msg)
 {
   // Here we put back the cel into its original coordinate (so we can
   // add an undoer before).
-  if (m_celStartX != m_cel->getX() ||
-      m_celStartY != m_cel->getY()) {
-    // Hold the new cel's position
-    int newX = m_cel->getX();
-    int newY = m_cel->getY();
+  if (m_celStartX != m_celNewX ||
+      m_celStartY != m_celNewY) {
+    Document* document = editor->getDocument();
 
     // Put the cel in the original position.
-    m_cel->setPosition(m_celStartX, m_celStartY);
+    if (m_cel)
+      m_cel->setPosition(m_celStartX, m_celStartY);
 
     // If the user didn't cancel the operation...
     if (!m_canceled) {
-       Document* document = editor->getDocument();
-       undo::UndoHistory* undoHistory = document->getUndoHistory();
-
-       // Add an undoer so we can go back to the current position (the original one).
-       if (undoHistory->isEnabled()) {
-	 undoHistory->setLabel("Cel Movement");
-	 undoHistory->setModification(undo::ModifyDocument);
-	 undoHistory->pushUndoer(new undoers::SetCelPosition(undoHistory->getObjects(), m_cel));
-       }
+       UndoTransaction undoTransaction(document, "Cel Movement", undo::ModifyDocument);
 
        // And now we move the cel to the new position.
-       m_cel->setPosition(newX, newY);
+       if (m_cel)
+	 undoTransaction.setCelPosition(m_cel, m_celNewX, m_celNewY);
+
+       // Move selection if it was visible
+       if (m_maskVisible)
+	 undoTransaction.setMaskPosition(document->getMask()->x + m_celNewX - m_celStartX,
+					 document->getMask()->y + m_celNewY - m_celStartY);
+
+       undoTransaction.commit();
      }
+
+    if (m_maskVisible) {
+      document->setMaskVisible(m_maskVisible);
+      document->generateMaskBoundaries();
+    }
   }
 
   editor->setState(editor->getDefaultState());
@@ -93,8 +111,11 @@ bool MovingCelState::onMouseMove(Editor* editor, Message* msg)
   int newMouseX, newMouseY;
   editor->screenToEditor(msg->mouse.x, msg->mouse.y, &newMouseX, &newMouseY);
 
-  m_cel->setPosition(m_celStartX - m_mouseStartX + newMouseX,
-		     m_celStartY - m_mouseStartY + newMouseY);
+  m_celNewX = m_celStartX - m_mouseStartX + newMouseX;
+  m_celNewY = m_celStartY - m_mouseStartY + newMouseY;
+
+  if (m_cel)
+    m_cel->setPosition(m_celNewX, m_celNewY);
 
   // Redraw the new cel position.
   editor->invalidate();
@@ -108,10 +129,10 @@ bool MovingCelState::onUpdateStatusBar(Editor* editor)
   app_get_statusbar()->setStatusText
     (0,
      "Pos %3d %3d Offset %3d %3d",
-     (int)m_cel->getX(),
-     (int)m_cel->getY(),
-     (int)(m_cel->getX() - m_celStartX),
-     (int)(m_cel->getY() - m_celStartY));
+     (int)m_celNewX,
+     (int)m_celNewY,
+     (int)(m_celNewX - m_celStartX),
+     (int)(m_celNewY - m_celStartY));
 
   return true;
 }

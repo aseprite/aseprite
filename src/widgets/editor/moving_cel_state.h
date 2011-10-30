@@ -41,7 +41,10 @@ private:
   int m_celStartY;
   int m_mouseStartX;
   int m_mouseStartY;
+  int m_celNewX;
+  int m_celNewY;
   bool m_canceled;
+  bool m_maskVisible;
 };
 
 #endif	// WIDGETS_EDITOR_MOVING_CEL_STATE_H_INCLUDED
