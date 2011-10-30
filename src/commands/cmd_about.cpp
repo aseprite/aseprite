@@ -59,8 +59,7 @@ void AboutCommand::onExecute(Context* context)
   Label* author1_desc = new Label("| Programming");
   Label* author2 = new LinkLabel("http://ilkke.blogspot.com/", "Ilija Melentijevic");
   Label* author2_desc = new Label("| Skin and Graphics");
-  Label* author3 = new Label("Trent Gamblin");
-  Label* author3_desc = new Label("| MAC OS X builds");
+  Label* author3 = new LinkLabel("http://code.google.com/p/aseprite/people/list", "Contributors");
   Box* bottom_box1 = new Box(JI_HORIZONTAL);
   Box* bottom_box2 = new Box(JI_HORIZONTAL);
   Box* bottom_box3 = new Box(JI_HORIZONTAL);
@@ -75,8 +74,7 @@ void AboutCommand::onExecute(Context* context)
   grid->addChildInCell(author1_desc, 1, 1, 0);
   grid->addChildInCell(author2, 1, 1, 0);
   grid->addChildInCell(author2_desc, 1, 1, 0);
-  grid->addChildInCell(author3, 1, 1, 0);
-  grid->addChildInCell(author3_desc, 1, 1, 0);
+  grid->addChildInCell(author3, 2, 1, 0);
   grid->addChildInCell(authors_separator2, 2, 1, 0);
   grid->addChildInCell(copyright, 2, 1, 0);
   grid->addChildInCell(website, 2, 1, 0);
