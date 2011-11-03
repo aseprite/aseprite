@@ -19,6 +19,9 @@
 #ifndef WIDGETS_EDITOR_PIXELS_MOVEMENT_H_INCLUDED
 #define WIDGETS_EDITOR_PIXELS_MOVEMENT_H_INCLUDED
 
+#include "document_wrappers.h"
+#include "undo_transaction.h"
+
 class Document;
 class Image;
 class Sprite;
@@ -34,7 +37,12 @@ public:
   void copyMask();
   void catchImage(int x, int y);
   void catchImageAgain(int x, int y);
+
+  // Moves the image to the new position (relative to the start
+  // position given in the ctor). Returns the rectangle that should be
+  // redrawn.
   gfx::Rect moveImage(int x, int y);
+
   void dropImageTemporarily();
   void dropImage();
   bool isDragging();
@@ -44,7 +52,13 @@ public:
   void setMaskColor(uint32_t mask_color);
 
 private:
-  class PixelsMovementImpl* m_impl;
+  const DocumentReader m_documentReader;
+  Sprite* m_sprite;
+  UndoTransaction m_undoTransaction;
+  int m_initial_x, m_initial_y;
+  int m_catch_x, m_catch_y;
+  bool m_firstDrop;
+  bool m_isDragging;
 };
 
 #endif
