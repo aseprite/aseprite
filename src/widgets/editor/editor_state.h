@@ -19,6 +19,8 @@
 #ifndef WIDGETS_EDITOR_EDITOR_STATE_H_INCLUDED
 #define WIDGETS_EDITOR_EDITOR_STATE_H_INCLUDED
 
+#include "base/disable_copying.h"
+
 class Editor;
 class EditorDecorator;
 union Message;
@@ -31,6 +33,7 @@ union Message;
 class EditorState
 {
 public:
+  EditorState() { }
   virtual ~EditorState() { }
 
   // Called just before this state is deleted and replaced by a new
@@ -80,6 +83,8 @@ public:
   // Called after the sprite is painted.
   virtual EditorDecorator* getDecorator() { return NULL; }
 
+private:
+  DISABLE_COPYING(EditorState);
 };
 
 #endif	// WIDGETS_EDITOR_EDITOR_STATE_H_INCLUDED
