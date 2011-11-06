@@ -904,6 +904,7 @@ bool Editor::onProcessMessage(Message* msg)
 	    jmanager_stop_timer(m_mask_timer_id);
 	  }
 
+	  // Draw the cursor again
 	  if (old_cursor_thick != 0) {
 	    editor_draw_cursor(jmouse_x(0), jmouse_y(0));
 	  }
@@ -945,17 +946,22 @@ bool Editor::onProcessMessage(Message* msg)
       break;
 
     case JM_BUTTONPRESSED:
-      if (m_sprite)
+      if (m_sprite) {
+	EditorStatePtr holdState(m_state);
 	return m_state->onMouseDown(this, msg);
+      }
       break;
 
     case JM_MOTION:
-      if (m_sprite)
+      if (m_sprite) {
+	EditorStatePtr holdState(m_state);
 	return m_state->onMouseMove(this, msg);
+      }
       break;
 
     case JM_BUTTONRELEASED:
       if (m_sprite) {
+	EditorStatePtr holdState(m_state);
 	if (m_state->onMouseUp(this, msg))
 	  return true;
       }
@@ -963,6 +969,7 @@ bool Editor::onProcessMessage(Message* msg)
 
     case JM_KEYPRESSED:
       if (m_sprite) {
+	EditorStatePtr holdState(m_state);
 	bool used = m_state->onKeyDown(this, msg);
 
 	if (hasMouse()) {
@@ -977,6 +984,7 @@ bool Editor::onProcessMessage(Message* msg)
 
     case JM_KEYRELEASED:
       if (m_sprite) {
+	EditorStatePtr holdState(m_state);
 	bool used = m_state->onKeyUp(this, msg);
 
 	if (hasMouse()) {
@@ -997,6 +1005,7 @@ bool Editor::onProcessMessage(Message* msg)
 
     case JM_WHEEL:
       if (m_sprite && hasMouse()) {
+	EditorStatePtr holdState(m_state);
 	if (m_state->onMouseWheel(this, msg))
 	  return true;
       }
