@@ -22,6 +22,7 @@
 
 #include "app.h"
 #include "app/color_utils.h"
+#include "base/unique_ptr.h"
 #include "gfx/rect.h"
 #include "gui/message.h"
 #include "gui/system.h"
@@ -47,11 +48,12 @@ MovingPixelsState::MovingPixelsState(Editor* editor, Message* msg, Image* imge, 
   // Copy the mask to the extra cel image
   Document* document = editor->getDocument();
   Sprite* sprite = editor->getSprite();
-  Image* tmpImage = NewImageFromMask(document);
-  x = document->getMask()->x;
-  y = document->getMask()->y;
-  m_pixelsMovement = new PixelsMovement(document, sprite, tmpImage, x, y, opacity);
-  delete tmpImage;
+  {
+    UniquePtr<Image> tmpImage(NewImageFromMask(document));
+    x = document->getMask()->x;
+    y = document->getMask()->y;
+    m_pixelsMovement = new PixelsMovement(document, sprite, tmpImage, x, y, opacity);
+  }
 
   // If the Ctrl key is pressed start dragging a copy of the selection
   if (customization && customization->isCopySelectionKeyPressed())
