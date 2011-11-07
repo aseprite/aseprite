@@ -20,6 +20,7 @@
  *      By Shawn Hargreaves.
  *      Flipping routines by Andrew Geers.
  *      Optimized by Sven Sandberg.
+ *      To C++ templates by David Capello
  */
 
 #include "config.h"
@@ -39,17 +40,16 @@
 #endif
 #endif
 
-static void ase_parallelogram_map_standard (Image *bmp, Image *sprite,
-					    fixed xs[4], fixed ys[4]);
-static void ase_rotate_scale_flip_coordinates (fixed w, fixed h,
-					       fixed x, fixed y,
-					       fixed cx, fixed cy,
-					       fixed angle,
-					       fixed scale_x, fixed scale_y,
-					       int h_flip, int v_flip,
-					       fixed xs[4], fixed ys[4]);
+static void ase_parallelogram_map_standard(Image *bmp, Image *sprite, fixed xs[4], fixed ys[4]);
+static void ase_rotate_scale_flip_coordinates(fixed w, fixed h,
+					      fixed x, fixed y,
+					      fixed cx, fixed cy,
+					      fixed angle,
+					      fixed scale_x, fixed scale_y,
+					      int h_flip, int v_flip,
+					      fixed xs[4], fixed ys[4]);
 
-void image_scale (Image *dst, Image *src, int x, int y, int w, int h)
+void image_scale(Image *dst, Image *src, int x, int y, int w, int h)
 {
   if (w == src->w && src->h == h)
     image_merge (dst, src, x, y, 255, BLEND_MODE_NORMAL);
@@ -85,8 +85,8 @@ void image_scale (Image *dst, Image *src, int x, int y, int w, int h)
   }
 }
 
-void image_rotate (Image *dst, Image *src, int x, int y, int w, int h,
-		   int cx, int cy, double angle)
+void image_rotate(Image *dst, Image *src, int x, int y, int w, int h,
+		  int cx, int cy, double angle)
 {
   fixed xs[4], ys[4];
 
@@ -123,80 +123,61 @@ void image_parallelogram (Image *bmp, Image *sprite,
   ase_parallelogram_map_standard (bmp, sprite, xs, ys);
 }
 
-/*
- * Scanline drawers.
- */
+// Scanline drawers.
 
-#if 0 /* directy copy */
+template<class Traits, class Delegate>
+static void draw_scanline(Image *bmp, Image *spr,
+			  fixed l_bmp_x, int bmp_y_i,
+			  fixed r_bmp_x,
+			  fixed l_spr_x, fixed l_spr_y,
+			  fixed spr_dx, fixed spr_dy)
+{
+  Traits::address_t addr, end_addr;
+  Traits::address_t* spr_line = (Traits::address_t*)spr->line;
+  Delegate delegate;
 
-#define SCANLINE_DRAWER(bits_pp, GETPIXEL, type)			\
-  static void draw_scanline_##bits_pp(Image *bmp, Image *spr,		\
-				      fixed l_bmp_x, int bmp_y_i,	\
-				      fixed r_bmp_x,			\
-				      fixed l_spr_x, fixed l_spr_y,	\
-				      fixed spr_dx, fixed spr_dy)	\
-  {									\
-    unsigned type *addr, *end_addr;					\
-    unsigned type **spr_line = (unsigned type **)spr->lines;		\
-									\
-    r_bmp_x >>= 16;							\
-    l_bmp_x >>= 16;							\
-    addr = ((unsigned type **)bmp->lines)[bmp_y_i];			\
-    end_addr = addr + r_bmp_x;						\
-    addr += l_bmp_x;							\
-    for (; addr <= end_addr; ++addr) {					\
-      *addr = GETPIXEL;							\
-      l_spr_x += spr_dx;						\
-      l_spr_y += spr_dy;						\
-    }									\
+  r_bmp_x >>= 16;
+  l_bmp_x >>= 16;
+  addr = ((Traits::address_t*)bmp->line)[bmp_y_i];
+  end_addr = addr + r_bmp_x;
+  addr += l_bmp_x;
+
+  for (; addr <= end_addr; ++addr) {
+    delegate.putpixel(addr, spr_line, l_spr_x, l_spr_y);
+    l_spr_x += spr_dx;
+    l_spr_y += spr_dy;
   }
+}
 
-SCANLINE_DRAWER(8, spr_line[l_spr_y>>16][l_spr_x>>16], char)
-SCANLINE_DRAWER(16, spr_line[l_spr_y>>16][l_spr_x>>16], short)
-SCANLINE_DRAWER(32, spr_line[l_spr_y>>16][l_spr_x>>16], long)
+class RgbDelegate {
+  BLEND_COLOR m_blender;
+public:
+  RgbDelegate() : m_blender(_rgba_blenders[BLEND_MODE_NORMAL]) { }
 
-#else /* blend copy */
-
-#define SCANLINE_DRAWER(bits_pp, INIT, GETPIXEL, type)			\
-  static void draw_scanline_##bits_pp(Image *bmp, Image *spr,		\
-				      fixed l_bmp_x, int bmp_y_i,	\
-				      fixed r_bmp_x,			\
-				      fixed l_spr_x, fixed l_spr_y,	\
-				      fixed spr_dx, fixed spr_dy)	\
-  {									\
-    unsigned type *addr, *end_addr;					\
-    unsigned type **spr_line = (unsigned type **)spr->line;		\
-    INIT;								\
-									\
-    r_bmp_x >>= 16;							\
-    l_bmp_x >>= 16;							\
-    addr = ((unsigned type **)bmp->line)[bmp_y_i];			\
-    end_addr = addr + r_bmp_x;						\
-    addr += l_bmp_x;							\
-    for (; addr <= end_addr; ++addr) {					\
-      GETPIXEL;								\
-      l_spr_x += spr_dx;						\
-      l_spr_y += spr_dy;						\
-    }									\
+  void putpixel(RgbTraits::address_t addr, RgbTraits::address_t* spr_line, fixed l_spr_x, fixed l_spr_y) {
+    *addr = m_blender(*addr, spr_line[l_spr_y>>16][l_spr_x>>16], 255);
   }
+};
 
-SCANLINE_DRAWER(8,
-		int c,
-		c = spr_line[l_spr_y>>16][l_spr_x>>16];
-		if (c != 0) *addr = c,
-		char)
+class GrayscaleDelegate {
+  BLEND_COLOR m_blender;
+public:
+  GrayscaleDelegate() : m_blender(_graya_blenders[BLEND_MODE_NORMAL]) { }
 
-SCANLINE_DRAWER(16,
-		BLEND_COLOR blender = _graya_blenders[BLEND_MODE_NORMAL],
- 		*addr = blender (*addr, spr_line[l_spr_y>>16][l_spr_x>>16], 255),
-		short)
+  void putpixel(GrayscaleTraits::address_t addr, GrayscaleTraits::address_t* spr_line, fixed l_spr_x, fixed l_spr_y) {
+    *addr = m_blender(*addr, spr_line[l_spr_y>>16][l_spr_x>>16], 255);
+  }
+};
 
-SCANLINE_DRAWER(32,
-		BLEND_COLOR blender = _rgba_blenders[BLEND_MODE_NORMAL],
- 		*addr = blender (*addr, spr_line[l_spr_y>>16][l_spr_x>>16], 255),
-		long)
+class IndexedDelegate {
+public:
+  IndexedDelegate() { }
 
-#endif
+  void putpixel(IndexedTraits::address_t addr, IndexedTraits::address_t* spr_line, fixed l_spr_x, fixed l_spr_y) {
+    register int c = spr_line[l_spr_y>>16][l_spr_x>>16];
+    if (c != 0) *addr = c;
+  }
+};
 
 /* _parallelogram_map:
  *  Worker routine for drawing rotated and/or scaled and/or flipped sprites:
@@ -222,12 +203,8 @@ SCANLINE_DRAWER(32,
  *  at least partly covered by the sprite. This is useful for doing
  *  anti-aliased blending.
  */
+template<class Traits, class Delegate>
 static void ase_parallelogram_map(Image *bmp, Image *spr, fixed xs[4], fixed ys[4],
-				  void (*draw_scanline)(Image *bmp, Image *spr,
-							fixed l_bmp_x, int bmp_y,
-							fixed r_bmp_x,
-							fixed l_spr_x, fixed l_spr_y,
-							fixed spr_dx, fixed spr_dy),
 				  int sub_pixel_accuracy)
 {
   /* Index in xs[] and ys[] to topmost point. */
@@ -599,10 +576,10 @@ static void ase_parallelogram_map(Image *bmp, Image *spr, fixed xs[4], fixed ys[
 	  }
 	}
       }
-      draw_scanline(bmp, spr,
-		    l_bmp_x_rounded, bmp_y_i, r_bmp_x_rounded,
-		    l_spr_x_rounded, l_spr_y_rounded,
-		    spr_dx, spr_dy);
+      draw_scanline<Traits, Delegate>(bmp, spr,
+				      l_bmp_x_rounded, bmp_y_i, r_bmp_x_rounded,
+				      l_spr_x_rounded, l_spr_y_rounded,
+				      spr_dx, spr_dy);
 
     }
     /* I'm not going to apoligize for this label and its gotos: to get
@@ -630,21 +607,21 @@ static void ase_parallelogram_map(Image *bmp, Image *spr, fixed xs[4], fixed ys[
  *  _parallelogram_map() function since then you can bypass it and define
  *  your own scanline drawer, eg. for anti-aliased rotations.
  */
-static void ase_parallelogram_map_standard (Image *bmp, Image *sprite,
-					    fixed xs[4], fixed ys[4])
+static void ase_parallelogram_map_standard(Image *bmp, Image *sprite,
+					   fixed xs[4], fixed ys[4])
 {
   switch (bmp->imgtype) {
 
     case IMAGE_RGB:
-      ase_parallelogram_map (bmp, sprite, xs, ys, draw_scanline_32, false);
+      ase_parallelogram_map<RgbTraits, RgbDelegate>(bmp, sprite, xs, ys, false);
       break;
 
     case IMAGE_GRAYSCALE:
-      ase_parallelogram_map (bmp, sprite, xs, ys, draw_scanline_16, false);
+      ase_parallelogram_map<GrayscaleTraits, GrayscaleDelegate>(bmp, sprite, xs, ys, false);
       break;
 
     case IMAGE_INDEXED:
-      ase_parallelogram_map (bmp, sprite, xs, ys, draw_scanline_8, false);
+      ase_parallelogram_map<IndexedTraits, IndexedDelegate>(bmp, sprite, xs, ys, false);
       break;
   }
 }
