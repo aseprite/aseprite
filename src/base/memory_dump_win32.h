@@ -41,7 +41,7 @@ private:
     MemoryDumpFile() {
       m_handle = ::CreateFile(memoryDumpFile.c_str(),
 			      GENERIC_WRITE, 0, NULL,
-			      CREATE_NEW, FILE_ATTRIBUTE_NORMAL, NULL);
+			      CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
     }
     ~MemoryDumpFile() {
       ::CloseHandle(m_handle);
