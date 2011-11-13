@@ -129,6 +129,16 @@ TEST(SharedPtr, Compare)
   EXPECT_EQ(5, *c);
 }
 
+TEST(SharedPtr, ResetBugDoesntSetPtrToNull)
+{
+  SharedPtr<int> a(new int(5));
+  {
+    SharedPtr<int> b(a);
+    b.reset();
+  }
+  EXPECT_EQ(5, *a);
+}
+
 int main(int argc, char** argv)
 {
   ::testing::InitGoogleTest(&argc, argv);

@@ -19,15 +19,11 @@ public:
     ++m_count;
   }
 
-  bool release()
+  void release()
   {
     --m_count;
-    if (m_count == 0) {
+    if (m_count == 0)
       delete this;
-      return true;
-    }
-    else
-      return false;
   }
 
   long use_count() const
@@ -142,6 +138,9 @@ public:
   {
     if (m_ptr != ptr) {
       release();
+      m_ptr = 0;
+      m_refCount = 0;
+
       if (ptr) {
 	try {
 	  m_refCount = new SharedPtrRefCounterImpl<T, DefaultSharedPtrDeleter<T> >(ptr, DefaultSharedPtrDeleter<T>());
@@ -161,6 +160,9 @@ public:
   {
     if (m_ptr != ptr) {
       release();
+      m_ptr = 0;
+      m_refCount = 0;
+
       if (ptr) {
 	try {
 	  m_refCount = new SharedPtrRefCounterImpl<T, Deleter>(ptr, deleter);
@@ -218,10 +220,8 @@ private:
   // Removes the reference to the pointee.
   void release()
   {
-    if (m_refCount && m_refCount->release()) {
-      m_ptr = 0;
-      m_refCount = 0;
-    }
+    if (m_refCount)
+      m_refCount->release();
   }
 
   
