@@ -63,6 +63,9 @@ namespace app {
     // Mini-stats
     int m_inits;
     int m_exits;
+
+    // True if this is a developer
+    bool m_isDeveloper;
   };
 
 }

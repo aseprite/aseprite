@@ -88,6 +88,7 @@ CheckUpdateThreadLauncher::CheckUpdateThreadLauncher()
   , m_guiMonitor(NULL)
   , m_inits(get_config_int("Updater", "Inits", 0))
   , m_exits(get_config_int("Updater", "Exits", 0))
+  , m_isDeveloper(get_config_bool("Updater", "IsDeveloper", false))
 {
   // Get how many days we have to wait for the next "check for update"
   int waitDays = get_config_int("Updater", "WaitDays", 0);
@@ -201,6 +202,9 @@ void CheckUpdateThreadLauncher::checkForUpdates()
   std::stringstream extraParams;
   extraParams << "inits=" << m_inits
 	      << "&exits=" << m_exits;
+
+  if (m_isDeveloper)
+    extraParams << "&dev=1";
 
   // Send the HTTP request to check for updates.
   m_bgJob->sendRequest(m_uuid, extraParams.str());
