@@ -50,16 +50,12 @@ ObjectId ObjectsContainerImpl::addObject(void* object)
 void ObjectsContainerImpl::insertObject(ObjectId id, void* object)
 {
   std::map<ObjectId, void*>::iterator it1 = m_idToPtr.find(id);
-  if (it1 != m_idToPtr.end()) {
-    ASSERT(false && "You've inserted two times the same object");
+  if (it1 != m_idToPtr.end())
     throw ExistentObjectException();
-  }
 
   std::map<void*, ObjectId>::iterator it2 = m_ptrToId.find(object);
-  if (it2 != m_ptrToId.end()) {
-    ASSERT(false && "You've inserted two times the same object");
+  if (it2 != m_ptrToId.end())
     throw ExistentObjectException();
-  }
 
   m_idToPtr[id] = object;
   m_ptrToId[object] = id;
@@ -68,17 +64,13 @@ void ObjectsContainerImpl::insertObject(ObjectId id, void* object)
 void ObjectsContainerImpl::removeObject(ObjectId id)
 {
   std::map<ObjectId, void*>::iterator it1 = m_idToPtr.find(id);
-  if (it1 == m_idToPtr.end()) {
-    ASSERT(false && "You want to remove a non-existent object");
+  if (it1 == m_idToPtr.end())
     throw ObjectNotFoundException();
-  }
 
   void* ptr = it1->second;
   std::map<void*, ObjectId>::iterator it2 = m_ptrToId.find(ptr);
-  if (it2 == m_ptrToId.end()) {
-    ASSERT(false && "You want to remove a non-existent object");
+  if (it2 == m_ptrToId.end())
     throw ObjectNotFoundException();
-  }
 
   m_idToPtr.erase(it1);
   m_ptrToId.erase(it2);
@@ -87,10 +79,8 @@ void ObjectsContainerImpl::removeObject(ObjectId id)
 void* ObjectsContainerImpl::getObject(ObjectId id)
 {
   std::map<ObjectId, void*>::iterator it = m_idToPtr.find(id);
-  if (it == m_idToPtr.end()) {
-    ASSERT(false && "You want to get information about a non-existent object");
+  if (it == m_idToPtr.end())
     throw ObjectNotFoundException();
-  }
 
   return it->second;
 }
