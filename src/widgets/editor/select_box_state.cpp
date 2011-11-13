@@ -56,6 +56,16 @@ void SelectBoxState::setBoxBounds(const gfx::Rect& box)
   m_rulers[V2] = Ruler(Ruler::Vertical, box.x+box.w);
 }
 
+void SelectBoxState::onAfterChangeState(Editor* editor)
+{
+  editor->setDecorator(this);
+}
+
+void SelectBoxState::onBeforePopState(Editor* editor)
+{
+  editor->setDecorator(NULL);
+}
+
 bool SelectBoxState::onMouseDown(Editor* editor, Message* msg)
 {
   if (msg->mouse.left || msg->mouse.right) {
@@ -133,11 +143,6 @@ bool SelectBoxState::onSetCursor(Editor* editor)
   }
 
   return false;
-}
-
-EditorDecorator* SelectBoxState::getDecorator()
-{
-  return this;
 }
 
 void SelectBoxState::preRenderDecorator(EditorPreRender* render)

@@ -53,11 +53,12 @@ public:
   void setBoxBounds(const gfx::Rect& rc);
 
   // EditorState overrides
+  virtual void onAfterChangeState(Editor* editor) OVERRIDE;
+  virtual void onBeforePopState(Editor* editor) OVERRIDE;
   virtual bool onMouseDown(Editor* editor, Message* msg) OVERRIDE;
   virtual bool onMouseUp(Editor* editor, Message* msg) OVERRIDE;
   virtual bool onMouseMove(Editor* editor, Message* msg) OVERRIDE;
   virtual bool onSetCursor(Editor* editor) OVERRIDE;
-  virtual EditorDecorator* getDecorator() OVERRIDE;
 
   // Returns false as it overrides default standby state behavior &
   // look. This state uses normal arrow cursors.

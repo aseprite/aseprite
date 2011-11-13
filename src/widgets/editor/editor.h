@@ -21,13 +21,13 @@
 
 #include "app/color.h"
 #include "base/compiler_specific.h"
-#include "base/shared_ptr.h"
 #include "base/signal.h"
 #include "document.h"
 #include "gui/base.h"
 #include "gui/widget.h"
 #include "widgets/editor/editor_listeners.h"
 #include "widgets/editor/editor_state.h"
+#include "widgets/editor/editor_states_history.h"
 
 #define MIN_ZOOM 0
 #define MAX_ZOOM 5
@@ -42,24 +42,25 @@ namespace tools {
   class Tool;
 }
 
-typedef SharedPtr<EditorState> EditorStatePtr;
-
 class Editor : public Widget
 {
 public:
-  // in editor.c
-
   Editor();
   ~Editor();
 
-  EditorStatePtr getDefaultState() { return m_defaultState; }
+  // Returns the current state.
   EditorStatePtr getState() { return m_state; }
-
-  // Changes the state of the editor and uses it as the default one.
-  void setDefaultState(const EditorStatePtr& newState);
 
   // Changes the state of the editor.
   void setState(const EditorStatePtr& newState);
+
+  // Backs to previous state.
+  void backToPreviousState();
+
+  // Gets/sets the current decorator. The decorator is not owned by
+  // the Editor, so it must be deleted by the caller.
+  EditorDecorator* getDecorator() { return m_decorator; }
+  void setDecorator(EditorDecorator* decorator) { m_decorator = decorator; }
 
   Document* getDocument() { return m_document; }
   void setDocument(Document* document);
@@ -145,15 +146,6 @@ public:
   static void editor_cursor_init();
   static void editor_cursor_exit();
 
-private:
-  void editor_update_quicktool();
-  void editor_draw_cursor(int x, int y, bool refresh = true);
-  void editor_move_cursor(int x, int y, bool refresh = true);
-  void editor_clean_cursor(bool refresh = true);
-  bool editor_cursor_is_subpixel();
-
-public:
-
   // click.c
 
   enum {
@@ -180,6 +172,13 @@ protected:
   }
 
 private:
+  void setStateInternal(const EditorStatePtr& newState);
+  void editor_update_quicktool();
+  void editor_draw_cursor(int x, int y, bool refresh = true);
+  void editor_move_cursor(int x, int y, bool refresh = true);
+  void editor_clean_cursor(bool refresh = true);
+  bool editor_cursor_is_subpixel();
+
   void drawGrid(const gfx::Rect& gridBounds, const Color& color);
 
   void editor_request_size(int *w, int *h);
@@ -189,15 +188,15 @@ private:
 			     int sprite_x, int sprite_y, int color,
 			     void (*pixel)(BITMAP *bmp, int x, int y, int color));
 
-  // Default state when the editor is in standby (generally
-  // StandbyState).  Transitory states should back to the default
-  // state (e.g. ScrollingState returns to the default state when the
-  // mouse button is released).
-  EditorStatePtr m_defaultState;
+  // Stack of states. The top element in the stack is the current state (m_state).
+  EditorStatesHistory m_statesHistory;
 
   // Current editor state (it can be shared between several editors to
   // the same document). This member cannot be NULL.
   EditorStatePtr m_state;
+
+  // Current decorator (to draw extra UI elements).
+  EditorDecorator* m_decorator;
   
   Document* m_document;		// Active document in the editor
   Sprite* m_sprite;		// Active sprite in the editor

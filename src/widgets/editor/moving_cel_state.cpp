@@ -102,7 +102,7 @@ bool MovingCelState::onMouseUp(Editor* editor, Message* msg)
     document->generateMaskBoundaries();
   }
 
-  editor->setState(editor->getDefaultState());
+  editor->backToPreviousState();
   editor->releaseMouse();
   return true;
 }

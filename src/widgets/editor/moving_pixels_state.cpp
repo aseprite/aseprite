@@ -80,7 +80,7 @@ MovingPixelsState::~MovingPixelsState()
   delete m_pixelsMovement;
 }
 
-void MovingPixelsState::onBeforeChangeState(Editor* editor)
+bool MovingPixelsState::onBeforeChangeState(Editor* editor)
 {
   ASSERT(m_pixelsMovement != NULL);
 
@@ -96,6 +96,7 @@ void MovingPixelsState::onBeforeChangeState(Editor* editor)
   editor->releaseMouse();
 
   app_get_statusbar()->hideMovePixelsOptions();
+  return false;			// Don't keep this state in history
 }
 
 void MovingPixelsState::onCurrentToolChange(Editor* editor)
@@ -274,6 +275,5 @@ void MovingPixelsState::dropPixels(Editor* editor)
 {
   // Just change to default state (StandbyState generally). We'll
   // receive an onBeforeChangeState event after this call.
-  editor->setState(editor->getDefaultState());
+  editor->backToPreviousState();
 }
-

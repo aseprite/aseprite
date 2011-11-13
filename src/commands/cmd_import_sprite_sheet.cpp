@@ -275,16 +275,18 @@ private:
     if (m_document && !m_editor) {
       m_rect = gfx::Rect(0, 0, 16, 16);
       m_editor = current_editor;
-      m_editor->setDefaultState(EditorStatePtr(new SelectBoxState(this, m_rect,
-								  SelectBoxState::PaintRulers |
-								  SelectBoxState::PaintGrid)));
+
+      EditorStatePtr newState(new SelectBoxState(this, m_rect,
+						 SelectBoxState::PaintRulers |
+						 SelectBoxState::PaintGrid));
+      m_editor->setState(newState);
     }
   }
 
   void releaseEditor()
   {
     if (m_editor) {
-      m_editor->setDefaultState(EditorStatePtr(new StandbyState));
+      m_editor->backToPreviousState();
       m_editor = NULL;
     }
   }

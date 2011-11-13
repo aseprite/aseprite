@@ -80,7 +80,7 @@ bool DrawingState::onMouseDown(Editor* editor, Message* msg)
     m_toolLoopManager = NULL;
 
     // Change to standby state
-    editor->setState(editor->getDefaultState());
+    editor->backToPreviousState();
     editor->releaseMouse();
   }
 
@@ -98,7 +98,7 @@ bool DrawingState::onMouseUp(Editor* editor, Message* msg)
   m_toolLoopManager->releaseLoop(pointer_from_msg(msg));
 
   // Back to standby state.
-  editor->setState(editor->getDefaultState());
+  editor->backToPreviousState();
   editor->releaseMouse();
   return true;
 }

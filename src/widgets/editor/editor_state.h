@@ -20,6 +20,7 @@
 #define WIDGETS_EDITOR_EDITOR_STATE_H_INCLUDED
 
 #include "base/disable_copying.h"
+#include "base/shared_ptr.h"
 
 class Editor;
 class EditorDecorator;
@@ -36,13 +37,19 @@ public:
   EditorState() { }
   virtual ~EditorState() { }
 
-  // Called just before this state is deleted and replaced by a new
-  // state in the Editor::setState() method.
-  virtual void onBeforeChangeState(Editor* editor) { }
+  // Called just before this state is replaced by a new state in the
+  // Editor::setState() method.  Returns true if this state should be
+  // kept in the EditorStatesHistory.
+  virtual bool onBeforeChangeState(Editor* editor) { return true; }
 
   // Called when this instance is set as the new Editor's state when
   // Editor::setState() method is used.
   virtual void onAfterChangeState(Editor* editor) { }
+
+  // Called just before the state will be removed from the
+  // EditorStatesHistory.  This event is useful to remove the
+  // decorator from the editor.
+  virtual void onBeforePopState(Editor* editor) { }
 
   // Called when the current tool in the tool bar changes. It is
   // useful for states which depends on the selected current tool (as
@@ -80,11 +87,10 @@ public:
   // drawing cursor.
   virtual bool requirePenPreview() { return false; }
 
-  // Called after the sprite is painted.
-  virtual EditorDecorator* getDecorator() { return NULL; }
-
 private:
   DISABLE_COPYING(EditorState);
 };
+
+typedef SharedPtr<EditorState> EditorStatePtr;
 
 #endif	// WIDGETS_EDITOR_EDITOR_STATE_H_INCLUDED

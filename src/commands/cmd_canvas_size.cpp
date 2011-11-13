@@ -74,12 +74,12 @@ public:
     m_top   ->EntryChange.connect(Bind<void>(&CanvasSizeFrame::onEntriesChange, this));
     m_bottom->EntryChange.connect(Bind<void>(&CanvasSizeFrame::onEntriesChange, this));
 
-    m_editor->setDefaultState(m_selectBoxState);
+    m_editor->setState(m_selectBoxState);
   }
 
   ~CanvasSizeFrame()
   {
-    m_editor->setDefaultState(EditorStatePtr(new StandbyState));
+    m_editor->backToPreviousState();
   }
 
   bool pressedOk() { return get_killer() == m_ok; }

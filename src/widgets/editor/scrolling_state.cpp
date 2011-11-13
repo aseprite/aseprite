@@ -45,7 +45,7 @@ bool ScrollingState::onMouseDown(Editor* editor, Message* msg)
 
 bool ScrollingState::onMouseUp(Editor* editor, Message* msg)
 {
-  editor->setState(editor->getDefaultState());
+  editor->backToPreviousState();
   editor->releaseMouse();
   return true;
 }

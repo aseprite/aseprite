@@ -117,10 +117,13 @@ private:
 
 Editor::Editor()
   : Widget(editor_type())
-  , m_defaultState(EditorStatePtr(new StandbyState()))
-  , m_state(m_defaultState)
+  , m_state(new StandbyState())
+  , m_decorator(NULL)
   , m_customizationDelegate(NULL)
 {
+  // Add the first state into the history.
+  m_statesHistory.push(m_state);
+
   m_document = NULL;
   m_sprite = NULL;
   m_zoom = 0;
@@ -171,22 +174,31 @@ int editor_type()
   return type;
 }
 
-void Editor::setDefaultState(const EditorStatePtr& newState)
-{
-  m_defaultState = newState;
-  setState(newState);
-}
-
-void Editor::setState(const EditorStatePtr& newState)
+void Editor::setStateInternal(const EditorStatePtr& newState)
 {
   hideDrawingCursor();
 
   // Fire before change state event, set the state, and fire after
   // change state event.
-  m_state->onBeforeChangeState(this);
+  bool keepInHistory = m_state->onBeforeChangeState(this);
+
+  // Push a new state
+  if (newState) {
+    if (!keepInHistory)
+      m_statesHistory.pop();
+
+    m_statesHistory.push(newState);
+    m_state = newState;
+  }
+  // Go to previous state
+  else {
+    m_state->onBeforePopState(this);
+
+    m_statesHistory.pop();
+    m_state = m_statesHistory.top();
+  }
 
   // Change to the new state.
-  m_state = newState;
   m_state->onAfterChangeState(this);
 
   // Redraw all the editors with the same document of this editor
@@ -205,13 +217,24 @@ void Editor::setState(const EditorStatePtr& newState)
   updateStatusBar();
 }
 
+void Editor::setState(const EditorStatePtr& newState)
+{
+  setStateInternal(newState);
+}
+
+void Editor::backToPreviousState()
+{
+  setStateInternal(EditorStatePtr(NULL));
+}
+
 void Editor::setDocument(Document* document)
 {
   //if (this->hasMouse())
   //jmanager_free_mouse();	// TODO Why is this here? Review this code
 
-  // Reset current state.
-  setDefaultState(EditorStatePtr(new StandbyState));
+  // Reset all states (back to standby).
+  m_statesHistory.clear();
+  setState(EditorStatePtr(new StandbyState));
 
   if (m_cursor_thick)
     editor_clean_cursor();
@@ -404,10 +427,10 @@ void Editor::drawSprite(int x1, int y1, int x2, int y2)
 
     if (rendered) {
       // Pre-render decorator.
-      if (EditorDecorator* decorator = m_defaultState->getDecorator()) {
+      if (m_decorator) {
       	EditorPreRenderImpl preRender(this, rendered,
       				      Point(-source_x, -source_y), m_zoom);
-      	decorator->preRenderDecorator(&preRender);
+	m_decorator->preRenderDecorator(&preRender);
       }
 
 #ifdef DRAWSPRITE_DOUBLEBUFFERED
@@ -446,9 +469,9 @@ void Editor::drawSprite(int x1, int y1, int x2, int y2)
 		   settings->getGridColor());
 
   // Post-render decorator.
-  if (EditorDecorator* decorator = m_defaultState->getDecorator()) {
+  if (m_decorator) {
     EditorPostRenderImpl postRender(this);
-    decorator->postRenderDecorator(&postRender);
+    m_decorator->postRenderDecorator(&postRender);
   }
 }
 

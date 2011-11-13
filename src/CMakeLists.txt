@@ -310,6 +310,7 @@ add_library(aseprite-library
   widgets/editor/drawing_state.cpp
   widgets/editor/editor.cpp
   widgets/editor/editor_listeners.cpp
+  widgets/editor/editor_states_history.cpp
   widgets/editor/editor_view.cpp
   widgets/editor/keys.cpp
   widgets/editor/moving_cel_state.cpp
