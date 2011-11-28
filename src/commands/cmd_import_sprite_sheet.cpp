@@ -88,6 +88,11 @@ public:
       m_grid.addChildInCell(hbox1, 4, 1, 0);
     }
 
+    m_x.EntryChange.connect(Bind<void>(&ImportSpriteSheetFrame::onEntriesChange, this));
+    m_y.EntryChange.connect(Bind<void>(&ImportSpriteSheetFrame::onEntriesChange, this));
+    m_width.EntryChange.connect(Bind<void>(&ImportSpriteSheetFrame::onEntriesChange, this));
+    m_height.EntryChange.connect(Bind<void>(&ImportSpriteSheetFrame::onEntriesChange, this));
+
     m_selectFile.Click.connect(&ImportSpriteSheetFrame::onSelectFile, this);
     m_selectFile.DropDownClick.connect(&ImportSpriteSheetFrame::onDropDown, this);
     m_import.Click.connect(Bind<void>(&ImportSpriteSheetFrame::onImport, this));
@@ -230,6 +235,31 @@ protected:
     closeWindow(NULL);
   }
 
+  gfx::Rect getRectFromEntries() const
+  {
+    int w = m_width.getTextInt();
+    int h = m_height.getTextInt();
+
+    return gfx::Rect(m_x.getTextInt(),
+		     m_y.getTextInt(),
+		     std::max<int>(1, w),
+		     std::max<int>(1, h));
+  }
+
+  void onEntriesChange()
+  {
+    m_rect = getRectFromEntries();
+
+    // Redraw new rulers position
+    if (m_editor) {
+      EditorStatePtr state = m_editor->getState();
+      if (SelectBoxState* boxState = dynamic_cast<SelectBoxState*>(state.get())) {
+	boxState->setBoxBounds(m_rect);
+	m_editor->invalidate();
+      }
+    }
+  }
+
   virtual void onBroadcastMouseMessage(WidgetsList& targets) OVERRIDE
   {
     Frame::onBroadcastMouseMessage(targets);
@@ -273,7 +303,7 @@ private:
     releaseEditor();
 
     if (m_document && !m_editor) {
-      m_rect = gfx::Rect(0, 0, 16, 16);
+      m_rect = getRectFromEntries();
       m_editor = current_editor;
 
       EditorStatePtr newState(new SelectBoxState(this, m_rect,
