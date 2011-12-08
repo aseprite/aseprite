@@ -1065,8 +1065,8 @@ void Editor::editor_request_size(int *w, int *h)
     View* view = View::getView(this);
     Rect vp = view->getViewportBounds();
 
-    m_offset_x = vp.w - m_sprite->getWidth()/2;
-    m_offset_y = vp.h - m_sprite->getHeight()/2;
+    m_offset_x = std::max<int>(vp.w/2, vp.w - m_sprite->getWidth()/2);
+    m_offset_y = std::max<int>(vp.h/2, vp.h - m_sprite->getHeight()/2);
 
     *w = (m_sprite->getWidth() << m_zoom) + m_offset_x*2;
     *h = (m_sprite->getHeight() << m_zoom) + m_offset_y*2;
