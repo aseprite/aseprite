@@ -132,13 +132,13 @@ static void draw_scanline(Image *bmp, Image *spr,
 			  fixed l_spr_x, fixed l_spr_y,
 			  fixed spr_dx, fixed spr_dy)
 {
-  Traits::address_t addr, end_addr;
-  Traits::address_t* spr_line = (Traits::address_t*)spr->line;
+  typename Traits::address_t addr, end_addr;
+  typename Traits::address_t* spr_line = (typename Traits::address_t*)spr->line;
   Delegate delegate;
 
   r_bmp_x >>= 16;
   l_bmp_x >>= 16;
-  addr = ((Traits::address_t*)bmp->line)[bmp_y_i];
+  addr = ((typename Traits::address_t*)bmp->line)[bmp_y_i];
   end_addr = addr + r_bmp_x;
   addr += l_bmp_x;
 
