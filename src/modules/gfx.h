@@ -20,9 +20,8 @@
 #define MODULES_GFX_H_INCLUDED
 
 #include "app/color.h"
+#include "gfx/rect.h"
 #include "gui/base.h"
-
-namespace gfx { class Rect; }
 
 struct FONT;
 struct BITMAP;

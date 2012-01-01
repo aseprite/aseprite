@@ -7,8 +7,11 @@
 #ifndef GUI_GRAPHICS_H_INCLUDED
 #define GUI_GRAPHICS_H_INCLUDED
 
-#include <string>
+#include "gfx/point.h"
 #include "gfx/rect.h"
+#include "gfx/size.h"
+
+#include <string>
 
 struct BITMAP;
 struct FONT;

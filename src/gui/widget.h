@@ -9,10 +9,11 @@
 
 #include <string>
 
-#include "gfx/rect.h"
 #include "gfx/border.h"
-#include "gui/component.h"
+#include "gfx/rect.h"
+#include "gfx/size.h"
 #include "gui/base.h"
+#include "gui/component.h"
 #include "gui/rect.h"
 #include "gui/widgets_list.h"
 

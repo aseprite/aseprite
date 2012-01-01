@@ -19,10 +19,8 @@
 #ifndef SKIN_SLIDER_PROPERTY_H_INCLUDED
 #define SKIN_SLIDER_PROPERTY_H_INCLUDED
 
+#include "gfx/rect.h"
 #include "skin/skin_property.h"
-
-// Forward declaration for gfx::Rect
-namespace gfx { class Rect; }
 
 class Slider;
 class Graphics;

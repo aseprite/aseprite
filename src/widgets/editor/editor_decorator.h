@@ -19,9 +19,7 @@
 #ifndef WIDGETS_EDITOR_EDITOR_DECORATOR_H_INCLUDED
 #define WIDGETS_EDITOR_EDITOR_DECORATOR_H_INCLUDED
 
-namespace gfx {
-  class Rect;
-}
+#include "gfx/rect.h"
 
 class Editor;
 class EditorDecorator;

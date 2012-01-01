@@ -9,54 +9,192 @@
 
 namespace gfx {
 
-class Size;
+template<typename T>
+class SizeT;
 
-class Border
+template<typename T>
+class BorderT
 {
 public:
-  Border();
-  Border(int left, int top, int right, int bottom);
-  explicit Border(int allSides);
+  BorderT() :
+    m_left(0),
+    m_top(0),
+    m_right(0),
+    m_bottom(0) {
+  }
 
-  int left() const { return m_left; };
-  int top() const { return m_top; };
-  int right() const { return m_right; };
-  int bottom() const { return m_bottom; };
+  BorderT(const T& left, const T& top, const T& right, const T& bottom) :
+    m_left(left),
+    m_top(top),
+    m_right(right),
+    m_bottom(bottom) {
+  }
 
-  void left(int left) { m_left = left; }
-  void top(int top) { m_top = top; }
-  void right(int right) { m_right = right; }
-  void bottom(int bottom) { m_bottom = bottom; }
+  explicit BorderT(const T& allSides) :
+    m_left(allSides),
+    m_top(allSides),
+    m_right(allSides),
+    m_bottom(allSides) {
+  }
 
-  Size getSize() const;
+  T left() const { return m_left; };
+  T top() const { return m_top; };
+  T right() const { return m_right; };
+  T bottom() const { return m_bottom; };
 
-  const Border& operator+=(const Border& br);
-  const Border& operator-=(const Border& br);
-  const Border& operator*=(const Border& br);
-  const Border& operator/=(const Border& br);
-  const Border& operator+=(int value);
-  const Border& operator-=(int value);
-  const Border& operator*=(int value);
-  const Border& operator/=(int value);
-  Border operator+(const Border& br) const;
-  Border operator-(const Border& br) const;
-  Border operator*(const Border& br) const;
-  Border operator/(const Border& br) const;
-  Border operator+(int value) const;
-  Border operator-(int value) const;
-  Border operator*(int value) const;
-  Border operator/(int value) const;
-  Border operator-() const;
+  void left(const T& left) { m_left = left; }
+  void top(const T& top) { m_top = top; }
+  void right(const T& right) { m_right = right; }
+  void bottom(const T& bottom) { m_bottom = bottom; }
 
-  bool operator==(const Border& br) const;
-  bool operator!=(const Border& br) const;
+  SizeT<T> getSize() const {
+    return Size(m_left + m_right, m_top + m_bottom);
+  }
+
+  const BorderT& operator+=(const BorderT& br) {
+    m_left += br.m_left;
+    m_top += br.m_top;
+    m_right += br.m_right;
+    m_bottom += br.m_bottom;
+    return *this;
+  }
+
+  const BorderT& operator-=(const BorderT& br) {
+    m_left -= br.m_left;
+    m_top -= br.m_top;
+    m_right -= br.m_right;
+    m_bottom -= br.m_bottom;
+    return *this;
+  }
+
+  const BorderT& operator*=(const BorderT& br) {
+    m_left *= br.m_left;
+    m_top *= br.m_top;
+    m_right *= br.m_right;
+    m_bottom *= br.m_bottom;
+    return *this;
+  }
+
+  const BorderT& operator/=(const BorderT& br) {
+    m_left /= br.m_left;
+    m_top /= br.m_top;
+    m_right /= br.m_right;
+    m_bottom /= br.m_bottom;
+    return *this;
+  }
+
+  const BorderT& operator+=(const T& value) {
+    m_left += value;
+    m_top += value;
+    m_right += value;
+    m_bottom += value;
+    return *this;
+  }
+
+  const BorderT& operator-=(const T& value) {
+    m_left -= value;
+    m_top -= value;
+    m_right -= value;
+    m_bottom -= value;
+    return *this;
+  }
+
+  const BorderT& operator*=(const T& value) {
+    m_left *= value;
+    m_top *= value;
+    m_right *= value;
+    m_bottom *= value;
+    return *this;
+  }
+
+  const BorderT& operator/=(const T& value) {
+    m_left /= value;
+    m_top /= value;
+    m_right /= value;
+    m_bottom /= value;
+    return *this;
+  }
+
+  BorderT operator+(const BorderT& br) const {
+    return BorderT(m_left + br.left(),
+		   m_top + br.top(),
+		   m_right + br.right(),
+		   m_bottom + br.bottom());
+  }
+
+  BorderT operator-(const BorderT& br) const {
+    return BorderT(m_left - br.left(),
+		   m_top - br.top(),
+		   m_right - br.right(),
+		   m_bottom - br.bottom());
+  }
+
+  BorderT operator*(const BorderT& br) const {
+    return BorderT(m_left * br.left(),
+		   m_top * br.top(),
+		   m_right * br.right(),
+		   m_bottom * br.bottom());
+  }
+
+  BorderT operator/(const BorderT& br) const {
+    return BorderT(m_left / br.left(),
+		   m_top / br.top(),
+		   m_right / br.right(),
+		   m_bottom / br.bottom());
+  }
+
+  BorderT operator+(const T& value) const {
+    return BorderT(m_left + value,
+		   m_top + value,
+		   m_right + value,
+		   m_bottom + value);
+  }
+
+  BorderT operator-(const T& value) const {
+    return BorderT(m_left - value,
+		   m_top - value,
+		   m_right - value,
+		   m_bottom - value);
+  }
+
+  BorderT operator*(const T& value) const {
+    return BorderT(m_left * value,
+		   m_top * value,
+		   m_right * value,
+		   m_bottom * value);
+  }
+
+  BorderT operator/(const T& value) const {
+    return BorderT(m_left / value,
+		   m_top / value,
+		   m_right / value,
+		   m_bottom / value);
+  }
+
+  BorderT operator-() const {
+    return BorderT(-m_left, -m_top, -m_right, -m_bottom);
+  }
+
+  bool operator==(const BorderT& br) const {
+    return
+      m_left == br.m_left && m_top == br.m_top &&
+      m_right == br.m_right && m_bottom == br.m_bottom;
+  }
+
+  bool operator!=(const BorderT& br) const {
+    return
+      m_left != br.m_left || m_top != br.m_top ||
+      m_right != br.m_right || m_bottom != br.m_bottom;
+  }
 
 private:
-  int m_left;
-  int m_top;
-  int m_right;
-  int m_bottom;
+  T m_left;
+  T m_top;
+  T m_right;
+  T m_bottom;
 };
+
+typedef BorderT<int> Border;
 
 } // namespace gfx
 

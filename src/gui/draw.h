@@ -7,9 +7,8 @@
 #ifndef GUI_DRAW_H_INCLUDED
 #define GUI_DRAW_H_INCLUDED
 
+#include "gfx/rect.h"
 #include "gui/base.h"
-
-namespace gfx { class Rect; }
 
 #define JI_COLOR_SHADE(color, r, g, b)		\
   makecol(MID(0, getr(color)+(r), 255),		\

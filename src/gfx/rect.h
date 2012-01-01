@@ -7,34 +7,44 @@
 #ifndef GFX_RECT_H_INCLUDED
 #define GFX_RECT_H_INCLUDED
 
-#ifdef WIN32
-  struct tagRECT;
-#endif
-
 namespace gfx {
 
-class Point;
-class Size;
-class Border;
+template<typename T> class PointT;
+template<typename T> class SizeT;
+template<typename T> class BorderT;
 
-class Rect			// A rectangle.
+// A rectangle.
+template<typename T>
+class RectT
 {
 public:
-
-  int x, y, w, h;
+  T x, y, w, h;
 
   // Creates a new empty rectangle with the origin in 0,0. 
-  Rect();
+  RectT() : x(0), y(0), w(0), h(0) {
+  }
 
   // Creates a new rectangle with the specified size with the origin in 0,0.
-  Rect(int w, int h);
+  RectT(const T& w, const T& h) :
+    x(0), y(0),
+    w(w), h(h) {
+  }
 
   // Creates a new rectangle with the specified size with the origin in 0,0.
-  explicit Rect(const Size& size);
+  explicit RectT(const SizeT<T>& size) :
+    x(0), y(0),
+    w(size.w), h(size.h) {
+  }
 
-  Rect(const Rect& rect);
+  RectT(const RectT<T>& rect) :
+    x(rect.x), y(rect.y),
+    w(rect.w), h(rect.h) {
+  }
 
-  Rect(const Point& point, const Size& size);
+  RectT(const PointT<T>& point, const SizeT<T>& size) :
+    x(point.x), y(point.y),
+    w(size.w), h(size.h) {
+  }
 
   // Creates a new rectangle with the origin in point1 and size
   // equal to point2-point1.
@@ -49,73 +59,214 @@ public:
   //
   // See that point2 isn't included in the rectangle, it's like the
   // point returned by getPoint2() member function.
-  Rect(const Point& point1, const Point& point2);
+  RectT(const PointT<T>& point1, const PointT<T>& point2) {
+    Point leftTop = point1;
+    Point rightBottom = point2;
+    register T t;
 
-  Rect(int x, int y, int w, int h);
+    if (leftTop.x > rightBottom.x) {
+      t = leftTop.x;
+      leftTop.x = rightBottom.x;
+      rightBottom.x = t;
+    }
+
+    if (leftTop.y > rightBottom.y) {
+      t = leftTop.y;
+      leftTop.y = rightBottom.y;
+      rightBottom.y = t;
+    }
+
+    this->x = leftTop.x;
+    this->y = leftTop.y;
+    this->w = rightBottom.x - leftTop.x;
+    this->h = rightBottom.y - leftTop.y;
+  }
+
+  RectT(const T& x, const T& y, const T& w, const T& h) : x(x), y(y), w(w), h(h) {
+  }
 
   // Verifies if the width and/or height of the rectangle are less or
   // equal than zero.
-  bool isEmpty() const;
+  bool isEmpty() const {
+    return (w <= 0 || h <= 0);
+  }
 
   // Returns the middle point of the rectangle (x+w/2, y+h/2).
-  Point getCenter() const;
+  PointT<T> getCenter() const {
+    return PointT<T>(x+w/2, y+h/2);
+  }
 
   // Returns the point in the upper-left corner (that is inside the
   // rectangle).
-  Point getOrigin() const;
+  PointT<T> getOrigin() const {
+    return PointT<T>(x, y);
+  }
 
   // Returns point in the lower-right corner that is outside the
   // rectangle (x+w, y+h).
-  Point getPoint2() const;
+  PointT<T> getPoint2() const {
+    return PointT<T>(x+w, y+h);
+  }
 
-  Size getSize() const;
+  SizeT<T> getSize() const {
+    return SizeT<T>(w, h);
+  }
 
-  Rect& setOrigin(const Point& pt);
-  Rect& setSize(const Size& sz);
+  RectT& setOrigin(const PointT<T>& pt) {
+    x = pt.x;
+    y = pt.y;
+    return *this;
+  }
+
+  RectT& setSize(const SizeT<T>& sz) {
+    w = sz.w;
+    h = sz.h;
+    return *this;
+  }
 
   // Moves the rectangle origin in the specified delta.
-  Rect& offset(int dx, int dy);
-  Rect& offset(const Point& delta);
-  Rect& inflate(int dw, int dh);
-  Rect& inflate(const Size& delta);
+  RectT& offset(const T& dx, const T& dy) {
+    x += dx;
+    y += dy;
+    return *this;
+  }
 
-  Rect& enlarge(int unit);
-  Rect& enlarge(const Border& br);
-  Rect& shrink(int unit);
-  Rect& shrink(const Border& br);
+  RectT& offset(const PointT<T>& delta) {
+    x += delta.x;
+    y += delta.y;
+    return *this;
+  }
+
+  RectT& inflate(const T& dw, const T& dh) {
+    w += dw;
+    h += dh;
+    return *this;
+  }
+
+  RectT& inflate(const SizeT<T>& delta) {
+    w += delta.w;
+    h += delta.h;
+    return *this;
+  }
+
+  RectT& enlarge(const T& unit) {
+    x -= unit;
+    y -= unit;
+    w += unit<<1;
+    h += unit<<1;
+    return *this;
+  }
+
+  RectT& enlarge(const BorderT<T>& br) {
+    x -= br.left();
+    y -= br.top();
+    w += br.left() + br.right();
+    h += br.top() + br.bottom();
+    return *this;
+  }
+
+  RectT& shrink(const T& unit) {
+    x += unit;
+    y += unit;
+    w -= unit<<1;
+    h -= unit<<1;
+    return *this;
+  }
+
+  RectT& shrink(const BorderT<T>& br) {
+    x += br.left();
+    y += br.top();
+    w -= br.left() + br.right();
+    h -= br.top() + br.bottom();
+    return *this;
+  }
 
   // Returns true if this rectangle encloses the pt point.
-  bool contains(const Point& pt) const;
+  bool contains(const PointT<T>& pt) const {
+    return
+      pt.x >= x && pt.x < x+w &&
+      pt.y >= y && pt.y < y+h;
+  }
 
   // Returns true if this rectangle entirely contains the rc rectangle.
-  bool contains(const Rect& rc) const;
+  bool contains(const RectT& rc) const {
+    if (isEmpty() || rc.isEmpty())
+      return false;
+
+    return
+      rc.x >= x && rc.x+rc.w <= x+w &&
+      rc.y >= y && rc.y+rc.h <= y+h;
+  }
 
   // Returns true if the intersection between this rectangle with rc
   // rectangle is not empty.
-  bool intersects(const Rect& rc) const;
+  bool intersects(const RectT& rc) const {
+    if (isEmpty() || rc.isEmpty())
+      return false;
+
+    return
+      rc.x <= x+w && rc.x+rc.w > x &&
+      rc.y <= y+h && rc.y+rc.h > y;
+  }
 
   // Returns the union rectangle between this and rc rectangle.
-  Rect createUnion(const Rect& rc) const;
+  RectT createUnion(const RectT& rc) const {
+    if (isEmpty())
+      return rc;
+    else if (rc.isEmpty())
+      return *this;
+    else
+      return Rect(Point(x < rc.x ? x: rc.x,
+			y < rc.y ? y: rc.y),
+		  Point(x+w > rc.x+rc.w ? x+w: rc.x+rc.w,
+			y+h > rc.y+rc.h ? y+h: rc.y+rc.h));
+  }
 
   // Returns the intersection rectangle between this and rc rectangles.
-  Rect createIntersect(const Rect& rc) const;
+  RectT createIntersect(const RectT& rc) const {
+    if (intersects(rc))
+      return Rect(Point(x > rc.x ? x: rc.x,
+			y > rc.y ? y: rc.y),
+		  Point(x+w < rc.x+rc.w ? x+w: rc.x+rc.w,
+			y+h < rc.y+rc.h ? y+h: rc.y+rc.h));
+    else
+      return Rect();
+  }
 
-  const Rect& operator+=(const Border& br);
-  const Rect& operator-=(const Border& br);
-  Rect operator+(const Border& br) const;
-  Rect operator-(const Border& br) const;
+  const RectT& operator+=(const BorderT<T>& br) {
+    enlarge(br);
+    return *this;
+  }
 
-  bool operator==(const Rect& rc) const;
-  bool operator!=(const Rect& rc) const;
+  const RectT& operator-=(const BorderT<T>& br) {
+    shrink(br);
+    return *this;
+  }
 
-#ifdef WIN32
-  explicit Rect(const tagRECT* rc);
-  operator tagRECT() const;
-#endif
+  RectT operator+(const BorderT<T>& br) const {
+    return Rect(*this).enlarge(br);
+  }
+
+  RectT operator-(const BorderT<T>& br) const {
+    return Rect(*this).shrink(br);
+  }
+
+  bool operator==(const RectT& rc) const {
+    return
+      x == rc.x && w == rc.w &&
+      y == rc.y && h == rc.h;
+  }
+
+  bool operator!=(const RectT& rc) const {
+    return
+      x != rc.x || w != rc.w ||
+      y != rc.y || h != rc.h;
+  }
 
 };
+
+typedef RectT<int> Rect;
 
 } // namespace gfx
 
 #endif
-

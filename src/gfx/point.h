@@ -7,51 +7,116 @@
 #ifndef GFX_POINT_H_INCLUDED
 #define GFX_POINT_H_INCLUDED
 
-#ifdef WIN32
-  struct tagPOINT;
-  struct tagPOINTS;
-#endif
-
 namespace gfx {
 
-class Size;
+template<typename T>
+class SizeT;
 
-class Point			// A 2D coordinate in the screen.
+// A 2D coordinate in the screen.
+template<typename T>
+class PointT
 {
 public:
+  T x, y;
 
-  int x, y;
+  PointT() : x(0), y(0) {
+  }
 
-  Point();
-  Point(int x, int y);
-  Point(const Point& point);
-  explicit Point(const Size& size);
+  PointT(const T& x, const T& y) : x(x), y(y) {
+  }
 
-  const Point& operator=(const Point& pt);
-  const Point& operator+=(const Point& pt);
-  const Point& operator-=(const Point& pt);
-  const Point& operator+=(int value);
-  const Point& operator-=(int value);
-  const Point& operator*=(int value);
-  const Point& operator/=(int value);
-  Point operator+(const Point& pt) const;
-  Point operator-(const Point& pt) const;
-  Point operator+(int value) const;
-  Point operator-(int value) const;
-  Point operator*(int value) const;
-  Point operator/(int value) const;
-  Point operator-() const;
+  PointT(const PointT& point) : x(point.x), y(point.y) {
+  }
 
-  bool operator==(const Point& pt) const;
-  bool operator!=(const Point& pt) const;
+  template<typename T2>
+  explicit PointT(const PointT<T2>& point) : x(static_cast<T>(point.x)),
+					     y(static_cast<T>(point.y)) {
+  }
 
-#ifdef WIN32
-  explicit Point(const tagPOINT* pt);
-  explicit Point(const tagPOINTS* pt);
-  operator tagPOINT() const;
-#endif
+  explicit PointT(const SizeT<T>& size) : x(size.w), y(size.h) {
+  }
+
+  const PointT& operator=(const PointT& pt) {
+    x = pt.x;
+    y = pt.y;
+    return *this;
+  }
+
+  const PointT& operator+=(const PointT& pt) {
+    x += pt.x;
+    y += pt.y;
+    return *this;
+  }
+
+  const PointT& operator-=(const PointT& pt) {
+    x -= pt.x;
+    y -= pt.y;
+    return *this;
+  }
+
+  const PointT& operator+=(const T& value) {
+    x += value;
+    y += value;
+    return *this;
+  }
+
+  const PointT& operator-=(const T& value) {
+    x -= value;
+    y -= value;
+    return *this;
+  }
+
+  const PointT& operator*=(const T& value) {
+    x *= value;
+    y *= value;
+    return *this;
+  }
+
+  const PointT& operator/=(const T& value) {
+    x /= value;
+    y /= value;
+    return *this;
+  }
+
+  PointT operator+(const PointT& pt) const {
+    return PointT(x+pt.x, y+pt.y);
+  }
+
+  PointT operator-(const PointT& pt) const {
+    return PointT(x-pt.x, y-pt.y);
+  }
+
+  PointT operator+(const T& value) const {
+    return PointT(x+value, y+value);
+  }
+
+  PointT operator-(const T& value) const {
+    return PointT(x-value, y-value);
+  }
+
+  PointT operator*(const T& value) const {
+    return PointT(x*value, y*value);
+  }
+
+  PointT operator/(const T& value) const {
+    return PointT(x/value, y/value);
+  }
+
+  PointT operator-() const {
+    return PointT(-x, -y);
+  }
+
+  bool operator==(const PointT& pt) const {
+    return x == pt.x && y == pt.y;
+  }
+
+  bool operator!=(const PointT& pt) const {
+    return x != pt.x || y != pt.y;
+  }
 
 };
+
+typedef PointT<int> Point;
 
 } // namespace gfx
 
