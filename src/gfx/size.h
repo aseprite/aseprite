@@ -31,11 +31,11 @@ public:
   }
 
   template<typename T2>
-  explicit SizeT(const SizeT<T2>& size) : x(static_cast<T>(size.x)),
-					  y(static_cast<T>(size.y)) {
+  explicit SizeT(const SizeT<T2>& size) : w(static_cast<T>(size.w)),
+					  h(static_cast<T>(size.h)) {
   }
 
-  explicit SizeT(const PointT<T>& point) : w(pt.x), h(pt.y)  {
+  explicit SizeT(const PointT<T>& point) : w(point.x), h(point.y)  {
   }
 
   SizeT createUnion(const SizeT& sz) const {

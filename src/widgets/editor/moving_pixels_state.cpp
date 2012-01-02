@@ -176,7 +176,7 @@ bool MovingPixelsState::onMouseUp(Editor* editor, Message* msg)
   m_pixelsMovement->dropImageTemporarily();
 
   // Redraw the new pivot location.
-  invalidate();
+  editor->invalidate();
 
   editor->releaseMouse();
   return true;

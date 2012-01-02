@@ -153,7 +153,7 @@ protected:
   typename Traits::address_t m_addr;
 public:
   void startScan(Image* bmp, int x, int y) {
-    m_addr = ((Traits::address_t*)bmp->line)[y]+x;
+    m_addr = ((typename Traits::address_t*)bmp->line)[y]+x;
   }
 };
 

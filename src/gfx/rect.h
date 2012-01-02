@@ -60,8 +60,8 @@ public:
   // See that point2 isn't included in the rectangle, it's like the
   // point returned by getPoint2() member function.
   RectT(const PointT<T>& point1, const PointT<T>& point2) {
-    Point leftTop = point1;
-    Point rightBottom = point2;
+    PointT<T> leftTop = point1;
+    PointT<T> rightBottom = point2;
     register T t;
 
     if (leftTop.x > rightBottom.x) {
@@ -216,21 +216,21 @@ public:
     else if (rc.isEmpty())
       return *this;
     else
-      return Rect(Point(x < rc.x ? x: rc.x,
-			y < rc.y ? y: rc.y),
-		  Point(x+w > rc.x+rc.w ? x+w: rc.x+rc.w,
-			y+h > rc.y+rc.h ? y+h: rc.y+rc.h));
+      return RectT(PointT<T>(x < rc.x ? x: rc.x,
+			     y < rc.y ? y: rc.y),
+		   PointT<T>(x+w > rc.x+rc.w ? x+w: rc.x+rc.w,
+			     y+h > rc.y+rc.h ? y+h: rc.y+rc.h));
   }
 
   // Returns the intersection rectangle between this and rc rectangles.
   RectT createIntersect(const RectT& rc) const {
     if (intersects(rc))
-      return Rect(Point(x > rc.x ? x: rc.x,
-			y > rc.y ? y: rc.y),
-		  Point(x+w < rc.x+rc.w ? x+w: rc.x+rc.w,
-			y+h < rc.y+rc.h ? y+h: rc.y+rc.h));
+      return RectT(PointT<T>(x > rc.x ? x: rc.x,
+			     y > rc.y ? y: rc.y),
+		   PointT<T>(x+w < rc.x+rc.w ? x+w: rc.x+rc.w,
+			     y+h < rc.y+rc.h ? y+h: rc.y+rc.h));
     else
-      return Rect();
+      return RectT();
   }
 
   const RectT& operator+=(const BorderT<T>& br) {
@@ -244,11 +244,11 @@ public:
   }
 
   RectT operator+(const BorderT<T>& br) const {
-    return Rect(*this).enlarge(br);
+    return RectT(*this).enlarge(br);
   }
 
   RectT operator-(const BorderT<T>& br) const {
-    return Rect(*this).shrink(br);
+    return RectT(*this).shrink(br);
   }
 
   bool operator==(const RectT& rc) const {

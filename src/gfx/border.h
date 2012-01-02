@@ -48,7 +48,7 @@ public:
   void bottom(const T& bottom) { m_bottom = bottom; }
 
   SizeT<T> getSize() const {
-    return Size(m_left + m_right, m_top + m_bottom);
+    return SizeT<T>(m_left + m_right, m_top + m_bottom);
   }
 
   const BorderT& operator+=(const BorderT& br) {
