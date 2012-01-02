@@ -132,50 +132,78 @@ static void draw_scanline(Image *bmp, Image *spr,
 			  fixed l_spr_x, fixed l_spr_y,
 			  fixed spr_dx, fixed spr_dy)
 {
-  Traits::address_t addr, end_addr;
-  Traits::address_t* spr_line = (Traits::address_t*)spr->line;
   Delegate delegate;
 
   r_bmp_x >>= 16;
   l_bmp_x >>= 16;
-  addr = ((Traits::address_t*)bmp->line)[bmp_y_i];
-  end_addr = addr + r_bmp_x;
-  addr += l_bmp_x;
 
-  for (; addr <= end_addr; ++addr) {
-    delegate.putpixel(addr, spr_line, l_spr_x, l_spr_y);
+  delegate.startScan(bmp, l_bmp_x, bmp_y_i);
+
+  for (int x=(int)l_bmp_x; x<=(int)r_bmp_x; ++x) {
+    delegate.feedLine(spr, l_spr_x, l_spr_y);
+
     l_spr_x += spr_dx;
     l_spr_y += spr_dy;
   }
 }
 
-class RgbDelegate {
+template<class Traits>
+class GenericDelegate {
+protected:
+  typename Traits::address_t m_addr;
+public:
+  void startScan(Image* bmp, int x, int y) {
+    m_addr = ((Traits::address_t*)bmp->line)[y]+x;
+  }
+};
+
+class RgbDelegate : public GenericDelegate<RgbTraits> {
   BLEND_COLOR m_blender;
 public:
   RgbDelegate() : m_blender(_rgba_blenders[BLEND_MODE_NORMAL]) { }
 
-  void putpixel(RgbTraits::address_t addr, RgbTraits::address_t* spr_line, fixed l_spr_x, fixed l_spr_y) {
-    *addr = m_blender(*addr, spr_line[l_spr_y>>16][l_spr_x>>16], 255);
+  void feedLine(Image* spr, fixed l_spr_x, fixed l_spr_y) {
+    *m_addr = m_blender(*m_addr, image_getpixel_fast<RgbTraits>(spr, l_spr_x>>16, l_spr_y>>16), 255);
+    ++m_addr;
   }
 };
 
-class GrayscaleDelegate {
+class GrayscaleDelegate : public GenericDelegate<GrayscaleTraits> {
   BLEND_COLOR m_blender;
 public:
   GrayscaleDelegate() : m_blender(_graya_blenders[BLEND_MODE_NORMAL]) { }
 
-  void putpixel(GrayscaleTraits::address_t addr, GrayscaleTraits::address_t* spr_line, fixed l_spr_x, fixed l_spr_y) {
-    *addr = m_blender(*addr, spr_line[l_spr_y>>16][l_spr_x>>16], 255);
+  void feedLine(Image* spr, fixed l_spr_x, fixed l_spr_y) {
+    *m_addr = m_blender(*m_addr, image_getpixel_fast<GrayscaleTraits>(spr, l_spr_x>>16, l_spr_y>>16), 255);
+    ++m_addr;
   }
 };
 
-class IndexedDelegate {
+class IndexedDelegate : public GenericDelegate<IndexedTraits> {
 public:
-  IndexedDelegate() { }
+  void feedLine(Image* spr, fixed l_spr_x, fixed l_spr_y) {
+    register int c = image_getpixel_fast<IndexedTraits>(spr, l_spr_x>>16, l_spr_y>>16);
+    if (c != 0)			// TODO
+      *m_addr = c;
+    ++m_addr;
+  }
+};
 
-  void putpixel(IndexedTraits::address_t addr, IndexedTraits::address_t* spr_line, fixed l_spr_x, fixed l_spr_y) {
-    register int c = spr_line[l_spr_y>>16][l_spr_x>>16];
-    if (c != 0) *addr = c;
+class BitmapDelegate : public GenericDelegate<BitmapTraits> {
+  div_t m_d;
+public:
+  void startScan(Image* bmp, int x, int y) {
+    m_d = div(x, 8);
+    m_addr = ((BitmapTraits::address_t*)bmp->line)[y] + m_d.quot;
+  }
+
+  void feedLine(Image* spr, fixed l_spr_x, fixed l_spr_y) {
+    if (image_getpixel_fast<BitmapTraits>(spr, l_spr_x>>16, l_spr_y>>16))
+      *m_addr |= (1<<m_d.rem);
+    else
+      *m_addr &= ~(1<<m_d.rem);
+
+    _image_bitmap_next_bit(m_d, m_addr);
   }
 };
 
@@ -622,6 +650,10 @@ static void ase_parallelogram_map_standard(Image *bmp, Image *sprite,
 
     case IMAGE_INDEXED:
       ase_parallelogram_map<IndexedTraits, IndexedDelegate>(bmp, sprite, xs, ys, false);
+      break;
+
+    case IMAGE_BITMAP:
+      ase_parallelogram_map<BitmapTraits, BitmapDelegate>(bmp, sprite, xs, ys, false);
       break;
   }
 }

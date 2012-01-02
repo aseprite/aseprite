@@ -73,6 +73,14 @@ static struct
   { "size_bl",		0, 0 },	// JI_CURSOR_SIZE_BL
   { "size_b",		0, 0 },	// JI_CURSOR_SIZE_B
   { "size_br",		0, 0 },	// JI_CURSOR_SIZE_BR
+  { "rotate_tl",	0, 0 },	// JI_CURSOR_ROTATE_TL
+  { "rotate_t",		0, 0 },	// JI_CURSOR_ROTATE_T
+  { "rotate_tr",	0, 0 },	// JI_CURSOR_ROTATE_TR
+  { "rotate_l",		0, 0 },	// JI_CURSOR_ROTATE_L
+  { "rotate_r",		0, 0 },	// JI_CURSOR_ROTATE_R
+  { "rotate_bl",	0, 0 },	// JI_CURSOR_ROTATE_BL
+  { "rotate_b",		0, 0 },	// JI_CURSOR_ROTATE_B
+  { "rotate_br",	0, 0 },	// JI_CURSOR_ROTATE_BR
   { "eyedropper",	0, 0 },	// JI_CURSOR_EYEDROPPER
 };
 
@@ -209,6 +217,8 @@ SkinTheme::SkinTheme()
   sheet_mapping["drop_down_button_right_hot"] = PART_DROP_DOWN_BUTTON_RIGHT_HOT_NW;
   sheet_mapping["drop_down_button_right_focused"] = PART_DROP_DOWN_BUTTON_RIGHT_FOCUSED_NW;
   sheet_mapping["drop_down_button_right_selected"] = PART_DROP_DOWN_BUTTON_RIGHT_SELECTED_NW;
+  sheet_mapping["transformation_handle"] = PART_TRANSFORMATION_HANDLE;
+  sheet_mapping["pivot_handle"] = PART_PIVOT_HANDLE;
 
   reload_skin();
 }

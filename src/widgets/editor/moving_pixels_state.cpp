@@ -37,11 +37,12 @@
 #include "widgets/editor/editor_customization_delegate.h"
 #include "widgets/editor/pixels_movement.h"
 #include "widgets/editor/standby_state.h"
+#include "widgets/editor/transform_handles.h"
 #include "widgets/statebar.h"
 
 #include <allegro.h>
 
-MovingPixelsState::MovingPixelsState(Editor* editor, Message* msg, Image* imge, int x, int y, int opacity)
+MovingPixelsState::MovingPixelsState(Editor* editor, Message* msg, Image* imge, int x, int y, int opacity, HandleType handle)
 {
   EditorCustomizationDelegate* customization = editor->getCustomizationDelegate();
 
@@ -62,7 +63,7 @@ MovingPixelsState::MovingPixelsState(Editor* editor, Message* msg, Image* imge, 
     m_pixelsMovement->cutMask();
 
   editor->screenToEditor(msg->mouse.x, msg->mouse.y, &x, &y);
-  m_pixelsMovement->catchImage(x, y);
+  m_pixelsMovement->catchImage(x, y, handle);
 
   // Setup mask color
   setTransparentColor(app_get_statusbar()->getTransparentColor());
@@ -90,6 +91,9 @@ bool MovingPixelsState::onBeforeChangeState(Editor* editor)
 
   // Drop pixels if the user press a button outside the selection
   m_pixelsMovement->dropImage();
+
+  editor->getDocument()->resetTransformation();
+
   delete m_pixelsMovement;
   m_pixelsMovement = NULL;
 
@@ -119,13 +123,37 @@ bool MovingPixelsState::onMouseDown(Editor* editor, Message* msg)
 {
   ASSERT(m_pixelsMovement != NULL);
 
+  Decorator* decorator = static_cast<Decorator*>(editor->getDecorator());
+  Document* document = editor->getDocument();
+
+  // Transform selected pixels
+  if (document->isMaskVisible() &&
+      decorator->getTransformHandles(editor)) {
+    TransformHandles* transfHandles = decorator->getTransformHandles(editor);
+
+    // Get the handle covered by the mouse.
+    HandleType handle = transfHandles->getHandleAtPoint(editor,
+							gfx::Point(msg->mouse.x, msg->mouse.y),
+							getTransformation(editor));
+
+    if (handle != NoHandle) {
+      // Re-catch the image
+      int x, y;
+      editor->screenToEditor(msg->mouse.x, msg->mouse.y, &x, &y);
+      m_pixelsMovement->catchImageAgain(x, y, handle);
+
+      editor->captureMouse();
+      return true;
+    }
+  }
+
   // Start "moving pixels" loop
   if (editor->isInsideSelection() && (msg->mouse.left ||
 				      msg->mouse.right)) {
     // Re-catch the image
     int x, y;
     editor->screenToEditor(msg->mouse.x, msg->mouse.y, &x, &y);
-    m_pixelsMovement->catchImageAgain(x, y);
+    m_pixelsMovement->catchImageAgain(x, y, NoHandle);
 
     editor->captureMouse();
     return true;
@@ -146,6 +174,9 @@ bool MovingPixelsState::onMouseUp(Editor* editor, Message* msg)
 
   // Drop the image temporarily in this location (where the user releases the mouse)
   m_pixelsMovement->dropImageTemporarily();
+
+  // Redraw the new pivot location.
+  invalidate();
 
   editor->releaseMouse();
   return true;
@@ -198,7 +229,7 @@ bool MovingPixelsState::onSetCursor(Editor* editor)
   ASSERT(m_pixelsMovement != NULL);
 
   // Move selection
-  if (m_pixelsMovement->isDragging() || editor->isInsideSelection()) {
+  if (m_pixelsMovement->isDragging()) {
     editor->hideDrawingCursor();
     jmouse_set_cursor(JI_CURSOR_MOVE);
     return true;
@@ -214,7 +245,7 @@ bool MovingPixelsState::onKeyDown(Editor* editor, Message* msg)
   EditorCustomizationDelegate* customization = editor->getCustomizationDelegate();
 
   if (customization && customization->isCopySelectionKeyPressed()) {
-    // If the user press the CTRL key when he is dragging pixels (but
+    // If the user presses the CTRL key when he is dragging pixels (but
     // not pressing the mouse buttons).
     if (!jmouse_b(0) && m_pixelsMovement) {
       // Drop pixels (sure the user will press the mouse button to
@@ -239,11 +270,13 @@ bool MovingPixelsState::onUpdateStatusBar(Editor* editor)
 {
   ASSERT(m_pixelsMovement != NULL);
 
-  gfx::Rect bounds = m_pixelsMovement->getImageBounds();
+  const gfx::Transformation& transform(getTransformation(editor));
 
   app_get_statusbar()->setStatusText
-    (100, "Pos %d %d, Size %d %d",
-     bounds.x, bounds.y, bounds.w, bounds.h);
+    (100, "Pos %d %d, Size %d %d, Angle %.1f",
+     transform.bounds().x, transform.bounds().y,
+     transform.bounds().w, transform.bounds().h,
+     180.0 * transform.angle() / PI);
 
   return true;
 }
@@ -276,4 +309,9 @@ void MovingPixelsState::dropPixels(Editor* editor)
   // Just change to default state (StandbyState generally). We'll
   // receive an onBeforeChangeState event after this call.
   editor->backToPreviousState();
+}
+
+gfx::Transformation MovingPixelsState::getTransformation(Editor* editor)
+{
+  return m_pixelsMovement->getTransformation();
 }

@@ -40,10 +40,12 @@
 #include "widgets/editor/drawing_state.h"
 #include "widgets/editor/editor.h"
 #include "widgets/editor/editor_customization_delegate.h"
+#include "widgets/editor/handle_type.h"
 #include "widgets/editor/moving_cel_state.h"
 #include "widgets/editor/moving_pixels_state.h"
 #include "widgets/editor/scrolling_state.h"
 #include "widgets/editor/tool_loop_impl.h"
+#include "widgets/editor/transform_handles.h"
 #include "widgets/statebar.h"
 
 #include <allegro.h>
@@ -56,17 +58,57 @@ enum WHEEL_ACTION { WHEEL_NONE,
 		    WHEEL_BG,
 		    WHEEL_FRAME };
 
+static int rotated_size_cursors[] = {
+  JI_CURSOR_SIZE_R,
+  JI_CURSOR_SIZE_TR,
+  JI_CURSOR_SIZE_T,
+  JI_CURSOR_SIZE_TL,
+  JI_CURSOR_SIZE_L,
+  JI_CURSOR_SIZE_BL,
+  JI_CURSOR_SIZE_B,
+  JI_CURSOR_SIZE_BR
+};
+
+static int rotated_rotate_cursors[] = {
+  JI_CURSOR_ROTATE_R,
+  JI_CURSOR_ROTATE_TR,
+  JI_CURSOR_ROTATE_T,
+  JI_CURSOR_ROTATE_TL,
+  JI_CURSOR_ROTATE_L,
+  JI_CURSOR_ROTATE_BL,
+  JI_CURSOR_ROTATE_B,
+  JI_CURSOR_ROTATE_BR
+};
+
 static inline bool has_shifts(Message* msg, int shift)
 {
   return ((msg->any.shifts & shift) == shift);
 }
 
 StandbyState::StandbyState()
+  : m_decorator(new Decorator(this))
 {
 }
 
 StandbyState::~StandbyState()
 {
+  delete m_decorator;
+}
+
+void StandbyState::onAfterChangeState(Editor* editor)
+{
+  editor->setDecorator(m_decorator);
+}
+
+void StandbyState::onCurrentToolChange(Editor* editor)
+{
+  tools::Tool* currentTool = editor->getCurrentEditorTool();
+
+  // If the user change from a selection tool to a non-selection tool,
+  // or viceversa, we've to show or hide the transformation handles.
+  // TODO Compare the ink (isSelection()) of the previous tool with
+  // the new one.
+  editor->invalidate();
 }
 
 bool StandbyState::onMouseDown(Editor* editor, Message* msg)
@@ -82,7 +124,9 @@ bool StandbyState::onMouseDown(Editor* editor, Message* msg)
   // Each time an editor is clicked the current editor and the active
   // document are set.
   set_current_editor(editor);
-  context->setActiveDocument(editor->getDocument());
+
+  Document* document = editor->getDocument();
+  context->setActiveDocument(document);
 
   // Start scroll loop
   if (msg->mouse.middle || clicked_ink->isScrollMovement()) {
@@ -109,11 +153,39 @@ bool StandbyState::onMouseDown(Editor* editor, Message* msg)
 	editor->setState(EditorStatePtr(new MovingCelState(editor, msg)));
       }
     }
+    return true;
   }
+
+  // Transform selected pixels
+  if (document->isMaskVisible() &&
+      m_decorator->getTransformHandles(editor)) {
+    TransformHandles* transfHandles = m_decorator->getTransformHandles(editor);
+
+    // Get the handle covered by the mouse.
+    HandleType handle = transfHandles->getHandleAtPoint(editor,
+							gfx::Point(msg->mouse.x, msg->mouse.y),
+							document->getTransformation());
+
+    if (handle != NoHandle) {
+      int x, y, opacity;
+      Image* image = sprite->getCurrentImage(&x, &y, &opacity);
+      if (image) {
+	if (!sprite->getCurrentLayer()->is_writable()) {
+	  Alert::show(PACKAGE "<<The layer is locked.||&Close");
+	  return true;
+	}
+
+	// Change to MovingPixelsState
+	editor->setState(EditorStatePtr(new MovingPixelsState(editor, msg, image, x, y, opacity, handle)));
+      }
+      return true;
+    }
+  }
+
   // Move selected pixels
-  else if (editor->isInsideSelection() &&
-	   current_tool->getInk(0)->isSelection() &&
-	   msg->mouse.left) {
+  if (editor->isInsideSelection() &&
+      current_tool->getInk(0)->isSelection() &&
+      msg->mouse.left) {
     int x, y, opacity;
     Image* image = sprite->getCurrentImage(&x, &y, &opacity);
     if (image) {
@@ -123,11 +195,13 @@ bool StandbyState::onMouseDown(Editor* editor, Message* msg)
       }
 
       // Change to MovingPixelsState
-      editor->setState(EditorStatePtr(new MovingPixelsState(editor, msg, image, x, y, opacity)));
+      editor->setState(EditorStatePtr(new MovingPixelsState(editor, msg, image, x, y, opacity, NoHandle)));
     }
+    return true;
   }
+
   // Call the eyedropper command
-  else if (clicked_ink->isEyedropper()) {
+  if (clicked_ink->isEyedropper()) {
     Command* eyedropper_cmd = 
       CommandsModule::instance()->getCommandByName(CommandId::Eyedropper);
 
@@ -137,11 +211,13 @@ bool StandbyState::onMouseDown(Editor* editor, Message* msg)
     UIContext::instance()->executeCommand(eyedropper_cmd, &params);
     return true;
   }
+
   // Start the Tool-Loop
-  else if (sprite->getCurrentLayer()) {
+  if (sprite->getCurrentLayer()) {
     tools::ToolLoop* toolLoop = create_tool_loop(editor, context, msg);
     if (toolLoop)
       editor->setState(EditorStatePtr(new DrawingState(toolLoop, editor, msg)));
+    return true;
   }
 
   return true;
@@ -285,6 +361,10 @@ bool StandbyState::onSetCursor(Editor* editor)
 
     // If the current tool change selection (e.g. rectangular marquee, etc.)
     if (current_ink->isSelection()) {
+      // See if the cursor is in some selection handle.
+      if (m_decorator->onSetCursor(editor))
+	return true;
+
       // Move pixels
       if (editor->isInsideSelection()) {
 	EditorCustomizationDelegate* customization = editor->getCustomizationDelegate();
@@ -380,4 +460,119 @@ bool StandbyState::onUpdateStatusBar(Editor* editor)
   }
 
   return true;
+}
+
+gfx::Transformation StandbyState::getTransformation(Editor* editor)
+{
+  return editor->getDocument()->getTransformation();
+}
+
+//////////////////////////////////////////////////////////////////////
+// Decorator
+
+StandbyState::Decorator::Decorator(StandbyState* standbyState)
+  : m_transfHandles(NULL)
+  , m_standbyState(standbyState)
+{
+}
+
+StandbyState::Decorator::~Decorator()
+{
+  delete m_transfHandles;
+}
+
+TransformHandles* StandbyState::Decorator::getTransformHandles(Editor* editor)
+{
+  if (!m_transfHandles)
+    m_transfHandles = new TransformHandles();
+
+  return m_transfHandles;
+}
+
+bool StandbyState::Decorator::onSetCursor(Editor* editor)
+{
+  if (!editor->getDocument()->isMaskVisible())
+    return false;
+
+  const gfx::Transformation transformation(m_standbyState->getTransformation(editor));
+  TransformHandles* tr = getTransformHandles(editor);
+  HandleType handle = tr->getHandleAtPoint(editor,
+					   gfx::Point(jmouse_x(0), jmouse_y(0)),
+					   transformation);
+
+  int newCursor = JI_CURSOR_NORMAL;
+
+  switch (handle) {
+    case ScaleNWHandle:		newCursor = JI_CURSOR_SIZE_TL; break;
+    case ScaleNHandle:		newCursor = JI_CURSOR_SIZE_T; break;
+    case ScaleNEHandle:		newCursor = JI_CURSOR_SIZE_TR; break;
+    case ScaleWHandle:		newCursor = JI_CURSOR_SIZE_L; break;
+    case ScaleEHandle:		newCursor = JI_CURSOR_SIZE_R; break;
+    case ScaleSWHandle:		newCursor = JI_CURSOR_SIZE_BL; break;
+    case ScaleSHandle:		newCursor = JI_CURSOR_SIZE_B; break;
+    case ScaleSEHandle:		newCursor = JI_CURSOR_SIZE_BR; break;
+    case RotateNWHandle:	newCursor = JI_CURSOR_ROTATE_TL; break;
+    case RotateNHandle:		newCursor = JI_CURSOR_ROTATE_T; break;
+    case RotateNEHandle:	newCursor = JI_CURSOR_ROTATE_TR; break;
+    case RotateWHandle:		newCursor = JI_CURSOR_ROTATE_L; break;
+    case RotateEHandle:		newCursor = JI_CURSOR_ROTATE_R; break;
+    case RotateSWHandle:	newCursor = JI_CURSOR_ROTATE_BL; break;
+    case RotateSHandle:		newCursor = JI_CURSOR_ROTATE_B; break;
+    case RotateSEHandle:	newCursor = JI_CURSOR_ROTATE_BR; break;
+    case PivotHandle:		newCursor = JI_CURSOR_HAND; break;
+    default:
+      return false;
+  }
+
+  // Adjust the cursor depending the current transformation angle.
+  fixed angle = ftofix(128.0 * transformation.angle() / PI);
+  angle = fixadd(angle, itofix(16));
+  angle &= (255<<16);
+  angle >>= 16;
+  angle /= 32;
+
+  if (newCursor >= JI_CURSOR_SIZE_TL && newCursor <= JI_CURSOR_SIZE_BR) {
+    size_t num = sizeof(rotated_size_cursors) / sizeof(rotated_size_cursors[0]);
+    size_t c;
+    for (c=num-1; c>0; --c)
+      if (rotated_size_cursors[c] == newCursor)
+	break;
+
+    newCursor = rotated_size_cursors[(c+angle) % num];
+  }
+  else if (newCursor >= JI_CURSOR_ROTATE_TL && newCursor <= JI_CURSOR_ROTATE_BR) {
+    size_t num = sizeof(rotated_rotate_cursors) / sizeof(rotated_rotate_cursors[0]);
+    size_t c;
+    for (c=num-1; c>0; --c)
+      if (rotated_rotate_cursors[c] == newCursor)
+	break;
+
+    newCursor = rotated_rotate_cursors[(c+angle) % num];
+  }
+
+  // Hide the drawing cursor (just in case) and show the new system cursor.
+  editor->hideDrawingCursor();
+  jmouse_set_cursor(newCursor);
+  return true;
+}
+
+void StandbyState::Decorator::preRenderDecorator(EditorPreRender* render)
+{
+  // Do nothing
+}
+
+void StandbyState::Decorator::postRenderDecorator(EditorPostRender* render)
+{
+  Editor* editor = render->getEditor();
+
+  // Draw transformation handles (if the mask is visible and isn't frozen).
+  if (editor->getDocument()->isMaskVisible() &&
+      !editor->getDocument()->getMask()->isFrozen()) {
+    // And draw only when the user has a selection tool as active tool.
+    tools::Tool* currentTool = editor->getCurrentEditorTool();
+
+    if (currentTool->getInk(0)->isSelection())
+      getTransformHandles(editor)->drawHandles(editor,
+					       m_standbyState->getTransformation(editor));
+  }
 }

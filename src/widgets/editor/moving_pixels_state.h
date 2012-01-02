@@ -20,6 +20,7 @@
 #define WIDGETS_EDITOR_MOVING_PIXELS_STATE_H_INCLUDED
 
 #include "base/compiler_specific.h"
+#include "widgets/editor/handle_type.h"
 #include "widgets/editor/standby_state.h"
 #include "widgets/statebar.h"
 
@@ -30,7 +31,8 @@ class PixelsMovement;
 class MovingPixelsState : public StandbyState, StatusBarListener
 {
 public:
-  MovingPixelsState(Editor* editor, Message* msg, Image* imge, int x, int y, int opacity);
+  MovingPixelsState(Editor* editor, Message* msg, Image* imge, int x, int y, int opacity,
+		    HandleType handle);
   virtual ~MovingPixelsState();
 
   virtual bool onBeforeChangeState(Editor* editor) OVERRIDE;
@@ -44,6 +46,8 @@ public:
   virtual bool onKeyUp(Editor* editor, Message* msg) OVERRIDE;
   virtual bool onUpdateStatusBar(Editor* editor) OVERRIDE;
 
+  virtual gfx::Transformation getTransformation(Editor* editor) OVERRIDE;
+
 protected:
   // StatusBarListener interface
   virtual void dispose() OVERRIDE;
@@ -53,7 +57,7 @@ private:
   void setTransparentColor(const Color& color);
   void dropPixels(Editor* editor);
 
-  // Helper member to move selection.
+  // Helper member to move/translate selection and pixels.
   PixelsMovement* m_pixelsMovement;
 };
 

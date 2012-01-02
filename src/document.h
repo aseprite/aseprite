@@ -23,6 +23,7 @@
 #include "base/shared_ptr.h"
 #include "base/unique_ptr.h"
 #include "document_id.h"
+#include "gfx/transformation.h"
 
 #include <string>
 
@@ -146,6 +147,13 @@ public:
   void setMaskVisible(bool visible);
 
   //////////////////////////////////////////////////////////////////////
+  // Transformation
+
+  gfx::Transformation getTransformation() const;
+  void setTransformation(const gfx::Transformation& transform);
+  void resetTransformation();
+
+  //////////////////////////////////////////////////////////////////////
   // Copying
 
   void copyLayerContent(const Layer* sourceLayer, Document* destDoc, Layer* destLayer) const;
@@ -221,6 +229,9 @@ private:
   // Current mask.
   UniquePtr<Mask> m_mask;
   bool m_maskVisible;
+
+  // Current transformation.
+  gfx::Transformation m_transformation;
 
   DISABLE_COPYING(Document);
 };

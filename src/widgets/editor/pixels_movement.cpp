@@ -22,33 +22,49 @@
 
 #include "app.h"
 #include "document.h"
+#include "la/vector2d.h"
 #include "modules/gui.h"
 #include "raster/cel.h"
 #include "raster/image.h"
 #include "raster/mask.h"
+#include "raster/rotate.h"
 #include "raster/sprite.h"
 #include "util/expand_cel_canvas.h"
 
-using namespace gfx;
+template<typename T>
+static inline const la::Vector2d<double> point2Vector(const gfx::PointT<T>& pt) {
+  return la::Vector2d<double>(pt.x, pt.y);
+}
 
-PixelsMovement::PixelsMovement(Document* document, Sprite* sprite, const Image* moveThis, int initial_x, int initial_y, int opacity)
+PixelsMovement::PixelsMovement(Document* document, Sprite* sprite, const Image* moveThis, int initialX, int initialY, int opacity)
   : m_documentReader(document)
   , m_sprite(sprite)
   , m_undoTransaction(document, "Pixels Movement")
-  , m_initial_x(initial_x)
-  , m_initial_y(initial_y)
   , m_firstDrop(true)
   , m_isDragging(false)
+  , m_adjustPivot(false)
+  , m_handle(NoHandle)
+  , m_originalImage(image_new_copy(moveThis))
 {
+  m_initialData = gfx::Transformation(gfx::Rect(initialX, initialY, moveThis->w, moveThis->h));
+  m_currentData = m_initialData;
+
   DocumentWriter documentWriter(m_documentReader);
-  documentWriter->prepareExtraCel(initial_x, initial_y, moveThis->w, moveThis->h, opacity);
+  documentWriter->prepareExtraCel(0, 0, m_sprite->getWidth(), m_sprite->getHeight(), opacity);
 
   Image* extraImage = documentWriter->getExtraCelImage();
-  image_copy(extraImage, moveThis, 0, 0);
+  image_clear(extraImage, extraImage->mask_color);
+  image_copy(extraImage, moveThis, initialX, initialY);
+
+  m_initialMask = new Mask(*documentWriter->getMask());
+  m_currentMask = new Mask(*documentWriter->getMask());
 }
 
 PixelsMovement::~PixelsMovement()
 {
+  delete m_originalImage;
+  delete m_initialMask;
+  delete m_currentMask;
 }
 
 void PixelsMovement::cutMask()
@@ -73,25 +89,27 @@ void PixelsMovement::copyMask()
   update_screen_for_document(m_documentReader);
 }
 
-void PixelsMovement::catchImage(int x, int y)
+void PixelsMovement::catchImage(int x, int y, HandleType handle)
 {
-  m_catch_x = x;
-  m_catch_y = y;
+  m_catchX = x;
+  m_catchY = y;
   m_isDragging = true;
+  m_handle = handle;
 }
 
-void PixelsMovement::catchImageAgain(int x, int y)
+void PixelsMovement::catchImageAgain(int x, int y, HandleType handle)
 {
   // Create a new UndoTransaction to move the pixels to other position
-  const Cel* cel = m_documentReader->getExtraCel();
-  m_initial_x = cel->getX();
-  m_initial_y = cel->getY();
+  m_initialData = m_currentData;
   m_isDragging = true;
 
-  m_catch_x = x;
-  m_catch_y = y;
+  m_catchX = x;
+  m_catchY = y;
 
-  // Hide the mask (do not deselect it, it will be moved them using m_undoTransaction.setMaskPosition)
+  m_handle = handle;
+
+  // Hide the mask (do not deselect it, it will be moved them using
+  // m_undoTransaction.setMaskPosition)
   Mask emptyMask;
   {
     DocumentWriter documentWriter(m_documentReader);
@@ -101,57 +119,188 @@ void PixelsMovement::catchImageAgain(int x, int y)
   update_screen_for_document(m_documentReader);
 }
 
-Rect PixelsMovement::moveImage(int x, int y)
+gfx::Rect PixelsMovement::moveImage(int x, int y)
 {
   DocumentWriter documentWriter(m_documentReader);
-  Cel* cel = documentWriter->getExtraCel();
   Image* image = documentWriter->getExtraCelImage();
+  Cel* cel = documentWriter->getExtraCel();
   int x1, y1, x2, y2;
-  int u1, v1, u2, v2;
 
-  x1 = cel->getX();
-  y1 = cel->getY();
-  x2 = cel->getX() + image->w;
-  y2 = cel->getY() + image->h;
+  x1 = m_initialData.bounds().x;
+  y1 = m_initialData.bounds().y;
+  x2 = m_initialData.bounds().x + m_initialData.bounds().w;
+  y2 = m_initialData.bounds().y + m_initialData.bounds().h;
 
-  int new_x = m_initial_x + x - m_catch_x;
-  int new_y = m_initial_y + y - m_catch_y;
+  bool updateBounds = false;
+  int dx, dy;
 
-  // No movement
-  if (cel->getX() == new_x && cel->getY() == new_y)
-    return Rect();
+  dx = ((x - m_catchX) *  cos(m_currentData.angle()) +
+	(y - m_catchY) * -sin(m_currentData.angle()));
+  dy = ((x - m_catchX) *  sin(m_currentData.angle()) +
+	(y - m_catchY) *  cos(m_currentData.angle()));
 
-  cel->setPosition(new_x, new_y);
+  switch (m_handle) {
 
-  u1 = cel->getX();
-  v1 = cel->getY();
-  u2 = cel->getX() + image->w;
-  v2 = cel->getY() + image->h;
+    case NoHandle:
+      x1 += dx;
+      y1 += dy;
+      x2 += dx;
+      y2 += dy;
+      updateBounds = true;
+      break;
 
-  return Rect(MIN(x1, u1), MIN(y1, v1),
-	      MAX(x2, u2) - MIN(x1, u1) + 1,
-	      MAX(y2, v2) - MIN(y1, v1) + 1);
+    case ScaleNWHandle:
+      x1 = MIN(x1+dx, x2-1);
+      y1 = MIN(y1+dy, y2-1);
+      updateBounds = true;
+      break;
+
+    case ScaleNHandle:
+      y1 = MIN(y1+dy, y2-1);
+      updateBounds = true;
+      break;
+
+    case ScaleNEHandle:
+      x2 = MAX(x2+dx, x1+1);
+      y1 = MIN(y1+dy, y2-1);
+      updateBounds = true;
+      break;
+
+    case ScaleWHandle:
+      x1 = MIN(x1+dx, x2-1);
+      updateBounds = true;
+      break;
+
+    case ScaleEHandle:
+      x2 = MAX(x2+dx, x1+1);
+      updateBounds = true;
+      break;
+
+    case ScaleSWHandle:
+      x1 = MIN(x1+dx, x2-1);
+      y2 = MAX(y2+dy, y1+1);
+      updateBounds = true;
+      break;
+
+    case ScaleSHandle:
+      y2 = MAX(y2+dy, y1+1);
+      updateBounds = true;
+      break;
+
+    case ScaleSEHandle:
+      x2 = MAX(x2+dx, x1+1);
+      y2 = MAX(y2+dy, y1+1);
+      updateBounds = true;
+      break;
+
+    case RotateNWHandle:
+    case RotateNHandle:
+    case RotateNEHandle:
+    case RotateWHandle:
+    case RotateEHandle:
+    case RotateSWHandle:
+    case RotateSHandle:
+    case RotateSEHandle:
+      {
+	gfx::Point abs_initial_pivot = m_initialData.pivot();
+	gfx::Point abs_pivot = m_currentData.pivot();
+
+	double newAngle =
+	  m_initialData.angle()
+	  + atan2((double)(-y + abs_pivot.y),
+		  (double)(+x - abs_pivot.x))
+	  - atan2((double)(-m_catchY + abs_initial_pivot.y),
+		  (double)(+m_catchX - abs_initial_pivot.x));
+
+	m_currentData.angle(newAngle);
+      }
+      break;
+
+    case PivotHandle:
+      {
+	// Calculate the new position of the pivot
+	gfx::Point newPivot(m_initialData.pivot().x + (x - m_catchX),
+			    m_initialData.pivot().y + (y - m_catchY));
+
+	m_currentData = m_initialData;
+	m_currentData.displacePivotTo(newPivot);
+      }
+      break;
+  }
+
+  if (updateBounds) {
+    m_currentData.bounds(gfx::Rect(x1, y1, x2 - x1, y2 - y1));
+    m_adjustPivot = true;
+  }
+
+  gfx::Transformation::Corners corners;
+  m_currentData.transformBox(corners);
+
+  // Transform the extra-cel which is the chunk of pixels that the user is moving.
+  image_clear(documentWriter->getExtraCelImage(), 0);
+  image_parallelogram(documentWriter->getExtraCelImage(), m_originalImage,
+		      corners.leftTop().x, corners.leftTop().y,
+		      corners.rightTop().x, corners.rightTop().y,
+		      corners.rightBottom().x, corners.rightBottom().y,
+		      corners.leftBottom().x, corners.leftBottom().y);
+
+  // Transform mask
+  mask_replace(m_currentMask, 0, 0, m_sprite->getWidth(), m_sprite->getHeight());
+  m_currentMask->freeze();
+  image_clear(m_currentMask->bitmap, 0);
+  image_parallelogram(m_currentMask->bitmap, m_initialMask->bitmap,
+		      corners.leftTop().x, corners.leftTop().y,
+		      corners.rightTop().x, corners.rightTop().y,
+		      corners.rightBottom().x, corners.rightBottom().y,
+		      corners.leftBottom().x, corners.leftBottom().y);
+  m_currentMask->unfreeze();
+
+  if (m_firstDrop)
+    m_undoTransaction.copyToCurrentMask(m_currentMask);
+  else
+    documentWriter->setMask(m_currentMask);
+
+  documentWriter->setTransformation(m_currentData);
+
+  return gfx::Rect(0, 0, m_sprite->getWidth(), m_sprite->getHeight());
 }
 
 void PixelsMovement::dropImageTemporarily()
 {
   m_isDragging = false;
 
-  const Cel* cel = m_documentReader->getExtraCel();
-
   {
     DocumentWriter documentWriter(m_documentReader);
 
-    // Show the mask again in the new position
-    if (m_firstDrop) {
-      m_firstDrop = false;
-      m_undoTransaction.setMaskPosition(cel->getX(), cel->getY());
+    // TODO Add undo information so the user can undo each transformation step.
+
+    // Displace the pivot to the new location:
+    if (m_adjustPivot) {
+      m_adjustPivot = false;
+
+      // Get the a factor for the X/Y position of the initial pivot
+      // position inside the initial non-rotated bounds.
+      gfx::PointT<double> pivotPosFactor(m_initialData.pivot() - m_initialData.bounds().getOrigin());
+      pivotPosFactor.x /= m_initialData.bounds().w;
+      pivotPosFactor.y /= m_initialData.bounds().h;
+
+      // Get the current transformed bounds.
+      gfx::Transformation::Corners corners;
+      m_currentData.transformBox(corners);
+
+      // The new pivot will be located from the rotated left-top
+      // corner a distance equal to the transformed bounds's
+      // width/height multiplied with the previously calculated X/Y
+      // factor.
+      la::Vector2d<double> newPivot(corners.leftTop().x,
+				    corners.leftTop().y);
+      newPivot += pivotPosFactor.x * point2Vector(corners.rightTop() - corners.leftTop());
+      newPivot += pivotPosFactor.y * point2Vector(corners.leftBottom() - corners.leftTop());
+
+      m_currentData.displacePivotTo(gfx::Point(newPivot.x, newPivot.y));
     }
-    else {
-      documentWriter->getMask()->x = cel->getX();
-      documentWriter->getMask()->y = cel->getY();
-    }
-    documentWriter->generateMaskBoundaries();
+
+    documentWriter->generateMaskBoundaries(m_currentMask);
   }
 
   update_screen_for_document(m_documentReader);
@@ -173,8 +322,8 @@ void PixelsMovement::dropImage()
 				      m_sprite->getCurrentLayer(), TILED_NONE);
 
       image_merge(expandCelCanvas.getDestCanvas(), image,
-		  cel->getX()-expandCelCanvas.getCel()->getX(),
-		  cel->getY()-expandCelCanvas.getCel()->getY(),
+		  -expandCelCanvas.getCel()->getX(),
+		  -expandCelCanvas.getCel()->getY(),
 		  cel->getOpacity(), BLEND_MODE_NORMAL);
 
       expandCelCanvas.commit();
@@ -190,7 +339,7 @@ bool PixelsMovement::isDragging()
   return m_isDragging;
 }
 
-Rect PixelsMovement::getImageBounds()
+gfx::Rect PixelsMovement::getImageBounds()
 {
   const Cel* cel = m_documentReader->getExtraCel();
   const Image* image = m_documentReader->getExtraCelImage();
@@ -198,7 +347,7 @@ Rect PixelsMovement::getImageBounds()
   ASSERT(cel != NULL);
   ASSERT(image != NULL);
 
-  return Rect(cel->getX(), cel->getY(), image->w, image->h);
+  return gfx::Rect(cel->getX(), cel->getY(), image->w, image->h);
 }
 
 void PixelsMovement::setMaskColor(uint32_t mask_color)

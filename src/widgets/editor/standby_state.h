@@ -20,13 +20,19 @@
 #define WIDGETS_EDITOR_STANDBY_STATE_H_INCLUDED
 
 #include "base/compiler_specific.h"
+#include "gfx/transformation.h"
+#include "widgets/editor/editor_decorator.h"
 #include "widgets/editor/editor_state.h"
+
+class TransformHandles;
 
 class StandbyState : public EditorState
 {
 public:
   StandbyState();
   virtual ~StandbyState();
+  virtual void onAfterChangeState(Editor* editor) OVERRIDE;
+  virtual void onCurrentToolChange(Editor* editor) OVERRIDE;
   virtual bool onMouseDown(Editor* editor, Message* msg) OVERRIDE;
   virtual bool onMouseUp(Editor* editor, Message* msg) OVERRIDE;
   virtual bool onMouseMove(Editor* editor, Message* msg) OVERRIDE;
@@ -39,6 +45,30 @@ public:
   // Returns true as the standby state is the only one which shows the
   // pen-preview.
   virtual bool requirePenPreview() OVERRIDE { return true; }
+
+  virtual gfx::Transformation getTransformation(Editor* editor);
+
+protected:
+  class Decorator : public EditorDecorator
+  {
+  public:
+    Decorator(StandbyState* standbyState);
+    virtual ~Decorator();
+
+    TransformHandles* getTransformHandles(Editor* editor);
+
+    bool onSetCursor(Editor* editor);
+
+    // EditorDecorator overrides
+    void preRenderDecorator(EditorPreRender* render) OVERRIDE;
+    void postRenderDecorator(EditorPostRender* render) OVERRIDE;
+  private:
+    TransformHandles* m_transfHandles;
+    StandbyState* m_standbyState;
+  };
+
+private:
+  Decorator* m_decorator;
 };
 
 #endif	// WIDGETS_EDITOR_STANDBY_STATE_H_INCLUDED

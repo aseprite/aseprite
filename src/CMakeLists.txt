@@ -320,6 +320,7 @@ add_library(aseprite-library
   widgets/editor/select_box_state.cpp
   widgets/editor/standby_state.cpp
   widgets/editor/tool_loop_impl.cpp
+  widgets/editor/transform_handles.cpp
   widgets/fileview.cpp
   widgets/groupbut.cpp
   widgets/hex_color_entry.cpp

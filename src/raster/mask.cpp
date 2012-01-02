@@ -83,6 +83,11 @@ void Mask::unfreeze()
     shrink();
 }
 
+gfx::Rect Mask::getBounds() const
+{
+  return gfx::Rect(x, y, w, h);
+}
+
 //////////////////////////////////////////////////////////////////////
 
 Mask* mask_new()

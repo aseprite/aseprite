@@ -22,6 +22,7 @@
 #include "app/color_utils.h"
 #include "context.h"
 #include "document.h"
+#include "raster/mask.h"
 #include "undo/undo_history.h"
 #include "undoers/set_mask.h"
 
@@ -269,6 +270,7 @@ public:
     }
     else {
       loop->getMask()->unfreeze();
+      loop->getDocument()->setTransformation(Transformation(loop->getMask()->getBounds()));
       loop->getDocument()->setMaskVisible(true);
     }
   }

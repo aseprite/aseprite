@@ -278,6 +278,8 @@ void Document::setMask(const Mask* mask)
 {
   m_mask.reset(mask_new_copy(mask));
   m_maskVisible = true;
+
+  resetTransformation();
 }
 
 bool Document::isMaskVisible() const
@@ -291,6 +293,27 @@ bool Document::isMaskVisible() const
 void Document::setMaskVisible(bool visible)
 {
   m_maskVisible = visible;
+}
+
+//////////////////////////////////////////////////////////////////////
+// Transformation
+
+gfx::Transformation Document::getTransformation() const
+{
+  return m_transformation;
+}
+
+void Document::setTransformation(const gfx::Transformation& transform)
+{
+  m_transformation = transform;
+}
+
+void Document::resetTransformation()
+{
+  if (m_mask)
+    m_transformation = gfx::Transformation(m_mask->getBounds());
+  else
+    m_transformation = gfx::Transformation();
 }
 
 //////////////////////////////////////////////////////////////////////

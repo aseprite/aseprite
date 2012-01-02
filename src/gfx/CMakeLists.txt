@@ -3,4 +3,5 @@
 
 add_library(gfx-lib
   hsv.cpp
-  rgb.cpp)
+  rgb.cpp
+  transformation.cpp)

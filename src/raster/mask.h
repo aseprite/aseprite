@@ -19,18 +19,18 @@
 #ifndef RASTER_MASK_H_INCLUDED
 #define RASTER_MASK_H_INCLUDED
 
+#include "gfx/rect.h"
 #include "raster/gfxobj.h"
 #include "raster/image.h"
 
 // Represents the selection (selected pixels, 0/1, 0=non-selected, 1=selected)
 class Mask : public GfxObj
 {
-  int m_freeze_count;
 public:
   // TODO private this
-  char* name;			/* mask name */
-  int x, y, w, h;		/* region bounds */
-  Image* bitmap;		/* bitmapped image mask */
+  char* name;			// Mask name
+  int x, y, w, h;		// Region bounds
+  Image* bitmap;		// Bitmapped image mask
 
   Mask();
   Mask(const Mask& mask);
@@ -52,11 +52,16 @@ public:
 	    image_getpixel(bitmap, u-x, v-y));
   }
 
+  gfx::Rect getBounds() const;
+
   // These functions can be used to disable the automatic call to
   // "shrink" method (so you can do a lot of modifications without
-  // lossing time shrink the mask in each little operation)
+  // lossing time shrinking the mask in each little operation).
   void freeze();
   void unfreeze();
+
+  // Returns true if the mask is frozen (See freeze/unfreeze functions).
+  bool isFrozen() const { return m_freeze_count > 0; }
 
   // Adds the specified rectangle in the mask/selection
   void add(int x, int y, int w, int h);
@@ -71,6 +76,8 @@ public:
 
 private:
   void initialize();
+
+  int m_freeze_count;
 };
 
 Mask* mask_new();

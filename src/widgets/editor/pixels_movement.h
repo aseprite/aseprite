@@ -21,22 +21,29 @@
 
 #include "document_wrappers.h"
 #include "undo_transaction.h"
+#include "widgets/editor/handle_type.h"
 
 class Document;
 class Image;
 class Sprite;
 
-// Uses the extra cel of the sprite to move/paste the specified image.
+// Helper class to move pixels interactively and control undo history
+// correctly.  The extra cel of the sprite is temporally used to show
+// feedback, drag, and drop the specified image in the constructor
+// (which generally would be the selected region or the clipboard
+// content).
 class PixelsMovement
 {
 public:
+  // The "moveThis" image specifies the chunk of pixels to be moved.
+  // The "x" and "y" parameters specify the initial position of the image.
   PixelsMovement(Document* document, Sprite* sprite, const Image* moveThis, int x, int y, int opacity);
   ~PixelsMovement();
 
   void cutMask();
   void copyMask();
-  void catchImage(int x, int y);
-  void catchImageAgain(int x, int y);
+  void catchImage(int x, int y, HandleType handle);
+  void catchImageAgain(int x, int y, HandleType handle);
 
   // Moves the image to the new position (relative to the start
   // position given in the ctor). Returns the rectangle that should be
@@ -51,14 +58,22 @@ public:
 
   void setMaskColor(uint32_t mask_color);
 
+  const gfx::Transformation& getTransformation() const { return m_currentData; }
+
 private:
   const DocumentReader m_documentReader;
   Sprite* m_sprite;
   UndoTransaction m_undoTransaction;
-  int m_initial_x, m_initial_y;
-  int m_catch_x, m_catch_y;
   bool m_firstDrop;
   bool m_isDragging;
+  bool m_adjustPivot;
+  HandleType m_handle;
+  Image* m_originalImage;
+  int m_catchX, m_catchY;
+  gfx::Transformation m_initialData;
+  gfx::Transformation m_currentData;
+  Mask* m_initialMask;
+  Mask* m_currentMask;
 };
 
 #endif
