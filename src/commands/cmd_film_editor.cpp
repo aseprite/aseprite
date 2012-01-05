@@ -40,8 +40,8 @@ protected:
 
 FilmEditorCommand::FilmEditorCommand()
   : Command("FilmEditor",
-	    "Animation Editor",
-	    CmdUIOnlyFlag)
+            "Animation Editor",
+            CmdUIOnlyFlag)
 {
 }
 
@@ -62,4 +62,3 @@ Command* CommandFactory::createFilmEditorCommand()
 {
   return new FilmEditorCommand;
 }
-

@@ -1,13 +1,13 @@
 /*****************************************************************************
- *   "Gif-Lib" - Yet another gif library.                     
- *                                         
- * Written by:  Gershon Elber                Ver 0.1, Jun. 1989   
- * Extensively hacked by: Eric S. Raymond        Ver 1.?, Sep 1992    
+ *   "Gif-Lib" - Yet another gif library.
+ *
+ * Written by:  Gershon Elber                Ver 0.1, Jun. 1989
+ * Extensively hacked by: Eric S. Raymond        Ver 1.?, Sep 1992
  *****************************************************************************
- * GIF construction tools                              
+ * GIF construction tools
  *****************************************************************************
- * History:                                     
- * 15 Sep 92 - Version 1.0 by Eric Raymond.                     
+ * History:
+ * 15 Sep 92 - Version 1.0 by Eric Raymond.
  ****************************************************************************/
 
 #ifdef HAVE_CONFIG_H
@@ -22,13 +22,13 @@
 #define MAX(x, y)    (((x) > (y)) ? (x) : (y))
 
 /******************************************************************************
- * Miscellaneous utility functions                          
+ * Miscellaneous utility functions
  *****************************************************************************/
 
 /* return smallest bitfield size n will fit in */
 int
 BitSize(int n) {
-    
+
     register int i;
 
     for (i = 1; i <= 8; i++)
@@ -38,7 +38,7 @@ BitSize(int n) {
 }
 
 /******************************************************************************
- * Color map object functions                              
+ * Color map object functions
  *****************************************************************************/
 
 /*
@@ -48,7 +48,7 @@ BitSize(int n) {
 ColorMapObject *
 MakeMapObject(int ColorCount,
               const GifColorType * ColorMap) {
-    
+
     ColorMapObject *Object;
 
     /*** FIXME: Our ColorCount has to be a power of two.  Is it necessary to
@@ -56,7 +56,7 @@ MakeMapObject(int ColorCount,
     if (ColorCount != (1 << BitSize(ColorCount))) {
         return ((ColorMapObject *) NULL);
     }
-    
+
     Object = (ColorMapObject *)malloc(sizeof(ColorMapObject));
     if (Object == (ColorMapObject *) NULL) {
         return ((ColorMapObject *) NULL);
@@ -118,7 +118,7 @@ DumpColorMap(ColorMapObject * Object,
 #endif /* DEBUG */
 
 /*
- * Compute the union of two given color maps and return it.  If result can't 
+ * Compute the union of two given color maps and return it.  If result can't
  * fit into 256 colors, NULL is returned, the allocated union otherwise.
  * ColorIn1 is copied as is to ColorUnion, while colors from ColorIn2 are
  * copied iff they didn't exist before.  ColorTransIn2 maps the old
@@ -132,7 +132,7 @@ UnionColorMap(const ColorMapObject * ColorIn1,
     int i, j, CrntSlot, RoundUpTo, NewBitSize;
     ColorMapObject *ColorUnion;
 
-    /* 
+    /*
      * Allocate table which will hold the result for sure.
      */
     ColorUnion = MakeMapObject(MAX(ColorIn1->ColorCount,
@@ -148,7 +148,7 @@ UnionColorMap(const ColorMapObject * ColorIn1,
         ColorUnion->Colors[i] = ColorIn1->Colors[i];
     CrntSlot = ColorIn1->ColorCount;
 
-    /* 
+    /*
      * Potentially obnoxious hack:
      *
      * Back CrntSlot down past all contiguous {0, 0, 0} slots at the end
@@ -168,7 +168,7 @@ UnionColorMap(const ColorMapObject * ColorIn1,
          * ColorIn1->ColorCount?
          */
         for (j = 0; j < ColorIn1->ColorCount; j++)
-            if (memcmp (&ColorIn1->Colors[j], &ColorIn2->Colors[i], 
+            if (memcmp (&ColorIn1->Colors[j], &ColorIn2->Colors[i],
                         sizeof(GifColorType)) == 0)
                 break;
 
@@ -192,7 +192,7 @@ UnionColorMap(const ColorMapObject * ColorIn1,
     if (RoundUpTo != ColorUnion->ColorCount) {
         register GifColorType *Map = ColorUnion->Colors;
 
-        /* 
+        /*
          * Zero out slots up to next power of 2.
          * We know these slots exist because of the way ColorUnion's
          * start dimension was computed.
@@ -227,7 +227,7 @@ ApplyTranslation(SavedImage * Image,
 }
 
 /******************************************************************************
- * Extension record functions                              
+ * Extension record functions
  *****************************************************************************/
 
 void
@@ -295,7 +295,7 @@ FreeExtension(SavedImage * Image)
 }
 
 /******************************************************************************
- * Image block allocation functions                          
+ * Image block allocation functions
 ******************************************************************************/
 
 /* Private Function:
@@ -305,7 +305,7 @@ void
 FreeLastSavedImage(GifFileType *GifFile) {
 
     SavedImage *sp;
-    
+
     if ((GifFile == NULL) || (GifFile->SavedImages == NULL))
         return;
 
@@ -336,7 +336,7 @@ FreeLastSavedImage(GifFileType *GifFile) {
 }
 
 /*
- * Append an image block to the SavedImages array  
+ * Append an image block to the SavedImages array
  */
 SavedImage *
 MakeSavedImage(GifFileType * GifFile,
@@ -359,7 +359,7 @@ MakeSavedImage(GifFileType * GifFile,
         if (CopyFrom) {
             memcpy((char *)sp, CopyFrom, sizeof(SavedImage));
 
-            /* 
+            /*
              * Make our own allocated copies of the heap fields in the
              * copied record.  This guards against potential aliasing
              * problems.
@@ -400,9 +400,9 @@ MakeSavedImage(GifFileType * GifFile,
                 memcpy(sp->ExtensionBlocks, CopyFrom->ExtensionBlocks,
                        sizeof(ExtensionBlock) * CopyFrom->ExtensionBlockCount);
 
-                /* 
+                /*
                  * For the moment, the actual blocks can take their
-                 * chances with free().  We'll fix this later. 
+                 * chances with free().  We'll fix this later.
                  *** FIXME: [Better check this out... Toshio]
                  * 2004 May 27: Looks like this was an ESR note.
                  * It means the blocks are shallow copied from InFile to

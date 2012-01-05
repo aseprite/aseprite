@@ -48,7 +48,7 @@
    v3->x = (v2->x - v1->x) * t + v1->x;                  \
    v3->y = (v2->y - v1->y) * t + v1->y;                  \
    v3->z = (v2->z - v1->z) * t + v1->z;                  \
-							 \
+                                                         \
    if (flags & INT_1COL) {                               \
       v3->c = (int)((v2->c - v1->c) * t + v1->c);        \
    }                                                     \
@@ -77,10 +77,10 @@
 /* clip3d_f:
  *  Clips a 3D polygon against planes x = -z, x = z, y = -z, y = z,
  *  z = min_z, z = max_z. If max_z <= min_z the z = max_z clipping is
- *  not done. Type is the rendering style - POLYTYPE_*, vc is the 
- *  number of vertices, vtx contains the input vertices, vout will 
- *  receive the result, vtmp and out must be supplied for temporary 
- *  storage. The size of arrays vout, vtmp and out should be twice as 
+ *  not done. Type is the rendering style - POLYTYPE_*, vc is the
+ *  number of vertices, vtx contains the input vertices, vout will
+ *  receive the result, vtmp and out must be supplied for temporary
+ *  storage. The size of arrays vout, vtmp and out should be twice as
  *  big as vtx.
  */
 int clip3d_f(int type, float min_z, float max_z, int vc, AL_CONST V3D_f *vtx[], V3D_f *vout[], V3D_f *vtmp[], int out[])
@@ -116,27 +116,27 @@ int clip3d_f(int type, float min_z, float max_z, int vc, AL_CONST V3D_f *vtx[], 
       vt = 0;
 
       for (i=0; i<vc; i++)
-	 out[i] = (vtx[i]->z > max_z);
+         out[i] = (vtx[i]->z > max_z);
 
       for (i=0, j=vc-1; i<vc; j=i, i++) {
-	 v1 = vtx[j];
-	 v2 = vtx[i];
-	 v3 = vtmp[vt];
+         v1 = vtx[j];
+         v2 = vtx[i];
+         v3 = vtmp[vt];
 
-	 if ((out[j] & out[i]) != 0)
-	    continue;
+         if ((out[j] & out[i]) != 0)
+            continue;
 
-	 if ((out[j] | out[i]) == 0) {
-	    point_inside(vt);
-	    continue;
-	 }
+         if ((out[j] | out[i]) == 0) {
+            point_inside(vt);
+            continue;
+         }
 
-	 t = (max_z - v1->z) / (v2->z - v1->z);
-	 point_interp_f(vt);
-	 v3 = vtmp[vt];
+         t = (max_z - v1->z) / (v2->z - v1->z);
+         point_interp_f(vt);
+         v3 = vtmp[vt];
 
-	 if (out[j])
-	    point_inside(vt);
+         if (out[j])
+            point_inside(vt);
       }
       vin = (AL_CONST V3D_f**)vtmp;
    }
@@ -156,11 +156,11 @@ int clip3d_f(int type, float min_z, float max_z, int vc, AL_CONST V3D_f *vtx[], 
       v3 = vout[vo];
 
       if ((out[j] & out[i]) != 0)
-	 continue;
+         continue;
 
       if ((out[j] | out[i]) == 0) {
-	 point_inside(vo);
-	 continue;
+         point_inside(vo);
+         continue;
       }
 
       t = (min_z - v1->z) / (v2->z - v1->z);
@@ -168,7 +168,7 @@ int clip3d_f(int type, float min_z, float max_z, int vc, AL_CONST V3D_f *vtx[], 
       v3 = vout[vo];
 
       if (out[j])
-	 point_inside(vo);
+         point_inside(vo);
    }
 
    vt = 0;
@@ -182,11 +182,11 @@ int clip3d_f(int type, float min_z, float max_z, int vc, AL_CONST V3D_f *vtx[], 
       v3 = vtmp[vt];
 
       if ((out[j] & out[i]) != 0)
-	 continue;
+         continue;
 
       if ((out[j] | out[i]) == 0) {
-	 point_inside(vt);
-	 continue;
+         point_inside(vt);
+         continue;
       }
 
       t = (-v1->z - v1->x) / (v2->x - v1->x + v2->z - v1->z);
@@ -194,7 +194,7 @@ int clip3d_f(int type, float min_z, float max_z, int vc, AL_CONST V3D_f *vtx[], 
       v3 = vtmp[vt];
 
       if (out[j])
-	 point_inside(vt);
+         point_inside(vt);
    }
 
    vo = 0;
@@ -208,11 +208,11 @@ int clip3d_f(int type, float min_z, float max_z, int vc, AL_CONST V3D_f *vtx[], 
       v3 = vout[vo];
 
       if ((out[j] & out[i]) != 0)
-	 continue;
+         continue;
 
       if ((out[j] | out[i]) == 0) {
-	 point_inside(vo);
-	 continue;
+         point_inside(vo);
+         continue;
       }
 
       t = (v1->z - v1->x) / (v2->x - v1->x - v2->z + v1->z);
@@ -220,7 +220,7 @@ int clip3d_f(int type, float min_z, float max_z, int vc, AL_CONST V3D_f *vtx[], 
       v3 = vout[vo];
 
       if (out[j])
-	 point_inside(vo);
+         point_inside(vo);
    }
 
    vt = 0;
@@ -234,11 +234,11 @@ int clip3d_f(int type, float min_z, float max_z, int vc, AL_CONST V3D_f *vtx[], 
       v3 = vtmp[vt];
 
       if ((out[j] & out[i]) != 0)
-	 continue;
+         continue;
 
       if ((out[j] | out[i]) == 0) {
-	 point_inside(vt);
-	 continue;
+         point_inside(vt);
+         continue;
       }
 
       t = (-v1->z - v1->y) / (v2->y - v1->y + v2->z - v1->z);
@@ -246,7 +246,7 @@ int clip3d_f(int type, float min_z, float max_z, int vc, AL_CONST V3D_f *vtx[], 
       v3 = vtmp[vt];
 
       if (out[j])
-	 point_inside(vt);
+         point_inside(vt);
    }
 
    vo = 0;
@@ -260,11 +260,11 @@ int clip3d_f(int type, float min_z, float max_z, int vc, AL_CONST V3D_f *vtx[], 
       v3 = vout[vo];
 
       if ((out[j] & out[i]) != 0)
-	 continue;
+         continue;
 
       if ((out[j] | out[i]) == 0) {
-	 point_inside(vo);
-	 continue;
+         point_inside(vo);
+         continue;
       }
 
       t = (v1->z - v1->y) / (v2->y - v1->y - v2->z + v1->z);
@@ -272,7 +272,7 @@ int clip3d_f(int type, float min_z, float max_z, int vc, AL_CONST V3D_f *vtx[], 
       v3 = vout[vo];
 
       if (out[j])
-	 point_inside(vo);
+         point_inside(vo);
    }
 
    if (type == POLYTYPE_FLAT)

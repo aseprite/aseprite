@@ -17,10 +17,10 @@
  */
 
 #include <cmath>
-#include <allegro.h>		// TODO avoid to include this for key[]
+#include <allegro.h>            // TODO avoid to include this for key[]
 
 #ifndef M_PI
-#define M_PI		3.14159265358979323846
+#define M_PI            3.14159265358979323846
 #endif
 
 // Controls clicks for tools like pencil
@@ -53,9 +53,9 @@ public:
   {
     char buf[1024];
     sprintf(buf, "Start %3d %3d End %3d %3d",
-	    points[0].x, points[0].y,
-	    points[points.size()-1].x,
-	    points[points.size()-1].y);
+            points[0].x, points[0].y,
+            points[points.size()-1].x,
+            points[points.size()-1].y);
     text = buf;
   }
 };
@@ -89,38 +89,38 @@ public:
 
       // Lines
       if (loop->getIntertwine()->snapByAngle()) {
-      	double angle = 180.0 * std::atan(static_cast<double>(-dy) /
-      					 static_cast<double>(dx)) / M_PI;
-      	angle = ABS(angle);
+        double angle = 180.0 * std::atan(static_cast<double>(-dy) /
+                                         static_cast<double>(dx)) / M_PI;
+        angle = ABS(angle);
 
-      	// Snap horizontally
-      	if (angle < 18.0) {
-      	  points[1].y = m_center.y;
-      	}
-      	// Snap at 26.565
-      	else if (angle < 36.0) {
-      	  points[1].x = m_center.x + SGN(dx)*maxsize;
-      	  points[1].y = m_center.y + SGN(dy)*maxsize/2;
-      	}
-      	// Snap at 45
-      	else if (angle < 54.0) {
-      	  points[1].x = m_center.x + SGN(dx)*minsize;
-      	  points[1].y = m_center.y + SGN(dy)*minsize;
-      	}
-      	// Snap at 63.435
-      	else if (angle < 72.0) {
-      	  points[1].x = m_center.x + SGN(dx)*maxsize/2;
-      	  points[1].y = m_center.y + SGN(dy)*maxsize;
-      	}
-      	// Snap vertically
-      	else {
-      	  points[1].x = m_center.x;
-      	}
+        // Snap horizontally
+        if (angle < 18.0) {
+          points[1].y = m_center.y;
+        }
+        // Snap at 26.565
+        else if (angle < 36.0) {
+          points[1].x = m_center.x + SGN(dx)*maxsize;
+          points[1].y = m_center.y + SGN(dy)*maxsize/2;
+        }
+        // Snap at 45
+        else if (angle < 54.0) {
+          points[1].x = m_center.x + SGN(dx)*minsize;
+          points[1].y = m_center.y + SGN(dy)*minsize;
+        }
+        // Snap at 63.435
+        else if (angle < 72.0) {
+          points[1].x = m_center.x + SGN(dx)*maxsize/2;
+          points[1].y = m_center.y + SGN(dy)*maxsize;
+        }
+        // Snap vertically
+        else {
+          points[1].x = m_center.x;
+        }
       }
       // Rectangles and ellipses
       else {
-	points[1].x = m_center.x + SGN(dx)*minsize;
-	points[1].y = m_center.y + SGN(dy)*minsize;
+        points[1].x = m_center.x + SGN(dx)*minsize;
+        points[1].y = m_center.y + SGN(dy)*minsize;
       }
     }
 
@@ -145,12 +145,12 @@ public:
   {
     char buf[1024];
     sprintf(buf, "Start %3d %3d End %3d %3d (Size %3d %3d) Angle %.1f",
-	    points[0].x, points[0].y,
-	    points[1].x, points[1].y,
-	    ABS(points[1].x-points[0].x)+1,
-	    ABS(points[1].y-points[0].y)+1,
-	    180.0 * std::atan2(static_cast<double>(points[0].y-points[1].y),
-			       static_cast<double>(points[1].x-points[0].x)) / M_PI);
+            points[0].x, points[0].y,
+            points[1].x, points[1].y,
+            ABS(points[1].x-points[0].x)+1,
+            ABS(points[1].y-points[0].y)+1,
+            180.0 * std::atan2(static_cast<double>(points[0].y-points[1].y),
+                               static_cast<double>(points[1].x-points[0].x)) / M_PI);
     text = buf;
   }
 };
@@ -167,10 +167,10 @@ public:
   bool releaseButton(Points& points, const Point& point)
   {
     if (points[points.size()-2] == point &&
-    	points[points.size()-1] == point)
-      return false;		// Click in the same point (no-drag), we are done
+        points[points.size()-1] == point)
+      return false;             // Click in the same point (no-drag), we are done
     else
-      return true;		// Continue adding points
+      return true;              // Continue adding points
   }
   void movement(ToolLoop* loop, Points& points, const Point& point)
   {
@@ -184,9 +184,9 @@ public:
   {
     char buf[1024];
     sprintf(buf, "Start %3d %3d End %3d %3d",
-	    points[0].x, points[0].y,
-	    points[points.size()-1].x,
-	    points[points.size()-1].y);
+            points[0].x, points[0].y,
+            points[points.size()-1].x,
+            points[points.size()-1].y);
     text = buf;
   }
 };
@@ -244,17 +244,17 @@ public:
   {
     switch (m_clickCounter) {
       case 0:
-	for (size_t i=1; i<points.size(); ++i)
-	  points[i] = point;
-	break;
+        for (size_t i=1; i<points.size(); ++i)
+          points[i] = point;
+        break;
       case 1:
       case 2:
-	points[1] = point;
-	points[2] = point;
-	break;
+        points[1] = point;
+        points[2] = point;
+        break;
       case 3:
-	points[2] = point;
-	break;
+        points[2] = point;
+        break;
     }
   }
   void getPointsToInterwine(const Points& input, Points& output)
@@ -265,10 +265,10 @@ public:
   {
     char buf[1024];
     sprintf(buf, "Start %3d %3d End %3d %3d (%3d %3d - %3d %3d)",
-	    points[0].x, points[0].y,
-	    points[3].x, points[3].y,
-	    points[1].x, points[1].y,
-	    points[2].x, points[2].y);
+            points[0].x, points[0].y,
+            points[3].x, points[3].y,
+            points[1].x, points[1].y,
+            points[2].x, points[2].y);
 
     text = buf;
   }

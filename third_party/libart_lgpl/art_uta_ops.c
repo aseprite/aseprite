@@ -74,37 +74,37 @@ art_uta_union (ArtUta *uta1, ArtUta *uta2)
       ix1 = (y - uta1->y0) * uta1->width + x0 - uta1->x0;
       ix2 = (y - uta2->y0) * uta2->width + x0 - uta2->x0;
       for (x = x0; x < x1; x++)
-	{
-	  if (x < uta1->x0 || y < uta1->y0 ||
-	      x >= uta1->x0 + uta1->width || y >= uta1->y0 + uta1->height)
-	    bb1 = 0;
-	  else
-	    bb1 = uta1->utiles[ix1];
+        {
+          if (x < uta1->x0 || y < uta1->y0 ||
+              x >= uta1->x0 + uta1->width || y >= uta1->y0 + uta1->height)
+            bb1 = 0;
+          else
+            bb1 = uta1->utiles[ix1];
 
-	  if (x < uta2->x0 || y < uta2->y0 ||
-	      x >= uta2->x0 + uta2->width || y >= uta2->y0 + uta2->height)
-	    bb2 = 0;
-	  else
-	    bb2 = uta2->utiles[ix2];
+          if (x < uta2->x0 || y < uta2->y0 ||
+              x >= uta2->x0 + uta2->width || y >= uta2->y0 + uta2->height)
+            bb2 = 0;
+          else
+            bb2 = uta2->utiles[ix2];
 
-	  if (bb1 == 0)
-	    bb = bb2;
-	  else if (bb2 == 0)
-	    bb = bb1;
-	  else
-	    bb = ART_UTA_BBOX_CONS(MIN(ART_UTA_BBOX_X0(bb1),
-				       ART_UTA_BBOX_X0(bb2)),
-				   MIN(ART_UTA_BBOX_Y0(bb1),
-				       ART_UTA_BBOX_Y0(bb2)),
-				   MAX(ART_UTA_BBOX_X1(bb1),
-				       ART_UTA_BBOX_X1(bb2)),
-				   MAX(ART_UTA_BBOX_Y1(bb1),
-				       ART_UTA_BBOX_Y1(bb2)));
-	  uta->utiles[ix] = bb;
-	  ix++;
-	  ix1++;
-	  ix2++;
-	}
+          if (bb1 == 0)
+            bb = bb2;
+          else if (bb2 == 0)
+            bb = bb1;
+          else
+            bb = ART_UTA_BBOX_CONS(MIN(ART_UTA_BBOX_X0(bb1),
+                                       ART_UTA_BBOX_X0(bb2)),
+                                   MIN(ART_UTA_BBOX_Y0(bb1),
+                                       ART_UTA_BBOX_Y0(bb2)),
+                                   MAX(ART_UTA_BBOX_X1(bb1),
+                                       ART_UTA_BBOX_X1(bb2)),
+                                   MAX(ART_UTA_BBOX_Y1(bb1),
+                                       ART_UTA_BBOX_Y1(bb2)));
+          uta->utiles[ix] = bb;
+          ix++;
+          ix1++;
+          ix2++;
+        }
     }
   return uta;
 }

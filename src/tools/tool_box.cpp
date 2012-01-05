@@ -51,37 +51,37 @@ ToolBox::ToolBox()
 {
   PRINTF("Toolbox module: installing\n");
 
-  m_inks["selection"]			 = new SelectionInk();
-  m_inks["paint"]			 = new PaintInk(PaintInk::Normal);
-  m_inks["paint_fg"]			 = new PaintInk(PaintInk::WithFg);
-  m_inks["paint_bg"]			 = new PaintInk(PaintInk::WithBg);
-  m_inks["eraser"]			 = new EraserInk(EraserInk::Eraser);
-  m_inks["replace_fg_with_bg"]		 = new EraserInk(EraserInk::ReplaceFgWithBg);
-  m_inks["replace_bg_with_fg"]		 = new EraserInk(EraserInk::ReplaceBgWithFg);
-  m_inks["pick_fg"]			 = new PickInk(PickInk::Fg);
-  m_inks["pick_bg"]			 = new PickInk(PickInk::Bg);
-  m_inks["scroll"]			 = new ScrollInk();
-  m_inks["move"]			 = new MoveInk();
-  m_inks["blur"]			 = new BlurInk();
-  m_inks["jumble"]			 = new JumbleInk();
+  m_inks["selection"]                    = new SelectionInk();
+  m_inks["paint"]                        = new PaintInk(PaintInk::Normal);
+  m_inks["paint_fg"]                     = new PaintInk(PaintInk::WithFg);
+  m_inks["paint_bg"]                     = new PaintInk(PaintInk::WithBg);
+  m_inks["eraser"]                       = new EraserInk(EraserInk::Eraser);
+  m_inks["replace_fg_with_bg"]           = new EraserInk(EraserInk::ReplaceFgWithBg);
+  m_inks["replace_bg_with_fg"]           = new EraserInk(EraserInk::ReplaceBgWithFg);
+  m_inks["pick_fg"]                      = new PickInk(PickInk::Fg);
+  m_inks["pick_bg"]                      = new PickInk(PickInk::Bg);
+  m_inks["scroll"]                       = new ScrollInk();
+  m_inks["move"]                         = new MoveInk();
+  m_inks["blur"]                         = new BlurInk();
+  m_inks["jumble"]                       = new JumbleInk();
 
-  m_controllers["freehand"]		 = new FreehandController();
-  m_controllers["point_by_point"]	 = new PointByPointController();
-  m_controllers["one_point"]		 = new OnePointController();
-  m_controllers["two_points"]		 = new TwoPointsController();
-  m_controllers["four_points"]		 = new FourPointsController();
+  m_controllers["freehand"]              = new FreehandController();
+  m_controllers["point_by_point"]        = new PointByPointController();
+  m_controllers["one_point"]             = new OnePointController();
+  m_controllers["two_points"]            = new TwoPointsController();
+  m_controllers["four_points"]           = new FourPointsController();
 
-  m_pointshapers["none"]		 = new NonePointShape();
-  m_pointshapers["pixel"]		 = new PixelPointShape();
-  m_pointshapers["pen"]			 = new PenPointShape();
-  m_pointshapers["floodfill"]		 = new FloodFillPointShape();
-  m_pointshapers["spray"]		 = new SprayPointShape();
+  m_pointshapers["none"]                 = new NonePointShape();
+  m_pointshapers["pixel"]                = new PixelPointShape();
+  m_pointshapers["pen"]                  = new PenPointShape();
+  m_pointshapers["floodfill"]            = new FloodFillPointShape();
+  m_pointshapers["spray"]                = new SprayPointShape();
 
-  m_intertwiners["none"]		 = new IntertwineNone();
-  m_intertwiners["as_lines"]		 = new IntertwineAsLines();
-  m_intertwiners["as_rectangles"]	 = new IntertwineAsRectangles();
-  m_intertwiners["as_ellipses"]		 = new IntertwineAsEllipses();
-  m_intertwiners["as_bezier"]		 = new IntertwineAsBezier();
+  m_intertwiners["none"]                 = new IntertwineNone();
+  m_intertwiners["as_lines"]             = new IntertwineAsLines();
+  m_intertwiners["as_rectangles"]        = new IntertwineAsRectangles();
+  m_intertwiners["as_ellipses"]          = new IntertwineAsEllipses();
+  m_intertwiners["as_bezier"]            = new IntertwineAsBezier();
 
   loadTools();
 
@@ -141,7 +141,7 @@ void ToolBox::loadTools()
       throw base::Exception("The configuration file has a <group> without 'id' or 'text' attributes.");
 
     ToolGroup* tool_group = new ToolGroup(group_id, group_text);
-	
+
     // For each tool
     TiXmlNode* xmlToolNode = xmlGroup->FirstChild("tool");
     TiXmlElement* xmlTool = xmlToolNode ? xmlToolNode->ToElement(): NULL;
@@ -152,7 +152,7 @@ void ToolBox::loadTools()
       const char* default_pen_size = xmlTool->Attribute("default_pen_size");
 
       Tool* tool = new Tool(tool_group, tool_id, tool_text, tool_tips,
-			    default_pen_size ? strtol(default_pen_size, NULL, 10): 1);
+                            default_pen_size ? strtol(default_pen_size, NULL, 10): 1);
 
       PRINTF(" - New tool '%s' in group '%s' found\n", tool_id, group_id);
 

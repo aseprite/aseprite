@@ -16,11 +16,11 @@
 #include "gui/gui.h"
 
 /* jinete stream file/string */
-#define JSF		((struct jstream_file *)(stream))
-#define JSS		((struct jstream_string *)(stream))
+#define JSF             ((struct jstream_file *)(stream))
+#define JSS             ((struct jstream_string *)(stream))
 
 /* size of chunks to add to the buffer for jstream_strings */
-#define BLOCKSIZE	1024
+#define BLOCKSIZE       1024
 
 struct jstream_file
 {
@@ -31,10 +31,10 @@ struct jstream_file
 struct jstream_string
 {
   struct jstream head;
-  char *buf;			/* buffer for the characters */
-  int size;			/* real size of the buffer */
-  int end;			/* index of the last character used in the buffer */
-  int pos;			/* the position for read data */
+  char *buf;                    /* buffer for the characters */
+  int size;                     /* real size of the buffer */
+  int end;                      /* index of the last character used in the buffer */
+  int pos;                      /* the position for read data */
 };
 
 static void stream_file_close(JStream stream);
@@ -107,7 +107,7 @@ JStream jstream_new_for_string(const char *buffer)
 
   JSS->end = buffer ? strlen(buffer): 0;
   JSS->size = buffer ? ((JSS->end / BLOCKSIZE) +
-			((JSS->end % BLOCKSIZE) > 0 ? 1: 0)): 0;
+                        ((JSS->end % BLOCKSIZE) > 0 ? 1: 0)): 0;
   JSS->pos = 0;
 
   return stream;
@@ -264,13 +264,13 @@ static char *stream_string_gets(JStream stream, char *s, int size)
     int c, i;
     for (i = 0; i < size; ++i) {
       if (JSS->pos < JSS->end) {
-	c = JSS->buf[JSS->pos++];
-	*(s++) = c;
-	if (c == '\n')
-	  break;
+        c = JSS->buf[JSS->pos++];
+        *(s++) = c;
+        if (c == '\n')
+          break;
       }
       else
-	break;
+        break;
     }
     *s = 0;
     return r;
@@ -292,8 +292,8 @@ static int stream_string_putc(JStream stream, int ch)
 
   if (JSS->pos < JSS->end)
     memmove(JSS->buf + JSS->pos + 1,
-	    JSS->buf + JSS->pos,
-	    JSS->end - JSS->pos);
+            JSS->buf + JSS->pos,
+            JSS->end - JSS->pos);
 
   JSS->end++;
   return JSS->buf[JSS->pos++] = ch;

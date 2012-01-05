@@ -42,8 +42,8 @@ Job::Job(const char* job_name)
   m_mutex = new Mutex();
   m_progress = app_get_statusbar()->addProgress();
   m_monitor = add_gui_monitor(&Job::monitor_proc,
-			      &Job::monitor_free,
-			      (void*)this);
+                              &Job::monitor_free,
+                              (void*)this);
   m_alert_window = Alert::create("%s<<Working...||&Cancel", job_name);
 }
 

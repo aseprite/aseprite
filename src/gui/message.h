@@ -11,29 +11,29 @@
 #include "gui/rect.h"
 
 /* TODO add mutexes */
-#define JM_MESSAGE(name)				\
-  static int _jm_##name = 0;				\
-  int jm_##name()					\
-  {							\
-    if (!_jm_##name)					\
-      _jm_##name = ji_register_message_type();		\
-    return _jm_##name;					\
-  }							\
+#define JM_MESSAGE(name)                                \
+  static int _jm_##name = 0;                            \
+  int jm_##name()                                       \
+  {                                                     \
+    if (!_jm_##name)                                    \
+      _jm_##name = ji_register_message_type();          \
+    return _jm_##name;                                  \
+  }                                                     \
 
 struct MessageAny
 {
-  int type;		/* type of message */
-  JList widgets;	/* destination widgets */
-  bool used : 1;	/* was used */
-  int shifts;		/* key shifts pressed when message was created */
+  int type;             /* type of message */
+  JList widgets;        /* destination widgets */
+  bool used : 1;        /* was used */
+  int shifts;           /* key shifts pressed when message was created */
 };
 
 struct MessageKey
 {
   MessageAny any;
-  unsigned scancode : 8;	/* Allegro scancode */
-  unsigned ascii : 8;		/* ASCII code */
-  unsigned repeat;		/* repeat=0 means the first time the key is pressed */
+  unsigned scancode : 8;        /* Allegro scancode */
+  unsigned ascii : 8;           /* ASCII code */
+  unsigned repeat;              /* repeat=0 means the first time the key is pressed */
   bool propagate_to_children : 1;
   bool propagate_to_parent : 1;
 };
@@ -41,50 +41,50 @@ struct MessageKey
 struct MessageDraw
 {
   MessageAny any;
-  int count;			/* cound=0 if it's last msg of draw-chain */
-  struct jrect rect;		/* area to draw */
+  int count;                    /* cound=0 if it's last msg of draw-chain */
+  struct jrect rect;            /* area to draw */
 };
 
 struct MessageMouse
 {
   MessageAny any;
-  int x, y;			/* mouse position */
-  unsigned flags : 4;		/* all buttons */
-  bool left : 1;		/* left button */
-  bool right : 1;		/* right button */
-  bool middle : 1;		/* middle button */
+  int x, y;                     /* mouse position */
+  unsigned flags : 4;           /* all buttons */
+  bool left : 1;                /* left button */
+  bool right : 1;               /* right button */
+  bool middle : 1;              /* middle button */
 };
 
 struct MessageSignal
 {
   MessageAny any;
-  int num;			/* signal number */
-  JWidget from;			/* signal generator */
+  int num;                      /* signal number */
+  JWidget from;                 /* signal generator */
 };
 
 struct MessageTimer
 {
   MessageAny any;
-  int count;			/* accumulated calls */
-  int timer_id;			/* number of timer */
+  int count;                    /* accumulated calls */
+  int timer_id;                 /* number of timer */
 };
 
 struct MessageSetPos
 {
   MessageAny any;
-  struct jrect rect;		/* set position */
+  struct jrect rect;            /* set position */
 };
 
 struct MessageReqSize
 {
   MessageAny any;
-  int w, h;			/* requested size */
+  int w, h;                     /* requested size */
 };
 
 struct MessageDrawRgn
 {
   MessageAny any;
-  JRegion region;		/* region to redraw */
+  JRegion region;               /* region to redraw */
 };
 
 struct MessageUser

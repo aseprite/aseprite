@@ -49,15 +49,15 @@ protected:
 
 SpritePropertiesCommand::SpritePropertiesCommand()
   : Command("SpriteProperties",
-	    "Sprite Properties",
-	    CmdUIOnlyFlag)
+            "Sprite Properties",
+            CmdUIOnlyFlag)
 {
 }
 
 bool SpritePropertiesCommand::onEnabled(Context* context)
 {
   return context->checkFlags(ContextFlags::ActiveDocumentIsWritable |
-			     ContextFlags::HasActiveSprite);
+                             ContextFlags::HasActiveSprite);
 }
 
 void SpritePropertiesCommand::onExecute(Context* context)
@@ -70,12 +70,12 @@ void SpritePropertiesCommand::onExecute(Context* context)
   // Load the window widget
   FramePtr window(load_widget("sprite_properties.xml", "sprite_properties"));
   get_widgets(window,
-	      "name", &name,
-	      "type", &type,
-	      "size", &size,
-	      "frames", &frames,
-	      "ok", &ok,
-	      "box_transparent", &box_transparent, NULL);
+              "name", &name,
+              "type", &type,
+              "size", &size,
+              "frames", &frames,
+              "ok", &ok,
+              "box_transparent", &box_transparent, NULL);
 
   // Get sprite properties and fill frame fields
   {
@@ -85,19 +85,19 @@ void SpritePropertiesCommand::onExecute(Context* context)
     // Update widgets values
     switch (sprite->getImgType()) {
       case IMAGE_RGB:
-	imgtype_text = "RGB";
-	break;
+        imgtype_text = "RGB";
+        break;
       case IMAGE_GRAYSCALE:
-	imgtype_text = "Grayscale";
-	break;
+        imgtype_text = "Grayscale";
+        break;
       case IMAGE_INDEXED:
-	sprintf(buf, "Indexed (%d colors)", sprite->getPalette(0)->size());
-	imgtype_text = buf;
-	break;
+        sprintf(buf, "Indexed (%d colors)", sprite->getPalette(0)->size());
+        imgtype_text = buf;
+        break;
       default:
-	ASSERT(false);
-	imgtype_text = "Unknown";
-	break;
+        ASSERT(false);
+        imgtype_text = "Unknown";
+        break;
     }
 
     // Filename
@@ -108,9 +108,9 @@ void SpritePropertiesCommand::onExecute(Context* context)
 
     // Sprite size (width and height)
     usprintf(buf, "%dx%d (%s)",
-	     sprite->getWidth(),
-	     sprite->getHeight(),
-	     get_pretty_memory_size(sprite->getMemSize()).c_str());
+             sprite->getWidth(),
+             sprite->getHeight(),
+             get_pretty_memory_size(sprite->getMemSize()).c_str());
 
     size->setText(buf);
 
@@ -119,7 +119,7 @@ void SpritePropertiesCommand::onExecute(Context* context)
 
     if (sprite->getImgType() == IMAGE_INDEXED) {
       color_button = new ColorButton(Color::fromIndex(sprite->getTransparentColor()),
-				     IMAGE_INDEXED);
+                                     IMAGE_INDEXED);
 
       box_transparent->addChild(color_button);
     }
@@ -144,9 +144,9 @@ void SpritePropertiesCommand::onExecute(Context* context)
       // property in the sprite.
       int index = color_button->getColor().getIndex();
       if (index != sprite->getTransparentColor()) {
-	// TODO Add undo handling
-	sprite->setTransparentColor(color_button->getColor().getIndex());
-	update_screen_for_document(document);
+        // TODO Add undo handling
+        sprite->setTransparentColor(color_button->getColor().getIndex());
+        update_screen_for_document(document);
       }
     }
   }

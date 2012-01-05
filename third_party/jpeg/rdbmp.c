@@ -21,7 +21,7 @@
  * This code contributed by James Arthur Boucher.
  */
 
-#include "cdjpeg.h"		/* Common decls for cjpeg/djpeg applications */
+#include "cdjpeg.h"             /* Common decls for cjpeg/djpeg applications */
 
 #ifdef BMP_SUPPORTED
 
@@ -30,19 +30,19 @@
 
 #ifdef HAVE_UNSIGNED_CHAR
 typedef unsigned char U_CHAR;
-#define UCH(x)	((int) (x))
+#define UCH(x)  ((int) (x))
 #else /* !HAVE_UNSIGNED_CHAR */
 #ifdef CHAR_IS_UNSIGNED
 typedef char U_CHAR;
-#define UCH(x)	((int) (x))
+#define UCH(x)  ((int) (x))
 #else
 typedef char U_CHAR;
-#define UCH(x)	((int) (x) & 0xFF)
+#define UCH(x)  ((int) (x) & 0xFF)
 #endif
 #endif /* HAVE_UNSIGNED_CHAR */
 
 
-#define	ReadOK(file,buffer,len)	(JFREAD(file,buffer,len) == ((size_t) (len)))
+#define ReadOK(file,buffer,len) (JFREAD(file,buffer,len) == ((size_t) (len)))
 
 
 /* Private version of data source object */
@@ -52,15 +52,15 @@ typedef struct _bmp_source_struct * bmp_source_ptr;
 typedef struct _bmp_source_struct {
   struct cjpeg_source_struct pub; /* public fields */
 
-  j_compress_ptr cinfo;		/* back link saves passing separate parm */
+  j_compress_ptr cinfo;         /* back link saves passing separate parm */
 
-  JSAMPARRAY colormap;		/* BMP colormap (converted to my format) */
+  JSAMPARRAY colormap;          /* BMP colormap (converted to my format) */
 
-  jvirt_sarray_ptr whole_image;	/* Needed to reverse row order */
-  JDIMENSION source_row;	/* Current source row number */
-  JDIMENSION row_width;		/* Physical width of scanlines in file */
+  jvirt_sarray_ptr whole_image; /* Needed to reverse row order */
+  JDIMENSION source_row;        /* Current source row number */
+  JDIMENSION row_width;         /* Physical width of scanlines in file */
 
-  int bits_per_pixel;		/* remembers 8- or 24-bit format */
+  int bits_per_pixel;           /* remembers 8- or 24-bit format */
 } bmp_source_struct;
 
 
@@ -137,7 +137,7 @@ get_8bit_row (j_compress_ptr cinfo, cjpeg_source_ptr sinfo)
   outptr = source->pub.buffer[0];
   for (col = cinfo->image_width; col > 0; col--) {
     t = GETJSAMPLE(*inptr++);
-    *outptr++ = colormap[0][t];	/* can omit GETJSAMPLE() safely */
+    *outptr++ = colormap[0][t]; /* can omit GETJSAMPLE() safely */
     *outptr++ = colormap[1][t];
     *outptr++ = colormap[2][t];
   }
@@ -167,7 +167,7 @@ get_24bit_row (j_compress_ptr cinfo, cjpeg_source_ptr sinfo)
   inptr = image_ptr[0];
   outptr = source->pub.buffer[0];
   for (col = cinfo->image_width; col > 0; col--) {
-    outptr[2] = *inptr++;	/* can omit GETJSAMPLE() safely */
+    outptr[2] = *inptr++;       /* can omit GETJSAMPLE() safely */
     outptr[1] = *inptr++;
     outptr[0] = *inptr++;
     outptr += 3;
@@ -208,7 +208,7 @@ preload_image (j_compress_ptr cinfo, cjpeg_source_ptr sinfo)
     for (col = source->row_width; col > 0; col--) {
       /* inline copy of read_byte() for speed */
       if ((c = getc(infile)) == EOF)
-	ERREXIT(cinfo, JERR_INPUT_EOF);
+        ERREXIT(cinfo, JERR_INPUT_EOF);
       *out_ptr++ = (JSAMPLE) c;
     }
   }
@@ -244,20 +244,20 @@ start_input_bmp (j_compress_ptr cinfo, cjpeg_source_ptr sinfo)
   U_CHAR bmpfileheader[14];
   U_CHAR bmpinfoheader[64];
 #define GET_2B(array,offset)  ((unsigned int) UCH(array[offset]) + \
-			       (((unsigned int) UCH(array[offset+1])) << 8))
+                               (((unsigned int) UCH(array[offset+1])) << 8))
 #define GET_4B(array,offset)  ((INT32) UCH(array[offset]) + \
-			       (((INT32) UCH(array[offset+1])) << 8) + \
-			       (((INT32) UCH(array[offset+2])) << 16) + \
-			       (((INT32) UCH(array[offset+3])) << 24))
+                               (((INT32) UCH(array[offset+1])) << 8) + \
+                               (((INT32) UCH(array[offset+2])) << 16) + \
+                               (((INT32) UCH(array[offset+3])) << 24))
   INT32 bfOffBits;
   INT32 headerSize;
-  INT32 biWidth = 0;		/* initialize to avoid compiler warning */
+  INT32 biWidth = 0;            /* initialize to avoid compiler warning */
   INT32 biHeight = 0;
   unsigned int biPlanes;
   INT32 biCompression;
   INT32 biXPelsPerMeter,biYPelsPerMeter;
   INT32 biClrUsed = 0;
-  int mapentrysize = 0;		/* 0 indicates no colormap */
+  int mapentrysize = 0;         /* 0 indicates no colormap */
   INT32 bPad;
   JDIMENSION row_width;
 
@@ -289,11 +289,11 @@ start_input_bmp (j_compress_ptr cinfo, cjpeg_source_ptr sinfo)
     source->bits_per_pixel = (int) GET_2B(bmpinfoheader,10);
 
     switch (source->bits_per_pixel) {
-    case 8:			/* colormapped image */
-      mapentrysize = 3;		/* OS/2 uses RGBTRIPLE colormap */
+    case 8:                     /* colormapped image */
+      mapentrysize = 3;         /* OS/2 uses RGBTRIPLE colormap */
       TRACEMS2(cinfo, 1, JTRC_BMP_OS2_MAPPED, (int) biWidth, (int) biHeight);
       break;
-    case 24:			/* RGB image */
+    case 24:                    /* RGB image */
       TRACEMS2(cinfo, 1, JTRC_BMP_OS2, (int) biWidth, (int) biHeight);
       break;
     default:
@@ -318,11 +318,11 @@ start_input_bmp (j_compress_ptr cinfo, cjpeg_source_ptr sinfo)
     /* biSizeImage, biClrImportant fields are ignored */
 
     switch (source->bits_per_pixel) {
-    case 8:			/* colormapped image */
-      mapentrysize = 4;		/* Windows uses RGBQUAD colormap */
+    case 8:                     /* colormapped image */
+      mapentrysize = 4;         /* Windows uses RGBQUAD colormap */
       TRACEMS2(cinfo, 1, JTRC_BMP_MAPPED, (int) biWidth, (int) biHeight);
       break;
-    case 24:			/* RGB image */
+    case 24:                    /* RGB image */
       TRACEMS2(cinfo, 1, JTRC_BMP, (int) biWidth, (int) biHeight);
       break;
     default:
@@ -338,7 +338,7 @@ start_input_bmp (j_compress_ptr cinfo, cjpeg_source_ptr sinfo)
       /* Set JFIF density parameters from the BMP data */
       cinfo->X_density = (UINT16) (biXPelsPerMeter/100); /* 100 cm per meter */
       cinfo->Y_density = (UINT16) (biYPelsPerMeter/100);
-      cinfo->density_unit = 2;	/* dots/cm */
+      cinfo->density_unit = 2;  /* dots/cm */
     }
     break;
   default:
@@ -352,7 +352,7 @@ start_input_bmp (j_compress_ptr cinfo, cjpeg_source_ptr sinfo)
   /* Read the colormap, if any */
   if (mapentrysize > 0) {
     if (biClrUsed <= 0)
-      biClrUsed = 256;		/* assume it's 256 */
+      biClrUsed = 256;          /* assume it's 256 */
     else if (biClrUsed > 256)
       ERREXIT(cinfo, JERR_BMP_BADCMAP);
     /* Allocate space to store the colormap */
@@ -366,7 +366,7 @@ start_input_bmp (j_compress_ptr cinfo, cjpeg_source_ptr sinfo)
   }
 
   /* Skip any remaining pad bytes */
-  if (bPad < 0)			/* incorrect bfOffBits value? */
+  if (bPad < 0)                 /* incorrect bfOffBits value? */
     ERREXIT(cinfo, JERR_BMP_BADHEADER);
   while (--bPad >= 0) {
     (void) read_byte(source);
@@ -427,8 +427,8 @@ jinit_read_bmp (j_compress_ptr cinfo)
   /* Create module interface object */
   source = (bmp_source_ptr)
       (*cinfo->mem->alloc_small) ((j_common_ptr) cinfo, JPOOL_IMAGE,
-				  SIZEOF(bmp_source_struct));
-  source->cinfo = cinfo;	/* make back link for subroutines */
+                                  SIZEOF(bmp_source_struct));
+  source->cinfo = cinfo;        /* make back link for subroutines */
   /* Fill in method ptrs, except get_pixel_rows which start_input sets */
   source->pub.start_input = start_input_bmp;
   source->pub.finish_input = finish_input_bmp;

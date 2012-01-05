@@ -31,7 +31,7 @@
 
 static bool my_callback();
 static void my_play_fli(const char *filename, bool loop, bool fullscreen,
-			bool (*callback)());
+                        bool (*callback)());
 
 void play_fli_animation(const char *filename, bool loop, bool fullscreen)
 {
@@ -97,7 +97,7 @@ static void speed_timer_callback()
 END_OF_STATIC_FUNCTION(speed_timer_callback);
 
 static void my_play_fli(const char *filename, bool loop, bool fullscreen,
-			bool (*callback)())
+                        bool (*callback)())
 {
   unsigned char cmap[768];
   unsigned char omap[768];
@@ -156,14 +156,14 @@ static void my_play_fli(const char *filename, bool loop, bool fullscreen,
   while (!done) {
     /* read the frame */
     fli_read_frame(f, &fli_header,
-		   (unsigned char *)old->dat, omap,
-		   (unsigned char *)bmp->dat, cmap);
+                   (unsigned char *)old->dat, omap,
+                   (unsigned char *)bmp->dat, cmap);
 
     if ((!frpos) || (memcmp (omap, cmap, 768) != 0)) {
       for (c=i=0; c<256; c++) {
-	pal[c].r = cmap[i++]>>2;
-	pal[c].g = cmap[i++]>>2;
-	pal[c].b = cmap[i++]>>2;
+        pal[c].r = cmap[i++]>>2;
+        pal[c].g = cmap[i++]>>2;
+        pal[c].b = cmap[i++]>>2;
       }
       set_palette(pal);
       memcpy(omap, cmap, 768);
@@ -171,7 +171,7 @@ static void my_play_fli(const char *filename, bool loop, bool fullscreen,
 
     if (fullscreen)
       stretch_blit(bmp, ji_screen,
-		   0, 0, fli_header.width, fli_header.height, x, y, w, h);
+                   0, 0, fli_header.width, fli_header.height, x, y, w, h);
     else
       blit(bmp, ji_screen, 0, 0, x, y, w, h);
 
@@ -180,17 +180,17 @@ static void my_play_fli(const char *filename, bool loop, bool fullscreen,
 
     do {
       if ((*callback) ()) {
-	done = true;
-	break;
+        done = true;
+        break;
       }
     } while (speed_timer <= 0);
 
     if ((++frpos) >= fli_header.frames) {
       if (!loop)
-	break;
+        break;
       else {
-	fseek(f, 128, SEEK_SET);
-	frpos = 0;
+        fseek(f, 128, SEEK_SET);
+        frpos = 0;
       }
     }
 
@@ -203,4 +203,3 @@ static void my_play_fli(const char *filename, bool loop, bool fullscreen,
 
   fclose(f);
 }
-

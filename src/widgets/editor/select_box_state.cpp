@@ -73,8 +73,8 @@ bool SelectBoxState::onMouseDown(Editor* editor, Message* msg)
 
     for (int i=0; i<(int)m_rulers.size(); ++i) {
       if (touchRuler(editor, m_rulers[i], msg->mouse.x, msg->mouse.y)) {
-	m_movingRuler = i;
-	break;
+        m_movingRuler = i;
+        break;
       }
     }
 
@@ -100,12 +100,12 @@ bool SelectBoxState::onMouseMove(Editor* editor, Message* msg)
     switch (m_rulers[m_movingRuler].getOrientation()) {
 
       case Ruler::Horizontal:
-	m_rulers[m_movingRuler].setPosition(v);
-	break;
+        m_rulers[m_movingRuler].setPosition(v);
+        break;
 
       case Ruler::Vertical:
-	m_rulers[m_movingRuler].setPosition(u);
-	break;
+        m_rulers[m_movingRuler].setPosition(u);
+        break;
     }
 
     if (m_delegate)
@@ -132,12 +132,12 @@ bool SelectBoxState::onSetCursor(Editor* editor)
   for (Rulers::iterator it = m_rulers.begin(), end = m_rulers.end(); it != end; ++it) {
     if (touchRuler(editor, *it, x, y)) {
       switch (it->getOrientation()) {
-	case Ruler::Horizontal:
-	  jmouse_set_cursor(JI_CURSOR_SIZE_T);
-	  return true;
-	case Ruler::Vertical:
-	  jmouse_set_cursor(JI_CURSOR_SIZE_L);
-	  return true;
+        case Ruler::Horizontal:
+          jmouse_set_cursor(JI_CURSOR_SIZE_T);
+          return true;
+        case Ruler::Vertical:
+          jmouse_set_cursor(JI_CURSOR_SIZE_L);
+          return true;
       }
     }
   }
@@ -191,11 +191,11 @@ void SelectBoxState::postRenderDecorator(EditorPostRender* render)
 
     if (boxBounds.w > 0)
       for (int x=boxBounds.x+boxBounds.w*2; x<vp.x+vp.w; x+=boxBounds.w)
-	render->drawLine(x, boxBounds.y, x, vp.y+vp.h-1, gridColor);
+        render->drawLine(x, boxBounds.y, x, vp.y+vp.h-1, gridColor);
 
     if (boxBounds.h > 0)
       for (int y=boxBounds.y+boxBounds.h*2; y<vp.y+vp.h; y+=boxBounds.h)
-	render->drawLine(boxBounds.x, y, vp.x+vp.w-1, y, gridColor);
+        render->drawLine(boxBounds.x, y, vp.x+vp.w-1, y, gridColor);
   }
 
   // Draw the rulers enclosing the box
@@ -205,13 +205,13 @@ void SelectBoxState::postRenderDecorator(EditorPostRender* render)
     for (Rulers::iterator it = m_rulers.begin(), end = m_rulers.end(); it != end; ++it) {
       switch (it->getOrientation()) {
 
-	case Ruler::Horizontal:
-	  render->drawLine(vp.x, it->getPosition(), vp.x+vp.w-1, it->getPosition(), rulerColor);
-	  break;
+        case Ruler::Horizontal:
+          render->drawLine(vp.x, it->getPosition(), vp.x+vp.w-1, it->getPosition(), rulerColor);
+          break;
 
-	case Ruler::Vertical:
-	  render->drawLine(it->getPosition(), vp.y, it->getPosition(), vp.y+vp.h-1, rulerColor);
-	  break;
+        case Ruler::Vertical:
+          render->drawLine(it->getPosition(), vp.y, it->getPosition(), vp.y+vp.h-1, rulerColor);
+          break;
       }
     }
   }

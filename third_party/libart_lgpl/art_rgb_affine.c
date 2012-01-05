@@ -60,11 +60,11 @@
  **/
 void
 art_rgb_affine (art_u8 *dst, int x0, int y0, int x1, int y1, int dst_rowstride,
-		const art_u8 *src,
-		int src_width, int src_height, int src_rowstride,
-		const double affine[6],
-		ArtFilterLevel level,
-		ArtAlphaGamma *alphagamma)
+                const art_u8 *src,
+                int src_width, int src_height, int src_rowstride,
+                const double affine[6],
+                ArtFilterLevel level,
+                ArtAlphaGamma *alphagamma)
 {
   /* Note: this is a slow implementation, and is missing all filter
      levels other than NEAREST. It is here for clarity of presentation
@@ -85,20 +85,20 @@ art_rgb_affine (art_u8 *dst, int x0, int y0, int x1, int y1, int dst_rowstride,
       run_x0 = x0;
       run_x1 = x1;
       art_rgb_affine_run (&run_x0, &run_x1, y, src_width, src_height,
-			  inv);
+                          inv);
       dst_p = dst_linestart + (run_x0 - x0) * 3;
       for (x = run_x0; x < run_x1; x++)
-	{
-	  pt.x = x + 0.5;
-	  art_affine_point (&src_pt, &pt, inv);
-	  src_x = floor (src_pt.x);
-	  src_y = floor (src_pt.y);
-	  src_p = src + (src_y * src_rowstride) + src_x * 3;
-	  dst_p[0] = src_p[0];
-	  dst_p[1] = src_p[1];
-	  dst_p[2] = src_p[2];
-	  dst_p += 3;
-	}
+        {
+          pt.x = x + 0.5;
+          art_affine_point (&src_pt, &pt, inv);
+          src_x = floor (src_pt.x);
+          src_y = floor (src_pt.y);
+          src_p = src + (src_y * src_rowstride) + src_x * 3;
+          dst_p[0] = src_p[0];
+          dst_p[1] = src_p[1];
+          dst_p[2] = src_p[2];
+          dst_p += 3;
+        }
       dst_linestart += dst_rowstride;
     }
 }

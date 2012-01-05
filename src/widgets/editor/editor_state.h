@@ -93,4 +93,4 @@ private:
 
 typedef SharedPtr<EditorState> EditorStatePtr;
 
-#endif	// WIDGETS_EDITOR_EDITOR_STATE_H_INCLUDED
+#endif  // WIDGETS_EDITOR_EDITOR_STATE_H_INCLUDED

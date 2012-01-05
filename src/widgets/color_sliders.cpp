@@ -52,30 +52,30 @@ namespace {
       int depth = g->getBitsPerPixel();
       int color;
       for (int x=0; x < rc.w; ++x) {
-	switch (m_channel) {
-	  case ColorSliders::Red:
-	    color = makecol(255 * x / (rc.w-1), m_color.getGreen(), m_color.getBlue());
-	    break;
-	  case ColorSliders::Green:
-	    color = makecol(m_color.getRed(), 255 * x / (rc.w-1), m_color.getBlue());
-	    break;
-	  case ColorSliders::Blue:
-	    color = makecol(m_color.getRed(), m_color.getGreen(), 255 * x / (rc.w-1));
-	    break;
-	  case ColorSliders::Hue:
-	    color = color_utils::color_for_allegro(Color::fromHsv(360 * x / (rc.w-1), m_color.getSaturation(), m_color.getValue()), depth);
-	    break;
-	  case ColorSliders::Saturation:
-	    color = color_utils::color_for_allegro(Color::fromHsv(m_color.getHue(), 100 * x / (rc.w-1), m_color.getValue()), depth);
-	    break;
-	  case ColorSliders::Value:
-	    color = color_utils::color_for_allegro(Color::fromHsv(m_color.getHue(), m_color.getSaturation(), 100 * x / (rc.w-1)), depth);
-	    break;
-	  case ColorSliders::Gray:
-	    color = color_utils::color_for_allegro(Color::fromGray(255 * x / (rc.w-1)), depth);
-	    break;
-	}
-	g->drawVLine(color, rc.x+x, rc.y, rc.h);
+        switch (m_channel) {
+          case ColorSliders::Red:
+            color = makecol(255 * x / (rc.w-1), m_color.getGreen(), m_color.getBlue());
+            break;
+          case ColorSliders::Green:
+            color = makecol(m_color.getRed(), 255 * x / (rc.w-1), m_color.getBlue());
+            break;
+          case ColorSliders::Blue:
+            color = makecol(m_color.getRed(), m_color.getGreen(), 255 * x / (rc.w-1));
+            break;
+          case ColorSliders::Hue:
+            color = color_utils::color_for_allegro(Color::fromHsv(360 * x / (rc.w-1), m_color.getSaturation(), m_color.getValue()), depth);
+            break;
+          case ColorSliders::Saturation:
+            color = color_utils::color_for_allegro(Color::fromHsv(m_color.getHue(), 100 * x / (rc.w-1), m_color.getValue()), depth);
+            break;
+          case ColorSliders::Value:
+            color = color_utils::color_for_allegro(Color::fromHsv(m_color.getHue(), m_color.getSaturation(), 100 * x / (rc.w-1)), depth);
+            break;
+          case ColorSliders::Gray:
+            color = color_utils::color_for_allegro(Color::fromGray(255 * x / (rc.w-1)), depth);
+            break;
+        }
+        g->drawVLine(color, rc.x+x, rc.y, rc.h);
       }
     }
 
@@ -84,7 +84,7 @@ namespace {
     BITMAP* m_cachedBg;
     Color m_color;
   };
- 
+
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -162,8 +162,8 @@ void ColorSliders::onEntryChange(int i)
   int value = m_entry[i]->getTextInt();
 
   value = MID(m_slider[i]->getMinValue(),
-	      value,
-	      m_slider[i]->getMaxValue());
+              value,
+              m_slider[i]->getMaxValue());
 
   m_slider[i]->setValue(value);
 
@@ -225,8 +225,8 @@ void RgbSliders::onSetColor(const Color& color)
 Color RgbSliders::getColorFromSliders()
 {
   return Color::fromRgb(getSliderValue(0),
-			getSliderValue(1),
-			getSliderValue(2));
+                        getSliderValue(1),
+                        getSliderValue(2));
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -250,8 +250,8 @@ void HsvSliders::onSetColor(const Color& color)
 Color HsvSliders::getColorFromSliders()
 {
   return Color::fromHsv(getSliderValue(0),
-			getSliderValue(1),
-			getSliderValue(2));
+                        getSliderValue(1),
+                        getSliderValue(2));
 }
 
 //////////////////////////////////////////////////////////////////////

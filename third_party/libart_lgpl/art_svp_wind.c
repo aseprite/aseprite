@@ -43,7 +43,7 @@
    z0-z1 and z2-z3 intersect each other. */
 static int
 intersect_lines (ArtPoint z0, ArtPoint z1, ArtPoint z2, ArtPoint z3,
-		 ArtPoint *p)
+                 ArtPoint *p)
 {
   double a01, b01, c01;
   double a23, b23, c23;
@@ -63,7 +63,7 @@ intersect_lines (ArtPoint z0, ArtPoint z1, ArtPoint z2, ArtPoint z3,
   a01 = z0.y - z1.y;
   b01 = z1.x - z0.x;
   c01 = -(z0.x * a01 + z0.y * b01);
-  /* = -((z0.y - z1.y) * z0.x + (z1.x - z0.x) * z0.y) 
+  /* = -((z0.y - z1.y) * z0.x + (z1.x - z0.x) * z0.y)
      = (z1.x * z0.y - z1.y * z0.x) */
 
   d2 = a01 * z2.x + b01 * z2.y + c01;
@@ -131,71 +131,71 @@ x_order (ArtPoint z0, ArtPoint z1, ArtPoint z2, ArtPoint z3)
   if (z0.y == z1.y)
     {
       if (z2.y == z3.y)
-	{
-	  double x01min, x01max;
-	  double x23min, x23max;
+        {
+          double x01min, x01max;
+          double x23min, x23max;
 
-	  if (z0.x > z1.x)
-	    {
-	      x01min = z1.x;
-	      x01max = z0.x;
-	    }
-	  else
-	    {
-	      x01min = z0.x;
-	      x01max = z1.x;
-	    }
+          if (z0.x > z1.x)
+            {
+              x01min = z1.x;
+              x01max = z0.x;
+            }
+          else
+            {
+              x01min = z0.x;
+              x01max = z1.x;
+            }
 
-	  if (z2.x > z3.x)
-	    {
-	      x23min = z3.x;
-	      x23max = z2.x;
-	    }
-	  else
-	    {
-	      x23min = z2.x;
-	      x23max = z3.x;
-	    }
+          if (z2.x > z3.x)
+            {
+              x23min = z3.x;
+              x23max = z2.x;
+            }
+          else
+            {
+              x23min = z2.x;
+              x23max = z3.x;
+            }
 
-	  if (x23min >= x01max) return 1;
-	  else if (x01min >= x23max) return -1;
-	  else return 0;
-	}
+          if (x23min >= x01max) return 1;
+          else if (x01min >= x23max) return -1;
+          else return 0;
+        }
       else
-	{
-	  /* z0-z1 is horizontal, z2-z3 isn't */
-	  a23 = z2.y - z3.y;
-	  b23 = z3.x - z2.x;
-	  c23 = -(z2.x * a23 + z2.y * b23);
+        {
+          /* z0-z1 is horizontal, z2-z3 isn't */
+          a23 = z2.y - z3.y;
+          b23 = z3.x - z2.x;
+          c23 = -(z2.x * a23 + z2.y * b23);
 
-	  if (z3.y < z2.y)
-	    {
-	      a23 = -a23;
-	      b23 = -b23;
-	      c23 = -c23;
-	    }
-	  
-	  d0 = trap_epsilon (a23 * z0.x + b23 * z0.y + c23);
-	  d1 = trap_epsilon (a23 * z1.x + b23 * z1.y + c23);
+          if (z3.y < z2.y)
+            {
+              a23 = -a23;
+              b23 = -b23;
+              c23 = -c23;
+            }
 
-	  if (d0 > 0)
-	    {
-	      if (d1 >= 0) return 1;
-	      else return 0;
-	    }
-	  else if (d0 == 0)
-	    {
-	      if (d1 > 0) return 1;
-	      else if (d1 < 0) return -1;
-	      else printf ("case 1 degenerate\n");
-	      return 0;
-	    }
-	  else /* d0 < 0 */
-	    {
-	      if (d1 <= 0) return -1;
-	      else return 0;
-	    }
-	}
+          d0 = trap_epsilon (a23 * z0.x + b23 * z0.y + c23);
+          d1 = trap_epsilon (a23 * z1.x + b23 * z1.y + c23);
+
+          if (d0 > 0)
+            {
+              if (d1 >= 0) return 1;
+              else return 0;
+            }
+          else if (d0 == 0)
+            {
+              if (d1 > 0) return 1;
+              else if (d1 < 0) return -1;
+              else printf ("case 1 degenerate\n");
+              return 0;
+            }
+          else /* d0 < 0 */
+            {
+              if (d1 <= 0) return -1;
+              else return 0;
+            }
+        }
     }
   else if (z2.y == z3.y)
     {
@@ -203,43 +203,43 @@ x_order (ArtPoint z0, ArtPoint z1, ArtPoint z2, ArtPoint z3)
       a01 = z0.y - z1.y;
       b01 = z1.x - z0.x;
       c01 = -(z0.x * a01 + z0.y * b01);
-      /* = -((z0.y - z1.y) * z0.x + (z1.x - z0.x) * z0.y) 
-	 = (z1.x * z0.y - z1.y * z0.x) */
+      /* = -((z0.y - z1.y) * z0.x + (z1.x - z0.x) * z0.y)
+         = (z1.x * z0.y - z1.y * z0.x) */
 
       if (z1.y < z0.y)
-	{
-	  a01 = -a01;
-	  b01 = -b01;
-	  c01 = -c01;
-	}
+        {
+          a01 = -a01;
+          b01 = -b01;
+          c01 = -c01;
+        }
 
       d2 = trap_epsilon (a01 * z2.x + b01 * z2.y + c01);
       d3 = trap_epsilon (a01 * z3.x + b01 * z3.y + c01);
 
       if (d2 > 0)
-	{
-	  if (d3 >= 0) return -1;
-	  else return 0;
-	}
+        {
+          if (d3 >= 0) return -1;
+          else return 0;
+        }
       else if (d2 == 0)
-	{
-	  if (d3 > 0) return -1;
-	  else if (d3 < 0) return 1;
-	  else printf ("case 2 degenerate\n");
-	  return 0;
-	}
+        {
+          if (d3 > 0) return -1;
+          else if (d3 < 0) return 1;
+          else printf ("case 2 degenerate\n");
+          return 0;
+        }
       else /* d2 < 0 */
-	{
-	  if (d3 <= 0) return 1;
-	  else return 0;
-	}
+        {
+          if (d3 <= 0) return 1;
+          else return 0;
+        }
     }
 
   /* find line equations ax + by + c = 0 */
   a01 = z0.y - z1.y;
   b01 = z1.x - z0.x;
   c01 = -(z0.x * a01 + z0.y * b01);
-  /* = -((z0.y - z1.y) * z0.x + (z1.x - z0.x) * z0.y) 
+  /* = -((z0.y - z1.y) * z0.x + (z1.x - z0.x) * z0.y)
      = -(z1.x * z0.y - z1.y * z0.x) */
 
   if (a01 > 0)
@@ -262,7 +262,7 @@ x_order (ArtPoint z0, ArtPoint z1, ArtPoint z2, ArtPoint z3)
       if (d3 > 0) return -1;
       else if (d3 < 0) return 1;
       else
-	fprintf (stderr, "colinear!\n");
+        fprintf (stderr, "colinear!\n");
     }
   else /* d2 < 0 */
     {
@@ -290,7 +290,7 @@ x_order (ArtPoint z0, ArtPoint z1, ArtPoint z2, ArtPoint z3)
       if (d1 > 0) return 1;
       else if (d1 < 0) return -1;
       else
-	fprintf (stderr, "colinear!\n");
+        fprintf (stderr, "colinear!\n");
     }
   else /* d0 < 0 */
     {
@@ -336,7 +336,7 @@ x_order_2 (ArtPoint z0, ArtPoint z1, ArtPoint z2, ArtPoint z3)
     return -1;
   if (z0.x >= z2.x && z1.x >= z2.x && z0.x >= z3.x && z1.x >= z3.x)
     return 1;
-  
+
   fprintf (stderr, "x_order_2: colinear!\n");
   return 0;
 }
@@ -369,87 +369,87 @@ traverse (ArtSVP *vp)
       printf ("y = %g\n", y);
       /* delete segments ending at y from active list */
       for (i = 0; i < n_active_segs; i++)
-	{
-	  asi = active_segs[i];
-	  if (vp->segs[asi].n_points - 1 == cursor[asi] &&
-	      vp->segs[asi].points[cursor[asi]].y == y)
-	    {
-	      printf ("deleting %d\n", asi);
-	      n_active_segs--;
-	      for (j = i; j < n_active_segs; j++)
-		active_segs[j] = active_segs[j + 1];
-	      i--;
-	    }
-	}
+        {
+          asi = active_segs[i];
+          if (vp->segs[asi].n_points - 1 == cursor[asi] &&
+              vp->segs[asi].points[cursor[asi]].y == y)
+            {
+              printf ("deleting %d\n", asi);
+              n_active_segs--;
+              for (j = i; j < n_active_segs; j++)
+                active_segs[j] = active_segs[j + 1];
+              i--;
+            }
+        }
 
       /* insert new segments into the active list */
       while (seg_idx < vp->n_segs && y == vp->segs[seg_idx].points[0].y)
-	{
-	  cursor[seg_idx] = 0;
-	  printf ("inserting %d\n", seg_idx);
-	  for (i = 0; i < n_active_segs; i++)
-	    {
-	      asi = active_segs[i];
-	      if (x_order (vp->segs[asi].points[cursor[asi]],
-			   vp->segs[asi].points[cursor[asi] + 1],
-			   vp->segs[seg_idx].points[0],
-			   vp->segs[seg_idx].points[1]) == -1)
-	      break;
-	    }
-	  tmp1 = seg_idx;
-	  for (j = i; j < n_active_segs; j++)
-	    {
-	      tmp2 = active_segs[j];
-	      active_segs[j] = tmp1;
-	      tmp1 = tmp2;
-	    }
-	  active_segs[n_active_segs] = tmp1;
-	  n_active_segs++;
-	  seg_idx++;
-	}
+        {
+          cursor[seg_idx] = 0;
+          printf ("inserting %d\n", seg_idx);
+          for (i = 0; i < n_active_segs; i++)
+            {
+              asi = active_segs[i];
+              if (x_order (vp->segs[asi].points[cursor[asi]],
+                           vp->segs[asi].points[cursor[asi] + 1],
+                           vp->segs[seg_idx].points[0],
+                           vp->segs[seg_idx].points[1]) == -1)
+              break;
+            }
+          tmp1 = seg_idx;
+          for (j = i; j < n_active_segs; j++)
+            {
+              tmp2 = active_segs[j];
+              active_segs[j] = tmp1;
+              tmp1 = tmp2;
+            }
+          active_segs[n_active_segs] = tmp1;
+          n_active_segs++;
+          seg_idx++;
+        }
 
       /* all active segs cross the y scanline (considering segs to be
        closed on top and open on bottom) */
       for (i = 0; i < n_active_segs; i++)
-	{
-	  asi = active_segs[i];
-	  printf ("%d (%g, %g) - (%g, %g) %s\n", asi,
-		  vp->segs[asi].points[cursor[asi]].x,
-		  vp->segs[asi].points[cursor[asi]].y,
-		  vp->segs[asi].points[cursor[asi] + 1].x,
-		  vp->segs[asi].points[cursor[asi] + 1].y,
-		  vp->segs[asi].dir ? "v" : "^");
-	}
+        {
+          asi = active_segs[i];
+          printf ("%d (%g, %g) - (%g, %g) %s\n", asi,
+                  vp->segs[asi].points[cursor[asi]].x,
+                  vp->segs[asi].points[cursor[asi]].y,
+                  vp->segs[asi].points[cursor[asi] + 1].x,
+                  vp->segs[asi].points[cursor[asi] + 1].y,
+                  vp->segs[asi].dir ? "v" : "^");
+        }
 
       /* advance y to the next event */
       if (n_active_segs == 0)
-	{
-	  if (seg_idx < vp->n_segs)
-	    y = vp->segs[seg_idx].points[0].y;
-	  /* else we're done */
-	}
+        {
+          if (seg_idx < vp->n_segs)
+            y = vp->segs[seg_idx].points[0].y;
+          /* else we're done */
+        }
       else
-	{
-	  asi = active_segs[0];
-	  y = vp->segs[asi].points[cursor[asi] + 1].y;
-	  for (i = 1; i < n_active_segs; i++)
-	    {
-	      asi = active_segs[i];
-	      if (y > vp->segs[asi].points[cursor[asi] + 1].y)
-		y = vp->segs[asi].points[cursor[asi] + 1].y;
-	    }
-	  if (seg_idx < vp->n_segs && y > vp->segs[seg_idx].points[0].y)
-	    y = vp->segs[seg_idx].points[0].y;
-	}
+        {
+          asi = active_segs[0];
+          y = vp->segs[asi].points[cursor[asi] + 1].y;
+          for (i = 1; i < n_active_segs; i++)
+            {
+              asi = active_segs[i];
+              if (y > vp->segs[asi].points[cursor[asi] + 1].y)
+                y = vp->segs[asi].points[cursor[asi] + 1].y;
+            }
+          if (seg_idx < vp->n_segs && y > vp->segs[seg_idx].points[0].y)
+            y = vp->segs[seg_idx].points[0].y;
+        }
 
       /* advance cursors to reach new y */
       for (i = 0; i < n_active_segs; i++)
-	{
-	  asi = active_segs[i];
-	  while (cursor[asi] < vp->segs[asi].n_points - 1 &&
-		 y >= vp->segs[asi].points[cursor[asi] + 1].y)
-	    cursor[asi]++;
-	}
+        {
+          asi = active_segs[i];
+          while (cursor[asi] < vp->segs[asi].n_points - 1 &&
+                 y >= vp->segs[asi].points[cursor[asi] + 1].y)
+            cursor[asi]++;
+        }
       printf ("\n");
     }
   art_free (cursor);
@@ -498,8 +498,8 @@ insert_ip (int seg_i, int *n_ips, int *n_ips_max, ArtPoint **ips, ArtPoint ip)
    so, add intersection point to both ips lists. */
 static void
 intersect_neighbors (int i, int *active_segs,
-		     int *n_ips, int *n_ips_max, ArtPoint **ips,
-		     int *cursor, ArtSVP *vp)
+                     int *n_ips, int *n_ips_max, ArtPoint **ips,
+                     int *cursor, ArtSVP *vp)
 {
   ArtPoint z0, z1, z2, z3;
   int asi01, asi23;
@@ -539,8 +539,8 @@ intersect_neighbors (int i, int *active_segs,
 */
 static void
 svp_add_point (ArtSVP *svp, int *n_points_max,
-	       ArtPoint p, int *seg_map, int *active_segs, int n_active_segs,
-	       int i)
+               ArtPoint p, int *seg_map, int *active_segs, int n_active_segs,
+               int i)
 {
   int asi, asi_left, asi_right;
   int n_points, n_points_left, n_points_right;
@@ -554,45 +554,45 @@ svp_add_point (ArtSVP *svp, int *n_points_max,
     {
       asi_left = seg_map[active_segs[i - 1]];
       n_points_left = svp->segs[asi_left].n_points;
-      if (n_points_left > 1 && 
-	  PT_EQ (svp->segs[asi_left].points[n_points_left - 2],
-		 svp->segs[asi].points[n_points - 1]))
-	{
-	  /* ok, new vector shares a top point with segment to the left -
-	     now, check that it satisfies ordering invariant */
-	  if (x_order (svp->segs[asi_left].points[n_points_left - 2],
-		       svp->segs[asi_left].points[n_points_left - 1],
-		       svp->segs[asi].points[n_points - 1],
-		       p) < 1)
+      if (n_points_left > 1 &&
+          PT_EQ (svp->segs[asi_left].points[n_points_left - 2],
+                 svp->segs[asi].points[n_points - 1]))
+        {
+          /* ok, new vector shares a top point with segment to the left -
+             now, check that it satisfies ordering invariant */
+          if (x_order (svp->segs[asi_left].points[n_points_left - 2],
+                       svp->segs[asi_left].points[n_points_left - 1],
+                       svp->segs[asi].points[n_points - 1],
+                       p) < 1)
 
-	    {
+            {
 #ifdef VERBOSE
-	      printf ("svp_add_point: cross on left!\n");
+              printf ("svp_add_point: cross on left!\n");
 #endif
-	    }
-	}
+            }
+        }
     }
 
   if (i + 1 < n_active_segs)
     {
       asi_right = seg_map[active_segs[i + 1]];
       n_points_right = svp->segs[asi_right].n_points;
-      if (n_points_right > 1 && 
-	  PT_EQ (svp->segs[asi_right].points[n_points_right - 2],
-		 svp->segs[asi].points[n_points - 1]))
-	{
-	  /* ok, new vector shares a top point with segment to the right -
-	     now, check that it satisfies ordering invariant */
-	  if (x_order (svp->segs[asi_right].points[n_points_right - 2],
-		       svp->segs[asi_right].points[n_points_right - 1],
-		       svp->segs[asi].points[n_points - 1],
-		       p) > -1)
-	    {
+      if (n_points_right > 1 &&
+          PT_EQ (svp->segs[asi_right].points[n_points_right - 2],
+                 svp->segs[asi].points[n_points - 1]))
+        {
+          /* ok, new vector shares a top point with segment to the right -
+             now, check that it satisfies ordering invariant */
+          if (x_order (svp->segs[asi_right].points[n_points_right - 2],
+                       svp->segs[asi_right].points[n_points_right - 1],
+                       svp->segs[asi].points[n_points - 1],
+                       p) > -1)
+            {
 #ifdef VERBOSE
-	      printf ("svp_add_point: cross on right!\n");
+              printf ("svp_add_point: cross on right!\n");
 #endif
-	    }
-	}
+            }
+        }
     }
   if (n_points_max[asi] == n_points)
     art_expand (seg->points, ArtPoint, n_points_max[asi]);
@@ -616,7 +616,7 @@ svp_add_point (ArtSVP *svp, int *n_points_max,
    */
 static int
 find_crossing (int i, int *active_segs, int n_active_segs,
-	       int *cursor, ArtPoint **ips, int *n_ips, ArtSVP *vp)
+               int *cursor, ArtPoint **ips, int *n_ips, ArtSVP *vp)
 {
   int asi, asi_left, asi_right;
   ArtPoint p0, p1;
@@ -636,18 +636,18 @@ find_crossing (int i, int *active_segs, int n_active_segs,
       asi_left = active_segs[target - 1];
       p0l = ips[asi_left][0];
       if (n_ips[asi_left] == 1)
-	p1l = vp->segs[asi_left].points[cursor[asi_left] + 1];
+        p1l = vp->segs[asi_left].points[cursor[asi_left] + 1];
       else
-	p1l = ips[asi_left][1];
+        p1l = ips[asi_left][1];
       if (!PT_EQ (p0, p0l))
-	break;
+        break;
 
 #ifdef VERBOSE
       printf ("point matches on left (%g, %g) - (%g, %g) x (%g, %g) - (%g, %g)!\n",
-	      p0l.x, p0l.y, p1l.x, p1l.y, p0.x, p0.y, p1.x, p1.y);
+              p0l.x, p0l.y, p1l.x, p1l.y, p0.x, p0.y, p1.x, p1.y);
 #endif
       if (x_order (p0l, p1l, p0, p1) == 1)
-	break;
+        break;
 
 #ifdef VERBOSE
       printf ("scanning to the left (i=%d, target=%d)\n", i, target);
@@ -661,18 +661,18 @@ find_crossing (int i, int *active_segs, int n_active_segs,
       asi_right = active_segs[target + 1];
       p0r = ips[asi_right][0];
       if (n_ips[asi_right] == 1)
-	p1r = vp->segs[asi_right].points[cursor[asi_right] + 1];
+        p1r = vp->segs[asi_right].points[cursor[asi_right] + 1];
       else
-	p1r = ips[asi_right][1];
+        p1r = ips[asi_right][1];
       if (!PT_EQ (p0, p0r))
-	break;
+        break;
 
 #ifdef VERBOSE
       printf ("point matches on left (%g, %g) - (%g, %g) x (%g, %g) - (%g, %g)!\n",
-	      p0.x, p0.y, p1.x, p1.y, p0r.x, p0r.y, p1r.x, p1r.y);
+              p0.x, p0.y, p1.x, p1.y, p0r.x, p0r.y, p1r.x, p1r.y);
 #endif
       if (x_order (p0r, p1r, p0, p1) == 1)
-	break;
+        break;
 
 #ifdef VERBOSE
       printf ("scanning to the right (i=%d, target=%d)\n", i, target);
@@ -699,10 +699,10 @@ find_crossing (int i, int *active_segs, int n_active_segs,
 */
 static void
 fix_crossing (int start, int end, int *active_segs, int n_active_segs,
-	      int *cursor, ArtPoint **ips, int *n_ips, int *n_ips_max,
-	      ArtSVP *vp, int *seg_map,
-	      ArtSVP **p_new_vp, int *pn_segs_max,
-	      int **pn_points_max)
+              int *cursor, ArtPoint **ips, int *n_ips, int *n_ips_max,
+              ArtSVP *vp, int *seg_map,
+              ArtSVP **p_new_vp, int *pn_segs_max,
+              int **pn_points_max)
 {
   int i, j;
   int target;
@@ -730,77 +730,77 @@ fix_crossing (int start, int end, int *active_segs, int n_active_segs,
 
       asi = active_segs[i];
       if (cursor[asi] < vp->segs[asi].n_points - 1) {
-	p0i = ips[asi][0];
-	if (n_ips[asi] == 1)
-	  p1i = vp->segs[asi].points[cursor[asi] + 1];
-	else
-	  p1i = ips[asi][1];
+        p0i = ips[asi][0];
+        if (n_ips[asi] == 1)
+          p1i = vp->segs[asi].points[cursor[asi] + 1];
+        else
+          p1i = ips[asi][1];
 
-	for (j = i - 1; j >= start; j--)
-	  {
-	    asj = active_segs[j];
-	    if (cursor[asj] < vp->segs[asj].n_points - 1)
-	      {
-		p0j = ips[asj][0];
-		if (n_ips[asj] == 1)
-		  p1j = vp->segs[asj].points[cursor[asj] + 1];
-		else
-		  p1j = ips[asj][1];
+        for (j = i - 1; j >= start; j--)
+          {
+            asj = active_segs[j];
+            if (cursor[asj] < vp->segs[asj].n_points - 1)
+              {
+                p0j = ips[asj][0];
+                if (n_ips[asj] == 1)
+                  p1j = vp->segs[asj].points[cursor[asj] + 1];
+                else
+                  p1j = ips[asj][1];
 
-		/* we _hope_ p0i = p0j */
-		if (x_order_2 (p0j, p1j, p0i, p1i) == -1)
-		  break;
-	      }
-	  }
+                /* we _hope_ p0i = p0j */
+                if (x_order_2 (p0j, p1j, p0i, p1i) == -1)
+                  break;
+              }
+          }
 
-	target = j + 1;
-	/* target is where active_seg[i] _should_ be in active_segs */
-      
-	if (target != i)
-	  {
-	    swap = 1;
+        target = j + 1;
+        /* target is where active_seg[i] _should_ be in active_segs */
+
+        if (target != i)
+          {
+            swap = 1;
 
 #ifdef VERBOSE
-	    printf ("fix_crossing: at %i should be %i\n", i, target);
+            printf ("fix_crossing: at %i should be %i\n", i, target);
 #endif
 
-	    /* let's close off all relevant segments */
-	    for (j = i; j >= target; j--)
-	      {
-		asi = active_segs[j];
-		/* First conjunct: this isn't the last point in the original
-		   segment.
+            /* let's close off all relevant segments */
+            for (j = i; j >= target; j--)
+              {
+                asi = active_segs[j];
+                /* First conjunct: this isn't the last point in the original
+                   segment.
 
-		   Second conjunct: this isn't the first point in the new
-		   segment (i.e. already broken).
-		*/
-		if (cursor[asi] < vp->segs[asi].n_points - 1 &&
-		    (*p_new_vp)->segs[seg_map[asi]].n_points != 1)
-		  {
-		    int seg_num;
-		    /* so break here */
+                   Second conjunct: this isn't the first point in the new
+                   segment (i.e. already broken).
+                */
+                if (cursor[asi] < vp->segs[asi].n_points - 1 &&
+                    (*p_new_vp)->segs[seg_map[asi]].n_points != 1)
+                  {
+                    int seg_num;
+                    /* so break here */
 #ifdef VERBOSE
-		    printf ("closing off %d\n", j);
+                    printf ("closing off %d\n", j);
 #endif
 
-		    pts = art_new (ArtPoint, 16);
-		    pts[0] = ips[asi][0];
-		    seg_num = art_svp_add_segment (p_new_vp, pn_segs_max,
-						   pn_points_max,
-						   1, vp->segs[asi].dir,
-						   pts,
-						   NULL);
-		    (*pn_points_max)[seg_num] = 16;
-		    seg_map[asi] = seg_num;
-		  }
-	      }
+                    pts = art_new (ArtPoint, 16);
+                    pts[0] = ips[asi][0];
+                    seg_num = art_svp_add_segment (p_new_vp, pn_segs_max,
+                                                   pn_points_max,
+                                                   1, vp->segs[asi].dir,
+                                                   pts,
+                                                   NULL);
+                    (*pn_points_max)[seg_num] = 16;
+                    seg_map[asi] = seg_num;
+                  }
+              }
 
-	    /* now fix the ordering in active_segs */
-	    asi = active_segs[i];
-	    for (j = i; j > target; j--)
-	      active_segs[j] = active_segs[j - 1];
-	    active_segs[j] = asi;
-	  }
+            /* now fix the ordering in active_segs */
+            asi = active_segs[i];
+            for (j = i; j > target; j--)
+              active_segs[j] = active_segs[j - 1];
+            active_segs[j] = asi;
+          }
       }
     }
   if (swap && start > 0)
@@ -809,14 +809,14 @@ fix_crossing (int start, int end, int *active_segs, int n_active_segs,
 
       as_start = active_segs[start];
       if (cursor[as_start] < vp->segs[as_start].n_points)
-	{
+        {
 #ifdef VERBOSE
-	  printf ("checking intersection of %d, %d\n", start - 1, start);
+          printf ("checking intersection of %d, %d\n", start - 1, start);
 #endif
-	  intersect_neighbors (start, active_segs,
-			       n_ips, n_ips_max, ips,
-			       cursor, vp);
-	}
+          intersect_neighbors (start, active_segs,
+                               n_ips, n_ips_max, ips,
+                               cursor, vp);
+        }
     }
 
   if (swap && end < n_active_segs)
@@ -825,21 +825,21 @@ fix_crossing (int start, int end, int *active_segs, int n_active_segs,
 
       as_end = active_segs[end - 1];
       if (cursor[as_end] < vp->segs[as_end].n_points)
-	{
+        {
 #ifdef VERBOSE
-	  printf ("checking intersection of %d, %d\n", end - 1, end);
+          printf ("checking intersection of %d, %d\n", end - 1, end);
 #endif
-	  intersect_neighbors (end, active_segs,
-			       n_ips, n_ips_max, ips,
-			       cursor, vp);
-	}
+          intersect_neighbors (end, active_segs,
+                               n_ips, n_ips_max, ips,
+                               cursor, vp);
+        }
     }
   if (swap)
     {
 #ifdef VERBOSE
       printf ("fix_crossing return: [%d..%d)", start, end);
       for (k = 0; k < n_active_segs; k++)
-	printf (" %d", active_segs[k]);
+        printf (" %d", active_segs[k]);
       printf ("\n");
 #endif
     }
@@ -998,7 +998,7 @@ art_svp_uncross (ArtSVP *vp)
 
   n_segs_max = 16;
   new_vp = (ArtSVP *)art_alloc (sizeof(ArtSVP) +
-				(n_segs_max - 1) * sizeof(ArtSVPSeg));
+                                (n_segs_max - 1) * sizeof(ArtSVPSeg));
   new_vp->n_segs = 0;
 
   if (vp->n_segs == 0)
@@ -1024,221 +1024,221 @@ art_svp_uncross (ArtSVP *vp)
 #endif
 
       /* maybe move deletions to end of loop (to avoid so much special
-	 casing on the end of a segment)? */
+         casing on the end of a segment)? */
 
       /* delete segments ending at y from active list */
       for (i = 0; i < n_active_segs; i++)
-	{
-	  asi = active_segs[i];
-	  if (vp->segs[asi].n_points - 1 == cursor[asi] &&
-	      vp->segs[asi].points[cursor[asi]].y == y)
-	    {
-	      do
-		{
+        {
+          asi = active_segs[i];
+          if (vp->segs[asi].n_points - 1 == cursor[asi] &&
+              vp->segs[asi].points[cursor[asi]].y == y)
+            {
+              do
+                {
 #ifdef VERBOSE
-		  printf ("deleting %d\n", asi);
+                  printf ("deleting %d\n", asi);
 #endif
-		  art_free (ips[asi]);
-		  n_active_segs--;
-		  for (j = i; j < n_active_segs; j++)
-		    active_segs[j] = active_segs[j + 1];
-		  if (i < n_active_segs)
-		    asi = active_segs[i];
-		  else
-		    break;
-		}
-	      while (vp->segs[asi].n_points - 1 == cursor[asi] &&
-		     vp->segs[asi].points[cursor[asi]].y == y);
+                  art_free (ips[asi]);
+                  n_active_segs--;
+                  for (j = i; j < n_active_segs; j++)
+                    active_segs[j] = active_segs[j + 1];
+                  if (i < n_active_segs)
+                    asi = active_segs[i];
+                  else
+                    break;
+                }
+              while (vp->segs[asi].n_points - 1 == cursor[asi] &&
+                     vp->segs[asi].points[cursor[asi]].y == y);
 
-	      /* test intersection of neighbors */
-	      if (i > 0 && i < n_active_segs)
-		intersect_neighbors (i, active_segs,
-				     n_ips, n_ips_max, ips,
-				     cursor, vp);
+              /* test intersection of neighbors */
+              if (i > 0 && i < n_active_segs)
+                intersect_neighbors (i, active_segs,
+                                     n_ips, n_ips_max, ips,
+                                     cursor, vp);
 
-	      i--;
-	    }	      
-	}
+              i--;
+            }
+        }
 
       /* insert new segments into the active list */
       while (seg_idx < vp->n_segs && y == vp->segs[seg_idx].points[0].y)
-	{
+        {
 #ifdef VERBOSE
-	  printf ("inserting %d\n", seg_idx);
+          printf ("inserting %d\n", seg_idx);
 #endif
-	  cursor[seg_idx] = 0;
-	  for (i = 0; i < n_active_segs; i++)
-	    {
-	      asi = active_segs[i];
-	      if (x_order_2 (vp->segs[seg_idx].points[0],
-			     vp->segs[seg_idx].points[1],
-			     vp->segs[asi].points[cursor[asi]],
-			     vp->segs[asi].points[cursor[asi] + 1]) == -1)
-		break;
-	    }
+          cursor[seg_idx] = 0;
+          for (i = 0; i < n_active_segs; i++)
+            {
+              asi = active_segs[i];
+              if (x_order_2 (vp->segs[seg_idx].points[0],
+                             vp->segs[seg_idx].points[1],
+                             vp->segs[asi].points[cursor[asi]],
+                             vp->segs[asi].points[cursor[asi] + 1]) == -1)
+                break;
+            }
 
-	  /* Create and initialize the intersection points data structure */
-	  n_ips[seg_idx] = 1;
-	  n_ips_max[seg_idx] = 2;
-	  ips[seg_idx] = art_new (ArtPoint, n_ips_max[seg_idx]);
-	  ips[seg_idx][0] = vp->segs[seg_idx].points[0];
+          /* Create and initialize the intersection points data structure */
+          n_ips[seg_idx] = 1;
+          n_ips_max[seg_idx] = 2;
+          ips[seg_idx] = art_new (ArtPoint, n_ips_max[seg_idx]);
+          ips[seg_idx][0] = vp->segs[seg_idx].points[0];
 
-	  /* Start a new segment in the new vector path */
-	  pts = art_new (ArtPoint, 16);
-	  pts[0] = vp->segs[seg_idx].points[0];
-	  seg_num = art_svp_add_segment (&new_vp, &n_segs_max,
-					 &n_points_max,
-					 1, vp->segs[seg_idx].dir,
-					 pts,
-					 NULL);
-	  n_points_max[seg_num] = 16;
-	  seg_map[seg_idx] = seg_num;
+          /* Start a new segment in the new vector path */
+          pts = art_new (ArtPoint, 16);
+          pts[0] = vp->segs[seg_idx].points[0];
+          seg_num = art_svp_add_segment (&new_vp, &n_segs_max,
+                                         &n_points_max,
+                                         1, vp->segs[seg_idx].dir,
+                                         pts,
+                                         NULL);
+          n_points_max[seg_num] = 16;
+          seg_map[seg_idx] = seg_num;
 
-	  tmp1 = seg_idx;
-	  for (j = i; j < n_active_segs; j++)
-	    {
-	      tmp2 = active_segs[j];
-	      active_segs[j] = tmp1;
-	      tmp1 = tmp2;
-	    }
-	  active_segs[n_active_segs] = tmp1;
-	  n_active_segs++;
+          tmp1 = seg_idx;
+          for (j = i; j < n_active_segs; j++)
+            {
+              tmp2 = active_segs[j];
+              active_segs[j] = tmp1;
+              tmp1 = tmp2;
+            }
+          active_segs[n_active_segs] = tmp1;
+          n_active_segs++;
 
-	  if (i > 0)
-	    intersect_neighbors (i, active_segs,
-				 n_ips, n_ips_max, ips,
-				 cursor, vp);
+          if (i > 0)
+            intersect_neighbors (i, active_segs,
+                                 n_ips, n_ips_max, ips,
+                                 cursor, vp);
 
-	  if (i + 1 < n_active_segs)
-	    intersect_neighbors (i + 1, active_segs,
-				 n_ips, n_ips_max, ips,
-				 cursor, vp);
+          if (i + 1 < n_active_segs)
+            intersect_neighbors (i + 1, active_segs,
+                                 n_ips, n_ips_max, ips,
+                                 cursor, vp);
 
-	  seg_idx++;
-	}
+          seg_idx++;
+        }
 
       /* all active segs cross the y scanline (considering segs to be
        closed on top and open on bottom) */
 #ifdef VERBOSE
       for (i = 0; i < n_active_segs; i++)
-	{
-	  asi = active_segs[i];
-	  printf ("%d ", asi);
-	  for (j = 0; j < n_ips[asi]; j++)
-	    printf ("(%g, %g) - ",
-		    ips[asi][j].x,
-		    ips[asi][j].y);
-	  printf ("(%g, %g) %s\n",
-		  vp->segs[asi].points[cursor[asi] + 1].x,
-		  vp->segs[asi].points[cursor[asi] + 1].y,
-		  vp->segs[asi].dir ? "v" : "^");
-	}
+        {
+          asi = active_segs[i];
+          printf ("%d ", asi);
+          for (j = 0; j < n_ips[asi]; j++)
+            printf ("(%g, %g) - ",
+                    ips[asi][j].x,
+                    ips[asi][j].y);
+          printf ("(%g, %g) %s\n",
+                  vp->segs[asi].points[cursor[asi] + 1].x,
+                  vp->segs[asi].points[cursor[asi] + 1].y,
+                  vp->segs[asi].dir ? "v" : "^");
+        }
 #endif
 
-      /* advance y to the next event 
+      /* advance y to the next event
        Note: this is quadratic. We'd probably get decent constant
        factor speed improvement by caching the y_curs values. */
       if (n_active_segs == 0)
-	{
-	  if (seg_idx < vp->n_segs)
-	    y = vp->segs[seg_idx].points[0].y;
-	  /* else we're done */
-	}
+        {
+          if (seg_idx < vp->n_segs)
+            y = vp->segs[seg_idx].points[0].y;
+          /* else we're done */
+        }
       else
-	{
-	  asi = active_segs[0];
-	  if (n_ips[asi] == 1)
-	    y = vp->segs[asi].points[cursor[asi] + 1].y;
-	  else
-	    y = ips[asi][1].y;
-	  for (i = 1; i < n_active_segs; i++)
-	    {
-	      asi = active_segs[i];
-	      if (n_ips[asi] == 1)
-		y_curs = vp->segs[asi].points[cursor[asi] + 1].y;
-	      else
-		y_curs = ips[asi][1].y;
-	      if (y > y_curs)
-		y = y_curs;
-	    }
-	  if (seg_idx < vp->n_segs && y > vp->segs[seg_idx].points[0].y)
-	    y = vp->segs[seg_idx].points[0].y;
-	}
+        {
+          asi = active_segs[0];
+          if (n_ips[asi] == 1)
+            y = vp->segs[asi].points[cursor[asi] + 1].y;
+          else
+            y = ips[asi][1].y;
+          for (i = 1; i < n_active_segs; i++)
+            {
+              asi = active_segs[i];
+              if (n_ips[asi] == 1)
+                y_curs = vp->segs[asi].points[cursor[asi] + 1].y;
+              else
+                y_curs = ips[asi][1].y;
+              if (y > y_curs)
+                y = y_curs;
+            }
+          if (seg_idx < vp->n_segs && y > vp->segs[seg_idx].points[0].y)
+            y = vp->segs[seg_idx].points[0].y;
+        }
 
       first_share = -1;
       share_x = 0; /* to avoid gcc warning, although share_x is never
-		      used when first_share is -1 */
+                      used when first_share is -1 */
       /* advance cursors to reach new y */
       for (i = 0; i < n_active_segs; i++)
-	{
-	  asi = active_segs[i];
-	  if (n_ips[asi] == 1)
-	    p_curs = vp->segs[asi].points[cursor[asi] + 1];
-	  else
-	    p_curs = ips[asi][1];
-	  if (p_curs.y == y)
-	    {
-	      svp_add_point (new_vp, n_points_max,
-			     p_curs, seg_map, active_segs, n_active_segs, i);
+        {
+          asi = active_segs[i];
+          if (n_ips[asi] == 1)
+            p_curs = vp->segs[asi].points[cursor[asi] + 1];
+          else
+            p_curs = ips[asi][1];
+          if (p_curs.y == y)
+            {
+              svp_add_point (new_vp, n_points_max,
+                             p_curs, seg_map, active_segs, n_active_segs, i);
 
-	      n_ips[asi]--;
-	      for (j = 0; j < n_ips[asi]; j++)
-		ips[asi][j] = ips[asi][j + 1];
+              n_ips[asi]--;
+              for (j = 0; j < n_ips[asi]; j++)
+                ips[asi][j] = ips[asi][j + 1];
 
-	      if (n_ips[asi] == 0)
-		{
-		  ips[asi][0] = p_curs;
-		  n_ips[asi] = 1;
-		  cursor[asi]++;
-		}
+              if (n_ips[asi] == 0)
+                {
+                  ips[asi][0] = p_curs;
+                  n_ips[asi] = 1;
+                  cursor[asi]++;
+                }
 
-	      if (first_share < 0 || p_curs.x != share_x)
-		{
-		  /* this is where crossings are detected, and if
-		     found, the active segments switched around. */
-		      
-		  fix_crossing (first_share, i,
-				active_segs, n_active_segs,
-				cursor, ips, n_ips, n_ips_max, vp, seg_map,
-				&new_vp,
-				&n_segs_max, &n_points_max);
+              if (first_share < 0 || p_curs.x != share_x)
+                {
+                  /* this is where crossings are detected, and if
+                     found, the active segments switched around. */
 
-		  first_share = i;
-		  share_x = p_curs.x;
-		}
+                  fix_crossing (first_share, i,
+                                active_segs, n_active_segs,
+                                cursor, ips, n_ips, n_ips_max, vp, seg_map,
+                                &new_vp,
+                                &n_segs_max, &n_points_max);
 
-	      if (cursor[asi] < vp->segs[asi].n_points - 1)
-		{
+                  first_share = i;
+                  share_x = p_curs.x;
+                }
 
-		  if (i > 0)
-		    intersect_neighbors (i, active_segs,
-					 n_ips, n_ips_max, ips,
-					 cursor, vp);
-		  
-		  if (i + 1 < n_active_segs)
-		    intersect_neighbors (i + 1, active_segs,
-					 n_ips, n_ips_max, ips,
-					 cursor, vp);
-		}
-	    }
-	  else
-	    {
-	      /* not on a cursor point */
-	      fix_crossing (first_share, i,
-			    active_segs, n_active_segs,
-			    cursor, ips, n_ips, n_ips_max, vp, seg_map,
-			    &new_vp,
-			    &n_segs_max, &n_points_max);
-	      first_share = -1;
-	    }
-	}
+              if (cursor[asi] < vp->segs[asi].n_points - 1)
+                {
+
+                  if (i > 0)
+                    intersect_neighbors (i, active_segs,
+                                         n_ips, n_ips_max, ips,
+                                         cursor, vp);
+
+                  if (i + 1 < n_active_segs)
+                    intersect_neighbors (i + 1, active_segs,
+                                         n_ips, n_ips_max, ips,
+                                         cursor, vp);
+                }
+            }
+          else
+            {
+              /* not on a cursor point */
+              fix_crossing (first_share, i,
+                            active_segs, n_active_segs,
+                            cursor, ips, n_ips, n_ips_max, vp, seg_map,
+                            &new_vp,
+                            &n_segs_max, &n_points_max);
+              first_share = -1;
+            }
+        }
 
       /* fix crossing on last shared group */
       fix_crossing (first_share, i,
-		    active_segs, n_active_segs,
-		    cursor, ips, n_ips, n_ips_max, vp, seg_map,
-		    &new_vp,
-		    &n_segs_max, &n_points_max);
+                    active_segs, n_active_segs,
+                    cursor, ips, n_ips, n_ips_max, vp, seg_map,
+                    &new_vp,
+                    &n_segs_max, &n_points_max);
 
 #ifdef VERBOSE
       printf ("\n");
@@ -1253,16 +1253,16 @@ art_svp_uncross (ArtSVP *vp)
     int k;
     for (k = 0; k < new_vp->n_segs - 1; k++)
       {
-	printf ("(%g, %g) - (%g, %g) %s (%g, %g) - (%g, %g)\n",
-		new_vp->segs[k].points[0].x,
-		new_vp->segs[k].points[0].y,
-		new_vp->segs[k].points[1].x,
-		new_vp->segs[k].points[1].y,
-		svp_seg_compare (&new_vp->segs[k], &new_vp->segs[k + 1]) > 1 ? ">": "<",
-		new_vp->segs[k + 1].points[0].x,
-		new_vp->segs[k + 1].points[0].y,
-		new_vp->segs[k + 1].points[1].x,
-		new_vp->segs[k + 1].points[1].y);
+        printf ("(%g, %g) - (%g, %g) %s (%g, %g) - (%g, %g)\n",
+                new_vp->segs[k].points[0].x,
+                new_vp->segs[k].points[0].y,
+                new_vp->segs[k].points[1].x,
+                new_vp->segs[k].points[1].y,
+                svp_seg_compare (&new_vp->segs[k], &new_vp->segs[k + 1]) > 1 ? ">": "<",
+                new_vp->segs[k + 1].points[0].x,
+                new_vp->segs[k + 1].points[0].y,
+                new_vp->segs[k + 1].points[1].x,
+                new_vp->segs[k + 1].points[1].y);
       }
   }
 #endif
@@ -1356,7 +1356,7 @@ art_svp_rewind_uncrossed (ArtSVP *vp, ArtWindRule rule)
 #endif
   n_segs_max = 16;
   new_vp = (ArtSVP *)art_alloc (sizeof(ArtSVP) +
-				(n_segs_max - 1) * sizeof(ArtSVPSeg));
+                                (n_segs_max - 1) * sizeof(ArtSVPSeg));
   new_vp->n_segs = 0;
 
   if (vp->n_segs == 0)
@@ -1377,155 +1377,155 @@ art_svp_rewind_uncrossed (ArtSVP *vp, ArtWindRule rule)
 #endif
       /* delete segments ending at y from active list */
       for (i = 0; i < n_active_segs; i++)
-	{
-	  asi = active_segs[i];
-	  if (vp->segs[asi].n_points - 1 == cursor[asi] &&
-	      vp->segs[asi].points[cursor[asi]].y == y)
-	    {
+        {
+          asi = active_segs[i];
+          if (vp->segs[asi].n_points - 1 == cursor[asi] &&
+              vp->segs[asi].points[cursor[asi]].y == y)
+            {
 #ifdef VERBOSE
-	      printf ("deleting %d\n", asi);
+              printf ("deleting %d\n", asi);
 #endif
-	      n_active_segs--;
-	      for (j = i; j < n_active_segs; j++)
-		active_segs[j] = active_segs[j + 1];
-	      i--;
-	    }
-	}
+              n_active_segs--;
+              for (j = i; j < n_active_segs; j++)
+                active_segs[j] = active_segs[j + 1];
+              i--;
+            }
+        }
 
       /* insert new segments into the active list */
       while (seg_idx < vp->n_segs && y == vp->segs[seg_idx].points[0].y)
-	{
+        {
 #ifdef VERBOSE
-	  printf ("inserting %d\n", seg_idx);
+          printf ("inserting %d\n", seg_idx);
 #endif
-	  cursor[seg_idx] = 0;
-	  for (i = 0; i < n_active_segs; i++)
-	    {
-	      asi = active_segs[i];
-	      if (x_order_2 (vp->segs[seg_idx].points[0],
-			     vp->segs[seg_idx].points[1],
-			     vp->segs[asi].points[cursor[asi]],
-			     vp->segs[asi].points[cursor[asi] + 1]) == -1)
-		break;
-	    }
+          cursor[seg_idx] = 0;
+          for (i = 0; i < n_active_segs; i++)
+            {
+              asi = active_segs[i];
+              if (x_order_2 (vp->segs[seg_idx].points[0],
+                             vp->segs[seg_idx].points[1],
+                             vp->segs[asi].points[cursor[asi]],
+                             vp->segs[asi].points[cursor[asi] + 1]) == -1)
+                break;
+            }
 
-	  /* Determine winding number for this segment */
-	  if (i == 0)
-	    left_wind = 0;
-	  else if (vp->segs[active_segs[i - 1]].dir)
-	    left_wind = winding[active_segs[i - 1]];
-	  else
-	    left_wind = winding[active_segs[i - 1]] - 1;
+          /* Determine winding number for this segment */
+          if (i == 0)
+            left_wind = 0;
+          else if (vp->segs[active_segs[i - 1]].dir)
+            left_wind = winding[active_segs[i - 1]];
+          else
+            left_wind = winding[active_segs[i - 1]] - 1;
 
-	  if (vp->segs[seg_idx].dir)
-	    wind = left_wind + 1;
-	  else
-	    wind = left_wind;
+          if (vp->segs[seg_idx].dir)
+            wind = left_wind + 1;
+          else
+            wind = left_wind;
 
-	  winding[seg_idx] = wind;
+          winding[seg_idx] = wind;
 
-	  switch (rule)
-	    {
-	    case ART_WIND_RULE_NONZERO:
-	      keep = (wind == 1 || wind == 0);
-	      invert = (wind == 0);
-	      break;
-	    case ART_WIND_RULE_INTERSECT:
-	      keep = (wind == 2);
-	      invert = 0;
-	      break;
-	    case ART_WIND_RULE_ODDEVEN:
-	      keep = 1;
-	      invert = !(wind & 1);
-	      break;
-	    case ART_WIND_RULE_POSITIVE:
-	      keep = (wind == 1);
-	      invert = 0;
-	      break;
-	    default:
-	      keep = 0;
-	      invert = 0;
-	      break;
-	    }
+          switch (rule)
+            {
+            case ART_WIND_RULE_NONZERO:
+              keep = (wind == 1 || wind == 0);
+              invert = (wind == 0);
+              break;
+            case ART_WIND_RULE_INTERSECT:
+              keep = (wind == 2);
+              invert = 0;
+              break;
+            case ART_WIND_RULE_ODDEVEN:
+              keep = 1;
+              invert = !(wind & 1);
+              break;
+            case ART_WIND_RULE_POSITIVE:
+              keep = (wind == 1);
+              invert = 0;
+              break;
+            default:
+              keep = 0;
+              invert = 0;
+              break;
+            }
 
-	  if (keep)
-	    {
-	      ArtPoint *points, *new_points;
-	      int n_points;
-	      int new_dir;
+          if (keep)
+            {
+              ArtPoint *points, *new_points;
+              int n_points;
+              int new_dir;
 
 #ifdef VERBOSE
-	      printf ("keeping segment %d\n", seg_idx);
+              printf ("keeping segment %d\n", seg_idx);
 #endif
-	      n_points = vp->segs[seg_idx].n_points;
-	      points = vp->segs[seg_idx].points;
-	      new_points = art_new (ArtPoint, n_points);
-	      memcpy (new_points, points, n_points * sizeof (ArtPoint));
-	      new_dir = vp->segs[seg_idx].dir ^ invert;
-	      art_svp_add_segment (&new_vp, &n_segs_max,
-				   NULL,
-				   n_points, new_dir, new_points,
-				   &vp->segs[seg_idx].bbox);
-	    }
+              n_points = vp->segs[seg_idx].n_points;
+              points = vp->segs[seg_idx].points;
+              new_points = art_new (ArtPoint, n_points);
+              memcpy (new_points, points, n_points * sizeof (ArtPoint));
+              new_dir = vp->segs[seg_idx].dir ^ invert;
+              art_svp_add_segment (&new_vp, &n_segs_max,
+                                   NULL,
+                                   n_points, new_dir, new_points,
+                                   &vp->segs[seg_idx].bbox);
+            }
 
-	  tmp1 = seg_idx;
-	  for (j = i; j < n_active_segs; j++)
-	    {
-	      tmp2 = active_segs[j];
-	      active_segs[j] = tmp1;
-	      tmp1 = tmp2;
-	    }
-	  active_segs[n_active_segs] = tmp1;
-	  n_active_segs++;
-	  seg_idx++;
-	}
+          tmp1 = seg_idx;
+          for (j = i; j < n_active_segs; j++)
+            {
+              tmp2 = active_segs[j];
+              active_segs[j] = tmp1;
+              tmp1 = tmp2;
+            }
+          active_segs[n_active_segs] = tmp1;
+          n_active_segs++;
+          seg_idx++;
+        }
 
 #ifdef VERBOSE
       /* all active segs cross the y scanline (considering segs to be
        closed on top and open on bottom) */
       for (i = 0; i < n_active_segs; i++)
-	{
-	  asi = active_segs[i];
-	  printf ("%d:%d (%g, %g) - (%g, %g) %s %d\n", asi,
-		  cursor[asi],
-		  vp->segs[asi].points[cursor[asi]].x,
-		  vp->segs[asi].points[cursor[asi]].y,
-		  vp->segs[asi].points[cursor[asi] + 1].x,
-		  vp->segs[asi].points[cursor[asi] + 1].y,
-		  vp->segs[asi].dir ? "v" : "^",
-		  winding[asi]);
-	}
+        {
+          asi = active_segs[i];
+          printf ("%d:%d (%g, %g) - (%g, %g) %s %d\n", asi,
+                  cursor[asi],
+                  vp->segs[asi].points[cursor[asi]].x,
+                  vp->segs[asi].points[cursor[asi]].y,
+                  vp->segs[asi].points[cursor[asi] + 1].x,
+                  vp->segs[asi].points[cursor[asi] + 1].y,
+                  vp->segs[asi].dir ? "v" : "^",
+                  winding[asi]);
+        }
 #endif
 
       /* advance y to the next event */
       if (n_active_segs == 0)
-	{
-	  if (seg_idx < vp->n_segs)
-	    y = vp->segs[seg_idx].points[0].y;
-	  /* else we're done */
-	}
+        {
+          if (seg_idx < vp->n_segs)
+            y = vp->segs[seg_idx].points[0].y;
+          /* else we're done */
+        }
       else
-	{
-	  asi = active_segs[0];
-	  y = vp->segs[asi].points[cursor[asi] + 1].y;
-	  for (i = 1; i < n_active_segs; i++)
-	    {
-	      asi = active_segs[i];
-	      if (y > vp->segs[asi].points[cursor[asi] + 1].y)
-		y = vp->segs[asi].points[cursor[asi] + 1].y;
-	    }
-	  if (seg_idx < vp->n_segs && y > vp->segs[seg_idx].points[0].y)
-	    y = vp->segs[seg_idx].points[0].y;
-	}
+        {
+          asi = active_segs[0];
+          y = vp->segs[asi].points[cursor[asi] + 1].y;
+          for (i = 1; i < n_active_segs; i++)
+            {
+              asi = active_segs[i];
+              if (y > vp->segs[asi].points[cursor[asi] + 1].y)
+                y = vp->segs[asi].points[cursor[asi] + 1].y;
+            }
+          if (seg_idx < vp->n_segs && y > vp->segs[seg_idx].points[0].y)
+            y = vp->segs[seg_idx].points[0].y;
+        }
 
       /* advance cursors to reach new y */
       for (i = 0; i < n_active_segs; i++)
-	{
-	  asi = active_segs[i];
-	  while (cursor[asi] < vp->segs[asi].n_points - 1 &&
-		 y >= vp->segs[asi].points[cursor[asi] + 1].y)
-	    cursor[asi]++;
-	}
+        {
+          asi = active_segs[i];
+          while (cursor[asi] < vp->segs[asi].n_points - 1 &&
+                 y >= vp->segs[asi].points[cursor[asi] + 1].y)
+            cursor[asi]++;
+        }
 #ifdef VERBOSE
       printf ("\n");
 #endif

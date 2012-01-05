@@ -1,6 +1,6 @@
-/*         ______   ___    ___ 
- *        /\  _  \ /\_ \  /\_ \ 
- *        \ \ \L\ \\//\ \ \//\ \      __     __   _ __   ___ 
+/*         ______   ___    ___
+ *        /\  _  \ /\_ \  /\_ \
+ *        \ \ \L\ \\//\ \ \//\ \      __     __   _ __   ___
  *         \ \  __ \ \ \ \  \ \ \   /'__`\ /'_ `\/\`'__\/ __`\
  *          \ \ \/\ \ \_\ \_ \_\ \_/\  __//\ \L\ \ \ \//\ \L\ \
  *           \ \_\ \_\/\____\/\____\ \____\ \____ \ \_\\ \____/
@@ -120,7 +120,7 @@
          #define ZERO_SIZE_ARRAY(type, name)  type name[] /* ISO C99 flexible array members */
       #endif
    #endif
-   
+
    #ifndef LONG_LONG
       #define LONG_LONG       long long
       #ifdef ALLEGRO_GUESS_INTTYPES_OK
@@ -142,7 +142,7 @@
          #define _AL_SINCOS(x, s, c)  __asm__ ("fsincos" : "=t" (c), "=u" (s) : "0" (x))
       #endif
    #endif
-   
+
    #ifdef __arm__
       #define ALLEGRO_ARM
    #endif
@@ -433,4 +433,3 @@
    #define ALLEGRO_COLORCONV_ALIGNED_WIDTH
    #define ALLEGRO_NO_COLORCOPY
 #endif
-

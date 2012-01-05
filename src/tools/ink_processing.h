@@ -26,58 +26,58 @@
 // Ink Processing
 //////////////////////////////////////////////////////////////////////
 
-#define DEFINE_INK_PROCESSING(addresses_define,				\
-			      addresses_initialize,			\
-			      addresses_increment,			\
-			      processing)				\
-  addresses_define							\
-  register int x;							\
-									\
-  /* Use mask */							\
-  if (loop->useMask()) {						\
-    Point maskOrigin(loop->getMaskOrigin());				\
-									\
-    if ((y < maskOrigin.y) || (y >= maskOrigin.y+loop->getMask()->h))	\
-      return;								\
-									\
-    if (x1 < maskOrigin.x)						\
-      x1 = maskOrigin.x;						\
-									\
-    if (x2 > maskOrigin.x+loop->getMask()->w-1)				\
-      x2 = maskOrigin.x+loop->getMask()->w-1;				\
-									\
-    if (Image* bitmap = loop->getMask()->bitmap) {			\
-      addresses_initialize;						\
-      for (x=x1; x<=x2; ++x) {						\
-	if (bitmap->getpixel(x-maskOrigin.x, y-maskOrigin.y))		\
-	  processing;							\
-									\
-	addresses_increment;						\
-      }									\
-      return;								\
-    }									\
-  }									\
-									\
-  addresses_initialize;							\
-  for (x=x1; x<=x2; ++x) {						\
-    processing;								\
-    addresses_increment;						\
+#define DEFINE_INK_PROCESSING(addresses_define,                         \
+                              addresses_initialize,                     \
+                              addresses_increment,                      \
+                              processing)                               \
+  addresses_define                                                      \
+  register int x;                                                       \
+                                                                        \
+  /* Use mask */                                                        \
+  if (loop->useMask()) {                                                \
+    Point maskOrigin(loop->getMaskOrigin());                            \
+                                                                        \
+    if ((y < maskOrigin.y) || (y >= maskOrigin.y+loop->getMask()->h))   \
+      return;                                                           \
+                                                                        \
+    if (x1 < maskOrigin.x)                                              \
+      x1 = maskOrigin.x;                                                \
+                                                                        \
+    if (x2 > maskOrigin.x+loop->getMask()->w-1)                         \
+      x2 = maskOrigin.x+loop->getMask()->w-1;                           \
+                                                                        \
+    if (Image* bitmap = loop->getMask()->bitmap) {                      \
+      addresses_initialize;                                             \
+      for (x=x1; x<=x2; ++x) {                                          \
+        if (bitmap->getpixel(x-maskOrigin.x, y-maskOrigin.y))           \
+          processing;                                                   \
+                                                                        \
+        addresses_increment;                                            \
+      }                                                                 \
+      return;                                                           \
+    }                                                                   \
+  }                                                                     \
+                                                                        \
+  addresses_initialize;                                                 \
+  for (x=x1; x<=x2; ++x) {                                              \
+    processing;                                                         \
+    addresses_increment;                                                \
   }
 
-#define DEFINE_INK_PROCESSING_DST(Traits, processing)			\
-  DEFINE_INK_PROCESSING(register Traits::address_t dst_address;				 , \
-			dst_address = ((Traits::address_t*)loop->getDstImage()->line)[y]+x1; , \
-			++dst_address							 , \
-			processing)
+#define DEFINE_INK_PROCESSING_DST(Traits, processing)                   \
+  DEFINE_INK_PROCESSING(register Traits::address_t dst_address;                          , \
+                        dst_address = ((Traits::address_t*)loop->getDstImage()->line)[y]+x1; , \
+                        ++dst_address                                                    , \
+                        processing)
 
-#define DEFINE_INK_PROCESSING_SRCDST(Traits, processing)			  \
-  DEFINE_INK_PROCESSING(register Traits::address_t src_address;			  \
-			register Traits::address_t dst_address;			, \
-			src_address = ((Traits::address_t*)loop->getSrcImage()->line)[y]+x1;   \
-			dst_address = ((Traits::address_t*)loop->getDstImage()->line)[y]+x1; , \
-			++src_address;						  \
-			++dst_address;						, \
-			processing)
+#define DEFINE_INK_PROCESSING_SRCDST(Traits, processing)                          \
+  DEFINE_INK_PROCESSING(register Traits::address_t src_address;                   \
+                        register Traits::address_t dst_address;                 , \
+                        src_address = ((Traits::address_t*)loop->getSrcImage()->line)[y]+x1;   \
+                        dst_address = ((Traits::address_t*)loop->getDstImage()->line)[y]+x1; , \
+                        ++src_address;                                            \
+                        ++dst_address;                                          , \
+                        processing)
 
 //////////////////////////////////////////////////////////////////////
 // Opaque Ink
@@ -89,7 +89,7 @@ static void ink_hline32_opaque(int x1, int y, int x2, ToolLoop* loop)
 
   DEFINE_INK_PROCESSING_DST
     (RgbTraits,
-     *dst_address = c			);
+     *dst_address = c                   );
 }
 
 static void ink_hline16_opaque(int x1, int y, int x2, ToolLoop* loop)
@@ -98,7 +98,7 @@ static void ink_hline16_opaque(int x1, int y, int x2, ToolLoop* loop)
 
   DEFINE_INK_PROCESSING_DST
     (GrayscaleTraits,
-     *dst_address = c			);
+     *dst_address = c                   );
 }
 
 static void ink_hline8_opaque(int x1, int y, int x2, ToolLoop* loop)
@@ -107,7 +107,7 @@ static void ink_hline8_opaque(int x1, int y, int x2, ToolLoop* loop)
 
   DEFINE_INK_PROCESSING_DST
     (IndexedTraits,
-     *dst_address = c			);
+     *dst_address = c                   );
 
   /* memset(((uint8_t**)data->dst_image->line)[y]+x1, data->color, x2-x1+1); */
 }
@@ -124,7 +124,7 @@ static void ink_hline32_transparent(int x1, int y, int x2, ToolLoop* loop)
   DEFINE_INK_PROCESSING_SRCDST
     (RgbTraits,
      *dst_address = _rgba_blend_normal(*src_address, color, opacity));
-}  
+}
 
 static void ink_hline16_transparent(int x1, int y, int x2, ToolLoop* loop)
 {
@@ -134,7 +134,7 @@ static void ink_hline16_transparent(int x1, int y, int x2, ToolLoop* loop)
   DEFINE_INK_PROCESSING_SRCDST
     (GrayscaleTraits,
      *dst_address = _graya_blend_normal(*src_address, color, opacity));
-}  
+}
 
 static void ink_hline8_transparent(int x1, int y, int x2, ToolLoop* loop)
 {
@@ -149,10 +149,10 @@ static void ink_hline8_transparent(int x1, int y, int x2, ToolLoop* loop)
      {
        c = _rgba_blend_normal(pal->getEntry(*src_address), tc, opacity);
        *dst_address = rgbmap->mapColor(_rgba_getr(c),
-				       _rgba_getg(c),
-				       _rgba_getb(c));
+                                       _rgba_getg(c),
+                                       _rgba_getb(c));
      });
-}  
+}
 
 //////////////////////////////////////////////////////////////////////
 // Blur Ink
@@ -168,11 +168,11 @@ namespace {
     void operator()(RgbTraits::pixel_t color)
     {
       if (_rgba_geta(color) != 0) {
-	r += _rgba_getr(color);
-	g += _rgba_getg(color);
-	b += _rgba_getb(color);
-	a += _rgba_geta(color);
-	++count;
+        r += _rgba_getr(color);
+        g += _rgba_getg(color);
+        b += _rgba_getb(color);
+        a += _rgba_geta(color);
+        ++count;
       }
     }
   };
@@ -186,9 +186,9 @@ namespace {
     void operator()(GrayscaleTraits::pixel_t color)
     {
       if (_graya_geta(color) > 0) {
-	v += _graya_getv(color);
-	a += _graya_geta(color);
-	++count;
+        v += _graya_getv(color);
+        a += _graya_geta(color);
+        ++count;
       }
     }
   };
@@ -229,24 +229,24 @@ static void ink_hline32_blur(int x1, int y, int x2, ToolLoop* loop)
        get_neighboring_pixels<RgbTraits>(src, x, y, 3, 3, 1, 1, tiledMode, delegate);
 
        if (delegate.count > 0) {
-	 delegate.r /= delegate.count;
-	 delegate.g /= delegate.count;
-	 delegate.b /= delegate.count;
-	 delegate.a /= 9;
+         delegate.r /= delegate.count;
+         delegate.g /= delegate.count;
+         delegate.b /= delegate.count;
+         delegate.a /= 9;
 
-	 RgbTraits::pixel_t c = *src_address;
-	 delegate.r = _rgba_getr(c) + (delegate.r-_rgba_getr(c)) * opacity / 255;
-	 delegate.g = _rgba_getg(c) + (delegate.g-_rgba_getg(c)) * opacity / 255;
-	 delegate.b = _rgba_getb(c) + (delegate.b-_rgba_getb(c)) * opacity / 255;
-	 delegate.a = _rgba_geta(c) + (delegate.a-_rgba_geta(c)) * opacity / 255;
-	 
-	 *dst_address = _rgba(delegate.r, delegate.g, delegate.b, delegate.a);
+         RgbTraits::pixel_t c = *src_address;
+         delegate.r = _rgba_getr(c) + (delegate.r-_rgba_getr(c)) * opacity / 255;
+         delegate.g = _rgba_getg(c) + (delegate.g-_rgba_getg(c)) * opacity / 255;
+         delegate.b = _rgba_getb(c) + (delegate.b-_rgba_getb(c)) * opacity / 255;
+         delegate.a = _rgba_geta(c) + (delegate.a-_rgba_geta(c)) * opacity / 255;
+
+         *dst_address = _rgba(delegate.r, delegate.g, delegate.b, delegate.a);
        }
        else {
-	 *dst_address = *src_address;
+         *dst_address = *src_address;
        }
      });
-}  
+}
 
 static void ink_hline16_blur(int x1, int y, int x2, ToolLoop* loop)
 {
@@ -262,20 +262,20 @@ static void ink_hline16_blur(int x1, int y, int x2, ToolLoop* loop)
        get_neighboring_pixels<GrayscaleTraits>(src, x, y, 3, 3, 1, 1, tiledMode, delegate);
 
        if (delegate.count > 0) {
-	 delegate.v /= delegate.count;
-	 delegate.a /= 9;
+         delegate.v /= delegate.count;
+         delegate.a /= 9;
 
-	 GrayscaleTraits::pixel_t c = *src_address;
-	 delegate.v = _graya_getv(c) + (delegate.v-_graya_getv(c)) * opacity / 255;
-	 delegate.a = _graya_geta(c) + (delegate.a-_graya_geta(c)) * opacity / 255;
+         GrayscaleTraits::pixel_t c = *src_address;
+         delegate.v = _graya_getv(c) + (delegate.v-_graya_getv(c)) * opacity / 255;
+         delegate.a = _graya_geta(c) + (delegate.a-_graya_geta(c)) * opacity / 255;
 
-	 *dst_address = _graya(delegate.v, delegate.a);
+         *dst_address = _graya(delegate.v, delegate.a);
        }
        else {
-	 *dst_address = *src_address;
+         *dst_address = *src_address;
        }
      });
-}  
+}
 
 static void ink_hline8_blur(int x1, int y, int x2, ToolLoop* loop)
 {
@@ -285,7 +285,7 @@ static void ink_hline8_blur(int x1, int y, int x2, ToolLoop* loop)
   TiledMode tiledMode = loop->getTiledMode();
   const Image* src = loop->getSrcImage();
   BlurGetPixelsDelegateIndexed delegate(pal);
-  
+
   DEFINE_INK_PROCESSING_SRCDST
     (IndexedTraits,
      {
@@ -293,22 +293,22 @@ static void ink_hline8_blur(int x1, int y, int x2, ToolLoop* loop)
        get_neighboring_pixels<IndexedTraits>(src, x, y, 3, 3, 1, 1, tiledMode, delegate);
 
        if (delegate.count > 0 && delegate.a/9 >= 128) {
-	 delegate.r /= delegate.count;
-	 delegate.g /= delegate.count;
-	 delegate.b /= delegate.count;
+         delegate.r /= delegate.count;
+         delegate.g /= delegate.count;
+         delegate.b /= delegate.count;
 
-	 uint32_t color32 = pal->getEntry(*src_address);
-	 delegate.r = _rgba_getr(color32) + (delegate.r-_rgba_getr(color32)) * opacity / 255;
-	 delegate.g = _rgba_getg(color32) + (delegate.g-_rgba_getg(color32)) * opacity / 255;
-	 delegate.b = _rgba_getb(color32) + (delegate.b-_rgba_getb(color32)) * opacity / 255;
+         uint32_t color32 = pal->getEntry(*src_address);
+         delegate.r = _rgba_getr(color32) + (delegate.r-_rgba_getr(color32)) * opacity / 255;
+         delegate.g = _rgba_getg(color32) + (delegate.g-_rgba_getg(color32)) * opacity / 255;
+         delegate.b = _rgba_getb(color32) + (delegate.b-_rgba_getb(color32)) * opacity / 255;
 
-	 *dst_address = rgbmap->mapColor(delegate.r, delegate.g, delegate.b);
+         *dst_address = rgbmap->mapColor(delegate.r, delegate.g, delegate.b);
        }
        else {
-	 *dst_address = *src_address;
+         *dst_address = *src_address;
        }
      });
-}  
+}
 
 //////////////////////////////////////////////////////////////////////
 // Replace Ink
@@ -325,7 +325,7 @@ static void ink_hline32_replace(int x1, int y, int x2, ToolLoop* loop)
      if (*src_address == color1) {
        *dst_address = _rgba_blend_normal(*src_address, color2, opacity);
      });
-}  
+}
 
 static void ink_hline16_replace(int x1, int y, int x2, ToolLoop* loop)
 {
@@ -338,7 +338,7 @@ static void ink_hline16_replace(int x1, int y, int x2, ToolLoop* loop)
      if (*src_address == color1) {
        *dst_address = _graya_blend_normal(*src_address, color2, opacity);
      });
-}  
+}
 
 static void ink_hline8_replace(int x1, int y, int x2, ToolLoop* loop)
 {
@@ -354,8 +354,8 @@ static void ink_hline8_replace(int x1, int y, int x2, ToolLoop* loop)
      if (*src_address == color1) {
        c = _rgba_blend_normal(pal->getEntry(*src_address), tc, opacity);
        *dst_address = rgbmap->mapColor(_rgba_getr(c),
-				       _rgba_getg(c),
-				       _rgba_getb(c));
+                                       _rgba_getg(c),
+                                       _rgba_getb(c));
      });
 }
 
@@ -363,29 +363,29 @@ static void ink_hline8_replace(int x1, int y, int x2, ToolLoop* loop)
 // Jumble Ink
 //////////////////////////////////////////////////////////////////////
 
-#define JUMBLE_XY_IN_UV()						\
-  u = x + (rand() % 3)-1 - speed.x;					\
-  v = y + (rand() % 3)-1 - speed.y;					\
-  									\
-  if (tiled & TILED_X_AXIS) {						\
-    if (u < 0)								\
+#define JUMBLE_XY_IN_UV()                                               \
+  u = x + (rand() % 3)-1 - speed.x;                                     \
+  v = y + (rand() % 3)-1 - speed.y;                                     \
+                                                                        \
+  if (tiled & TILED_X_AXIS) {                                           \
+    if (u < 0)                                                          \
       u = loop->getSrcImage()->w - (-(u+1) % loop->getSrcImage()->w) - 1; \
-    else if (u >= loop->getSrcImage()->w)				\
-      u %= loop->getSrcImage()->w;					\
-  }									\
-  else {								\
-    u = MID(0, u, loop->getSrcImage()->w-1);				\
-  }									\
-									\
-  if (tiled & TILED_Y_AXIS) {						\
-    if (v < 0)								\
+    else if (u >= loop->getSrcImage()->w)                               \
+      u %= loop->getSrcImage()->w;                                      \
+  }                                                                     \
+  else {                                                                \
+    u = MID(0, u, loop->getSrcImage()->w-1);                            \
+  }                                                                     \
+                                                                        \
+  if (tiled & TILED_Y_AXIS) {                                           \
+    if (v < 0)                                                          \
       v = loop->getSrcImage()->h - (-(v+1) % loop->getSrcImage()->h) - 1; \
-    else if (v >= loop->getSrcImage()->h)				\
-      v %= loop->getSrcImage()->h;					\
-  }									\
-  else {								\
-    v = MID(0, v, loop->getSrcImage()->h-1);				\
-  }									\
+    else if (v >= loop->getSrcImage()->h)                               \
+      v %= loop->getSrcImage()->h;                                      \
+  }                                                                     \
+  else {                                                                \
+    v = MID(0, v, loop->getSrcImage()->h-1);                            \
+  }                                                                     \
   color = image_getpixel(loop->getSrcImage(), u, v);
 
 static void ink_hline32_jumble(int x1, int y, int x2, ToolLoop* loop)
@@ -402,7 +402,7 @@ static void ink_hline32_jumble(int x1, int y, int x2, ToolLoop* loop)
        *dst_address = _rgba_blend_merge(*src_address, color, opacity);
      }
      );
-}  
+}
 
 static void ink_hline16_jumble(int x1, int y, int x2, ToolLoop* loop)
 {
@@ -418,7 +418,7 @@ static void ink_hline16_jumble(int x1, int y, int x2, ToolLoop* loop)
        *dst_address = _graya_blend_merge(*src_address, color, opacity);
      }
      );
-}  
+}
 
 static void ink_hline8_jumble(int x1, int y, int x2, ToolLoop* loop)
 {
@@ -437,17 +437,17 @@ static void ink_hline8_jumble(int x1, int y, int x2, ToolLoop* loop)
 
        tc = color != 0 ? pal->getEntry(color): 0;
        c = _rgba_blend_merge(*src_address != 0 ? pal->getEntry(*src_address): 0,
-			     tc, opacity);
+                             tc, opacity);
 
        if (_rgba_geta(c) >= 128)
-	 *dst_address = rgbmap->mapColor(_rgba_getr(c),
-					 _rgba_getg(c),
-					 _rgba_getb(c));
+         *dst_address = rgbmap->mapColor(_rgba_getr(c),
+                                         _rgba_getg(c),
+                                         _rgba_getb(c));
        else
-	 *dst_address = 0;
+         *dst_address = 0;
      }
      );
-}  
+}
 
 //////////////////////////////////////////////////////////////////////
 
@@ -462,9 +462,9 @@ enum {
 
 static AlgoHLine ink_processing[][3] =
 {
-#define DEF_INK(name)			\
-  { (AlgoHLine)ink_hline32_##name,	\
-    (AlgoHLine)ink_hline16_##name,	\
+#define DEF_INK(name)                   \
+  { (AlgoHLine)ink_hline32_##name,      \
+    (AlgoHLine)ink_hline16_##name,      \
     (AlgoHLine)ink_hline8_##name }
 
   DEF_INK(opaque),

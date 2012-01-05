@@ -45,7 +45,7 @@ typedef struct _BoundSeg
 
 // The returned pointer must be freed using base_free() function.
 BoundSeg* find_mask_boundary(const Image* maskPR, int* num_elems,
-			     BoundaryType type, int x1, int y1, int x2, int y2);
+                             BoundaryType type, int x1, int y1, int x2, int y2);
 
 BoundSeg* sort_boundary(BoundSeg* segs, int num_segs, int* num_groups);
 

@@ -41,7 +41,7 @@ void SetTotalFrames::dispose()
 void SetTotalFrames::revert(ObjectsContainer* objects, UndoersCollector* redoers)
 {
   Sprite* sprite = objects->getObjectT<Sprite>(m_spriteId);
-  
+
   // Push another SetTotalFrames as redoer
   redoers->pushUndoer(new SetTotalFrames(objects, sprite));
 

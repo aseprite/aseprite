@@ -45,4 +45,4 @@ protected:
 
 } // namespace tools
 
-#endif	// TOOLS_INTERTWINE_H_INCLUDED
+#endif  // TOOLS_INTERTWINE_H_INCLUDED

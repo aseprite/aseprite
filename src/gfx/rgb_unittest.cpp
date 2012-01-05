@@ -15,9 +15,9 @@ using namespace std;
 ostream& operator<<(ostream& os, const Rgb& rgb)
 {
   return os << "("
-	    << rgb.red() << ", "
-	    << rgb.green() << ", "
-	    << rgb.blue() << ")";
+            << rgb.red() << ", "
+            << rgb.green() << ", "
+            << rgb.blue() << ")";
 }
 
 TEST(Rgb, Ctor)

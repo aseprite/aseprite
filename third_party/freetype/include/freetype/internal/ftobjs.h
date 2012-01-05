@@ -180,7 +180,7 @@ FT_BEGIN_HEADER
     FT_Matrix        glyph_matrix;
     FT_Vector        glyph_delta;
     void*            glyph_hints;
-  
+
   } FT_GlyphSlot_InternalRec;
 
 

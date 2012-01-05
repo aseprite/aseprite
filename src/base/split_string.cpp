@@ -21,10 +21,10 @@ namespace {
     bool operator()(base::string::value_type chr)
     {
       for (base::string::const_iterator
-	     it = separators->begin(),
-	     end = separators->end(); it != end; ++it) {
-	if (chr == *it)
-	  return true;
+             it = separators->begin(),
+             end = separators->end(); it != end; ++it) {
+        if (chr == *it)
+          return true;
       }
       return false;
     }
@@ -33,8 +33,8 @@ namespace {
 }
 
 void base::split_string(const base::string& string,
-			std::vector<base::string>& parts,
-			const base::string& separators)
+                        std::vector<base::string>& parts,
+                        const base::string& separators)
 {
   size_t elements = 1 + std::count_if(string.begin(), string.end(), is_separator(&separators));
   parts.reserve(elements);

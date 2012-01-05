@@ -57,15 +57,15 @@ END_OF_STATIC_FUNCTION(speed_timer_callback);
 
 PlayAnimationCommand::PlayAnimationCommand()
   : Command("PlayAnimation",
-	    "Play Animation",
-	    CmdUIOnlyFlag)
+            "Play Animation",
+            CmdUIOnlyFlag)
 {
 }
 
 bool PlayAnimationCommand::onEnabled(Context* context)
 {
   return context->checkFlags(ContextFlags::ActiveDocumentIsWritable |
-			     ContextFlags::HasActiveSprite);
+                             ContextFlags::HasActiveSprite);
 }
 
 void PlayAnimationCommand::onExecute(Context* context)
@@ -119,14 +119,14 @@ void PlayAnimationCommand::onExecute(Context* context)
       poll_mouse();
       poll_keyboard();
       if (keypressed() || mouse_b)
-	done = true;
+        done = true;
       gui_feedback();
     } while (!done && (speed_timer <= 0));
 
     if (!done) {
       int frame = sprite->getCurrentFrame()+1;
       if (frame >= sprite->getTotalFrames())
-	frame = 0;
+        frame = 0;
       sprite->setCurrentFrame(frame);
 
       speed_timer--;

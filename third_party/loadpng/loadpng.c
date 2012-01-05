@@ -29,12 +29,12 @@ int _png_compression_level = Z_BEST_COMPRESSION;
 static double get_gamma(void)
 {
     if (_png_screen_gamma == -1.0) {
-	/* Use the environment variable if available.
-	 * 2.2 is a good guess for PC monitors.
-	 * 1.1 is good for my laptop.
-	 */
-	AL_CONST char *gamma_str = getenv("SCREEN_GAMMA");
-	return (gamma_str) ? atof(gamma_str) : 2.2;
+        /* Use the environment variable if available.
+         * 2.2 is a good guess for PC monitors.
+         * 1.1 is good for my laptop.
+         */
+        AL_CONST char *gamma_str = getenv("SCREEN_GAMMA");
+        return (gamma_str) ? atof(gamma_str) : 2.2;
     }
 
     return _png_screen_gamma;
@@ -50,7 +50,7 @@ static void read_data(png_structp png_ptr, png_bytep data, png_uint_32 length)
 {
     PACKFILE *f = (PACKFILE *)png_get_io_ptr(png_ptr);
     if ((png_uint_32)pack_fread(data, length, f) != length)
-	png_error(png_ptr, "read error (loadpng calling pack_fread)");
+        png_error(png_ptr, "read error (loadpng calling pack_fread)");
 }
 
 
@@ -67,7 +67,7 @@ static int check_if_png(PACKFILE *fp)
     ASSERT(fp);
 
     if (pack_fread(buf, PNG_BYTES_TO_CHECK, fp) != PNG_BYTES_TO_CHECK)
-	return 0;
+        return 0;
 
     return (png_sig_cmp(buf, (png_size_t)0, PNG_BYTES_TO_CHECK) == 0);
 }
@@ -97,7 +97,7 @@ static BITMAP *really_load_png(png_structp png_ptr, png_infop info_ptr, RGB *pal
     png_read_info(png_ptr, info_ptr);
 
     png_get_IHDR(png_ptr, info_ptr, &width, &height, &bit_depth, &color_type,
-		 &interlace_type, NULL, NULL);
+                 &interlace_type, NULL, NULL);
 
     /* Extract multiple pixels with bit depths of 1, 2, and 4 from a single
      * byte into separate bytes (useful for paletted and grayscale images).
@@ -106,71 +106,71 @@ static BITMAP *really_load_png(png_structp png_ptr, png_infop info_ptr, RGB *pal
 
     /* Expand grayscale images to the full 8 bits from 1, 2, or 4 bits/pixel */
     if ((color_type == PNG_COLOR_TYPE_GRAY) && (bit_depth < 8))
-	png_set_expand(png_ptr);
+        png_set_expand(png_ptr);
 
     /* Adds a full alpha channel if there is transparency information
      * in a tRNS chunk. */
     if (png_get_valid(png_ptr, info_ptr, PNG_INFO_tRNS)) {
-	png_set_tRNS_to_alpha(png_ptr);
-	tRNS_to_alpha = TRUE;
+        png_set_tRNS_to_alpha(png_ptr);
+        tRNS_to_alpha = TRUE;
     }
 
     /* Convert 16-bits per colour component to 8-bits per colour component. */
     if (bit_depth == 16)
-	png_set_strip_16(png_ptr);
+        png_set_strip_16(png_ptr);
 
     /* Convert grayscale to RGB triplets */
     if ((color_type == PNG_COLOR_TYPE_GRAY) ||
-	(color_type == PNG_COLOR_TYPE_GRAY_ALPHA))
-	png_set_gray_to_rgb(png_ptr);
+        (color_type == PNG_COLOR_TYPE_GRAY_ALPHA))
+        png_set_gray_to_rgb(png_ptr);
 
     /* Optionally, tell libpng to handle the gamma correction for us. */
     if (_png_screen_gamma != 0.0) {
-	screen_gamma = get_gamma();
+        screen_gamma = get_gamma();
 
-	if (png_get_sRGB(png_ptr, info_ptr, &intent))
-	    png_set_gamma(png_ptr, screen_gamma, 0.45455);
-	else {
-	    if (png_get_gAMA(png_ptr, info_ptr, &image_gamma))
-		png_set_gamma(png_ptr, screen_gamma, image_gamma);
-	    else
-		png_set_gamma(png_ptr, screen_gamma, 0.45455);
-	}
+        if (png_get_sRGB(png_ptr, info_ptr, &intent))
+            png_set_gamma(png_ptr, screen_gamma, 0.45455);
+        else {
+            if (png_get_gAMA(png_ptr, info_ptr, &image_gamma))
+                png_set_gamma(png_ptr, screen_gamma, image_gamma);
+            else
+                png_set_gamma(png_ptr, screen_gamma, 0.45455);
+        }
     }
 
     /* Turn on interlace handling. */
     number_passes = png_set_interlace_handling(png_ptr);
-    
+
     /* Call to gamma correct and add the background to the palette
      * and update info structure.
      */
     png_read_update_info(png_ptr, info_ptr);
-    
+
     /* Even if the user doesn't supply space for a palette, we want
      * one for the load process.
      */
     if (!pal)
-	pal = tmppal;
-    
+        pal = tmppal;
+
     /* Palettes. */
     if (color_type & PNG_COLOR_MASK_PALETTE) {
-	int num_palette, i;
-	png_colorp palette;
+        int num_palette, i;
+        png_colorp palette;
 
-	if (png_get_PLTE(png_ptr, info_ptr, &palette, &num_palette)) {
-	    /* We don't actually dither, we just copy the palette. */
-	    for (i = 0; ((i < num_palette) && (i < 256)); i++) {
-		pal[i].r = palette[i].red >> 2;		/* 256 -> 64 */
-		pal[i].g = palette[i].green >> 2;
-		pal[i].b = palette[i].blue >> 2;
-	    }
+        if (png_get_PLTE(png_ptr, info_ptr, &palette, &num_palette)) {
+            /* We don't actually dither, we just copy the palette. */
+            for (i = 0; ((i < num_palette) && (i < 256)); i++) {
+                pal[i].r = palette[i].red >> 2;         /* 256 -> 64 */
+                pal[i].g = palette[i].green >> 2;
+                pal[i].b = palette[i].blue >> 2;
+            }
 
-	    for (; i < 256; i++)
-		pal[i].r = pal[i].g = pal[i].b = 0;
-	}
+            for (; i < 256; i++)
+                pal[i].r = pal[i].g = pal[i].b = 0;
+        }
     }
     else {
-	generate_332_palette(pal);
+        generate_332_palette(pal);
     }
 
     rowbytes = png_get_rowbytes(png_ptr, info_ptr);
@@ -180,32 +180,32 @@ static BITMAP *really_load_png(png_structp png_ptr, png_infop info_ptr, RGB *pal
 
     /* Allegro cannot handle less than 8 bpp. */
     if (bpp < 8)
-	bpp = 8;
+        bpp = 8;
 
     dest_bpp = _color_load_depth(bpp, (bpp == 32));
     bmp = create_bitmap_ex(bpp, width, height);
 
     /* Maybe flip RGB to BGR. */
     if ((bpp == 24) || (bpp == 32)) {
-	int c = makecol_depth(bpp, 0, 0, 255);
-	unsigned char *pc = (unsigned char *)&c;
-	if (pc[0] == 255)
-	    png_set_bgr(png_ptr);
-#ifdef ALLEGRO_BIG_ENDIAN	    
-	png_set_swap_alpha(png_ptr);
-#endif	    
+        int c = makecol_depth(bpp, 0, 0, 255);
+        unsigned char *pc = (unsigned char *)&c;
+        if (pc[0] == 255)
+            png_set_bgr(png_ptr);
+#ifdef ALLEGRO_BIG_ENDIAN
+        png_set_swap_alpha(png_ptr);
+#endif
     }
 
     /* Read the image, one line at a line (easier to debug!) */
     for (pass = 0; pass < number_passes; pass++) {
-	png_uint_32 y;
-	for (y = 0; y < height; y++)
-	    png_read_row(png_ptr, bmp->line[y], NULL);
+        png_uint_32 y;
+        for (y = 0; y < height; y++)
+            png_read_row(png_ptr, bmp->line[y], NULL);
     }
 
     /* Let Allegro convert the image into the desired colour depth. */
     if (dest_bpp != bpp)
-	bmp = _fixup_loaded_bitmap(bmp, pal, dest_bpp);
+        bmp = _fixup_loaded_bitmap(bmp, pal, dest_bpp);
 
     /* Read rest of file, and get additional chunks in info_ptr. */
     png_read_end(png_ptr, info_ptr);
@@ -227,7 +227,7 @@ BITMAP *load_png(AL_CONST char *filename, RGB *pal)
 
     fp = pack_fopen(filename, "r");
     if (!fp)
-	return NULL;
+        return NULL;
 
     bmp = load_png_pf(fp, pal);
 
@@ -250,7 +250,7 @@ BITMAP *load_png_pf(PACKFILE *fp, RGB *pal)
     ASSERT(fp);
 
     if (!check_if_png(fp)) {
-	return NULL;
+        return NULL;
     }
 
     /* Create and initialize the png_struct with the desired error handler
@@ -260,16 +260,16 @@ BITMAP *load_png_pf(PACKFILE *fp, RGB *pal)
      * was compiled with a compatible version of the library.
      */
     png_ptr = png_create_read_struct(PNG_LIBPNG_VER_STRING,
-				     (void *)NULL, NULL, NULL);
+                                     (void *)NULL, NULL, NULL);
     if (!png_ptr) {
-	return NULL;
+        return NULL;
     }
 
     /* Allocate/initialize the memory for image information. */
     info_ptr = png_create_info_struct(png_ptr);
     if (!info_ptr) {
-	png_destroy_read_struct(&png_ptr, (png_infopp)NULL, (png_infopp)NULL);
-	return NULL;
+        png_destroy_read_struct(&png_ptr, (png_infopp)NULL, (png_infopp)NULL);
+        return NULL;
     }
 
     /* Set error handling if you are using the setjmp/longjmp method (this is
@@ -277,10 +277,10 @@ BITMAP *load_png_pf(PACKFILE *fp, RGB *pal)
      * set up your own error handlers in the png_create_read_struct() earlier.
      */
     if (setjmp(png_ptr->jmpbuf)) {
-	/* Free all of the memory associated with the png_ptr and info_ptr */
-	png_destroy_read_struct(&png_ptr, &info_ptr, (png_infopp)NULL);
-	/* If we get here, we had a problem reading the file */
-	return NULL;
+        /* Free all of the memory associated with the png_ptr and info_ptr */
+        png_destroy_read_struct(&png_ptr, &info_ptr, (png_infopp)NULL);
+        /* If we get here, we had a problem reading the file */
+        return NULL;
     }
 
     /* Use Allegro packfile routines. */
@@ -315,7 +315,7 @@ static void read_data_memory(png_structp png_ptr, png_bytep data, png_uint_32 le
     MEMORY_READER_STATE *f = (MEMORY_READER_STATE *)png_get_io_ptr(png_ptr);
 
     if (length > (f->bufsize - f->current_pos))
-	png_error(png_ptr, "read error in read_data_memory (loadpng)");
+        png_error(png_ptr, "read error in read_data_memory (loadpng)");
 
     memcpy(data, f->buffer + f->current_pos, length);
     f->current_pos += length;
@@ -345,10 +345,10 @@ BITMAP *load_memory_png(AL_CONST void *buffer, int bufsize, RGB *pal)
     png_infop info_ptr;
 
     if (!buffer || (bufsize <= 0))
-    	return NULL;
+        return NULL;
 
     if (!check_if_png_memory(buffer))
-	return NULL;
+        return NULL;
 
     /* Create and initialize the png_struct with the desired error handler
      * functions.  If you want to use the default stderr and longjump method,
@@ -357,15 +357,15 @@ BITMAP *load_memory_png(AL_CONST void *buffer, int bufsize, RGB *pal)
      * was compiled with a compatible version of the library.
      */
     png_ptr = png_create_read_struct(PNG_LIBPNG_VER_STRING,
-				     (void *)NULL, NULL, NULL);
+                                     (void *)NULL, NULL, NULL);
     if (!png_ptr)
-	return NULL;
+        return NULL;
 
     /* Allocate/initialize the memory for image information. */
     info_ptr = png_create_info_struct(png_ptr);
     if (!info_ptr) {
-	png_destroy_read_struct(&png_ptr, (png_infopp)NULL, (png_infopp)NULL);
-	return NULL;
+        png_destroy_read_struct(&png_ptr, (png_infopp)NULL, (png_infopp)NULL);
+        return NULL;
     }
 
     /* Set error handling if you are using the setjmp/longjmp method (this is
@@ -373,10 +373,10 @@ BITMAP *load_memory_png(AL_CONST void *buffer, int bufsize, RGB *pal)
      * set up your own error handlers in the png_create_read_struct() earlier.
      */
     if (setjmp(png_ptr->jmpbuf)) {
-	/* Free all of the memory associated with the png_ptr and info_ptr */
-	png_destroy_read_struct(&png_ptr, &info_ptr, (png_infopp)NULL);
-	/* If we get here, we had a problem reading the file */
-	return NULL;
+        /* Free all of the memory associated with the png_ptr and info_ptr */
+        png_destroy_read_struct(&png_ptr, &info_ptr, (png_infopp)NULL);
+        /* If we get here, we had a problem reading the file */
+        return NULL;
     }
 
     /* Set up the reader state. */
@@ -395,6 +395,6 @@ BITMAP *load_memory_png(AL_CONST void *buffer, int bufsize, RGB *pal)
 
     /* Clean up after the read, and free any memory allocated. */
     png_destroy_read_struct(&png_ptr, &info_ptr, (png_infopp)NULL);
-    
+
     return bmp;
 }

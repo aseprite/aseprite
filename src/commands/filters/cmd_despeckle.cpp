@@ -47,15 +47,15 @@ class DespeckleWindow : public FilterWindow
 public:
   DespeckleWindow(MedianFilter& filter, FilterManagerImpl& filterMgr)
     : FilterWindow("Median Blur", ConfigSection, &filterMgr,
-		   WithChannelsSelector,
-		   WithTiledCheckBox,
-		   filter.getTiledMode())
+                   WithChannelsSelector,
+                   WithTiledCheckBox,
+                   filter.getTiledMode())
     , m_filter(filter)
     , m_controlsWidget(load_widget("despeckle.xml", "controls"))
   {
     get_widgets(m_controlsWidget,
-		"width", &m_widthEntry,
-		"height", &m_heightEntry, NULL);
+                "width", &m_widthEntry,
+                "height", &m_heightEntry, NULL);
 
     getContainer()->addChild(m_controlsWidget);
 
@@ -70,7 +70,7 @@ private:
   void onSizeChange()
   {
     m_filter.setSize(m_widthEntry->getTextInt(),
-		     m_heightEntry->getTextInt());
+                     m_heightEntry->getTextInt());
     restartPreview();
   }
 
@@ -101,15 +101,15 @@ protected:
 
 DespeckleCommand::DespeckleCommand()
   : Command("Despeckle",
-	    "Despeckle",
-	    CmdRecordableFlag)
+            "Despeckle",
+            CmdRecordableFlag)
 {
 }
 
 bool DespeckleCommand::onEnabled(Context* context)
 {
   return context->checkFlags(ContextFlags::ActiveDocumentIsWritable |
-			     ContextFlags::HasActiveSprite);
+                             ContextFlags::HasActiveSprite);
 }
 
 void DespeckleCommand::onExecute(Context* context)
@@ -117,13 +117,13 @@ void DespeckleCommand::onExecute(Context* context)
   MedianFilter filter;
   filter.setTiledMode(context->getSettings()->getTiledMode());
   filter.setSize(get_config_int(ConfigSection, "Width", 3),
-		 get_config_int(ConfigSection, "Height", 3));
+                 get_config_int(ConfigSection, "Height", 3));
 
   FilterManagerImpl filterMgr(context->getActiveDocument(), &filter);
   filterMgr.setTarget(TARGET_RED_CHANNEL |
-		      TARGET_GREEN_CHANNEL |
-		      TARGET_BLUE_CHANNEL |
-		      TARGET_GRAY_CHANNEL);
+                      TARGET_GREEN_CHANNEL |
+                      TARGET_BLUE_CHANNEL |
+                      TARGET_GRAY_CHANNEL);
 
   DespeckleWindow window(filter, filterMgr);
   if (window.doModal()) {

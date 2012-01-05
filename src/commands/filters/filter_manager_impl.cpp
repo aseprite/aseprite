@@ -122,8 +122,8 @@ void FilterManagerImpl::beginForPreview()
   else {
     m_preview_mask = mask_new();
     mask_replace(m_preview_mask,
-		 m_offset_x, m_offset_y,
-		 m_src->w, m_src->h);
+                 m_offset_x, m_offset_y,
+                 m_src->w, m_src->h);
   }
 
   m_row = 0;
@@ -225,9 +225,9 @@ void FilterManagerImpl::applyToTarget()
   bool cancelled = false;
 
   ImagesCollector images(m_sprite,
-			 (m_target & TARGET_ALL_LAYERS) == TARGET_ALL_LAYERS,
-			 (m_target & TARGET_ALL_FRAMES) == TARGET_ALL_FRAMES,
-			 true);	// we will write in each image
+                         (m_target & TARGET_ALL_LAYERS) == TARGET_ALL_LAYERS,
+                         (m_target & TARGET_ALL_FRAMES) == TARGET_ALL_FRAMES,
+                         true); // we will write in each image
   if (images.empty())
     return;
 
@@ -241,7 +241,7 @@ void FilterManagerImpl::applyToTarget()
     if (undo->isEnabled())
       undo->pushUndoer(new undoers::OpenGroup());
   }
-  
+
   m_progressBase = 0.0f;
   m_progressWidth = 1.0f / images.size();
 
@@ -276,8 +276,8 @@ void FilterManagerImpl::flush()
     reg1 = jregion_new(NULL, 0);
 
     editor->editorToScreen(m_x+m_offset_x,
-			   m_y+m_offset_y+m_row-1,
-			   &rect.x1, &rect.y1);
+                           m_y+m_offset_y+m_row-1,
+                           &rect.x1, &rect.y1);
     rect.x2 = rect.x1 + (m_w << editor->getZoom());
     rect.y2 = rect.y1 + (1 << editor->getZoom());
 

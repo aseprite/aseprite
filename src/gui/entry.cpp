@@ -114,7 +114,7 @@ void Entry::setCaretPos(int pos)
     x = this->rc->x1 + this->border_width.l;
     for (c=++m_scroll; ; c++) {
       x += CHARACTER_LENGTH(this->getFont(),
-			    (c < ustrlen(text))? ugetat(text, c): ' ');
+                            (c < ustrlen(text))? ugetat(text, c): ' ');
 
       if (x >= this->rc->x2-this->border_width.r)
         break;
@@ -145,7 +145,7 @@ void Entry::deselectText()
 }
 
 void Entry::getEntryThemeInfo(int* scroll, int* caret, int* state,
-			      int* selbeg, int* selend)
+                              int* selbeg, int* selend)
 {
   if (scroll) *scroll = m_scroll;
   if (caret) *caret = m_caret;
@@ -168,10 +168,10 @@ bool Entry::onProcessMessage(Message* msg)
 
     case JM_TIMER:
       if (this->hasFocus() &&
-	  msg->timer.timer_id == m_timer_id) {
-	// Blinking caret
-	m_state = m_state ? false: true;
-	invalidate();
+          msg->timer.timer_id == m_timer_id) {
+        // Blinking caret
+        m_state = m_state ? false: true;
+        invalidate();
       }
       break;
 
@@ -189,82 +189,82 @@ bool Entry::onProcessMessage(Message* msg)
       invalidate();
 
       jmanager_stop_timer(m_timer_id);
-      
+
       deselectText();
       m_recent_focused = false;
       break;
 
     case JM_KEYPRESSED:
       if (this->hasFocus() && !isReadOnly()) {
-	// Command to execute
-	EntryCmd::Type cmd = EntryCmd::NoOp;
+        // Command to execute
+        EntryCmd::Type cmd = EntryCmd::NoOp;
 
-	switch (msg->key.scancode) {
+        switch (msg->key.scancode) {
 
-	  case KEY_LEFT:
-	    if (msg->any.shifts & KB_CTRL_FLAG)
-	      cmd = EntryCmd::BackwardWord;
-	    else
-	      cmd = EntryCmd::BackwardChar;
-	    break;
+          case KEY_LEFT:
+            if (msg->any.shifts & KB_CTRL_FLAG)
+              cmd = EntryCmd::BackwardWord;
+            else
+              cmd = EntryCmd::BackwardChar;
+            break;
 
-	  case KEY_RIGHT:
-	    if (msg->any.shifts & KB_CTRL_FLAG)
-	      cmd = EntryCmd::ForwardWord;
-	    else
-	      cmd = EntryCmd::ForwardChar;
-	    break;
+          case KEY_RIGHT:
+            if (msg->any.shifts & KB_CTRL_FLAG)
+              cmd = EntryCmd::ForwardWord;
+            else
+              cmd = EntryCmd::ForwardChar;
+            break;
 
-	  case KEY_HOME:
-	    cmd = EntryCmd::BeginningOfLine;
-	    break;
+          case KEY_HOME:
+            cmd = EntryCmd::BeginningOfLine;
+            break;
 
-	  case KEY_END:
-	    cmd = EntryCmd::EndOfLine;
-	    break;
+          case KEY_END:
+            cmd = EntryCmd::EndOfLine;
+            break;
 
-	  case KEY_DEL:
-	    if (msg->any.shifts & KB_SHIFT_FLAG)
-	      cmd = EntryCmd::Cut;
-	    else
-	      cmd = EntryCmd::DeleteForward;
-	    break;
+          case KEY_DEL:
+            if (msg->any.shifts & KB_SHIFT_FLAG)
+              cmd = EntryCmd::Cut;
+            else
+              cmd = EntryCmd::DeleteForward;
+            break;
 
-	  case KEY_INSERT:
-	    if (msg->any.shifts & KB_SHIFT_FLAG)
-	      cmd = EntryCmd::Paste;
-	    else if (msg->any.shifts & KB_CTRL_FLAG)
-	      cmd = EntryCmd::Copy;
-	    break;
+          case KEY_INSERT:
+            if (msg->any.shifts & KB_SHIFT_FLAG)
+              cmd = EntryCmd::Paste;
+            else if (msg->any.shifts & KB_CTRL_FLAG)
+              cmd = EntryCmd::Copy;
+            break;
 
-	  case KEY_BACKSPACE:
-	    cmd = EntryCmd::DeleteBackward;
-	    break;
+          case KEY_BACKSPACE:
+            cmd = EntryCmd::DeleteBackward;
+            break;
 
-	  default:
-	    if (msg->key.ascii >= 32) {
-	      cmd = EntryCmd::InsertChar;
-	    }
-	    else {
-	      // map common Windows shortcuts for Cut/Copy/Paste
-	      if ((msg->any.shifts & (KB_CTRL_FLAG | KB_SHIFT_FLAG | KB_ALT_FLAG)) == KB_CTRL_FLAG) {
-		switch (msg->key.scancode) {
-		  case KEY_X: cmd = EntryCmd::Cut; break;
-		  case KEY_C: cmd = EntryCmd::Copy; break;
-		  case KEY_V: cmd = EntryCmd::Paste; break;
-		}
-	      }
-	    }
-	    break;
-	}
+          default:
+            if (msg->key.ascii >= 32) {
+              cmd = EntryCmd::InsertChar;
+            }
+            else {
+              // map common Windows shortcuts for Cut/Copy/Paste
+              if ((msg->any.shifts & (KB_CTRL_FLAG | KB_SHIFT_FLAG | KB_ALT_FLAG)) == KB_CTRL_FLAG) {
+                switch (msg->key.scancode) {
+                  case KEY_X: cmd = EntryCmd::Cut; break;
+                  case KEY_C: cmd = EntryCmd::Copy; break;
+                  case KEY_V: cmd = EntryCmd::Paste; break;
+                }
+              }
+            }
+            break;
+        }
 
-	if (cmd == EntryCmd::NoOp)
-	  break;
+        if (cmd == EntryCmd::NoOp)
+          break;
 
-	executeCmd(cmd,
-		   msg->key.ascii,
-		   (msg->any.shifts & KB_SHIFT_FLAG) ? true: false);
-	return true;
+        executeCmd(cmd,
+                   msg->key.ascii,
+                   (msg->any.shifts & KB_SHIFT_FLAG) ? true: false);
+        return true;
       }
       break;
 
@@ -273,76 +273,76 @@ bool Entry::onProcessMessage(Message* msg)
 
     case JM_MOTION:
       if (this->hasCapture()) {
-	const char *text = this->getText();
-	bool move, is_dirty;
-	int c, x;
+        const char *text = this->getText();
+        bool move, is_dirty;
+        int c, x;
 
-	move = true;
-	is_dirty = false;
+        move = true;
+        is_dirty = false;
 
-	/* backward scroll */
-	if (msg->mouse.x < this->rc->x1) {
-	  if (m_scroll > 0) {
-	    m_caret = --m_scroll;
-	    move = false;
-	    is_dirty = true;
-	    invalidate();
-	  }
-	}
-	/* forward scroll */
-	else if (msg->mouse.x >= this->rc->x2) {
-	  if (m_scroll < ustrlen(text)) {
-	    m_scroll++;
-	    x = this->rc->x1 + this->border_width.l;
-	    for (c=m_scroll; ; c++) {
-	      x += CHARACTER_LENGTH(this->getFont(),
-				   (c < ustrlen(text))? ugetat(text, c): ' ');
-	      if (x > this->rc->x2-this->border_width.r) {
-		c--;
-		break;
-	      }
-	      else if (!ugetat (text, c))
-		break;
-	    }
-	    m_caret = c;
-	    move = false;
-	    is_dirty = true;
-	    invalidate();
-	  }
-	}
+        /* backward scroll */
+        if (msg->mouse.x < this->rc->x1) {
+          if (m_scroll > 0) {
+            m_caret = --m_scroll;
+            move = false;
+            is_dirty = true;
+            invalidate();
+          }
+        }
+        /* forward scroll */
+        else if (msg->mouse.x >= this->rc->x2) {
+          if (m_scroll < ustrlen(text)) {
+            m_scroll++;
+            x = this->rc->x1 + this->border_width.l;
+            for (c=m_scroll; ; c++) {
+              x += CHARACTER_LENGTH(this->getFont(),
+                                   (c < ustrlen(text))? ugetat(text, c): ' ');
+              if (x > this->rc->x2-this->border_width.r) {
+                c--;
+                break;
+              }
+              else if (!ugetat (text, c))
+                break;
+            }
+            m_caret = c;
+            move = false;
+            is_dirty = true;
+            invalidate();
+          }
+        }
 
-	// Move caret
-	if (move) {
-	  c = getCaretFromMouse(msg);
+        // Move caret
+        if (move) {
+          c = getCaretFromMouse(msg);
 
-	  if (m_caret != c) {
-	    m_caret = c;
-	    is_dirty = true;
-	    invalidate();
-	  }
-	}
+          if (m_caret != c) {
+            m_caret = c;
+            is_dirty = true;
+            invalidate();
+          }
+        }
 
-	// Move selection
-	if (m_recent_focused) {
-	  m_recent_focused = false;
-	  m_select = m_caret;
-	}
-	else if (msg->type == JM_BUTTONPRESSED)
-	  m_select = m_caret;
+        // Move selection
+        if (m_recent_focused) {
+          m_recent_focused = false;
+          m_select = m_caret;
+        }
+        else if (msg->type == JM_BUTTONPRESSED)
+          m_select = m_caret;
 
-	// Show the caret
-	if (is_dirty) {
-	  jmanager_start_timer(m_timer_id);
-	  m_state = true;
-	}
+        // Show the caret
+        if (is_dirty) {
+          jmanager_start_timer(m_timer_id);
+          m_state = true;
+        }
 
-	return true;
+        return true;
       }
       break;
 
     case JM_BUTTONRELEASED:
       if (this->hasCapture())
-	this->releaseMouse();
+        this->releaseMouse();
       return true;
 
     case JM_DOUBLECLICK:
@@ -356,7 +356,7 @@ bool Entry::onProcessMessage(Message* msg)
     case JM_MOUSELEAVE:
       /* TODO theme stuff */
       if (this->isEnabled())
-	invalidate();
+        invalidate();
       break;
   }
 
@@ -372,7 +372,7 @@ void Entry::onPreferredSize(PreferredSizeEvent& ev)
 
   w = MIN(w, JI_SCREEN_W/2);
 
-  int h = 
+  int h =
     + border_width.t
     + text_height(getFont())
     + border_width.b;
@@ -397,8 +397,8 @@ int Entry::getCaretFromMouse(Message* msg)
 
   mx = msg->mouse.x;
   mx = MID(this->rc->x1+this->border_width.l,
-	   mx,
-	   this->rc->x2-this->border_width.r-1);
+           mx,
+           this->rc->x2-this->border_width.r-1);
 
   x = this->rc->x1 + this->border_width.l;
   for (c=m_scroll; ugetat(this->getText(), c); c++) {
@@ -414,7 +414,7 @@ int Entry::getCaretFromMouse(Message* msg)
 
   if (!ugetat(this->getText(), c))
     if ((mx >= x) &&
-	(mx <= this->rc->x2-this->border_width.r-1))
+        (mx <= this->rc->x2-this->border_width.r-1))
       caret = c;
 
   return caret;
@@ -435,14 +435,14 @@ void Entry::executeCmd(EntryCmd::Type cmd, int ascii, bool shift_pressed)
     case EntryCmd::InsertChar:
       // delete the entire selection
       if (selbeg >= 0) {
-	text.erase(selbeg, selend-selbeg+1);
+        text.erase(selbeg, selend-selbeg+1);
 
-	m_caret = selbeg;
+        m_caret = selbeg;
       }
 
       // put the character
       if (text.size() < m_maxsize)
-	text.insert(m_caret++, 1, ascii);
+        text.insert(m_caret++, 1, ascii);
 
       m_select = -1;
       break;
@@ -451,19 +451,19 @@ void Entry::executeCmd(EntryCmd::Type cmd, int ascii, bool shift_pressed)
     case EntryCmd::BackwardWord:
       // selection
       if (shift_pressed) {
-	if (m_select < 0)
-	  m_select = m_caret;
+        if (m_select < 0)
+          m_select = m_caret;
       }
       else
-	m_select = -1;
+        m_select = -1;
 
       // backward word
       if (cmd == EntryCmd::BackwardWord) {
-	backwardWord();
+        backwardWord();
       }
       // backward char
       else if (m_caret > 0) {
-	m_caret--;
+        m_caret--;
       }
       break;
 
@@ -471,30 +471,30 @@ void Entry::executeCmd(EntryCmd::Type cmd, int ascii, bool shift_pressed)
     case EntryCmd::ForwardWord:
       // selection
       if (shift_pressed) {
-	if (m_select < 0)
-	  m_select = m_caret;
+        if (m_select < 0)
+          m_select = m_caret;
       }
       else
-	m_select = -1;
+        m_select = -1;
 
       // forward word
       if (cmd == EntryCmd::ForwardWord) {
-	forwardWord();
+        forwardWord();
       }
       // forward char
       else if (m_caret < (int)text.size()) {
-	m_caret++;
+        m_caret++;
       }
       break;
 
     case EntryCmd::BeginningOfLine:
       // selection
       if (shift_pressed) {
-	if (m_select < 0)
-	  m_select = m_caret;
+        if (m_select < 0)
+          m_select = m_caret;
       }
       else
-	m_select = -1;
+        m_select = -1;
 
       m_caret = 0;
       break;
@@ -502,11 +502,11 @@ void Entry::executeCmd(EntryCmd::Type cmd, int ascii, bool shift_pressed)
     case EntryCmd::EndOfLine:
       // selection
       if (shift_pressed) {
-	if (m_select < 0)
-	  m_select = m_caret;
+        if (m_select < 0)
+          m_select = m_caret;
       }
       else
-	m_select = -1;
+        m_select = -1;
 
       m_caret = text.size();
       break;
@@ -515,21 +515,21 @@ void Entry::executeCmd(EntryCmd::Type cmd, int ascii, bool shift_pressed)
     case EntryCmd::Cut:
       // delete the entire selection
       if (selbeg >= 0) {
-	// *cut* text!
-	if (cmd == EntryCmd::Cut) {
-	  base::string buf = text.substr(selbeg, selend - selbeg + 1);
-	  jclipboard_set_text(buf.c_str());
-	}
+        // *cut* text!
+        if (cmd == EntryCmd::Cut) {
+          base::string buf = text.substr(selbeg, selend - selbeg + 1);
+          jclipboard_set_text(buf.c_str());
+        }
 
-	// remove text
-	text.erase(selbeg, selend-selbeg+1);
+        // remove text
+        text.erase(selbeg, selend-selbeg+1);
 
-	m_caret = selbeg;
+        m_caret = selbeg;
       }
       // delete the next character
       else {
-	if (m_caret < (int)text.size())
-	  text.erase(m_caret, 1);
+        if (m_caret < (int)text.size())
+          text.erase(m_caret, 1);
       }
 
       m_select = -1;
@@ -539,44 +539,44 @@ void Entry::executeCmd(EntryCmd::Type cmd, int ascii, bool shift_pressed)
       const char *clipboard;
 
       if ((clipboard = jclipboard_get_text())) {
-	// delete the entire selection
-	if (selbeg >= 0) {
-	  text.erase(selbeg, selend-selbeg+1);
+        // delete the entire selection
+        if (selbeg >= 0) {
+          text.erase(selbeg, selend-selbeg+1);
 
-	  m_caret = selbeg;
-	  m_select = -1;
-	}
+          m_caret = selbeg;
+          m_select = -1;
+        }
 
-	// paste text
-	for (c=0; c<ustrlen(clipboard); c++)
-	  if (text.size() < m_maxsize)
-	    text.insert(m_caret+c, 1, ugetat(clipboard, c));
-	  else
-	    break;
+        // paste text
+        for (c=0; c<ustrlen(clipboard); c++)
+          if (text.size() < m_maxsize)
+            text.insert(m_caret+c, 1, ugetat(clipboard, c));
+          else
+            break;
 
-	setCaretPos(m_caret+c);
+        setCaretPos(m_caret+c);
       }
       break;
     }
 
     case EntryCmd::Copy:
       if (selbeg >= 0) {
-	base::string buf = text.substr(selbeg, selend - selbeg + 1);
-	jclipboard_set_text(buf.c_str());
+        base::string buf = text.substr(selbeg, selend - selbeg + 1);
+        jclipboard_set_text(buf.c_str());
       }
       break;
 
     case EntryCmd::DeleteBackward:
       // delete the entire selection
       if (selbeg >= 0) {
-	text.erase(selbeg, selend-selbeg+1);
+        text.erase(selbeg, selend-selbeg+1);
 
-	m_caret = selbeg;
+        m_caret = selbeg;
       }
       // delete the previous character
       else {
-	if (m_caret > 0)
-	  text.erase(--m_caret, 1);
+        if (m_caret > 0)
+          text.erase(--m_caret, 1);
       }
 
       m_select = -1;
@@ -592,8 +592,8 @@ void Entry::executeCmd(EntryCmd::Type cmd, int ascii, bool shift_pressed)
   invalidate();
 }
 
-#define IS_WORD_CHAR(ch)				\
-  (!((!ch) || (uisspace(ch)) ||				\
+#define IS_WORD_CHAR(ch)                                \
+  (!((!ch) || (uisspace(ch)) ||                         \
     ((ch) == '/') || ((ch) == OTHER_PATH_SEPARATOR)))
 
 void Entry::forwardWord()

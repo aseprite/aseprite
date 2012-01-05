@@ -206,5 +206,3 @@ public:
 #include "inline/fix.inl"
 
 #endif          /* ifndef ALLEGRO_FIX_H */
-
-

@@ -1,6 +1,6 @@
-/*         ______   ___    ___ 
- *        /\  _  \ /\_ \  /\_ \ 
- *        \ \ \L\ \\//\ \ \//\ \      __     __   _ __   ___ 
+/*         ______   ___    ___
+ *        /\  _  \ /\_ \  /\_ \
+ *        \ \ \L\ \\//\ \ \//\ \      __     __   _ __   ___
  *         \ \  __ \ \ \ \  \ \ \   /'__`\ /'_ `\/\`'__\/ __`\
  *          \ \ \/\ \ \_\ \_ \_\ \_/\  __//\ \L\ \ \ \//\ \L\ \
  *           \ \_\ \_\/\____\/\____\ \____\ \____ \ \_\\ \____/
@@ -44,8 +44,8 @@ void setup_direct_shifts(void)
    _rgb_b_shift_24 = 0;
 
    _rgb_a_shift_32 = 24;
-   _rgb_r_shift_32 = 16; 
-   _rgb_g_shift_32 = 8; 
+   _rgb_r_shift_32 = 16;
+   _rgb_g_shift_32 = 8;
    _rgb_b_shift_32 = 0;
 }
 
@@ -63,7 +63,7 @@ unsigned long osx_qz_write_line(BITMAP *bmp, int line)
          LockPortBits(BMP_EXTRA(bmp)->port);
       }
    }
-   
+
    return (unsigned long)(bmp->line[line]);
 }
 
@@ -132,12 +132,12 @@ static BITMAP *_make_quickdraw_bitmap(int width, int height, int flags)
    char *addr;
    int pitch;
    int i, size;
-   
+
    /* create new GWorld */
    SetRect(&rect, 0, 0, width, height);
    if (NewGWorld(&gworld, screen->vtable->color_depth, &rect, NULL, NULL, flags))
       return NULL;
-   
+
    LockPortBits(gworld);
    addr = GetPixBaseAddr(GetPortPixMap(gworld));
    pitch = GetPixRowBytes(GetPortPixMap(gworld));
@@ -182,7 +182,7 @@ static BITMAP *_make_quickdraw_bitmap(int width, int height, int flags)
       return NULL;
    }
    BMP_EXTRA(bmp)->port = gworld;
-   
+
    return bmp;
 }
 
@@ -239,7 +239,7 @@ void osx_qz_destroy_video_bitmap(BITMAP *bmp)
 void osx_qz_blit_to_self(BITMAP *source, BITMAP *dest, int source_x, int source_y, int dest_x, int dest_y, int width, int height)
 {
    Rect source_rect, dest_rect;
-   
+
    SetRect(&source_rect, source_x + source->x_ofs, source_y + source->y_ofs,
       source_x + source->x_ofs + width, source_y + source->y_ofs + height);
    SetRect(&dest_rect, dest_x + dest->x_ofs, dest_y + dest->y_ofs,
@@ -250,7 +250,7 @@ void osx_qz_blit_to_self(BITMAP *source, BITMAP *dest, int source_x, int source_
       LockPortBits(BMP_EXTRA(dest)->port);
    CopyBits(GetPortBitMapForCopyBits(BMP_EXTRA(source)->port),
             GetPortBitMapForCopyBits(BMP_EXTRA(dest)->port),
-	    &source_rect, &dest_rect, srcCopy, NULL);
+            &source_rect, &dest_rect, srcCopy, NULL);
    if (!(dest->id & BMP_ID_LOCKED))
       UnlockPortBits(BMP_EXTRA(dest)->port);
 }

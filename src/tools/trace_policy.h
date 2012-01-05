@@ -30,4 +30,4 @@ enum TracePolicy
 
 } // namespace tools
 
-#endif	// TOOLS_TRACE_POLICY_H_INCLUDED
+#endif  // TOOLS_TRACE_POLICY_H_INCLUDED

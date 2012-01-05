@@ -109,4 +109,3 @@
 #define FUNC_POLY_SCANLINE_PTEX_MASK_TRANS  _poly_scanline_ptex_mask_trans8
 
 #endif /* !__bma_cdefs8_h */
-

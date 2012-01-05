@@ -40,8 +40,8 @@ protected:
 
 PasteCommand::PasteCommand()
   : Command("Paste",
-	    "Paste",
-	    CmdUIOnlyFlag)
+            "Paste",
+            CmdUIOnlyFlag)
 {
 }
 
@@ -50,9 +50,9 @@ bool PasteCommand::onEnabled(Context* context)
   return
     clipboard::can_paste() &&
     context->checkFlags(ContextFlags::ActiveDocumentIsWritable |
-			ContextFlags::ActiveLayerIsReadable |
-			ContextFlags::ActiveLayerIsWritable |
-			ContextFlags::ActiveLayerIsImage);
+                        ContextFlags::ActiveLayerIsReadable |
+                        ContextFlags::ActiveLayerIsWritable |
+                        ContextFlags::ActiveLayerIsImage);
 }
 
 void PasteCommand::onExecute(Context* context)

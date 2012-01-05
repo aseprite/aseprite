@@ -41,19 +41,19 @@ static void win32_shell_execute(const char* verb, const char* file, const char* 
     int ret = GetLastError();
     if (ret != 0) {
       DWORD flags =
-	FORMAT_MESSAGE_ALLOCATE_BUFFER |
-	FORMAT_MESSAGE_FROM_SYSTEM |
-	FORMAT_MESSAGE_IGNORE_INSERTS;
+        FORMAT_MESSAGE_ALLOCATE_BUFFER |
+        FORMAT_MESSAGE_FROM_SYSTEM |
+        FORMAT_MESSAGE_IGNORE_INSERTS;
       LPSTR msgbuf;
 
       if (FormatMessageA(flags, NULL, ret,
-			 MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
-			 reinterpret_cast<LPSTR>(&msgbuf),
-			 0, NULL)) {
-	Alert::show("Problem<<Cannot open:<<%s<<%s||&Close", file, msgbuf);
-	LocalFree(msgbuf);
+                         MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
+                         reinterpret_cast<LPSTR>(&msgbuf),
+                         0, NULL)) {
+        Alert::show("Problem<<Cannot open:<<%s<<%s||&Close", file, msgbuf);
+        LocalFree(msgbuf);
 
-	ret = 0;
+        ret = 0;
       }
     }
   }

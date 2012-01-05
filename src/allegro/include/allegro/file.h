@@ -176,5 +176,3 @@ AL_FUNC(void *, pack_get_userdata, (PACKFILE *f));
 #endif
 
 #endif          /* ifndef ALLEGRO_FILE_H */
-
-

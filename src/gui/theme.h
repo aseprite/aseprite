@@ -31,7 +31,7 @@ public:
 
   Theme();
   virtual ~Theme();
-  
+
   void regenerate();
 
   virtual BITMAP* set_cursor(int type, int *focus_x, int *focus_y) = 0;

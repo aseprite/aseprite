@@ -44,4 +44,4 @@ private:
 
 } // namespace undoers
 
-#endif	// UNDOERS_SET_MASK_POSITION_H_INCLUDED
+#endif  // UNDOERS_SET_MASK_POSITION_H_INCLUDED

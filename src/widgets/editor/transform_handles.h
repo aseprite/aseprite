@@ -44,8 +44,8 @@ public:
 
 private:
   gfx::Rect getPivotHandleBounds(Editor* editor,
-				 const gfx::Transformation& transform,
-				 const gfx::Transformation::Corners& corners);
+                                 const gfx::Transformation& transform,
+                                 const gfx::Transformation::Corners& corners);
 
   bool inHandle(const gfx::Point& pt, int x, int y, int gfx_w, int gfx_h, fixed angle);
   void drawHandle(BITMAP* bmp, int x, int y, fixed angle);

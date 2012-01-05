@@ -1,16 +1,16 @@
 /******************************************************************************
- * In order to make life a little bit easier when using the GIF file format,   
- * this library was written, and which does all the dirty work...              
- *                                                                             
- *                                        Written by Gershon Elber,  Jun. 1989 
- *                                        Hacks by Eric S. Raymond,  Sep. 1992 
+ * In order to make life a little bit easier when using the GIF file format,
+ * this library was written, and which does all the dirty work...
+ *
+ *                                        Written by Gershon Elber,  Jun. 1989
+ *                                        Hacks by Eric S. Raymond,  Sep. 1992
  ******************************************************************************
- * History:                                                                    
- * 14 Jun 89 - Version 1.0 by Gershon Elber.                                   
- *  3 Sep 90 - Version 1.1 by Gershon Elber (Support for Gif89, Unique names)  
- * 15 Sep 90 - Version 2.0 by Eric S. Raymond (Changes to suoport GIF slurp)   
+ * History:
+ * 14 Jun 89 - Version 1.0 by Gershon Elber.
+ *  3 Sep 90 - Version 1.1 by Gershon Elber (Support for Gif89, Unique names)
+ * 15 Sep 90 - Version 2.0 by Eric S. Raymond (Changes to suoport GIF slurp)
  * 26 Jun 96 - Version 3.0 by Eric S. Raymond (Full GIF89 support)
- * 17 Dec 98 - Version 4.0 by Toshio Kuratomi (Fix extension writing code)     
+ * 17 Dec 98 - Version 4.0 by Toshio Kuratomi (Fix extension writing code)
  *****************************************************************************/
 
 #ifndef _GIF_LIB_H_
@@ -120,7 +120,7 @@ typedef int (*InputFunc) (GifFileType *, GifByteType *, int);
 typedef int (*OutputFunc) (GifFileType *, const GifByteType *, int);
 
 /******************************************************************************
- *  GIF89 extension function codes                                             
+ *  GIF89 extension function codes
 ******************************************************************************/
 
 #define COMMENT_EXT_FUNC_CODE     0xfe    /* comment */
@@ -129,8 +129,8 @@ typedef int (*OutputFunc) (GifFileType *, const GifByteType *, int);
 #define APPLICATION_EXT_FUNC_CODE 0xff    /* application block */
 
 /******************************************************************************
- * O.K., here are the routines one can access in order to encode GIF file:     
- * (GIF_LIB file EGIF_LIB.C).                              
+ * O.K., here are the routines one can access in order to encode GIF file:
+ * (GIF_LIB file EGIF_LIB.C).
 ******************************************************************************/
 
 GifFileType *EGifOpenFileName(const char *GifFileName,
@@ -177,8 +177,8 @@ int EGifCloseFile(GifFileType * GifFile);
 #define E_GIF_ERR_NOT_WRITEABLE  10
 
 /******************************************************************************
- * O.K., here are the routines one can access in order to decode GIF file:     
- * (GIF_LIB file DGIF_LIB.C).                              
+ * O.K., here are the routines one can access in order to decode GIF file:
+ * (GIF_LIB file DGIF_LIB.C).
  *****************************************************************************/
 #ifndef _GBA_NO_FILEIO
 GifFileType *DGifOpenFileName(const char *GifFileName);
@@ -217,7 +217,7 @@ int DGifCloseFile(GifFileType * GifFile);
 #define D_GIF_ERR_EOF_TOO_SOON   113
 
 /******************************************************************************
- * O.K., here are the routines from GIF_LIB file QUANTIZE.C.              
+ * O.K., here are the routines from GIF_LIB file QUANTIZE.C.
 ******************************************************************************/
 int QuantizeBuffer(unsigned int Width, unsigned int Height,
                    int *ColorMapSize, GifByteType * RedInput,
@@ -226,7 +226,7 @@ int QuantizeBuffer(unsigned int Width, unsigned int Height,
                    GifColorType * OutputColorMap);
 
 /******************************************************************************
- * O.K., here are the routines from GIF_LIB file QPRINTF.C.              
+ * O.K., here are the routines from GIF_LIB file QPRINTF.C.
 ******************************************************************************/
 extern int GifQuietPrint;
 
@@ -237,7 +237,7 @@ extern int GifQuietPrint;
 #endif /* HAVE_STDARG_H */
 
 /******************************************************************************
- * O.K., here are the routines from GIF_LIB file GIF_ERR.C.              
+ * O.K., here are the routines from GIF_LIB file GIF_ERR.C.
 ******************************************************************************/
 #ifndef _GBA_NO_FILEIO
 extern void PrintGifError(void);
@@ -245,7 +245,7 @@ extern void PrintGifError(void);
 extern int GifLastError(void);
 
 /******************************************************************************
- * O.K., here are the routines from GIF_LIB file DEV2GIF.C.              
+ * O.K., here are the routines from GIF_LIB file DEV2GIF.C.
 ******************************************************************************/
 extern int DumpScreen2Gif(const char *FileName,
                           int ReqGraphDriver,
@@ -261,7 +261,7 @@ extern int DumpScreen2Gif(const char *FileName,
  *****************************************************************************/
 
 /******************************************************************************
- * Color Map handling from ALLOCGIF.C                          
+ * Color Map handling from ALLOCGIF.C
  *****************************************************************************/
 
 extern ColorMapObject *MakeMapObject(int ColorCount,
@@ -273,7 +273,7 @@ extern ColorMapObject *UnionColorMap(const ColorMapObject * ColorIn1,
 extern int BitSize(int n);
 
 /******************************************************************************
- * Support for the in-core structures allocation (slurp mode).              
+ * Support for the in-core structures allocation (slurp mode).
  *****************************************************************************/
 
 /* This is the in-core version of an extension record */
@@ -302,7 +302,7 @@ extern SavedImage *MakeSavedImage(GifFileType * GifFile,
 extern void FreeSavedImages(GifFileType * GifFile);
 
 /******************************************************************************
- * The library's internal utility font                          
+ * The library's internal utility font
  *****************************************************************************/
 
 #define GIF_FONT_WIDTH  8

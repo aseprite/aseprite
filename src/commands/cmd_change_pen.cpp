@@ -47,8 +47,8 @@ protected:
 
 ChangePenCommand::ChangePenCommand()
   : Command("ChangePen",
-	    "Change Pen",
-	    CmdUIOnlyFlag)
+            "Change Pen",
+            CmdUIOnlyFlag)
 {
   m_change = None;
 }
@@ -72,11 +72,11 @@ void ChangePenCommand::onExecute(Context* context)
       break;
     case IncrementSize:
       if (pen->getSize() < 32)
-	pen->setSize(pen->getSize()+1);
+        pen->setSize(pen->getSize()+1);
       break;
     case DecrementSize:
       if (pen->getSize() > 1)
-	pen->setSize(pen->getSize()-1);
+        pen->setSize(pen->getSize()-1);
       break;
   }
 }

@@ -151,5 +151,3 @@ AL_FUNC(int, geta_depth, (int color_depth, int c));
 #include "inline/color.inl"
 
 #endif          /* ifndef ALLEGRO_COLOR_H */
-
-

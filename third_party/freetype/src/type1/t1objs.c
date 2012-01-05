@@ -61,7 +61,7 @@
     T1_Face              face     = (T1_Face) size->root.face;
     PSHinter_Interface*  pshinter = face->pshinter;
     FT_Module            module;
-    
+
 
     module = FT_Get_Module( size->root.face->driver->root.library,
                             "pshinter" );
@@ -77,7 +77,7 @@
     if ( size->root.internal )
     {
       PSH_Globals_Funcs  funcs;
-    
+
 
       funcs = T1_Size_Get_Globals_Funcs( size );
       if ( funcs )
@@ -93,20 +93,20 @@
   {
     FT_Error           error = 0;
     PSH_Globals_Funcs  funcs = T1_Size_Get_Globals_Funcs( size );
-    
+
 
     if ( funcs )
     {
       PSH_Globals  globals;
       T1_Face      face = (T1_Face)size->root.face;
-      
 
-      error = funcs->create( size->root.face->memory, 
+
+      error = funcs->create( size->root.face->memory,
                              &face->type1.private_dict, &globals );
       if ( !error )
         size->root.internal = (FT_Size_Internal)(void*)globals;
     }
-    
+
     return error;
   }
 
@@ -117,7 +117,7 @@
     PSH_Globals_Funcs  funcs = T1_Size_Get_Globals_Funcs( size );
     FT_Error           error = 0;
 
-    
+
     if ( funcs )
       error = funcs->set_scale( (PSH_Globals)size->root.internal,
                                  size->root.metrics.x_scale,
@@ -142,29 +142,29 @@
 
   FT_LOCAL_DEF FT_Error
   T1_GlyphSlot_Init( T1_GlyphSlot   slot )
-  {  
+  {
     T1_Face              face;
     PSHinter_Interface*  pshinter;
-    
+
     face     = (T1_Face) slot->root.face;
     pshinter = face->pshinter;
     if (pshinter)
     {
       FT_Module  module;
-      
+
       module = FT_Get_Module( slot->root.face->driver->root.library, "pshinter" );
       if (module)
       {
         T1_Hints_Funcs  funcs;
-        
+
         funcs = pshinter->get_t1_funcs( module );
         slot->root.internal->glyph_hints = (void*)funcs;
       }
     }
     return 0;
   }
-  
-  
+
+
   /*************************************************************************/
   /*                                                                       */
   /*                            FACE  FUNCTIONS                            */
@@ -304,7 +304,7 @@
 
       face->psaux = psaux;
     }
-    
+
     pshinter = (PSHinter_Interface*)face->pshinter;
     if ( !pshinter )
     {
@@ -372,7 +372,7 @@
             family++;
             full++;
           }
-  
+
           root->style_name = ( *full == ' ' ? full + 1
                                             : (char *)"Regular" );
         }

@@ -32,7 +32,7 @@ bool ImageView::onProcessMessage(Message* msg)
       struct jrect box, text, icon;
 
       jwidget_get_texticon_info(this, &box, &text, &icon,
-				getAlign(), m_bmp->w, m_bmp->h);
+                                getAlign(), m_bmp->w, m_bmp->h);
 
       msg->reqsize.w = border_width.l + jrect_w(&box) + border_width.r;
       msg->reqsize.h = border_width.t + jrect_h(&box) + border_width.b;
@@ -49,10 +49,10 @@ void ImageView::onPaint(PaintEvent& ev)
   struct jrect box, text, icon;
 
   jwidget_get_texticon_info(this, &box, &text, &icon,
-			    getAlign(), m_bmp->w, m_bmp->h);
+                            getAlign(), m_bmp->w, m_bmp->h);
 
   jdraw_rectexclude(rc, &icon,
-		    jwidget_get_bg_color(this));
+                    jwidget_get_bg_color(this));
 
   blit(m_bmp, ji_screen, 0, 0,
        icon.x1, icon.y1, jrect_w(&icon), jrect_h(&icon));

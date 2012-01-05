@@ -42,7 +42,7 @@ void SetCurrentLayer::revert(ObjectsContainer* objects, UndoersCollector* redoer
 {
   Sprite* sprite = objects->getObjectT<Sprite>(m_spriteId);
   Layer* layer = (m_layerId ? objects->getObjectT<Layer>(m_layerId): NULL);
-  
+
   // Push another SetCurrentLayer as redoer
   redoers->pushUndoer(new SetCurrentLayer(objects, sprite));
 

@@ -33,7 +33,7 @@ class IcoFormat : public FileFormat
   const char* onGetName() const { return "ico"; }
   const char* onGetExtensions() const { return "ico"; }
   int onGetFlags() const {
-    return 
+    return
       FILE_SUPPORT_LOAD |
       FILE_SUPPORT_SAVE |
       FILE_SUPPORT_RGB |
@@ -92,9 +92,9 @@ bool IcoFormat::onLoad(FileOp* fop)
 
   // Read the icon header
   ICONDIR header;
-  header.reserved = fgetw(f);			// Reserved
-  header.type     = fgetw(f);			// Resource type: 1=ICON
-  header.entries  = fgetw(f);			// Number of icons
+  header.reserved = fgetw(f);                   // Reserved
+  header.type     = fgetw(f);                   // Resource type: 1=ICON
+  header.entries  = fgetw(f);                   // Number of icons
 
   if (header.type != 1) {
     fop_error(fop, "Invalid ICO file type.\n");
@@ -113,14 +113,14 @@ bool IcoFormat::onLoad(FileOp* fop)
   entries.reserve(header.entries);
   for (uint16_t n=0; n<header.entries; ++n) {
     ICONDIRENTRY entry;
-    entry.width		 = fgetc(f);	 // width
-    entry.height	 = fgetc(f);	 // height
-    entry.color_count	 = fgetc(f);	 // color count
-    entry.reserved	 = fgetc(f);	 // reserved
-    entry.planes	 = fgetw(f);	 // color planes
-    entry.bpp		 = fgetw(f);	 // bits per pixel
-    entry.image_size	 = fgetl(f);	 // size in bytes of image data
-    entry.image_offset	 = fgetl(f);	 // file offset to image data
+    entry.width          = fgetc(f);     // width
+    entry.height         = fgetc(f);     // height
+    entry.color_count    = fgetc(f);     // color count
+    entry.reserved       = fgetc(f);     // reserved
+    entry.planes         = fgetw(f);     // color planes
+    entry.bpp            = fgetw(f);     // bits per pixel
+    entry.image_size     = fgetl(f);     // size in bytes of image data
+    entry.image_offset   = fgetl(f);     // file offset to image data
     entries.push_back(entry);
   }
 
@@ -150,17 +150,17 @@ bool IcoFormat::onLoad(FileOp* fop)
 
   // Read BITMAPINFOHEADER
   BITMAPINFOHEADER bmpHeader;
-  bmpHeader.size		 = fgetl(f);
-  bmpHeader.width		 = fgetl(f);
-  bmpHeader.height		 = fgetl(f); // XOR height + AND height
-  bmpHeader.planes		 = fgetw(f);
-  bmpHeader.bpp			 = fgetw(f);
-  bmpHeader.compression		 = fgetl(f); // unused in .ico files
-  bmpHeader.imageSize		 = fgetl(f);
-  bmpHeader.xPelsPerMeter	 = fgetl(f); // unused for ico
-  bmpHeader.yPelsPerMeter	 = fgetl(f); // unused for ico
-  bmpHeader.clrUsed		 = fgetl(f); // unused for ico
-  bmpHeader.clrImportant	 = fgetl(f); // unused for ico
+  bmpHeader.size                 = fgetl(f);
+  bmpHeader.width                = fgetl(f);
+  bmpHeader.height               = fgetl(f); // XOR height + AND height
+  bmpHeader.planes               = fgetw(f);
+  bmpHeader.bpp                  = fgetw(f);
+  bmpHeader.compression          = fgetl(f); // unused in .ico files
+  bmpHeader.imageSize            = fgetl(f);
+  bmpHeader.xPelsPerMeter        = fgetl(f); // unused for ico
+  bmpHeader.yPelsPerMeter        = fgetl(f); // unused for ico
+  bmpHeader.clrUsed              = fgetl(f); // unused for ico
+  bmpHeader.clrImportant         = fgetl(f); // unused for ico
 
   // Read the palette
   if (entry.bpp <= 8) {
@@ -185,21 +185,21 @@ bool IcoFormat::onLoad(FileOp* fop)
     for (x=0; x<image->w; ++x) {
       switch (entry.bpp) {
 
-	case 8:
-	  c = fgetc(f);
-	  ASSERT(c >= 0 && c < numcolors);
-	  if (c >= 0 && c < numcolors)
-	    image_putpixel(image, x, y, c);
-	  else
-	    image_putpixel(image, x, y, 0);
-	  break;
+        case 8:
+          c = fgetc(f);
+          ASSERT(c >= 0 && c < numcolors);
+          if (c >= 0 && c < numcolors)
+            image_putpixel(image, x, y, c);
+          else
+            image_putpixel(image, x, y, 0);
+          break;
 
-	case 24:
-	  b = fgetc(f);
-	  g = fgetc(f);
-	  r = fgetc(f);
-	  image_putpixel(image, x, y, _rgba(r, g, b, 255));
-	  break;
+        case 24:
+          b = fgetc(f);
+          g = fgetc(f);
+          r = fgetc(f);
+          image_putpixel(image, x, y, _rgba(r, g, b, 255));
+          break;
       }
     }
 
@@ -207,7 +207,7 @@ bool IcoFormat::onLoad(FileOp* fop)
     while (x & 3) {
       fgetc(f);
       x++;
-    } 
+    }
   }
 
   // AND mask
@@ -217,9 +217,9 @@ bool IcoFormat::onLoad(FileOp* fop)
       m = fgetc(f);
       v = 128;
       for (b=0; b<8; b++) {
-	if ((m & v) == v)
-	  image_putpixel(image, x*8+b, y, 0); // TODO mask color
-	v >>= 1;
+        if ((m & v) == v)
+          image_putpixel(image, x*8+b, y, 0); // TODO mask color
+        v >>= 1;
       }
     }
 
@@ -229,10 +229,10 @@ bool IcoFormat::onLoad(FileOp* fop)
       x++;
     }
   }
-  
+
   // Close the file
   fclose(f);
-  
+
   fop->document = new Document(sprite);
   return true;
 }
@@ -250,11 +250,11 @@ bool IcoFormat::onSave(FileOp* fop)
     return false;
 
   offset = 6 + num*16;  // ICONDIR + ICONDIRENTRYs
-   
+
   // Icon directory
-  fputw(0, f);			// reserved
-  fputw(1, f);			// resource type: 1=ICON
-  fputw(num, f);		// number of icons
+  fputw(0, f);                  // reserved
+  fputw(1, f);                  // resource type: 1=ICON
+  fputw(num, f);                // number of icons
 
   // Entries
   for (n=0; n<num; ++n) {
@@ -267,21 +267,21 @@ bool IcoFormat::onSave(FileOp* fop)
       size += 256 * 4;
 
     // ICONDIRENTRY
-    fputc(sprite->getWidth(), f);	// width
-    fputc(sprite->getHeight(), f);	// height
-    fputc(0, f);		// color count
-    fputc(0, f);		// reserved
-    fputw(1, f);		// color planes
-    fputw(bpp, f);		// bits per pixel
-    fputl(size, f);		// size in bytes of image data
-    fputl(offset, f);		// file offset to image data
+    fputc(sprite->getWidth(), f);       // width
+    fputc(sprite->getHeight(), f);      // height
+    fputc(0, f);                // color count
+    fputc(0, f);                // reserved
+    fputw(1, f);                // color planes
+    fputw(bpp, f);              // bits per pixel
+    fputl(size, f);             // size in bytes of image data
+    fputl(offset, f);           // file offset to image data
 
     offset += size;
   }
 
   Image* image = image_new(sprite->getImgType(),
-			   sprite->getWidth(),
-			   sprite->getHeight());
+                           sprite->getWidth(),
+                           sprite->getHeight());
 
   for (n=0; n<num; ++n) {
     image_clear(image, 0);
@@ -296,17 +296,17 @@ bool IcoFormat::onSave(FileOp* fop)
       size += 256 * 4;
 
     // BITMAPINFOHEADER
-    fputl(40, f);		   // size
-    fputl(image->w, f);		   // width
-    fputl(image->h * 2, f);	   // XOR height + AND height
-    fputw(1, f);		   // planes
-    fputw(bpp, f);		   // bitcount
-    fputl(0, f);		   // unused for ico
-    fputl(size, f);		   // size
-    fputl(0, f);		   // unused for ico
-    fputl(0, f);		   // unused for ico
-    fputl(0, f);		   // unused for ico
-    fputl(0, f);		   // unused for ico
+    fputl(40, f);                  // size
+    fputl(image->w, f);            // width
+    fputl(image->h * 2, f);        // XOR height + AND height
+    fputw(1, f);                   // planes
+    fputw(bpp, f);                 // bitcount
+    fputl(0, f);                   // unused for ico
+    fputl(size, f);                // size
+    fputl(0, f);                   // unused for ico
+    fputl(0, f);                   // unused for ico
+    fputl(0, f);                   // unused for ico
+    fputl(0, f);                   // unused for ico
 
     // PALETTE
     if (bpp == 8) {
@@ -315,83 +315,83 @@ bool IcoFormat::onSave(FileOp* fop)
       fputl(0, f);  // color 0 is black, so the XOR mask works
 
       for (i=1; i<256; i++) {
-	fputc(_rgba_getb(pal->getEntry(i)), f);
-	fputc(_rgba_getg(pal->getEntry(i)), f);
-	fputc(_rgba_getr(pal->getEntry(i)), f);
-	fputc(0, f);
+        fputc(_rgba_getb(pal->getEntry(i)), f);
+        fputc(_rgba_getg(pal->getEntry(i)), f);
+        fputc(_rgba_getr(pal->getEntry(i)), f);
+        fputc(0, f);
       }
     }
 
     // XOR MASK
     for (y=image->h-1; y>=0; --y) {
       for (x=0; x<image->w; ++x) {
-	switch (image->imgtype) {
+        switch (image->imgtype) {
 
-	  case IMAGE_RGB:
-	    c = image_getpixel(image, x, y);
-	    fputc(_rgba_getb(c), f);
-	    fputc(_rgba_getg(c), f);
-	    fputc(_rgba_getr(c), f);
-	    break;
+          case IMAGE_RGB:
+            c = image_getpixel(image, x, y);
+            fputc(_rgba_getb(c), f);
+            fputc(_rgba_getg(c), f);
+            fputc(_rgba_getr(c), f);
+            break;
 
-	  case IMAGE_GRAYSCALE:
-	    c = image_getpixel(image, x, y);
-	    fputc(_graya_getv(c), f);
-	    fputc(_graya_getv(c), f);
-	    fputc(_graya_getv(c), f);
-	    break;
+          case IMAGE_GRAYSCALE:
+            c = image_getpixel(image, x, y);
+            fputc(_graya_getv(c), f);
+            fputc(_graya_getv(c), f);
+            fputc(_graya_getv(c), f);
+            break;
 
-	  case IMAGE_INDEXED:
-	    c = image_getpixel(image, x, y);
-	    fputc(c, f);
-	    break;
-	}
+          case IMAGE_INDEXED:
+            c = image_getpixel(image, x, y);
+            fputc(c, f);
+            break;
+        }
       }
 
       // every scanline must be 32-bit aligned
       while (x & 3) {
-	fputc(0, f);
-	x++;
-      } 
+        fputc(0, f);
+        x++;
+      }
     }
 
     // AND MASK
     for (y=image->h-1; y>=0; --y) {
       for (x=0; x<(image->w+7)/8; ++x) {
-	m = 0;
-	v = 128;
+        m = 0;
+        v = 128;
 
-	for (b=0; b<8; b++) {
-	  c = image_getpixel(image, x*8+b, y);
+        for (b=0; b<8; b++) {
+          c = image_getpixel(image, x*8+b, y);
 
-	  switch (image->imgtype) {
+          switch (image->imgtype) {
 
-	    case IMAGE_RGB:
-	      if (_rgba_geta(c) == 0)
-		m |= v;
-	      break;
+            case IMAGE_RGB:
+              if (_rgba_geta(c) == 0)
+                m |= v;
+              break;
 
-	    case IMAGE_GRAYSCALE:
-	      if (_graya_geta(c) == 0)
-		m |= v;
-	      break;
+            case IMAGE_GRAYSCALE:
+              if (_graya_geta(c) == 0)
+                m |= v;
+              break;
 
-	    case IMAGE_INDEXED:
-	      if (c == 0) // TODO configurable background color (or nothing as background)
-		m |= v;
-	      break;
-	  }
+            case IMAGE_INDEXED:
+              if (c == 0) // TODO configurable background color (or nothing as background)
+                m |= v;
+              break;
+          }
 
-	  v >>= 1;
-	}
+          v >>= 1;
+        }
 
-	fputc(m, f);  
+        fputc(m, f);
       }
 
-	// every scanline must be 32-bit aligned
+        // every scanline must be 32-bit aligned
       while (x & 3) {
-	fputc(0, f);
-	x++;
+        fputc(0, f);
+        x++;
       }
     }
   }

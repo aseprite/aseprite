@@ -47,32 +47,32 @@ art_svp_point_wind (ArtSVP *svp, double x, double y)
       ArtSVPSeg *seg = &svp->segs[i];
 
       if (seg->bbox.y0 > y)
-	break;
+        break;
 
       if (seg->bbox.y1 > y)
-	{
-	  if (seg->bbox.x1 < x)
-	    wind += seg->dir ? 1 : -1;
-	  else if (seg->bbox.x0 <= x)
-	    {
-	      double x0, y0, x1, y1, dx, dy;
+        {
+          if (seg->bbox.x1 < x)
+            wind += seg->dir ? 1 : -1;
+          else if (seg->bbox.x0 <= x)
+            {
+              double x0, y0, x1, y1, dx, dy;
 
-	      for (j = 0; j < seg->n_points - 1; j++)
-		{
-		  if (seg->points[j + 1].y > y)
-		    break;
-		}
-	      x0 = seg->points[j].x;
-	      y0 = seg->points[j].y;
-	      x1 = seg->points[j + 1].x;
-	      y1 = seg->points[j + 1].y;
+              for (j = 0; j < seg->n_points - 1; j++)
+                {
+                  if (seg->points[j + 1].y > y)
+                    break;
+                }
+              x0 = seg->points[j].x;
+              y0 = seg->points[j].y;
+              x1 = seg->points[j + 1].x;
+              y1 = seg->points[j + 1].y;
 
-	      dx = x1 - x0;
-	      dy = y1 - y0;
-	      if ((x - x0) * dy > (y - y0) * dx)
-		wind += seg->dir ? 1 : -1;
-	    }
-	}
+              dx = x1 - x0;
+              dy = y1 - y0;
+              if ((x - x0) * dy > (y - y0) * dx)
+                wind += seg->dir ? 1 : -1;
+            }
+        }
     }
 
   return wind;
@@ -100,38 +100,38 @@ art_svp_point_dist (ArtSVP *svp, double x, double y)
     {
       ArtSVPSeg *seg = &svp->segs[i];
       for (j = 0; j < seg->n_points - 1; j++)
-	{
-	  double x0 = seg->points[j].x;
-	  double y0 = seg->points[j].y;
-	  double x1 = seg->points[j + 1].x;
-	  double y1 = seg->points[j + 1].y;
+        {
+          double x0 = seg->points[j].x;
+          double y0 = seg->points[j].y;
+          double x1 = seg->points[j + 1].x;
+          double y1 = seg->points[j + 1].y;
 
-	  double dx = x1 - x0;
-	  double dy = y1 - y0;
+          double dx = x1 - x0;
+          double dy = y1 - y0;
 
-	  double dxx0 = x - x0;
-	  double dyy0 = y - y0;
+          double dxx0 = x - x0;
+          double dyy0 = y - y0;
 
-	  double dot = dxx0 * dx + dyy0 * dy;
+          double dot = dxx0 * dx + dyy0 * dy;
 
-	  if (dot < 0)
-	    dist_sq = dxx0 * dxx0 + dyy0 * dyy0;
-	  else
-	    {
-	      double rr = dx * dx + dy * dy;
+          if (dot < 0)
+            dist_sq = dxx0 * dxx0 + dyy0 * dyy0;
+          else
+            {
+              double rr = dx * dx + dy * dy;
 
-	      if (dot > rr)
-		dist_sq = (x - x1) * (x - x1) + (y - y1) * (y - y1);
-	      else
-		{
-		  double perp = (y - y0) * dx - (x - x0) * dy;
+              if (dot > rr)
+                dist_sq = (x - x1) * (x - x1) + (y - y1) * (y - y1);
+              else
+                {
+                  double perp = (y - y0) * dx - (x - x0) * dy;
 
-		  dist_sq = perp * perp / rr;
-		}
-	    }
-	  if (best_sq < 0 || dist_sq < best_sq)
-	    best_sq = dist_sq;
-	}
+                  dist_sq = perp * perp / rr;
+                }
+            }
+          if (best_sq < 0 || dist_sq < best_sq)
+            best_sq = dist_sq;
+        }
     }
 
   if (best_sq >= 0)
@@ -139,4 +139,3 @@ art_svp_point_dist (ArtSVP *svp, double x, double y)
   else
     return 1e12;
 }
-

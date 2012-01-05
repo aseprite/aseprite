@@ -17,7 +17,7 @@ Please write me about your experiences with this plug-in:
 
 This is another idea I had recently:
 The FLI format allows to add chunks with new data to a frame, that are
-skipped by readers that don't understand them. 
+skipped by readers that don't understand them.
 They will require a special reader. This is easy to write, because all the
 fli handling is in "fli.c", and can be reused for other programs.
 - MIDI events: Background musik ! (I'd need to recycle some code from
@@ -30,6 +30,6 @@ Known limitations:
 - The FLI format allows to change the palette from frame to frame. This does
 not work in Gimp, because Gimp allows only one palette per image. I'd have
 to translate the image to True-Color while loading.
-- Animations consume a lot of memory and swapping will slow the playback 
+- Animations consume a lot of memory and swapping will slow the playback
 down.
-			Jens Ch. Restemeier
+                        Jens Ch. Restemeier

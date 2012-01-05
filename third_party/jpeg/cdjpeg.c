@@ -9,15 +9,15 @@
  * programs (cjpeg, djpeg, jpegtran).
  */
 
-#include "cdjpeg.h"		/* Common decls for cjpeg/djpeg applications */
-#include <ctype.h>		/* to declare isupper(), tolower() */
+#include "cdjpeg.h"             /* Common decls for cjpeg/djpeg applications */
+#include <ctype.h>              /* to declare isupper(), tolower() */
 #ifdef NEED_SIGNAL_CATCHER
-#include <signal.h>		/* to declare signal() */
+#include <signal.h>             /* to declare signal() */
 #endif
 #ifdef USE_SETMODE
-#include <fcntl.h>		/* to declare setmode()'s parameter macros */
+#include <fcntl.h>              /* to declare setmode()'s parameter macros */
 /* If you have setmode() but not <io.h>, just delete this line: */
-#include <io.h>			/* to declare setmode() */
+#include <io.h>                 /* to declare setmode() */
 #endif
 
 
@@ -31,13 +31,13 @@
 
 static j_common_ptr sig_cinfo;
 
-void				/* must be global for Manx C */
+void                            /* must be global for Manx C */
 signal_catcher (int signum)
 {
   if (sig_cinfo != NULL) {
     if (sig_cinfo->err != NULL) /* turn off trace output */
       sig_cinfo->err->trace_level = 0;
-    jpeg_destroy(sig_cinfo);	/* clean up memory allocation & temp files */
+    jpeg_destroy(sig_cinfo);    /* clean up memory allocation & temp files */
   }
   exit(EXIT_FAILURE);
 }
@@ -47,10 +47,10 @@ GLOBAL(void)
 enable_signal_catcher (j_common_ptr cinfo)
 {
   sig_cinfo = cinfo;
-#ifdef SIGINT			/* not all systems have SIGINT */
+#ifdef SIGINT                   /* not all systems have SIGINT */
   signal(SIGINT, signal_catcher);
 #endif
-#ifdef SIGTERM			/* not all systems have SIGTERM */
+#ifdef SIGTERM                  /* not all systems have SIGTERM */
   signal(SIGTERM, signal_catcher);
 #endif
 }
@@ -75,8 +75,8 @@ progress_monitor (j_common_ptr cinfo)
     prog->percent_done = percent_done;
     if (total_passes > 1) {
       fprintf(stderr, "\rPass %d/%d: %3d%% ",
-	      prog->pub.completed_passes + prog->completed_extra_passes + 1,
-	      total_passes, percent_done);
+              prog->pub.completed_passes + prog->completed_extra_passes + 1,
+              total_passes, percent_done);
     } else {
       fprintf(stderr, "\r %3d%% ", percent_done);
     }
@@ -126,17 +126,17 @@ keymatch (char * arg, const char * keyword, int minchars)
 
   while ((ca = *arg++) != '\0') {
     if ((ck = *keyword++) == '\0')
-      return FALSE;		/* arg longer than keyword, no good */
-    if (isupper(ca))		/* force arg to lcase (assume ck is already) */
+      return FALSE;             /* arg longer than keyword, no good */
+    if (isupper(ca))            /* force arg to lcase (assume ck is already) */
       ca = tolower(ca);
     if (ca != ck)
-      return FALSE;		/* no good */
-    nmatched++;			/* count matched characters */
+      return FALSE;             /* no good */
+    nmatched++;                 /* count matched characters */
   }
   /* reached end of argument; fail if it's too short for unique abbrev */
   if (nmatched < minchars)
     return FALSE;
-  return TRUE;			/* A-OK */
+  return TRUE;                  /* A-OK */
 }
 
 
@@ -150,10 +150,10 @@ read_stdin (void)
 {
   FILE * input_file = stdin;
 
-#ifdef USE_SETMODE		/* need to hack file mode? */
+#ifdef USE_SETMODE              /* need to hack file mode? */
   setmode(fileno(stdin), O_BINARY);
 #endif
-#ifdef USE_FDOPEN		/* need to re-open in binary mode? */
+#ifdef USE_FDOPEN               /* need to re-open in binary mode? */
   if ((input_file = fdopen(fileno(stdin), READ_BINARY)) == NULL) {
     fprintf(stderr, "Cannot reopen stdin\n");
     exit(EXIT_FAILURE);
@@ -168,10 +168,10 @@ write_stdout (void)
 {
   FILE * output_file = stdout;
 
-#ifdef USE_SETMODE		/* need to hack file mode? */
+#ifdef USE_SETMODE              /* need to hack file mode? */
   setmode(fileno(stdout), O_BINARY);
 #endif
-#ifdef USE_FDOPEN		/* need to re-open in binary mode? */
+#ifdef USE_FDOPEN               /* need to re-open in binary mode? */
   if ((output_file = fdopen(fileno(stdout), WRITE_BINARY)) == NULL) {
     fprintf(stderr, "Cannot reopen stdout\n");
     exit(EXIT_FAILURE);

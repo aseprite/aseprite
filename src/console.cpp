@@ -91,13 +91,13 @@ Console::~Console()
 
   if ((wid_console) && (console_counter == 0)) {
     if (console_locked
-	&& !want_close_flag
-	&& wid_console->isVisible()) {
+        && !want_close_flag
+        && wid_console->isVisible()) {
       /* open in foreground */
       wid_console->open_window_fg();
     }
 
-    delete wid_console; 	// window
+    delete wid_console;         // window
     wid_console = NULL;
     want_close_flag = false;
   }
@@ -105,7 +105,7 @@ Console::~Console()
 
 void Console::printf(const char *format, ...)
 {
-  char buf[1024];		// TODO warning buffer overflow
+  char buf[1024];               // TODO warning buffer overflow
   va_list ap;
 
   va_start(ap, format);
@@ -126,7 +126,7 @@ void Console::printf(const char *format, ...)
     if (!console_locked) {
       JRect rect = jrect_new(0, 0, JI_SCREEN_W*9/10, JI_SCREEN_H*6/10);
       console_locked = true;
-      
+
       wid_view->setVisible(true);
 
       wid_console->remap_window();

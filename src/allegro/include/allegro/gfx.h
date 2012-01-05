@@ -464,5 +464,3 @@ AL_FUNC(void, lock_bitmap, (struct BITMAP *bmp));
 #include "inline/gfx.inl"
 
 #endif          /* ifndef ALLEGRO_GFX_H */
-
-

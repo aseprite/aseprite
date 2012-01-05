@@ -42,20 +42,20 @@ protected:
 
 LayerFromBackgroundCommand::LayerFromBackgroundCommand()
   : Command("LayerFromBackground",
-	    "Layer From Background",
-	    CmdRecordableFlag)
+            "Layer From Background",
+            CmdRecordableFlag)
 {
 }
 
 bool LayerFromBackgroundCommand::onEnabled(Context* context)
 {
   return context->checkFlags(ContextFlags::ActiveDocumentIsWritable |
-			     ContextFlags::HasActiveSprite |
-			     ContextFlags::HasActiveLayer |
-			     ContextFlags::ActiveLayerIsReadable |
-			     ContextFlags::ActiveLayerIsWritable |
-			     ContextFlags::ActiveLayerIsImage |
-			     ContextFlags::ActiveLayerIsBackground);
+                             ContextFlags::HasActiveSprite |
+                             ContextFlags::HasActiveLayer |
+                             ContextFlags::ActiveLayerIsReadable |
+                             ContextFlags::ActiveLayerIsWritable |
+                             ContextFlags::ActiveLayerIsImage |
+                             ContextFlags::ActiveLayerIsBackground);
 }
 
 void LayerFromBackgroundCommand::onExecute(Context* context)
@@ -76,4 +76,3 @@ Command* CommandFactory::createLayerFromBackgroundCommand()
 {
   return new LayerFromBackgroundCommand;
 }
-

@@ -34,7 +34,7 @@ class FileFormatsManager
 public:
   // Returns a singleton of this class.
   static FileFormatsManager& instance();
-  
+
   virtual ~FileFormatsManager();
 
   void registerAllFormats();

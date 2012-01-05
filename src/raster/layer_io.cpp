@@ -41,12 +41,12 @@ void write_layer(std::ostream& os, LayerSubObjectsSerializer* subObjects, Layer*
 {
   std::string name = layer->getName();
 
-  write16(os, name.size());			       // Name length
+  write16(os, name.size());                            // Name length
   if (!name.empty())
-    os.write(name.c_str(), name.size());	       // Name
+    os.write(name.c_str(), name.size());               // Name
 
-  write32(os, layer->getFlags());		       // Flags
-  write16(os, layer->getType());		       // Type
+  write32(os, layer->getFlags());                      // Flags
+  write16(os, layer->getType());                       // Type
 
   switch (layer->getType()) {
 
@@ -58,13 +58,13 @@ void write_layer(std::ostream& os, LayerSubObjectsSerializer* subObjects, Layer*
       CelIterator end = static_cast<LayerImage*>(layer)->getCelEnd();
 
       for (; it != end; ++it) {
-	Cel* cel = *it;
-	subObjects->write_cel(os, cel);
+        Cel* cel = *it;
+        subObjects->write_cel(os, cel);
 
-	Image* image = layer->getSprite()->getStock()->getImage(cel->getImage());
-	ASSERT(image != NULL);
+        Image* image = layer->getSprite()->getStock()->getImage(cel->getImage());
+        ASSERT(image != NULL);
 
-	subObjects->write_image(os, image);
+        subObjects->write_image(os, image);
       }
       break;
     }
@@ -77,7 +77,7 @@ void write_layer(std::ostream& os, LayerSubObjectsSerializer* subObjects, Layer*
       write16(os, static_cast<LayerFolder*>(layer)->get_layers_count());
 
       for (; it != end; ++it)
-	subObjects->write_layer(os, *it);
+        subObjects->write_layer(os, *it);
       break;
     }
 
@@ -86,17 +86,17 @@ void write_layer(std::ostream& os, LayerSubObjectsSerializer* subObjects, Layer*
 
 Layer* read_layer(std::istream& is, LayerSubObjectsSerializer* subObjects, Sprite* sprite)
 {
-  uint16_t name_length = read16(is);		    // Name length
+  uint16_t name_length = read16(is);                // Name length
   std::vector<char> name(name_length+1);
   if (name_length > 0) {
-    is.read(&name[0], name_length);		    // Name
+    is.read(&name[0], name_length);                 // Name
     name[name_length] = 0;
   }
   else
     name[0] = 0;
 
-  uint32_t flags = read32(is);			   // Flags
-  uint16_t layer_type = read16(is);		   // Type
+  uint32_t flags = read32(is);                     // Flags
+  uint16_t layer_type = read16(is);                // Type
 
   UniquePtr<Layer> layer;
 
@@ -107,18 +107,18 @@ Layer* read_layer(std::istream& is, LayerSubObjectsSerializer* subObjects, Sprit
       layer.reset(new LayerImage(sprite));
 
       // Read cels
-      int cels = read16(is);			  // Number of cels
+      int cels = read16(is);                      // Number of cels
       for (int c=0; c<cels; ++c) {
-	// Read the cel
-	Cel* cel = subObjects->read_cel(is);
+        // Read the cel
+        Cel* cel = subObjects->read_cel(is);
 
-	// Add the cel in the layer
-	static_cast<LayerImage*>(layer.get())->addCel(cel);
+        // Add the cel in the layer
+        static_cast<LayerImage*>(layer.get())->addCel(cel);
 
-	// Read the cel's image
-	Image* image = subObjects->read_image(is);
+        // Read the cel's image
+        Image* image = subObjects->read_image(is);
 
-	sprite->getStock()->replaceImage(cel->getImage(), image);
+        sprite->getStock()->replaceImage(cel->getImage(), image);
       }
       break;
     }
@@ -130,11 +130,11 @@ Layer* read_layer(std::istream& is, LayerSubObjectsSerializer* subObjects, Sprit
       // Number of sub-layers
       int layers = read16(is);
       for (int c=0; c<layers; c++) {
-	Layer* child = subObjects->read_layer(is);
-	if (child)
-	  static_cast<LayerFolder*>(layer.get())->add_layer(child);
-	else
-	  break;
+        Layer* child = subObjects->read_layer(is);
+        if (child)
+          static_cast<LayerFolder*>(layer.get())->add_layer(child);
+        else
+          break;
       }
       break;
     }

@@ -352,7 +352,7 @@ DGifGetImageDesc(GifFileType * GifFile) {
     GifFile->Image.Interlace = (Buf[0] & 0x40);
     if (Buf[0] & 0x80) {    /* Does this image have local color map? */
 
-        /*** FIXME: Why do we check both of these in order to do this? 
+        /*** FIXME: Why do we check both of these in order to do this?
          * Why do we have both Image and SavedImages? */
         if (GifFile->Image.ColorMap && GifFile->SavedImages == NULL)
             FreeMapObject(GifFile->Image.ColorMap);
@@ -470,7 +470,7 @@ DGifGetLine(GifFileType * GifFile,
 int
 DGifGetPixel(GifFileType * GifFile,
              GifPixelType Pixel) {
-    
+
     GifByteType *Dummy;
     GifFilePrivateType *Private = (GifFilePrivateType *) GifFile->Private;
 
@@ -542,7 +542,7 @@ DGifGetExtension(GifFileType * GifFile,
 int
 DGifGetExtensionNext(GifFileType * GifFile,
                      GifByteType ** Extension) {
-    
+
     GifByteType Buf;
     GifFilePrivateType *Private = (GifFilePrivateType *)GifFile->Private;
 
@@ -568,7 +568,7 @@ DGifGetExtensionNext(GifFileType * GifFile,
  *****************************************************************************/
 int
 DGifCloseFile(GifFileType * GifFile) {
-    
+
     GifFilePrivateType *Private;
     FILE *File;
 
@@ -885,7 +885,7 @@ DGifGetPrefixChar(GifPrefixType *Prefix,
 int
 DGifGetLZCodes(GifFileType * GifFile,
                int *Code) {
-    
+
     GifByteType *CodeBlock;
     GifFilePrivateType *Private = (GifFilePrivateType *)GifFile->Private;
 
@@ -925,7 +925,7 @@ DGifGetLZCodes(GifFileType * GifFile,
 static int
 DGifDecompressInput(GifFileType * GifFile,
                     int *Code) {
-    
+
     GifFilePrivateType *Private = (GifFilePrivateType *)GifFile->Private;
 
     GifByteType NextByte;
@@ -940,7 +940,7 @@ DGifDecompressInput(GifFileType * GifFile,
         _GifError = D_GIF_ERR_IMAGE_DEFECT;
         return GIF_ERROR;
     }
-    
+
     while (Private->CrntShiftState < Private->RunningBits) {
         /* Needs to get more bytes from input stream for next code: */
         if (DGifBufferedInput(GifFile, Private->Buf, &NextByte) == GIF_ERROR) {
@@ -1055,7 +1055,7 @@ DGifSlurp(GifFileType * GifFile) {
                   temp_save.ExtensionBlockCount = 0;
 
                   /* FIXME: The following is wrong.  It is left in only for
-                   * backwards compatibility.  Someday it should go away. Use 
+                   * backwards compatibility.  Someday it should go away. Use
                    * the sp->ExtensionBlocks->Function variable instead. */
                   sp->Function = sp->ExtensionBlocks[0].Function;
               }

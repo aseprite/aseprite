@@ -12,8 +12,8 @@
 #define jrect_w(r) (((JRect)(r))->x2-((JRect)(r))->x1)
 #define jrect_h(r) (((JRect)(r))->y2-((JRect)(r))->y1)
 
-#define jrect_point_in(r,x,y)					\
-  (((x) >= ((JRect)(r))->x1) && ((x) < ((JRect)(r))->x2) &&	\
+#define jrect_point_in(r,x,y)                                   \
+  (((x) >= ((JRect)(r))->x1) && ((x) < ((JRect)(r))->x2) &&     \
    ((y) >= ((JRect)(r))->y1) && ((y) < ((JRect)(r))->y2))
 
 struct jrect

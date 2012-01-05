@@ -1,6 +1,6 @@
-/*         ______   ___    ___ 
- *        /\  _  \ /\_ \  /\_ \ 
- *        \ \ \L\ \\//\ \ \//\ \      __     __   _ __   ___ 
+/*         ______   ___    ___
+ *        /\  _  \ /\_ \  /\_ \
+ *        \ \ \L\ \\//\ \ \//\ \      __     __   _ __   ___
  *         \ \  __ \ \ \ \  \ \ \   /'__`\ /'_ `\/\`'__\/ __`\
  *          \ \ \/\ \ \_\ \_ \_\ \_/\  __//\ \L\ \ \ \//\ \L\ \
  *           \ \_\ \_\/\____\/\____\ \____\ \____ \ \_\\ \____/
@@ -11,7 +11,7 @@
  *      Some definitions for internal use by the Linux console code.
  *
  *      By George Foot.
- * 
+ *
  *      See readme.txt for copyright information.
  */
 
@@ -37,13 +37,13 @@ extern _DRIVER_INFO _linux_timer_driver_list[];
 /************ Memory mapping ************/ /* (src/linux/lmemory.c) */
 /****************************************/
 
-/* struct MAPPED_MEMORY:  Used to describe a block of memory mapped 
+/* struct MAPPED_MEMORY:  Used to describe a block of memory mapped
  *  into our address space (in particular, the video memory).
  */
 struct MAPPED_MEMORY {
-	unsigned int base, size;      /* linear address and size of block */
-	int perms;                    /* PROT_READ | PROT_WRITE, etc */
-	void *data;                   /* pointer to block after mapping */
+        unsigned int base, size;      /* linear address and size of block */
+        int perms;                    /* PROT_READ | PROT_WRITE, etc */
+        void *data;                   /* pointer to block after mapping */
 };
 
 extern int __al_linux_have_ioperms;
@@ -204,16 +204,16 @@ extern volatile int __al_linux_switching_blocked;
 /**************************************/
 
 typedef struct GFX_MODE_INFO {
-	int w,h,c;   /* width, height, colour depth */
-	int id;      /* ID code, for driver's reference */
-	void *data;  /* data for driver's use in setting the mode */
+        int w,h,c;   /* width, height, colour depth */
+        int id;      /* ID code, for driver's reference */
+        void *data;  /* data for driver's use in setting the mode */
 } GFX_MODE_INFO;
 
 BITMAP *__al_linux_gfx_mode_set_helper (
-	int w, int h, int v_w, int v_h, int c,
-	GFX_DRIVER *driver, GFX_MODE_INFO *mode,
-	int (*set_video_mode) (GFX_MODE_INFO *mode),
-	void (*set_width) (int w)
+        int w, int h, int v_w, int v_h, int c,
+        GFX_DRIVER *driver, GFX_MODE_INFO *mode,
+        int (*set_video_mode) (GFX_MODE_INFO *mode),
+        void (*set_width) (int w)
 );
 
 
@@ -254,4 +254,3 @@ void __al_linux_mouse_handler (int x, int y, int z, int b);
 #endif
 
 #endif /* ifndef AINTLNX_H */
-

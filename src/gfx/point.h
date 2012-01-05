@@ -30,7 +30,7 @@ public:
 
   template<typename T2>
   explicit PointT(const PointT<T2>& point) : x(static_cast<T>(point.x)),
-					     y(static_cast<T>(point.y)) {
+                                             y(static_cast<T>(point.y)) {
   }
 
   explicit PointT(const SizeT<T>& size) : x(size.w), y(size.h) {

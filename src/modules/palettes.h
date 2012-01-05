@@ -33,4 +33,3 @@ void set_black_palette();
 void set_current_color(int index, int r, int g, int b);
 
 #endif
-

@@ -47,4 +47,4 @@ private:
 
 } // namespace undoers
 
-#endif	// UNDOERS_IMAGE_AREA_H_INCLUDED
+#endif  // UNDOERS_IMAGE_AREA_H_INCLUDED

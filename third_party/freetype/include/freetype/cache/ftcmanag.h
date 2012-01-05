@@ -107,7 +107,7 @@ FT_BEGIN_HEADER
     FT_UInt          size;
     FTC_FamilyEntry  entries;
     FT_UInt          free;
-  
+
   } FTC_FamilyTableRec, *FTC_FamilyTable;
 
 
@@ -162,10 +162,10 @@ FT_BEGIN_HEADER
 
     FT_ULong            max_weight;
     FT_ULong            cur_weight;
-    
+
     FT_UInt             num_nodes;
     FTC_Node            nodes_list;
-    
+
     FTC_Cache           caches[FTC_MAX_CACHES];
 
     FT_Pointer          request_data;

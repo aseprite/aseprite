@@ -35,10 +35,10 @@ namespace quantization {
   // Changes the "imgtype" of the image. The dithering method is used
   // only when you want to convert from RGB to Indexed.
   Image* convert_imgtype(const Image* image, int imgtype,
-			 DitheringMethod ditheringMethod,
-			 const RgbMap* rgbmap,
-			 const Palette* palette,
-			 bool has_background_layer);
+                         DitheringMethod ditheringMethod,
+                         const RgbMap* rgbmap,
+                         const Palette* palette,
+                         bool has_background_layer);
 
 }
 

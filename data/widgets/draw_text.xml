@@ -5,12 +5,12 @@
   <box vertical="true">
     <box horizontal="true">
       <box vertical="true" homogeneous="true">
-	<label text="Font:" />
-	<label text="Size:" />
+        <label text="Font:" />
+        <label text="Size:" />
       </box>
       <box vertical="true" homogeneous="true" expansive="true">
-	<button text="" name="font" />
-	<entry maxsize="8" name="size"/>
+        <button text="" name="font" />
+        <entry maxsize="8" name="size"/>
       </box>
     </box>
 <!--     <label text="Fixed Size:" /> -->
@@ -20,11 +20,11 @@
     <separator horizontal="true" />
     <box horizontal="true">
       <box vertical="true" homogeneous="true">
-	<label text="Text:" />
-	<label text="Color:" />
+        <label text="Text:" />
+        <label text="Color:" />
       </box>
       <box vertical="true" homogeneous="true" expansive="true" name="color_box">
-	<entry maxsize="256" name="text" expansive="true" />
+        <entry maxsize="256" name="text" expansive="true" />
       </box>
     </box>
     <box horizontal="true" homogeneous="true">

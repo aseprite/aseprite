@@ -193,9 +193,9 @@
 
     /* render outline into the bitmap */
     error = render->raster_render( render->raster, &params );
-    
+
     FT_Outline_Translate( outline, cbox.xMin, cbox.yMin );
-    
+
     if ( error )
       goto Exit;
 

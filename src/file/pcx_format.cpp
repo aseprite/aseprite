@@ -75,14 +75,14 @@ bool PcxFormat::onLoad(FileOp* fop)
     return false;
   }
 
-  width = -(fgetw(f));		/* xmin */
-  height = -(fgetw(f));		/* ymin */
-  width += fgetw(f) + 1;	/* xmax */
-  height += fgetw(f) + 1;	/* ymax */
+  width = -(fgetw(f));          /* xmin */
+  height = -(fgetw(f));         /* ymin */
+  width += fgetw(f) + 1;        /* xmax */
+  height += fgetw(f) + 1;       /* ymax */
 
-  fgetl(f);			/* skip DPI values */
+  fgetl(f);                     /* skip DPI values */
 
-  for (c=0; c<16; c++) {	/* read the 16 color palette */
+  for (c=0; c<16; c++) {        /* read the 16 color palette */
     r = fgetc(f);
     g = fgetc(f);
     b = fgetc(f);
@@ -103,9 +103,9 @@ bool PcxFormat::onLoad(FileOp* fop)
     fgetc(f);
 
   image = fop_sequence_image(fop, bpp == 8 ?
-				  IMAGE_INDEXED:
-				  IMAGE_RGB,
-			     width, height);
+                                  IMAGE_INDEXED:
+                                  IMAGE_RGB,
+                             width, height);
   if (!image) {
     fclose(f);
     return false;
@@ -161,15 +161,15 @@ bool PcxFormat::onLoad(FileOp* fop)
   if (!fop_is_stop(fop)) {
     if (bpp == 8) {                  /* look for a 256 color palette */
       while ((c = fgetc(f)) != EOF) {
-	if (c == 12) {
-	  for (c=0; c<256; c++) {
-	    r = fgetc(f);
-	    g = fgetc(f);
-	    b = fgetc(f);
-	    fop_sequence_set_color(fop, c, r, g, b);
-	  }
-	  break;
-	}
+        if (c == 12) {
+          for (c=0; c<256; c++) {
+            r = fgetc(f);
+            g = fgetc(f);
+            b = fgetc(f);
+            fop_sequence_set_color(fop, c, r, g, b);
+          }
+          break;
+        }
       }
     }
   }
@@ -215,12 +215,12 @@ bool PcxFormat::onSave(FileOp* fop)
   fputc(5, f);                       /* version */
   fputc(1, f);                       /* run length encoding  */
   fputc(8, f);                       /* 8 bits per pixel */
-  fputw(0, f);			     /* xmin */
-  fputw(0, f);			     /* ymin */
-  fputw(image->w-1, f);		     /* xmax */
-  fputw(image->h-1, f);		     /* ymax */
-  fputw(320, f);		     /* HDpi */
-  fputw(200, f);		     /* VDpi */
+  fputw(0, f);                       /* xmin */
+  fputw(0, f);                       /* ymin */
+  fputw(image->w-1, f);              /* xmax */
+  fputw(image->h-1, f);              /* ymax */
+  fputw(320, f);                     /* HDpi */
+  fputw(200, f);                     /* VDpi */
 
   for (c=0; c<16; c++) {
     fop_sequence_get_color(fop, c, &r, &g, &b);
@@ -235,7 +235,7 @@ bool PcxFormat::onSave(FileOp* fop)
   fputw(1, f);                      /* color palette */
   fputw(image->w, f);               /* hscreen size */
   fputw(image->h, f);               /* vscreen size */
-  for (c=0; c<54; c++)		    /* filler */
+  for (c=0; c<54; c++)              /* filler */
     fputc(0, f);
 
   for (y=0; y<image->h; y++) {           /* for each scanline... */
@@ -243,12 +243,12 @@ bool PcxFormat::onSave(FileOp* fop)
     runchar = 0;
     for (x=0; x<image->w*planes; x++) {  /* for each pixel... */
       if (depth == 8) {
-	if (image->imgtype == IMAGE_INDEXED)
-	  ch = image_getpixel_fast<IndexedTraits>(image, x, y);
-	else if (image->imgtype == IMAGE_GRAYSCALE) {
-	  c = image_getpixel_fast<GrayscaleTraits>(image, x, y);
-	  ch = _graya_getv(c);
-	}
+        if (image->imgtype == IMAGE_INDEXED)
+          ch = image_getpixel_fast<IndexedTraits>(image, x, y);
+        else if (image->imgtype == IMAGE_GRAYSCALE) {
+          c = image_getpixel_fast<GrayscaleTraits>(image, x, y);
+          ch = _graya_getv(c);
+        }
       }
       else {
         if (x < image->w) {

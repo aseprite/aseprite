@@ -65,8 +65,8 @@ ArtUta *
 art_uta_new_coords (int x0, int y0, int x1, int y1)
 {
   return art_uta_new (x0 >> ART_UTILE_SHIFT, y0 >> ART_UTILE_SHIFT,
-		      1 + (x1 >> ART_UTILE_SHIFT),
-		      1 + (y1 >> ART_UTILE_SHIFT));
+                      1 + (x1 >> ART_UTILE_SHIFT),
+                      1 + (y1 >> ART_UTILE_SHIFT));
 }
 
 /**

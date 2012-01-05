@@ -99,19 +99,19 @@ void osx_keyboard_handler(int pressed, NSEvent *event)
    const char character = [[event charactersIgnoringModifiers] lossyCString][0];
    int scancode = mac_to_scancode[[event keyCode]];
    int modifiers = [event modifierFlags];
-   
+
    if (pressed) {
       if (modifiers & NSAlternateKeyMask)
          _handle_key_press(0, scancode);
       else {
          if ((modifiers & NSControlKeyMask) && (isalpha(character)))
             _handle_key_press(tolower(character) - 'a' + 1, scancode);
-	 else
+         else
             _handle_key_press(character, scancode);
       }
       if ((three_finger_flag) &&
-	  (scancode == KEY_END) && (_key_shifts & (KB_CTRL_FLAG | KB_ALT_FLAG))) {
-	 raise(SIGTERM);
+          (scancode == KEY_END) && (_key_shifts & (KB_CTRL_FLAG | KB_ALT_FLAG))) {
+         raise(SIGTERM);
       }
    }
    else
@@ -127,27 +127,27 @@ void osx_keyboard_modifiers(unsigned int mods)
 {
    unsigned const int mod_info[5][3] = { { NSAlphaShiftKeyMask, KB_CAPSLOCK_FLAG, KEY_CAPSLOCK },
                                          { NSShiftKeyMask,      KB_SHIFT_FLAG,    KEY_LSHIFT   },
-		       	                 { NSControlKeyMask,    KB_CTRL_FLAG,     KEY_LCONTROL },
-			                 { NSAlternateKeyMask,  KB_ALT_FLAG,      KEY_ALT      },
-			                 { NSCommandKeyMask,    KB_COMMAND_FLAG,  KEY_COMMAND  } };
+                                         { NSControlKeyMask,    KB_CTRL_FLAG,     KEY_LCONTROL },
+                                         { NSAlternateKeyMask,  KB_ALT_FLAG,      KEY_ALT      },
+                                         { NSCommandKeyMask,    KB_COMMAND_FLAG,  KEY_COMMAND  } };
    int i, changed;
-   
+
    for (i = 0; i < 5; i++) {
       changed = (mods ^ old_mods) & mod_info[i][0];
       if (changed) {
          if (mods & mod_info[i][0]) {
-	    _key_shifts |= mod_info[i][1];
+            _key_shifts |= mod_info[i][1];
             _handle_key_press(-1, mod_info[i][2]);
-	    if (i == 0)
-	       /* Caps lock requires special handling */
-	       _handle_key_release(mod_info[0][2]);
-	 }
-	 else {
-	    _key_shifts &= ~mod_info[i][1];
-	    if (i == 0)
-	       _handle_key_press(-1, mod_info[0][2]);
-	    _handle_key_release(mod_info[i][2]);
-	 }
+            if (i == 0)
+               /* Caps lock requires special handling */
+               _handle_key_release(mod_info[0][2]);
+         }
+         else {
+            _key_shifts &= ~mod_info[i][1];
+            if (i == 0)
+               _handle_key_press(-1, mod_info[0][2]);
+            _handle_key_release(mod_info[i][2]);
+         }
       }
    }
    old_mods = mods;
@@ -168,8 +168,8 @@ void osx_keyboard_focused(int focused, int state)
    }
    else {
       for (i=0; i<KEY_MAX; i++) {
-	 if (key[i])
-	    _handle_key_release(i);
+         if (key[i])
+            _handle_key_release(i);
       }
    }
 }

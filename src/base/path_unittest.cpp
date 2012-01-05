@@ -21,70 +21,70 @@ TEST(Path, IsPathSeparator)
 
 TEST(Path, GetFilePath)
 {
-  EXPECT_EQ("C:\\foo",	get_file_path("C:\\foo\\main.cpp"));
-  EXPECT_EQ("C:/foo",	get_file_path("C:/foo/pack.tar.gz"));
-  EXPECT_EQ(".",	get_file_path("./main.cpp"));
-  EXPECT_EQ(".",	get_file_path(".\\main.cpp"));
-  EXPECT_EQ("",		get_file_path("\\main.cpp"));
-  EXPECT_EQ("",		get_file_path("main.cpp"));
-  EXPECT_EQ("",		get_file_path("main."));
-  EXPECT_EQ("",		get_file_path("main"));
-  EXPECT_EQ("C:/foo",	get_file_path("C:/foo/"));
-  EXPECT_EQ("C:",	get_file_path("C:\\"));
-  EXPECT_EQ("C:",	get_file_path("C:\\.cpp"));
-  EXPECT_EQ("",		get_file_path(".cpp"));
-  EXPECT_EQ("",		get_file_path(""));
+  EXPECT_EQ("C:\\foo",  get_file_path("C:\\foo\\main.cpp"));
+  EXPECT_EQ("C:/foo",   get_file_path("C:/foo/pack.tar.gz"));
+  EXPECT_EQ(".",        get_file_path("./main.cpp"));
+  EXPECT_EQ(".",        get_file_path(".\\main.cpp"));
+  EXPECT_EQ("",         get_file_path("\\main.cpp"));
+  EXPECT_EQ("",         get_file_path("main.cpp"));
+  EXPECT_EQ("",         get_file_path("main."));
+  EXPECT_EQ("",         get_file_path("main"));
+  EXPECT_EQ("C:/foo",   get_file_path("C:/foo/"));
+  EXPECT_EQ("C:",       get_file_path("C:\\"));
+  EXPECT_EQ("C:",       get_file_path("C:\\.cpp"));
+  EXPECT_EQ("",         get_file_path(".cpp"));
+  EXPECT_EQ("",         get_file_path(""));
 }
 
 TEST(Path, GetFileName)
 {
-  EXPECT_EQ("main.cpp",		get_file_name("C:\\foo\\main.cpp"));
-  EXPECT_EQ("pack.tar.gz",	get_file_name("C:/foo/pack.tar.gz"));
-  EXPECT_EQ("main.cpp",		get_file_name("./main.cpp"));
-  EXPECT_EQ("main.cpp",		get_file_name(".\\main.cpp"));
-  EXPECT_EQ("main.cpp",		get_file_name("\\main.cpp"));
-  EXPECT_EQ("main.cpp",		get_file_name("main.cpp"));
-  EXPECT_EQ("main.",		get_file_name("main."));
-  EXPECT_EQ("main",		get_file_name("main"));
-  EXPECT_EQ("",			get_file_name("C:/foo/"));
-  EXPECT_EQ("",			get_file_name("C:\\"));
-  EXPECT_EQ(".cpp",		get_file_name("C:\\.cpp"));
-  EXPECT_EQ(".cpp",		get_file_name(".cpp"));
-  EXPECT_EQ("",			get_file_name(""));
+  EXPECT_EQ("main.cpp",         get_file_name("C:\\foo\\main.cpp"));
+  EXPECT_EQ("pack.tar.gz",      get_file_name("C:/foo/pack.tar.gz"));
+  EXPECT_EQ("main.cpp",         get_file_name("./main.cpp"));
+  EXPECT_EQ("main.cpp",         get_file_name(".\\main.cpp"));
+  EXPECT_EQ("main.cpp",         get_file_name("\\main.cpp"));
+  EXPECT_EQ("main.cpp",         get_file_name("main.cpp"));
+  EXPECT_EQ("main.",            get_file_name("main."));
+  EXPECT_EQ("main",             get_file_name("main"));
+  EXPECT_EQ("",                 get_file_name("C:/foo/"));
+  EXPECT_EQ("",                 get_file_name("C:\\"));
+  EXPECT_EQ(".cpp",             get_file_name("C:\\.cpp"));
+  EXPECT_EQ(".cpp",             get_file_name(".cpp"));
+  EXPECT_EQ("",                 get_file_name(""));
 }
 
 TEST(Path, GetFileExtension)
 {
-  EXPECT_EQ("cpp",	get_file_extension("C:\\foo\\main.cpp"));
-  EXPECT_EQ("gz",	get_file_extension("C:/foo/pack.tar.gz"));
-  EXPECT_EQ("cpp",	get_file_extension("./main.cpp"));
-  EXPECT_EQ("cpp",	get_file_extension(".\\main.cpp"));
-  EXPECT_EQ("cpp",	get_file_extension("\\main.cpp"));
-  EXPECT_EQ("cpp",	get_file_extension("main.cpp"));
-  EXPECT_EQ("",		get_file_extension("main."));
-  EXPECT_EQ("",		get_file_extension("main"));
-  EXPECT_EQ("",		get_file_extension("C:/foo/"));
-  EXPECT_EQ("",		get_file_extension("C:\\"));
-  EXPECT_EQ("cpp",	get_file_extension("C:\\.cpp"));
-  EXPECT_EQ("cpp",	get_file_extension(".cpp"));
-  EXPECT_EQ("",		get_file_extension(""));
+  EXPECT_EQ("cpp",      get_file_extension("C:\\foo\\main.cpp"));
+  EXPECT_EQ("gz",       get_file_extension("C:/foo/pack.tar.gz"));
+  EXPECT_EQ("cpp",      get_file_extension("./main.cpp"));
+  EXPECT_EQ("cpp",      get_file_extension(".\\main.cpp"));
+  EXPECT_EQ("cpp",      get_file_extension("\\main.cpp"));
+  EXPECT_EQ("cpp",      get_file_extension("main.cpp"));
+  EXPECT_EQ("",         get_file_extension("main."));
+  EXPECT_EQ("",         get_file_extension("main"));
+  EXPECT_EQ("",         get_file_extension("C:/foo/"));
+  EXPECT_EQ("",         get_file_extension("C:\\"));
+  EXPECT_EQ("cpp",      get_file_extension("C:\\.cpp"));
+  EXPECT_EQ("cpp",      get_file_extension(".cpp"));
+  EXPECT_EQ("",         get_file_extension(""));
 }
 
 TEST(Path, GetFileTitle)
 {
-  EXPECT_EQ("main",	get_file_title("C:\\foo\\main.cpp"));
-  EXPECT_EQ("pack.tar",	get_file_title("C:/foo/pack.tar.gz"));
-  EXPECT_EQ("main",	get_file_title("./main.cpp"));
-  EXPECT_EQ("main",	get_file_title(".\\main.cpp"));
-  EXPECT_EQ("main",	get_file_title("\\main.cpp"));
-  EXPECT_EQ("main",	get_file_title("main.cpp"));
-  EXPECT_EQ("main",	get_file_title("main."));
-  EXPECT_EQ("main",	get_file_title("main"));
-  EXPECT_EQ("",		get_file_title("C:/foo/"));
-  EXPECT_EQ("",		get_file_title("C:\\"));
-  EXPECT_EQ("",		get_file_title("C:\\.cpp"));
-  EXPECT_EQ("",		get_file_title(".cpp"));
-  EXPECT_EQ("",		get_file_title(""));
+  EXPECT_EQ("main",     get_file_title("C:\\foo\\main.cpp"));
+  EXPECT_EQ("pack.tar", get_file_title("C:/foo/pack.tar.gz"));
+  EXPECT_EQ("main",     get_file_title("./main.cpp"));
+  EXPECT_EQ("main",     get_file_title(".\\main.cpp"));
+  EXPECT_EQ("main",     get_file_title("\\main.cpp"));
+  EXPECT_EQ("main",     get_file_title("main.cpp"));
+  EXPECT_EQ("main",     get_file_title("main."));
+  EXPECT_EQ("main",     get_file_title("main"));
+  EXPECT_EQ("",         get_file_title("C:/foo/"));
+  EXPECT_EQ("",         get_file_title("C:\\"));
+  EXPECT_EQ("",         get_file_title("C:\\.cpp"));
+  EXPECT_EQ("",         get_file_title(".cpp"));
+  EXPECT_EQ("",         get_file_title(""));
 }
 
 TEST(Path, JoinPath)
@@ -92,20 +92,20 @@ TEST(Path, JoinPath)
   base::string sep;
   sep.push_back(path_separator);
 
-  EXPECT_EQ("",				join_path("", ""));
-  EXPECT_EQ("fn",			join_path("", "fn"));
-  EXPECT_EQ("/fn",			join_path("/", "fn"));
-  EXPECT_EQ("/this"+sep+"fn",		join_path("/this", "fn"));
-  EXPECT_EQ("C:\\path"+sep+"fn",	join_path("C:\\path", "fn"));
-  EXPECT_EQ("C:\\path\\fn",		join_path("C:\\path\\", "fn"));
+  EXPECT_EQ("",                         join_path("", ""));
+  EXPECT_EQ("fn",                       join_path("", "fn"));
+  EXPECT_EQ("/fn",                      join_path("/", "fn"));
+  EXPECT_EQ("/this"+sep+"fn",           join_path("/this", "fn"));
+  EXPECT_EQ("C:\\path"+sep+"fn",        join_path("C:\\path", "fn"));
+  EXPECT_EQ("C:\\path\\fn",             join_path("C:\\path\\", "fn"));
 }
 
 TEST(Path, RemovePathSeparator)
 {
-  EXPECT_EQ("C:\\foo",			remove_path_separator("C:\\foo\\"));
-  EXPECT_EQ("C:/foo",			remove_path_separator("C:/foo/"));
-  EXPECT_EQ("C:\\foo\\main.cpp",	remove_path_separator("C:\\foo\\main.cpp"));
-  EXPECT_EQ("C:\\foo\\main.cpp",	remove_path_separator("C:\\foo\\main.cpp/"));
+  EXPECT_EQ("C:\\foo",                  remove_path_separator("C:\\foo\\"));
+  EXPECT_EQ("C:/foo",                   remove_path_separator("C:/foo/"));
+  EXPECT_EQ("C:\\foo\\main.cpp",        remove_path_separator("C:\\foo\\main.cpp"));
+  EXPECT_EQ("C:\\foo\\main.cpp",        remove_path_separator("C:\\foo\\main.cpp/"));
 }
 
 TEST(Path, HasFileExtension)

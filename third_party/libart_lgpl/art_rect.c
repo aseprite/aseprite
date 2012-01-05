@@ -98,7 +98,7 @@ art_irect_empty (const ArtIRect *src) {
 #if 0
 gboolean irect_point_inside (ArtIRect *rect, GzwPoint *point) {
   return (point->x >= rect->x0 && point->y >= rect->y0 &&
-	  point->x < rect->x1 && point->y < rect->y1);
+          point->x < rect->x1 && point->y < rect->y1);
 }
 #endif
 

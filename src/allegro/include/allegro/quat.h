@@ -56,5 +56,3 @@ AL_FUNC(void, quat_slerp, (AL_CONST QUAT *from, AL_CONST QUAT *to, float t, QUAT
 #endif
 
 #endif          /* ifndef ALLEGRO_QUAT_H */
-
-

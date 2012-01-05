@@ -37,8 +37,8 @@ bool LinkLabel::onProcessMessage(Message* msg)
     case JM_SETCURSOR:
       // TODO theme stuff
       if (isEnabled()) {
-	jmouse_set_cursor(JI_CURSOR_HAND);
-	return true;
+        jmouse_set_cursor(JI_CURSOR_HAND);
+        return true;
       }
       break;
 
@@ -46,14 +46,14 @@ bool LinkLabel::onProcessMessage(Message* msg)
     case JM_MOUSELEAVE:
       // TODO theme stuff
       if (isEnabled())
-	invalidate();
+        invalidate();
       break;
 
     case JM_BUTTONRELEASED:
       if (isEnabled()) {
-	if (!m_url.empty())
-	  Launcher::openUrl(m_url);
-	Click();
+        if (!m_url.empty())
+          Launcher::openUrl(m_url);
+        Click();
       }
       break;
   }

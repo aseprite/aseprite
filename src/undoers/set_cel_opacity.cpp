@@ -41,7 +41,7 @@ void SetCelOpacity::dispose()
 void SetCelOpacity::revert(ObjectsContainer* objects, UndoersCollector* redoers)
 {
   Cel* cel = objects->getObjectT<Cel>(m_celId);
-  
+
   // Push another SetCelOpacity as redoer
   redoers->pushUndoer(new SetCelOpacity(objects, cel));
 

@@ -1,6 +1,6 @@
 
-	loadpng: glue for Allegro and libpng
-	
+        loadpng: glue for Allegro and libpng
+
 
 This wrapper is mostly a copy and paste job from example.c in the
 libpng docs, stripping out the useless transformations and making it
@@ -10,9 +10,9 @@ domain.
 
 Requirements:
 
-	Allegro		http://alleg.sourceforge.net/
-	libpng 		http://www.libpng.org/pub/png/
-	zlib 		http://www.gzip.org/zlib/
+        Allegro         http://alleg.sourceforge.net/
+        libpng          http://www.libpng.org/pub/png/
+        zlib            http://www.gzip.org/zlib/
 
 
 Usage:
@@ -26,7 +26,7 @@ To compile, just run "make" (or perhaps "mingw32-make").  To use
 loadpng, you need to link with libpng, zlib in addition to loadpng
 itself, e.g.
 
-	gcc mygame.c -lldpng -lpng -lz -lalleg
+        gcc mygame.c -lldpng -lpng -lz -lalleg
 
 I recommend you copy loadpng's files into your own project's directory
 and compile loadpng as part of your project.

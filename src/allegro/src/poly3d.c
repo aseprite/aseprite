@@ -1,6 +1,6 @@
-/*         ______   ___    ___ 
- *        /\  _  \ /\_ \  /\_ \ 
- *        \ \ \L\ \\//\ \ \//\ \      __     __   _ __   ___ 
+/*         ______   ___    ___
+ *        /\  _  \ /\_ \  /\_ \
+ *        \ \ \L\ \\//\ \ \//\ \      __     __   _ __   ___
  *         \ \  __ \ \ \ \  \ \ \   /'__`\ /'_ `\/\`'__\/ __`\
  *          \ \ \/\ \ \_\ \_ \_\ \_/\  __//\ \L\ \ \ \//\ \L\ \
  *           \ \_\ \_\/\____\/\____\ \____\ \____ \ \_\\ \____/
@@ -45,7 +45,7 @@ SCANLINE_FILLER _optim_alternative_drawer;
 
 
 /* _fill_3d_edge_structure:
- *  Polygon helper function: initialises an edge structure for the 3d 
+ *  Polygon helper function: initialises an edge structure for the 3d
  *  rasterising code, using fixed point vertex structures. Returns 1 on
  *  success, or 0 if the edge is horizontal or clipped out of existence.
  */
@@ -91,16 +91,16 @@ int _fill_3d_edge_structure(POLYGON_EDGE *edge, AL_CONST V3D *v1, AL_CONST V3D *
       edge->dat.z = z1 + edge->dat.dz * step_f;
 
       if (flags & INTERP_FLOAT_UV) {
-	 /* floating point (perspective correct) texture interpolation */
-	 float fu1 = v1->u * z1;
-	 float fv1 = v1->v * z1;
-	 float fu2 = v2->u * z2;
-	 float fv2 = v2->v * z2;
+         /* floating point (perspective correct) texture interpolation */
+         float fu1 = v1->u * z1;
+         float fv1 = v1->v * z1;
+         float fu2 = v2->u * z2;
+         float fv2 = v2->v * z2;
 
-	 edge->dat.dfu = (fu2 - fu1) * h1;
-	 edge->dat.dfv = (fv2 - fv1) * h1;
-	 edge->dat.fu = fu1 + edge->dat.dfu * step_f;
-	 edge->dat.fv = fv1 + edge->dat.dfv * step_f;
+         edge->dat.dfu = (fu2 - fu1) * h1;
+         edge->dat.dfv = (fv2 - fv1) * h1;
+         edge->dat.fu = fu1 + edge->dat.dfu * step_f;
+         edge->dat.fv = fv1 + edge->dat.dfv * step_f;
       }
    }
 
@@ -109,11 +109,11 @@ int _fill_3d_edge_structure(POLYGON_EDGE *edge, AL_CONST V3D *v1, AL_CONST V3D *
       if (bmp->clip) {
          if (edge->top < bmp->ct) {
             edge->x += (bmp->ct - edge->top) * edge->dx;
-	    edge->top = bmp->ct;
+            edge->top = bmp->ct;
          }
 
          if (edge->bottom >= bmp->cb)
-	    edge->bottom = bmp->cb - 1;
+            edge->bottom = bmp->cb - 1;
       }
 
       return (edge->bottom >= edge->top);
@@ -129,20 +129,20 @@ int _fill_3d_edge_structure(POLYGON_EDGE *edge, AL_CONST V3D *v1, AL_CONST V3D *
       /* RGB shading interpolation */
       if (flags & COLOR_TO_RGB) {
          AL_CONST int coldepth = bitmap_color_depth(bmp);
-	 r1 = getr_depth(coldepth, v1->c);
-	 r2 = getr_depth(coldepth, v2->c);
-	 g1 = getg_depth(coldepth, v1->c);
-	 g2 = getg_depth(coldepth, v2->c);
-	 b1 = getb_depth(coldepth, v1->c);
-	 b2 = getb_depth(coldepth, v2->c);
-      } 
+         r1 = getr_depth(coldepth, v1->c);
+         r2 = getr_depth(coldepth, v2->c);
+         g1 = getg_depth(coldepth, v1->c);
+         g2 = getg_depth(coldepth, v2->c);
+         b1 = getb_depth(coldepth, v1->c);
+         b2 = getb_depth(coldepth, v2->c);
+      }
       else {
-	 r1 = (v1->c >> 16) & 0xFF;
-	 r2 = (v2->c >> 16) & 0xFF;
-	 g1 = (v1->c >> 8) & 0xFF;
-	 g2 = (v2->c >> 8) & 0xFF;
-	 b1 = v1->c & 0xFF;
-	 b2 = v2->c & 0xFF;
+         r1 = (v1->c >> 16) & 0xFF;
+         r2 = (v2->c >> 16) & 0xFF;
+         g1 = (v1->c >> 8) & 0xFF;
+         g2 = (v2->c >> 8) & 0xFF;
+         b1 = v1->c & 0xFF;
+         b2 = v2->c & 0xFF;
       }
 
       edge->dat.dr = fixdiv(itofix(r2 - r1), h);
@@ -180,7 +180,7 @@ int _fill_3d_edge_structure(POLYGON_EDGE *edge, AL_CONST V3D *v1, AL_CONST V3D *
 
 
 /* _fill_3d_edge_structure_f:
- *  Polygon helper function: initialises an edge structure for the 3d 
+ *  Polygon helper function: initialises an edge structure for the 3d
  *  rasterising code, using floating point vertex structures. Returns 1 on
  *  success, or 0 if the edge is horizontal or clipped out of existence.
  */
@@ -227,16 +227,16 @@ int _fill_3d_edge_structure_f(POLYGON_EDGE *edge, AL_CONST V3D_f *v1, AL_CONST V
       edge->dat.z = z1 + edge->dat.dz * step_f;
 
       if (flags & INTERP_FLOAT_UV) {
-	 /* floating point (perspective correct) texture interpolation */
-	 float fu1 = v1->u * z1 * 65536.;
-	 float fv1 = v1->v * z1 * 65536.;
-	 float fu2 = v2->u * z2 * 65536.;
-	 float fv2 = v2->v * z2 * 65536.;
+         /* floating point (perspective correct) texture interpolation */
+         float fu1 = v1->u * z1 * 65536.;
+         float fv1 = v1->v * z1 * 65536.;
+         float fu2 = v2->u * z2 * 65536.;
+         float fv2 = v2->v * z2 * 65536.;
 
-	 edge->dat.dfu = (fu2 - fu1) * h1;
-	 edge->dat.dfv = (fv2 - fv1) * h1;
-	 edge->dat.fu = fu1 + edge->dat.dfu * step_f;
-	 edge->dat.fv = fv1 + edge->dat.dfv * step_f;
+         edge->dat.dfu = (fu2 - fu1) * h1;
+         edge->dat.dfv = (fv2 - fv1) * h1;
+         edge->dat.fu = fu1 + edge->dat.dfu * step_f;
+         edge->dat.fv = fv1 + edge->dat.dfv * step_f;
       }
    }
 
@@ -244,12 +244,12 @@ int _fill_3d_edge_structure_f(POLYGON_EDGE *edge, AL_CONST V3D_f *v1, AL_CONST V
       /* if clipping is enabled then clip edge */
       if (bmp->clip) {
          if (edge->top < bmp->ct) {
-	    edge->x += (bmp->ct - edge->top) * edge->dx;
-	    edge->top = bmp->ct;
+            edge->x += (bmp->ct - edge->top) * edge->dx;
+            edge->top = bmp->ct;
          }
 
          if (edge->bottom >= bmp->cb)
-	    edge->bottom = bmp->cb - 1;
+            edge->bottom = bmp->cb - 1;
       }
 
       return (edge->bottom >= edge->top);
@@ -265,20 +265,20 @@ int _fill_3d_edge_structure_f(POLYGON_EDGE *edge, AL_CONST V3D_f *v1, AL_CONST V
       /* RGB shading interpolation */
       if (flags & COLOR_TO_RGB) {
          AL_CONST int coldepth = bitmap_color_depth(bmp);
-	 r1 = getr_depth(coldepth, v1->c);
-	 r2 = getr_depth(coldepth, v2->c);
-	 g1 = getg_depth(coldepth, v1->c);
-	 g2 = getg_depth(coldepth, v2->c);
-	 b1 = getb_depth(coldepth, v1->c);
-	 b2 = getb_depth(coldepth, v2->c);
-      } 
+         r1 = getr_depth(coldepth, v1->c);
+         r2 = getr_depth(coldepth, v2->c);
+         g1 = getg_depth(coldepth, v1->c);
+         g2 = getg_depth(coldepth, v2->c);
+         b1 = getb_depth(coldepth, v1->c);
+         b2 = getb_depth(coldepth, v2->c);
+      }
       else {
-	 r1 = (v1->c >> 16) & 0xFF;
-	 r2 = (v2->c >> 16) & 0xFF;
-	 g1 = (v1->c >> 8) & 0xFF;
-	 g2 = (v2->c >> 8) & 0xFF;
-	 b1 = v1->c & 0xFF;
-	 b2 = v2->c & 0xFF;
+         r1 = (v1->c >> 16) & 0xFF;
+         r2 = (v2->c >> 16) & 0xFF;
+         g1 = (v1->c >> 8) & 0xFF;
+         g2 = (v2->c >> 8) & 0xFF;
+         b1 = v1->c & 0xFF;
+         b2 = v2->c & 0xFF;
       }
 
       edge->dat.dr = fixdiv(itofix(r2 - r1), h);
@@ -316,18 +316,18 @@ int _fill_3d_edge_structure_f(POLYGON_EDGE *edge, AL_CONST V3D_f *v1, AL_CONST V
 
 
 /* _get_scanline_filler:
- *  Helper function for deciding which rasterisation function and 
+ *  Helper function for deciding which rasterisation function and
  *  interpolation flags we should use for a specific polygon type.
  */
 SCANLINE_FILLER _get_scanline_filler(int type, int *flags, POLYGON_SEGMENT *info, BITMAP *texture, BITMAP *bmp)
 {
-   typedef struct POLYTYPE_INFO 
+   typedef struct POLYTYPE_INFO
    {
       SCANLINE_FILLER filler;
       SCANLINE_FILLER alternative;
    } POLYTYPE_INFO;
 
-   static int polytype_interp_pal[] = 
+   static int polytype_interp_pal[] =
    {
       INTERP_FLAT,
       INTERP_1COL,
@@ -346,7 +346,7 @@ SCANLINE_FILLER _get_scanline_filler(int type, int *flags, POLYGON_SEGMENT *info
       INTERP_Z | INTERP_FLOAT_UV | OPT_FLOAT_UV_TO_FIX
    };
 
-   static int polytype_interp_tc[] = 
+   static int polytype_interp_tc[] =
    {
       INTERP_FLAT,
       INTERP_3COL | COLOR_TO_RGB,
@@ -784,72 +784,72 @@ SCANLINE_FILLER _get_scanline_filler(int type, int *flags, POLYGON_SEGMENT *info
 
       #ifdef ALLEGRO_COLOR8
 
-	 case 8:
-	    interpinfo = polytype_interp_pal;
-	    typeinfo = polytype_info8;
-	 #ifdef ALLEGRO_MMX
-	    typeinfo_mmx = polytype_info8x;
-	    typeinfo_3d = polytype_info8d;
-	 #endif
-	    typeinfo_zbuf = polytype_info8z;
-	    break;
+         case 8:
+            interpinfo = polytype_interp_pal;
+            typeinfo = polytype_info8;
+         #ifdef ALLEGRO_MMX
+            typeinfo_mmx = polytype_info8x;
+            typeinfo_3d = polytype_info8d;
+         #endif
+            typeinfo_zbuf = polytype_info8z;
+            break;
 
       #endif
 
       #ifdef ALLEGRO_COLOR16
 
-	 case 15:
-	    interpinfo = polytype_interp_tc;
-	    typeinfo = polytype_info15;
-	 #ifdef ALLEGRO_MMX
-	    typeinfo_mmx = polytype_info15x;
-	    typeinfo_3d = polytype_info15d;
-	 #endif
-	    typeinfo_zbuf = polytype_info15z;
-	    break;
+         case 15:
+            interpinfo = polytype_interp_tc;
+            typeinfo = polytype_info15;
+         #ifdef ALLEGRO_MMX
+            typeinfo_mmx = polytype_info15x;
+            typeinfo_3d = polytype_info15d;
+         #endif
+            typeinfo_zbuf = polytype_info15z;
+            break;
 
-	 case 16:
-	    interpinfo = polytype_interp_tc;
-	    typeinfo = polytype_info16;
-	 #ifdef ALLEGRO_MMX
-	    typeinfo_mmx = polytype_info16x;
-	    typeinfo_3d = polytype_info16d;
-	 #endif
-	    typeinfo_zbuf = polytype_info16z;
-	    break;
+         case 16:
+            interpinfo = polytype_interp_tc;
+            typeinfo = polytype_info16;
+         #ifdef ALLEGRO_MMX
+            typeinfo_mmx = polytype_info16x;
+            typeinfo_3d = polytype_info16d;
+         #endif
+            typeinfo_zbuf = polytype_info16z;
+            break;
 
       #endif
 
       #ifdef ALLEGRO_COLOR24
 
-	 case 24:
-	    interpinfo = polytype_interp_tc;
-	    typeinfo = polytype_info24;
-	 #ifdef ALLEGRO_MMX
-	    typeinfo_mmx = polytype_info24x;
-	    typeinfo_3d = polytype_info24d;
-	 #endif
-	    typeinfo_zbuf = polytype_info24z;
-	    break;
+         case 24:
+            interpinfo = polytype_interp_tc;
+            typeinfo = polytype_info24;
+         #ifdef ALLEGRO_MMX
+            typeinfo_mmx = polytype_info24x;
+            typeinfo_3d = polytype_info24d;
+         #endif
+            typeinfo_zbuf = polytype_info24z;
+            break;
 
       #endif
 
       #ifdef ALLEGRO_COLOR32
 
-	 case 32:
-	    interpinfo = polytype_interp_tc;
-	    typeinfo = polytype_info32;
-	 #ifdef ALLEGRO_MMX
-	    typeinfo_mmx = polytype_info32x;
-	    typeinfo_3d = polytype_info32d;
-	 #endif
-	    typeinfo_zbuf = polytype_info32z;
-	    break;
+         case 32:
+            interpinfo = polytype_interp_tc;
+            typeinfo = polytype_info32;
+         #ifdef ALLEGRO_MMX
+            typeinfo_mmx = polytype_info32x;
+            typeinfo_3d = polytype_info32d;
+         #endif
+            typeinfo_zbuf = polytype_info32z;
+            break;
 
       #endif
 
       default:
-	 return NULL;
+         return NULL;
    }
 
    type = CLAMP(0, type & ~POLYTYPE_ZBUF, POLYTYPE_MAX-1);
@@ -861,7 +861,7 @@ SCANLINE_FILLER _get_scanline_filler(int type, int *flags, POLYGON_SEGMENT *info
       info->vmask = texture->h - 1;
       info->vshift = 0;
       while ((1 << info->vshift) < texture->w)
-	 info->vshift++;
+         info->vshift++;
    }
    else {
       info->texture = NULL;
@@ -880,8 +880,8 @@ SCANLINE_FILLER _get_scanline_filler(int type, int *flags, POLYGON_SEGMENT *info
    #ifdef ALLEGRO_MMX
    if ((cpu_capabilities & CPU_MMX) && (typeinfo_mmx[type].filler)) {
       if ((cpu_capabilities & CPU_3DNOW) && (typeinfo_3d[type].filler)) {
-	 _optim_alternative_drawer = typeinfo_3d[type].alternative;
-	 return typeinfo_3d[type].filler;
+         _optim_alternative_drawer = typeinfo_3d[type].alternative;
+         return typeinfo_3d[type].filler;
       }
       _optim_alternative_drawer = typeinfo_mmx[type].alternative;
       return typeinfo_mmx[type].filler;
@@ -919,16 +919,16 @@ void _clip_polygon_segment_f(POLYGON_SEGMENT *info, int gap, int flags)
       info->z += info->dz * gap;
 
       if (flags & INTERP_FLOAT_UV) {
-	 info->fu += info->dfu * gap;
-	 info->fv += info->dfv * gap;
+         info->fu += info->dfu * gap;
+         info->fv += info->dfv * gap;
       }
    }
 }
 
 
 
-/* draw_polygon_segment: 
- *  Polygon helper function to fill a scanline. Calculates deltas for 
+/* draw_polygon_segment:
+ *  Polygon helper function to fill a scanline. Calculates deltas for
  *  whichever values need interpolating, clips the segment, and then calls
  *  the lowlevel scanline filler.
  */
@@ -960,7 +960,7 @@ static void draw_polygon_segment(BITMAP *bmp, int ytop, int ybottom, POLYGON_EDG
 
       if (drawer == _poly_scanline_dummy) {
          if (w > 0)
-	    bmp->vtable->hfill(bmp, x, y, x+w-1, color);
+            bmp->vtable->hfill(bmp, x, y, x+w-1, color);
       }
       else {
          step = (x << 16) - e1->x;
@@ -970,99 +970,99 @@ static void draw_polygon_segment(BITMAP *bmp, int ytop, int ybottom, POLYGON_EDG
  *  In order to avoid divisions by zero, width is set to -1. This way s1 and s2
  *  are still being updated but the scanline is not drawn since w == 0.
  */
-	 if (width == 0)
-	    width = -1 << 16;
+         if (width == 0)
+            width = -1 << 16;
 /*
  *  End of nasty trick.
  */
-	 if (flags & INTERP_1COL) {
-	    info->dc = fixdiv(s2->c - s1->c, width);
-	    info->c = s1->c + fixmul(step, info->dc);
-	    s1->c += s1->dc;
-	    s2->c += s2->dc;
-	 }
+         if (flags & INTERP_1COL) {
+            info->dc = fixdiv(s2->c - s1->c, width);
+            info->c = s1->c + fixmul(step, info->dc);
+            s1->c += s1->dc;
+            s2->c += s2->dc;
+         }
 
-	 if (flags & INTERP_3COL) {
-	    info->dr = fixdiv(s2->r - s1->r, width);
-	    info->dg = fixdiv(s2->g - s1->g, width);
-	    info->db = fixdiv(s2->b - s1->b, width);
-	    info->r = s1->r + fixmul(step, info->dr);
-	    info->g = s1->g + fixmul(step, info->dg);
-	    info->b = s1->b + fixmul(step, info->db);
+         if (flags & INTERP_3COL) {
+            info->dr = fixdiv(s2->r - s1->r, width);
+            info->dg = fixdiv(s2->g - s1->g, width);
+            info->db = fixdiv(s2->b - s1->b, width);
+            info->r = s1->r + fixmul(step, info->dr);
+            info->g = s1->g + fixmul(step, info->dg);
+            info->b = s1->b + fixmul(step, info->db);
 
-	    s1->r += s1->dr;
-	    s2->r += s2->dr;
-	    s1->g += s1->dg;
-	    s2->g += s2->dg;
-	    s1->b += s1->db;
-	    s2->b += s2->db;
-	 }
+            s1->r += s1->dr;
+            s2->r += s2->dr;
+            s1->g += s1->dg;
+            s2->g += s2->dg;
+            s1->b += s1->db;
+            s2->b += s2->db;
+         }
 
-	 if (flags & INTERP_FIX_UV) {
-	    info->du = fixdiv(s2->u - s1->u, width);
-	    info->dv = fixdiv(s2->v - s1->v, width);
-	    info->u = s1->u + fixmul(step, info->du);
-	    info->v = s1->v + fixmul(step, info->dv);
+         if (flags & INTERP_FIX_UV) {
+            info->du = fixdiv(s2->u - s1->u, width);
+            info->dv = fixdiv(s2->v - s1->v, width);
+            info->u = s1->u + fixmul(step, info->du);
+            info->v = s1->v + fixmul(step, info->dv);
 
-	    s1->u += s1->du;
-	    s2->u += s2->du;
-	    s1->v += s1->dv;
-	    s2->v += s2->dv;
-	 }
+            s1->u += s1->du;
+            s2->u += s2->du;
+            s1->v += s1->dv;
+            s2->v += s2->dv;
+         }
 
-	 if (flags & INTERP_Z) {
-	    float step_f = fixtof(step);
-	    float w1 = 65536. / width;
+         if (flags & INTERP_Z) {
+            float step_f = fixtof(step);
+            float w1 = 65536. / width;
 
-	    info->dz = (s2->z - s1->z) * w1;
-	    info->z = s1->z + info->dz * step_f;
-	    s1->z += s1->dz;
-	    s2->z += s2->dz;
+            info->dz = (s2->z - s1->z) * w1;
+            info->z = s1->z + info->dz * step_f;
+            s1->z += s1->dz;
+            s2->z += s2->dz;
 
-	    if (flags & INTERP_FLOAT_UV) {
-	       info->dfu = (s2->fu - s1->fu) * w1;
-	       info->dfv = (s2->fv - s1->fv) * w1;
-	       info->fu = s1->fu + info->dfu * step_f;
-	       info->fv = s1->fv + info->dfv * step_f;
+            if (flags & INTERP_FLOAT_UV) {
+               info->dfu = (s2->fu - s1->fu) * w1;
+               info->dfv = (s2->fv - s1->fv) * w1;
+               info->fu = s1->fu + info->dfu * step_f;
+               info->fv = s1->fv + info->dfv * step_f;
 
-	       s1->fu += s1->dfu;
-	       s2->fu += s2->dfu;
-	       s1->fv += s1->dfv;
-	       s2->fv += s2->dfv;
-	    }
-	 }
+               s1->fu += s1->dfu;
+               s2->fu += s2->dfu;
+               s1->fv += s1->dfv;
+               s2->fv += s2->dfv;
+            }
+         }
 
-	 /* if clipping is enabled then clip the segment */
-	 if (bmp->clip) {
-	    if (x < bmp->cl) {
-	       gap = bmp->cl - x;
-	       x = bmp->cl;
-	       w -= gap;
-	       _clip_polygon_segment_f(info, gap, flags);
-	    }
+         /* if clipping is enabled then clip the segment */
+         if (bmp->clip) {
+            if (x < bmp->cl) {
+               gap = bmp->cl - x;
+               x = bmp->cl;
+               w -= gap;
+               _clip_polygon_segment_f(info, gap, flags);
+            }
 
-	    if (x+w > bmp->cr)
-	       w = bmp->cr - x;
-	 }
+            if (x+w > bmp->cr)
+               w = bmp->cr - x;
+         }
 
-	 if (w > 0) {
-	    int dx = x * BYTES_PER_PIXEL(bitmap_color_depth(bmp));
-	    
-	    if ((flags & OPT_FLOAT_UV_TO_FIX) && (info->dz == 0)) {
-	       float z1 = 1. / info->z;
-	       info->u = info->fu * z1;
-	       info->v = info->fv * z1;
-	       info->du = info->dfu * z1;
-	       info->dv = info->dfv * z1;
-	       drawer = _optim_alternative_drawer;
-	    }
+         if (w > 0) {
+            int dx = x * BYTES_PER_PIXEL(bitmap_color_depth(bmp));
 
-            if (flags & INTERP_ZBUF) 
+            if ((flags & OPT_FLOAT_UV_TO_FIX) && (info->dz == 0)) {
+               float z1 = 1. / info->z;
+               info->u = info->fu * z1;
+               info->v = info->fv * z1;
+               info->du = info->dfu * z1;
+               info->dv = info->dfv * z1;
+               drawer = _optim_alternative_drawer;
+            }
+
+            if (flags & INTERP_ZBUF)
                info->zbuf_addr = bmp_write_line(_zbuffer, y) + x * sizeof(float);
 
-	    info->read_addr = bmp_read_line(bmp, y) + dx;
-	    drawer(bmp_write_line(bmp, y) + dx, w, info);
-	 }
+            info->read_addr = bmp_read_line(bmp, y) + dx;
+            drawer(bmp_write_line(bmp, y) + dx, w, info);
+         }
       }
 
       e1->x += e1->dx;
@@ -1101,9 +1101,9 @@ static void do_polygon3d(BITMAP *bmp, int top, int bottom, POLYGON_EDGE *left_ed
    ytop = top;
    for (;;) {
       if (right_edge->bottom <= left_edge->bottom)
-	 ybottom = right_edge->bottom;
+         ybottom = right_edge->bottom;
       else
-	 ybottom = left_edge->bottom;
+         ybottom = left_edge->bottom;
 
       /* fill the scanline */
       draw_polygon_segment(bmp, ytop, ybottom, left_edge, right_edge, drawer, flags, color, info);
@@ -1112,9 +1112,9 @@ static void do_polygon3d(BITMAP *bmp, int top, int bottom, POLYGON_EDGE *left_ed
 
       /* update edges */
       if (ybottom >= left_edge->bottom)
-	 left_edge = left_edge->prev;
+         left_edge = left_edge->prev;
       if (ybottom >= right_edge->bottom)
-	 right_edge = right_edge->next;
+         right_edge = right_edge->next;
 
       ytop = ybottom + 1;
    }
@@ -1169,21 +1169,21 @@ void _soft_polygon3d(BITMAP *bmp, int type, BITMAP *texture, int vc, V3D *vtx[])
       v2 = vtx[c];
 
       if (_fill_3d_edge_structure(edge, v1, v2, flags, bmp)) {
-	 if (edge->top < top) {
+         if (edge->top < top) {
             top = edge->top;
-	    start_edge = edge;
+            start_edge = edge;
          }
 
-	 if (edge->bottom > bottom)
+         if (edge->bottom > bottom)
             bottom = edge->bottom;
 
          if (list_edges) {
             list_edges->next = edge;
-	    edge->prev = list_edges;
+            edge->prev = list_edges;
          }
 
-	 list_edges = edge;
-	 edge++;
+         list_edges = edge;
+         edge++;
       }
    }
 
@@ -1237,19 +1237,19 @@ void _soft_polygon3d_f(BITMAP *bmp, int type, BITMAP *texture, int vc, V3D_f *vt
       if (_fill_3d_edge_structure_f(edge, v1, v2, flags, bmp)) {
          if (edge->top < top) {
             top = edge->top;
-	    start_edge = edge;
+            start_edge = edge;
          }
 
-	 if (edge->bottom > bottom)
+         if (edge->bottom > bottom)
             bottom = edge->bottom;
 
          if (list_edges) {
             list_edges->next = edge;
-	    edge->prev = list_edges;
+            edge->prev = list_edges;
          }
 
-	 list_edges = edge;
-	 edge++;
+         list_edges = edge;
+         edge++;
       }
    }
 
@@ -1297,78 +1297,78 @@ static void draw_triangle_part(BITMAP *bmp, int ytop, int ybottom, POLYGON_EDGE 
 
       if (drawer == _poly_scanline_dummy) {
          if (w > 0)
-	    bmp->vtable->hfill(bmp, x, y, x+w-1, color);
+            bmp->vtable->hfill(bmp, x, y, x+w-1, color);
       }
       else {
-	 if (flags & INTERP_1COL) {
-	    info->c = s1->c + fixmul(step, info->dc);
+         if (flags & INTERP_1COL) {
+            info->c = s1->c + fixmul(step, info->dc);
             s1->c += s1->dc;
          }
 
-	 if (flags & INTERP_3COL) {
-	    info->r = s1->r + fixmul(step, info->dr);
-	    info->g = s1->g + fixmul(step, info->dg);
-	    info->b = s1->b + fixmul(step, info->db);
+         if (flags & INTERP_3COL) {
+            info->r = s1->r + fixmul(step, info->dr);
+            info->g = s1->g + fixmul(step, info->dg);
+            info->b = s1->b + fixmul(step, info->db);
 
-	    s1->r += s1->dr;
-	    s1->g += s1->dg;
-	    s1->b += s1->db;
-	 }
+            s1->r += s1->dr;
+            s1->g += s1->dg;
+            s1->b += s1->db;
+         }
 
-	 if (flags & INTERP_FIX_UV) {
-	    info->u = s1->u + fixmul(step, info->du);
-	    info->v = s1->v + fixmul(step, info->dv);
+         if (flags & INTERP_FIX_UV) {
+            info->u = s1->u + fixmul(step, info->du);
+            info->v = s1->v + fixmul(step, info->dv);
 
-	    s1->u += s1->du;
-	    s1->v += s1->dv;
-	 }
+            s1->u += s1->du;
+            s1->v += s1->dv;
+         }
 
-	 if (flags & INTERP_Z) {
-	    float step_f = fixtof(step);
+         if (flags & INTERP_Z) {
+            float step_f = fixtof(step);
 
-	    info->z = s1->z + info->dz * step_f;
-	    s1->z += s1->dz;
+            info->z = s1->z + info->dz * step_f;
+            s1->z += s1->dz;
 
-	    if (flags & INTERP_FLOAT_UV) {
-	       info->fu = s1->fu + info->dfu * step_f;
-	       info->fv = s1->fv + info->dfv * step_f;
+            if (flags & INTERP_FLOAT_UV) {
+               info->fu = s1->fu + info->dfu * step_f;
+               info->fv = s1->fv + info->dfv * step_f;
 
-	       s1->fu += s1->dfu;
-	       s1->fv += s1->dfv;
-	    }
-	 }
+               s1->fu += s1->dfu;
+               s1->fv += s1->dfv;
+            }
+         }
 
-	 /* if clipping is enabled then clip the segment */
-	 if (bmp->clip) {
-	    if (x < bmp->cl) {
-	       gap = bmp->cl - x;
-	       x = bmp->cl;
-	       w -= gap;
-	       _clip_polygon_segment_f(info, gap, flags);
-	    }
+         /* if clipping is enabled then clip the segment */
+         if (bmp->clip) {
+            if (x < bmp->cl) {
+               gap = bmp->cl - x;
+               x = bmp->cl;
+               w -= gap;
+               _clip_polygon_segment_f(info, gap, flags);
+            }
 
-	    if (x+w > bmp->cr)
-	       w = bmp->cr - x;
-	 }
+            if (x+w > bmp->cr)
+               w = bmp->cr - x;
+         }
 
-	 if (w > 0) {
-	    int dx = x * BYTES_PER_PIXEL(bitmap_color_depth(bmp));
-	    
-	    if (test_optim) {
-	       float z1 = 1. / info->z;
-	       info->u = info->fu * z1;
-	       info->v = info->fv * z1;
-	       info->du = info->dfu * z1;
-	       info->dv = info->dfv * z1;
-	       drawer = _optim_alternative_drawer;
-	    }
+         if (w > 0) {
+            int dx = x * BYTES_PER_PIXEL(bitmap_color_depth(bmp));
 
-            if (flags & INTERP_ZBUF) 
+            if (test_optim) {
+               float z1 = 1. / info->z;
+               info->u = info->fu * z1;
+               info->v = info->fv * z1;
+               info->du = info->dfu * z1;
+               info->dv = info->dfv * z1;
+               drawer = _optim_alternative_drawer;
+            }
+
+            if (flags & INTERP_ZBUF)
                info->zbuf_addr = bmp_write_line(_zbuffer, y) + x * sizeof(float);
 
-	    info->read_addr = bmp_read_line(bmp, y) + dx;
-	    drawer(bmp_write_line(bmp, y) + dx, w, info);
-	 }
+            info->read_addr = bmp_read_line(bmp, y) + dx;
+            drawer(bmp_write_line(bmp, y) + dx, w, info);
+         }
       }
 
       left_edge->x += left_edge->dx;
@@ -1391,15 +1391,15 @@ static void _triangle_deltas(BITMAP *bmp, fixed w, POLYGON_SEGMENT *s1, POLYGON_
       int r, g, b;
 
       if (flags & COLOR_TO_RGB) {
-      	 AL_CONST int coldepth = bitmap_color_depth(bmp);
-	 r = getr_depth(coldepth, v->c);
-	 g = getg_depth(coldepth, v->c);
-	 b = getb_depth(coldepth, v->c);
+         AL_CONST int coldepth = bitmap_color_depth(bmp);
+         r = getr_depth(coldepth, v->c);
+         g = getg_depth(coldepth, v->c);
+         b = getb_depth(coldepth, v->c);
       }
       else {
-	 r = (v->c >> 16) & 0xFF;
-	 g = (v->c >> 8) & 0xFF;
-	 b = v->c & 0xFF;
+         r = (v->c >> 16) & 0xFF;
+         g = (v->c >> 8) & 0xFF;
+         b = v->c & 0xFF;
       }
 
       info->dr = fixdiv(s1->r - itofix(r), w);
@@ -1421,12 +1421,12 @@ static void _triangle_deltas(BITMAP *bmp, fixed w, POLYGON_SEGMENT *s1, POLYGON_
       info->dz = (s1->z - z1) * w1;
 
       if (flags & INTERP_FLOAT_UV) {
-	 /* floating point (perspective correct) texture interpolation */
-	 float fu1 = v->u * z1;
-	 float fv1 = v->v * z1;
+         /* floating point (perspective correct) texture interpolation */
+         float fu1 = v->u * z1;
+         float fv1 = v->v * z1;
 
-	 info->dfu = (s1->fu - fu1) * w1;
-	 info->dfv = (s1->fv - fv1) * w1;
+         info->dfu = (s1->fu - fu1) * w1;
+         info->dfv = (s1->fv - fv1) * w1;
       }
    }
 }
@@ -1444,15 +1444,15 @@ static void _triangle_deltas_f(BITMAP *bmp, fixed w, POLYGON_SEGMENT *s1, POLYGO
       int r, g, b;
 
       if (flags & COLOR_TO_RGB) {
-      	 AL_CONST int coldepth = bitmap_color_depth(bmp);
-	 r = getr_depth(coldepth, v->c);
-	 g = getg_depth(coldepth, v->c);
-	 b = getb_depth(coldepth, v->c);
+         AL_CONST int coldepth = bitmap_color_depth(bmp);
+         r = getr_depth(coldepth, v->c);
+         g = getg_depth(coldepth, v->c);
+         b = getb_depth(coldepth, v->c);
       }
       else {
-	 r = (v->c >> 16) & 0xFF;
-	 g = (v->c >> 8) & 0xFF;
-	 b = v->c & 0xFF;
+         r = (v->c >> 16) & 0xFF;
+         g = (v->c >> 8) & 0xFF;
+         b = v->c & 0xFF;
       }
 
       info->dr = fixdiv(s1->r - itofix(r), w);
@@ -1474,12 +1474,12 @@ static void _triangle_deltas_f(BITMAP *bmp, fixed w, POLYGON_SEGMENT *s1, POLYGO
       info->dz = (s1->z - z1) * w1;
 
       if (flags & INTERP_FLOAT_UV) {
-	 /* floating point (perspective correct) texture interpolation */
-	 float fu1 = v->u * z1 * 65536.;
-	 float fv1 = v->v * z1 * 65536.;
+         /* floating point (perspective correct) texture interpolation */
+         float fu1 = v->u * z1 * 65536.;
+         float fv1 = v->v * z1 * 65536.;
 
-	 info->dfu = (s1->fu - fu1) * w1;
-	 info->dfv = (s1->fv - fv1) * w1;
+         info->dfu = (s1->fu - fu1) * w1;
+         info->dfv = (s1->fv - fv1) * w1;
       }
    }
 }
@@ -1511,8 +1511,8 @@ void _clip_polygon_segment(POLYGON_SEGMENT *info, fixed gap, int flags)
       info->z += info->dz * gap_f;
 
       if (flags & INTERP_FLOAT_UV) {
-	 info->fu += info->dfu * gap_f;
-	 info->fv += info->dfv * gap_f;
+         info->fu += info->dfu * gap_f;
+         info->fv += info->dfv * gap_f;
       }
    }
 }
@@ -1568,7 +1568,7 @@ void _soft_triangle3d(BITMAP *bmp, int type, BITMAP *texture, V3D *v1, V3D *v2, 
    /* set fpu to single-precision, truncate mode */
    #ifdef ALLEGRO_DOS
       if (flags & (INTERP_Z | INTERP_FLOAT_UV))
-	 old87 = _control87(PC_24 | RC_CHOP, MCW_PC | MCW_RC);
+         old87 = _control87(PC_24 | RC_CHOP, MCW_PC | MCW_RC);
    #endif
 
    /* do 3D triangle*/
@@ -1578,23 +1578,23 @@ void _soft_triangle3d(BITMAP *bmp, int type, BITMAP *texture, V3D *v1, V3D *v2, 
 
       /* calculate deltas */
       if (drawer != _poly_scanline_dummy) {
-	 fixed w, h;
-	 POLYGON_SEGMENT s1 = edge1.dat;
+         fixed w, h;
+         POLYGON_SEGMENT s1 = edge1.dat;
 
-	 h = vt2->y - (edge1.top << 16);
-	 _clip_polygon_segment(&s1, h, flags);
+         h = vt2->y - (edge1.top << 16);
+         _clip_polygon_segment(&s1, h, flags);
 
-	 w = edge1.x + fixmul(h, edge1.dx) - vt2->x;
-	 if (w) _triangle_deltas(bmp, w, &s1, &info, vt2, flags);
+         w = edge1.x + fixmul(h, edge1.dx) - vt2->x;
+         if (w) _triangle_deltas(bmp, w, &s1, &info, vt2, flags);
       }
 
       /* draws part between y1 and y2 */
       if (_fill_3d_edge_structure(&edge2, vt1, vt2, flags, bmp))
-	 draw_triangle_part(bmp, edge2.top, edge2.bottom, &edge1, &edge2, drawer, flags, color, &info);
+         draw_triangle_part(bmp, edge2.top, edge2.bottom, &edge1, &edge2, drawer, flags, color, &info);
 
       /* draws part between y2 and y3 */
       if (_fill_3d_edge_structure(&edge2, vt2, vt3, flags, bmp))
-	 draw_triangle_part(bmp, edge2.top, edge2.bottom, &edge1, &edge2, drawer, flags, color, &info);
+         draw_triangle_part(bmp, edge2.top, edge2.bottom, &edge1, &edge2, drawer, flags, color, &info);
 
       bmp_unwrite_line(bmp);
       release_bitmap(bmp);
@@ -1603,7 +1603,7 @@ void _soft_triangle3d(BITMAP *bmp, int type, BITMAP *texture, V3D *v1, V3D *v2, 
    /* reset fpu mode */
    #ifdef ALLEGRO_DOS
       if (flags & (INTERP_Z | INTERP_FLOAT_UV))
-	 _control87(old87, MCW_PC | MCW_RC);
+         _control87(old87, MCW_PC | MCW_RC);
    #endif
 }
 
@@ -1668,23 +1668,23 @@ void _soft_triangle3d_f(BITMAP *bmp, int type, BITMAP *texture, V3D_f *v1, V3D_f
 
       /* calculate deltas */
       if (drawer != _poly_scanline_dummy) {
-	 fixed w, h;
-	 POLYGON_SEGMENT s1 = edge1.dat;
+         fixed w, h;
+         POLYGON_SEGMENT s1 = edge1.dat;
 
-	 h = ftofix(vt2->y) - (edge1.top << 16);
-	 _clip_polygon_segment(&s1, h, flags);
+         h = ftofix(vt2->y) - (edge1.top << 16);
+         _clip_polygon_segment(&s1, h, flags);
 
-	 w = edge1.x + fixmul(h, edge1.dx) - ftofix(vt2->x);
-	 if (w) _triangle_deltas_f(bmp, w, &s1, &info, vt2, flags);
+         w = edge1.x + fixmul(h, edge1.dx) - ftofix(vt2->x);
+         if (w) _triangle_deltas_f(bmp, w, &s1, &info, vt2, flags);
       }
 
       /* draws part between y1 and y2 */
       if (_fill_3d_edge_structure_f(&edge2, vt1, vt2, flags, bmp))
-	 draw_triangle_part(bmp, edge2.top, edge2.bottom, &edge1, &edge2, drawer, flags, color, &info);
+         draw_triangle_part(bmp, edge2.top, edge2.bottom, &edge1, &edge2, drawer, flags, color, &info);
 
       /* draws part between y2 and y3 */
       if (_fill_3d_edge_structure_f(&edge2, vt2, vt3, flags, bmp))
-	 draw_triangle_part(bmp, edge2.top, edge2.bottom, &edge1, &edge2, drawer, flags, color, &info);
+         draw_triangle_part(bmp, edge2.top, edge2.bottom, &edge1, &edge2, drawer, flags, color, &info);
 
       bmp_unwrite_line(bmp);
       release_bitmap(bmp);
@@ -1693,7 +1693,7 @@ void _soft_triangle3d_f(BITMAP *bmp, int type, BITMAP *texture, V3D_f *v1, V3D_f
    /* reset fpu mode */
    #ifdef ALLEGRO_DOS
       if (flags & (INTERP_Z | INTERP_FLOAT_UV))
-	 _control87(old87, MCW_PC | MCW_RC);
+         _control87(old87, MCW_PC | MCW_RC);
    #endif
 }
 
@@ -1789,7 +1789,7 @@ void destroy_zbuffer(ZBUFFER *zbuf)
 {
    if (zbuf) {
       if (zbuf == _zbuffer)
-	 _zbuffer = NULL;
+         _zbuffer = NULL;
       destroy_bitmap(zbuf);
    }
 }

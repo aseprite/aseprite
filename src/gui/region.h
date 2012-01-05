@@ -15,7 +15,7 @@
 #define JI_REGION_NUM_RECTS(reg) ((reg)->data ? (reg)->data->numRects : 1)
 #define JI_REGION_SIZE(reg) ((reg)->data ? (reg)->data->size : 0)
 #define JI_REGION_RECTS(reg) ((reg)->data ? (JRect)((reg)->data + 1) \
-			      : &(reg)->extents)
+                              : &(reg)->extents)
 #define JI_REGION_RECTPTR(reg) ((JRect)((reg)->data + 1))
 #define JI_REGION_RECT(reg,i) (&JI_REGION_RECTPTR(reg)[i])
 #define JI_REGION_TOP(reg) JI_REGION_RECT(reg, (reg)->data->numRects)
@@ -23,9 +23,9 @@
 #define JI_REGION_SZOF(n) (sizeof(struct jregion_data) + ((n) * sizeof(struct jrect)))
 
 /* return values from jregion_rect_in */
-#define JI_RGNOUT	0
-#define JI_RGNIN	1
-#define JI_RGNPART	2
+#define JI_RGNOUT       0
+#define JI_RGNIN        1
+#define JI_RGNPART      2
 
 struct jregion_data
 {

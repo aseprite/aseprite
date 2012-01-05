@@ -34,75 +34,75 @@ void algo_line(int x1, int y1, int x2, int y2, void *data, AlgoPixel proc)
   int dd;
 
   /* worker macro */
-#define DO_LINE(pri_sign, pri_c, pri_cond, sec_sign, sec_c, sec_cond)	\
-  {									\
-    if (d##pri_c == 0) {						\
-      proc(x1, y1, data);						\
-      return;								\
-    }									\
-									\
-    i1 = 2 * d##sec_c;							\
-    dd = i1 - (sec_sign (pri_sign d##pri_c));				\
-    i2 = dd - (sec_sign (pri_sign d##pri_c));				\
-									\
-    x = x1;								\
-    y = y1;								\
-									\
-    while (pri_c pri_cond pri_c##2) {					\
-      proc(x, y, data);							\
-									\
-      if (dd sec_cond 0) {						\
-	sec_c sec_sign##= 1;						\
-	dd += i2;							\
-      }									\
-      else								\
-	dd += i1;							\
-									\
-      pri_c pri_sign##= 1;						\
-    }									\
+#define DO_LINE(pri_sign, pri_c, pri_cond, sec_sign, sec_c, sec_cond)   \
+  {                                                                     \
+    if (d##pri_c == 0) {                                                \
+      proc(x1, y1, data);                                               \
+      return;                                                           \
+    }                                                                   \
+                                                                        \
+    i1 = 2 * d##sec_c;                                                  \
+    dd = i1 - (sec_sign (pri_sign d##pri_c));                           \
+    i2 = dd - (sec_sign (pri_sign d##pri_c));                           \
+                                                                        \
+    x = x1;                                                             \
+    y = y1;                                                             \
+                                                                        \
+    while (pri_c pri_cond pri_c##2) {                                   \
+      proc(x, y, data);                                                 \
+                                                                        \
+      if (dd sec_cond 0) {                                              \
+        sec_c sec_sign##= 1;                                            \
+        dd += i2;                                                       \
+      }                                                                 \
+      else                                                              \
+        dd += i1;                                                       \
+                                                                        \
+      pri_c pri_sign##= 1;                                              \
+    }                                                                   \
   }
 
   if (dx >= 0) {
     if (dy >= 0) {
       if (dx >= dy) {
-	/* (x1 <= x2) && (y1 <= y2) && (dx >= dy) */
-	DO_LINE(+, x, <=, +, y, >=);
+        /* (x1 <= x2) && (y1 <= y2) && (dx >= dy) */
+        DO_LINE(+, x, <=, +, y, >=);
       }
       else {
-	/* (x1 <= x2) && (y1 <= y2) && (dx < dy) */
-	DO_LINE(+, y, <=, +, x, >=);
+        /* (x1 <= x2) && (y1 <= y2) && (dx < dy) */
+        DO_LINE(+, y, <=, +, x, >=);
       }
     }
     else {
       if (dx >= -dy) {
-	/* (x1 <= x2) && (y1 > y2) && (dx >= dy) */
-	DO_LINE(+, x, <=, -, y, <=);
+        /* (x1 <= x2) && (y1 > y2) && (dx >= dy) */
+        DO_LINE(+, x, <=, -, y, <=);
       }
       else {
-	/* (x1 <= x2) && (y1 > y2) && (dx < dy) */
-	DO_LINE(-, y, >=, +, x, >=);
+        /* (x1 <= x2) && (y1 > y2) && (dx < dy) */
+        DO_LINE(-, y, >=, +, x, >=);
       }
     }
   }
   else {
     if (dy >= 0) {
       if (-dx >= dy) {
-	/* (x1 > x2) && (y1 <= y2) && (dx >= dy) */
-	DO_LINE(-, x, >=, +, y, >=);
+        /* (x1 > x2) && (y1 <= y2) && (dx >= dy) */
+        DO_LINE(-, x, >=, +, y, >=);
       }
       else {
-	/* (x1 > x2) && (y1 <= y2) && (dx < dy) */
-	DO_LINE(+, y, <=, -, x, <=);
+        /* (x1 > x2) && (y1 <= y2) && (dx < dy) */
+        DO_LINE(+, y, <=, -, x, <=);
       }
     }
     else {
       if (-dx >= -dy) {
-	/* (x1 > x2) && (y1 > y2) && (dx >= dy) */
-	DO_LINE(-, x, >=, -, y, <=);
+        /* (x1 > x2) && (y1 > y2) && (dx >= dy) */
+        DO_LINE(-, x, >=, -, y, <=);
       }
       else {
-	/* (x1 > x2) && (y1 > y2) && (dx < dy) */
-	DO_LINE(-, y, >=, -, x, <=);
+        /* (x1 > x2) && (y1 > y2) && (dx < dy) */
+        DO_LINE(-, y, >=, -, x, <=);
       }
     }
   }
@@ -141,7 +141,7 @@ void algo_ellipse(int x1, int y1, int x2, int y2, void *data, AlgoPixel proc)
 
   if (rx == 1) { algo_line(x2, y1, x2, y2, data, proc); rx--; }
   if (rx == 0) { algo_line(x1, y1, x1, y2, data, proc); return; }
-   
+
   if (ry == 1) { algo_line(x1, y2, x2, y2, data, proc); ry--; }
   if (ry == 0) { algo_line(x1, y1, x2, y1, data, proc); return; }
 
@@ -265,10 +265,10 @@ void algo_ellipsefill(int x1, int y1, int x2, int y2, void *data, AlgoHLine proc
 
   if (rx == 1) { int c; for (c=y1; c<=y2; c++) proc(x2, c, x2, data); rx--; }
   if (rx == 0) { int c; for (c=y1; c<=y2; c++) proc(x1, c, x1, data); return; }
-   
+
   if (ry == 1) { proc(x1, y2, x2, data); ry--; }
   if (ry == 0) { proc(x1, y1, x2, data); return; }
-   
+
   rx /= 2;
   ry /= 2;
 
@@ -376,8 +376,8 @@ void algo_ellipsefill(int x1, int y1, int x2, int y2, void *data, AlgoHLine proc
 /* Algorightm from Allegro (allegro/src/spline.c)
    Adapted for ASE by David A. Capello. */
 void algo_spline(double x0, double y0, double x1, double y1,
-		 double x2, double y2, double x3, double y3,
-		 void *data, AlgoLine proc)
+                 double x2, double y2, double x3, double y3,
+                 void *data, AlgoLine proc)
 {
   int npts;
   int out_x1, out_x2;
@@ -397,8 +397,8 @@ void algo_spline(double x0, double y0, double x1, double y1,
 #undef DIST
 #define DIST(x, y) (sqrt((x) * (x) + (y) * (y)))
   npts = (int)(sqrt(DIST(x1-x0, y1-y0) +
-		    DIST(x2-x1, y2-y1) +
-		    DIST(x3-x2, y3-y2)) * 1.2);
+                    DIST(x2-x1, y2-y1) +
+                    DIST(x3-x2, y3-y2)) * 1.2);
   if (npts > MAX_POINTS)
     npts = MAX_POINTS;
   else if (npts < 4)
@@ -451,8 +451,8 @@ void algo_spline(double x0, double y0, double x1, double y1,
 }
 
 double algo_spline_get_y(double x0, double y0, double x1, double y1,
-			 double x2, double y2, double x3, double y3,
-			 double in_x)
+                         double x2, double y2, double x3, double y3,
+                         double in_x)
 {
   int npts;
   double out_x, old_x;
@@ -472,8 +472,8 @@ double algo_spline_get_y(double x0, double y0, double x1, double y1,
 #undef DIST
 #define DIST(x, y) (sqrt ((x) * (x) + (y) * (y)))
   npts = (int) (sqrt (DIST(x1-x0, y1-y0) +
-		      DIST(x2-x1, y2-y1) +
-		      DIST(x3-x2, y3-y2)) * 1.2);
+                      DIST(x2-x1, y2-y1) +
+                      DIST(x3-x2, y3-y2)) * 1.2);
   if (npts > MAX_POINTS)
     npts = MAX_POINTS;
   else if (npts < 4)
@@ -529,8 +529,8 @@ double algo_spline_get_y(double x0, double y0, double x1, double y1,
 }
 
 double algo_spline_get_tan(double x0, double y0, double x1, double y1,
-			   double x2, double y2, double x3, double y3,
-			   double in_x)
+                           double x2, double y2, double x3, double y3,
+                           double in_x)
 {
   int npts;
   double out_x, old_dx, old_x;
@@ -550,8 +550,8 @@ double algo_spline_get_tan(double x0, double y0, double x1, double y1,
 #undef DIST
 #define DIST(x, y) (sqrt ((x) * (x) + (y) * (y)))
   npts = (int) (sqrt (DIST(x1-x0, y1-y0) +
-		      DIST(x2-x1, y2-y1) +
-		      DIST(x3-x2, y3-y2)) * 1.2);
+                      DIST(x2-x1, y2-y1) +
+                      DIST(x3-x2, y3-y2)) * 1.2);
   if (npts > MAX_POINTS)
     npts = MAX_POINTS;
   else if (npts < 4)

@@ -1,6 +1,6 @@
-/*         ______   ___    ___ 
- *        /\  _  \ /\_ \  /\_ \ 
- *        \ \ \L\ \\//\ \ \//\ \      __     __   _ __   ___ 
+/*         ______   ___    ___
+ *        /\  _  \ /\_ \  /\_ \
+ *        \ \ \L\ \\//\ \ \//\ \      __     __   _ __   ___
  *         \ \  __ \ \ \ \  \ \ \   /'__`\ /'_ `\/\`'__\/ __`\
  *          \ \ \/\ \ \_\ \_ \_\ \_/\  __//\ \L\ \ \ \//\ \L\ \
  *           \ \_\ \_\/\____\/\____\ \____\ \____ \ \_\\ \____/
@@ -51,7 +51,7 @@ GFX_DRIVER gfx_directx_win =
    "DirectDraw window",
    gfx_directx_win_init,
    gfx_directx_win_exit,
-   NULL,                        // AL_METHOD(int, scroll, (int x, int y)); 
+   NULL,                        // AL_METHOD(int, scroll, (int x, int y));
    gfx_directx_sync,
    gfx_directx_set_palette,
    NULL,                        // AL_METHOD(int, request_scroll, (int x, int y));
@@ -246,7 +246,7 @@ static void update_matching_window(RECT *rect)
 
    ClientToScreen(allegro_wnd, &dest_rect.p);
    ClientToScreen(allegro_wnd, &dest_rect.p + 1);
- 
+
    /* blit offscreen backbuffer to the window */
    IDirectDrawSurface2_Blt(gfx_directx_primary_surface->id, &dest_rect.r,
                            offscreen_surface->id, rect, 0, NULL);
@@ -258,7 +258,7 @@ static void update_matching_window(RECT *rect)
 
 /* is_contained:
  *  Helper to find the relative position of two rectangles.
- */ 
+ */
 static INLINE int is_contained(RECT *rect1, RECT *rect2)
 {
    if ((rect1->left >= rect2->left) &&
@@ -298,7 +298,7 @@ static int ddsurf_blit_ex(LPDIRECTDRAWSURFACE2 dest_surf, RECT *dest_rect,
       IDirectDrawSurface2_Unlock(dest_surf, NULL);
       return -1;
    }
-   
+
    /* fill in source graphics rectangle description */
    src_gfx_rect.width  = src_rect->right  - src_rect->left;
    src_gfx_rect.height = src_rect->bottom - src_rect->top;
@@ -308,7 +308,7 @@ static int ddsurf_blit_ex(LPDIRECTDRAWSURFACE2 dest_surf, RECT *dest_rect,
    /* fill in destination graphics rectangle description */
    dest_gfx_rect.pitch = dest_desc.lPitch;
    dest_gfx_rect.data  = dest_desc.lpSurface;
-   
+
    /* function doing the hard work */
    colorconv_blit(&src_gfx_rect, &dest_gfx_rect);
 
@@ -553,7 +553,7 @@ static int wnd_set_windowed_coop(void)
 {
    HRESULT hr;
    HWND allegro_wnd = win_get_window();
-   
+
    hr = IDirectDraw2_SetCooperativeLevel(directdraw, allegro_wnd, DDSCL_NORMAL);
    if (FAILED(hr)) {
       _TRACE(PREFIX_E "SetCooperative level = %s (%x), hwnd = %x\n", win_err_str(hr), hr, allegro_wnd);
@@ -575,7 +575,7 @@ static int verify_color_depth (int color_depth)
    int i;
 
    if ((gfx_directx_compare_color_depth(color_depth) == 0) && (color_depth != 8)) {
-      /* the color depths match */ 
+      /* the color depths match */
       _al_wd_update_window = update_matching_window;
    }
    else {
@@ -647,10 +647,10 @@ static void gfx_directx_setup_driver_desc(void)
    char tmp1[128], tmp2[128];
 
    uszprintf(gfx_driver_desc, sizeof(gfx_driver_desc),
-	     uconvert_ascii("DirectDraw, in %s, %d bpp window", tmp1),
-	     uconvert_ascii((colorconv_blit ? "color conversion" : "matching"), tmp2),
-	     _win_desktop_depth);
-   
+             uconvert_ascii("DirectDraw, in %s, %d bpp window", tmp1),
+             uconvert_ascii((colorconv_blit ? "color conversion" : "matching"), tmp2),
+             _win_desktop_depth);
+
    gfx_directx_win.desc = gfx_driver_desc;
 }
 
@@ -739,7 +739,7 @@ static struct BITMAP *gfx_directx_win_init(int w, int h, int v_w, int v_h, int c
  *  Shuts down the driver.
  */
 static void gfx_directx_win_exit(struct BITMAP *bmp)
-{ 
+{
    _enter_gfx_critical();
 
    if (bmp) {
@@ -757,7 +757,7 @@ static void gfx_directx_win_exit(struct BITMAP *bmp)
       _release_colorconv_blitter(colorconv_blit);
       colorconv_blit = NULL;
    }
-   
+
    _destroy_directx_forefront_bitmap();
 
    gfx_directx_exit(NULL);
@@ -786,7 +786,7 @@ static BITMAP *gfx_directx_acknowledge_resize(void)
    /* Destroy old screen */
    destroy_bitmap(gfx_directx_forefront_bitmap);
    _destroy_directx_forefront_bitmap();
-   
+
    /* Re-create the screen */
    new_screen = _create_directx_forefront_bitmap(w, h, color_depth);
 
@@ -834,7 +834,7 @@ static BITMAP *_create_directx_forefront_bitmap(int w, int h, int color_depth)
          if (gfx_directx_create_palette(offscreen_surface) != 0)
             goto Error;
 
-         /* init the core library color conversion functions */ 
+         /* init the core library color conversion functions */
          if (gfx_directx_update_color_format(gfx_directx_primary_surface, _win_desktop_depth) != 0)
             goto Error;
       }

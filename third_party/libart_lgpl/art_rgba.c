@@ -59,82 +59,82 @@ art_rgba_rgba_composite (art_u8 *dst, const art_u8 *src, int n)
       src_alpha = (src_abgr >> 24) & 0xff;
 #endif
       if (src_alpha)
-	{
-	  if (src_alpha == 0xff ||
-	      (
+        {
+          if (src_alpha == 0xff ||
+              (
 #ifdef WORDS_BIGENDIAN
-	       dst_rgba = ((art_u32 *)dst)[i],
-	       dst_alpha = dst_rgba & 0xff,
+               dst_rgba = ((art_u32 *)dst)[i],
+               dst_alpha = dst_rgba & 0xff,
 #else
-	       dst_abgr = ((art_u32 *)dst)[i],
-	       dst_alpha = (dst_abgr >> 24),
+               dst_abgr = ((art_u32 *)dst)[i],
+               dst_alpha = (dst_abgr >> 24),
 #endif
-	       dst_alpha == 0))
+               dst_alpha == 0))
 #ifdef WORDS_BIGENDIAN
-	    ((art_u32 *)dst)[i] = src_rgba;
+            ((art_u32 *)dst)[i] = src_rgba;
 #else
-	    ((art_u32 *)dst)[i] = src_abgr;
+            ((art_u32 *)dst)[i] = src_abgr;
 #endif
-	  else
-	    {
-	      int r, g, b, a;
-	      int src_r, src_g, src_b;
-	      int dst_r, dst_g, dst_b;
-	      int tmp;
-	      int c;
+          else
+            {
+              int r, g, b, a;
+              int src_r, src_g, src_b;
+              int dst_r, dst_g, dst_b;
+              int tmp;
+              int c;
 
 #ifdef ART_OPTIMIZE_SPACE
-	      tmp = (255 - src_alpha) * (255 - dst_alpha) + 0x80;
-	      a = 255 - ((tmp + (tmp >> 8)) >> 8);
-	      c = ((src_alpha << 16) + (a >> 1)) / a;
+              tmp = (255 - src_alpha) * (255 - dst_alpha) + 0x80;
+              a = 255 - ((tmp + (tmp >> 8)) >> 8);
+              c = ((src_alpha << 16) + (a >> 1)) / a;
 #else
-	      tmp = art_rgba_composite_table[(src_alpha << 8) + dst_alpha];
-	      c = tmp & 0x1ffff;
-	      a = tmp >> 24;
+              tmp = art_rgba_composite_table[(src_alpha << 8) + dst_alpha];
+              c = tmp & 0x1ffff;
+              a = tmp >> 24;
 #endif
 #ifdef WORDS_BIGENDIAN
-	      src_r = (src_rgba >> 24) & 0xff;
-	      src_g = (src_rgba >> 16) & 0xff;
-	      src_b = (src_rgba >> 8) & 0xff;
-	      dst_r = (dst_rgba >> 24) & 0xff;
-	      dst_g = (dst_rgba >> 16) & 0xff;
-	      dst_b = (dst_rgba >> 8) & 0xff;
+              src_r = (src_rgba >> 24) & 0xff;
+              src_g = (src_rgba >> 16) & 0xff;
+              src_b = (src_rgba >> 8) & 0xff;
+              dst_r = (dst_rgba >> 24) & 0xff;
+              dst_g = (dst_rgba >> 16) & 0xff;
+              dst_b = (dst_rgba >> 8) & 0xff;
 #else
-	      src_r = src_abgr & 0xff;
-	      src_g = (src_abgr >> 8) & 0xff;
-	      src_b = (src_abgr >> 16) & 0xff;
-	      dst_r = dst_abgr & 0xff;
-	      dst_g = (dst_abgr >> 8) & 0xff;
-	      dst_b = (dst_abgr >> 16) & 0xff;
+              src_r = src_abgr & 0xff;
+              src_g = (src_abgr >> 8) & 0xff;
+              src_b = (src_abgr >> 16) & 0xff;
+              dst_r = dst_abgr & 0xff;
+              dst_g = (dst_abgr >> 8) & 0xff;
+              dst_b = (dst_abgr >> 16) & 0xff;
 #endif
-	      r = dst_r + (((src_r - dst_r) * c + 0x8000) >> 16);
-	      g = dst_g + (((src_g - dst_g) * c + 0x8000) >> 16);
-	      b = dst_b + (((src_b - dst_b) * c + 0x8000) >> 16);
+              r = dst_r + (((src_r - dst_r) * c + 0x8000) >> 16);
+              g = dst_g + (((src_g - dst_g) * c + 0x8000) >> 16);
+              b = dst_b + (((src_b - dst_b) * c + 0x8000) >> 16);
 #ifdef WORDS_BIGENDIAN
-	    ((art_u32 *)dst)[i] = (r << 24) | (g << 16) | (b << 8) | a;
+            ((art_u32 *)dst)[i] = (r << 24) | (g << 16) | (b << 8) | a;
 #else
-	    ((art_u32 *)dst)[i] = (a << 24) | (b << 16) | (g << 8) | r;
-#endif	      
-	    }
-	}
+            ((art_u32 *)dst)[i] = (a << 24) | (b << 16) | (g << 8) | r;
+#endif
+            }
+        }
 #if 0
       /* it's not clear to me this optimization really wins */
       else
-	{
-	  /* skip over run of transparent pixels */
-	  for (; i < n - 1; i++)
-	    {
+        {
+          /* skip over run of transparent pixels */
+          for (; i < n - 1; i++)
+            {
 #ifdef WORDS_BIGENDIAN
-	      src_rgba = ((art_u32 *)src)[i + 1];
-	      if (src_rgba & 0xff)
-		break;
+              src_rgba = ((art_u32 *)src)[i + 1];
+              if (src_rgba & 0xff)
+                break;
 #else
-	      src_abgr = ((art_u32 *)src)[i + 1];
-	      if (src_abgr & 0xff000000)
-		break;
+              src_abgr = ((art_u32 *)src)[i + 1];
+              if (src_abgr & 0xff000000)
+                break;
 #endif
-	    }
-	}
+            }
+        }
 #endif
     }
 }
@@ -173,7 +173,7 @@ art_rgba_fill_run (art_u8 *buf, art_u8 r, art_u8 g, art_u8 b, int n)
 #else
       ((art_u32 *)buf)[i] = src_abgr;
 #endif
-    }    
+    }
 }
 
 /**
@@ -219,41 +219,41 @@ art_rgba_run_alpha (art_u8 *buf, art_u8 r, art_u8 g, art_u8 b, int alpha, int n)
       dst_alpha = (dst_abgr >> 24) & 0xff;
 #endif
       if (dst_alpha)
-	{
+        {
 #ifdef ART_OPTIMIZE_SPACE
-	  tmp = (255 - alpha) * (255 - dst_alpha) + 0x80;
-	  a = 255 - ((tmp + (tmp >> 8)) >> 8);
-	  c = ((alpha << 16) + (a >> 1)) / a;
+          tmp = (255 - alpha) * (255 - dst_alpha) + 0x80;
+          a = 255 - ((tmp + (tmp >> 8)) >> 8);
+          c = ((alpha << 16) + (a >> 1)) / a;
 #else
-	  tmp = art_rgba_composite_table[(alpha << 8) + dst_alpha];
-	  c = tmp & 0x1ffff;
-	  a = tmp >> 24;
+          tmp = art_rgba_composite_table[(alpha << 8) + dst_alpha];
+          c = tmp & 0x1ffff;
+          a = tmp >> 24;
 #endif
 #ifdef WORDS_BIGENDIAN
-	  dst_r = (dst_rgba >> 24) & 0xff;
-	  dst_g = (dst_rgba >> 16) & 0xff;
-	  dst_b = (dst_rgba >> 8) & 0xff;
+          dst_r = (dst_rgba >> 24) & 0xff;
+          dst_g = (dst_rgba >> 16) & 0xff;
+          dst_b = (dst_rgba >> 8) & 0xff;
 #else
-	  dst_r = dst_abgr & 0xff;
-	  dst_g = (dst_abgr >> 8) & 0xff;
-	  dst_b = (dst_abgr >> 16) & 0xff;
+          dst_r = dst_abgr & 0xff;
+          dst_g = (dst_abgr >> 8) & 0xff;
+          dst_b = (dst_abgr >> 16) & 0xff;
 #endif
-	  dst_r += (((r - dst_r) * c + 0x8000) >> 16);
-	  dst_g += (((g - dst_g) * c + 0x8000) >> 16);
-	  dst_b += (((b - dst_b) * c + 0x8000) >> 16);
+          dst_r += (((r - dst_r) * c + 0x8000) >> 16);
+          dst_g += (((g - dst_g) * c + 0x8000) >> 16);
+          dst_b += (((b - dst_b) * c + 0x8000) >> 16);
 #ifdef WORDS_BIGENDIAN
-	  ((art_u32 *)buf)[i] = (dst_r << 24) | (dst_g << 16) | (dst_b << 8) | a;
+          ((art_u32 *)buf)[i] = (dst_r << 24) | (dst_g << 16) | (dst_b << 8) | a;
 #else
-	  ((art_u32 *)buf)[i] = (a << 24) | (dst_b << 16) | (dst_g << 8) | dst_r;
+          ((art_u32 *)buf)[i] = (a << 24) | (dst_b << 16) | (dst_g << 8) | dst_r;
 #endif
-	}
+        }
       else
-	{
+        {
 #ifdef WORDS_BIGENDIAN
-	  ((art_u32 *)buf)[i] = src_rgba;
+          ((art_u32 *)buf)[i] = src_rgba;
 #else
-	  ((art_u32 *)buf)[i] = src_abgr;
+          ((art_u32 *)buf)[i] = src_abgr;
 #endif
-	}
+        }
     }
 }

@@ -97,7 +97,7 @@
       gfam->hash       = hash;
       gfam->item_total = item_total;
       gfam->item_count = item_count;
-      
+
       FTC_GLYPH_FAMILY_FOUND( gfam, gquery );
     }
 

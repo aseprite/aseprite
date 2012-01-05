@@ -47,7 +47,7 @@ void RemoveCel::revert(ObjectsContainer* objects, UndoersCollector* redoers)
 {
   LayerImage* layer = objects->getObjectT<LayerImage>(m_layerId);
   Cel* cel = read_object<Cel>(objects, m_stream, raster::read_cel);
-  
+
   // Push an AddCel as redoer
   redoers->pushUndoer(new AddCel(objects, layer, cel));
 

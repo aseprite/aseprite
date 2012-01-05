@@ -80,12 +80,12 @@ Version 4.1.2
 * Complete deprecation list is now in the README file
 * Audited the sources with gcc -Wall. Everything detectable has now been fixed.
 * Ran the library code through indent.
-  
+
 Version 4.1.1
 =============
 * Merge in many bug fixes that were sent in while I was hiking the
   Appalachian Trail.
-* The qprintf methods of the library are now deprecated.  Do not use 
+* The qprintf methods of the library are now deprecated.  Do not use
   GifQuietPrint or GifQprintf.  These should have been pushed out into the
   utility helper library instead of sitting around in the library proper at
   the same time as the getarg functions were moved out.  Getting rid of these
@@ -156,4 +156,3 @@ Changes from Eric Raymond's libgif:
 ========
 Changes predating libungif 3.0 (news in the original libgif, in other words.)
 is in ONEWS
-

@@ -58,8 +58,8 @@ Message* jmessage_new_key_related(int type, int readkey_value)
 
 #if 0
   printf("%s: %i %i [%c]\n", type == JM_KEYPRESSED ? "JM_KEYPRESSED":
-						     "JM_KEYRELEASED",
-	 msg->key.scancode, msg->key.ascii, msg->key.ascii);
+                                                     "JM_KEYRELEASED",
+         msg->key.scancode, msg->key.ascii, msg->key.ascii);
   fflush(stdout);
 #endif
   return msg;

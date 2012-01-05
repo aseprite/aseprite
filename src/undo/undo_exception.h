@@ -19,4 +19,4 @@ public:
 
 } // namespace undo
 
-#endif	// UNDO_UNDO_EXCEPTION_H_INCLUDED
+#endif  // UNDO_UNDO_EXCEPTION_H_INCLUDED

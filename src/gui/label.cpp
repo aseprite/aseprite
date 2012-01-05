@@ -36,11 +36,11 @@ bool Label::onProcessMessage(Message* msg)
 
     case JM_REQSIZE:
       if (this->hasText()) {
-	msg->reqsize.w = jwidget_get_text_length(this);
-	msg->reqsize.h = jwidget_get_text_height(this);
+        msg->reqsize.w = jwidget_get_text_length(this);
+        msg->reqsize.h = jwidget_get_text_height(this);
       }
       else
-	msg->reqsize.w = msg->reqsize.h = 0;
+        msg->reqsize.w = msg->reqsize.h = 0;
 
       msg->reqsize.w += this->border_width.l + this->border_width.r;
       msg->reqsize.h += this->border_width.t + this->border_width.b;

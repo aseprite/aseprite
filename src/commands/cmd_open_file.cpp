@@ -86,7 +86,7 @@ static void openfile_bg(FileOp* fop)
 /**
  * Called by the gui-monitor (a timer in the gui module that is called
  * every 100 milliseconds).
- * 
+ *
  * [main thread]
  */
 static void monitor_openfile_bg(void* _data)
@@ -104,7 +104,7 @@ static void monitor_openfile_bg(void* _data)
 
 /**
  * Called to destroy the data of the monitor.
- * 
+ *
  * [main thread]
  */
 static void monitor_free(void* _data)
@@ -119,8 +119,8 @@ static void monitor_free(void* _data)
 
 OpenFileCommand::OpenFileCommand()
   : Command("OpenFile",
-	    "Open Sprite",
-	    CmdRecordableFlag)
+            "Open Sprite",
+            CmdRecordableFlag)
 {
   m_filename = "";
 }
@@ -152,62 +152,62 @@ void OpenFileCommand::onExecute(Context* context)
 
     if (fop) {
       if (fop->has_error()) {
-	console.printf(fop->error.c_str());
-	fop_free(fop);
+        console.printf(fop->error.c_str());
+        fop_free(fop);
 
-	unrecent = true;
+        unrecent = true;
       }
       else {
-	base::thread thread(&openfile_bg, fop);
-	OpenFileData* data = new OpenFileData;
+        base::thread thread(&openfile_bg, fop);
+        OpenFileData* data = new OpenFileData;
 
-	data->fop = fop;
-	data->progress = app_get_statusbar()->addProgress();
-	data->alert_window = Alert::create(PACKAGE
-					   "<<Loading file:<<%s||&Cancel",
-					   get_filename(m_filename.c_str()));
+        data->fop = fop;
+        data->progress = app_get_statusbar()->addProgress();
+        data->alert_window = Alert::create(PACKAGE
+                                           "<<Loading file:<<%s||&Cancel",
+                                           get_filename(m_filename.c_str()));
 
-	// Add a monitor to check the loading (FileOp) progress
-	data->monitor = add_gui_monitor(monitor_openfile_bg,
-					monitor_free, data);
+        // Add a monitor to check the loading (FileOp) progress
+        data->monitor = add_gui_monitor(monitor_openfile_bg,
+                                        monitor_free, data);
 
-	data->alert_window->open_window_fg();
+        data->alert_window->open_window_fg();
 
-	if (data->monitor != NULL)
-	  remove_gui_monitor(data->monitor);
+        if (data->monitor != NULL)
+          remove_gui_monitor(data->monitor);
 
-	// Stop the file-operation and wait the thread to exit
-	fop_stop(data->fop);
-	thread.join();
+        // Stop the file-operation and wait the thread to exit
+        fop_stop(data->fop);
+        thread.join();
 
-	// Post-load processing, it is called from the GUI because may require user intervention.
-	fop_post_load(fop);
+        // Post-load processing, it is called from the GUI because may require user intervention.
+        fop_post_load(fop);
 
-	// Show any error
-	if (fop->has_error())
-	  console.printf(fop->error.c_str());
+        // Show any error
+        if (fop->has_error())
+          console.printf(fop->error.c_str());
 
-	Document* document = fop->document;
-	if (document) {
-	  UIContext* context = UIContext::instance();
+        Document* document = fop->document;
+        if (document) {
+          UIContext* context = UIContext::instance();
 
-	  App::instance()->getRecentFiles()->addRecentFile(fop->filename.c_str());
-	  context->addDocument(document);
+          App::instance()->getRecentFiles()->addRecentFile(fop->filename.c_str());
+          context->addDocument(document);
 
-	  set_document_in_more_reliable_editor(document);
-	}
-	else if (!fop_is_stop(fop))
-	  unrecent = true;
+          set_document_in_more_reliable_editor(document);
+        }
+        else if (!fop_is_stop(fop))
+          unrecent = true;
 
-	delete data->progress;
-	fop_free(fop);
-	delete data;
+        delete data->progress;
+        fop_free(fop);
+        delete data;
       }
 
       // The file was not found or was loaded loaded with errors,
       // so we can remove it from the recent-file list
       if (unrecent) {
-	App::instance()->getRecentFiles()->removeRecentFile(m_filename.c_str());
+        App::instance()->getRecentFiles()->removeRecentFile(m_filename.c_str());
       }
     }
     else {

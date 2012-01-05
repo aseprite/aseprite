@@ -62,12 +62,12 @@
  **/
 void
 art_rgb_rgba_affine (art_u8 *dst,
-		     int x0, int y0, int x1, int y1, int dst_rowstride,
-		     const art_u8 *src,
-		     int src_width, int src_height, int src_rowstride,
-		     const double affine[6],
-		     ArtFilterLevel level,
-		     ArtAlphaGamma *alphagamma)
+                     int x0, int y0, int x1, int y1, int dst_rowstride,
+                     const art_u8 *src,
+                     int src_width, int src_height, int src_rowstride,
+                     const double affine[6],
+                     ArtFilterLevel level,
+                     ArtAlphaGamma *alphagamma)
 {
   /* Note: this is a slow implementation, and is missing all filter
      levels other than NEAREST. It is here for clarity of presentation
@@ -92,49 +92,49 @@ art_rgb_rgba_affine (art_u8 *dst,
       run_x0 = x0;
       run_x1 = x1;
       art_rgb_affine_run (&run_x0, &run_x1, y, src_width, src_height,
-			  inv);
+                          inv);
       dst_p = dst_linestart + (run_x0 - x0) * 3;
       for (x = run_x0; x < run_x1; x++)
-	{
-	  pt.x = x + 0.5;
-	  art_affine_point (&src_pt, &pt, inv);
-	  src_x = floor (src_pt.x);
-	  src_y = floor (src_pt.y);
-	  src_p = src + (src_y * src_rowstride) + src_x * 4;
-	  if (src_x >= 0 && src_x < src_width &&
-	      src_y >= 0 && src_y < src_height)
-	    {
+        {
+          pt.x = x + 0.5;
+          art_affine_point (&src_pt, &pt, inv);
+          src_x = floor (src_pt.x);
+          src_y = floor (src_pt.y);
+          src_p = src + (src_y * src_rowstride) + src_x * 4;
+          if (src_x >= 0 && src_x < src_width &&
+              src_y >= 0 && src_y < src_height)
+            {
 
-	  alpha = src_p[3];
-	  if (alpha)
-	    {
-	      if (alpha == 255)
-		{
-		  dst_p[0] = src_p[0];
-		  dst_p[1] = src_p[1];
-		  dst_p[2] = src_p[2];
-		}
-	      else
-		{
-		  bg_r = dst_p[0];
-		  bg_g = dst_p[1];
-		  bg_b = dst_p[2];
-		  
-		  tmp = (src_p[0] - bg_r) * alpha;
-		  fg_r = bg_r + ((tmp + (tmp >> 8) + 0x80) >> 8);
-		  tmp = (src_p[1] - bg_g) * alpha;
-		  fg_g = bg_g + ((tmp + (tmp >> 8) + 0x80) >> 8);
-		  tmp = (src_p[2] - bg_b) * alpha;
-		  fg_b = bg_b + ((tmp + (tmp >> 8) + 0x80) >> 8);
-		  
-		  dst_p[0] = fg_r;
-		  dst_p[1] = fg_g;
-		  dst_p[2] = fg_b;
-		}
-	    }
-	    } else { dst_p[0] = 255; dst_p[1] = 0; dst_p[2] = 0; }
-	  dst_p += 3;
-	}
+          alpha = src_p[3];
+          if (alpha)
+            {
+              if (alpha == 255)
+                {
+                  dst_p[0] = src_p[0];
+                  dst_p[1] = src_p[1];
+                  dst_p[2] = src_p[2];
+                }
+              else
+                {
+                  bg_r = dst_p[0];
+                  bg_g = dst_p[1];
+                  bg_b = dst_p[2];
+
+                  tmp = (src_p[0] - bg_r) * alpha;
+                  fg_r = bg_r + ((tmp + (tmp >> 8) + 0x80) >> 8);
+                  tmp = (src_p[1] - bg_g) * alpha;
+                  fg_g = bg_g + ((tmp + (tmp >> 8) + 0x80) >> 8);
+                  tmp = (src_p[2] - bg_b) * alpha;
+                  fg_b = bg_b + ((tmp + (tmp >> 8) + 0x80) >> 8);
+
+                  dst_p[0] = fg_r;
+                  dst_p[1] = fg_g;
+                  dst_p[2] = fg_b;
+                }
+            }
+            } else { dst_p[0] = 255; dst_p[1] = 0; dst_p[2] = 0; }
+          dst_p += 3;
+        }
       dst_linestart += dst_rowstride;
     }
 }

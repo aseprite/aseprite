@@ -41,8 +41,8 @@ protected:
 
 RemoveFrameCommand::RemoveFrameCommand()
   : Command("RemoveFrame",
-	    "Remove Frame",
-	    CmdRecordableFlag)
+            "Remove Frame",
+            CmdRecordableFlag)
 {
 }
 

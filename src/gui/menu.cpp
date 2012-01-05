@@ -245,7 +245,7 @@ void Menu::showPopup(int x, int y)
   base->is_filtering = true;
   jmanager_add_msg_filter(JM_BUTTONPRESSED, menubox);
 
-  window->set_moveable(false);	 // Can't move the window
+  window->set_moveable(false);   // Can't move the window
 
   // Set children
   menubox->setMenu(this);
@@ -255,7 +255,7 @@ void Menu::showPopup(int x, int y)
 
   // Menubox position
   window->position_window(MID(0, x, JI_SCREEN_W-jrect_w(window->rc)),
-			  MID(0, y, JI_SCREEN_H-jrect_h(window->rc)));
+                          MID(0, y, JI_SCREEN_H-jrect_h(window->rc)));
 
   // Set the focus to the new menubox
   jmanager_set_focus(menubox);
@@ -307,13 +307,13 @@ void Menu::requestSize(int *w, int *h)
 
     if (this->parent->type == JI_MENUBAR) {
       *w += reqSize.w + ((link->next != this->children->end) ?
-			 this->child_spacing: 0);
+                         this->child_spacing: 0);
       *h = MAX(*h, reqSize.h);
     }
     else {
       *w = MAX(*w, reqSize.w);
       *h += reqSize.h + ((link->next != this->children->end) ?
-			 this->child_spacing: 0);
+                         this->child_spacing: 0);
     }
   }
 
@@ -369,206 +369,206 @@ bool MenuBox::onProcessMessage(Message* msg)
     case JM_MOTION:
       /* isn't pressing a button? */
       if (!msg->mouse.flags && !get_base(this)->was_clicked)
-	break;
+        break;
 
       // Fall though
 
     case JM_BUTTONPRESSED:
       if (menu) {
-	if (get_base(this)->is_processing)
-	  break;
+        if (get_base(this)->is_processing)
+          break;
 
-	// Here we catch the filtered messages (menu-bar or the
-	// popuped menu-box) to detect if the user press outside of
-	// the widget
-	if (msg->type == JM_BUTTONPRESSED && m_base != NULL) {
-	  Widget* picked = ji_get_default_manager()->pick(msg->mouse.x, msg->mouse.y);
+        // Here we catch the filtered messages (menu-bar or the
+        // popuped menu-box) to detect if the user press outside of
+        // the widget
+        if (msg->type == JM_BUTTONPRESSED && m_base != NULL) {
+          Widget* picked = ji_get_default_manager()->pick(msg->mouse.x, msg->mouse.y);
 
-	  // If one of these conditions are accomplished we have to
-	  // close all menus (back to menu-bar or close the popuped
-	  // menubox), this is the place where we control if...
-	  if (picked == NULL ||		// If the button was clicked nowhere
-	      picked == this ||         // If the button was clicked in this menubox
-	      // The picked widget isn't menu-related
-	      (picked->type != JI_MENUBOX &&
-	       picked->type != JI_MENUBAR &&
-	       picked->type != JI_MENUITEM) ||
-	      // The picked widget (that is menu-related) isn't from
-	      // the same tree of menus
-	      (get_base_menubox(picked) != this)) {
+          // If one of these conditions are accomplished we have to
+          // close all menus (back to menu-bar or close the popuped
+          // menubox), this is the place where we control if...
+          if (picked == NULL ||         // If the button was clicked nowhere
+              picked == this ||         // If the button was clicked in this menubox
+              // The picked widget isn't menu-related
+              (picked->type != JI_MENUBOX &&
+               picked->type != JI_MENUBAR &&
+               picked->type != JI_MENUITEM) ||
+              // The picked widget (that is menu-related) isn't from
+              // the same tree of menus
+              (get_base_menubox(picked) != this)) {
 
-	    // The user click outside all the menu-box/menu-items, close all
-	    menu->closeAll();
-	    return true;
-	  }
-	}
+            // The user click outside all the menu-box/menu-items, close all
+            menu->closeAll();
+            return true;
+          }
+        }
 
-	// Get the widget below the mouse cursor 
-	Widget* picked = menu->pick(msg->mouse.x, msg->mouse.y);
-	if (picked) {
-	  if ((picked->type == JI_MENUITEM) &&
-	      !(picked->flags & JI_DISABLED)) {
+        // Get the widget below the mouse cursor
+        Widget* picked = menu->pick(msg->mouse.x, msg->mouse.y);
+        if (picked) {
+          if ((picked->type == JI_MENUITEM) &&
+              !(picked->flags & JI_DISABLED)) {
 
-	    // If the picked menu-item is not highlighted...
-	    if (!static_cast<MenuItem*>(picked)->isHighlighted()) {
-	      // In menu-bar always open the submenu, in other popup-menus
-	      // open the submenu only if the user does click
-	      bool open_submenu =
-		(this->type == JI_MENUBAR) ||
-		(msg->type == JM_BUTTONPRESSED);
-	      
-	      menu->highlightItem(static_cast<MenuItem*>(picked), false, open_submenu, false);
-	    }
-	    // If the user pressed in a highlighted menu-item (maybe
-	    // the user was waiting for the timer to open the
-	    // submenu...)
-	    else if (msg->type == JM_BUTTONPRESSED &&
-		     static_cast<MenuItem*>(picked)->hasSubmenu()) {
-	      static_cast<MenuItem*>(picked)->stopTimer();
+            // If the picked menu-item is not highlighted...
+            if (!static_cast<MenuItem*>(picked)->isHighlighted()) {
+              // In menu-bar always open the submenu, in other popup-menus
+              // open the submenu only if the user does click
+              bool open_submenu =
+                (this->type == JI_MENUBAR) ||
+                (msg->type == JM_BUTTONPRESSED);
 
-	      // If the submenu is closed, open it
-	      if (!static_cast<MenuItem*>(picked)->hasSubmenuOpened())
-		static_cast<MenuItem*>(picked)->openSubmenu(false);
-	    }
-	  }
-	  else if (!get_base(this)->was_clicked) {
-	    menu->unhighlightItem();
-	  }
-	}
+              menu->highlightItem(static_cast<MenuItem*>(picked), false, open_submenu, false);
+            }
+            // If the user pressed in a highlighted menu-item (maybe
+            // the user was waiting for the timer to open the
+            // submenu...)
+            else if (msg->type == JM_BUTTONPRESSED &&
+                     static_cast<MenuItem*>(picked)->hasSubmenu()) {
+              static_cast<MenuItem*>(picked)->stopTimer();
+
+              // If the submenu is closed, open it
+              if (!static_cast<MenuItem*>(picked)->hasSubmenuOpened())
+                static_cast<MenuItem*>(picked)->openSubmenu(false);
+            }
+          }
+          else if (!get_base(this)->was_clicked) {
+            menu->unhighlightItem();
+          }
+        }
       }
       break;
 
     case JM_MOUSELEAVE:
       if (menu) {
-	if (get_base(this)->is_processing)
-	  break;
-	
-	MenuItem* highlight = menu->getHighlightedItem();
-	if (highlight && !highlight->hasSubmenuOpened())
-	  menu->unhighlightItem();
+        if (get_base(this)->is_processing)
+          break;
+
+        MenuItem* highlight = menu->getHighlightedItem();
+        if (highlight && !highlight->hasSubmenuOpened())
+          menu->unhighlightItem();
       }
       break;
 
     case JM_BUTTONRELEASED:
       if (menu) {
-	if (get_base(this)->is_processing)
-	  break;
+        if (get_base(this)->is_processing)
+          break;
 
-	// The item is highlighted and not opened (and the timer to open the submenu is stopped)
-	MenuItem* highlight = menu->getHighlightedItem();
-	if (highlight &&
-	    !highlight->hasSubmenuOpened() &&
-	    highlight->m_submenu_timer < 0) {
-	  menu->closeAll();
-	  highlight->executeClick();
-	}
+        // The item is highlighted and not opened (and the timer to open the submenu is stopped)
+        MenuItem* highlight = menu->getHighlightedItem();
+        if (highlight &&
+            !highlight->hasSubmenuOpened() &&
+            highlight->m_submenu_timer < 0) {
+          menu->closeAll();
+          highlight->executeClick();
+        }
       }
       break;
 
     case JM_KEYPRESSED:
       if (menu) {
-	MenuItem* selected;
+        MenuItem* selected;
 
-	if (get_base(this)->is_processing)
-	  break;
+        if (get_base(this)->is_processing)
+          break;
 
-	get_base(this)->was_clicked = false;
+        get_base(this)->was_clicked = false;
 
-	// Check for ALT+some underlined letter
-	if (((this->type == JI_MENUBOX) && (msg->any.shifts == 0 || // Inside menu-boxes we can use letters without Alt modifier pressed
-					    msg->any.shifts == KB_ALT_FLAG)) ||
-	    ((this->type == JI_MENUBAR) && (msg->any.shifts == KB_ALT_FLAG))) {
-	  selected = check_for_letter(menu, scancode_to_ascii(msg->key.scancode));
-	  if (selected) {
-	    menu->highlightItem(selected, true, true, true);
-	    return true;
-	  }
-	}
+        // Check for ALT+some underlined letter
+        if (((this->type == JI_MENUBOX) && (msg->any.shifts == 0 || // Inside menu-boxes we can use letters without Alt modifier pressed
+                                            msg->any.shifts == KB_ALT_FLAG)) ||
+            ((this->type == JI_MENUBAR) && (msg->any.shifts == KB_ALT_FLAG))) {
+          selected = check_for_letter(menu, scancode_to_ascii(msg->key.scancode));
+          if (selected) {
+            menu->highlightItem(selected, true, true, true);
+            return true;
+          }
+        }
 
-	// Highlight movement with keyboard
-	if (this->hasFocus()) {
-	  MenuItem* highlight = menu->getHighlightedItem();
-	  MenuItem* child_with_submenu_opened = NULL;
-	  JLink link;
-	  bool used = false;
+        // Highlight movement with keyboard
+        if (this->hasFocus()) {
+          MenuItem* highlight = menu->getHighlightedItem();
+          MenuItem* child_with_submenu_opened = NULL;
+          JLink link;
+          bool used = false;
 
-	  // Search a child with highlight or the submenu opened
-	  JI_LIST_FOR_EACH(menu->children, link) {
-	    Widget* child = (Widget*)link->data;
-	    if (child->type != JI_MENUITEM)
-	      continue;
+          // Search a child with highlight or the submenu opened
+          JI_LIST_FOR_EACH(menu->children, link) {
+            Widget* child = (Widget*)link->data;
+            if (child->type != JI_MENUITEM)
+              continue;
 
-	    if (static_cast<MenuItem*>(child)->hasSubmenuOpened())
-	      child_with_submenu_opened = static_cast<MenuItem*>(child);
-	  }
+            if (static_cast<MenuItem*>(child)->hasSubmenuOpened())
+              child_with_submenu_opened = static_cast<MenuItem*>(child);
+          }
 
-	  if (!highlight && child_with_submenu_opened)
-	    highlight = child_with_submenu_opened;
+          if (!highlight && child_with_submenu_opened)
+            highlight = child_with_submenu_opened;
 
-	  switch (msg->key.scancode) {
+          switch (msg->key.scancode) {
 
-	    case KEY_ESC:
-	      // In menu-bar
-	      if (this->type == JI_MENUBAR) {
-		if (highlight) {
-		  cancelMenuLoop();
-		  used = true;
-		}
-	      }
-	      // In menu-boxes
-	      else {
-		if (child_with_submenu_opened) {
-		  child_with_submenu_opened->closeSubmenu(true);
-		  used = true;
-		}
-		// Go to parent
-		else if (menu->m_menuitem) {
-		  // Just retrogress one parent-level
-		  menu->m_menuitem->closeSubmenu(true);
-		  used = true;
-		}
-	      }
-	      break;
-
-	    case KEY_UP:
+            case KEY_ESC:
               // In menu-bar
-	      if (this->type == JI_MENUBAR) {
-		if (child_with_submenu_opened)
-		  child_with_submenu_opened->closeSubmenu(true);
+              if (this->type == JI_MENUBAR) {
+                if (highlight) {
+                  cancelMenuLoop();
+                  used = true;
+                }
+              }
+              // In menu-boxes
+              else {
+                if (child_with_submenu_opened) {
+                  child_with_submenu_opened->closeSubmenu(true);
+                  used = true;
+                }
+                // Go to parent
+                else if (menu->m_menuitem) {
+                  // Just retrogress one parent-level
+                  menu->m_menuitem->closeSubmenu(true);
+                  used = true;
+                }
+              }
+              break;
+
+            case KEY_UP:
+              // In menu-bar
+              if (this->type == JI_MENUBAR) {
+                if (child_with_submenu_opened)
+                  child_with_submenu_opened->closeSubmenu(true);
               }
               // In menu-boxes
               else {
                 // Go to previous
                 highlight = find_previtem(menu, highlight);
-		menu->highlightItem(highlight, false, false, false);
+                menu->highlightItem(highlight, false, false, false);
               }
-	      used = true;
-	      break;
+              used = true;
+              break;
 
             case KEY_DOWN:
               // In menu-bar
-	      if (this->type == JI_MENUBAR) {
+              if (this->type == JI_MENUBAR) {
                 // Select the active menu
-		menu->highlightItem(highlight, true, true, true);
+                menu->highlightItem(highlight, true, true, true);
               }
               // In menu-boxes
               else {
                 // Go to next
                 highlight = find_nextitem(menu, highlight);
-		menu->highlightItem(highlight, false, false, false);
+                menu->highlightItem(highlight, false, false, false);
               }
-	      used = true;
-	      break;
+              used = true;
+              break;
 
-	    case KEY_LEFT:
+            case KEY_LEFT:
               // In menu-bar
-	      if (this->type == JI_MENUBAR) {
+              if (this->type == JI_MENUBAR) {
                 // Go to previous
                 highlight = find_previtem(menu, highlight);
-		menu->highlightItem(highlight, false, false, false);
+                menu->highlightItem(highlight, false, false, false);
               }
               // In menu-boxes
-	      else {
+              else {
                 // Go to parent
                 if (menu->m_menuitem) {
                   Widget* parent = menu->m_menuitem->parent->parent;
@@ -577,75 +577,75 @@ bool MenuBox::onProcessMessage(Message* msg)
 
                   // If the parent is the menu-bar
                   if (parent->type == JI_MENUBAR) {
-		    menu = static_cast<MenuBar*>(parent)->getMenu();
+                    menu = static_cast<MenuBar*>(parent)->getMenu();
                     MenuItem* menuitem = find_previtem(menu, menu->getHighlightedItem());
 
                     // Go to previous item in the parent
-		    menu->highlightItem(menuitem, false, true, true);
+                    menu->highlightItem(menuitem, false, true, true);
                   }
                   // If the parent isn't the menu-bar
                   else {
                     // Just retrogress one parent-level
-		    menu->m_menuitem->closeSubmenu(true);
-		  }
+                    menu->m_menuitem->closeSubmenu(true);
+                  }
                 }
-	      }
-	      used = true;
-	      break;
+              }
+              used = true;
+              break;
 
-	    case KEY_RIGHT:
+            case KEY_RIGHT:
               // In menu-bar
-	      if (this->type == JI_MENUBAR) {
+              if (this->type == JI_MENUBAR) {
                 // Go to next
                 highlight = find_nextitem(menu, highlight);
-		menu->highlightItem(highlight, false, false, false);
+                menu->highlightItem(highlight, false, false, false);
               }
               // In menu-boxes
               else {
                 // Enter in sub-menu
                 if ((highlight) && highlight->hasSubmenu()) {
-		  menu->highlightItem(highlight, true, true, true);
+                  menu->highlightItem(highlight, true, true, true);
                 }
                 // Go to parent
                 else if (menu->m_menuitem) {
                   // Get the root menu
-		  MenuBox* root = get_base_menubox(this);
-		  menu = root->getMenu();
+                  MenuBox* root = get_base_menubox(this);
+                  menu = root->getMenu();
 
                   // Go to the next item in the root
                   MenuItem* menuitem = find_nextitem(menu, menu->getHighlightedItem());
 
                   // Open the sub-menu
-		  menu->highlightItem(menuitem, false, true, true);
+                  menu->highlightItem(menuitem, false, true, true);
                 }
               }
-	      used = true;
-	      break;
+              used = true;
+              break;
 
-	    case KEY_ENTER:
-	    case KEY_ENTER_PAD:
-	      if (highlight)
-		menu->highlightItem(highlight, true, true, true);
-	      used = true;
-	      break;
-	  }
+            case KEY_ENTER:
+            case KEY_ENTER_PAD:
+              if (highlight)
+                menu->highlightItem(highlight, true, true, true);
+              used = true;
+              break;
+          }
 
-	  // Return true if we've already consumed the key.
-	  if (used) {
-	    return true;
-	  }
-	  // If the user presses the ALT key we close everything.
-	  else if (msg->key.scancode == KEY_ALT) {
-	    cancelMenuLoop();
-	  }
-	}
+          // Return true if we've already consumed the key.
+          if (used) {
+            return true;
+          }
+          // If the user presses the ALT key we close everything.
+          else if (msg->key.scancode == KEY_ALT) {
+            cancelMenuLoop();
+          }
+        }
       }
       break;
 
     default:
       if (msg->type == JM_CLOSE_POPUP) {
-	_jmanager_close_window(this->getManager(),
-			       static_cast<Frame*>(this->getRoot()), true);
+        _jmanager_close_window(this->getManager(),
+                               static_cast<Frame*>(this->getRoot()), true);
       }
       break;
 
@@ -697,8 +697,8 @@ bool MenuItem::onProcessMessage(Message* msg)
 
       // When a menu item receives the mouse, start a timer to open the submenu...
       if (isEnabled() && hasSubmenu()) {
-	// Start the timer to open the submenu...
-	startTimer();
+        // Start the timer to open the submenu...
+        startTimer();
       }
       break;
 
@@ -708,182 +708,182 @@ bool MenuItem::onProcessMessage(Message* msg)
 
       // Stop timer to open the popup
       if (m_submenu_timer >= 0) {
-	jmanager_remove_timer(m_submenu_timer);
-	m_submenu_timer = -1;
+        jmanager_remove_timer(m_submenu_timer);
+        m_submenu_timer = -1;
       }
       break;
 
     default:
       if (msg->type == JM_OPEN_MENUITEM) {
-	MenuBaseData* base = get_base(this);
-	JRect pos;
-	bool select_first = msg->user.a ? true: false;
+        MenuBaseData* base = get_base(this);
+        JRect pos;
+        bool select_first = msg->user.a ? true: false;
 
-	ASSERT(base != NULL);
-	ASSERT(base->is_processing);
-	ASSERT(hasSubmenu());
+        ASSERT(base != NULL);
+        ASSERT(base->is_processing);
+        ASSERT(hasSubmenu());
 
-	JRect old_pos = jwidget_get_rect(this->parent->parent);
+        JRect old_pos = jwidget_get_rect(this->parent->parent);
 
-	// New window and new menu-box
-	Frame* window = new Frame(false, NULL);
-	jwidget_add_hook(window, -1, window_msg_proc, NULL);
+        // New window and new menu-box
+        Frame* window = new Frame(false, NULL);
+        jwidget_add_hook(window, -1, window_msg_proc, NULL);
 
-	MenuBox* menubox = new MenuBox();
-	m_submenu_menubox = menubox;
+        MenuBox* menubox = new MenuBox();
+        m_submenu_menubox = menubox;
 
-	window->set_moveable(false); // Can't move the window
+        window->set_moveable(false); // Can't move the window
 
-	// Set children
-	menubox->setMenu(m_submenu);
-	window->addChild(menubox);
+        // Set children
+        menubox->setMenu(m_submenu);
+        window->addChild(menubox);
 
-	window->remap_window();
+        window->remap_window();
 
-	// Menubox position
-	pos = jwidget_get_rect(window);
+        // Menubox position
+        pos = jwidget_get_rect(window);
 
-	if (this->parent->parent->type == JI_MENUBAR) {
-	  jrect_moveto(pos,
-		       MID(0, this->rc->x1, JI_SCREEN_W-jrect_w(pos)),
-		       MID(0, this->rc->y2, JI_SCREEN_H-jrect_h(pos)));
-	}
-	else {
-	  int x_left = this->rc->x1-jrect_w(pos);
-	  int x_right = this->rc->x2;
-	  int x, y = this->rc->y1;
-	  struct jrect r1, r2;
-	  int s1, s2;
+        if (this->parent->parent->type == JI_MENUBAR) {
+          jrect_moveto(pos,
+                       MID(0, this->rc->x1, JI_SCREEN_W-jrect_w(pos)),
+                       MID(0, this->rc->y2, JI_SCREEN_H-jrect_h(pos)));
+        }
+        else {
+          int x_left = this->rc->x1-jrect_w(pos);
+          int x_right = this->rc->x2;
+          int x, y = this->rc->y1;
+          struct jrect r1, r2;
+          int s1, s2;
 
-	  r1.x1 = x_left = MID(0, x_left, JI_SCREEN_W-jrect_w(pos));
-	  r2.x1 = x_right = MID(0, x_right, JI_SCREEN_W-jrect_w(pos));
+          r1.x1 = x_left = MID(0, x_left, JI_SCREEN_W-jrect_w(pos));
+          r2.x1 = x_right = MID(0, x_right, JI_SCREEN_W-jrect_w(pos));
 
-	  r1.y1 = r2.y1 = y = MID(0, y, JI_SCREEN_H-jrect_h(pos));
+          r1.y1 = r2.y1 = y = MID(0, y, JI_SCREEN_H-jrect_h(pos));
 
-	  r1.x2 = r1.x1+jrect_w(pos);
-	  r1.y2 = r1.y1+jrect_h(pos);
-	  r2.x2 = r2.x1+jrect_w(pos);
-	  r2.y2 = r2.y1+jrect_h(pos);
+          r1.x2 = r1.x1+jrect_w(pos);
+          r1.y2 = r1.y1+jrect_h(pos);
+          r2.x2 = r2.x1+jrect_w(pos);
+          r2.y2 = r2.y1+jrect_h(pos);
 
-	  // Calculate both intersections
-	  s1 = jrect_intersect(&r1, old_pos);
-	  s2 = jrect_intersect(&r2, old_pos);
+          // Calculate both intersections
+          s1 = jrect_intersect(&r1, old_pos);
+          s2 = jrect_intersect(&r2, old_pos);
 
-	  if (!s2)
-	    x = x_right;	// Use the right because there aren't intersection with it
-	  else if (!s1)
-	    x = x_left;		// Use the left because there are not intersection
-	  else if (jrect_w(&r2)*jrect_h(&r2) <= jrect_w(&r1)*jrect_h(&r1))
-	    x = x_right;	        // Use the right because there are less intersection area
-	  else
-	    x = x_left;		// Use the left because there are less intersection area
+          if (!s2)
+            x = x_right;        // Use the right because there aren't intersection with it
+          else if (!s1)
+            x = x_left;         // Use the left because there are not intersection
+          else if (jrect_w(&r2)*jrect_h(&r2) <= jrect_w(&r1)*jrect_h(&r1))
+            x = x_right;                // Use the right because there are less intersection area
+          else
+            x = x_left;         // Use the left because there are less intersection area
 
-	  jrect_moveto(pos, x, y);
-	}
+          jrect_moveto(pos, x, y);
+        }
 
-	window->position_window(pos->x1, pos->y1);
-	jrect_free(pos);
+        window->position_window(pos->x1, pos->y1);
+        jrect_free(pos);
 
-	// Set the focus to the new menubox
-	jwidget_magnetic(menubox, true);
+        // Set the focus to the new menubox
+        jwidget_magnetic(menubox, true);
 
-	// Setup the highlight of the new menubox
-	if (select_first) {
-	  // Select the first child
-	  Widget* child;
-	  MenuItem* first_child = NULL;
-	  JLink link;
+        // Setup the highlight of the new menubox
+        if (select_first) {
+          // Select the first child
+          Widget* child;
+          MenuItem* first_child = NULL;
+          JLink link;
 
-	  JI_LIST_FOR_EACH(m_submenu->children, link) {
-	    child = (Widget*)link->data;
+          JI_LIST_FOR_EACH(m_submenu->children, link) {
+            child = (Widget*)link->data;
 
-	    if (child->type != JI_MENUITEM)
-	      continue;
+            if (child->type != JI_MENUITEM)
+              continue;
 
-	    if (child->isEnabled()) {
-	      first_child = static_cast<MenuItem*>(child);
-	      break;
-	    }
-	  }
+            if (child->isEnabled()) {
+              first_child = static_cast<MenuItem*>(child);
+              break;
+            }
+          }
 
-	  if (first_child)
-	    m_submenu->highlightItem(first_child, false, false, false);
-	  else
-	    m_submenu->unhighlightItem();
-	}
-	else
-	  m_submenu->unhighlightItem();
+          if (first_child)
+            m_submenu->highlightItem(first_child, false, false, false);
+          else
+            m_submenu->unhighlightItem();
+        }
+        else
+          m_submenu->unhighlightItem();
 
-	// Run in background
-	window->open_window_bg();
+        // Run in background
+        window->open_window_bg();
 
-	base->is_processing = false;
+        base->is_processing = false;
 
-	jrect_free(old_pos);
-	return true;
+        jrect_free(old_pos);
+        return true;
       }
       else if (msg->type == JM_CLOSE_MENUITEM) {
-	MenuBaseData* base = get_base(this);
-	Frame* window;
-	bool last_of_close_chain = (msg->user.a ? true: false);
+        MenuBaseData* base = get_base(this);
+        Frame* window;
+        bool last_of_close_chain = (msg->user.a ? true: false);
 
-	ASSERT(base != NULL);
-	ASSERT(base->is_processing);
+        ASSERT(base != NULL);
+        ASSERT(base->is_processing);
 
-	MenuBox* menubox = m_submenu_menubox;
-	m_submenu_menubox = NULL;
+        MenuBox* menubox = m_submenu_menubox;
+        m_submenu_menubox = NULL;
 
-	ASSERT(menubox != NULL);
+        ASSERT(menubox != NULL);
 
-	window = (Frame*)menubox->parent;
-	ASSERT(window && window->type == JI_FRAME);
+        window = (Frame*)menubox->parent;
+        ASSERT(window && window->type == JI_FRAME);
 
-	// Fetch the "menu" to avoid free it with 'jwidget_free()'
-	menubox->setMenu(NULL);
+        // Fetch the "menu" to avoid free it with 'jwidget_free()'
+        menubox->setMenu(NULL);
 
-	// Destroy the window
-	window->closeWindow(NULL);
+        // Destroy the window
+        window->closeWindow(NULL);
 
-	// Set the focus to this menu-box of this menu-item
-	if (base->close_all)
-	  jmanager_free_focus();
-	else
-	  jmanager_set_focus(this->parent->parent);
+        // Set the focus to this menu-box of this menu-item
+        if (base->close_all)
+          jmanager_free_focus();
+        else
+          jmanager_set_focus(this->parent->parent);
 
-	// Is not necessary to free this window because it's
-	// automatically destroyed by the manager
-	// ... jwidget_free(window);
+        // Is not necessary to free this window because it's
+        // automatically destroyed by the manager
+        // ... jwidget_free(window);
 
-	if (last_of_close_chain) {
-	  base->close_all = false;
-	  base->is_processing = false;
-	}
+        if (last_of_close_chain) {
+          base->close_all = false;
+          base->is_processing = false;
+        }
 
-	// Stop timer to open the popup
-	stopTimer();
-	return true;
+        // Stop timer to open the popup
+        stopTimer();
+        return true;
       }
       else if (msg->type == JM_EXE_MENUITEM) {
-	onClick();
-	return true;
+        onClick();
+        return true;
       }
       break;
 
     case JM_TIMER:
       if (msg->timer.timer_id == m_submenu_timer) {
-	MenuBaseData* base = get_base(this);
+        MenuBaseData* base = get_base(this);
 
-	ASSERT(hasSubmenu());
+        ASSERT(hasSubmenu());
 
-	// Stop timer to open the popup
-	stopTimer();
+        // Stop timer to open the popup
+        stopTimer();
 
-	// If the submenu is closed, and we are not processing messages, open it
-	if (m_submenu_menubox == NULL && !base->is_processing)
-	  openSubmenu(false);
+        // If the submenu is closed, and we are not processing messages, open it
+        if (m_submenu_menubox == NULL && !base->is_processing)
+          openSubmenu(false);
       }
       break;
-  
+
   }
 
   return Widget::onProcessMessage(msg);
@@ -934,15 +934,15 @@ static MenuBox* get_base_menubox(Widget* widget)
     // We are in a menubox
     if (widget->type == JI_MENUBOX || widget->type == JI_MENUBAR) {
       if (static_cast<MenuBox*>(widget)->getBase()) {
-	return static_cast<MenuBox*>(widget);
+        return static_cast<MenuBox*>(widget);
       }
       else {
-	Menu* menu = static_cast<MenuBox*>(widget)->getMenu();
-	
-	ASSERT(menu != NULL);
-	ASSERT(menu->getOwnerMenuItem() != NULL);
+        Menu* menu = static_cast<MenuBox*>(widget)->getMenu();
 
-	widget = menu->getOwnerMenuItem();
+        ASSERT(menu != NULL);
+        ASSERT(menu->getOwnerMenuItem() != NULL);
+
+        widget = menu->getOwnerMenuItem();
       }
     }
     // We are in a menuitem
@@ -995,8 +995,8 @@ void Menu::highlightItem(MenuItem* menuitem, bool click, bool open_submenu, bool
     if (child != menuitem) {
       // Is it?
       if (static_cast<MenuItem*>(child)->isHighlighted()) {
-	static_cast<MenuItem*>(child)->setHighlighted(false);
-	child->invalidate();
+        static_cast<MenuItem*>(child)->setHighlighted(false);
+        child->invalidate();
       }
     }
   }
@@ -1010,18 +1010,18 @@ void Menu::highlightItem(MenuItem* menuitem, bool click, bool open_submenu, bool
     // Highlight parents
     if (menu->getOwnerMenuItem() != NULL) {
       static_cast<Menu*>(menu->getOwnerMenuItem()->parent)
-	->highlightItem(menu->getOwnerMenuItem(), false, false, false);
+        ->highlightItem(menu->getOwnerMenuItem(), false, false, false);
     }
 
     // Open submenu of the menitem
     if (menuitem->hasSubmenu()) {
       if (open_submenu) {
-	// If the submenu is closed, open it
-	if (!menuitem->hasSubmenuOpened())
-	  menuitem->openSubmenu(select_first_child);
+        // If the submenu is closed, open it
+        if (!menuitem->hasSubmenuOpened())
+          menuitem->openSubmenu(select_first_child);
 
-	// The mouse was clicked
-	get_base(menuitem)->was_clicked = true;
+        // The mouse was clicked
+        get_base(menuitem)->was_clicked = true;
       }
     }
     // Execute menuitem action
@@ -1058,11 +1058,11 @@ void MenuItem::openSubmenu(bool select_first)
     JI_LIST_FOR_EACH(menu->children, link) {
       child = reinterpret_cast<Widget*>(link->data);
       if (child->type != JI_MENUITEM)
-	continue;
+        continue;
 
       MenuItem* childMenuItem = static_cast<MenuItem*>(child);
       if (childMenuItem != this && childMenuItem->hasSubmenuOpened()) {
-	childMenuItem->closeSubmenu(false);
+        childMenuItem->closeSubmenu(false);
       }
     }
   }
@@ -1079,7 +1079,7 @@ void MenuItem::openSubmenu(bool select_first)
 
   // Reset flags
   base->close_all = false;
-  base->is_processing = true;  
+  base->is_processing = true;
 
   // We need to add a filter of the JM_BUTTONPRESSED to intercept
   // clicks outside the menu (and close all the hierarchy in that
@@ -1108,7 +1108,7 @@ void MenuItem::closeSubmenu(bool last_of_close_chain)
     child = reinterpret_cast<Widget*>(link->data);
     if (child->type != JI_MENUITEM)
       continue;
-    
+
     if (static_cast<MenuItem*>(child)->hasSubmenuOpened())
       static_cast<MenuItem*>(child)->closeSubmenu(false);
   }
@@ -1177,11 +1177,11 @@ void Menu::closeAll()
     JI_LIST_FOR_EACH(menu->children, link) {
       Widget* child = reinterpret_cast<Widget*>(link->data);
       if (child->type != JI_MENUITEM)
-	continue;
+        continue;
 
       menuitem = static_cast<MenuItem*>(child);
       if (menuitem->hasSubmenuOpened())
-	menuitem->closeSubmenu(true);
+        menuitem->closeSubmenu(true);
     }
   }
 
@@ -1241,7 +1241,7 @@ static MenuItem* check_for_letter(Menu* menu, int ascii)
       for (int c=0; menuitem->getText()[c]; c++)
         if ((menuitem->getText()[c] == '&') && (menuitem->getText()[c+1] != '&'))
           if (tolower(ascii) == tolower(menuitem->getText()[c+1]))
-	    return menuitem;
+            return menuitem;
   }
   return NULL;
 }
@@ -1262,11 +1262,11 @@ static MenuItem* check_for_accel(Menu* menu, Message* msg)
     }
     else if (menuitem->getAccel()) {
       if ((menuitem->isEnabled()) &&
-	  (jaccel_check(menuitem->getAccel(),
-			msg->any.shifts,
-			msg->key.ascii,
-			msg->key.scancode)))
-	return menuitem;
+          (jaccel_check(menuitem->getAccel(),
+                        msg->any.shifts,
+                        msg->key.ascii,
+                        msg->key.scancode)))
+        return menuitem;
     }
   }
   return NULL;

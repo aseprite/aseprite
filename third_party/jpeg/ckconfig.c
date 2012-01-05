@@ -32,17 +32,17 @@
  * undefine the corresponding HAVE_xxx symbol.
  */
 
-#define HAVE_STDDEF_H		/* replace 'define' by 'undef' if error here */
-#ifdef HAVE_STDDEF_H		/* next line will be skipped if you undef... */
+#define HAVE_STDDEF_H           /* replace 'define' by 'undef' if error here */
+#ifdef HAVE_STDDEF_H            /* next line will be skipped if you undef... */
 #include <stddef.h>
 #endif
 
-#define HAVE_STDLIB_H		/* same thing for stdlib.h */
+#define HAVE_STDLIB_H           /* same thing for stdlib.h */
 #ifdef HAVE_STDLIB_H
 #include <stdlib.h>
 #endif
 
-#include <stdio.h>		/* If you ain't got this, you ain't got C. */
+#include <stdio.h>              /* If you ain't got this, you ain't got C. */
 
 /* We have to see if your string functions are defined by
  * strings.h (old BSD convention) or string.h (everybody else).
@@ -63,7 +63,7 @@
  * on the size_t test below, try defining NEED_SYS_TYPES_H.
  */
 
-#undef NEED_SYS_TYPES_H		/* start by assuming we don't need it */
+#undef NEED_SYS_TYPES_H         /* start by assuming we don't need it */
 #ifdef NEED_SYS_TYPES_H
 #include <sys/types.h>
 #endif
@@ -81,13 +81,13 @@
  * "typedef unsigned int size_t;".
  */
 
-#undef NEED_SPECIAL_INCLUDE	/* assume we DON'T need it, for starters */
+#undef NEED_SPECIAL_INCLUDE     /* assume we DON'T need it, for starters */
 
 #ifdef NEED_SPECIAL_INCLUDE
 #include <someincludefile.h>
 #endif
 
-typedef size_t my_size_t;	/* The payoff: do we have size_t now? */
+typedef size_t my_size_t;       /* The payoff: do we have size_t now? */
 
 
 /* The next question is whether your compiler supports ANSI-style function
@@ -102,7 +102,7 @@ typedef size_t my_size_t;	/* The payoff: do we have size_t now? */
 #ifdef HAVE_PROTOTYPES
 int testfunction (int arg1, int * arg2); /* check prototypes */
 
-struct methods_struct {		/* check method-pointer declarations */
+struct methods_struct {         /* check method-pointer declarations */
   int (*error_exit) (char *msgtext);
   int (*trace_message) (char *msgtext);
   int (*another_method) (void);
@@ -113,7 +113,7 @@ int testfunction (int arg1, int * arg2) /* check definitions */
   return arg2[arg1];
 }
 
-int test2function (void)	/* check void arg list */
+int test2function (void)        /* check void arg list */
 {
   return 0;
 }
@@ -152,14 +152,14 @@ unsigned short un_short;
 
 #ifdef HAVE_VOID
 /* Caution: a C++ compiler will insist on complete prototypes */
-typedef void * void_ptr;	/* check void * */
-#ifdef HAVE_PROTOTYPES		/* check ptr to function returning void */
+typedef void * void_ptr;        /* check void * */
+#ifdef HAVE_PROTOTYPES          /* check ptr to function returning void */
 typedef void (*void_func) (int a, int b);
 #else
 typedef void (*void_func) ();
 #endif
 
-#ifdef HAVE_PROTOTYPES		/* check void function result */
+#ifdef HAVE_PROTOTYPES          /* check void function result */
 void test3function (void_ptr arg1, void_func arg2)
 #else
 void test3function (arg1, arg2)
@@ -169,7 +169,7 @@ void test3function (arg1, arg2)
 {
   char * locptr = (char *) arg1; /* check casting to and from void * */
   arg1 = (void *) locptr;
-  (*arg2) (1, 2);		/* check call of fcn returning void */
+  (*arg2) (1, 2);               /* check call of fcn returning void */
 }
 #endif
 
@@ -246,14 +246,14 @@ int is_char_signed (arg)
      int arg;
 #endif
 {
-  if (arg == 189) {		/* expected result for unsigned char */
-    return 0;			/* type char is unsigned */
+  if (arg == 189) {             /* expected result for unsigned char */
+    return 0;                   /* type char is unsigned */
   }
-  else if (arg != -67) {	/* expected result for signed char */
+  else if (arg != -67) {        /* expected result for signed char */
     printf("Hmm, it seems 'char' is not eight bits wide on your machine.\n");
     printf("I fear the JPEG software will not work at all.\n\n");
   }
-  return 1;			/* assume char is signed otherwise */
+  return 1;                     /* assume char is signed otherwise */
 }
 
 
@@ -267,18 +267,18 @@ int is_shifting_signed (arg)
 {
   long res = arg >> 4;
 
-  if (res == -0x7F7E80CL) {	/* expected result for signed shift */
-    return 1;			/* right shift is signed */
+  if (res == -0x7F7E80CL) {     /* expected result for signed shift */
+    return 1;                   /* right shift is signed */
   }
   /* see if unsigned-shift hack will fix it. */
   /* we can't just test exact value since it depends on width of long... */
   res |= (~0L) << (32-4);
-  if (res == -0x7F7E80CL) {	/* expected result now? */
-    return 0;			/* right shift is unsigned */
+  if (res == -0x7F7E80CL) {     /* expected result now? */
+    return 0;                   /* right shift is unsigned */
   }
   printf("Right shift isn't acting as I expect it to.\n");
   printf("I fear the JPEG software will not work at all.\n\n");
-  return 0;			/* try it with unsigned anyway */
+  return 0;                     /* try it with unsigned anyway */
 }
 
 
@@ -369,15 +369,15 @@ int main (argc, argv)
     fprintf(outfile, "#define RIGHT_SHIFT_IS_UNSIGNED\n");
   fprintf(outfile, "\n#endif /* JPEG_INTERNALS */\n");
   fprintf(outfile, "\n#ifdef JPEG_CJPEG_DJPEG\n\n");
-  fprintf(outfile, "#define BMP_SUPPORTED		/* BMP image file format */\n");
-  fprintf(outfile, "#define GIF_SUPPORTED		/* GIF image file format */\n");
-  fprintf(outfile, "#define PPM_SUPPORTED		/* PBMPLUS PPM/PGM image file format */\n");
-  fprintf(outfile, "#undef RLE_SUPPORTED		/* Utah RLE image file format */\n");
-  fprintf(outfile, "#define TARGA_SUPPORTED		/* Targa image file format */\n\n");
-  fprintf(outfile, "#undef TWO_FILE_COMMANDLINE	/* You may need this on non-Unix systems */\n");
-  fprintf(outfile, "#undef NEED_SIGNAL_CATCHER	/* Define this if you use jmemname.c */\n");
+  fprintf(outfile, "#define BMP_SUPPORTED               /* BMP image file format */\n");
+  fprintf(outfile, "#define GIF_SUPPORTED               /* GIF image file format */\n");
+  fprintf(outfile, "#define PPM_SUPPORTED               /* PBMPLUS PPM/PGM image file format */\n");
+  fprintf(outfile, "#undef RLE_SUPPORTED                /* Utah RLE image file format */\n");
+  fprintf(outfile, "#define TARGA_SUPPORTED             /* Targa image file format */\n\n");
+  fprintf(outfile, "#undef TWO_FILE_COMMANDLINE /* You may need this on non-Unix systems */\n");
+  fprintf(outfile, "#undef NEED_SIGNAL_CATCHER  /* Define this if you use jmemname.c */\n");
   fprintf(outfile, "#undef DONT_USE_B_MODE\n");
-  fprintf(outfile, "/* #define PROGRESS_REPORT */	/* optional */\n");
+  fprintf(outfile, "/* #define PROGRESS_REPORT */       /* optional */\n");
   fprintf(outfile, "\n#endif /* JPEG_CJPEG_DJPEG */\n");
 
   /* Close the jconfig.h file */

@@ -489,4 +489,3 @@ typedef int sig_atomic_t;
 #define ZERO_NULL 0
 
 #endif /* __SETUP_ONCE_H */
-

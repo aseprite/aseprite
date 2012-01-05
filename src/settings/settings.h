@@ -84,7 +84,7 @@ public:
   // Tools settings
 
   virtual IToolSettings* getToolSettings(tools::Tool* tool) = 0;
-  
+
 };
 
 // Tool's settings
@@ -125,4 +125,3 @@ public:
 };
 
 #endif
-

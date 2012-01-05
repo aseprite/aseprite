@@ -77,9 +77,9 @@ public:
   virtual void getCels(CelList& cels) = 0;
 
 private:
-  std::string m_name;		// layer name
-  Sprite* m_sprite;		// owner of the layer
-  LayerFolder* m_parent;	// parent layer
+  std::string m_name;           // layer name
+  Sprite* m_sprite;             // owner of the layer
+  LayerFolder* m_parent;        // parent layer
   unsigned short m_flags;
 
   // Disable assigment
@@ -151,7 +151,7 @@ private:
 };
 
 LayerImage* layer_new_flatten_copy(Sprite* dst_sprite, const Layer* src_layer,
-				   int x, int y, int w, int h, int frmin, int frmax);
+                                   int x, int y, int w, int h, int frmin, int frmax);
 
 void layer_render(const Layer* layer, Image *image, int x, int y, int frame);
 

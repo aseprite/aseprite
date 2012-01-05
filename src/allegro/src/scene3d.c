@@ -1,6 +1,6 @@
-/*         ______   ___    ___ 
- *        /\  _  \ /\_ \  /\_ \ 
- *        \ \ \L\ \\//\ \ \//\ \      __     __   _ __   ___ 
+/*         ______   ___    ___
+ *        /\  _  \ /\_ \  /\_ \
+ *        \ \ \L\ \\//\ \ \//\ \      __     __   _ __   ___
  *         \ \  __ \ \ \ \  \ \ \   /'__`\ /'_ `\/\`'__\/ __`\
  *          \ \ \/\ \ \_\ \_ \_\ \_/\  __//\ \L\ \ \ \//\ \L\ \
  *           \ \_\ \_\/\____\/\____\ \____\ \____ \ \_\\ \____/
@@ -11,8 +11,8 @@
  *      The 3D scene renderer.
  *
  *      By Calin Andrian.
- * 
- *	Merging into Allegro and API changes by Bertrand Coconnier.
+ *
+ *      Merging into Allegro and API changes by Bertrand Coconnier.
  *
  *      See readme.txt for copyright information.
  */
@@ -28,8 +28,8 @@
 #define HASH_NUM 256
 /* each part is made of 2^HASH_SHIFT lines */
 #define HASH_SHIFT 3
-/* Consequently, scanline sorting algorithm can handle up to 
-   HASH_NUM * 2^HASH_SHIFT lines 
+/* Consequently, scanline sorting algorithm can handle up to
+   HASH_NUM * 2^HASH_SHIFT lines
  */
 
 static POLYGON_EDGE *scene_edge = NULL, *scene_inact;
@@ -79,7 +79,7 @@ int create_scene(int nedge, int npoly)
       hash = _AL_MALLOC(HASH_NUM * sizeof(POLYGON_EDGE*));
       if (!hash) {
          _AL_FREE(scene_edge);
-	 _AL_FREE(scene_poly);
+         _AL_FREE(scene_poly);
          return -3;
       }
    }
@@ -148,16 +148,16 @@ static POLYGON_EDGE *_add_edge_hash(POLYGON_EDGE *list, POLYGON_EDGE *edge, int 
 
    if (sort_by_x) {
       while ((pos) && (pos->x < edge->x)) {
-	 prev = pos;
-	 pos = pos->next;
+         prev = pos;
+         pos = pos->next;
       }
    }
    else {
       int i;
       int empty = 1, first = 1;
-   
+
       i = edge->top >> HASH_SHIFT;
-      
+
       ASSERT(i < HASH_NUM);
 
       if (hash[i]) {
@@ -165,23 +165,23 @@ static POLYGON_EDGE *_add_edge_hash(POLYGON_EDGE *list, POLYGON_EDGE *edge, int 
          prev = pos->prev;
          empty = 0;
       }
-   
+
       while ((pos) && (pos->top < edge->top)) {
          prev = pos;
          pos = pos->next;
          first = 0;
       }
-      
+
       if (first || empty)
          hash[i] = edge;
    }
-   
+
    edge->next = pos;
    edge->prev = prev;
-   
+
    if (pos)
       pos->prev = edge;
-      
+
    if (prev) {
       prev->next = edge;
       return list;
@@ -197,7 +197,7 @@ static POLYGON_EDGE *_add_edge_hash(POLYGON_EDGE *list, POLYGON_EDGE *edge, int 
  *  space (before projection) for perspective projection:
  *    Axz + Byz + Cz + D = 0
  *  This routine changed by Bertrand Coconnier in order to handle coincident
- *  vertices in the polygon (According to Ben Davis' hack in poly3d.c). 
+ *  vertices in the polygon (According to Ben Davis' hack in poly3d.c).
  *  Now the function computes the polygon area in planes xy, yz, and xz in
  *  order to obtain the polygon normal. Plane equation coefficients are
  *  then computed.
@@ -215,11 +215,11 @@ static void poly_plane(V3D *vtx[], POLYGON_INFO *poly, int vc)
    float z = fixtof(vtx[vc-1]->z);
    float x = fixtof(vtx[vc-1]->x) * z; /* "un-persp-projection" */
    float y = fixtof(vtx[vc-1]->y) * z; /* "un-persp-projection" */
-   
+
    poly->a = (z0 + z) * (y - y0); /* area in plane yz */
    poly->b = (x0 + x) * (z - z0); /* area in plane zx */
    poly->c = (y0 + y) * (x - x0); /* area in plane xy */
-   
+
    for(i=1; i<vc; i++) {
       z = fixtof(vtx[i]->z);
       x = fixtof(vtx[i]->x) * z;
@@ -263,11 +263,11 @@ static void poly_plane_f(V3D_f *vtx[], POLYGON_INFO *poly, int vc)
    float z = vtx[vc-1]->z;
    float x = vtx[vc-1]->x * z;
    float y = vtx[vc-1]->y * z;
-   
+
    poly->a = (z0 + z) * (y - y0);
    poly->b = (x0 + x) * (z - z0);
    poly->c = (y0 + y) * (x - x0);
-   
+
    for(i=1; i<vc; i++) {
       z = vtx[i]->z;
       x = vtx[i]->x * z;
@@ -339,7 +339,7 @@ static void init_poly(int type, POLYGON_INFO *poly)
       INTERP_Z | INTERP_THRU | INTERP_TRANS,
       INTERP_Z | INTERP_THRU | INTERP_TRANS
    };
-   
+
    poly->alt_drawer = _optim_alternative_drawer;
    poly->inside = 0;
 
@@ -355,7 +355,7 @@ static void init_poly(int type, POLYGON_INFO *poly)
 
    if (bitmap_color_depth(scene_bmp) == 8) {
       poly->flags &= ~INTERP_BLEND;
-   } 
+   }
    else {
       if (poly->flags & INTERP_BLEND) {
          poly->b15 = _blender_col_15;
@@ -433,8 +433,8 @@ int scene_polygon3d(int type, BITMAP *texture, int vc, V3D *vtx[])
 
       if (_fill_3d_edge_structure(edge, v1, v2, poly->flags, scene_bmp)) {
          edge->poly = poly;
-	 scene_inact = _add_edge_hash(scene_inact, edge, FALSE);
-	 edge++;
+         scene_inact = _add_edge_hash(scene_inact, edge, FALSE);
+         edge++;
          scene_nedge++;
       }
    }
@@ -478,8 +478,8 @@ int scene_polygon3d_f(int type, BITMAP *texture, int vc, V3D_f *vtx[])
 
       if (_fill_3d_edge_structure_f(edge, v1, v2, poly->flags, scene_bmp)) {
          edge->poly = poly;
-	 scene_inact = _add_edge_hash(scene_inact, edge, FALSE);
-	 edge++;
+         scene_inact = _add_edge_hash(scene_inact, edge, FALSE);
+         edge++;
          scene_nedge++;
       }
    }
@@ -542,7 +542,7 @@ static void scene_segment(POLYGON_EDGE *e01, POLYGON_EDGE *e02,
 
    if (flags & INTERP_FLAT) {
       info->c = poly->color;
-   } 
+   }
    else {
       if (flags & INTERP_1COL) {
          info->dc = fixdiv(dat2->c - dat1->c, width);
@@ -595,7 +595,7 @@ static void scene_segment(POLYGON_EDGE *e01, POLYGON_EDGE *e02,
       info->du = info->dfu * z1;
       info->dv = info->dfv * z1;
       drawer = poly->alt_drawer;
-   } 
+   }
    else
       drawer = poly->drawer;
 
@@ -616,7 +616,7 @@ static void scene_segment(POLYGON_EDGE *e01, POLYGON_EDGE *e02,
       }
       else
          scene_bmp->vtable->hfill(scene_bmp, x, scene_y, x+w-1, poly->color);
-   } 
+   }
    else {
       int dx = x * BYTES_PER_PIXEL(bitmap_color_depth(scene_bmp));
       if (flags & INTERP_ZBUF)
@@ -679,7 +679,7 @@ void render_scene(void)
 
    ASSERT(scene_maxedge > 0);
    ASSERT(scene_maxpoly > 0);
-   
+
    scene_cmap = color_map;
    scene_alpha = _blender_alpha;
    solid_mode();
@@ -702,10 +702,10 @@ void render_scene(void)
       /* check for newly active edges */
       edge = scene_inact;
       while ((edge) && (edge->top == scene_y)) {
-	 POLYGON_EDGE *next_edge = edge->next;
-	 scene_inact = _remove_edge(scene_inact, edge);
-	 active_edges = _add_edge_hash(active_edges, edge, TRUE);
-	 edge = next_edge;
+         POLYGON_EDGE *next_edge = edge->next;
+         scene_inact = _remove_edge(scene_inact, edge);
+         active_edges = _add_edge_hash(active_edges, edge, TRUE);
+         edge = next_edge;
       }
 
       /* no edges on this line */
@@ -725,8 +725,8 @@ void render_scene(void)
             POLYGON_INFO *prev = NULL;
 
             poly->left_edge = edge;
-	    poly->right_edge = NULL;
-	    
+            poly->right_edge = NULL;
+
             /* find its place in the list */
             while (pos && far_z(scene_y, edge, pos)) {
                prev = pos;
@@ -740,14 +740,14 @@ void render_scene(void)
             poly->next = pos;
             poly->prev = prev;
             if (pos) pos->prev = poly;
-            if (prev) 
-	       prev->next = poly;
+            if (prev)
+               prev->next = poly;
             else {
                start_edge = edge;
                active_poly = poly;
             }
-         } 
-	 else {
+         }
+         else {
             poly->right_edge = edge;
             /* poly ends here. Was it visible ? */
             if (scene_trans_seg(start_edge, edge, poly, active_poly)) {
@@ -758,10 +758,10 @@ void render_scene(void)
                }
             }
             /* unlink */
-            if (poly->next) 
-	       poly->next->prev = poly->prev;
+            if (poly->next)
+               poly->next->prev = poly->prev;
             if (poly->prev)
-	       poly->prev->next = poly->next;
+               poly->prev->next = poly->next;
             else
                active_poly = poly->next;
          }
@@ -774,38 +774,38 @@ void render_scene(void)
       active_edges = NULL;
 
       while (edge) {
-	 POLYGON_EDGE *prev_edge = edge->prev;
-	 if (scene_y < edge->bottom) {
+         POLYGON_EDGE *prev_edge = edge->prev;
+         if (scene_y < edge->bottom) {
             POLYGON_SEGMENT *dat = &edge->dat;
             int flags = edge->poly->flags;
 
-	    edge->x += edge->dx;
+            edge->x += edge->dx;
             dat->z += dat->dz;
 
-	    if (!(flags & INTERP_FLAT)) {
-	       if (flags & INTERP_1COL)
-	          dat->c += dat->dc;
+            if (!(flags & INTERP_FLAT)) {
+               if (flags & INTERP_1COL)
+                  dat->c += dat->dc;
 
                if (flags & INTERP_3COL) {
-	          dat->r += dat->dr;
-	          dat->g += dat->dg;
-	          dat->b += dat->db;
-	       }
+                  dat->r += dat->dr;
+                  dat->g += dat->dg;
+                  dat->b += dat->db;
+               }
 
-	       if (flags & INTERP_FIX_UV) {
-	          dat->u += dat->du;
-	          dat->v += dat->dv;
-	       }
+               if (flags & INTERP_FIX_UV) {
+                  dat->u += dat->du;
+                  dat->v += dat->dv;
+               }
 
-	       if (flags & INTERP_FLOAT_UV) {
-	          dat->fu += dat->dfu;
-	          dat->fv += dat->dfv;
-	       }
-	    }
+               if (flags & INTERP_FLOAT_UV) {
+                  dat->fu += dat->dfu;
+                  dat->fv += dat->dfv;
+               }
+            }
 
             active_edges = _add_edge_hash(active_edges, edge, TRUE);
-	 }
-	 edge = prev_edge;
+         }
+         edge = prev_edge;
       }
    }
 

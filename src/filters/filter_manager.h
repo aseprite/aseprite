@@ -59,7 +59,7 @@ public:
   // the filter). You must increment all your internal source and
   // destination address pointers one pixel without applying the
   // filter.
-  // 
+  //
   // This method is used to skip non-selected pixels (when the
   // selection is actived).
   virtual bool skipPixel() = 0;

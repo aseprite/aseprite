@@ -21,53 +21,53 @@
 ; Based on code contributed by Ge' Weijers.
 ;
 
-JMEMDOSA_TXT	segment byte public 'CODE'
+JMEMDOSA_TXT    segment byte public 'CODE'
 
-		assume	cs:JMEMDOSA_TXT
+                assume  cs:JMEMDOSA_TXT
 
-		public	_jdos_open
-		public	_jdos_close
-		public	_jdos_seek
-		public	_jdos_read
-		public	_jdos_write
-		public	_jxms_getdriver
-		public	_jxms_calldriver
-		public	_jems_available
-		public	_jems_calldriver
+                public  _jdos_open
+                public  _jdos_close
+                public  _jdos_seek
+                public  _jdos_read
+                public  _jdos_write
+                public  _jxms_getdriver
+                public  _jxms_calldriver
+                public  _jems_available
+                public  _jems_calldriver
 
 ;
 ; short far jdos_open (short far * handle, char far * filename)
 ;
 ; Create and open a temporary file
 ;
-_jdos_open	proc	far
-		push	bp			; linkage
-		mov 	bp,sp
-		push	si			; save all registers for safety
-		push	di
-		push	bx
-		push	cx
-		push	dx
-		push	es
-		push	ds
-		mov	cx,0			; normal file attributes
-		lds	dx,dword ptr [bp+10]	; get filename pointer
-		mov	ah,3ch			; create file
-		int	21h
-		jc	open_err		; if failed, return error code
-		lds	bx,dword ptr [bp+6]	; get handle pointer
-		mov	word ptr [bx],ax	; save the handle
-		xor	ax,ax			; return zero for OK
-open_err:	pop	ds			; restore registers and exit
-		pop	es
-		pop	dx
-		pop	cx
-		pop	bx
-		pop	di
-		pop	si
-		pop 	bp
-		ret
-_jdos_open	endp
+_jdos_open      proc    far
+                push    bp                      ; linkage
+                mov     bp,sp
+                push    si                      ; save all registers for safety
+                push    di
+                push    bx
+                push    cx
+                push    dx
+                push    es
+                push    ds
+                mov     cx,0                    ; normal file attributes
+                lds     dx,dword ptr [bp+10]    ; get filename pointer
+                mov     ah,3ch                  ; create file
+                int     21h
+                jc      open_err                ; if failed, return error code
+                lds     bx,dword ptr [bp+6]     ; get handle pointer
+                mov     word ptr [bx],ax        ; save the handle
+                xor     ax,ax                   ; return zero for OK
+open_err:       pop     ds                      ; restore registers and exit
+                pop     es
+                pop     dx
+                pop     cx
+                pop     bx
+                pop     di
+                pop     si
+                pop     bp
+                ret
+_jdos_open      endp
 
 
 ;
@@ -75,31 +75,31 @@ _jdos_open	endp
 ;
 ; Close the file handle
 ;
-_jdos_close	proc	far
-		push	bp			; linkage
-		mov 	bp,sp
-		push	si			; save all registers for safety
-		push	di
-		push	bx
-		push	cx
-		push	dx
-		push	es
-		push	ds
-		mov	bx,word ptr [bp+6]	; file handle
-		mov	ah,3eh			; close file
-		int	21h
-		jc	close_err		; if failed, return error code
-		xor	ax,ax			; return zero for OK
-close_err:	pop	ds			; restore registers and exit
-		pop	es
-		pop	dx
-		pop	cx
-		pop	bx
-		pop	di
-		pop	si
-		pop 	bp
-		ret
-_jdos_close	endp
+_jdos_close     proc    far
+                push    bp                      ; linkage
+                mov     bp,sp
+                push    si                      ; save all registers for safety
+                push    di
+                push    bx
+                push    cx
+                push    dx
+                push    es
+                push    ds
+                mov     bx,word ptr [bp+6]      ; file handle
+                mov     ah,3eh                  ; close file
+                int     21h
+                jc      close_err               ; if failed, return error code
+                xor     ax,ax                   ; return zero for OK
+close_err:      pop     ds                      ; restore registers and exit
+                pop     es
+                pop     dx
+                pop     cx
+                pop     bx
+                pop     di
+                pop     si
+                pop     bp
+                ret
+_jdos_close     endp
 
 
 ;
@@ -107,33 +107,33 @@ _jdos_close	endp
 ;
 ; Set file position
 ;
-_jdos_seek	proc	far
-		push	bp			; linkage
-		mov 	bp,sp
-		push	si			; save all registers for safety
-		push	di
-		push	bx
-		push	cx
-		push	dx
-		push	es
-		push	ds
-		mov	bx,word ptr [bp+6]	; file handle
-		mov	dx,word ptr [bp+8]	; LS offset
-		mov	cx,word ptr [bp+10]	; MS offset
-		mov	ax,4200h		; absolute seek
-		int	21h
-		jc	seek_err		; if failed, return error code
-		xor	ax,ax			; return zero for OK
-seek_err:	pop	ds			; restore registers and exit
-		pop	es
-		pop	dx
-		pop	cx
-		pop	bx
-		pop	di
-		pop	si
-		pop 	bp
-		ret
-_jdos_seek	endp
+_jdos_seek      proc    far
+                push    bp                      ; linkage
+                mov     bp,sp
+                push    si                      ; save all registers for safety
+                push    di
+                push    bx
+                push    cx
+                push    dx
+                push    es
+                push    ds
+                mov     bx,word ptr [bp+6]      ; file handle
+                mov     dx,word ptr [bp+8]      ; LS offset
+                mov     cx,word ptr [bp+10]     ; MS offset
+                mov     ax,4200h                ; absolute seek
+                int     21h
+                jc      seek_err                ; if failed, return error code
+                xor     ax,ax                   ; return zero for OK
+seek_err:       pop     ds                      ; restore registers and exit
+                pop     es
+                pop     dx
+                pop     cx
+                pop     bx
+                pop     di
+                pop     si
+                pop     bp
+                ret
+_jdos_seek      endp
 
 
 ;
@@ -141,37 +141,37 @@ _jdos_seek	endp
 ;
 ; Read from file
 ;
-_jdos_read	proc	far
-		push	bp			; linkage
-		mov 	bp,sp
-		push	si			; save all registers for safety
-		push	di
-		push	bx
-		push	cx
-		push	dx
-		push	es
-		push	ds
-		mov	bx,word ptr [bp+6]	; file handle
-		lds	dx,dword ptr [bp+8]	; buffer address
-		mov	cx,word ptr [bp+12]	; number of bytes
-		mov	ah,3fh			; read file
-		int	21h
-		jc	read_err		; if failed, return error code
-		cmp	ax,word ptr [bp+12]	; make sure all bytes were read
-		je	read_ok
-		mov	ax,1			; else return 1 for not OK
-		jmp	short read_err
-read_ok:	xor	ax,ax			; return zero for OK
-read_err:	pop	ds			; restore registers and exit
-		pop	es
-		pop	dx
-		pop	cx
-		pop	bx
-		pop	di
-		pop	si
-		pop 	bp
-		ret
-_jdos_read	endp
+_jdos_read      proc    far
+                push    bp                      ; linkage
+                mov     bp,sp
+                push    si                      ; save all registers for safety
+                push    di
+                push    bx
+                push    cx
+                push    dx
+                push    es
+                push    ds
+                mov     bx,word ptr [bp+6]      ; file handle
+                lds     dx,dword ptr [bp+8]     ; buffer address
+                mov     cx,word ptr [bp+12]     ; number of bytes
+                mov     ah,3fh                  ; read file
+                int     21h
+                jc      read_err                ; if failed, return error code
+                cmp     ax,word ptr [bp+12]     ; make sure all bytes were read
+                je      read_ok
+                mov     ax,1                    ; else return 1 for not OK
+                jmp     short read_err
+read_ok:        xor     ax,ax                   ; return zero for OK
+read_err:       pop     ds                      ; restore registers and exit
+                pop     es
+                pop     dx
+                pop     cx
+                pop     bx
+                pop     di
+                pop     si
+                pop     bp
+                ret
+_jdos_read      endp
 
 
 ;
@@ -179,37 +179,37 @@ _jdos_read	endp
 ;
 ; Write to file
 ;
-_jdos_write	proc	far
-		push	bp			; linkage
-		mov 	bp,sp
-		push	si			; save all registers for safety
-		push	di
-		push	bx
-		push	cx
-		push	dx
-		push	es
-		push	ds
-		mov	bx,word ptr [bp+6]	; file handle
-		lds	dx,dword ptr [bp+8]	; buffer address
-		mov	cx,word ptr [bp+12]	; number of bytes
-		mov	ah,40h			; write file
-		int	21h
-		jc	write_err		; if failed, return error code
-		cmp	ax,word ptr [bp+12]	; make sure all bytes written
-		je	write_ok
-		mov	ax,1			; else return 1 for not OK
-		jmp	short write_err
-write_ok:	xor	ax,ax			; return zero for OK
-write_err:	pop	ds			; restore registers and exit
-		pop	es
-		pop	dx
-		pop	cx
-		pop	bx
-		pop	di
-		pop	si
-		pop 	bp
-		ret
-_jdos_write	endp
+_jdos_write     proc    far
+                push    bp                      ; linkage
+                mov     bp,sp
+                push    si                      ; save all registers for safety
+                push    di
+                push    bx
+                push    cx
+                push    dx
+                push    es
+                push    ds
+                mov     bx,word ptr [bp+6]      ; file handle
+                lds     dx,dword ptr [bp+8]     ; buffer address
+                mov     cx,word ptr [bp+12]     ; number of bytes
+                mov     ah,40h                  ; write file
+                int     21h
+                jc      write_err               ; if failed, return error code
+                cmp     ax,word ptr [bp+12]     ; make sure all bytes written
+                je      write_ok
+                mov     ax,1                    ; else return 1 for not OK
+                jmp     short write_err
+write_ok:       xor     ax,ax                   ; return zero for OK
+write_err:      pop     ds                      ; restore registers and exit
+                pop     es
+                pop     dx
+                pop     cx
+                pop     bx
+                pop     di
+                pop     si
+                pop     bp
+                ret
+_jdos_write     endp
 
 
 ;
@@ -217,40 +217,40 @@ _jdos_write	endp
 ;
 ; Get the address of the XMS driver, or NULL if not available
 ;
-_jxms_getdriver	proc	far
-		push	bp			; linkage
-		mov 	bp,sp
-		push	si			; save all registers for safety
-		push	di
-		push	bx
-		push	cx
-		push	dx
-		push	es
-		push	ds
-		mov 	ax,4300h		; call multiplex interrupt with
-		int	2fh			; a magic cookie, hex 4300
-		cmp 	al,80h			; AL should contain hex 80
-		je	xmsavail
-		xor 	dx,dx			; no XMS driver available
-		xor 	ax,ax			; return a nil pointer
-		jmp	short xmsavail_done
-xmsavail:	mov 	ax,4310h		; fetch driver address with
-		int	2fh			; another magic cookie
-		mov 	dx,es			; copy address to dx:ax
-		mov 	ax,bx
-xmsavail_done:	les 	bx,dword ptr [bp+6]	; get pointer to return value
-		mov	word ptr es:[bx],ax
-		mov	word ptr es:[bx+2],dx
-		pop	ds			; restore registers and exit
-		pop	es
-		pop	dx
-		pop	cx
-		pop	bx
-		pop	di
-		pop	si
-		pop	bp
-		ret
-_jxms_getdriver	endp
+_jxms_getdriver proc    far
+                push    bp                      ; linkage
+                mov     bp,sp
+                push    si                      ; save all registers for safety
+                push    di
+                push    bx
+                push    cx
+                push    dx
+                push    es
+                push    ds
+                mov     ax,4300h                ; call multiplex interrupt with
+                int     2fh                     ; a magic cookie, hex 4300
+                cmp     al,80h                  ; AL should contain hex 80
+                je      xmsavail
+                xor     dx,dx                   ; no XMS driver available
+                xor     ax,ax                   ; return a nil pointer
+                jmp     short xmsavail_done
+xmsavail:       mov     ax,4310h                ; fetch driver address with
+                int     2fh                     ; another magic cookie
+                mov     dx,es                   ; copy address to dx:ax
+                mov     ax,bx
+xmsavail_done:  les     bx,dword ptr [bp+6]     ; get pointer to return value
+                mov     word ptr es:[bx],ax
+                mov     word ptr es:[bx+2],dx
+                pop     ds                      ; restore registers and exit
+                pop     es
+                pop     dx
+                pop     cx
+                pop     bx
+                pop     di
+                pop     si
+                pop     bp
+                ret
+_jxms_getdriver endp
 
 
 ;
@@ -260,38 +260,38 @@ _jxms_getdriver	endp
 ; These are loaded, the XMS call is performed, and the new values of the
 ; AX,DX,BX registers are written back to the context structure.
 ;
-_jxms_calldriver 	proc	far
-		push	bp			; linkage
-		mov 	bp,sp
-		push	si			; save all registers for safety
-		push	di
-		push	bx
-		push	cx
-		push	dx
-		push	es
-		push	ds
-		les 	bx,dword ptr [bp+10]	; get XMScontext pointer
-		mov 	ax,word ptr es:[bx]	; load registers
-		mov 	dx,word ptr es:[bx+2]
-		mov 	si,word ptr es:[bx+6]
-		mov 	ds,word ptr es:[bx+8]
-		mov 	bx,word ptr es:[bx+4]
-		call	dword ptr [bp+6]	; call the driver
-		mov	cx,bx			; save returned BX for a sec
-		les 	bx,dword ptr [bp+10]	; get XMScontext pointer
-		mov 	word ptr es:[bx],ax	; put back ax,dx,bx
-		mov 	word ptr es:[bx+2],dx
-		mov 	word ptr es:[bx+4],cx
-		pop	ds			; restore registers and exit
-		pop	es
-		pop	dx
-		pop	cx
-		pop	bx
-		pop	di
-		pop	si
-		pop 	bp
-		ret
-_jxms_calldriver 	endp
+_jxms_calldriver        proc    far
+                push    bp                      ; linkage
+                mov     bp,sp
+                push    si                      ; save all registers for safety
+                push    di
+                push    bx
+                push    cx
+                push    dx
+                push    es
+                push    ds
+                les     bx,dword ptr [bp+10]    ; get XMScontext pointer
+                mov     ax,word ptr es:[bx]     ; load registers
+                mov     dx,word ptr es:[bx+2]
+                mov     si,word ptr es:[bx+6]
+                mov     ds,word ptr es:[bx+8]
+                mov     bx,word ptr es:[bx+4]
+                call    dword ptr [bp+6]        ; call the driver
+                mov     cx,bx                   ; save returned BX for a sec
+                les     bx,dword ptr [bp+10]    ; get XMScontext pointer
+                mov     word ptr es:[bx],ax     ; put back ax,dx,bx
+                mov     word ptr es:[bx+2],dx
+                mov     word ptr es:[bx+4],cx
+                pop     ds                      ; restore registers and exit
+                pop     es
+                pop     dx
+                pop     cx
+                pop     bx
+                pop     di
+                pop     si
+                pop     bp
+                ret
+_jxms_calldriver        endp
 
 
 ;
@@ -299,39 +299,39 @@ _jxms_calldriver 	endp
 ;
 ; Have we got an EMS driver? (this comes straight from the EMS 4.0 specs)
 ;
-_jems_available	proc	far
-		push	si			; save all registers for safety
-		push	di
-		push	bx
-		push	cx
-		push	dx
-		push	es
-		push	ds
-		mov	ax,3567h		; get interrupt vector 67h
-		int	21h
-		push	cs
-		pop	ds
-		mov	di,000ah		; check offs 10 in returned seg
-		lea	si,ASCII_device_name	; against literal string
-		mov	cx,8
-		cld
-		repe cmpsb
-		jne	no_ems
-		mov	ax,1			; match, it's there
-		jmp	short avail_done
-no_ems:		xor	ax,ax			; it's not there
-avail_done:	pop	ds			; restore registers and exit
-		pop	es
-		pop	dx
-		pop	cx
-		pop	bx
-		pop	di
-		pop	si
-		ret
+_jems_available proc    far
+                push    si                      ; save all registers for safety
+                push    di
+                push    bx
+                push    cx
+                push    dx
+                push    es
+                push    ds
+                mov     ax,3567h                ; get interrupt vector 67h
+                int     21h
+                push    cs
+                pop     ds
+                mov     di,000ah                ; check offs 10 in returned seg
+                lea     si,ASCII_device_name    ; against literal string
+                mov     cx,8
+                cld
+                repe cmpsb
+                jne     no_ems
+                mov     ax,1                    ; match, it's there
+                jmp     short avail_done
+no_ems:         xor     ax,ax                   ; it's not there
+avail_done:     pop     ds                      ; restore registers and exit
+                pop     es
+                pop     dx
+                pop     cx
+                pop     bx
+                pop     di
+                pop     si
+                ret
 
-ASCII_device_name	db	"EMMXXXX0"
+ASCII_device_name       db      "EMMXXXX0"
 
-_jems_available	endp
+_jems_available endp
 
 
 ;
@@ -341,39 +341,39 @@ _jems_available	endp
 ; These are loaded, the EMS trap is performed, and the new values of the
 ; AX,DX,BX registers are written back to the context structure.
 ;
-_jems_calldriver	proc far
-		push	bp			; linkage
-		mov 	bp,sp
-		push	si			; save all registers for safety
-		push	di
-		push	bx
-		push	cx
-		push	dx
-		push	es
-		push	ds
-		les 	bx,dword ptr [bp+6]	; get EMScontext pointer
-		mov 	ax,word ptr es:[bx]	; load registers
-		mov 	dx,word ptr es:[bx+2]
-		mov 	si,word ptr es:[bx+6]
-		mov 	ds,word ptr es:[bx+8]
-		mov 	bx,word ptr es:[bx+4]
-		int	67h			; call the EMS driver
-		mov	cx,bx			; save returned BX for a sec
-		les 	bx,dword ptr [bp+6]	; get EMScontext pointer
-		mov 	word ptr es:[bx],ax	; put back ax,dx,bx
-		mov 	word ptr es:[bx+2],dx
-		mov 	word ptr es:[bx+4],cx
-		pop	ds			; restore registers and exit
-		pop	es
-		pop	dx
-		pop	cx
-		pop	bx
-		pop	di
-		pop	si
-		pop 	bp
-		ret
-_jems_calldriver	endp
+_jems_calldriver        proc far
+                push    bp                      ; linkage
+                mov     bp,sp
+                push    si                      ; save all registers for safety
+                push    di
+                push    bx
+                push    cx
+                push    dx
+                push    es
+                push    ds
+                les     bx,dword ptr [bp+6]     ; get EMScontext pointer
+                mov     ax,word ptr es:[bx]     ; load registers
+                mov     dx,word ptr es:[bx+2]
+                mov     si,word ptr es:[bx+6]
+                mov     ds,word ptr es:[bx+8]
+                mov     bx,word ptr es:[bx+4]
+                int     67h                     ; call the EMS driver
+                mov     cx,bx                   ; save returned BX for a sec
+                les     bx,dword ptr [bp+6]     ; get EMScontext pointer
+                mov     word ptr es:[bx],ax     ; put back ax,dx,bx
+                mov     word ptr es:[bx+2],dx
+                mov     word ptr es:[bx+4],cx
+                pop     ds                      ; restore registers and exit
+                pop     es
+                pop     dx
+                pop     cx
+                pop     bx
+                pop     di
+                pop     si
+                pop     bp
+                ret
+_jems_calldriver        endp
 
-JMEMDOSA_TXT	ends
+JMEMDOSA_TXT    ends
 
-		end
+                end

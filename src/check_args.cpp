@@ -46,60 +46,60 @@ CheckArgs::CheckArgs(const std::vector<base::string>& args)
     // Option
     if ((n > 0) && (len > 0)) {
       base::string option = arg.substr(n);
-      
+
       // Use other palette file
       if (option == "palette") {
-	if (++i < args.size())
-	  m_paletteFilename = args[i];
-	else
-	  usage(false);
+        if (++i < args.size())
+          m_paletteFilename = args[i];
+        else
+          usage(false);
       }
       // Video resolution
       else if (option == "resolution") {
-	if (++i < args.size()) {
-	  // The following argument should indicate the resolution
-	  // in a format like: 320x240[x8]
-	  std::vector<base::string> parts;
-	  base::split_string(args[i], parts, "x");
+        if (++i < args.size()) {
+          // The following argument should indicate the resolution
+          // in a format like: 320x240[x8]
+          std::vector<base::string> parts;
+          base::split_string(args[i], parts, "x");
 
-	  switch (parts.size()) {
-	    case 1:
-	      set_config_int("GfxMode", "Depth", base::convert_to<int>(parts[0]));
-	      break;
-	    case 2:
-	    case 3:
-	      set_config_int("GfxMode", "Width", base::convert_to<int>(parts[0]));
-	      set_config_int("GfxMode", "Height", base::convert_to<int>(parts[1]));
-	      if (parts.size() == 3)
-		set_config_int("GfxMode", "Depth", base::convert_to<int>(parts[2]));
-	      break;
-	    default:
-	      usage(false);
-	      break;
-	  }
-	}
-	else {
-	  console.printf("%s: option \"res\" requires an argument\n", 
-			 m_exeName.c_str());
-	  usage(false);
-	}
+          switch (parts.size()) {
+            case 1:
+              set_config_int("GfxMode", "Depth", base::convert_to<int>(parts[0]));
+              break;
+            case 2:
+            case 3:
+              set_config_int("GfxMode", "Width", base::convert_to<int>(parts[0]));
+              set_config_int("GfxMode", "Height", base::convert_to<int>(parts[1]));
+              if (parts.size() == 3)
+                set_config_int("GfxMode", "Depth", base::convert_to<int>(parts[2]));
+              break;
+            default:
+              usage(false);
+              break;
+          }
+        }
+        else {
+          console.printf("%s: option \"res\" requires an argument\n",
+                         m_exeName.c_str());
+          usage(false);
+        }
       }
       // Verbose mode
       else if (option == "verbose") {
-	m_verbose = true;
+        m_verbose = true;
       }
       // Show help
       else if (option == "help") {
-	usage(true);
+        usage(true);
       }
       // Show version
       else if (option == "version") {
-	m_consoleOnly = true;
-	console.printf("%s %s\n", PACKAGE, VERSION);
+        m_consoleOnly = true;
+        console.printf("%s %s\n", PACKAGE, VERSION);
       }
       // Invalid argument
       else {
-	usage(false);
+        usage(false);
       }
     }
     // Graphic file to open
@@ -158,7 +158,7 @@ void CheckArgs::usage(bool showHelp)
   }
   // How to show options
   else {
-    console.printf("Try \"%s --help\" for more information.\n", 
-		   m_exeName.c_str());
+    console.printf("Try \"%s --help\" for more information.\n",
+                   m_exeName.c_str());
   }
 }

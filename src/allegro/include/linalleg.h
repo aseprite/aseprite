@@ -25,5 +25,3 @@
  */
 
 #endif          /* ifndef LIN_ALLEGRO_H */
-
-

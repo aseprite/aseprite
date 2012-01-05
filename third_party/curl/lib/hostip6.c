@@ -233,4 +233,3 @@ Curl_addrinfo *Curl_getaddrinfo(struct connectdata *conn,
 }
 #endif /* CURLRES_SYNCH */
 #endif /* CURLRES_IPV6 */
-

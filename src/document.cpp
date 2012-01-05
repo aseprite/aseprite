@@ -93,7 +93,7 @@ Document* Document::createBasicDocument(int imgtype, int width, int height, int 
 
     // Add image in the sprite's stock.
     indexInStock = sprite->getStock()->addImage(image);
-    image.release();		// Release the image because it is in the sprite's stock.
+    image.release();            // Release the image because it is in the sprite's stock.
   }
 
   // Create the first transparent layer.
@@ -108,7 +108,7 @@ Document* Document::createBasicDocument(int imgtype, int width, int height, int 
 
       // Add the cel in the layer.
       layer->addCel(cel);
-      cel.release();		// Release the cel because it is in the layer
+      cel.release();            // Release the cel because it is in the layer
     }
 
     // Add the layer in the sprite.
@@ -120,15 +120,15 @@ Document* Document::createBasicDocument(int imgtype, int width, int height, int 
 
   // Create the document with the new sprite.
   UniquePtr<Document> document(new Document(sprite));
-  sprite.release();		// Release the sprite because it is in the document.
+  sprite.release();             // Release the sprite because it is in the document.
 
   document->setFilename("Sprite");
-  return document.release();	// Release the document (it does not throw) returning the raw pointer
+  return document.release();    // Release the document (it does not throw) returning the raw pointer
 }
 
 void Document::addSprite(Sprite* sprite)
 {
-  ASSERT(m_sprite == NULL);	// TODO add support for more sprites in the future (e.g. for .ico files)
+  ASSERT(m_sprite == NULL);     // TODO add support for more sprites in the future (e.g. for .ico files)
   m_sprite.reset(sprite);
 }
 
@@ -202,18 +202,18 @@ void Document::generateMaskBoundaries(Mask* mask)
 
   // No mask specified? Use the current one in the document
   if (!mask) {
-    if (!isMaskVisible())	// The mask is hidden
-      return;			// Done, without boundaries
+    if (!isMaskVisible())       // The mask is hidden
+      return;                   // Done, without boundaries
     else
-      mask = getMask();		// Use the document mask
+      mask = getMask();         // Use the document mask
   }
 
   ASSERT(mask != NULL);
 
   if (mask->bitmap) {
     m_bound.seg = find_mask_boundary(mask->bitmap,
-				     &m_bound.nseg,
-				     IgnoreBounds, 0, 0, 0, 0);
+                                     &m_bound.nseg,
+                                     IgnoreBounds, 0, 0, 0, 0);
     for (int c=0; c<m_bound.nseg; c++) {
       m_bound.seg[c].x1 += mask->x;
       m_bound.seg[c].y1 += mask->y;
@@ -240,7 +240,7 @@ void Document::prepareExtraCel(int x, int y, int w, int h, int opacity)
   ASSERT(getSprite() != NULL);
 
   if (!m_extraCel)
-    m_extraCel = new Cel(0, 0);	// Ignored fields for this cell (frame, and image index)
+    m_extraCel = new Cel(0, 0); // Ignored fields for this cell (frame, and image index)
 
   m_extraCel->setPosition(x, y);
   m_extraCel->setOpacity(opacity);
@@ -249,10 +249,10 @@ void Document::prepareExtraCel(int x, int y, int w, int h, int opacity)
       m_extraImage->imgtype != getSprite()->getImgType() ||
       m_extraImage->w != w ||
       m_extraImage->h != h) {
-    delete m_extraImage;		// image
+    delete m_extraImage;                // image
     m_extraImage = image_new(getSprite()->getImgType(), w, h);
     image_clear(m_extraImage,
-		m_extraImage->mask_color = 0);
+                m_extraImage->mask_color = 0);
   }
 }
 
@@ -285,9 +285,9 @@ void Document::setMask(const Mask* mask)
 bool Document::isMaskVisible() const
 {
   return
-    m_maskVisible &&		// The mask was not hidden by the user explicitly
-    m_mask &&			// The mask does exist
-    !m_mask->is_empty();	// The mask is not empty
+    m_maskVisible &&            // The mask was not hidden by the user explicitly
+    m_mask &&                   // The mask does exist
+    !m_mask->is_empty();        // The mask is not empty
 }
 
 void Document::setMaskVisible(bool visible)
@@ -339,7 +339,7 @@ void Document::copyLayerContent(const Layer* sourceLayer0, Document* destDoc, La
       UniquePtr<Cel> newCel(new Cel(*sourceCel));
 
       ASSERT((sourceCel->getImage() >= 0) &&
-	     (sourceCel->getImage() < sourceLayer->getSprite()->getStock()->size()));
+             (sourceCel->getImage() < sourceLayer->getSprite()->getStock()->size()));
 
       const Image* sourceImage = sourceLayer->getSprite()->getStock()->getImage(sourceCel->getImage());
       ASSERT(sourceImage != NULL);
@@ -348,9 +348,9 @@ void Document::copyLayerContent(const Layer* sourceLayer0, Document* destDoc, La
       newCel->setImage(destLayer->getSprite()->getStock()->addImage(newImage));
 
       if (undo->isEnabled()) {
-	undo->pushUndoer(new undoers::AddImage(undo->getObjects(),
-	    destLayer->getSprite()->getStock(),
-	    newCel->getImage()));
+        undo->pushUndoer(new undoers::AddImage(undo->getObjects(),
+            destLayer->getSprite()->getStock(),
+            newCel->getImage()));
       }
 
       destLayer->addCel(newCel);
@@ -369,23 +369,23 @@ void Document::copyLayerContent(const Layer* sourceLayer0, Document* destDoc, La
       UniquePtr<Layer> destChild(NULL);
 
       if (sourceChild->is_image()) {
-	destChild.reset(new LayerImage(destLayer->getSprite()));
-	copyLayerContent(sourceChild, destDoc, destChild);
+        destChild.reset(new LayerImage(destLayer->getSprite()));
+        copyLayerContent(sourceChild, destDoc, destChild);
       }
       else if (sourceChild->is_folder()) {
-	destChild.reset(new LayerFolder(destLayer->getSprite()));
-	copyLayerContent(sourceChild, destDoc, destChild);
+        destChild.reset(new LayerFolder(destLayer->getSprite()));
+        copyLayerContent(sourceChild, destDoc, destChild);
       }
       else {
-	ASSERT(false);
+        ASSERT(false);
       }
 
       ASSERT(destChild != NULL);
 
       // Add the new layer in the sprite.
       if (undo->isEnabled())
-	undo->pushUndoer(new undoers::AddLayer(undo->getObjects(),
-	    destLayer, destChild));
+        undo->pushUndoer(new undoers::AddLayer(undo->getObjects(),
+            destLayer, destChild));
 
       destLayer->add_layer(destChild);
       destChild.release();
@@ -400,8 +400,8 @@ Document* Document::duplicate(DuplicateType type) const
 {
   const Sprite* sourceSprite = getSprite();
   UniquePtr<Sprite> spriteCopyPtr(new Sprite(sourceSprite->getImgType(),
-					     sourceSprite->getWidth(),
-					     sourceSprite->getHeight(), sourceSprite->getPalette(0)->size()));
+                                             sourceSprite->getWidth(),
+                                             sourceSprite->getHeight(), sourceSprite->getPalette(0)->size()));
   UniquePtr<Document> documentCopy(new Document(spriteCopyPtr));
   Sprite* spriteCopy = spriteCopyPtr.release();
 
@@ -433,8 +433,8 @@ Document* Document::duplicate(DuplicateType type) const
 
       // Set as current layer the same layer as the source
       {
-	int index = sourceSprite->layerToIndex(sourceSprite->getCurrentLayer());
-	spriteCopy->setCurrentLayer(spriteCopy->indexToLayer(index));
+        int index = sourceSprite->layerToIndex(sourceSprite->getCurrentLayer());
+        spriteCopy->setCurrentLayer(spriteCopy->indexToLayer(index));
       }
 
       // Re-enable the undo
@@ -443,23 +443,23 @@ Document* Document::duplicate(DuplicateType type) const
 
     case DuplicateWithFlattenLayers:
       {
-	// Flatten layers
-	ASSERT(sourceSprite->getFolder() != NULL);
+        // Flatten layers
+        ASSERT(sourceSprite->getFolder() != NULL);
 
-	LayerImage* flatLayer = layer_new_flatten_copy
-	    (spriteCopy,
-	     sourceSprite->getFolder(),
-	     0, 0, sourceSprite->getWidth(), sourceSprite->getHeight(),
-	     0, sourceSprite->getTotalFrames()-1);
+        LayerImage* flatLayer = layer_new_flatten_copy
+            (spriteCopy,
+             sourceSprite->getFolder(),
+             0, 0, sourceSprite->getWidth(), sourceSprite->getHeight(),
+             0, sourceSprite->getTotalFrames()-1);
 
-	// Add and select the new flat layer
-	spriteCopy->getFolder()->add_layer(flatLayer);
-	spriteCopy->setCurrentLayer(flatLayer);
+        // Add and select the new flat layer
+        spriteCopy->getFolder()->add_layer(flatLayer);
+        spriteCopy->setCurrentLayer(flatLayer);
 
-	// Configure the layer as background only if the original
-	// sprite has a background layer.
-	if (sourceSprite->getBackgroundLayer() != NULL)
-	  flatLayer->configureAsBackground();
+        // Configure the layer as background only if the original
+        // sprite has a background layer.
+        if (sourceSprite->getBackgroundLayer() != NULL)
+          flatLayer->configureAsBackground();
       }
       break;
   }
@@ -484,18 +484,18 @@ bool Document::lock(LockType lockType)
     case ReadLock:
       // If no body is writting the sprite...
       if (!m_write_lock) {
-	// We can read it
-	++m_read_locks;
-	return true;
+        // We can read it
+        ++m_read_locks;
+        return true;
       }
       break;
 
     case WriteLock:
       // If no body is reading and writting...
       if (m_read_locks == 0 && !m_write_lock) {
-	// We can start writting the sprite...
-	m_write_lock = true;
-	return true;
+        // We can start writting the sprite...
+        m_write_lock = true;
+        return true;
       }
       break;
 

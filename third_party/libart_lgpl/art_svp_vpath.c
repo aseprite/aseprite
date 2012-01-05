@@ -77,7 +77,7 @@ art_svp_from_vpath (ArtVpath *vpath)
   n_segs = 0;
   n_segs_max = 16;
   svp = (ArtSVP *)art_alloc (sizeof(ArtSVP) +
-			     (n_segs_max - 1) * sizeof(ArtSVPSeg));
+                             (n_segs_max - 1) * sizeof(ArtSVPSeg));
 
   dir = 0;
   n_points = 0;
@@ -86,94 +86,94 @@ art_svp_from_vpath (ArtVpath *vpath)
   i = 0;
 
   x = y = 0; /* unnecessary, given "first code must not be LINETO" invariant,
-		but it makes gcc -Wall -ansi -pedantic happier */
+                but it makes gcc -Wall -ansi -pedantic happier */
   x_min = x_max = 0; /* same */
 
   while (vpath[i].code != ART_END) {
     if (vpath[i].code == ART_MOVETO || vpath[i].code == ART_MOVETO_OPEN)
       {
-	if (points != NULL && n_points >= 2)
-	  {
-	    if (n_segs == n_segs_max)
-	      {
-		n_segs_max <<= 1;
-		svp = (ArtSVP *)art_realloc (svp, sizeof(ArtSVP) +
-					     (n_segs_max - 1) *
-					     sizeof(ArtSVPSeg));
-	      }
-	    svp->segs[n_segs].n_points = n_points;
-	    svp->segs[n_segs].dir = (dir > 0);
-	    if (dir < 0)
-	      reverse_points (points, n_points);
-	    svp->segs[n_segs].points = points;
-	    svp->segs[n_segs].bbox.x0 = x_min;
-	    svp->segs[n_segs].bbox.x1 = x_max;
-	    svp->segs[n_segs].bbox.y0 = points[0].y;
-	    svp->segs[n_segs].bbox.y1 = points[n_points - 1].y;
-	    n_segs++;
-	    points = NULL;
-	  }
+        if (points != NULL && n_points >= 2)
+          {
+            if (n_segs == n_segs_max)
+              {
+                n_segs_max <<= 1;
+                svp = (ArtSVP *)art_realloc (svp, sizeof(ArtSVP) +
+                                             (n_segs_max - 1) *
+                                             sizeof(ArtSVPSeg));
+              }
+            svp->segs[n_segs].n_points = n_points;
+            svp->segs[n_segs].dir = (dir > 0);
+            if (dir < 0)
+              reverse_points (points, n_points);
+            svp->segs[n_segs].points = points;
+            svp->segs[n_segs].bbox.x0 = x_min;
+            svp->segs[n_segs].bbox.x1 = x_max;
+            svp->segs[n_segs].bbox.y0 = points[0].y;
+            svp->segs[n_segs].bbox.y1 = points[n_points - 1].y;
+            n_segs++;
+            points = NULL;
+          }
 
-	if (points == NULL)
-	  {
-	    n_points_max = 4;
-	    points = art_new (ArtPoint, n_points_max);
-	  }
+        if (points == NULL)
+          {
+            n_points_max = 4;
+            points = art_new (ArtPoint, n_points_max);
+          }
 
-	n_points = 1;
-	points[0].x = x = vpath[i].x;
-	points[0].y = y = vpath[i].y;
-	x_min = x;
-	x_max = x;
-	dir = 0;
+        n_points = 1;
+        points[0].x = x = vpath[i].x;
+        points[0].y = y = vpath[i].y;
+        x_min = x;
+        x_max = x;
+        dir = 0;
       }
     else /* must be LINETO */
       {
-	new_dir = (vpath[i].y > y ||
-		   (vpath[i].y == y && vpath[i].x > x)) ? 1 : -1;
-	if (dir && dir != new_dir)
-	  {
-	    /* new segment */
-	    x = points[n_points - 1].x;
-	    y = points[n_points - 1].y;
-	    if (n_segs == n_segs_max)
-	      {
-		n_segs_max <<= 1;
-		svp = (ArtSVP *)art_realloc (svp, sizeof(ArtSVP) +
-					     (n_segs_max - 1) *
-					     sizeof(ArtSVPSeg));
-	      }
-	    svp->segs[n_segs].n_points = n_points;
-	    svp->segs[n_segs].dir = (dir > 0);
-	    if (dir < 0)
-	      reverse_points (points, n_points);
-	    svp->segs[n_segs].points = points;
-	    svp->segs[n_segs].bbox.x0 = x_min;
-	    svp->segs[n_segs].bbox.x1 = x_max;
-	    svp->segs[n_segs].bbox.y0 = points[0].y;
-	    svp->segs[n_segs].bbox.y1 = points[n_points - 1].y;
-	    n_segs++;
+        new_dir = (vpath[i].y > y ||
+                   (vpath[i].y == y && vpath[i].x > x)) ? 1 : -1;
+        if (dir && dir != new_dir)
+          {
+            /* new segment */
+            x = points[n_points - 1].x;
+            y = points[n_points - 1].y;
+            if (n_segs == n_segs_max)
+              {
+                n_segs_max <<= 1;
+                svp = (ArtSVP *)art_realloc (svp, sizeof(ArtSVP) +
+                                             (n_segs_max - 1) *
+                                             sizeof(ArtSVPSeg));
+              }
+            svp->segs[n_segs].n_points = n_points;
+            svp->segs[n_segs].dir = (dir > 0);
+            if (dir < 0)
+              reverse_points (points, n_points);
+            svp->segs[n_segs].points = points;
+            svp->segs[n_segs].bbox.x0 = x_min;
+            svp->segs[n_segs].bbox.x1 = x_max;
+            svp->segs[n_segs].bbox.y0 = points[0].y;
+            svp->segs[n_segs].bbox.y1 = points[n_points - 1].y;
+            n_segs++;
 
-	    n_points = 1;
-	    n_points_max = 4;
-	    points = art_new (ArtPoint, n_points_max);
-	    points[0].x = x;
-	    points[0].y = y;
-	    x_min = x;
-	    x_max = x;
-	  }
+            n_points = 1;
+            n_points_max = 4;
+            points = art_new (ArtPoint, n_points_max);
+            points[0].x = x;
+            points[0].y = y;
+            x_min = x;
+            x_max = x;
+          }
 
-	if (points != NULL)
-	  {
-	    if (n_points == n_points_max)
-	      art_expand (points, ArtPoint, n_points_max);
-	    points[n_points].x = x = vpath[i].x;
-	    points[n_points].y = y = vpath[i].y;
-	    if (x < x_min) x_min = x;
-	    else if (x > x_max) x_max = x;
-	    n_points++;
-	  }
-	dir = new_dir;
+        if (points != NULL)
+          {
+            if (n_points == n_points_max)
+              art_expand (points, ArtPoint, n_points_max);
+            points[n_points].x = x = vpath[i].x;
+            points[n_points].y = y = vpath[i].y;
+            if (x < x_min) x_min = x;
+            else if (x > x_max) x_max = x;
+            n_points++;
+          }
+        dir = new_dir;
       }
     i++;
   }
@@ -181,27 +181,27 @@ art_svp_from_vpath (ArtVpath *vpath)
   if (points != NULL)
     {
       if (n_points >= 2)
-	{
-	  if (n_segs == n_segs_max)
-	    {
-	      n_segs_max <<= 1;
-	      svp = (ArtSVP *)art_realloc (svp, sizeof(ArtSVP) +
-					   (n_segs_max - 1) *
-					   sizeof(ArtSVPSeg));
-	    }
-	  svp->segs[n_segs].n_points = n_points;
-	  svp->segs[n_segs].dir = (dir > 0);
-	  if (dir < 0)
-	    reverse_points (points, n_points);
-	  svp->segs[n_segs].points = points;
-	  svp->segs[n_segs].bbox.x0 = x_min;
-	  svp->segs[n_segs].bbox.x1 = x_max;
-	  svp->segs[n_segs].bbox.y0 = points[0].y;
-	  svp->segs[n_segs].bbox.y1 = points[n_points - 1].y;
-	  n_segs++;
-	}
+        {
+          if (n_segs == n_segs_max)
+            {
+              n_segs_max <<= 1;
+              svp = (ArtSVP *)art_realloc (svp, sizeof(ArtSVP) +
+                                           (n_segs_max - 1) *
+                                           sizeof(ArtSVPSeg));
+            }
+          svp->segs[n_segs].n_points = n_points;
+          svp->segs[n_segs].dir = (dir > 0);
+          if (dir < 0)
+            reverse_points (points, n_points);
+          svp->segs[n_segs].points = points;
+          svp->segs[n_segs].bbox.x0 = x_min;
+          svp->segs[n_segs].bbox.x1 = x_max;
+          svp->segs[n_segs].bbox.y0 = points[0].y;
+          svp->segs[n_segs].bbox.y1 = points[n_points - 1].y;
+          n_segs++;
+        }
       else
-	art_free (points);
+        art_free (points);
     }
 
   svp->n_segs = n_segs;
@@ -210,4 +210,3 @@ art_svp_from_vpath (ArtVpath *vpath)
 
   return svp;
 }
-

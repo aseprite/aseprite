@@ -117,7 +117,7 @@ Bind(R (T::*m)(), T2* t)
 
 // BindAdapter1_fun
 template<typename R, typename F,
-	 typename X1>
+         typename X1>
 class BindAdapter1_fun
 {
   F f;
@@ -141,7 +141,7 @@ public:
 };
 
 template<typename F,
-	 typename X1>
+         typename X1>
 class BindAdapter1_fun<void, F, X1>
 {
   F f;
@@ -165,7 +165,7 @@ public:
 };
 
 template<typename R, typename F,
-	 typename X1>
+         typename X1>
 BindAdapter1_fun<R, F, X1>
 Bind(const F& f, X1 x1)
 {
@@ -174,8 +174,8 @@ Bind(const F& f, X1 x1)
 
 // BindAdapter1_mem
 template<typename R, typename T,
-	 typename B1,
-	 typename X1>
+         typename B1,
+         typename X1>
 class BindAdapter1_mem
 {
   R (T::*m)(B1);
@@ -201,8 +201,8 @@ public:
 };
 
 template<typename T,
-	 typename B1,
-	 typename X1>
+         typename B1,
+         typename X1>
 class BindAdapter1_mem<void, T, B1, X1>
 {
   void (T::*m)(B1);
@@ -228,7 +228,7 @@ public:
 };
 
 template<typename R, typename T, typename T2,
-	 typename B1, typename X1>
+         typename B1, typename X1>
 BindAdapter1_mem<R, T, B1, X1>
 Bind(R (T::*m)(B1), T2* t, X1 x1)
 {
@@ -237,7 +237,7 @@ Bind(R (T::*m)(B1), T2* t, X1 x1)
 
 // BindAdapter2_fun
 template<typename R, typename F,
-	 typename X1, typename X2>
+         typename X1, typename X2>
 class BindAdapter2_fun
 {
   F f;
@@ -262,7 +262,7 @@ public:
 };
 
 template<typename F,
-	 typename X1, typename X2>
+         typename X1, typename X2>
 class BindAdapter2_fun<void, F, X1, X2>
 {
   F f;
@@ -287,7 +287,7 @@ public:
 };
 
 template<typename R, typename F,
-	 typename X1, typename X2>
+         typename X1, typename X2>
 BindAdapter2_fun<R, F, X1, X2>
 Bind(const F& f, X1 x1, X2 x2)
 {
@@ -296,8 +296,8 @@ Bind(const F& f, X1 x1, X2 x2)
 
 // BindAdapter2_mem
 template<typename R, typename T,
-	 typename B1, typename B2,
-	 typename X1, typename X2>
+         typename B1, typename B2,
+         typename X1, typename X2>
 class BindAdapter2_mem
 {
   R (T::*m)(B1, B2);
@@ -324,8 +324,8 @@ public:
 };
 
 template<typename T,
-	 typename B1, typename B2,
-	 typename X1, typename X2>
+         typename B1, typename B2,
+         typename X1, typename X2>
 class BindAdapter2_mem<void, T, B1, B2, X1, X2>
 {
   void (T::*m)(B1, B2);
@@ -360,7 +360,7 @@ Bind(R (T::*m)(B1, B2), T2* t, X1 x1, X2 x2)
 
 // BindAdapter3_fun
 template<typename R, typename F,
-	 typename X1, typename X2, typename X3>
+         typename X1, typename X2, typename X3>
 class BindAdapter3_fun
 {
   F f;
@@ -386,7 +386,7 @@ public:
 };
 
 template<typename F,
-	 typename X1, typename X2, typename X3>
+         typename X1, typename X2, typename X3>
 class BindAdapter3_fun<void, F, X1, X2, X3>
 {
   F f;
@@ -412,7 +412,7 @@ public:
 };
 
 template<typename R, typename F,
-	 typename X1, typename X2, typename X3>
+         typename X1, typename X2, typename X3>
 BindAdapter3_fun<R, F, X1, X2, X3>
 Bind(const F& f, X1 x1, X2 x2, X3 x3)
 {
@@ -421,8 +421,8 @@ Bind(const F& f, X1 x1, X2 x2, X3 x3)
 
 // BindAdapter3_mem
 template<typename R, typename T,
-	 typename B1, typename B2, typename B3,
-	   typename X1, typename X2, typename X3>
+         typename B1, typename B2, typename B3,
+           typename X1, typename X2, typename X3>
 class BindAdapter3_mem
 {
   R (T::*m)(B1, B2, B3);
@@ -450,8 +450,8 @@ public:
 };
 
 template<typename T,
-	 typename B1, typename B2, typename B3,
-	 typename X1, typename X2, typename X3>
+         typename B1, typename B2, typename B3,
+         typename X1, typename X2, typename X3>
 class BindAdapter3_mem<void, T, B1, B2, B3, X1, X2, X3>
 {
   void (T::*m)(B1, B2, B3);
@@ -479,8 +479,8 @@ public:
 };
 
 template<typename R, typename T, typename T2,
-	 typename B1, typename B2, typename B3,
-	 typename X1, typename X2, typename X3>
+         typename B1, typename B2, typename B3,
+         typename X1, typename X2, typename X3>
 BindAdapter3_mem<R, T, B1, B2, B3, X1, X2, X3>
 Bind(R (T::*m)(B1, B2, B3), T2* t, X1 x1, X2 x2)
 {

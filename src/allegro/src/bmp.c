@@ -43,8 +43,8 @@ typedef struct BITMAPFILEHEADER
 } BITMAPFILEHEADER;
 
 
-/* Used for both OS/2 and Windows BMP. 
- * Contains only the parameters needed to load the image 
+/* Used for both OS/2 and Windows BMP.
+ * Contains only the parameters needed to load the image
  */
 typedef struct BITMAPINFOHEADER
 {
@@ -164,8 +164,8 @@ static void read_bmicolors(int bytes, RGB *pal, PACKFILE *f, int win_flag)
       i += 3;
 
       if (win_flag && i < bytes) {
-	 pack_getc(f);
-	 i++;
+         pack_getc(f);
+         i++;
       }
    }
 
@@ -188,11 +188,11 @@ static void read_1bit_line(int length, PACKFILE *f, BITMAP *bmp, int line)
    for (i=0; i<length; i++) {
       j = i % 32;
       if (j == 0) {
-	 n = pack_mgetl(f);
-	 for (k=0; k<32; k++) {
-	    b[31-k] = (char)(n & 1);
-	    n = n >> 1;
-	 }
+         n = pack_mgetl(f);
+         for (k=0; k<32; k++) {
+            b[31-k] = (char)(n & 1);
+            n = n >> 1;
+         }
       }
       pix = b[j];
       bmp->line[line][i] = pix;
@@ -215,14 +215,14 @@ static void read_4bit_line(int length, PACKFILE *f, BITMAP *bmp, int line)
    for (i=0; i<length; i++) {
       j = i % 8;
       if (j == 0) {
-	 n = pack_igetl(f);
-	 for (k=0; k<4; k++) {
-	    temp = n & 255;
-	    b[k*2+1] = temp & 15;
-	    temp = temp >> 4;
-	    b[k*2] = temp & 15;
-	    n = n >> 8;
-	 }
+         n = pack_igetl(f);
+         for (k=0; k<4; k++) {
+            temp = n & 255;
+            b[k*2+1] = temp & 15;
+            temp = temp >> 4;
+            b[k*2] = temp & 15;
+            n = n >> 8;
+         }
       }
       pix = b[j];
       bmp->line[line][i] = pix;
@@ -244,11 +244,11 @@ static void read_8bit_line(int length, PACKFILE *f, BITMAP *bmp, int line)
    for (i=0; i<length; i++) {
       j = i % 4;
       if (j == 0) {
-	 n = pack_igetl(f);
-	 for (k=0; k<4; k++) {
-	    b[k] = (char)(n & 255);
-	    n = n >> 8;
-	 }
+         n = pack_igetl(f);
+         for (k=0; k<4; k++) {
+            b[k] = (char)(n & 255);
+            n = n >> 8;
+         }
       }
       pix = b[j];
       bmp->line[line][i] = pix;
@@ -275,16 +275,16 @@ static void read_16bit_line(int length, PACKFILE *f, BITMAP *bmp, int line)
       c.b = w & 0x1f;
 
       bmp_write16(bmp->line[line]+i*2,
-	 makecol16(_rgb_scale_5[c.r],
-	    _rgb_scale_5[c.g],
-	    _rgb_scale_5[c.b]));
+         makecol16(_rgb_scale_5[c.r],
+            _rgb_scale_5[c.g],
+            _rgb_scale_5[c.b]));
    }
 
    /* padding */
    i = (i * 2) % 4;
    if (i != 0) {
       while (i++ < 4)
-	 pack_getc(f);
+         pack_getc(f);
    }
 }
 
@@ -352,48 +352,48 @@ static void read_bitfields_image(PACKFILE *f, BITMAP *bmp, AL_CONST BITMAPINFOHE
    line   = height < 0 ? 0 : height-1;
    dir    = height < 0 ? 1 : -1;
    height = ABS(height);
-   
+
    bpp = bitmap_color_depth(bmp);
    bytes_per_pixel = BYTES_PER_PIXEL(bpp);
 
    for (i=0; i<height; i++, line+=dir) {
       for (k=0; k<(int)infoheader->biWidth; k++) {
 
-	 pack_fread(&buffer, bytes_per_pixel, f);
+         pack_fread(&buffer, bytes_per_pixel, f);
 
-	 if (bpp == 15) {
-	    red = (buffer >> 10) & 0x1f;
-	    grn = (buffer >> 5) & 0x1f;
-	    blu = (buffer) & 0x1f;
-	    buffer = (red << _rgb_r_shift_15) |
-		     (grn << _rgb_g_shift_15) |
-		     (blu << _rgb_b_shift_15);
-	 }
-	 else if (bpp == 16) {
-	    red = (buffer >> 11) & 0x1f;
-	    grn = (buffer >> 5) & 0x3f;
-	    blu = (buffer) & 0x1f;
-	    buffer = (red << _rgb_r_shift_16) |
-		     (grn << _rgb_g_shift_16) |
-		     (blu << _rgb_b_shift_16);
-	 }
-	 else {
-	    red = (buffer >> 16) & 0xff;
-	    grn = (buffer >> 8) & 0xff;
-	    blu = (buffer) & 0xff;
-	    buffer = (red << _rgb_r_shift_32) |
-		     (grn << _rgb_g_shift_32) |
-		     (blu << _rgb_b_shift_32);
-	 }
+         if (bpp == 15) {
+            red = (buffer >> 10) & 0x1f;
+            grn = (buffer >> 5) & 0x1f;
+            blu = (buffer) & 0x1f;
+            buffer = (red << _rgb_r_shift_15) |
+                     (grn << _rgb_g_shift_15) |
+                     (blu << _rgb_b_shift_15);
+         }
+         else if (bpp == 16) {
+            red = (buffer >> 11) & 0x1f;
+            grn = (buffer >> 5) & 0x3f;
+            blu = (buffer) & 0x1f;
+            buffer = (red << _rgb_r_shift_16) |
+                     (grn << _rgb_g_shift_16) |
+                     (blu << _rgb_b_shift_16);
+         }
+         else {
+            red = (buffer >> 16) & 0xff;
+            grn = (buffer >> 8) & 0xff;
+            blu = (buffer) & 0xff;
+            buffer = (red << _rgb_r_shift_32) |
+                     (grn << _rgb_g_shift_32) |
+                     (blu << _rgb_b_shift_32);
+         }
 
-	 memcpy(&bmp->line[line][k * bytes_per_pixel], &buffer, bytes_per_pixel);
+         memcpy(&bmp->line[line][k * bytes_per_pixel], &buffer, bytes_per_pixel);
       }
 
       /* padding */
       k = (k * bytes_per_pixel) % 4;
       if (k > 0) {
-	 while (k++ < 4)
-	    pack_getc(f);
+         while (k++ < 4)
+            pack_getc(f);
       }
    }
 }
@@ -414,29 +414,29 @@ static void read_image(PACKFILE *f, BITMAP *bmp, AL_CONST BITMAPINFOHEADER *info
    for (i=0; i<height; i++, line+=dir) {
       switch (infoheader->biBitCount) {
 
-	 case 1:
-	    read_1bit_line(infoheader->biWidth, f, bmp, line);
-	    break;
+         case 1:
+            read_1bit_line(infoheader->biWidth, f, bmp, line);
+            break;
 
-	 case 4:
-	    read_4bit_line(infoheader->biWidth, f, bmp, line);
-	    break;
+         case 4:
+            read_4bit_line(infoheader->biWidth, f, bmp, line);
+            break;
 
-	 case 8:
-	    read_8bit_line(infoheader->biWidth, f, bmp, line);
-	    break;
+         case 8:
+            read_8bit_line(infoheader->biWidth, f, bmp, line);
+            break;
 
-	 case 16:
-	    read_16bit_line(infoheader->biWidth, f, bmp, line);
-	    break;
+         case 16:
+            read_16bit_line(infoheader->biWidth, f, bmp, line);
+            break;
 
-	 case 24:
-	    read_24bit_line(infoheader->biWidth, f, bmp, line);
-	    break;
+         case 24:
+            read_24bit_line(infoheader->biWidth, f, bmp, line);
+            break;
 
-	 case 32:
-	    read_32bit_line(infoheader->biWidth, f, bmp, line);
-	    break;
+         case 32:
+            read_32bit_line(infoheader->biWidth, f, bmp, line);
+            break;
       }
    }
 }
@@ -460,54 +460,54 @@ static void read_RLE8_compressed_image(PACKFILE *f, BITMAP *bmp, AL_CONST BITMAP
       eolflag = 0;                           /* end of line flag */
 
       while ((eolflag == 0) && (eopicflag == 0)) {
-	 count = pack_getc(f);
-	 val = pack_getc(f);
+         count = pack_getc(f);
+         val = pack_getc(f);
 
-	 if (count > 0) {                    /* repeat pixel count times */
-	    for (j=0;j<count;j++) {
-	       bmp->line[line][pos] = val;
-	       pos++;
-	    }
-	 }
-	 else {
-	    switch (val) {
+         if (count > 0) {                    /* repeat pixel count times */
+            for (j=0;j<count;j++) {
+               bmp->line[line][pos] = val;
+               pos++;
+            }
+         }
+         else {
+            switch (val) {
 
-	       case 0:                       /* end of line flag */
-		  eolflag=1;
-		  break;
+               case 0:                       /* end of line flag */
+                  eolflag=1;
+                  break;
 
-	       case 1:                       /* end of picture flag */
-		  eopicflag=1;
-		  break;
+               case 1:                       /* end of picture flag */
+                  eopicflag=1;
+                  break;
 
-	       case 2:                       /* displace picture */
-		  count = pack_getc(f);
-		  val = pack_getc(f);
-		  pos += count;
-		  line -= val;
-		  break;
+               case 2:                       /* displace picture */
+                  count = pack_getc(f);
+                  val = pack_getc(f);
+                  pos += count;
+                  line -= val;
+                  break;
 
-	       default:                      /* read in absolute mode */
-		  for (j=0; j<val; j++) {
-		     val0 = pack_getc(f);
-		     bmp->line[line][pos] = val0;
-		     pos++;
-		  }
+               default:                      /* read in absolute mode */
+                  for (j=0; j<val; j++) {
+                     val0 = pack_getc(f);
+                     bmp->line[line][pos] = val0;
+                     pos++;
+                  }
 
-		  if (j%2 == 1)
-		     val0 = pack_getc(f);    /* align on word boundary */
-		  break;
+                  if (j%2 == 1)
+                     val0 = pack_getc(f);    /* align on word boundary */
+                  break;
 
-	    }
-	 }
+            }
+         }
 
-	 if (pos-1 > (int)infoheader->biWidth)
-	    eolflag=1;
+         if (pos-1 > (int)infoheader->biWidth)
+            eolflag=1;
       }
 
       line--;
       if (line < 0)
-	 eopicflag = 1;
+         eopicflag = 1;
    }
 }
 
@@ -532,60 +532,60 @@ static void read_RLE4_compressed_image(PACKFILE *f, BITMAP *bmp, AL_CONST BITMAP
       eolflag = 0;                           /* end of line flag */
 
       while ((eolflag == 0) && (eopicflag == 0)) {
-	 count = pack_getc(f);
-	 val = pack_getc(f);
+         count = pack_getc(f);
+         val = pack_getc(f);
 
-	 if (count > 0) {                    /* repeat pixels count times */
-	    b[1] = val & 15;
-	    b[0] = (val >> 4) & 15;
-	    for (j=0; j<count; j++) {
-	       bmp->line[line][pos] = b[j%2];
-	       pos++;
-	    }
-	 }
-	 else {
-	    switch (val) {
+         if (count > 0) {                    /* repeat pixels count times */
+            b[1] = val & 15;
+            b[0] = (val >> 4) & 15;
+            for (j=0; j<count; j++) {
+               bmp->line[line][pos] = b[j%2];
+               pos++;
+            }
+         }
+         else {
+            switch (val) {
 
-	       case 0:                       /* end of line */
-		  eolflag=1;
-		  break;
+               case 0:                       /* end of line */
+                  eolflag=1;
+                  break;
 
-	       case 1:                       /* end of picture */
-		  eopicflag=1;
-		  break;
+               case 1:                       /* end of picture */
+                  eopicflag=1;
+                  break;
 
-	       case 2:                       /* displace image */
-		  count = pack_getc(f);
-		  val = pack_getc(f);
-		  pos += count;
-		  line -= val;
-		  break;
+               case 2:                       /* displace image */
+                  count = pack_getc(f);
+                  val = pack_getc(f);
+                  pos += count;
+                  line -= val;
+                  break;
 
-	       default:                      /* read in absolute mode */
-		  for (j=0; j<val; j++) {
-		     if ((j%4) == 0) {
-			val0 = pack_igetw(f);
-			for (k=0; k<2; k++) {
-			   b[2*k+1] = val0 & 15;
-			   val0 = val0 >> 4;
-			   b[2*k] = val0 & 15;
-			   val0 = val0 >> 4;
-			}
-		     }
-		     bmp->line[line][pos] = b[j%4];
-		     pos++;
-		  }
-		  break;
-	    }
-	 }
+               default:                      /* read in absolute mode */
+                  for (j=0; j<val; j++) {
+                     if ((j%4) == 0) {
+                        val0 = pack_igetw(f);
+                        for (k=0; k<2; k++) {
+                           b[2*k+1] = val0 & 15;
+                           val0 = val0 >> 4;
+                           b[2*k] = val0 & 15;
+                           val0 = val0 >> 4;
+                        }
+                     }
+                     bmp->line[line][pos] = b[j%4];
+                     pos++;
+                  }
+                  break;
+            }
+         }
 
-	 if (pos-1 > (int)infoheader->biWidth)
-	    eolflag=1;
+         if (pos-1 > (int)infoheader->biWidth)
+            eolflag=1;
       }
 
       line--;
       if (line < 0)
-	 eopicflag = 1;
+         eopicflag = 1;
    }
 }
 
@@ -649,17 +649,17 @@ BITMAP *load_bmp_pf(PACKFILE *f, RGB *pal)
 
    if (biSize == WININFOHEADERSIZE) {
       if (read_win_bminfoheader(f, &infoheader) != 0) {
-	 return NULL;
+         return NULL;
       }
       if (infoheader.biCompression != BI_BITFIELDS)
-	 read_bmicolors(fileheader.bfOffBits - 54, pal, f, 1);
+         read_bmicolors(fileheader.bfOffBits - 54, pal, f, 1);
    }
    else if (biSize == OS2INFOHEADERSIZE) {
       if (read_os2_bminfoheader(f, &infoheader) != 0) {
-	 return NULL;
+         return NULL;
       }
       if (infoheader.biCompression != BI_BITFIELDS)
-	 read_bmicolors(fileheader.bfOffBits - 26, pal, f, 0);
+         read_bmicolors(fileheader.bfOffBits - 26, pal, f, 0);
    }
    else {
       return NULL;
@@ -682,14 +682,14 @@ BITMAP *load_bmp_pf(PACKFILE *f, RGB *pal)
       (void)grnMask;
 
       if ((bluMask == 0x001f) && (redMask == 0x7C00))
-	 bpp = 15;
+         bpp = 15;
       else if ((bluMask == 0x001f) && (redMask == 0xF800))
-	 bpp = 16;
+         bpp = 16;
       else if ((bluMask == 0x0000FF) && (redMask == 0xFF0000))
-	 bpp = 32;
+         bpp = 32;
       else {
-	 /* Unrecognised bit masks/depth, refuse to load. */
-	 return NULL;
+         /* Unrecognised bit masks/depth, refuse to load. */
+         return NULL;
       }
    }
 
@@ -706,36 +706,36 @@ BITMAP *load_bmp_pf(PACKFILE *f, RGB *pal)
    switch (infoheader.biCompression) {
 
       case BI_RGB:
-	 read_image(f, bmp, &infoheader);
-	 break;
+         read_image(f, bmp, &infoheader);
+         break;
 
       case BI_RLE8:
-	 read_RLE8_compressed_image(f, bmp, &infoheader);
-	 break;
+         read_RLE8_compressed_image(f, bmp, &infoheader);
+         break;
 
       case BI_RLE4:
-	 read_RLE4_compressed_image(f, bmp, &infoheader);
-	 break;
+         read_RLE4_compressed_image(f, bmp, &infoheader);
+         break;
 
       case BI_BITFIELDS:
-	 read_bitfields_image(f, bmp, &infoheader);
-	 break;
+         read_bitfields_image(f, bmp, &infoheader);
+         break;
 
       default:
-	 destroy_bitmap(bmp);
-	 bmp = NULL;
+         destroy_bitmap(bmp);
+         bmp = NULL;
    }
 
    if (dest_depth != bpp) {
       /* restore original palette except if it comes from the bitmap */
       if ((bpp != 8) && (!want_palette))
-	 pal = NULL;
+         pal = NULL;
 
       if (bmp) {
-	 bmp = _fixup_loaded_bitmap(bmp, pal, dest_depth);
+         bmp = _fixup_loaded_bitmap(bmp, pal, dest_depth);
       }
    }
-   
+
    /* construct a fake palette if 8-bit mode is not involved */
    if ((bpp != 8) && (dest_depth != 8) && want_palette)
       generate_332_palette(pal);
@@ -749,14 +749,14 @@ BITMAP *load_bmp_pf(PACKFILE *f, RGB *pal)
  *  Writes a bitmap into a BMP file, using the specified palette (this
  *  should be an array of at least 256 RGB structures).
  */
-int save_bmp(AL_CONST char *filename, BITMAP *bmp, AL_CONST RGB *pal) 
+int save_bmp(AL_CONST char *filename, BITMAP *bmp, AL_CONST RGB *pal)
 {
    PACKFILE *f;
    int ret;
    ASSERT(filename);
 
    f = pack_fopen(filename, F_WRITE);
-   if (!f) 
+   if (!f)
       return -1;
 
    ret = save_bmp_pf(f, bmp, pal);
@@ -774,7 +774,7 @@ int save_bmp(AL_CONST char *filename, BITMAP *bmp, AL_CONST RGB *pal)
  *  offset into the file is left after the TGA file just written. On failure
  *  the offset is left at the end of whatever incomplete data was written.
  */
-int save_bmp_pf(PACKFILE *f, BITMAP *bmp, AL_CONST RGB *pal) 
+int save_bmp_pf(PACKFILE *f, BITMAP *bmp, AL_CONST RGB *pal)
 {
    PALETTE tmppal;
    int bfSize;
@@ -797,9 +797,9 @@ int save_bmp_pf(PACKFILE *f, BITMAP *bmp, AL_CONST RGB *pal)
 
    if (bpp == 8) {
       biSizeImage = (bmp->w + filler) * bmp->h;
-      bfSize = (54		       /* header */
-		+ 256*4		       /* palette */
-		+ biSizeImage);	       /* image data */
+      bfSize = (54                     /* header */
+                + 256*4                /* palette */
+                + biSizeImage);        /* image data */
    }
    else {
       biSizeImage = (bmp->w*3 + filler) * bmp->h;
@@ -815,9 +815,9 @@ int save_bmp_pf(PACKFILE *f, BITMAP *bmp, AL_CONST RGB *pal)
    pack_iputw(0, f);                   /* bfReserved2 */
 
    if (bpp == 8)                       /* bfOffBits */
-      pack_iputl(54+256*4, f); 
+      pack_iputl(54+256*4, f);
    else
-      pack_iputl(54, f); 
+      pack_iputl(54, f);
 
    /* info_header */
    pack_iputl(40, f);                  /* biSize */
@@ -836,10 +836,10 @@ int save_bmp_pf(PACKFILE *f, BITMAP *bmp, AL_CONST RGB *pal)
 
       /* palette */
       for (i=0; i<256; i++) {
-	 pack_putc(_rgb_scale_6[pal[i].b], f);
-	 pack_putc(_rgb_scale_6[pal[i].g], f);
-	 pack_putc(_rgb_scale_6[pal[i].r], f);
-	 pack_putc(0, f);
+         pack_putc(_rgb_scale_6[pal[i].b], f);
+         pack_putc(_rgb_scale_6[pal[i].g], f);
+         pack_putc(_rgb_scale_6[pal[i].r], f);
+         pack_putc(0, f);
       }
    }
    else {
@@ -850,19 +850,19 @@ int save_bmp_pf(PACKFILE *f, BITMAP *bmp, AL_CONST RGB *pal)
    /* image data */
    for (i=bmp->h-1; i>=0; i--) {
       for (j=0; j<bmp->w; j++) {
-	 if (bpp == 8) {
-	    pack_putc(getpixel(bmp, j, i), f);
-	 }
-	 else {
-	    c = getpixel(bmp, j, i);
-	    pack_putc(getb_depth(depth, c), f);
-	    pack_putc(getg_depth(depth, c), f);
-	    pack_putc(getr_depth(depth, c), f);
-	 }
+         if (bpp == 8) {
+            pack_putc(getpixel(bmp, j, i), f);
+         }
+         else {
+            c = getpixel(bmp, j, i);
+            pack_putc(getb_depth(depth, c), f);
+            pack_putc(getg_depth(depth, c), f);
+            pack_putc(getr_depth(depth, c), f);
+         }
       }
 
       for (j=0; j<filler; j++)
-	 pack_putc(0, f);
+         pack_putc(0, f);
    }
 
    if (*allegro_errno)
@@ -870,4 +870,3 @@ int save_bmp_pf(PACKFILE *f, BITMAP *bmp, AL_CONST RGB *pal)
    else
       return 0;
 }
-

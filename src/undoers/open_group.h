@@ -36,4 +36,4 @@ public:
 
 } // namespace undoers
 
-#endif	// UNDOERS_OPEN_GROUP_H_INCLUDED
+#endif  // UNDOERS_OPEN_GROUP_H_INCLUDED

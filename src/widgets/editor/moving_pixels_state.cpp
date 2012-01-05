@@ -100,7 +100,7 @@ bool MovingPixelsState::onBeforeChangeState(Editor* editor)
   editor->releaseMouse();
 
   app_get_statusbar()->hideMovePixelsOptions();
-  return false;			// Don't keep this state in history
+  return false;                 // Don't keep this state in history
 }
 
 void MovingPixelsState::onCurrentToolChange(Editor* editor)
@@ -133,8 +133,8 @@ bool MovingPixelsState::onMouseDown(Editor* editor, Message* msg)
 
     // Get the handle covered by the mouse.
     HandleType handle = transfHandles->getHandleAtPoint(editor,
-							gfx::Point(msg->mouse.x, msg->mouse.y),
-							getTransformation(editor));
+                                                        gfx::Point(msg->mouse.x, msg->mouse.y),
+                                                        getTransformation(editor));
 
     if (handle != NoHandle) {
       // Re-catch the image
@@ -149,7 +149,7 @@ bool MovingPixelsState::onMouseDown(Editor* editor, Message* msg)
 
   // Start "moving pixels" loop
   if (editor->isInsideSelection() && (msg->mouse.left ||
-				      msg->mouse.right)) {
+                                      msg->mouse.right)) {
     // Re-catch the image
     int x, y;
     editor->screenToEditor(msg->mouse.x, msg->mouse.y, &x, &y);
@@ -163,7 +163,7 @@ bool MovingPixelsState::onMouseDown(Editor* editor, Message* msg)
     // Drop pixels (e.g. to start drawing)
     dropPixels(editor);
   }
-  
+
   // Use StandbyState implementation
   return StandbyState::onMouseDown(editor, msg);
 }
@@ -191,7 +191,7 @@ bool MovingPixelsState::onMouseMove(Editor* editor, Message* msg)
     // Infinite scroll
     editor->controlInfiniteScroll(msg);
 
-    // Get the position of the mouse in the sprite 
+    // Get the position of the mouse in the sprite
     int x, y;
     editor->screenToEditor(msg->mouse.x, msg->mouse.y, &x, &y);
 
@@ -203,9 +203,9 @@ bool MovingPixelsState::onMouseMove(Editor* editor, Message* msg)
       // Redraw the extra cel in the new position
       jmouse_hide();
       editors_draw_sprite_tiled(editor->getSprite(),
-				bounds.x, bounds.y,
-				bounds.x+bounds.w-1,
-				bounds.y+bounds.h-1);
+                                bounds.x, bounds.y,
+                                bounds.x+bounds.w-1,
+                                bounds.y+bounds.h-1);
       jmouse_show();
     }
     editor->updateStatusBar();
@@ -299,7 +299,7 @@ void MovingPixelsState::setTransparentColor(const Color& color)
 
   Sprite* sprite = current_editor->getSprite();
   ASSERT(sprite != NULL);
-  
+
   int imgtype = sprite->getImgType();
   m_pixelsMovement->setMaskColor(color_utils::color_for_image(color, imgtype));
 }

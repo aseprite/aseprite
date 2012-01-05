@@ -25,7 +25,7 @@
 
 #ifndef ALLEGRO_MACOSX
 
-/* System drivers provide their own lists, so this is just to keep the 
+/* System drivers provide their own lists, so this is just to keep the
  * Allegro framework happy.  */
 _DRIVER_INFO _timer_driver_list[] = {
    { 0, 0, 0 }
@@ -43,8 +43,8 @@ _DRIVER_INFO _timer_driver_list[] = {
  *  where the tv_sec is unsigned.
  */
 static int timeval_subtract(struct timeval *result,
-			    struct timeval *x,
-			    struct timeval *y)
+                            struct timeval *x,
+                            struct timeval *y)
 {
    /* Perform the carry for the later subtraction by updating Y. */
    if (x->tv_usec < y->tv_usec) {
@@ -102,21 +102,21 @@ void _unix_rest(unsigned int ms, void (*callback) (void))
       end.tv_usec %= 1000000L;
 
       while (1) {
-	 if (timeval_subtract(&delay, &end, &now))
-	    break;
+         if (timeval_subtract(&delay, &end, &now))
+            break;
 
 #ifdef ALLEGRO_MACOSX
-	 result = usleep((delay.tv_sec * 1000000L) + delay.tv_usec);
+         result = usleep((delay.tv_sec * 1000000L) + delay.tv_usec);
 #else
-	 result = select(0, NULL, NULL, NULL, &delay);
+         result = select(0, NULL, NULL, NULL, &delay);
 #endif
-	 if (result == 0)	/* ok */
-	    break;
-	 if ((result != -1) || (errno != EINTR))
-	    break;
+         if (result == 0)       /* ok */
+            break;
+         if ((result != -1) || (errno != EINTR))
+            break;
 
-	 /* interrupted */
-	 gettimeofday(&now, NULL);
+         /* interrupted */
+         gettimeofday(&now, NULL);
       }
    }
 }

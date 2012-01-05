@@ -84,7 +84,7 @@ void Editor::editor_click_done()
 // Returns false when the user stop the click-loop: releases the
 // button or press the second click (depend of the mode)
 int Editor::editor_click(int *x, int *y, int *update,
-			 void (*scroll_callback) (int before_change))
+                         void (*scroll_callback) (int before_change))
 {
   int prev_x, prev_y;
 
@@ -95,8 +95,8 @@ int Editor::editor_click(int *x, int *y, int *update,
 
     if (click_mode == MODE_CLICKANDCLICK) {
       do {
-	jmouse_poll();
-	gui_feedback();
+        jmouse_poll();
+        gui_feedback();
       } while (jmouse_b(0));
 
       jmouse_set_position(click_start_x, click_start_y);
@@ -124,31 +124,31 @@ int Editor::editor_click(int *x, int *y, int *update,
     /* update scroll */
     if (jmouse_control_infinite_scroll(vp)) {
       if (scroll_callback)
-	(*scroll_callback)(true);
+        (*scroll_callback)(true);
 
       /* smooth scroll movement */
       if (get_config_bool("Options", "MoveSmooth", true)) {
-	jmouse_set_position(MID(vp.x+1, click_last_x, vp.x+vp.w-2),
-			    MID(vp.y+1, click_last_y, vp.y+vp.h-2));
+        jmouse_set_position(MID(vp.x+1, click_last_x, vp.x+vp.w-2),
+                            MID(vp.y+1, click_last_y, vp.y+vp.h-2));
       }
       /* this is better for high resolutions: scroll movement by big steps */
       else {
-	jmouse_set_position((click_last_x != jmouse_x(0)) ?
-			    (click_last_x + (vp.x+vp.w/2))/2: jmouse_x(0),
+        jmouse_set_position((click_last_x != jmouse_x(0)) ?
+                            (click_last_x + (vp.x+vp.w/2))/2: jmouse_x(0),
 
-			    (click_last_y != jmouse_y(0)) ?
-			    (click_last_y + (vp.y+vp.h/2))/2: jmouse_y(0));
+                            (click_last_y != jmouse_y(0)) ?
+                            (click_last_y + (vp.y+vp.h/2))/2: jmouse_y(0));
       }
 
       gfx::Point scroll = view->getViewScroll();
       setEditorScroll(scroll.x+click_last_x-jmouse_x(0),
-		      scroll.y+click_last_y-jmouse_y(0), true);
+                      scroll.y+click_last_y-jmouse_y(0), true);
 
       click_last_x = jmouse_x(0);
       click_last_y = jmouse_y(0);
 
       if (scroll_callback)
-	(*scroll_callback)(false);
+        (*scroll_callback)(false);
     }
 
     // If the cursor hasn't subpixel movement
@@ -168,8 +168,8 @@ int Editor::editor_click(int *x, int *y, int *update,
       click_prev_last_b = click_last_b;
 
       do {
-	jmouse_poll();
-	gui_feedback();
+        jmouse_poll();
+        gui_feedback();
       } while (jmouse_b(0));
 
       jmouse_set_position(click_last_x, click_last_y);

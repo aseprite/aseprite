@@ -43,8 +43,8 @@ protected:
 
 FlattenLayersCommand::FlattenLayersCommand()
   : Command("FlattenLayers",
-	    "Flatten Layers",
-	    CmdUIOnlyFlag)
+            "Flatten Layers",
+            CmdUIOnlyFlag)
 {
 }
 

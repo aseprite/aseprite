@@ -33,14 +33,14 @@
 
 static void
 art_rgb_bitmap_affine_opaque (art_u8 *dst,
-			      int x0, int y0, int x1, int y1,
-			      int dst_rowstride,
-			      const art_u8 *src,
-			      int src_width, int src_height, int src_rowstride,
-			      art_u32 rgb,
-			      const double affine[6],
-			      ArtFilterLevel level,
-			      ArtAlphaGamma *alphagamma)
+                              int x0, int y0, int x1, int y1,
+                              int dst_rowstride,
+                              const art_u8 *src,
+                              int src_width, int src_height, int src_rowstride,
+                              art_u32 rgb,
+                              const double affine[6],
+                              ArtFilterLevel level,
+                              ArtAlphaGamma *alphagamma)
 {
   /* Note: this is a slow implementation, and is missing all filter
      levels other than NEAREST. It is here for clarity of presentation
@@ -65,23 +65,23 @@ art_rgb_bitmap_affine_opaque (art_u8 *dst,
       run_x0 = x0;
       run_x1 = x1;
       art_rgb_affine_run (&run_x0, &run_x1, y, src_width, src_height,
-			  inv);
+                          inv);
       dst_p = dst_linestart + (run_x0 - x0) * 3;
       for (x = run_x0; x < run_x1; x++)
-	{
-	  pt.x = x + 0.5;
-	  art_affine_point (&src_pt, &pt, inv);
-	  src_x = floor (src_pt.x);
-	  src_y = floor (src_pt.y);
-	  src_p = src + (src_y * src_rowstride) + (src_x >> 3);
-	  if (*src_p & (128 >> (src_x & 7)))
-	    {
-	      dst_p[0] = r;
-	      dst_p[1] = g;
-	      dst_p[2] = b;
-	    }
-	  dst_p += 3;
-	}
+        {
+          pt.x = x + 0.5;
+          art_affine_point (&src_pt, &pt, inv);
+          src_x = floor (src_pt.x);
+          src_y = floor (src_pt.y);
+          src_p = src + (src_y * src_rowstride) + (src_x >> 3);
+          if (*src_p & (128 >> (src_x & 7)))
+            {
+              dst_p[0] = r;
+              dst_p[1] = g;
+              dst_p[2] = b;
+            }
+          dst_p += 3;
+        }
       dst_linestart += dst_rowstride;
     }
 }
@@ -118,13 +118,13 @@ art_rgb_bitmap_affine_opaque (art_u8 *dst,
  **/
 void
 art_rgb_bitmap_affine (art_u8 *dst,
-		       int x0, int y0, int x1, int y1, int dst_rowstride,
-		       const art_u8 *src,
-		       int src_width, int src_height, int src_rowstride,
-		       art_u32 rgba,
-		       const double affine[6],
-		       ArtFilterLevel level,
-		       ArtAlphaGamma *alphagamma)
+                       int x0, int y0, int x1, int y1, int dst_rowstride,
+                       const art_u8 *src,
+                       int src_width, int src_height, int src_rowstride,
+                       art_u32 rgba,
+                       const double affine[6],
+                       ArtFilterLevel level,
+                       ArtAlphaGamma *alphagamma)
 {
   /* Note: this is a slow implementation, and is missing all filter
      levels other than NEAREST. It is here for clarity of presentation
@@ -145,12 +145,12 @@ art_rgb_bitmap_affine (art_u8 *dst,
   if (alpha == 0xff)
     {
       art_rgb_bitmap_affine_opaque (dst, x0, y0, x1, y1, dst_rowstride,
-				    src,
-				    src_width, src_height, src_rowstride,
-				    rgba >> 8,
-				    affine,
-				    level,
-				    alphagamma);
+                                    src,
+                                    src_width, src_height, src_rowstride,
+                                    rgba >> 8,
+                                    affine,
+                                    level,
+                                    alphagamma);
       return;
     }
   /* alpha = (65536 * alpha) / 255; */
@@ -166,31 +166,31 @@ art_rgb_bitmap_affine (art_u8 *dst,
       run_x0 = x0;
       run_x1 = x1;
       art_rgb_affine_run (&run_x0, &run_x1, y, src_width, src_height,
-			  inv);
+                          inv);
       dst_p = dst_linestart + (run_x0 - x0) * 3;
       for (x = run_x0; x < run_x1; x++)
-	{
-	  pt.x = x + 0.5;
-	  art_affine_point (&src_pt, &pt, inv);
-	  src_x = floor (src_pt.x);
-	  src_y = floor (src_pt.y);
-	  src_p = src + (src_y * src_rowstride) + (src_x >> 3);
-	  if (*src_p & (128 >> (src_x & 7)))
-	    {
-	      bg_r = dst_p[0];
-	      bg_g = dst_p[1];
-	      bg_b = dst_p[2];
+        {
+          pt.x = x + 0.5;
+          art_affine_point (&src_pt, &pt, inv);
+          src_x = floor (src_pt.x);
+          src_y = floor (src_pt.y);
+          src_p = src + (src_y * src_rowstride) + (src_x >> 3);
+          if (*src_p & (128 >> (src_x & 7)))
+            {
+              bg_r = dst_p[0];
+              bg_g = dst_p[1];
+              bg_b = dst_p[2];
 
-	      fg_r = bg_r + (((r - bg_r) * alpha + 0x8000) >> 16);
-	      fg_g = bg_g + (((g - bg_g) * alpha + 0x8000) >> 16);
-	      fg_b = bg_b + (((b - bg_b) * alpha + 0x8000) >> 16);
+              fg_r = bg_r + (((r - bg_r) * alpha + 0x8000) >> 16);
+              fg_g = bg_g + (((g - bg_g) * alpha + 0x8000) >> 16);
+              fg_b = bg_b + (((b - bg_b) * alpha + 0x8000) >> 16);
 
-	      dst_p[0] = fg_r;
-	      dst_p[1] = fg_g;
-	      dst_p[2] = fg_b;
-	    }
-	  dst_p += 3;
-	}
+              dst_p[0] = fg_r;
+              dst_p[1] = fg_g;
+              dst_p[2] = fg_b;
+            }
+          dst_p += 3;
+        }
       dst_linestart += dst_rowstride;
     }
 }

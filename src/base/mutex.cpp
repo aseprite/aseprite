@@ -12,7 +12,7 @@
   #include "base/mutex_win32.h"
 #else
   #include "base/mutex_pthread.h"
-#endif 
+#endif
 
 Mutex::Mutex()
   : m_impl(new MutexImpl)

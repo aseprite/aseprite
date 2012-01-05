@@ -29,4 +29,4 @@ namespace updater {
 
 } // namespace updater
 
-#endif	// UPDATER_USER_AGENT_H_INCLUDED
+#endif  // UPDATER_USER_AGENT_H_INCLUDED

@@ -173,7 +173,7 @@ FT_BEGIN_HEADER
 
     /* support for Multiple Masters fonts */
     T1_Blend*      blend;
-    
+
     /* since FT 2.1 - interface to PostScript hinter */
     void*          pshinter;
 
@@ -188,7 +188,7 @@ FT_BEGIN_HEADER
     CID_Info    cid;
     void*       afm_data;
     CID_Subrs*  subrs;
-    
+
     /* since FT 2.1 - interface to PostScript hinter */
     void*       pshinter;
 

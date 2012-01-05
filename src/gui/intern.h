@@ -41,10 +41,10 @@ void _jmanager_close_window(JWidget manager, Frame* frame, bool redraw_backgroun
 // theme.cpp
 
 void _ji_theme_draw_sprite_color(BITMAP *bmp, BITMAP *sprite,
-				 int x, int y, int color);
+                                 int x, int y, int color);
 
 void _ji_theme_textbox_draw(BITMAP *bmp, JWidget textbox,
-			    int *w, int *h, int bg, int fg);
+                            int *w, int *h, int bg, int fg);
 
 //////////////////////////////////////////////////////////////////////
 // jfontbmp.c

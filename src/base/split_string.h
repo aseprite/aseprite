@@ -13,8 +13,8 @@
 namespace base {
 
   void split_string(const base::string& string,
-		    std::vector<base::string>& parts,
-		    const base::string& separators);
+                    std::vector<base::string>& parts,
+                    const base::string& separators);
 
 }
 

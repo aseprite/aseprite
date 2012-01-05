@@ -17,7 +17,7 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#include <string.h>	/* for memset */
+#include <string.h>     /* for memset */
 #include "art_misc.h"
 #include "art_rgb.h"
 
@@ -60,11 +60,11 @@ art_rgb_fill_run (art_u8 *buf, art_u8 r, art_u8 g, art_u8 b, gint n)
   else
     {
       for (i = 0; i < n; i++)
-	{
-	  *buf++ = r;
-	  *buf++ = g;
-	  *buf++ = b;
-	}
+        {
+          *buf++ = r;
+          *buf++ = g;
+          *buf++ = b;
+        }
     }
 }
 #endif
@@ -100,47 +100,47 @@ art_rgb_fill_run (art_u8 *buf, art_u8 r, art_u8 g, art_u8 b, int n)
   else
     {
       if (n < 8)
-	{
-	  for (i = 0; i < n; i++)
-	    {
-	      *buf++ = r;
-	      *buf++ = g;
-	      *buf++ = b;
-	    }
-	} else {
-	  /* handle prefix up to byte alignment */
-	  /* I'm worried about this cast on sizeof(long) != sizeof(uchar *)
-	     architectures, but it _should_ work. */
-	  for (i = 0; ((unsigned long)buf) & 3; i++)
-	    {
-	      *buf++ = r;
-	      *buf++ = g;
-	      *buf++ = b;
-	    }
+        {
+          for (i = 0; i < n; i++)
+            {
+              *buf++ = r;
+              *buf++ = g;
+              *buf++ = b;
+            }
+        } else {
+          /* handle prefix up to byte alignment */
+          /* I'm worried about this cast on sizeof(long) != sizeof(uchar *)
+             architectures, but it _should_ work. */
+          for (i = 0; ((unsigned long)buf) & 3; i++)
+            {
+              *buf++ = r;
+              *buf++ = g;
+              *buf++ = b;
+            }
 #ifndef WORDS_BIGENDIAN
-	  v1 = r | (g << 8) | (b << 16) | (r << 24);
-	  v3 = (v1 << 8) | b;
-	  v2 = (v3 << 8) | g;
+          v1 = r | (g << 8) | (b << 16) | (r << 24);
+          v3 = (v1 << 8) | b;
+          v2 = (v3 << 8) | g;
 #else
-	  v1 = (r << 24) | (g << 16) | (b << 8) | r;
-	  v2 = (v1 << 8) | g;
-	  v3 = (v2 << 8) | b;
+          v1 = (r << 24) | (g << 16) | (b << 8) | r;
+          v2 = (v1 << 8) | g;
+          v3 = (v2 << 8) | b;
 #endif
-	  for (; i < n - 3; i += 4)
-	    {
-	      ((art_u32 *)buf)[0] = v1;
-	      ((art_u32 *)buf)[1] = v2;
-	      ((art_u32 *)buf)[2] = v3;
-	      buf += 12;
-	    }
-	  /* handle postfix */
-	  for (; i < n; i++)
-	    {
-	      *buf++ = r;
-	      *buf++ = g;
-	      *buf++ = b;
-	    }
-	}
+          for (; i < n - 3; i += 4)
+            {
+              ((art_u32 *)buf)[0] = v1;
+              ((art_u32 *)buf)[1] = v2;
+              ((art_u32 *)buf)[2] = v3;
+              buf += 12;
+            }
+          /* handle postfix */
+          for (; i < n; i++)
+            {
+              *buf++ = r;
+              *buf++ = g;
+              *buf++ = b;
+            }
+        }
     }
 }
 #endif
@@ -173,4 +173,3 @@ art_rgb_run_alpha (art_u8 *buf, art_u8 r, art_u8 g, art_u8 b, int alpha, int n)
       *buf++ = v + (((b - v) * alpha + 0x80) >> 8);
     }
 }
-

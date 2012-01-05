@@ -15,12 +15,12 @@ using namespace std;
 ostream& operator<<(ostream& os, const Hsv& hsv)
 {
   return os << "("
-	    << hsv.hueInt() << ", "
-	    << hsv.saturationInt() << ", "
-	    << hsv.valueInt() << "); real: ("
-	    << hsv.hue() << ", "
-	    << hsv.saturation() << ", "
-	    << hsv.value() << ")";
+            << hsv.hueInt() << ", "
+            << hsv.saturationInt() << ", "
+            << hsv.valueInt() << "); real: ("
+            << hsv.hue() << ", "
+            << hsv.saturation() << ", "
+            << hsv.value() << ")";
 }
 
 TEST(Hsv, Ctor)

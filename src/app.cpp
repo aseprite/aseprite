@@ -102,11 +102,11 @@ static Widget* box_colorbar = NULL;   /* box where the color bar is */
 static Widget* box_toolbar = NULL;    /* box where the tools bar is */
 static Widget* box_statusbar = NULL;  /* box where the status bar is */
 static Widget* box_tabsbar = NULL;    /* box where the tabs bar is */
-static MenuBar* menubar = NULL;	      /* the menu bar widget */
+static MenuBar* menubar = NULL;       /* the menu bar widget */
 static StatusBar* statusbar = NULL;   /* the status bar widget */
 static ColorBar* colorbar = NULL;     /* the color bar widget */
-static Widget* toolbar = NULL;	      /* the tool bar widget */
-static Tabs* tabsbar = NULL;	      // The tabs bar widget
+static Widget* toolbar = NULL;        /* the tool bar widget */
+static Tabs* tabsbar = NULL;          // The tabs bar widget
 
 static char *palette_filename = NULL;
 
@@ -135,7 +135,7 @@ App::App(int argc, char* argv[])
 
   // Initialize editors.
   init_module_editors();
- 
+
   // Register well-known image file types.
   FileFormatsManager::instance().registerAllFormats();
 
@@ -152,7 +152,7 @@ App::App(int argc, char* argv[])
     UniquePtr<Palette> pal(Palette::load(palette_filename));
     if (pal.get() == NULL)
       throw base::Exception("Error loading default palette from: %s",
-			    static_cast<const char*>(palette_filename));
+                            static_cast<const char*>(palette_filename));
 
     set_default_palette(pal.get());
   }
@@ -247,40 +247,40 @@ int App::run()
 
     // procress options
   PRINTF("Processing options...\n");
-  
+
   ASSERT(m_checkArgs != NULL);
   {
     Console console;
     for (CheckArgs::iterator
-	   it  = m_checkArgs->begin();
+           it  = m_checkArgs->begin();
          it != m_checkArgs->end(); ++it) {
       CheckArgs::Option* option = *it;
 
       switch (option->type()) {
 
-	case CheckArgs::Option::OpenSprite: {
-	  // Load the sprite
-	  Document* document = load_document(option->data().c_str());
-	  if (!document) {
-	    if (!isGui())
-	      console.printf("Error loading file \"%s\"\n", option->data().c_str());
-	  }
-	  else {
-	    // Mount and select the sprite
-	    UIContext* context = UIContext::instance();
-	    context->addDocument(document);
-	    context->setActiveDocument(document);
+        case CheckArgs::Option::OpenSprite: {
+          // Load the sprite
+          Document* document = load_document(option->data().c_str());
+          if (!document) {
+            if (!isGui())
+              console.printf("Error loading file \"%s\"\n", option->data().c_str());
+          }
+          else {
+            // Mount and select the sprite
+            UIContext* context = UIContext::instance();
+            context->addDocument(document);
+            context->setActiveDocument(document);
 
-	    if (isGui()) {
-	      // Show it
-	      set_document_in_more_reliable_editor(context->getFirstDocument());
+            if (isGui()) {
+              // Show it
+              set_document_in_more_reliable_editor(context->getFirstDocument());
 
-	      // Recent file
-	      getRecentFiles()->addRecentFile(option->data().c_str());
-	    }
-	  }
-	  break;
-	}
+              // Recent file
+              getRecentFiles()->addRecentFile(option->data().c_str());
+            }
+          }
+          break;
+        }
       }
     }
     delete m_checkArgs;
@@ -346,7 +346,7 @@ App::~App()
 
     // Destroy the loaded gui.xml file.
     delete GuiXml::instance();
-  
+
     m_instance = NULL;
   }
   catch (...) {
@@ -400,7 +400,7 @@ void app_rebuild_documents_tabs()
 
   // Insert all other sprites
   for (Documents::const_iterator
-	 it = docs.begin(), end = docs.end(); it != end; ++it) {
+         it = docs.begin(), end = docs.end(); it != end; ++it) {
     const Document* document = *it;
     app_update_document_tab(document);
   }
@@ -446,12 +446,12 @@ bool app_rebuild_recent_list()
       Params params;
 
       for (; it != end; ++it) {
-	const char* filename = it->c_str();
+        const char* filename = it->c_str();
 
-	params.set("filename", filename);
+        params.set("filename", filename);
 
-	menuitem = new MenuItem2(get_filename(filename), cmd_open_file, &params);
-	submenu->addChild(menuitem);
+        menuitem = new MenuItem2(get_filename(filename), cmd_open_file, &params);
+        submenu->addChild(menuitem);
       }
     }
     else {
@@ -495,7 +495,7 @@ int app_get_color_to_clear_layer(Layer* layer)
 {
   /* all transparent layers are cleared with the mask color */
   Color color = Color::fromMask();
-  
+
   /* the `Background' is erased with the `Background Color' */
   if (layer != NULL && layer->is_background())
     color = colorbar->getBgColor();
@@ -521,13 +521,13 @@ void AppTabsDelegate::clickTab(Tabs* tabs, void* data, int button)
     if (button & 2) {
       Menu* popup_menu = get_document_tab_popup_menu();
       if (popup_menu != NULL) {
-	popup_menu->showPopup(jmouse_x(0), jmouse_y(0));
+        popup_menu->showPopup(jmouse_x(0), jmouse_y(0));
       }
     }
     // middle-button: close the sprite
     else if (button & 4) {
       Command* close_file_cmd =
-	CommandsModule::instance()->getCommandByName(CommandId::CloseFile);
+        CommandsModule::instance()->getCommandByName(CommandId::CloseFile);
 
       context->executeCommand(close_file_cmd, NULL);
     }
@@ -541,10 +541,9 @@ void AppTabsDelegate::mouseOverTab(Tabs* tabs, void* data)
 
   if (data) {
     app_get_statusbar()->setStatusText(250, "%s",
-				       static_cast<const char*>(document->getFilename()));
+                                       static_cast<const char*>(document->getFilename()));
   }
   else {
     app_get_statusbar()->clearText();
   }
 }
-

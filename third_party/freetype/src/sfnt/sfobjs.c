@@ -300,7 +300,7 @@
     if ( LOAD_( max_profile ) ||
          LOAD_( charmaps )    )
       goto Exit;
-      
+
     /* the following tables are optional in PCL fonts -- */
     /* don't check for errors                            */
     (void)LOAD_( names );

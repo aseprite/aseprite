@@ -1,6 +1,6 @@
-/*         ______   ___    ___ 
- *        /\  _  \ /\_ \  /\_ \ 
- *        \ \ \L\ \\//\ \ \//\ \      __     __   _ __   ___ 
+/*         ______   ___    ___
+ *        /\  _  \ /\_ \  /\_ \
+ *        \ \ \L\ \\//\ \ \//\ \      __     __   _ __   ___
  *         \ \  __ \ \ \ \  \ \ \   /'__`\ /'_ `\/\`'__\/ __`\
  *          \ \ \/\ \ \_\ \_ \_\ \_/\  __//\ \L\ \ \ \//\ \L\ \
  *           \ \_\ \_\/\____\/\____\ \____\ \____ \ \_\\ \____/
@@ -8,10 +8,10 @@
  *                                           /\____/
  *                                           \_/__/
  *
- *	The OSS driver does not support percussion mode, so we have to 
- * 	"emulate" the percussion instruments using normal "melodic" mode.  
- * 	Some of these come from the SBTimbre package, others I (Peter Wang) 
- * 	tweaked manually.  Please feel free to make these sound good.
+ *      The OSS driver does not support percussion mode, so we have to
+ *      "emulate" the percussion instruments using normal "melodic" mode.
+ *      Some of these come from the SBTimbre package, others I (Peter Wang)
+ *      tweaked manually.  Please feel free to make these sound good.
  */
 
 
@@ -65,4 +65,3 @@ static FM_INSTRUMENT fm_emulated_drum[47] =
    { 0xBE, 0x4F, 0x00, 0x48, 0xF7, 0xF8, 0xFD, 0xFE, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00 }, /* MUTETRIG */
    { 0xBE, 0x4F, 0x00, 0x48, 0xF4, 0xE5, 0xA6, 0xB5, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00 }  /* OPENTRIG */
 };
-

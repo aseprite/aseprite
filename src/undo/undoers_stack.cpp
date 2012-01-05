@@ -28,11 +28,11 @@ void UndoersStack::clear()
 {
   for (iterator it = begin(), end = this->end(); it != end; ++it) {
     (*it)->getUndoer()->dispose(); // Delete the Undoer.
-    delete *it;			   // Delete the UndoersStack::Item.
+    delete *it;                    // Delete the UndoersStack::Item.
   }
 
   m_size = 0;
-  m_items.clear();		// Clear the list of items.
+  m_items.clear();              // Clear the list of items.
 }
 
 int UndoersStack::getMemSize() const
@@ -51,7 +51,7 @@ void UndoersStack::pushUndoer(Undoer* undoer)
 
   try {
     Item* item = new Item(m_undoHistory->getLabel(),
-			  m_undoHistory->getModification(), undoer);
+                          m_undoHistory->getModification(), undoer);
     try {
       m_items.insert(begin(), item);
     }
@@ -80,8 +80,8 @@ Undoer* UndoersStack::popUndoer(PopFrom popFrom)
       it = --end();
 
     undoer = (*it)->getUndoer();    // Set the undoer to return.
-    delete *it;			    // Delete the UndoersStack::Item.
-    m_items.erase(it);		    // Erase the item from the stack.
+    delete *it;                     // Delete the UndoersStack::Item.
+    m_items.erase(it);              // Erase the item from the stack.
     m_size -= undoer->getMemSize(); // Reduce the stack size.
   }
   else
@@ -104,9 +104,9 @@ int UndoersStack::countUndoGroups() const
       ++it;
 
       if (undoer->isOpenGroup())
-	level++;
+        level++;
       else if (undoer->isCloseGroup())
-	level--;
+        level--;
     } while (level && (it != end()));
 
     if (level == 0)

@@ -41,11 +41,11 @@ art_vpath_dash_max_subpath (const ArtVpath *vpath)
   for (i = 0; vpath[i].code != ART_END; i++)
     {
       if (vpath[i].code == ART_MOVETO || vpath[i].code == ART_MOVETO_OPEN)
-	{
-	  if (i - start > max_subpath)
-	    max_subpath = i - start;
-	  start = i;
-	}
+        {
+          if (i - start > max_subpath)
+            max_subpath = i - start;
+          start = i;
+        }
     }
   if (i - start > max_subpath)
     max_subpath = i - start;
@@ -112,7 +112,7 @@ art_vpath_dash (const ArtVpath *vpath, const ArtVpathDash *dash)
       phase_init -= dash->dash[offset_init];
       offset_init++;
       if (offset_init == dash->n_dash)
-	offset_init = 0;
+        offset_init = 0;
     }
 
   for (start = 0; vpath[start].code != ART_END; start = end)
@@ -121,76 +121,76 @@ art_vpath_dash (const ArtVpath *vpath, const ArtVpathDash *dash)
       /* subpath is [start..end) */
       total_dist = 0;
       for (i = start; i < end - 1; i++)
-	{
-	  double dx, dy;
+        {
+          double dx, dy;
 
-	  dx = vpath[i + 1].x - vpath[i].x;
-	  dy = vpath[i + 1].y - vpath[i].y;
-	  dists[i - start] = sqrt (dx * dx + dy * dy);
-	  total_dist += dists[i - start];
-	}
+          dx = vpath[i + 1].x - vpath[i].x;
+          dy = vpath[i + 1].y - vpath[i].y;
+          dists[i - start] = sqrt (dx * dx + dy * dy);
+          total_dist += dists[i - start];
+        }
       if (total_dist <= dash->dash[offset_init] - phase_init)
-	{
-	  /* subpath fits entirely within first dash */
-	  if (toggle_init)
-	    {
-	      for (i = start; i < end; i++)
-		art_vpath_add_point (&result, &n_result, &n_result_max,
-				     vpath[i].code, vpath[i].x, vpath[i].y);
-	    }
-	}
+        {
+          /* subpath fits entirely within first dash */
+          if (toggle_init)
+            {
+              for (i = start; i < end; i++)
+                art_vpath_add_point (&result, &n_result, &n_result_max,
+                                     vpath[i].code, vpath[i].x, vpath[i].y);
+            }
+        }
       else
-	{
-	  /* subpath is composed of at least one dash - thus all
-	     generated pieces are open */
-	  double dist;
+        {
+          /* subpath is composed of at least one dash - thus all
+             generated pieces are open */
+          double dist;
 
-	  phase = phase_init;
-	  offset = offset_init;
-	  toggle = toggle_init;
-	  dist = 0;
-	  i = start;
-	  if (toggle)
-	    art_vpath_add_point (&result, &n_result, &n_result_max,
-				 ART_MOVETO_OPEN, vpath[i].x, vpath[i].y);
-	  while (i != end - 1)
-	    {
-	      if (dists[i - start] - dist > dash->dash[offset] - phase)
-		{
-		  /* dash boundary is next */
-		  double a;
-		  double x, y;
+          phase = phase_init;
+          offset = offset_init;
+          toggle = toggle_init;
+          dist = 0;
+          i = start;
+          if (toggle)
+            art_vpath_add_point (&result, &n_result, &n_result_max,
+                                 ART_MOVETO_OPEN, vpath[i].x, vpath[i].y);
+          while (i != end - 1)
+            {
+              if (dists[i - start] - dist > dash->dash[offset] - phase)
+                {
+                  /* dash boundary is next */
+                  double a;
+                  double x, y;
 
-		  dist += dash->dash[offset] - phase;
-		  a = dist / dists[i - start];
-		  x = vpath[i].x + a * (vpath[i + 1].x - vpath[i].x);
-		  y = vpath[i].y + a * (vpath[i + 1].y - vpath[i].y);
-		  art_vpath_add_point (&result, &n_result, &n_result_max,
-				       toggle ? ART_LINETO : ART_MOVETO_OPEN,
-				       x, y);
-		  /* advance to next dash */
-		  toggle = !toggle;
-		  phase = 0;
-		  offset++;
-		  if (offset == dash->n_dash)
-		    offset = 0;
-		}
-	      else
-		{
-		  /* end of line in vpath is next */
-		  phase += dists[i - start] - dist;
-		  i++;
-		  dist = 0;
-		  if (toggle)
-		    art_vpath_add_point (&result, &n_result, &n_result_max,
-					 ART_LINETO, vpath[i].x, vpath[i].y);
-		}
-	    }
-	}
+                  dist += dash->dash[offset] - phase;
+                  a = dist / dists[i - start];
+                  x = vpath[i].x + a * (vpath[i + 1].x - vpath[i].x);
+                  y = vpath[i].y + a * (vpath[i + 1].y - vpath[i].y);
+                  art_vpath_add_point (&result, &n_result, &n_result_max,
+                                       toggle ? ART_LINETO : ART_MOVETO_OPEN,
+                                       x, y);
+                  /* advance to next dash */
+                  toggle = !toggle;
+                  phase = 0;
+                  offset++;
+                  if (offset == dash->n_dash)
+                    offset = 0;
+                }
+              else
+                {
+                  /* end of line in vpath is next */
+                  phase += dists[i - start] - dist;
+                  i++;
+                  dist = 0;
+                  if (toggle)
+                    art_vpath_add_point (&result, &n_result, &n_result_max,
+                                         ART_LINETO, vpath[i].x, vpath[i].y);
+                }
+            }
+        }
     }
 
   art_vpath_add_point (&result, &n_result, &n_result_max,
-		       ART_END, 0, 0);
+                       ART_END, 0, 0);
 
   art_free (dists);
 

@@ -44,4 +44,4 @@ private:
 
 } // namespace undoers
 
-#endif	// UNDOERS_SET_TOTAL_FRAMES_H_INCLUDED
+#endif  // UNDOERS_SET_TOTAL_FRAMES_H_INCLUDED

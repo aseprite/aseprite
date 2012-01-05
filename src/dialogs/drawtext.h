@@ -27,4 +27,3 @@ void dialogs_draw_text(Sprite* sprite);
 Image* RenderText(Sprite* sprite, const char* fontname, int size, int color, const char* text);
 
 #endif
-

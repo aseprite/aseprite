@@ -82,11 +82,11 @@ HandleType TransformHandles::getHandleAtPoint(Editor* editor, const gfx::Point& 
     int handle_r = handle_rs[i];
     for (size_t c=0; c<HANDLES; ++c) {
       if (inHandle(pt,
-		   (x[handles_info[c].i1]+x[handles_info[c].i2])/2,
-		   (y[handles_info[c].i1]+y[handles_info[c].i2])/2,
-		   handle_r, handle_r,
-		   angle + handles_info[c].angle)) {
-	return handles_info[c].handle[i];
+                   (x[handles_info[c].i1]+x[handles_info[c].i2])/2,
+                   (y[handles_info[c].i1]+y[handles_info[c].i2])/2,
+                   handle_r, handle_r,
+                   angle + handles_info[c].angle)) {
+        return handles_info[c].handle[i];
       }
     }
   }
@@ -134,9 +134,9 @@ void TransformHandles::drawHandles(Editor* editor, const gfx::Transformation& tr
   // Draw corner handle
   for (size_t c=0; c<HANDLES; ++c) {
     drawHandle(bmp,
-	       (x[handles_info[c].i1]+x[handles_info[c].i2])/2,
-	       (y[handles_info[c].i1]+y[handles_info[c].i2])/2,
-	       angle + handles_info[c].angle);
+               (x[handles_info[c].i1]+x[handles_info[c].i2])/2,
+               (y[handles_info[c].i1]+y[handles_info[c].i2])/2,
+               angle + handles_info[c].angle);
   }
 
   // Draw the pivot
@@ -150,8 +150,8 @@ void TransformHandles::drawHandles(Editor* editor, const gfx::Transformation& tr
 }
 
 gfx::Rect TransformHandles::getPivotHandleBounds(Editor* editor,
-						 const gfx::Transformation& transform,
-						 const gfx::Transformation::Corners& corners)
+                                                 const gfx::Transformation& transform,
+                                                 const gfx::Transformation::Corners& corners)
 {
   SkinTheme* theme = static_cast<SkinTheme*>(CurrentTheme::get());
   BITMAP* gfx = theme->get_part(PART_PIVOT_HANDLE);
@@ -173,7 +173,7 @@ bool TransformHandles::inHandle(const gfx::Point& pt, int x, int y, int gfx_w, i
   adjustHandle(x, y, gfx_w, gfx_h, angle);
 
   return (pt.x >= x && pt.x < x+gfx_w &&
-	  pt.y >= y && pt.y < y+gfx_h);
+          pt.y >= y && pt.y < y+gfx_h);
 }
 
 void TransformHandles::drawHandle(BITMAP* bmp, int x, int y, fixed angle)
@@ -214,7 +214,7 @@ void TransformHandles::adjustHandle(int& x, int& y, int handle_w, int handle_h, 
       y = y-handle_h;
       break;
 
-    case 4: 
+    case 4:
       x = x-handle_w;
       y = y-handle_h/2;
       break;

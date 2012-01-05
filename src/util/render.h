@@ -34,11 +34,11 @@ public:
   //////////////////////////////////////////////////////////////////////
   // Checked background configuration
 
-  enum CheckedBgType { CHECKED_BG_16X16, 
-		       CHECKED_BG_8X8,
-		       CHECKED_BG_4X4, 
-		       CHECKED_BG_2X2 };
-  
+  enum CheckedBgType { CHECKED_BG_16X16,
+                       CHECKED_BG_8X8,
+                       CHECKED_BG_4X4,
+                       CHECKED_BG_2X2 };
+
   static void loadConfig();
   static CheckedBgType getCheckedBgType();
   static void setCheckedBgType(CheckedBgType type);
@@ -58,32 +58,32 @@ public:
   // Main function used by sprite-editors to render the sprite
 
   static Image* renderSprite(const Document* document,
-			     const Sprite* sprite,
-			     int source_x, int source_y,
-			     int width, int height,
-			     int frpos, int zoom,
-			     bool draw_tiled_bg);
+                             const Sprite* sprite,
+                             int source_x, int source_y,
+                             int width, int height,
+                             int frpos, int zoom,
+                             bool draw_tiled_bg);
 
   //////////////////////////////////////////////////////////////////////
   // Extra functions
 
   static void renderCheckedBackground(Image* image,
-				      int source_x, int source_y,
-				      int zoom);
+                                      int source_x, int source_y,
+                                      int zoom);
 
   static void renderImage(Image* rgb_image, Image* src_image, const Palette* pal,
-			  int x, int y, int zoom);
+                          int x, int y, int zoom);
 
 private:
   static void renderLayer(const Document* document,
-			  const Sprite* sprite,
-			  const Layer* layer,
-			  Image* image,
-			  int source_x, int source_y,
-			  int frame, int zoom,
-			  void (*zoomed_func)(Image*, const Image*, const Palette*, int, int, int, int, int),
-			  bool render_background,
-			  bool render_transparent);
+                          const Sprite* sprite,
+                          const Layer* layer,
+                          Image* image,
+                          int source_x, int source_y,
+                          int frame, int zoom,
+                          void (*zoomed_func)(Image*, const Image*, const Palette*, int, int, int, int, int),
+                          bool render_background,
+                          bool render_transparent);
 };
 
 #endif

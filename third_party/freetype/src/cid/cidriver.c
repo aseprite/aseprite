@@ -193,7 +193,7 @@
       ft_module_font_driver       |
       ft_module_driver_scalable   |
       ft_module_driver_has_hinter ,
-      
+
       sizeof( FT_DriverRec ),
       "t1cid",   /* module name           */
       0x10000L,  /* version 1.0 of driver */

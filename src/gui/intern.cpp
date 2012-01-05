@@ -59,7 +59,7 @@ void _ji_add_widget(JWidget widget)
     for (widget_id=1; widget_id<widgets->size(); widget_id++) {
       // is it free?
       if ((*widgets)[widget_id] == NULL)
-	break;
+        break;
     }
 
     // we need space for other widget more?
@@ -81,10 +81,10 @@ void _ji_remove_widget(JWidget widget)
 bool _ji_is_valid_widget(JWidget widget)
 {
   return (widget &&
-	  widget->id >= 0 &&
-	  widget->id < widgets->size() &&
-	  (*widgets)[widget->id] &&
-	  (*widgets)[widget->id]->id == widget->id);
+          widget->id >= 0 &&
+          widget->id < widgets->size() &&
+          (*widgets)[widget->id] &&
+          (*widgets)[widget->id]->id == widget->id);
 }
 
 void _ji_set_font_of_all_widgets(FONT* f)
@@ -113,7 +113,7 @@ void _ji_reinit_theme_in_all_widgets()
   for (c=0; c<widgets->size(); c++)
     if (_ji_is_valid_widget((*widgets)[c])) {
       if ((*widgets)[c]->type == JI_FRAME)
-	static_cast<Frame*>((*widgets)[c])->remap_window();
+        static_cast<Frame*>((*widgets)[c])->remap_window();
     }
 
   // Refresh the screen

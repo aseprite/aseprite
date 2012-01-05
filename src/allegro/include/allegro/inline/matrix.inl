@@ -44,5 +44,3 @@ AL_INLINE(void, apply_matrix, (MATRIX *m, fixed x, fixed y, fixed z, fixed *xout
 #endif
 
 #endif          /* ifndef ALLEGRO_MATRIX_INL */
-
-

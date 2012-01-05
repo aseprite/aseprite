@@ -32,11 +32,10 @@ art_uta_from_vpath (const ArtVpath *vec);
 /* This is a private function: */
 void
 art_uta_add_line (ArtUta *uta, double x0, double y0, double x1, double y1,
-		  int *rbuf, int rbuf_rowstride);
+                  int *rbuf, int rbuf_rowstride);
 
 #ifdef __cplusplus
 }
 #endif /* __cplusplus */
 
 #endif /* __ART_UTA_VPATH_H__ */
-

@@ -111,7 +111,7 @@ void ResourceFinder::findInDocsDir(const char* filename)
   // $BINDIR/../share/aseprite/docs/filename
   sprintf(buf, "../share/aseprite/docs/%s", filename);
   findInBinDir(buf);
-  
+
   #ifdef ALLEGRO_MACOSX
     // $BINDIR/aseprite.app/Contents/Resources/docs/filename
     sprintf(buf, "aseprite.app/Contents/Resources/docs/%s", filename);

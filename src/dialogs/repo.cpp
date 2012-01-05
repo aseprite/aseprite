@@ -51,7 +51,7 @@ void ji_show_repo_dlg(RepoDlg *repo_dlg)
   Button* button_close = new Button("&Close");
 
   jwidget_add_hook(repo_dlg->listbox, repo_listbox_type(),
-		   repo_listbox_msg_proc, repo_dlg);
+                   repo_listbox_msg_proc, repo_dlg);
 
   repo_dlg->button_use->Click.connect(Bind<void>(&use_command, repo_dlg->button_use, repo_dlg));
   repo_dlg->button_add->Click.connect(Bind<void>(&add_command, repo_dlg->button_add, repo_dlg));
@@ -160,18 +160,18 @@ static bool repo_listbox_msg_proc(JWidget widget, Message* msg)
     case JM_SIGNAL:
       switch (msg->signal.num) {
 
-	case JI_SIGNAL_LISTBOX_CHANGE:
-	  repo_dlg->listitem = jlistbox_get_selected_child(widget);
+        case JI_SIGNAL_LISTBOX_CHANGE:
+          repo_dlg->listitem = jlistbox_get_selected_child(widget);
 
-	  repo_dlg->button_use->setEnabled(true);
-	  repo_dlg->button_delete->setEnabled(true);
-	  break;
+          repo_dlg->button_use->setEnabled(true);
+          repo_dlg->button_delete->setEnabled(true);
+          break;
 
-	case JI_SIGNAL_LISTBOX_SELECT:
-	  if (repo_dlg->use_listitem)
-	    if (!(*repo_dlg->use_listitem)(repo_dlg))
-	      widget->closeWindow();
-	  break;
+        case JI_SIGNAL_LISTBOX_SELECT:
+          if (repo_dlg->use_listitem)
+            if (!(*repo_dlg->use_listitem)(repo_dlg))
+              widget->closeWindow();
+          break;
       }
       break;
   }
@@ -201,7 +201,7 @@ static void add_command(Button* widget, RepoDlg* repo_dlg)
 
       /* select the last item */
       jlistbox_select_index(repo_dlg->listbox,
-			    jlist_length(repo_dlg->listbox->children)-1);
+                            jlist_length(repo_dlg->listbox->children)-1);
     }
 
     if (!ret)
@@ -224,21 +224,21 @@ static void delete_command(Button* widget, RepoDlg* repo_dlg)
       repo_dlg->listbox->removeChild(repo_dlg->listitem);
 
       if (repo_dlg->free_listitem)
-	(*repo_dlg->free_listitem) (repo_dlg);
+        (*repo_dlg->free_listitem) (repo_dlg);
 
       jwidget_free(repo_dlg->listitem);
 
       /* disable buttons */
       if (!repo_dlg->listbox->children) {
-	repo_dlg->button_use->setEnabled(false);
-	repo_dlg->button_delete->setEnabled(false);
+        repo_dlg->button_use->setEnabled(false);
+        repo_dlg->button_delete->setEnabled(false);
       }
       /* select other item */
       else {
-	last = jlist_length(repo_dlg->listbox->children)-1;
+        last = jlist_length(repo_dlg->listbox->children)-1;
 
-	jlistbox_select_index(repo_dlg->listbox,
-			      index > last ? last: index);
+        jlistbox_select_index(repo_dlg->listbox,
+                              index > last ? last: index);
       }
 
       /* update the list-box */

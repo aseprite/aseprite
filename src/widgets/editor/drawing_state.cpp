@@ -35,7 +35,7 @@ static tools::ToolLoopManager::Pointer pointer_from_msg(Message* msg)
   tools::ToolLoopManager::Pointer::Button button =
     (msg->mouse.right ? tools::ToolLoopManager::Pointer::Right:
      (msg->mouse.middle ? tools::ToolLoopManager::Pointer::Middle:
-			  tools::ToolLoopManager::Pointer::Left));
+                          tools::ToolLoopManager::Pointer::Left));
 
   return tools::ToolLoopManager::Pointer(msg->mouse.x, msg->mouse.y, button);
 }
@@ -94,7 +94,7 @@ bool DrawingState::onMouseUp(Editor* editor, Message* msg)
   // Notify the release of the mouse button to the tool loop manager.
   if (m_toolLoopManager->releaseButton(pointer_from_msg(msg)))
     return true;
-  
+
   m_toolLoopManager->releaseLoop(pointer_from_msg(msg));
 
   // Back to standby state.

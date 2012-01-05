@@ -92,5 +92,4 @@ private:
 
 } // namespace tools
 
-#endif	// TOOLS_TOOL_H_INCLUDED
-
+#endif  // TOOLS_TOOL_H_INCLUDED

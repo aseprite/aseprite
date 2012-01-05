@@ -54,4 +54,3 @@ extern BOOL amiga_init();
 #endif /* __ixemul__ */
 #endif /* __AMIGA__ */
 #endif /* LIBCURL_AMIGAOS_H */
-

@@ -41,4 +41,4 @@ public:
   virtual bool isCopySelectionKeyPressed() = 0;
 };
 
-#endif	// WIDGETS_EDITOR_CUSTOMIZATION_DELEGATE_H_INCLUDED
+#endif  // WIDGETS_EDITOR_CUSTOMIZATION_DELEGATE_H_INCLUDED

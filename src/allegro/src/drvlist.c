@@ -1,6 +1,6 @@
-/*         ______   ___    ___ 
- *        /\  _  \ /\_ \  /\_ \ 
- *        \ \ \L\ \\//\ \ \//\ \      __     __   _ __   ___ 
+/*         ______   ___    ___
+ *        /\  _  \ /\_ \  /\_ \
+ *        \ \ \L\ \\//\ \ \//\ \      __     __   _ __   ___
  *         \ \  __ \ \ \ \  \ \ \   /'__`\ /'_ `\/\`'__\/ __`\
  *          \ \ \/\ \ \_\ \_ \_\ \_/\  __//\ \L\ \ \ \//\ \L\ \
  *           \ \_\ \_\/\____\/\____\ \____\ \____ \ \_\\ \____/
@@ -41,7 +41,7 @@ static int count_drivers(_DRIVER_INFO *drvlist)
 _DRIVER_INFO *_create_driver_list(void)
 {
    _DRIVER_INFO *drv;
-	
+
    drv = _AL_MALLOC(sizeof(struct _DRIVER_INFO));
 
    if (drv) {
@@ -72,7 +72,7 @@ void _driver_list_append_driver(_DRIVER_INFO **drvlist, int id, void *driver, in
 {
    _DRIVER_INFO *drv;
    int c;
-    
+
    ASSERT(*drvlist);
 
    c = count_drivers(*drvlist);
@@ -100,7 +100,7 @@ void _driver_list_prepend_driver(_DRIVER_INFO **drvlist, int id, void *driver, i
 {
    _DRIVER_INFO *drv;
    int c;
-    
+
    ASSERT(*drvlist);
 
    c = count_drivers(*drvlist);
@@ -108,7 +108,7 @@ void _driver_list_prepend_driver(_DRIVER_INFO **drvlist, int id, void *driver, i
    drv = _AL_REALLOC(*drvlist, sizeof(_DRIVER_INFO) * (c+2));
    if (!drv)
       return;
-   
+
    memmove(drv+1, drv, sizeof(_DRIVER_INFO) * (c+1));
 
    drv[0].id = id;

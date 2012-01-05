@@ -55,7 +55,7 @@ ColorSelector::ColorSelector()
   m_colorPalette.setColumns(40);
   m_colorPalette.setBoxSize(6*jguiscale());
   m_colorPaletteContainer.attachToView(&m_colorPalette);
- 
+
   jwidget_expansive(&m_colorPaletteContainer, true);
 
   setup_mini_look(&m_indexButton);
@@ -186,7 +186,7 @@ void ColorSelector::findBestfitIndex(const Color& color)
   int r = color.getRed();
   int g = color.getGreen();
   int b = color.getBlue();
-  
+
   // Search for the closest color to the RGB values
   int i = get_current_palette()->findBestfit(r, g, b);
   if (i >= 0 && i < 256) {
@@ -218,7 +218,7 @@ void ColorSelector::selectColorType(Color::Type type)
     case Color::GrayType:  m_grayButton.setSelected(true); break;
     case Color::MaskType:  m_maskButton.setSelected(true); break;
   }
-  
+
   m_vbox.layout();
   m_vbox.invalidate();
 }

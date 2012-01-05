@@ -137,7 +137,7 @@
 /* The last #include file should be: */
 #include "memdebug.h"
 
-#ifndef USE_NTRESPONSES 
+#ifndef USE_NTRESPONSES
 /* Define this to make the type-3 message include the NT response message */
 #define USE_NTRESPONSES 1
 
@@ -1063,7 +1063,7 @@ CURLcode Curl_output_ntlm(struct connectdata *conn,
     }
     else
 #endif
-	{
+        {
 
 #if USE_NTRESPONSES
       unsigned char ntbuffer[0x18];

@@ -1008,7 +1008,7 @@
         FT_ERROR(( "ps_hints_t2mask: "
                    "called with invalid bitcount %d (instead of %d)\n",
                    bit_count, count1 + count2 ));
-        
+
         /* simply ignore the operator */
         return;
       }
@@ -1053,7 +1053,7 @@
         FT_ERROR(( "ps_hints_t2counter: "
                    "called with invalid bitcount %d (instead of %d)\n",
                    bit_count, count1 + count2 ));
-                   
+
         /* simply ignore the operator */
         return;
       }

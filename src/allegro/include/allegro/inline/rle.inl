@@ -66,5 +66,3 @@ AL_INLINE(void, draw_lit_rle_sprite, (struct BITMAP *bmp, AL_CONST struct RLE_SP
 #endif
 
 #endif          /* ifndef ALLEGRO_RLE_INL */
-
-

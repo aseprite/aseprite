@@ -19,7 +19,7 @@
 
 /* Render a sorted vector path into a graymap. */
 
-#include <string.h>	/* for memset */
+#include <string.h>     /* for memset */
 #include "art_misc.h"
 
 #include "art_svp.h"
@@ -36,7 +36,7 @@ struct _ArtGraySVPData {
 
 static void
 art_gray_svp_callback (void *callback_data, int y,
-		       int start, ArtSVPRenderAAStep *steps, int n_steps)
+                       int start, ArtSVPRenderAAStep *steps, int n_steps)
 {
   ArtGraySVPData *data = (ArtGraySVPData *)callback_data;
   art_u8 *linebuf;
@@ -64,19 +64,19 @@ art_gray_svp_callback (void *callback_data, int y,
     {
       run_x1 = steps[0].x;
       if (run_x1 > x0)
-	memset (linebuf, running_sum >> 16, run_x1 - x0);
+        memset (linebuf, running_sum >> 16, run_x1 - x0);
 
       for (k = 0; k < n_steps - 1; k++)
-	{
-	  running_sum += steps[k].delta;
-	  run_x0 = run_x1;
-	  run_x1 = steps[k + 1].x;
-	  if (run_x1 > run_x0)
-	    memset (linebuf + run_x0 - x0, running_sum >> 16, run_x1 - run_x0);
-	}
+        {
+          running_sum += steps[k].delta;
+          run_x0 = run_x1;
+          run_x1 = steps[k + 1].x;
+          if (run_x1 > run_x0)
+            memset (linebuf + run_x0 - x0, running_sum >> 16, run_x1 - run_x0);
+        }
       running_sum += steps[k].delta;
       if (x1 > run_x1)
-	memset (linebuf + run_x1 - x0, running_sum >> 16, x1 - run_x1);
+        memset (linebuf + run_x1 - x0, running_sum >> 16, x1 - run_x1);
     }
   else
     {
@@ -108,8 +108,8 @@ art_gray_svp_callback (void *callback_data, int y,
  **/
 void
 art_gray_svp_aa (const ArtSVP *svp,
-		 int x0, int y0, int x1, int y1,
-		 art_u8 *buf, int rowstride)
+                 int x0, int y0, int x1, int y1,
+                 art_u8 *buf, int rowstride)
 {
   ArtGraySVPData data;
 

@@ -46,7 +46,7 @@ void SetMask::dispose()
 void SetMask::revert(ObjectsContainer* objects, UndoersCollector* redoers)
 {
   Document* document = objects->getObjectT<Document>(m_documentId);
-  
+
   // Push another SetMask as redoer
   redoers->pushUndoer(new SetMask(objects, document));
 

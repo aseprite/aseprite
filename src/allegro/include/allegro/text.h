@@ -50,5 +50,3 @@ AL_FUNC(void, destroy_font, (struct FONT *f));
 #endif
 
 #endif          /* ifndef ALLEGRO_TEXT_H */
-
-

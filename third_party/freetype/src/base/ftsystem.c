@@ -259,13 +259,13 @@
 
   extern FT_Int
   ft_mem_debug_init( FT_Memory  memory );
-  
+
   extern void
   ft_mem_debug_done( FT_Memory  memory );
-  
-#endif  
-      
-      
+
+#endif
+
+
   /* documentation is in ftobjs.h */
 
   FT_EXPORT_DEF( FT_Memory )
@@ -283,7 +283,7 @@
       memory->free    = ft_free;
 #ifdef FT_DEBUG_MEMORY
       ft_mem_debug_init( memory );
-#endif    
+#endif
     }
 
     return memory;
@@ -297,7 +297,7 @@
   {
 #ifdef FT_DEBUG_MEMORY
     ft_mem_debug_done( memory );
-#endif  
+#endif
     memory->free( memory, memory );
   }
 

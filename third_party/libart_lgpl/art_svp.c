@@ -54,9 +54,9 @@
  **/
 int
 art_svp_add_segment (ArtSVP **p_vp, int *pn_segs_max,
-		     int **pn_points_max,
-		     int n_points, int dir, ArtPoint *points,
-		     ArtDRect *bbox)
+                     int **pn_points_max,
+                     int n_points, int dir, ArtPoint *points,
+                     ArtDRect *bbox)
 {
   int seg_num;
   ArtSVP *svp;
@@ -68,10 +68,10 @@ art_svp_add_segment (ArtSVP **p_vp, int *pn_segs_max,
     {
       *pn_segs_max <<= 1;
       svp = (ArtSVP *)art_realloc (svp, sizeof(ArtSVP) +
-				   (*pn_segs_max - 1) * sizeof(ArtSVPSeg));
+                                   (*pn_segs_max - 1) * sizeof(ArtSVPSeg));
       *p_vp = svp;
       if (pn_points_max != NULL)
-	*pn_points_max = art_renew (*pn_points_max, int, *pn_segs_max);
+        *pn_points_max = art_renew (*pn_points_max, int, *pn_segs_max);
     }
   seg = &svp->segs[seg_num];
   seg->n_points = n_points;
@@ -86,15 +86,15 @@ art_svp_add_segment (ArtSVP **p_vp, int *pn_segs_max,
 
       x_min = x_max = points[0].x;
       for (i = 1; i < n_points; i++)
-	{
-	  if (x_min > points[i].x)
-	    x_min = points[i].x;
-	  if (x_max < points[i].x)
-	    x_max = points[i].x;
-	}
+        {
+          if (x_min > points[i].x)
+            x_min = points[i].x;
+          if (x_max < points[i].x)
+            x_max = points[i].x;
+        }
       seg->bbox.x0 = x_min;
       seg->bbox.y0 = points[0].y;
-      
+
       seg->bbox.x1 = x_max;
       seg->bbox.y1 = points[n_points - 1].y;
     }
@@ -105,7 +105,7 @@ art_svp_add_segment (ArtSVP **p_vp, int *pn_segs_max,
 /**
  * art_svp_free: Free an #ArtSVP structure.
  * @svp: #ArtSVP to free.
- * 
+ *
  * Frees an #ArtSVP structure and all the segments in it.
  **/
 void
@@ -125,7 +125,7 @@ art_svp_free (ArtSVP *svp)
  * art_svp_seg_compare: Compare two segments of an svp.
  * @seg1: First segment to compare.
  * @seg2: Second segment to compare.
- * 
+ *
  * Compares two segments of an svp. Return 1 if @seg2 is below or to the
  * right of @seg1, -1 otherwise. The comparison rules are "interesting"
  * with respect to numerical robustness, rtfs if in doubt.
@@ -141,9 +141,8 @@ art_svp_seg_compare (const void *s1, const void *s2)
   else if (seg1->points[0].x - EPSILON > seg2->points[0].x) return 1;
   else if (seg1->points[0].x + EPSILON < seg2->points[0].x) return -1;
   else if ((seg1->points[1].x - seg1->points[0].x) *
-	   (seg2->points[1].y - seg2->points[0].y) -
-	   (seg1->points[1].y - seg1->points[0].y) *
-	   (seg2->points[1].x - seg2->points[0].x) > 0) return 1;
+           (seg2->points[1].y - seg2->points[0].y) -
+           (seg1->points[1].y - seg1->points[0].y) *
+           (seg2->points[1].x - seg2->points[0].x) > 0) return 1;
   else return -1;
 }
-

@@ -1,6 +1,6 @@
-/*         ______   ___    ___ 
- *        /\  _  \ /\_ \  /\_ \ 
- *        \ \ \L\ \\//\ \ \//\ \      __     __   _ __   ___ 
+/*         ______   ___    ___
+ *        /\  _  \ /\_ \  /\_ \
+ *        \ \ \L\ \\//\ \ \//\ \      __     __   _ __   ___
  *         \ \  __ \ \ \ \  \ \ \   /'__`\ /'_ `\/\`'__\/ __`\
  *          \ \ \/\ \ \_\ \_ \_\ \_/\  __//\ \L\ \ \ \//\ \L\ \
  *           \ \_\ \_\/\____\/\____\ \____\ \____ \ \_\\ \____/
@@ -35,24 +35,24 @@
  *
  *      On the subject of VBE/AF in general:
  *
- *      Kendall Bennett and Tom Ryan of SciTech software deserve 
- *      significant thanks for coming up with such a magnificent API and 
- *      then helping me write this driver, after the VESA people (may they 
- *      be smitten with plagues of locusts and then develop subtle memory 
- *      leaks in their code :-) decided to charge stupid sums of money for 
- *      copies of the /AF specification. Unfortunately, SciTech have 
- *      subsequently abandoned VBE/AF in favour of a closed, proprietary 
- *      system called Nucleus. Ah well, I'm sure that this makes sense 
- *      for them in commercial terms, even if it is something of a 
+ *      Kendall Bennett and Tom Ryan of SciTech software deserve
+ *      significant thanks for coming up with such a magnificent API and
+ *      then helping me write this driver, after the VESA people (may they
+ *      be smitten with plagues of locusts and then develop subtle memory
+ *      leaks in their code :-) decided to charge stupid sums of money for
+ *      copies of the /AF specification. Unfortunately, SciTech have
+ *      subsequently abandoned VBE/AF in favour of a closed, proprietary
+ *      system called Nucleus. Ah well, I'm sure that this makes sense
+ *      for them in commercial terms, even if it is something of a
  *      disappointment for us idealistic hacker types...
  *
  *      The problem with Nucleus is that the spec is only available under
  *      NDA, so I cannot support it directly in Allegro. The plan,
  *      therefore, is to write a Nucleus to VBE/AF wrapper driver.
  *      This requires a few callback routines that stock VBE/AF doesn't
- *      provide, hence the Nucleus-specific extensions in this file. It 
- *      doesn't provide direct Nucleus support, but hopefully will enable 
- *      someone (whether us or SciTech) to add that support in the future 
+ *      provide, hence the Nucleus-specific extensions in this file. It
+ *      doesn't provide direct Nucleus support, but hopefully will enable
+ *      someone (whether us or SciTech) to add that support in the future
  *      via an external driver binary.
  *
  *      By Shawn Hargreaves.
@@ -138,7 +138,7 @@ static char vbeaf_desc[256] = EMPTY_STRING;
 
 
 /* the video driver structure */
-GFX_DRIVER gfx_vbeaf = 
+GFX_DRIVER gfx_vbeaf =
 {
    GFX_VBEAF,
    empty_string,
@@ -160,7 +160,7 @@ GFX_DRIVER gfx_vbeaf =
    vbeaf_restore,
    NULL,                         /* AL_METHOD(void, set_blender_mode, (int mode, int r, int g, int b, int a)); */
    vbeaf_fetch_mode_list,        /* fetch mode hook */
-   NULL,			 /* acknowledge_resize */
+   NULL,                         /* acknowledge_resize */
    0, 0, FALSE, 0, 0, 0, 0, FALSE
 };
 
@@ -473,7 +473,7 @@ typedef struct FAF_HWPTR_DATA
    #define _remove_linear_mapping(_addr)                    \
    {                                                        \
       if ((_addr)->data)                                    \
-	 __al_linux_unmap_memory(_addr);                    \
+         __al_linux_unmap_memory(_addr);                    \
    }
 
    #define _create_selector(sel, addr, len)  -1
@@ -555,32 +555,32 @@ extern void _af_int86(void), _af_call_rm(void), _af_wrapper(void), _af_wrapper_e
    #define SAFE_CALL(FUNC)                \
    {                                      \
       int _ds, _es, _ss;                  \
-					  \
+                                          \
       asm volatile (                      \
-	 " movw %%ds, %w0 ; "             \
-	 " movw %%es, %w1 ; "             \
-	 " movw %%ss, %w2 ; "             \
-	 " movw %w3, %%ds ; "             \
-	 " movw %w3, %%es ; "             \
-	 " movw %w3, %%ss ; "             \
-					  \
+         " movw %%ds, %w0 ; "             \
+         " movw %%es, %w1 ; "             \
+         " movw %%ss, %w2 ; "             \
+         " movw %w3, %%ds ; "             \
+         " movw %w3, %%es ; "             \
+         " movw %w3, %%ss ; "             \
+                                          \
       : "=&q" (_ds),                      \
-	"=&q" (_es),                      \
-	"=&q" (_ss)                       \
-					  \
+        "=&q" (_es),                      \
+        "=&q" (_ss)                       \
+                                          \
       : "q" (__djgpp_ds_alias)            \
       );                                  \
-					  \
+                                          \
       FUNC                                \
-					  \
+                                          \
       asm volatile (                      \
-	 "movw %w0, %%ds ; "              \
-	 "movw %w1, %%es ; "              \
-	 "movw %w2, %%ss ; "              \
+         "movw %w0, %%ds ; "              \
+         "movw %w1, %%es ; "              \
+         "movw %w2, %%ss ; "              \
       :                                   \
       : "q" (_ds),                        \
-	"q" (_es),                        \
-	"q" (_ss)                         \
+        "q" (_es),                        \
+        "q" (_ss)                         \
       );                                  \
    }
 
@@ -592,9 +592,9 @@ extern void _af_int86(void), _af_call_rm(void), _af_wrapper(void), _af_wrapper_e
    #define SAFE_CALL(FUNC)                \
    {                                      \
       __al_linux_switching_blocked++;     \
-					  \
+                                          \
       FUNC                                \
-					  \
+                                          \
       __al_linux_release_bitmap(NULL);    \
    }
 
@@ -637,15 +637,15 @@ static int call_vbeaf_asm(void *proc)
 
       /* use gcc-style inline asm */
       asm (
-	 " pushl %%ebx ; "
-	 " movl %%ecx, %%ebx ; "
-	 " call *%%edx ; "
-	 " popl %%ebx ; "
+         " pushl %%ebx ; "
+         " movl %%ecx, %%ebx ; "
+         " call *%%edx ; "
+         " popl %%ebx ; "
 
       : "=&a" (ret)                       /* return value in eax */
 
       : "c" (af_driver),                  /* VBE/AF driver in ds:ebx */
-	"d" (proc)                        /* function ptr in edx */
+        "d" (proc)                        /* function ptr in edx */
 
       : "memory"                          /* assume everything is clobbered */
       );
@@ -654,16 +654,16 @@ static int call_vbeaf_asm(void *proc)
 
       /* use Watcom-style inline asm */
       {
-	 int _af(void *func, AF_DRIVER *driver);
+         int _af(void *func, AF_DRIVER *driver);
 
-	 #pragma aux _af =                \
-	    " call esi "                  \
-					  \
-	 parm [esi] [ebx]                 \
-	 modify [ecx edx edi]             \
-	 value [eax];
+         #pragma aux _af =                \
+            " call esi "                  \
+                                          \
+         parm [esi] [ebx]                 \
+         modify [ecx edx edi]             \
+         value [eax];
 
-	 ret = _af(proc, af_driver);
+         ret = _af(proc, af_driver);
       }
 
    #else
@@ -690,7 +690,7 @@ END_OF_STATIC_FUNCTION(vbeaf_no_wait);
 
 
 /* load_vbeaf_driver:
- *  Tries to load the specified VBE/AF driver file, returning TRUE on 
+ *  Tries to load the specified VBE/AF driver file, returning TRUE on
  *  success. Allocates memory and reads the driver into it.
  */
 static int load_vbeaf_driver(AL_CONST char *filename)
@@ -705,23 +705,23 @@ static int load_vbeaf_driver(AL_CONST char *filename)
       struct stat s;
 
       if (stat(uconvert_toascii(filename, tmp), &s) != 0)
-	 return 0;
+         return 0;
 
       if ((s.st_uid != 0) || (s.st_mode & (S_IWGRP | S_IWOTH))) {
-	 uszprintf(allegro_error, ALLEGRO_ERROR_SIZE, get_config_text("%s must only be writeable by root"), filename);
-	 return -1;
+         uszprintf(allegro_error, ALLEGRO_ERROR_SIZE, get_config_text("%s must only be writeable by root"), filename);
+         return -1;
       }
 
       size = s.st_size;
       if (size <= 0)
-	 return 0;
+         return 0;
 
    #else
 
       /* simple version for other platforms */
       size = file_size_ex(filename);
       if (size <= 0)
-	 return 0;
+         return 0;
 
    #endif
 
@@ -787,11 +787,11 @@ static void initialise_freebeaf_extensions(void)
 
       ptr = af_driver->OemExt(af_driver, FAFEXT_LIBC);
       if (ptr)
-	 _fill_vbeaf_libc_exports(ptr);
+         _fill_vbeaf_libc_exports(ptr);
 
       ptr = af_driver->OemExt(af_driver, FAFEXT_PMODE);
       if (ptr)
-	 _fill_vbeaf_pmode_exports(ptr);
+         _fill_vbeaf_pmode_exports(ptr);
 
    #endif
 }
@@ -799,7 +799,7 @@ static void initialise_freebeaf_extensions(void)
 
 
 /* initialise_vbeaf_driver:
- *  Sets up the DPMI memory mappings required by the VBE/AF driver, 
+ *  Sets up the DPMI memory mappings required by the VBE/AF driver,
  *  returning zero on success.
  */
 static int initialise_vbeaf_driver(void)
@@ -810,13 +810,13 @@ static int initialise_vbeaf_driver(void)
 
       /* query driver for the FreeBE/AF farptr extension */
       if (faf_ext > 0)
-	 faf_farptr = af_driver->OemExt(af_driver, FAFEXT_HWPTR);
+         faf_farptr = af_driver->OemExt(af_driver, FAFEXT_HWPTR);
       else
-	 faf_farptr = NULL;
+         faf_farptr = NULL;
 
    #else
 
-      /* don't use farptr on any other platforms */ 
+      /* don't use farptr on any other platforms */
       faf_farptr = NULL;
 
    #endif
@@ -824,31 +824,31 @@ static int initialise_vbeaf_driver(void)
    #ifdef ALLEGRO_DOS
 
       if (faf_farptr) {
-	 /* use farptr access */
-	 for (c=0; c<4; c++) {
-	    faf_farptr->IOMemMaps[c].sel = 0; 
-	    faf_farptr->IOMemMaps[c].offset = 0; 
-	 }
+         /* use farptr access */
+         for (c=0; c<4; c++) {
+            faf_farptr->IOMemMaps[c].sel = 0;
+            faf_farptr->IOMemMaps[c].offset = 0;
+         }
 
-	 faf_farptr->BankedMem.sel = 0; 
-	 faf_farptr->BankedMem.offset = 0; 
+         faf_farptr->BankedMem.sel = 0;
+         faf_farptr->BankedMem.offset = 0;
 
-	 faf_farptr->LinearMem.sel = 0; 
-	 faf_farptr->LinearMem.offset = 0; 
+         faf_farptr->LinearMem.sel = 0;
+         faf_farptr->LinearMem.offset = 0;
 
-	 vbeaf_nearptr = FALSE;
+         vbeaf_nearptr = FALSE;
       }
       else {
-	 /* enable nearptr access */
-	 if (_crt0_startup_flags & _CRT0_FLAG_NEARPTR) {
-	    vbeaf_nearptr = FALSE;
-	 }
-	 else {
-	    if (__djgpp_nearptr_enable() == 0)
-	       return -2;
+         /* enable nearptr access */
+         if (_crt0_startup_flags & _CRT0_FLAG_NEARPTR) {
+            vbeaf_nearptr = FALSE;
+         }
+         else {
+            if (__djgpp_nearptr_enable() == 0)
+               return -2;
 
-	    vbeaf_nearptr = TRUE;
-	 }
+            vbeaf_nearptr = TRUE;
+         }
       }
 
    #endif
@@ -856,64 +856,64 @@ static int initialise_vbeaf_driver(void)
    /* create mapping for MMIO ports */
    for (c=0; c<4; c++) {
       if (af_driver->IOMemoryBase[c]) {
-	 if (_create_linear_mapping(af_memmap+c, af_driver->IOMemoryBase[c], 
-				    af_driver->IOMemoryLen[c]) != 0)
-	    return -1;
+         if (_create_linear_mapping(af_memmap+c, af_driver->IOMemoryBase[c],
+                                    af_driver->IOMemoryLen[c]) != 0)
+            return -1;
 
-	 if (faf_farptr) {
-	    /* farptr IO mapping */
-	    if (_create_selector(&faf_farptr->IOMemMaps[c].sel, af_memmap[c], 
-				 af_driver->IOMemoryLen[c]) != 0) {
-	       _remove_linear_mapping(af_memmap+c);
-	       return -1;
-	    }
-	    faf_farptr->IOMemMaps[c].offset = 0;
-	    af_driver->IOMemMaps[c] = NULL;
-	 }
-	 else {
-	    /* nearptr IO mapping */
-	    af_driver->IOMemMaps[c] = MVAL(af_memmap[c]);
-	 }
+         if (faf_farptr) {
+            /* farptr IO mapping */
+            if (_create_selector(&faf_farptr->IOMemMaps[c].sel, af_memmap[c],
+                                 af_driver->IOMemoryLen[c]) != 0) {
+               _remove_linear_mapping(af_memmap+c);
+               return -1;
+            }
+            faf_farptr->IOMemMaps[c].offset = 0;
+            af_driver->IOMemMaps[c] = NULL;
+         }
+         else {
+            /* nearptr IO mapping */
+            af_driver->IOMemMaps[c] = MVAL(af_memmap[c]);
+         }
       }
    }
 
    /* create mapping for banked video RAM */
    if (af_driver->BankedBasePtr) {
       if (_create_linear_mapping(&af_banked_mem, af_driver->BankedBasePtr, 0x10000) != 0)
-	 return -1;
+         return -1;
 
       if (faf_farptr) {
-	 /* farptr banked vram mapping */
-	 if (_create_selector(&faf_farptr->BankedMem.sel, af_banked_mem, 0x10000) != 0) {
-	    _remove_linear_mapping(&af_banked_mem);
-	    return -1;
-	 }
-	 faf_farptr->BankedMem.offset = 0;
-	 af_driver->BankedMem = NULL;
+         /* farptr banked vram mapping */
+         if (_create_selector(&faf_farptr->BankedMem.sel, af_banked_mem, 0x10000) != 0) {
+            _remove_linear_mapping(&af_banked_mem);
+            return -1;
+         }
+         faf_farptr->BankedMem.offset = 0;
+         af_driver->BankedMem = NULL;
       }
       else {
-	 /* nearptr banked vram mapping */
-	 af_driver->BankedMem = MVAL(af_banked_mem);
+         /* nearptr banked vram mapping */
+         af_driver->BankedMem = MVAL(af_banked_mem);
       }
    }
 
    /* create mapping for linear video RAM */
    if (af_driver->LinearBasePtr) {
       if (_create_linear_mapping(&af_linear_mem, af_driver->LinearBasePtr, af_driver->LinearSize*1024) != 0)
-	 return -1;
+         return -1;
 
       if (faf_farptr) {
-	 /* farptr linear vram mapping */
-	 if (_create_selector(&faf_farptr->LinearMem.sel, af_linear_mem, af_driver->LinearSize*1024) != 0) {
-	    _remove_linear_mapping(&af_linear_mem);
-	    return -1;
-	 }
-	 faf_farptr->LinearMem.offset = 0;
-	 af_driver->LinearMem = NULL;
+         /* farptr linear vram mapping */
+         if (_create_selector(&faf_farptr->LinearMem.sel, af_linear_mem, af_driver->LinearSize*1024) != 0) {
+            _remove_linear_mapping(&af_linear_mem);
+            return -1;
+         }
+         faf_farptr->LinearMem.offset = 0;
+         af_driver->LinearMem = NULL;
       }
       else {
-	 /* nearptr linear vram mapping */
-	 af_driver->LinearMem  = MVAL(af_linear_mem);
+         /* nearptr linear vram mapping */
+         af_driver->LinearMem  = MVAL(af_linear_mem);
       }
    }
 
@@ -939,31 +939,31 @@ static int find_vbeaf_mode(int w, int h, int v_w, int v_h, int color_depth, AF_M
       /* retrieve the mode information block */
       if (af_driver->GetVideoModeInfo(af_driver, *mode, mode_info) == 0) {
 
-	 /* check size and color depth */
-	 if ((mode_info->XResolution == w) &&
-	     (mode_info->YResolution == h) &&
-	     (mode_info->BitsPerPixel == color_depth) &&
-	     (mode_info->MaxScanLineWidth >= v_w)) {
+         /* check size and color depth */
+         if ((mode_info->XResolution == w) &&
+             (mode_info->YResolution == h) &&
+             (mode_info->BitsPerPixel == color_depth) &&
+             (mode_info->MaxScanLineWidth >= v_w)) {
 
-	    /* make sure the mode supports scrolling */
-	    if ((v_w > w) || (v_h > h)) {
-	       if (!(mode_info->Attributes & 2)) {
-		  ustrzcpy(allegro_error, ALLEGRO_ERROR_SIZE, get_config_text("Hardware scrolling not supported"));
-		  return 0;
-	       }
-	    }
+            /* make sure the mode supports scrolling */
+            if ((v_w > w) || (v_h > h)) {
+               if (!(mode_info->Attributes & 2)) {
+                  ustrzcpy(allegro_error, ALLEGRO_ERROR_SIZE, get_config_text("Hardware scrolling not supported"));
+                  return 0;
+               }
+            }
 
-	    /* if it isn't FreeBE/AF, it must be UniVBE, so if we don't
-	     * have hardware acceleration we may as well just fail this
-	     * call and use VBE 3.0 instead.
-	     */
-	    if ((!(mode_info->Attributes & 16)) && (!faf_id)) {
-	       ustrzcpy(allegro_error, ALLEGRO_ERROR_SIZE, get_config_text("Hardware acceleration not available"));
-	       return 0;
-	    }
+            /* if it isn't FreeBE/AF, it must be UniVBE, so if we don't
+             * have hardware acceleration we may as well just fail this
+             * call and use VBE 3.0 instead.
+             */
+            if ((!(mode_info->Attributes & 16)) && (!faf_id)) {
+               ustrzcpy(allegro_error, ALLEGRO_ERROR_SIZE, get_config_text("Hardware acceleration not available"));
+               return 0;
+            }
 
-	    return *mode;
-	 }
+            return *mode;
+         }
       }
    }
 
@@ -1041,18 +1041,18 @@ static int vbeaf_locate_driver(void)
       ustrzcpy(filename, sizeof(filename), p);
 
       if (ugetc(get_filename(filename)) == 0) {
-	 append_filename(filename, filename, uconvert_ascii("vbeaf.drv", tmp1), sizeof(filename));
+         append_filename(filename, filename, uconvert_ascii("vbeaf.drv", tmp1), sizeof(filename));
       }
       else {
-	 if (file_exists(filename, FA_DIREC, &attrib)) {
-	    if (attrib & FA_DIREC)
-	       append_filename(filename, filename, uconvert_ascii("vbeaf.drv", tmp1), sizeof(filename));
-	 }
+         if (file_exists(filename, FA_DIREC, &attrib)) {
+            if (attrib & FA_DIREC)
+               append_filename(filename, filename, uconvert_ascii("vbeaf.drv", tmp1), sizeof(filename));
+         }
       }
 
       ret = load_vbeaf_driver(filename);
       if (ret)
-	 goto found_it;
+         goto found_it;
    }
 
    /* look for driver in the same directory as the program */
@@ -1066,7 +1066,7 @@ static int vbeaf_locate_driver(void)
    for (i=0; possible_filenames[i]; i++) {
       ret = load_vbeaf_driver(uconvert_ascii(possible_filenames[i], tmp1));
       if (ret)
-	 goto found_it;
+         goto found_it;
    }
 
    /* check the environment for a location */
@@ -1075,14 +1075,14 @@ static int vbeaf_locate_driver(void)
       append_filename(filename, uconvert_ascii(p, tmp1), uconvert_ascii("vbeaf.drv", tmp2), sizeof(filename));
       ret = load_vbeaf_driver(filename);
       if (ret)
-	 goto found_it;
+         goto found_it;
    }
 
    /* oops, no driver */
    ustrzcpy(allegro_error, ALLEGRO_ERROR_SIZE, get_config_text("Can't find VBEAF.DRV"));
    ret = FALSE;
 
-   /* got it! */ 
+   /* got it! */
    found_it:
 
    return ret;
@@ -1115,9 +1115,9 @@ static int vbeaf_lowlevel_init(void)
    #ifdef ALLEGRO_LINUX
 
       if (!__al_linux_have_ioperms) {
-	 vbeaf_exit(NULL);
-	 ustrzcpy(allegro_error, ALLEGRO_ERROR_SIZE, get_config_text("This driver needs root privileges"));
-	 return FALSE;
+         vbeaf_exit(NULL);
+         ustrzcpy(allegro_error, ALLEGRO_ERROR_SIZE, get_config_text("This driver needs root privileges"));
+         return FALSE;
       }
 
       _vbeaf_selector = _default_ds();
@@ -1146,9 +1146,9 @@ static int vbeaf_lowlevel_init(void)
    if (ret != 0) {
       vbeaf_exit(NULL);
       if (ret == -2)
-	 ustrzcpy(allegro_error, ALLEGRO_ERROR_SIZE, get_config_text("VBE/AF nearptrs not supported on this platform"));
+         ustrzcpy(allegro_error, ALLEGRO_ERROR_SIZE, get_config_text("VBE/AF nearptrs not supported on this platform"));
       else
-	 ustrzcpy(allegro_error, ALLEGRO_ERROR_SIZE, get_config_text("Can't map memory for VBE/AF"));
+         ustrzcpy(allegro_error, ALLEGRO_ERROR_SIZE, get_config_text("Can't map memory for VBE/AF"));
       return FALSE;
    }
 
@@ -1189,9 +1189,9 @@ static void vbeaf_exit(BITMAP *b)
    /* shut down the driver */
    if (in_af_mode) {
       if (af_driver->EnableDirectAccess)
-	 af_driver->EnableDirectAccess(af_driver);
+         af_driver->EnableDirectAccess(af_driver);
       else if (af_driver->WaitTillIdle)
-	 af_driver->WaitTillIdle(af_driver);
+         af_driver->WaitTillIdle(af_driver);
 
       af_driver->RestoreTextMode(af_driver);
       in_af_mode = FALSE;
@@ -1200,7 +1200,7 @@ static void vbeaf_exit(BITMAP *b)
    /* undo memory mappings */
    if (faf_farptr) {
       for (c=0; c<4; c++)
-	 _remove_selector(&faf_farptr->IOMemMaps[c].sel);
+         _remove_selector(&faf_farptr->IOMemMaps[c].sel);
 
       _remove_selector(&faf_farptr->BankedMem.sel);
       _remove_selector(&faf_farptr->LinearMem.sel);
@@ -1220,8 +1220,8 @@ static void vbeaf_exit(BITMAP *b)
    #ifdef ALLEGRO_DOS
 
       if (vbeaf_nearptr) {
-	 __djgpp_nearptr_disable();
-	 vbeaf_nearptr = FALSE;
+         __djgpp_nearptr_disable();
+         vbeaf_nearptr = FALSE;
       }
 
    #endif
@@ -1298,12 +1298,12 @@ static GFX_MODE_LIST *vbeaf_fetch_mode_list(void)
    if (!af_driver) {
       if (!vbeaf_locate_driver()) {
          if (mode_info) _AL_FREE(mode_info);
-	 
+
          return NULL;
       }
       if (!vbeaf_lowlevel_init()) {
          if (mode_info) _AL_FREE(mode_info);
-	 
+
          return NULL;
       }
       vbeaf_was_off = TRUE;
@@ -1315,7 +1315,7 @@ static GFX_MODE_LIST *vbeaf_fetch_mode_list(void)
    gfx_mode_list = _AL_MALLOC(sizeof(GFX_MODE_LIST));
    if (!gfx_mode_list) {
       if (mode_info) _AL_FREE(mode_info);
-      
+
       return NULL;
    }
    gfx_mode_list->mode = NULL;
@@ -1327,14 +1327,14 @@ static GFX_MODE_LIST *vbeaf_fetch_mode_list(void)
       if (!gfx_mode_list->mode) {
          if (mode_info) _AL_FREE(mode_info);
          if (gfx_mode_list) _AL_FREE(gfx_mode_list);
-         
+
          return NULL;
       }
       if (af_driver->GetVideoModeInfo(af_driver, *mode, mode_info) != 0) {
          if (mode_info) _AL_FREE(mode_info);
          if (gfx_mode_list->mode) _AL_FREE(gfx_mode_list->mode);
          if (gfx_mode_list) _AL_FREE(gfx_mode_list);
-         
+
          return NULL;
       }
 
@@ -1350,7 +1350,7 @@ static GFX_MODE_LIST *vbeaf_fetch_mode_list(void)
    if (!gfx_mode_list->mode) {
       if (mode_info) _AL_FREE(mode_info);
       if (gfx_mode_list) _AL_FREE(gfx_mode_list);
-      
+
       return NULL;
    }
 
@@ -1370,9 +1370,9 @@ static GFX_MODE_LIST *vbeaf_fetch_mode_list(void)
 
 
 /* vbeaf_vsync:
- *  VBE/AF vsync routine, needed for cards that don't emulate the VGA 
- *  blanking registers. VBE/AF doesn't provide a vsync function, but we 
- *  can emulate it by altering the display start address with the vsync 
+ *  VBE/AF vsync routine, needed for cards that don't emulate the VGA
+ *  blanking registers. VBE/AF doesn't provide a vsync function, but we
+ *  can emulate it by altering the display start address with the vsync
  *  flag set.
  */
 static void vbeaf_vsync(void)
@@ -1394,7 +1394,7 @@ static int vbeaf_scroll(int x, int y)
 
    SAFISH_CALL(
       if (_wait_for_vsync && af_driver->WaitTillIdle)
-	 af_driver->WaitTillIdle(af_driver);
+         af_driver->WaitTillIdle(af_driver);
 
       af_driver->SetDisplayStart(af_driver, x, y, 1);
    );
@@ -1439,7 +1439,7 @@ static int vbeaf_request_scroll(int x, int y)
 
    SAFISH_CALL(
       if (af_driver->WaitTillIdle)
-	 af_driver->WaitTillIdle(af_driver);
+         af_driver->WaitTillIdle(af_driver);
 
       af_driver->SetDisplayStart(af_driver, x, y, 0);
    );
@@ -1496,49 +1496,49 @@ static int vbeaf_set_mouse_sprite(BITMAP *sprite, int xfocus, int yfocus)
    for (y=0; y<sprite->h; y++) {
       for (x=0; x<sprite->w; x++) {
 
-	 c = getpixel(sprite, x, y);
+         c = getpixel(sprite, x, y);
 
-	 if (c == bitmap_mask_color(sprite)) {
-	    /* skip masked pixels */
-	 }
-	 else if (c == vbeaf_cur_c1) {
-	    /* color #1 pixel */
-	    cursor.andMask[y] |= 0x80000000>>x;
-	    cursor.xorMask[y] |= 0x80000000>>x;
-	 }
-	 else if (c == vbeaf_cur_c2) {
-	    /* color #2 pixel */
-	    cursor.andMask[y] |= 0x80000000>>x;
-	 }
-	 else {
-	    /* check whether this pixel value is zero */
-	    if (bpp == 8) {
-	       iszero = ((getr_depth(bpp, c) == getr_depth(bpp, 0)) &&
-			 (getg_depth(bpp, c) == getg_depth(bpp, 0)) &&
-			 (getb_depth(bpp, c) == getb_depth(bpp, 0)));
-	    }
-	    else {
-	       iszero = ((getr_depth(bpp, c) == 0) &&
-			 (getg_depth(bpp, c) == 0) &&
-			 (getb_depth(bpp, c) == 0));
-	    }
+         if (c == bitmap_mask_color(sprite)) {
+            /* skip masked pixels */
+         }
+         else if (c == vbeaf_cur_c1) {
+            /* color #1 pixel */
+            cursor.andMask[y] |= 0x80000000>>x;
+            cursor.xorMask[y] |= 0x80000000>>x;
+         }
+         else if (c == vbeaf_cur_c2) {
+            /* color #2 pixel */
+            cursor.andMask[y] |= 0x80000000>>x;
+         }
+         else {
+            /* check whether this pixel value is zero */
+            if (bpp == 8) {
+               iszero = ((getr_depth(bpp, c) == getr_depth(bpp, 0)) &&
+                         (getg_depth(bpp, c) == getg_depth(bpp, 0)) &&
+                         (getb_depth(bpp, c) == getb_depth(bpp, 0)));
+            }
+            else {
+               iszero = ((getr_depth(bpp, c) == 0) &&
+                         (getg_depth(bpp, c) == 0) &&
+                         (getb_depth(bpp, c) == 0));
+            }
 
-	    if ((vbeaf_cur_c2 < 0) && (iszero)) {
-	       /* zero pixel value = color #2 */
-	       vbeaf_cur_c2 = c;
-	       cursor.andMask[y] |= 0x80000000>>x;
-	    }
-	    else if (vbeaf_cur_c1 < 0) {
-	       /* other pixel value = color #1 */
-	       vbeaf_cur_c1 = c;
-	       cursor.andMask[y] |= 0x80000000>>x;
-	       cursor.xorMask[y] |= 0x80000000>>x;
-	    }
-	    else {
-	       /* it's not cool if there are more than two colors! */
-	       return -1;
-	    }
-	 }
+            if ((vbeaf_cur_c2 < 0) && (iszero)) {
+               /* zero pixel value = color #2 */
+               vbeaf_cur_c2 = c;
+               cursor.andMask[y] |= 0x80000000>>x;
+            }
+            else if (vbeaf_cur_c1 < 0) {
+               /* other pixel value = color #1 */
+               vbeaf_cur_c1 = c;
+               cursor.andMask[y] |= 0x80000000>>x;
+               cursor.xorMask[y] |= 0x80000000>>x;
+            }
+            else {
+               /* it's not cool if there are more than two colors! */
+               return -1;
+            }
+         }
       }
    }
 
@@ -1556,10 +1556,10 @@ static int vbeaf_set_mouse_sprite(BITMAP *sprite, int xfocus, int yfocus)
       af_driver->SetCursor(af_driver, &cursor);
 
       if ((bpp > 8) && (vbeaf_cur_c1 >= 0)) {
-	 af_driver->SetCursorColor(af_driver, 
-				   getr_depth(bpp, vbeaf_cur_c1),
-				   getg_depth(bpp, vbeaf_cur_c1),
-				   getb_depth(bpp, vbeaf_cur_c1));
+         af_driver->SetCursorColor(af_driver,
+                                   getr_depth(bpp, vbeaf_cur_c1),
+                                   getg_depth(bpp, vbeaf_cur_c1),
+                                   getb_depth(bpp, vbeaf_cur_c1));
       }
    );
 
@@ -1575,18 +1575,18 @@ static int vbeaf_show_mouse(BITMAP *bmp, int x, int y)
 {
    if (bitmap_color_depth(bmp) == 8) {
       if (vbeaf_cur_c2 >= 0) {
-	 /* check that the palette contains a valid zero color */
-	 if ((getr_depth(8, vbeaf_cur_c2) != getr_depth(8, 0)) ||
-	     (getg_depth(8, vbeaf_cur_c2) != getg_depth(8, 0)) ||
-	     (getb_depth(8, vbeaf_cur_c2) != getb_depth(8, 0)))
-	    return -1;
+         /* check that the palette contains a valid zero color */
+         if ((getr_depth(8, vbeaf_cur_c2) != getr_depth(8, 0)) ||
+             (getg_depth(8, vbeaf_cur_c2) != getg_depth(8, 0)) ||
+             (getb_depth(8, vbeaf_cur_c2) != getb_depth(8, 0)))
+            return -1;
       }
 
       /* set the cursor color */
       if (vbeaf_cur_c1 >= 0) {
-	 SAFISH_CALL(
-	    af_driver->SetCursorColor(af_driver, vbeaf_cur_c1, 0, 0);
-	 );
+         SAFISH_CALL(
+            af_driver->SetCursorColor(af_driver, vbeaf_cur_c1, 0, 0);
+         );
       }
    }
 
@@ -1630,18 +1630,18 @@ static void vbeaf_move_mouse(int x, int y)
 
    SAFISH_CALL(
       if (onscreen) {
-	 af_driver->SetCursorPos(af_driver, hx, hy);
+         af_driver->SetCursorPos(af_driver, hx, hy);
 
-	 if (!vbeaf_cur_on) {
-	    af_driver->ShowCursor(af_driver, 1);
-	    vbeaf_cur_on = TRUE;
-	 }
+         if (!vbeaf_cur_on) {
+            af_driver->ShowCursor(af_driver, 1);
+            vbeaf_cur_on = TRUE;
+         }
       }
       else {
-	 if (vbeaf_cur_on) {
-	    af_driver->ShowCursor(af_driver, 0);
-	    vbeaf_cur_on = FALSE;
-	 }
+         if (vbeaf_cur_on) {
+            af_driver->ShowCursor(af_driver, 0);
+            vbeaf_cur_on = FALSE;
+         }
       }
    );
 
@@ -1672,7 +1672,7 @@ static void vbeaf_drawing_mode(void)
       vbeaf_fg_mix = vbeaf_bg_mix = (_drawing_mode == DRAW_MODE_XOR) ? 3 : 0;
 
       SAFISH_CALL(
-	 af_driver->SetMix(af_driver, vbeaf_fg_mix, vbeaf_bg_mix);
+         af_driver->SetMix(af_driver, vbeaf_fg_mix, vbeaf_bg_mix);
       );
       return;
    }
@@ -1689,7 +1689,7 @@ static void vbeaf_drawing_mode(void)
       vbeaf_fg_mix = vbeaf_bg_mix = 0;
 
       SAFISH_CALL(
-	 af_driver->SetMix(af_driver, vbeaf_fg_mix, vbeaf_bg_mix);
+         af_driver->SetMix(af_driver, vbeaf_fg_mix, vbeaf_bg_mix);
       );
       return;
    }
@@ -1707,7 +1707,7 @@ static void vbeaf_drawing_mode(void)
       vbeaf_bg_mix = (_drawing_mode == DRAW_MODE_MASKED_PATTERN) ? 4 : 0;
 
       SAFISH_CALL(
-	 af_driver->SetMix(af_driver, vbeaf_fg_mix, vbeaf_bg_mix);
+         af_driver->SetMix(af_driver, vbeaf_fg_mix, vbeaf_bg_mix);
       );
       return;
    }
@@ -1742,62 +1742,62 @@ static void prepare_color_pattern(BITMAP *bmp)
 
       switch (bitmap_color_depth(bmp)) {
 
-	 #ifdef ALLEGRO_COLOR8
+         #ifdef ALLEGRO_COLOR8
 
-	    case 8:
-	       for (y=0; y<8; y++) {
-		  for (x=0; x<8; x++) {
-		     xx = (x-xo) & _drawing_x_mask;
-		     yy = (y-yo) & _drawing_y_mask;
-		     pattern[y*8+x] = _drawing_pattern->line[yy][xx];
-		  }
-	       }
-	       break;
+            case 8:
+               for (y=0; y<8; y++) {
+                  for (x=0; x<8; x++) {
+                     xx = (x-xo) & _drawing_x_mask;
+                     yy = (y-yo) & _drawing_y_mask;
+                     pattern[y*8+x] = _drawing_pattern->line[yy][xx];
+                  }
+               }
+               break;
 
-	 #endif
+         #endif
 
-	 #ifdef ALLEGRO_COLOR16
+         #ifdef ALLEGRO_COLOR16
 
-	    case 15:
-	    case 16:
-	       for (y=0; y<8; y++) {
-		  for (x=0; x<8; x++) {
-		     xx = (x-xo) & _drawing_x_mask;
-		     yy = (y-yo) & _drawing_y_mask;
-		     pattern[y*8+x] = ((unsigned short *)_drawing_pattern->line[yy])[xx];
-		  }
-	       }
-	       break;
+            case 15:
+            case 16:
+               for (y=0; y<8; y++) {
+                  for (x=0; x<8; x++) {
+                     xx = (x-xo) & _drawing_x_mask;
+                     yy = (y-yo) & _drawing_y_mask;
+                     pattern[y*8+x] = ((unsigned short *)_drawing_pattern->line[yy])[xx];
+                  }
+               }
+               break;
 
-	 #endif
+         #endif
 
-	 #ifdef ALLEGRO_COLOR24
+         #ifdef ALLEGRO_COLOR24
 
-	    case 24:
-	       for (y=0; y<8; y++) {
-		  for (x=0; x<8; x++) {
-		     xx = (x-xo) & _drawing_x_mask;
-		     yy = (y-yo) & _drawing_y_mask;
-		     pattern[y*8+x] = *((unsigned long *)(_drawing_pattern->line[yy]+xx*3)) & 0xFFFFFF;
-		  }
-	       }
-	       break;
+            case 24:
+               for (y=0; y<8; y++) {
+                  for (x=0; x<8; x++) {
+                     xx = (x-xo) & _drawing_x_mask;
+                     yy = (y-yo) & _drawing_y_mask;
+                     pattern[y*8+x] = *((unsigned long *)(_drawing_pattern->line[yy]+xx*3)) & 0xFFFFFF;
+                  }
+               }
+               break;
 
-	 #endif
+         #endif
 
-	 #ifdef ALLEGRO_COLOR32
+         #ifdef ALLEGRO_COLOR32
 
-	    case 32:
-	       for (y=0; y<8; y++) {
-		  for (x=0; x<8; x++) {
-		     xx = (x-xo) & _drawing_x_mask;
-		     yy = (y-yo) & _drawing_y_mask;
-		     pattern[y*8+x] = ((unsigned long *)_drawing_pattern->line[yy])[xx];
-		  }
-	       }
-	       break;
+            case 32:
+               for (y=0; y<8; y++) {
+                  for (x=0; x<8; x++) {
+                     xx = (x-xo) & _drawing_x_mask;
+                     yy = (y-yo) & _drawing_y_mask;
+                     pattern[y*8+x] = ((unsigned long *)_drawing_pattern->line[yy])[xx];
+                  }
+               }
+               break;
 
-	 #endif
+         #endif
       }
 
       af_driver->Set8x8ColorPattern(af_driver, 0, pattern);
@@ -1823,70 +1823,70 @@ static void prepare_mono_pattern(BITMAP *bmp)
 
       switch (bitmap_color_depth(bmp)) {
 
-	 #ifdef ALLEGRO_COLOR16
+         #ifdef ALLEGRO_COLOR16
 
-	    case 8:
-	       for (y=0; y<8; y++) {
-		  pattern[y] = 0;
-		  for (x=0; x<8; x++) {
-		     xx = (x-xo) & _drawing_x_mask;
-		     yy = (y-yo) & _drawing_y_mask;
-		     if (_drawing_pattern->line[yy][xx])
-			pattern[y] |= (0x80>>x);
-		  }
-	       }
-	       break;
+            case 8:
+               for (y=0; y<8; y++) {
+                  pattern[y] = 0;
+                  for (x=0; x<8; x++) {
+                     xx = (x-xo) & _drawing_x_mask;
+                     yy = (y-yo) & _drawing_y_mask;
+                     if (_drawing_pattern->line[yy][xx])
+                        pattern[y] |= (0x80>>x);
+                  }
+               }
+               break;
 
-	 #endif
+         #endif
 
-	 #ifdef ALLEGRO_COLOR16
+         #ifdef ALLEGRO_COLOR16
 
-	    case 15:
-	    case 16:
-	       for (y=0; y<8; y++) {
-		  pattern[y] = 0;
-		  for (x=0; x<8; x++) {
-		     xx = (x-xo) & _drawing_x_mask;
-		     yy = (y-yo) & _drawing_y_mask;
-		     if (((unsigned short *)_drawing_pattern->line[yy])[xx] != bitmap_mask_color(bmp))
-			pattern[y] |= (0x80>>x);
-		  }
-	       }
-	       break;
+            case 15:
+            case 16:
+               for (y=0; y<8; y++) {
+                  pattern[y] = 0;
+                  for (x=0; x<8; x++) {
+                     xx = (x-xo) & _drawing_x_mask;
+                     yy = (y-yo) & _drawing_y_mask;
+                     if (((unsigned short *)_drawing_pattern->line[yy])[xx] != bitmap_mask_color(bmp))
+                        pattern[y] |= (0x80>>x);
+                  }
+               }
+               break;
 
-	 #endif
+         #endif
 
-	 #ifdef ALLEGRO_COLOR24
+         #ifdef ALLEGRO_COLOR24
 
-	    case 24:
-	       for (y=0; y<8; y++) {
-		  pattern[y] = 0;
-		  for (x=0; x<8; x++) {
-		     xx = (x-xo) & _drawing_x_mask;
-		     yy = (y-yo) & _drawing_y_mask;
-		     if ((*((unsigned long *)(_drawing_pattern->line[yy]+xx*3)) & 0xFFFFFF) != MASK_COLOR_24)
-			pattern[y] |= (0x80>>x);
-		  }
-	       }
-	       break;
+            case 24:
+               for (y=0; y<8; y++) {
+                  pattern[y] = 0;
+                  for (x=0; x<8; x++) {
+                     xx = (x-xo) & _drawing_x_mask;
+                     yy = (y-yo) & _drawing_y_mask;
+                     if ((*((unsigned long *)(_drawing_pattern->line[yy]+xx*3)) & 0xFFFFFF) != MASK_COLOR_24)
+                        pattern[y] |= (0x80>>x);
+                  }
+               }
+               break;
 
-	 #endif
+         #endif
 
-	 #ifdef ALLEGRO_COLOR32
+         #ifdef ALLEGRO_COLOR32
 
-	    case 32:
-	       for (y=0; y<8; y++) {
-		  pattern[y] = 0;
-		  for (x=0; x<8; x++) {
-		     xx = (x-xo) & _drawing_x_mask;
-		     yy = (y-yo) & _drawing_y_mask;
-		     if (((unsigned long *)_drawing_pattern->line[yy])[xx] != MASK_COLOR_32)
-			pattern[y] |= (0x80>>x);
-		  }
-	       }
-	       break;
+            case 32:
+               for (y=0; y<8; y++) {
+                  pattern[y] = 0;
+                  for (x=0; x<8; x++) {
+                     xx = (x-xo) & _drawing_x_mask;
+                     yy = (y-yo) & _drawing_y_mask;
+                     if (((unsigned long *)_drawing_pattern->line[yy])[xx] != MASK_COLOR_32)
+                        pattern[y] |= (0x80>>x);
+                  }
+               }
+               break;
 
-	 #endif
+         #endif
       }
 
       af_driver->Set8x8MonoPattern(af_driver, pattern);
@@ -1905,7 +1905,7 @@ static INLINE void go_accel(void)
    /* turn on the accelerator */
    if (!_accel_active) {
       if (af_driver->DisableDirectAccess)
-	 af_driver->DisableDirectAccess(af_driver);
+         af_driver->DisableDirectAccess(af_driver);
 
       _accel_active = TRUE;
    }
@@ -1926,16 +1926,16 @@ static void vbeaf_hline(BITMAP *bmp, int x1, int y, int x2, int color)
 
    if (bmp->clip) {
       if ((y < bmp->ct) || (y >= bmp->cb))
-	 return;
+         return;
 
       if (x1 < bmp->cl)
-	 x1 = bmp->cl;
+         x1 = bmp->cl;
 
       if (x2 >= bmp->cr)
-	 x2 = bmp->cr-1;
+         x2 = bmp->cr-1;
 
       if (x2 < x1)
-	 return;
+         return;
    }
 
    SAFISH_CALL(
@@ -1943,29 +1943,29 @@ static void vbeaf_hline(BITMAP *bmp, int x1, int y, int x2, int color)
 
       switch (_drawing_mode) {
 
-	 case DRAW_MODE_SOLID:
-	 case DRAW_MODE_XOR:
-	    /* normal scanline fill */
-	    af_driver->DrawScan(af_driver, color, y+bmp->y_ofs, 
-				x1+bmp->x_ofs, x2+bmp->x_ofs+1);
-	    break;
+         case DRAW_MODE_SOLID:
+         case DRAW_MODE_XOR:
+            /* normal scanline fill */
+            af_driver->DrawScan(af_driver, color, y+bmp->y_ofs,
+                                x1+bmp->x_ofs, x2+bmp->x_ofs+1);
+            break;
 
-	 case DRAW_MODE_COPY_PATTERN:
-	    /* colored pattern scanline fill */
-	    prepare_color_pattern(bmp);
+         case DRAW_MODE_COPY_PATTERN:
+            /* colored pattern scanline fill */
+            prepare_color_pattern(bmp);
 
-	    af_driver->DrawColorPattScan(af_driver, y+bmp->y_ofs, 
-					 x1+bmp->x_ofs, x2+bmp->x_ofs+1);
-	    break;
+            af_driver->DrawColorPattScan(af_driver, y+bmp->y_ofs,
+                                         x1+bmp->x_ofs, x2+bmp->x_ofs+1);
+            break;
 
-	 case DRAW_MODE_SOLID_PATTERN:
-	 case DRAW_MODE_MASKED_PATTERN:
-	    /* mono pattern scanline fill */
-	    prepare_mono_pattern(bmp);
+         case DRAW_MODE_SOLID_PATTERN:
+         case DRAW_MODE_MASKED_PATTERN:
+            /* mono pattern scanline fill */
+            prepare_mono_pattern(bmp);
 
-	    af_driver->DrawPattScan(af_driver, color, 0, y+bmp->y_ofs, 
-				    x1+bmp->x_ofs, x2+bmp->x_ofs+1);
-	    break;
+            af_driver->DrawPattScan(af_driver, color, 0, y+bmp->y_ofs,
+                                    x1+bmp->x_ofs, x2+bmp->x_ofs+1);
+            break;
       }
    );
 }
@@ -1985,24 +1985,24 @@ static void vbeaf_vline_a(BITMAP *bmp, int x, int y1, int y2, int color)
 
    if (bmp->clip) {
       if ((x < bmp->cl) || (x >= bmp->cr))
-	 return;
+         return;
 
       if (y1 < bmp->ct)
-	 y1 = bmp->ct;
+         y1 = bmp->ct;
 
       if (y2 >= bmp->cb)
-	 y2 = bmp->cb-1;
+         y2 = bmp->cb-1;
 
       if (y2 < y1)
-	 return;
+         return;
    }
 
    SAFISH_CALL(
       go_accel();
 
       af_driver->DrawLine(af_driver, color,
-			  itofix(x+bmp->x_ofs), itofix(y1+bmp->y_ofs),
-			  itofix(x+bmp->x_ofs), itofix(y2+bmp->y_ofs));
+                          itofix(x+bmp->x_ofs), itofix(y1+bmp->y_ofs),
+                          itofix(x+bmp->x_ofs), itofix(y2+bmp->y_ofs));
    );
 }
 
@@ -2021,16 +2021,16 @@ static void vbeaf_vline_b(BITMAP *bmp, int x, int y1, int y2, int color)
 
    if (bmp->clip) {
       if ((x < bmp->cl) || (x >= bmp->cr))
-	 return;
+         return;
 
       if (y1 < bmp->ct)
-	 y1 = bmp->ct;
+         y1 = bmp->ct;
 
       if (y2 >= bmp->cb)
-	 y2 = bmp->cb-1;
+         y2 = bmp->cb-1;
 
       if (y2 < y1)
-	 return;
+         return;
    }
 
    SAFISH_CALL(
@@ -2038,29 +2038,29 @@ static void vbeaf_vline_b(BITMAP *bmp, int x, int y1, int y2, int color)
 
       switch (_drawing_mode) {
 
-	 case DRAW_MODE_SOLID:
-	 case DRAW_MODE_XOR:
-	    /* mono vertical line */
-	    af_driver->DrawRect(af_driver, color, 
-				x+bmp->x_ofs, y1+bmp->y_ofs, 1, y2-y1+1);
-	    break;
+         case DRAW_MODE_SOLID:
+         case DRAW_MODE_XOR:
+            /* mono vertical line */
+            af_driver->DrawRect(af_driver, color,
+                                x+bmp->x_ofs, y1+bmp->y_ofs, 1, y2-y1+1);
+            break;
 
-	 case DRAW_MODE_COPY_PATTERN:
-	    /* colored pattern vertical line */
-	    prepare_color_pattern(bmp);
+         case DRAW_MODE_COPY_PATTERN:
+            /* colored pattern vertical line */
+            prepare_color_pattern(bmp);
 
-	    af_driver->DrawColorPattRect(af_driver,
-					 x+bmp->x_ofs, y1+bmp->y_ofs, 1, y2-y1+1);
-	    break;
+            af_driver->DrawColorPattRect(af_driver,
+                                         x+bmp->x_ofs, y1+bmp->y_ofs, 1, y2-y1+1);
+            break;
 
-	 case DRAW_MODE_SOLID_PATTERN:
-	 case DRAW_MODE_MASKED_PATTERN:
-	    /* mono pattern vertical line */
-	    prepare_mono_pattern(bmp);
+         case DRAW_MODE_SOLID_PATTERN:
+         case DRAW_MODE_MASKED_PATTERN:
+            /* mono pattern vertical line */
+            prepare_mono_pattern(bmp);
 
-	    af_driver->DrawPattRect(af_driver, color, 0,
-				    x+bmp->x_ofs, y1+bmp->y_ofs, 1, y2-y1+1);
-	    break;
+            af_driver->DrawPattRect(af_driver, color, 0,
+                                    x+bmp->x_ofs, y1+bmp->y_ofs, 1, y2-y1+1);
+            break;
       }
    );
 }
@@ -2081,23 +2081,23 @@ static void vbeaf_line(BITMAP *bmp, int x1, int y1, int x2, int y2, int color)
       dy = y2;
 
       if (sx > dx) {
-	 t = sx;
-	 sx = dx;
-	 dx = t;
+         t = sx;
+         sx = dx;
+         dx = t;
       }
 
       if (sy > dy) {
-	 t = sy;
-	 sy = dy;
-	 dy = t;
+         t = sy;
+         sy = dy;
+         dy = t;
       }
 
       if ((sx >= bmp->cr) || (sy >= bmp->cb) || (dx < bmp->cl) || (dy < bmp->ct))
-	 return;
+         return;
 
       if ((sx < bmp->cl) || (sy < bmp->ct) || (dx >= bmp->cr) || (dy >= bmp->cb)) {
-	 orig_line(bmp, x1, y1, x2, y2, color);
-	 return;
+         orig_line(bmp, x1, y1, x2, y2, color);
+         return;
       }
    }
 
@@ -2105,8 +2105,8 @@ static void vbeaf_line(BITMAP *bmp, int x1, int y1, int x2, int y2, int color)
       go_accel();
 
       af_driver->DrawLine(af_driver, color,
-			  itofix(x1+bmp->x_ofs), itofix(y1+bmp->y_ofs),
-			  itofix(x2+bmp->x_ofs), itofix(y2+bmp->y_ofs));
+                          itofix(x1+bmp->x_ofs), itofix(y1+bmp->y_ofs),
+                          itofix(x2+bmp->x_ofs), itofix(y2+bmp->y_ofs));
    );
 }
 
@@ -2131,22 +2131,22 @@ static void vbeaf_rectfill(BITMAP *bmp, int x1, int y1, int x2, int y2, int colo
 
    if (bmp->clip) {
       if (x1 < bmp->cl)
-	 x1 = bmp->cl;
+         x1 = bmp->cl;
 
       if (x2 >= bmp->cr)
-	 x2 = bmp->cr-1;
+         x2 = bmp->cr-1;
 
       if (x2 < x1)
-	 return;
+         return;
 
       if (y1 < bmp->ct)
-	 y1 = bmp->ct;
+         y1 = bmp->ct;
 
       if (y2 >= bmp->cb)
-	 y2 = bmp->cb-1;
+         y2 = bmp->cb-1;
 
       if (y2 < y1)
-	 return;
+         return;
    }
 
    SAFISH_CALL(
@@ -2154,32 +2154,32 @@ static void vbeaf_rectfill(BITMAP *bmp, int x1, int y1, int x2, int y2, int colo
 
       switch (_drawing_mode) {
 
-	 case DRAW_MODE_SOLID:
-	 case DRAW_MODE_XOR:
-	    /* mono rectangle fill */
-	    af_driver->DrawRect(af_driver, color, 
-				x1+bmp->x_ofs, y1+bmp->y_ofs, 
-				x2-x1+1, y2-y1+1);
-	    break;
+         case DRAW_MODE_SOLID:
+         case DRAW_MODE_XOR:
+            /* mono rectangle fill */
+            af_driver->DrawRect(af_driver, color,
+                                x1+bmp->x_ofs, y1+bmp->y_ofs,
+                                x2-x1+1, y2-y1+1);
+            break;
 
-	 case DRAW_MODE_COPY_PATTERN:
-	    /* colored pattern rectangle fill */
-	    prepare_color_pattern(bmp);
+         case DRAW_MODE_COPY_PATTERN:
+            /* colored pattern rectangle fill */
+            prepare_color_pattern(bmp);
 
-	    af_driver->DrawColorPattRect(af_driver,
-					 x1+bmp->x_ofs, y1+bmp->y_ofs,
-					 x2-x1+1, y2-y1+1);
-	    break;
+            af_driver->DrawColorPattRect(af_driver,
+                                         x1+bmp->x_ofs, y1+bmp->y_ofs,
+                                         x2-x1+1, y2-y1+1);
+            break;
 
-	 case DRAW_MODE_SOLID_PATTERN:
-	 case DRAW_MODE_MASKED_PATTERN:
-	    /* mono pattern rectangle fill */
-	    prepare_mono_pattern(bmp);
+         case DRAW_MODE_SOLID_PATTERN:
+         case DRAW_MODE_MASKED_PATTERN:
+            /* mono pattern rectangle fill */
+            prepare_mono_pattern(bmp);
 
-	    af_driver->DrawPattRect(af_driver, color, 0,
-				    x1+bmp->x_ofs, y1+bmp->y_ofs,
-				    x2-x1+1, y2-y1+1);
-	    break;
+            af_driver->DrawPattRect(af_driver, color, 0,
+                                    x1+bmp->x_ofs, y1+bmp->y_ofs,
+                                    x2-x1+1, y2-y1+1);
+            break;
       }
    );
 }
@@ -2197,22 +2197,22 @@ static void vbeaf_triangle(BITMAP *bmp, int x1, int y1, int x2, int y2, int x3, 
    if (bmp->clip) {
       if ((x1 < bmp->cl) || (x2 < bmp->cl) || (x3 < bmp->cl)) {
          _soft_triangle(bmp, x1, y1, x2, y2, x3, y3, color);
-	 return;
+         return;
       }
-      
+
       if ((y1 < bmp->ct) || (y2 < bmp->ct) || (y3 < bmp->ct)) {
          _soft_triangle(bmp, x1, y1, x2, y2, x3, y3, color);
-	 return;
+         return;
       }
 
       if ((x1 >= bmp->cr) || (x2 >= bmp->cr) || (x3 >= bmp->cr)) {
          _soft_triangle(bmp, x1, y1, x2, y2, x3, y3, color);
-	 return;
+         return;
       }
 
       if ((y1 >= bmp->cb) || (y2 >= bmp->cb) || (y3 >= bmp->cb)) {
          _soft_triangle(bmp, x1, y1, x2, y2, x3, y3, color);
-	 return;
+         return;
       }
    }
 
@@ -2222,7 +2222,7 @@ static void vbeaf_triangle(BITMAP *bmp, int x1, int y1, int x2, int y2, int x3, 
       int tmp = x##a;         \
       x##a = x##b;            \
       x##b = tmp;             \
-			      \
+                              \
       tmp = y##a;             \
       y##a = y##b;            \
       y##b = tmp;             \
@@ -2242,67 +2242,67 @@ static void vbeaf_triangle(BITMAP *bmp, int x1, int y1, int x2, int y2, int x3, 
       go_accel();
 
       if (y2 > y1) {
-	 /* draw the top half of the triangle as one trapezoid */
-	 trap.y = y1+bmp->y_ofs;
-	 trap.count = y2-y1;
-	 trap.x1 = trap.x2 = itofix(x1+bmp->x_ofs);
-	 trap.slope1 = itofix(x2-x1) / (y2-y1);
-	 trap.slope2 = itofix(x3-x1) / (y3-y1);
+         /* draw the top half of the triangle as one trapezoid */
+         trap.y = y1+bmp->y_ofs;
+         trap.count = y2-y1;
+         trap.x1 = trap.x2 = itofix(x1+bmp->x_ofs);
+         trap.slope1 = itofix(x2-x1) / (y2-y1);
+         trap.slope2 = itofix(x3-x1) / (y3-y1);
 
-	 if (trap.slope1 < 0)
-	    trap.x1 += MIN(trap.slope1+itofix(1), 0);
+         if (trap.slope1 < 0)
+            trap.x1 += MIN(trap.slope1+itofix(1), 0);
 
-	 if (trap.slope2 < 0)
-	    trap.x2 += MIN(trap.slope2+itofix(1), 0);
+         if (trap.slope2 < 0)
+            trap.x2 += MIN(trap.slope2+itofix(1), 0);
 
-	 if (trap.slope1 > trap.slope2)
-	    trap.x1 += MAX(ABS(trap.slope1), itofix(1));
-	 else
-	    trap.x2 += MAX(ABS(trap.slope2), itofix(1));
+         if (trap.slope1 > trap.slope2)
+            trap.x1 += MAX(ABS(trap.slope1), itofix(1));
+         else
+            trap.x2 += MAX(ABS(trap.slope2), itofix(1));
 
-	 af_driver->DrawTrap(af_driver, color, &trap);
+         af_driver->DrawTrap(af_driver, color, &trap);
 
-	 if (y3 > y2) {
-	    /* draw the bottom half as a second trapezoid */
-	    if (trap.slope1 < 0)
-	       trap.x1 -= MIN(trap.slope1+itofix(1), 0);
+         if (y3 > y2) {
+            /* draw the bottom half as a second trapezoid */
+            if (trap.slope1 < 0)
+               trap.x1 -= MIN(trap.slope1+itofix(1), 0);
 
-	    if (trap.slope1 > trap.slope2)
-	       trap.x1 -= MAX(ABS(trap.slope1), itofix(1));
+            if (trap.slope1 > trap.slope2)
+               trap.x1 -= MAX(ABS(trap.slope1), itofix(1));
 
-	    trap.count = y3-y2;
-	    trap.slope1 = itofix(x3-x2) / (y3-y2);
+            trap.count = y3-y2;
+            trap.slope1 = itofix(x3-x2) / (y3-y2);
 
-	    if (trap.slope1 < 0)
-	       trap.x1 += MIN(trap.slope1+itofix(1), 0);
+            if (trap.slope1 < 0)
+               trap.x1 += MIN(trap.slope1+itofix(1), 0);
 
-	    if (trap.x1 > trap.x2)
-	       trap.x1 += MAX(ABS(trap.slope1), itofix(1));
+            if (trap.x1 > trap.x2)
+               trap.x1 += MAX(ABS(trap.slope1), itofix(1));
 
-	    af_driver->DrawTrap(af_driver, color, &trap);
-	 }
+            af_driver->DrawTrap(af_driver, color, &trap);
+         }
       }
       else if (y3 > y2) {
-	 /* we can draw the entire thing with a single trapezoid */
-	 trap.y = y1+bmp->y_ofs;
-	 trap.count = y3-y2;
-	 trap.x1 = itofix(x2+bmp->x_ofs);
-	 trap.x2 = itofix(x1+bmp->x_ofs);
-	 trap.slope1 = itofix(x3-x2) / (y3-y2);
-	 trap.slope2 = (y3 > y1) ? (itofix(x3-x1) / (y3-y1)) : 0;
+         /* we can draw the entire thing with a single trapezoid */
+         trap.y = y1+bmp->y_ofs;
+         trap.count = y3-y2;
+         trap.x1 = itofix(x2+bmp->x_ofs);
+         trap.x2 = itofix(x1+bmp->x_ofs);
+         trap.slope1 = itofix(x3-x2) / (y3-y2);
+         trap.slope2 = (y3 > y1) ? (itofix(x3-x1) / (y3-y1)) : 0;
 
-	 if (trap.slope1 < 0)
-	    trap.x1 += MIN(trap.slope1+itofix(1), 0);
+         if (trap.slope1 < 0)
+            trap.x1 += MIN(trap.slope1+itofix(1), 0);
 
-	 if (trap.slope2 < 0)
-	    trap.x2 += MIN(trap.slope2+itofix(1), 0);
+         if (trap.slope2 < 0)
+            trap.x2 += MIN(trap.slope2+itofix(1), 0);
 
-	 if (trap.x1 > trap.x2)
-	    trap.x1 += MAX(ABS(trap.slope1), itofix(1));
-	 else
-	    trap.x2 += MAX(ABS(trap.slope2), itofix(1));
+         if (trap.x1 > trap.x2)
+            trap.x1 += MAX(ABS(trap.slope1), itofix(1));
+         else
+            trap.x2 += MAX(ABS(trap.slope2), itofix(1));
 
-	 af_driver->DrawTrap(af_driver, color, &trap);
+         af_driver->DrawTrap(af_driver, color, &trap);
       }
    );
 }
@@ -2332,7 +2332,7 @@ static void vbeaf_draw_glyph(BITMAP *bmp, AL_CONST FONT_GLYPH *glyph, int x, int
 
       h -= d;
       if (h <= 0)
-	 return;
+         return;
 
       data += d*stride;
       y = bmp->ct;
@@ -2342,26 +2342,26 @@ static void vbeaf_draw_glyph(BITMAP *bmp, AL_CONST FONT_GLYPH *glyph, int x, int
    if (y+h >= bmp->cb) {
       h = bmp->cb - y;
       if (h <= 0)
-	 return;
+         return;
    }
 
    SAFE_CALL(
       /* set the mix mode */
       if (bg >= 0) {
-	 af_driver->SetMix(af_driver, 0, 0);
-	 d = bg;
+         af_driver->SetMix(af_driver, 0, 0);
+         d = bg;
       }
       else {
-	 af_driver->SetMix(af_driver, 0, 4);
-	 d = 0;
+         af_driver->SetMix(af_driver, 0, 4);
+         d = 0;
       }
 
       /* draw the letter */
       go_accel();
 
       af_driver->PutMonoImage(af_driver, color, d,
-			      x+bmp->x_ofs, y+bmp->y_ofs,
-			      stride, 0, 0, stride*8, h, (unsigned char *)data);
+                              x+bmp->x_ofs, y+bmp->y_ofs,
+                              stride, 0, 0, stride*8, h, (unsigned char *)data);
 
       af_driver->SetMix(af_driver, vbeaf_fg_mix, vbeaf_bg_mix);
    );
@@ -2387,57 +2387,57 @@ static void vbeaf_draw_sprite(BITMAP *bmp, BITMAP *sprite, int x, int y)
       h = sprite->h;
 
       if (bmp->clip) {
-	 if (x < bmp->cl) {
-	    sx += bmp->cl-x;
-	    w -= bmp->cl-x;
-	    x = bmp->cl;
-	 }
+         if (x < bmp->cl) {
+            sx += bmp->cl-x;
+            w -= bmp->cl-x;
+            x = bmp->cl;
+         }
 
-	 if (y < bmp->ct) {
-	    sy += bmp->ct-y;
-	    h -= bmp->ct-y;
-	    y = bmp->ct;
-	 }
+         if (y < bmp->ct) {
+            sy += bmp->ct-y;
+            h -= bmp->ct-y;
+            y = bmp->ct;
+         }
 
-	 if (x+w > bmp->cr)
-	    w = bmp->cr-x;
+         if (x+w > bmp->cr)
+            w = bmp->cr-x;
 
-	 if (w <= 0)
-	    return;
+         if (w <= 0)
+            return;
 
-	 if (y+h > bmp->cb)
-	    h = bmp->cb-y;
+         if (y+h > bmp->cb)
+            h = bmp->cb-y;
 
-	 if (h <= 0)
-	    return;
+         if (h <= 0)
+            return;
       }
 
       if (sprite->vtable == &_screen_vtable) {
-	 /* hardware blit within the video memory */
-	 SAFISH_CALL(
-	    go_accel();
+         /* hardware blit within the video memory */
+         SAFISH_CALL(
+            go_accel();
 
-	    af_driver->SrcTransBlt(af_driver, sx, sy, w, h,
-				   x+bmp->x_ofs, y+bmp->y_ofs,
-				   0, sprite->vtable->mask_color);
-	 );
+            af_driver->SrcTransBlt(af_driver, sx, sy, w, h,
+                                   x+bmp->x_ofs, y+bmp->y_ofs,
+                                   0, sprite->vtable->mask_color);
+         );
       }
       else {
-	 /* hardware blit from system memory */
-	 if (sprite->h > 1)
-	    pitch = (long)sprite->line[1] - (long)sprite->line[0];
-	 else
-	    pitch = sprite->w;
+         /* hardware blit from system memory */
+         if (sprite->h > 1)
+            pitch = (long)sprite->line[1] - (long)sprite->line[0];
+         else
+            pitch = sprite->w;
 
-	 SAFE_CALL(
-	    go_accel();
+         SAFE_CALL(
+            go_accel();
 
-	    af_driver->SrcTransBltSys(af_driver, 
-				      sprite->line[0], pitch,
-				      sx, sy, w, h,
-				      x+bmp->x_ofs, y+bmp->y_ofs,
-				      0, sprite->vtable->mask_color);
-	 );
+            af_driver->SrcTransBltSys(af_driver,
+                                      sprite->line[0], pitch,
+                                      sx, sy, w, h,
+                                      x+bmp->x_ofs, y+bmp->y_ofs,
+                                      0, sprite->vtable->mask_color);
+         );
       }
    }
    else {
@@ -2466,12 +2466,12 @@ static void vbeaf_blit_from_memory(BITMAP *source, BITMAP *dest, int source_x, i
       go_accel();
 
       af_driver->BitBltSys(af_driver,
-			   source->line[0], pitch,
-			   source_x, source_y,
-			   width, height,
-			   dest_x+dest->x_ofs,
-			   dest_y+dest->y_ofs,
-			   0);
+                           source->line[0], pitch,
+                           source_x, source_y,
+                           width, height,
+                           dest_x+dest->x_ofs,
+                           dest_y+dest->y_ofs,
+                           0);
    );
 }
 
@@ -2488,12 +2488,12 @@ static void vbeaf_blit_to_self(BITMAP *source, BITMAP *dest, int source_x, int s
       go_accel();
 
       af_driver->BitBlt(af_driver,
-			source_x+source->x_ofs, 
-			source_y+source->y_ofs,
-			width, height,
-			dest_x+dest->x_ofs, 
-			dest_y+dest->y_ofs,
-			0);
+                        source_x+source->x_ofs,
+                        source_y+source->y_ofs,
+                        width, height,
+                        dest_x+dest->x_ofs,
+                        dest_y+dest->y_ofs,
+                        0);
    );
 }
 
@@ -2509,34 +2509,34 @@ static void vbeaf_masked_blit(BITMAP *source, BITMAP *dest, int source_x, int so
    if ((source->vtable == &_screen_vtable) && (af_driver->SrcTransBlt)) {
       /* hardware blit within the video memory */
       SAFISH_CALL(
-	 go_accel();
+         go_accel();
 
-	 af_driver->SrcTransBlt(af_driver,
-				source_x+source->x_ofs,
-				source_y+source->y_ofs,
-				width, height,
-				dest_x+dest->x_ofs,
-				dest_y+dest->y_ofs,
-				0, source->vtable->mask_color);
+         af_driver->SrcTransBlt(af_driver,
+                                source_x+source->x_ofs,
+                                source_y+source->y_ofs,
+                                width, height,
+                                dest_x+dest->x_ofs,
+                                dest_y+dest->y_ofs,
+                                0, source->vtable->mask_color);
       );
    }
    else if (af_driver->SrcTransBltSys) {
       /* hardware blit from system memory */
       if (source->h > 1)
-	 pitch = (long)source->line[1] - (long)source->line[0];
+         pitch = (long)source->line[1] - (long)source->line[0];
       else
-	 pitch = source->w;
+         pitch = source->w;
 
       SAFE_CALL(
-	 go_accel();
+         go_accel();
 
-	 af_driver->SrcTransBltSys(af_driver,
-				   source->line[0], pitch,
-				   source_x, source_y,
-				   width, height,
-				   dest_x+dest->x_ofs,
-				   dest_y+dest->y_ofs,
-				   0, source->vtable->mask_color);
+         af_driver->SrcTransBltSys(af_driver,
+                                   source->line[0], pitch,
+                                   source_x, source_y,
+                                   width, height,
+                                   dest_x+dest->x_ofs,
+                                   dest_y+dest->y_ofs,
+                                   0, source->vtable->mask_color);
       );
    }
    else {
@@ -2556,16 +2556,16 @@ static void vbeaf_clear_to_color(BITMAP *bitmap, int color)
       go_accel();
 
       if ((vbeaf_fg_mix != 0) || (vbeaf_bg_mix != 0))
-	 af_driver->SetMix(af_driver, 0, 0);
+         af_driver->SetMix(af_driver, 0, 0);
 
-      af_driver->DrawRect(af_driver, color, 
-			  bitmap->cl+bitmap->x_ofs, 
-			  bitmap->ct+bitmap->y_ofs, 
-			  bitmap->cr-bitmap->cl, 
-			  bitmap->cb-bitmap->ct);
+      af_driver->DrawRect(af_driver, color,
+                          bitmap->cl+bitmap->x_ofs,
+                          bitmap->ct+bitmap->y_ofs,
+                          bitmap->cr-bitmap->cl,
+                          bitmap->cb-bitmap->ct);
 
       if ((vbeaf_fg_mix != 0) || (vbeaf_bg_mix != 0))
-	 af_driver->SetMix(af_driver, vbeaf_fg_mix, vbeaf_bg_mix);
+         af_driver->SetMix(af_driver, vbeaf_fg_mix, vbeaf_bg_mix);
    );
 }
 

@@ -59,10 +59,10 @@
 #include "widgets/toolbar.h"
 #include "xml_widgets.h"
 
-#define REFRESH_FULL_SCREEN	1
+#define REFRESH_FULL_SCREEN     1
 #define SYSTEM_WINDOW_RESIZE    2
 
-#define MONITOR_TIMER_MSECS	100
+#define MONITOR_TIMER_MSECS     100
 
 #define SPRITEDITOR_ACTION_COPYSELECTION "CopySelection"
 
@@ -76,11 +76,11 @@ static struct
   int height;
   int scale;
 } try_resolutions[] = { { 1024, 768, 2 },
-			{  800, 600, 2 },
-			{  640, 480, 2 },
-			{  320, 240, 1 },
-			{  320, 200, 1 },
-			{    0,   0, 0 } };
+                        {  800, 600, 2 },
+                        {  640, 480, 2 },
+                        {  320, 240, 1 },
+                        {  320, 200, 1 },
+                        {    0,   0, 0 } };
 
 static int try_depths[] = { 32, 24, 16, 15 };
 
@@ -89,9 +89,9 @@ static GfxMode lastWorkingGfxMode;
 //////////////////////////////////////////////////////////////////////
 
 enum ShortcutType { Shortcut_ExecuteCommand,
-		    Shortcut_ChangeTool,
-		    Shortcut_EditorQuicktool,
-		    Shortcut_SpriteEditor };
+                    Shortcut_ChangeTool,
+                    Shortcut_EditorQuicktool,
+                    Shortcut_SpriteEditor };
 
 struct Shortcut
 {
@@ -130,7 +130,7 @@ struct Monitor
   bool deleted;
 
   Monitor(void (*proc)(void *),
-	  void (*free)(void *), void *data);
+          void (*free)(void *), void *data);
   ~Monitor();
 };
 
@@ -206,13 +206,13 @@ int init_module_gui()
 #if !defined(ALLEGRO_DOS)
   three_finger_flag = false;
 #endif
-  three_finger_flag = true;	// TODO remove this line
+  three_finger_flag = true;     // TODO remove this line
 
   // Set the graphics mode...
   load_gui_config(w, h, bpp, fullscreen, maximized);
 
   autodetect = fullscreen ? GFX_AUTODETECT_FULLSCREEN:
-			    GFX_AUTODETECT_WINDOWED;
+                            GFX_AUTODETECT_WINDOWED;
 
   // Default resolution
   if (!w || !h) {
@@ -230,15 +230,15 @@ int init_module_gui()
     // Try to get desktop resolution
     if (has_desktop) {
       for (c=0; try_resolutions[c].width; ++c) {
-	if (try_resolutions[c].width <= dsk_w &&
-	    try_resolutions[c].height <= dsk_h) {
-	  min_possible_dsk_res = c;
-	  fullscreen = false;
-	  w = try_resolutions[c].width;
-	  h = try_resolutions[c].height;
-	  screen_scaling = try_resolutions[c].scale;
-	  break;
-	}
+        if (try_resolutions[c].width <= dsk_w &&
+            try_resolutions[c].height <= dsk_h) {
+          min_possible_dsk_res = c;
+          fullscreen = false;
+          w = try_resolutions[c].width;
+          h = try_resolutions[c].height;
+          screen_scaling = try_resolutions[c].scale;
+          break;
+        }
       }
     }
     // Full screen
@@ -268,21 +268,21 @@ int init_module_gui()
 
     for (c=min_possible_dsk_res; try_resolutions[c].width; ++c) {
       if (set_gfx_mode(autodetect,
-		       try_resolutions[c].width,
-		       try_resolutions[c].height, 0, 0) == 0) {
-	screen_scaling = try_resolutions[c].scale;
-	goto gfx_done;
+                       try_resolutions[c].width,
+                       try_resolutions[c].height, 0, 0) == 0) {
+        screen_scaling = try_resolutions[c].scale;
+        goto gfx_done;
       }
     }
 
     if (bpp == 15)
       throw base::Exception("Error setting graphics mode\n%s\n"
-			    "Try \"ase -res WIDTHxHEIGHTxBPP\"\n", allegro_error);
+                            "Try \"ase -res WIDTHxHEIGHTxBPP\"\n", allegro_error);
 
     for (c=0; try_depths[c]; ++c) {
       if (bpp == try_depths[c]) {
-	bpp = try_depths[c+1];
-	break;
+        bpp = try_depths[c+1];
+        break;
       }
     }
   }
@@ -328,7 +328,7 @@ void exit_module_gui()
   // destroy shortcuts
   ASSERT(shortcuts != NULL);
   for (std::vector<Shortcut*>::iterator
-	 it = shortcuts->begin(); it != shortcuts->end(); ++it) {
+         it = shortcuts->begin(); it != shortcuts->end(); ++it) {
     Shortcut* shortcut = *it;
     delete shortcut;
   }
@@ -338,7 +338,7 @@ void exit_module_gui()
   // destroy monitors
   ASSERT(monitors != NULL);
   for (MonitorList::iterator
-  	 it2 = monitors->begin(); it2 != monitors->end(); ++it2) {
+         it2 = monitors->begin(); it2 != monitors->end(); ++it2) {
     Monitor* monitor = *it2;
     delete monitor;
   }
@@ -365,7 +365,7 @@ void exit_module_gui()
 }
 
 Monitor::Monitor(void (*proc)(void *),
-		 void (*free)(void *), void *data)
+                 void (*free)(void *), void *data)
 {
   this->proc = proc;
   this->free = free;
@@ -387,11 +387,11 @@ static void load_gui_config(int& w, int& h, int& bpp, bool& fullscreen, bool& ma
   bpp = get_config_int("GfxMode", "Depth", 0);
   fullscreen = get_config_bool("GfxMode", "FullScreen",
 #ifdef FULLSCREEN_PLATFORM
-			       true
+                               true
 #else
-			       false
+                               false
 #endif
-			       );
+                               );
   screen_scaling = get_config_int("GfxMode", "ScreenScale", 2);
   screen_scaling = MID(1, screen_scaling, 4);
   maximized = get_config_bool("GfxMode", "Maximized", false);
@@ -506,12 +506,12 @@ void gui_flip_screen()
     }
     else {
       if (JI_SCREEN_W == SCREEN_W && JI_SCREEN_H == SCREEN_H) {
-	blit(ji_screen, screen, 0, 0, 0, 0, SCREEN_W, SCREEN_H);
+        blit(ji_screen, screen, 0, 0, 0, 0, SCREEN_W, SCREEN_H);
       }
       else {
-	stretch_blit(ji_screen, screen,
-		     0, 0, JI_SCREEN_W, JI_SCREEN_H,
-		     0, 0, SCREEN_W, SCREEN_H);
+        stretch_blit(ji_screen, screen,
+                     0, 0, JI_SCREEN_W, JI_SCREEN_H,
+                     0, 0, SCREEN_W, SCREEN_H);
       }
     }
   }
@@ -565,8 +565,8 @@ void gui_setup_screen(bool reload_font)
   // Update guiscale factor
   int old_guiscale = jguiscale();
   CurrentTheme::get()->guiscale = (screen_scaling == 1 &&
-				   JI_SCREEN_W > 512 &&
-				   JI_SCREEN_H > 256) ? 2: 1;
+                                   JI_SCREEN_W > 512 &&
+                                   JI_SCREEN_H > 256) ? 2: 1;
 
   // If the guiscale have changed
   if (old_guiscale != jguiscale()) {
@@ -617,7 +617,7 @@ void load_window_pos(JWidget window, const char *section)
   pos.h = MID(orig_pos.h, pos.h, JI_SCREEN_H);
 
   pos.setOrigin(Point(MID(0, pos.x, JI_SCREEN_W-pos.w),
-		      MID(0, pos.y, JI_SCREEN_H-pos.h)));
+                      MID(0, pos.y, JI_SCREEN_H-pos.h)));
 
   window->setBounds(pos);
 }
@@ -697,8 +697,8 @@ static bool hook_msg_proc(JWidget widget, Message* msg)
     case JM_SIGNAL: {
       HookData* hook_data = reinterpret_cast<HookData*>(jwidget_get_data(widget, hook_type()));
       if (hook_data &&
-	  hook_data->signal_num == msg->signal.num) {
-	return (*hook_data->signal_handler)(widget, hook_data->data);
+          hook_data->signal_num == msg->signal.num) {
+        return (*hook_data->signal_handler)(widget, hook_data->data);
       }
       break;
     }
@@ -709,9 +709,9 @@ static bool hook_msg_proc(JWidget widget, Message* msg)
 
 // @warning You can't use this function for the same widget two times.
 void hook_signal(JWidget widget,
-		 int signal_num,
-		 bool (*signal_handler)(JWidget widget, void* data),
-		 void* data)
+                 int signal_num,
+                 bool (*signal_handler)(JWidget widget, void* data),
+                 void* data)
 {
   ASSERT(widget != NULL);
   ASSERT(jwidget_get_data(widget, hook_type()) == NULL);
@@ -793,16 +793,16 @@ void setup_bevels(Widget* widget, int b1, int b2, int b3, int b4)
 // Sets the IconInterface pointer interface of the button to show the
 // specified set of icons. Each icon is a part of the SkinTheme.
 void set_gfxicon_to_button(ButtonBase* button,
-			   int normal_part_id,
-			   int selected_part_id,
-			   int disabled_part_id, int icon_align)
+                           int normal_part_id,
+                           int selected_part_id,
+                           int disabled_part_id, int icon_align)
 {
   ButtonIconImpl* buttonIcon =
     new ButtonIconImpl(static_cast<SkinTheme*>(button->getTheme()),
-		       normal_part_id,
-		       selected_part_id,
-		       disabled_part_id,
-		       icon_align);
+                       normal_part_id,
+                       selected_part_id,
+                       disabled_part_id,
+                       icon_align);
 
   button->setIconInterface(buttonIcon);
 }
@@ -899,13 +899,13 @@ JAccel add_keyboard_shortcut_to_spriteeditor(const char* shortcut_string, const 
 Command* get_command_from_key_message(Message* msg)
 {
   for (std::vector<Shortcut*>::iterator
-	 it = shortcuts->begin(); it != shortcuts->end(); ++it) {
+         it = shortcuts->begin(); it != shortcuts->end(); ++it) {
     Shortcut* shortcut = *it;
 
     if (shortcut->type == Shortcut_ExecuteCommand &&
-	// TODO why?
-	// shortcut->argument.empty() &&
-	shortcut->is_pressed(msg)) {
+        // TODO why?
+        // shortcut->argument.empty() &&
+        shortcut->is_pressed(msg)) {
       return shortcut->command;
     }
   }
@@ -990,9 +990,9 @@ bool Shortcut::is_pressed(Message* msg)
 {
   if (accel) {
     return jaccel_check(accel,
-			msg->any.shifts,
-			msg->key.ascii,
-			msg->key.scancode);
+                        msg->any.shifts,
+                        msg->key.ascii,
+                        msg->key.scancode);
   }
   return false;
 }
@@ -1012,13 +1012,13 @@ static Shortcut* get_keyboard_shortcut_for_command(const char* command_name, Par
     return NULL;
 
   for (std::vector<Shortcut*>::iterator
-	 it = shortcuts->begin(); it != shortcuts->end(); ++it) {
+         it = shortcuts->begin(); it != shortcuts->end(); ++it) {
     Shortcut* shortcut = *it;
 
     if (shortcut->type == Shortcut_ExecuteCommand &&
-	shortcut->command == command &&
-	((!params && shortcut->params->empty()) ||
-	 (params && *shortcut->params == *params))) {
+        shortcut->command == command &&
+        ((!params && shortcut->params->empty()) ||
+         (params && *shortcut->params == *params))) {
       return shortcut;
     }
   }
@@ -1029,11 +1029,11 @@ static Shortcut* get_keyboard_shortcut_for_command(const char* command_name, Par
 static Shortcut* get_keyboard_shortcut_for_tool(tools::Tool* tool)
 {
   for (std::vector<Shortcut*>::iterator
-	 it = shortcuts->begin(); it != shortcuts->end(); ++it) {
+         it = shortcuts->begin(); it != shortcuts->end(); ++it) {
     Shortcut* shortcut = *it;
 
     if (shortcut->type == Shortcut_ChangeTool &&
-	shortcut->tool == tool) {
+        shortcut->tool == tool) {
       return shortcut;
     }
   }
@@ -1044,11 +1044,11 @@ static Shortcut* get_keyboard_shortcut_for_tool(tools::Tool* tool)
 static Shortcut* get_keyboard_shortcut_for_quicktool(tools::Tool* tool)
 {
   for (std::vector<Shortcut*>::iterator
-	 it = shortcuts->begin(); it != shortcuts->end(); ++it) {
+         it = shortcuts->begin(); it != shortcuts->end(); ++it) {
     Shortcut* shortcut = *it;
 
     if (shortcut->type == Shortcut_EditorQuicktool &&
-	shortcut->tool == tool) {
+        shortcut->tool == tool) {
       return shortcut;
     }
   }
@@ -1059,11 +1059,11 @@ static Shortcut* get_keyboard_shortcut_for_quicktool(tools::Tool* tool)
 static Shortcut* get_keyboard_shortcut_for_spriteeditor(const char* action_name)
 {
   for (std::vector<Shortcut*>::iterator
-	 it = shortcuts->begin(); it != shortcuts->end(); ++it) {
+         it = shortcuts->begin(); it != shortcuts->end(); ++it) {
     Shortcut* shortcut = *it;
 
     if (shortcut->type == Shortcut_SpriteEditor &&
-	strcmp(shortcut->action, action_name) == 0) {
+        strcmp(shortcut->action, action_name) == 0) {
       return shortcut;
     }
   }
@@ -1075,7 +1075,7 @@ static Shortcut* get_keyboard_shortcut_for_spriteeditor(const char* action_name)
 // whatever you want. It's mainly used to monitor the progress of a
 // file-operation (see @ref fop_operate)
 Monitor* add_gui_monitor(void (*proc)(void *),
-			 void (*free)(void *), void *data)
+                         void (*free)(void *), void *data)
 {
   Monitor* monitor = new Monitor(proc, free, data);
 
@@ -1126,27 +1126,27 @@ static bool manager_msg_proc(JWidget widget, Message* msg)
 
     case JM_TIMER:
       if (msg->timer.timer_id == monitor_timer) {
-	for (MonitorList::iterator
-	       it = monitors->begin(), next; it != monitors->end(); it = next) {
-	  Monitor* monitor = *it;
-	  next = it;
-	  ++next;
+        for (MonitorList::iterator
+               it = monitors->begin(), next; it != monitors->end(); it = next) {
+          Monitor* monitor = *it;
+          next = it;
+          ++next;
 
-	  // is the monitor not lock?
-	  if (!monitor->lock) {
-	    // call the monitor procedure
-	    monitor->lock = true;
-	    (*monitor->proc)(monitor->data);
-	    monitor->lock = false;
+          // is the monitor not lock?
+          if (!monitor->lock) {
+            // call the monitor procedure
+            monitor->lock = true;
+            (*monitor->proc)(monitor->data);
+            monitor->lock = false;
 
-	    if (monitor->deleted)
-	      delete monitor;
-	  }
-	}
+            if (monitor->deleted)
+              delete monitor;
+          }
+        }
 
-	// is monitors empty? we can stop the timer so
-	if (monitors->empty())
-	  jmanager_stop_timer(monitor_timer);
+        // is monitors empty? we can stop the timer so
+        if (monitors->empty())
+          jmanager_stop_timer(monitor_timer);
       }
       break;
 
@@ -1155,105 +1155,105 @@ static bool manager_msg_proc(JWidget widget, Message* msg)
 
       // If there is a foreground window as top level...
       if (toplevel_frame &&
-	  toplevel_frame != app_get_top_window() &&
-	  toplevel_frame->is_foreground()) {
-	// We just do not process keyboard shortcuts for menus and tools
-	break;
+          toplevel_frame != app_get_top_window() &&
+          toplevel_frame->is_foreground()) {
+        // We just do not process keyboard shortcuts for menus and tools
+        break;
       }
 
       for (std::vector<Shortcut*>::iterator
-	     it = shortcuts->begin(); it != shortcuts->end(); ++it) {
-	Shortcut* shortcut = *it;
+             it = shortcuts->begin(); it != shortcuts->end(); ++it) {
+        Shortcut* shortcut = *it;
 
-	if (shortcut->is_pressed(msg)) {
-	  // Cancel menu-bar loops (to close any popup menu)
-	  app_get_menubar()->cancelMenuLoop();
+        if (shortcut->is_pressed(msg)) {
+          // Cancel menu-bar loops (to close any popup menu)
+          app_get_menubar()->cancelMenuLoop();
 
-	  switch (shortcut->type) {
+          switch (shortcut->type) {
 
-	    case Shortcut_ChangeTool: {
-	      tools::Tool* current_tool = UIContext::instance()->getSettings()->getCurrentTool();
-	      tools::Tool* select_this_tool = shortcut->tool;
-	      tools::ToolBox* toolbox = App::instance()->getToolBox();
-	      std::vector<tools::Tool*> possibles;
+            case Shortcut_ChangeTool: {
+              tools::Tool* current_tool = UIContext::instance()->getSettings()->getCurrentTool();
+              tools::Tool* select_this_tool = shortcut->tool;
+              tools::ToolBox* toolbox = App::instance()->getToolBox();
+              std::vector<tools::Tool*> possibles;
 
-	      // Iterate over all tools
-	      for (tools::ToolIterator it = toolbox->begin(); it != toolbox->end(); ++it) {
-		Shortcut* shortcut = get_keyboard_shortcut_for_tool(*it);
+              // Iterate over all tools
+              for (tools::ToolIterator it = toolbox->begin(); it != toolbox->end(); ++it) {
+                Shortcut* shortcut = get_keyboard_shortcut_for_tool(*it);
 
-		// Collect all tools with the pressed keyboard-shortcut
-		if (shortcut && shortcut->is_pressed(msg))
-		  possibles.push_back(*it);
-	      }
+                // Collect all tools with the pressed keyboard-shortcut
+                if (shortcut && shortcut->is_pressed(msg))
+                  possibles.push_back(*it);
+              }
 
-	      if (possibles.size() >= 2) {
-		bool done = false;
+              if (possibles.size() >= 2) {
+                bool done = false;
 
-		for (size_t i=0; i<possibles.size(); ++i) {
-		  if (possibles[i] != current_tool &&
-		      toolbar_is_tool_visible(app_get_toolbar(), possibles[i])) {
-		    select_this_tool = possibles[i];
-		    done = true;
-		    break;
-		  }
-		}
+                for (size_t i=0; i<possibles.size(); ++i) {
+                  if (possibles[i] != current_tool &&
+                      toolbar_is_tool_visible(app_get_toolbar(), possibles[i])) {
+                    select_this_tool = possibles[i];
+                    done = true;
+                    break;
+                  }
+                }
 
-		if (!done) {
-		  for (size_t i=0; i<possibles.size(); ++i) {
-		    // If one of the possibilities is the current tool
-		    if (possibles[i] == current_tool) {
-		      // We select the next tool in the possibilities
-		      select_this_tool = possibles[(i+1) % possibles.size()];
-		      break;
-		    }
-		  }
-		}
-	      }
+                if (!done) {
+                  for (size_t i=0; i<possibles.size(); ++i) {
+                    // If one of the possibilities is the current tool
+                    if (possibles[i] == current_tool) {
+                      // We select the next tool in the possibilities
+                      select_this_tool = possibles[(i+1) % possibles.size()];
+                      break;
+                    }
+                  }
+                }
+              }
 
-	      toolbar_select_tool(app_get_toolbar(), select_this_tool);
-	      return true;
-	    }
+              toolbar_select_tool(app_get_toolbar(), select_this_tool);
+              return true;
+            }
 
-	    case Shortcut_ExecuteCommand: {
-	      Command* command = shortcut->command;
+            case Shortcut_ExecuteCommand: {
+              Command* command = shortcut->command;
 
-	      // The screen shot is available in everywhere
-	      if (strcmp(command->short_name(), CommandId::ScreenShot) == 0) {
-		UIContext::instance()->executeCommand(command, shortcut->params);
-		return true;
-	      }
-	      // All other keys are only available in the main-window
-	      else {
-		JLink link;
+              // The screen shot is available in everywhere
+              if (strcmp(command->short_name(), CommandId::ScreenShot) == 0) {
+                UIContext::instance()->executeCommand(command, shortcut->params);
+                return true;
+              }
+              // All other keys are only available in the main-window
+              else {
+                JLink link;
 
-		JI_LIST_FOR_EACH(widget->children, link) {
-		  Frame* child = reinterpret_cast<Frame*>(link->data);
+                JI_LIST_FOR_EACH(widget->children, link) {
+                  Frame* child = reinterpret_cast<Frame*>(link->data);
 
-		  // There are a foreground window executing?
-		  if (child->is_foreground()) {
-		    break;
-		  }
-		  // Is it the desktop and the top-window=
-		  else if (child->is_desktop() && child == app_get_top_window()) {
-		    // OK, so we can execute the command represented
-		    // by the pressed-key in the message...
-		    UIContext::instance()->executeCommand(command, shortcut->params);
-		    return true;
-		  }
-		}
-	      }
-	      break;
-	    }
+                  // There are a foreground window executing?
+                  if (child->is_foreground()) {
+                    break;
+                  }
+                  // Is it the desktop and the top-window=
+                  else if (child->is_desktop() && child == app_get_top_window()) {
+                    // OK, so we can execute the command represented
+                    // by the pressed-key in the message...
+                    UIContext::instance()->executeCommand(command, shortcut->params);
+                    return true;
+                  }
+                }
+              }
+              break;
+            }
 
-	    case Shortcut_EditorQuicktool: {
-	      // Do nothing, it is used in the editor through the
-	      // get_selected_quicktool() function.
-	      break;
-	    }
+            case Shortcut_EditorQuicktool: {
+              // Do nothing, it is used in the editor through the
+              // get_selected_quicktool() function.
+              break;
+            }
 
-	  }
-	  break;
-	}
+          }
+          break;
+        }
       }
       break;
     }

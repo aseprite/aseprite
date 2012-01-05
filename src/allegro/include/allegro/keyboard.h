@@ -391,5 +391,3 @@ enum {
 #endif
 
 #endif          /* ifndef ALLEGRO_KEYBOARD_H */
-
-

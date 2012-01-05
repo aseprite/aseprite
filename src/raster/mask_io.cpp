@@ -33,16 +33,16 @@ using namespace base::serialization::little_endian;
 
 // Serialized Mask data:
 //
-//   WORD[4]		x, y, w, h
-//   for each line	("h" times)
-//     for each packet	("((w+7)/8)" times)
-//       BYTE		8 pixels of the mask
-//       BYTE		for Indexed images
+//   WORD[4]            x, y, w, h
+//   for each line      ("h" times)
+//     for each packet  ("((w+7)/8)" times)
+//       BYTE           8 pixels of the mask
+//       BYTE           for Indexed images
 
 void write_mask(std::ostream& os, Mask* mask)
 {
-  write16(os, mask->x);		       // Xpos
-  write16(os, mask->y);		       // Ypos
+  write16(os, mask->x);                // Xpos
+  write16(os, mask->y);                // Ypos
   write16(os, mask->bitmap ? mask->w: 0); // Width
   write16(os, mask->bitmap ? mask->h: 0); // Height
 
@@ -56,10 +56,10 @@ void write_mask(std::ostream& os, Mask* mask)
 
 Mask* read_mask(std::istream& is)
 {
-  int x = read16(is);		// Xpos
-  int y = read16(is);		// Ypos
-  int w = read16(is);		// Width
-  int h = read16(is);		// Height
+  int x = read16(is);           // Xpos
+  int y = read16(is);           // Ypos
+  int w = read16(is);           // Width
+  int h = read16(is);           // Height
 
   UniquePtr<Mask> mask(mask_new());
 

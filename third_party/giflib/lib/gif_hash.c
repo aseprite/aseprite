@@ -1,19 +1,19 @@
 /*****************************************************************************
-*   "Gif-Lib" - Yet another gif library.				     *
-*									     *
-* Written by:  Gershon Elber			IBM PC Ver 0.1,	Jun. 1989    *
+*   "Gif-Lib" - Yet another gif library.                                     *
+*                                                                            *
+* Written by:  Gershon Elber                    IBM PC Ver 0.1, Jun. 1989    *
 ******************************************************************************
-* Module to support the following operations:				     *
-*									     *
-* 1. InitHashTable - initialize hash table.				     *
-* 2. ClearHashTable - clear the hash table to an empty state.		     *
-* 2. InsertHashTable - insert one item into data structure.		     *
-* 3. ExistsHashTable - test if item exists in data structure.		     *
-*									     *
-* This module is used to hash the GIF codes during encoding.		     *
+* Module to support the following operations:                                *
+*                                                                            *
+* 1. InitHashTable - initialize hash table.                                  *
+* 2. ClearHashTable - clear the hash table to an empty state.                *
+* 2. InsertHashTable - insert one item into data structure.                  *
+* 3. ExistsHashTable - test if item exists in data structure.                *
+*                                                                            *
+* This module is used to hash the GIF codes during encoding.                 *
 ******************************************************************************
-* History:								     *
-* 14 Jun 89 - Version 1.0 by Gershon Elber.				     *
+* History:                                                                   *
+* 14 Jun 89 - Version 1.0 by Gershon Elber.                                  *
 *****************************************************************************/
 
 #ifdef HAVE_CONFIG_H
@@ -55,23 +55,23 @@
 
 /* #define  DEBUG_HIT_RATE    Debug number of misses per hash Insert/Exists. */
 
-#ifdef	DEBUG_HIT_RATE
+#ifdef  DEBUG_HIT_RATE
 static long NumberOfTests = 0,
-	    NumberOfMisses = 0;
-#endif	/* DEBUG_HIT_RATE */
+            NumberOfMisses = 0;
+#endif  /* DEBUG_HIT_RATE */
 
 static int KeyItem(UINT32 Item);
 
 /******************************************************************************
-* Initialize HashTable - allocate the memory needed and clear it.	      *
+* Initialize HashTable - allocate the memory needed and clear it.             *
 ******************************************************************************/
 GifHashTableType *_InitHashTable(void)
 {
     GifHashTableType *HashTable;
 
     if ((HashTable = (GifHashTableType *) malloc(sizeof(GifHashTableType)))
-	== NULL)
-	return NULL;
+        == NULL)
+        return NULL;
 
     _ClearHashTable(HashTable);
 
@@ -79,7 +79,7 @@ GifHashTableType *_InitHashTable(void)
 }
 
 /******************************************************************************
-* Routine to clear the HashTable to an empty state.			      *
+* Routine to clear the HashTable to an empty state.                           *
 * This part is a little machine depended. Use the commented part otherwise.   *
 ******************************************************************************/
 void _ClearHashTable(GifHashTableType *HashTable)
@@ -89,7 +89,7 @@ void _ClearHashTable(GifHashTableType *HashTable)
 
 /******************************************************************************
 * Routine to insert a new Item into the HashTable. The data is assumed to be  *
-* new one.								      *
+* new one.                                                                    *
 ******************************************************************************/
 void _InsertHashTable(GifHashTableType *HashTable, UINT32 Key, int Code)
 {
@@ -97,22 +97,22 @@ void _InsertHashTable(GifHashTableType *HashTable, UINT32 Key, int Code)
     UINT32 *HTable = HashTable -> HTable;
 
 #ifdef DEBUG_HIT_RATE
-	NumberOfTests++;
-	NumberOfMisses++;
+        NumberOfTests++;
+        NumberOfMisses++;
 #endif /* DEBUG_HIT_RATE */
 
     while (HT_GET_KEY(HTable[HKey]) != 0xFFFFFL) {
 #ifdef DEBUG_HIT_RATE
-	    NumberOfMisses++;
+            NumberOfMisses++;
 #endif /* DEBUG_HIT_RATE */
-	HKey = (HKey + 1) & HT_KEY_MASK;
+        HKey = (HKey + 1) & HT_KEY_MASK;
     }
     HTable[HKey] = HT_PUT_KEY(Key) | HT_PUT_CODE(Code);
 }
 
 /******************************************************************************
 * Routine to test if given Key exists in HashTable and if so returns its code *
-* Returns the Code if key was found, -1 if not.				      *
+* Returns the Code if key was found, -1 if not.                               *
 ******************************************************************************/
 int _ExistsHashTable(GifHashTableType *HashTable, UINT32 Key)
 {
@@ -120,16 +120,16 @@ int _ExistsHashTable(GifHashTableType *HashTable, UINT32 Key)
     UINT32 *HTable = HashTable -> HTable, HTKey;
 
 #ifdef DEBUG_HIT_RATE
-	NumberOfTests++;
-	NumberOfMisses++;
+        NumberOfTests++;
+        NumberOfMisses++;
 #endif /* DEBUG_HIT_RATE */
 
     while ((HTKey = HT_GET_KEY(HTable[HKey])) != 0xFFFFFL) {
 #ifdef DEBUG_HIT_RATE
-	    NumberOfMisses++;
+            NumberOfMisses++;
 #endif /* DEBUG_HIT_RATE */
-	if (Key == HTKey) return HT_GET_CODE(HTable[HKey]);
-	HKey = (HKey + 1) & HT_KEY_MASK;
+        if (Key == HTKey) return HT_GET_CODE(HTable[HKey]);
+        HKey = (HKey + 1) & HT_KEY_MASK;
     }
 
     return -1;
@@ -138,7 +138,7 @@ int _ExistsHashTable(GifHashTableType *HashTable, UINT32 Key)
 /******************************************************************************
 * Routine to generate an HKey for the hashtable out of the given unique key.  *
 * The given Key is assumed to be 20 bits as follows: lower 8 bits are the     *
-* new postfix character, while the upper 12 bits are the prefix code.	      *
+* new postfix character, while the upper 12 bits are the prefix code.         *
 * Because the average hit ratio is only 2 (2 hash references per entry),      *
 * evaluating more complex keys (such as twin prime keys) does not worth it!   *
 ******************************************************************************/
@@ -147,7 +147,7 @@ static int KeyItem(UINT32 Item)
     return ((Item >> 12) ^ Item) & HT_KEY_MASK;
 }
 
-#ifdef	DEBUG_HIT_RATE
+#ifdef  DEBUG_HIT_RATE
 /******************************************************************************
 * Debugging routine to print the hit ratio - number of times the hash table   *
 * was tested per operation. This routine was used to test the KeyItem routine *
@@ -155,7 +155,7 @@ static int KeyItem(UINT32 Item)
 void HashTablePrintHitRatio(void)
 {
     printf("Hash Table Hit Ratio is %ld/%ld = %ld%%.\n",
-	NumberOfMisses, NumberOfTests,
-	NumberOfMisses * 100 / NumberOfTests);
+        NumberOfMisses, NumberOfTests,
+        NumberOfMisses * 100 / NumberOfTests);
 }
-#endif	/* DEBUG_HIT_RATE */
+#endif  /* DEBUG_HIT_RATE */

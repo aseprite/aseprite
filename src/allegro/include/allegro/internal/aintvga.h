@@ -1,6 +1,6 @@
-/*         ______   ___    ___ 
- *        /\  _  \ /\_ \  /\_ \ 
- *        \ \ \L\ \\//\ \ \//\ \      __     __   _ __   ___ 
+/*         ______   ___    ___
+ *        /\  _  \ /\_ \  /\_ \
+ *        \ \ \L\ \\//\ \ \//\ \      __     __   _ __   ___
  *         \ \  __ \ \ \ \  \ \ \   /'__`\ /'_ `\/\`'__\/ __`\
  *          \ \ \/\ \ \_\ \_ \_\ \_/\  __//\ \L\ \ \ \//\ \L\ \
  *           \ \_\ \_\/\____\/\____\ \____\ \____ \ \_\\ \____/
@@ -46,7 +46,7 @@ AL_FUNC(void, _restore_vga_mode, (void));
 AL_INLINE(int, _read_vga_register, (int port, int idx),
 {
    if (port==0x3C0)
-      inportb(_crtc+6); 
+      inportb(_crtc+6);
 
    outportb(port, idx);
    return inportb(port+1);
@@ -99,7 +99,7 @@ AL_INLINE(void, _vsync_out_v, (void),
 AL_INLINE(void, _vsync_in, (void),
 {
    if (_timer_use_retrace) {
-      int t = retrace_count; 
+      int t = retrace_count;
 
       do {
       } while (t == retrace_count);

@@ -62,7 +62,7 @@ function(add_psp_executable nm)
         )
     add_custom_command(
         TARGET ${nm}
-        POST_BUILD 
+        POST_BUILD
         COMMAND psp-fixup-imports ${PSP_EXECUTABLE_OUTPUT_NAME}
         COMMAND mksfo '${PSP_EXECUTABLE_OUTPUT_NAME}' PARAM.SFO
         COMMAND psp-prxgen ${PSP_EXECUTABLE_OUTPUT_NAME} ${PSP_EXECUTABLE_OUTPUT_NAME}.prx
@@ -135,7 +135,7 @@ function(add_psp_executable nm)
         )
     add_custom_command(
         TARGET ${nm}
-        POST_BUILD 
+        POST_BUILD
         COMMAND psp-fixup-imports ${PSP_EXECUTABLE_OUTPUT_NAME}
         COMMAND mksfo '${PSP_EXECUTABLE_OUTPUT_NAME}' PARAM.SFO
         COMMAND psp-prxgen ${PSP_EXECUTABLE_OUTPUT_NAME} ${PSP_EXECUTABLE_OUTPUT_NAME}.prx
@@ -208,7 +208,7 @@ function(add_psp_executable nm)
         )
     add_custom_command(
         TARGET ${nm}
-        POST_BUILD 
+        POST_BUILD
         COMMAND psp-fixup-imports ${PSP_EXECUTABLE_OUTPUT_NAME}
         COMMAND mksfo '${PSP_EXECUTABLE_OUTPUT_NAME}' PARAM.SFO
         COMMAND psp-prxgen ${PSP_EXECUTABLE_OUTPUT_NAME} ${PSP_EXECUTABLE_OUTPUT_NAME}.prx

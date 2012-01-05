@@ -30,14 +30,14 @@ void algo_ellipse(int x1, int y1, int x2, int y2, void *data, AlgoPixel proc);
 void algo_ellipsefill(int x1, int y1, int x2, int y2, void *data, AlgoHLine proc);
 
 void algo_spline(double x0, double y0, double x1, double y1,
-		 double x2, double y2, double x3, double y3,
-		 void *data, AlgoLine proc);
+                 double x2, double y2, double x3, double y3,
+                 void *data, AlgoLine proc);
 double algo_spline_get_y(double x0, double y0, double x1, double y1,
-			 double x2, double y2, double x3, double y3,
-			 double x);
+                         double x2, double y2, double x3, double y3,
+                         double x);
 double algo_spline_get_tan(double x0, double y0, double x1, double y1,
-			   double x2, double y2, double x3, double y3,
-			   double in_x);
+                           double x2, double y2, double x3, double y3,
+                           double in_x);
 
 void algo_floodfill(Image* image, int x, int y, int tolerance, void* data, AlgoHLine proc);
 

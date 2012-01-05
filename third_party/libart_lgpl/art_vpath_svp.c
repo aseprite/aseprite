@@ -116,7 +116,7 @@ art_vpath_from_svp (const ArtSVP *svp)
 
   n_new = 0;
   n_new_max = 16; /* I suppose we _could_ estimate this from traversing
-		     the svp, so we don't have to reallocate */
+                     the svp, so we don't have to reallocate */
   new = art_new (ArtVpath, n_new_max);
 
   visited = art_new (int, n_segs);
@@ -127,66 +127,66 @@ art_vpath_from_svp (const ArtSVP *svp)
   for (i = 0; i < n_segs; i++)
     {
       if (!first)
-	{
-	  /* search for the continuation of the existing subpath */
-	  /* This could be a binary search (which is why we sorted, above) */
-	  for (j = 0; j < n_segs * 2; j++)
-	    {
-	      if (!visited[ends[j].seg_num] &&
-		  art_vpath_svp_point_compare (last_x, last_y,
-					       ends[j].x, ends[j].y) == 0)
-		break;
-	    }
-	  if (j == n_segs * 2)
-	    first = 1;
-	}
+        {
+          /* search for the continuation of the existing subpath */
+          /* This could be a binary search (which is why we sorted, above) */
+          for (j = 0; j < n_segs * 2; j++)
+            {
+              if (!visited[ends[j].seg_num] &&
+                  art_vpath_svp_point_compare (last_x, last_y,
+                                               ends[j].x, ends[j].y) == 0)
+                break;
+            }
+          if (j == n_segs * 2)
+            first = 1;
+        }
       if (first)
-	{
-	  /* start a new subpath */
-	  for (j = 0; j < n_segs * 2; j++)
-	    if (!visited[ends[j].seg_num])
-	      break;
-	}
+        {
+          /* start a new subpath */
+          for (j = 0; j < n_segs * 2; j++)
+            if (!visited[ends[j].seg_num])
+              break;
+        }
       if (j == n_segs * 2)
-	{
-	  printf ("failure\n");
-	}
+        {
+          printf ("failure\n");
+        }
       seg_num = ends[j].seg_num;
       n_points = svp->segs[seg_num].n_points;
       for (k = 0; k < n_points; k++)
-	{
-	  pt_num = svp->segs[seg_num].dir ? k : n_points - (1 + k);
-	  if (k == 0)
-	    {
-	      if (first)
-		{
-		  art_vpath_add_point (&new, &n_new, &n_new_max,
-				       ART_MOVETO,
-				       svp->segs[seg_num].points[pt_num].x,
-				       svp->segs[seg_num].points[pt_num].y);
-		}
-	    }
-	  else
-	    {
-	      art_vpath_add_point (&new, &n_new, &n_new_max,
-				   ART_LINETO,
-				   svp->segs[seg_num].points[pt_num].x,
-				   svp->segs[seg_num].points[pt_num].y);
-	      if (k == n_points - 1)
-		{
-		  last_x = svp->segs[seg_num].points[pt_num].x;
-		  last_y = svp->segs[seg_num].points[pt_num].y;
-		  /* to make more robust, check for meeting first_[xy],
-		     set first if so */
-		}
-	    }
-	  first = 0;
-	}
+        {
+          pt_num = svp->segs[seg_num].dir ? k : n_points - (1 + k);
+          if (k == 0)
+            {
+              if (first)
+                {
+                  art_vpath_add_point (&new, &n_new, &n_new_max,
+                                       ART_MOVETO,
+                                       svp->segs[seg_num].points[pt_num].x,
+                                       svp->segs[seg_num].points[pt_num].y);
+                }
+            }
+          else
+            {
+              art_vpath_add_point (&new, &n_new, &n_new_max,
+                                   ART_LINETO,
+                                   svp->segs[seg_num].points[pt_num].x,
+                                   svp->segs[seg_num].points[pt_num].y);
+              if (k == n_points - 1)
+                {
+                  last_x = svp->segs[seg_num].points[pt_num].x;
+                  last_y = svp->segs[seg_num].points[pt_num].y;
+                  /* to make more robust, check for meeting first_[xy],
+                     set first if so */
+                }
+            }
+          first = 0;
+        }
       visited[seg_num] = 1;
     }
 
   art_vpath_add_point (&new, &n_new, &n_new_max,
-		       ART_END, 0, 0);
+                       ART_END, 0, 0);
   art_free (visited);
   art_free (ends);
   return new;

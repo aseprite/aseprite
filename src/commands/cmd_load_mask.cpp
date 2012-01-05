@@ -23,7 +23,7 @@
 #include "dialogs/filesel.h"
 #include "document_wrappers.h"
 #include "gui/alert.h"
-#include "modules/gui.h" 
+#include "modules/gui.h"
 #include "raster/mask.h"
 #include "raster/sprite.h"
 #include "undo/undo_history.h"
@@ -47,8 +47,8 @@ protected:
 
 LoadMaskCommand::LoadMaskCommand()
   : Command("LoadMask",
-	    "LoadMask",
-	    CmdRecordableFlag)
+            "LoadMask",
+            CmdRecordableFlag)
 {
   m_filename = "";
 }
@@ -80,7 +80,7 @@ void LoadMaskCommand::onExecute(Context* context)
   Mask *mask = load_msk_file(m_filename.c_str());
   if (!mask)
     throw base::Exception("Error loading .msk file: %s",
-			  static_cast<const char*>(m_filename.c_str()));
+                          static_cast<const char*>(m_filename.c_str()));
 
   {
     DocumentWriter documentWriter(document);

@@ -52,20 +52,20 @@ void FUNC_LINEAR_PUTPIXEL(BITMAP *dst, int dx, int dy, int color)
       PIXEL_PTR d = OFFSET_PIXEL_PTR(bmp_write_line(dst, dy), dx);
 
       if (_drawing_mode == DRAW_MODE_COPY_PATTERN) {
-	 PUT_PIXEL(d, c);
+         PUT_PIXEL(d, c);
       }
       else if (_drawing_mode == DRAW_MODE_SOLID_PATTERN) {
-	 if (!IS_MASK(c)) {
-	    PUT_PIXEL(d, color);
-	 }
-	 else {
-	    PUT_PIXEL(d, c);
-	 }
+         if (!IS_MASK(c)) {
+            PUT_PIXEL(d, color);
+         }
+         else {
+            PUT_PIXEL(d, c);
+         }
       }
       else if (_drawing_mode == DRAW_MODE_MASKED_PATTERN) {
-	 if (!IS_MASK(c)) {
-	    PUT_PIXEL(d, color);
-	 }
+         if (!IS_MASK(c)) {
+            PUT_PIXEL(d, color);
+         }
       }
    }
 
@@ -113,11 +113,11 @@ void FUNC_LINEAR_HLINE(BITMAP *dst, int dx1, int dy, int dx2, int color)
    }
    if (dst->clip) {
       if (dx1 < dst->cl)
-	 dx1 = dst->cl;
+         dx1 = dst->cl;
       if (dx2 >= dst->cr)
-	 dx2 = dst->cr - 1;
+         dx2 = dst->cr - 1;
       if ((dx1 > dx2) || (dy < dst->ct) || (dy >= dst->cb))
-	 return;
+         return;
    }
 
    w = dx2 - dx1;
@@ -127,18 +127,18 @@ void FUNC_LINEAR_HLINE(BITMAP *dst, int dx1, int dy, int dx2, int color)
    if (_drawing_mode == DRAW_MODE_SOLID) {
       PIXEL_PTR d = OFFSET_PIXEL_PTR(bmp_write_line(dst, dy), dx1);
       do {
-	 PUT_PIXEL(d, color);
-	 INC_PIXEL_PTR(d);
+         PUT_PIXEL(d, color);
+         INC_PIXEL_PTR(d);
       } while (--w >= 0);
    }
    else if (_drawing_mode == DRAW_MODE_XOR) {
       PIXEL_PTR s = OFFSET_PIXEL_PTR(bmp_read_line(dst, dy), dx1);
       PIXEL_PTR d = OFFSET_PIXEL_PTR(bmp_write_line(dst, dy), dx1);
       do {
-	 unsigned long c = GET_PIXEL(s) ^ color;
-	 PUT_PIXEL(d, c);
-	 INC_PIXEL_PTR(s);
-	 INC_PIXEL_PTR(d);
+         unsigned long c = GET_PIXEL(s) ^ color;
+         PUT_PIXEL(d, c);
+         INC_PIXEL_PTR(s);
+         INC_PIXEL_PTR(d);
       } while (--w >= 0);
    }
    else if (_drawing_mode == DRAW_MODE_TRANS) {
@@ -146,10 +146,10 @@ void FUNC_LINEAR_HLINE(BITMAP *dst, int dx1, int dy, int dx2, int color)
       PIXEL_PTR d = OFFSET_PIXEL_PTR(bmp_write_line(dst, dy), dx1);
       PP_BLENDER blender = MAKE_PP_BLENDER(color);
       do {
-	 unsigned long c = PP_BLEND(blender, GET_PIXEL(s), color);
-	 PUT_PIXEL(d, c);
-	 INC_PIXEL_PTR(s);
-	 INC_PIXEL_PTR(d);
+         unsigned long c = PP_BLEND(blender, GET_PIXEL(s), color);
+         PUT_PIXEL(d, c);
+         INC_PIXEL_PTR(s);
+         INC_PIXEL_PTR(d);
       } while (--w >= 0);
    }
    else {
@@ -163,53 +163,53 @@ void FUNC_LINEAR_HLINE(BITMAP *dst, int dx1, int dy, int dx2, int color)
       w++;
       curw = _drawing_x_mask + 1 - x;
       if (curw > w)
-	 curw = w;
+         curw = w;
 
       if (_drawing_mode == DRAW_MODE_COPY_PATTERN) {
-	 do {
-	    w -= curw;
-	    do {
-	       unsigned long c = GET_MEMORY_PIXEL(s);
-	       PUT_PIXEL(d, c);
-	       INC_PIXEL_PTR(s);
-	       INC_PIXEL_PTR(d);
-	    } while (--curw > 0);
-	    s = sline;
-	    curw = MIN(w, (int)_drawing_x_mask+1);
-	 } while (curw > 0);
+         do {
+            w -= curw;
+            do {
+               unsigned long c = GET_MEMORY_PIXEL(s);
+               PUT_PIXEL(d, c);
+               INC_PIXEL_PTR(s);
+               INC_PIXEL_PTR(d);
+            } while (--curw > 0);
+            s = sline;
+            curw = MIN(w, (int)_drawing_x_mask+1);
+         } while (curw > 0);
       }
       else if (_drawing_mode == DRAW_MODE_SOLID_PATTERN) {
-	 do {
-	    w -= curw;
-	    do {
-	       unsigned long c = GET_MEMORY_PIXEL(s);
-	       if (!IS_MASK(c)) {
-		  PUT_PIXEL(d, color);
-	       }
-	       else {
-		  PUT_PIXEL(d, c);
-	       }
-	       INC_PIXEL_PTR(s);
-	       INC_PIXEL_PTR(d);
-	    } while (--curw > 0);
-	    s = sline;
-	    curw = MIN(w, (int)_drawing_x_mask+1);
-	 } while (curw > 0);
+         do {
+            w -= curw;
+            do {
+               unsigned long c = GET_MEMORY_PIXEL(s);
+               if (!IS_MASK(c)) {
+                  PUT_PIXEL(d, color);
+               }
+               else {
+                  PUT_PIXEL(d, c);
+               }
+               INC_PIXEL_PTR(s);
+               INC_PIXEL_PTR(d);
+            } while (--curw > 0);
+            s = sline;
+            curw = MIN(w, (int)_drawing_x_mask+1);
+         } while (curw > 0);
       }
       else if (_drawing_mode == DRAW_MODE_MASKED_PATTERN) {
-	 do {
-	    w -= curw;
-	    do {
-	       unsigned long c = GET_MEMORY_PIXEL(s);
-	       if (!IS_MASK(c)) {
-		  PUT_PIXEL(d, color);
-	       }
-	       INC_PIXEL_PTR(s);
-	       INC_PIXEL_PTR(d);
-	    } while (--curw > 0);
-	    s = sline;
-	    curw = MIN(w, (int)_drawing_x_mask+1);
-	 } while (curw > 0);
+         do {
+            w -= curw;
+            do {
+               unsigned long c = GET_MEMORY_PIXEL(s);
+               if (!IS_MASK(c)) {
+                  PUT_PIXEL(d, color);
+               }
+               INC_PIXEL_PTR(s);
+               INC_PIXEL_PTR(d);
+            } while (--curw > 0);
+            s = sline;
+            curw = MIN(w, (int)_drawing_x_mask+1);
+         } while (curw > 0);
       }
    }
 
@@ -234,18 +234,18 @@ void FUNC_LINEAR_VLINE(BITMAP *dst, int dx, int dy1, int dy2, int color)
    }
    if (dst->clip) {
       if (dy1 < dst->ct)
-	 dy1 = dst->ct;
+         dy1 = dst->ct;
       if (dy2 >= dst->cb)
-	 dy2 = dst->cb - 1;
+         dy2 = dst->cb - 1;
       if ((dx < dst->cl) || (dx >= dst->cr) || (dy1 > dy2))
-	 return;
+         return;
    }
 
    if (_drawing_mode == DRAW_MODE_SOLID) {
       bmp_select(dst);
       for (y = dy1; y <= dy2; y++) {
-	 PIXEL_PTR d = OFFSET_PIXEL_PTR(bmp_write_line(dst, y), dx);
-	 PUT_PIXEL(d, color);
+         PIXEL_PTR d = OFFSET_PIXEL_PTR(bmp_write_line(dst, y), dx);
+         PUT_PIXEL(d, color);
       }
       bmp_unwrite_line(dst);
    }
@@ -254,11 +254,10 @@ void FUNC_LINEAR_VLINE(BITMAP *dst, int dx, int dy1, int dy2, int color)
 
       dst->clip = 0;
       for (y = dy1; y <= dy2; y++) {
-	 FUNC_LINEAR_PUTPIXEL(dst, dx, y, color);
+         FUNC_LINEAR_PUTPIXEL(dst, dx, y, color);
       }
       dst->clip = clip;
    }
 }
 
 #endif /* !__bma_cgfx_h */
-

@@ -4,7 +4,7 @@
 #include <windows.h>
 
 
-1 VERSIONINFO 
+1 VERSIONINFO
 FILEVERSION 4, 4, 2, 0
 PRODUCTVERSION 4, 4, 2, 0
 FILEOS VOS__WINDOWS32
@@ -31,4 +31,3 @@ BEGIN
       VALUE "Translation", 0x0809, 1252
    END
 END
-

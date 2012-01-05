@@ -42,9 +42,9 @@
 #define JPEG_INTERNALS
 #include "jinclude.h"
 #include "jpeglib.h"
-#include "jmemsys.h"		/* import the system-dependent declarations */
+#include "jmemsys.h"            /* import the system-dependent declarations */
 
-#ifndef HAVE_STDLIB_H		/* <stdlib.h> should declare these */
+#ifndef HAVE_STDLIB_H           /* <stdlib.h> should declare these */
 extern void * malloc JPP((size_t size));
 extern void free JPP((void *ptr));
 extern char * getenv JPP((const char * name));
@@ -54,34 +54,34 @@ extern char * getenv JPP((const char * name));
 
 #ifdef __TURBOC__
 /* These definitions work for Borland C (Turbo C) */
-#include <alloc.h>		/* need farmalloc(), farfree() */
-#define far_malloc(x)	farmalloc(x)
-#define far_free(x)	farfree(x)
+#include <alloc.h>              /* need farmalloc(), farfree() */
+#define far_malloc(x)   farmalloc(x)
+#define far_free(x)     farfree(x)
 #else
 /* These definitions work for Microsoft C and compatible compilers */
-#include <malloc.h>		/* need _fmalloc(), _ffree() */
-#define far_malloc(x)	_fmalloc(x)
-#define far_free(x)	_ffree(x)
+#include <malloc.h>             /* need _fmalloc(), _ffree() */
+#define far_malloc(x)   _fmalloc(x)
+#define far_free(x)     _ffree(x)
 #endif
 
 #else /* not NEED_FAR_POINTERS */
 
-#define far_malloc(x)	malloc(x)
-#define far_free(x)	free(x)
+#define far_malloc(x)   malloc(x)
+#define far_free(x)     free(x)
 
 #endif /* NEED_FAR_POINTERS */
 
-#ifdef DONT_USE_B_MODE		/* define mode parameters for fopen() */
-#define READ_BINARY	"r"
+#ifdef DONT_USE_B_MODE          /* define mode parameters for fopen() */
+#define READ_BINARY     "r"
 #else
-#define READ_BINARY	"rb"
+#define READ_BINARY     "rb"
 #endif
 
-#ifndef USE_MSDOS_MEMMGR	/* make sure user got configuration right */
+#ifndef USE_MSDOS_MEMMGR        /* make sure user got configuration right */
   You forgot to define USE_MSDOS_MEMMGR in jconfig.h. /* deliberate syntax error */
 #endif
 
-#if MAX_ALLOC_CHUNK >= 65535L	/* make sure jconfig.h got this right */
+#if MAX_ALLOC_CHUNK >= 65535L   /* make sure jconfig.h got this right */
   MAX_ALLOC_CHUNK should be less than 64K. /* deliberate syntax error */
 #endif
 
@@ -94,23 +94,23 @@ extern char * getenv JPP((const char * name));
  * compiler memory model.  We assume "short" is 16 bits, "long" is 32.
  */
 
-typedef void far * XMSDRIVER;	/* actually a pointer to code */
-typedef struct {		/* registers for calling XMS driver */
-	unsigned short ax, dx, bx;
-	void far * ds_si;
+typedef void far * XMSDRIVER;   /* actually a pointer to code */
+typedef struct {                /* registers for calling XMS driver */
+        unsigned short ax, dx, bx;
+        void far * ds_si;
       } XMScontext;
-typedef struct {		/* registers for calling EMS driver */
-	unsigned short ax, dx, bx;
-	void far * ds_si;
+typedef struct {                /* registers for calling EMS driver */
+        unsigned short ax, dx, bx;
+        void far * ds_si;
       } EMScontext;
 
 extern short far jdos_open JPP((short far * handle, char far * filename));
 extern short far jdos_close JPP((short handle));
 extern short far jdos_seek JPP((short handle, long offset));
 extern short far jdos_read JPP((short handle, void far * buffer,
-				unsigned short count));
+                                unsigned short count));
 extern short far jdos_write JPP((short handle, void far * buffer,
-				 unsigned short count));
+                                 unsigned short count));
 extern void far jxms_getdriver JPP((XMSDRIVER far *));
 extern void far jxms_calldriver JPP((XMSDRIVER, XMScontext far *));
 extern short far jems_available JPP((void));
@@ -122,7 +122,7 @@ extern void far jems_calldriver JPP((EMScontext far *));
  * This is highly system-dependent, and you may want to customize it.
  */
 
-static int next_file_num;	/* to distinguish among several temp files */
+static int next_file_num;       /* to distinguish among several temp files */
 
 LOCAL(void)
 select_file_name (char * fname)
@@ -138,21 +138,21 @@ select_file_name (char * fname)
      */
     if ((env = (const char *) getenv("TMP")) == NULL)
       if ((env = (const char *) getenv("TEMP")) == NULL)
-	env = ".";
-    if (*env == '\0')		/* null string means "." */
+        env = ".";
+    if (*env == '\0')           /* null string means "." */
       env = ".";
-    ptr = fname;		/* copy name to fname */
+    ptr = fname;                /* copy name to fname */
     while (*env != '\0')
       *ptr++ = *env++;
     if (ptr[-1] != '\\' && ptr[-1] != '/')
-      *ptr++ = '\\';		/* append backslash if not in env variable */
+      *ptr++ = '\\';            /* append backslash if not in env variable */
     /* Append a suitable file name */
-    next_file_num++;		/* advance counter */
+    next_file_num++;            /* advance counter */
     sprintf(ptr, "JPG%03d.TMP", next_file_num);
     /* Probe to see if file name is already in use */
     if ((tfile = fopen(fname, READ_BINARY)) == NULL)
       break;
-    fclose(tfile);		/* oops, it's there; close tfile & try again */
+    fclose(tfile);              /* oops, it's there; close tfile & try again */
   }
 }
 
@@ -200,13 +200,13 @@ jpeg_free_large (j_common_ptr cinfo, void FAR * object, size_t sizeofobject)
  * a slop factor of 5% or so.
  */
 
-#ifndef DEFAULT_MAX_MEM		/* so can override from makefile */
-#define DEFAULT_MAX_MEM		300000L /* for total usage about 450K */
+#ifndef DEFAULT_MAX_MEM         /* so can override from makefile */
+#define DEFAULT_MAX_MEM         300000L /* for total usage about 450K */
 #endif
 
 GLOBAL(long)
 jpeg_mem_available (j_common_ptr cinfo, long min_bytes_needed,
-		    long max_bytes_needed, long already_allocated)
+                    long max_bytes_needed, long already_allocated)
 {
   return cinfo->mem->max_memory_to_use - already_allocated;
 }
@@ -228,7 +228,7 @@ jpeg_mem_available (j_common_ptr cinfo, long min_bytes_needed,
  *   2. Extended memory, accessed per the XMS V2.0 specification.
  *   3. Expanded memory, accessed per the LIM/EMS 4.0 specification.
  * You'll need copies of those specs to make sense of the related code.
- * The specs are available by Internet FTP from the SIMTEL archives 
+ * The specs are available by Internet FTP from the SIMTEL archives
  * (oak.oakland.edu and its various mirror sites).  See files
  * pub/msdos/microsoft/xms20.arc and pub/msdos/info/limems41.zip.
  */
@@ -241,32 +241,32 @@ jpeg_mem_available (j_common_ptr cinfo, long min_bytes_needed,
 
 METHODDEF(void)
 read_file_store (j_common_ptr cinfo, backing_store_ptr info,
-		 void FAR * buffer_address,
-		 long file_offset, long byte_count)
+                 void FAR * buffer_address,
+                 long file_offset, long byte_count)
 {
   if (jdos_seek(info->handle.file_handle, file_offset))
     ERREXIT(cinfo, JERR_TFILE_SEEK);
   /* Since MAX_ALLOC_CHUNK is less than 64K, byte_count will be too. */
-  if (byte_count > 65535L)	/* safety check */
+  if (byte_count > 65535L)      /* safety check */
     ERREXIT(cinfo, JERR_BAD_ALLOC_CHUNK);
   if (jdos_read(info->handle.file_handle, buffer_address,
-		(unsigned short) byte_count))
+                (unsigned short) byte_count))
     ERREXIT(cinfo, JERR_TFILE_READ);
 }
 
 
 METHODDEF(void)
 write_file_store (j_common_ptr cinfo, backing_store_ptr info,
-		  void FAR * buffer_address,
-		  long file_offset, long byte_count)
+                  void FAR * buffer_address,
+                  long file_offset, long byte_count)
 {
   if (jdos_seek(info->handle.file_handle, file_offset))
     ERREXIT(cinfo, JERR_TFILE_SEEK);
   /* Since MAX_ALLOC_CHUNK is less than 64K, byte_count will be too. */
-  if (byte_count > 65535L)	/* safety check */
+  if (byte_count > 65535L)      /* safety check */
     ERREXIT(cinfo, JERR_BAD_ALLOC_CHUNK);
   if (jdos_write(info->handle.file_handle, buffer_address,
-		 (unsigned short) byte_count))
+                 (unsigned short) byte_count))
     ERREXIT(cinfo, JERR_TFILE_WRITE);
 }
 
@@ -274,8 +274,8 @@ write_file_store (j_common_ptr cinfo, backing_store_ptr info,
 METHODDEF(void)
 close_file_store (j_common_ptr cinfo, backing_store_ptr info)
 {
-  jdos_close(info->handle.file_handle);	/* close the file */
-  remove(info->temp_name);	/* delete the file */
+  jdos_close(info->handle.file_handle); /* close the file */
+  remove(info->temp_name);      /* delete the file */
 /* If your system doesn't have remove(), try unlink() instead.
  * remove() is the ANSI-standard name for this function, but
  * unlink() was more common in pre-ANSI systems.
@@ -286,7 +286,7 @@ close_file_store (j_common_ptr cinfo, backing_store_ptr info)
 
 LOCAL(boolean)
 open_file_store (j_common_ptr cinfo, backing_store_ptr info,
-		 long total_bytes_needed)
+                 long total_bytes_needed)
 {
   short handle;
 
@@ -301,7 +301,7 @@ open_file_store (j_common_ptr cinfo, backing_store_ptr info,
   info->write_backing_store = write_file_store;
   info->close_backing_store = close_file_store;
   TRACEMSS(cinfo, 1, JTRC_TFILE_OPEN, info->temp_name);
-  return TRUE;			/* succeeded */
+  return TRUE;                  /* succeeded */
 }
 
 
@@ -311,28 +311,28 @@ open_file_store (j_common_ptr cinfo, backing_store_ptr info,
 
 #if XMS_SUPPORTED
 
-static XMSDRIVER xms_driver;	/* saved address of XMS driver */
+static XMSDRIVER xms_driver;    /* saved address of XMS driver */
 
-typedef union {			/* either long offset or real-mode pointer */
-	long offset;
-	void far * ptr;
+typedef union {                 /* either long offset or real-mode pointer */
+        long offset;
+        void far * ptr;
       } XMSPTR;
 
-typedef struct {		/* XMS move specification structure */
-	long length;
-	XMSH src_handle;
-	XMSPTR src;
-	XMSH dst_handle;
-	XMSPTR dst;
+typedef struct {                /* XMS move specification structure */
+        long length;
+        XMSH src_handle;
+        XMSPTR src;
+        XMSH dst_handle;
+        XMSPTR dst;
       } XMSspec;
 
-#define ODD(X)	(((X) & 1L) != 0)
+#define ODD(X)  (((X) & 1L) != 0)
 
 
 METHODDEF(void)
 read_xms_store (j_common_ptr cinfo, backing_store_ptr info,
-		void FAR * buffer_address,
-		long file_offset, long byte_count)
+                void FAR * buffer_address,
+                long file_offset, long byte_count)
 {
   XMScontext ctx;
   XMSspec spec;
@@ -347,16 +347,16 @@ read_xms_store (j_common_ptr cinfo, backing_store_ptr info,
   spec.src.offset = file_offset;
   spec.dst_handle = 0;
   spec.dst.ptr = buffer_address;
-  
+
   ctx.ds_si = (void far *) & spec;
-  ctx.ax = 0x0b00;		/* EMB move */
+  ctx.ax = 0x0b00;              /* EMB move */
   jxms_calldriver(xms_driver, (XMScontext far *) & ctx);
   if (ctx.ax != 1)
     ERREXIT(cinfo, JERR_XMS_READ);
 
   if (ODD(byte_count)) {
     read_xms_store(cinfo, info, (void FAR *) endbuffer,
-		   file_offset + byte_count - 1L, 2L);
+                   file_offset + byte_count - 1L, 2L);
     ((char FAR *) buffer_address)[byte_count - 1L] = endbuffer[0];
   }
 }
@@ -364,8 +364,8 @@ read_xms_store (j_common_ptr cinfo, backing_store_ptr info,
 
 METHODDEF(void)
 write_xms_store (j_common_ptr cinfo, backing_store_ptr info,
-		 void FAR * buffer_address,
-		 long file_offset, long byte_count)
+                 void FAR * buffer_address,
+                 long file_offset, long byte_count)
 {
   XMScontext ctx;
   XMSspec spec;
@@ -382,17 +382,17 @@ write_xms_store (j_common_ptr cinfo, backing_store_ptr info,
   spec.dst.offset = file_offset;
 
   ctx.ds_si = (void far *) & spec;
-  ctx.ax = 0x0b00;		/* EMB move */
+  ctx.ax = 0x0b00;              /* EMB move */
   jxms_calldriver(xms_driver, (XMScontext far *) & ctx);
   if (ctx.ax != 1)
     ERREXIT(cinfo, JERR_XMS_WRITE);
 
   if (ODD(byte_count)) {
     read_xms_store(cinfo, info, (void FAR *) endbuffer,
-		   file_offset + byte_count - 1L, 2L);
+                   file_offset + byte_count - 1L, 2L);
     endbuffer[0] = ((char FAR *) buffer_address)[byte_count - 1L];
     write_xms_store(cinfo, info, (void FAR *) endbuffer,
-		    file_offset + byte_count - 1L, 2L);
+                    file_offset + byte_count - 1L, 2L);
   }
 }
 
@@ -412,14 +412,14 @@ close_xms_store (j_common_ptr cinfo, backing_store_ptr info)
 
 LOCAL(boolean)
 open_xms_store (j_common_ptr cinfo, backing_store_ptr info,
-		long total_bytes_needed)
+                long total_bytes_needed)
 {
   XMScontext ctx;
 
   /* Get address of XMS driver */
   jxms_getdriver((XMSDRIVER far *) & xms_driver);
   if (xms_driver == NULL)
-    return FALSE;		/* no driver to be had */
+    return FALSE;               /* no driver to be had */
 
   /* Get version number, must be >= 2.00 */
   ctx.ax = 0x0000;
@@ -440,7 +440,7 @@ open_xms_store (j_common_ptr cinfo, backing_store_ptr info,
   info->write_backing_store = write_xms_store;
   info->close_backing_store = close_xms_store;
   TRACEMS1(cinfo, 1, JTRC_XMS_OPEN, ctx.dx);
-  return TRUE;			/* succeeded */
+  return TRUE;                  /* succeeded */
 }
 
 #endif /* XMS_SUPPORTED */
@@ -463,25 +463,25 @@ open_xms_store (j_common_ptr cinfo, backing_store_ptr info,
 
 typedef void far * EMSPTR;
 
-typedef union {			/* EMS move specification structure */
-	long length;		/* It's easy to access first 4 bytes */
-	char bytes[18];		/* Misaligned fields in here! */
+typedef union {                 /* EMS move specification structure */
+        long length;            /* It's easy to access first 4 bytes */
+        char bytes[18];         /* Misaligned fields in here! */
       } EMSspec;
 
 /* Macros for accessing misaligned fields */
 #define FIELD_AT(spec,offset,type)  (*((type *) &(spec.bytes[offset])))
-#define SRC_TYPE(spec)		FIELD_AT(spec,4,char)
-#define SRC_HANDLE(spec)	FIELD_AT(spec,5,EMSH)
-#define SRC_OFFSET(spec)	FIELD_AT(spec,7,unsigned short)
-#define SRC_PAGE(spec)		FIELD_AT(spec,9,unsigned short)
-#define SRC_PTR(spec)		FIELD_AT(spec,7,EMSPTR)
-#define DST_TYPE(spec)		FIELD_AT(spec,11,char)
-#define DST_HANDLE(spec)	FIELD_AT(spec,12,EMSH)
-#define DST_OFFSET(spec)	FIELD_AT(spec,14,unsigned short)
-#define DST_PAGE(spec)		FIELD_AT(spec,16,unsigned short)
-#define DST_PTR(spec)		FIELD_AT(spec,14,EMSPTR)
+#define SRC_TYPE(spec)          FIELD_AT(spec,4,char)
+#define SRC_HANDLE(spec)        FIELD_AT(spec,5,EMSH)
+#define SRC_OFFSET(spec)        FIELD_AT(spec,7,unsigned short)
+#define SRC_PAGE(spec)          FIELD_AT(spec,9,unsigned short)
+#define SRC_PTR(spec)           FIELD_AT(spec,7,EMSPTR)
+#define DST_TYPE(spec)          FIELD_AT(spec,11,char)
+#define DST_HANDLE(spec)        FIELD_AT(spec,12,EMSH)
+#define DST_OFFSET(spec)        FIELD_AT(spec,14,unsigned short)
+#define DST_PAGE(spec)          FIELD_AT(spec,16,unsigned short)
+#define DST_PTR(spec)           FIELD_AT(spec,14,EMSPTR)
 
-#define EMSPAGESIZE	16384L	/* gospel, see the EMS specs */
+#define EMSPAGESIZE     16384L  /* gospel, see the EMS specs */
 
 #define HIBYTE(W)  (((W) >> 8) & 0xFF)
 #define LOBYTE(W)  ((W) & 0xFF)
@@ -489,8 +489,8 @@ typedef union {			/* EMS move specification structure */
 
 METHODDEF(void)
 read_ems_store (j_common_ptr cinfo, backing_store_ptr info,
-		void FAR * buffer_address,
-		long file_offset, long byte_count)
+                void FAR * buffer_address,
+                long file_offset, long byte_count)
 {
   EMScontext ctx;
   EMSspec spec;
@@ -503,9 +503,9 @@ read_ems_store (j_common_ptr cinfo, backing_store_ptr info,
   DST_TYPE(spec) = 0;
   DST_HANDLE(spec) = 0;
   DST_PTR(spec)    = buffer_address;
-  
+
   ctx.ds_si = (void far *) & spec;
-  ctx.ax = 0x5700;		/* move memory region */
+  ctx.ax = 0x5700;              /* move memory region */
   jems_calldriver((EMScontext far *) & ctx);
   if (HIBYTE(ctx.ax) != 0)
     ERREXIT(cinfo, JERR_EMS_READ);
@@ -514,8 +514,8 @@ read_ems_store (j_common_ptr cinfo, backing_store_ptr info,
 
 METHODDEF(void)
 write_ems_store (j_common_ptr cinfo, backing_store_ptr info,
-		 void FAR * buffer_address,
-		 long file_offset, long byte_count)
+                 void FAR * buffer_address,
+                 long file_offset, long byte_count)
 {
   EMScontext ctx;
   EMSspec spec;
@@ -528,9 +528,9 @@ write_ems_store (j_common_ptr cinfo, backing_store_ptr info,
   DST_HANDLE(spec) = info->handle.ems_handle;
   DST_PAGE(spec)   = (unsigned short) (file_offset / EMSPAGESIZE);
   DST_OFFSET(spec) = (unsigned short) (file_offset % EMSPAGESIZE);
-  
+
   ctx.ds_si = (void far *) & spec;
-  ctx.ax = 0x5700;		/* move memory region */
+  ctx.ax = 0x5700;              /* move memory region */
   jems_calldriver((EMScontext far *) & ctx);
   if (HIBYTE(ctx.ax) != 0)
     ERREXIT(cinfo, JERR_EMS_WRITE);
@@ -552,7 +552,7 @@ close_ems_store (j_common_ptr cinfo, backing_store_ptr info)
 
 LOCAL(boolean)
 open_ems_store (j_common_ptr cinfo, backing_store_ptr info,
-		long total_bytes_needed)
+                long total_bytes_needed)
 {
   EMScontext ctx;
 
@@ -585,7 +585,7 @@ open_ems_store (j_common_ptr cinfo, backing_store_ptr info,
   info->write_backing_store = write_ems_store;
   info->close_backing_store = close_ems_store;
   TRACEMS1(cinfo, 1, JTRC_EMS_OPEN, ctx.dx);
-  return TRUE;			/* succeeded */
+  return TRUE;                  /* succeeded */
 }
 
 #endif /* EMS_SUPPORTED */
@@ -597,7 +597,7 @@ open_ems_store (j_common_ptr cinfo, backing_store_ptr info,
 
 GLOBAL(void)
 jpeg_open_backing_store (j_common_ptr cinfo, backing_store_ptr info,
-			 long total_bytes_needed)
+                         long total_bytes_needed)
 {
   /* Try extended memory, then expanded memory, then regular file. */
 #if XMS_SUPPORTED
@@ -622,8 +622,8 @@ jpeg_open_backing_store (j_common_ptr cinfo, backing_store_ptr info,
 GLOBAL(long)
 jpeg_mem_init (j_common_ptr cinfo)
 {
-  next_file_num = 0;		/* initialize temp file name generator */
-  return DEFAULT_MAX_MEM;	/* default for max_memory_to_use */
+  next_file_num = 0;            /* initialize temp file name generator */
+  return DEFAULT_MAX_MEM;       /* default for max_memory_to_use */
 }
 
 GLOBAL(void)

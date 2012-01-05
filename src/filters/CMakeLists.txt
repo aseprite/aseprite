@@ -9,4 +9,3 @@ add_library(filters-lib
   invert_color_filter.cpp
   median_filter.cpp
   replace_color_filter.cpp)
-

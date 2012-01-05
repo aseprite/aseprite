@@ -35,7 +35,7 @@ static HID_DEVICE* add_device(HID_DEVICE_COLLECTION*);
 /* add_element:
  * Add a new, blank element to a device.
  * This is later specialized into a button
- * axis or whatever 
+ * axis or whatever
  */
 static HID_ELEMENT* add_element(HID_DEVICE* d) {
    HID_ELEMENT* e;
@@ -54,13 +54,13 @@ static HID_ELEMENT* add_element(HID_DEVICE* d) {
 
 /* i_val:
  * Helper method - get an integer value from a dictionary
- * Defaults to 0 if the value is not found; in practice this 
+ * Defaults to 0 if the value is not found; in practice this
  * should not occur.
  */
 static int i_val(CFTypeRef d, CFStringRef key) {
    int ans;
    CFTypeRef num = CFDictionaryGetValue(d, key);
-   if (num) 
+   if (num)
       CFNumberGetValue(num, kCFNumberIntType, &ans);
    else
       ans = 0;
@@ -68,7 +68,7 @@ static int i_val(CFTypeRef d, CFStringRef key) {
 }
 
 /* hid_store_element_data:
- * Parse this HID element, break it down and store the 
+ * Parse this HID element, break it down and store the
  * relevant data in the device structure
  */
 static void hid_store_element_data(CFTypeRef element, int type, HID_DEVICE *device, int app, int col, int idx)
@@ -111,17 +111,17 @@ static void hid_scan_application(CFTypeRef properties, HID_DEVICE *device, int a
             type = i_val(element, CFSTR(kIOHIDElementTypeKey));
             usage = i_val(element, CFSTR(kIOHIDElementUsageKey));
             usage_page = i_val(element, CFSTR(kIOHIDElementUsagePageKey));
-            if (type == kIOHIDElementTypeCollection) 
+            if (type == kIOHIDElementTypeCollection)
                {
                   /* It is a collection; recurse into it, if it is
                    part of the generic desktop (sometimes the whole
                    joystick is wrapped up inside a collection like
                    this. */
                   if (usage_page == kHIDPage_GenericDesktop)
-                     hid_scan_application(element, device, app);                     
+                     hid_scan_application(element, device, app);
                }
             else
-               { 
+               {
                   switch (usage_page) {
                   case kHIDPage_GenericDesktop:
                      switch(usage) {
@@ -137,33 +137,33 @@ static void hid_scan_application(CFTypeRef properties, HID_DEVICE *device, int a
                      case kHIDUsage_GD_X:
                         hid_store_element_data(element, HID_ELEMENT_AXIS_PRIMARY_X, device, app, stick, axis++);
                         break;
-                        
+
                      case kHIDUsage_GD_Y:
                         hid_store_element_data(element, HID_ELEMENT_AXIS_PRIMARY_Y, device, app, stick, axis++);
                         break;
-                        
+
                      case kHIDUsage_GD_Z:
                      case kHIDUsage_GD_Rx:
                      case kHIDUsage_GD_Ry:
                      case kHIDUsage_GD_Rz:
                         hid_store_element_data(element, HID_ELEMENT_AXIS, device,app, stick, axis++);
                         break;
-                        
+
                      case kHIDUsage_GD_Slider:
                      case kHIDUsage_GD_Dial:
                      case kHIDUsage_GD_Wheel:
                         /* If we've already seen some axes on this stick, move to the next one */
-                        if (axis > 0) 
+                        if (axis > 0)
                            {
                               ++stick;
                               axis=0;
                            }
                         hid_store_element_data(element, HID_ELEMENT_STANDALONE_AXIS, device, app, stick++, 0);
                         break;
-                    
+
                      case kHIDUsage_GD_Hatswitch:
                         /* If we've already seen some axes on this stick, move to the next one */
-                        if (axis > 0) 
+                        if (axis > 0)
                            {
                               ++stick;
                               axis=0;
@@ -209,11 +209,11 @@ static void hid_scan_physical_collection(CFTypeRef properties, HID_DEVICE *devic
                case kHIDUsage_GD_X:
                   hid_store_element_data(element, HID_ELEMENT_AXIS_PRIMARY_X, device, app, stick, axis++);
                   break;
-                
+
                case kHIDUsage_GD_Y:
                   hid_store_element_data(element, HID_ELEMENT_AXIS_PRIMARY_Y, device, app, stick, axis++);
                   break;
-                
+
                case kHIDUsage_GD_Z:
                case kHIDUsage_GD_Rx:
                case kHIDUsage_GD_Ry:
@@ -273,7 +273,7 @@ static void hid_scan_application_collection(CFMutableDictionaryRef properties, H
 }
 
 /* get_usb_properties:
- * Get a property dictionary from the USB plane. 
+ * Get a property dictionary from the USB plane.
  */
 static CFMutableDictionaryRef get_usb_properties(io_object_t device)
 {
@@ -281,7 +281,7 @@ static CFMutableDictionaryRef get_usb_properties(io_object_t device)
    CFMutableDictionaryRef usb_properties = NULL;
    if (IORegistryEntryGetParentEntry(device, kIOServicePlane, &parent) == KERN_SUCCESS) {
       if (IORegistryEntryGetParentEntry(parent, kIOServicePlane, &grandparent) == KERN_SUCCESS) {
-         IORegistryEntryCreateCFProperties (grandparent, &usb_properties, 
+         IORegistryEntryCreateCFProperties (grandparent, &usb_properties,
                                             kCFAllocatorDefault, kNilOptions);
          IOObjectRelease(grandparent);
       }
@@ -318,7 +318,7 @@ HID_DEVICE_COLLECTION *osx_hid_scan(int type, HID_DEVICE_COLLECTION* col)
    if (filename != nil)
       properties = [NSDictionary dictionaryWithContentsOfFile:filename];
    if (properties)
-   {   
+   {
       this_device = add_device(col);
       this_device->manufacturer = strdup([((NSString*) [properties objectForKey: @kIOHIDManufacturerKey]) lossyCString]);
       this_device->product = strdup([((NSString*) [properties objectForKey: @kIOHIDProductKey]) lossyCString]);
@@ -349,7 +349,7 @@ HID_DEVICE_COLLECTION *osx_hid_scan(int type, HID_DEVICE_COLLECTION* col)
    AL_CONST char *string;
    SInt32 score = 0;
    int error;
-   
+
    usage_page = kHIDPage_GenericDesktop;
    switch (type) {
    case HID_MOUSE:
@@ -387,9 +387,9 @@ HID_DEVICE_COLLECTION *osx_hid_scan(int type, HID_DEVICE_COLLECTION* col)
                else {
                   this_device->cur_app=col->devices[col->count-1].cur_app;
                }
-               /* 
+               /*
                 * Mac OS X currently is not mirroring all USB properties
-                * to HID page so need to look at USB device page also. 
+                * to HID page so need to look at USB device page also.
                 */
                usb_properties = get_usb_properties(hid_device);
                type_ref = CFDictionaryGetValue(properties, CFSTR(kIOHIDManufacturerKey));
@@ -480,7 +480,7 @@ static HID_DEVICE* add_device(HID_DEVICE_COLLECTION* o) {
 }
 
 /* osx_hid_free:
- * Release the memory taken up by a collection 
+ * Release the memory taken up by a collection
  */
 void osx_hid_free(HID_DEVICE_COLLECTION *col)
 {

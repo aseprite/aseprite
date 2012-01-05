@@ -30,8 +30,8 @@ class LockedDocumentException : public base::Exception
 public:
   LockedDocumentException() throw()
   : base::Exception("Cannot read or write the active document.\n"
-		    "It is locked by a background task.\n"
-		    "Try again later.") { }
+                    "It is locked by a background task.\n"
+                    "Try again later.") { }
 };
 
 //////////////////////////////////////////////////////////////////////
@@ -45,7 +45,7 @@ public:
   explicit DocumentWrapper(Document* document) : m_document(document) { }
   ~DocumentWrapper() { }
 
-  DocumentWrapper& operator=(const DocumentWrapper& copy) 
+  DocumentWrapper& operator=(const DocumentWrapper& copy)
   {
     m_document = copy.m_document;
     return *this;
@@ -54,13 +54,13 @@ public:
   operator Document* () { return m_document; }
   operator const Document* () const { return m_document; }
 
-  Document* operator->() 
+  Document* operator->()
   {
     ASSERT(m_document != NULL);
     return m_document;
   }
 
-  const Document* operator->() const 
+  const Document* operator->() const
   {
     ASSERT(m_document != NULL);
     return m_document;
@@ -135,7 +135,7 @@ public:
   {
     if (m_document) {
       if (!m_document->lock(Document::WriteLock))
-	throw LockedDocumentException();
+        throw LockedDocumentException();
 
       m_locked = true;
     }
@@ -148,13 +148,13 @@ public:
   {
     if (m_document) {
       if (!m_document->lockToWrite())
-	throw LockedDocumentException();
+        throw LockedDocumentException();
 
       m_locked = true;
     }
   }
 
-  ~DocumentWriter() 
+  ~DocumentWriter()
   {
     unlockWriter();
   }
@@ -169,7 +169,7 @@ public:
       m_from_reader = true;
 
       if (!m_document->lockToWrite())
-	throw LockedDocumentException();
+        throw LockedDocumentException();
 
       m_locked = true;
     }
@@ -183,9 +183,9 @@ protected:
   {
     if (m_document && m_locked) {
       if (m_from_reader)
-	m_document->unlockToRead();
+        m_document->unlockToRead();
       else
-	m_document->unlock();
+        m_document->unlock();
       m_locked = false;
     }
   }
@@ -208,7 +208,7 @@ public:
   {
   }
 
-  ~ActiveDocumentReader() 
+  ~ActiveDocumentReader()
   {
   }
 
@@ -224,7 +224,7 @@ public:
   {
   }
 
-  ~ActiveDocumentWriter() 
+  ~ActiveDocumentWriter()
   {
   }
 

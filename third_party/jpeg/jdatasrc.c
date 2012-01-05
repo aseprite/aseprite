@@ -23,16 +23,16 @@
 /* Expanded data source object for stdio input */
 
 typedef struct {
-  struct jpeg_source_mgr pub;	/* public fields */
+  struct jpeg_source_mgr pub;   /* public fields */
 
-  FILE * infile;		/* source stream */
-  JOCTET * buffer;		/* start of buffer */
-  boolean start_of_file;	/* have we gotten any data yet? */
+  FILE * infile;                /* source stream */
+  JOCTET * buffer;              /* start of buffer */
+  boolean start_of_file;        /* have we gotten any data yet? */
 } my_source_mgr;
 
 typedef my_source_mgr * my_src_ptr;
 
-#define INPUT_BUF_SIZE  4096	/* choose an efficiently fread'able size */
+#define INPUT_BUF_SIZE  4096    /* choose an efficiently fread'able size */
 
 
 /*
@@ -95,7 +95,7 @@ fill_input_buffer (j_decompress_ptr cinfo)
   nbytes = JFREAD(src->infile, src->buffer, INPUT_BUF_SIZE);
 
   if (nbytes <= 0) {
-    if (src->start_of_file)	/* Treat empty input file as fatal error */
+    if (src->start_of_file)     /* Treat empty input file as fatal error */
       ERREXIT(cinfo, JERR_INPUT_EMPTY);
     WARNMS(cinfo, JWRN_JPEG_EOF);
     /* Insert a fake EOI marker */
@@ -190,14 +190,14 @@ jpeg_stdio_src (j_decompress_ptr cinfo, FILE * infile)
    * This makes it unsafe to use this manager and a different source
    * manager serially with the same JPEG object.  Caveat programmer.
    */
-  if (cinfo->src == NULL) {	/* first time for this JPEG object? */
+  if (cinfo->src == NULL) {     /* first time for this JPEG object? */
     cinfo->src = (struct jpeg_source_mgr *)
       (*cinfo->mem->alloc_small) ((j_common_ptr) cinfo, JPOOL_PERMANENT,
-				  SIZEOF(my_source_mgr));
+                                  SIZEOF(my_source_mgr));
     src = (my_src_ptr) cinfo->src;
     src->buffer = (JOCTET *)
       (*cinfo->mem->alloc_small) ((j_common_ptr) cinfo, JPOOL_PERMANENT,
-				  INPUT_BUF_SIZE * SIZEOF(JOCTET));
+                                  INPUT_BUF_SIZE * SIZEOF(JOCTET));
   }
 
   src = (my_src_ptr) cinfo->src;

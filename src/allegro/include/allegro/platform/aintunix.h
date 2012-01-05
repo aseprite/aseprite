@@ -1,6 +1,6 @@
-/*         ______   ___    ___ 
- *        /\  _  \ /\_ \  /\_ \ 
- *        \ \ \L\ \\//\ \ \//\ \      __     __   _ __   ___ 
+/*         ______   ___    ___
+ *        /\  _  \ /\_ \  /\_ \
+ *        \ \ \L\ \\//\ \ \//\ \      __     __   _ __   ___
  *         \ \  __ \ \ \ \  \ \ \   /'__`\ /'_ `\/\`'__\/ __`\
  *          \ \ \/\ \ \_\ \_ \_\ \_/\  __//\ \L\ \ \ \//\ \L\ \
  *           \ \_\ \_\/\____\/\____\ \____\ \____ \ \_\\ \____/
@@ -11,7 +11,7 @@
  *      Some definitions for internal use by the Unix library code.
  *
  *      By Shawn Hargreaves.
- * 
+ *
  *      See readme.txt for copyright information.
  */
 
@@ -152,7 +152,7 @@ extern "C" {
  */
 typedef void (*bg_func) (int threaded);
 
-/* Background function manager -- responsible for calling background 
+/* Background function manager -- responsible for calling background
  * functions.  `int' methods return -1 on failure, 0 on success. */
 struct bg_manager
 {
@@ -164,7 +164,7 @@ struct bg_manager
    void (*enable_interrupts) (void);
    void (*disable_interrupts) (void);
    int (*interrupts_disabled) (void);
-};	
+};
 
 extern struct bg_manager _bg_man_pthreads;
 extern struct bg_manager _bg_man_sigalrm;

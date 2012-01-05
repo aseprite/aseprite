@@ -56,7 +56,7 @@
  **/
 void
 art_uta_add_line (ArtUta *uta, double x0, double y0, double x1, double y1,
-		  int *rbuf, int rbuf_rowstride)
+                  int *rbuf, int rbuf_rowstride)
 {
   int xmin, ymin;
   double xmax, ymax;
@@ -92,12 +92,12 @@ art_uta_add_line (ArtUta *uta, double x0, double y0, double x1, double y1,
       ix = yt0 * uta->width + xt0;
       bb = uta->utiles[ix];
       if (bb == 0)
-	bb = ART_UTA_BBOX_CONS(xf0, yf0, xf1, yf1);
+        bb = ART_UTA_BBOX_CONS(xf0, yf0, xf1, yf1);
       else
-	bb = ART_UTA_BBOX_CONS(MIN(ART_UTA_BBOX_X0(bb), xf0),
-			   MIN(ART_UTA_BBOX_Y0(bb), yf0),
-			   MAX(ART_UTA_BBOX_X1(bb), xf1),
-			   MAX(ART_UTA_BBOX_Y1(bb), yf1));
+        bb = ART_UTA_BBOX_CONS(MIN(ART_UTA_BBOX_X0(bb), xf0),
+                           MIN(ART_UTA_BBOX_Y0(bb), yf0),
+                           MAX(ART_UTA_BBOX_X1(bb), xf1),
+                           MAX(ART_UTA_BBOX_Y1(bb), yf1));
       uta->utiles[ix] = bb;
     }
   else
@@ -110,165 +110,165 @@ art_uta_add_line (ArtUta *uta, double x0, double y0, double x1, double y1,
       sx = dx > 0 ? 1 : dx < 0 ? -1 : 0;
       sy = dy > 0 ? 1 : dy < 0 ? -1 : 0;
       if (ymin == ymaxf)
-	{
-	  /* special case horizontal (dx/dy slope would be infinite) */
-	  xf0 = xmin & (ART_UTILE_SIZE - 1);
-	  yf0 = ymin & (ART_UTILE_SIZE - 1);
-	  xf1 = (xmaxf & (ART_UTILE_SIZE - 1)) + xmaxc - xmaxf;
-	  yf1 = (ymaxf & (ART_UTILE_SIZE - 1)) + ymaxc - ymaxf;
+        {
+          /* special case horizontal (dx/dy slope would be infinite) */
+          xf0 = xmin & (ART_UTILE_SIZE - 1);
+          yf0 = ymin & (ART_UTILE_SIZE - 1);
+          xf1 = (xmaxf & (ART_UTILE_SIZE - 1)) + xmaxc - xmaxf;
+          yf1 = (ymaxf & (ART_UTILE_SIZE - 1)) + ymaxc - ymaxf;
 
-	  ix = yt0 * uta->width + xt0;
-	  ix1 = yt0 * uta->width + xt1;
-	  while (ix != ix1)
-	    {
-	      bb = uta->utiles[ix];
-	      if (bb == 0)
-		bb = ART_UTA_BBOX_CONS(xf0, yf0, ART_UTILE_SIZE, yf1);
-	      else
-		bb = ART_UTA_BBOX_CONS(MIN(ART_UTA_BBOX_X0(bb), xf0),
-				   MIN(ART_UTA_BBOX_Y0(bb), yf0),
-				   ART_UTILE_SIZE,
-				   MAX(ART_UTA_BBOX_Y1(bb), yf1));
-	      uta->utiles[ix] = bb;
-	      xf0 = 0;
-	      ix++;
-	    }
-	  bb = uta->utiles[ix];
-	  if (bb == 0)
-	    bb = ART_UTA_BBOX_CONS(0, yf0, xf1, yf1);
-	  else
-	    bb = ART_UTA_BBOX_CONS(0,
-			       MIN(ART_UTA_BBOX_Y0(bb), yf0),
-			       MAX(ART_UTA_BBOX_X1(bb), xf1),
-			       MAX(ART_UTA_BBOX_Y1(bb), yf1));
-	  uta->utiles[ix] = bb;
-	}
+          ix = yt0 * uta->width + xt0;
+          ix1 = yt0 * uta->width + xt1;
+          while (ix != ix1)
+            {
+              bb = uta->utiles[ix];
+              if (bb == 0)
+                bb = ART_UTA_BBOX_CONS(xf0, yf0, ART_UTILE_SIZE, yf1);
+              else
+                bb = ART_UTA_BBOX_CONS(MIN(ART_UTA_BBOX_X0(bb), xf0),
+                                   MIN(ART_UTA_BBOX_Y0(bb), yf0),
+                                   ART_UTILE_SIZE,
+                                   MAX(ART_UTA_BBOX_Y1(bb), yf1));
+              uta->utiles[ix] = bb;
+              xf0 = 0;
+              ix++;
+            }
+          bb = uta->utiles[ix];
+          if (bb == 0)
+            bb = ART_UTA_BBOX_CONS(0, yf0, xf1, yf1);
+          else
+            bb = ART_UTA_BBOX_CONS(0,
+                               MIN(ART_UTA_BBOX_Y0(bb), yf0),
+                               MAX(ART_UTA_BBOX_X1(bb), xf1),
+                               MAX(ART_UTA_BBOX_Y1(bb), yf1));
+          uta->utiles[ix] = bb;
+        }
       else
-	{
-	  /* Do a Bresenham-style traversal of the line */
-	  double dx_dy;
-	  double x, y;
-	  double xn, yn;
+        {
+          /* Do a Bresenham-style traversal of the line */
+          double dx_dy;
+          double x, y;
+          double xn, yn;
 
-	  /* normalize coordinates to uta origin */
-	  x0 -= uta->x0 << ART_UTILE_SHIFT;
-	  y0 -= uta->y0 << ART_UTILE_SHIFT;
-	  x1 -= uta->x0 << ART_UTILE_SHIFT;
-	  y1 -= uta->y0 << ART_UTILE_SHIFT;
-	  if (dy < 0)
-	    {
-	      double tmp;
+          /* normalize coordinates to uta origin */
+          x0 -= uta->x0 << ART_UTILE_SHIFT;
+          y0 -= uta->y0 << ART_UTILE_SHIFT;
+          x1 -= uta->x0 << ART_UTILE_SHIFT;
+          y1 -= uta->y0 << ART_UTILE_SHIFT;
+          if (dy < 0)
+            {
+              double tmp;
 
-	      tmp = x0;
-	      x0 = x1;
-	      x1 = tmp;
+              tmp = x0;
+              x0 = x1;
+              x1 = tmp;
 
-	      tmp = y0;
-	      y0 = y1;
-	      y1 = tmp;
+              tmp = y0;
+              y0 = y1;
+              y1 = tmp;
 
-	      dx = -dx;
-	      sx = -sx;
-	      dy = -dy;
-	      /* we leave sy alone, because it would always be 1,
-		 and we need it for the rbuf stuff. */
-	    }
-	  xt0 = ((int)floor (x0) >> ART_UTILE_SHIFT);
-	  xt1 = ((int)floor (x1) >> ART_UTILE_SHIFT);
-	  /* now [xy]0 is above [xy]1 */
+              dx = -dx;
+              sx = -sx;
+              dy = -dy;
+              /* we leave sy alone, because it would always be 1,
+                 and we need it for the rbuf stuff. */
+            }
+          xt0 = ((int)floor (x0) >> ART_UTILE_SHIFT);
+          xt1 = ((int)floor (x1) >> ART_UTILE_SHIFT);
+          /* now [xy]0 is above [xy]1 */
 
-	  ix = yt0 * uta->width + xt0;
-	  ix1 = yt1 * uta->width + xt1;
+          ix = yt0 * uta->width + xt0;
+          ix1 = yt1 * uta->width + xt1;
 #ifdef VERBOSE
-	  printf ("%% ix = %d,%d; ix1 = %d,%d\n", xt0, yt0, xt1, yt1);
+          printf ("%% ix = %d,%d; ix1 = %d,%d\n", xt0, yt0, xt1, yt1);
 #endif
 
-	  dx_dy = dx / dy;
-	  x = x0;
-	  y = y0;
-	  while (ix != ix1)
-	    {
-	      int dix;
+          dx_dy = dx / dy;
+          x = x0;
+          y = y0;
+          while (ix != ix1)
+            {
+              int dix;
 
-	      /* figure out whether next crossing is horizontal or vertical */
+              /* figure out whether next crossing is horizontal or vertical */
 #ifdef VERBOSE
-	      printf ("%% %d,%d\n", xt0, yt0);
+              printf ("%% %d,%d\n", xt0, yt0);
 #endif
-	      yn = (yt0 + 1) << ART_UTILE_SHIFT;
-	      xn = x0 + dx_dy * (yn - y0);
-	      if (xt0 != (int)floor (xn) >> ART_UTILE_SHIFT)
-		{
-		  /* horizontal crossing */
-		  xt0 += sx;
-		  dix = sx;
-		  if (dx > 0)
-		    {
-		      xn = xt0 << ART_UTILE_SHIFT;
-		      yn = y0 + (xn - x0) / dx_dy;
+              yn = (yt0 + 1) << ART_UTILE_SHIFT;
+              xn = x0 + dx_dy * (yn - y0);
+              if (xt0 != (int)floor (xn) >> ART_UTILE_SHIFT)
+                {
+                  /* horizontal crossing */
+                  xt0 += sx;
+                  dix = sx;
+                  if (dx > 0)
+                    {
+                      xn = xt0 << ART_UTILE_SHIFT;
+                      yn = y0 + (xn - x0) / dx_dy;
 
-		      xf0 = (int)floor (x) & (ART_UTILE_SIZE - 1);
-		      xf1 = ART_UTILE_SIZE;
-		    }
-		  else
-		    {
-		      xn = (xt0 + 1) << ART_UTILE_SHIFT;
-		      yn = y0 + (xn - x0) / dx_dy;
+                      xf0 = (int)floor (x) & (ART_UTILE_SIZE - 1);
+                      xf1 = ART_UTILE_SIZE;
+                    }
+                  else
+                    {
+                      xn = (xt0 + 1) << ART_UTILE_SHIFT;
+                      yn = y0 + (xn - x0) / dx_dy;
 
-		      xf0 = 0;
-		      xmaxc = (int)ceil (x);
-		      xf1 = xmaxc - ((xt0 + 1) << ART_UTILE_SHIFT);
-		    }
-		  ymaxf = (int)floor (yn);
-		  ymaxc = (int)ceil (yn);
-		  yf1 = (ymaxf & (ART_UTILE_SIZE - 1)) + ymaxc - ymaxf;
-		}
-	      else
-		{
-		  /* vertical crossing */
-		  dix = uta->width;
-		  xf0 = (int)floor (MIN(x, xn)) & (ART_UTILE_SIZE - 1);
-		  xmax = MAX(x, xn);
-		  xmaxc = (int)ceil (xmax);
-		  xf1 = xmaxc - (xt0 << ART_UTILE_SHIFT);
-		  yf1 = ART_UTILE_SIZE;
+                      xf0 = 0;
+                      xmaxc = (int)ceil (x);
+                      xf1 = xmaxc - ((xt0 + 1) << ART_UTILE_SHIFT);
+                    }
+                  ymaxf = (int)floor (yn);
+                  ymaxc = (int)ceil (yn);
+                  yf1 = (ymaxf & (ART_UTILE_SIZE - 1)) + ymaxc - ymaxf;
+                }
+              else
+                {
+                  /* vertical crossing */
+                  dix = uta->width;
+                  xf0 = (int)floor (MIN(x, xn)) & (ART_UTILE_SIZE - 1);
+                  xmax = MAX(x, xn);
+                  xmaxc = (int)ceil (xmax);
+                  xf1 = xmaxc - (xt0 << ART_UTILE_SHIFT);
+                  yf1 = ART_UTILE_SIZE;
 
-		  if (rbuf != NULL)
-		    rbuf[yt0 * rbuf_rowstride + xt0] += sy;
+                  if (rbuf != NULL)
+                    rbuf[yt0 * rbuf_rowstride + xt0] += sy;
 
-		  yt0++;
-		}
-	      yf0 = (int)floor (y) & (ART_UTILE_SIZE - 1);
-	      bb = uta->utiles[ix];
-	      if (bb == 0)
-		bb = ART_UTA_BBOX_CONS(xf0, yf0, xf1, yf1);
-	      else
-		bb = ART_UTA_BBOX_CONS(MIN(ART_UTA_BBOX_X0(bb), xf0),
-				       MIN(ART_UTA_BBOX_Y0(bb), yf0),
-				       MAX(ART_UTA_BBOX_X1(bb), xf1),
-				       MAX(ART_UTA_BBOX_Y1(bb), yf1));
-	      uta->utiles[ix] = bb;
+                  yt0++;
+                }
+              yf0 = (int)floor (y) & (ART_UTILE_SIZE - 1);
+              bb = uta->utiles[ix];
+              if (bb == 0)
+                bb = ART_UTA_BBOX_CONS(xf0, yf0, xf1, yf1);
+              else
+                bb = ART_UTA_BBOX_CONS(MIN(ART_UTA_BBOX_X0(bb), xf0),
+                                       MIN(ART_UTA_BBOX_Y0(bb), yf0),
+                                       MAX(ART_UTA_BBOX_X1(bb), xf1),
+                                       MAX(ART_UTA_BBOX_Y1(bb), yf1));
+              uta->utiles[ix] = bb;
 
-	      x = xn;
-	      y = yn;
-	      ix += dix;
-	    }
-	  xmax = MAX(x, x1);
-	  xmaxc = ceil (xmax);
-	  ymaxc = ceil (y1);
-	  xf0 = (int)floor (MIN(x1, x)) & (ART_UTILE_SIZE - 1);
-	  yf0 = (int)floor (y) & (ART_UTILE_SIZE - 1);
-	  xf1 = xmaxc - (xt0 << ART_UTILE_SHIFT);
-	  yf1 = ymaxc - (yt0 << ART_UTILE_SHIFT);
-	  bb = uta->utiles[ix];
-	  if (bb == 0)
-	    bb = ART_UTA_BBOX_CONS(xf0, yf0, xf1, yf1);
-	  else
-	    bb = ART_UTA_BBOX_CONS(MIN(ART_UTA_BBOX_X0(bb), xf0),
-				   MIN(ART_UTA_BBOX_Y0(bb), yf0),
-				   MAX(ART_UTA_BBOX_X1(bb), xf1),
-				   MAX(ART_UTA_BBOX_Y1(bb), yf1));
-	  uta->utiles[ix] = bb;
-	}
+              x = xn;
+              y = yn;
+              ix += dix;
+            }
+          xmax = MAX(x, x1);
+          xmaxc = ceil (xmax);
+          ymaxc = ceil (y1);
+          xf0 = (int)floor (MIN(x1, x)) & (ART_UTILE_SIZE - 1);
+          yf0 = (int)floor (y) & (ART_UTILE_SIZE - 1);
+          xf1 = xmaxc - (xt0 << ART_UTILE_SHIFT);
+          yf1 = ymaxc - (yt0 << ART_UTILE_SHIFT);
+          bb = uta->utiles[ix];
+          if (bb == 0)
+            bb = ART_UTA_BBOX_CONS(xf0, yf0, xf1, yf1);
+          else
+            bb = ART_UTA_BBOX_CONS(MIN(ART_UTA_BBOX_X0(bb), xf0),
+                                   MIN(ART_UTA_BBOX_Y0(bb), yf0),
+                                   MAX(ART_UTA_BBOX_X1(bb), xf1),
+                                   MAX(ART_UTA_BBOX_Y1(bb), yf1));
+          uta->utiles[ix] = bb;
+        }
     }
 }
 
@@ -314,20 +314,20 @@ art_uta_from_vpath (const ArtVpath *vec)
   for (i = 0; vec[i].code != ART_END; i++)
     {
       switch (vec[i].code)
-	{
-	case ART_MOVETO:
-	  x = vec[i].x;
-	  y = vec[i].y;
-	  break;
-	case ART_LINETO:
-	  art_uta_add_line (uta, vec[i].x, vec[i].y, x, y, rbuf, width);
-	  x = vec[i].x;
-	  y = vec[i].y;
-	  break;
-	default:
-	  /* this shouldn't happen */
-	  break;
-	}
+        {
+        case ART_MOVETO:
+          x = vec[i].x;
+          y = vec[i].y;
+          break;
+        case ART_LINETO:
+          art_uta_add_line (uta, vec[i].x, vec[i].y, x, y, rbuf, width);
+          x = vec[i].x;
+          y = vec[i].y;
+          break;
+        default:
+          /* this shouldn't happen */
+          break;
+        }
     }
 
   /* now add in the filling from rbuf */
@@ -336,37 +336,37 @@ art_uta_from_vpath (const ArtVpath *vec)
     {
       sum = 0;
       for (xt = 0; xt < width; xt++)
-	{
-	  sum += rbuf[ix];
-	  /* Nonzero winding rule - others are possible, but hardly
-	     worth it. */
-	  if (sum != 0)
-	    {
-	      bb = utiles[ix];
-	      bb &= 0xffff0000;
-	      bb |= (ART_UTILE_SIZE << 8) | ART_UTILE_SIZE;
-	      utiles[ix] = bb;
-	      if (xt != width - 1)
-		{
-		  bb = utiles[ix + 1];
-		  bb &= 0xffff00;
-		  bb |= ART_UTILE_SIZE;
-		  utiles[ix + 1] = bb;
-		}
-	      if (yt != height - 1)
-		{
-		  bb = utiles[ix + width];
-		  bb &= 0xff0000ff;
-		  bb |= ART_UTILE_SIZE << 8;
-		  utiles[ix + width] = bb;
-		  if (xt != width - 1)
-		    {
-		      utiles[ix + width + 1] &= 0xffff;
-		    }
-		}
-	    }
-	  ix++;
-	}
+        {
+          sum += rbuf[ix];
+          /* Nonzero winding rule - others are possible, but hardly
+             worth it. */
+          if (sum != 0)
+            {
+              bb = utiles[ix];
+              bb &= 0xffff0000;
+              bb |= (ART_UTILE_SIZE << 8) | ART_UTILE_SIZE;
+              utiles[ix] = bb;
+              if (xt != width - 1)
+                {
+                  bb = utiles[ix + 1];
+                  bb &= 0xffff00;
+                  bb |= ART_UTILE_SIZE;
+                  utiles[ix + 1] = bb;
+                }
+              if (yt != height - 1)
+                {
+                  bb = utiles[ix + width];
+                  bb &= 0xff0000ff;
+                  bb |= ART_UTILE_SIZE << 8;
+                  utiles[ix + width] = bb;
+                  if (xt != width - 1)
+                    {
+                      utiles[ix + width + 1] &= 0xffff;
+                    }
+                }
+            }
+          ix++;
+        }
     }
 
   art_free (rbuf);

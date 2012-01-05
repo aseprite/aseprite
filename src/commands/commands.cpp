@@ -55,7 +55,7 @@ CommandsModule::~CommandsModule()
   ASSERT(m_instance == this);
 
   for (CommandsList::iterator
-	 it = m_commands.begin(); it != m_commands.end(); ++it) {
+         it = m_commands.begin(); it != m_commands.end(); ++it) {
     delete *it;
   }
 
@@ -75,7 +75,7 @@ Command* CommandsModule::getCommandByName(const char* name)
     return NULL;
 
   for (CommandsList::iterator
-	 it = m_commands.begin(); it != m_commands.end(); ++it) {
+         it = m_commands.begin(); it != m_commands.end(); ++it) {
     if (ustricmp((*it)->short_name(), name) == 0)
       return *it;
   }

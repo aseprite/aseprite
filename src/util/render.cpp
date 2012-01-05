@@ -43,9 +43,9 @@ public:
     m_mask_color = src->mask_color;
   }
   inline void operator()(typename DstTraits::address_t& scanline_address,
-			 typename DstTraits::address_t& dst_address,
-			 typename SrcTraits::address_t& src_address,
-			 int opacity)
+                         typename DstTraits::address_t& dst_address,
+                         typename SrcTraits::address_t& src_address,
+                         int opacity)
   {
     if (*src_address != m_mask_color)
       *scanline_address = (*m_blend_color)(*dst_address, *src_address, opacity);
@@ -66,9 +66,9 @@ public:
     m_mask_color = src->mask_color;
   }
   inline void operator()(RgbTraits::address_t& scanline_address,
-			 RgbTraits::address_t& dst_address,
-			 GrayscaleTraits::address_t& src_address,
-			 int opacity)
+                         RgbTraits::address_t& dst_address,
+                         GrayscaleTraits::address_t& src_address,
+                         int opacity)
   {
     if (*src_address != m_mask_color) {
       int v = _graya_getv(*src_address);
@@ -93,27 +93,27 @@ public:
     m_pal = pal;
   }
   inline void operator()(RgbTraits::address_t& scanline_address,
-			 RgbTraits::address_t& dst_address,
-			 IndexedTraits::address_t& src_address,
-			 int opacity)
+                         RgbTraits::address_t& dst_address,
+                         IndexedTraits::address_t& src_address,
+                         int opacity)
   {
     if (m_blend_mode == BLEND_MODE_COPY) {
       *scanline_address = m_pal->getEntry(*src_address);
     }
     else {
       if (*src_address != m_mask_color) {
-	*scanline_address = _rgba_blend_normal(*dst_address, m_pal->getEntry(*src_address), opacity);
+        *scanline_address = _rgba_blend_normal(*dst_address, m_pal->getEntry(*src_address), opacity);
       }
       else
-	*scanline_address = *dst_address;
+        *scanline_address = *dst_address;
     }
   }
 };
 
 template<class DstTraits, class SrcTraits>
 static void merge_zoomed_image(Image* dst, const Image* src, const Palette* pal,
-			       int x, int y, int opacity,
-			       int blend_mode, int zoom)
+                               int x, int y, int opacity,
+                               int blend_mode, int zoom)
 {
   BlenderHelper<DstTraits, SrcTraits> blender(src, pal, blend_mode);
   typename SrcTraits::address_t src_address;
@@ -203,15 +203,15 @@ static void merge_zoomed_image(Image* dst, const Image* src, const Palette* pal,
 
       src_address++;
       if ((x == 0) && (first_box_w > 0))
-	dst_address += first_box_w;
+        dst_address += first_box_w;
       else
-	dst_address += box_w;
+        dst_address += box_w;
       scanline_address++;
 
       if (dst_address >= dst_address_end)
-	break;
+        break;
     }
-    
+
     // get the 'height' of the line to be painted in 'dst'
     if ((y == 0) && (first_box_h > 0))
       line_h = first_box_h;
@@ -229,16 +229,16 @@ static void merge_zoomed_image(Image* dst, const Image* src, const Palette* pal,
       // first pixel
       if (first_box_w > 0) {
         for (box_x=0; box_x<first_box_w; box_x++) {
-	  ASSERT(scanline_address >= scanline);
-	  ASSERT(scanline_address <  scanline + src_w);
-	  ASSERT(dst_address >= image_address_fast<DstTraits>(dst, dst_x, dst_y));
-	  ASSERT(dst_address <= image_address_fast<DstTraits>(dst, dst_x+dst_w-1, dst_y));
-	  ASSERT(dst_address <  dst_address_end);
+          ASSERT(scanline_address >= scanline);
+          ASSERT(scanline_address <  scanline + src_w);
+          ASSERT(dst_address >= image_address_fast<DstTraits>(dst, dst_x, dst_y));
+          ASSERT(dst_address <= image_address_fast<DstTraits>(dst, dst_x+dst_w-1, dst_y));
+          ASSERT(dst_address <  dst_address_end);
 
-	  (*dst_address++) = (*scanline_address);
+          (*dst_address++) = (*scanline_address);
 
-	  if (dst_address >= dst_address_end)
-	    goto done_with_line;
+          if (dst_address >= dst_address_end)
+            goto done_with_line;
         }
 
         scanline_address++;
@@ -248,14 +248,14 @@ static void merge_zoomed_image(Image* dst, const Image* src, const Palette* pal,
       // the rest of the line
       for (; x<src_w; x++) {
         for (box_x=0; box_x<box_w; box_x++) {
-	  ASSERT(dst_address >= image_address_fast<DstTraits>(dst, dst_x, dst_y));
-	  ASSERT(dst_address <= image_address_fast<DstTraits>(dst, dst_x+dst_w-1, dst_y));
-	  ASSERT(dst_address <  dst_address_end);
+          ASSERT(dst_address >= image_address_fast<DstTraits>(dst, dst_x, dst_y));
+          ASSERT(dst_address <= image_address_fast<DstTraits>(dst, dst_x+dst_w-1, dst_y));
+          ASSERT(dst_address <  dst_address_end);
 
-	  (*dst_address++) = (*scanline_address);
+          (*dst_address++) = (*scanline_address);
 
-	  if (dst_address >= dst_address_end)
-	    goto done_with_line;
+          if (dst_address >= dst_address_end)
+            goto done_with_line;
         }
 
         scanline_address++;
@@ -291,7 +291,7 @@ static Image *rastering_image = NULL;
 void RenderEngine::loadConfig()
 {
   checked_bg_type = (CheckedBgType)get_config_int("Options", "CheckedBgType",
-						  (int)RenderEngine::CHECKED_BG_16X16);
+                                                  (int)RenderEngine::CHECKED_BG_16X16);
   checked_bg_zoom = get_config_bool("Options", "CheckedBgZoom", true);
   checked_bg_color1 = get_config_color("Options", "CheckedBgColor1", Color::fromRgb(128, 128, 128));
   checked_bg_color2 = get_config_color("Options", "CheckedBgColor2", Color::fromRgb(192, 192, 192));
@@ -367,11 +367,11 @@ void RenderEngine::setPreviewImage(Layer *layer, Image *image)
  */
 // static
 Image* RenderEngine::renderSprite(const Document* document,
-				  const Sprite* sprite,
-				  int source_x, int source_y,
-				  int width, int height,
-				  int frame, int zoom,
-				  bool draw_tiled_bg)
+                                  const Sprite* sprite,
+                                  int source_x, int source_y,
+                                  int width, int height,
+                                  int frame, int zoom,
+                                  bool draw_tiled_bg)
 {
   void (*zoomed_func)(Image*, const Image*, const Palette*, int, int, int, int, int);
   const LayerImage* background = sprite->getBackgroundLayer();
@@ -392,7 +392,7 @@ Image* RenderEngine::renderSprite(const Document* document,
     case IMAGE_INDEXED:
       zoomed_func = merge_zoomed_image<RgbTraits, IndexedTraits>;
       if (!need_checked_bg)
-	bg_color = sprite->getPalette(frame)->getEntry(sprite->getTransparentColor());
+        bg_color = sprite->getPalette(frame)->getEntry(sprite->getTransparentColor());
       break;
 
     default:
@@ -416,7 +416,7 @@ Image* RenderEngine::renderSprite(const Document* document,
     // Draw background layer of the current frame with opacity=255
     global_opacity = 255;
     renderLayer(document, sprite, sprite->getFolder(), image,
-		source_x, source_y, frame, zoom, zoomed_func, true, false);
+                source_x, source_y, frame, zoom, zoomed_func, true, false);
 
     // Draw transparent layers of the previous/next frames with different opacity (<255) (it is the onion-skinning)
     {
@@ -426,28 +426,28 @@ Image* RenderEngine::renderSprite(const Document* document,
       int opacity_step = settings->getOnionskinOpacityStep();
 
       for (int f=frame-prevs; f <= frame+nexts; ++f) {
-	if (f == frame || f < 0 || f >= sprite->getTotalFrames())
-	  continue;
-	else if (f < frame)
-	  global_opacity = opacity_base - opacity_step * ((frame - f)-1);
-	else
-	  global_opacity = opacity_base - opacity_step * ((f - frame)-1);
+        if (f == frame || f < 0 || f >= sprite->getTotalFrames())
+          continue;
+        else if (f < frame)
+          global_opacity = opacity_base - opacity_step * ((frame - f)-1);
+        else
+          global_opacity = opacity_base - opacity_step * ((f - frame)-1);
 
-	if (global_opacity > 0)
-	  renderLayer(document, sprite, sprite->getFolder(), image,
-		      source_x, source_y, f, zoom, zoomed_func, false, true);
+        if (global_opacity > 0)
+          renderLayer(document, sprite, sprite->getFolder(), image,
+                      source_x, source_y, f, zoom, zoomed_func, false, true);
       }
     }
 
     // Draw transparent layers of the current frame with opacity=255
     global_opacity = 255;
     renderLayer(document, sprite, sprite->getFolder(), image,
-		source_x, source_y, frame, zoom, zoomed_func, false, true);
+                source_x, source_y, frame, zoom, zoomed_func, false, true);
   }
   // Onion-skin is disabled: just draw the current frame
   else {
     renderLayer(document, sprite, sprite->getFolder(), image,
-		source_x, source_y, frame, zoom, zoomed_func, true, true);
+                source_x, source_y, frame, zoom, zoomed_func, true, true);
   }
 
   return image;
@@ -455,8 +455,8 @@ Image* RenderEngine::renderSprite(const Document* document,
 
 // static
 void RenderEngine::renderCheckedBackground(Image* image,
-					   int source_x, int source_y,
-					   int zoom)
+                                           int source_x, int source_y,
+                                           int zoom)
 {
   int x, y, u, v;
   int tile_w = 16;
@@ -510,7 +510,7 @@ void RenderEngine::renderCheckedBackground(Image* image,
   for (y=y_start-tile_h; y<image->h+tile_h; y+=tile_h) {
     for (x=x_start-tile_w; x<image->w+tile_w; x+=tile_w) {
       image_rectfill(image, x, y, x+tile_w-1, y+tile_h-1,
-		     (((u+v))&1)? c1: c2);
+                     (((u+v))&1)? c1: c2);
       ++u;
     }
     u = u_start;
@@ -520,7 +520,7 @@ void RenderEngine::renderCheckedBackground(Image* image,
 
 // static
 void RenderEngine::renderImage(Image* rgb_image, Image* src_image, const Palette* pal,
-			       int x, int y, int zoom)
+                               int x, int y, int zoom)
 {
   void (*zoomed_func)(Image*, const Image*, const Palette*, int, int, int, int, int);
 
@@ -549,14 +549,14 @@ void RenderEngine::renderImage(Image* rgb_image, Image* src_image, const Palette
 
 // static
 void RenderEngine::renderLayer(const Document* document,
-			       const Sprite* sprite,
-			       const Layer* layer,
-			       Image *image,
-			       int source_x, int source_y,
-			       int frame, int zoom,
-			       void (*zoomed_func)(Image*, const Image*, const Palette*, int, int, int, int, int),
-			       bool render_background,
-			       bool render_transparent)
+                               const Sprite* sprite,
+                               const Layer* layer,
+                               Image *image,
+                               int source_x, int source_y,
+                               int frame, int zoom,
+                               void (*zoomed_func)(Image*, const Image*, const Palette*, int, int, int, int, int),
+                               bool render_background,
+                               bool render_transparent)
 {
   // we can't read from this layer
   if (!layer->is_readable())
@@ -566,41 +566,41 @@ void RenderEngine::renderLayer(const Document* document,
 
     case GFXOBJ_LAYER_IMAGE: {
       if ((!render_background  &&  layer->is_background()) ||
-	  (!render_transparent && !layer->is_background()))
-	break;
+          (!render_transparent && !layer->is_background()))
+        break;
 
       const Cel* cel = static_cast<const LayerImage*>(layer)->getCel(frame);
       if (cel != NULL) {
-	Image* src_image;
+        Image* src_image;
 
-	/* is the 'rastering_image' setted to be used with this layer? */
-	if ((frame == sprite->getCurrentFrame()) &&
-	    (selected_layer == layer) &&
-	    (rastering_image != NULL)) {
-	  src_image = rastering_image;
-	}
-	/* if not, we use the original cel-image from the images' stock */
-	else if ((cel->getImage() >= 0) &&
-		 (cel->getImage() < layer->getSprite()->getStock()->size()))
-	  src_image = layer->getSprite()->getStock()->getImage(cel->getImage());
-	else
-	  src_image = NULL;
+        /* is the 'rastering_image' setted to be used with this layer? */
+        if ((frame == sprite->getCurrentFrame()) &&
+            (selected_layer == layer) &&
+            (rastering_image != NULL)) {
+          src_image = rastering_image;
+        }
+        /* if not, we use the original cel-image from the images' stock */
+        else if ((cel->getImage() >= 0) &&
+                 (cel->getImage() < layer->getSprite()->getStock()->size()))
+          src_image = layer->getSprite()->getStock()->getImage(cel->getImage());
+        else
+          src_image = NULL;
 
-	if (src_image) {
-	  int output_opacity;
-	  register int t;
+        if (src_image) {
+          int output_opacity;
+          register int t;
 
-	  output_opacity = MID(0, cel->getOpacity(), 255);
-	  output_opacity = INT_MULT(output_opacity, global_opacity, t);
+          output_opacity = MID(0, cel->getOpacity(), 255);
+          output_opacity = INT_MULT(output_opacity, global_opacity, t);
 
-	  src_image->mask_color = sprite->getTransparentColor();
+          src_image->mask_color = sprite->getTransparentColor();
 
-	  (*zoomed_func)(image, src_image, sprite->getPalette(frame),
-			 (cel->getX() << zoom) - source_x,
-			 (cel->getY() << zoom) - source_y,
-			 output_opacity,
-			 static_cast<const LayerImage*>(layer)->getBlendMode(), zoom);
-	}
+          (*zoomed_func)(image, src_image, sprite->getPalette(frame),
+                         (cel->getX() << zoom) - source_x,
+                         (cel->getY() << zoom) - source_y,
+                         output_opacity,
+                         static_cast<const LayerImage*>(layer)->getBlendMode(), zoom);
+        }
       }
       break;
     }
@@ -610,11 +610,11 @@ void RenderEngine::renderLayer(const Document* document,
       LayerConstIterator end = static_cast<const LayerFolder*>(layer)->get_layer_end();
 
       for (; it != end; ++it) {
-	renderLayer(document, sprite, *it, image,
-		    source_x, source_y,
-		    frame, zoom, zoomed_func,
-		    render_background,
-		    render_transparent);
+        renderLayer(document, sprite, *it, image,
+                    source_x, source_y,
+                    frame, zoom, zoomed_func,
+                    render_background,
+                    render_transparent);
       }
       break;
     }
@@ -629,9 +629,9 @@ void RenderEngine::renderLayer(const Document* document,
       Image* extraImage = document->getExtraCelImage();
 
       (*zoomed_func)(image, extraImage, sprite->getPalette(frame),
-		     (extraCel->getX() << zoom) - source_x,
-		     (extraCel->getY() << zoom) - source_y,
-		     extraCel->getOpacity(), BLEND_MODE_NORMAL, zoom);
+                     (extraCel->getX() << zoom) - source_x,
+                     (extraCel->getY() << zoom) - source_y,
+                     extraCel->getOpacity(), BLEND_MODE_NORMAL, zoom);
     }
   }
 }

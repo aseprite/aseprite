@@ -68,7 +68,7 @@ LATEST CHANGES BETWEEN 2.0.6 and 2.0.5
       run any program using FreeType.  When the library is exited, a summary
       of memory footprints and possible leaks will be displayed.
 
-      This works transparently with _any_ program that uses FreeType. 
+      This works transparently with _any_ program that uses FreeType.
       However, you will need a lot of memory to use this (allocated blocks
       are never released to the heap to detect double deletes easily).
 
@@ -76,7 +76,7 @@ LATEST CHANGES BETWEEN 2.0.6 and 2.0.5
   III. MISCELLANEOUS
 
     - We are aware of subtle differences between the output of FreeType
-      versions 1 and 2 when it comes to monochrome TrueType-hinted glyphs. 
+      versions 1 and 2 when it comes to monochrome TrueType-hinted glyphs.
       These are most probably due to small differences in the monochrome
       rasterizers and will be worked out in an upcoming release.
 
@@ -84,13 +84,13 @@ LATEST CHANGES BETWEEN 2.0.6 and 2.0.5
     - We have decided to fork the sources in a "stable" branch, and an
       "unstable" one, since FreeType is becoming a critical component of
       many Unix systems.
-      
+
       The next bug-fix releases of the library will be named 2.0.7,
       2.0.8, etc.. while the "2.1" branch will contain a version of the
       sources where we'll start major reworking of the library's internals,
       in order to produce FreeType 2.2.0 (or even 3.0) in a more distant
       future.
-      
+
       We also hope that this scheme will allow much more frequent releases
       than in the past
 

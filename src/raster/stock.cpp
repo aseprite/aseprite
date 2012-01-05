@@ -40,17 +40,17 @@ Stock::Stock(const Stock& stock)
   try {
     for (int i=0; i<stock.size(); ++i) {
       if (!stock.getImage(i))
-	addImage(NULL);
+        addImage(NULL);
       else {
-	Image* image_copy = image_new_copy(stock.getImage(i));
-	addImage(image_copy);
+        Image* image_copy = image_new_copy(stock.getImage(i));
+        addImage(image_copy);
       }
     }
   }
   catch (...) {
     for (int i=0; i<size(); ++i) {
       if (getImage(i))
-	delete getImage(i);
+        delete getImage(i);
     }
     throw;
   }

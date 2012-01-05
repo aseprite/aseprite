@@ -40,9 +40,9 @@ static Module module[] =
   /* This sorting is very important because last modules depend of
      first ones.  */
 
-  DEF_MODULE(palette,		0),
-  DEF_MODULE(gui,		REQUIRE_INTERFACE),
-  DEF_MODULE(rootmenu,		REQUIRE_INTERFACE),
+  DEF_MODULE(palette,           0),
+  DEF_MODULE(gui,               REQUIRE_INTERFACE),
+  DEF_MODULE(rootmenu,          REQUIRE_INTERFACE),
 };
 
 static int modules = sizeof(module) / sizeof(Module);
@@ -54,8 +54,8 @@ LegacyModules::LegacyModules(int requirements)
       PRINTF("Installing module: %s\n", module[c].name);
 
       if ((*module[c].init)() < 0)
-	throw base::Exception("Error initializing module: %s",
-			      static_cast<const char*>(module[c].name));
+        throw base::Exception("Error initializing module: %s",
+                              static_cast<const char*>(module[c].name));
 
       module[c].installed = true;
     }

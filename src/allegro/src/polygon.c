@@ -1,6 +1,6 @@
-/*         ______   ___    ___ 
- *        /\  _  \ /\_ \  /\_ \ 
- *        \ \ \L\ \\//\ \ \//\ \      __     __   _ __   ___ 
+/*         ______   ___    ___
+ *        /\  _  \ /\_ \  /\_ \
+ *        \ \ \L\ \\//\ \ \//\ \      __     __   _ __   ___
  *         \ \  __ \ \ \ \  \ \ \   /'__`\ /'_ `\/\`'__\/ __`\
  *          \ \ \/\ \ \_\ \_ \_\ \_/\  __//\ \L\ \ \ \//\ \L\ \
  *           \ \_\ \_\/\____\/\____\ \____\ \____ \ \_\\ \____/
@@ -45,7 +45,7 @@ static void fill_edge_structure(POLYGON_EDGE *edge, AL_CONST int *i1, AL_CONST i
    }
    else {
       edge->dx = ((i2[0] - i1[0]) << POLYGON_FIX_SHIFT) << 1;
-   }     
+   }
    edge->w = MAX(ABS(edge->dx)-1, 0);
    edge->prev = NULL;
    edge->next = NULL;
@@ -65,14 +65,14 @@ POLYGON_EDGE *_add_edge(POLYGON_EDGE *list, POLYGON_EDGE *edge, int sort_by_x)
 
    if (sort_by_x) {
       while ((pos) && (pos->x < edge->x)) {
-	 prev = pos;
-	 pos = pos->next;
+         prev = pos;
+         pos = pos->next;
       }
    }
    else {
       while ((pos) && (pos->top < edge->top)) {
-	 prev = pos;
-	 pos = pos->next;
+         prev = pos;
+         pos = pos->next;
       }
    }
 
@@ -97,7 +97,7 @@ POLYGON_EDGE *_add_edge(POLYGON_EDGE *list, POLYGON_EDGE *edge, int sort_by_x)
  */
 POLYGON_EDGE *_remove_edge(POLYGON_EDGE *list, POLYGON_EDGE *edge)
 {
-   if (edge->next) 
+   if (edge->next)
       edge->next->prev = edge->prev;
 
    if (edge->prev) {
@@ -111,8 +111,8 @@ POLYGON_EDGE *_remove_edge(POLYGON_EDGE *list, POLYGON_EDGE *edge)
 
 
 /* polygon:
- *  Draws a filled polygon with an arbitrary number of corners. Pass the 
- *  number of vertices, then an array containing a series of x, y points 
+ *  Draws a filled polygon with an arbitrary number of corners. Pass the
+ *  number of vertices, then an array containing a series of x, y points
  *  (a total of vertices*2 values).
  */
 void _soft_polygon(BITMAP *bmp, int vertices, AL_CONST int *points, int color)
@@ -138,14 +138,14 @@ void _soft_polygon(BITMAP *bmp, int vertices, AL_CONST int *points, int color)
 
       if (edge->bottom >= edge->top) {
 
-	 if (edge->top < top)
-	    top = edge->top;
+         if (edge->top < top)
+            top = edge->top;
 
-	 if (edge->bottom > bottom)
-	    bottom = edge->bottom;
+         if (edge->bottom > bottom)
+            bottom = edge->bottom;
 
-	 inactive_edges = _add_edge(inactive_edges, edge, FALSE);
-	 edge++;
+         inactive_edges = _add_edge(inactive_edges, edge, FALSE);
+         edge++;
       }
 
       i2 = i1;
@@ -169,82 +169,82 @@ void _soft_polygon(BITMAP *bmp, int vertices, AL_CONST int *points, int color)
       /* check for newly active edges */
       edge = inactive_edges;
       while ((edge) && (edge->top == c)) {
-	 next_edge = edge->next;
-	 inactive_edges = _remove_edge(inactive_edges, edge);
-	 active_edges = _add_edge(active_edges, edge, TRUE);
-	 edge = next_edge;
+         next_edge = edge->next;
+         inactive_edges = _remove_edge(inactive_edges, edge);
+         active_edges = _add_edge(active_edges, edge, TRUE);
+         edge = next_edge;
       }
 
       /* draw horizontal line segments */
       edge = active_edges;
       while (edge) {
-	 e = edge->w;
-	 if (edge->bottom != c) {
-	    up = 1 - up;
-	 }
-	 else {
-	    e = edge->w >> 1;
-	 }
+         e = edge->w;
+         if (edge->bottom != c) {
+            up = 1 - up;
+         }
+         else {
+            e = edge->w >> 1;
+         }
 
-	 if (edge->top == c) {
-	    e = edge->w >> 1;
-	 }
+         if (edge->top == c) {
+            e = edge->w >> 1;
+         }
 
-	 if ((draw < 1) && (up >= 1)) {
-	    b1 = (edge->x + e) >> POLYGON_FIX_SHIFT;	 
-	 }
-	 else if (draw >= 1) {
-	    /* filling the polygon */
-	    e1 = edge->x >> POLYGON_FIX_SHIFT;	 
-	    hid = MAX(hid, b1 + 1);
+         if ((draw < 1) && (up >= 1)) {
+            b1 = (edge->x + e) >> POLYGON_FIX_SHIFT;
+         }
+         else if (draw >= 1) {
+            /* filling the polygon */
+            e1 = edge->x >> POLYGON_FIX_SHIFT;
+            hid = MAX(hid, b1 + 1);
 
-	    if (hid <= e1-1) {
-	       bmp->vtable->hfill(bmp, hid, c, e1-1, color);
-	    }
+            if (hid <= e1-1) {
+               bmp->vtable->hfill(bmp, hid, c, e1-1, color);
+            }
 
-	    b1 = (edge->x + e) >> POLYGON_FIX_SHIFT;	 
-	 }
+            b1 = (edge->x + e) >> POLYGON_FIX_SHIFT;
+         }
 
-	 /* drawing the edge */
-	 hid = MAX(hid, edge->x >> POLYGON_FIX_SHIFT);
-	 if (hid <= ((edge->x + e) >> POLYGON_FIX_SHIFT)) {	 
-	    bmp->vtable->hfill(bmp, hid, c, (edge->x + e) >> POLYGON_FIX_SHIFT, color);
-	    hid = 1 + ((edge->x + e) >> POLYGON_FIX_SHIFT);
-	 }
+         /* drawing the edge */
+         hid = MAX(hid, edge->x >> POLYGON_FIX_SHIFT);
+         if (hid <= ((edge->x + e) >> POLYGON_FIX_SHIFT)) {
+            bmp->vtable->hfill(bmp, hid, c, (edge->x + e) >> POLYGON_FIX_SHIFT, color);
+            hid = 1 + ((edge->x + e) >> POLYGON_FIX_SHIFT);
+         }
 
-	 edge = edge->next;
-	 draw = up;
+         edge = edge->next;
+         draw = up;
       }
 
       /* update edges, sorting and removing dead ones */
       edge = active_edges;
       while (edge) {
-	 next_edge = edge->next;
-	 if (c >= edge->bottom) {
-	    active_edges = _remove_edge(active_edges, edge);
-	 }
-	 else {
-	    edge->x += edge->dx;
-	    if ((edge->top == c) && (edge->dx > 0)) {
-	       edge->x -= edge->dx/2;
-	    }
-	    if ((edge->bottom == c+1) && (edge->dx < 0)) {
-	       edge->x -= edge->dx/2;
-	    }
-	    while ((edge->prev) && (edge->x < edge->prev->x)) {
-	       if (edge->next)
-		  edge->next->prev = edge->prev;
-	       edge->prev->next = edge->next;
-	       edge->next = edge->prev;
-	       edge->prev = edge->prev->prev;
-	       edge->next->prev = edge;
-	       if (edge->prev)
-		  edge->prev->next = edge;
-	       else
-		  active_edges = edge;
-	    }
-	 }
-	 edge = next_edge;
+         next_edge = edge->next;
+         if (c >= edge->bottom) {
+            active_edges = _remove_edge(active_edges, edge);
+         }
+         else {
+            edge->x += edge->dx;
+            if ((edge->top == c) && (edge->dx > 0)) {
+               edge->x -= edge->dx/2;
+            }
+            if ((edge->bottom == c+1) && (edge->dx < 0)) {
+               edge->x -= edge->dx/2;
+            }
+            while ((edge->prev) && (edge->x < edge->prev->x)) {
+               if (edge->next)
+                  edge->next->prev = edge->prev;
+               edge->prev->next = edge->next;
+               edge->next = edge->prev;
+               edge->prev = edge->prev->prev;
+               edge->next->prev = edge;
+               if (edge->prev)
+                  edge->prev->next = edge;
+               else
+                  active_edges = edge;
+            }
+         }
+         edge = next_edge;
       }
    }
 
@@ -262,11 +262,11 @@ void _soft_triangle(BITMAP *bmp, int x1, int y1, int x2, int y2, int x3, int y3,
 
    #if (defined ALLEGRO_GCC) && (defined ALLEGRO_I386)
 
-      /* note: this depends on a dodgy assumption about parameter passing 
-       * conventions. I assume that the point coordinates are all on the 
-       * stack in consecutive locations, so I can pass that block of stack 
-       * memory as the array for polygon() without bothering to copy the 
-       * data to a temporary location. 
+      /* note: this depends on a dodgy assumption about parameter passing
+       * conventions. I assume that the point coordinates are all on the
+       * stack in consecutive locations, so I can pass that block of stack
+       * memory as the array for polygon() without bothering to copy the
+       * data to a temporary location.
        */
       polygon(bmp, 3, &x1, color);
 
@@ -283,4 +283,3 @@ void _soft_triangle(BITMAP *bmp, int x1, int y1, int x2, int y2, int x3, int y3,
    }
    #endif
 }
-

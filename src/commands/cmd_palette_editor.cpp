@@ -84,7 +84,7 @@ protected:
   void onSaveCommand(Event& ev);
   void onRampCommand(Event& ev);
   void onQuantizeCommand(Event& ev);
-    
+
 private:
   void selectColorType(Color::Type type);
   void setPaletteEntry(const Color& color);
@@ -154,8 +154,8 @@ private:
 
 PaletteEditorCommand::PaletteEditorCommand()
   : Command("PaletteEditor",
-	    "PaletteEditor",
-	    CmdRecordableFlag)
+            "PaletteEditor",
+            CmdRecordableFlag)
 {
   m_open = true;
   m_close = false;
@@ -208,8 +208,8 @@ void PaletteEditorCommand::onExecute(Context* context)
 
       int width = MAX(jrect_w(g_frame->rc), JI_SCREEN_W/2);
       g_frame->setBounds(Rect(JI_SCREEN_W - width - jrect_w(app_get_toolbar()->rc),
-			      JI_SCREEN_H - jrect_h(g_frame->rc) - jrect_h(app_get_statusbar()->rc),
-			      width, jrect_h(g_frame->rc)));
+                              JI_SCREEN_H - jrect_h(g_frame->rc) - jrect_h(app_get_statusbar()->rc),
+                              width, jrect_h(g_frame->rc)));
 
       // Load window configuration
       load_window_pos(g_frame, "PaletteEditor");
@@ -224,7 +224,7 @@ void PaletteEditorCommand::onExecute(Context* context)
   {
     Color color =
       (m_background ? context->getSettings()->getBgColor():
-  		      context->getSettings()->getFgColor());
+                      context->getSettings()->getFgColor());
 
     g_frame->setColor(color);
   }
@@ -392,11 +392,11 @@ bool PaletteEntryEditor::onProcessMessage(Message* msg)
 
       // Redraw all editors
       try {
-	const ActiveDocumentReader document(UIContext::instance());
-	update_editors_with_document(document);
+        const ActiveDocumentReader document(UIContext::instance());
+        update_editors_with_document(document);
       }
       catch (...) {
-	// Do nothing
+        // Do nothing
       }
     }
     // Redraw just the current editor
@@ -474,7 +474,7 @@ void PaletteEntryEditor::onMoreOptionsClick(Event& ev)
     // Remove the space occupied by the "More options" panel
     {
       JRect rect = jrect_new(rc->x1, rc->y1,
-			     rc->x2, rc->y2 - reqSize.h);
+                             rc->x2, rc->y2 - reqSize.h);
       move_window(rect);
       jrect_free(rect);
     }
@@ -489,12 +489,12 @@ void PaletteEntryEditor::onMoreOptionsClick(Event& ev)
     // Add space for the "more_options" panel
     if (jrect_h(rc) < reqSize.h) {
       JRect rect = jrect_new(rc->x1, rc->y1,
-			     rc->x2, rc->y1 + reqSize.h);
+                             rc->x2, rc->y1 + reqSize.h);
 
       // Show the expanded area inside the screen
       if (rect->y2 > JI_SCREEN_H)
-	jrect_displace(rect, 0, JI_SCREEN_H - rect->y2);
-      
+        jrect_displace(rect, 0, JI_SCREEN_H - rect->y2);
+
       move_window(rect);
       jrect_free(rect);
     }
@@ -532,12 +532,12 @@ void PaletteEntryEditor::onSaveCommand(Event& ev)
   if (!filename.empty()) {
     if (exists(filename.c_str())) {
       ret = Alert::show("Warning<<File exists, overwrite it?<<%s||&Yes||&No||&Cancel",
-			get_filename(filename.c_str()));
+                        get_filename(filename.c_str()));
 
       if (ret == 2)
-	goto again;
+        goto again;
       else if (ret != 1)
-	return;
+        return;
     }
 
     Palette* palette = get_current_palette();
@@ -597,8 +597,8 @@ void PaletteEntryEditor::setPaletteEntry(const Color& color)
   palView->getSelectedEntries(entries);
 
   uint32_t new_pal_color = _rgba(color.getRed(),
-				 color.getGreen(),
-				 color.getBlue(), 255);
+                                 color.getGreen(),
+                                 color.getBlue(), 255);
 
   Palette* palette = get_current_palette();
   for (int c=0; c<palette->size(); c++) {
@@ -628,44 +628,44 @@ void PaletteEntryEditor::setPaletteEntryChannel(const Color& color, ColorSliders
       switch (color.getType()) {
 
         case Color::RgbType:
-	  // Setup the new RGB values depending of the modified channel.
-	  switch (channel) {
-	    case ColorSliders::Red:
-	      r = color.getRed();
-	    case ColorSliders::Green:
-	      g = color.getGreen();
-	      break;
-	    case ColorSliders::Blue:
-	      b = color.getBlue();
-	      break;
-	  }
-	  break;
+          // Setup the new RGB values depending of the modified channel.
+          switch (channel) {
+            case ColorSliders::Red:
+              r = color.getRed();
+            case ColorSliders::Green:
+              g = color.getGreen();
+              break;
+            case ColorSliders::Blue:
+              b = color.getBlue();
+              break;
+          }
+          break;
 
         case Color::HsvType:
-	  {
-	    // Convert RGB to HSV
-	    Hsv hsv(Rgb(r, g, b));
+          {
+            // Convert RGB to HSV
+            Hsv hsv(Rgb(r, g, b));
 
-	    // Only modify the desired HSV channel
-	    switch (channel) {
-	      case ColorSliders::Hue:
-		hsv.hue(color.getHue());
-		break;
-	      case ColorSliders::Saturation:
-		hsv.saturation(double(color.getSaturation()) / 100.0);
-		break;
-	      case ColorSliders::Value:
-		hsv.value(double(color.getValue()) / 100.0);
-		break;
-	    }
+            // Only modify the desired HSV channel
+            switch (channel) {
+              case ColorSliders::Hue:
+                hsv.hue(color.getHue());
+                break;
+              case ColorSliders::Saturation:
+                hsv.saturation(double(color.getSaturation()) / 100.0);
+                break;
+              case ColorSliders::Value:
+                hsv.value(double(color.getValue()) / 100.0);
+                break;
+            }
 
-	    // Convert HSV back to RGB
-	    Rgb rgb(hsv);
-	    r = rgb.red();
-	    g = rgb.green();
-	    b = rgb.blue();
-	  }
-	  break;
+            // Convert HSV back to RGB
+            Rgb rgb(hsv);
+            r = rgb.red();
+            g = rgb.green();
+            b = rgb.blue();
+          }
+          break;
       }
 
       palette->setEntry(c, _rgba(r, g, b, 255));
@@ -682,7 +682,7 @@ void PaletteEntryEditor::selectColorType(Color::Type type)
     case Color::RgbType: m_rgbButton.setSelected(true); break;
     case Color::HsvType: m_hsvButton.setSelected(true); break;
   }
-  
+
   m_vbox.layout();
   m_vbox.invalidate();
 }
@@ -719,28 +719,28 @@ void PaletteEntryEditor::updateCurrentSpritePalette(const char* operationName)
       currentSpritePalette->countDiff(newPalette, &from, &to);
 
       if (from >= 0 && to >= from) {
-	// Add undo information to save the range of pal entries that will be modified.
-	if (undo->isEnabled()) {
-	  if (m_graftChange && strcmp(undo->getLabel(), operationName) == 0) {
-	    undo->setLabel(operationName);
-	    undo->setModification(undo::ModifyDocument);
+        // Add undo information to save the range of pal entries that will be modified.
+        if (undo->isEnabled()) {
+          if (m_graftChange && strcmp(undo->getLabel(), operationName) == 0) {
+            undo->setLabel(operationName);
+            undo->setModification(undo::ModifyDocument);
 
-	    undo->graftUndoerInLastGroup(new undoers::SetPaletteColors(undo->getObjects(),
-								       sprite, currentSpritePalette, from, to));
-	  }
-	  else {
-	    undo->setLabel(operationName);
-	    undo->setModification(undo::ModifyDocument);
+            undo->graftUndoerInLastGroup(new undoers::SetPaletteColors(undo->getObjects(),
+                                                                       sprite, currentSpritePalette, from, to));
+          }
+          else {
+            undo->setLabel(operationName);
+            undo->setModification(undo::ModifyDocument);
 
-	    undo->pushUndoer(new undoers::OpenGroup());
-	    undo->pushUndoer(new undoers::SetPaletteColors(undo->getObjects(),
-							   sprite, currentSpritePalette, from, to));
-	    undo->pushUndoer(new undoers::CloseGroup());
-	  }
-	}
+            undo->pushUndoer(new undoers::OpenGroup());
+            undo->pushUndoer(new undoers::SetPaletteColors(undo->getObjects(),
+                                                           sprite, currentSpritePalette, from, to));
+            undo->pushUndoer(new undoers::CloseGroup());
+          }
+        }
 
-	// Change the sprite palette
-	sprite->setPalette(newPalette, false);
+        // Change the sprite palette
+        sprite->setPalette(newPalette, false);
       }
     }
     catch (base::Exception& e) {

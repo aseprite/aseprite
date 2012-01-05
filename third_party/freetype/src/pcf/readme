@@ -46,8 +46,8 @@ client application the work of interpreting them.  For instance:
   FT_New_Face( library,..., &face );
 
   pcfface = (PCF_Public_Face)face;
-  
-  if ((pcfface->charset_registry == "ISO10646") && 
+
+  if ((pcfface->charset_registry == "ISO10646") &&
         (pcfface->charset_encoding) == "1")) [..]
 
 Thus the driver always export ``ft_encoding_none'' as

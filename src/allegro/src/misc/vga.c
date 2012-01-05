@@ -1,6 +1,6 @@
-/*         ______   ___    ___ 
- *        /\  _  \ /\_ \  /\_ \ 
- *        \ \ \L\ \\//\ \ \//\ \      __     __   _ __   ___ 
+/*         ______   ___    ___
+ *        /\  _  \ /\_ \  /\_ \
+ *        \ \ \L\ \\//\ \ \//\ \      __     __   _ __   ___
  *         \ \  __ \ \ \ \  \ \ \   /'__`\ /'_ `\/\`'__\/ __`\
  *          \ \ \/\ \ \_\ \_ \_\ \_/\  __//\ \L\ \ \ \//\ \L\ \
  *           \ \_\ \_\/\____\/\____\ \____\ \____ \ \_\\ \____/
@@ -43,12 +43,12 @@ static int vga_scroll(int x, int y);
 static GFX_MODE_LIST *vga_fetch_mode_list(void);
 
 
-GFX_DRIVER gfx_vga = 
+GFX_DRIVER gfx_vga =
 {
    GFX_VGA,
    empty_string,
    empty_string,
-   "Standard VGA", 
+   "Standard VGA",
    vga_init,
    vga_exit,
    NULL,
@@ -63,7 +63,7 @@ GFX_DRIVER gfx_vga =
    _restore_vga_mode,
    NULL,                         /* AL_METHOD(void, set_blender_mode, (int mode, int r, int g, int b, int a)); */
    vga_fetch_mode_list,
-   NULL,			/* acknowledge_resize */
+   NULL,                        /* acknowledge_resize */
    320, 200,
    TRUE,
    0, 0,
@@ -110,11 +110,11 @@ static BITMAP *vga_init(int w, int h, int v_w, int v_h, int color_depth)
       /* standard mode 13h */
       addr = _set_vga_mode(0x13);
       if (!addr)
-	 return NULL;
+         return NULL;
 
       b = _make_bitmap(320, 200, addr, &gfx_vga, 8, 320);
       if (!b)
-	 return NULL;
+         return NULL;
 
       gfx_vga.scroll = NULL;
       gfx_vga.w = 320;
@@ -124,11 +124,11 @@ static BITMAP *vga_init(int w, int h, int v_w, int v_h, int color_depth)
       /* tweaked 320x100 mode */
       addr = _set_vga_mode(0x13);
       if (!addr)
-	 return NULL;
+         return NULL;
 
       b = _make_bitmap(320, 200, addr, &gfx_vga, 8, 320);
       if (!b)
-	 return NULL;
+         return NULL;
 
       outportb(0x3D4, 9);
       outportb(0x3D5, inportb(0x3D5) | 0x80);
@@ -141,11 +141,11 @@ static BITMAP *vga_init(int w, int h, int v_w, int v_h, int color_depth)
       /* tweaked 256x256 mode */
       addr = _set_vga_mode(0x13);
       if (!addr)
-	 return NULL;
+         return NULL;
 
       b = _make_bitmap(256, 256, addr, &gfx_vga, 8, 256);
       if (!b)
-	 return NULL;
+         return NULL;
 
       outportb(0x3D4, 0x11);
       c = inportb(0x3D5) & 0x7F;
@@ -194,11 +194,11 @@ static BITMAP *vga_init(int w, int h, int v_w, int v_h, int color_depth)
       /* tweaked 160x120 mode */
       addr = _set_vga_mode(0x0D);
       if (!addr)
-	 return NULL;
+         return NULL;
 
       b = _make_bitmap(160, 409, addr, &gfx_vga, 8, 160);
       if (!b)
-	 return NULL;
+         return NULL;
 
       outportb(0x3D4, 0x11);
       outportb(0x3D5, inportb(0x3D5)&0x7F);
@@ -244,8 +244,8 @@ static BITMAP *vga_init(int w, int h, int v_w, int v_h, int color_depth)
       outportb(0x3C0, inportb(0x3C1)|0x40);
 
       for (c=0; c<16; c++) {
-	 outportb(0x3C0, c);
-	 outportb(0x3C0, c);
+         outportb(0x3C0, c);
+         outportb(0x3C0, c);
       }
       outportb(0x3C0, 0x20);
 
@@ -269,11 +269,11 @@ static BITMAP *vga_init(int w, int h, int v_w, int v_h, int color_depth)
       /* tweaked 80x80 mode */
       addr = _set_vga_mode(0x13);
       if (!addr)
-	 return NULL;
+         return NULL;
 
       b = _make_bitmap(80, 819, addr, &gfx_vga, 8, 80);
       if (!b)
-	 return NULL;
+         return NULL;
 
       outportw(0x3C4, 0x0604);
       outportw(0x3C4, 0x0F02);
@@ -352,10 +352,10 @@ static GFX_MODE_LIST *vga_fetch_mode_list(void)
 
    mode_list = _AL_MALLOC(sizeof(GFX_MODE_LIST));
    if (!mode_list) return NULL;
-   
+
    mode_list->mode = _AL_MALLOC(sizeof(vga_gfx_modes));
    if (!mode_list->mode) return NULL;
-   
+
    memcpy(mode_list->mode, vga_gfx_modes, sizeof(vga_gfx_modes));
    mode_list->num_modes = sizeof(vga_gfx_modes) / sizeof(GFX_MODE) - 1;
 
@@ -374,7 +374,7 @@ extern void _module_init_modex(int);  /* from modex.c */
 void _module_init(int system_driver)
 {
    _module_init_modex(system_driver);
-   
+
    if (system_driver == SYSTEM_LINUX)
       _unix_register_gfx_driver(GFX_VGA, &gfx_vga, TRUE, TRUE);
 }

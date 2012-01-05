@@ -122,16 +122,16 @@ void ji_set_screen(BITMAP *bmp, int width, int height)
 
     /* update default-manager size */
     if (manager && (jrect_w(manager->rc) != JI_SCREEN_W ||
-		    jrect_h(manager->rc) != JI_SCREEN_H)) {
+                    jrect_h(manager->rc) != JI_SCREEN_H)) {
       JRect rect = jrect_new(0, 0, JI_SCREEN_W, JI_SCREEN_H);
       jwidget_set_rect(manager, rect);
       jrect_free(rect);
 
       if (ji_dirty_region)
-	jregion_reset(ji_dirty_region, manager->rc);
+        jregion_reset(ji_dirty_region, manager->rc);
     }
 
-    jmouse_set_cursor(cursor);	/* restore mouse cursor */
+    jmouse_set_cursor(cursor);  /* restore mouse cursor */
   }
 }
 
@@ -168,8 +168,8 @@ void ji_flip_dirty_region()
   }
   else if (nrects > 1) {
     for (c=0, rc=JI_REGION_RECTS(ji_dirty_region);
-	 c<nrects;
-	 c++, rc++)
+         c<nrects;
+         c++, rc++)
       ji_flip_rect(rc);
   }
 
@@ -182,21 +182,21 @@ void ji_flip_rect(JRect rect)
 
   if (JI_SCREEN_W == SCREEN_W && JI_SCREEN_H == SCREEN_H) {
     blit(ji_screen, screen,
-	 rect->x1, rect->y1,
-	 rect->x1, rect->y1,
-	 jrect_w(rect),
-	 jrect_h(rect));
+         rect->x1, rect->y1,
+         rect->x1, rect->y1,
+         jrect_w(rect),
+         jrect_h(rect));
   }
   else {
     stretch_blit(ji_screen, screen,
-		 rect->x1,
-		 rect->y1,
-		 jrect_w(rect),
-		 jrect_h(rect),
-		 rect->x1 * SCREEN_W / JI_SCREEN_W,
-		 rect->y1 * SCREEN_H / JI_SCREEN_H,
-		 jrect_w(rect) * SCREEN_W / JI_SCREEN_W,
-		 jrect_h(rect) * SCREEN_H / JI_SCREEN_H);
+                 rect->x1,
+                 rect->y1,
+                 jrect_w(rect),
+                 jrect_h(rect),
+                 rect->x1 * SCREEN_W / JI_SCREEN_W,
+                 rect->y1 * SCREEN_H / JI_SCREEN_H,
+                 jrect_w(rect) * SCREEN_W / JI_SCREEN_W,
+                 jrect_h(rect) * SCREEN_H / JI_SCREEN_H);
   }
 }
 
@@ -222,16 +222,16 @@ int jmouse_set_cursor(int type)
       show_mouse(NULL);
 
       {
-	BITMAP *sprite;
-	int x = 0;
-	int y = 0;
+        BITMAP *sprite;
+        int x = 0;
+        int y = 0;
 
-	sprite = theme->set_cursor(type, &x, &y);
-	set_cursor(sprite, x, y);
+        sprite = theme->set_cursor(type, &x, &y);
+        set_cursor(sprite, x, y);
       }
 
       if (ji_screen == screen)
-	show_mouse(ji_screen);
+        show_mouse(ji_screen);
     }
 
     return old;
@@ -249,8 +249,8 @@ void jmouse_draw_cursor()
     int x = m_x[0]-focus_x;
     int y = m_y[0]-focus_y;
     JRect rect = jrect_new(x, y,
-			   x+sprite_cursor->w,
-			   y+sprite_cursor->h);
+                           x+sprite_cursor->w,
+                           y+sprite_cursor->h);
 
     ji_get_default_manager()->invalidateRect(rect);
     /* rectfill(ji_screen, rect->x1, rect->y1, rect->x2-1, rect->y2-1, makecol(0, 0, 255)); */
@@ -274,8 +274,8 @@ void jmouse_draw_cursor()
 
     if (ji_dirty_region) {
       JRect rect = jrect_new(x, y,
-			     x+sprite_cursor->w,
-			     y+sprite_cursor->h);
+                             x+sprite_cursor->w,
+                             y+sprite_cursor->h);
       ji_add_dirty_rect(rect);
       jrect_free(rect);
     }
@@ -317,7 +317,7 @@ bool jmouse_is_shown()
 
 /**
  * Updates the mouse information (position, wheel and buttons).
- * 
+ *
  * @return Returns true if the mouse moved.
  */
 bool jmouse_poll()
@@ -360,7 +360,7 @@ void jmouse_set_position(int x, int y)
   }
   else {
     position_mouse(SCREEN_W * x / JI_SCREEN_W,
-		   SCREEN_H * y / JI_SCREEN_H);
+                   SCREEN_H * y / JI_SCREEN_H);
   }
 }
 
@@ -369,9 +369,9 @@ void jmouse_capture()
 #if defined(ALLEGRO_UNIX)
 
   XGrabPointer(_xwin.display, _xwin.window, False,
-	       PointerMotionMask | ButtonPressMask | ButtonReleaseMask,
-	       GrabModeAsync, GrabModeAsync,
-	       None, None, CurrentTime);
+               PointerMotionMask | ButtonPressMask | ButtonReleaseMask,
+               GrabModeAsync, GrabModeAsync,
+               None, None, CurrentTime);
 
 #endif
 }
@@ -441,29 +441,29 @@ static void update_mouse_position()
       MapWindowPoints(win_get_window(), NULL, (LPPOINT)&rc, 2);
 
       if (!PtInRect(&rc, pt)) {
-	/* if the mouse is free we can hide the cursor putting the
-	   mouse outside the screen (right-bottom corder) */
-	if (!jmanager_get_capture()) {
-	  m_x[0] = JI_SCREEN_W+focus_x;
-	  m_y[0] = JI_SCREEN_H+focus_y;
-	}
-	/* if the mouse is captured we can put it in the edges of the screen */
-	else {
-	  pt.x -= rc.left;
-	  pt.y -= rc.top;
+        /* if the mouse is free we can hide the cursor putting the
+           mouse outside the screen (right-bottom corder) */
+        if (!jmanager_get_capture()) {
+          m_x[0] = JI_SCREEN_W+focus_x;
+          m_y[0] = JI_SCREEN_H+focus_y;
+        }
+        /* if the mouse is captured we can put it in the edges of the screen */
+        else {
+          pt.x -= rc.left;
+          pt.y -= rc.top;
 
-	  if (ji_screen == screen) {
-	    m_x[0] = pt.x;
-	    m_y[0] = pt.y;
-	  }
-	  else {
-	    m_x[0] = JI_SCREEN_W * pt.x / SCREEN_W;
-	    m_y[0] = JI_SCREEN_H * pt.y / SCREEN_H;
-	  }
+          if (ji_screen == screen) {
+            m_x[0] = pt.x;
+            m_y[0] = pt.y;
+          }
+          else {
+            m_x[0] = JI_SCREEN_W * pt.x / SCREEN_W;
+            m_y[0] = JI_SCREEN_H * pt.y / SCREEN_H;
+          }
 
-	  m_x[0] = MID(0, m_x[0], JI_SCREEN_W-1);
-	  m_y[0] = MID(0, m_y[0], JI_SCREEN_H-1);
-	}
+          m_x[0] = MID(0, m_x[0], JI_SCREEN_W-1);
+          m_y[0] = MID(0, m_y[0], JI_SCREEN_H-1);
+        }
       }
     }
 #endif
@@ -480,8 +480,8 @@ static void capture_covered_area()
     covered_area_y = m_y[0]-focus_y;
 
     blit(ji_screen, covered_area,
-	 covered_area_x, covered_area_y, 0, 0,
-	 covered_area->w, covered_area->h);
+         covered_area_x, covered_area_y, 0, 0,
+         covered_area->w, covered_area->h);
   }
 }
 
@@ -489,8 +489,8 @@ static void restore_covered_area()
 {
   if (covered_area != NULL) {
     blit(covered_area, ji_screen,
-	 0, 0, covered_area_x, covered_area_y,
-	 covered_area->w, covered_area->h);
+         0, 0, covered_area_x, covered_area_y,
+         covered_area->w, covered_area->h);
 
     destroy_bitmap(covered_area);
     covered_area = NULL;

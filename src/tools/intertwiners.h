@@ -47,20 +47,20 @@ public:
     }
     else if (points.size() >= 2) {
       for (size_t c=0; c+1<points.size(); c+=2) {
-	int x1 = points[c].x;
-	int y1 = points[c].y;
-	int x2 = points[c+1].x;
-	int y2 = points[c+1].y;
+        int x1 = points[c].x;
+        int y1 = points[c].y;
+        int x2 = points[c+1].x;
+        int y2 = points[c+1].y;
 
-	algo_line(x1, y1, x2, y2, loop, (AlgoPixel)doPointshapePoint);
+        algo_line(x1, y1, x2, y2, loop, (AlgoPixel)doPointshapePoint);
       }
     }
 
     // Closed shape (polygon outline)
     if (loop->getFilled()) {
       algo_line(points[0].x, points[0].y,
-		points[points.size()-1].x,
-		points[points.size()-1].y, loop, (AlgoPixel)doPointshapePoint);
+                points[points.size()-1].x,
+                points[points.size()-1].y, loop, (AlgoPixel)doPointshapePoint);
     }
   }
 
@@ -93,22 +93,22 @@ public:
     }
     else if (points.size() >= 2) {
       for (size_t c=0; c+1<points.size(); c+=2) {
-	int x1 = points[c].x;
-	int y1 = points[c].y;
-	int x2 = points[c+1].x;
-	int y2 = points[c+1].y;
-	int y;
+        int x1 = points[c].x;
+        int y1 = points[c].y;
+        int x2 = points[c+1].x;
+        int y2 = points[c+1].y;
+        int y;
 
-	if (x1 > x2) std::swap(x1, x2);
-	if (y1 > y2) std::swap(y1, y2);
+        if (x1 > x2) std::swap(x1, x2);
+        if (y1 > y2) std::swap(y1, y2);
 
-	doPointshapeLine(x1, y1, x2, y1, loop);
-	doPointshapeLine(x1, y2, x2, y2, loop);
+        doPointshapeLine(x1, y1, x2, y1, loop);
+        doPointshapeLine(x1, y2, x2, y2, loop);
 
-	for (y=y1; y<=y2; y++) {
-	  doPointshapePoint(x1, y, loop);
-	  doPointshapePoint(x2, y, loop);
-	}
+        for (y=y1; y<=y2; y++) {
+          doPointshapePoint(x1, y, loop);
+          doPointshapePoint(x2, y, loop);
+        }
       }
     }
   }
@@ -131,7 +131,7 @@ public:
       if (y1 > y2) std::swap(y1, y2);
 
       for (y=y1; y<=y2; y++)
-	doPointshapeLine(x1, y, x2, y, loop);
+        doPointshapeLine(x1, y, x2, y, loop);
     }
   }
 };
@@ -150,15 +150,15 @@ public:
     }
     else if (points.size() >= 2) {
       for (size_t c=0; c+1<points.size(); c+=2) {
-	int x1 = points[c].x;
-	int y1 = points[c].y;
-	int x2 = points[c+1].x;
-	int y2 = points[c+1].y;
+        int x1 = points[c].x;
+        int y1 = points[c].y;
+        int x2 = points[c+1].x;
+        int y2 = points[c+1].y;
 
-	if (x1 > x2) std::swap(x1, x2);
-	if (y1 > y2) std::swap(y1, y2);
+        if (x1 > x2) std::swap(x1, x2);
+        if (y1 > y2) std::swap(y1, y2);
 
-	algo_ellipse(x1, y1, x2, y2, loop, (AlgoPixel)doPointshapePoint);
+        algo_ellipse(x1, y1, x2, y2, loop, (AlgoPixel)doPointshapePoint);
       }
     }
   }
@@ -195,23 +195,23 @@ public:
 
     for (size_t c=0; c<points.size(); c += 4) {
       if (points.size()-c == 1) {
-	doPointshapePoint(points[c].x, points[c].y, loop);
+        doPointshapePoint(points[c].x, points[c].y, loop);
       }
       else if (points.size()-c == 2) {
-	algo_line(points[c].x, points[c].y,
-		  points[c+1].x, points[c+1].y, loop, (AlgoPixel)doPointshapePoint);
+        algo_line(points[c].x, points[c].y,
+                  points[c+1].x, points[c+1].y, loop, (AlgoPixel)doPointshapePoint);
       }
       else if (points.size()-c == 3) {
-	algo_spline(points[c  ].x, points[c  ].y,
-		    points[c+1].x, points[c+1].y,
-		    points[c+1].x, points[c+1].y,
-		    points[c+2].x, points[c+2].y, loop, (AlgoLine)doPointshapeLine);
+        algo_spline(points[c  ].x, points[c  ].y,
+                    points[c+1].x, points[c+1].y,
+                    points[c+1].x, points[c+1].y,
+                    points[c+2].x, points[c+2].y, loop, (AlgoLine)doPointshapeLine);
       }
       else {
-	algo_spline(points[c  ].x, points[c  ].y,
-		    points[c+1].x, points[c+1].y,
-		    points[c+2].x, points[c+2].y,
-		    points[c+3].x, points[c+3].y, loop, (AlgoLine)doPointshapeLine);
+        algo_spline(points[c  ].x, points[c  ].y,
+                    points[c+1].x, points[c+1].y,
+                    points[c+2].x, points[c+2].y,
+                    points[c+3].x, points[c+3].y, loop, (AlgoLine)doPointshapeLine);
       }
     }
   }

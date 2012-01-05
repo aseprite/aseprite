@@ -15,7 +15,7 @@
  *      Distorted by George Foot.
  *
  *      Mangled by Peter Wang.
- * 
+ *
  *      See readme.txt for copyright information.
  */
 
@@ -70,8 +70,8 @@ void _sigalrm_enable_interrupts(void)
       /* Process pending interrupts.  */
       first_time = TRUE;
       if (_sigalrm_interrupt_pending) {
-	 _sigalrm_interrupt_pending = FALSE;
-	 _sigalrm_signal_handler(SIGALRM);
+         _sigalrm_interrupt_pending = FALSE;
+         _sigalrm_signal_handler(SIGALRM);
       }
    }
    else if (_sigalrm_cli_count < 0) {
@@ -106,7 +106,7 @@ static unsigned long _sigalrm_time_passed(void)
    gettimeofday(&new_time, 0);
    if (!first_time) {
       interval = ((new_time.tv_sec - old_time.tv_sec) * 1000000L +
-		  (new_time.tv_usec - old_time.tv_usec));
+                  (new_time.tv_usec - old_time.tv_usec));
    }
    else {
       first_time = FALSE;
@@ -207,10 +207,10 @@ static RETSIGTYPE _sigalrm_signal_handler(int num)
       i = i * (TIMERS_PER_SECOND/100) / 10000L;
 
       if (_sigalrm_interrupt_handler)
-	 (*_sigalrm_interrupt_handler)(i);
+         (*_sigalrm_interrupt_handler)(i);
 
       if (_sigalrm_timer_interrupt_handler)
-	 (*_sigalrm_timer_interrupt_handler)(i);
+         (*_sigalrm_timer_interrupt_handler)(i);
    }
 
    /* Abort with enabled interrupts.  */
@@ -320,7 +320,7 @@ static int bg_man_sigalrm_unregister_func(bg_func f)
 
    if (i+1 == max_func)
       do {
-	 max_func--;
+         max_func--;
       } while ((max_func > 0) && !funcs[max_func-1]);
 
    return 0;

@@ -77,7 +77,7 @@ ExpandCelCanvas::ExpandCelCanvas(Document* document, Sprite* sprite, Layer* laye
     x2 = MAX(m_cel->getX()+m_celImage->w, m_sprite->getWidth());
     y2 = MAX(m_cel->getY()+m_celImage->h, m_sprite->getHeight());
   }
-  else { 			// tiled
+  else {                        // tiled
     x1 = 0;
     y1 = 0;
     x2 = m_sprite->getWidth();
@@ -86,9 +86,9 @@ ExpandCelCanvas::ExpandCelCanvas(Document* document, Sprite* sprite, Layer* laye
 
   // create two copies of the image region which we'll modify with the tool
   m_srcImage = image_crop(m_celImage,
-			  x1-m_cel->getX(),
-			  y1-m_cel->getY(), x2-x1, y2-y1,
-			  m_sprite->getTransparentColor());
+                          x1-m_cel->getX(),
+                          y1-m_cel->getY(), x2-x1, y2-y1,
+                          m_sprite->getTransparentColor());
 
   m_dstImage = image_new_copy(m_srcImage);
 
@@ -127,7 +127,7 @@ void ExpandCelCanvas::commit()
     // Was m_celImage created in the start of the tool-loop?.
     if (m_celCreated) {
       // We can keep the m_celImage
-	  
+
       // We copy the destination image to the m_celImage
       image_copy(m_celImage, m_dstImage, 0, 0);
 
@@ -136,31 +136,31 @@ void ExpandCelCanvas::commit()
 
       // Is the undo enabled?.
       if (undo->isEnabled()) {
-	// We can temporary remove the cel.
-	static_cast<LayerImage*>(m_sprite->getCurrentLayer())->removeCel(m_cel);
+        // We can temporary remove the cel.
+        static_cast<LayerImage*>(m_sprite->getCurrentLayer())->removeCel(m_cel);
 
-	// We create the undo information (for the new m_celImage
-	// in the stock and the new cel in the layer)...
-	undo->pushUndoer(new undoers::OpenGroup());
-	undo->pushUndoer(new undoers::AddImage(undo->getObjects(),
-					       m_sprite->getStock(), m_cel->getImage()));
-	undo->pushUndoer(new undoers::AddCel(undo->getObjects(),
-					     m_sprite->getCurrentLayer(), m_cel));
-	undo->pushUndoer(new undoers::CloseGroup());
+        // We create the undo information (for the new m_celImage
+        // in the stock and the new cel in the layer)...
+        undo->pushUndoer(new undoers::OpenGroup());
+        undo->pushUndoer(new undoers::AddImage(undo->getObjects(),
+                                               m_sprite->getStock(), m_cel->getImage()));
+        undo->pushUndoer(new undoers::AddCel(undo->getObjects(),
+                                             m_sprite->getCurrentLayer(), m_cel));
+        undo->pushUndoer(new undoers::CloseGroup());
 
-	// And finally we add the cel again in the layer.
-	static_cast<LayerImage*>(m_sprite->getCurrentLayer())->addCel(m_cel);
+        // And finally we add the cel again in the layer.
+        static_cast<LayerImage*>(m_sprite->getCurrentLayer())->addCel(m_cel);
       }
     }
     // If the m_celImage was already created before the whole process...
     else {
       // Add to the undo history the differences between m_celImage and m_dstImage
       if (undo->isEnabled()) {
-	UniquePtr<Dirty> dirty(new Dirty(m_celImage, m_dstImage));
+        UniquePtr<Dirty> dirty(new Dirty(m_celImage, m_dstImage));
 
-	dirty->saveImagePixels(m_celImage);
-	if (dirty != NULL)
-	  undo->pushUndoer(new undoers::DirtyArea(undo->getObjects(), m_celImage, dirty));
+        dirty->saveImagePixels(m_celImage);
+        if (dirty != NULL)
+          undo->pushUndoer(new undoers::DirtyArea(undo->getObjects(), m_celImage, dirty));
       }
 
       // Copy the destination to the cel image.
@@ -174,18 +174,18 @@ void ExpandCelCanvas::commit()
       undo->pushUndoer(new undoers::OpenGroup());
 
       if (m_cel->getX() != m_originalCelX ||
-	  m_cel->getY() != m_originalCelY) {
-	int x = m_cel->getX();
-	int y = m_cel->getY();
-	m_cel->setPosition(m_originalCelX, m_originalCelY);
+          m_cel->getY() != m_originalCelY) {
+        int x = m_cel->getX();
+        int y = m_cel->getY();
+        m_cel->setPosition(m_originalCelX, m_originalCelY);
 
-	undo->pushUndoer(new undoers::SetCelPosition(undo->getObjects(), m_cel));
+        undo->pushUndoer(new undoers::SetCelPosition(undo->getObjects(), m_cel));
 
-	m_cel->setPosition(x, y);
+        m_cel->setPosition(x, y);
       }
 
       undo->pushUndoer(new undoers::ReplaceImage(undo->getObjects(),
-						 m_sprite->getStock(), m_cel->getImage()));
+                                                 m_sprite->getStock(), m_cel->getImage()));
       undo->pushUndoer(new undoers::CloseGroup());
     }
 

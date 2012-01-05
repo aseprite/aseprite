@@ -1,6 +1,6 @@
-/*         ______   ___    ___ 
- *        /\  _  \ /\_ \  /\_ \ 
- *        \ \ \L\ \\//\ \ \//\ \      __     __   _ __   ___ 
+/*         ______   ___    ___
+ *        /\  _  \ /\_ \  /\_ \
+ *        \ \ \L\ \\//\ \ \//\ \      __     __   _ __   ___
  *         \ \  __ \ \ \ \  \ \ \   /'__`\ /'_ `\/\`'__\/ __`\
  *          \ \ \/\ \ \_\ \_ \_\ \_/\  __//\ \L\ \ \ \//\ \L\ \
  *           \ \_\ \_\/\____\/\____\ \____\ \____ \ \_\\ \____/
@@ -54,7 +54,7 @@ static DDPIXELFORMAT pixel_format[] = {
    /* 32-bit RGB */
    {sizeof(DDPIXELFORMAT), DDPF_RGB, 0, {32}, {0xFF0000}, {0x00FF00}, {0x0000FF}, {0}},
    /* 32-bit BGR */
-   {sizeof(DDPIXELFORMAT), DDPF_RGB, 0, {32}, {0x0000FF}, {0x00FF00}, {0xFF0000}, {0}} 
+   {sizeof(DDPIXELFORMAT), DDPF_RGB, 0, {32}, {0x0000FF}, {0x00FF00}, {0xFF0000}, {0}}
 };
 
 
@@ -173,7 +173,7 @@ static int get_color_bits(int mask)
  *  Compares the requested color depth with the desktop depth and find
  *  the best pixel format for color conversion if they don't match.
  *  Returns 0 if the depths match, -1 if they don't.
- */ 
+ */
 int gfx_directx_compare_color_depth(int color_depth)
 {
    DDSURFACEDESC surf_desc;
@@ -273,7 +273,7 @@ int gfx_directx_update_color_format(DDRAW_SURFACE *surf, int color_depth)
 
 /* EnumModesCallback:
  *  Callback function for enumerating the graphics modes.
- */ 
+ */
 static HRESULT CALLBACK EnumModesCallback(LPDDSURFACEDESC lpDDSurfaceDesc, LPVOID gfx_mode_list_ptr)
 {
    GFX_MODE_LIST *gfx_mode_list = (GFX_MODE_LIST *)gfx_mode_list_ptr;
@@ -289,7 +289,7 @@ static HRESULT CALLBACK EnumModesCallback(LPDDSURFACEDESC lpDDSurfaceDesc, LPVOI
 
    /* check if 16 bpp mode is 16 bpp or 15 bpp */
    if (gfx_mode_list->mode[gfx_mode_list->num_modes].bpp == 16) {
-      gfx_mode_list->mode[gfx_mode_list->num_modes].bpp = 
+      gfx_mode_list->mode[gfx_mode_list->num_modes].bpp =
          get_color_bits(lpDDSurfaceDesc->ddpfPixelFormat.dwRBitMask) +
          get_color_bits(lpDDSurfaceDesc->ddpfPixelFormat.dwGBitMask) +
          get_color_bits(lpDDSurfaceDesc->ddpfPixelFormat.dwBBitMask);
@@ -381,7 +381,7 @@ int set_video_mode(int w, int h, int v_w, int v_h, int color_depth)
       _wnd_flags = 0;
 
    while (TRUE) {
-      /* let the window thread do the hard work */ 
+      /* let the window thread do the hard work */
       _TRACE(PREFIX_I "setting display mode(%u, %u, %u, %u)\n",
              _wnd_width, _wnd_height, _wnd_depth, _wnd_refresh_rate);
 
@@ -397,7 +397,7 @@ int set_video_mode(int w, int h, int v_w, int v_h, int color_depth)
       else
          break;
    }
-      
+
    _TRACE(PREFIX_E "Unable to set any display mode.\n");
    return -1;
 

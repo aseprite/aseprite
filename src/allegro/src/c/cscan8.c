@@ -29,4 +29,3 @@
 #undef _bma_scan_gcol
 
 #endif
-

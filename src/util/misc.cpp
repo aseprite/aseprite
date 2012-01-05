@@ -65,12 +65,12 @@ Image* NewImageFromMask(const Document* srcDocument)
 
     for (u=0; u<srcMask->w; u++) {
       if ((*address & (1<<d.rem))) {
-	getx = u+srcMask->x-x;
-	gety = v+srcMask->y-y;
+        getx = u+srcMask->x-x;
+        gety = v+srcMask->y-y;
 
-	if ((getx >= 0) && (getx < src->w) &&
-	    (gety >= 0) && (gety < src->h))
-	  dst->putpixel(u, v, src->getpixel(getx, gety));
+        if ((getx >= 0) && (getx < src->w) &&
+            (gety >= 0) && (gety < src->h))
+          dst->putpixel(u, v, src->getpixel(getx, gety));
       }
 
       _image_bitmap_next_bit(d, address);

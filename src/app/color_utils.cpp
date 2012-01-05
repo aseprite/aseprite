@@ -69,7 +69,7 @@ int color_utils::blackandwhite_neg(int r, int g, int b)
 int color_utils::color_for_allegro(const Color& color, int depth)
 {
   int c = -1;
-  
+
   switch (color.getType()) {
 
     case Color::MaskType:
@@ -79,27 +79,27 @@ int color_utils::color_for_allegro(const Color& color, int depth)
     case Color::RgbType:
     case Color::HsvType:
       c = makeacol_depth(depth,
-			 color.getRed(),
-			 color.getGreen(),
-			 color.getBlue(), 255);
+                         color.getRed(),
+                         color.getGreen(),
+                         color.getBlue(), 255);
       break;
 
     case Color::GrayType:
       c = color.getGray();
       if (depth != 8)
-	c = makeacol_depth(depth, c, c, c, 255);
+        c = makeacol_depth(depth, c, c, c, 255);
       break;
 
     case Color::IndexType:
       c = color.getIndex();
       if (depth != 8) {
-	ASSERT(c >= 0 && c < (int)get_current_palette()->size());
+        ASSERT(c >= 0 && c < (int)get_current_palette()->size());
 
-	uint32_t _c = get_current_palette()->getEntry(c);
-	c = makeacol_depth(depth,
-			   _rgba_getr(_c),
-			   _rgba_getg(_c),
-			   _rgba_getb(_c), 255);
+        uint32_t _c = get_current_palette()->getEntry(c);
+        c = makeacol_depth(depth,
+                           _rgba_getr(_c),
+                           _rgba_getg(_c),
+                           _rgba_getb(_c), 255);
       }
       break;
 
@@ -124,9 +124,9 @@ int color_utils::color_for_image(const Color& color, int imgtype)
       break;
     case IMAGE_INDEXED:
       if (color.getType() == Color::IndexType)
-	c = color.getIndex();
+        c = color.getIndex();
       else
-	c = get_current_palette()->findBestfit(color.getRed(), color.getGreen(), color.getBlue());
+        c = get_current_palette()->findBestfit(color.getRed(), color.getGreen(), color.getBlue());
       break;
   }
 
@@ -161,14 +161,14 @@ int color_utils::fixup_color_for_background(int imgtype, int color)
   switch (imgtype) {
     case IMAGE_RGB:
       if (_rgba_geta(color) < 255) {
-	return _rgba(_rgba_getr(color),
-		     _rgba_getg(color),
-		     _rgba_getb(color), 255);
+        return _rgba(_rgba_getr(color),
+                     _rgba_getg(color),
+                     _rgba_getb(color), 255);
       }
       break;
     case IMAGE_GRAYSCALE:
       if (_graya_geta(color) < 255) {
-	return _graya(_graya_getv(color), 255);
+        return _graya(_graya_getv(color), 255);
       }
       break;
   }

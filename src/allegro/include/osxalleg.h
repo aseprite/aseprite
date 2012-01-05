@@ -9,7 +9,7 @@
  *                                           \_/__/
  *
  *      Main header file for the MacOS X Allegro library port.
- *      Any OS X Allegro specific function is declared here. 
+ *      Any OS X Allegro specific function is declared here.
  *
  *      By Angelo Mottola.
  *
@@ -35,4 +35,3 @@ extern "C" {
 #endif
 
 #endif
-

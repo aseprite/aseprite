@@ -55,7 +55,7 @@
 /**
  * Returns true if the cursor of the editor needs subpixel movement.
  */
-#define IS_SUBPIXEL(editor)	((editor)->m_zoom >= 2)
+#define IS_SUBPIXEL(editor)     ((editor)->m_zoom >= 2)
 
 /**
  * Maximum quantity of colors to save pixels overlapped by the cursor.
@@ -71,9 +71,9 @@ static struct {
 } cursor_bound = { 0, 0, 0, 0, NULL };
 
 enum {
-  CURSOR_PENCIL      = 1,	// New cursor style (with preview)
-  CURSOR_CROSS_ONE   = 2,	// Old cursor style (deprecated)
-  CURSOR_BOUNDS      = 4	// Old cursor boundaries (deprecated)
+  CURSOR_PENCIL      = 1,       // New cursor style (with preview)
+  CURSOR_CROSS_ONE   = 2,       // Old cursor style (deprecated)
+  CURSOR_BOUNDS      = 4        // Old cursor boundaries (deprecated)
 };
 
 static int cursor_type = CURSOR_PENCIL;
@@ -190,8 +190,8 @@ static Pen* editor_get_current_pen()
       current_pen->get_angle() != pen_settings->getAngle()) {
     delete current_pen;
     current_pen = new Pen(pen_settings->getType(),
-			  pen_settings->getSize(),
-			  pen_settings->getAngle());
+                          pen_settings->getSize(),
+                          pen_settings->getAngle());
   }
 
   return current_pen;
@@ -263,11 +263,11 @@ void Editor::editor_draw_cursor(int x, int y, bool refresh)
     cursor_type = CURSOR_CROSS_ONE;
   }
   else if (// Use cursor bounds for inks that are effects (eraser, blur, etc.)
-	   current_tool->getInk(0)->isEffect() ||
-	   // or when the FG color is mask and we are not in the background layer
-	   (UIContext::instance()->getSettings()->getFgColor().getType() == Color::MaskType &&
-	    (m_sprite->getCurrentLayer() != NULL &&
-	     !m_sprite->getCurrentLayer()->is_background()))) {
+           current_tool->getInk(0)->isEffect() ||
+           // or when the FG color is mask and we are not in the background layer
+           (UIContext::instance()->getSettings()->getFgColor().getType() == Color::MaskType &&
+            (m_sprite->getCurrentLayer() != NULL &&
+             !m_sprite->getCurrentLayer()->is_background()))) {
     cursor_type = CURSOR_BOUNDS;
   }
   else {
@@ -290,9 +290,9 @@ void Editor::editor_draw_cursor(int x, int y, bool refresh)
 
     // Create the extra cel to show the pen preview
     m_document->prepareExtraCel(x-pen->get_size()/2,
-				y-pen->get_size()/2,
-				pen->get_size(), pen->get_size(),
-				tool_settings->getOpacity());
+                                y-pen->get_size()/2,
+                                pen->get_size(), pen->get_size(),
+                                tool_settings->getOpacity());
 
     // In 'indexed' images, if the current color is 0, we have to use
     // a different mask color (different from 0) to draw the extra layer
@@ -310,10 +310,10 @@ void Editor::editor_draw_cursor(int x, int y, bool refresh)
 
     if (refresh) {
       editors_draw_sprite(m_sprite,
-			  x-pen->get_size()/2,
-			  y-pen->get_size()/2,
-			  x+pen->get_size()/2,
-			  y+pen->get_size()/2);
+                          x-pen->get_size()/2,
+                          y-pen->get_size()/2,
+                          x+pen->get_size()/2,
+                          y+pen->get_size()/2);
     }
   }
 
@@ -362,14 +362,14 @@ void Editor::editor_move_cursor(int x, int y, bool refresh)
     for_each_pixel_of_pen(old_screen_x, old_screen_y, old_x, old_y, 0, cleanpixel);
     ji_screen->clip = TRUE;
     release_bitmap(ji_screen);
-    
+
     if (cursor_type & CURSOR_PENCIL && m_state->requirePenPreview()) {
       Pen* pen = editor_get_current_pen();
       editors_draw_sprite(m_sprite,
-			  std::min(new_x, old_x)-pen->get_size()/2,
-			  std::min(new_y, old_y)-pen->get_size()/2,
-			  std::max(new_x, old_x)+pen->get_size()/2,
-			  std::max(new_y, old_y)+pen->get_size()/2);
+                          std::min(new_x, old_x)-pen->get_size()/2,
+                          std::min(new_y, old_y)-pen->get_size()/2,
+                          std::max(new_x, old_x)+pen->get_size()/2,
+                          std::max(new_y, old_y)+pen->get_size()/2);
     }
 
     /* save area and draw the cursor */
@@ -422,16 +422,16 @@ void Editor::editor_clean_cursor(bool refresh)
     Pen* pen = editor_get_current_pen();
 
     m_document->prepareExtraCel(x-pen->get_size()/2,
-				y-pen->get_size()/2,
-				pen->get_size(), pen->get_size(),
-				0); // Opacity = 0
+                                y-pen->get_size()/2,
+                                pen->get_size(), pen->get_size(),
+                                0); // Opacity = 0
 
     if (refresh) {
       editors_draw_sprite(m_sprite,
-			  x-pen->get_size()/2,
-			  y-pen->get_size()/2,
-			  x+pen->get_size()/2,
-			  y+pen->get_size()/2);
+                          x-pen->get_size()/2,
+                          y-pen->get_size()/2,
+                          x+pen->get_size()/2,
+                          y+pen->get_size()/2);
     }
   }
 
@@ -470,7 +470,7 @@ static void generate_cursor_boundaries()
       ->getToolSettings(current_tool)
       ->getPen();
 
-  if (cursor_bound.seg == NULL || 
+  if (cursor_bound.seg == NULL ||
       cursor_bound.pen_type != pen_settings->getType() ||
       cursor_bound.pen_size != pen_settings->getSize() ||
       cursor_bound.pen_angle != pen_settings->getAngle()) {
@@ -485,22 +485,22 @@ static void generate_cursor_boundaries()
 
     if (pen_settings) {
       pen = new Pen(pen_settings->getType(),
-		    pen_settings->getSize(),
-		    pen_settings->getAngle());
+                    pen_settings->getSize(),
+                    pen_settings->getAngle());
     }
     else
       pen = new Pen();
 
     cursor_bound.seg = find_mask_boundary(pen->get_image(),
-    					  &cursor_bound.nseg,
-    					  IgnoreBounds, 0, 0, 0, 0);
+                                          &cursor_bound.nseg,
+                                          IgnoreBounds, 0, 0, 0, 0);
     delete pen;
   }
 }
 
 void Editor::for_each_pixel_of_pen(int screen_x, int screen_y,
-				   int sprite_x, int sprite_y, int color,
-				   void (*pixel)(BITMAP *bmp, int x, int y, int color))
+                                   int sprite_x, int sprite_y, int color,
+                                   void (*pixel)(BITMAP *bmp, int x, int y, int color))
 {
   saved_pixel_n = 0;
 
@@ -540,9 +540,9 @@ static void editor_cursor_pencil(Editor *editor, int x, int y, int color, int th
   for (v=0; v<7; v++) {
     for (u=0; u<7; u++) {
       if (cursor_cross[v*7+u]) {
-	xout = x-3+u;
-	yout = y-3+v;
-	(*pixel)(ji_screen, xout, yout, color);
+        xout = x-3+u;
+        yout = y-3+v;
+        (*pixel)(ji_screen, xout, yout, color);
       }
     }
   }
@@ -552,7 +552,7 @@ static void editor_cursor_pencil(Editor *editor, int x, int y, int color, int th
 // Old cross
 
 static void editor_cursor_cross(Editor* editor, int x, int y, int color, int thickness,
-				void (*pixel)(BITMAP *bmp, int x, int y, int color))
+                                void (*pixel)(BITMAP *bmp, int x, int y, int color))
 {
   static int cursor_cross[6*6] = {
     0, 0, 1, 1, 0, 0,
@@ -568,17 +568,17 @@ static void editor_cursor_cross(Editor* editor, int x, int y, int color, int thi
   for (v=0; v<6; v++) {
     for (u=0; u<6; u++) {
       if (cursor_cross[v*6+u]) {
-	editor->editorToScreen(x, y, &xout, &yout);
+        editor->editorToScreen(x, y, &xout, &yout);
 
-	xout += ((u<3) ?
-		 u-((thickness>>1)<<zoom)-3:
-		 u-((thickness>>1)<<zoom)-3+(thickness<<zoom));
+        xout += ((u<3) ?
+                 u-((thickness>>1)<<zoom)-3:
+                 u-((thickness>>1)<<zoom)-3+(thickness<<zoom));
 
-	yout += ((v<3)?
-		 v-((thickness>>1)<<zoom)-3:
-		 v-((thickness>>1)<<zoom)-3+(thickness<<zoom));
+        yout += ((v<3)?
+                 v-((thickness>>1)<<zoom)-3:
+                 v-((thickness>>1)<<zoom)-3+(thickness<<zoom));
 
-	(*pixel)(ji_screen, xout, yout, color);
+        (*pixel)(ji_screen, xout, yout, color);
       }
     }
   }
@@ -603,24 +603,24 @@ static void editor_cursor_bounds(Editor *editor, int x, int y, int color, void (
     editor->editorToScreen(x+x1, y+y1, &x1, &y1);
     editor->editorToScreen(x+x2, y+y2, &x2, &y2);
 
-    if (seg->open) {		/* outside */
+    if (seg->open) {            /* outside */
       if (x1 == x2) {
-	x1--;
-	x2--;
-	y2--;
+        x1--;
+        x2--;
+        y2--;
       }
       else {
-	y1--;
-	y2--;
-	x2--;
+        y1--;
+        y2--;
+        x2--;
       }
     }
     else {
       if (x1 == x2) {
-	y2--;
+        y2--;
       }
       else {
-	x2--;
+        x2--;
       }
     }
 
@@ -661,7 +661,7 @@ static void cleanpixel(BITMAP *bmp, int x, int y, int color)
     if (point_inside_region(x, y, clipping_region))
       putpixel(bmp, x, y, saved_pixel[saved_pixel_n++]);
     else if (old_clipping_region &&
-	     point_inside_region(x, y, old_clipping_region))
+             point_inside_region(x, y, old_clipping_region))
       saved_pixel_n++;
   }
 }

@@ -42,8 +42,8 @@ protected:
 
 ReselectMaskCommand::ReselectMaskCommand()
   : Command("ReselectMask",
-	    "Reselect Mask",
-	    CmdRecordableFlag)
+            "Reselect Mask",
+            CmdRecordableFlag)
 {
 }
 
@@ -51,9 +51,9 @@ bool ReselectMaskCommand::onEnabled(Context* context)
 {
   ActiveDocumentWriter document(context);
   return
-     document &&		      // The document does exist
+     document &&                      // The document does exist
     !document->isMaskVisible() &&     // The mask is hidden
-     document->getMask() &&	      // The mask does exist
+     document->getMask() &&           // The mask does exist
     !document->getMask()->is_empty(); // But it is not empty
 }
 

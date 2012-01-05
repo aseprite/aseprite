@@ -58,8 +58,8 @@
   #include "util/clipboard_win32.h"
 #endif
 
-#define SCALE_MODE	0
-#define ROTATE_MODE	1
+#define SCALE_MODE      0
+#define ROTATE_MODE     1
 
 enum {
   ACTION_SETMODE,
@@ -86,22 +86,22 @@ static void set_clipboard(Image* image, Palette* palette, bool set_system_clipbo
 static bool copy_from_document(const Document* document);
 
 static bool interactive_transform(Editor* widget, Image *dest_image, Image *image,
-				  int x, int y, int xout[4], int yout[4]);
+                                  int x, int y, int xout[4], int yout[4]);
 static void apply_rotation(int x1, int y1, int x2, int y2,
-			   fixed angle, int cx, int cy,
-			   int xout[4], int yout[4]);
+                           fixed angle, int cx, int cy,
+                           int xout[4], int yout[4]);
 static void draw_box(BITMAP *bmp,
-		     int cx1, int cy1, int cx2, int cy2,
-		     int x1, int y1, int x2, int y2, BITMAP *preview,
-		     int mode, fixed angle, int cx, int cy);
+                     int cx1, int cy1, int cx2, int cy2,
+                     int x1, int y1, int x2, int y2, BITMAP *preview,
+                     int mode, fixed angle, int cx, int cy);
 static void draw_icon(BITMAP *bmp, int x, int y, int mode, fixed angle);
 static void fill_in_vars(int *in_box,
-			 int *in_left, int *in_center, int *in_right,
-			 int *in_top, int *in_middle, int *in_bottom,
-			 int x1, int y1, int x2, int y2, fixed angle,
-			 int cx, int cy);
+                         int *in_left, int *in_center, int *in_right,
+                         int *in_top, int *in_middle, int *in_bottom,
+                         int x1, int y1, int x2, int y2, fixed angle,
+                         int cx, int cy);
 static void update_status_bar(Editor* editor, Image *image,
-			      int x1, int y1, int x2, int y2, fixed angle);
+                              int x1, int y1, int x2, int y2, fixed angle);
 
 static bool first_time = true;
 
@@ -194,7 +194,7 @@ void clipboard::copy(const DocumentReader& document)
 void clipboard::copy_image(Image* image, Palette* pal)
 {
   set_clipboard(image_new_copy(image),
-		pal ? new Palette(*pal): NULL, true);
+                pal ? new Palette(*pal): NULL, true);
 }
 
 void clipboard::paste(DocumentWriter& document)
@@ -241,7 +241,7 @@ void clipboard::paste(DocumentWriter& document)
     int dst_image_index = sprite->getStock()->addImage(dst_image);
     if (undo->isEnabled())
       undo->pushUndoer(new undoers::AddImage(undo->getObjects(),
-	  sprite->getStock(), dst_image_index));
+          sprite->getStock(), dst_image_index));
 
     // Create the new cel in the current frame with the recently
     // created image
@@ -260,8 +260,8 @@ void clipboard::paste(DocumentWriter& document)
   else {
     RgbMap* rgbmap = sprite->getRgbMap();
     src_image = quantization::convert_imgtype(clipboard_image, sprite->getImgType(), DITHERING_NONE,
-					      rgbmap, sprite->getPalette(sprite->getCurrentFrame()),
-					      false);
+                                              rgbmap, sprite->getPalette(sprite->getCurrentFrame()),
+                                              false);
   }
 
   // Do the interactive-transform loop (where the user can move the floating image)
@@ -276,7 +276,7 @@ void clipboard::paste(DocumentWriter& document)
     y = (y1+y2)/2-src_image->h/2;
 
     paste = interactive_transform(current_editor,
-				  dst_image, src_image, x, y, xout, yout);
+                                  dst_image, src_image, x, y, xout, yout);
   }
 
   if (paste) {
@@ -300,13 +300,13 @@ void clipboard::paste(DocumentWriter& document)
     if (w >= 1 && h >= 1) {
       // Add information to hold the modified region in the image.
       if (undo->isEnabled())
-	undo->pushUndoer(new undoers::ImageArea(undo->getObjects(),
-	    dst_image, u1, v1, w, h));
+        undo->pushUndoer(new undoers::ImageArea(undo->getObjects(),
+            dst_image, u1, v1, w, h));
 
       // Draw the transformed image.
       image_parallelogram(dst_image, src_image,
-			  xout[0], yout[0], xout[1], yout[1],
-			  xout[2], yout[2], xout[3], yout[3]);
+                          xout[0], yout[0], xout[1], yout[1],
+                          xout[2], yout[2], xout[3], yout[3]);
     }
 
     // Commit the "paste" operation
@@ -325,28 +325,28 @@ void clipboard::paste(DocumentWriter& document)
 enum { DONE_NONE, DONE_CANCEL, DONE_PASTE };
 
 static bool interactive_transform(Editor* editor,
-				  Image *dest_image, Image *image,
-				  int x, int y,
-				  int xout[4], int yout[4])
+                                  Image *dest_image, Image *image,
+                                  int x, int y,
+                                  int xout[4], int yout[4])
 {
-#define UPDATE()							\
-  jmouse_hide();							\
-  old_screen = ji_screen;						\
-  ji_screen = bmp1;							\
-  jmanager_dispatch_messages(ji_get_default_manager());			\
-  ji_screen = old_screen;						\
-  REDRAW();								\
+#define UPDATE()                                                        \
+  jmouse_hide();                                                        \
+  old_screen = ji_screen;                                               \
+  ji_screen = bmp1;                                                     \
+  jmanager_dispatch_messages(ji_get_default_manager());                 \
+  ji_screen = old_screen;                                               \
+  REDRAW();                                                             \
   jmouse_show();
 
-#define REDRAW()							\
-  jmouse_hide();							\
-  blit(bmp1, bmp2, vp.x, vp.y, 0, 0, vp.w, vp.h);			\
-  draw_box(bmp2,							\
-	   0, 0, vp.w-1, vp.h-1,					\
-	   x1-vp.x, y1-vp.y, x2-vp.x, y2-vp.y,				\
-	   preview, mode, angle, cx-vp.x, cy-vp.y);			\
-  blit(bmp2, ji_screen, 0, 0, vp.x, vp.y, vp.w, vp.h);			\
-  update_status_bar(editor, image, x1, y1, x2, y2, angle);		\
+#define REDRAW()                                                        \
+  jmouse_hide();                                                        \
+  blit(bmp1, bmp2, vp.x, vp.y, 0, 0, vp.w, vp.h);                       \
+  draw_box(bmp2,                                                        \
+           0, 0, vp.w-1, vp.h-1,                                        \
+           x1-vp.x, y1-vp.y, x2-vp.x, y2-vp.y,                          \
+           preview, mode, angle, cx-vp.x, cy-vp.y);                     \
+  blit(bmp2, ji_screen, 0, 0, vp.x, vp.y, vp.w, vp.h);                  \
+  update_status_bar(editor, image, x1, y1, x2, y2, angle);              \
   jmouse_show();
 
   int x1, y1, x2, y2;
@@ -386,27 +386,27 @@ static bool interactive_transform(Editor* editor,
     case IMAGE_RGB: {
       int x, y;
       for (y=0; y<image->h; y++)
-	for (x=0; x<image->w; x++)
-	  if (_rgba_geta(image_getpixel_fast<RgbTraits>(image, x, y)) < 128)
-	    putpixel(preview, x, y, mask_color);
+        for (x=0; x<image->w; x++)
+          if (_rgba_geta(image_getpixel_fast<RgbTraits>(image, x, y)) < 128)
+            putpixel(preview, x, y, mask_color);
       break;
     }
 
     case IMAGE_GRAYSCALE: {
       int x, y;
       for (y=0; y<image->h; y++)
-	for (x=0; x<image->w; x++)
-	  if (_graya_geta(image_getpixel_fast<GrayscaleTraits>(image, x, y)) < 128)
-	    putpixel(preview, x, y, mask_color);
+        for (x=0; x<image->w; x++)
+          if (_graya_geta(image_getpixel_fast<GrayscaleTraits>(image, x, y)) < 128)
+            putpixel(preview, x, y, mask_color);
       break;
     }
 
     case IMAGE_INDEXED: {
       int x, y;
       for (y=0; y<image->h; y++)
-	for (x=0; x<image->w; x++)
-	  if (image_getpixel_fast<IndexedTraits>(image, x, y) == 0)
-	    putpixel(preview, x, y, mask_color);
+        for (x=0; x<image->w; x++)
+          if (image_getpixel_fast<IndexedTraits>(image, x, y) == 0)
+            putpixel(preview, x, y, mask_color);
       break;
     }
   }
@@ -422,17 +422,17 @@ static bool interactive_transform(Editor* editor,
       fixed old_angle = angle;
 
       switch (c>>8) {
-	case KEY_ESC:   done = DONE_CANCEL; break;	/* cancel */
-	case KEY_ENTER: done = DONE_PASTE; break;	/* paste */
-	case KEY_LEFT:  angle = fixadd(angle, itofix(1));  break;
-	case KEY_RIGHT: angle = fixsub(angle, itofix(1));  break;
-	case KEY_UP:    angle = fixadd(angle, itofix(32)); break;
-	case KEY_DOWN:  angle = fixsub(angle, itofix(32)); break;
+        case KEY_ESC:   done = DONE_CANCEL; break;      /* cancel */
+        case KEY_ENTER: done = DONE_PASTE; break;       /* paste */
+        case KEY_LEFT:  angle = fixadd(angle, itofix(1));  break;
+        case KEY_RIGHT: angle = fixsub(angle, itofix(1));  break;
+        case KEY_UP:    angle = fixadd(angle, itofix(32)); break;
+        case KEY_DOWN:  angle = fixsub(angle, itofix(32)); break;
       }
 
       if (old_angle != angle) {
-	angle &= 255<<16;
-	REDRAW();
+        angle &= 255<<16;
+        REDRAW();
       }
     }
 
@@ -443,55 +443,55 @@ static bool interactive_transform(Editor* editor,
       int in_box;
 
       fill_in_vars(&in_box,
-		   &in_left, &in_center, &in_right,
-		   &in_top, &in_middle, &in_bottom,
-		   x1, y1, x2, y2, angle, cx, cy);
+                   &in_left, &in_center, &in_right,
+                   &in_top, &in_middle, &in_bottom,
+                   x1, y1, x2, y2, angle, cx, cy);
 
       if (in_box) {
-	jmouse_set_cursor(JI_CURSOR_SCROLL);
-	action = ACTION_MOVE;
+        jmouse_set_cursor(JI_CURSOR_SCROLL);
+        action = ACTION_MOVE;
       }
       else {
-	/* top */
-	if (in_top && in_left) {
-	  jmouse_set_cursor(JI_CURSOR_SIZE_TL);
-	  action = mode == SCALE_MODE ? ACTION_SCALE_TL: ACTION_ROTATE_TL;
-	}
-	else if (in_top && in_center) {
-	  jmouse_set_cursor(JI_CURSOR_SIZE_T);
-	  action = mode == SCALE_MODE ? ACTION_SCALE_T: ACTION_ROTATE_T;
-	}
-	else if (in_top && in_right) {
-	  jmouse_set_cursor(JI_CURSOR_SIZE_TR);
-	  action = mode == SCALE_MODE ? ACTION_SCALE_TR: ACTION_ROTATE_TR;
-	}
-	/* middle */
-	else if (in_middle && in_left) {
-	  jmouse_set_cursor(JI_CURSOR_SIZE_L);
-	  action = mode == SCALE_MODE ? ACTION_SCALE_L: ACTION_ROTATE_L;
-	}
-	else if (in_middle && in_right) {
-	  jmouse_set_cursor(JI_CURSOR_SIZE_R);
-	  action = mode == SCALE_MODE ? ACTION_SCALE_R: ACTION_ROTATE_R;
-	}
-	/* bottom */
-	else if (in_bottom && in_left) {
-	  jmouse_set_cursor(JI_CURSOR_SIZE_BL);
-	  action = mode == SCALE_MODE ? ACTION_SCALE_BL: ACTION_ROTATE_BL;
-	}
-	else if (in_bottom && in_center) {
-	  jmouse_set_cursor(JI_CURSOR_SIZE_B);
-	  action = mode == SCALE_MODE ? ACTION_SCALE_B: ACTION_ROTATE_B;
-	}
-	else if (in_bottom && in_right) {
-	  jmouse_set_cursor(JI_CURSOR_SIZE_BR);
-	  action = mode == SCALE_MODE ? ACTION_SCALE_BR: ACTION_ROTATE_BR;
-	}
-	/* normal */
-	else {
-	  jmouse_set_cursor(JI_CURSOR_NORMAL);
-	  action = ACTION_SETMODE;
-	}
+        /* top */
+        if (in_top && in_left) {
+          jmouse_set_cursor(JI_CURSOR_SIZE_TL);
+          action = mode == SCALE_MODE ? ACTION_SCALE_TL: ACTION_ROTATE_TL;
+        }
+        else if (in_top && in_center) {
+          jmouse_set_cursor(JI_CURSOR_SIZE_T);
+          action = mode == SCALE_MODE ? ACTION_SCALE_T: ACTION_ROTATE_T;
+        }
+        else if (in_top && in_right) {
+          jmouse_set_cursor(JI_CURSOR_SIZE_TR);
+          action = mode == SCALE_MODE ? ACTION_SCALE_TR: ACTION_ROTATE_TR;
+        }
+        /* middle */
+        else if (in_middle && in_left) {
+          jmouse_set_cursor(JI_CURSOR_SIZE_L);
+          action = mode == SCALE_MODE ? ACTION_SCALE_L: ACTION_ROTATE_L;
+        }
+        else if (in_middle && in_right) {
+          jmouse_set_cursor(JI_CURSOR_SIZE_R);
+          action = mode == SCALE_MODE ? ACTION_SCALE_R: ACTION_ROTATE_R;
+        }
+        /* bottom */
+        else if (in_bottom && in_left) {
+          jmouse_set_cursor(JI_CURSOR_SIZE_BL);
+          action = mode == SCALE_MODE ? ACTION_SCALE_BL: ACTION_ROTATE_BL;
+        }
+        else if (in_bottom && in_center) {
+          jmouse_set_cursor(JI_CURSOR_SIZE_B);
+          action = mode == SCALE_MODE ? ACTION_SCALE_B: ACTION_ROTATE_B;
+        }
+        else if (in_bottom && in_right) {
+          jmouse_set_cursor(JI_CURSOR_SIZE_BR);
+          action = mode == SCALE_MODE ? ACTION_SCALE_BR: ACTION_ROTATE_BR;
+        }
+        /* normal */
+        else {
+          jmouse_set_cursor(JI_CURSOR_NORMAL);
+          action = ACTION_SETMODE;
+        }
       }
     }
 
@@ -499,211 +499,211 @@ static bool interactive_transform(Editor* editor,
     if (jmouse_b(0)) {
       /* left button+shift || middle button = scroll movement */
       if ((jmouse_b(0) == 1 && (key[KEY_LSHIFT] || key[KEY_RSHIFT])) ||
-	  (jmouse_b(0) == 4)) {
-	View* view = View::getView(editor);
+          (jmouse_b(0) == 4)) {
+        View* view = View::getView(editor);
 
-	x = jmouse_x(0) - jmouse_x(1);
-	y = jmouse_y(0) - jmouse_y(1);
+        x = jmouse_x(0) - jmouse_x(1);
+        y = jmouse_y(0) - jmouse_y(1);
 
-/* 	screenToEditor (widget, x1, y1, &x1, &y1); */
-/* 	screenToEditor (widget, x2, y2, &x2, &y2); */
+/*      screenToEditor (widget, x1, y1, &x1, &y1); */
+/*      screenToEditor (widget, x2, y2, &x2, &y2); */
 
-	/* TODO */
+        /* TODO */
 
-	gfx::Point scroll = view->getViewScroll();
-	editor->setEditorScroll(scroll.x-x, scroll.y-y, true);
+        gfx::Point scroll = view->getViewScroll();
+        editor->setEditorScroll(scroll.x-x, scroll.y-y, true);
 
-/* 	editorToScreen(widget, x1, y1, &x1, &y1); */
-/* 	editorToScreen(widget, x2, y2, &x2, &y2); */
+/*      editorToScreen(widget, x1, y1, &x1, &y1); */
+/*      editorToScreen(widget, x2, y2, &x2, &y2); */
 
-	jmouse_control_infinite_scroll(vp);
+        jmouse_control_infinite_scroll(vp);
 
-	view->invalidate();
-	jwidget_flush_redraw(view);
-	UPDATE();
+        view->invalidate();
+        jwidget_flush_redraw(view);
+        UPDATE();
 
-	/* recenter the pivot (cx, cy) */
-/* 	{ */
-/* 	  MATRIX m; */
-/* 	  fixed fx, fy, fz; */
-/* 	  /\* new pivot position with transformation *\/ */
-/* 	  int ncx = (x1+x2)/2; */
-/* 	  int ncy = (y1+y2)/2; */
+        /* recenter the pivot (cx, cy) */
+/*      { */
+/*        MATRIX m; */
+/*        fixed fx, fy, fz; */
+/*        /\* new pivot position with transformation *\/ */
+/*        int ncx = (x1+x2)/2; */
+/*        int ncy = (y1+y2)/2; */
 
-/* 	  get_rotation_matrix (&m, 0, 0, angle); */
+/*        get_rotation_matrix (&m, 0, 0, angle); */
 
-/* 	  /\* new pivot position in the screen *\/ */
-/* 	  apply_matrix (&m, itofix(ncx-cx), itofix(ncy-cy), 0, &fx, &fy, &fz); */
-/* 	  cx = cx+fixtoi(fx); */
-/* 	  cy = cy+fixtoi(fy); */
+/*        /\* new pivot position in the screen *\/ */
+/*        apply_matrix (&m, itofix(ncx-cx), itofix(ncy-cy), 0, &fx, &fy, &fz); */
+/*        cx = cx+fixtoi(fx); */
+/*        cy = cy+fixtoi(fy); */
 
-/* 	  /\* move all vertices to leave the pivot as the center  *\/ */
-/* 	  x1 += cx - ncx; */
-/* 	  y1 += cy - ncy; */
-/* 	  x2 += cx - ncx; */
-/* 	  y2 += cy - ncy; */
+/*        /\* move all vertices to leave the pivot as the center  *\/ */
+/*        x1 += cx - ncx; */
+/*        y1 += cy - ncy; */
+/*        x2 += cx - ncx; */
+/*        y2 += cy - ncy; */
 
-/* 	  jmouse_hide(); */
-/* 	  blit (bmp1, bmp2, 0, 0, 0, 0, vp->w, vp->h); */
-/* 	  draw_box (bmp2, */
-/* 		    0, 0, vp->w-1, vp->h-1, */
-/* 		    x1-vp->x, y1-vp->y, x2-vp->x, y2-vp->y, */
-/* 		    preview, mode, angle, cx-vp->x, cy-vp->y); */
-/* 	  blit (bmp2, ji_screen, 0, 0, vp->x, vp->y, vp->w, vp->h); */
-/* 	  update_status_bar (widget, image, x1, y1, x2, y2, angle); */
-/* 	  jmouse_show(); */
-/* 	} */
+/*        jmouse_hide(); */
+/*        blit (bmp1, bmp2, 0, 0, 0, 0, vp->w, vp->h); */
+/*        draw_box (bmp2, */
+/*                  0, 0, vp->w-1, vp->h-1, */
+/*                  x1-vp->x, y1-vp->y, x2-vp->x, y2-vp->y, */
+/*                  preview, mode, angle, cx-vp->x, cy-vp->y); */
+/*        blit (bmp2, ji_screen, 0, 0, vp->x, vp->y, vp->w, vp->h); */
+/*        update_status_bar (widget, image, x1, y1, x2, y2, angle); */
+/*        jmouse_show(); */
+/*      } */
       }
       /* right button = paste */
       else if (jmouse_b(0) == 2) {
-	done = DONE_PASTE; 		/* paste */
+        done = DONE_PASTE;              /* paste */
       }
       /* change mode */
       else if (action == ACTION_SETMODE) {
-	mode = (mode == SCALE_MODE) ? ROTATE_MODE: SCALE_MODE;
-	REDRAW();
+        mode = (mode == SCALE_MODE) ? ROTATE_MODE: SCALE_MODE;
+        REDRAW();
 
-	do {
-	  poll_keyboard();
-	  jmouse_poll();
-	  gui_feedback();
-	} while (jmouse_b(0));
+        do {
+          poll_keyboard();
+          jmouse_poll();
+          gui_feedback();
+        } while (jmouse_b(0));
       }
       /* modify selection */
       else {
-	int mx = jmouse_x(0);
-	int my = jmouse_y(0);
-	fixed angle1 = angle;
-	fixed angle2 = fixatan2(itofix(jmouse_y(0)-cy),
-				itofix(jmouse_x(0)-cx));
-	angle2 = fixsub(0, angle2);
+        int mx = jmouse_x(0);
+        int my = jmouse_y(0);
+        fixed angle1 = angle;
+        fixed angle2 = fixatan2(itofix(jmouse_y(0)-cy),
+                                itofix(jmouse_x(0)-cx));
+        angle2 = fixsub(0, angle2);
 
-	u1 = x1;
-	v1 = y1;
-	u2 = x2;
-	v2 = y2;
+        u1 = x1;
+        v1 = y1;
+        u2 = x2;
+        v2 = y2;
 
-	do {
-	  poll_keyboard();
-	  if (jmouse_poll()) {
+        do {
+          poll_keyboard();
+          if (jmouse_poll()) {
 
-	    if (action == ACTION_MOVE) {
-	      x = jmouse_x(0) - mx;
-	      y = jmouse_y(0) - my;
-	    }
-	    else if (action >= ACTION_SCALE_TL &&
-		     action <= ACTION_SCALE_BR) {
-	      x = fixtoi(fixmul(itofix(jmouse_x(0) - mx), fixcos(angle)))
-		+ fixtoi(fixmul(itofix(jmouse_y(0) - my),-fixsin(angle)));
-	      y = fixtoi(fixmul(itofix(jmouse_x(0) - mx), fixsin(angle)))
-		+ fixtoi(fixmul(itofix(jmouse_y(0) - my), fixcos(angle)));
-	    }
-	    else
-	      x = y = 0;
+            if (action == ACTION_MOVE) {
+              x = jmouse_x(0) - mx;
+              y = jmouse_y(0) - my;
+            }
+            else if (action >= ACTION_SCALE_TL &&
+                     action <= ACTION_SCALE_BR) {
+              x = fixtoi(fixmul(itofix(jmouse_x(0) - mx), fixcos(angle)))
+                + fixtoi(fixmul(itofix(jmouse_y(0) - my),-fixsin(angle)));
+              y = fixtoi(fixmul(itofix(jmouse_x(0) - mx), fixsin(angle)))
+                + fixtoi(fixmul(itofix(jmouse_y(0) - my), fixcos(angle)));
+            }
+            else
+              x = y = 0;
 
-	    x1 = u1;
-	    y1 = v1;
-	    x2 = u2;
-	    y2 = v2;
+            x1 = u1;
+            y1 = v1;
+            x2 = u2;
+            y2 = v2;
 
-	    switch (action) {
-	      case ACTION_MOVE:
-		x1 += x;
-		y1 += y;
-		x2 += x;
-		y2 += y;
-		cx = (x1+x2)/2;
-		cy = (y1+y2)/2;
-		break;
-	      case ACTION_SCALE_L:
-		x1 = MIN(x1+x, x2);
-		break;
-	      case ACTION_SCALE_T:
-		y1 = MIN(y1+y, y2);
-		break;
-	      case ACTION_SCALE_R:
-		x2 = MAX(x2+x, x1);
-		break;
-	      case ACTION_SCALE_B:
-		y2 = MAX(y2+y, y1);
-		break;
-	      case ACTION_SCALE_TL:
-		x1 = MIN(x1+x, x2);
-		y1 = MIN(y1+y, y2);
-		break;
-	      case ACTION_SCALE_TR:
-		x2 = MAX(x2+x, x1);
-		y1 = MIN(y1+y, y2);
-		break;
-	      case ACTION_SCALE_BL:
-		x1 = MIN(x1+x, x2);
-		y2 = MAX(y2+y, y1);
-		break;
-	      case ACTION_SCALE_BR:
-		x2 = MAX(x2+x, x1);
-		y2 = MAX(y2+y, y1);
-		break;
-	      case ACTION_ROTATE_TL:
-	      case ACTION_ROTATE_T:
-	      case ACTION_ROTATE_TR:
-	      case ACTION_ROTATE_L:
-	      case ACTION_ROTATE_R:
-	      case ACTION_ROTATE_BL:
-	      case ACTION_ROTATE_B:
-	      case ACTION_ROTATE_BR:
-		angle = fixatan2(itofix(jmouse_y(0)-cy),
-				 itofix(jmouse_x(0)-cx));
-		angle &= 255<<16;
-		angle = fixsub(0, angle);
+            switch (action) {
+              case ACTION_MOVE:
+                x1 += x;
+                y1 += y;
+                x2 += x;
+                y2 += y;
+                cx = (x1+x2)/2;
+                cy = (y1+y2)/2;
+                break;
+              case ACTION_SCALE_L:
+                x1 = MIN(x1+x, x2);
+                break;
+              case ACTION_SCALE_T:
+                y1 = MIN(y1+y, y2);
+                break;
+              case ACTION_SCALE_R:
+                x2 = MAX(x2+x, x1);
+                break;
+              case ACTION_SCALE_B:
+                y2 = MAX(y2+y, y1);
+                break;
+              case ACTION_SCALE_TL:
+                x1 = MIN(x1+x, x2);
+                y1 = MIN(y1+y, y2);
+                break;
+              case ACTION_SCALE_TR:
+                x2 = MAX(x2+x, x1);
+                y1 = MIN(y1+y, y2);
+                break;
+              case ACTION_SCALE_BL:
+                x1 = MIN(x1+x, x2);
+                y2 = MAX(y2+y, y1);
+                break;
+              case ACTION_SCALE_BR:
+                x2 = MAX(x2+x, x1);
+                y2 = MAX(y2+y, y1);
+                break;
+              case ACTION_ROTATE_TL:
+              case ACTION_ROTATE_T:
+              case ACTION_ROTATE_TR:
+              case ACTION_ROTATE_L:
+              case ACTION_ROTATE_R:
+              case ACTION_ROTATE_BL:
+              case ACTION_ROTATE_B:
+              case ACTION_ROTATE_BR:
+                angle = fixatan2(itofix(jmouse_y(0)-cy),
+                                 itofix(jmouse_x(0)-cx));
+                angle &= 255<<16;
+                angle = fixsub(0, angle);
 
-		angle = fixadd(angle1, fixsub (angle, angle2));
-		break;
-	    }
+                angle = fixadd(angle1, fixsub (angle, angle2));
+                break;
+            }
 
-	    editor->screenToEditor(x1, y1, &x1, &y1);
-	    editor->screenToEditor(x2, y2, &x2, &y2);
+            editor->screenToEditor(x1, y1, &x1, &y1);
+            editor->screenToEditor(x2, y2, &x2, &y2);
 
-	    // if (UIContext::instance()->getSettings()->get_snap_to_grid() && angle == 0) {
-	    //   int ox = x1;
-	    //   int oy = y1;
-	    //   apply_grid(&x1, &y1, false);
-	    //   x2 += x1 - ox;
-	    //   y2 += y1 - oy;
-	    // }
+            // if (UIContext::instance()->getSettings()->get_snap_to_grid() && angle == 0) {
+            //   int ox = x1;
+            //   int oy = y1;
+            //   apply_grid(&x1, &y1, false);
+            //   x2 += x1 - ox;
+            //   y2 += y1 - oy;
+            // }
 
-	    editor->editorToScreen(x1, y1, &x1, &y1);
-	    editor->editorToScreen(x2, y2, &x2, &y2);
+            editor->editorToScreen(x1, y1, &x1, &y1);
+            editor->editorToScreen(x2, y2, &x2, &y2);
 
-	    /* redraw the screen */
-	    REDRAW();
-	  }
+            /* redraw the screen */
+            REDRAW();
+          }
 
-	  gui_feedback();
-	} while (jmouse_b(0));
+          gui_feedback();
+        } while (jmouse_b(0));
 
-	/* recenter the pivot (cx, cy) */
-	{
-	  MATRIX m;
-	  fixed fx, fy, fz;
-	  /* new pivot position with transformation */
-	  int ncx = (x1+x2)/2;
-	  int ncy = (y1+y2)/2;
+        /* recenter the pivot (cx, cy) */
+        {
+          MATRIX m;
+          fixed fx, fy, fz;
+          /* new pivot position with transformation */
+          int ncx = (x1+x2)/2;
+          int ncy = (y1+y2)/2;
 
-	  get_rotation_matrix(&m, 0, 0, angle);
+          get_rotation_matrix(&m, 0, 0, angle);
 
-	  /* new pivot position in the screen */
-	  apply_matrix(&m, itofix(ncx-cx), itofix(ncy-cy), 0, &fx, &fy, &fz);
-	  cx = cx+fixtoi(fx);
-	  cy = cy+fixtoi(fy);
+          /* new pivot position in the screen */
+          apply_matrix(&m, itofix(ncx-cx), itofix(ncy-cy), 0, &fx, &fy, &fz);
+          cx = cx+fixtoi(fx);
+          cy = cy+fixtoi(fy);
 
-	  /* move all vertices to leave the pivot as the center  */
-	  x1 += cx - ncx;
-	  y1 += cy - ncy;
-	  x2 += cx - ncx;
-	  y2 += cy - ncy;
+          /* move all vertices to leave the pivot as the center  */
+          x1 += cx - ncx;
+          y1 += cy - ncy;
+          x2 += cx - ncx;
+          y2 += cy - ncy;
 
-	  REDRAW();
-	}
+          REDRAW();
+        }
       }
     }
 
@@ -730,12 +730,12 @@ static bool interactive_transform(Editor* editor,
 }
 
 static void apply_rotation(int x1, int y1, int x2, int y2,
-			   fixed angle, int cx, int cy,
-			   int xout[4], int yout[4])
+                           fixed angle, int cx, int cy,
+                           int xout[4], int yout[4])
 {
-#define APPLYMATRIX(_x,_y,n)						\
-  apply_matrix (&m, itofix (_x-cx), itofix (_y-cy), 0, &fx, &fy, &fz);	\
-  xout[n] = cx+fixtoi(fx);						\
+#define APPLYMATRIX(_x,_y,n)                                            \
+  apply_matrix (&m, itofix (_x-cx), itofix (_y-cy), 0, &fx, &fy, &fz);  \
+  xout[n] = cx+fixtoi(fx);                                              \
   yout[n] = cy+fixtoi(fy);
 
   MATRIX m;
@@ -749,10 +749,10 @@ static void apply_rotation(int x1, int y1, int x2, int y2,
 }
 
 static void draw_box(BITMAP *bmp,
-		     int cx1, int cy1, int cx2, int cy2,
-		     int x1, int y1, int x2, int y2,
-		     BITMAP *preview, int mode, fixed angle,
-		     int cx, int cy)
+                     int cx1, int cy1, int cx2, int cy2,
+                     int x1, int y1, int x2, int y2,
+                     BITMAP *preview, int mode, fixed angle,
+                     int cx, int cy)
 {
   fixed xs[4], ys[4];
   int x[4], y[4];
@@ -781,7 +781,7 @@ static void draw_box(BITMAP *bmp,
 #endif
 
   /* draw icons */
-#define DRAWICON(n1,n2,_angle)						\
+#define DRAWICON(n1,n2,_angle)                                          \
   draw_icon(bmp, (x[n1]+x[n2])/2, (y[n1]+y[n2])/2, mode, _angle)
 
   DRAWICON(1, 2, angle);
@@ -846,10 +846,10 @@ static void draw_icon(BITMAP *bmp, int x, int y, int mode, fixed angle)
 }
 
 static void fill_in_vars(int *in_box,
-			 int *in_left, int *in_center, int *in_right,
-			 int *in_top, int *in_middle, int *in_bottom,
-			 int x1, int y1, int x2, int y2, fixed angle,
-			 int cx, int cy)
+                         int *in_left, int *in_center, int *in_right,
+                         int *in_top, int *in_middle, int *in_bottom,
+                         int x1, int y1, int x2, int y2, fixed angle,
+                         int cx, int cy)
 {
   MATRIX m;
   int mx = jmouse_x(0);
@@ -871,7 +871,7 @@ static void fill_in_vars(int *in_box,
 }
 
 static void update_status_bar(Editor* editor, Image *image,
-			      int x1, int y1, int x2, int y2, fixed angle)
+                              int x1, int y1, int x2, int y2, fixed angle)
 {
   int u1, v1, u2, v2;
   int iangle = 360*(fixtoi (angle & (255<<16)))/256;

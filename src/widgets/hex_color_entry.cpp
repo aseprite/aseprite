@@ -44,9 +44,9 @@ HexColorEntry::HexColorEntry()
 void HexColorEntry::setColor(const Color& color)
 {
   m_entry.setTextf("%02x%02x%02x",
-		   color.getRed(),
-		   color.getGreen(),
-		   color.getBlue());
+                   color.getRed(),
+                   color.getGreen(),
+                   color.getBlue());
 }
 
 void HexColorEntry::onEntryChange()
@@ -64,6 +64,6 @@ void HexColorEntry::onEntryChange()
   r = (hex & 0xff0000) >> 16;
   g = (hex & 0xff00) >> 8;
   b = (hex & 0xff);
-  
+
   ColorChange(Color::fromRgb(r, g, b));
 }

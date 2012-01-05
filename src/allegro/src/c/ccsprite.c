@@ -52,4 +52,3 @@ void draw_compiled_sprite(BITMAP *dst, AL_CONST COMPILED_SPRITE *src, int x, int
    ASSERT(src);
    draw_rle_sprite(dst, (COMPILED_SPRITE *)src, x, y);
 }
-

@@ -25,4 +25,3 @@ class Document;
 Image* NewImageFromMask(const Document* srcDocument);
 
 #endif
-

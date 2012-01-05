@@ -88,7 +88,7 @@ bool PngFormat::onLoad(FileOp* fop)
    * was compiled with a compatible version of the library
    */
   png_ptr = png_create_read_struct(PNG_LIBPNG_VER_STRING, (png_voidp)fop,
- 				   report_png_error, report_png_error);
+                                   report_png_error, report_png_error);
   if (png_ptr == NULL) {
     fop_error(fop, "png_create_read_struct\n");
     fclose(fp);
@@ -126,11 +126,11 @@ bool PngFormat::onLoad(FileOp* fop)
    * PNG file before the first IDAT (image data chunk).
    */
   png_read_info(png_ptr, info_ptr);
-  
-  png_get_IHDR(png_ptr, info_ptr, &width, &height, &bit_depth, &color_type,
-	       &interlace_type, int_p_NULL, int_p_NULL);
 
-  
+  png_get_IHDR(png_ptr, info_ptr, &width, &height, &bit_depth, &color_type,
+               &interlace_type, int_p_NULL, int_p_NULL);
+
+
   /* Set up the data transformations you want.  Note that these are all
    * optional.  Only call them if you want/need them.  Many of the
    * transformations only work on specific types of images, and many
@@ -165,7 +165,7 @@ bool PngFormat::onLoad(FileOp* fop)
 
     case PNG_COLOR_TYPE_RGB_ALPHA:
       fop->seq.has_alpha = true;
-    case PNG_COLOR_TYPE_RGB: 
+    case PNG_COLOR_TYPE_RGB:
       imgtype = IMAGE_RGB;
       break;
 
@@ -185,7 +185,7 @@ bool PngFormat::onLoad(FileOp* fop)
       fclose(fp);
       return false;
   }
-  
+
   image = fop_sequence_image(fop, imgtype, info_ptr->width, info_ptr->height);
   if (!image) {
     fop_error(fop, "file_sequence_image %dx%d\n", info_ptr->width, info_ptr->height);
@@ -205,16 +205,16 @@ bool PngFormat::onLoad(FileOp* fop)
 
     for (c = 0; c < num_palette; c++) {
       fop_sequence_set_color(fop, c,
-			     palette[c].red,
-			     palette[c].green,
-			     palette[c].blue);
+                             palette[c].red,
+                             palette[c].green,
+                             palette[c].blue);
     }
     for (; c < 256; c++) {
       fop_sequence_set_color(fop, c, 0, 0, 0);
     }
 
     // Read alpha values for palette entries
-    png_bytep trans = NULL;	// Transparent palette entries
+    png_bytep trans = NULL;     // Transparent palette entries
     int num_trans = 0;
 
     png_get_tRNS(png_ptr, info_ptr, &trans, &num_trans, NULL);
@@ -223,10 +223,10 @@ bool PngFormat::onLoad(FileOp* fop)
       pal_alphas[i] = trans[i];
 
       if (pal_alphas[i] < 128) {
-	fop->seq.has_alpha = true; // Is a transparent sprite
+        fop->seq.has_alpha = true; // Is a transparent sprite
 
-	if (mask_entry < 0)
-	  mask_entry = i;
+        if (mask_entry < 0)
+          mask_entry = i;
       }
     }
 
@@ -248,78 +248,78 @@ bool PngFormat::onLoad(FileOp* fop)
 
       /* RGB_ALPHA */
       if (info_ptr->color_type == PNG_COLOR_TYPE_RGB_ALPHA) {
-	register uint8_t* src_address = row_pointer;
-	register uint32_t* dst_address = ((uint32_t**)image->line)[y];
-	register unsigned int x, r, g, b, a;
+        register uint8_t* src_address = row_pointer;
+        register uint32_t* dst_address = ((uint32_t**)image->line)[y];
+        register unsigned int x, r, g, b, a;
 
-	for (x=0; x<width; x++) {
-	  r = *(src_address++);
-	  g = *(src_address++);
-	  b = *(src_address++);
-	  a = *(src_address++);
-	  *(dst_address++) = _rgba(r, g, b, a);
-	}
+        for (x=0; x<width; x++) {
+          r = *(src_address++);
+          g = *(src_address++);
+          b = *(src_address++);
+          a = *(src_address++);
+          *(dst_address++) = _rgba(r, g, b, a);
+        }
       }
       /* RGB */
       else if (info_ptr->color_type == PNG_COLOR_TYPE_RGB) {
-	register uint8_t* src_address = row_pointer;
-	register uint32_t* dst_address = ((uint32_t**)image->line)[y];
-	register unsigned int x, r, g, b;
+        register uint8_t* src_address = row_pointer;
+        register uint32_t* dst_address = ((uint32_t**)image->line)[y];
+        register unsigned int x, r, g, b;
 
-	for (x=0; x<width; x++) {
-	  r = *(src_address++);
-	  g = *(src_address++);
-	  b = *(src_address++);
-	  *(dst_address++) = _rgba(r, g, b, 255);
-	}
+        for (x=0; x<width; x++) {
+          r = *(src_address++);
+          g = *(src_address++);
+          b = *(src_address++);
+          *(dst_address++) = _rgba(r, g, b, 255);
+        }
       }
       /* GRAY_ALPHA */
       else if (info_ptr->color_type == PNG_COLOR_TYPE_GRAY_ALPHA) {
-	register uint8_t* src_address = row_pointer;
-	register uint16_t* dst_address = ((uint16_t**)image->line)[y];
-	register unsigned int x, k, a;
+        register uint8_t* src_address = row_pointer;
+        register uint16_t* dst_address = ((uint16_t**)image->line)[y];
+        register unsigned int x, k, a;
 
-	for (x=0; x<width; x++) {
-	  k = *(src_address++);
-	  a = *(src_address++);
-	  *(dst_address++) = _graya(k, a);
-	}
+        for (x=0; x<width; x++) {
+          k = *(src_address++);
+          a = *(src_address++);
+          *(dst_address++) = _graya(k, a);
+        }
       }
       /* GRAY */
       else if (info_ptr->color_type == PNG_COLOR_TYPE_GRAY) {
-	register uint8_t* src_address = row_pointer;
-	register uint16_t* dst_address = ((uint16_t**)image->line)[y];
-	register unsigned int x, k;
+        register uint8_t* src_address = row_pointer;
+        register uint16_t* dst_address = ((uint16_t**)image->line)[y];
+        register unsigned int x, k;
 
-	for (x=0; x<width; x++) {
-	  k = *(src_address++);
-	  *(dst_address++) = _graya(k, 255);
-	}
+        for (x=0; x<width; x++) {
+          k = *(src_address++);
+          *(dst_address++) = _graya(k, 255);
+        }
       }
       /* PALETTE */
       else if (info_ptr->color_type == PNG_COLOR_TYPE_PALETTE) {
-	register uint8_t* src_address = row_pointer;
-	register uint8_t* dst_address = ((uint8_t**)image->line)[y];
-	register unsigned int x, c;
+        register uint8_t* src_address = row_pointer;
+        register uint8_t* dst_address = ((uint8_t**)image->line)[y];
+        register unsigned int x, c;
 
-	for (x=0; x<width; x++) {
-	  c = *(src_address++);
+        for (x=0; x<width; x++) {
+          c = *(src_address++);
 
-	  if (pal_alphas[c] < 128) {
-	    *(dst_address++) = mask_entry;
-	  }
-	  else {
-	    *(dst_address++) = c;
-	  }
-	}
+          if (pal_alphas[c] < 128) {
+            *(dst_address++) = mask_entry;
+          }
+          else {
+            *(dst_address++) = c;
+          }
+        }
       }
 
       fop_progress(fop,
-		   (float)((float)pass + (float)(y+1) / (float)(height))
-		   / (float)number_passes);
+                   (float)((float)pass + (float)(y+1) / (float)(height))
+                   / (float)number_passes);
 
       if (fop_is_stop(fop))
-	break;
+        break;
     }
   }
   png_free(png_ptr, row_pointer);
@@ -356,7 +356,7 @@ bool PngFormat::onSave(FileOp* fop)
    * in case we are using dynamically linked libraries.  REQUIRED.
    */
   png_ptr = png_create_write_struct(PNG_LIBPNG_VER_STRING, (png_voidp)fop,
-				    report_png_error, report_png_error);
+                                    report_png_error, report_png_error);
   if (png_ptr == NULL) {
     fclose(fp);
     return false;
@@ -397,13 +397,13 @@ bool PngFormat::onSave(FileOp* fop)
   switch (image->imgtype) {
     case IMAGE_RGB:
       color_type = fop->document->getSprite()->needAlpha() ?
-	PNG_COLOR_TYPE_RGB_ALPHA:
-	PNG_COLOR_TYPE_RGB;
+        PNG_COLOR_TYPE_RGB_ALPHA:
+        PNG_COLOR_TYPE_RGB;
       break;
     case IMAGE_GRAYSCALE:
       color_type = fop->document->getSprite()->needAlpha() ?
-	PNG_COLOR_TYPE_GRAY_ALPHA:
-	PNG_COLOR_TYPE_GRAY;
+        PNG_COLOR_TYPE_GRAY_ALPHA:
+        PNG_COLOR_TYPE_GRAY;
       break;
     case IMAGE_INDEXED:
       color_type = PNG_COLOR_TYPE_PALETTE;
@@ -411,7 +411,7 @@ bool PngFormat::onSave(FileOp* fop)
   }
 
   png_set_IHDR(png_ptr, info_ptr, width, height, 8, color_type,
-	       PNG_INTERLACE_NONE, PNG_COMPRESSION_TYPE_BASE, PNG_FILTER_TYPE_BASE);
+               PNG_INTERLACE_NONE, PNG_COMPRESSION_TYPE_BASE, PNG_FILTER_TYPE_BASE);
 
   if (image->imgtype == IMAGE_INDEXED) {
     int c, r, g, b;
@@ -440,7 +440,7 @@ bool PngFormat::onSave(FileOp* fop)
       png_bytep trans = (png_bytep)png_malloc(png_ptr, num_trans);
 
       for (c = 0; c < num_trans; ++c)
-	trans[c] = (c == mask_entry ? 0: 255);
+        trans[c] = (c == mask_entry ? 0: 255);
 
       png_set_tRNS(png_ptr, info_ptr, trans, num_trans, NULL);
       png_free(png_ptr, trans);
@@ -466,70 +466,70 @@ bool PngFormat::onSave(FileOp* fop)
     for (y = 0; y < height; y++) {
       /* RGB_ALPHA */
       if (info_ptr->color_type == PNG_COLOR_TYPE_RGB_ALPHA) {
-	register uint32_t* src_address = ((uint32_t**)image->line)[y];
-	register uint8_t* dst_address = row_pointer;
-	register unsigned int x, c;
+        register uint32_t* src_address = ((uint32_t**)image->line)[y];
+        register uint8_t* dst_address = row_pointer;
+        register unsigned int x, c;
 
-	for (x=0; x<width; x++) {
-	  c = *(src_address++);
-	  *(dst_address++) = _rgba_getr(c);
-	  *(dst_address++) = _rgba_getg(c);
-	  *(dst_address++) = _rgba_getb(c);
-	  *(dst_address++) = _rgba_geta(c);
-	}
+        for (x=0; x<width; x++) {
+          c = *(src_address++);
+          *(dst_address++) = _rgba_getr(c);
+          *(dst_address++) = _rgba_getg(c);
+          *(dst_address++) = _rgba_getb(c);
+          *(dst_address++) = _rgba_geta(c);
+        }
       }
       /* RGB */
       else if (info_ptr->color_type == PNG_COLOR_TYPE_RGB) {
-	register uint32_t* src_address = ((uint32_t**)image->line)[y];
-	register uint8_t* dst_address = row_pointer;
-	register unsigned int x, c;
+        register uint32_t* src_address = ((uint32_t**)image->line)[y];
+        register uint8_t* dst_address = row_pointer;
+        register unsigned int x, c;
 
-	for (x=0; x<width; x++) {
-	  c = *(src_address++);
-	  *(dst_address++) = _rgba_getr(c);
-	  *(dst_address++) = _rgba_getg(c);
-	  *(dst_address++) = _rgba_getb(c);
-	}
+        for (x=0; x<width; x++) {
+          c = *(src_address++);
+          *(dst_address++) = _rgba_getr(c);
+          *(dst_address++) = _rgba_getg(c);
+          *(dst_address++) = _rgba_getb(c);
+        }
       }
       /* GRAY_ALPHA */
       else if (info_ptr->color_type == PNG_COLOR_TYPE_GRAY_ALPHA) {
-	register uint16_t* src_address = ((uint16_t**)image->line)[y];
-	register uint8_t* dst_address = row_pointer;
-	register unsigned int x, c;
+        register uint16_t* src_address = ((uint16_t**)image->line)[y];
+        register uint8_t* dst_address = row_pointer;
+        register unsigned int x, c;
 
-	for (x=0; x<width; x++) {
-	  c = *(src_address++);
-	  *(dst_address++) = _graya_getv(c);
-	  *(dst_address++) = _graya_geta(c);
-	}
+        for (x=0; x<width; x++) {
+          c = *(src_address++);
+          *(dst_address++) = _graya_getv(c);
+          *(dst_address++) = _graya_geta(c);
+        }
       }
       /* GRAY */
       else if (info_ptr->color_type == PNG_COLOR_TYPE_GRAY) {
-	register uint16_t* src_address = ((uint16_t**)image->line)[y];
-	register uint8_t* dst_address = row_pointer;
-	register unsigned int x, c;
+        register uint16_t* src_address = ((uint16_t**)image->line)[y];
+        register uint8_t* dst_address = row_pointer;
+        register unsigned int x, c;
 
-	for (x=0; x<width; x++) {
-	  c = *(src_address++);
-	  *(dst_address++) = _graya_getv(c);
-	}
+        for (x=0; x<width; x++) {
+          c = *(src_address++);
+          *(dst_address++) = _graya_getv(c);
+        }
       }
       /* PALETTE */
       else if (info_ptr->color_type == PNG_COLOR_TYPE_PALETTE) {
-	register uint8_t* src_address = ((uint8_t**)image->line)[y];
-	register uint8_t* dst_address = row_pointer;
-	register unsigned int x;
+        register uint8_t* src_address = ((uint8_t**)image->line)[y];
+        register uint8_t* dst_address = row_pointer;
+        register unsigned int x;
 
-	for (x=0; x<width; x++)
-	  *(dst_address++) = *(src_address++);
+        for (x=0; x<width; x++)
+          *(dst_address++) = *(src_address++);
       }
 
       /* write the line */
       png_write_rows(png_ptr, &row_pointer, 1);
 
       fop_progress(fop,
-		   (float)((float)pass + (float)(y+1) / (float)(height))
-		   / (float)number_passes);
+                   (float)((float)pass + (float)(y+1) / (float)(height))
+                   / (float)number_passes);
     }
   }
 

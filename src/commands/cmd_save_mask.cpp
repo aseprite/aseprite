@@ -44,8 +44,8 @@ protected:
 
 SaveMaskCommand::SaveMaskCommand()
   : Command("SaveMask",
-	    "Save Mask",
-	    CmdUIOnlyFlag)
+            "Save Mask",
+            CmdUIOnlyFlag)
 {
 }
 
@@ -69,7 +69,7 @@ void SaveMaskCommand::onExecute(Context* context)
     if (exists(filename.c_str())) {
       /* ask if the user wants overwrite the file? */
       ret = Alert::show("Warning<<File exists, overwrite it?<<%s||&Yes||&No||&Cancel",
-			get_filename(filename.c_str()));
+                        get_filename(filename.c_str()));
     }
     else
       break;

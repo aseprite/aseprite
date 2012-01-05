@@ -414,7 +414,7 @@
       ft_module_font_driver       |
       ft_module_driver_scalable   |
       ft_module_driver_has_hinter,
-      
+
       sizeof( CFF_DriverRec ),
       "cff",
       0x10000L,

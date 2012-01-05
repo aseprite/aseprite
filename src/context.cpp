@@ -126,26 +126,26 @@ void Context::executeCommand(Command* command, Params* params)
   }
   catch (base::Exception& e) {
     PRINTF("Exception caught executing '%s' command\n%s\n",
-	   command->short_name(), e.what());
+           command->short_name(), e.what());
 
     Console::showException(e);
   }
   catch (std::exception& e) {
     PRINTF("std::exception caught executing '%s' command\n%s\n",
-	   command->short_name(), e.what());
+           command->short_name(), e.what());
 
     console.printf("An error ocurred executing the command.\n\nDetails:\n%s", e.what());
   }
 #ifndef DEBUGMODE
   catch (...) {
     PRINTF("unknown exception executing '%s' command\n",
-	   command->short_name());
+           command->short_name());
 
     console.printf("An unknown error ocurred executing the command.\n"
-  		   "Please save your work, close the program, try it\n"
-		   "again, and report this bug.\n\n"
-  		   "Details: Unknown exception caught. This can be bad\n"
-		   "memory access, divison by zero, etc.");
+                   "Please save your work, close the program, try it\n"
+                   "again, and report this bug.\n\n"
+                   "Details: Unknown exception caught. This can be bad\n"
+                   "memory access, divison by zero, etc.");
   }
 #endif
 }

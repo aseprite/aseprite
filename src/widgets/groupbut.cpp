@@ -61,10 +61,10 @@ JWidget group_button_new(int w, int h, int first_selected, ...)
       icon = va_arg(ap, int);
 
       radio = radio_button_new(vbox->id+0x1000,
-			       x ==   0 && y ==   0 ? 2: 0,
-			       x == w-1 && y ==   0 ? 2: 0,
-			       x ==   0 && y == h-1 ? 2: 0,
-			       x == w-1 && y == h-1 ? 2: 0);
+                               x ==   0 && y ==   0 ? 2: 0,
+                               x == w-1 && y ==   0 ? 2: 0,
+                               x ==   0 && y == h-1 ? 2: 0,
+                               x == w-1 && y == h-1 ? 2: 0);
 
       radio->user_data[1] = (void*)c;
 
@@ -72,17 +72,17 @@ JWidget group_button_new(int w, int h, int first_selected, ...)
       radio->setName(buf);
 
       if (icon >= 0)
-	set_gfxicon_to_button(radio, icon, icon+1, icon, JI_CENTER | JI_MIDDLE);
+        set_gfxicon_to_button(radio, icon, icon+1, icon, JI_CENTER | JI_MIDDLE);
 
       radio->Click.connect(Bind<bool>(&radio_change_hook, vbox));
 
       if (c == first_selected)
-	radio->setSelected(true);
+        radio->setSelected(true);
 
       if (hbox)
-	hbox->addChild(radio);
+        hbox->addChild(radio);
       else
-	vbox->addChild(radio);
+        vbox->addChild(radio);
 
       c++;
     }
@@ -126,7 +126,7 @@ static JWidget find_selected(JWidget widget)
   else {
     JI_LIST_FOR_EACH(widget->children, link)
       if ((sel = find_selected(reinterpret_cast<JWidget>(link->data))))
-	return sel;
+        return sel;
 
     return NULL;
   }
@@ -145,7 +145,7 @@ static int select_button(JWidget widget, int index)
   else {
     JI_LIST_FOR_EACH(widget->children, link)
       if (select_button(reinterpret_cast<JWidget>(link->data), index))
-	return true;
+        return true;
   }
 
   return false;

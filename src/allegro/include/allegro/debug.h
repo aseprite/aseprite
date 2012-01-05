@@ -45,5 +45,3 @@ AL_FUNC(void, register_trace_handler, (AL_METHOD(int, handler, (AL_CONST char *m
 #endif
 
 #endif          /* ifndef ALLEGRO_DEBUG_H */
-
-

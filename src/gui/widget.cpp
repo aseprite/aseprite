@@ -165,7 +165,7 @@ void Widget::initTheme()
  * @see jhook
  */
 void jwidget_add_hook(JWidget widget, int type,
-		      MessageFunc msg_proc, void *data)
+                      MessageFunc msg_proc, void *data)
 {
   JHook hook;
 
@@ -582,8 +582,8 @@ Widget* Widget::pick(int x, int y)
     JI_LIST_FOR_EACH(this->children, link) {
       inside = reinterpret_cast<Widget*>(link->data)->pick(x, y);
       if (inside) {
-	picked = inside;
-	break;
+        picked = inside;
+        break;
       }
     }
   }
@@ -728,9 +728,9 @@ JRect jwidget_get_child_rect(JWidget widget)
   ASSERT_VALID_WIDGET(widget);
 
   return jrect_new(widget->rc->x1 + widget->border_width.l,
-		   widget->rc->y1 + widget->border_width.t,
-		   widget->rc->x2 - widget->border_width.r,
-		   widget->rc->y2 - widget->border_width.b);
+                   widget->rc->y1 + widget->border_width.t,
+                   widget->rc->x2 - widget->border_width.r,
+                   widget->rc->y2 - widget->border_width.b);
 }
 
 JRegion jwidget_get_region(JWidget widget)
@@ -770,14 +770,14 @@ JRegion jwidget_get_drawable_region(JWidget widget, int flags)
       link = jlist_find(windows_list, window);
 
       if (!jlist_empty(windows_list) &&
-	  window != jlist_first(windows_list)->data &&
-	  link != windows_list->end) {
-	/* subtract the rectangles */
-	for (link=link->prev; link != windows_list->end; link=link->prev) {
-	  reg1 = jwidget_get_region(reinterpret_cast<JWidget>(link->data));
-	  jregion_subtract(region, region, reg1);
-	  jregion_free(reg1);
-	}
+          window != jlist_first(windows_list)->data &&
+          link != windows_list->end) {
+        /* subtract the rectangles */
+        for (link=link->prev; link != windows_list->end; link=link->prev) {
+          reg1 = jwidget_get_region(reinterpret_cast<JWidget>(link->data));
+          jregion_subtract(region, region, reg1);
+          jregion_free(reg1);
+        }
       }
 
       window = manager->getRoot();
@@ -793,16 +793,16 @@ JRegion jwidget_get_drawable_region(JWidget widget, int flags)
     JI_LIST_FOR_EACH(widget->children, link) {
       child = reinterpret_cast<JWidget>(link->data);
       if (child->isVisible()) {
-	reg3 = jwidget_get_region(child);
-	if (child->flags & JI_DECORATIVE) {
-	  jregion_reset(reg1, widget->rc);
-	  jregion_intersect(reg1, reg1, reg3);
-	}
-	else {
-	  jregion_intersect(reg1, reg2, reg3);
-	}
-	jregion_subtract(region, region, reg1);
-	jregion_free(reg3);
+        reg3 = jwidget_get_region(child);
+        if (child->flags & JI_DECORATIVE) {
+          jregion_reset(reg1, widget->rc);
+          jregion_intersect(reg1, reg1, reg3);
+        }
+        else {
+          jregion_intersect(reg1, reg2, reg3);
+        }
+        jregion_subtract(region, region, reg1);
+        jregion_free(reg3);
       }
     }
     jregion_free(reg1);
@@ -893,15 +893,15 @@ int jwidget_get_text_height(JWidget widget)
 }
 
 void jwidget_get_texticon_info(JWidget widget,
-			       JRect box, JRect text, JRect icon,
-			       int icon_align, int icon_w, int icon_h)
+                               JRect box, JRect text, JRect icon,
+                               int icon_align, int icon_w, int icon_h)
 {
-#define SETRECT(r)				\
-  if (r) {					\
-    r->x1 = r##_x;				\
-    r->y1 = r##_y;				\
-    r->x2 = r##_x+r##_w;			\
-    r->y2 = r##_y+r##_h;			\
+#define SETRECT(r)                              \
+  if (r) {                                      \
+    r->x1 = r##_x;                              \
+    r->y1 = r##_y;                              \
+    r->x2 = r##_x+r##_w;                        \
+    r->y2 = r##_y+r##_h;                        \
   }
 
   int box_x, box_y, box_w, box_h, icon_x, icon_y;
@@ -921,7 +921,7 @@ void jwidget_get_texticon_info(JWidget widget,
   }
 
   /* box size */
-  if (icon_align & JI_CENTER) {	  /* with the icon in the center */
+  if (icon_align & JI_CENTER) {   /* with the icon in the center */
     if (icon_align & JI_MIDDLE) { /* with the icon inside the text */
       box_w = MAX(icon_w, text_w);
       box_h = MAX(icon_h, text_h);
@@ -1094,8 +1094,8 @@ void jwidget_flush_redraw(JWidget widget)
     JI_LIST_FOR_EACH(widget->children, link) {
       Widget* child = (Widget*)link->data;
       if (child->flags & JI_DIRTY) {
-	child->flags ^= JI_DIRTY;
-	processing.push(child);
+        child->flags ^= JI_DIRTY;
+        processing.push(child);
       }
     }
 
@@ -1104,23 +1104,23 @@ void jwidget_flush_redraw(JWidget widget)
       /* get areas to draw */
       JRegion region = jwidget_get_drawable_region(widget, JI_GDR_CUTTOPWINDOWS);
       jregion_intersect(widget->update_region,
-			widget->update_region, region);
+                        widget->update_region, region);
       jregion_free(region);
 
       nrects = JI_REGION_NUM_RECTS(widget->update_region);
 
       /* draw the widget */
       for (c=0, rc=JI_REGION_RECTS(widget->update_region);
-	   c<nrects;
-	   c++, rc++) {
-	/* create the draw message */
-	msg = jmessage_new(JM_DRAW);
-	msg->draw.count = nrects-1 - c;
-	msg->draw.rect = *rc;
-	jmessage_add_dest(msg, widget);
+           c<nrects;
+           c++, rc++) {
+        /* create the draw message */
+        msg = jmessage_new(JM_DRAW);
+        msg->draw.count = nrects-1 - c;
+        msg->draw.rect = *rc;
+        jmessage_add_dest(msg, widget);
 
-	/* enqueue the draw message */
-	jmanager_enqueue_message(msg);
+        /* enqueue the draw message */
+        jmanager_enqueue_message(msg);
       }
 
       jregion_empty(widget->update_region);
@@ -1169,7 +1169,7 @@ void Widget::invalidateRegion(const JRegion region)
       jregion_rect_in(region, this->rc) != JI_RGNOUT) {
     JRegion reg1 = jregion_new(NULL, 0);
     JRegion reg2 = jwidget_get_drawable_region(this,
-					       JI_GDR_CUTTOPWINDOWS);
+                                               JI_GDR_CUTTOPWINDOWS);
     JLink link;
 
     jregion_union(reg1, this->update_region, region);
@@ -1191,7 +1191,7 @@ void jwidget_scroll(JWidget widget, JRegion region, int dx, int dy)
 {
   if (dx != 0 || dy != 0) {
     JRegion reg2 = jregion_new(NULL, 0);
-    
+
     jregion_copy(reg2, region);
     jregion_translate(reg2, dx, dy);
     jregion_intersect(reg2, reg2, region);
@@ -1255,7 +1255,7 @@ bool jwidget_emit_signal(JWidget widget, int signal_num)
     if (!ret && widget->type != JI_FRAME) {
       Widget* window = widget->getRoot();
       if (window)
-	ret = window->sendMessage(msg);
+        ret = window->sendMessage(msg);
     }
 
     jmessage_free(msg);
@@ -1281,7 +1281,7 @@ bool Widget::sendMessage(Message* msg)
     if (hook->msg_proc) {
       done = (*hook->msg_proc)(this, msg);
       if (done)
-	break;
+        break;
     }
   }
 
@@ -1459,8 +1459,8 @@ bool jwidget_check_underscored(JWidget widget, int scancode)
 
     for (c=0; text[c]; c++)
       if ((text[c] == '&') && (text[c+1] != '&'))
-	if (ascii == tolower(text[c+1]))
-	  return true;
+        if (ascii == tolower(text[c+1]))
+          return true;
   }
 
   return false;
@@ -1485,7 +1485,7 @@ bool Widget::onProcessMessage(Message* msg)
 
       /* broadcast the message to the children */
       JI_LIST_FOR_EACH(widget->children, link)
-	reinterpret_cast<JWidget>(link->data)->sendMessage(msg);
+        reinterpret_cast<JWidget>(link->data)->sendMessage(msg);
       break;
     }
 
@@ -1496,35 +1496,35 @@ bool Widget::onProcessMessage(Message* msg)
       // screen, we already are painting off-screen using ji_screen,
       // so we don't need the temporary bitmap.
       if (m_doubleBuffered && ji_screen == screen) {
-	ASSERT(jrect_w(&msg->draw.rect) > 0);
-	ASSERT(jrect_h(&msg->draw.rect) > 0);
+        ASSERT(jrect_w(&msg->draw.rect) > 0);
+        ASSERT(jrect_h(&msg->draw.rect) > 0);
 
-	BITMAP* bmp = create_bitmap_ex(bitmap_color_depth(ji_screen),
-				       jrect_w(&msg->draw.rect),
-				       jrect_h(&msg->draw.rect));
+        BITMAP* bmp = create_bitmap_ex(bitmap_color_depth(ji_screen),
+                                       jrect_w(&msg->draw.rect),
+                                       jrect_h(&msg->draw.rect));
 
-	Graphics graphics(bmp, rc->x1-msg->draw.rect.x1, rc->y1-msg->draw.rect.y1);
-	graphics.setFont(getFont());
+        Graphics graphics(bmp, rc->x1-msg->draw.rect.x1, rc->y1-msg->draw.rect.y1);
+        graphics.setFont(getFont());
 
-	PaintEvent ev(this, &graphics);
-	onPaint(ev); // Fire onPaint event
+        PaintEvent ev(this, &graphics);
+        onPaint(ev); // Fire onPaint event
 
-	// Blit the temporary bitmap to the real screen
-	if (ev.isPainted())
-	  blit(bmp, ji_screen, 0, 0, msg->draw.rect.x1, msg->draw.rect.y1, bmp->w, bmp->h);
+        // Blit the temporary bitmap to the real screen
+        if (ev.isPainted())
+          blit(bmp, ji_screen, 0, 0, msg->draw.rect.x1, msg->draw.rect.y1, bmp->w, bmp->h);
 
-	destroy_bitmap(bmp);
-	return ev.isPainted();
+        destroy_bitmap(bmp);
+        return ev.isPainted();
       }
       // Paint directly on ji_screen (in this case "ji_screen" can be
       // the screen or a memory bitmap).
       else {
-	Graphics graphics(ji_screen, rc->x1, rc->y1);
-	graphics.setFont(getFont());
+        Graphics graphics(ji_screen, rc->x1, rc->y1);
+        graphics.setFont(getFont());
 
-	PaintEvent ev(this, &graphics);
-	onPaint(ev); // Fire onPaint event
-	return ev.isPainted();
+        PaintEvent ev(this, &graphics);
+        onPaint(ev); // Fire onPaint event
+        return ev.isPainted();
       }
 
     case JM_REQSIZE:
@@ -1541,7 +1541,7 @@ bool Widget::onProcessMessage(Message* msg)
 
       /* set all the children to the same "cpos" */
       JI_LIST_FOR_EACH(widget->children, link)
-	jwidget_set_rect(reinterpret_cast<JWidget>(link->data), cpos);
+        jwidget_set_rect(reinterpret_cast<JWidget>(link->data), cpos);
 
       jrect_free(cpos);
       return true;
@@ -1551,7 +1551,7 @@ bool Widget::onProcessMessage(Message* msg)
       JLink link;
 
       JI_LIST_FOR_EACH(widget->children, link)
-	reinterpret_cast<JWidget>(link->data)->invalidate();
+        reinterpret_cast<JWidget>(link->data)->invalidate();
 
       return true;
     }
@@ -1559,18 +1559,18 @@ bool Widget::onProcessMessage(Message* msg)
     case JM_KEYPRESSED:
     case JM_KEYRELEASED:
       if (msg->key.propagate_to_children) {
-	JLink link;
+        JLink link;
 
-	/* broadcast the message to the children */
-	JI_LIST_FOR_EACH(widget->children, link)
-	  reinterpret_cast<JWidget>(link->data)->sendMessage(msg);
+        /* broadcast the message to the children */
+        JI_LIST_FOR_EACH(widget->children, link)
+          reinterpret_cast<JWidget>(link->data)->sendMessage(msg);
       }
 
       /* propagate the message to the parent */
       if (msg->key.propagate_to_parent && widget->parent != NULL)
-	return widget->parent->sendMessage(msg);
+        return widget->parent->sendMessage(msg);
       else
-	break;
+        break;
 
     case JM_BUTTONPRESSED:
     case JM_BUTTONRELEASED:
@@ -1579,17 +1579,17 @@ bool Widget::onProcessMessage(Message* msg)
     case JM_WHEEL:
       /* propagate the message to the parent */
       if (widget->parent != NULL)
-	return widget->parent->sendMessage(msg);
+        return widget->parent->sendMessage(msg);
       else
-	break;
+        break;
 
     case JM_SETCURSOR:
       /* propagate the message to the parent */
       if (widget->parent != NULL)
-	return widget->parent->sendMessage(msg);
+        return widget->parent->sendMessage(msg);
       else {
-	jmouse_set_cursor(JI_CURSOR_NORMAL);
-	return true;
+        jmouse_set_cursor(JI_CURSOR_NORMAL);
+        return true;
       }
 
   }

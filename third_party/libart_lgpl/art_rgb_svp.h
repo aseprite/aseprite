@@ -34,17 +34,17 @@ extern "C" {
 
 void
 art_rgb_svp_aa (const ArtSVP *svp,
-		int x0, int y0, int x1, int y1,
-		art_u32 fg_color, art_u32 bg_color,
-		art_u8 *buf, int rowstride,
-		ArtAlphaGamma *alphagamma);
+                int x0, int y0, int x1, int y1,
+                art_u32 fg_color, art_u32 bg_color,
+                art_u8 *buf, int rowstride,
+                ArtAlphaGamma *alphagamma);
 
 void
 art_rgb_svp_alpha (const ArtSVP *svp,
-		   int x0, int y0, int x1, int y1,
-		   art_u32 rgba,
-		   art_u8 *buf, int rowstride,
-		   ArtAlphaGamma *alphagamma);
+                   int x0, int y0, int x1, int y1,
+                   art_u32 rgba,
+                   art_u8 *buf, int rowstride,
+                   ArtAlphaGamma *alphagamma);
 
 #ifdef __cplusplus
 }

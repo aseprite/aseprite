@@ -984,10 +984,10 @@ THE SOFTWARE.
       {
         root->available_sizes->width  = (FT_Short)( prop->value.integer );
         root->available_sizes->height = (FT_Short)( prop->value.integer );
-        
+
         size_set = 1;
       }
-      else 
+      else
       {
         prop = find_property( face, "POINT_SIZE" );
         if ( prop != NULL )
@@ -997,16 +997,16 @@ THE SOFTWARE.
 
           xres = find_property( face, "RESOLUTION_X" );
           yres = find_property( face, "RESOLUTION_Y" );
-              
+
           if ( ( xres != NULL ) && ( yres != NULL ) )
           {
             root->available_sizes->width =
-              (FT_Short)( prop->value.integer *  
+              (FT_Short)( prop->value.integer *
                           xres->value.integer / 720 );
             root->available_sizes->height =
-              (FT_Short)( prop->value.integer *  
-                          yres->value.integer / 720 ); 
-                  
+              (FT_Short)( prop->value.integer *
+                          yres->value.integer / 720 );
+
             size_set = 1;
           }
         }

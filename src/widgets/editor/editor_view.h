@@ -35,4 +35,4 @@ private:
   Type m_type;
 };
 
-#endif	// WIDGETS_EDITOR_VIEW_H_INCLUDED
+#endif  // WIDGETS_EDITOR_VIEW_H_INCLUDED

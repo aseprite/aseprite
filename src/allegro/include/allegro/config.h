@@ -61,5 +61,3 @@ AL_FUNC(void, free_config_entries, (AL_CONST char ***names));
 #endif
 
 #endif          /* ifndef ALLEGRO_CONFIG_H */
-
-

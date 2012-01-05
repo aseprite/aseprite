@@ -235,7 +235,7 @@ AL_VAR(FONT_VTABLE *, font_vtable_trans);
 AL_FUNC(FONT_GLYPH *, _mono_find_glyph, (AL_CONST FONT *f, int ch));
 AL_FUNC(BITMAP *, _color_find_glyph, (AL_CONST FONT *f, int ch));
 
-typedef struct FONT_MONO_DATA 
+typedef struct FONT_MONO_DATA
 {
    int begin, end;                  /* first char and one-past-the-end char */
    FONT_GLYPH **glyphs;             /* our glyphs */
@@ -252,7 +252,7 @@ typedef struct FONT_COLOR_DATA
 
 /* caches and tables for svga bank switching */
 AL_VAR(int, _last_bank_1);
-AL_VAR(int, _last_bank_2); 
+AL_VAR(int, _last_bank_2);
 
 AL_VAR(int *, _gfx_bank);
 
@@ -313,15 +313,15 @@ AL_VAR(int, _safe_gfx_mode_change);
 #ifdef ALLEGRO_I386
    #define BYTES_PER_PIXEL(bpp)     (((int)(bpp) + 7) / 8)
 #else
-   #ifdef ALLEGRO_MPW 
+   #ifdef ALLEGRO_MPW
       /* in Mac 24 bit is a unsigned long */
-      #define BYTES_PER_PIXEL(bpp)  (((bpp) <= 8) ? 1					\
-				     : (((bpp) <= 16) ? 2		\
-					: 4))
+      #define BYTES_PER_PIXEL(bpp)  (((bpp) <= 8) ? 1                                   \
+                                     : (((bpp) <= 16) ? 2               \
+                                        : 4))
    #else
-      #define BYTES_PER_PIXEL(bpp)  (((bpp) <= 8) ? 1					\
-				     : (((bpp) <= 16) ? 2		\
-					: (((bpp) <= 24) ? 3 : 4)))
+      #define BYTES_PER_PIXEL(bpp)  (((bpp) <= 8) ? 1                                   \
+                                     : (((bpp) <= 16) ? 2               \
+                                        : (((bpp) <= 24) ? 3 : 4)))
    #endif
 #endif
 
@@ -736,8 +736,8 @@ typedef struct POLYGON_SEGMENT
    unsigned char *texture;          /* the texture map */
    int umask, vmask, vshift;        /* texture map size information */
    int seg;                         /* destination bitmap selector */
-   uintptr_t zbuf_addr;		    /* Z-buffer address */
-   uintptr_t read_addr;		    /* reading address for transparency modes */
+   uintptr_t zbuf_addr;             /* Z-buffer address */
+   uintptr_t read_addr;             /* reading address for transparency modes */
 } POLYGON_SEGMENT;
 
 
@@ -746,7 +746,7 @@ typedef AL_METHOD(void, SCANLINE_FILLER, (uintptr_t addr, int w, POLYGON_SEGMENT
 
 
 /* an active polygon edge */
-typedef struct POLYGON_EDGE 
+typedef struct POLYGON_EDGE
 {
    int top;                         /* top y position */
    int bottom;                      /* bottom y position */
@@ -755,7 +755,7 @@ typedef struct POLYGON_EDGE
    POLYGON_SEGMENT dat;             /* texture/gouraud information */
    struct POLYGON_EDGE *prev;       /* doubly linked list */
    struct POLYGON_EDGE *next;
-   struct POLYGON_INFO *poly;	    /* father polygon */
+   struct POLYGON_INFO *poly;       /* father polygon */
 } POLYGON_EDGE;
 
 
@@ -772,9 +772,9 @@ typedef struct POLYGON_INFO         /* a polygon waiting rendering */
    int alpha;                       /* blender alpha */
    int b15, b16, b24, b32;          /* blender colors */
    COLOR_MAP *cmap;                 /* trans color map */
-   SCANLINE_FILLER drawer;	    /* scanline drawing functions */
-   SCANLINE_FILLER alt_drawer; 
-   POLYGON_EDGE *left_edge;	    /* true edges used in interpolation */
+   SCANLINE_FILLER drawer;          /* scanline drawing functions */
+   SCANLINE_FILLER alt_drawer;
+   POLYGON_EDGE *left_edge;         /* true edges used in interpolation */
    POLYGON_EDGE *right_edge;
    POLYGON_SEGMENT info;            /* base information for scanline functions */
 } POLYGON_INFO;
@@ -1010,7 +1010,7 @@ AL_FUNC(void, _poly_zbuf_ptex_mask_trans32, (uintptr_t addr, int w, POLYGON_SEGM
 
 #define V1_DAT_DATA              0
 #define V1_DAT_FONT              1
-#define V1_DAT_BITMAP_16         2 
+#define V1_DAT_BITMAP_16         2
 #define V1_DAT_BITMAP_256        3
 #define V1_DAT_SPRITE_16         4
 #define V1_DAT_SPRITE_256        5

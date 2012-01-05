@@ -25,10 +25,10 @@
 #include <vector>
 #include <string>
 
-#define FILE_LOAD_SEQUENCE_NONE		0x00000001
-#define FILE_LOAD_SEQUENCE_ASK		0x00000002
-#define FILE_LOAD_SEQUENCE_YES		0x00000004
-#define FILE_LOAD_ONE_FRAME		0x00000008
+#define FILE_LOAD_SEQUENCE_NONE         0x00000001
+#define FILE_LOAD_SEQUENCE_ASK          0x00000002
+#define FILE_LOAD_SEQUENCE_YES          0x00000004
+#define FILE_LOAD_ONE_FRAME             0x00000008
 
 class Document;
 class Cel;
@@ -43,35 +43,35 @@ class FormatOptions;
 
 // File operations.
 typedef enum { FileOpLoad,
-	       FileOpSave } FileOpType;
+               FileOpSave } FileOpType;
 
 // Structure to load & save files.
 struct FileOp
 {
-  FileOpType type;		// Operation type: 0=load, 1=save.
+  FileOpType type;              // Operation type: 0=load, 1=save.
   FileFormat* format;
-  void* format_data;		// Custom data for the FileFormat::onLoad/onSave operations.
-  Document* document;		// Loaded document, or document to be saved.
-  std::string filename;		// File-name to load/save.
+  void* format_data;            // Custom data for the FileFormat::onLoad/onSave operations.
+  Document* document;           // Loaded document, or document to be saved.
+  std::string filename;         // File-name to load/save.
 
   // Shared fields between threads.
-  Mutex* mutex;			// Mutex to access to the next two fields.
-  float progress;		// Progress (1.0 is ready).
-  std::string error;		// Error string.
-  bool done : 1;		// True if the operation finished.
-  bool stop : 1;		// Force the break of the operation.
-  bool oneframe : 1;		// Load just one frame (in formats
-				// that support animation like
-				// GIF/FLI/ASE).
+  Mutex* mutex;                 // Mutex to access to the next two fields.
+  float progress;               // Progress (1.0 is ready).
+  std::string error;            // Error string.
+  bool done : 1;                // True if the operation finished.
+  bool stop : 1;                // Force the break of the operation.
+  bool oneframe : 1;            // Load just one frame (in formats
+                                // that support animation like
+                                // GIF/FLI/ASE).
 
   // Data for sequences.
   struct {
     std::vector<std::string> filename_list; // All file names to load/save.
-    Palette* palette;		// Palette of the sequence.
-    Image* image;		// Image to be saved/loaded.
+    Palette* palette;           // Palette of the sequence.
+    Image* image;               // Image to be saved/loaded.
     // For the progress bar.
-    float progress_offset;	// Progress offset from the current frame.
-    float progress_fraction;	// Progress fraction for one frame.
+    float progress_offset;      // Progress offset from the current frame.
+    float progress_fraction;    // Progress fraction for one frame.
     // To load sequences.
     int frame;
     bool has_alpha;

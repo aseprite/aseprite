@@ -52,17 +52,17 @@ class ConvolutionMatrixWindow : public FilterWindow
 public:
   ConvolutionMatrixWindow(ConvolutionMatrixFilter& filter, FilterManagerImpl& filterMgr, ConvolutionMatrixStock& stock)
     : FilterWindow("Convolution Matrix", ConfigSection, &filterMgr,
-		   WithChannelsSelector,
-		   WithTiledCheckBox,
-		   filter.getTiledMode())
+                   WithChannelsSelector,
+                   WithTiledCheckBox,
+                   filter.getTiledMode())
     , m_filter(filter)
     , m_controlsWidget(load_widget("convolution_matrix.xml", "controls"))
     , m_stock(stock)
   {
     get_widgets(m_controlsWidget,
-		"view", &m_view,
-		"stock", &m_stockListBox,
-		"reload", &m_reloadButton, NULL);
+                "view", &m_view,
+                "stock", &m_stockListBox,
+                "reload", &m_reloadButton, NULL);
 
     getContainer()->addChild(m_controlsWidget);
 
@@ -99,8 +99,8 @@ private:
     }
 
     for (ConvolutionMatrixStock::iterator it = m_stock.begin(), end = m_stock.end();
-	 it != end; ++it) {
-      SharedPtr<ConvolutionMatrix> matrix = *it; 
+         it != end; ++it) {
+      SharedPtr<ConvolutionMatrix> matrix = *it;
       Widget* listitem = jlistitem_new(matrix->getName()); // TODO convert listitem to a class
       m_stockListBox->addChild(listitem);
     }
@@ -111,16 +111,16 @@ private:
   void selectMatrixByName(const char* oldSelected)
   {
     Widget* select_this = reinterpret_cast<Widget*>(jlist_first_data(m_stockListBox->children));
-    
+
     if (oldSelected) {
       JLink link;
       JI_LIST_FOR_EACH(m_stockListBox->children, link) {
-	Widget* child = reinterpret_cast<Widget*>(link->data);
+        Widget* child = reinterpret_cast<Widget*>(link->data);
 
-	if (strcmp(child->getText(), oldSelected) == 0) {
-	  select_this = child;
-	  break;
-	}
+        if (strcmp(child->getText(), oldSelected) == 0) {
+          select_this = child;
+          break;
+        }
       }
     }
 
@@ -152,7 +152,7 @@ private:
     window->onMatrixChange();
     return true;
   }
-  
+
   ConvolutionMatrixFilter& m_filter;
   WidgetPtr m_controlsWidget;
   ConvolutionMatrixStock& m_stock;
@@ -177,15 +177,15 @@ protected:
 
 ConvolutionMatrixCommand::ConvolutionMatrixCommand()
   : Command("ConvolutionMatrix",
-	    "Convolution Matrix",
-	    CmdRecordableFlag)
+            "Convolution Matrix",
+            CmdRecordableFlag)
 {
 }
 
 bool ConvolutionMatrixCommand::onEnabled(Context* context)
 {
   return context->checkFlags(ContextFlags::ActiveDocumentIsWritable |
-			     ContextFlags::HasActiveSprite);
+                             ContextFlags::HasActiveSprite);
 }
 
 void ConvolutionMatrixCommand::onExecute(Context* context)

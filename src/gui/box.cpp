@@ -44,22 +44,22 @@ bool Box::onProcessMessage(Message* msg)
 
 void Box::onPreferredSize(PreferredSizeEvent& ev)
 {
-#define GET_CHILD_SIZE(w, h)			\
-  {						\
-    if (getAlign() & JI_HOMOGENEOUS)		\
-      w = MAX(w, reqSize.w);			\
-    else					\
-      w += reqSize.w;				\
-						\
-    h = MAX(h, reqSize.h);			\
+#define GET_CHILD_SIZE(w, h)                    \
+  {                                             \
+    if (getAlign() & JI_HOMOGENEOUS)            \
+      w = MAX(w, reqSize.w);                    \
+    else                                        \
+      w += reqSize.w;                           \
+                                                \
+    h = MAX(h, reqSize.h);                      \
   }
 
-#define FINAL_SIZE(w)					\
-  {							\
-    if (getAlign() & JI_HOMOGENEOUS)			\
-      w *= nvis_children;				\
-							\
-    w += child_spacing * (nvis_children-1);		\
+#define FINAL_SIZE(w)                                   \
+  {                                                     \
+    if (getAlign() & JI_HOMOGENEOUS)                    \
+      w *= nvis_children;                               \
+                                                        \
+    w += child_spacing * (nvis_children-1);             \
   }
 
   int w, h, nvis_children;
@@ -72,7 +72,7 @@ void Box::onPreferredSize(PreferredSizeEvent& ev)
     if (!(child->flags & JI_HIDDEN))
       nvis_children++;
   }
-  
+
   w = h = 0;
 
   JI_LIST_FOR_EACH(this->children, link) {
@@ -113,73 +113,73 @@ void Box::onPaint(PaintEvent& ev)
 
 void Box::box_set_position(JRect rect)
 {
-#define FIXUP(x, y, w, h, l, t, r, b)					\
-  {									\
-    if (nvis_children > 0) {						\
-      if (getAlign() & JI_HOMOGENEOUS) {				\
-	width = (jrect_##w(this->rc)					\
-		 - this->border_width.l					\
-		 - this->border_width.r					\
-		 - this->child_spacing * (nvis_children - 1));		\
-	extra = width / nvis_children;					\
-      }									\
-      else if (nexpand_children > 0) {					\
-	width = jrect_##w(this->rc) - reqSize.w;			\
-	extra = width / nexpand_children;				\
-      }									\
-      else {								\
-	width = 0;							\
-	extra = 0;							\
-      }									\
-									\
-      x = this->rc->x##1 + this->border_width.l;			\
-      y = this->rc->y##1 + this->border_width.t;			\
-      h = MAX(1, jrect_##h(this->rc)					\
-		 - this->border_width.t					\
-		 - this->border_width.b);				\
-      									\
-      JI_LIST_FOR_EACH(this->children, link) {				\
-	child = (JWidget)link->data;					\
-									\
-	if (!(child->flags & JI_HIDDEN)) {				\
-	  if (this->getAlign() & JI_HOMOGENEOUS) {			\
-	    if (nvis_children == 1)					\
-	      child_width = width;					\
-	    else							\
-	      child_width = extra;					\
-									\
-	    --nvis_children;						\
-	    width -= extra;						\
-	  }								\
-	  else {							\
-	    reqSize = child->getPreferredSize();			\
-									\
-	    child_width = reqSize.w;					\
-									\
-	    if (jwidget_is_expansive(child)) {				\
-	      if (nexpand_children == 1)				\
-		child_width += width;					\
-	      else							\
-		child_width += extra;					\
-									\
-	      --nexpand_children;					\
-	      width -= extra;						\
-	    }								\
-	  }								\
-									\
-	  w = MAX(1, child_width);					\
-									\
-	  if (this->getAlign() & JI_HORIZONTAL)				\
-	    jrect_replace(&cpos, x, y, x+w, y+h);			\
-	  else								\
-	    jrect_replace(&cpos, y, x, y+h, x+w);			\
-									\
-	  jwidget_set_rect(child, &cpos);				\
-									\
-	  x += child_width + this->child_spacing;			\
-	}								\
-      }									\
-    }									\
+#define FIXUP(x, y, w, h, l, t, r, b)                                   \
+  {                                                                     \
+    if (nvis_children > 0) {                                            \
+      if (getAlign() & JI_HOMOGENEOUS) {                                \
+        width = (jrect_##w(this->rc)                                    \
+                 - this->border_width.l                                 \
+                 - this->border_width.r                                 \
+                 - this->child_spacing * (nvis_children - 1));          \
+        extra = width / nvis_children;                                  \
+      }                                                                 \
+      else if (nexpand_children > 0) {                                  \
+        width = jrect_##w(this->rc) - reqSize.w;                        \
+        extra = width / nexpand_children;                               \
+      }                                                                 \
+      else {                                                            \
+        width = 0;                                                      \
+        extra = 0;                                                      \
+      }                                                                 \
+                                                                        \
+      x = this->rc->x##1 + this->border_width.l;                        \
+      y = this->rc->y##1 + this->border_width.t;                        \
+      h = MAX(1, jrect_##h(this->rc)                                    \
+                 - this->border_width.t                                 \
+                 - this->border_width.b);                               \
+                                                                        \
+      JI_LIST_FOR_EACH(this->children, link) {                          \
+        child = (JWidget)link->data;                                    \
+                                                                        \
+        if (!(child->flags & JI_HIDDEN)) {                              \
+          if (this->getAlign() & JI_HOMOGENEOUS) {                      \
+            if (nvis_children == 1)                                     \
+              child_width = width;                                      \
+            else                                                        \
+              child_width = extra;                                      \
+                                                                        \
+            --nvis_children;                                            \
+            width -= extra;                                             \
+          }                                                             \
+          else {                                                        \
+            reqSize = child->getPreferredSize();                        \
+                                                                        \
+            child_width = reqSize.w;                                    \
+                                                                        \
+            if (jwidget_is_expansive(child)) {                          \
+              if (nexpand_children == 1)                                \
+                child_width += width;                                   \
+              else                                                      \
+                child_width += extra;                                   \
+                                                                        \
+              --nexpand_children;                                       \
+              width -= extra;                                           \
+            }                                                           \
+          }                                                             \
+                                                                        \
+          w = MAX(1, child_width);                                      \
+                                                                        \
+          if (this->getAlign() & JI_HORIZONTAL)                         \
+            jrect_replace(&cpos, x, y, x+w, y+h);                       \
+          else                                                          \
+            jrect_replace(&cpos, y, x, y+h, x+w);                       \
+                                                                        \
+          jwidget_set_rect(child, &cpos);                               \
+                                                                        \
+          x += child_width + this->child_spacing;                       \
+        }                                                               \
+      }                                                                 \
+    }                                                                   \
   }
 
   struct jrect cpos;
@@ -200,7 +200,7 @@ void Box::box_set_position(JRect rect)
     if (!(child->flags & JI_HIDDEN)) {
       nvis_children++;
       if (jwidget_is_expansive(child))
-	nexpand_children++;
+        nexpand_children++;
     }
   }
 

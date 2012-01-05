@@ -22,12 +22,12 @@
 using namespace gfx;
 
 /* TODO optional anti-aliased textout */
-#define SETUP_ANTIALISING(f, bg, fill_bg)				\
-  ji_font_set_aa_mode(f, fill_bg ||					\
-			 bitmap_color_depth(ji_screen) == 8 ? bg: -1)
+#define SETUP_ANTIALISING(f, bg, fill_bg)                               \
+  ji_font_set_aa_mode(f, fill_bg ||                                     \
+                         bitmap_color_depth(ji_screen) == 8 ? bg: -1)
 
 void jrectedge(BITMAP *bmp, int x1, int y1, int x2, int y2,
-	       int c1, int c2)
+               int c1, int c2)
 {
   hline(bmp, x1,   y1,   x2-1, c1);
   hline(bmp, x1+1, y2,   x2,   c2);
@@ -36,7 +36,7 @@ void jrectedge(BITMAP *bmp, int x1, int y1, int x2, int y2,
 }
 
 void jrectexclude(BITMAP *bmp, int x1, int y1, int x2, int y2,
-		  int ex1, int ey1, int ex2, int ey2, int color)
+                  int ex1, int ey1, int ex2, int ey2, int color)
 {
   if ((ex1 > x2) || (ex2 < x1) ||
       (ey1 > y2) || (ey2 < y1))
@@ -66,7 +66,7 @@ void jrectexclude(BITMAP *bmp, int x1, int y1, int x2, int y2,
 }
 
 void jrectshade(BITMAP *bmp, int x1, int y1, int x2, int y2,
-		int c1, int c2, int align)
+                int c1, int c2, int align)
 {
   register int c;
   int r[2], g[2], b[2];
@@ -84,22 +84,22 @@ void jrectshade(BITMAP *bmp, int x1, int y1, int x2, int y2,
       hline(bmp, x1, y1, x2, c1);
     else
       for (c=y1; c<=y2; c++)
-	hline(bmp,
-	      x1, c, x2,
-	      makecol((r[0] + (r[1] - r[0]) * (c - y1) / (y2 - y1)),
-		      (g[0] + (g[1] - g[0]) * (c - y1) / (y2 - y1)),
-		      (b[0] + (b[1] - b[0]) * (c - y1) / (y2 - y1))));
+        hline(bmp,
+              x1, c, x2,
+              makecol((r[0] + (r[1] - r[0]) * (c - y1) / (y2 - y1)),
+                      (g[0] + (g[1] - g[0]) * (c - y1) / (y2 - y1)),
+                      (b[0] + (b[1] - b[0]) * (c - y1) / (y2 - y1))));
   }
   else if (align & JI_HORIZONTAL) {
     if (x1 == x2)
       vline(ji_screen, x1, y1, y2, c1);
     else
       for (c=x1; c<=x2; c++)
-	vline(ji_screen,
-	      c, y1, y2,
-	      makecol((r[0] + (r[1] - r[0]) * (c - x1) / (x2 - x1)),
-		      (g[0] + (g[1] - g[0]) * (c - x1) / (x2 - x1)),
-		      (b[0] + (b[1] - b[0]) * (c - x1) / (x2 - x1))));
+        vline(ji_screen,
+              c, y1, y2,
+              makecol((r[0] + (r[1] - r[0]) * (c - x1) / (x2 - x1)),
+                      (g[0] + (g[1] - g[0]) * (c - x1) / (x2 - x1)),
+                      (b[0] + (b[1] - b[0]) * (c - x1) / (x2 - x1))));
   }
 }
 
@@ -126,17 +126,17 @@ void jdraw_rectedge(const JRect r, int c1, int c2)
 void jdraw_rectshade(const JRect rect, int c1, int c2, int align)
 {
   jrectshade(ji_screen,
-	     rect->x1, rect->y1,
-	     rect->x2-1, rect->y2-1, c1, c2, align);
+             rect->x1, rect->y1,
+             rect->x2-1, rect->y2-1, c1, c2, align);
 }
 
 void jdraw_rectexclude(const JRect rc, const JRect exclude, int color)
 {
   jrectexclude(ji_screen,
-	       rc->x1, rc->y1,
-	       rc->x2-1, rc->y2-1,
-	       exclude->x1, exclude->y1,
-	       exclude->x2-1, exclude->y2-1, color);
+               rc->x1, rc->y1,
+               rc->x2-1, rc->y2-1,
+               exclude->x1, exclude->y1,
+               exclude->x2-1, exclude->y2-1, color);
 }
 
 void jdraw_char(FONT* f, int chr, int x, int y, int fg, int bg, bool fill_bg)
@@ -147,7 +147,7 @@ void jdraw_char(FONT* f, int chr, int x, int y, int fg, int bg, bool fill_bg)
 }
 
 void jdraw_text(BITMAP* bmp, FONT* font, const char *s, int x, int y,
-		int fg_color, int bg_color, bool fill_bg, int underline_height)
+                int fg_color, int bg_color, bool fill_bg, int underline_height)
 {
   // original code from allegro/src/guiproc.c
   char tmp[1024];
@@ -162,12 +162,12 @@ void jdraw_text(BITMAP* bmp, FONT* font, const char *s, int x, int y,
       in_pos += uwidth(s+in_pos);
       c = ugetc(s+in_pos);
       if (c == '&') {
-	out_pos += usetc(tmp+out_pos, '&');
-	in_pos += uwidth(s+in_pos);
-	len++;
+        out_pos += usetc(tmp+out_pos, '&');
+        in_pos += uwidth(s+in_pos);
+        len++;
       }
       else
-	hline_pos = len;
+        hline_pos = len;
     }
     else {
       out_pos += usetc(tmp+out_pos, c);
@@ -191,9 +191,9 @@ void jdraw_text(BITMAP* bmp, FONT* font, const char *s, int x, int y,
     c = text_length(font, tmp);
 
     rectfill(bmp, x+hline_pos,
-	     y+text_height(font),
-	     x+hline_pos+c-1,
-	     y+text_height(font)+underline_height-1, fg_color);
+             y+text_height(font),
+             x+hline_pos+c-1,
+             y+text_height(font)+underline_height-1, fg_color);
   }
 }
 
@@ -212,8 +212,8 @@ void ji_move_region(JRegion region, int dx, int dy)
   if (is_linear_bitmap(ji_screen) && nrects == 1) {
     rc = JI_REGION_RECTS(region);
     blit(ji_screen, ji_screen,
-	 rc->x1, rc->y1,
-	 rc->x1+dx, rc->y1+dy, jrect_w(rc), jrect_h(rc));
+         rc->x1, rc->y1,
+         rc->x1+dx, rc->y1+dy, jrect_w(rc), jrect_h(rc));
   }
   // Blit saving areas and copy them.
   else if (nrects > 1) {
@@ -223,7 +223,7 @@ void ji_move_region(JRegion region, int dx, int dy)
     for (c=0, rc=JI_REGION_RECTS(region); c<nrects; ++c, ++rc) {
       bmp = create_bitmap(jrect_w(rc), jrect_h(rc));
       blit(ji_screen, bmp,
-	   rc->x1, rc->y1, 0, 0, bmp->w, bmp->h);
+           rc->x1, rc->y1, 0, 0, bmp->w, bmp->h);
       images[c] = bmp;
     }
 

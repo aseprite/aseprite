@@ -58,7 +58,7 @@ art_render_svp_can_drive (ArtMaskSource *self, ArtRender *render)
 
 static void
 art_render_svp_callback (void *callback_data, int y,
-			 int start, ArtSVPRenderAAStep *steps, int n_steps)
+                         int start, ArtSVPRenderAAStep *steps, int n_steps)
 {
   ArtMaskSourceSVP *z = (ArtMaskSourceSVP *)callback_data;
   ArtRender *render = z->render;
@@ -74,37 +74,37 @@ art_render_svp_callback (void *callback_data, int y,
     {
       run_x1 = steps[0].x;
       if (run_x1 > x0 && running_sum > 0x80ff)
-	{
-	  run[0].x = x0;
-	  run[0].alpha = running_sum;
-	  n_run++;
-	}
+        {
+          run[0].x = x0;
+          run[0].alpha = running_sum;
+          n_run++;
+        }
 
       for (i = 0; i < n_steps - 1; i++)
-	{
+        {
           running_sum += steps[i].delta;
           run_x0 = run_x1;
           run_x1 = steps[i + 1].x;
-	  if (run_x1 > run_x0)
-	    {
-	      run[n_run].x = run_x0;
-	      run[n_run].alpha = running_sum;
-	      n_run++;
-	    }
-	}
+          if (run_x1 > run_x0)
+            {
+              run[n_run].x = run_x0;
+              run[n_run].alpha = running_sum;
+              n_run++;
+            }
+        }
       if (x1 > run_x1)
-	{
-	  running_sum += steps[n_steps - 1].delta;
-	  run[n_run].x = run_x1;
-	  run[n_run].alpha = running_sum;
-	  n_run++;
-	}
+        {
+          running_sum += steps[n_steps - 1].delta;
+          run[n_run].x = run_x1;
+          run[n_run].alpha = running_sum;
+          n_run++;
+        }
       if (running_sum > 0x80ff)
-	{
-	  run[n_run].x = x1;
-	  run[n_run].alpha = 0x8000;
-	  n_run++;
-	}
+        {
+          run[n_run].x = x1;
+          run[n_run].alpha = 0x8000;
+          n_run++;
+        }
     }
 
   render->n_run = n_run;
@@ -116,7 +116,7 @@ art_render_svp_callback (void *callback_data, int y,
 
 static void
 art_render_svp_callback_span (void *callback_data, int y,
-			      int start, ArtSVPRenderAAStep *steps, int n_steps)
+                              int start, ArtSVPRenderAAStep *steps, int n_steps)
 {
   ArtMaskSourceSVP *z = (ArtMaskSourceSVP *)callback_data;
   ArtRender *render = z->render;
@@ -134,44 +134,44 @@ art_render_svp_callback_span (void *callback_data, int y,
     {
       run_x1 = steps[0].x;
       if (run_x1 > x0 && running_sum > 0x80ff)
-	{
-	  run[0].x = x0;
-	  run[0].alpha = running_sum;
-	  n_run++;
-	  span_x[0] = x0;
-	  n_span++;
-	}
+        {
+          run[0].x = x0;
+          run[0].alpha = running_sum;
+          n_run++;
+          span_x[0] = x0;
+          n_span++;
+        }
 
       for (i = 0; i < n_steps - 1; i++)
-	{
+        {
           running_sum += steps[i].delta;
           run_x0 = run_x1;
           run_x1 = steps[i + 1].x;
-	  if (run_x1 > run_x0)
-	    {
-	      run[n_run].x = run_x0;
-	      run[n_run].alpha = running_sum;
-	      n_run++;
-	      if ((n_span & 1) != (running_sum > 0x80ff))
-		span_x[n_span++] = run_x0;
-	    }
-	}
+          if (run_x1 > run_x0)
+            {
+              run[n_run].x = run_x0;
+              run[n_run].alpha = running_sum;
+              n_run++;
+              if ((n_span & 1) != (running_sum > 0x80ff))
+                span_x[n_span++] = run_x0;
+            }
+        }
       if (x1 > run_x1)
-	{
-	  running_sum += steps[n_steps - 1].delta;
-	  run[n_run].x = run_x1;
-	  run[n_run].alpha = running_sum;
-	  n_run++;
-	  if ((n_span & 1) != (running_sum > 0x80ff))
-	    span_x[n_span++] = run_x1;
-	}
+        {
+          running_sum += steps[n_steps - 1].delta;
+          run[n_run].x = run_x1;
+          run[n_run].alpha = running_sum;
+          n_run++;
+          if ((n_span & 1) != (running_sum > 0x80ff))
+            span_x[n_span++] = run_x1;
+        }
       if (running_sum > 0x80ff)
-	{
-	  run[n_run].x = x1;
-	  run[n_run].alpha = 0x8000;
-	  n_run++;
-	  span_x[n_span++] = x1;
-	}
+        {
+          run[n_run].x = x1;
+          run[n_run].alpha = 0x8000;
+          n_run++;
+          span_x[n_span++] = x1;
+        }
     }
 
   render->n_run = n_run;
@@ -184,7 +184,7 @@ art_render_svp_callback_span (void *callback_data, int y,
 
 static void
 art_render_svp_callback_opacity (void *callback_data, int y,
-				 int start, ArtSVPRenderAAStep *steps, int n_steps)
+                                 int start, ArtSVPRenderAAStep *steps, int n_steps)
 {
   ArtMaskSourceSVP *z = (ArtMaskSourceSVP *)callback_data;
   ArtRender *render = z->render;
@@ -205,39 +205,39 @@ art_render_svp_callback_opacity (void *callback_data, int y,
       run_x1 = steps[0].x;
       alpha = ((running_sum >> 8) * opacity + 0x80080) >> 8;
       if (run_x1 > x0 && alpha > 0x80ff)
-	{
-	  run[0].x = x0;
-	  run[0].alpha = alpha;
-	  n_run++;
-	}
+        {
+          run[0].x = x0;
+          run[0].alpha = alpha;
+          n_run++;
+        }
 
       for (i = 0; i < n_steps - 1; i++)
-	{
+        {
           running_sum += steps[i].delta;
           run_x0 = run_x1;
           run_x1 = steps[i + 1].x;
-	  if (run_x1 > run_x0)
-	    {
-	      run[n_run].x = run_x0;
-	      alpha = ((running_sum >> 8) * opacity + 0x80080) >> 8;
-	      run[n_run].alpha = alpha;
-	      n_run++;
-	    }
-	}
+          if (run_x1 > run_x0)
+            {
+              run[n_run].x = run_x0;
+              alpha = ((running_sum >> 8) * opacity + 0x80080) >> 8;
+              run[n_run].alpha = alpha;
+              n_run++;
+            }
+        }
       if (x1 > run_x1)
-	{
-	  running_sum += steps[n_steps - 1].delta;
-	  run[n_run].x = run_x1;
-	  alpha = ((running_sum >> 8) * opacity + 0x80080) >> 8;
-	  run[n_run].alpha = alpha;
-	  n_run++;
-	}
+        {
+          running_sum += steps[n_steps - 1].delta;
+          run[n_run].x = run_x1;
+          alpha = ((running_sum >> 8) * opacity + 0x80080) >> 8;
+          run[n_run].alpha = alpha;
+          n_run++;
+        }
       if (alpha > 0x80ff)
-	{
-	  run[n_run].x = x1;
-	  run[n_run].alpha = 0x8000;
-	  n_run++;
-	}
+        {
+          run[n_run].x = x1;
+          run[n_run].alpha = 0x8000;
+          n_run++;
+        }
     }
 
   render->n_run = n_run;
@@ -249,7 +249,7 @@ art_render_svp_callback_opacity (void *callback_data, int y,
 
 static void
 art_render_svp_callback_opacity_span (void *callback_data, int y,
-				      int start, ArtSVPRenderAAStep *steps, int n_steps)
+                                      int start, ArtSVPRenderAAStep *steps, int n_steps)
 {
   ArtMaskSourceSVP *z = (ArtMaskSourceSVP *)callback_data;
   ArtRender *render = z->render;
@@ -272,46 +272,46 @@ art_render_svp_callback_opacity_span (void *callback_data, int y,
       run_x1 = steps[0].x;
       alpha = ((running_sum >> 8) * opacity + 0x800080) >> 8;
       if (run_x1 > x0 && alpha > 0x80ff)
-	{
-	  run[0].x = x0;
-	  run[0].alpha = alpha;
-	  n_run++;
-	  span_x[0] = x0;
-	  n_span++;
-	}
+        {
+          run[0].x = x0;
+          run[0].alpha = alpha;
+          n_run++;
+          span_x[0] = x0;
+          n_span++;
+        }
 
       for (i = 0; i < n_steps - 1; i++)
-	{
+        {
           running_sum += steps[i].delta;
           run_x0 = run_x1;
           run_x1 = steps[i + 1].x;
-	  if (run_x1 > run_x0)
-	    {
-	      run[n_run].x = run_x0;
-	      alpha = ((running_sum >> 8) * opacity + 0x800080) >> 8;
-	      run[n_run].alpha = alpha;
-	      n_run++;
-	      if ((n_span & 1) != (alpha > 0x80ff))
-		span_x[n_span++] = run_x0;
-	    }
-	}
+          if (run_x1 > run_x0)
+            {
+              run[n_run].x = run_x0;
+              alpha = ((running_sum >> 8) * opacity + 0x800080) >> 8;
+              run[n_run].alpha = alpha;
+              n_run++;
+              if ((n_span & 1) != (alpha > 0x80ff))
+                span_x[n_span++] = run_x0;
+            }
+        }
       if (x1 > run_x1)
-	{
-	  running_sum += steps[n_steps - 1].delta;
-	  run[n_run].x = run_x1;
-	  alpha = ((running_sum >> 8) * opacity + 0x800080) >> 8;
-	  run[n_run].alpha = alpha;
-	  n_run++;
-	  if ((n_span & 1) != (alpha > 0x80ff))
-	    span_x[n_span++] = run_x1;
-	}
+        {
+          running_sum += steps[n_steps - 1].delta;
+          run[n_run].x = run_x1;
+          alpha = ((running_sum >> 8) * opacity + 0x800080) >> 8;
+          run[n_run].alpha = alpha;
+          n_run++;
+          if ((n_span & 1) != (alpha > 0x80ff))
+            span_x[n_span++] = run_x1;
+        }
       if (alpha > 0x80ff)
-	{
-	  run[n_run].x = x1;
-	  run[n_run].alpha = 0x8000;
-	  n_run++;
-	  span_x[n_span++] = x1;
-	}
+        {
+          run[n_run].x = x1;
+          run[n_run].alpha = 0x8000;
+          n_run++;
+          span_x[n_span++] = x1;
+        }
     }
 
   render->n_run = n_run;
@@ -327,36 +327,36 @@ art_render_svp_invoke_driver (ArtMaskSource *self, ArtRender *render)
 {
   ArtMaskSourceSVP *z = (ArtMaskSourceSVP *)self;
   void (*callback) (void *callback_data,
-		    int y,
-		    int start,
-		    ArtSVPRenderAAStep *steps, int n_steps);
+                    int y,
+                    int start,
+                    ArtSVPRenderAAStep *steps, int n_steps);
 
   z->dest_ptr = render->pixels;
   if (render->opacity == 0x10000)
     {
       if (render->need_span)
-	callback = art_render_svp_callback_span;
+        callback = art_render_svp_callback_span;
       else
-	callback = art_render_svp_callback;
+        callback = art_render_svp_callback;
     }
   else
     {
       if (render->need_span)
-	callback = art_render_svp_callback_opacity_span;
+        callback = art_render_svp_callback_opacity_span;
       else
-	callback = art_render_svp_callback_opacity;
+        callback = art_render_svp_callback_opacity;
     }
 
   art_svp_render_aa (z->svp,
-		     render->x0, render->y0,
-		     render->x1, render->y1, callback,
-		     self);
+                     render->x0, render->y0,
+                     render->x1, render->y1, callback,
+                     self);
   art_render_svp_done (&self->super, render);
 }
 
 static void
 art_render_svp_prepare (ArtMaskSource *self, ArtRender *render,
-			art_boolean first)
+                        art_boolean first)
 {
   /* todo */
   art_die ("art_render_svp non-driver mode not yet implemented.\n");

@@ -32,7 +32,7 @@ extern "C" {
 
 ArtIRect *
 art_rect_list_from_uta (ArtUta *uta, int max_width, int max_height,
-			int *p_nrects);
+                        int *p_nrects);
 
 #ifdef __cplusplus
 }

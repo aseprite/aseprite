@@ -20,7 +20,7 @@ class RectT
 public:
   T x, y, w, h;
 
-  // Creates a new empty rectangle with the origin in 0,0. 
+  // Creates a new empty rectangle with the origin in 0,0.
   RectT() : x(0), y(0), w(0), h(0) {
   }
 
@@ -51,7 +51,7 @@ public:
   //
   // If a coordinate of point1 is greater than point2, the coordinates
   // are swapped. The resulting rectangle will be:
-  // 
+  //
   // x = min(point1.x, point2.x)
   // y = min(point1.y, point2.y)
   // w = max(point1.x, point2.x) - x
@@ -217,18 +217,18 @@ public:
       return *this;
     else
       return RectT(PointT<T>(x < rc.x ? x: rc.x,
-			     y < rc.y ? y: rc.y),
-		   PointT<T>(x+w > rc.x+rc.w ? x+w: rc.x+rc.w,
-			     y+h > rc.y+rc.h ? y+h: rc.y+rc.h));
+                             y < rc.y ? y: rc.y),
+                   PointT<T>(x+w > rc.x+rc.w ? x+w: rc.x+rc.w,
+                             y+h > rc.y+rc.h ? y+h: rc.y+rc.h));
   }
 
   // Returns the intersection rectangle between this and rc rectangles.
   RectT createIntersect(const RectT& rc) const {
     if (intersects(rc))
       return RectT(PointT<T>(x > rc.x ? x: rc.x,
-			     y > rc.y ? y: rc.y),
-		   PointT<T>(x+w < rc.x+rc.w ? x+w: rc.x+rc.w,
-			     y+h < rc.y+rc.h ? y+h: rc.y+rc.h));
+                             y > rc.y ? y: rc.y),
+                   PointT<T>(x+w < rc.x+rc.w ? x+w: rc.x+rc.w,
+                             y+h < rc.y+rc.h ? y+h: rc.y+rc.h));
     else
       return RectT();
   }

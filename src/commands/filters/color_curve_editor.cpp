@@ -37,30 +37,30 @@
 #include "gui/widget.h"
 #include "modules/gui.h"
 
-#define SCR2EDIT_X(xpos)					\
-  (m_x1 +							\
-   ((m_x2 - m_x1 + 1)						\
-    * ((xpos) - rc->x1 - border_width.l)			\
+#define SCR2EDIT_X(xpos)                                        \
+  (m_x1 +                                                       \
+   ((m_x2 - m_x1 + 1)                                           \
+    * ((xpos) - rc->x1 - border_width.l)                        \
     / (jrect_w(rc) - border_width.l - border_width.r)))
 
-#define SCR2EDIT_Y(ypos)					\
-  (m_y1 +							\
-   ((m_y2 - m_y1 + 1)						\
-    * ((jrect_h(rc) - border_width.t - border_width.b)		\
-       - ((ypos) - rc->y1 - border_width.t))			\
+#define SCR2EDIT_Y(ypos)                                        \
+  (m_y1 +                                                       \
+   ((m_y2 - m_y1 + 1)                                           \
+    * ((jrect_h(rc) - border_width.t - border_width.b)          \
+       - ((ypos) - rc->y1 - border_width.t))                    \
     / (jrect_h(rc) - border_width.t - border_width.b)))
 
-#define EDIT2SCR_X(xpos)					\
-  (rc->x1 + border_width.l					\
-   + ((jrect_w(rc) - border_width.l - border_width.r)		\
-      * ((xpos) - m_x1)						\
+#define EDIT2SCR_X(xpos)                                        \
+  (rc->x1 + border_width.l                                      \
+   + ((jrect_w(rc) - border_width.l - border_width.r)           \
+      * ((xpos) - m_x1)                                         \
       / (m_x2 - m_x1 + 1)))
 
-#define EDIT2SCR_Y(ypos)					\
-  (rc->y1							\
-   + (jrect_h(rc) - border_width.t - border_width.b)		\
-   - ((jrect_h(rc) - border_width.t - border_width.b)		\
-      * ((ypos) - m_y1)						\
+#define EDIT2SCR_Y(ypos)                                        \
+  (rc->y1                                                       \
+   + (jrect_h(rc) - border_width.t - border_width.b)            \
+   - ((jrect_h(rc) - border_width.t - border_width.b)           \
+      * ((ypos) - m_y1)                                         \
       / (m_y2 - m_y1 + 1)))
 
 enum {
@@ -99,14 +99,14 @@ bool ColorCurveEditor::onProcessMessage(Message* msg)
     case JM_REQSIZE: {
 #if 0
       msg->reqsize.w =
-	+ border_width.l
-	+ ((m_x2 - m_x1 + 1))
-	+ border_width.r;
+        + border_width.l
+        + ((m_x2 - m_x1 + 1))
+        + border_width.r;
 
       msg->reqsize.h =
-	+ border_width.t
-	+ ((m_y2 - m_y1 + 1))
-	+ border_width.b;
+        + border_width.t
+        + ((m_y2 - m_y1 + 1))
+        + border_width.b;
 #else
       msg->reqsize.w = border_width.l + 1 + border_width.r;
       msg->reqsize.h = border_width.t + 1 + border_width.b;
@@ -117,36 +117,36 @@ bool ColorCurveEditor::onProcessMessage(Message* msg)
     case JM_KEYPRESSED: {
       switch (msg->key.scancode) {
 
-	case KEY_INSERT: {
-	  int x = SCR2EDIT_X(jmouse_x(0));
-	  int y = SCR2EDIT_Y(jmouse_y(0));
+        case KEY_INSERT: {
+          int x = SCR2EDIT_X(jmouse_x(0));
+          int y = SCR2EDIT_Y(jmouse_y(0));
 
-	  // TODO undo?
-	  m_curve->addPoint(gfx::Point(x, y));
+          // TODO undo?
+          m_curve->addPoint(gfx::Point(x, y));
 
-	  invalidate();
-	  CurveEditorChange();
-	  break;
-	}
+          invalidate();
+          CurveEditorChange();
+          break;
+        }
 
-	case KEY_DEL: {
-	  gfx::Point* point = getClosestPoint(SCR2EDIT_X(jmouse_x(0)),
-					      SCR2EDIT_Y(jmouse_y(0)),
-					      NULL, NULL);
+        case KEY_DEL: {
+          gfx::Point* point = getClosestPoint(SCR2EDIT_X(jmouse_x(0)),
+                                              SCR2EDIT_Y(jmouse_y(0)),
+                                              NULL, NULL);
 
-	  // TODO undo?
-	  if (point) {
-	    m_curve->removePoint(*point);
-	    m_editPoint = NULL;
+          // TODO undo?
+          if (point) {
+            m_curve->removePoint(*point);
+            m_editPoint = NULL;
 
-	    invalidate();
-	    CurveEditorChange();
-	  }
-	  break;
-	}
+            invalidate();
+            CurveEditorChange();
+          }
+          break;
+        }
 
-	default:
-	  return false;
+        default:
+          return false;
       }
       return true;
     }
@@ -163,10 +163,10 @@ bool ColorCurveEditor::onProcessMessage(Message* msg)
 
       // Draw guides
       for (x=1; x<=3; x++)
-	vline(bmp, x*bmp->w/4, 1, bmp->h-2, makecol (128, 128, 0));
+        vline(bmp, x*bmp->w/4, 1, bmp->h-2, makecol (128, 128, 0));
 
       for (y=1; y<=3; y++)
-	hline(bmp, 1, y*bmp->h/4, bmp->w-2, makecol (128, 128, 0));
+        hline(bmp, 1, y*bmp->h/4, bmp->w-2, makecol (128, 128, 0));
 
       // Get curve values
       std::vector<int> values(m_x2-m_x1+1);
@@ -174,27 +174,27 @@ bool ColorCurveEditor::onProcessMessage(Message* msg)
 
       // Draw curve
       for (x=border_width.l;
-	   x<jrect_w(rc)-border_width.r; x++) {
-	u = SCR2EDIT_X(rc->x1+x);
-	u = MID(m_x1, u, m_x2);
+           x<jrect_w(rc)-border_width.r; x++) {
+        u = SCR2EDIT_X(rc->x1+x);
+        u = MID(m_x1, u, m_x2);
 
-	y = values[u - m_x1];
-	y = MID(m_y1, y, m_y2);
+        y = values[u - m_x1];
+        y = MID(m_y1, y, m_y2);
 
-	putpixel(bmp, x, EDIT2SCR_Y(y)-rc->y1,
-		 makecol(255, 255, 255));
+        putpixel(bmp, x, EDIT2SCR_Y(y)-rc->y1,
+                 makecol(255, 255, 255));
       }
 
       // Draw nodes
       for (ColorCurve::iterator it = m_curve->begin(), end = m_curve->end(); it != end; ++it) {
-	const gfx::Point& point = *it;
+        const gfx::Point& point = *it;
 
-	x = EDIT2SCR_X(point.x) - rc->x1;
-	y = EDIT2SCR_Y(point.y) - rc->y1;
+        x = EDIT2SCR_X(point.x) - rc->x1;
+        y = EDIT2SCR_Y(point.y) - rc->y1;
 
-	rect(bmp, x-2, y-2, x+2, y+2,
-	     m_editPoint == &point ? makecol(255, 255, 0):
-				     makecol(0, 0, 255));
+        rect(bmp, x-2, y-2, x+2, y+2,
+             m_editPoint == &point ? makecol(255, 255, 0):
+                                     makecol(0, 0, 255));
       }
 
       // Blit to screen
@@ -206,41 +206,41 @@ bool ColorCurveEditor::onProcessMessage(Message* msg)
     case JM_BUTTONPRESSED:
       // Change scroll
       if (msg->any.shifts & KB_SHIFT_FLAG) {
-	m_status = STATUS_SCROLLING;
-	jmouse_set_cursor(JI_CURSOR_SCROLL);
+        m_status = STATUS_SCROLLING;
+        jmouse_set_cursor(JI_CURSOR_SCROLL);
       }
       /* scaling */
 /*       else if (msg->shifts & KB_CTRL_FLAG) { */
-/* 	m_status = STATUS_SCALING; */
-/* 	jmouse_set_cursor(JI_CURSOR_SCROLL); */
+/*      m_status = STATUS_SCALING; */
+/*      jmouse_set_cursor(JI_CURSOR_SCROLL); */
 /*       } */
       // Show manual-entry dialog
       else if (msg->mouse.right) {
-	m_editPoint = getClosestPoint(SCR2EDIT_X(msg->mouse.x),
-				      SCR2EDIT_Y(msg->mouse.y),
-				      NULL, NULL);
-	if (m_editPoint) {
-	  invalidate();
-	  jwidget_flush_redraw(this);
+        m_editPoint = getClosestPoint(SCR2EDIT_X(msg->mouse.x),
+                                      SCR2EDIT_Y(msg->mouse.y),
+                                      NULL, NULL);
+        if (m_editPoint) {
+          invalidate();
+          jwidget_flush_redraw(this);
 
-	  if (editNodeManually(*m_editPoint))
-	    CurveEditorChange();
+          if (editNodeManually(*m_editPoint))
+            CurveEditorChange();
 
-	  m_editPoint = NULL;
-	  invalidate();
-	}
-	
-	return true;
+          m_editPoint = NULL;
+          invalidate();
+        }
+
+        return true;
       }
       // Edit node
       else {
-	m_editPoint = getClosestPoint(SCR2EDIT_X(msg->mouse.x),
-				      SCR2EDIT_Y(msg->mouse.y),
-				      &m_editX,
-				      &m_editY);
+        m_editPoint = getClosestPoint(SCR2EDIT_X(msg->mouse.x),
+                                      SCR2EDIT_Y(msg->mouse.y),
+                                      &m_editX,
+                                      &m_editY);
 
-	m_status = STATUS_MOVING_POINT;
-	jmouse_set_cursor(JI_CURSOR_HAND);
+        m_status = STATUS_MOVING_POINT;
+        jmouse_set_cursor(JI_CURSOR_HAND);
       }
 
       captureMouse();
@@ -248,73 +248,73 @@ bool ColorCurveEditor::onProcessMessage(Message* msg)
 
     case JM_MOTION:
       if (hasCapture()) {
-	switch (m_status) {
+        switch (m_status) {
 
-	  case STATUS_SCROLLING: {
-	    View* view = View::getView(this);
-	    gfx::Rect vp = view->getViewportBounds();
-	    gfx::Point scroll = view->getViewScroll();
+          case STATUS_SCROLLING: {
+            View* view = View::getView(this);
+            gfx::Rect vp = view->getViewportBounds();
+            gfx::Point scroll = view->getViewScroll();
 
-	    scroll.x += jmouse_x(1)-jmouse_x(0);
-	    scroll.y += jmouse_y(1)-jmouse_y(0);
+            scroll.x += jmouse_x(1)-jmouse_x(0);
+            scroll.y += jmouse_y(1)-jmouse_y(0);
 
-	    view->setViewScroll(scroll);
+            view->setViewScroll(scroll);
 
-	    jmouse_control_infinite_scroll(vp);
-	    break;
-	  }
+            jmouse_control_infinite_scroll(vp);
+            break;
+          }
 
-	  case STATUS_MOVING_POINT:
-	    if (m_editPoint) {
-	      *m_editX = SCR2EDIT_X(msg->mouse.x);
-	      *m_editY = SCR2EDIT_Y(msg->mouse.y);
-	      *m_editX = MID(m_x1, *m_editX, m_x2);
-	      *m_editY = MID(m_y1, *m_editY, m_y2);
+          case STATUS_MOVING_POINT:
+            if (m_editPoint) {
+              *m_editX = SCR2EDIT_X(msg->mouse.x);
+              *m_editY = SCR2EDIT_Y(msg->mouse.y);
+              *m_editX = MID(m_x1, *m_editX, m_x2);
+              *m_editY = MID(m_y1, *m_editY, m_y2);
 
-	      // TODO this should be optional
-	      CurveEditorChange();
+              // TODO this should be optional
+              CurveEditorChange();
 
-	      invalidate();
-	    }
-	    break;
-	}
+              invalidate();
+            }
+            break;
+        }
 
-	return true;
+        return true;
       }
-#if 0				// TODO
+#if 0                           // TODO
       // If the mouse move above a curve_editor, the focus change to
       // this widget immediately
       else if (!jwidget_has_focus(this)) {
-	jmanager_set_focus(this);
+        jmanager_set_focus(this);
       }
 #endif
       break;
 
     case JM_BUTTONRELEASED:
       if (hasCapture()) {
-	releaseMouse();
+        releaseMouse();
 
-	switch (m_status) {
+        switch (m_status) {
 
-	  case STATUS_SCROLLING:
-	    jmouse_set_cursor(JI_CURSOR_NORMAL);
-	    break;
+          case STATUS_SCROLLING:
+            jmouse_set_cursor(JI_CURSOR_NORMAL);
+            break;
 
-/* 	  case STATUS_SCALING: */
-/* 	    jmouse_set_cursor(JI_CURSOR_NORMAL); */
-/* 	    break; */
+/*        case STATUS_SCALING: */
+/*          jmouse_set_cursor(JI_CURSOR_NORMAL); */
+/*          break; */
 
-	  case STATUS_MOVING_POINT:
-	    jmouse_set_cursor(JI_CURSOR_NORMAL);
-	    CurveEditorChange();
+          case STATUS_MOVING_POINT:
+            jmouse_set_cursor(JI_CURSOR_NORMAL);
+            CurveEditorChange();
 
-	    m_editPoint = NULL;
-	    invalidate();
-	    break;
-	}
+            m_editPoint = NULL;
+            invalidate();
+            break;
+        }
 
-	m_status = STATUS_STANDBY;
-	return true;
+        m_status = STATUS_STANDBY;
+        return true;
       }
       break;
   }
@@ -324,17 +324,17 @@ bool ColorCurveEditor::onProcessMessage(Message* msg)
 
 gfx::Point* ColorCurveEditor::getClosestPoint(int x, int y, int** edit_x, int** edit_y)
 {
-#define CALCDIST(xx, yy)				\
-  dx = point->xx-x;					\
-  dy = point->yy-y;					\
-  dist = std::sqrt(static_cast<double>(dx*dx + dy*dy));	\
-							\
-  if (!point_found || dist <= dist_min) {		\
-    point_found = point;				\
-    dist_min = dist;					\
-							\
-    if (edit_x) *edit_x = &point->xx;			\
-    if (edit_y) *edit_y = &point->yy;			\
+#define CALCDIST(xx, yy)                                \
+  dx = point->xx-x;                                     \
+  dy = point->yy-y;                                     \
+  dist = std::sqrt(static_cast<double>(dx*dx + dy*dy)); \
+                                                        \
+  if (!point_found || dist <= dist_min) {               \
+    point_found = point;                                \
+    dist_min = dist;                                    \
+                                                        \
+    if (edit_x) *edit_x = &point->xx;                   \
+    if (edit_y) *edit_y = &point->yy;                   \
   }
 
   gfx::Point* point;

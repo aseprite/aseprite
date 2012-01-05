@@ -89,7 +89,7 @@ void PaletteView::setBoxSize(int boxsize)
 void PaletteView::clearSelection()
 {
   std::fill(m_selectedEntries.begin(),
-	    m_selectedEntries.end(), false);
+            m_selectedEntries.end(), false);
 }
 
 void PaletteView::selectColor(int index)
@@ -112,7 +112,7 @@ void PaletteView::selectRange(int index1, int index2)
   m_currentEntry = index2;
 
   std::fill(m_selectedEntries.begin()+std::min(index1, index2),
-  	    m_selectedEntries.begin()+std::max(index1, index2)+1, true);
+            m_selectedEntries.begin()+std::max(index1, index2)+1, true);
 
   update_scroll(index2);
   invalidate();
@@ -177,11 +177,11 @@ Color PaletteView::getColorByPosition(int target_x, int target_y)
 
     for (u=0; u<cols; u++) {
       if (c >= palette->size())
-	break;
+        break;
 
       if ((target_x >= x) && (target_x <= x+m_boxsize) &&
-	  (target_y >= y) && (target_y <= y+m_boxsize))
-	return Color::fromIndex(c);
+          (target_y >= y) && (target_y <= y+m_boxsize))
+        return Color::fromIndex(c);
 
       x += m_boxsize+this->child_spacing;
       c++;
@@ -219,44 +219,44 @@ bool PaletteView::onProcessMessage(Message* msg)
       c = 0;
 
       for (v=0; v<rows; v++) {
-	x = this->border_width.l;
+        x = this->border_width.l;
 
-	for (u=0; u<cols; u++) {
-	  if (c >= palette->size())
-	    break;
+        for (u=0; u<cols; u++) {
+          if (c >= palette->size())
+            break;
 
-	  if (bitmap_color_depth(ji_screen) == 8)
-	    color = c;
-	  else
-	    color = makecol_depth
-	      (bitmap_color_depth(ji_screen),
-	       _rgba_getr(palette->getEntry(c)),
-	       _rgba_getg(palette->getEntry(c)),
-	       _rgba_getb(palette->getEntry(c)));
+          if (bitmap_color_depth(ji_screen) == 8)
+            color = c;
+          else
+            color = makecol_depth
+              (bitmap_color_depth(ji_screen),
+               _rgba_getr(palette->getEntry(c)),
+               _rgba_getg(palette->getEntry(c)),
+               _rgba_getb(palette->getEntry(c)));
 
-	  rectfill(bmp, x, y, x+m_boxsize-1, y+m_boxsize-1, color);
+          rectfill(bmp, x, y, x+m_boxsize-1, y+m_boxsize-1, color);
 
-	  if (m_selectedEntries[c]) {
-	    bool top    = (c >= m_columns            && c-m_columns >= 0  ? m_selectedEntries[c-m_columns]: false);
-	    bool bottom = (c < 256-m_columns         && c+m_columns < 256 ? m_selectedEntries[c+m_columns]: false);
-	    bool left   = ((c%m_columns)>0           && c-1         >= 0  ? m_selectedEntries[c-1]: false);
-	    bool right  = ((c%m_columns)<m_columns-1 && c+1         < 256 ? m_selectedEntries[c+1]: false);
+          if (m_selectedEntries[c]) {
+            bool top    = (c >= m_columns            && c-m_columns >= 0  ? m_selectedEntries[c-m_columns]: false);
+            bool bottom = (c < 256-m_columns         && c+m_columns < 256 ? m_selectedEntries[c+m_columns]: false);
+            bool left   = ((c%m_columns)>0           && c-1         >= 0  ? m_selectedEntries[c-1]: false);
+            bool right  = ((c%m_columns)<m_columns-1 && c+1         < 256 ? m_selectedEntries[c+1]: false);
 
-	    if (!top) hline(bmp, x-1, y-1, x+m_boxsize, bordercolor);
-	    if (!bottom) hline(bmp, x-1, y+m_boxsize, x+m_boxsize, bordercolor);
-	    if (!left) vline(bmp, x-1, y-1, y+m_boxsize, bordercolor);
-	    if (!right) vline(bmp, x+m_boxsize, y-1, y+m_boxsize, bordercolor);
-	  }
+            if (!top) hline(bmp, x-1, y-1, x+m_boxsize, bordercolor);
+            if (!bottom) hline(bmp, x-1, y+m_boxsize, x+m_boxsize, bordercolor);
+            if (!left) vline(bmp, x-1, y-1, y+m_boxsize, bordercolor);
+            if (!right) vline(bmp, x+m_boxsize, y-1, y+m_boxsize, bordercolor);
+          }
 
-	  x += m_boxsize+this->child_spacing;
-	  c++;
-	}
+          x += m_boxsize+this->child_spacing;
+          c++;
+        }
 
-	y += m_boxsize+this->child_spacing;
+        y += m_boxsize+this->child_spacing;
       }
 
       blit(bmp, ji_screen,
-	   0, 0, this->rc->x1, this->rc->y1, bmp->w, bmp->h);
+           0, 0, this->rc->x1, this->rc->y1, bmp->w, bmp->h);
       destroy_bitmap(bmp);
       return true;
     }
@@ -278,27 +278,27 @@ bool PaletteView::onProcessMessage(Message* msg)
 
       Color color = getColorByPosition(mouse_x, mouse_y);
       if (color.getType() == Color::IndexType) {
-	int idx = color.getIndex();
+        int idx = color.getIndex();
 
-	app_get_statusbar()->showColor(0, "", color, 255);
+        app_get_statusbar()->showColor(0, "", color, 255);
 
-	if (hasCapture() && idx != m_currentEntry) {
-	  if (!(msg->any.shifts & KB_CTRL_FLAG))
-	    clearSelection();
+        if (hasCapture() && idx != m_currentEntry) {
+          if (!(msg->any.shifts & KB_CTRL_FLAG))
+            clearSelection();
 
-	  if (msg->any.shifts & KB_SHIFT_FLAG)
-	    selectRange(m_rangeAnchor, idx);
-	  else
-	    selectColor(idx);
+          if (msg->any.shifts & KB_SHIFT_FLAG)
+            selectRange(m_rangeAnchor, idx);
+          else
+            selectColor(idx);
 
-	  // Emit signals
-	  jwidget_emit_signal(this, SIGNAL_PALETTE_EDITOR_CHANGE);
-	  IndexChange(idx);
-	}
+          // Emit signals
+          jwidget_emit_signal(this, SIGNAL_PALETTE_EDITOR_CHANGE);
+          IndexChange(idx);
+        }
       }
 
       if (hasCapture())
-	return true;
+        return true;
 
       break;
     }
@@ -310,9 +310,9 @@ bool PaletteView::onProcessMessage(Message* msg)
     case JM_WHEEL: {
       View* view = View::getView(this);
       if (view) {
-	gfx::Point scroll = view->getViewScroll();
-	scroll.y += (jmouse_z(1)-jmouse_z(0)) * 3 * m_boxsize;
-	view->setViewScroll(scroll);
+        gfx::Point scroll = view->getViewScroll();
+        scroll.y += (jmouse_z(1)-jmouse_z(0)) * 3 * m_boxsize;
+        view->setViewScroll(scroll);
       }
       break;
     }

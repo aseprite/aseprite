@@ -408,7 +408,7 @@ QuantizeRGBBuffer(int Width,
 static void
 GetScanLine(GifPixelType * ScanLine,
             int Y) {
-    
+
 #ifdef __MSDOS__
     unsigned char ScreenByte;
     int i, j, k;

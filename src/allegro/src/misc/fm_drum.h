@@ -1,6 +1,6 @@
-/*         ______   ___    ___ 
- *        /\  _  \ /\_ \  /\_ \ 
- *        \ \ \L\ \\//\ \ \//\ \      __     __   _ __   ___ 
+/*         ______   ___    ___
+ *        /\  _  \ /\_ \  /\_ \
+ *        \ \ \L\ \\//\ \ \//\ \      __     __   _ __   ___
  *         \ \  __ \ \ \ \  \ \ \   /'__`\ /'_ `\/\`'__\/ __`\
  *          \ \ \/\ \ \_\ \_ \_\ \_/\  __//\ \L\ \ \ \//\ \L\ \
  *           \ \_\ \_\/\____\/\____\ \____\ \____ \ \_\\ \____/
@@ -8,8 +8,8 @@
  *                                           /\____/
  *                                           \_/__/
  *
- * 	This set of GM percussion patches was provided partly by Jorrit Rouwe,
- * 	and partly taken from the SBTimbre utility...
+ *      This set of GM percussion patches was provided partly by Jorrit Rouwe,
+ *      and partly taken from the SBTimbre utility...
  */
 
 
@@ -63,4 +63,3 @@ static FM_INSTRUMENT fm_drum[47] =
    { 0xc5, 0xd5, 0x4f, 0x10, 0xf6, 0xf6, 0x84, 0x84, 0x00, 0x00, 0x08, 0x02, 0x16, FM_BD }, /* Mute Triangle */
    { 0xc5, 0xd5, 0x4f, 0x10, 0xf6, 0xf6, 0x84, 0x72, 0x00, 0x00, 0x08, 0x02, 0x16, FM_BD }  /* Open Triangle */
 };
-

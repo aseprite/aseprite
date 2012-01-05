@@ -26,4 +26,3 @@ void destroy_thumbnails();
 struct BITMAP* generate_thumbnail(const Layer* layer, const Cel* cel, const Sprite* sprite);
 
 #endif
-

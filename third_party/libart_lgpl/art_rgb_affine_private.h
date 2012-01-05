@@ -29,8 +29,8 @@ extern "C" {
 
 void
 art_rgb_affine_run (int *p_x0, int *p_x1, int y,
-		    int src_width, int src_height,
-		    const double affine[6]);
+                    int src_width, int src_height,
+                    const double affine[6]);
 
 #ifdef __cplusplus
 }

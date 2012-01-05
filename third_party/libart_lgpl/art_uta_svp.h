@@ -34,4 +34,3 @@ art_uta_from_svp (const ArtSVP *svp);
 #endif /* __cplusplus */
 
 #endif /* __ART_UTA_SVP_H__ */
-

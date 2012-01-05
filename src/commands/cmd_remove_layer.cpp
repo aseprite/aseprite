@@ -44,15 +44,15 @@ protected:
 
 RemoveLayerCommand::RemoveLayerCommand()
   : Command("RemoveLayer",
-	    "Remove Layer",
-	    CmdRecordableFlag)
+            "Remove Layer",
+            CmdRecordableFlag)
 {
 }
 
 bool RemoveLayerCommand::onEnabled(Context* context)
 {
   return context->checkFlags(ContextFlags::ActiveDocumentIsWritable |
-			     ContextFlags::HasActiveLayer);
+                             ContextFlags::HasActiveLayer);
 }
 
 void RemoveLayerCommand::onExecute(Context* context)
@@ -73,7 +73,7 @@ void RemoveLayerCommand::onExecute(Context* context)
   app_get_statusbar()->invalidate();
   app_get_statusbar()
     ->showTip(1000, "Layer `%s' removed",
-	      layer_name.c_str());
+              layer_name.c_str());
 }
 
 //////////////////////////////////////////////////////////////////////

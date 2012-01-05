@@ -39,7 +39,7 @@ public:
   void findConfigurationFile();
 
 private:
-  // Disable copy 
+  // Disable copy
   ResourceFinder(const ResourceFinder&);
   ResourceFinder& operator==(const ResourceFinder&);
 
@@ -49,4 +49,3 @@ private:
 };
 
 #endif
-

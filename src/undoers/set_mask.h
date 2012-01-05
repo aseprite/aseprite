@@ -49,4 +49,4 @@ private:
 
 } // namespace undoers
 
-#endif	// UNDOERS_SET_MASK_H_INCLUDED
+#endif  // UNDOERS_SET_MASK_H_INCLUDED

@@ -29,11 +29,11 @@ static void *load_datafile_png(PACKFILE *f, long size)
 
     buffer = malloc(size);
     if (!buffer)
-	return NULL;
+        return NULL;
 
     if (pack_fread(buffer, size, f) != size) {
-	free(buffer);
-	return NULL;
+        free(buffer);
+        return NULL;
     }
 
     bmp = load_memory_png(buffer, size, NULL);
@@ -46,7 +46,7 @@ static void *load_datafile_png(PACKFILE *f, long size)
 static void destroy_datafile_png(void *data)
 {
     if (data) {
-	destroy_bitmap((BITMAP *)data);
+        destroy_bitmap((BITMAP *)data);
     }
 }
 

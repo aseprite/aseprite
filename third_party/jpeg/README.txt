@@ -202,8 +202,8 @@ We highly recommend reading one or more of these references before trying to
 understand the innards of the JPEG software.
 
 The best short technical introduction to the JPEG compression algorithm is
-	Wallace, Gregory K.  "The JPEG Still Picture Compression Standard",
-	Communications of the ACM, April 1991 (vol. 34 no. 4), pp. 30-44.
+        Wallace, Gregory K.  "The JPEG Still Picture Compression Standard",
+        Communications of the ACM, April 1991 (vol. 34 no. 4), pp. 30-44.
 (Adjacent articles in that issue discuss MPEG motion picture compression,
 applications of JPEG, and related topics.)  If you don't have the CACM issue
 handy, a PostScript file containing a revised version of Wallace's article is
@@ -252,11 +252,11 @@ currently does not support any Part 3 extensions.
 The JPEG standard does not specify all details of an interchangeable file
 format.  For the omitted details we follow the "JFIF" conventions, revision
 1.02.  A copy of the JFIF spec is available from:
-	Literature Department
-	C-Cube Microsystems, Inc.
-	1778 McCarthy Blvd.
-	Milpitas, CA 95035
-	phone (408) 944-6300,  fax (408) 944-6314
+        Literature Department
+        C-Cube Microsystems, Inc.
+        1778 McCarthy Blvd.
+        Milpitas, CA 95035
+        phone (408) 944-6300,  fax (408) 944-6314
 A PostScript version of this document is available by FTP at
 ftp://ftp.uu.net/graphics/jpeg/jfif.ps.gz.  There is also a plain text
 version at ftp://ftp.uu.net/graphics/jpeg/jfif.txt.gz, but it is missing
@@ -303,8 +303,8 @@ and other news.answers archive sites, including the official news.answers
 archive at rtfm.mit.edu: ftp://rtfm.mit.edu/pub/usenet/news.answers/jpeg-faq/.
 If you don't have Web or FTP access, send e-mail to mail-server@rtfm.mit.edu
 with body
-	send usenet/news.answers/jpeg-faq/part1
-	send usenet/news.answers/jpeg-faq/part2
+        send usenet/news.answers/jpeg-faq/part1
+        send usenet/news.answers/jpeg-faq/part2
 
 
 RELATED SOFTWARE

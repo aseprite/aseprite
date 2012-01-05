@@ -93,7 +93,7 @@ static int load_root_menu()
     app_get_menubar()->setMenu(NULL);
 
   // destroy `root-menu'
-  delete root_menu;		// widget
+  delete root_menu;             // widget
 
   // create a new empty-menu
   root_menu = NULL;
@@ -103,7 +103,7 @@ static int load_root_menu()
   frame_popup_menu = NULL;
   cel_popup_menu = NULL;
   cel_movement_popup_menu = NULL;
-  
+
   TiXmlDocument& doc(GuiXml::instance()->doc());
   TiXmlHandle handle(&doc);
   const char* path = GuiXml::instance()->filename();
@@ -117,7 +117,7 @@ static int load_root_menu()
   root_menu = load_menu_by_id(handle, "main_menu");
   if (!root_menu)
     throw base::Exception("Error loading main menu from file:\n%s\nReinstall the application.",
-			  static_cast<const char*>(path));
+                          static_cast<const char*>(path));
 
   // Add a warning element because the user is not using the last well-known gui.xml file.
   if (GuiXml::instance()->version() != VERSION)
@@ -150,34 +150,34 @@ static int load_root_menu()
     if (command_name && command_key) {
       Command* command = CommandsModule::instance()->getCommandByName(command_name);
       if (command) {
-	// Read params
-	Params params;
+        // Read params
+        Params params;
 
-	TiXmlElement* xmlParam = xmlKey->FirstChildElement("param");
-	while (xmlParam) {
-	  const char* param_name = xmlParam->Attribute("name");
-	  const char* param_value = xmlParam->Attribute("value");
+        TiXmlElement* xmlParam = xmlKey->FirstChildElement("param");
+        while (xmlParam) {
+          const char* param_name = xmlParam->Attribute("name");
+          const char* param_value = xmlParam->Attribute("value");
 
-	  if (param_name && param_value)
-	    params.set(param_name, param_value);
+          if (param_name && param_value)
+            params.set(param_name, param_value);
 
-	  xmlParam = xmlParam->NextSiblingElement();
-	}
+          xmlParam = xmlParam->NextSiblingElement();
+        }
 
-	bool first_shortcut =
-	  (get_accel_to_execute_command(command_name, &params) == NULL);
+        bool first_shortcut =
+          (get_accel_to_execute_command(command_name, &params) == NULL);
 
-	PRINTF(" - Shortcut for command `%s' <%s>\n", command_name, command_key);
-		  
-	// add the keyboard shortcut to the command
-	JAccel accel =
-	  add_keyboard_shortcut_to_execute_command(command_key, command_name, &params);
+        PRINTF(" - Shortcut for command `%s' <%s>\n", command_name, command_key);
 
-	// add the shortcut to the menuitems with this
-	// command (this is only visual, the "manager_msg_proc"
-	// is the only one that process keyboard shortcuts)
-	if (first_shortcut)
-	  apply_shortcut_to_menuitems_with_command(root_menu, command, &params, accel);
+        // add the keyboard shortcut to the command
+        JAccel accel =
+          add_keyboard_shortcut_to_execute_command(command_key, command_name, &params);
+
+        // add the shortcut to the menuitems with this
+        // command (this is only visual, the "manager_msg_proc"
+        // is the only one that process keyboard shortcuts)
+        if (first_shortcut)
+          apply_shortcut_to_menuitems_with_command(root_menu, command, &params, accel);
       }
     }
 
@@ -199,8 +199,8 @@ static int load_root_menu()
     if (tool_id && tool_key) {
       tools::Tool* tool = App::instance()->getToolBox()->getToolById(tool_id);
       if (tool) {
-	PRINTF(" - Shortcut for tool `%s': <%s>\n", tool_id, tool_key);
-	add_keyboard_shortcut_to_change_tool(tool_key, tool);
+        PRINTF(" - Shortcut for tool `%s': <%s>\n", tool_id, tool_key);
+        add_keyboard_shortcut_to_change_tool(tool_key, tool);
       }
     }
     xmlKey = xmlKey->NextSiblingElement();
@@ -220,8 +220,8 @@ static int load_root_menu()
     if (tool_id && tool_key) {
       tools::Tool* tool = App::instance()->getToolBox()->getToolById(tool_id);
       if (tool) {
-	PRINTF(" - Shortcut for quicktool `%s': <%s>\n", tool_id, tool_key);
-	add_keyboard_shortcut_to_quicktool(tool_key, tool);
+        PRINTF(" - Shortcut for quicktool `%s': <%s>\n", tool_id, tool_key);
+        add_keyboard_shortcut_to_quicktool(tool_key, tool);
       }
     }
     xmlKey = xmlKey->NextSiblingElement();
@@ -292,7 +292,7 @@ static Menu* convert_xmlelem_to_menu(TiXmlElement* elem)
       menu->addChild(menuitem);
     else
       throw base::Exception("Error converting the element \"%s\" to a menu-item.\n",
-			    static_cast<const char*>(child->Value()));
+                            static_cast<const char*>(child->Value()));
 
     child = child->NextSiblingElement();
   }
@@ -309,7 +309,7 @@ static Widget* convert_xmlelem_to_menuitem(TiXmlElement* elem)
   const char* command_name = elem->Attribute("command");
   Command* command =
     command_name ? CommandsModule::instance()->getCommandByName(command_name):
-		   NULL;
+                   NULL;
 
   // load params
   Params params;
@@ -320,7 +320,7 @@ static Widget* convert_xmlelem_to_menuitem(TiXmlElement* elem)
       const char* param_value = xmlParam->Attribute("value");
 
       if (param_name && param_value)
-	params.set(param_name, param_value);
+        params.set(param_name, param_value);
 
       xmlParam = xmlParam->NextSiblingElement();
     }
@@ -328,7 +328,7 @@ static Widget* convert_xmlelem_to_menuitem(TiXmlElement* elem)
 
   /* create the item */
   MenuItem2* menuitem = new MenuItem2(elem->Attribute("text"),
-				      command, command ? &params: NULL);
+                                      command, command ? &params: NULL);
   if (!menuitem)
     return NULL;
 
@@ -384,15 +384,15 @@ static void apply_shortcut_to_menuitems_with_command(Menu* menu, Command *comman
       Params* mi_params = menuitem->getParams();
 
       if (mi_command &&
-	  ustricmp(mi_command->short_name(), command->short_name()) == 0 &&
-	  ((mi_params && *mi_params == *params) ||
-	   (Params() == *params))) {
-	// Set the accelerator to be shown in this menu-item
-	menuitem->setAccel(jaccel_new_copy(accel));
+          ustricmp(mi_command->short_name(), command->short_name()) == 0 &&
+          ((mi_params && *mi_params == *params) ||
+           (Params() == *params))) {
+        // Set the accelerator to be shown in this menu-item
+        menuitem->setAccel(jaccel_new_copy(accel));
       }
 
       if (Menu* submenu = menuitem->getSubmenu())
-	apply_shortcut_to_menuitems_with_command(submenu, command, params, accel);
+        apply_shortcut_to_menuitems_with_command(submenu, command, params, accel);
     }
   }
 

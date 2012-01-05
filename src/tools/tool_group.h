@@ -28,8 +28,8 @@ class ToolGroup
 {
 public:
   ToolGroup(const char* name,
-	    const char* label) : m_name(name)
-			       , m_label(label) { }
+            const char* label) : m_name(name)
+                               , m_label(label) { }
 
   const std::string& getName() const { return m_name; }
   const std::string& getLabel() const { return m_label; }
@@ -41,5 +41,4 @@ private:
 
 } // namespace tools
 
-#endif	// TOOLS_TOOL_GROUP_H_INCLUDED
-
+#endif  // TOOLS_TOOL_GROUP_H_INCLUDED

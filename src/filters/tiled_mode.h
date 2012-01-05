@@ -27,4 +27,3 @@ enum TiledMode {
 };
 
 #endif
-

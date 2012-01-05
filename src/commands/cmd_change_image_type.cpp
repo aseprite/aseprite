@@ -47,8 +47,8 @@ protected:
 
 ChangeImageTypeCommand::ChangeImageTypeCommand()
   : Command("ChangeImageType",
-	    "Change Image Type",
-	    CmdUIOnlyFlag)
+            "Change Image Type",
+            CmdUIOnlyFlag)
 {
   m_imgtype = IMAGE_RGB;
   m_dithering = DITHERING_NONE;

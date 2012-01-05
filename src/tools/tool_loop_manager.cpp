@@ -53,7 +53,7 @@ void ToolLoopManager::prepareLoop(const Pointer& pointer)
 
   // Prepare the image where we will draw on
   image_copy(m_toolLoop->getDstImage(),
-	     m_toolLoop->getSrcImage(), 0, 0);
+             m_toolLoop->getSrcImage(), 0, 0);
 
   // Prepare the ink
   m_toolLoop->getInk()->prepareInk(m_toolLoop);
@@ -61,7 +61,7 @@ void ToolLoopManager::prepareLoop(const Pointer& pointer)
   // Prepare preview image (the destination image will be our preview
   // in the tool-loop time, so we can see what we are drawing)
   RenderEngine::setPreviewImage(m_toolLoop->getLayer(),
-				m_toolLoop->getDstImage());
+                                m_toolLoop->getDstImage());
 }
 
 void ToolLoopManager::releaseLoop(const Pointer& pointer)
@@ -125,13 +125,13 @@ void ToolLoopManager::movement(const Pointer& pointer)
   std::string statusText;
   m_toolLoop->getController()->getStatusBarText(m_points, statusText);
   m_toolLoop->updateStatusBar(statusText.c_str());
-  
+
   doLoopStep(false);
 }
 
 void ToolLoopManager::doLoopStep(bool last_step)
 {
-  static Rect old_dirty_area;	// TODO Not thread safe
+  static Rect old_dirty_area;   // TODO Not thread safe
 
   Points points_to_interwine;
   if (!last_step)

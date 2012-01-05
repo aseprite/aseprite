@@ -46,8 +46,8 @@ public:
     m_docs.removeAllItems();
     m_docs.addItem("Documents");
     for (Documents::const_iterator
-	   it = context->getDocuments().begin(),
-	   end = context->getDocuments().end(); it != end; ++it) {
+           it = context->getDocuments().begin(),
+           end = context->getDocuments().end(); it != end; ++it) {
       m_docs.addItem((*it)->getFilename());
     }
     m_docs.addItem("---------");
@@ -72,8 +72,8 @@ protected:
 
 DeveloperConsoleCommand::DeveloperConsoleCommand()
   : Command("DeveloperConsole",
-	    "DeveloperConsole",
-	    CmdUIOnlyFlag)
+            "DeveloperConsole",
+            CmdUIOnlyFlag)
 {
   m_devConsole = NULL;
 }

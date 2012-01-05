@@ -36,21 +36,21 @@ fi
 
 function def_common_files()
 {
-  txt_files="							     \
-$1/README.html							     \
-$1/LICENSE.txt							     \
-$1/data/convmatr.def						     \
-$1/data/*.xml						     	     \
-$1/docs/files/*.txt						     \
-$1/docs/licenses/*.txt						     \
+  txt_files="                                                        \
+$1/README.html                                                       \
+$1/LICENSE.txt                                                       \
+$1/data/convmatr.def                                                 \
+$1/data/*.xml                                                        \
+$1/docs/files/*.txt                                                  \
+$1/docs/licenses/*.txt                                               \
 $1/data/widgets/*.xml"
 
-  bin_files="							     \
-$1/data/palettes/*.col						     \
-$1/data/icons/ase*.ico						     \
-$1/data/icons/ase*.png						     \
-$1/data/skins/*/*.png						     \
-$1/data/skins/*/*.xml						     \
+  bin_files="                                                        \
+$1/data/palettes/*.col                                               \
+$1/data/icons/ase*.ico                                               \
+$1/data/icons/ase*.png                                               \
+$1/data/skins/*/*.png                                                \
+$1/data/skins/*/*.xml                                                \
 $1/docs/*.pdf"
 }
 
@@ -74,7 +74,7 @@ if [ ! -f $distdir-win32.zip ] ; then
     $zip $distdir-win32.zip $txt_files
 
     # Dynamic version of DLLs
-    #$zip $distdir-win32.zip $bin_files		\
+    #$zip $distdir-win32.zip $bin_files         \
     #    $distdir-win32/aseprite.exe \
     #    $distdir-win32/alleg44.dll \
     #    $distdir-win32/msvcr90.dll

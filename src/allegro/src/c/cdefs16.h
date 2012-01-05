@@ -64,7 +64,7 @@
 #define PS_ALPHA_BLEND(b,o,c)  ((*(b))((o), (c), _blender_alpha))
 
 #define PATTERN_LINE(y)        (PIXEL_PTR) (_drawing_pattern->line[((y) - _drawing_y_anchor) \
-								   & _drawing_y_mask])
+                                                                   & _drawing_y_mask])
 #define GET_PATTERN_PIXEL(x,y) GET_MEMORY_PIXEL(OFFSET_PIXEL_PTR(PATTERN_LINE(y), \
                                                 ((x) - _drawing_x_anchor) & _drawing_x_mask))
 
@@ -114,4 +114,3 @@
 #define FUNC_POLY_SCANLINE_PTEX_MASK_TRANS  _poly_scanline_ptex_mask_trans16
 
 #endif /* !__bma_cdefs16_h */
-

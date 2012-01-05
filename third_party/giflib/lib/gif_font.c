@@ -1,13 +1,13 @@
 /*****************************************************************************
- *   "Gif-Lib" - Yet another gif library.                     
- *                                         
- * Written by:  Gershon Elber            IBM PC Ver 0.1,    Jun. 1989    
+ *   "Gif-Lib" - Yet another gif library.
+ *
+ * Written by:  Gershon Elber            IBM PC Ver 0.1,    Jun. 1989
  *****************************************************************************
- * Utility font handling and simple drawing for the GIF library             
+ * Utility font handling and simple drawing for the GIF library
  *****************************************************************************
- * History:                                     
- * 17 Jun 89 - Version 1.0 by Gershon Elber.                     
- * 25 Sep 92 - Draw functions added by Eric S. Raymond                 
+ * History:
+ * 17 Jun 89 - Version 1.0 by Gershon Elber.
+ * 25 Sep 92 - Draw functions added by Eric S. Raymond
  ****************************************************************************/
 
 #ifdef HAVE_CONFIG_H
@@ -18,7 +18,7 @@
 #include "gif_lib.h"
 
 /*****************************************************************************
- * Ascii 8 by 8 regular font - only first 128 characters are supported.         
+ * Ascii 8 by 8 regular font - only first 128 characters are supported.
  ****************************************************************************/
 
 /*

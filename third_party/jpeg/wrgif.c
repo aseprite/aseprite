@@ -37,7 +37,7 @@
  *    CompuServe Incorporated."
  */
 
-#include "cdjpeg.h"		/* Common decls for cjpeg/djpeg applications */
+#include "cdjpeg.h"             /* Common decls for cjpeg/djpeg applications */
 
 #ifdef GIF_SUPPORTED
 
@@ -45,31 +45,31 @@
 /* Private version of data destination object */
 
 typedef struct {
-  struct djpeg_dest_struct pub;	/* public fields */
+  struct djpeg_dest_struct pub; /* public fields */
 
-  j_decompress_ptr cinfo;	/* back link saves passing separate parm */
+  j_decompress_ptr cinfo;       /* back link saves passing separate parm */
 
   /* State for packing variable-width codes into a bitstream */
-  int n_bits;			/* current number of bits/code */
-  int maxcode;			/* maximum code, given n_bits */
-  INT32 cur_accum;		/* holds bits not yet output */
-  int cur_bits;			/* # of bits in cur_accum */
+  int n_bits;                   /* current number of bits/code */
+  int maxcode;                  /* maximum code, given n_bits */
+  INT32 cur_accum;              /* holds bits not yet output */
+  int cur_bits;                 /* # of bits in cur_accum */
 
   /* State for GIF code assignment */
-  int ClearCode;		/* clear code (doesn't change) */
-  int EOFCode;			/* EOF code (ditto) */
-  int code_counter;		/* counts output symbols */
+  int ClearCode;                /* clear code (doesn't change) */
+  int EOFCode;                  /* EOF code (ditto) */
+  int code_counter;             /* counts output symbols */
 
   /* GIF data packet construction buffer */
-  int bytesinpkt;		/* # of bytes in current packet */
-  char packetbuf[256];		/* workspace for accumulating packet */
+  int bytesinpkt;               /* # of bytes in current packet */
+  char packetbuf[256];          /* workspace for accumulating packet */
 
 } gif_dest_struct;
 
 typedef gif_dest_struct * gif_dest_ptr;
 
 /* Largest value that will fit in N bits */
-#define MAXCODE(n_bits)	((1 << (n_bits)) - 1)
+#define MAXCODE(n_bits) ((1 << (n_bits)) - 1)
 
 
 /*
@@ -81,10 +81,10 @@ LOCAL(void)
 flush_packet (gif_dest_ptr dinfo)
 /* flush any accumulated data */
 {
-  if (dinfo->bytesinpkt > 0) {	/* never write zero-length packet */
+  if (dinfo->bytesinpkt > 0) {  /* never write zero-length packet */
     dinfo->packetbuf[0] = (char) dinfo->bytesinpkt++;
     if (JFWRITE(dinfo->pub.output_file, dinfo->packetbuf, dinfo->bytesinpkt)
-	!= (size_t) dinfo->bytesinpkt)
+        != (size_t) dinfo->bytesinpkt)
       ERREXIT(dinfo->cinfo, JERR_FILE_WRITE);
     dinfo->bytesinpkt = 0;
   }
@@ -93,10 +93,10 @@ flush_packet (gif_dest_ptr dinfo)
 
 /* Add a character to current packet; flush to disk if necessary */
 #define CHAR_OUT(dinfo,c)  \
-	{ (dinfo)->packetbuf[++(dinfo)->bytesinpkt] = (char) (c);  \
-	    if ((dinfo)->bytesinpkt >= 255)  \
-	      flush_packet(dinfo);  \
-	}
+        { (dinfo)->packetbuf[++(dinfo)->bytesinpkt] = (char) (c);  \
+            if ((dinfo)->bytesinpkt >= 255)  \
+              flush_packet(dinfo);  \
+        }
 
 
 /* Routine to convert variable-width codes into a byte stream */
@@ -173,7 +173,7 @@ compress_pixel (gif_dest_ptr dinfo, int c)
     dinfo->code_counter++;
   } else {
     output(dinfo, dinfo->ClearCode);
-    dinfo->code_counter = dinfo->ClearCode + 2;	/* reset the counter */
+    dinfo->code_counter = dinfo->ClearCode + 2; /* reset the counter */
   }
 }
 
@@ -248,9 +248,9 @@ emit_header (gif_dest_ptr dinfo, int num_colors, JSAMPARRAY colormap)
   /* Write the Logical Screen Descriptor */
   put_word(dinfo, (unsigned int) dinfo->cinfo->output_width);
   put_word(dinfo, (unsigned int) dinfo->cinfo->output_height);
-  FlagByte = 0x80;		/* Yes, there is a global color table */
+  FlagByte = 0x80;              /* Yes, there is a global color table */
   FlagByte |= (BitsPerPixel-1) << 4; /* color resolution */
-  FlagByte |= (BitsPerPixel-1);	/* size of global color table */
+  FlagByte |= (BitsPerPixel-1); /* size of global color table */
   putc(FlagByte, dinfo->pub.output_file);
   putc(0, dinfo->pub.output_file); /* Background color index */
   putc(0, dinfo->pub.output_file); /* Reserved (aspect ratio in GIF89) */
@@ -260,18 +260,18 @@ emit_header (gif_dest_ptr dinfo, int num_colors, JSAMPARRAY colormap)
   for (i=0; i < ColorMapSize; i++) {
     if (i < num_colors) {
       if (colormap != NULL) {
-	if (dinfo->cinfo->out_color_space == JCS_RGB) {
-	  /* Normal case: RGB color map */
-	  putc(GETJSAMPLE(colormap[0][i]) >> cshift, dinfo->pub.output_file);
-	  putc(GETJSAMPLE(colormap[1][i]) >> cshift, dinfo->pub.output_file);
-	  putc(GETJSAMPLE(colormap[2][i]) >> cshift, dinfo->pub.output_file);
-	} else {
-	  /* Grayscale "color map": possible if quantizing grayscale image */
-	  put_3bytes(dinfo, GETJSAMPLE(colormap[0][i]) >> cshift);
-	}
+        if (dinfo->cinfo->out_color_space == JCS_RGB) {
+          /* Normal case: RGB color map */
+          putc(GETJSAMPLE(colormap[0][i]) >> cshift, dinfo->pub.output_file);
+          putc(GETJSAMPLE(colormap[1][i]) >> cshift, dinfo->pub.output_file);
+          putc(GETJSAMPLE(colormap[2][i]) >> cshift, dinfo->pub.output_file);
+        } else {
+          /* Grayscale "color map": possible if quantizing grayscale image */
+          put_3bytes(dinfo, GETJSAMPLE(colormap[0][i]) >> cshift);
+        }
       } else {
-	/* Create a gray-scale map of num_colors values, range 0..255 */
-	put_3bytes(dinfo, (i * 255 + (num_colors-1)/2) / (num_colors-1));
+        /* Create a gray-scale map of num_colors values, range 0..255 */
+        put_3bytes(dinfo, (i * 255 + (num_colors-1)/2) / (num_colors-1));
       }
     } else {
       /* fill out the map to a power of 2 */
@@ -280,7 +280,7 @@ emit_header (gif_dest_ptr dinfo, int num_colors, JSAMPARRAY colormap)
   }
   /* Write image separator and Image Descriptor */
   putc(',', dinfo->pub.output_file); /* separator */
-  put_word(dinfo, 0);		/* left/top offset */
+  put_word(dinfo, 0);           /* left/top offset */
   put_word(dinfo, 0);
   put_word(dinfo, (unsigned int) dinfo->cinfo->output_width); /* image size */
   put_word(dinfo, (unsigned int) dinfo->cinfo->output_height);
@@ -317,7 +317,7 @@ start_output_gif (j_decompress_ptr cinfo, djpeg_dest_ptr dinfo)
 
 METHODDEF(void)
 put_pixel_rows (j_decompress_ptr cinfo, djpeg_dest_ptr dinfo,
-		JDIMENSION rows_supplied)
+                JDIMENSION rows_supplied)
 {
   gif_dest_ptr dest = (gif_dest_ptr) dinfo;
   register JSAMPROW ptr;
@@ -364,8 +364,8 @@ jinit_write_gif (j_decompress_ptr cinfo)
   /* Create module interface object, fill in method pointers */
   dest = (gif_dest_ptr)
       (*cinfo->mem->alloc_small) ((j_common_ptr) cinfo, JPOOL_IMAGE,
-				  SIZEOF(gif_dest_struct));
-  dest->cinfo = cinfo;		/* make back link for subroutines */
+                                  SIZEOF(gif_dest_struct));
+  dest->cinfo = cinfo;          /* make back link for subroutines */
   dest->pub.start_output = start_output_gif;
   dest->pub.put_pixel_rows = put_pixel_rows;
   dest->pub.finish_output = finish_output_gif;

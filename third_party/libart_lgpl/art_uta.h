@@ -30,7 +30,7 @@ typedef art_u32 ArtUtaBbox;
 typedef struct _ArtUta ArtUta;
 
 #define ART_UTA_BBOX_CONS(x0, y0, x1, y1) (((x0) << 24) | ((y0) << 16) | \
-				       ((x1) << 8) | (y1))
+                                       ((x1) << 8) | (y1))
 
 #define ART_UTA_BBOX_X0(ub) ((ub) >> 24)
 #define ART_UTA_BBOX_Y0(ub) (((ub) >> 16) & 0xff)

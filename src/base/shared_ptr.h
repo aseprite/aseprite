@@ -32,7 +32,7 @@ public:
   }
 
 private:
-  long m_count;		// Number of references.
+  long m_count;         // Number of references.
 };
 
 // Default deleter used by shared pointer (it calls "delete"
@@ -65,7 +65,7 @@ public:
 
 private:
   T* m_ptr;
-  Deleter m_deleter;		// Used to destroy the pointer.
+  Deleter m_deleter;            // Used to destroy the pointer.
 };
 
 // Wraps a pointer and keeps reference counting to automatically
@@ -142,15 +142,15 @@ public:
       m_refCount = 0;
 
       if (ptr) {
-	try {
-	  m_refCount = new SharedPtrRefCounterImpl<T, DefaultSharedPtrDeleter<T> >(ptr, DefaultSharedPtrDeleter<T>());
-	}
-	catch (...) {
-	  DefaultSharedPtrDeleter<T>()(ptr);
-	  throw;
-	}
-	m_ptr = ptr;
-	add_ref();
+        try {
+          m_refCount = new SharedPtrRefCounterImpl<T, DefaultSharedPtrDeleter<T> >(ptr, DefaultSharedPtrDeleter<T>());
+        }
+        catch (...) {
+          DefaultSharedPtrDeleter<T>()(ptr);
+          throw;
+        }
+        m_ptr = ptr;
+        add_ref();
       }
     }
   }
@@ -164,15 +164,15 @@ public:
       m_refCount = 0;
 
       if (ptr) {
-	try {
-	  m_refCount = new SharedPtrRefCounterImpl<T, Deleter>(ptr, deleter);
-	}
-	catch (...) {
-	  deleter(ptr);
-	  throw;
-	}
-	m_ptr = ptr;
-	add_ref();
+        try {
+          m_refCount = new SharedPtrRefCounterImpl<T, Deleter>(ptr, deleter);
+        }
+        catch (...) {
+          deleter(ptr);
+          throw;
+        }
+        m_ptr = ptr;
+        add_ref();
       }
     }
   }
@@ -224,8 +224,8 @@ private:
       m_refCount->release();
   }
 
-  
-  T* m_ptr;			       // The pointee object.
+
+  T* m_ptr;                            // The pointee object.
   SharedPtrRefCounterBase* m_refCount; // Number of references.
 
   template<class> friend class SharedPtr;

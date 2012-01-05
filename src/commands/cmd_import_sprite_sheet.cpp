@@ -48,7 +48,7 @@
 // ImportSpriteSheetFrame
 
 class ImportSpriteSheetFrame : public Frame,
-			       public SelectBoxDelegate
+                               public SelectBoxDelegate
 {
 public:
   ImportSpriteSheetFrame(Context* context)
@@ -158,25 +158,25 @@ protected:
 
       // As first step, we cut each tile and add them into "animation" list.
       for (int y=m_rect.y; y<sprite->getHeight(); y += m_rect.h) {
-	for (int x=m_rect.x; x<sprite->getWidth(); x += m_rect.w) {
-	  UniquePtr<Image> resultImage(image_new(sprite->getImgType(), m_rect.w, m_rect.h));
+        for (int x=m_rect.x; x<sprite->getWidth(); x += m_rect.w) {
+          UniquePtr<Image> resultImage(image_new(sprite->getImgType(), m_rect.w, m_rect.h));
 
-	  // Clear the image with mask color.
-	  image_clear(resultImage, 0);
+          // Clear the image with mask color.
+          image_clear(resultImage, 0);
 
-	  // Render the portion of sheet.
-	  sprite->render(resultImage, -x, -y);
-	  animation.push_back(resultImage);
-	  resultImage.release();
-	}
+          // Render the portion of sheet.
+          sprite->render(resultImage, -x, -y);
+          animation.push_back(resultImage);
+          resultImage.release();
+        }
       }
 
       if (animation.size() == 0) {
-	Alert::show("Import Sprite Sheet"
-		    "<<The specified rectangle does not create any tile."
-		    "<<Select a rectangle inside the sprite region."
-		    "||&OK");
-	return;
+        Alert::show("Import Sprite Sheet"
+                    "<<The specified rectangle does not create any tile."
+                    "<<Select a rectangle inside the sprite region."
+                    "||&OK");
+        return;
       }
 
       // The following steps modify the sprite, so we wrap all
@@ -188,18 +188,18 @@ protected:
 
       // Add all frames+cels to the new layer
       for (size_t i=0; i<animation.size(); ++i) {
-	int indexInStock;
+        int indexInStock;
 
-	// Add the image into the sprite's stock
-	indexInStock = undoTransaction.addImageInStock(animation[i]);
-	animation[i] = NULL;
+        // Add the image into the sprite's stock
+        indexInStock = undoTransaction.addImageInStock(animation[i]);
+        animation[i] = NULL;
 
-	// Create the cel.
-	UniquePtr<Cel> resultCel(new Cel(i, indexInStock));
+        // Create the cel.
+        UniquePtr<Cel> resultCel(new Cel(i, indexInStock));
 
-	// Add the cel in the layer.
-	undoTransaction.addCel(resultLayer, resultCel);
-	resultCel.release();
+        // Add the cel in the layer.
+        undoTransaction.addCel(resultLayer, resultCel);
+        resultCel.release();
       }
 
       // Copy the list of layers (because we will modify it in the iteration).
@@ -207,8 +207,8 @@ protected:
 
       // Remove all other layers
       for (LayerIterator it=layers.begin(), end=layers.end(); it!=end; ++it) {
-	if (*it != resultLayer)
-	  undoTransaction.removeLayer(*it);
+        if (*it != resultLayer)
+          undoTransaction.removeLayer(*it);
       }
 
       // Change the number of frames
@@ -222,7 +222,7 @@ protected:
     }
     catch (...) {
       for (size_t i=0; i<animation.size(); ++i)
-	delete animation[i];
+        delete animation[i];
       throw;
     }
 
@@ -241,9 +241,9 @@ protected:
     int h = m_height.getTextInt();
 
     return gfx::Rect(m_x.getTextInt(),
-		     m_y.getTextInt(),
-		     std::max<int>(1, w),
-		     std::max<int>(1, h));
+                     m_y.getTextInt(),
+                     std::max<int>(1, w),
+                     std::max<int>(1, h));
   }
 
   void onEntriesChange()
@@ -254,8 +254,8 @@ protected:
     if (m_editor) {
       EditorStatePtr state = m_editor->getState();
       if (SelectBoxState* boxState = dynamic_cast<SelectBoxState*>(state.get())) {
-	boxState->setBoxBounds(m_rect);
-	m_editor->invalidate();
+        boxState->setBoxBounds(m_rect);
+        m_editor->invalidate();
       }
     }
   }
@@ -307,8 +307,8 @@ private:
       m_editor = current_editor;
 
       EditorStatePtr newState(new SelectBoxState(this, m_rect,
-						 SelectBoxState::PaintRulers |
-						 SelectBoxState::PaintGrid));
+                                                 SelectBoxState::PaintRulers |
+                                                 SelectBoxState::PaintGrid));
       m_editor->setState(newState);
     }
   }
@@ -351,8 +351,8 @@ protected:
 
 ImportSpriteSheetCommand::ImportSpriteSheetCommand()
   : Command("ImportSpriteSheet",
-	    "Import Sprite Sheet",
-	    CmdRecordableFlag)
+            "Import Sprite Sheet",
+            CmdRecordableFlag)
 {
 }
 

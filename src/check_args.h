@@ -46,7 +46,7 @@ public:
 
   typedef std::vector<Option*> Options;
   typedef Options::iterator iterator;
-  
+
   CheckArgs(const std::vector<base::string>& args);
   ~CheckArgs();
 
@@ -71,4 +71,3 @@ private:
 };
 
 #endif
-

@@ -36,19 +36,19 @@ static void datedit_find_character(BITMAP *bmp, int *x, int *y, int *w, int *h)
   }
 
   /* look for top left corner of character */
-  while ((getpixel(bmp, *x, *y) != c1) || 
-	 (getpixel(bmp, *x+1, *y) != c2) ||
-	 (getpixel(bmp, *x, *y+1) != c2) ||
-	 (getpixel(bmp, *x+1, *y+1) == c1) ||
-	 (getpixel(bmp, *x+1, *y+1) == c2)) {
+  while ((getpixel(bmp, *x, *y) != c1) ||
+         (getpixel(bmp, *x+1, *y) != c2) ||
+         (getpixel(bmp, *x, *y+1) != c2) ||
+         (getpixel(bmp, *x+1, *y+1) == c1) ||
+         (getpixel(bmp, *x+1, *y+1) == c2)) {
     (*x)++;
     if (*x >= bmp->w) {
       *x = 0;
       (*y)++;
       if (*y >= bmp->h) {
-	*w = 0;
-	*h = 0;
-	return;
+        *w = 0;
+        *h = 0;
+        return;
       }
     }
   }
@@ -56,15 +56,15 @@ static void datedit_find_character(BITMAP *bmp, int *x, int *y, int *w, int *h)
   /* look for right edge of character */
   *w = 0;
   while ((getpixel(bmp, *x+*w+1, *y) == c2) &&
-	 (getpixel(bmp, *x+*w+1, *y+1) != c2) &&
-	 (*x+*w+1 <= bmp->w))
+         (getpixel(bmp, *x+*w+1, *y+1) != c2) &&
+         (*x+*w+1 <= bmp->w))
     (*w)++;
 
   /* look for bottom edge of character */
   *h = 0;
   while ((getpixel(bmp, *x, *y+*h+1) == c2) &&
-	 (getpixel(bmp, *x+1, *y+*h+1) != c2) &&
-	 (*y+*h+1 <= bmp->h))
+         (getpixel(bmp, *x+1, *y+*h+1) != c2) &&
+         (*y+*h+1 <= bmp->h))
     (*h)++;
 }
 
@@ -94,10 +94,10 @@ static int import_bitmap_font_mono(FONT_GLYPH** gl, int num)
 
       for(j = 0; j < sx * h; j++) gl[i]->dat[j] = 0;
       for(j = 0; j < h; j++) {
-	for(k = 0; k < w; k++) {
-	  if(getpixel(import_bmp, import_x + k + 1, import_y + j + 1))
-	    gl[i]->dat[(j * sx) + (k / 8)] |= 0x80 >> (k & 7);
-	}
+        for(k = 0; k < w; k++) {
+          if(getpixel(import_bmp, import_x + k + 1, import_y + j + 1))
+            gl[i]->dat[(j * sx) + (k / 8)] |= 0x80 >> (k & 7);
+        }
       }
 
       import_x += w;

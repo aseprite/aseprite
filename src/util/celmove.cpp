@@ -47,7 +47,7 @@
 
 /* these variables indicate what cel to move (and the sprite's
    frame indicates where to move it) */
-static Layer* src_layer = NULL;	// TODO warning not thread safe
+static Layer* src_layer = NULL; // TODO warning not thread safe
 static Layer* dst_layer = NULL;
 static int src_frame = 0;
 static int dst_frame = 0;
@@ -55,7 +55,7 @@ static int dst_frame = 0;
 static void remove_cel(Sprite* sprite, undo::UndoHistory* undo, LayerImage *layer, Cel *cel);
 
 void set_frame_to_handle(Layer *_src_layer, int _src_frame,
-			 Layer *_dst_layer, int _dst_frame)
+                         Layer *_dst_layer, int _dst_frame)
 {
   src_layer = _src_layer;
   src_frame = _src_frame;
@@ -103,49 +103,49 @@ void move_cel(DocumentWriter& document)
   if (src_cel != NULL) {
     if (src_layer == dst_layer) {
       if (undo->isEnabled())
-	undo->pushUndoer(new undoers::SetCelFrame(undo->getObjects(), src_cel));
+        undo->pushUndoer(new undoers::SetCelFrame(undo->getObjects(), src_cel));
 
       src_cel->setFrame(dst_frame);
     }
     /* move the cel in different layers */
     else {
       if (undo->isEnabled())
-	undo->pushUndoer(new undoers::RemoveCel(undo->getObjects(), src_layer, src_cel));
+        undo->pushUndoer(new undoers::RemoveCel(undo->getObjects(), src_layer, src_cel));
       static_cast<LayerImage*>(src_layer)->removeCel(src_cel);
 
       src_cel->setFrame(dst_frame);
 
       /* if we are moving a cel from a transparent layer to the
-	 background layer, we have to clear the background of the
-	 image */
+         background layer, we have to clear the background of the
+         image */
       if (!src_layer->is_background() &&
-	  dst_layer->is_background()) {
-	Image *src_image = sprite->getStock()->getImage(src_cel->getImage());
-	Image *dst_image = image_crop(src_image,
-				      -src_cel->getX(),
-				      -src_cel->getY(),
-				      sprite->getWidth(),
-				      sprite->getHeight(), 0);
+          dst_layer->is_background()) {
+        Image *src_image = sprite->getStock()->getImage(src_cel->getImage());
+        Image *dst_image = image_crop(src_image,
+                                      -src_cel->getX(),
+                                      -src_cel->getY(),
+                                      sprite->getWidth(),
+                                      sprite->getHeight(), 0);
 
-	if (undo->isEnabled()) {
-	  undo->pushUndoer(new undoers::ReplaceImage(undo->getObjects(),
-	      sprite->getStock(), src_cel->getImage()));
-	  undo->pushUndoer(new undoers::SetCelPosition(undo->getObjects(), src_cel));
-	  undo->pushUndoer(new undoers::SetCelOpacity(undo->getObjects(), src_cel));
-	}
+        if (undo->isEnabled()) {
+          undo->pushUndoer(new undoers::ReplaceImage(undo->getObjects(),
+              sprite->getStock(), src_cel->getImage()));
+          undo->pushUndoer(new undoers::SetCelPosition(undo->getObjects(), src_cel));
+          undo->pushUndoer(new undoers::SetCelOpacity(undo->getObjects(), src_cel));
+        }
 
-	image_clear(dst_image, app_get_color_to_clear_layer(dst_layer));
-	image_merge(dst_image, src_image, src_cel->getX(), src_cel->getY(), 255, BLEND_MODE_NORMAL);
+        image_clear(dst_image, app_get_color_to_clear_layer(dst_layer));
+        image_merge(dst_image, src_image, src_cel->getX(), src_cel->getY(), 255, BLEND_MODE_NORMAL);
 
-	src_cel->setPosition(0, 0);
-	src_cel->setOpacity(255);
+        src_cel->setPosition(0, 0);
+        src_cel->setOpacity(255);
 
-	sprite->getStock()->replaceImage(src_cel->getImage(), dst_image);
-	image_free(src_image);
+        sprite->getStock()->replaceImage(src_cel->getImage(), dst_image);
+        image_free(src_image);
       }
-      
+
       if (undo->isEnabled())
-	undo->pushUndoer(new undoers::AddCel(undo->getObjects(), dst_layer, src_cel));
+        undo->pushUndoer(new undoers::AddCel(undo->getObjects(), dst_layer, src_cel));
 
       static_cast<LayerImage*>(dst_layer)->addCel(src_cel);
     }
@@ -201,12 +201,12 @@ void copy_cel(DocumentWriter& document)
        background layer, we have to clear the background of the
        image */
     if (!src_layer->is_background() &&
-	dst_layer->is_background()) {
+        dst_layer->is_background()) {
       dst_image = image_crop(src_image,
-			     -src_cel->getX(),
-			     -src_cel->getY(),
-			     sprite->getWidth(),
-			     sprite->getHeight(), 0);
+                             -src_cel->getX(),
+                             -src_cel->getY(),
+                             sprite->getWidth(),
+                             sprite->getHeight(), 0);
 
       image_clear(dst_image, app_get_color_to_clear_layer(dst_layer));
       image_merge(dst_image, src_image, src_cel->getX(), src_cel->getY(), 255, BLEND_MODE_NORMAL);
@@ -226,7 +226,7 @@ void copy_cel(DocumentWriter& document)
     image_index = sprite->getStock()->addImage(dst_image);
     if (undo->isEnabled())
       undo->pushUndoer(new undoers::AddImage(undo->getObjects(),
-	  sprite->getStock(), image_index));
+          sprite->getStock(), image_index));
 
     /* create the new cel */
     dst_cel = new Cel(dst_frame, image_index);
@@ -259,8 +259,8 @@ static void remove_cel(Sprite* sprite, undo::UndoHistory* undo, LayerImage *laye
     for (frame=0; frame<sprite->getTotalFrames(); ++frame) {
       it = layer->getCel(frame);
       if (it != NULL && it != cel && it->getImage() == cel->getImage()) {
-	used = true;
-	break;
+        used = true;
+        break;
       }
     }
 
@@ -273,8 +273,8 @@ static void remove_cel(Sprite* sprite, undo::UndoHistory* undo, LayerImage *laye
       image = sprite->getStock()->getImage(cel->getImage());
 
       if (undo->isEnabled())
-	undo->pushUndoer(new undoers::RemoveImage(undo->getObjects(),
-	    sprite->getStock(), cel->getImage()));
+        undo->pushUndoer(new undoers::RemoveImage(undo->getObjects(),
+            sprite->getStock(), cel->getImage()));
 
       sprite->getStock()->removeImage(image);
       image_free(image);

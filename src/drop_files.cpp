@@ -70,7 +70,7 @@ void uninstall_drop_files()
 
 void check_for_dropped_files()
 {
-  if (!base_wnd_proc)		// drop-files hook not installed
+  if (!base_wnd_proc)           // drop-files hook not installed
     return;
 
   if (!app_get_top_window()->is_toplevel())
@@ -88,7 +88,7 @@ void check_for_dropped_files()
     Params params;
 
     for (std::vector<base::string>::iterator
-	   it = files.begin(); it != files.end(); ++it) {
+           it = files.begin(); it != files.end(); ++it) {
       params.set("filename", it->c_str());
       UIContext::instance()->executeCommand(cmd_open_file, &params);
     }
@@ -101,7 +101,7 @@ static void subclass_hwnd()
 
   // add the WS_EX_ACCEPTFILES
   SetWindowLong(hwnd, GWL_EXSTYLE,
-		GetWindowLong(hwnd, GWL_EXSTYLE) | WS_EX_ACCEPTFILES);
+                GetWindowLong(hwnd, GWL_EXSTYLE) | WS_EX_ACCEPTFILES);
 
   // set the GWL_WNDPROC to globalWndProc
   base_wnd_proc = (wndproc_t)SetWindowLongPtr(hwnd, GWLP_WNDPROC, (LONG_PTR)ase_wnd_proc);
@@ -122,22 +122,22 @@ static LRESULT CALLBACK ase_wnd_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM 
 
     case WM_DROPFILES:
       {
-	ScopedLock lock(*dropped_files_mutex);
-	HDROP hdrop = (HDROP)(wparam);
-	int index, count, length;
+        ScopedLock lock(*dropped_files_mutex);
+        HDROP hdrop = (HDROP)(wparam);
+        int index, count, length;
 
-	count = DragQueryFile(hdrop, 0xFFFFFFFF, NULL, 0);
-	for (index=0; index<count; ++index) {
-	  length = DragQueryFile(hdrop, index, NULL, 0);
-	  if (length > 0) {
-	    TCHAR* lpstr = new TCHAR[length+1];
-	    DragQueryFile(hdrop, index, lpstr, length+1);
-	    dropped_files->push_back(lpstr);
-	    delete[] lpstr;
-	  }
-	}
+        count = DragQueryFile(hdrop, 0xFFFFFFFF, NULL, 0);
+        for (index=0; index<count; ++index) {
+          length = DragQueryFile(hdrop, index, NULL, 0);
+          if (length > 0) {
+            TCHAR* lpstr = new TCHAR[length+1];
+            DragQueryFile(hdrop, index, lpstr, length+1);
+            dropped_files->push_back(lpstr);
+            delete[] lpstr;
+          }
+        }
 
-	DragFinish(hdrop);
+        DragFinish(hdrop);
       }
       break;
 

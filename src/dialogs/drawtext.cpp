@@ -64,11 +64,11 @@ void dialogs_draw_text(Sprite* sprite)
   JWidgetPtr window = load_widget("draw_text.xml", "drawtext_window");
 
   if (!get_widgets(window,
-		   "font", &font_button,
-		   "text", &entry_text,
-		   "size", &entry_size,
-		   "color_box", &color_box,
-		   "ok", &button_ok, NULL)) {
+                   "font", &font_button,
+                   "text", &entry_text,
+                   "size", &entry_size,
+                   "color_box", &color_box,
+                   "ok", &button_ok, NULL)) {
     return;
   }
 
@@ -79,7 +79,7 @@ void dialogs_draw_text(Sprite* sprite)
   /* color button */
   color_but = colorbutton_new
     (get_config_color("DrawText", "Color",
-		      colorbar_get_fg_color(app_get_colorbar())),
+                      colorbar_get_fg_color(app_get_colorbar())),
      sprite->imgtype);
 
   color_box->addChild(color_but);
@@ -88,7 +88,7 @@ void dialogs_draw_text(Sprite* sprite)
   usprintf(buf, "%d", get_config_int("DrawText", "Size", 8));
   jwidget_set_text(entry_size, buf);
   jwidget_set_text(entry_text,
-		   get_config_string("DrawText", "Text", "ABCabc"));
+                   get_config_string("DrawText", "Text", "ABCabc"));
 
   /* window */
   window->remap_window();
@@ -100,7 +100,7 @@ void dialogs_draw_text(Sprite* sprite)
     const char *text = jwidget_get_text(entry_text);
     const char *size_str = jwidget_get_text(entry_size);
     const char *font_str = get_config_string("DrawText", "Font",
-					     "allegro.pcx");
+                                             "allegro.pcx");
     int color;
     int size;
     FONT *f;
@@ -132,11 +132,11 @@ void dialogs_draw_text(Sprite* sprite)
       /* render text */
       image = render_text(sprite, f, text, color);
       if (image) {
-	clipboard::copy_image(image, sprite_get_palette(sprite, sprite->frame));
-	clipboard::paste(sprite);
+        clipboard::copy_image(image, sprite_get_palette(sprite, sprite->frame));
+        clipboard::paste(sprite);
       }
       else
-	console_printf(_("Error rendering text.\n"));
+        console_printf(_("Error rendering text.\n"));
 
       /* free the font */
       destroy_font(f);
@@ -166,17 +166,17 @@ Image *RenderText(Sprite* sprite, const char *fontname, int size, int color, con
 static Image* render_text(Sprite* sprite, FONT *f, const char *text, int color)
 {
   /* TODO warning this uses Image->dat and not Image->line */
-#define DO(type, colfunc)				\
-  {							\
-    register int c;					\
-    uint32_t* src = (uint32_t*)bmp->dat;		\
-    type* dst = (type*)image->dat;			\
-    for (i=0; i<pixels; i++) {				\
-      c = *src;						\
-      *dst = colfunc;					\
-      src++;						\
-      dst++;						\
-    }							\
+#define DO(type, colfunc)                               \
+  {                                                     \
+    register int c;                                     \
+    uint32_t* src = (uint32_t*)bmp->dat;                \
+    type* dst = (type*)image->dat;                      \
+    for (i=0; i<pixels; i++) {                          \
+      c = *src;                                         \
+      *dst = colfunc;                                   \
+      src++;                                            \
+      dst++;                                            \
+    }                                                   \
   }
 
   int i, pixels, w, h;
@@ -211,8 +211,8 @@ static Image* render_text(Sprite* sprite, FONT *f, const char *text, int color)
 
     case IMAGE_RGB:
       DO(uint32_t, _rgba(_rgba_getr(color),
-			 _rgba_getg(color),
-			 _rgba_getb(color), getg32(c)));
+                         _rgba_getg(color),
+                         _rgba_getb(color), getg32(c)));
       break;
 
     case IMAGE_GRAYSCALE:
@@ -253,7 +253,7 @@ static FONT *my_load_font(const char *filename)
       break;
     else {
       if (exists(path))
-	PRINTF("Unknown font format \"%s\"\n", path);
+        PRINTF("Unknown font format \"%s\"\n", path);
     }
   }
 
@@ -270,8 +270,8 @@ static void button_font_command(JWidget widget)
 {
   base::string filename =
     ase_file_selector("Open Font (TTF or Allegro bitmap format)",
-		      get_config_string ("DrawText", "Font", ""),
-		      "pcx,bmp,tga,lbm,ttf");
+                      get_config_string ("DrawText", "Font", ""),
+                      "pcx,bmp,tga,lbm,ttf");
 
   if (!filename.empty()) {
     set_config_string("DrawText", "Font", filename.c_str());

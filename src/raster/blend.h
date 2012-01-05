@@ -19,7 +19,7 @@
 #ifndef RASTER_BLEND_H_INCLUDED
 #define RASTER_BLEND_H_INCLUDED
 
-#define INT_MULT(a, b, t)				\
+#define INT_MULT(a, b, t)                               \
   ((t) = (a) * (b) + 0x80, ((((t) >> 8) + (t)) >> 8))
 
 enum {
@@ -44,4 +44,3 @@ int _graya_blend_forpath(int back, int front, int opacity);
 int _graya_blend_merge(int back, int front, int opacity);
 
 #endif
-

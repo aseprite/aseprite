@@ -7,14 +7,14 @@
  *
  * This file contains routines to process some of cjpeg's more complicated
  * command-line switches.  Switches processed here are:
- *	-qtables file		Read quantization tables from text file
- *	-scans file		Read scan script from text file
- *	-qslots N[,N,...]	Set component quantization table selectors
- *	-sample HxV[,HxV,...]	Set component sampling factors
+ *      -qtables file           Read quantization tables from text file
+ *      -scans file             Read scan script from text file
+ *      -qslots N[,N,...]       Set component quantization table selectors
+ *      -sample HxV[,HxV,...]   Set component sampling factors
  */
 
-#include "cdjpeg.h"		/* Common decls for cjpeg/djpeg applications */
-#include <ctype.h>		/* to declare isdigit(), isspace() */
+#include "cdjpeg.h"             /* Common decls for cjpeg/djpeg applications */
+#include <ctype.h>              /* to declare isdigit(), isspace() */
 
 
 LOCAL(int)
@@ -23,7 +23,7 @@ text_getc (FILE * file)
 /* A comment/newline sequence is returned as a newline */
 {
   register int ch;
-  
+
   ch = getc(file);
   if (ch == '#') {
     do {
@@ -41,7 +41,7 @@ read_text_integer (FILE * file, long * result, int * termchar)
 {
   register int ch;
   register long val;
-  
+
   /* Skip any leading whitespace, detect EOF */
   do {
     ch = text_getc(file);
@@ -50,7 +50,7 @@ read_text_integer (FILE * file, long * result, int * termchar)
       return FALSE;
     }
   } while (isspace(ch));
-  
+
   if (! isdigit(ch)) {
     *termchar = ch;
     return FALSE;
@@ -71,7 +71,7 @@ read_text_integer (FILE * file, long * result, int * termchar)
 
 GLOBAL(boolean)
 read_quant_tables (j_compress_ptr cinfo, char * filename,
-		   int scale_factor, boolean force_baseline)
+                   int scale_factor, boolean force_baseline)
 /* Read a set of quantization tables from the specified file.
  * The file is plain ASCII text: decimal numbers with whitespace between.
  * Comments preceded by '#' may be included in the file.
@@ -102,9 +102,9 @@ read_quant_tables (j_compress_ptr cinfo, char * filename,
     table[0] = (unsigned int) val;
     for (i = 1; i < DCTSIZE2; i++) {
       if (! read_text_integer(fp, &val, &termchar)) {
-	fprintf(stderr, "Invalid table data in file %s\n", filename);
-	fclose(fp);
-	return FALSE;
+        fprintf(stderr, "Invalid table data in file %s\n", filename);
+        fclose(fp);
+        return FALSE;
       }
       table[i] = (unsigned int) val;
     }
@@ -138,7 +138,7 @@ read_scan_integer (FILE * file, long * result, int * termchar)
   ch = *termchar;
   while (ch != EOF && isspace(ch))
     ch = text_getc(file);
-  if (isdigit(ch)) {		/* oops, put it back */
+  if (isdigit(ch)) {            /* oops, put it back */
     if (ungetc(ch, file) == EOF)
       return FALSE;
     ch = ' ';
@@ -176,7 +176,7 @@ read_scan_script (j_compress_ptr cinfo, char * filename)
   int scanno, ncomps, termchar;
   long val;
   jpeg_scan_info * scanptr;
-#define MAX_SCANS  100		/* quite arbitrary limit */
+#define MAX_SCANS  100          /* quite arbitrary limit */
   jpeg_scan_info scans[MAX_SCANS];
 
   if ((fp = fopen(filename, "r")) == NULL) {
@@ -196,29 +196,29 @@ read_scan_script (j_compress_ptr cinfo, char * filename)
     ncomps = 1;
     while (termchar == ' ') {
       if (ncomps >= MAX_COMPS_IN_SCAN) {
-	fprintf(stderr, "Too many components in one scan in file %s\n",
-		filename);
-	fclose(fp);
-	return FALSE;
+        fprintf(stderr, "Too many components in one scan in file %s\n",
+                filename);
+        fclose(fp);
+        return FALSE;
       }
       if (! read_scan_integer(fp, &val, &termchar))
-	goto bogus;
+        goto bogus;
       scanptr->component_index[ncomps] = (int) val;
       ncomps++;
     }
     scanptr->comps_in_scan = ncomps;
     if (termchar == ':') {
       if (! read_scan_integer(fp, &val, &termchar) || termchar != ' ')
-	goto bogus;
+        goto bogus;
       scanptr->Ss = (int) val;
       if (! read_scan_integer(fp, &val, &termchar) || termchar != ' ')
-	goto bogus;
+        goto bogus;
       scanptr->Se = (int) val;
       if (! read_scan_integer(fp, &val, &termchar) || termchar != ' ')
-	goto bogus;
+        goto bogus;
       scanptr->Ah = (int) val;
       if (! read_scan_integer(fp, &val, &termchar))
-	goto bogus;
+        goto bogus;
       scanptr->Al = (int) val;
     } else {
       /* set non-progressive parameters */
@@ -249,7 +249,7 @@ bogus:
      */
     scanptr = (jpeg_scan_info *)
       (*cinfo->mem->alloc_small) ((j_common_ptr) cinfo, JPOOL_IMAGE,
-				  scanno * SIZEOF(jpeg_scan_info));
+                                  scanno * SIZEOF(jpeg_scan_info));
     MEMCOPY(scanptr, scans, scanno * SIZEOF(jpeg_scan_info));
     cinfo->scan_info = scanptr;
     cinfo->num_scans = scanno;
@@ -269,25 +269,25 @@ set_quant_slots (j_compress_ptr cinfo, char *arg)
  * If there are more components than parameters, the last value is replicated.
  */
 {
-  int val = 0;			/* default table # */
+  int val = 0;                  /* default table # */
   int ci;
   char ch;
 
   for (ci = 0; ci < MAX_COMPONENTS; ci++) {
     if (*arg) {
-      ch = ',';			/* if not set by sscanf, will be ',' */
+      ch = ',';                 /* if not set by sscanf, will be ',' */
       if (sscanf(arg, "%d%c", &val, &ch) < 1)
-	return FALSE;
-      if (ch != ',')		/* syntax check */
-	return FALSE;
+        return FALSE;
+      if (ch != ',')            /* syntax check */
+        return FALSE;
       if (val < 0 || val >= NUM_QUANT_TBLS) {
-	fprintf(stderr, "JPEG quantization tables are numbered 0..%d\n",
-		NUM_QUANT_TBLS-1);
-	return FALSE;
+        fprintf(stderr, "JPEG quantization tables are numbered 0..%d\n",
+                NUM_QUANT_TBLS-1);
+        return FALSE;
       }
       cinfo->comp_info[ci].quant_tbl_no = val;
       while (*arg && *arg++ != ',') /* advance to next segment of arg string */
-	;
+        ;
     } else {
       /* reached end of parameter, set remaining components to last table */
       cinfo->comp_info[ci].quant_tbl_no = val;
@@ -309,19 +309,19 @@ set_sample_factors (j_compress_ptr cinfo, char *arg)
 
   for (ci = 0; ci < MAX_COMPONENTS; ci++) {
     if (*arg) {
-      ch2 = ',';		/* if not set by sscanf, will be ',' */
+      ch2 = ',';                /* if not set by sscanf, will be ',' */
       if (sscanf(arg, "%d%c%d%c", &val1, &ch1, &val2, &ch2) < 3)
-	return FALSE;
+        return FALSE;
       if ((ch1 != 'x' && ch1 != 'X') || ch2 != ',') /* syntax check */
-	return FALSE;
+        return FALSE;
       if (val1 <= 0 || val1 > 4 || val2 <= 0 || val2 > 4) {
-	fprintf(stderr, "JPEG sampling factors must be 1..4\n");
-	return FALSE;
+        fprintf(stderr, "JPEG sampling factors must be 1..4\n");
+        return FALSE;
       }
       cinfo->comp_info[ci].h_samp_factor = val1;
       cinfo->comp_info[ci].v_samp_factor = val2;
       while (*arg && *arg++ != ',') /* advance to next segment of arg string */
-	;
+        ;
     } else {
       /* reached end of parameter, set remaining components to 1x1 sampling */
       cinfo->comp_info[ci].h_samp_factor = 1;

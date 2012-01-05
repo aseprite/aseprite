@@ -117,58 +117,58 @@ public:
 
   BorderT operator+(const BorderT& br) const {
     return BorderT(m_left + br.left(),
-		   m_top + br.top(),
-		   m_right + br.right(),
-		   m_bottom + br.bottom());
+                   m_top + br.top(),
+                   m_right + br.right(),
+                   m_bottom + br.bottom());
   }
 
   BorderT operator-(const BorderT& br) const {
     return BorderT(m_left - br.left(),
-		   m_top - br.top(),
-		   m_right - br.right(),
-		   m_bottom - br.bottom());
+                   m_top - br.top(),
+                   m_right - br.right(),
+                   m_bottom - br.bottom());
   }
 
   BorderT operator*(const BorderT& br) const {
     return BorderT(m_left * br.left(),
-		   m_top * br.top(),
-		   m_right * br.right(),
-		   m_bottom * br.bottom());
+                   m_top * br.top(),
+                   m_right * br.right(),
+                   m_bottom * br.bottom());
   }
 
   BorderT operator/(const BorderT& br) const {
     return BorderT(m_left / br.left(),
-		   m_top / br.top(),
-		   m_right / br.right(),
-		   m_bottom / br.bottom());
+                   m_top / br.top(),
+                   m_right / br.right(),
+                   m_bottom / br.bottom());
   }
 
   BorderT operator+(const T& value) const {
     return BorderT(m_left + value,
-		   m_top + value,
-		   m_right + value,
-		   m_bottom + value);
+                   m_top + value,
+                   m_right + value,
+                   m_bottom + value);
   }
 
   BorderT operator-(const T& value) const {
     return BorderT(m_left - value,
-		   m_top - value,
-		   m_right - value,
-		   m_bottom - value);
+                   m_top - value,
+                   m_right - value,
+                   m_bottom - value);
   }
 
   BorderT operator*(const T& value) const {
     return BorderT(m_left * value,
-		   m_top * value,
-		   m_right * value,
-		   m_bottom * value);
+                   m_top * value,
+                   m_right * value,
+                   m_bottom * value);
   }
 
   BorderT operator/(const T& value) const {
     return BorderT(m_left / value,
-		   m_top / value,
-		   m_right / value,
-		   m_bottom / value);
+                   m_top / value,
+                   m_right / value,
+                   m_bottom / value);
   }
 
   BorderT operator-() const {
@@ -199,4 +199,3 @@ typedef BorderT<int> Border;
 } // namespace gfx
 
 #endif
-

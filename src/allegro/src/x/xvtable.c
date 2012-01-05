@@ -48,11 +48,11 @@ static void _xwin_draw_lit_rle_sprite(BITMAP *dst, AL_CONST RLE_SPRITE *src, int
 static void _xwin_draw_character(BITMAP *dst, BITMAP *src, int dx, int dy, int color, int bg);
 static void _xwin_draw_glyph(BITMAP *dst, AL_CONST FONT_GLYPH *src, int dx, int dy, int color, int bg);
 static void _xwin_blit_anywhere(BITMAP *src, BITMAP *dst, int sx, int sy,
-				int dx, int dy, int w, int h);
+                                int dx, int dy, int w, int h);
 static void _xwin_blit_backward(BITMAP *src, BITMAP *dst, int sx, int sy,
-				int dx, int dy, int w, int h);
+                                int dx, int dy, int w, int h);
 static void _xwin_masked_blit(BITMAP *src, BITMAP *dst, int sx, int sy,
-			      int dx, int dy, int w, int h);
+                              int dx, int dy, int w, int h);
 static void _xwin_clear_to_color(BITMAP *dst, int color);
 
 
@@ -333,11 +333,11 @@ static void _xwin_hline(BITMAP *dst, int dx1, int dy, int dx2, int color)
 
    if (dst->clip) {
       if (dx1 < dst->cl)
-	 dx1 = dst->cl;
+         dx1 = dst->cl;
       if (dx2 >= dst->cr)
-	 dx2 = dst->cr - 1;
+         dx2 = dst->cr - 1;
       if ((dx1 > dx2) || (dy < dst->ct) || (dy >= dst->cb))
-	 return;
+         return;
    }
 
    _xwin_in_gfx_call = 1;
@@ -370,11 +370,11 @@ static void _xwin_vline(BITMAP *dst, int dx, int dy1, int dy2, int color)
 
    if (dst->clip) {
       if (dy1 < dst->ct)
-	 dy1 = dst->ct;
+         dy1 = dst->ct;
       if (dy2 >= dst->cb)
-	 dy2 = dst->cb - 1;
+         dy2 = dst->cb - 1;
       if ((dx < dst->cl) || (dx >= dst->cr) || (dy1 > dy2))
-	 return;
+         return;
    }
 
    _xwin_in_gfx_call = 1;
@@ -413,18 +413,18 @@ static void _xwin_rectfill(BITMAP *dst, int dx1, int dy1, int dx2, int dy2, int 
 
    if (dst->clip) {
       if (dx1 < dst->cl)
-	 dx1 = dst->cl;
+         dx1 = dst->cl;
       if (dx2 >= dst->cr)
-	 dx2 = dst->cr - 1;
+         dx2 = dst->cr - 1;
       if (dx1 > dx2)
-	 return;
+         return;
 
       if (dy1 < dst->ct)
-	 dy1 = dst->ct;
+         dy1 = dst->ct;
       if (dy2 >= dst->cb)
-	 dy2 = dst->cb - 1;
+         dy2 = dst->cb - 1;
       if (dy1 > dy2)
-	 return;
+         return;
    }
 
    _xwin_in_gfx_call = 1;
@@ -465,7 +465,7 @@ static void _xwin_clear_to_color(BITMAP *dst, int color)
  *  Wrapper for blit.
  */
 static void _xwin_blit_anywhere(BITMAP *src, BITMAP *dst, int sx, int sy,
-				int dx, int dy, int w, int h)
+                                int dx, int dy, int w, int h)
 {
    if (_xwin_in_gfx_call) {
       _xwin_vtable.blit_from_memory(src, dst, sx, sy, dx, dy, w, h);
@@ -484,7 +484,7 @@ static void _xwin_blit_anywhere(BITMAP *src, BITMAP *dst, int sx, int sy,
  *  Wrapper for blit_backward.
  */
 static void _xwin_blit_backward(BITMAP *src, BITMAP *dst, int sx, int sy,
-				int dx, int dy, int w, int h)
+                                int dx, int dy, int w, int h)
 {
    if (_xwin_in_gfx_call) {
       _xwin_vtable.blit_to_self_backward(src, dst, sx, sy, dx, dy, w, h);
@@ -503,7 +503,7 @@ static void _xwin_blit_backward(BITMAP *src, BITMAP *dst, int sx, int sy,
  *  Wrapper for masked_blit.
  */
 static void _xwin_masked_blit(BITMAP *src, BITMAP *dst, int sx, int sy,
-			      int dx, int dy, int w, int h)
+                              int dx, int dy, int w, int h)
 {
    if (_xwin_in_gfx_call) {
       _xwin_vtable.masked_blit(src, dst, sx, sy, dx, dy, w, h);
@@ -530,7 +530,7 @@ static void _xwin_masked_blit(BITMAP *src, BITMAP *dst, int sx, int sy,
       tmp = dst->cr - x_orig;                                      \
       w = ((tmp > w_orig) ? w_orig : tmp) - x_delta;               \
       if (w <= 0)                                                  \
-	 return;                                                   \
+         return;                                                   \
                                                                    \
       tmp = dst->ct - y_orig;                                      \
       y_delta = ((tmp < 0) ? 0 : tmp);                             \
@@ -539,7 +539,7 @@ static void _xwin_masked_blit(BITMAP *src, BITMAP *dst, int sx, int sy,
       tmp = dst->cb - y_orig;                                      \
       h = ((tmp > h_orig) ? h_orig : tmp) - y_delta;               \
       if (h <= 0)                                                  \
-	 return;                                                   \
+         return;                                                   \
    }                                                               \
    else {                                                          \
       x = x_orig;                                                  \

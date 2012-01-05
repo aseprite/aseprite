@@ -35,5 +35,3 @@ AL_VAR(AL_CONST fixed, radtofix_r);
 #endif
 
 #endif          /* ifndef ALLEGRO_FIXED_H */
-
-

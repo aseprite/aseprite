@@ -43,5 +43,4 @@ protected:
 
 } // namespace tools
 
-#endif	// TOOLS_INK_H_INCLUDED
-
+#endif  // TOOLS_INK_H_INCLUDED

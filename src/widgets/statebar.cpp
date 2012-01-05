@@ -75,17 +75,17 @@ StatusBar::StatusBar()
   : Widget(statusbar_type())
   , m_color(Color::fromMask())
 {
-#define BUTTON_NEW(name, text, action)					\
-  {									\
-    (name) = new Button(text);						\
-    (name)->user_data[0] = this;					\
-    setup_mini_look(name);						\
+#define BUTTON_NEW(name, text, action)                                  \
+  {                                                                     \
+    (name) = new Button(text);                                          \
+    (name)->user_data[0] = this;                                        \
+    setup_mini_look(name);                                              \
     (name)->Click.connect(Bind<void>(&ani_button_command, (name), action)); \
   }
 
-#define ICON_NEW(name, icon, action)					\
-  {									\
-    BUTTON_NEW((name), NULL, (action));					\
+#define ICON_NEW(name, icon, action)                                    \
+  {                                                                     \
+    BUTTON_NEW((name), NULL, (action));                                 \
     set_gfxicon_to_button((name), icon, icon##_SELECTED, icon##_DISABLED, JI_CENTER | JI_MIDDLE); \
   }
 
@@ -179,7 +179,7 @@ StatusBar::~StatusBar()
   for (ProgressList::iterator it = m_progress.begin(); it != m_progress.end(); ++it)
     delete *it;
 
-  delete m_tipwindow;		// widget
+  delete m_tipwindow;           // widget
   delete m_movePixelsBox;
   delete m_commandsBox;
   delete m_notificationsBox;
@@ -209,7 +209,7 @@ void StatusBar::onCurrentToolChange()
 void StatusBar::onTransparentColorChange()
 {
   m_listeners.notify<const Color&>(&StatusBarListener::onChangeTransparentColor,
-				   getTransparentColor());
+                                   getTransparentColor());
 }
 
 void StatusBar::clearText()
@@ -220,7 +220,7 @@ void StatusBar::clearText()
 bool StatusBar::setStatusText(int msecs, const char *format, ...)
 {
   if ((ji_clock > m_timeout) || (msecs > 0)) {
-    char buf[256];		// TODO warning buffer overflow
+    char buf[256];              // TODO warning buffer overflow
     va_list ap;
 
     va_start(ap, format);
@@ -241,7 +241,7 @@ bool StatusBar::setStatusText(int msecs, const char *format, ...)
 
 void StatusBar::showTip(int msecs, const char *format, ...)
 {
-  char buf[256];		// TODO warning buffer overflow
+  char buf[256];                // TODO warning buffer overflow
   va_list ap;
   int x, y;
 
@@ -298,7 +298,7 @@ void StatusBar::showTool(int msecs, tools::Tool* tool)
   // Tool shortcut
   JAccel accel = get_accel_to_change_tool(tool);
   if (accel) {
-    char buf[512];		// TODO possible buffer overflow
+    char buf[512];              // TODO possible buffer overflow
     jaccel_to_string(accel, buf);
     text += ", Shortcut: ";
     text += buf;
@@ -399,32 +399,32 @@ bool StatusBar::onProcessMessage(Message* msg)
 
     case JM_REQSIZE:
       msg->reqsize.w = msg->reqsize.h =
-	4*jguiscale()
-	+ jwidget_get_text_height(this)
-	+ 4*jguiscale();
+        4*jguiscale()
+        + jwidget_get_text_height(this)
+        + 4*jguiscale();
       return true;
 
     case JM_SETPOS:
       jrect_copy(this->rc, &msg->setpos.rect);
       {
-	JRect rc = jrect_new_copy(this->rc);
-	rc->x1 = rc->x2 - m_notificationsBox->getPreferredSize().w;
-	jwidget_set_rect(m_notificationsBox, rc);
-	jrect_free(rc);
+        JRect rc = jrect_new_copy(this->rc);
+        rc->x1 = rc->x2 - m_notificationsBox->getPreferredSize().w;
+        jwidget_set_rect(m_notificationsBox, rc);
+        jrect_free(rc);
       }
       {
-	JRect rc = jrect_new_copy(this->rc);
-	rc->x2 -= jrect_w(rc)/4 + 4*jguiscale();
-	jwidget_set_rect(m_commandsBox, rc);
-	jrect_free(rc);
+        JRect rc = jrect_new_copy(this->rc);
+        rc->x2 -= jrect_w(rc)/4 + 4*jguiscale();
+        jwidget_set_rect(m_commandsBox, rc);
+        jrect_free(rc);
       }
       {
-	JRect rc = jrect_new_copy(this->rc);
-	Size reqSize = m_movePixelsBox->getPreferredSize();
-	rc->x1 = rc->x2 - reqSize.w;
-	rc->x2 -= this->border_width.r;
-	jwidget_set_rect(m_movePixelsBox, rc);
-	jrect_free(rc);
+        JRect rc = jrect_new_copy(this->rc);
+        Size reqSize = m_movePixelsBox->getPreferredSize();
+        rc->x1 = rc->x2 - reqSize.w;
+        rc->x2 -= this->border_width.r;
+        jwidget_set_rect(m_movePixelsBox, rc);
+        jrect_free(rc);
       }
       return true;
 
@@ -434,10 +434,10 @@ bool StatusBar::onProcessMessage(Message* msg)
       int face_color = ji_color_face();
       JRect rc = jwidget_get_rect(this);
       BITMAP *doublebuffer = create_bitmap(jrect_w(&msg->draw.rect),
-					   jrect_h(&msg->draw.rect));
+                                           jrect_h(&msg->draw.rect));
       jrect_displace(rc,
-		     -msg->draw.rect.x1,
-		     -msg->draw.rect.y1);
+                     -msg->draw.rect.x1,
+                     -msg->draw.rect.y1);
 
       clear_to_color(doublebuffer, face_color);
 
@@ -453,154 +453,154 @@ bool StatusBar::onProcessMessage(Message* msg)
 
       // Color
       if (m_state == SHOW_COLOR) {
-	// Draw eyedropper icon
-	BITMAP* icon = theme->get_toolicon("eyedropper");
-	if (icon) {
-	  set_alpha_blender();
-	  draw_trans_sprite(doublebuffer, icon,
-			    x, (rc->y1+rc->y2)/2-icon->h/2);
-	  
-	  x += icon->w + 4*jguiscale();
-	}
+        // Draw eyedropper icon
+        BITMAP* icon = theme->get_toolicon("eyedropper");
+        if (icon) {
+          set_alpha_blender();
+          draw_trans_sprite(doublebuffer, icon,
+                            x, (rc->y1+rc->y2)/2-icon->h/2);
 
-	// Draw color
-	draw_color_button(doublebuffer, Rect(x, rc->y1, 32*jguiscale(), rc->y2-rc->y1),
-			  true, true, true, true,
-			  true, true, true, true,
-			  app_get_current_image_type(), m_color,
-			  false, false);
+          x += icon->w + 4*jguiscale();
+        }
 
-	x += (32+4)*jguiscale();
+        // Draw color
+        draw_color_button(doublebuffer, Rect(x, rc->y1, 32*jguiscale(), rc->y2-rc->y1),
+                          true, true, true, true,
+                          true, true, true, true,
+                          app_get_current_image_type(), m_color,
+                          false, false);
 
-	// Draw color description
-	std::string str = m_color.toFormalString(app_get_current_image_type(), true);
-	if (m_alpha < 255) {
-	  char buf[512];
-	  usprintf(buf, ", Alpha %d", m_alpha);
-	  str += buf;
-	}
+        x += (32+4)*jguiscale();
 
-	textout_ex(doublebuffer, this->getFont(), str.c_str(),
-		   x, (rc->y1+rc->y2)/2-text_height(this->getFont())/2,
-		   text_color, -1);
+        // Draw color description
+        std::string str = m_color.toFormalString(app_get_current_image_type(), true);
+        if (m_alpha < 255) {
+          char buf[512];
+          usprintf(buf, ", Alpha %d", m_alpha);
+          str += buf;
+        }
 
-	x += ji_font_text_len(this->getFont(), str.c_str()) + 4*jguiscale();
+        textout_ex(doublebuffer, this->getFont(), str.c_str(),
+                   x, (rc->y1+rc->y2)/2-text_height(this->getFont())/2,
+                   text_color, -1);
+
+        x += ji_font_text_len(this->getFont(), str.c_str()) + 4*jguiscale();
       }
 
       // Show tool
       if (m_state == SHOW_TOOL) {
-	// Draw eyedropper icon
-	BITMAP* icon = theme->get_toolicon(m_tool->getId().c_str());
-	if (icon) {
-	  set_alpha_blender();
-	  draw_trans_sprite(doublebuffer, icon,
-			    x, (rc->y1+rc->y2)/2-icon->h/2);
+        // Draw eyedropper icon
+        BITMAP* icon = theme->get_toolicon(m_tool->getId().c_str());
+        if (icon) {
+          set_alpha_blender();
+          draw_trans_sprite(doublebuffer, icon,
+                            x, (rc->y1+rc->y2)/2-icon->h/2);
 
-	  x += icon->w + 4*jguiscale();
-	}
+          x += icon->w + 4*jguiscale();
+        }
       }
 
       // Status bar text
       if (this->getTextSize() > 0) {
-	textout_ex(doublebuffer, this->getFont(), this->getText(),
-		   x,
-		   (rc->y1+rc->y2)/2-text_height(this->getFont())/2,
-		   text_color, -1);
+        textout_ex(doublebuffer, this->getFont(), this->getText(),
+                   x,
+                   (rc->y1+rc->y2)/2-text_height(this->getFont())/2,
+                   text_color, -1);
 
-	x += ji_font_text_len(this->getFont(), this->getText()) + 4*jguiscale();
+        x += ji_font_text_len(this->getFont(), this->getText()) + 4*jguiscale();
       }
 
       // Draw progress bar
       if (!m_progress.empty()) {
-	int width = 64;
-	int y1, y2;
-	int x = rc->x2 - (width+4);
+        int width = 64;
+        int y1, y2;
+        int x = rc->x2 - (width+4);
 
-	y1 = rc->y1;
-	y2 = rc->y2-1;
+        y1 = rc->y1;
+        y2 = rc->y2-1;
 
-	for (ProgressList::iterator it = m_progress.begin(); it != m_progress.end(); ++it) {
-	  Progress* progress = *it;
+        for (ProgressList::iterator it = m_progress.begin(); it != m_progress.end(); ++it) {
+          Progress* progress = *it;
 
-	  draw_progress_bar(doublebuffer,
-			    x, y1, x+width-1, y2,
-			    progress->getPos());
+          draw_progress_bar(doublebuffer,
+                            x, y1, x+width-1, y2,
+                            progress->getPos());
 
-	  x -= width+4;
-	}
+          x -= width+4;
+        }
       }
       // Show layers only when we are not moving pixels
       else if (!hasChild(m_movePixelsBox)) {
-	// Available width for layers buttons
-	int width = jrect_w(rc)/4;
+        // Available width for layers buttons
+        int width = jrect_w(rc)/4;
 
-	// Draw layers
-	try {
-	  --rc->y2;
+        // Draw layers
+        try {
+          --rc->y2;
 
-	  const ActiveDocumentReader document(UIContext::instance());
-	  const Sprite* sprite(document ? document->getSprite(): NULL);
-	  if (sprite) {
-	    if (hasChild(m_notificationsBox)) {
-	      removeChild(m_notificationsBox);
-	      invalidate();
-	    }
+          const ActiveDocumentReader document(UIContext::instance());
+          const Sprite* sprite(document ? document->getSprite(): NULL);
+          if (sprite) {
+            if (hasChild(m_notificationsBox)) {
+              removeChild(m_notificationsBox);
+              invalidate();
+            }
 
-	    const LayerFolder* folder = sprite->getFolder();
-	    LayerConstIterator it = folder->get_layer_begin();
-	    LayerConstIterator end = folder->get_layer_end();
-	    int count = folder->get_layers_count();
-	    char buf[256];
+            const LayerFolder* folder = sprite->getFolder();
+            LayerConstIterator it = folder->get_layer_begin();
+            LayerConstIterator end = folder->get_layer_end();
+            int count = folder->get_layers_count();
+            char buf[256];
 
-	    for (int c=0; it != end; ++it, ++c) {
-	      int x1 = rc->x2-width + c*width/count;
-	      int x2 = rc->x2-width + (c+1)*width/count;
-	      bool hot = (*it == sprite->getCurrentLayer())
-		|| (c == m_hot_layer);
+            for (int c=0; it != end; ++it, ++c) {
+              int x1 = rc->x2-width + c*width/count;
+              int x2 = rc->x2-width + (c+1)*width/count;
+              bool hot = (*it == sprite->getCurrentLayer())
+                || (c == m_hot_layer);
 
-	      theme->draw_bounds_nw(doublebuffer,
-				    x1, rc->y1, x2, rc->y2,
-				    hot ? PART_TOOLBUTTON_HOT_NW:
-					  PART_TOOLBUTTON_NORMAL_NW,
-				    hot ? theme->get_button_hot_face_color():
-					  theme->get_button_normal_face_color());
+              theme->draw_bounds_nw(doublebuffer,
+                                    x1, rc->y1, x2, rc->y2,
+                                    hot ? PART_TOOLBUTTON_HOT_NW:
+                                          PART_TOOLBUTTON_NORMAL_NW,
+                                    hot ? theme->get_button_hot_face_color():
+                                          theme->get_button_normal_face_color());
 
-	      if (count == 1)
-		uszprintf(buf, sizeof(buf), "%s", (*it)->getName().c_str());
-	      else
-		{
-		  if (c+'A' <= 'Z')
-		    usprintf(buf, "%c", c+'A');
-		  else
-		    usprintf(buf, "%d", c-('Z'-'A'));
-		}
+              if (count == 1)
+                uszprintf(buf, sizeof(buf), "%s", (*it)->getName().c_str());
+              else
+                {
+                  if (c+'A' <= 'Z')
+                    usprintf(buf, "%c", c+'A');
+                  else
+                    usprintf(buf, "%d", c-('Z'-'A'));
+                }
 
-	      textout_centre_ex(doublebuffer, this->getFont(), buf,
-				(x1+x2)/2,
-				(rc->y1+rc->y2)/2-text_height(this->getFont())/2,
-				hot ? theme->get_button_hot_text_color():
-				      theme->get_button_normal_text_color(), -1);
-	    }
-	  }
-	  else {
-	    if (!hasChild(m_notificationsBox)) {
-	      addChild(m_notificationsBox);
-	      invalidate();
-	    }
-	  }
-	}
-	catch (LockedDocumentException&) {
-	  // Do nothing...
-	}
+              textout_centre_ex(doublebuffer, this->getFont(), buf,
+                                (x1+x2)/2,
+                                (rc->y1+rc->y2)/2-text_height(this->getFont())/2,
+                                hot ? theme->get_button_hot_text_color():
+                                      theme->get_button_normal_text_color(), -1);
+            }
+          }
+          else {
+            if (!hasChild(m_notificationsBox)) {
+              addChild(m_notificationsBox);
+              invalidate();
+            }
+          }
+        }
+        catch (LockedDocumentException&) {
+          // Do nothing...
+        }
       }
 
       jrect_free(rc);
 
       blit(doublebuffer, ji_screen, 0, 0,
-	   msg->draw.rect.x1,
-	   msg->draw.rect.y1,
-	   doublebuffer->w,
-	   doublebuffer->h);
+           msg->draw.rect.x1,
+           msg->draw.rect.y1,
+           doublebuffer->w,
+           doublebuffer->h);
       destroy_bitmap(doublebuffer);
       return true;
     }
@@ -609,25 +609,25 @@ bool StatusBar::onProcessMessage(Message* msg)
       bool state = (UIContext::instance()->getActiveDocument() != NULL);
 
       if (!hasChild(m_movePixelsBox)) {
-	if (state && !hasChild(m_commandsBox)) {
-	  m_b_first->setEnabled(state);
-	  m_b_prev->setEnabled(state);
-	  m_b_play->setEnabled(state);
-	  m_b_next->setEnabled(state);
-	  m_b_last->setEnabled(state);
+        if (state && !hasChild(m_commandsBox)) {
+          m_b_first->setEnabled(state);
+          m_b_prev->setEnabled(state);
+          m_b_play->setEnabled(state);
+          m_b_next->setEnabled(state);
+          m_b_last->setEnabled(state);
 
-	  updateFromLayer();
+          updateFromLayer();
 
-	  if (hasChild(m_notificationsBox))
-	    removeChild(m_notificationsBox);
+          if (hasChild(m_notificationsBox))
+            removeChild(m_notificationsBox);
 
-	  addChild(m_commandsBox);
-	  invalidate();
-	}
-	else if (!state && !hasChild(m_notificationsBox)) {
-	  addChild(m_notificationsBox);
-	  invalidate();
-	}
+          addChild(m_commandsBox);
+          invalidate();
+        }
+        else if (!state && !hasChild(m_notificationsBox)) {
+          addChild(m_notificationsBox);
+          invalidate();
+        }
       }
       break;
     }
@@ -639,106 +639,106 @@ bool StatusBar::onProcessMessage(Message* msg)
       rc->y1 += 1*jguiscale();
       rc->x2 -= 2*jguiscale();
       rc->y2 -= 2*jguiscale();
-      
+
       // Available width for layers buttons
       int width = jrect_w(rc)/4;
 
       // Check layers bounds
       try {
-	--rc->y2;
+        --rc->y2;
 
-	int hot_layer = -1;
+        int hot_layer = -1;
 
-	const ActiveDocumentReader document(UIContext::instance());
-	const Sprite* sprite(document ? document->getSprite(): NULL);
-	// Check which sprite's layer has the mouse over
-	if (sprite) {
-	  const LayerFolder* folder = sprite->getFolder();
-	  LayerConstIterator it = folder->get_layer_begin();
-	  LayerConstIterator end = folder->get_layer_end();
-	  int count = folder->get_layers_count();
+        const ActiveDocumentReader document(UIContext::instance());
+        const Sprite* sprite(document ? document->getSprite(): NULL);
+        // Check which sprite's layer has the mouse over
+        if (sprite) {
+          const LayerFolder* folder = sprite->getFolder();
+          LayerConstIterator it = folder->get_layer_begin();
+          LayerConstIterator end = folder->get_layer_end();
+          int count = folder->get_layers_count();
 
-	  for (int c=0; it != end; ++it, ++c) {
-	    int x1 = rc->x2-width + c*width/count;
-	    int x2 = rc->x2-width + (c+1)*width/count;
+          for (int c=0; it != end; ++it, ++c) {
+            int x1 = rc->x2-width + c*width/count;
+            int x2 = rc->x2-width + (c+1)*width/count;
 
-	    if (Rect(Point(x1, rc->y1),
-		     Point(x2, rc->y2)).contains(Point(msg->mouse.x,
-						       msg->mouse.y))) {
-	      hot_layer = c;
-	      break;
-	    }
-	  }
-	}
-	// Check if the "Donate" button has the mouse over
-	else {
-	  int x1 = rc->x2-width;
-	  int x2 = rc->x2;
+            if (Rect(Point(x1, rc->y1),
+                     Point(x2, rc->y2)).contains(Point(msg->mouse.x,
+                                                       msg->mouse.y))) {
+              hot_layer = c;
+              break;
+            }
+          }
+        }
+        // Check if the "Donate" button has the mouse over
+        else {
+          int x1 = rc->x2-width;
+          int x2 = rc->x2;
 
-	  if (Rect(Point(x1, rc->y1),
-		   Point(x2, rc->y2)).contains(Point(msg->mouse.x,
-						     msg->mouse.y))) {
-	    hot_layer = 0;
-	  }
-	}
+          if (Rect(Point(x1, rc->y1),
+                   Point(x2, rc->y2)).contains(Point(msg->mouse.x,
+                                                     msg->mouse.y))) {
+            hot_layer = 0;
+          }
+        }
 
-	if (m_hot_layer != hot_layer) {
-	  m_hot_layer = hot_layer;
-	  invalidate();
-	}
+        if (m_hot_layer != hot_layer) {
+          m_hot_layer = hot_layer;
+          invalidate();
+        }
       }
       catch (LockedDocumentException&) {
-	// Do nothing...
+        // Do nothing...
       }
 
       jrect_free(rc);
       break;
     }
-      
+
     case JM_BUTTONPRESSED:
       // When the user press the mouse-button over a hot-layer-button...
       if (m_hot_layer >= 0) {
-	try {
-	  ActiveDocumentWriter document(UIContext::instance());
-	  Sprite* sprite(document ? document->getSprite(): NULL);
-	  if (sprite) {
-	    Layer* layer = sprite->indexToLayer(m_hot_layer);
-	    if (layer) {
-	      // Set the current layer
-	      if (layer != sprite->getCurrentLayer())
-		sprite->setCurrentLayer(layer);
+        try {
+          ActiveDocumentWriter document(UIContext::instance());
+          Sprite* sprite(document ? document->getSprite(): NULL);
+          if (sprite) {
+            Layer* layer = sprite->indexToLayer(m_hot_layer);
+            if (layer) {
+              // Set the current layer
+              if (layer != sprite->getCurrentLayer())
+                sprite->setCurrentLayer(layer);
 
-	      // Flash the current layer
-	      ASSERT(current_editor != NULL); // Cannot be null when we have a current sprite
-	      current_editor->flashCurrentLayer();
+              // Flash the current layer
+              ASSERT(current_editor != NULL); // Cannot be null when we have a current sprite
+              current_editor->flashCurrentLayer();
 
-	      // Redraw the status-bar
-	      invalidate();
-	    }
-	  }
-	}
-	catch (LockedDocumentException&) {
-	  // Do nothing...
-	}
+              // Redraw the status-bar
+              invalidate();
+            }
+          }
+        }
+        catch (LockedDocumentException&) {
+          // Do nothing...
+        }
       }
       break;
 
     case JM_MOUSELEAVE:
       if (hasChild(m_commandsBox)) {
-	// If we want restore the state-bar and the slider doesn't have
-	// the capture...
-	if (jmanager_get_capture() != m_slider) {
-	  // ...exit from command mode
-	  jmanager_free_focus();		// TODO Review this code
+        // If we want restore the state-bar and the slider doesn't have
+        // the capture...
+        if (jmanager_get_capture() != m_slider) {
+          // ...exit from command mode
+          jmanager_free_focus();                // TODO Review this code
 
-	  removeChild(m_commandsBox);
-	  invalidate();
-	}
+          removeChild(m_commandsBox);
+          invalidate();
+        }
 
-	if (m_hot_layer >= 0) {
-	  m_hot_layer = -1;
-	  invalidate();
-	}
+        if (m_hot_layer >= 0) {
+          m_hot_layer = -1;
+          invalidate();
+        }
       }
       break;
 
@@ -770,15 +770,15 @@ static void slider_change_hook(Slider* slider)
     Sprite* sprite(document ? document->getSprite(): NULL);
     if (sprite) {
       if ((sprite->getCurrentLayer()) &&
-	  (sprite->getCurrentLayer()->is_image())) {
-	Cel* cel = ((LayerImage*)sprite->getCurrentLayer())->getCel(sprite->getCurrentFrame());
-	if (cel) {
-	  // Update the opacity
-	  cel->setOpacity(slider->getValue());
+          (sprite->getCurrentLayer()->is_image())) {
+        Cel* cel = ((LayerImage*)sprite->getCurrentLayer())->getCel(sprite->getCurrentFrame());
+        if (cel) {
+          // Update the opacity
+          cel->setOpacity(slider->getValue());
 
-	  // Update the editors
-	  update_screen_for_document(document);
-	}
+          // Update the editors
+          update_screen_for_document(document);
+        }
       }
     }
   }
@@ -813,10 +813,10 @@ void StatusBar::updateFromLayer()
 
     // Opacity layer
     if (sprite &&
-	sprite->getCurrentLayer() &&
-	sprite->getCurrentLayer()->is_image() &&
-	!sprite->getCurrentLayer()->is_background() &&
-	(cel = ((LayerImage*)sprite->getCurrentLayer())->getCel(sprite->getCurrentFrame()))) {
+        sprite->getCurrentLayer() &&
+        sprite->getCurrentLayer()->is_image() &&
+        !sprite->getCurrentLayer()->is_background() &&
+        (cel = ((LayerImage*)sprite->getCurrentLayer())->getCel(sprite->getCurrentFrame()))) {
       m_slider->setValue(MID(0, cel->getOpacity(), 255));
       m_slider->setEnabled(true);
     }
@@ -830,4 +830,3 @@ void StatusBar::updateFromLayer()
     m_slider->setEnabled(false);
   }
 }
-

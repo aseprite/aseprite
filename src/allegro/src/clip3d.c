@@ -48,7 +48,7 @@
    v3->x = fixmul(v2->x - v1->x, t) + v1->x;             \
    v3->y = fixmul(v2->y - v1->y, t) + v1->y;             \
    v3->z = fixmul(v2->z - v1->z, t) + v1->z;             \
-							 \
+                                                         \
    if (flags & INT_1COL) {                               \
       v3->c = (v2->c - v1->c) * fixtoi(t) + v1->c;       \
    }                                                     \
@@ -110,27 +110,27 @@ int clip3d(int type, fixed min_z, fixed max_z, int vc, AL_CONST V3D *vtx[], V3D 
       vt = 0;
 
       for (i=0; i<vc; i++)
-	 out[i] = (vtx[i]->z > max_z);
+         out[i] = (vtx[i]->z > max_z);
 
       for (i=0, j=vc-1; i<vc; j=i, i++) {
-	 v1 = vtx[j];
-	 v2 = vtx[i];
-	 v3 = vtmp[vt];
+         v1 = vtx[j];
+         v2 = vtx[i];
+         v3 = vtmp[vt];
 
-	 if ((out[j] & out[i]) != 0)
-	    continue;
+         if ((out[j] & out[i]) != 0)
+            continue;
 
-	 if ((out[j] | out[i]) == 0) {
-	    point_inside(vt);
-	    continue;
-	 }
+         if ((out[j] | out[i]) == 0) {
+            point_inside(vt);
+            continue;
+         }
 
-	 t = fixdiv(max_z - v1->z, v2->z - v1->z);
-	 point_interp(vt);
-	 v3 = vtmp[vt];
+         t = fixdiv(max_z - v1->z, v2->z - v1->z);
+         point_interp(vt);
+         v3 = vtmp[vt];
 
-	 if (out[j])
-	    point_inside(vt);
+         if (out[j])
+            point_inside(vt);
       }
       vin = (AL_CONST V3D**)vtmp;
    }
@@ -150,11 +150,11 @@ int clip3d(int type, fixed min_z, fixed max_z, int vc, AL_CONST V3D *vtx[], V3D 
       v3 = vout[vo];
 
       if ((out[j] & out[i]) != 0)
-	 continue;
+         continue;
 
       if ((out[j] | out[i]) == 0) {
-	 point_inside(vo);
-	 continue;
+         point_inside(vo);
+         continue;
       }
 
       t = fixdiv(min_z - v1->z, v2->z - v1->z);
@@ -162,7 +162,7 @@ int clip3d(int type, fixed min_z, fixed max_z, int vc, AL_CONST V3D *vtx[], V3D 
       v3 = vout[vo];
 
       if (out[j])
-	 point_inside(vo);
+         point_inside(vo);
    }
 
    vt = 0;
@@ -176,11 +176,11 @@ int clip3d(int type, fixed min_z, fixed max_z, int vc, AL_CONST V3D *vtx[], V3D 
       v3 = vtmp[vt];
 
       if ((out[j] & out[i]) != 0)
-	 continue;
+         continue;
 
       if ((out[j] | out[i]) == 0) {
-	 point_inside(vt);
-	 continue;
+         point_inside(vt);
+         continue;
       }
 
       t = fixdiv(-v1->z - v1->x, v2->x - v1->x + v2->z - v1->z);
@@ -188,7 +188,7 @@ int clip3d(int type, fixed min_z, fixed max_z, int vc, AL_CONST V3D *vtx[], V3D 
       v3 = vtmp[vt];
 
       if (out[j])
-	 point_inside(vt);
+         point_inside(vt);
    }
 
    vo = 0;
@@ -202,11 +202,11 @@ int clip3d(int type, fixed min_z, fixed max_z, int vc, AL_CONST V3D *vtx[], V3D 
       v3 = vout[vo];
 
       if ((out[j] & out[i]) != 0)
-	 continue;
+         continue;
 
       if ((out[j] | out[i]) == 0) {
-	 point_inside(vo);
-	 continue;
+         point_inside(vo);
+         continue;
       }
 
       t = fixdiv(v1->z - v1->x, v2->x - v1->x - v2->z + v1->z);
@@ -214,7 +214,7 @@ int clip3d(int type, fixed min_z, fixed max_z, int vc, AL_CONST V3D *vtx[], V3D 
       v3 = vout[vo];
 
       if (out[j])
-	 point_inside(vo);
+         point_inside(vo);
    }
 
    vt = 0;
@@ -228,11 +228,11 @@ int clip3d(int type, fixed min_z, fixed max_z, int vc, AL_CONST V3D *vtx[], V3D 
       v3 = vtmp[vt];
 
       if ((out[j] & out[i]) != 0)
-	 continue;
+         continue;
 
       if ((out[j] | out[i]) == 0) {
-	 point_inside(vt);
-	 continue;
+         point_inside(vt);
+         continue;
       }
 
       t = fixdiv(-v1->z - v1->y, v2->y - v1->y + v2->z - v1->z);
@@ -240,7 +240,7 @@ int clip3d(int type, fixed min_z, fixed max_z, int vc, AL_CONST V3D *vtx[], V3D 
       v3 = vtmp[vt];
 
       if (out[j])
-	 point_inside(vt);
+         point_inside(vt);
    }
 
    vo = 0;
@@ -254,11 +254,11 @@ int clip3d(int type, fixed min_z, fixed max_z, int vc, AL_CONST V3D *vtx[], V3D 
       v3 = vout[vo];
 
       if ((out[j] & out[i]) != 0)
-	 continue;
+         continue;
 
       if ((out[j] | out[i]) == 0) {
-	 point_inside(vo);
-	 continue;
+         point_inside(vo);
+         continue;
       }
 
       t = fixdiv(v1->z - v1->y, v2->y - v1->y - v2->z + v1->z);
@@ -266,7 +266,7 @@ int clip3d(int type, fixed min_z, fixed max_z, int vc, AL_CONST V3D *vtx[], V3D 
       v3 = vout[vo];
 
       if (out[j])
-	 point_inside(vo);
+         point_inside(vo);
    }
 
    if (type == POLYTYPE_FLAT)

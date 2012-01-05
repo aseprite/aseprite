@@ -43,4 +43,4 @@ private:
 
 } // namespace undoers
 
-#endif	// UNDOERS_SET_CEL_OPACITY_H_INCLUDED
+#endif  // UNDOERS_SET_CEL_OPACITY_H_INCLUDED

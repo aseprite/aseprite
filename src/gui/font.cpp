@@ -187,7 +187,7 @@ static void _font_cache_glyph(AL_CONST FONT* f, int glyph_number)
 
         /* allocate bitmap */
         af->cached_glyphs[glyph_number].bmp = (unsigned char*)
-	  base_malloc(sizeof(unsigned char) * ft_bmp->width * ft_bmp->rows);
+          base_malloc(sizeof(unsigned char) * ft_bmp->width * ft_bmp->rows);
 
         /* monochrome drawing */
         {
@@ -226,7 +226,7 @@ static void _font_cache_glyph(AL_CONST FONT* f, int glyph_number)
       FT_Bitmap *ft_bmp;
       FT_Glyph glyph;
       FT_BitmapGlyph bmp_glyph;
-    
+
       FT_Glyph_Copy(new_glyph, &glyph);
 
       /* only render glyph if it is not already a bitmap */
@@ -250,7 +250,7 @@ static void _font_cache_glyph(AL_CONST FONT* f, int glyph_number)
 
         /* allocate bitmap */
         af->cached_glyphs[glyph_number].aabmp = (unsigned char*)
-	  base_malloc(sizeof(unsigned char) * ft_bmp->width * ft_bmp->rows);
+          base_malloc(sizeof(unsigned char) * ft_bmp->width * ft_bmp->rows);
 
         /* aa drawing */
         {
@@ -357,7 +357,7 @@ FONT* ji_font_load_ttf(const char *filepathname)
 
   /* we are loading from file, no mem buffer needed */
   af->data = NULL;
-  af->data_size = 0; 
+  af->data_size = 0;
 
   /* load the font */
   error = FT_New_Face(ft_library, filepathname, 0, &af->face);
@@ -443,7 +443,7 @@ int ji_font_set_size(FONT* f, int h)
       else
         direction = 1;
     }
-    
+
     /* check we didn't overpass it */
     else if ((direction > 0) && (real_height > h)) {
       /* decrease one and found */
@@ -544,7 +544,7 @@ const int *ji_font_get_available_fixed_sizes(FONT* f, int *n)
     return af->fixed_sizes;
   }
   else
-    return NULL;		/* TODO return text_height(...) size */
+    return NULL;                /* TODO return text_height(...) size */
 }
 
 int ji_font_get_char_extra_spacing(FONT* f)
@@ -584,8 +584,8 @@ int ji_font_text_len(struct FONT* f, const char *s)
       in_pos += uwidth(s+in_pos);
       c = ugetc(s+in_pos);
       if (c == '&') {
-	pix_len += f->vtable->char_length(f, '&');
-	in_pos += uwidth(s+in_pos);
+        pix_len += f->vtable->char_length(f, '&');
+        in_pos += uwidth(s+in_pos);
       }
     }
     else {
@@ -610,7 +610,7 @@ static CACHED_GLYPH *_aa_find_glyph(AL_CONST FONT* f, int ch)
     glyph_index = FT_Get_Char_Index(af->face, ch);
   else
     glyph_index = ch;
-    
+
   /* apply kerning */
   /*if (last_glyph_index) {
     FT_Vector v;
@@ -666,7 +666,7 @@ static int aa_length(AL_CONST FONT* f, AL_CONST char *text)
 }
 
 static void _aa_prepare_alpha_table(AL_CONST FONT* f, int color,
-				    int *alpha_table, int depth)
+                                    int *alpha_table, int depth)
 {
   AL_CONST FONT_AA_DATA* af = reinterpret_cast<AL_CONST FONT_AA_DATA*>(f->data);
   int i, r, g, b, br, bg, bb, ir, ig, ib;
@@ -682,7 +682,7 @@ static void _aa_prepare_alpha_table(AL_CONST FONT* f, int color,
     g = getg_depth(depth, color);
     b = getb_depth(depth, color);
 
-    /* get the background rgb */   
+    /* get the background rgb */
     br = getr_depth(depth, af->aa_mode);
     bg = getg_depth(depth, af->aa_mode);
     bb = getb_depth(depth, af->aa_mode);
@@ -706,14 +706,14 @@ static void _aa_prepare_alpha_table(AL_CONST FONT* f, int color,
     blendr = br << 8;
     blendg = bg << 8;
     blendb = bb << 8;
-    
+
     /* blend both values and make our alpha table */
     for (i=0; i<256; i++) {
       if (i == 0)
-	alpha_table[i] = -1;
+        alpha_table[i] = -1;
       else
-	alpha_table[i] = makecol_depth(depth,
-				       blendr >> 8, blendg >> 8, blendb >> 8);
+        alpha_table[i] = makecol_depth(depth,
+                                       blendr >> 8, blendg >> 8, blendb >> 8);
 
       blendr += ir;
       blendg += ig;
@@ -723,7 +723,7 @@ static void _aa_prepare_alpha_table(AL_CONST FONT* f, int color,
 }
 
 static void _aa_render_glyph(BITMAP *bmp, FONT_AA_DATA* af, CACHED_GLYPH *g,
-			     int u, int v, int color, int *alpha_table)
+                             int u, int v, int color, int *alpha_table)
 {
   int max_bmp_x, max_bmp_y;
   unsigned char *bmp_p;
@@ -744,23 +744,23 @@ static void _aa_render_glyph(BITMAP *bmp, FONT_AA_DATA* af, CACHED_GLYPH *g,
     if (af->aa_mode >= 0) {
       /* copy the character bitmap to the dest one */
       for (bmp_y=v; bmp_y<max_bmp_y; bmp_y++) {
-	for (bmp_x=u; bmp_x<max_bmp_x; bmp_x++) {
-	  c = alpha_table[*bmp_p];
-	  if (c >= 0)
-	    putpixel(bmp, bmp_x, bmp_y, c);
-	  bmp_p++;
-	}
+        for (bmp_x=u; bmp_x<max_bmp_x; bmp_x++) {
+          c = alpha_table[*bmp_p];
+          if (c >= 0)
+            putpixel(bmp, bmp_x, bmp_y, c);
+          bmp_p++;
+        }
       }
     }
     /* if in transparent mode */
     else {
       /* copy the FT character bitmap to our dest one */
       for (bmp_y=v; bmp_y<max_bmp_y; bmp_y++) {
-	for (bmp_x=u; bmp_x<max_bmp_x; bmp_x++) {
-	  set_trans_blender(0, 0, 0, *bmp_p);
-	  putpixel(bmp, bmp_x, bmp_y, color);
-	  bmp_p++;
-	}
+        for (bmp_x=u; bmp_x<max_bmp_x; bmp_x++) {
+          set_trans_blender(0, 0, 0, *bmp_p);
+          putpixel(bmp, bmp_x, bmp_y, color);
+          bmp_p++;
+        }
       }
     }
   }
@@ -777,11 +777,11 @@ static void _aa_render_glyph(BITMAP *bmp, FONT_AA_DATA* af, CACHED_GLYPH *g,
     /* copy the character bitmap to our allegro one */
     for (bmp_y=u; bmp_y<max_bmp_y; bmp_y++) {
       for (bmp_x=v; bmp_x<max_bmp_x; bmp_x++) {
-	if (*bmp_p)
-	  putpixel(bmp, bmp_x, bmp_y, color);
-	/*             else if (af->aa_mode >= 0) */
-	/*               putpixel(bmp, bmp_x, bmp_y, af->aa_mode); */
-	bmp_p++;
+        if (*bmp_p)
+          putpixel(bmp, bmp_x, bmp_y, color);
+        /*             else if (af->aa_mode >= 0) */
+        /*               putpixel(bmp, bmp_x, bmp_y, af->aa_mode); */
+        bmp_p++;
       }
     }
   }
@@ -803,8 +803,8 @@ static int aa_render_char(AL_CONST FONT* f, int ch, int fg, int bg, BITMAP *bmp,
 
   if (bg >= 0) {
     rectfill(bmp, x, y,
-	     x + f->vtable->char_length(f, ch) - 1,
-	     y + f->vtable->font_height(f) - 1, bg);
+             x + f->vtable->char_length(f, ch) - 1,
+             y + f->vtable->font_height(f) - 1, bg);
   }
 
   g = _aa_find_glyph(f, ch);
@@ -843,8 +843,8 @@ static void aa_render(AL_CONST FONT* f, AL_CONST char *text, int fg, int bg, BIT
 
   if (bg >= 0) {
     rectfill(bmp, x, y,
-	     x + text_length(f, text) - 1,
-	     y + text_height(f) - 1, bg);
+             x + text_length(f, text) - 1,
+             y + text_height(f) - 1, bg);
     bg = -1; /* to avoid filling rectangles for each character */
   }
 
@@ -988,8 +988,8 @@ int ji_font_text_len(struct FONT* f, const char* s)
       in_pos += uwidth(s+in_pos);
       c = ugetc(s+in_pos);
       if (c == '&') {
-	pix_len += f->vtable->char_length(f, '&');
-	in_pos += uwidth(s+in_pos);
+        pix_len += f->vtable->char_length(f, '&');
+        in_pos += uwidth(s+in_pos);
       }
     }
     else {

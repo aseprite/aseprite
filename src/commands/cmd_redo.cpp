@@ -39,8 +39,8 @@ protected:
 
 RedoCommand::RedoCommand()
   : Command("Redo",
-	    "Redo",
-	    CmdUIOnlyFlag)
+            "Redo",
+            CmdUIOnlyFlag)
 {
 }
 
@@ -58,7 +58,7 @@ void RedoCommand::onExecute(Context* context)
 
   app_get_statusbar()
     ->showTip(1000, "Redid %s",
-	      document->getUndoHistory()->getNextRedoLabel());
+              document->getUndoHistory()->getNextRedoLabel());
 
   document->getUndoHistory()->doRedo();
   document->generateMaskBoundaries();

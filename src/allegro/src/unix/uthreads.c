@@ -79,28 +79,28 @@ static void *bg_man_pthreads_threadfunc(void *arg)
       gettimeofday(&new_time, 0);
       /* add the new time difference to the remainder of the old difference */
       interval += ((new_time.tv_sec - old_time.tv_sec) * 1000000L +
-		   (new_time.tv_usec - old_time.tv_usec));
+                   (new_time.tv_usec - old_time.tv_usec));
       old_time = new_time;
 
       /* run the callbacks for each 10ms elapsed, but limit to 18ms */
       if (interval > 18000)
-         interval = 18000;      
+         interval = 18000;
       while (interval > 10000) {
-	 interval -= 10000;	  
+         interval -= 10000;
 
-	 pthread_mutex_lock(&cli_mutex);
+         pthread_mutex_lock(&cli_mutex);
 
-	 /* wait until interrupts are enabled */
-	 while (cli_count > 0)
-	    pthread_cond_wait(&cli_cond, &cli_mutex);
+         /* wait until interrupts are enabled */
+         while (cli_count > 0)
+            pthread_cond_wait(&cli_cond, &cli_mutex);
 
-	 /* call all the callbacks */
-	 for (n = 0; n < max_func; n++) {
-	    if (funcs[n])
-	       funcs[n](1);
-	 }
+         /* call all the callbacks */
+         for (n = 0; n < max_func; n++) {
+            if (funcs[n])
+               funcs[n](1);
+         }
 
-	 pthread_mutex_unlock(&cli_mutex);
+         pthread_mutex_unlock(&cli_mutex);
       }
 
       /* rest a little bit before checking again */
@@ -182,7 +182,7 @@ static int bg_man_pthreads_register_func(bg_func f)
    else {
       funcs[i] = f;
       if (i == max_func)
-	 max_func++;
+         max_func++;
    }
 
    bg_man_pthreads_enable_interrupts();
@@ -207,9 +207,9 @@ static int really_unregister_func(bg_func f)
    else {
       funcs[i] = NULL;
       if (i+1 == max_func)
-	 do {
-	    max_func--;
-	 } while ((max_func > 0) && !funcs[max_func-1]);
+         do {
+            max_func--;
+         } while ((max_func > 0) && !funcs[max_func-1]);
       return 0;
    }
 }
@@ -358,7 +358,7 @@ void _unix_lock_mutex(void *handle)
 
    if (mx->owner != pthread_self()) {
       pthread_mutex_lock(&mx->actual_mutex);
-      mx->owner = pthread_self();      
+      mx->owner = pthread_self();
    }
 
    mx->lock_count++;
@@ -381,5 +381,4 @@ void _unix_unlock_mutex(void *handle)
    }
 }
 
-#endif	/* ALLEGRO_HAVE_LIBPTHREAD */
-
+#endif  /* ALLEGRO_HAVE_LIBPTHREAD */

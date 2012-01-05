@@ -48,8 +48,8 @@ private:
 
 LaunchCommand::LaunchCommand()
   : Command("Launch",
-	    "Launch",
-	    CmdUIOnlyFlag)
+            "Launch",
+            CmdUIOnlyFlag)
   , m_type(Url)
   , m_path("")
 {
@@ -76,16 +76,16 @@ void LaunchCommand::onExecute(Context* context)
 
     case FileInDocs:
       {
-	ResourceFinder rf;
-	rf.findInDocsDir(m_path.c_str());
+        ResourceFinder rf;
+        rf.findInDocsDir(m_path.c_str());
 
-	while (const char* path = rf.next()) {
-	  if (!exists(path))
-	    continue;
+        while (const char* path = rf.next()) {
+          if (!exists(path))
+            continue;
 
-	  Launcher::openFile(path);
-	  break;
-	}
+          Launcher::openFile(path);
+          break;
+        }
       }
       break;
 

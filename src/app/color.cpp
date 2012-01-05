@@ -84,15 +84,15 @@ Color Color::fromImage(int imgtype, int c)
 
     case IMAGE_RGB:
       if (_rgba_geta(c) > 0) {
-	color = Color::fromRgb(_rgba_getr(c),
-			       _rgba_getg(c),
-			       _rgba_getb(c));
+        color = Color::fromRgb(_rgba_getr(c),
+                               _rgba_getg(c),
+                               _rgba_getb(c));
       }
       break;
 
     case IMAGE_GRAYSCALE:
       if (_graya_geta(c) > 0) {
-	color = Color::fromGray(_graya_getv(c));
+        color = Color::fromGray(_graya_getv(c));
       }
       break;
 
@@ -120,24 +120,24 @@ Color Color::fromString(const std::string& str)
 
   if (str != "mask") {
     if (str.find("rgb{") == 0 ||
-	str.find("hsv{") == 0) {
+        str.find("hsv{") == 0) {
       int c = 0, table[3] = { 0, 0, 0 };
       int i = 4, j;
-      
+
       while ((j = str.find_first_of(",}", i)) != std::string::npos) {
-	std::string element = str.substr(i, j - i);
-	if (c < 3)
-	  table[c++] = std::strtol(element.c_str(), NULL, 10);
-	if (c >= 3)
-	  break;
-	i = j+1;
+        std::string element = str.substr(i, j - i);
+        if (c < 3)
+          table[c++] = std::strtol(element.c_str(), NULL, 10);
+        if (c >= 3)
+          break;
+        i = j+1;
       }
-      
+
       if (str[0] == 'r')
-	color = Color::fromRgb(table[0], table[1], table[2]);
+        color = Color::fromRgb(table[0], table[1], table[2]);
       else
-	color = Color::fromHsv(table[0], table[1], table[2]);
-    } 
+        color = Color::fromHsv(table[0], table[1], table[2]);
+    }
     else if (str.find("gray{") == 0) {
       color = Color::fromGray(std::strtol(str.c_str()+5, NULL, 10));
     }
@@ -161,16 +161,16 @@ std::string Color::toString() const
 
     case Color::RgbType:
       result << "rgb{"
-	     << m_value.rgb.r << ","
-	     << m_value.rgb.g << ","
-	     << m_value.rgb.b << "}";
+             << m_value.rgb.r << ","
+             << m_value.rgb.g << ","
+             << m_value.rgb.b << "}";
       break;
 
     case Color::HsvType:
       result << "hsv{"
-	     << m_value.hsv.h << ","
-	     << m_value.hsv.s << ","
-	     << m_value.hsv.v << "}";
+             << m_value.hsv.h << ","
+             << m_value.hsv.s << ","
+             << m_value.hsv.v << "}";
       break;
 
     case Color::GrayType:
@@ -195,65 +195,65 @@ std::string Color::toFormalString(int imgtype, bool long_format) const
     switch (getType()) {
 
       case Color::MaskType:
-	result << "Mask";
-	break;
+        result << "Mask";
+        break;
 
       case Color::RgbType:
-	if (imgtype == IMAGE_GRAYSCALE) {
-	  result << "Gray " << getGray();
-	}
-	else {
-	  result << "RGB "
-		 << m_value.rgb.r << " "
-		 << m_value.rgb.g << " "
-		 << m_value.rgb.b;
+        if (imgtype == IMAGE_GRAYSCALE) {
+          result << "Gray " << getGray();
+        }
+        else {
+          result << "RGB "
+                 << m_value.rgb.r << " "
+                 << m_value.rgb.g << " "
+                 << m_value.rgb.b;
 
-	  if (imgtype == IMAGE_INDEXED)
-	    result << " Index "
-		   << color_utils::color_for_image(*this, imgtype);
-	}
-	break;
+          if (imgtype == IMAGE_INDEXED)
+            result << " Index "
+                   << color_utils::color_for_image(*this, imgtype);
+        }
+        break;
 
       case Color::HsvType:
-	if (imgtype == IMAGE_GRAYSCALE) {
-	  result << "Gray " << getGray();
-	}
-	else {
-	  result << "HSB "
-		 << m_value.hsv.h << "\xB0 "
-		 << m_value.hsv.s << " "
-		 << m_value.hsv.v;
-  
-	  if (imgtype == IMAGE_INDEXED)
-	    result << " Index " << color_utils::color_for_image(*this, imgtype);
-	}
-	break;
-	
+        if (imgtype == IMAGE_GRAYSCALE) {
+          result << "Gray " << getGray();
+        }
+        else {
+          result << "HSB "
+                 << m_value.hsv.h << "\xB0 "
+                 << m_value.hsv.s << " "
+                 << m_value.hsv.v;
+
+          if (imgtype == IMAGE_INDEXED)
+            result << " Index " << color_utils::color_for_image(*this, imgtype);
+        }
+        break;
+
       case Color::GrayType:
-	result << "Gray " << m_value.gray;
-	break;
+        result << "Gray " << m_value.gray;
+        break;
 
       case Color::IndexType: {
-	int i = m_value.index;
-	if (i >= 0 && i < (int)get_current_palette()->size()) {
-	  uint32_t _c = get_current_palette()->getEntry(i);
-	  result << "Index " << i
-		 << " (RGB "
-		 << (int)_rgba_getr(_c) << " "
-		 << (int)_rgba_getg(_c) << " "
-		 << (int)_rgba_getb(_c) << ")";
-	}
-	else {
-	  result << "Index "
-		 << i
-		 << " (out of range)";
-	}
-	break;
+        int i = m_value.index;
+        if (i >= 0 && i < (int)get_current_palette()->size()) {
+          uint32_t _c = get_current_palette()->getEntry(i);
+          result << "Index " << i
+                 << " (RGB "
+                 << (int)_rgba_getr(_c) << " "
+                 << (int)_rgba_getg(_c) << " "
+                 << (int)_rgba_getb(_c) << ")";
+        }
+        else {
+          result << "Index "
+                 << i
+                 << " (out of range)";
+        }
+        break;
       }
 
       default:
-	ASSERT(false);
-	break;
+        ASSERT(false);
+        break;
     }
   }
   // Short format
@@ -261,43 +261,43 @@ std::string Color::toFormalString(int imgtype, bool long_format) const
     switch (getType()) {
 
       case Color::MaskType:
-	result << "Mask";
-	break;
+        result << "Mask";
+        break;
 
       case Color::RgbType:
-	if (imgtype == IMAGE_GRAYSCALE) {
-	  result << "Gry-" << getGray();
-	}
-	else {
-	  result << "#" << std::hex << std::setfill('0')
-		 << std::setw(2) << m_value.rgb.r
-		 << std::setw(2) << m_value.rgb.g
-		 << std::setw(2) << m_value.rgb.b;
-	}
-	break;
+        if (imgtype == IMAGE_GRAYSCALE) {
+          result << "Gry-" << getGray();
+        }
+        else {
+          result << "#" << std::hex << std::setfill('0')
+                 << std::setw(2) << m_value.rgb.r
+                 << std::setw(2) << m_value.rgb.g
+                 << std::setw(2) << m_value.rgb.b;
+        }
+        break;
 
       case Color::HsvType:
-	if (imgtype == IMAGE_GRAYSCALE) {
-	  result << "Gry-" << getGray();
-	}
-	else {
-	  result << m_value.hsv.h << "\xB0"
-		 << m_value.hsv.s << ","
-		 << m_value.hsv.v;
-	}
-	break;
+        if (imgtype == IMAGE_GRAYSCALE) {
+          result << "Gry-" << getGray();
+        }
+        else {
+          result << m_value.hsv.h << "\xB0"
+                 << m_value.hsv.s << ","
+                 << m_value.hsv.v;
+        }
+        break;
 
       case Color::GrayType:
-	result << "Gry-" << m_value.gray;
-	break;
+        result << "Gry-" << m_value.gray;
+        break;
 
       case Color::IndexType:
-	result << "Idx-" << m_value.index;
-	break;
+        result << "Idx-" << m_value.index;
+        break;
 
       default:
-	ASSERT(false);
-	break;
+        ASSERT(false);
+        break;
     }
   }
 
@@ -316,15 +316,15 @@ bool Color::operator==(const Color& other) const
 
     case Color::RgbType:
       return
-	m_value.rgb.r == other.m_value.rgb.r &&
-	m_value.rgb.g == other.m_value.rgb.g &&
-	m_value.rgb.b == other.m_value.rgb.b;
+        m_value.rgb.r == other.m_value.rgb.r &&
+        m_value.rgb.g == other.m_value.rgb.g &&
+        m_value.rgb.b == other.m_value.rgb.b;
 
     case Color::HsvType:
       return
-	m_value.hsv.h == other.m_value.hsv.h &&
-	m_value.hsv.s == other.m_value.hsv.s &&
-	m_value.hsv.v == other.m_value.hsv.v;
+        m_value.hsv.h == other.m_value.hsv.h &&
+        m_value.hsv.s == other.m_value.hsv.s &&
+        m_value.hsv.v == other.m_value.hsv.v;
 
     case Color::GrayType:
       return m_value.gray == other.m_value.gray;
@@ -366,9 +366,9 @@ int Color::getRed() const
 
     case Color::HsvType:
       return Rgb(Hsv(m_value.hsv.h,
-		     double(m_value.hsv.s) / 100.0,
-		     double(m_value.hsv.v) / 100.0)).red();
-      
+                     double(m_value.hsv.s) / 100.0,
+                     double(m_value.hsv.v) / 100.0)).red();
+
     case Color::GrayType:
       return m_value.gray;
 
@@ -397,8 +397,8 @@ int Color::getGreen() const
 
     case Color::HsvType:
       return Rgb(Hsv(m_value.hsv.h,
-		     double(m_value.hsv.s) / 100.0,
-		     double(m_value.hsv.v) / 100.0)).green();
+                     double(m_value.hsv.s) / 100.0,
+                     double(m_value.hsv.v) / 100.0)).green();
 
     case Color::GrayType:
       return m_value.gray;
@@ -428,8 +428,8 @@ int Color::getBlue() const
 
     case Color::HsvType:
       return Rgb(Hsv(m_value.hsv.h,
-		     double(m_value.hsv.s) / 100.0,
-		     double(m_value.hsv.v) / 100.0)).blue();
+                     double(m_value.hsv.s) / 100.0,
+                     double(m_value.hsv.v) / 100.0)).blue();
 
     case Color::GrayType:
       return m_value.gray;
@@ -456,8 +456,8 @@ int Color::getHue() const
 
     case Color::RgbType:
       return Hsv(Rgb(m_value.rgb.r,
-		     m_value.rgb.g,
-		     m_value.rgb.b)).hueInt();
+                     m_value.rgb.g,
+                     m_value.rgb.b)).hueInt();
 
     case Color::HsvType:
       return m_value.hsv.h;
@@ -472,8 +472,8 @@ int Color::getHue() const
       uint32_t c = get_current_palette()->getEntry(i);
 
       return Hsv(Rgb(_rgba_getr(c),
-		     _rgba_getg(c),
-		     _rgba_getb(c))).hueInt();
+                     _rgba_getg(c),
+                     _rgba_getb(c))).hueInt();
     }
 
   }
@@ -491,8 +491,8 @@ int Color::getSaturation() const
 
     case Color::RgbType:
       return Hsv(Rgb(m_value.rgb.r,
-		     m_value.rgb.g,
-		     m_value.rgb.b)).saturationInt();
+                     m_value.rgb.g,
+                     m_value.rgb.b)).saturationInt();
 
     case Color::HsvType:
       return m_value.hsv.s;
@@ -507,8 +507,8 @@ int Color::getSaturation() const
       uint32_t c = get_current_palette()->getEntry(i);
 
       return Hsv(Rgb(_rgba_getr(c),
-		     _rgba_getg(c),
-		     _rgba_getb(c))).saturationInt();
+                     _rgba_getg(c),
+                     _rgba_getb(c))).saturationInt();
     }
 
   }
@@ -526,12 +526,12 @@ int Color::getValue() const
 
     case Color::RgbType:
       return Hsv(Rgb(m_value.rgb.r,
-		     m_value.rgb.g,
-		     m_value.rgb.b)).valueInt();
+                     m_value.rgb.g,
+                     m_value.rgb.b)).valueInt();
 
     case Color::HsvType:
       return m_value.hsv.v;
-      
+
     case Color::GrayType:
       return 100 * m_value.gray / 255;
 
@@ -542,8 +542,8 @@ int Color::getValue() const
       uint32_t c = get_current_palette()->getEntry(i);
 
       return Hsv(Rgb(_rgba_getr(c),
-		     _rgba_getg(c),
-		     _rgba_getb(c))).valueInt();
+                     _rgba_getg(c),
+                     _rgba_getb(c))).valueInt();
     }
 
   }
@@ -561,12 +561,12 @@ int Color::getGray() const
 
     case Color::RgbType:
       return 255 * Hsv(Rgb(m_value.rgb.r,
-			   m_value.rgb.g,
-			   m_value.rgb.b)).valueInt() / 100;
+                           m_value.rgb.g,
+                           m_value.rgb.b)).valueInt() / 100;
 
     case Color::HsvType:
       return 255 * m_value.hsv.v / 100;
-      
+
     case Color::GrayType:
       return m_value.gray;
 
@@ -577,8 +577,8 @@ int Color::getGray() const
       uint32_t c = get_current_palette()->getEntry(i);
 
       return 255 * Hsv(Rgb(_rgba_getr(c),
-			   _rgba_getg(c),
-			   _rgba_getb(c))).valueInt() / 100;
+                           _rgba_getg(c),
+                           _rgba_getb(c))).valueInt() / 100;
     }
 
   }

@@ -36,8 +36,8 @@ protected:
 
 CloseEditorCommand::CloseEditorCommand()
   : Command("CloseEditor",
-	    "Close Editor",
-	    CmdUIOnlyFlag)
+            "Close Editor",
+            CmdUIOnlyFlag)
 {
 }
 
@@ -61,8 +61,8 @@ protected:
 
 MakeUniqueEditorCommand::MakeUniqueEditorCommand()
   : Command("MakeUniqueEditor",
-	    "Make Unique Editor",
-	    CmdUIOnlyFlag)
+            "Make Unique Editor",
+            CmdUIOnlyFlag)
 {
 }
 
@@ -86,8 +86,8 @@ protected:
 
 SplitEditorHorizontallyCommand::SplitEditorHorizontallyCommand()
   : Command("SplitEditorHorizontally",
-	    "Split Editor Horizontally",
-	    CmdUIOnlyFlag)
+            "Split Editor Horizontally",
+            CmdUIOnlyFlag)
 {
 }
 
@@ -111,8 +111,8 @@ protected:
 
 SplitEditorVerticallyCommand::SplitEditorVerticallyCommand()
   : Command("SplitEditorVertically",
-	    "Split Editor Vertically",
-	    CmdUIOnlyFlag)
+            "Split Editor Vertically",
+            CmdUIOnlyFlag)
 {
 }
 

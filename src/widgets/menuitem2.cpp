@@ -53,11 +53,11 @@ bool MenuItem2::onProcessMessage(Message* msg)
       UIContext* context = UIContext::instance();
 
       if (m_command) {
-	if (m_params)
-	  m_command->loadParams(m_params);
+        if (m_params)
+          m_command->loadParams(m_params);
 
-	setEnabled(m_command->isEnabled(context));
-	setSelected(m_command->isChecked(context));
+        setEnabled(m_command->isEnabled(context));
+        setSelected(m_command->isChecked(context));
       }
       break;
     }
@@ -69,27 +69,27 @@ bool MenuItem2::onProcessMessage(Message* msg)
 
     case JM_SIGNAL:
       if (msg->signal.num == JI_SIGNAL_MENUITEM_SELECT) {
-	UIContext* context = UIContext::instance();
+        UIContext* context = UIContext::instance();
 
-	if (m_command) {
-	  if (m_params)
-	    m_command->loadParams(m_params);
+        if (m_command) {
+          if (m_params)
+            m_command->loadParams(m_params);
 
-	  if (m_command->isEnabled(context)) {
-	    context->executeCommand(m_command);
-	    return true;
-	  }
-	}
+          if (m_command->isEnabled(context)) {
+            context->executeCommand(m_command);
+            return true;
+          }
+        }
       }
       break;
 
     default:
       if (msg->type == jm_open_menuitem()) {
-	// Update the context flags after opening the menuitem's
-	// submenu to update the "enabled" flag of each command
-	// correctly.
-	Context* context = UIContext::instance();
-	context->updateFlags();
+        // Update the context flags after opening the menuitem's
+        // submenu to update the "enabled" flag of each command
+        // correctly.
+        Context* context = UIContext::instance();
+        context->updateFlags();
       }
       break;
   }

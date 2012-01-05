@@ -29,11 +29,10 @@ JHook jhook_new()
 
 /**
  * Destroys the hook.
- * 
+ *
  * @see jhook
  */
 void jhook_free(JHook hook)
 {
   delete hook;
 }
-

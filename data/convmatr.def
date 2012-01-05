@@ -1,4 +1,4 @@
-# Allegro Sprite Editor convolution matrices		-*- Shell-script -*-
+# Allegro Sprite Editor convolution matrices            -*- Shell-script -*-
 # Copyright (C) 2001-2011 by David Capello
 #
 # Parser in "src/effect/convmatr.c"

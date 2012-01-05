@@ -61,7 +61,7 @@ static void savefile_bg(void *fop_data)
 /**
  * Called by the gui-monitor (a timer in the gui module that is called
  * every 100 milliseconds).
- * 
+ *
  * [main thread]
  */
 static void monitor_savefile_bg(void *_data)
@@ -78,7 +78,7 @@ static void monitor_savefile_bg(void *_data)
 
 /**
  * Called when the monitor is destroyed.
- * 
+ *
  * [main thread]
  */
 static void monitor_free(void *_data)
@@ -103,12 +103,12 @@ static void save_document_in_background(Document* document, bool mark_as_saved)
   data->fop = fop;
   data->progress = app_get_statusbar()->addProgress();
   data->alert_window = Alert::create(PACKAGE
-				     "<<Saving file:<<%s||&Cancel",
-				     get_filename(document->getFilename()));
+                                     "<<Saving file:<<%s||&Cancel",
+                                     get_filename(document->getFilename()));
 
   /* add a monitor to check the saving (FileOp) progress */
   data->monitor = add_gui_monitor(monitor_savefile_bg,
-				  monitor_free, data);
+                                  monitor_free, data);
 
   /* TODO error handling */
 
@@ -133,7 +133,7 @@ static void save_document_in_background(Document* document, bool mark_as_saved)
 
     app_get_statusbar()
       ->setStatusText(2000, "File %s, saved.",
-		      get_filename(document->getFilename()));
+                      get_filename(document->getFilename()));
   }
 
   delete data->progress;
@@ -164,7 +164,7 @@ static void save_as_dialog(const DocumentReader& document, const char* dlg_title
     if (exists(filename.c_str())) {
       /* ask if the user wants overwrite the file? */
       ret = Alert::show("Warning<<File exists, overwrite it?<<%s||&Yes||&No||&Cancel",
-			get_filename(filename.c_str()));
+                        get_filename(filename.c_str()));
     }
     else
       break;
@@ -206,8 +206,8 @@ protected:
 
 SaveFileCommand::SaveFileCommand()
   : Command("SaveFile",
-	    "Save File",
-	    CmdRecordableFlag)
+            "Save File",
+            CmdRecordableFlag)
 {
 }
 
@@ -257,8 +257,8 @@ protected:
 
 SaveFileAsCommand::SaveFileAsCommand()
   : Command("SaveFileAs",
-	    "Save File As",
-	    CmdRecordableFlag)
+            "Save File As",
+            CmdRecordableFlag)
 {
 }
 
@@ -290,8 +290,8 @@ protected:
 
 SaveFileCopyAsCommand::SaveFileCopyAsCommand()
   : Command("SaveFileCopyAs",
-	    "Save File Copy As",
-	    CmdRecordableFlag)
+            "Save File Copy As",
+            CmdRecordableFlag)
 {
 }
 

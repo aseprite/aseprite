@@ -33,10 +33,10 @@ using namespace base::serialization::little_endian;
 
 // Serialized Cel data:
 //
-//   WORD		Frame
-//   WORD		Image index
-//   WORD[2]		X, Y
-//   WORD		Opacity
+//   WORD               Frame
+//   WORD               Image index
+//   WORD[2]            X, Y
+//   WORD               Opacity
 
 void write_cel(std::ostream& os, Cel* cel)
 {

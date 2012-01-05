@@ -51,12 +51,11 @@ private:
   void clean_pen();
   void regenerate_pen();
 
-  PenType m_type;			/* type of pen */
-  int m_size;				/* size (diameter) */
-  int m_angle;				/* angle in degrees 0-360 */
-  Image* m_image;			/* image of the pen */
+  PenType m_type;                       /* type of pen */
+  int m_size;                           /* size (diameter) */
+  int m_angle;                          /* angle in degrees 0-360 */
+  Image* m_image;                       /* image of the pen */
   std::vector<PenScanline> m_scanline;
 };
 
 #endif
-

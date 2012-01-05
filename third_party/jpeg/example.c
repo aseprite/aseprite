@@ -6,7 +6,7 @@
  * conjunction with the documentation file libjpeg.doc.
  *
  * This code will not do anything useful as-is, but it may be helpful as a
- * skeleton for constructing routines that call the JPEG library.  
+ * skeleton for constructing routines that call the JPEG library.
  *
  * We present these routines in the same coding style used in the JPEG code
  * (ANSI function definitions, etc); but you are of course free to code your
@@ -58,9 +58,9 @@
  * RGB color and is described by:
  */
 
-extern JSAMPLE * image_buffer;	/* Points to large array of R,G,B-order data */
-extern int image_height;	/* Number of rows in image */
-extern int image_width;		/* Number of columns in image */
+extern JSAMPLE * image_buffer;  /* Points to large array of R,G,B-order data */
+extern int image_height;        /* Number of rows in image */
+extern int image_width;         /* Number of columns in image */
 
 
 /*
@@ -88,9 +88,9 @@ write_JPEG_file (char * filename, int quality)
    */
   struct jpeg_error_mgr jerr;
   /* More stuff */
-  FILE * outfile;		/* target file */
-  JSAMPROW row_pointer[1];	/* pointer to JSAMPLE row[s] */
-  int row_stride;		/* physical row width in image buffer */
+  FILE * outfile;               /* target file */
+  JSAMPROW row_pointer[1];      /* pointer to JSAMPLE row[s] */
+  int row_stride;               /* physical row width in image buffer */
 
   /* Step 1: allocate and initialize JPEG compression object */
 
@@ -122,10 +122,10 @@ write_JPEG_file (char * filename, int quality)
   /* First we supply a description of the input image.
    * Four fields of the cinfo struct must be filled in:
    */
-  cinfo.image_width = image_width; 	/* image width and height, in pixels */
+  cinfo.image_width = image_width;      /* image width and height, in pixels */
   cinfo.image_height = image_height;
-  cinfo.input_components = 3;		/* # of color components per pixel */
-  cinfo.in_color_space = JCS_RGB; 	/* colorspace of input image */
+  cinfo.input_components = 3;           /* # of color components per pixel */
+  cinfo.in_color_space = JCS_RGB;       /* colorspace of input image */
   /* Now use the library's routine to set default compression parameters.
    * (You must set at least cinfo.in_color_space before calling this,
    * since the defaults depend on the source color space.)
@@ -151,7 +151,7 @@ write_JPEG_file (char * filename, int quality)
    * To keep things simple, we pass one scanline per call; you can pass
    * more if you wish, though.
    */
-  row_stride = image_width * 3;	/* JSAMPLEs per row in image_buffer */
+  row_stride = image_width * 3; /* JSAMPLEs per row in image_buffer */
 
   while (cinfo.next_scanline < cinfo.image_height) {
     /* jpeg_write_scanlines expects an array of pointers to scanlines.
@@ -248,9 +248,9 @@ write_JPEG_file (char * filename, int quality)
  */
 
 struct my_error_mgr {
-  struct jpeg_error_mgr pub;	/* "public" fields */
+  struct jpeg_error_mgr pub;    /* "public" fields */
 
-  jmp_buf setjmp_buffer;	/* for return to caller */
+  jmp_buf setjmp_buffer;        /* for return to caller */
 };
 
 typedef struct my_error_mgr * my_error_ptr;
@@ -293,9 +293,9 @@ read_JPEG_file (char * filename)
    */
   struct my_error_mgr jerr;
   /* More stuff */
-  FILE * infile;		/* source file */
-  JSAMPARRAY buffer;		/* Output row buffer */
-  int row_stride;		/* physical row width in output buffer */
+  FILE * infile;                /* source file */
+  JSAMPARRAY buffer;            /* Output row buffer */
+  int row_stride;               /* physical row width in output buffer */
 
   /* In this example we want to open the input file before doing anything else,
    * so that the setjmp() error recovery below can assume the file is open.
@@ -356,12 +356,12 @@ read_JPEG_file (char * filename)
    * output image dimensions available, as well as the output colormap
    * if we asked for color quantization.
    * In this example, we need to make an output work buffer of the right size.
-   */ 
+   */
   /* JSAMPLEs per row in output buffer */
   row_stride = cinfo.output_width * cinfo.output_components;
   /* Make a one-row-high sample array that will go away when done with image */
   buffer = (*cinfo.mem->alloc_sarray)
-		((j_common_ptr) &cinfo, JPOOL_IMAGE, row_stride, 1);
+                ((j_common_ptr) &cinfo, JPOOL_IMAGE, row_stride, 1);
 
   /* Step 6: while (scan lines remain to be read) */
   /*           jpeg_read_scanlines(...); */

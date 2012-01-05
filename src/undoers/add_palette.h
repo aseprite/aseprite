@@ -42,4 +42,4 @@ private:
 
 } // namespace undoers
 
-#endif	// UNDOERS_ADD_PALETTE_H_INCLUDED
+#endif  // UNDOERS_ADD_PALETTE_H_INCLUDED

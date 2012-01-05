@@ -74,16 +74,16 @@ class ReplaceColorWindow : public FilterWindow
 public:
   ReplaceColorWindow(ReplaceColorFilterWrapper& filter, FilterManagerImpl& filterMgr)
     : FilterWindow("Replace Color", ConfigSection, &filterMgr,
-		   WithChannelsSelector,
-		   WithoutTiledCheckBox)
+                   WithChannelsSelector,
+                   WithoutTiledCheckBox)
     , m_filter(filter)
     , m_controlsWidget(load_widget("replace_color.xml", "controls"))
   {
     get_widgets(m_controlsWidget,
-		"from", &m_fromButton,
-		"to", &m_toButton,
-		"tolerance", &m_toleranceSlider, NULL);
-    
+                "from", &m_fromButton,
+                "to", &m_toButton,
+                "tolerance", &m_toleranceSlider, NULL);
+
     getContainer()->addChild(m_controlsWidget);
 
     m_fromButton->setColor(m_filter.getFrom());
@@ -138,15 +138,15 @@ protected:
 
 ReplaceColorCommand::ReplaceColorCommand()
   : Command("ReplaceColor",
-	    "Replace Color",
-	    CmdRecordableFlag)
+            "Replace Color",
+            CmdRecordableFlag)
 {
 }
 
 bool ReplaceColorCommand::onEnabled(Context* context)
 {
   return context->checkFlags(ContextFlags::ActiveDocumentIsWritable |
-			     ContextFlags::HasActiveSprite);
+                             ContextFlags::HasActiveSprite);
 }
 
 void ReplaceColorCommand::onExecute(Context* context)
@@ -161,10 +161,10 @@ void ReplaceColorCommand::onExecute(Context* context)
 
   FilterManagerImpl filterMgr(document, &filter);
   filterMgr.setTarget(TARGET_RED_CHANNEL |
-		      TARGET_GREEN_CHANNEL |
-		      TARGET_BLUE_CHANNEL |
-		      TARGET_GRAY_CHANNEL |
-		      TARGET_ALPHA_CHANNEL);
+                      TARGET_GREEN_CHANNEL |
+                      TARGET_BLUE_CHANNEL |
+                      TARGET_GRAY_CHANNEL |
+                      TARGET_ALPHA_CHANNEL);
 
   ReplaceColorWindow window(filter, filterMgr);
   if (window.doModal()) {

@@ -64,9 +64,9 @@ bool get_config_bool(const char *section, const char *name, bool value)
 {
   const char *got = get_config_string(section, name, value ? "yes": "no");
   return (got &&
-	  (ustricmp(got, "yes") == 0 ||
-	   ustricmp(got, "true") == 0 ||
-	   ustricmp(got, "1") == 0)) ? true: false;
+          (ustricmp(got, "yes") == 0 ||
+           ustricmp(got, "true") == 0 ||
+           ustricmp(got, "1") == 0)) ? true: false;
 }
 
 void set_config_bool(const char *section, const char *name, bool value)
@@ -96,7 +96,7 @@ void set_config_rect(const char *section, const char *name, const Rect& rect)
 {
   char buf[128];
   uszprintf(buf, sizeof(buf), "%d %d %d %d",
-	    rect.x, rect.y, rect.w, rect.h);
+            rect.x, rect.y, rect.w, rect.h);
   set_config_string(section, name, buf);
 }
 

@@ -10,7 +10,7 @@ For next release
 + Sort palette entries.
 + Add "Remap" button to palette editor after a palette entry is modified:
   This button should apply a color curve to the whole sprite to remap
-  old indexes to the new positions. 
+  old indexes to the new positions.
 + Move launcher.cpp to base/ lib adding an extension point for "gui" lib.
 + Remove src/dialogs/repo,playfli,drawtext.
 + Move src/dialogs/aniedit,filesel to src/widgets (remove dialogs/ directory).

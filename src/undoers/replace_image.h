@@ -49,4 +49,4 @@ private:
 
 } // namespace undoers
 
-#endif	// UNDOERS_REPLACE_IMAGE_H_INCLUDED
+#endif  // UNDOERS_REPLACE_IMAGE_H_INCLUDED

@@ -388,7 +388,7 @@
     ah_debug_disable_vert = no_vert_edges;
 #else
     FT_UNUSED( no_horz_edges );
-    FT_UNUSED( no_vert_edges );    
+    FT_UNUSED( no_vert_edges );
 #endif
     /* AH_Interpolate_Blue_Edges( hinter ); -- doesn't seem to help      */
     /* reduce the problem of the disappearing eye in the `e' of Times... */

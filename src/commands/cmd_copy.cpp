@@ -40,18 +40,18 @@ protected:
 
 CopyCommand::CopyCommand()
   : Command("Copy",
-	    "Copy",
-	    CmdUIOnlyFlag)
+            "Copy",
+            CmdUIOnlyFlag)
 {
 }
 
 bool CopyCommand::onEnabled(Context* context)
 {
   return context->checkFlags(ContextFlags::ActiveDocumentIsWritable |
-			     ContextFlags::ActiveLayerIsReadable |
-			     ContextFlags::ActiveLayerIsWritable |
-			     ContextFlags::HasActiveImage |
-			     ContextFlags::HasVisibleMask);
+                             ContextFlags::ActiveLayerIsReadable |
+                             ContextFlags::ActiveLayerIsWritable |
+                             ContextFlags::HasActiveImage |
+                             ContextFlags::HasVisibleMask);
 }
 
 void CopyCommand::onExecute(Context* context)

@@ -53,18 +53,18 @@ art_svp_merge (const ArtSVP *svp1, const ArtSVP *svp2)
   int ix1, ix2;
 
   svp_new = (ArtSVP *)art_alloc (sizeof(ArtSVP) +
-				 (svp1->n_segs + svp2->n_segs - 1) *
-				 sizeof(ArtSVPSeg));
+                                 (svp1->n_segs + svp2->n_segs - 1) *
+                                 sizeof(ArtSVPSeg));
   ix1 = 0;
   ix2 = 0;
   for (ix = 0; ix < svp1->n_segs + svp2->n_segs; ix++)
     {
       if (ix1 < svp1->n_segs &&
-	  (ix2 == svp2->n_segs ||
-	   art_svp_seg_compare (&svp1->segs[ix1], &svp2->segs[ix2]) < 1))
-	svp_new->segs[ix] = svp1->segs[ix1++];
+          (ix2 == svp2->n_segs ||
+           art_svp_seg_compare (&svp1->segs[ix1], &svp2->segs[ix2]) < 1))
+        svp_new->segs[ix] = svp1->segs[ix1++];
       else
-	svp_new->segs[ix] = svp2->segs[ix2++];
+        svp_new->segs[ix] = svp2->segs[ix2++];
     }
 
   svp_new->n_segs = ix;
@@ -84,16 +84,16 @@ print_ps_vpath (ArtVpath *vpath)
   for (i = 0; vpath[i].code != ART_END; i++)
     {
       switch (vpath[i].code)
-	{
-	case ART_MOVETO:
-	  printf ("%g %g moveto\n", XOFF + vpath[i].x, YOFF - vpath[i].y);
-	  break;
-	case ART_LINETO:
-	  printf ("%g %g lineto\n", XOFF + vpath[i].x, YOFF - vpath[i].y);
-	  break;
-	default:
-	  break;
-	}
+        {
+        case ART_MOVETO:
+          printf ("%g %g moveto\n", XOFF + vpath[i].x, YOFF - vpath[i].y);
+          break;
+        case ART_LINETO:
+          printf ("%g %g lineto\n", XOFF + vpath[i].x, YOFF - vpath[i].y);
+          break;
+        default:
+          break;
+        }
     }
   printf ("stroke showpage\n");
 }
@@ -110,30 +110,30 @@ print_ps_svp (ArtSVP *vpath)
     {
       printf ("%g setgray\n", vpath->segs[i].dir ? 0.7 : 0);
       for (j = 0; j < vpath->segs[i].n_points; j++)
-	{
-	  printf ("%g %g %s\n",
-		  XOFF + vpath->segs[i].points[j].x,
-		  YOFF - vpath->segs[i].points[j].y,
-		  j ? "lineto" : "moveto");
-	}
+        {
+          printf ("%g %g %s\n",
+                  XOFF + vpath->segs[i].points[j].x,
+                  YOFF - vpath->segs[i].points[j].y,
+                  j ? "lineto" : "moveto");
+        }
       printf ("%g %g moveto %g %g lineto %g %g lineto %g %g lineto stroke\n",
-	      XOFF + vpath->segs[i].points[0].x - DELT,
-	      YOFF - DELT - vpath->segs[i].points[0].y,
-	      XOFF + vpath->segs[i].points[0].x - DELT,
-	      YOFF - vpath->segs[i].points[0].y,
-	      XOFF + vpath->segs[i].points[0].x + DELT,
-	      YOFF - vpath->segs[i].points[0].y,
-	      XOFF + vpath->segs[i].points[0].x + DELT,
-	      YOFF - DELT - vpath->segs[i].points[0].y);
+              XOFF + vpath->segs[i].points[0].x - DELT,
+              YOFF - DELT - vpath->segs[i].points[0].y,
+              XOFF + vpath->segs[i].points[0].x - DELT,
+              YOFF - vpath->segs[i].points[0].y,
+              XOFF + vpath->segs[i].points[0].x + DELT,
+              YOFF - vpath->segs[i].points[0].y,
+              XOFF + vpath->segs[i].points[0].x + DELT,
+              YOFF - DELT - vpath->segs[i].points[0].y);
       printf ("%g %g moveto %g %g lineto %g %g lineto %g %g lineto stroke\n",
-	      XOFF + vpath->segs[i].points[j - 1].x - DELT,
-	      YOFF + DELT - vpath->segs[i].points[j - 1].y,
-	      XOFF + vpath->segs[i].points[j - 1].x - DELT,
-	      YOFF - vpath->segs[i].points[j - 1].y,
-	      XOFF + vpath->segs[i].points[j - 1].x + DELT,
-	      YOFF - vpath->segs[i].points[j - 1].y,
-	      XOFF + vpath->segs[i].points[j - 1].x + DELT,
-	      YOFF + DELT - vpath->segs[i].points[j - 1].y);
+              XOFF + vpath->segs[i].points[j - 1].x - DELT,
+              YOFF + DELT - vpath->segs[i].points[j - 1].y,
+              XOFF + vpath->segs[i].points[j - 1].x - DELT,
+              YOFF - vpath->segs[i].points[j - 1].y,
+              XOFF + vpath->segs[i].points[j - 1].x + DELT,
+              YOFF - vpath->segs[i].points[j - 1].y,
+              XOFF + vpath->segs[i].points[j - 1].x + DELT,
+              YOFF + DELT - vpath->segs[i].points[j - 1].y);
       printf ("stroke\n");
     }
 

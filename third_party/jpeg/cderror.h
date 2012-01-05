@@ -32,7 +32,7 @@
 
 typedef enum {
 
-#define JMESSAGE(code,string)	code ,
+#define JMESSAGE(code,string)   code ,
 
 #endif /* JMAKE_ENUM_LIST */
 
@@ -60,7 +60,7 @@ JMESSAGE(JERR_GIF_IMAGENOTFOUND, "Too few images in GIF file")
 JMESSAGE(JERR_GIF_NOT, "Not a GIF file")
 JMESSAGE(JTRC_GIF, "%ux%ux%d GIF image")
 JMESSAGE(JTRC_GIF_BADVERSION,
-	 "Warning: unexpected GIF version number '%c%c%c'")
+         "Warning: unexpected GIF version number '%c%c%c'")
 JMESSAGE(JTRC_GIF_EXTENSION, "Ignoring GIF extension block of type 0x%02x")
 JMESSAGE(JTRC_GIF_NONSQUARE, "Caution: nonsquare pixels in input")
 JMESSAGE(JWRN_GIF_BADDATA, "Corrupt data in GIF file")
@@ -108,13 +108,13 @@ JMESSAGE(JERR_TGA_NOTCOMP, "Targa support was not compiled")
 #endif /* TARGA_SUPPORTED */
 
 JMESSAGE(JERR_BAD_CMAP_FILE,
-	 "Color map file is invalid or of unsupported format")
+         "Color map file is invalid or of unsupported format")
 JMESSAGE(JERR_TOO_MANY_COLORS,
-	 "Output file format cannot handle %d colormap entries")
+         "Output file format cannot handle %d colormap entries")
 JMESSAGE(JERR_UNGETC_FAILED, "ungetc failed")
 #ifdef TARGA_SUPPORTED
 JMESSAGE(JERR_UNKNOWN_FORMAT,
-	 "Unrecognized input file format --- perhaps you need -targa")
+         "Unrecognized input file format --- perhaps you need -targa")
 #else
 JMESSAGE(JERR_UNKNOWN_FORMAT, "Unrecognized input file format")
 #endif

@@ -53,7 +53,7 @@ void FUNC_LINEAR_CLEAR_TO_COLOR(BITMAP *dst, int color)
       PIXEL_PTR d = OFFSET_PIXEL_PTR(bmp_write_line(dst, y), dst->cl);
 
       for (x = w - 1; x >= 0; INC_PIXEL_PTR(d), x--) {
-	 PUT_PIXEL(d, color);
+         PUT_PIXEL(d, color);
       }
    }
 
@@ -66,7 +66,7 @@ void FUNC_LINEAR_CLEAR_TO_COLOR(BITMAP *dst, int color)
  *  Normal forward blitting for linear bitmaps.
  */
 void FUNC_LINEAR_BLIT(BITMAP *src, BITMAP *dst, int sx, int sy,
-		      int dx, int dy, int w, int h)
+                      int dx, int dy, int w, int h)
 {
    int y;
 #ifndef USE_MEMMOVE
@@ -82,13 +82,13 @@ void FUNC_LINEAR_BLIT(BITMAP *src, BITMAP *dst, int sx, int sy,
 
 #ifndef USE_MEMMOVE
       for (x = w - 1; x >= 0; INC_PIXEL_PTR(s), INC_PIXEL_PTR(d), x--) {
-	 unsigned long c;
+         unsigned long c;
 
-	 bmp_select(src);
-	 c = GET_PIXEL(s);
+         bmp_select(src);
+         c = GET_PIXEL(s);
 
-	 bmp_select(dst);
-	 PUT_PIXEL(d, c);
+         bmp_select(dst);
+         PUT_PIXEL(d, c);
       }
 #else
       memmove(d, s, w * sizeof(*s) * PTR_PER_PIXEL);
@@ -105,7 +105,7 @@ void FUNC_LINEAR_BLIT(BITMAP *src, BITMAP *dst, int sx, int sy,
  *  Reverse blitting routine, for overlapping linear bitmaps.
  */
 void FUNC_LINEAR_BLIT_BACKWARD(BITMAP *src, BITMAP *dst, int sx, int sy,
-			       int dx, int dy, int w, int h)
+                               int dx, int dy, int w, int h)
 {
    int y;
 #ifndef USE_MEMMOVE
@@ -121,13 +121,13 @@ void FUNC_LINEAR_BLIT_BACKWARD(BITMAP *src, BITMAP *dst, int sx, int sy,
       PIXEL_PTR d = OFFSET_PIXEL_PTR(bmp_write_line(dst, dy + y), dx + w - 1);
 
       for (x = w - 1; x >= 0; DEC_PIXEL_PTR(s), DEC_PIXEL_PTR(d), x--) {
-	 unsigned long c;
+         unsigned long c;
 
-	 bmp_select(src);
-	 c = GET_PIXEL(s);
+         bmp_select(src);
+         c = GET_PIXEL(s);
 
-	 bmp_select(dst);
-	 PUT_PIXEL(d, c);
+         bmp_select(dst);
+         PUT_PIXEL(d, c);
       }
 #else
       PIXEL_PTR s = OFFSET_PIXEL_PTR(bmp_read_line(src, sy + y), sx);
@@ -149,7 +149,7 @@ void FUNC_LINEAR_BLIT_END(void) { }
  *  Masked (skipping transparent pixels) blitting routine for linear bitmaps.
  */
 void FUNC_LINEAR_MASKED_BLIT(BITMAP *src, BITMAP *dst, int sx, int sy,
-			     int dx, int dy, int w, int h)
+                             int dx, int dy, int w, int h)
 {
    int x, y;
    unsigned long mask_color;
@@ -164,15 +164,15 @@ void FUNC_LINEAR_MASKED_BLIT(BITMAP *src, BITMAP *dst, int sx, int sy,
       PIXEL_PTR d = OFFSET_PIXEL_PTR(bmp_write_line(dst, dy + y), dx);
 
       for (x = w - 1; x >= 0; INC_PIXEL_PTR(s), INC_PIXEL_PTR(d), x--) {
-	 unsigned long c;
+         unsigned long c;
 
-	 bmp_select(src);
-	 c = GET_PIXEL(s);
+         bmp_select(src);
+         c = GET_PIXEL(s);
 
-	 if (c != mask_color) {
-	    bmp_select(dst);
-	    PUT_PIXEL(d, c);
-	 }
+         if (c != mask_color) {
+            bmp_select(dst);
+            PUT_PIXEL(d, c);
+         }
       }
    }
 
@@ -181,4 +181,3 @@ void FUNC_LINEAR_MASKED_BLIT(BITMAP *src, BITMAP *dst, int sx, int sy,
 }
 
 #endif /* !__bma_cblit_h */
-

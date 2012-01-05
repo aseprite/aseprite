@@ -114,9 +114,9 @@ void path_lineto(Path* path, double x, double y)
 }
 
 void path_curveto(Path* path,
-		  double control_x1, double control_y1,
-		  double control_x2, double control_y2,
-		  double end_x, double end_y)
+                  double control_x1, double control_y1,
+                  double control_x2, double control_y2,
+                  double end_x, double end_y)
 {
   int n;
 
@@ -142,8 +142,8 @@ void path_close(Path* path)
       path->bpath[n].code = ART_MOVETO;
 
       if (path->bpath[path->end-1].x3 != path->bpath[n].x3 ||
-	  path->bpath[path->end-1].y3 != path->bpath[n].y3)
-	path_lineto (path, path->bpath[n].x3, path->bpath[n].y3);
+          path->bpath[path->end-1].y3 != path->bpath[n].y3)
+        path_lineto (path, path->bpath[n].x3, path->bpath[n].y3);
 
       break;
     }
@@ -258,7 +258,7 @@ static void blend_indexed_hline(Image *image, int x1, int y, int x2, int i, int 
 }
 
 static void art_image_svp_callback(void *callback_data, int y, int start,
-				   ArtSVPRenderAAStep *steps, int n_steps)
+                                   ArtSVPRenderAAStep *steps, int n_steps)
 {
   ArtBitmapSVPData *data = (ArtBitmapSVPData *)callback_data;
   int run_x0, run_x1;
@@ -275,7 +275,7 @@ static void art_image_svp_callback(void *callback_data, int y, int start,
     if (run_x1 > x0) {
       g = running_sum>>16;
       if (g > 0)
-	(*data->hline) (data->image, x0, y, run_x1-1, color, g);
+        (*data->hline) (data->image, x0, y, run_x1-1, color, g);
     }
 
     for (k = 0; k < n_steps - 1; k++) {
@@ -283,16 +283,16 @@ static void art_image_svp_callback(void *callback_data, int y, int start,
       run_x0 = run_x1;
       run_x1 = steps[k + 1].x;
       if (run_x1 > run_x0) {
-	g = running_sum>>16;
-	if (g > 0)
-	  (*data->hline) (data->image, run_x0, y, run_x1-1, color, g);
+        g = running_sum>>16;
+        if (g > 0)
+          (*data->hline) (data->image, run_x0, y, run_x1-1, color, g);
       }
     }
     running_sum += steps[k].delta;
     if (x1 > run_x1) {
       g = running_sum>>16;
       if (g > 0)
-	(*data->hline) (data->image, run_x1, y, x1-1, color, g);
+        (*data->hline) (data->image, run_x1, y, x1-1, color, g);
     }
   }
   else {
@@ -325,8 +325,8 @@ static void art_image_svp_callback(void *callback_data, int y, int start,
  * by [x..x+1] and [y..y+1].
  **/
 static void art_image_svp_aa (const ArtSVP *svp,
-			      int x0, int y0, int x1, int y1,
-			      Image *image, int color)
+                              int x0, int y0, int x1, int y1,
+                              Image *image, int color)
 {
   ArtBitmapSVPData data;
 

@@ -55,33 +55,33 @@ bool EditorView::onProcessMessage(Message* msg)
 
     case JM_DRAW:
       {
-	Widget* viewport = getViewport();
-	Widget* child = reinterpret_cast<JWidget>(jlist_first_data(viewport->children));
-	JRect pos = jwidget_get_rect(this);
-	SkinTheme* theme = static_cast<SkinTheme*>(getTheme());
-	bool selected = false;
+        Widget* viewport = getViewport();
+        Widget* child = reinterpret_cast<JWidget>(jlist_first_data(viewport->children));
+        JRect pos = jwidget_get_rect(this);
+        SkinTheme* theme = static_cast<SkinTheme*>(getTheme());
+        bool selected = false;
 
-	switch (m_type) {
+        switch (m_type) {
 
-	  // Only show the view selected if it is the current editor
-	  case CurrentEditorMode:
-	    selected = (child == current_editor);
-	    break;
+          // Only show the view selected if it is the current editor
+          case CurrentEditorMode:
+            selected = (child == current_editor);
+            break;
 
-	  // Always show selected
-	  case AlwaysSelected:
-	    selected = true;
-	    break;
+          // Always show selected
+          case AlwaysSelected:
+            selected = true;
+            break;
 
-	}
+        }
 
-	theme->draw_bounds_nw(ji_screen,
-			      pos->x1, pos->y1,
-			      pos->x2-1, pos->y2-1,
-			      selected ? PART_EDITOR_SELECTED_NW:
-					 PART_EDITOR_NORMAL_NW, false);
+        theme->draw_bounds_nw(ji_screen,
+                              pos->x1, pos->y1,
+                              pos->x2-1, pos->y2-1,
+                              selected ? PART_EDITOR_SELECTED_NW:
+                                         PART_EDITOR_NORMAL_NW, false);
 
-	jrect_free(pos);
+        jrect_free(pos);
       }
       return true;
 

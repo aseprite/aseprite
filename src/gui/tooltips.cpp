@@ -20,8 +20,8 @@ using namespace gfx;
 
 struct TipData
 {
-  Widget* widget;	// Widget that shows the tooltip
-  Frame* window;	// Frame where is the tooltip
+  Widget* widget;       // Widget that shows the tooltip
+  Frame* window;        // Frame where is the tooltip
   std::string text;
   int timer_id;
   int arrowAlign;
@@ -72,14 +72,14 @@ static bool tip_hook(JWidget widget, Message* msg)
 
     case JM_DESTROY:
       if (tip->timer_id >= 0)
-	jmanager_remove_timer(tip->timer_id);
+        jmanager_remove_timer(tip->timer_id);
 
       delete tip;
       break;
 
     case JM_MOUSEENTER:
       if (tip->timer_id < 0)
-	tip->timer_id = jmanager_add_timer(widget, 300);
+        tip->timer_id = jmanager_add_timer(widget, 300);
 
       jmanager_start_timer(tip->timer_id);
       break;
@@ -88,77 +88,77 @@ static bool tip_hook(JWidget widget, Message* msg)
     case JM_BUTTONPRESSED:
     case JM_MOUSELEAVE:
       if (tip->window) {
-	tip->window->closeWindow(NULL);
-	delete tip->window;	// widget
-	tip->window = NULL;
+        tip->window->closeWindow(NULL);
+        delete tip->window;     // widget
+        tip->window = NULL;
       }
 
       if (tip->timer_id >= 0)
-	jmanager_stop_timer(tip->timer_id);
+        jmanager_stop_timer(tip->timer_id);
       break;
 
     case JM_TIMER:
       if (msg->timer.timer_id == tip->timer_id) {
-	if (!tip->window) {
-	  TipWindow* window = new TipWindow(tip->text.c_str(), true);
-	  gfx::Rect bounds = tip->widget->getBounds();
-	  int x = jmouse_x(0)+12*jguiscale();
-	  int y = jmouse_y(0)+12*jguiscale();
-	  int w, h;
+        if (!tip->window) {
+          TipWindow* window = new TipWindow(tip->text.c_str(), true);
+          gfx::Rect bounds = tip->widget->getBounds();
+          int x = jmouse_x(0)+12*jguiscale();
+          int y = jmouse_y(0)+12*jguiscale();
+          int w, h;
 
-	  tip->window = window;
+          tip->window = window;
 
-	  window->setArrowAlign(tip->arrowAlign);
-	  window->remap_window();
+          window->setArrowAlign(tip->arrowAlign);
+          window->remap_window();
 
-	  w = jrect_w(window->rc);
-	  h = jrect_h(window->rc);
+          w = jrect_w(window->rc);
+          h = jrect_h(window->rc);
 
-	  switch (tip->arrowAlign) {
-	    case JI_TOP | JI_LEFT:
-	      x = bounds.x + bounds.w;
-	      y = bounds.y + bounds.h;
-	      break;
-	    case JI_TOP | JI_RIGHT:
-	      x = bounds.x - w;
-	      y = bounds.y + bounds.h;
-	      break;
-	    case JI_BOTTOM | JI_LEFT:
-	      x = bounds.x + bounds.w;
-	      y = bounds.y - h;
-	      break;
-	    case JI_BOTTOM | JI_RIGHT:
-	      x = bounds.x - w;
-	      y = bounds.y - h;
-	      break;
-	    case JI_TOP:
-	      x = bounds.x + bounds.w/2 - w/2;
-	      y = bounds.y + bounds.h;
-	      break;
-	    case JI_BOTTOM:
-	      x = bounds.x + bounds.w/2 - w/2;
-	      y = bounds.y - h;
-	      break;
-	    case JI_LEFT:
-	      x = bounds.x + bounds.w;
-	      y = bounds.y + bounds.h/2 - h/2;
-	      break;
-	    case JI_RIGHT:
-	      x = bounds.x - w;
-	      y = bounds.y + bounds.h/2 - h/2;
-	      break;
-	  }
+          switch (tip->arrowAlign) {
+            case JI_TOP | JI_LEFT:
+              x = bounds.x + bounds.w;
+              y = bounds.y + bounds.h;
+              break;
+            case JI_TOP | JI_RIGHT:
+              x = bounds.x - w;
+              y = bounds.y + bounds.h;
+              break;
+            case JI_BOTTOM | JI_LEFT:
+              x = bounds.x + bounds.w;
+              y = bounds.y - h;
+              break;
+            case JI_BOTTOM | JI_RIGHT:
+              x = bounds.x - w;
+              y = bounds.y - h;
+              break;
+            case JI_TOP:
+              x = bounds.x + bounds.w/2 - w/2;
+              y = bounds.y + bounds.h;
+              break;
+            case JI_BOTTOM:
+              x = bounds.x + bounds.w/2 - w/2;
+              y = bounds.y - h;
+              break;
+            case JI_LEFT:
+              x = bounds.x + bounds.w;
+              y = bounds.y + bounds.h/2 - h/2;
+              break;
+            case JI_RIGHT:
+              x = bounds.x - w;
+              y = bounds.y + bounds.h/2 - h/2;
+              break;
+          }
 
-	  // if (x+w > JI_SCREEN_W) {
-	  //   x = jmouse_x(0) - w - 4*jguiscale();
-	  //   y = jmouse_y(0);
-	  // }
+          // if (x+w > JI_SCREEN_W) {
+          //   x = jmouse_x(0) - w - 4*jguiscale();
+          //   y = jmouse_y(0);
+          // }
 
-	  window->position_window(MID(0, x, JI_SCREEN_W-w),
-				  MID(0, y, JI_SCREEN_H-h));
-	  window->open_window();
-	}
-	jmanager_stop_timer(tip->timer_id);
+          window->position_window(MID(0, x, JI_SCREEN_W-w),
+                                  MID(0, y, JI_SCREEN_H-h));
+          window->open_window();
+        }
+        jmanager_stop_timer(tip->timer_id);
       }
       break;
 
@@ -240,62 +240,62 @@ bool TipWindow::onProcessMessage(Message* msg)
 
     case JM_CLOSE:
       if (m_filtering) {
-	m_filtering = false;
-	jmanager_remove_msg_filter(JM_MOTION, this);
-	jmanager_remove_msg_filter(JM_BUTTONPRESSED, this);
-	jmanager_remove_msg_filter(JM_KEYPRESSED, this);
+        m_filtering = false;
+        jmanager_remove_msg_filter(JM_MOTION, this);
+        jmanager_remove_msg_filter(JM_BUTTONPRESSED, this);
+        jmanager_remove_msg_filter(JM_KEYPRESSED, this);
       }
       break;
 
     case JM_SIGNAL:
       if (msg->signal.num == JI_SIGNAL_INIT_THEME) {
-	this->border_width.l = 6 * jguiscale();
-	this->border_width.t = 6 * jguiscale();
-	this->border_width.r = 6 * jguiscale();
-	this->border_width.b = 7 * jguiscale();
-	
-	// Setup the background color.
-	setBgColor(makecol(255, 255, 200));
-	return true;
+        this->border_width.l = 6 * jguiscale();
+        this->border_width.t = 6 * jguiscale();
+        this->border_width.r = 6 * jguiscale();
+        this->border_width.b = 7 * jguiscale();
+
+        // Setup the background color.
+        setBgColor(makecol(255, 255, 200));
+        return true;
       }
       break;
 
     case JM_MOUSELEAVE:
       if (m_hot_region == NULL)
-	this->closeWindow(NULL);
+        this->closeWindow(NULL);
       break;
 
     case JM_KEYPRESSED:
       if (m_filtering && msg->key.scancode < KEY_MODIFIERS)
-	this->closeWindow(NULL);
+        this->closeWindow(NULL);
       break;
 
     case JM_BUTTONPRESSED:
       /* if the user click outside the window, we have to close the
-	 tooltip window */
+         tooltip window */
       if (m_filtering) {
-	Widget* picked = this->pick(msg->mouse.x, msg->mouse.y);
-	if (!picked || picked->getRoot() != this) {
-	  this->closeWindow(NULL);
-	}
+        Widget* picked = this->pick(msg->mouse.x, msg->mouse.y);
+        if (!picked || picked->getRoot() != this) {
+          this->closeWindow(NULL);
+        }
       }
 
       /* this is used when the user click inside a small text
-	 tooltip */
+         tooltip */
       if (m_close_on_buttonpressed)
-	this->closeWindow(NULL);
+        this->closeWindow(NULL);
       break;
 
     case JM_MOTION:
       if (m_hot_region != NULL &&
-	  jmanager_get_capture() == NULL) {
-	struct jrect box;
+          jmanager_get_capture() == NULL) {
+        struct jrect box;
 
-	/* if the mouse is outside the hot-region we have to close the window */
-	if (!jregion_point_in(m_hot_region,
-			      msg->mouse.x, msg->mouse.y, &box)) {
-	  this->closeWindow(NULL);
-	}
+        /* if the mouse is outside the hot-region we have to close the window */
+        if (!jregion_point_in(m_hot_region,
+                              msg->mouse.x, msg->mouse.y, &box)) {
+          this->closeWindow(NULL);
+        }
       }
       break;
 
@@ -309,8 +309,8 @@ void TipWindow::onPreferredSize(PreferredSizeEvent& ev)
   ScreenGraphics g;
   g.setFont(getFont());
   Size resultSize = g.fitString(getText(),
-				(getClientBounds() - getBorder()).w,
-				getAlign());
+                                (getClientBounds() - getBorder()).w,
+                                getAlign());
 
   resultSize.w += this->border_width.l + this->border_width.r;
   resultSize.h += this->border_width.t + this->border_width.b;

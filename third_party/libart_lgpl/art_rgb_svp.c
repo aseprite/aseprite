@@ -46,7 +46,7 @@ struct _ArtRgbSVPAlphaData {
 
 static void
 art_rgb_svp_callback (void *callback_data, int y,
-		      int start, ArtSVPRenderAAStep *steps, int n_steps)
+                      int start, ArtSVPRenderAAStep *steps, int n_steps)
 {
   ArtRgbSVPData *data = (ArtRgbSVPData *)callback_data;
   art_u8 *linebuf;
@@ -64,41 +64,41 @@ art_rgb_svp_callback (void *callback_data, int y,
     {
       run_x1 = steps[0].x;
       if (run_x1 > x0)
-	{
-	  rgb = data->rgbtab[(running_sum >> 16) & 0xff];
-	  art_rgb_fill_run (linebuf,
-			    rgb >> 16, (rgb >> 8) & 0xff, rgb & 0xff,
-			    run_x1 - x0);
-	}
+        {
+          rgb = data->rgbtab[(running_sum >> 16) & 0xff];
+          art_rgb_fill_run (linebuf,
+                            rgb >> 16, (rgb >> 8) & 0xff, rgb & 0xff,
+                            run_x1 - x0);
+        }
 
       for (k = 0; k < n_steps - 1; k++)
-	{
-	  running_sum += steps[k].delta;
-	  run_x0 = run_x1;
-	  run_x1 = steps[k + 1].x;
-	  if (run_x1 > run_x0)
-	    {
-	      rgb = data->rgbtab[(running_sum >> 16) & 0xff];
-	      art_rgb_fill_run (linebuf + (run_x0 - x0) * 3,
-				rgb >> 16, (rgb >> 8) & 0xff, rgb & 0xff,
-				run_x1 - run_x0);
-	    }
-	}
+        {
+          running_sum += steps[k].delta;
+          run_x0 = run_x1;
+          run_x1 = steps[k + 1].x;
+          if (run_x1 > run_x0)
+            {
+              rgb = data->rgbtab[(running_sum >> 16) & 0xff];
+              art_rgb_fill_run (linebuf + (run_x0 - x0) * 3,
+                                rgb >> 16, (rgb >> 8) & 0xff, rgb & 0xff,
+                                run_x1 - run_x0);
+            }
+        }
       running_sum += steps[k].delta;
       if (x1 > run_x1)
-	{
-	  rgb = data->rgbtab[(running_sum >> 16) & 0xff];
-	  art_rgb_fill_run (linebuf + (run_x1 - x0) * 3,
-			    rgb >> 16, (rgb >> 8) & 0xff, rgb & 0xff,
-			    x1 - run_x1);
-	}
+        {
+          rgb = data->rgbtab[(running_sum >> 16) & 0xff];
+          art_rgb_fill_run (linebuf + (run_x1 - x0) * 3,
+                            rgb >> 16, (rgb >> 8) & 0xff, rgb & 0xff,
+                            x1 - run_x1);
+        }
     }
   else
     {
       rgb = data->rgbtab[(running_sum >> 16) & 0xff];
       art_rgb_fill_run (linebuf,
-			rgb >> 16, (rgb >> 8) & 0xff, rgb & 0xff,
-			x1 - x0);
+                        rgb >> 16, (rgb >> 8) & 0xff, rgb & 0xff,
+                        x1 - x0);
     }
 
   data->buf += data->rowstride;
@@ -137,10 +137,10 @@ art_rgb_svp_callback (void *callback_data, int y,
  **/
 void
 art_rgb_svp_aa (const ArtSVP *svp,
-		int x0, int y0, int x1, int y1,
-		art_u32 fg_color, art_u32 bg_color,
-		art_u8 *buf, int rowstride,
-		ArtAlphaGamma *alphagamma)
+                int x0, int y0, int x1, int y1,
+                art_u32 fg_color, art_u32 bg_color,
+                art_u8 *buf, int rowstride,
+                ArtAlphaGamma *alphagamma)
 {
   ArtRgbSVPData data;
 
@@ -168,12 +168,12 @@ art_rgb_svp_aa (const ArtSVP *svp,
       db = ((b_fg - b_bg) << 16) / 255;
 
       for (i = 0; i < 256; i++)
-	{
-	  data.rgbtab[i] = (r & 0xff0000) | ((g & 0xff0000) >> 8) | (b >> 16);
-	  r += dr;
-	  g += dg;
-	  b += db;
-	}
+        {
+          data.rgbtab[i] = (r & 0xff0000) | ((g & 0xff0000) >> 8) | (b >> 16);
+          r += dr;
+          g += dg;
+          b += db;
+        }
     }
   else
     {
@@ -199,14 +199,14 @@ art_rgb_svp_aa (const ArtSVP *svp,
 
       invtab = alphagamma->invtable;
       for (i = 0; i < 256; i++)
-	{
-	  data.rgbtab[i] = (invtab[r >> 16] << 16) |
-	    (invtab[g >> 16] << 8) |
-	    invtab[b >> 16];
-	  r += dr;
-	  g += dg;
-	  b += db;
-	}
+        {
+          data.rgbtab[i] = (invtab[r >> 16] << 16) |
+            (invtab[g >> 16] << 8) |
+            invtab[b >> 16];
+          r += dr;
+          g += dg;
+          b += db;
+        }
     }
   data.buf = buf;
   data.rowstride = rowstride;
@@ -217,7 +217,7 @@ art_rgb_svp_aa (const ArtSVP *svp,
 
 static void
 art_rgb_svp_alpha_callback (void *callback_data, int y,
-			    int start, ArtSVPRenderAAStep *steps, int n_steps)
+                            int start, ArtSVPRenderAAStep *steps, int n_steps)
 {
   ArtRgbSVPAlphaData *data = (ArtRgbSVPAlphaData *)callback_data;
   art_u8 *linebuf;
@@ -242,45 +242,45 @@ art_rgb_svp_alpha_callback (void *callback_data, int y,
     {
       run_x1 = steps[0].x;
       if (run_x1 > x0)
-	{
-	  alpha = (running_sum >> 16) & 0xff;
-	  if (alpha)
-	    art_rgb_run_alpha (linebuf,
-			       r, g, b, alphatab[alpha],
-			       run_x1 - x0);
-	}
+        {
+          alpha = (running_sum >> 16) & 0xff;
+          if (alpha)
+            art_rgb_run_alpha (linebuf,
+                               r, g, b, alphatab[alpha],
+                               run_x1 - x0);
+        }
 
       for (k = 0; k < n_steps - 1; k++)
-	{
-	  running_sum += steps[k].delta;
-	  run_x0 = run_x1;
-	  run_x1 = steps[k + 1].x;
-	  if (run_x1 > run_x0)
-	    {
-	      alpha = (running_sum >> 16) & 0xff;
-	      if (alpha)
-		art_rgb_run_alpha (linebuf + (run_x0 - x0) * 3,
-				   r, g, b, alphatab[alpha],
-				   run_x1 - run_x0);
-	    }
-	}
+        {
+          running_sum += steps[k].delta;
+          run_x0 = run_x1;
+          run_x1 = steps[k + 1].x;
+          if (run_x1 > run_x0)
+            {
+              alpha = (running_sum >> 16) & 0xff;
+              if (alpha)
+                art_rgb_run_alpha (linebuf + (run_x0 - x0) * 3,
+                                   r, g, b, alphatab[alpha],
+                                   run_x1 - run_x0);
+            }
+        }
       running_sum += steps[k].delta;
       if (x1 > run_x1)
-	{
-	  alpha = (running_sum >> 16) & 0xff;
-	  if (alpha)
-	    art_rgb_run_alpha (linebuf + (run_x1 - x0) * 3,
-			       r, g, b, alphatab[alpha],
-			       x1 - run_x1);
-	}
+        {
+          alpha = (running_sum >> 16) & 0xff;
+          if (alpha)
+            art_rgb_run_alpha (linebuf + (run_x1 - x0) * 3,
+                               r, g, b, alphatab[alpha],
+                               x1 - run_x1);
+        }
     }
   else
     {
       alpha = (running_sum >> 16) & 0xff;
       if (alpha)
-	art_rgb_run_alpha (linebuf,
-			   r, g, b, alphatab[alpha],
-			   x1 - x0);
+        art_rgb_run_alpha (linebuf,
+                           r, g, b, alphatab[alpha],
+                           x1 - x0);
     }
 
   data->buf += data->rowstride;
@@ -288,8 +288,8 @@ art_rgb_svp_alpha_callback (void *callback_data, int y,
 
 static void
 art_rgb_svp_alpha_opaque_callback (void *callback_data, int y,
-				   int start,
-				   ArtSVPRenderAAStep *steps, int n_steps)
+                                   int start,
+                                   ArtSVPRenderAAStep *steps, int n_steps)
 {
   ArtRgbSVPAlphaData *data = (ArtRgbSVPAlphaData *)callback_data;
   art_u8 *linebuf;
@@ -314,73 +314,73 @@ art_rgb_svp_alpha_opaque_callback (void *callback_data, int y,
     {
       run_x1 = steps[0].x;
       if (run_x1 > x0)
-	{
-	  alpha = running_sum >> 16;
-	  if (alpha)
-	    {
-	      if (alpha >= 255)
-		art_rgb_fill_run (linebuf,
-				  r, g, b,
-				  run_x1 - x0);
-	      else
-		art_rgb_run_alpha (linebuf,
-				   r, g, b, alphatab[alpha],
-				   run_x1 - x0);
-	    }
-	}
+        {
+          alpha = running_sum >> 16;
+          if (alpha)
+            {
+              if (alpha >= 255)
+                art_rgb_fill_run (linebuf,
+                                  r, g, b,
+                                  run_x1 - x0);
+              else
+                art_rgb_run_alpha (linebuf,
+                                   r, g, b, alphatab[alpha],
+                                   run_x1 - x0);
+            }
+        }
 
       for (k = 0; k < n_steps - 1; k++)
-	{
-	  running_sum += steps[k].delta;
-	  run_x0 = run_x1;
-	  run_x1 = steps[k + 1].x;
-	  if (run_x1 > run_x0)
-	    {
-	      alpha = running_sum >> 16;
-	      if (alpha)
-		{
-		  if (alpha >= 255)
-		    art_rgb_fill_run (linebuf + (run_x0 - x0) * 3,
-				      r, g, b,
-				      run_x1 - run_x0);
-		  else
-		    art_rgb_run_alpha (linebuf + (run_x0 - x0) * 3,
-				       r, g, b, alphatab[alpha],
-				       run_x1 - run_x0);
-		}
-	    }
-	}
+        {
+          running_sum += steps[k].delta;
+          run_x0 = run_x1;
+          run_x1 = steps[k + 1].x;
+          if (run_x1 > run_x0)
+            {
+              alpha = running_sum >> 16;
+              if (alpha)
+                {
+                  if (alpha >= 255)
+                    art_rgb_fill_run (linebuf + (run_x0 - x0) * 3,
+                                      r, g, b,
+                                      run_x1 - run_x0);
+                  else
+                    art_rgb_run_alpha (linebuf + (run_x0 - x0) * 3,
+                                       r, g, b, alphatab[alpha],
+                                       run_x1 - run_x0);
+                }
+            }
+        }
       running_sum += steps[k].delta;
       if (x1 > run_x1)
-	{
-	  alpha = running_sum >> 16;
-	  if (alpha)
-	    {
-	      if (alpha >= 255)
-		art_rgb_fill_run (linebuf + (run_x1 - x0) * 3,
-				  r, g, b,
-				  x1 - run_x1);
-	      else
-		art_rgb_run_alpha (linebuf + (run_x1 - x0) * 3,
-				   r, g, b, alphatab[alpha],
-				   x1 - run_x1);
-	    }
-	}
+        {
+          alpha = running_sum >> 16;
+          if (alpha)
+            {
+              if (alpha >= 255)
+                art_rgb_fill_run (linebuf + (run_x1 - x0) * 3,
+                                  r, g, b,
+                                  x1 - run_x1);
+              else
+                art_rgb_run_alpha (linebuf + (run_x1 - x0) * 3,
+                                   r, g, b, alphatab[alpha],
+                                   x1 - run_x1);
+            }
+        }
     }
   else
     {
       alpha = running_sum >> 16;
       if (alpha)
-	{
-	  if (alpha >= 255)
-	    art_rgb_fill_run (linebuf,
-			      r, g, b,
-			      x1 - x0);
-	  else
-	    art_rgb_run_alpha (linebuf,
-			       r, g, b, alphatab[alpha],
-			       x1 - x0);
-	}
+        {
+          if (alpha >= 255)
+            art_rgb_fill_run (linebuf,
+                              r, g, b,
+                              x1 - x0);
+          else
+            art_rgb_run_alpha (linebuf,
+                               r, g, b, alphatab[alpha],
+                               x1 - x0);
+        }
     }
 
   data->buf += data->rowstride;
@@ -415,10 +415,10 @@ art_rgb_svp_alpha_opaque_callback (void *callback_data, int y,
  **/
 void
 art_rgb_svp_alpha (const ArtSVP *svp,
-		   int x0, int y0, int x1, int y1,
-		   art_u32 rgba,
-		   art_u8 *buf, int rowstride,
-		   ArtAlphaGamma *alphagamma)
+                   int x0, int y0, int x1, int y1,
+                   art_u32 rgba,
+                   art_u8 *buf, int rowstride,
+                   ArtAlphaGamma *alphagamma)
 {
   ArtRgbSVPAlphaData data;
   int r, g, b, alpha;
@@ -450,8 +450,7 @@ art_rgb_svp_alpha (const ArtSVP *svp,
   data.x1 = x1;
   if (alpha == 255)
     art_svp_render_aa (svp, x0, y0, x1, y1, art_rgb_svp_alpha_opaque_callback,
-		       &data);
+                       &data);
   else
     art_svp_render_aa (svp, x0, y0, x1, y1, art_rgb_svp_alpha_callback, &data);
 }
-

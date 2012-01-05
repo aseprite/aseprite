@@ -51,4 +51,4 @@ private:
 
 } // namespace net
 
-#endif	// NET_HTTP_RESPONSE_H_INCLUDED
+#endif  // NET_HTTP_RESPONSE_H_INCLUDED

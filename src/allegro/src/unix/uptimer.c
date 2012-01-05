@@ -56,10 +56,10 @@ TIMER_DRIVER timerdrv_unix_pthreads =
    "Unix pthreads timers",
    ptimer_init,
    ptimer_exit,
-   NULL, NULL,		/* install_int, remove_int */
-   NULL, NULL,		/* install_param_int, remove_param_int */
-   NULL, NULL,		/* can_simulate_retrace, simulate_retrace */
-   _unix_rest		/* rest */
+   NULL, NULL,          /* install_int, remove_int */
+   NULL, NULL,          /* install_param_int, remove_param_int */
+   NULL, NULL,          /* can_simulate_retrace, simulate_retrace */
+   _unix_rest           /* rest */
 };
 
 
@@ -119,7 +119,7 @@ static void *ptimer_thread_func(void *unused)
    {
       struct sched_param sparam;
       int spolicy;
-   
+
       if (pthread_getschedparam(pthread_self(), &spolicy, &sparam) == EOK) {
          sparam.sched_priority += 4;
          pthread_setschedparam(pthread_self(), spolicy, &sparam);

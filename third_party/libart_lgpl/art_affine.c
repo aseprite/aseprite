@@ -41,7 +41,7 @@
  **/
 void
 art_affine_point (ArtPoint *dst, const ArtPoint *src,
-		  const double affine[6])
+                  const double affine[6])
 {
   double x, y;
 
@@ -129,9 +129,9 @@ art_ftoa (char str[80], double x)
       *p++ = '.';
       i = sprintf (p, "%06d", (int)floor ((x + EPSILON / 2) * 1e6));
       while (i && p[i - 1] == '0')
-	i--;
+        i--;
       if (i == 0)
-	i--;
+        i--;
       p += i;
     }
   else if (x < 1e6)
@@ -139,31 +139,31 @@ art_ftoa (char str[80], double x)
       i = sprintf (p, "%d", (int)floor (x + EPSILON / 2));
       p += i;
       if (i < 6)
-	{
-	  int ix;
+        {
+          int ix;
 
-	  *p++ = '.';
-	  x -= floor (x + EPSILON / 2);
-	  for (j = i; j < 6; j++)
-	    x *= 10;
-	  ix = floor (x + 0.5);
+          *p++ = '.';
+          x -= floor (x + EPSILON / 2);
+          for (j = i; j < 6; j++)
+            x *= 10;
+          ix = floor (x + 0.5);
 
-	  for (j = 0; j < i; j++)
-	    ix *= 10;
+          for (j = 0; j < i; j++)
+            ix *= 10;
 
-	  /* A cheap hack, this routine can round wrong for fractions
-	     near one. */
-	  if (ix == 1000000)
-	    ix = 999999;
+          /* A cheap hack, this routine can round wrong for fractions
+             near one. */
+          if (ix == 1000000)
+            ix = 999999;
 
-	  sprintf (p, "%06d", ix);
-	  i = 6 - i;
-	  while (i && p[i - 1] == '0')
-	    i--;
-	  if (i == 0)
-	    i--;
-	  p += i;
-	}
+          sprintf (p, "%06d", ix);
+          i = 6 - i;
+          while (i && p[i - 1] == '0')
+            i--;
+          if (i == 0)
+            i--;
+          p += i;
+        }
     }
   else
     p += sprintf (p, "%g", x);
@@ -204,53 +204,53 @@ art_affine_to_string (char str[128], const double src[6])
     {
       /* could be scale or rotate */
       if (fabs (src[1]) < EPSILON && fabs (src[2]) < EPSILON)
-	{
-	  /* scale */
-	  if (fabs (src[0] - 1) < EPSILON && fabs (src[3] - 1) < EPSILON)
-	    {
-	      /* identity transform */
-	      str[0] = '\0';
-	      return;
-	    }
-	  else
-	    {
-	      ix = 0;
-	      ix += art_ftoa (str + ix, src[0]);
-	      str[ix++] = ' ';
-	      ix += art_ftoa (str + ix, src[3]);
-	      strcpy (str + ix, " scale");
-	      return;
-	    }
-	}
+        {
+          /* scale */
+          if (fabs (src[0] - 1) < EPSILON && fabs (src[3] - 1) < EPSILON)
+            {
+              /* identity transform */
+              str[0] = '\0';
+              return;
+            }
+          else
+            {
+              ix = 0;
+              ix += art_ftoa (str + ix, src[0]);
+              str[ix++] = ' ';
+              ix += art_ftoa (str + ix, src[3]);
+              strcpy (str + ix, " scale");
+              return;
+            }
+        }
       else
-	{
-	  /* could be rotate */
-	  if (fabs (src[0] - src[3]) < EPSILON &&
-	      fabs (src[1] + src[2]) < EPSILON &&
-	      fabs (src[0] * src[0] + src[1] * src[1] - 1) < 2 * EPSILON)
-	    {
-	      double theta;
+        {
+          /* could be rotate */
+          if (fabs (src[0] - src[3]) < EPSILON &&
+              fabs (src[1] + src[2]) < EPSILON &&
+              fabs (src[0] * src[0] + src[1] * src[1] - 1) < 2 * EPSILON)
+            {
+              double theta;
 
-	      theta = (180 / M_PI) * atan2 (src[1], src[0]);
-	      art_ftoa (tmp, theta);
-	      sprintf (str, "%s rotate", tmp);
-	      return;
-	    }
-	}
+              theta = (180 / M_PI) * atan2 (src[1], src[0]);
+              art_ftoa (tmp, theta);
+              sprintf (str, "%s rotate", tmp);
+              return;
+            }
+        }
     }
   else
     {
       /* could be translate */
       if (fabs (src[0] - 1) < EPSILON && fabs (src[1]) < EPSILON &&
-	  fabs (src[2]) < EPSILON && fabs (src[3] - 1) < EPSILON)
-	{
-	  ix = 0;
-	  ix += art_ftoa (str + ix, src[4]);
-	  str[ix++] = ' ';
-	  ix += art_ftoa (str + ix, src[5]);
-	  strcpy (str + ix, " translate");
-	  return;
-	}
+          fabs (src[2]) < EPSILON && fabs (src[3] - 1) < EPSILON)
+        {
+          ix = 0;
+          ix += art_ftoa (str + ix, src[4]);
+          str[ix++] = ' ';
+          ix += art_ftoa (str + ix, src[5]);
+          strcpy (str + ix, " translate");
+          return;
+        }
     }
 
   ix = 0;
@@ -432,7 +432,7 @@ int
 art_affine_rectilinear (const double src[6])
 {
   return ((fabs (src[1]) < EPSILON && fabs (src[2]) < EPSILON) ||
-	  (fabs (src[0]) < EPSILON && fabs (src[3]) < EPSILON));
+          (fabs (src[0]) < EPSILON && fabs (src[3]) < EPSILON));
 }
 
 /**
@@ -449,9 +449,9 @@ int
 art_affine_equal (double matrix1[6], double matrix2[6])
 {
   return (fabs (matrix1[0] - matrix2[0]) < EPSILON &&
-	  fabs (matrix1[1] - matrix2[1]) < EPSILON &&
-	  fabs (matrix1[2] - matrix2[2]) < EPSILON &&
-	  fabs (matrix1[3] - matrix2[3]) < EPSILON &&
-	  fabs (matrix1[4] - matrix2[4]) < EPSILON &&
-	  fabs (matrix1[5] - matrix2[5]) < EPSILON);
+          fabs (matrix1[1] - matrix2[1]) < EPSILON &&
+          fabs (matrix1[2] - matrix2[2]) < EPSILON &&
+          fabs (matrix1[3] - matrix2[3]) < EPSILON &&
+          fabs (matrix1[4] - matrix2[4]) < EPSILON &&
+          fabs (matrix1[5] - matrix2[5]) < EPSILON);
 }

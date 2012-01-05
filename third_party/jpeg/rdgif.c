@@ -19,7 +19,7 @@
  *    CompuServe Incorporated."
  */
 
-#include "cdjpeg.h"		/* Common decls for cjpeg/djpeg applications */
+#include "cdjpeg.h"             /* Common decls for cjpeg/djpeg applications */
 
 #ifdef GIF_SUPPORTED
 
@@ -32,7 +32,7 @@ jinit_read_gif (j_compress_ptr cinfo)
 {
   fprintf(stderr, "GIF input is unsupported for legal reasons.  Sorry.\n");
   exit(EXIT_FAILURE);
-  return NULL;			/* keep compiler happy */
+  return NULL;                  /* keep compiler happy */
 }
 
 #endif /* GIF_SUPPORTED */

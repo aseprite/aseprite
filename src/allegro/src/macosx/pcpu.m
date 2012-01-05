@@ -1,6 +1,6 @@
-/*         ______   ___    ___ 
- *        /\  _  \ /\_ \  /\_ \ 
- *        \ \ \L\ \\//\ \ \//\ \      __     __   _ __   ___ 
+/*         ______   ___    ___
+ *        /\  _  \ /\_ \  /\_ \
+ *        \ \ \L\ \\//\ \ \//\ \      __     __   _ __   ___
  *         \ \  __ \ \ \ \  \ \ \   /'__`\ /'_ `\/\`'__\/ __`\
  *          \ \ \/\ \ \_\ \_ \_\ \_/\  __//\ \L\ \ \ \//\ \L\ \
  *           \ \_\ \_\/\____\/\____\ \____\ \____ \ \_\\ \____/
@@ -25,5 +25,5 @@ void check_cpu() {
   cpu_model=info->cpusubtype;
   cpu_capabilities=CPU_ID|CPU_FPU; /* confident that this info is correct */
   do_uconvert(info->name, U_ASCII, cpu_vendor, U_CURRENT,
-	      _AL_CPU_VENDOR_SIZE);
+              _AL_CPU_VENDOR_SIZE);
 }

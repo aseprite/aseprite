@@ -37,7 +37,7 @@
 
 static ColorCurve* the_curve = NULL;
 
-// Slot for App::Exit signal 
+// Slot for App::Exit signal
 static void on_exit_delete_curve()
 {
   delete the_curve;
@@ -51,8 +51,8 @@ class ColorCurveWindow : public FilterWindow
 public:
   ColorCurveWindow(ColorCurveFilter& filter, FilterManagerImpl& filterMgr)
     : FilterWindow("Color Curve", "ColorCurve", &filterMgr,
-		   WithChannelsSelector,
-		   WithoutTiledCheckBox)
+                   WithChannelsSelector,
+                   WithoutTiledCheckBox)
     , m_filter(filter)
     , m_editor(filter.getCurve(), 0, 0, 255, 255)
   {
@@ -100,15 +100,15 @@ protected:
 
 ColorCurveCommand::ColorCurveCommand()
   : Command("ColorCurve",
-	    "Color Curve",
-	    CmdRecordableFlag)
+            "Color Curve",
+            CmdRecordableFlag)
 {
 }
 
 bool ColorCurveCommand::onEnabled(Context* context)
 {
   return context->checkFlags(ContextFlags::ActiveDocumentIsWritable |
-			     ContextFlags::HasActiveSprite);
+                             ContextFlags::HasActiveSprite);
 }
 
 void ColorCurveCommand::onExecute(Context* context)
@@ -129,10 +129,10 @@ void ColorCurveCommand::onExecute(Context* context)
 
   FilterManagerImpl filterMgr(context->getActiveDocument(), &filter);
   filterMgr.setTarget(TARGET_RED_CHANNEL |
-		      TARGET_GREEN_CHANNEL |
-		      TARGET_BLUE_CHANNEL |
-		      TARGET_GRAY_CHANNEL |
-		      TARGET_ALPHA_CHANNEL);
+                      TARGET_GREEN_CHANNEL |
+                      TARGET_BLUE_CHANNEL |
+                      TARGET_GRAY_CHANNEL |
+                      TARGET_ALPHA_CHANNEL);
 
   ColorCurveWindow window(filter, filterMgr);
   if (window.doModal()) {

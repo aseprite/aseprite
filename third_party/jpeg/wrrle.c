@@ -16,7 +16,7 @@
  * with updates from Robert Hutchinson.
  */
 
-#include "cdjpeg.h"		/* Common decls for cjpeg/djpeg applications */
+#include "cdjpeg.h"             /* Common decls for cjpeg/djpeg applications */
 
 #ifdef RLE_SUPPORTED
 
@@ -47,15 +47,15 @@
  * though not all of the entries need be used.
  */
 
-#define CMAPBITS	8
-#define CMAPLENGTH	(1<<(CMAPBITS))
+#define CMAPBITS        8
+#define CMAPLENGTH      (1<<(CMAPBITS))
 
 typedef struct {
   struct djpeg_dest_struct pub; /* public fields */
 
-  jvirt_sarray_ptr image;	/* virtual array to store the output image */
-  rle_map *colormap;	 	/* RLE-style color map, or NULL if none */
-  rle_pixel **rle_row;		/* To pass rows to rle_putrow() */
+  jvirt_sarray_ptr image;       /* virtual array to store the output image */
+  rle_map *colormap;            /* RLE-style color map, or NULL if none */
+  rle_pixel **rle_row;          /* To pass rows to rle_putrow() */
 
 } rle_dest_struct;
 
@@ -64,7 +64,7 @@ typedef rle_dest_struct * rle_dest_ptr;
 /* Forward declarations */
 METHODDEF(void) rle_put_pixel_rows
     JPP((j_decompress_ptr cinfo, djpeg_dest_ptr dinfo,
-	 JDIMENSION rows_supplied));
+         JDIMENSION rows_supplied));
 
 
 /*
@@ -97,8 +97,8 @@ start_output_rle (j_decompress_ptr cinfo, djpeg_dest_ptr dinfo)
    */
 
   if (cinfo->output_width > 32767 || cinfo->output_height > 32767)
-    ERREXIT2(cinfo, JERR_RLE_DIMENSIONS, cinfo->output_width, 
-	     cinfo->output_height);
+    ERREXIT2(cinfo, JERR_RLE_DIMENSIONS, cinfo->output_width,
+             cinfo->output_height);
 
   if (cinfo->out_color_space != JCS_GRAYSCALE &&
       cinfo->out_color_space != JCS_RGB)
@@ -151,7 +151,7 @@ start_output_rle (j_decompress_ptr cinfo, djpeg_dest_ptr dinfo)
 
 METHODDEF(void)
 rle_put_pixel_rows (j_decompress_ptr cinfo, djpeg_dest_ptr dinfo,
-		    JDIMENSION rows_supplied)
+                    JDIMENSION rows_supplied)
 {
   rle_dest_ptr dest = (rle_dest_ptr) dinfo;
 
@@ -172,7 +172,7 @@ METHODDEF(void)
 finish_output_rle (j_decompress_ptr cinfo, djpeg_dest_ptr dinfo)
 {
   rle_dest_ptr dest = (rle_dest_ptr) dinfo;
-  rle_hdr header;		/* Output file information */
+  rle_hdr header;               /* Output file information */
   rle_pixel **rle_row, *red, *green, *blue;
   JSAMPROW output_row;
   char cmapcomment[80];
@@ -223,7 +223,7 @@ finish_output_rle (j_decompress_ptr cinfo, djpeg_dest_ptr dinfo)
     for (row = cinfo->output_height-1; row >= 0; row--) {
       rle_row = (rle_pixel **) (*cinfo->mem->access_virt_sarray)
         ((j_common_ptr) cinfo, dest->image,
-	 (JDIMENSION) row, (JDIMENSION) 1, FALSE);
+         (JDIMENSION) row, (JDIMENSION) 1, FALSE);
       rle_putrow(rle_row, (int) cinfo->output_width, &header);
 #ifdef PROGRESS_REPORT
       if (progress != NULL) {
@@ -237,7 +237,7 @@ finish_output_rle (j_decompress_ptr cinfo, djpeg_dest_ptr dinfo)
       rle_row = (rle_pixel **) dest->rle_row;
       output_row = * (*cinfo->mem->access_virt_sarray)
         ((j_common_ptr) cinfo, dest->image,
-	 (JDIMENSION) row, (JDIMENSION) 1, FALSE);
+         (JDIMENSION) row, (JDIMENSION) 1, FALSE);
       red = rle_row[0];
       green = rle_row[1];
       blue = rle_row[2];

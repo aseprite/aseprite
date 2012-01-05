@@ -218,7 +218,7 @@ FT_BEGIN_HEADER
 
 #define MEM_Free( _pointer_ )                                               \
           FT_Free_Debug( memory, (void**)&(_pointer_), __FILE__, __LINE__ )
-  
+
 #else  /* !FT_DEBUG_MEMORY */
 
 #define MEM_Alloc( _pointer_, _size_ )                     \

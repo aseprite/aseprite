@@ -42,5 +42,3 @@ AL_ARRAY(fixed, _acos_tbl);
 #include "inline/fmaths.inl"
 
 #endif          /* ifndef ALLEGRO_FMATH_H */
-
-

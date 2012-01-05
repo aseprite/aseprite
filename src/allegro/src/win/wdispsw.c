@@ -1,6 +1,6 @@
-/*         ______   ___    ___ 
- *        /\  _  \ /\_ \  /\_ \ 
- *        \ \ \L\ \\//\ \ \//\ \      __     __   _ __   ___ 
+/*         ______   ___    ___
+ *        /\  _  \ /\_ \  /\_ \
+ *        \ \ \L\ \\//\ \ \//\ \      __     __   _ __   ___
  *         \ \  __ \ \ \ \  \ \ \   /'__`\ /'_ `\/\`'__\/ __`\
  *          \ \ \/\ \ \_\ \_ \_\ \_/\  __//\ \L\ \ \ \//\ \L\ \
  *           \ \_\ \_\/\____\/\____\ \____\ \____ \ \_\\ \____/
@@ -77,17 +77,17 @@ int sys_directx_set_display_switch_mode(int mode)
       case SWITCH_PAUSE:
          if (win_gfx_driver && !win_gfx_driver->has_backing_store)
             return -1;
-	 break;
+         break;
 
       case SWITCH_BACKAMNESIA:
       case SWITCH_AMNESIA:
          if (!win_gfx_driver || win_gfx_driver->has_backing_store)
             return -1;
-	 break;
+         break;
 
       default:
-	 return -1;
-   } 
+         return -1;
+   }
 
    return 0;
 }

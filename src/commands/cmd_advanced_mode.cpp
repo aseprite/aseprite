@@ -45,8 +45,8 @@ bool AdvancedModeCommand::advanced_mode = false;
 
 AdvancedModeCommand::AdvancedModeCommand()
   : Command("AdvancedMode",
-	    "Advanced Mode",
-	    CmdUIOnlyFlag)
+            "Advanced Mode",
+            CmdUIOnlyFlag)
 {
 }
 
@@ -62,7 +62,7 @@ void AdvancedModeCommand::onExecute(Context* context)
 
   app_get_top_window()->remap_window();
   app_get_top_window()->invalidate();
-  
+
   if (advanced_mode &&
       get_config_bool("AdvancedMode", "Warning", true)) {
     JAccel accel = get_accel_to_execute_command(short_name());

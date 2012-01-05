@@ -47,7 +47,7 @@ void register_bitmap_file_type(AL_CONST char *ext, BITMAP *(*load)(AL_CONST char
    aext = uconvert_toascii(ext, tmp);
    if (strlen(aext) == 0) return;
 
-   if (!iter) 
+   if (!iter)
       iter = bitmap_type_list = _AL_MALLOC(sizeof(struct BITMAP_TYPE_INFO));
    else {
       for (iter = bitmap_type_list; iter->next; iter = iter->next);
@@ -74,12 +74,12 @@ BITMAP *load_bitmap(AL_CONST char *filename, RGB *pal)
    ASSERT(filename);
 
    aext = uconvert_toascii(get_extension(filename), tmp);
-   
+
    for (iter = bitmap_type_list; iter; iter = iter->next) {
       if (stricmp(iter->ext, aext) == 0) {
-	 if (iter->load)
-	    return iter->load(filename, pal);
-	 return NULL;
+         if (iter->load)
+            return iter->load(filename, pal);
+         return NULL;
       }
    }
 
@@ -102,9 +102,9 @@ int save_bitmap(AL_CONST char *filename, BITMAP *bmp, AL_CONST RGB *pal)
 
    for (iter = bitmap_type_list; iter; iter = iter->next) {
       if (stricmp(iter->ext, aext) == 0) {
-	 if (iter->save)
-	    return iter->save(filename, bmp, pal);
-	 return 1;
+         if (iter->save)
+            return iter->save(filename, bmp, pal);
+         return 1;
       }
    }
 
@@ -137,18 +137,18 @@ BITMAP *_fixup_loaded_bitmap(BITMAP *bmp, PALETTE pal, int bpp)
       RGB_MAP *old_map = rgb_map;
 
       if (pal)
-	 generate_optimized_palette(bmp, pal, NULL);
+         generate_optimized_palette(bmp, pal, NULL);
       else
-	 pal = _current_palette;
+         pal = _current_palette;
 
       rgb_map = _AL_MALLOC(sizeof(RGB_MAP));
       if (rgb_map != NULL)
-	 create_rgb_table(rgb_map, pal, NULL);
+         create_rgb_table(rgb_map, pal, NULL);
 
       blit(bmp, b2, 0, 0, 0, 0, bmp->w, bmp->h);
 
       if (rgb_map != NULL)
-	 _AL_FREE(rgb_map);
+         _AL_FREE(rgb_map);
       rgb_map = old_map;
    }
    else if (bitmap_color_depth(bmp) == 8) {
@@ -180,7 +180,7 @@ static void register_bitmap_file_type_exit(void)
       _AL_FREE(iter);
       iter = next;
    }
-   
+
    bitmap_type_list = NULL;
 
    /* If we are using a destructor, then we only want to prune the list
@@ -204,7 +204,7 @@ void _register_bitmap_file_type_init(void)
    char buf[32];
 
    _add_exit_func(register_bitmap_file_type_exit,
-		  "register_bitmap_file_type_exit");
+                  "register_bitmap_file_type_exit");
 
    register_bitmap_file_type(uconvert_ascii("bmp", buf), load_bmp, save_bmp);
    register_bitmap_file_type(uconvert_ascii("lbm", buf), load_lbm, NULL);
@@ -244,7 +244,7 @@ void _register_bitmap_file_type_init(void)
          _AL_FREE(iter);
          iter = next;
       }
-   
+
       bitmap_type_list = NULL;
 
       _remove_exit_func(register_bitmap_file_type_exit);

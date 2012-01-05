@@ -42,32 +42,32 @@ JLink jlist_nth_link(JList list, unsigned int n);
 void *jlist_nth_data(JList list, unsigned int n);
 JLink jlist_find(JList list, const void *data);
 
-#define jlist_first(list)		(((JList)(list))->end->next)
-#define jlist_last(list)		(((JList)(list))->end->prev)
-#define jlist_length(list)		(((JList)(list))->length)
+#define jlist_first(list)               (((JList)(list))->end->next)
+#define jlist_last(list)                (((JList)(list))->end->prev)
+#define jlist_length(list)              (((JList)(list))->length)
 
-#define jlist_first_data(list)		(jlist_first(list)->data)
-#define jlist_last_data(list)		(jlist_last(list)->data)
+#define jlist_first_data(list)          (jlist_first(list)->data)
+#define jlist_last_data(list)           (jlist_last(list)->data)
 
-#define jlist_empty(list)		(((JList)(list))->length == 0)
+#define jlist_empty(list)               (((JList)(list))->length == 0)
 
-#define JI_LIST_FOR_EACH(list, link)		\
-  for (link=((JList)(list))->end->next;		\
-       link!=((JList)(list))->end;		\
+#define JI_LIST_FOR_EACH(list, link)            \
+  for (link=((JList)(list))->end->next;         \
+       link!=((JList)(list))->end;              \
        link=link->next)
 
-#define JI_LIST_FOR_EACH_BACK(list, link)	\
-  for (link=((JList)(list))->end->prev;		\
-       link!=((JList)(list))->end;		\
+#define JI_LIST_FOR_EACH_BACK(list, link)       \
+  for (link=((JList)(list))->end->prev;         \
+       link!=((JList)(list))->end;              \
        link=link->prev)
 
 /**
  * Iterator for each item of the list (the body of the "for" can be
  * remove elements in the list).
  */
-#define JI_LIST_FOR_EACH_SAFE(list, link, next)			\
-  for (link=((JList)(list))->end->next, next=link->next;	\
-       link!=((JList)(list))->end;				\
+#define JI_LIST_FOR_EACH_SAFE(list, link, next)                 \
+  for (link=((JList)(list))->end->next, next=link->next;        \
+       link!=((JList)(list))->end;                              \
        link=next, next=link->next)
 
 #endif

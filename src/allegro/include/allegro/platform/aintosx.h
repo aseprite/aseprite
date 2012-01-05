@@ -123,7 +123,7 @@ typedef struct HID_DEVICE
    int cur_app;
 } HID_DEVICE;
 
-typedef struct 
+typedef struct
 {
    int count;
    int capacity;

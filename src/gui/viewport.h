@@ -15,7 +15,7 @@ class Viewport : public Widget
 public:
   Viewport();
 
-  gfx::Size calculateNeededSize(); 
+  gfx::Size calculateNeededSize();
 
 protected:
   // Events

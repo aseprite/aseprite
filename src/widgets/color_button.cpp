@@ -56,7 +56,7 @@ ColorButton::ColorButton(const Color& color, int imgtype)
 
 ColorButton::~ColorButton()
 {
-  delete m_frame;	// widget, frame
+  delete m_frame;       // widget, frame
 }
 
 int ColorButton::getImgType() const
@@ -95,7 +95,7 @@ bool ColorButton::onProcessMessage(Message* msg)
 
     case JM_CLOSE:
       if (m_frame && m_frame->isVisible())
-	m_frame->closeWindow(NULL);
+        m_frame->closeWindow(NULL);
       break;
 
     case JM_MOUSEENTER:
@@ -108,60 +108,60 @@ bool ColorButton::onProcessMessage(Message* msg)
 
     case JM_SIGNAL:
       if (msg->signal.num == JI_SIGNAL_BUTTON_SELECT) {
-	// If the popup window was not created or shown yet..
-	if (m_frame == NULL || !m_frame->isVisible()) {
-	  // Open it
-	  openSelectorDialog();
-	}
-	else if (!m_frame->is_moveable()) {
-	  // If it is visible, close it
-	  closeSelectorDialog();
-	}
-	return true;
+        // If the popup window was not created or shown yet..
+        if (m_frame == NULL || !m_frame->isVisible()) {
+          // Open it
+          openSelectorDialog();
+        }
+        else if (!m_frame->is_moveable()) {
+          // If it is visible, close it
+          closeSelectorDialog();
+        }
+        return true;
       }
       break;
 
     case JM_MOTION:
       if (hasCapture()) {
-	Widget* picked = ji_get_default_manager()->pick(msg->mouse.x, msg->mouse.y);
-	Color color = m_color;
+        Widget* picked = ji_get_default_manager()->pick(msg->mouse.x, msg->mouse.y);
+        Color color = m_color;
 
-	if (picked && picked != this) {
-	  // Pick a color from another color-button
-	  if (ColorButton* pickedColBut = dynamic_cast<ColorButton*>(picked)) {
-	    color = pickedColBut->getColor();
-	  }
-	  // Pick a color from the color-bar
-	  else if (picked->type == palette_view_type()) {
-	    color = ((PaletteView*)picked)->getColorByPosition(msg->mouse.x, msg->mouse.y);
-	  }
-	  // Pick a color from a editor
-	  else if (picked->type == editor_type()) {
-	    Editor* editor = static_cast<Editor*>(picked);
-	    Sprite* sprite = editor->getSprite();
-	    int x, y, imgcolor;
+        if (picked && picked != this) {
+          // Pick a color from another color-button
+          if (ColorButton* pickedColBut = dynamic_cast<ColorButton*>(picked)) {
+            color = pickedColBut->getColor();
+          }
+          // Pick a color from the color-bar
+          else if (picked->type == palette_view_type()) {
+            color = ((PaletteView*)picked)->getColorByPosition(msg->mouse.x, msg->mouse.y);
+          }
+          // Pick a color from a editor
+          else if (picked->type == editor_type()) {
+            Editor* editor = static_cast<Editor*>(picked);
+            Sprite* sprite = editor->getSprite();
+            int x, y, imgcolor;
 
-	    if (sprite) {
-	      x = msg->mouse.x;
-	      y = msg->mouse.y;
-	      editor->screenToEditor(x, y, &x, &y);
-	      imgcolor = sprite->getPixel(x, y);
-	      color = Color::fromImage(sprite->getImgType(), imgcolor);
-	    }
-	  }
-	}
+            if (sprite) {
+              x = msg->mouse.x;
+              y = msg->mouse.y;
+              editor->screenToEditor(x, y, &x, &y);
+              imgcolor = sprite->getPixel(x, y);
+              color = Color::fromImage(sprite->getImgType(), imgcolor);
+            }
+          }
+        }
 
-	// Did the color change?
-	if (color != m_color) {
-	  setColor(color);
-	}
+        // Did the color change?
+        if (color != m_color) {
+          setColor(color);
+        }
       }
       break;
 
     case JM_SETCURSOR:
       if (hasCapture()) {
-	jmouse_set_cursor(JI_CURSOR_EYEDROPPER);
-	return true;
+        jmouse_set_cursor(JI_CURSOR_EYEDROPPER);
+        return true;
       }
       break;
 
@@ -179,7 +179,7 @@ void ColorButton::onPreferredSize(PreferredSizeEvent& ev)
   box.x2 = box.x1+64;
 
   ev.setPreferredSize(jrect_w(&box) + border_width.l + border_width.r,
-		      jrect_h(&box) + border_width.t + border_width.b);
+                      jrect_h(&box) + border_width.t + border_width.b);
 }
 
 void ColorButton::onPaint(PaintEvent& ev) // TODO use "ev.getGraphics()"
@@ -196,8 +196,8 @@ void ColorButton::onPaint(PaintEvent& ev) // TODO use "ev.getGraphics()"
   // When the button is pushed, show the negative
   if (isSelected()) {
     color = Color::fromRgb(255-m_color.getRed(),
-			   255-m_color.getGreen(),
-			   255-m_color.getBlue());
+                           255-m_color.getGreen(),
+                           255-m_color.getBlue());
   }
   // When the button is not pressed, show the real color
   else
@@ -217,13 +217,13 @@ void ColorButton::onPaint(PaintEvent& ev) // TODO use "ev.getGraphics()"
 
   setTextQuiet(str.c_str());
   jwidget_get_texticon_info(this, &box, &text, &icon, 0, 0, 0);
-  
+
   int textcolor = makecol(255, 255, 255);
   if (color.isValid())
     textcolor = color_utils::blackandwhite_neg(color.getRed(), color.getGreen(), color.getBlue());
 
   jdraw_text(ji_screen, getFont(), getText(), text.x1, text.y1,
-	     textcolor, -1, false, jguiscale());
+             textcolor, -1, false, jguiscale());
 }
 
 void ColorButton::openSelectorDialog()
@@ -253,9 +253,9 @@ void ColorButton::openSelectorDialog()
   /* setup the hot-region */
   {
     JRect rc = jrect_new(MIN(this->rc->x1, m_frame->rc->x1)-8,
-			 MIN(this->rc->y1, m_frame->rc->y1)-8,
-			 MAX(this->rc->x2, m_frame->rc->x2)+8,
-			 MAX(this->rc->y2, m_frame->rc->y2)+8);
+                         MIN(this->rc->y1, m_frame->rc->y1)-8,
+                         MAX(this->rc->x2, m_frame->rc->x2)+8,
+                         MAX(this->rc->y2, m_frame->rc->y2)+8);
     JRegion rgn = jregion_new(rc, 1);
     jrect_free(rc);
 

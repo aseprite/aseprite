@@ -4,10 +4,10 @@
   <box vertical="true" expansive="true" name="controls">
     <box horizontal="true" expansive="true">
       <grid columns="2" name="controls">
-	<label text="From:" />
-	<colorpicker name="from" cell_align="horizontal" />
-	<label text="To:" />
-	<colorpicker name="to" cell_align="horizontal" />
+        <label text="From:" />
+        <colorpicker name="from" cell_align="horizontal" />
+        <label text="To:" />
+        <colorpicker name="to" cell_align="horizontal" />
       </grid>
     </box>
     <label text="Tolerance:" />

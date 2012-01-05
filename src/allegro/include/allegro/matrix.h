@@ -92,5 +92,3 @@ AL_FUNC(void, apply_matrix_f, (AL_CONST MATRIX_f *m, float x, float y, float z, 
 #include "inline/matrix.inl"
 
 #endif          /* ifndef ALLEGRO_MATRIX_H */
-
-

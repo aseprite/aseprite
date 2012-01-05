@@ -24,7 +24,7 @@ namespace tools {
 class ToolLoop;
 
 // Class used to paint directly in the destination image (loop->getDstImage())
-// 
+//
 // The main task of this class is to draw scanlines through its
 // inkHline function member.
 class Ink
@@ -71,5 +71,4 @@ public:
 
 } // namespace tools
 
-#endif	// TOOLS_INK_H_INCLUDED
-
+#endif  // TOOLS_INK_H_INCLUDED

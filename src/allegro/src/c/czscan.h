@@ -16,7 +16,7 @@
  *      See readme.txt for copyright information.
  */
 
-#define ZBUF_PTR	float*
+#define ZBUF_PTR        float*
 
 #ifndef __bma_czscan_h
 #define __bma_czscan_h
@@ -207,7 +207,7 @@ void FUNC_POLY_ZBUF_ATEX_MASK(uintptr_t addr, int w, POLYGON_SEGMENT *info)
          unsigned long color = GET_MEMORY_PIXEL(s);
 
          if (!IS_MASK(color)) {
-	    PUT_PIXEL(d, color);
+            PUT_PIXEL(d, color);
             *zb = z;
          }
       }
@@ -309,8 +309,8 @@ void FUNC_POLY_ZBUF_ATEX_MASK_LIT(uintptr_t addr, int w, POLYGON_SEGMENT *info)
          unsigned long color = GET_MEMORY_PIXEL(s);
 
          if (!IS_MASK(color)) {
-	    color = PS_BLEND(blender, (c >> 16), color);
-	    PUT_PIXEL(d, color);
+            color = PS_BLEND(blender, (c >> 16), color);
+            PUT_PIXEL(d, color);
             *zb = z;
          }
       }
@@ -407,7 +407,7 @@ void FUNC_POLY_ZBUF_PTEX_MASK(uintptr_t addr, int w, POLYGON_SEGMENT *info)
          unsigned long color = GET_MEMORY_PIXEL(s);
 
          if (!IS_MASK(color)) {
-	    PUT_PIXEL(d, color);
+            PUT_PIXEL(d, color);
             *zb = (float) fz;
          }
       }
@@ -515,8 +515,8 @@ void FUNC_POLY_ZBUF_PTEX_MASK_LIT(uintptr_t addr, int w, POLYGON_SEGMENT *info)
          unsigned long color = GET_MEMORY_PIXEL(s);
 
          if (!IS_MASK(color)) {
-	    color = PS_BLEND(blender, (c >> 16), color);
-	    PUT_PIXEL(d, color);
+            color = PS_BLEND(blender, (c >> 16), color);
+            PUT_PIXEL(d, color);
             *zb = (float) fz;
          }
       }
@@ -616,11 +616,11 @@ void FUNC_POLY_ZBUF_ATEX_MASK_TRANS(uintptr_t addr, int w, POLYGON_SEGMENT *info
       if (*zb < z) {
          PIXEL_PTR s = OFFSET_PIXEL_PTR(texture, ((v >> vshift) & vmask) + ((u >> 16) & umask));
          unsigned long color = GET_MEMORY_PIXEL(s);
-	 if (!IS_MASK(color)) {
+         if (!IS_MASK(color)) {
             color = PS_ALPHA_BLEND(blender, color, GET_PIXEL(r));
             PUT_PIXEL(d, color);
             *zb = z;
-	 }
+         }
       }
       u += du;
       v += dv;
@@ -721,11 +721,11 @@ void FUNC_POLY_ZBUF_PTEX_MASK_TRANS(uintptr_t addr, int w, POLYGON_SEGMENT *info
          long v = fv / fz;
          PIXEL_PTR s = OFFSET_PIXEL_PTR(texture, ((v >> vshift) & vmask) + ((u >> 16) & umask));
          unsigned long color = GET_MEMORY_PIXEL(s);
-	 if (!IS_MASK(color)) {
+         if (!IS_MASK(color)) {
             color = PS_ALPHA_BLEND(blender, color, GET_PIXEL(r));
             PUT_PIXEL(d, color);
             *zb = (float) fz;
-	 }
+         }
       }
       fu += dfu;
       fv += dfv;
@@ -735,4 +735,3 @@ void FUNC_POLY_ZBUF_PTEX_MASK_TRANS(uintptr_t addr, int w, POLYGON_SEGMENT *info
 }
 
 #endif /* !__bma_czscan_h */
-

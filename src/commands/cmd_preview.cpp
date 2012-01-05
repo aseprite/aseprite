@@ -37,8 +37,8 @@
 #include "widgets/statebar.h"
 #include "document_wrappers.h"
 
-#define PREVIEW_TILED		1
-#define PREVIEW_FIT_ON_SCREEN	2
+#define PREVIEW_TILED           1
+#define PREVIEW_FIT_ON_SCREEN   2
 
 //////////////////////////////////////////////////////////////////////
 // base class
@@ -56,15 +56,15 @@ protected:
 
 PreviewCommand::PreviewCommand()
   : Command("Preview",
-	    "Preview",
-	    CmdUIOnlyFlag)
+            "Preview",
+            CmdUIOnlyFlag)
 {
 }
 
 bool PreviewCommand::onEnabled(Context* context)
 {
   return context->checkFlags(ContextFlags::ActiveDocumentIsWritable |
-			     ContextFlags::HasActiveSprite);
+                             ContextFlags::HasActiveSprite);
 }
 
 
@@ -75,7 +75,7 @@ void PreviewCommand::onExecute(Context* context)
 {
   Editor* editor = current_editor;
 
-  // Cancel operation if current editor does not have a sprite 
+  // Cancel operation if current editor does not have a sprite
   if (!editor || !editor->getSprite())
     return;
 
@@ -134,8 +134,8 @@ void PreviewCommand::onExecute(Context* context)
     // Render sprite and leave the result in 'render' variable
     if (render == NULL) {
       render = RenderEngine::renderSprite(document, sprite,
-					  0, 0, sprite->getWidth(), sprite->getHeight(),
-					  sprite->getCurrentFrame(), 0, false);
+                                          0, 0, sprite->getWidth(), sprite->getHeight(),
+                                          sprite->getCurrentFrame(), 0, false);
     }
 
     // Redraw the screen
@@ -149,27 +149,27 @@ void PreviewCommand::onExecute(Context* context)
       if (tiled & TILED_Y_AXIS) y = SGN(y) * (ABS(y)%h);
 
       if (index_bg_color == -1)
-	RenderEngine::renderCheckedBackground(doublebuf, -pos_x, -pos_y, zoom);
+        RenderEngine::renderCheckedBackground(doublebuf, -pos_x, -pos_y, zoom);
       else
-	image_clear(doublebuf, pal->getEntry(index_bg_color));
+        image_clear(doublebuf, pal->getEntry(index_bg_color));
 
       switch (tiled) {
-	case TILED_NONE:
-	  RenderEngine::renderImage(doublebuf, render, pal, x, y, zoom);
-	  break;
-	case TILED_X_AXIS:
-	  for (u=x-w; u<JI_SCREEN_W+w; u+=w)
-	    RenderEngine::renderImage(doublebuf, render, pal, u, y, zoom);
-	  break;
-	case TILED_Y_AXIS:
-	  for (v=y-h; v<JI_SCREEN_H+h; v+=h)
-	    RenderEngine::renderImage(doublebuf, render, pal, x, v, zoom);
-	  break;
-	case TILED_BOTH:
-	  for (v=y-h; v<JI_SCREEN_H+h; v+=h)
-	    for (u=x-w; u<JI_SCREEN_W+w; u+=w)
-	      RenderEngine::renderImage(doublebuf, render, pal, u, v, zoom);
-	  break;
+        case TILED_NONE:
+          RenderEngine::renderImage(doublebuf, render, pal, x, y, zoom);
+          break;
+        case TILED_X_AXIS:
+          for (u=x-w; u<JI_SCREEN_W+w; u+=w)
+            RenderEngine::renderImage(doublebuf, render, pal, u, y, zoom);
+          break;
+        case TILED_Y_AXIS:
+          for (v=y-h; v<JI_SCREEN_H+h; v+=h)
+            RenderEngine::renderImage(doublebuf, render, pal, x, v, zoom);
+          break;
+        case TILED_BOTH:
+          for (v=y-h; v<JI_SCREEN_H+h; v+=h)
+            for (u=x-w; u<JI_SCREEN_W+w; u+=w)
+              RenderEngine::renderImage(doublebuf, render, pal, u, v, zoom);
+          break;
       }
 
       image_to_allegro(doublebuf, ji_screen, 0, 0, pal);
@@ -186,44 +186,44 @@ void PreviewCommand::onExecute(Context* context)
 
       // Change frame
       if (command != NULL &&
-	  (strcmp(command->short_name(), CommandId::GotoFirstFrame) == 0 ||
-	   strcmp(command->short_name(), CommandId::GotoPreviousFrame) == 0 ||
-	   strcmp(command->short_name(), CommandId::GotoNextFrame) == 0 ||
-	   strcmp(command->short_name(), CommandId::GotoLastFrame) == 0)) {
-	// Execute the command
-	context->executeCommand(command);
+          (strcmp(command->short_name(), CommandId::GotoFirstFrame) == 0 ||
+           strcmp(command->short_name(), CommandId::GotoPreviousFrame) == 0 ||
+           strcmp(command->short_name(), CommandId::GotoNextFrame) == 0 ||
+           strcmp(command->short_name(), CommandId::GotoLastFrame) == 0)) {
+        // Execute the command
+        context->executeCommand(command);
 
-	// Redraw
-	redraw = true;
+        // Redraw
+        redraw = true;
 
-	// Re-render
-	if (render)
-	  image_free(render);
-	render = NULL;
+        // Re-render
+        if (render)
+          image_free(render);
+        render = NULL;
       }
       // Play the animation
       else if (command != NULL &&
-	       strcmp(command->short_name(), CommandId::PlayAnimation) == 0) {
-	// TODO
+               strcmp(command->short_name(), CommandId::PlayAnimation) == 0) {
+        // TODO
       }
       // Change background color
       else if ((readkey_value>>8) == KEY_PLUS_PAD ||
-	       (readkey_value&0xff) == '+') {
-	if (index_bg_color == -1 ||
-	    index_bg_color < pal->size()-1) {
-	  ++index_bg_color;
-	  redraw = true;
-	}
+               (readkey_value&0xff) == '+') {
+        if (index_bg_color == -1 ||
+            index_bg_color < pal->size()-1) {
+          ++index_bg_color;
+          redraw = true;
+        }
       }
       else if ((readkey_value>>8) == KEY_MINUS_PAD ||
-	       (readkey_value&0xff) == '-') {
-	if (index_bg_color >= 0) {
-	  --index_bg_color;	// can be -1 which is the checked background
-	  redraw = true;
-	}
+               (readkey_value&0xff) == '-') {
+        if (index_bg_color >= 0) {
+          --index_bg_color;     // can be -1 which is the checked background
+          redraw = true;
+        }
       }
       else
-	break;
+        break;
     }
   } while (!jmouse_b(0));
 

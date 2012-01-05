@@ -29,10 +29,10 @@ namespace tools {
 class ToolLoop;
 
 // Class to manage the drawing tool (editor <-> tool interface).
-// 
+//
 // The flow is this:
 // 1. The user press a mouse button in a Editor widget
-// 2. The Editor creates an implementation of ToolLoop and use it 
+// 2. The Editor creates an implementation of ToolLoop and use it
 //    with the ToolLoopManager constructor
 // 3. The ToolLoopManager is used to call
 //    the following methods:
@@ -98,12 +98,12 @@ private:
   void snapToGrid(bool flexible, gfx::Point& point);
 
   static void calculateDirtyArea(ToolLoop* loop,
-				 const Points& points,
-				 gfx::Rect& dirty_area);
+                                 const Points& points,
+                                 gfx::Rect& dirty_area);
 
   static void calculateMinMax(const Points& points,
-			      gfx::Point& minpt,
-			      gfx::Point& maxpt);
+                              gfx::Point& minpt,
+                              gfx::Point& maxpt);
 
   ToolLoop* m_toolLoop;
   Points m_points;
@@ -112,5 +112,4 @@ private:
 
 } // namespace tools
 
-#endif	// TOOLS_TOOL_H_INCLUDED
-
+#endif  // TOOLS_TOOL_H_INCLUDED

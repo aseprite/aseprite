@@ -39,8 +39,8 @@
 
 void
 art_rgb_affine_run (int *p_x0, int *p_x1, int y,
-		    int src_width, int src_height,
-		    const double affine[6])
+                    int src_width, int src_height,
+                    const double affine[6])
 {
   int x0, x1;
   double z;
@@ -57,11 +57,11 @@ art_rgb_affine_run (int *p_x0, int *p_x1, int y,
       x_intercept = -z / affine[0];
       xi = ceil (x_intercept + EPSILON - 0.5);
       if (xi > x0)
-	x0 = xi;
+        x0 = xi;
       x_intercept = (-z + src_width) / affine[0];
       xi = ceil (x_intercept - EPSILON - 0.5);
       if (xi < x1)
-	x1 = xi;
+        x1 = xi;
     }
   else if (affine[0] < -EPSILON)
     {
@@ -69,20 +69,20 @@ art_rgb_affine_run (int *p_x0, int *p_x1, int y,
       x_intercept = (-z + src_width) / affine[0];
       xi = ceil (x_intercept + EPSILON - 0.5);
       if (xi > x0)
-	x0 = xi;
+        x0 = xi;
       x_intercept = -z / affine[0];
       xi = ceil (x_intercept - EPSILON - 0.5);
       if (xi < x1)
-	x1 = xi;
+        x1 = xi;
     }
   else
     {
       z = affine[2] * (y + 0.5) + affine[4];
       if (z < 0 || z >= src_width)
-	{
-	  *p_x1 = *p_x0;
-	  return;
-	}
+        {
+          *p_x1 = *p_x0;
+          return;
+        }
     }
 
   /* do top and bottom edges */
@@ -92,11 +92,11 @@ art_rgb_affine_run (int *p_x0, int *p_x1, int y,
       x_intercept = -z / affine[1];
       xi = ceil (x_intercept + EPSILON - 0.5);
       if (xi > x0)
-	x0 = xi;
+        x0 = xi;
       x_intercept = (-z + src_height) / affine[1];
       xi = ceil (x_intercept - EPSILON - 0.5);
       if (xi < x1)
-	x1 = xi;
+        x1 = xi;
     }
   else if (affine[1] < -EPSILON)
     {
@@ -104,20 +104,20 @@ art_rgb_affine_run (int *p_x0, int *p_x1, int y,
       x_intercept = (-z + src_height) / affine[1];
       xi = ceil (x_intercept + EPSILON - 0.5);
       if (xi > x0)
-	x0 = xi;
+        x0 = xi;
       x_intercept = -z / affine[1];
       xi = ceil (x_intercept - EPSILON - 0.5);
       if (xi < x1)
-	x1 = xi;
+        x1 = xi;
     }
   else
     {
       z = affine[3] * (y + 0.5) + affine[5];
       if (z < 0 || z >= src_height)
-	{
-	  *p_x1 = *p_x0;
-	  return;
-	}
+        {
+          *p_x1 = *p_x0;
+          return;
+        }
     }
 
   *p_x0 = x0;

@@ -25,23 +25,23 @@
 /* Derived data constructed for each Huffman table */
 
 typedef struct {
-  unsigned int ehufco[256];	/* code for each symbol */
-  char ehufsi[256];		/* length of code for each symbol */
+  unsigned int ehufco[256];     /* code for each symbol */
+  char ehufsi[256];             /* length of code for each symbol */
   /* If no code has been allocated for a symbol S, ehufsi[S] contains 0 */
 } c_derived_tbl;
 
 /* Short forms of external names for systems with brain-damaged linkers. */
 
 #ifdef NEED_SHORT_EXTERNAL_NAMES
-#define jpeg_make_c_derived_tbl	jMkCDerived
-#define jpeg_gen_optimal_table	jGenOptTbl
+#define jpeg_make_c_derived_tbl jMkCDerived
+#define jpeg_gen_optimal_table  jGenOptTbl
 #endif /* NEED_SHORT_EXTERNAL_NAMES */
 
 /* Expand a Huffman table definition into the derived format */
 EXTERN(void) jpeg_make_c_derived_tbl
-	JPP((j_compress_ptr cinfo, boolean isDC, int tblno,
-	     c_derived_tbl ** pdtbl));
+        JPP((j_compress_ptr cinfo, boolean isDC, int tblno,
+             c_derived_tbl ** pdtbl));
 
 /* Generate an optimal table definition given the specified counts */
 EXTERN(void) jpeg_gen_optimal_table
-	JPP((j_compress_ptr cinfo, JHUFF_TBL * htbl, long freq[]));
+        JPP((j_compress_ptr cinfo, JHUFF_TBL * htbl, long freq[]));

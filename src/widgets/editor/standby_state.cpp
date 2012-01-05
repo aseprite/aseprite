@@ -51,12 +51,12 @@
 #include <allegro.h>
 
 enum WHEEL_ACTION { WHEEL_NONE,
-		    WHEEL_ZOOM,
-		    WHEEL_VSCROLL,
-		    WHEEL_HSCROLL,
-		    WHEEL_FG,
-		    WHEEL_BG,
-		    WHEEL_FRAME };
+                    WHEEL_ZOOM,
+                    WHEEL_VSCROLL,
+                    WHEEL_HSCROLL,
+                    WHEEL_FG,
+                    WHEEL_BG,
+                    WHEEL_FRAME };
 
 static int rotated_size_cursors[] = {
   JI_CURSOR_SIZE_R,
@@ -138,19 +138,19 @@ bool StandbyState::onMouseDown(Editor* editor, Message* msg)
   // Move cel X,Y coordinates
   if (clicked_ink->isCelMovement()) {
     if ((sprite->getCurrentLayer()) &&
-	(sprite->getCurrentLayer()->getType() == GFXOBJ_LAYER_IMAGE)) {
+        (sprite->getCurrentLayer()->getType() == GFXOBJ_LAYER_IMAGE)) {
       // TODO you can move the `Background' with tiled mode
       if (sprite->getCurrentLayer()->is_background()) {
-	Alert::show(PACKAGE
-		    "<<You can't move the `Background' layer."
-		    "||&Close");
+        Alert::show(PACKAGE
+                    "<<You can't move the `Background' layer."
+                    "||&Close");
       }
       else if (!sprite->getCurrentLayer()->is_moveable()) {
-	Alert::show(PACKAGE "<<The layer movement is locked.||&Close");
+        Alert::show(PACKAGE "<<The layer movement is locked.||&Close");
       }
       else {
-	// Change to MovingCelState
-	editor->setState(EditorStatePtr(new MovingCelState(editor, msg)));
+        // Change to MovingCelState
+        editor->setState(EditorStatePtr(new MovingCelState(editor, msg)));
       }
     }
     return true;
@@ -163,20 +163,20 @@ bool StandbyState::onMouseDown(Editor* editor, Message* msg)
 
     // Get the handle covered by the mouse.
     HandleType handle = transfHandles->getHandleAtPoint(editor,
-							gfx::Point(msg->mouse.x, msg->mouse.y),
-							document->getTransformation());
+                                                        gfx::Point(msg->mouse.x, msg->mouse.y),
+                                                        document->getTransformation());
 
     if (handle != NoHandle) {
       int x, y, opacity;
       Image* image = sprite->getCurrentImage(&x, &y, &opacity);
       if (image) {
-	if (!sprite->getCurrentLayer()->is_writable()) {
-	  Alert::show(PACKAGE "<<The layer is locked.||&Close");
-	  return true;
-	}
+        if (!sprite->getCurrentLayer()->is_writable()) {
+          Alert::show(PACKAGE "<<The layer is locked.||&Close");
+          return true;
+        }
 
-	// Change to MovingPixelsState
-	editor->setState(EditorStatePtr(new MovingPixelsState(editor, msg, image, x, y, opacity, handle)));
+        // Change to MovingPixelsState
+        editor->setState(EditorStatePtr(new MovingPixelsState(editor, msg, image, x, y, opacity, handle)));
       }
       return true;
     }
@@ -190,8 +190,8 @@ bool StandbyState::onMouseDown(Editor* editor, Message* msg)
     Image* image = sprite->getCurrentImage(&x, &y, &opacity);
     if (image) {
       if (!sprite->getCurrentLayer()->is_writable()) {
-	Alert::show(PACKAGE "<<The layer is locked.||&Close");
-	return true;
+        Alert::show(PACKAGE "<<The layer is locked.||&Close");
+        return true;
       }
 
       // Change to MovingPixelsState
@@ -202,7 +202,7 @@ bool StandbyState::onMouseDown(Editor* editor, Message* msg)
 
   // Call the eyedropper command
   if (clicked_ink->isEyedropper()) {
-    Command* eyedropper_cmd = 
+    Command* eyedropper_cmd =
       CommandsModule::instance()->getCommandByName(CommandId::Eyedropper);
 
     Params params;
@@ -247,12 +247,12 @@ bool StandbyState::onMouseWheel(Editor* editor, Message* msg)
     wheelAction = WHEEL_ZOOM;
   }
   else {
-#if 1				// TODO make it configurable
+#if 1                           // TODO make it configurable
     if (has_shifts(msg, KB_ALT_FLAG)) {
       if (has_shifts(msg, KB_SHIFT_FLAG))
-	wheelAction = WHEEL_BG;
+        wheelAction = WHEEL_BG;
       else
-	wheelAction = WHEEL_FG;
+        wheelAction = WHEEL_FG;
     }
     else if (has_shifts(msg, KB_CTRL_FLAG)) {
       wheelAction = WHEEL_FRAME;
@@ -275,44 +275,44 @@ bool StandbyState::onMouseWheel(Editor* editor, Message* msg)
       break;
 
     case WHEEL_FG:
-      // if (m_state == EDITOR_STATE_STANDBY) 
+      // if (m_state == EDITOR_STATE_STANDBY)
       {
-	int newIndex = 0;
-	if (app_get_colorbar()->getFgColor().getType() == Color::IndexType) {
-	  newIndex = app_get_colorbar()->getFgColor().getIndex() + dz;
-	  newIndex = MID(0, newIndex, 255);
-	}
-	app_get_colorbar()->setFgColor(Color::fromIndex(newIndex));
+        int newIndex = 0;
+        if (app_get_colorbar()->getFgColor().getType() == Color::IndexType) {
+          newIndex = app_get_colorbar()->getFgColor().getIndex() + dz;
+          newIndex = MID(0, newIndex, 255);
+        }
+        app_get_colorbar()->setFgColor(Color::fromIndex(newIndex));
       }
       break;
 
     case WHEEL_BG:
-      // if (m_state == EDITOR_STATE_STANDBY) 
+      // if (m_state == EDITOR_STATE_STANDBY)
       {
-	int newIndex = 0;
-	if (app_get_colorbar()->getBgColor().getType() == Color::IndexType) {
-	  newIndex = app_get_colorbar()->getBgColor().getIndex() + dz;
-	  newIndex = MID(0, newIndex, 255);
-	}
-	app_get_colorbar()->setBgColor(Color::fromIndex(newIndex));
+        int newIndex = 0;
+        if (app_get_colorbar()->getBgColor().getType() == Color::IndexType) {
+          newIndex = app_get_colorbar()->getBgColor().getIndex() + dz;
+          newIndex = MID(0, newIndex, 255);
+        }
+        app_get_colorbar()->setBgColor(Color::fromIndex(newIndex));
       }
       break;
 
     case WHEEL_FRAME:
-      // if (m_state == EDITOR_STATE_STANDBY) 
+      // if (m_state == EDITOR_STATE_STANDBY)
       {
-	Command* command = CommandsModule::instance()->getCommandByName
-	  ((dz < 0) ? CommandId::GotoNextFrame:
-		      CommandId::GotoPreviousFrame);
-	if (command)
-	  UIContext::instance()->executeCommand(command, NULL);
+        Command* command = CommandsModule::instance()->getCommandByName
+          ((dz < 0) ? CommandId::GotoNextFrame:
+                      CommandId::GotoPreviousFrame);
+        if (command)
+          UIContext::instance()->executeCommand(command, NULL);
       }
       break;
 
     case WHEEL_ZOOM: {
       int zoom = MID(MIN_ZOOM, editor->getZoom()-dz, MAX_ZOOM);
       if (editor->getZoom() != zoom)
-	editor->setZoomAndCenterInMouse(zoom, msg->mouse.x, msg->mouse.y);
+        editor->setZoomAndCenterInMouse(zoom, msg->mouse.x, msg->mouse.y);
       break;
     }
 
@@ -324,21 +324,21 @@ bool StandbyState::onMouseWheel(Editor* editor, Message* msg)
       int dy = 0;
 
       if (wheelAction == WHEEL_HSCROLL) {
-	dx = dz * vp.w;
+        dx = dz * vp.w;
       }
       else {
-	dy = dz * vp.h;
+        dy = dz * vp.h;
       }
 
       if (scrollBigSteps) {
-	dx /= 2;
-	dy /= 2;
+        dx /= 2;
+        dy /= 2;
       }
       else {
-	dx /= 10;
-	dy /= 10;
+        dx /= 10;
+        dy /= 10;
       }
-		
+
       gfx::Point scroll = view->getViewScroll();
 
       editor->hideDrawingCursor();
@@ -363,20 +363,20 @@ bool StandbyState::onSetCursor(Editor* editor)
     if (current_ink->isSelection()) {
       // See if the cursor is in some selection handle.
       if (m_decorator->onSetCursor(editor))
-	return true;
+        return true;
 
       // Move pixels
       if (editor->isInsideSelection()) {
-	EditorCustomizationDelegate* customization = editor->getCustomizationDelegate();
+        EditorCustomizationDelegate* customization = editor->getCustomizationDelegate();
 
-	editor->hideDrawingCursor();
+        editor->hideDrawingCursor();
 
-	if (customization && customization->isCopySelectionKeyPressed())
-	  jmouse_set_cursor(JI_CURSOR_NORMAL_ADD);
-	else
-	  jmouse_set_cursor(JI_CURSOR_MOVE);
+        if (customization && customization->isCopySelectionKeyPressed())
+          jmouse_set_cursor(JI_CURSOR_NORMAL_ADD);
+        else
+          jmouse_set_cursor(JI_CURSOR_MOVE);
 
-	return true;
+        return true;
       }
     }
     else if (current_ink->isEyedropper()) {
@@ -497,29 +497,29 @@ bool StandbyState::Decorator::onSetCursor(Editor* editor)
   const gfx::Transformation transformation(m_standbyState->getTransformation(editor));
   TransformHandles* tr = getTransformHandles(editor);
   HandleType handle = tr->getHandleAtPoint(editor,
-					   gfx::Point(jmouse_x(0), jmouse_y(0)),
-					   transformation);
+                                           gfx::Point(jmouse_x(0), jmouse_y(0)),
+                                           transformation);
 
   int newCursor = JI_CURSOR_NORMAL;
 
   switch (handle) {
-    case ScaleNWHandle:		newCursor = JI_CURSOR_SIZE_TL; break;
-    case ScaleNHandle:		newCursor = JI_CURSOR_SIZE_T; break;
-    case ScaleNEHandle:		newCursor = JI_CURSOR_SIZE_TR; break;
-    case ScaleWHandle:		newCursor = JI_CURSOR_SIZE_L; break;
-    case ScaleEHandle:		newCursor = JI_CURSOR_SIZE_R; break;
-    case ScaleSWHandle:		newCursor = JI_CURSOR_SIZE_BL; break;
-    case ScaleSHandle:		newCursor = JI_CURSOR_SIZE_B; break;
-    case ScaleSEHandle:		newCursor = JI_CURSOR_SIZE_BR; break;
-    case RotateNWHandle:	newCursor = JI_CURSOR_ROTATE_TL; break;
-    case RotateNHandle:		newCursor = JI_CURSOR_ROTATE_T; break;
-    case RotateNEHandle:	newCursor = JI_CURSOR_ROTATE_TR; break;
-    case RotateWHandle:		newCursor = JI_CURSOR_ROTATE_L; break;
-    case RotateEHandle:		newCursor = JI_CURSOR_ROTATE_R; break;
-    case RotateSWHandle:	newCursor = JI_CURSOR_ROTATE_BL; break;
-    case RotateSHandle:		newCursor = JI_CURSOR_ROTATE_B; break;
-    case RotateSEHandle:	newCursor = JI_CURSOR_ROTATE_BR; break;
-    case PivotHandle:		newCursor = JI_CURSOR_HAND; break;
+    case ScaleNWHandle:         newCursor = JI_CURSOR_SIZE_TL; break;
+    case ScaleNHandle:          newCursor = JI_CURSOR_SIZE_T; break;
+    case ScaleNEHandle:         newCursor = JI_CURSOR_SIZE_TR; break;
+    case ScaleWHandle:          newCursor = JI_CURSOR_SIZE_L; break;
+    case ScaleEHandle:          newCursor = JI_CURSOR_SIZE_R; break;
+    case ScaleSWHandle:         newCursor = JI_CURSOR_SIZE_BL; break;
+    case ScaleSHandle:          newCursor = JI_CURSOR_SIZE_B; break;
+    case ScaleSEHandle:         newCursor = JI_CURSOR_SIZE_BR; break;
+    case RotateNWHandle:        newCursor = JI_CURSOR_ROTATE_TL; break;
+    case RotateNHandle:         newCursor = JI_CURSOR_ROTATE_T; break;
+    case RotateNEHandle:        newCursor = JI_CURSOR_ROTATE_TR; break;
+    case RotateWHandle:         newCursor = JI_CURSOR_ROTATE_L; break;
+    case RotateEHandle:         newCursor = JI_CURSOR_ROTATE_R; break;
+    case RotateSWHandle:        newCursor = JI_CURSOR_ROTATE_BL; break;
+    case RotateSHandle:         newCursor = JI_CURSOR_ROTATE_B; break;
+    case RotateSEHandle:        newCursor = JI_CURSOR_ROTATE_BR; break;
+    case PivotHandle:           newCursor = JI_CURSOR_HAND; break;
     default:
       return false;
   }
@@ -536,7 +536,7 @@ bool StandbyState::Decorator::onSetCursor(Editor* editor)
     size_t c;
     for (c=num-1; c>0; --c)
       if (rotated_size_cursors[c] == newCursor)
-	break;
+        break;
 
     newCursor = rotated_size_cursors[(c+angle) % num];
   }
@@ -545,7 +545,7 @@ bool StandbyState::Decorator::onSetCursor(Editor* editor)
     size_t c;
     for (c=num-1; c>0; --c)
       if (rotated_rotate_cursors[c] == newCursor)
-	break;
+        break;
 
     newCursor = rotated_rotate_cursors[(c+angle) % num];
   }
@@ -573,6 +573,6 @@ void StandbyState::Decorator::postRenderDecorator(EditorPostRender* render)
 
     if (currentTool->getInk(0)->isSelection())
       getTransformHandles(editor)->drawHandles(editor,
-					       m_standbyState->getTransformation(editor));
+                                               m_standbyState->getTransformation(editor));
   }
 }

@@ -46,7 +46,7 @@ public:
 
   // Signals
   Signal1<void, const Color&> ColorChange;
-  
+
 protected:
   void onColorPaletteIndexChange(int index);
   void onColorSlidersChange(ColorSlidersChangeEvent& ev);

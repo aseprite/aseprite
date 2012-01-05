@@ -24,7 +24,7 @@ public:
   void setValue(int value);
 
   void getSliderThemeInfo(int* min, int* max, int* value);
-  
+
   // Signals
   Signal0<void> Change;
   Signal0<void> SliderReleased;

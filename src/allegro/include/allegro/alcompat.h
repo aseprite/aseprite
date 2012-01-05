@@ -192,4 +192,3 @@ AL_FUNC_DEPRECATED(int,  timer_is_using_retrace, (void));
 #endif
 
 #endif          /* ifndef ALLEGRO_COMPAT_H */
-

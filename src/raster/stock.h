@@ -63,8 +63,8 @@ public:
   void replaceImage(int index, Image* image);
 
 //private: TODO uncomment this line
-  int m_imgtype;	// Type of images (all images in the stock must be of this type).
-  ImagesList m_image;	// The images-array where the images are.
+  int m_imgtype;        // Type of images (all images in the stock must be of this type).
+  ImagesList m_image;   // The images-array where the images are.
 };
 
 #endif

@@ -48,7 +48,7 @@ using namespace gfx;
    Animator Editor
 
                         Frames ...
-                        
+
    --------------------+-----+-----+-----+---
             Layers     |msecs|msecs|msecs|...
    --------------------+-----+-----+-----+---
@@ -64,22 +64,22 @@ using namespace gfx;
 // Size of the thumbnail in the screen (width x height), the really
 // size of the thumbnail bitmap is specified in the
 // 'generate_thumbnail' routine.
-#define THUMBSIZE	(32*jguiscale())
+#define THUMBSIZE       (32*jguiscale())
 
 // Height of the headers.
-#define HDRSIZE		(3 + text_height(this->getFont())*2 + 3 + 3)
+#define HDRSIZE         (3 + text_height(this->getFont())*2 + 3 + 3)
 
 // Width of the frames.
-#define FRMSIZE		(3 + THUMBSIZE + 3)
+#define FRMSIZE         (3 + THUMBSIZE + 3)
 
 // Height of the layers.
-#define LAYSIZE		(3 + MAX(text_height(this->getFont()), THUMBSIZE) + 4)
+#define LAYSIZE         (3 + MAX(text_height(this->getFont()), THUMBSIZE) + 4)
 
 // Space between icons and other information in the layer.
-#define ICONSEP		(2*jguiscale())
+#define ICONSEP         (2*jguiscale())
 
 // Space between the icon-bitmap and the edge of the surrounding button.
-#define ICONBORDER	(4*jguiscale())
+#define ICONBORDER      (4*jguiscale())
 
 enum {
   A_PART_NOTHING,
@@ -120,9 +120,9 @@ private:
   void drawHeader(JRect clip);
   void drawHeaderFrame(JRect clip, int frame);
   void drawHeaderPart(JRect clip, int x1, int y1, int x2, int y2,
-		      bool is_hot, bool is_clk,
-		      const char* line1, int align1,
-		      const char* line2, int align2);
+                      bool is_hot, bool is_clk,
+                      const char* line1, int align1,
+                      const char* line2, int align2);
   void drawSeparator(JRect clip);
   void drawLayer(JRect clip, int layer_index);
   void drawLayerPadding();
@@ -161,7 +161,7 @@ private:
 static AnimationEditor* current_anieditor = NULL;
 
 static void icon_rect(BITMAP* icon_normal, BITMAP* icon_selected, int x1, int y1, int x2, int y2,
-		      bool is_selected, bool is_hot, bool is_clk);
+                      bool is_selected, bool is_hot, bool is_clk);
 
 bool animation_editor_is_movingcel()
 {
@@ -254,34 +254,34 @@ bool AnimationEditor::onProcessMessage(Message* msg)
 
       // Draw the header for each visible frame.
       for (frame=first_frame; frame<=last_frame; frame++)
-	drawHeaderFrame(clip, frame);
+        drawHeaderFrame(clip, frame);
 
       // Draw the separator.
       drawSeparator(clip);
 
       // Draw each visible layer.
       for (layer=first_layer; layer<=last_layer; layer++) {
-	drawLayer(clip, layer);
+        drawLayer(clip, layer);
 
-	// Get the first CelIterator to be drawn (it is the first cel with cel->frame >= first_frame)
-	CelIterator it, end;
-	Layer* layerPtr = m_layers[layer];
-	if (layerPtr->is_image()) {
-	  it = static_cast<LayerImage*>(layerPtr)->getCelBegin();
-	  end = static_cast<LayerImage*>(layerPtr)->getCelEnd();
-	  for (; it != end && (*it)->getFrame() < first_frame; ++it)
-	    ;
-	}
+        // Get the first CelIterator to be drawn (it is the first cel with cel->frame >= first_frame)
+        CelIterator it, end;
+        Layer* layerPtr = m_layers[layer];
+        if (layerPtr->is_image()) {
+          it = static_cast<LayerImage*>(layerPtr)->getCelBegin();
+          end = static_cast<LayerImage*>(layerPtr)->getCelEnd();
+          for (; it != end && (*it)->getFrame() < first_frame; ++it)
+            ;
+        }
 
-	// Draw every visible cel for each layer.
-	for (frame=first_frame; frame<=last_frame; ++frame) {
-	  Cel* cel = (layerPtr->is_image() && it != end && (*it)->getFrame() == frame ? *it: NULL);
+        // Draw every visible cel for each layer.
+        for (frame=first_frame; frame<=last_frame; ++frame) {
+          Cel* cel = (layerPtr->is_image() && it != end && (*it)->getFrame() == frame ? *it: NULL);
 
-	  drawCel(clip, layer, frame, cel);
+          drawCel(clip, layer, frame, cel);
 
-	  if (cel)
-	    ++it;		// Go to next cel
-	}
+          if (cel)
+            ++it;               // Go to next cel
+        }
       }
 
       drawLayerPadding();
@@ -302,119 +302,119 @@ bool AnimationEditor::onProcessMessage(Message* msg)
 
     case JM_BUTTONPRESSED:
       if (msg->mouse.middle || m_space_pressed) {
-	captureMouse();
-	m_state = STATE_SCROLLING;
-	return true;
+        captureMouse();
+        m_state = STATE_SCROLLING;
+        return true;
       }
 
       // Clicked-part = hot-part.
       m_clk_part = m_hot_part;
       m_clk_layer = m_hot_layer;
       m_clk_frame = m_hot_frame;
-	
+
       switch (m_hot_part) {
-	case A_PART_NOTHING:
-	  // Do nothing.
-	  break;
-	case A_PART_SEPARATOR:
-	  captureMouse();
-	  m_state = STATE_MOVING_SEPARATOR;
-	  break;
-	case A_PART_HEADER_LAYER:
-	  // Do nothing.
-	  break;
-	case A_PART_HEADER_FRAME:
-	  {
-	    const DocumentReader document(const_cast<Document*>(m_document));
-	    DocumentWriter document_writer(document);
-	    document_writer->getSprite()->setCurrentFrame(m_clk_frame);
-	  }
-	  invalidate(); // TODO Replace this by redrawing old current frame and new current frame
-	  captureMouse();
-	  m_state = STATE_MOVING_FRAME;
-	  break;
-	case A_PART_LAYER: {
-	  const DocumentReader document(const_cast<Document*>(m_document));
-	  const Sprite* sprite = m_sprite;
-	  int old_layer = getLayerIndex(sprite->getCurrentLayer());
-	  int frame = m_sprite->getCurrentFrame();
+        case A_PART_NOTHING:
+          // Do nothing.
+          break;
+        case A_PART_SEPARATOR:
+          captureMouse();
+          m_state = STATE_MOVING_SEPARATOR;
+          break;
+        case A_PART_HEADER_LAYER:
+          // Do nothing.
+          break;
+        case A_PART_HEADER_FRAME:
+          {
+            const DocumentReader document(const_cast<Document*>(m_document));
+            DocumentWriter document_writer(document);
+            document_writer->getSprite()->setCurrentFrame(m_clk_frame);
+          }
+          invalidate(); // TODO Replace this by redrawing old current frame and new current frame
+          captureMouse();
+          m_state = STATE_MOVING_FRAME;
+          break;
+        case A_PART_LAYER: {
+          const DocumentReader document(const_cast<Document*>(m_document));
+          const Sprite* sprite = m_sprite;
+          int old_layer = getLayerIndex(sprite->getCurrentLayer());
+          int frame = m_sprite->getCurrentFrame();
 
-	  // Did the user select another layer?
-	  if (old_layer != m_clk_layer) {
-	    {
-	      DocumentWriter document_writer(document);
-	      Sprite* sprite_writer = const_cast<Sprite*>(m_sprite);
-	      sprite_writer->setCurrentLayer(m_layers[m_clk_layer]);
-	    }
+          // Did the user select another layer?
+          if (old_layer != m_clk_layer) {
+            {
+              DocumentWriter document_writer(document);
+              Sprite* sprite_writer = const_cast<Sprite*>(m_sprite);
+              sprite_writer->setCurrentLayer(m_layers[m_clk_layer]);
+            }
 
-	    jmouse_hide();
-	    // Redraw the old & new selected cel.
-	    drawPart(A_PART_CEL, old_layer, frame);
-	    drawPart(A_PART_CEL, m_clk_layer, frame);
-	    // Redraw the old selected layer.
-	    drawPart(A_PART_LAYER, old_layer, frame);
-	    jmouse_show();
-	  }
+            jmouse_hide();
+            // Redraw the old & new selected cel.
+            drawPart(A_PART_CEL, old_layer, frame);
+            drawPart(A_PART_CEL, m_clk_layer, frame);
+            // Redraw the old selected layer.
+            drawPart(A_PART_LAYER, old_layer, frame);
+            jmouse_show();
+          }
 
-	  // Change the scroll to show the new selected cel.
-	  showCel(m_clk_layer, sprite->getCurrentFrame());
-	  captureMouse();
-	  m_state = STATE_MOVING_LAYER;
-	  break;
-	}
-	case A_PART_LAYER_EYE_ICON:
-	  captureMouse();
-	  break;
-	case A_PART_LAYER_LOCK_ICON:
-	  captureMouse();
-	  break;
-	case A_PART_CEL: {
-	  const DocumentReader document(const_cast<Document*>(m_document));
-	  const Sprite* sprite = document->getSprite();
-	  int old_layer = getLayerIndex(sprite->getCurrentLayer());
-	  int old_frame = sprite->getCurrentFrame();
+          // Change the scroll to show the new selected cel.
+          showCel(m_clk_layer, sprite->getCurrentFrame());
+          captureMouse();
+          m_state = STATE_MOVING_LAYER;
+          break;
+        }
+        case A_PART_LAYER_EYE_ICON:
+          captureMouse();
+          break;
+        case A_PART_LAYER_LOCK_ICON:
+          captureMouse();
+          break;
+        case A_PART_CEL: {
+          const DocumentReader document(const_cast<Document*>(m_document));
+          const Sprite* sprite = document->getSprite();
+          int old_layer = getLayerIndex(sprite->getCurrentLayer());
+          int old_frame = sprite->getCurrentFrame();
 
-	  // Select the new clicked-part.
-	  if (old_layer != m_clk_layer ||
-	      old_frame != m_clk_frame) {
-	    {
-	      DocumentWriter document_writer(document);
-	      Sprite* sprite_writer = document_writer->getSprite();
-	      sprite_writer->setCurrentLayer(m_layers[m_clk_layer]);
-	      sprite_writer->setCurrentFrame(m_clk_frame);
-	    }
+          // Select the new clicked-part.
+          if (old_layer != m_clk_layer ||
+              old_frame != m_clk_frame) {
+            {
+              DocumentWriter document_writer(document);
+              Sprite* sprite_writer = document_writer->getSprite();
+              sprite_writer->setCurrentLayer(m_layers[m_clk_layer]);
+              sprite_writer->setCurrentFrame(m_clk_frame);
+            }
 
-	    jmouse_hide();
-	    // Redraw the old & new selected layer.
-	    if (old_layer != m_clk_layer) {
-	      drawPart(A_PART_LAYER, old_layer, old_frame);
-	      drawPart(A_PART_LAYER,
-		       m_clk_layer,
-		       m_clk_frame);
-	    }
-	    // Redraw the old selected cel.
-	    drawPart(A_PART_CEL, old_layer, old_frame);
-	    jmouse_show();
-	  }
+            jmouse_hide();
+            // Redraw the old & new selected layer.
+            if (old_layer != m_clk_layer) {
+              drawPart(A_PART_LAYER, old_layer, old_frame);
+              drawPart(A_PART_LAYER,
+                       m_clk_layer,
+                       m_clk_frame);
+            }
+            // Redraw the old selected cel.
+            drawPart(A_PART_CEL, old_layer, old_frame);
+            jmouse_show();
+          }
 
-	  // Change the scroll to show the new selected cel.
-	  showCel(m_clk_layer, sprite->getCurrentFrame());
+          // Change the scroll to show the new selected cel.
+          showCel(m_clk_layer, sprite->getCurrentFrame());
 
-	  // Capture the mouse (to move the cel).
-	  captureMouse();
-	  m_state = STATE_MOVING_CEL;
-	  break;
-	}
+          // Capture the mouse (to move the cel).
+          captureMouse();
+          m_state = STATE_MOVING_CEL;
+          break;
+        }
       }
 
       // Redraw the new selected part (header, layer or cel).
       jmouse_hide();
       drawPart(m_clk_part,
-	       m_clk_layer,
-	       m_clk_frame);
+               m_clk_layer,
+               m_clk_frame);
       jmouse_show();
       break;
-      
+
     case JM_MOTION: {
       int hot_part = A_PART_NOTHING;
       int hot_layer = -1;
@@ -423,82 +423,82 @@ bool AnimationEditor::onProcessMessage(Message* msg)
       int my = msg->mouse.y - rc->y1;
 
       if (hasCapture()) {
-	if (m_state == STATE_SCROLLING) {
-	  setScroll(m_scroll_x+jmouse_x(1)-jmouse_x(0),
-		    m_scroll_y+jmouse_y(1)-jmouse_y(0), true);
+        if (m_state == STATE_SCROLLING) {
+          setScroll(m_scroll_x+jmouse_x(1)-jmouse_x(0),
+                    m_scroll_y+jmouse_y(1)-jmouse_y(0), true);
 
-	  jmouse_control_infinite_scroll(getBounds());
-	  return true;
-	}
-	// If the mouse pressed the mouse's button in the separator,
-	// we shouldn't change the hot (so the separator can be
-	// tracked to the mouse's released).
-	else if (m_clk_part == A_PART_SEPARATOR) {
-	  hot_part = m_clk_part;
-	  m_separator_x = mx;
-	  invalidate();
-	  return true;
-	}
+          jmouse_control_infinite_scroll(getBounds());
+          return true;
+        }
+        // If the mouse pressed the mouse's button in the separator,
+        // we shouldn't change the hot (so the separator can be
+        // tracked to the mouse's released).
+        else if (m_clk_part == A_PART_SEPARATOR) {
+          hot_part = m_clk_part;
+          m_separator_x = mx;
+          invalidate();
+          return true;
+        }
       }
 
       // Is the mouse on the separator.
       if (mx > m_separator_x-4 && mx < m_separator_x+4)  {
-	hot_part = A_PART_SEPARATOR;
+        hot_part = A_PART_SEPARATOR;
       }
       // Is the mouse on the headers?
       else if (my < HDRSIZE) {
-	// Is on the layers' header?
-	if (mx < m_separator_x)
-	  hot_part = A_PART_HEADER_LAYER;
-	// Is on a frame header?
-	else {
-	  hot_part = A_PART_HEADER_FRAME;
-	  hot_frame = (mx
-		       - m_separator_x
-		       - m_separator_w
-		       + m_scroll_x) / FRMSIZE;
-	}
+        // Is on the layers' header?
+        if (mx < m_separator_x)
+          hot_part = A_PART_HEADER_LAYER;
+        // Is on a frame header?
+        else {
+          hot_part = A_PART_HEADER_FRAME;
+          hot_frame = (mx
+                       - m_separator_x
+                       - m_separator_w
+                       + m_scroll_x) / FRMSIZE;
+        }
       }
       else {
-	hot_layer = (my
-		     - HDRSIZE
-		     + m_scroll_y) / LAYSIZE;
-	
-	// Is the mouse on a layer's label?
-	if (mx < m_separator_x) {
-	  SkinTheme* theme = static_cast<SkinTheme*>(getTheme());
-	  BITMAP* icon1 = theme->get_part(PART_LAYER_VISIBLE);
-	  BITMAP* icon2 = theme->get_part(PART_LAYER_EDITABLE);
-	  int x1, y1, x2, y2, y_mid;
+        hot_layer = (my
+                     - HDRSIZE
+                     + m_scroll_y) / LAYSIZE;
 
-	  x1 = 0;
-	  y1 = HDRSIZE + LAYSIZE*hot_layer - m_scroll_y;
-	  x2 = x1 + m_separator_x - 1;
-	  y2 = y1 + LAYSIZE - 1;
-	  y_mid = (y1+y2) / 2;
+        // Is the mouse on a layer's label?
+        if (mx < m_separator_x) {
+          SkinTheme* theme = static_cast<SkinTheme*>(getTheme());
+          BITMAP* icon1 = theme->get_part(PART_LAYER_VISIBLE);
+          BITMAP* icon2 = theme->get_part(PART_LAYER_EDITABLE);
+          int x1, y1, x2, y2, y_mid;
 
-	  if (mx >= x1+2 &&
-	      mx <= x1+ICONSEP+ICONBORDER+icon1->w+ICONBORDER-1 &&
-	      my >= y_mid-icon1->h/2-ICONBORDER &&
-	      my <= y_mid+icon1->h/2+ICONBORDER) {
-	    hot_part = A_PART_LAYER_EYE_ICON;
-	  }
-	  else if (mx >= x1+ICONSEP+ICONBORDER+icon1->w+ICONBORDER &&
-		   mx <= x1+ICONSEP+ICONBORDER+icon1->w+ICONBORDER+ICONBORDER+icon2->w+ICONBORDER-1 &&
-		   my >= y_mid-icon2->h/2-ICONBORDER &&
-		   my <= y_mid+icon2->h/2+ICONBORDER) {
-	    hot_part = A_PART_LAYER_LOCK_ICON;
-	  }
-	  else
-	    hot_part = A_PART_LAYER;
-	}
-	else {
-	  hot_part = A_PART_CEL;
-	  hot_frame = (mx
-		       - m_separator_x
-		       - m_separator_w
-		       + m_scroll_x) / FRMSIZE;
-	}
+          x1 = 0;
+          y1 = HDRSIZE + LAYSIZE*hot_layer - m_scroll_y;
+          x2 = x1 + m_separator_x - 1;
+          y2 = y1 + LAYSIZE - 1;
+          y_mid = (y1+y2) / 2;
+
+          if (mx >= x1+2 &&
+              mx <= x1+ICONSEP+ICONBORDER+icon1->w+ICONBORDER-1 &&
+              my >= y_mid-icon1->h/2-ICONBORDER &&
+              my <= y_mid+icon1->h/2+ICONBORDER) {
+            hot_part = A_PART_LAYER_EYE_ICON;
+          }
+          else if (mx >= x1+ICONSEP+ICONBORDER+icon1->w+ICONBORDER &&
+                   mx <= x1+ICONSEP+ICONBORDER+icon1->w+ICONBORDER+ICONBORDER+icon2->w+ICONBORDER-1 &&
+                   my >= y_mid-icon2->h/2-ICONBORDER &&
+                   my <= y_mid+icon2->h/2+ICONBORDER) {
+            hot_part = A_PART_LAYER_LOCK_ICON;
+          }
+          else
+            hot_part = A_PART_LAYER;
+        }
+        else {
+          hot_part = A_PART_CEL;
+          hot_frame = (mx
+                       - m_separator_x
+                       - m_separator_w
+                       + m_scroll_x) / FRMSIZE;
+        }
       }
 
       // Set the new 'hot' thing.
@@ -508,192 +508,192 @@ bool AnimationEditor::onProcessMessage(Message* msg)
 
     case JM_BUTTONRELEASED:
       if (hasCapture()) {
-	releaseMouse();
+        releaseMouse();
 
-	if (m_state == STATE_SCROLLING) {
-	  m_state = STATE_STANDBY;
-	  return true;
-	}
+        if (m_state == STATE_SCROLLING) {
+          m_state = STATE_STANDBY;
+          return true;
+        }
 
-	switch (m_hot_part) {
-	  case A_PART_NOTHING:
-	    // Do nothing.
-	    break;
-	  case A_PART_SEPARATOR:
-	    // Do nothing.
-	    break;
-	  case A_PART_HEADER_LAYER:
-	    // Do nothing.
-	    break;
-	  case A_PART_HEADER_FRAME:
-	    // Show the frame pop-up menu.
-	    if (msg->mouse.right) {
-	      if (m_clk_frame == m_hot_frame) {
-		Menu* popup_menu = get_frame_popup_menu();
-		if (popup_menu != NULL) {
-		  popup_menu->showPopup(msg->mouse.x, msg->mouse.y);
+        switch (m_hot_part) {
+          case A_PART_NOTHING:
+            // Do nothing.
+            break;
+          case A_PART_SEPARATOR:
+            // Do nothing.
+            break;
+          case A_PART_HEADER_LAYER:
+            // Do nothing.
+            break;
+          case A_PART_HEADER_FRAME:
+            // Show the frame pop-up menu.
+            if (msg->mouse.right) {
+              if (m_clk_frame == m_hot_frame) {
+                Menu* popup_menu = get_frame_popup_menu();
+                if (popup_menu != NULL) {
+                  popup_menu->showPopup(msg->mouse.x, msg->mouse.y);
 
-		  destroy_thumbnails();
-		  invalidate();
-		}
-	      }
-	    }
-	    // Show the frame's properties dialog.
-	    else if (msg->mouse.left) {
-	      if (m_clk_frame == m_hot_frame) {
-		// Execute FrameProperties command for current frame.
-		Command* command = CommandsModule::instance()
-		  ->getCommandByName(CommandId::FrameProperties);
-		Params params;
-		params.set("frame", "current");
+                  destroy_thumbnails();
+                  invalidate();
+                }
+              }
+            }
+            // Show the frame's properties dialog.
+            else if (msg->mouse.left) {
+              if (m_clk_frame == m_hot_frame) {
+                // Execute FrameProperties command for current frame.
+                Command* command = CommandsModule::instance()
+                  ->getCommandByName(CommandId::FrameProperties);
+                Params params;
+                params.set("frame", "current");
 
-		UIContext::instance()->executeCommand(command, &params);
-	      }
-	      else {
-		const DocumentReader document(const_cast<Document*>(m_document));
-		const Sprite* sprite = m_sprite;
+                UIContext::instance()->executeCommand(command, &params);
+              }
+              else {
+                const DocumentReader document(const_cast<Document*>(m_document));
+                const Sprite* sprite = m_sprite;
 
-		if (m_hot_frame >= 0 &&
-		    m_hot_frame < sprite->getTotalFrames() &&
-		    m_hot_frame != m_clk_frame+1) {
-		  {
-		    DocumentWriter document_writer(document);
-		    UndoTransaction undoTransaction(document_writer, "Move Frame");
-		    undoTransaction.moveFrameBefore(m_clk_frame, m_hot_frame);
-		    undoTransaction.commit();
-		  }
-		  invalidate();
-		}
-	      }
-	    }
-	    break;
-	  case A_PART_LAYER:
-	    // Show the layer pop-up menu.
-	    if (msg->mouse.right) {
-	      if (m_clk_layer == m_hot_layer) {
-	      	Menu* popup_menu = get_layer_popup_menu();
-	      	if (popup_menu != NULL) {
-	      	  popup_menu->showPopup(msg->mouse.x, msg->mouse.y);
+                if (m_hot_frame >= 0 &&
+                    m_hot_frame < sprite->getTotalFrames() &&
+                    m_hot_frame != m_clk_frame+1) {
+                  {
+                    DocumentWriter document_writer(document);
+                    UndoTransaction undoTransaction(document_writer, "Move Frame");
+                    undoTransaction.moveFrameBefore(m_clk_frame, m_hot_frame);
+                    undoTransaction.commit();
+                  }
+                  invalidate();
+                }
+              }
+            }
+            break;
+          case A_PART_LAYER:
+            // Show the layer pop-up menu.
+            if (msg->mouse.right) {
+              if (m_clk_layer == m_hot_layer) {
+                Menu* popup_menu = get_layer_popup_menu();
+                if (popup_menu != NULL) {
+                  popup_menu->showPopup(msg->mouse.x, msg->mouse.y);
 
-		  destroy_thumbnails();
-		  invalidate();
-		  regenerateLayers();
-	      	}
-	      }
-	    }
-	    // Move a layer.
-	    else if (msg->mouse.left) {
-	      if (m_hot_layer >= 0 &&
-		  m_hot_layer < m_nlayers &&
-		  m_hot_layer != m_clk_layer &&
-		  m_hot_layer != m_clk_layer+1) {
-		if (!m_layers[m_clk_layer]->is_background()) {
-		  // move the clicked-layer after the hot-layer
-		  try {
-		    const DocumentReader document(const_cast<Document*>(m_document));
-		    DocumentWriter document_writer(document);
-		    Sprite* sprite_writer = const_cast<Sprite*>(m_sprite);
+                  destroy_thumbnails();
+                  invalidate();
+                  regenerateLayers();
+                }
+              }
+            }
+            // Move a layer.
+            else if (msg->mouse.left) {
+              if (m_hot_layer >= 0 &&
+                  m_hot_layer < m_nlayers &&
+                  m_hot_layer != m_clk_layer &&
+                  m_hot_layer != m_clk_layer+1) {
+                if (!m_layers[m_clk_layer]->is_background()) {
+                  // move the clicked-layer after the hot-layer
+                  try {
+                    const DocumentReader document(const_cast<Document*>(m_document));
+                    DocumentWriter document_writer(document);
+                    Sprite* sprite_writer = const_cast<Sprite*>(m_sprite);
 
-		    UndoTransaction undoTransaction(document_writer, "Move Layer");
-		    undoTransaction.moveLayerAfter(m_layers[m_clk_layer],
-						   m_layers[m_hot_layer]);
-		    undoTransaction.commit();
+                    UndoTransaction undoTransaction(document_writer, "Move Layer");
+                    undoTransaction.moveLayerAfter(m_layers[m_clk_layer],
+                                                   m_layers[m_hot_layer]);
+                    undoTransaction.commit();
 
-		    // Select the new layer.
-		    sprite_writer->setCurrentLayer(m_layers[m_clk_layer]);
-		  }
-		  catch (LockedDocumentException& e) {
-		    Console::showException(e);
-		  }
+                    // Select the new layer.
+                    sprite_writer->setCurrentLayer(m_layers[m_clk_layer]);
+                  }
+                  catch (LockedDocumentException& e) {
+                    Console::showException(e);
+                  }
 
-		  invalidate();
-		  regenerateLayers();
-		}
-		else {
-		  Alert::show(PACKAGE "<<You can't move the `Background' layer.||&OK");
-		}
-	      }
-	    }
-	    break;
-	  case A_PART_LAYER_EYE_ICON:
-	    // Hide/show layer.
-	    if (m_hot_layer == m_clk_layer &&
-		m_hot_layer >= 0 &&
-		m_hot_layer < m_nlayers) {
-	      Layer* layer = m_layers[m_clk_layer];
-	      ASSERT(layer != NULL);
-	      layer->set_readable(!layer->is_readable());
-	    }
-	    break;
-	  case A_PART_LAYER_LOCK_ICON:
-	    // Lock/unlock layer.
-	    if (m_hot_layer == m_clk_layer &&
-		m_hot_layer >= 0 &&
-		m_hot_layer < m_nlayers) {
-	      Layer* layer = m_layers[m_clk_layer];
-	      ASSERT(layer != NULL);
-	      layer->set_writable(!layer->is_writable());
-	    }
-	    break;
-	  case A_PART_CEL: {
-	    bool movement =
-	      m_clk_part == A_PART_CEL &&
-	      m_hot_part == A_PART_CEL &&
-	      (m_clk_layer != m_hot_layer ||
-	       m_clk_frame != m_hot_frame);
+                  invalidate();
+                  regenerateLayers();
+                }
+                else {
+                  Alert::show(PACKAGE "<<You can't move the `Background' layer.||&OK");
+                }
+              }
+            }
+            break;
+          case A_PART_LAYER_EYE_ICON:
+            // Hide/show layer.
+            if (m_hot_layer == m_clk_layer &&
+                m_hot_layer >= 0 &&
+                m_hot_layer < m_nlayers) {
+              Layer* layer = m_layers[m_clk_layer];
+              ASSERT(layer != NULL);
+              layer->set_readable(!layer->is_readable());
+            }
+            break;
+          case A_PART_LAYER_LOCK_ICON:
+            // Lock/unlock layer.
+            if (m_hot_layer == m_clk_layer &&
+                m_hot_layer >= 0 &&
+                m_hot_layer < m_nlayers) {
+              Layer* layer = m_layers[m_clk_layer];
+              ASSERT(layer != NULL);
+              layer->set_writable(!layer->is_writable());
+            }
+            break;
+          case A_PART_CEL: {
+            bool movement =
+              m_clk_part == A_PART_CEL &&
+              m_hot_part == A_PART_CEL &&
+              (m_clk_layer != m_hot_layer ||
+               m_clk_frame != m_hot_frame);
 
-	    if (movement) {
-	      set_frame_to_handle
-		(// Source cel.
-		 m_layers[m_clk_layer],
-		 m_clk_frame,
-		 // Destination cel.
-		 m_layers[m_hot_layer],
-		 m_hot_frame);
-	    }
+            if (movement) {
+              set_frame_to_handle
+                (// Source cel.
+                 m_layers[m_clk_layer],
+                 m_clk_frame,
+                 // Destination cel.
+                 m_layers[m_hot_layer],
+                 m_hot_frame);
+            }
 
-	    // Show the cel pop-up menu.
-	    if (msg->mouse.right) {
-	      Menu* popup_menu = movement ? get_cel_movement_popup_menu():
-					    get_cel_popup_menu();
-	      if (popup_menu != NULL) {
-		popup_menu->showPopup(msg->mouse.x, msg->mouse.y);
+            // Show the cel pop-up menu.
+            if (msg->mouse.right) {
+              Menu* popup_menu = movement ? get_cel_movement_popup_menu():
+                                            get_cel_popup_menu();
+              if (popup_menu != NULL) {
+                popup_menu->showPopup(msg->mouse.x, msg->mouse.y);
 
-		destroy_thumbnails();
-		regenerateLayers();
-		invalidate();
-	      }
-	    }
-	    // Move the cel.
-	    else if (msg->mouse.left) {
-	      if (movement) {
-		{
-		  const DocumentReader document(const_cast<Document*>(m_document));
-		  DocumentWriter document_writer(document);
-		  move_cel(document_writer);
-		}
+                destroy_thumbnails();
+                regenerateLayers();
+                invalidate();
+              }
+            }
+            // Move the cel.
+            else if (msg->mouse.left) {
+              if (movement) {
+                {
+                  const DocumentReader document(const_cast<Document*>(m_document));
+                  DocumentWriter document_writer(document);
+                  move_cel(document_writer);
+                }
 
-		destroy_thumbnails();
-		regenerateLayers();
-		invalidate();
-	      }
-	    }
-	    break;
-	  }
-	}
+                destroy_thumbnails();
+                regenerateLayers();
+                invalidate();
+              }
+            }
+            break;
+          }
+        }
 
-	// Clean the clicked-part & redraw the hot-part.
-	jmouse_hide();
-	cleanClk();
-	drawPart(m_hot_part,
-		 m_hot_layer,
-		 m_hot_frame);
-	jmouse_show();
+        // Clean the clicked-part & redraw the hot-part.
+        jmouse_hide();
+        cleanClk();
+        drawPart(m_hot_part,
+                 m_hot_layer,
+                 m_hot_frame);
+        jmouse_show();
 
-	// Restore the cursor.
-	m_state = STATE_STANDBY;
-	setCursor(msg->mouse.x, msg->mouse.y);
-	return true;
+        // Restore the cursor.
+        m_state = STATE_STANDBY;
+        setCursor(msg->mouse.x, msg->mouse.y);
+        return true;
       }
       break;
 
@@ -702,85 +702,85 @@ bool AnimationEditor::onProcessMessage(Message* msg)
 
       // Close animation editor.
       if ((command && (strcmp(command->short_name(), CommandId::FilmEditor) == 0)) ||
-	  (msg->key.scancode == KEY_ESC)) {
-	closeWindow();
-	return true;
+          (msg->key.scancode == KEY_ESC)) {
+        closeWindow();
+        return true;
       }
 
       // Undo.
       if (command && strcmp(command->short_name(), CommandId::Undo) == 0) {
-	const DocumentReader document(const_cast<Document*>(m_document));
-	const undo::UndoHistory* undo = document->getUndoHistory();
+        const DocumentReader document(const_cast<Document*>(m_document));
+        const undo::UndoHistory* undo = document->getUndoHistory();
 
-	if (undo->canUndo()) {
-	  DocumentWriter document_writer(document);
-	  undo::UndoHistory* undo_writer = document_writer->getUndoHistory();
+        if (undo->canUndo()) {
+          DocumentWriter document_writer(document);
+          undo::UndoHistory* undo_writer = document_writer->getUndoHistory();
 
-	  undo_writer->doUndo();
+          undo_writer->doUndo();
 
-	  destroy_thumbnails();
-	  regenerateLayers();
-	  showCurrentCel();
-	  invalidate();
-	}
-	return true;
+          destroy_thumbnails();
+          regenerateLayers();
+          showCurrentCel();
+          invalidate();
+        }
+        return true;
       }
 
       // Redo.
       if (command && strcmp(command->short_name(), CommandId::Redo) == 0) {
-	const DocumentReader document(const_cast<Document*>(m_document));
-	const undo::UndoHistory* undo = document->getUndoHistory();
+        const DocumentReader document(const_cast<Document*>(m_document));
+        const undo::UndoHistory* undo = document->getUndoHistory();
 
-	if (undo->canRedo()) {
-	  DocumentWriter document_writer(document);
-	  undo::UndoHistory* undo_writer = document_writer->getUndoHistory();
+        if (undo->canRedo()) {
+          DocumentWriter document_writer(document);
+          undo::UndoHistory* undo_writer = document_writer->getUndoHistory();
 
-	  undo_writer->doRedo();
+          undo_writer->doRedo();
 
-	  destroy_thumbnails();
-	  regenerateLayers();
-	  showCurrentCel();
-	  invalidate();
-	}
-	return true;
+          destroy_thumbnails();
+          regenerateLayers();
+          showCurrentCel();
+          invalidate();
+        }
+        return true;
       }
 
       // New_frame, remove_frame, new_cel, remove_cel.
       if (command != NULL) {
-	if (strcmp(command->short_name(), CommandId::NewFrame) == 0 ||
-	    strcmp(command->short_name(), CommandId::RemoveCel) == 0 ||
-	    strcmp(command->short_name(), CommandId::RemoveFrame) == 0 ||
-	    strcmp(command->short_name(), CommandId::GotoFirstFrame) == 0 ||
-	    strcmp(command->short_name(), CommandId::GotoPreviousFrame) == 0 ||
-	    strcmp(command->short_name(), CommandId::GotoPreviousLayer) == 0 ||
-	    strcmp(command->short_name(), CommandId::GotoNextFrame) == 0 ||
-	    strcmp(command->short_name(), CommandId::GotoNextLayer) == 0 ||
-	    strcmp(command->short_name(), CommandId::GotoLastFrame) == 0) {
-	  // execute the command
-	  UIContext::instance()->executeCommand(command);
+        if (strcmp(command->short_name(), CommandId::NewFrame) == 0 ||
+            strcmp(command->short_name(), CommandId::RemoveCel) == 0 ||
+            strcmp(command->short_name(), CommandId::RemoveFrame) == 0 ||
+            strcmp(command->short_name(), CommandId::GotoFirstFrame) == 0 ||
+            strcmp(command->short_name(), CommandId::GotoPreviousFrame) == 0 ||
+            strcmp(command->short_name(), CommandId::GotoPreviousLayer) == 0 ||
+            strcmp(command->short_name(), CommandId::GotoNextFrame) == 0 ||
+            strcmp(command->short_name(), CommandId::GotoNextLayer) == 0 ||
+            strcmp(command->short_name(), CommandId::GotoLastFrame) == 0) {
+          // execute the command
+          UIContext::instance()->executeCommand(command);
 
-	  showCurrentCel();
-	  invalidate();
-	  return true;
-	}
+          showCurrentCel();
+          invalidate();
+          return true;
+        }
 
-	if (strcmp(command->short_name(), CommandId::NewLayer) == 0 ||
-	    strcmp(command->short_name(), CommandId::RemoveLayer) == 0) {
-	  // execute the command
-	  UIContext::instance()->executeCommand(command);
+        if (strcmp(command->short_name(), CommandId::NewLayer) == 0 ||
+            strcmp(command->short_name(), CommandId::RemoveLayer) == 0) {
+          // execute the command
+          UIContext::instance()->executeCommand(command);
 
-	  regenerateLayers();
-	  showCurrentCel();
-	  invalidate();
-	  return true;
-	}
+          regenerateLayers();
+          showCurrentCel();
+          invalidate();
+          return true;
+        }
       }
 
       switch (msg->key.scancode) {
-	case KEY_SPACE:
-	  m_space_pressed = true;
-	  setCursor(jmouse_x(0), jmouse_y(0));
-	  return true;
+        case KEY_SPACE:
+          m_space_pressed = true;
+          setCursor(jmouse_x(0), jmouse_y(0));
+          return true;
       }
 
       break;
@@ -789,16 +789,16 @@ bool AnimationEditor::onProcessMessage(Message* msg)
     case JM_KEYRELEASED:
       switch (msg->key.scancode) {
 
-	case KEY_SPACE:
-	  if (m_space_pressed) {
-	    // We have to clear all the KEY_SPACE in buffer.
-	    clear_keybuf();
+        case KEY_SPACE:
+          if (m_space_pressed) {
+            // We have to clear all the KEY_SPACE in buffer.
+            clear_keybuf();
 
-	    m_space_pressed = false;
-	    setCursor(jmouse_x(0), jmouse_y(0));
-	    return true;
-	  }
-	  break;
+            m_space_pressed = false;
+            setCursor(jmouse_x(0), jmouse_y(0));
+            return true;
+          }
+          break;
       }
       break;
 
@@ -808,17 +808,17 @@ bool AnimationEditor::onProcessMessage(Message* msg)
       int dy = 0;
 
       if ((msg->any.shifts & KB_CTRL_FLAG) == KB_CTRL_FLAG)
-	dx = dz * FRMSIZE;
+        dx = dz * FRMSIZE;
       else
-	dy = dz * LAYSIZE;
+        dy = dz * LAYSIZE;
 
       if ((msg->any.shifts & KB_SHIFT_FLAG) == KB_SHIFT_FLAG) {
-      	dx *= 3;
-      	dy *= 3;
+        dx *= 3;
+        dy *= 3;
       }
 
       setScroll(m_scroll_x+dx,
-		m_scroll_y+dy, true);
+                m_scroll_y+dy, true);
       break;
     }
 
@@ -842,21 +842,21 @@ void AnimationEditor::setCursor(int x, int y)
   }
   // Scrolling.
   else if (m_state == STATE_SCROLLING ||
-	   m_space_pressed) {
+           m_space_pressed) {
     jmouse_set_cursor(JI_CURSOR_SCROLL);
   }
   // Moving a frame.
   else if (m_state == STATE_MOVING_FRAME &&
-	   m_clk_part == A_PART_HEADER_FRAME &&
-	   m_hot_part == A_PART_HEADER_FRAME &&
-	   m_clk_frame != m_hot_frame) {
+           m_clk_part == A_PART_HEADER_FRAME &&
+           m_hot_part == A_PART_HEADER_FRAME &&
+           m_clk_frame != m_hot_frame) {
     jmouse_set_cursor(JI_CURSOR_MOVE);
   }
   // Moving a layer.
   else if (m_state == STATE_MOVING_LAYER &&
-	   m_clk_part == A_PART_LAYER &&
-	   m_hot_part == A_PART_LAYER &&
-	   m_clk_layer != m_hot_layer) {
+           m_clk_part == A_PART_LAYER &&
+           m_hot_part == A_PART_LAYER &&
+           m_clk_layer != m_hot_layer) {
     if (m_layers[m_clk_layer]->is_background())
       jmouse_set_cursor(JI_CURSOR_FORBIDDEN);
     else
@@ -864,10 +864,10 @@ void AnimationEditor::setCursor(int x, int y)
   }
   // Moving a cel.
   else if (m_state == STATE_MOVING_CEL &&
-	   m_clk_part == A_PART_CEL &&
-	   m_hot_part == A_PART_CEL &&
-	   (m_clk_frame != m_hot_frame ||
-	    m_clk_layer != m_hot_layer)) {
+           m_clk_part == A_PART_CEL &&
+           m_hot_part == A_PART_CEL &&
+           (m_clk_frame != m_hot_frame ||
+            m_clk_layer != m_hot_layer)) {
     jmouse_set_cursor(JI_CURSOR_MOVE);
   }
   // Normal state.
@@ -901,18 +901,18 @@ void AnimationEditor::drawHeader(JRect clip)
 
   // Draw the header for the layers.
   drawHeaderPart(clip, x1, y1, x2, y2,
-		 // is_hot, is_clk,
-		 false, false,
-		 "Frames >>", 1,
-		 "Layers", -1);
+                 // is_hot, is_clk,
+                 false, false,
+                 "Frames >>", 1,
+                 "Layers", -1);
 }
 
 void AnimationEditor::drawHeaderFrame(JRect clip, int frame)
 {
   bool is_hot = (m_hot_part == A_PART_HEADER_FRAME &&
-		 m_hot_frame == frame);
+                 m_hot_frame == frame);
   bool is_clk = (m_clk_part == A_PART_HEADER_FRAME &&
-		 m_clk_frame == frame);
+                 m_clk_frame == frame);
   int x1, y1, x2, y2;
   int cx1, cy1, cx2, cy2;
   char buf1[256];
@@ -927,16 +927,16 @@ void AnimationEditor::drawHeaderFrame(JRect clip, int frame)
   y2 = y1 + HDRSIZE - 1;
 
   add_clip_rect(ji_screen,
-		this->rc->x1 + m_separator_x + m_separator_w,
-		y1, this->rc->x2-1, y2);
+                this->rc->x1 + m_separator_x + m_separator_w,
+                y1, this->rc->x2-1, y2);
 
   // Draw the header for the layers.
   usprintf(buf1, "%d", frame+1);
   usprintf(buf2, "%d", m_sprite->getFrameDuration(frame));
   drawHeaderPart(clip, x1, y1, x2, y2,
-		 is_hot, is_clk,
-		 buf1, 0,
-		 buf2, 0);
+                 is_hot, is_clk,
+                 buf1, 0,
+                 buf2, 0);
 
   // If this header wasn't clicked but there are another frame's
   // header clicked, we have to draw some indicators to show that the
@@ -952,7 +952,7 @@ void AnimationEditor::drawHeaderFrame(JRect clip, int frame)
       // Right side.
       vline(ji_screen, x2+1, y1, y2, ji_color_foreground());
       if (x2+2 <= this->rc->x2-1)
-	rectfill(ji_screen, x2+2, y1, this->rc->x2-1, y2, ji_color_face());
+        rectfill(ji_screen, x2+2, y1, this->rc->x2-1, y2, ji_color_face());
     }
   }
 
@@ -960,9 +960,9 @@ void AnimationEditor::drawHeaderFrame(JRect clip, int frame)
 }
 
 void AnimationEditor::drawHeaderPart(JRect clip, int x1, int y1, int x2, int y2,
-				     bool is_hot, bool is_clk,
-				     const char *line1, int align1,
-				     const char *line2, int align2)
+                                     bool is_hot, bool is_clk,
+                                     const char *line1, int align1,
+                                     const char *line2, int align2)
 {
   int x, fg, face, facelight, faceshadow;
 
@@ -972,7 +972,7 @@ void AnimationEditor::drawHeaderPart(JRect clip, int x1, int y1, int x2, int y2,
 
   fg = !is_hot && is_clk ? ji_color_background(): ji_color_foreground();
   face = is_hot ? ji_color_hotface(): (is_clk ? ji_color_selected():
-						ji_color_face());
+                                                ji_color_face());
   facelight = is_hot && is_clk ? ji_color_faceshadow(): ji_color_facelight();
   faceshadow = is_hot && is_clk ? ji_color_facelight(): ji_color_faceshadow();
 
@@ -990,9 +990,9 @@ void AnimationEditor::drawHeaderPart(JRect clip, int x1, int y1, int x2, int y2,
       x = (x1+x2)/2 - text_length(this->getFont(), line1)/2;
     else
       x = x2 - 3 - text_length(this->getFont(), line1);
-      
+
     jdraw_text(ji_screen, this->getFont(), line1, x, y1+3,
-	       fg, face, true, jguiscale());
+               fg, face, true, jguiscale());
   }
 
   if (line2 != NULL) {
@@ -1002,10 +1002,10 @@ void AnimationEditor::drawHeaderPart(JRect clip, int x1, int y1, int x2, int y2,
       x = (x1+x2)/2 - text_length(this->getFont(), line2)/2;
     else
       x = x2 - 3 - text_length(this->getFont(), line2);
-    
+
     jdraw_text(ji_screen, this->getFont(), line2,
-	       x, y1+3+ji_font_get_size(this->getFont())+3,
-	       fg, face, true, jguiscale());
+               x, y1+3+ji_font_get_size(this->getFont())+3,
+               fg, face, true, jguiscale());
   }
 }
 
@@ -1024,7 +1024,7 @@ void AnimationEditor::drawSeparator(JRect clip)
     return;
 
   vline(ji_screen, x1, y1, y2, is_hot ? ji_color_selected():
-					ji_color_foreground());
+                                        ji_color_foreground());
 }
 
 void AnimationEditor::drawLayer(JRect clip, int layer_index)
@@ -1036,8 +1036,8 @@ void AnimationEditor::drawLayer(JRect clip, int layer_index)
   bool is_clk = (m_clk_part == A_PART_LAYER && m_clk_layer == layer_index);
   int bg = selected_layer ?
     ji_color_selected(): (is_hot ? ji_color_hotface():
-			  (is_clk ? ji_color_selected():
-				    ji_color_face()));
+                          (is_clk ? ji_color_selected():
+                                    ji_color_face()));
   int fg = selected_layer ? ji_color_background(): ji_color_foreground();
   BITMAP* icon1 = theme->get_part(layer->is_readable() ? PART_LAYER_VISIBLE: PART_LAYER_HIDDEN);
   BITMAP* icon2 = theme->get_part(layer->is_writable() ? PART_LAYER_EDITABLE: PART_LAYER_LOCKED);
@@ -1048,7 +1048,7 @@ void AnimationEditor::drawLayer(JRect clip, int layer_index)
   int u;
 
   get_clip_rect(ji_screen, &cx1, &cy1, &cx2, &cy2);
-  
+
   x1 = this->rc->x1;
   y1 = this->rc->y1 + HDRSIZE + LAYSIZE*layer_index - m_scroll_y;
   x2 = x1 + m_separator_x - 1;
@@ -1056,10 +1056,10 @@ void AnimationEditor::drawLayer(JRect clip, int layer_index)
   y_mid = (y1+y2) / 2;
 
   add_clip_rect(ji_screen,
-		this->rc->x1,
-		this->rc->y1 + HDRSIZE,
-		this->rc->x1 + m_separator_x - 1,
-		this->rc->y2-1);
+                this->rc->x1,
+                this->rc->y1 + HDRSIZE,
+                this->rc->x1 + m_separator_x - 1,
+                this->rc->y2-1);
 
   if (is_hot) {
     jrectedge(ji_screen, x1, y1, x2, y2-1, ji_color_facelight(), ji_color_faceshadow());
@@ -1081,47 +1081,47 @@ void AnimationEditor::drawLayer(JRect clip, int layer_index)
   // u = the position where to put the next element (like eye-icon,
   //     lock-icon, layer-name)
   u = x1+ICONSEP;
-  
+
   // Draw the eye (readable flag).
   icon_rect(icon1, icon1_selected,
-	    u,
-	    y_mid-icon1->h/2-ICONBORDER,
-	    u+ICONBORDER+icon1->w+ICONBORDER-1,
-	    y_mid-icon1->h/2+icon1->h+ICONBORDER-1,
-	    selected_layer,
-	    (m_hot_part == A_PART_LAYER_EYE_ICON &&
-	     m_hot_layer == layer_index),
-	    (m_clk_part == A_PART_LAYER_EYE_ICON &&
-	     m_clk_layer == layer_index));
+            u,
+            y_mid-icon1->h/2-ICONBORDER,
+            u+ICONBORDER+icon1->w+ICONBORDER-1,
+            y_mid-icon1->h/2+icon1->h+ICONBORDER-1,
+            selected_layer,
+            (m_hot_part == A_PART_LAYER_EYE_ICON &&
+             m_hot_layer == layer_index),
+            (m_clk_part == A_PART_LAYER_EYE_ICON &&
+             m_clk_layer == layer_index));
 
   u += u+ICONBORDER+icon1->w+ICONBORDER;
 
   // Draw the padlock (writable flag).
   icon_rect(icon2, icon2_selected,
-	    u,
-	    y_mid-icon1->h/2-ICONBORDER,
-	    u+ICONBORDER+icon2->w+ICONBORDER-1,
-	    y_mid-icon1->h/2+icon1->h-1+ICONBORDER,
-	    selected_layer,
-	    (m_hot_part == A_PART_LAYER_LOCK_ICON &&
-	     m_hot_layer == layer_index),
-	    (m_clk_part == A_PART_LAYER_LOCK_ICON &&
-	     m_clk_layer == layer_index));
+            u,
+            y_mid-icon1->h/2-ICONBORDER,
+            u+ICONBORDER+icon2->w+ICONBORDER-1,
+            y_mid-icon1->h/2+icon1->h-1+ICONBORDER,
+            selected_layer,
+            (m_hot_part == A_PART_LAYER_LOCK_ICON &&
+             m_hot_layer == layer_index),
+            (m_clk_part == A_PART_LAYER_LOCK_ICON &&
+             m_clk_layer == layer_index));
 
   u += ICONBORDER+icon2->w+ICONBORDER+ICONSEP;
 
   // Draw the layer's name.
   jdraw_text(ji_screen, this->getFont(), layer->getName().c_str(),
-	     u, y_mid - ji_font_get_size(this->getFont())/2,
-	     fg, bg, true, jguiscale());
+             u, y_mid - ji_font_get_size(this->getFont())/2,
+             fg, bg, true, jguiscale());
 
   // The background should be underlined.
   if (layer->is_background()) {
     hline(ji_screen,
-	  u,
-	  y_mid - ji_font_get_size(this->getFont())/2 + ji_font_get_size(this->getFont()) + 1,
-	  u + text_length(this->getFont(), layer->getName().c_str()),
-	  fg);
+          u,
+          y_mid - ji_font_get_size(this->getFont())/2 + ji_font_get_size(this->getFont()) + 1,
+          u + text_length(this->getFont(), layer->getName().c_str()),
+          fg);
   }
 
   set_clip_rect(ji_screen, cx1, cy1, cx2, cy2);
@@ -1132,7 +1132,7 @@ void AnimationEditor::drawLayerPadding()
   SkinTheme* theme = static_cast<SkinTheme*>(this->getTheme());
   int layer_index = m_nlayers-1;
   int x1, y1, x2, y2;
-  
+
   x1 = this->rc->x1;
   y1 = this->rc->y1 + HDRSIZE + LAYSIZE*layer_index - m_scroll_y;
   x2 = x1 + m_separator_x - 1;
@@ -1141,11 +1141,11 @@ void AnimationEditor::drawLayerPadding()
   // Padding in the bottom side.
   if (y2+1 <= this->rc->y2-1) {
     rectfill(ji_screen, x1, y2+1, x2, this->rc->y2-1,
-	     theme->get_editor_face_color());
+             theme->get_editor_face_color());
     rectfill(ji_screen,
-	     x2+1+m_separator_w, y2+1,
-	     this->rc->x2-1, this->rc->y2-1,
-	     theme->get_editor_face_color());
+             x2+1+m_separator_w, y2+1,
+             this->rc->x2-1, this->rc->y2-1,
+             theme->get_editor_face_color());
   }
 }
 
@@ -1155,13 +1155,13 @@ void AnimationEditor::drawCel(JRect clip, int layer_index, int frame, Cel* cel)
   Layer *layer = m_layers[layer_index];
   bool selected_layer = (layer == m_sprite->getCurrentLayer());
   bool is_hot = (m_hot_part == A_PART_CEL &&
-		 m_hot_layer == layer_index &&
-		 m_hot_frame == frame);
+                 m_hot_layer == layer_index &&
+                 m_hot_frame == frame);
   bool is_clk = (m_clk_part == A_PART_CEL &&
-		 m_clk_layer == layer_index &&
-		 m_clk_frame == frame);
+                 m_clk_layer == layer_index &&
+                 m_clk_frame == frame);
   int bg = is_hot ? ji_color_hotface():
-		    ji_color_face();
+                    ji_color_face();
   int x1, y1, x2, y2;
   int cx1, cy1, cx2, cy2;
   BITMAP *thumbnail;
@@ -1176,10 +1176,10 @@ void AnimationEditor::drawCel(JRect clip, int layer_index, int frame, Cel* cel)
   y2 = y1 + LAYSIZE - 1;
 
   add_clip_rect(ji_screen,
-		this->rc->x1 + m_separator_x + m_separator_w,
-		this->rc->y1 + HDRSIZE,
-		this->rc->x2-1,
-		this->rc->y2-1);
+                this->rc->x1 + m_separator_x + m_separator_w,
+                this->rc->y1 + HDRSIZE,
+                this->rc->x2-1,
+                this->rc->y2-1);
 
   Rect thumbnail_rect(Point(x1+3, y1+3), Point(x2-2, y2-2));
 
@@ -1188,7 +1188,7 @@ void AnimationEditor::drawCel(JRect clip, int layer_index, int frame, Cel* cel)
     // Current cel.
     if (is_hot)
       jrectedge(ji_screen, x1, y1, x2, y2-1,
-		ji_color_facelight(), ji_color_faceshadow());
+                ji_color_facelight(), ji_color_faceshadow());
     else
       rect(ji_screen, x1, y1, x2, y2-1, ji_color_selected());
     rect(ji_screen, x1+1, y1+1, x2-1, y2-2, ji_color_selected());
@@ -1197,7 +1197,7 @@ void AnimationEditor::drawCel(JRect clip, int layer_index, int frame, Cel* cel)
   else {
     if (is_hot) {
       jrectedge(ji_screen, x1, y1, x2, y2-1,
-		ji_color_facelight(), ji_color_faceshadow());
+                ji_color_facelight(), ji_color_faceshadow());
       rectfill(ji_screen, x1+1, y1+1, x2-1, y2-2, bg);
     }
     else {
@@ -1218,9 +1218,9 @@ void AnimationEditor::drawCel(JRect clip, int layer_index, int frame, Cel* cel)
     thumbnail = generate_thumbnail(layer, cel, m_sprite);
     if (thumbnail != NULL) {
       stretch_blit(thumbnail, ji_screen,
-		   0, 0, thumbnail->w, thumbnail->h,
-		   thumbnail_rect.x, thumbnail_rect.y,
-		   thumbnail_rect.w, thumbnail_rect.h);
+                   0, 0, thumbnail->w, thumbnail->h,
+                   thumbnail_rect.x, thumbnail_rect.y,
+                   thumbnail_rect.w, thumbnail_rect.h);
     }
   }
 
@@ -1247,8 +1247,8 @@ void AnimationEditor::drawCel(JRect clip, int layer_index, int frame, Cel* cel)
       // Right side.
       vline(ji_screen, x2+1, y1, y2, ji_color_foreground());
       if (x2+2 <= this->rc->x2-1)
-	rectfill(ji_screen, x2+2, y1, this->rc->x2-1, y2,
-		 theme->get_editor_face_color());
+        rectfill(ji_screen, x2+2, y1, this->rc->x2-1, y2,
+                 theme->get_editor_face_color());
     }
   }
 
@@ -1269,25 +1269,25 @@ bool AnimationEditor::drawPart(int part, int layer, int frame)
       return true;
     case A_PART_HEADER_FRAME:
       if (frame >= 0 && frame < m_sprite->getTotalFrames()) {
-	drawHeaderFrame(this->rc, frame);
-	return true;
+        drawHeaderFrame(this->rc, frame);
+        return true;
       }
       break;
     case A_PART_LAYER:
     case A_PART_LAYER_EYE_ICON:
     case A_PART_LAYER_LOCK_ICON:
       if (layer >= 0 && layer < m_nlayers) {
-	drawLayer(this->rc, layer);
-	return true;
+        drawLayer(this->rc, layer);
+        return true;
       }
       break;
     case A_PART_CEL:
       if (layer >= 0 && layer < m_nlayers &&
-	  frame >= 0 && frame < m_sprite->getTotalFrames()) {
-	Cel* cel = (m_layers[layer]->is_image() ? static_cast<LayerImage*>(m_layers[layer])->getCel(frame): NULL);
+          frame >= 0 && frame < m_sprite->getTotalFrames()) {
+        Cel* cel = (m_layers[layer]->is_image() ? static_cast<LayerImage*>(m_layers[layer])->getCel(frame): NULL);
 
-	drawCel(this->rc, layer, frame, cel);
-	return true;
+        drawCel(this->rc, layer, frame, cel);
+        return true;
       }
       break;
   }
@@ -1330,8 +1330,8 @@ void AnimationEditor::hotThis(int hot_part, int hot_layer, int hot_frame)
     m_hot_part = A_PART_NOTHING;
 
     drawPart(old_hot_part,
-	     m_hot_layer,
-	     m_hot_frame);
+             m_hot_layer,
+             m_hot_frame);
 
     // Draw the new 'hot' thing.
     m_hot_part = hot_part;
@@ -1406,10 +1406,10 @@ void AnimationEditor::cleanClk()
 {
   int clk_part = m_clk_part;
   m_clk_part = A_PART_NOTHING;
-  
+
   drawPart(clk_part,
-	   m_clk_layer,
-	   m_clk_frame);
+           m_clk_layer,
+           m_clk_frame);
 }
 
 void AnimationEditor::setScroll(int x, int y, bool use_refresh_region)
@@ -1447,10 +1447,10 @@ void AnimationEditor::setScroll(int x, int y, bool use_refresh_region)
 
     // Scroll layers.
     jrect_replace(rect2,
-		  this->rc->x1,
-		  this->rc->y1 + HDRSIZE,
-		  this->rc->x1 + m_separator_x,
-		  this->rc->y2);
+                  this->rc->x1,
+                  this->rc->y1 + HDRSIZE,
+                  this->rc->x1 + m_separator_x,
+                  this->rc->y2);
     jregion_reset(reg2, rect2);
     jregion_copy(reg1, region);
     jregion_intersect(reg1, reg1, reg2);
@@ -1458,10 +1458,10 @@ void AnimationEditor::setScroll(int x, int y, bool use_refresh_region)
 
     // Scroll header-frame.
     jrect_replace(rect2,
-		  this->rc->x1 + m_separator_x + m_separator_w,
-		  this->rc->y1,
-		  this->rc->x2,
-		  this->rc->y1 + HDRSIZE);
+                  this->rc->x1 + m_separator_x + m_separator_w,
+                  this->rc->y1,
+                  this->rc->x2,
+                  this->rc->y1 + HDRSIZE);
     jregion_reset(reg2, rect2);
     jregion_copy(reg1, region);
     jregion_intersect(reg1, reg1, reg2);
@@ -1469,10 +1469,10 @@ void AnimationEditor::setScroll(int x, int y, bool use_refresh_region)
 
     // Scroll cels.
     jrect_replace(rect2,
-		  this->rc->x1 + m_separator_x + m_separator_w,
-		  this->rc->y1 + HDRSIZE,
-		  this->rc->x2,
-		  this->rc->y2);
+                  this->rc->x1 + m_separator_x + m_separator_w,
+                  this->rc->y1 + HDRSIZE,
+                  this->rc->x2,
+                  this->rc->y2);
     jregion_reset(reg2, rect2);
     jregion_copy(reg1, region);
     jregion_intersect(reg1, reg1, reg2);
@@ -1500,7 +1500,7 @@ int AnimationEditor::getLayerIndex(const Layer* layer)
 
 // Auxiliary routine to draw an icon in the layer-part.
 static void icon_rect(BITMAP* icon_normal, BITMAP* icon_selected, int x1, int y1, int x2, int y2,
-		      bool is_selected, bool is_hot, bool is_clk)
+                      bool is_selected, bool is_hot, bool is_clk)
 {
   int icon_x = x1+ICONBORDER;
   int icon_y = (y1+y2)/2-icon_normal->h/2;
@@ -1512,8 +1512,8 @@ static void icon_rect(BITMAP* icon_normal, BITMAP* icon_selected, int x1, int y1
 
     if (!is_selected)
       rectfill(ji_screen,
-	       x1+1, y1+1, x2-1, y2-1,
-	       ji_color_hotface());
+               x1+1, y1+1, x2-1, y2-1,
+               ji_color_hotface());
   }
 
   set_alpha_blender();

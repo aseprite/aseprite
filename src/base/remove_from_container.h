@@ -13,11 +13,11 @@ namespace base {
 // container.
 template<typename ContainerType>
 void remove_from_container(ContainerType& container,
-			   typename ContainerType::const_reference element)
+                           typename ContainerType::const_reference element)
 {
   for (typename ContainerType::iterator
-	 it = container.begin(),
-	 end = container.end(); it != end; ) {
+         it = container.begin(),
+         end = container.end(); it != end; ) {
     if (*it == element) {
       it = container.erase(it);
       end = container.end();

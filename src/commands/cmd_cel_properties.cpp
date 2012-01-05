@@ -47,15 +47,15 @@ protected:
 
 CelPropertiesCommand::CelPropertiesCommand()
   : Command("CelProperties",
-	    "Cel Properties",
-	    CmdUIOnlyFlag)
+            "Cel Properties",
+            CmdUIOnlyFlag)
 {
 }
 
 bool CelPropertiesCommand::onEnabled(Context* context)
 {
   return context->checkFlags(ContextFlags::ActiveDocumentIsWritable |
-			     ContextFlags::ActiveLayerIsImage);
+                             ContextFlags::ActiveLayerIsImage);
 }
 
 void CelPropertiesCommand::onExecute(Context* context)
@@ -74,11 +74,11 @@ void CelPropertiesCommand::onExecute(Context* context)
 
   FramePtr window(load_widget("cel_properties.xml", "cel_properties"));
   get_widgets(window,
-	      "frame", &label_frame,
-	      "pos", &label_pos,
-	      "size", &label_size,
-	      "opacity", &slider_opacity,
-	      "ok", &button_ok, NULL);
+              "frame", &label_frame,
+              "pos", &label_pos,
+              "size", &label_size,
+              "opacity", &slider_opacity,
+              "ok", &button_ok, NULL);
 
   // Mini look for the opacity slider
   setup_mini_look(slider_opacity);
@@ -98,21 +98,21 @@ void CelPropertiesCommand::onExecute(Context* context)
     // Dimension (and memory size)
     memsize =
       image_line_size(sprite->getStock()->getImage(cel->getImage()),
-		      sprite->getStock()->getImage(cel->getImage())->w)*
+                      sprite->getStock()->getImage(cel->getImage())->w)*
       sprite->getStock()->getImage(cel->getImage())->h;
 
     label_size->setTextf("%dx%d (%s)",
-			 sprite->getStock()->getImage(cel->getImage())->w,
-			 sprite->getStock()->getImage(cel->getImage())->h,
-			 get_pretty_memory_size(memsize).c_str());
+                         sprite->getStock()->getImage(cel->getImage())->w,
+                         sprite->getStock()->getImage(cel->getImage())->h,
+                         get_pretty_memory_size(memsize).c_str());
 
     // Opacity
     slider_opacity->setValue(cel->getOpacity());
     if (layer->is_background()) {
       slider_opacity->setEnabled(false);
       jwidget_add_tooltip_text(slider_opacity, "The `Background' layer is opaque,\n"
-					       "you can't change its opacity.",
-			       JI_LEFT);
+                                               "you can't change its opacity.",
+                               JI_LEFT);
     }
   }
   else {
@@ -135,12 +135,12 @@ void CelPropertiesCommand::onExecute(Context* context)
 
     // The opacity was changed?
     if (cel_writer != NULL &&
-	cel_writer->getOpacity() != new_opacity) {
+        cel_writer->getOpacity() != new_opacity) {
       if (undo->isEnabled()) {
-	undo->setLabel("Cel Opacity Change");
-	undo->setModification(undo::ModifyDocument);
+        undo->setLabel("Cel Opacity Change");
+        undo->setModification(undo::ModifyDocument);
 
-	undo->pushUndoer(new undoers::SetCelOpacity(undo->getObjects(), cel_writer));
+        undo->pushUndoer(new undoers::SetCelOpacity(undo->getObjects(), cel_writer));
       }
 
       // Change cel opacity.

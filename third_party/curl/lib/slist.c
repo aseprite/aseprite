@@ -132,4 +132,3 @@ void curl_slist_free_all(struct curl_slist *list)
     item = next;
   } while(next);
 }
-

@@ -41,8 +41,8 @@
 #include <algorithm>
 #include <allegro.h>
 
-#define MAX_THUMBNAIL_SIZE		128
-#define ISEARCH_KEYPRESS_INTERVAL_MSECS	500
+#define MAX_THUMBNAIL_SIZE              128
+#define ISEARCH_KEYPRESS_INTERVAL_MSECS 500
 
 using namespace gfx;
 
@@ -100,13 +100,13 @@ JWidget fileview_new(IFileItem* start_folder, const base::string& exts)
     start_folder = FileSystemModule::instance()->getRootFileItem();
   else {
     while (!start_folder->isFolder() &&
-	   start_folder->getParent() != NULL) {
+           start_folder->getParent() != NULL) {
       start_folder = start_folder->getParent();
     }
   }
 
   jwidget_add_hook(widget, fileview_type(),
-		   fileview_msg_proc, fileview);
+                   fileview_msg_proc, fileview);
   jwidget_focusrest(widget, true);
 
   fileview->current_folder = start_folder;
@@ -210,24 +210,24 @@ static bool fileview_msg_proc(JWidget widget, Message* msg)
 
     case JM_REQSIZE:
       if (!fileview->req_valid) {
-	int w, h, iw, ih;
+        int w, h, iw, ih;
 
-	w = 0;
-	h = 0;
+        w = 0;
+        h = 0;
 
-	// rows
-	for (FileItemList::iterator
-	       it=fileview->list.begin();
-	     it!=fileview->list.end(); ++it) {
-	  IFileItem* fi = *it;
-	  fileview_get_fileitem_size(widget, fi, &iw, &ih);
-	  w = MAX(w, iw);
-	  h += ih;
-	}
+        // rows
+        for (FileItemList::iterator
+               it=fileview->list.begin();
+             it!=fileview->list.end(); ++it) {
+          IFileItem* fi = *it;
+          fileview_get_fileitem_size(widget, fi, &iw, &ih);
+          w = MAX(w, iw);
+          h += ih;
+        }
 
-	fileview->req_valid = true;
-	fileview->req_w = w;
-	fileview->req_h = h;
+        fileview->req_valid = true;
+        fileview->req_w = w;
+        fileview->req_h = h;
       }
 
       msg->reqsize.w = fileview->req_w;
@@ -248,132 +248,132 @@ static bool fileview_msg_proc(JWidget widget, Message* msg)
 
       // rows
       for (FileItemList::iterator
-	     it=fileview->list.begin();
-	   it!=fileview->list.end(); ++it) {
-	IFileItem* fi = *it;
-	fileview_get_fileitem_size(widget, fi, &iw, &ih);
-	
-	if (fi == fileview->selected) {
-	  bgcolor = ji_color_selected();
-	  fgcolor = ji_color_background();
-	}
-	else {
-	  bgcolor = row ? makecol(240, 240, 240):
-			  ji_color_background();
+             it=fileview->list.begin();
+           it!=fileview->list.end(); ++it) {
+        IFileItem* fi = *it;
+        fileview_get_fileitem_size(widget, fi, &iw, &ih);
 
-	  fgcolor =
-	    fi->isFolder() &&
-	    !fi->isBrowsable() ? makecol(255, 200, 200):
-				 ji_color_foreground();
-	}
+        if (fi == fileview->selected) {
+          bgcolor = ji_color_selected();
+          fgcolor = ji_color_background();
+        }
+        else {
+          bgcolor = row ? makecol(240, 240, 240):
+                          ji_color_background();
 
-	x = widget->rc->x1+2;
+          fgcolor =
+            fi->isFolder() &&
+            !fi->isBrowsable() ? makecol(255, 200, 200):
+                                 ji_color_foreground();
+        }
 
-	if (fi->isFolder()) {
-	  int icon_w = ji_font_text_len(widget->getFont(), "[+]");
-	  int icon_h = ji_font_get_size(widget->getFont());
+        x = widget->rc->x1+2;
 
-	  jdraw_text(ji_screen, widget->getFont(),
-		     "[+]", x, y+2,
-		     fgcolor, bgcolor, true, jguiscale());
+        if (fi->isFolder()) {
+          int icon_w = ji_font_text_len(widget->getFont(), "[+]");
+          int icon_h = ji_font_get_size(widget->getFont());
 
-	  // background for the icon
-	  jrectexclude(ji_screen,
-		       /* rectangle to fill */
-		       widget->rc->x1, y,
-		       x+icon_w+2-1, y+2+th+2-1,
-		       /* exclude where is the icon located */
-		       x, y+2,
-		       x+icon_w-1,
-		       y+2+icon_h-1,
-		       /* fill with the background color */
-		       bgcolor);
+          jdraw_text(ji_screen, widget->getFont(),
+                     "[+]", x, y+2,
+                     fgcolor, bgcolor, true, jguiscale());
 
-	  x += icon_w+2;
-	}
-	else {
-	  // background for the left side of the item
-	  rectfill(ji_screen,
-		   widget->rc->x1, y,
-		   x-1, y+2+th+2-1,
-		   bgcolor);
-	}
+          // background for the icon
+          jrectexclude(ji_screen,
+                       /* rectangle to fill */
+                       widget->rc->x1, y,
+                       x+icon_w+2-1, y+2+th+2-1,
+                       /* exclude where is the icon located */
+                       x, y+2,
+                       x+icon_w-1,
+                       y+2+icon_h-1,
+                       /* fill with the background color */
+                       bgcolor);
 
-	// item name
-	jdraw_text(ji_screen, widget->getFont(),
-		   fi->getDisplayName().c_str(), x, y+2,
-		   fgcolor, bgcolor, true, jguiscale());
+          x += icon_w+2;
+        }
+        else {
+          // background for the left side of the item
+          rectfill(ji_screen,
+                   widget->rc->x1, y,
+                   x-1, y+2+th+2-1,
+                   bgcolor);
+        }
 
-	// background for the item name
-	jrectexclude(ji_screen,
-		     /* rectangle to fill */
-		     x, y,
-		     widget->rc->x2-1, y+2+th+2-1,
-		     /* exclude where is the text located */
-		     x, y+2,
-		     x+ji_font_text_len(widget->getFont(),
-					fi->getDisplayName().c_str())-1,
-		     y+2+ji_font_get_size(widget->getFont())-1,
-		     /* fill with the background color */
-		     bgcolor);
+        // item name
+        jdraw_text(ji_screen, widget->getFont(),
+                   fi->getDisplayName().c_str(), x, y+2,
+                   fgcolor, bgcolor, true, jguiscale());
 
-	// draw progress bar
-	if (!fileview->monitors.empty()) {
-	  for (MonitorList::iterator
-		 it2 = fileview->monitors.begin();
-	       it2 != fileview->monitors.end(); ++it2) {
-	    Monitor* monitor = *it2;
-	    ThumbnailData* data = (ThumbnailData*)get_monitor_data(monitor);
+        // background for the item name
+        jrectexclude(ji_screen,
+                     /* rectangle to fill */
+                     x, y,
+                     widget->rc->x2-1, y+2+th+2-1,
+                     /* exclude where is the text located */
+                     x, y+2,
+                     x+ji_font_text_len(widget->getFont(),
+                                        fi->getDisplayName().c_str())-1,
+                     y+2+ji_font_get_size(widget->getFont())-1,
+                     /* fill with the background color */
+                     bgcolor);
 
-	    // Check if this monitor is for this file-item
-	    if (data->fileitem == fi) {
-	      // If the file operation is not done, means that we are
-	      // still loading the file, so we can show a progress bar
-	      if (!fop_is_done(data->fop)) {
-		float progress = fop_get_progress(data->fop);
+        // draw progress bar
+        if (!fileview->monitors.empty()) {
+          for (MonitorList::iterator
+                 it2 = fileview->monitors.begin();
+               it2 != fileview->monitors.end(); ++it2) {
+            Monitor* monitor = *it2;
+            ThumbnailData* data = (ThumbnailData*)get_monitor_data(monitor);
 
-		draw_progress_bar(ji_screen,
-				  widget->rc->x2-2-64, y+ih/2-3,
-				  widget->rc->x2-2, y+ih/2+3,
-				  progress);
-	      }
-	      break;
-	    }
-	  }
-	}
+            // Check if this monitor is for this file-item
+            if (data->fileitem == fi) {
+              // If the file operation is not done, means that we are
+              // still loading the file, so we can show a progress bar
+              if (!fop_is_done(data->fop)) {
+                float progress = fop_get_progress(data->fop);
 
-	// thumbnail position
-	if (fi == fileview->selected) {
-	  thumbnail = fi->getThumbnail();
-	  if (thumbnail)
-	    thumbnail_y = y + ih/2;
-	}
+                draw_progress_bar(ji_screen,
+                                  widget->rc->x2-2-64, y+ih/2-3,
+                                  widget->rc->x2-2, y+ih/2+3,
+                                  progress);
+              }
+              break;
+            }
+          }
+        }
 
-	y += ih;
-	row ^= 1;
+        // thumbnail position
+        if (fi == fileview->selected) {
+          thumbnail = fi->getThumbnail();
+          if (thumbnail)
+            thumbnail_y = y + ih/2;
+        }
+
+        y += ih;
+        row ^= 1;
       }
 
       if (y < widget->rc->y2-1)
-	rectfill(ji_screen,
-		 widget->rc->x1, y,
-		 widget->rc->x2-1, widget->rc->y2-1,
-		 ji_color_background());
+        rectfill(ji_screen,
+                 widget->rc->x1, y,
+                 widget->rc->x2-1, widget->rc->y2-1,
+                 ji_color_background());
 
       /* draw the thumbnail */
       if (thumbnail) {
-	x = vp.x+vp.w-2-thumbnail->w;
-	y = thumbnail_y-thumbnail->h/2;
-	y = MID(vp.y+2, y, vp.y+vp.h-3-thumbnail->h);
+        x = vp.x+vp.w-2-thumbnail->w;
+        y = thumbnail_y-thumbnail->h/2;
+        y = MID(vp.y+2, y, vp.y+vp.h-3-thumbnail->h);
 
-	blit(thumbnail, ji_screen, 0, 0, x, y, thumbnail->w, thumbnail->h);
-	rect(ji_screen,
-	     x-1, y-1, x+thumbnail->w, y+thumbnail->h,
-	     makecol(0, 0, 0));
+        blit(thumbnail, ji_screen, 0, 0, x, y, thumbnail->w, thumbnail->h);
+        rect(ji_screen,
+             x-1, y-1, x+thumbnail->w, y+thumbnail->h,
+             makecol(0, 0, 0));
       }
 
       // is the current folder empty?
       if (fileview->list.empty())
-	draw_emptyset_symbol(ji_screen, vp, makecol(194, 194, 194));
+        draw_emptyset_symbol(ji_screen, vp, makecol(194, 194, 194));
       return true;
     }
 
@@ -382,182 +382,182 @@ static bool fileview_msg_proc(JWidget widget, Message* msg)
 
     case JM_MOTION:
       if (widget->hasCapture()) {
-	int iw, ih;
-	int th = jwidget_get_text_height(widget);
-	int y = widget->rc->y1;
-	IFileItem* old_selected = fileview->selected;
-	fileview->selected = NULL;
+        int iw, ih;
+        int th = jwidget_get_text_height(widget);
+        int y = widget->rc->y1;
+        IFileItem* old_selected = fileview->selected;
+        fileview->selected = NULL;
 
-	// rows
-	for (FileItemList::iterator
-	       it=fileview->list.begin();
-	     it!=fileview->list.end(); ++it) {
-	  IFileItem* fi = *it;
-	  fileview_get_fileitem_size(widget, fi, &iw, &ih);
+        // rows
+        for (FileItemList::iterator
+               it=fileview->list.begin();
+             it!=fileview->list.end(); ++it) {
+          IFileItem* fi = *it;
+          fileview_get_fileitem_size(widget, fi, &iw, &ih);
 
-	  if (((msg->mouse.y >= y) && (msg->mouse.y < y+2+th+2)) ||
-	      (it == fileview->list.begin() && msg->mouse.y < y) ||
-	      (it == fileview->list.end()-1 && msg->mouse.y >= y+2+th+2)) {
-	    fileview->selected = fi;
-	    fileview_make_selected_fileitem_visible(widget);
-	    break;
-	  }
+          if (((msg->mouse.y >= y) && (msg->mouse.y < y+2+th+2)) ||
+              (it == fileview->list.begin() && msg->mouse.y < y) ||
+              (it == fileview->list.end()-1 && msg->mouse.y >= y+2+th+2)) {
+            fileview->selected = fi;
+            fileview_make_selected_fileitem_visible(widget);
+            break;
+          }
 
-	  y += ih;
-	}
+          y += ih;
+        }
 
-	if (old_selected != fileview->selected) {
-	  fileview_generate_preview_of_selected_item(widget);
+        if (old_selected != fileview->selected) {
+          fileview_generate_preview_of_selected_item(widget);
 
-	  widget->invalidate();
-	  jwidget_emit_signal(widget, SIGNAL_FILEVIEW_FILE_SELECTED);
-	}
+          widget->invalidate();
+          jwidget_emit_signal(widget, SIGNAL_FILEVIEW_FILE_SELECTED);
+        }
       }
       break;
 
     case JM_BUTTONRELEASED:
       if (widget->hasCapture()) {
-	widget->releaseMouse();
+        widget->releaseMouse();
       }
       break;
 
     case JM_KEYPRESSED:
       if (widget->hasFocus()) {
-	int select = fileview_get_selected_index(widget);
-	View* view = View::getView(widget);
-	int bottom = fileview->list.size();
+        int select = fileview_get_selected_index(widget);
+        View* view = View::getView(widget);
+        int bottom = fileview->list.size();
 
-	switch (msg->key.scancode) {
-	  case KEY_UP:
-	    if (select >= 0)
-	      select--;
-	    else
-	      select = 0;
-	    break;
-	  case KEY_DOWN:
-	    if (select >= 0)
-	      select++;
-	    else
-	      select = 0;
-	    break;
-	  case KEY_HOME:
-	    select = 0;
-	    break;
-	  case KEY_END:
-	    select = bottom-1;
-	    break;
-	  case KEY_PGUP:
-	  case KEY_PGDN: {
-	    int sgn = (msg->key.scancode == KEY_PGUP) ? -1: 1;
-	    gfx::Rect vp = view->getViewportBounds();
-	    if (select < 0)
-	      select = 0;
-	    select += sgn * vp.h / (2+jwidget_get_text_height(widget)+2);
-	    break;
-	  }
-	  case KEY_LEFT:
-	  case KEY_RIGHT:
-	    if (select >= 0) {
-	      gfx::Rect vp = view->getViewportBounds();
-	      int sgn = (msg->key.scancode == KEY_LEFT) ? -1: 1;
-	      gfx::Point scroll = view->getViewScroll();
-	      scroll.x += vp.w/2*sgn;
-	      view->setViewScroll(scroll);
-	    }
-	    break;
-	  case KEY_ENTER:
-	    if (fileview->selected) {
-	      if (fileview->selected->isBrowsable()) {
-		fileview_set_current_folder(widget, fileview->selected);
-		return true;
-	      }
-	      if (fileview->selected->isFolder()) {
-		// do nothing (is a folder but not browseable
-		return true;
-	      }
-	      else {
-		// a file was selected
-		jwidget_emit_signal(widget, SIGNAL_FILEVIEW_FILE_ACCEPT);
-		return true;
-	      }
-	    }
-	    else
-	      return false;
-	  case KEY_BACKSPACE:
-	    fileview_goup(widget);
-	    return true;
-	  default:
-	    if (msg->key.ascii == ' ' ||
-		(utolower(msg->key.ascii) >= 'a' &&
-		 utolower(msg->key.ascii) <= 'z') ||
-		(utolower(msg->key.ascii) >= '0' &&
-		 utolower(msg->key.ascii) <= '9')) {
-	      if (ji_clock - fileview->isearch_clock > ISEARCH_KEYPRESS_INTERVAL_MSECS)
-		ustrcpy(fileview->isearch, empty_string);
+        switch (msg->key.scancode) {
+          case KEY_UP:
+            if (select >= 0)
+              select--;
+            else
+              select = 0;
+            break;
+          case KEY_DOWN:
+            if (select >= 0)
+              select++;
+            else
+              select = 0;
+            break;
+          case KEY_HOME:
+            select = 0;
+            break;
+          case KEY_END:
+            select = bottom-1;
+            break;
+          case KEY_PGUP:
+          case KEY_PGDN: {
+            int sgn = (msg->key.scancode == KEY_PGUP) ? -1: 1;
+            gfx::Rect vp = view->getViewportBounds();
+            if (select < 0)
+              select = 0;
+            select += sgn * vp.h / (2+jwidget_get_text_height(widget)+2);
+            break;
+          }
+          case KEY_LEFT:
+          case KEY_RIGHT:
+            if (select >= 0) {
+              gfx::Rect vp = view->getViewportBounds();
+              int sgn = (msg->key.scancode == KEY_LEFT) ? -1: 1;
+              gfx::Point scroll = view->getViewScroll();
+              scroll.x += vp.w/2*sgn;
+              view->setViewScroll(scroll);
+            }
+            break;
+          case KEY_ENTER:
+            if (fileview->selected) {
+              if (fileview->selected->isBrowsable()) {
+                fileview_set_current_folder(widget, fileview->selected);
+                return true;
+              }
+              if (fileview->selected->isFolder()) {
+                // do nothing (is a folder but not browseable
+                return true;
+              }
+              else {
+                // a file was selected
+                jwidget_emit_signal(widget, SIGNAL_FILEVIEW_FILE_ACCEPT);
+                return true;
+              }
+            }
+            else
+              return false;
+          case KEY_BACKSPACE:
+            fileview_goup(widget);
+            return true;
+          default:
+            if (msg->key.ascii == ' ' ||
+                (utolower(msg->key.ascii) >= 'a' &&
+                 utolower(msg->key.ascii) <= 'z') ||
+                (utolower(msg->key.ascii) >= '0' &&
+                 utolower(msg->key.ascii) <= '9')) {
+              if (ji_clock - fileview->isearch_clock > ISEARCH_KEYPRESS_INTERVAL_MSECS)
+                ustrcpy(fileview->isearch, empty_string);
 
-	      usprintf(fileview->isearch+ustrsize(fileview->isearch),
-		       "%c", msg->key.ascii);
+              usprintf(fileview->isearch+ustrsize(fileview->isearch),
+                       "%c", msg->key.ascii);
 
-	      {
-		int i, chrs = ustrlen(fileview->isearch);
-		FileItemList::iterator
-		  link = fileview->list.begin() + ((select >= 0) ? select: 0);
+              {
+                int i, chrs = ustrlen(fileview->isearch);
+                FileItemList::iterator
+                  link = fileview->list.begin() + ((select >= 0) ? select: 0);
 
-		for (i=MAX(select, 0); i<bottom; ++i, ++link) {
-		  IFileItem* fi = *link;
-		  if (ustrnicmp(fi->getDisplayName().c_str(),
-				fileview->isearch,
-				chrs) == 0) {
-		    select = i;
-		    break;
-		  }
-		}
-	      }
-	      fileview->isearch_clock = ji_clock;
-	      /* go to fileview_select_index... */
-	    }
-	    else
-	      return false;
-	}
+                for (i=MAX(select, 0); i<bottom; ++i, ++link) {
+                  IFileItem* fi = *link;
+                  if (ustrnicmp(fi->getDisplayName().c_str(),
+                                fileview->isearch,
+                                chrs) == 0) {
+                    select = i;
+                    break;
+                  }
+                }
+              }
+              fileview->isearch_clock = ji_clock;
+              /* go to fileview_select_index... */
+            }
+            else
+              return false;
+        }
 
-	if (bottom > 0)
-	  fileview_select_index(widget, MID(0, select, bottom-1));
-	return true;
+        if (bottom > 0)
+          fileview_select_index(widget, MID(0, select, bottom-1));
+        return true;
       }
       break;
 
     case JM_WHEEL: {
       View* view = View::getView(widget);
       if (view) {
-	gfx::Point scroll = view->getViewScroll();
-	scroll.y += (jmouse_z(1)-jmouse_z(0)) * 3*(2+jwidget_get_text_height(widget)+2);
-	view->setViewScroll(scroll);
+        gfx::Point scroll = view->getViewScroll();
+        scroll.y += (jmouse_z(1)-jmouse_z(0)) * 3*(2+jwidget_get_text_height(widget)+2);
+        view->setViewScroll(scroll);
       }
       break;
     }
 
     case JM_DOUBLECLICK:
       if (fileview->selected) {
-	if (fileview->selected->isBrowsable()) {
-	  fileview_set_current_folder(widget, fileview->selected);
-	  return true;
-	}
-	else {
-	  jwidget_emit_signal(widget, SIGNAL_FILEVIEW_FILE_ACCEPT);
-	  return true;
-	}
+        if (fileview->selected->isBrowsable()) {
+          fileview_set_current_folder(widget, fileview->selected);
+          return true;
+        }
+        else {
+          jwidget_emit_signal(widget, SIGNAL_FILEVIEW_FILE_ACCEPT);
+          return true;
+        }
       }
       break;
 
     case JM_TIMER:
       /* is time to generate the thumbnail? */
       if (msg->timer.timer_id == fileview->timer_id) {
-	IFileItem* fileitem;
+        IFileItem* fileitem;
 
-	jmanager_stop_timer(fileview->timer_id);
+        jmanager_stop_timer(fileview->timer_id);
 
-	fileitem = fileview->item_to_generate_thumbnail;
-	fileview_generate_thumbnail(widget, fileitem);
+        fileitem = fileview->item_to_generate_thumbnail;
+        fileview_generate_thumbnail(widget, fileitem);
       }
       break;
 
@@ -576,7 +576,7 @@ static void fileview_get_fileitem_size(JWidget widget, IFileItem* fi, int *w, in
   }
 
   len += ji_font_text_len(widget->getFont(),
-			  fi->getDisplayName().c_str());
+                          fi->getDisplayName().c_str());
 
 /*   if (!fileitem_is_folder(fi)) { */
 /*     len += 2+ji_font_text_len(widget->text_font, buf); */
@@ -598,16 +598,16 @@ static void fileview_make_selected_fileitem_visible(JWidget widget)
 
   // rows
   for (FileItemList::iterator
-	 it=fileview->list.begin();
+         it=fileview->list.begin();
        it!=fileview->list.end(); ++it) {
     IFileItem* fi = *it;
     fileview_get_fileitem_size(widget, fi, &iw, &ih);
 
     if (fi == fileview->selected) {
       if (y < vp.y)
-	scroll.y = y - widget->rc->y1;
+        scroll.y = y - widget->rc->y1;
       else if (y > vp.y + vp.h - (2+th+2))
-	scroll.y = y - widget->rc->y1 - vp.h + (2+th+2);
+        scroll.y = y - widget->rc->y1 - vp.h + (2+th+2);
 
       view->setViewScroll(scroll);
       break;
@@ -627,15 +627,15 @@ static void fileview_regenerate_list(JWidget widget)
   // filter the list by the available extensions
   if (!fileview->exts.empty()) {
     for (FileItemList::iterator
-	   it=fileview->list.begin();
-	 it!=fileview->list.end(); ) {
+           it=fileview->list.begin();
+         it!=fileview->list.end(); ) {
       IFileItem* fileitem = *it;
       if (!fileitem->isFolder() &&
-	  !fileitem->hasExtension(fileview->exts.c_str())) {
-	it = fileview->list.erase(it);
+          !fileitem->hasExtension(fileview->exts.c_str())) {
+        it = fileview->list.erase(it);
       }
       else
-	++it;
+        ++it;
     }
   }
 }
@@ -645,7 +645,7 @@ static int fileview_get_selected_index(JWidget widget)
   FileView* fileview = fileview_data(widget);
 
   for (FileItemList::iterator
-	 it = fileview->list.begin();
+         it = fileview->list.begin();
        it != fileview->list.end(); ++it) {
     if (*it == fileview->selected)
       return it - fileview->list.begin();
@@ -662,7 +662,7 @@ static void fileview_select_index(JWidget widget, int index)
   fileview->selected = fileview->list.at(index);
   if (old_selected != fileview->selected) {
     fileview_make_selected_fileitem_visible(widget);
-    
+
     widget->invalidate();
     jwidget_emit_signal(widget, SIGNAL_FILEVIEW_FILE_SELECTED);
   }
@@ -696,8 +696,8 @@ static bool fileview_generate_thumbnail(JWidget widget, IFileItem* fileitem)
 
   FileOp* fop =
     fop_to_load_document(fileitem->getFileName().c_str(),
-			 FILE_LOAD_SEQUENCE_NONE |
-			 FILE_LOAD_ONE_FRAME);
+                         FILE_LOAD_SEQUENCE_NONE |
+                         FILE_LOAD_ONE_FRAME);
   if (!fop)
     return true;
 
@@ -716,7 +716,7 @@ static bool fileview_generate_thumbnail(JWidget widget, IFileItem* fileitem)
     if (data->thread) {
       // add a monitor to check the loading (FileOp) progress
       data->monitor = add_gui_monitor(monitor_thumbnail_generation,
-				      monitor_free_thumbnail_generation, data);
+                                      monitor_free_thumbnail_generation, data);
 
       fileview_data(widget)->monitors.push_back(data->monitor);
       widget->invalidate();
@@ -737,7 +737,7 @@ static void fileview_stop_threads(FileView* fileview)
 
   // join all threads (removing all monitors)
   for (MonitorList::iterator
-	 it = fileview->monitors.begin();
+         it = fileview->monitors.begin();
        it != fileview->monitors.end(); ) {
     Monitor* monitor = *it;
     ++it;
@@ -769,7 +769,7 @@ static void openfile_bg(ThumbnailData* data)
 /**
  * Called by the GUI-monitor (a timer in the gui module that is called
  * every 100 milliseconds).
- * 
+ *
  * [main thread]
  */
 static void monitor_thumbnail_generation(void *_data)
@@ -788,30 +788,30 @@ static void monitor_thumbnail_generation(void *_data)
       Image* image;
 
       Sprite* sprite = (fop->document && fop->document->getSprite()) ? fop->document->getSprite():
-								       NULL;
+                                                                       NULL;
       if (!fop_is_stop(fop) && sprite) {
-	// The palette to convert the Image to a BITMAP
-	data->palette = new Palette(*sprite->getPalette(0));
+        // The palette to convert the Image to a BITMAP
+        data->palette = new Palette(*sprite->getPalette(0));
 
-	// Render the 'sprite' in one plain 'image'
-	image = image_new(sprite->getImgType(), sprite->getWidth(), sprite->getHeight());
-	sprite->render(image, 0, 0);
+        // Render the 'sprite' in one plain 'image'
+        image = image_new(sprite->getImgType(), sprite->getWidth(), sprite->getHeight());
+        sprite->render(image, 0, 0);
 
-	// Calculate the thumbnail size
-	thumb_w = MAX_THUMBNAIL_SIZE * image->w / MAX(image->w, image->h);
-	thumb_h = MAX_THUMBNAIL_SIZE * image->h / MAX(image->w, image->h);
-	if (MAX(thumb_w, thumb_h) > MAX(image->w, image->h)) {
-	  thumb_w = image->w;
-	  thumb_h = image->h;
-	}
-	thumb_w = MID(1, thumb_w, MAX_THUMBNAIL_SIZE);
-	thumb_h = MID(1, thumb_h, MAX_THUMBNAIL_SIZE);
+        // Calculate the thumbnail size
+        thumb_w = MAX_THUMBNAIL_SIZE * image->w / MAX(image->w, image->h);
+        thumb_h = MAX_THUMBNAIL_SIZE * image->h / MAX(image->w, image->h);
+        if (MAX(thumb_w, thumb_h) > MAX(image->w, image->h)) {
+          thumb_w = image->w;
+          thumb_h = image->h;
+        }
+        thumb_w = MID(1, thumb_w, MAX_THUMBNAIL_SIZE);
+        thumb_h = MID(1, thumb_h, MAX_THUMBNAIL_SIZE);
 
-	// Stretch the 'image'
-	data->thumbnail = image_new(image->imgtype, thumb_w, thumb_h);
-	image_clear(data->thumbnail, 0);
-	image_scale(data->thumbnail, image, 0, 0, thumb_w, thumb_h);
-	image_free(image);
+        // Stretch the 'image'
+        data->thumbnail = image_new(image->imgtype, thumb_w, thumb_h);
+        image_clear(data->thumbnail, 0);
+        image_scale(data->thumbnail, image, 0, 0, thumb_w, thumb_h);
+        image_free(image);
       }
 
       delete fop->document;
@@ -820,12 +820,12 @@ static void monitor_thumbnail_generation(void *_data)
     /* set the thumbnail of the file-item */
     if (data->thumbnail) {
       BITMAP *bmp = create_bitmap_ex(16,
-				     data->thumbnail->w,
-				     data->thumbnail->h);
+                                     data->thumbnail->w,
+                                     data->thumbnail->h);
 
       image_to_allegro(data->thumbnail, bmp, 0, 0, data->palette);
 
-      delete data->thumbnail;	// image
+      delete data->thumbnail;   // image
       delete data->palette;
       data->thumbnail = NULL;
       data->palette = NULL;
@@ -834,8 +834,8 @@ static void monitor_thumbnail_generation(void *_data)
 
       /* is the selected file-item the one that now has a thumbnail? */
       if (fileview_get_selected(data->fileview) == data->fileitem) {
-	/* we have to dirty the file-view to show the thumbnail */
-	data->fileview->invalidate();
+        /* we have to dirty the file-view to show the thumbnail */
+        data->fileview->invalidate();
       }
     }
 

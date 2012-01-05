@@ -34,7 +34,7 @@ struct ComboBox::Item
   Item() : data(NULL) { }
 };
 
-#define IS_VALID_ITEM(combobox, index)				\
+#define IS_VALID_ITEM(combobox, index)                          \
   (index >= 0 && index < combobox->getItemCount())
 
 static bool combobox_entry_msg_proc(JWidget widget, Message* msg);
@@ -194,7 +194,7 @@ int ComboBox::findItemIndex(const std::string& text)
     Item* item = *it;
 
     if ((m_casesensitive && ustrcmp(item->text.c_str(), text.c_str()) == 0) ||
-	(!m_casesensitive && ustricmp(item->text.c_str(), text.c_str()) == 0)) {
+        (!m_casesensitive && ustricmp(item->text.c_str(), text.c_str()) == 0)) {
       return itemIndex;
     }
 
@@ -273,21 +273,21 @@ bool ComboBox::onProcessMessage(Message* msg)
       jrect_free(cbox);
       return true;
     }
-      
+
     case JM_WINMOVE:
       if (m_window) {
-	JRect rc = getListBoxPos();
-	m_window->move_window(rc);
-	jrect_free(rc);
+        JRect rc = getListBoxPos();
+        m_window->move_window(rc);
+        jrect_free(rc);
       }
       break;
 
     case JM_BUTTONPRESSED:
       if (m_window != NULL) {
-	if (!View::getView(m_listbox)->hasMouse()) {
-	  closeListBox();
-	  return true;
-	}
+        if (!View::getView(m_listbox)->hasMouse()) {
+          closeListBox();
+          return true;
+        }
       }
       break;
 
@@ -329,39 +329,39 @@ static bool combobox_entry_msg_proc(JWidget widget, Message* msg)
 
     case JM_KEYPRESSED:
       if (widget->hasFocus()) {
-	if (!combobox->isEditable()) {
-	  if (msg->key.scancode == KEY_SPACE ||
-	      msg->key.scancode == KEY_ENTER ||
-	      msg->key.scancode == KEY_ENTER_PAD) {
-	    combobox->switchListBox();
-	    return true;
-	  }
-	}
-	else {
-	  if (msg->key.scancode == KEY_ENTER ||
-	      msg->key.scancode == KEY_ENTER_PAD) {
-	    combobox->switchListBox();
-	    return true;
-	  }
-	}
+        if (!combobox->isEditable()) {
+          if (msg->key.scancode == KEY_SPACE ||
+              msg->key.scancode == KEY_ENTER ||
+              msg->key.scancode == KEY_ENTER_PAD) {
+            combobox->switchListBox();
+            return true;
+          }
+        }
+        else {
+          if (msg->key.scancode == KEY_ENTER ||
+              msg->key.scancode == KEY_ENTER_PAD) {
+            combobox->switchListBox();
+            return true;
+          }
+        }
       }
       break;
 
     case JM_BUTTONPRESSED:
       if (combobox->isClickOpen()) {
-	combobox->switchListBox();
+        combobox->switchListBox();
       }
 
       if (combobox->isEditable()) {
-	jmanager_set_focus(widget);
+        jmanager_set_focus(widget);
       }
       else
-	return true;
+        return true;
       break;
 
     case JM_DRAW:
       widget->getTheme()->draw_combobox_entry(static_cast<Entry*>(widget),
-					      &msg->draw.rect);
+                                              &msg->draw.rect);
       return true;
 
   }
@@ -377,49 +377,49 @@ static bool combobox_listbox_msg_proc(JWidget widget, Message* msg)
 
     case JM_SIGNAL:
       if (msg->signal.num == JI_SIGNAL_LISTBOX_CHANGE) {
-	int index = jlistbox_get_selected_index(widget);
+        int index = jlistbox_get_selected_index(widget);
 
-	if (IS_VALID_ITEM(combobox, index))
-	  combobox->setSelectedItem(index);
+        if (IS_VALID_ITEM(combobox, index))
+          combobox->setSelectedItem(index);
       }
       break;
 
     case JM_BUTTONRELEASED:
       {
-	int index = combobox->getSelectedItem();
+        int index = combobox->getSelectedItem();
 
-	combobox->closeListBox();
+        combobox->closeListBox();
 
-	if (IS_VALID_ITEM(combobox, index)) {
-	  combobox->Change();
-	  jwidget_emit_signal(combobox, JI_SIGNAL_COMBOBOX_SELECT);
-	}
+        if (IS_VALID_ITEM(combobox, index)) {
+          combobox->Change();
+          jwidget_emit_signal(combobox, JI_SIGNAL_COMBOBOX_SELECT);
+        }
       }
       return true;
 
 /*     case JM_IDLE: { */
 /*       /\* if the user clicks outside the listbox *\/ */
 /*       if (!jmouse_b(1) && jmouse_b(0) && !jwidget_has_mouse(widget)) { */
-/* 	ComboBox *combobox = jwidget_get_data(combo_widget, JI_COMBOBOX); */
+/*      ComboBox *combobox = jwidget_get_data(combo_widget, JI_COMBOBOX); */
 
-/* 	if (combobox->entry && !jwidget_has_mouse(combobox->entry) && */
-/* 	    combobox->button && !jwidget_has_mouse(combobox->button) && */
-/* 	    combobox->window && !jwidget_has_mouse(combobox->window)) { */
-/* 	  combobox_close_window(combo_widget); */
-/* 	  return true; */
-/* 	} */
+/*      if (combobox->entry && !jwidget_has_mouse(combobox->entry) && */
+/*          combobox->button && !jwidget_has_mouse(combobox->button) && */
+/*          combobox->window && !jwidget_has_mouse(combobox->window)) { */
+/*        combobox_close_window(combo_widget); */
+/*        return true; */
+/*      } */
 /*       } */
 /*       break; */
 /*     } */
 
     case JM_KEYPRESSED:
       if (widget->hasFocus()) {
-	if (msg->key.scancode == KEY_SPACE ||
-	    msg->key.scancode == KEY_ENTER ||
-	    msg->key.scancode == KEY_ENTER_PAD) {
-	  combobox->closeListBox();
-	  return true;
-	}
+        if (msg->key.scancode == KEY_SPACE ||
+            msg->key.scancode == KEY_ENTER ||
+            msg->key.scancode == KEY_ENTER_PAD) {
+          combobox->closeListBox();
+          return true;
+        }
       }
       break;
   }
@@ -442,7 +442,7 @@ void ComboBox::openListBox()
 
     m_listbox->user_data[0] = this;
     jwidget_add_hook(m_listbox, JI_WIDGET,
-		     combobox_listbox_msg_proc, NULL);
+                     combobox_listbox_msg_proc, NULL);
 
     std::vector<Item*>::iterator it, end = m_items.end();
     for (it = m_items.begin(); it != end; ++it) {
@@ -486,7 +486,7 @@ void ComboBox::closeListBox()
 {
   if (m_window) {
     m_window->closeWindow(this);
-    delete m_window;		// window, frame
+    delete m_window;            // window, frame
     m_window = NULL;
 
     jmanager_remove_msg_filter(JM_BUTTONPRESSED, this);
@@ -505,9 +505,9 @@ void ComboBox::switchListBox()
 JRect ComboBox::getListBoxPos()
 {
   JRect rc = jrect_new(m_entry->rc->x1,
-		       m_entry->rc->y2,
-		       m_button->rc->x2,
-		       m_entry->rc->y2+jrect_h(m_window->rc));
+                       m_entry->rc->y2,
+                       m_button->rc->x2,
+                       m_entry->rc->y2+jrect_h(m_window->rc));
   if (rc->y2 > JI_SCREEN_H)
     jrect_displace(rc, 0, -(jrect_h(rc)+jrect_h(m_entry->rc)));
   return rc;

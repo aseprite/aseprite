@@ -43,7 +43,7 @@ public:
   void operator()() { f(); }
   Slot0_fun* clone() const { return new Slot0_fun(*this); }
 };
-  
+
 // Slot0_mem - pointer to a member function of the T class
 template<typename R, class T>
 class Slot0_mem : public Slot0<R>
@@ -107,7 +107,7 @@ public:
   void operator()(A1 a1) { f(a1); }
   Slot1_fun* clone() const { return new Slot1_fun(*this); }
 };
-  
+
 // Slot1_mem - pointer to a member function of the T class
 template<typename R, class T, typename A1>
 class Slot1_mem : public Slot1<R, A1>

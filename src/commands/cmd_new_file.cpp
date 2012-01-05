@@ -57,8 +57,8 @@ static int _sprite_counter = 0;
 
 NewFileCommand::NewFileCommand()
   : Command("NewFile",
-	    "New File",
-	    CmdRecordableFlag)
+            "New File",
+            CmdRecordableFlag)
 {
 }
 
@@ -81,14 +81,14 @@ void NewFileCommand::onExecute(Context* context)
   // Load the window widget
   FramePtr window(load_widget("new_sprite.xml", "new_sprite"));
   get_widgets(window,
-	      "width", &width,
-	      "height", &height,
-	      "radio1", &radio1,
-	      "radio2", &radio2,
-	      "radio3", &radio3,
-	      "colors", &colors,
-	      "ok_button", &ok,
-	      "bg_box", &bg_box, NULL);
+              "width", &width,
+              "height", &height,
+              "radio1", &radio1,
+              "radio2", &radio2,
+              "radio3", &radio3,
+              "colors", &colors,
+              "ok_button", &ok,
+              "bg_box", &bg_box, NULL);
 
   // Default values: Indexed, 320x240, Background color
   imgtype = get_config_int("NewSprite", "Type", IMAGE_INDEXED);
@@ -153,8 +153,8 @@ void NewFileCommand::onExecute(Context* context)
       ASSERT(h >= 1 && h <= 9999);
 
       UniquePtr<Document> document(
-	Document::createBasicDocument(imgtype, w, h,
-				      (imgtype == IMAGE_INDEXED ? ncolors: 256)));
+        Document::createBasicDocument(imgtype, w, h,
+                                      (imgtype == IMAGE_INDEXED ? ncolors: 256)));
       Sprite* sprite(document->getSprite());
 
       get_default_palette()->copyColorsTo(sprite->getCurrentPalette());
@@ -165,14 +165,14 @@ void NewFileCommand::onExecute(Context* context)
       // If the background color isn't transparent, we have to
       // convert the `Layer 1' in a `Background'
       if (color.getType() != Color::MaskType) {
-	Sprite* sprite = document->getSprite();
+        Sprite* sprite = document->getSprite();
 
-	ASSERT(sprite->getCurrentLayer() && sprite->getCurrentLayer()->is_image());
-	
-	static_cast<LayerImage*>(sprite->getCurrentLayer())->configureAsBackground();
-	image_clear(sprite->getCurrentImage(), color_utils::color_for_image(color, imgtype));
+        ASSERT(sprite->getCurrentLayer() && sprite->getCurrentLayer()->is_image());
+
+        static_cast<LayerImage*>(sprite->getCurrentLayer())->configureAsBackground();
+        image_clear(sprite->getCurrentImage(), color_utils::color_for_image(color, imgtype));
       }
-      
+
       // Show the sprite to the user
       context->addDocument(document);
 

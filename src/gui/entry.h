@@ -31,7 +31,7 @@ public:
 
   // for themes
   void getEntryThemeInfo(int* scroll, int* caret, int* state,
-			 int* selbeg, int* selend);
+                         int* selbeg, int* selend);
 
   // Signals
   Signal0<void> EntryChange;
@@ -75,7 +75,7 @@ private:
   int m_select;
   int m_timer_id;
   bool m_hidden : 1;
-  bool m_state : 1;		// show or not the text caret
+  bool m_state : 1;             // show or not the text caret
   bool m_readonly : 1;
   bool m_password : 1;
   bool m_recent_focused : 1;

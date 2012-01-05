@@ -25,4 +25,3 @@ _DRIVER_INFO _mouse_driver_list[] =
 {
    {  0,  NULL,  0  }
 };
-

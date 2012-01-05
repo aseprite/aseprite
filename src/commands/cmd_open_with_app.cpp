@@ -38,8 +38,8 @@ protected:
 
 OpenWithAppCommand::OpenWithAppCommand()
   : Command("OpenWithApp",
-	    "Open With Associated Application",
-	    CmdUIOnlyFlag)
+            "Open With Associated Application",
+            CmdUIOnlyFlag)
 {
 }
 

@@ -48,14 +48,14 @@ Image *load_pic_file(const char *filename, int *x, int *y, RGB *palette)
   magic = pack_igetw (f);
   if (magic == 0x9119) {
     /* read Animator PIC file ***************************************/
-    w = pack_igetw (f);			/* width */
-    h = pack_igetw (f);			/* height */
-    *x = ((short)pack_igetw (f));	/* X offset */
-    *y = ((short)pack_igetw (f));	/* Y offset */
-    bpp = pack_getc (f);		/* bits per pixel (must be 8) */
-    compression = pack_getc (f);	/* compression flag (must be 0) */
-    image_size = pack_igetl (f);	/* image size (in bytes) */
-    pack_getc (f);			/* reserved */
+    w = pack_igetw (f);                 /* width */
+    h = pack_igetw (f);                 /* height */
+    *x = ((short)pack_igetw (f));       /* X offset */
+    *y = ((short)pack_igetw (f));       /* Y offset */
+    bpp = pack_getc (f);                /* bits per pixel (must be 8) */
+    compression = pack_getc (f);        /* compression flag (must be 0) */
+    image_size = pack_igetl (f);        /* image size (in bytes) */
+    pack_getc (f);                      /* reserved */
 
     if (bpp != 8 || compression != 0) {
       pack_fclose (f);
@@ -68,9 +68,9 @@ Image *load_pic_file(const char *filename, int *x, int *y, RGB *palette)
       g = pack_getc (f);
       b = pack_getc (f);
       if (palette) {
-	palette[c].r = r;
-	palette[c].g = g;
-	palette[c].b = b;
+        palette[c].r = r;
+        palette[c].g = g;
+        palette[c].b = b;
       }
     }
 
@@ -79,7 +79,7 @@ Image *load_pic_file(const char *filename, int *x, int *y, RGB *palette)
 
     for (v=0; v<h; v++)
       for (u=0; u<w; u++)
-	image->putpixel(u, v, pack_getc(f));
+        image->putpixel(u, v, pack_getc(f));
 
     pack_fclose (f);
     return image;
@@ -92,19 +92,19 @@ Image *load_pic_file(const char *filename, int *x, int *y, RGB *palette)
     return NULL;
 
   /* read a PIC/MSK Animator Pro file *************************************/
-  size = pack_igetl (f);	/* file size */
-  magic = pack_igetw (f);	/* magic number 9500h */
+  size = pack_igetl (f);        /* file size */
+  magic = pack_igetw (f);       /* magic number 9500h */
   if (magic != 0x9500) {
     pack_fclose (f);
     return NULL;
   }
 
-  w = pack_igetw (f);		/* width */
-  h = pack_igetw (f);		/* height */
-  *x = pack_igetw (f);		/* X offset */
-  *y = pack_igetw (f);		/* Y offset */
-  pack_igetl (f);		/* user ID, is 0 */
-  bpp = pack_getc (f);		/* bits per pixel */
+  w = pack_igetw (f);           /* width */
+  h = pack_igetw (f);           /* height */
+  *x = pack_igetw (f);          /* X offset */
+  *y = pack_igetw (f);          /* Y offset */
+  pack_igetl (f);               /* user ID, is 0 */
+  bpp = pack_getc (f);          /* bits per pixel */
 
   if ((bpp != 1 && bpp != 8) || (w<1) || (h<1) || (w>9999) || (h>9999)) {
     pack_fclose (f);
@@ -115,7 +115,7 @@ Image *load_pic_file(const char *filename, int *x, int *y, RGB *palette)
   for (c=0; c<45; c++)
     pack_getc (f);
 
-  size -= 64;			/* the header uses 64 bytes */
+  size -= 64;                   /* the header uses 64 bytes */
 
   image = image_new (bpp == 8 ? IMAGE_INDEXED: IMAGE_BITMAP, w, h);
 
@@ -128,41 +128,41 @@ Image *load_pic_file(const char *filename, int *x, int *y, RGB *palette)
 
       /* color palette info */
       case 0:
-	version = pack_igetw (f);	/* palette version */
-	if (version != 0) {
-	  image_free (image);
-	  pack_fclose (f);
-	  return NULL;
-	}
-	/* 256 RGB entries in 0-255 format */
-	for (c=0; c<256; c++) {
-	  r = pack_getc (f);
-	  g = pack_getc (f);
-	  b = pack_getc (f);
-	  if (palette) {
-	    palette[c].r = MID (0, r, 255) >> 2;
-	    palette[c].g = MID (0, g, 255) >> 2;
-	    palette[c].b = MID (0, b, 255) >> 2;
-	  }
-	}
-	break;
+        version = pack_igetw (f);       /* palette version */
+        if (version != 0) {
+          image_free (image);
+          pack_fclose (f);
+          return NULL;
+        }
+        /* 256 RGB entries in 0-255 format */
+        for (c=0; c<256; c++) {
+          r = pack_getc (f);
+          g = pack_getc (f);
+          b = pack_getc (f);
+          if (palette) {
+            palette[c].r = MID (0, r, 255) >> 2;
+            palette[c].g = MID (0, g, 255) >> 2;
+            palette[c].b = MID (0, b, 255) >> 2;
+          }
+        }
+        break;
 
       /* byte-per-pixel image data */
       case 1:
-	for (v=0; v<h; v++)
-	  for (u=0; u<w; u++)
-	    image->putpixel(u, v, pack_getc(f));
-	break;
+        for (v=0; v<h; v++)
+          for (u=0; u<w; u++)
+            image->putpixel(u, v, pack_getc(f));
+        break;
 
       /* bit-per-pixel image data */
       case 2:
-	for (v=0; v<h; v++)
-	  for (u=0; u<(w+7)/8; u++) {
-	    byte = pack_getc (f);
-	    for (c=0; c<8; c++)
-	      image_putpixel (image, u*8+c, v, byte & (1<<(7-c)));
-	  }
-	break;
+        for (v=0; v<h; v++)
+          for (u=0; u<(w+7)/8; u++) {
+            byte = pack_getc (f);
+            for (c=0; c<8; c++)
+              image_putpixel (image, u*8+c, v, byte & (1<<(7-c)));
+          }
+        break;
     }
 
     size -= block_size;
@@ -174,7 +174,7 @@ Image *load_pic_file(const char *filename, int *x, int *y, RGB *palette)
 
 /* saves an Animator Pro PIC file */
 int save_pic_file(const char *filename, int x, int y,
-		  const RGB* palette, const Image* image)
+                  const RGB* palette, const Image* image)
 {
   int c, u, v, bpp, size, byte;
   PACKFILE* f;
@@ -201,14 +201,14 @@ int save_pic_file(const char *filename, int x, int y,
   else
     size += (4+2+2+256*3) + (4+2+image->w*image->h);
 
-  pack_iputl(size, f);		/* file size */
-  pack_iputw(0x9500, f);	/* magic number 9500h */
-  pack_iputw(image->w, f);	/* width */
-  pack_iputw(image->h, f);	/* height */
-  pack_iputw(x, f);		/* X offset */
-  pack_iputw(y, f);		/* Y offset */
-  pack_iputl(0, f);		/* user ID, is 0 */
-  pack_putc(bpp, f);		/* bits per pixel */
+  pack_iputl(size, f);          /* file size */
+  pack_iputw(0x9500, f);        /* magic number 9500h */
+  pack_iputw(image->w, f);      /* width */
+  pack_iputw(image->h, f);      /* height */
+  pack_iputw(x, f);             /* X offset */
+  pack_iputw(y, f);             /* Y offset */
+  pack_iputl(0, f);             /* user ID, is 0 */
+  pack_putc(bpp, f);            /* bits per pixel */
 
   /* reserved data */
   for (c=0; c<45; c++)
@@ -217,35 +217,35 @@ int save_pic_file(const char *filename, int x, int y,
   /* 1 bpp */
   if (bpp == 1) {
     /* bit-per-data image data block */
-    pack_iputl ((4+2+((image->w+7)/8)*image->h), f);	/* block size */
-    pack_iputw (2, f);					/* block type */
-    for (v=0; v<image->h; v++)				/* image data */
+    pack_iputl ((4+2+((image->w+7)/8)*image->h), f);    /* block size */
+    pack_iputw (2, f);                                  /* block type */
+    for (v=0; v<image->h; v++)                          /* image data */
       for (u=0; u<(image->w+7)/8; u++) {
-	byte = 0;
-	for (c=0; c<8; c++)
-	  if (image_getpixel (image, u*8+c, v))
-	    byte |= (1<<(7-c));
-	pack_putc (byte, f);
+        byte = 0;
+        for (c=0; c<8; c++)
+          if (image_getpixel (image, u*8+c, v))
+            byte |= (1<<(7-c));
+        pack_putc (byte, f);
       }
   }
   /* 8 bpp */
   else {
     /* color palette info */
-    pack_iputl((4+2+2+256*3), f);	/* block size */
-    pack_iputw(0, f);			/* block type */
-    pack_iputw(0, f);			/* version */
-    for (c=0; c<256; c++) {		/* 256 palette entries */
+    pack_iputl((4+2+2+256*3), f);       /* block size */
+    pack_iputw(0, f);                   /* block type */
+    pack_iputw(0, f);                   /* version */
+    for (c=0; c<256; c++) {             /* 256 palette entries */
       pack_putc(_rgb_scale_6[palette[c].r], f);
       pack_putc(_rgb_scale_6[palette[c].g], f);
       pack_putc(_rgb_scale_6[palette[c].b], f);
     }
 
     /* pixel-per-data image data block */
-    pack_iputl ((4+2+image->w*image->h), f);	/* block size */
-    pack_iputw (1, f);				/* block type */
-    for (v=0; v<image->h; v++)			/* image data */
+    pack_iputl ((4+2+image->w*image->h), f);    /* block size */
+    pack_iputw (1, f);                          /* block type */
+    for (v=0; v<image->h; v++)                  /* image data */
       for (u=0; u<image->w; u++)
-	pack_putc(image->getpixel(u, v), f);
+        pack_putc(image->getpixel(u, v), f);
   }
 
   pack_fclose (f);

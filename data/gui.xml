@@ -27,12 +27,12 @@
       <key command="Paste" shortcut="Ctrl+V" /> <key command="Paste" shortcut="Shift+Ins" />
       <key command="Clear" shortcut="Del" /> <key command="Clear" shortcut="Backspace" />
       <key command="Flip" shortcut="Shift+H">
-	<param name="target" value="mask" />
-	<param name="orientation" value="horizontal" />
+        <param name="target" value="mask" />
+        <param name="orientation" value="horizontal" />
       </key>
       <key command="Flip" shortcut="Shift+V">
-	<param name="target" value="mask" />
-	<param name="orientation" value="vertical" />
+        <param name="target" value="mask" />
+        <param name="orientation" value="vertical" />
       </key>
       <key command="ReplaceColor" shortcut="Shift+R" />
       <key command="InvertColor" shortcut="Ctrl+I" />
@@ -51,7 +51,7 @@
       <!-- Frame -->
       <key command="NewFrame" shortcut="N" />
       <key command="FrameProperties" shortcut="P">
-	<param name="frame" value="current" />
+        <param name="frame" value="current" />
       </key>
       <key command="GotoFirstFrame" shortcut="Home" />
       <key command="GotoPreviousFrame" shortcut="Left" />
@@ -74,47 +74,47 @@
       <key command="SnapToGrid" shortcut="Shift+S" />
       <key command="FilmEditor" shortcut="Tab" />
       <key command="PaletteEditor" shortcut="F4">
-	<param name="switch" value="true" />
+        <param name="switch" value="true" />
       </key>
       <!-- Others -->
       <key command="SwitchColors" shortcut="X" />
       <key command="ChangeColor" shortcut="9">
-	<param name="target" value="foreground" />
-	<param name="change" value="decrement-index" />
+        <param name="target" value="foreground" />
+        <param name="change" value="decrement-index" />
       </key>
       <key command="ChangeColor" shortcut="0">
-	<param name="target" value="foreground" />
-	<param name="change" value="increment-index" />
+        <param name="target" value="foreground" />
+        <param name="change" value="increment-index" />
       </key>
       <key command="ChangeColor" shortcut="[">
-	<param name="target" value="foreground" />
-	<param name="change" value="decrement-index" />
+        <param name="target" value="foreground" />
+        <param name="change" value="decrement-index" />
       </key>
       <key command="ChangeColor" shortcut="]">
-	<param name="target" value="foreground" />
-	<param name="change" value="increment-index" />
+        <param name="target" value="foreground" />
+        <param name="change" value="increment-index" />
       </key>
       <key command="ChangeColor" shortcut="Ctrl+9">
-	<param name="target" value="background" />
-	<param name="change" value="decrement-index" />
+        <param name="target" value="background" />
+        <param name="change" value="decrement-index" />
       </key>
       <key command="ChangeColor" shortcut="Ctrl+0">
-	<param name="target" value="background" />
-	<param name="change" value="increment-index" />
+        <param name="target" value="background" />
+        <param name="change" value="increment-index" />
       </key>
 
       <!-- Modify pen size with +/- signs -->
       <key command="ChangePen" shortcut="+">
-	<param name="change" value="increment-size" />
+        <param name="change" value="increment-size" />
       </key>
       <key command="ChangePen" shortcut="-">
-	<param name="change" value="decrement-size" />
+        <param name="change" value="decrement-size" />
       </key>
       <key command="ChangePen" shortcut="Plus Pad">
-	<param name="change" value="increment-size" />
+        <param name="change" value="increment-size" />
       </key>
       <key command="ChangePen" shortcut="Minus Pad">
-	<param name="change" value="decrement-size" />
+        <param name="change" value="decrement-size" />
       </key>
     </commands>
 
@@ -168,189 +168,189 @@
     </spriteeditor>
 
   </keyboard>
-  
+
   <menus>
     <!-- main bar menu -->
     <menu id="main_menu">
       <menu text="&amp;File">
-	<item command="NewFile" text="&amp;New..." />
-	<item command="OpenFile" text="&amp;Open..." />
-	<item id="recent_list" text="Open &amp;Recent" />
-	<separator />
-	<item command="SaveFile" text="&amp;Save" />
-	<item command="SaveFileAs" text="Save &amp;As..." />
-	<item command="SaveFileCopyAs" text="Save Cop&amp;y As..." />
-	<item command="CloseFile" text="&amp;Close" />
-	<item command="CloseAllFiles" text="Close All" />
-	<separator />
-	<item command="ImportSpriteSheet" text="&amp;Import Sprite Sheet" />
-	<item command="ExportSpriteSheet" text="&amp;Export Sprite Sheet" />
-	<separator />
-	<item command="Exit" text="E&amp;xit" />
+        <item command="NewFile" text="&amp;New..." />
+        <item command="OpenFile" text="&amp;Open..." />
+        <item id="recent_list" text="Open &amp;Recent" />
+        <separator />
+        <item command="SaveFile" text="&amp;Save" />
+        <item command="SaveFileAs" text="Save &amp;As..." />
+        <item command="SaveFileCopyAs" text="Save Cop&amp;y As..." />
+        <item command="CloseFile" text="&amp;Close" />
+        <item command="CloseAllFiles" text="Close All" />
+        <separator />
+        <item command="ImportSpriteSheet" text="&amp;Import Sprite Sheet" />
+        <item command="ExportSpriteSheet" text="&amp;Export Sprite Sheet" />
+        <separator />
+        <item command="Exit" text="E&amp;xit" />
       </menu>
       <menu text="&amp;Edit">
-	<item command="Undo" text="&amp;Undo" />
-	<item command="Redo" text="&amp;Redo" />
-	<separator />
-	<item command="Cut" text="Cu&amp;t" />
-	<item command="Copy" text="&amp;Copy" />
-	<item command="Paste" text="&amp;Paste" />
-	<item command="Clear" text="C&amp;lear" />
-	<separator />
-	<item command="Flip" text="Flip &amp;Horizontal">
-	  <param name="target" value="mask" />
-	  <param name="orientation" value="horizontal" />
-	</item>
-	<item command="Flip" text="Flip &amp;Vertical">
-	  <param name="target" value="mask" />
-	  <param name="orientation" value="vertical" />
-	</item>
-	<separator />
-	<item command="ReplaceColor" text="R&amp;eplace Color..." />
-	<item command="InvertColor" text="&amp;Invert" />
-	<menu text="F&amp;X" id="fx_popup">
-	  <item command="ConvolutionMatrix" text="Convolution &amp;Matrix" />
-	  <item command="ColorCurve" text="&amp;Color Curve" />
-	  <separator />
-	  <item command="Despeckle" text="&amp;Despeckle (median filter)" />
-	</menu>
-	<separator />
-	<item command="ConfigureTools" text="Tool&amp;s" />
-	<item command="Options" text="&amp;Options" />
+        <item command="Undo" text="&amp;Undo" />
+        <item command="Redo" text="&amp;Redo" />
+        <separator />
+        <item command="Cut" text="Cu&amp;t" />
+        <item command="Copy" text="&amp;Copy" />
+        <item command="Paste" text="&amp;Paste" />
+        <item command="Clear" text="C&amp;lear" />
+        <separator />
+        <item command="Flip" text="Flip &amp;Horizontal">
+          <param name="target" value="mask" />
+          <param name="orientation" value="horizontal" />
+        </item>
+        <item command="Flip" text="Flip &amp;Vertical">
+          <param name="target" value="mask" />
+          <param name="orientation" value="vertical" />
+        </item>
+        <separator />
+        <item command="ReplaceColor" text="R&amp;eplace Color..." />
+        <item command="InvertColor" text="&amp;Invert" />
+        <menu text="F&amp;X" id="fx_popup">
+          <item command="ConvolutionMatrix" text="Convolution &amp;Matrix" />
+          <item command="ColorCurve" text="&amp;Color Curve" />
+          <separator />
+          <item command="Despeckle" text="&amp;Despeckle (median filter)" />
+        </menu>
+        <separator />
+        <item command="ConfigureTools" text="Tool&amp;s" />
+        <item command="Options" text="&amp;Options" />
       </menu>
       <menu text="&amp;Sprite">
-	<item command="SpriteProperties" text="&amp;Properties..." />
-	<menu text="Color &amp;Mode">
-	  <item command="ChangeImageType" text="&amp;RGB Color">
-	    <param name="imgtype" value="rgb" />
-	  </item>
-	  <item command="ChangeImageType" text="&amp;Grayscale">
-	    <param name="imgtype" value="grayscale" />
-	  </item>
-	  <item command="ChangeImageType" text="&amp;Indexed (No Dithering)">
-	    <param name="imgtype" value="indexed" />
-	  </item>
-	  <item command="ChangeImageType" text="Indexed (Ordered &amp;Dither)">
-	    <param name="imgtype" value="indexed" />
-	    <param name="dithering" value="ordered" />
-	  </item>
-	</menu>
-	<separator />
-	<item command="DuplicateSprite" text="&amp;Duplicate..." />
-	<separator />
-	<item command="SpriteSize" text="&amp;Sprite Size..." />
-	<item command="CanvasSize" text="&amp;Canvas Size..." />
-	<menu text="&amp;Rotate Canvas">
-	  <item command="RotateCanvas" text="180">
-	    <param name="angle" value="180" />
-	  </item>
-	  <item command="RotateCanvas" text="90 CW">
-	    <param name="angle" value="90" />
-	  </item>
-	  <item command="RotateCanvas" text="90 CCW">
-	    <param name="angle" value="-90" />
-	  </item>
-	  <separator />
-	  <item command="Flip" text="Flip Canvas &amp;Horizontal">
-	    <param name="target" value="canvas" />
-	    <param name="orientation" value="horizontal" />
-	  </item>
-	  <item command="Flip" text="Flip Canvas &amp;Vertical">
-	    <param name="target" value="canvas" />
-	    <param name="orientation" value="vertical" />
-	  </item>
-	</menu>
-	<separator />
-	<item command="CropSprite" text="Cr&amp;op" />
-	<item command="AutocropSprite" text="&amp;Trim" />
+        <item command="SpriteProperties" text="&amp;Properties..." />
+        <menu text="Color &amp;Mode">
+          <item command="ChangeImageType" text="&amp;RGB Color">
+            <param name="imgtype" value="rgb" />
+          </item>
+          <item command="ChangeImageType" text="&amp;Grayscale">
+            <param name="imgtype" value="grayscale" />
+          </item>
+          <item command="ChangeImageType" text="&amp;Indexed (No Dithering)">
+            <param name="imgtype" value="indexed" />
+          </item>
+          <item command="ChangeImageType" text="Indexed (Ordered &amp;Dither)">
+            <param name="imgtype" value="indexed" />
+            <param name="dithering" value="ordered" />
+          </item>
+        </menu>
+        <separator />
+        <item command="DuplicateSprite" text="&amp;Duplicate..." />
+        <separator />
+        <item command="SpriteSize" text="&amp;Sprite Size..." />
+        <item command="CanvasSize" text="&amp;Canvas Size..." />
+        <menu text="&amp;Rotate Canvas">
+          <item command="RotateCanvas" text="180">
+            <param name="angle" value="180" />
+          </item>
+          <item command="RotateCanvas" text="90 CW">
+            <param name="angle" value="90" />
+          </item>
+          <item command="RotateCanvas" text="90 CCW">
+            <param name="angle" value="-90" />
+          </item>
+          <separator />
+          <item command="Flip" text="Flip Canvas &amp;Horizontal">
+            <param name="target" value="canvas" />
+            <param name="orientation" value="horizontal" />
+          </item>
+          <item command="Flip" text="Flip Canvas &amp;Vertical">
+            <param name="target" value="canvas" />
+            <param name="orientation" value="vertical" />
+          </item>
+        </menu>
+        <separator />
+        <item command="CropSprite" text="Cr&amp;op" />
+        <item command="AutocropSprite" text="&amp;Trim" />
       </menu>
       <menu text="&amp;Layer">
-	<item command="LayerProperties" text="&amp;Properties..." />
-	<separator />
-	<item command="NewLayer" text="&amp;New Layer" />
-	<item command="RemoveLayer" text="&amp;Remove Layer" />
-	<item command="BackgroundFromLayer" text="&amp;Background from Layer" />
-	<item command="LayerFromBackground" text="&amp;Layer from Background" />
-	<separator />
-	<item command="DuplicateLayer" text="&amp;Duplicate" />
-	<item command="MergeDownLayer" text="&amp;Merge Down" />
-	<item command="FlattenLayers" text="&amp;Flatten" />
+        <item command="LayerProperties" text="&amp;Properties..." />
+        <separator />
+        <item command="NewLayer" text="&amp;New Layer" />
+        <item command="RemoveLayer" text="&amp;Remove Layer" />
+        <item command="BackgroundFromLayer" text="&amp;Background from Layer" />
+        <item command="LayerFromBackground" text="&amp;Layer from Background" />
+        <separator />
+        <item command="DuplicateLayer" text="&amp;Duplicate" />
+        <item command="MergeDownLayer" text="&amp;Merge Down" />
+        <item command="FlattenLayers" text="&amp;Flatten" />
       </menu>
       <menu text="F&amp;rame">
-	<item command="FrameProperties" text="Frame &amp;Properties...">
-	  <param name="frame" value="current" />
-	</item>
-	<item command="CelProperties" text="&amp;Cel Properties..." />
-	<separator />
-	<item command="NewFrame" text="&amp;New Frame" />
-	<item command="RemoveFrame" text="&amp;Remove Frame" />
-	<separator />
-	<menu text="&amp;Jump to">
-	  <item command="GotoFirstFrame" text="&amp;First Frame" />
-	  <item command="GotoPreviousFrame" text="&amp;Previous Frame" />
-	  <item command="GotoNextFrame" text="&amp;Next Frame" />
-	  <item command="GotoLastFrame" text="&amp;Last Frame" />
-	</menu>
-	<item command="PlayAnimation" text="&amp;Play Animation" />
-	<separator />
-	<item command="FrameProperties" text="Constant Frame Rate">
-	  <param name="frame" value="all" />
-	</item>
+        <item command="FrameProperties" text="Frame &amp;Properties...">
+          <param name="frame" value="current" />
+        </item>
+        <item command="CelProperties" text="&amp;Cel Properties..." />
+        <separator />
+        <item command="NewFrame" text="&amp;New Frame" />
+        <item command="RemoveFrame" text="&amp;Remove Frame" />
+        <separator />
+        <menu text="&amp;Jump to">
+          <item command="GotoFirstFrame" text="&amp;First Frame" />
+          <item command="GotoPreviousFrame" text="&amp;Previous Frame" />
+          <item command="GotoNextFrame" text="&amp;Next Frame" />
+          <item command="GotoLastFrame" text="&amp;Last Frame" />
+        </menu>
+        <item command="PlayAnimation" text="&amp;Play Animation" />
+        <separator />
+        <item command="FrameProperties" text="Constant Frame Rate">
+          <param name="frame" value="all" />
+        </item>
       </menu>
       <menu text="Selec&amp;t">
-	<item command="MaskAll" text="&amp;All" />
-	<item command="DeselectMask" text="&amp;Deselect" />
-	<item command="ReselectMask" text="&amp;Reselect" />
-	<item command="InvertMask" text="&amp;Inverse" />
-	<separator />
-	<item command="MaskByColor" text="&amp;Color Range" />
-	<separator />
-	<item command="LoadMask" text="&amp;Load from MSK file" />
-	<item command="SaveMask" text="&amp;Save to MSK file" />
+        <item command="MaskAll" text="&amp;All" />
+        <item command="DeselectMask" text="&amp;Deselect" />
+        <item command="ReselectMask" text="&amp;Reselect" />
+        <item command="InvertMask" text="&amp;Inverse" />
+        <separator />
+        <item command="MaskByColor" text="&amp;Color Range" />
+        <separator />
+        <item command="LoadMask" text="&amp;Load from MSK file" />
+        <item command="SaveMask" text="&amp;Save to MSK file" />
       </menu>
       <menu text="&amp;View">
-	<menu text="Sprite &amp;Editor">
-	  <item command="MakeUniqueEditor" text="Make &amp;Unique" />
-	  <separator />
-	  <item command="SplitEditorVertically" text="Split &amp;Vertically" />
-	  <item command="SplitEditorHorizontally" text="Split &amp;Horizontally" />
-	  <separator />
-	  <item command="CloseEditor" text="&amp;Close" />
-	</menu>
-	<separator />
-	<item command="ShowGrid" text="Show &amp;Grid" />
-	<item command="SnapToGrid" text="&amp;Snap to Grid" />
-	<item command="GridSettings" text="Gri&amp;d Settings" />
-	<separator />
-	<item command="FilmEditor" text="&amp;Animation Editor" />
-	<item command="PaletteEditor" text="&amp;Palette Editor">
-	  <param name="switch" value="true" />
-	</item>
-	<item command="Preview" text="Previe&amp;w" />
-	<separator />
-	<item command="Refresh" text="&amp;Refresh &amp;&amp; Reload Skin" />
-	<item command="ScreenShot" text="&amp;Screen Shot" />
+        <menu text="Sprite &amp;Editor">
+          <item command="MakeUniqueEditor" text="Make &amp;Unique" />
+          <separator />
+          <item command="SplitEditorVertically" text="Split &amp;Vertically" />
+          <item command="SplitEditorHorizontally" text="Split &amp;Horizontally" />
+          <separator />
+          <item command="CloseEditor" text="&amp;Close" />
+        </menu>
+        <separator />
+        <item command="ShowGrid" text="Show &amp;Grid" />
+        <item command="SnapToGrid" text="&amp;Snap to Grid" />
+        <item command="GridSettings" text="Gri&amp;d Settings" />
+        <separator />
+        <item command="FilmEditor" text="&amp;Animation Editor" />
+        <item command="PaletteEditor" text="&amp;Palette Editor">
+          <param name="switch" value="true" />
+        </item>
+        <item command="Preview" text="Previe&amp;w" />
+        <separator />
+        <item command="Refresh" text="&amp;Refresh &amp;&amp; Reload Skin" />
+        <item command="ScreenShot" text="&amp;Screen Shot" />
       </menu>
       <menu text="&amp;Help">
-	<item command="Launch" text="Quick &amp;Reference">
-	  <param name="type" value="docs" />
-	  <param name="path" value="quickref.pdf" />
-	</item>
-	<item command="Launch" text="Wiki">
-	  <param name="type" value="url" />
-	  <param name="path" value="http://code.google.com/p/aseprite/wiki/Home" />
-	</item>
-	<separator />
-	<item command="Launch" text="Release Notes">
-	  <param name="type" value="url" />
-	  <param name="path" value="http://code.google.com/p/aseprite/wiki/ReleaseNotes" />
-	</item>
-	<item command="Launch" text="&amp;Donate">
-	  <param name="type" value="url" />
-	  <param name="path" value="http://www.aseprite.org/donate/" />
-	</item>
-	<separator />
-	<item command="About" text="&amp;About" />
+        <item command="Launch" text="Quick &amp;Reference">
+          <param name="type" value="docs" />
+          <param name="path" value="quickref.pdf" />
+        </item>
+        <item command="Launch" text="Wiki">
+          <param name="type" value="url" />
+          <param name="path" value="http://code.google.com/p/aseprite/wiki/Home" />
+        </item>
+        <separator />
+        <item command="Launch" text="Release Notes">
+          <param name="type" value="url" />
+          <param name="path" value="http://code.google.com/p/aseprite/wiki/ReleaseNotes" />
+        </item>
+        <item command="Launch" text="&amp;Donate">
+          <param name="type" value="url" />
+          <param name="path" value="http://www.aseprite.org/donate/" />
+        </item>
+        <separator />
+        <item command="About" text="&amp;About" />
       </menu>
     </menu>
 
@@ -373,22 +373,22 @@
       <item command="MergeDownLayer" text="&amp;Merge Down" />
       <item command="FlattenLayers" text="&amp;Flatten" />
     </menu>
-    
+
     <menu id="frame_popup">
       <item command="FrameProperties" text="&amp;Properties...">
-	<param name="frame" value="current" />
+        <param name="frame" value="current" />
       </item>
       <separator />
       <item command="NewFrame" text="&amp;New" />
       <item command="RemoveFrame" text="&amp;Remove" />
     </menu>
-    
+
     <menu id="cel_popup">
       <item command="CelProperties" text="&amp;Properties..." />
       <separator />
       <item command="Clear" text="&amp;Clear" />
     </menu>
-    
+
     <menu id="cel_movement_popup">
       <item command="MoveCel" text="&amp;Move" />
       <item command="CopyCel" text="&amp;Copy" />
@@ -401,236 +401,236 @@
     <group id="selection_tools" text="Selection Tools">
 
       <tool id="rectangular_marquee"
-	    text="Rectangular Marquee Tool"
-	    fill="always"
-	    ink="selection"
-	    controller="two_points"
-	    pointshape="pixel"
-	    intertwine="as_rectangles"
-	    tracepolicy="last">
-	<tooltip>*
-	Left-button: add to current selection.&#10;*
-	Right-button: remove from current selection.
-	</tooltip>
+            text="Rectangular Marquee Tool"
+            fill="always"
+            ink="selection"
+            controller="two_points"
+            pointshape="pixel"
+            intertwine="as_rectangles"
+            tracepolicy="last">
+        <tooltip>*
+        Left-button: add to current selection.&#10;*
+        Right-button: remove from current selection.
+        </tooltip>
       </tool>
 
       <tool id="elliptical_marquee"
-	    text="Elliptical Marquee Tool"
-	    fill="always"
-	    ink="selection"
-	    controller="two_points"
-	    pointshape="pixel"
-	    intertwine="as_ellipses"
-	    tracepolicy="last">
-	<tooltip>*
-	Left-button: add to current selection.&#10;*
-	Right-button: remove from current selection.
-	</tooltip>
+            text="Elliptical Marquee Tool"
+            fill="always"
+            ink="selection"
+            controller="two_points"
+            pointshape="pixel"
+            intertwine="as_ellipses"
+            tracepolicy="last">
+        <tooltip>*
+        Left-button: add to current selection.&#10;*
+        Right-button: remove from current selection.
+        </tooltip>
       </tool>
 
       <tool id="lasso"
-	    text="Lasso Tool"
-	    fill="always"
-	    ink="selection"
-	    controller="freehand"
-	    pointshape="pixel"
-	    intertwine="as_lines"
-	    tracepolicy="accumulative">
-	<tooltip>*
-	Left-button: add to current selection.&#10;*
-	Right-button: remove from current selection.
-	</tooltip>
+            text="Lasso Tool"
+            fill="always"
+            ink="selection"
+            controller="freehand"
+            pointshape="pixel"
+            intertwine="as_lines"
+            tracepolicy="accumulative">
+        <tooltip>*
+        Left-button: add to current selection.&#10;*
+        Right-button: remove from current selection.
+        </tooltip>
       </tool>
 
       <tool id="polygonal_lasso"
-	    text="Polygonal Lasso Tool"
-	    fill="always"
-	    ink="selection"
-	    controller="point_by_point"
-	    pointshape="pixel"
-	    intertwine="as_lines"
-	    tracepolicy="last">
-	<tooltip>*
-	Left-button: add to current selection.&#10;*
-	Right-button: remove from current selection.
-	</tooltip>
+            text="Polygonal Lasso Tool"
+            fill="always"
+            ink="selection"
+            controller="point_by_point"
+            pointshape="pixel"
+            intertwine="as_lines"
+            tracepolicy="last">
+        <tooltip>*
+        Left-button: add to current selection.&#10;*
+        Right-button: remove from current selection.
+        </tooltip>
       </tool>
 
       <tool id="magic_wand"
-	    text="Magic Wand Tool"
-	    fill="always"
-	    ink="selection"
-	    controller="one_point"
-	    pointshape="floodfill"
-	    tracepolicy="accumulative">
-	<tooltip>*
-	Left-button: add to current selection.&#10;*
-	Right-button: remove from current selection.
-	</tooltip>
+            text="Magic Wand Tool"
+            fill="always"
+            ink="selection"
+            controller="one_point"
+            pointshape="floodfill"
+            tracepolicy="accumulative">
+        <tooltip>*
+        Left-button: add to current selection.&#10;*
+        Right-button: remove from current selection.
+        </tooltip>
       </tool>
     </group>
 
     <group id="pencil_tools" text="Pencil Tools">
       <tool id="pencil"
-	    text="Pencil Tool"
-	    ink="paint"
-	    controller="freehand"
-	    pointshape="pen"
-	    intertwine="as_lines"
-	    tracepolicy="accumulative"
-	    />
+            text="Pencil Tool"
+            ink="paint"
+            controller="freehand"
+            pointshape="pen"
+            intertwine="as_lines"
+            tracepolicy="accumulative"
+            />
       <tool id="spray"
-	    text="Spray Tool"
-	    ink="paint"
-	    controller="freehand"
-	    pointshape="spray"
-	    tracepolicy="overlap"
-	    />
+            text="Spray Tool"
+            ink="paint"
+            controller="freehand"
+            pointshape="spray"
+            tracepolicy="overlap"
+            />
     </group>
 
     <group id="helpers" text="Helpers">
       <tool id="eraser"
-	    text="Eraser Tool"
-	    ink_left="eraser"
-	    ink_right="replace_fg_with_bg"
-	    controller="freehand"
-	    pointshape="pen"
-	    intertwine="as_lines"
-	    tracepolicy="accumulative"
-	    default_pen_size="8">
-	<tooltip>*
-	Left-button: Erase with the background color in `Background' layer&#10;
-	or transparent color in any other layer.&#10;*
-	Right-button: Replace foreground with background color.
-	</tooltip>
+            text="Eraser Tool"
+            ink_left="eraser"
+            ink_right="replace_fg_with_bg"
+            controller="freehand"
+            pointshape="pen"
+            intertwine="as_lines"
+            tracepolicy="accumulative"
+            default_pen_size="8">
+        <tooltip>*
+        Left-button: Erase with the background color in `Background' layer&#10;
+        or transparent color in any other layer.&#10;*
+        Right-button: Replace foreground with background color.
+        </tooltip>
       </tool>
       <tool id="eyedropper"
-	    text="Eyedropper Tool"
-	    ink_left="pick_fg"
-	    ink_right="pick_bg"
-	    controller="freehand"
-	    pointshape="pixel"
-	    />
+            text="Eyedropper Tool"
+            ink_left="pick_fg"
+            ink_right="pick_bg"
+            controller="freehand"
+            pointshape="pixel"
+            />
       <tool id="hand"
-	    text="Hand Tool"
-	    ink="scroll"
-	    controller="freehand"
-	    />
+            text="Hand Tool"
+            ink="scroll"
+            controller="freehand"
+            />
       <tool id="move"
-	    text="Move Tool"
-	    ink="move"
-	    controller="freehand"
-	    />
+            text="Move Tool"
+            ink="move"
+            controller="freehand"
+            />
     </group>
 
     <group id="paint_bucket" text="Paint Bucket Tool">
       <tool id="paint_bucket"
-	    text="Paint Bucket Tool"
-	    ink="paint"
-	    controller="one_point"
-	    pointshape="floodfill"
-	    tracepolicy="accumulative"
-	    />
+            text="Paint Bucket Tool"
+            ink="paint"
+            controller="one_point"
+            pointshape="floodfill"
+            tracepolicy="accumulative"
+            />
     </group>
 
     <group id="perfect_traces" text="Perfect Traces">
       <tool id="line"
-	    text="Line Tool"
-	    ink="paint"
-	    controller="two_points"
-	    pointshape="pen"
-	    intertwine="as_lines"
-	    tracepolicy="last"
-	    />
+            text="Line Tool"
+            ink="paint"
+            controller="two_points"
+            pointshape="pen"
+            intertwine="as_lines"
+            tracepolicy="last"
+            />
       <tool id="curve"
-	    text="Curve Tool"
-	    ink="paint"
-	    controller="four_points"
-	    pointshape="pen"
-	    intertwine="as_bezier"
-	    tracepolicy="last"
-	    />
+            text="Curve Tool"
+            ink="paint"
+            controller="four_points"
+            pointshape="pen"
+            intertwine="as_bezier"
+            tracepolicy="last"
+            />
     </group>
 
     <group id="shapes" text="Shapes">
       <tool id="rectangle"
-	    text="Rectangle Tool"
-	    fill="optional"
-	    ink="paint"
-	    controller="two_points"
-	    pointshape="pen"
-	    intertwine="as_rectangles"
-	    tracepolicy="last"
-	    />
+            text="Rectangle Tool"
+            fill="optional"
+            ink="paint"
+            controller="two_points"
+            pointshape="pen"
+            intertwine="as_rectangles"
+            tracepolicy="last"
+            />
       <tool id="filled_rectangle"
-	    text="Filled Rectangle Tool"
-	    fill="always"
-	    ink="paint"
-	    controller="two_points"
-	    pointshape="pen"
-	    intertwine="as_rectangles"
-	    tracepolicy="last"
-	    />
+            text="Filled Rectangle Tool"
+            fill="always"
+            ink="paint"
+            controller="two_points"
+            pointshape="pen"
+            intertwine="as_rectangles"
+            tracepolicy="last"
+            />
       <tool id="ellipse"
-	    text="Ellipse Tool"
-	    fill="optional"
-	    ink="paint"
-	    controller="two_points"
-	    pointshape="pen"
-	    intertwine="as_ellipses"
-	    tracepolicy="last"
-	    />
+            text="Ellipse Tool"
+            fill="optional"
+            ink="paint"
+            controller="two_points"
+            pointshape="pen"
+            intertwine="as_ellipses"
+            tracepolicy="last"
+            />
       <tool id="filled_ellipse"
-	    text="Filled Ellipse Tool"
-	    fill="always"
-	    ink="paint"
-	    controller="two_points"
-	    pointshape="pen"
-	    intertwine="as_ellipses"
-	    tracepolicy="last"
-	    />
+            text="Filled Ellipse Tool"
+            fill="always"
+            ink="paint"
+            controller="two_points"
+            pointshape="pen"
+            intertwine="as_ellipses"
+            tracepolicy="last"
+            />
     </group>
 
     <group id="contours" text="Contours">
       <tool id="contour"
-	    text="Contour Tool"
-	    fill="always"
-	    ink="paint"
-	    controller="freehand"
-	    pointshape="pen"
-	    intertwine="as_lines"
-	    tracepolicy="accumulative"
-	    />
+            text="Contour Tool"
+            fill="always"
+            ink="paint"
+            controller="freehand"
+            pointshape="pen"
+            intertwine="as_lines"
+            tracepolicy="accumulative"
+            />
       <tool id="polygon"
-	    text="Polygon Tool"
-	    fill="always"
-	    ink="paint"
-	    controller="point_by_point"
-	    pointshape="pen"
-	    intertwine="as_lines"
-	    tracepolicy="last"
-	    />
+            text="Polygon Tool"
+            fill="always"
+            ink="paint"
+            controller="point_by_point"
+            pointshape="pen"
+            intertwine="as_lines"
+            tracepolicy="last"
+            />
     </group>
 
     <group id="effects" text="Effects">
       <tool id="blur"
-	    text="Blur Tool"
-	    ink="blur"
-	    controller="freehand"
-	    pointshape="pen"
-	    intertwine="as_lines"
-	    tracepolicy="overlap"
-	    default_pen_size="16"
-	    />
+            text="Blur Tool"
+            ink="blur"
+            controller="freehand"
+            pointshape="pen"
+            intertwine="as_lines"
+            tracepolicy="overlap"
+            default_pen_size="16"
+            />
       <tool id="jumble"
-	    text="Jumble Tool"
-	    ink="jumble"
-	    controller="freehand"
-	    pointshape="pen"
-	    intertwine="as_lines"
-	    tracepolicy="overlap"
-	    default_pen_size="16"
-	    />
+            text="Jumble Tool"
+            ink="jumble"
+            controller="freehand"
+            pointshape="pen"
+            intertwine="as_lines"
+            tracepolicy="overlap"
+            default_pen_size="16"
+            />
     </group>
 
   </tools>

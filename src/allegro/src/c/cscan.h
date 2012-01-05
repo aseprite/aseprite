@@ -12,8 +12,8 @@
  *
  *      By Michael Bukin.
  *
- *	Scanline subdivision in *_PTEX functions and transparency modes
- *	added by Bertrand Coconnier.
+ *      Scanline subdivision in *_PTEX functions and transparency modes
+ *      added by Bertrand Coconnier.
  *
  *      See readme.txt for copyright information.
  */
@@ -145,7 +145,7 @@ void FUNC_POLY_SCANLINE_ATEX_MASK(uintptr_t addr, int w, POLYGON_SEGMENT *info)
       unsigned long color = GET_MEMORY_PIXEL(s);
 
       if (!IS_MASK(color)) {
-	 PUT_PIXEL(d, color);
+         PUT_PIXEL(d, color);
       }
       u += du;
       v += dv;
@@ -229,8 +229,8 @@ void FUNC_POLY_SCANLINE_ATEX_MASK_LIT(uintptr_t addr, int w, POLYGON_SEGMENT *in
       unsigned long color = GET_MEMORY_PIXEL(s);
 
       if (!IS_MASK(color)) {
-	 color = PS_BLEND(blender, (c >> 16), color);
-	 PUT_PIXEL(d, color);
+         color = PS_BLEND(blender, (c >> 16), color);
+         PUT_PIXEL(d, color);
       }
       u += du;
       v += dv;
@@ -289,7 +289,7 @@ void FUNC_POLY_SCANLINE_PTEX(uintptr_t addr, int w, POLYGON_SEGMENT *info)
       dv = (nextv - v) >> 2;
 
       /* scanline subdivision */
-      if (x < 3) 
+      if (x < 3)
          imax = x;
       for (i = imax; i >= 0; i--, INC_PIXEL_PTR(d)) {
          s = OFFSET_PIXEL_PTR(texture, ((v >> vshift) & vmask) + ((u >> 16) & umask));
@@ -353,14 +353,14 @@ void FUNC_POLY_SCANLINE_PTEX_MASK(uintptr_t addr, int w, POLYGON_SEGMENT *info)
       dv = (nextv - v) >> 2;
 
       /* scanline subdivision */
-      if (x < 3) 
+      if (x < 3)
          imax = x;
       for (i = imax; i >= 0; i--, INC_PIXEL_PTR(d)) {
          s = OFFSET_PIXEL_PTR(texture, ((v >> vshift) & vmask) + ((u >> 16) & umask));
          color = GET_MEMORY_PIXEL(s);
 
          if (!IS_MASK(color)) {
-	    PUT_PIXEL(d, color);
+            PUT_PIXEL(d, color);
          }
          u += du;
          v += dv;
@@ -422,7 +422,7 @@ void FUNC_POLY_SCANLINE_PTEX_LIT(uintptr_t addr, int w, POLYGON_SEGMENT *info)
       dv = (nextv - v) >> 2;
 
       /* scanline subdivision */
-      if (x < 3) 
+      if (x < 3)
          imax = x;
       for (i = imax; i >= 0; i--, INC_PIXEL_PTR(d)) {
          PIXEL_PTR s = OFFSET_PIXEL_PTR(texture, ((v >> vshift) & vmask) + ((u >> 16) & umask));
@@ -432,7 +432,7 @@ void FUNC_POLY_SCANLINE_PTEX_LIT(uintptr_t addr, int w, POLYGON_SEGMENT *info)
          PUT_PIXEL(d, color);
          u += du;
          v += dv;
-	 c += dc;
+         c += dc;
       }
    }
 }
@@ -491,7 +491,7 @@ void FUNC_POLY_SCANLINE_PTEX_MASK_LIT(uintptr_t addr, int w, POLYGON_SEGMENT *in
       dv = (nextv - v) >> 2;
 
       /* scanline subdivision */
-      if (x < 3) 
+      if (x < 3)
          imax = x;
       for (i = imax; i >= 0; i--, INC_PIXEL_PTR(d)) {
          PIXEL_PTR s = OFFSET_PIXEL_PTR(texture, ((v >> vshift) & vmask) + ((u >> 16) & umask));
@@ -499,11 +499,11 @@ void FUNC_POLY_SCANLINE_PTEX_MASK_LIT(uintptr_t addr, int w, POLYGON_SEGMENT *in
 
          if (!IS_MASK(color)) {
             color = PS_BLEND(blender, (c >> 16), color);
-	    PUT_PIXEL(d, color);
+            PUT_PIXEL(d, color);
          }
          u += du;
          v += dv;
-	 c += dc;
+         c += dc;
       }
    }
 }
@@ -645,7 +645,7 @@ void FUNC_POLY_SCANLINE_PTEX_TRANS(uintptr_t addr, int w, POLYGON_SEGMENT *info)
       dv = (nextv - v) >> 2;
 
       /* scanline subdivision */
-      if (x < 3) 
+      if (x < 3)
          imax = x;
       for (i = imax; i >= 0; i--, INC_PIXEL_PTR(d), INC_PIXEL_PTR(r)) {
          PIXEL_PTR s = OFFSET_PIXEL_PTR(texture, ((v >> vshift) & vmask) + ((u >> 16) & umask));
@@ -712,16 +712,16 @@ void FUNC_POLY_SCANLINE_PTEX_MASK_TRANS(uintptr_t addr, int w, POLYGON_SEGMENT *
       dv = (nextv - v) >> 2;
 
       /* scanline subdivision */
-      if (x < 3) 
+      if (x < 3)
          imax = x;
       for (i = imax; i >= 0; i--, INC_PIXEL_PTR(d), INC_PIXEL_PTR(r)) {
          PIXEL_PTR s = OFFSET_PIXEL_PTR(texture, ((v >> vshift) & vmask) + ((u >> 16) & umask));
          unsigned long color = GET_MEMORY_PIXEL(s);
 
-	 if (!IS_MASK(color)) {
+         if (!IS_MASK(color)) {
             color = PS_ALPHA_BLEND(blender, color, GET_PIXEL(r));
             PUT_PIXEL(d, color);
-	 }
+         }
          u += du;
          v += dv;
       }
@@ -729,4 +729,3 @@ void FUNC_POLY_SCANLINE_PTEX_MASK_TRANS(uintptr_t addr, int w, POLYGON_SEGMENT *
 }
 
 #endif /* !__bma_cscan_h */
-

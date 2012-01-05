@@ -47,7 +47,7 @@
 #endif
 
 #ifndef MAX_PATH
-#  define MAX_PATH 4096		/* TODO this is needed for Linux, is it correct? */
+#  define MAX_PATH 4096         /* TODO this is needed for Linux, is it correct? */
 #endif
 
 template<class Container>
@@ -79,12 +79,12 @@ private:
 };
 
 // Variables used only to maintain the history of navigation.
-static FileItemList* navigation_history = NULL;	// Set of FileItems navigated
+static FileItemList* navigation_history = NULL; // Set of FileItems navigated
 static NullableIterator<FileItemList> navigation_position; // Current position in the navigation history
-static bool navigation_locked = false;	// If true the navigation_history isn't
-					// modified if the current folder changes
-					//(used when the back/forward buttons
-					// are pushed)
+static bool navigation_locked = false;  // If true the navigation_history isn't
+                                        // modified if the current folder changes
+                                        //(used when the back/forward buttons
+                                        // are pushed)
 
 static void update_location(Widget* window);
 static void update_navigation_buttons(Widget* window);
@@ -100,7 +100,7 @@ static bool location_msg_proc(Widget* widget, Message* msg);
 static bool filetype_msg_proc(Widget* widget, Message* msg);
 static bool filename_msg_proc(Widget* widget, Message* msg);
 
-// Slot for App::Exit signal 
+// Slot for App::Exit signal
 static void on_exit_delete_navigation_history()
 {
   delete navigation_history;
@@ -108,14 +108,14 @@ static void on_exit_delete_navigation_history()
 
 /**
  * Shows the dialog to select a file in ASE.
- * 
+ *
  * Mainly it uses:
  * - the 'file_system' routines.
  * - the 'widgets/fileview' widget.
  */
 base::string ase_file_selector(const base::string& message,
-			       const base::string& init_path,
-			       const base::string& exts)
+                               const base::string& init_path,
+                               const base::string& exts)
 {
   static Frame* window = NULL;
   Widget* fileview;
@@ -144,15 +144,15 @@ base::string ase_file_selector(const base::string& message,
     if (!start_folder) {
       // if the `path' doesn't exist...
       if (path.empty() || (!FileSystemModule::instance()->dirExists(path))) {
-	// we can get the current `path' from the system
+        // we can get the current `path' from the system
 #ifdef HAVE_DRIVES
-	int drive = _al_getdrive();
+        int drive = _al_getdrive();
 #else
-	int drive = 0;
+        int drive = 0;
 #endif
-	char tmp[1024];
-	_al_getdcwd(drive, tmp, sizeof(tmp) - ucwidth(OTHER_PATH_SEPARATOR));
-	path = tmp;
+        char tmp[1024];
+        _al_getdcwd(drive, tmp, sizeof(tmp) - ucwidth(OTHER_PATH_SEPARATOR));
+        path = tmp;
       }
 
       start_folder_path = base::join_path(path, init_path);
@@ -187,20 +187,20 @@ base::string ase_file_selector(const base::string& message,
     jwidget_focusrest(goup, false);
 
     set_gfxicon_to_button(goback,
-			  PART_COMBOBOX_ARROW_LEFT,
-			  PART_COMBOBOX_ARROW_LEFT_SELECTED,
-			  PART_COMBOBOX_ARROW_LEFT_DISABLED,
-			  JI_CENTER | JI_MIDDLE);
+                          PART_COMBOBOX_ARROW_LEFT,
+                          PART_COMBOBOX_ARROW_LEFT_SELECTED,
+                          PART_COMBOBOX_ARROW_LEFT_DISABLED,
+                          JI_CENTER | JI_MIDDLE);
     set_gfxicon_to_button(goforward,
-			  PART_COMBOBOX_ARROW_RIGHT,
-			  PART_COMBOBOX_ARROW_RIGHT_SELECTED,
-			  PART_COMBOBOX_ARROW_RIGHT_DISABLED,
-			  JI_CENTER | JI_MIDDLE);
+                          PART_COMBOBOX_ARROW_RIGHT,
+                          PART_COMBOBOX_ARROW_RIGHT_SELECTED,
+                          PART_COMBOBOX_ARROW_RIGHT_DISABLED,
+                          JI_CENTER | JI_MIDDLE);
     set_gfxicon_to_button(goup,
-			  PART_COMBOBOX_ARROW_UP,
-			  PART_COMBOBOX_ARROW_UP_SELECTED,
-			  PART_COMBOBOX_ARROW_UP_DISABLED,
-			  JI_CENTER | JI_MIDDLE);
+                          PART_COMBOBOX_ARROW_UP,
+                          PART_COMBOBOX_ARROW_UP_SELECTED,
+                          PART_COMBOBOX_ARROW_UP_DISABLED,
+                          JI_CENTER | JI_MIDDLE);
 
     setup_mini_look(goback);
     setup_mini_look(goforward);
@@ -243,7 +243,7 @@ base::string ase_file_selector(const base::string& message,
   // current location
   navigation_position.reset();
   add_in_navigation_history(fileview_get_current_folder(fileview));
-  
+
   // fill the location combo-box
   update_location(window);
   update_navigation_buttons(window);
@@ -289,7 +289,7 @@ again:
     if (fn == "..") {
       enter_folder = folder->getParent();
       if (!enter_folder)
-	enter_folder = folder;
+        enter_folder = folder;
     }
     else if (!fn.empty()) {
       // check if the user specified in "fn" a item of "fileview"
@@ -301,56 +301,56 @@ again:
 #endif
 
       for (FileItemList::const_iterator
-	     it=children.begin(); it!=children.end(); ++it) {
-	IFileItem* child = *it;
-	base::string child_name = child->getDisplayName();
+             it=children.begin(); it!=children.end(); ++it) {
+        IFileItem* child = *it;
+        base::string child_name = child->getDisplayName();
 
 #ifdef WIN32
-	child_name = base::string_to_lower(child_name);
+        child_name = base::string_to_lower(child_name);
 #endif
-	if (child_name == fn2) {
-	  enter_folder = *it;
-	  buf = enter_folder->getFileName();
-	  break;
-	}
+        if (child_name == fn2) {
+          enter_folder = *it;
+          buf = enter_folder->getFileName();
+          break;
+        }
       }
 
       if (!enter_folder) {
-	// does the file-name entry have separators?
-	if (base::is_path_separator(*fn.begin())) { // absolute path (UNIX style)
+        // does the file-name entry have separators?
+        if (base::is_path_separator(*fn.begin())) { // absolute path (UNIX style)
 #ifdef WIN32
-	  // get the drive of the current folder
-	  base::string drive = folder->getFileName();
-	  if (drive.size() >= 2 && drive[1] == ':') {
-	    buf += drive[0];
-	    buf += ':';
-	    buf += fn;
-	  }
-	  else
-	    buf = base::join_path("C:", fn);
+          // get the drive of the current folder
+          base::string drive = folder->getFileName();
+          if (drive.size() >= 2 && drive[1] == ':') {
+            buf += drive[0];
+            buf += ':';
+            buf += fn;
+          }
+          else
+            buf = base::join_path("C:", fn);
 #else
-	  buf = fn;
+          buf = fn;
 #endif
-	}
+        }
 #ifdef WIN32
-	// does the file-name entry have colon?
-	else if (fn.find(':') != base::string::npos) { // absolute path on Windows
-	  if (fn.size() == 2 && fn[1] == ':') {
-	    buf = base::join_path(fn, "");
-	  }
-	  else {
-	    buf = fn;
-	  }
-	}
+        // does the file-name entry have colon?
+        else if (fn.find(':') != base::string::npos) { // absolute path on Windows
+          if (fn.size() == 2 && fn[1] == ':') {
+            buf = base::join_path(fn, "");
+          }
+          else {
+            buf = fn;
+          }
+        }
 #endif
-	else {
-	  buf = folder->getFileName();
-	  buf = base::join_path(buf, fn);
-	}
-	buf = base::fix_path_separators(buf);
+        else {
+          buf = folder->getFileName();
+          buf = base::join_path(buf, fn);
+        }
+        buf = base::fix_path_separators(buf);
 
-	// we can check if 'buf' is a folder, so we have to enter in it
-	enter_folder = FileSystemModule::instance()->getFileItemFromPath(buf);
+        // we can check if 'buf' is a folder, so we have to enter in it
+        enter_folder = FileSystemModule::instance()->getFileItemFromPath(buf);
       }
     }
     else {
@@ -361,8 +361,8 @@ again:
 
     // did we find a folder to enter?
     if (enter_folder &&
-	enter_folder->isFolder() &&
-	enter_folder->isBrowsable()) {
+        enter_folder->isFolder() &&
+        enter_folder->isBrowsable()) {
       // enter in the folder that was specified in the 'filename_entry'
       fileview_set_current_folder(fileview, enter_folder);
 
@@ -388,7 +388,7 @@ again:
     // save the path in the configuration file
     base::string lastpath = folder->getKeyName();
     set_config_string("FileSelect", "CurrentDirectory",
-		      lastpath.c_str());
+                      lastpath.c_str());
   }
 
   jwidget_free(window);
@@ -441,7 +441,7 @@ static void update_location(Widget* window)
 
     if (fileitem == current_folder)
       selected_index = level;
-    
+
     level++;
   }
 
@@ -461,9 +461,9 @@ static void update_location(Widget* window)
 
       // Check if the path was not already included in the list
       if (included.find(path) == included.end()) {
-	included.insert(path);
+        included.insert(path);
 
-	location->addItem(path);
+        location->addItem(path);
       }
     }
   }
@@ -491,15 +491,15 @@ static void update_navigation_buttons(Widget* window)
   // Update the state of the go back button: if the navigation-history
   // has two elements and the navigation-position isn't the first one.
   goback->setEnabled(navigation_history->size() > 1 &&
-		     (navigation_position.isNull() ||
-		      navigation_position.getIterator() != navigation_history->begin()));
+                     (navigation_position.isNull() ||
+                      navigation_position.getIterator() != navigation_history->begin()));
 
   // Update the state of the go forward button: if the
   // navigation-history has two elements and the navigation-position
   // isn't the last one.
   goforward->setEnabled(navigation_history->size() > 1 &&
-			(navigation_position.isNull() ||
-			 navigation_position.getIterator() != navigation_history->end()-1));
+                        (navigation_position.isNull() ||
+                         navigation_position.getIterator() != navigation_history->end()-1));
 
   // Update the state of the go up button: if the current-folder isn't
   // the root-item
@@ -591,36 +591,36 @@ static bool fileview_msg_proc(Widget* widget, Message* msg)
 {
   if (msg->type == JM_SIGNAL) {
     switch (msg->signal.num) {
-    
+
       case SIGNAL_FILEVIEW_FILE_SELECTED: {
-	IFileItem* fileitem = fileview_get_selected(widget);
+        IFileItem* fileitem = fileview_get_selected(widget);
 
-	if (!fileitem->isFolder()) {
-	  Frame* window = static_cast<Frame*>(widget->getRoot());
-	  Widget* entry = window->findChild("filename");
-	  base::string filename = base::get_file_name(fileitem->getFileName());
+        if (!fileitem->isFolder()) {
+          Frame* window = static_cast<Frame*>(widget->getRoot());
+          Widget* entry = window->findChild("filename");
+          base::string filename = base::get_file_name(fileitem->getFileName());
 
-	  entry->setText(filename.c_str());
-	  select_filetype_from_filename(window);
-	}
-	break;
+          entry->setText(filename.c_str());
+          select_filetype_from_filename(window);
+        }
+        break;
       }
 
-	/* when a file is accepted */
+        /* when a file is accepted */
       case SIGNAL_FILEVIEW_FILE_ACCEPT:
-	widget->closeWindow();
-	break;
+        widget->closeWindow();
+        break;
 
-	/* when the current folder change */
+        /* when the current folder change */
       case SIGNAL_FILEVIEW_CURRENT_FOLDER_CHANGED: {
-	Frame* window = static_cast<Frame*>(widget->getRoot());
+        Frame* window = static_cast<Frame*>(widget->getRoot());
 
-	if (!navigation_locked)
-	  add_in_navigation_history(fileview_get_current_folder(widget));
+        if (!navigation_locked)
+          add_in_navigation_history(fileview_get_current_folder(widget));
 
-	update_location(window);
-	update_navigation_buttons(window);
-	break;
+        update_location(window);
+        update_navigation_buttons(window);
+        break;
       }
 
     }
@@ -640,26 +640,26 @@ static bool location_msg_proc(Widget* widget, Message* msg)
       // When the user change the location we have to set the
       // current-folder in the 'fileview' widget
       case JI_SIGNAL_COMBOBOX_SELECT: {
-	int itemIndex = combobox->getSelectedItem();
-	IFileItem* fileitem = reinterpret_cast<IFileItem*>(combobox->getItemData(itemIndex));
+        int itemIndex = combobox->getSelectedItem();
+        IFileItem* fileitem = reinterpret_cast<IFileItem*>(combobox->getItemData(itemIndex));
 
-	// Maybe the user selected a recent file path
-	if (fileitem == NULL) {
-	  base::string path = combobox->getItemText(itemIndex);
-	  if (!path.empty())
-	    fileitem = FileSystemModule::instance()->getFileItemFromPath(path);
-	}
+        // Maybe the user selected a recent file path
+        if (fileitem == NULL) {
+          base::string path = combobox->getItemText(itemIndex);
+          if (!path.empty())
+            fileitem = FileSystemModule::instance()->getFileItemFromPath(path);
+        }
 
-	if (fileitem != NULL) {
-	  Widget* fileview = widget->findSibling("fileview");
+        if (fileitem != NULL) {
+          Widget* fileview = widget->findSibling("fileview");
 
-	  fileview_set_current_folder(fileview, fileitem);
+          fileview_set_current_folder(fileview, fileitem);
 
-	  // Refocus the 'fileview' (the focus in that widget is more
-	  // useful for the user)
-	  jmanager_set_focus(fileview);
-	}
-	break;
+          // Refocus the 'fileview' (the focus in that widget is more
+          // useful for the user)
+          jmanager_set_focus(fileview);
+        }
+        break;
       }
     }
   }
@@ -678,20 +678,20 @@ static bool filetype_msg_proc(Widget* widget, Message* msg)
       // When the user select a new file-type (extension), we have to
       // change the file-extension in the 'filename' entry widget
       case JI_SIGNAL_COMBOBOX_SELECT: {
-	std::string ext = combobox->getItemText(combobox->getSelectedItem());
-	Frame* window = static_cast<Frame*>(combobox->getRoot());
-	Entry* entry = window->findChildT<Entry>("filename");
-	char buf[MAX_PATH];
-	char* p;
+        std::string ext = combobox->getItemText(combobox->getSelectedItem());
+        Frame* window = static_cast<Frame*>(combobox->getRoot());
+        Entry* entry = window->findChildT<Entry>("filename");
+        char buf[MAX_PATH];
+        char* p;
 
-	ustrcpy(buf, entry->getText());
-	p = get_extension(buf);
-	if (p && *p != 0) {
-	  ustrcpy(p, ext.c_str());
-	  entry->setText(buf);
-	  entry->selectText(0, -1);
-	}
-	break;
+        ustrcpy(buf, entry->getText());
+        p = get_extension(buf);
+        if (p && *p != 0) {
+          ustrcpy(p, ext.c_str());
+          entry->setText(buf);
+          entry->selectText(0, -1);
+        }
+        break;
       }
 
     }
@@ -705,7 +705,7 @@ static bool filename_msg_proc(Widget* widget, Message* msg)
     // Check if all keys are released
     for (int c=0; c<KEY_MAX; ++c) {
       if (key[c])
-	return false;
+        return false;
     }
 
     // String to be autocompleted
@@ -719,29 +719,28 @@ static bool filename_msg_proc(Widget* widget, Message* msg)
     const FileItemList& children = fileview_get_filelist(fileview);
 
     for (FileItemList::const_iterator
-	   it=children.begin(); it!=children.end(); ++it) {
+           it=children.begin(); it!=children.end(); ++it) {
       IFileItem* child = *it;
       base::string child_name = child->getDisplayName();
 
       base::string::iterator it1, it2;
 
       for (it1 = child_name.begin(), it2 = left_part.begin();
-	   it1!=child_name.end() && it2!=left_part.end();
-	   ++it1, ++it2) {
-	if (std::tolower(*it1) != std::tolower(*it2))
-	  break;
+           it1!=child_name.end() && it2!=left_part.end();
+           ++it1, ++it2) {
+        if (std::tolower(*it1) != std::tolower(*it2))
+          break;
       }
 
       // Is the pattern (left_part) in the child_name's beginning?
       if (it2 == left_part.end()) {
-	widget->setText(child_name.c_str());
-	((Entry*)widget)->selectText(child_name.size(),
-				     left_part.size());
-	clear_keybuf();
-	return true;
+        widget->setText(child_name.c_str());
+        ((Entry*)widget)->selectText(child_name.size(),
+                                     left_part.size());
+        clear_keybuf();
+        return true;
       }
     }
   }
   return false;
 }
-

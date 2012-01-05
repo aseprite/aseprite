@@ -175,5 +175,3 @@ AL_INLINE(void, _set_color, (int idx, AL_CONST RGB *p),
 #endif
 
 #endif          /* ifndef ALLEGRO_COLOR_INL */
-
-

@@ -43,5 +43,3 @@ AL_FUNC(int, lzss_read, (PACKFILE *file, LZSS_UNPACK_DATA *dat, int s, unsigned 
 #endif
 
 #endif          /* ifndef ALLEGRO_LZSS_H */
-
-

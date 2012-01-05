@@ -34,7 +34,7 @@ public:
 };
 
 class SelectBoxState : public StandbyState
-		     , public EditorDecorator
+                     , public EditorDecorator
 {
   enum { H1, H2, V1, V2 };
 
@@ -45,8 +45,8 @@ public:
   static const int PaintGrid = 4;
 
   SelectBoxState(SelectBoxDelegate* delegate,
-		 const gfx::Rect& rc,
-		 PaintFlags paintFlags);
+                 const gfx::Rect& rc,
+                 PaintFlags paintFlags);
 
   // Returns the bounding box arranged by the rulers.
   gfx::Rect getBoxBounds() const;
@@ -83,4 +83,4 @@ private:
   PaintFlags m_paintFlags;
 };
 
-#endif	// WIDGETS_EDITOR_SELECT_BOX_STATE_H_INCLUDED
+#endif  // WIDGETS_EDITOR_SELECT_BOX_STATE_H_INCLUDED

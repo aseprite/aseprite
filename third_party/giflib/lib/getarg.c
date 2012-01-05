@@ -101,7 +101,7 @@
 #endif
 
 #include <stdlib.h>
- 
+
 #ifdef __MSDOS__
 #include <alloc.h>
 #endif /* __MSDOS__ */
@@ -157,8 +157,8 @@ static char *MyMalloc(unsigned size);
 #endif /* MYMALLOC */
 
 /***************************************************************************
- * Routine to access the    command    line argument and interpret them:       
- * Return ARG_OK (0) is case of succesfull parsing, error code else...       
+ * Routine to access the    command    line argument and interpret them:
+ * Return ARG_OK (0) is case of succesfull parsing, error code else...
  **************************************************************************/
 #ifdef HAVE_STDARG_H
 int
@@ -221,11 +221,11 @@ int GAGetArgs(va_alist)
 }
 
 /***************************************************************************
- * Routine to search for unsatisfied flags - simply scan the list for !- 
+ * Routine to search for unsatisfied flags - simply scan the list for !-
  * sequence. Before this scan, this routine updates the rest of the command
- * line into the last two parameters if it is requested by the CtrlStr 
- * (last item in CtrlStr is NOT an option). 
- * Return ARG_OK if all satisfied, CMD_ERR_AllSatis error else. 
+ * line into the last two parameters if it is requested by the CtrlStr
+ * (last item in CtrlStr is NOT an option).
+ * Return ARG_OK if all satisfied, CMD_ERR_AllSatis error else.
  **************************************************************************/
 static int
 GATestAllSatis(char *CtrlStrCopy,

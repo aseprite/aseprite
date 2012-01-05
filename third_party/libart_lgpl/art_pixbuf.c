@@ -20,7 +20,7 @@
 #include "art_misc.h"
 #include "art_pixbuf.h"
 
-#include <string.h>		/* memcpy */
+#include <string.h>             /* memcpy */
 
 
 /**
@@ -46,7 +46,7 @@
  **/
 ArtPixBuf *
 art_pixbuf_new_rgb_dnotify (art_u8 *pixels, int width, int height, int rowstride,
-			    void *dfunc_data, ArtDestroyNotify dfunc)
+                            void *dfunc_data, ArtDestroyNotify dfunc)
 {
   ArtPixBuf *pixbuf;
 
@@ -90,7 +90,7 @@ art_pixbuf_new_rgb_dnotify (art_u8 *pixels, int width, int height, int rowstride
  **/
 ArtPixBuf *
 art_pixbuf_new_rgba_dnotify (art_u8 *pixels, int width, int height, int rowstride,
-			     void *dfunc_data, ArtDestroyNotify dfunc)
+                             void *dfunc_data, ArtDestroyNotify dfunc)
 {
   ArtPixBuf *pixbuf;
 

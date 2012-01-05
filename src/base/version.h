@@ -35,16 +35,16 @@ namespace base {
     // operator[] that can be used to set version digits.
     int& operator[](size_t index) {
       if (index >= m_digits.size())
-	m_digits.resize(index+1);
+        m_digits.resize(index+1);
       return m_digits[index];
     }
 
     // operator[] that can be used to get version digits.
     int operator[](size_t index) const {
       if (index < m_digits.size())
-	return m_digits[index];
+        return m_digits[index];
       else
-	return 0;
+        return 0;
     }
 
     // Adds a new digit.

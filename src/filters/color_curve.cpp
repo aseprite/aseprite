@@ -62,32 +62,32 @@ void ColorCurve::getValues(int x1, int x2, std::vector<int>& values)
     switch (m_type) {
 
       case Linear: {
-	iterator it, begin = this->begin(), end = this->end();
+        iterator it, begin = this->begin(), end = this->end();
 
-	for (it = begin; it != end; ++it)
-	  if (it->x >= x1)
-	    break;
+        for (it = begin; it != end; ++it)
+          if (it->x >= x1)
+            break;
 
-	for (x=x1; x<=x2; x++) {
-	  while ((it != end) && (x > it->x))
-	    ++it;
+        for (x=x1; x<=x2; x++) {
+          while ((it != end) && (x > it->x))
+            ++it;
 
-	  if (it != end) {
-	    if (it != begin) {
-	      const gfx::Point& p = *(it-1);
-	      const gfx::Point& n = *it;
+          if (it != end) {
+            if (it != begin) {
+              const gfx::Point& p = *(it-1);
+              const gfx::Point& n = *it;
 
-	      values[x-x1] = p.y + (n.y-p.y) * (x-p.x) / (n.x-p.x);
-	    }
-	    else {
-	      values[x-x1] = it->y;
-	    }
-	  }
-	  else {
-	    values[x-x1] = (end-1)->y;
-	  }
-	}
-	break;
+              values[x-x1] = p.y + (n.y-p.y) * (x-p.x) / (n.x-p.x);
+            }
+            else {
+              values[x-x1] = it->y;
+            }
+          }
+          else {
+            values[x-x1] = (end-1)->y;
+          }
+        }
+        break;
       }
 
     }

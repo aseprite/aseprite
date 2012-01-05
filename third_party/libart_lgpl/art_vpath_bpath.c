@@ -32,17 +32,17 @@
 /* level must be >= 1 */
 ArtPoint *
 art_bezier_to_vec (double x0, double y0,
-		   double x1, double y1,
-		   double x2, double y2,
-		   double x3, double y3,
-		   ArtPoint *p,
-		   int level)
+                   double x1, double y1,
+                   double x2, double y2,
+                   double x3, double y3,
+                   ArtPoint *p,
+                   int level)
 {
   double x_m, y_m;
 
 #ifdef VERBOSE
   printf ("bezier_to_vec: %g,%g %g,%g %g,%g %g,%g %d\n",
-	  x0, y0, x1, y1, x2, y2, x3, y3, level);
+          x0, y0, x1, y1, x2, y2, x3, y3, level);
 #endif
   if (level == 1) {
     x_m = (x0 + 3 * (x1 + x2) + x3) * 0.125;
@@ -74,7 +74,7 @@ art_bezier_to_vec (double x0, double y0,
     y_m = (ya2 + yb1) * 0.5;
 #ifdef VERBOSE
     printf ("%g,%g %g,%g %g,%g %g,%g\n", xa1, ya1, xa2, ya2,
-	    xb1, yb1, xb2, yb2);
+            xb1, yb1, xb2, yb2);
 #endif
     p = art_bezier_to_vec (x0, y0, xa1, ya1, xa2, ya2, x_m, y_m, p, level - 1);
     p = art_bezier_to_vec (x_m, y_m, xb1, yb1, xb2, yb2, x3, y3, p, level - 1);
@@ -86,7 +86,7 @@ art_bezier_to_vec (double x0, double y0,
 #define RENDER_SIZE (1 << (RENDER_LEVEL))
 
 /**
- * art_vpath_render_bez: Render a bezier segment into the vpath. 
+ * art_vpath_render_bez: Render a bezier segment into the vpath.
  * @p_vpath: Where the pointer to the #ArtVpath structure is stored.
  * @pn_points: Pointer to the number of points in *@p_vpath.
  * @pn_points_max: Pointer to the number of points allocated.
@@ -115,11 +115,11 @@ art_bezier_to_vec (double x0, double y0,
 **/
 static void
 art_vpath_render_bez (ArtVpath **p_vpath, int *pn, int *pn_max,
-		      double x0, double y0,
-		      double x1, double y1,
-		      double x2, double y2,
-		      double x3, double y3,
-		      double flatness)
+                      double x0, double y0,
+                      double x1, double y1,
+                      double x2, double y2,
+                      double x3, double y3,
+                      double flatness)
 {
   double x3_0, y3_0;
   double z3_0_dot;
@@ -204,7 +204,7 @@ art_vpath_render_bez (ArtVpath **p_vpath, int *pn, int *pn_max,
  nosubdivide:
   /* don't subdivide */
   art_vpath_add_point (p_vpath, pn, pn_max,
-		       ART_LINETO, x3, y3);
+                       ART_LINETO, x3, y3);
   return;
 
  subdivide:
@@ -221,12 +221,12 @@ art_vpath_render_bez (ArtVpath **p_vpath, int *pn, int *pn_max,
   y_m = (ya2 + yb1) * 0.5;
 #ifdef VERBOSE
   printf ("%g,%g %g,%g %g,%g %g,%g\n", xa1, ya1, xa2, ya2,
-	  xb1, yb1, xb2, yb2);
+          xb1, yb1, xb2, yb2);
 #endif
   art_vpath_render_bez (p_vpath, pn, pn_max,
-			x0, y0, xa1, ya1, xa2, ya2, x_m, y_m, flatness);
+                        x0, y0, xa1, ya1, xa2, ya2, x_m, y_m, flatness);
   art_vpath_render_bez (p_vpath, pn, pn_max,
-			x_m, y_m, xb1, yb1, xb2, yb2, x3, y3, flatness);
+                        x_m, y_m, xb1, yb1, xb2, yb2, x3, y3, flatness);
 }
 
 /**
@@ -264,52 +264,51 @@ art_bez_path_to_vec (const ArtBpath *bez, double flatness)
     {
 #ifdef VERBOSE
       printf ("%s %g %g\n",
-	      bez[bez_index].code == ART_CURVETO ? "curveto" :
-	      bez[bez_index].code == ART_LINETO ? "lineto" :
-	      bez[bez_index].code == ART_MOVETO ? "moveto" :
-	      bez[bez_index].code == ART_MOVETO_OPEN ? "moveto-open" :
-	      "end", bez[bez_index].x3, bez[bez_index].y3);
+              bez[bez_index].code == ART_CURVETO ? "curveto" :
+              bez[bez_index].code == ART_LINETO ? "lineto" :
+              bez[bez_index].code == ART_MOVETO ? "moveto" :
+              bez[bez_index].code == ART_MOVETO_OPEN ? "moveto-open" :
+              "end", bez[bez_index].x3, bez[bez_index].y3);
 #endif
       /* make sure space for at least one more code */
       if (vec_n >= vec_n_max)
-	art_expand (vec, ArtVpath, vec_n_max);
+        art_expand (vec, ArtVpath, vec_n_max);
       switch (bez[bez_index].code)
-	{
-	case ART_MOVETO_OPEN:
-	case ART_MOVETO:
-	case ART_LINETO:
-	  x = bez[bez_index].x3;
-	  y = bez[bez_index].y3;
-	  vec[vec_n].code = bez[bez_index].code;
-	  vec[vec_n].x = x;
-	  vec[vec_n].y = y;
-	  vec_n++;
-	  break;
-	case ART_END:
-	  vec[vec_n].code = bez[bez_index].code;
-	  vec[vec_n].x = 0;
-	  vec[vec_n].y = 0;
-	  vec_n++;
-	  break;
-	case ART_CURVETO:
+        {
+        case ART_MOVETO_OPEN:
+        case ART_MOVETO:
+        case ART_LINETO:
+          x = bez[bez_index].x3;
+          y = bez[bez_index].y3;
+          vec[vec_n].code = bez[bez_index].code;
+          vec[vec_n].x = x;
+          vec[vec_n].y = y;
+          vec_n++;
+          break;
+        case ART_END:
+          vec[vec_n].code = bez[bez_index].code;
+          vec[vec_n].x = 0;
+          vec[vec_n].y = 0;
+          vec_n++;
+          break;
+        case ART_CURVETO:
 #ifdef VERBOSE
-	  printf ("%g,%g %g,%g %g,%g %g,%g\n", x, y,
-			 bez[bez_index].x1, bez[bez_index].y1,
-			 bez[bez_index].x2, bez[bez_index].y2,
-			 bez[bez_index].x3, bez[bez_index].y3);
+          printf ("%g,%g %g,%g %g,%g %g,%g\n", x, y,
+                         bez[bez_index].x1, bez[bez_index].y1,
+                         bez[bez_index].x2, bez[bez_index].y2,
+                         bez[bez_index].x3, bez[bez_index].y3);
 #endif
-	  art_vpath_render_bez (&vec, &vec_n, &vec_n_max,
-				x, y,
-				bez[bez_index].x1, bez[bez_index].y1,
-				bez[bez_index].x2, bez[bez_index].y2,
-				bez[bez_index].x3, bez[bez_index].y3,
-				flatness);
-	  x = bez[bez_index].x3;
-	  y = bez[bez_index].y3;
-	  break;
-	}
+          art_vpath_render_bez (&vec, &vec_n, &vec_n_max,
+                                x, y,
+                                bez[bez_index].x1, bez[bez_index].y1,
+                                bez[bez_index].x2, bez[bez_index].y2,
+                                bez[bez_index].x3, bez[bez_index].y3,
+                                flatness);
+          x = bez[bez_index].x3;
+          y = bez[bez_index].y3;
+          break;
+        }
     }
   while (bez[bez_index++].code != ART_END);
   return vec;
 }
-

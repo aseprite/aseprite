@@ -44,7 +44,7 @@ void SetFrameDuration::dispose()
 void SetFrameDuration::revert(ObjectsContainer* objects, UndoersCollector* redoers)
 {
   Sprite* sprite = objects->getObjectT<Sprite>(m_spriteId);
-  
+
   // Push another SetFrameDuration as redoer
   redoers->pushUndoer(new SetFrameDuration(objects, sprite, m_frame));
 

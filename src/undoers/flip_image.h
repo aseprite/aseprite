@@ -46,4 +46,4 @@ private:
 
 } // namespace undoers
 
-#endif	// UNDOERS_FLIP_IMAGE_H_INCLUDED
+#endif  // UNDOERS_FLIP_IMAGE_H_INCLUDED

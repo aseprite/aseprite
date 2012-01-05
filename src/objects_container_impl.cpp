@@ -36,7 +36,7 @@ ObjectId ObjectsContainerImpl::addObject(void* object)
   // First we check if the object is already in the container.
   std::map<void*, ObjectId>::iterator it = m_ptrToId.find(object);
   if (it != m_ptrToId.end())
-    return it->second;		// So we return the already assigned ID
+    return it->second;          // So we return the already assigned ID
 
   // In other case we add the new object
   ObjectId id = ++m_idCounter;

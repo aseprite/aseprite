@@ -1,6 +1,6 @@
-/*         ______   ___    ___ 
- *        /\  _  \ /\_ \  /\_ \ 
- *        \ \ \L\ \\//\ \ \//\ \      __     __   _ __   ___ 
+/*         ______   ___    ___
+ *        /\  _  \ /\_ \  /\_ \
+ *        \ \ \L\ \\//\ \ \//\ \      __     __   _ __   ___
  *         \ \  __ \ \ \ \  \ \ \   /'__`\ /'_ `\/\`'__\/ __`\
  *          \ \ \/\ \ \_\ \_ \_\ \_/\  __//\ \L\ \ \ \//\ \L\ \
  *           \ \_\ \_\/\____\/\____\ \____\ \____ \ \_\\ \____/
@@ -9,9 +9,9 @@
  *                                           \_/__/
  *
  *      Helper routines for the VBE/AF driver. This file is in charge of
- *      filling in the libc and pmode function export structures used by 
- *      the FreeBE/AF extensions, which is mainly needed for compatibility 
- *      with the SciTech Nucleus drivers (see the comments at at the top 
+ *      filling in the libc and pmode function export structures used by
+ *      the FreeBE/AF extensions, which is mainly needed for compatibility
+ *      with the SciTech Nucleus drivers (see the comments at at the top
  *      of vbeaf.c).
  *
  *      This file is based on the SciTech PM/Lite library API.
@@ -122,7 +122,7 @@ void _fill_vbeaf_libc_exports(void *ptr)
    #define FILL_LIBC(field, func)                           \
    {                                                        \
       if ((long)offsetof(LIBC_DATA, field) < lc->size)      \
-	 lc->field  = (void *)func;                         \
+         lc->field  = (void *)func;                         \
    }
 
    FILL_LIBC(abort, abort);
@@ -262,7 +262,7 @@ static void *get_bios_pointer(void)
 {
    if (!(_crt0_startup_flags & _CRT0_FLAG_NEARPTR))
       if (__djgpp_nearptr_enable() == 0)
-	 return NULL;
+         return NULL;
 
    return (void *)(__djgpp_conventional_base + 0x400);
 }
@@ -276,7 +276,7 @@ static void *get_a0000_pointer(void)
 {
    if (!(_crt0_startup_flags & _CRT0_FLAG_NEARPTR))
       if (__djgpp_nearptr_enable() == 0)
-	 return NULL;
+         return NULL;
 
    return (void *)(__djgpp_conventional_base + 0xA0000);
 }
@@ -292,7 +292,7 @@ static void *map_physical_addr(unsigned long base, unsigned long limit)
 
    if (!(_crt0_startup_flags & _CRT0_FLAG_NEARPTR))
       if (__djgpp_nearptr_enable() == 0)
-	 return NULL;
+         return NULL;
 
    if (_create_linear_mapping(&linear, base, limit) != 0)
       return NULL;
@@ -366,8 +366,8 @@ static void load_ds(void)
 
       /* use gcc-style inline asm */
       asm (
-	 "  movw %%cs:_saved_ds, %%ax ; "
-	 "  movw %%ax, %%ds "
+         "  movw %%cs:_saved_ds, %%ax ; "
+         "  movw %%ax, %%ds "
       :
       :
       : "%eax"
@@ -377,15 +377,15 @@ static void load_ds(void)
 
       /* use Watcom-style inline asm */
       {
-	 int _ds(void);
+         int _ds(void);
 
-	 #pragma aux _ds =                \
-	    " mov ax, cs:saved_ds "       \
-	    " mov ds, ax "                \
-					  \
-	 modify [eax];
+         #pragma aux _ds =                \
+            " mov ax, cs:saved_ds "       \
+            " mov ds, ax "                \
+                                          \
+         modify [eax];
 
-	 _ds();
+         _ds();
       }
 
    #endif
@@ -400,7 +400,7 @@ static void *map_real_pointer(unsigned int r_seg, unsigned int r_off)
 {
    if (!(_crt0_startup_flags & _CRT0_FLAG_NEARPTR))
       if (__djgpp_nearptr_enable() == 0)
-	 return NULL;
+         return NULL;
 
    return (void *)(__djgpp_conventional_base + (r_seg<<4) + r_off);
 }
@@ -441,9 +441,9 @@ static void *alloc_real_seg(unsigned int size, unsigned int *r_seg, unsigned int
 
    for (i=0; i<(int)(sizeof(rm_blocks)/sizeof(rm_blocks[0])); i++) {
       if (!rm_blocks[i].ptr) {
-	 rm_blocks[i].ptr = ptr;
-	 rm_blocks[i].sel = sel;
-	 break;
+         rm_blocks[i].ptr = ptr;
+         rm_blocks[i].sel = sel;
+         break;
       }
    }
 
@@ -461,10 +461,10 @@ static void free_real_seg(void *mem)
 
    for (i=0; i<(int)(sizeof(rm_blocks)/sizeof(rm_blocks[0])); i++) {
       if (rm_blocks[i].ptr == mem) {
-	 __dpmi_free_dos_memory(rm_blocks[i].sel);
-	 rm_blocks[i].ptr = NULL;
-	 rm_blocks[i].sel = 0;
-	 break;
+         __dpmi_free_dos_memory(rm_blocks[i].sel);
+         rm_blocks[i].ptr = NULL;
+         rm_blocks[i].sel = 0;
+         break;
       }
    }
 }
@@ -622,19 +622,19 @@ static void my_segread(SCITECH_SREGS *sregs)
 
       /* use gcc-style inline asm */
       asm (
-	 "  movw %%cs, %w0 ; "
-	 "  movw %%ds, %w1 ; "
-	 "  movw %%es, %w2 ; "
-	 "  movw %%fs, %w3 ; "
-	 "  movw %%gs, %w4 ; "
-	 "  movw %%ss, %w5 ; "
+         "  movw %%cs, %w0 ; "
+         "  movw %%ds, %w1 ; "
+         "  movw %%es, %w2 ; "
+         "  movw %%fs, %w3 ; "
+         "  movw %%gs, %w4 ; "
+         "  movw %%ss, %w5 ; "
 
       : "=m" (sregs->cs),
-	"=m" (sregs->ds),
-	"=m" (sregs->es),
-	"=m" (sregs->fs),
-	"=m" (sregs->gs),
-	"=m" (sregs->ss)
+        "=m" (sregs->ds),
+        "=m" (sregs->es),
+        "=m" (sregs->fs),
+        "=m" (sregs->gs),
+        "=m" (sregs->ss)
       );
 
    #elif defined WATCOM
@@ -666,8 +666,8 @@ static void my_segread(SCITECH_SREGS *sregs)
    INT(n+0x0C), INT(n+0x0D), INT(n+0x0E), INT(n+0x0F)
 
 
-static unsigned char asm_int_code[256][3] = 
-{ 
+static unsigned char asm_int_code[256][3] =
+{
    INTROW(0x00), INTROW(0x10), INTROW(0x20), INTROW(0x30),
    INTROW(0x40), INTROW(0x50), INTROW(0x60), INTROW(0x70),
    INTROW(0x80), INTROW(0x90), INTROW(0xA0), INTROW(0xB0),
@@ -845,7 +845,7 @@ static void *get_vesa_buf(unsigned int *len, unsigned int *rseg, unsigned int *r
       vesa_ptr = alloc_real_seg(2048, &seg, &off);
 
       if (!vesa_ptr)
-	 return NULL;
+         return NULL;
 
       atexit(free_vesa_buf);
    }
@@ -961,7 +961,7 @@ static const char *get_nucleus_path(void)
    p = getenv("WINBOOTDIR");
    if (p) {
       if (!buffer)
-	 buffer = _AL_MALLOC(BUFFER_SIZE);
+         buffer = _AL_MALLOC(BUFFER_SIZE);
 
       _al_sane_strncpy(buffer , p, BUFFER_SIZE);
       strncat(buffer, "\\nucleus", BUFFER_SIZE-1);
@@ -1053,7 +1053,7 @@ static void vf_exit(void)
 
 
 /* stored console state structure */
-typedef struct 
+typedef struct
 {
    int mode;
    int tall;
@@ -1177,7 +1177,7 @@ void _fill_vbeaf_pmode_exports(void *ptr)
    #define FILL_PMODE(field, func)                          \
    {                                                        \
       if ((long)offsetof(PMODE_DATA, field) < pm->size)     \
-	 pm->field = func;                                  \
+         pm->field = func;                                  \
    }
 
    FILL_PMODE(getModeType, get_mode_type);
@@ -1229,5 +1229,3 @@ void _fill_vbeaf_pmode_exports(void *ptr)
    FILL_PMODE(enableWriteCombine, enable_write_combine);
    FILL_PMODE(backslash, put_backslash);
 }
-
-

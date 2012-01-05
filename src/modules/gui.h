@@ -53,13 +53,13 @@ class widget_not_found : public base::Exception
 {
 public:
   widget_not_found(const char* widget_name) throw()
-    : base::Exception("A data file is corrupted.\nPlease reinstall %s\n\n" 
-		      "Details: Widget not found: %s", PACKAGE, widget_name) { }
+    : base::Exception("A data file is corrupted.\nPlease reinstall %s\n\n"
+                      "Details: Widget not found: %s", PACKAGE, widget_name) { }
 };
 
 //////////////////////////////////////////////////////////////////////
 
-#define HOOK(widget, signal, signal_handler, data)			\
+#define HOOK(widget, signal, signal_handler, data)                      \
   hook_signal((widget), (signal), (signal_handler), (void *)(data))
 
 class Sprite;
@@ -86,9 +86,9 @@ Widget* load_widget(const char *filename, const char *name);
 Widget* find_widget(Widget* widget, const char *name);
 
 void hook_signal(Widget* widget,
-		 int signal_num,
-		 bool (*signal_handler)(Widget* widget, void *data),
-		 void *data);
+                 int signal_num,
+                 bool (*signal_handler)(Widget* widget, void *data),
+                 void *data);
 
 void get_widgets(Widget* window, ...);
 
@@ -97,9 +97,9 @@ void setup_look(Widget* widget, LookType lookType);
 void setup_bevels(Widget* widget, int b1, int b2, int b3, int b4);
 
 void set_gfxicon_to_button(ButtonBase* button,
-			   int normal_part_id,
-			   int selected_part_id,
-			   int disabled_part_id, int icon_align);
+                           int normal_part_id,
+                           int selected_part_id,
+                           int disabled_part_id, int icon_align);
 
 RadioButton* radio_button_new(int radio_group, int b1, int b2, int b3, int b4);
 CheckBox* check_button_new(const char* text, int b1, int b2, int b3, int b4);
@@ -123,7 +123,7 @@ tools::Tool* get_selected_quicktool(tools::Tool* currentTool);
 // Monitors
 
 Monitor* add_gui_monitor(void (*proc)(void*),
-			 void (*free)(void*), void* data);
+                         void (*free)(void*), void* data);
 void remove_gui_monitor(Monitor* monitor);
 void* get_monitor_data(Monitor* monitor);
 

@@ -40,20 +40,20 @@ typedef enum {
 
 ArtSVP *
 art_svp_vpath_stroke (ArtVpath *vpath,
-		      ArtPathStrokeJoinType join,
-		      ArtPathStrokeCapType cap,
-		      double line_width,
-		      double miter_limit,
-		      double flatness);
+                      ArtPathStrokeJoinType join,
+                      ArtPathStrokeCapType cap,
+                      double line_width,
+                      double miter_limit,
+                      double flatness);
 
 /* This version may have winding numbers exceeding 1. */
 ArtVpath *
 art_svp_vpath_stroke_raw (ArtVpath *vpath,
-			  ArtPathStrokeJoinType join,
-			  ArtPathStrokeCapType cap,
-			  double line_width,
-			  double miter_limit,
-			  double flatness);
+                          ArtPathStrokeJoinType join,
+                          ArtPathStrokeCapType cap,
+                          double line_width,
+                          double miter_limit,
+                          double flatness);
 
 #ifdef __cplusplus
 }

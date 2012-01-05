@@ -185,17 +185,17 @@ AL_FUNC(void, check_cpu, (void));
 
 /* Information for Power PC processors */
 /* these defines are taken from <mach-o/machine.h> */
-#define CPU_MODEL_POWERPC_601	       1
-#define CPU_MODEL_POWERPC_602	       2
-#define CPU_MODEL_POWERPC_603	       3
-#define CPU_MODEL_POWERPC_603e	       4
-#define CPU_MODEL_POWERPC_603ev	       5
-#define CPU_MODEL_POWERPC_604	       6
-#define CPU_MODEL_POWERPC_604e	       7
-#define CPU_MODEL_POWERPC_620	       8
-#define CPU_MODEL_POWERPC_750	       9
-#define CPU_MODEL_POWERPC_7400	       10
-#define CPU_MODEL_POWERPC_7450	       11
+#define CPU_MODEL_POWERPC_601          1
+#define CPU_MODEL_POWERPC_602          2
+#define CPU_MODEL_POWERPC_603          3
+#define CPU_MODEL_POWERPC_603e         4
+#define CPU_MODEL_POWERPC_603ev        5
+#define CPU_MODEL_POWERPC_604          6
+#define CPU_MODEL_POWERPC_604e         7
+#define CPU_MODEL_POWERPC_620          8
+#define CPU_MODEL_POWERPC_750          9
+#define CPU_MODEL_POWERPC_7400         10
+#define CPU_MODEL_POWERPC_7450         11
 
 AL_ARRAY(char, cpu_vendor);
 AL_VAR(int, cpu_family);
@@ -256,5 +256,3 @@ AL_ARRAY(_DRIVER_INFO, _system_driver_list);
 #include "inline/system.inl"
 
 #endif          /* ifndef ALLEGRO_SYSTEM_H */
-
-

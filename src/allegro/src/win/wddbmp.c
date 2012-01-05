@@ -1,6 +1,6 @@
-/*         ______   ___    ___ 
- *        /\  _  \ /\_ \  /\_ \ 
- *        \ \ \L\ \\//\ \ \//\ \      __     __   _ __   ___ 
+/*         ______   ___    ___
+ *        /\  _  \ /\_ \  /\_ \
+ *        \ \ \L\ \\//\ \ \//\ \      __     __   _ __   ___
  *         \ \  __ \ \ \ \  \ \ \   /'__`\ /'_ `\/\`'__\/ __`\
  *          \ \ \/\ \ \_\ \_ \_\ \_/\  __//\ \L\ \ \ \//\ \L\ \
  *           \ \_\ \_\/\____\/\____\ \____\ \____ \ \_\\ \____/
@@ -32,11 +32,11 @@
  *    depending on the driver) at startup,
  *  - the first video bitmap reuses the DirectDraw surface of the screen which is
  *    then assigned to flipping_page[0],
- *  - the second video bitmap allocates flipping_page[1] and uses it as its 
+ *  - the second video bitmap allocates flipping_page[1] and uses it as its
  *    DirectDraw surface; it also destroys the single surface pointed to by
  *    flipping_page[0] and creates a DirectDraw flipping chain whose frontbuffer
  *    is connected back to flipping_page[0] and backbuffer to flipping_page[1],
- *  - the third video bitmap allocates flipping_page[2] and uses it as its 
+ *  - the third video bitmap allocates flipping_page[2] and uses it as its
  *    DirectDraw surface; it also destroys the flipping chain pointed to by
  *    flipping_page[0] and flipping_page[1] and creates a new flipping chain
  *    whose frontbuffer is connected back to flipping_page[0], first backbuffer
@@ -265,7 +265,7 @@ static LPDIRECTDRAWSURFACE2 create_directdraw2_surface(int w, int h, LPDDPIXELFO
 
 /* gfx_directx_create_surface:
  *  Creates a DirectDraw surface.
- */ 
+ */
 DDRAW_SURFACE *gfx_directx_create_surface(int w, int h, LPDDPIXELFORMAT pixel_format, int type)
 {
    DDRAW_SURFACE *surf;
@@ -378,7 +378,7 @@ static int recreate_flipping_chain(int n_pages)
 
    /* create the new flipping chain with the specified characteristics */
    flipping_page[0]->id = create_directdraw2_surface(w, h, ddpixel_format, type, n_backbuffers);
-   if (!flipping_page[0]->id) 
+   if (!flipping_page[0]->id)
       return -1;
 
    /* retrieve the backbuffers */

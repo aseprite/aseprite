@@ -25,32 +25,32 @@ TABLE OF CONTENTS
 -----------------
 
 Overview:
-	Functions provided by the library
-	Outline of typical usage
+        Functions provided by the library
+        Outline of typical usage
 Basic library usage:
-	Data formats
-	Compression details
-	Decompression details
-	Mechanics of usage: include files, linking, etc
+        Data formats
+        Compression details
+        Decompression details
+        Mechanics of usage: include files, linking, etc
 Advanced features:
-	Compression parameter selection
-	Decompression parameter selection
-	Special color spaces
-	Error handling
-	Compressed data handling (source and destination managers)
-	I/O suspension
-	Progressive JPEG support
-	Buffered-image mode
-	Abbreviated datastreams and multiple images
-	Special markers
-	Raw (downsampled) image data
-	Really raw data: DCT coefficients
-	Progress monitoring
-	Memory management
-	Memory usage
-	Library compile-time options
-	Portability considerations
-	Notes for MS-DOS implementors
+        Compression parameter selection
+        Decompression parameter selection
+        Special color spaces
+        Error handling
+        Compressed data handling (source and destination managers)
+        I/O suspension
+        Progressive JPEG support
+        Buffered-image mode
+        Abbreviated datastreams and multiple images
+        Special markers
+        Raw (downsampled) image data
+        Really raw data: DCT coefficients
+        Progress monitoring
+        Memory management
+        Memory usage
+        Library compile-time options
+        Portability considerations
+        Notes for MS-DOS implementors
 
 You should read at least the overview and basic usage sections before trying
 to program with the library.  The sections on advanced features can be read
@@ -91,11 +91,11 @@ A word about functions *not* provided by the library.  We handle a subset of
 the ISO JPEG standard; most baseline, extended-sequential, and progressive
 JPEG processes are supported.  (Our subset includes all features now in common
 use.)  Unsupported ISO options include:
-	* Hierarchical storage
-	* Lossless JPEG
-	* Arithmetic entropy coding (unsupported for legal reasons)
-	* DNL marker
-	* Nonintegral subsampling ratios
+        * Hierarchical storage
+        * Lossless JPEG
+        * Arithmetic entropy coding (unsupported for legal reasons)
+        * DNL marker
+        * Nonintegral subsampling ratios
 We support both 8- and 12-bit data precision, but this is a compile-time
 choice rather than a run-time choice; hence it is difficult to use both
 precisions in a single application.
@@ -112,14 +112,14 @@ Outline of typical usage
 
 The rough outline of a JPEG compression operation is:
 
-	Allocate and initialize a JPEG compression object
-	Specify the destination for the compressed data (eg, a file)
-	Set parameters for compression, including image size & colorspace
-	jpeg_start_compress(...);
-	while (scan lines remain to be written)
-		jpeg_write_scanlines(...);
-	jpeg_finish_compress(...);
-	Release the JPEG compression object
+        Allocate and initialize a JPEG compression object
+        Specify the destination for the compressed data (eg, a file)
+        Set parameters for compression, including image size & colorspace
+        jpeg_start_compress(...);
+        while (scan lines remain to be written)
+                jpeg_write_scanlines(...);
+        jpeg_finish_compress(...);
+        Release the JPEG compression object
 
 A JPEG compression object holds parameters and working state for the JPEG
 library.  We make creation/destruction of the object separate from starting
@@ -138,15 +138,15 @@ provide its own destination manager to do something else.
 
 Similarly, the rough outline of a JPEG decompression operation is:
 
-	Allocate and initialize a JPEG decompression object
-	Specify the source of the compressed data (eg, a file)
-	Call jpeg_read_header() to obtain image info
-	Set parameters for decompression
-	jpeg_start_decompress(...);
-	while (scan lines remain to be read)
-		jpeg_read_scanlines(...);
-	jpeg_finish_decompress(...);
-	Release the JPEG decompression object
+        Allocate and initialize a JPEG decompression object
+        Specify the source of the compressed data (eg, a file)
+        Call jpeg_read_header() to obtain image info
+        Set parameters for decompression
+        jpeg_start_decompress(...);
+        while (scan lines remain to be read)
+                jpeg_read_scanlines(...);
+        jpeg_finish_decompress(...);
+        Release the JPEG decompression object
 
 This is comparable to the compression outline except that reading the
 datastream header is a separate step.  This is helpful because information
@@ -271,11 +271,11 @@ initialize the rest of the JPEG object.
 
 Typical code for this step, if you are using the default error handler, is
 
-	struct jpeg_compress_struct cinfo;
-	struct jpeg_error_mgr jerr;
-	...
-	cinfo.err = jpeg_std_error(&jerr);
-	jpeg_create_compress(&cinfo);
+        struct jpeg_compress_struct cinfo;
+        struct jpeg_error_mgr jerr;
+        ...
+        cinfo.err = jpeg_std_error(&jerr);
+        jpeg_create_compress(&cinfo);
 
 jpeg_create_compress allocates a small amount of memory, so it could fail
 if you are out of memory.  In that case it will exit via the error handler;
@@ -292,13 +292,13 @@ destination module if you want to do something else, as discussed later.
 If you use the standard destination module, you must open the target stdio
 stream beforehand.  Typical code for this step looks like:
 
-	FILE * outfile;
-	...
-	if ((outfile = fopen(filename, "wb")) == NULL) {
-	    fprintf(stderr, "can't open %s\n", filename);
-	    exit(1);
-	}
-	jpeg_stdio_dest(&cinfo, outfile);
+        FILE * outfile;
+        ...
+        if ((outfile = fopen(filename, "wb")) == NULL) {
+            fprintf(stderr, "can't open %s\n", filename);
+            exit(1);
+        }
+        jpeg_stdio_dest(&cinfo, outfile);
 
 where the last line invokes the standard destination module.
 
@@ -319,10 +319,10 @@ calling jpeg_start_compress() and jpeg_finish_compress().
 You must supply information about the source image by setting the following
 fields in the JPEG object (cinfo structure):
 
-	image_width		Width of image, in pixels
-	image_height		Height of image, in pixels
-	input_components	Number of color channels (samples per pixel)
-	in_color_space		Color space of source image
+        image_width             Width of image, in pixels
+        image_height            Height of image, in pixels
+        input_components        Number of color channels (samples per pixel)
+        in_color_space          Color space of source image
 
 The image dimensions are, hopefully, obvious.  JPEG supports image dimensions
 of 1 to 64K pixels in either direction.  The input color space is typically
@@ -346,13 +346,13 @@ than once, if that happens to be convenient.
 
 Typical code for a 24-bit RGB source image is
 
-	cinfo.image_width = Width; 	/* image width and height, in pixels */
-	cinfo.image_height = Height;
-	cinfo.input_components = 3;	/* # of color components per pixel */
-	cinfo.in_color_space = JCS_RGB; /* colorspace of input image */
+        cinfo.image_width = Width;      /* image width and height, in pixels */
+        cinfo.image_height = Height;
+        cinfo.input_components = 3;     /* # of color components per pixel */
+        cinfo.in_color_space = JCS_RGB; /* colorspace of input image */
 
-	jpeg_set_defaults(&cinfo);
-	/* Make optional parameter settings here */
+        jpeg_set_defaults(&cinfo);
+        /* Make optional parameter settings here */
 
 
 4. jpeg_start_compress(...);
@@ -364,7 +364,7 @@ storage, and emit the first few bytes of the JPEG datastream header.
 
 Typical code:
 
-	jpeg_start_compress(&cinfo, TRUE);
+        jpeg_start_compress(&cinfo, TRUE);
 
 The "TRUE" parameter ensures that a complete JPEG interchange datastream
 will be written.  This is appropriate in most cases.  If you think you might
@@ -377,7 +377,7 @@ the compression cycle.
 
 
 5. while (scan lines remain to be written)
-	jpeg_write_scanlines(...);
+        jpeg_write_scanlines(...);
 
 Now write all the required image data by calling jpeg_write_scanlines()
 one or more times.  You can pass one or more scanlines in each call, up
@@ -402,15 +402,15 @@ Code for this step depends heavily on the way that you store the source data.
 example.c shows the following code for the case of a full-size 2-D source
 array containing 3-byte RGB pixels:
 
-	JSAMPROW row_pointer[1];	/* pointer to a single row */
-	int row_stride;			/* physical row width in buffer */
+        JSAMPROW row_pointer[1];        /* pointer to a single row */
+        int row_stride;                 /* physical row width in buffer */
 
-	row_stride = image_width * 3;	/* JSAMPLEs per row in image_buffer */
+        row_stride = image_width * 3;   /* JSAMPLEs per row in image_buffer */
 
-	while (cinfo.next_scanline < cinfo.image_height) {
-	    row_pointer[0] = & image_buffer[cinfo.next_scanline * row_stride];
-	    jpeg_write_scanlines(&cinfo, row_pointer, 1);
-	}
+        while (cinfo.next_scanline < cinfo.image_height) {
+            row_pointer[0] = & image_buffer[cinfo.next_scanline * row_stride];
+            jpeg_write_scanlines(&cinfo, row_pointer, 1);
+        }
 
 jpeg_write_scanlines() returns the number of scanlines actually written.
 This will normally be equal to the number passed in, so you can usually
@@ -435,7 +435,7 @@ object.
 
 Typical code:
 
-	jpeg_finish_compress(&cinfo);
+        jpeg_finish_compress(&cinfo);
 
 If using the stdio destination manager, don't forget to close the output
 stdio stream (if necessary) afterwards.
@@ -478,7 +478,7 @@ handler structure.
 
 Typical code:
 
-	jpeg_destroy_compress(&cinfo);
+        jpeg_destroy_compress(&cinfo);
 
 
 8. Aborting.
@@ -519,11 +519,11 @@ call jpeg_create_decompress().  Error handling is exactly the same.
 
 Typical code:
 
-	struct jpeg_decompress_struct cinfo;
-	struct jpeg_error_mgr jerr;
-	...
-	cinfo.err = jpeg_std_error(&jerr);
-	jpeg_create_decompress(&cinfo);
+        struct jpeg_decompress_struct cinfo;
+        struct jpeg_error_mgr jerr;
+        ...
+        cinfo.err = jpeg_std_error(&jerr);
+        jpeg_create_decompress(&cinfo);
 
 (Both here and in the IJG code, we usually use variable name "cinfo" for
 both compression and decompression objects.)
@@ -539,13 +539,13 @@ to do something else, as discussed later.
 If you use the standard source module, you must open the source stdio stream
 beforehand.  Typical code for this step looks like:
 
-	FILE * infile;
-	...
-	if ((infile = fopen(filename, "rb")) == NULL) {
-	    fprintf(stderr, "can't open %s\n", filename);
-	    exit(1);
-	}
-	jpeg_stdio_src(&cinfo, infile);
+        FILE * infile;
+        ...
+        if ((infile = fopen(filename, "rb")) == NULL) {
+            fprintf(stderr, "can't open %s\n", filename);
+            exit(1);
+        }
+        jpeg_stdio_src(&cinfo, infile);
 
 where the last line invokes the standard source module.
 
@@ -568,7 +568,7 @@ being discarded.
 
 Typical code for this step is just
 
-	jpeg_read_header(&cinfo, TRUE);
+        jpeg_read_header(&cinfo, TRUE);
 
 This will read the source datastream header markers, up to the beginning
 of the compressed data proper.  On return, the image dimensions and other
@@ -616,7 +616,7 @@ memory, and prepare for returning data.
 
 Typical code is just
 
-	jpeg_start_decompress(&cinfo);
+        jpeg_start_decompress(&cinfo);
 
 If you have requested a multi-pass operating mode, such as 2-pass color
 quantization, jpeg_start_decompress() will do everything needed before data
@@ -629,12 +629,12 @@ After this call, the final output image dimensions, including any requested
 scaling, are available in the JPEG object; so is the selected colormap, if
 colormapped output has been requested.  Useful fields include
 
-	output_width		image width and height, as scaled
-	output_height
-	out_color_components	# of color components in out_color_space
-	output_components	# of color components returned per pixel
-	colormap		the selected colormap, if any
-	actual_number_of_colors		number of entries in colormap
+        output_width            image width and height, as scaled
+        output_height
+        out_color_components    # of color components in out_color_space
+        output_components       # of color components returned per pixel
+        colormap                the selected colormap, if any
+        actual_number_of_colors         number of entries in colormap
 
 output_components is 1 (a colormap index) when quantizing colors; otherwise it
 equals out_color_components.  It is the number of JSAMPLE values that will be
@@ -653,7 +653,7 @@ relevant parameters (scaling, output color space, and quantization flag).
 
 
 6. while (scan lines remain to be read)
-	jpeg_read_scanlines(...);
+        jpeg_read_scanlines(...);
 
 Now you can read the decompressed image data by calling jpeg_read_scanlines()
 one or more times.  At each call, you pass in the maximum number of scanlines
@@ -695,7 +695,7 @@ with the JPEG object to be released.
 
 Typical code:
 
-	jpeg_finish_decompress(&cinfo);
+        jpeg_finish_decompress(&cinfo);
 
 If using the stdio source manager, don't forget to close the source stdio
 stream if necessary.
@@ -718,7 +718,7 @@ destroying compression objects applies here too.
 
 Typical code:
 
-	jpeg_destroy_decompress(&cinfo);
+        jpeg_destroy_decompress(&cinfo);
 
 
 9. Aborting.
@@ -799,188 +799,188 @@ cinfo fields directly.
 The helper routines are:
 
 jpeg_set_defaults (j_compress_ptr cinfo)
-	This routine sets all JPEG parameters to reasonable defaults, using
-	only the input image's color space (field in_color_space, which must
-	already be set in cinfo).  Many applications will only need to use
-	this routine and perhaps jpeg_set_quality().
+        This routine sets all JPEG parameters to reasonable defaults, using
+        only the input image's color space (field in_color_space, which must
+        already be set in cinfo).  Many applications will only need to use
+        this routine and perhaps jpeg_set_quality().
 
 jpeg_set_colorspace (j_compress_ptr cinfo, J_COLOR_SPACE colorspace)
-	Sets the JPEG file's colorspace (field jpeg_color_space) as specified,
-	and sets other color-space-dependent parameters appropriately.  See
-	"Special color spaces", below, before using this.  A large number of
-	parameters, including all per-component parameters, are set by this
-	routine; if you want to twiddle individual parameters you should call
-	jpeg_set_colorspace() before rather than after.
+        Sets the JPEG file's colorspace (field jpeg_color_space) as specified,
+        and sets other color-space-dependent parameters appropriately.  See
+        "Special color spaces", below, before using this.  A large number of
+        parameters, including all per-component parameters, are set by this
+        routine; if you want to twiddle individual parameters you should call
+        jpeg_set_colorspace() before rather than after.
 
 jpeg_default_colorspace (j_compress_ptr cinfo)
-	Selects an appropriate JPEG colorspace based on cinfo->in_color_space,
-	and calls jpeg_set_colorspace().  This is actually a subroutine of
-	jpeg_set_defaults().  It's broken out in case you want to change
-	just the colorspace-dependent JPEG parameters.
+        Selects an appropriate JPEG colorspace based on cinfo->in_color_space,
+        and calls jpeg_set_colorspace().  This is actually a subroutine of
+        jpeg_set_defaults().  It's broken out in case you want to change
+        just the colorspace-dependent JPEG parameters.
 
 jpeg_set_quality (j_compress_ptr cinfo, int quality, boolean force_baseline)
-	Constructs JPEG quantization tables appropriate for the indicated
-	quality setting.  The quality value is expressed on the 0..100 scale
-	recommended by IJG (cjpeg's "-quality" switch uses this routine).
-	Note that the exact mapping from quality values to tables may change
-	in future IJG releases as more is learned about DCT quantization.
-	If the force_baseline parameter is TRUE, then the quantization table
-	entries are constrained to the range 1..255 for full JPEG baseline
-	compatibility.  In the current implementation, this only makes a
-	difference for quality settings below 25, and it effectively prevents
-	very small/low quality files from being generated.  The IJG decoder
-	is capable of reading the non-baseline files generated at low quality
-	settings when force_baseline is FALSE, but other decoders may not be.
+        Constructs JPEG quantization tables appropriate for the indicated
+        quality setting.  The quality value is expressed on the 0..100 scale
+        recommended by IJG (cjpeg's "-quality" switch uses this routine).
+        Note that the exact mapping from quality values to tables may change
+        in future IJG releases as more is learned about DCT quantization.
+        If the force_baseline parameter is TRUE, then the quantization table
+        entries are constrained to the range 1..255 for full JPEG baseline
+        compatibility.  In the current implementation, this only makes a
+        difference for quality settings below 25, and it effectively prevents
+        very small/low quality files from being generated.  The IJG decoder
+        is capable of reading the non-baseline files generated at low quality
+        settings when force_baseline is FALSE, but other decoders may not be.
 
 jpeg_set_linear_quality (j_compress_ptr cinfo, int scale_factor,
-			 boolean force_baseline)
-	Same as jpeg_set_quality() except that the generated tables are the
-	sample tables given in the JPEC spec section K.1, multiplied by the
-	specified scale factor (which is expressed as a percentage; thus
-	scale_factor = 100 reproduces the spec's tables).  Note that larger
-	scale factors give lower quality.  This entry point is useful for
-	conforming to the Adobe PostScript DCT conventions, but we do not
-	recommend linear scaling as a user-visible quality scale otherwise.
-	force_baseline again constrains the computed table entries to 1..255.
+                         boolean force_baseline)
+        Same as jpeg_set_quality() except that the generated tables are the
+        sample tables given in the JPEC spec section K.1, multiplied by the
+        specified scale factor (which is expressed as a percentage; thus
+        scale_factor = 100 reproduces the spec's tables).  Note that larger
+        scale factors give lower quality.  This entry point is useful for
+        conforming to the Adobe PostScript DCT conventions, but we do not
+        recommend linear scaling as a user-visible quality scale otherwise.
+        force_baseline again constrains the computed table entries to 1..255.
 
 int jpeg_quality_scaling (int quality)
-	Converts a value on the IJG-recommended quality scale to a linear
-	scaling percentage.  Note that this routine may change or go away
-	in future releases --- IJG may choose to adopt a scaling method that
-	can't be expressed as a simple scalar multiplier, in which case the
-	premise of this routine collapses.  Caveat user.
+        Converts a value on the IJG-recommended quality scale to a linear
+        scaling percentage.  Note that this routine may change or go away
+        in future releases --- IJG may choose to adopt a scaling method that
+        can't be expressed as a simple scalar multiplier, in which case the
+        premise of this routine collapses.  Caveat user.
 
 jpeg_add_quant_table (j_compress_ptr cinfo, int which_tbl,
-		      const unsigned int *basic_table,
-		      int scale_factor, boolean force_baseline)
-	Allows an arbitrary quantization table to be created.  which_tbl
-	indicates which table slot to fill.  basic_table points to an array
-	of 64 unsigned ints given in normal array order.  These values are
-	multiplied by scale_factor/100 and then clamped to the range 1..65535
-	(or to 1..255 if force_baseline is TRUE).
-	CAUTION: prior to library version 6a, jpeg_add_quant_table expected
-	the basic table to be given in JPEG zigzag order.  If you need to
-	write code that works with either older or newer versions of this
-	routine, you must check the library version number.  Something like
-	"#if JPEG_LIB_VERSION >= 61" is the right test.
+                      const unsigned int *basic_table,
+                      int scale_factor, boolean force_baseline)
+        Allows an arbitrary quantization table to be created.  which_tbl
+        indicates which table slot to fill.  basic_table points to an array
+        of 64 unsigned ints given in normal array order.  These values are
+        multiplied by scale_factor/100 and then clamped to the range 1..65535
+        (or to 1..255 if force_baseline is TRUE).
+        CAUTION: prior to library version 6a, jpeg_add_quant_table expected
+        the basic table to be given in JPEG zigzag order.  If you need to
+        write code that works with either older or newer versions of this
+        routine, you must check the library version number.  Something like
+        "#if JPEG_LIB_VERSION >= 61" is the right test.
 
 jpeg_simple_progression (j_compress_ptr cinfo)
-	Generates a default scan script for writing a progressive-JPEG file.
-	This is the recommended method of creating a progressive file,
-	unless you want to make a custom scan sequence.  You must ensure that
-	the JPEG color space is set correctly before calling this routine.
+        Generates a default scan script for writing a progressive-JPEG file.
+        This is the recommended method of creating a progressive file,
+        unless you want to make a custom scan sequence.  You must ensure that
+        the JPEG color space is set correctly before calling this routine.
 
 
 Compression parameters (cinfo fields) include:
 
 J_DCT_METHOD dct_method
-	Selects the algorithm used for the DCT step.  Choices are:
-		JDCT_ISLOW: slow but accurate integer algorithm
-		JDCT_IFAST: faster, less accurate integer method
-		JDCT_FLOAT: floating-point method
-		JDCT_DEFAULT: default method (normally JDCT_ISLOW)
-		JDCT_FASTEST: fastest method (normally JDCT_IFAST)
-	The FLOAT method is very slightly more accurate than the ISLOW method,
-	but may give different results on different machines due to varying
-	roundoff behavior.  The integer methods should give the same results
-	on all machines.  On machines with sufficiently fast FP hardware, the
-	floating-point method may also be the fastest.  The IFAST method is
-	considerably less accurate than the other two; its use is not
-	recommended if high quality is a concern.  JDCT_DEFAULT and
-	JDCT_FASTEST are macros configurable by each installation.
+        Selects the algorithm used for the DCT step.  Choices are:
+                JDCT_ISLOW: slow but accurate integer algorithm
+                JDCT_IFAST: faster, less accurate integer method
+                JDCT_FLOAT: floating-point method
+                JDCT_DEFAULT: default method (normally JDCT_ISLOW)
+                JDCT_FASTEST: fastest method (normally JDCT_IFAST)
+        The FLOAT method is very slightly more accurate than the ISLOW method,
+        but may give different results on different machines due to varying
+        roundoff behavior.  The integer methods should give the same results
+        on all machines.  On machines with sufficiently fast FP hardware, the
+        floating-point method may also be the fastest.  The IFAST method is
+        considerably less accurate than the other two; its use is not
+        recommended if high quality is a concern.  JDCT_DEFAULT and
+        JDCT_FASTEST are macros configurable by each installation.
 
 J_COLOR_SPACE jpeg_color_space
 int num_components
-	The JPEG color space and corresponding number of components; see
-	"Special color spaces", below, for more info.  We recommend using
-	jpeg_set_color_space() if you want to change these.
+        The JPEG color space and corresponding number of components; see
+        "Special color spaces", below, for more info.  We recommend using
+        jpeg_set_color_space() if you want to change these.
 
 boolean optimize_coding
-	TRUE causes the compressor to compute optimal Huffman coding tables
-	for the image.  This requires an extra pass over the data and
-	therefore costs a good deal of space and time.  The default is
-	FALSE, which tells the compressor to use the supplied or default
-	Huffman tables.  In most cases optimal tables save only a few percent
-	of file size compared to the default tables.  Note that when this is
-	TRUE, you need not supply Huffman tables at all, and any you do
-	supply will be overwritten.
+        TRUE causes the compressor to compute optimal Huffman coding tables
+        for the image.  This requires an extra pass over the data and
+        therefore costs a good deal of space and time.  The default is
+        FALSE, which tells the compressor to use the supplied or default
+        Huffman tables.  In most cases optimal tables save only a few percent
+        of file size compared to the default tables.  Note that when this is
+        TRUE, you need not supply Huffman tables at all, and any you do
+        supply will be overwritten.
 
 unsigned int restart_interval
 int restart_in_rows
-	To emit restart markers in the JPEG file, set one of these nonzero.
-	Set restart_interval to specify the exact interval in MCU blocks.
-	Set restart_in_rows to specify the interval in MCU rows.  (If
-	restart_in_rows is not 0, then restart_interval is set after the
-	image width in MCUs is computed.)  Defaults are zero (no restarts).
-	One restart marker per MCU row is often a good choice.
-	NOTE: the overhead of restart markers is higher in grayscale JPEG
-	files than in color files, and MUCH higher in progressive JPEGs.
-	If you use restarts, you may want to use larger intervals in those
-	cases.
+        To emit restart markers in the JPEG file, set one of these nonzero.
+        Set restart_interval to specify the exact interval in MCU blocks.
+        Set restart_in_rows to specify the interval in MCU rows.  (If
+        restart_in_rows is not 0, then restart_interval is set after the
+        image width in MCUs is computed.)  Defaults are zero (no restarts).
+        One restart marker per MCU row is often a good choice.
+        NOTE: the overhead of restart markers is higher in grayscale JPEG
+        files than in color files, and MUCH higher in progressive JPEGs.
+        If you use restarts, you may want to use larger intervals in those
+        cases.
 
 const jpeg_scan_info * scan_info
 int num_scans
-	By default, scan_info is NULL; this causes the compressor to write a
-	single-scan sequential JPEG file.  If not NULL, scan_info points to
-	an array of scan definition records of length num_scans.  The
-	compressor will then write a JPEG file having one scan for each scan
-	definition record.  This is used to generate noninterleaved or
-	progressive JPEG files.  The library checks that the scan array
-	defines a valid JPEG scan sequence.  (jpeg_simple_progression creates
-	a suitable scan definition array for progressive JPEG.)  This is
-	discussed further under "Progressive JPEG support".
+        By default, scan_info is NULL; this causes the compressor to write a
+        single-scan sequential JPEG file.  If not NULL, scan_info points to
+        an array of scan definition records of length num_scans.  The
+        compressor will then write a JPEG file having one scan for each scan
+        definition record.  This is used to generate noninterleaved or
+        progressive JPEG files.  The library checks that the scan array
+        defines a valid JPEG scan sequence.  (jpeg_simple_progression creates
+        a suitable scan definition array for progressive JPEG.)  This is
+        discussed further under "Progressive JPEG support".
 
 int smoothing_factor
-	If non-zero, the input image is smoothed; the value should be 1 for
-	minimal smoothing to 100 for maximum smoothing.  Consult jcsample.c
-	for details of the smoothing algorithm.  The default is zero.
+        If non-zero, the input image is smoothed; the value should be 1 for
+        minimal smoothing to 100 for maximum smoothing.  Consult jcsample.c
+        for details of the smoothing algorithm.  The default is zero.
 
 boolean write_JFIF_header
-	If TRUE, a JFIF APP0 marker is emitted.  jpeg_set_defaults() and
-	jpeg_set_colorspace() set this TRUE if a JFIF-legal JPEG color space
-	(ie, YCbCr or grayscale) is selected, otherwise FALSE.
+        If TRUE, a JFIF APP0 marker is emitted.  jpeg_set_defaults() and
+        jpeg_set_colorspace() set this TRUE if a JFIF-legal JPEG color space
+        (ie, YCbCr or grayscale) is selected, otherwise FALSE.
 
 UINT8 JFIF_major_version
 UINT8 JFIF_minor_version
-	The version number to be written into the JFIF marker.
-	jpeg_set_defaults() initializes the version to 1.01 (major=minor=1).
-	You should set it to 1.02 (major=1, minor=2) if you plan to write
-	any JFIF 1.02 extension markers.
+        The version number to be written into the JFIF marker.
+        jpeg_set_defaults() initializes the version to 1.01 (major=minor=1).
+        You should set it to 1.02 (major=1, minor=2) if you plan to write
+        any JFIF 1.02 extension markers.
 
 UINT8 density_unit
 UINT16 X_density
 UINT16 Y_density
-	The resolution information to be written into the JFIF marker;
-	not used otherwise.  density_unit may be 0 for unknown,
-	1 for dots/inch, or 2 for dots/cm.  The default values are 0,1,1
-	indicating square pixels of unknown size.
+        The resolution information to be written into the JFIF marker;
+        not used otherwise.  density_unit may be 0 for unknown,
+        1 for dots/inch, or 2 for dots/cm.  The default values are 0,1,1
+        indicating square pixels of unknown size.
 
 boolean write_Adobe_marker
-	If TRUE, an Adobe APP14 marker is emitted.  jpeg_set_defaults() and
-	jpeg_set_colorspace() set this TRUE if JPEG color space RGB, CMYK,
-	or YCCK is selected, otherwise FALSE.  It is generally a bad idea
-	to set both write_JFIF_header and write_Adobe_marker.  In fact,
-	you probably shouldn't change the default settings at all --- the
-	default behavior ensures that the JPEG file's color space can be
-	recognized by the decoder.
+        If TRUE, an Adobe APP14 marker is emitted.  jpeg_set_defaults() and
+        jpeg_set_colorspace() set this TRUE if JPEG color space RGB, CMYK,
+        or YCCK is selected, otherwise FALSE.  It is generally a bad idea
+        to set both write_JFIF_header and write_Adobe_marker.  In fact,
+        you probably shouldn't change the default settings at all --- the
+        default behavior ensures that the JPEG file's color space can be
+        recognized by the decoder.
 
 JQUANT_TBL * quant_tbl_ptrs[NUM_QUANT_TBLS]
-	Pointers to coefficient quantization tables, one per table slot,
-	or NULL if no table is defined for a slot.  Usually these should
-	be set via one of the above helper routines; jpeg_add_quant_table()
-	is general enough to define any quantization table.  The other
-	routines will set up table slot 0 for luminance quality and table
-	slot 1 for chrominance.
+        Pointers to coefficient quantization tables, one per table slot,
+        or NULL if no table is defined for a slot.  Usually these should
+        be set via one of the above helper routines; jpeg_add_quant_table()
+        is general enough to define any quantization table.  The other
+        routines will set up table slot 0 for luminance quality and table
+        slot 1 for chrominance.
 
 JHUFF_TBL * dc_huff_tbl_ptrs[NUM_HUFF_TBLS]
 JHUFF_TBL * ac_huff_tbl_ptrs[NUM_HUFF_TBLS]
-	Pointers to Huffman coding tables, one per table slot, or NULL if
-	no table is defined for a slot.  Slots 0 and 1 are filled with the
-	JPEG sample tables by jpeg_set_defaults().  If you need to allocate
-	more table structures, jpeg_alloc_huff_table() may be used.
-	Note that optimal Huffman tables can be computed for an image
-	by setting optimize_coding, as discussed above; there's seldom
-	any need to mess with providing your own Huffman tables.
+        Pointers to Huffman coding tables, one per table slot, or NULL if
+        no table is defined for a slot.  Slots 0 and 1 are filled with the
+        JPEG sample tables by jpeg_set_defaults().  If you need to allocate
+        more table structures, jpeg_alloc_huff_table() may be used.
+        Note that optimal Huffman tables can be computed for an image
+        by setting optimize_coding, as discussed above; there's seldom
+        any need to mess with providing your own Huffman tables.
 
 There are some additional cinfo fields which are not documented here
 because you currently can't change them; for example, you can't set
@@ -994,32 +994,32 @@ comp_info[] array is allocated by jpeg_set_defaults(); if you choose not
 to use that routine, it's up to you to allocate the array.
 
 int component_id
-	The one-byte identifier code to be recorded in the JPEG file for
-	this component.  For the standard color spaces, we recommend you
-	leave the default values alone.
+        The one-byte identifier code to be recorded in the JPEG file for
+        this component.  For the standard color spaces, we recommend you
+        leave the default values alone.
 
 int h_samp_factor
 int v_samp_factor
-	Horizontal and vertical sampling factors for the component; must
-	be 1..4 according to the JPEG standard.  Note that larger sampling
-	factors indicate a higher-resolution component; many people find
-	this behavior quite unintuitive.  The default values are 2,2 for
-	luminance components and 1,1 for chrominance components, except
-	for grayscale where 1,1 is used.
+        Horizontal and vertical sampling factors for the component; must
+        be 1..4 according to the JPEG standard.  Note that larger sampling
+        factors indicate a higher-resolution component; many people find
+        this behavior quite unintuitive.  The default values are 2,2 for
+        luminance components and 1,1 for chrominance components, except
+        for grayscale where 1,1 is used.
 
 int quant_tbl_no
-	Quantization table number for component.  The default value is
-	0 for luminance components and 1 for chrominance components.
+        Quantization table number for component.  The default value is
+        0 for luminance components and 1 for chrominance components.
 
 int dc_tbl_no
 int ac_tbl_no
-	DC and AC entropy coding table numbers.  The default values are
-	0 for luminance components and 1 for chrominance components.
+        DC and AC entropy coding table numbers.  The default values are
+        0 for luminance components and 1 for chrominance components.
 
 int component_index
-	Must equal the component's index in comp_info[].  (Beginning in
-	release v6, the compressor library will fill this in automatically;
-	you don't have to.)
+        Must equal the component's index in comp_info[].  (Beginning in
+        release v6, the compressor library will fill this in automatically;
+        you don't have to.)
 
 
 Decompression parameter selection
@@ -1039,18 +1039,18 @@ processing.
 The following fields in the JPEG object are set by jpeg_read_header() and
 may be useful to the application in choosing decompression parameters:
 
-JDIMENSION image_width			Width and height of image
+JDIMENSION image_width                  Width and height of image
 JDIMENSION image_height
-int num_components			Number of color components
-J_COLOR_SPACE jpeg_color_space		Colorspace of image
-boolean saw_JFIF_marker			TRUE if a JFIF APP0 marker was seen
-  UINT8 JFIF_major_version		Version information from JFIF marker
+int num_components                      Number of color components
+J_COLOR_SPACE jpeg_color_space          Colorspace of image
+boolean saw_JFIF_marker                 TRUE if a JFIF APP0 marker was seen
+  UINT8 JFIF_major_version              Version information from JFIF marker
   UINT8 JFIF_minor_version
-  UINT8 density_unit			Resolution data from JFIF marker
+  UINT8 density_unit                    Resolution data from JFIF marker
   UINT16 X_density
   UINT16 Y_density
-boolean saw_Adobe_marker		TRUE if an Adobe APP14 marker was seen
-  UINT8 Adobe_transform			Color transform code from Adobe marker
+boolean saw_Adobe_marker                TRUE if an Adobe APP14 marker was seen
+  UINT8 Adobe_transform                 Color transform code from Adobe marker
 
 The JPEG color space, unfortunately, is something of a guess since the JPEG
 standard proper does not provide a way to record it.  In practice most files
@@ -1062,50 +1062,50 @@ The decompression parameters that determine the basic properties of the
 returned image are:
 
 J_COLOR_SPACE out_color_space
-	Output color space.  jpeg_read_header() sets an appropriate default
-	based on jpeg_color_space; typically it will be RGB or grayscale.
-	The application can change this field to request output in a different
-	colorspace.  For example, set it to JCS_GRAYSCALE to get grayscale
-	output from a color file.  (This is useful for previewing: grayscale
-	output is faster than full color since the color components need not
-	be processed.)  Note that not all possible color space transforms are
-	currently implemented; you may need to extend jdcolor.c if you want an
-	unusual conversion.
+        Output color space.  jpeg_read_header() sets an appropriate default
+        based on jpeg_color_space; typically it will be RGB or grayscale.
+        The application can change this field to request output in a different
+        colorspace.  For example, set it to JCS_GRAYSCALE to get grayscale
+        output from a color file.  (This is useful for previewing: grayscale
+        output is faster than full color since the color components need not
+        be processed.)  Note that not all possible color space transforms are
+        currently implemented; you may need to extend jdcolor.c if you want an
+        unusual conversion.
 
 unsigned int scale_num, scale_denom
-	Scale the image by the fraction scale_num/scale_denom.  Default is
-	1/1, or no scaling.  Currently, the only supported scaling ratios
-	are 1/1, 1/2, 1/4, and 1/8.  (The library design allows for arbitrary
-	scaling ratios but this is not likely to be implemented any time soon.)
-	Smaller scaling ratios permit significantly faster decoding since
-	fewer pixels need be processed and a simpler IDCT method can be used.
+        Scale the image by the fraction scale_num/scale_denom.  Default is
+        1/1, or no scaling.  Currently, the only supported scaling ratios
+        are 1/1, 1/2, 1/4, and 1/8.  (The library design allows for arbitrary
+        scaling ratios but this is not likely to be implemented any time soon.)
+        Smaller scaling ratios permit significantly faster decoding since
+        fewer pixels need be processed and a simpler IDCT method can be used.
 
 boolean quantize_colors
-	If set TRUE, colormapped output will be delivered.  Default is FALSE,
-	meaning that full-color output will be delivered.
+        If set TRUE, colormapped output will be delivered.  Default is FALSE,
+        meaning that full-color output will be delivered.
 
 The next three parameters are relevant only if quantize_colors is TRUE.
 
 int desired_number_of_colors
-	Maximum number of colors to use in generating a library-supplied color
-	map (the actual number of colors is returned in a different field).
-	Default 256.  Ignored when the application supplies its own color map.
+        Maximum number of colors to use in generating a library-supplied color
+        map (the actual number of colors is returned in a different field).
+        Default 256.  Ignored when the application supplies its own color map.
 
 boolean two_pass_quantize
-	If TRUE, an extra pass over the image is made to select a custom color
-	map for the image.  This usually looks a lot better than the one-size-
-	fits-all colormap that is used otherwise.  Default is TRUE.  Ignored
-	when the application supplies its own color map.
+        If TRUE, an extra pass over the image is made to select a custom color
+        map for the image.  This usually looks a lot better than the one-size-
+        fits-all colormap that is used otherwise.  Default is TRUE.  Ignored
+        when the application supplies its own color map.
 
 J_DITHER_MODE dither_mode
-	Selects color dithering method.  Supported values are:
-		JDITHER_NONE	no dithering: fast, very low quality
-		JDITHER_ORDERED	ordered dither: moderate speed and quality
-		JDITHER_FS	Floyd-Steinberg dither: slow, high quality
-	Default is JDITHER_FS.  (At present, ordered dither is implemented
-	only in the single-pass, standard-colormap case.  If you ask for
-	ordered dither when two_pass_quantize is TRUE or when you supply
-	an external color map, you'll get F-S dithering.)
+        Selects color dithering method.  Supported values are:
+                JDITHER_NONE    no dithering: fast, very low quality
+                JDITHER_ORDERED ordered dither: moderate speed and quality
+                JDITHER_FS      Floyd-Steinberg dither: slow, high quality
+        Default is JDITHER_FS.  (At present, ordered dither is implemented
+        only in the single-pass, standard-colormap case.  If you ask for
+        ordered dither when two_pass_quantize is TRUE or when you supply
+        an external color map, you'll get F-S dithering.)
 
 When quantize_colors is TRUE, the target color map is described by the next
 two fields.  colormap is set to NULL by jpeg_read_header().  The application
@@ -1116,39 +1116,39 @@ selects a suitable color map and sets these two fields itself.
 only accepted for 3-component output color spaces.]
 
 JSAMPARRAY colormap
-	The color map, represented as a 2-D pixel array of out_color_components
-	rows and actual_number_of_colors columns.  Ignored if not quantizing.
-	CAUTION: if the JPEG library creates its own colormap, the storage
-	pointed to by this field is released by jpeg_finish_decompress().
-	Copy the colormap somewhere else first, if you want to save it.
+        The color map, represented as a 2-D pixel array of out_color_components
+        rows and actual_number_of_colors columns.  Ignored if not quantizing.
+        CAUTION: if the JPEG library creates its own colormap, the storage
+        pointed to by this field is released by jpeg_finish_decompress().
+        Copy the colormap somewhere else first, if you want to save it.
 
 int actual_number_of_colors
-	The number of colors in the color map.
+        The number of colors in the color map.
 
 Additional decompression parameters that the application may set include:
 
 J_DCT_METHOD dct_method
-	Selects the algorithm used for the DCT step.  Choices are the same
-	as described above for compression.
+        Selects the algorithm used for the DCT step.  Choices are the same
+        as described above for compression.
 
 boolean do_fancy_upsampling
-	If TRUE, do careful upsampling of chroma components.  If FALSE,
-	a faster but sloppier method is used.  Default is TRUE.  The visual
-	impact of the sloppier method is often very small.
+        If TRUE, do careful upsampling of chroma components.  If FALSE,
+        a faster but sloppier method is used.  Default is TRUE.  The visual
+        impact of the sloppier method is often very small.
 
 boolean do_block_smoothing
-	If TRUE, interblock smoothing is applied in early stages of decoding
-	progressive JPEG files; if FALSE, not.  Default is TRUE.  Early
-	progression stages look "fuzzy" with smoothing, "blocky" without.
-	In any case, block smoothing ceases to be applied after the first few
-	AC coefficients are known to full accuracy, so it is relevant only
-	when using buffered-image mode for progressive images.
+        If TRUE, interblock smoothing is applied in early stages of decoding
+        progressive JPEG files; if FALSE, not.  Default is TRUE.  Early
+        progression stages look "fuzzy" with smoothing, "blocky" without.
+        In any case, block smoothing ceases to be applied after the first few
+        AC coefficients are known to full accuracy, so it is relevant only
+        when using buffered-image mode for progressive images.
 
 boolean enable_1pass_quant
 boolean enable_external_quant
 boolean enable_2pass_quant
-	These are significant only in buffered-image mode, which is
-	described in its own section below.
+        These are significant only in buffered-image mode, which is
+        described in its own section below.
 
 
 The output image dimensions are given by the following fields.  These are
@@ -1160,11 +1160,11 @@ close to a desired target size.  It's also important if you are using the
 JPEG library's memory manager to allocate output buffer space, because you
 are supposed to request such buffers *before* jpeg_start_decompress().
 
-JDIMENSION output_width		Actual dimensions of output image.
+JDIMENSION output_width         Actual dimensions of output image.
 JDIMENSION output_height
-int out_color_components	Number of color components in out_color_space.
-int output_components		Number of color components returned.
-int rec_outbuf_height		Recommended height of scanline buffer.
+int out_color_components        Number of color components in out_color_space.
+int output_components           Number of color components returned.
+int rec_outbuf_height           Recommended height of scanline buffer.
 
 When quantizing colors, output_components is 1, indicating a single color map
 index per pixel.  Otherwise it equals out_color_components.  The output arrays
@@ -1204,10 +1204,10 @@ by jpeg_color_space.  jpeg_set_defaults() chooses a reasonable JPEG color
 space depending on in_color_space, but you can override this by calling
 jpeg_set_colorspace().  Of course you must select a supported transformation.
 jccolor.c currently supports the following transformations:
-	RGB => YCbCr
-	RGB => GRAYSCALE
-	YCbCr => GRAYSCALE
-	CMYK => YCCK
+        RGB => YCbCr
+        RGB => GRAYSCALE
+        YCbCr => GRAYSCALE
+        CMYK => YCCK
 plus the null transforms: GRAYSCALE => GRAYSCALE, RGB => RGB,
 YCbCr => YCbCr, CMYK => CMYK, YCCK => YCCK, and UNKNOWN => UNKNOWN.
 
@@ -1237,10 +1237,10 @@ jpeg_read_header's guess by setting jpeg_color_space.  jpeg_read_header also
 selects a default output color space based on (its guess of) jpeg_color_space;
 set out_color_space to override this.  Again, you must select a supported
 transformation.  jdcolor.c currently supports
-	YCbCr => GRAYSCALE
-	YCbCr => RGB
-	GRAYSCALE => RGB
-	YCCK => CMYK
+        YCbCr => GRAYSCALE
+        YCbCr => RGB
+        GRAYSCALE => RGB
+        YCCK => CMYK
 as well as the null transforms.  (Since GRAYSCALE=>RGB is provided, an
 application can force grayscale JPEGs to look like color JPEGs if it only
 wants to handle one case.)
@@ -1310,31 +1310,31 @@ The library does not touch client_data at all.)
 The individual methods that you might wish to override are:
 
 error_exit (j_common_ptr cinfo)
-	Receives control for a fatal error.  Information sufficient to
-	generate the error message has been stored in cinfo->err; call
-	output_message to display it.  Control must NOT return to the caller;
-	generally this routine will exit() or longjmp() somewhere.
-	Typically you would override this routine to get rid of the exit()
-	default behavior.  Note that if you continue processing, you should
-	clean up the JPEG object with jpeg_abort() or jpeg_destroy().
+        Receives control for a fatal error.  Information sufficient to
+        generate the error message has been stored in cinfo->err; call
+        output_message to display it.  Control must NOT return to the caller;
+        generally this routine will exit() or longjmp() somewhere.
+        Typically you would override this routine to get rid of the exit()
+        default behavior.  Note that if you continue processing, you should
+        clean up the JPEG object with jpeg_abort() or jpeg_destroy().
 
 output_message (j_common_ptr cinfo)
-	Actual output of any JPEG message.  Override this to send messages
-	somewhere other than stderr.  Note that this method does not know
-	how to generate a message, only where to send it.
+        Actual output of any JPEG message.  Override this to send messages
+        somewhere other than stderr.  Note that this method does not know
+        how to generate a message, only where to send it.
 
 format_message (j_common_ptr cinfo, char * buffer)
-	Constructs a readable error message string based on the error info
-	stored in cinfo->err.  This method is called by output_message.  Few
-	applications should need to override this method.  One possible
-	reason for doing so is to implement dynamic switching of error message
-	language.
+        Constructs a readable error message string based on the error info
+        stored in cinfo->err.  This method is called by output_message.  Few
+        applications should need to override this method.  One possible
+        reason for doing so is to implement dynamic switching of error message
+        language.
 
 emit_message (j_common_ptr cinfo, int msg_level)
-	Decide whether or not to emit a warning or trace message; if so,
-	calls output_message.  The main reason for overriding this method
-	would be to abort on warnings.  msg_level is -1 for warnings,
-	0 and up for trace messages.
+        Decide whether or not to emit a warning or trace message; if so,
+        calls output_message.  The main reason for overriding this method
+        would be to abort on warnings.  msg_level is -1 for warnings,
+        0 and up for trace messages.
 
 Only error_exit() and emit_message() are called from the rest of the JPEG
 library; the other two are internal to the error handler.
@@ -1357,9 +1357,9 @@ messages.  See the sample applications cjpeg/djpeg for an example of using
 addon messages (the addon messages are defined in cderror.h).
 
 Actual invocation of the error handler is done via macros defined in jerror.h:
-	ERREXITn(...)	for fatal errors
-	WARNMSn(...)	for corrupt-data warnings
-	TRACEMSn(...)	for trace and informational messages.
+        ERREXITn(...)   for fatal errors
+        WARNMSn(...)    for corrupt-data warnings
+        TRACEMSn(...)   for trace and informational messages.
 These macros store the message code and any additional parameters into the
 error handler struct, then invoke the error_exit() or emit_message() method.
 The variants of each macro are for varying numbers of additional parameters.
@@ -1399,8 +1399,8 @@ on external storage.
 A data destination manager struct contains a pointer and count defining the
 next byte to write in the work buffer and the remaining free space:
 
-	JOCTET * next_output_byte;  /* => next byte to write in buffer */
-	size_t free_in_buffer;      /* # of byte spaces remaining in buffer */
+        JOCTET * next_output_byte;  /* => next byte to write in buffer */
+        size_t free_in_buffer;      /* # of byte spaces remaining in buffer */
 
 The library increments the pointer and decrements the count until the buffer
 is filled.  The manager's empty_output_buffer method must reset the pointer
@@ -1410,27 +1410,27 @@ and total size in private fields not visible to the library.
 A data destination manager provides three methods:
 
 init_destination (j_compress_ptr cinfo)
-	Initialize destination.  This is called by jpeg_start_compress()
-	before any data is actually written.  It must initialize
-	next_output_byte and free_in_buffer.  free_in_buffer must be
-	initialized to a positive value.
+        Initialize destination.  This is called by jpeg_start_compress()
+        before any data is actually written.  It must initialize
+        next_output_byte and free_in_buffer.  free_in_buffer must be
+        initialized to a positive value.
 
 empty_output_buffer (j_compress_ptr cinfo)
-	This is called whenever the buffer has filled (free_in_buffer
-	reaches zero).  In typical applications, it should write out the
-	*entire* buffer (use the saved start address and buffer length;
-	ignore the current state of next_output_byte and free_in_buffer).
-	Then reset the pointer & count to the start of the buffer, and
-	return TRUE indicating that the buffer has been dumped.
-	free_in_buffer must be set to a positive value when TRUE is
-	returned.  A FALSE return should only be used when I/O suspension is
-	desired (this operating mode is discussed in the next section).
+        This is called whenever the buffer has filled (free_in_buffer
+        reaches zero).  In typical applications, it should write out the
+        *entire* buffer (use the saved start address and buffer length;
+        ignore the current state of next_output_byte and free_in_buffer).
+        Then reset the pointer & count to the start of the buffer, and
+        return TRUE indicating that the buffer has been dumped.
+        free_in_buffer must be set to a positive value when TRUE is
+        returned.  A FALSE return should only be used when I/O suspension is
+        desired (this operating mode is discussed in the next section).
 
 term_destination (j_compress_ptr cinfo)
-	Terminate destination --- called by jpeg_finish_compress() after all
-	data has been written.  In most applications, this must flush any
-	data remaining in the buffer.  Use either next_output_byte or
-	free_in_buffer to determine how much data is in the buffer.
+        Terminate destination --- called by jpeg_finish_compress() after all
+        data has been written.  In most applications, this must flush any
+        data remaining in the buffer.  Use either next_output_byte or
+        free_in_buffer to determine how much data is in the buffer.
 
 term_destination() is NOT called by jpeg_abort() or jpeg_destroy().  If you
 want the destination manager to be cleaned up during an abort, you must do it
@@ -1447,8 +1447,8 @@ additional frammishes.  The source manager struct contains a pointer and count
 defining the next byte to read from the work buffer and the number of bytes
 remaining:
 
-	const JOCTET * next_input_byte; /* => next byte to read from buffer */
-	size_t bytes_in_buffer;         /* # of bytes remaining in buffer */
+        const JOCTET * next_input_byte; /* => next byte to read from buffer */
+        size_t bytes_in_buffer;         /* # of bytes remaining in buffer */
 
 The library increments the pointer and decrements the count until the buffer
 is emptied.  The manager's fill_input_buffer method must reset the pointer and
@@ -1458,47 +1458,47 @@ address and total size in private fields not visible to the library.
 A data source manager provides five methods:
 
 init_source (j_decompress_ptr cinfo)
-	Initialize source.  This is called by jpeg_read_header() before any
-	data is actually read.  Unlike init_destination(), it may leave
-	bytes_in_buffer set to 0 (in which case a fill_input_buffer() call
-	will occur immediately).
+        Initialize source.  This is called by jpeg_read_header() before any
+        data is actually read.  Unlike init_destination(), it may leave
+        bytes_in_buffer set to 0 (in which case a fill_input_buffer() call
+        will occur immediately).
 
 fill_input_buffer (j_decompress_ptr cinfo)
-	This is called whenever bytes_in_buffer has reached zero and more
-	data is wanted.  In typical applications, it should read fresh data
-	into the buffer (ignoring the current state of next_input_byte and
-	bytes_in_buffer), reset the pointer & count to the start of the
-	buffer, and return TRUE indicating that the buffer has been reloaded.
-	It is not necessary to fill the buffer entirely, only to obtain at
-	least one more byte.  bytes_in_buffer MUST be set to a positive value
-	if TRUE is returned.  A FALSE return should only be used when I/O
-	suspension is desired (this mode is discussed in the next section).
+        This is called whenever bytes_in_buffer has reached zero and more
+        data is wanted.  In typical applications, it should read fresh data
+        into the buffer (ignoring the current state of next_input_byte and
+        bytes_in_buffer), reset the pointer & count to the start of the
+        buffer, and return TRUE indicating that the buffer has been reloaded.
+        It is not necessary to fill the buffer entirely, only to obtain at
+        least one more byte.  bytes_in_buffer MUST be set to a positive value
+        if TRUE is returned.  A FALSE return should only be used when I/O
+        suspension is desired (this mode is discussed in the next section).
 
 skip_input_data (j_decompress_ptr cinfo, long num_bytes)
-	Skip num_bytes worth of data.  The buffer pointer and count should
-	be advanced over num_bytes input bytes, refilling the buffer as
-	needed.  This is used to skip over a potentially large amount of
-	uninteresting data (such as an APPn marker).  In some applications
-	it may be possible to optimize away the reading of the skipped data,
-	but it's not clear that being smart is worth much trouble; large
-	skips are uncommon.  bytes_in_buffer may be zero on return.
-	A zero or negative skip count should be treated as a no-op.
+        Skip num_bytes worth of data.  The buffer pointer and count should
+        be advanced over num_bytes input bytes, refilling the buffer as
+        needed.  This is used to skip over a potentially large amount of
+        uninteresting data (such as an APPn marker).  In some applications
+        it may be possible to optimize away the reading of the skipped data,
+        but it's not clear that being smart is worth much trouble; large
+        skips are uncommon.  bytes_in_buffer may be zero on return.
+        A zero or negative skip count should be treated as a no-op.
 
 resync_to_restart (j_decompress_ptr cinfo, int desired)
-	This routine is called only when the decompressor has failed to find
-	a restart (RSTn) marker where one is expected.  Its mission is to
-	find a suitable point for resuming decompression.  For most
-	applications, we recommend that you just use the default resync
-	procedure, jpeg_resync_to_restart().  However, if you are able to back
-	up in the input data stream, or if you have a-priori knowledge about
-	the likely location of restart markers, you may be able to do better.
-	Read the read_restart_marker() and jpeg_resync_to_restart() routines
-	in jdmarker.c if you think you'd like to implement your own resync
-	procedure.
+        This routine is called only when the decompressor has failed to find
+        a restart (RSTn) marker where one is expected.  Its mission is to
+        find a suitable point for resuming decompression.  For most
+        applications, we recommend that you just use the default resync
+        procedure, jpeg_resync_to_restart().  However, if you are able to back
+        up in the input data stream, or if you have a-priori knowledge about
+        the likely location of restart markers, you may be able to do better.
+        Read the read_restart_marker() and jpeg_resync_to_restart() routines
+        in jdmarker.c if you think you'd like to implement your own resync
+        procedure.
 
 term_source (j_decompress_ptr cinfo)
-	Terminate source --- called by jpeg_finish_decompress() after all
-	data has been read.  Often a no-op.
+        Terminate source --- called by jpeg_finish_decompress() after all
+        data has been read.  Often a no-op.
 
 For both fill_input_buffer() and skip_input_data(), there is no such thing
 as an EOF return.  If the end of the file has been reached, the routine has
@@ -1606,7 +1606,7 @@ that suspension has occurred.  This can happen at four places:
   * jpeg_read_header(): will return JPEG_SUSPENDED.
   * jpeg_start_decompress(): will return FALSE, rather than its usual TRUE.
   * jpeg_read_scanlines(): will return the number of scanlines already
-	completed (possibly 0).
+        completed (possibly 0).
   * jpeg_finish_decompress(): will return FALSE, rather than its usual TRUE.
 The surrounding application must recognize these cases, load more data into
 the input buffer, and repeat the call.  In the case of jpeg_read_scanlines(),
@@ -1784,23 +1784,23 @@ rates.
 
 The basic control flow for buffered-image decoding is
 
-	jpeg_create_decompress()
-	set data source
-	jpeg_read_header()
-	set overall decompression parameters
-	cinfo.buffered_image = TRUE;	/* select buffered-image mode */
-	jpeg_start_decompress()
-	for (each output pass) {
-	    adjust output decompression parameters if required
-	    jpeg_start_output()		/* start a new output pass */
-	    for (all scanlines in image) {
-	        jpeg_read_scanlines()
-	        display scanlines
-	    }
-	    jpeg_finish_output()	/* terminate output pass */
-	}
-	jpeg_finish_decompress()
-	jpeg_destroy_decompress()
+        jpeg_create_decompress()
+        set data source
+        jpeg_read_header()
+        set overall decompression parameters
+        cinfo.buffered_image = TRUE;    /* select buffered-image mode */
+        jpeg_start_decompress()
+        for (each output pass) {
+            adjust output decompression parameters if required
+            jpeg_start_output()         /* start a new output pass */
+            for (all scanlines in image) {
+                jpeg_read_scanlines()
+                display scanlines
+            }
+            jpeg_finish_output()        /* terminate output pass */
+        }
+        jpeg_finish_decompress()
+        jpeg_destroy_decompress()
 
 This differs from ordinary unbuffered decoding in that there is an additional
 level of looping.  The application can choose how many output passes to make
@@ -1809,9 +1809,9 @@ and how to display each pass.
 The simplest approach to displaying progressive images is to do one display
 pass for each scan appearing in the input file.  In this case the outer loop
 condition is typically
-	while (! jpeg_input_complete(&cinfo))
+        while (! jpeg_input_complete(&cinfo))
 and the start-output call should read
-	jpeg_start_output(&cinfo, cinfo.input_scan_number);
+        jpeg_start_output(&cinfo, cinfo.input_scan_number);
 The second parameter to jpeg_start_output() indicates which scan of the input
 file is to be displayed; the scans are numbered starting at 1 for this
 purpose.  (You can use a loop counter starting at 1 if you like, but using
@@ -1842,11 +1842,11 @@ If input data arrives faster than it can be displayed, the application can
 cause the library to decode input data in advance of what's needed to produce
 output.  This is done by calling the routine jpeg_consume_input().
 The return value is one of the following:
-	JPEG_REACHED_SOS:    reached an SOS marker (the start of a new scan)
-	JPEG_REACHED_EOI:    reached the EOI marker (end of image)
-	JPEG_ROW_COMPLETED:  completed reading one MCU row of compressed data
-	JPEG_SCAN_COMPLETED: completed reading last MCU row of current scan
-	JPEG_SUSPENDED:      suspended before completing any of the above
+        JPEG_REACHED_SOS:    reached an SOS marker (the start of a new scan)
+        JPEG_REACHED_EOI:    reached the EOI marker (end of image)
+        JPEG_ROW_COMPLETED:  completed reading one MCU row of compressed data
+        JPEG_SCAN_COMPLETED: completed reading last MCU row of current scan
+        JPEG_SUSPENDED:      suspended before completing any of the above
 (JPEG_SUSPENDED can occur only if a suspending data source is used.)  This
 routine can be called at any time after initializing the JPEG object.  It
 reads some additional data and returns when one of the indicated significant
@@ -1923,27 +1923,27 @@ When using this strategy, you'll want to be sure that you perform a final
 output pass after receiving all the data; otherwise your last display may not
 be full quality across the whole screen.  So the right outer loop logic is
 something like this:
-	do {
-	    absorb any waiting input by calling jpeg_consume_input()
-	    final_pass = jpeg_input_complete(&cinfo);
-	    adjust output decompression parameters if required
-	    jpeg_start_output(&cinfo, cinfo.input_scan_number);
-	    ...
-	    jpeg_finish_output()
-	} while (! final_pass);
+        do {
+            absorb any waiting input by calling jpeg_consume_input()
+            final_pass = jpeg_input_complete(&cinfo);
+            adjust output decompression parameters if required
+            jpeg_start_output(&cinfo, cinfo.input_scan_number);
+            ...
+            jpeg_finish_output()
+        } while (! final_pass);
 rather than quitting as soon as jpeg_input_complete() returns TRUE.  This
 arrangement makes it simple to use higher-quality decoding parameters
 for the final pass.  But if you don't want to use special parameters for
 the final pass, the right loop logic is like this:
-	for (;;) {
-	    absorb any waiting input by calling jpeg_consume_input()
-	    jpeg_start_output(&cinfo, cinfo.input_scan_number);
-	    ...
-	    jpeg_finish_output()
-	    if (jpeg_input_complete(&cinfo) &&
-	        cinfo.input_scan_number == cinfo.output_scan_number)
-	      break;
-	}
+        for (;;) {
+            absorb any waiting input by calling jpeg_consume_input()
+            jpeg_start_output(&cinfo, cinfo.input_scan_number);
+            ...
+            jpeg_finish_output()
+            if (jpeg_input_complete(&cinfo) &&
+                cinfo.input_scan_number == cinfo.output_scan_number)
+              break;
+        }
 In this case you don't need to know in advance whether an output pass is to
 be the last one, so it's not necessary to have reached EOF before starting
 the final output pass; rather, what you want to test is whether the output
@@ -2052,9 +2052,9 @@ working-storage requirements, the library requires you to indicate which
 one(s) you intend to use before you call jpeg_start_decompress().  (If we did
 not require this, the max_memory_to_use setting would be a complete fiction.)
 You do this by setting one or more of these three cinfo fields to TRUE:
-	enable_1pass_quant		Fixed color cube colormap
-	enable_external_quant		Externally-supplied colormap
-	enable_2pass_quant		Two-pass custom colormap
+        enable_1pass_quant              Fixed color cube colormap
+        enable_external_quant           Externally-supplied colormap
+        enable_2pass_quant              Two-pass custom colormap
 All three are initialized FALSE by jpeg_read_header().  But
 jpeg_start_decompress() automatically sets TRUE the one selected by the
 current two_pass_quantize and colormap settings, so you only need to set the
@@ -2205,14 +2205,14 @@ sent_tables flags will be set TRUE.
 A sure-fire way to create matching tables-only and abbreviated image files
 is to proceed as follows:
 
-	create JPEG compression object
-	set JPEG parameters
-	set destination to tables-only file
-	jpeg_write_tables(&cinfo);
-	set destination to image file
-	jpeg_start_compress(&cinfo, FALSE);
-	write data...
-	jpeg_finish_compress(&cinfo);
+        create JPEG compression object
+        set JPEG parameters
+        set destination to tables-only file
+        jpeg_write_tables(&cinfo);
+        set destination to image file
+        jpeg_start_compress(&cinfo, FALSE);
+        write data...
+        jpeg_finish_compress(&cinfo);
 
 Since the JPEG parameters are not altered between writing the table file and
 the abbreviated image file, the same tables are sure to be used.  Of course,
@@ -2240,7 +2240,7 @@ to load a fixed quantization table into table slot "n":
 
     if (cinfo.quant_tbl_ptrs[n] == NULL)
       cinfo.quant_tbl_ptrs[n] = jpeg_alloc_quant_table((j_common_ptr) &cinfo);
-    quant_ptr = cinfo.quant_tbl_ptrs[n];	/* quant_ptr is JQUANT_TBL* */
+    quant_ptr = cinfo.quant_tbl_ptrs[n];        /* quant_ptr is JQUANT_TBL* */
     for (i = 0; i < 64; i++) {
       /* Qtable[] is desired quantization table, in natural array order */
       quant_ptr->quantval[i] = Qtable[i];
@@ -2250,7 +2250,7 @@ Code to load a fixed Huffman table is typically (for AC table "n"):
 
     if (cinfo.ac_huff_tbl_ptrs[n] == NULL)
       cinfo.ac_huff_tbl_ptrs[n] = jpeg_alloc_huff_table((j_common_ptr) &cinfo);
-    huff_ptr = cinfo.ac_huff_tbl_ptrs[n];	/* huff_ptr is JHUFF_TBL* */
+    huff_ptr = cinfo.ac_huff_tbl_ptrs[n];       /* huff_ptr is JHUFF_TBL* */
     for (i = 1; i <= 16; i++) {
       /* counts[i] is number of Huffman codes of length i bits, i=1..16 */
       huff_ptr->bits[i] = counts[i];
@@ -2272,15 +2272,15 @@ sufficient to read a tables-only file.  You must pass a second parameter of
 FALSE to indicate that you do not require an image to be present.  Thus, the
 typical scenario is
 
-	create JPEG decompression object
-	set source to tables-only file
-	jpeg_read_header(&cinfo, FALSE);
-	set source to abbreviated image file
-	jpeg_read_header(&cinfo, TRUE);
-	set decompression parameters
-	jpeg_start_decompress(&cinfo);
-	read data...
-	jpeg_finish_decompress(&cinfo);
+        create JPEG decompression object
+        set source to tables-only file
+        jpeg_read_header(&cinfo, FALSE);
+        set source to abbreviated image file
+        jpeg_read_header(&cinfo, TRUE);
+        set decompression parameters
+        jpeg_start_decompress(&cinfo);
+        read data...
+        jpeg_finish_decompress(&cinfo);
 
 In some cases, you may want to read a file without knowing whether it contains
 an image or just tables.  In that case, pass FALSE and check the return value
@@ -2353,7 +2353,7 @@ all else.  Specify the marker type parameter as "JPEG_COM" for COM or
 "JPEG_APP0 + n" for APPn.  (Actually, jpeg_write_marker will let you write
 any marker type, but we don't recommend writing any other kinds of marker.)
 For example, to write a user comment string pointed to by comment_text:
-	jpeg_write_marker(cinfo, JPEG_COM, comment_text, strlen(comment_text));
+        jpeg_write_marker(cinfo, JPEG_COM, comment_text, strlen(comment_text));
 
 If it's not convenient to store all the marker data in memory at once,
 you can instead call jpeg_write_m_header() followed by multiple calls to
@@ -2399,7 +2399,7 @@ determined separately for COM markers and for each APPn marker code.
 
 
 To save the contents of special markers in memory, call
-	jpeg_save_markers(cinfo, marker_code, length_limit)
+        jpeg_save_markers(cinfo, marker_code, length_limit)
 where marker_code is the marker type to save, JPEG_COM or JPEG_APP0+n.
 (To arrange to save all the special marker types, you need to call this
 routine 17 times, for COM and APP0-APP15.)  If the incoming marker is longer
@@ -2444,7 +2444,7 @@ effective length limit is exactly what you set it to be.
 If you want to supply your own marker-reading routine, you do it by calling
 jpeg_set_marker_processor().  A marker processor routine must have the
 signature
-	boolean jpeg_marker_parser_method (j_decompress_ptr cinfo)
+        boolean jpeg_marker_parser_method (j_decompress_ptr cinfo)
 Although the marker code is not explicitly passed, the routine can find it
 in cinfo->unread_marker.  At the time of call, the marker proper has been
 read from the data source module.  The processor routine is responsible for
@@ -2531,8 +2531,8 @@ image; don't forget to pad your data as necessary.
 
 The required dimensions of the supplied data can be computed for each
 component as
-	cinfo->comp_info[i].width_in_blocks*DCTSIZE  samples per row
-	cinfo->comp_info[i].height_in_blocks*DCTSIZE rows in image
+        cinfo->comp_info[i].width_in_blocks*DCTSIZE  samples per row
+        cinfo->comp_info[i].height_in_blocks*DCTSIZE rows in image
 after jpeg_start_compress() has initialized those fields.  If the valid data
 is smaller than this, it must be padded appropriately.  For some sampling
 factors and image sizes, additional dummy DCT blocks are inserted to make
@@ -2540,12 +2540,12 @@ the image a multiple of the MCU dimensions.  The library creates such dummy
 blocks itself; it does not read them from your supplied data.  Therefore you
 need never pad by more than DCTSIZE samples.  An example may help here.
 Assume 2h2v downsampling of YCbCr data, that is
-	cinfo->comp_info[0].h_samp_factor = 2		for Y
-	cinfo->comp_info[0].v_samp_factor = 2
-	cinfo->comp_info[1].h_samp_factor = 1		for Cb
-	cinfo->comp_info[1].v_samp_factor = 1
-	cinfo->comp_info[2].h_samp_factor = 1		for Cr
-	cinfo->comp_info[2].v_samp_factor = 1
+        cinfo->comp_info[0].h_samp_factor = 2           for Y
+        cinfo->comp_info[0].v_samp_factor = 2
+        cinfo->comp_info[1].h_samp_factor = 1           for Cb
+        cinfo->comp_info[1].v_samp_factor = 1
+        cinfo->comp_info[2].h_samp_factor = 1           for Cr
+        cinfo->comp_info[2].v_samp_factor = 1
 and suppose that the nominal image dimensions (cinfo->image_width and
 cinfo->image_height) are 101x101 pixels.  Then jpeg_start_compress() will
 compute downsampled_width = 101 and width_in_blocks = 13 for Y,
@@ -2716,18 +2716,18 @@ JPEG memory manager with lifetime JPOOL_PERMANENT will work nicely.)  You
 can use the same callback routine for both compression and decompression.
 
 The jpeg_progress_mgr struct contains four fields which are set by the library:
-	long pass_counter;	/* work units completed in this pass */
-	long pass_limit;	/* total number of work units in this pass */
-	int completed_passes;	/* passes completed so far */
-	int total_passes;	/* total number of passes expected */
+        long pass_counter;      /* work units completed in this pass */
+        long pass_limit;        /* total number of work units in this pass */
+        int completed_passes;   /* passes completed so far */
+        int total_passes;       /* total number of passes expected */
 During any one pass, pass_counter increases from 0 up to (not including)
 pass_limit; the step size is usually but not necessarily 1.  The pass_limit
 value may change from one pass to another.  The expected total number of
 passes is in total_passes, and the number of passes already completed is in
 completed_passes.  Thus the fraction of work completed may be estimated as
-		completed_passes + (pass_counter/pass_limit)
-		--------------------------------------------
-				total_passes
+                completed_passes + (pass_counter/pass_limit)
+                --------------------------------------------
+                                total_passes
 ignoring the fact that the passes may not be equal amounts of work.
 
 When decompressing, pass_limit can even change within a pass, because it
@@ -2900,7 +2900,7 @@ functions.  To do this, undefine xxx_SUPPORTED symbols as necessary.
 
 You can also save a few K by not having text error messages in the library;
 the standard error message table occupies about 5Kb.  This is particularly
-reasonable for embedded applications where there's no good way to display 
+reasonable for embedded applications where there's no good way to display
 a message anyway.  To do this, remove the creation of the message table
 (jpeg_std_message_table[]) from jerror.c, and alter format_message to do
 something reasonable without it.  You could output the numeric value of the
@@ -2924,10 +2924,10 @@ See install.doc for configuration procedures.
 
 The code is not dependent on the exact sizes of the C data types.  As
 distributed, we make the assumptions that
-	char	is at least 8 bits wide
-	short	is at least 16 bits wide
-	int	is at least 16 bits wide
-	long	is at least 32 bits wide
+        char    is at least 8 bits wide
+        short   is at least 16 bits wide
+        int     is at least 16 bits wide
+        long    is at least 32 bits wide
 (These are the minimum requirements of the ANSI C standard.)  Wider types will
 work fine, although memory may be used inefficiently if char is much larger
 than 8 bits or short is much bigger than 16 bits.  The code should work

@@ -199,7 +199,7 @@ static int _xwin_sysdrv_init(void)
    if (get_config_int("system", "XInitThreads", 1))
       XInitThreads();
 
-   /* Open the display, create a window, and background-process 
+   /* Open the display, create a window, and background-process
     * events for it all. */
    if (_xwin_open_display(0) || _xwin_create_window()
        || _unix_bg_man->register_func(_xwin_bg_handler))
@@ -273,7 +273,7 @@ static void _xwin_sysdrv_set_window_title(AL_CONST char *name)
 static int _xwin_sysdrv_set_close_button_callback(void (*proc)(void))
 {
    _xwin.close_button_callback = proc;
-   
+
    return 0;
 }
 
@@ -282,7 +282,7 @@ static int _xwin_sysdrv_set_close_button_callback(void (*proc)(void))
 static int _xwin_sysdrv_set_resize_callback(void (*proc)(RESIZE_DISPLAY_EVENT *ev))
 {
    _xwin.resize_callback = proc;
-   
+
    return 0;
 }
 
@@ -316,25 +316,25 @@ static void _xwin_sysdrv_message(AL_CONST char *msg)
    switch (pid) {
 
       case -1: /* fork error */
-	 fputs(msg2, stdout);
-	 break;
+         fputs(msg2, stdout);
+         break;
 
       case 0: /* child process */
-	 execlp("xmessage", "xmessage", "-buttons", "OK:101", "-default", "OK", "-center", msg2, (char *)NULL);
+         execlp("xmessage", "xmessage", "-buttons", "OK:101", "-default", "OK", "-center", msg2, (char *)NULL);
 
-	 /* if execution reaches here, it means execlp failed */
-	 _exit(EXIT_FAILURE);
-	 break;
+         /* if execution reaches here, it means execlp failed */
+         _exit(EXIT_FAILURE);
+         break;
 
       default: /* parent process */
-	 waitpid(pid, &status, 0);
-	 if ((!WIFEXITED(status))
-	     || (WEXITSTATUS(status) != 101)) /* ok button */
-	 {
-	    fputs(msg2, stdout);
-	 }
+         waitpid(pid, &status, 0);
+         if ((!WIFEXITED(status))
+             || (WEXITSTATUS(status) != 101)) /* ok button */
+         {
+            fputs(msg2, stdout);
+         }
 
-	 break;
+         break;
    }
 }
 
@@ -389,7 +389,7 @@ static int _xwin_sysdrv_display_switch_mode(int mode)
 {
    if (_xwin.in_dga_mode) {
       if (mode != SWITCH_NONE)
-	 return -1;
+         return -1;
    }
 
    if (mode != SWITCH_BACKGROUND)
@@ -441,4 +441,3 @@ static void _xwin_sysdrv_get_gfx_safe_mode(int *driver, struct GFX_MODE *mode)
    mode->height = 200;
    mode->bpp = 8;
 }
-

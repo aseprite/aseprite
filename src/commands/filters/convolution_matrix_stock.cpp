@@ -55,19 +55,19 @@ namespace {
 
 void ConvolutionMatrixStock::reloadStock()
 {
-#define READ_TOK() {					\
-    if (!tok_read(f, buf, leavings, sizeof (leavings)))	\
-      break;						\
+#define READ_TOK() {                                    \
+    if (!tok_read(f, buf, leavings, sizeof (leavings))) \
+      break;                                            \
   }
 
-#define READ_INT(var) {				\
-    READ_TOK();					\
-    var = strtol(buf, NULL, 10);		\
+#define READ_INT(var) {                         \
+    READ_TOK();                                 \
+    var = strtol(buf, NULL, 10);                \
   }
 
   const char *names[] = { "convmatr.usr",
-			  "convmatr.gen",
-			  "convmatr.def", NULL };
+                          "convmatr.gen",
+                          "convmatr.def", NULL };
   char *s, buf[256], leavings[4096];
   int i, c, x, y, w, h, div, bias;
   SharedPtr<ConvolutionMatrix> matrix;
@@ -84,7 +84,7 @@ void ConvolutionMatrixStock::reloadStock()
       // Open matrices stock file
       f.reset(fopen(path, "r"), fclose);
       if (!f)
-	continue;
+        continue;
 
       tok_reset_line_num();
 
@@ -92,101 +92,101 @@ void ConvolutionMatrixStock::reloadStock()
 
       // Read the matrix name
       while (tok_read(f, buf, leavings, sizeof(leavings))) {
-	// Name of the matrix
-	name = buf;
+        // Name of the matrix
+        name = buf;
 
-	// Width and height
-	READ_INT(w);
-	READ_INT(h);
+        // Width and height
+        READ_INT(w);
+        READ_INT(h);
 
-	if ((w <= 0) || (w > 32) ||
-	    (h <= 0) || (h > 32))
-	  break;
+        if ((w <= 0) || (w > 32) ||
+            (h <= 0) || (h > 32))
+          break;
 
-	// Create the matrix data
-	matrix.reset(new ConvolutionMatrix(w, h));
-	matrix->setName(name.c_str());
+        // Create the matrix data
+        matrix.reset(new ConvolutionMatrix(w, h));
+        matrix->setName(name.c_str());
 
-	// Centre
-	READ_INT(x);
-	READ_INT(y);
+        // Centre
+        READ_INT(x);
+        READ_INT(y);
 
-	if ((x < 0) || (x >= w) ||
-	    (y < 0) || (y >= h))
-	  break;
-	
-	matrix->setCenterX(x);
-	matrix->setCenterY(y);
+        if ((x < 0) || (x >= w) ||
+            (y < 0) || (y >= h))
+          break;
 
-	// Data
-	READ_TOK();                    // Jump the `{' char
-	if (*buf != '{')
-	  break;
+        matrix->setCenterX(x);
+        matrix->setCenterY(y);
 
-	c = 0;
-	div = 0;
-	for (y=0; y<h; ++y) {
-	  for (x=0; x<w; ++x) {
-	    READ_TOK();
-	    int value = strtod(buf, NULL) * ConvolutionMatrix::Precision;
-	    div += value;
+        // Data
+        READ_TOK();                    // Jump the `{' char
+        if (*buf != '{')
+          break;
 
-	    matrix->value(x, y) = value;
-	  }
-	}
+        c = 0;
+        div = 0;
+        for (y=0; y<h; ++y) {
+          for (x=0; x<w; ++x) {
+            READ_TOK();
+            int value = strtod(buf, NULL) * ConvolutionMatrix::Precision;
+            div += value;
 
-	READ_TOK();                    // Jump the `}' char
-	if (*buf != '}')
-	  break;
+            matrix->value(x, y) = value;
+          }
+        }
 
-	if (div > 0)
-	  bias = 0;
-	else if (div == 0) {
-	  div = ConvolutionMatrix::Precision;
-	  bias = 128;
-	}
-	else {
-	  div = ABS(div);
-	  bias = 255;
-	}
+        READ_TOK();                    // Jump the `}' char
+        if (*buf != '}')
+          break;
 
-	// Div
-	READ_TOK();
-	if (strcmp(buf, "auto") != 0)
-	  div = strtod(buf, NULL) * ConvolutionMatrix::Precision;
+        if (div > 0)
+          bias = 0;
+        else if (div == 0) {
+          div = ConvolutionMatrix::Precision;
+          bias = 128;
+        }
+        else {
+          div = ABS(div);
+          bias = 255;
+        }
 
-	matrix->setDiv(div);
+        // Div
+        READ_TOK();
+        if (strcmp(buf, "auto") != 0)
+          div = strtod(buf, NULL) * ConvolutionMatrix::Precision;
 
-	// Bias
-	READ_TOK();
-	if (strcmp(buf, "auto") != 0)
-	  bias = strtod(buf, NULL);
+        matrix->setDiv(div);
 
-	matrix->setBias(bias);
+        // Bias
+        READ_TOK();
+        if (strcmp(buf, "auto") != 0)
+          bias = strtod(buf, NULL);
 
-	// Target
-	READ_TOK();
+        matrix->setBias(bias);
 
-	Target target = 0;
-	for (s=buf; *s; s++) {
-	  switch (*s) {
-	    case 'r': target |= TARGET_RED_CHANNEL; break;
-	    case 'g': target |= TARGET_GREEN_CHANNEL; break;
-	    case 'b': target |= TARGET_BLUE_CHANNEL; break;
-	    case 'a': target |= TARGET_ALPHA_CHANNEL; break;
-	  }
-	}
+        // Target
+        READ_TOK();
 
-	if ((target & (TARGET_RED_CHANNEL |
-		       TARGET_GREEN_CHANNEL |
-		       TARGET_BLUE_CHANNEL)) != 0) {
-	  target |= TARGET_GRAY_CHANNEL;
-	}
+        Target target = 0;
+        for (s=buf; *s; s++) {
+          switch (*s) {
+            case 'r': target |= TARGET_RED_CHANNEL; break;
+            case 'g': target |= TARGET_GREEN_CHANNEL; break;
+            case 'b': target |= TARGET_BLUE_CHANNEL; break;
+            case 'a': target |= TARGET_ALPHA_CHANNEL; break;
+          }
+        }
 
-	matrix->setDefaultTarget(target);
+        if ((target & (TARGET_RED_CHANNEL |
+                       TARGET_GREEN_CHANNEL |
+                       TARGET_BLUE_CHANNEL)) != 0) {
+          target |= TARGET_GRAY_CHANNEL;
+        }
 
-	// Insert the new matrix in the list
-	m_matrices.push_back(matrix);
+        matrix->setDefaultTarget(target);
+
+        // Insert the new matrix in the list
+        m_matrices.push_back(matrix);
       }
     }
   }

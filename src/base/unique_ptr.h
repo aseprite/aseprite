@@ -85,8 +85,8 @@ public:
   operator pointer() const { return m_ptr; }
 
 private:
-  pointer m_ptr;			 // The pointee object.
-  deleter_type m_deleter;		 // The deleter.
+  pointer m_ptr;                         // The pointee object.
+  deleter_type m_deleter;                // The deleter.
 
   DISABLE_COPYING(UniquePtr);
 };

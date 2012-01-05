@@ -24,10 +24,10 @@
 #include "skin/skin_theme.h"
 
 ButtonIconImpl::ButtonIconImpl(SkinTheme* theme,
-			       int normalIcon,
-			       int selectedIcon,
-			       int disabledIcon,
-			       int iconAlign)
+                               int normalIcon,
+                               int selectedIcon,
+                               int disabledIcon,
+                               int iconAlign)
   : m_theme(theme)
   , m_normalIcon(normalIcon)
   , m_selectedIcon(selectedIcon)

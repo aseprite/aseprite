@@ -1,6 +1,6 @@
-/*         ______   ___    ___ 
- *        /\  _  \ /\_ \  /\_ \ 
- *        \ \ \L\ \\//\ \ \//\ \      __     __   _ __   ___ 
+/*         ______   ___    ___
+ *        /\  _  \ /\_ \  /\_ \
+ *        \ \ \L\ \\//\ \ \//\ \      __     __   _ __   ___
  *         \ \  __ \ \ \ \  \ \ \   /'__`\ /'_ `\/\`'__\/ __`\
  *          \ \ \/\ \ \_\ \_ \_\ \_/\  __//\ \L\ \ \ \//\ \L\ \
  *           \ \_\ \_\/\____\/\____\ \____\ \____ \ \_\\ \____/
@@ -39,9 +39,9 @@ int makecol15_dither(int r, int g, int b, int x, int y)
 
    y = dither_ytable[y&7];
 
-   bpos = (x+y)&7; 
+   bpos = (x+y)&7;
    returned_r += (dither_table[r&7] >> bpos) & 1;
-   
+
    bpos = (bpos+3)&7;
    returned_b += (dither_table[b&7] >> bpos) & 1;
 
@@ -71,9 +71,9 @@ int makecol16_dither(int r, int g, int b, int x, int y)
 
    y = dither_ytable[y&7];
 
-   bpos = (x+y)&7; 
+   bpos = (x+y)&7;
    returned_r += (dither_table[r&7] >> bpos) & 1;
-   
+
    bpos = (bpos+3)&7;
    returned_b += (dither_table[b&7] >> bpos) & 1;
 
@@ -86,5 +86,3 @@ int makecol16_dither(int r, int g, int b, int x, int y)
 
    return (returned_r<<_rgb_r_shift_16) | (returned_g<<_rgb_g_shift_16) | (returned_b<<_rgb_b_shift_16);
 }
-
-

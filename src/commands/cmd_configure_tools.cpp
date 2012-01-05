@@ -57,7 +57,7 @@ static bool brush_preview_msg_proc(JWidget widget, Message* msg);
 static bool window_close_hook(JWidget widget, void *data);
 static bool brush_type_change_hook(JWidget widget, void *data);
 
-// Slot for App::Exit signal 
+// Slot for App::Exit signal
 static void on_exit_delete_this_widget()
 {
   ASSERT(window != NULL);
@@ -122,17 +122,17 @@ static void on_current_tool_change()
 
   // True if the current tool needs opacity options
   bool hasOpacity = (current_tool->getInk(0)->isPaint() ||
-		     current_tool->getInk(0)->isEffect() ||
-		     current_tool->getInk(1)->isPaint() ||
-		     current_tool->getInk(1)->isEffect());
+                     current_tool->getInk(0)->isEffect() ||
+                     current_tool->getInk(1)->isPaint() ||
+                     current_tool->getInk(1)->isEffect());
 
   // True if the current tool needs tolerance options
   bool hasTolerance = (current_tool->getPointShape(0)->isFloodFill() ||
-		       current_tool->getPointShape(1)->isFloodFill());
+                       current_tool->getPointShape(1)->isFloodFill());
 
   // True if the current tool needs spray options
   bool hasSprayOptions = (current_tool->getPointShape(0)->isSpray() ||
-			  current_tool->getPointShape(1)->isSpray());
+                          current_tool->getPointShape(1)->isSpray());
 
   // Show/Hide parameters
   opacity_label->setVisible(hasOpacity);
@@ -146,14 +146,14 @@ static void on_current_tool_change()
   if (jrect_w(window->rc) < reqSize.w ||
       jrect_h(window->rc) != reqSize.h) {
     JRect rect = jrect_new(window->rc->x1, window->rc->y1,
-			   (jrect_w(window->rc) < reqSize.w) ? window->rc->x1 + reqSize.w: 
-							       window->rc->x2,
-			   window->rc->y1 + reqSize.h);
+                           (jrect_w(window->rc) < reqSize.w) ? window->rc->x1 + reqSize.w:
+                                                               window->rc->x2,
+                           window->rc->y1 + reqSize.h);
 
     // Show the expanded area inside the screen
     if (rect->y2 > JI_SCREEN_H)
       jrect_displace(rect, 0, JI_SCREEN_H - rect->y2);
-      
+
     window->move_window(rect);
     jrect_free(rect);
   }
@@ -208,8 +208,8 @@ private:
 
 ConfigureTools::ConfigureTools()
   : Command("ConfigureTools",
-	    "Configure Tools",
-	    CmdUIOnlyFlag)
+            "Configure Tools",
+            CmdUIOnlyFlag)
 {
 }
 
@@ -233,22 +233,22 @@ void ConfigureTools::onExecute(Context* context)
 
   try {
     get_widgets(window,
-		"tiled", &m_tiled,
-		"tiled_x", &m_tiledX,
-		"tiled_y", &m_tiledY,
-		"snap_to_grid", &m_snapToGrid,
-		"view_grid", &m_viewGrid,
-		"pixel_grid", &m_pixelGrid,
-		"set_grid", &set_grid,
-		"brush_size", &m_brushSize,
-		"brush_angle", &m_brushAngle,
-		"opacity", &m_opacity,
-		"tolerance", &m_tolerance,
-		"spray_width", &m_sprayWidth,
-		"air_speed", &m_airSpeed,
-		"brush_preview_box", &brush_preview_box,
-		"brush_type_box", &brush_type_box,
-		"onionskin", &m_onionSkin, NULL);
+                "tiled", &m_tiled,
+                "tiled_x", &m_tiledX,
+                "tiled_y", &m_tiledY,
+                "snap_to_grid", &m_snapToGrid,
+                "view_grid", &m_viewGrid,
+                "pixel_grid", &m_pixelGrid,
+                "set_grid", &set_grid,
+                "brush_size", &m_brushSize,
+                "brush_angle", &m_brushAngle,
+                "opacity", &m_opacity,
+                "tolerance", &m_tolerance,
+                "spray_width", &m_sprayWidth,
+                "air_speed", &m_airSpeed,
+                "brush_preview_box", &brush_preview_box,
+                "brush_type_box", &brush_type_box,
+                "onionskin", &m_onionSkin, NULL);
   }
   catch (...) {
     jwidget_free(window);
@@ -264,7 +264,7 @@ void ConfigureTools::onExecute(Context* context)
 
     brush_preview->setName("brush_preview");
     jwidget_add_hook(brush_preview, JI_WIDGET,
-		     brush_preview_msg_proc, NULL);
+                     brush_preview_msg_proc, NULL);
   }
   else {
     brush_preview = window->findChild("brush_preview");
@@ -280,9 +280,9 @@ void ConfigureTools::onExecute(Context* context)
     PenType type = tool_settings->getPen()->getType();
 
     brush_type = group_button_new(3, 1, type,
-				  PART_BRUSH_CIRCLE,
-				  PART_BRUSH_SQUARE,
-				  PART_BRUSH_LINE);
+                                  PART_BRUSH_CIRCLE,
+                                  PART_BRUSH_SQUARE,
+                                  PART_BRUSH_LINE);
 
     brush_type->setName("brush_type");
   }
@@ -295,7 +295,7 @@ void ConfigureTools::onExecute(Context* context)
     if (settings->getTiledMode() & TILED_X_AXIS) m_tiledX->setSelected(true);
     if (settings->getTiledMode() & TILED_Y_AXIS) m_tiledY->setSelected(true);
   }
-      
+
   if (settings->getSnapToGrid()) m_snapToGrid->setSelected(true);
   if (settings->getGridVisible()) m_viewGrid->setSelected(true);
   if (settings->getPixelGridVisible()) m_pixelGrid->setSelected(true);
@@ -351,29 +351,29 @@ static bool brush_preview_msg_proc(JWidget widget, Message* msg)
 
     case JM_DRAW: {
       BITMAP *bmp = create_bitmap(jrect_w(widget->rc),
-				  jrect_h(widget->rc));
+                                  jrect_h(widget->rc));
 
       Tool* current_tool = UIContext::instance()
-	->getSettings()
-	->getCurrentTool();
+        ->getSettings()
+        ->getCurrentTool();
 
       IPenSettings* pen_settings = UIContext::instance()
-	->getSettings()
-	->getToolSettings(current_tool)
-	->getPen();
+        ->getSettings()
+        ->getToolSettings(current_tool)
+        ->getPen();
 
       ASSERT(pen_settings != NULL);
 
       Pen* pen = new Pen(pen_settings->getType(),
-			 pen_settings->getSize(),
-			 pen_settings->getAngle());
+                         pen_settings->getSize(),
+                         pen_settings->getAngle());
 
       clear_to_color(bmp, makecol(0, 0, 0));
       image_to_allegro(pen->get_image(), bmp,
-		       bmp->w/2 - pen->get_size()/2,
-		       bmp->h/2 - pen->get_size()/2, NULL);
+                       bmp->w/2 - pen->get_size()/2,
+                       bmp->h/2 - pen->get_size()/2, NULL);
       blit(bmp, ji_screen, 0, 0, widget->rc->x1, widget->rc->y1,
-	   bmp->w, bmp->h);
+           bmp->w, bmp->h);
       destroy_bitmap(bmp);
 
       delete pen;
@@ -413,10 +413,10 @@ static bool brush_type_change_hook(JWidget widget, void *data)
 
   app_get_statusbar()
     ->setStatusText(250,
-		    "Pen shape: %s",
-		    type == PEN_TYPE_CIRCLE ? "Circle":
-		    type == PEN_TYPE_SQUARE ? "Square":
-		    type == PEN_TYPE_LINE ? "Line": "Unknown");
+                    "Pen shape: %s",
+                    type == PEN_TYPE_CIRCLE ? "Circle":
+                    type == PEN_TYPE_SQUARE ? "Square":
+                    type == PEN_TYPE_LINE ? "Line": "Unknown");
 
   return true;
 }
@@ -537,12 +537,12 @@ void ConfigureTools::onSetGridClick()
       UIContext::instance()->getSettings()->setGridBounds(bounds);
 
       if (UIContext::instance()->getSettings()->getGridVisible())
-	refresh_all_editors();
+        refresh_all_editors();
     }
     else {
-      Command* grid_settings_cmd = 
-	CommandsModule::instance()->getCommandByName(CommandId::GridSettings);
-  
+      Command* grid_settings_cmd =
+        CommandsModule::instance()->getCommandByName(CommandId::GridSettings);
+
       UIContext::instance()->executeCommand(grid_settings_cmd, NULL);
     }
   }

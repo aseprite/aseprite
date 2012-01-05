@@ -63,8 +63,8 @@ Dirty::Dirty(Image* image, Image* image_diff)
     x1 = -1;
     for (x=0; x<image->w; x++) {
       if (image_getpixel(image, x, y) != image_getpixel(image_diff, x, y)) {
-	x1 = x;
-	break;
+        x1 = x;
+        break;
       }
     }
     if (x1 < 0)
@@ -72,7 +72,7 @@ Dirty::Dirty(Image* image, Image* image_diff)
 
     for (x2=image->w-1; x2>x1; x2--) {
       if (image_getpixel(image, x2, y) != image_getpixel(image_diff, x2, y))
-	break;
+        break;
     }
 
     Col* col = new Col(x1, x2-x1+1);
@@ -103,17 +103,17 @@ Dirty::~Dirty()
 
 int Dirty::getMemSize() const
 {
-  int size = 4+1+2*4+2;		// DWORD+BYTE+WORD[4]+WORD
+  int size = 4+1+2*4+2;         // DWORD+BYTE+WORD[4]+WORD
 
   RowsList::const_iterator row_it = m_rows.begin();
   RowsList::const_iterator row_end = m_rows.end();
   for (; row_it != row_end; ++row_it) {
-    size += 4;			// y, cols (WORD[2])
+    size += 4;                  // y, cols (WORD[2])
 
     ColsList::const_iterator col_it = (*row_it)->cols.begin();
     ColsList::const_iterator col_end = (*row_it)->cols.end();
     for (; col_it != col_end; ++col_it) {
-      size += 4;		// x, w (WORD[2])
+      size += 4;                // x, w (WORD[2])
       size += getLineSize((*col_it)->w);
     }
   }

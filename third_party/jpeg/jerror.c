@@ -28,7 +28,7 @@
 #include <windows.h>
 #endif
 
-#ifndef EXIT_FAILURE		/* define exit() codes if not provided */
+#ifndef EXIT_FAILURE            /* define exit() codes if not provided */
 #define EXIT_FAILURE  1
 #endif
 
@@ -42,10 +42,10 @@
  */
 
 #ifdef NEED_SHORT_EXTERNAL_NAMES
-#define jpeg_std_message_table	jMsgTable
+#define jpeg_std_message_table  jMsgTable
 #endif
 
-#define JMESSAGE(code,string)	string ,
+#define JMESSAGE(code,string)   string ,
 
 const char * const jpeg_std_message_table[] = {
 #include "jerror.h"
@@ -105,7 +105,7 @@ output_message (j_common_ptr cinfo)
 #ifdef USE_WINDOWS_MESSAGEBOX
   /* Display it in a message dialog box */
   MessageBox(GetActiveWindow(), buffer, "JPEG Library Error",
-	     MB_OK | MB_ICONERROR);
+             MB_OK | MB_ICONERROR);
 #else
   /* Send it to stderr, adding a newline */
   fprintf(stderr, "%s\n", buffer);
@@ -167,8 +167,8 @@ format_message (j_common_ptr cinfo, char * buffer)
   if (msg_code > 0 && msg_code <= err->last_jpeg_message) {
     msgtext = err->jpeg_message_table[msg_code];
   } else if (err->addon_message_table != NULL &&
-	     msg_code >= err->first_addon_message &&
-	     msg_code <= err->last_addon_message) {
+             msg_code >= err->first_addon_message &&
+             msg_code <= err->last_addon_message) {
     msgtext = err->addon_message_table[msg_code - err->first_addon_message];
   }
 
@@ -193,10 +193,10 @@ format_message (j_common_ptr cinfo, char * buffer)
     sprintf(buffer, msgtext, err->msg_parm.s);
   else
     sprintf(buffer, msgtext,
-	    err->msg_parm.i[0], err->msg_parm.i[1],
-	    err->msg_parm.i[2], err->msg_parm.i[3],
-	    err->msg_parm.i[4], err->msg_parm.i[5],
-	    err->msg_parm.i[6], err->msg_parm.i[7]);
+            err->msg_parm.i[0], err->msg_parm.i[1],
+            err->msg_parm.i[2], err->msg_parm.i[3],
+            err->msg_parm.i[4], err->msg_parm.i[5],
+            err->msg_parm.i[6], err->msg_parm.i[7]);
 }
 
 
@@ -213,17 +213,17 @@ reset_error_mgr (j_common_ptr cinfo)
 {
   cinfo->err->num_warnings = 0;
   /* trace_level is not reset since it is an application-supplied parameter */
-  cinfo->err->msg_code = 0;	/* may be useful as a flag for "no error" */
+  cinfo->err->msg_code = 0;     /* may be useful as a flag for "no error" */
 }
 
 
 /*
  * Fill in the standard error-handling methods in a jpeg_error_mgr object.
  * Typical call is:
- *	struct jpeg_compress_struct cinfo;
- *	struct jpeg_error_mgr err;
+ *      struct jpeg_compress_struct cinfo;
+ *      struct jpeg_error_mgr err;
  *
- *	cinfo.err = jpeg_std_error(&err);
+ *      cinfo.err = jpeg_std_error(&err);
  * after which the application may override some of the methods.
  */
 
@@ -236,16 +236,16 @@ jpeg_std_error (struct jpeg_error_mgr * err)
   err->format_message = format_message;
   err->reset_error_mgr = reset_error_mgr;
 
-  err->trace_level = 0;		/* default = no tracing */
-  err->num_warnings = 0;	/* no warnings emitted yet */
-  err->msg_code = 0;		/* may be useful as a flag for "no error" */
+  err->trace_level = 0;         /* default = no tracing */
+  err->num_warnings = 0;        /* no warnings emitted yet */
+  err->msg_code = 0;            /* may be useful as a flag for "no error" */
 
   /* Initialize message table pointers */
   err->jpeg_message_table = jpeg_std_message_table;
   err->last_jpeg_message = (int) JMSG_LASTMSGCODE - 1;
 
   err->addon_message_table = NULL;
-  err->first_addon_message = 0;	/* for safety */
+  err->first_addon_message = 0; /* for safety */
   err->last_addon_message = 0;
 
   return err;

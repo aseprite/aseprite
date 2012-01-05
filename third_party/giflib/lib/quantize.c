@@ -249,7 +249,7 @@ SubdivColorMap(NewColorMapType * NewColorSubdiv,
         /* Sort all elements in that entry along the given axis and split at
          * the median.  */
         SortArray = (QuantizedColorType **)malloc(
-                      sizeof(QuantizedColorType *) * 
+                      sizeof(QuantizedColorType *) *
                       NewColorSubdiv[Index].NumEntries);
         if (SortArray == NULL)
             return GIF_ERROR;

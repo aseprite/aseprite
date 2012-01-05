@@ -41,7 +41,7 @@ void SetCelFrame::dispose()
 void SetCelFrame::revert(ObjectsContainer* objects, UndoersCollector* redoers)
 {
   Cel* cel = objects->getObjectT<Cel>(m_celId);
-  
+
   // Push another SetCelFrame as redoer
   redoers->pushUndoer(new SetCelFrame(objects, cel));
 

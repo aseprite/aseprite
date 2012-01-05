@@ -76,9 +76,9 @@ public:
   {
     return reinterpret_cast<T*>(getObject(id));
   }
-  
+
 };
 
 } // namespace undo
 
-#endif	// UNDO_OBJECTS_CONTAINER_H_INCLUDED
+#endif  // UNDO_OBJECTS_CONTAINER_H_INCLUDED

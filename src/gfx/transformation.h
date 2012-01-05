@@ -21,11 +21,11 @@ public:
   class Corners {
     public:
       enum {
-	LEFT_TOP = 0,
-	RIGHT_TOP = 1,
-	RIGHT_BOTTOM = 2,
-	LEFT_BOTTOM = 3,
-	NUM_OF_CORNERS = 4
+        LEFT_TOP = 0,
+        RIGHT_TOP = 1,
+        RIGHT_BOTTOM = 2,
+        LEFT_BOTTOM = 3,
+        NUM_OF_CORNERS = 4
       };
 
       Corners() : m_corners(NUM_OF_CORNERS) { }
@@ -46,15 +46,15 @@ public:
       void leftBottom(const PointT<double>& pt) { m_corners[LEFT_BOTTOM] = pt; }
 
       Corners& operator=(const gfx::Rect& bounds) {
-	m_corners[LEFT_TOP].x = bounds.x;
-	m_corners[LEFT_TOP].y = bounds.y;
-	m_corners[RIGHT_TOP].x = bounds.x + bounds.w;
-	m_corners[RIGHT_TOP].y = bounds.y;
-	m_corners[RIGHT_BOTTOM].x = bounds.x + bounds.w;
-	m_corners[RIGHT_BOTTOM].y = bounds.y + bounds.h;
-	m_corners[LEFT_BOTTOM].x = bounds.x;
-	m_corners[LEFT_BOTTOM].y = bounds.y + bounds.h;
-	return *this;
+        m_corners[LEFT_TOP].x = bounds.x;
+        m_corners[LEFT_TOP].y = bounds.y;
+        m_corners[RIGHT_TOP].x = bounds.x + bounds.w;
+        m_corners[RIGHT_TOP].y = bounds.y;
+        m_corners[RIGHT_BOTTOM].x = bounds.x + bounds.w;
+        m_corners[RIGHT_BOTTOM].y = bounds.y + bounds.h;
+        m_corners[LEFT_BOTTOM].x = bounds.x;
+        m_corners[LEFT_BOTTOM].y = bounds.y + bounds.h;
+        return *this;
       }
 
     private:

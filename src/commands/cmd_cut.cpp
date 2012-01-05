@@ -40,18 +40,18 @@ protected:
 
 CutCommand::CutCommand()
   : Command("Cut",
-	    "Cut",
-	    CmdUIOnlyFlag)
+            "Cut",
+            CmdUIOnlyFlag)
 {
 }
 
 bool CutCommand::onEnabled(Context* context)
 {
   return context->checkFlags(ContextFlags::ActiveDocumentIsWritable |
-			     ContextFlags::ActiveLayerIsReadable |
-			     ContextFlags::ActiveLayerIsWritable |
-			     ContextFlags::HasVisibleMask |
-			     ContextFlags::HasActiveImage);
+                             ContextFlags::ActiveLayerIsReadable |
+                             ContextFlags::ActiveLayerIsWritable |
+                             ContextFlags::HasVisibleMask |
+                             ContextFlags::HasActiveImage);
 }
 
 void CutCommand::onExecute(Context* context)

@@ -24,4 +24,3 @@
 void play_fli_animation(const char *filename, bool loop, bool fullscreen);
 
 #endif
-

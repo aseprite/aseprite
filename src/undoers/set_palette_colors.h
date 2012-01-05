@@ -52,4 +52,4 @@ private:
 
 } // namespace undoers
 
-#endif	// UNDOERS_SET_PALETTE_COLORS_H_INCLUDED
+#endif  // UNDOERS_SET_PALETTE_COLORS_H_INCLUDED

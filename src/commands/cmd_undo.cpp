@@ -39,8 +39,8 @@ protected:
 
 UndoCommand::UndoCommand()
   : Command("Undo",
-	    "Undo",
-	    CmdUIOnlyFlag)
+            "Undo",
+            CmdUIOnlyFlag)
 {
 }
 
@@ -58,7 +58,7 @@ void UndoCommand::onExecute(Context* context)
 
   app_get_statusbar()
     ->showTip(1000, "Undid %s",
-	      document->getUndoHistory()->getNextUndoLabel());
+              document->getUndoHistory()->getNextUndoLabel());
 
   document->getUndoHistory()->doUndo();
   document->generateMaskBoundaries();

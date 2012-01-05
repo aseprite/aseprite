@@ -73,8 +73,8 @@ void Palette::resize(int ncolors)
   if ((int)m_colors.size() > old_size) {
     // Fill new colors with black
     std::fill(m_colors.begin()+old_size,
-	      m_colors.begin()+m_colors.size(),
-	      _rgba(0, 0, 0, 255));
+              m_colors.begin()+m_colors.size(),
+              _rgba(0, 0, 0, 255));
   }
 
   ++m_modifications;
@@ -228,7 +228,7 @@ void Palette::makeRectRamp(int from, int to, int columns)
 
   if (from > to)
     std::swap(from, to);
-  
+
   x1 = from % columns;
   y1 = from / columns;
   x2 = to % columns;
@@ -239,7 +239,7 @@ void Palette::makeRectRamp(int from, int to, int columns)
     makeVertRamp(y1*columns+x2, to, columns);
     if (x2 - x1 >= 2)
       for (y=y1; y<=y2; ++y)
-	makeHorzRamp(y*columns+x1, y*columns+x2);
+        makeHorzRamp(y*columns+x1, y*columns+x2);
   }
 
 }
@@ -292,37 +292,37 @@ bool SortPalette::operator()(uint32_t c1, uint32_t c2)
     case SortPalette::HSV_Saturation:
     case SortPalette::HSV_Value: {
       Hsv hsv1(Rgb(_rgba_getr(c1),
-		   _rgba_getg(c1),
-		   _rgba_getb(c1)));
+                   _rgba_getg(c1),
+                   _rgba_getb(c1)));
       Hsv hsv2(Rgb(_rgba_getr(c2),
-		   _rgba_getg(c2),
-		   _rgba_getb(c2)));
+                   _rgba_getg(c2),
+                   _rgba_getb(c2)));
 
       switch (m_channel) {
-	case SortPalette::HSV_Hue:
-	  value1 = hsv1.hueInt();
-	  value2 = hsv2.hueInt();
-	  break;
-	case SortPalette::HSV_Saturation:
-	  value1 = hsv1.saturationInt();
-	  value2 = hsv2.saturationInt();
-	  break;
-	case SortPalette::HSV_Value:
-	  value1 = hsv1.valueInt();
-	  value2 = hsv2.valueInt();
-	  break;
-	default:
-	  ASSERT(false);
-	  break;
+        case SortPalette::HSV_Hue:
+          value1 = hsv1.hueInt();
+          value2 = hsv2.hueInt();
+          break;
+        case SortPalette::HSV_Saturation:
+          value1 = hsv1.saturationInt();
+          value2 = hsv2.saturationInt();
+          break;
+        case SortPalette::HSV_Value:
+          value1 = hsv1.valueInt();
+          value2 = hsv2.valueInt();
+          break;
+        default:
+          ASSERT(false);
+          break;
       }
       break;
     }
 
     case SortPalette::HSL_Lightness: {
       value1 = (std::max(_rgba_getr(c1), std::max(_rgba_getg(c1), _rgba_getb(c1))) +
-		std::min(_rgba_getr(c1), std::min(_rgba_getg(c1), _rgba_getb(c1)))) / 2;
+                std::min(_rgba_getr(c1), std::min(_rgba_getg(c1), _rgba_getb(c1)))) / 2;
       value2 = (std::max(_rgba_getr(c2), std::max(_rgba_getg(c2), _rgba_getb(c2))) +
-		std::min(_rgba_getr(c2), std::min(_rgba_getg(c2), _rgba_getb(c2)))) / 2;
+                std::min(_rgba_getr(c2), std::min(_rgba_getg(c2), _rgba_getb(c2)))) / 2;
       break;
     }
 
@@ -365,7 +365,7 @@ struct PalEntryWithIndexPredicate {
 
 void Palette::sort(int from, int to, SortPalette* sort_palette, std::vector<int>& mapping)
 {
-  if (from == to)		// Just do nothing
+  if (from == to)               // Just do nothing
     return;
 
   ASSERT(from < to);
@@ -419,8 +419,8 @@ void Palette::fromAllegro(const RGB* rgb)
   m_colors.resize(256);
   for (i=0; i<256; ++i) {
     m_colors[i] = _rgba(_rgb_scale_6[rgb[i].r],
-			_rgb_scale_6[rgb[i].g],
-			_rgb_scale_6[rgb[i].b], 255);
+                        _rgb_scale_6[rgb[i].g],
+                        _rgb_scale_6[rgb[i].b], 255);
   }
   ++m_modifications;
 }
@@ -473,7 +473,7 @@ bool Palette::save(const char *filename) const
     bmp = create_bitmap_ex(8, 16, 16);
     for (y=c=0; y<16; y++)
       for (x=0; x<16; x++)
-	putpixel(bmp, x, y, c++);
+        putpixel(bmp, x, y, c++);
 
     toAllegro(rgbpal);
 
@@ -490,7 +490,7 @@ bool Palette::save(const char *filename) const
 /**********************************************************************/
 /* Based on Allegro's bestfit_color */
 
-static unsigned int col_diff[3*128]; 
+static unsigned int col_diff[3*128];
 
 static void bestfit_init()
 {
@@ -535,13 +535,13 @@ int Palette::findBestfit(int r, int g, int b) const
     if (coldiff < lowest) {
       coldiff += (col_diff + 128) [ ((_rgba_getr(rgb)>>3) - r) & 0x7F ];
       if (coldiff < lowest) {
-	coldiff += (col_diff + 256) [ ((_rgba_getb(rgb)>>3) - b) & 0x7F ];
-	if (coldiff < lowest) {
-	  bestfit = i;
-	  if (coldiff == 0)
-	    return bestfit;
-	  lowest = coldiff;
-	}
+        coldiff += (col_diff + 256) [ ((_rgba_getb(rgb)>>3) - b) & 0x7F ];
+        if (coldiff < lowest) {
+          bestfit = i;
+          if (coldiff == 0)
+            return bestfit;
+          lowest = coldiff;
+        }
       }
     }
     i++;

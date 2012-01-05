@@ -59,14 +59,14 @@ TEST(UniquePtr, PtrToStruct)
     {
       UniquePtr<A> b(new A(200));
       {
-	UniquePtr<A> c(new A(300));
+        UniquePtr<A> c(new A(300));
 
-	EXPECT_EQ(0, valueInDtor);
+        EXPECT_EQ(0, valueInDtor);
 
-	c.reset();
-	EXPECT_EQ(300, valueInDtor);
+        c.reset();
+        EXPECT_EQ(300, valueInDtor);
 
-	c.reset(new A(400));
+        c.reset(new A(400));
       }
       EXPECT_EQ(400, valueInDtor);
     }

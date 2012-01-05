@@ -57,7 +57,7 @@ void get_readable_extensions(char* buf, int size)
   for (; it != end; ++it) {
     if ((*it)->support(FILE_SUPPORT_LOAD)) {
       if (ustrcmp(buf, empty_string) != 0)
-      	ustrncat(buf, ",", size);
+        ustrncat(buf, ",", size);
       ustrncat(buf, (*it)->extensions(), size);
     }
   }
@@ -75,7 +75,7 @@ void get_writable_extensions(char* buf, int size)
   for (; it != end; ++it) {
     if ((*it)->support(FILE_SUPPORT_SAVE)) {
       if (ustrcmp(buf, empty_string) != 0)
-      	ustrncat(buf, ",", size);
+        ustrncat(buf, ",", size);
       ustrncat(buf, (*it)->extensions(), size);
     }
   }
@@ -170,44 +170,44 @@ FileOp* fop_to_load_document(const char* filename, int flags)
       int c, width, start_from;
 
       /* first of all, we must generate the list of files to load in the
-	 sequence... */
+         sequence... */
 
       /* check is this could be a sequence */
       start_from = split_filename(filename, left, right, &width);
       if (start_from >= 0) {
-	/* try to get more file names */
-	for (c=start_from+1; ; c++) {
-	  /* get the next file name */
-	  usprintf(buf, "%s%0*d%s", left, width, c, right);
+        /* try to get more file names */
+        for (c=start_from+1; ; c++) {
+          /* get the next file name */
+          usprintf(buf, "%s%0*d%s", left, width, c, right);
 
-	  /* if the file doesn't exist, we doesn't need more files to load */
-	  if (!exists(buf))
-	    break;
+          /* if the file doesn't exist, we doesn't need more files to load */
+          if (!exists(buf))
+            break;
 
-	  /* add this file name to the list */
-	  fop->seq.filename_list.push_back(buf);
-	}
+          /* add this file name to the list */
+          fop->seq.filename_list.push_back(buf);
+        }
       }
 
       /* TODO add a better dialog to edit file-names */
       if ((flags & FILE_LOAD_SEQUENCE_ASK) &&
-	  App::instance()->isGui()) {
-	/* really want load all files? */
-	if ((fop->seq.filename_list.size() > 1) &&
-	    (Alert::show("Notice"
-			 "<<Possible animation with:"
-			 "<<%s"
-			 "<<Load the sequence of bitmaps?"
-			 "||&Agree||&Skip",
-			 get_filename(filename)) != 1)) {
-	 
-	  /* if the user replies "Skip", we need just one file name (the
-	     first one) */
-	  if (fop->seq.filename_list.size() > 1) {
-	    fop->seq.filename_list.erase(fop->seq.filename_list.begin()+1,
-					 fop->seq.filename_list.end());
-	  }
-	}
+          App::instance()->isGui()) {
+        /* really want load all files? */
+        if ((fop->seq.filename_list.size() > 1) &&
+            (Alert::show("Notice"
+                         "<<Possible animation with:"
+                         "<<%s"
+                         "<<Load the sequence of bitmaps?"
+                         "||&Agree||&Skip",
+                         get_filename(filename)) != 1)) {
+
+          /* if the user replies "Skip", we need just one file name (the
+             first one) */
+          if (fop->seq.filename_list.size() > 1) {
+            fop->seq.filename_list.erase(fop->seq.filename_list.begin()+1,
+                                         fop->seq.filename_list.end());
+          }
+        }
       }
     }
   }
@@ -258,30 +258,30 @@ FileOp* fop_to_save_document(Document* document)
 
     case IMAGE_RGB:
       if (!(fop->format->support(FILE_SUPPORT_RGB))) {
-	usprintf(buf+ustrlen(buf), "<<- %s", "RGB format");
-	fatal = true;
+        usprintf(buf+ustrlen(buf), "<<- %s", "RGB format");
+        fatal = true;
       }
       if (!(fop->format->support(FILE_SUPPORT_RGBA)) &&
-	  fop->document->getSprite()->needAlpha()) {
-	usprintf(buf+ustrlen(buf), "<<- %s", "Alpha channel");
+          fop->document->getSprite()->needAlpha()) {
+        usprintf(buf+ustrlen(buf), "<<- %s", "Alpha channel");
       }
       break;
 
     case IMAGE_GRAYSCALE:
       if (!(fop->format->support(FILE_SUPPORT_GRAY))) {
-	usprintf(buf+ustrlen(buf), "<<- Grayscale format");
-	fatal = true;
+        usprintf(buf+ustrlen(buf), "<<- Grayscale format");
+        fatal = true;
       }
       if (!(fop->format->support(FILE_SUPPORT_GRAYA)) &&
-	  fop->document->getSprite()->needAlpha()) {
-	usprintf(buf+ustrlen(buf), "<<- Alpha channel");
+          fop->document->getSprite()->needAlpha()) {
+        usprintf(buf+ustrlen(buf), "<<- Alpha channel");
       }
       break;
 
     case IMAGE_INDEXED:
       if (!(fop->format->support(FILE_SUPPORT_INDEXED))) {
-	usprintf(buf+ustrlen(buf), "<<- Indexed format");
-	fatal = true;
+        usprintf(buf+ustrlen(buf), "<<- Indexed format");
+        fatal = true;
       }
       break;
   }
@@ -289,7 +289,7 @@ FileOp* fop_to_save_document(Document* document)
   // check frames support
   if (fop->document->getSprite()->getTotalFrames() > 1) {
     if (!fop->format->support(FILE_SUPPORT_FRAMES) &&
-	!fop->format->support(FILE_SUPPORT_SEQUENCES)) {
+        !fop->format->support(FILE_SUPPORT_SEQUENCES)) {
       usprintf(buf+ustrlen(buf), "<<- Frames");
     }
   }
@@ -304,7 +304,7 @@ FileOp* fop_to_save_document(Document* document)
   // Palettes support.
   if (fop->document->getSprite()->getPalettes().size() > 1) {
     if (!fop->format->support(FILE_SUPPORT_PALETTES) &&
-	!fop->format->support(FILE_SUPPORT_SEQUENCES)) {
+        !fop->format->support(FILE_SUPPORT_SEQUENCES)) {
       usprintf(buf+ustrlen(buf), "<<- Palette changes between frames");
     }
   }
@@ -316,20 +316,20 @@ FileOp* fop_to_save_document(Document* document)
       int ret;
 
       if (fatal)
-	ret = Alert::show("Error<<File format \"%s\" doesn't support:%s"
-			  "||&Close",
-			  fop->format->name(), buf);
+        ret = Alert::show("Error<<File format \"%s\" doesn't support:%s"
+                          "||&Close",
+                          fop->format->name(), buf);
       else
-	ret = Alert::show("Warning<<File format \"%s\" doesn't support:%s"
-			  "<<Do you want continue?"
-			  "||&Yes||&No",
-			  fop->format->name(), buf);
+        ret = Alert::show("Warning<<File format \"%s\" doesn't support:%s"
+                          "<<Do you want continue?"
+                          "||&Yes||&No",
+                          fop->format->name(), buf);
 
       /* operation can't be done (by fatal error) or the user cancel
-	 the operation */
+         the operation */
       if ((fatal) || (ret != 1)) {
-	fop_free(fop);
-	return NULL;
+        fop_free(fop);
+        return NULL;
       }
     }
     /* no interactive & fatal error? */
@@ -354,17 +354,17 @@ FileOp* fop_to_save_document(Document* document)
 
       start_from = split_filename(fop->document->getFilename(), left, right, &width);
       if (start_from < 0) {
-	start_from = 0;
-	width =
-	  (fop->document->getSprite()->getTotalFrames() < 10)? 1:
-	  (fop->document->getSprite()->getTotalFrames() < 100)? 2:
-	  (fop->document->getSprite()->getTotalFrames() < 1000)? 3: 4;
+        start_from = 0;
+        width =
+          (fop->document->getSprite()->getTotalFrames() < 10)? 1:
+          (fop->document->getSprite()->getTotalFrames() < 100)? 2:
+          (fop->document->getSprite()->getTotalFrames() < 1000)? 3: 4;
       }
 
       for (frame=0; frame<fop->document->getSprite()->getTotalFrames(); frame++) {
-	/* get the name for this frame */
-	usprintf(buf, "%s%0*d%s", left, width, start_from+frame, right);
-	fop->seq.filename_list.push_back(buf);
+        /* get the name for this frame */
+        usprintf(buf, "%s%0*d%s", left, width, start_from+frame, right);
+        fop->seq.filename_list.push_back(buf);
       }
     }
   }
@@ -414,31 +414,31 @@ void fop_operate(FileOp *fop)
       fop->seq.palette->makeBlack();
 
       // TODO set_palette for each frame???
-#define SEQUENCE_IMAGE()						\
-      do {								\
-	image_index = fop->document					\
-	  ->getSprite()							\
-	  ->getStock()->addImage(fop->seq.image);			\
-									\
-	fop->seq.last_cel->setImage(image_index);			\
-	fop->seq.layer->addCel(fop->seq.last_cel);			\
-									\
-	if (fop->document->getSprite()->getPalette(frame)		\
-	      ->countDiff(fop->seq.palette, NULL, NULL) > 0) {		\
-	  fop->seq.palette->setFrame(frame);				\
-	  fop->document->getSprite()->setPalette(fop->seq.palette, true); \
-	}								\
-									\
-	old_image = fop->seq.image;					\
-	fop->seq.image = NULL;						\
-	fop->seq.last_cel = NULL;					\
+#define SEQUENCE_IMAGE()                                                \
+      do {                                                              \
+        image_index = fop->document                                     \
+          ->getSprite()                                                 \
+          ->getStock()->addImage(fop->seq.image);                       \
+                                                                        \
+        fop->seq.last_cel->setImage(image_index);                       \
+        fop->seq.layer->addCel(fop->seq.last_cel);                      \
+                                                                        \
+        if (fop->document->getSprite()->getPalette(frame)               \
+              ->countDiff(fop->seq.palette, NULL, NULL) > 0) {          \
+          fop->seq.palette->setFrame(frame);                            \
+          fop->document->getSprite()->setPalette(fop->seq.palette, true); \
+        }                                                               \
+                                                                        \
+        old_image = fop->seq.image;                                     \
+        fop->seq.image = NULL;                                          \
+        fop->seq.last_cel = NULL;                                       \
       } while (0)
 
       /* load the sequence */
       frames = fop->seq.filename_list.size();
       frame = 0;
       old_image = NULL;
-      
+
       fop->seq.has_alpha = false;
       fop->seq.progress_offset = 0.0f;
       fop->seq.progress_fraction = 1.0f / (float)frames;
@@ -446,95 +446,95 @@ void fop_operate(FileOp *fop)
       std::vector<std::string>::iterator it = fop->seq.filename_list.begin();
       std::vector<std::string>::iterator end = fop->seq.filename_list.end();
       for (; it != end; ++it) {
-	fop->filename = it->c_str();
+        fop->filename = it->c_str();
 
-	// Call the "load" procedure to read the first bitmap.
-	loadres = fop->format->load(fop);
-	if (!loadres) {
-	  fop_error(fop, "Error loading frame %d from file \"%s\"\n",
-		    frame+1, fop->filename.c_str());
-	}
+        // Call the "load" procedure to read the first bitmap.
+        loadres = fop->format->load(fop);
+        if (!loadres) {
+          fop_error(fop, "Error loading frame %d from file \"%s\"\n",
+                    frame+1, fop->filename.c_str());
+        }
 
-	// For the first frame...
-	if (!old_image) {
-	  // Error reading the first frame
-	  if (!loadres || !fop->document || !fop->seq.last_cel) {
-	    if (fop->seq.image) image_free(fop->seq.image);
-	    if (fop->seq.last_cel) delete fop->seq.last_cel;
-	    if (fop->document) {
-	      delete fop->document;
-	      fop->document = NULL;
-	    }
-	    break;
-	  }
-	  // Read ok
-	  else {
-	    /* add the keyframe */
-	    SEQUENCE_IMAGE();
-	  }
-	}
-	/* for other frames */
-	else {
-	  /* all done (or maybe not enough memory) */
-	  if (!loadres || !fop->seq.last_cel) {
-	    if (fop->seq.image) image_free(fop->seq.image);
-	    if (fop->seq.last_cel) delete fop->seq.last_cel;
+        // For the first frame...
+        if (!old_image) {
+          // Error reading the first frame
+          if (!loadres || !fop->document || !fop->seq.last_cel) {
+            if (fop->seq.image) image_free(fop->seq.image);
+            if (fop->seq.last_cel) delete fop->seq.last_cel;
+            if (fop->document) {
+              delete fop->document;
+              fop->document = NULL;
+            }
+            break;
+          }
+          // Read ok
+          else {
+            /* add the keyframe */
+            SEQUENCE_IMAGE();
+          }
+        }
+        /* for other frames */
+        else {
+          /* all done (or maybe not enough memory) */
+          if (!loadres || !fop->seq.last_cel) {
+            if (fop->seq.image) image_free(fop->seq.image);
+            if (fop->seq.last_cel) delete fop->seq.last_cel;
 
-	    break;
-	  }
+            break;
+          }
 
-	  /* compare the old frame with the new one */
+          /* compare the old frame with the new one */
 #if USE_LINK /* TODO this should be configurable through a check-box */
-	  if (image_count_diff(old_image, fop->seq.image)) {
-	    SEQUENCE_IMAGE();
-	  }
-	  /* we don't need this image */
-	  else {
-	    image_free(fop->seq.image);
+          if (image_count_diff(old_image, fop->seq.image)) {
+            SEQUENCE_IMAGE();
+          }
+          /* we don't need this image */
+          else {
+            image_free(fop->seq.image);
 
-	    /* but add a link frame */
-	    fop->seq.last_cel->image = image_index;
-	    layer_add_frame(fop->seq.layer, fop->seq.last_cel);
+            /* but add a link frame */
+            fop->seq.last_cel->image = image_index;
+            layer_add_frame(fop->seq.layer, fop->seq.last_cel);
 
-	    fop->seq.last_image = NULL;
-	    fop->seq.last_cel = NULL;
-	  }
+            fop->seq.last_image = NULL;
+            fop->seq.last_cel = NULL;
+          }
 #else
-	  SEQUENCE_IMAGE();
+          SEQUENCE_IMAGE();
 #endif
-	}
+        }
 
-	frame++;
-	fop->seq.progress_offset += fop->seq.progress_fraction;
+        frame++;
+        fop->seq.progress_offset += fop->seq.progress_fraction;
       }
       fop->filename = *fop->seq.filename_list.begin();
 
       // Final setup
       if (fop->document != NULL) {
-	// Configure the layer as the 'Background'
-	if (!fop->seq.has_alpha)
-	  fop->seq.layer->configureAsBackground();
+        // Configure the layer as the 'Background'
+        if (!fop->seq.has_alpha)
+          fop->seq.layer->configureAsBackground();
 
-	// Set the frames range
-	fop->document->getSprite()->setTotalFrames(frame);
+        // Set the frames range
+        fop->document->getSprite()->setTotalFrames(frame);
 
-	// Sets special options from the specific format (e.g. BMP
-	// file can contain the number of bits per pixel).
-	fop->document->setFormatOptions(fop->seq.format_options);
+        // Sets special options from the specific format (e.g. BMP
+        // file can contain the number of bits per pixel).
+        fop->document->setFormatOptions(fop->seq.format_options);
       }
     }
     // Direct load from one file.
     else {
       // Call the "load" procedure.
       if (!fop->format->load(fop))
-	fop_error(fop, "Error loading sprite from file \"%s\"\n",
-		  fop->filename.c_str());
+        fop_error(fop, "Error loading sprite from file \"%s\"\n",
+                  fop->filename.c_str());
     }
   }
   // Save //////////////////////////////////////////////////////////////////////
   else if (fop->type == FileOpSave &&
-	   fop->format != NULL &&
-	   fop->format->support(FILE_SUPPORT_SAVE)) {
+           fop->format != NULL &&
+           fop->format->support(FILE_SUPPORT_SAVE)) {
     // Save a sequence
     if (fop->is_sequence()) {
       ASSERT(fop->format->support(FILE_SUPPORT_SEQUENCES));
@@ -543,53 +543,53 @@ void fop_operate(FileOp *fop)
 
       // Create a temporary bitmap
       fop->seq.image = image_new(sprite->getImgType(),
-				 sprite->getWidth(),
-				 sprite->getHeight());
+                                 sprite->getWidth(),
+                                 sprite->getHeight());
       if (fop->seq.image != NULL) {
-	int old_frame = sprite->getCurrentFrame();
+        int old_frame = sprite->getCurrentFrame();
 
-	fop->seq.progress_offset = 0.0f;
-	fop->seq.progress_fraction = 1.0f / (float)sprite->getTotalFrames();
+        fop->seq.progress_offset = 0.0f;
+        fop->seq.progress_fraction = 1.0f / (float)sprite->getTotalFrames();
 
-	// For each frame in the sprite.
-	for (int frame=0; frame < sprite->getTotalFrames(); ++frame) {
-	  // Draw the "frame" in "fop->seq.image"
-	  sprite->setCurrentFrame(frame);
-	  sprite->render(fop->seq.image, 0, 0);
+        // For each frame in the sprite.
+        for (int frame=0; frame < sprite->getTotalFrames(); ++frame) {
+          // Draw the "frame" in "fop->seq.image"
+          sprite->setCurrentFrame(frame);
+          sprite->render(fop->seq.image, 0, 0);
 
-	  // Setup the palette.
-	  sprite->getPalette(sprite->getCurrentFrame())->copyColorsTo(fop->seq.palette);
+          // Setup the palette.
+          sprite->getPalette(sprite->getCurrentFrame())->copyColorsTo(fop->seq.palette);
 
-	  // Setup the filename to be used.
-	  fop->filename = fop->seq.filename_list[sprite->getCurrentFrame()];
+          // Setup the filename to be used.
+          fop->filename = fop->seq.filename_list[sprite->getCurrentFrame()];
 
-	  // Call the "save" procedure... did it fail?
-	  if (!fop->format->save(fop)) {
-	    fop_error(fop, "Error saving frame %d in the file \"%s\"\n",
-		      sprite->getCurrentFrame()+1, fop->filename.c_str());
-	    break;
-	  }
+          // Call the "save" procedure... did it fail?
+          if (!fop->format->save(fop)) {
+            fop_error(fop, "Error saving frame %d in the file \"%s\"\n",
+                      sprite->getCurrentFrame()+1, fop->filename.c_str());
+            break;
+          }
 
-	  fop->seq.progress_offset += fop->seq.progress_fraction;
-	}
-	fop->filename = *fop->seq.filename_list.begin();
+          fop->seq.progress_offset += fop->seq.progress_fraction;
+        }
+        fop->filename = *fop->seq.filename_list.begin();
 
-	// Destroy the image
-	image_free(fop->seq.image);
+        // Destroy the image
+        image_free(fop->seq.image);
 
-	// Restore frame
-	sprite->setCurrentFrame(old_frame);
+        // Restore frame
+        sprite->setCurrentFrame(old_frame);
       }
       else {
-	fop_error(fop, "Not enough memory for the temporary bitmap.\n");
+        fop_error(fop, "Not enough memory for the temporary bitmap.\n");
       }
     }
     // Direct save to a file.
     else {
       // Call the "save" procedure.
       if (!fop->format->save(fop))
-	fop_error(fop, "Error saving the sprite in the file \"%s\"\n",
-		  fop->filename.c_str());
+        fop_error(fop, "Error saving the sprite in the file \"%s\"\n",
+                  fop->filename.c_str());
     }
   }
 
@@ -655,8 +655,8 @@ void fop_post_load(FileOp* fop)
 
     // Creates a suitable palette for RGB images
     if (fop->document->getSprite()->getImgType() == IMAGE_RGB &&
-	fop->document->getSprite()->getPalettes().size() <= 1 &&
-	fop->document->getSprite()->getPalette(0)->isBlack()) {
+        fop->document->getSprite()->getPalettes().size() <= 1 &&
+        fop->document->getSprite()->getPalette(0)->isBlack()) {
       SharedPtr<Palette> palette(quantization::create_palette_from_rgb(fop->document->getSprite()));
 
       fop->document->getSprite()->resetPalettes();
@@ -816,7 +816,7 @@ static FileOp* fop_new(FileOpType type)
   fop->seq.frame = 0;
   fop->seq.layer = NULL;
   fop->seq.last_cel = NULL;
-  
+
   return fop;
 }
 
@@ -836,9 +836,9 @@ static FileFormat* get_fileformat(const char* extension)
     ustrcpy(buf, (*it)->extensions());
 
     for (tok=ustrtok(buf, ","); tok;
-	 tok=ustrtok(NULL, ",")) {
+         tok=ustrtok(NULL, ",")) {
       if (ustricmp(extension, tok) == 0)
-	return (*it);
+        return (*it);
     }
   }
 
@@ -889,10 +889,10 @@ static int split_filename(const char* filename, char* left, char* right, int* wi
       ret = 0;
 
       if (ptr >= buf) {
-	*(ptr--) = chr;
+        *(ptr--) = chr;
 
-	if (width)
-	  (*width)++;
+        if (width)
+          (*width)++;
       }
 
       uremove(left, -1);
@@ -987,8 +987,8 @@ int fputl(long l, FILE* file)
   if (fputc(b1, file) == b1)
     if (fputc(b2, file) == b2)
       if (fputc(b3, file) == b3)
-	if (fputc(b4, file) == b4)
-	  return 0;
+        if (fputc(b4, file) == b4)
+          return 0;
 
   return -1;
 }

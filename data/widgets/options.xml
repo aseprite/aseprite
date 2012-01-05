@@ -13,14 +13,14 @@
       <check text="2 Click Movement" name="move_click2" disabled="true" />
       <check text="2 Click Drawing" name="draw_click2" disabled="true" />
       <grid columns="2">
-	<label text="Cursor:" />
-	<box name="cursor_color_box" /><!-- custom widget -->
+        <label text="Cursor:" />
+        <box name="cursor_color_box" /><!-- custom widget -->
 
-	<label text="Grid Color:" />
-	<box name="grid_color_box" /><!-- custom widget -->
+        <label text="Grid Color:" />
+        <box name="grid_color_box" /><!-- custom widget -->
 
-	<label text="Pixel Grid:" />
-	<box name="pixel_grid_color_box" /><!-- custom widget -->
+        <label text="Pixel Grid:" />
+        <box name="pixel_grid_color_box" /><!-- custom widget -->
       </grid>
 
       <!-- Undo -->
@@ -40,15 +40,15 @@
 
       <separator text="Checked Background:" horizontal="true" />
       <box horizontal="true">
-	<label text="Size:" />
-	<combobox name="checked_bg_size" expansive="true" />
+        <label text="Size:" />
+        <combobox name="checked_bg_size" expansive="true" />
       </box>
       <check text="Apply Zoom" name="checked_bg_zoom" />
       <grid columns="2">
-	<label text="Color 1" />
-	<box horizontal="true" name="checked_bg_color1_box" />
-	<label text="Color 2" />
-	<box horizontal="true" name="checked_bg_color2_box" />
+        <label text="Color 1" />
+        <box horizontal="true" name="checked_bg_color1_box" />
+        <label text="Color 2" />
+        <box horizontal="true" name="checked_bg_color2_box" />
       </grid>
       <button name="checked_bg_reset" text="Reset" />
 
@@ -60,8 +60,8 @@
     <box horizontal="true">
       <box horizontal="true" expansive="true" />
       <box horizontal="true" homogeneous="true">
-	<button text="&amp;OK" closewindow="true" name="button_ok" magnetic="true" width="60" />
-	<button text="&amp;Cancel" closewindow="true" />
+        <button text="&amp;OK" closewindow="true" name="button_ok" magnetic="true" width="60" />
+        <button text="&amp;Cancel" closewindow="true" />
       </box>
     </box>
   </box>

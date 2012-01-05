@@ -46,4 +46,4 @@ private:
 
 } // namespace undoers
 
-#endif	// UNDOERS_REMAP_PALETTE_H_INCLUDED
+#endif  // UNDOERS_REMAP_PALETTE_H_INCLUDED

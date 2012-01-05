@@ -90,4 +90,4 @@ private:
 
 } // namespace undo
 
-#endif	// UNDO_UNDOERS_STACK_H_INCLUDED
+#endif  // UNDO_UNDOERS_STACK_H_INCLUDED

@@ -118,5 +118,3 @@ AL_FUNC(int, mouse_on_screen, (void));
 #endif
 
 #endif          /* ifndef ALLEGRO_MOUSE_H */
-
-

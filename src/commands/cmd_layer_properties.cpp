@@ -45,15 +45,15 @@ protected:
 
 LayerPropertiesCommand::LayerPropertiesCommand()
   : Command("LayerProperties",
-	    "Layer Properties",
-	    CmdRecordableFlag)
+            "Layer Properties",
+            CmdRecordableFlag)
 {
 }
 
 bool LayerPropertiesCommand::onEnabled(Context* context)
 {
   return context->checkFlags(ContextFlags::ActiveDocumentIsWritable |
-			     ContextFlags::HasActiveLayer);
+                             ContextFlags::HasActiveLayer);
 }
 
 void LayerPropertiesCommand::onExecute(Context* context)

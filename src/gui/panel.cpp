@@ -62,8 +62,8 @@ static bool panel_msg_proc(JWidget widget, Message* msg)
 
     case JM_DESTROY:
       {
-	Panel* panel = reinterpret_cast<Panel*>(jwidget_get_data(widget, JI_PANEL));
-	delete panel;
+        Panel* panel = reinterpret_cast<Panel*>(jwidget_get_data(widget, JI_PANEL));
+        delete panel;
       }
       break;
 
@@ -79,120 +79,120 @@ static bool panel_msg_proc(JWidget widget, Message* msg)
       widget->getTheme()->draw_panel(widget, &msg->draw.rect);
       return true;
 
-    case JM_BUTTONPRESSED: 
+    case JM_BUTTONPRESSED:
       if (widget->isEnabled()) {
-	JWidget c1, c2;
-	int x1, y1, x2, y2;
-	int bar, click_bar;
-	JLink link;
+        JWidget c1, c2;
+        int x1, y1, x2, y2;
+        int bar, click_bar;
+        JLink link;
 
-	bar = click_bar = 0;
+        bar = click_bar = 0;
 
-	JI_LIST_FOR_EACH(widget->children, link) {
-	  if (link->next != widget->children->end) {
-	    c1 = reinterpret_cast<JWidget>(link->data);
-	    c2 = reinterpret_cast<JWidget>(link->next->data);
+        JI_LIST_FOR_EACH(widget->children, link) {
+          if (link->next != widget->children->end) {
+            c1 = reinterpret_cast<JWidget>(link->data);
+            c2 = reinterpret_cast<JWidget>(link->next->data);
 
-	    ++bar;
+            ++bar;
 
-	    if (widget->getAlign() & JI_HORIZONTAL) {
-	      x1 = c1->rc->x2;
-	      y1 = widget->rc->y1;
-	      x2 = c2->rc->x1;
-	      y2 = widget->rc->y2;
-	    }
-	    else {
-	      x1 = widget->rc->x1;
-	      y1 = c1->rc->y2;
-	      x2 = widget->rc->x2;
-	      y2 = c2->rc->y1;
-	    }
+            if (widget->getAlign() & JI_HORIZONTAL) {
+              x1 = c1->rc->x2;
+              y1 = widget->rc->y1;
+              x2 = c2->rc->x1;
+              y2 = widget->rc->y2;
+            }
+            else {
+              x1 = widget->rc->x1;
+              y1 = c1->rc->y2;
+              x2 = widget->rc->x2;
+              y2 = c2->rc->y1;
+            }
 
-	    if ((msg->mouse.x >= x1) && (msg->mouse.x < x2) &&
-		(msg->mouse.y >= y1) && (msg->mouse.y < y2))
-	      click_bar = bar;
-	  }
-	}
+            if ((msg->mouse.x >= x1) && (msg->mouse.x < x2) &&
+                (msg->mouse.y >= y1) && (msg->mouse.y < y2))
+              click_bar = bar;
+          }
+        }
 
-	if (!click_bar)
-	  break;
+        if (!click_bar)
+          break;
 
-	widget->captureMouse();
-	/* Continue with motion message...  */
+        widget->captureMouse();
+        /* Continue with motion message...  */
       }
       else
-	break;
+        break;
 
     case JM_MOTION:
       if (widget->hasCapture()) {
-	Panel* panel = reinterpret_cast<Panel*>(jwidget_get_data(widget, JI_PANEL));
+        Panel* panel = reinterpret_cast<Panel*>(jwidget_get_data(widget, JI_PANEL));
 
-	if (widget->getAlign() & JI_HORIZONTAL) {
-	  panel->pos =
-	    100.0 * (msg->mouse.x-widget->rc->x1) / jrect_w(widget->rc);
-	}
-	else {
-	  panel->pos =
-	    100.0 * (msg->mouse.y-widget->rc->y1) / jrect_h(widget->rc);
-	}
+        if (widget->getAlign() & JI_HORIZONTAL) {
+          panel->pos =
+            100.0 * (msg->mouse.x-widget->rc->x1) / jrect_w(widget->rc);
+        }
+        else {
+          panel->pos =
+            100.0 * (msg->mouse.y-widget->rc->y1) / jrect_h(widget->rc);
+        }
 
-	panel->pos = MID(0, panel->pos, 100);
+        panel->pos = MID(0, panel->pos, 100);
 
-	jwidget_set_rect(widget, widget->rc);
-	widget->invalidate();
-	return true;
+        jwidget_set_rect(widget, widget->rc);
+        widget->invalidate();
+        return true;
       }
       break;
 
     case JM_BUTTONRELEASED:
       if (widget->hasCapture()) {
-	widget->releaseMouse();
-	return true;
+        widget->releaseMouse();
+        return true;
       }
       break;
 
     case JM_SETCURSOR:
       if (widget->isEnabled()) {
-	JWidget c1, c2;
-	JLink link;
-	int x1, y1, x2, y2;
-	bool change_cursor = false;
+        JWidget c1, c2;
+        JLink link;
+        int x1, y1, x2, y2;
+        bool change_cursor = false;
 
-	JI_LIST_FOR_EACH(widget->children, link) {
-	  if (link->next != widget->children->end) {
-	    c1 = reinterpret_cast<JWidget>(link->data);
-	    c2 = reinterpret_cast<JWidget>(link->next->data);
+        JI_LIST_FOR_EACH(widget->children, link) {
+          if (link->next != widget->children->end) {
+            c1 = reinterpret_cast<JWidget>(link->data);
+            c2 = reinterpret_cast<JWidget>(link->next->data);
 
-	    if (widget->getAlign() & JI_HORIZONTAL) {
-	      x1 = c1->rc->x2;
-	      y1 = widget->rc->y1;
-	      x2 = c2->rc->x1;
-	      y2 = widget->rc->y2;
-	    }
-	    else {
-	      x1 = widget->rc->x1;
-	      y1 = c1->rc->y2;
-	      x2 = widget->rc->x2;
-	      y2 = c2->rc->y1;
-	    }
+            if (widget->getAlign() & JI_HORIZONTAL) {
+              x1 = c1->rc->x2;
+              y1 = widget->rc->y1;
+              x2 = c2->rc->x1;
+              y2 = widget->rc->y2;
+            }
+            else {
+              x1 = widget->rc->x1;
+              y1 = c1->rc->y2;
+              x2 = widget->rc->x2;
+              y2 = c2->rc->y1;
+            }
 
-	    if ((msg->mouse.x >= x1) && (msg->mouse.x < x2) &&
-		(msg->mouse.y >= y1) && (msg->mouse.y < y2)) {
-	      change_cursor = true;
-	      break;
-	    }
-	  }
-	}
+            if ((msg->mouse.x >= x1) && (msg->mouse.x < x2) &&
+                (msg->mouse.y >= y1) && (msg->mouse.y < y2)) {
+              change_cursor = true;
+              break;
+            }
+          }
+        }
 
-	if (change_cursor) {
-	  if (widget->getAlign() & JI_HORIZONTAL)
-	    jmouse_set_cursor(JI_CURSOR_SIZE_L);
-	  else
-	    jmouse_set_cursor(JI_CURSOR_SIZE_T);
-	  return true;
-	}
-	else
-	  return false;
+        if (change_cursor) {
+          if (widget->getAlign() & JI_HORIZONTAL)
+            jmouse_set_cursor(JI_CURSOR_SIZE_L);
+          else
+            jmouse_set_cursor(JI_CURSOR_SIZE_T);
+          return true;
+        }
+        else
+          return false;
       }
       break;
 
@@ -203,16 +203,16 @@ static bool panel_msg_proc(JWidget widget, Message* msg)
 
 static void panel_request_size(JWidget widget, int *w, int *h)
 {
-#define GET_CHILD_SIZE(w, h)			\
-  do {						\
-    *w = MAX(*w, reqSize.w);			\
-    *h = MAX(*h, reqSize.h);			\
+#define GET_CHILD_SIZE(w, h)                    \
+  do {                                          \
+    *w = MAX(*w, reqSize.w);                    \
+    *h = MAX(*h, reqSize.h);                    \
   } while(0)
 
-#define FINAL_SIZE(w)					\
-  do {							\
-    *w *= nvis_children;				\
-    *w += widget->child_spacing * (nvis_children-1);	\
+#define FINAL_SIZE(w)                                   \
+  do {                                                  \
+    *w *= nvis_children;                                \
+    *w += widget->child_spacing * (nvis_children-1);    \
   } while(0)
 
   int nvis_children;
@@ -256,26 +256,26 @@ static void panel_request_size(JWidget widget, int *w, int *h)
 
 static void panel_set_position(JWidget widget, JRect rect)
 {
-#define FIXUP(x, y, w, h, l, t, r, b)					\
-  do {									\
-    avail = jrect_##w(widget->rc) - widget->child_spacing;		\
-									\
-    pos->x##1 = widget->rc->x##1;					\
-    pos->y##1 = widget->rc->y##1;					\
-    pos->x##2 = pos->x##1 + avail*panel->pos/100;			\
-    /* TODO uncomment this to make a restricted panel */		\
-    /* pos->w = MID(reqSize1.w, pos->w, avail-reqSize2.w); */		\
-    pos->y##2 = pos->y##1 + jrect_##h(widget->rc);			\
-									\
-    jwidget_set_rect(child1, pos);					\
-									\
-    pos->x##1 = child1->rc->x##1 + jrect_##w(child1->rc)		\
-      + widget->child_spacing;						\
-    pos->y##1 = widget->rc->y##1;					\
-    pos->x##2 = pos->x##1 + avail - jrect_##w(child1->rc);		\
-    pos->y##2 = pos->y##1 + jrect_##h(widget->rc);			\
-									\
-    jwidget_set_rect(child2, pos);					\
+#define FIXUP(x, y, w, h, l, t, r, b)                                   \
+  do {                                                                  \
+    avail = jrect_##w(widget->rc) - widget->child_spacing;              \
+                                                                        \
+    pos->x##1 = widget->rc->x##1;                                       \
+    pos->y##1 = widget->rc->y##1;                                       \
+    pos->x##2 = pos->x##1 + avail*panel->pos/100;                       \
+    /* TODO uncomment this to make a restricted panel */                \
+    /* pos->w = MID(reqSize1.w, pos->w, avail-reqSize2.w); */           \
+    pos->y##2 = pos->y##1 + jrect_##h(widget->rc);                      \
+                                                                        \
+    jwidget_set_rect(child1, pos);                                      \
+                                                                        \
+    pos->x##1 = child1->rc->x##1 + jrect_##w(child1->rc)                \
+      + widget->child_spacing;                                          \
+    pos->y##1 = widget->rc->y##1;                                       \
+    pos->x##2 = pos->x##1 + avail - jrect_##w(child1->rc);              \
+    pos->y##2 = pos->y##1 + jrect_##h(widget->rc);                      \
+                                                                        \
+    jwidget_set_rect(child2, pos);                                      \
   } while(0)
 
   JRect pos = jrect_new(0, 0, 0, 0);

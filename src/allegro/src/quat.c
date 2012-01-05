@@ -1,6 +1,6 @@
 /*         ______   ___    ___
- *        /\  _  \ /\_ \  /\_ \ 
- *        \ \ \L\ \\//\ \ \//\ \      __     __   _ __   ___ 
+ *        /\  _  \ /\_ \  /\_ \
+ *        \ \ \L\ \\//\ \ \//\ \      __     __   _ __   ___
  *         \ \  __ \ \ \ \  \ \ \   /'__`\ /'_ `\/\`'__\/ __`\
  *          \ \ \/\ \ \_\ \_ \_\ \_/\  __//\ \L\ \ \ \//\ \L\ \
  *           \ \_\ \_\/\____\/\____\ \____\ \____ \ \_\\ \____/
@@ -60,27 +60,27 @@ void quat_mul(AL_CONST QUAT *p, AL_CONST QUAT *q, QUAT *out)
 
    /* w" = ww' - xx' - yy' - zz' */
    out->w = (p->w * q->w) -
-	    (p->x * q->x) -
-	    (p->y * q->y) -
-	    (p->z * q->z);
+            (p->x * q->x) -
+            (p->y * q->y) -
+            (p->z * q->z);
 
    /* x" = wx' + xw' + yz' - zy' */
    out->x = (p->w * q->x) +
-	    (p->x * q->w) +
-	    (p->y * q->z) -
-	    (p->z * q->y);
+            (p->x * q->w) +
+            (p->y * q->z) -
+            (p->z * q->y);
 
    /* y" = wy' + yw' + zx' - xz' */
    out->y = (p->w * q->y) +
-	    (p->y * q->w) +
-	    (p->z * q->x) -
-	    (p->x * q->z);
+            (p->y * q->w) +
+            (p->z * q->x) -
+            (p->x * q->z);
 
    /* z" = wz' + zw' + xy' - yx' */
    out->z = (p->w * q->z) +
-	    (p->z * q->w) +
-	    (p->x * q->y) -
-	    (p->y * q->x);
+            (p->z * q->w) +
+            (p->x * q->y) -
+            (p->y * q->x);
 }
 
 
@@ -427,9 +427,9 @@ void quat_slerp(AL_CONST QUAT *from, AL_CONST QUAT *to, float t, QUAT *out, int 
    ASSERT(out);
 
    cos_angle = (from->x * to->x) +
-	       (from->y * to->y) +
-	       (from->z * to->z) +
-	       (from->w * to->w);
+               (from->y * to->y) +
+               (from->z * to->z) +
+               (from->w * to->w);
 
    if (((how == QUAT_SHORT) && (cos_angle < 0.0)) ||
        ((how == QUAT_LONG)  && (cos_angle > 0.0)) ||
@@ -466,6 +466,3 @@ void quat_slerp(AL_CONST QUAT *from, AL_CONST QUAT *to, float t, QUAT *out, int 
    out->y = (float)((scale_from * from->y) + (scale_to * to2.y));
    out->z = (float)((scale_from * from->z) + (scale_to * to2.z));
 }
-
-
-

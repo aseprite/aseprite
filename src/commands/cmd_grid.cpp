@@ -41,8 +41,8 @@ class ShowGridCommand : public Command
 public:
   ShowGridCommand()
     : Command("ShowGrid",
-	      "Show Grid",
-	      CmdUIOnlyFlag)
+              "Show Grid",
+              CmdUIOnlyFlag)
   {
   }
 
@@ -55,7 +55,7 @@ protected:
 
     return settings->getGridVisible();
   }
-  
+
   void onExecute(Context* context)
   {
     ISettings* settings = context->getSettings();
@@ -73,8 +73,8 @@ class SnapToGridCommand : public Command
 public:
   SnapToGridCommand()
     : Command("SnapToGrid",
-	      "Snap to Grid",
-	      CmdUIOnlyFlag)
+              "Snap to Grid",
+              CmdUIOnlyFlag)
   {
   }
 
@@ -87,7 +87,7 @@ protected:
 
     return settings->getSnapToGrid();
   }
-  
+
   void onExecute(Context* context)
   {
     ISettings* settings = context->getSettings();
@@ -97,7 +97,7 @@ protected:
     refresh_all_editors();
 
     usprintf(buf, "Snap to grid: %s",
-	     (settings->getSnapToGrid() ? "On": "Off"));
+             (settings->getSnapToGrid() ? "On": "Off"));
 
     app_get_statusbar()->setStatusText(250, buf);
   }
@@ -119,8 +119,8 @@ protected:
 
 GridSettingsCommand::GridSettingsCommand()
   : Command("GridSettings",
-	    "Grid Settings",
-	    CmdUIOnlyFlag)
+            "Grid Settings",
+            CmdUIOnlyFlag)
 {
 }
 
@@ -135,11 +135,11 @@ void GridSettingsCommand::onExecute(Context* context)
 
   FramePtr window(load_widget("grid_settings.xml", "grid_settings"));
   get_widgets(window,
-	      "ok", &button_ok,
-  	      "grid_x", &grid_x,
-  	      "grid_y", &grid_y,
-  	      "grid_w", &grid_w,
-  	      "grid_h", &grid_h, NULL);
+              "ok", &button_ok,
+              "grid_x", &grid_x,
+              "grid_y", &grid_y,
+              "grid_w", &grid_w,
+              "grid_h", &grid_h, NULL);
 
   Rect bounds = UIContext::instance()->getSettings()->getGridBounds();
 

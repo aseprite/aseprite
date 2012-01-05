@@ -51,9 +51,9 @@ class Tabs : public Widget
 {
   struct Tab
   {
-    std::string text;		// Label in the tab
-    void* data;			// Opaque pointer to user data
-    int width;			// Width of the tab
+    std::string text;           // Label in the tab
+    void* data;                 // Opaque pointer to user data
+    int width;                  // Width of the tab
 
     Tab(const char* text, void* data)
     {
@@ -64,10 +64,10 @@ class Tabs : public Widget
   };
 
   enum Ani { ANI_NONE,
-	     ANI_ADDING_TAB,
-	     ANI_REMOVING_TAB,
-	     ANI_SCROLL,
-	     ANI_SMOOTH_SCROLL };
+             ANI_ADDING_TAB,
+             ANI_REMOVING_TAB,
+             ANI_SCROLL,
+             ANI_SMOOTH_SCROLL };
 
 public:
   Tabs(TabsDelegate* delegate);
@@ -106,10 +106,10 @@ private:
 
   // Variables for animation purposes
   int m_timerId;
-  int m_begScrollX;		// Initial X position of scroll in the animation when you scroll with mouse wheel
-  int m_endScrollX;		// Final X position of scroll in the animation when you scroll with mouse wheel
-  Ani m_ani;			// Current animation
-  int m_ani_t;			// Number of ticks from the beginning of the animation
+  int m_begScrollX;             // Initial X position of scroll in the animation when you scroll with mouse wheel
+  int m_endScrollX;             // Final X position of scroll in the animation when you scroll with mouse wheel
+  Ani m_ani;                    // Current animation
+  int m_ani_t;                  // Number of ticks from the beginning of the animation
   Tab* m_removedTab;
   Tab* m_nextTabOfTheRemovedOne;
 

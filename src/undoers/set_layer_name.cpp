@@ -41,7 +41,7 @@ void SetLayerName::dispose()
 void SetLayerName::revert(ObjectsContainer* objects, UndoersCollector* redoers)
 {
   Layer* layer = objects->getObjectT<Layer>(m_layerId);
-  
+
   // Push another SetLayerName as redoer
   redoers->pushUndoer(new SetLayerName(objects, layer));
 

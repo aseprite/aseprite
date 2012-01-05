@@ -66,10 +66,10 @@ Layer* Layer::get_prev() const
   if (m_parent != NULL) {
     LayerConstIterator it =
       std::find(m_parent->get_layer_begin(),
-		m_parent->get_layer_end(), this);
+                m_parent->get_layer_end(), this);
 
     if (it != m_parent->get_layer_end() &&
-	it != m_parent->get_layer_begin()) {
+        it != m_parent->get_layer_begin()) {
       it--;
       return *it;
     }
@@ -82,12 +82,12 @@ Layer* Layer::get_next() const
   if (m_parent != NULL) {
     LayerConstIterator it =
       std::find(m_parent->get_layer_begin(),
-		m_parent->get_layer_end(), this);
+                m_parent->get_layer_end(), this);
 
     if (it != m_parent->get_layer_end()) {
       it++;
       if (it != m_parent->get_layer_end())
-	return *it;
+        return *it;
     }
   }
   return NULL;
@@ -316,7 +316,7 @@ void LayerFolder::move_layer(Layer* layer, Layer* after)
  * @param src_layer Generally a set of layers to be flattened.
  */
 LayerImage* layer_new_flatten_copy(Sprite* dst_sprite, const Layer* src_layer,
-				   int x, int y, int w, int h, int frmin, int frmax)
+                                   int x, int y, int w, int h, int frmin, int frmax)
 {
   UniquePtr<LayerImage> flatLayer(new LayerImage(dst_sprite));
 
@@ -327,18 +327,18 @@ LayerImage* layer_new_flatten_copy(Sprite* dst_sprite, const Layer* src_layer,
       Image* image = image_new(flatLayer->getSprite()->getImgType(), w, h);
 
       try {
-	// Create the new cel for the output layer (add the image to stock too).
-	Cel* cel = new Cel(frame, flatLayer->getSprite()->getStock()->addImage(image));
-	cel->setPosition(x, y);
+        // Create the new cel for the output layer (add the image to stock too).
+        Cel* cel = new Cel(frame, flatLayer->getSprite()->getStock()->addImage(image));
+        cel->setPosition(x, y);
 
-	// Clear the image and render this frame.
-	image_clear(image, 0);
-	layer_render(src_layer, image, -x, -y, frame);
-	flatLayer->addCel(cel);
+        // Clear the image and render this frame.
+        image_clear(image, 0);
+        layer_render(src_layer, image, -x, -y, frame);
+        flatLayer->addCel(cel);
       }
       catch (...) {
-	delete image;
-	throw;
+        delete image;
+        throw;
       }
     }
   }
@@ -358,19 +358,19 @@ void layer_render(const Layer* layer, Image* image, int x, int y, int frame)
       Image* src_image;
 
       if (cel) {
-	ASSERT((cel->getImage() >= 0) &&
-	       (cel->getImage() < layer->getSprite()->getStock()->size()));
+        ASSERT((cel->getImage() >= 0) &&
+               (cel->getImage() < layer->getSprite()->getStock()->size()));
 
-	src_image = layer->getSprite()->getStock()->getImage(cel->getImage());
-	ASSERT(src_image != NULL);
+        src_image = layer->getSprite()->getStock()->getImage(cel->getImage());
+        ASSERT(src_image != NULL);
 
-	src_image->mask_color = layer->getSprite()->getTransparentColor();
+        src_image->mask_color = layer->getSprite()->getTransparentColor();
 
-	image_merge(image, src_image,
-		    cel->getX() + x,
-		    cel->getY() + y,
-		    MID (0, cel->getOpacity(), 255),
-		    static_cast<const LayerImage*>(layer)->getBlendMode());
+        image_merge(image, src_image,
+                    cel->getX() + x,
+                    cel->getY() + y,
+                    MID (0, cel->getOpacity(), 255),
+                    static_cast<const LayerImage*>(layer)->getBlendMode());
       }
       break;
     }
@@ -380,7 +380,7 @@ void layer_render(const Layer* layer, Image* image, int x, int y, int frame)
       LayerConstIterator end = static_cast<const LayerFolder*>(layer)->get_layer_end();
 
       for (; it != end; ++it)
-	layer_render(*it, image, x, y, frame);
+        layer_render(*it, image, x, y, frame);
 
       break;
     }
@@ -407,8 +407,8 @@ static bool has_cels(const Layer* layer, int frame)
       LayerConstIterator end = static_cast<const LayerFolder*>(layer)->get_layer_end();
 
       for (; it != end; ++it) {
-	if (has_cels(*it, frame))
-	  return true;
+        if (has_cels(*it, frame))
+          return true;
       }
       break;
     }

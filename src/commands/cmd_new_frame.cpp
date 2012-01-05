@@ -50,19 +50,19 @@ protected:
 
 NewFrameCommand::NewFrameCommand()
   : Command("NewFrame",
-	    "New Frame",
-	    CmdRecordableFlag)
+            "New Frame",
+            CmdRecordableFlag)
 {
 }
 
 bool NewFrameCommand::onEnabled(Context* context)
 {
   return context->checkFlags(ContextFlags::ActiveDocumentIsWritable |
-			     ContextFlags::HasActiveSprite |
-			     ContextFlags::HasActiveLayer |
-			     ContextFlags::ActiveLayerIsReadable |
-			     ContextFlags::ActiveLayerIsWritable |
-			     ContextFlags::ActiveLayerIsImage);
+                             ContextFlags::HasActiveSprite |
+                             ContextFlags::HasActiveLayer |
+                             ContextFlags::ActiveLayerIsReadable |
+                             ContextFlags::ActiveLayerIsWritable |
+                             ContextFlags::ActiveLayerIsImage);
 }
 
 void NewFrameCommand::onExecute(Context* context)
@@ -77,8 +77,8 @@ void NewFrameCommand::onExecute(Context* context)
   update_screen_for_document(document);
   app_get_statusbar()
     ->showTip(1000, "New frame %d/%d",
-	      sprite->getCurrentFrame()+1,
-	      sprite->getTotalFrames());
+              sprite->getCurrentFrame()+1,
+              sprite->getTotalFrames());
 }
 
 //////////////////////////////////////////////////////////////////////

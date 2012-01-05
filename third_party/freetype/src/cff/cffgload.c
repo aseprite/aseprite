@@ -248,7 +248,7 @@
 
       builder->hints_globals = 0;
       builder->hints_funcs   = 0;
-            
+
       if ( hinting && size )
       {
         builder->hints_globals = size->internal;
@@ -1091,7 +1091,7 @@
         case cff_op_hintmask:
         case cff_op_cntrmask:
           FT_TRACE4(( op == cff_op_hintmask ? " hintmask" : " cntrmask" ));
-  
+
           /* implement vstem when needed --                        */
           /* the specification doesn't say it, but this also works */
           /* with the 'cntrmask' operator                          */
@@ -1103,7 +1103,7 @@
                              0,
                              num_args / 2,
                              args );
-          
+
             decoder->num_hints += num_args / 2;
           }
 

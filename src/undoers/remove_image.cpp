@@ -49,7 +49,7 @@ void RemoveImage::revert(ObjectsContainer* objects, UndoersCollector* redoers)
 {
   Stock* stock = objects->getObjectT<Stock>(m_stockId);
   Image* image = read_object<Image>(objects, m_stream, raster::read_image);
-  
+
   // Push an AddImage as redoer
   redoers->pushUndoer(new AddImage(objects, stock, m_imageIndex));
 

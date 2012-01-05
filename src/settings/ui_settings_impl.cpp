@@ -117,7 +117,7 @@ void UISettingsImpl::setCurrentTool(tools::Tool* tool)
   if (m_currentTool != tool) {
     // Fire PenSizeBeforeChange signal (maybe the new selected tool has a different pen size)
     App::instance()->PenSizeBeforeChange();
-    
+
     // Change the tool
     m_currentTool = tool;
 
@@ -277,7 +277,7 @@ public:
   int getSize() { return m_size; }
   int getAngle() { return m_angle; }
 
-  void setType(PenType type) 
+  void setType(PenType type)
   {
     m_type = MID(PEN_TYPE_FIRST, type, PEN_TYPE_LAST);
   }
@@ -342,7 +342,7 @@ public:
     m_pen.enableSignals(true);
 
     if (m_tool->getPointShape(0)->isSpray() ||
-	m_tool->getPointShape(1)->isSpray()) {
+        m_tool->getPointShape(1)->isSpray()) {
       m_spray_width = get_config_int(cfg_section.c_str(), "SprayWidth", m_spray_width);
       m_spray_speed = get_config_int(cfg_section.c_str(), "SpraySpeed", m_spray_speed);
     }
@@ -359,7 +359,7 @@ public:
     set_config_int(cfg_section.c_str(), "PenAngle", m_pen.getAngle());
 
     if (m_tool->getPointShape(0)->isSpray() ||
-	m_tool->getPointShape(1)->isSpray()) {
+        m_tool->getPointShape(1)->isSpray()) {
       set_config_int(cfg_section.c_str(), "SprayWidth", m_spray_width);
       set_config_int(cfg_section.c_str(), "SpraySpeed", m_spray_speed);
     }

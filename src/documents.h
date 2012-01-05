@@ -55,7 +55,7 @@ public:
   // list. E.g. It is used to reorder documents when they are selected
   // as active.
   void moveDocument(Document* document, int index);
- 
+
   Document* getByIndex(int index) const { return m_documents[index]; }
   Document* getById(DocumentId id) const;
 

@@ -41,15 +41,15 @@ protected:
 
 DeselectMaskCommand::DeselectMaskCommand()
   : Command("DeselectMask",
-	    "Deselect Mask",
-	    CmdRecordableFlag)
+            "Deselect Mask",
+            CmdRecordableFlag)
 {
 }
 
 bool DeselectMaskCommand::onEnabled(Context* context)
 {
   return context->checkFlags(ContextFlags::ActiveDocumentIsWritable |
-			     ContextFlags::HasVisibleMask);
+                             ContextFlags::HasVisibleMask);
 }
 
 void DeselectMaskCommand::onExecute(Context* context)

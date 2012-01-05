@@ -31,7 +31,7 @@
 #include <iostream>
 #include <sstream>
 
-#define UPDATE_URL	WEBSITE "update/?xml=1"
+#define UPDATE_URL      WEBSITE "update/?xml=1"
 
 namespace updater {
 
@@ -48,7 +48,7 @@ CheckUpdateResponse::CheckUpdateResponse(const CheckUpdateResponse& other)
   , m_waitDays(0)
 {
 }
-    
+
 CheckUpdateResponse::CheckUpdateResponse(const std::string& responseBody)
   : m_type(Unknown)
   , m_waitDays(0)

@@ -50,8 +50,8 @@ private:
 
 SelectFileCommand::SelectFileCommand()
   : Command("SelectFile",
-	    "Select File",
-	    CmdUIOnlyFlag)
+            "Select File",
+            CmdUIOnlyFlag)
 {
   m_documentId = WithoutDocumentId;
 }

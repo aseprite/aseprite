@@ -39,8 +39,8 @@
 #include <algorithm>
 #include <vector>
 
-#define FIXUP_TOP_WINDOW()			\
-  app_get_top_window()->remap_window();		\
+#define FIXUP_TOP_WINDOW()                      \
+  app_get_top_window()->remap_window();         \
   app_get_top_window()->invalidate();
 
 class EditorItem
@@ -83,8 +83,8 @@ static void update_mini_editor_frame(Editor* editor);
 static void on_mini_editor_frame_close(CloseEvent& ev);
 
 class WrappedEditor : public Editor,
-		      public EditorListener,
-		      public EditorCustomizationDelegate
+                      public EditorListener,
+                      public EditorCustomizationDelegate
 {
 public:
   WrappedEditor() {
@@ -173,8 +173,8 @@ Editor* create_new_editor()
 void remove_editor(Editor* editor)
 {
   for (EditorList::iterator
-	 it = editors.begin(),
-	 end = editors.end(); it != end; ++it) {
+         it = editors.begin(),
+         end = editors.end(); it != end; ++it) {
     if (it->getEditor() == editor) {
       editors.erase(it);
       return;
@@ -214,8 +214,8 @@ void editors_draw_sprite(const Sprite* sprite, int x1, int y1, int x2, int y2)
 // TODO improve this (with JRegion or something, and without recursivity).
 void editors_draw_sprite_tiled(const Sprite* sprite, int x1, int y1, int x2, int y2)
 {
-  int cx1, cy1, cx2, cy2;	// Cel rectangle.
-  int lx1, ly1, lx2, ly2;	// Limited rectangle to the cel rectangle.
+  int cx1, cy1, cx2, cy2;       // Cel rectangle.
+  int lx1, ly1, lx2, ly2;       // Limited rectangle to the cel rectangle.
 #ifdef TILED_IN_LAYER
   Image *image = GetImage2(sprite, &cx1, &cy1, NULL);
   cx2 = cx1+image->w-1;
@@ -238,27 +238,27 @@ void editors_draw_sprite_tiled(const Sprite* sprite, int x1, int y1, int x2, int
   // Left.
   if (x1 < cx1 && lx2 < cx2) {
     editors_draw_sprite_tiled(sprite,
-			      MAX(lx2+1, cx2+1+(x1-cx1)), y1,
-			      cx2, y2);
+                              MAX(lx2+1, cx2+1+(x1-cx1)), y1,
+                              cx2, y2);
   }
 
   // Top.
   if (y1 < cy1 && ly2 < cy2) {
     editors_draw_sprite_tiled(sprite,
-			      x1, MAX(ly2+1, cy2+1+(y1-cx1)),
-			      x2, cy2);
+                              x1, MAX(ly2+1, cy2+1+(y1-cx1)),
+                              x2, cy2);
   }
 
   // Right.
   if (x2 >= cx2+1 && lx1 > cx1) {
 #ifdef TILED_IN_LAYER
     editors_draw_sprite_tiled(sprite,
-			      cx1, y1,
-			      MIN(lx1-1, x2-image->w), y2);
+                              cx1, y1,
+                              MIN(lx1-1, x2-image->w), y2);
 #else
     editors_draw_sprite_tiled(sprite,
-			      cx1, y1,
-			      MIN(lx1-1, x2-sprite->getWidth()), y2);
+                              cx1, y1,
+                              MIN(lx1-1, x2-sprite->getWidth()), y2);
 #endif
   }
 
@@ -266,12 +266,12 @@ void editors_draw_sprite_tiled(const Sprite* sprite, int x1, int y1, int x2, int
   if (y2 >= cy2+1 && ly1 > cy1) {
 #if TILED_IN_LAYER
     editors_draw_sprite_tiled(sprite,
-			      x1, cy1,
-			      x2, MIN(ly1-1, y2-image->h));
+                              x1, cy1,
+                              x2, MIN(ly1-1, y2-image->h));
 #else
     editors_draw_sprite_tiled(sprite,
-			      x1, cy1,
-			      x2, MIN(ly1-1, y2-sprite->getHeight()));
+                              x1, cy1,
+                              x2, MIN(ly1-1, y2-sprite->getHeight()));
 #endif
   }
 }
@@ -306,11 +306,11 @@ void set_current_editor(Editor* editor)
     // current one.
     for (EditorList::iterator it = editors.begin(); it != editors.end(); ++it) {
       if (it->getEditor() == editor) {
-	if (it->getType() != EditorItem::Normal) {
-	  // Avoid setting the mini-editor as the current one
-	  return;
-	}
-	break;
+        if (it->getType() != EditorItem::Normal) {
+          // Avoid setting the mini-editor as the current one
+          return;
+        }
+        break;
       }
     }
 
@@ -336,7 +336,7 @@ void set_document_in_current_editor(Document* document)
 {
   if (current_editor) {
     UIContext* context = UIContext::instance();
-    
+
     context->setActiveDocument(document);
     if (document != NULL)
       context->sendDocumentToTop(document);
@@ -360,13 +360,13 @@ void set_document_in_more_reliable_editor(Document* document)
     for (EditorList::iterator it = editors.begin(); it != editors.end(); ++it) {
       // Avoid using abnormal editors (mini, etc.)
       if (it->getType() != EditorItem::Normal)
-	continue;
+        continue;
 
       Editor* editor = it->getEditor();
 
       if (!editor->getDocument()) {
-	best = editor;
-	break;
+        best = editor;
+        break;
       }
     }
   }
@@ -542,7 +542,7 @@ static Document* get_more_reliable_document()
   const Documents& docs = context->getDocuments();
 
   for (Documents::const_iterator
-	 it = docs.begin(), end = docs.end(); it != end; ++it) {
+         it = docs.begin(), end = docs.end(); it != end; ++it) {
     Document* document = *it;
     if (!(is_document_in_some_editor(document)))
       return document;
@@ -562,7 +562,7 @@ static Widget* find_next_editor(Widget* widget)
   else {
     JI_LIST_FOR_EACH(widget->children, link)
       if ((editor = find_next_editor(reinterpret_cast<JWidget>(link->data))))
-	break;
+        break;
   }
 
   return editor;
@@ -604,8 +604,8 @@ static void create_mini_editor_frame()
   int height = JI_SCREEN_H/4;
   mini_editor_frame->setBounds
     (gfx::Rect(JI_SCREEN_W - width - jrect_w(app_get_toolbar()->rc),
-	       JI_SCREEN_H - height - jrect_h(app_get_statusbar()->rc),
-	       width, height));
+               JI_SCREEN_H - height - jrect_h(app_get_statusbar()->rc),
+               width, height));
 
   load_window_pos(mini_editor_frame, "MiniEditor");
 }

@@ -45,8 +45,8 @@ END_OF_INLINE(_default_ds);
  *  Bank switch function.
  */
 INLINE _AL_DLL uintptr_t bmp_write_line(BITMAP *bmp, int lyne)
-{ 
-   _asm { 
+{
+   _asm {
       mov edx, bmp
       mov ecx, [edx]BITMAP.write_bank
       mov eax, lyne
@@ -266,4 +266,3 @@ END_OF_INLINE(fixceil);
 
 
 #pragma warning (default: 4035)
-

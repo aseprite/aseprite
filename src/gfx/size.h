@@ -32,7 +32,7 @@ public:
 
   template<typename T2>
   explicit SizeT(const SizeT<T2>& size) : w(static_cast<T>(size.w)),
-					  h(static_cast<T>(size.h)) {
+                                          h(static_cast<T>(size.h)) {
   }
 
   explicit SizeT(const PointT<T>& point) : w(point.x), h(point.y)  {
@@ -45,7 +45,7 @@ public:
 
   SizeT createIntersect(const SizeT& sz) const {
     return SizeT(std::min(w, sz.w),
-		 std::min(h, sz.h));
+                 std::min(h, sz.h));
   }
 
   const SizeT& operator=(const SizeT& sz) {

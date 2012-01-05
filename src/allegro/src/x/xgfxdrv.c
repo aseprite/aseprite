@@ -92,7 +92,7 @@ static GFX_DRIVER gfx_xwin_fullscreen =
    NULL, NULL,
    NULL,
    _xwin_fetch_mode_list,
-   NULL,			/* acknowledge_resize */
+   NULL,                        /* acknowledge_resize */
    320, 200,
    TRUE,
    0, 0,

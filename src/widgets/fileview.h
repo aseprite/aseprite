@@ -24,9 +24,9 @@
 #include "gui/base.h"
 
 /* TODO use some JI_SIGNAL_USER */
-#define SIGNAL_FILEVIEW_FILE_SELECTED		0x10006
-#define SIGNAL_FILEVIEW_FILE_ACCEPT		0x10007
-#define SIGNAL_FILEVIEW_CURRENT_FOLDER_CHANGED	0x10008
+#define SIGNAL_FILEVIEW_FILE_SELECTED           0x10006
+#define SIGNAL_FILEVIEW_FILE_ACCEPT             0x10007
+#define SIGNAL_FILEVIEW_CURRENT_FOLDER_CHANGED  0x10008
 
 JWidget fileview_new(IFileItem* start_folder, const base::string& exts);
 int fileview_type();

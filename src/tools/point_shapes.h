@@ -57,7 +57,7 @@ public:
 
     for (c=0; c<h; c++) {
       if (scanline->state)
-	doInkHline(x+scanline->x1, y+c, x+scanline->x2, loop);
+        doInkHline(x+scanline->x1, y+c, x+scanline->x2, loop);
       ++scanline;
     }
   }

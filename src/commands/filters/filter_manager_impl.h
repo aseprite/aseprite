@@ -45,11 +45,11 @@ class NoImageException : public base::Exception
 public:
   NoImageException() throw()
   : base::Exception("There are not an active image to apply the effect.\n"
-		    "Please select a layer/cel with an image and try again.") { }
+                    "Please select a layer/cel with an image and try again.") { }
 };
 
 class FilterManagerImpl : public FilterManager
-			, public FilterIndexedData
+                        , public FilterIndexedData
 {
 public:
   // Interface to report progress to the user and take input from him
@@ -100,7 +100,7 @@ public:
   // FilterIndexedData implementation
   Palette* getPalette();
   RgbMap* getRgbMap();
-  
+
 private:
   void init(const Layer* layer, Image* image, int offset_x, int offset_y);
   void apply();
@@ -119,8 +119,8 @@ private:
   Mask* m_preview_mask;
   unsigned char* m_mask_address;
   div_t m_d;
-  Target m_targetOrig;		// Original targets
-  Target m_target;		// Filtered targets
+  Target m_targetOrig;          // Original targets
+  Target m_target;              // Filtered targets
 
   // Hooks
   float m_progressBase;

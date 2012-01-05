@@ -183,7 +183,7 @@ void FUNC_LINEAR_DRAW_SPRITE(BITMAP *dst, BITMAP *src, int dx, int dy)
       tmp = dst->cr - dx;
       w = ((tmp > src->w) ? src->w : tmp) - sxbeg;
       if (w <= 0)
-	 return;
+         return;
 
       tmp = dst->ct - dy;
       sybeg = ((tmp < 0) ? 0 : tmp);
@@ -192,7 +192,7 @@ void FUNC_LINEAR_DRAW_SPRITE(BITMAP *dst, BITMAP *src, int dx, int dy)
       tmp = dst->cb - dy;
       h = ((tmp > src->h) ? src->h : tmp) - sybeg;
       if (h <= 0)
-	 return;
+         return;
    }
    else {
       w = src->w;
@@ -207,30 +207,30 @@ void FUNC_LINEAR_DRAW_SPRITE(BITMAP *dst, BITMAP *src, int dx, int dy)
       bmp_select(dst);
 
       for (y = 0; y < h; y++) {
-	 PIXEL_PTR s = OFFSET_PIXEL_PTR(src->line[sybeg + y], sxbeg);
-	 PIXEL_PTR d = OFFSET_PIXEL_PTR(bmp_write_line(dst, dybeg + y), dxbeg);
+         PIXEL_PTR s = OFFSET_PIXEL_PTR(src->line[sybeg + y], sxbeg);
+         PIXEL_PTR d = OFFSET_PIXEL_PTR(bmp_write_line(dst, dybeg + y), dxbeg);
 
-	 for (x = w - 1; x >= 0; INC_PIXEL_PTR(s), INC_PIXEL_PTR(d), x--) {
-	    unsigned long c = GET_MEMORY_PIXEL(s);
-	    if (!IS_SPRITE_MASK(src, c)) {
-	       PUT_PIXEL(d, c);
-	    }
-	 }
+         for (x = w - 1; x >= 0; INC_PIXEL_PTR(s), INC_PIXEL_PTR(d), x--) {
+            unsigned long c = GET_MEMORY_PIXEL(s);
+            if (!IS_SPRITE_MASK(src, c)) {
+               PUT_PIXEL(d, c);
+            }
+         }
       }
 
       bmp_unwrite_line(dst);
    }
    else {
       for (y = 0; y < h; y++) {
-	 PIXEL_PTR s = OFFSET_PIXEL_PTR(src->line[sybeg + y], sxbeg);
-	 PIXEL_PTR d = OFFSET_PIXEL_PTR(dst->line[dybeg + y], dxbeg);
+         PIXEL_PTR s = OFFSET_PIXEL_PTR(src->line[sybeg + y], sxbeg);
+         PIXEL_PTR d = OFFSET_PIXEL_PTR(dst->line[dybeg + y], dxbeg);
 
-	 for (x = w - 1; x >= 0; INC_PIXEL_PTR(s), INC_PIXEL_PTR(d), x--) {
-	    unsigned long c = GET_MEMORY_PIXEL(s);
-	    if (!IS_SPRITE_MASK(src, c)) {
-	       PUT_MEMORY_PIXEL(d, c);
-	    }
-	 }
+         for (x = w - 1; x >= 0; INC_PIXEL_PTR(s), INC_PIXEL_PTR(d), x--) {
+            unsigned long c = GET_MEMORY_PIXEL(s);
+            if (!IS_SPRITE_MASK(src, c)) {
+               PUT_MEMORY_PIXEL(d, c);
+            }
+         }
       }
    }
 }
@@ -263,7 +263,7 @@ void FUNC_LINEAR_DRAW_256_SPRITE(BITMAP *dst, BITMAP *src, int dx, int dy)
       tmp = dst->cr - dx;
       w = ((tmp > src->w) ? src->w : tmp) - sxbeg;
       if (w <= 0)
-	 return;
+         return;
 
       tmp = dst->ct - dy;
       sybeg = ((tmp < 0) ? 0 : tmp);
@@ -272,7 +272,7 @@ void FUNC_LINEAR_DRAW_256_SPRITE(BITMAP *dst, BITMAP *src, int dx, int dy)
       tmp = dst->cb - dy;
       h = ((tmp > src->h) ? src->h : tmp) - sybeg;
       if (h <= 0)
-	 return;
+         return;
    }
    else {
       w = src->w;
@@ -290,32 +290,32 @@ void FUNC_LINEAR_DRAW_256_SPRITE(BITMAP *dst, BITMAP *src, int dx, int dy)
       bmp_select(dst);
 
       for (y = 0; y < h; y++) {
-	 unsigned char *s = src->line[sybeg + y] + sxbeg;
-	 PIXEL_PTR d = OFFSET_PIXEL_PTR(bmp_write_line(dst, dybeg + y), dxbeg);
+         unsigned char *s = src->line[sybeg + y] + sxbeg;
+         PIXEL_PTR d = OFFSET_PIXEL_PTR(bmp_write_line(dst, dybeg + y), dxbeg);
 
-	 for (x = w - 1; x >= 0; s++, INC_PIXEL_PTR(d), x--) {
-	    unsigned long c = *s;
-	    if (c != 0) {
-	       c = table[c];
-	       PUT_PIXEL(d, c);
-	    }
-	 }
+         for (x = w - 1; x >= 0; s++, INC_PIXEL_PTR(d), x--) {
+            unsigned long c = *s;
+            if (c != 0) {
+               c = table[c];
+               PUT_PIXEL(d, c);
+            }
+         }
       }
 
       bmp_unwrite_line(dst);
    }
    else {
       for (y = 0; y < h; y++) {
-	 unsigned char *s = src->line[sybeg + y] + sxbeg;
-	 PIXEL_PTR d = OFFSET_PIXEL_PTR(dst->line[dybeg + y], dxbeg);
+         unsigned char *s = src->line[sybeg + y] + sxbeg;
+         PIXEL_PTR d = OFFSET_PIXEL_PTR(dst->line[dybeg + y], dxbeg);
 
-	 for (x = w - 1; x >= 0; s++, INC_PIXEL_PTR(d), x--) {
-	    unsigned long c = *s;
-	    if (c != 0) {
-	       c = table[c];
-	       PUT_MEMORY_PIXEL(d, c);
-	    }
-	 }
+         for (x = w - 1; x >= 0; s++, INC_PIXEL_PTR(d), x--) {
+            unsigned long c = *s;
+            if (c != 0) {
+               c = table[c];
+               PUT_MEMORY_PIXEL(d, c);
+            }
+         }
       }
    }
 }
@@ -344,7 +344,7 @@ void FUNC_LINEAR_DRAW_SPRITE_V_FLIP(BITMAP *dst, BITMAP *src, int dx, int dy)
       tmp = dst->cr - dx;
       w = ((tmp > src->w) ? src->w : tmp) - sxbeg;
       if (w <= 0)
-	 return;
+         return;
 
       tmp = dst->ct - dy;
       sybeg = ((tmp < 0) ? 0 : tmp);
@@ -353,7 +353,7 @@ void FUNC_LINEAR_DRAW_SPRITE_V_FLIP(BITMAP *dst, BITMAP *src, int dx, int dy)
       tmp = dst->cb - dy;
       h = ((tmp > src->h) ? src->h : tmp) - sybeg;
       if (h <= 0)
-	 return;
+         return;
 
       /* use backward drawing onto dst */
       sybeg = src->h - (sybeg + h);
@@ -372,30 +372,30 @@ void FUNC_LINEAR_DRAW_SPRITE_V_FLIP(BITMAP *dst, BITMAP *src, int dx, int dy)
       bmp_select(dst);
 
       for (y = 0; y < h; y++) {
-	 PIXEL_PTR s = OFFSET_PIXEL_PTR(src->line[sybeg + y], sxbeg);
-	 PIXEL_PTR d = OFFSET_PIXEL_PTR(bmp_write_line(dst, dybeg - y), dxbeg);
+         PIXEL_PTR s = OFFSET_PIXEL_PTR(src->line[sybeg + y], sxbeg);
+         PIXEL_PTR d = OFFSET_PIXEL_PTR(bmp_write_line(dst, dybeg - y), dxbeg);
 
-	 for (x = w - 1; x >= 0; INC_PIXEL_PTR(s), INC_PIXEL_PTR(d), x--) {
-	    unsigned long c = GET_MEMORY_PIXEL(s);
-	    if (!IS_SPRITE_MASK(src, c)) {
-	       PUT_PIXEL(d, c);
-	    }
-	 }
+         for (x = w - 1; x >= 0; INC_PIXEL_PTR(s), INC_PIXEL_PTR(d), x--) {
+            unsigned long c = GET_MEMORY_PIXEL(s);
+            if (!IS_SPRITE_MASK(src, c)) {
+               PUT_PIXEL(d, c);
+            }
+         }
       }
 
       bmp_unwrite_line(dst);
    }
    else {
       for (y = 0; y < h; y++) {
-	 PIXEL_PTR s = OFFSET_PIXEL_PTR(src->line[sybeg + y], sxbeg);
-	 PIXEL_PTR d = OFFSET_PIXEL_PTR(dst->line[dybeg - y], dxbeg);
+         PIXEL_PTR s = OFFSET_PIXEL_PTR(src->line[sybeg + y], sxbeg);
+         PIXEL_PTR d = OFFSET_PIXEL_PTR(dst->line[dybeg - y], dxbeg);
 
-	 for (x = w - 1; x >= 0; INC_PIXEL_PTR(s), INC_PIXEL_PTR(d), x--) {
-	    unsigned long c = GET_MEMORY_PIXEL(s);
-	    if (!IS_SPRITE_MASK(src, c)) {
-	       PUT_MEMORY_PIXEL(d, c);
-	    }
-	 }
+         for (x = w - 1; x >= 0; INC_PIXEL_PTR(s), INC_PIXEL_PTR(d), x--) {
+            unsigned long c = GET_MEMORY_PIXEL(s);
+            if (!IS_SPRITE_MASK(src, c)) {
+               PUT_MEMORY_PIXEL(d, c);
+            }
+         }
       }
    }
 }
@@ -424,7 +424,7 @@ void FUNC_LINEAR_DRAW_SPRITE_H_FLIP(BITMAP *dst, BITMAP *src, int dx, int dy)
       tmp = dst->cr - dx;
       w = ((tmp > src->w) ? src->w : tmp) - sxbeg;
       if (w <= 0)
-	 return;
+         return;
 
       /* use backward drawing onto dst */
       sxbeg = src->w - (sxbeg + w);
@@ -437,7 +437,7 @@ void FUNC_LINEAR_DRAW_SPRITE_H_FLIP(BITMAP *dst, BITMAP *src, int dx, int dy)
       tmp = dst->cb - dy;
       h = ((tmp > src->h) ? src->h : tmp) - sybeg;
       if (h <= 0)
-	 return;
+         return;
    }
    else {
       w = src->w;
@@ -452,30 +452,30 @@ void FUNC_LINEAR_DRAW_SPRITE_H_FLIP(BITMAP *dst, BITMAP *src, int dx, int dy)
       bmp_select(dst);
 
       for (y = 0; y < h; y++) {
-	 PIXEL_PTR s = OFFSET_PIXEL_PTR(src->line[sybeg + y], sxbeg);
-	 PIXEL_PTR d = OFFSET_PIXEL_PTR(bmp_write_line(dst, dybeg + y), dxbeg);
+         PIXEL_PTR s = OFFSET_PIXEL_PTR(src->line[sybeg + y], sxbeg);
+         PIXEL_PTR d = OFFSET_PIXEL_PTR(bmp_write_line(dst, dybeg + y), dxbeg);
 
-	 for (x = w - 1; x >= 0; INC_PIXEL_PTR(s), DEC_PIXEL_PTR(d), x--) {
-	    unsigned long c = GET_MEMORY_PIXEL(s);
-	    if (!IS_SPRITE_MASK(src, c)) {
-	       PUT_PIXEL(d, c);
-	    }
-	 }
+         for (x = w - 1; x >= 0; INC_PIXEL_PTR(s), DEC_PIXEL_PTR(d), x--) {
+            unsigned long c = GET_MEMORY_PIXEL(s);
+            if (!IS_SPRITE_MASK(src, c)) {
+               PUT_PIXEL(d, c);
+            }
+         }
       }
 
       bmp_unwrite_line(dst);
    }
    else {
       for (y = 0; y < h; y++) {
-	 PIXEL_PTR s = OFFSET_PIXEL_PTR(src->line[sybeg + y], sxbeg);
-	 PIXEL_PTR d = OFFSET_PIXEL_PTR(dst->line[dybeg + y], dxbeg);
+         PIXEL_PTR s = OFFSET_PIXEL_PTR(src->line[sybeg + y], sxbeg);
+         PIXEL_PTR d = OFFSET_PIXEL_PTR(dst->line[dybeg + y], dxbeg);
 
-	 for (x = w - 1; x >= 0; INC_PIXEL_PTR(s), DEC_PIXEL_PTR(d), x--) {
-	    unsigned long c = GET_MEMORY_PIXEL(s);
-	    if (!IS_SPRITE_MASK(src, c)) {
-	       PUT_MEMORY_PIXEL(d, c);
-	    }
-	 }
+         for (x = w - 1; x >= 0; INC_PIXEL_PTR(s), DEC_PIXEL_PTR(d), x--) {
+            unsigned long c = GET_MEMORY_PIXEL(s);
+            if (!IS_SPRITE_MASK(src, c)) {
+               PUT_MEMORY_PIXEL(d, c);
+            }
+         }
       }
    }
 }
@@ -504,7 +504,7 @@ void FUNC_LINEAR_DRAW_SPRITE_VH_FLIP(BITMAP *dst, BITMAP *src, int dx, int dy)
       tmp = dst->cr - dx;
       w = ((tmp > src->w) ? src->w : tmp) - sxbeg;
       if (w <= 0)
-	 return;
+         return;
 
       /* use backward drawing onto dst */
       sxbeg = src->w - (sxbeg + w);
@@ -517,7 +517,7 @@ void FUNC_LINEAR_DRAW_SPRITE_VH_FLIP(BITMAP *dst, BITMAP *src, int dx, int dy)
       tmp = dst->cb - dy;
       h = ((tmp > src->h) ? src->h : tmp) - sybeg;
       if (h <= 0)
-	 return;
+         return;
 
       /* use backward drawing onto dst */
       sybeg = src->h - (sybeg + h);
@@ -536,30 +536,30 @@ void FUNC_LINEAR_DRAW_SPRITE_VH_FLIP(BITMAP *dst, BITMAP *src, int dx, int dy)
       bmp_select(dst);
 
       for (y = 0; y < h; y++) {
-	 PIXEL_PTR s = OFFSET_PIXEL_PTR(src->line[sybeg + y], sxbeg);
-	 PIXEL_PTR d = OFFSET_PIXEL_PTR(bmp_write_line(dst, dybeg - y), dxbeg);
+         PIXEL_PTR s = OFFSET_PIXEL_PTR(src->line[sybeg + y], sxbeg);
+         PIXEL_PTR d = OFFSET_PIXEL_PTR(bmp_write_line(dst, dybeg - y), dxbeg);
 
-	 for (x = w - 1; x >= 0; INC_PIXEL_PTR(s), DEC_PIXEL_PTR(d), x--) {
-	    unsigned long c = GET_MEMORY_PIXEL(s);
-	    if (!IS_SPRITE_MASK(src, c)) {
-	       PUT_PIXEL(d, c);
-	    }
-	 }
+         for (x = w - 1; x >= 0; INC_PIXEL_PTR(s), DEC_PIXEL_PTR(d), x--) {
+            unsigned long c = GET_MEMORY_PIXEL(s);
+            if (!IS_SPRITE_MASK(src, c)) {
+               PUT_PIXEL(d, c);
+            }
+         }
       }
 
       bmp_unwrite_line(dst);
    }
    else {
       for (y = 0; y < h; y++) {
-	 PIXEL_PTR s = OFFSET_PIXEL_PTR(src->line[sybeg + y], sxbeg);
-	 PIXEL_PTR d = OFFSET_PIXEL_PTR(dst->line[dybeg - y], dxbeg);
+         PIXEL_PTR s = OFFSET_PIXEL_PTR(src->line[sybeg + y], sxbeg);
+         PIXEL_PTR d = OFFSET_PIXEL_PTR(dst->line[dybeg - y], dxbeg);
 
-	 for (x = w - 1; x >= 0; INC_PIXEL_PTR(s), DEC_PIXEL_PTR(d), x--) {
-	    unsigned long c = GET_MEMORY_PIXEL(s);
-	    if (!IS_SPRITE_MASK(src, c)) {
-	       PUT_MEMORY_PIXEL(d, c);
-	    }
-	 }
+         for (x = w - 1; x >= 0; INC_PIXEL_PTR(s), DEC_PIXEL_PTR(d), x--) {
+            unsigned long c = GET_MEMORY_PIXEL(s);
+            if (!IS_SPRITE_MASK(src, c)) {
+               PUT_MEMORY_PIXEL(d, c);
+            }
+         }
       }
    }
 }
@@ -589,7 +589,7 @@ void FUNC_LINEAR_DRAW_TRANS_SPRITE(BITMAP *dst, BITMAP *src, int dx, int dy)
       tmp = dst->cr - dx;
       w = ((tmp > src->w) ? src->w : tmp) - sxbeg;
       if (w <= 0)
-	 return;
+         return;
 
       tmp = dst->ct - dy;
       sybeg = ((tmp < 0) ? 0 : tmp);
@@ -598,7 +598,7 @@ void FUNC_LINEAR_DRAW_TRANS_SPRITE(BITMAP *dst, BITMAP *src, int dx, int dy)
       tmp = dst->cb - dy;
       h = ((tmp > src->h) ? src->h : tmp) - sybeg;
       if (h <= 0)
-	 return;
+         return;
    }
    else {
       w = src->w;
@@ -615,22 +615,22 @@ void FUNC_LINEAR_DRAW_TRANS_SPRITE(BITMAP *dst, BITMAP *src, int dx, int dy)
       bmp_select(dst);
 
       for (y = 0; y < h; y++) {
-	 unsigned char *s = src->line[sybeg + y] + sxbeg;
-	 PIXEL_PTR ds = OFFSET_PIXEL_PTR(bmp_read_line(dst, dybeg + y), dxbeg);
-	 PIXEL_PTR dd = OFFSET_PIXEL_PTR(bmp_write_line(dst, dybeg + y), dxbeg);
+         unsigned char *s = src->line[sybeg + y] + sxbeg;
+         PIXEL_PTR ds = OFFSET_PIXEL_PTR(bmp_read_line(dst, dybeg + y), dxbeg);
+         PIXEL_PTR dd = OFFSET_PIXEL_PTR(bmp_write_line(dst, dybeg + y), dxbeg);
 
-	 for (x = w - 1; x >= 0; s++, INC_PIXEL_PTR(ds), INC_PIXEL_PTR(dd), x--) {
-	    unsigned long c = *s;
+         for (x = w - 1; x >= 0; s++, INC_PIXEL_PTR(ds), INC_PIXEL_PTR(dd), x--) {
+            unsigned long c = *s;
 #if PP_DEPTH == 8
-	    c = DTS_BLEND(blender, GET_PIXEL(ds), c);
-	    PUT_PIXEL(dd, c);
+            c = DTS_BLEND(blender, GET_PIXEL(ds), c);
+            PUT_PIXEL(dd, c);
 #else
             if (!IS_SPRITE_MASK(src, c)) {
-	       c = DTS_BLEND(blender, GET_PIXEL(ds), c);
-	       PUT_PIXEL(dd, c);
-	    }
+               c = DTS_BLEND(blender, GET_PIXEL(ds), c);
+               PUT_PIXEL(dd, c);
+            }
 #endif
-	 }
+         }
       }
 
       bmp_unwrite_line(dst);
@@ -639,43 +639,43 @@ void FUNC_LINEAR_DRAW_TRANS_SPRITE(BITMAP *dst, BITMAP *src, int dx, int dy)
       bmp_select(dst);
 
       for (y = 0; y < h; y++) {
-	 PIXEL_PTR s = OFFSET_PIXEL_PTR(src->line[sybeg + y], sxbeg);
-	 PIXEL_PTR ds = OFFSET_PIXEL_PTR(bmp_read_line(dst, dybeg + y), dxbeg);
-	 PIXEL_PTR dd = OFFSET_PIXEL_PTR(bmp_write_line(dst, dybeg + y), dxbeg);
+         PIXEL_PTR s = OFFSET_PIXEL_PTR(src->line[sybeg + y], sxbeg);
+         PIXEL_PTR ds = OFFSET_PIXEL_PTR(bmp_read_line(dst, dybeg + y), dxbeg);
+         PIXEL_PTR dd = OFFSET_PIXEL_PTR(bmp_write_line(dst, dybeg + y), dxbeg);
 
-	 for (x = w - 1; x >= 0; INC_PIXEL_PTR(s), INC_PIXEL_PTR(ds), INC_PIXEL_PTR(dd), x--) {
-	    unsigned long c = GET_MEMORY_PIXEL(s);
+         for (x = w - 1; x >= 0; INC_PIXEL_PTR(s), INC_PIXEL_PTR(ds), INC_PIXEL_PTR(dd), x--) {
+            unsigned long c = GET_MEMORY_PIXEL(s);
 #if PP_DEPTH == 8
-	    c = DTS_BLEND(blender, GET_PIXEL(ds), c);
-	    PUT_PIXEL(dd, c);
+            c = DTS_BLEND(blender, GET_PIXEL(ds), c);
+            PUT_PIXEL(dd, c);
 #else
-	    if (!IS_SPRITE_MASK(src, c)) {
-	       c = DTS_BLEND(blender, GET_PIXEL(ds), c);
-	       PUT_PIXEL(dd, c);
-	    }
+            if (!IS_SPRITE_MASK(src, c)) {
+               c = DTS_BLEND(blender, GET_PIXEL(ds), c);
+               PUT_PIXEL(dd, c);
+            }
 #endif
-	 }
+         }
       }
 
       bmp_unwrite_line(dst);
    }
    else {
       for (y = 0; y < h; y++) {
-	 PIXEL_PTR s = OFFSET_PIXEL_PTR(src->line[sybeg + y], sxbeg);
-	 PIXEL_PTR d = OFFSET_PIXEL_PTR(dst->line[dybeg + y], dxbeg);
+         PIXEL_PTR s = OFFSET_PIXEL_PTR(src->line[sybeg + y], sxbeg);
+         PIXEL_PTR d = OFFSET_PIXEL_PTR(dst->line[dybeg + y], dxbeg);
 
-	 for (x = w - 1; x >= 0; INC_PIXEL_PTR(s), INC_PIXEL_PTR(d), x--) {
-	    unsigned long c = GET_MEMORY_PIXEL(s);
+         for (x = w - 1; x >= 0; INC_PIXEL_PTR(s), INC_PIXEL_PTR(d), x--) {
+            unsigned long c = GET_MEMORY_PIXEL(s);
 #if PP_DEPTH == 8
-	    c = DTS_BLEND(blender, GET_MEMORY_PIXEL(d), c);
-	    PUT_MEMORY_PIXEL(d, c);
+            c = DTS_BLEND(blender, GET_MEMORY_PIXEL(d), c);
+            PUT_MEMORY_PIXEL(d, c);
 #else
-	    if (!IS_SPRITE_MASK(src, c)) {
-	       c = DTS_BLEND(blender, GET_MEMORY_PIXEL(d), c);
-	       PUT_MEMORY_PIXEL(d, c);
-	    }
+            if (!IS_SPRITE_MASK(src, c)) {
+               c = DTS_BLEND(blender, GET_MEMORY_PIXEL(d), c);
+               PUT_MEMORY_PIXEL(d, c);
+            }
 #endif
-	 }
+         }
       }
    }
 }
@@ -707,7 +707,7 @@ void FUNC_LINEAR_DRAW_TRANS_RGBA_SPRITE(BITMAP *dst, BITMAP *src, int dx, int dy
       tmp = dst->cr - dx;
       w = ((tmp > src->w) ? src->w : tmp) - sxbeg;
       if (w <= 0)
-	 return;
+         return;
 
       tmp = dst->ct - dy;
       sybeg = ((tmp < 0) ? 0 : tmp);
@@ -716,7 +716,7 @@ void FUNC_LINEAR_DRAW_TRANS_RGBA_SPRITE(BITMAP *dst, BITMAP *src, int dx, int dy
       tmp = dst->cb - dy;
       h = ((tmp > src->h) ? src->h : tmp) - sybeg;
       if (h <= 0)
-	 return;
+         return;
    }
    else {
       w = src->w;
@@ -737,12 +737,12 @@ void FUNC_LINEAR_DRAW_TRANS_RGBA_SPRITE(BITMAP *dst, BITMAP *src, int dx, int dy
       PIXEL_PTR dd = OFFSET_PIXEL_PTR(bmp_write_line(dst, dybeg + y), dxbeg);
 
       for (x = w - 1; x >= 0; s++, INC_PIXEL_PTR(ds), INC_PIXEL_PTR(dd), x--) {
-	 unsigned long c = *s;
+         unsigned long c = *s;
 
-	 if (c != MASK_COLOR_32) {
-	    c = RGBA_BLEND(blender, GET_PIXEL(ds), c);
-	    PUT_PIXEL(dd, c);
-	 }
+         if (c != MASK_COLOR_32) {
+            c = RGBA_BLEND(blender, GET_PIXEL(ds), c);
+            PUT_PIXEL(dd, c);
+         }
       }
    }
 
@@ -776,7 +776,7 @@ void FUNC_LINEAR_DRAW_LIT_SPRITE(BITMAP *dst, BITMAP *src, int dx, int dy, int c
       tmp = dst->cr - dx;
       w = ((tmp > src->w) ? src->w : tmp) - sxbeg;
       if (w <= 0)
-	 return;
+         return;
 
       tmp = dst->ct - dy;
       sybeg = ((tmp < 0) ? 0 : tmp);
@@ -785,7 +785,7 @@ void FUNC_LINEAR_DRAW_LIT_SPRITE(BITMAP *dst, BITMAP *src, int dx, int dy, int c
       tmp = dst->cb - dy;
       h = ((tmp > src->h) ? src->h : tmp) - sybeg;
       if (h <= 0)
-	 return;
+         return;
    }
    else {
       w = src->w;
@@ -802,34 +802,34 @@ void FUNC_LINEAR_DRAW_LIT_SPRITE(BITMAP *dst, BITMAP *src, int dx, int dy, int c
       bmp_select(dst);
 
       for (y = 0; y < h; y++) {
-	 PIXEL_PTR s = OFFSET_PIXEL_PTR(src->line[sybeg + y], sxbeg);
-	 PIXEL_PTR d = OFFSET_PIXEL_PTR(bmp_write_line(dst, dybeg + y), dxbeg);
+         PIXEL_PTR s = OFFSET_PIXEL_PTR(src->line[sybeg + y], sxbeg);
+         PIXEL_PTR d = OFFSET_PIXEL_PTR(bmp_write_line(dst, dybeg + y), dxbeg);
 
-	 for (x = w - 1; x >= 0; INC_PIXEL_PTR(s), INC_PIXEL_PTR(d), x--) {
-	    unsigned long c = GET_MEMORY_PIXEL(s);
+         for (x = w - 1; x >= 0; INC_PIXEL_PTR(s), INC_PIXEL_PTR(d), x--) {
+            unsigned long c = GET_MEMORY_PIXEL(s);
 
-	    if (!IS_MASK(c)) {
-	       c = DLS_BLEND(blender, color, c);
-	       PUT_PIXEL(d, c);
-	    }
-	 }
+            if (!IS_MASK(c)) {
+               c = DLS_BLEND(blender, color, c);
+               PUT_PIXEL(d, c);
+            }
+         }
       }
 
       bmp_unwrite_line(dst);
    }
    else {
       for (y = 0; y < h; y++) {
-	 PIXEL_PTR s = OFFSET_PIXEL_PTR(src->line[sybeg + y], sxbeg);
-	 PIXEL_PTR d = OFFSET_PIXEL_PTR(dst->line[dybeg + y], dxbeg);
+         PIXEL_PTR s = OFFSET_PIXEL_PTR(src->line[sybeg + y], sxbeg);
+         PIXEL_PTR d = OFFSET_PIXEL_PTR(dst->line[dybeg + y], dxbeg);
 
-	 for (x = w - 1; x >= 0; INC_PIXEL_PTR(s), INC_PIXEL_PTR(d), x--) {
-	    unsigned long c = GET_MEMORY_PIXEL(s);
+         for (x = w - 1; x >= 0; INC_PIXEL_PTR(s), INC_PIXEL_PTR(d), x--) {
+            unsigned long c = GET_MEMORY_PIXEL(s);
 
-	    if (!IS_MASK(c)) {
-	       c = DLS_BLEND(blender, color, c);
-	       PUT_MEMORY_PIXEL(d, c);
-	    }
-	 }
+            if (!IS_MASK(c)) {
+               c = DLS_BLEND(blender, color, c);
+               PUT_MEMORY_PIXEL(d, c);
+            }
+         }
       }
    }
 }
@@ -859,7 +859,7 @@ void FUNC_LINEAR_DRAW_CHARACTER(BITMAP *dst, BITMAP *src, int dx, int dy, int co
       tmp = dst->cr - dx;
       w = ((tmp > src->w) ? src->w : tmp) - sxbeg;
       if (w <= 0)
-	 return;
+         return;
 
       tmp = dst->ct - dy;
       sybeg = ((tmp < 0) ? 0 : tmp);
@@ -868,7 +868,7 @@ void FUNC_LINEAR_DRAW_CHARACTER(BITMAP *dst, BITMAP *src, int dx, int dy, int co
       tmp = dst->cb - dy;
       h = ((tmp > src->h) ? src->h : tmp) - sybeg;
       if (h <= 0)
-	 return;
+         return;
    }
    else {
       w = src->w;
@@ -884,34 +884,34 @@ void FUNC_LINEAR_DRAW_CHARACTER(BITMAP *dst, BITMAP *src, int dx, int dy, int co
    if (bg < 0) {
       /* Masked character.  */
       for (y = 0; y < h; y++) {
-	 unsigned char *s = src->line[sybeg + y] + sxbeg;
-	 PIXEL_PTR d = OFFSET_PIXEL_PTR(bmp_write_line(dst, dybeg + y), dxbeg);
+         unsigned char *s = src->line[sybeg + y] + sxbeg;
+         PIXEL_PTR d = OFFSET_PIXEL_PTR(bmp_write_line(dst, dybeg + y), dxbeg);
 
-	 for (x = w - 1; x >= 0; s++, INC_PIXEL_PTR(d), x--) {
-	    unsigned long c = *s;
+         for (x = w - 1; x >= 0; s++, INC_PIXEL_PTR(d), x--) {
+            unsigned long c = *s;
 
-	    if (c != 0) {
-	       PUT_PIXEL(d, color);
-	    }
-	 }
+            if (c != 0) {
+               PUT_PIXEL(d, color);
+            }
+         }
       }
    }
    else {
       /* Opaque character.  */
       for (y = 0; y < h; y++) {
-	 unsigned char *s = src->line[sybeg + y] + sxbeg;
-	 PIXEL_PTR d = OFFSET_PIXEL_PTR(bmp_write_line(dst, dybeg + y), dxbeg);
+         unsigned char *s = src->line[sybeg + y] + sxbeg;
+         PIXEL_PTR d = OFFSET_PIXEL_PTR(bmp_write_line(dst, dybeg + y), dxbeg);
 
-	 for (x = w - 1; x >= 0; s++, INC_PIXEL_PTR(d), x--) {
-	    unsigned long c = *s;
+         for (x = w - 1; x >= 0; s++, INC_PIXEL_PTR(d), x--) {
+            unsigned long c = *s;
 
-	    if (c != 0) {
-	       PUT_PIXEL(d, color);
-	    }
-	    else {
-	       PUT_PIXEL(d, bg);
-	    }
-	 }
+            if (c != 0) {
+               PUT_PIXEL(d, color);
+            }
+            else {
+               PUT_PIXEL(d, bg);
+            }
+         }
       }
    }
 
@@ -943,7 +943,7 @@ void FUNC_LINEAR_DRAW_RLE_SPRITE(BITMAP *dst, AL_CONST RLE_SPRITE *src, int dx, 
       tmp = dst->cr - dx;
       w = ((tmp > src->w) ? src->w : tmp) - sxbeg;
       if (w <= 0)
-	 return;
+         return;
 
       tmp = dst->ct - dy;
       sybeg = ((tmp < 0) ? 0 : tmp);
@@ -952,7 +952,7 @@ void FUNC_LINEAR_DRAW_RLE_SPRITE(BITMAP *dst, AL_CONST RLE_SPRITE *src, int dx, 
       tmp = dst->cb - dy;
       h = ((tmp > src->h) ? src->h : tmp) - sybeg;
       if (h <= 0)
-	 return;
+         return;
    }
    else {
       w = src->w;
@@ -970,9 +970,9 @@ void FUNC_LINEAR_DRAW_RLE_SPRITE(BITMAP *dst, AL_CONST RLE_SPRITE *src, int dx, 
       long c = *s++;
 
       while (!RLE_IS_EOL(c)) {
-	 if (c > 0)
-	    s += c;
-	 c = *s++;
+         if (c > 0)
+            s += c;
+         c = *s++;
       }
    }
 
@@ -986,79 +986,79 @@ void FUNC_LINEAR_DRAW_RLE_SPRITE(BITMAP *dst, AL_CONST RLE_SPRITE *src, int dx, 
 
          /* Clip left.  */
          for (x = sxbeg; x > 0; ) {
-	    if (RLE_IS_EOL(c))
-	       goto next_line;
-	    else if (c > 0) {
-	       /* Run of solid pixels.  */
-	       if ((x - c) >= 0) {
-	          /* Fully clipped.  */
-	          x -= c;
-	          s += c;
-	       }
-	       else {
-	          /* Visible on the right.  */
-	          c -= x;
-	          s += x;
-	          break;
-	       }
-	    }
-	    else {
-	       /* Run of transparent pixels.  */
-	       if ((x + c) >= 0) {
-	          /* Fully clipped.  */
-	          x += c;
-	       }
-	       else {
-	          /* Visible on the right.  */
-	          c += x;
-	          break;
-	       }
-	    }
+            if (RLE_IS_EOL(c))
+               goto next_line;
+            else if (c > 0) {
+               /* Run of solid pixels.  */
+               if ((x - c) >= 0) {
+                  /* Fully clipped.  */
+                  x -= c;
+                  s += c;
+               }
+               else {
+                  /* Visible on the right.  */
+                  c -= x;
+                  s += x;
+                  break;
+               }
+            }
+            else {
+               /* Run of transparent pixels.  */
+               if ((x + c) >= 0) {
+                  /* Fully clipped.  */
+                  x += c;
+               }
+               else {
+                  /* Visible on the right.  */
+                  c += x;
+                  break;
+               }
+            }
 
-	    c = *s++;
+            c = *s++;
          }
 
          /* Visible part.  */
          for (x = w; x > 0; ) {
-	    if (RLE_IS_EOL(c))
-	       goto next_line;
-	    else if (c > 0) {
-	       /* Run of solid pixels.  */
-	       if ((x - c) >= 0) {
-	          /* Fully visible.  */
-	          x -= c;
-	          for (c--; c >= 0; s++, INC_PIXEL_PTR(d), c--) {
-		     unsigned long col = *s;
-		     PUT_PIXEL(d, col);
-	          }
-	       }
-	       else {
-	          /* Clipped on the right.  */
-	          c -= x;
-	          for (x--; x >= 0; s++, INC_PIXEL_PTR(d), x--) {
-		     unsigned long col = *s;
-		     PUT_PIXEL(d, col);
-	          }
-	          break;
-	       }
-	    }
-	    else {
-	       /* Run of transparent pixels.  */
-	       x += c;
-	       d = OFFSET_PIXEL_PTR(d, -c);
-	    }
+            if (RLE_IS_EOL(c))
+               goto next_line;
+            else if (c > 0) {
+               /* Run of solid pixels.  */
+               if ((x - c) >= 0) {
+                  /* Fully visible.  */
+                  x -= c;
+                  for (c--; c >= 0; s++, INC_PIXEL_PTR(d), c--) {
+                     unsigned long col = *s;
+                     PUT_PIXEL(d, col);
+                  }
+               }
+               else {
+                  /* Clipped on the right.  */
+                  c -= x;
+                  for (x--; x >= 0; s++, INC_PIXEL_PTR(d), x--) {
+                     unsigned long col = *s;
+                     PUT_PIXEL(d, col);
+                  }
+                  break;
+               }
+            }
+            else {
+               /* Run of transparent pixels.  */
+               x += c;
+               d = OFFSET_PIXEL_PTR(d, -c);
+            }
 
-	    c = *s++;
+            c = *s++;
          }
 
          /* Clip right.  */
          while (!RLE_IS_EOL(c)) {
-	    if (c > 0)
-	       s += c;
-	    c = *s++;
+            if (c > 0)
+               s += c;
+            c = *s++;
          }
 
-	 next_line: ;
+         next_line: ;
       }
    }
    else {
@@ -1068,38 +1068,38 @@ void FUNC_LINEAR_DRAW_RLE_SPRITE(BITMAP *dst, AL_CONST RLE_SPRITE *src, int dx, 
 
          /* Visible part.  */
          for (x = w; x > 0; ) {
-	    if (RLE_IS_EOL(c))
-	       goto next_line2;
-	    else if (c > 0) {
-	       /* Run of solid pixels.  */
-	       if ((x - c) >= 0) {
-	          /* Fully visible.  */
-	          x -= c;
-	          for (c--; c >= 0; s++, INC_PIXEL_PTR(d), c--) {
-		     unsigned long col = *s;
-		     PUT_PIXEL(d, col);
-	          }
-	       }
-	       else {
-	          /* Clipped on the right.  */
-	          c -= x;
-	          for (x--; x >= 0; s++, INC_PIXEL_PTR(d), x--) {
-		     unsigned long col = *s;
-		     PUT_PIXEL(d, col);
-	          }
-	          break;
-	       }
-	    }
-	    else {
-	       /* Run of transparent pixels.  */
-	       x += c;
-	       d = OFFSET_PIXEL_PTR(d, -c);
-	    }
+            if (RLE_IS_EOL(c))
+               goto next_line2;
+            else if (c > 0) {
+               /* Run of solid pixels.  */
+               if ((x - c) >= 0) {
+                  /* Fully visible.  */
+                  x -= c;
+                  for (c--; c >= 0; s++, INC_PIXEL_PTR(d), c--) {
+                     unsigned long col = *s;
+                     PUT_PIXEL(d, col);
+                  }
+               }
+               else {
+                  /* Clipped on the right.  */
+                  c -= x;
+                  for (x--; x >= 0; s++, INC_PIXEL_PTR(d), x--) {
+                     unsigned long col = *s;
+                     PUT_PIXEL(d, col);
+                  }
+                  break;
+               }
+            }
+            else {
+               /* Run of transparent pixels.  */
+               x += c;
+               d = OFFSET_PIXEL_PTR(d, -c);
+            }
 
-	    c = *s++;
+            c = *s++;
          }
 
-	 next_line2: ;
+         next_line2: ;
       }
    }
 
@@ -1132,7 +1132,7 @@ void FUNC_LINEAR_DRAW_TRANS_RLE_SPRITE(BITMAP *dst, AL_CONST RLE_SPRITE *src, in
       tmp = dst->cr - dx;
       w = ((tmp > src->w) ? src->w : tmp) - sxbeg;
       if (w <= 0)
-	 return;
+         return;
 
       tmp = dst->ct - dy;
       sybeg = ((tmp < 0) ? 0 : tmp);
@@ -1141,7 +1141,7 @@ void FUNC_LINEAR_DRAW_TRANS_RLE_SPRITE(BITMAP *dst, AL_CONST RLE_SPRITE *src, in
       tmp = dst->cb - dy;
       h = ((tmp > src->h) ? src->h : tmp) - sybeg;
       if (h <= 0)
-	 return;
+         return;
    }
    else {
       w = src->w;
@@ -1160,9 +1160,9 @@ void FUNC_LINEAR_DRAW_TRANS_RLE_SPRITE(BITMAP *dst, AL_CONST RLE_SPRITE *src, in
       long c = *s++;
 
       while (!RLE_IS_EOL(c)) {
-	 if (c > 0)
-	    s += c;
-	 c = *s++;
+         if (c > 0)
+            s += c;
+         c = *s++;
       }
    }
 
@@ -1177,77 +1177,77 @@ void FUNC_LINEAR_DRAW_TRANS_RLE_SPRITE(BITMAP *dst, AL_CONST RLE_SPRITE *src, in
 
          /* Clip left.  */
          for (x = sxbeg; x > 0; ) {
-	    if (RLE_IS_EOL(c))
-	       goto next_line;
-	    else if (c > 0) {
-	       /* Run of solid pixels.  */
-	       if ((x - c) >= 0) {
-	          /* Fully clipped.  */
-	          x -= c;
-	          s += c;
-	       }
-	       else {
-	          /* Visible on the right.  */
-	          c -= x;
-	          s += x;
-	          break;
-	       }
-	    }
-	    else {
-	       /* Run of transparent pixels.  */
-	       if ((x + c) >= 0) {
-	          /* Fully clipped.  */
-	          x += c;
-	       }
-	       else {
-	          /* Visible on the right.  */
-	          c += x;
-	          break;
-	       }
-	    }
+            if (RLE_IS_EOL(c))
+               goto next_line;
+            else if (c > 0) {
+               /* Run of solid pixels.  */
+               if ((x - c) >= 0) {
+                  /* Fully clipped.  */
+                  x -= c;
+                  s += c;
+               }
+               else {
+                  /* Visible on the right.  */
+                  c -= x;
+                  s += x;
+                  break;
+               }
+            }
+            else {
+               /* Run of transparent pixels.  */
+               if ((x + c) >= 0) {
+                  /* Fully clipped.  */
+                  x += c;
+               }
+               else {
+                  /* Visible on the right.  */
+                  c += x;
+                  break;
+               }
+            }
 
-	    c = *s++;
+            c = *s++;
          }
 
          /* Visible part.  */
          for (x = w; x > 0; ) {
-	    if (RLE_IS_EOL(c))
-	       goto next_line;
-	    else if (c > 0) {
-	       /* Run of solid pixels.  */
-	       if ((x - c) >= 0) {
-	          /* Fully visible.  */
-	          x -= c;
-	          for (c--; c >= 0; s++, INC_PIXEL_PTR(ds), INC_PIXEL_PTR(dd), c--) {
-		     unsigned long col = DTS_BLEND(blender, GET_PIXEL(ds), *s);
-		     PUT_PIXEL(dd, col);
-	          }
-	       }
-	       else {
-	          /* Clipped on the right.  */
-	          c -= x;
-	          for (x--; x >= 0; s++, INC_PIXEL_PTR(ds), INC_PIXEL_PTR(dd), x--) {
-		     unsigned long col = DTS_BLEND(blender, GET_PIXEL(ds), *s);
-		     PUT_PIXEL(dd, col);
-	          }
-	          break;
-	       }
-	    }
-	    else {
-	       /* Run of transparent pixels.  */
-	       x += c;
-	       ds = OFFSET_PIXEL_PTR(ds, -c);
-	       dd = OFFSET_PIXEL_PTR(dd, -c);
-	    }
+            if (RLE_IS_EOL(c))
+               goto next_line;
+            else if (c > 0) {
+               /* Run of solid pixels.  */
+               if ((x - c) >= 0) {
+                  /* Fully visible.  */
+                  x -= c;
+                  for (c--; c >= 0; s++, INC_PIXEL_PTR(ds), INC_PIXEL_PTR(dd), c--) {
+                     unsigned long col = DTS_BLEND(blender, GET_PIXEL(ds), *s);
+                     PUT_PIXEL(dd, col);
+                  }
+               }
+               else {
+                  /* Clipped on the right.  */
+                  c -= x;
+                  for (x--; x >= 0; s++, INC_PIXEL_PTR(ds), INC_PIXEL_PTR(dd), x--) {
+                     unsigned long col = DTS_BLEND(blender, GET_PIXEL(ds), *s);
+                     PUT_PIXEL(dd, col);
+                  }
+                  break;
+               }
+            }
+            else {
+               /* Run of transparent pixels.  */
+               x += c;
+               ds = OFFSET_PIXEL_PTR(ds, -c);
+               dd = OFFSET_PIXEL_PTR(dd, -c);
+            }
 
-	    c = *s++;
+            c = *s++;
          }
 
          /* Clip right.  */
          while (!RLE_IS_EOL(c)) {
-	    if (c > 0)
-	       s += c;
-	    c = *s++;
+            if (c > 0)
+               s += c;
+            c = *s++;
          }
 
 next_line:{}
@@ -1261,43 +1261,43 @@ next_line:{}
 
          /* Visible part.  */
          for (x = w; x > 0; ) {
-	    if (RLE_IS_EOL(c))
-	       goto next_line2;
-	    else if (c > 0) {
-	       /* Run of solid pixels.  */
-	       if ((x - c) >= 0) {
-	          /* Fully visible.  */
-	          x -= c;
-	          for (c--; c >= 0; s++, INC_PIXEL_PTR(ds), INC_PIXEL_PTR(dd), c--) {
-		     unsigned long col = DTS_BLEND(blender, GET_PIXEL(ds), *s);
-		     PUT_PIXEL(dd, col);
-	          }
-	       }
-	       else {
-	          /* Clipped on the right.  */
-	          c -= x;
-	          for (x--; x >= 0; s++, INC_PIXEL_PTR(ds), INC_PIXEL_PTR(dd), x--) {
-		     unsigned long col = DTS_BLEND(blender, GET_PIXEL(ds), *s);
-		     PUT_PIXEL(dd, col);
-	          }
-	          break;
-	       }
-	    }
-	    else {
-	       /* Run of transparent pixels.  */
-	       x += c;
-	       ds = OFFSET_PIXEL_PTR(ds, -c);
-	       dd = OFFSET_PIXEL_PTR(dd, -c);
-	    }
+            if (RLE_IS_EOL(c))
+               goto next_line2;
+            else if (c > 0) {
+               /* Run of solid pixels.  */
+               if ((x - c) >= 0) {
+                  /* Fully visible.  */
+                  x -= c;
+                  for (c--; c >= 0; s++, INC_PIXEL_PTR(ds), INC_PIXEL_PTR(dd), c--) {
+                     unsigned long col = DTS_BLEND(blender, GET_PIXEL(ds), *s);
+                     PUT_PIXEL(dd, col);
+                  }
+               }
+               else {
+                  /* Clipped on the right.  */
+                  c -= x;
+                  for (x--; x >= 0; s++, INC_PIXEL_PTR(ds), INC_PIXEL_PTR(dd), x--) {
+                     unsigned long col = DTS_BLEND(blender, GET_PIXEL(ds), *s);
+                     PUT_PIXEL(dd, col);
+                  }
+                  break;
+               }
+            }
+            else {
+               /* Run of transparent pixels.  */
+               x += c;
+               ds = OFFSET_PIXEL_PTR(ds, -c);
+               dd = OFFSET_PIXEL_PTR(dd, -c);
+            }
 
-	    c = *s++;
+            c = *s++;
          }
 
          /* Clip right.  */
          while (!RLE_IS_EOL(c)) {
-	    if (c > 0)
-	       s += c;
-	    c = *s++;
+            if (c > 0)
+               s += c;
+            c = *s++;
          }
 
 next_line2:{}
@@ -1335,7 +1335,7 @@ void FUNC_LINEAR_DRAW_TRANS_RGBA_RLE_SPRITE(BITMAP *dst, AL_CONST RLE_SPRITE *sr
       tmp = dst->cr - dx;
       w = ((tmp > src->w) ? src->w : tmp) - sxbeg;
       if (w <= 0)
-	 return;
+         return;
 
       tmp = dst->ct - dy;
       sybeg = ((tmp < 0) ? 0 : tmp);
@@ -1344,7 +1344,7 @@ void FUNC_LINEAR_DRAW_TRANS_RGBA_RLE_SPRITE(BITMAP *dst, AL_CONST RLE_SPRITE *sr
       tmp = dst->cb - dy;
       h = ((tmp > src->h) ? src->h : tmp) - sybeg;
       if (h <= 0)
-	 return;
+         return;
    }
    else {
       w = src->w;
@@ -1363,9 +1363,9 @@ void FUNC_LINEAR_DRAW_TRANS_RGBA_RLE_SPRITE(BITMAP *dst, AL_CONST RLE_SPRITE *sr
       long c = *s++;
 
       while (c != MASK_COLOR_32) {
-	 if (c > 0)
-	    s += c;
-	 c = *s++;
+         if (c > 0)
+            s += c;
+         c = *s++;
       }
    }
 
@@ -1380,77 +1380,77 @@ void FUNC_LINEAR_DRAW_TRANS_RGBA_RLE_SPRITE(BITMAP *dst, AL_CONST RLE_SPRITE *sr
 
          /* Clip left.  */
          for (x = sxbeg; x > 0; ) {
-	    if (c == MASK_COLOR_32)
-	       goto next_line;
-	    else if (c > 0) {
-	       /* Run of solid pixels.  */
-	       if ((x - c) >= 0) {
-	          /* Fully clipped.  */
-	          x -= c;
-	          s += c;
-	       }
-	       else {
-	          /* Visible on the right.  */
-	          c -= x;
-	          s += x;
-	          break;
-	       }
-	    }
-	    else {
-	       /* Run of transparent pixels.  */
-	       if ((x + c) >= 0) {
-	          /* Fully clipped.  */
-	          x += c;
-	       }
-	       else {
-	          /* Visible on the right.  */
-	          c += x;
-	          break;
-	       }
-	    }
+            if (c == MASK_COLOR_32)
+               goto next_line;
+            else if (c > 0) {
+               /* Run of solid pixels.  */
+               if ((x - c) >= 0) {
+                  /* Fully clipped.  */
+                  x -= c;
+                  s += c;
+               }
+               else {
+                  /* Visible on the right.  */
+                  c -= x;
+                  s += x;
+                  break;
+               }
+            }
+            else {
+               /* Run of transparent pixels.  */
+               if ((x + c) >= 0) {
+                  /* Fully clipped.  */
+                  x += c;
+               }
+               else {
+                  /* Visible on the right.  */
+                  c += x;
+                  break;
+               }
+            }
 
-	    c = *s++;
+            c = *s++;
          }
 
          /* Visible part.  */
          for (x = w; x > 0; ) {
-	    if (c == MASK_COLOR_32)
-	       goto next_line;
-	    else if (c > 0) {
-	       /* Run of solid pixels.  */
-	       if ((x - c) >= 0) {
-	          /* Fully visible.  */
-	          x -= c;
-	          for (c--; c >= 0; s++, INC_PIXEL_PTR(ds), INC_PIXEL_PTR(dd), c--) {
-		     unsigned long col = RGBA_BLEND(blender, GET_PIXEL(ds), *s);
-		     PUT_PIXEL(dd, col);
-	          }
-	       }
-	       else {
-	          /* Clipped on the right.  */
-	          c -= x;
-	          for (x--; x >= 0; s++, INC_PIXEL_PTR(ds), INC_PIXEL_PTR(dd), x--) {
-		     unsigned long col = RGBA_BLEND(blender, GET_PIXEL(ds), *s);
-		     PUT_PIXEL(dd, col);
-	          }
-	          break;
-	       }
-	    }
-	    else {
-	       /* Run of transparent pixels.  */
-	       x += c;
-	       ds = OFFSET_PIXEL_PTR(ds, -c);
-	       dd = OFFSET_PIXEL_PTR(dd, -c);
-	    }
+            if (c == MASK_COLOR_32)
+               goto next_line;
+            else if (c > 0) {
+               /* Run of solid pixels.  */
+               if ((x - c) >= 0) {
+                  /* Fully visible.  */
+                  x -= c;
+                  for (c--; c >= 0; s++, INC_PIXEL_PTR(ds), INC_PIXEL_PTR(dd), c--) {
+                     unsigned long col = RGBA_BLEND(blender, GET_PIXEL(ds), *s);
+                     PUT_PIXEL(dd, col);
+                  }
+               }
+               else {
+                  /* Clipped on the right.  */
+                  c -= x;
+                  for (x--; x >= 0; s++, INC_PIXEL_PTR(ds), INC_PIXEL_PTR(dd), x--) {
+                     unsigned long col = RGBA_BLEND(blender, GET_PIXEL(ds), *s);
+                     PUT_PIXEL(dd, col);
+                  }
+                  break;
+               }
+            }
+            else {
+               /* Run of transparent pixels.  */
+               x += c;
+               ds = OFFSET_PIXEL_PTR(ds, -c);
+               dd = OFFSET_PIXEL_PTR(dd, -c);
+            }
 
-	    c = *s++;
+            c = *s++;
          }
 
          /* Clip right.  */
          while (c != MASK_COLOR_32) {
-	    if (c > 0)
-	       s += c;
-	    c = *s++;
+            if (c > 0)
+               s += c;
+            c = *s++;
          }
 
       next_line:{}
@@ -1464,36 +1464,36 @@ void FUNC_LINEAR_DRAW_TRANS_RGBA_RLE_SPRITE(BITMAP *dst, AL_CONST RLE_SPRITE *sr
 
          /* Visible part.  */
          for (x = w; x > 0; ) {
-	    if (c == MASK_COLOR_32)
-	       goto next_line2;
-	    else if (c > 0) {
-	       /* Run of solid pixels.  */
-	       if ((x - c) >= 0) {
-	          /* Fully visible.  */
-	          x -= c;
-	          for (c--; c >= 0; s++, INC_PIXEL_PTR(ds), INC_PIXEL_PTR(dd), c--) {
-		     unsigned long col = RGBA_BLEND(blender, GET_PIXEL(ds), *s);
-		     PUT_PIXEL(dd, col);
-	          }
-	       }
-	       else {
-	          /* Clipped on the right.  */
-	          c -= x;
-	          for (x--; x >= 0; s++, INC_PIXEL_PTR(ds), INC_PIXEL_PTR(dd), x--) {
-		     unsigned long col = RGBA_BLEND(blender, GET_PIXEL(ds), *s);
-		     PUT_PIXEL(dd, col);
-	          }
-	          break;
-	       }
-	    }
-	    else {
-	       /* Run of transparent pixels.  */
-	       x += c;
-	       ds = OFFSET_PIXEL_PTR(ds, -c);
-	       dd = OFFSET_PIXEL_PTR(dd, -c);
-	    }
+            if (c == MASK_COLOR_32)
+               goto next_line2;
+            else if (c > 0) {
+               /* Run of solid pixels.  */
+               if ((x - c) >= 0) {
+                  /* Fully visible.  */
+                  x -= c;
+                  for (c--; c >= 0; s++, INC_PIXEL_PTR(ds), INC_PIXEL_PTR(dd), c--) {
+                     unsigned long col = RGBA_BLEND(blender, GET_PIXEL(ds), *s);
+                     PUT_PIXEL(dd, col);
+                  }
+               }
+               else {
+                  /* Clipped on the right.  */
+                  c -= x;
+                  for (x--; x >= 0; s++, INC_PIXEL_PTR(ds), INC_PIXEL_PTR(dd), x--) {
+                     unsigned long col = RGBA_BLEND(blender, GET_PIXEL(ds), *s);
+                     PUT_PIXEL(dd, col);
+                  }
+                  break;
+               }
+            }
+            else {
+               /* Run of transparent pixels.  */
+               x += c;
+               ds = OFFSET_PIXEL_PTR(ds, -c);
+               dd = OFFSET_PIXEL_PTR(dd, -c);
+            }
 
-	    c = *s++;
+            c = *s++;
          }
 
       next_line2:{}
@@ -1531,7 +1531,7 @@ void FUNC_LINEAR_DRAW_LIT_RLE_SPRITE(BITMAP *dst, AL_CONST RLE_SPRITE *src, int 
       tmp = dst->cr - dx;
       w = ((tmp > src->w) ? src->w : tmp) - sxbeg;
       if (w <= 0)
-	 return;
+         return;
 
       tmp = dst->ct - dy;
       sybeg = ((tmp < 0) ? 0 : tmp);
@@ -1540,7 +1540,7 @@ void FUNC_LINEAR_DRAW_LIT_RLE_SPRITE(BITMAP *dst, AL_CONST RLE_SPRITE *src, int 
       tmp = dst->cb - dy;
       h = ((tmp > src->h) ? src->h : tmp) - sybeg;
       if (h <= 0)
-	 return;
+         return;
    }
    else {
       w = src->w;
@@ -1559,9 +1559,9 @@ void FUNC_LINEAR_DRAW_LIT_RLE_SPRITE(BITMAP *dst, AL_CONST RLE_SPRITE *src, int 
       long c = *s++;
 
       while (!RLE_IS_EOL(c)) {
-	 if (c > 0)
-	    s += c;
-	 c = *s++;
+         if (c > 0)
+            s += c;
+         c = *s++;
       }
    }
 
@@ -1575,76 +1575,76 @@ void FUNC_LINEAR_DRAW_LIT_RLE_SPRITE(BITMAP *dst, AL_CONST RLE_SPRITE *src, int 
 
          /* Clip left.  */
          for (x = sxbeg; x > 0; ) {
-	    if (RLE_IS_EOL(c))
-	       goto next_line;
-	    else if (c > 0) {
-	       /* Run of solid pixels.  */
-	       if ((x - c) >= 0) {
-	          /* Fully clipped.  */
-	          x -= c;
-	          s += c;
-	       }
-	       else {
-	          /* Visible on the right.  */
-	          c -= x;
-	          s += x;
-	          break;
-	       }
-	    }
-	    else {
-	       /* Run of transparent pixels.  */
-	       if ((x + c) >= 0) {
-	          /* Fully clipped.  */
-	          x += c;
-	       }
-	       else {
-	          /* Visible on the right.  */
-	          c += x;
-	          break;
-	       }
-	    }
+            if (RLE_IS_EOL(c))
+               goto next_line;
+            else if (c > 0) {
+               /* Run of solid pixels.  */
+               if ((x - c) >= 0) {
+                  /* Fully clipped.  */
+                  x -= c;
+                  s += c;
+               }
+               else {
+                  /* Visible on the right.  */
+                  c -= x;
+                  s += x;
+                  break;
+               }
+            }
+            else {
+               /* Run of transparent pixels.  */
+               if ((x + c) >= 0) {
+                  /* Fully clipped.  */
+                  x += c;
+               }
+               else {
+                  /* Visible on the right.  */
+                  c += x;
+                  break;
+               }
+            }
 
-	    c = *s++;
+            c = *s++;
          }
 
          /* Visible part.  */
          for (x = w; x > 0; ) {
-	    if (RLE_IS_EOL(c))
-	       goto next_line;
-	    else if (c > 0) {
-	       /* Run of solid pixels.  */
-	       if ((x - c) >= 0) {
-	          /* Fully visible.  */
-	          x -= c;
-	          for (c--; c >= 0; s++, INC_PIXEL_PTR(d), c--) {
-		     unsigned long col = DLS_BLEND(blender, color, *s);
-		     PUT_PIXEL(d, col);
-	          }
-	       }
-	       else {
-	          /* Clipped on the right.  */
-	          c -= x;
-	          for (x--; x >= 0; s++, INC_PIXEL_PTR(d), x--) {
-		     unsigned long col = DLS_BLEND(blender, color, *s);
-		     PUT_PIXEL(d, col);
-	          }
-	          break;
-	       }
-	    }
-	    else {
-	       /* Run of transparent pixels.  */
-	       x += c;
-	       d = OFFSET_PIXEL_PTR(d, -c);
-	    }
+            if (RLE_IS_EOL(c))
+               goto next_line;
+            else if (c > 0) {
+               /* Run of solid pixels.  */
+               if ((x - c) >= 0) {
+                  /* Fully visible.  */
+                  x -= c;
+                  for (c--; c >= 0; s++, INC_PIXEL_PTR(d), c--) {
+                     unsigned long col = DLS_BLEND(blender, color, *s);
+                     PUT_PIXEL(d, col);
+                  }
+               }
+               else {
+                  /* Clipped on the right.  */
+                  c -= x;
+                  for (x--; x >= 0; s++, INC_PIXEL_PTR(d), x--) {
+                     unsigned long col = DLS_BLEND(blender, color, *s);
+                     PUT_PIXEL(d, col);
+                  }
+                  break;
+               }
+            }
+            else {
+               /* Run of transparent pixels.  */
+               x += c;
+               d = OFFSET_PIXEL_PTR(d, -c);
+            }
 
-	    c = *s++;
+            c = *s++;
          }
 
          /* Clip right.  */
          while (!RLE_IS_EOL(c)) {
-	    if (c > 0)
-	       s += c;
-	    c = *s++;
+            if (c > 0)
+               s += c;
+            c = *s++;
          }
 
 next_line:{}
@@ -1658,35 +1658,35 @@ next_line:{}
 
          /* Visible part.  */
          for (x = w; x > 0; ) {
-	    if (RLE_IS_EOL(c))
-	       goto next_line2;
-	    else if (c > 0) {
-	       /* Run of solid pixels.  */
-	       if ((x - c) >= 0) {
-	          /* Fully visible.  */
-	          x -= c;
-	          for (c--; c >= 0; s++, INC_PIXEL_PTR(d), c--) {
-		     unsigned long col = DLS_BLEND(blender, color, *s);
-		     PUT_PIXEL(d, col);
-	          }
-	       }
-	       else {
-	          /* Clipped on the right.  */
-	          c -= x;
-	          for (x--; x >= 0; s++, INC_PIXEL_PTR(d), x--) {
-		     unsigned long col = DLS_BLEND(blender, color, *s);
-		     PUT_PIXEL(d, col);
-	          }
-	          break;
-	       }
-	    }
-	    else {
-	       /* Run of transparent pixels.  */
-	       x += c;
-	       d = OFFSET_PIXEL_PTR(d, -c);
-	    }
+            if (RLE_IS_EOL(c))
+               goto next_line2;
+            else if (c > 0) {
+               /* Run of solid pixels.  */
+               if ((x - c) >= 0) {
+                  /* Fully visible.  */
+                  x -= c;
+                  for (c--; c >= 0; s++, INC_PIXEL_PTR(d), c--) {
+                     unsigned long col = DLS_BLEND(blender, color, *s);
+                     PUT_PIXEL(d, col);
+                  }
+               }
+               else {
+                  /* Clipped on the right.  */
+                  c -= x;
+                  for (x--; x >= 0; s++, INC_PIXEL_PTR(d), x--) {
+                     unsigned long col = DLS_BLEND(blender, color, *s);
+                     PUT_PIXEL(d, col);
+                  }
+                  break;
+               }
+            }
+            else {
+               /* Run of transparent pixels.  */
+               x += c;
+               d = OFFSET_PIXEL_PTR(d, -c);
+            }
 
-	    c = *s++;
+            c = *s++;
          }
 
       next_line2:{}
@@ -1697,4 +1697,3 @@ next_line:{}
 }
 
 #endif /* !__bma_cspr_h */
-

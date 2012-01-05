@@ -99,7 +99,7 @@ CheckUpdateThreadLauncher::CheckUpdateThreadLauncher()
 
     // Verify if we are in the "WaitDays" period...
     if (now < lastCheck+60*60*24*waitDays &&
-	now > lastCheck) {	                         // <- Avoid broken clocks
+        now > lastCheck) {                               // <- Avoid broken clocks
       // So we do not check for updates.
       m_doCheck = false;
     }
@@ -128,7 +128,7 @@ CheckUpdateThreadLauncher::~CheckUpdateThreadLauncher()
   set_config_int("Updater", "Exits", get_config_int("Updater", "Exits", 0)+1);
   flush_config_file();
 }
-    
+
 void CheckUpdateThreadLauncher::launch()
 {
   // In this case we are in the "wait days" period, so we don't check
@@ -157,7 +157,7 @@ void CheckUpdateThreadLauncher::monitorActivity()
 {
   // If we do not receive a response yet...
   if (!m_received)
-    return;			// Skip and wait the next call.
+    return;                     // Skip and wait the next call.
 
   // Depending on the type of update received
   switch (m_response.getUpdateType()) {
@@ -201,7 +201,7 @@ void CheckUpdateThreadLauncher::checkForUpdates()
   // Add mini-stats in the request
   std::stringstream extraParams;
   extraParams << "inits=" << m_inits
-	      << "&exits=" << m_exits;
+              << "&exits=" << m_exits;
 
   if (m_isDeveloper)
     extraParams << "&dev=1";

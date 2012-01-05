@@ -30,10 +30,10 @@
 // (centerX,centerY) element of the matrix.
 template<typename Traits, typename Delegate>
 inline void get_neighboring_pixels(const Image* sourceImage, int x, int y,
-				   int width, int height,
-				   int centerX, int centerY,
-				   TiledMode tiledMode,
-				   Delegate& delegate)
+                                   int width, int height,
+                                   int centerX, int centerY,
+                                   TiledMode tiledMode,
+                                   Delegate& delegate)
 {
   int dx, dy;
 
@@ -61,17 +61,17 @@ inline void get_neighboring_pixels(const Image* sourceImage, int x, int y,
     addx = 0;
     if (getx < 0) {
       if (tiledMode & TILED_X_AXIS)
-	getx = sourceImage->w - (-(getx+1) % sourceImage->w) - 1;
+        getx = sourceImage->w - (-(getx+1) % sourceImage->w) - 1;
       else {
-	addx = -getx;
-	getx = 0;
+        addx = -getx;
+        getx = 0;
       }
     }
     else if (getx >= sourceImage->w) {
       if (tiledMode & TILED_X_AXIS)
-	getx = getx % sourceImage->w;
+        getx = getx % sourceImage->w;
       else
-	getx = sourceImage->w-1;
+        getx = sourceImage->w-1;
     }
 
     typename Traits::const_address_t srcAddress =
@@ -83,24 +83,24 @@ inline void get_neighboring_pixels(const Image* sourceImage, int x, int y,
 
       // Update X position to get pixel.
       if (getx < sourceImage->w-1) {
-	++getx;
-	if (addx == 0)
-	  ++srcAddress;
-	else
-	  --addx;
+        ++getx;
+        if (addx == 0)
+          ++srcAddress;
+        else
+          --addx;
       }
       else if (tiledMode & TILED_X_AXIS) {
-	getx = 0;
-	srcAddress = image_address_fast<Traits>(sourceImage, getx, gety);
+        getx = 0;
+        srcAddress = image_address_fast<Traits>(sourceImage, getx, gety);
       }
     }
 
     // Update Y position to get pixel
     if (gety < sourceImage->h-1) {
       if (addy == 0)
-	++gety;
+        ++gety;
       else
-	--addy;
+        --addy;
     }
     else if (tiledMode & TILED_Y_AXIS)
       gety = 0;

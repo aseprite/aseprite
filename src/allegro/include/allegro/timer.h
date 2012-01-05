@@ -73,4 +73,3 @@ AL_FUNC(void, rest_callback, (unsigned int tyme, AL_METHOD(void, callback, (void
 #endif
 
 #endif          /* ifndef ALLEGRO_TIMER_H */
-

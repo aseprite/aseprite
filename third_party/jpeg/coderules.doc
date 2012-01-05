@@ -21,11 +21,11 @@ Block comments should be laid out thusly:
  */
 
 We indent statements in K&R style, e.g.,
-	if (test) {
-	  then-part;
-	} else {
-	  else-part;
-	}
+        if (test) {
+          then-part;
+        } else {
+          else-part;
+        }
 with two spaces per indentation level.  (This indentation convention is
 handled automatically by GNU Emacs and many other text editors.)
 
@@ -57,16 +57,16 @@ keywords can be inserted for use in Windows DLLs.)
 
 ansi2knr does not transform method declarations (function pointers in
 structs).  We handle these with a macro JMETHOD, defined as
-	#ifdef HAVE_PROTOTYPES
-	#define JMETHOD(type,methodname,arglist)  type (*methodname) arglist
-	#else
-	#define JMETHOD(type,methodname,arglist)  type (*methodname) ()
-	#endif
+        #ifdef HAVE_PROTOTYPES
+        #define JMETHOD(type,methodname,arglist)  type (*methodname) arglist
+        #else
+        #define JMETHOD(type,methodname,arglist)  type (*methodname) ()
+        #endif
 which is used like this:
-	struct function_pointers {
-	  JMETHOD(void, init_entropy_encoder, (int somearg, jparms *jp));
-	  JMETHOD(void, term_entropy_encoder, (void));
-	};
+        struct function_pointers {
+          JMETHOD(void, init_entropy_encoder, (int somearg, jparms *jp));
+          JMETHOD(void, term_entropy_encoder, (void));
+        };
 Note the set of parentheses surrounding the parameter list.
 
 A similar solution is used for forward and external function declarations

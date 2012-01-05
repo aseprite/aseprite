@@ -41,8 +41,8 @@ protected:
 
 AboutCommand::AboutCommand()
   : Command("About",
-	    "About",
-	    CmdUIOnlyFlag)
+            "About",
+            CmdUIOnlyFlag)
 {
 }
 
@@ -79,7 +79,7 @@ void AboutCommand::onExecute(Context* context)
   grid->addChildInCell(copyright, 2, 1, 0);
   grid->addChildInCell(website, 2, 1, 0);
   grid->addChildInCell(bottom_box1, 2, 1, 0);
-  
+
   jwidget_magnetic(close_button, true);
 
   jwidget_expansive(bottom_box2, true);
@@ -93,10 +93,10 @@ void AboutCommand::onExecute(Context* context)
   frame->addChild(box1);
 
   jwidget_set_border(close_button,
-  		     close_button->border_width.l + 16*jguiscale(),
-  		     close_button->border_width.t,
-  		     close_button->border_width.r + 16*jguiscale(),
-  		     close_button->border_width.b);
+                     close_button->border_width.l + 16*jguiscale(),
+                     close_button->border_width.t,
+                     close_button->border_width.r + 16*jguiscale(),
+                     close_button->border_width.b);
 
   close_button->Click.connect(Bind<void>(&Frame::closeWindow, frame.get(), close_button));
 

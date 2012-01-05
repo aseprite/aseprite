@@ -45,44 +45,44 @@ void ContextFlags::update(Context* context)
       m_flags |= ActiveDocumentIsReadable;
 
       if (document->isMaskVisible())
-	m_flags |= HasVisibleMask;
+        m_flags |= HasVisibleMask;
 
       Sprite* sprite = document->getSprite();
       if (sprite) {
-	m_flags |= HasActiveSprite;
+        m_flags |= HasActiveSprite;
 
-	if (sprite->getBackgroundLayer())
-	  m_flags |= HasBackgroundLayer;
+        if (sprite->getBackgroundLayer())
+          m_flags |= HasBackgroundLayer;
 
-	Layer* layer = sprite->getCurrentLayer();
-	if (layer) {
-	  m_flags |= HasActiveLayer;
+        Layer* layer = sprite->getCurrentLayer();
+        if (layer) {
+          m_flags |= HasActiveLayer;
 
-	  if (layer->is_background())
-	    m_flags |= ActiveLayerIsBackground;
+          if (layer->is_background())
+            m_flags |= ActiveLayerIsBackground;
 
-	  if (layer->is_readable())
-	    m_flags |= ActiveLayerIsReadable;
+          if (layer->is_readable())
+            m_flags |= ActiveLayerIsReadable;
 
-	  if (layer->is_writable())
-	    m_flags |= ActiveLayerIsWritable;
+          if (layer->is_writable())
+            m_flags |= ActiveLayerIsWritable;
 
-	  if (layer->is_image()) {
-	    m_flags |= ActiveLayerIsImage;
+          if (layer->is_image()) {
+            m_flags |= ActiveLayerIsImage;
 
-	    Cel* cel = static_cast<LayerImage*>(layer)->getCel(sprite->getCurrentFrame());
-	    if (cel) {
-	      m_flags |= HasActiveCel;
+            Cel* cel = static_cast<LayerImage*>(layer)->getCel(sprite->getCurrentFrame());
+            if (cel) {
+              m_flags |= HasActiveCel;
 
-	      if (sprite->getStock()->getImage(cel->getImage()))
-		m_flags |= HasActiveImage;
-	    }
-	  }
-	}
+              if (sprite->getStock()->getImage(cel->getImage()))
+                m_flags |= HasActiveImage;
+            }
+          }
+        }
       }
 
       if (document->lockToWrite())
-	m_flags |= ActiveDocumentIsWritable;
+        m_flags |= ActiveDocumentIsWritable;
 
       document->unlock();
     }

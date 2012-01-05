@@ -13,4 +13,4 @@ typedef uint32_t ObjectId;
 
 } // namespace undo
 
-#endif	// UNDO_OBJECT_ID_H_INCLUDED
+#endif  // UNDO_OBJECT_ID_H_INCLUDED

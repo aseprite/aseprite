@@ -47,8 +47,8 @@ protected:
 
 DuplicateSpriteCommand::DuplicateSpriteCommand()
   : Command("DuplicateSprite",
-	    "Duplicate Sprite",
-	    CmdUIOnlyFlag)
+            "Duplicate Sprite",
+            CmdUIOnlyFlag)
 {
 }
 

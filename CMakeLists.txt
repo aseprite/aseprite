@@ -1,6 +1,6 @@
 # ASE - Allegro Sprite Editor
 # Copyright (C) 2001-2011  David Capello
-# 
+#
 # Parts of this file come from the Allegro 4.4 CMakeLists.txt
 
 # CMake setup
@@ -68,14 +68,14 @@ endif(COMPILER_MSVC)
 ######################################################################
 # Directories
 
-set(CURL_DIR		${CMAKE_SOURCE_DIR}/third_party/curl)
-set(GIFLIB_DIR		${CMAKE_SOURCE_DIR}/third_party/giflib)
-set(LIBFREETYPE_DIR	${CMAKE_SOURCE_DIR}/third_party/freetype)
-set(LIBJPEG_DIR		${CMAKE_SOURCE_DIR}/third_party/jpeg)
-set(LIBPNG_DIR		${CMAKE_SOURCE_DIR}/third_party/libpng)
-set(LOADPNG_DIR		${CMAKE_SOURCE_DIR}/third_party/loadpng)
-set(TINYXML_DIR		${CMAKE_SOURCE_DIR}/third_party/tinyxml)
-set(ZLIB_DIR		${CMAKE_SOURCE_DIR}/third_party/zlib)
+set(CURL_DIR            ${CMAKE_SOURCE_DIR}/third_party/curl)
+set(GIFLIB_DIR          ${CMAKE_SOURCE_DIR}/third_party/giflib)
+set(LIBFREETYPE_DIR     ${CMAKE_SOURCE_DIR}/third_party/freetype)
+set(LIBJPEG_DIR         ${CMAKE_SOURCE_DIR}/third_party/jpeg)
+set(LIBPNG_DIR          ${CMAKE_SOURCE_DIR}/third_party/libpng)
+set(LOADPNG_DIR         ${CMAKE_SOURCE_DIR}/third_party/loadpng)
+set(TINYXML_DIR         ${CMAKE_SOURCE_DIR}/third_party/tinyxml)
+set(ZLIB_DIR            ${CMAKE_SOURCE_DIR}/third_party/zlib)
 
 # Allegro header files
 include_directories(${CMAKE_SOURCE_DIR}/src/allegro/include)
@@ -224,8 +224,8 @@ if(APPLE)
     # NSQuickDrawView.h when compiling in 64-bit mode, and 64-bit mode is the
     # default when compiling on Snow Leopard.
     if(${CMAKE_SYSTEM_PROCESSOR} STREQUAL i386)
-	set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -arch i386")
-	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -arch i386")
+        set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -arch i386")
+        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -arch i386")
     endif()
 
     # The Mac port simply uses too many deprecated things.

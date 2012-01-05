@@ -23,18 +23,18 @@
 
 #include <vector>
 
-#define FILE_SUPPORT_LOAD		0x00000001
-#define FILE_SUPPORT_SAVE		0x00000002
-#define FILE_SUPPORT_RGB		0x00000004
-#define FILE_SUPPORT_RGBA		0x00000008
-#define FILE_SUPPORT_GRAY		0x00000010
-#define FILE_SUPPORT_GRAYA		0x00000020
-#define FILE_SUPPORT_INDEXED		0x00000040
-#define FILE_SUPPORT_LAYERS		0x00000080
-#define FILE_SUPPORT_FRAMES		0x00000100
-#define FILE_SUPPORT_PALETTES		0x00000200
-#define FILE_SUPPORT_SEQUENCES		0x00000400
-#define FILE_SUPPORT_GET_FORMAT_OPTIONS	0x00000800
+#define FILE_SUPPORT_LOAD               0x00000001
+#define FILE_SUPPORT_SAVE               0x00000002
+#define FILE_SUPPORT_RGB                0x00000004
+#define FILE_SUPPORT_RGBA               0x00000008
+#define FILE_SUPPORT_GRAY               0x00000010
+#define FILE_SUPPORT_GRAYA              0x00000020
+#define FILE_SUPPORT_INDEXED            0x00000040
+#define FILE_SUPPORT_LAYERS             0x00000080
+#define FILE_SUPPORT_FRAMES             0x00000100
+#define FILE_SUPPORT_PALETTES           0x00000200
+#define FILE_SUPPORT_SEQUENCES          0x00000400
+#define FILE_SUPPORT_GET_FORMAT_OPTIONS 0x00000800
 
 class FormatOptions;
 class FileFormat;
@@ -66,7 +66,7 @@ public:
   SharedPtr<FormatOptions> getFormatOptions(FileOp* fop) {
     return onGetFormatOptions(fop);
   }
-  
+
   // Returns true if this file format supports the given flag.
   bool support(int f) const {
     return ((onGetFlags() & f) == f);

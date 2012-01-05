@@ -90,7 +90,7 @@ GFX_DRIVER gfx_xdga2 =
    NULL, NULL,
    NULL,
    _xdga2_fetch_mode_list,
-   NULL,			/* acknowledge_resize */
+   NULL,                        /* acknowledge_resize */
    640, 480,
    TRUE,
    0, 0,
@@ -123,7 +123,7 @@ GFX_DRIVER gfx_xdga2_soft =
    NULL, NULL,
    NULL,
    _xdga2_fetch_mode_list,
-   NULL,			/* acknowledge_resize */
+   NULL,                        /* acknowledge_resize */
    640, 480,
    TRUE,
    0, 0,
@@ -166,14 +166,14 @@ static GFX_MODE_LIST *_xdga2_private_fetch_mode_list(void)
          }
       }
       if (!already_there) {
-	 tmp = _AL_REALLOC(mode_list->mode, sizeof(GFX_MODE) * (stored_modes + 1));
-	 if (!tmp)
+         tmp = _AL_REALLOC(mode_list->mode, sizeof(GFX_MODE) * (stored_modes + 1));
+         if (!tmp)
             goto error;
          mode_list->mode = tmp;
          mode_list->mode[stored_modes].width = mode[i].viewportWidth;
          mode_list->mode[stored_modes].height = mode[i].viewportHeight;
          mode_list->mode[stored_modes].bpp = bpp;
-	 stored_modes++;
+         stored_modes++;
       }
    }
 
@@ -228,7 +228,7 @@ static int _xdga2_find_mode(int w, int h, int vw, int vh, int depth)
    for (i=0; i<num_modes; i++) {
       bpp = mode[i].depth;
       if (bpp == 24) bpp = mode[i].bitsPerPixel;
-      
+
       if ((mode[i].viewportWidth == w) &&
           (mode[i].viewportHeight == h) &&
           (mode[i].imageWidth >= vw) &&
@@ -242,7 +242,7 @@ static int _xdga2_find_mode(int w, int h, int vw, int vh, int depth)
       for (i=0; i<num_modes; i++) {
          bpp = mode[i].depth;
          if (bpp == 24) bpp = mode[i].bitsPerPixel;
-      
+
          if ((mode[i].viewportWidth == w) &&
             (mode[i].viewportHeight == h) &&
             (mode[i].imageWidth >= vw) &&
@@ -255,7 +255,7 @@ static int _xdga2_find_mode(int w, int h, int vw, int vh, int depth)
          return 0;
       }
    }
-   
+
    found = mode[i].num;
    XFree(mode);
    return found;
@@ -315,14 +315,14 @@ static void _xdga2_handle_input(void)
 
          case KeyPress:
             XDGAKeyEventToXKeyEvent(&cur_event->xkey, &key);
-	    key.type -= dga_event_base;
-	    _xwin_keyboard_handler(&key, TRUE);
+            key.type -= dga_event_base;
+            _xwin_keyboard_handler(&key, TRUE);
             break;
 
          case KeyRelease:
-	    XDGAKeyEventToXKeyEvent(&cur_event->xkey, &key);
-	    key.type -= dga_event_base;
-	    _xwin_keyboard_handler(&key, TRUE);
+            XDGAKeyEventToXKeyEvent(&cur_event->xkey, &key);
+            key.type -= dga_event_base;
+            _xwin_keyboard_handler(&key, TRUE);
             break;
 
          case ButtonPress:
@@ -554,7 +554,7 @@ static BITMAP *_xdga2_private_gfxdrv_init_drv(GFX_DRIVER *drv, int w, int h, int
 
    if (accel) {
       /* Hardware acceleration has been requested */
-      
+
       /* Updates line switcher to accommodate framebuffer synchronization */
       bmp->write_bank = _xdga2_write_line;
       bmp->read_bank = _xdga2_write_line;
@@ -648,10 +648,10 @@ static BITMAP *_xdga2_soft_gfxdrv_init(int w, int h, int vw, int vh, int color_d
 static void _xdga2_gfxdrv_exit(BITMAP *bmp)
 {
    XLOCK();
-   
+
    if (_xwin.in_dga_mode) {
       _xwin_input_handler = 0;
-       
+
       XDGACloseFramebuffer(_xwin.display, _xwin.screen);
       XDGASetMode(_xwin.display, _xwin.screen, 0);
       _xwin.in_dga_mode = 0;
@@ -665,7 +665,7 @@ static void _xdga2_gfxdrv_exit(BITMAP *bmp)
 
       set_display_switch_mode(SWITCH_BACKGROUND);
    }
-   
+
    XUNLOCK();
 }
 
@@ -692,7 +692,7 @@ static int _xdga2_poll_scroll(void)
 static int _xdga2_request_scroll(int x, int y)
 {
    XLOCK();
-   
+
    if (x < 0) x = 0;
    else if (x > dga_device->mode.maxViewportX)
       x = dga_device->mode.maxViewportX;
@@ -703,7 +703,7 @@ static int _xdga2_request_scroll(int x, int y)
    XDGASetViewport(_xwin.display, _xwin.screen, x, y, XDGAFlipRetrace);
 
    XUNLOCK();
-   
+
    return 0;
 }
 
@@ -748,7 +748,7 @@ static int _xdga2_scroll_screen(int x, int y)
    XDGASetViewport(_xwin.display, _xwin.screen, x, y, XDGAFlipRetrace);
 
    XUNLOCK();
-   
+
    return 0;
 }
 
@@ -763,7 +763,7 @@ static void _xdga2_set_palette_range(AL_CONST PALETTE p, int from, int to, int v
    static XColor color[256];
 
    XLOCK();
-   
+
    if (vsync) {
       XSync(_xwin.display, False);
    }
@@ -828,7 +828,7 @@ uintptr_t _xdga2_write_line(BITMAP *bmp, int line)
 static void _xaccel_hline(BITMAP *bmp, int x1, int y, int x2, int color)
 {
    int tmp;
-   
+
    if (_drawing_mode != DRAW_MODE_SOLID) {
       _orig_hline(bmp, x1, y, x2, color);
       return;
@@ -872,7 +872,7 @@ static void _xaccel_hline(BITMAP *bmp, int x1, int y, int x2, int color)
 static void _xaccel_vline(BITMAP *bmp, int x, int y1, int y2, int color)
 {
    int tmp;
-   
+
    if (_drawing_mode != DRAW_MODE_SOLID) {
       _orig_vline(bmp, x, y1, y2, color);
       return;
@@ -978,7 +978,7 @@ static void _xaccel_clear_to_color(BITMAP *bmp, int color)
    y1 = bmp->ct + bmp->y_ofs;
    x2 = bmp->cr + bmp->x_ofs;
    y2 = bmp->cb + bmp->y_ofs;
-   
+
    XLOCK();
    XDGAFillRectangle(_xwin.display, _xwin.screen, x1, y1, x2 - x1, y2 - y1, color);
    XUNLOCK();

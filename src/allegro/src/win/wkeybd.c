@@ -44,7 +44,7 @@ static const unsigned char hw_to_mycode[256] =
    /* 0x38 */    KEY_8,                   KEY_9,                     0,                          0,
    /* 0x3C */    0,                       0,                         0,                          0,
    /* 0x40 */    0,                       KEY_A,                     KEY_B,                      KEY_C,
-   /* 0x44 */    KEY_D,                   KEY_E,                     KEY_F,                      KEY_G,    
+   /* 0x44 */    KEY_D,                   KEY_E,                     KEY_F,                      KEY_G,
    /* 0x48 */    KEY_H,                   KEY_I,                     KEY_J,                      KEY_K,
    /* 0x4C */    KEY_L,                   KEY_M,                     KEY_N,                      KEY_O,
    /* 0x50 */    KEY_P,                   KEY_Q,                     KEY_R,                      KEY_S,
@@ -100,14 +100,14 @@ static const unsigned char hw_to_mycode[256] =
  */
 void _al_win_kbd_update_shifts(void)
 {
-#define HANDLE_KEY(mycode, vk)			\
-   if (GetAsyncKeyState(vk) & 0x8000) {		\
-      if (!key[mycode])				\
-	 _handle_key_press(0, mycode);		\
-   }						\
-   else {					\
-      if (key[mycode])				\
-	 _handle_key_release(mycode);		\
+#define HANDLE_KEY(mycode, vk)                  \
+   if (GetAsyncKeyState(vk) & 0x8000) {         \
+      if (!key[mycode])                         \
+         _handle_key_press(0, mycode);          \
+   }                                            \
+   else {                                       \
+      if (key[mycode])                          \
+         _handle_key_release(mycode);           \
    }
 
    HANDLE_KEY(KEY_ALT, VK_MENU);

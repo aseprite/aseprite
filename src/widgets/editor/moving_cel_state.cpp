@@ -85,12 +85,12 @@ bool MovingCelState::onMouseUp(Editor* editor, Message* msg)
 
        // And now we move the cel to the new position.
        if (m_cel)
-	 undoTransaction.setCelPosition(m_cel, m_celNewX, m_celNewY);
+         undoTransaction.setCelPosition(m_cel, m_celNewX, m_celNewY);
 
        // Move selection if it was visible
        if (m_maskVisible)
-	 undoTransaction.setMaskPosition(document->getMask()->x + m_celNewX - m_celStartX,
-					 document->getMask()->y + m_celNewY - m_celStartY);
+         undoTransaction.setMaskPosition(document->getMask()->x + m_celNewX - m_celStartX,
+                                         document->getMask()->y + m_celNewY - m_celStartY);
 
        undoTransaction.commit();
      }

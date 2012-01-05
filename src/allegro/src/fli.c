@@ -1,6 +1,6 @@
-/*         ______   ___    ___ 
- *        /\  _  \ /\_ \  /\_ \ 
- *        \ \ \L\ \\//\ \ \//\ \      __     __   _ __   ___ 
+/*         ______   ___    ___
+ *        /\  _  \ /\_ \  /\_ \
+ *        \ \ \L\ \\//\ \ \//\ \      __     __   _ __   ___
  *         \ \  __ \ \ \ \  \ \ \   /'__`\ /'_ `\/\`'__\/ __`\
  *          \ \ \/\ \ \_\ \_ \_\ \_/\  __//\ \L\ \ \ \//\ \L\ \
  *           \ \_\ \_\/\____\/\____\ \____\ \____ \ \_\\ \____/
@@ -63,7 +63,7 @@ typedef struct FLI_FRAME
 
 
 
-typedef struct FLI_CHUNK 
+typedef struct FLI_CHUNK
 {
    unsigned long     size;
    unsigned short    type;
@@ -113,9 +113,9 @@ END_OF_STATIC_FUNCTION(fli_timer_callback);
 
 
 /* fli_read:
- *  Helper function to get a block of data from the FLI, which can read 
- *  from disk or a copy of the FLI held in memory. If buf is set, that is 
- *  where it stores the data, otherwise it uses the scratch buffer. Returns 
+ *  Helper function to get a block of data from the FLI, which can read
+ *  from disk or a copy of the FLI held in memory. If buf is set, that is
+ *  where it stores the data, otherwise it uses the scratch buffer. Returns
  *  a pointer to the data, or NULL on error.
  */
 static void *fli_read(void *buf, int size)
@@ -124,21 +124,21 @@ static void *fli_read(void *buf, int size)
 
    if (fli_mem_data) {
       if (buf)
-	 memcpy(buf, (char *)fli_mem_data+fli_mem_pos, size);
+         memcpy(buf, (char *)fli_mem_data+fli_mem_pos, size);
       else
-	 buf = (char *)fli_mem_data+fli_mem_pos;
+         buf = (char *)fli_mem_data+fli_mem_pos;
 
       fli_mem_pos += size;
    }
    else {
       if (!buf) {
-	 _grow_scratch_mem(size);
-	 buf = _scratch_mem;
+         _grow_scratch_mem(size);
+         buf = _scratch_mem;
       }
 
       result = pack_fread(buf, size, fli_file);
       if (result != size)
-	 return NULL;
+         return NULL;
    }
 
    return buf;
@@ -159,9 +159,9 @@ static void fli_rewind(int offset)
       pack_fclose(fli_file);
       fli_file = pack_fopen(fli_filename, F_READ);
       if (fli_file)
-	 pack_fseek(fli_file, offset);
+         pack_fseek(fli_file, offset);
       else
-	 fli_status = FLI_ERROR;
+         fli_status = FLI_ERROR;
    }
 }
 
@@ -215,7 +215,7 @@ static unsigned short _fli_read_word_nc(unsigned char **p)
 {
    unsigned short t;
    t = (((unsigned short) *((unsigned char*) (*p)))
-	| ((unsigned short) *((unsigned char*) (*p) + 1) << 8));
+        | ((unsigned short) *((unsigned char*) (*p) + 1) << 8));
    *p += 2;
    return t;
 }
@@ -233,9 +233,9 @@ static unsigned long _fli_read_ulong_nc(unsigned char **p)
 {
    unsigned long t;
    t = (((unsigned long) *((unsigned char*) (*p)))
-	| ((unsigned long) *((unsigned char*) (*p) + 1) << 8)
-	| ((unsigned long) *((unsigned char*) (*p) + 2) << 16)
-	| ((unsigned long) *((unsigned char*) (*p) + 3) << 24));
+        | ((unsigned long) *((unsigned char*) (*p) + 1) << 8)
+        | ((unsigned long) *((unsigned char*) (*p) + 2) << 16)
+        | ((unsigned long) *((unsigned char*) (*p) + 3) << 24));
    *p += 4;
    return t;
 }
@@ -272,7 +272,7 @@ static signed long _fli_read_long_nc(unsigned char **p)
    int c;                                                       \
    uint16_t *ptr = (uint16_t*) (pos);                           \
    unsigned short v = READ_WORD_NC(p);                          \
-								\
+                                                                \
    for (c = 0; c < (size); c++)                                 \
       *ptr++ = v;                                               \
 }
@@ -285,7 +285,7 @@ static signed long _fli_read_long_nc(unsigned char **p)
    unsigned char *ptr = (pos);                                  \
    unsigned char v1 = READ_BYTE_NC(p);                          \
    unsigned char v2 = READ_BYTE_NC(p);                          \
-								\
+                                                                \
    for (c = 0; c < (size); c++) {                               \
       *ptr++ = v1;                                              \
       *ptr++ = v2;                                              \
@@ -333,26 +333,26 @@ static void do_fli_256_color(unsigned char *p, int sz)
 
    while (packets-- > 0) {
       if ((sz -= 2) < 0)
-	 return;
+         return;
       offset += READ_BYTE_NC(p);
       length = READ_BYTE_NC(p);
       if (length == 0)
-	 length = 256;
+         length = 256;
 
       end = offset + length;
       if (end > PAL_SIZE)
-	 return;
+         return;
       else if ((sz -= length * 3) < 0) {
-	 FLI_KLUDGE(p, sz, length * 3);
+         FLI_KLUDGE(p, sz, length * 3);
       }
 
       fli_pal_dirty_from = MIN(fli_pal_dirty_from, offset);
       fli_pal_dirty_to = MAX(fli_pal_dirty_to, end-1);
 
       for(; offset < end; offset++) {
-	 fli_palette[offset].r = READ_BYTE_NC(p) / 4;
-	 fli_palette[offset].g = READ_BYTE_NC(p) / 4;
-	 fli_palette[offset].b = READ_BYTE_NC(p) / 4;
+         fli_palette[offset].r = READ_BYTE_NC(p) / 4;
+         fli_palette[offset].g = READ_BYTE_NC(p) / 4;
+         fli_palette[offset].b = READ_BYTE_NC(p) / 4;
       }
    }
 }
@@ -378,21 +378,21 @@ static void do_fli_delta(unsigned char *p, int sz)
 
    while (lines-- > 0) {                  /* for each line... */
       if ((sz -= 2) < 0)
-	 return;
+         return;
       packets = READ_SHORT_NC(p);
 
       while (packets < 0) {
-	 if (packets & 0x4000)
-	    y -= packets;
-	 else if (y < fli_bitmap->h)
-	    fli_bitmap->line[y][fli_bitmap->w-1] = packets & 0xFF;
+         if (packets & 0x4000)
+            y -= packets;
+         else if (y < fli_bitmap->h)
+            fli_bitmap->line[y][fli_bitmap->w-1] = packets & 0xFF;
 
-	 if ((sz -= 2) < 0)
-	    return;
-	 packets = READ_SHORT_NC(p);
+         if ((sz -= 2) < 0)
+            return;
+         packets = READ_SHORT_NC(p);
       }
       if (y >= fli_bitmap->h)
-	 return;
+         return;
 
       curr = fli_bitmap->line[y];
 
@@ -400,30 +400,30 @@ static void do_fli_delta(unsigned char *p, int sz)
       fli_bmp_dirty_to = MAX(fli_bmp_dirty_to, y);
 
       while (packets-- > 0) {
-	 if ((sz -= 2) < 0)
-	    return;
-	 curr += READ_BYTE_NC(p);         /* skip bytes */
-	 size = READ_CHAR_NC(p);
+         if ((sz -= 2) < 0)
+            return;
+         curr += READ_BYTE_NC(p);         /* skip bytes */
+         size = READ_CHAR_NC(p);
 
-	 if (size > 0) {                  /* copy size words */
-	    if ((curr + size * 2) > bitmap_end)
-	       return;
-	    else if ((sz -= size * 2) < 0) {
-	       FLI_KLUDGE(p, sz, size * 2);
-	    }
-	    READ_BLOCK_NC(p, curr, size*2);
-	    curr += size*2;
-	 }
-	 else if (size < 0) {             /* repeat word -size times */
-	    size = -size;
-	    if ((curr + size * 2) > bitmap_end)
-	       return;
-	    else if ((sz -= 2) < 0) {
-	       FLI_KLUDGE(p, sz, 2);
-	    }
-	    READ_RLE_WORD_NC(p, curr, size);
-	    curr += size*2;
-	 }
+         if (size > 0) {                  /* copy size words */
+            if ((curr + size * 2) > bitmap_end)
+               return;
+            else if ((sz -= size * 2) < 0) {
+               FLI_KLUDGE(p, sz, size * 2);
+            }
+            READ_BLOCK_NC(p, curr, size*2);
+            curr += size*2;
+         }
+         else if (size < 0) {             /* repeat word -size times */
+            size = -size;
+            if ((curr + size * 2) > bitmap_end)
+               return;
+            else if ((sz -= 2) < 0) {
+               FLI_KLUDGE(p, sz, 2);
+            }
+            READ_RLE_WORD_NC(p, curr, size);
+            curr += size*2;
+         }
       }
 
       y++;
@@ -449,26 +449,26 @@ static void do_fli_color(unsigned char *p, int sz)
 
    while (packets-- > 0) {
       if ((sz -= 2) < 0)
-	 return;
+         return;
       offset += READ_BYTE_NC(p);
       length = READ_BYTE_NC(p);
       if (length == 0)
-	 length = 256;
+         length = 256;
 
       end = offset + length;
       if (end > PAL_SIZE)
-	 return;
+         return;
       else if ((sz -= length * 3) < 0) {
-	 FLI_KLUDGE(p, sz, length * 3);
+         FLI_KLUDGE(p, sz, length * 3);
       }
 
       fli_pal_dirty_from = MIN(fli_pal_dirty_from, offset);
       fli_pal_dirty_to = MAX(fli_pal_dirty_to, end-1);
 
       for(; offset < end; offset++) {
-	 fli_palette[offset].r = READ_BYTE_NC(p);
-	 fli_palette[offset].g = READ_BYTE_NC(p);
-	 fli_palette[offset].b = READ_BYTE_NC(p);
+         fli_palette[offset].r = READ_BYTE_NC(p);
+         fli_palette[offset].g = READ_BYTE_NC(p);
+         fli_palette[offset].b = READ_BYTE_NC(p);
       }
    }
 }
@@ -502,35 +502,35 @@ static void do_fli_lc(unsigned char *p, int sz)
 
    while (lines-- > 0) {                     /* for each line... */
       if ((sz -= 1) < 0)
-	 return;
+         return;
       packets = READ_BYTE_NC(p);
       curr = fli_bitmap->line[y];
 
       while (packets-- > 0) {
-	 if ((sz -= 2) < 0)
-	    return;
-	 curr += READ_BYTE_NC(p);            /* skip bytes */
-	 size = READ_CHAR_NC(p);
+         if ((sz -= 2) < 0)
+            return;
+         curr += READ_BYTE_NC(p);            /* skip bytes */
+         size = READ_CHAR_NC(p);
 
-	 if (size > 0) {                     /* copy size bytes */
-	    if ((curr + size) > bitmap_end)
-	       return;
-	    else if ((sz -= size) < 0) {
-	       FLI_KLUDGE(p, sz, size);
-	    }
-	    READ_BLOCK_NC(p, curr, size);
-	    curr += size;
-	 }
-	 else if (size < 0) {                /* repeat byte -size times */
-	    size = -size;
-	    if ((curr + size) > bitmap_end)
-	       return;
-	    else if ((sz -= 1) < 0) {
-	       FLI_KLUDGE(p, sz, 1);
-	    }
-	    READ_RLE_BYTE_NC(p, curr, size);
-	    curr += size;
-	 }
+         if (size > 0) {                     /* copy size bytes */
+            if ((curr + size) > bitmap_end)
+               return;
+            else if ((sz -= size) < 0) {
+               FLI_KLUDGE(p, sz, size);
+            }
+            READ_BLOCK_NC(p, curr, size);
+            curr += size;
+         }
+         else if (size < 0) {                /* repeat byte -size times */
+            size = -size;
+            if ((curr + size) > bitmap_end)
+               return;
+            else if ((sz -= 1) < 0) {
+               FLI_KLUDGE(p, sz, 1);
+            }
+            READ_RLE_BYTE_NC(p, curr, size);
+            curr += size;
+         }
       }
 
       y++;
@@ -568,66 +568,66 @@ static void do_fli_brun(unsigned char *p, int sz)
 
    for (y=0; y<fli_bitmap->h; y++) {         /* for each line... */
       if ((sz -= 1) < 0)
-	 return;
+         return;
       packets = READ_BYTE_NC(p);
       curr = fli_bitmap->line[y];
 
       if (packets == 0) {                    /* FLC chunk (fills the whole line) */
-	 unsigned char *line_end = curr + fli_bitmap->w;
+         unsigned char *line_end = curr + fli_bitmap->w;
 
-	 while (curr < line_end) {
-	    if ((sz -= 1) < 0)
-	       return;
-	    size = READ_CHAR_NC(p);
+         while (curr < line_end) {
+            if ((sz -= 1) < 0)
+               return;
+            size = READ_CHAR_NC(p);
 
-	    if (size < 0) {                     /* copy -size bytes */
-	       size = -size;
-	       if ((curr + size) > bitmap_end)
-		  return;
-	       else if ((sz -= size) < 0) {
-		  FLI_KLUDGE(p, sz, size);
-	       }
-	       READ_BLOCK_NC(p, curr, size);
-	       curr += size;
-	    }
-	    else if (size > 0) {                /* repeat byte size times */
-	       if ((curr + size) > bitmap_end)
-		  return;
-	       else if ((sz -= 1) < 0) {
-		  FLI_KLUDGE(p, sz, 1);
-	       }
-	       READ_RLE_BYTE_NC(p, curr, size);
-	       curr += size;
-	    }
-	 }
+            if (size < 0) {                     /* copy -size bytes */
+               size = -size;
+               if ((curr + size) > bitmap_end)
+                  return;
+               else if ((sz -= size) < 0) {
+                  FLI_KLUDGE(p, sz, size);
+               }
+               READ_BLOCK_NC(p, curr, size);
+               curr += size;
+            }
+            else if (size > 0) {                /* repeat byte size times */
+               if ((curr + size) > bitmap_end)
+                  return;
+               else if ((sz -= 1) < 0) {
+                  FLI_KLUDGE(p, sz, 1);
+               }
+               READ_RLE_BYTE_NC(p, curr, size);
+               curr += size;
+            }
+         }
       }
       else {
-	 /* FLI chunk (uses packets count) */
-	 while (packets-- > 0) {
-	    if ((sz -= 1) < 0)
-	       return;
-	    size = READ_CHAR_NC(p);
+         /* FLI chunk (uses packets count) */
+         while (packets-- > 0) {
+            if ((sz -= 1) < 0)
+               return;
+            size = READ_CHAR_NC(p);
 
-	    if (size < 0) {                     /* copy -size bytes */
-	       size = -size;
-	       if ((curr + size) > bitmap_end)
-		  return;
-	       if ((sz -= size) < 0) {
-		  FLI_KLUDGE(p, sz, size);
-	       }
-	       READ_BLOCK_NC(p, curr, size);
-	       curr += size;
-	    }
-	    else if (size > 0) {                /* repeat byte size times */
-	       if ((curr + size) > bitmap_end)
-		  return;
-	       if ((sz -= 1) < 0) {
-		  FLI_KLUDGE(p, sz, 1);
-	       }
-	       READ_RLE_BYTE_NC(p, curr, size);
-	       curr += size;
-	    }
-	 }
+            if (size < 0) {                     /* copy -size bytes */
+               size = -size;
+               if ((curr + size) > bitmap_end)
+                  return;
+               if ((sz -= size) < 0) {
+                  FLI_KLUDGE(p, sz, size);
+               }
+               READ_BLOCK_NC(p, curr, size);
+               curr += size;
+            }
+            else if (size > 0) {                /* repeat byte size times */
+               if ((curr + size) > bitmap_end)
+                  return;
+               if ((sz -= 1) < 0) {
+                  FLI_KLUDGE(p, sz, 1);
+               }
+               READ_RLE_BYTE_NC(p, curr, size);
+               curr += size;
+            }
+         }
       }
    }
 }
@@ -735,7 +735,7 @@ static void read_frame(void)
 
    get_another_frame:
 
-   /* read the frame header */ 
+   /* read the frame header */
    if (_fli_read_frame(&frame_header) != 0) {
       fli_status = FLI_ERROR;
       return;
@@ -746,7 +746,7 @@ static void read_frame(void)
       fli_skip(frame_header.size-sizeof_FLI_FRAME);
 
       if (++fli_frame >= fli_header.frame_count)
-	 return;
+         return;
 
       goto get_another_frame;
    }
@@ -775,8 +775,8 @@ static void read_frame(void)
    /* now to decode it */
    for (c=0; c<frame_header.chunks; c++) {
       if (_fli_parse_chunk(&chunk, p, frame_size) != 0) {
-	 /* chunk is broken, but don't return an error */
-	 break;
+         /* chunk is broken, but don't return an error */
+         break;
       }
 
       p += sizeof_FLI_CHUNK;
@@ -784,49 +784,49 @@ static void read_frame(void)
       frame_size -= chunk.size;
 
       if (c == frame_header.chunks-1)
-	 sz += frame_size;
+         sz += frame_size;
 
       switch (chunk.type) {
 
-	 case 4: 
-	    do_fli_256_color(p, sz);
-	    break;
+         case 4:
+            do_fli_256_color(p, sz);
+            break;
 
-	 case 7:
-	    do_fli_delta(p, sz);
-	    break;
+         case 7:
+            do_fli_delta(p, sz);
+            break;
 
-	 case 11: 
-	    do_fli_color(p, sz);
-	    break;
+         case 11:
+            do_fli_color(p, sz);
+            break;
 
-	 case 12:
-	    do_fli_lc(p, sz);
-	    break;
+         case 12:
+            do_fli_lc(p, sz);
+            break;
 
-	 case 13:
-	    do_fli_black();
-	    break;
+         case 13:
+            do_fli_black();
+            break;
 
-	 case 15:
-	    do_fli_brun(p, sz);
-	    break;
+         case 15:
+            do_fli_brun(p, sz);
+            break;
 
-	 case 16:
-	    do_fli_copy(p, sz);
-	    break;
+         case 16:
+            do_fli_copy(p, sz);
+            break;
 
-	 default:
-	    /* should we return an error? nah... */
-	    break;
+         default:
+            /* should we return an error? nah... */
+            break;
       }
 
       p += sz;
 
       /* alignment */
       if (sz & 1) {
-	 p++;
-	 frame_size--;
+         p++;
+         frame_size--;
       }
    }
 
@@ -851,28 +851,28 @@ static int do_play_fli(BITMAP *bmp, int loop, int (*callback)(void))
    while (ret == FLI_OK) {
       /* update the palette */
       if (fli_pal_dirty_from <= fli_pal_dirty_to)
-	 set_palette_range(fli_palette, fli_pal_dirty_from, fli_pal_dirty_to, TRUE);
+         set_palette_range(fli_palette, fli_pal_dirty_from, fli_pal_dirty_to, TRUE);
 
       /* update the screen */
       if (fli_bmp_dirty_from <= fli_bmp_dirty_to) {
-	 vsync();
-	 blit(fli_bitmap, bmp, 0, fli_bmp_dirty_from, 0, fli_bmp_dirty_from,
-			fli_bitmap->w, 1+fli_bmp_dirty_to-fli_bmp_dirty_from);
+         vsync();
+         blit(fli_bitmap, bmp, 0, fli_bmp_dirty_from, 0, fli_bmp_dirty_from,
+                        fli_bitmap->w, 1+fli_bmp_dirty_to-fli_bmp_dirty_from);
       }
 
       reset_fli_variables();
 
       if (callback) {
-	 ret = (*callback)();
-	 if (ret != FLI_OK)
-	    break;
+         ret = (*callback)();
+         if (ret != FLI_OK)
+            break;
       }
 
       ret = next_fli_frame(loop);
 
       while (fli_timer <= 0) {
-	 /* wait a bit */
-	 rest(0);
+         /* wait a bit */
+         rest(0);
       }
    }
 
@@ -884,22 +884,22 @@ static int do_play_fli(BITMAP *bmp, int loop, int (*callback)(void))
 
 
 /* play_fli:
- *  Top level FLI playing function. Plays the specified file, displaying 
- *  it at the top left corner of the specified bitmap. If the callback 
- *  function is not NULL it will be called for each frame in the file, and 
- *  can return zero to continue playing or non-zero to stop the FLI. If 
- *  loop is non-zero the player will cycle through the animation (in this 
- *  case the callback function is the only way to stop the player). Returns 
- *  one of the FLI status constants, or the value returned by the callback 
- *  if this is non-zero. If you need to distinguish between the two, the 
- *  callback should return positive integers, since the FLI status values 
+ *  Top level FLI playing function. Plays the specified file, displaying
+ *  it at the top left corner of the specified bitmap. If the callback
+ *  function is not NULL it will be called for each frame in the file, and
+ *  can return zero to continue playing or non-zero to stop the FLI. If
+ *  loop is non-zero the player will cycle through the animation (in this
+ *  case the callback function is the only way to stop the player). Returns
+ *  one of the FLI status constants, or the value returned by the callback
+ *  if this is non-zero. If you need to distinguish between the two, the
+ *  callback should return positive integers, since the FLI status values
  *  are zero or negative.
  */
 int play_fli(AL_CONST char *filename, BITMAP *bmp, int loop, int (*callback)(void))
 {
    ASSERT(filename);
    ASSERT(bmp);
-   
+
    if (open_fli(filename) != FLI_OK)
       return FLI_ERROR;
 
@@ -909,14 +909,14 @@ int play_fli(AL_CONST char *filename, BITMAP *bmp, int loop, int (*callback)(voi
 
 
 /* play_memory_fli:
- *  Like play_fli(), but for files which have already been loaded into 
+ *  Like play_fli(), but for files which have already been loaded into
  *  memory. Pass a pointer to the memory containing the FLI data.
  */
 int play_memory_fli(void *fli_data, BITMAP *bmp, int loop, int (*callback)(void))
 {
    ASSERT(fli_data);
    ASSERT(bmp);
-   
+
    if (open_memory_fli(fli_data) != FLI_OK)
       return FLI_ERROR;
 
@@ -988,7 +988,7 @@ static int do_open_fli(void)
 int open_fli(AL_CONST char *filename)
 {
    ASSERT(filename);
-   
+
    if (fli_status != FLI_NOT_OPEN)
       return FLI_ERROR;
 
@@ -1011,13 +1011,13 @@ int open_fli(AL_CONST char *filename)
 
 
 /* open_memory_fli:
- *  Like open_fli(), but for files which have already been loaded into 
+ *  Like open_fli(), but for files which have already been loaded into
  *  memory. Pass a pointer to the memory containing the FLI data.
  */
 int open_memory_fli(void *fli_data)
 {
    ASSERT(fli_data);
-   
+
    if (fli_status != FLI_NOT_OPEN)
       return FLI_ERROR;
 
@@ -1062,9 +1062,9 @@ void close_fli(void)
 
 
 /* next_fli_frame:
- *  Advances to the next frame of the FLI, leaving the changes in the 
- *  fli_bitmap and fli_palette. If loop is non-zero, it will cycle if 
- *  it reaches the end of the animation. Returns one of the FLI status 
+ *  Advances to the next frame of the FLI, leaving the changes in the
+ *  fli_bitmap and fli_palette. If loop is non-zero, it will cycle if
+ *  it reaches the end of the animation. Returns one of the FLI status
  *  constants.
  */
 int next_fli_frame(int loop)
@@ -1077,12 +1077,12 @@ int next_fli_frame(int loop)
    /* end of file? should we loop? */
    if (fli_frame >= fli_header.frame_count) {
       if (loop) {
-	 fli_rewind(sizeof_FLI_HEADER);
-	 fli_frame = 0;
+         fli_rewind(sizeof_FLI_HEADER);
+         fli_frame = 0;
       }
       else {
-	 fli_status = FLI_EOF;
-	 return fli_status;
+         fli_status = FLI_EOF;
+         return fli_status;
       }
    }
 
@@ -1105,4 +1105,3 @@ void reset_fli_variables(void)
    fli_pal_dirty_from = INT_MAX;
    fli_pal_dirty_to = INT_MIN;
 }
-

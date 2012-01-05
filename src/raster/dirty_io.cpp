@@ -33,17 +33,17 @@ using namespace base::serialization::little_endian;
 
 // Serialized Dirty data:
 //
-//    BYTE		image type
-//    WORD[4]		x1, y1, x2, y2
-//    WORD		rows
+//    BYTE              image type
+//    WORD[4]           x1, y1, x2, y2
+//    WORD              rows
 //    for each row
-//      WORD[2]		y, columns
+//      WORD[2]         y, columns
 //      for each column
-// 	 WORD[2]	x, w
-// 	 for each pixel ("w" times)
-// 	   BYTE[4]	for RGB images, or
-// 	   BYTE[2]	for Grayscale images, or
-// 	   BYTE		for Indexed images
+//       WORD[2]        x, w
+//       for each pixel ("w" times)
+//         BYTE[4]      for RGB images, or
+//         BYTE[2]      for Grayscale images, or
+//         BYTE         for Indexed images
 
 void write_dirty(std::ostream& os, Dirty* dirty)
 {
@@ -93,18 +93,18 @@ Dirty* read_dirty(std::istream& is)
       row->cols.resize(noCols);
 
       for (u=0; u<noCols; u++) {
-	x = read16(is);
-	w = read16(is);
+        x = read16(is);
+        w = read16(is);
 
-	UniquePtr<Dirty::Col> col(new Dirty::Col(x, w));
+        UniquePtr<Dirty::Col> col(new Dirty::Col(x, w));
 
-	int size = dirty->getLineSize(col->w);
-	ASSERT(size > 0);
+        int size = dirty->getLineSize(col->w);
+        ASSERT(size > 0);
 
-	col->data.resize(size);
-	is.read((char*)&col->data[0], size);
+        col->data.resize(size);
+        is.read((char*)&col->data[0], size);
 
-	row->cols[u] = col.release();
+        row->cols[u] = col.release();
       }
 
       dirty->m_rows[v] = row.release();

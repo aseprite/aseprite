@@ -33,22 +33,22 @@ using namespace base::serialization::little_endian;
 
 // Serialized Image data:
 //
-//    DWORD		image ID
-//    BYTE		image type
-//    WORD[2]		w, h
-//    DWORD		mask color
-//    for each line	("h" times)
+//    DWORD             image ID
+//    BYTE              image type
+//    WORD[2]           w, h
+//    DWORD             mask color
+//    for each line     ("h" times)
 //      for each pixel  ("w" times)
-//	  BYTE[4]	for RGB images, or
-//	  BYTE[2]	for Grayscale images, or
-//	  BYTE		for Indexed images
+//        BYTE[4]       for RGB images, or
+//        BYTE[2]       for Grayscale images, or
+//        BYTE          for Indexed images
 
 void write_image(std::ostream& os, Image* image)
 {
-  write8(os, image->imgtype);		  // Imgtype
-  write16(os, image->w);		  // Width
-  write16(os, image->h);		  // Height
-  write32(os, image->mask_color);	  // Mask color
+  write8(os, image->imgtype);             // Imgtype
+  write16(os, image->w);                  // Width
+  write16(os, image->h);                  // Height
+  write32(os, image->mask_color);         // Mask color
 
   int size = image_line_size(image, image->w);
   for (int c=0; c<image->h; c++)
@@ -57,10 +57,10 @@ void write_image(std::ostream& os, Image* image)
 
 Image* read_image(std::istream& is)
 {
-  int imgtype = read8(is);		// Imgtype
-  int width = read16(is);		// Width
-  int height = read16(is);		// Height
-  uint32_t maskColor = read32(is);	// Mask color
+  int imgtype = read8(is);              // Imgtype
+  int width = read16(is);               // Width
+  int height = read16(is);              // Height
+  uint32_t maskColor = read32(is);      // Mask color
 
   UniquePtr<Image> image(image_new(imgtype, width, height));
   int size = image_line_size(image, image->w);

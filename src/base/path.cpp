@@ -35,7 +35,7 @@ string base::get_file_path(const string& filename)
   if (rit != filename.rend()) {
     ++rit;
     std::copy(filename.begin(), string::const_iterator(rit.base()),
-	      std::back_inserter(res));
+              std::back_inserter(res));
   }
 
   return res;
@@ -51,7 +51,7 @@ string base::get_file_name(const string& filename)
       break;
 
   std::copy(string::const_iterator(rit.base()), filename.end(),
-	    std::back_inserter(result));
+            std::back_inserter(result));
 
   return result;
 }
@@ -71,7 +71,7 @@ string base::get_file_extension(const string& filename)
 
   if (rit != filename.rend()) {
     std::copy(string::const_iterator(rit.base()), filename.end(),
-	      std::back_inserter(result));
+              std::back_inserter(result));
   }
 
   return result;
@@ -107,7 +107,7 @@ string base::join_path(const string& path, const string& file)
   // Add a separator at the end if it is necessay
   if (!result.empty() && !is_path_separator(*(result.end()-1)))
     result.push_back(path_separator);
-  
+
   // Add the file
   result += file;
   return result;
@@ -130,7 +130,7 @@ string base::fix_path_separators(const string& filename)
 
   // Replace any separator with the system path separator.
   std::replace_if(result.begin(), result.end(),
-		  is_path_separator, path_separator);
+                  is_path_separator, path_separator);
 
   return result;
 }
@@ -143,14 +143,13 @@ bool base::has_file_extension(const string& filename, const string& csv_extensio
     int extsz = ext.size();
     string::const_iterator p =
       std::search(csv_extensions.begin(),
-		  csv_extensions.end(),
-		  ext.begin(), ext.end());
+                  csv_extensions.end(),
+                  ext.begin(), ext.end());
 
     if ((p != csv_extensions.end()) &&
-	((p+extsz) == csv_extensions.end() || *(p+extsz) == ',') &&
-	(p == csv_extensions.begin() || *(p-1) == ','))
+        ((p+extsz) == csv_extensions.end() || *(p+extsz) == ',') &&
+        (p == csv_extensions.begin() || *(p-1) == ','))
       return true;
   }
   return false;
 }
-

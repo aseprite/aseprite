@@ -27,8 +27,8 @@ class Pen;
 class Image;
 class Mask;
 
-#define DIRTY_VALID_COLUMN	1
-#define DIRTY_MUSTBE_UPDATED	2
+#define DIRTY_VALID_COLUMN      1
+#define DIRTY_MUSTBE_UPDATED    2
 
 class Dirty {
 public:
@@ -90,8 +90,7 @@ public:    // a Dirty instance from a deserialization process,
   int m_x1, m_y1;
   int m_x2, m_y2;
   RowsList m_rows;
-  
+
 };
 
 #endif
-

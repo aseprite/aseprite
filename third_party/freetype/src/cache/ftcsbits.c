@@ -65,8 +65,8 @@
     FTC_ImageDesc       desc;
 
   } FTC_SBitFamilyRec;
- 
-  
+
+
 #define FTC_SBIT_FAMILY( x )         ( (FTC_SBitFamily)( x ) )
 #define FTC_SBIT_FAMILY_MEMORY( x )  FTC_GLYPH_FAMILY_MEMORY( &( x )->cset )
 
@@ -515,11 +515,11 @@
                          FTC_SBit        *ansbit )
   {
     FTC_ImageDesc  desc0;
-    
+
 
     if ( !desc )
       return FT_Err_Invalid_Argument;
-      
+
     desc0.font = desc->font;
     desc0.type = (FT_UInt32)desc->image_type;
 

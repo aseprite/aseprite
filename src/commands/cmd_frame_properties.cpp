@@ -54,8 +54,8 @@ private:
 
 FramePropertiesCommand::FramePropertiesCommand()
   : Command("FrameProperties",
-	    "Frame Properties",
-	    CmdUIOnlyFlag)
+            "Frame Properties",
+            CmdUIOnlyFlag)
 {
 }
 
@@ -86,9 +86,9 @@ void FramePropertiesCommand::onExecute(Context* context)
 
   FramePtr window(load_widget("frame_duration.xml", "frame_duration"));
   get_widgets(window,
-	      "frame", &frame,
-	      "frlen", &frlen,
-	      "ok", &ok, NULL);
+              "frame", &frame,
+              "frlen", &frlen,
+              "ok", &ok, NULL);
 
   int sprite_frame = 0;
   switch (m_frame) {
@@ -118,12 +118,12 @@ void FramePropertiesCommand::onExecute(Context* context)
 
     if (m_frame == ALL_FRAMES) {
       if (Alert::show("Warning"
-		      "<<Do you want to change the duration of all frames?"
-		      "||&Yes||&No") == 1) {
-	DocumentWriter document_writer(document);
-	UndoTransaction undoTransaction(document_writer, "Constant Frame-Rate");
-	undoTransaction.setConstantFrameRate(num);
-	undoTransaction.commit();
+                      "<<Do you want to change the duration of all frames?"
+                      "||&Yes||&No") == 1) {
+        DocumentWriter document_writer(document);
+        UndoTransaction undoTransaction(document_writer, "Constant Frame-Rate");
+        undoTransaction.setConstantFrameRate(num);
+        undoTransaction.commit();
       }
     }
     else {

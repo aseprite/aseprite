@@ -52,4 +52,4 @@ private:
   tools::ToolLoopManager* m_toolLoopManager;
 };
 
-#endif	// WIDGETS_EDITOR_DRAWING_STATE_H_INCLUDED
+#endif  // WIDGETS_EDITOR_DRAWING_STATE_H_INCLUDED

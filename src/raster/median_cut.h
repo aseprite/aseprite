@@ -51,7 +51,7 @@ namespace quantization {
 
   public:
     Box(int r1, int g1, int b1,
-	int r2, int g2, int b2)
+        int r2, int g2, int b2)
       : r1(r1), g1(g1), b1(b1)
       , r2(r2), g2(g2), b2(b2)
       , volume(calculateVolume())
@@ -77,13 +77,13 @@ namespace quantization {
     {
       // Split along the largest dimension of the box.
       if ((r2-r1) >= (g2-g1) && (r2-r1) >= (b2-b1)) {
-	return splitAlongAxis<RAxisGetter, RAxisSplitter>(histogram, boxes, r1, r2, g1, g2, b1, b2);
+        return splitAlongAxis<RAxisGetter, RAxisSplitter>(histogram, boxes, r1, r2, g1, g2, b1, b2);
       }
       else if ((g2-g1) >= (r2-r1) && (g2-g1) >= (b2-b1)) {
-	return splitAlongAxis<GAxisGetter, GAxisSplitter>(histogram, boxes, g1, g2, r1, r2, b1, b2);
+        return splitAlongAxis<GAxisGetter, GAxisSplitter>(histogram, boxes, g1, g2, r1, r2, b1, b2);
       }
       else {
-	return splitAlongAxis<BAxisGetter, BAxisSplitter>(histogram, boxes, b1, b2, r1, r2, g1, g2);
+        return splitAlongAxis<BAxisGetter, BAxisSplitter>(histogram, boxes, b1, b2, r1, r2, g1, g2);
       }
     }
 
@@ -96,24 +96,24 @@ namespace quantization {
       int i, j, k;
 
       for (i=r1; i<=r2; ++i)
-	for (j=g1; j<=g2; ++j)
-	  for (k=b1; k<=b2; ++k) {
-	    int c = histogram.at(i, j, k);
-	    r += c * i;
-	    g += c * j;
-	    b += c * k;
-	    count += c;
-	  }
+        for (j=g1; j<=g2; ++j)
+          for (k=b1; k<=b2; ++k) {
+            int c = histogram.at(i, j, k);
+            r += c * i;
+            g += c * j;
+            b += c * k;
+            count += c;
+          }
 
       // No colors in the box? This should not be possible.
       assert(count > 0 && "Box without histogram points, you must fill the histogram before using this function.");
       if (count == 0)
-	return _rgba(0, 0, 0, 255);
+        return _rgba(0, 0, 0, 255);
 
       // Returns the mean.
       return _rgba((255 * r / (Histogram::RElements-1)) / count,
-		   (255 * g / (Histogram::GElements-1)) / count,
-		   (255 * b / (Histogram::BElements-1)) / count, 255);
+                   (255 * g / (Histogram::GElements-1)) / count,
+                   (255 * b / (Histogram::BElements-1)) / count, 255);
     }
 
     // The boxes will be sort in the priority_queue by volume.
@@ -140,9 +140,9 @@ namespace quantization {
       int i, j, k;
 
       for (i=r1; i<=r2; ++i)
-	for (j=g1; j<=g2; ++j)
-	  for (k=b1; k<=b2; ++k)
-	    count += histogram.at(i, j, k);
+        for (j=g1; j<=g2; ++j)
+          for (k=b1; k<=b2; ++k)
+            count += histogram.at(i, j, k);
 
       return count;
     }
@@ -152,31 +152,31 @@ namespace quantization {
     // i2=r2; if AxisGetter is GAxisGetter, then i1=g1, i2=g2).
     template<class AxisGetter>
     static void axisShrink(const Histogram& histogram,
-			   int& i1, int& i2, 
-			   const int& j1, const int& j2, 
-			   const int& k1, const int& k2)
+                           int& i1, int& i2,
+                           const int& j1, const int& j2,
+                           const int& k1, const int& k2)
     {
       int j, k;
 
       // Shrink i1.
       for (; i1<i2; ++i1) {
-	for (j=j1; j<=j2; ++j) {
-	  for (k=k1; k<=k2; ++k) {
-	    if (AxisGetter::at(histogram, i1, j, k) > 0)
-	      goto doneA;
-	  }
-	}
+        for (j=j1; j<=j2; ++j) {
+          for (k=k1; k<=k2; ++k) {
+            if (AxisGetter::at(histogram, i1, j, k) > 0)
+              goto doneA;
+          }
+        }
       }
 
     doneA:;
 
       for (; i2>i1; --i2) {
-	for (j=j1; j<=j2; ++j) {
-	  for (k=k1; k<=k2; ++k) {
-	    if (AxisGetter::at(histogram, i2, j, k) > 0)
-	      goto doneB;
-	  }
-	}
+        for (j=j1; j<=j2; ++j) {
+          for (k=k1; k<=k2; ++k) {
+            if (AxisGetter::at(histogram, i2, j, k) > 0)
+              goto doneB;
+          }
+        }
       }
 
     doneB:;
@@ -189,10 +189,10 @@ namespace quantization {
     // operation.
     template<class AxisGetter, class AxisSplitter>
     bool splitAlongAxis(const Histogram& histogram,
-			std::priority_queue<Box>& boxes,
-			const int& i1, const int& i2,
-			const int& j1, const int& j2,
-			const int& k1, const int& k2) const
+                        std::priority_queue<Box>& boxes,
+                        const int& i1, const int& i2,
+                        const int& j1, const int& j2,
+                        const int& k1, const int& k2) const
     {
       // These two variables will be used to count how many points are
       // in each side of the box if we split it in "i" position.
@@ -206,46 +206,46 @@ namespace quantization {
       // the number of points in both sides of the plane are
       // approximated the same.
       for (i=i1; i<=i2; ++i) {
-	size_t planePoints = 0;
+        size_t planePoints = 0;
 
-	// We count all points in "i" plane.
-      	for (j=j1; j<=j2; ++j)
-      	  for (k=k1; k<=k2; ++k)
-      	    planePoints += AxisGetter::at(histogram, i, j, k);
+        // We count all points in "i" plane.
+        for (j=j1; j<=j2; ++j)
+          for (k=k1; k<=k2; ++k)
+            planePoints += AxisGetter::at(histogram, i, j, k);
 
-	// As we move the plane to split through "i" axis One side is getting more points, 
-	totalPoints1 += planePoints;
-	totalPoints2 -= planePoints;
+        // As we move the plane to split through "i" axis One side is getting more points,
+        totalPoints1 += planePoints;
+        totalPoints2 -= planePoints;
 
-	if (totalPoints1 > totalPoints2) {
-	  if (totalPoints2 > 0) {
-	    Box box1(AxisSplitter::box1(*this, i));
-	    Box box2(AxisSplitter::box2(*this, i+1));
-	    box1.points = totalPoints1;
-	    box2.points = totalPoints2;
-	    boxes.push(box1);
-	    boxes.push(box2);
-	    return true;
-	  }
-	  else if (totalPoints1-planePoints > 0) {
-	    Box box1(AxisSplitter::box1(*this, i-1));
-	    Box box2(AxisSplitter::box2(*this, i));
-	    box1.points = totalPoints1-planePoints;
-	    box2.points = totalPoints2+planePoints;
-	    boxes.push(box1);
-	    boxes.push(box2);
-	    return true;
-	  }
-	  else
-	    return false;
-	}
+        if (totalPoints1 > totalPoints2) {
+          if (totalPoints2 > 0) {
+            Box box1(AxisSplitter::box1(*this, i));
+            Box box2(AxisSplitter::box2(*this, i+1));
+            box1.points = totalPoints1;
+            box2.points = totalPoints2;
+            boxes.push(box1);
+            boxes.push(box2);
+            return true;
+          }
+          else if (totalPoints1-planePoints > 0) {
+            Box box1(AxisSplitter::box1(*this, i-1));
+            Box box2(AxisSplitter::box2(*this, i));
+            box1.points = totalPoints1-planePoints;
+            box2.points = totalPoints2+planePoints;
+            boxes.push(box1);
+            boxes.push(box2);
+            return true;
+          }
+          else
+            return false;
+        }
       }
       return false;
     }
 
-    int r1, g1, b1;		// Min point (closest to origin)
-    int r2, g2, b2;		// Max point
-    size_t points;		// Number of points in the space which enclose this box
+    int r1, g1, b1;             // Min point (closest to origin)
+    int r2, g2, b2;             // Max point
+    size_t points;              // Number of points in the space which enclose this box
     int volume;
   }; // end of class Box
 
@@ -260,9 +260,9 @@ namespace quantization {
 
     // First we start with one big box containing all histogram's samples.
     boxes.push(Box<Histogram>(0, 0, 0,
-			      Histogram::RElements-1,
-			      Histogram::GElements-1,
-			      Histogram::BElements-1));
+                              Histogram::RElements-1,
+                              Histogram::GElements-1,
+                              Histogram::BElements-1));
 
     // Then we split each box until we reach the maximum specified by
     // the user (maxBoxes) or until there aren't more boxes to split.
@@ -277,14 +277,14 @@ namespace quantization {
 
       // Try to split the box along the largest axis.
       if (!box.split(histogram, boxes)) {
-	// If we were not able to split the box (maybe because it is
-	// too small or there are not enough points to split it), then
-	// we add the box's color to the "result" vector directly (the
-	// box is not in the queue anymore).
-	if (result.size() < maxBoxes)
-	  result.push_back(box.meanColor(histogram));
-	else
-	  return;
+        // If we were not able to split the box (maybe because it is
+        // too small or there are not enough points to split it), then
+        // we add the box's color to the "result" vector directly (the
+        // box is not in the queue anymore).
+        if (result.size() < maxBoxes)
+          result.push_back(box.meanColor(histogram));
+        else
+          return;
       }
     }
 

@@ -1,6 +1,6 @@
-/*         ______   ___    ___ 
- *        /\  _  \ /\_ \  /\_ \ 
- *        \ \ \L\ \\//\ \ \//\ \      __     __   _ __   ___ 
+/*         ______   ___    ___
+ *        /\  _  \ /\_ \  /\_ \
+ *        \ \ \L\ \\//\ \ \//\ \      __     __   _ __   ___
  *         \ \  __ \ \ \ \  \ \ \   /'__`\ /'_ `\/\`'__\/ __`\
  *          \ \ \/\ \ \_\ \_ \_\ \_/\  __//\ \L\ \ \ \//\ \L\ \
  *           \ \_\ \_\/\____\/\____\ \____\ \____ \ \_\\ \____/
@@ -34,7 +34,7 @@
  *  the end of a line (since zero can't occur anywhere else in the data,
  *  this can be used to find the start of a specified line when clipping).
  *  For truecolor RLE sprites, the data and command bytes are both in the
- *  same format (16 or 32 bits, 24 bpp data is padded to 32 bit aligment), 
+ *  same format (16 or 32 bits, 24 bpp data is padded to 32 bit aligment),
  *  and the mask color (bright pink) is used as the EOL marker.
  */
 RLE_SPRITE *get_rle_sprite(BITMAP *bitmap)
@@ -46,7 +46,7 @@ RLE_SPRITE *get_rle_sprite(BITMAP *bitmap)
    int pix;
    int c;
    ASSERT(bitmap);
-   
+
    depth = bitmap_color_depth(bitmap);
 
    #define WRITE_TO_SPRITE8(x) {                                             \
@@ -74,28 +74,28 @@ RLE_SPRITE *get_rle_sprite(BITMAP *bitmap)
    #define DO_RLE(bits)                                                      \
    {                                                                         \
       for (y=0; y<bitmap->h; y++) {                                          \
-	 run = -1;                                                           \
-	 for (x=0; x<bitmap->w; x++) {                                       \
-	    pix = getpixel(bitmap, x, y) & 0xFFFFFF;                         \
-	    if (pix != bitmap->vtable->mask_color) {                         \
-	       if ((run >= 0) && (p[run] > 0) && (p[run] < 127))             \
-		  p[run]++;                                                  \
-	       else {                                                        \
-		  run = c;                                                   \
-		  WRITE_TO_SPRITE##bits(1);                                  \
-	       }                                                             \
-	       WRITE_TO_SPRITE##bits(getpixel(bitmap, x, y));                \
-	    }                                                                \
-	    else {                                                           \
-	       if ((run >= 0) && (p[run] < 0) && (p[run] > -128))            \
-		  p[run]--;                                                  \
-	       else {                                                        \
-		  run = c;                                                   \
-		  WRITE_TO_SPRITE##bits(-1);                                 \
-	       }                                                             \
-	    }                                                                \
-	 }                                                                   \
-	 WRITE_TO_SPRITE##bits(bitmap->vtable->mask_color);                  \
+         run = -1;                                                           \
+         for (x=0; x<bitmap->w; x++) {                                       \
+            pix = getpixel(bitmap, x, y) & 0xFFFFFF;                         \
+            if (pix != bitmap->vtable->mask_color) {                         \
+               if ((run >= 0) && (p[run] > 0) && (p[run] < 127))             \
+                  p[run]++;                                                  \
+               else {                                                        \
+                  run = c;                                                   \
+                  WRITE_TO_SPRITE##bits(1);                                  \
+               }                                                             \
+               WRITE_TO_SPRITE##bits(getpixel(bitmap, x, y));                \
+            }                                                                \
+            else {                                                           \
+               if ((run >= 0) && (p[run] < 0) && (p[run] > -128))            \
+                  p[run]--;                                                  \
+               else {                                                        \
+                  run = c;                                                   \
+                  WRITE_TO_SPRITE##bits(-1);                                 \
+               }                                                             \
+            }                                                                \
+         }                                                                   \
+         WRITE_TO_SPRITE##bits(bitmap->vtable->mask_color);                  \
       }                                                                      \
    }
 
@@ -105,38 +105,38 @@ RLE_SPRITE *get_rle_sprite(BITMAP *bitmap)
 
       #ifdef ALLEGRO_COLOR8
 
-	 case 8:
-	    {
-	       signed char *p = (signed char *)_scratch_mem;
-	       DO_RLE(8);
-	    }
-	    break;
+         case 8:
+            {
+               signed char *p = (signed char *)_scratch_mem;
+               DO_RLE(8);
+            }
+            break;
 
       #endif
 
       #ifdef ALLEGRO_COLOR16
 
-	 case 15:
-	 case 16:
-	    {
-	       signed short *p = (signed short *)_scratch_mem;
-	       DO_RLE(16);
-	       c *= sizeof(short);
-	    }
-	    break;
+         case 15:
+         case 16:
+            {
+               signed short *p = (signed short *)_scratch_mem;
+               DO_RLE(16);
+               c *= sizeof(short);
+            }
+            break;
 
       #endif
 
       #if (defined ALLEGRO_COLOR24) || (defined ALLEGRO_COLOR32)
 
-	 case 24:
-	 case 32:
-	    {
-	       int32_t *p = (int32_t *)_scratch_mem;
-	       DO_RLE(32);
-	       c *= sizeof(int32_t);
-	    }
-	    break;
+         case 24:
+         case 32:
+            {
+               int32_t *p = (int32_t *)_scratch_mem;
+               DO_RLE(32);
+               c *= sizeof(int32_t);
+            }
+            break;
 
       #endif
    }
@@ -164,5 +164,3 @@ void destroy_rle_sprite(RLE_SPRITE *sprite)
    if (sprite)
       _AL_FREE(sprite);
 }
-
-

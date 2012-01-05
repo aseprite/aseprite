@@ -67,10 +67,10 @@ FilterManagerImpl* FilterPreview::getFilterManager() const
 bool FilterPreview::onProcessMessage(Message* msg)
 {
   switch (msg->type) {
-      
+
     case JM_OPEN:
       RenderEngine::setPreviewImage(m_filterMgr->getSprite()->getCurrentLayer(),
-				    m_filterMgr->getDestinationImage());
+                                    m_filterMgr->getDestinationImage());
       break;
 
     case JM_CLOSE:
@@ -82,10 +82,10 @@ bool FilterPreview::onProcessMessage(Message* msg)
 
     case JM_TIMER:
       if (m_filterMgr) {
-	if (m_filterMgr->applyStep())
-	  m_filterMgr->flush();
-	else
-	  jmanager_stop_timer(m_timerId);
+        if (m_filterMgr->applyStep())
+          m_filterMgr->flush();
+        else
+          jmanager_stop_timer(m_timerId);
       }
       break;
   }

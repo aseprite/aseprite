@@ -43,7 +43,7 @@ private:
   void highlightItem(MenuItem* menuitem, bool click, bool open_submenu, bool select_first_child);
   void unhighlightItem();
 
-  MenuItem* m_menuitem;		// From where the menu was open
+  MenuItem* m_menuitem;         // From where the menu was open
 
   friend class MenuBox;
   friend class MenuItem;
@@ -130,11 +130,11 @@ private:
   void stopTimer();
   void executeClick();
 
-  JAccel m_accel;		// Hot-key
-  bool m_highlighted;		// Is it highlighted?
-  Menu* m_submenu;		// The sub-menu
-  MenuBox* m_submenu_menubox;	// The opened menubox for this menu-item
-  int m_submenu_timer;		// Timer to open the submenu
+  JAccel m_accel;               // Hot-key
+  bool m_highlighted;           // Is it highlighted?
+  Menu* m_submenu;              // The sub-menu
+  MenuBox* m_submenu_menubox;   // The opened menubox for this menu-item
+  int m_submenu_timer;          // Timer to open the submenu
 
   friend class Menu;
   friend class MenuBox;

@@ -77,4 +77,4 @@ int SHA1Result( SHA1Context *,
 }
 #endif
 
-#endif	// BASE_SHA1_RFC3174_H_INCLUDED
+#endif  // BASE_SHA1_RFC3174_H_INCLUDED

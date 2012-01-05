@@ -39,8 +39,8 @@ protected:
 
 ExitCommand::ExitCommand()
   : Command("Exit",
-	    "Exit",
-	    CmdUIOnlyFlag)
+            "Exit",
+            CmdUIOnlyFlag)
 {
 }
 
@@ -52,7 +52,7 @@ void ExitCommand::onExecute(Context* context)
     // Check if this sprite is modified
     if (document->isModified()) {
       if (Alert::show("Warning<<There are sprites with changes.<<Do you want quit anyway?||&Yes||&No") != 1) {
-	return;
+        return;
       }
       break;
     }
@@ -70,4 +70,3 @@ Command* CommandFactory::createExitCommand()
 {
   return new ExitCommand;
 }
-

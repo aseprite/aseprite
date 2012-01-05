@@ -77,10 +77,10 @@ public:
   void fillRect(const gfx::Rect& rect, uint32_t rgbaColor, int opacity) OVERRIDE
   {
     image_rectblend(m_image,
-		    m_offset.x + (rect.x << m_zoom),
-		    m_offset.y + (rect.y << m_zoom),
-		    m_offset.x + ((rect.x+rect.w) << m_zoom) - 1,
-		    m_offset.y + ((rect.y+rect.h) << m_zoom) - 1, rgbaColor, opacity);
+                    m_offset.x + (rect.x << m_zoom),
+                    m_offset.y + (rect.y << m_zoom),
+                    m_offset.x + ((rect.x+rect.w) << m_zoom) - 1,
+                    m_offset.y + ((rect.y+rect.h) << m_zoom) - 1, rgbaColor, opacity);
   }
 
 private:
@@ -230,7 +230,7 @@ void Editor::backToPreviousState()
 void Editor::setDocument(Document* document)
 {
   //if (this->hasMouse())
-  //jmanager_free_mouse();	// TODO Why is this here? Review this code
+  //jmanager_free_mouse();      // TODO Why is this here? Review this code
 
   // Reset all states (back to standby).
   m_statesHistory.clear();
@@ -264,8 +264,8 @@ void Editor::setDocument(Document* document)
     }
 
     setEditorScroll(m_offset_x + preferred.scroll_x,
-		    m_offset_y + preferred.scroll_y,
-		    false);
+                    m_offset_y + preferred.scroll_y,
+                    false);
   }
   // In this case document is NULL
   else {
@@ -315,9 +315,9 @@ void Editor::setEditorScroll(int x, int y, int use_refresh_region)
   if (use_refresh_region) {
     // Move screen with blits
     jwidget_scroll(this, region,
-		   oldScroll.x - newScroll.x,
-		   oldScroll.y - newScroll.y);
-    
+                   oldScroll.x - newScroll.x,
+                   oldScroll.y - newScroll.y);
+
     jregion_free(region);
   }
 
@@ -419,18 +419,18 @@ void Editor::drawSprite(int x1, int y1, int x2, int y2)
   if ((width > 0) && (height > 0)) {
     // Generate the rendered image
     Image* rendered = RenderEngine::renderSprite(m_document,
-						 m_sprite,
-						 source_x, source_y,
-						 width, height,
-						 m_sprite->getCurrentFrame(),
-						 m_zoom, true);
+                                                 m_sprite,
+                                                 source_x, source_y,
+                                                 width, height,
+                                                 m_sprite->getCurrentFrame(),
+                                                 m_zoom, true);
 
     if (rendered) {
       // Pre-render decorator.
       if (m_decorator) {
-      	EditorPreRenderImpl preRender(this, rendered,
-      				      Point(-source_x, -source_y), m_zoom);
-	m_decorator->preRenderDecorator(&preRender);
+        EditorPreRenderImpl preRender(this, rendered,
+                                      Point(-source_x, -source_y), m_zoom);
+        m_decorator->preRenderDecorator(&preRender);
       }
 
 #ifdef DRAWSPRITE_DOUBLEBUFFERED
@@ -460,13 +460,13 @@ void Editor::drawSprite(int x1, int y1, int x2, int y2)
   if (settings->getPixelGridVisible()) {
     if (m_zoom > 1)
       this->drawGrid(Rect(0, 0, 1, 1),
-		     settings->getPixelGridColor());
+                     settings->getPixelGridColor());
   }
 
   // Draw the grid
   if (settings->getGridVisible())
     this->drawGrid(settings->getGridBounds(),
-		   settings->getGridColor());
+                   settings->getGridColor());
 
   // Post-render decorator.
   if (m_decorator) {
@@ -524,31 +524,31 @@ void Editor::drawMask()
     x2 = seg->x2<<m_zoom;
     y2 = seg->y2<<m_zoom;
 
-#if 1				// Bounds inside mask
+#if 1                           // Bounds inside mask
     if (!seg->open)
-#else				// Bounds outside mask
+#else                           // Bounds outside mask
     if (seg->open)
 #endif
       {
-	if (x1 == x2) {
-	  x1--;
-	  x2--;
-	  y2--;
-	}
-	else {
-	  y1--;
-	  y2--;
-	  x2--;
-	}
+        if (x1 == x2) {
+          x1--;
+          x2--;
+          y2--;
+        }
+        else {
+          y1--;
+          y2--;
+          x2--;
+        }
       }
     else
       {
-	if (x1 == x2) {
-	  y2--;
-	}
-	else {
-	  x2--;
-	}
+        if (x1 == x2) {
+          y2--;
+        }
+        else {
+          x2--;
+        }
       }
 
     line(ji_screen, x+x1, y+y1, x+x2, y+y2, 0);
@@ -576,8 +576,8 @@ void Editor::drawMaskSafe()
       jmouse_hide();
 
     for (c=0, rc=JI_REGION_RECTS(region);
-	 c<nrects;
-	 c++, rc++) {
+         c<nrects;
+         c++, rc++) {
       set_clip_rect(ji_screen, rc->x1, rc->y1, rc->x2-1, rc->y2-1);
       drawMask();
     }
@@ -607,7 +607,7 @@ void Editor::drawGrid(const Rect& gridBounds, const Color& color)
 
   // Change the grid position to the first grid's tile
   grid.setOrigin(Point((grid.x % grid.w) - grid.w,
-		       (grid.y % grid.h) - grid.h));
+                       (grid.y % grid.h) - grid.h));
   if (grid.x < 0) grid.x += grid.w;
   if (grid.y < 0) grid.y += grid.h;
 
@@ -650,15 +650,15 @@ void Editor::flashCurrentLayer()
     image_clear(flash_image, flash_image->mask_color);
     for (v=0; v<flash_image->h; ++v) {
       for (u=0; u<flash_image->w; ++u) {
-	if (u-x >= 0 && u-x < src_image->w &&
-	    v-y >= 0 && v-y < src_image->h) {
-	  uint32_t color = image_getpixel(src_image, u-x, v-y);
-	  if (color != src_image->mask_color) {
-	    Color ccc = Color::fromRgb(255, 255, 255);
-	    image_putpixel(flash_image, u, v,
-			   color_utils::color_for_image(ccc, flash_image->imgtype));
-	  }
-	}
+        if (u-x >= 0 && u-x < src_image->w &&
+            v-y >= 0 && v-y < src_image->h) {
+          uint32_t color = image_getpixel(src_image, u-x, v-y);
+          if (color != src_image->mask_color) {
+            Color ccc = Color::fromRgb(255, 255, 255);
+            image_putpixel(flash_image, u, v,
+                           color_utils::color_for_image(ccc, flash_image->imgtype));
+          }
+        }
       }
     }
 
@@ -688,12 +688,12 @@ void Editor::controlInfiniteScroll(Message* msg)
     // Smooth scroll movement
     if (get_config_bool("Options", "MoveSmooth", TRUE)) {
       jmouse_set_position(MID(vp.x+1, old_x, vp.x+vp.w-2),
-			  MID(vp.y+1, old_y, vp.y+vp.h-2));
+                          MID(vp.y+1, old_y, vp.y+vp.h-2));
     }
     // This is better for high resolutions: scroll movement by big steps
     else {
       jmouse_set_position((old_x != msg->mouse.x) ? (old_x + (vp.x+vp.w/2))/2: msg->mouse.x,
-			  (old_y != msg->mouse.y) ? (old_y + (vp.y+vp.h/2))/2: msg->mouse.y);
+                          (old_y != msg->mouse.y) ? (old_y + (vp.y+vp.h/2))/2: msg->mouse.y);
     }
 
     msg->mouse.x = jmouse_x(0);
@@ -701,7 +701,7 @@ void Editor::controlInfiniteScroll(Message* msg)
 
     Point scroll = view->getViewScroll();
     setEditorScroll(scroll.x+old_x-msg->mouse.x,
-		    scroll.y+old_y-msg->mouse.y, true);
+                    scroll.y+old_y-msg->mouse.y, true);
   }
 }
 
@@ -883,63 +883,63 @@ bool Editor::onProcessMessage(Message* msg)
 
       int old_cursor_thick = m_cursor_thick;
       if (m_cursor_thick)
-      	editor_clean_cursor();
+        editor_clean_cursor();
 
       // Editor without sprite
       if (!m_sprite) {
-	View* view = View::getView(this);
-	Rect vp = view->getViewportBounds();
+        View* view = View::getView(this);
+        Rect vp = view->getViewportBounds();
 
-	jdraw_rectfill(vp, theme->get_editor_face_color());
-	draw_emptyset_symbol(ji_screen, vp, makecol(64, 64, 64));
+        jdraw_rectfill(vp, theme->get_editor_face_color());
+        draw_emptyset_symbol(ji_screen, vp, makecol(64, 64, 64));
       }
       // Editor with sprite
       else {
-	try {
-	  // Lock the sprite to read/render it.
-	  DocumentReader documentReader(m_document);
-	  int x1, y1, x2, y2;
+        try {
+          // Lock the sprite to read/render it.
+          DocumentReader documentReader(m_document);
+          int x1, y1, x2, y2;
 
-	  // Draw the background outside of sprite's bounds
-	  x1 = this->rc->x1 + m_offset_x;
-	  y1 = this->rc->y1 + m_offset_y;
-	  x2 = x1 + (m_sprite->getWidth() << m_zoom) - 1;
-	  y2 = y1 + (m_sprite->getHeight() << m_zoom) - 1;
+          // Draw the background outside of sprite's bounds
+          x1 = this->rc->x1 + m_offset_x;
+          y1 = this->rc->y1 + m_offset_y;
+          x2 = x1 + (m_sprite->getWidth() << m_zoom) - 1;
+          y2 = y1 + (m_sprite->getHeight() << m_zoom) - 1;
 
-	  jrectexclude(ji_screen,
-		       this->rc->x1, this->rc->y1,
-		       this->rc->x2-1, this->rc->y2-1,
-		       x1-1, y1-1, x2+1, y2+2, theme->get_editor_face_color());
+          jrectexclude(ji_screen,
+                       this->rc->x1, this->rc->y1,
+                       this->rc->x2-1, this->rc->y2-1,
+                       x1-1, y1-1, x2+1, y2+2, theme->get_editor_face_color());
 
-	  // Draw the sprite in the editor
-	  drawSprite(0, 0, m_sprite->getWidth()-1, m_sprite->getHeight()-1);
+          // Draw the sprite in the editor
+          drawSprite(0, 0, m_sprite->getWidth()-1, m_sprite->getHeight()-1);
 
-	  // Draw the sprite boundary
-	  rect(ji_screen, x1-1, y1-1, x2+1, y2+1, theme->get_editor_sprite_border());
-	  hline(ji_screen, x1-1, y2+2, x2+1, theme->get_editor_sprite_bottom_edge());
+          // Draw the sprite boundary
+          rect(ji_screen, x1-1, y1-1, x2+1, y2+1, theme->get_editor_sprite_border());
+          hline(ji_screen, x1-1, y2+2, x2+1, theme->get_editor_sprite_bottom_edge());
 
-	  // Draw the mask boundaries
-	  if (m_document->getBoundariesSegments()) {
-	    drawMask();
-	    jmanager_start_timer(m_mask_timer_id);
-	  }
-	  else {
-	    jmanager_stop_timer(m_mask_timer_id);
-	  }
+          // Draw the mask boundaries
+          if (m_document->getBoundariesSegments()) {
+            drawMask();
+            jmanager_start_timer(m_mask_timer_id);
+          }
+          else {
+            jmanager_stop_timer(m_mask_timer_id);
+          }
 
-	  // Draw the cursor again
-	  if (old_cursor_thick != 0) {
-	    editor_draw_cursor(jmouse_x(0), jmouse_y(0));
-	  }
-	}
-	catch (const LockedDocumentException&) {
-	  // The sprite is locked to be read, so we can draw an opaque
-	  // background only.
+          // Draw the cursor again
+          if (old_cursor_thick != 0) {
+            editor_draw_cursor(jmouse_x(0), jmouse_y(0));
+          }
+        }
+        catch (const LockedDocumentException&) {
+          // The sprite is locked to be read, so we can draw an opaque
+          // background only.
 
-	  View* view = View::getView(this);
-	  Rect vp = view->getViewportBounds();
-	  jdraw_rectfill(vp, theme->get_editor_face_color());
-	}
+          View* view = View::getView(this);
+          Rect vp = view->getViewportBounds();
+          jdraw_rectfill(vp, theme->get_editor_face_color());
+        }
       }
 
       return true;
@@ -947,15 +947,15 @@ bool Editor::onProcessMessage(Message* msg)
 
     case JM_TIMER:
       if (msg->timer.timer_id == m_mask_timer_id) {
-	if (m_sprite) {
-	  drawMaskSafe();
+        if (m_sprite) {
+          drawMaskSafe();
 
-	  // Set offset to make selection-movement effect
-	  if (m_offset_count < 7)
-	    m_offset_count++;
-	  else
-	    m_offset_count = 0;
-	}
+          // Set offset to make selection-movement effect
+          if (m_offset_count < 7)
+            m_offset_count++;
+          else
+            m_offset_count = 0;
+        }
       }
       break;
 
@@ -970,53 +970,53 @@ bool Editor::onProcessMessage(Message* msg)
 
     case JM_BUTTONPRESSED:
       if (m_sprite) {
-	EditorStatePtr holdState(m_state);
-	return m_state->onMouseDown(this, msg);
+        EditorStatePtr holdState(m_state);
+        return m_state->onMouseDown(this, msg);
       }
       break;
 
     case JM_MOTION:
       if (m_sprite) {
-	EditorStatePtr holdState(m_state);
-	return m_state->onMouseMove(this, msg);
+        EditorStatePtr holdState(m_state);
+        return m_state->onMouseMove(this, msg);
       }
       break;
 
     case JM_BUTTONRELEASED:
       if (m_sprite) {
-	EditorStatePtr holdState(m_state);
-	if (m_state->onMouseUp(this, msg))
-	  return true;
+        EditorStatePtr holdState(m_state);
+        if (m_state->onMouseUp(this, msg))
+          return true;
       }
       break;
 
     case JM_KEYPRESSED:
       if (m_sprite) {
-	EditorStatePtr holdState(m_state);
-	bool used = m_state->onKeyDown(this, msg);
+        EditorStatePtr holdState(m_state);
+        bool used = m_state->onKeyDown(this, msg);
 
-	if (hasMouse()) {
-	  editor_update_quicktool();
-	  editor_setcursor();
-	}
+        if (hasMouse()) {
+          editor_update_quicktool();
+          editor_setcursor();
+        }
 
-	if (used)
-	  return true;
+        if (used)
+          return true;
       }
       break;
 
     case JM_KEYRELEASED:
       if (m_sprite) {
-	EditorStatePtr holdState(m_state);
-	bool used = m_state->onKeyUp(this, msg);
+        EditorStatePtr holdState(m_state);
+        bool used = m_state->onKeyUp(this, msg);
 
-	if (hasMouse()) {
-	  editor_update_quicktool();
-	  editor_setcursor();
-	}
+        if (hasMouse()) {
+          editor_update_quicktool();
+          editor_setcursor();
+        }
 
-	if (used)
-	  return true;
+        if (used)
+          return true;
       }
       break;
 
@@ -1028,9 +1028,9 @@ bool Editor::onProcessMessage(Message* msg)
 
     case JM_WHEEL:
       if (m_sprite && hasMouse()) {
-	EditorStatePtr holdState(m_state);
-	if (m_state->onMouseWheel(this, msg))
-	  return true;
+        EditorStatePtr holdState(m_state);
+        if (m_state->onMouseWheel(this, msg))
+          return true;
       }
       break;
 

@@ -1,6 +1,6 @@
-/*         ______   ___    ___ 
- *        /\  _  \ /\_ \  /\_ \ 
- *        \ \ \L\ \\//\ \ \//\ \      __     __   _ __   ___ 
+/*         ______   ___    ___
+ *        /\  _  \ /\_ \  /\_ \
+ *        \ \ \L\ \\//\ \ \//\ \      __     __   _ __   ___
  *         \ \  __ \ \ \ \  \ \ \   /'__`\ /'_ `\/\`'__\/ __`\
  *          \ \ \/\ \ \_\ \_ \_\ \_/\  __//\ \L\ \ \ \//\ \L\ \
  *           \ \_\ \_\/\____\/\____\ \____\ \____ \ \_\\ \____/
@@ -8,7 +8,7 @@
  *                                           /\____/
  *                                           \_/__/
  *
- *      Windows timer driver. 
+ *      Windows timer driver.
  *
  *      By Stefan Schimanski.
  *
@@ -119,9 +119,9 @@ static void tim_win32_high_perf_thread(void *unused)
 
    while (TRUE) {
       if (!_win_app_foreground) {
-	 /* restart counter if the thread was blocked */
-	 if (_win_thread_switch_out())
-	    QueryPerformanceCounter(&prev_tick);
+         /* restart counter if the thread was blocked */
+         if (_win_thread_switch_out())
+            QueryPerformanceCounter(&prev_tick);
       }
 
       /* get current counter */
@@ -139,8 +139,8 @@ static void tim_win32_high_perf_thread(void *unused)
       /* wait calculated time */
       result = WaitForSingleObject(timer_stop_event, TIMER_TO_MSEC(delay));
       if (result != WAIT_TIMEOUT) {
-	 _win_thread_exit();
-	 return;
+         _win_thread_exit();
+         return;
       }
    }
 }
@@ -154,7 +154,7 @@ static void tim_win32_low_perf_thread(void *unused)
 {
    DWORD result;
    unsigned long delay = 0x8000;
-   DWORD prev_time;  
+   DWORD prev_time;
    DWORD curr_time;  /* in milliseconds */
    DWORD diff_time;
 
@@ -166,9 +166,9 @@ static void tim_win32_low_perf_thread(void *unused)
 
    while (TRUE) {
       if (!_win_app_foreground) {
-	 /* restart time if the thread was blocked */
-	 if (_win_thread_switch_out())
-	    prev_time = timeGetTime();
+         /* restart time if the thread was blocked */
+         if (_win_thread_switch_out())
+            prev_time = timeGetTime();
       }
 
       /* get current time */
@@ -186,8 +186,8 @@ static void tim_win32_low_perf_thread(void *unused)
       /* wait calculated time */
       result = WaitForSingleObject(timer_stop_event, TIMER_TO_MSEC(delay));
       if (result != WAIT_TIMEOUT) {
-	 _win_thread_exit();
-	 return;
+         _win_thread_exit();
+         return;
       }
    }
 }

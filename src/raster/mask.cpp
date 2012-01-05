@@ -125,7 +125,7 @@ void mask_copy(Mask* mask_dst, const Mask* mask_src)
   if (mask_src->bitmap) {
     // add all the area of "mask"
     mask_dst->add(mask_src->x, mask_src->y,
-		  mask_src->w, mask_src->h);
+                  mask_src->w, mask_src->h);
 
     /* and copy the "mask" bitmap */
     image_copy(mask_dst->bitmap, mask_src->bitmap, 0, 0);
@@ -161,8 +161,8 @@ void mask_invert(Mask* mask)
       d.quot = d.rem = 0;
       address = ((uint8_t**)mask->bitmap->line)[v];
       for (u=0; u<mask->w; u++) {
-	*address ^= (1<<d.rem);
-	_image_bitmap_next_bit(d, address);
+        *address ^= (1<<d.rem);
+        _image_bitmap_next_bit(d, address);
       }
     }
 
@@ -195,16 +195,16 @@ void Mask::add(int x, int y, int w, int h)
     this->reserve(x, y, w, h);
 
   image_rectfill(this->bitmap,
-		 x-this->x, y-this->y,
-		 x-this->x+w-1, y-this->y+h-1, 1);
+                 x-this->x, y-this->y,
+                 x-this->x+w-1, y-this->y+h-1, 1);
 }
 
 void mask_subtract(Mask* mask, int x, int y, int w, int h)
 {
   if (mask->bitmap) {
     image_rectfill(mask->bitmap,
-		   x-mask->x, y-mask->y,
-		   x-mask->x+w-1, y-mask->y+h-1, 0);
+                   x-mask->x, y-mask->y,
+                   x-mask->x+w-1, y-mask->y+h-1, 0);
     mask->shrink();
   }
 }
@@ -255,27 +255,27 @@ void mask_by_color(Mask* mask, const Image *src, int color, int fuzziness)
       dst_a = _rgba_geta(color);
 
       for (v=0; v<src->h; v++) {
-	src_address = ((uint32_t**)src->line)[v];
-	dst_address = ((uint8_t**)dst->line)[v];
+        src_address = ((uint32_t**)src->line)[v];
+        dst_address = ((uint8_t**)dst->line)[v];
 
-	d = div (0, 8);
+        d = div (0, 8);
 
-	for (u=0; u<src->w; u++) {
-	  c = *(src_address++);
+        for (u=0; u<src->w; u++) {
+          c = *(src_address++);
 
-	  src_r = _rgba_getr(c);
-	  src_g = _rgba_getg(c);
-	  src_b = _rgba_getb(c);
-	  src_a = _rgba_geta(c);
+          src_r = _rgba_getr(c);
+          src_g = _rgba_getg(c);
+          src_b = _rgba_getb(c);
+          src_a = _rgba_geta(c);
 
-	  if (!((src_r >= dst_r-fuzziness) && (src_r <= dst_r+fuzziness) &&
-		(src_g >= dst_g-fuzziness) && (src_g <= dst_g+fuzziness) &&
-		(src_b >= dst_b-fuzziness) && (src_b <= dst_b+fuzziness) &&
-		(src_a >= dst_a-fuzziness) && (src_a <= dst_a+fuzziness)))
-	    (*dst_address) ^= (1 << d.rem);
+          if (!((src_r >= dst_r-fuzziness) && (src_r <= dst_r+fuzziness) &&
+                (src_g >= dst_g-fuzziness) && (src_g <= dst_g+fuzziness) &&
+                (src_b >= dst_b-fuzziness) && (src_b <= dst_b+fuzziness) &&
+                (src_a >= dst_a-fuzziness) && (src_a <= dst_a+fuzziness)))
+            (*dst_address) ^= (1 << d.rem);
 
-	  _image_bitmap_next_bit(d, dst_address);
-	}
+          _image_bitmap_next_bit(d, dst_address);
+        }
       }
     } break;
 
@@ -291,23 +291,23 @@ void mask_by_color(Mask* mask, const Image *src, int color, int fuzziness)
       dst_a = _graya_geta(color);
 
       for (v=0; v<src->h; v++) {
-	src_address = ((uint16_t**)src->line)[v];
-	dst_address = ((uint8_t**)dst->line)[v];
+        src_address = ((uint16_t**)src->line)[v];
+        dst_address = ((uint8_t**)dst->line)[v];
 
-	d = div (0, 8);
+        d = div (0, 8);
 
-	for (u=0; u<src->w; u++) {
-	  c = *(src_address++);
+        for (u=0; u<src->w; u++) {
+          c = *(src_address++);
 
-	  src_k = _graya_getv(c);
-	  src_a = _graya_geta(c);
+          src_k = _graya_getv(c);
+          src_a = _graya_geta(c);
 
-	  if (!((src_k >= dst_k-fuzziness) && (src_k <= dst_k+fuzziness) &&
-		(src_a >= dst_a-fuzziness) && (src_a <= dst_a+fuzziness)))
-	    (*dst_address) ^= (1 << d.rem);
+          if (!((src_k >= dst_k-fuzziness) && (src_k <= dst_k+fuzziness) &&
+                (src_a >= dst_a-fuzziness) && (src_a <= dst_a+fuzziness)))
+            (*dst_address) ^= (1 << d.rem);
 
-	  _image_bitmap_next_bit(d, dst_address);
-	}
+          _image_bitmap_next_bit(d, dst_address);
+        }
       }
     } break;
 
@@ -318,19 +318,19 @@ void mask_by_color(Mask* mask, const Image *src, int color, int fuzziness)
       div_t d;
 
       for (v=0; v<src->h; v++) {
-	src_address = ((uint8_t**)src->line)[v];
-	dst_address = ((uint8_t**)dst->line)[v];
+        src_address = ((uint8_t**)src->line)[v];
+        dst_address = ((uint8_t**)dst->line)[v];
 
-	d = div (0, 8);
+        d = div (0, 8);
 
-	for (u=0; u<src->w; u++) {
-	  c = *(src_address++);
+        for (u=0; u<src->w; u++) {
+          c = *(src_address++);
 
-	  if (!((c >= color-fuzziness) && (c <= color+fuzziness)))
-	    (*dst_address) ^= (1 << d.rem);
+          if (!((c >= color-fuzziness) && (c <= color+fuzziness)))
+            (*dst_address) ^= (1 << d.rem);
 
-	  _image_bitmap_next_bit(d, dst_address);
-	}
+          _image_bitmap_next_bit(d, dst_address);
+        }
       }
     } break;
   }
@@ -340,23 +340,23 @@ void mask_by_color(Mask* mask, const Image *src, int color, int fuzziness)
 
 void mask_crop(Mask* mask, const Image *image)
 {
-#define ADVANCE(beg, end, o_end, cmp, op, getpixel1, getpixel)	\
-  {								\
-    done = true;						\
-    for (beg=beg_##beg; beg cmp beg_##end; beg op) {		\
-      old_color = getpixel1;					\
-      done = true;						\
-      for (c++; c<=beg_##o_end; c++) {				\
-	if (getpixel != old_color) {				\
-	  done = false;						\
-	  break;						\
-	}							\
-      }								\
-      if (!done)						\
-	break;							\
-    }								\
-    if (done)							\
-      done_count++;						\
+#define ADVANCE(beg, end, o_end, cmp, op, getpixel1, getpixel)  \
+  {                                                             \
+    done = true;                                                \
+    for (beg=beg_##beg; beg cmp beg_##end; beg op) {            \
+      old_color = getpixel1;                                    \
+      done = true;                                              \
+      for (c++; c<=beg_##o_end; c++) {                          \
+        if (getpixel != old_color) {                            \
+          done = false;                                         \
+          break;                                                \
+        }                                                       \
+      }                                                         \
+      if (!done)                                                \
+        break;                                                  \
+    }                                                           \
+    if (done)                                                   \
+      done_count++;                                             \
   }
 
   int beg_x1, beg_y1, beg_x2, beg_y2;
@@ -379,20 +379,20 @@ void mask_crop(Mask* mask, const Image *image)
 
   /* left */
   ADVANCE(x1, x2, y2, <=, ++,
-	  image_getpixel(image, x1, c=beg_y1),
-	  image_getpixel(image, x1, c));
+          image_getpixel(image, x1, c=beg_y1),
+          image_getpixel(image, x1, c));
   /* right */
   ADVANCE(x2, x1, y2, >=, --,
-	  image_getpixel(image, x2, c=beg_y1),
-	  image_getpixel(image, x2, c));
+          image_getpixel(image, x2, c=beg_y1),
+          image_getpixel(image, x2, c));
   /* top */
   ADVANCE(y1, y2, x2, <=, ++,
-	  image_getpixel(image, c=beg_x1, y1),
-	  image_getpixel(image, c, y1));
+          image_getpixel(image, c=beg_x1, y1),
+          image_getpixel(image, c, y1));
   /* bottom */
   ADVANCE(y2, y1, x2, >=, --,
-	  image_getpixel(image, c=beg_x1, y2),
-	  image_getpixel(image, c, y2));
+          image_getpixel(image, c=beg_x1, y2),
+          image_getpixel(image, c, y2));
 
   if (done_count < 4)
     mask_intersect(mask, x1, y1, x2, y2);
@@ -425,16 +425,16 @@ void Mask::reserve(int x, int y, int w, int h)
     int new_mask_h = y2 - new_mask_y + 1;
 
     if (this->x != new_mask_x ||
-	this->y != new_mask_y ||
-	this->w != new_mask_w ||
-	this->h != new_mask_h) {
+        this->y != new_mask_y ||
+        this->w != new_mask_w ||
+        this->h != new_mask_h) {
       this->x = new_mask_x;
       this->y = new_mask_y;
       this->w = new_mask_w;
       this->h = new_mask_h;
 
       Image* image = image_crop(this->bitmap, this->x-x1, this->y-y1, this->w, this->h, 0);
-      delete this->bitmap;	// image
+      delete this->bitmap;      // image
       this->bitmap = image;
     }
   }
@@ -445,20 +445,20 @@ void Mask::shrink()
   // If the mask is frozen we avoid the shrinking
   if (m_freeze_count > 0)
     return;
-    
-#define SHRINK_SIDE(u_begin, u_op, u_final, u_add,			\
-		    v_begin, v_op, v_final, v_add, U, V, var)		\
-  {									\
-    for (u = u_begin; u u_op u_final; u u_add) {			\
-      for (v = v_begin; v v_op v_final; v v_add) {			\
-	if (this->bitmap->getpixel(U, V))				\
-	  break;							\
-      }									\
-      if (v == v_final)							\
-	var;								\
-      else								\
-	break;								\
-    }									\
+
+#define SHRINK_SIDE(u_begin, u_op, u_final, u_add,                      \
+                    v_begin, v_op, v_final, v_add, U, V, var)           \
+  {                                                                     \
+    for (u = u_begin; u u_op u_final; u u_add) {                        \
+      for (v = v_begin; v v_op v_final; v v_add) {                      \
+        if (this->bitmap->getpixel(U, V))                               \
+          break;                                                        \
+      }                                                                 \
+      if (v == v_final)                                                 \
+        var;                                                            \
+      else                                                              \
+        break;                                                          \
+    }                                                                   \
   }
 
   int u, v, x1, y1, x2, y2;
@@ -469,22 +469,22 @@ void Mask::shrink()
   y2 = this->y+this->h-1;
 
   SHRINK_SIDE(0, <, this->w, ++,
-	      0, <, this->h, ++, u, v, x1++);
+              0, <, this->h, ++, u, v, x1++);
 
   SHRINK_SIDE(0, <, this->h, ++,
-	      0, <, this->w, ++, v, u, y1++);
+              0, <, this->w, ++, v, u, y1++);
 
   SHRINK_SIDE(this->w-1, >, 0, --,
-	      0, <, this->h, ++, u, v, x2--);
+              0, <, this->h, ++, u, v, x2--);
 
   SHRINK_SIDE(this->h-1, >, 0, --,
-	      0, <, this->w, ++, v, u, y2--);
+              0, <, this->w, ++, v, u, y2--);
 
   if ((x1 > x2) || (y1 > y2)) {
     mask_none(this);
   }
   else if ((x1 != this->x) || (x2 != this->x+this->w-1) ||
-	   (y1 != this->y) || (y2 != this->y+this->h-1)) {
+           (y1 != this->y) || (y2 != this->y+this->h-1)) {
     u = this->x;
     v = this->y;
 

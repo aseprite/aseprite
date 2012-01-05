@@ -45,5 +45,3 @@ AL_FUNC(void, destroy_rle_sprite, (RLE_SPRITE *sprite));
 #include "inline/rle.inl"
 
 #endif          /* ifndef ALLEGRO_RLE_H */
-
-

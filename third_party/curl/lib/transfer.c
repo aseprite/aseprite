@@ -509,18 +509,18 @@ static CURLcode readwrite_data(struct SessionHandle *data,
                   "Rewinding stream by : %zd"
                   " bytes on url %s (zero-length body)\n",
                   nread, data->state.path);
-	          read_rewind(conn, (size_t)nread);
+                  read_rewind(conn, (size_t)nread);
           }
-	  else {
+          else {
             infof(data,
                   "Excess found in a non pipelined read:"
                   " excess = %zd"
-		  " url = %s (zero-length body)\n",
+                  " url = %s (zero-length body)\n",
                   nread, data->state.path);
-	  }
-	}
+          }
+        }
 
-	break;
+        break;
       }
     }
 #endif /* CURL_DISABLE_HTTP */

@@ -84,26 +84,26 @@ bool PopupFrame::onProcessMessage(Message* msg)
 
     case JM_SIGNAL:
       if (msg->signal.num == JI_SIGNAL_INIT_THEME) {
-	this->border_width.l = 3 * jguiscale();
-	this->border_width.t = 3 * jguiscale();
-	this->border_width.r = 3 * jguiscale();
-	this->border_width.b = 3 * jguiscale();
-	return true;
+        this->border_width.l = 3 * jguiscale();
+        this->border_width.t = 3 * jguiscale();
+        this->border_width.r = 3 * jguiscale();
+        this->border_width.b = 3 * jguiscale();
+        return true;
       }
       break;
 
     case JM_MOUSELEAVE:
       if (m_hot_region == NULL && !is_moveable())
-	closeWindow(NULL);
+        closeWindow(NULL);
       break;
 
     case JM_KEYPRESSED:
       if (m_filtering &&
-	  (msg->key.scancode == KEY_ESC ||
-	   msg->key.scancode == KEY_ENTER ||
-	   msg->key.scancode == KEY_ENTER_PAD)) {
-	closeWindow(NULL);
-	return false;
+          (msg->key.scancode == KEY_ESC ||
+           msg->key.scancode == KEY_ENTER ||
+           msg->key.scancode == KEY_ENTER_PAD)) {
+        closeWindow(NULL);
+        return false;
       }
       break;
 
@@ -111,27 +111,27 @@ bool PopupFrame::onProcessMessage(Message* msg)
       // If the user click outside the window, we have to close the
       // tooltip window.
       if (m_filtering) {
-	Widget* picked = this->pick(msg->mouse.x, msg->mouse.y);
-	if (!picked || picked->getRoot() != this) {
-	  closeWindow(NULL);
-	}
+        Widget* picked = this->pick(msg->mouse.x, msg->mouse.y);
+        if (!picked || picked->getRoot() != this) {
+          closeWindow(NULL);
+        }
       }
 
       // This is used when the user click inside a small text tooltip.
       if (m_close_on_buttonpressed)
-	closeWindow(NULL);
+        closeWindow(NULL);
       break;
 
     case JM_MOTION:
       if (!is_moveable() &&
-	  m_hot_region != NULL &&
-	  jmanager_get_capture() == NULL) {
-	struct jrect box;
+          m_hot_region != NULL &&
+          jmanager_get_capture() == NULL) {
+        struct jrect box;
 
-	// If the mouse is outside the hot-region we have to close the
-	// window.
-	if (!jregion_point_in(m_hot_region, msg->mouse.x, msg->mouse.y, &box))
-	  closeWindow(NULL);
+        // If the mouse is outside the hot-region we have to close the
+        // window.
+        if (!jregion_point_in(m_hot_region, msg->mouse.x, msg->mouse.y, &box))
+          closeWindow(NULL);
       }
       break;
 
@@ -148,8 +148,8 @@ void PopupFrame::onPreferredSize(PreferredSizeEvent& ev)
 
   if (hasText())
     resultSize = g.fitString(getText(),
-			     (getClientBounds() - getBorder()).w,
-			     getAlign());
+                             (getClientBounds() - getBorder()).w,
+                             getAlign());
 
   resultSize.w += border_width.l + border_width.r;
   resultSize.h += border_width.t + border_width.b;

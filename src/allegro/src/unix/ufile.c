@@ -1,6 +1,6 @@
-/*         ______   ___    ___ 
- *        /\  _  \ /\_ \  /\_ \ 
- *        \ \ \L\ \\//\ \ \//\ \      __     __   _ __   ___ 
+/*         ______   ___    ___
+ *        /\  _  \ /\_ \  /\_ \
+ *        \ \ \L\ \\//\ \ \//\ \      __     __   _ __   ___
  *         \ \  __ \ \ \ \  \ \ \   /'__`\ /'_ `\/\`'__\/ __`\
  *          \ \ \/\ \ \_\ \_ \_\ \_/\  __//\ \L\ \ \ \//\ \L\ \
  *           \ \_\ \_\/\____\/\____\ \____\ \____ \ \_\\ \____/
@@ -262,15 +262,15 @@ static int ff_get_attrib(AL_CONST char *name, struct stat *s)
 
    if (euid != 0) {
       if (s->st_uid == euid) {
-	 if ((s->st_mode & S_IWUSR) == 0)
-	    attrib |= FA_RDONLY;
+         if ((s->st_mode & S_IWUSR) == 0)
+            attrib |= FA_RDONLY;
       }
       else if (s->st_gid == getegid()) {
-	 if ((s->st_mode & S_IWGRP) == 0)
-	    attrib |= FA_RDONLY;
+         if ((s->st_mode & S_IWGRP) == 0)
+            attrib |= FA_RDONLY;
       }
       else if ((s->st_mode & S_IWOTH) == 0) {
-	 attrib |= FA_RDONLY;
+         attrib |= FA_RDONLY;
       }
    }
 

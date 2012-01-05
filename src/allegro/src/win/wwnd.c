@@ -1,6 +1,6 @@
-/*         ______   ___    ___ 
- *        /\  _  \ /\_ \  /\_ \ 
- *        \ \ \L\ \\//\ \ \//\ \      __     __   _ __   ___ 
+/*         ______   ___    ___
+ *        /\  _  \ /\_ \  /\_ \
+ *        \ \ \L\ \\//\ \ \//\ \      __     __   _ __   ___
  *         \ \  __ \ \ \ \  \ \ \   /'__`\ /'_ `\/\`'__\/ __`\
  *          \ \ \/\ \ \_\ \_ \_\ \_/\  __//\ \L\ \ \ \//\ \L\ \
  *           \ \_\ \_\/\____\/\____\ \____\ \____ \ \_\\ \____/
@@ -124,21 +124,21 @@ static LRESULT CALLBACK directx_wnd_proc(HWND wnd, UINT message, WPARAM wparam, 
    switch (message) {
 
       case WM_CREATE:
-	 allegro_wnd = wnd;
+         allegro_wnd = wnd;
          break;
 
       case WM_DESTROY:
-	 PostQuitMessage(0);
+         PostQuitMessage(0);
          allegro_wnd = NULL;
          break;
 
       case WM_SETCURSOR:
          if (_mouse_installed) {
-	    int hittest = LOWORD(lparam);
-	    if (hittest == HTCLIENT) {
-	       mouse_set_syscursor();
-	       return 1;  /* not TRUE */
-	    }
+            int hittest = LOWORD(lparam);
+            if (hittest == HTCLIENT) {
+               mouse_set_syscursor();
+               return 1;  /* not TRUE */
+            }
          }
          break;
 
@@ -147,13 +147,13 @@ static LRESULT CALLBACK directx_wnd_proc(HWND wnd, UINT message, WPARAM wparam, 
             _win_switch_out();
          }
          else {
-	    /* Ignore the WM_ACTIVATE event if the window is minimized. */
-	    if (HIWORD(wparam))
-	       break;
+            /* Ignore the WM_ACTIVATE event if the window is minimized. */
+            if (HIWORD(wparam))
+               break;
 
-	    /* no delay in windowed mode */
-	    _win_switch_in();
-	 }
+            /* no delay in windowed mode */
+            _win_switch_in();
+         }
          break;
 
       case WM_ENTERSIZEMOVE:
@@ -182,99 +182,99 @@ static LRESULT CALLBACK directx_wnd_proc(HWND wnd, UINT message, WPARAM wparam, 
          break;
 
       case WM_SIZE: {
-	 int old_width = wnd_width;
-	 int old_height = wnd_height;
+         int old_width = wnd_width;
+         int old_height = wnd_height;
 
          wnd_width = LOWORD(lparam);
          wnd_height = HIWORD(lparam);
 
-	 if ((wnd_width > 0 && wnd_height > 0) &&
-	     (sizing || (wparam == SIZE_MAXIMIZED ||
-			 wparam == SIZE_RESTORED))) {
-	    sizing = FALSE;
+         if ((wnd_width > 0 && wnd_height > 0) &&
+             (sizing || (wparam == SIZE_MAXIMIZED ||
+                         wparam == SIZE_RESTORED))) {
+            sizing = FALSE;
             if (user_resize_proc) {
-	       RESIZE_DISPLAY_EVENT ev;
-	       ev.old_w = old_width;
-	       ev.old_h = old_height;
-	       ev.new_w = wnd_width;
-	       ev.new_h = wnd_height;
-	       ev.is_maximized = (wparam == SIZE_MAXIMIZED) ? 1: 0;
-	       ev.is_restored = (wparam == SIZE_RESTORED) ? 1: 0;
+               RESIZE_DISPLAY_EVENT ev;
+               ev.old_w = old_width;
+               ev.old_h = old_height;
+               ev.new_w = wnd_width;
+               ev.new_h = wnd_height;
+               ev.is_maximized = (wparam == SIZE_MAXIMIZED) ? 1: 0;
+               ev.is_restored = (wparam == SIZE_RESTORED) ? 1: 0;
 
-	       (*user_resize_proc)(&ev);
-	    }
-	 }
-	 break;
+               (*user_resize_proc)(&ev);
+            }
+         }
+         break;
       }
 
       case WM_SIZING: {
-	 LPRECT rc = (LPRECT)lparam;
-	 int w = (rc->right - rc->left);
-	 int h = (rc->bottom - rc->top);
-	 int dw = (w % 16);
-	 int dh = (h % 16);
+         LPRECT rc = (LPRECT)lparam;
+         int w = (rc->right - rc->left);
+         int h = (rc->bottom - rc->top);
+         int dw = (w % 16);
+         int dh = (h % 16);
 
-	 switch (wparam) {
+         switch (wparam) {
 
-	    case WMSZ_LEFT:
-	    case WMSZ_TOPLEFT:
-	    case WMSZ_BOTTOMLEFT: {
-	       if (w < 192)
-		 rc->left = rc->right - 192;
-	       else
-		 rc->left += dw;
-	       break;
-	    }
+            case WMSZ_LEFT:
+            case WMSZ_TOPLEFT:
+            case WMSZ_BOTTOMLEFT: {
+               if (w < 192)
+                 rc->left = rc->right - 192;
+               else
+                 rc->left += dw;
+               break;
+            }
 
-	    case WMSZ_RIGHT:
-	    case WMSZ_TOPRIGHT:
-	    case WMSZ_BOTTOMRIGHT: {
-	       if (w < 192)
-		 rc->right = rc->left + 192;
-	       else
-		 rc->right -= dw;
-	       break;
-	    }
+            case WMSZ_RIGHT:
+            case WMSZ_TOPRIGHT:
+            case WMSZ_BOTTOMRIGHT: {
+               if (w < 192)
+                 rc->right = rc->left + 192;
+               else
+                 rc->right -= dw;
+               break;
+            }
 
-	    case WMSZ_TOP:
-	    case WMSZ_BOTTOM:
-	       /* Ignore */
-	       break;
-	 }
+            case WMSZ_TOP:
+            case WMSZ_BOTTOM:
+               /* Ignore */
+               break;
+         }
 
-	 switch (wparam) {
+         switch (wparam) {
 
-	    case WMSZ_TOP:
-	    case WMSZ_TOPLEFT:
-	    case WMSZ_TOPRIGHT:
-	       if (h < 96)
-		 rc->top = rc->bottom - 96;
-	       else
-		 rc->top += dh;
-	       break;
+            case WMSZ_TOP:
+            case WMSZ_TOPLEFT:
+            case WMSZ_TOPRIGHT:
+               if (h < 96)
+                 rc->top = rc->bottom - 96;
+               else
+                 rc->top += dh;
+               break;
 
-	    case WMSZ_BOTTOM:
-	    case WMSZ_BOTTOMLEFT:
-	    case WMSZ_BOTTOMRIGHT:
-	       if (h < 96)
-		 rc->bottom = rc->top + 96;
-	       else
-		 rc->bottom -= dh;
-	       break;
+            case WMSZ_BOTTOM:
+            case WMSZ_BOTTOMLEFT:
+            case WMSZ_BOTTOMRIGHT:
+               if (h < 96)
+                 rc->bottom = rc->top + 96;
+               else
+                 rc->bottom -= dh;
+               break;
 
-	    case WMSZ_LEFT:
-	    case WMSZ_RIGHT:
-	       /* Ignore */
-	       break;
-	 }
+            case WMSZ_LEFT:
+            case WMSZ_RIGHT:
+               /* Ignore */
+               break;
+         }
 
-	 sizing = TRUE;
-	 return TRUE;
+         sizing = TRUE;
+         return TRUE;
       }
 
       case WM_PAINT:
          if (win_gfx_driver) {
-	    PAINTSTRUCT ps;
+            PAINTSTRUCT ps;
             BeginPaint(wnd, &ps);
             if (win_gfx_driver && win_gfx_driver->paint)
                 win_gfx_driver->paint(&ps.rcPaint);
@@ -310,102 +310,102 @@ static LRESULT CALLBACK directx_wnd_proc(HWND wnd, UINT message, WPARAM wparam, 
 
       case WM_MENUCHAR :
          return (MNC_CLOSE<<16)|(wparam&0xffff);
-         
+
       case WM_CLOSE:
-	 if (user_close_proc)
-	    (*user_close_proc)();
-	 return 0;
+         if (user_close_proc)
+            (*user_close_proc)();
+         return 0;
 
       case WM_LBUTTONDOWN:
       case WM_LBUTTONUP:
          if (_mouse_installed) {
-	    int mx = GET_X_LPARAM(lparam);
-	    int my = GET_Y_LPARAM(lparam);
-	    BOOL down = (message == WM_LBUTTONDOWN);
-	    _al_win_mouse_handle_button(wnd, 1, down, mx, my, TRUE);
-	 }
-	 break;
+            int mx = GET_X_LPARAM(lparam);
+            int my = GET_Y_LPARAM(lparam);
+            BOOL down = (message == WM_LBUTTONDOWN);
+            _al_win_mouse_handle_button(wnd, 1, down, mx, my, TRUE);
+         }
+         break;
 
       case WM_MBUTTONDOWN:
       case WM_MBUTTONUP:
          if (_mouse_installed) {
-	    int mx = GET_X_LPARAM(lparam);
-	    int my = GET_Y_LPARAM(lparam);
-	    BOOL down = (message == WM_MBUTTONDOWN);
-	    _al_win_mouse_handle_button(wnd, 3, down, mx, my, TRUE);
-	 }
-	 break;
+            int mx = GET_X_LPARAM(lparam);
+            int my = GET_Y_LPARAM(lparam);
+            BOOL down = (message == WM_MBUTTONDOWN);
+            _al_win_mouse_handle_button(wnd, 3, down, mx, my, TRUE);
+         }
+         break;
 
       case WM_RBUTTONDOWN:
       case WM_RBUTTONUP:
          if (_mouse_installed) {
-	    int mx = GET_X_LPARAM(lparam);
-	    int my = GET_Y_LPARAM(lparam);
-	    BOOL down = (message == WM_RBUTTONDOWN);
-	    _al_win_mouse_handle_button(wnd, 2, down, mx, my, TRUE);
-	 }
-	 break;
+            int mx = GET_X_LPARAM(lparam);
+            int my = GET_Y_LPARAM(lparam);
+            BOOL down = (message == WM_RBUTTONDOWN);
+            _al_win_mouse_handle_button(wnd, 2, down, mx, my, TRUE);
+         }
+         break;
 
       case WM_XBUTTONDOWN:
       case WM_XBUTTONUP:
          if (_mouse_installed) {
-	    int mx = GET_X_LPARAM(lparam);
-	    int my = GET_Y_LPARAM(lparam);
-	    int button = HIWORD(wparam);
-	    BOOL down = (message == WM_XBUTTONDOWN);
-	    if (button == XBUTTON1)
-	       _al_win_mouse_handle_button(wnd, 4, down, mx, my, TRUE);
-	    else if (button == XBUTTON2)
-	       _al_win_mouse_handle_button(wnd, 5, down, mx, my, TRUE);
-	    return TRUE;
-	 }
-	 break;
+            int mx = GET_X_LPARAM(lparam);
+            int my = GET_Y_LPARAM(lparam);
+            int button = HIWORD(wparam);
+            BOOL down = (message == WM_XBUTTONDOWN);
+            if (button == XBUTTON1)
+               _al_win_mouse_handle_button(wnd, 4, down, mx, my, TRUE);
+            else if (button == XBUTTON2)
+               _al_win_mouse_handle_button(wnd, 5, down, mx, my, TRUE);
+            return TRUE;
+         }
+         break;
 
       case WM_MOUSEWHEEL:
          if (_mouse_installed) {
-	    int d = GET_WHEEL_DELTA_WPARAM(wparam);
-	    _al_win_mouse_handle_wheel(wnd, d / WHEEL_DELTA, FALSE);
-	    return TRUE;
-	 }
-	 break;
+            int d = GET_WHEEL_DELTA_WPARAM(wparam);
+            _al_win_mouse_handle_wheel(wnd, d / WHEEL_DELTA, FALSE);
+            return TRUE;
+         }
+         break;
 
       case WM_MOUSEMOVE:
          if (_mouse_installed) {
-	    POINTS p = MAKEPOINTS(lparam);
-	    _al_win_mouse_handle_move(wnd, p.x, p.y);
-	    return 0;
-	 }
+            POINTS p = MAKEPOINTS(lparam);
+            _al_win_mouse_handle_move(wnd, p.x, p.y);
+            return 0;
+         }
          break;
 
       case WM_SYSKEYDOWN:
-	 if (_keyboard_installed) {
-	    int vcode = wparam; 
-	    BOOL repeated  = (lparam >> 30) & 0x1;
-	    _al_win_kbd_handle_key_press(0, vcode, repeated);
-	    return 0;
-	 }
-	 break;
+         if (_keyboard_installed) {
+            int vcode = wparam;
+            BOOL repeated  = (lparam >> 30) & 0x1;
+            _al_win_kbd_handle_key_press(0, vcode, repeated);
+            return 0;
+         }
+         break;
 
       case WM_KEYDOWN:
-	 if (_keyboard_installed) {
-	    int vcode = wparam; 
-	    int scode = (lparam >> 16) & 0xff;
-	    BOOL repeated  = (lparam >> 30) & 0x1;
-	    /* We can't use TranslateMessage() because we don't know if it will
-	       produce a WM_CHAR or not. */
-	    _al_win_kbd_handle_key_press(scode, vcode, repeated);
-	    return 0;
-	 }
-	 break;
+         if (_keyboard_installed) {
+            int vcode = wparam;
+            int scode = (lparam >> 16) & 0xff;
+            BOOL repeated  = (lparam >> 30) & 0x1;
+            /* We can't use TranslateMessage() because we don't know if it will
+               produce a WM_CHAR or not. */
+            _al_win_kbd_handle_key_press(scode, vcode, repeated);
+            return 0;
+         }
+         break;
 
       case WM_SYSKEYUP:
       case WM_KEYUP:
-	 if (_keyboard_installed) {
-	    int vcode = wparam;
-	    _al_win_kbd_handle_key_release(vcode);
-	    return 0;
-	 }
-	 break;
+         if (_keyboard_installed) {
+            int vcode = wparam;
+            _al_win_kbd_handle_key_release(vcode);
+            return 0;
+         }
+         break;
 
    }
 
@@ -457,7 +457,7 @@ static HWND create_directx_window(void)
 
    /* create the window now */
    wnd = CreateWindowEx(WS_EX_APPWINDOW, ALLEGRO_WND_CLASS, wnd_title,
-			WS_OVERLAPPEDWINDOW,
+                        WS_OVERLAPPEDWINDOW,
                         -100, -100, 0, 0,
                         NULL, NULL, allegro_inst, NULL);
    if (!wnd) {
@@ -534,7 +534,7 @@ int init_directx_window(void)
       break;
    default:               /* thread failed to create window */
       return -1;
-   } 
+   }
 
    /* initialize gfx critical section */
    InitializeCriticalSection(&gfx_crit_sect);
@@ -603,30 +603,30 @@ int adjust_window(int w, int h)
       /* try to get the height of the window's title bar */
       user32_handle = GetModuleHandle("user32");
       if (user32_handle) {
-	 get_title_bar_info
-	    = (func)GetProcAddress(user32_handle, "GetTitleBarInfo");
-	 if (get_title_bar_info) {
-	    tb_info.cbSize = sizeof(TITLEBARINFO);
-	    if (get_title_bar_info(allegro_wnd, &tb_info))
-	       tb_height
-		  = tb_info.rcTitleBar.bottom - tb_info.rcTitleBar.top;
-	 }
+         get_title_bar_info
+            = (func)GetProcAddress(user32_handle, "GetTitleBarInfo");
+         if (get_title_bar_info) {
+            tb_info.cbSize = sizeof(TITLEBARINFO);
+            if (get_title_bar_info(allegro_wnd, &tb_info))
+               tb_height
+                  = tb_info.rcTitleBar.bottom - tb_info.rcTitleBar.top;
+         }
       }
       if (!user32_handle || !get_title_bar_info)
-	 tb_height = GetSystemMetrics(SM_CYSIZE);
-         
+         tb_height = GetSystemMetrics(SM_CYSIZE);
+
       /* try to center the window relative to its last position */
       last_wnd_x += (last_w - w)/2;
       last_wnd_y += (last_h - h)/2;
-	 
+
       if (last_wnd_x + w >= working_area.right)
-	 last_wnd_x = working_area.right - w;
+         last_wnd_x = working_area.right - w;
       if (last_wnd_y + h >= working_area.bottom)
-	 last_wnd_y = working_area.bottom - h;
+         last_wnd_y = working_area.bottom - h;
       if (last_wnd_x < working_area.left)
-	 last_wnd_x = working_area.left;
+         last_wnd_x = working_area.left;
       if (last_wnd_y - tb_height < working_area.top)
-	 last_wnd_y = working_area.top + tb_height;
+         last_wnd_y = working_area.top + tb_height;
    }
 
 #ifdef ALLEGRO_COLORCONV_ALIGNED_WIDTH
@@ -643,10 +643,10 @@ int adjust_window(int w, int h)
 
    /* retrieve the size of the decorated window */
    AdjustWindowRect(&win_size, GetWindowLong(allegro_wnd, GWL_STYLE), FALSE);
-   
+
    /* display the window */
    MoveWindow(allegro_wnd, win_size.left, win_size.top,
-	      win_size.right - win_size.left, win_size.bottom - win_size.top, TRUE);
+              win_size.right - win_size.left, win_size.bottom - win_size.top, TRUE);
 
    /* check that the actual window size is the one requested */
    GetClientRect(allegro_wnd, &win_size);
@@ -664,7 +664,7 @@ int adjust_window(int w, int h)
 
 
 /* save_window_pos:
- *  Stores the position of the current window before closing it so that 
+ *  Stores the position of the current window before closing it so that
  *  it can be used as the initial position for the next window.
  */
 void save_window_pos(void)

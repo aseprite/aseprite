@@ -15,15 +15,15 @@
 #define JPEG_INTERNALS
 #include "jinclude.h"
 #include "jpeglib.h"
-#include "jmemsys.h"		/* import the system-dependent declarations */
+#include "jmemsys.h"            /* import the system-dependent declarations */
 
-#ifndef HAVE_STDLIB_H		/* <stdlib.h> should declare malloc(),free() */
+#ifndef HAVE_STDLIB_H           /* <stdlib.h> should declare malloc(),free() */
 extern void * malloc JPP((size_t size));
 extern void free JPP((void *ptr));
 #endif
 
-#ifndef SEEK_SET		/* pre-ANSI systems may not define this; */
-#define SEEK_SET  0		/* if not, assume 0 is correct */
+#ifndef SEEK_SET                /* pre-ANSI systems may not define this; */
+#define SEEK_SET  0             /* if not, assume 0 is correct */
 #endif
 
 
@@ -73,13 +73,13 @@ jpeg_free_large (j_common_ptr cinfo, void FAR * object, size_t sizeofobject)
  * a slop factor of 5% or so.
  */
 
-#ifndef DEFAULT_MAX_MEM		/* so can override from makefile */
-#define DEFAULT_MAX_MEM		1000000L /* default: one megabyte */
+#ifndef DEFAULT_MAX_MEM         /* so can override from makefile */
+#define DEFAULT_MAX_MEM         1000000L /* default: one megabyte */
 #endif
 
 GLOBAL(long)
 jpeg_mem_available (j_common_ptr cinfo, long min_bytes_needed,
-		    long max_bytes_needed, long already_allocated)
+                    long max_bytes_needed, long already_allocated)
 {
   return cinfo->mem->max_memory_to_use - already_allocated;
 }
@@ -95,8 +95,8 @@ jpeg_mem_available (j_common_ptr cinfo, long min_bytes_needed,
 
 METHODDEF(void)
 read_backing_store (j_common_ptr cinfo, backing_store_ptr info,
-		    void FAR * buffer_address,
-		    long file_offset, long byte_count)
+                    void FAR * buffer_address,
+                    long file_offset, long byte_count)
 {
   if (fseek(info->temp_file, file_offset, SEEK_SET))
     ERREXIT(cinfo, JERR_TFILE_SEEK);
@@ -108,8 +108,8 @@ read_backing_store (j_common_ptr cinfo, backing_store_ptr info,
 
 METHODDEF(void)
 write_backing_store (j_common_ptr cinfo, backing_store_ptr info,
-		     void FAR * buffer_address,
-		     long file_offset, long byte_count)
+                     void FAR * buffer_address,
+                     long file_offset, long byte_count)
 {
   if (fseek(info->temp_file, file_offset, SEEK_SET))
     ERREXIT(cinfo, JERR_TFILE_SEEK);
@@ -139,7 +139,7 @@ close_backing_store (j_common_ptr cinfo, backing_store_ptr info)
 
 GLOBAL(void)
 jpeg_open_backing_store (j_common_ptr cinfo, backing_store_ptr info,
-			 long total_bytes_needed)
+                         long total_bytes_needed)
 {
   if ((info->temp_file = tmpfile()) == NULL)
     ERREXITS(cinfo, JERR_TFILE_CREATE, "");
@@ -157,7 +157,7 @@ jpeg_open_backing_store (j_common_ptr cinfo, backing_store_ptr info,
 GLOBAL(long)
 jpeg_mem_init (j_common_ptr cinfo)
 {
-  return DEFAULT_MAX_MEM;	/* default for max_memory_to_use */
+  return DEFAULT_MAX_MEM;       /* default for max_memory_to_use */
 }
 
 GLOBAL(void)

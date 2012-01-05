@@ -46,10 +46,10 @@ public:
   }
 
 private:
-  int m_frame;			// Frame position
-  int m_image;			// Image index of stock
-  int m_x, m_y;			// X/Y screen position
-  int m_opacity;		// Opacity level
+  int m_frame;                  // Frame position
+  int m_image;                  // Image index of stock
+  int m_x, m_y;                 // X/Y screen position
+  int m_opacity;                // Opacity level
 };
 
 #endif

@@ -42,4 +42,4 @@ private:
 
 } // namespace undoers
 
-#endif	// UNDOERS_SET_SPRITE_IMGTYPE_H_INCLUDED
+#endif  // UNDOERS_SET_SPRITE_IMGTYPE_H_INCLUDED

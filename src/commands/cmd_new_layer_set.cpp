@@ -43,15 +43,15 @@ protected:
 
 NewLayerSetCommand::NewLayerSetCommand()
   : Command("NewLayerSet",
-	    "New Layer Set",
-	    CmdRecordableFlag)
+            "New Layer Set",
+            CmdRecordableFlag)
 {
 }
 
 bool NewLayerSetCommand::onEnabled(Context* context)
 {
   return context->checkFlags(ContextFlags::ActiveDocumentIsWritable |
-			     ContextFlags::HasActiveSprite);
+                             ContextFlags::HasActiveSprite);
 }
 
 void NewLayerSetCommand::onExecute(Context* context)

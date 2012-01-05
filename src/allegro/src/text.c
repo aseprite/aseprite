@@ -1,6 +1,6 @@
-/*         ______   ___    ___ 
- *        /\  _  \ /\_ \  /\_ \ 
- *        \ \ \L\ \\//\ \ \//\ \      __     __   _ __   ___ 
+/*         ______   ___    ___
+ *        /\  _  \ /\_ \  /\_ \
+ *        \ \ \L\ \\//\ \ \//\ \      __     __   _ __   ___
  *         \ \  __ \ \ \ \  \ \ \   /'__`\ /'_ `\/\`'__\/ __`\
  *          \ \ \/\ \ \_\ \_ \_\ \_/\  __//\ \L\ \ \ \//\ \L\ \
  *           \ \_\ \_\/\____\/\____\ \____\ \____ \ \_\\ \____/
@@ -26,7 +26,7 @@
 
 
 /* textout_ex:
- *  Writes the null terminated string str onto bmp at position x, y, using 
+ *  Writes the null terminated string str onto bmp at position x, y, using
  *  the specified font, foreground color and background color (-1 is trans).
  *  If color is -1 and a proportional font is in use, it will be drawn
  *  using the colors from the original font bitmap (the one imported into
@@ -43,7 +43,7 @@ void textout_ex(BITMAP *bmp, AL_CONST FONT *f, AL_CONST char *str, int x, int y,
 
 
 /* textout_centre_ex:
- *  Like textout_ex(), but uses the x coordinate as the centre rather than 
+ *  Like textout_ex(), but uses the x coordinate as the centre rather than
  *  the left of the string.
  */
 void textout_centre_ex(BITMAP *bmp, AL_CONST FONT *f, AL_CONST char *str, int x, int y, int color, int bg)
@@ -60,7 +60,7 @@ void textout_centre_ex(BITMAP *bmp, AL_CONST FONT *f, AL_CONST char *str, int x,
 
 
 /* textout_right_ex:
- *  Like textout_ex(), but uses the x coordinate as the right rather than 
+ *  Like textout_ex(), but uses the x coordinate as the right rather than
  *  the left of the string.
  */
 void textout_right_ex(BITMAP *bmp, AL_CONST FONT *f, AL_CONST char *str, int x, int y, int color, int bg)
@@ -98,7 +98,7 @@ void textout_justify_ex(BITMAP *bmp, AL_CONST FONT *f, AL_CONST char *str, int x
    i += usetc(toks+i, '\r');
    usetc(toks+i, 0);
 
-   /* count words and measure min length (without spaces) */ 
+   /* count words and measure min length (without spaces) */
    strbuf = _al_ustrdup(str);
    if (!strbuf) {
       /* Can't justify ! */
@@ -124,7 +124,7 @@ void textout_justify_ex(BITMAP *bmp, AL_CONST FONT *f, AL_CONST char *str, int x
       /* can't justify */
       _AL_FREE(strbuf);
       f->vtable->render(f, str, color, bg, bmp, x1, y);
-      return; 
+      return;
    }
 
    /* distribute space left evenly between words */
@@ -161,7 +161,7 @@ void textprintf_ex(BITMAP *bmp, AL_CONST FONT *f, int x, int y, int color, int b
 
 
 /* textprintf_centre_ex:
- *  Like textprintf_ex(), but uses the x coordinate as the centre rather than 
+ *  Like textprintf_ex(), but uses the x coordinate as the centre rather than
  *  the left of the string.
  */
 void textprintf_centre_ex(BITMAP *bmp, AL_CONST FONT *f, int x, int y, int color, int bg, AL_CONST char *format, ...)
@@ -182,7 +182,7 @@ void textprintf_centre_ex(BITMAP *bmp, AL_CONST FONT *f, int x, int y, int color
 
 
 /* textprintf_right_ex:
- *  Like textprintf_ex(), but uses the x coordinate as the right rather than 
+ *  Like textprintf_ex(), but uses the x coordinate as the right rather than
  *  the left of the string.
  */
 void textprintf_right_ex(BITMAP *bmp, AL_CONST FONT *f, int x, int y, int color, int bg, AL_CONST char *format, ...)
@@ -257,7 +257,7 @@ void destroy_font(FONT *f)
 
 
 
-/* The following code has been deprecated, as it relies on a global 
+/* The following code has been deprecated, as it relies on a global
  * variable. This is no good in multithreaded code, and using a bg
  * parameter also simplifies other code (for instance, the GUI).
  */
@@ -298,14 +298,14 @@ int text_mode(int mode)
 
 
 /* textout_centre: (inlined)
- *  Like textout(), but uses the x coordinate as the centre rather than 
+ *  Like textout(), but uses the x coordinate as the centre rather than
  *  the left of the string.
  */
 
 
 
 /* textout_right: (inlined)
- *  Like textout(), but uses the x coordinate as the right rather than 
+ *  Like textout(), but uses the x coordinate as the right rather than
  *  the left of the string.
  */
 
@@ -338,7 +338,7 @@ void textprintf(BITMAP *bmp, AL_CONST FONT *f, int x, int y, int color, AL_CONST
 
 
 /* textprintf_centre:
- *  Like textprintf(), but uses the x coordinate as the centre rather than 
+ *  Like textprintf(), but uses the x coordinate as the centre rather than
  *  the left of the string.
  */
 void textprintf_centre(BITMAP *bmp, AL_CONST FONT *f, int x, int y, int color, AL_CONST char *format, ...)
@@ -359,7 +359,7 @@ void textprintf_centre(BITMAP *bmp, AL_CONST FONT *f, int x, int y, int color, A
 
 
 /* textprintf_right:
- *  Like textout(), but uses the x coordinate as the right rather than 
+ *  Like textout(), but uses the x coordinate as the right rather than
  *  the left of the string.
  */
 void textprintf_right(BITMAP *bmp, AL_CONST FONT *f, int x, int y, int color, AL_CONST char *format, ...)

@@ -80,15 +80,15 @@ struct _ArtRenderMaskRun {
 
 struct _ArtRenderCallback {
   void (*render) (ArtRenderCallback *self, ArtRender *render,
-		  art_u8 *dest, int y);
+                  art_u8 *dest, int y);
   void (*done) (ArtRenderCallback *self, ArtRender *render);
 };
 
 struct _ArtImageSource {
   ArtRenderCallback super;
   void (*negotiate) (ArtImageSource *self, ArtRender *render,
-		     ArtImageSourceFlags *p_flags,
-		     int *p_buf_depth, ArtAlphaType *p_alpha_type);
+                     ArtImageSourceFlags *p_flags,
+                     int *p_buf_depth, ArtAlphaType *p_alpha_type);
 };
 
 struct _ArtMaskSource {
@@ -139,9 +139,9 @@ struct _ArtRender {
 
 ArtRender *
 art_render_new (int x0, int y0, int x1, int y1,
-		art_u8 *pixels, int rowstride,
-		int n_chan, int depth, ArtAlphaType alpha_type,
-		ArtAlphaGamma *alphagamma);
+                art_u8 *pixels, int rowstride,
+                int n_chan, int depth, ArtAlphaType alpha_type,
+                ArtAlphaGamma *alphagamma);
 
 void
 art_render_invoke (ArtRender *render);
@@ -174,4 +174,3 @@ art_render_add_image_source (ArtRender *render, ArtImageSource *image_source);
 #endif /* __cplusplus */
 
 #endif /* __ART_RENDER_H__ */
-

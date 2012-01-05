@@ -68,26 +68,26 @@ static void rle_tga_read(unsigned char *address, int w, int type, FILE *f)
       c += count;
       value = fgetc(f);
       while (count--) {
-	if (type == 1)
-	  *(address++) = value;
-	else {
-	  *((uint16_t*)address) = value;
-	  address += sizeof(uint16_t);
-	}
+        if (type == 1)
+          *(address++) = value;
+        else {
+          *((uint16_t*)address) = value;
+          address += sizeof(uint16_t);
+        }
       }
     }
     else {
       count++;
       c += count;
       if (type == 1) {
-	fread(address, 1, count, f);
-	address += count;
+        fread(address, 1, count, f);
+        address += count;
       }
       else {
-	for (g=0; g<count; g++) {
-	  *((uint16_t*)address) = fgetc(f);
-	  address += sizeof(uint16_t);
-	}
+        for (g=0; g<count; g++) {
+          *((uint16_t*)address) = fgetc(f);
+          address += sizeof(uint16_t);
+        }
       }
     }
   } while (c < w);
@@ -168,11 +168,11 @@ static void rle_tga_read16(uint32_t* address, int w, FILE *f)
       c += count;
       value = fgetw(f);
       color = _rgba(_rgb_scale_5[((value >> 10) & 0x1F)],
-		    _rgb_scale_5[((value >> 5) & 0x1F)],
-		    _rgb_scale_5[(value & 0x1F)], 255);
+                    _rgb_scale_5[((value >> 5) & 0x1F)],
+                    _rgb_scale_5[(value & 0x1F)], 255);
 
       while (count--)
-	*(address++) = color;
+        *(address++) = color;
     }
     else {
       count++;
@@ -180,8 +180,8 @@ static void rle_tga_read16(uint32_t* address, int w, FILE *f)
       while (count--) {
         value = fgetw(f);
         color = _rgba(_rgb_scale_5[((value >> 10) & 0x1F)],
-		      _rgb_scale_5[((value >> 5) & 0x1F)],
-		      _rgb_scale_5[(value & 0x1F)], 255);
+                      _rgb_scale_5[((value >> 5) & 0x1F)],
+                      _rgb_scale_5[(value & 0x1F)], 255);
         *(address++) = color;
       }
     }
@@ -229,21 +229,21 @@ bool TgaFormat::onLoad(FileOp* fop)
     for (i=0; i<palette_colors; i++) {
       switch (palette_entry_size) {
 
-	case 16:
-	  c = fgetw(f);
-	  image_palette[i][0] = (c & 0x1F) << 3;
-	  image_palette[i][1] = ((c >> 5) & 0x1F) << 3;
-	  image_palette[i][2] = ((c >> 10) & 0x1F) << 3;
-	  break;
+        case 16:
+          c = fgetw(f);
+          image_palette[i][0] = (c & 0x1F) << 3;
+          image_palette[i][1] = ((c >> 5) & 0x1F) << 3;
+          image_palette[i][2] = ((c >> 10) & 0x1F) << 3;
+          break;
 
-	case 24:
-	case 32:
-	  image_palette[i][0] = fgetc(f);
-	  image_palette[i][1] = fgetc(f);
-	  image_palette[i][2] = fgetc(f);
-	  if (palette_entry_size == 32)
-	    fgetc(f);
-	  break;
+        case 24:
+        case 32:
+          image_palette[i][0] = fgetc(f);
+          image_palette[i][1] = fgetc(f);
+          image_palette[i][2] = fgetc(f);
+          if (palette_entry_size == 32)
+            fgetc(f);
+          break;
       }
     }
   }
@@ -275,9 +275,9 @@ bool TgaFormat::onLoad(FileOp* fop)
 
       for (i=0; i<palette_colors; i++) {
         fop_sequence_set_color(fop, i,
-			       image_palette[i][2],
-			       image_palette[i][1],
-			       image_palette[i][0]);
+                               image_palette[i][2],
+                               image_palette[i][1],
+                               image_palette[i][0]);
       }
 
       type = IMAGE_INDEXED;
@@ -332,12 +332,12 @@ bool TgaFormat::onLoad(FileOp* fop)
           rle_tga_read(image->line[yc], image_width, image_type, f);
         else if (image_type == 1)
           fread(image->line[yc], 1, image_width, f);
-	else {
-	  for (x=0; x<image_width; x++)
-	    *(((uint16_t**)image->line)[yc]+x) =
-	      _graya(fgetc(f), 255);
-	}
-	break;
+        else {
+          for (x=0; x<image_width; x++)
+            *(((uint16_t**)image->line)[yc]+x) =
+              _graya(fgetc(f), 255);
+        }
+        break;
 
       case 2:
         if (bpp == 32) {
@@ -373,8 +373,8 @@ bool TgaFormat::onLoad(FileOp* fop)
               c = fgetw(f);
               *(((uint32_t**)image->line)[yc]+x) =
                 _rgba(((c >> 10) & 0x1F),
-		      ((c >> 5) & 0x1F),
-		      (c & 0x1F), 255);
+                      ((c >> 5) & 0x1F),
+                      (c & 0x1F), 255);
             }
           }
         }
@@ -384,7 +384,7 @@ bool TgaFormat::onLoad(FileOp* fop)
     if (image_height > 1) {
       fop_progress(fop, (float)(image_height-y) / (float)(image_height));
       if (fop_is_stop(fop))
-	break;
+        break;
     }
   }
 
@@ -422,16 +422,16 @@ bool TgaFormat::onSave(FileOp* fop)
   fputc((need_pal) ? 1 : 0, f);         /* palette type */
   /* image type */
   fputc((image->imgtype == IMAGE_RGB      ) ? 2 :
-	(image->imgtype == IMAGE_GRAYSCALE) ? 3 :
-	(image->imgtype == IMAGE_INDEXED  ) ? 1 : 0, f);
+        (image->imgtype == IMAGE_GRAYSCALE) ? 3 :
+        (image->imgtype == IMAGE_INDEXED  ) ? 1 : 0, f);
   fputw(0, f);                         /* first colour */
   fputw((need_pal) ? 256 : 0, f);      /* number of colours */
   fputc((need_pal) ? 24 : 0, f);       /* palette entry size */
-  fputw(0, f);			       /* left */
-  fputw(0, f);			       /* top */
-  fputw(image->w, f);		       /* width */
-  fputw(image->h, f);		       /* height */
-  fputc(depth, f);		       /* bits per pixel */
+  fputw(0, f);                         /* left */
+  fputw(0, f);                         /* top */
+  fputw(image->w, f);                  /* width */
+  fputw(image->h, f);                  /* height */
+  fputc(depth, f);                     /* bits per pixel */
 
   /* descriptor (bottom to top, 8-bit alpha) */
   fputc(image->imgtype == IMAGE_RGB ? 8: 0, f);
@@ -458,7 +458,7 @@ bool TgaFormat::onSave(FileOp* fop)
           fputc(_rgba_geta(c), f);
         }
 
-	fop_progress(fop, (float)(image->h-y) / (float)(image->h));
+        fop_progress(fop, (float)(image->h-y) / (float)(image->h));
       }
       break;
 
@@ -467,7 +467,7 @@ bool TgaFormat::onSave(FileOp* fop)
         for (x=0; x<image->w; x++)
           fputc(_graya_getv(image_getpixel(image, x, y)), f);
 
-	fop_progress(fop, (float)(image->h-y) / (float)(image->h));
+        fop_progress(fop, (float)(image->h-y) / (float)(image->h));
       }
       break;
 
@@ -476,7 +476,7 @@ bool TgaFormat::onSave(FileOp* fop)
         for (x=0; x<image->w; x++)
           fputc(image_getpixel(image, x, y), f);
 
-	fop_progress(fop, (float)(image->h-y) / (float)(image->h));
+        fop_progress(fop, (float)(image->h-y) / (float)(image->h));
       }
       break;
   }

@@ -55,15 +55,15 @@ FileFormat* CreateFliFormat()
 
 bool FliFormat::onLoad(FileOp* fop)
 {
-#define SETPAL()						\
-  do {								\
-      for (c=0; c<256; c++) {					\
-	pal->setEntry(c, _rgba(cmap[c*3],			\
-			       cmap[c*3+1],			\
-			       cmap[c*3+2], 255));		\
-      }								\
-      pal->setFrame(frpos_out);					\
-      sprite->setPalette(pal, true);				\
+#define SETPAL()                                                \
+  do {                                                          \
+      for (c=0; c<256; c++) {                                   \
+        pal->setEntry(c, _rgba(cmap[c*3],                       \
+                               cmap[c*3+1],                     \
+                               cmap[c*3+2], 255));              \
+      }                                                         \
+      pal->setFrame(frpos_out);                                 \
+      sprite->setPalette(pal, true);                            \
     } while (0)
 
   unsigned char cmap[768];
@@ -127,32 +127,32 @@ bool FliFormat::onLoad(FileOp* fop)
        frpos_in++) {
     /* read the frame */
     fli_read_frame(f, &fli_header,
-		   (unsigned char *)old->dat, omap,
-		   (unsigned char *)bmp->dat, cmap);
+                   (unsigned char *)old->dat, omap,
+                   (unsigned char *)bmp->dat, cmap);
 
     /* first frame, or the frames changes, or the palette changes */
     if ((frpos_in == 0) ||
-	(image_count_diff(old, bmp))
+        (image_count_diff(old, bmp))
 #ifndef USE_LINK /* TODO this should be configurable through a check-box */
-	|| (memcmp(omap, cmap, 768) != 0)
+        || (memcmp(omap, cmap, 768) != 0)
 #endif
-	) {
+        ) {
       /* the image changes? */
       if (frpos_in != 0)
-	frpos_out++;
+        frpos_out++;
 
       /* add the new frame */
       image = image_new_copy(bmp);
       if (!image) {
-	fop_error(fop, "Not enough memory\n");
-	break;
+        fop_error(fop, "Not enough memory\n");
+        break;
       }
 
       index = sprite->getStock()->addImage(image);
       if (index < 0) {
-	image_free(image);
-	fop_error(fop, "Not enough memory\n");
-	break;
+        image_free(image);
+        fop_error(fop, "Not enough memory\n");
+        break;
       }
 
       cel = new Cel(frpos_out, index);
@@ -160,7 +160,7 @@ bool FliFormat::onLoad(FileOp* fop)
 
       /* first frame or the palette changes */
       if ((frpos_in == 0) || (memcmp(omap, cmap, 768) != 0))
-	SETPAL();
+        SETPAL();
     }
 #ifdef USE_LINK
     /* the palette changes */
@@ -176,7 +176,7 @@ bool FliFormat::onLoad(FileOp* fop)
     // The palette and the image don't change: add duration to the last added frame
     else {
       sprite->setFrameDuration(frpos_out,
-			       sprite->getFrameDuration(frpos_out)+fli_header.speed);
+                               sprite->getFrameDuration(frpos_out)+fli_header.speed);
     }
 
     /* update the old image and color-map to the new ones to compare later */
@@ -280,12 +280,12 @@ bool FliFormat::onSave(FileOp* fop)
     for (c=0; c<times; c++) {
       /* write this frame */
       if (frpos == 0 && c == 0)
-	fli_write_frame(f, &fli_header, NULL, NULL,
-			(unsigned char *)bmp->dat, cmap, W_ALL);
+        fli_write_frame(f, &fli_header, NULL, NULL,
+                        (unsigned char *)bmp->dat, cmap, W_ALL);
       else
-	fli_write_frame(f, &fli_header,
-			(unsigned char *)old->dat, omap,
-			(unsigned char *)bmp->dat, cmap, W_ALL);
+        fli_write_frame(f, &fli_header,
+                        (unsigned char *)old->dat, omap,
+                        (unsigned char *)bmp->dat, cmap, W_ALL);
 
       /* update the old image and color-map to the new ones to compare later */
       image_copy(old, bmp, 0, 0);
@@ -321,4 +321,3 @@ static int get_time_precision(Sprite *sprite)
 
   return precision;
 }
-

@@ -118,7 +118,7 @@ public:
 
   // Changes the scroll to see the given point as the center of the editor.
   void centerInSpritePoint(int x, int y);
-  
+
   void updateStatusBar();
 
   // Control scroll when cursor goes out of the editor.
@@ -157,7 +157,7 @@ public:
   void editor_click_continue(int mode, int *x, int *y);
   void editor_click_done();
   int editor_click(int *x, int *y, int *update,
-		   void (*scroll_callback) (int before_change));
+                   void (*scroll_callback) (int before_change));
   int editor_click_cancel();
 
 protected:
@@ -185,8 +185,8 @@ private:
   void editor_setcursor();
 
   void for_each_pixel_of_pen(int screen_x, int screen_y,
-			     int sprite_x, int sprite_y, int color,
-			     void (*pixel)(BITMAP *bmp, int x, int y, int color));
+                             int sprite_x, int sprite_y, int color,
+                             void (*pixel)(BITMAP *bmp, int x, int y, int color));
 
   // Stack of states. The top element in the stack is the current state (m_state).
   EditorStatesHistory m_statesHistory;
@@ -197,10 +197,10 @@ private:
 
   // Current decorator (to draw extra UI elements).
   EditorDecorator* m_decorator;
-  
-  Document* m_document;		// Active document in the editor
-  Sprite* m_sprite;		// Active sprite in the editor
-  int m_zoom;			// Zoom in the editor
+
+  Document* m_document;         // Active document in the editor
+  Sprite* m_sprite;             // Active sprite in the editor
+  int m_zoom;                   // Zoom in the editor
 
   // Drawing cursor
   int m_cursor_thick;

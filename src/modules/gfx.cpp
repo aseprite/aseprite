@@ -155,7 +155,7 @@ void dotted_mode(int offset)
   for (y=0; y<8; y++)
     for (x=0; x<8; x++)
       putpixel(pattern, x, y,
-	       (pattern_data[offset][y] & (1<<(7-x)))? fg: bg);
+               (pattern_data[offset][y] & (1<<(7-x)))? fg: bg);
 
   drawing_mode(DRAW_MODE_COPY_PATTERN, pattern, 0, 0);
 }
@@ -190,7 +190,7 @@ struct RectTracker
 };
 
 static void do_rect(BITMAP* bmp, int x1, int y1, int x2, int y2, RectTracker* rt,
-		    void (*proc)(BITMAP* bmp, int x, int y, RectTracker* rt))
+                    void (*proc)(BITMAP* bmp, int x, int y, RectTracker* rt))
 {
   int x, y, u1, u2, v1, v2;
 
@@ -369,7 +369,7 @@ void draw_color(BITMAP* bmp, const Rect& rc, int imgtype, const Color& color)
 
     if (index >= 0 && index < get_current_palette()->size()) {
       rectfill(bmp, rc.x, rc.y, rc.x+rc.w-1, rc.y+rc.h-1,
-	       color_utils::color_for_allegro(color, bitmap_color_depth(bmp)));
+               color_utils::color_for_allegro(color, bitmap_color_depth(bmp)));
     }
     else {
       rectfill(bmp, rc.x, rc.y, rc.x+rc.w-1, rc.y+rc.h-1, makecol(0, 0, 0));
@@ -382,8 +382,8 @@ void draw_color(BITMAP* bmp, const Rect& rc, int imgtype, const Color& color)
 
     case IMAGE_INDEXED:
       rectfill(bmp, rc.x, rc.y, rc.x+rc.w-1, rc.y+rc.h-1,
-	       color_utils::color_for_allegro(Color::fromIndex(color_utils::color_for_image(color, imgtype)),
-					      bitmap_color_depth(bmp)));
+               color_utils::color_for_allegro(Color::fromIndex(color_utils::color_for_image(color, imgtype)),
+                                              bitmap_color_depth(bmp)));
       break;
 
     case IMAGE_RGB:
@@ -394,10 +394,10 @@ void draw_color(BITMAP* bmp, const Rect& rc, int imgtype, const Color& color)
       {
         int rgb_bitmap_color = color_utils::color_for_image(color, imgtype);
         Color color2 = Color::fromRgb(_rgba_getr(rgb_bitmap_color),
-				      _rgba_getg(rgb_bitmap_color),
-				      _rgba_getb(rgb_bitmap_color));
+                                      _rgba_getg(rgb_bitmap_color),
+                                      _rgba_getb(rgb_bitmap_color));
         rectfill(graph, 0, 0, rc.w-1, rc.h-1,
-		 color_utils::color_for_allegro(color2, 32));
+                 color_utils::color_for_allegro(color2, 32));
       }
 
       blit(graph, bmp, 0, 0, rc.x, rc.y, rc.w, rc.h);
@@ -411,10 +411,10 @@ void draw_color(BITMAP* bmp, const Rect& rc, int imgtype, const Color& color)
         return;
 
       {
-	int gray_bitmap_color = color_utils::color_for_image(color, imgtype);
-	Color color2 = Color::fromGray(_graya_getv(gray_bitmap_color));
+        int gray_bitmap_color = color_utils::color_for_image(color, imgtype);
+        Color color2 = Color::fromGray(_graya_getv(gray_bitmap_color));
         rectfill(graph, 0, 0, rc.w-1, rc.h-1,
-		 color_utils::color_for_allegro(color2, 32));
+                 color_utils::color_for_allegro(color2, 32));
       }
 
       blit(graph, bmp, 0, 0, rc.x, rc.y, rc.w, rc.h);
@@ -425,20 +425,20 @@ void draw_color(BITMAP* bmp, const Rect& rc, int imgtype, const Color& color)
 }
 
 void draw_color_button(BITMAP* bmp,
-		       const Rect& rc,
-		       bool outer_nw, bool outer_n, bool outer_ne, bool outer_e,
-		       bool outer_se, bool outer_s, bool outer_sw, bool outer_w,
-		       int imgtype, const Color& color, bool hot, bool drag)
+                       const Rect& rc,
+                       bool outer_nw, bool outer_n, bool outer_ne, bool outer_e,
+                       bool outer_se, bool outer_s, bool outer_sw, bool outer_w,
+                       int imgtype, const Color& color, bool hot, bool drag)
 {
   SkinTheme* theme = (SkinTheme*)CurrentTheme::get();
   int scale = jguiscale();
 
   // Draw background (the color)
   draw_color(bmp,
-	     Rect(rc.x+1*jguiscale(),
-		  rc.y+1*jguiscale(),
-		  rc.w-((outer_e) ? 2*jguiscale(): 1*jguiscale()),
-		  rc.h-((outer_s) ? 2*jguiscale(): 1*jguiscale())), imgtype, color);
+             Rect(rc.x+1*jguiscale(),
+                  rc.y+1*jguiscale(),
+                  rc.w-((outer_e) ? 2*jguiscale(): 1*jguiscale()),
+                  rc.h-((outer_s) ? 2*jguiscale(): 1*jguiscale())), imgtype, color);
 
   // Draw opaque border
   {
@@ -458,16 +458,16 @@ void draw_color_button(BITMAP* bmp,
   // Draw hot
   if (hot) {
     theme->draw_bounds_nw(bmp,
-			  rc.x, rc.y,
-			  rc.x+rc.w-1,
-			  rc.y+rc.h-1 - (outer_s ? 1*scale: 0),
-			  PART_COLORBAR_BORDER_HOTFG_NW);
+                          rc.x, rc.y,
+                          rc.x+rc.w-1,
+                          rc.y+rc.h-1 - (outer_s ? 1*scale: 0),
+                          PART_COLORBAR_BORDER_HOTFG_NW);
   }
 }
 
 void draw_progress_bar(BITMAP* bmp,
-		       int x1, int y1, int x2, int y2,
-		       float progress)
+                       int x1, int y1, int x2, int y2,
+                       float progress)
 {
   int w = x2 - x1 + 1;
   int u = (int)((float)(w-2)*progress);

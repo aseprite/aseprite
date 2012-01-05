@@ -110,4 +110,3 @@ void app_default_statusbar_message();
 int app_get_color_to_clear_layer(Layer* layer);
 
 #endif
-

@@ -29,7 +29,7 @@
 #include "skin/skin_theme.h"
 #include "widgets/tabs.h"
 
-#define ARROW_W		(12*jguiscale())
+#define ARROW_W         (12*jguiscale())
 
 #define ANI_ADDING_TAB_TICKS      5
 #define ANI_REMOVING_TAB_TICKS    10
@@ -68,16 +68,16 @@ Tabs::Tabs(TabsDelegate* delegate)
 
   jwidget_focusrest(m_button_left, false);
   jwidget_focusrest(m_button_right, false);
-  
+
   set_gfxicon_to_button(m_button_left,
-			PART_COMBOBOX_ARROW_LEFT,
-			PART_COMBOBOX_ARROW_LEFT_SELECTED,
-			PART_COMBOBOX_ARROW_LEFT_DISABLED, JI_CENTER | JI_MIDDLE);
+                        PART_COMBOBOX_ARROW_LEFT,
+                        PART_COMBOBOX_ARROW_LEFT_SELECTED,
+                        PART_COMBOBOX_ARROW_LEFT_DISABLED, JI_CENTER | JI_MIDDLE);
 
   set_gfxicon_to_button(m_button_right,
-			PART_COMBOBOX_ARROW_RIGHT,
-			PART_COMBOBOX_ARROW_RIGHT_SELECTED,
-			PART_COMBOBOX_ARROW_RIGHT_DISABLED, JI_CENTER | JI_MIDDLE);
+                        PART_COMBOBOX_ARROW_RIGHT,
+                        PART_COMBOBOX_ARROW_RIGHT_SELECTED,
+                        PART_COMBOBOX_ARROW_RIGHT_DISABLED, JI_CENTER | JI_MIDDLE);
 
   jwidget_add_hook(m_button_left, tabs_type(), tabs_button_msg_proc, (void *)-1);
   jwidget_add_hook(m_button_right, tabs_type(), tabs_button_msg_proc, (void *)+1);
@@ -101,8 +101,8 @@ Tabs::~Tabs()
     delete *it; // tab
   m_list_of_tabs.clear();
 
-  delete m_button_left;		// widget
-  delete m_button_right;	// widget
+  delete m_button_left;         // widget
+  delete m_button_right;        // widget
 
   jmanager_remove_timer(m_timerId);
 }
@@ -168,7 +168,7 @@ void Tabs::setTabText(const char* text, void* data)
     // Make it visible (if it's the selected)
     if (m_selected == tab)
       makeTabVisible(tab);
-    
+
     invalidate();
   }
 }
@@ -201,8 +201,8 @@ bool Tabs::onProcessMessage(Message* msg)
     case JM_REQSIZE:
       msg->reqsize.w = 0; // msg->reqsize.h = 4 + jwidget_get_text_height(widget) + 5;
       msg->reqsize.h =
-	theme->get_part(PART_TAB_FILLER)->h +
-	theme->get_part(PART_TAB_BOTTOM_NORMAL)->h;
+        theme->get_part(PART_TAB_FILLER)->h +
+        theme->get_part(PART_TAB_BOTTOM_NORMAL)->h;
       return true;
 
     case JM_SETPOS:
@@ -212,14 +212,14 @@ bool Tabs::onProcessMessage(Message* msg)
 
     case JM_DRAW: {
       BITMAP *doublebuffer = create_bitmap(jrect_w(&msg->draw.rect),
-					   jrect_h(&msg->draw.rect));
+                                           jrect_h(&msg->draw.rect));
       JRect rect = jwidget_get_rect(this);
       jrect_displace(rect, -msg->draw.rect.x1, -msg->draw.rect.y1);
-	
+
       JRect box = jrect_new(rect->x1-m_scrollX,
-			    rect->y1,
-			    rect->x1-m_scrollX+2*jguiscale(),
-			    rect->y1+theme->get_part(PART_TAB_FILLER)->h);
+                            rect->y1,
+                            rect->x1-m_scrollX+2*jguiscale(),
+                            rect->y1+theme->get_part(PART_TAB_FILLER)->h);
 
       clear_to_color(doublebuffer, theme->get_window_face_color());
 
@@ -232,66 +232,66 @@ bool Tabs::onProcessMessage(Message* msg)
       std::vector<Tab*>::iterator it, end = m_list_of_tabs.end();
 
       for (it = m_list_of_tabs.begin(); it != end; ++it) {
-	Tab* tab = *it;
-	
-	box->x2 = box->x1 + tab->width;
+        Tab* tab = *it;
 
-	int x_delta = 0;
-	int y_delta = 0;
+        box->x2 = box->x1 + tab->width;
 
-	// Y-delta for animating tabs (intros and outros)
-	if (m_ani == ANI_ADDING_TAB && m_selected == tab) {
-	  y_delta = (box->y2 - box->y1) * (ANI_ADDING_TAB_TICKS - m_ani_t) / ANI_ADDING_TAB_TICKS;
-	}
-	else if (m_ani == ANI_REMOVING_TAB && m_nextTabOfTheRemovedOne == tab) {
-	  x_delta += m_removedTab->width - m_removedTab->width*(1.0-std::exp(-10.0 * m_ani_t / (double)ANI_REMOVING_TAB_TICKS));
-	  x_delta = MID(0, x_delta, m_removedTab->width);
+        int x_delta = 0;
+        int y_delta = 0;
 
-	  // Draw deleted tab
-	  if (m_removedTab) {
-	    JRect box2 = jrect_new(box->x1, box->y1, box->x1+x_delta, box->y2);
-	    drawTab(doublebuffer, box2, m_removedTab, 0, false);
-	    jrect_free(box2);
-	  }
-	}
+        // Y-delta for animating tabs (intros and outros)
+        if (m_ani == ANI_ADDING_TAB && m_selected == tab) {
+          y_delta = (box->y2 - box->y1) * (ANI_ADDING_TAB_TICKS - m_ani_t) / ANI_ADDING_TAB_TICKS;
+        }
+        else if (m_ani == ANI_REMOVING_TAB && m_nextTabOfTheRemovedOne == tab) {
+          x_delta += m_removedTab->width - m_removedTab->width*(1.0-std::exp(-10.0 * m_ani_t / (double)ANI_REMOVING_TAB_TICKS));
+          x_delta = MID(0, x_delta, m_removedTab->width);
 
-	box->x1 += x_delta;
-	box->x2 += x_delta;
-	
-	drawTab(doublebuffer, box, tab, y_delta, (tab == m_selected));
+          // Draw deleted tab
+          if (m_removedTab) {
+            JRect box2 = jrect_new(box->x1, box->y1, box->x1+x_delta, box->y2);
+            drawTab(doublebuffer, box2, m_removedTab, 0, false);
+            jrect_free(box2);
+          }
+        }
 
-	box->x1 = box->x2;
+        box->x1 += x_delta;
+        box->x2 += x_delta;
+
+        drawTab(doublebuffer, box, tab, y_delta, (tab == m_selected));
+
+        box->x1 = box->x2;
       }
 
       if (m_ani == ANI_REMOVING_TAB && m_nextTabOfTheRemovedOne == NULL) {
-	// Draw deleted tab
-	if (m_removedTab) {
-	  int x_delta = m_removedTab->width - m_removedTab->width*(1.0-std::exp(-10.0 * m_ani_t / (double)ANI_REMOVING_TAB_TICKS));
-	  x_delta = MID(0, x_delta, m_removedTab->width);
+        // Draw deleted tab
+        if (m_removedTab) {
+          int x_delta = m_removedTab->width - m_removedTab->width*(1.0-std::exp(-10.0 * m_ani_t / (double)ANI_REMOVING_TAB_TICKS));
+          x_delta = MID(0, x_delta, m_removedTab->width);
 
-	  JRect box2 = jrect_new(box->x1, box->y1, box->x1+x_delta, box->y2);
-	  drawTab(doublebuffer, box2, m_removedTab, 0, false);
-	  jrect_free(box2);
+          JRect box2 = jrect_new(box->x1, box->y1, box->x1+x_delta, box->y2);
+          drawTab(doublebuffer, box2, m_removedTab, 0, false);
+          jrect_free(box2);
 
-	  box->x1 += x_delta;
-	  box->x2 = box->x1;
-	}
+          box->x1 += x_delta;
+          box->x2 = box->x1;
+        }
       }
 
       /* fill the gap to the right-side */
       if (box->x1 < rect->x2) {
-	theme->draw_part_as_hline(doublebuffer, box->x1, box->y1, rect->x2-1, box->y2-1, PART_TAB_FILLER);
-	theme->draw_part_as_hline(doublebuffer, box->x1, box->y2, rect->x2-1, rect->y2-1, PART_TAB_BOTTOM_NORMAL);
+        theme->draw_part_as_hline(doublebuffer, box->x1, box->y1, rect->x2-1, box->y2-1, PART_TAB_FILLER);
+        theme->draw_part_as_hline(doublebuffer, box->x1, box->y2, rect->x2-1, rect->y2-1, PART_TAB_BOTTOM_NORMAL);
       }
 
       jrect_free(rect);
       jrect_free(box);
 
       blit(doublebuffer, ji_screen, 0, 0,
-	   msg->draw.rect.x1,
-	   msg->draw.rect.y1,
-	   doublebuffer->w,
-	   doublebuffer->h);
+           msg->draw.rect.x1,
+           msg->draw.rect.y1,
+           doublebuffer->w,
+           doublebuffer->h);
       destroy_bitmap(doublebuffer);
       return true;
     }
@@ -303,22 +303,22 @@ bool Tabs::onProcessMessage(Message* msg)
 
     case JM_MOUSELEAVE:
       if (m_hot != NULL) {
-	m_hot = NULL;
-	invalidate();
+        m_hot = NULL;
+        invalidate();
       }
       return true;
 
     case JM_BUTTONPRESSED:
       if (m_hot != NULL) {
-	if (m_selected != m_hot) {
-	  m_selected = m_hot;
-	  invalidate();
-	}
+        if (m_selected != m_hot) {
+          m_selected = m_hot;
+          invalidate();
+        }
 
-	if (m_selected && m_delegate)
-	  m_delegate->clickTab(this,
-			       m_selected->data,
-			       msg->mouse.flags);
+        if (m_selected && m_delegate)
+          m_delegate->clickTab(this,
+                               m_selected->data,
+                               msg->mouse.flags);
       }
       return true;
 
@@ -328,14 +328,14 @@ bool Tabs::onProcessMessage(Message* msg)
 
       m_begScrollX = m_scrollX;
       if (m_ani != ANI_SMOOTH_SCROLL)
-	m_endScrollX = m_scrollX + dx;
+        m_endScrollX = m_scrollX + dx;
       else
-	m_endScrollX += dx;
+        m_endScrollX += dx;
 
       // Limit endScrollX position (to improve animation ending to the correct position)
       {
-	int max_x = getMaxScrollX();
-	m_endScrollX = MID(0, m_endScrollX, max_x);
+        int max_x = getMaxScrollX();
+        m_endScrollX = MID(0, m_endScrollX, max_x);
       }
 
       startAni(ANI_SMOOTH_SCROLL);
@@ -344,41 +344,41 @@ bool Tabs::onProcessMessage(Message* msg)
 
     case JM_TIMER: {
       switch (m_ani) {
-	case ANI_NONE:
-	  // Do nothing
-	  break;
-	case ANI_SCROLL: {
-	  int dir = jmanager_get_capture() == m_button_left ? -1: 1;
-	  setScrollX(m_scrollX + dir*8*msg->timer.count);
-	  break;
-	}
-	case ANI_SMOOTH_SCROLL: {
-	  if (m_ani_t == ANI_SMOOTH_SCROLL_TICKS) {
-	    stopAni();
-	    setScrollX(m_endScrollX);
-	  }
-	  else {
-	    // Lineal
-	    //setScrollX(m_begScrollX + m_endScrollX - m_begScrollX) * m_ani_t / 10);
+        case ANI_NONE:
+          // Do nothing
+          break;
+        case ANI_SCROLL: {
+          int dir = jmanager_get_capture() == m_button_left ? -1: 1;
+          setScrollX(m_scrollX + dir*8*msg->timer.count);
+          break;
+        }
+        case ANI_SMOOTH_SCROLL: {
+          if (m_ani_t == ANI_SMOOTH_SCROLL_TICKS) {
+            stopAni();
+            setScrollX(m_endScrollX);
+          }
+          else {
+            // Lineal
+            //setScrollX(m_begScrollX + m_endScrollX - m_begScrollX) * m_ani_t / 10);
 
-	    // Exponential
-	    setScrollX(m_begScrollX +
-		       (m_endScrollX - m_begScrollX) * (1.0-std::exp(-10.0 * m_ani_t / (double)ANI_SMOOTH_SCROLL_TICKS)));
-	  }
-	  break;
-	}
-	case ANI_ADDING_TAB: {
-	  if (m_ani_t == ANI_ADDING_TAB_TICKS)
-	    stopAni();
-	  invalidate();
-	  break;
-	}
-	case ANI_REMOVING_TAB: {
-	  if (m_ani_t == ANI_REMOVING_TAB_TICKS)
-	    stopAni();
-	  invalidate();
-	  break;
-	}
+            // Exponential
+            setScrollX(m_begScrollX +
+                       (m_endScrollX - m_begScrollX) * (1.0-std::exp(-10.0 * m_ani_t / (double)ANI_SMOOTH_SCROLL_TICKS)));
+          }
+          break;
+        }
+        case ANI_ADDING_TAB: {
+          if (m_ani_t == ANI_ADDING_TAB_TICKS)
+            stopAni();
+          invalidate();
+          break;
+        }
+        case ANI_REMOVING_TAB: {
+          if (m_ani_t == ANI_REMOVING_TAB_TICKS)
+            stopAni();
+          invalidate();
+          break;
+        }
       }
       ++m_ani_t;
       break;
@@ -386,20 +386,20 @@ bool Tabs::onProcessMessage(Message* msg)
 
     case JM_SIGNAL:
       if (msg->signal.num == JI_SIGNAL_INIT_THEME) {
-	m_button_left->setBgColor(theme->get_tab_selected_face_color());
-	m_button_right->setBgColor(theme->get_tab_selected_face_color());
+        m_button_left->setBgColor(theme->get_tab_selected_face_color());
+        m_button_right->setBgColor(theme->get_tab_selected_face_color());
       }
       else if (msg->signal.num == JI_SIGNAL_SET_FONT) {
-	std::vector<Tab*>::iterator it, end = m_list_of_tabs.end();
+        std::vector<Tab*>::iterator it, end = m_list_of_tabs.end();
 
-	for (it = m_list_of_tabs.begin(); it != end; ++it) {
-	  Tab* tab = *it;
-	  tab->width = calcTabWidth(tab);
-	}
+        for (it = m_list_of_tabs.begin(); it != end; ++it) {
+          Tab* tab = *it;
+          tab->width = calcTabWidth(tab);
+        }
       }
       else if (msg->signal.num == JI_SIGNAL_INIT_THEME) {
-	/* setup the background color */
-	jwidget_set_bg_color(this, ji_color_face());
+        /* setup the background color */
+        jwidget_set_bg_color(this, ji_color_face());
       }
       break;
 
@@ -431,33 +431,33 @@ void Tabs::drawTab(BITMAP* bmp, JRect box, Tab* tab, int y_delta, bool selected)
 
   if (jrect_w(box) > 2) {
     theme->draw_bounds_nw(bmp,
-			  box->x1, box->y1+y_delta, box->x2-1, box->y2-1,
-			  (selected) ? PART_TAB_SELECTED_NW:
-				       PART_TAB_NORMAL_NW, face_color);
+                          box->x1, box->y1+y_delta, box->x2-1, box->y2-1,
+                          (selected) ? PART_TAB_SELECTED_NW:
+                                       PART_TAB_NORMAL_NW, face_color);
     jdraw_text(bmp, this->getFont(), tab->text.c_str(),
-	       box->x1+4*jguiscale(),
-	       (box->y1+box->y2)/2-text_height(this->getFont())/2+1 + y_delta,
-	       text_color, face_color, false, jguiscale());
+               box->x1+4*jguiscale(),
+               (box->y1+box->y2)/2-text_height(this->getFont())/2+1 + y_delta,
+               text_color, face_color, false, jguiscale());
   }
 
   if (selected) {
     theme->draw_bounds_nw(bmp,
-			  box->x1, box->y2, box->x2-1, this->rc->y2-1,
-			  PART_TAB_BOTTOM_SELECTED_NW,
-			  theme->get_tab_selected_face_color());
+                          box->x1, box->y2, box->x2-1, this->rc->y2-1,
+                          PART_TAB_BOTTOM_SELECTED_NW,
+                          theme->get_tab_selected_face_color());
   }
   else {
     theme->draw_part_as_hline(bmp,
-			      box->x1, box->y2, box->x2-1, this->rc->y2-1,
-			      PART_TAB_BOTTOM_NORMAL);
+                              box->x1, box->y2, box->x2-1, this->rc->y2-1,
+                              PART_TAB_BOTTOM_NORMAL);
   }
 
 #ifdef CLOSE_BUTTON_IN_EACH_TAB
   BITMAP* close_icon = theme->get_part(PART_WINDOW_CLOSE_BUTTON_NORMAL);
   set_alpha_blender();
   draw_trans_sprite(doublebuffer, close_icon,
-		    box->x2-4*jguiscale()-close_icon->w,
-		    (box->y1+box->y2)/2-close_icon->h/2+1*jguiscale());
+                    box->x2-4*jguiscale()-close_icon->w,
+                    (box->y1+box->y2)/2-close_icon->h/2+1*jguiscale());
 #endif
 }
 
@@ -503,10 +503,10 @@ void Tabs::makeTabVisible(Tab* make_visible_this_tab)
 
     if (tab == make_visible_this_tab) {
       if (x - m_scrollX < 0) {
-	setScrollX(x);
+        setScrollX(x);
       }
       else if (x + tab->width - m_scrollX > jrect_w(this->rc) - extra_x) {
-	setScrollX(x + tab->width - jrect_w(this->rc) + extra_x);
+        setScrollX(x + tab->width - jrect_w(this->rc) + extra_x);
       }
       break;
     }
@@ -543,7 +543,7 @@ void Tabs::setScrollX(int scroll_x)
     {
       JRect rect = jwidget_get_rect(this);
       JRect box = jrect_new(rect->x2-ARROW_W*2, rect->y1,
-			    rect->x2-ARROW_W, rect->y2-2);
+                            rect->x2-ARROW_W, rect->y2-2);
       jwidget_set_rect(m_button_left, box);
 
       jrect_moveto(box, box->x1+ARROW_W, box->y1);
@@ -647,16 +647,16 @@ static bool tabs_button_msg_proc(JWidget widget, Message* msg)
 
     case JM_SIGNAL:
       if (msg->signal.num == JI_SIGNAL_BUTTON_SELECT) {
-	return true;
+        return true;
       }
       else if (msg->signal.num == JI_SIGNAL_DISABLE) {
-	ASSERT(tabs != NULL);
+        ASSERT(tabs != NULL);
 
-	if (widget->isSelected()) {
-	  tabs->stopScrolling();
-	  widget->setSelected(false);
-	}
-	return true;
+        if (widget->isSelected()) {
+          tabs->stopScrolling();
+          widget->setSelected(false);
+        }
+        return true;
       }
       break;
 
@@ -674,4 +674,3 @@ static bool tabs_button_msg_proc(JWidget widget, Message* msg)
 
   return false;
 }
-

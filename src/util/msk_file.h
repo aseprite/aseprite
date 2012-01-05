@@ -25,4 +25,3 @@ Mask* load_msk_file(const char* filename);
 int save_msk_file(const Mask* mask, const char* filename);
 
 #endif
-

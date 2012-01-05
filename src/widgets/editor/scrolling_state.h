@@ -37,4 +37,4 @@ public:
   virtual bool onUpdateStatusBar(Editor* editor) OVERRIDE;
 };
 
-#endif	// WIDGETS_EDITOR_SCROLLING_STATE_H_INCLUDED
+#endif  // WIDGETS_EDITOR_SCROLLING_STATE_H_INCLUDED

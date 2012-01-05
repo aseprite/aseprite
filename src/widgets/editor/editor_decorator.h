@@ -57,4 +57,4 @@ public:
   virtual void postRenderDecorator(EditorPostRender* render) = 0;
 };
 
-#endif	// WIDGETS_EDITOR_EDITOR_DECORATOR_H_INCLUDED
+#endif  // WIDGETS_EDITOR_EDITOR_DECORATOR_H_INCLUDED

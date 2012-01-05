@@ -42,17 +42,17 @@ protected:
 
 MaskAllCommand::MaskAllCommand()
   : Command("MaskAll",
-	    "Mask All",
-	    CmdRecordableFlag)
+            "Mask All",
+            CmdRecordableFlag)
 {
 }
 
 bool MaskAllCommand::onEnabled(Context* context)
 {
   return context->checkFlags(ContextFlags::ActiveDocumentIsWritable |
-			     ContextFlags::HasActiveSprite);
+                             ContextFlags::HasActiveSprite);
 }
-  
+
 void MaskAllCommand::onExecute(Context* context)
 {
   ActiveDocumentWriter document(context);

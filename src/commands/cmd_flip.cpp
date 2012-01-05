@@ -56,8 +56,8 @@ private:
 
 FlipCommand::FlipCommand()
   : Command("Flip",
-	    "Flip",
-	    CmdRecordableFlag)
+            "Flip",
+            CmdRecordableFlag)
 {
   m_flip_mask = false;
   m_flip_horizontal = false;
@@ -86,11 +86,11 @@ void FlipCommand::onExecute(Context* context)
 
   {
     UndoTransaction undoTransaction(document,
-				    m_flip_mask ?
-				    (m_flip_horizontal ? "Flip Horizontal":
-							 "Flip Vertical"):
-				    (m_flip_horizontal ? "Flip Canvas Horizontal":
-							 "Flip Canvas Vertical"));
+                                    m_flip_mask ?
+                                    (m_flip_horizontal ? "Flip Horizontal":
+                                                         "Flip Vertical"):
+                                    (m_flip_horizontal ? "Flip Canvas Horizontal":
+                                                         "Flip Canvas Vertical"));
 
     if (m_flip_mask) {
       Image* image;
@@ -99,32 +99,32 @@ void FlipCommand::onExecute(Context* context)
 
       image = sprite->getCurrentImage(&x, &y);
       if (!image)
-	return;
+        return;
 
       // Mask is empty?
       if (!document->isMaskVisible()) {
-	// so we flip the entire image
-	x1 = 0;
-	y1 = 0;
-	x2 = image->w-1;
-	y2 = image->h-1;
+        // so we flip the entire image
+        x1 = 0;
+        y1 = 0;
+        x2 = image->w-1;
+        y2 = image->h-1;
       }
       else {
-	// apply the cel offset
-	x1 = document->getMask()->x - x;
-	y1 = document->getMask()->y - y;
-	x2 = document->getMask()->x + document->getMask()->w - 1 - x;
-	y2 = document->getMask()->y + document->getMask()->h - 1 - y;
+        // apply the cel offset
+        x1 = document->getMask()->x - x;
+        y1 = document->getMask()->y - y;
+        x2 = document->getMask()->x + document->getMask()->w - 1 - x;
+        y2 = document->getMask()->y + document->getMask()->h - 1 - y;
 
-	// clip
-	x1 = MID(0, x1, image->w-1);
-	y1 = MID(0, y1, image->h-1);
-	x2 = MID(0, x2, image->w-1);
-	y2 = MID(0, y2, image->h-1);
+        // clip
+        x1 = MID(0, x1, image->w-1);
+        y1 = MID(0, y1, image->h-1);
+        x2 = MID(0, x2, image->w-1);
+        y2 = MID(0, y2, image->h-1);
       }
 
-      undoTransaction.flipImage(image, x1, y1, x2, y2, 
-				m_flip_horizontal, m_flip_vertical);
+      undoTransaction.flipImage(image, x1, y1, x2, y2,
+                                m_flip_horizontal, m_flip_vertical);
     }
     else {
       // get all sprite cels
@@ -133,16 +133,16 @@ void FlipCommand::onExecute(Context* context)
 
       // for each cel...
       for (CelIterator it = cels.begin(); it != cels.end(); ++it) {
-	Cel* cel = *it;
-	Image* image = sprite->getStock()->getImage(cel->getImage());
+        Cel* cel = *it;
+        Image* image = sprite->getStock()->getImage(cel->getImage());
 
-	undoTransaction.setCelPosition
-	  (cel,
-	   m_flip_horizontal ? sprite->getWidth() - image->w - cel->getX(): cel->getX(),
-	   m_flip_vertical ? sprite->getHeight() - image->h - cel->getY(): cel->getY());
+        undoTransaction.setCelPosition
+          (cel,
+           m_flip_horizontal ? sprite->getWidth() - image->w - cel->getX(): cel->getX(),
+           m_flip_vertical ? sprite->getHeight() - image->h - cel->getY(): cel->getY());
 
-	undoTransaction.flipImage(image, 0, 0, image->w-1, image->h-1,
-				  m_flip_horizontal, m_flip_vertical);
+        undoTransaction.flipImage(image, 0, 0, image->w-1, image->h-1,
+                                  m_flip_horizontal, m_flip_vertical);
       }
     }
 

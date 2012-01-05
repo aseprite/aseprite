@@ -63,9 +63,9 @@ void path_set_cap(Path* path, int cap);
 void path_moveto(Path* path, double x, double y);
 void path_lineto(Path* path, double x, double y);
 void path_curveto(Path* path,
-		  double control_x1, double control_y1,
-		  double control_x2, double control_y2,
-		  double end_x, double end_y);
+                  double control_x1, double control_y1,
+                  double control_x2, double control_y2,
+                  double end_x, double end_y);
 void path_close(Path* path);
 
 void path_move(Path* path, double x, double y);

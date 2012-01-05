@@ -149,17 +149,16 @@ void Pen::regenerate_pen()
 
     for (x=0; x<m_size; x++) {
       if (image_getpixel(m_image, x, y)) {
-	m_scanline[y].x1 = x;
+        m_scanline[y].x1 = x;
 
-	for (; x<m_size; x++)
-	  if (!image_getpixel(m_image, x, y))
-	    break;
+        for (; x<m_size; x++)
+          if (!image_getpixel(m_image, x, y))
+            break;
 
-	m_scanline[y].x2 = x-1;
-	m_scanline[y].state = true;
-	break;
+        m_scanline[y].x2 = x-1;
+        m_scanline[y].state = true;
+        break;
       }
     }
   }
 }
-

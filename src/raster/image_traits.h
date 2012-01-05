@@ -22,10 +22,10 @@
 //////////////////////////////////////////////////////////////////////
 // RGBA
 
-#define _rgba_r_shift	0
-#define _rgba_g_shift	8
-#define _rgba_b_shift	16
-#define _rgba_a_shift	24
+#define _rgba_r_shift   0
+#define _rgba_g_shift   8
+#define _rgba_b_shift   16
+#define _rgba_a_shift   24
 
 inline uint8_t _rgba_getr(uint32_t c)
 {
@@ -50,9 +50,9 @@ inline uint8_t _rgba_geta(uint32_t c)
 inline uint32_t _rgba(uint8_t r, uint8_t g, uint8_t b, uint8_t a)
 {
   return ((r << _rgba_r_shift) |
-	  (g << _rgba_g_shift) |
-	  (b << _rgba_b_shift) |
-	  (a << _rgba_a_shift));
+          (g << _rgba_g_shift) |
+          (b << _rgba_b_shift) |
+          (a << _rgba_a_shift));
 }
 
 struct RgbTraits
@@ -85,8 +85,8 @@ struct RgbTraits
 //////////////////////////////////////////////////////////////////////
 // Grayscale
 
-#define _graya_v_shift	0
-#define _graya_a_shift	8
+#define _graya_v_shift  0
+#define _graya_a_shift  8
 
 inline uint8_t _graya_getv(uint16_t c)
 {
@@ -101,7 +101,7 @@ inline uint8_t _graya_geta(uint16_t c)
 inline uint16_t _graya(uint8_t v, uint8_t a)
 {
   return ((v << _graya_v_shift) |
-	  (a << _graya_a_shift));
+          (a << _graya_a_shift));
 }
 
 struct GrayscaleTraits
@@ -179,12 +179,12 @@ struct BitmapTraits
   }
 };
 
-#define _image_bitmap_next_bit(d, a)		\
-  if (d.rem < 7)				\
-    d.rem++;					\
-  else {					\
-    a++;					\
-    d.rem = 0;					\
+#define _image_bitmap_next_bit(d, a)            \
+  if (d.rem < 7)                                \
+    d.rem++;                                    \
+  else {                                        \
+    a++;                                        \
+    d.rem = 0;                                  \
   }
 
 //////////////////////////////////////////////////////////////////////

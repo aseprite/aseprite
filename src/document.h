@@ -75,7 +75,7 @@ public:
 
   //////////////////////////////////////////////////////////////////////
   // Main properties
-  
+
   DocumentId getId() const { return m_id; }
   void setId(DocumentId id) { m_id = id; }
 

@@ -116,7 +116,7 @@ void calc_spline(AL_CONST int points[8], int npts, int *out_x, int *out_y)
  *  Draws a bezier spline onto the specified bitmap in the specified color.
  */
 void _soft_spline(BITMAP *bmp, AL_CONST int points[8], int color)
-{   
+{
    #define MAX_POINTS   64
 
    int xpts[MAX_POINTS], ypts[MAX_POINTS];
@@ -145,9 +145,9 @@ void _soft_spline(BITMAP *bmp, AL_CONST int points[8], int color)
    #undef DIST
    #define DIST(x, y) (sqrt((x) * (x) + (y) * (y)))
    num_points = (int)(sqrt(DIST(points[2]-points[0], points[3]-points[1]) +
-			   DIST(points[4]-points[2], points[5]-points[3]) +
-			   DIST(points[6]-points[4], points[7]-points[5])) *
-		      1.2);
+                           DIST(points[4]-points[2], points[5]-points[3]) +
+                           DIST(points[6]-points[4], points[7]-points[5])) *
+                      1.2);
 
    if (num_points > MAX_POINTS)
       num_points = MAX_POINTS;
@@ -159,26 +159,25 @@ void _soft_spline(BITMAP *bmp, AL_CONST int points[8], int color)
    if ((_drawing_mode == DRAW_MODE_XOR) ||
        (_drawing_mode == DRAW_MODE_TRANS)) {
       /* Must compensate for the end pixel being drawn twice,
-	 hence the mess. */
+         hence the mess. */
       old_drawing_mode = _drawing_mode;
       old_drawing_pattern = _drawing_pattern;
       old_drawing_x_anchor = _drawing_x_anchor;
       old_drawing_y_anchor = _drawing_y_anchor;
       for (i=1; i<num_points-1; i++) {
-	 c = getpixel(bmp, xpts[i], ypts[i]);
-	 line(bmp, xpts[i-1], ypts[i-1], xpts[i], ypts[i], color);
-	 solid_mode();
-	 putpixel(bmp, xpts[i], ypts[i], c);
-	 drawing_mode(old_drawing_mode, old_drawing_pattern,
-		      old_drawing_x_anchor, old_drawing_y_anchor);
+         c = getpixel(bmp, xpts[i], ypts[i]);
+         line(bmp, xpts[i-1], ypts[i-1], xpts[i], ypts[i], color);
+         solid_mode();
+         putpixel(bmp, xpts[i], ypts[i], c);
+         drawing_mode(old_drawing_mode, old_drawing_pattern,
+                      old_drawing_x_anchor, old_drawing_y_anchor);
       }
       line(bmp, xpts[i-1], ypts[i-1], xpts[i], ypts[i], color);
    }
    else {
       for (i=1; i<num_points; i++)
-	 line(bmp, xpts[i-1], ypts[i-1], xpts[i], ypts[i], color);
+         line(bmp, xpts[i-1], ypts[i-1], xpts[i], ypts[i], color);
    }
 
    release_bitmap(bmp);
 }
-

@@ -1,6 +1,6 @@
-/*         ______   ___    ___ 
- *        /\  _  \ /\_ \  /\_ \ 
- *        \ \ \L\ \\//\ \ \//\ \      __     __   _ __   ___ 
+/*         ______   ___    ___
+ *        /\  _  \ /\_ \  /\_ \
+ *        \ \ \L\ \\//\ \ \//\ \      __     __   _ __   ___
  *         \ \  __ \ \ \ \  \ \ \   /'__`\ /'_ `\/\`'__\/ __`\
  *          \ \ \/\ \ \_\ \_ \_\ \_/\  __//\ \L\ \ \ \//\ \L\ \
  *           \ \_\ \_\/\____\/\____\ \____\ \____ \ \_\\ \____/
@@ -222,17 +222,17 @@ fixed fixatan(fixed x)
    else {                  /* search the second half instead */
       a = 128;
       b = 255;
-   } 
+   }
 
    do {
       c = (a + b) >> 1;
       d = x - _tan_tbl[c];
 
       if (d > 0)
-	 a = c + 1;
+         a = c + 1;
       else
-	 if (d < 0)
-	    b = c - 1;
+         if (d < 0)
+            b = c - 1;
 
    } while ((a <= b) && (d));
 
@@ -253,12 +253,12 @@ fixed fixatan2(fixed y, fixed x)
 
    if (x==0) {
       if (y==0) {
-	 *allegro_errno = EDOM;
-	 return 0L;
+         *allegro_errno = EDOM;
+         return 0L;
       }
       else
-	 return ((y < 0) ? -0x00400000L : 0x00400000L);
-   } 
+         return ((y < 0) ? -0x00400000L : 0x00400000L);
+   }
 
    *allegro_errno = 0;
    r = fixdiv(y, x);

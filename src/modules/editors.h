@@ -54,4 +54,3 @@ bool is_mini_editor_enabled();
 void enable_mini_editor(bool state);
 
 #endif
-

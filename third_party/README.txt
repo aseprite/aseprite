@@ -7,7 +7,7 @@ gfli/
   modified version of gfli 1.3 (I fix some bugs with color chunks),
   you can get the entire package from:
 
-    http://www.gimp.org/	(search in the plug-ins)
+    http://www.gimp.org/        (search in the plug-ins)
 
 jpeg/
 
@@ -53,4 +53,4 @@ zlib/
     http://www.zlib.net/
 
 ----------------------------------------------------------------------
-			                              David A. Capello
+                                                      David A. Capello

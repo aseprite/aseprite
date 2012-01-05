@@ -41,26 +41,26 @@
 
 // Frame used to show canvas parameters.
 class CanvasSizeFrame : public Frame
-		      , public SelectBoxDelegate
+                      , public SelectBoxDelegate
 {
 public:
   CanvasSizeFrame(int left, int top, int right, int bottom)
     : Frame(false, "Canvas Size")
     , m_editor(current_editor)
     , m_rect(-left, -top,
-	     current_editor->getSprite()->getWidth() + left + right,
-	     current_editor->getSprite()->getHeight() + top + bottom)
+             current_editor->getSprite()->getWidth() + left + right,
+             current_editor->getSprite()->getHeight() + top + bottom)
     , m_selectBoxState(new SelectBoxState(this, m_rect,
-					  SelectBoxState::PaintRulers |
-					  SelectBoxState::PaintDarkOutside))
+                                          SelectBoxState::PaintRulers |
+                                          SelectBoxState::PaintDarkOutside))
   {
     m_mainBox = load_widget("canvas_size.xml", "main_box");
     get_widgets(m_mainBox,
-		"left", &m_left,
-		"top", &m_top,
-		"right", &m_right,
-		"bottom", &m_bottom,
-		"ok", &m_ok, NULL);
+                "left", &m_left,
+                "top", &m_top,
+                "right", &m_right,
+                "bottom", &m_bottom,
+                "ok", &m_ok, NULL);
 
     addChild(m_mainBox);
 
@@ -107,8 +107,8 @@ protected:
     int top = getTop();
 
     m_rect = gfx::Rect(-left, -top,
-		       m_editor->getSprite()->getWidth() + left + getRight(),
-		       m_editor->getSprite()->getHeight() + top + getBottom());
+                       m_editor->getSprite()->getWidth() + left + getRight(),
+                       m_editor->getSprite()->getHeight() + top + getBottom());
 
     static_cast<SelectBoxState*>(m_selectBoxState.get())->setBoxBounds(m_rect);
 
@@ -153,8 +153,8 @@ protected:
 
 CanvasSizeCommand::CanvasSizeCommand()
   : Command("CanvasSize",
-	    "Canvas Size",
-	    CmdRecordableFlag)
+            "Canvas Size",
+            CmdRecordableFlag)
 {
   m_left = m_right = m_top = m_bottom = 0;
 }
@@ -162,7 +162,7 @@ CanvasSizeCommand::CanvasSizeCommand()
 bool CanvasSizeCommand::onEnabled(Context* context)
 {
   return context->checkFlags(ContextFlags::ActiveDocumentIsWritable |
-			     ContextFlags::HasActiveSprite);
+                             ContextFlags::HasActiveSprite);
 }
 
 void CanvasSizeCommand::onExecute(Context* context)

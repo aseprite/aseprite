@@ -23,4 +23,4 @@ public:
 
 } // namespace undoers
 
-#endif	// UNDOERS_UNDOER_BASE_H_INCLUDED
+#endif  // UNDOERS_UNDOER_BASE_H_INCLUDED

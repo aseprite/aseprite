@@ -110,7 +110,7 @@ FT_BEGIN_HEADER
   /*    implemented by @FTC_ImageCache.                                    */
   /*                                                                       */
   typedef struct FTC_SBitCacheRec_*  FTC_SBitCache;
-  
+
 
   /*************************************************************************/
   /*                                                                       */

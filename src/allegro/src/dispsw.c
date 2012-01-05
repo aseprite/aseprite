@@ -115,16 +115,16 @@ int set_display_switch_callback(int dir, void (*cb)(void))
 
    for (i=0; i<MAX_SWITCH_CALLBACKS; i++) {
       if (dir == SWITCH_IN) {
-	 if (!switch_in_cb[i]) {
-	    switch_in_cb[i] = cb;
-	    return 0;
-	 }
+         if (!switch_in_cb[i]) {
+            switch_in_cb[i] = cb;
+            return 0;
+         }
       }
       else {
-	 if (!switch_out_cb[i]) {
-	    switch_out_cb[i] = cb;
-	    return 0;
-	 }
+         if (!switch_out_cb[i]) {
+            switch_out_cb[i] = cb;
+            return 0;
+         }
       }
    }
 
@@ -142,10 +142,10 @@ void remove_display_switch_callback(void (*cb)(void))
 
    for (i=0; i<MAX_SWITCH_CALLBACKS; i++) {
       if (switch_in_cb[i] == cb)
-	 switch_in_cb[i] = NULL;
+         switch_in_cb[i] = NULL;
 
       if (switch_out_cb[i] == cb)
-	 switch_out_cb[i] = NULL;
+         switch_out_cb[i] = NULL;
    }
 }
 
@@ -160,7 +160,7 @@ void _switch_in(void)
 
    for (i=0; i<MAX_SWITCH_CALLBACKS; i++) {
       if (switch_in_cb[i])
-	 switch_in_cb[i]();
+         switch_in_cb[i]();
    }
 }
 
@@ -175,7 +175,7 @@ void _switch_out(void)
 
    for (i=0; i<MAX_SWITCH_CALLBACKS; i++) {
       if (switch_out_cb[i])
-	 switch_out_cb[i]();
+         switch_out_cb[i]();
    }
 }
 
@@ -190,14 +190,14 @@ static BITMAP_INFORMATION *find_switch_bitmap(BITMAP_INFORMATION **head, BITMAP 
 
    while (info) {
       if (info->bmp == bmp) {
-	 *head_ret = head;
-	 return info;
+         *head_ret = head;
+         return info;
       }
 
       if (info->child) {
-	 kid = find_switch_bitmap(&info->child, bmp, head_ret);
-	 if (kid)
-	    return kid;
+         kid = find_switch_bitmap(&info->child, bmp, head_ret);
+         if (kid)
+            return kid;
       }
 
       head = &info->sibling;
@@ -224,11 +224,11 @@ void _register_switch_bitmap(BITMAP *bmp, BITMAP *parent)
       /* add a sub-bitmap */
       parent_info = find_switch_bitmap(&info_list, parent, &head);
       if (!parent_info)
-	 goto getout;
+         goto getout;
 
       info = _AL_MALLOC(sizeof(BITMAP_INFORMATION));
       if (!info)
-	 goto getout;
+         goto getout;
 
       info->bmp = bmp;
       info->other = NULL;
@@ -246,7 +246,7 @@ void _register_switch_bitmap(BITMAP *bmp, BITMAP *parent)
 
       info = _AL_MALLOC(sizeof(BITMAP_INFORMATION));
       if (!info)
-	 goto getout;
+         goto getout;
 
       info->bmp = bmp;
       info->other = NULL;
@@ -317,12 +317,12 @@ static void reconstruct_kids(BITMAP *parent, BITMAP_INFORMATION *info)
       y = info->bmp->y_ofs - parent->y_ofs;
 
       if (is_planar_bitmap(info->bmp))
-	 x /= 4;
+         x /= 4;
 
       x *= BYTES_PER_PIXEL(bitmap_color_depth(info->bmp));
 
       for (i=0; i<info->bmp->h; i++)
-	 info->bmp->line[i] = parent->line[y+i] + x;
+         info->bmp->line[i] = parent->line[y+i] + x;
 
       reconstruct_kids(info->bmp, info->child);
       info = info->sibling;
@@ -400,10 +400,10 @@ static void save_bitmap_state(BITMAP_INFORMATION *info, int switch_mode)
    info->other->vtable->release = info->bmp->vtable->release;
 
    #define INTERESTING_ID_BITS   (BMP_ID_VIDEO | BMP_ID_SYSTEM | \
-				  BMP_ID_SUB | BMP_ID_MASK)
+                                  BMP_ID_SUB | BMP_ID_MASK)
 
-   info->other->id = (info->bmp->id & INTERESTING_ID_BITS) | 
-		     (info->other->id & ~INTERESTING_ID_BITS);
+   info->other->id = (info->bmp->id & INTERESTING_ID_BITS) |
+                     (info->other->id & ~INTERESTING_ID_BITS);
 
    swap_bitmap_contents(info->bmp, info->other);
 }
@@ -421,7 +421,7 @@ void _save_switch_state(int switch_mode)
    if (!screen)
       return;
 
-   if (_al_linker_mouse && 
+   if (_al_linker_mouse &&
        is_same_bitmap(*(_al_linker_mouse->mouse_screen_ptr), screen)) {
       _al_linker_mouse->show_mouse(NULL);
       hadmouse = TRUE;
@@ -495,9 +495,9 @@ void _restore_switch_state(void)
 
    if (bitmap_color_depth(screen) == 8) {
       if (_got_prev_current_palette)
-	 gfx_driver->set_palette(_prev_current_palette, 0, 255, FALSE);
+         gfx_driver->set_palette(_prev_current_palette, 0, 255, FALSE);
       else
-	 gfx_driver->set_palette(_current_palette, 0, 255, FALSE);
+         gfx_driver->set_palette(_current_palette, 0, 255, FALSE);
    }
 
    if (hadmouse)
@@ -505,5 +505,3 @@ void _restore_switch_state(void)
 
    _timer_installed = hadtimer;
 }
-
-

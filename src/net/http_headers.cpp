@@ -23,7 +23,7 @@
 namespace net {
 
 void HttpHeaders::setHeader(const std::string& name,
-			    const std::string& value)
+                            const std::string& value)
 {
   m_map[name] = value;
 }

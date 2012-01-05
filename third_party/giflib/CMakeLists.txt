@@ -3,7 +3,7 @@
 
 include_directories(
   lib
-  ${CMAKE_CURRENT_BINARY_DIR}		# For config.h
+  ${CMAKE_CURRENT_BINARY_DIR}           # For config.h
   )
 
 check_include_files("dlfcn.h" HAVE_DLFCN_H)

@@ -66,7 +66,7 @@ static MOUSE_DRIVER mouse_winapi =
 };
 
 
-HCURSOR _win_hcursor = NULL;	/* Hardware cursor to display */
+HCURSOR _win_hcursor = NULL;    /* Hardware cursor to display */
 
 
 
@@ -216,13 +216,13 @@ static void mouse_winapi_enable_hardware_cursor(int mode)
 
 
 /* mouse_winapi_select_system_cursor:
- *  Select an OS native cursor 
+ *  Select an OS native cursor
  */
 static int mouse_winapi_select_system_cursor(int cursor)
 {
    HCURSOR wc;
    HWND allegro_wnd = win_get_window();
-   
+
    wc = NULL;
    switch(cursor) {
       case MOUSE_CURSOR_ARROW:
@@ -243,7 +243,7 @@ static int mouse_winapi_select_system_cursor(int cursor)
 
    _win_hcursor = wc;
    SetCursor(_win_hcursor);
-   
+
    return cursor;
 }
 

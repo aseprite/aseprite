@@ -5,8 +5,8 @@
   <box vertical="true">
     <box horizontal="true">
       <box horizontal="true" noborders="true">
-	<button text="" name="goback" bevel="2 0 2 0" tooltip="Go back one folder" />
-	<button text="" name="goforward" bevel="0 2 0 2" tooltip="Go forward one folder" />
+        <button text="" name="goback" bevel="2 0 2 0" tooltip="Go back one folder" />
+        <button text="" name="goforward" bevel="0 2 0 2" tooltip="Go forward one folder" />
       </box>
       <button text="" name="goup" tooltip="Up to parent folder&#10;(Backspace)" />
       <combobox name="location" expansive="true" />
@@ -20,8 +20,8 @@
     <box horizontal="true">
       <box horizontal="true" expansive="true" />
       <box horizontal="true" homogeneous="true">
-	<button text="&amp;OK" closewindow="true" name="ok" magnetic="true" width="60" />
-	<button text="&amp;Cancel" closewindow="true" name="cancel" />
+        <button text="&amp;OK" closewindow="true" name="ok" magnetic="true" width="60" />
+        <button text="&amp;Cancel" closewindow="true" name="cancel" />
       </box>
     </box>
   </box>

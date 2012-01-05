@@ -27,9 +27,9 @@
 /* loads a MSK file (Animator and Animator Pro format) */
 Mask *load_msk_file(const char *filename)
 {
-#if (MAKE_VERSION(4, 2, 1) >= MAKE_VERSION(ALLEGRO_VERSION,		\
-					   ALLEGRO_SUB_VERSION,		\
-					   ALLEGRO_WIP_VERSION))
+#if (MAKE_VERSION(4, 2, 1) >= MAKE_VERSION(ALLEGRO_VERSION,             \
+                                           ALLEGRO_SUB_VERSION,         \
+                                           ALLEGRO_WIP_VERSION))
   int orig_size = file_size(filename);
 #else
   int orig_size = file_size_ex(filename);
@@ -56,7 +56,7 @@ Mask *load_msk_file(const char *filename)
     image = load_pic_file(filename, &x, &y, NULL);
     if ((!image) || (image->imgtype != IMAGE_BITMAP)) {
       if (image)
-	image_free(image);
+        image_free(image);
     }
     else {
       mask = mask_new();
@@ -76,12 +76,12 @@ Mask *load_msk_file(const char *filename)
     for (i=0; i<8000; i++) {
       byte = pack_getc (f);
       for (c=0; c<8; c++) {
-	mask->bitmap->putpixel(u, v, byte & (1<<(7-c)));
-	u++;
-	if (u == 320) {
-	  u = 0;
-	  v++;
-	}
+        mask->bitmap->putpixel(u, v, byte & (1<<(7-c)));
+        u++;
+        if (u == 320) {
+          u = 0;
+          v++;
+        }
       }
     }
     pack_fclose(f);

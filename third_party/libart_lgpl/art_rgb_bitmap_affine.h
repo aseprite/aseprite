@@ -37,13 +37,13 @@ extern "C" {
 
 void
 art_rgb_bitmap_affine (art_u8 *dst,
-		       int x0, int y0, int x1, int y1, int dst_rowstride,
-		       const art_u8 *src,
-		       int src_width, int src_height, int src_rowstride,
-		       art_u32 rgba,
-		       const double affine[6],
-		       ArtFilterLevel level,
-		       ArtAlphaGamma *alphagamma);
+                       int x0, int y0, int x1, int y1, int dst_rowstride,
+                       const art_u8 *src,
+                       int src_width, int src_height, int src_rowstride,
+                       art_u32 rgba,
+                       const double affine[6],
+                       ArtFilterLevel level,
+                       ArtAlphaGamma *alphagamma);
 
 #ifdef __cplusplus
 }

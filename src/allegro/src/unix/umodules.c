@@ -85,28 +85,28 @@ void _unix_load_modules(int system_driver)
    void *handle;
    void (*init)(int);
    MODULE *m;
- 
+
    /* Read the ALLEGRO_MODULES environment variable.
     * But don't do it if we are root (for obvious reasons).
     */
    if (geteuid() != 0) {
       char *env = getenv("ALLEGRO_MODULES");
       if (env) {
-	 snprintf(fullpath, sizeof fullpath, "%s/%s", env, "modules.lst");
-	 fullpath[(sizeof fullpath) - 1] = 0;
-	 f = pack_fopen(uconvert_ascii(fullpath, buf), F_READ);
-	 if (f) goto found;
+         snprintf(fullpath, sizeof fullpath, "%s/%s", env, "modules.lst");
+         fullpath[(sizeof fullpath) - 1] = 0;
+         f = pack_fopen(uconvert_ascii(fullpath, buf), F_READ);
+         if (f) goto found;
       }
    }
 
    for (pathptr = module_path; *pathptr; pathptr++) {
       snprintf(fullpath, sizeof fullpath, "%s/%d.%d.%d/modules.lst",
-	       *pathptr, ALLEGRO_VERSION, ALLEGRO_SUB_VERSION, ALLEGRO_WIP_VERSION);
+               *pathptr, ALLEGRO_VERSION, ALLEGRO_SUB_VERSION, ALLEGRO_WIP_VERSION);
       fullpath[(sizeof fullpath) - 1] = 0;
       f = pack_fopen(uconvert_ascii(fullpath, buf), F_READ);
       if (f) goto found;
    }
-   
+
    return;
 
    found:
@@ -114,43 +114,43 @@ void _unix_load_modules(int system_driver)
    TRACE(PREFIX_I "Loading modules from \"%s\".\n", fullpath);
 
    fullpath_slash = strrchr(fullpath, '/');
-   
+
    while (TRUE) {
       if (!pack_fgets(buf, sizeof buf, f))
          break;
       filename = uconvert_toascii(buf, buf2);
       strip(filename);
       if ((filename[0] == '#') || (strlen(filename) == 0))
-	 continue;
+         continue;
 
       if (!fullpath_slash) {
          snprintf(fullpath, sizeof fullpath, filename);
-	 fullpath[(sizeof fullpath) - 1] = 0;
+         fullpath[(sizeof fullpath) - 1] = 0;
       }
       else {
-	 snprintf(fullpath_slash+1, (sizeof fullpath) - (fullpath_slash - fullpath) - 1, filename);
-	 fullpath[(sizeof fullpath) - 1] = 0;
+         snprintf(fullpath_slash+1, (sizeof fullpath) - (fullpath_slash - fullpath) - 1, filename);
+         fullpath[(sizeof fullpath) - 1] = 0;
       }
-      
+
       if (!exists(uconvert_ascii(fullpath, buf)))
-	 continue;
+         continue;
 
       handle = dlopen(fullpath, RTLD_NOW);
       if (!handle) {
-	 /* useful during development */
-	 /* printf("Error loading module: %s\n", dlerror()); */
-	 continue;
+         /* useful during development */
+         /* printf("Error loading module: %s\n", dlerror()); */
+         continue;
       }
-      
+
       init = dlsym(handle, "_module_init");
       if (init)
          init(system_driver);
 
       m = _AL_MALLOC(sizeof(MODULE));
       if (m) {
-	 m->handle = handle;
-	 m->next = module_list;
-	 module_list = m;
+         m->handle = handle;
+         m->next = module_list;
+         module_list = m;
       }
    }
 
@@ -161,7 +161,7 @@ void _unix_load_modules(int system_driver)
 
 /* _unix_unload_modules:
  *  Unload loaded modules.
- */             
+ */
 void _unix_unload_modules(void)
 {
    MODULE *m, *next;
@@ -186,34 +186,34 @@ void _unix_unload_modules(void)
       has_registered = (sym ? *sym : 0);
 
       if (!has_registered || _allegro_in_exit)
-	 dlclose(m->handle);
+         dlclose(m->handle);
 
       _AL_FREE(m);
    }
-   
+
    module_list = NULL;
 }
 
 
 
-#else	/* ifdef ALLEGRO_WITH_MODULES */
+#else   /* ifdef ALLEGRO_WITH_MODULES */
 
 
 
 void _unix_load_modules(int system_driver)
 {
-   /*	Fiddle dee dum,
-	Fiddle dee dee,
-	Eric, the half a bee	*/
+   /*   Fiddle dee dum,
+        Fiddle dee dee,
+        Eric, the half a bee    */
 }
 
 
 
 void _unix_unload_modules(void)
 {
-   /*	Ho ho ho,
-	Tee hee hee,
-	Eric, the half a bee	*/
+   /*   Ho ho ho,
+        Tee hee hee,
+        Eric, the half a bee    */
 }
 
 

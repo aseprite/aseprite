@@ -23,12 +23,12 @@
 static Theme* current_theme = NULL;
 
 static void draw_text(BITMAP *bmp, FONT *f, const char *text, int x, int y,
-		      int fg_color, int bg_color, bool fill_bg);
+                      int fg_color, int bg_color, bool fill_bg);
 
 Theme::Theme()
 {
   this->name = "Theme";
-  this->default_font = font;	// Default Allegro font
+  this->default_font = font;    // Default Allegro font
   this->desktop_color = 0;
   this->textbox_fg_color = 0;
   this->textbox_bg_color = 0;
@@ -94,16 +94,16 @@ int ji_color_facelight()
 {
   register int c = ji_color_face();
   return makecol(MIN(getr(c)+64, 255),
-		 MIN(getg(c)+64, 255),
-		 MIN(getb(c)+64, 255));
+                 MIN(getg(c)+64, 255),
+                 MIN(getb(c)+64, 255));
 }
 
 int ji_color_faceshadow()
 {
   register int c = ji_color_face();
   return makecol(MAX(getr(c)-64, 0),
-		 MAX(getg(c)-64, 0),
-		 MAX(getb(c)-64, 0));
+                 MAX(getg(c)-64, 0),
+                 MAX(getb(c)-64, 0));
 }
 
 int ji_color_hotface()
@@ -126,12 +126,12 @@ BITMAP* ji_apply_guiscale(BITMAP* original)
   int scale = jguiscale();
   if (scale > 1) {
     BITMAP* scaled = create_bitmap_ex(bitmap_color_depth(original),
-				      original->w*scale,
-				      original->h*scale);
+                                      original->w*scale,
+                                      original->h*scale);
 
     for (int y=0; y<scaled->h; ++y)
       for (int x=0; x<scaled->w; ++x)
-	putpixel(scaled, x, y, getpixel(original, x/scale, y/scale));
+        putpixel(scaled, x, y, getpixel(original, x/scale, y/scale));
 
     destroy_bitmap(original);
     return scaled;
@@ -141,18 +141,18 @@ BITMAP* ji_apply_guiscale(BITMAP* original)
 }
 
 void _ji_theme_draw_sprite_color(BITMAP *bmp, BITMAP *sprite,
-				 int x, int y, int color)
+                                 int x, int y, int color)
 {
   int u, v, mask = bitmap_mask_color(sprite);
 
   for (v=0; v<sprite->h; v++)
     for (u=0; u<sprite->w; u++)
       if (getpixel(sprite, u, v) != mask)
-	putpixel(bmp, x+u, y+v, color);
+        putpixel(bmp, x+u, y+v, color);
 }
 
 void _ji_theme_textbox_draw(BITMAP *bmp, JWidget widget,
-			    int *w, int *h, int bg, int fg)
+                            int *w, int *h, int bg, int fg)
 {
   View* view = View::getView(widget);
   char *text = (char*)widget->getText(); // TODO warning: removing const modifier
@@ -204,11 +204,11 @@ void _ji_theme_textbox_draw(BITMAP *bmp, JWidget widget,
 #else
       /* make good use of the complete text-box */
       if (view) {
-	gfx::Size maxSize = view->getScrollableSize();
-	width = MAX(viewport_w, maxSize.w);
+        gfx::Size maxSize = view->getScrollableSize();
+        width = MAX(viewport_w, maxSize.w);
       }
       else {
-	width = viewport_w;
+        width = viewport_w;
       }
 #endif
     }
@@ -223,44 +223,44 @@ void _ji_theme_textbox_draw(BITMAP *bmp, JWidget widget,
     if (!(widget->getAlign() & JI_WORDWRAP)) {
       end = ustrchr(beg, '\n');
       if (end) {
-	chr = *end;
-	*end = 0;
+        chr = *end;
+        *end = 0;
       }
     }
     /* with word-wrap */
     else {
       old_end = NULL;
       for (beg_end=beg;;) {
-	end = ustrpbrk(beg_end, " \n");
-	if (end) {
-	  chr = *end;
-	  *end = 0;
-	}
+        end = ustrpbrk(beg_end, " \n");
+        if (end) {
+          chr = *end;
+          *end = 0;
+        }
 
-	/* to here we can print */
-	if ((old_end) && (x+text_length(font, beg) > x1-scroll.x+width)) {
-	  if (end)
-	    *end = chr;
+        /* to here we can print */
+        if ((old_end) && (x+text_length(font, beg) > x1-scroll.x+width)) {
+          if (end)
+            *end = chr;
 
-	  end = old_end;
-	  chr = *end;
-	  *end = 0;
-	  break;
-	}
-	/* we can print one word more */
-	else if (end) {
-	  /* force break */
-	  if (chr == '\n')
-	    break;
+          end = old_end;
+          chr = *end;
+          *end = 0;
+          break;
+        }
+        /* we can print one word more */
+        else if (end) {
+          /* force break */
+          if (chr == '\n')
+            break;
 
-	  *end = chr;
-	  beg_end = end+1;
-	}
-	/* we are in the end of text */
-	else
-	  break;
+          *end = chr;
+          beg_end = end+1;
+        }
+        /* we are in the end of text */
+        else
+          break;
 
-	old_end = end;
+        old_end = end;
       }
     }
 
@@ -271,17 +271,17 @@ void _ji_theme_textbox_draw(BITMAP *bmp, JWidget widget,
       int xout;
 
       if (widget->getAlign() & JI_CENTER)
-	xout = x + width/2 - len/2;
+        xout = x + width/2 - len/2;
       else if (widget->getAlign() & JI_RIGHT)
-	xout = x + width - len;
-      else			/* left */
-	xout = x;
+        xout = x + width - len;
+      else                      /* left */
+        xout = x;
 
       draw_text(bmp, font, beg, xout, y, fg, bg, true);
 
       jrectexclude(bmp,
-		   x1, y, x2, y+textheight-1,
-		   xout, y, xout+len-1, y+textheight-1, bg);
+                   x1, y, x2, y+textheight-1,
+                   xout, y, xout+len-1, y+textheight-1, bg);
     }
 
     /* width */
@@ -311,7 +311,7 @@ void _ji_theme_textbox_draw(BITMAP *bmp, JWidget widget,
 }
 
 static void draw_text(BITMAP *bmp, FONT *f, const char *text, int x, int y,
-		      int fg_color, int bg_color, bool fill_bg)
+                      int fg_color, int bg_color, bool fill_bg)
 {
   /* TODO optional anti-aliased textout */
   ji_font_set_aa_mode(f, bg_color);

@@ -61,7 +61,7 @@
    #define ALLEGRO_NO_ASM
 #endif
 
-#ifndef TRUE 
+#ifndef TRUE
    #define TRUE         -1
    #define FALSE        0
 #endif
@@ -69,7 +69,7 @@
 #undef MIN
 #undef MAX
 #undef MID
-     
+
 #define MIN(x,y)     (((x) < (y)) ? (x) : (y))
 #define MAX(x,y)     (((x) > (y)) ? (x) : (y))
 
@@ -80,10 +80,10 @@
 
 /* Optimized version of MID for when x <= z. */
 #define CLAMP(x,y,z) MAX((x), MIN((y), (z)))
-     
+
 #undef ABS
 #define ABS(x)       (((x) >= 0) ? (x) : (-(x)))
-     
+
 #undef SGN
 #define SGN(x)       (((x) >= 0) ? 1 : -1)
 
@@ -105,5 +105,3 @@ typedef struct _DRIVER_INFO         /* info about a hardware driver */
 #endif
 
 #endif          /* ifndef ALLEGRO_BASE_H */
-
-

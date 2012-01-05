@@ -63,13 +63,13 @@ struct _ArtGradientStop {
 
 void
 art_render_gradient_linear (ArtRender *render,
-			    const ArtGradientLinear *gradient,
-			    ArtFilterLevel level);
+                            const ArtGradientLinear *gradient,
+                            ArtFilterLevel level);
 
 void
 art_render_gradient_radial (ArtRender *render,
-			    const ArtGradientRadial *gradient,
-			    ArtFilterLevel level);
+                            const ArtGradientRadial *gradient,
+                            ArtFilterLevel level);
 
 #ifdef __cplusplus
 }

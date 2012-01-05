@@ -146,7 +146,7 @@ CURLcode Curl_addrinfo_callback(struct connectdata *conn,
 #if defined(ENABLE_IPV6) && defined(CURLRES_ARES) /* CURLRES_IPV6 */
       if(--conn->async.num_pending > 0) {
         /* We are not done yet. Clean up and return.
-	   This function will be called again. */
+           This function will be called again. */
         if(conn->async.temp_ai) {
           Curl_freeaddrinfo(conn->async.temp_ai);
           conn->async.temp_ai = NULL;

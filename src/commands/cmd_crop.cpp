@@ -48,15 +48,15 @@ protected:
 
 CropSpriteCommand::CropSpriteCommand()
   : Command("CropSprite",
-	    "Crop Sprite",
-	    CmdRecordableFlag)
+            "Crop Sprite",
+            CmdRecordableFlag)
 {
 }
 
 bool CropSpriteCommand::onEnabled(Context* context)
 {
   return context->checkFlags(ContextFlags::ActiveDocumentIsWritable |
-			     ContextFlags::HasVisibleMask);
+                             ContextFlags::HasVisibleMask);
 }
 
 void CropSpriteCommand::onExecute(Context* context)
@@ -91,15 +91,15 @@ protected:
 
 AutocropSpriteCommand::AutocropSpriteCommand()
   : Command("AutocropSprite",
-	    "Autocrop Sprite",
-	    CmdRecordableFlag)
+            "Autocrop Sprite",
+            CmdRecordableFlag)
 {
 }
 
 bool AutocropSpriteCommand::onEnabled(Context* context)
 {
   return context->checkFlags(ContextFlags::ActiveDocumentIsWritable |
-			     ContextFlags::HasActiveSprite);
+                             ContextFlags::HasActiveSprite);
 }
 
 void AutocropSpriteCommand::onExecute(Context* context)

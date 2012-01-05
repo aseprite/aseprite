@@ -1,6 +1,6 @@
-/*         ______   ___    ___ 
- *        /\  _  \ /\_ \  /\_ \ 
- *        \ \ \L\ \\//\ \ \//\ \      __     __   _ __   ___ 
+/*         ______   ___    ___
+ *        /\  _  \ /\_ \  /\_ \
+ *        \ \ \L\ \\//\ \ \//\ \      __     __   _ __   ___
  *         \ \  __ \ \ \ \  \ \ \   /'__`\ /'_ `\/\`'__\/ __`\
  *          \ \ \/\ \ \_\ \_ \_\ \_/\  __//\ \L\ \ \ \//\ \L\ \
  *           \ \_\ \_\/\____\/\____\ \____\ \____ \ \_\\ \____/
@@ -46,7 +46,7 @@ static int flood_count;          /* number of flooded segments */
 
 /* flooder:
  *  Fills a horizontal line around the specified position, and adds it
- *  to the list of drawn segments. Returns the first x coordinate after 
+ *  to the list of drawn segments. Returns the first x coordinate after
  *  the part of the line which it has dealt with.
  */
 static int flooder(BITMAP *bmp, int x, int y, int src_color, int dest_color)
@@ -61,53 +61,53 @@ static int flooder(BITMAP *bmp, int x, int y, int src_color, int dest_color)
    {                                                                         \
       /* check start pixel */                                                \
       if ((int)bmp_read##bits(addr+x*size) != src_color)                     \
-	 return x+1;                                                         \
-									     \
+         return x+1;                                                         \
+                                                                             \
       /* work left from starting point */                                    \
       for (left=x-1; left>=bmp->cl; left--) {                                \
-	 if ((int)bmp_read##bits(addr+left*size) != src_color)               \
-	    break;                                                           \
+         if ((int)bmp_read##bits(addr+left*size) != src_color)               \
+            break;                                                           \
       }                                                                      \
-									     \
+                                                                             \
       /* work right from starting point */                                   \
       for (right=x+1; right<bmp->cr; right++) {                              \
-	 if ((int)bmp_read##bits(addr+right*size) != src_color)              \
-	    break;                                                           \
+         if ((int)bmp_read##bits(addr+right*size) != src_color)              \
+            break;                                                           \
       }                                                                      \
    }
 
    ASSERT(bmp);
-   
+
    if (is_linear_bitmap(bmp)) {     /* use direct access for linear bitmaps */
       addr = bmp_read_line(bmp, y);
       bmp_select(bmp);
 
       switch (bitmap_color_depth(bmp)) {
 
-	 #ifdef ALLEGRO_COLOR8
-	    case 8:
-	       FLOODER(8, 1);
-	       break;
-	 #endif
+         #ifdef ALLEGRO_COLOR8
+            case 8:
+               FLOODER(8, 1);
+               break;
+         #endif
 
-	 #ifdef ALLEGRO_COLOR16
-	    case 15:
-	    case 16:
-	       FLOODER(16, sizeof(short));
-	       break;
-	 #endif
+         #ifdef ALLEGRO_COLOR16
+            case 15:
+            case 16:
+               FLOODER(16, sizeof(short));
+               break;
+         #endif
 
-	 #ifdef ALLEGRO_COLOR24
-	    case 24:
-	       FLOODER(24, 3);
-	       break;
-	 #endif
+         #ifdef ALLEGRO_COLOR24
+            case 24:
+               FLOODER(24, 3);
+               break;
+         #endif
 
-	 #ifdef ALLEGRO_COLOR32
-	    case 32:
-	       FLOODER(32, sizeof(int32_t));
-	       break;
-	 #endif
+         #ifdef ALLEGRO_COLOR32
+            case 32:
+               FLOODER(32, sizeof(int32_t));
+               break;
+         #endif
       }
 
       bmp_unwrite_line(bmp);
@@ -115,18 +115,18 @@ static int flooder(BITMAP *bmp, int x, int y, int src_color, int dest_color)
    else {                           /* have to use getpixel() for mode-X */
       /* check start pixel */
       if (getpixel(bmp, x, y) != src_color)
-	 return x+1;
+         return x+1;
 
-      /* work left from starting point */ 
+      /* work left from starting point */
       for (left=x-1; left>=bmp->cl; left--)
-	 if (getpixel(bmp, left, y) != src_color)
-	    break;
+         if (getpixel(bmp, left, y) != src_color)
+            break;
 
-      /* work right from starting point */ 
+      /* work right from starting point */
       for (right=x+1; right<bmp->cr; right++)
-	 if (getpixel(bmp, right, y) != src_color)
-	    break;
-   } 
+         if (getpixel(bmp, right, y) != src_color)
+            break;
+   }
 
    left++;
    right--;
@@ -140,8 +140,8 @@ static int flooder(BITMAP *bmp, int x, int y, int src_color, int dest_color)
 
    if (p->flags) {
       while (p->next) {
-	 c = p->next;
-	 p = FLOOD_LINE(c);
+         c = p->next;
+         p = FLOOD_LINE(c);
       }
 
       p->next = c = flood_count++;
@@ -167,8 +167,8 @@ static int flooder(BITMAP *bmp, int x, int y, int src_color, int dest_color)
 
 
 /* check_flood_line:
- *  Checks a line segment, using the scratch buffer is to store a list of 
- *  segments which have already been drawn in order to minimise the required 
+ *  Checks a line segment, using the scratch buffer is to store a list of
+ *  segments which have already been drawn in order to minimise the required
  *  number of tests.
  */
 static int check_flood_line(BITMAP *bmp, int y, int left, int right, int src_color, int dest_color)
@@ -181,20 +181,20 @@ static int check_flood_line(BITMAP *bmp, int y, int left, int right, int src_col
       c = y;
 
       for (;;) {
-	 p = FLOOD_LINE(c);
+         p = FLOOD_LINE(c);
 
-	 if ((left >= p->lpos) && (left <= p->rpos)) {
-	    left = p->rpos+2;
-	    break;
-	 }
+         if ((left >= p->lpos) && (left <= p->rpos)) {
+            left = p->rpos+2;
+            break;
+         }
 
-	 c = p->next;
+         c = p->next;
 
-	 if (!c) {
-	    left = flooder(bmp, left, y, src_color, dest_color);
-	    ret = TRUE;
-	    break; 
-	 }
+         if (!c) {
+            left = flooder(bmp, left, y, src_color, dest_color);
+            ret = TRUE;
+            break;
+         }
       }
    }
 
@@ -213,7 +213,7 @@ void _soft_floodfill(BITMAP *bmp, int x, int y, int color)
    FLOODED_LINE *p;
    ASSERT(bmp);
 
-   /* make sure we have a valid starting point */ 
+   /* make sure we have a valid starting point */
    if ((x < bmp->cl) || (x >= bmp->cr) || (y < bmp->ct) || (y >= bmp->cb))
       return;
 
@@ -248,31 +248,30 @@ void _soft_floodfill(BITMAP *bmp, int x, int y, int color)
       /* for each line on the screen */
       for (c=0; c<flood_count; c++) {
 
-	 p = FLOOD_LINE(c);
+         p = FLOOD_LINE(c);
 
-	 /* check below the segment? */
-	 if (p->flags & FLOOD_TODO_BELOW) {
-	    p->flags &= ~FLOOD_TODO_BELOW;
-	    if (check_flood_line(bmp, p->y+1, p->lpos, p->rpos, src_color, color)) {
-	       done = FALSE;
-	       p = FLOOD_LINE(c);
-	    }
-	 }
+         /* check below the segment? */
+         if (p->flags & FLOOD_TODO_BELOW) {
+            p->flags &= ~FLOOD_TODO_BELOW;
+            if (check_flood_line(bmp, p->y+1, p->lpos, p->rpos, src_color, color)) {
+               done = FALSE;
+               p = FLOOD_LINE(c);
+            }
+         }
 
-	 /* check above the segment? */
-	 if (p->flags & FLOOD_TODO_ABOVE) {
-	    p->flags &= ~FLOOD_TODO_ABOVE;
-	    if (check_flood_line(bmp, p->y-1, p->lpos, p->rpos, src_color, color)) {
-	       done = FALSE;
-	       /* special case shortcut for going backwards */
-	       if ((c < bmp->cb) && (c > 0))
-		  c -= 2;
-	    }
-	 }
+         /* check above the segment? */
+         if (p->flags & FLOOD_TODO_ABOVE) {
+            p->flags &= ~FLOOD_TODO_ABOVE;
+            if (check_flood_line(bmp, p->y-1, p->lpos, p->rpos, src_color, color)) {
+               done = FALSE;
+               /* special case shortcut for going backwards */
+               if ((c < bmp->cb) && (c > 0))
+                  c -= 2;
+            }
+         }
       }
 
    } while (!done);
 
    release_bitmap(bmp);
 }
-

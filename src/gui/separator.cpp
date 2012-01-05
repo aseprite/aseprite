@@ -40,15 +40,15 @@ static bool separator_msg_proc(JWidget widget, Message* msg)
       JLink link;
 
       JI_LIST_FOR_EACH(widget->children, link) {
-	child = (JWidget)link->data;
+        child = (JWidget)link->data;
 
-	reqSize = child->getPreferredSize();
-	maxSize.w = MAX(maxSize.w, reqSize.w);
-	maxSize.h = MAX(maxSize.h, reqSize.h);
+        reqSize = child->getPreferredSize();
+        maxSize.w = MAX(maxSize.w, reqSize.w);
+        maxSize.h = MAX(maxSize.h, reqSize.h);
       }
 
       if (widget->hasText())
-	maxSize.w = MAX(maxSize.w, jwidget_get_text_length(widget));
+        maxSize.w = MAX(maxSize.w, jwidget_get_text_length(widget));
 
       msg->reqsize.w = widget->border_width.l + maxSize.w + widget->border_width.r;
       msg->reqsize.h = widget->border_width.t + maxSize.h + widget->border_width.b;

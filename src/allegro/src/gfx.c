@@ -1,6 +1,6 @@
-/*         ______   ___    ___ 
- *        /\  _  \ /\_ \  /\_ \ 
- *        \ \ \L\ \\//\ \ \//\ \      __     __   _ __   ___ 
+/*         ______   ___    ___
+ *        /\  _  \ /\_ \  /\_ \
+ *        \ \ \L\ \\//\ \ \//\ \      __     __   _ __   ___
  *         \ \  __ \ \ \ \  \ \ \   /'__`\ /'_ `\/\`'__\/ __`\
  *          \ \ \/\ \ \_\ \_ \_\ \_/\  __//\ \L\ \ \ \//\ \L\ \
  *           \ \_\ \_\/\____\/\____\ \____\ \____ \ \_\\ \____/
@@ -41,24 +41,24 @@ void drawing_mode(int mode, BITMAP *pattern, int x_anchor, int y_anchor)
    _drawing_y_anchor = y_anchor;
 
    if (pattern) {
-      _drawing_x_mask = 1; 
+      _drawing_x_mask = 1;
       while (_drawing_x_mask < (unsigned)pattern->w)
-	 _drawing_x_mask <<= 1;        /* find power of two greater than w */
+         _drawing_x_mask <<= 1;        /* find power of two greater than w */
 
       if (_drawing_x_mask > (unsigned)pattern->w) {
-	 ASSERT(FALSE);
-	 _drawing_x_mask >>= 1;        /* round down if required */
+         ASSERT(FALSE);
+         _drawing_x_mask >>= 1;        /* round down if required */
       }
 
       _drawing_x_mask--;               /* convert to AND mask */
 
       _drawing_y_mask = 1;
       while (_drawing_y_mask < (unsigned)pattern->h)
-	 _drawing_y_mask <<= 1;        /* find power of two greater than h */
+         _drawing_y_mask <<= 1;        /* find power of two greater than h */
 
       if (_drawing_y_mask > (unsigned)pattern->h) {
-	 ASSERT(FALSE);
-	 _drawing_y_mask >>= 1;        /* round down if required */
+         ASSERT(FALSE);
+         _drawing_y_mask >>= 1;        /* round down if required */
       }
 
       _drawing_y_mask--;               /* convert to AND mask */
@@ -175,9 +175,9 @@ int _bitmap_has_alpha(BITMAP *bmp)
 
    for (y = 0; y < bmp->h; y++) {
       for (x = 0; x < bmp->w; x++) {
-	 c = getpixel(bmp, x, y);
-	 if (geta32(c))
-	    return TRUE;
+         c = getpixel(bmp, x, y);
+         if (geta32(c))
+            return TRUE;
       }
    }
 
@@ -234,14 +234,14 @@ void set_palette_range(AL_CONST PALETTE p, int from, int to, int vsync)
       _current_palette[c] = p[c];
 
       if (_color_depth != 8)
-	 palette_color[c] = makecol(_rgb_scale_6[p[c].r], _rgb_scale_6[p[c].g], _rgb_scale_6[p[c].b]);
+         palette_color[c] = makecol(_rgb_scale_6[p[c].r], _rgb_scale_6[p[c].g], _rgb_scale_6[p[c].b]);
    }
 
    _current_palette_changed = 0xFFFFFFFF & ~(1<<(_color_depth-1));
 
    if (gfx_driver) {
       if ((screen->vtable->color_depth == 8) && (!_dispsw_status))
-	 gfx_driver->set_palette(p, from, to, vsync);
+         gfx_driver->set_palette(p, from, to, vsync);
    }
    else if ((system_driver) && (system_driver->set_palette_range))
       system_driver->set_palette_range(p, from, to, vsync);
@@ -273,8 +273,8 @@ void select_palette(AL_CONST PALETTE p)
 
    if (_color_depth != 8) {
       for (c=0; c<PAL_SIZE; c++) {
-	 prev_palette_color[c] = palette_color[c];
-	 palette_color[c] = makecol(_rgb_scale_6[p[c].r], _rgb_scale_6[p[c].g], _rgb_scale_6[p[c].b]);
+         prev_palette_color[c] = palette_color[c];
+         palette_color[c] = makecol(_rgb_scale_6[p[c].r], _rgb_scale_6[p[c].g], _rgb_scale_6[p[c].b]);
       }
    }
 
@@ -297,7 +297,7 @@ void unselect_palette(void)
 
    if (_color_depth != 8) {
       for (c=0; c<PAL_SIZE; c++)
-	 palette_color[c] = prev_palette_color[c];
+         palette_color[c] = prev_palette_color[c];
    }
 
    ASSERT(_got_prev_current_palette == TRUE);
@@ -326,14 +326,14 @@ static int *palette_expansion_table(int bpp)
 
    if (_current_palette_changed & (1<<(bpp-1))) {
       for (c=0; c<PAL_SIZE; c++) {
-	 table[c] = makecol_depth(bpp,
-				  _rgb_scale_6[_current_palette[c].r], 
-				  _rgb_scale_6[_current_palette[c].g], 
-				  _rgb_scale_6[_current_palette[c].b]);
+         table[c] = makecol_depth(bpp,
+                                  _rgb_scale_6[_current_palette[c].r],
+                                  _rgb_scale_6[_current_palette[c].g],
+                                  _rgb_scale_6[_current_palette[c].b]);
       }
 
       _current_palette_changed &= ~(1<<(bpp-1));
-   } 
+   }
 
    return table;
 }
@@ -409,7 +409,7 @@ void get_palette_range(PALETTE p, int from, int to)
 
 
 
-/* fade_interpolate: 
+/* fade_interpolate:
  *  Calculates a palette part way between source and dest, returning it
  *  in output. The pos indicates how far between the two extremes it should
  *  be: 0 = return source, 64 = return dest, 32 = return exactly half way.
@@ -423,7 +423,7 @@ void fade_interpolate(AL_CONST PALETTE source, AL_CONST PALETTE dest, PALETTE ou
    ASSERT(from >= 0 && from < PAL_SIZE);
    ASSERT(to >= 0 && to < PAL_SIZE);
 
-   for (c=from; c<=to; c++) { 
+   for (c=from; c<=to; c++) {
       output[c].r = ((int)source[c].r * (63-pos) + (int)dest[c].r * pos) / 64;
       output[c].g = ((int)source[c].g * (63-pos) + (int)dest[c].g * pos) / 64;
       output[c].b = ((int)source[c].b * (63-pos) + (int)dest[c].b * pos) / 64;
@@ -454,18 +454,18 @@ void fade_from_range(AL_CONST PALETTE source, AL_CONST PALETTE dest, int speed, 
       last = -1;
 
       while ((c = (retrace_count-start)*speed/2) < 64) {
-	 if (c != last) {
-	    fade_interpolate(source, dest, temp, c, from, to);
-	    set_palette_range(temp, from, to, TRUE);
-	    last = c;
-	 }
+         if (c != last) {
+            fade_interpolate(source, dest, temp, c, from, to);
+            set_palette_range(temp, from, to, TRUE);
+            last = c;
+         }
       }
    }
    else {
       for (c=0; c<64; c+=speed) {
-	 fade_interpolate(source, dest, temp, c, from, to);
-	 set_palette_range(temp, from, to, TRUE);
-	 set_palette_range(temp, from, to, TRUE);
+         fade_interpolate(source, dest, temp, c, from, to);
+         set_palette_range(temp, from, to, TRUE);
+         set_palette_range(temp, from, to, TRUE);
       }
    }
 
@@ -476,7 +476,7 @@ void fade_from_range(AL_CONST PALETTE source, AL_CONST PALETTE dest, int speed, 
 
 /* fade_in_range:
  *  Fades from a solid black palette to p, at the specified speed (1 is
- *  the slowest, 64 is instantaneous). Only affects colors between from and 
+ *  the slowest, 64 is instantaneous). Only affects colors between from and
  *  to (inclusive, pass 0 and 255 to fade the entire palette).
  */
 void fade_in_range(AL_CONST PALETTE p, int speed, int from, int to)
@@ -490,9 +490,9 @@ void fade_in_range(AL_CONST PALETTE p, int speed, int from, int to)
 
 
 /* fade_out_range:
- *  Fades from the current palette to a solid black palette, at the 
- *  specified speed (1 is the slowest, 64 is instantaneous). Only affects 
- *  colors between from and to (inclusive, pass 0 and 255 to fade the 
+ *  Fades from the current palette to a solid black palette, at the
+ *  specified speed (1 is the slowest, 64 is instantaneous). Only affects
+ *  colors between from and to (inclusive, pass 0 and 255 to fade the
  *  entire palette).
  */
 void fade_out_range(int speed, int from, int to)
@@ -533,7 +533,7 @@ void fade_in(AL_CONST PALETTE p, int speed)
 
 
 /* fade_out:
- *  Fades from the current palette to a solid black palette, at the 
+ *  Fades from the current palette to a solid black palette, at the
  *  specified speed (1 is the slowest, 64 is instantaneous).
  */
 void fade_out(int speed)
@@ -574,7 +574,7 @@ void _soft_rect(BITMAP *bmp, int x1, int y1, int x2, int y2, int color)
       vline(bmp, x1, y1+1, y2-1, color);
 
       if (x2 > x1)
-	 vline(bmp, x2, y1+1, y2-1, color);
+         vline(bmp, x2, y1+1, y2-1, color);
    }
 
    release_bitmap(bmp);
@@ -597,28 +597,28 @@ void _normal_rectfill(BITMAP *bmp, int x1, int y1, int x2, int y2, int color)
 
    if (bmp->clip) {
       if (x1 > x2) {
-	 t = x1;
-	 x1 = x2;
-	 x2 = t;
+         t = x1;
+         x1 = x2;
+         x2 = t;
       }
 
       if (x1 < bmp->cl)
-	 x1 = bmp->cl;
+         x1 = bmp->cl;
 
       if (x2 >= bmp->cr)
-	 x2 = bmp->cr-1;
+         x2 = bmp->cr-1;
 
       if (x2 < x1)
-	 return;
+         return;
 
       if (y1 < bmp->ct)
-	 y1 = bmp->ct;
+         y1 = bmp->ct;
 
       if (y2 >= bmp->cb)
-	 y2 = bmp->cb-1;
+         y2 = bmp->cb-1;
 
       if (y2 < y1)
-	 return;
+         return;
 
       bmp->clip = FALSE;
       t = TRUE;
@@ -641,9 +641,9 @@ void _normal_rectfill(BITMAP *bmp, int x1, int y1, int x2, int y2, int color)
 
 
 /* do_line:
- *  Calculates all the points along a line between x1, y1 and x2, y2, 
- *  calling the supplied function for each one. This will be passed a 
- *  copy of the bmp parameter, the x and y position, and a copy of the 
+ *  Calculates all the points along a line between x1, y1 and x2, y2,
+ *  calling the supplied function for each one. This will be passed a
+ *  copy of the bmp parameter, the x and y position, and a copy of the
  *  d parameter (so do_line() can be used with putpixel()).
  */
 void do_line(BITMAP *bmp, int x1, int y1, int x2, int y2, int d, void (*proc)(BITMAP *, int, int, int))
@@ -658,73 +658,73 @@ void do_line(BITMAP *bmp, int x1, int y1, int x2, int y2, int d, void (*proc)(BI
    #define DO_LINE(pri_sign, pri_c, pri_cond, sec_sign, sec_c, sec_cond)     \
    {                                                                         \
       if (d##pri_c == 0) {                                                   \
-	 proc(bmp, x1, y1, d);                                               \
-	 return;                                                             \
+         proc(bmp, x1, y1, d);                                               \
+         return;                                                             \
       }                                                                      \
-									     \
+                                                                             \
       i1 = 2 * d##sec_c;                                                     \
       dd = i1 - (sec_sign (pri_sign d##pri_c));                              \
       i2 = dd - (sec_sign (pri_sign d##pri_c));                              \
-									     \
+                                                                             \
       x = x1;                                                                \
       y = y1;                                                                \
-									     \
+                                                                             \
       while (pri_c pri_cond pri_c##2) {                                      \
-	 proc(bmp, x, y, d);                                                 \
-									     \
-	 if (dd sec_cond 0) {                                                \
-	    sec_c = sec_c sec_sign 1;                                        \
-	    dd += i2;                                                        \
-	 }                                                                   \
-	 else                                                                \
-	    dd += i1;                                                        \
-									     \
-	 pri_c = pri_c pri_sign 1;                                           \
+         proc(bmp, x, y, d);                                                 \
+                                                                             \
+         if (dd sec_cond 0) {                                                \
+            sec_c = sec_c sec_sign 1;                                        \
+            dd += i2;                                                        \
+         }                                                                   \
+         else                                                                \
+            dd += i1;                                                        \
+                                                                             \
+         pri_c = pri_c pri_sign 1;                                           \
       }                                                                      \
    }
 
    if (dx >= 0) {
       if (dy >= 0) {
-	 if (dx >= dy) {
-	    /* (x1 <= x2) && (y1 <= y2) && (dx >= dy) */
-	    DO_LINE(+, x, <=, +, y, >=);
-	 }
-	 else {
-	    /* (x1 <= x2) && (y1 <= y2) && (dx < dy) */
-	    DO_LINE(+, y, <=, +, x, >=);
-	 }
+         if (dx >= dy) {
+            /* (x1 <= x2) && (y1 <= y2) && (dx >= dy) */
+            DO_LINE(+, x, <=, +, y, >=);
+         }
+         else {
+            /* (x1 <= x2) && (y1 <= y2) && (dx < dy) */
+            DO_LINE(+, y, <=, +, x, >=);
+         }
       }
       else {
-	 if (dx >= -dy) {
-	    /* (x1 <= x2) && (y1 > y2) && (dx >= dy) */
-	    DO_LINE(+, x, <=, -, y, <=);
-	 }
-	 else {
-	    /* (x1 <= x2) && (y1 > y2) && (dx < dy) */
-	    DO_LINE(-, y, >=, +, x, >=);
-	 }
+         if (dx >= -dy) {
+            /* (x1 <= x2) && (y1 > y2) && (dx >= dy) */
+            DO_LINE(+, x, <=, -, y, <=);
+         }
+         else {
+            /* (x1 <= x2) && (y1 > y2) && (dx < dy) */
+            DO_LINE(-, y, >=, +, x, >=);
+         }
       }
    }
    else {
       if (dy >= 0) {
-	 if (-dx >= dy) {
-	    /* (x1 > x2) && (y1 <= y2) && (dx >= dy) */
-	    DO_LINE(-, x, >=, +, y, >=);
-	 }
-	 else {
-	    /* (x1 > x2) && (y1 <= y2) && (dx < dy) */
-	    DO_LINE(+, y, <=, -, x, <=);
-	 }
+         if (-dx >= dy) {
+            /* (x1 > x2) && (y1 <= y2) && (dx >= dy) */
+            DO_LINE(-, x, >=, +, y, >=);
+         }
+         else {
+            /* (x1 > x2) && (y1 <= y2) && (dx < dy) */
+            DO_LINE(+, y, <=, -, x, <=);
+         }
       }
       else {
-	 if (-dx >= -dy) {
-	    /* (x1 > x2) && (y1 > y2) && (dx >= dy) */
-	    DO_LINE(-, x, >=, -, y, <=);
-	 }
-	 else {
-	    /* (x1 > x2) && (y1 > y2) && (dx < dy) */
-	    DO_LINE(-, y, >=, -, x, <=);
-	 }
+         if (-dx >= -dy) {
+            /* (x1 > x2) && (y1 > y2) && (dx >= dy) */
+            DO_LINE(-, x, >=, -, y, <=);
+         }
+         else {
+            /* (x1 > x2) && (y1 > y2) && (dx < dy) */
+            DO_LINE(-, y, >=, -, x, <=);
+         }
       }
    }
 
@@ -758,22 +758,22 @@ void _normal_line(BITMAP *bmp, int x1, int y1, int x2, int y2, int color)
       dy = y2;
 
       if (sx > dx) {
-	 t = sx;
-	 sx = dx;
-	 dx = t;
+         t = sx;
+         sx = dx;
+         dx = t;
       }
 
       if (sy > dy) {
-	 t = sy;
-	 sy = dy;
-	 dy = t;
+         t = sy;
+         sy = dy;
+         dy = t;
       }
 
       if ((sx >= bmp->cr) || (sy >= bmp->cb) || (dx < bmp->cl) || (dy < bmp->ct))
-	 return;
+         return;
 
       if ((sx >= bmp->cl) && (sy >= bmp->ct) && (dx < bmp->cr) && (dy < bmp->cb))
-	 bmp->clip = FALSE;
+         bmp->clip = FALSE;
 
       t = TRUE;
    }
@@ -816,15 +816,15 @@ void _fast_line(BITMAP *bmp, int x1, int y1, int x2, int y2, int color)
 
       #define COMPCLIP(code, x, y)  \
       {                             \
-	 code = 0;                  \
-	 if (y < ymin)              \
-	    code |= TOP;            \
-	 else if (y > ymax)         \
-	    code |= BOTTOM;         \
-	 if (x < xmin)              \
-	    code |= LEFT;           \
-	 else if (x > xmax)         \
-	    code |= RIGHT;          \
+         code = 0;                  \
+         if (y < ymin)              \
+            code |= TOP;            \
+         else if (y > ymax)         \
+            code |= BOTTOM;         \
+         if (x < xmin)              \
+            code |= LEFT;           \
+         else if (x > xmax)         \
+            code |= RIGHT;          \
       }
 
       xmin = bmp->cl;
@@ -837,58 +837,58 @@ void _fast_line(BITMAP *bmp, int x1, int y1, int x2, int y2, int color)
 
       do {
 
-	 if (!(code0 | code1)) {
-	    /* Trivially accept. */
-	    accept = done = 1;
-	 }
-	 else if (code0 & code1) {
-	    /* Trivially reject. */
-	    done = 1;
-	 }
-	 else {
-	    /* Didn't reject or accept, so do some calculations. */
-	    outcode = code0 ? code0 : code1;  /* pick one endpoint */
+         if (!(code0 | code1)) {
+            /* Trivially accept. */
+            accept = done = 1;
+         }
+         else if (code0 & code1) {
+            /* Trivially reject. */
+            done = 1;
+         }
+         else {
+            /* Didn't reject or accept, so do some calculations. */
+            outcode = code0 ? code0 : code1;  /* pick one endpoint */
 
-	    if (outcode & TOP) {
-	       if (y2 == y1)
-		  x = x1;
-	       else
-		  x = x1 + (x2 - x1) * (ymin - y1) / (y2 - y1);
-	       y = ymin;
-	    }
-	    else if (outcode & BOTTOM) {
-	       if (y2 == y1)
-		  x = x1;
-	       else
-		  x = x1 + (x2 - x1) * (ymax - y1) / (y2 - y1);
-	       y = ymax;
-	    }
-	    else if (outcode & LEFT) {
-	       if (x2 == x1)
-		  y = y1;
-	       else
-		  y = y1 + (y2 - y1) * (xmin - x1) / (x2 - x1);
-	       x = xmin;
-	    }
-	    else {  /* outcode & RIGHT */
-	       if (x2 == x1)
-		  y = y1;
-	       else
-		  y = y1 + (y2 - y1) * (xmax - x1) / (x2 - x1);
-	       x = xmax;
-	    }
+            if (outcode & TOP) {
+               if (y2 == y1)
+                  x = x1;
+               else
+                  x = x1 + (x2 - x1) * (ymin - y1) / (y2 - y1);
+               y = ymin;
+            }
+            else if (outcode & BOTTOM) {
+               if (y2 == y1)
+                  x = x1;
+               else
+                  x = x1 + (x2 - x1) * (ymax - y1) / (y2 - y1);
+               y = ymax;
+            }
+            else if (outcode & LEFT) {
+               if (x2 == x1)
+                  y = y1;
+               else
+                  y = y1 + (y2 - y1) * (xmin - x1) / (x2 - x1);
+               x = xmin;
+            }
+            else {  /* outcode & RIGHT */
+               if (x2 == x1)
+                  y = y1;
+               else
+                  y = y1 + (y2 - y1) * (xmax - x1) / (x2 - x1);
+               x = xmax;
+            }
 
-	    if (outcode == code0) {
-	       x1 = x;
-	       y1 = y;
-	       COMPCLIP(code0, x1, y1);
-	    }
-	    else {
-	       x2 = x;
-	       y2 = y;
-	       COMPCLIP(code1, x2, y2);
-	    }
-	 }
+            if (outcode == code0) {
+               x1 = x;
+               y1 = y;
+               COMPCLIP(code0, x1, y1);
+            }
+            else {
+               x2 = x;
+               y2 = y;
+               COMPCLIP(code1, x2, y2);
+            }
+         }
       } while (!done);
 
       #undef COMPCLIP
@@ -898,7 +898,7 @@ void _fast_line(BITMAP *bmp, int x1, int y1, int x2, int y2, int color)
       #undef RIGHT
 
       if (!accept)
-	 return;
+         return;
 
       /* We have already done the clipping, no need to do it again. */
       bmp->clip = FALSE;
@@ -924,7 +924,7 @@ void _fast_line(BITMAP *bmp, int x1, int y1, int x2, int y2, int color)
 
 /* do_circle:
  *  Helper function for the circle drawing routines. Calculates the points
- *  in a circle of radius r around point x, y, and calls the specified 
+ *  in a circle of radius r around point x, y, and calls the specified
  *  routine for each one. The output proc will be passed first a copy of
  *  the bmp parameter, then the x, y point, then a copy of the d parameter
  *  (so putpixel() can be used as the callback).
@@ -933,48 +933,48 @@ void do_circle(BITMAP *bmp, int x, int y, int radius, int d, void (*proc)(BITMAP
 {
    int cx = 0;
    int cy = radius;
-   int df = 1 - radius; 
+   int df = 1 - radius;
    int d_e = 3;
    int d_se = -2 * radius + 5;
 
    do {
-      proc(bmp, x+cx, y+cy, d); 
+      proc(bmp, x+cx, y+cy, d);
 
-      if (cx) 
-	 proc(bmp, x-cx, y+cy, d); 
+      if (cx)
+         proc(bmp, x-cx, y+cy, d);
 
-      if (cy) 
-	 proc(bmp, x+cx, y-cy, d);
+      if (cy)
+         proc(bmp, x+cx, y-cy, d);
 
-      if ((cx) && (cy)) 
-	 proc(bmp, x-cx, y-cy, d); 
+      if ((cx) && (cy))
+         proc(bmp, x-cx, y-cy, d);
 
       if (cx != cy) {
-	 proc(bmp, x+cy, y+cx, d); 
+         proc(bmp, x+cy, y+cx, d);
 
-	 if (cx) 
-	    proc(bmp, x+cy, y-cx, d);
+         if (cx)
+            proc(bmp, x+cy, y-cx, d);
 
-	 if (cy) 
-	    proc(bmp, x-cy, y+cx, d); 
+         if (cy)
+            proc(bmp, x-cy, y+cx, d);
 
-	 if (cx && cy) 
-	    proc(bmp, x-cy, y-cx, d); 
+         if (cx && cy)
+            proc(bmp, x-cy, y-cx, d);
       }
 
       if (df < 0)  {
-	 df += d_e;
-	 d_e += 2;
-	 d_se += 2;
+         df += d_e;
+         d_e += 2;
+         d_se += 2;
       }
-      else { 
-	 df += d_se;
-	 d_e += 2;
-	 d_se += 4;
-	 cy--;
-      } 
+      else {
+         df += d_se;
+         d_e += 2;
+         d_se += 4;
+         cy--;
+      }
 
-      cx++; 
+      cx++;
 
    } while (cx <= cy);
 }
@@ -996,10 +996,10 @@ void _soft_circle(BITMAP *bmp, int x, int y, int radius, int color)
       dy = y+radius+1;
 
       if ((sx >= bmp->cr) || (sy >= bmp->cb) || (dx < bmp->cl) || (dy < bmp->ct))
-	 return;
+         return;
 
       if ((sx >= bmp->cl) && (sy >= bmp->ct) && (dx < bmp->cr) && (dy < bmp->cb))
-	 bmp->clip = FALSE;
+         bmp->clip = FALSE;
 
       clip = TRUE;
    }
@@ -1024,7 +1024,7 @@ void _soft_circlefill(BITMAP *bmp, int x, int y, int radius, int color)
 {
    int cx = 0;
    int cy = radius;
-   int df = 1 - radius; 
+   int df = 1 - radius;
    int d_e = 3;
    int d_se = -2 * radius + 5;
    int clip, sx, sy, dx, dy;
@@ -1037,10 +1037,10 @@ void _soft_circlefill(BITMAP *bmp, int x, int y, int radius, int color)
       dy = y+radius+1;
 
       if ((sx >= bmp->cr) || (sy >= bmp->cb) || (dx < bmp->cl) || (dy < bmp->ct))
-	 return;
+         return;
 
       if ((sx >= bmp->cl) && (sy >= bmp->ct) && (dx < bmp->cr) && (dy < bmp->cb))
-	 bmp->clip = FALSE;
+         bmp->clip = FALSE;
 
       clip = TRUE;
    }
@@ -1053,28 +1053,28 @@ void _soft_circlefill(BITMAP *bmp, int x, int y, int radius, int color)
       bmp->vtable->hfill(bmp, x-cy, y-cx, x+cy, color);
 
       if (cx)
-	 bmp->vtable->hfill(bmp, x-cy, y+cx, x+cy, color);
+         bmp->vtable->hfill(bmp, x-cy, y+cx, x+cy, color);
 
       if (df < 0)  {
-	 df += d_e;
-	 d_e += 2;
-	 d_se += 2;
+         df += d_e;
+         d_e += 2;
+         d_se += 2;
       }
-      else { 
-	 if (cx != cy) {
-	    bmp->vtable->hfill(bmp, x-cx, y-cy, x+cx, color);
+      else {
+         if (cx != cy) {
+            bmp->vtable->hfill(bmp, x-cx, y-cy, x+cx, color);
 
-	    if (cy)
-	       bmp->vtable->hfill(bmp, x-cx, y+cy, x+cx, color);
-	 }
+            if (cy)
+               bmp->vtable->hfill(bmp, x-cx, y+cy, x+cx, color);
+         }
 
-	 df += d_se;
-	 d_e += 2;
-	 d_se += 4;
-	 cy--;
-      } 
+         df += d_se;
+         d_e += 2;
+         d_se += 4;
+         cy--;
+      }
 
-      cx++; 
+      cx++;
 
    } while (cx <= cy);
 
@@ -1087,9 +1087,9 @@ void _soft_circlefill(BITMAP *bmp, int x, int y, int radius, int color)
 
 /* do_ellipse:
  *  Helper function for the ellipse drawing routines. Calculates the points
- *  in an ellipse of radius rx and ry around point x, y, and calls the 
- *  specified routine for each one. The output proc will be passed first a 
- *  copy of the bmp parameter, then the x, y point, then a copy of the d 
+ *  in an ellipse of radius rx and ry around point x, y, and calls the
+ *  specified routine for each one. The output proc will be passed first a
+ *  copy of the bmp parameter, then the x, y point, then a copy of the d
  *  parameter (so putpixel() can be used as the callback).
  */
 void do_ellipse(BITMAP *bmp, int ix, int iy, int rx0, int ry0, int d,
@@ -1211,10 +1211,10 @@ void _soft_ellipse(BITMAP *bmp, int x, int y, int rx, int ry, int color)
       dy = y+ry+1;
 
       if ((sx >= bmp->cr) || (sy >= bmp->cb) || (dx < bmp->cl) || (dy < bmp->ct))
-	 return;
+         return;
 
       if ((sx >= bmp->cl) && (sy >= bmp->ct) && (dx < bmp->cr) && (dy < bmp->cb))
-	 bmp->clip = FALSE;
+         bmp->clip = FALSE;
 
       clip = TRUE;
    }
@@ -1405,9 +1405,9 @@ static INLINE void get_point_on_arc(int r, fixed a, int *out_x, int *out_y, int 
 /* do_arc:
  *  Helper function for the arc function. Calculates the points in an arc
  *  of radius r around point x, y, going anticlockwise from fixed point
- *  binary angle ang1 to ang2, and calls the specified routine for each one. 
- *  The output proc will be passed first a copy of the bmp parameter, then 
- *  the x, y point, then a copy of the d parameter (so putpixel() can be 
+ *  binary angle ang1 to ang2, and calls the specified routine for each one.
+ *  The output proc will be passed first a copy of the bmp parameter, then
+ *  the x, y point, then a copy of the d parameter (so putpixel() can be
  *  used as the callback).
  */
 void do_arc(BITMAP *bmp, int x, int y, fixed ang1, fixed ang2, int r, int d, void (*proc)(BITMAP *, int, int, int))
@@ -1454,7 +1454,7 @@ void do_arc(BITMAP *bmp, int x, int y, fixed ang1, fixed ang2, int r, int d, voi
        * strictly after q.
        */
       if (((ang2&0xffffff) < (ang1&0xffffff)) ||
-	  (((ang1&0xffffff) < 0x400000) && ((ang2&0xffffff) >= 0xc00000)))
+          (((ang1&0xffffff) < 0x400000) && ((ang2&0xffffff) >= 0xc00000)))
          qe += 4;
    }
 
@@ -1476,44 +1476,44 @@ void do_arc(BITMAP *bmp, int x, int y, fixed ang1, fixed ang2, int r, int d, voi
       if ((q&1) == 0) {
          if (px == 0) {
             if (qe == q)
-	       break;
-	    q++;
-	    dy = -dy;
-	 }
+               break;
+            q++;
+            dy = -dy;
+         }
       }
       else {
          if (py == 0) {
-	    if (qe == q)
-	       break;
-	    q++;
-	    dx = -dx;
-	 }
+            if (qe == q)
+               break;
+            q++;
+            dx = -dx;
+         }
       }
 
       /* Are we in the final quadrant? */
       if (qe == q) {
-	 /* Have we reached (or passed) the end point both in x and y? */
-	 det = 0;
+         /* Have we reached (or passed) the end point both in x and y? */
+         det = 0;
 
-	 if (dy > 0) {
-	    if (py >= ey)
-	       det++;
-	 }
-	 else {
-	    if (py <= ey)
-	       det++;
-	 }
-	 if (dx > 0) {
-	    if (px >= ex)
-	       det++;
-	 }
-	 else {
-	    if (px <= ex)
-	       det++;
-	 }
-	 
-	 if (det == 2)
-	    break;
+         if (dy > 0) {
+            if (py >= ey)
+               det++;
+         }
+         else {
+            if (py <= ey)
+               det++;
+         }
+         if (dx > 0) {
+            if (px >= ex)
+               det++;
+         }
+         else {
+            if (px <= ex)
+               det++;
+         }
+
+         if (det == 2)
+            break;
       }
 
       proc(bmp, x+px, y+py, d);
@@ -1541,19 +1541,19 @@ void do_arc(BITMAP *bmp, int x, int y, fixed ang1, fixed ang2, int r, int d, voi
        * three points.
        */
       if (rr1 < 0)
-	 rr1 = -rr1;
+         rr1 = -rr1;
       if (rr2 < 0)
-	 rr2 = -rr2;
+         rr2 = -rr2;
       if (rr3 < 0)
-	 rr3 = -rr3;
+         rr3 = -rr3;
 
       if (rr3 >= MIN(rr1, rr2)) {
          px += dx;
-	 xx = xx_new;
+         xx = xx_new;
       }
       if (rr1 > MIN(rr2, rr3)) {
          py += dy;
-	 yy = yy_new;
+         yy = yy_new;
       }
    }
    /* Only draw last point if it doesn't overlap with first one. */
@@ -1575,4 +1575,3 @@ void _soft_arc(BITMAP *bmp, int x, int y, fixed ang1, fixed ang2, int r, int col
 
    release_bitmap(bmp);
 }
-

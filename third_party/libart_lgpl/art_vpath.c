@@ -45,7 +45,7 @@
  **/
 void
 art_vpath_add_point (ArtVpath **p_vpath, int *pn_points, int *pn_points_max,
-		     ArtPathcode code, double x, double y)
+                     ArtPathcode code, double x, double y)
 {
   int i;
 
@@ -153,12 +153,12 @@ art_vpath_bbox_drect (const ArtVpath *vec, ArtDRect *drect)
       x0 = x1 = vec[0].x;
       y0 = y1 = vec[0].y;
       for (i = 1; vec[i].code != ART_END; i++)
-	{
-	  if (vec[i].x < x0) x0 = vec[i].x;
-	  if (vec[i].x > x1) x1 = vec[i].x;
-	  if (vec[i].y < y0) y0 = vec[i].y;
-	  if (vec[i].y > y1) y1 = vec[i].y;
-	}
+        {
+          if (vec[i].x < x0) x0 = vec[i].x;
+          if (vec[i].x > x1) x1 = vec[i].x;
+          if (vec[i].y < y0) y0 = vec[i].y;
+          if (vec[i].y > y1) y1 = vec[i].y;
+        }
     }
   drect->x0 = x0;
   drect->y0 = y0;
@@ -193,7 +193,7 @@ art_vpath_bbox_irect (const ArtVpath *vec, ArtIRect *irect)
  * numerical stability yet.
  *
  * Return value: Newly allocated vpath containing perturbed @src.
- **/ 
+ **/
 ArtVpath *
 art_vpath_perturb (ArtVpath *src)
 {
@@ -218,18 +218,18 @@ art_vpath_perturb (ArtVpath *src)
       x = src[i].x + (PERTURBATION * rand ()) / RAND_MAX - PERTURBATION * 0.5;
       y = src[i].y + (PERTURBATION * rand ()) / RAND_MAX - PERTURBATION * 0.5;
       if (src[i].code == ART_MOVETO)
-	{
-	  x_start = x;
-	  y_start = y;
-	  open = 0;
-	}
+        {
+          x_start = x;
+          y_start = y;
+          open = 0;
+        }
       else if (src[i].code == ART_MOVETO_OPEN)
-	open = 1;
+        open = 1;
       if (!open && (i + 1 == size || src[i + 1].code != ART_LINETO))
-	{
-	  x = x_start;
-	  y = y_start;
-	}
+        {
+          x = x_start;
+          y = y_start;
+        }
       new[i].x = x;
       new[i].y = y;
     }

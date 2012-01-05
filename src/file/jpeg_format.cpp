@@ -42,13 +42,13 @@ class JpegFormat : public FileFormat
   class JpegOptions : public FormatOptions
   {
   public:
-    float quality;		// 1.0 maximum quality.
+    float quality;              // 1.0 maximum quality.
   };
 
   const char* onGetName() const { return "jpeg"; }
   const char* onGetExtensions() const { return "jpeg,jpg"; }
   int onGetFlags() const {
-    return 
+    return
       FILE_SUPPORT_LOAD |
       FILE_SUPPORT_SAVE |
       FILE_SUPPORT_RGB |
@@ -144,10 +144,10 @@ bool JpegFormat::onLoad(FileOp* fop)
 
   // Create the image.
   image = fop_sequence_image(fop,
-			     (cinfo.out_color_space == JCS_RGB ? IMAGE_RGB:
-								 IMAGE_GRAYSCALE),
-			     cinfo.output_width,
-			     cinfo.output_height);
+                             (cinfo.out_color_space == JCS_RGB ? IMAGE_RGB:
+                                                                 IMAGE_GRAYSCALE),
+                             cinfo.output_width,
+                             cinfo.output_height);
   if (!image) {
     jpeg_destroy_decompress(&cinfo);
     fclose(file);
@@ -165,7 +165,7 @@ bool JpegFormat::onLoad(FileOp* fop)
 
   for (c=0; c<(int)buffer_height; c++) {
     buffer[c] = (JSAMPROW)base_malloc(sizeof(JSAMPLE) *
-				      cinfo.output_width * cinfo.output_components);
+                                      cinfo.output_width * cinfo.output_components);
     if (!buffer[c]) {
       for (c--; c>=0; c--)
         base_free(buffer[c]);
@@ -298,7 +298,7 @@ bool JpegFormat::onSave(FileOp* fop)
 
   for (c=0; c<(int)buffer_height; c++) {
     buffer[c] = (JSAMPROW)base_malloc(sizeof(JSAMPLE) *
-				      cinfo.image_width * cinfo.num_components);
+                                      cinfo.image_width * cinfo.num_components);
     if (!buffer[c]) {
       fop_error(fop, "Not enough memory for buffer scanlines.\n");
       for (c--; c>=0; c--)
@@ -341,7 +341,7 @@ bool JpegFormat::onSave(FileOp* fop)
       }
     }
     jpeg_write_scanlines(&cinfo, buffer, buffer_height);
-    
+
     fop_progress(fop, (float)(cinfo.next_scanline+1) / (float)(cinfo.image_height));
   }
 
@@ -380,8 +380,8 @@ SharedPtr<FormatOptions> JpegFormat::onGetFormatOptions(FileOp* fop)
     Slider* slider_quality;
     Widget* ok;
     get_widgets(window,
-		"quality", &slider_quality,
-		"ok", &ok, NULL);
+                "quality", &slider_quality,
+                "ok", &ok, NULL);
 
     slider_quality->setValue(jpeg_options->quality * 10.0f);
 

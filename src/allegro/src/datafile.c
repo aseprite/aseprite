@@ -1,6 +1,6 @@
-/*         ______   ___    ___ 
- *        /\  _  \ /\_ \  /\_ \ 
- *        \ \ \L\ \\//\ \ \//\ \      __     __   _ __   ___ 
+/*         ______   ___    ___
+ *        /\  _  \ /\_ \  /\_ \
+ *        \ \ \L\ \\//\ \ \//\ \      __     __   _ __   ___
  *         \ \  __ \ \ \ \  \ \ \   /'__`\ /'_ `\/\`'__\/ __`\
  *          \ \ \/\ \ \_\ \_ \_\ \_/\  __//\ \L\ \ \ \//\ \L\ \
  *           \ \_\ \_\/\____\/\____\ \____\ \____ \ \_\\ \____/
@@ -45,7 +45,7 @@ static void (*datafile_callback)(DATAFILE *) = NULL;
 
 /* load_st_data:
  *  I'm not using this format any more, but files created with the old
- *  version of Allegro might have some bitmaps stored like this. It is 
+ *  version of Allegro might have some bitmaps stored like this. It is
  *  the 4bpp planar system used by the Atari ST low resolution mode.
  */
 static void load_st_data(unsigned char *pos, long size, PACKFILE *f)
@@ -61,12 +61,12 @@ static void load_st_data(unsigned char *pos, long size, PACKFILE *f)
       d3 = pack_mgetw(f);
       d4 = pack_mgetw(f);
       for (c=0; c<16; c++) {
-	 *(pos++) = ((d1 & 0x8000) >> 15) + ((d2 & 0x8000) >> 14) +
-		    ((d3 & 0x8000) >> 13) + ((d4 & 0x8000) >> 12);
-	 d1 <<= 1;
-	 d2 <<= 1;
-	 d3 <<= 1;
-	 d4 <<= 1; 
+         *(pos++) = ((d1 & 0x8000) >> 15) + ((d2 & 0x8000) >> 14) +
+                    ((d3 & 0x8000) >> 13) + ((d4 & 0x8000) >> 12);
+         d1 <<= 1;
+         d2 <<= 1;
+         d3 <<= 1;
+         d4 <<= 1;
       }
       size--;
    }
@@ -134,82 +134,82 @@ static BITMAP *read_bitmap(PACKFILE *f, int bits, int allowconv)
    switch (bits) {
 
       case 4:
-	 /* old format ST data */
-	 load_st_data(bmp->dat, w*h/2, f);
-	 break;
+         /* old format ST data */
+         load_st_data(bmp->dat, w*h/2, f);
+         break;
 
       case 8:
-	 /* 256 color bitmap */
-	 pack_fread(bmp->dat, w*h, f);
+         /* 256 color bitmap */
+         pack_fread(bmp->dat, w*h, f);
 
-	 break;
+         break;
 
       case 15:
-	 /* 15bit hicolor */
-	 for (y=0; y<h; y++) {
-	    p16 = (uint16_t *)bmp->line[y];
+         /* 15bit hicolor */
+         for (y=0; y<h; y++) {
+            p16 = (uint16_t *)bmp->line[y];
 
-	    for (x=0; x<w; x++) {
-	       c = pack_igetw(f);
-	       r = _rgb_scale_5[(c >> 11) & 0x1F]; /* stored as 16 bit */
-	       g = _rgb_scale_6[(c >> 5) & 0x3F];
-	       b = _rgb_scale_5[c & 0x1F];
-	       p16[x] = makecol15(r, g, b);
-	    }
-	 }
-	 break;
+            for (x=0; x<w; x++) {
+               c = pack_igetw(f);
+               r = _rgb_scale_5[(c >> 11) & 0x1F]; /* stored as 16 bit */
+               g = _rgb_scale_6[(c >> 5) & 0x3F];
+               b = _rgb_scale_5[c & 0x1F];
+               p16[x] = makecol15(r, g, b);
+            }
+         }
+         break;
 
       case 16:
-	 /* 16bit hicolor */
-	 for (y=0; y<h; y++) {
-	    p16 = (uint16_t *)bmp->line[y];
+         /* 16bit hicolor */
+         for (y=0; y<h; y++) {
+            p16 = (uint16_t *)bmp->line[y];
 
-	    for (x=0; x<w; x++) {
-	       c = pack_igetw(f);
-	       r = _rgb_scale_5[(c >> 11) & 0x1F];
-	       g = _rgb_scale_6[(c >> 5) & 0x3F];
-	       b = _rgb_scale_5[c & 0x1F];
-	       p16[x] = makecol16(r, g, b);
-	    }
-	 }
-	 break;
+            for (x=0; x<w; x++) {
+               c = pack_igetw(f);
+               r = _rgb_scale_5[(c >> 11) & 0x1F];
+               g = _rgb_scale_6[(c >> 5) & 0x3F];
+               b = _rgb_scale_5[c & 0x1F];
+               p16[x] = makecol16(r, g, b);
+            }
+         }
+         break;
 
       case 24:
-	 /* 24bit truecolor */
-	 for (y=0; y<h; y++) {
-	    for (x=0; x<w; x++) {
-	       r = pack_getc(f);
-	       g = pack_getc(f);
-	       b = pack_getc(f);
+         /* 24bit truecolor */
+         for (y=0; y<h; y++) {
+            for (x=0; x<w; x++) {
+               r = pack_getc(f);
+               g = pack_getc(f);
+               b = pack_getc(f);
 
-	       if (rgba)
-		  pack_getc(f);
+               if (rgba)
+                  pack_getc(f);
 
-	       c = makecol24(r, g, b);
-	       WRITE3BYTES(bmp->line[y] + (x * 3), c);
-	    }
-	 }
-	 break;
+               c = makecol24(r, g, b);
+               WRITE3BYTES(bmp->line[y] + (x * 3), c);
+            }
+         }
+         break;
 
       case 32:
-	 /* 32bit rgba */
-	 for (y=0; y<h; y++) {
-	    p32 = (uint32_t *)bmp->line[y];
+         /* 32bit rgba */
+         for (y=0; y<h; y++) {
+            p32 = (uint32_t *)bmp->line[y];
 
-	    for (x=0; x<w; x++) {
-	       r = pack_getc(f);
-	       g = pack_getc(f);
-	       b = pack_getc(f);
+            for (x=0; x<w; x++) {
+               r = pack_getc(f);
+               g = pack_getc(f);
+               b = pack_getc(f);
 
-	       if (rgba)
-		  a = pack_getc(f);
-	       else
-		  a = 0;
+               if (rgba)
+                  a = pack_getc(f);
+               else
+                  a = 0;
 
-	       p32[x] = makeacol32(r, g, b, a);
-	    }
-	 }
-	 break;
+               p32[x] = makeacol32(r, g, b, a);
+            }
+         }
+         break;
 
    }
 
@@ -217,8 +217,8 @@ static BITMAP *read_bitmap(PACKFILE *f, int bits, int allowconv)
       BITMAP *tmp = bmp;
       bmp = create_bitmap_ex(destbits, w, h);
       if (!bmp) {
-	 *allegro_errno = ENOMEM;
-	 return NULL;
+         *allegro_errno = ENOMEM;
+         return NULL;
       }
       blit(tmp, bmp, 0, 0, 0, 0, bmp->w, bmp->h);
       destroy_bitmap(tmp);
@@ -237,13 +237,13 @@ static FONT *read_font_fixed(PACKFILE *pack, int height, int maxchars)
    FONT *f = NULL;
    FONT_MONO_DATA *mf = NULL;
    FONT_GLYPH **gl = NULL;
-   
+
    int i = 0;
-   
+
    f = _AL_MALLOC(sizeof(FONT));
    mf = _AL_MALLOC(sizeof(FONT_MONO_DATA));
    gl = _AL_MALLOC(sizeof(FONT_GLYPH *) * maxchars);
-   
+
    if (!f || !mf || !gl) {
       _AL_FREE(f);
       _AL_FREE(mf);
@@ -251,34 +251,34 @@ static FONT *read_font_fixed(PACKFILE *pack, int height, int maxchars)
       *allegro_errno = ENOMEM;
       return NULL;
    }
-   
+
    f->data = mf;
    f->height = height;
    f->vtable = font_vtable_mono;
-   
+
    mf->begin = ' ';
    mf->end = ' ' + maxchars;
    mf->next = NULL;
    mf->glyphs = gl;
-   
+
    memset(gl, 0, sizeof(FONT_GLYPH *) * maxchars);
-   
+
    for (i = 0; i < maxchars; i++) {
       FONT_GLYPH *g = _AL_MALLOC(sizeof(FONT_GLYPH) + height);
-      
+
       if (!g) {
-	 destroy_font(f);
-	 *allegro_errno = ENOMEM;
-	 return NULL;
+         destroy_font(f);
+         *allegro_errno = ENOMEM;
+         return NULL;
       }
-      
+
       gl[i] = g;
       g->w = 8;
       g->h = height;
-      
+
       pack_fread(g->dat, height, pack);
    }
-   
+
    return f;
 }
 
@@ -293,11 +293,11 @@ static FONT *read_font_prop(PACKFILE *pack, int maxchars)
    FONT_COLOR_DATA *cf = NULL;
    BITMAP **bits = NULL;
    int i = 0, h = 0;
-   
+
    f = _AL_MALLOC(sizeof(FONT));
    cf = _AL_MALLOC(sizeof(FONT_COLOR_DATA));
    bits = _AL_MALLOC(sizeof(BITMAP *) * maxchars);
-   
+
    if (!f || !cf || !bits) {
       _AL_FREE(f);
       _AL_FREE(cf);
@@ -305,43 +305,43 @@ static FONT *read_font_prop(PACKFILE *pack, int maxchars)
       *allegro_errno = ENOMEM;
       return NULL;
    }
-   
+
    f->data = cf;
    f->vtable = font_vtable_color;
-   
+
    cf->begin = ' ';
    cf->end = ' ' + maxchars;
    cf->next = NULL;
    cf->bitmaps = bits;
-   
+
    memset(bits, 0, sizeof(BITMAP *) * maxchars);
-   
+
    for (i = 0; i < maxchars; i++) {
       if (pack_feof(pack)) break;
-      
+
       bits[i] = read_bitmap(pack, 8, FALSE);
       if (!bits[i]) {
-	 destroy_font(f);
-	 return NULL;
+         destroy_font(f);
+         return NULL;
       }
-      
+
       if (bits[i]->h > h) h = bits[i]->h;
    }
-   
+
    while (i < maxchars) {
       bits[i] = create_bitmap_ex(8, 8, h);
       if (!bits[i]) {
-	 destroy_font(f);
-	 *allegro_errno = ENOMEM;
-	 return NULL;
+         destroy_font(f);
+         *allegro_errno = ENOMEM;
+         return NULL;
       }
-      
+
       clear_bitmap(bits[i]);
       i++;
    }
-   
+
    f->height = h;
-   
+
    return f;
 }
 
@@ -355,51 +355,51 @@ static FONT_MONO_DATA *read_font_mono(PACKFILE *f, int *hmax)
    FONT_MONO_DATA *mf = NULL;
    int max = 0, i = 0;
    FONT_GLYPH **gl = NULL;
-   
+
    mf = _AL_MALLOC(sizeof(FONT_MONO_DATA));
    if (!mf) {
       *allegro_errno = ENOMEM;
       return NULL;
    }
-   
+
    mf->begin = pack_mgetl(f);
    mf->end = pack_mgetl(f) + 1;
    mf->next = NULL;
    max = mf->end - mf->begin;
-   
+
    mf->glyphs = gl = _AL_MALLOC(sizeof(FONT_GLYPH *) * max);
    if (!gl) {
       _AL_FREE(mf);
       *allegro_errno = ENOMEM;
       return NULL;
    }
-   
+
    for (i = 0; i < max; i++) {
       int w, h, sz;
-      
+
       w = pack_mgetw(f);
       h = pack_mgetw(f);
       sz = ((w + 7) / 8) * h;
-      
+
       if (h > *hmax) *hmax = h;
-      
+
       gl[i] = _AL_MALLOC(sizeof(FONT_GLYPH) + sz);
       if (!gl[i]) {
-	 while (i) {
-	    i--;
-	    _AL_FREE(mf->glyphs[i]);
-	 }
-	 _AL_FREE(mf);
-	 _AL_FREE(mf->glyphs);
-	 *allegro_errno = ENOMEM;
-	 return NULL;
+         while (i) {
+            i--;
+            _AL_FREE(mf->glyphs[i]);
+         }
+         _AL_FREE(mf);
+         _AL_FREE(mf->glyphs);
+         *allegro_errno = ENOMEM;
+         return NULL;
       }
-      
+
       gl[i]->w = w;
       gl[i]->h = h;
       pack_fread(gl[i]->dat, sz, f);
    }
-   
+
    return mf;
 }
 
@@ -413,13 +413,13 @@ static FONT_COLOR_DATA *read_font_color(PACKFILE *pack, int *hmax, int depth)
    FONT_COLOR_DATA *cf = NULL;
    int max = 0, i = 0;
    BITMAP **bits = NULL;
-   
+
    cf = _AL_MALLOC(sizeof(FONT_COLOR_DATA));
    if (!cf) {
       *allegro_errno = ENOMEM;
       return NULL;
    }
-   
+
    cf->begin = pack_mgetl(pack);
    cf->end = pack_mgetl(pack) + 1;
    cf->next = NULL;
@@ -438,18 +438,18 @@ static FONT_COLOR_DATA *read_font_color(PACKFILE *pack, int *hmax, int depth)
        */
       bits[i] = read_bitmap(pack, depth, depth!=8);
       if (!bits[i]) {
-	 while (i) {
-	    i--;
-	    destroy_bitmap(bits[i]);
-	 }
-	 _AL_FREE(bits);
-	 _AL_FREE(cf);
-	 *allegro_errno = ENOMEM;
-	 return 0;
+         while (i) {
+            i--;
+            destroy_bitmap(bits[i]);
+         }
+         _AL_FREE(bits);
+         _AL_FREE(cf);
+         *allegro_errno = ENOMEM;
+         return 0;
       }
-      
-      if (bits[i]->h > *hmax) 
-	 *hmax = bits[i]->h;
+
+      if (bits[i]->h > *hmax)
+         *hmax = bits[i]->h;
    }
 
    return cf;
@@ -479,44 +479,44 @@ static FONT *read_font(PACKFILE *pack)
    while (num_ranges--) {
       depth = pack_getc(pack);
       if (depth == 1 || depth == 255) {
-	 FONT_MONO_DATA *mf = 0, *iter = (FONT_MONO_DATA *)f->data;
-	 
-	 f->vtable = font_vtable_mono;
+         FONT_MONO_DATA *mf = 0, *iter = (FONT_MONO_DATA *)f->data;
 
-	 mf = read_font_mono(pack, &height);
-	 if (!mf) {
-	    destroy_font(f);
-	    return NULL;
-	 }
+         f->vtable = font_vtable_mono;
 
-	 if (!iter)
-	    f->data = mf;
-	 else {
-	    while (iter->next) iter = iter->next;
-	    iter->next = mf;
-	 }
-      } 
+         mf = read_font_mono(pack, &height);
+         if (!mf) {
+            destroy_font(f);
+            return NULL;
+         }
+
+         if (!iter)
+            f->data = mf;
+         else {
+            while (iter->next) iter = iter->next;
+            iter->next = mf;
+         }
+      }
       else {
-	 FONT_COLOR_DATA *cf = NULL, *iter = (FONT_COLOR_DATA *)f->data;
-         
+         FONT_COLOR_DATA *cf = NULL, *iter = (FONT_COLOR_DATA *)f->data;
+
          /* Older versions of Allegro use `0' to indicate a colour font */
          if (depth == 0)
             depth = 8;
 
-	 f->vtable = font_vtable_color;
+         f->vtable = font_vtable_color;
 
-	 cf = read_font_color(pack, &height, depth);
-	 if (!cf) {
-	    destroy_font(f);
-	    return NULL;
-	 }
+         cf = read_font_color(pack, &height, depth);
+         if (!cf) {
+            destroy_font(f);
+            return NULL;
+         }
 
-	 if (!iter) 
-	    f->data = cf;
-	 else {
-	    while (iter->next) iter = iter->next;
-	    iter->next = cf;
-	 }
+         if (!iter)
+            f->data = cf;
+         else {
+            while (iter->next) iter = iter->next;
+            iter->next = cf;
+         }
       }
    }
 
@@ -552,7 +552,7 @@ static RGB *read_palette(PACKFILE *f, int size)
       c++;
       x++;
       if (x >= size)
-	 x = 0;
+         x = 0;
    }
 
    return p;
@@ -561,7 +561,7 @@ static RGB *read_palette(PACKFILE *f, int size)
 
 
 /* read_rle_sprite:
- *  Reads an RLE compressed sprite from a file, allocating memory for it. 
+ *  Reads an RLE compressed sprite from a file, allocating memory for it.
  */
 static RLE_SPRITE *read_rle_sprite(PACKFILE *f, int bits)
 {
@@ -599,95 +599,95 @@ static RLE_SPRITE *read_rle_sprite(PACKFILE *f, int bits)
    switch (bits) {
 
       case 8:
-	 /* easy! */
-	 pack_fread(s->dat, size, f);
-	 break;
+         /* easy! */
+         pack_fread(s->dat, size, f);
+         break;
 
       case 15:
       case 16:
-	 /* read hicolor data */
-	 p16 = (signed short *)s->dat;
-	 eol_marker = (bits == 15) ? MASK_COLOR_15 : MASK_COLOR_16;
+         /* read hicolor data */
+         p16 = (signed short *)s->dat;
+         eol_marker = (bits == 15) ? MASK_COLOR_15 : MASK_COLOR_16;
 
-	 for (y=0; y<h; y++) {
-	    s16 = pack_igetw(f);
+         for (y=0; y<h; y++) {
+            s16 = pack_igetw(f);
 
-	    while ((unsigned short)s16 != MASK_COLOR_16) {
-	       if (s16 < 0) {
-		  /* skip count */
-		  *p16 = s16;
-		  p16++;
-	       }
-	       else {
-		  /* solid run */
-		  x = s16;
-		  *p16 = s16;
-		  p16++;
+            while ((unsigned short)s16 != MASK_COLOR_16) {
+               if (s16 < 0) {
+                  /* skip count */
+                  *p16 = s16;
+                  p16++;
+               }
+               else {
+                  /* solid run */
+                  x = s16;
+                  *p16 = s16;
+                  p16++;
 
-		  while (x-- > 0) {
-		     c = pack_igetw(f);
-		     r = _rgb_scale_5[(c >> 11) & 0x1F];
-		     g = _rgb_scale_6[(c >> 5) & 0x3F];
-		     b = _rgb_scale_5[c & 0x1F];
-		     *p16 = makecol_depth(bits, r, g, b);
-		     p16++;
-		  }
-	       }
+                  while (x-- > 0) {
+                     c = pack_igetw(f);
+                     r = _rgb_scale_5[(c >> 11) & 0x1F];
+                     g = _rgb_scale_6[(c >> 5) & 0x3F];
+                     b = _rgb_scale_5[c & 0x1F];
+                     *p16 = makecol_depth(bits, r, g, b);
+                     p16++;
+                  }
+               }
 
-	       s16 = pack_igetw(f);
-	    }
+               s16 = pack_igetw(f);
+            }
 
-	    /* end of line */
-	    *p16 = eol_marker;
-	    p16++;
-	 }
-	 break;
+            /* end of line */
+            *p16 = eol_marker;
+            p16++;
+         }
+         break;
 
       case 24:
       case 32:
-	 /* read truecolor data */
-	 p32 = (int32_t *)s->dat;
-	 eol_marker = (bits == 24) ? MASK_COLOR_24 : MASK_COLOR_32;
+         /* read truecolor data */
+         p32 = (int32_t *)s->dat;
+         eol_marker = (bits == 24) ? MASK_COLOR_24 : MASK_COLOR_32;
 
-	 for (y=0; y<h; y++) {
-	    c = pack_igetl(f);
+         for (y=0; y<h; y++) {
+            c = pack_igetl(f);
 
-	    while ((uint32_t)c != MASK_COLOR_32) {
-	       if (c < 0) {
-		  /* skip count */
-		  *p32 = c;
-		  p32++;
-	       }
-	       else {
-		  /* solid run */
-		  x = c;
-		  *p32 = c;
-		  p32++;
+            while ((uint32_t)c != MASK_COLOR_32) {
+               if (c < 0) {
+                  /* skip count */
+                  *p32 = c;
+                  p32++;
+               }
+               else {
+                  /* solid run */
+                  x = c;
+                  *p32 = c;
+                  p32++;
 
-		  while (x-- > 0) {
-		     r = pack_getc(f);
-		     g = pack_getc(f);
-		     b = pack_getc(f);
+                  while (x-- > 0) {
+                     r = pack_getc(f);
+                     g = pack_getc(f);
+                     b = pack_getc(f);
 
-		     if (rgba)
-			a = pack_getc(f);
-		     else
-			a = 0;
+                     if (rgba)
+                        a = pack_getc(f);
+                     else
+                        a = 0;
 
-		     *p32 = makeacol_depth(bits, r, g, b, a);
+                     *p32 = makeacol_depth(bits, r, g, b, a);
 
-		     p32++;
-		  }
-	       }
+                     p32++;
+                  }
+               }
 
-	       c = pack_igetl(f);
-	    }
+               c = pack_igetl(f);
+            }
 
-	    /* end of line */
-	    *p32 = eol_marker;
-	    p32++;
-	 }
-	 break;
+            /* end of line */
+            *p32 = eol_marker;
+            p32++;
+         }
+         break;
    }
 
    destbits = _color_load_depth(bits, rgba);
@@ -695,9 +695,9 @@ static RLE_SPRITE *read_rle_sprite(PACKFILE *f, int bits)
    if (destbits != bits) {
       b1 = create_bitmap_ex(bits, s->w, s->h);
       if (!b1) {
-	 destroy_rle_sprite(s);
-	 *allegro_errno = ENOMEM;
-	 return NULL;
+         destroy_rle_sprite(s);
+         *allegro_errno = ENOMEM;
+         return NULL;
       }
 
       clear_to_color(b1, bitmap_mask_color(b1));
@@ -705,10 +705,10 @@ static RLE_SPRITE *read_rle_sprite(PACKFILE *f, int bits)
 
       b2 = create_bitmap_ex(destbits, s->w, s->h);
       if (!b2) {
-	 destroy_rle_sprite(s);
-	 destroy_bitmap(b1);
-	 *allegro_errno = ENOMEM;
-	 return NULL;
+         destroy_rle_sprite(s);
+         destroy_bitmap(b1);
+         *allegro_errno = ENOMEM;
+         return NULL;
       }
 
       blit(b1, b2, 0, 0, 0, 0, s->w, s->h);
@@ -790,100 +790,100 @@ static DATAFILE *read_old_datafile(PACKFILE *f, void (*callback)(DATAFILE *))
 
       switch (type) {
 
-	 case V1_DAT_FONT: 
-	 case V1_DAT_FONT_8x8: 
-	    dat[c].type = DAT_FONT;
-	    dat[c].dat = read_font_fixed(f, 8, OLD_FONT_SIZE);
-	    dat[c].size = 0;
-	    break;
+         case V1_DAT_FONT:
+         case V1_DAT_FONT_8x8:
+            dat[c].type = DAT_FONT;
+            dat[c].dat = read_font_fixed(f, 8, OLD_FONT_SIZE);
+            dat[c].size = 0;
+            break;
 
-	 case V1_DAT_FONT_PROP:
-	    dat[c].type = DAT_FONT;
-	    dat[c].dat = read_font_prop(f, OLD_FONT_SIZE);
-	    dat[c].size = 0;
-	    break;
+         case V1_DAT_FONT_PROP:
+            dat[c].type = DAT_FONT;
+            dat[c].dat = read_font_prop(f, OLD_FONT_SIZE);
+            dat[c].size = 0;
+            break;
 
-	 case V1_DAT_BITMAP:
-	 case V1_DAT_BITMAP_256:
-	    dat[c].type = DAT_BITMAP;
-	    dat[c].dat = read_bitmap(f, 8, TRUE);
-	    dat[c].size = 0;
-	    break;
+         case V1_DAT_BITMAP:
+         case V1_DAT_BITMAP_256:
+            dat[c].type = DAT_BITMAP;
+            dat[c].dat = read_bitmap(f, 8, TRUE);
+            dat[c].size = 0;
+            break;
 
-	 case V1_DAT_BITMAP_16:
-	    dat[c].type = DAT_BITMAP;
-	    dat[c].dat = read_bitmap(f, 4, FALSE);
-	    dat[c].size = 0;
-	    break;
+         case V1_DAT_BITMAP_16:
+            dat[c].type = DAT_BITMAP;
+            dat[c].dat = read_bitmap(f, 4, FALSE);
+            dat[c].size = 0;
+            break;
 
-	 case V1_DAT_SPRITE_256:
-	    dat[c].type = DAT_BITMAP;
-	    pack_mgetw(f);
-	    dat[c].dat = read_bitmap(f, 8, TRUE);
-	    dat[c].size = 0;
-	    break;
+         case V1_DAT_SPRITE_256:
+            dat[c].type = DAT_BITMAP;
+            pack_mgetw(f);
+            dat[c].dat = read_bitmap(f, 8, TRUE);
+            dat[c].size = 0;
+            break;
 
-	 case V1_DAT_SPRITE_16:
-	    dat[c].type = DAT_BITMAP;
-	    pack_mgetw(f);
-	    dat[c].dat = read_bitmap(f, 4, FALSE);
-	    dat[c].size = 0;
-	    break;
+         case V1_DAT_SPRITE_16:
+            dat[c].type = DAT_BITMAP;
+            pack_mgetw(f);
+            dat[c].dat = read_bitmap(f, 4, FALSE);
+            dat[c].size = 0;
+            break;
 
-	 case V1_DAT_PALETTE:
-	 case V1_DAT_PALETTE_256:
-	    dat[c].type = DAT_PALETTE;
-	    dat[c].dat = read_palette(f, PAL_SIZE);
-	    dat[c].size = sizeof(PALETTE);
-	    break;
+         case V1_DAT_PALETTE:
+         case V1_DAT_PALETTE_256:
+            dat[c].type = DAT_PALETTE;
+            dat[c].dat = read_palette(f, PAL_SIZE);
+            dat[c].size = sizeof(PALETTE);
+            break;
 
-	 case V1_DAT_PALETTE_16:
-	    dat[c].type = DAT_PALETTE;
-	    dat[c].dat = read_palette(f, 16);
-	    dat[c].size = 0;
-	    break;
+         case V1_DAT_PALETTE_16:
+            dat[c].type = DAT_PALETTE;
+            dat[c].dat = read_palette(f, 16);
+            dat[c].size = 0;
+            break;
 
-	 case V1_DAT_RLE_SPRITE:
-	    dat[c].type = DAT_RLE_SPRITE;
-	    dat[c].dat = read_rle_sprite(f, 8);
-	    dat[c].size = 0;
-	    break;
+         case V1_DAT_RLE_SPRITE:
+            dat[c].type = DAT_RLE_SPRITE;
+            dat[c].dat = read_rle_sprite(f, 8);
+            dat[c].size = 0;
+            break;
 
-	 case V1_DAT_FLI:
-	    dat[c].type = DAT_FLI;
-	    dat[c].size = pack_mgetl(f);
-	    dat[c].dat = read_block(f, dat[c].size, 0);
-	    break;
+         case V1_DAT_FLI:
+            dat[c].type = DAT_FLI;
+            dat[c].size = pack_mgetl(f);
+            dat[c].dat = read_block(f, dat[c].size, 0);
+            break;
 
-	 case V1_DAT_C_SPRITE:
-	    dat[c].type = DAT_C_SPRITE;
-	    dat[c].dat = read_compiled_sprite(f, FALSE, 8);
-	    dat[c].size = 0;
-	    break;
+         case V1_DAT_C_SPRITE:
+            dat[c].type = DAT_C_SPRITE;
+            dat[c].dat = read_compiled_sprite(f, FALSE, 8);
+            dat[c].size = 0;
+            break;
 
-	 case V1_DAT_XC_SPRITE:
-	    dat[c].type = DAT_XC_SPRITE;
-	    dat[c].dat = read_compiled_sprite(f, TRUE, 8);
-	    dat[c].size = 0;
-	    break;
+         case V1_DAT_XC_SPRITE:
+            dat[c].type = DAT_XC_SPRITE;
+            dat[c].dat = read_compiled_sprite(f, TRUE, 8);
+            dat[c].size = 0;
+            break;
 
-	 default:
-	    dat[c].type = DAT_DATA;
-	    dat[c].size = pack_mgetl(f);
-	    dat[c].dat = read_block(f, dat[c].size, 0);
-	    break;
+         default:
+            dat[c].type = DAT_DATA;
+            dat[c].size = pack_mgetl(f);
+            dat[c].dat = read_block(f, dat[c].size, 0);
+            break;
       }
 
       if (*allegro_errno) {
-	 if (!dat[c].dat)
-	    dat[c].type = DAT_END;
-	 unload_datafile(dat);
-	 pack_fclose(f);
-	 return NULL;
+         if (!dat[c].dat)
+            dat[c].type = DAT_END;
+         unload_datafile(dat);
+         pack_fclose(f);
+         return NULL;
       }
 
       if (callback)
-	 callback(dat+c);
+         callback(dat+c);
    }
 
    return dat;
@@ -983,10 +983,10 @@ static int load_object(DATAFILE *obj, PACKFILE *f, int type)
 
       /* look for a load function */
       for (i=0; i<MAX_DATAFILE_TYPES; i++) {
-	 if (_datafile_type[i].type == type) {
-	    obj->dat = _datafile_type[i].load(ff, d);
-	    goto Found;
-	 }
+         if (_datafile_type[i].type == type) {
+            obj->dat = _datafile_type[i].load(ff, d);
+            goto Found;
+         }
       }
 
       /* if not found, load binary data */
@@ -996,7 +996,7 @@ static int load_object(DATAFILE *obj, PACKFILE *f, int type)
       pack_fclose_chunk(ff);
 
       if (!obj->dat)
-	 return -1;
+         return -1;
 
       obj->type = type;
       obj->size = d;
@@ -1037,8 +1037,8 @@ int _load_property(DATAFILE_PROPERTY *prop, PACKFILE *f)
       int length = uconvert_size(prop->dat, U_UTF8, U_CURRENT);
       p = _AL_MALLOC_ATOMIC(length);
       if (!p) {
-	 *allegro_errno = ENOMEM;
-	 return -1;
+         *allegro_errno = ENOMEM;
+         return -1;
       }
 
       do_uconvert(prop->dat, U_UTF8, p, U_CURRENT, length);
@@ -1067,8 +1067,8 @@ int _add_property(DATAFILE_PROPERTY **list, DATAFILE_PROPERTY *prop)
    if (*list) {
       iter = *list;
       while (iter->type != DAT_END) {
-	 length++;
-	 iter++;
+         length++;
+         iter++;
       }
    }
 
@@ -1100,7 +1100,7 @@ void _destroy_property_list(DATAFILE_PROPERTY *list)
 
    for (c=0; list[c].type != DAT_END; c++) {
       if (list[c].dat)
-	 _AL_FREE(list[c].dat);
+         _AL_FREE(list[c].dat);
    }
 
    _AL_FREE(list);
@@ -1133,25 +1133,25 @@ static void *load_file_object(PACKFILE *f, long size)
       type = pack_mgetl(f);
 
       if (type == DAT_PROPERTY) {
-	 if ((_load_property(&prop, f) != 0) || (_add_property(&list, &prop) != 0)) {
-	    failed = TRUE;
-	    break;
-	 }
+         if ((_load_property(&prop, f) != 0) || (_add_property(&list, &prop) != 0)) {
+            failed = TRUE;
+            break;
+         }
       }
       else {
-	 if (load_object(&dat[c], f, type) != 0) {
-	    failed = TRUE;
-	    break;
-	 }
+         if (load_object(&dat[c], f, type) != 0) {
+            failed = TRUE;
+            break;
+         }
 
-	 /* attach the property list to the object */
-	 dat[c].prop = list;
-	 list = NULL;
+         /* attach the property list to the object */
+         dat[c].prop = list;
+         list = NULL;
 
-	 if (datafile_callback)
-	    datafile_callback(dat+c);
+         if (datafile_callback)
+            datafile_callback(dat+c);
 
-	 c++;
+         c++;
       }
    }
 
@@ -1176,7 +1176,7 @@ static void *load_file_object(PACKFILE *f, long size)
 
 
 /* load_datafile:
- *  Loads an entire data file into memory, and returns a pointer to it. 
+ *  Loads an entire data file into memory, and returns a pointer to it.
  *  On error, sets errno and returns NULL.
  */
 DATAFILE *load_datafile(AL_CONST char *filename)
@@ -1188,7 +1188,7 @@ DATAFILE *load_datafile(AL_CONST char *filename)
 
 
 /* load_datafile_callback:
- *  Loads an entire data file into memory, and returns a pointer to it. 
+ *  Loads an entire data file into memory, and returns a pointer to it.
  *  On error, sets errno and returns NULL.
  */
 DATAFILE *load_datafile_callback(AL_CONST char *filename, void (*callback)(DATAFILE *))
@@ -1219,7 +1219,7 @@ DATAFILE *load_datafile_callback(AL_CONST char *filename, void (*callback)(DATAF
       dat = NULL;
 
    pack_fclose(f);
-   return dat; 
+   return dat;
 }
 
 
@@ -1316,7 +1316,7 @@ DATAFILE *load_datafile_object(AL_CONST char *filename, AL_CONST char *objectnam
 
    ASSERT(filename);
    ASSERT(objectname);
-  
+
    /* concatenate to filename#objectname */
    ustrzcpy(parent, sizeof(parent), filename);
 
@@ -1324,17 +1324,17 @@ DATAFILE *load_datafile_object(AL_CONST char *filename, AL_CONST char *objectnam
       ustrzcat(parent, sizeof(parent), uconvert_ascii("#", tmp));
 
    ustrzcat(parent, sizeof(parent), objectname);
-   
+
    /* split into path and actual objectname (for nested files) */
    prevptr = bufptr = parent;
    separator = NULL;
    while ((c = ugetx(&bufptr)) != 0) {
       if ((c == '#') || (c == '/') || (c == OTHER_PATH_SEPARATOR))
-	 separator = prevptr;
+         separator = prevptr;
 
       prevptr = bufptr;
    }
-   
+
    ustrzcpy(child, sizeof(child), separator + uwidth (separator));
 
    if (separator == parent)
@@ -1369,46 +1369,46 @@ DATAFILE *load_datafile_object(AL_CONST char *filename, AL_CONST char *objectnam
       type = pack_mgetl(f);
 
       if (type == DAT_PROPERTY) {
-	 if ((_load_property(&prop, f) != 0) || (_add_property(&list, &prop) != 0))
-	    break;
+         if ((_load_property(&prop, f) != 0) || (_add_property(&list, &prop) != 0))
+            break;
 
-	 if ((prop.type == DAT_NAME) && (ustricmp(prop.dat, child) == 0))
-	    found = TRUE;
+         if ((prop.type == DAT_NAME) && (ustricmp(prop.dat, child) == 0))
+            found = TRUE;
       }
       else {
-	 if (found) {
-	    /* we have found the object, load it */
-	    dat = _AL_MALLOC(sizeof(DATAFILE));
-	    if (!dat) {
-	       *allegro_errno = ENOMEM;
-	       break;
-	    }
+         if (found) {
+            /* we have found the object, load it */
+            dat = _AL_MALLOC(sizeof(DATAFILE));
+            if (!dat) {
+               *allegro_errno = ENOMEM;
+               break;
+            }
 
-	    if (load_object(dat, f, type) != 0) {
-	       _AL_FREE(dat);
-	       dat = NULL;
-	       break;
-	    }
+            if (load_object(dat, f, type) != 0) {
+               _AL_FREE(dat);
+               dat = NULL;
+               break;
+            }
 
-	    /* attach the property list to the object */
-	    dat->prop = list;
-	    list = NULL;
+            /* attach the property list to the object */
+            dat->prop = list;
+            list = NULL;
 
-	    break;
-	 }
-	 else {
-	    /* skip an unwanted object */
-	    size = pack_mgetl(f);
-	    pack_fseek(f, size+4);  /* '4' for the chunk size */
+            break;
+         }
+         else {
+            /* skip an unwanted object */
+            size = pack_mgetl(f);
+            pack_fseek(f, size+4);  /* '4' for the chunk size */
 
-	    /* destroy the property list */
-	    if (list) {
-	       _destroy_property_list(list);
-	       list = NULL;
-	    }
+            /* destroy the property list */
+            if (list) {
+               _destroy_property_list(list);
+               list = NULL;
+            }
 
-	    c++;
-	 }
+            c++;
+         }
       }
    }
 
@@ -1485,13 +1485,13 @@ void _unload_datafile_object(DATAFILE *dat)
    /* look for a destructor function */
    for (i=0; i<MAX_DATAFILE_TYPES; i++) {
       if (_datafile_type[i].type == dat->type) {
-	 if (dat->dat) {
-	    if (_datafile_type[i].destroy)
-	       _datafile_type[i].destroy(dat->dat);
-	    else
-	       _AL_FREE(dat->dat);
-	 }
-	 return;
+         if (dat->dat) {
+            if (_datafile_type[i].destroy)
+               _datafile_type[i].destroy(dat->dat);
+            else
+               _AL_FREE(dat->dat);
+         }
+         return;
       }
    }
 
@@ -1511,7 +1511,7 @@ void unload_datafile(DATAFILE *dat)
 
    if (dat) {
       for (i=0; dat[i].type != DAT_END; i++)
-	 _unload_datafile_object(dat+i);
+         _unload_datafile_object(dat+i);
 
       _AL_FREE(dat);
    }
@@ -1562,8 +1562,8 @@ DATAFILE *find_datafile_object(AL_CONST DATAFILE *dat, AL_CONST char *objectname
 
    while ((c = ugetxc(&objectname)) != 0) {
       if ((c == '#') || (c == '/') || (c == OTHER_PATH_SEPARATOR)) {
-	 recurse = TRUE;
-	 break;
+         recurse = TRUE;
+         break;
       }
       pos += usetc(name+pos, c);
    }
@@ -1573,19 +1573,19 @@ DATAFILE *find_datafile_object(AL_CONST DATAFILE *dat, AL_CONST char *objectname
    /* search for the requested object */
    for (pos=0; dat[pos].type != DAT_END; pos++) {
       if (ustricmp(name, get_datafile_property(dat+pos, DAT_NAME)) == 0) {
-	 if (recurse) {
-	    if (dat[pos].type == DAT_FILE)
-	       return find_datafile_object(dat[pos].dat, objectname);
-	    else
-	       return NULL;
-	 }
-	 else
-	    return (DATAFILE*)dat+pos;
+         if (recurse) {
+            if (dat[pos].type == DAT_FILE)
+               return find_datafile_object(dat[pos].dat, objectname);
+            else
+               return NULL;
+         }
+         else
+            return (DATAFILE*)dat+pos;
       }
    }
 
    /* oh dear, the object isn't there... */
-   return NULL; 
+   return NULL;
 }
 
 
@@ -1602,10 +1602,10 @@ AL_CONST char *get_datafile_property(AL_CONST DATAFILE *dat, int type)
    prop = dat->prop;
    if (prop) {
       while (prop->type != DAT_END) {
-	 if (prop->type == type)
-	    return (prop->dat) ? prop->dat : empty_string;
+         if (prop->type == type)
+            return (prop->dat) ? prop->dat : empty_string;
 
-	 prop++;
+         prop++;
       }
    }
 
@@ -1641,294 +1641,294 @@ void fixup_datafile(DATAFILE *data)
 
       switch (data[i].type) {
 
-	 case DAT_BITMAP:
-	    /* fix up a bitmap object */
-	    bmp = data[i].dat;
-	    bpp = bitmap_color_depth(bmp);
+         case DAT_BITMAP:
+            /* fix up a bitmap object */
+            bmp = data[i].dat;
+            bpp = bitmap_color_depth(bmp);
 
-	    switch (bpp) {
+            switch (bpp) {
 
-	    #ifdef ALLEGRO_COLOR16
+            #ifdef ALLEGRO_COLOR16
 
-	       case 15:
-		  /* fix up a 15 bit hicolor bitmap */
-		  if (_color_depth == 16) {
-		     GFX_VTABLE *vtable = _get_vtable(16);
+               case 15:
+                  /* fix up a 15 bit hicolor bitmap */
+                  if (_color_depth == 16) {
+                     GFX_VTABLE *vtable = _get_vtable(16);
 
-		     if (vtable != NULL) {
-			depth = 16;
-			bmp->vtable = vtable;
-		     }
-		     else
-			depth = 15;
-		  }
-		  else
-		     depth = 15;
+                     if (vtable != NULL) {
+                        depth = 16;
+                        bmp->vtable = vtable;
+                     }
+                     else
+                        depth = 15;
+                  }
+                  else
+                     depth = 15;
 
-		  for (y=0; y<bmp->h; y++) {
-		     p16 = (unsigned short *)bmp->line[y];
+                  for (y=0; y<bmp->h; y++) {
+                     p16 = (unsigned short *)bmp->line[y];
 
-		     for (x=0; x<bmp->w; x++) {
-			c = p16[x];
-			r = _rgb_scale_5[c & 0x1F];
-			g = _rgb_scale_5[(c >> 5) & 0x1F];
-			b = _rgb_scale_5[(c >> 10) & 0x1F];
-			p16[x] = makecol_depth(depth, r, g, b);
-		     }
-		  }
-		  break;
-
-
-	       case 16:
-		  /* fix up a 16 bit hicolor bitmap */
-		  if (_color_depth == 15) {
-		     GFX_VTABLE *vtable = _get_vtable(15);
-
-		     if (vtable != NULL) {
-			depth = 15;
-			bmp->vtable = vtable;
-		     }
-		     else
-			depth = 16;
-		  }
-		  else
-		     depth = 16;
-
-		  for (y=0; y<bmp->h; y++) {
-		     p16 = (unsigned short *)bmp->line[y];
-
-		     for (x=0; x<bmp->w; x++) {
-			c = p16[x];
-			r = _rgb_scale_5[c & 0x1F];
-			g = _rgb_scale_6[(c >> 5) & 0x3F];
-			b = _rgb_scale_5[(c >> 11) & 0x1F];
-			if (_color_conv & COLORCONV_KEEP_TRANS && depth == 15 &&
-			   c == 0xf83f) g = 8; /* don't end up as mask color */
-			p16[x] = makecol_depth(depth, r, g, b);
-		     }
-		  }
-		  break;
-
-	    #endif
+                     for (x=0; x<bmp->w; x++) {
+                        c = p16[x];
+                        r = _rgb_scale_5[c & 0x1F];
+                        g = _rgb_scale_5[(c >> 5) & 0x1F];
+                        b = _rgb_scale_5[(c >> 10) & 0x1F];
+                        p16[x] = makecol_depth(depth, r, g, b);
+                     }
+                  }
+                  break;
 
 
-	    #ifdef ALLEGRO_COLOR24
+               case 16:
+                  /* fix up a 16 bit hicolor bitmap */
+                  if (_color_depth == 15) {
+                     GFX_VTABLE *vtable = _get_vtable(15);
 
-	       case 24:
-		  /* fix up a 24 bit truecolor bitmap */
-		  for (y=0; y<bmp->h; y++) {
-		     p8 = bmp->line[y];
+                     if (vtable != NULL) {
+                        depth = 15;
+                        bmp->vtable = vtable;
+                     }
+                     else
+                        depth = 16;
+                  }
+                  else
+                     depth = 16;
 
-		     for (x=0; x<bmp->w; x++) {
-			c = READ3BYTES(p8+x*3);
-			r = (c & 0xFF);
-			g = (c >> 8) & 0xFF;
-			b = (c >> 16) & 0xFF;
-			WRITE3BYTES(p8+x*3, makecol24(r, g, b));
-		     }
-		  }
-		  break;
+                  for (y=0; y<bmp->h; y++) {
+                     p16 = (unsigned short *)bmp->line[y];
 
-	    #endif
+                     for (x=0; x<bmp->w; x++) {
+                        c = p16[x];
+                        r = _rgb_scale_5[c & 0x1F];
+                        g = _rgb_scale_6[(c >> 5) & 0x3F];
+                        b = _rgb_scale_5[(c >> 11) & 0x1F];
+                        if (_color_conv & COLORCONV_KEEP_TRANS && depth == 15 &&
+                           c == 0xf83f) g = 8; /* don't end up as mask color */
+                        p16[x] = makecol_depth(depth, r, g, b);
+                     }
+                  }
+                  break;
 
-
-	    #ifdef ALLEGRO_COLOR32
-
-	       case 32:
-		  /* fix up a 32 bit truecolor bitmap */
-		  for (y=0; y<bmp->h; y++) {
-		     p32 = (uint32_t *)bmp->line[y];
-
-		     for (x=0; x<bmp->w; x++) {
-			c = p32[x];
-			r = (c & 0xFF);
-			g = (c >> 8) & 0xFF;
-			b = (c >> 16) & 0xFF;
-			a = (c >> 24) & 0xFF;
-			p32[x] = makeacol32(r, g, b, a);
-		     }
-		  }
-		  break;
-
-	    #endif
-
-	    }
-	    break;
+            #endif
 
 
-	 case DAT_RLE_SPRITE:
-	    /* fix up an RLE sprite object */
-	    rle = data[i].dat;
-	    bpp = rle->color_depth;
+            #ifdef ALLEGRO_COLOR24
 
-	    switch (bpp) {
+               case 24:
+                  /* fix up a 24 bit truecolor bitmap */
+                  for (y=0; y<bmp->h; y++) {
+                     p8 = bmp->line[y];
 
-	    #ifdef ALLEGRO_COLOR16
+                     for (x=0; x<bmp->w; x++) {
+                        c = READ3BYTES(p8+x*3);
+                        r = (c & 0xFF);
+                        g = (c >> 8) & 0xFF;
+                        b = (c >> 16) & 0xFF;
+                        WRITE3BYTES(p8+x*3, makecol24(r, g, b));
+                     }
+                  }
+                  break;
 
-	       case 15:
-		  /* fix up a 15 bit hicolor RLE sprite */
-		  if (_color_depth == 16) {
-		     depth = 16;
-		     rle->color_depth = 16;
-		     eol_marker = MASK_COLOR_16;
-		  }
-		  else {
-		     depth = 15;
-		     eol_marker = MASK_COLOR_15;
-		  }
-
-		  s16 = (signed short *)rle->dat;
-
-		  for (y=0; y<rle->h; y++) {
-		     while ((unsigned short)*s16 != MASK_COLOR_15) {
-			if (*s16 > 0) {
-			   x = *s16;
-			   s16++;
-			   while (x-- > 0) {
-			      c = *s16;
-			      r = _rgb_scale_5[c & 0x1F];
-			      g = _rgb_scale_5[(c >> 5) & 0x1F];
-			      b = _rgb_scale_5[(c >> 10) & 0x1F];
-			      *s16 = makecol_depth(depth, r, g, b);
-			      s16++;
-			   }
-			}
-			else
-			   s16++;
-		     }
-		     *s16 = eol_marker;
-		     s16++;
-		  }
-		  break;
+            #endif
 
 
-	       case 16:
-		  /* fix up a 16 bit hicolor RLE sprite */
-		  if (_color_depth == 15) {
-		     depth = 15;
-		     rle->color_depth = 15;
-		     eol_marker = MASK_COLOR_15;
-		  }
-		  else {
-		     depth = 16;
-		     eol_marker = MASK_COLOR_16;
-		  }
+            #ifdef ALLEGRO_COLOR32
 
-		  s16 = (signed short *)rle->dat;
+               case 32:
+                  /* fix up a 32 bit truecolor bitmap */
+                  for (y=0; y<bmp->h; y++) {
+                     p32 = (uint32_t *)bmp->line[y];
 
-		  for (y=0; y<rle->h; y++) {
-		     while ((unsigned short)*s16 != MASK_COLOR_16) {
-			if (*s16 > 0) {
-			   x = *s16;
-			   s16++;
-			   while (x-- > 0) {
-			      c = *s16;
-			      r = _rgb_scale_5[c & 0x1F];
-			      g = _rgb_scale_6[(c >> 5) & 0x3F];
-			      b = _rgb_scale_5[(c >> 11) & 0x1F];
-			      *s16 = makecol_depth(depth, r, g, b);
-			      s16++;
-			   }
-			}
-			else
-			   s16++;
-		     }
-		     *s16 = eol_marker;
-		     s16++;
-		  }
-		  break;
+                     for (x=0; x<bmp->w; x++) {
+                        c = p32[x];
+                        r = (c & 0xFF);
+                        g = (c >> 8) & 0xFF;
+                        b = (c >> 16) & 0xFF;
+                        a = (c >> 24) & 0xFF;
+                        p32[x] = makeacol32(r, g, b, a);
+                     }
+                  }
+                  break;
 
-	    #endif
+            #endif
+
+            }
+            break;
 
 
-	    #ifdef ALLEGRO_COLOR24
+         case DAT_RLE_SPRITE:
+            /* fix up an RLE sprite object */
+            rle = data[i].dat;
+            bpp = rle->color_depth;
 
-	       case 24:
-		  /* fix up a 24 bit truecolor RLE sprite */
-		  if (_color_depth == 32) {
-		     depth = 32;
-		     rle->color_depth = 32;
-		     eol_marker = MASK_COLOR_32;
-		  }
-		  else {
-		     depth = 24;
-		     eol_marker = MASK_COLOR_24;
-		  }
+            switch (bpp) {
 
-		  s32 = (int32_t *)rle->dat;
+            #ifdef ALLEGRO_COLOR16
 
-		  for (y=0; y<rle->h; y++) {
-		     while ((uint32_t)*s32 != MASK_COLOR_24) {
-			if (*s32 > 0) {
-			   x = *s32;
-			   s32++;
-			   while (x-- > 0) {
-			      c = *s32;
-			      r = (c & 0xFF);
-			      g = (c>>8) & 0xFF;
-			      b = (c>>16) & 0xFF;
-			      *s32 = makecol_depth(depth, r, g, b);
-			      s32++;
-			   }
-			}
-			else
-			   s32++;
-		     }
-		     *s32 = eol_marker;
-		     s32++;
-		  }
-		  break;
+               case 15:
+                  /* fix up a 15 bit hicolor RLE sprite */
+                  if (_color_depth == 16) {
+                     depth = 16;
+                     rle->color_depth = 16;
+                     eol_marker = MASK_COLOR_16;
+                  }
+                  else {
+                     depth = 15;
+                     eol_marker = MASK_COLOR_15;
+                  }
 
-	    #endif
+                  s16 = (signed short *)rle->dat;
+
+                  for (y=0; y<rle->h; y++) {
+                     while ((unsigned short)*s16 != MASK_COLOR_15) {
+                        if (*s16 > 0) {
+                           x = *s16;
+                           s16++;
+                           while (x-- > 0) {
+                              c = *s16;
+                              r = _rgb_scale_5[c & 0x1F];
+                              g = _rgb_scale_5[(c >> 5) & 0x1F];
+                              b = _rgb_scale_5[(c >> 10) & 0x1F];
+                              *s16 = makecol_depth(depth, r, g, b);
+                              s16++;
+                           }
+                        }
+                        else
+                           s16++;
+                     }
+                     *s16 = eol_marker;
+                     s16++;
+                  }
+                  break;
 
 
-	    #ifdef ALLEGRO_COLOR32
+               case 16:
+                  /* fix up a 16 bit hicolor RLE sprite */
+                  if (_color_depth == 15) {
+                     depth = 15;
+                     rle->color_depth = 15;
+                     eol_marker = MASK_COLOR_15;
+                  }
+                  else {
+                     depth = 16;
+                     eol_marker = MASK_COLOR_16;
+                  }
 
-	       case 32:
-		  /* fix up a 32 bit truecolor RLE sprite */
-		  if (_color_depth == 24) {
-		     depth = 24;
-		     rle->color_depth = 24;
-		     eol_marker = MASK_COLOR_24;
-		  }
-		  else {
-		     depth = 32;
-		     eol_marker = MASK_COLOR_32;
-		  }
+                  s16 = (signed short *)rle->dat;
 
-		  s32 = (int32_t *)rle->dat;
+                  for (y=0; y<rle->h; y++) {
+                     while ((unsigned short)*s16 != MASK_COLOR_16) {
+                        if (*s16 > 0) {
+                           x = *s16;
+                           s16++;
+                           while (x-- > 0) {
+                              c = *s16;
+                              r = _rgb_scale_5[c & 0x1F];
+                              g = _rgb_scale_6[(c >> 5) & 0x3F];
+                              b = _rgb_scale_5[(c >> 11) & 0x1F];
+                              *s16 = makecol_depth(depth, r, g, b);
+                              s16++;
+                           }
+                        }
+                        else
+                           s16++;
+                     }
+                     *s16 = eol_marker;
+                     s16++;
+                  }
+                  break;
 
-		  for (y=0; y<rle->h; y++) {
-		     while ((uint32_t)*s32 != MASK_COLOR_32) {
-			if (*s32 > 0) {
-			   x = *s32;
-			   s32++;
-			   while (x-- > 0) {
-			      c = *s32;
-			      r = (c & 0xFF);
-			      g = (c>>8) & 0xFF;
-			      b = (c>>16) & 0xFF;
-			      if (depth == 32) {
-				 a = (c>>24) & 0xFF;
-				 *s32 = makeacol32(r, g, b, a);
-			      }
-			      else
-				 *s32 = makecol24(r, g, b);
-			      s32++;
-			   }
-			}
-			else
-			   s32++;
-		     }
-		     *s32 = eol_marker;
-		     s32++;
-		  }
-		  break;
+            #endif
 
-	    #endif
 
-	    }
-	    break;
+            #ifdef ALLEGRO_COLOR24
+
+               case 24:
+                  /* fix up a 24 bit truecolor RLE sprite */
+                  if (_color_depth == 32) {
+                     depth = 32;
+                     rle->color_depth = 32;
+                     eol_marker = MASK_COLOR_32;
+                  }
+                  else {
+                     depth = 24;
+                     eol_marker = MASK_COLOR_24;
+                  }
+
+                  s32 = (int32_t *)rle->dat;
+
+                  for (y=0; y<rle->h; y++) {
+                     while ((uint32_t)*s32 != MASK_COLOR_24) {
+                        if (*s32 > 0) {
+                           x = *s32;
+                           s32++;
+                           while (x-- > 0) {
+                              c = *s32;
+                              r = (c & 0xFF);
+                              g = (c>>8) & 0xFF;
+                              b = (c>>16) & 0xFF;
+                              *s32 = makecol_depth(depth, r, g, b);
+                              s32++;
+                           }
+                        }
+                        else
+                           s32++;
+                     }
+                     *s32 = eol_marker;
+                     s32++;
+                  }
+                  break;
+
+            #endif
+
+
+            #ifdef ALLEGRO_COLOR32
+
+               case 32:
+                  /* fix up a 32 bit truecolor RLE sprite */
+                  if (_color_depth == 24) {
+                     depth = 24;
+                     rle->color_depth = 24;
+                     eol_marker = MASK_COLOR_24;
+                  }
+                  else {
+                     depth = 32;
+                     eol_marker = MASK_COLOR_32;
+                  }
+
+                  s32 = (int32_t *)rle->dat;
+
+                  for (y=0; y<rle->h; y++) {
+                     while ((uint32_t)*s32 != MASK_COLOR_32) {
+                        if (*s32 > 0) {
+                           x = *s32;
+                           s32++;
+                           while (x-- > 0) {
+                              c = *s32;
+                              r = (c & 0xFF);
+                              g = (c>>8) & 0xFF;
+                              b = (c>>16) & 0xFF;
+                              if (depth == 32) {
+                                 a = (c>>24) & 0xFF;
+                                 *s32 = makeacol32(r, g, b, a);
+                              }
+                              else
+                                 *s32 = makecol24(r, g, b);
+                              s32++;
+                           }
+                        }
+                        else
+                           s32++;
+                     }
+                     *s32 = eol_marker;
+                     s32++;
+                  }
+                  break;
+
+            #endif
+
+            }
+            break;
       }
    }
 }
@@ -1945,15 +1945,15 @@ static void initialise_bitmap(BITMAP *bmp)
 
    for (i=0; _vtable_list[i].vtable; i++) {
       if (_vtable_list[i].color_depth == (int)(uintptr_t)bmp->vtable) {
-	 bmp->vtable = _vtable_list[i].vtable;
-	 bmp->write_bank = _stub_bank_switch;
-	 bmp->read_bank = _stub_bank_switch;
-	 bmp->seg = _default_ds();
-	 return;
+         bmp->vtable = _vtable_list[i].vtable;
+         bmp->write_bank = _stub_bank_switch;
+         bmp->read_bank = _stub_bank_switch;
+         bmp->seg = _default_ds();
+         return;
       }
    }
 
-   ASSERT(FALSE); 
+   ASSERT(FALSE);
 }
 
 
@@ -1971,30 +1971,30 @@ static void initialise_datafile(DATAFILE *data)
 
       switch (data[c].type) {
 
-	 case DAT_FILE:
-	    initialise_datafile(data[c].dat);
-	    break;
+         case DAT_FILE:
+            initialise_datafile(data[c].dat);
+            break;
 
-	 case DAT_BITMAP:
-	    initialise_bitmap((BITMAP *)data[c].dat);
-	    break;
+         case DAT_BITMAP:
+            initialise_bitmap((BITMAP *)data[c].dat);
+            break;
 
-	 case DAT_FONT:
-	    f = data[c].dat;
-	    color_flag = (int)(uintptr_t)f->vtable;
-	    if (color_flag == 1) {
-	       FONT_COLOR_DATA *cf = (FONT_COLOR_DATA *)f->data;
-	       while (cf) {
-		  for (c2 = cf->begin; c2 < cf->end; c2++)
-		     initialise_bitmap((BITMAP *)cf->bitmaps[c2 - cf->begin]);
-		  cf = cf->next;
-	       }
-	       f->vtable = font_vtable_color;
-	    }
-	    else {
-	       f->vtable = font_vtable_mono;
-	    }
-	    break;
+         case DAT_FONT:
+            f = data[c].dat;
+            color_flag = (int)(uintptr_t)f->vtable;
+            if (color_flag == 1) {
+               FONT_COLOR_DATA *cf = (FONT_COLOR_DATA *)f->data;
+               while (cf) {
+                  for (c2 = cf->begin; c2 < cf->end; c2++)
+                     initialise_bitmap((BITMAP *)cf->bitmaps[c2 - cf->begin]);
+                  cf = cf->next;
+               }
+               f->vtable = font_vtable_color;
+            }
+            else {
+               f->vtable = font_vtable_mono;
+            }
+            break;
       }
    }
 }

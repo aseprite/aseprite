@@ -151,7 +151,7 @@ FT_BEGIN_HEADER
 
   FT_LOCAL FT_Error
   T1_GlyphSlot_Init( T1_GlyphSlot  slot );
-  
+
   FT_LOCAL void
   T1_GlyphSlot_Done( T1_GlyphSlot  slot );
 

@@ -116,7 +116,7 @@ bool CurrentGfxModeGuard::tryGfxMode(const GfxMode& newMode)
     else {
       Console console;
       console.printf("Error setting graphics mode: %dx%d %d bpp\n",
-		     newMode.getWidth(), newMode.getHeight(), newMode.getDepth());
+                     newMode.getWidth(), newMode.getHeight(), newMode.getDepth());
       return false;
     }
   }

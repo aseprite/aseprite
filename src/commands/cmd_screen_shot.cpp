@@ -43,8 +43,8 @@ protected:
 
 ScreenShotCommand::ScreenShotCommand()
   : Command("ScreenShot",
-	    "Screen Shot",
-	    CmdUIOnlyFlag)
+            "Screen Shot",
+            CmdUIOnlyFlag)
 {
 }
 
@@ -96,24 +96,24 @@ void ScreenShotCommand::onExecute(Context* context)
       uint32_t* address;
 
       for (y=0; y<image->h; ++y) {
-	address = (uint32_t*)image->line[y];
-	for (x=0; x<image->w; ++x) {
-	  c = getpixel(bmp, x, y);
-	  r = getr(c);
-	  g = getg(c);
-	  b = getb(c);
-	  *(address++) = _rgba(r, g, b, 255);
-	}
+        address = (uint32_t*)image->line[y];
+        for (x=0; x<image->w; ++x) {
+          c = getpixel(bmp, x, y);
+          r = getr(c);
+          g = getg(c);
+          b = getb(c);
+          *(address++) = _rgba(r, g, b, 255);
+        }
       }
     }
     else if (imgtype == IMAGE_INDEXED) {
       uint8_t* address;
 
       for (y=0; y<image->h; ++y) {
-	address = (uint8_t*)image->line[y];
-	for (x=0; x<image->w; ++x) {
-	  *(address++) = getpixel(bmp, x, y);
-	}
+        address = (uint8_t*)image->line[y];
+        for (x=0; x<image->w; ++x) {
+          *(address++) = getpixel(bmp, x, y);
+        }
       }
     }
 

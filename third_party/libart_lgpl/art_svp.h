@@ -51,9 +51,9 @@ struct _ArtSVP {
 
 int
 art_svp_add_segment (ArtSVP **p_vp, int *pn_segs_max,
-		     int **pn_points_max,
-		     int n_points, int dir, ArtPoint *points,
-		     ArtDRect *bbox);
+                     int **pn_points_max,
+                     int n_points, int dir, ArtPoint *points,
+                     ArtDRect *bbox);
 
 void
 art_svp_free (ArtSVP *svp);

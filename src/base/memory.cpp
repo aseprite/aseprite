@@ -19,7 +19,7 @@
 
 using namespace std;
 
-#if !defined MEMLEAK		// Without leak detection
+#if !defined MEMLEAK            // Without leak detection
 
 void* base_malloc(size_t bytes)
 {
@@ -62,11 +62,11 @@ char* base_strdup(const char* string)
 
 // This is an implementation of the __builtin_return_address GCC
 // extension for the MSVC compiler.
-// 
+//
 // Author: Unknown
 // Modified by David Capello to return NULL when the callstack
 // is not as high as the specified "level".
-// 
+//
 __declspec (naked) void* __builtin_return_address(int level)
 {
    __asm
@@ -125,7 +125,7 @@ void base_memleak_exit()
 
   FILE* f = fopen("_ase_memlog.txt", "wt");
   slot_t* it;
-  
+
   if (f != NULL) {
 #ifdef _MSC_VER
     struct SYMBOL_INFO_EX {
@@ -160,21 +160,21 @@ void base_memleak_exit()
 
       for (int c=0; c<BACKTRACE_LEVELS; ++c) {
 #ifdef _MSC_VER
-	DWORD displacement;
+        DWORD displacement;
 
-	if (::SymGetLineFromAddr(hproc, (DWORD)it->backtrace[c], &displacement, &line)) {
-	  si.header.Name[0] = 0;
+        if (::SymGetLineFromAddr(hproc, (DWORD)it->backtrace[c], &displacement, &line)) {
+          si.header.Name[0] = 0;
 
-	  ::SymFromAddr(hproc, (DWORD)it->backtrace[c], NULL, &si.header);
+          ::SymFromAddr(hproc, (DWORD)it->backtrace[c], NULL, &si.header);
 
-	  fprintf(f, "%p : %s(%lu) [%s]\n",
-		  it->backtrace[c],
-		  line.FileName, line.LineNumber,
-		  si.header.Name);
-	}
-	else
+          fprintf(f, "%p : %s(%lu) [%s]\n",
+                  it->backtrace[c],
+                  line.FileName, line.LineNumber,
+                  si.header.Name);
+        }
+        else
 #endif
-	  fprintf(f, "%p\n", it->backtrace[c]);
+          fprintf(f, "%p\n", it->backtrace[c]);
       }
     }
     fclose(f);
@@ -230,9 +230,9 @@ static void delslot(void* ptr)
   for (it=headslot; it!=NULL; prev=it, it=it->next) {
     if (it->ptr == ptr) {
       if (prev)
-	prev->next = it->next;
+        prev->next = it->next;
       else
-	headslot = it->next;
+        headslot = it->next;
 
       free(it);
       break;

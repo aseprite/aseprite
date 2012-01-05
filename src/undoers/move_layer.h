@@ -43,4 +43,4 @@ private:
 
 } // namespace undoers
 
-#endif	// UNDOERS_MOVE_LAYER_H_INCLUDED
+#endif  // UNDOERS_MOVE_LAYER_H_INCLUDED

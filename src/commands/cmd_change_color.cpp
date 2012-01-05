@@ -50,8 +50,8 @@ protected:
 
 ChangeColorCommand::ChangeColorCommand()
   : Command("ChangeColor",
-	    "Change Color",
-	    CmdUIOnlyFlag)
+            "Change Color",
+            CmdUIOnlyFlag)
 {
   m_background = false;
   m_change = None;
@@ -72,7 +72,7 @@ void ChangeColorCommand::onExecute(Context* context)
 {
   ColorBar* colorbar = app_get_colorbar();
   Color color = m_background ? colorbar->getBgColor():
-			       colorbar->getFgColor();
+                               colorbar->getFgColor();
 
   switch (m_change) {
     case None:
@@ -80,21 +80,21 @@ void ChangeColorCommand::onExecute(Context* context)
       break;
     case IncrementIndex:
       if (color.getType() == Color::IndexType) {
-	int index = color.getIndex();
-	if (index < 255)	// TODO use sprite palette limit
-	  color = Color::fromIndex(index+1);
+        int index = color.getIndex();
+        if (index < 255)        // TODO use sprite palette limit
+          color = Color::fromIndex(index+1);
       }
       else
-	color = Color::fromIndex(0);
+        color = Color::fromIndex(0);
       break;
     case DecrementIndex:
       if (color.getType() == Color::IndexType) {
-	int index = color.getIndex();
-	if (index > 0)
-	  color = Color::fromIndex(index-1);
+        int index = color.getIndex();
+        if (index > 0)
+          color = Color::fromIndex(index-1);
       }
       else
-	color = Color::fromIndex(0);
+        color = Color::fromIndex(0);
       break;
   }
 

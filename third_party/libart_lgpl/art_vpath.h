@@ -47,7 +47,7 @@ struct _ArtVpath {
 
 void
 art_vpath_add_point (ArtVpath **p_vpath, int *pn_points, int *pn_points_max,
-		     ArtPathcode code, double x, double y);
+                     ArtPathcode code, double x, double y);
 
 ArtVpath *
 art_vpath_new_circle (double x, double y, double r);

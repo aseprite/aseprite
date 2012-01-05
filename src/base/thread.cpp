@@ -12,7 +12,7 @@
   #include <windows.h>
   #include <process.h>
 #else
-  #include <pthread.h>		// Use pthread library in Unix-like systems
+  #include <pthread.h>          // Use pthread library in Unix-like systems
 #endif
 
 namespace {
@@ -90,7 +90,7 @@ void base::thread::launch_thread(func_wrapper* f)
 
   DWORD native_id;
   m_native_handle = ::CreateThread(NULL, 0, win32_thread_proxy, (LPVOID)f,
-				   CREATE_SUSPENDED, &native_id);
+                                   CREATE_SUSPENDED, &native_id);
   ResumeThread(m_native_handle);
 
 #else

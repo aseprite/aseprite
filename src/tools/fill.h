@@ -30,4 +30,4 @@ enum Fill
 
 } // namespace tools
 
-#endif	// TOOLS_FILL_H_INCLUDED
+#endif  // TOOLS_FILL_H_INCLUDED

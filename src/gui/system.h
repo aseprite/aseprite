@@ -33,7 +33,7 @@ void ji_flip_rect(JRect rect);
 /***********************************************************************/
 /* timer related */
 
-extern int volatile ji_clock;	/* in milliseconds */
+extern int volatile ji_clock;   /* in milliseconds */
 
 /***********************************************************************/
 /* mouse related */

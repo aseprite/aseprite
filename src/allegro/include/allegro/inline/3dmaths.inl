@@ -56,5 +56,3 @@ AL_INLINE(void, persp_project_f, (float x, float y, float z, float *xout, float 
 #endif
 
 #endif          /* ifndef ALLEGRO_3DMATHS_INL */
-
-

@@ -56,47 +56,47 @@ char* tok_read(FILE* f, char* buf, char* leavings, int sizeof_leavings)
 
     for (ch=*s; ch; ch=*s) {
       if (ch == ' ') {
-	s++;
+        s++;
       }
       else if (ch == '#') {
-	s += strlen(s);
-	break;
+        s += strlen(s);
+        break;
       }
       else if (ch == '\"') {
-	s++;
+        s++;
 
-	for (ch=*s; ; ch=*s) {
-	  if (!ch) {
-	    line_num++;
-	    if (!tok_fgets(leavings, sizeof_leavings, f))
-	      break;
-	    else {
-	      s = leavings;
-	      continue;
-	    }
-	  }
-	  else if (ch == '\\') {
-	    s++;
-	    switch (*s) {
-	      case 'n': ch = '\n'; break;
-	      default: ch = *s; break;
-	    }
-	  }
-	  else if (ch == '\"') {
-	    s++;
-	    break;
-	  }
-	  buf[len++] = ch;
-	  s++;
-	}
-	break;
+        for (ch=*s; ; ch=*s) {
+          if (!ch) {
+            line_num++;
+            if (!tok_fgets(leavings, sizeof_leavings, f))
+              break;
+            else {
+              s = leavings;
+              continue;
+            }
+          }
+          else if (ch == '\\') {
+            s++;
+            switch (*s) {
+              case 'n': ch = '\n'; break;
+              default: ch = *s; break;
+            }
+          }
+          else if (ch == '\"') {
+            s++;
+            break;
+          }
+          buf[len++] = ch;
+          s++;
+        }
+        break;
       }
       else {
-	for (ch=*s; (ch) && (ch != ' '); ch=*s) {
-	  buf[len++] = ch;
-	  s++;
-	}
-	break;
+        for (ch=*s; (ch) && (ch != ' '); ch=*s) {
+          buf[len++] = ch;
+          s++;
+        }
+        break;
       }
     }
 

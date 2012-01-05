@@ -112,5 +112,3 @@ AL_PRINTFUNC(int, usprintf, (char *buf, AL_CONST char *format, ...), 2, 3);
 #endif
 
 #endif          /* ifndef ALLEGRO_UNICODE__H */
-
-

@@ -60,50 +60,50 @@ art_uta_from_irect (ArtIRect *bbox)
   if (height == 1)
     {
       if (width == 1)
-	utiles[0] = ART_UTA_BBOX_CONS (xf0, yf0, xf1, yf1);
+        utiles[0] = ART_UTA_BBOX_CONS (xf0, yf0, xf1, yf1);
       else
-	{
-	  utiles[0] = ART_UTA_BBOX_CONS (xf0, yf0, ART_UTILE_SIZE, yf1);
-	  bb = ART_UTA_BBOX_CONS (0, yf0, ART_UTILE_SIZE, yf1);
-	  for (x = 1; x < width - 1; x++)
-	    utiles[x] = bb;
-	  utiles[x] = ART_UTA_BBOX_CONS (0, yf0, xf1, yf1);
-	}
+        {
+          utiles[0] = ART_UTA_BBOX_CONS (xf0, yf0, ART_UTILE_SIZE, yf1);
+          bb = ART_UTA_BBOX_CONS (0, yf0, ART_UTILE_SIZE, yf1);
+          for (x = 1; x < width - 1; x++)
+            utiles[x] = bb;
+          utiles[x] = ART_UTA_BBOX_CONS (0, yf0, xf1, yf1);
+        }
     }
   else
     {
       if (width == 1)
-	{
-	  utiles[0] = ART_UTA_BBOX_CONS (xf0, yf0, xf1, ART_UTILE_SIZE);
-	  bb = ART_UTA_BBOX_CONS (xf0, 0, xf1, ART_UTILE_SIZE);
-	  for (y = 1; y < height - 1; y++)
-	    utiles[y] = bb;
-	  utiles[y] = ART_UTA_BBOX_CONS (xf0, 0, xf1, yf1);
-	}
+        {
+          utiles[0] = ART_UTA_BBOX_CONS (xf0, yf0, xf1, ART_UTILE_SIZE);
+          bb = ART_UTA_BBOX_CONS (xf0, 0, xf1, ART_UTILE_SIZE);
+          for (y = 1; y < height - 1; y++)
+            utiles[y] = bb;
+          utiles[y] = ART_UTA_BBOX_CONS (xf0, 0, xf1, yf1);
+        }
       else
-	{
-	  utiles[0] =
-	    ART_UTA_BBOX_CONS (xf0, yf0, ART_UTILE_SIZE, ART_UTILE_SIZE);
-	  bb = ART_UTA_BBOX_CONS (0, yf0, ART_UTILE_SIZE, ART_UTILE_SIZE);
-	  for (x = 1; x < width - 1; x++)
-	    utiles[x] = bb;
-	  utiles[x] = ART_UTA_BBOX_CONS (0, yf0, xf1, ART_UTILE_SIZE);
-	  ix = width;
-	  for (y = 1; y < height - 1; y++)
-	    {
-	      utiles[ix++] =
-		ART_UTA_BBOX_CONS (xf0, 0, ART_UTILE_SIZE, ART_UTILE_SIZE);
-	      bb = ART_UTA_BBOX_CONS (0, 0, ART_UTILE_SIZE, ART_UTILE_SIZE);
-	      for (x = 1; x < width - 1; x++)
-		utiles[ix++] = bb;
-	      utiles[ix++] = ART_UTA_BBOX_CONS (0, 0, xf1, ART_UTILE_SIZE);
-	    }
-	  utiles[ix++] = ART_UTA_BBOX_CONS (xf0, 0, ART_UTILE_SIZE, yf1);
-	  bb = ART_UTA_BBOX_CONS (0, 0, ART_UTILE_SIZE, yf1);
-	  for (x = 1; x < width - 1; x++)
-	    utiles[ix++] = bb;
-	  utiles[ix++] = ART_UTA_BBOX_CONS (0, 0, xf1, yf1);
-	}
+        {
+          utiles[0] =
+            ART_UTA_BBOX_CONS (xf0, yf0, ART_UTILE_SIZE, ART_UTILE_SIZE);
+          bb = ART_UTA_BBOX_CONS (0, yf0, ART_UTILE_SIZE, ART_UTILE_SIZE);
+          for (x = 1; x < width - 1; x++)
+            utiles[x] = bb;
+          utiles[x] = ART_UTA_BBOX_CONS (0, yf0, xf1, ART_UTILE_SIZE);
+          ix = width;
+          for (y = 1; y < height - 1; y++)
+            {
+              utiles[ix++] =
+                ART_UTA_BBOX_CONS (xf0, 0, ART_UTILE_SIZE, ART_UTILE_SIZE);
+              bb = ART_UTA_BBOX_CONS (0, 0, ART_UTILE_SIZE, ART_UTILE_SIZE);
+              for (x = 1; x < width - 1; x++)
+                utiles[ix++] = bb;
+              utiles[ix++] = ART_UTA_BBOX_CONS (0, 0, xf1, ART_UTILE_SIZE);
+            }
+          utiles[ix++] = ART_UTA_BBOX_CONS (xf0, 0, ART_UTILE_SIZE, yf1);
+          bb = ART_UTA_BBOX_CONS (0, 0, ART_UTILE_SIZE, yf1);
+          for (x = 1; x < width - 1; x++)
+            utiles[ix++] = bb;
+          utiles[ix++] = ART_UTA_BBOX_CONS (0, 0, xf1, yf1);
+        }
     }
   return uta;
 }

@@ -50,76 +50,76 @@ static bool textbox_msg_proc(JWidget widget, Message* msg)
 
     case JM_SIGNAL:
       if (msg->signal.num == JI_SIGNAL_SET_TEXT) {
-	View* view = View::getView(widget);
-	if (view)
-	  view->updateView();
+        View* view = View::getView(widget);
+        if (view)
+          view->updateView();
       }
       break;
 
     case JM_KEYPRESSED:
       if (widget->hasFocus()) {
-	View* view = View::getView(widget);
-	if (view) {
-	  gfx::Rect vp = view->getViewportBounds();
-	  gfx::Point scroll = view->getViewScroll();
-	  int textheight = jwidget_get_text_height(widget);
-	  
-	  switch (msg->key.scancode) {
+        View* view = View::getView(widget);
+        if (view) {
+          gfx::Rect vp = view->getViewportBounds();
+          gfx::Point scroll = view->getViewScroll();
+          int textheight = jwidget_get_text_height(widget);
 
-	    case KEY_LEFT:
-	      scroll.x -= vp.w/2;
-	      view->setViewScroll(scroll);
-	      break;
+          switch (msg->key.scancode) {
 
-	    case KEY_RIGHT:
-	      scroll.x += vp.w/2;
-	      view->setViewScroll(scroll);
-	      break;
+            case KEY_LEFT:
+              scroll.x -= vp.w/2;
+              view->setViewScroll(scroll);
+              break;
 
-	    case KEY_UP:
-	      scroll.y -= vp.h/2;
-	      view->setViewScroll(scroll);
-	      break;
+            case KEY_RIGHT:
+              scroll.x += vp.w/2;
+              view->setViewScroll(scroll);
+              break;
 
-	    case KEY_DOWN:
-	      scroll.y += vp.h/2;
-	      view->setViewScroll(scroll);
-	      break;
+            case KEY_UP:
+              scroll.y -= vp.h/2;
+              view->setViewScroll(scroll);
+              break;
 
-	    case KEY_PGUP:
-	      scroll.y -= (vp.h-textheight);
-	      view->setViewScroll(scroll);
-	      break;
+            case KEY_DOWN:
+              scroll.y += vp.h/2;
+              view->setViewScroll(scroll);
+              break;
 
-	    case KEY_PGDN:
-	      scroll.y += (vp.h-textheight);
-	      view->setViewScroll(scroll);
-	      break;
+            case KEY_PGUP:
+              scroll.y -= (vp.h-textheight);
+              view->setViewScroll(scroll);
+              break;
 
-	    case KEY_HOME:
-	      scroll.y = 0;
-	      view->setViewScroll(scroll);
-	      break;
+            case KEY_PGDN:
+              scroll.y += (vp.h-textheight);
+              view->setViewScroll(scroll);
+              break;
 
-	    case KEY_END:
-	      scroll.y = jrect_h(widget->rc) - vp.h;
-	      view->setViewScroll(scroll);
-	      break;
+            case KEY_HOME:
+              scroll.y = 0;
+              view->setViewScroll(scroll);
+              break;
 
-	    default:
-	      return false;
-	  }
-	}
-	return true;
+            case KEY_END:
+              scroll.y = jrect_h(widget->rc) - vp.h;
+              view->setViewScroll(scroll);
+              break;
+
+            default:
+              return false;
+          }
+        }
+        return true;
       }
       break;
 
     case JM_BUTTONPRESSED: {
       View* view = View::getView(widget);
       if (view) {
-	widget->captureMouse();
-	jmouse_set_cursor(JI_CURSOR_SCROLL);
-	return true;
+        widget->captureMouse();
+        jmouse_set_cursor(JI_CURSOR_SCROLL);
+        return true;
       }
       break;
     }
@@ -127,15 +127,15 @@ static bool textbox_msg_proc(JWidget widget, Message* msg)
     case JM_MOTION: {
       View* view = View::getView(widget);
       if (view && widget->hasCapture()) {
-	gfx::Rect vp = view->getViewportBounds();
-	gfx::Point scroll = view->getViewScroll();
+        gfx::Rect vp = view->getViewportBounds();
+        gfx::Point scroll = view->getViewScroll();
 
-	scroll.x += jmouse_x(1) - jmouse_x(0);
-	scroll.y += jmouse_y(1) - jmouse_y(0);
+        scroll.x += jmouse_x(1) - jmouse_x(0);
+        scroll.y += jmouse_y(1) - jmouse_y(0);
 
-	view->setViewScroll(scroll);
+        view->setViewScroll(scroll);
 
-	jmouse_control_infinite_scroll(vp);
+        jmouse_control_infinite_scroll(vp);
       }
       break;
     }
@@ -143,9 +143,9 @@ static bool textbox_msg_proc(JWidget widget, Message* msg)
     case JM_BUTTONRELEASED: {
       View* view = View::getView(widget);
       if (view && widget->hasCapture()) {
-	widget->releaseMouse();
-	jmouse_set_cursor(JI_CURSOR_NORMAL);
-	return true;
+        widget->releaseMouse();
+        jmouse_set_cursor(JI_CURSOR_NORMAL);
+        return true;
       }
       break;
     }
@@ -153,11 +153,11 @@ static bool textbox_msg_proc(JWidget widget, Message* msg)
     case JM_WHEEL: {
       View* view = View::getView(widget);
       if (view) {
-	gfx::Point scroll = view->getViewScroll();
+        gfx::Point scroll = view->getViewScroll();
 
-	scroll.y += (jmouse_z(1) - jmouse_z(0)) * jwidget_get_text_height(widget)*3;
+        scroll.y += (jmouse_z(1) - jmouse_z(0)) * jwidget_get_text_height(widget)*3;
 
-	view->setViewScroll(scroll);
+        view->setViewScroll(scroll);
       }
       break;
     }
@@ -193,4 +193,3 @@ static void textbox_request_size(JWidget widget, int *w, int *h)
     *w = min;
   }
 }
-

@@ -36,7 +36,7 @@
 
 #include <allegro/unicode.h>
 
-#define PERC_FORMAT	"%.1f%%"
+#define PERC_FORMAT     "%.1f%%"
 
 class SpriteSizeJob : public Job
 {
@@ -85,7 +85,7 @@ protected:
       // Get cel's image
       Image* image = m_sprite->getStock()->getImage(cel->getImage());
       if (!image)
-	continue;
+        continue;
 
       // Resize the image
       int w = scale_x(image->w);
@@ -94,9 +94,9 @@ protected:
 
       image_fixup_transparent_colors(image);
       image_resize(image, new_image,
-		   m_resize_method,
-		   m_sprite->getPalette(cel->getFrame()),
-		   m_sprite->getRgbMap(cel->getFrame()));
+                   m_resize_method,
+                   m_sprite->getPalette(cel->getFrame()),
+                   m_sprite->getRgbMap(cel->getFrame()));
 
       undoTransaction.replaceStockImage(cel->getImage(), new_image);
 
@@ -104,31 +104,31 @@ protected:
 
       // cancel all the operation?
       if (isCanceled())
-	return;	       // UndoTransaction destructor will undo all operations
+        return;        // UndoTransaction destructor will undo all operations
     }
 
     // Resize mask
     if (m_document->isMaskVisible()) {
       Image* old_bitmap = image_crop(m_document->getMask()->bitmap, -1, -1,
-				     m_document->getMask()->bitmap->w+2,
-				     m_document->getMask()->bitmap->h+2, 0);
+                                     m_document->getMask()->bitmap->w+2,
+                                     m_document->getMask()->bitmap->h+2, 0);
 
       int w = scale_x(old_bitmap->w);
       int h = scale_y(old_bitmap->h);
       Mask* new_mask = mask_new();
       mask_replace(new_mask,
-		   scale_x(m_document->getMask()->x-1),
-		   scale_y(m_document->getMask()->y-1), MAX(1, w), MAX(1, h));
+                   scale_x(m_document->getMask()->x-1),
+                   scale_y(m_document->getMask()->y-1), MAX(1, w), MAX(1, h));
       image_resize(old_bitmap, new_mask->bitmap,
-		   m_resize_method,
-		   m_sprite->getCurrentPalette(), // Ignored
-		   m_sprite->getRgbMap());	  // Ignored
+                   m_resize_method,
+                   m_sprite->getCurrentPalette(), // Ignored
+                   m_sprite->getRgbMap());        // Ignored
       image_free(old_bitmap);
 
       // reshrink
       mask_intersect(new_mask,
-		     new_mask->x, new_mask->y,
-		     new_mask->w, new_mask->h);
+                     new_mask->x, new_mask->y,
+                     new_mask->w, new_mask->h);
 
       // copy new mask
       undoTransaction.copyToCurrentMask(new_mask);
@@ -174,15 +174,15 @@ private:
 
 SpriteSizeCommand::SpriteSizeCommand()
   : Command("SpriteSize",
-	    "Sprite Size",
-	    CmdRecordableFlag)
+            "Sprite Size",
+            CmdRecordableFlag)
 {
 }
 
 bool SpriteSizeCommand::onEnabled(Context* context)
 {
   return context->checkFlags(ContextFlags::ActiveDocumentIsWritable |
-			     ContextFlags::HasActiveSprite);
+                             ContextFlags::HasActiveSprite);
 }
 
 void SpriteSizeCommand::onExecute(Context* context)
@@ -195,13 +195,13 @@ void SpriteSizeCommand::onExecute(Context* context)
   // load the window widget
   FramePtr window(load_widget("sprite_size.xml", "sprite_size"));
   get_widgets(window,
-	      "width_px", &width_px,
-	      "height_px", &height_px,
-	      "width_perc", &width_perc,
-	      "height_perc", &height_perc,
-	      "lock_ratio", &m_lockRatio,
-	      "method", &method,
-	      "ok", &ok, NULL);
+              "width_px", &width_px,
+              "height_px", &height_px,
+              "width_perc", &width_perc,
+              "height_perc", &height_perc,
+              "lock_ratio", &m_lockRatio,
+              "method", &method,
+              "ok", &ok, NULL);
 
   width_px->setTextf("%d", sprite->getWidth());
   height_px->setTextf("%d", sprite->getHeight());

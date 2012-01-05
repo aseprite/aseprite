@@ -59,5 +59,3 @@ AL_VAR(volatile int, fli_timer);       /* for timing FLI playback */
 #endif
 
 #endif          /* ifndef ALLEGRO_FLI_H */
-
-

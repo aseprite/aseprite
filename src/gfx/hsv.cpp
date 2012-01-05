@@ -52,7 +52,7 @@ Hsv::Hsv(const Rgb& rgb)
       hue_prime = (g - b) / chroma;
 
       while (hue_prime < 0.0)
-	hue_prime += 6.0;
+        hue_prime += 6.0;
       hue_prime = fmod(hue_prime, 6.0);
     }
     else if (M == rgb.green()) {

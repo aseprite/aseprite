@@ -44,10 +44,10 @@ DropDownButton::DropDownButton(const char* text)
 
   m_dropDown->setIconInterface
     (new ButtonIconImpl(static_cast<SkinTheme*>(m_dropDown->getTheme()),
-			PART_COMBOBOX_ARROW_DOWN,
-			PART_COMBOBOX_ARROW_DOWN_SELECTED,
-			PART_COMBOBOX_ARROW_DOWN_DISABLED,
-			JI_CENTER | JI_MIDDLE));
+                        PART_COMBOBOX_ARROW_DOWN,
+                        PART_COMBOBOX_ARROW_DOWN_SELECTED,
+                        PART_COMBOBOX_ARROW_DOWN_DISABLED,
+                        JI_CENTER | JI_MIDDLE));
 }
 
 void DropDownButton::onButtonClick(Event& ev)

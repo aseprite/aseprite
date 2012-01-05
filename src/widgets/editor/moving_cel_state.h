@@ -47,4 +47,4 @@ private:
   bool m_maskVisible;
 };
 
-#endif	// WIDGETS_EDITOR_MOVING_CEL_STATE_H_INCLUDED
+#endif  // WIDGETS_EDITOR_MOVING_CEL_STATE_H_INCLUDED

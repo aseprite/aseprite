@@ -21,9 +21,9 @@
  * currently implemented.
  */
 
-#include "cdjpeg.h"		/* Common decls for cjpeg/djpeg applications */
+#include "cdjpeg.h"             /* Common decls for cjpeg/djpeg applications */
 
-#ifdef QUANT_2PASS_SUPPORTED	/* otherwise can't quantize to supplied map */
+#ifdef QUANT_2PASS_SUPPORTED    /* otherwise can't quantize to supplied map */
 
 /* Portions of this code are based on the PBMPLUS library, which is:
 **
@@ -54,9 +54,9 @@ add_map_entry (j_decompress_ptr cinfo, int R, int G, int B)
   /* Check for duplicate color. */
   for (index = 0; index < ncolors; index++) {
     if (GETJSAMPLE(colormap0[index]) == R &&
-	GETJSAMPLE(colormap1[index]) == G &&
-	GETJSAMPLE(colormap2[index]) == B)
-      return;			/* color is already in map */
+        GETJSAMPLE(colormap1[index]) == G &&
+        GETJSAMPLE(colormap2[index]) == B)
+      return;                   /* color is already in map */
   }
 
   /* Check for map overflow. */
@@ -107,9 +107,9 @@ read_gif_map (j_decompress_ptr cinfo, FILE * infile)
     if (R == EOF || G == EOF || B == EOF)
       ERREXIT(cinfo, JERR_BAD_CMAP_FILE);
     add_map_entry(cinfo,
-		  R << (BITS_IN_JSAMPLE-8),
-		  G << (BITS_IN_JSAMPLE-8),
-		  B << (BITS_IN_JSAMPLE-8));
+                  R << (BITS_IN_JSAMPLE-8),
+                  G << (BITS_IN_JSAMPLE-8),
+                  B << (BITS_IN_JSAMPLE-8));
   }
 }
 
@@ -123,7 +123,7 @@ pbm_getc (FILE * infile)
 /* A comment/newline sequence is returned as a newline */
 {
   register int ch;
-  
+
   ch = getc(infile);
   if (ch == '#') {
     do {
@@ -143,17 +143,17 @@ read_pbm_integer (j_decompress_ptr cinfo, FILE * infile)
 {
   register int ch;
   register unsigned int val;
-  
+
   /* Skip any leading whitespace */
   do {
     ch = pbm_getc(infile);
     if (ch == EOF)
       ERREXIT(cinfo, JERR_BAD_CMAP_FILE);
   } while (ch == ' ' || ch == '\t' || ch == '\n' || ch == '\r');
-  
+
   if (ch < '0' || ch > '9')
     ERREXIT(cinfo, JERR_BAD_CMAP_FILE);
-  
+
   val = ch - '0';
   while ((ch = pbm_getc(infile)) >= '0' && ch <= '9') {
     val *= 10;
@@ -175,7 +175,7 @@ read_ppm_map (j_decompress_ptr cinfo, FILE * infile)
   int R, G, B;
 
   /* Initial 'P' has already been read by read_color_map */
-  c = getc(infile);		/* save format discriminator for a sec */
+  c = getc(infile);             /* save format discriminator for a sec */
 
   /* while we fetch the remaining header info */
   w = read_pbm_integer(cinfo, infile);
@@ -190,26 +190,26 @@ read_ppm_map (j_decompress_ptr cinfo, FILE * infile)
     ERREXIT(cinfo, JERR_BAD_CMAP_FILE);
 
   switch (c) {
-  case '3':			/* it's a text-format PPM file */
+  case '3':                     /* it's a text-format PPM file */
     for (row = 0; row < h; row++) {
       for (col = 0; col < w; col++) {
-	R = read_pbm_integer(cinfo, infile);
-	G = read_pbm_integer(cinfo, infile);
-	B = read_pbm_integer(cinfo, infile);
-	add_map_entry(cinfo, R, G, B);
+        R = read_pbm_integer(cinfo, infile);
+        G = read_pbm_integer(cinfo, infile);
+        B = read_pbm_integer(cinfo, infile);
+        add_map_entry(cinfo, R, G, B);
       }
     }
     break;
 
-  case '6':			/* it's a raw-format PPM file */
+  case '6':                     /* it's a raw-format PPM file */
     for (row = 0; row < h; row++) {
       for (col = 0; col < w; col++) {
-	R = getc(infile);
-	G = getc(infile);
-	B = getc(infile);
-	if (R == EOF || G == EOF || B == EOF)
-	  ERREXIT(cinfo, JERR_BAD_CMAP_FILE);
-	add_map_entry(cinfo, R, G, B);
+        R = getc(infile);
+        G = getc(infile);
+        B = getc(infile);
+        if (R == EOF || G == EOF || B == EOF)
+          ERREXIT(cinfo, JERR_BAD_CMAP_FILE);
+        add_map_entry(cinfo, R, G, B);
       }
     }
     break;

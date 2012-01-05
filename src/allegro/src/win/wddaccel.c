@@ -1,6 +1,6 @@
-/*         ______   ___    ___ 
- *        /\  _  \ /\_ \  /\_ \ 
- *        \ \ \L\ \\//\ \ \//\ \      __     __   _ __   ___ 
+/*         ______   ___    ___
+ *        /\  _  \ /\_ \  /\_ \
+ *        \ \ \L\ \\//\ \ \//\ \      __     __   _ __   ___
  *         \ \  __ \ \ \ \  \ \ \   /'__`\ /'_ `\/\`'__\/ __`\
  *          \ \ \/\ \ \_\ \_ \_\ \_/\  __//\ \L\ \ \ \//\ \L\ \
  *           \ \_\ \_\/\____\/\____\ \____\ \____ \ \_\\ \____/
@@ -64,16 +64,16 @@ static void ddraw_blit_to_self(BITMAP * source, BITMAP * dest, int source_x, int
    source_parent = source;
    while (source_parent->id & BMP_ID_SUB)
       source_parent = (BITMAP *)source_parent->extra;
-   
+
    _enter_gfx_critical();
    gfx_directx_release_lock(dest);
    gfx_directx_release_lock(source);
-   
+
    IDirectDrawSurface2_BltFast(DDRAW_SURFACE_OF(dest_parent)->id, dest_parent_x, dest_parent_y,
                                DDRAW_SURFACE_OF(source_parent)->id, &src_rect,
                                DDBLTFAST_WAIT);
    _exit_gfx_critical();
-   
+
    /* only for windowed mode */
    if ((gfx_driver->id == GFX_DIRECTX_WIN) && (dest_parent == gfx_directx_forefront_bitmap)) {
       src_rect.left   = dest_parent_x;
@@ -133,7 +133,7 @@ static void ddraw_masked_blit(BITMAP * source, BITMAP * dest, int source_x, int 
       _exit_gfx_critical();
 
       if (FAILED(hr))
-	 _TRACE(PREFIX_E "Blt failed (%x)\n", hr);
+         _TRACE(PREFIX_E "Blt failed (%x)\n", hr);
 
       /* only for windowed mode */
       if ((gfx_driver->id == GFX_DIRECTX_WIN) && (dest_parent == gfx_directx_forefront_bitmap))
@@ -161,29 +161,29 @@ static void ddraw_draw_sprite(BITMAP * bmp, BITMAP * sprite, int x, int y)
       h = sprite->h;
 
       if (bmp->clip) {
-	 if (x < bmp->cl) {
-	    sx += bmp->cl - x;
-	    w -= bmp->cl - x;
-	    x = bmp->cl;
-	 }
+         if (x < bmp->cl) {
+            sx += bmp->cl - x;
+            w -= bmp->cl - x;
+            x = bmp->cl;
+         }
 
-	 if (y < bmp->ct) {
-	    sy += bmp->ct - y;
-	    h -= bmp->ct - y;
-	    y = bmp->ct;
-	 }
+         if (y < bmp->ct) {
+            sy += bmp->ct - y;
+            h -= bmp->ct - y;
+            y = bmp->ct;
+         }
 
-	 if (x + w > bmp->cr)
-	    w = bmp->cr - x;
+         if (x + w > bmp->cr)
+            w = bmp->cr - x;
 
-	 if (w <= 0)
-	    return;
+         if (w <= 0)
+            return;
 
-	 if (y + h > bmp->cb)
-	    h = bmp->cb - y;
+         if (y + h > bmp->cb)
+            h = bmp->cb - y;
 
-	 if (h <= 0)
-	    return;
+         if (h <= 0)
+            return;
       }
 
       ddraw_masked_blit(sprite, bmp, sx, sy, x, y, w, h);
@@ -221,7 +221,7 @@ static void ddraw_do_stretch_blit(struct BITMAP *source, struct BITMAP *dest, in
    src_key.dwColorSpaceHighValue = source->vtable->mask_color;
 
    if ( ( (masked && (gfx_capabilities & GFX_HW_VRAM_STRETCH_BLIT_MASKED)) ||
-          (!masked && (gfx_capabilities & GFX_HW_VRAM_STRETCH_BLIT)) 
+          (!masked && (gfx_capabilities & GFX_HW_VRAM_STRETCH_BLIT))
         ) && ( is_video_bitmap(source) || is_system_bitmap(source) ) ) {
 
       /* find parents */
@@ -246,7 +246,7 @@ static void ddraw_do_stretch_blit(struct BITMAP *source, struct BITMAP *dest, in
       _exit_gfx_critical();
 
       if (FAILED(hr))
-	 _TRACE(PREFIX_E "Blt failed (%x)\n", hr);
+         _TRACE(PREFIX_E "Blt failed (%x)\n", hr);
 
       /* only for windowed mode */
       if ((gfx_driver->id == GFX_DIRECTX_WIN) && (dest_parent == gfx_directx_forefront_bitmap))
@@ -331,22 +331,22 @@ static void ddraw_rectfill(BITMAP *bitmap, int x1, int y1, int x2, int y2, int c
 
    if (bitmap->clip) {
       if (x1 < bitmap->cl)
-	 x1 = bitmap->cl;
+         x1 = bitmap->cl;
 
       if (x2 >= bitmap->cr)
-	 x2 = bitmap->cr-1;
+         x2 = bitmap->cr-1;
 
       if (x2 < x1)
-	 return;
+         return;
 
       if (y1 < bitmap->ct)
-	 y1 = bitmap->ct;
+         y1 = bitmap->ct;
 
       if (y2 >= bitmap->cb)
-	 y2 = bitmap->cb-1;
+         y2 = bitmap->cb-1;
 
       if (y2 < y1)
-	 return;
+         return;
    }
 
    dest_rect.left = x1 + bitmap->x_ofs;
@@ -404,16 +404,16 @@ static void ddraw_hline(BITMAP *bitmap, int x1, int y, int x2, int color)
 
    if (bitmap->clip) {
       if ((y < bitmap->ct) || (y >= bitmap->cb))
-	 return;
+         return;
 
       if (x1 < bitmap->cl)
-	 x1 = bitmap->cl;
+         x1 = bitmap->cl;
 
       if (x2 >= bitmap->cr)
-	 x2 = bitmap->cr-1;
+         x2 = bitmap->cr-1;
 
       if (x2 < x1)
-	 return;
+         return;
    }
 
    dest_rect.left = x1 + bitmap->x_ofs;
@@ -470,16 +470,16 @@ static void ddraw_vline(BITMAP *bitmap, int x, int y1, int y2, int color)
 
    if (bitmap->clip) {
       if ((x < bitmap->cl) || (x >= bitmap->cr))
-	 return;
+         return;
 
       if (y1 < bitmap->ct)
-	 y1 = bitmap->ct;
+         y1 = bitmap->ct;
 
       if (y2 >= bitmap->cb)
-	 y2 = bitmap->cb-1;
+         y2 = bitmap->cb-1;
 
       if (y2 < y1)
-	 return;
+         return;
    }
 
    dest_rect.top = y1 + bitmap->y_ofs;
@@ -561,12 +561,12 @@ void gfx_directx_enable_acceleration(GFX_DRIVER * drv)
 
       if (ddcaps.dwCaps & DDCAPS_BLTSTRETCH) {
          _screen_vtable.do_stretch_blit = ddraw_do_stretch_blit;
-         gfx_capabilities |= 
+         gfx_capabilities |=
             GFX_HW_VRAM_STRETCH_BLIT_MASKED|GFX_HW_SYS_STRETCH_BLIT_MASKED;
       }
 
       if (_screen_vtable.color_depth == 8)
-	 _screen_vtable.draw_256_sprite = ddraw_draw_sprite;
+         _screen_vtable.draw_256_sprite = ddraw_draw_sprite;
 
       gfx_capabilities |= (GFX_HW_VRAM_BLIT_MASKED | GFX_HW_SYS_TO_VRAM_BLIT_MASKED);
    }
@@ -587,4 +587,3 @@ void gfx_directx_enable_triple_buffering(GFX_DRIVER *drv)
       gfx_capabilities |= GFX_CAN_TRIPLE_BUFFER;
    }
 }
-

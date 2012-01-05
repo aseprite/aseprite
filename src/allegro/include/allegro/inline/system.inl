@@ -63,5 +63,3 @@ AL_INLINE(int, get_desktop_resolution, (int *width, int *height),
 #endif
 
 #endif          /* ifndef ALLEGRO_SYSTEM_INL */
-
-

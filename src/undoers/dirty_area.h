@@ -49,4 +49,4 @@ private:
 
 } // namespace undoers
 
-#endif	// UNDOERS_DIRTY_AREA_H_INCLUDED
+#endif  // UNDOERS_DIRTY_AREA_H_INCLUDED

@@ -44,4 +44,4 @@ private:
 
 } // namespace undoers
 
-#endif	// UNDOERS_SET_LAYER_FLAGS_H_INCLUDED
+#endif  // UNDOERS_SET_LAYER_FLAGS_H_INCLUDED

@@ -33,15 +33,15 @@ using namespace base::serialization::little_endian;
 
 // Serialized Palette data:
 //
-//   WORD		Frame
-//   WORD		Number of colors
-//   for each color	("ncolors" times)
-//     DWORD		_rgba color
+//   WORD               Frame
+//   WORD               Number of colors
+//   for each color     ("ncolors" times)
+//     DWORD            _rgba color
 
 void write_palette(std::ostream& os, Palette* palette)
 {
   write16(os, palette->getFrame()); // Frame
-  write16(os, palette->size());	    // Number of colors
+  write16(os, palette->size());     // Number of colors
 
   for (int c=0; c<palette->size(); c++) {
     uint32_t color = palette->getEntry(c);
@@ -51,8 +51,8 @@ void write_palette(std::ostream& os, Palette* palette)
 
 Palette* read_palette(std::istream& is)
 {
-  int frame = read16(is);	// Frame
-  int ncolors = read16(is);	// Number of colors
+  int frame = read16(is);       // Frame
+  int ncolors = read16(is);     // Number of colors
 
   UniquePtr<Palette> palette(new Palette(frame, ncolors));
 

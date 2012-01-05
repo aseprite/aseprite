@@ -57,7 +57,7 @@ public:
   void addSamples(uint32_t color, size_t count = 1)
   {
     int i = histogramIndex(color);
-    
+
     if (m_histogram[i] < std::numeric_limits<size_t>::max()-count) // Avoid overflow
       m_histogram[i] += count;
     else
@@ -68,17 +68,17 @@ public:
     // instead.
     if (m_useHighPrecision) {
       std::vector<uint32_t>::iterator it =
-	std::find(m_highPrecision.begin(), m_highPrecision.end(), color);
+        std::find(m_highPrecision.begin(), m_highPrecision.end(), color);
 
       // The color is not in the high-precision table
       if (it == m_highPrecision.end()) {
-	if (m_highPrecision.size() < 256) {
-	  m_highPrecision.push_back(color);
-	}
-	else {
-	  // In this case we reach the limit for the high-precision histogram.
-	  m_useHighPrecision = false;
-	}
+        if (m_highPrecision.size() < 256) {
+          m_highPrecision.push_back(color);
+        }
+        else {
+          // In this case we reach the limit for the high-precision histogram.
+          m_useHighPrecision = false;
+        }
       }
     }
   }
@@ -92,7 +92,7 @@ public:
     // Can we use the high-precision table?
     if (m_useHighPrecision && int(m_highPrecision.size()) <= (to-from+1)) {
       for (int i=0; i<(int)m_highPrecision.size(); ++i)
-    	palette->setEntry(from+i, m_highPrecision[i]);
+        palette->setEntry(from+i, m_highPrecision[i]);
 
       return m_highPrecision.size();
     }
@@ -103,7 +103,7 @@ public:
       median_cut(*this, to-from+1, result);
 
       for (int i=0; i<(int)result.size(); ++i)
-    	palette->setEntry(from+i, result[i]);
+        palette->setEntry(from+i, result[i]);
 
       return result.size();
     }
@@ -116,8 +116,8 @@ private:
   size_t histogramIndex(uint32_t color) const
   {
     return histogramIndex((_rgba_getr(color) >> (8 - RBits)),
-			  (_rgba_getg(color) >> (8 - GBits)),
-			  (_rgba_getb(color) >> (8 - BBits)));
+                          (_rgba_getg(color) >> (8 - GBits)),
+                          (_rgba_getb(color) >> (8 - BBits)));
   }
 
   size_t histogramIndex(int i, int j, int k) const

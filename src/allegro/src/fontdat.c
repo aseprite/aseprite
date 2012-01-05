@@ -36,10 +36,10 @@ FONT *load_dat_font(AL_CONST char *filename, RGB *pal, void *param)
    char **names;
    int c, want_palette;
    ASSERT(filename);
-   
+
    /* Load font and palette by name? */
    names = param;
-   
+
    fnt = NULL;
    p = NULL;
 
@@ -53,7 +53,7 @@ FONT *load_dat_font(AL_CONST char *filename, RGB *pal, void *param)
       df->dat = NULL;
       unload_datafile_object(df);
    }
-   
+
    /* Load palette by name? */
    want_palette = TRUE;
    if (names && names[1]) {
@@ -64,14 +64,14 @@ FONT *load_dat_font(AL_CONST char *filename, RGB *pal, void *param)
       unload_datafile_object(df);
       want_palette = FALSE;
    }
-   
+
    if (!fnt || want_palette) {
       df = load_datafile(filename);
-   
+
       if (!df) {
          return NULL;
       }
-   
+
       for (c=0; df[c].type!=DAT_END; c++) {
          /* Only pick the last palette if no palette was named */
          if (df[c].type==DAT_PALETTE && want_palette)
@@ -83,14 +83,14 @@ FONT *load_dat_font(AL_CONST char *filename, RGB *pal, void *param)
             break;
          }
       }
-   
-   
+
+
       if (p && pal && want_palette && fnt) {
          memcpy(pal, p, sizeof(PALETTE));
       }
-   
+
       unload_datafile(df);
    }
-   
+
    return fnt;
 }

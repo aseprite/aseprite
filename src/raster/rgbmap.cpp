@@ -39,7 +39,7 @@ public:
 
   bool match(const Palette* palette) const {
     return (m_palette == palette &&
-	    m_modifications == palette->getModifications());
+            m_modifications == palette->getModifications());
   }
 
   void regenerate(const Palette* palette) {
@@ -52,12 +52,12 @@ public:
 
     for (int r=0; r<32; ++r)
       for (int g=0; g<32; ++g)
-	for (int b=0; b<32; ++b) {
-	  if (m_allegMap->data[r][g][b] >= palette->size())
-	    m_allegMap->data[r][g][b] = palette->findBestfit(_rgb_scale_5[r],
-							     _rgb_scale_5[g],
-							     _rgb_scale_5[b]);
-	}
+        for (int b=0; b<32; ++b) {
+          if (m_allegMap->data[r][g][b] >= palette->size())
+            m_allegMap->data[r][g][b] = palette->findBestfit(_rgb_scale_5[r],
+                                                             _rgb_scale_5[g],
+                                                             _rgb_scale_5[b]);
+        }
   }
 
   int mapColor(int r, int g, int b) const {

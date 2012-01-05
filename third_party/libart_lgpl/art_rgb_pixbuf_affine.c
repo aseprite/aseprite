@@ -61,11 +61,11 @@
  **/
 void
 art_rgb_pixbuf_affine (art_u8 *dst,
-		       int x0, int y0, int x1, int y1, int dst_rowstride,
-		       const ArtPixBuf *pixbuf,
-		       const double affine[6],
-		       ArtFilterLevel level,
-		       ArtAlphaGamma *alphagamma)
+                       int x0, int y0, int x1, int y1, int dst_rowstride,
+                       const ArtPixBuf *pixbuf,
+                       const double affine[6],
+                       ArtFilterLevel level,
+                       ArtAlphaGamma *alphagamma)
 {
   if (pixbuf->format != ART_PIX_RGB)
     {
@@ -87,16 +87,16 @@ art_rgb_pixbuf_affine (art_u8 *dst,
 
   if (pixbuf->has_alpha)
     art_rgb_rgba_affine (dst, x0, y0, x1, y1, dst_rowstride,
-			 pixbuf->pixels,
-			 pixbuf->width, pixbuf->height, pixbuf->rowstride,
-			 affine,
-			 level,
-			 alphagamma);
+                         pixbuf->pixels,
+                         pixbuf->width, pixbuf->height, pixbuf->rowstride,
+                         affine,
+                         level,
+                         alphagamma);
   else
     art_rgb_affine (dst, x0, y0, x1, y1, dst_rowstride,
-		    pixbuf->pixels,
-		    pixbuf->width, pixbuf->height, pixbuf->rowstride,
-		    affine,
-		    level,
-		    alphagamma);
+                    pixbuf->pixels,
+                    pixbuf->width, pixbuf->height, pixbuf->rowstride,
+                    affine,
+                    level,
+                    alphagamma);
 }

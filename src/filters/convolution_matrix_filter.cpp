@@ -72,14 +72,14 @@ namespace {
     void operator()(RgbTraits::pixel_t color)
     {
       if (*matrixData) {
-	if (_rgba_geta(color) == 0)
-	  div -= *matrixData;
-	else {
-	  r += _rgba_getr(color) * (*matrixData);
-	  g += _rgba_getg(color) * (*matrixData);
-	  b += _rgba_getb(color) * (*matrixData);
-	  a += _rgba_geta(color) * (*matrixData);
-	}
+        if (_rgba_geta(color) == 0)
+          div -= *matrixData;
+        else {
+          r += _rgba_getr(color) * (*matrixData);
+          g += _rgba_getg(color) * (*matrixData);
+          b += _rgba_getb(color) * (*matrixData);
+          a += _rgba_geta(color) * (*matrixData);
+        }
       }
       matrixData++;
     }
@@ -98,12 +98,12 @@ namespace {
     void operator()(GrayscaleTraits::pixel_t color)
     {
       if (*matrixData) {
-	if (_graya_geta(color) == 0)
-	  div -= *matrixData;
-	else {
-	  v += _graya_getv(color) * (*matrixData);
-	  a += _graya_geta(color) * (*matrixData);
-	}
+        if (_graya_geta(color) == 0)
+          div -= *matrixData;
+        else {
+          v += _graya_getv(color) * (*matrixData);
+          a += _graya_geta(color) * (*matrixData);
+        }
       }
       matrixData++;
     }
@@ -125,10 +125,10 @@ namespace {
     void operator()(GrayscaleTraits::pixel_t color)
     {
       if (*matrixData) {
-	r += _rgba_getr(pal->getEntry(color)) * (*matrixData);
-	g += _rgba_getg(pal->getEntry(color)) * (*matrixData);
-	b += _rgba_getb(pal->getEntry(color)) * (*matrixData);
-	index += color * (*matrixData);
+        r += _rgba_getr(pal->getEntry(color)) * (*matrixData);
+        g += _rgba_getg(pal->getEntry(color)) * (*matrixData);
+        b += _rgba_getb(pal->getEntry(color)) * (*matrixData);
+        index += color * (*matrixData);
       }
       matrixData++;
     }
@@ -165,11 +165,11 @@ void ConvolutionMatrixFilter::applyToRgba(FilterManager* filterMgr)
 
     delegate.reset(m_matrix);
     get_neighboring_pixels<RgbTraits>(src, x, y,
-				      m_matrix->getWidth(),
-				      m_matrix->getHeight(),
-				      m_matrix->getCenterX(),
-				      m_matrix->getCenterY(),
-				      m_tiledMode, delegate);
+                                      m_matrix->getWidth(),
+                                      m_matrix->getHeight(),
+                                      m_matrix->getCenterX(),
+                                      m_matrix->getCenterY(),
+                                      m_tiledMode, delegate);
 
     color = image_getpixel_fast<RgbTraits>(src, x, y);
     if (delegate.div == 0) {
@@ -232,18 +232,18 @@ void ConvolutionMatrixFilter::applyToGrayscale(FilterManager* filterMgr)
 
     delegate.reset(m_matrix);
     get_neighboring_pixels<GrayscaleTraits>(src, x, y,
-					    m_matrix->getWidth(),
-					    m_matrix->getHeight(),
-					    m_matrix->getCenterX(),
-					    m_matrix->getCenterY(),
-					    m_tiledMode, delegate);
+                                            m_matrix->getWidth(),
+                                            m_matrix->getHeight(),
+                                            m_matrix->getCenterX(),
+                                            m_matrix->getCenterY(),
+                                            m_tiledMode, delegate);
 
     color = image_getpixel_fast<GrayscaleTraits>(src, x, y);
     if (delegate.div == 0) {
       *(dst_address++) = color;
       continue;
     }
-    
+
     if (target & TARGET_GRAY_CHANNEL) {
       delegate.v = delegate.v / delegate.div + m_matrix->getBias();
       delegate.v = MID(0, delegate.v, 255);
@@ -287,11 +287,11 @@ void ConvolutionMatrixFilter::applyToIndexed(FilterManager* filterMgr)
 
     delegate.reset(m_matrix);
     get_neighboring_pixels<IndexedTraits>(src, x, y,
-					  m_matrix->getWidth(),
-					  m_matrix->getHeight(),
-					  m_matrix->getCenterX(),
-					  m_matrix->getCenterY(),
-					  m_tiledMode, delegate);
+                                          m_matrix->getWidth(),
+                                          m_matrix->getHeight(),
+                                          m_matrix->getCenterX(),
+                                          m_matrix->getCenterY(),
+                                          m_tiledMode, delegate);
 
     color = image_getpixel_fast<IndexedTraits>(src, x, y);
     if (delegate.div == 0) {
@@ -307,25 +307,25 @@ void ConvolutionMatrixFilter::applyToIndexed(FilterManager* filterMgr)
     }
     else {
       if (target & TARGET_RED_CHANNEL) {
-	delegate.r = delegate.r / delegate.div + m_matrix->getBias();
-	delegate.r = MID(0, delegate.r, 255);
+        delegate.r = delegate.r / delegate.div + m_matrix->getBias();
+        delegate.r = MID(0, delegate.r, 255);
       }
       else
-	delegate.r = _rgba_getr(pal->getEntry(color));
+        delegate.r = _rgba_getr(pal->getEntry(color));
 
       if (target & TARGET_GREEN_CHANNEL) {
-	delegate.g =  delegate.g / delegate.div + m_matrix->getBias();
-	delegate.g = MID(0, delegate.g, 255);
+        delegate.g =  delegate.g / delegate.div + m_matrix->getBias();
+        delegate.g = MID(0, delegate.g, 255);
       }
       else
-	delegate.g = _rgba_getg(pal->getEntry(color));
+        delegate.g = _rgba_getg(pal->getEntry(color));
 
       if (target & TARGET_BLUE_CHANNEL) {
-	delegate.b = delegate.b / delegate.div + m_matrix->getBias();
-	delegate.b = MID(0, delegate.b, 255);
+        delegate.b = delegate.b / delegate.div + m_matrix->getBias();
+        delegate.b = MID(0, delegate.b, 255);
       }
       else
-	delegate.b = _rgba_getb(pal->getEntry(color));
+        delegate.b = _rgba_getb(pal->getEntry(color));
 
       *(dst_address++) = rgbmap->mapColor(delegate.r, delegate.g, delegate.b);
     }

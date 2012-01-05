@@ -10,9 +10,9 @@ extern "C" {
 
 
 /* Overkill :-) */
-#define LOADPNG_VERSION		1
-#define LOADPNG_SUBVERSION	5
-#define LOADPNG_VERSIONSTR	"1.5"
+#define LOADPNG_VERSION         1
+#define LOADPNG_SUBVERSION      5
+#define LOADPNG_VERSIONSTR      "1.5"
 
 
 /* _png_screen_gamma is slightly overloaded (sorry):

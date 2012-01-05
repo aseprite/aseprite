@@ -30,4 +30,4 @@ public:
 
 } // namespace undo
 
-#endif	// UNDO_UNDOERS_COLLECTOR_H_INCLUDED
+#endif  // UNDO_UNDOERS_COLLECTOR_H_INCLUDED

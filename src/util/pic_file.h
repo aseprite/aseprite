@@ -24,9 +24,9 @@
 class Image;
 
 Image* load_pic_file(const char* filename, int *x, int *y,
-		     RGB* palette);
+                     RGB* palette);
 
 int save_pic_file(const char* filename, int x, int y,
-		  const RGB* palette, const Image* image);
+                  const RGB* palette, const Image* image);
 
 #endif

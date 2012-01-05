@@ -57,7 +57,7 @@ void jrect_union(JRect r1, const JRect r2)
 bool jrect_intersect(JRect r1, const JRect r2)
 {
   if (!((r1->x2 <= r2->x1) || (r1->x1 >= r2->x2) ||
-	(r1->y2 <= r2->y1) || (r1->y1 >= r2->y2))) {
+        (r1->y2 <= r2->y1) || (r1->y1 >= r2->y2))) {
     r1->x1 = MAX(r1->x1, r2->x1);
     r1->y1 = MAX(r1->y1, r2->y1);
     r1->x2 = MIN(r1->x2, r2->x2);

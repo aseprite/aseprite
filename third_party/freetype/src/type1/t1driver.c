@@ -332,9 +332,9 @@
   {
     {
       ft_module_font_driver      |
-      ft_module_driver_scalable  | 
+      ft_module_driver_scalable  |
       ft_module_driver_has_hinter,
-      
+
       sizeof( FT_DriverRec ),
 
       "type1",

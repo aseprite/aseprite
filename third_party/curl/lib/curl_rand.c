@@ -58,4 +58,3 @@ void Curl_srand(void)
   Curl_rand();
   Curl_rand();
 }
-

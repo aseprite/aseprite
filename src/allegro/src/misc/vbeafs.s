@@ -1,6 +1,6 @@
-/*         ______   ___    ___ 
- *        /\  _  \ /\_ \  /\_ \ 
- *        \ \ \L\ \\//\ \ \//\ \      __     __   _ __   ___ 
+/*         ______   ___    ___
+ *        /\  _  \ /\_ \  /\_ \
+ *        \ \ \L\ \\//\ \ \//\ \      __     __   _ __   ___
  *         \ \  __ \ \ \ \  \ \ \   /'__`\ /'_ `\/\`'__\/ __`\
  *          \ \ \/\ \ \_\ \_ \_\ \_/\  __//\ \L\ \ \ \//\ \L\ \
  *           \ \_\ \_\/\____\/\____\ \____\ \____ \ \_\\ \____/
@@ -51,7 +51,7 @@ FUNC(_af_int86)
    xorl %ecx, %ecx
 
    movl $0x300, %eax
-   int $0x31 
+   int $0x31
 
    popw %es
    popal
@@ -74,7 +74,7 @@ FUNC(_af_call_rm)
    xorl %ecx, %ecx
 
    movl $0x301, %eax
-   int $0x31 
+   int $0x31
 
    popw %es
    popal
@@ -96,31 +96,31 @@ FUNC(_af_wrapper_end)
 #define DISABLE_ACCEL(name)                                                  \
    cmpl $0, GLOBL(_accel_active)                                           ; \
    jz name##_inactive                                                      ; \
-									   ; \
+                                                                           ; \
    pushl %eax                 /* save registers */                         ; \
    pushl %ebx                                                              ; \
    pushl %ecx                                                              ; \
    pushl %edx                                                              ; \
-									   ; \
+                                                                           ; \
    movw %es, %bx              /* make %es be valid */                      ; \
    movw VBEAF_SELECTOR, %dx                                                ; \
    movw %dx, %es                                                           ; \
-									   ; \
+                                                                           ; \
    movl GLOBL(_accel_driver), %ecx                                         ; \
    movl GLOBL(_accel_idle), %edx                                           ; \
    pushl %ecx                                                              ; \
    call *%edx                 /* turn off the graphics hardware */         ; \
    addl $4, %esp                                                           ; \
-									   ; \
+                                                                           ; \
    movw %bx, %es              /* restore registers */                      ; \
-									   ; \
+                                                                           ; \
    popl %edx                                                               ; \
    popl %ecx                                                               ; \
    popl %ebx                                                               ; \
    popl %eax                                                               ; \
-									   ; \
+                                                                           ; \
    movl $0, GLOBL(_accel_active)                                           ; \
-									   ; \
+                                                                           ; \
    _align_                                                                 ; \
 name##_inactive:
 
@@ -146,7 +146,7 @@ FUNC(_accel_bank_switch)
 
    addl BMP_YOFFSET(%edx), %eax              /* lookup which bank */
    shll $2, %eax
-   addl GLOBL(_gfx_bank), %eax 
+   addl GLOBL(_gfx_bank), %eax
    movl (%eax), %eax
 
    cmpl GLOBL(_last_bank_1), %eax            /* need to change? */

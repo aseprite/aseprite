@@ -37,7 +37,7 @@ AL_FUNC(void, _xwin_close_display, (void));
 AL_FUNC(int, _xwin_create_window, (void));
 AL_FUNC(void, _xwin_destroy_window, (void));
 AL_FUNC(BITMAP*, _xwin_create_screen, (GFX_DRIVER *drv, int w, int h,
-				       int vw, int vh, int depth, int fullscreen));
+                                       int vw, int vh, int depth, int fullscreen));
 AL_FUNC(void, _xwin_destroy_screen, (void));
 AL_FUNC(BITMAP *, _xwin_rebuild_screen, (int w, int h, int color_depth));
 AL_FUNC(void, _xwin_set_palette_range, (AL_CONST PALETTE p, int from, int to, int vsync));
@@ -61,7 +61,7 @@ AL_FUNC(void, _xwin_move_mouse, (int x, int y));
 #endif
 
 AL_FUNC(BITMAP*, _xdga_create_screen, (GFX_DRIVER *drv, int w, int h,
-				       int vw, int vh, int depth, int fullscreen));
+                                       int vw, int vh, int depth, int fullscreen));
 AL_FUNC(void, _xdga_destroy_screen, (void));
 AL_FUNC(void, _xdga_set_palette_range, (AL_CONST PALETTE p, int from, int to, int vsync));
 AL_FUNC(int, _xdga_scroll_screen, (int x, int y));
@@ -84,4 +84,3 @@ AL_FUNC(void, _xwin_mouse_leave_notify, (void));
 AL_FUNC(void, _xwin_mouse_enter_notify, (void));
 
 #endif /* !__bma_xwin_h */
-

@@ -1,6 +1,6 @@
-/*         ______   ___    ___ 
- *        /\  _  \ /\_ \  /\_ \ 
- *        \ \ \L\ \\//\ \ \//\ \      __     __   _ __   ___ 
+/*         ______   ___    ___
+ *        /\  _  \ /\_ \  /\_ \
+ *        \ \ \L\ \\//\ \ \//\ \      __     __   _ __   ___
  *         \ \  __ \ \ \ \  \ \ \   /'__`\ /'_ `\/\`'__\/ __`\
  *          \ \ \/\ \ \_\ \_ \_\ \_/\  __//\ \L\ \ \ \//\ \L\ \
  *           \ \_\ \_\/\____\/\____\ \____\ \____ \ \_\\ \____/
@@ -29,12 +29,12 @@
 
 
 
-typedef struct FLOODED_LINE	/* store segments which have been flooded */
+typedef struct FLOODED_LINE     /* store segments which have been flooded */
 {
-  short flags;			/* status of the segment */
-  short lpos, rpos;		/* left and right ends of segment */
-  short y;			/* y coordinate of the segment */
-  int next;			/* linked list if several per line */
+  short flags;                  /* status of the segment */
+  short lpos, rpos;             /* left and right ends of segment */
+  short y;                      /* y coordinate of the segment */
+  int next;                     /* linked list if several per line */
 } FLOODED_LINE;
 
 /* Note: a 'short' is not sufficient for 'next' above in some corner cases. */
@@ -66,9 +66,9 @@ static inline bool color_equal_32(uint32_t c1, uint32_t c2, int tolerance)
       return true;
 
     return ((ABS(r1-r2) <= tolerance) &&
-	    (ABS(g1-g2) <= tolerance) &&
-	    (ABS(b1-b2) <= tolerance) &&
-	    (ABS(a1-a2) <= tolerance));
+            (ABS(g1-g2) <= tolerance) &&
+            (ABS(b1-b2) <= tolerance) &&
+            (ABS(a1-a2) <= tolerance));
   }
 }
 
@@ -86,7 +86,7 @@ static inline bool color_equal_16(uint16_t c1, uint16_t c2, int tolerance)
       return true;
 
     return ((ABS(k1-k2) <= tolerance) &&
-	    (ABS(a1-a2) <= tolerance));
+            (ABS(a1-a2) <= tolerance));
   }
 }
 
@@ -106,7 +106,7 @@ static inline bool color_equal_8(uint8_t c1, uint8_t c2, int tolerance)
  *  the part of the line which it has dealt with.
  */
 static int flooder (Image *image, int x, int y,
-		    int src_color, int tolerance, void *data, AlgoHLine proc)
+                    int src_color, int tolerance, void *data, AlgoHLine proc)
 {
   FLOODED_LINE *p;
   int left = 0, right = 0;
@@ -183,18 +183,18 @@ static int flooder (Image *image, int x, int y,
     default:
       /* check start pixel */
       if (image_getpixel(image, x, y) != src_color)
-	return x+1;
+        return x+1;
 
       /* work left from starting point */
       for (left=x-1; left>=0; left--) {
-	if (image_getpixel(image, left, y) != src_color)
-	  break;
+        if (image_getpixel(image, left, y) != src_color)
+          break;
       }
 
       /* work right from starting point */
       for (right=x+1; right<image->w; right++) {
-	if (image_getpixel(image, right, y) != src_color)
-	  break;
+        if (image_getpixel(image, right, y) != src_color)
+          break;
       }
       break;
   }
@@ -243,7 +243,7 @@ static int flooder (Image *image, int x, int y,
  *  number of tests.
  */
 static int check_flood_line(Image* image, int y, int left, int right,
-			    int src_color, int tolerance, void *data, AlgoHLine proc)
+                            int src_color, int tolerance, void *data, AlgoHLine proc)
 {
   int c;
   FLOODED_LINE *p;
@@ -320,7 +320,7 @@ void algo_floodfill(Image* image, int x, int y, int tolerance, void *data, AlgoH
       if (p->flags & FLOOD_TODO_BELOW) {
         p->flags &= ~FLOOD_TODO_BELOW;
         if (check_flood_line(image, p->y+1, p->lpos, p->rpos,
-			     src_color, tolerance, data, proc)) {
+                             src_color, tolerance, data, proc)) {
           done = false;
           p = FLOOD_LINE(c);
         }
@@ -330,7 +330,7 @@ void algo_floodfill(Image* image, int x, int y, int tolerance, void *data, AlgoH
       if (p->flags & FLOOD_TODO_ABOVE) {
         p->flags &= ~FLOOD_TODO_ABOVE;
         if (check_flood_line(image, p->y-1, p->lpos, p->rpos,
-			     src_color, tolerance, data, proc)) {
+                             src_color, tolerance, data, proc)) {
           done = false;
           /* special case shortcut for going backwards */
           if ((c < image->h) && (c > 0))

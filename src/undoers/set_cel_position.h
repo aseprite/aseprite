@@ -43,4 +43,4 @@ private:
 
 } // namespace undoers
 
-#endif	// UNDOERS_SET_CEL_POSITION_H_INCLUDED
+#endif  // UNDOERS_SET_CEL_POSITION_H_INCLUDED

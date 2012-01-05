@@ -37,7 +37,7 @@ public:
   const_iterator end() const { return m_map.end(); }
 
   void setHeader(const std::string& name,
-		 const std::string& value);
+                 const std::string& value);
 
 private:
   Map m_map;
@@ -45,4 +45,4 @@ private:
 
 } // namespace net
 
-#endif	// NET_HTTP_HEADERS_H_INCLUDED
+#endif  // NET_HTTP_HEADERS_H_INCLUDED

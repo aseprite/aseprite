@@ -22,7 +22,7 @@
 #include "base/string.h"
 
 base::string ase_file_selector(const base::string& message,
-			       const base::string& init_path,
-			       const base::string& exts);
+                               const base::string& init_path,
+                               const base::string& exts);
 
 #endif

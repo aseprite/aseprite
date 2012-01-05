@@ -41,8 +41,8 @@ class CloseFileCommand : public Command
 public:
   CloseFileCommand()
     : Command("CloseFile",
-	      "Close File",
-	      CmdUIOnlyFlag)
+              "Close File",
+              CmdUIOnlyFlag)
   {
   }
 
@@ -74,8 +74,8 @@ class CloseAllFilesCommand : public Command
 public:
   CloseAllFilesCommand()
     : Command("CloseAllFiles",
-	      "Close All Files",
-	      CmdRecordableFlag)
+              "Close All Files",
+              CmdRecordableFlag)
   {
   }
 
@@ -95,11 +95,11 @@ protected:
 
     while (true) {
       if (context->getActiveDocument() != NULL) {
-	if (!close_active_document(context))
-	  break;
+        if (!close_active_document(context))
+          break;
       }
       else
-	break;
+        break;
     }
   }
 
@@ -125,30 +125,30 @@ static bool close_active_document(Context* context)
 
       // see if the sprite has changes
       while (document->isModified()) {
-	// ask what want to do the user with the changes in the sprite
-	int ret = Alert::show("Warning<<Saving changes in:<<%s||&Save||Do&n't Save||&Cancel",
-			      get_filename(document->getFilename()));
+        // ask what want to do the user with the changes in the sprite
+        int ret = Alert::show("Warning<<Saving changes in:<<%s||&Save||Do&n't Save||&Cancel",
+                              get_filename(document->getFilename()));
 
-	if (ret == 1) {
-	  // "save": save the changes
-	  save_it = true;
-	  break;
-	}
-	else if (ret != 2) {
-	  // "cancel" or "ESC" */
-	  return false; // we back doing nothing
-	}
-	else {
-	  // "discard"
-	  break;
-	}
+        if (ret == 1) {
+          // "save": save the changes
+          save_it = true;
+          break;
+        }
+        else if (ret != 2) {
+          // "cancel" or "ESC" */
+          return false; // we back doing nothing
+        }
+        else {
+          // "discard"
+          break;
+        }
       }
     }
 
     // Does we need to save the sprite?
     if (save_it) {
       Command* save_command =
-	CommandsModule::instance()->getCommandByName(CommandId::SaveFile);
+        CommandsModule::instance()->getCommandByName(CommandId::SaveFile);
       context->executeCommand(save_command);
 
       try_again = true;
@@ -162,7 +162,7 @@ static bool close_active_document(Context* context)
     ActiveDocumentWriter document(context);
     app_get_statusbar()
       ->setStatusText(0, "Sprite '%s' closed.",
-		      get_filename(document->getFilename()));
+                      get_filename(document->getFilename()));
     document.deleteDocument();
   }
   return true;

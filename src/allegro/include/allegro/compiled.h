@@ -40,5 +40,3 @@ AL_FUNC(void, draw_compiled_sprite, (struct BITMAP *bmp, AL_CONST COMPILED_SPRIT
 #endif
 
 #endif          /* ifndef ALLEGRO_COMPILED_H */
-
-

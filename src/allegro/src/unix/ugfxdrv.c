@@ -23,4 +23,3 @@
 /* list the available drivers */
 BEGIN_GFX_DRIVER_LIST
 END_GFX_DRIVER_LIST
-

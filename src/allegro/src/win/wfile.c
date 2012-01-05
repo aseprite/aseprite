@@ -1,6 +1,6 @@
-/*         ______   ___    ___ 
- *        /\  _  \ /\_ \  /\_ \ 
- *        \ \ \L\ \\//\ \ \//\ \      __     __   _ __   ___ 
+/*         ______   ___    ___
+ *        /\  _  \ /\_ \  /\_ \
+ *        \ \ \L\ \\//\ \ \//\ \      __     __   _ __   ___
  *         \ \  __ \ \ \ \  \ \ \   /'__`\ /'_ `\/\`'__\/ __`\
  *          \ \ \/\ \ \_\ \_ \_\ \_/\  __//\ \L\ \ \ \//\ \L\ \
  *           \ \_\ \_\/\____\/\____\ \____\ \____ \ \_\\ \____/
@@ -174,7 +174,7 @@ int al_findfirst(AL_CONST char *pattern, struct al_ffblk *info, int attrib)
 
    /* Windows defines specific flags for NTFS permissions:
     *   FA_TEMPORARY            0x0100
-    *   FA_SPARSE_FILE          0x0200 
+    *   FA_SPARSE_FILE          0x0200
     *   FA_REPARSE_POINT        0x0400
     *   FA_COMPRESSED           0x0800
     *   FA_OFFLINE              0x1000
@@ -376,4 +376,3 @@ int _al_win_unlink(const char *pathname)
       return _wunlink((wchar_t*)pathname);
    }
 }
-

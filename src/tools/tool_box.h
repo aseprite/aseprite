@@ -68,5 +68,4 @@ private:
 
 } // namespace tools
 
-#endif	// TOOLS_TOOL_BOX_H_INCLUDED
-
+#endif  // TOOLS_TOOL_BOX_H_INCLUDED

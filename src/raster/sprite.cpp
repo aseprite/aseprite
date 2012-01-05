@@ -42,7 +42,7 @@ Sprite::Sprite(int imgtype, int width, int height, int ncolors)
   ASSERT(width > 0 && height > 0);
 
   m_frames = 1;
-  m_frlens.push_back(100);	// First frame with 100 msecs of duration
+  m_frlens.push_back(100);      // First frame with 100 msecs of duration
   m_frame = 0;
   m_stock = new Stock(imgtype);
   m_folder = new LayerFolder(this);
@@ -63,9 +63,9 @@ Sprite::Sprite(int imgtype, int width, int height, int ncolors)
     case IMAGE_GRAYSCALE:
     case IMAGE_BITMAP:
       for (int c=0; c<ncolors; c++) {
-	int g = 255 * c / (ncolors-1);
-	g = MID(0, g, 255);
-	pal.setEntry(c, _rgba(g, g, g, 255));
+        int g = 255 * c / (ncolors-1);
+        g = MID(0, g, 255);
+        pal.setEntry(c, _rgba(g, g, g, 255));
       }
       break;
   }
@@ -93,7 +93,7 @@ Sprite::~Sprite()
     PalettesList::iterator end = m_palettes.end();
     PalettesList::iterator it = m_palettes.begin();
     for (; it != end; ++it)
-      delete *it;		// palette
+      delete *it;               // palette
   }
 
   // Destroy RGB map
@@ -241,11 +241,11 @@ void Sprite::setPalette(const Palette* pal, bool truncate)
       other = *it;
 
       if (pal->getFrame() == other->getFrame()) {
-	pal->copyColorsTo(other);
-	return;
+        pal->copyColorsTo(other);
+        return;
       }
       else if (pal->getFrame() < other->getFrame())
-	break;
+        break;
     }
 
     m_palettes.insert(it, new Palette(*pal));
@@ -258,9 +258,9 @@ void Sprite::resetPalettes()
   PalettesList::iterator it = m_palettes.begin();
 
   if (it != end) {
-    ++it;			// Leave the first palette only.
+    ++it;                       // Leave the first palette only.
     while (it != end) {
-      delete *it;		// palette
+      delete *it;               // palette
       it = m_palettes.erase(it);
       end = m_palettes.end();
     }
@@ -272,7 +272,7 @@ void Sprite::deletePalette(Palette* pal)
   ASSERT(pal != NULL);
 
   base::remove_from_container(m_palettes, pal);
-  delete pal;			// palette
+  delete pal;                   // palette
 }
 
 Palette* Sprite::getCurrentPalette() const
@@ -355,7 +355,7 @@ Image* Sprite::getCurrentImage(int* x, int* y, int* opacity) const
     const Cel* cel = static_cast<const LayerImage*>(getCurrentLayer())->getCel(getCurrentFrame());
     if (cel) {
       ASSERT((cel->getImage() >= 0) &&
-	     (cel->getImage() < getStock()->size()));
+             (cel->getImage() < getStock()->size()));
 
       image = getStock()->getImage(cel->getImage());
 
@@ -385,14 +385,14 @@ void Sprite::remapImages(int frame_from, int frame_to, const std::vector<uint8_t
     Cel* cel = *it;
 
     // Remap this Cel because is inside the specified range
-    if (cel->getFrame() >= frame_from && 
-	cel->getFrame() <= frame_to) {
+    if (cel->getFrame() >= frame_from &&
+        cel->getFrame() <= frame_to) {
       Image* image = getStock()->getImage(cel->getImage());
 
       for (int y=0; y<image->h; ++y) {
-	IndexedTraits::address_t ptr = image_address_fast<IndexedTraits>(image, 0, y);
-	for (int x=0; x<image->w; ++x, ++ptr)
-	  *ptr = mapping[*ptr];
+        IndexedTraits::address_t ptr = image_address_fast<IndexedTraits>(image, 0, y);
+        for (int x=0; x<image->w; ++x, ++ptr)
+          *ptr = mapping[*ptr];
       }
     }
   }
@@ -404,7 +404,7 @@ void Sprite::remapImages(int frame_from, int frame_to, const std::vector<uint8_t
 void Sprite::render(Image* image, int x, int y) const
 {
   image_rectfill(image, x, y, x+m_width-1, y+m_height-1,
-		 (m_imgtype == IMAGE_INDEXED ? getTransparentColor(): 0));
+                 (m_imgtype == IMAGE_INDEXED ? getTransparentColor(): 0));
 
   layer_render(getFolder(), image, x, y, getCurrentFrame());
 }
@@ -440,8 +440,8 @@ static Layer* index2layer(const Layer* layer, int index, int* index_count)
       LayerConstIterator end = static_cast<const LayerFolder*>(layer)->get_layer_end();
 
       for (; it != end; ++it) {
-	if ((found = index2layer(*it, index, index_count)))
-	  return found;
+        if ((found = index2layer(*it, index, index_count)))
+          return found;
       }
     }
 
@@ -463,8 +463,8 @@ static int layer2index(const Layer* layer, const Layer* find_layer, int* index_c
       LayerConstIterator end = static_cast<const LayerFolder*>(layer)->get_layer_end();
 
       for (; it != end; ++it) {
-	if ((found = layer2index(*it, find_layer, index_count)) >= 0)
-	  return found;
+        if ((found = layer2index(*it, find_layer, index_count)) >= 0)
+          return found;
       }
     }
 

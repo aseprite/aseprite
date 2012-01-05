@@ -36,23 +36,23 @@ struct _ArtSVPRenderAAStep {
 
 ArtSVPRenderAAIter *
 art_svp_render_aa_iter (const ArtSVP *svp,
-			int x0, int y0, int x1, int y1);
+                        int x0, int y0, int x1, int y1);
 
 void
 art_svp_render_aa_iter_step (ArtSVPRenderAAIter *iter, int *p_start,
-			     ArtSVPRenderAAStep **p_steps, int *p_n_steps);
+                             ArtSVPRenderAAStep **p_steps, int *p_n_steps);
 
 void
 art_svp_render_aa_iter_done (ArtSVPRenderAAIter *iter);
 
 void
 art_svp_render_aa (const ArtSVP *svp,
-		   int x0, int y0, int x1, int y1,
-		   void (*callback) (void *callback_data,
-				     int y,
-				     int start,
-				     ArtSVPRenderAAStep *steps, int n_steps),
-		   void *callback_data);
+                   int x0, int y0, int x1, int y1,
+                   void (*callback) (void *callback_data,
+                                     int y,
+                                     int start,
+                                     ArtSVPRenderAAStep *steps, int n_steps),
+                   void *callback_data);
 
 #ifdef __cplusplus
 }

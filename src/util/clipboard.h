@@ -37,4 +37,3 @@ namespace clipboard {
 } // namespace clipboard
 
 #endif
-

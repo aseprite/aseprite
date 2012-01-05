@@ -24,4 +24,3 @@ bool animation_editor_is_movingcel();
 void switch_between_animation_and_sprite_editor();
 
 #endif
-

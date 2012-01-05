@@ -1,6 +1,6 @@
-/*         ______   ___    ___ 
- *        /\  _  \ /\_ \  /\_ \ 
- *        \ \ \L\ \\//\ \ \//\ \      __     __   _ __   ___ 
+/*         ______   ___    ___
+ *        /\  _  \ /\_ \  /\_ \
+ *        \ \ \L\ \\//\ \ \//\ \      __     __   _ __   ___
  *         \ \  __ \ \ \ \  \ \ \   /'__`\ /'_ `\/\`'__\/ __`\
  *          \ \ \/\ \ \_\ \_ \_\ \_/\  __//\ \L\ \ \ \//\ \L\ \
  *           \ \_\ \_\/\____\/\____\ \____\ \____ \ \_\\ \____/
@@ -55,19 +55,19 @@ void _win_thread_init(void)
 
       ole32 = GetModuleHandle("OLE32.DLL");
       if (ole32 != NULL) {
-	 _CoInitializeEx = (_CoInitializeEx_ptr) GetProcAddress(
-						ole32, "CoInitializeEx");
+         _CoInitializeEx = (_CoInitializeEx_ptr) GetProcAddress(
+                                                ole32, "CoInitializeEx");
       }
       else {
-	 MessageBox(allegro_wnd,
-	 "OLE32.DLL can't be loaded.", "Warning", MB_ICONWARNING + MB_OK);
+         MessageBox(allegro_wnd,
+         "OLE32.DLL can't be loaded.", "Warning", MB_ICONWARNING + MB_OK);
       }
 
       if (_CoInitializeEx == NULL) {
-	 MessageBox(allegro_wnd,
-		    "Microsoft Distributed COM is not installed on this system. If you have problems "
-		    "with this application, please install the DCOM update. You can find it on the "
-	 "Microsoft homepage.", "DCOM not found", MB_ICONWARNING + MB_OK);
+         MessageBox(allegro_wnd,
+                    "Microsoft Distributed COM is not installed on this system. If you have problems "
+                    "with this application, please install the DCOM update. You can find it on the "
+         "Microsoft homepage.", "DCOM not found", MB_ICONWARNING + MB_OK);
       }
    }
 
@@ -146,4 +146,3 @@ void sys_directx_unlock_mutex(void *handle)
 
    LeaveCriticalSection(cs);
 }
-

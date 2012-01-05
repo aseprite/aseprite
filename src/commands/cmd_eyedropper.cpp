@@ -52,8 +52,8 @@ protected:
 
 EyedropperCommand::EyedropperCommand()
   : Command("Eyedropper",
-	    "Eyedropper",
-	    CmdUIOnlyFlag)
+            "Eyedropper",
+            CmdUIOnlyFlag)
 {
   m_background = false;
 }
@@ -82,7 +82,7 @@ void EyedropperCommand::onExecute(Context* context)
 
   // get the color from the image
   Color color = Color::fromImage(sprite->getImgType(),
-				 sprite->getPixel(x, y));
+                                 sprite->getPixel(x, y));
 
   // TODO replace the color in the "context", not directly from the color-bar
 

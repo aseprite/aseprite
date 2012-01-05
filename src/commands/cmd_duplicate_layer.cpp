@@ -48,16 +48,16 @@ protected:
 
 DuplicateLayerCommand::DuplicateLayerCommand()
   : Command("DuplicateLayer",
-	    "Duplicate Layer",
-	    CmdRecordableFlag)
+            "Duplicate Layer",
+            CmdRecordableFlag)
 {
 }
 
 bool DuplicateLayerCommand::onEnabled(Context* context)
 {
   return context->checkFlags(ContextFlags::ActiveDocumentIsWritable |
-			     ContextFlags::HasActiveLayer |
-			     ContextFlags::ActiveLayerIsImage);
+                             ContextFlags::HasActiveLayer |
+                             ContextFlags::ActiveLayerIsImage);
 }
 
 void DuplicateLayerCommand::onExecute(Context* context)
@@ -87,7 +87,7 @@ void DuplicateLayerCommand::onExecute(Context* context)
   // Add the new layer in the sprite.
   if (undo->isEnabled())
     undo->pushUndoer(new undoers::AddLayer(undo->getObjects(),
-	sourceLayer->get_parent(), newLayerPtr));
+        sourceLayer->get_parent(), newLayerPtr));
 
   sourceLayer->get_parent()->add_layer(newLayerPtr);
 

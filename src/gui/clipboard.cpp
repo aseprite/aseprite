@@ -14,7 +14,7 @@
 #include <winalleg.h>
 #endif
 
-#pragma warning(disable:4996)	// To void MSVC warning about std::copy() with unsafe arguments
+#pragma warning(disable:4996)   // To void MSVC warning about std::copy() with unsafe arguments
 
 static std::string clipboard_text;
 
@@ -30,11 +30,11 @@ const char* jclipboard_get_text()
     if (OpenClipboard(win_get_window())) {
       HGLOBAL hglobal = GetClipboardData(CF_TEXT);
       if (hglobal != NULL) {
-	LPSTR lpstr = static_cast<LPSTR>(GlobalLock(hglobal));
-	if (lpstr != NULL) {
-	  lowlevel_set_clipboard_text(lpstr);
-	  GlobalUnlock(hglobal);
-	}
+        LPSTR lpstr = static_cast<LPSTR>(GlobalLock(hglobal));
+        if (lpstr != NULL) {
+          lowlevel_set_clipboard_text(lpstr);
+          GlobalUnlock(hglobal);
+        }
       }
       CloseClipboard();
     }
@@ -54,16 +54,16 @@ void jclipboard_set_text(const char *text)
       EmptyClipboard();
 
       if (!clipboard_text.empty()) {
-	int len = clipboard_text.size();
+        int len = clipboard_text.size();
 
-	HGLOBAL hglobal = GlobalAlloc(GMEM_MOVEABLE |
-				      GMEM_ZEROINIT, sizeof(char)*(len+1));
+        HGLOBAL hglobal = GlobalAlloc(GMEM_MOVEABLE |
+                                      GMEM_ZEROINIT, sizeof(char)*(len+1));
 
-	LPSTR lpstr = static_cast<LPSTR>(GlobalLock(hglobal));
-	std::copy(clipboard_text.begin(), clipboard_text.end(), lpstr);
-	GlobalUnlock(hglobal);
+        LPSTR lpstr = static_cast<LPSTR>(GlobalLock(hglobal));
+        std::copy(clipboard_text.begin(), clipboard_text.end(), lpstr);
+        GlobalUnlock(hglobal);
 
-	SetClipboardData(CF_TEXT, hglobal);
+        SetClipboardData(CF_TEXT, hglobal);
       }
       CloseClipboard();
     }

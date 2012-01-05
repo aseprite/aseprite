@@ -10,25 +10,25 @@
 #include "gfx/rect.h"
 #include "gui/base.h"
 
-#define JI_COLOR_SHADE(color, r, g, b)		\
-  makecol(MID(0, getr(color)+(r), 255),		\
-	  MID(0, getg(color)+(g), 255),		\
-	  MID(0, getb(color)+(b), 255))
+#define JI_COLOR_SHADE(color, r, g, b)          \
+  makecol(MID(0, getr(color)+(r), 255),         \
+          MID(0, getg(color)+(g), 255),         \
+          MID(0, getb(color)+(b), 255))
 
-#define JI_COLOR_INTERP(c1, c2, step, max)		\
-  makecol(getr(c1)+(getr(c2)-getr(c1)) * step / max,	\
-	  getg(c1)+(getg(c2)-getg(c1)) * step / max,	\
-	  getb(c1)+(getb(c2)-getb(c1)) * step / max)
+#define JI_COLOR_INTERP(c1, c2, step, max)              \
+  makecol(getr(c1)+(getr(c2)-getr(c1)) * step / max,    \
+          getg(c1)+(getg(c2)-getg(c1)) * step / max,    \
+          getb(c1)+(getb(c2)-getb(c1)) * step / max)
 
 struct FONT;
 struct BITMAP;
 
 void jrectedge(struct BITMAP *bmp, int x1, int y1, int x2, int y2,
-	       int c1, int c2);
+               int c1, int c2);
 void jrectexclude(struct BITMAP *bmp, int x1, int y1, int x2, int y2,
-		  int ex1, int ey1, int ex2, int ey2, int color);
+                  int ex1, int ey1, int ex2, int ey2, int color);
 void jrectshade(struct BITMAP *bmp, int x1, int y1, int x2, int y2,
-		int c1, int c2, int align);
+                int c1, int c2, int align);
 
 void jdraw_rect(const JRect rect, int color);
 void jdraw_rectfill(const JRect rect, int color);

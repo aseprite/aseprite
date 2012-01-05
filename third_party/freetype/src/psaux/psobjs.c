@@ -166,7 +166,7 @@
       FT_Error   error;
       FT_Offset  new_size  = table->capacity;
       FT_Long    in_offset;
-      
+
 
       in_offset = (FT_Long)((FT_Byte*)object - table->block);
       if ( (FT_ULong)in_offset >= table->capacity )
@@ -178,7 +178,7 @@
       error = reallocate_t1_table( table, new_size );
       if ( error )
         return error;
-      
+
       if ( in_offset >= 0 )
         object = table->block + in_offset;
     }
@@ -1093,7 +1093,7 @@
 
       builder->hints_globals = size->internal;
       builder->hints_funcs   = 0;
-            
+
       if ( hinting )
         builder->hints_funcs = glyph->internal->glyph_hints;
     }

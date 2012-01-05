@@ -38,4 +38,3 @@ int fixup_color_for_background(int imgtype, int color);
 }
 
 #endif
-

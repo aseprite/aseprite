@@ -117,157 +117,157 @@ BITMAP *load_lbm(AL_CONST char *filename, RGB *pal)
    check_flags = 0;
 
    do {  /* We'll use cycle to skip possible junk      */
-	 /*  chunks: ANNO, CAMG, GRAB, DEST, TEXT etc. */
+         /*  chunks: ANNO, CAMG, GRAB, DEST, TEXT etc. */
       data_id = pack_igetl(f);
 
       switch(data_id) {
 
-	 case IFF_CMAP:
-	    memset(pal, 0, 256 * 3);
-	    len = pack_mgetl(f) / 3;
-	    for (i=0; i<len; i++) {
-	       pal[i].r = pack_getc(f) >> 2;
-	       pal[i].g = pack_getc(f) >> 2;
-	       pal[i].b = pack_getc(f) >> 2;
-	    }
-	    check_flags |= 1;       /* flag "palette read" */
-	    break;
+         case IFF_CMAP:
+            memset(pal, 0, 256 * 3);
+            len = pack_mgetl(f) / 3;
+            for (i=0; i<len; i++) {
+               pal[i].r = pack_getc(f) >> 2;
+               pal[i].g = pack_getc(f) >> 2;
+               pal[i].b = pack_getc(f) >> 2;
+            }
+            check_flags |= 1;       /* flag "palette read" */
+            break;
 
-	 case IFF_BODY:
-	    pack_igetl(f);          /* skip BODY size */
-	    b = create_bitmap_ex(8, w, h);
-	    if (!b) {
-	       pack_fclose(f);
-	       return NULL;
-	    }
+         case IFF_BODY:
+            pack_igetl(f);          /* skip BODY size */
+            b = create_bitmap_ex(8, w, h);
+            if (!b) {
+               pack_fclose(f);
+               return NULL;
+            }
 
-	    memset(b->line[0], 0, w * h);
+            memset(b->line[0], 0, w * h);
 
-	    if (pbm_mode)
-	       bpl = w;
-	    else {
-	       bpl = w >> 3;        /* calc bytes per line  */
-	       if (w & 7)           /* for finish bits      */
-		  bpl++;
-	    }
-	    if (bpl & 1)            /* alignment            */
-	       bpl++;
-	    line_buf = _AL_MALLOC_ATOMIC(bpl);
-	    if (!line_buf) {
-	       pack_fclose(f);
-	       return NULL;
-	    }
+            if (pbm_mode)
+               bpl = w;
+            else {
+               bpl = w >> 3;        /* calc bytes per line  */
+               if (w & 7)           /* for finish bits      */
+                  bpl++;
+            }
+            if (bpl & 1)            /* alignment            */
+               bpl++;
+            line_buf = _AL_MALLOC_ATOMIC(bpl);
+            if (!line_buf) {
+               pack_fclose(f);
+               return NULL;
+            }
 
-	    if (pbm_mode) {
-	       for (y = 0; y < h; y++) {
-		  if (cmp_type) {
-		     i = 0;
-		     while (i < bpl) {
-			uc = pack_getc(f);
-			if (uc < 128) {
-			   uc++;
-			   pack_fread(&line_buf[i], uc, f);
-			   i += uc;
-			}
-			else if (uc > 128) {
-			   uc = 257 - uc;
-			   ch = pack_getc(f);
-			   memset(&line_buf[i], ch, uc);
-			   i += uc;
-			}
-			/* 128 (0x80) means NOP - no operation  */
-		     }
-		  }
-		  else  /* pure theoretical situation */
-		     pack_fread(line_buf, bpl, f);
+            if (pbm_mode) {
+               for (y = 0; y < h; y++) {
+                  if (cmp_type) {
+                     i = 0;
+                     while (i < bpl) {
+                        uc = pack_getc(f);
+                        if (uc < 128) {
+                           uc++;
+                           pack_fread(&line_buf[i], uc, f);
+                           i += uc;
+                        }
+                        else if (uc > 128) {
+                           uc = 257 - uc;
+                           ch = pack_getc(f);
+                           memset(&line_buf[i], ch, uc);
+                           i += uc;
+                        }
+                        /* 128 (0x80) means NOP - no operation  */
+                     }
+                  }
+                  else  /* pure theoretical situation */
+                     pack_fread(line_buf, bpl, f);
 
-		  memcpy(b->line[y], line_buf, bpl);
-	       }
-	    }
-	    else {
-	       for (y = 0; y < h; y++) {
-		  for (bit_plane = 0; bit_plane < color_depth; bit_plane++) {
-		     if (cmp_type) {
-			i = 0;
-			while (i < bpl) {
-			   uc = pack_getc(f);
-			   if (uc < 128) {
-			      uc++;
-			      pack_fread(&line_buf[i], uc, f);
-			      i += uc;
-			   }
-			   else if (uc > 128) {
-			      uc = 257 - uc;
-			      ch = pack_getc(f);
-			      memset(&line_buf[i], ch, uc);
-			      i += uc;
-			   }
-			   /* 128 (0x80) means NOP - no operation  */
-			}
-		     }
-		     else
-			pack_fread(line_buf, bpl, f);
+                  memcpy(b->line[y], line_buf, bpl);
+               }
+            }
+            else {
+               for (y = 0; y < h; y++) {
+                  for (bit_plane = 0; bit_plane < color_depth; bit_plane++) {
+                     if (cmp_type) {
+                        i = 0;
+                        while (i < bpl) {
+                           uc = pack_getc(f);
+                           if (uc < 128) {
+                              uc++;
+                              pack_fread(&line_buf[i], uc, f);
+                              i += uc;
+                           }
+                           else if (uc > 128) {
+                              uc = 257 - uc;
+                              ch = pack_getc(f);
+                              memset(&line_buf[i], ch, uc);
+                              i += uc;
+                           }
+                           /* 128 (0x80) means NOP - no operation  */
+                        }
+                     }
+                     else
+                        pack_fread(line_buf, bpl, f);
 
-		     bit_mask = 1 << bit_plane;
-		     ppl = bpl;     /* for all pixel blocks */
-		     if (w & 7)     /*  may be, except the  */
-			ppl--;      /*  the last            */
+                     bit_mask = 1 << bit_plane;
+                     ppl = bpl;     /* for all pixel blocks */
+                     if (w & 7)     /*  may be, except the  */
+                        ppl--;      /*  the last            */
 
-		     for (x = 0; x < ppl; x++) {
-			if (line_buf[x] & 128)
-			   b->line[y][x * 8]     |= bit_mask;
-			if (line_buf[x] & 64)
-			   b->line[y][x * 8 + 1] |= bit_mask;
-			if (line_buf[x] & 32)
-			   b->line[y][x * 8 + 2] |= bit_mask;
-			if (line_buf[x] & 16)
-			   b->line[y][x * 8 + 3] |= bit_mask;
-			if (line_buf[x] & 8)
-			   b->line[y][x * 8 + 4] |= bit_mask;
-			if (line_buf[x] & 4)
-			   b->line[y][x * 8 + 5] |= bit_mask;
-			if (line_buf[x] & 2)
-			   b->line[y][x * 8 + 6] |= bit_mask;
-			if (line_buf[x] & 1)
-			   b->line[y][x * 8 + 7] |= bit_mask;
-		     }
+                     for (x = 0; x < ppl; x++) {
+                        if (line_buf[x] & 128)
+                           b->line[y][x * 8]     |= bit_mask;
+                        if (line_buf[x] & 64)
+                           b->line[y][x * 8 + 1] |= bit_mask;
+                        if (line_buf[x] & 32)
+                           b->line[y][x * 8 + 2] |= bit_mask;
+                        if (line_buf[x] & 16)
+                           b->line[y][x * 8 + 3] |= bit_mask;
+                        if (line_buf[x] & 8)
+                           b->line[y][x * 8 + 4] |= bit_mask;
+                        if (line_buf[x] & 4)
+                           b->line[y][x * 8 + 5] |= bit_mask;
+                        if (line_buf[x] & 2)
+                           b->line[y][x * 8 + 6] |= bit_mask;
+                        if (line_buf[x] & 1)
+                           b->line[y][x * 8 + 7] |= bit_mask;
+                     }
 
-		     /* last pixel block */
-		     if (w & 7) {
-			x = bpl - 1;
+                     /* last pixel block */
+                     if (w & 7) {
+                        x = bpl - 1;
 
-			/* no necessary to check if (w & 7) > 0 in */
-			/* first condition, because (w & 7) != 0   */
-			if (line_buf[x] & 128)
-			   b->line[y][x * 8]     |= bit_mask;
-			if ((line_buf[x] & 64) && ((w & 7) > 1))
-			   b->line[y][x * 8 + 1] |= bit_mask;
-			if ((line_buf[x] & 32) && ((w & 7) > 2))
-			   b->line[y][x * 8 + 2] |= bit_mask;
-			if ((line_buf[x] & 16) && ((w & 7) > 3))
-			   b->line[y][x * 8 + 3] |= bit_mask;
-			if ((line_buf[x] & 8)  && ((w & 7) > 4))
-			   b->line[y][x * 8 + 4] |= bit_mask;
-			if ((line_buf[x] & 4)  && ((w & 7) > 5))
-			   b->line[y][x * 8 + 5] |= bit_mask;
-			if ((line_buf[x] & 2)  && ((w & 7) > 6))
-			   b->line[y][x * 8 + 6] |= bit_mask;
-			if ((line_buf[x] & 1)  && ((w & 7) > 7))
-			   b->line[y][x * 8 + 7] |= bit_mask;
-		     }
-		  }
-	       }
-	    }
-	    _AL_FREE(line_buf);
-	    check_flags |= 2;       /* flag "bitmap read" */
-	    break;
+                        /* no necessary to check if (w & 7) > 0 in */
+                        /* first condition, because (w & 7) != 0   */
+                        if (line_buf[x] & 128)
+                           b->line[y][x * 8]     |= bit_mask;
+                        if ((line_buf[x] & 64) && ((w & 7) > 1))
+                           b->line[y][x * 8 + 1] |= bit_mask;
+                        if ((line_buf[x] & 32) && ((w & 7) > 2))
+                           b->line[y][x * 8 + 2] |= bit_mask;
+                        if ((line_buf[x] & 16) && ((w & 7) > 3))
+                           b->line[y][x * 8 + 3] |= bit_mask;
+                        if ((line_buf[x] & 8)  && ((w & 7) > 4))
+                           b->line[y][x * 8 + 4] |= bit_mask;
+                        if ((line_buf[x] & 4)  && ((w & 7) > 5))
+                           b->line[y][x * 8 + 5] |= bit_mask;
+                        if ((line_buf[x] & 2)  && ((w & 7) > 6))
+                           b->line[y][x * 8 + 6] |= bit_mask;
+                        if ((line_buf[x] & 1)  && ((w & 7) > 7))
+                           b->line[y][x * 8 + 7] |= bit_mask;
+                     }
+                  }
+               }
+            }
+            _AL_FREE(line_buf);
+            check_flags |= 2;       /* flag "bitmap read" */
+            break;
 
-	 default:                   /* skip useless chunks  */
-	    len = pack_mgetl(f);
-	    if (len & 1)
-	       len++;
-	    for (l=0; l < (len >> 1); l++)
-	       pack_igetw(f);
+         default:                   /* skip useless chunks  */
+            len = pack_mgetl(f);
+            if (len & 1)
+               len++;
+            for (l=0; l < (len >> 1); l++)
+               pack_igetw(f);
       }
 
       /* Exit from loop if we are at the end of file, */
@@ -279,7 +279,7 @@ BITMAP *load_lbm(AL_CONST char *filename, RGB *pal)
 
    if (check_flags != 3) {
       if (check_flags & 2)
-	 destroy_bitmap(b);
+         destroy_bitmap(b);
       return FALSE;
    }
 
@@ -293,4 +293,3 @@ BITMAP *load_lbm(AL_CONST char *filename, RGB *pal)
 
    return b;
 }
-

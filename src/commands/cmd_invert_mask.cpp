@@ -44,15 +44,15 @@ protected:
 
 InvertMaskCommand::InvertMaskCommand()
   : Command("InvertMask",
-	    "Invert Mask",
-	    CmdRecordableFlag)
+            "Invert Mask",
+            CmdRecordableFlag)
 {
 }
 
 bool InvertMaskCommand::onEnabled(Context* context)
 {
   return context->checkFlags(ContextFlags::ActiveDocumentIsWritable |
-			     ContextFlags::HasActiveSprite);
+                             ContextFlags::HasActiveSprite);
 }
 
 void InvertMaskCommand::onExecute(Context* context)
@@ -92,16 +92,16 @@ void InvertMaskCommand::onExecute(Context* context)
 
     /* remove in the new mask the current sprite marked region */
     image_rectfill(mask->bitmap,
-		   document->getMask()->x, document->getMask()->y,
-		   document->getMask()->x + document->getMask()->w-1,
-		   document->getMask()->y + document->getMask()->h-1, 0);
+                   document->getMask()->x, document->getMask()->y,
+                   document->getMask()->x + document->getMask()->w-1,
+                   document->getMask()->y + document->getMask()->h-1, 0);
 
     /* invert the current mask in the sprite */
     mask_invert(document->getMask());
     if (document->getMask()->bitmap) {
       /* copy the inverted region in the new mask */
       image_copy(mask->bitmap, document->getMask()->bitmap,
-		 document->getMask()->x, document->getMask()->y);
+                 document->getMask()->x, document->getMask()->y);
     }
 
     /* we need only need the area inside the sprite */

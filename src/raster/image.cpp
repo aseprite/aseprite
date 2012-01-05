@@ -125,10 +125,10 @@ void image_putpen(Image* image, Pen* pen, int x, int y, int fg_color, int bg_col
   else {
     for (v=0; v<pen_image->h; v++) {
       for (u=0; u<pen_image->w; u++) {
-	if (image_getpixel(pen_image, u, v))
-	  image_putpixel(image, x+u, y+v, fg_color);
-	else
-	  image_putpixel(image, x+u, y+v, bg_color);
+        if (image_getpixel(pen_image, u, v))
+          image_putpixel(image, x+u, y+v, fg_color);
+        else
+          image_putpixel(image, x+u, y+v, bg_color);
       }
     }
   }
@@ -174,9 +174,9 @@ void image_rotate(const Image* src, Image* dst, int angle)
       ASSERT(dst->h == src->h);
 
       for (y=0; y<src->h; ++y)
-	for (x=0; x<src->w; ++x)
-	  dst->putpixel(src->w - x - 1,
-			src->h - y - 1, src->getpixel(x, y));
+        for (x=0; x<src->w; ++x)
+          dst->putpixel(src->w - x - 1,
+                        src->h - y - 1, src->getpixel(x, y));
       break;
 
     case 90:
@@ -184,8 +184,8 @@ void image_rotate(const Image* src, Image* dst, int angle)
       ASSERT(dst->h == src->w);
 
       for (y=0; y<src->h; ++y)
-	for (x=0; x<src->w; ++x)
-	  dst->putpixel(src->h - y - 1, x, src->getpixel(x, y));
+        for (x=0; x<src->w; ++x)
+          dst->putpixel(src->h - y - 1, x, src->getpixel(x, y));
       break;
 
     case -90:
@@ -193,8 +193,8 @@ void image_rotate(const Image* src, Image* dst, int angle)
       ASSERT(dst->h == src->w);
 
       for (y=0; y<src->h; ++y)
-	for (x=0; x<src->w; ++x)
-	  dst->putpixel(y, src->w - x - 1, src->getpixel(x, y));
+        for (x=0; x<src->w; ++x)
+          dst->putpixel(y, src->w - x - 1, src->getpixel(x, y));
       break;
 
     // bad angle
@@ -378,36 +378,36 @@ void image_fixup_transparent_colors(Image* image)
       int r, g, b, count;
 
       for (y=0; y<image->h; ++y) {
-	for (x=0; x<image->w; ++x) {
-	  c = image_getpixel_fast<RgbTraits>(image, x, y);
+        for (x=0; x<image->w; ++x) {
+          c = image_getpixel_fast<RgbTraits>(image, x, y);
 
-	  // if this is a completelly-transparent pixel...
-	  if (_rgba_geta(c) == 0) {
-	    count = 0;
-	    r = g = b = 0;
+          // if this is a completelly-transparent pixel...
+          if (_rgba_geta(c) == 0) {
+            count = 0;
+            r = g = b = 0;
 
-	    for (v=y-1; v<=y+1; ++v) {
-	      for (u=x-1; u<=x+1; ++u) {
-	    	if ((u >= 0) && (v >= 0) && (u < image->w) && (v < image->h)) {
-	    	  c = image_getpixel_fast<RgbTraits>(image, u, v);
-	    	  if (_rgba_geta(c) > 0) {
-	    	    r += _rgba_getr(c);
-	    	    g += _rgba_getg(c);
-	    	    b += _rgba_getb(c);
-		    ++count;
-	    	  }
-	    	}
-	      }
-	    }
+            for (v=y-1; v<=y+1; ++v) {
+              for (u=x-1; u<=x+1; ++u) {
+                if ((u >= 0) && (v >= 0) && (u < image->w) && (v < image->h)) {
+                  c = image_getpixel_fast<RgbTraits>(image, u, v);
+                  if (_rgba_geta(c) > 0) {
+                    r += _rgba_getr(c);
+                    g += _rgba_getg(c);
+                    b += _rgba_getb(c);
+                    ++count;
+                  }
+                }
+              }
+            }
 
-	    if (count > 0) {
-	      r /= count;
-	      g /= count;
-	      b /= count;
-	      image_putpixel_fast<RgbTraits>(image, x, y, _rgba(r, g, b, 0));
-	    }
-	  }
-	}
+            if (count > 0) {
+              r /= count;
+              g /= count;
+              b /= count;
+              image_putpixel_fast<RgbTraits>(image, x, y, _rgba(r, g, b, 0));
+            }
+          }
+        }
       }
       break;
     }
@@ -417,36 +417,36 @@ void image_fixup_transparent_colors(Image* image)
       int k, count;
 
       for (y=0; y<image->h; ++y) {
-	for (x=0; x<image->w; ++x) {
-	  c = image_getpixel_fast<GrayscaleTraits>(image, x, y);
+        for (x=0; x<image->w; ++x) {
+          c = image_getpixel_fast<GrayscaleTraits>(image, x, y);
 
-	  // if this is a completelly-transparent pixel...
-	  if (_graya_geta(c) == 0) {
-	    count = 0;
-	    k = 0;
+          // if this is a completelly-transparent pixel...
+          if (_graya_geta(c) == 0) {
+            count = 0;
+            k = 0;
 
-	    for (v=y-1; v<=y+1; ++v) {
-	      for (u=x-1; u<=x+1; ++u) {
-	    	if ((u >= 0) && (v >= 0) && (u < image->w) && (v < image->h)) {
-	    	  c = image_getpixel_fast<GrayscaleTraits>(image, u, v);
-	    	  if (_graya_geta(c) > 0) {
-	    	    k += _graya_getv(c);
-		    ++count;
-	    	  }
-	    	}
-	      }
-	    }
+            for (v=y-1; v<=y+1; ++v) {
+              for (u=x-1; u<=x+1; ++u) {
+                if ((u >= 0) && (v >= 0) && (u < image->w) && (v < image->h)) {
+                  c = image_getpixel_fast<GrayscaleTraits>(image, u, v);
+                  if (_graya_geta(c) > 0) {
+                    k += _graya_getv(c);
+                    ++count;
+                  }
+                }
+              }
+            }
 
-	    if (count > 0) {
-	      k /= count;
-	      image_putpixel_fast<GrayscaleTraits>(image, x, y, _graya(k, 0));
-	    }
-	  }
-	}
+            if (count > 0) {
+              k /= count;
+              image_putpixel_fast<GrayscaleTraits>(image, x, y, _graya(k, 0));
+            }
+          }
+        }
       }
       break;
     }
-      
+
   }
 }
 
@@ -466,19 +466,19 @@ void image_resize(const Image* src, Image* dst, ResizeMethod method, const Palet
       uint32_t color;
       double u, v, du, dv;
       int x, y;
-  
+
       u = v = 0.0;
       du = src->w * 1.0 / dst->w;
       dv = src->h * 1.0 / dst->h;
       for (y=0; y<dst->h; ++y) {
-	for (x=0; x<dst->w; ++x) {
-	  color = src->getpixel(MID(0, u, src->w-1),
-				MID(0, v, src->h-1));
-	  dst->putpixel(x, y, color);
-	  u += du;
-	}
-	u = 0.0;
-	v += dv;
+        for (x=0; x<dst->w; ++x) {
+          color = src->getpixel(MID(0, u, src->w-1),
+                                MID(0, v, src->h-1));
+          dst->putpixel(x, y, color);
+          u += du;
+        }
+        u = 0.0;
+        v += dv;
       }
       break;
     }
@@ -490,91 +490,91 @@ void image_resize(const Image* src, Image* dst, ResizeMethod method, const Palet
       int u_floor, u_floor2;
       int v_floor, v_floor2;
       int x, y;
-  
+
       u = v = 0.0;
       du = (src->w-1) * 1.0 / (dst->w-1);
       dv = (src->h-1) * 1.0 / (dst->h-1);
       for (y=0; y<dst->h; ++y) {
-	for (x=0; x<dst->w; ++x) {
-	  u_floor = floor(u);
-	  v_floor = floor(v);
+        for (x=0; x<dst->w; ++x) {
+          u_floor = floor(u);
+          v_floor = floor(v);
 
-	  if (u_floor > src->w-1) {
-	    u_floor = src->w-1;
-	    u_floor2 = src->w-1;
-	  }
-	  else if (u_floor == src->w-1)
-	    u_floor2 = u_floor;
-	  else
-	    u_floor2 = u_floor+1;
+          if (u_floor > src->w-1) {
+            u_floor = src->w-1;
+            u_floor2 = src->w-1;
+          }
+          else if (u_floor == src->w-1)
+            u_floor2 = u_floor;
+          else
+            u_floor2 = u_floor+1;
 
-	  if (v_floor > src->h-1) {
-	    v_floor = src->h-1;
-	    v_floor2 = src->h-1;
-	  }
-	  else if (v_floor == src->h-1)
-	    v_floor2 = v_floor;
-	  else
-	    v_floor2 = v_floor+1;
+          if (v_floor > src->h-1) {
+            v_floor = src->h-1;
+            v_floor2 = src->h-1;
+          }
+          else if (v_floor == src->h-1)
+            v_floor2 = v_floor;
+          else
+            v_floor2 = v_floor+1;
 
-	  // get the four colors
-	  color[0] = src->getpixel(u_floor,  v_floor);
-	  color[1] = src->getpixel(u_floor2, v_floor);
-	  color[2] = src->getpixel(u_floor,  v_floor2);
-	  color[3] = src->getpixel(u_floor2, v_floor2);
+          // get the four colors
+          color[0] = src->getpixel(u_floor,  v_floor);
+          color[1] = src->getpixel(u_floor2, v_floor);
+          color[2] = src->getpixel(u_floor,  v_floor2);
+          color[3] = src->getpixel(u_floor2, v_floor2);
 
-	  // calculate the interpolated color
-	  double u1 = u - u_floor;
-	  double v1 = v - v_floor;
-	  double u2 = 1 - u1;
-	  double v2 = 1 - v1;
+          // calculate the interpolated color
+          double u1 = u - u_floor;
+          double v1 = v - v_floor;
+          double u2 = 1 - u1;
+          double v2 = 1 - v1;
 
-	  switch (dst->imgtype) {
-	    case IMAGE_RGB: {
-	      int r = ((_rgba_getr(color[0])*u2 + _rgba_getr(color[1])*u1)*v2 +
-		       (_rgba_getr(color[2])*u2 + _rgba_getr(color[3])*u1)*v1);
-	      int g = ((_rgba_getg(color[0])*u2 + _rgba_getg(color[1])*u1)*v2 +
-		       (_rgba_getg(color[2])*u2 + _rgba_getg(color[3])*u1)*v1);
-	      int b = ((_rgba_getb(color[0])*u2 + _rgba_getb(color[1])*u1)*v2 +
-		       (_rgba_getb(color[2])*u2 + _rgba_getb(color[3])*u1)*v1);
-	      int a = ((_rgba_geta(color[0])*u2 + _rgba_geta(color[1])*u1)*v2 +
-		       (_rgba_geta(color[2])*u2 + _rgba_geta(color[3])*u1)*v1);
-	      dst_color = _rgba(r, g, b, a);
-	      break;
-	    }
-	    case IMAGE_GRAYSCALE: {
-	      int v = ((_graya_getv(color[0])*u2 + _graya_getv(color[1])*u1)*v2 +
-		       (_graya_getv(color[2])*u2 + _graya_getv(color[3])*u1)*v1);
-	      int a = ((_graya_geta(color[0])*u2 + _graya_geta(color[1])*u1)*v2 +
-		       (_graya_geta(color[2])*u2 + _graya_geta(color[3])*u1)*v1);
-	      dst_color = _graya(v, a);
-	      break;
-	    }
-	    case IMAGE_INDEXED: {
-	      int r = ((_rgba_getr(pal->getEntry(color[0]))*u2 + _rgba_getr(pal->getEntry(color[1]))*u1)*v2 +
-		       (_rgba_getr(pal->getEntry(color[2]))*u2 + _rgba_getr(pal->getEntry(color[3]))*u1)*v1);
-	      int g = ((_rgba_getg(pal->getEntry(color[0]))*u2 + _rgba_getg(pal->getEntry(color[1]))*u1)*v2 +
-		       (_rgba_getg(pal->getEntry(color[2]))*u2 + _rgba_getg(pal->getEntry(color[3]))*u1)*v1);
-	      int b = ((_rgba_getb(pal->getEntry(color[0]))*u2 + _rgba_getb(pal->getEntry(color[1]))*u1)*v2 +
-		       (_rgba_getb(pal->getEntry(color[2]))*u2 + _rgba_getb(pal->getEntry(color[3]))*u1)*v1);
-	      int a = (((color[0] == 0 ? 0: 255)*u2 + (color[1] == 0 ? 0: 255)*u1)*v2 +
-		       ((color[2] == 0 ? 0: 255)*u2 + (color[3] == 0 ? 0: 255)*u1)*v1);
-	      dst_color = a > 127 ? rgbmap->mapColor(r, g, b): 0;
-	      break;
-	    }
-	    case IMAGE_BITMAP: {
-	      int g = ((255*color[0]*u2 + 255*color[1]*u1)*v2 +
-	      	       (255*color[2]*u2 + 255*color[3]*u1)*v1);
-	      dst_color = g > 127 ? 1: 0;
-	      break;
-	    }
-	  }
-      
-	  dst->putpixel(x, y, dst_color);
-	  u += du;
-	}
-	u = 0.0;
-	v += dv;
+          switch (dst->imgtype) {
+            case IMAGE_RGB: {
+              int r = ((_rgba_getr(color[0])*u2 + _rgba_getr(color[1])*u1)*v2 +
+                       (_rgba_getr(color[2])*u2 + _rgba_getr(color[3])*u1)*v1);
+              int g = ((_rgba_getg(color[0])*u2 + _rgba_getg(color[1])*u1)*v2 +
+                       (_rgba_getg(color[2])*u2 + _rgba_getg(color[3])*u1)*v1);
+              int b = ((_rgba_getb(color[0])*u2 + _rgba_getb(color[1])*u1)*v2 +
+                       (_rgba_getb(color[2])*u2 + _rgba_getb(color[3])*u1)*v1);
+              int a = ((_rgba_geta(color[0])*u2 + _rgba_geta(color[1])*u1)*v2 +
+                       (_rgba_geta(color[2])*u2 + _rgba_geta(color[3])*u1)*v1);
+              dst_color = _rgba(r, g, b, a);
+              break;
+            }
+            case IMAGE_GRAYSCALE: {
+              int v = ((_graya_getv(color[0])*u2 + _graya_getv(color[1])*u1)*v2 +
+                       (_graya_getv(color[2])*u2 + _graya_getv(color[3])*u1)*v1);
+              int a = ((_graya_geta(color[0])*u2 + _graya_geta(color[1])*u1)*v2 +
+                       (_graya_geta(color[2])*u2 + _graya_geta(color[3])*u1)*v1);
+              dst_color = _graya(v, a);
+              break;
+            }
+            case IMAGE_INDEXED: {
+              int r = ((_rgba_getr(pal->getEntry(color[0]))*u2 + _rgba_getr(pal->getEntry(color[1]))*u1)*v2 +
+                       (_rgba_getr(pal->getEntry(color[2]))*u2 + _rgba_getr(pal->getEntry(color[3]))*u1)*v1);
+              int g = ((_rgba_getg(pal->getEntry(color[0]))*u2 + _rgba_getg(pal->getEntry(color[1]))*u1)*v2 +
+                       (_rgba_getg(pal->getEntry(color[2]))*u2 + _rgba_getg(pal->getEntry(color[3]))*u1)*v1);
+              int b = ((_rgba_getb(pal->getEntry(color[0]))*u2 + _rgba_getb(pal->getEntry(color[1]))*u1)*v2 +
+                       (_rgba_getb(pal->getEntry(color[2]))*u2 + _rgba_getb(pal->getEntry(color[3]))*u1)*v1);
+              int a = (((color[0] == 0 ? 0: 255)*u2 + (color[1] == 0 ? 0: 255)*u1)*v2 +
+                       ((color[2] == 0 ? 0: 255)*u2 + (color[3] == 0 ? 0: 255)*u1)*v1);
+              dst_color = a > 127 ? rgbmap->mapColor(r, g, b): 0;
+              break;
+            }
+            case IMAGE_BITMAP: {
+              int g = ((255*color[0]*u2 + 255*color[1]*u1)*v2 +
+                       (255*color[2]*u2 + 255*color[3]*u1)*v1);
+              dst_color = g > 127 ? 1: 0;
+              break;
+            }
+          }
+
+          dst->putpixel(x, y, dst_color);
+          u += du;
+        }
+        u = 0.0;
+        v += dv;
       }
       break;
     }
@@ -595,48 +595,48 @@ int image_count_diff(const Image* i1, const Image* i2)
 
     case IMAGE_RGB:
       {
-	uint32_t* address1 = (uint32_t*)i1->dat;
-	uint32_t* address2 = (uint32_t*)i2->dat;
-	for (c=0; c<size; c++)
-	  if (*(address1++) != *(address2++))
-	    diff++;
+        uint32_t* address1 = (uint32_t*)i1->dat;
+        uint32_t* address2 = (uint32_t*)i2->dat;
+        for (c=0; c<size; c++)
+          if (*(address1++) != *(address2++))
+            diff++;
       }
       break;
 
     case IMAGE_GRAYSCALE:
       {
-	uint16_t* address1 = (uint16_t*)i1->dat;
-	uint16_t* address2 = (uint16_t*)i2->dat;
-	for (c=0; c<size; c++)
-	  if (*(address1++) != *(address2++))
-	    diff++;
+        uint16_t* address1 = (uint16_t*)i1->dat;
+        uint16_t* address2 = (uint16_t*)i2->dat;
+        for (c=0; c<size; c++)
+          if (*(address1++) != *(address2++))
+            diff++;
       }
       break;
 
     case IMAGE_INDEXED:
       {
-	uint8_t* address1 = (uint8_t*)i1->dat;
-	uint8_t* address2 = (uint8_t*)i2->dat;
-	for (c=0; c<size; c++)
-	  if (*(address1++) != *(address2++))
-	    diff++;
+        uint8_t* address1 = (uint8_t*)i1->dat;
+        uint8_t* address2 = (uint8_t*)i2->dat;
+        for (c=0; c<size; c++)
+          if (*(address1++) != *(address2++))
+            diff++;
       }
       break;
 
     case IMAGE_BITMAP:
       /* TODO test it */
       {
-	uint8_t* address1 = (uint8_t*)i1->dat;
-	uint8_t* address2 = (uint8_t*)i2->dat;
-	div_t d1 = div (0, 8);
-	div_t d2 = div (0, 8);
-	for (c=0; c<size; c++) {
-	  if (((*address1) & (1<<d1.rem)) !=
-	      ((*address2) & (1<<d2.rem)))
-	    diff++;
-	  _image_bitmap_next_bit(d1, address1);
-	  _image_bitmap_next_bit(d2, address2);
-	}
+        uint8_t* address1 = (uint8_t*)i1->dat;
+        uint8_t* address2 = (uint8_t*)i2->dat;
+        div_t d1 = div (0, 8);
+        div_t d2 = div (0, 8);
+        for (c=0; c<size; c++) {
+          if (((*address1) & (1<<d1.rem)) !=
+              ((*address2) & (1<<d2.rem)))
+            diff++;
+          _image_bitmap_next_bit(d1, address1);
+          _image_bitmap_next_bit(d2, address2);
+        }
       }
       break;
   }
@@ -646,19 +646,19 @@ int image_count_diff(const Image* i1, const Image* i2)
 
 bool image_shrink_rect(Image *image, int *x1, int *y1, int *x2, int *y2, int refpixel)
 {
-#define SHRINK_SIDE(u_begin, u_op, u_final, u_add,		\
-		    v_begin, v_op, v_final, v_add, U, V, var)	\
-  do {								\
-    for (u = u_begin; u u_op u_final; u u_add) {		\
-      for (v = v_begin; v v_op v_final; v v_add) {		\
-	if (image->getpixel(U, V) != refpixel)			\
-	  break;						\
-      }								\
-      if (v == v_final)						\
-	var;							\
-      else							\
-	break;							\
-    }								\
+#define SHRINK_SIDE(u_begin, u_op, u_final, u_add,              \
+                    v_begin, v_op, v_final, v_add, U, V, var)   \
+  do {                                                          \
+    for (u = u_begin; u u_op u_final; u u_add) {                \
+      for (v = v_begin; v v_op v_final; v v_add) {              \
+        if (image->getpixel(U, V) != refpixel)                  \
+          break;                                                \
+      }                                                         \
+      if (v == v_final)                                         \
+        var;                                                    \
+      else                                                      \
+        break;                                                  \
+    }                                                           \
   } while (0)
 
   int u, v;
@@ -669,16 +669,16 @@ bool image_shrink_rect(Image *image, int *x1, int *y1, int *x2, int *y2, int ref
   *y2 = image->h-1;
 
   SHRINK_SIDE(0, <, image->w, ++,
-	      0, <, image->h, ++, u, v, (*x1)++);
+              0, <, image->h, ++, u, v, (*x1)++);
 
   SHRINK_SIDE(0, <, image->h, ++,
-	      0, <, image->w, ++, v, u, (*y1)++);
+              0, <, image->w, ++, v, u, (*y1)++);
 
   SHRINK_SIDE(image->w-1, >, 0, --,
-	      0, <, image->h, ++, u, v, (*x2)--);
+              0, <, image->h, ++, u, v, (*x2)--);
 
   SHRINK_SIDE(image->h-1, >, 0, --,
-	      0, <, image->w, ++, v, u, (*y2)--);
+              0, <, image->w, ++, v, u, (*y2)--);
 
   if ((*x1 > *x2) || (*y1 > *y2))
     return false;

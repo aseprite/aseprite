@@ -41,14 +41,14 @@ namespace undo {
 //
 // You have to wrap every call to an undo transaction with a
 // DocumentWriter. The preferred usage is as the following:
-// 
+//
 // {
 //   DocumentWriter documentWriter(document);
 //   UndoTransaction undoTransaction(documentWriter, "My big operation");
 //   ...
 //   undoTransaction.commit();
 // }
-// 
+//
 class UndoTransaction
 {
 public:
@@ -117,7 +117,7 @@ public:
   Image* getCelImage(Cel* cel);
   void clearMask(int bgcolor);
   void flipImage(Image* image, int x1, int y1, int x2, int y2,
-		 bool flip_horizontal, bool flip_vertical);
+                 bool flip_horizontal, bool flip_vertical);
   void pasteImage(const Image* src_image, int x, int y, int opacity);
 
   // for mask

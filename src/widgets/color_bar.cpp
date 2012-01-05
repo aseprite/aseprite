@@ -55,15 +55,15 @@ bool ColorBar::ScrollableView::onProcessMessage(Message* msg)
 
     case JM_DRAW:
       {
-	Viewport* viewport = getViewport();
-	Widget* child = reinterpret_cast<Widget*>(jlist_first_data(viewport->children));
-	SkinTheme* theme = static_cast<SkinTheme*>(getTheme());
+        Viewport* viewport = getViewport();
+        Widget* child = reinterpret_cast<Widget*>(jlist_first_data(viewport->children));
+        SkinTheme* theme = static_cast<SkinTheme*>(getTheme());
 
-	theme->draw_bounds_nw(ji_screen,
-			      rc->x1, rc->y1,
-			      rc->x2-1, rc->y2-1,
-			      hasFocus() ? PART_EDITOR_SELECTED_NW:
-					   PART_EDITOR_NORMAL_NW, false);
+        theme->draw_bounds_nw(ji_screen,
+                              rc->x1, rc->y1,
+                              rc->x2-1, rc->y2-1,
+                              hasFocus() ? PART_EDITOR_SELECTED_NW:
+                                           PART_EDITOR_NORMAL_NW, false);
       }
       return true;
 
@@ -91,10 +91,10 @@ ColorBar::ColorBar(int align)
   m_bgColor.setPreferredSize(0, m_bgColor.getPreferredSize().h);
 
   m_scrollableView.attachToView(&m_paletteView);
-  int w = (m_scrollableView.getBorder().getSize().w + 
-	   m_scrollableView.getViewport()->getBorder().getSize().w + 
-	   m_paletteView.getPreferredSize().w +
-	   getTheme()->scrollbar_size);
+  int w = (m_scrollableView.getBorder().getSize().w +
+           m_scrollableView.getViewport()->getBorder().getSize().w +
+           m_paletteView.getPreferredSize().w +
+           getTheme()->scrollbar_size);
 
   jwidget_set_min_size(&m_scrollableView, w, 0);
 
@@ -104,7 +104,7 @@ ColorBar::ColorBar(int align)
   addChild(&m_scrollableView);
   addChild(&m_fgColor);
   addChild(&m_bgColor);
-  
+
   this->border_width.l = 2*jguiscale();
   this->border_width.t = 2*jguiscale();
   this->border_width.r = 2*jguiscale();

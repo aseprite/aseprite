@@ -41,7 +41,7 @@ void SetCurrentFrame::dispose()
 void SetCurrentFrame::revert(ObjectsContainer* objects, UndoersCollector* redoers)
 {
   Sprite* sprite = objects->getObjectT<Sprite>(m_spriteId);
-  
+
   // Push another SetCurrentFrame as redoer
   redoers->pushUndoer(new SetCurrentFrame(objects, sprite));
 

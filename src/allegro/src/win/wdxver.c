@@ -1,6 +1,6 @@
-/*         ______   ___    ___ 
- *        /\  _  \ /\_ \  /\_ \ 
- *        \ \ \L\ \\//\ \ \//\ \      __     __   _ __   ___ 
+/*         ______   ___    ___
+ *        /\  _  \ /\_ \  /\_ \
+ *        \ \ \L\ \\//\ \ \//\ \      __     __   _ __   ___
  *         \ \  __ \ \ \ \  \ \ \   /'__`\ /'_ `\/\`'__\/ __`\
  *          \ \ \/\ \ \_\ \_ \_\ \_/\  __//\ \L\ \ \ \//\ \L\ \
  *           \ \_\ \_\/\____\/\____\ \____\ \____ \ \_\\ \____/
@@ -109,7 +109,7 @@ int get_dx_ver(void)
       if ( dsetup_hinst ) {
          DSetupCreate = (DSETUPCREATE)GetProcAddress(dsetup_hinst, "DirectXSetupGetVersion");
          if ( DSetupCreate ) {
-            dsetup_result = DSetupCreate( &dsetup_version, &dsetup_revision );	// returns 0 on failure
+            dsetup_result = DSetupCreate( &dsetup_version, &dsetup_revision );  // returns 0 on failure
             if ( dsetup_result ) {
                switch (dsetup_version) {
                   case 0x00040005:

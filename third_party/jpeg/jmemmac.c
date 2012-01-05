@@ -54,7 +54,7 @@
 #include "jpeglib.h"
 #include "jmemsys.h"    /* import the system-dependent declarations */
 
-#ifndef USE_MAC_MEMMGR	/* make sure user got configuration right */
+#ifndef USE_MAC_MEMMGR  /* make sure user got configuration right */
   You forgot to define USE_MAC_MEMMGR in jconfig.h. /* deliberate syntax error */
 #endif
 
@@ -64,11 +64,11 @@
 #include <Script.h>     /* for smSystemScript */
 #include <Gestalt.h>    /* we use Gestalt to test for specific functionality */
 
-#ifndef TEMP_FILE_NAME		/* can override from jconfig.h or Makefile */
+#ifndef TEMP_FILE_NAME          /* can override from jconfig.h or Makefile */
 #define TEMP_FILE_NAME  "JPG%03d.TMP"
 #endif
 
-static int next_file_num;	/* to distinguish among several temp files */
+static int next_file_num;       /* to distinguish among several temp files */
 
 
 /*
@@ -117,7 +117,7 @@ jpeg_free_large (j_common_ptr cinfo, void FAR * object, size_t sizeofobject)
 
 GLOBAL(long)
 jpeg_mem_available (j_common_ptr cinfo, long min_bytes_needed,
-		    long max_bytes_needed, long already_allocated)
+                    long max_bytes_needed, long already_allocated)
 {
   long limit = cinfo->mem->max_memory_to_use - already_allocated;
   long slop, mem;
@@ -134,7 +134,7 @@ jpeg_mem_available (j_common_ptr cinfo, long min_bytes_needed,
   slop = max_bytes_needed / 16 + 32768L;
   mem = CompactMem(max_bytes_needed + slop) - slop;
   if (mem < 0)
-    mem = 0;			/* sigh, couldn't even get the slop */
+    mem = 0;                    /* sigh, couldn't even get the slop */
   /* Don't take more than the application says we can have */
   if (mem > limit && limit > 0)
     mem = limit;
@@ -152,8 +152,8 @@ jpeg_mem_available (j_common_ptr cinfo, long min_bytes_needed,
 
 METHODDEF(void)
 read_backing_store (j_common_ptr cinfo, backing_store_ptr info,
-		    void FAR * buffer_address,
-		    long file_offset, long byte_count)
+                    void FAR * buffer_address,
+                    long file_offset, long byte_count)
 {
   long bytes = byte_count;
   long retVal;
@@ -162,7 +162,7 @@ read_backing_store (j_common_ptr cinfo, backing_store_ptr info,
     ERREXIT(cinfo, JERR_TFILE_SEEK);
 
   retVal = FSRead ( info->temp_file, &bytes,
-		    (unsigned char *) buffer_address );
+                    (unsigned char *) buffer_address );
   if ( retVal != noErr || bytes != byte_count )
     ERREXIT(cinfo, JERR_TFILE_READ);
 }
@@ -170,8 +170,8 @@ read_backing_store (j_common_ptr cinfo, backing_store_ptr info,
 
 METHODDEF(void)
 write_backing_store (j_common_ptr cinfo, backing_store_ptr info,
-		     void FAR * buffer_address,
-		     long file_offset, long byte_count)
+                     void FAR * buffer_address,
+                     long file_offset, long byte_count)
 {
   long bytes = byte_count;
   long retVal;
@@ -180,7 +180,7 @@ write_backing_store (j_common_ptr cinfo, backing_store_ptr info,
     ERREXIT(cinfo, JERR_TFILE_SEEK);
 
   retVal = FSWrite ( info->temp_file, &bytes,
-		     (unsigned char *) buffer_address );
+                     (unsigned char *) buffer_address );
   if ( retVal != noErr || bytes != byte_count )
     ERREXIT(cinfo, JERR_TFILE_WRITE);
 }
@@ -203,7 +203,7 @@ close_backing_store (j_common_ptr cinfo, backing_store_ptr info)
 
 GLOBAL(void)
 jpeg_open_backing_store (j_common_ptr cinfo, backing_store_ptr info,
-			 long total_bytes_needed)
+                         long total_bytes_needed)
 {
   short         tmpRef, vRefNum;
   long          dirID;
@@ -235,7 +235,7 @@ jpeg_open_backing_store (j_common_ptr cinfo, backing_store_ptr info,
 
   /* Keep generating file names till we find one that's not in use */
   for (;;) {
-    next_file_num++;		/* advance counter */
+    next_file_num++;            /* advance counter */
 
     sprintf(info->temp_name, TEMP_FILE_NAME, next_file_num);
     strcpy ( (Ptr)fName+1, info->temp_name );

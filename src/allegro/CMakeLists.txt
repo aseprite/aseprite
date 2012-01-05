@@ -308,9 +308,9 @@ macro(add_headers location)
     list(APPEND ALLEGRO_PUBLIC_HEADERS ${ARGN})
     # We reuse MACOSX_PACKAGE_LOCATION on non-Mac platforms as well.
     set_source_files_properties(${ARGN}
-	PROPERTIES
-	MACOSX_PACKAGE_LOCATION Headers/${location}
-	)
+        PROPERTIES
+        MACOSX_PACKAGE_LOCATION Headers/${location}
+        )
 endmacro(add_headers)
 
 configure_file(
@@ -329,7 +329,7 @@ if(UNIX)
         )
     add_headers(allegro/platform
         ${CMAKE_BINARY_DIR}/include/allegro/platform/alunixac.h
-	)
+        )
 endif(UNIX)
 
 add_headers(""               include/allegro.h)
@@ -369,9 +369,9 @@ endif()
 if(APPLE)
     # CMake 2.6.2 onwards passes these flags automatically.
     if(${CMAKE_MAJOR_VERSION}.${CMAKE_MINOR_VERSION} STREQUAL 2.6 AND
-	    ${CMAKE_PATCH_VERSION} LESS 2)
-	set(ALLEGRO_LINK_FLAGS
-	    "-compatibility_version ${COMPAT_VERSION} -current_version ${ALLEGRO_VERSION}")
+            ${CMAKE_PATCH_VERSION} LESS 2)
+        set(ALLEGRO_LINK_FLAGS
+            "-compatibility_version ${COMPAT_VERSION} -current_version ${ALLEGRO_VERSION}")
     endif()
 endif(APPLE)
 
@@ -417,13 +417,13 @@ set_target_properties(allegro
 
 if(WANT_FRAMEWORKS)
     add_our_library(alleg-main STATIC
-	src/macosx/main.m
-	)
+        src/macosx/main.m
+        )
     set_target_properties(alleg-main
-	PROPERTIES
-	OUTPUT_NAME alleg-main${BUILD_TYPE_SUFFIX}
-	COMPILE_FLAGS -DALLEGRO_SRC
-	)
+        PROPERTIES
+        OUTPUT_NAME alleg-main${BUILD_TYPE_SUFFIX}
+        COMPILE_FLAGS -DALLEGRO_SRC
+        )
     target_link_libraries(allegro alleg-main)
 endif(WANT_FRAMEWORKS)
 

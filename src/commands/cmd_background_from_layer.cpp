@@ -40,8 +40,8 @@ protected:
 
 BackgroundFromLayerCommand::BackgroundFromLayerCommand()
   : Command("BackgroundFromLayer",
-	    "BackgroundFromLayer",
-	    CmdRecordableFlag)
+            "BackgroundFromLayer",
+            CmdRecordableFlag)
 {
 }
 
@@ -49,9 +49,9 @@ bool BackgroundFromLayerCommand::onEnabled(Context* context)
 {
   return
     context->checkFlags(ContextFlags::ActiveDocumentIsWritable |
-			ContextFlags::ActiveLayerIsReadable |
-			ContextFlags::ActiveLayerIsWritable |
-			ContextFlags::HasActiveImage) &&
+                        ContextFlags::ActiveLayerIsReadable |
+                        ContextFlags::ActiveLayerIsWritable |
+                        ContextFlags::HasActiveImage) &&
     // Doesn't have a background layer
     !context->checkFlags(ContextFlags::HasBackgroundLayer);
 }

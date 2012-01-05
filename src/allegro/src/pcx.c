@@ -124,63 +124,63 @@ BITMAP *load_pcx_pf(PACKFILE *f, RGB *pal)
 #endif
 
       while (x < bytes_per_line*bpp/8) {
-	 ch = pack_getc(f);
-	 if ((ch & 0xC0) == 0xC0) {
-	    c = (ch & 0x3F);
-	    ch = pack_getc(f);
-	 }
-	 else
-	    c = 1;
+         ch = pack_getc(f);
+         if ((ch & 0xC0) == 0xC0) {
+            c = (ch & 0x3F);
+            ch = pack_getc(f);
+         }
+         else
+            c = 1;
 
-	 if (bpp == 8) {
-	    while (c--) {
-	       if (x < b->w)
-		  b->line[y][x] = ch;
-	       x++;
-	    }
-	 }
-	 else {
-	    while (c--) {
-	       if (xx < b->w)
-		  b->line[y][xx*3+po] = ch;
-	       x++;
-	       if (x == bytes_per_line) {
-		  xx = 0;
+         if (bpp == 8) {
+            while (c--) {
+               if (x < b->w)
+                  b->line[y][x] = ch;
+               x++;
+            }
+         }
+         else {
+            while (c--) {
+               if (xx < b->w)
+                  b->line[y][xx*3+po] = ch;
+               x++;
+               if (x == bytes_per_line) {
+                  xx = 0;
 #ifdef ALLEGRO_LITTLE_ENDIAN
-		  po = _rgb_g_shift_24/8;
+                  po = _rgb_g_shift_24/8;
 #elif defined ALLEGRO_BIG_ENDIAN
-		  po = 2 - _rgb_g_shift_24/8;
+                  po = 2 - _rgb_g_shift_24/8;
 #elif !defined SCAN_DEPEND
    #error endianess not defined
 #endif
-	       }
-	       else if (x == bytes_per_line*2) {
-		  xx = 0;
+               }
+               else if (x == bytes_per_line*2) {
+                  xx = 0;
 #ifdef ALLEGRO_LITTLE_ENDIAN
-		  po = _rgb_b_shift_24/8;
+                  po = _rgb_b_shift_24/8;
 #elif defined ALLEGRO_BIG_ENDIAN
-		  po = 2 - _rgb_b_shift_24/8;
+                  po = 2 - _rgb_b_shift_24/8;
 #elif !defined SCAN_DEPEND
    #error endianess not defined
 #endif
-	       }
-	       else
-		  xx++;
-	    }
-	 }
+               }
+               else
+                  xx++;
+            }
+         }
       }
    }
 
    if (bpp == 8) {                  /* look for a 256 color palette */
-      while ((c = pack_getc(f)) != EOF) { 
-	 if (c == 12) {
-	    for (c=0; c<256; c++) {
-	       pal[c].r = pack_getc(f) / 4;
-	       pal[c].g = pack_getc(f) / 4;
-	       pal[c].b = pack_getc(f) / 4;
-	    }
-	    break;
-	 }
+      while ((c = pack_getc(f)) != EOF) {
+         if (c == 12) {
+            for (c=0; c<256; c++) {
+               pal[c].r = pack_getc(f) / 4;
+               pal[c].g = pack_getc(f) / 4;
+               pal[c].b = pack_getc(f) / 4;
+            }
+            break;
+         }
       }
    }
 
@@ -192,7 +192,7 @@ BITMAP *load_pcx_pf(PACKFILE *f, RGB *pal)
    if (dest_depth != bpp) {
       /* restore original palette except if it comes from the bitmap */
       if ((bpp != 8) && (!want_palette))
-	 pal = NULL;
+         pal = NULL;
 
       b = _fixup_loaded_bitmap(b, pal, dest_depth);
    }
@@ -223,7 +223,7 @@ int save_pcx(AL_CONST char *filename, BITMAP *bmp, AL_CONST RGB *pal)
    ret = save_pcx_pf(f, bmp, pal);
 
    pack_fclose(f);
-   
+
    return ret;
 }
 
@@ -290,51 +290,51 @@ int save_pcx_pf(PACKFILE *f, BITMAP *bmp, AL_CONST RGB *pal)
       runcount = 0;
       runchar = 0;
       for (x=0; x<bmp->w*planes; x++) {   /* for each pixel... */
-	 if (depth == 8) {
-	    ch = getpixel(bmp, x, y);
-	 }
-	 else {
-	    if (x<bmp->w) {
-	       c = getpixel(bmp, x, y);
-	       ch = getr_depth(depth, c);
-	    }
-	    else if (x<bmp->w*2) {
-	       c = getpixel(bmp, x-bmp->w, y);
-	       ch = getg_depth(depth, c);
-	    }
-	    else {
-	       c = getpixel(bmp, x-bmp->w*2, y);
-	       ch = getb_depth(depth, c);
-	    }
-	 }
-	 if (runcount==0) {
-	    runcount = 1;
-	    runchar = ch;
-	 }
-	 else {
-	    if ((ch != runchar) || (runcount >= 0x3f)) {
-	       if ((runcount > 1) || ((runchar & 0xC0) == 0xC0))
-		  pack_putc(0xC0 | runcount, f);
-	       pack_putc(runchar,f);
-	       runcount = 1;
-	       runchar = ch;
-	    }
-	    else
-	       runcount++;
-	 }
+         if (depth == 8) {
+            ch = getpixel(bmp, x, y);
+         }
+         else {
+            if (x<bmp->w) {
+               c = getpixel(bmp, x, y);
+               ch = getr_depth(depth, c);
+            }
+            else if (x<bmp->w*2) {
+               c = getpixel(bmp, x-bmp->w, y);
+               ch = getg_depth(depth, c);
+            }
+            else {
+               c = getpixel(bmp, x-bmp->w*2, y);
+               ch = getb_depth(depth, c);
+            }
+         }
+         if (runcount==0) {
+            runcount = 1;
+            runchar = ch;
+         }
+         else {
+            if ((ch != runchar) || (runcount >= 0x3f)) {
+               if ((runcount > 1) || ((runchar & 0xC0) == 0xC0))
+                  pack_putc(0xC0 | runcount, f);
+               pack_putc(runchar,f);
+               runcount = 1;
+               runchar = ch;
+            }
+            else
+               runcount++;
+         }
       }
       if ((runcount > 1) || ((runchar & 0xC0) == 0xC0))
-	 pack_putc(0xC0 | runcount, f);
+         pack_putc(0xC0 | runcount, f);
       pack_putc(runchar,f);
    }
 
    if (depth == 8) {                      /* 256 color palette */
-      pack_putc(12, f); 
+      pack_putc(12, f);
 
       for (c=0; c<256; c++) {
-	 pack_putc(_rgb_scale_6[pal[c].r], f);
-	 pack_putc(_rgb_scale_6[pal[c].g], f);
-	 pack_putc(_rgb_scale_6[pal[c].b], f);
+         pack_putc(_rgb_scale_6[pal[c].r], f);
+         pack_putc(_rgb_scale_6[pal[c].g], f);
+         pack_putc(_rgb_scale_6[pal[c].b], f);
       }
    }
 
@@ -343,4 +343,3 @@ int save_pcx_pf(PACKFILE *f, BITMAP *bmp, AL_CONST RGB *pal)
    else
       return 0;
 }
-

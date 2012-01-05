@@ -577,7 +577,7 @@
   FTC_Manager_Check( FTC_Manager  manager )
   {
     FTC_Node  node, first;
-    
+
 
     first = manager->nodes_list;
 
@@ -585,7 +585,7 @@
     if ( first )
     {
       FT_ULong  weight = 0;
-      
+
 
       node = first;
 

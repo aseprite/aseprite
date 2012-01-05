@@ -1,6 +1,6 @@
-/*         ______   ___    ___ 
- *        /\  _  \ /\_ \  /\_ \ 
- *        \ \ \L\ \\//\ \ \//\ \      __     __   _ __   ___ 
+/*         ______   ___    ___
+ *        /\  _  \ /\_ \  /\_ \
+ *        \ \ \L\ \\//\ \ \//\ \      __     __   _ __   ___
  *         \ \  __ \ \ \ \  \ \ \   /'__`\ /'_ `\/\`'__\/ __`\
  *          \ \ \/\ \ \_\ \_ \_\ \_/\  __//\ \L\ \ \ \//\ \L\ \
  *           \ \_\ \_\/\____\/\____\ \____\ \____ \ \_\\ \____/
@@ -62,7 +62,7 @@ int _palette_color16[256];
 int _palette_color24[256];
 int _palette_color32[256];
 
-int *palette_color = _palette_color8; 
+int *palette_color = _palette_color8;
 
 BLENDER_FUNC _blender_func15 = NULL;   /* truecolor pixel blender routines */
 BLENDER_FUNC _blender_func16 = NULL;
@@ -296,7 +296,7 @@ void destroy_gfx_mode_list(GFX_MODE_LIST *gfx_mode_list)
 
 
 /* set_color_depth:
- *  Sets the pixel size (in bits) which will be used by subsequent calls to 
+ *  Sets the pixel size (in bits) which will be used by subsequent calls to
  *  set_gfx_mode() and create_bitmap(). Valid depths are 8, 15, 16, 24 and 32.
  */
 void set_color_depth(int depth)
@@ -400,12 +400,12 @@ int _color_load_depth(int depth, int hasalpha)
 
    for (i=0; i < (int)(sizeof(conversion_flags)/sizeof(CONVERSION_FLAGS)); i++) {
       if ((conversion_flags[i].in_depth == depth) &&
-	  (conversion_flags[i].out_depth == _color_depth) &&
-	  ((conversion_flags[i].hasalpha != 0) == (hasalpha != 0))) {
-	 if (_color_conv & conversion_flags[i].flag)
-	    return _color_depth;
-	 else
-	    return depth;
+          (conversion_flags[i].out_depth == _color_depth) &&
+          ((conversion_flags[i].hasalpha != 0) == (hasalpha != 0))) {
+         if (_color_conv & conversion_flags[i].flag)
+            return _color_depth;
+         else
+            return depth;
       }
    }
 
@@ -429,19 +429,19 @@ GFX_VTABLE *_get_vtable(int color_depth)
       vt = system_driver->get_vtable(color_depth);
 
       if (vt) {
-	 LOCK_DATA(vt, sizeof(GFX_VTABLE));
-	 LOCK_CODE(vt->draw_sprite, (long)vt->draw_sprite_end - (long)vt->draw_sprite);
-	 LOCK_CODE(vt->blit_from_memory, (long)vt->blit_end - (long)vt->blit_from_memory);
-	 return vt;
+         LOCK_DATA(vt, sizeof(GFX_VTABLE));
+         LOCK_CODE(vt->draw_sprite, (long)vt->draw_sprite_end - (long)vt->draw_sprite);
+         LOCK_CODE(vt->blit_from_memory, (long)vt->blit_end - (long)vt->blit_from_memory);
+         return vt;
       }
    }
 
    for (i=0; _vtable_list[i].vtable; i++) {
       if (_vtable_list[i].color_depth == color_depth) {
-	 LOCK_DATA(_vtable_list[i].vtable, sizeof(GFX_VTABLE));
-	 LOCK_CODE(_vtable_list[i].vtable->draw_sprite, (long)_vtable_list[i].vtable->draw_sprite_end - (long)_vtable_list[i].vtable->draw_sprite);
-	 LOCK_CODE(_vtable_list[i].vtable->blit_from_memory, (long)_vtable_list[i].vtable->blit_end - (long)_vtable_list[i].vtable->blit_from_memory);
-	 return _vtable_list[i].vtable;
+         LOCK_DATA(_vtable_list[i].vtable, sizeof(GFX_VTABLE));
+         LOCK_CODE(_vtable_list[i].vtable->draw_sprite, (long)_vtable_list[i].vtable->draw_sprite_end - (long)_vtable_list[i].vtable->draw_sprite);
+         LOCK_CODE(_vtable_list[i].vtable->blit_from_memory, (long)_vtable_list[i].vtable->blit_end - (long)_vtable_list[i].vtable->blit_from_memory);
+         return _vtable_list[i].vtable;
       }
    }
 
@@ -498,7 +498,7 @@ static GFX_DRIVER *get_gfx_driver_from_id(int card, _DRIVER_INFO *driver_list)
 
    for (c=0; driver_list[c].driver; c++) {
       if (driver_list[c].id == card)
-	 return driver_list[c].driver;
+         return driver_list[c].driver;
    }
 
    return NULL;
@@ -537,46 +537,46 @@ static int get_config_gfx_driver(char *gfx_card, int w, int h, int v_w, int v_h,
    for (n=-2; n<255; n++) {
       switch (n) {
 
-	 case -2:
-	    /* example: gfx_card_640x480x16 = */
-	    uszprintf(buf, sizeof(buf), uconvert_ascii("%s_%dx%dx%d", tmp), gfx_card, w, h, _color_depth);
-	    break;
+         case -2:
+            /* example: gfx_card_640x480x16 = */
+            uszprintf(buf, sizeof(buf), uconvert_ascii("%s_%dx%dx%d", tmp), gfx_card, w, h, _color_depth);
+            break;
 
-	 case -1:
-	    /* example: gfx_card_24bpp = */
-	    uszprintf(buf, sizeof(buf), uconvert_ascii("%s_%dbpp", tmp), gfx_card, _color_depth);
-	    break;
+         case -1:
+            /* example: gfx_card_24bpp = */
+            uszprintf(buf, sizeof(buf), uconvert_ascii("%s_%dbpp", tmp), gfx_card, _color_depth);
+            break;
 
-	 case 0:
-	    /* example: gfx_card = */
-	    uszprintf(buf, sizeof(buf), uconvert_ascii("%s", tmp), gfx_card);
-	    break;
+         case 0:
+            /* example: gfx_card = */
+            uszprintf(buf, sizeof(buf), uconvert_ascii("%s", tmp), gfx_card);
+            break;
 
-	 default:
-	    /* example: gfx_card1 = */
-	    uszprintf(buf, sizeof(buf), uconvert_ascii("%s%d", tmp), gfx_card, n);
-	    break;
+         default:
+            /* example: gfx_card1 = */
+            uszprintf(buf, sizeof(buf), uconvert_ascii("%s%d", tmp), gfx_card, n);
+            break;
       }
 
       card = get_config_id(uconvert_ascii("graphics", tmp), buf, 0);
 
       if (card) {
-	 drv = get_gfx_driver_from_id(card, driver_list);
+         drv = get_gfx_driver_from_id(card, driver_list);
 
-	 if (drv && gfx_driver_is_valid(drv, flags)) {
-	    found = TRUE;
-	    screen = init_gfx_driver(drv, w, h, v_w, v_h);
+         if (drv && gfx_driver_is_valid(drv, flags)) {
+            found = TRUE;
+            screen = init_gfx_driver(drv, w, h, v_w, v_h);
 
-	    if (screen)
-	       break;
-	 }
+            if (screen)
+               break;
+         }
       }
       else {
-	 /* Stop searching the gfx_card#n (n>0) family at the first missing member,
-	  * except gfx_card1 which could have been identified with gfx_card.
-	  */
-	 if (n > 1)
-	    break;
+         /* Stop searching the gfx_card#n (n>0) family at the first missing member,
+          * except gfx_card1 which could have been identified with gfx_card.
+          */
+         if (n > 1)
+            break;
       }
    }
 
@@ -588,19 +588,19 @@ static int get_config_gfx_driver(char *gfx_card, int w, int h, int v_w, int v_h,
 /* set_gfx_mode:
  *  Sets the graphics mode. The card should be one of the GFX_* constants
  *  from allegro.h, or GFX_AUTODETECT to accept any graphics driver. Pass
- *  GFX_TEXT to return to text mode (although allegro_exit() will usually 
- *  do this for you). The w and h parameters specify the screen resolution 
- *  you want, and v_w and v_h specify the minumum virtual screen size. 
- *  The graphics drivers may actually create a much larger virtual screen, 
+ *  GFX_TEXT to return to text mode (although allegro_exit() will usually
+ *  do this for you). The w and h parameters specify the screen resolution
+ *  you want, and v_w and v_h specify the minumum virtual screen size.
+ *  The graphics drivers may actually create a much larger virtual screen,
  *  so you should check the values of VIRTUAL_W and VIRTUAL_H after you
- *  set the mode. If unable to select an appropriate mode, this function 
+ *  set the mode. If unable to select an appropriate mode, this function
  *  returns -1.
  */
 int set_gfx_mode(int card, int w, int h, int v_w, int v_h)
 {
    TRACE(PREFIX_I "Called set_gfx_mode(%d, %d, %d, %d, %d).\n",
-	 card, w, h, v_w, v_h);
-         
+         card, w, h, v_w, v_h);
+
    /* TODO: shouldn't this be incremented only IF successful? */
    _gfx_mode_set_count++;
 
@@ -625,12 +625,12 @@ int acknowledge_resize(void)
 
       /* Hide the mouse from current "screen" */
       if (_mouse_installed)
-	 show_mouse(NULL);
+         show_mouse(NULL);
 
       new_screen = gfx_driver->acknowledge_resize();
       if (!new_screen) {
-	 TRACE(PREFIX_I "acknowledge_resize failed.\n");
-	 return -1;
+         TRACE(PREFIX_I "acknowledge_resize failed.\n");
+         return -1;
       }
 
       TRACE(PREFIX_I "acknowledge_resize succeeded.\n");
@@ -638,7 +638,7 @@ int acknowledge_resize(void)
       screen = new_screen;
 
       if (_al_linker_mouse)
-	_al_linker_mouse->set_mouse_etc();
+        _al_linker_mouse->set_mouse_etc();
 
       return 0;
    }
@@ -672,7 +672,7 @@ static int _set_gfx_mode(int card, int w, int h, int v_w, int v_h, int allow_con
       LOCK_FUNCTION(blit);
 
       if (system_driver->save_console_state)
-	 system_driver->save_console_state();
+         system_driver->save_console_state();
 
       _add_exit_func(shutdown_gfx, "shutdown_gfx");
 
@@ -690,17 +690,17 @@ static int _set_gfx_mode(int card, int w, int h, int v_w, int v_h, int allow_con
          _al_linker_mouse->show_mouse(NULL);
 
       while (vram_bitmap_list)
-	 destroy_bitmap(vram_bitmap_list->bmp);
+         destroy_bitmap(vram_bitmap_list->bmp);
 
       bmp_read_line(screen, 0);
       bmp_write_line(screen, 0);
       bmp_unwrite_line(screen);
 
       if (gfx_driver->scroll)
-	 gfx_driver->scroll(0, 0);
+         gfx_driver->scroll(0, 0);
 
       if (gfx_driver->exit)
-	 gfx_driver->exit(screen);
+         gfx_driver->exit(screen);
 
       destroy_bitmap(screen);
 
@@ -716,7 +716,7 @@ static int _set_gfx_mode(int card, int w, int h, int v_w, int v_h, int allow_con
     */
 #if 0
    /* restore default truecolor pixel format */
-   _rgb_r_shift_15 = 0; 
+   _rgb_r_shift_15 = 0;
    _rgb_g_shift_15 = 5;
    _rgb_b_shift_15 = 10;
    _rgb_r_shift_16 = 0;
@@ -739,11 +739,11 @@ static int _set_gfx_mode(int card, int w, int h, int v_w, int v_h, int allow_con
    if (card == GFX_TEXT) {
       TRACE(PREFIX_I "Closing, restoring original console state.\n");
       if (system_driver->restore_console_state)
-	 system_driver->restore_console_state();
+         system_driver->restore_console_state();
 
       if (_gfx_bank) {
-	 _AL_FREE(_gfx_bank);
-	 _gfx_bank = NULL;
+         _AL_FREE(_gfx_bank);
+         _gfx_bank = NULL;
       }
 
       TRACE(PREFIX_I "Graphic mode closed.\n");
@@ -777,34 +777,34 @@ static int _set_gfx_mode(int card, int w, int h, int v_w, int v_h, int allow_con
 
       /* first try the config variables */
       if (allow_config) {
-	 /* try the gfx_card variable if GFX_AUTODETECT or GFX_AUTODETECT_FULLSCREEN was selected */
-	 if (!(flags & GFX_DRIVER_WINDOWED_FLAG))
-	    found = get_config_gfx_driver(uconvert_ascii("gfx_card", tmp1), w, h, v_w, v_h, flags, driver_list);
+         /* try the gfx_card variable if GFX_AUTODETECT or GFX_AUTODETECT_FULLSCREEN was selected */
+         if (!(flags & GFX_DRIVER_WINDOWED_FLAG))
+            found = get_config_gfx_driver(uconvert_ascii("gfx_card", tmp1), w, h, v_w, v_h, flags, driver_list);
 
-	 /* try the gfx_cardw variable if GFX_AUTODETECT or GFX_AUTODETECT_WINDOWED was selected */
-	 if (!(flags & GFX_DRIVER_FULLSCREEN_FLAG) && !found)
-	    found = get_config_gfx_driver(uconvert_ascii("gfx_cardw", tmp1), w, h, v_w, v_h, flags, driver_list);
+         /* try the gfx_cardw variable if GFX_AUTODETECT or GFX_AUTODETECT_WINDOWED was selected */
+         if (!(flags & GFX_DRIVER_FULLSCREEN_FLAG) && !found)
+            found = get_config_gfx_driver(uconvert_ascii("gfx_cardw", tmp1), w, h, v_w, v_h, flags, driver_list);
       }
 
       /* go through the list of autodetected drivers if none was previously found */
       if (!found) {
-	 TRACE(PREFIX_I "Autodetecting graphic driver.\n");
-	 for (c=0; driver_list[c].driver; c++) {
-	    if (driver_list[c].autodetect) {
-	       drv = driver_list[c].driver;
+         TRACE(PREFIX_I "Autodetecting graphic driver.\n");
+         for (c=0; driver_list[c].driver; c++) {
+            if (driver_list[c].autodetect) {
+               drv = driver_list[c].driver;
 
-	       if (gfx_driver_is_valid(drv, flags)) {
-		  screen = init_gfx_driver(drv, w, h, v_w, v_h);
+               if (gfx_driver_is_valid(drv, flags)) {
+                  screen = init_gfx_driver(drv, w, h, v_w, v_h);
 
-		  if (screen)
-		     break;
-	       }
-	    }
-	 }
+                  if (screen)
+                     break;
+               }
+            }
+         }
       }
       else {
-	 TRACE(PREFIX_I "GFX_AUTODETECT overridden through configuration:"
-	       " %s.\n", tmp1);
+         TRACE(PREFIX_I "GFX_AUTODETECT overridden through configuration:"
+               " %s.\n", tmp1);
       }
    }
    else {
@@ -812,7 +812,7 @@ static int _set_gfx_mode(int card, int w, int h, int v_w, int v_h, int allow_con
       drv = get_gfx_driver_from_id(card, driver_list);
 
       if (drv)
-	 screen = init_gfx_driver(drv, w, h, v_w, v_h);
+         screen = init_gfx_driver(drv, w, h, v_w, v_h);
    }
 
    /* gracefully handle failure */
@@ -820,7 +820,7 @@ static int _set_gfx_mode(int card, int w, int h, int v_w, int v_h, int allow_con
       gfx_driver = NULL;  /* set by init_gfx_driver() */
 
       if (!ugetc(allegro_error))
-	 ustrzcpy(allegro_error, ALLEGRO_ERROR_SIZE, get_config_text("Unable to find a suitable graphics driver"));
+         ustrzcpy(allegro_error, ALLEGRO_ERROR_SIZE, get_config_text("Unable to find a suitable graphics driver"));
 
       TRACE(PREFIX_E "Failed setting graphic driver %d.\n", card);
       return -1;
@@ -829,10 +829,10 @@ static int _set_gfx_mode(int card, int w, int h, int v_w, int v_h, int allow_con
    /* set the basic capabilities of the driver */
    if ((VIRTUAL_W > SCREEN_W) || (VIRTUAL_H > SCREEN_H)) {
       if (gfx_driver->scroll)
-	 gfx_capabilities |= GFX_CAN_SCROLL;
+         gfx_capabilities |= GFX_CAN_SCROLL;
 
       if ((gfx_driver->request_scroll) || (gfx_driver->request_video_bitmap))
-	 gfx_capabilities |= GFX_CAN_TRIPLE_BUFFER;
+         gfx_capabilities |= GFX_CAN_TRIPLE_BUFFER;
    }
 
    /* check whether we are instructed to disable vsync */
@@ -846,7 +846,7 @@ static int _set_gfx_mode(int card, int w, int h, int v_w, int v_h, int allow_con
       _wait_for_vsync = TRUE;
 
    TRACE(PREFIX_I "The driver %s wait for vsync.\n",
-	 (_wait_for_vsync) ? "will" : "won't");
+         (_wait_for_vsync) ? "will" : "won't");
 
    /* Give the gfx driver an opportunity to set the drawing mode */
    if ((gfx_driver->drawing_mode) && (!_dispsw_status))
@@ -868,9 +868,9 @@ static int _set_gfx_mode(int card, int w, int h, int v_w, int v_h, int allow_con
    _register_switch_bitmap(screen, NULL);
 
    TRACE(PREFIX_I "set_gfx_card success for %dx%dx%d.\n",
-	 screen->w, screen->h, bitmap_color_depth(screen));
+         screen->w, screen->h, bitmap_color_depth(screen));
    return 0;
-} 
+}
 
 
 
@@ -890,14 +890,14 @@ static int _set_gfx_mode_safe(int card, int w, int h, int v_w, int v_h)
    ASSERT(card == GFX_SAFE);
    ASSERT(system_driver);
    TRACE(PREFIX_I "Trying to set a safe graphics mode.\n");
-   
+
    if (system_driver->get_gfx_safe_mode) {
       ustrzcpy(buf, sizeof(buf), allegro_error);
 
       /* retrieve the safe graphics mode */
       system_driver->get_gfx_safe_mode(&driver, &mode);
       TRACE(PREFIX_I "The system driver suggests %dx%dx%d\n",
-	    mode.width, mode.height, mode.bpp);
+            mode.width, mode.height, mode.bpp);
 
       /* try using the specified resolution but current depth */
       if (_set_gfx_mode(driver, w, h, 0, 0, TRUE) == 0)
@@ -914,7 +914,7 @@ static int _set_gfx_mode_safe(int card, int w, int h, int v_w, int v_h)
    }
    else {
       TRACE(PREFIX_W "The system driver was unable to get a safe mode, "
-	    "I'll try with the specified parameters...\n");
+            "I'll try with the specified parameters...\n");
       /* no safe graphics mode, try hard-coded autodetected modes with
        * custom settings */
       _safe_gfx_mode_change = 1;
@@ -931,18 +931,18 @@ static int _set_gfx_mode_safe(int card, int w, int h, int v_w, int v_h)
    TRACE(PREFIX_E "Bad bad, not even GFX_SAFE works?\n");
    _set_gfx_mode(GFX_TEXT, 0, 0, 0, 0, TRUE);
    allegro_message(uconvert_ascii("%s\n", tmp1),
-		   get_config_text("Fatal error: unable to set GFX_SAFE"));
+                   get_config_text("Fatal error: unable to set GFX_SAFE"));
    return -1;
 }
 
 
 
 /* _sort_out_virtual_width:
- *  Decides how wide the virtual screen really needs to be. That is more 
- *  complicated than it sounds, because the Allegro graphics primitives 
- *  require that each scanline be contained within a single bank. That 
- *  causes problems on cards that don't have overlapping banks, unless the 
- *  bank size is a multiple of the virtual width. So we may need to adjust 
+ *  Decides how wide the virtual screen really needs to be. That is more
+ *  complicated than it sounds, because the Allegro graphics primitives
+ *  require that each scanline be contained within a single bank. That
+ *  causes problems on cards that don't have overlapping banks, unless the
+ *  bank size is a multiple of the virtual width. So we may need to adjust
  *  the width just to keep things running smoothly...
  */
 void _sort_out_virtual_width(int *width, GFX_DRIVER *driver)
@@ -953,7 +953,7 @@ void _sort_out_virtual_width(int *width, GFX_DRIVER *driver)
    if (driver->linear)
       return;
 
-   /* if banks can overlap, we are ok... */ 
+   /* if banks can overlap, we are ok... */
    if (driver->bank_size > driver->bank_gran)
       return;
 
@@ -961,7 +961,7 @@ void _sort_out_virtual_width(int *width, GFX_DRIVER *driver)
    while (((driver->bank_size / w) * w) != driver->bank_size) {
       w++;
       if (w > driver->bank_size)
-	 break; /* oh shit */
+         break; /* oh shit */
    }
 
    *width = w;
@@ -970,9 +970,9 @@ void _sort_out_virtual_width(int *width, GFX_DRIVER *driver)
 
 
 /* _make_bitmap:
- *  Helper function for creating the screen bitmap. Sets up a bitmap 
- *  structure for addressing video memory at addr, and fills the bank 
- *  switching table using bank size/granularity information from the 
+ *  Helper function for creating the screen bitmap. Sets up a bitmap
+ *  structure for addressing video memory at addr, and fills the bank
+ *  switching table using bank size/granularity information from the
  *  specified graphics driver.
  */
 BITMAP *_make_bitmap(int w, int h, uintptr_t addr, GFX_DRIVER *driver, int color_depth, int bpl)
@@ -1024,22 +1024,22 @@ BITMAP *_make_bitmap(int w, int h, uintptr_t addr, GFX_DRIVER *driver, int color
 
    if (driver->linear) {
       for (i=1; i<h; i++) {
-	 b->line[i] = b->line[i-1] + bpl;
-	 _gfx_bank[i] = 0;
+         b->line[i] = b->line[i-1] + bpl;
+         _gfx_bank[i] = 0;
       }
    }
    else {
       bank = 0;
 
       for (i=1; i<h; i++) {
-	 b->line[i] = b->line[i-1] + bpl;
-	 if (b->line[i]+bpl-1 >= (unsigned char *)addr + driver->bank_size) {
-	    while (b->line[i] >= (unsigned char *)addr + driver->bank_gran) {
-	       b->line[i] -= driver->bank_gran;
-	       bank++;
-	    }
-	 }
-	 _gfx_bank[i] = bank;
+         b->line[i] = b->line[i-1] + bpl;
+         if (b->line[i]+bpl-1 >= (unsigned char *)addr + driver->bank_size) {
+            while (b->line[i] >= (unsigned char *)addr + driver->bank_gran) {
+               b->line[i] -= driver->bank_gran;
+               bank++;
+            }
+         }
+         _gfx_bank[i] = bank;
       }
    }
 
@@ -1133,7 +1133,7 @@ BITMAP *create_bitmap(int width, int height)
  *  pre-existing bitmap, but possibly with different clipping settings.
  *  Usually will be smaller, and positioned at some arbitrary point.
  *
- *  Mark Wodrich is the owner of the brain responsible this hugely useful 
+ *  Mark Wodrich is the owner of the brain responsible this hugely useful
  *  and beautiful function.
  */
 BITMAP *create_sub_bitmap(BITMAP *parent, int x, int y, int width, int height)
@@ -1147,10 +1147,10 @@ BITMAP *create_sub_bitmap(BITMAP *parent, int x, int y, int width, int height)
    ASSERT((width > 0) && (height > 0));
    ASSERT(system_driver);
 
-   if (x+width > parent->w) 
+   if (x+width > parent->w)
       width = parent->w-x;
 
-   if (y+height > parent->h) 
+   if (y+height > parent->h)
       height = parent->h-y;
 
    if (parent->vtable->create_sub_bitmap)
@@ -1301,7 +1301,7 @@ BITMAP *create_video_bitmap(int width, int height)
 
    ASSERT(width >= 0);
    ASSERT(height > 0);
-   
+
    if (_dispsw_status)
       return NULL;
 
@@ -1309,7 +1309,7 @@ BITMAP *create_video_bitmap(int width, int height)
    if (gfx_driver->create_video_bitmap) {
       bmp = gfx_driver->create_video_bitmap(width, height);
       if (!bmp)
-	 return NULL;
+         return NULL;
 
       b = _AL_MALLOC(sizeof(VRAM_BITMAP));
       b->x = -1;
@@ -1344,17 +1344,17 @@ BITMAP *create_video_bitmap(int width, int height)
        * (this loop runs in amortized quadratic time)
        */
       while (vram_bitmap && (vram_bitmap->y < y+height)) {
-	 /* find sorted x-position */
-	 last_p = &active_list;
-	 for (b = active_list; b && (vram_bitmap->x > b->x); b = b->next_x)
-	    last_p = &b->next_x;
+         /* find sorted x-position */
+         last_p = &active_list;
+         for (b = active_list; b && (vram_bitmap->x > b->x); b = b->next_x)
+            last_p = &b->next_x;
 
-	 /* insert */
-	 *last_p = vram_bitmap;
-	 vram_bitmap->next_x = b;
+         /* insert */
+         *last_p = vram_bitmap;
+         vram_bitmap->next_x = b;
 
-	 /* next video bitmap */
-	 vram_bitmap = vram_bitmap->next_y;
+         /* next video bitmap */
+         vram_bitmap = vram_bitmap->next_y;
       }
 
       x = 0;
@@ -1363,25 +1363,25 @@ BITMAP *create_video_bitmap(int width, int height)
        * (this loop runs in quadratic time)
        */
       for (b = active_list; b; b = b->next_x) {
-	 if (x+width <= b->x)  /* hole is big enough? */
-	    return add_vram_block(x, y, width, height);
+         if (x+width <= b->x)  /* hole is big enough? */
+            return add_vram_block(x, y, width, height);
 
          /* Move search x-position to the right edge of the
           * skipped bitmap if we are not already past it.
           * And check there is enough room before continuing.
           */
-	 if (x < b->x + b->w) {
-	    x = (b->x + b->w + 15) & ~15;
-	    if (x+width > VIRTUAL_W)
-	       break;
-	 }
+         if (x < b->x + b->w) {
+            x = (b->x + b->w + 15) & ~15;
+            if (x+width > VIRTUAL_W)
+               break;
+         }
       }
 
       /* If the whole ACTIVE_LIST was scanned, there is a big
        * enough hole to the right of the rightmost bitmap.
        */
       if (b == NULL)
-	 return add_vram_block(x, y, width, height);
+         return add_vram_block(x, y, width, height);
 
       /* Move search y-position to the topmost bottom edge
        * of the bitmaps intersecting the stripe.
@@ -1389,20 +1389,20 @@ BITMAP *create_video_bitmap(int width, int height)
        */
       y = active_list->y + active_list->h;
       for (b = active_list->next_x; b; b = b->next_x) {
-	 if (y > b->y + b->h)
-	    y = b->y + b->h;
+         if (y > b->y + b->h)
+            y = b->y + b->h;
       }
 
       if (y+height > VIRTUAL_H) {  /* too close to bottom? */
-	 /* Before failing, cache this bitmap size so that later calls can
-	  * learn from it. Use area as a measure to sort the bitmap sizes.
+         /* Before failing, cache this bitmap size so that later calls can
+          * learn from it. Use area as a measure to sort the bitmap sizes.
           */
-	 if (width * height < failed_bitmap_w * failed_bitmap_h) {
-	    failed_bitmap_w = width;
-	    failed_bitmap_h = height;
-	 }
+         if (width * height < failed_bitmap_w * failed_bitmap_h) {
+            failed_bitmap_w = width;
+            failed_bitmap_h = height;
+         }
 
-	 return NULL;
+         return NULL;
       }
 
       /* Remove the blocks that don't intersect the new stripe from ACTIVE_LIST.
@@ -1410,10 +1410,10 @@ BITMAP *create_video_bitmap(int width, int height)
        */
       last_p = &active_list;
       for (b = active_list; b; b = b->next_x) {
-	 if (y >= b->y + b->h)
-	    *last_p = b->next_x;
-	 else
-	    last_p = &b->next_x;
+         if (y >= b->y + b->h)
+            *last_p = b->next_x;
+         else
+            last_p = &b->next_x;
       }
    }
 }
@@ -1451,66 +1451,66 @@ void destroy_bitmap(BITMAP *bitmap)
 
    if (bitmap) {
       if (is_video_bitmap(bitmap)) {
-	 /* special case for getting rid of video memory bitmaps */
-	 ASSERT(!_dispsw_status);
+         /* special case for getting rid of video memory bitmaps */
+         ASSERT(!_dispsw_status);
 
-	 prev = NULL;
-	 pos = vram_bitmap_list;
+         prev = NULL;
+         pos = vram_bitmap_list;
 
-	 while (pos) {
-	    if (pos->bmp == bitmap) {
-	       if (prev)
-		  prev->next_y = pos->next_y;
-	       else
-		  vram_bitmap_list = pos->next_y;
+         while (pos) {
+            if (pos->bmp == bitmap) {
+               if (prev)
+                  prev->next_y = pos->next_y;
+               else
+                  vram_bitmap_list = pos->next_y;
 
-	       if (pos->x < 0) {
-		  /* the driver is in charge of this object */
-		  gfx_driver->destroy_video_bitmap(bitmap);
-		  _AL_FREE(pos);
-		  return;
-	       } 
+               if (pos->x < 0) {
+                  /* the driver is in charge of this object */
+                  gfx_driver->destroy_video_bitmap(bitmap);
+                  _AL_FREE(pos);
+                  return;
+               }
 
-	       /* Update cached bitmap size using worst case scenario:
-		* the bitmap lies between two holes whose size is the cached
-		* size on each axis respectively.
-		*/
-	       failed_bitmap_w = failed_bitmap_w * 2 + ((bitmap->w + 15) & ~15);
-	       if (failed_bitmap_w > BMP_MAX_SIZE)
-		  failed_bitmap_w = BMP_MAX_SIZE;
+               /* Update cached bitmap size using worst case scenario:
+                * the bitmap lies between two holes whose size is the cached
+                * size on each axis respectively.
+                */
+               failed_bitmap_w = failed_bitmap_w * 2 + ((bitmap->w + 15) & ~15);
+               if (failed_bitmap_w > BMP_MAX_SIZE)
+                  failed_bitmap_w = BMP_MAX_SIZE;
 
-	       failed_bitmap_h = failed_bitmap_h * 2 + bitmap->h;
-	       if (failed_bitmap_h > BMP_MAX_SIZE)
-		  failed_bitmap_h = BMP_MAX_SIZE;
+               failed_bitmap_h = failed_bitmap_h * 2 + bitmap->h;
+               if (failed_bitmap_h > BMP_MAX_SIZE)
+                  failed_bitmap_h = BMP_MAX_SIZE;
 
-	       _AL_FREE(pos);
-	       break;
-	    }
+               _AL_FREE(pos);
+               break;
+            }
 
-	    prev = pos;
-	    pos = pos->next_y;
-	 }
+            prev = pos;
+            pos = pos->next_y;
+         }
 
-	 _unregister_switch_bitmap(bitmap);
+         _unregister_switch_bitmap(bitmap);
       }
       else if (is_system_bitmap(bitmap)) {
-	 /* special case for getting rid of system memory bitmaps */
-	 ASSERT(gfx_driver != NULL);
+         /* special case for getting rid of system memory bitmaps */
+         ASSERT(gfx_driver != NULL);
 
-	 if (gfx_driver->destroy_system_bitmap) {
-	    gfx_driver->destroy_system_bitmap(bitmap);
-	    return;
-	 }
+         if (gfx_driver->destroy_system_bitmap) {
+            gfx_driver->destroy_system_bitmap(bitmap);
+            return;
+         }
       }
 
       /* normal memory or sub-bitmap destruction */
       if (system_driver->destroy_bitmap) {
-	 if (system_driver->destroy_bitmap(bitmap))
-	    return;
+         if (system_driver->destroy_bitmap(bitmap))
+            return;
       }
 
       if (bitmap->dat)
-	 _AL_FREE(bitmap->dat);
+         _AL_FREE(bitmap->dat);
 
       _AL_FREE(bitmap);
    }
@@ -1520,8 +1520,8 @@ void destroy_bitmap(BITMAP *bitmap)
 
 /* set_clip_rect:
  *  Sets the two opposite corners of the clipping rectangle to be used when
- *  drawing to the bitmap. Nothing will be drawn to positions outside of this 
- *  rectangle. When a new bitmap is created the clipping rectangle will be 
+ *  drawing to the bitmap. Nothing will be drawn to positions outside of this
+ *  rectangle. When a new bitmap is created the clipping rectangle will be
  *  set to the full area of the bitmap.
  */
 void set_clip_rect(BITMAP *bitmap, int x1, int y1, int x2, int y2)
@@ -1567,11 +1567,11 @@ void add_clip_rect(BITMAP *bitmap, int x1, int y1, int x2, int y2)
 
 /* set_clip:
  *  Sets the two opposite corners of the clipping rectangle to be used when
- *  drawing to the bitmap. Nothing will be drawn to positions outside of this 
- *  rectangle. When a new bitmap is created the clipping rectangle will be 
- *  set to the full area of the bitmap. If x1, y1, x2 and y2 are all zero 
- *  clipping will be turned off, which will slightly speed up drawing 
- *  operations but will allow memory to be corrupted if you attempt to draw 
+ *  drawing to the bitmap. Nothing will be drawn to positions outside of this
+ *  rectangle. When a new bitmap is created the clipping rectangle will be
+ *  set to the full area of the bitmap. If x1, y1, x2 and y2 are all zero
+ *  clipping will be turned off, which will slightly speed up drawing
+ *  operations but will allow memory to be corrupted if you attempt to draw
  *  off the edge of the bitmap.
  */
 void set_clip(BITMAP *bitmap, int x1, int y1, int x2, int y2)
@@ -1605,7 +1605,7 @@ void set_clip(BITMAP *bitmap, int x1, int y1, int x2, int y2)
 
 
 /* scroll_screen:
- *  Attempts to scroll the hardware screen, returning 0 on success. 
+ *  Attempts to scroll the hardware screen, returning 0 on success.
  *  Check the VIRTUAL_W and VIRTUAL_H values to see how far the screen
  *  can be scrolled. Note that a lot of VESA drivers can only handle
  *  horizontal scrolling in four pixel increments.
@@ -1637,8 +1637,8 @@ int scroll_screen(int x, int y)
    else {
       h = (_screen_split_position > 0) ? _screen_split_position : SCREEN_H;
       if (y > (VIRTUAL_H - h)) {
-	 y = VIRTUAL_H - h;
-	 ret = -1;
+         y = VIRTUAL_H - h;
+         ret = -1;
       }
    }
 
@@ -1684,8 +1684,8 @@ int request_scroll(int x, int y)
    else {
       h = (_screen_split_position > 0) ? _screen_split_position : SCREEN_H;
       if (y > (VIRTUAL_H - h)) {
-	 y = VIRTUAL_H - h;
-	 ret = -1;
+         y = VIRTUAL_H - h;
+         ret = -1;
       }
    }
 
@@ -1712,12 +1712,12 @@ int poll_scroll(void)
 
 
 /* show_video_bitmap:
- *  Page flipping function: swaps to display the specified video memory 
+ *  Page flipping function: swaps to display the specified video memory
  *  bitmap object (this must be the same size as the physical screen).
  */
 int show_video_bitmap(BITMAP *bitmap)
 {
-   if ((!is_video_bitmap(bitmap)) || 
+   if ((!is_video_bitmap(bitmap)) ||
        (bitmap->w != SCREEN_W) || (bitmap->h != SCREEN_H) ||
        (_dispsw_status))
       return -1;
@@ -1731,12 +1731,12 @@ int show_video_bitmap(BITMAP *bitmap)
 
 
 /* request_video_bitmap:
- *  Triple buffering function: triggers a swap to display the specified 
+ *  Triple buffering function: triggers a swap to display the specified
  *  video memory bitmap object, which will take place on the next retrace.
  */
 int request_video_bitmap(BITMAP *bitmap)
 {
-   if ((!is_video_bitmap(bitmap)) || 
+   if ((!is_video_bitmap(bitmap)) ||
        (bitmap->w != SCREEN_W) || (bitmap->h != SCREEN_H) ||
        (_dispsw_status))
       return -1;
@@ -1765,8 +1765,8 @@ int enable_triple_buffer(void)
       gfx_driver->enable_triple_buffer();
 
       if ((gfx_driver->request_scroll) || (gfx_driver->request_video_bitmap)) {
-	 gfx_capabilities |= GFX_CAN_TRIPLE_BUFFER;
-	 return 0;
+         gfx_capabilities |= GFX_CAN_TRIPLE_BUFFER;
+         return 0;
       }
    }
 
@@ -1847,6 +1847,3 @@ int get_gfx_mode(void)
 
    return gfx_driver->id;
 }
-
-
-

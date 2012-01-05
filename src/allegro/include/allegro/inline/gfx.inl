@@ -280,5 +280,3 @@ AL_INLINE(int, get_clip_state, (BITMAP *bitmap),
 #endif
 
 #endif          /* ifndef ALLEGRO_GFX_INL */
-
-

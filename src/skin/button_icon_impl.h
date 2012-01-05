@@ -27,10 +27,10 @@ class ButtonIconImpl : public IButtonIcon
 {
 public:
   ButtonIconImpl(SkinTheme* theme,
-		 int normalIcon,
-		 int selectedIcon,
-		 int disabledIcon,
-		 int iconAlign);
+                 int normalIcon,
+                 int selectedIcon,
+                 int disabledIcon,
+                 int iconAlign);
 
   // IButtonIcon implementation
   void destroy();

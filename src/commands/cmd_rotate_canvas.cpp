@@ -88,17 +88,17 @@ protected:
 
       // change it location
       switch (m_angle) {
-	case 180:
-	  undoTransaction.setCelPosition(cel,
-					 m_sprite->getWidth() - cel->getX() - image->w,
-					 m_sprite->getHeight() - cel->getY() - image->h);
-	  break;
-	case 90:
-	  undoTransaction.setCelPosition(cel, m_sprite->getHeight() - cel->getY() - image->h, cel->getX());
-	  break;
-	case -90:
-	  undoTransaction.setCelPosition(cel, cel->getY(), m_sprite->getWidth() - cel->getX() - image->w);
-	  break;
+        case 180:
+          undoTransaction.setCelPosition(cel,
+                                         m_sprite->getWidth() - cel->getX() - image->w,
+                                         m_sprite->getHeight() - cel->getY() - image->h);
+          break;
+        case 90:
+          undoTransaction.setCelPosition(cel, m_sprite->getHeight() - cel->getY() - image->h, cel->getX());
+          break;
+        case -90:
+          undoTransaction.setCelPosition(cel, cel->getY(), m_sprite->getWidth() - cel->getX() - image->w);
+          break;
       }
     }
 
@@ -106,12 +106,12 @@ protected:
     for (int i=0; i<m_sprite->getStock()->size(); ++i) {
       Image* image = m_sprite->getStock()->getImage(i);
       if (!image)
-	continue;
+        continue;
 
       // rotate the image
       Image* new_image = image_new(image->imgtype,
-				   m_angle == 180 ? image->w: image->h,
-				   m_angle == 180 ? image->h: image->w);
+                                   m_angle == 180 ? image->w: image->h,
+                                   m_angle == 180 ? image->h: image->w);
       image_rotate(image, new_image, m_angle);
 
       undoTransaction.replaceStockImage(i, new_image);
@@ -120,7 +120,7 @@ protected:
 
       // cancel all the operation?
       if (isCanceled())
-	return;	       // UndoTransaction destructor will undo all operations
+        return;        // UndoTransaction destructor will undo all operations
     }
 
     // rotate mask
@@ -130,24 +130,24 @@ protected:
       int x = 0, y = 0;
 
       switch (m_angle) {
-	case 180:
-	  x = m_sprite->getWidth() - origMask->x - origMask->w;
-	  y = m_sprite->getHeight() - origMask->y - origMask->h;
-	  break;
-	case 90:
-	  x = m_sprite->getHeight() - origMask->y - origMask->h;
-	  y = origMask->x;
-	  break;
-	case -90:
-	  x = origMask->y;
-	  y = m_sprite->getWidth() - origMask->x - origMask->w;
-	  break;
+        case 180:
+          x = m_sprite->getWidth() - origMask->x - origMask->w;
+          y = m_sprite->getHeight() - origMask->y - origMask->h;
+          break;
+        case 90:
+          x = m_sprite->getHeight() - origMask->y - origMask->h;
+          y = origMask->x;
+          break;
+        case -90:
+          x = origMask->y;
+          y = m_sprite->getWidth() - origMask->x - origMask->w;
+          break;
       }
 
       // create the new rotated mask
       mask_replace(new_mask, x, y,
-		   m_angle == 180 ? origMask->w: origMask->h,
-		   m_angle == 180 ? origMask->h: origMask->w);
+                   m_angle == 180 ? origMask->w: origMask->h,
+                   m_angle == 180 ? origMask->h: origMask->w);
       image_rotate(origMask->bitmap, new_mask->bitmap, m_angle);
 
       // copy new mask
@@ -170,8 +170,8 @@ protected:
 
 RotateCanvasCommand::RotateCanvasCommand()
   : Command("RotateCanvas",
-	    "Rotate Canvas",
-	    CmdRecordableFlag)
+            "Rotate Canvas",
+            CmdRecordableFlag)
 {
   m_angle = 0;
 }
@@ -186,7 +186,7 @@ void RotateCanvasCommand::onLoadParams(Params* params)
 bool RotateCanvasCommand::onEnabled(Context* context)
 {
   return context->checkFlags(ContextFlags::ActiveDocumentIsWritable |
-			     ContextFlags::HasActiveSprite);
+                             ContextFlags::HasActiveSprite);
 }
 
 void RotateCanvasCommand::onExecute(Context* context)

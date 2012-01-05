@@ -71,4 +71,4 @@ private:
   Decorator* m_decorator;
 };
 
-#endif	// WIDGETS_EDITOR_STANDBY_STATE_H_INCLUDED
+#endif  // WIDGETS_EDITOR_STANDBY_STATE_H_INCLUDED

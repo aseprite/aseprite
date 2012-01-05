@@ -14,7 +14,7 @@ Deprecation list.  Will be removed in giflib 5.0:
 * GIF_ERROR and GIF_MESSAGE are on the deprecation list as they are also
   utility helper functions rather than essential to the functioning of the
   library.
-* The qprintf methods of the library are now deprecated.  Do not use 
+* The qprintf methods of the library are now deprecated.  Do not use
   GifQuietPrint or GifQprintf.  These should have been pushed out into the
   utility helper library instead of sitting around in the library proper at
   the same time as the getarg functions were moved out.  Getting rid of these

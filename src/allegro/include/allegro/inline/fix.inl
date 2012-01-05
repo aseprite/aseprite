@@ -250,5 +250,3 @@ inline void persp_project(fix x, fix y, fix z, fix *xout, fix *yout)
 #endif          /* ifdef __cplusplus */
 
 #endif          /* ifndef ALLEGRO_FIX_INL */
-
-

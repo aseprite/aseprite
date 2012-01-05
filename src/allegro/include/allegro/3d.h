@@ -100,5 +100,3 @@ AL_FUNC(void, render_scene, (void));
 #endif
 
 #endif          /* ifndef ALLEGRO_3D_H */
-
-

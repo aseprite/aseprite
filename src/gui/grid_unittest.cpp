@@ -130,7 +130,7 @@ TEST(JGrid, SameWidth2x1Grid)
 }
 
 // Tests the next layout (a grid of 3x3 cells):
-// 
+//
 //        2 (separator)
 //       _|_
 //      /   \
@@ -152,15 +152,15 @@ TEST(JGrid, SameWidth2x1Grid)
 // When we expand the grid we get the following layout:
 //
 //  +---+----------------------------+
-//  | 1 | 2       		     |
+//  | 1 | 2                          |
 //  +---+------------------------+---+
-//  | 3                	       	 | 4 |
-//  |            		 |   |
-//  |            		 |   |
-//  |            		 |   |
-//  |				 |   |
-//  |				 |   |
-//  |				 |   |
+//  | 3                          | 4 |
+//  |                            |   |
+//  |                            |   |
+//  |                            |   |
+//  |                            |   |
+//  |                            |   |
+//  |                            |   |
 //  +----------------------------+---+
 //
 TEST(JGrid, Intrincate3x3Grid)

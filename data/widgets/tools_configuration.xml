@@ -5,12 +5,12 @@
   <box vertical="true" childspacing="0">
     <box horizontal="true" expansive="true">
       <box vertical="true" childspacing="2">
-	<box horizontal="true" childspacing="0">
+        <box horizontal="true" childspacing="0">
             <check text="Tiled" name="tiled" />
             <check text="x" name="tiled_x" />
             <check text="y" name="tiled_y" />
-	</box>
-	<check text="Onionskin" name="onionskin" />
+        </box>
+        <check text="Onionskin" name="onionskin" />
         <separator text="Grid:" horizontal="true" left="true" />
         <check text="Snap to Grid" name="snap_to_grid" />
         <check text="View Grid" name="view_grid" />
@@ -20,10 +20,10 @@
       <separator vertical="true" />
       <box vertical="true" expansive="true" childspacing="2">
         <box horizontal="true">
-	  <grid columns="2" childspacing="0" expansive="true">
+          <grid columns="2" childspacing="0" expansive="true">
 
-	    <label text="Pen:" />
-	    <box horizontal="true" childspacing="0" name="brush_type_box" /><!-- custom widget -->
+            <label text="Pen:" />
+            <box horizontal="true" childspacing="0" name="brush_type_box" /><!-- custom widget -->
 
             <label text="Size:" />
             <slider min="1" max="32" name="brush_size" minwidth="32" cell_align="horizontal" />
@@ -32,27 +32,27 @@
             <slider min="0" max="180" name="brush_angle" cell_align="horizontal" />
 
             <label text="Opacity:" name="opacity_label" />
-	    <slider min="0" max="255" name="opacity" cell_align="horizontal" />
+            <slider min="0" max="255" name="opacity" cell_align="horizontal" />
 
             <label text="Tolerance:" name="tolerance_label" />
-	    <slider min="0" max="255" name="tolerance" cell_align="horizontal" />
+            <slider min="0" max="255" name="tolerance" cell_align="horizontal" />
 
-	  </grid>
-	  <box name="brush_preview_box" /><!-- custom widget -->
+          </grid>
+          <box name="brush_preview_box" /><!-- custom widget -->
         </box>
-	<box vertical="true" name="spray_box">
-	  <separator text="Spray:" horizontal="true" left="true" />
-	  <box horizontal="true">
-	    <box vertical="true" homogeneous="true" childspacing="0">
-	      <label text="Spray Width:" />
-	      <label text="Air Speed:" />
-	    </box>
-	    <box vertical="true" homogeneous="true" expansive="true" childspacing="0">
-	      <slider min="1" max="32" name="spray_width" />
-	      <slider min="1" max="100" name="air_speed" />
-	    </box>
-	  </box>
-	</box>
+        <box vertical="true" name="spray_box">
+          <separator text="Spray:" horizontal="true" left="true" />
+          <box horizontal="true">
+            <box vertical="true" homogeneous="true" childspacing="0">
+              <label text="Spray Width:" />
+              <label text="Air Speed:" />
+            </box>
+            <box vertical="true" homogeneous="true" expansive="true" childspacing="0">
+              <slider min="1" max="32" name="spray_width" />
+              <slider min="1" max="100" name="air_speed" />
+            </box>
+          </box>
+        </box>
       </box>
     </box>
   </box>

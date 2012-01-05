@@ -1,6 +1,6 @@
-/*         ______   ___    ___ 
- *        /\  _  \ /\_ \  /\_ \ 
- *        \ \ \L\ \\//\ \ \//\ \      __     __   _ __   ___ 
+/*         ______   ___    ___
+ *        /\  _  \ /\_ \  /\_ \
+ *        \ \ \L\ \\//\ \ \//\ \      __     __   _ __   ___
  *         \ \  __ \ \ \ \  \ \ \   /'__`\ /'_ `\/\`'__\/ __`\
  *          \ \ \/\ \ \_\ \_ \_\ \_/\  __//\ \L\ \ \ \//\ \L\ \
  *           \ \_\ \_\/\____\/\____\ \____\ \____ \ \_\\ \____/
@@ -214,7 +214,7 @@ int finalize_directx_init(void)
  */
 int exit_directx(void)
 {
-   if (directdraw) {      
+   if (directdraw) {
       /* set cooperative level back to normal */
       IDirectDraw2_SetCooperativeLevel(directdraw, win_get_window(), DDSCL_NORMAL);
 
@@ -258,7 +258,7 @@ struct BITMAP *gfx_directx_init(GFX_DRIVER *drv, int w, int h, int v_w, int v_h,
    /* set color format */
    if (color_depth == 8) {
       if (gfx_directx_create_palette(gfx_directx_primary_surface) != 0)
-	 goto Error;
+         goto Error;
    }
    else {
       if (gfx_directx_update_color_format(gfx_directx_primary_surface, color_depth) != 0)
@@ -318,7 +318,7 @@ void gfx_directx_sync(void)
 /* gfx_directx_exit:
  */
 void gfx_directx_exit(struct BITMAP *bmp)
-{ 
+{
    _enter_critical();
 
    _set_current_refresh_rate(0);
@@ -429,9 +429,9 @@ int gfx_directx_set_mouse_sprite(struct BITMAP *sprite, int xfocus, int yfocus)
       /* Create transparent cursor */
       for (y = 0; y < sys_sm_cy; y++) {
          for (x = 0; x < sys_sm_cx; x++) {
-	    SetPixel(h_and_dc, x, y, WINDOWS_RGB(255, 255, 255));
-	    SetPixel(h_xor_dc, x, y, WINDOWS_RGB(0, 0, 0));
-	 }
+            SetPixel(h_and_dc, x, y, WINDOWS_RGB(255, 255, 255));
+            SetPixel(h_xor_dc, x, y, WINDOWS_RGB(0, 0, 0));
+         }
       }
       draw_to_hdc(h_xor_dc, sprite, 0, 0);
       mask_color = bitmap_mask_color(sprite);
@@ -439,15 +439,15 @@ int gfx_directx_set_mouse_sprite(struct BITMAP *sprite, int xfocus, int yfocus)
       /* Make cursor background transparent */
       for (y = 0; y < sprite->h; y++) {
          for (x = 0; x < sprite->w; x++) {
-	    if (getpixel(sprite, x, y) != mask_color) {
-	       /* Don't touch XOR value */
-	       SetPixel(h_and_dc, x, y, 0);
-	    }
-	    else {
-	       /* No need to touch AND value */
-	       SetPixel(h_xor_dc, x, y, WINDOWS_RGB(0, 0, 0));
-	    }
-	 }
+            if (getpixel(sprite, x, y) != mask_color) {
+               /* Don't touch XOR value */
+               SetPixel(h_and_dc, x, y, 0);
+            }
+            else {
+               /* No need to touch AND value */
+               SetPixel(h_xor_dc, x, y, WINDOWS_RGB(0, 0, 0));
+            }
+         }
       }
 
       SelectObject(h_and_dc, hOldAndMaskBitmap);
@@ -529,4 +529,3 @@ void gfx_directx_hide_mouse(void)
 void gfx_directx_move_mouse(int x, int y)
 {
 }
-

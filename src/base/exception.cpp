@@ -28,7 +28,7 @@ Exception::Exception(const char* format, ...) throw()
       va_list ap;
       va_start(ap, format);
 
-      char buf[1024];		// TODO warning buffer overflow
+      char buf[1024];           // TODO warning buffer overflow
       vsprintf(buf, format, ap);
       m_msg = buf;
 

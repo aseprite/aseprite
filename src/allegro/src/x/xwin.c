@@ -186,13 +186,13 @@ static void _xwin_private_select_screen_to_buffer_function(void);
 static void _xwin_private_select_set_colors_function(void);
 static void _xwin_private_setup_driver_desc(GFX_DRIVER *drv);
 static BITMAP *_xwin_private_create_screen(GFX_DRIVER *drv, int w, int h,
-					   int vw, int vh, int depth, int fullscreen);
+                                           int vw, int vh, int depth, int fullscreen);
 static void _xwin_private_destroy_screen(void);
 static void _xwin_private_destroy_screen_data(void);
 static BITMAP *_xwin_private_create_screen_data(GFX_DRIVER *drv, int w, int h);
 static BITMAP *_xwin_private_create_screen_bitmap(GFX_DRIVER *drv,
-						  unsigned char *frame_buffer,
-						  int bytes_per_buffer_line);
+                                                  unsigned char *frame_buffer,
+                                                  int bytes_per_buffer_line);
 static void _xwin_private_create_mapping_tables(void);
 static void _xwin_private_create_mapping(unsigned long *map, int ssize, int dsize, int dshift);
 static int _xwin_private_display_is_local(void);
@@ -415,7 +415,7 @@ static void _xwin_wait_mapped(Window win)
  *  The real window uses wm_window as parent initially and will be reparented
  *  to the (freshly created) fullscreen window when requested and reparented
  *  back again in screen_destroy.
- *  
+ *
  *  Idea/concept of three windows borrowed from SDL. But somehow SDL manages
  *  to reuse the fullscreen window too.
  */
@@ -435,16 +435,16 @@ static int _xwin_private_create_window(void)
    setattr.background_pixel = XBlackPixel(_xwin.display, _xwin.screen);
    setattr.border_pixel = XBlackPixel(_xwin.display, _xwin.screen);
    setattr.event_mask = (KeyPressMask | KeyReleaseMask | StructureNotifyMask
-			 | EnterWindowMask | LeaveWindowMask
-			 | FocusChangeMask | ExposureMask | PropertyChangeMask
-			 | ButtonPressMask | ButtonReleaseMask | PointerMotionMask
-			 /*| MappingNotifyMask (SubstructureRedirectMask?)*/);
+                         | EnterWindowMask | LeaveWindowMask
+                         | FocusChangeMask | ExposureMask | PropertyChangeMask
+                         | ButtonPressMask | ButtonReleaseMask | PointerMotionMask
+                         /*| MappingNotifyMask (SubstructureRedirectMask?)*/);
    _xwin.wm_window = XCreateWindow(_xwin.display,
-				XDefaultRootWindow(_xwin.display),
-				0, 0, 320, 200, 0,
-				CopyFromParent, InputOutput, CopyFromParent,
-				CWBackPixel | CWBorderPixel | CWEventMask,
-				&setattr);
+                                XDefaultRootWindow(_xwin.display),
+                                0, 0, 320, 200, 0,
+                                CopyFromParent, InputOutput, CopyFromParent,
+                                CWBackPixel | CWBorderPixel | CWEventMask,
+                                &setattr);
 
    /* Get associated visual and window depth (bits per pixel).  */
    XGetWindowAttributes(_xwin.display, _xwin.wm_window, &getattr);
@@ -463,19 +463,19 @@ static int _xwin_private_create_window(void)
    }
    XSetWindowColormap(_xwin.display, _xwin.wm_window, _xwin.colormap);
    XInstallColormap(_xwin.display, _xwin.colormap);
-   
+
    /* Create the real / drawing window (reuses setattr). */
    setattr.colormap = _xwin.colormap;
    _xwin.window = XCreateWindow(_xwin.display,
-				_xwin.wm_window,
-				0, 0, 320, 200, 0,
-				CopyFromParent, InputOutput, CopyFromParent,
-				CWBackPixel | CWBorderPixel | CWEventMask |
-				CWColormap, &setattr);
+                                _xwin.wm_window,
+                                0, 0, 320, 200, 0,
+                                CopyFromParent, InputOutput, CopyFromParent,
+                                CWBackPixel | CWBorderPixel | CWEventMask |
+                                CWColormap, &setattr);
 
    /* Map the real / drawing window it won't appear untill the parent does */
    XMapWindow(_xwin.display, _xwin.window);
-   
+
    /* Set WM_DELETE_WINDOW atom in WM_PROTOCOLS property (to get window_delete requests).  */
    wm_delete_window = XInternAtom(_xwin.display, "WM_DELETE_WINDOW", False);
    XSetWMProtocols(_xwin.display, _xwin.wm_window, &wm_delete_window, 1);
@@ -648,33 +648,33 @@ static void _xwin_private_select_screen_to_buffer_function(void)
    }
    else {
       switch (_xwin.screen_depth) {
-	 case 8: i = 0; break;
-	 case 15: i = 1; break;
-	 case 16: i = 2; break;
-	 case 24: i = 3; break;
-	 case 32: i = 4; break;
-	 default: i = 0; break;
+         case 8: i = 0; break;
+         case 15: i = 1; break;
+         case 16: i = 2; break;
+         case 24: i = 3; break;
+         case 32: i = 4; break;
+         default: i = 0; break;
       }
       switch (_xwin.fast_visual_depth) {
-	 case 0: j = 0; break;
-	 case 8: j = 1; break;
-	 case 16: j = 2; break;
-	 case 24: j = 3; break;
-	 case 32: j = 4; break;
-	 default: j = 0; break;
+         case 0: j = 0; break;
+         case 8: j = 1; break;
+         case 16: j = 2; break;
+         case 24: j = 3; break;
+         case 32: j = 4; break;
+         default: j = 0; break;
       }
       if (!_xwin.visual_is_truecolor)
-	 j += 5;
+         j += 5;
 
       if (_xwin_private_colorconv_usable()) {
-	 TRACE(PREFIX_I "Using generic color conversion blitter (%u, %u).\n",
-	       _xwin.screen_depth, _xwin.fast_visual_depth);
-	 blitter_func = _get_colorconv_blitter(_xwin.screen_depth,
-					       _xwin.fast_visual_depth);
-	 _xwin.screen_to_buffer = _xwin_private_fast_colorconv;
+         TRACE(PREFIX_I "Using generic color conversion blitter (%u, %u).\n",
+               _xwin.screen_depth, _xwin.fast_visual_depth);
+         blitter_func = _get_colorconv_blitter(_xwin.screen_depth,
+                                               _xwin.fast_visual_depth);
+         _xwin.screen_to_buffer = _xwin_private_fast_colorconv;
       }
       else {
-	 _xwin.screen_to_buffer = _xwin_screen_to_buffer_function[i][j];
+         _xwin.screen_to_buffer = _xwin_screen_to_buffer_function[i][j];
       }
    }
 }
@@ -691,13 +691,13 @@ static void _xwin_private_select_set_colors_function(void)
    }
    else {
       if (_xwin.matching_formats) {
-	 _xwin.set_colors = _xwin_private_set_matching_colors;
+         _xwin.set_colors = _xwin_private_set_matching_colors;
       }
       else if (_xwin.visual_is_truecolor) {
-	 _xwin.set_colors = _xwin_private_set_truecolor_colors;
+         _xwin.set_colors = _xwin_private_set_truecolor_colors;
       }
       else {
-	 _xwin.set_colors = _xwin_private_set_palette_colors;
+         _xwin.set_colors = _xwin_private_set_palette_colors;
       }
    }
 }
@@ -714,17 +714,17 @@ static void _xwin_private_setup_driver_desc(GFX_DRIVER *drv)
    /* Prepare driver description.  */
    if (_xwin.matching_formats) {
       uszprintf(_xwin_driver_desc, sizeof(_xwin_driver_desc),
-	        uconvert_ascii("X-Windows graphics, in matching, %d bpp %s", tmp1),
-	        _xwin.window_depth,
-	        uconvert_ascii("real depth", tmp2));
+                uconvert_ascii("X-Windows graphics, in matching, %d bpp %s", tmp1),
+                _xwin.window_depth,
+                uconvert_ascii("real depth", tmp2));
    }
    else {
       uszprintf(_xwin_driver_desc, sizeof(_xwin_driver_desc),
-	        uconvert_ascii("X-Windows graphics, in %s %s, %d bpp %s", tmp1),
-	        uconvert_ascii((_xwin.fast_visual_depth ? "fast" : "slow"), tmp2),
-	        uconvert_ascii((_xwin.visual_is_truecolor ? "truecolor" : "paletted"), tmp3),
-	        _xwin.window_depth,
-	        uconvert_ascii("real depth", tmp4));
+                uconvert_ascii("X-Windows graphics, in %s %s, %d bpp %s", tmp1),
+                uconvert_ascii((_xwin.fast_visual_depth ? "fast" : "slow"), tmp2),
+                uconvert_ascii((_xwin.visual_is_truecolor ? "truecolor" : "paletted"), tmp3),
+                _xwin.window_depth,
+                uconvert_ascii("real depth", tmp4));
    }
    drv->desc = _xwin_driver_desc;
 }
@@ -735,7 +735,7 @@ static void _xwin_private_setup_driver_desc(GFX_DRIVER *drv)
  *  Creates screen data and other resources.
  */
 static BITMAP *_xwin_private_create_screen(GFX_DRIVER *drv, int w, int h,
-					   int vw, int vh, int depth, int fullscreen)
+                                           int vw, int vh, int depth, int fullscreen)
 {
    if (_xwin.window == None) {
       ustrzcpy(allegro_error, ALLEGRO_ERROR_SIZE, get_config_text("No window"));
@@ -771,7 +771,7 @@ static BITMAP *_xwin_private_create_screen(GFX_DRIVER *drv, int w, int h,
       ustrzcpy(allegro_error, ALLEGRO_ERROR_SIZE, get_config_text("Unsupported color depth"));
       return 0;
    }
-   
+
    /* Save dimensions.  */
    _xwin.window_width = w;
    _xwin.window_height = h;
@@ -812,22 +812,22 @@ static BITMAP *_xwin_private_create_screen(GFX_DRIVER *drv, int w, int h,
 
       /* Make sure we got to the top of the window stack.  */
       XRaiseWindow(_xwin.display, _xwin.fs_window);
-      
+
       /* Reparent the real window.  */
       XReparentWindow(_xwin.display, _xwin.window, _xwin.fs_window, 0, 0);
 
       /* Grab the keyboard and mouse.  */
       if (XGrabKeyboard(_xwin.display, XDefaultRootWindow(_xwin.display), False,
-			GrabModeAsync, GrabModeAsync, CurrentTime) != GrabSuccess) {
-	 ustrzcpy(allegro_error, ALLEGRO_ERROR_SIZE, get_config_text("Can not grab keyboard"));
-	 return 0;
+                        GrabModeAsync, GrabModeAsync, CurrentTime) != GrabSuccess) {
+         ustrzcpy(allegro_error, ALLEGRO_ERROR_SIZE, get_config_text("Can not grab keyboard"));
+         return 0;
       }
       _xwin.keyboard_grabbed = 1;
       if (XGrabPointer(_xwin.display, _xwin.window, False,
-		       PointerMotionMask | ButtonPressMask | ButtonReleaseMask,
-		       GrabModeAsync, GrabModeAsync, _xwin.window, None, CurrentTime) != GrabSuccess) {
-	 ustrzcpy(allegro_error, ALLEGRO_ERROR_SIZE, get_config_text("Can not grab mouse"));
-	 return 0;
+                       PointerMotionMask | ButtonPressMask | ButtonReleaseMask,
+                       GrabModeAsync, GrabModeAsync, _xwin.window, None, CurrentTime) != GrabSuccess) {
+         ustrzcpy(allegro_error, ALLEGRO_ERROR_SIZE, get_config_text("Can not grab mouse"));
+         return 0;
       }
       _xwin.mouse_grabbed = 1;
 
@@ -842,7 +842,7 @@ static BITMAP *_xwin_private_create_screen(GFX_DRIVER *drv, int w, int h,
       XSync(_xwin.display, False);
       _xvidmode_private_set_fullscreen(w, h, &fs_width, &fs_height);
 #endif
-      
+
       /* Center the window (if necessary).  */
       if ((fs_width != w) || (fs_height != h))
          XMoveWindow(_xwin.display, _xwin.window, (fs_width - w) / 2,
@@ -864,7 +864,7 @@ static BITMAP *_xwin_private_create_screen(GFX_DRIVER *drv, int w, int h,
 }
 
 BITMAP *_xwin_create_screen(GFX_DRIVER *drv, int w, int h,
-			    int vw, int vh, int depth, int fullscreen)
+                            int vw, int vh, int depth, int fullscreen)
 {
    BITMAP *bmp;
    XLOCK();
@@ -904,7 +904,7 @@ static void _xwin_private_destroy_screen(void)
       _release_colorconv_blitter(blitter_func);
       blitter_func = NULL;
    }
-   
+
    if (_xwin.fs_window != None) {
       /* Reparent the real window! */
       XReparentWindow(_xwin.display, _xwin.window, _xwin.wm_window, 0, 0);
@@ -997,8 +997,8 @@ static BITMAP *_xwin_private_create_screen_data(GFX_DRIVER *drv, int w, int h)
 
    /* Create screen bitmap from frame buffer.  */
    return _xwin_private_create_screen_bitmap(drv,
-					     (unsigned char *)_xwin.ximage->data + _xwin.ximage->xoffset,
-					     _xwin.ximage->bytes_per_line);
+                                             (unsigned char *)_xwin.ximage->data + _xwin.ximage->xoffset,
+                                             _xwin.ximage->bytes_per_line);
 }
 
 
@@ -1006,8 +1006,8 @@ static BITMAP *_xwin_private_create_screen_data(GFX_DRIVER *drv, int w, int h)
  *  Create screen bitmap from frame buffer.
  */
 static BITMAP *_xwin_private_create_screen_bitmap(GFX_DRIVER *drv,
-						  unsigned char *frame_buffer,
-						  int bytes_per_buffer_line)
+                                                  unsigned char *frame_buffer,
+                                                  int bytes_per_buffer_line)
 {
    int line;
    int bytes_per_screen_line;
@@ -1042,8 +1042,8 @@ static BITMAP *_xwin_private_create_screen_bitmap(GFX_DRIVER *drv,
       bytes_per_screen_line = _xwin.virtual_width * BYTES_PER_PIXEL(_xwin.screen_depth);
       _xwin.screen_data = _AL_MALLOC_ATOMIC(_xwin.virtual_height * bytes_per_screen_line);
       if (_xwin.screen_data == 0) {
-	 ustrzcpy(allegro_error, ALLEGRO_ERROR_SIZE, get_config_text("Not enough memory"));
-	 return 0;
+         ustrzcpy(allegro_error, ALLEGRO_ERROR_SIZE, get_config_text("Not enough memory"));
+         return 0;
       }
       _xwin.screen_line[0] = _xwin.screen_data;
    }
@@ -1056,19 +1056,19 @@ static BITMAP *_xwin_private_create_screen_bitmap(GFX_DRIVER *drv,
    if (!_xwin.matching_formats && _xwin.fast_visual_depth) {
       _xwin.buffer_line = _AL_MALLOC(_xwin.virtual_height * sizeof(unsigned char*));
       if (_xwin.buffer_line == 0) {
-	 ustrzcpy(allegro_error, ALLEGRO_ERROR_SIZE, get_config_text("Not enough memory"));
-	 return 0;
+         ustrzcpy(allegro_error, ALLEGRO_ERROR_SIZE, get_config_text("Not enough memory"));
+         return 0;
       }
 
       _xwin.buffer_line[0] = frame_buffer;
       for (line = 1; line < _xwin.virtual_height; line++)
-	 _xwin.buffer_line[line] = _xwin.buffer_line[line - 1] + bytes_per_buffer_line;
+         _xwin.buffer_line[line] = _xwin.buffer_line[line - 1] + bytes_per_buffer_line;
    }
 
    /* Create bitmap.  */
    bmp = _make_bitmap(_xwin.virtual_width, _xwin.virtual_height,
-		      (uintptr_t) (_xwin.screen_line[0]), drv,
-		      _xwin.screen_depth, bytes_per_screen_line);
+                      (uintptr_t) (_xwin.screen_line[0]), drv,
+                      _xwin.screen_depth, bytes_per_screen_line);
    if (bmp == 0) {
       ustrzcpy(allegro_error, ALLEGRO_ERROR_SIZE, get_config_text("Not enough memory"));
       return 0;
@@ -1110,37 +1110,37 @@ static void _xwin_private_create_mapping_tables(void)
 {
    if (!_xwin.matching_formats) {
       if (_xwin.visual_is_truecolor) {
-	 switch (_xwin.screen_depth) {
-	    case 8:
-	       /* Will be modified later in set_palette.  */
-	       _xwin_private_create_mapping(_xwin.rmap, 256, 0, 0);
-	       _xwin_private_create_mapping(_xwin.gmap, 256, 0, 0);
-	       _xwin_private_create_mapping(_xwin.bmap, 256, 0, 0);
-	       break;
-	    case 15:
-	       _xwin_private_create_mapping(_xwin.rmap, 32, _xwin.rsize, _xwin.rshift);
-	       _xwin_private_create_mapping(_xwin.gmap, 32, _xwin.gsize, _xwin.gshift);
-	       _xwin_private_create_mapping(_xwin.bmap, 32, _xwin.bsize, _xwin.bshift);
-	       break;
-	    case 16:
-	       _xwin_private_create_mapping(_xwin.rmap, 32, _xwin.rsize, _xwin.rshift);
-	       _xwin_private_create_mapping(_xwin.gmap, 64, _xwin.gsize, _xwin.gshift);
-	       _xwin_private_create_mapping(_xwin.bmap, 32, _xwin.bsize, _xwin.bshift);
-	       break;
-	    case 24:
-	    case 32:
-	       _xwin_private_create_mapping(_xwin.rmap, 256, _xwin.rsize, _xwin.rshift);
-	       _xwin_private_create_mapping(_xwin.gmap, 256, _xwin.gsize, _xwin.gshift);
-	       _xwin_private_create_mapping(_xwin.bmap, 256, _xwin.bsize, _xwin.bshift);
-	       break;
-	 }
+         switch (_xwin.screen_depth) {
+            case 8:
+               /* Will be modified later in set_palette.  */
+               _xwin_private_create_mapping(_xwin.rmap, 256, 0, 0);
+               _xwin_private_create_mapping(_xwin.gmap, 256, 0, 0);
+               _xwin_private_create_mapping(_xwin.bmap, 256, 0, 0);
+               break;
+            case 15:
+               _xwin_private_create_mapping(_xwin.rmap, 32, _xwin.rsize, _xwin.rshift);
+               _xwin_private_create_mapping(_xwin.gmap, 32, _xwin.gsize, _xwin.gshift);
+               _xwin_private_create_mapping(_xwin.bmap, 32, _xwin.bsize, _xwin.bshift);
+               break;
+            case 16:
+               _xwin_private_create_mapping(_xwin.rmap, 32, _xwin.rsize, _xwin.rshift);
+               _xwin_private_create_mapping(_xwin.gmap, 64, _xwin.gsize, _xwin.gshift);
+               _xwin_private_create_mapping(_xwin.bmap, 32, _xwin.bsize, _xwin.bshift);
+               break;
+            case 24:
+            case 32:
+               _xwin_private_create_mapping(_xwin.rmap, 256, _xwin.rsize, _xwin.rshift);
+               _xwin_private_create_mapping(_xwin.gmap, 256, _xwin.gsize, _xwin.gshift);
+               _xwin_private_create_mapping(_xwin.bmap, 256, _xwin.bsize, _xwin.bshift);
+               break;
+         }
       }
       else {
-	 int i;
+         int i;
 
-	 /* Might be modified later in set_palette.  */
-	 for (i = 0; i < 256; i++)
-	    _xwin.rmap[i] = _xwin.gmap[i] = _xwin.bmap[i] = 0;
+         /* Might be modified later in set_palette.  */
+         for (i = 0; i < 256; i++)
+            _xwin.rmap[i] = _xwin.gmap[i] = _xwin.bmap[i] = 0;
       }
    }
 }
@@ -1206,32 +1206,32 @@ static int _xwin_private_create_ximage(int w, int h)
    if (_xwin.use_shm) {
       /* Try to create shared memory XImage.  */
       image = XShmCreateImage(_xwin.display, _xwin.visual, _xwin.window_depth,
-			      ZPixmap, 0, &_xwin.shminfo, w, h);
+                              ZPixmap, 0, &_xwin.shminfo, w, h);
       do {
-	 if (image != 0) {
-	    /* Create shared memory segment.  */
-	    _xwin.shminfo.shmid = shmget(IPC_PRIVATE, image->bytes_per_line * image->height,
-					 IPC_CREAT | 0777);
-	    if (_xwin.shminfo.shmid != -1) {
-	       /* Attach shared memory to our address space.  */
-	       _xwin.shminfo.shmaddr = image->data = shmat(_xwin.shminfo.shmid, 0, 0);
-	       if (_xwin.shminfo.shmaddr != (char*) -1) {
-		  _xwin.shminfo.readOnly = True;
+         if (image != 0) {
+            /* Create shared memory segment.  */
+            _xwin.shminfo.shmid = shmget(IPC_PRIVATE, image->bytes_per_line * image->height,
+                                         IPC_CREAT | 0777);
+            if (_xwin.shminfo.shmid != -1) {
+               /* Attach shared memory to our address space.  */
+               _xwin.shminfo.shmaddr = image->data = shmat(_xwin.shminfo.shmid, 0, 0);
+               if (_xwin.shminfo.shmaddr != (char*) -1) {
+                  _xwin.shminfo.readOnly = True;
 
-		  /* Attach shared memory to the X-server address space.  */
-		  if (XShmAttach(_xwin.display, &_xwin.shminfo)) {
-		     XSync(_xwin.display, False);
-		     break;
-		   }
+                  /* Attach shared memory to the X-server address space.  */
+                  if (XShmAttach(_xwin.display, &_xwin.shminfo)) {
+                     XSync(_xwin.display, False);
+                     break;
+                   }
 
-		  shmdt(_xwin.shminfo.shmaddr);
-	       }
-	       shmctl(_xwin.shminfo.shmid, IPC_RMID, 0);
-	    }
-	    XDestroyImage(image);
-	    image = 0;
-	 }
-	 _xwin.use_shm = 0;
+                  shmdt(_xwin.shminfo.shmaddr);
+               }
+               shmctl(_xwin.shminfo.shmid, IPC_RMID, 0);
+            }
+            XDestroyImage(image);
+            image = 0;
+         }
+         _xwin.use_shm = 0;
       } while (0);
    }
 #endif
@@ -1243,18 +1243,18 @@ static int _xwin_private_create_ximage(int w, int h)
 
       pixmap = XCreatePixmap(_xwin.display, _xwin.window, w, h, _xwin.window_depth);
       if (pixmap != None) {
-	 image = XGetImage(_xwin.display, pixmap, 0, 0, w, h, AllPlanes, ZPixmap);
-	 XFreePixmap(_xwin.display, pixmap);
+         image = XGetImage(_xwin.display, pixmap, 0, 0, w, h, AllPlanes, ZPixmap);
+         XFreePixmap(_xwin.display, pixmap);
       }
 #else
       image = XCreateImage(_xwin.display, _xwin.visual, _xwin.window_depth,
-			   ZPixmap, 0, 0, w, h, 32, 0);
+                           ZPixmap, 0, 0, w, h, 32, 0);
       if (image != 0) {
-	 image->data = _AL_MALLOC_ATOMIC(image->bytes_per_line * image->height);
-	 if (image->data == 0) {
-	    XDestroyImage(image);
-	    image = 0;
-	 }
+         image->data = _AL_MALLOC_ATOMIC(image->bytes_per_line * image->height);
+         if (image->data == 0) {
+            XDestroyImage(image);
+            image = 0;
+         }
       }
 #endif
    }
@@ -1274,9 +1274,9 @@ static void _xwin_private_destroy_ximage(void)
    if (_xwin.ximage != 0) {
 #ifdef ALLEGRO_XWINDOWS_WITH_SHM
       if (_xwin.use_shm) {
-	 XShmDetach(_xwin.display, &_xwin.shminfo);
-	 shmdt(_xwin.shminfo.shmaddr);
-	 shmctl(_xwin.shminfo.shmid, IPC_RMID, 0);
+         XShmDetach(_xwin.display, &_xwin.shminfo);
+         shmdt(_xwin.shminfo.shmaddr);
+         shmctl(_xwin.shminfo.shmid, IPC_RMID, 0);
       }
 #endif
       XDestroyImage(_xwin.ximage);
@@ -1302,57 +1302,57 @@ static void _xwin_private_prepare_visual(void)
 
       /* Red shift and size.  */
       for (mask = _xwin.visual->red_mask, i = 0; (mask & 1) != 1; mask >>= 1)
-	 i++;
+         i++;
       _xwin.rshift = i;
       for (i = 0; mask != 0; mask >>= 1)
-	 i++;
+         i++;
       _xwin.rsize = 1 << i;
 
       /* Green shift and size.  */
       for (mask = _xwin.visual->green_mask, i = 0; (mask & 1) != 1; mask >>= 1)
-	 i++;
+         i++;
       _xwin.gshift = i;
       for (i = 0; mask != 0; mask >>= 1)
-	 i++;
+         i++;
       _xwin.gsize = 1 << i;
 
       /* Blue shift and size.  */
       for (mask = _xwin.visual->blue_mask, i = 0; (mask & 1) != 1; mask >>= 1)
-	 i++;
+         i++;
       _xwin.bshift = i;
       for (i = 0; mask != 0; mask >>= 1)
-	 i++;
+         i++;
       _xwin.bsize = 1 << i;
 
       /* Convert DirectColor visual into true color visual.  */
       if (_xwin.visual->class == DirectColor) {
-	 color.flags = DoRed;
-	 rmax = _xwin.rsize - 1;
-	 gmax = _xwin.gsize - 1;
-	 bmax = _xwin.bsize - 1;
-	 for (i = 0; i < _xwin.rsize; i++) {
-	    color.pixel = i << _xwin.rshift;
-	    color.red = ((rmax <= 0) ? 0 : ((i * 65535L) / rmax));
-	    XStoreColor(_xwin.display, _xwin.colormap, &color);
-	 }
-	 color.flags = DoGreen;
-	 for (i = 0; i < _xwin.gsize; i++) {
-	    color.pixel = i << _xwin.gshift;
-	    color.green = ((gmax <= 0) ? 0 : ((i * 65535L) / gmax));
-	    XStoreColor(_xwin.display, _xwin.colormap, &color);
-	 }
-	 color.flags = DoBlue;
-	 for (i = 0; i < _xwin.bsize; i++) {
-	    color.pixel = i << _xwin.bshift;
-	    color.blue = ((bmax <= 0) ? 0 : ((i * 65535L) / bmax));
-	    XStoreColor(_xwin.display, _xwin.colormap, &color);
-	 }
+         color.flags = DoRed;
+         rmax = _xwin.rsize - 1;
+         gmax = _xwin.gsize - 1;
+         bmax = _xwin.bsize - 1;
+         for (i = 0; i < _xwin.rsize; i++) {
+            color.pixel = i << _xwin.rshift;
+            color.red = ((rmax <= 0) ? 0 : ((i * 65535L) / rmax));
+            XStoreColor(_xwin.display, _xwin.colormap, &color);
+         }
+         color.flags = DoGreen;
+         for (i = 0; i < _xwin.gsize; i++) {
+            color.pixel = i << _xwin.gshift;
+            color.green = ((gmax <= 0) ? 0 : ((i * 65535L) / gmax));
+            XStoreColor(_xwin.display, _xwin.colormap, &color);
+         }
+         color.flags = DoBlue;
+         for (i = 0; i < _xwin.bsize; i++) {
+            color.pixel = i << _xwin.bshift;
+            color.blue = ((bmax <= 0) ? 0 : ((i * 65535L) / bmax));
+            XStoreColor(_xwin.display, _xwin.colormap, &color);
+         }
       }
 
       _xwin.visual_is_truecolor = 1;
    }
    else if ((_xwin.visual->class == PseudoColor)
-	    || (_xwin.visual->class == GrayScale)) {
+            || (_xwin.visual->class == GrayScale)) {
       /* Convert read-write palette visual into true color visual.  */
       b = _xwin.window_depth / 3;
       r = (_xwin.window_depth - b) / 2;
@@ -1373,15 +1373,15 @@ static void _xwin_private_prepare_visual(void)
 
       color.flags = DoRed | DoGreen | DoBlue;
       for (r = 0; r < _xwin.rsize; r++) {
-	 for (g = 0; g < _xwin.gsize; g++) {
-	    for (b = 0; b < _xwin.bsize; b++) {
-	       color.pixel = (r << _xwin.rshift) | (g << _xwin.gshift) | (b << _xwin.bshift);
-	       color.red = ((rmax <= 0) ? 0 : ((r * 65535L) / rmax));
-	       color.green = ((gmax <= 0) ? 0 : ((g * 65535L) / gmax));
-	       color.blue = ((bmax <= 0) ? 0 : ((b * 65535L) / bmax));
-	       XStoreColor(_xwin.display, _xwin.colormap, &color);
-	    }
-	 }
+         for (g = 0; g < _xwin.gsize; g++) {
+            for (b = 0; b < _xwin.bsize; b++) {
+               color.pixel = (r << _xwin.rshift) | (g << _xwin.gshift) | (b << _xwin.bshift);
+               color.red = ((rmax <= 0) ? 0 : ((r * 65535L) / rmax));
+               color.green = ((gmax <= 0) ? 0 : ((g * 65535L) / gmax));
+               color.blue = ((bmax <= 0) ? 0 : ((b * 65535L) / bmax));
+               XStoreColor(_xwin.display, _xwin.colormap, &color);
+            }
+         }
       }
    }
    else {
@@ -1397,15 +1397,15 @@ static void _xwin_private_prepare_visual(void)
 
       /* Make fixed palette and create mapping RRRRGGGGBBBB -> palette index.  */
       for (r = 0; r < 16; r++) {
-	 for (g = 0; g < 16; g++) {
-	    for (b = 0; b < 16; b++) {
-	       color.red = (r * 65535L) / 15;
-	       color.green = (g * 65535L) / 15;
-	       color.blue = (b * 65535L) / 15;
-	       XAllocColor(_xwin.display, _xwin.colormap, &color);
-	       _xwin.cmap[(r << 8) | (g << 4) | b] = color.pixel;
-	    }
-	 }
+         for (g = 0; g < 16; g++) {
+            for (b = 0; b < 16; b++) {
+               color.red = (r * 65535L) / 15;
+               color.green = (g * 65535L) / 15;
+               color.blue = (b * 65535L) / 15;
+               XAllocColor(_xwin.display, _xwin.colormap, &color);
+               _xwin.cmap[(r << 8) | (g << 4) | b] = color.pixel;
+            }
+         }
       }
    }
 }
@@ -1423,56 +1423,56 @@ static int _xwin_private_matching_formats(void)
    if (_xwin.screen_depth == 8) {
       /* For matching 8 bpp modes visual must be PseudoColor or GrayScale.  */
       if (((_xwin.visual->class != PseudoColor)
-	   && (_xwin.visual->class != GrayScale))
-	  || (_xwin.fast_visual_depth != 8)
-	  || (_xwin.window_depth != 8))
-	 return 0;
+           && (_xwin.visual->class != GrayScale))
+          || (_xwin.fast_visual_depth != 8)
+          || (_xwin.window_depth != 8))
+         return 0;
    }
    else if ((_xwin.visual->class != TrueColor)
-	    && (_xwin.visual->class != DirectColor)) {
+            && (_xwin.visual->class != DirectColor)) {
       /* For matching true color modes visual must be TrueColor or DirectColor.  */
       return 0;
    }
    else if (_xwin.screen_depth == 15) {
       if ((_xwin.fast_visual_depth != 16)
-	  || (_xwin.rsize != 32) || (_xwin.gsize != 32) || (_xwin.bsize != 32)
-	  || ((_xwin.rshift != 0) && (_xwin.rshift != 10))
-	  || ((_xwin.bshift != 0) && (_xwin.bshift != 10))
-	  || (_xwin.gshift != 5))
-	 return 0;
+          || (_xwin.rsize != 32) || (_xwin.gsize != 32) || (_xwin.bsize != 32)
+          || ((_xwin.rshift != 0) && (_xwin.rshift != 10))
+          || ((_xwin.bshift != 0) && (_xwin.bshift != 10))
+          || (_xwin.gshift != 5))
+         return 0;
       _rgb_r_shift_15 = _xwin.rshift;
       _rgb_g_shift_15 = _xwin.gshift;
       _rgb_b_shift_15 = _xwin.bshift;
    }
    else if (_xwin.screen_depth == 16) {
       if ((_xwin.fast_visual_depth != 16)
-	  || (_xwin.rsize != 32) || (_xwin.gsize != 64) || (_xwin.bsize != 32)
-	  || ((_xwin.rshift != 0) && (_xwin.rshift != 11))
-	  || ((_xwin.bshift != 0) && (_xwin.bshift != 11))
-	  || (_xwin.gshift != 5))
-	 return 0;
+          || (_xwin.rsize != 32) || (_xwin.gsize != 64) || (_xwin.bsize != 32)
+          || ((_xwin.rshift != 0) && (_xwin.rshift != 11))
+          || ((_xwin.bshift != 0) && (_xwin.bshift != 11))
+          || (_xwin.gshift != 5))
+         return 0;
       _rgb_r_shift_16 = _xwin.rshift;
       _rgb_g_shift_16 = _xwin.gshift;
       _rgb_b_shift_16 = _xwin.bshift;
    }
    else if (_xwin.screen_depth == 24){
       if ((_xwin.fast_visual_depth != 24)
-	  || (_xwin.rsize != 256) || (_xwin.gsize != 256) || (_xwin.bsize != 256)
-	  || ((_xwin.rshift != 0) && (_xwin.rshift != 16))
-	  || ((_xwin.bshift != 0) && (_xwin.bshift != 16))
-	  || (_xwin.gshift != 8))
-	 return 0;
+          || (_xwin.rsize != 256) || (_xwin.gsize != 256) || (_xwin.bsize != 256)
+          || ((_xwin.rshift != 0) && (_xwin.rshift != 16))
+          || ((_xwin.bshift != 0) && (_xwin.bshift != 16))
+          || (_xwin.gshift != 8))
+         return 0;
       _rgb_r_shift_24 = _xwin.rshift;
       _rgb_g_shift_24 = _xwin.gshift;
       _rgb_b_shift_24 = _xwin.bshift;
    }
    else if (_xwin.screen_depth == 32) {
       if ((_xwin.fast_visual_depth != 32)
-	  || (_xwin.rsize != 256) || (_xwin.gsize != 256) || (_xwin.bsize != 256)
-	  || ((_xwin.rshift != 0) && (_xwin.rshift != 16))
-	  || ((_xwin.bshift != 0) && (_xwin.bshift != 16))
-	  || (_xwin.gshift != 8))
-	 return 0;
+          || (_xwin.rsize != 256) || (_xwin.gsize != 256) || (_xwin.bsize != 256)
+          || ((_xwin.rshift != 0) && (_xwin.rshift != 16))
+          || ((_xwin.bshift != 0) && (_xwin.bshift != 16))
+          || (_xwin.gshift != 8))
+         return 0;
       _rgb_r_shift_32 = _xwin.rshift;
       _rgb_g_shift_32 = _xwin.gshift;
       _rgb_b_shift_32 = _xwin.bshift;
@@ -1537,14 +1537,14 @@ static int _xwin_private_colorconv_usable(void)
 
       /* For usable 8 bpp modes visual must be PseudoColor or GrayScale.  */
       if ((_xwin.visual->class == PseudoColor)
-	   || (_xwin.visual->class == GrayScale))
-	 return 1;
+           || (_xwin.visual->class == GrayScale))
+         return 1;
 #else
       return 0;
 #endif
    }
    else if ((_xwin.visual->class != TrueColor)
-	    && (_xwin.visual->class != DirectColor)) {
+            && (_xwin.visual->class != DirectColor)) {
       /* For usable true color modes visual must be TrueColor or DirectColor.  */
       return 0;
    }
@@ -1554,7 +1554,7 @@ static int _xwin_private_colorconv_usable(void)
        && ((_xwin.bshift == 0) || (_xwin.bshift == 10) || (_xwin.bshift == 11))
        && (_xwin.gshift == 5)) {
       if (_xwin.bshift == 0)
-	 _xwin_private_hack_shifts();
+         _xwin_private_hack_shifts();
       return 1;
    }
    else if ((_xwin.fast_visual_depth == 24)
@@ -1563,7 +1563,7 @@ static int _xwin_private_colorconv_usable(void)
        && ((_xwin.bshift == 0) || (_xwin.bshift == 16))
        && (_xwin.gshift == 8)) {
       if (_xwin.bshift == 0)
-	 _xwin_private_hack_shifts();
+         _xwin_private_hack_shifts();
       return 1;
    }
    else if ((_xwin.fast_visual_depth == 32)
@@ -1572,7 +1572,7 @@ static int _xwin_private_colorconv_usable(void)
        && ((_xwin.bshift == 0) || (_xwin.bshift == 16))
        && (_xwin.gshift == 8)) {
       if (_xwin.bshift == 0)
-	 _xwin_private_hack_shifts();
+         _xwin_private_hack_shifts();
       return 1;
    }
 
@@ -1629,33 +1629,33 @@ static int _xwin_private_fast_visual_depth(void)
       int bit;
 
       for (bit = -1; bit < _xwin.window_depth; bit++) {
-	 unsigned long color = ((bit < 0) ? 0 : ((unsigned long) 1 << bit));
+         unsigned long color = ((bit < 0) ? 0 : ((unsigned long) 1 << bit));
 
-	 /* Write color through XImage API.  */
-	 XPutPixel(_xwin.ximage, x, 0, color);
+         /* Write color through XImage API.  */
+         XPutPixel(_xwin.ximage, x, 0, color);
 
-	 /* Read color with direct access.  */
-	 switch (test_depth) {
-	    case 8:
-	       if (p8[x] != color)
-		  ok = 0;
-	       break;
-	    case 16:
-	       if (p16[x] != color)
-		  ok = 0;
-	       break;
-	    case 32:
-	       if (p32[x] != color)
-		  ok = 0;
-	       break;
-	    default:
-	       ok = 0;
-	       break;
-	 }
-	 XPutPixel(_xwin.ximage, x, 0, 0);
+         /* Read color with direct access.  */
+         switch (test_depth) {
+            case 8:
+               if (p8[x] != color)
+                  ok = 0;
+               break;
+            case 16:
+               if (p16[x] != color)
+                  ok = 0;
+               break;
+            case 32:
+               if (p32[x] != color)
+                  ok = 0;
+               break;
+            default:
+               ok = 0;
+               break;
+         }
+         XPutPixel(_xwin.ximage, x, 0, 0);
 
-	 if (!ok)
-	    return 0;
+         if (!ok)
+            return 0;
       }
    }
 
@@ -1685,9 +1685,9 @@ void _xwin_enable_hardware_cursor(int mode)
       /* Move X-cursor to Allegro cursor.  */
       XLOCK();
       XWarpPointer(_xwin.display, _xwin.window, _xwin.window,
-		   0, 0, _xwin.window_width, _xwin.window_height,
-		   _mouse_x - (_xwin_mouse_extended_range ? _xwin.scroll_x : 0),
-		   _mouse_y - (_xwin_mouse_extended_range ? _xwin.scroll_y : 0));
+                   0, 0, _xwin.window_width, _xwin.window_height,
+                   _mouse_x - (_xwin_mouse_extended_range ? _xwin.scroll_x : 0),
+                   _mouse_y - (_xwin_mouse_extended_range ? _xwin.scroll_y : 0));
       XUNLOCK();
    }
 }
@@ -1877,10 +1877,10 @@ static void name(int sx, int sy, int sw, int sh)                                
       stype *s = (stype*) (_xwin.screen_line[y]) + sx;                                  \
       dtype *d = (dtype*) (_xwin.buffer_line[y]) + sx;                                  \
       for (x = sw - 1; x >= 0; x--) {                                                   \
-	 unsigned long color = *s++;                                                    \
-	 *d++ = (_xwin.rmap[(color >> (rshift)) & (rmask)]                              \
-		 | _xwin.gmap[(color >> (gshift)) & (gmask)]                            \
-		 | _xwin.bmap[(color >> (bshift)) & (bmask)]);                          \
+         unsigned long color = *s++;                                                    \
+         *d++ = (_xwin.rmap[(color >> (rshift)) & (rmask)]                              \
+                 | _xwin.gmap[(color >> (gshift)) & (gmask)]                            \
+                 | _xwin.bmap[(color >> (bshift)) & (bmask)]);                          \
       }                                                                                 \
    }                                                                                    \
 }
@@ -1893,9 +1893,9 @@ static void name(int sx, int sy, int sw, int sh)                                
       unsigned char *s = _xwin.screen_line[y] + 3 * sx;                                 \
       dtype *d = (dtype*) (_xwin.buffer_line[y]) + sx;                                  \
       for (x = sw - 1; x >= 0; s += 3, x--) {                                           \
-	 *d++ = (_xwin.rmap[s[DEFAULT_RGB_R_POS_24]]                                    \
-		 | _xwin.gmap[s[DEFAULT_RGB_G_POS_24]]                                  \
-		 | _xwin.bmap[s[DEFAULT_RGB_B_POS_24]]);                                \
+         *d++ = (_xwin.rmap[s[DEFAULT_RGB_R_POS_24]]                                    \
+                 | _xwin.gmap[s[DEFAULT_RGB_G_POS_24]]                                  \
+                 | _xwin.bmap[s[DEFAULT_RGB_B_POS_24]]);                                \
       }                                                                                 \
    }                                                                                    \
 }
@@ -1908,11 +1908,11 @@ static void name(int sx, int sy, int sw, int sh)                                
       stype *s = (stype*) (_xwin.screen_line[y]) + sx;                                  \
       unsigned char *d = _xwin.buffer_line[y] + 3 * sx;                                 \
       for (x = sw - 1; x >= 0; d += 3, x--) {                                           \
-	 unsigned long color = *s++;                                                    \
-	 color = (_xwin.rmap[(color >> (rshift)) & (rmask)]                             \
-		  | _xwin.gmap[(color >> (gshift)) & (gmask)]                           \
-		  | _xwin.bmap[(color >> (bshift)) & (bmask)]);                         \
-	 WRITE3BYTES(d, color);                                                         \
+         unsigned long color = *s++;                                                    \
+         color = (_xwin.rmap[(color >> (rshift)) & (rmask)]                             \
+                  | _xwin.gmap[(color >> (gshift)) & (gmask)]                           \
+                  | _xwin.bmap[(color >> (bshift)) & (bmask)]);                         \
+         WRITE3BYTES(d, color);                                                         \
       }                                                                                 \
    }                                                                                    \
 }
@@ -1925,57 +1925,57 @@ static void name(int sx, int sy, int sw, int sh)                                
       unsigned char *s = _xwin.screen_line[y] + 3 * sx;                                 \
       unsigned char *d = _xwin.buffer_line[y] + 3 * sx;                                 \
       for (x = sw - 1; x >= 0; s += 3, d += 3, x--) {                                   \
-	 unsigned long color = _xwin.rmap[s[DEFAULT_RGB_R_POS_24]]                      \
-	 		       | _xwin.gmap[s[DEFAULT_RGB_G_POS_24]]                    \
-			       | _xwin.bmap[s[DEFAULT_RGB_B_POS_24]];                   \
-	 WRITE3BYTES(d, color);                                                         \
+         unsigned long color = _xwin.rmap[s[DEFAULT_RGB_R_POS_24]]                      \
+                               | _xwin.gmap[s[DEFAULT_RGB_G_POS_24]]                    \
+                               | _xwin.bmap[s[DEFAULT_RGB_B_POS_24]];                   \
+         WRITE3BYTES(d, color);                                                         \
       }                                                                                 \
    }                                                                                    \
 }
 
 MAKE_FAST_TRUECOLOR(_xwin_private_fast_truecolor_8_to_8,
-		    unsigned char, unsigned char, 0, 0, 0, 0xFF, 0xFF, 0xFF);
+                    unsigned char, unsigned char, 0, 0, 0, 0xFF, 0xFF, 0xFF);
 MAKE_FAST_TRUECOLOR(_xwin_private_fast_truecolor_8_to_16,
-		    unsigned char, unsigned short, 0, 0, 0, 0xFF, 0xFF, 0xFF);
+                    unsigned char, unsigned short, 0, 0, 0, 0xFF, 0xFF, 0xFF);
 MAKE_FAST_TRUECOLOR(_xwin_private_fast_truecolor_8_to_32,
-		    unsigned char, uint32_t, 0, 0, 0, 0xFF, 0xFF, 0xFF);
+                    unsigned char, uint32_t, 0, 0, 0, 0xFF, 0xFF, 0xFF);
 
 MAKE_FAST_TRUECOLOR(_xwin_private_fast_truecolor_15_to_8,
-		    unsigned short, unsigned char, 0, 5, 10, 0x1F, 0x1F, 0x1F);
+                    unsigned short, unsigned char, 0, 5, 10, 0x1F, 0x1F, 0x1F);
 MAKE_FAST_TRUECOLOR(_xwin_private_fast_truecolor_15_to_16,
-		    unsigned short, unsigned short, 0, 5, 10, 0x1F, 0x1F, 0x1F);
+                    unsigned short, unsigned short, 0, 5, 10, 0x1F, 0x1F, 0x1F);
 MAKE_FAST_TRUECOLOR(_xwin_private_fast_truecolor_15_to_32,
-		    unsigned short, uint32_t, 0, 5, 10, 0x1F, 0x1F, 0x1F);
+                    unsigned short, uint32_t, 0, 5, 10, 0x1F, 0x1F, 0x1F);
 
 MAKE_FAST_TRUECOLOR(_xwin_private_fast_truecolor_16_to_8,
-		    unsigned short, unsigned char, 0, 5, 11, 0x1F, 0x3F, 0x1F);
+                    unsigned short, unsigned char, 0, 5, 11, 0x1F, 0x3F, 0x1F);
 MAKE_FAST_TRUECOLOR(_xwin_private_fast_truecolor_16_to_16,
-		    unsigned short, unsigned short, 0, 5, 11, 0x1F, 0x3F, 0x1F);
+                    unsigned short, unsigned short, 0, 5, 11, 0x1F, 0x3F, 0x1F);
 MAKE_FAST_TRUECOLOR(_xwin_private_fast_truecolor_16_to_32,
-		    unsigned short, uint32_t, 0, 5, 11, 0x1F, 0x3F, 0x1F);
+                    unsigned short, uint32_t, 0, 5, 11, 0x1F, 0x3F, 0x1F);
 
 MAKE_FAST_TRUECOLOR(_xwin_private_fast_truecolor_32_to_8,
-		    uint32_t, unsigned char, 0, 8, 16, 0xFF, 0xFF, 0xFF);
+                    uint32_t, unsigned char, 0, 8, 16, 0xFF, 0xFF, 0xFF);
 MAKE_FAST_TRUECOLOR(_xwin_private_fast_truecolor_32_to_16,
-		    uint32_t, unsigned short, 0, 8, 16, 0xFF, 0xFF, 0xFF);
+                    uint32_t, unsigned short, 0, 8, 16, 0xFF, 0xFF, 0xFF);
 MAKE_FAST_TRUECOLOR(_xwin_private_fast_truecolor_32_to_32,
-		    uint32_t, uint32_t, 0, 8, 16, 0xFF, 0xFF, 0xFF);
+                    uint32_t, uint32_t, 0, 8, 16, 0xFF, 0xFF, 0xFF);
 
 MAKE_FAST_TRUECOLOR24(_xwin_private_fast_truecolor_24_to_8,
-		      unsigned char);
+                      unsigned char);
 MAKE_FAST_TRUECOLOR24(_xwin_private_fast_truecolor_24_to_16,
-		      unsigned short);
+                      unsigned short);
 MAKE_FAST_TRUECOLOR24(_xwin_private_fast_truecolor_24_to_32,
-		      uint32_t);
+                      uint32_t);
 
 MAKE_FAST_TRUECOLOR_TO24(_xwin_private_fast_truecolor_8_to_24,
-			 unsigned char, 0, 0, 0, 0xFF, 0xFF, 0xFF);
+                         unsigned char, 0, 0, 0, 0xFF, 0xFF, 0xFF);
 MAKE_FAST_TRUECOLOR_TO24(_xwin_private_fast_truecolor_15_to_24,
-			 unsigned short, 0, 5, 10, 0x1F, 0x1F, 0x1F);
+                         unsigned short, 0, 5, 10, 0x1F, 0x1F, 0x1F);
 MAKE_FAST_TRUECOLOR_TO24(_xwin_private_fast_truecolor_16_to_24,
-			 unsigned short, 0, 5, 11, 0x1F, 0x3F, 0x1F);
+                         unsigned short, 0, 5, 11, 0x1F, 0x3F, 0x1F);
 MAKE_FAST_TRUECOLOR_TO24(_xwin_private_fast_truecolor_32_to_24,
-			 uint32_t, 0, 8, 16, 0xFF, 0xFF, 0xFF);
+                         uint32_t, 0, 8, 16, 0xFF, 0xFF, 0xFF);
 
 MAKE_FAST_TRUECOLOR24_TO24(_xwin_private_fast_truecolor_24_to_24);
 
@@ -1987,10 +1987,10 @@ static void name(int sx, int sy, int sw, int sh)                                
       unsigned char *s = _xwin.screen_line[y] + sx;                                     \
       dtype *d = (dtype*) (_xwin.buffer_line[y]) + sx;                                  \
       for (x = sw - 1; x >= 0; x--) {                                                   \
-	 unsigned long color = *s++;                                                    \
-	 *d++ = _xwin.cmap[(_xwin.rmap[color]                                           \
-			    | _xwin.gmap[color]                                         \
-			    | _xwin.bmap[color])];                                      \
+         unsigned long color = *s++;                                                    \
+         *d++ = _xwin.cmap[(_xwin.rmap[color]                                           \
+                            | _xwin.gmap[color]                                         \
+                            | _xwin.bmap[color])];                                      \
       }                                                                                 \
    }                                                                                    \
 }
@@ -2003,10 +2003,10 @@ static void name(int sx, int sy, int sw, int sh)                                
       stype *s = (stype*) (_xwin.screen_line[y]) + sx;                                  \
       dtype *d = (dtype*) (_xwin.buffer_line[y]) + sx;                                  \
       for (x = sw - 1; x >= 0; x--) {                                                   \
-	 unsigned long color = *s++;                                                    \
-	 *d++ = _xwin.cmap[((((color >> (rshift)) & 0x0F) << 8)                         \
-			    | (((color >> (gshift)) & 0x0F) << 4)                       \
-			    | ((color >> (bshift)) & 0x0F))];                           \
+         unsigned long color = *s++;                                                    \
+         *d++ = _xwin.cmap[((((color >> (rshift)) & 0x0F) << 8)                         \
+                            | (((color >> (gshift)) & 0x0F) << 4)                       \
+                            | ((color >> (bshift)) & 0x0F))];                           \
       }                                                                                 \
    }                                                                                    \
 }
@@ -2019,47 +2019,47 @@ static void name(int sx, int sy, int sw, int sh)                                
       unsigned char *s = _xwin.screen_line[y] + 3 * sx;                                 \
       dtype *d = (dtype*) (_xwin.buffer_line[y]) + sx;                                  \
       for (x = sw - 1; x >= 0; s += 3, x--) {                                           \
-	 *d++ = _xwin.cmap[((((unsigned long) s[DEFAULT_RGB_R_POS_24] << 4) & 0xF00)    \
-			    | ((unsigned long) s[DEFAULT_RGB_G_POS_24] & 0xF0)          \
-			    | (((unsigned long) s[DEFAULT_RGB_B_POS_24] >> 4) & 0x0F))];\
+         *d++ = _xwin.cmap[((((unsigned long) s[DEFAULT_RGB_R_POS_24] << 4) & 0xF00)    \
+                            | ((unsigned long) s[DEFAULT_RGB_G_POS_24] & 0xF0)          \
+                            | (((unsigned long) s[DEFAULT_RGB_B_POS_24] >> 4) & 0x0F))];\
       }                                                                                 \
    }                                                                                    \
 }
 
 MAKE_FAST_PALETTE8(_xwin_private_fast_palette_8_to_8,
-		   unsigned char);
+                   unsigned char);
 MAKE_FAST_PALETTE8(_xwin_private_fast_palette_8_to_16,
-		   unsigned short);
+                   unsigned short);
 MAKE_FAST_PALETTE8(_xwin_private_fast_palette_8_to_32,
-		   uint32_t);
+                   uint32_t);
 
 MAKE_FAST_PALETTE(_xwin_private_fast_palette_15_to_8,
-		  unsigned short, unsigned char, 1, 6, 11);
+                  unsigned short, unsigned char, 1, 6, 11);
 MAKE_FAST_PALETTE(_xwin_private_fast_palette_15_to_16,
-		  unsigned short, unsigned short, 1, 6, 11);
+                  unsigned short, unsigned short, 1, 6, 11);
 MAKE_FAST_PALETTE(_xwin_private_fast_palette_15_to_32,
-		  unsigned short, uint32_t, 1, 6, 11);
+                  unsigned short, uint32_t, 1, 6, 11);
 
 MAKE_FAST_PALETTE(_xwin_private_fast_palette_16_to_8,
-		  unsigned short, unsigned char, 1, 7, 12);
+                  unsigned short, unsigned char, 1, 7, 12);
 MAKE_FAST_PALETTE(_xwin_private_fast_palette_16_to_16,
-		  unsigned short, unsigned short, 1, 7, 12);
+                  unsigned short, unsigned short, 1, 7, 12);
 MAKE_FAST_PALETTE(_xwin_private_fast_palette_16_to_32,
-		  unsigned short, uint32_t, 1, 7, 12);
+                  unsigned short, uint32_t, 1, 7, 12);
 
 MAKE_FAST_PALETTE(_xwin_private_fast_palette_32_to_8,
-		  uint32_t, unsigned char, 4, 12, 20);
+                  uint32_t, unsigned char, 4, 12, 20);
 MAKE_FAST_PALETTE(_xwin_private_fast_palette_32_to_16,
-		  uint32_t, unsigned short, 4, 12, 20);
+                  uint32_t, unsigned short, 4, 12, 20);
 MAKE_FAST_PALETTE(_xwin_private_fast_palette_32_to_32,
-		  uint32_t, uint32_t, 4, 12, 20);
+                  uint32_t, uint32_t, 4, 12, 20);
 
 MAKE_FAST_PALETTE24(_xwin_private_fast_palette_24_to_8,
-		    unsigned char);
+                    unsigned char);
 MAKE_FAST_PALETTE24(_xwin_private_fast_palette_24_to_16,
-		    unsigned short);
+                    unsigned short);
 MAKE_FAST_PALETTE24(_xwin_private_fast_palette_24_to_32,
-		    uint32_t);
+                    uint32_t);
 
 #define MAKE_SLOW_TRUECOLOR(name,stype,rshift,gshift,bshift,rmask,gmask,bmask)          \
 static void name(int sx, int sy, int sw, int sh)                                        \
@@ -2068,11 +2068,11 @@ static void name(int sx, int sy, int sw, int sh)                                
    for (y = sy; y < (sy + sh); y++) {                                                   \
       stype *s = (stype*) (_xwin.screen_line[y]) + sx;                                  \
       for (x = sx; x < (sx + sw); x++) {                                                \
-	 unsigned long color = *s++;                                                    \
-	 XPutPixel (_xwin.ximage, x, y,                                                 \
-		    (_xwin.rmap[(color >> (rshift)) & (rmask)]                          \
-		     | _xwin.gmap[(color >> (gshift)) & (gmask)]                        \
-		     | _xwin.bmap[(color >> (bshift)) & (bmask)]));                     \
+         unsigned long color = *s++;                                                    \
+         XPutPixel (_xwin.ximage, x, y,                                                 \
+                    (_xwin.rmap[(color >> (rshift)) & (rmask)]                          \
+                     | _xwin.gmap[(color >> (gshift)) & (gmask)]                        \
+                     | _xwin.bmap[(color >> (bshift)) & (bmask)]));                     \
       }                                                                                 \
    }                                                                                    \
 }
@@ -2084,10 +2084,10 @@ static void name(int sx, int sy, int sw, int sh)                                
    for (y = sy; y < (sy + sh); y++) {                                                   \
       unsigned char *s = _xwin.screen_line[y] + 3 * sx;                                 \
       for (x = sx; x < (sx + sw); s += 3, x++) {                                        \
-	 XPutPixel(_xwin.ximage, x, y,                                                  \
-		   (_xwin.rmap[s[DEFAULT_RGB_R_POS_24]]                                 \
-		    | _xwin.gmap[s[DEFAULT_RGB_G_POS_24]]                               \
-		    | _xwin.bmap[s[DEFAULT_RGB_B_POS_24]]));                            \
+         XPutPixel(_xwin.ximage, x, y,                                                  \
+                   (_xwin.rmap[s[DEFAULT_RGB_R_POS_24]]                                 \
+                    | _xwin.gmap[s[DEFAULT_RGB_G_POS_24]]                               \
+                    | _xwin.bmap[s[DEFAULT_RGB_B_POS_24]]));                            \
       }                                                                                 \
    }                                                                                    \
 }
@@ -2105,11 +2105,11 @@ static void name(int sx, int sy, int sw, int sh)                                
    for (y = sy; y < (sy + sh); y++) {                                                   \
       unsigned char *s = _xwin.screen_line[y] + sx;                                     \
       for (x = sx; x < (sx + sw); x++) {                                                \
-	 unsigned long color = *s++;                                                    \
-	 XPutPixel(_xwin.ximage, x, y,                                                  \
-		   _xwin.cmap[(_xwin.rmap[color]                                        \
-			       | _xwin.gmap[color]                                      \
-			       | _xwin.bmap[color])]);                                  \
+         unsigned long color = *s++;                                                    \
+         XPutPixel(_xwin.ximage, x, y,                                                  \
+                   _xwin.cmap[(_xwin.rmap[color]                                        \
+                               | _xwin.gmap[color]                                      \
+                               | _xwin.bmap[color])]);                                  \
       }                                                                                 \
    }                                                                                    \
 }
@@ -2121,11 +2121,11 @@ static void name(int sx, int sy, int sw, int sh)                                
    for (y = sy; y < (sy + sh); y++) {                                                   \
       stype *s = (stype*) (_xwin.screen_line[y]) + sx;                                  \
       for (x = sx; x < (sx + sw); x++) {                                                \
-	 unsigned long color = *s++;                                                    \
-	 XPutPixel(_xwin.ximage, x, y,                                                  \
-		   _xwin.cmap[((((color >> (rshift)) & 0x0F) << 8)                      \
-			       | (((color >> (gshift)) & 0x0F) << 4)                    \
-			       | ((color >> (bshift)) & 0x0F))]);                       \
+         unsigned long color = *s++;                                                    \
+         XPutPixel(_xwin.ximage, x, y,                                                  \
+                   _xwin.cmap[((((color >> (rshift)) & 0x0F) << 8)                      \
+                               | (((color >> (gshift)) & 0x0F) << 4)                    \
+                               | ((color >> (bshift)) & 0x0F))]);                       \
       }                                                                                 \
    }                                                                                    \
 }
@@ -2137,10 +2137,10 @@ static void name(int sx, int sy, int sw, int sh)                                
    for (y = sy; y < (sy + sh); y++) {                                                   \
       unsigned char *s = _xwin.screen_line[y] + 3 * sx;                                 \
       for (x = sx; x < (sx + sw); s += 3, x++) {                                        \
-	 XPutPixel(_xwin.ximage, x, y,                                                  \
-		   _xwin.cmap[((((unsigned long) s[DEFAULT_RGB_R_POS_24] << 4) & 0xF00) \
-			       | ((unsigned long) s[DEFAULT_RGB_G_POS_24] & 0xF0)       \
-			       | (((unsigned long) s[DEFAULT_RGB_B_POS_24] >> 4) & 0x0F))]); \
+         XPutPixel(_xwin.ximage, x, y,                                                  \
+                   _xwin.cmap[((((unsigned long) s[DEFAULT_RGB_R_POS_24] << 4) & 0xF00) \
+                               | ((unsigned long) s[DEFAULT_RGB_G_POS_24] & 0xF0)       \
+                               | (((unsigned long) s[DEFAULT_RGB_B_POS_24] >> 4) & 0x0F))]); \
       }                                                                                 \
    }                                                                                    \
 }
@@ -2207,7 +2207,7 @@ static void _xwin_private_set_palette_range(AL_CONST PALETTE p, int from, int to
             ASSERT(pal);
             ASSERT(p);
             if (!pal || !p)
-	       return; /* ... in shame and disgrace */
+               return; /* ... in shame and disgrace */
             memcpy(&pal[from], &p[from], sizeof(RGB)*(to-from+1));
             for (c = from; c <= to; c++) {
                temp = pal[c].r;
@@ -2215,7 +2215,7 @@ static void _xwin_private_set_palette_range(AL_CONST PALETTE p, int from, int to
                pal[c].b = temp;
             }
             _set_colorconv_palette(pal, from, to);
-	    _AL_FREE(pal);
+            _AL_FREE(pal);
          }
          else {
             _set_colorconv_palette(p, from, to);
@@ -2227,7 +2227,7 @@ static void _xwin_private_set_palette_range(AL_CONST PALETTE p, int from, int to
 
       /* Update XImage and window.  */
       if (!_xwin.matching_formats)
-	 _xwin_private_update_screen(0, 0, _xwin.virtual_width, _xwin.virtual_height);
+         _xwin_private_update_screen(0, 0, _xwin.virtual_width, _xwin.virtual_height);
    }
 }
 
@@ -2342,122 +2342,122 @@ static void _xwin_private_process_event(XEvent *event)
    switch (event->type) {
       case KeyPress:
          _xwin_keyboard_handler(&event->xkey, FALSE);
-	 break;
+         break;
       case KeyRelease:
          _xwin_keyboard_handler(&event->xkey, FALSE);
-	 break;
+         break;
       case FocusIn:
-	 _switch_in();
+         _switch_in();
          _xwin_keyboard_focus_handler(&event->xfocus);
-	 break;
+         break;
       case FocusOut:
-	 _switch_out();
+         _switch_out();
          _xwin_keyboard_focus_handler(&event->xfocus);
-	 break;
+         break;
       case ButtonPress:
-	 /* Mouse button pressed.  */
-	 if (event->xbutton.button == Button1)
-	    mouse_buttons |= 1;
-	 else if (event->xbutton.button == Button3)
-	    mouse_buttons |= 2;
-	 else if (event->xbutton.button == Button2)
-	    mouse_buttons |= 4;
-	 else if (event->xbutton.button == Button4) {
-	    dz = 1;
+         /* Mouse button pressed.  */
+         if (event->xbutton.button == Button1)
+            mouse_buttons |= 1;
+         else if (event->xbutton.button == Button3)
+            mouse_buttons |= 2;
+         else if (event->xbutton.button == Button2)
+            mouse_buttons |= 4;
+         else if (event->xbutton.button == Button4) {
+            dz = 1;
          }
          else if (event->xbutton.button == Button5) {
             dz = -1;
          }
          else if (event->xbutton.button == 6) {
-            dw = -1; 
+            dw = -1;
          }
          else if (event->xbutton.button == 7) {
             dw = 1;
          }
          else if (event->xbutton.button == 8)
-	    mouse_buttons |= 8;
+            mouse_buttons |= 8;
          else if (event->xbutton.button == 9)
-	    mouse_buttons |= 16;
-	 if (_xwin_mouse_interrupt)
-	    (*_xwin_mouse_interrupt)(0, 0, dz, dw, mouse_buttons);
-	 break;
+            mouse_buttons |= 16;
+         if (_xwin_mouse_interrupt)
+            (*_xwin_mouse_interrupt)(0, 0, dz, dw, mouse_buttons);
+         break;
       case ButtonRelease:
-	 /* Mouse button released.  */
-	 if (event->xbutton.button == Button1)
-	    mouse_buttons &= ~1;
-	 else if (event->xbutton.button == Button3)
-	    mouse_buttons &= ~2;
-	 else if (event->xbutton.button == Button2)
-	    mouse_buttons &= ~4;
+         /* Mouse button released.  */
+         if (event->xbutton.button == Button1)
+            mouse_buttons &= ~1;
+         else if (event->xbutton.button == Button3)
+            mouse_buttons &= ~2;
+         else if (event->xbutton.button == Button2)
+            mouse_buttons &= ~4;
          else if (event->xbutton.button == 8)
-	    mouse_buttons &= ~8;
+            mouse_buttons &= ~8;
          else if (event->xbutton.button == 9)
-	    mouse_buttons &= ~16;
-	 if (_xwin_mouse_interrupt)
-	    (*_xwin_mouse_interrupt)(0, 0, 0, 0, mouse_buttons);
-	 break;
+            mouse_buttons &= ~16;
+         if (_xwin_mouse_interrupt)
+            (*_xwin_mouse_interrupt)(0, 0, 0, 0, mouse_buttons);
+         break;
       case MotionNotify:
-	 /* Mouse moved.  */
-	 dx = event->xmotion.x - mouse_savedx;
-	 dy = event->xmotion.y - mouse_savedy;
-	 /* Discard some events after warp.  */
-	 if (mouse_was_warped && ((dx != 0) || (dy != 0)) && (mouse_was_warped++ < 16))
-	    break;
-	 mouse_savedx = event->xmotion.x;
-	 mouse_savedy = event->xmotion.y;
-	 mouse_was_warped = 0;
-	 if (!_xwin.mouse_warped) {
-	    /* Move Allegro cursor to X-cursor.  */
-	    dx = event->xmotion.x - (_mouse_x - (_xwin_mouse_extended_range ? _xwin.scroll_x : 0));
-	    dy = event->xmotion.y - (_mouse_y - (_xwin_mouse_extended_range ? _xwin.scroll_y : 0));
-	 }
-	 if (((dx != 0) || (dy != 0)) && _xwin_mouse_interrupt) {
-	    if (_xwin.mouse_warped && (mouse_warp_now++ & 4)) {
-	       /* Warp X-cursor to the center of the window.  */
-	       mouse_savedx = _xwin.window_width / 2;
-	       mouse_savedy = _xwin.window_height / 2;
-	       mouse_was_warped = 1;
-	       XWarpPointer(_xwin.display, _xwin.window, _xwin.window,
-			    0, 0, _xwin.window_width, _xwin.window_height,
-			    mouse_savedx, mouse_savedy);
-	    }
-	    /* Move Allegro cursor.  */
-	    (*_xwin_mouse_interrupt)(dx, dy, 0, 0, mouse_buttons);
-	 }
-	 break;
+         /* Mouse moved.  */
+         dx = event->xmotion.x - mouse_savedx;
+         dy = event->xmotion.y - mouse_savedy;
+         /* Discard some events after warp.  */
+         if (mouse_was_warped && ((dx != 0) || (dy != 0)) && (mouse_was_warped++ < 16))
+            break;
+         mouse_savedx = event->xmotion.x;
+         mouse_savedy = event->xmotion.y;
+         mouse_was_warped = 0;
+         if (!_xwin.mouse_warped) {
+            /* Move Allegro cursor to X-cursor.  */
+            dx = event->xmotion.x - (_mouse_x - (_xwin_mouse_extended_range ? _xwin.scroll_x : 0));
+            dy = event->xmotion.y - (_mouse_y - (_xwin_mouse_extended_range ? _xwin.scroll_y : 0));
+         }
+         if (((dx != 0) || (dy != 0)) && _xwin_mouse_interrupt) {
+            if (_xwin.mouse_warped && (mouse_warp_now++ & 4)) {
+               /* Warp X-cursor to the center of the window.  */
+               mouse_savedx = _xwin.window_width / 2;
+               mouse_savedy = _xwin.window_height / 2;
+               mouse_was_warped = 1;
+               XWarpPointer(_xwin.display, _xwin.window, _xwin.window,
+                            0, 0, _xwin.window_width, _xwin.window_height,
+                            mouse_savedx, mouse_savedy);
+            }
+            /* Move Allegro cursor.  */
+            (*_xwin_mouse_interrupt)(dx, dy, 0, 0, mouse_buttons);
+         }
+         break;
       case EnterNotify:
-	 /* Mouse entered window.  */
-	 _mouse_on = TRUE;
-	 _xwin_mouse_enter_notify();
-	 mouse_savedx = event->xcrossing.x;
-	 mouse_savedy = event->xcrossing.y;
-	 mouse_was_warped = 0;
-	 if (!_xwin.mouse_warped) {
-	    /* Move Allegro cursor to X-cursor.  */
-	    dx = event->xcrossing.x - (_mouse_x - (_xwin_mouse_extended_range ? _xwin.scroll_x : 0));
-	    dy = event->xcrossing.y - (_mouse_y - (_xwin_mouse_extended_range ? _xwin.scroll_y : 0));
-	    if (((dx != 0) || (dy != 0)) && _xwin_mouse_interrupt)
-	       (*_xwin_mouse_interrupt)(dx, dy, 0, 0, mouse_buttons);
-	 }
-	 else if (_xwin_mouse_interrupt)
-	    (*_xwin_mouse_interrupt)(0, 0, 0, 0, mouse_buttons);
-	 break;
+         /* Mouse entered window.  */
+         _mouse_on = TRUE;
+         _xwin_mouse_enter_notify();
+         mouse_savedx = event->xcrossing.x;
+         mouse_savedy = event->xcrossing.y;
+         mouse_was_warped = 0;
+         if (!_xwin.mouse_warped) {
+            /* Move Allegro cursor to X-cursor.  */
+            dx = event->xcrossing.x - (_mouse_x - (_xwin_mouse_extended_range ? _xwin.scroll_x : 0));
+            dy = event->xcrossing.y - (_mouse_y - (_xwin_mouse_extended_range ? _xwin.scroll_y : 0));
+            if (((dx != 0) || (dy != 0)) && _xwin_mouse_interrupt)
+               (*_xwin_mouse_interrupt)(dx, dy, 0, 0, mouse_buttons);
+         }
+         else if (_xwin_mouse_interrupt)
+            (*_xwin_mouse_interrupt)(0, 0, 0, 0, mouse_buttons);
+         break;
       case LeaveNotify:
-	 _mouse_on = FALSE;
-	 if (_xwin_mouse_interrupt)
-	    (*_xwin_mouse_interrupt)(0, 0, 0, 0, mouse_buttons);
-	 _xwin_mouse_leave_notify();
-	 break;
+         _mouse_on = FALSE;
+         if (_xwin_mouse_interrupt)
+            (*_xwin_mouse_interrupt)(0, 0, 0, 0, mouse_buttons);
+         _xwin_mouse_leave_notify();
+         break;
       case Expose:
-	 /* Request to redraw part of the window.  */
-	 (*_xwin_window_redrawer)(event->xexpose.x, event->xexpose.y,
-				     event->xexpose.width, event->xexpose.height);
-	 break;
+         /* Request to redraw part of the window.  */
+         (*_xwin_window_redrawer)(event->xexpose.x, event->xexpose.y,
+                                     event->xexpose.width, event->xexpose.height);
+         break;
       case MappingNotify:
-	 /* Keyboard mapping changed.  */
-	 if (event->xmapping.request == MappingKeyboard)
-	    _xwin_get_keyboard_mapping();
-	 break;
+         /* Keyboard mapping changed.  */
+         if (event->xmapping.request == MappingKeyboard)
+            _xwin_get_keyboard_mapping();
+         break;
       case ClientMessage:
          /* Window close request */
          if ((Atom)event->xclient.data.l[0] == wm_delete_window) {
@@ -2466,24 +2466,24 @@ static void _xwin_private_process_event(XEvent *event)
          }
          break;
       case ConfigureNotify: {
-	 int old_width = _xwin.window_width;
-	 int old_height = _xwin.window_height;
-	 int new_width = event->xconfigure.width;
-	 int new_height = event->xconfigure.height;
+         int old_width = _xwin.window_width;
+         int old_height = _xwin.window_height;
+         int new_width = event->xconfigure.width;
+         int new_height = event->xconfigure.height;
 
-	 if (_xwin.resize_callback &&
-	     ((old_width != new_width) ||
-	      (old_height != new_height))) {
-	    RESIZE_DISPLAY_EVENT ev;
-	    ev.old_w = old_width;
-	    ev.old_h = old_height;
-	    ev.new_w = new_width;
-	    ev.new_h = new_height;
-	    ev.is_maximized = 0;
-	    ev.is_restored = 0;
+         if (_xwin.resize_callback &&
+             ((old_width != new_width) ||
+              (old_height != new_height))) {
+            RESIZE_DISPLAY_EVENT ev;
+            ev.old_w = old_width;
+            ev.old_h = old_height;
+            ev.new_w = new_width;
+            ev.new_h = new_height;
+            ev.is_maximized = 0;
+            ev.is_restored = 0;
 
-	    _xwin.resize_callback(&ev);
-	 }
+            _xwin.resize_callback(&ev);
+         }
          break;
       }
    }
@@ -2507,9 +2507,9 @@ void _xwin_private_handle_input(void)
       _xwin.mouse_warped = 0;
       /* Move X-cursor to Allegro cursor.  */
       XWarpPointer(_xwin.display, _xwin.window, _xwin.window,
-		   0, 0, _xwin.window_width, _xwin.window_height,
-		   _mouse_x - (_xwin_mouse_extended_range ? _xwin.scroll_x : 0),
-		   _mouse_y - (_xwin_mouse_extended_range ? _xwin.scroll_y : 0));
+                   0, 0, _xwin.window_width, _xwin.window_height,
+                   _mouse_x - (_xwin_mouse_extended_range ? _xwin.scroll_x : 0),
+                   _mouse_y - (_xwin_mouse_extended_range ? _xwin.scroll_y : 0));
    }
 
    /* Flush X-buffers.  */
@@ -2544,11 +2544,11 @@ void _xwin_private_handle_input(void)
        * it with the same keycode, we ignore the release event.
        */
       if (event[i].type == KeyRelease && (i + 1) < events) {
-	 if (event[i + 1].type == KeyPress) {
-	    if (event[i].xkey.keycode == event[i + 1].xkey.keycode &&
-	       event[i].xkey.time == event[i + 1].xkey.time)
-	       continue;
-	 }
+         if (event[i + 1].type == KeyPress) {
+            if (event[i].xkey.keycode == event[i + 1].xkey.keycode &&
+               event[i].xkey.time == event[i + 1].xkey.time)
+               continue;
+         }
       }
 
       _xwin_private_process_event(&event[i]);
@@ -2631,12 +2631,12 @@ static void _xwin_private_redraw_window(int x, int y, int w, int h)
    else {
 #ifdef ALLEGRO_XWINDOWS_WITH_SHM
       if (_xwin.use_shm)
-	 XShmPutImage(_xwin.display, _xwin.window, _xwin.gc, _xwin.ximage,
-		      x + _xwin.scroll_x, y + _xwin.scroll_y, x, y, w, h, False);
+         XShmPutImage(_xwin.display, _xwin.window, _xwin.gc, _xwin.ximage,
+                      x + _xwin.scroll_x, y + _xwin.scroll_y, x, y, w, h, False);
       else
 #endif
-	 XPutImage(_xwin.display, _xwin.window, _xwin.gc, _xwin.ximage,
-		   x + _xwin.scroll_x, y + _xwin.scroll_y, x, y, w, h);
+         XPutImage(_xwin.display, _xwin.window, _xwin.gc, _xwin.ximage,
+                   x + _xwin.scroll_x, y + _xwin.scroll_y, x, y, w, h);
    }
 }
 
@@ -2694,26 +2694,26 @@ static void _xwin_private_update_screen(int x, int y, int w, int h)
    if (_xwin.screen_to_buffer != 0) {
       /* Clip updated region.  */
       if (x >= _xwin.virtual_width)
-	 return;
+         return;
       if (x < 0) {
-	 w += x;
-	 x = 0;
+         w += x;
+         x = 0;
       }
       if (w >= (_xwin.virtual_width - x))
-	 w = _xwin.virtual_width - x;
+         w = _xwin.virtual_width - x;
       if (w <= 0)
-	 return;
+         return;
 
       if (y >= _xwin.virtual_height)
-	 return;
+         return;
       if (y < 0) {
-	 h += y;
-	 y = 0;
+         h += y;
+         y = 0;
       }
       if (h >= (_xwin.virtual_height - y))
-	 h = _xwin.virtual_height - y;
+         h = _xwin.virtual_height - y;
       if (h <= 0)
-	 return;
+         return;
 
       (*(_xwin.screen_to_buffer))(x, y, w, h);
    }
@@ -2848,7 +2848,7 @@ static int cmpmodes(const void *va, const void *vb)
     const XF86VidModeModeInfo *b = *(const XF86VidModeModeInfo **)vb;
 
     if (a->hdisplay == b->hdisplay)
-        return b->vdisplay - a->vdisplay;  
+        return b->vdisplay - a->vdisplay;
     else
         return b->hdisplay - a->hdisplay;
 }
@@ -2864,7 +2864,7 @@ static void _xvidmode_private_set_fullscreen(int w, int h, int *vidmode_width,
    int vid_event_base, vid_error_base;
    int vid_major_version, vid_minor_version;
    int i;
-   
+
    /* Test that display is local.  */
    if (!_xwin_private_display_is_local())
       return;
@@ -2876,7 +2876,7 @@ static void _xvidmode_private_set_fullscreen(int w, int h, int *vidmode_width,
 
    /* Get list of modelines.  */
    if (!XF86VidModeGetAllModeLines(_xwin.display, _xwin.screen,
-				   &_xwin.num_modes, &_xwin.modesinfo))
+                                   &_xwin.num_modes, &_xwin.modesinfo))
       return;
 
    /* Remember the mode to restore.  */
@@ -2884,7 +2884,7 @@ static void _xvidmode_private_set_fullscreen(int w, int h, int *vidmode_width,
 
    /* Search for an exact matching video mode.  */
    for (i = 0; i < _xwin.num_modes; i++) {
-      if ((_xwin.modesinfo[i]->hdisplay == w) && 
+      if ((_xwin.modesinfo[i]->hdisplay == w) &&
           (_xwin.modesinfo[i]->vdisplay == h))
          break;
    }
@@ -2897,11 +2897,11 @@ static void _xvidmode_private_set_fullscreen(int w, int h, int *vidmode_width,
           if (!best_width) {
               if ((_xwin.modesinfo[i]->hdisplay >= w) &&
                   (_xwin.modesinfo[i]->vdisplay >= h)) {
-                  best_width = _xwin.modesinfo[i]->hdisplay;   
-                  best_height = _xwin.modesinfo[i]->vdisplay;  
+                  best_width = _xwin.modesinfo[i]->hdisplay;
+                  best_height = _xwin.modesinfo[i]->vdisplay;
               }
           }
-	  else {
+          else {
               if ((_xwin.modesinfo[i]->hdisplay != best_width) ||
                   (_xwin.modesinfo[i]->vdisplay != best_height)) {
                   i++;
@@ -2910,7 +2910,7 @@ static void _xvidmode_private_set_fullscreen(int w, int h, int *vidmode_width,
           }
       }
    }
-      
+
    /* Switch video mode.  */
    if ((_xwin.modesinfo[i] == _xwin.orig_modeinfo) ||
        !XF86VidModeSwitchToMode(_xwin.display, _xwin.screen,
@@ -2925,10 +2925,10 @@ static void _xvidmode_private_set_fullscreen(int w, int h, int *vidmode_width,
       /* Only kept / set for compatibility with apps which check this.  */
       _xwin.mode_switched = 1;
    }
-   
+
    /* Lock mode switching.  */
    XF86VidModeLockModeSwitch(_xwin.display, _xwin.screen, True);
-	 
+
    /* Set viewport. */
    XF86VidModeSetViewPort(_xwin.display, _xwin.screen, 0, 0);
 }
@@ -2944,7 +2944,7 @@ static void free_modelines(XF86VidModeModeInfo **modesinfo, int num_modes)
 
    for (i = 0; i < num_modes; i++)
       if (modesinfo[i]->privsize > 0)
-	 XFree(modesinfo[i]->private);
+         XFree(modesinfo[i]->private);
    XFree(modesinfo);
 }
 
@@ -2960,12 +2960,12 @@ static void _xvidmode_private_unset_fullscreen(void)
       XF86VidModeLockModeSwitch(_xwin.display, _xwin.screen, False);
 
       if (_xwin.orig_modeinfo) {
-	 /* Restore the original video mode.  */
-	 XF86VidModeSwitchToMode(_xwin.display, _xwin.screen,
+         /* Restore the original video mode.  */
+         XF86VidModeSwitchToMode(_xwin.display, _xwin.screen,
             _xwin.orig_modeinfo);
          _xwin.orig_modeinfo = 0;
          /* only kept / set for compatibility with apps which check this */
-	 _xwin.mode_switched = 0;
+         _xwin.mode_switched = 0;
       }
 
       /* Free modelines.  */
@@ -2991,9 +2991,9 @@ static GFX_MODE_LIST *_xwin_private_fetch_mode_list(void)
    int vid_event_base, vid_error_base;
    int vid_major_version, vid_minor_version;
    XF86VidModeModeInfo **modesinfo;
-   
+
    /* Test that display is local.  */
-   if (_xwin_private_display_is_local() && 
+   if (_xwin_private_display_is_local() &&
        /* Test for presence of VidMode extension.  */
        XF86VidModeQueryExtension(_xwin.display, &vid_event_base, &vid_error_base) &&
        XF86VidModeQueryVersion(_xwin.display, &vid_major_version, &vid_minor_version) &&
@@ -3045,13 +3045,13 @@ static GFX_MODE_LIST *_xwin_private_fetch_mode_list(void)
 #define ADD_SCREEN_MODE(BPP)                                                  \
       mode_list->mode[j].width  = DisplayWidth(_xwin.display, _xwin.screen);  \
       mode_list->mode[j].height = DisplayHeight(_xwin.display, _xwin.screen); \
-      mode_list->mode[j].bpp = BPP;			                      \
+      mode_list->mode[j].bpp = BPP;                                           \
       j++
 #ifdef ALLEGRO_XWINDOWS_WITH_XF86VIDMODE
-#define ADD_VIDMODE_MODE(BPP)			            \
+#define ADD_VIDMODE_MODE(BPP)                               \
       mode_list->mode[j].width = modesinfo[i]->hdisplay;    \
       mode_list->mode[j].height = modesinfo[i]->vdisplay;   \
-      mode_list->mode[j].bpp = BPP;			    \
+      mode_list->mode[j].bpp = BPP;                         \
       j++
 #define ADD_MODE(BPP)                                       \
       if (has_vidmode) {                                    \

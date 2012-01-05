@@ -107,10 +107,10 @@ static void proc_one_word(JAccel accel, char* word)
     else if (tok[1] == 0) {
       if (((*tok >= 'a') && (*tok <= 'z')) ||
           ((*tok >= 'A') && (*tok <= 'Z'))) {
-	ascii = tolower(*tok);
+        ascii = tolower(*tok);
       }
       else {
-	ascii = *tok;
+        ascii = *tok;
       }
 
       if (((*tok >= 'a') && (*tok <= 'z')) ||
@@ -119,97 +119,97 @@ static void proc_one_word(JAccel accel, char* word)
       else if ((*tok >= '0') && (*tok <= '9'))
         scancode = KEY_0 + *tok - '0';
       else {
-	switch (*tok) {
-	  case '~': scancode = KEY_TILDE; break;
-	  case '-': scancode = KEY_MINUS; break;
-	  case '=': scancode = KEY_EQUALS; break;
-	  case '[': scancode = KEY_OPENBRACE; break;
-	  case ']': scancode = KEY_CLOSEBRACE; break;
-	  case ';': scancode = KEY_COLON; break;
-	  case '\'': scancode = KEY_QUOTE; break;
-	  case '\\': scancode = KEY_BACKSLASH; break;
-	  case ',': scancode = KEY_COMMA; break;
-	  case '.': scancode = KEY_STOP; break;
-	  case '/': scancode = KEY_SLASH; break;
-	  case '*': scancode = KEY_ASTERISK; break;
-	}
+        switch (*tok) {
+          case '~': scancode = KEY_TILDE; break;
+          case '-': scancode = KEY_MINUS; break;
+          case '=': scancode = KEY_EQUALS; break;
+          case '[': scancode = KEY_OPENBRACE; break;
+          case ']': scancode = KEY_CLOSEBRACE; break;
+          case ';': scancode = KEY_COLON; break;
+          case '\'': scancode = KEY_QUOTE; break;
+          case '\\': scancode = KEY_BACKSLASH; break;
+          case ',': scancode = KEY_COMMA; break;
+          case '.': scancode = KEY_STOP; break;
+          case '/': scancode = KEY_SLASH; break;
+          case '*': scancode = KEY_ASTERISK; break;
+        }
       }
     }
     /* other ones */
     else {
       /* F1, F2, ..., F11, F12 */
       if ((toupper (*tok) == 'F') && (ustrlen(tok) <= 3)) {
-	int num = ustrtol(tok+1, NULL, 10);
-	if ((num >= 1) && (num <= 12))
-	  scancode = KEY_F1 + num - 1;
+        int num = ustrtol(tok+1, NULL, 10);
+        if ((num >= 1) && (num <= 12))
+          scancode = KEY_F1 + num - 1;
       }
       else if ((ustricmp(tok, "Escape") == 0) ||
-	       (ustricmp(tok, "Esc") == 0))
-	scancode = KEY_ESC;
+               (ustricmp(tok, "Esc") == 0))
+        scancode = KEY_ESC;
       else if (ustricmp(tok, "Backspace") == 0)
-	scancode = KEY_BACKSPACE;
+        scancode = KEY_BACKSPACE;
       else if (ustricmp(tok, "Tab") == 0)
-	scancode = KEY_TAB;
+        scancode = KEY_TAB;
       else if (ustricmp(tok, "Enter") == 0)
-	scancode = KEY_ENTER;
+        scancode = KEY_ENTER;
       else if (ustricmp(tok, "Space") == 0)
-	scancode = KEY_SPACE;
+        scancode = KEY_SPACE;
       else if ((ustricmp(tok, "Insert") == 0) ||
-	       (ustricmp(tok, "Ins") == 0))
-	scancode = KEY_INSERT;
+               (ustricmp(tok, "Ins") == 0))
+        scancode = KEY_INSERT;
       else if ((ustricmp(tok, "Delete") == 0) ||
-	       (ustricmp(tok, "Del") == 0))
-	scancode = KEY_DEL;
+               (ustricmp(tok, "Del") == 0))
+        scancode = KEY_DEL;
       else if (ustricmp(tok, "Home") == 0)
-	scancode = KEY_HOME;
+        scancode = KEY_HOME;
       else if (ustricmp(tok, "End") == 0)
-	scancode = KEY_END;
+        scancode = KEY_END;
       else if ((ustricmp(tok, "Page Up") == 0) ||
-	       (ustricmp(tok, "PgUp") == 0))
-	scancode = KEY_PGUP;
+               (ustricmp(tok, "PgUp") == 0))
+        scancode = KEY_PGUP;
       else if ((ustricmp(tok, "Page Down") == 0) ||
-	       (ustricmp(tok, "PgDn") == 0))
-	scancode = KEY_PGDN;
+               (ustricmp(tok, "PgDn") == 0))
+        scancode = KEY_PGDN;
       else if (ustricmp(tok, "Left") == 0)
-	scancode = KEY_LEFT;
+        scancode = KEY_LEFT;
       else if (ustricmp(tok, "Right") == 0)
-	scancode = KEY_RIGHT;
+        scancode = KEY_RIGHT;
       else if (ustricmp(tok, "Up") == 0)
-	scancode = KEY_UP;
+        scancode = KEY_UP;
       else if (ustricmp(tok, "Down") == 0)
-	scancode = KEY_DOWN;
+        scancode = KEY_DOWN;
       else if (ustricmp(tok, "0 Pad") == 0)
-	scancode = KEY_0_PAD;
+        scancode = KEY_0_PAD;
       else if (ustricmp(tok, "1 Pad") == 0)
-	scancode = KEY_1_PAD;
+        scancode = KEY_1_PAD;
       else if (ustricmp(tok, "2 Pad") == 0)
-	scancode = KEY_2_PAD;
+        scancode = KEY_2_PAD;
       else if (ustricmp(tok, "3 Pad") == 0)
-	scancode = KEY_3_PAD;
+        scancode = KEY_3_PAD;
       else if (ustricmp(tok, "4 Pad") == 0)
-	scancode = KEY_4_PAD;
+        scancode = KEY_4_PAD;
       else if (ustricmp(tok, "5 Pad") == 0)
-	scancode = KEY_5_PAD;
+        scancode = KEY_5_PAD;
       else if (ustricmp(tok, "6 Pad") == 0)
-	scancode = KEY_6_PAD;
+        scancode = KEY_6_PAD;
       else if (ustricmp(tok, "7 Pad") == 0)
-	scancode = KEY_7_PAD;
+        scancode = KEY_7_PAD;
       else if (ustricmp(tok, "8 Pad") == 0)
-	scancode = KEY_8_PAD;
+        scancode = KEY_8_PAD;
       else if (ustricmp(tok, "9 Pad") == 0)
-	scancode = KEY_9_PAD;
+        scancode = KEY_9_PAD;
       else if (ustricmp(tok, "Slash Pad") == 0)
-	scancode = KEY_SLASH_PAD;
+        scancode = KEY_SLASH_PAD;
       else if (ustricmp(tok, "Asterisk") == 0)
-	scancode = KEY_ASTERISK;
+        scancode = KEY_ASTERISK;
       else if (ustricmp(tok, "Minus Pad") == 0)
-	scancode = KEY_MINUS_PAD;
+        scancode = KEY_MINUS_PAD;
       else if (ustricmp(tok, "Plus Pad") == 0)
-	scancode = KEY_PLUS_PAD;
+        scancode = KEY_PLUS_PAD;
       else if (ustricmp(tok, "Del Pad") == 0)
-	scancode = KEY_DEL_PAD;
+        scancode = KEY_DEL_PAD;
       else if (ustricmp(tok, "Enter Pad") == 0)
-	scancode = KEY_ENTER_PAD;
+        scancode = KEY_ENTER_PAD;
     }
   }
 
@@ -421,7 +421,7 @@ bool jaccel_check(JAccel accel, int shifts, int ascii, int scancode)
      Ctrl+9    36          2
    */
   else if ((scancode >= KEY_0 && scancode <= KEY_9) &&
-	   (ascii < 32 || ascii == 127)) {
+           (ascii < 32 || ascii == 127)) {
     ascii = '0'+scancode-KEY_0;
     scancode = 0;
   }
@@ -458,12 +458,12 @@ bool jaccel_check(JAccel accel, int shifts, int ascii, int scancode)
 #ifdef REPORT_KEYS
     keycombo_get_string(key, buf);
     printf("%3d==%3d %3d==%3d %s==%s ",
-	   key->scancode, scancode, key->ascii, ascii, buf, buf2);
+           key->scancode, scancode, key->ascii, ascii, buf, buf2);
 #endif
 
     if (((key->scancode && key->scancode == scancode)
-	 || (key->ascii && key->ascii == ascii))
-	&& (key->shifts == (shifts & (KB_SHIFT_FLAG | KB_CTRL_FLAG | KB_ALT_FLAG)))) {
+         || (key->ascii && key->ascii == ascii))
+        && (key->shifts == (shifts & (KB_SHIFT_FLAG | KB_CTRL_FLAG | KB_ALT_FLAG)))) {
 
 #ifdef REPORT_KEYS
       printf("true\n");
@@ -494,7 +494,7 @@ bool jaccel_check_from_key(JAccel accel)
     KeyCombo* keyCombo = (KeyCombo*)link->data;
 
     if ((keyCombo->scancode == 0 || key[keyCombo->scancode]) &&
-	(keyCombo->shifts == (shifts & (KB_SHIFT_FLAG | KB_CTRL_FLAG | KB_ALT_FLAG)))) {
+        (keyCombo->shifts == (shifts & (KB_SHIFT_FLAG | KB_CTRL_FLAG | KB_ALT_FLAG)))) {
       return true;
     }
   }

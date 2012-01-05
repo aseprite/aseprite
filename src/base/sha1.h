@@ -37,4 +37,4 @@ namespace base {
 
 } // namespace base
 
-#endif	// BASE_SHA1_H_INCLUDED
+#endif  // BASE_SHA1_H_INCLUDED

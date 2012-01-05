@@ -18,7 +18,7 @@
 
 #include "tools/ink_processing.h"
 
-#include "app.h"		// TODO avoid to include this file
+#include "app.h"                // TODO avoid to include this file
 #include "app/color_utils.h"
 #include "context.h"
 #include "document.h"
@@ -48,20 +48,20 @@ public:
     switch (m_type) {
 
       case Normal:
-	// Do nothing, use the default colors
-	break;
+        // Do nothing, use the default colors
+        break;
 
       case WithFg:
       case WithBg:
-	{
-	  int color = color_utils::color_for_layer(m_type == WithFg ? 
-						   loop->getContext()->getSettings()->getFgColor():
-						   loop->getContext()->getSettings()->getBgColor(),
-						   loop->getLayer());
-	  loop->setPrimaryColor(color);
-	  loop->setSecondaryColor(color);
-	}
-	break;
+        {
+          int color = color_utils::color_for_layer(m_type == WithFg ?
+                                                   loop->getContext()->getSettings()->getFgColor():
+                                                   loop->getContext()->getSettings()->getBgColor(),
+                                                   loop->getLayer());
+          loop->setPrimaryColor(color);
+          loop->setSecondaryColor(color);
+        }
+        break;
     }
 
     m_proc = loop->getOpacity() == 255 ?
@@ -158,30 +158,30 @@ public:
     switch (m_type) {
 
       case Eraser:
-	m_proc = ink_processing[INK_OPAQUE][MID(0, loop->getSprite()->getImgType(), 2)];
+        m_proc = ink_processing[INK_OPAQUE][MID(0, loop->getSprite()->getImgType(), 2)];
 
-	// TODO app_get_color_to_clear_layer should receive the context as parameter
-	loop->setPrimaryColor(app_get_color_to_clear_layer(loop->getLayer()));
-	loop->setSecondaryColor(app_get_color_to_clear_layer(loop->getLayer()));
-	break;
+        // TODO app_get_color_to_clear_layer should receive the context as parameter
+        loop->setPrimaryColor(app_get_color_to_clear_layer(loop->getLayer()));
+        loop->setSecondaryColor(app_get_color_to_clear_layer(loop->getLayer()));
+        break;
 
       case ReplaceFgWithBg:
-	m_proc = ink_processing[INK_REPLACE][MID(0, loop->getSprite()->getImgType(), 2)];
+        m_proc = ink_processing[INK_REPLACE][MID(0, loop->getSprite()->getImgType(), 2)];
 
-	loop->setPrimaryColor(color_utils::color_for_layer(loop->getContext()->getSettings()->getFgColor(),
-							   loop->getLayer()));
-	loop->setSecondaryColor(color_utils::color_for_layer(loop->getContext()->getSettings()->getBgColor(),
-							     loop->getLayer()));
-	break;
+        loop->setPrimaryColor(color_utils::color_for_layer(loop->getContext()->getSettings()->getFgColor(),
+                                                           loop->getLayer()));
+        loop->setSecondaryColor(color_utils::color_for_layer(loop->getContext()->getSettings()->getBgColor(),
+                                                             loop->getLayer()));
+        break;
 
       case ReplaceBgWithFg:
-	m_proc = ink_processing[INK_REPLACE][MID(0, loop->getSprite()->getImgType(), 2)];
+        m_proc = ink_processing[INK_REPLACE][MID(0, loop->getSprite()->getImgType(), 2)];
 
-	loop->setPrimaryColor(color_utils::color_for_layer(loop->getContext()->getSettings()->getBgColor(),
-							   loop->getLayer()));
-	loop->setSecondaryColor(color_utils::color_for_layer(loop->getContext()->getSettings()->getFgColor(),
-							     loop->getLayer()));
-	break;
+        loop->setPrimaryColor(color_utils::color_for_layer(loop->getContext()->getSettings()->getBgColor(),
+                                                           loop->getLayer()));
+        loop->setSecondaryColor(color_utils::color_for_layer(loop->getContext()->getSettings()->getFgColor(),
+                                                             loop->getLayer()));
+        break;
     }
   }
 
@@ -239,7 +239,7 @@ class SelectionInk : public Ink
 
 public:
   SelectionInk() { m_modify_selection = false; }
-  
+
   bool isSelection() const { return true; }
 
   void inkHline(int x1, int y, int x2, ToolLoop* loop)
@@ -248,9 +248,9 @@ public:
       Point offset = loop->getOffset();
 
       if (loop->getMouseButton() == ToolLoop::Left)
-	loop->getMask()->add(x1-offset.x, y-offset.y, x2-x1+1, 1);
+        loop->getMask()->add(x1-offset.x, y-offset.y, x2-x1+1, 1);
       else if (loop->getMouseButton() == ToolLoop::Right)
-	mask_subtract(loop->getMask(), x1-offset.x, y-offset.y, x2-x1+1, 1);
+        mask_subtract(loop->getMask(), x1-offset.x, y-offset.y, x2-x1+1, 1);
     }
     else
       image_hline(loop->getDstImage(), x1, y, x2, loop->getPrimaryColor());
@@ -263,7 +263,7 @@ public:
     if (state) {
       undo::UndoHistory* undo = loop->getDocument()->getUndoHistory();
       if (undo->isEnabled())
-	undo->pushUndoer(new undoers::SetMask(undo->getObjects(), loop->getDocument()));
+        undo->pushUndoer(new undoers::SetMask(undo->getObjects(), loop->getDocument()));
 
       loop->getMask()->freeze();
       loop->getMask()->reserve(0, 0, loop->getSprite()->getWidth(), loop->getSprite()->getHeight());

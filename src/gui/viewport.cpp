@@ -78,12 +78,12 @@ void Viewport::set_position(JRect rect)
     reqSize = child->getPreferredSize();
 
     cpos->x2 = cpos->x1 + MAX(reqSize.w, jrect_w(this->rc)
-					 - this->border_width.l
-					 - this->border_width.r);
+                                         - this->border_width.l
+                                         - this->border_width.r);
 
     cpos->y2 = cpos->y1 + MAX(reqSize.h, jrect_h(this->rc)
-					 - this->border_width.t
-					 - this->border_width.b);
+                                         - this->border_width.t
+                                         - this->border_width.b);
 
     jwidget_set_rect(child, cpos);
   }

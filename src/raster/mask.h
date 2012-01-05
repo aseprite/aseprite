@@ -28,9 +28,9 @@ class Mask : public GfxObj
 {
 public:
   // TODO private this
-  char* name;			// Mask name
-  int x, y, w, h;		// Region bounds
-  Image* bitmap;		// Bitmapped image mask
+  char* name;                   // Mask name
+  int x, y, w, h;               // Region bounds
+  Image* bitmap;                // Bitmapped image mask
 
   Mask();
   Mask(const Mask& mask);
@@ -47,9 +47,9 @@ public:
   // Returns true if the point is inside the mask
   bool contains_point(int u, int v) const {
     return (bitmap &&
-	    u >= x && u < x+w &&
-	    v >= y && v < y+h &&
-	    image_getpixel(bitmap, u-x, v-y));
+            u >= x && u < x+w &&
+            v >= y && v < y+h &&
+            image_getpixel(bitmap, u-x, v-y));
   }
 
   gfx::Rect getBounds() const;

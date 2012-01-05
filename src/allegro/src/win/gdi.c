@@ -1,6 +1,6 @@
-/*         ______   ___    ___ 
- *        /\  _  \ /\_ \  /\_ \ 
- *        \ \ \L\ \\//\ \ \//\ \      __     __   _ __   ___ 
+/*         ______   ___    ___
+ *        /\  _  \ /\_ \  /\_ \
+ *        \ \ \L\ \\//\ \ \//\ \      __     __   _ __   ___
  *         \ \  __ \ \ \ \  \ \ \   /'__`\ /'_ `\/\`'__\/ __`\
  *          \ \ \/\ \ \_\ \_ \_\ \_/\  __//\ \L\ \ \ \//\ \L\ \
  *           \ \_\ \_\/\____\/\____\ \____\ \____ \ \_\\ \____/
@@ -78,10 +78,10 @@ void set_palette_to_hdc(HDC dc, PALETTE pal)
 
    if (current_hpalette) {
       for (i = 0; i < 256; i++) {
-	 palPalEntry[i].peRed = _rgb_scale_6[pal[i].r];
-	 palPalEntry[i].peGreen = _rgb_scale_6[pal[i].g];
-	 palPalEntry[i].peBlue = _rgb_scale_6[pal[i].b];
-	 palPalEntry[i].peFlags = 0;
+         palPalEntry[i].peRed = _rgb_scale_6[pal[i].r];
+         palPalEntry[i].peGreen = _rgb_scale_6[pal[i].g];
+         palPalEntry[i].peBlue = _rgb_scale_6[pal[i].b];
+         palPalEntry[i].peFlags = 0;
       }
 
       SetPaletteEntries(current_hpalette, 0, 256, (LPPALETTEENTRY) & palPalEntry);
@@ -89,7 +89,7 @@ void set_palette_to_hdc(HDC dc, PALETTE pal)
    else {
       current_hpalette = convert_palette_to_hpalette(pal);
       _add_exit_func(destroy_current_hpalette,
-		     "destroy_current_hpalette");
+                     "destroy_current_hpalette");
    }
 
    SelectPalette(dc, current_hpalette, FALSE);
@@ -177,10 +177,10 @@ static BITMAPINFO *get_bitmap_info(BITMAP *bitmap, PALETTE pal)
 
    if (pal) {
       for (i = 0; i < 256; i++) {
-	 bi->bmiColors[i].rgbRed = _rgb_scale_6[pal[i].r];
-	 bi->bmiColors[i].rgbGreen = _rgb_scale_6[pal[i].g];
-	 bi->bmiColors[i].rgbBlue = _rgb_scale_6[pal[i].b];
-	 bi->bmiColors[i].rgbReserved = 0;
+         bi->bmiColors[i].rgbRed = _rgb_scale_6[pal[i].r];
+         bi->bmiColors[i].rgbGreen = _rgb_scale_6[pal[i].g];
+         bi->bmiColors[i].rgbBlue = _rgb_scale_6[pal[i].b];
+         bi->bmiColors[i].rgbReserved = 0;
       }
    }
 
@@ -204,7 +204,7 @@ static BYTE *get_dib_from_bitmap(BITMAP *bitmap)
 
    bpp = bitmap_color_depth(bitmap);
    pitch = bitmap->w * BYTES_PER_PIXEL(bpp);
-   pitch = (pitch + 3) & ~3;	/* align on dword */
+   pitch = (pitch + 3) & ~3;    /* align on dword */
 
    pixels = (BYTE *) _AL_MALLOC_ATOMIC(bitmap->h * pitch);
    if (!pixels)
@@ -213,88 +213,88 @@ static BYTE *get_dib_from_bitmap(BITMAP *bitmap)
    switch (bpp) {
 
       case 8:
-	 for (y = 0; y < bitmap->h; y++) {
-	    memcpy(pixels + y * pitch, bitmap->line[y], bitmap->w);
-	 }
-	 break;
+         for (y = 0; y < bitmap->h; y++) {
+            memcpy(pixels + y * pitch, bitmap->line[y], bitmap->w);
+         }
+         break;
 
       case 15:
-	 if ((_rgb_r_shift_15 == 10) && (_rgb_g_shift_15 == 5) && (_rgb_b_shift_15 == 0)) {
-	    for (y = 0; y < bitmap->h; y++)
-	       memcpy(pixels + y * pitch, bitmap->line[y], bitmap->w * 2);
-	 }
-	 else {
-	    for (y = 0; y < bitmap->h; y++) {
-	       src = bitmap->line[y];
-	       dst = pixels + y * pitch;
+         if ((_rgb_r_shift_15 == 10) && (_rgb_g_shift_15 == 5) && (_rgb_b_shift_15 == 0)) {
+            for (y = 0; y < bitmap->h; y++)
+               memcpy(pixels + y * pitch, bitmap->line[y], bitmap->w * 2);
+         }
+         else {
+            for (y = 0; y < bitmap->h; y++) {
+               src = bitmap->line[y];
+               dst = pixels + y * pitch;
 
-	       for (x = 0; x < bitmap->w; x++) {
-		  col = *(WORD *) (src);
-		  *((WORD *) (dst)) = (WORD) ((getb15(col) >> 3) | ((getg15(col) >> 3) << 5) | ((getr15(col) >> 3) << 10));
-		  src += 2;
-		  dst += 2;
-	       }
-	    }
-	 }
-	 break;
+               for (x = 0; x < bitmap->w; x++) {
+                  col = *(WORD *) (src);
+                  *((WORD *) (dst)) = (WORD) ((getb15(col) >> 3) | ((getg15(col) >> 3) << 5) | ((getr15(col) >> 3) << 10));
+                  src += 2;
+                  dst += 2;
+               }
+            }
+         }
+         break;
 
       case 16:
-	 /* the format of a 16-bit DIB is 5-5-5 as above */
-	 for (y = 0; y < bitmap->h; y++) {
-	    src = bitmap->line[y];
-	    dst = pixels + y * pitch;
+         /* the format of a 16-bit DIB is 5-5-5 as above */
+         for (y = 0; y < bitmap->h; y++) {
+            src = bitmap->line[y];
+            dst = pixels + y * pitch;
 
-	    for (x = 0; x < bitmap->w; x++) {
-	       col = *(WORD *) (src);
-	       *((WORD *) (dst)) = (WORD) ((getb16(col) >> 3) | ((getg16(col) >> 3) << 5) | ((getr16(col) >> 3) << 10));
-	       src += 2;
-	       dst += 2;
-	    }
-	 }
-	 break;
+            for (x = 0; x < bitmap->w; x++) {
+               col = *(WORD *) (src);
+               *((WORD *) (dst)) = (WORD) ((getb16(col) >> 3) | ((getg16(col) >> 3) << 5) | ((getr16(col) >> 3) << 10));
+               src += 2;
+               dst += 2;
+            }
+         }
+         break;
 
       case 24:
-	 if ((_rgb_r_shift_24 == 16) && (_rgb_g_shift_24 == 8) && (_rgb_b_shift_24 == 0)) {
-	    for (y = 0; y < bitmap->h; y++)
-	       memcpy(pixels + y * pitch, bitmap->line[y], bitmap->w * 3);
-	 }
-	 else {
-	    for (y = 0; y < bitmap->h; y++) {
-	       src = bitmap->line[y];
-	       dst = pixels + y * pitch;
+         if ((_rgb_r_shift_24 == 16) && (_rgb_g_shift_24 == 8) && (_rgb_b_shift_24 == 0)) {
+            for (y = 0; y < bitmap->h; y++)
+               memcpy(pixels + y * pitch, bitmap->line[y], bitmap->w * 3);
+         }
+         else {
+            for (y = 0; y < bitmap->h; y++) {
+               src = bitmap->line[y];
+               dst = pixels + y * pitch;
 
-	       for (x = 0; x < bitmap->w; x++) {
-		  col = *(DWORD *) (src);
-		  src += 3;
-		  *(dst++) = getb24(col);
-		  *(dst++) = getg24(col);
-		  *(dst++) = getr24(col);
-	       }
-	    }
-	 }
-	 break;
+               for (x = 0; x < bitmap->w; x++) {
+                  col = *(DWORD *) (src);
+                  src += 3;
+                  *(dst++) = getb24(col);
+                  *(dst++) = getg24(col);
+                  *(dst++) = getr24(col);
+               }
+            }
+         }
+         break;
 
       case 32:
-	 if ((_rgb_r_shift_32 == 16) && (_rgb_g_shift_32 == 8) && (_rgb_b_shift_32 == 0)) {
-	    for (y = 0; y < bitmap->h; y++)
-	       memcpy(pixels + y * pitch, bitmap->line[y], bitmap->w * 4);
-	 }
-	 else {
-	    for (y = 0; y < bitmap->h; y++) {
-	       src = bitmap->line[y];
-	       dst = pixels + y * pitch;
+         if ((_rgb_r_shift_32 == 16) && (_rgb_g_shift_32 == 8) && (_rgb_b_shift_32 == 0)) {
+            for (y = 0; y < bitmap->h; y++)
+               memcpy(pixels + y * pitch, bitmap->line[y], bitmap->w * 4);
+         }
+         else {
+            for (y = 0; y < bitmap->h; y++) {
+               src = bitmap->line[y];
+               dst = pixels + y * pitch;
 
-	       for (x = 0; x < bitmap->w; x++) {
-		  col = *(DWORD *) (src);
-		  src += 4;
-		  *(dst++) = getb32(col);
-		  *(dst++) = getg32(col);
-		  *(dst++) = getr32(col);
-		  dst++;
-	       }
-	    }
-	 }
-	 break;
+               for (x = 0; x < bitmap->w; x++) {
+                  col = *(DWORD *) (src);
+                  src += 4;
+                  *(dst++) = getb32(col);
+                  *(dst++) = getg32(col);
+                  *(dst++) = getr32(col);
+                  dst++;
+               }
+            }
+         }
+         break;
    }
 
    return pixels;
@@ -329,7 +329,7 @@ static BYTE *get_dib_from_hbitmap(int bpp, HBITMAP hbitmap)
       return NULL;
 
    pitch = bm.bmWidth * BYTES_PER_PIXEL(bpp);
-   pitch = (pitch + 3) & ~3;	/* align on dword */
+   pitch = (pitch + 3) & ~3;    /* align on dword */
 
    pixels = (BYTE *) _AL_MALLOC_ATOMIC(bm.bmHeight * pitch);
    if (!pixels)
@@ -358,25 +358,25 @@ static BYTE *get_dib_from_hbitmap(int bpp, HBITMAP hbitmap)
 
    ptr = pixels;
 
-   /* This never occurs, because if screen or memory bitmap is 8-bit, 
-    * we ask Windows to convert it to truecolor. It is safer, but a little 
+   /* This never occurs, because if screen or memory bitmap is 8-bit,
+    * we ask Windows to convert it to truecolor. It is safer, but a little
     * bit slower.
     */
 
    if (bpp == 8) {
       for (y = 0; y < bm.bmWidth; y++) {
-	 for (x = 0; x < bm.bmHeight; x++) {
-	    col = *ptr;
+         for (x = 0; x < bm.bmHeight; x++) {
+            col = *ptr;
 
-	    if ((col < 10) || (col >= 246)) {
-	       /* we have to remap colors from system palette */
-	       *(ptr++) = makecol8(binfo->bmiColors[col].rgbRed, binfo->bmiColors[col].rgbGreen, binfo->bmiColors[col].rgbBlue);
-	    }
-	    else {
-	       /* our palette is shifted by 10 */
-	       *(ptr++) = col - 10;
-	    }
-	 }
+            if ((col < 10) || (col >= 246)) {
+               /* we have to remap colors from system palette */
+               *(ptr++) = makecol8(binfo->bmiColors[col].rgbRed, binfo->bmiColors[col].rgbGreen, binfo->bmiColors[col].rgbBlue);
+            }
+            else {
+               /* our palette is shifted by 10 */
+               *(ptr++) = col - 10;
+            }
+         }
       }
    }
 
@@ -405,96 +405,96 @@ static BITMAP *get_bitmap_from_dib(int bpp, int w, int h, BYTE *pixels)
 
    bitmap = create_bitmap_ex(bpp, w, h);
    pitch = bitmap->w * BYTES_PER_PIXEL(bpp);
-   pitch = (pitch + 3) & ~3;	/* align on dword */
+   pitch = (pitch + 3) & ~3;    /* align on dword */
 
    switch (bpp) {
 
       case 8:
-	 for (y = 0; y < bitmap->h; y++) {
-	    memcpy(bitmap->line[y], pixels + y * pitch, bitmap->w);
-	 }
-	 break;
+         for (y = 0; y < bitmap->h; y++) {
+            memcpy(bitmap->line[y], pixels + y * pitch, bitmap->w);
+         }
+         break;
 
       case 15:
-	 if ((_rgb_r_shift_15 == 10) && (_rgb_g_shift_15 == 5) && (_rgb_b_shift_15 == 0)) {
-	    for (y = 0; y < bitmap->h; y++)
-	       memcpy(bitmap->line[y], pixels + y * pitch, bitmap->w * 2);
-	 }
-	 else {
-	    for (y = 0; y < bitmap->h; y++) {
-	       dst = bitmap->line[y];
-	       src = pixels + y * pitch;
+         if ((_rgb_r_shift_15 == 10) && (_rgb_g_shift_15 == 5) && (_rgb_b_shift_15 == 0)) {
+            for (y = 0; y < bitmap->h; y++)
+               memcpy(bitmap->line[y], pixels + y * pitch, bitmap->w * 2);
+         }
+         else {
+            for (y = 0; y < bitmap->h; y++) {
+               dst = bitmap->line[y];
+               src = pixels + y * pitch;
 
-	       for (x = 0; x < bitmap->w; x++) {
-		  col = *(WORD *) (src);
-		  *((WORD *) (dst)) = makecol15(_rgb_scale_5[(col >> 10) & 0x1F], _rgb_scale_5[(col >> 5) & 0x1F], _rgb_scale_5[col & 0x1F]);
-		  src += 2;
-		  dst += 2;
-	       }
-	    }
-	 }
-	 break;
+               for (x = 0; x < bitmap->w; x++) {
+                  col = *(WORD *) (src);
+                  *((WORD *) (dst)) = makecol15(_rgb_scale_5[(col >> 10) & 0x1F], _rgb_scale_5[(col >> 5) & 0x1F], _rgb_scale_5[col & 0x1F]);
+                  src += 2;
+                  dst += 2;
+               }
+            }
+         }
+         break;
 
       case 16:
-	 /* the format of a 16-bit DIB is 5-5-5 as above */
-	 for (y = 0; y < bitmap->h; y++) {
-	    dst = bitmap->line[y];
-	    src = pixels + y * pitch;
+         /* the format of a 16-bit DIB is 5-5-5 as above */
+         for (y = 0; y < bitmap->h; y++) {
+            dst = bitmap->line[y];
+            src = pixels + y * pitch;
 
-	    for (x = 0; x < bitmap->w; x++) {
-	       col = *(WORD *) (src);
-	       *((WORD *) (dst)) = makecol16(_rgb_scale_5[(col >> 10) & 0x1F], _rgb_scale_5[(col >> 5) & 0x1F], _rgb_scale_5[col & 0x1F]);
-	       src += 2;
-	       dst += 2;
-	    }
-	 }
-	 break;
+            for (x = 0; x < bitmap->w; x++) {
+               col = *(WORD *) (src);
+               *((WORD *) (dst)) = makecol16(_rgb_scale_5[(col >> 10) & 0x1F], _rgb_scale_5[(col >> 5) & 0x1F], _rgb_scale_5[col & 0x1F]);
+               src += 2;
+               dst += 2;
+            }
+         }
+         break;
 
       case 24:
-	 if ((_rgb_r_shift_24 == 16) && (_rgb_g_shift_24 == 8) && (_rgb_b_shift_24 == 0)) {
-	    for (y = 0; y < bitmap->h; y++)
-	       memcpy(bitmap->line[y], pixels + y * pitch, bitmap->w * 3);
-	 }
-	 else {
-	    for (y = 0; y < bitmap->h; y++) {
-	       dst = bitmap->line[y];
-	       src = pixels + y * pitch;
+         if ((_rgb_r_shift_24 == 16) && (_rgb_g_shift_24 == 8) && (_rgb_b_shift_24 == 0)) {
+            for (y = 0; y < bitmap->h; y++)
+               memcpy(bitmap->line[y], pixels + y * pitch, bitmap->w * 3);
+         }
+         else {
+            for (y = 0; y < bitmap->h; y++) {
+               dst = bitmap->line[y];
+               src = pixels + y * pitch;
 
-	       for (x = 0; x < bitmap->w; x++) {
-		  r = *(src++);
-		  g = *(src++);
-		  b = *(src++);
-		  col = makecol24(r, g, b);
-		  *((WORD *) dst) = (col & 0xFFFF);
-		  dst += 2;
-		  *(dst++) = (col >> 16);
-	       }
-	    }
-	 }
-	 break;
+               for (x = 0; x < bitmap->w; x++) {
+                  r = *(src++);
+                  g = *(src++);
+                  b = *(src++);
+                  col = makecol24(r, g, b);
+                  *((WORD *) dst) = (col & 0xFFFF);
+                  dst += 2;
+                  *(dst++) = (col >> 16);
+               }
+            }
+         }
+         break;
 
       case 32:
-	 if ((_rgb_r_shift_32 == 16) && (_rgb_g_shift_32 == 8) && (_rgb_b_shift_32 == 0)) {
-	    for (y = 0; y < bitmap->h; y++)
-	       memcpy(bitmap->line[y], pixels + y * pitch, bitmap->w * 4);
-	 }
-	 else {
-	    for (y = 0; y < bitmap->h; y++) {
-	       dst = bitmap->line[y];
-	       src = pixels + y * pitch;
+         if ((_rgb_r_shift_32 == 16) && (_rgb_g_shift_32 == 8) && (_rgb_b_shift_32 == 0)) {
+            for (y = 0; y < bitmap->h; y++)
+               memcpy(bitmap->line[y], pixels + y * pitch, bitmap->w * 4);
+         }
+         else {
+            for (y = 0; y < bitmap->h; y++) {
+               dst = bitmap->line[y];
+               src = pixels + y * pitch;
 
-	       for (x = 0; x < bitmap->w; x++) {
-		  b = *(src++);
-		  g = *(src++);
-		  r = *(src++);
-		  col = makecol32(r, g, b);
-		  src++;
-		  *((DWORD *) dst) = col;
-		  dst += 4;
-	       }
-	    }
-	 }
-	 break;
+               for (x = 0; x < bitmap->w; x++) {
+                  b = *(src++);
+                  g = *(src++);
+                  r = *(src++);
+                  col = makecol32(r, g, b);
+                  src++;
+                  *((DWORD *) dst) = col;
+                  dst += 4;
+               }
+            }
+         }
+         break;
    }
 
    return bitmap;
@@ -609,13 +609,13 @@ void stretch_blit_to_hdc(BITMAP *bitmap, HDC dc, int src_x, int src_y, int src_w
     */
    if (bottom_up_src_y == 0 && src_x == 0 && src_h != bitmap->h) {
       StretchDIBits(dc, dest_x, dest_h+dest_y-1, dest_w, -dest_h,
-	 src_x, bitmap->h-src_y+1, src_w, -src_h, pixels, bi,
-	 DIB_RGB_COLORS, SRCCOPY);
+         src_x, bitmap->h-src_y+1, src_w, -src_h, pixels, bi,
+         DIB_RGB_COLORS, SRCCOPY);
    }
    else {
       StretchDIBits(dc, dest_x, dest_y, dest_w, dest_h,
-	 src_x, bottom_up_src_y, src_w, src_h, pixels, bi,
-	 DIB_RGB_COLORS, SRCCOPY);
+         src_x, bottom_up_src_y, src_w, src_h, pixels, bi,
+         DIB_RGB_COLORS, SRCCOPY);
    }
 
    _AL_FREE(pixels);

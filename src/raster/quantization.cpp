@@ -37,9 +37,9 @@ using namespace gfx;
 
 // Converts a RGB image to indexed with ordered dithering method.
 static Image* ordered_dithering(const Image* src_image,
-				int offsetx, int offsety,
-				const RgbMap* rgbmap,
-				const Palette* palette);
+                                int offsetx, int offsety,
+                                const RgbMap* rgbmap,
+                                const Palette* palette);
 
 static void create_palette_from_bitmaps(const std::vector<Image*>& images, Palette* palette, bool has_background_layer);
 
@@ -50,9 +50,9 @@ Palette* quantization::create_palette_from_rgb(const Sprite* sprite)
   Image* flat_image;
 
   ImagesCollector images(sprite,
-			 true,   // all layers
-			 true,   // all frames,
-			 false); // forWrite=false, read only
+                         true,   // all layers
+                         true,   // all frames,
+                         false); // forWrite=false, read only
 
   // Add a flat image with the current sprite's frame rendered
   flat_image = image_new(sprite->getImgType(), sprite->getWidth(), sprite->getHeight());
@@ -67,7 +67,7 @@ Palette* quantization::create_palette_from_rgb(const Sprite* sprite)
   for (ImagesCollector::ItemsIterator it=images.begin(); it!=images.end(); ++it)
     image_array[c++] = it->image();
   image_array[c++] = flat_image; // The 'flat_image'
-    
+
   // Generate an optimized palette for all images
   create_palette_from_bitmaps(image_array, palette, has_background_layer);
 
@@ -76,10 +76,10 @@ Palette* quantization::create_palette_from_rgb(const Sprite* sprite)
 }
 
 Image* quantization::convert_imgtype(const Image* image, int imgtype,
-				     DitheringMethod ditheringMethod,
-				     const RgbMap* rgbmap,
-				     const Palette* palette,
-				     bool has_background_layer)
+                                     DitheringMethod ditheringMethod,
+                                     const RgbMap* rgbmap,
+                                     const Palette* palette,
+                                     bool has_background_layer)
 {
   uint32_t* rgb_address;
   uint16_t* gray_address;
@@ -93,8 +93,8 @@ Image* quantization::convert_imgtype(const Image* image, int imgtype,
     return NULL;
   // RGB -> Indexed with ordered dithering
   else if (image->imgtype == IMAGE_RGB &&
-	   imgtype == IMAGE_INDEXED &&
-	   ditheringMethod == DITHERING_ORDERED) {
+           imgtype == IMAGE_INDEXED &&
+           ditheringMethod == DITHERING_ORDERED) {
     return ordered_dithering(image, 0, 0, rgbmap, palette);
   }
 
@@ -111,38 +111,38 @@ Image* quantization::convert_imgtype(const Image* image, int imgtype,
 
       switch (new_image->imgtype) {
 
-	// RGB -> Grayscale
-	case IMAGE_GRAYSCALE:
-	  gray_address = (uint16_t*)new_image->dat;
-	  for (i=0; i<size; i++) {
-	    c = *rgb_address;
+        // RGB -> Grayscale
+        case IMAGE_GRAYSCALE:
+          gray_address = (uint16_t*)new_image->dat;
+          for (i=0; i<size; i++) {
+            c = *rgb_address;
 
-	    g = 255 * Hsv(Rgb(_rgba_getr(c),
-	    		      _rgba_getg(c),
-	    		      _rgba_getb(c))).valueInt() / 100;
-	    *gray_address = _graya(g, _rgba_geta(c));
+            g = 255 * Hsv(Rgb(_rgba_getr(c),
+                              _rgba_getg(c),
+                              _rgba_getb(c))).valueInt() / 100;
+            *gray_address = _graya(g, _rgba_geta(c));
 
-	    rgb_address++;
-	    gray_address++;
-	  }
-	  break;
+            rgb_address++;
+            gray_address++;
+          }
+          break;
 
-	// RGB -> Indexed
-	case IMAGE_INDEXED:
-	  idx_address = new_image->dat;
-	  for (i=0; i<size; i++) {
-	    c = *rgb_address;
-	    r = _rgba_getr(c);
-	    g = _rgba_getg(c);
-	    b = _rgba_getb(c);
-	    if (_rgba_geta(c) == 0)
-	      *idx_address = 0;
-	    else
-	      *idx_address = rgbmap->mapColor(r, g, b);
-	    rgb_address++;
-	    idx_address++;
-	  }
-	  break;
+        // RGB -> Indexed
+        case IMAGE_INDEXED:
+          idx_address = new_image->dat;
+          for (i=0; i<size; i++) {
+            c = *rgb_address;
+            r = _rgba_getr(c);
+            g = _rgba_getg(c);
+            b = _rgba_getb(c);
+            if (_rgba_geta(c) == 0)
+              *idx_address = 0;
+            else
+              *idx_address = rgbmap->mapColor(r, g, b);
+            rgb_address++;
+            idx_address++;
+          }
+          break;
       }
       break;
 
@@ -151,31 +151,31 @@ Image* quantization::convert_imgtype(const Image* image, int imgtype,
 
       switch (new_image->imgtype) {
 
-	// Grayscale -> RGB
-	case IMAGE_RGB:
-	  rgb_address = (uint32_t*)new_image->dat;
-	  for (i=0; i<size; i++) {
-	    c = *gray_address;
-	    g = _graya_getv(c);
-	    *rgb_address = _rgba(g, g, g, _graya_geta(c));
-	    gray_address++;
-	    rgb_address++;
-	  }
-	  break;
+        // Grayscale -> RGB
+        case IMAGE_RGB:
+          rgb_address = (uint32_t*)new_image->dat;
+          for (i=0; i<size; i++) {
+            c = *gray_address;
+            g = _graya_getv(c);
+            *rgb_address = _rgba(g, g, g, _graya_geta(c));
+            gray_address++;
+            rgb_address++;
+          }
+          break;
 
-	// Grayscale -> Indexed
-	case IMAGE_INDEXED:
-	  idx_address = new_image->dat;
-	  for (i=0; i<size; i++) {
-	    c = *gray_address;
-	    if (_graya_geta(c) == 0)
-	      *idx_address = 0;
-	    else
-	      *idx_address = _graya_getv(c);
-	    gray_address++;
-	    idx_address++;
-	  }
-	  break;
+        // Grayscale -> Indexed
+        case IMAGE_INDEXED:
+          idx_address = new_image->dat;
+          for (i=0; i<size; i++) {
+            c = *gray_address;
+            if (_graya_geta(c) == 0)
+              *idx_address = 0;
+            else
+              *idx_address = _graya_getv(c);
+            gray_address++;
+            idx_address++;
+          }
+          break;
       }
       break;
 
@@ -184,43 +184,43 @@ Image* quantization::convert_imgtype(const Image* image, int imgtype,
 
       switch (new_image->imgtype) {
 
-	// Indexed -> RGB
-	case IMAGE_RGB:
-	  rgb_address = (uint32_t*)new_image->dat;
-	  for (i=0; i<size; i++) {
-	    c = *idx_address;
+        // Indexed -> RGB
+        case IMAGE_RGB:
+          rgb_address = (uint32_t*)new_image->dat;
+          for (i=0; i<size; i++) {
+            c = *idx_address;
 
-	    if (c == 0 && !has_background_layer)
-	      *rgb_address = 0;
-	    else
-	      *rgb_address = _rgba(_rgba_getr(palette->getEntry(c)),
-				   _rgba_getg(palette->getEntry(c)),
-				   _rgba_getb(palette->getEntry(c)), 255);
-	    idx_address++;
-	    rgb_address++;
-	  }
-	  break;
+            if (c == 0 && !has_background_layer)
+              *rgb_address = 0;
+            else
+              *rgb_address = _rgba(_rgba_getr(palette->getEntry(c)),
+                                   _rgba_getg(palette->getEntry(c)),
+                                   _rgba_getb(palette->getEntry(c)), 255);
+            idx_address++;
+            rgb_address++;
+          }
+          break;
 
-	// Indexed -> Grayscale
-	case IMAGE_GRAYSCALE:
-	  gray_address = (uint16_t*)new_image->dat;
-	  for (i=0; i<size; i++) {
-	    c = *idx_address;
+        // Indexed -> Grayscale
+        case IMAGE_GRAYSCALE:
+          gray_address = (uint16_t*)new_image->dat;
+          for (i=0; i<size; i++) {
+            c = *idx_address;
 
-	    if (c == 0 && !has_background_layer)
-	      *gray_address = 0;
-	    else {
-	      r = _rgba_getr(palette->getEntry(c));
-	      g = _rgba_getg(palette->getEntry(c));
-	      b = _rgba_getb(palette->getEntry(c));
+            if (c == 0 && !has_background_layer)
+              *gray_address = 0;
+            else {
+              r = _rgba_getr(palette->getEntry(c));
+              g = _rgba_getg(palette->getEntry(c));
+              b = _rgba_getb(palette->getEntry(c));
 
-	      g = 255 * Hsv(Rgb(r, g, b)).valueInt() / 100;
-	      *gray_address = _graya(g, 255);
-	    }
-	    idx_address++;
-	    gray_address++;
-	  }
-	  break;
+              g = 255 * Hsv(Rgb(r, g, b)).valueInt() / 100;
+              *gray_address = _graya(g, 255);
+            }
+            idx_address++;
+            gray_address++;
+          }
+          break;
 
       }
       break;
@@ -238,7 +238,7 @@ Image* quantization::convert_imgtype(const Image* image, int imgtype,
  *----------------------------------------------------------------------
  */
 
-/* Bayer-method ordered dither.	 The array line[] contains the
+/* Bayer-method ordered dither.  The array line[] contains the
  * intensity values for the line being processed.  As you can see, the
  * ordered dither is much simpler than the error dispersion dither.
  * It is also many times faster, but it is not as accurate and
@@ -256,14 +256,14 @@ static int pattern[8][8] = {
   { 63, 31, 55, 23, 61, 29, 53, 21 }
 };
 
-#define DIST(r1,g1,b1,r2,g2,b2) (3 * ((r1)-(r2)) * ((r1)-(r2)) +	\
-				 4 * ((g1)-(g2)) * ((g1)-(g2)) +	\
-				 2 * ((b1)-(b2)) * ((b1)-(b2)))
+#define DIST(r1,g1,b1,r2,g2,b2) (3 * ((r1)-(r2)) * ((r1)-(r2)) +        \
+                                 4 * ((g1)-(g2)) * ((g1)-(g2)) +        \
+                                 2 * ((b1)-(b2)) * ((b1)-(b2)))
 
 static Image* ordered_dithering(const Image* src_image,
-				int offsetx, int offsety,
-				const RgbMap* rgbmap,
-				const Palette* palette)
+                                int offsetx, int offsety,
+                                const RgbMap* rgbmap,
+                                const Palette* palette)
 {
   int oppr, oppg, oppb, oppnrcm;
   Image *dst_image;
@@ -287,42 +287,42 @@ static Image* ordered_dithering(const Image* src_image,
       a = _rgba_geta(c);
 
       if (a != 0) {
-	nearestcm = rgbmap->mapColor(r, g, b);
-	/* rgb values for nearest color */
-	nr = _rgba_getr(palette->getEntry(nearestcm));
-	ng = _rgba_getg(palette->getEntry(nearestcm));
-	nb = _rgba_getb(palette->getEntry(nearestcm));
-	/* Color as far from rgb as nrngnb but in the other direction */
-	oppr = MID(0, 2*r - nr, 255);
-	oppg = MID(0, 2*g - ng, 255);
-	oppb = MID(0, 2*b - nb, 255);
-	/* Nearest match for opposite color: */
-	oppnrcm = rgbmap->mapColor(oppr, oppg, oppb);
-	/* If they're not the same, dither between them. */
-	/* Dither constant is measured by where the true
-	   color lies between the two nearest approximations.
-	   Since the most nearly opposite color is not necessarily
-	   on the line from the nearest through the true color,
-	   some triangulation error can be introduced.	In the worst
-	   case the r-nr distance can actually be less than the nr-oppr
-	   distance. */
-	if (oppnrcm != nearestcm) {
-	  oppr = _rgba_getr(palette->getEntry(oppnrcm));
-	  oppg = _rgba_getg(palette->getEntry(oppnrcm));
-	  oppb = _rgba_getb(palette->getEntry(oppnrcm));
+        nearestcm = rgbmap->mapColor(r, g, b);
+        /* rgb values for nearest color */
+        nr = _rgba_getr(palette->getEntry(nearestcm));
+        ng = _rgba_getg(palette->getEntry(nearestcm));
+        nb = _rgba_getb(palette->getEntry(nearestcm));
+        /* Color as far from rgb as nrngnb but in the other direction */
+        oppr = MID(0, 2*r - nr, 255);
+        oppg = MID(0, 2*g - ng, 255);
+        oppb = MID(0, 2*b - nb, 255);
+        /* Nearest match for opposite color: */
+        oppnrcm = rgbmap->mapColor(oppr, oppg, oppb);
+        /* If they're not the same, dither between them. */
+        /* Dither constant is measured by where the true
+           color lies between the two nearest approximations.
+           Since the most nearly opposite color is not necessarily
+           on the line from the nearest through the true color,
+           some triangulation error can be introduced.  In the worst
+           case the r-nr distance can actually be less than the nr-oppr
+           distance. */
+        if (oppnrcm != nearestcm) {
+          oppr = _rgba_getr(palette->getEntry(oppnrcm));
+          oppg = _rgba_getg(palette->getEntry(oppnrcm));
+          oppb = _rgba_getb(palette->getEntry(oppnrcm));
 
-	  dither_const = DIST(nr, ng, nb, oppr, oppg, oppb);
-	  if (dither_const != 0) {
-	    dither_const = 64 * DIST(r, g, b, nr, ng, nb) / dither_const;
-	    dither_const = MIN(63, dither_const);
+          dither_const = DIST(nr, ng, nb, oppr, oppg, oppb);
+          if (dither_const != 0) {
+            dither_const = 64 * DIST(r, g, b, nr, ng, nb) / dither_const;
+            dither_const = MIN(63, dither_const);
 
-	    if (pattern[(x+offsetx) & 7][(y+offsety) & 7] < dither_const)
-	      nearestcm = oppnrcm;
-	  }
-	}
+            if (pattern[(x+offsetx) & 7][(y+offsety) & 7] < dither_const)
+              nearestcm = oppnrcm;
+          }
+        }
       }
       else
-	nearestcm = 0;
+        nearestcm = 0;
 
       image_putpixel_fast<IndexedTraits>(dst_image, x, y, nearestcm);
     }
@@ -354,14 +354,14 @@ static void create_palette_from_bitmaps(const std::vector<Image*>& images, Palet
       address = image_address_fast<RgbTraits>(image, 0, y);
 
       for (int x=0; x<image->w; ++x) {
-	color = *address;
+        color = *address;
 
-	if (_rgba_geta(color) > 0) {
-	  color |= _rgba(0, 0, 0, 255);
-	  histogram.addSamples(color, 1);
-	}
+        if (_rgba_geta(color) > 0) {
+          color |= _rgba(0, 0, 0, 255);
+          histogram.addSamples(color, 1);
+        }
 
-	++address;
+        ++address;
       }
     }
   }

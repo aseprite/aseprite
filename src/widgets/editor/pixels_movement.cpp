@@ -135,9 +135,9 @@ gfx::Rect PixelsMovement::moveImage(int x, int y)
   int dx, dy;
 
   dx = ((x - m_catchX) *  cos(m_currentData.angle()) +
-	(y - m_catchY) * -sin(m_currentData.angle()));
+        (y - m_catchY) * -sin(m_currentData.angle()));
   dy = ((x - m_catchX) *  sin(m_currentData.angle()) +
-	(y - m_catchY) *  cos(m_currentData.angle()));
+        (y - m_catchY) *  cos(m_currentData.angle()));
 
   switch (m_handle) {
 
@@ -202,28 +202,28 @@ gfx::Rect PixelsMovement::moveImage(int x, int y)
     case RotateSHandle:
     case RotateSEHandle:
       {
-	gfx::Point abs_initial_pivot = m_initialData.pivot();
-	gfx::Point abs_pivot = m_currentData.pivot();
+        gfx::Point abs_initial_pivot = m_initialData.pivot();
+        gfx::Point abs_pivot = m_currentData.pivot();
 
-	double newAngle =
-	  m_initialData.angle()
-	  + atan2((double)(-y + abs_pivot.y),
-		  (double)(+x - abs_pivot.x))
-	  - atan2((double)(-m_catchY + abs_initial_pivot.y),
-		  (double)(+m_catchX - abs_initial_pivot.x));
+        double newAngle =
+          m_initialData.angle()
+          + atan2((double)(-y + abs_pivot.y),
+                  (double)(+x - abs_pivot.x))
+          - atan2((double)(-m_catchY + abs_initial_pivot.y),
+                  (double)(+m_catchX - abs_initial_pivot.x));
 
-	m_currentData.angle(newAngle);
+        m_currentData.angle(newAngle);
       }
       break;
 
     case PivotHandle:
       {
-	// Calculate the new position of the pivot
-	gfx::Point newPivot(m_initialData.pivot().x + (x - m_catchX),
-			    m_initialData.pivot().y + (y - m_catchY));
+        // Calculate the new position of the pivot
+        gfx::Point newPivot(m_initialData.pivot().x + (x - m_catchX),
+                            m_initialData.pivot().y + (y - m_catchY));
 
-	m_currentData = m_initialData;
-	m_currentData.displacePivotTo(newPivot);
+        m_currentData = m_initialData;
+        m_currentData.displacePivotTo(newPivot);
       }
       break;
   }
@@ -239,20 +239,20 @@ gfx::Rect PixelsMovement::moveImage(int x, int y)
   // Transform the extra-cel which is the chunk of pixels that the user is moving.
   image_clear(documentWriter->getExtraCelImage(), 0);
   image_parallelogram(documentWriter->getExtraCelImage(), m_originalImage,
-		      corners.leftTop().x, corners.leftTop().y,
-		      corners.rightTop().x, corners.rightTop().y,
-		      corners.rightBottom().x, corners.rightBottom().y,
-		      corners.leftBottom().x, corners.leftBottom().y);
+                      corners.leftTop().x, corners.leftTop().y,
+                      corners.rightTop().x, corners.rightTop().y,
+                      corners.rightBottom().x, corners.rightBottom().y,
+                      corners.leftBottom().x, corners.leftBottom().y);
 
   // Transform mask
   mask_replace(m_currentMask, 0, 0, m_sprite->getWidth(), m_sprite->getHeight());
   m_currentMask->freeze();
   image_clear(m_currentMask->bitmap, 0);
   image_parallelogram(m_currentMask->bitmap, m_initialMask->bitmap,
-		      corners.leftTop().x, corners.leftTop().y,
-		      corners.rightTop().x, corners.rightTop().y,
-		      corners.rightBottom().x, corners.rightBottom().y,
-		      corners.leftBottom().x, corners.leftBottom().y);
+                      corners.leftTop().x, corners.leftTop().y,
+                      corners.rightTop().x, corners.rightTop().y,
+                      corners.rightBottom().x, corners.rightBottom().y,
+                      corners.leftBottom().x, corners.leftBottom().y);
   m_currentMask->unfreeze();
 
   if (m_firstDrop)
@@ -293,7 +293,7 @@ void PixelsMovement::dropImageTemporarily()
       // width/height multiplied with the previously calculated X/Y
       // factor.
       la::Vector2d<double> newPivot(corners.leftTop().x,
-				    corners.leftTop().y);
+                                    corners.leftTop().y);
       newPivot += pivotPosFactor.x * point2Vector(corners.rightTop() - corners.leftTop());
       newPivot += pivotPosFactor.y * point2Vector(corners.leftBottom() - corners.leftTop());
 
@@ -319,12 +319,12 @@ void PixelsMovement::dropImage()
       // Expand the canvas to paste the image in the fully visible
       // portion of sprite.
       ExpandCelCanvas expandCelCanvas(documentWriter, m_sprite,
-				      m_sprite->getCurrentLayer(), TILED_NONE);
+                                      m_sprite->getCurrentLayer(), TILED_NONE);
 
       image_merge(expandCelCanvas.getDestCanvas(), image,
-		  -expandCelCanvas.getCel()->getX(),
-		  -expandCelCanvas.getCel()->getY(),
-		  cel->getOpacity(), BLEND_MODE_NORMAL);
+                  -expandCelCanvas.getCel()->getX(),
+                  -expandCelCanvas.getCel()->getY(),
+                  cel->getOpacity(), BLEND_MODE_NORMAL);
 
       expandCelCanvas.commit();
     }

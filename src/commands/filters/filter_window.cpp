@@ -27,10 +27,10 @@
 #include "modules/gui.h"
 
 FilterWindow::FilterWindow(const char* title, const char* cfgSection,
-			   FilterManagerImpl* filterMgr,
-			   WithChannels withChannels,
-			   WithTiled withTiled,
-			   TiledMode tiledMode)
+                           FilterManagerImpl* filterMgr,
+                           WithChannels withChannels,
+                           WithTiled withTiled,
+                           TiledMode tiledMode)
   : Frame(false, title)
   , m_cfgSection(cfgSection)
   , m_filterMgr(filterMgr)
@@ -62,7 +62,7 @@ FilterWindow::FilterWindow(const char* title, const char* cfgSection,
 
   addChild(&m_preview);
   addChild(&m_hbox);
-  
+
   if (m_tiledCheck) {
     m_tiledCheck->setSelected(tiledMode != TILED_NONE);
     m_tiledCheck->Click.connect(Bind<void>(&FilterWindow::onTiledChange, this));

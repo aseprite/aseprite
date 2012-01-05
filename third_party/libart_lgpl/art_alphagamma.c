@@ -53,15 +53,15 @@ art_alphagamma_new (double gamma)
     tablesize = 10;
 
   alphagamma = (ArtAlphaGamma *)art_alloc (sizeof(ArtAlphaGamma) +
-					   ((1 << tablesize) - 1) *
-					   sizeof(art_u8));
+                                           ((1 << tablesize) - 1) *
+                                           sizeof(art_u8));
   alphagamma->gamma = gamma;
   alphagamma->invtable_size = tablesize;
 
   table = alphagamma->table;
   for (i = 0; i < 256; i++)
     table[i] = (int)floor (((1 << tablesize) - 1) *
-			   pow (i * (1.0 / 255), gamma) + 0.5);
+                           pow (i * (1.0 / 255), gamma) + 0.5);
 
   invtable = alphagamma->invtable;
   s = 1.0 / ((1 << tablesize) - 1);

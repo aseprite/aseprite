@@ -20,9 +20,8 @@
 #define UTIL_AUTOCROP_H_INCLUDED
 
 bool get_shrink_rect(int *x1, int *y1, int *x2, int *y2,
-		     Image *image, int refpixel);
+                     Image *image, int refpixel);
 bool get_shrink_rect2(int *x1, int *y1, int *x2, int *y2,
-		      Image *image, Image *regimage);
+                      Image *image, Image *regimage);
 
 #endif
-

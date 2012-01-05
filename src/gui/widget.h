@@ -22,8 +22,8 @@ class PreferredSizeEvent;
 
 #ifndef NDEBUG
 #include "gui/intern.h"
-#define ASSERT_VALID_WIDGET(widget) ASSERT((widget) != NULL &&		\
-					   _ji_is_valid_widget((widget)))
+#define ASSERT_VALID_WIDGET(widget) ASSERT((widget) != NULL &&          \
+                                           _ji_is_valid_widget((widget)))
 #else
 #define ASSERT_VALID_WIDGET(widget) ((void)0)
 #endif
@@ -40,10 +40,10 @@ void jwidget_free(JWidget widget);
 /* hooks */
 
 void jwidget_add_hook(JWidget widget, int type,
-		      MessageFunc msg_proc, void *data);
+                      MessageFunc msg_proc, void *data);
 JHook jwidget_get_hook(JWidget widget, int type);
 void *jwidget_get_data(JWidget widget, int type);
- 
+
 /* behavior properties */
 
 void jwidget_magnetic(JWidget widget, bool state);
@@ -66,8 +66,8 @@ int jwidget_get_bg_color(JWidget widget);
 int jwidget_get_text_length(JWidget widget);
 int jwidget_get_text_height(JWidget widget);
 void jwidget_get_texticon_info(JWidget widget,
-			       JRect box, JRect text, JRect icon,
-			       int icon_align, int icon_w, int icon_h);
+                               JRect box, JRect text, JRect icon,
+                               int icon_align, int icon_w, int icon_h);
 
 void jwidget_noborders(JWidget widget);
 void jwidget_set_border(JWidget widget, int value);
@@ -98,42 +98,42 @@ bool jwidget_check_underscored(JWidget widget, int scancode);
 class Widget : public Component
 {
 public:
-  JID id;			/* identify code */
-  int type;			/* widget's type */
+  JID id;                       /* identify code */
+  int type;                     /* widget's type */
 
-  char *name;			/* widget's name */
-  JRect rc;			/* position rectangle */
+  char *name;                   /* widget's name */
+  JRect rc;                     /* position rectangle */
   struct {
     int l, t, r, b;
-  } border_width;		/* border separation with the parent */
-  int child_spacing;		/* separation between children */
+  } border_width;               /* border separation with the parent */
+  int child_spacing;            /* separation between children */
 
   /* flags */
   int flags;
-  int emit_signals;		/* emit signal counter */
+  int emit_signals;             /* emit signal counter */
 
   /* widget size limits */
   int min_w, min_h;
   int max_w, max_h;
 
   /* structures */
-  JList children;		 /* sub-objects */
-  JWidget parent;		 /* who is the parent? */
+  JList children;                /* sub-objects */
+  JWidget parent;                /* who is the parent? */
 
   /* virtual properties */
-  JList hooks;			/* hooks with msg_proc and specific data */
+  JList hooks;                  /* hooks with msg_proc and specific data */
 
   /* common widget properties */
 private:
-  Theme* m_theme;		// Widget's theme
-  int m_align;			// Widget alignment
-  std::string m_text;		// Widget text
-  struct FONT *m_font;		// Text font type
-  int m_bg_color;		// Background color
+  Theme* m_theme;               // Widget's theme
+  int m_align;                  // Widget alignment
+  std::string m_text;           // Widget text
+  struct FONT *m_font;          // Text font type
+  int m_bg_color;               // Background color
 public:
 
   /* drawable cycle */
-  JRegion update_region;	/* region to be redrawed */
+  JRegion update_region;        /* region to be redrawed */
 
   /* more properties... */
 

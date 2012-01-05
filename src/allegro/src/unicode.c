@@ -1,6 +1,6 @@
-/*         ______   ___    ___ 
- *        /\  _  \ /\_ \  /\_ \ 
- *        \ \ \L\ \\//\ \ \//\ \      __     __   _ __   ___ 
+/*         ______   ___    ___
+ *        /\  _  \ /\_ \  /\_ \
+ *        \ \ \L\ \\//\ \ \//\ \      __     __   _ __   ___
  *         \ \  __ \ \ \ \  \ \ \   /'__`\ /'_ `\/\`'__\/ __`\
  *          \ \ \/\ \ \_\ \_ \_\ \_/\  __//\ \L\ \ \ \//\ \L\ \
  *           \ \_\ \_\/\____\/\____\ \____\ \____ \ \_\\ \____/
@@ -110,13 +110,13 @@ static unsigned short _codepage_table[] =
    0x50, 0x51, 0x52, 0x53, 0x54, 0x55, 0x56, 0x57, 0x58, 0x59, 0x5A, 0x5B, 0x5C, 0x5D, 0x5E, 0x5F,
    0x60, 0x61, 0x62, 0x63, 0x64, 0x65, 0x66, 0x67, 0x68, 0x69, 0x6A, 0x6B, 0x6C, 0x6D, 0x6E, 0x6F,
    0x70, 0x71, 0x72, 0x73, 0x74, 0x75, 0x76, 0x77, 0x78, 0x79, 0x7A, 0x7B, 0x7C, 0x7D, 0x7E, 0x7F,
-   0x5E, 0x5E, 0x5E, 0x5E, 0x5E, 0x5E, 0x5E, 0x5E, 0x5E, 0x5E, 0x5E, 0x5E, 0x5E, 0x5E, 0x5E, 0x5E, 
-   0x5E, 0x5E, 0x5E, 0x5E, 0x5E, 0x5E, 0x5E, 0x5E, 0x5E, 0x5E, 0x5E, 0x5E, 0x5E, 0x5E, 0x5E, 0x5E, 
-   0x5E, 0x5E, 0x5E, 0x5E, 0x5E, 0x5E, 0x5E, 0x5E, 0x5E, 0x5E, 0x5E, 0x5E, 0x5E, 0x5E, 0x5E, 0x5E, 
-   0x5E, 0x5E, 0x5E, 0x5E, 0x5E, 0x5E, 0x5E, 0x5E, 0x5E, 0x5E, 0x5E, 0x5E, 0x5E, 0x5E, 0x5E, 0x5E, 
-   0x5E, 0x5E, 0x5E, 0x5E, 0x5E, 0x5E, 0x5E, 0x5E, 0x5E, 0x5E, 0x5E, 0x5E, 0x5E, 0x5E, 0x5E, 0x5E, 
-   0x5E, 0x5E, 0x5E, 0x5E, 0x5E, 0x5E, 0x5E, 0x5E, 0x5E, 0x5E, 0x5E, 0x5E, 0x5E, 0x5E, 0x5E, 0x5E, 
-   0x5E, 0x5E, 0x5E, 0x5E, 0x5E, 0x5E, 0x5E, 0x5E, 0x5E, 0x5E, 0x5E, 0x5E, 0x5E, 0x5E, 0x5E, 0x5E, 
+   0x5E, 0x5E, 0x5E, 0x5E, 0x5E, 0x5E, 0x5E, 0x5E, 0x5E, 0x5E, 0x5E, 0x5E, 0x5E, 0x5E, 0x5E, 0x5E,
+   0x5E, 0x5E, 0x5E, 0x5E, 0x5E, 0x5E, 0x5E, 0x5E, 0x5E, 0x5E, 0x5E, 0x5E, 0x5E, 0x5E, 0x5E, 0x5E,
+   0x5E, 0x5E, 0x5E, 0x5E, 0x5E, 0x5E, 0x5E, 0x5E, 0x5E, 0x5E, 0x5E, 0x5E, 0x5E, 0x5E, 0x5E, 0x5E,
+   0x5E, 0x5E, 0x5E, 0x5E, 0x5E, 0x5E, 0x5E, 0x5E, 0x5E, 0x5E, 0x5E, 0x5E, 0x5E, 0x5E, 0x5E, 0x5E,
+   0x5E, 0x5E, 0x5E, 0x5E, 0x5E, 0x5E, 0x5E, 0x5E, 0x5E, 0x5E, 0x5E, 0x5E, 0x5E, 0x5E, 0x5E, 0x5E,
+   0x5E, 0x5E, 0x5E, 0x5E, 0x5E, 0x5E, 0x5E, 0x5E, 0x5E, 0x5E, 0x5E, 0x5E, 0x5E, 0x5E, 0x5E, 0x5E,
+   0x5E, 0x5E, 0x5E, 0x5E, 0x5E, 0x5E, 0x5E, 0x5E, 0x5E, 0x5E, 0x5E, 0x5E, 0x5E, 0x5E, 0x5E, 0x5E,
    0x5E, 0x5E, 0x5E, 0x5E, 0x5E, 0x5E, 0x5E, 0x5E, 0x5E, 0x5E, 0x5E, 0x5E, 0x5E, 0x5E, 0x5E, 0x5E,
 };
 
@@ -125,17 +125,17 @@ static unsigned short _codepage_table[] =
 /* this default table reduces Latin-1 and Extended-A characters to 7 bits */
 static unsigned short _codepage_extras[] =
 {
-   0xA1, '!',  0xA2, 'c',  0xA3, '#',  0xB5, 'u',  0xBF, '?',  0xC0, 'A', 
-   0xC1, 'A',  0xC2, 'A',  0xC3, 'A',  0xC4, 'A',  0xC5, 'A',  0xC6, 'A', 
-   0xC7, 'C',  0xC8, 'E',  0xC9, 'E',  0xCA, 'E',  0xCB, 'E',  0xCC, 'I', 
-   0xCD, 'I',  0xCE, 'I',  0xCF, 'I',  0xD0, 'D',  0xD1, 'N',  0xD2, 'O', 
-   0xD3, 'O',  0xD4, 'O',  0xD5, 'O',  0xD6, 'O',  0xD7, 'X',  0xD8, '0', 
-   0xD9, 'U',  0xDA, 'U',  0xDB, 'U',  0xDC, 'U',  0xDD, 'Y',  0xDE, 'P', 
-   0xDF, 'S',  0xE0, 'a',  0xE1, 'a',  0xE2, 'a',  0xE3, 'a',  0xE4, 'a', 
-   0xE5, 'a',  0xE6, 'a',  0xE7, 'c',  0xE8, 'e',  0xE9, 'e',  0xEA, 'e', 
-   0xEB, 'e',  0xEC, 'i',  0xED, 'i',  0xEE, 'i',  0xEF, 'i',  0xF0, 'o', 
-   0xF1, 'n',  0xF2, 'o',  0xF3, 'o',  0xF4, 'o',  0xF5, 'o',  0xF6, 'o', 
-   0xF8, 'o',  0xF9, 'u',  0xFA, 'u',  0xFB, 'u',  0xFC, 'u',  0xFD, 'y', 
+   0xA1, '!',  0xA2, 'c',  0xA3, '#',  0xB5, 'u',  0xBF, '?',  0xC0, 'A',
+   0xC1, 'A',  0xC2, 'A',  0xC3, 'A',  0xC4, 'A',  0xC5, 'A',  0xC6, 'A',
+   0xC7, 'C',  0xC8, 'E',  0xC9, 'E',  0xCA, 'E',  0xCB, 'E',  0xCC, 'I',
+   0xCD, 'I',  0xCE, 'I',  0xCF, 'I',  0xD0, 'D',  0xD1, 'N',  0xD2, 'O',
+   0xD3, 'O',  0xD4, 'O',  0xD5, 'O',  0xD6, 'O',  0xD7, 'X',  0xD8, '0',
+   0xD9, 'U',  0xDA, 'U',  0xDB, 'U',  0xDC, 'U',  0xDD, 'Y',  0xDE, 'P',
+   0xDF, 'S',  0xE0, 'a',  0xE1, 'a',  0xE2, 'a',  0xE3, 'a',  0xE4, 'a',
+   0xE5, 'a',  0xE6, 'a',  0xE7, 'c',  0xE8, 'e',  0xE9, 'e',  0xEA, 'e',
+   0xEB, 'e',  0xEC, 'i',  0xED, 'i',  0xEE, 'i',  0xEF, 'i',  0xF0, 'o',
+   0xF1, 'n',  0xF2, 'o',  0xF3, 'o',  0xF4, 'o',  0xF5, 'o',  0xF6, 'o',
+   0xF8, 'o',  0xF9, 'u',  0xFA, 'u',  0xFB, 'u',  0xFC, 'u',  0xFD, 'y',
    0xFE, 'p',  0xFF, 'y',
 
    0x100, 'A',  0x101, 'a',  0x102, 'A',  0x103, 'a',  0x104, 'A',
@@ -202,18 +202,18 @@ static int ascii_cp_setc(char *s, int c)
 
    for (i=0; i<256; i++) {
       if (codepage_table[i] == c) {
-	 *s = i;
-	 return 1;
+         *s = i;
+         return 1;
       }
    }
 
    if (codepage_extras) {
       for (i=0; codepage_extras[i]; i+=2) {
-	 if (codepage_extras[i] == c) {
-	    *s = codepage_extras[i+1];
-	    return 1;
-	 }
-      } 
+         if (codepage_extras[i] == c) {
+            *s = codepage_extras[i+1];
+            return 1;
+         }
+      }
    }
 
    *s = '^';
@@ -231,14 +231,14 @@ static int ascii_cp_isok(int c)
 
    for (i=0; i<256; i++) {
       if (codepage_table[i] == c)
-	 return TRUE;
+         return TRUE;
    }
 
    if (codepage_extras) {
       for (i=0; codepage_extras[i]; i+=2) {
-	 if (codepage_extras[i] == c)
-	    return TRUE;
-      } 
+         if (codepage_extras[i] == c)
+            return TRUE;
+      }
    }
 
    return FALSE;
@@ -320,17 +320,17 @@ static int utf8_getc(AL_CONST char *s)
    if (c & 0x80) {
       n = 1;
       while (c & (0x80>>n))
-	 n++;
+         n++;
 
       c &= (1<<(8-n))-1;
 
       while (--n > 0) {
-	 t = *((unsigned char *)(s++));
+         t = *((unsigned char *)(s++));
 
-	 if ((!(t&0x80)) || (t&0x40))
-	    return '^';
+         if ((!(t&0x80)) || (t&0x40))
+            return '^';
 
-	 c = (c<<6) | (t&0x3F);
+         c = (c<<6) | (t&0x3F);
       }
    }
 
@@ -350,19 +350,19 @@ static int utf8_getx(char **s)
    if (c & 0x80) {
       n = 1;
       while (c & (0x80>>n))
-	 n++;
+         n++;
 
       c &= (1<<(8-n))-1;
 
       while (--n > 0) {
-	 t = *((unsigned char *)((*s)++));
+         t = *((unsigned char *)((*s)++));
 
-	 if ((!(t&0x80)) || (t&0x40)) {
-	    (*s)--;
-	    return '^';
-	 }
+         if ((!(t&0x80)) || (t&0x40)) {
+            (*s)--;
+            return '^';
+         }
 
-	 c = (c<<6) | (t&0x3F);
+         c = (c<<6) | (t&0x3F);
       }
    }
 
@@ -421,7 +421,7 @@ static int utf8_width(AL_CONST char *s)
 
    if (c & 0x80) {
       while (c & (0x80>>n))
-	 n++;
+         n++;
    }
 
    return n;
@@ -513,7 +513,7 @@ UTYPE_INFO *_find_utype(int type)
 
    for (i=0; i<(int)(sizeof(utypes)/sizeof(UTYPE_INFO)); i++)
       if (utypes[i].id == type)
-	 return &utypes[i];
+         return &utypes[i];
 
    return NULL;
 }
@@ -597,7 +597,7 @@ int need_uconvert(AL_CONST char *s, int type, int newtype)
 {
    int c;
    ASSERT(s);
-   
+
    if (type == U_CURRENT)
       type = utype;
 
@@ -609,9 +609,9 @@ int need_uconvert(AL_CONST char *s, int type, int newtype)
 
    if (((type == U_ASCII) || (type == U_UTF8)) && ((newtype == U_ASCII) || (newtype == U_UTF8))) {
       do {
-	 c = *((unsigned char *)(s++));
-	 if (!c)
-	    return FALSE;
+         c = *((unsigned char *)(s++));
+         if (!c)
+            return FALSE;
       } while (c <= 127);
    }
 
@@ -674,11 +674,11 @@ void do_uconvert(AL_CONST char *s, int type, char *buf, int newtype, int size)
 
    while ((c = info->u_getx((char**)&s)) != 0) {
       if (!outfo->u_isok(c))
-	 c = '^';
+         c = '^';
 
       size -= outfo->u_cwidth(c);
       if (size < 0)
-	 break;
+         break;
 
       pos += outfo->u_setc(buf+pos, c);
    }
@@ -715,7 +715,7 @@ char *uconvert(AL_CONST char *s, int type, char *buf, int newtype, int size)
 
 
 /* uoffset:
- *  Returns the offset in bytes from the start of the string to the 
+ *  Returns the offset in bytes from the start of the string to the
  *  character at the specified index. If the index is negative, counts
  *  backward from the end of the string (-1 returns an offset to the
  *  last character).
@@ -732,8 +732,8 @@ int uoffset(AL_CONST char *s, int index)
    while (index-- > 0) {
       last = s;
       if (!ugetxc(&s)) {
-	 s = last;
-	 break;
+         s = last;
+         break;
       }
    }
 
@@ -1193,62 +1193,62 @@ int utolower(int c)
       case 7924:
       case 7926:
       case 7928:
-	   return c + 1;
+           return c + 1;
       case 304:
-	   return c + -199;
+           return c + -199;
       case 376:
-	   return c + -121;
+           return c + -121;
       case 385:
-	   return c + 210;
+           return c + 210;
       case 390:
-	   return c + 206;
+           return c + 206;
       case 398:
-	   return c + 79;
+           return c + 79;
       case 399:
-	   return c + 202;
+           return c + 202;
       case 400:
-	   return c + 203;
+           return c + 203;
       case 403:
-	   return c + 205;
+           return c + 205;
       case 404:
-	   return c + 207;
+           return c + 207;
       case 406:
       case 412:
-	   return c + 211;
+           return c + 211;
       case 407:
-	   return c + 209;
+           return c + 209;
       case 413:
-	   return c + 213;
+           return c + 213;
       case 415:
-	   return c + 214;
+           return c + 214;
       case 422:
       case 425:
       case 430:
-	   return c + 218;
+           return c + 218;
       case 439:
-	   return c + 219;
+           return c + 219;
       case 452:
       case 455:
       case 458:
       case 497:
-	   return c + 2;
+           return c + 2;
       case 902:
-	   return c + 38;
+           return c + 38;
       case 908:
-	   return c + 64;
+           return c + 64;
       case 8025:
       case 8027:
       case 8029:
       case 8031:
-	   return c + -8;
+           return c + -8;
       case 8124:
       case 8140:
       case 8188:
-	   return c + -9;
+           return c + -9;
       case 8172:
-	   return c + -7;
+           return c + -7;
       default:
-	   return c;
+           return c;
    }
 }
 
@@ -1311,7 +1311,7 @@ int utoupper(int c)
 
    switch (c) {
       case 255:
-	   return c + 121;
+           return c + 121;
       case 257:
       case 259:
       case 261:
@@ -1617,83 +1617,83 @@ int utoupper(int c)
       case 7925:
       case 7927:
       case 7929:
-	   return c + -1;
+           return c + -1;
       case 305:
-	   return c + -232;
+           return c + -232;
       case 383:
-	   return c + -300;
+           return c + -300;
       case 454:
       case 457:
       case 460:
       case 499:
-	   return c + -2;
+           return c + -2;
       case 477:
       case 1010:
-	   return c + -79;
+           return c + -79;
       case 595:
-	   return c + -210;
+           return c + -210;
       case 596:
-	   return c + -206;
+           return c + -206;
       case 601:
-	   return c + -202;
+           return c + -202;
       case 603:
-	   return c + -203;
+           return c + -203;
       case 608:
-	   return c + -205;
+           return c + -205;
       case 611:
-	   return c + -207;
+           return c + -207;
       case 616:
-	   return c + -209;
+           return c + -209;
       case 617:
       case 623:
-	   return c + -211;
+           return c + -211;
       case 626:
-	   return c + -213;
+           return c + -213;
       case 629:
-	   return c + -214;
+           return c + -214;
       case 640:
       case 643:
       case 648:
-	   return c + -218;
+           return c + -218;
       case 658:
-	   return c + -219;
+           return c + -219;
       case 837:
-	   return c + 84;
+           return c + 84;
       case 940:
-	   return c + -38;
+           return c + -38;
       case 962:
-	   return c + -31;
+           return c + -31;
       case 972:
-	   return c + -64;
+           return c + -64;
       case 976:
-	   return c + -62;
+           return c + -62;
       case 977:
-	   return c + -57;
+           return c + -57;
       case 981:
-	   return c + -47;
+           return c + -47;
       case 982:
-	   return c + -54;
+           return c + -54;
       case 1008:
-	   return c + -86;
+           return c + -86;
       case 1009:
-	   return c + -80;
+           return c + -80;
       case 7835:
-	   return c + -59;
+           return c + -59;
       case 8017:
       case 8019:
       case 8021:
       case 8023:
-	   return c + 8;
+           return c + 8;
       case 8115:
       case 8131:
       case 8179:
-	   return c + 9;
+           return c + 9;
       case 8126:
-	   return c + -7205;
+           return c + -7205;
       case 8165:
-	   return c + 7;
+           return c + 7;
       default:
-	   return c;
+           return c;
    }
 }
 
@@ -1704,10 +1704,10 @@ int utoupper(int c)
  */
 int uisspace(int c)
 {
-   return ((c == ' ') || (c == '\t') || (c == '\r') || 
-	   (c == '\n') || (c == '\f') || (c == '\v') ||
-	   (c == 0x1680) || ((c >= 0x2000) && (c <= 0x200A)) ||
-	   (c == 0x2028) || (c == 0x202f) || (c == 0x3000));
+   return ((c == ' ') || (c == '\t') || (c == '\r') ||
+           (c == '\n') || (c == '\f') || (c == '\v') ||
+           (c == 0x1680) || ((c >= 0x2000) && (c <= 0x200A)) ||
+           (c == 0x2028) || (c == 0x202f) || (c == 0x3000));
 }
 
 
@@ -1900,10 +1900,10 @@ int ustrcmp(AL_CONST char *s1, AL_CONST char *s2)
       c2 = ugetxc(&s2);
 
       if (c1 != c2)
-	 return c1 - c2;
+         return c1 - c2;
 
       if (!c1)
-	 return 0;
+         return 0;
    }
 }
 
@@ -2012,10 +2012,10 @@ int ustrncmp(AL_CONST char *s1, AL_CONST char *s2, int n)
       c2 = ugetxc(&s2);
 
       if (c1 != c2)
-	 return c1 - c2;
+         return c1 - c2;
 
       if ((!c1) || (--n <= 0))
-	 return 0;
+         return 0;
    }
 }
 
@@ -2035,10 +2035,10 @@ int ustricmp(AL_CONST char *s1, AL_CONST char *s2)
       c2 = utolower(ugetxc(&s2));
 
       if (c1 != c2)
-	 return c1 - c2;
+         return c1 - c2;
 
       if (!c1)
-	 return 0;
+         return 0;
    }
 }
 
@@ -2083,7 +2083,7 @@ char *ustrlwr(char *s)
       lc = utolower(c);
 
       if (lc != c)
-	 usetat(s+pos, 0, lc);
+         usetat(s+pos, 0, lc);
 
       pos += uwidth(s+pos);
    }
@@ -2106,7 +2106,7 @@ char *ustrupr(char *s)
       uc = utoupper(c);
 
       if (uc != c)
-	 usetat(s+pos, 0, uc);
+         usetat(s+pos, 0, uc);
 
       pos += uwidth(s+pos);
    }
@@ -2126,7 +2126,7 @@ char *ustrchr(AL_CONST char *s, int c)
 
    while ((d = ugetc(s)) != 0) {
       if (c == d)
-	 return (char *)s;
+         return (char *)s;
 
       s += uwidth(s);
    }
@@ -2150,7 +2150,7 @@ char *ustrrchr(AL_CONST char *s, int c)
 
    for (c1=ugetc(s); c1; c1=ugetc(s+pos)) {
       if (c1 == c)
-	 last_match = s + pos;
+         last_match = s + pos;
 
       pos += ucwidth(c1);
    }
@@ -2172,7 +2172,7 @@ char *ustrstr(AL_CONST char *s1, AL_CONST char *s2)
    len = ustrlen(s2);
    while (ugetc(s1)) {
       if (ustrncmp(s1, s2, len) == 0)
-	 return (char *)s1;
+         return (char *)s1;
 
       s1 += uwidth(s1);
    }
@@ -2196,8 +2196,8 @@ char *ustrpbrk(AL_CONST char *s, AL_CONST char *set)
       setp = set;
 
       while ((d = ugetxc(&setp)) != 0) {
-	 if (c == d)
-	    return (char *)s;
+         if (c == d)
+            return (char *)s;
       }
 
       s += uwidth(s);
@@ -2235,7 +2235,7 @@ char *ustrtok_r(char *s, AL_CONST char *set, char **last)
       s = *last;
 
       if (!s)
-	 return NULL;
+         return NULL;
    }
 
    skip_leading_delimiters:
@@ -2247,7 +2247,7 @@ char *ustrtok_r(char *s, AL_CONST char *set, char **last)
 
    while ((sc = ugetxc(&setp)) != 0) {
       if (c == sc)
-	 goto skip_leading_delimiters;
+         goto skip_leading_delimiters;
    }
 
    if (!c) {
@@ -2264,18 +2264,18 @@ char *ustrtok_r(char *s, AL_CONST char *set, char **last)
       setp = set;
 
       do {
-	 sc = ugetxc(&setp);
-	 if (sc == c) {
-	    if (!c) {
-	       *last = NULL;
-	       return tok;
-	    }
-	    else {
-	       s += usetat(prev_str, 0, 0);
-	       *last = s;
-	       return tok;
-	    }
-	 }
+         sc = ugetxc(&setp);
+         if (sc == c) {
+            if (!c) {
+               *last = NULL;
+               return tok;
+            }
+            else {
+               s += usetat(prev_str, 0, 0);
+               *last = s;
+               return tok;
+            }
+         }
       } while (sc);
    }
 }
@@ -2413,15 +2413,15 @@ typedef struct STRING_ARG
    #define va_int(args, flags)               \
    (                                         \
       ((flags) & SPRINT_FLAG_SHORT_INT) ?    \
-	 va_arg(args, signed int)            \
+         va_arg(args, signed int)            \
       :                                      \
       (((flags) & SPRINT_FLAG_LONG_LONG) ?   \
-	 va_arg(args, signed LONG_LONG)      \
+         va_arg(args, signed LONG_LONG)      \
       :                                      \
       (((flags) & SPRINT_FLAG_LONG_INT) ?    \
-	 va_arg(args, signed long int)       \
+         va_arg(args, signed long int)       \
       :                                      \
-	 va_arg(args, signed int)))          \
+         va_arg(args, signed int)))          \
    )
 
 #else
@@ -2429,12 +2429,12 @@ typedef struct STRING_ARG
    #define va_int(args, flags)               \
    (                                         \
       ((flags) & SPRINT_FLAG_SHORT_INT) ?    \
-	 va_arg(args, signed int)            \
+         va_arg(args, signed int)            \
       :                                      \
       (((flags) & SPRINT_FLAG_LONG_INT) ?    \
-	 va_arg(args, signed long int)       \
+         va_arg(args, signed long int)       \
       :                                      \
-	 va_arg(args, signed int))           \
+         va_arg(args, signed int))           \
    )
 
 #endif
@@ -2449,15 +2449,15 @@ typedef struct STRING_ARG
    #define va_uint(args, flags)              \
    (                                         \
       ((flags) & SPRINT_FLAG_SHORT_INT) ?    \
-	 va_arg(args, unsigned int)          \
+         va_arg(args, unsigned int)          \
       :                                      \
       (((flags) & SPRINT_FLAG_LONG_LONG) ?   \
-	 va_arg(args, unsigned LONG_LONG)    \
+         va_arg(args, unsigned LONG_LONG)    \
       :                                      \
       (((flags) & SPRINT_FLAG_LONG_INT) ?    \
-	 va_arg(args, unsigned long int)     \
+         va_arg(args, unsigned long int)     \
       :                                      \
-	 va_arg(args, unsigned int)))        \
+         va_arg(args, unsigned int)))        \
    )
 
 #else
@@ -2465,12 +2465,12 @@ typedef struct STRING_ARG
    #define va_uint(args, flags)              \
    (                                         \
       ((flags) & SPRINT_FLAG_SHORT_INT) ?    \
-	 va_arg(args, unsigned int)          \
+         va_arg(args, unsigned int)          \
       :                                      \
       (((flags) & SPRINT_FLAG_LONG_INT) ?    \
-	 va_arg(args, unsigned long int)     \
+         va_arg(args, unsigned long int)     \
       :                                      \
-	 va_arg(args, unsigned int))         \
+         va_arg(args, unsigned int))         \
    )
 
 #endif
@@ -2742,7 +2742,7 @@ static int sprint_string(STRING_ARG *string_arg, SPRINT_INFO *info, AL_CONST cha
 
    while ((c = ugetxc(&s)) != 0) {
       if ((info->precision >= 0) && (len >= info->precision))
-	 break;
+         break;
 
       pos += usetc(string_arg->data+pos, c);
       len++;
@@ -2770,218 +2770,218 @@ static int decode_format_string(char *buf, STRING_ARG *string_arg, AL_CONST char
    while ((c = ugetxc(&format)) != 0) {
 
       if (c == '%') {
-	 if ((c = ugetc(format)) == '%') {
-	    /* percent sign escape */
-	    format += uwidth(format);
+         if ((c = ugetc(format)) == '%') {
+            /* percent sign escape */
+            format += uwidth(format);
             buf += usetc(buf, '%');
             buf += usetc(buf, '%');
             len++;
-	 }
-	 else {
-	    /* format specifier */
-	    #define NEXT_C()                 \
-	    {                                \
-	       format += uwidth(format);     \
-	       c = ugetc(format);            \
-	    }
+         }
+         else {
+            /* format specifier */
+            #define NEXT_C()                 \
+            {                                \
+               format += uwidth(format);     \
+               c = ugetc(format);            \
+            }
 
-	    /* set default conversion flags */
-	    info.flags = 0;
-	    info.field_width = 0;
-	    info.precision = -1;
-	    info.num_special = 0;
+            /* set default conversion flags */
+            info.flags = 0;
+            info.field_width = 0;
+            info.precision = -1;
+            info.num_special = 0;
 
-	    /* check for conversion flags */
-	    done = FALSE;
+            /* check for conversion flags */
+            done = FALSE;
 
-	    do {
-	       switch (c) {
+            do {
+               switch (c) {
 
-		  case '-':
-		     info.flags |= SPRINT_FLAG_LEFT_JUSTIFY;
-		     NEXT_C();
-		     break;
+                  case '-':
+                     info.flags |= SPRINT_FLAG_LEFT_JUSTIFY;
+                     NEXT_C();
+                     break;
 
-		  case '+':
-		     info.flags |= SPRINT_FLAG_FORCE_PLUS_SIGN;
-		     NEXT_C();
-		     break;
+                  case '+':
+                     info.flags |= SPRINT_FLAG_FORCE_PLUS_SIGN;
+                     NEXT_C();
+                     break;
 
-		  case ' ':
-		     info.flags |= SPRINT_FLAG_FORCE_SPACE;
-		     NEXT_C();
-		     break;
+                  case ' ':
+                     info.flags |= SPRINT_FLAG_FORCE_SPACE;
+                     NEXT_C();
+                     break;
 
-		  case '#':
-		     info.flags |= SPRINT_FLAG_ALTERNATE_CONVERSION;
-		     NEXT_C();
-		     break;
+                  case '#':
+                     info.flags |= SPRINT_FLAG_ALTERNATE_CONVERSION;
+                     NEXT_C();
+                     break;
 
-		  case '0':
-		     info.flags |= SPRINT_FLAG_PAD_ZERO;
-		     NEXT_C();
-		     break;
+                  case '0':
+                     info.flags |= SPRINT_FLAG_PAD_ZERO;
+                     NEXT_C();
+                     break;
 
-		  default:
-		     done = TRUE;
-		     break;
-	       }
+                  default:
+                     done = TRUE;
+                     break;
+               }
 
-	    } while (!done);
+            } while (!done);
 
-	    /* check for a field width specifier */
-	    if (c == '*') {
-	       NEXT_C();
-	       info.field_width = va_arg(args, int);
-	       if (info.field_width < 0) {
-		  info.flags |= SPRINT_FLAG_LEFT_JUSTIFY;
-		  info.field_width = -info.field_width;
-	       }
-	    }
-	    else if ((c >= '0') && (c <= '9')) {
-	       info.field_width = 0;
-	       do {
-		  info.field_width *= 10;
-		  info.field_width += c - '0';
-		  NEXT_C();
-	       } while ((c >= '0') && (c <= '9'));
-	    }
+            /* check for a field width specifier */
+            if (c == '*') {
+               NEXT_C();
+               info.field_width = va_arg(args, int);
+               if (info.field_width < 0) {
+                  info.flags |= SPRINT_FLAG_LEFT_JUSTIFY;
+                  info.field_width = -info.field_width;
+               }
+            }
+            else if ((c >= '0') && (c <= '9')) {
+               info.field_width = 0;
+               do {
+                  info.field_width *= 10;
+                  info.field_width += c - '0';
+                  NEXT_C();
+               } while ((c >= '0') && (c <= '9'));
+            }
 
-	    /* check for a precision specifier */
-	    if (c == '.')
-	       NEXT_C();
+            /* check for a precision specifier */
+            if (c == '.')
+               NEXT_C();
 
-	    if (c == '*') {
-	       NEXT_C();
-	       info.precision = va_arg(args, int);
-	       if (info.precision < 0)
-		  info.precision = 0;
-	    }
-	    else if ((c >= '0') && (c <= '9')) {
-	       info.precision = 0;
-	       do {
-		  info.precision *= 10;
-		  info.precision += c - '0';
-		  NEXT_C();
-	       } while ((c >= '0') && (c <= '9'));
-	    }
+            if (c == '*') {
+               NEXT_C();
+               info.precision = va_arg(args, int);
+               if (info.precision < 0)
+                  info.precision = 0;
+            }
+            else if ((c >= '0') && (c <= '9')) {
+               info.precision = 0;
+               do {
+                  info.precision *= 10;
+                  info.precision += c - '0';
+                  NEXT_C();
+               } while ((c >= '0') && (c <= '9'));
+            }
 
-	    /* check for size qualifiers */
-	    done = FALSE;
+            /* check for size qualifiers */
+            done = FALSE;
 
-	    do {
-	       switch (c) {
+            do {
+               switch (c) {
 
-		  case 'h':
-		     info.flags |= SPRINT_FLAG_SHORT_INT;
-		     NEXT_C();
-		     break;
+                  case 'h':
+                     info.flags |= SPRINT_FLAG_SHORT_INT;
+                     NEXT_C();
+                     break;
 
-		  case 'l':
-		     if (info.flags & SPRINT_FLAG_LONG_INT)
-			info.flags |= SPRINT_FLAG_LONG_LONG;
-		     else
-			info.flags |= SPRINT_FLAG_LONG_INT;
-		     NEXT_C();
-		     break;
+                  case 'l':
+                     if (info.flags & SPRINT_FLAG_LONG_INT)
+                        info.flags |= SPRINT_FLAG_LONG_LONG;
+                     else
+                        info.flags |= SPRINT_FLAG_LONG_INT;
+                     NEXT_C();
+                     break;
 
-		  case 'L':
-		     info.flags |= (SPRINT_FLAG_LONG_DOUBLE | SPRINT_FLAG_LONG_LONG);
-		     NEXT_C();
-		     break;
+                  case 'L':
+                     info.flags |= (SPRINT_FLAG_LONG_DOUBLE | SPRINT_FLAG_LONG_LONG);
+                     NEXT_C();
+                     break;
 
-		  default:
-		     done = TRUE;
-		     break;
-	       }
+                  default:
+                     done = TRUE;
+                     break;
+               }
 
-	    } while (!done);
+            } while (!done);
 
-	    /* format the data */
-	    switch (c) {
+            /* format the data */
+            switch (c) {
 
-	       case 'c':
-		  /* character */
-		  slen = sprint_char(string_arg, &info, va_arg(args, int));
-		  NEXT_C();
-		  break;
+               case 'c':
+                  /* character */
+                  slen = sprint_char(string_arg, &info, va_arg(args, int));
+                  NEXT_C();
+                  break;
 
-	       case 'd':
-	       case 'i':
-		  /* signed integer */
-		  slen = sprint_int(string_arg, &info, va_int(args, info.flags));
-		  NEXT_C();
-		  break;
+               case 'd':
+               case 'i':
+                  /* signed integer */
+                  slen = sprint_int(string_arg, &info, va_int(args, info.flags));
+                  NEXT_C();
+                  break;
 
-	       case 'D':
-		  /* signed long integer */
-		  slen = sprint_int(string_arg, &info, va_int(args, info.flags | SPRINT_FLAG_LONG_INT));
-		  NEXT_C();
-		  break;
+               case 'D':
+                  /* signed long integer */
+                  slen = sprint_int(string_arg, &info, va_int(args, info.flags | SPRINT_FLAG_LONG_INT));
+                  NEXT_C();
+                  break;
 
-	       case 'e':
-	       case 'E':
-	       case 'f':
-	       case 'g':
-	       case 'G':
-		  /* double */
-		  if (info.flags & SPRINT_FLAG_LONG_DOUBLE)
-		     slen = sprint_float(string_arg, &info, va_arg(args, long double), c);
-		  else
-		     slen = sprint_float(string_arg, &info, va_arg(args, double), c);
-		  NEXT_C();
-		  break;
+               case 'e':
+               case 'E':
+               case 'f':
+               case 'g':
+               case 'G':
+                  /* double */
+                  if (info.flags & SPRINT_FLAG_LONG_DOUBLE)
+                     slen = sprint_float(string_arg, &info, va_arg(args, long double), c);
+                  else
+                     slen = sprint_float(string_arg, &info, va_arg(args, double), c);
+                  NEXT_C();
+                  break;
 
-	       case 'n':
-		  /* store current string position */
-		  pstr_pos = va_arg(args, int *);
-		  *pstr_pos = len;
-		  slen = -1;
-		  NEXT_C();
-		  break;
+               case 'n':
+                  /* store current string position */
+                  pstr_pos = va_arg(args, int *);
+                  *pstr_pos = len;
+                  slen = -1;
+                  NEXT_C();
+                  break;
 
-	       case 'o':
-		  /* unsigned octal integer */
-		  slen = sprint_octal(string_arg, &info, va_uint(args, info.flags));
-		  NEXT_C();
-		  break;
+               case 'o':
+                  /* unsigned octal integer */
+                  slen = sprint_octal(string_arg, &info, va_uint(args, info.flags));
+                  NEXT_C();
+                  break;
 
-	       case 'p':
-		  /* pointer */
-		  slen = sprint_hex(string_arg, &info, FALSE, (unsigned long)(va_arg(args, void *)));
-		  NEXT_C();
-		  break;
+               case 'p':
+                  /* pointer */
+                  slen = sprint_hex(string_arg, &info, FALSE, (unsigned long)(va_arg(args, void *)));
+                  NEXT_C();
+                  break;
 
-	       case 's':
-		  /* string */
-		  slen = sprint_string(string_arg, &info, va_arg(args, char *));
-		  NEXT_C();
-		  break;
+               case 's':
+                  /* string */
+                  slen = sprint_string(string_arg, &info, va_arg(args, char *));
+                  NEXT_C();
+                  break;
 
-	       case 'u':
-		  /* unsigned integer */
-		  slen = sprint_unsigned(string_arg, &info, va_uint(args, info.flags));
-		  NEXT_C();
-		  break;
+               case 'u':
+                  /* unsigned integer */
+                  slen = sprint_unsigned(string_arg, &info, va_uint(args, info.flags));
+                  NEXT_C();
+                  break;
 
-	       case 'U':
-		  /* unsigned long integer */
-		  slen = sprint_unsigned(string_arg, &info, va_uint(args, info.flags | SPRINT_FLAG_LONG_INT));
-		  NEXT_C();
-		  break;
+               case 'U':
+                  /* unsigned long integer */
+                  slen = sprint_unsigned(string_arg, &info, va_uint(args, info.flags | SPRINT_FLAG_LONG_INT));
+                  NEXT_C();
+                  break;
 
-	       case 'x':
-	       case 'X':
-		  /* unsigned hex integer */
-		  slen = sprint_hex(string_arg, &info, (c == 'X'), va_uint(args, info.flags));
-		  NEXT_C();
-		  break;
+               case 'x':
+               case 'X':
+                  /* unsigned hex integer */
+                  slen = sprint_hex(string_arg, &info, (c == 'X'), va_uint(args, info.flags));
+                  NEXT_C();
+                  break;
 
-	       default:
-		  /* weird shit... */
-		  slen = -1;
-		  break;
-	    }
+               default:
+                  /* weird shit... */
+                  slen = -1;
+                  break;
+            }
 
             if (slen >= 0) {
                if (slen < info.field_width) {
@@ -3033,12 +3033,12 @@ static int decode_format_string(char *buf, STRING_ARG *string_arg, AL_CONST char
                string_arg = string_arg->next;
                string_arg->next = NULL;
             }
-	 }
+         }
       }
       else {
-	 /* normal character */
-	 buf += usetc(buf, c);
-	 len++;
+         /* normal character */
+         buf += usetc(buf, c);
+         len++;
       }
    }
 
@@ -3081,14 +3081,14 @@ int uvszprintf(char *buf, int size, AL_CONST char *format, va_list args)
    while ((c = ugetx(&decoded_format)) != 0) {
 
       if (c == '%') {
-	 if ((c = ugetx(&decoded_format)) == '%') {
-	    /* percent sign escape */
+         if ((c = ugetx(&decoded_format)) == '%') {
+            /* percent sign escape */
             size -= ucwidth('%');
             if (size<0)
                break;
-	    buf += usetc(buf, '%');
-	 }
-	 else if (c == 's') {
+            buf += usetc(buf, '%');
+         }
+         else if (c == 's') {
             /* string argument */
             ustrzcpy(buf, size+ucwidth(0), iter_arg->data);
             buf += iter_arg->size;
@@ -3101,11 +3101,11 @@ int uvszprintf(char *buf, int size, AL_CONST char *format, va_list args)
          }
       }
       else {
-	 /* normal character */
+         /* normal character */
          size -= ucwidth(c);
          if (size<0)
             break;
-	 buf += usetc(buf, c);
+         buf += usetc(buf, c);
       }
    }
 
@@ -3163,4 +3163,3 @@ int uszprintf(char *buf, int size, AL_CONST char *format, ...)
 
    return ret;
 }
-

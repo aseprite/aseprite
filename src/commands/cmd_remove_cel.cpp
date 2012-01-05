@@ -42,18 +42,18 @@ protected:
 
 RemoveCelCommand::RemoveCelCommand()
   : Command("RemoveCel",
-	    "Remove Cel",
-	    CmdRecordableFlag)
+            "Remove Cel",
+            CmdRecordableFlag)
 {
 }
 
 bool RemoveCelCommand::onEnabled(Context* context)
 {
   return context->checkFlags(ContextFlags::ActiveDocumentIsWritable |
-			     ContextFlags::ActiveLayerIsReadable |
-			     ContextFlags::ActiveLayerIsWritable |
-			     ContextFlags::ActiveLayerIsImage |
-			     ContextFlags::HasActiveCel);
+                             ContextFlags::ActiveLayerIsReadable |
+                             ContextFlags::ActiveLayerIsWritable |
+                             ContextFlags::ActiveLayerIsImage |
+                             ContextFlags::HasActiveCel);
 }
 
 void RemoveCelCommand::onExecute(Context* context)

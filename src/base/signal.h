@@ -68,7 +68,7 @@ public:
   {
     typename SlotList::iterator end = m_slots.end();
     for (typename SlotList::iterator
-	   it = m_slots.begin(); it != end; ++it)
+           it = m_slots.begin(); it != end; ++it)
       delete *it;
     m_slots.clear();
   }
@@ -89,7 +89,7 @@ private:
   {
     typename SlotList::const_iterator end = s.m_slots.end();
     for (typename SlotList::const_iterator
-	   it = s.m_slots.begin(); it != end; ++it) {
+           it = s.m_slots.begin(); it != end; ++it) {
       m_slots.push_back((*it)->clone());
     }
   }
@@ -111,7 +111,7 @@ public:
     R result(default_result);
     typename Signal0_base<R>::SlotList::iterator end = Signal0_base<R>::m_slots.end();
     for (typename Signal0_base<R>::SlotList::iterator
-	   it = Signal0_base<R>::m_slots.begin(); it != end; ++it) {
+           it = Signal0_base<R>::m_slots.begin(); it != end; ++it) {
       typename Signal0_base<R>::SlotType* slot = *it;
       result = (*slot)();
     }
@@ -125,7 +125,7 @@ public:
     Merger merger(m);
     typename Signal0_base<R>::SlotList::iterator end = Signal0_base<R>::m_slots.end();
     for (typename Signal0_base<R>::SlotList::iterator
-	   it = Signal0_base<R>::m_slots.begin(); it != end; ++it) {
+           it = Signal0_base<R>::m_slots.begin(); it != end; ++it) {
       typename Signal0_base<R>::SlotType* slot = *it;
       result = merger(result, (*slot)());
     }
@@ -148,7 +148,7 @@ public:
   {
     SlotList::iterator end = m_slots.end();
     for (SlotList::iterator
-	   it = m_slots.begin(); it != end; ++it) {
+           it = m_slots.begin(); it != end; ++it) {
       SlotType* slot = *it;
       (*slot)();
     }
@@ -212,7 +212,7 @@ public:
   {
     typename SlotList::iterator end = m_slots.end();
     for (typename SlotList::iterator
-	   it = m_slots.begin(); it != end; ++it)
+           it = m_slots.begin(); it != end; ++it)
       delete *it;
     m_slots.clear();
   }
@@ -233,7 +233,7 @@ private:
   {
     typename SlotList::const_iterator end = s.m_slots.end();
     for (typename SlotList::const_iterator
-	   it = s.m_slots.begin(); it != end; ++it) {
+           it = s.m_slots.begin(); it != end; ++it) {
       m_slots.push_back((*it)->clone());
     }
   }
@@ -255,7 +255,7 @@ public:
     R result(default_result);
     typename Signal1_base<R, A1>::SlotList::iterator end = Signal1_base<R, A1>::m_slots.end();
     for (typename Signal1_base<R, A1>::SlotList::iterator
-	   it = Signal1_base<R, A1>::m_slots.begin(); it != end; ++it) {
+           it = Signal1_base<R, A1>::m_slots.begin(); it != end; ++it) {
       typename Signal1_base<R, A1>::SlotType* slot = *it;
       result = (*slot)(a1);
     }
@@ -269,7 +269,7 @@ public:
     Merger merger(m);
     typename Signal1_base<R, A1>::SlotList::iterator end = Signal1_base<R, A1>::m_slots.end();
     for (typename Signal1_base<R, A1>::SlotList::iterator
-	   it = Signal1_base<R, A1>::m_slots.begin(); it != end; ++it) {
+           it = Signal1_base<R, A1>::m_slots.begin(); it != end; ++it) {
       typename Signal1_base<R, A1>::SlotType* slot = *it;
       result = merger(result, (*slot)(a1));
     }
@@ -292,7 +292,7 @@ public:
   {
     typename Signal1_base<void, A1>::SlotList::iterator end = Signal1_base<void, A1>::m_slots.end();
     for (typename Signal1_base<void, A1>::SlotList::iterator
-	   it = Signal1_base<void, A1>::m_slots.begin(); it != end; ++it) {
+           it = Signal1_base<void, A1>::m_slots.begin(); it != end; ++it) {
       typename Signal1_base<void, A1>::SlotType* slot = *it;
       (*slot)(a1);
     }
@@ -356,7 +356,7 @@ public:
   {
     typename SlotList::iterator end = m_slots.end();
     for (typename SlotList::iterator
-	   it = m_slots.begin(); it != end; ++it)
+           it = m_slots.begin(); it != end; ++it)
       delete *it;
     m_slots.clear();
   }
@@ -377,7 +377,7 @@ private:
   {
     typename SlotList::const_iterator end = s.m_slots.end();
     for (typename SlotList::const_iterator
-	   it = s.m_slots.begin(); it != end; ++it) {
+           it = s.m_slots.begin(); it != end; ++it) {
       m_slots.push_back((*it)->clone());
     }
   }
@@ -399,7 +399,7 @@ public:
     R result(default_result);
     typename Signal2_base<R, A1, A2>::SlotList::iterator end = Signal2_base<R, A1, A2>::m_slots.end();
     for (typename Signal2_base<R, A1, A2>::SlotList::iterator
-	   it = Signal2_base<R, A1, A2>::m_slots.begin(); it != end; ++it) {
+           it = Signal2_base<R, A1, A2>::m_slots.begin(); it != end; ++it) {
       typename Signal2_base<R, A1, A2>::SlotType* slot = *it;
       result = (*slot)(a1, a2);
     }
@@ -413,7 +413,7 @@ public:
     Merger merger(m);
     typename Signal2_base<R, A1, A2>::SlotList::iterator end = Signal2_base<R, A1, A2>::m_slots.end();
     for (typename Signal2_base<R, A1, A2>::SlotList::iterator
-	   it = Signal2_base<R, A1, A2>::m_slots.begin(); it != end; ++it) {
+           it = Signal2_base<R, A1, A2>::m_slots.begin(); it != end; ++it) {
       typename Signal2_base<R, A1, A2>::SlotType* slot = *it;
       result = merger(result, (*slot)(a1, a2));
     }
@@ -436,7 +436,7 @@ public:
   {
     typename Signal2_base<void, A1, A2>::SlotList::iterator end = Signal2_base<void, A1, A2>::m_slots.end();
     for (typename Signal2_base<void, A1, A2>::SlotList::iterator
-	   it = Signal2_base<void, A1, A2>::m_slots.begin(); it != end; ++it) {
+           it = Signal2_base<void, A1, A2>::m_slots.begin(); it != end; ++it) {
       typename Signal2_base<void, A1, A2>::SlotType* slot = *it;
       (*slot)(a1, a2);
     }

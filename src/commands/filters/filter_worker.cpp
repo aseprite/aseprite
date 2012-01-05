@@ -63,15 +63,15 @@ private:
     FilterWorker* filterWorker = (FilterWorker*)data;
     filterWorker->monitor();
   }
-  
+
   FilterManagerImpl* m_filterMgr; // Effect to be applied.
-  Mutex m_mutex;		// Mutex to access to 'pos', 'done' and 'cancelled' fields in different threads.
-  float m_pos;			// Current progress position
-  bool m_done : 1;		// Was the effect completelly applied?
-  bool m_cancelled : 1;		// Was the effect cancelled by the user?
-  Monitor* m_monitor;		// Monitor to update the progress-bar
-  Progress* m_progressBar;	// The progress-bar.
-  AlertPtr m_alertWindow;	// Alert for the user to cancel the filter-progress if he wants.
+  Mutex m_mutex;                // Mutex to access to 'pos', 'done' and 'cancelled' fields in different threads.
+  float m_pos;                  // Current progress position
+  bool m_done : 1;              // Was the effect completelly applied?
+  bool m_cancelled : 1;         // Was the effect cancelled by the user?
+  Monitor* m_monitor;           // Monitor to update the progress-bar
+  Progress* m_progressBar;      // The progress-bar.
+  AlertPtr m_alertWindow;       // Alert for the user to cancel the filter-progress if he wants.
 };
 
 FilterWorker::FilterWorker(FilterManagerImpl* filterMgr)
@@ -86,7 +86,7 @@ FilterWorker::FilterWorker(FilterManagerImpl* filterMgr)
   m_progressBar = app_get_statusbar()->addProgress();
 
   m_alertWindow = Alert::create(PACKAGE
-				"<<Applying effect...||&Cancel");
+                                "<<Applying effect...||&Cancel");
 
   m_monitor = add_gui_monitor(FilterWorker::monitor_proxy, NULL, this);
 }
@@ -176,7 +176,7 @@ void FilterWorker::monitor()
 
 // Applies the filter in a background thread meanwhile a progress bar
 // is shown to the user.
-// 
+//
 // [main thread]
 //
 void start_filter_worker(FilterManagerImpl* filterMgr)

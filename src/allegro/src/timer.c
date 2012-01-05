@@ -1,6 +1,6 @@
-/*         ______   ___    ___ 
- *        /\  _  \ /\_ \  /\_ \ 
- *        \ \ \L\ \\//\ \ \//\ \      __     __   _ __   ___ 
+/*         ______   ___    ___
+ *        /\  _  \ /\_ \  /\_ \
+ *        \ \ \L\ \\//\ \ \//\ \      __     __   _ __   ___
  *         \ \  __ \ \ \ \  \ \ \   /'__`\ /'_ `\/\`'__\/ __`\
  *          \ \ \/\ \ \_\ \_ \_\ \_/\  __//\ \L\ \ \ \//\ \L\ \
  *           \ \_\ \_\/\____\/\____\ \____\ \____ \ \_\\ \____/
@@ -90,37 +90,37 @@ long _handle_timer_tick(int interval)
    d = timer_delay;
 
    /* deal with retrace synchronisation */
-   vsync_counter -= d; 
+   vsync_counter -= d;
 
    while (vsync_counter <= 0) {
       vsync_counter += _vsync_speed;
       retrace_count++;
       if (retrace_proc)
-	 retrace_proc();
+         retrace_proc();
    }
 
    /* process the user callbacks */
-   for (i=0; i<MAX_TIMERS; i++) { 
+   for (i=0; i<MAX_TIMERS; i++) {
       if (((_timer_queue[i].proc) || (_timer_queue[i].param_proc)) &&
-	  (_timer_queue[i].speed > 0)) {
+          (_timer_queue[i].speed > 0)) {
 
-	 _timer_queue[i].counter -= d;
+         _timer_queue[i].counter -= d;
 
-	 while ((_timer_queue[i].counter <= 0) && 
-		((_timer_queue[i].proc) || (_timer_queue[i].param_proc)) && 
-		(_timer_queue[i].speed > 0)) {
-	    _timer_queue[i].counter += _timer_queue[i].speed;
-	    if (_timer_queue[i].param_proc)
-	       _timer_queue[i].param_proc(_timer_queue[i].param);
-	    else
-	       _timer_queue[i].proc();
-	 }
+         while ((_timer_queue[i].counter <= 0) &&
+                ((_timer_queue[i].proc) || (_timer_queue[i].param_proc)) &&
+                (_timer_queue[i].speed > 0)) {
+            _timer_queue[i].counter += _timer_queue[i].speed;
+            if (_timer_queue[i].param_proc)
+               _timer_queue[i].param_proc(_timer_queue[i].param);
+            else
+               _timer_queue[i].proc();
+         }
 
-	 if ((_timer_queue[i].counter > 0) && 
-	     ((_timer_queue[i].proc) || (_timer_queue[i].param_proc)) && 
-	     (_timer_queue[i].counter < new_delay)) {
-	    new_delay = _timer_queue[i].counter;
-	 }
+         if ((_timer_queue[i].counter > 0) &&
+             ((_timer_queue[i].proc) || (_timer_queue[i].param_proc)) &&
+             (_timer_queue[i].counter < new_delay)) {
+            new_delay = _timer_queue[i].counter;
+         }
       }
    }
 
@@ -170,23 +170,23 @@ void rest_callback(unsigned int time, void (*callback)(void))
    }
    if (timer_driver) {
       if (timer_driver->rest) {
-	 timer_driver->rest(time, callback);
+         timer_driver->rest(time, callback);
       }
       else {
-	 rest_count = time;
+         rest_count = time;
 
-	 if (install_int(rest_int, 1) < 0)
-	    return;
+         if (install_int(rest_int, 1) < 0)
+            return;
 
-	 do {
-	    if (callback)
-	       callback();
-	    else
-	       rest(0);
+         do {
+            if (callback)
+               callback();
+            else
+               rest(0);
 
-	 } while (rest_count > 0);
+         } while (rest_count > 0);
 
-	 remove_int(rest_int);
+         remove_int(rest_int);
       }
    }
    else {
@@ -249,7 +249,7 @@ int timer_is_using_retrace(void)
 
 
 /* find_timer_slot:
- *  Searches the list of user timer callbacks for a specified function, 
+ *  Searches the list of user timer callbacks for a specified function,
  *  returning the position at which it was found, or -1 if it isn't there.
  */
 static int find_timer_slot(void (*proc)(void))
@@ -258,7 +258,7 @@ static int find_timer_slot(void (*proc)(void))
 
    for (x=0; x<MAX_TIMERS; x++)
       if (_timer_queue[x].proc == proc)
-	 return x;
+         return x;
 
    return -1;
 }
@@ -268,8 +268,8 @@ END_OF_STATIC_FUNCTION(find_timer_slot);
 
 
 /* find_param_timer_slot:
- *  Searches the list of user timer callbacks for a specified paramater 
- *  function, returning the position at which it was found, or -1 if it 
+ *  Searches the list of user timer callbacks for a specified paramater
+ *  function, returning the position at which it was found, or -1 if it
  *  isn't there.
  */
 static int find_param_timer_slot(void (*proc)(void *param), void *param)
@@ -278,7 +278,7 @@ static int find_param_timer_slot(void (*proc)(void *param), void *param)
 
    for (x=0; x<MAX_TIMERS; x++)
       if ((_timer_queue[x].param_proc == proc) && (_timer_queue[x].param == param))
-	 return x;
+         return x;
 
    return -1;
 }
@@ -296,7 +296,7 @@ static int find_empty_timer_slot(void)
 
    for (x=0; x<MAX_TIMERS; x++)
       if ((!_timer_queue[x].proc) && (!_timer_queue[x].param_proc))
-	 return x;
+         return x;
 
    return -1;
 }
@@ -306,9 +306,9 @@ END_OF_STATIC_FUNCTION(find_empty_timer_slot);
 
 
 /* install_timer_int:
- *  Installs a function into the list of user timers, or if it is already 
- *  installed, adjusts its speed. This function will be called once every 
- *  speed timer ticks. Returns a negative number if there was no room to 
+ *  Installs a function into the list of user timers, or if it is already
+ *  installed, adjusts its speed. This function will be called once every
+ *  speed timer ticks. Returns a negative number if there was no room to
  *  add a new routine.
  */
 static int install_timer_int(void *proc, void *param, long speed, int param_used)
@@ -317,20 +317,20 @@ static int install_timer_int(void *proc, void *param, long speed, int param_used
 
    if (!timer_driver) {                   /* make sure we are installed */
       if (install_timer() != 0)
-	 return -1;
+         return -1;
    }
 
    if (param_used) {
-      if (timer_driver->install_param_int) 
-	 return timer_driver->install_param_int((void (*)(void *))proc, param, speed);
+      if (timer_driver->install_param_int)
+         return timer_driver->install_param_int((void (*)(void *))proc, param, speed);
 
       x = find_param_timer_slot((void (*)(void *))proc, param);
    }
    else {
-      if (timer_driver->install_int) 
-	 return timer_driver->install_int((void (*)(void))proc, speed);
+      if (timer_driver->install_int)
+         return timer_driver->install_int((void (*)(void))proc, speed);
 
-      x = find_timer_slot((void (*)(void))proc); 
+      x = find_timer_slot((void (*)(void))proc);
    }
 
    if (x < 0)
@@ -343,18 +343,18 @@ static int install_timer_int(void *proc, void *param, long speed, int param_used
    system_driver->lock_mutex(timer_mutex);
 #endif
 
-   if ((proc == _timer_queue[x].proc) || (proc == _timer_queue[x].param_proc)) { 
+   if ((proc == _timer_queue[x].proc) || (proc == _timer_queue[x].param_proc)) {
       _timer_queue[x].counter -= _timer_queue[x].speed;
       _timer_queue[x].counter += speed;
    }
    else {
       _timer_queue[x].counter = speed;
       if (param_used) {
-	 _timer_queue[x].param = param;
-	 _timer_queue[x].param_proc = proc;
+         _timer_queue[x].param = param;
+         _timer_queue[x].param_proc = proc;
       }
       else
-	 _timer_queue[x].proc = proc;
+         _timer_queue[x].proc = proc;
    }
 
    _timer_queue[x].speed = speed;
@@ -431,19 +431,19 @@ static void remove_timer_int(void *proc, void *param, int param_used)
 
    if (param_used) {
       if ((timer_driver) && (timer_driver->remove_param_int)) {
-	 timer_driver->remove_param_int((void (*)(void *))proc, param);
-	 return;
+         timer_driver->remove_param_int((void (*)(void *))proc, param);
+         return;
       }
 
       x = find_param_timer_slot((void (*)(void *))proc, param);
    }
    else {
       if ((timer_driver) && (timer_driver->remove_int)) {
-	 timer_driver->remove_int((void (*)(void))proc);
-	 return;
+         timer_driver->remove_int((void (*)(void))proc);
+         return;
       }
 
-      x = find_timer_slot((void (*)(void))proc); 
+      x = find_timer_slot((void (*)(void))proc);
    }
 
    if (x < 0)
@@ -512,7 +512,7 @@ static void clear_timer_queue(void)
 
 /* install_timer:
  *  Installs the timer interrupt handler. You must do this before installing
- *  any user timer routines. You must set up the timer before trying to 
+ *  any user timer routines. You must set up the timer before trying to
  *  display a mouse pointer or using any of the GUI routines.
  */
 int install_timer(void)
@@ -570,7 +570,7 @@ int install_timer(void)
       timer_driver = driver_list[i].driver;
       timer_driver->name = timer_driver->desc = get_config_text(timer_driver->ascii_name);
       if (timer_driver->init() == 0)
-	 break;
+         break;
    }
 
    if (!driver_list[i].driver) {
@@ -615,4 +615,3 @@ void remove_timer(void)
    _remove_exit_func(remove_timer);
    _timer_installed = FALSE;
 }
-

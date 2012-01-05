@@ -22,8 +22,8 @@
 #include "commands/command_factory.h"
 
 enum CommandFlags {
-  CmdUIOnlyFlag			 = 0x00000001,
-  CmdRecordableFlag		 = 0x00000002,
+  CmdUIOnlyFlag                  = 0x00000001,
+  CmdRecordableFlag              = 0x00000002,
 };
 
 class Context;

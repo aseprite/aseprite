@@ -47,8 +47,8 @@ class InvertColorWindow : public FilterWindow
 public:
   InvertColorWindow(InvertColorFilter& filter, FilterManagerImpl& filterMgr)
     : FilterWindow("Invert Color", ConfigSection, &filterMgr,
-		   WithChannelsSelector,
-		   WithoutTiledCheckBox)
+                   WithChannelsSelector,
+                   WithoutTiledCheckBox)
     , m_filter(filter)
   {
   }
@@ -73,15 +73,15 @@ protected:
 
 InvertColorCommand::InvertColorCommand()
   : Command("InvertColor",
-	    "Invert Color",
-	    CmdRecordableFlag)
+            "Invert Color",
+            CmdRecordableFlag)
 {
 }
 
 bool InvertColorCommand::onEnabled(Context* context)
 {
   return context->checkFlags(ContextFlags::ActiveDocumentIsWritable |
-			     ContextFlags::HasActiveSprite);
+                             ContextFlags::HasActiveSprite);
 }
 
 void InvertColorCommand::onExecute(Context* context)
@@ -89,9 +89,9 @@ void InvertColorCommand::onExecute(Context* context)
   InvertColorFilter filter;
   FilterManagerImpl filterMgr(context->getActiveDocument(), &filter);
   filterMgr.setTarget(TARGET_RED_CHANNEL |
-		      TARGET_GREEN_CHANNEL |
-		      TARGET_BLUE_CHANNEL |
-		      TARGET_GRAY_CHANNEL);
+                      TARGET_GREEN_CHANNEL |
+                      TARGET_BLUE_CHANNEL |
+                      TARGET_GRAY_CHANNEL);
 
   InvertColorWindow window(filter, filterMgr);
   window.doModal();

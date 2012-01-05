@@ -37,7 +37,7 @@
 #define JPEG_INTERNALS
 #include "jinclude.h"
 #include "jpeglib.h"
-#include "jdct.h"		/* Private declarations for DCT subsystem */
+#include "jdct.h"               /* Private declarations for DCT subsystem */
 
 #ifdef DCT_FLOAT_SUPPORTED
 
@@ -76,24 +76,24 @@ jpeg_fdct_float (FAST_FLOAT * data)
     tmp5 = dataptr[2] - dataptr[5];
     tmp3 = dataptr[3] + dataptr[4];
     tmp4 = dataptr[3] - dataptr[4];
-    
+
     /* Even part */
-    
-    tmp10 = tmp0 + tmp3;	/* phase 2 */
+
+    tmp10 = tmp0 + tmp3;        /* phase 2 */
     tmp13 = tmp0 - tmp3;
     tmp11 = tmp1 + tmp2;
     tmp12 = tmp1 - tmp2;
-    
+
     dataptr[0] = tmp10 + tmp11; /* phase 3 */
     dataptr[4] = tmp10 - tmp11;
-    
+
     z1 = (tmp12 + tmp13) * ((FAST_FLOAT) 0.707106781); /* c4 */
-    dataptr[2] = tmp13 + z1;	/* phase 5 */
+    dataptr[2] = tmp13 + z1;    /* phase 5 */
     dataptr[6] = tmp13 - z1;
-    
+
     /* Odd part */
 
-    tmp10 = tmp4 + tmp5;	/* phase 2 */
+    tmp10 = tmp4 + tmp5;        /* phase 2 */
     tmp11 = tmp5 + tmp6;
     tmp12 = tmp6 + tmp7;
 
@@ -103,15 +103,15 @@ jpeg_fdct_float (FAST_FLOAT * data)
     z4 = ((FAST_FLOAT) 1.306562965) * tmp12 + z5; /* c2+c6 */
     z3 = tmp11 * ((FAST_FLOAT) 0.707106781); /* c4 */
 
-    z11 = tmp7 + z3;		/* phase 5 */
+    z11 = tmp7 + z3;            /* phase 5 */
     z13 = tmp7 - z3;
 
-    dataptr[5] = z13 + z2;	/* phase 6 */
+    dataptr[5] = z13 + z2;      /* phase 6 */
     dataptr[3] = z13 - z2;
     dataptr[1] = z11 + z4;
     dataptr[7] = z11 - z4;
 
-    dataptr += DCTSIZE;		/* advance pointer to next row */
+    dataptr += DCTSIZE;         /* advance pointer to next row */
   }
 
   /* Pass 2: process columns. */
@@ -126,24 +126,24 @@ jpeg_fdct_float (FAST_FLOAT * data)
     tmp5 = dataptr[DCTSIZE*2] - dataptr[DCTSIZE*5];
     tmp3 = dataptr[DCTSIZE*3] + dataptr[DCTSIZE*4];
     tmp4 = dataptr[DCTSIZE*3] - dataptr[DCTSIZE*4];
-    
+
     /* Even part */
-    
-    tmp10 = tmp0 + tmp3;	/* phase 2 */
+
+    tmp10 = tmp0 + tmp3;        /* phase 2 */
     tmp13 = tmp0 - tmp3;
     tmp11 = tmp1 + tmp2;
     tmp12 = tmp1 - tmp2;
-    
+
     dataptr[DCTSIZE*0] = tmp10 + tmp11; /* phase 3 */
     dataptr[DCTSIZE*4] = tmp10 - tmp11;
-    
+
     z1 = (tmp12 + tmp13) * ((FAST_FLOAT) 0.707106781); /* c4 */
     dataptr[DCTSIZE*2] = tmp13 + z1; /* phase 5 */
     dataptr[DCTSIZE*6] = tmp13 - z1;
-    
+
     /* Odd part */
 
-    tmp10 = tmp4 + tmp5;	/* phase 2 */
+    tmp10 = tmp4 + tmp5;        /* phase 2 */
     tmp11 = tmp5 + tmp6;
     tmp12 = tmp6 + tmp7;
 
@@ -153,7 +153,7 @@ jpeg_fdct_float (FAST_FLOAT * data)
     z4 = ((FAST_FLOAT) 1.306562965) * tmp12 + z5; /* c2+c6 */
     z3 = tmp11 * ((FAST_FLOAT) 0.707106781); /* c4 */
 
-    z11 = tmp7 + z3;		/* phase 5 */
+    z11 = tmp7 + z3;            /* phase 5 */
     z13 = tmp7 - z3;
 
     dataptr[DCTSIZE*5] = z13 + z2; /* phase 6 */
@@ -161,7 +161,7 @@ jpeg_fdct_float (FAST_FLOAT * data)
     dataptr[DCTSIZE*1] = z11 + z4;
     dataptr[DCTSIZE*7] = z11 - z4;
 
-    dataptr++;			/* advance pointer to next column */
+    dataptr++;                  /* advance pointer to next column */
   }
 }
 

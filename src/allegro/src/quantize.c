@@ -87,14 +87,14 @@ static void insert_node(int color)
 
    for (;;) {
       if (p->color == color) {
-	 /* this node (e.g. the color was already filled) */
-	 p->count++;
-	 return;
+         /* this node (e.g. the color was already filled) */
+         p->count++;
+         return;
       }
       if (p->next)
-	 p = p->next;
+         p = p->next;
       else
-	 break;
+         break;
    }
 
    /* new color */
@@ -146,14 +146,14 @@ static void optimize_colors(ITEM *array, int item, int palsize, int length, int 
 
       /* with all item in front of 'item' */
       for (j=0, curbest=1000; j<item; j++) {
-	 t = compare_cols(array[i].color, array[j].color);
+         t = compare_cols(array[i].color, array[j].color);
 
-	 /* finding minimum difference (maximal to all used colors) */
-	 if (t < curbest) {
-	    curbest = t;
-	    if (t < mindiff)
-	       break;
-	 }
+         /* finding minimum difference (maximal to all used colors) */
+         if (t < curbest) {
+            curbest = t;
+            if (t < mindiff)
+               break;
+         }
       }
 
       /* filling that minimum to 'key' field */
@@ -164,12 +164,12 @@ static void optimize_colors(ITEM *array, int item, int palsize, int length, int 
    qsort(array + item, length - item, sizeof(ITEM), qsort_helper_ITEM);
 
    /* find the start of small values ('key') in array and safely reducing
-    * the number of items we'll work with 
+    * the number of items we'll work with
     */
    for (i = item; i < length; i++) {
       if (array[i].key < mindiff) {
-	 length = i;
-	 break;
+         length = i;
+         break;
       }
    }
 
@@ -181,30 +181,30 @@ static void optimize_colors(ITEM *array, int item, int palsize, int length, int 
    for (i=item; i<palsize; i++) {
       /* the 'i'th best is already known */
       if (best < mindiff) {
-	 return;
+         return;
       }
       else {
-	 int tmp;
+         int tmp;
 
-	 /* swap the focused color and the one with 'bestpos' (the most
-	  * different) index
-	  */
-	 tmp = array[bestpos].color;
-	 array[bestpos] = array[i];
-	 array[i].color = tmp;
+         /* swap the focused color and the one with 'bestpos' (the most
+          * different) index
+          */
+         tmp = array[bestpos].color;
+         array[bestpos] = array[i];
+         array[i].color = tmp;
 
-	 /* fix the keys (can be only diminished with the last added color) */
-	 for (j=i+1, best=-1; j<length; j++) {
-	    t = compare_cols(array[i].color, array[j].color);
-	    if (t < array[j].key) {
-	       array[j].key = t;
-	    }
-	    /* find the maximum for swapping */
-	    if (array[j].key > best) {
-	       best = array[j].key;
-	       bestpos = j;
-	    }
-	 }
+         /* fix the keys (can be only diminished with the last added color) */
+         for (j=i+1, best=-1; j<length; j++) {
+            t = compare_cols(array[i].color, array[j].color);
+            if (t < array[j].key) {
+               array[j].key = t;
+            }
+            /* find the maximum for swapping */
+            if (array[j].key > best) {
+               best = array[j].key;
+               bestpos = j;
+            }
+         }
       }
    }
 }
@@ -218,7 +218,7 @@ static INLINE int no_such_color(ITEM *array, int length, int color, int mask)
 
    for (i=0; i<length; i++)
       if ((array[i].color & mask) == color)
-	 return 0;
+         return 0;
 
    return 1;
 }
@@ -238,10 +238,10 @@ static INLINE void copy_color(RGB *rgb, int color)
 /* generate_optimized_palette_ex:
  *  Calculates a suitable palette for color reducing the specified truecolor
  *  image. If the rsvdcols parameter is not NULL, it contains an array of
- *  256 flags. If rsvdcols[n] > 0 the palette entry is assumed to be already 
+ *  256 flags. If rsvdcols[n] > 0 the palette entry is assumed to be already
  *  set so I count with it. If rsvdcols[n] < 0 I mustn't assume anything about
  *  the entry. If rsvdcols[n] == 0 the entry is free for me to change.
- * 
+ *
  *  Variable fraction controls, how big part of the palette should be
  *  filled with 'different colors', maxswaps gives upper boundary for
  *  number of swaps and mindiff chooses when to stop replacing values
@@ -257,23 +257,23 @@ static int generate_optimized_palette_ex(BITMAP *image, PALETTE pal, AL_CONST si
    switch (bitsperrgb) {
 
       case 4:
-	 prec_mask = 0x3C3C3C;
-	 prec_mask2 = 0;
-	 bitmask15 = 0x7BDE;    /* 0111 1011 1101 1110 */
-	 bitmask16 = 0xF79E;    /* 1111 0111 1001 1110 */
-	 bitmask24 = 0xF0F0F0;
-	 break;
+         prec_mask = 0x3C3C3C;
+         prec_mask2 = 0;
+         bitmask15 = 0x7BDE;    /* 0111 1011 1101 1110 */
+         bitmask16 = 0xF79E;    /* 1111 0111 1001 1110 */
+         bitmask24 = 0xF0F0F0;
+         break;
 
       case 5:
-	 prec_mask = 0x3E3E3E;
-	 prec_mask2 = 0x3C3C3C;
-	 bitmask15 = 0x7FFF;    /* 0111 1111 1111 1111 */
-	 bitmask16 = 0xFFDF;    /* 1111 1111 1101 1111 */
-	 bitmask24 = 0xF8F8F8;
-	 break;
+         prec_mask = 0x3E3E3E;
+         prec_mask2 = 0x3C3C3C;
+         bitmask15 = 0x7FFF;    /* 0111 1111 1111 1111 */
+         bitmask16 = 0xFFDF;    /* 1111 1111 1101 1111 */
+         bitmask24 = 0xF8F8F8;
+         break;
 
       default:
-	 return -1;
+         return -1;
    }
 
    distinct = 0;
@@ -295,11 +295,11 @@ static int generate_optimized_palette_ex(BITMAP *image, PALETTE pal, AL_CONST si
    /* count the number of colors we shouldn't modify */
    if (rsvdcols) {
       for (i=0; i<256; i++) {
-	 if (rsvdcols[i]) {
-	    rsvdcnt++;
-	    if (rsvdcols[i] > 0)
-	       rsvduse++;
-	 }
+         if (rsvdcols[i]) {
+            rsvdcnt++;
+            if (rsvdcols[i] > 0)
+               rsvduse++;
+         }
       }
    }
    else {
@@ -312,7 +312,7 @@ static int generate_optimized_palette_ex(BITMAP *image, PALETTE pal, AL_CONST si
       rsvduse++;
 
       for (i=1; i<256; i++)
-	 tmprsvd[i] = 0;
+         tmprsvd[i] = 0;
 
       rsvdcols = tmprsvd;
    }
@@ -330,31 +330,31 @@ static int generate_optimized_palette_ex(BITMAP *image, PALETTE pal, AL_CONST si
    switch (imgdepth) {
 
       case 32:
-	 for (y=0; y<image->h; y++)
-	    for (x=0; x<image->w; x++)
-	       insert_node(bmp_read32((uintptr_t)image->line[y]+x*sizeof(int32_t)) & bitmask24);
-	 break;
+         for (y=0; y<image->h; y++)
+            for (x=0; x<image->w; x++)
+               insert_node(bmp_read32((uintptr_t)image->line[y]+x*sizeof(int32_t)) & bitmask24);
+         break;
 
       case 24:
-	 for (y=0; y<image->h; y++)
-	    for (x=0; x<image->w; x++)
-	       insert_node(bmp_read24((uintptr_t)image->line[y]+x*3) & bitmask24);
-	 break;
+         for (y=0; y<image->h; y++)
+            for (x=0; x<image->w; x++)
+               insert_node(bmp_read24((uintptr_t)image->line[y]+x*3) & bitmask24);
+         break;
 
       case 16:
-	 for (y=0; y<image->h; y++)
-	    for (x=0; x<image->w; x++)
-	       insert_node(bmp_read16((uintptr_t)image->line[y]+x*sizeof(short)) & bitmask16);
-	 break;
+         for (y=0; y<image->h; y++)
+            for (x=0; x<image->w; x++)
+               insert_node(bmp_read16((uintptr_t)image->line[y]+x*sizeof(short)) & bitmask16);
+         break;
 
       case 15:
-	 for (y=0; y<image->h; y++)
-	    for (x=0; x<image->w; x++)
-	       insert_node(bmp_read15((uintptr_t)image->line[y]+x*sizeof(short)) & bitmask15);
-	 break;
+         for (y=0; y<image->h; y++)
+            for (x=0; x<image->w; x++)
+               insert_node(bmp_read15((uintptr_t)image->line[y]+x*sizeof(short)) & bitmask15);
+         break;
 
       default:
-	 return -1;
+         return -1;
    }
 
    /* convert the 'hash_table' to array 'colors' */
@@ -366,16 +366,16 @@ static int generate_optimized_palette_ex(BITMAP *image, PALETTE pal, AL_CONST si
 
    for (i = 0, j = rsvduse; i<HASHTABLESIZE; i++) {
       if (hash_table[i].count) {
-	 NODE *node = &hash_table[i];
+         NODE *node = &hash_table[i];
 
-	 do {
-	    colors[j].color = node->color;
-	    colors[j++].key = node->count;
-	    node = node->next;
-	 } while (node != NULL);
+         do {
+            colors[j].color = node->color;
+            colors[j++].key = node->count;
+            node = node->next;
+         } while (node != NULL);
 
-	 if (hash_table[i].next)
-	    delete_list(hash_table[i].next);
+         if (hash_table[i].next)
+            delete_list(hash_table[i].next);
       }
    }
 
@@ -395,31 +395,31 @@ static int generate_optimized_palette_ex(BITMAP *image, PALETTE pal, AL_CONST si
    switch (imgdepth) {
 
       case 32:
-	 rshift = _rgb_r_shift_32 + 3;
-	 gshift = _rgb_g_shift_32 + 3;
-	 bshift = _rgb_b_shift_32 + 3;
-	 break;
+         rshift = _rgb_r_shift_32 + 3;
+         gshift = _rgb_g_shift_32 + 3;
+         bshift = _rgb_b_shift_32 + 3;
+         break;
 
       case 24:
-	 rshift = _rgb_r_shift_24 + 3;
-	 gshift = _rgb_g_shift_24 + 3;
-	 bshift = _rgb_b_shift_24 + 3;
-	 break;
+         rshift = _rgb_r_shift_24 + 3;
+         gshift = _rgb_g_shift_24 + 3;
+         bshift = _rgb_b_shift_24 + 3;
+         break;
 
       case 16:
-	 rshift = _rgb_r_shift_16;
-	 gshift = _rgb_g_shift_16 + 1;
-	 bshift = _rgb_b_shift_16;
-	 break;
+         rshift = _rgb_r_shift_16;
+         gshift = _rgb_g_shift_16 + 1;
+         bshift = _rgb_b_shift_16;
+         break;
 
       case 15:
-	 rshift = _rgb_r_shift_15;
-	 gshift = _rgb_g_shift_15;
-	 bshift = _rgb_b_shift_15;
-	 break;
+         rshift = _rgb_r_shift_15;
+         gshift = _rgb_g_shift_15;
+         bshift = _rgb_b_shift_15;
+         break;
 
       default:
-	 return -1;
+         return -1;
    }
 
    for (i = rsvduse; i < numcols; i++) {
@@ -436,25 +436,25 @@ static int generate_optimized_palette_ex(BITMAP *image, PALETTE pal, AL_CONST si
        * any optimization
        */
       if (numcols <= palsize)
-	 break;
+         break;
 
       if (rsvduse > 0) {
-	 /* copy 'rsvd' to the 'colors' */
-	 for (i = 0, j = 0; i < rsvduse; j++)
-	    if (rsvdcols[j] > 0)
-	       colors[i++].color = (pal[j].r | (pal[j].g << 8) | (pal[j].b << 16));
+         /* copy 'rsvd' to the 'colors' */
+         for (i = 0, j = 0; i < rsvduse; j++)
+            if (rsvdcols[j] > 0)
+               colors[i++].color = (pal[j].r | (pal[j].g << 8) | (pal[j].b << 16));
 
-	 /* reduce 'colors' skipping colors contained in 'rsvd' palette */
-	 for (i = rsvduse, j = i; i < numcols; i++)
-	    if (no_such_color(colors, rsvduse, colors[i].color, prec_mask))
-	       colors[j++].color = colors[i].color;
+         /* reduce 'colors' skipping colors contained in 'rsvd' palette */
+         for (i = rsvduse, j = i; i < numcols; i++)
+            if (no_such_color(colors, rsvduse, colors[i].color, prec_mask))
+               colors[j++].color = colors[i].color;
 
-	 /* now there are j colors in 'common'  */
-	 numcols = j;
+         /* now there are j colors in 'common'  */
+         numcols = j;
 
-	 /* now there might be enough free cells in palette */
-	 if (numcols <= palsize)
-	    break;
+         /* now there might be enough free cells in palette */
+         if (numcols <= palsize)
+            break;
       }
 
       /* from 'start' will start swapping colors */
@@ -462,38 +462,38 @@ static int generate_optimized_palette_ex(BITMAP *image, PALETTE pal, AL_CONST si
 
       /* it may be slow, so don't let replace too many colors */
       if (start < (palsize - maxswaps))
-	 start = palsize - maxswaps;
+         start = palsize - maxswaps;
 
       /* swap not less than 10 colors */
       if (start > (palsize - 10))
-	 start = rsvduse;
+         start = rsvduse;
 
       /* don't swap reserved colors */
       if (start < rsvduse)
-	 start = rsvduse;
+         start = rsvduse;
 
       if (bitsperrgb == 5) {
-	 /* do second pass on the colors we'll possibly use to replace (lower
-	    bits per pixel to 4) - this would effectively lower the maximum
-	    number of different colors to some 4000 (from 32000) */
-	 for (i = start, k = i; i < numcols; i++) {
-	    for (j = 0; j < k; j++) {
-	       if ((colors[j].color & prec_mask2) == (colors[i].color & prec_mask2)) {
-		  j = -1;
-		  break;
-	       }
-	    }
-	    /* add this color if there is not similar one */
-	    if (j != -1)
-	       colors[k++].color = colors[i].color;
-	 }
+         /* do second pass on the colors we'll possibly use to replace (lower
+            bits per pixel to 4) - this would effectively lower the maximum
+            number of different colors to some 4000 (from 32000) */
+         for (i = start, k = i; i < numcols; i++) {
+            for (j = 0; j < k; j++) {
+               if ((colors[j].color & prec_mask2) == (colors[i].color & prec_mask2)) {
+                  j = -1;
+                  break;
+               }
+            }
+            /* add this color if there is not similar one */
+            if (j != -1)
+               colors[k++].color = colors[i].color;
+         }
 
-	 /* now there are k colors in 'common' */
-	 numcols = k;
+         /* now there are k colors in 'common' */
+         numcols = k;
 
-	 /* now there might be enough free cells in palette */
-	 if (numcols <= palsize)
-	    break;
+         /* now there might be enough free cells in palette */
+         if (numcols <= palsize)
+            break;
       }
 
       /* start finding the most different colors */
@@ -505,7 +505,7 @@ static int generate_optimized_palette_ex(BITMAP *image, PALETTE pal, AL_CONST si
    /* copy used colors to 'pal', skipping 'rsvd' */
    for (i = rsvduse, j = 0; i < numcols; j++)
       if (!rsvdcols[j])
-	 copy_color(&pal[j], colors[i++].color);
+         copy_color(&pal[j], colors[i++].color);
 
    _AL_FREE(colors);
 
@@ -519,4 +519,3 @@ int generate_optimized_palette(BITMAP *image, PALETTE pal, AL_CONST signed char 
    ASSERT(image);
    return generate_optimized_palette_ex(image, pal, rsvdcols, DEFAULT_PREC, DEFAULT_FRACTION, DEFAULT_MAXSWAPS, DEFAULT_MINDIFF);
 }
-

@@ -103,8 +103,8 @@ protected:
     bool state = false;
     switch (m_sheetType.getSelectedItem()) {
       case Matrix:
-	state = true;
-	break;
+        state = true;
+        break;
     }
     m_columnsLabel.setVisible(state);
     m_columns.setVisible(state);
@@ -125,14 +125,14 @@ protected:
 
     switch (m_sheetType.getSelectedItem()) {
       case HorizontalStrip:
-	columns = nframes;
-	break;
+        columns = nframes;
+        break;
       case VerticalStrip:
-	columns = 1;
-	break;
+        columns = 1;
+        break;
       case Matrix:
-	columns = m_columns.getTextInt();
-	break;
+        columns = m_columns.getTextInt();
+        break;
     }
 
     columns = MID(1, columns, nframes);
@@ -149,8 +149,8 @@ protected:
       sprite->render(resultImage, column*sprite->getWidth(), row*sprite->getHeight());
 
       if (++column >= columns) {
-	column = 0;
-	++row;
+        column = 0;
+        ++row;
       }
     }
     sprite->setCurrentFrame(oldFrame);
@@ -179,8 +179,8 @@ protected:
 
       // Remove all other layers
       for (LayerIterator it=layers.begin(), end=layers.end(); it!=end; ++it) {
-	if (*it != resultLayer)
-	  undoTransaction.removeLayer(*it);
+        if (*it != resultLayer)
+          undoTransaction.removeLayer(*it);
       }
 
       // Change the number of frames (just one, the sprite sheet)
@@ -203,49 +203,49 @@ protected:
     switch (m_exportAction.getSelectedItem()) {
 
       case SaveCopyAs:
-	{
-	  Command* command = CommandsModule::instance()
-	    ->getCommandByName(CommandId::SaveFileCopyAs);
+        {
+          Command* command = CommandsModule::instance()
+            ->getCommandByName(CommandId::SaveFileCopyAs);
 
-	  m_context->executeCommand(command);
-	}
+          m_context->executeCommand(command);
+        }
 
-	// Always go back, as we are using "Save Copy As", so the user
-	// wants to continue editing the original sprite.
-	undo = true;
-	break;
+        // Always go back, as we are using "Save Copy As", so the user
+        // wants to continue editing the original sprite.
+        undo = true;
+        break;
 
       case SaveAs:
-	{
-	  Command* command = CommandsModule::instance()
-	    ->getCommandByName(CommandId::SaveFileAs);
+        {
+          Command* command = CommandsModule::instance()
+            ->getCommandByName(CommandId::SaveFileAs);
 
-	  m_context->executeCommand(command);
-	}
+          m_context->executeCommand(command);
+        }
 
-	// If the command was cancelled, we go back to the original
-	// state, if the sprite sheet was saved then we don't undo
-	// because the user wants to edit the sprite sheet.
-	undo = (m_document->isModified());
-	break;
+        // If the command was cancelled, we go back to the original
+        // state, if the sprite sheet was saved then we don't undo
+        // because the user wants to edit the sprite sheet.
+        undo = (m_document->isModified());
+        break;
 
       case Save:
-	{
-	  Command* command = CommandsModule::instance()
-	    ->getCommandByName(CommandId::SaveFile);
+        {
+          Command* command = CommandsModule::instance()
+            ->getCommandByName(CommandId::SaveFile);
 
-	  m_context->executeCommand(command);
-	}
+          m_context->executeCommand(command);
+        }
 
-	// Same case as "Save As"
-	undo = (m_document->isModified());
-	break;
+        // Same case as "Save As"
+        undo = (m_document->isModified());
+        break;
 
       case DoNotSave:
-	// Do not undo as the user wants to edit the sprite sheet
-	// before to save the file.
-	undo = false;
-	break;
+        // Do not undo as the user wants to edit the sprite sheet
+        // before to save the file.
+        undo = false;
+        break;
     }
 
     // Undo the sprite sheet conversion
@@ -295,8 +295,8 @@ protected:
 
 ExportSpriteSheetCommand::ExportSpriteSheetCommand()
   : Command("ExportSpriteSheet",
-	    "Export Sprite Sheet",
-	    CmdRecordableFlag)
+            "Export Sprite Sheet",
+            CmdRecordableFlag)
 {
 }
 

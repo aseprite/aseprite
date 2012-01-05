@@ -1,6 +1,6 @@
-/*         ______   ___    ___ 
- *        /\  _  \ /\_ \  /\_ \ 
- *        \ \ \L\ \\//\ \ \//\ \      __     __   _ __   ___ 
+/*         ______   ___    ___
+ *        /\  _  \ /\_ \  /\_ \
+ *        \ \ \L\ \\//\ \ \//\ \      __     __   _ __   ___
  *         \ \  __ \ \ \ \  \ \ \   /'__`\ /'_ `\/\`'__\/ __`\
  *          \ \ \/\ \ \_\ \_ \_\ \_/\  __//\ \L\ \ \ \//\ \L\ \
  *           \ \_\ \_\/\____\/\____\ \____\ \____ \ \_\\ \____/
@@ -23,7 +23,7 @@
 
 KEYBOARD_DRIVER *keyboard_driver = NULL;     /* the active driver */
 
-int _keyboard_installed = FALSE; 
+int _keyboard_installed = FALSE;
 
 static int keyboard_polled = FALSE;          /* are we in polling mode? */
 
@@ -145,21 +145,21 @@ static INLINE void add_key(volatile KEY_BUFFER *buffer, int key, int scancode)
 
    if (buffer == &key_buffer) {
       if (keyboard_ucallback) {
-	 key = keyboard_ucallback(key, &scancode);
-	 if ((!key) && (!scancode))
-	    return;
+         key = keyboard_ucallback(key, &scancode);
+         if ((!key) && (!scancode))
+            return;
       }
       else if (keyboard_callback) {
-	 c = ((key <= 0xFF) ? key : '^') | (scancode << 8);
-	 d = keyboard_callback(c);
+         c = ((key <= 0xFF) ? key : '^') | (scancode << 8);
+         d = keyboard_callback(c);
 
-	 if (!d)
-	    return;
+         if (!d)
+            return;
 
-	 if (d != c) {
-	    key = (d & 0xFF);
-	    scancode = (d >> 8);
-	 }
+         if (d != c) {
+            key = (d & 0xFF);
+            scancode = (d >> 8);
+         }
       }
    }
 
@@ -208,7 +208,7 @@ void clear_keybuf(void)
 
    if ((keypressed_hook) && (readkey_hook))
       while (keypressed_hook())
-	 readkey_hook();
+         readkey_hook();
 }
 
 
@@ -238,9 +238,9 @@ int keypressed(void)
 
    if (key_buffer.start == key_buffer.end) {
       if (keypressed_hook)
-	 return keypressed_hook();
+         return keypressed_hook();
       else
-	 return FALSE;
+         return FALSE;
    }
    else
       return TRUE;
@@ -252,7 +252,7 @@ int keypressed(void)
  *  Returns the next character code from the keyboard buffer. If the
  *  buffer is empty, it waits until a key is pressed. The low byte of
  *  the return value contains the ASCII code of the key, and the high
- *  byte the scan code. 
+ *  byte the scan code.
  */
 int readkey(void)
 {
@@ -277,26 +277,26 @@ int ureadkey(int *scancode)
 
    if ((!keyboard_driver) && (!readkey_hook)) {
       if (scancode)
-	 *scancode = 0;
+         *scancode = 0;
       return 0;
    }
 
    if ((readkey_hook) && (key_buffer.start == key_buffer.end)) {
       c = readkey_hook();
       if (scancode)
-	 *scancode = (c >> 8);
+         *scancode = (c >> 8);
       return (c & 0xFF);
    }
 
    while (key_buffer.start == key_buffer.end) {
       if ((keyboard_driver) && (keyboard_driver->wait_for_input)) {
-	 waiting_for_input = TRUE;
-	 keyboard_driver->wait_for_input();
-	 waiting_for_input = FALSE;
+         waiting_for_input = TRUE;
+         keyboard_driver->wait_for_input();
+         waiting_for_input = FALSE;
       }
 
       if (keyboard_polled)
-	 poll_keyboard();
+         poll_keyboard();
 
       rest(1);
    }
@@ -388,12 +388,12 @@ END_OF_STATIC_FUNCTION(repeat_timer);
 
 
 /* install_keyboard_hooks:
- *  You should only use this function if you *aren't* using the rest of the 
- *  keyboard handler. It can be called in the place of install_keyboard(), 
- *  and lets you provide callback routines to detect and read keypresses, 
- *  which will be used by the main keypressed() and readkey() functions. This 
- *  can be useful if you want to use Allegro's GUI code with a custom 
- *  keyboard handler, as it provides a way for the GUI to access keyboard 
+ *  You should only use this function if you *aren't* using the rest of the
+ *  keyboard handler. It can be called in the place of install_keyboard(),
+ *  and lets you provide callback routines to detect and read keypresses,
+ *  which will be used by the main keypressed() and readkey() functions. This
+ *  can be useful if you want to use Allegro's GUI code with a custom
+ *  keyboard handler, as it provides a way for the GUI to access keyboard
  *  input from your own code.
  */
 void install_keyboard_hooks(int (*keypressed)(void), int (*readkey)(void))
@@ -418,8 +418,8 @@ static INLINE void update_shifts(void)
 
    if (key_shifts != _key_shifts) {
       if ((keyboard_driver->set_leds) && (key_led_flag) &&
-	  ((key_shifts ^ _key_shifts) & LED_FLAGS))
-	 keyboard_driver->set_leds(_key_shifts);
+          ((key_shifts ^ _key_shifts) & LED_FLAGS))
+         keyboard_driver->set_leds(_key_shifts);
 
       key_shifts = _key_shifts;
    }
@@ -435,36 +435,36 @@ void _handle_key_press(int keycode, int scancode)
    if ((keyboard_driver->poll) || (!keyboard_polled)) {
       /* process immediately */
       if (scancode > 0) {
-	 if ((!repeat_delay) && (key[scancode]))
-	    return;
+         if ((!repeat_delay) && (key[scancode]))
+            return;
 
-	 key[scancode] = -1;
+         key[scancode] = -1;
 
-	 if (keyboard_lowlevel_callback)
-	    keyboard_lowlevel_callback(scancode);
+         if (keyboard_lowlevel_callback)
+            keyboard_lowlevel_callback(scancode);
       }
 
       /* e.g. for F1, keycode=0, and scancode=KEY_F1 */
       if (keycode >= 0)
-	 add_key(&key_buffer, keycode, scancode);
+         add_key(&key_buffer, keycode, scancode);
 
       update_shifts();
    }
    else {
       /* deal with this during the next poll_keyboard() */
       if (scancode > 0) {
-	 if ((!repeat_delay) && (_key[scancode]))
-	    return;
+         if ((!repeat_delay) && (_key[scancode]))
+            return;
 
-	 _key[scancode] = -1;
+         _key[scancode] = -1;
       }
 
       if (keycode >= 0)
-	 add_key(&_key_buffer, keycode, scancode);
+         add_key(&_key_buffer, keycode, scancode);
    }
 
    /* autorepeat? */
-   if ((keyboard_driver->autorepeat) && (repeat_delay) && 
+   if ((keyboard_driver->autorepeat) && (repeat_delay) &&
        (keycode >= 0) && (scancode > 0) && (scancode != KEY_PAUSE) &&
        ((keycode != repeat_key) || (scancode != repeat_scan))) {
       repeat_key = keycode;
@@ -495,7 +495,7 @@ void _handle_key_release(int scancode)
       key[scancode] = 0;
 
       if (keyboard_lowlevel_callback)
-	 keyboard_lowlevel_callback(scancode | 0x80);
+         keyboard_lowlevel_callback(scancode | 0x80);
 
       update_shifts();
    }
@@ -533,29 +533,29 @@ int poll_keyboard(void)
    else if (!keyboard_polled) {
       /* switch into polling emulation mode */
       for (i=0; i<KEY_MAX; i++)
-	 _key[i] = key[i];
+         _key[i] = key[i];
 
       keyboard_polled = TRUE;
    }
    else {
       /* update the real keyboard variables with stored input */
       for (i=0; i<KEY_MAX; i++) {
-	 if (key[i] != _key[i]) {
-	    key[i] = _key[i];
+         if (key[i] != _key[i]) {
+            key[i] = _key[i];
 
-	    if (keyboard_lowlevel_callback)
-	       keyboard_lowlevel_callback((key[i]) ? i : (i | 0x80));
-	 }
+            if (keyboard_lowlevel_callback)
+               keyboard_lowlevel_callback((key[i]) ? i : (i | 0x80));
+         }
       }
 
       while (_key_buffer.start != _key_buffer.end) {
-	 add_key(&key_buffer, _key_buffer.key[_key_buffer.start], 
-			      _key_buffer.scancode[_key_buffer.start]);
+         add_key(&key_buffer, _key_buffer.key[_key_buffer.start],
+                              _key_buffer.scancode[_key_buffer.start]);
 
-	 if (_key_buffer.start < KEY_BUFFER_SIZE-1)
-	    _key_buffer.start++;
-	 else
-	    _key_buffer.start = 0;
+         if (_key_buffer.start < KEY_BUFFER_SIZE-1)
+            _key_buffer.start++;
+         else
+            _key_buffer.start = 0;
       }
 
       update_shifts();
@@ -617,7 +617,7 @@ AL_CONST char *scancode_to_name(int scancode)
 
 
 /* install_keyboard:
- *  Installs Allegro's keyboard handler. You must call this before using 
+ *  Installs Allegro's keyboard handler. You must call this before using
  *  any of the keyboard input routines. Returns -1 on failure.
  */
 int install_keyboard(void)
@@ -664,7 +664,7 @@ int install_keyboard(void)
       keyboard_driver = driver_list[i].driver;
       keyboard_driver->name = keyboard_driver->desc = get_config_text(keyboard_driver->ascii_name);
       if (keyboard_driver->init() == 0)
-	 break;
+         break;
    }
 
    if (!driver_list[i].driver) {
@@ -690,7 +690,7 @@ int install_keyboard(void)
 
 
 /* remove_keyboard:
- *  Removes the keyboard handler. You don't normally need to call this, 
+ *  Removes the keyboard handler. You don't normally need to call this,
  *  because allegro_exit() will do it for you.
  */
 void remove_keyboard(void)
@@ -725,5 +725,3 @@ void remove_keyboard(void)
 
    _remove_exit_func(remove_keyboard);
 }
-
-

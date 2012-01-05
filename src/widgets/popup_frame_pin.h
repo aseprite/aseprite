@@ -38,7 +38,7 @@ protected:
 
 private:
   void onPinClick(Event& ev);
-  
+
   CheckBox m_pin;
 };
 

@@ -13,7 +13,7 @@
  *      By Tim Gunn.
  *
  *      RLE support added by Michal Mertl and Salvador Eduardo Tropea.
- * 
+ *
  *      Palette reading improved by Peter Wang.
  *
  *      Big-endian support added by Eric Botcazou.
@@ -47,18 +47,18 @@ static void rle_tga_read8(unsigned char *b, int w, PACKFILE *f)
    do {
       count = pack_getc(f);
       if (count & 0x80) {
-	 /* run-length packet */
-	 count = (count & 0x7F) + 1;
-	 c += count;
-	 value = pack_getc(f);
-	 while (count--)
-	    *b++ = value;
+         /* run-length packet */
+         count = (count & 0x7F) + 1;
+         c += count;
+         value = pack_getc(f);
+         while (count--)
+            *b++ = value;
       }
       else {
-	 /* raw packet */
-	 count++;
-	 c += count;
-	 b = raw_tga_read8(b, count, f);
+         /* raw packet */
+         count++;
+         c += count;
+         b = raw_tga_read8(b, count, f);
       }
    } while (c < w);
 }
@@ -106,18 +106,18 @@ static void rle_tga_read32(unsigned int *b, int w, PACKFILE *f)
    do {
       count = pack_getc(f);
       if (count & 0x80) {
-	 /* run-length packet */
-	 count = (count & 0x7F) + 1;
-	 c += count;
-	 color = single_tga_read32(f);
-	 while (count--)
-	    *b++ = color;
+         /* run-length packet */
+         count = (count & 0x7F) + 1;
+         c += count;
+         color = single_tga_read32(f);
+         while (count--)
+            *b++ = color;
       }
       else {
-	 /* raw packet */
-	 count++;
-	 c += count;
-	 b = raw_tga_read32(b, count, f);
+         /* raw packet */
+         count++;
+         c += count;
+         b = raw_tga_read32(b, count, f);
       }
    } while (c < w);
 }
@@ -167,20 +167,20 @@ static void rle_tga_read24(unsigned char *b, int w, PACKFILE *f)
    do {
       count = pack_getc(f);
       if (count & 0x80) {
-	 /* run-length packet */
-	 count = (count & 0x7F) + 1;
-	 c += count;
-	 color = single_tga_read24(f);
-	 while (count--) {
-	    WRITE3BYTES(b, color);
-	    b += 3;
-	 }
+         /* run-length packet */
+         count = (count & 0x7F) + 1;
+         c += count;
+         color = single_tga_read24(f);
+         while (count--) {
+            WRITE3BYTES(b, color);
+            b += 3;
+         }
       }
       else {
-	 /* raw packet */
-	 count++;
-	 c += count;
-	 b = raw_tga_read24(b, count, f);
+         /* raw packet */
+         count++;
+         c += count;
+         b = raw_tga_read24(b, count, f);
       }
    } while (c < w);
 }
@@ -197,8 +197,8 @@ static INLINE int single_tga_read16(PACKFILE *f)
    value = pack_igetw(f);
 
    return (((value >> 10) & 0x1F) << _rgb_r_shift_15) |
-	  (((value >> 5) & 0x1F) << _rgb_g_shift_15)  |
-	  ((value & 0x1F) << _rgb_b_shift_15);
+          (((value >> 5) & 0x1F) << _rgb_g_shift_15)  |
+          ((value & 0x1F) << _rgb_b_shift_15);
 }
 
 
@@ -226,18 +226,18 @@ static void rle_tga_read16(unsigned short *b, int w, PACKFILE *f)
    do {
       count = pack_getc(f);
       if (count & 0x80) {
-	 /* run-length packet */
-	 count = (count & 0x7F) + 1;
-	 c += count;
-	 color = single_tga_read16(f);
-	 while (count--)
-	    *b++ = color;
+         /* run-length packet */
+         count = (count & 0x7F) + 1;
+         c += count;
+         color = single_tga_read16(f);
+         while (count--)
+            *b++ = color;
       }
       else {
-	 /* raw packet */
-	 count++;
-	 c += count;
-	 b = raw_tga_read16(b, count, f);
+         /* raw packet */
+         count++;
+         c += count;
+         b = raw_tga_read16(b, count, f);
       }
    } while (c < w);
 }
@@ -315,24 +315,24 @@ BITMAP *load_tga_pf(PACKFILE *f, RGB *pal)
 
       for (i = 0; i < palette_colors; i++) {
 
-	 switch (palette_entry_size) {
+         switch (palette_entry_size) {
 
-	    case 16: 
-	       c = pack_igetw(f);
-	       image_palette[i][0] = (c & 0x1F) << 3;
-	       image_palette[i][1] = ((c >> 5) & 0x1F) << 3;
-	       image_palette[i][2] = ((c >> 10) & 0x1F) << 3;
-	       break;
+            case 16:
+               c = pack_igetw(f);
+               image_palette[i][0] = (c & 0x1F) << 3;
+               image_palette[i][1] = ((c >> 5) & 0x1F) << 3;
+               image_palette[i][2] = ((c >> 10) & 0x1F) << 3;
+               break;
 
-	    case 24:
-	    case 32:
-	       image_palette[i][0] = pack_getc(f);
-	       image_palette[i][1] = pack_getc(f);
-	       image_palette[i][2] = pack_getc(f);
-	       if (palette_entry_size == 32)
-		  pack_getc(f);
-	       break;
-	 }
+            case 24:
+            case 32:
+               image_palette[i][0] = pack_getc(f);
+               image_palette[i][1] = pack_getc(f);
+               image_palette[i][2] = pack_getc(f);
+               if (palette_entry_size == 32)
+                  pack_getc(f);
+               break;
+         }
       }
    }
    else if (palette_type != 0) {
@@ -358,51 +358,51 @@ BITMAP *load_tga_pf(PACKFILE *f, RGB *pal)
    switch (image_type) {
 
       case 1:
-	 /* paletted image */
-	 if ((palette_type != 1) || (bpp != 8)) {
-	    return NULL;
-	 }
+         /* paletted image */
+         if ((palette_type != 1) || (bpp != 8)) {
+            return NULL;
+         }
 
-	 for(i=0; i<palette_colors; i++) {
-	     pal[i].r = image_palette[i][2] >> 2;
-	     pal[i].g = image_palette[i][1] >> 2;
-	     pal[i].b = image_palette[i][0] >> 2;
-	 }
+         for(i=0; i<palette_colors; i++) {
+             pal[i].r = image_palette[i][2] >> 2;
+             pal[i].g = image_palette[i][1] >> 2;
+             pal[i].b = image_palette[i][0] >> 2;
+         }
 
-	 dest_depth = _color_load_depth(8, FALSE);
-	 break;
+         dest_depth = _color_load_depth(8, FALSE);
+         break;
 
       case 2:
-	 /* truecolor image */
-	 if ((palette_type == 0) && ((bpp == 15) || (bpp == 16))) {
-	    bpp = 15;
-	    dest_depth = _color_load_depth(15, FALSE);
-	 }
-	 else if ((palette_type == 0) && ((bpp == 24) || (bpp == 32))) {
-	    dest_depth = _color_load_depth(bpp, (bpp == 32));
-	 }
-	 else {
-	    return NULL;
-	 }
-	 break;
+         /* truecolor image */
+         if ((palette_type == 0) && ((bpp == 15) || (bpp == 16))) {
+            bpp = 15;
+            dest_depth = _color_load_depth(15, FALSE);
+         }
+         else if ((palette_type == 0) && ((bpp == 24) || (bpp == 32))) {
+            dest_depth = _color_load_depth(bpp, (bpp == 32));
+         }
+         else {
+            return NULL;
+         }
+         break;
 
       case 3:
-	 /* grayscale image */
-	 if ((palette_type != 0) || (bpp != 8)) {
-	    return NULL;
-	 }
+         /* grayscale image */
+         if ((palette_type != 0) || (bpp != 8)) {
+            return NULL;
+         }
 
-	 for (i=0; i<256; i++) {
-	     pal[i].r = i>>2;
-	     pal[i].g = i>>2;
-	     pal[i].b = i>>2;
-	 }
+         for (i=0; i<256; i++) {
+             pal[i].r = i>>2;
+             pal[i].g = i>>2;
+             pal[i].b = i>>2;
+         }
 
-	 dest_depth = _color_load_depth(bpp, FALSE);
-	 break;
+         dest_depth = _color_load_depth(bpp, FALSE);
+         break;
 
       default:
-	 return NULL;
+         return NULL;
    }
 
    bmp = create_bitmap_ex(bpp, image_width, image_height);
@@ -417,34 +417,34 @@ BITMAP *load_tga_pf(PACKFILE *f, RGB *pal)
 
       switch (image_type) {
 
-	 case 1:
-	 case 3:
-	    if (compressed)
-	       rle_tga_read8(bmp->line[yc], image_width, f);
-	    else
-	       raw_tga_read8(bmp->line[yc], image_width, f);
-	    break;
+         case 1:
+         case 3:
+            if (compressed)
+               rle_tga_read8(bmp->line[yc], image_width, f);
+            else
+               raw_tga_read8(bmp->line[yc], image_width, f);
+            break;
 
-	 case 2:
-	    if (bpp == 32) {
-	       if (compressed)
-		  rle_tga_read32((unsigned int *)bmp->line[yc], image_width, f);
-	       else
-		  raw_tga_read32((unsigned int *)bmp->line[yc], image_width, f);
-	    }
-	    else if (bpp == 24) {
-	       if (compressed)
-		  rle_tga_read24(bmp->line[yc], image_width, f);
-	       else
-		  raw_tga_read24(bmp->line[yc], image_width, f);
-	    }
-	    else {
-	       if (compressed)
-		  rle_tga_read16((unsigned short *)bmp->line[yc], image_width, f);
-	       else
-		  raw_tga_read16((unsigned short *)bmp->line[yc], image_width, f);
-	    }
-	    break;
+         case 2:
+            if (bpp == 32) {
+               if (compressed)
+                  rle_tga_read32((unsigned int *)bmp->line[yc], image_width, f);
+               else
+                  raw_tga_read32((unsigned int *)bmp->line[yc], image_width, f);
+            }
+            else if (bpp == 24) {
+               if (compressed)
+                  rle_tga_read24(bmp->line[yc], image_width, f);
+               else
+                  raw_tga_read24(bmp->line[yc], image_width, f);
+            }
+            else {
+               if (compressed)
+                  rle_tga_read16((unsigned short *)bmp->line[yc], image_width, f);
+               else
+                  raw_tga_read16((unsigned short *)bmp->line[yc], image_width, f);
+            }
+            break;
       }
    }
 
@@ -456,15 +456,15 @@ BITMAP *load_tga_pf(PACKFILE *f, RGB *pal)
    if (dest_depth != bpp) {
       /* restore original palette except if it comes from the bitmap */
       if ((bpp != 8) && (!want_palette))
-	 pal = NULL;
+         pal = NULL;
 
       bmp = _fixup_loaded_bitmap(bmp, pal, dest_depth);
    }
-   
+
    /* construct a fake palette if 8-bit mode is not involved */
    if ((bpp != 8) && (dest_depth != 8) && want_palette)
       generate_332_palette(pal);
-      
+
    return bmp;
 }
 
@@ -535,9 +535,9 @@ int save_tga_pf(PACKFILE *f, BITMAP *bmp, AL_CONST RGB *pal)
 
    if (depth == 8) {
       for (y=0; y<256; y++) {
-	 image_palette[y][2] = _rgb_scale_6[pal[y].r];
-	 image_palette[y][1] = _rgb_scale_6[pal[y].g];
-	 image_palette[y][0] = _rgb_scale_6[pal[y].b];
+         image_palette[y][2] = _rgb_scale_6[pal[y].r];
+         image_palette[y][1] = _rgb_scale_6[pal[y].g];
+         image_palette[y][0] = _rgb_scale_6[pal[y].b];
       }
 
       pack_fwrite(image_palette, 768, f);
@@ -547,72 +547,72 @@ int save_tga_pf(PACKFILE *f, BITMAP *bmp, AL_CONST RGB *pal)
 
       #ifdef ALLEGRO_COLOR8
 
-	 case 8:
-	    for (y=bmp->h; y; y--)
-	       for (x=0; x<bmp->w; x++)
-		  pack_putc(getpixel(bmp, x, y-1), f);
-	    break;
+         case 8:
+            for (y=bmp->h; y; y--)
+               for (x=0; x<bmp->w; x++)
+                  pack_putc(getpixel(bmp, x, y-1), f);
+            break;
 
       #endif
 
       #ifdef ALLEGRO_COLOR16
 
-	 case 15:
-	    for (y=bmp->h; y; y--) {
-	       for (x=0; x<bmp->w; x++) {
-		  c = getpixel(bmp, x, y-1);
-		  r = getr15(c);
-		  g = getg15(c);
-		  b = getb15(c);
-		  c = ((r<<7)&0x7C00) | ((g<<2)&0x3E0) | ((b>>3)&0x1F);
-		  pack_iputw(c, f);
-	       }
-	    }
-	    break;
+         case 15:
+            for (y=bmp->h; y; y--) {
+               for (x=0; x<bmp->w; x++) {
+                  c = getpixel(bmp, x, y-1);
+                  r = getr15(c);
+                  g = getg15(c);
+                  b = getb15(c);
+                  c = ((r<<7)&0x7C00) | ((g<<2)&0x3E0) | ((b>>3)&0x1F);
+                  pack_iputw(c, f);
+               }
+            }
+            break;
 
-	 case 16:
-	    for (y=bmp->h; y; y--) {
-	       for (x=0; x<bmp->w; x++) {
-		  c = getpixel(bmp, x, y-1);
-		  r = getr16(c);
-		  g = getg16(c);
-		  b = getb16(c);
-		  c = ((r<<7)&0x7C00) | ((g<<2)&0x3E0) | ((b>>3)&0x1F);
-		  pack_iputw(c, f);
-	       }
-	    }
-	    break;
+         case 16:
+            for (y=bmp->h; y; y--) {
+               for (x=0; x<bmp->w; x++) {
+                  c = getpixel(bmp, x, y-1);
+                  r = getr16(c);
+                  g = getg16(c);
+                  b = getb16(c);
+                  c = ((r<<7)&0x7C00) | ((g<<2)&0x3E0) | ((b>>3)&0x1F);
+                  pack_iputw(c, f);
+               }
+            }
+            break;
 
       #endif
 
       #ifdef ALLEGRO_COLOR24
 
-	 case 24:
-	    for (y=bmp->h; y; y--) {
-	       for (x=0; x<bmp->w; x++) {
-		  c = getpixel(bmp, x, y-1);
-		  pack_putc(getb24(c), f);
-		  pack_putc(getg24(c), f);
-		  pack_putc(getr24(c), f);
-	       }
-	    }
-	    break;
+         case 24:
+            for (y=bmp->h; y; y--) {
+               for (x=0; x<bmp->w; x++) {
+                  c = getpixel(bmp, x, y-1);
+                  pack_putc(getb24(c), f);
+                  pack_putc(getg24(c), f);
+                  pack_putc(getr24(c), f);
+               }
+            }
+            break;
 
       #endif
 
       #ifdef ALLEGRO_COLOR32
 
-	 case 32:
-	    for (y=bmp->h; y; y--) {
-	       for (x=0; x<bmp->w; x++) {
-		  c = getpixel(bmp, x, y-1);
-		  pack_putc(getb32(c), f);
-		  pack_putc(getg32(c), f);
-		  pack_putc(getr32(c), f);
-		  pack_putc(geta32(c), f);
-	       }
-	    }
-	    break;
+         case 32:
+            for (y=bmp->h; y; y--) {
+               for (x=0; x<bmp->w; x++) {
+                  c = getpixel(bmp, x, y-1);
+                  pack_putc(getb32(c), f);
+                  pack_putc(getg32(c), f);
+                  pack_putc(getr32(c), f);
+                  pack_putc(geta32(c), f);
+               }
+            }
+            break;
 
       #endif
    }
@@ -622,5 +622,3 @@ int save_tga_pf(PACKFILE *f, BITMAP *bmp, AL_CONST RGB *pal)
    else
       return 0;
 }
-
-

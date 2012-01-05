@@ -46,7 +46,7 @@
  **/
 ArtIRect *
 art_rect_list_from_uta (ArtUta *uta, int max_width, int max_height,
-			int *p_nrects)
+                        int *p_nrects)
 {
   ArtIRect *rects;
   int n_rects, n_rects_max;
@@ -76,58 +76,58 @@ art_rect_list_from_uta (ArtUta *uta, int max_width, int max_height,
   for (y = 0; y < height; y++)
     for (x = 0; x < width; x++)
       {
-	bb = utiles[ix];
-	if (bb)
-	  {
-	    x0 = ((uta->x0 + x) << ART_UTILE_SHIFT) + ART_UTA_BBOX_X0(bb);
-	    y0 = ((uta->y0 + y) << ART_UTILE_SHIFT) + ART_UTA_BBOX_Y0(bb);
-	    y1 = ((uta->y0 + y) << ART_UTILE_SHIFT) + ART_UTA_BBOX_Y1(bb);
+        bb = utiles[ix];
+        if (bb)
+          {
+            x0 = ((uta->x0 + x) << ART_UTILE_SHIFT) + ART_UTA_BBOX_X0(bb);
+            y0 = ((uta->y0 + y) << ART_UTILE_SHIFT) + ART_UTA_BBOX_Y0(bb);
+            y1 = ((uta->y0 + y) << ART_UTILE_SHIFT) + ART_UTA_BBOX_Y1(bb);
 
-	    left_ix = ix;
-	    /* now try to extend to the right */
-	    while (x != width - 1 &&
-		   ART_UTA_BBOX_X1(bb) == ART_UTILE_SIZE &&
-		   (((bb & 0xffffff) ^ utiles[ix + 1]) & 0xffff00ff) == 0 &&
-		   (((uta->x0 + x + 1) << ART_UTILE_SHIFT) +
-		    ART_UTA_BBOX_X1(utiles[ix + 1]) -
-		    x0) <= max_width)
-	      {
-		bb = utiles[ix + 1];
-		ix++;
-		x++;
-	      }
-	    x1 = ((uta->x0 + x) << ART_UTILE_SHIFT) + ART_UTA_BBOX_X1(bb);
+            left_ix = ix;
+            /* now try to extend to the right */
+            while (x != width - 1 &&
+                   ART_UTA_BBOX_X1(bb) == ART_UTILE_SIZE &&
+                   (((bb & 0xffffff) ^ utiles[ix + 1]) & 0xffff00ff) == 0 &&
+                   (((uta->x0 + x + 1) << ART_UTILE_SHIFT) +
+                    ART_UTA_BBOX_X1(utiles[ix + 1]) -
+                    x0) <= max_width)
+              {
+                bb = utiles[ix + 1];
+                ix++;
+                x++;
+              }
+            x1 = ((uta->x0 + x) << ART_UTILE_SHIFT) + ART_UTA_BBOX_X1(bb);
 
 
-	    /* if rectangle nonempty */
-	    if ((x1 ^ x0) | (y1 ^ y0))
-	      {
-		/* try to glom onto an existing rectangle */
-		glom_rect = glom[left_ix];
-		if (glom_rect != -1 &&
-		    x0 == rects[glom_rect].x0 &&
-		    x1 == rects[glom_rect].x1 &&
-		    y0 == rects[glom_rect].y1 &&
-		    y1 - rects[glom_rect].y0 <= max_height)
-		  {
-		    rects[glom_rect].y1 = y1;
-		  }
-		else
-		  {
-		    if (n_rects == n_rects_max)
-		      art_expand (rects, ArtIRect, n_rects_max);
-		    rects[n_rects].x0 = x0;
-		    rects[n_rects].y0 = y0;
-		    rects[n_rects].x1 = x1;
-		    rects[n_rects].y1 = y1;
-		    glom_rect = n_rects;
-		    n_rects++;
-		  }
-		if (y != height - 1)
-		  glom[left_ix + width] = glom_rect;
-	      }
-	  }
-	ix++;
+            /* if rectangle nonempty */
+            if ((x1 ^ x0) | (y1 ^ y0))
+              {
+                /* try to glom onto an existing rectangle */
+                glom_rect = glom[left_ix];
+                if (glom_rect != -1 &&
+                    x0 == rects[glom_rect].x0 &&
+                    x1 == rects[glom_rect].x1 &&
+                    y0 == rects[glom_rect].y1 &&
+                    y1 - rects[glom_rect].y0 <= max_height)
+                  {
+                    rects[glom_rect].y1 = y1;
+                  }
+                else
+                  {
+                    if (n_rects == n_rects_max)
+                      art_expand (rects, ArtIRect, n_rects_max);
+                    rects[n_rects].x0 = x0;
+                    rects[n_rects].y0 = y0;
+                    rects[n_rects].x1 = x1;
+                    rects[n_rects].y1 = y1;
+                    glom_rect = n_rects;
+                    n_rects++;
+                  }
+                if (y != height - 1)
+                  glom[left_ix + width] = glom_rect;
+              }
+          }
+        ix++;
       }
 
   art_free (glom);

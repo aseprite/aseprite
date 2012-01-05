@@ -44,4 +44,4 @@ private:
 
 } // namespace undoers
 
-#endif	// UNDOERS_SET_CURRENT_FRAME_H_INCLUDED
+#endif  // UNDOERS_SET_CURRENT_FRAME_H_INCLUDED

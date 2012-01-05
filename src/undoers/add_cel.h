@@ -43,4 +43,4 @@ private:
 
 } // namespace undoers
 
-#endif	// UNDOERS_ADD_CEL_H_INCLUDED
+#endif  // UNDOERS_ADD_CEL_H_INCLUDED

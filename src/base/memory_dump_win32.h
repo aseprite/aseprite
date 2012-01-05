@@ -40,8 +40,8 @@ private:
   public:
     MemoryDumpFile() {
       m_handle = ::CreateFile(memoryDumpFile.c_str(),
-			      GENERIC_WRITE, 0, NULL,
-			      CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
+                              GENERIC_WRITE, 0, NULL,
+                              CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
     }
     ~MemoryDumpFile() {
       ::CloseHandle(m_handle);
@@ -60,12 +60,12 @@ private:
     ei.ClientPointers     = FALSE;
 
     ::MiniDumpWriteDump(::GetCurrentProcess(),
-			::GetCurrentProcessId(),
-			file.handle(),
-			MiniDumpNormal,
-			(exceptionPointers ? &ei: NULL),
-			NULL,
-			NULL);
+                        ::GetCurrentProcessId(),
+                        file.handle(),
+                        MiniDumpNormal,
+                        (exceptionPointers ? &ei: NULL),
+                        NULL,
+                        NULL);
 
   }
 };

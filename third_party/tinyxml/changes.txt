@@ -1,5 +1,5 @@
 Changes in version 1.0.1:
-- Fixed comment tags which were outputing as '<?--' instead of 
+- Fixed comment tags which were outputing as '<?--' instead of
   the correct '<!--'.
 - Implemented the Next and Prev methods of the TiXmlAttribute class.
 - Renamed 'LastAttribtute' to 'LastAttribute'
@@ -19,19 +19,19 @@ Changes in version 1.0.3
   in place.
 
 Changes in version 1.1.0
-- Added the	TiXmlAttributeSet class to pull the attributes into
+- Added the     TiXmlAttributeSet class to pull the attributes into
   a seperate container.
 - Moved the doubly liked list out of XmlBase. Now XmlBase only
   requires the Print() function and defines some utility functions.
 - Moved errors into a seperate file. (With the idea of internationalization
   to the other latin-1 languages.)
 - Added the "NodeType"
-- Fixed white space parsing in text to conform with the standard. 
+- Fixed white space parsing in text to conform with the standard.
   Basically, all white space becomes just one space.
 - Added the TiXmlDeclaration class to read xml declarations.
 
 Changes in version 1.2.0
-- Removed the factory. The factory was not really in the spirit 
+- Removed the factory. The factory was not really in the spirit
   of small and simple, confused the code, and was of limited value.
 - Added FirstChildElement and NextSiblingElement, because they
   are such common functions.
@@ -49,23 +49,23 @@ Changes in version 1.2.2
 Changes in version 1.2.3
 - Added the TIXML prefix to the error strings to resolve conflicts
   with #defines in OS headers. Thanks to Steve Lhomme.
-- Fixed a delete buf that should be a delete [] buf. 
+- Fixed a delete buf that should be a delete [] buf.
   Thanks to Ephi Sinowitz.
 
 Changes in version 1.2.4
 - ReplaceChild() was almost guarenteed to fail. Should be fixed,
   thanks to Joe Smith. Joe also pointed out that the Print() functions
   should take stream references: I agree, and would like to overload
-  the Print() method to take either format, but I don't want to do 
+  the Print() method to take either format, but I don't want to do
   this in a dot release.
 - Some compilers seem to need an extra <ctype.h> include. Thanks
   to Steve Lhomme for that.
 
 Changes in version 2.0.0 BETA
-- Made the ToXXX() casts safe if 'this' is null. 
+- Made the ToXXX() casts safe if 'this' is null.
   When "LoadFile" is called with a filename, the value will correctly get set.
   Thanks to Brian Yoder.
-- Fixed bug where isalpha() and isalnum() would get called with a negative value for 
+- Fixed bug where isalpha() and isalnum() would get called with a negative value for
   high ascii numbers. Thanks to Alesky Aksenov.
 - Fixed some errors codes that were not getting set.
 - Made methods "const" that were not.
@@ -114,21 +114,21 @@ Changes in version 2.1.4
 
 Changes in version 2.1.5
 - Bug fix by kylotan : infinite loop on some input (tinyxmlparser.cpp rev 1.27)
-- Contributed by Ivica Aracic (bytelord) : 1 new VC++ project to compile versions as static libraries (tinyxml_lib.dsp), 
+- Contributed by Ivica Aracic (bytelord) : 1 new VC++ project to compile versions as static libraries (tinyxml_lib.dsp),
   and an example usage in xmltest.dsp
   (Patch request ID 678605)
-- A suggestion by Ronald Fenner Jr (dormlock) to add #include <istream> and <ostream> for Apple's Project Builder 
+- A suggestion by Ronald Fenner Jr (dormlock) to add #include <istream> and <ostream> for Apple's Project Builder
   (Patch request ID 697642)
 - A patch from ohommes that allows to parse correctly dots in element names and attribute names
   (Patch request 602600 and kylotan 701728)
 - A patch from  hermitgeek ( James ) and wasteland for improper error reporting
 - Reviewed by Lee, with the following changes:
-	- Got sick of fighting the STL/non-STL thing in the windows build. Broke
-	  them out as seperate projects.
-	- I have too long not included the dsw. Added.
-	- TinyXmlText had a protected Print. Odd.
-	- Made LinkEndChild public, with docs and appropriate warnings.
-	- Updated the docs.
+        - Got sick of fighting the STL/non-STL thing in the windows build. Broke
+          them out as seperate projects.
+        - I have too long not included the dsw. Added.
+        - TinyXmlText had a protected Print. Odd.
+        - Made LinkEndChild public, with docs and appropriate warnings.
+        - Updated the docs.
 
 2.2.0
 - Fixed an uninitialized pointer in the TiXmlAttributes
@@ -158,8 +158,8 @@ Changes in version 2.1.5
 2.3.1
 - Fixed bug in handling nulls embedded in the input.
 - Make UTF-8 parser tolerant of bad text encoding.
-- Added encoding detection. 
-- Many fixes and input from John-Philip Leonard Johansson (JP) and Ellers, 
+- Added encoding detection.
+- Many fixes and input from John-Philip Leonard Johansson (JP) and Ellers,
   including UTF-8 feedback, bug reports, and patches. Thanks!
 - Added version # constants - a suggestion from JP and Ellers.
 - [ 979180 ] Missing ; in entity reference, fix from Rob Laveaux.
@@ -204,7 +204,7 @@ Changes in version 2.1.5
 - First pass at switching to the "safe" stdlib functions. Many people have suggested and
   pushed on this, but Warren Stevens put together the first proposal.
 - TinyXml now will do EOL normalization before parsing, consistent with the W3C XML spec.
-- Documents loaded with the UTF-8 BOM will now save with the UTF-8 BOM. Good suggestion 
+- Documents loaded with the UTF-8 BOM will now save with the UTF-8 BOM. Good suggestion
   from 'instructor_'
 - Ellers submitted his very popular tutorials, which have been added to the distribution.
 
@@ -219,7 +219,7 @@ Changes in version 2.1.5
 2.4.3
 - Fixed a test bug that caused a crash in 'xmltest'. TinyXML was fine, but it isn't good
   to ship with a broken test suite.
-- Started converting some functions to not cast between std::string and const char* 
+- Started converting some functions to not cast between std::string and const char*
   quite as often.
 - Added FILE* versions of the document loads - good suggestion from Wade Brainerd
 - Empty documents might not always return the errors they should. [1398915] Thanks to igor v.
@@ -227,7 +227,7 @@ Changes in version 2.1.5
 
 2.4.4
 - Bug find thanks to andre-gross found a memory leak that occured when a document failed to load.
-- Bug find (and good analysis) by VirtualJim who found a case where attribute parsing 
+- Bug find (and good analysis) by VirtualJim who found a case where attribute parsing
   should be throwing an error and wasn't.
 - Steve Hyatt suggested the QueryValueAttribute method, which is now implemented.
 - DavidA identified a chunk of dead code.
@@ -240,7 +240,7 @@ Changes in version 2.1.5
 - [ tinyxml-Bugs-1527079 ] Compile error in tinystr.cpp fixed, thanks to Paul Suggs
 - [ tinyxml-Bugs-1522890 ] SaveFile has no error checks fixed, thanks to Ivan Dobrokotov
 - Ivan Dobrokotov also reported redundant memory allocation in the Attribute() method, which
-  upon investigation was a mess. The attribute should now be fixed for both const char* and 
+  upon investigation was a mess. The attribute should now be fixed for both const char* and
   std::string, and the return types match the input parameters.
 - Feature [ 1511105 ] Make TiXmlComment constructor accept a string / char*, implemented.
   Thanks to Karl Itschen for the feedback.
@@ -261,9 +261,8 @@ Changes in version 2.1.5
 - grosheck identified several problems with the Document copy. Many thanks for [ 1660367 ]
 - Nice catch, and suggested fix, be Gilad Novik on the Printer dropping entities.
   "[ 1600650 ] Bug when printing xml text" is now fixed.
-- A subtle fix from Nicos Gollan in the tinystring initializer: 
+- A subtle fix from Nicos Gollan in the tinystring initializer:
   [ 1581449 ] Fix initialiser of TiXmlString::nullrep_
-- Great catch, although there isn't a submitter for the bug. [ 1475201 ] TinyXML parses entities in comments. 
+- Great catch, although there isn't a submitter for the bug. [ 1475201 ] TinyXML parses entities in comments.
   Comments should not, in fact, parse entities. Fixed the code path and added tests.
 - We were not catching all the returns from ftell. Thanks to Bernard for catching that.
-  

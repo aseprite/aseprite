@@ -62,8 +62,8 @@ bool ScrollBar::onProcessMessage(Message* msg)
 
       m_wherepos = pos;
       m_whereclick = getAlign() & JI_HORIZONTAL ?
-	msg->mouse.x:
-	msg->mouse.y;
+        msg->mouse.x:
+        msg->mouse.y;
 
       x1 = this->rc->x1;
       y1 = this->rc->y1;
@@ -78,41 +78,41 @@ bool ScrollBar::onProcessMessage(Message* msg)
       Point scroll = view->getViewScroll();
 
       if (this->getAlign() & JI_HORIZONTAL) {
-	// in the bar
-	if (MOUSE_IN(u1+pos, v1, u1+pos+len-1, v2)) {
-	  // capture mouse
-	}
-	// left
-	else if (MOUSE_IN(x1, y1, u1+pos-1, y2)) {
-	  scroll.x -= jrect_w(view->getViewport()->rc)/2;
-	  ret = true;
-	}
-	// right
-	else if (MOUSE_IN(u1+pos+len, y1, x2, y2)) {
-	  scroll.x += jrect_w(view->getViewport()->rc)/2;
-	  ret = true;
-	}
+        // in the bar
+        if (MOUSE_IN(u1+pos, v1, u1+pos+len-1, v2)) {
+          // capture mouse
+        }
+        // left
+        else if (MOUSE_IN(x1, y1, u1+pos-1, y2)) {
+          scroll.x -= jrect_w(view->getViewport()->rc)/2;
+          ret = true;
+        }
+        // right
+        else if (MOUSE_IN(u1+pos+len, y1, x2, y2)) {
+          scroll.x += jrect_w(view->getViewport()->rc)/2;
+          ret = true;
+        }
       }
       else {
-	// in the bar
-	if (MOUSE_IN(u1, v1+pos, u2, v1+pos+len-1)) {
-	  // capture mouse
-	}
-	// left
-	else if (MOUSE_IN(x1, y1, x2, v1+pos-1)) {
-	  scroll.y -= jrect_h(view->getViewport()->rc)/2;
-	  ret = true;
-	}
-	// right
-	else if (MOUSE_IN(x1, v1+pos+len, x2, y2)) {
-	  scroll.y += jrect_h(view->getViewport()->rc)/2;
-	  ret = true;
-	}
+        // in the bar
+        if (MOUSE_IN(u1, v1+pos, u2, v1+pos+len-1)) {
+          // capture mouse
+        }
+        // left
+        else if (MOUSE_IN(x1, y1, x2, v1+pos-1)) {
+          scroll.y -= jrect_h(view->getViewport()->rc)/2;
+          ret = true;
+        }
+        // right
+        else if (MOUSE_IN(x1, v1+pos+len, x2, y2)) {
+          scroll.y += jrect_h(view->getViewport()->rc)/2;
+          ret = true;
+        }
       }
 
       if (ret) {
-	view->setViewScroll(scroll);
-	return ret;
+        view->setViewScroll(scroll);
+        return ret;
       }
 
       setSelected(true);
@@ -123,31 +123,31 @@ bool ScrollBar::onProcessMessage(Message* msg)
 
     case JM_MOTION:
       if (hasCapture()) {
-	View* view = static_cast<View*>(getParent());
-	int pos, len, bar_size, viewport_size;
-	int old_pos;
+        View* view = static_cast<View*>(getParent());
+        int pos, len, bar_size, viewport_size;
+        int old_pos;
 
-	getScrollBarInfo(&pos, &len, &bar_size, &viewport_size);
-	old_pos = pos;
+        getScrollBarInfo(&pos, &len, &bar_size, &viewport_size);
+        old_pos = pos;
 
-	if (bar_size > len) {
-	  Point scroll = view->getViewScroll();
+        if (bar_size > len) {
+          Point scroll = view->getViewScroll();
 
-	  if (this->getAlign() & JI_HORIZONTAL) {
-	    pos = (m_wherepos + msg->mouse.x - m_whereclick);
-	    pos = MID(0, pos, bar_size - len);
+          if (this->getAlign() & JI_HORIZONTAL) {
+            pos = (m_wherepos + msg->mouse.x - m_whereclick);
+            pos = MID(0, pos, bar_size - len);
 
-	    scroll.x = (m_size - viewport_size) * pos / (bar_size - len);
-	    view->setViewScroll(scroll);
-	  }
-	  else {
-	    pos = (m_wherepos + msg->mouse.y - m_whereclick);
-	    pos = MID(0, pos, bar_size - len);
+            scroll.x = (m_size - viewport_size) * pos / (bar_size - len);
+            view->setViewScroll(scroll);
+          }
+          else {
+            pos = (m_wherepos + msg->mouse.y - m_whereclick);
+            pos = MID(0, pos, bar_size - len);
 
-	    scroll.y = (m_size - viewport_size) * pos / (bar_size - len);
-	    view->setViewScroll(scroll);
-	  }
-	}
+            scroll.y = (m_size - viewport_size) * pos / (bar_size - len);
+            view->setViewScroll(scroll);
+          }
+        }
       }
       break;
 

@@ -119,7 +119,7 @@ public:
 
   // Returns true if the figure must be filled when we release the
   // mouse (e.g. a filled rectangle, etc.)
-  // 
+  //
   // To fill a shape, the Intertwine::fillPoints function is used.
   virtual bool getFilled() = 0;
 
@@ -166,5 +166,4 @@ public:
 
 } // namespace tools
 
-#endif	// TOOLS_TOOL_LOOP_H_INCLUDED
-
+#endif  // TOOLS_TOOL_LOOP_H_INCLUDED

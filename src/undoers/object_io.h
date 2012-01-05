@@ -43,8 +43,8 @@ void write_object(undo::ObjectsContainer* objects, std::ostream& os, T* object, 
   // Get an ID for the image.
   undo::ObjectId objectId = objects->addObject(object);
 
-  write32(os, objectId);	// Write the ID
-  writer(os, object);		// Write the object
+  write32(os, objectId);        // Write the ID
+  writer(os, object);           // Write the object
 
   // Remove the object from the container (it will be
   // re-added by a undoers::read_object call).
@@ -58,8 +58,8 @@ T* read_object(undo::ObjectsContainer* objects, std::istream& is, Reader& reader
 {
   using base::serialization::little_endian::read32;
 
-  undo::ObjectId objectId = read32(is);	   // Read the ID
-  UniquePtr<T> object(reader(is));	   // Read the object
+  undo::ObjectId objectId = read32(is);    // Read the ID
+  UniquePtr<T> object(reader(is));         // Read the object
 
   // Re-insert the object in the container with the read ID.
   objects->insertObject(objectId, object);
@@ -68,4 +68,4 @@ T* read_object(undo::ObjectsContainer* objects, std::istream& is, Reader& reader
 
 } // namespace undoers
 
-#endif	// UNDOERS_OBJECT_IO_H_INCLUDED
+#endif  // UNDOERS_OBJECT_IO_H_INCLUDED

@@ -31,104 +31,104 @@
    int stride = (w+7)/8;                                                     \
    int lgap = 0;                                                             \
    int d, i, j;                                                              \
-									     \
+                                                                             \
    if (bmp->clip) {                                                          \
       /* clip the top */                                                     \
       if (y < bmp->ct) {                                                     \
-	 d = bmp->ct - y;                                                    \
-									     \
-	 h -= d;                                                             \
-	 if (h <= 0)                                                         \
-	    return;                                                          \
-									     \
-	 data += d*stride;                                                   \
-	 y = bmp->ct;                                                        \
+         d = bmp->ct - y;                                                    \
+                                                                             \
+         h -= d;                                                             \
+         if (h <= 0)                                                         \
+            return;                                                          \
+                                                                             \
+         data += d*stride;                                                   \
+         y = bmp->ct;                                                        \
       }                                                                      \
-									     \
+                                                                             \
       /* clip the bottom */                                                  \
       if (y+h >= bmp->cb) {                                                  \
-	 h = bmp->cb - y;                                                    \
-	 if (h <= 0)                                                         \
-	    return;                                                          \
+         h = bmp->cb - y;                                                    \
+         if (h <= 0)                                                         \
+            return;                                                          \
       }                                                                      \
-									     \
+                                                                             \
       /* clip the left */                                                    \
       if (x < bmp->cl) {                                                     \
-	 d = bmp->cl - x;                                                    \
-									     \
-	 w -= d;                                                             \
-	 if (w <= 0)                                                         \
-	    return;                                                          \
-									     \
-	 data += d/8;                                                        \
-	 lgap = d&7;                                                         \
-	 x = bmp->cl;                                                        \
+         d = bmp->cl - x;                                                    \
+                                                                             \
+         w -= d;                                                             \
+         if (w <= 0)                                                         \
+            return;                                                          \
+                                                                             \
+         data += d/8;                                                        \
+         lgap = d&7;                                                         \
+         x = bmp->cl;                                                        \
       }                                                                      \
-									     \
+                                                                             \
       /* clip the right */                                                   \
       if (x+w >= bmp->cr) {                                                  \
-	 w = bmp->cr - x;                                                    \
-	 if (w <= 0)                                                         \
-	    return;                                                          \
+         w = bmp->cr - x;                                                    \
+         if (w <= 0)                                                         \
+            return;                                                          \
       }                                                                      \
    }                                                                         \
-									     \
+                                                                             \
    stride -= (lgap+w+7)/8;                                                   \
-									     \
+                                                                             \
    /* draw it */                                                             \
    bmp_select(bmp);                                                          \
-									     \
+                                                                             \
    while (h--) {                                                             \
       addr = bmp_write_line(bmp, y++) + x*size;                              \
-									     \
+                                                                             \
       j = 0;                                                                 \
       i = 0x80 >> lgap;                                                      \
       d = *(data++);                                                         \
-									     \
+                                                                             \
       if (bg >= 0) {                                                         \
-	 /* opaque mode drawing loop */                                      \
-	 for (;;) {                                                          \
-	    if (d & i)                                                       \
-	       bmp_write##bits(addr, color);                                 \
-	    else                                                             \
-	       bmp_write##bits(addr, bg);                                    \
-									     \
-	    j++;                                                             \
-	    if (j == w)                                                      \
-	       break;                                                        \
-									     \
-	    i >>= 1;                                                         \
-	    if (!i) {                                                        \
-	       i = 0x80;                                                     \
-	       d = *(data++);                                                \
-	    }                                                                \
-									     \
-	    addr += size;                                                    \
-	 }                                                                   \
+         /* opaque mode drawing loop */                                      \
+         for (;;) {                                                          \
+            if (d & i)                                                       \
+               bmp_write##bits(addr, color);                                 \
+            else                                                             \
+               bmp_write##bits(addr, bg);                                    \
+                                                                             \
+            j++;                                                             \
+            if (j == w)                                                      \
+               break;                                                        \
+                                                                             \
+            i >>= 1;                                                         \
+            if (!i) {                                                        \
+               i = 0x80;                                                     \
+               d = *(data++);                                                \
+            }                                                                \
+                                                                             \
+            addr += size;                                                    \
+         }                                                                   \
       }                                                                      \
       else {                                                                 \
-	 /* masked mode drawing loop */                                      \
-	 for (;;) {                                                          \
-	    if (d & i)                                                       \
-	       bmp_write##bits(addr, color);                                 \
-									     \
-	    j++;                                                             \
-	    if (j == w)                                                      \
-	       break;                                                        \
-									     \
-	    i >>= 1;                                                         \
-	    if (!i) {                                                        \
-	       i = 0x80;                                                     \
-	       d = *(data++);                                                \
-	    }                                                                \
-									     \
-	    addr += size;                                                    \
-	 }                                                                   \
+         /* masked mode drawing loop */                                      \
+         for (;;) {                                                          \
+            if (d & i)                                                       \
+               bmp_write##bits(addr, color);                                 \
+                                                                             \
+            j++;                                                             \
+            if (j == w)                                                      \
+               break;                                                        \
+                                                                             \
+            i >>= 1;                                                         \
+            if (!i) {                                                        \
+               i = 0x80;                                                     \
+               d = *(data++);                                                \
+            }                                                                \
+                                                                             \
+            addr += size;                                                    \
+         }                                                                   \
       }                                                                      \
-									     \
+                                                                             \
       data += stride;                                                        \
    }                                                                         \
-									     \
+                                                                             \
    bmp_unwrite_line(bmp);                                                    \
 }
 
@@ -187,4 +187,3 @@ void _linear_draw_glyph32(BITMAP *bmp, AL_CONST FONT_GLYPH *glyph, int x, int y,
 }
 
 #endif
-

@@ -44,15 +44,15 @@ protected:
 
 GotoPreviousLayerCommand::GotoPreviousLayerCommand()
   : Command("GotoPreviousLayer",
-	    "Goto Previous Layer",
-	    CmdUIOnlyFlag)
+            "Goto Previous Layer",
+            CmdUIOnlyFlag)
 {
 }
 
 bool GotoPreviousLayerCommand::onEnabled(Context* context)
 {
   return context->checkFlags(ContextFlags::ActiveDocumentIsWritable |
-			     ContextFlags::HasActiveSprite);
+                             ContextFlags::HasActiveSprite);
 }
 
 void GotoPreviousLayerCommand::onExecute(Context* context)
@@ -60,7 +60,7 @@ void GotoPreviousLayerCommand::onExecute(Context* context)
   ActiveDocumentWriter document(context);
   Sprite* sprite(document->getSprite());
   int i = sprite->layerToIndex(sprite->getCurrentLayer());
-  
+
   if (i > 0)
     i--;
   else
@@ -74,7 +74,7 @@ void GotoPreviousLayerCommand::onExecute(Context* context)
 
   app_get_statusbar()
     ->setStatusText(1000, "Layer `%s' selected",
-		    sprite->getCurrentLayer()->getName().c_str());
+                    sprite->getCurrentLayer()->getName().c_str());
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -93,15 +93,15 @@ protected:
 
 GotoNextLayerCommand::GotoNextLayerCommand()
   : Command("GotoNextLayer",
-	    "Goto Next Layer",
-	    CmdUIOnlyFlag)
+            "Goto Next Layer",
+            CmdUIOnlyFlag)
 {
 }
 
 bool GotoNextLayerCommand::onEnabled(Context* context)
 {
   return context->checkFlags(ContextFlags::ActiveDocumentIsWritable |
-			     ContextFlags::HasActiveSprite);
+                             ContextFlags::HasActiveSprite);
 }
 
 void GotoNextLayerCommand::onExecute(Context* context)
@@ -123,7 +123,7 @@ void GotoNextLayerCommand::onExecute(Context* context)
 
   app_get_statusbar()
     ->setStatusText(1000, "Layer `%s' selected",
-		    sprite->getCurrentLayer()->getName().c_str());
+                    sprite->getCurrentLayer()->getName().c_str());
 }
 
 //////////////////////////////////////////////////////////////////////

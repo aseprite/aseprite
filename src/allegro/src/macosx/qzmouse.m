@@ -48,7 +48,7 @@ MOUSE_DRIVER mouse_macosx = {
    NULL,       // AL_METHOD(void, set_speed, (int xspeed, int yspeed));
    osx_mouse_get_mickeys,
    NULL,       // AL_METHOD(int,  analyse_data, (AL_CONST char *buffer, int size));
-   osx_enable_hardware_cursor, 
+   osx_enable_hardware_cursor,
    osx_select_system_cursor
 };
 
@@ -77,7 +77,7 @@ static char driver_desc[256];
 
 
 /* osx_change_cursor:
- * Actually change the current cursor. This can be called fom any thread 
+ * Actually change the current cursor. This can be called fom any thread
  * but ensures that the change is only called from the main thread.
  */
 static void osx_change_cursor(NSCursor* cursor)
@@ -116,15 +116,15 @@ void osx_mouse_handler(int ax, int ay, int x, int y, int z, int buttons)
       osx_mouse_warped = FALSE;
       return;
    }
-   
+
    _mouse_b = buttons;
-   
+
    mymickey_x += x;
    mymickey_y += y;
    _mouse_x = ax;
    _mouse_y = ay;
    _mouse_z += z;
-   
+
    _mouse_x = CLAMP(mouse_minx, _mouse_x, mouse_maxx);
    _mouse_y = CLAMP(mouse_miny, _mouse_y, mouse_maxy);
 
@@ -142,7 +142,7 @@ static int osx_mouse_init(void)
    int i, j;
    int buttons, max_buttons = -1;
    HID_DEVICE* device;
-   
+
    if (floor(NSAppKitVersionNumber) <= NSAppKitVersionNumber10_1) {
       /* On 10.1.x mice and keyboards aren't available from the HID Manager,
        * so we can't autodetect. We assume an 1-button mouse to always be
@@ -157,23 +157,23 @@ static int osx_mouse_init(void)
          buttons = 0;
          for (j = 0; j < device->num_elements; j++) {
             if (device->element[j].type == HID_ELEMENT_BUTTON)
-	       buttons++;
+               buttons++;
          }
          if (buttons > max_buttons) {
             max_buttons = buttons;
-	    _al_sane_strncpy(driver_desc, "", sizeof(driver_desc));
+            _al_sane_strncpy(driver_desc, "", sizeof(driver_desc));
             if (device->manufacturer) {
-	       strncat(driver_desc, device->manufacturer, sizeof(driver_desc)-1);
-	       strncat(driver_desc, " ", sizeof(driver_desc)-1);
-	    }
-	    if (device->product)
-	       strncat(driver_desc, device->product, sizeof(driver_desc)-1);
-	    mouse_macosx.desc = driver_desc;
-	 }
+               strncat(driver_desc, device->manufacturer, sizeof(driver_desc)-1);
+               strncat(driver_desc, " ", sizeof(driver_desc)-1);
+            }
+            if (device->product)
+               strncat(driver_desc, device->product, sizeof(driver_desc)-1);
+            mouse_macosx.desc = driver_desc;
+         }
       }
       osx_hid_free(&devices);
    }
-   
+
    _unix_lock_mutex(osx_event_mutex);
    osx_emulate_mouse_buttons = (max_buttons == 1) ? TRUE : FALSE;
    _unix_unlock_mutex(osx_event_mutex);
@@ -213,21 +213,21 @@ static void osx_mouse_position(int x, int y)
    CGPoint point;
    NSRect frame;
    int screen_height;
-   
+
    _unix_lock_mutex(osx_event_mutex);
-   
+
    _mouse_x = point.x = x;
    _mouse_y = point.y = y;
-   
+
    if (osx_window) {
       CFNumberGetValue(CFDictionaryGetValue(CGDisplayCurrentMode(kCGDirectMainDisplay), kCGDisplayHeight), kCFNumberSInt32Type, &screen_height);
       frame = [osx_window frame];
       point.x += frame.origin.x;
       point.y += (screen_height - (frame.origin.y + gfx_driver->h));
    }
-   
+
    CGDisplayMoveCursorToPoint(kCGDirectMainDisplay, point);
-   
+
    mymickey_x = mymickey_y = 0;
    osx_mouse_warped = TRUE;
 
@@ -245,7 +245,7 @@ static void osx_mouse_set_range(int x1, int y1, int x2, int y2)
    mouse_miny = y1;
    mouse_maxx = x2;
    mouse_maxy = y2;
-   
+
    osx_mouse_position(CLAMP(mouse_minx, _mouse_x, mouse_maxx), CLAMP(mouse_miny, _mouse_y, mouse_maxy));
 }
 
@@ -257,7 +257,7 @@ static void osx_mouse_set_range(int x1, int y1, int x2, int y2)
 static void osx_mouse_get_mickeys(int *mickeyx, int *mickeyy)
 {
    _unix_lock_mutex(osx_event_mutex);
-   
+
    *mickeyx = mymickey_x;
    *mickeyy = mymickey_y;
    mymickey_x = mymickey_y = 0;
@@ -274,7 +274,7 @@ int osx_mouse_set_sprite(BITMAP *sprite, int x, int y)
 {
    int ix, iy;
    int sw, sh;
-   
+
    if (!sprite)
       return -1;
    sw = sprite->w;
@@ -286,7 +286,7 @@ int osx_mouse_set_sprite(BITMAP *sprite, int x, int y)
          return -1;
       sh = sw = 16;
    }
-   
+
    // Delete the old cursor (OK to send a message to nil)
    [cursor release];
 
@@ -305,8 +305,8 @@ int osx_mouse_set_sprite(BITMAP *sprite, int x, int y)
    for (iy = 0; iy< sh; ++iy) {
       unsigned char* ptr = [cursor_rep bitmapData] + (iy * [cursor_rep bytesPerRow]);
       for (ix = 0; ix< sw; ++ix) {
-         int color = is_inside_bitmap(sprite, ix, iy, 1) 
-            ? getpixel(sprite, ix, iy) : mask; 
+         int color = is_inside_bitmap(sprite, ix, iy, 1)
+            ? getpixel(sprite, ix, iy) : mask;
          // Disable the possibility of mouse sprites with alpha for now, because
          // this causes the built-in cursors to be invisible in 32 bit mode.
          // int alpha = (color == mask) ? 0 : ((bpp == 32) ? geta_depth(bpp, color) : 255);
@@ -372,7 +372,7 @@ void osx_mouse_move(int x, int y)
 /* osx_enable_hardware_cursor:
  *  Enable hardware cursor - on OSX it's always enabled.
  */
-void osx_enable_hardware_cursor(AL_CONST int mode) 
+void osx_enable_hardware_cursor(AL_CONST int mode)
 {
    (void)mode;
 }

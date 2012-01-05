@@ -39,15 +39,15 @@ protected:
 
 MaskByColorCommand::MaskByColorCommand()
   : Command("MaskByColor",
-	    "Mask By Color",
-	    CmdUIOnlyFlag)
+            "Mask By Color",
+            CmdUIOnlyFlag)
 {
 }
 
 bool MaskByColorCommand::onEnabled(Context* context)
 {
   return context->checkFlags(ContextFlags::ActiveDocumentIsWritable |
-			     ContextFlags::HasActiveSprite);
+                             ContextFlags::HasActiveSprite);
 }
 
 void MaskByColorCommand::onExecute(Context* context)

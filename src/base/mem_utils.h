@@ -12,4 +12,3 @@
 std::string get_pretty_memory_size(size_t memsize);
 
 #endif
-

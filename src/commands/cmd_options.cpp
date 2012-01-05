@@ -57,8 +57,8 @@ private:
 
 OptionsCommand::OptionsCommand()
   : Command("Options",
-	    "Options",
-	    CmdUIOnlyFlag)
+            "Options",
+            CmdUIOnlyFlag)
 {
 }
 
@@ -80,19 +80,19 @@ void OptionsCommand::onExecute(Context* context)
   /* load the window widget */
   FramePtr window(load_widget("options.xml", "options"));
   get_widgets(window,
-	      "smooth", &check_smooth,
-	      "move_click2", &move_click2,
-	      "draw_click2", &draw_click2,
-	      "cursor_color_box", &cursor_color_box,
-	      "grid_color_box", &grid_color_box,
-	      "pixel_grid_color_box", &pixel_grid_color_box,
-	      "checked_bg_size", &m_checked_bg,
-	      "checked_bg_zoom", &m_checked_bg_zoom,
-	      "checked_bg_color1_box", &checked_bg_color1_box,
-	      "checked_bg_color2_box", &checked_bg_color2_box,
-	      "checked_bg_reset", &checked_bg_reset,
-	      "undo_size_limit", &undo_size_limit,
-	      "button_ok", &button_ok, NULL);
+              "smooth", &check_smooth,
+              "move_click2", &move_click2,
+              "draw_click2", &draw_click2,
+              "cursor_color_box", &cursor_color_box,
+              "grid_color_box", &grid_color_box,
+              "pixel_grid_color_box", &pixel_grid_color_box,
+              "checked_bg_size", &m_checked_bg,
+              "checked_bg_zoom", &m_checked_bg_zoom,
+              "checked_bg_color1_box", &checked_bg_color1_box,
+              "checked_bg_color2_box", &checked_bg_color2_box,
+              "checked_bg_reset", &checked_bg_reset,
+              "undo_size_limit", &undo_size_limit,
+              "button_ok", &button_ok, NULL);
 
   // Cursor color
   cursor_color = new ColorButton(Editor::get_cursor_color(), IMAGE_RGB);

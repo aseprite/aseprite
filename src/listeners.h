@@ -76,8 +76,8 @@ public:
   void notify(void (listener_type::*method)())
   {
     for (iterator
-	   it = this->begin(), 
-	   end = this->end(); it != end; ++it) {
+           it = this->begin(),
+           end = this->end(); it != end; ++it) {
       ((*it)->*method)();
     }
   }
@@ -86,8 +86,8 @@ public:
   void notify(void (listener_type::*method)(Arg1), Arg1 arg1)
   {
     for (iterator
-	   it = this->begin(), 
-	   end = this->end(); it != end; ++it) {
+           it = this->begin(),
+           end = this->end(); it != end; ++it) {
       ((*it)->*method)(arg1);
     }
   }
@@ -96,4 +96,4 @@ private:
   list_type m_listeners;
 };
 
-#endif	// LISTENERS_H_INCLUDED
+#endif  // LISTENERS_H_INCLUDED

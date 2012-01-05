@@ -68,12 +68,12 @@ bool Slider::onProcessMessage(Message* msg)
     case JM_FOCUSENTER:
     case JM_FOCUSLEAVE:
       if (isEnabled())
-	invalidate();
+        invalidate();
       break;
 
     case JM_BUTTONPRESSED:
       if (!isEnabled())
-	return true;
+        return true;
 
       setSelected(true);
       captureMouse();
@@ -88,118 +88,118 @@ bool Slider::onProcessMessage(Message* msg)
 
     case JM_MOTION:
       if (hasCapture()) {
-	int value, accuracy, range;
-	JRect rc = jwidget_get_child_rect(this);
+        int value, accuracy, range;
+        JRect rc = jwidget_get_child_rect(this);
 
-	range = m_max - m_min + 1;
+        range = m_max - m_min + 1;
 
-	/* with left click */
-	if (slider_press_left) {
-	  value = m_min + range * (msg->mouse.x - rc->x1) / jrect_w(rc);
-	}
-	/* with right click */
-	else {
-	  accuracy = MID(1, jrect_w(rc) / range, jrect_w(rc));
+        /* with left click */
+        if (slider_press_left) {
+          value = m_min + range * (msg->mouse.x - rc->x1) / jrect_w(rc);
+        }
+        /* with right click */
+        else {
+          accuracy = MID(1, jrect_w(rc) / range, jrect_w(rc));
 
-	  value = slider_press_value +
-	    (msg->mouse.x - slider_press_x) / accuracy;
-	}
+          value = slider_press_value +
+            (msg->mouse.x - slider_press_x) / accuracy;
+        }
 
-	value = MID(m_min, value, m_max);
+        value = MID(m_min, value, m_max);
 
-	if (m_value != value) {
-	  this->setValue(value);
-	  onChange();
-	}
+        if (m_value != value) {
+          this->setValue(value);
+          onChange();
+        }
 
-	/* for left click */
-	if (slider_press_left) {
-	  int x = jmouse_x(0);
+        /* for left click */
+        if (slider_press_left) {
+          int x = jmouse_x(0);
 
-	  if (x < rc->x1-1)
-	    x = rc->x1-1;
-	  else if (x > rc->x2)
-	    x = rc->x2;
+          if (x < rc->x1-1)
+            x = rc->x1-1;
+          else if (x > rc->x2)
+            x = rc->x2;
 
-	  if (x != jmouse_x(0))
-	    jmouse_set_position(x, jmouse_y(0));
-	}
-	/* for right click */
-	else if (jmouse_control_infinite_scroll(getBounds() - getBorder())) {
-	  slider_press_x = jmouse_x(0);
-	  slider_press_value = m_value;
-	}
+          if (x != jmouse_x(0))
+            jmouse_set_position(x, jmouse_y(0));
+        }
+        /* for right click */
+        else if (jmouse_control_infinite_scroll(getBounds() - getBorder())) {
+          slider_press_x = jmouse_x(0);
+          slider_press_value = m_value;
+        }
 
-	jrect_free(rc);
-	return true;
+        jrect_free(rc);
+        return true;
       }
       break;
 
     case JM_BUTTONRELEASED:
       if (hasCapture()) {
-	setSelected(false);
-	releaseMouse();
-	setupSliderCursor();
+        setSelected(false);
+        releaseMouse();
+        setupSliderCursor();
 
-	onSliderReleased();
+        onSliderReleased();
       }
       break;
 
     case JM_MOUSEENTER:
     case JM_MOUSELEAVE:
 /*       if (jwidget_is_enabled(widget) && */
-/* 	  jwidget_has_capture(widget)) { */
-/* 	/\* swap the select status *\/ */
-/* 	if (jwidget_is_selected(widget)) */
-/* 	  jwidget_deselect(widget); */
-/* 	else */
-/* 	  jwidget_select(widget); */
+/*        jwidget_has_capture(widget)) { */
+/*      /\* swap the select status *\/ */
+/*      if (jwidget_is_selected(widget)) */
+/*        jwidget_deselect(widget); */
+/*      else */
+/*        jwidget_select(widget); */
 
-/* 	/\* TODO switch slider signal *\/ */
+/*      /\* TODO switch slider signal *\/ */
 /*       } */
 
       /* TODO theme stuff */
       if (isEnabled())
-	invalidate();
+        invalidate();
       break;
 
     case JM_KEYPRESSED:
       if (hasFocus()) {
-	int min = m_min;
-	int max = m_max;
-	int value = m_value;
+        int min = m_min;
+        int max = m_max;
+        int value = m_value;
 
-	switch (msg->key.scancode) {
-	  case KEY_LEFT:  value = MAX(value-1, min); break;
-	  case KEY_RIGHT: value = MIN(value+1, max); break;
-	  case KEY_PGDN:  value = MAX(value-(max-min+1)/4, min); break;
-	  case KEY_PGUP:  value = MIN(value+(max-min+1)/4, max); break;
-	  case KEY_HOME:  value = min; break;
-	  case KEY_END:   value = max; break;
-	  default:
-	    goto not_used;
-	}
+        switch (msg->key.scancode) {
+          case KEY_LEFT:  value = MAX(value-1, min); break;
+          case KEY_RIGHT: value = MIN(value+1, max); break;
+          case KEY_PGDN:  value = MAX(value-(max-min+1)/4, min); break;
+          case KEY_PGUP:  value = MIN(value+(max-min+1)/4, max); break;
+          case KEY_HOME:  value = min; break;
+          case KEY_END:   value = max; break;
+          default:
+            goto not_used;
+        }
 
-	if (m_value != value) {
-	  this->setValue(value);
-	  onChange();
-	}
+        if (m_value != value) {
+          this->setValue(value);
+          onChange();
+        }
 
-	return true;
+        return true;
       }
       break;
 
     case JM_WHEEL:
       if (isEnabled()) {
-	int value = m_value + jmouse_z(0) - jmouse_z(1);
+        int value = m_value + jmouse_z(0) - jmouse_z(1);
 
-	value = MID(m_min, value, m_max);
+        value = MID(m_min, value, m_max);
 
-	if (m_value != value) {
-	  this->setValue(value);
-	  onChange();
-	}
-	return true;
+        if (m_value != value) {
+          this->setValue(value);
+          onChange();
+        }
+        return true;
       }
       break;
 

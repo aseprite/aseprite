@@ -1,6 +1,6 @@
-/*         ______   ___    ___ 
- *        /\  _  \ /\_ \  /\_ \ 
- *        \ \ \L\ \\//\ \ \//\ \      __     __   _ __   ___ 
+/*         ______   ___    ___
+ *        /\  _  \ /\_ \  /\_ \
+ *        \ \ \L\ \\//\ \ \//\ \      __     __   _ __   ___
  *         \ \  __ \ \ \ \  \ \ \   /'__`\ /'_ `\/\`'__\/ __`\
  *          \ \ \/\ \ \_\ \_ \_\ \_/\  __//\ \L\ \ \ \//\ \L\ \
  *           \ \_\ \_\/\____\/\____\ \____\ \____ \ \_\\ \____/
@@ -105,16 +105,16 @@ FONT *load_grx_or_bios_font(AL_CONST char *filename, RGB *pal, void *param)
    if (ustricmp(get_extension(filename), uconvert_ascii("fnt", tmp)) == 0) {
       f = pack_fopen(filename, F_READ);
       if (!f)
-	 return NULL;
+         return NULL;
 
       id = pack_igetl(f);
       pack_fclose(f);
 
       if (id == FONTMAGIC)
-	 font = load_grx_font(filename, pal, param);
+         font = load_grx_font(filename, pal, param);
       else
-	 font = load_bios_font(filename, pal, param);
+         font = load_bios_font(filename, pal, param);
    }
-   
+
    return font;
 }

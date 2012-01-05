@@ -26,11 +26,11 @@
 XmlException::XmlException(TiXmlDocument* doc) throw()
 {
   try {
-    char buf[4096];		// TODO Overflow
+    char buf[4096];             // TODO Overflow
 
     sprintf(buf, "Error in XML file '%s' (line %d, column %d)\nError %d: %s",
-	    doc->Value(), doc->ErrorRow(), doc->ErrorCol(),
-	    doc->ErrorId(), doc->ErrorDesc());
+            doc->Value(), doc->ErrorRow(), doc->ErrorCol(),
+            doc->ErrorId(), doc->ErrorDesc());
 
     setMessage(buf);
   }

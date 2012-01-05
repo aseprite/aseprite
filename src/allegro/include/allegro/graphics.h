@@ -30,4 +30,3 @@
 #include "compiled.h"
 
 #endif          /* ifndef ALLEGRO_GRAPHICS_H */
-

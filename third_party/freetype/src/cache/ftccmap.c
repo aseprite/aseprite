@@ -131,7 +131,7 @@
   ftc_cmap_node_weight( FTC_CMapNode  cnode )
   {
     FT_UNUSED(cnode);
-    
+
     return sizeof ( *cnode );
   }
 

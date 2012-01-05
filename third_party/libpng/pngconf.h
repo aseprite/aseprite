@@ -19,7 +19,7 @@
 
 #define PNG_1_2_X
 
-/* 
+/*
  * PNG_USER_CONFIG has to be defined on the compiler command line. This
  * includes the resource compiler for Windows DLL configurations.
  */
@@ -39,7 +39,7 @@
 
 /*
  * Added at libpng-1.2.8
- *  
+ *
  * If you create a private DLL you need to define in "pngusr.h" the followings:
  * #define PNG_USER_PRIVATEBUILD <Describes by whom and why this version of
  *        the DLL was built>
@@ -50,8 +50,8 @@
  *        number and must match your private DLL name>
  *  e.g. // private DLL "libpng13gx.dll"
  *       #define PNG_USER_DLLFNAME_POSTFIX "gx"
- * 
- * The following macros are also at your disposal if you want to complete the 
+ *
+ * The following macros are also at your disposal if you want to complete the
  * DLL VERSIONINFO structure.
  * - PNG_USER_VERSIONINFO_COMMENTS
  * - PNG_USER_VERSIONINFO_COMPANYNAME
@@ -144,9 +144,9 @@
  * 'Cygwin' defines/defaults:
  *   PNG_BUILD_DLL -- (ignored) building the dll
  *   (no define)   -- (ignored) building an application, linking to the dll
- *   PNG_STATIC    -- (ignored) building the static lib, or building an 
+ *   PNG_STATIC    -- (ignored) building the static lib, or building an
  *                    application that links to the static lib.
- *   ALL_STATIC    -- (ignored) building various static libs, or building an 
+ *   ALL_STATIC    -- (ignored) building various static libs, or building an
  *                    application that links to the static libs.
  * Thus,
  * a cygwin user should define either PNG_BUILD_DLL or PNG_STATIC, and
@@ -159,12 +159,12 @@
  *   PNG_BUILD_DLL
  *   PNG_STATIC
  *   (nothing) == PNG_USE_DLL
- * 
+ *
  * CYGWIN (2002-01-20): The preceding is now obsolete. With the advent
- *   of auto-import in binutils, we no longer need to worry about 
+ *   of auto-import in binutils, we no longer need to worry about
  *   __declspec(dllexport) / __declspec(dllimport) and friends.  Therefore,
  *   we don't need to worry about PNG_STATIC or ALL_STATIC when it comes
- *   to __declspec() stuff.  However, we DO need to worry about 
+ *   to __declspec() stuff.  However, we DO need to worry about
  *   PNG_BUILD_DLL and PNG_STATIC because those change some defaults
  *   such as CONSOLE_IO and whether GLOBAL_ARRAYS are allowed.
  */
@@ -208,8 +208,8 @@
 #        if !defined(PNG_DLL)
 #          define PNG_DLL
 #        endif
-#      endif  
-#    endif  
+#      endif
+#    endif
 #  endif
 #endif
 
@@ -726,7 +726,7 @@
 #  define PNG_EASY_ACCESS_SUPPORTED
 #endif
 
-/* PNG_ASSEMBLER_CODE was enabled by default in version 1.2.0 
+/* PNG_ASSEMBLER_CODE was enabled by default in version 1.2.0
  * and removed from version 1.2.20.  The following will be removed
  * from libpng-1.4.0
 */
@@ -1301,7 +1301,7 @@ typedef z_stream FAR *  png_zstreamp;
 #  define PNGAPI __cdecl
 #  undef PNG_IMPEXP
 #  define PNG_IMPEXP
-#endif  
+#endif
 
 /* If you define PNGAPI, e.g., with compiler option "-DPNGAPI=__stdcall",
  * you may get warnings regarding the linkage of png_zalloc and png_zfree.

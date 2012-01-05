@@ -172,7 +172,7 @@ static void _xwin_mousedrv_position(int x, int y)
    mymickey_x = mymickey_y = 0;
 
    if (_xwin.hw_cursor_ok)
-      XWarpPointer(_xwin.display, _xwin.window, _xwin.window, 0, 0, 
+      XWarpPointer(_xwin.display, _xwin.window, _xwin.window, 0, 0,
                    _xwin.window_width, _xwin.window_height, x, y);
    XUNLOCK();
 
@@ -243,7 +243,7 @@ static void _xwin_mousedrv_get_mickeys(int *mickeyx, int *mickeyy)
 
 
 /* _xwin_select_system_cursor:
- *  Select an OS native cursor 
+ *  Select an OS native cursor
  */
 static int _xwin_select_system_cursor(AL_CONST int cursor)
 {

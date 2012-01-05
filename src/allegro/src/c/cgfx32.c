@@ -25,4 +25,3 @@
 #include "cgfx.h"
 
 #endif
-

@@ -81,7 +81,7 @@ void dialogs_mask_color(Document* document)
   label_color = new Label("Color:");
   button_color = new ColorButton
    (get_config_color("MaskColor", "Color",
-		     app_get_colorbar()->getFgColor()),
+                     app_get_colorbar()->getFgColor()),
     sprite->getImgType());
   button_1 = new Button("1");
   button_2 = new Button("2");

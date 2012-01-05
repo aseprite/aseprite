@@ -32,7 +32,7 @@ class MovingPixelsState : public StandbyState, StatusBarListener
 {
 public:
   MovingPixelsState(Editor* editor, Message* msg, Image* imge, int x, int y, int opacity,
-		    HandleType handle);
+                    HandleType handle);
   virtual ~MovingPixelsState();
 
   virtual bool onBeforeChangeState(Editor* editor) OVERRIDE;
@@ -61,4 +61,4 @@ private:
   PixelsMovement* m_pixelsMovement;
 };
 
-#endif	// WIDGETS_EDITOR_MOVING_PIXELS_STATE_H_INCLUDED
+#endif  // WIDGETS_EDITOR_MOVING_PIXELS_STATE_H_INCLUDED

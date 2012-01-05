@@ -73,14 +73,14 @@ class ToolLoopImpl : public tools::ToolLoop
 
 public:
   ToolLoopImpl(Editor* editor,
-	       Context* context,
-	       tools::Tool* tool,
-	       Document* document,
-	       Sprite* sprite,
-	       Layer* layer,
-	       tools::ToolLoop::Button button,
-	       const Color& primary_color,
-	       const Color& secondary_color)
+               Context* context,
+               tools::Tool* tool,
+               Document* document,
+               Sprite* sprite,
+               Layer* layer,
+               tools::ToolLoop::Button button,
+               const Color& primary_color,
+               const Color& secondary_color)
     : m_editor(editor)
     , m_context(context)
     , m_tool(tool)
@@ -99,14 +99,14 @@ public:
 
     switch (tool->getFill(m_button)) {
       case tools::FillNone:
-	m_filled = false;
-	break;
+        m_filled = false;
+        break;
       case tools::FillAlways:
-	m_filled = true;
-	break;
+        m_filled = true;
+        break;
       case tools::FillOptional:
-	m_filled = settings->getToolSettings(m_tool)->getFilled();
-	break;
+        m_filled = settings->getToolSettings(m_tool)->getFilled();
+        break;
     }
     m_previewFilled = settings->getToolSettings(m_tool)->getPreviewFilled();
 
@@ -118,9 +118,9 @@ public:
     ASSERT(pen_settings != NULL);
 
     m_pen = new Pen(pen_settings->getType(),
-		    pen_settings->getSize(),
-		    pen_settings->getAngle());
-    
+                    pen_settings->getSize(),
+                    pen_settings->getAngle());
+
     m_useMask = m_document->isMaskVisible();
 
     // Selection ink
@@ -134,7 +134,7 @@ public:
 
     m_mask = m_document->getMask();
     m_maskOrigin = (!m_mask->is_empty() ? gfx::Point(m_mask->x-x1, m_mask->y-y1):
-					  gfx::Point(0, 0));
+                                          gfx::Point(0, 0));
 
     m_opacity = settings->getToolSettings(m_tool)->getOpacity();
     m_tolerance = settings->getToolSettings(m_tool)->getTolerance();
@@ -149,12 +149,12 @@ public:
       m_document->getUndoHistory()->setLabel(m_tool->getText().c_str());
 
       if (getInk()->isSelection() ||
-	  getInk()->isEyedropper() ||
-	  getInk()->isScrollMovement()) {
-	m_document->getUndoHistory()->setModification(undo::DoesntModifyDocument);
+          getInk()->isEyedropper() ||
+          getInk()->isScrollMovement()) {
+        m_document->getUndoHistory()->setModification(undo::DoesntModifyDocument);
       }
       else
-	m_document->getUndoHistory()->setModification(undo::ModifyDocument);
+        m_document->getUndoHistory()->setModification(undo::ModifyDocument);
     }
   }
 
@@ -163,11 +163,11 @@ public:
     if (!m_canceled) {
       // Paint ink
       if (getInk()->isPaint()) {
-	m_expandCelCanvas.commit();
+        m_expandCelCanvas.commit();
       }
       // Selection ink
       else if (getInk()->isSelection()) {
-	m_document->generateMaskBoundaries();
+        m_document->generateMaskBoundaries();
       }
     }
 
@@ -219,7 +219,7 @@ public:
   {
     gfx::Point spritePoint;
     m_editor->screenToEditor(screenPoint.x, screenPoint.y,
-			     &spritePoint.x, &spritePoint.y);
+                             &spritePoint.x, &spritePoint.y);
     return spritePoint;
   }
 
@@ -258,17 +258,17 @@ tools::ToolLoop* create_tool_loop(Editor* editor, Context* context, Message* msg
   // If the active layer is not visible.
   if (!layer->is_readable()) {
     Alert::show(PACKAGE
-		"<<The current layer is hidden,"
-		"<<make it visible and try again"
-		"||&Close");
+                "<<The current layer is hidden,"
+                "<<make it visible and try again"
+                "||&Close");
     return NULL;
   }
   // If the active layer is read-only.
   else if (!layer->is_writable()) {
     Alert::show(PACKAGE
-		"<<The current layer is locked,"
-		"<<unlock it and try again"
-		"||&Close");
+                "<<The current layer is locked,"
+                "<<unlock it and try again"
+                "||&Close");
     return NULL;
   }
 
@@ -279,21 +279,21 @@ tools::ToolLoop* create_tool_loop(Editor* editor, Context* context, Message* msg
 
   if (!fg.isValid() || !bg.isValid()) {
     Alert::show(PACKAGE
-		"<<The current selected foreground and/or background color"
-		"<<is out of range. Select valid colors in the color-bar."
-		"||&Close");
+                "<<The current selected foreground and/or background color"
+                "<<is out of range. Select valid colors in the color-bar."
+                "||&Close");
     return NULL;
   }
 
   // Create the new tool loop
   return
     new ToolLoopImpl(editor,
-		     context,
-		     current_tool,
-		     editor->getDocument(),
-		     sprite, layer,
-		     msg->mouse.left ? tools::ToolLoop::Left:
-				       tools::ToolLoop::Right,
-		     msg->mouse.left ? fg: bg,
-		     msg->mouse.left ? bg: fg);
+                     context,
+                     current_tool,
+                     editor->getDocument(),
+                     sprite, layer,
+                     msg->mouse.left ? tools::ToolLoop::Left:
+                                       tools::ToolLoop::Right,
+                     msg->mouse.left ? fg: bg,
+                     msg->mouse.left ? bg: fg);
 }

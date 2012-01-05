@@ -48,9 +48,9 @@ class Image : public GfxObj
 public:
   int imgtype;
   int w, h;
-  uint8_t* dat;			// Pixmap data.
-  uint8_t** line;		// Start of each scanline.
-  uint32_t mask_color;		// Skipped color in merge process.
+  uint8_t* dat;                 // Pixmap data.
+  uint8_t** line;               // Start of each scanline.
+  uint32_t mask_color;          // Skipped color in merge process.
 
   Image(int imgtype, int w, int h);
   virtual ~Image();
@@ -82,7 +82,7 @@ void image_clear(Image* image, int color);
 
 void image_copy(Image* dst, const Image* src, int x, int y);
 void image_merge(Image* dst, const Image* src, int x, int y, int opacity,
-		 int blend_mode);
+                 int blend_mode);
 
 Image* image_crop(const Image* image, int x, int y, int w, int h, int bgcolor);
 void image_rotate(const Image* src, Image* dst, int angle);
@@ -106,7 +106,7 @@ bool image_shrink_rect(Image *image, int *x1, int *y1, int *x2, int *y2, int ref
 inline int imgtype_shift(int imgtype)
 {
   return ((imgtype == IMAGE_RGB)?       2:
-	  (imgtype == IMAGE_GRAYSCALE)? 1: 0);
+          (imgtype == IMAGE_GRAYSCALE)? 1: 0);
 }
 
 inline int image_shift(const Image* image)

@@ -49,7 +49,7 @@ public:
   void rollback();
 
   // You can read pixels from here
-  Image* getSourceCanvas() {	// TODO this should be "const"
+  Image* getSourceCanvas() {    // TODO this should be "const"
     return m_srcImage;
   }
 

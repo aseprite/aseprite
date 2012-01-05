@@ -42,4 +42,4 @@ private:
 
 } // namespace undoers
 
-#endif	// UNDOERS_SET_STOCK_IMGTYPE_H_INCLUDED
+#endif  // UNDOERS_SET_STOCK_IMGTYPE_H_INCLUDED

@@ -53,8 +53,8 @@ static int get_max_layer_num(Layer* layer);
 
 NewLayerCommand::NewLayerCommand()
   : Command("NewLayer",
-	    "New Layer",
-	    CmdRecordableFlag)
+            "New Layer",
+            CmdRecordableFlag)
 {
   m_ask = false;
   m_name = "";
@@ -71,7 +71,7 @@ void NewLayerCommand::onLoadParams(Params* params)
 bool NewLayerCommand::onEnabled(Context* context)
 {
   return context->checkFlags(ContextFlags::ActiveDocumentIsWritable |
-			     ContextFlags::HasActiveSprite);
+                             ContextFlags::HasActiveSprite);
 }
 
 void NewLayerCommand::onExecute(Context* context)
@@ -138,7 +138,7 @@ static int get_max_layer_num(Layer* layer)
       max = MAX(tmp, max);
     }
   }
-  
+
   return max;
 }
 

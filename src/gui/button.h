@@ -35,9 +35,9 @@ class ButtonBase : public Widget
 {
 public:
   ButtonBase(const char* text,
-	     int type,
-	     int behaviorType,
-	     int drawType);
+             int type,
+             int behaviorType,
+             int drawType);
   virtual ~ButtonBase();
 
   int getBehaviorType() const;

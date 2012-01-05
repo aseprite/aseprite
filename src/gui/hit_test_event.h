@@ -27,7 +27,7 @@ enum HitTest
 class HitTestEvent : public Event
 {
 public:
-  HitTestEvent(Component* source, const gfx::Point& point, HitTest hit) 
+  HitTestEvent(Component* source, const gfx::Point& point, HitTest hit)
     : Event(source)
     , m_point(point)
     , m_hit(hit) { }
@@ -42,4 +42,4 @@ private:
   HitTest m_hit;
 };
 
-#endif	// GUI_HIT_TEST_EVENT_H_INCLUDED
+#endif  // GUI_HIT_TEST_EVENT_H_INCLUDED

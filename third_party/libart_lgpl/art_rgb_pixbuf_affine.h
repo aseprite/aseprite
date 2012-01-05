@@ -39,11 +39,11 @@ extern "C" {
 
 void
 art_rgb_pixbuf_affine (art_u8 *dst,
-		       int x0, int y0, int x1, int y1, int dst_rowstride,
-		       const ArtPixBuf *pixbuf,
-		       const double affine[6],
-		       ArtFilterLevel level,
-		       ArtAlphaGamma *alphagamma);
+                       int x0, int y0, int x1, int y1, int dst_rowstride,
+                       const ArtPixBuf *pixbuf,
+                       const double affine[6],
+                       ArtFilterLevel level,
+                       ArtAlphaGamma *alphagamma);
 
 #ifdef __cplusplus
 }

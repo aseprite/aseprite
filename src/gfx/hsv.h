@@ -71,8 +71,8 @@ public:
   // The comparison is done through the integer value of each component.
   bool operator==(const Hsv& other) const {
     return (hueInt() == other.hueInt() &&
-	    saturationInt() == other.saturationInt() &&
-	    valueInt() == other.valueInt());
+            saturationInt() == other.saturationInt() &&
+            valueInt() == other.valueInt());
   }
 
   bool operator!=(const Hsv& other) const {

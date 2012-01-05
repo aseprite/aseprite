@@ -40,8 +40,8 @@ class ColorSliders : public Widget
 {
 public:
   enum Channel { Red, Green, Blue,
-		 Hue, Saturation, Value,
-		 Gray };
+                 Hue, Saturation, Value,
+                 Gray };
 
   ColorSliders();
   ~ColorSliders();

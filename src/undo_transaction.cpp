@@ -85,7 +85,7 @@ UndoTransaction::~UndoTransaction()
     if (isEnabled()) {
       // If it isn't committed, we have to rollback all changes.
       if (!m_committed && !m_closed)
-	rollback();
+        rollback();
 
       ASSERT(m_closed);
     }
@@ -170,7 +170,7 @@ void UndoTransaction::setCurrentLayer(Layer* layer)
 {
   if (isEnabled())
     m_undoHistory->pushUndoer(new undoers::SetCurrentLayer(
-	m_undoHistory->getObjects(), m_sprite));
+        m_undoHistory->getObjects(), m_sprite));
 
   m_sprite->setCurrentLayer(layer);
 }
@@ -210,8 +210,8 @@ void UndoTransaction::autocropSprite(int bgcolor)
   x2 = y2 = INT_MIN;
 
   Image* image = image_new(m_sprite->getImgType(),
-			   m_sprite->getWidth(),
-			   m_sprite->getHeight());
+                           m_sprite->getWidth(),
+                           m_sprite->getHeight());
 
   for (int frame=0; frame<m_sprite->getTotalFrames(); ++frame) {
     m_sprite->setCurrentFrame(frame);
@@ -220,7 +220,7 @@ void UndoTransaction::autocropSprite(int bgcolor)
     // TODO configurable (what color pixel to use as "refpixel",
     // here we are using the top-left pixel by default)
     if (image_shrink_rect(image, &u1, &v1, &u2, &v2,
-			  image_getpixel(image, 0, 0))) {
+                          image_getpixel(image, 0, 0))) {
       x1 = MIN(x1, u1);
       y1 = MIN(y1, v1);
       x2 = MAX(x2, u2);
@@ -262,9 +262,9 @@ void UndoTransaction::setImgType(int new_imgtype, DitheringMethod dithering_meth
       continue;
 
     new_image = quantization::convert_imgtype(old_image, new_imgtype, dithering_method, rgbmap,
-					      // TODO check this out
-					      m_sprite->getCurrentPalette(),
-					      m_sprite->getBackgroundLayer() != NULL);
+                                              // TODO check this out
+                                              m_sprite->getCurrentPalette(),
+                                              m_sprite->getBackgroundLayer() != NULL);
 
     this->replaceStockImage(c, new_image);
   }
@@ -284,9 +284,9 @@ void UndoTransaction::setImgType(int new_imgtype, DitheringMethod dithering_meth
       // Save all palettes
       PalettesList palettes = m_sprite->getPalettes();
       for (PalettesList::iterator it = palettes.begin(); it != palettes.end(); ++it) {
-	Palette* palette = *it;
-	m_undoHistory->pushUndoer(new undoers::RemovePalette(
-	    m_undoHistory->getObjects(), m_sprite, palette->getFrame()));
+        Palette* palette = *it;
+        m_undoHistory->pushUndoer(new undoers::RemovePalette(
+            m_undoHistory->getObjects(), m_sprite, palette->getFrame()));
       }
     }
 
@@ -312,7 +312,7 @@ int UndoTransaction::addImageInStock(Image* image)
 
   if (isEnabled())
     m_undoHistory->pushUndoer(new undoers::AddImage(m_undoHistory->getObjects(),
-	m_sprite->getStock(), image_index));
+        m_sprite->getStock(), image_index));
 
   return image_index;
 }
@@ -329,7 +329,7 @@ void UndoTransaction::removeImageFromStock(int image_index)
 
   if (isEnabled())
     m_undoHistory->pushUndoer(new undoers::RemoveImage(m_undoHistory->getObjects(),
-	m_sprite->getStock(), image_index));
+        m_sprite->getStock(), image_index));
 
   m_sprite->getStock()->removeImage(image);
   image_free(image);
@@ -344,7 +344,7 @@ void UndoTransaction::replaceStockImage(int image_index, Image* new_image)
   // replace the image in the stock
   if (isEnabled())
     m_undoHistory->pushUndoer(new undoers::ReplaceImage(m_undoHistory->getObjects(),
-	m_sprite->getStock(), image_index));
+        m_sprite->getStock(), image_index));
 
   m_sprite->getStock()->replaceImage(image_index, new_image);
 
@@ -363,7 +363,7 @@ LayerImage* UndoTransaction::newLayer()
   // add the layer in the sprite set
   if (isEnabled())
     m_undoHistory->pushUndoer(new undoers::AddLayer(m_undoHistory->getObjects(),
-	m_sprite->getFolder(), layer));
+        m_sprite->getFolder(), layer));
 
   m_sprite->getFolder()->add_layer(layer);
 
@@ -402,7 +402,7 @@ void UndoTransaction::removeLayer(Layer* layer)
   // remove the layer
   if (isEnabled())
     m_undoHistory->pushUndoer(new undoers::RemoveLayer(m_undoHistory->getObjects(),
-	layer));
+        layer));
 
   parent->remove_layer(layer);
 
@@ -443,8 +443,8 @@ void UndoTransaction::displaceLayers(Layer* layer, int dx, int dy)
       CelIterator it = ((LayerImage*)layer)->getCelBegin();
       CelIterator end = ((LayerImage*)layer)->getCelEnd();
       for (; it != end; ++it) {
-	Cel* cel = *it;
-	setCelPosition(cel, cel->getX()+dx, cel->getY()+dy);
+        Cel* cel = *it;
+        setCelPosition(cel, cel->getX()+dx, cel->getY()+dy);
       }
       break;
     }
@@ -453,7 +453,7 @@ void UndoTransaction::displaceLayers(Layer* layer, int dx, int dy)
       LayerIterator it = ((LayerFolder*)layer)->get_layer_begin();
       LayerIterator end = ((LayerFolder*)layer)->get_layer_end();
       for (; it != end; ++it)
-	displaceLayers(*it, dx, dy);
+        displaceLayers(*it, dx, dy);
       break;
     }
 
@@ -472,8 +472,8 @@ void UndoTransaction::backgroundFromLayer(LayerImage* layer, int bgcolor)
   // create a temporary image to draw each frame of the new
   // `Background' layer
   UniquePtr<Image> bg_image_wrap(image_new(m_sprite->getImgType(),
-					   m_sprite->getWidth(),
-					   m_sprite->getHeight()));
+                                           m_sprite->getWidth(),
+                                           m_sprite->getHeight()));
   Image* bg_image = bg_image_wrap.get();
 
   CelIterator it = layer->getCelBegin();
@@ -482,7 +482,7 @@ void UndoTransaction::backgroundFromLayer(LayerImage* layer, int bgcolor)
   for (; it != end; ++it) {
     Cel* cel = *it;
     ASSERT((cel->getImage() > 0) &&
-	   (cel->getImage() < m_sprite->getStock()->size()));
+           (cel->getImage() < m_sprite->getStock()->size()));
 
     // get the image from the sprite's stock of images
     Image* cel_image = m_sprite->getStock()->getImage(cel->getImage());
@@ -490,20 +490,20 @@ void UndoTransaction::backgroundFromLayer(LayerImage* layer, int bgcolor)
 
     image_clear(bg_image, bgcolor);
     image_merge(bg_image, cel_image,
-		cel->getX(),
-		cel->getY(),
-		MID(0, cel->getOpacity(), 255),
-		layer->getBlendMode());
+                cel->getX(),
+                cel->getY(),
+                MID(0, cel->getOpacity(), 255),
+                layer->getBlendMode());
 
     // now we have to copy the new image (bg_image) to the cel...
     setCelPosition(cel, 0, 0);
 
     // same size of cel-image and bg-image
     if (bg_image->w == cel_image->w &&
-	bg_image->h == cel_image->h) {
+        bg_image->h == cel_image->h) {
       if (isEnabled())
-	m_undoHistory->pushUndoer(new undoers::ImageArea(m_undoHistory->getObjects(),
-	    cel_image, 0, 0, cel_image->w, cel_image->h));
+        m_undoHistory->pushUndoer(new undoers::ImageArea(m_undoHistory->getObjects(),
+            cel_image, 0, 0, cel_image->w, cel_image->h));
 
       image_copy(cel_image, bg_image, 0, 0);
     }
@@ -558,8 +558,8 @@ void UndoTransaction::flattenLayers(int bgcolor)
 
   // create a temporary image
   UniquePtr<Image> image_wrap(image_new(m_sprite->getImgType(),
-					m_sprite->getWidth(),
-					m_sprite->getHeight()));
+                                        m_sprite->getWidth(),
+                                        m_sprite->getHeight()));
   Image* image = image_wrap.get();
 
   /* get the background layer from the sprite */
@@ -570,14 +570,14 @@ void UndoTransaction::flattenLayers(int bgcolor)
 
     if (isEnabled())
       m_undoHistory->pushUndoer(new undoers::AddLayer(m_undoHistory->getObjects(),
-	  m_sprite->getFolder(), background));
+          m_sprite->getFolder(), background));
 
     m_sprite->getFolder()->add_layer(background);
 
     if (isEnabled())
       m_undoHistory->pushUndoer(new undoers::MoveLayer(m_undoHistory->getObjects(),
-	  background));
-    
+          background));
+
     background->configureAsBackground();
   }
 
@@ -594,16 +594,16 @@ void UndoTransaction::flattenLayers(int bgcolor)
 
       /* we have to save the current state of `cel_image' in the undo */
       if (isEnabled()) {
-	Dirty* dirty = new Dirty(cel_image, image);
-	dirty->saveImagePixels(cel_image);
-	m_undoHistory->pushUndoer(new undoers::DirtyArea(
-	    m_undoHistory->getObjects(), cel_image, dirty));
-	delete dirty;
+        Dirty* dirty = new Dirty(cel_image, image);
+        dirty->saveImagePixels(cel_image);
+        m_undoHistory->pushUndoer(new undoers::DirtyArea(
+            m_undoHistory->getObjects(), cel_image, dirty));
+        delete dirty;
       }
     }
     else {
       /* if there aren't a cel in this frame in the background, we
-	 have to create a copy of the image for the new cel */
+         have to create a copy of the image for the new cel */
       cel_image = image_new_copy(image);
       /* TODO error handling: if (!cel_image) { ... } */
 
@@ -622,7 +622,7 @@ void UndoTransaction::flattenLayers(int bgcolor)
   if (m_sprite->getCurrentLayer() != background) {
     if (isEnabled())
       m_undoHistory->pushUndoer(new undoers::SetCurrentLayer(
-	  m_undoHistory->getObjects(), m_sprite));
+          m_undoHistory->getObjects(), m_sprite));
 
     m_sprite->setCurrentLayer(background);
   }
@@ -638,8 +638,8 @@ void UndoTransaction::flattenLayers(int bgcolor)
 
       // Remove the layer
       if (isEnabled())
-	m_undoHistory->pushUndoer(new undoers::RemoveLayer(m_undoHistory->getObjects(),
-	    old_layer));
+        m_undoHistory->pushUndoer(new undoers::RemoveLayer(m_undoHistory->getObjects(),
+            old_layer));
 
       m_sprite->getFolder()->remove_layer(old_layer);
 
@@ -664,7 +664,7 @@ void UndoTransaction::newFrame()
 {
   // add a new cel to every layer
   newFrameForLayer(m_sprite->getFolder(),
-		   m_sprite->getCurrentFrame()+1);
+                   m_sprite->getCurrentFrame()+1);
 
   // increment frames counter in the sprite
   setNumberOfFrames(m_sprite->getTotalFrames()+1);
@@ -683,9 +683,9 @@ void UndoTransaction::newFrameForLayer(Layer* layer, int frame)
     case GFXOBJ_LAYER_IMAGE:
       // displace all cels in '>=frame' to the next frame
       for (int c=m_sprite->getTotalFrames()-1; c>=frame; --c) {
-	Cel* cel = static_cast<LayerImage*>(layer)->getCel(c);
-	if (cel)
-	  setCelFramePosition(cel, cel->getFrame()+1);
+        Cel* cel = static_cast<LayerImage*>(layer)->getCel(c);
+        if (cel)
+          setCelFramePosition(cel, cel->getFrame()+1);
       }
 
       copyPreviousFrame(layer, frame);
@@ -696,7 +696,7 @@ void UndoTransaction::newFrameForLayer(Layer* layer, int frame)
       LayerIterator end = static_cast<LayerFolder*>(layer)->get_layer_end();
 
       for (; it != end; ++it)
-	newFrameForLayer(*it, frame);
+        newFrameForLayer(*it, frame);
       break;
     }
 
@@ -731,11 +731,11 @@ void UndoTransaction::removeFrameOfLayer(Layer* layer, int frame)
 
     case GFXOBJ_LAYER_IMAGE:
       if (Cel* cel = static_cast<LayerImage*>(layer)->getCel(frame))
-	removeCel(static_cast<LayerImage*>(layer), cel);
+        removeCel(static_cast<LayerImage*>(layer), cel);
 
       for (++frame; frame<m_sprite->getTotalFrames(); ++frame)
-	if (Cel* cel = static_cast<LayerImage*>(layer)->getCel(frame))
-	  setCelFramePosition(cel, cel->getFrame()-1);
+        if (Cel* cel = static_cast<LayerImage*>(layer)->getCel(frame))
+          setCelFramePosition(cel, cel->getFrame()-1);
       break;
 
     case GFXOBJ_LAYER_FOLDER: {
@@ -743,7 +743,7 @@ void UndoTransaction::removeFrameOfLayer(Layer* layer, int frame)
       LayerIterator end = static_cast<LayerFolder*>(layer)->get_layer_end();
 
       for (; it != end; ++it)
-	removeFrameOfLayer(*it, frame);
+        removeFrameOfLayer(*it, frame);
       break;
     }
 
@@ -761,7 +761,7 @@ void UndoTransaction::copyPreviousFrame(Layer* layer, int frame)
   // create a copy of the previous cel
   Cel* src_cel = static_cast<LayerImage*>(layer)->getCel(frame-1);
   Image* src_image = src_cel ? m_sprite->getStock()->getImage(src_cel->getImage()):
-			       NULL;
+                               NULL;
 
   // nothing to copy, it will be a transparent cel
   if (!src_image)
@@ -773,7 +773,7 @@ void UndoTransaction::copyPreviousFrame(Layer* layer, int frame)
 
   // create the new cel
   Cel* dst_cel = new Cel(frame, image_index);
-  if (src_cel) {		// copy the data from the previous cel
+  if (src_cel) {                // copy the data from the previous cel
     dst_cel->setPosition(src_cel->getX(), src_cel->getY());
     dst_cel->setOpacity(src_cel->getOpacity());
   }
@@ -789,7 +789,7 @@ void UndoTransaction::addCel(LayerImage* layer, Cel* cel)
 
   if (isEnabled())
     m_undoHistory->pushUndoer(new undoers::AddCel(m_undoHistory->getObjects(),
-	layer, cel));
+        layer, cel));
 
   layer->addCel(cel);
 }
@@ -817,7 +817,7 @@ void UndoTransaction::removeCel(LayerImage* layer, Cel* cel)
 
   if (isEnabled())
     m_undoHistory->pushUndoer(new undoers::RemoveCel(m_undoHistory->getObjects(),
-	layer, cel));
+        layer, cel));
 
   // remove the cel from the layer
   layer->removeCel(cel);
@@ -851,7 +851,7 @@ void UndoTransaction::setFrameDuration(int frame, int msecs)
 {
   if (isEnabled())
     m_undoHistory->pushUndoer(new undoers::SetFrameDuration(
-	m_undoHistory->getObjects(), m_sprite, frame));
+        m_undoHistory->getObjects(), m_sprite, frame));
 
   m_sprite->setFrameDuration(frame, msecs);
 }
@@ -861,7 +861,7 @@ void UndoTransaction::setConstantFrameRate(int msecs)
   if (isEnabled()) {
     for (int fr=0; fr<m_sprite->getTotalFrames(); ++fr)
       m_undoHistory->pushUndoer(new undoers::SetFrameDuration(
-	  m_undoHistory->getObjects(), m_sprite, fr));
+          m_undoHistory->getObjects(), m_sprite, fr));
   }
 
   m_sprite->setDurationForAllFrames(msecs);
@@ -881,14 +881,14 @@ void UndoTransaction::moveFrameBefore(int frame, int before_frame)
     // moving the frame to the future
     if (frame < before_frame) {
       for (int c=frame; c<before_frame-1; c++)
-	setFrameDuration(c, m_sprite->getFrameDuration(c+1));
+        setFrameDuration(c, m_sprite->getFrameDuration(c+1));
 
       setFrameDuration(before_frame-1, frlen_aux);
     }
     // moving the frame to the past
     else if (before_frame < frame) {
       for (int c=frame; c>before_frame; c--)
-	setFrameDuration(c, m_sprite->getFrameDuration(c-1));
+        setFrameDuration(c, m_sprite->getFrameDuration(c-1));
 
       setFrameDuration(before_frame, frlen_aux);
     }
@@ -909,32 +909,32 @@ void UndoTransaction::moveFrameBeforeLayer(Layer* layer, int frame, int before_f
       CelIterator end = ((LayerImage*)layer)->getCelEnd();
 
       for (; it != end; ++it) {
-	Cel* cel = *it;
-	int new_frame = cel->getFrame();
+        Cel* cel = *it;
+        int new_frame = cel->getFrame();
 
-	// moving the frame to the future
-	if (frame < before_frame) {
-	  if (cel->getFrame() == frame) {
-	    new_frame = before_frame-1;
-	  }
-	  else if (cel->getFrame() > frame &&
-		   cel->getFrame() < before_frame) {
-	    new_frame--;
-	  }
-	}
-	// moving the frame to the past
-	else if (before_frame < frame) {
-	  if (cel->getFrame() == frame) {
-	    new_frame = before_frame;
-	  }
-	  else if (cel->getFrame() >= before_frame &&
-		   cel->getFrame() < frame) {
-	    new_frame++;
-	  }
-	}
+        // moving the frame to the future
+        if (frame < before_frame) {
+          if (cel->getFrame() == frame) {
+            new_frame = before_frame-1;
+          }
+          else if (cel->getFrame() > frame &&
+                   cel->getFrame() < before_frame) {
+            new_frame--;
+          }
+        }
+        // moving the frame to the past
+        else if (before_frame < frame) {
+          if (cel->getFrame() == frame) {
+            new_frame = before_frame;
+          }
+          else if (cel->getFrame() >= before_frame &&
+                   cel->getFrame() < frame) {
+            new_frame++;
+          }
+        }
 
-	if (cel->getFrame() != new_frame)
-	  setCelFramePosition(cel, new_frame);
+        if (cel->getFrame() != new_frame)
+          setCelFramePosition(cel, new_frame);
       }
       break;
     }
@@ -944,7 +944,7 @@ void UndoTransaction::moveFrameBeforeLayer(Layer* layer, int frame, int before_f
       LayerIterator end = static_cast<LayerFolder*>(layer)->get_layer_end();
 
       for (; it != end; ++it)
-	moveFrameBeforeLayer(*it, frame, before_frame);
+        moveFrameBeforeLayer(*it, frame, before_frame);
       break;
     }
 
@@ -963,7 +963,7 @@ void UndoTransaction::cropCel(Cel* cel, int x, int y, int w, int h, int bgcolor)
 {
   Image* cel_image = m_sprite->getStock()->getImage(cel->getImage());
   ASSERT(cel_image);
-    
+
   // create the new image through a crop
   Image* new_image = image_crop(cel_image, x-cel->getX(), y-cel->getY(), w, h, bgcolor);
 
@@ -1001,8 +1001,8 @@ void UndoTransaction::clearMask(int bgcolor)
     // If the layer is the background then we clear the image.
     if (m_sprite->getCurrentLayer()->is_background()) {
       if (isEnabled())
-	m_undoHistory->pushUndoer(new undoers::ImageArea(m_undoHistory->getObjects(),
-	    image, 0, 0, image->w, image->h));
+        m_undoHistory->pushUndoer(new undoers::ImageArea(m_undoHistory->getObjects(),
+            image, 0, 0, image->w, image->h));
 
       // clear all
       image_clear(image, bgcolor);
@@ -1028,7 +1028,7 @@ void UndoTransaction::clearMask(int bgcolor)
 
     if (isEnabled())
       m_undoHistory->pushUndoer(new undoers::ImageArea(m_undoHistory->getObjects(),
-	  image, x1, y1, x2-x1+1, y2-y1+1));
+          image, x1, y1, x2-x1+1, y2-y1+1));
 
     // clear the masked zones
     for (v=0; v<mask->h; v++) {
@@ -1036,28 +1036,28 @@ void UndoTransaction::clearMask(int bgcolor)
       uint8_t* address = ((uint8_t**)mask->bitmap->line)[v]+d.quot;
 
       for (u=0; u<mask->w; u++) {
-	if ((*address & (1<<d.rem))) {
-	  putx = u + offset_x;
-	  puty = v + offset_y;
-	  image_putpixel(image, putx, puty, bgcolor);
-	}
+        if ((*address & (1<<d.rem))) {
+          putx = u + offset_x;
+          puty = v + offset_y;
+          image_putpixel(image, putx, puty, bgcolor);
+        }
 
-	_image_bitmap_next_bit(d, address);
+        _image_bitmap_next_bit(d, address);
       }
     }
   }
 }
 
 void UndoTransaction::flipImage(Image* image, int x1, int y1, int x2, int y2,
-				bool flip_horizontal, bool flip_vertical)
+                                bool flip_horizontal, bool flip_vertical)
 {
   // Insert the undo operation.
   if (isEnabled()) {
     m_undoHistory->pushUndoer
       (new undoers::FlipImage
        (m_undoHistory->getObjects(), image, x1, y1, x2-x1+1, y2-y1+1,
-	(flip_horizontal ? undoers::FlipImage::FlipHorizontal: 0) |
-	(flip_vertical ? undoers::FlipImage::FlipVertical: 0)));
+        (flip_horizontal ? undoers::FlipImage::FlipHorizontal: 0) |
+        (flip_vertical ? undoers::FlipImage::FlipVertical: 0)));
   }
 
   // Flip the portion of the bitmap.
@@ -1067,9 +1067,9 @@ void UndoTransaction::flipImage(Image* image, int x1, int y1, int x2, int y2,
   for (y=0; y<(y2-y1+1); y++)
     for (x=0; x<(x2-x1+1); x++)
       image_putpixel(image,
-		     flip_horizontal ? x2-x: x1+x,
-		     flip_vertical ? y2-y: y1+y,
-		     image_getpixel(area, x, y));
+                     flip_horizontal ? x2-x: x1+x,
+                     flip_vertical ? y2-y: y1+y,
+                     image_getpixel(area, x, y));
 
   image_free(area);
 }
@@ -1100,7 +1100,7 @@ void UndoTransaction::copyToCurrentMask(Mask* mask)
 
   if (isEnabled())
     m_undoHistory->pushUndoer(new undoers::SetMask(m_undoHistory->getObjects(),
-	m_document));
+        m_document));
 
   mask_copy(m_document->getMask(), mask);
 }
@@ -1120,7 +1120,7 @@ void UndoTransaction::deselectMask()
 {
   if (isEnabled())
     m_undoHistory->pushUndoer(new undoers::SetMask(m_undoHistory->getObjects(),
-	m_document));
+        m_document));
 
   m_document->setMaskVisible(false);
 }

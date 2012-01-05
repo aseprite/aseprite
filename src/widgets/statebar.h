@@ -119,12 +119,12 @@ private:
 
   // Box of main commands
   Widget* m_commandsBox;
-  Slider* m_slider;			// Opacity slider
-  Button* m_b_first;			// Go to first frame
-  Button* m_b_prev;			// Go to previous frame
-  Button* m_b_play;			// Play animation
-  Button* m_b_next;			// Go to next frame
-  Button* m_b_last;			// Go to last frame
+  Slider* m_slider;                     // Opacity slider
+  Button* m_b_first;                    // Go to first frame
+  Button* m_b_prev;                     // Go to previous frame
+  Button* m_b_play;                     // Play animation
+  Button* m_b_next;                     // Go to next frame
+  Button* m_b_last;                     // Go to last frame
 
   // Box of notifications.
   Widget* m_notificationsBox;

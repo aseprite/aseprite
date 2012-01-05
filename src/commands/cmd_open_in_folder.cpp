@@ -38,8 +38,8 @@ protected:
 
 OpenInFolderCommand::OpenInFolderCommand()
   : Command("OpenInFolder",
-	    "Open In Folder",
-	    CmdUIOnlyFlag)
+            "Open In Folder",
+            CmdUIOnlyFlag)
 {
 }
 

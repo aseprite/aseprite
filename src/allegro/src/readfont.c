@@ -35,7 +35,7 @@ static FONT_TYPE_INFO *font_type_list = NULL;
 
 
 /* register_font_file_type:
- *  Informs Allegro of a new font file type, telling it how to load files of 
+ *  Informs Allegro of a new font file type, telling it how to load files of
  *  this format.
  */
 void register_font_file_type(AL_CONST char *ext, FONT *(*load)(AL_CONST char *filename, RGB *pal, void *param))
@@ -46,7 +46,7 @@ void register_font_file_type(AL_CONST char *ext, FONT *(*load)(AL_CONST char *fi
    aext = uconvert_toascii(ext, tmp);
    if (strlen(aext) == 0) return;
 
-   if (!iter) 
+   if (!iter)
       iter = font_type_list = _AL_MALLOC(sizeof(struct FONT_TYPE_INFO));
    else {
       for (iter = font_type_list; iter->next; iter = iter->next);
@@ -73,15 +73,15 @@ FONT *load_font(AL_CONST char *filename, RGB *pal, void *param)
    ASSERT(filename);
 
    aext = uconvert_toascii(get_extension(filename), tmp);
-   
+
    for (iter = font_type_list; iter; iter = iter->next) {
       if (stricmp(iter->ext, aext) == 0) {
-	 if (iter->load)
-	    return iter->load(filename, pal, param);
-	 return NULL;
+         if (iter->load)
+            return iter->load(filename, pal, param);
+         return NULL;
       }
    }
-   
+
    /* Try to load the file as a bitmap image and grab the font from there */
    return load_bitmap_font(filename, pal, param);
 }
@@ -101,7 +101,7 @@ static void register_font_file_type_exit(void)
       _AL_FREE(iter);
       iter = next;
    }
-   
+
    font_type_list = NULL;
 
    /* If we are using a destructor, then we only want to prune the list
@@ -125,7 +125,7 @@ void _register_font_file_type_init(void)
    char buf[32];
 
    _add_exit_func(register_font_file_type_exit,
-		  "register_font_file_type_exit");
+                  "register_font_file_type_exit");
 
    register_font_file_type(uconvert_ascii("dat", buf), load_dat_font);
    register_font_file_type(uconvert_ascii("fnt", buf), load_grx_or_bios_font);
@@ -140,8 +140,8 @@ void _register_font_file_type_init(void)
 
    /* font_filetype_constructor:
     *  Register font filetype functions if this object file is linked
-    *  in. This isn't called if the load_font() function isn't used 
-    *  in a program, thus saving a little space in statically linked 
+    *  in. This isn't called if the load_font() function isn't used
+    *  in a program, thus saving a little space in statically linked
     *  programs.
     */
    void font_filetype_constructor(void)
@@ -164,7 +164,7 @@ void _register_font_file_type_init(void)
          _AL_FREE(iter);
          iter = next;
       }
-   
+
       font_type_list = NULL;
 
       _remove_exit_func(register_font_file_type_exit);

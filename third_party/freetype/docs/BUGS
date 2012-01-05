@@ -109,33 +109,33 @@ ADVANCED-COMPOSITES
     I notice that truetype/ttgload.c only supports Apple's definition of
     offsets for composite glyphs.  Apple and Microsoft behave differently if
     there is a scale factor.  OpenType defines some bits to disambiguate.
-    
+
     (A problem in both 2.0.4 and 2.0.5.)
-    
+
     Apple says (http://fonts.apple.com/TTRefMan/RM06/Chap6glyf.html) that if
     flags&ARGS_ARE_XY is set then the offsets should be scaled by the scale
     factors (as you have done), but they also say something very cryptic
     about what happens when the component is rotated at 45° (which you do
     not support) -- See the "Important" note at the bottom.
-    
+
     The old truetype spec from Microsoft did not mention this.  The OpenType
     spec (http://www.microsoft.com/typography/otspec/glyf.htm,
     http://partners.adobe.com/asn/developer/opentype/glyf.html) defines two
     new bits to disambiguate:
 
-      SCALED_COMPONENT_OFFSET 11 
+      SCALED_COMPONENT_OFFSET 11
       Composite designed to have the component offset scaled (designed for
       Apple rasterizer)
 
-      UNSCALED_COMPONENT_OFFSET 12 
+      UNSCALED_COMPONENT_OFFSET 12
       Composite designed not to have the component offset scaled (designed
       for the Microsoft TrueType rasterizer)
-    
+
     Perhaps you could add a load_flag to allow the user to define the
     default setting?
 
   David says:
-  
+
     Wow, I was not even aware of this, it will probably take a little time
     to implement since I don't have any font that implement these
     "features", and also because I believe that we're running out of bits
@@ -201,7 +201,7 @@ BAD-UNIXXXX-NAMES
   Glyph names like uniXXXX are not recognized as they should be.  It seems
   that code in psmodule.c for uniXXXX glyph names was never tested.  The
   patch is very simple.
-  
+
   (A simple bug that was left un-noticed due to the fact that I don't have
   any Postscript font that use this convention, unfortunately.)
 
@@ -210,16 +210,16 @@ GLYPH_TO_BITMAP-BUG
 
   Calling FT_Glyph_To_Bitmap() sometimes modifies the original glyph
   outline, creating weird alignment artefacts.
-  
-  This subtle bug was really in the file `src/smooth/ftsmooth.c'. 
+
+  This subtle bug was really in the file `src/smooth/ftsmooth.c'.
   Basically, the outline was shifted before rendering it into a new bitmap
   buffer.  However, it wasn't properly un-shifted after that operation.
 
   This was only noticeable with certain glyphs or certain fonts; it crept in
   a long time ago.
-                  
+
   The same bug has been fixed in src/raster/ftrender1.c also.
-                  
+
 
 
 TT-GLYPH-CRASH
@@ -227,7 +227,7 @@ TT-GLYPH-CRASH
   The library crashed when trying to load certain glyphs from an
   automatically generated TrueType file (tt1095m_.ttf submitted by
   Scott Long).
-  
+
   It turned out that the font contained invalid glyph data (i.e. was broken),
   but the TrueType glyph loader in FreeType wasn't paranoid enough, which
   resulted in nasty memory overwrites all over the place.
@@ -239,7 +239,7 @@ T1-FONT-CRASH
   The library crashed when trying to load the "Stalingrad Regular" face
   from the "sadn.pfb" font file provided by Anthony Fok (and the Gnome-Print
   team I believe).
-  
+
   This was due to the fact that the font missed a full font name entry,
   though boasted a family name and postscript name. The Type 1 face loader
   didn't check for these pathetic cases and seg-faulted..
@@ -253,7 +253,7 @@ BAD-ADVANCES
   old but hadn't been spotted because all test programs actually
   explicitely or implicitely (i.e. through the cache) rounded the advance
   widths of glyphs..
-  
+
   This resulted in poor rendering of a number of client applications
   however (it's strange to see they took so long to notice the devel team ?)
 

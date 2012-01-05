@@ -34,8 +34,8 @@ extern "C" {
 
 void
 art_gray_svp_aa (const ArtSVP *svp,
-		 int x0, int y0, int x1, int y1,
-		 art_u8 *buf, int rowstride);
+                 int x0, int y0, int x1, int y1,
+                 art_u8 *buf, int rowstride);
 
 #ifdef __cplusplus
 }

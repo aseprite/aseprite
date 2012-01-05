@@ -37,4 +37,4 @@ public:
   virtual void documentChanged(Editor* editor) = 0;
 };
 
-#endif	// WIDGETS_EDITOR_LISTENER_H_INCLUDED
+#endif  // WIDGETS_EDITOR_LISTENER_H_INCLUDED

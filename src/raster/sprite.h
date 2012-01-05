@@ -139,17 +139,17 @@ public:
   int getPixel(int x, int y) const;
 
 private:
-  Sprite* m_self;			 // pointer to the Sprite
-  int m_imgtype;			 // image type
-  int m_width;				 // image width (in pixels)
-  int m_height;				 // image height (in pixels)
-  int m_frames;				 // how many frames has this sprite
-  std::vector<int> m_frlens;		 // duration per frame
-  int m_frame;				 // current frame, range [0,frames)
-  PalettesList m_palettes;		 // list of palettes
-  Stock* m_stock;			 // stock to get images
-  LayerFolder* m_folder;		 // main folder of layers
-  Layer* m_layer;			 // current layer
+  Sprite* m_self;                        // pointer to the Sprite
+  int m_imgtype;                         // image type
+  int m_width;                           // image width (in pixels)
+  int m_height;                          // image height (in pixels)
+  int m_frames;                          // how many frames has this sprite
+  std::vector<int> m_frlens;             // duration per frame
+  int m_frame;                           // current frame, range [0,frames)
+  PalettesList m_palettes;               // list of palettes
+  Stock* m_stock;                        // stock to get images
+  LayerFolder* m_folder;                 // main folder of layers
+  Layer* m_layer;                        // current layer
 
   // Current rgb map
   RgbMap* m_rgbMap;

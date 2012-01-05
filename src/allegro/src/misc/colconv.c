@@ -1,6 +1,6 @@
-/*         ______   ___    ___ 
- *        /\  _  \ /\_ \  /\_ \ 
- *        \ \ \L\ \\//\ \ \//\ \      __     __   _ __   ___ 
+/*         ______   ___    ___
+ *        /\  _  \ /\_ \  /\_ \
+ *        \ \ \L\ \\//\ \ \//\ \      __     __   _ __   ___
  *         \ \  __ \ \ \ \  \ \ \   /'__`\ /'_ `\/\`'__\/ __`\
  *          \ \ \/\ \ \_\ \_ \_\ \_/\  __//\ \L\ \ \ \//\ \L\ \
  *           \ \_\ \_\/\____\/\____\ \____\ \____ \ \_\\ \____/
@@ -50,7 +50,7 @@ static void build_rgb_scale_5235_table(int to_depth)
       /* 2 contiguous 256-entry tables (2k) */
       _colorconv_rgb_scale_5x35 = _AL_MALLOC_ATOMIC(sizeof(int)*512);
 
-   /* 1st table: r5g2 to r8g8b0 */ 
+   /* 1st table: r5g2 to r8g8b0 */
    for (i=0; i<128; i++) {
       red = _rgb_scale_5[i>>2];
       green=((i&3)<<6)+((i&3)<<1);
@@ -98,7 +98,7 @@ static void build_rgb_scale_5335_table(int to_depth)
       /* 2 contiguous 256-entry tables (2k) */
       _colorconv_rgb_scale_5x35 = _AL_MALLOC_ATOMIC(sizeof(int)*512);
 
-   /* 1st table: r5g3 to r8g8b0 */ 
+   /* 1st table: r5g3 to r8g8b0 */
    for (i=0; i<256; i++) {
       red = _rgb_scale_5[i>>3];
       green=(i&7)<<5;
@@ -185,7 +185,7 @@ void _set_colorconv_palette(AL_CONST struct RGB *p, int from, int to)
 
       if ((indexed_palette_depth == 15) || (indexed_palette_depth == 16)) {
          /* 2 pre-calculated shift tables (2k) */
-         _colorconv_indexed_palette[PAL_SIZE+n] = color<<16; 
+         _colorconv_indexed_palette[PAL_SIZE+n] = color<<16;
       }
       else if (indexed_palette_depth == 24) {
          /* 4 pre-calculated shift tables (4k) */
@@ -407,4 +407,3 @@ void _release_colorconv_blitter(COLORCONV_BLITTER_FUNC *blitter)
       _colorconv_rgb_map = NULL;
    }
 }
-

@@ -51,7 +51,7 @@ void RemapPalette::revert(ObjectsContainer* objects, UndoersCollector* redoers)
   std::vector<uint8_t> inverse_mapping(m_mapping.size());
   for (size_t c=0; c<m_mapping.size(); ++c)
     inverse_mapping[m_mapping[c]] = c;
-  
+
   // Push an RemapPalette as redoer
   redoers->pushUndoer(new RemapPalette(objects, sprite, m_frameFrom, m_frameTo, inverse_mapping));
 

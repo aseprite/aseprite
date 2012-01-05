@@ -45,7 +45,7 @@ FileFormatsManager::~FileFormatsManager()
 {
   FileFormatsList::iterator end = this->end();
   for (FileFormatsList::iterator it = begin(); it != end; ++it) {
-    delete (*it);		// delete the FileFormat
+    delete (*it);               // delete the FileFormat
   }
 }
 
@@ -76,5 +76,3 @@ FileFormatsList::iterator FileFormatsManager::end()
 {
   return m_formats.end();
 }
-
-

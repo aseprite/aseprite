@@ -1,6 +1,6 @@
-/*         ______   ___    ___ 
- *        /\  _  \ /\_ \  /\_ \ 
- *        \ \ \L\ \\//\ \ \//\ \      __     __   _ __   ___ 
+/*         ______   ___    ___
+ *        /\  _  \ /\_ \  /\_ \
+ *        \ \ \L\ \\//\ \ \//\ \      __     __   _ __   ___
  *         \ \  __ \ \ \ \  \ \ \   /'__`\ /'_ `\/\`'__\/ __`\
  *          \ \ \/\ \ \_\ \_ \_\ \_/\  __//\ \L\ \ \ \//\ \L\ \
  *           \ \_\ \_\/\____\/\____\ \____\ \____ \ \_\\ \____/
@@ -165,8 +165,8 @@ static void blit_from_256(BITMAP *src, BITMAP *dest, int s_x, int s_y, int d_x, 
       int dest_mask = bitmap_mask_color(dest);                               \
                                                                              \
       for (y=0; y<h; y++) {                                                  \
-	 s = bmp_read_line(src, s_y+y) + s_x*ssize;                          \
-	 d = bmp_write_line(dest, d_y+y) + d_x*dsize;                        \
+         s = bmp_read_line(src, s_y+y) + s_x*ssize;                          \
+         d = bmp_write_line(dest, d_y+y) + d_x*dsize;                        \
                                                                              \
          for (x=0; x<w; x++) {                                               \
             bmp_select(src);                                                 \
@@ -175,12 +175,12 @@ static void blit_from_256(BITMAP *src, BITMAP *dest, int s_x, int s_y, int d_x, 
             if (c == src_mask)                                               \
                c = dest_mask;                                                \
             else {                                                           \
-	       r = getr##sbits(c);                                           \
-	       g = getg##sbits(c);                                           \
-	       b = getb##sbits(c);                                           \
+               r = getr##sbits(c);                                           \
+               g = getg##sbits(c);                                           \
+               b = getb##sbits(c);                                           \
                c = MAKECOL;                                                  \
                if (c == dest_mask)                                           \
-		 c = rc;			\
+                 c = rc;                        \
             }                                                                \
                                                                              \
             bmp_select(dest);                                                \
@@ -193,8 +193,8 @@ static void blit_from_256(BITMAP *src, BITMAP *dest, int s_x, int s_y, int d_x, 
    }                                                                         \
    else {                                                                    \
       for (y=0; y<h; y++) {                                                  \
-	 s = bmp_read_line(src, s_y+y) + s_x*ssize;                          \
-	 d = bmp_write_line(dest, d_y+y) + d_x*dsize;                        \
+         s = bmp_read_line(src, s_y+y) + s_x*ssize;                          \
+         d = bmp_write_line(dest, d_y+y) + d_x*dsize;                        \
                                                                              \
          for (x=0; x<w; x++) {                                               \
             bmp_select(src);                                                 \
@@ -352,7 +352,7 @@ static void blit_from_15(BITMAP *src, BITMAP *dest, int s_x, int s_y, int d_x, i
       case 8:
          if (_color_conv & COLORCONV_DITHER_PAL)
             dither_blit(src, dest, s_x, s_y, d_x, d_y, w, h);
-         else 
+         else
             CONVERT_BLIT(15, sizeof(int16_t), 8, 1)
          break;
       #endif
@@ -395,7 +395,7 @@ static void blit_from_16(BITMAP *src, BITMAP *dest, int s_x, int s_y, int d_x, i
       case 8:
          if (_color_conv & COLORCONV_DITHER_PAL)
             dither_blit(src, dest, s_x, s_y, d_x, d_y, w, h);
-         else 
+         else
             CONVERT_BLIT(16, sizeof(int16_t), 8, 1)
          break;
       #endif
@@ -417,7 +417,7 @@ static void blit_from_16(BITMAP *src, BITMAP *dest, int s_x, int s_y, int d_x, i
       #endif
    }
 
-   #endif 
+   #endif
 }
 
 
@@ -438,7 +438,7 @@ static void blit_from_24(BITMAP *src, BITMAP *dest, int s_x, int s_y, int d_x, i
       case 8:
          if (_color_conv & COLORCONV_DITHER_PAL)
             dither_blit(src, dest, s_x, s_y, d_x, d_y, w, h);
-         else 
+         else
             CONVERT_BLIT(24, 3, 8, 1);
          break;
       #endif
@@ -466,7 +466,7 @@ static void blit_from_24(BITMAP *src, BITMAP *dest, int s_x, int s_y, int d_x, i
       #endif
    }
 
-   #endif 
+   #endif
 }
 
 
@@ -487,7 +487,7 @@ static void blit_from_32(BITMAP *src, BITMAP *dest, int s_x, int s_y, int d_x, i
       case 8:
          if (_color_conv & COLORCONV_DITHER_PAL)
             dither_blit(src, dest, s_x, s_y, d_x, d_y, w, h);
-         else 
+         else
             CONVERT_BLIT(32, sizeof(int32_t), 8, 1)
          break;
       #endif
@@ -515,13 +515,13 @@ static void blit_from_32(BITMAP *src, BITMAP *dest, int s_x, int s_y, int d_x, i
       #endif
    }
 
-   #endif 
+   #endif
 }
 
 
 
 /* blit_to_or_from_modex:
- *  Converts between truecolor and planar mode-X bitmaps. This function is 
+ *  Converts between truecolor and planar mode-X bitmaps. This function is
  *  painfully slow, but I don't think it is something that people will need
  *  to do very often...
  */
@@ -570,25 +570,25 @@ void _blit_between_formats(BITMAP *src, BITMAP *dest, int s_x, int s_y, int d_x,
    else {
       switch (bitmap_color_depth(src)) {
 
-	 case 8:
-	    blit_from_256(src, dest, s_x, s_y, d_x, d_y, w, h);
-	    break;
+         case 8:
+            blit_from_256(src, dest, s_x, s_y, d_x, d_y, w, h);
+            break;
 
-	 case 15:
-	    blit_from_15(src, dest, s_x, s_y, d_x, d_y, w, h);
-	    break;
+         case 15:
+            blit_from_15(src, dest, s_x, s_y, d_x, d_y, w, h);
+            break;
 
-	 case 16:
-	    blit_from_16(src, dest, s_x, s_y, d_x, d_y, w, h);
-	    break;
+         case 16:
+            blit_from_16(src, dest, s_x, s_y, d_x, d_y, w, h);
+            break;
 
-	 case 24:
-	    blit_from_24(src, dest, s_x, s_y, d_x, d_y, w, h);
-	    break;
+         case 24:
+            blit_from_24(src, dest, s_x, s_y, d_x, d_y, w, h);
+            break;
 
-	 case 32:
-	    blit_from_32(src, dest, s_x, s_y, d_x, d_y, w, h);
-	    break;
+         case 32:
+            blit_from_32(src, dest, s_x, s_y, d_x, d_y, w, h);
+            break;
       }
    }
 }
@@ -692,12 +692,12 @@ static void blit_to_self(BITMAP *src, BITMAP *dest, int s_x, int s_y, int d_x, i
 
 
 /* blit:
- *  Copies an area of the source bitmap to the destination bitmap. s_x and 
- *  s_y give the top left corner of the area of the source bitmap to copy, 
- *  and d_x and d_y give the position in the destination bitmap. w and h 
- *  give the size of the area to blit. This routine respects the clipping 
- *  rectangle of the destination bitmap, and will work correctly even when 
- *  the two memory areas overlap (ie. src and dest are the same). 
+ *  Copies an area of the source bitmap to the destination bitmap. s_x and
+ *  s_y give the top left corner of the area of the source bitmap to copy,
+ *  and d_x and d_y give the position in the destination bitmap. w and h
+ *  give the size of the area to blit. This routine respects the clipping
+ *  rectangle of the destination bitmap, and will work correctly even when
+ *  the two memory areas overlap (ie. src and dest are the same).
  */
 void blit(BITMAP *src, BITMAP *dest, int s_x, int s_y, int d_x, int d_y, int w, int h)
 {

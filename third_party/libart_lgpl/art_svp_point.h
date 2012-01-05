@@ -37,7 +37,3 @@ art_svp_point_dist (ArtSVP *svp, double x, double y);
 #endif /* __cplusplus */
 
 #endif /* __ART_SVP_H__ */
-
-
-
-

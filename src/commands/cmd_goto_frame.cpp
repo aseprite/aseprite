@@ -41,8 +41,8 @@ protected:
 
 GotoFirstFrameCommand::GotoFirstFrameCommand()
   : Command("GotoFirstFrame",
-	    "Goto First Frame",
-	    CmdRecordableFlag)
+            "Goto First Frame",
+            CmdRecordableFlag)
 {
 }
 
@@ -79,8 +79,8 @@ protected:
 
 GotoPreviousFrameCommand::GotoPreviousFrameCommand()
   : Command("GotoPreviousFrame",
-	    "Goto Previous Frame",
-	    CmdRecordableFlag)
+            "Goto Previous Frame",
+            CmdRecordableFlag)
 {
 }
 
@@ -121,8 +121,8 @@ protected:
 
 GotoNextFrameCommand::GotoNextFrameCommand()
   : Command("GotoNextFrame",
-	    "Goto Next Frame",
-	    CmdRecordableFlag)
+            "Goto Next Frame",
+            CmdRecordableFlag)
 {
 }
 
@@ -163,8 +163,8 @@ protected:
 
 GotoLastFrameCommand::GotoLastFrameCommand()
   : Command("GotoLastFrame",
-	    "Goto Last Frame",
-	    CmdRecordableFlag)
+            "Goto Last Frame",
+            CmdRecordableFlag)
 {
 }
 

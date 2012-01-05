@@ -48,8 +48,8 @@ protected:
 
 RefreshCommand::RefreshCommand()
   : Command("Refresh",
-	    "Refresh",
-	    CmdUIOnlyFlag)
+            "Refresh",
+            CmdUIOnlyFlag)
 {
 }
 
@@ -77,11 +77,11 @@ void RefreshCommand::onExecute(Context* context)
     PROCESS_MEMORY_COUNTERS pmc;
     if (GetProcessMemoryInfo(GetCurrentProcess(), &pmc, sizeof(pmc))) {
       app_get_statusbar()
-	->showTip(1000,
-		  "Current memory: %.16g KB (%lu)\n"
-		  "Peak of memory: %.16g KB (%lu)",
-		  pmc.WorkingSetSize / 1024.0, pmc.WorkingSetSize,
-		  pmc.PeakWorkingSetSize / 1024.0, pmc.PeakWorkingSetSize);
+        ->showTip(1000,
+                  "Current memory: %.16g KB (%lu)\n"
+                  "Peak of memory: %.16g KB (%lu)",
+                  pmc.WorkingSetSize / 1024.0, pmc.WorkingSetSize,
+                  pmc.PeakWorkingSetSize / 1024.0, pmc.PeakWorkingSetSize);
     }
   }
 #endif

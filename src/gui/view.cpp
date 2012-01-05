@@ -76,15 +76,15 @@ void View::hideScrollBars()
 Size View::getScrollableSize()
 {
   return Size(m_scrollbar_h.getSize(),
-	      m_scrollbar_v.getSize());
+              m_scrollbar_v.getSize());
 }
 
 void View::setScrollableSize(const Size& sz)
 {
-#define CHECK(w, h, l, t, r, b)					\
-  ((sz.w > jrect_##w(m_viewport.rc)				\
-                    - m_viewport.border_width.l			\
-		    - m_viewport.border_width.r) &&		\
+#define CHECK(w, h, l, t, r, b)                                 \
+  ((sz.w > jrect_##w(m_viewport.rc)                             \
+                    - m_viewport.border_width.l                 \
+                    - m_viewport.border_width.r) &&             \
    (BAR_SIZE < jrect_##w(pos)) && (BAR_SIZE < jrect_##h(pos)))
 
   JRect pos, rect;
@@ -104,14 +104,14 @@ void View::setScrollableSize(const Size& sz)
       addChild(&m_scrollbar_h);
 
       if (CHECK(h, w, t, l, b, r)) {
-	pos->x2 -= BAR_SIZE;
-	if (CHECK(w, h, l, t, r, b))
-	  addChild(&m_scrollbar_v);
-	else {
-	  pos->x2 += BAR_SIZE;
-	  pos->y2 += BAR_SIZE;
-	  removeChild(&m_scrollbar_h);
-	}
+        pos->x2 -= BAR_SIZE;
+        if (CHECK(w, h, l, t, r, b))
+          addChild(&m_scrollbar_v);
+        else {
+          pos->x2 += BAR_SIZE;
+          pos->y2 += BAR_SIZE;
+          removeChild(&m_scrollbar_h);
+        }
       }
     }
     else if (CHECK(h, w, t, l, b, r)) {
@@ -120,19 +120,19 @@ void View::setScrollableSize(const Size& sz)
 
       if (CHECK(w, h, l, t, r, b)) {
         pos->y2 -= BAR_SIZE;
-	if (CHECK(h, w, t, l, b, r))
-	  addChild(&m_scrollbar_h);
-	else {
-	  pos->x2 += BAR_SIZE;
-	  pos->y2 += BAR_SIZE;
-	  removeChild(&m_scrollbar_v);
-	}
+        if (CHECK(h, w, t, l, b, r))
+          addChild(&m_scrollbar_h);
+        else {
+          pos->x2 += BAR_SIZE;
+          pos->y2 += BAR_SIZE;
+          removeChild(&m_scrollbar_v);
+        }
       }
     }
 
     if (hasChild(&m_scrollbar_h)) {
       rect = jrect_new(pos->x1, pos->y2,
-		       pos->x1+jrect_w(pos), pos->y2+BAR_SIZE);
+                       pos->x1+jrect_w(pos), pos->y2+BAR_SIZE);
       jwidget_set_rect(&m_scrollbar_h, rect);
       jrect_free(rect);
 
@@ -143,7 +143,7 @@ void View::setScrollableSize(const Size& sz)
 
     if (hasChild(&m_scrollbar_v)) {
       rect = jrect_new(pos->x2, pos->y1,
-		       pos->x2+BAR_SIZE, pos->y1+jrect_h(pos));
+                       pos->x2+BAR_SIZE, pos->y1+jrect_h(pos));
       jwidget_set_rect(&m_scrollbar_v, rect);
       jrect_free(rect);
 
@@ -164,13 +164,13 @@ void View::setScrollableSize(const Size& sz)
 Size View::getVisibleSize()
 {
   return Size(jrect_w(m_viewport.rc) - m_viewport.border_width.l - m_viewport.border_width.r,
-	      jrect_h(m_viewport.rc) - m_viewport.border_width.t - m_viewport.border_width.b);
+              jrect_h(m_viewport.rc) - m_viewport.border_width.t - m_viewport.border_width.b);
 }
 
 Point View::getViewScroll()
 {
   return Point(m_scrollbar_h.getPos(),
-	       m_scrollbar_v.getPos());
+               m_scrollbar_v.getPos());
 }
 
 void View::setViewScroll(const Point& pt)
@@ -179,7 +179,7 @@ void View::setViewScroll(const Point& pt)
   Size maxsize = getScrollableSize();
   Size visible = getVisibleSize();
   Point newScroll(MID(0, pt.x, MAX(0, maxsize.w - visible.w)),
-		  MID(0, pt.y, MAX(0, maxsize.h - visible.h)));
+                  MID(0, pt.y, MAX(0, maxsize.h - visible.h)));
 
   if (newScroll == oldScroll)
     return;
@@ -263,9 +263,9 @@ bool View::onProcessMessage(Message* msg)
     case JM_FOCUSLEAVE:
       /* TODO add something to avoid this (theme specific stuff) */
       {
-	JRegion reg1 = jwidget_get_drawable_region(this, JI_GDR_CUTTOPWINDOWS);
-	jregion_union(this->update_region, this->update_region, reg1);
-	jregion_free(reg1);
+        JRegion reg1 = jwidget_get_drawable_region(this, JI_GDR_CUTTOPWINDOWS);
+        jregion_union(this->update_region, this->update_region, reg1);
+        jregion_free(reg1);
       }
       break;
   }

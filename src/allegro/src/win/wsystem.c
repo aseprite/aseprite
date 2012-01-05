@@ -1,6 +1,6 @@
-/*         ______   ___    ___ 
- *        /\  _  \ /\_ \  /\_ \ 
- *        \ \ \L\ \\//\ \ \//\ \      __     __   _ __   ___ 
+/*         ______   ___    ___
+ *        /\  _  \ /\_ \  /\_ \
+ *        \ \ \L\ \\//\ \ \//\ \      __     __   _ __   ___
  *         \ \  __ \ \ \ \  \ \ \   /'__`\ /'_ `\/\`'__\/ __`\
  *          \ \ \/\ \ \_\ \_ \_\ \_/\  __//\ \L\ \ \ \//\ \L\ \
  *           \ \_\ \_\/\____\/\____\ \____\ \____ \ \_\\ \____/
@@ -85,7 +85,7 @@ SYSTEM_DRIVER system_directx =
    NULL,                        /* AL_METHOD(void, display_switch_lock, (int lock)); */
    sys_directx_desktop_color_depth,
    sys_directx_get_desktop_resolution,
-   NULL,			/* get_gfx_safe_mode */
+   NULL,                        /* get_gfx_safe_mode */
    sys_directx_yield_timeslice,
    sys_directx_create_mutex,
    sys_directx_destroy_mutex,
@@ -158,11 +158,11 @@ static int sys_directx_init(void)
          /* If in the future a os_revision == 3 or greater comes,
             it will be detected as Win2003 instead of Win2000. */
          if (os_revision >= 2)
-	    os_type = OSTYPE_WIN2003;
+            os_type = OSTYPE_WIN2003;
          else if (os_revision == 1)
-	    os_type = OSTYPE_WINXP;
-	 else
-	    os_type = OSTYPE_WIN2000;
+            os_type = OSTYPE_WINXP;
+         else
+            os_type = OSTYPE_WIN2000;
       }
       else
          os_type = OSTYPE_WINNT;
@@ -320,9 +320,9 @@ static void sys_directx_message(AL_CONST char *msg)
       msg += uwidth(msg);
 
    MessageBoxW(allegro_wnd,
-	       (unsigned short *)uconvert(msg, U_CURRENT, tmp1, U_UNICODE, ALLEGRO_MESSAGE_SIZE),
-	       (unsigned short *)uconvert(wnd_title, U_ASCII, tmp2, U_UNICODE, sizeof(tmp2)),
-	       MB_OK);
+               (unsigned short *)uconvert(msg, U_CURRENT, tmp1, U_UNICODE, ALLEGRO_MESSAGE_SIZE),
+               (unsigned short *)uconvert(wnd_title, U_ASCII, tmp2, U_UNICODE, sizeof(tmp2)),
+               MB_OK);
 
    _AL_FREE(tmp1);
 }
@@ -363,8 +363,8 @@ static void sys_directx_restore_console_state(void)
 
    /* re-size and hide window */
    SetWindowPos(allegro_wnd, HWND_TOP, wnd_rect.left, wnd_rect.top,
-		wnd_rect.right - wnd_rect.left, wnd_rect.bottom - wnd_rect.top,
-		SWP_NOCOPYBITS);
+                wnd_rect.right - wnd_rect.left, wnd_rect.bottom - wnd_rect.top,
+                SWP_NOCOPYBITS);
    ShowWindow(allegro_wnd, SW_SHOW);
 }
 
@@ -487,18 +487,18 @@ int _WinMain(void *_main, void *hInst, void *hPrev, char *Cmd, int nShow)
    /* parse commandline into argc/argv format */
    while (argbuf[i]) {
       while ((argbuf[i]) && (uisspace(argbuf[i])))
-	 i++;
+         i++;
 
       if (argbuf[i]) {
-	 if ((argbuf[i] == '\'') || (argbuf[i] == '"')) {
-	    q = argbuf[i++];
-	    if (!argbuf[i])
-	       break;
-	 }
-	 else
-	    q = 0;
+         if ((argbuf[i] == '\'') || (argbuf[i] == '"')) {
+            q = argbuf[i++];
+            if (!argbuf[i])
+               break;
+         }
+         else
+            q = 0;
 
-	 argv[argc++] = &argbuf[i];
+         argv[argc++] = &argbuf[i];
 
          if (argc >= argc_max) {
             argc_max += 64;
@@ -509,13 +509,13 @@ int _WinMain(void *_main, void *hInst, void *hPrev, char *Cmd, int nShow)
             }
          }
 
-	 while ((argbuf[i]) && ((q) ? (argbuf[i] != q) : (!uisspace(argbuf[i]))))
-	    i++;
+         while ((argbuf[i]) && ((q) ? (argbuf[i] != q) : (!uisspace(argbuf[i]))))
+            i++;
 
-	 if (argbuf[i]) {
-	    argbuf[i] = 0;
-	    i++;
-	 }
+         if (argbuf[i]) {
+            argbuf[i] = 0;
+            i++;
+         }
       }
    }
 

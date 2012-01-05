@@ -87,5 +87,3 @@ AL_FUNC(void, pivot_scaled_sprite_v_flip_lit, (BITMAP *bmp, BITMAP *sprite, int 
 #include "inline/draw.inl"
 
 #endif          /* ifndef ALLEGRO_DRAW_H */
-
-

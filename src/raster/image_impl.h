@@ -29,7 +29,7 @@ class ImageImpl : public Image
   typedef typename Traits::address_t address_t;
   typedef typename Traits::const_address_t const_address_t;
 
-public:				// raw access to pixel-data
+public:                         // raw access to pixel-data
 
   inline address_t raw_pixels() {
     return (address_t)dat;
@@ -48,7 +48,7 @@ public:				// raw access to pixel-data
     ASSERT(y >= 0 && y < h);
     return ((const_address_t*)line)[y];
   }
-  
+
 public:
 
   ImageImpl(int w, int h)
@@ -111,7 +111,7 @@ public:
     yend = y+src->h-1;
 
     if ((xend < 0) || (xbeg >= dst->w) ||
-	(yend < 0) || (ybeg >= dst->h))
+        (yend < 0) || (ybeg >= dst->h))
       return;
 
     if (xbeg < 0) {
@@ -167,7 +167,7 @@ public:
     yend = y+src->h-1;
 
     if ((xend < 0) || (xbeg >= dst->w) ||
-	(yend < 0) || (ybeg >= dst->h))
+        (yend < 0) || (ybeg >= dst->h))
       return;
 
     if (xbeg < 0) {
@@ -193,11 +193,11 @@ public:
       dst_address = ((ImageImpl<Traits>*)dst)->line_address(ydst)+xbeg;
 
       for (xdst=xbeg; xdst<=xend; xdst++) {
-	if (*src_address != mask_color)
-	  *dst_address = (*blender)(*dst_address, *src_address, opacity);
+        if (*src_address != mask_color)
+          *dst_address = (*blender)(*dst_address, *src_address, opacity);
 
-	dst_address++;
-	src_address++;
+        dst_address++;
+        src_address++;
       }
     }
   }
@@ -218,7 +218,7 @@ public:
     for (y=y1; y<=y2; ++y) {
       addr = line_address(y)+x1;
       for (x=x1; x<=x2; ++x)
-	*(addr++) = color;
+        *(addr++) = color;
     }
   }
 
@@ -303,10 +303,10 @@ void ImageImpl<IndexedTraits>::merge(const Image* src, int x, int y, int opacity
       dst_address = ((ImageImpl<IndexedTraits>*)dst)->line_address(ydst)+xbeg;
 
       for (xdst=xbeg; xdst<=xend; xdst++) {
-	*dst_address = (*src_address);
+        *dst_address = (*src_address);
 
-	dst_address++;
-	src_address++;
+        dst_address++;
+        src_address++;
       }
     }
   }
@@ -319,11 +319,11 @@ void ImageImpl<IndexedTraits>::merge(const Image* src, int x, int y, int opacity
       dst_address = ((ImageImpl<IndexedTraits>*)dst)->line_address(ydst)+xbeg;
 
       for (xdst=xbeg; xdst<=xend; xdst++) {
-	if (*src_address != mask_color)
-	  *dst_address = (*src_address);
+        if (*src_address != mask_color)
+          *dst_address = (*src_address);
 
-	dst_address++;
-	src_address++;
+        dst_address++;
+        src_address++;
       }
     }
   }
@@ -335,10 +335,10 @@ void ImageImpl<BitmapTraits>::clear(int color)
   memset(raw_pixels(), color ? 0xff: 0x00, ((w+7)/8) * h);
 }
 
-#define BITMAP_HLINE(op)			\
-  for (x=x1; x<=x2; x++) {			\
-    *addr op (1<<d.rem);			\
-    _image_bitmap_next_bit(d, addr);		\
+#define BITMAP_HLINE(op)                        \
+  for (x=x1; x<=x2; x++) {                      \
+    *addr op (1<<d.rem);                        \
+    _image_bitmap_next_bit(d, addr);            \
   }
 
 template<>
@@ -522,37 +522,37 @@ void ImageImpl<RgbTraits>::to_allegro(BITMAP *bmp, int _x, int _y, const Palette
     case 8:
 #if defined GFX_MODEX && !defined ALLEGRO_UNIX && !defined ALLEGRO_MACOSX
       if (is_planar_bitmap(bmp)) {
-	for (y=0; y<h; y++) {
-	  bmp_address = (unsigned long)bmp->line[_y];
+        for (y=0; y<h; y++) {
+          bmp_address = (unsigned long)bmp->line[_y];
 
-	  for (x=0; x<image->w; x++) {
-	    outportw(0x3C4, (0x100<<((_x+x)&3))|2);
-	    bmp_write8(bmp_address+((_x+x)>>2),
-		       makecol8((*addr) & 0xff,
-				((*addr)>>8) & 0xff,
-				((*addr)>>16) & 0xff));
-	    addr++;
-	  }
-  
-	  _y++;
-	}
+          for (x=0; x<image->w; x++) {
+            outportw(0x3C4, (0x100<<((_x+x)&3))|2);
+            bmp_write8(bmp_address+((_x+x)>>2),
+                       makecol8((*addr) & 0xff,
+                                ((*addr)>>8) & 0xff,
+                                ((*addr)>>16) & 0xff));
+            addr++;
+          }
+
+          _y++;
+        }
       }
       else {
 #endif
-	for (y=0; y<h; y++) {
-	  bmp_address = bmp_write_line(bmp, _y)+_x;
-  
-	  for (x=0; x<w; x++) {
-	    bmp_write8(bmp_address,
-		       makecol8((*addr) & 0xff,
-				((*addr)>>8) & 0xff,
-				((*addr)>>16) & 0xff));
-	    addr++;
-	    bmp_address++;
-	  }
-  
-	  _y++;
-	}
+        for (y=0; y<h; y++) {
+          bmp_address = bmp_write_line(bmp, _y)+_x;
+
+          for (x=0; x<w; x++) {
+            bmp_write8(bmp_address,
+                       makecol8((*addr) & 0xff,
+                                ((*addr)>>8) & 0xff,
+                                ((*addr)>>16) & 0xff));
+            addr++;
+            bmp_address++;
+          }
+
+          _y++;
+        }
 #if defined GFX_MODEX && !defined ALLEGRO_UNIX && !defined ALLEGRO_MACOSX
       }
 #endif
@@ -562,18 +562,18 @@ void ImageImpl<RgbTraits>::to_allegro(BITMAP *bmp, int _x, int _y, const Palette
       _x <<= 1;
 
       for (y=0; y<h; y++) {
-	bmp_address = bmp_write_line(bmp, _y)+_x;
+        bmp_address = bmp_write_line(bmp, _y)+_x;
 
-	for (x=0; x<w; x++) {
-	  bmp_write15(bmp_address,
-		      makecol15((*addr) & 0xff,
-				((*addr)>>8) & 0xff,
-				((*addr)>>16) & 0xff));
-	  addr++;
-	  bmp_address += 2;
-	}
+        for (x=0; x<w; x++) {
+          bmp_write15(bmp_address,
+                      makecol15((*addr) & 0xff,
+                                ((*addr)>>8) & 0xff,
+                                ((*addr)>>16) & 0xff));
+          addr++;
+          bmp_address += 2;
+        }
 
-	_y++;
+        _y++;
       }
       break;
 
@@ -581,18 +581,18 @@ void ImageImpl<RgbTraits>::to_allegro(BITMAP *bmp, int _x, int _y, const Palette
       _x <<= 1;
 
       for (y=0; y<h; y++) {
-	bmp_address = bmp_write_line (bmp, _y)+_x;
+        bmp_address = bmp_write_line (bmp, _y)+_x;
 
-	for (x=0; x<w; x++) {
-	  bmp_write16(bmp_address,
-		      makecol16((*addr) & 0xff,
-				((*addr)>>8) & 0xff,
-				((*addr)>>16) & 0xff));
-	  addr++;
-	  bmp_address += 2;
-	}
+        for (x=0; x<w; x++) {
+          bmp_write16(bmp_address,
+                      makecol16((*addr) & 0xff,
+                                ((*addr)>>8) & 0xff,
+                                ((*addr)>>16) & 0xff));
+          addr++;
+          bmp_address += 2;
+        }
 
-	_y++;
+        _y++;
       }
       break;
 
@@ -600,18 +600,18 @@ void ImageImpl<RgbTraits>::to_allegro(BITMAP *bmp, int _x, int _y, const Palette
       _x *= 3;
 
       for (y=0; y<h; y++) {
-	bmp_address = bmp_write_line(bmp, _y)+_x;
+        bmp_address = bmp_write_line(bmp, _y)+_x;
 
-	for (x=0; x<w; x++) {
-	  bmp_write24(bmp_address,
-		      makecol24((*addr) & 0xff,
-				((*addr)>>8) & 0xff,
-				((*addr)>>16) & 0xff));
-	  addr++;
-	  bmp_address += 3;
-	}
+        for (x=0; x<w; x++) {
+          bmp_write24(bmp_address,
+                      makecol24((*addr) & 0xff,
+                                ((*addr)>>8) & 0xff,
+                                ((*addr)>>16) & 0xff));
+          addr++;
+          bmp_address += 3;
+        }
 
-	_y++;
+        _y++;
       }
       break;
 
@@ -619,19 +619,19 @@ void ImageImpl<RgbTraits>::to_allegro(BITMAP *bmp, int _x, int _y, const Palette
       _x <<= 2;
 
       for (y=0; y<h; y++) {
-	bmp_address = bmp_write_line(bmp, _y)+_x;
+        bmp_address = bmp_write_line(bmp, _y)+_x;
 
-	for (x=0; x<w; x++) {
-	  bmp_write32(bmp_address,
-		      makeacol32((*addr) & 0xff,
-				 ((*addr)>>8) & 0xff,
-				 ((*addr)>>16) & 0xff,
-				 ((*addr)>>24) & 0xff));
-	  addr++;
-	  bmp_address += 4;
-	}
+        for (x=0; x<w; x++) {
+          bmp_write32(bmp_address,
+                      makeacol32((*addr) & 0xff,
+                                 ((*addr)>>8) & 0xff,
+                                 ((*addr)>>16) & 0xff,
+                                 ((*addr)>>24) & 0xff));
+          addr++;
+          bmp_address += 4;
+        }
 
-	_y++;
+        _y++;
       }
       break;
   }
@@ -692,9 +692,9 @@ void ImageImpl<GrayscaleTraits>::to_allegro(BITMAP *bmp, int _x, int _y, const P
 
         for (x=0; x<w; x++) {
           bmp_write15(bmp_address,
-		      makecol15((*addr) & 0xff,
-				(*addr) & 0xff,
-				(*addr) & 0xff));
+                      makecol15((*addr) & 0xff,
+                                (*addr) & 0xff,
+                                (*addr) & 0xff));
           addr++;
           bmp_address += 2;
         }
@@ -711,9 +711,9 @@ void ImageImpl<GrayscaleTraits>::to_allegro(BITMAP *bmp, int _x, int _y, const P
 
         for (x=0; x<w; x++) {
           bmp_write16(bmp_address,
-		      makecol16((*addr) & 0xff,
-				(*addr) & 0xff,
-				(*addr) & 0xff));
+                      makecol16((*addr) & 0xff,
+                                (*addr) & 0xff,
+                                (*addr) & 0xff));
           addr++;
           bmp_address += 2;
         }
@@ -730,9 +730,9 @@ void ImageImpl<GrayscaleTraits>::to_allegro(BITMAP *bmp, int _x, int _y, const P
 
         for (x=0; x<w; x++) {
           bmp_write24(bmp_address,
-		      makecol24((*addr) & 0xff,
-				(*addr) & 0xff,
-				(*addr) & 0xff));
+                      makecol24((*addr) & 0xff,
+                                (*addr) & 0xff,
+                                (*addr) & 0xff));
           addr++;
           bmp_address += 3;
         }
@@ -749,9 +749,9 @@ void ImageImpl<GrayscaleTraits>::to_allegro(BITMAP *bmp, int _x, int _y, const P
 
         for (x=0; x<w; x++) {
           bmp_write32(bmp_address,
-		      makeacol32((*addr) & 0xff,
-				 (*addr) & 0xff,
-				 (*addr) & 0xff, 255));
+                      makeacol32((*addr) & 0xff,
+                                 (*addr) & 0xff,
+                                 (*addr) & 0xff, 255));
           addr++;
           bmp_address += 4;
         }
@@ -817,7 +817,7 @@ void ImageImpl<IndexedTraits>::to_allegro(BITMAP *bmp, int _x, int _y, const Pal
         bmp_address = bmp_write_line(bmp, _y)+_x;
 
         for (x=0; x<w; x++) {
-	  c = palette->getEntry(*addr);
+          c = palette->getEntry(*addr);
           bmp_write15(bmp_address, makecol15(_rgba_getr(c), _rgba_getg(c), _rgba_getb(c)));
           addr++;
           bmp_address += 2;
@@ -834,7 +834,7 @@ void ImageImpl<IndexedTraits>::to_allegro(BITMAP *bmp, int _x, int _y, const Pal
         bmp_address = bmp_write_line(bmp, _y)+_x;
 
         for (x=0; x<w; x++) {
-	  c = palette->getEntry(*addr);
+          c = palette->getEntry(*addr);
           bmp_write16(bmp_address, makecol16(_rgba_getr(c), _rgba_getg(c), _rgba_getb(c)));
           addr++;
           bmp_address += 2;
@@ -851,7 +851,7 @@ void ImageImpl<IndexedTraits>::to_allegro(BITMAP *bmp, int _x, int _y, const Pal
         bmp_address = bmp_write_line(bmp, _y)+_x;
 
         for (x=0; x<w; x++) {
-	  c = palette->getEntry(*addr);
+          c = palette->getEntry(*addr);
           bmp_write24(bmp_address, makecol24(_rgba_getr(c), _rgba_getg(c), _rgba_getb(c)));
           addr++;
           bmp_address += 3;
@@ -868,7 +868,7 @@ void ImageImpl<IndexedTraits>::to_allegro(BITMAP *bmp, int _x, int _y, const Pal
         bmp_address = bmp_write_line(bmp, _y)+_x;
 
         for (x=0; x<w; x++) {
-	  c = palette->getEntry(*addr);
+          c = palette->getEntry(*addr);
           bmp_write32(bmp_address, makeacol32(_rgba_getr(c), _rgba_getg(c), _rgba_getb(c), 255));
           addr++;
           bmp_address += 4;
@@ -903,15 +903,15 @@ void ImageImpl<BitmapTraits>::to_allegro(BITMAP *bmp, int _x, int _y, const Pale
 #if defined GFX_MODEX && !defined ALLEGRO_UNIX && !defined ALLEGRO_MACOSX
       if (is_planar_bitmap(bmp)) {
         for (y=0; y<h; y++) {
-	  addr = line_address(y);
+          addr = line_address(y);
           bmp_address = (unsigned long)bmp->line[_y];
 
-	  d = beg_d;
+          d = beg_d;
           for (x=0; x<w; x++) {
             outportw (0x3C4, (0x100<<((_x+x)&3))|2);
             bmp_write8(bmp_addr+((_x+x)>>2),
-		       color[((*addr) & (1<<d.rem))? 1: 0]);
-	    _image_bitmap_next_bit(d, addr);
+                       color[((*addr) & (1<<d.rem))? 1: 0]);
+            _image_bitmap_next_bit(d, addr);
           }
 
           _y++;
@@ -920,13 +920,13 @@ void ImageImpl<BitmapTraits>::to_allegro(BITMAP *bmp, int _x, int _y, const Pale
       else {
 #endif
         for (y=0; y<h; y++) {
-	  addr = line_address(y);
+          addr = line_address(y);
           bmp_address = bmp_write_line(bmp, _y)+_x;
 
-	  d = beg_d;
+          d = beg_d;
           for (x=0; x<w; x++) {
             bmp_write8 (bmp_address++, color[((*addr) & (1<<d.rem))? 1: 0]);
-	    _image_bitmap_next_bit(d, addr);
+            _image_bitmap_next_bit(d, addr);
           }
 
           _y++;
@@ -943,14 +943,14 @@ void ImageImpl<BitmapTraits>::to_allegro(BITMAP *bmp, int _x, int _y, const Pale
       _x <<= 1;
 
       for (y=0; y<h; y++) {
-	addr = line_address(y);
+        addr = line_address(y);
         bmp_address = bmp_write_line(bmp, _y)+_x;
 
-	d = beg_d;
+        d = beg_d;
         for (x=0; x<w; x++) {
           bmp_write15(bmp_address, color[((*addr) & (1<<d.rem))? 1: 0]);
           bmp_address += 2;
-	  _image_bitmap_next_bit(d, addr);
+          _image_bitmap_next_bit(d, addr);
         }
 
         _y++;
@@ -964,14 +964,14 @@ void ImageImpl<BitmapTraits>::to_allegro(BITMAP *bmp, int _x, int _y, const Pale
       _x <<= 1;
 
       for (y=0; y<h; y++) {
-	addr = line_address(y);
+        addr = line_address(y);
         bmp_address = bmp_write_line(bmp, _y)+_x;
 
-	d = beg_d;
+        d = beg_d;
         for (x=0; x<w; x++) {
           bmp_write16(bmp_address, color[((*addr) & (1<<d.rem))? 1: 0]);
           bmp_address += 2;
-	  _image_bitmap_next_bit(d, addr);
+          _image_bitmap_next_bit(d, addr);
         }
 
         _y++;
@@ -985,14 +985,14 @@ void ImageImpl<BitmapTraits>::to_allegro(BITMAP *bmp, int _x, int _y, const Pale
       _x *= 3;
 
       for (y=0; y<h; y++) {
-	addr = line_address(y);
+        addr = line_address(y);
         bmp_address = bmp_write_line(bmp, _y)+_x;
 
-	d = beg_d;
+        d = beg_d;
         for (x=0; x<w; x++) {
           bmp_write24(bmp_address, color[((*addr) & (1<<d.rem))? 1: 0]);
           bmp_address += 3;
-	  _image_bitmap_next_bit (d, addr);
+          _image_bitmap_next_bit (d, addr);
         }
 
         _y++;
@@ -1006,14 +1006,14 @@ void ImageImpl<BitmapTraits>::to_allegro(BITMAP *bmp, int _x, int _y, const Pale
       _x <<= 2;
 
       for (y=0; y<h; y++) {
-	addr = line_address(y);
+        addr = line_address(y);
         bmp_address = bmp_write_line(bmp, _y)+_x;
 
-	d = beg_d;
+        d = beg_d;
         for (x=0; x<w; x++) {
           bmp_write32(bmp_address, color[((*addr) & (1<<d.rem))? 1: 0]);
           bmp_address += 4;
-	  _image_bitmap_next_bit(d, addr);
+          _image_bitmap_next_bit(d, addr);
         }
 
         _y++;

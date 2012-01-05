@@ -257,7 +257,7 @@ static void update_shifts(XKeyEvent *event)
        * press/release.
        */
       if (event->state & modifier_flags[i][1])
-	 mask |= modifier_flags[i][0];
+         mask |= modifier_flags[i][0];
 
       /* In case a modifier key itself was pressed, we now need to update
        * the above state for Allegro, which wants the state after the
@@ -266,19 +266,19 @@ static void update_shifts(XKeyEvent *event)
       for (j = 0; j < xmodmap->max_keypermod; j++) {
          if (event->keycode && event->keycode ==
             xmodmap->modifiermap[i * xmodmap->max_keypermod + j]) {
-	    if (event->type == KeyPress) {
+            if (event->type == KeyPress) {
                /* Modifier key pressed - toggle or set flag. */
-	       if (modifier_flags[i][2])
-		  mask ^= modifier_flags[i][0];
-	       else
-		  mask |= modifier_flags[i][0];
-	    }
+               if (modifier_flags[i][2])
+                  mask ^= modifier_flags[i][0];
+               else
+                  mask |= modifier_flags[i][0];
+            }
             else if (event->type == KeyRelease) {
-	       /* Modifier key of non-toggle key released - remove flag. */
-	       if (!modifier_flags[i][2])
-		  mask &= ~modifier_flags[i][0];
-	    }
-	 }
+               /* Modifier key of non-toggle key released - remove flag. */
+               if (!modifier_flags[i][2])
+                  mask &= ~modifier_flags[i][0];
+            }
+         }
       }
    }
    _key_shifts = mask;
@@ -308,11 +308,11 @@ static void dga2_update_shifts(XKeyEvent *event)
                if (!modifier_flags[i][2])
                   _key_shifts &= ~modifier_flags[i][0];
             }
-	 }
+         }
       }
       /* Hack: DGA keys seem to get reported wrong otherwise. */
       if (_key_shifts & modifier_flags[i][0])
-	 event->state |= modifier_flags[i][1];
+         event->state |= modifier_flags[i][1];
    }
 }
 
@@ -328,21 +328,21 @@ static int find_unknown_key_assignment (int i)
 
    for (j = 1; j < KEY_MAX; j++) {
       if (!used[j]) {
-	 AL_CONST char *str;
-	 _xwin.keycode_to_scancode[i] = j;
-	 str = XKeysymToString(keysyms[sym_per_key * (i - min_keycode)]);
-	 if (str)
-	    key_names[j] = str;
-	 else
-	    key_names[j] = _keyboard_common_names[j];
-	 used[j] = 1;
-	 break;
+         AL_CONST char *str;
+         _xwin.keycode_to_scancode[i] = j;
+         str = XKeysymToString(keysyms[sym_per_key * (i - min_keycode)]);
+         if (str)
+            key_names[j] = str;
+         else
+            key_names[j] = _keyboard_common_names[j];
+         used[j] = 1;
+         break;
       }
    }
 
    if (j == KEY_MAX) {
       TRACE(PREFIX_E "You have more keys reported by X than Allegro's "
-	    "maximum of %i keys. Please send a bug report.\n", KEY_MAX);
+            "maximum of %i keys. Please send a bug report.\n", KEY_MAX);
       _xwin.keycode_to_scancode[i] = 0;
    }
 
@@ -402,13 +402,13 @@ void _xwin_keyboard_handler(XKeyEvent *event, int dga2_hack)
 
 #if defined (ALLEGRO_XWINDOWS_WITH_XIM) && defined(X_HAVE_UTF8_STRING)
       if (xic) {
-	 len = Xutf8LookupString(xic, event, buffer, sizeof buffer, NULL, NULL);
+         len = Xutf8LookupString(xic, event, buffer, sizeof buffer, NULL, NULL);
       }
       else
 #endif
       {
          /* XLookupString is supposed to only use ASCII. */
-	 len = XLookupString(event, buffer, sizeof buffer, NULL, NULL);
+         len = XLookupString(event, buffer, sizeof buffer, NULL, NULL);
       }
       buffer[len] = '\0';
       uconvert(buffer, U_UTF8, buffer2, U_UNICODE, sizeof buffer2);
@@ -418,22 +418,22 @@ void _xwin_keyboard_handler(XKeyEvent *event, int dga2_hack)
       r = XFilterEvent((XEvent *)event, _xwin.window);
 #endif
       if (keycode || unicode) {
-	 /* If we have a keycode, we want it to go to Allegro immediately, so the
-	  * key[] array is updated, and the user callbacks are called. OTOH, a key
-	  * should not be added to the keyboard buffer (parameter -1) if it was
+         /* If we have a keycode, we want it to go to Allegro immediately, so the
+          * key[] array is updated, and the user callbacks are called. OTOH, a key
+          * should not be added to the keyboard buffer (parameter -1) if it was
           * filtered out as a compose key, or if it is a modifier key.
-	  */
-	 if (r || keycode >= KEY_MODIFIERS)
-	    unicode = -1;
-	 else {
-	    /* Historically, Allegro expects to get only the scancode when Alt is
-	     * held down.
-	     */
-	    if (_key_shifts & KB_ALT_FLAG)
-	       unicode = 0;
+          */
+         if (r || keycode >= KEY_MODIFIERS)
+            unicode = -1;
+         else {
+            /* Historically, Allegro expects to get only the scancode when Alt is
+             * held down.
+             */
+            if (_key_shifts & KB_ALT_FLAG)
+               unicode = 0;
          }
 
-	 _handle_key_press(unicode, keycode);
+         _handle_key_press(unicode, keycode);
 
          /* Detect Ctrl-Alt-End. */
          if (keycode == KEY_END && (_key_shifts & KB_CTRL_FLAG) &&
@@ -470,8 +470,8 @@ void _xwin_keyboard_focus_handler(XFocusChangeEvent *event)
       int i;
 
       for (i = 0; i < KEY_MAX; i++) {
-	 if (key[i])
-	    _handle_key_release(i);
+         if (key[i])
+            _handle_key_release(i);
       }
    }
 }
@@ -489,7 +489,7 @@ static int find_allegro_key(KeySym sym)
 
    for (i = 0; i < n; i++) {
       if (translation_table[i].keysym == sym)
-	 return translation_table[i].allegro_key;
+         return translation_table[i].allegro_key;
    }
    return 0;
 }
@@ -559,43 +559,43 @@ void _xwin_get_keyboard_mapping(void)
 
       /* Hack for French keyboards, to correctly map KEY_0 to KEY_9. */
       if (sym2 >= XK_0 && sym2 <= XK_9) {
-	 allegro_key = find_allegro_key(sym2);
+         allegro_key = find_allegro_key(sym2);
       }
 
       if (!allegro_key) {
-	 if (sym != NoSymbol) {
-	    allegro_key = find_allegro_key(sym);
+         if (sym != NoSymbol) {
+            allegro_key = find_allegro_key(sym);
 
-	    if (allegro_key == 0) {
-	       missing++;
-	       TRACE (" defering.\n");
-	    }
-	 }
-	 else {
-	    /* No KeySym for this key - ignore it. */
-	    _xwin.keycode_to_scancode[i] = -1;
-	    TRACE (" not assigned.\n");
-	 }
+            if (allegro_key == 0) {
+               missing++;
+               TRACE (" defering.\n");
+            }
+         }
+         else {
+            /* No KeySym for this key - ignore it. */
+            _xwin.keycode_to_scancode[i] = -1;
+            TRACE (" not assigned.\n");
+         }
       }
 
       if (allegro_key) {
-	 if (used[allegro_key]) {
-	    TRACE(" *double*");
-	 }
-	 _xwin.keycode_to_scancode[i] = allegro_key;
-	 key_names[allegro_key] =
-	    XKeysymToString(keysyms[sym_per_key * (i - min_keycode)]);
-	 used[allegro_key] = 1;
-	 TRACE(" assigned to %i.\n", allegro_key);
+         if (used[allegro_key]) {
+            TRACE(" *double*");
+         }
+         _xwin.keycode_to_scancode[i] = allegro_key;
+         key_names[allegro_key] =
+            XKeysymToString(keysyms[sym_per_key * (i - min_keycode)]);
+         used[allegro_key] = 1;
+         TRACE(" assigned to %i.\n", allegro_key);
       }
    }
 
    if (missing) {
       /* The keys still not assigned are just assigned arbitrarily now. */
       for (i = min_keycode; i <= max_keycode; i++) {
-	 if (_xwin.keycode_to_scancode[i] == 0) {
-	    find_unknown_key_assignment(i);
-	 }
+         if (_xwin.keycode_to_scancode[i] == 0) {
+            find_unknown_key_assignment(i);
+         }
       }
    }
 
@@ -607,8 +607,8 @@ void _xwin_get_keyboard_mapping(void)
 
       TRACE (PREFIX_I "Modifier %d:", i + 1);
       for (j = 0; j < xmodmap->max_keypermod; j++) {
-	 KeySym sym = XKeycodeToKeysym(_xwin.display,
-	    xmodmap->modifiermap[i * xmodmap->max_keypermod + j], 0);
+         KeySym sym = XKeycodeToKeysym(_xwin.display,
+            xmodmap->modifiermap[i * xmodmap->max_keypermod + j], 0);
          char *sym_str = XKeysymToString(sym);
          TRACE(" %s", sym_str ? sym_str : "NULL");
       }
@@ -629,14 +629,14 @@ void _xwin_get_keyboard_mapping(void)
       option_format = uconvert_ascii("keycode%d", tmp2);
 
       for (i = min_keycode; i <= max_keycode; i++) {
-	 int scancode;
+         int scancode;
 
-	 uszprintf(option, sizeof(option), option_format, i);
-	 scancode = get_config_int(section, option, -1);
-	 if (scancode > 0) {
-	    _xwin.keycode_to_scancode[i] = scancode;
-	    TRACE(PREFIX_I "User override: KeySym %i assigned to %i.\n", i, scancode);
-	 }
+         uszprintf(option, sizeof(option), option_format, i);
+         scancode = get_config_int(section, option, -1);
+         if (scancode > 0) {
+            _xwin.keycode_to_scancode[i] = scancode;
+            TRACE(PREFIX_I "User override: KeySym %i assigned to %i.\n", i, scancode);
+         }
       }
    }
 
@@ -715,35 +715,35 @@ static int x_keyboard_init(void)
    if (xim) {
       imvalret = XGetIMValues(xim, XNQueryInputStyle, &xim_styles, NULL);
       if (imvalret != NULL || xim_styles == NULL) {
-	 TRACE(PREFIX_W "Input method doesn't support any styles.\n");
+         TRACE(PREFIX_W "Input method doesn't support any styles.\n");
       }
 
       if (xim_styles) {
-	 xim_style = 0;
-	 for (i = 0;  i < xim_styles->count_styles;  i++) {
-	    if (xim_styles->supported_styles[i] ==
-	       (XIMPreeditNothing | XIMStatusNothing)) {
-	       xim_style = xim_styles->supported_styles[i];
-	       break;
-	    }
-	 }
+         xim_style = 0;
+         for (i = 0;  i < xim_styles->count_styles;  i++) {
+            if (xim_styles->supported_styles[i] ==
+               (XIMPreeditNothing | XIMStatusNothing)) {
+               xim_style = xim_styles->supported_styles[i];
+               break;
+            }
+         }
 
-	 if (xim_style == 0) {
-	    TRACE (PREFIX_W "Input method doesn't support the style we support.\n");
-	 }
-	 XFree(xim_styles);
+         if (xim_style == 0) {
+            TRACE (PREFIX_W "Input method doesn't support the style we support.\n");
+         }
+         XFree(xim_styles);
       }
    }
 
    if (xim && xim_style) {
       xic = XCreateIC(xim,
-		       XNInputStyle, xim_style,
-		       XNClientWindow, _xwin.window,
-		       XNFocusWindow, _xwin.window,
-		       NULL);
+                       XNInputStyle, xim_style,
+                       XNClientWindow, _xwin.window,
+                       XNFocusWindow, _xwin.window,
+                       NULL);
 
       if (xic == NULL) {
-	 TRACE (PREFIX_W "XCreateIC failed.\n");
+         TRACE (PREFIX_W "XCreateIC failed.\n");
       }
    }
 #endif

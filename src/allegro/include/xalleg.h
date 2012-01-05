@@ -10,7 +10,7 @@
  *
  *      X header file for the Allegro library.
  *
- *      This prototypes some things which might be useful to 
+ *      This prototypes some things which might be useful to
  *      the calling application, but you don't need it.
  */
 
@@ -175,4 +175,3 @@ AL_FUNC(void, xwin_set_window_name, (AL_CONST char *name, AL_CONST char *group))
 #endif
 
 #endif
-

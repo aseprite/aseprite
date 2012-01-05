@@ -24,13 +24,13 @@
 #define _CRT_SECURE_NO_WARNINGS
 
 // General information
-#define PACKAGE			"ASEPRITE"
-#define VERSION			"0.9.1"
-#define ASE_BETA		1
-#define WEBSITE			"http://www.aseprite.org/"
-#define COPYRIGHT		"Copyright (C) 2001-2011 David Capello"
+#define PACKAGE                 "ASEPRITE"
+#define VERSION                 "0.9.1"
+#define ASE_BETA                1
+#define WEBSITE                 "http://www.aseprite.org/"
+#define COPYRIGHT               "Copyright (C) 2001-2011 David Capello"
 
-#define PRINTF			verbose_printf
+#define PRINTF                  verbose_printf
 
 // Defined in src/log.cpp
 void verbose_printf(const char* format, ...);
@@ -40,7 +40,7 @@ void verbose_printf(const char* format, ...);
 #define PI 3.14159265358979323846
 
 #include <allegro/base.h>
-#include <allegro/debug.h>	// ASSERT
+#include <allegro/debug.h>      // ASSERT
 
 //////////////////////////////////////////////////////////////////////
 // Overloaded new/delete operators to detect memory-leaks

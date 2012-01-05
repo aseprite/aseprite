@@ -285,7 +285,7 @@
     decoder->builder.advance      = advance;
 
     /* XXX: old code doesn't work with postscript hinter */
-#if 0    
+#if 0
     /* Finally, move the accent */
     if ( decoder->builder.load_points )
     {
@@ -297,7 +297,7 @@
 
       FT_Outline_Translate( &dummy, adx - asb, ady );
     }
-#else    
+#else
     decoder->builder.pos_x = 0;
     decoder->builder.pos_y = 0;
 #endif
@@ -633,10 +633,10 @@
             goto Syntax_Error;
           }
           ip += 2;
-          
+
           if ( hinter )
             hinter->reset( hinter->hints, builder->current->n_points );
-            
+
           break;
 
         case 12:
@@ -731,19 +731,19 @@
           FT_TRACE4(( " endchar" ));
 
           close_contour( builder );
-          
+
           /* close hints recording session */
           if ( hinter )
           {
             if (hinter->close( hinter->hints, builder->current->n_points ))
               goto Syntax_Error;
-            
+
             /* apply hints to the loaded glyph outline now */
             hinter->apply( hinter->hints,
                            builder->current,
                            (PSH_Globals)builder->hints_globals );
           }
-          
+
           /* add current outline to the glyph slot */
           FT_GlyphLoader_Add( builder->loader );
 
@@ -1009,7 +1009,7 @@
 
         case op_hstem:
           FT_TRACE4(( " hstem" ));
-          
+
           /* record horizontal hint */
           if ( hinter )
           {
@@ -1025,7 +1025,7 @@
           /* record horizontal counter-controlled hints */
           if ( hinter )
             hinter->stem3( hinter->hints, 1, top );
-                           
+
           break;
 
         case op_vstem:
@@ -1047,7 +1047,7 @@
           if ( hinter )
           {
             FT_Pos  dx = orig_x;
-            
+
             top[0] += dx;
             top[2] += dx;
             top[4] += dx;

@@ -32,9 +32,9 @@ namespace updater {
   public:
     enum Type {
       Unknown,
-      NoUpdate,			// No update available. You've the latest version.
-      Critical,			// There are critical bugs fixed.
-      Major			// New major version.
+      NoUpdate,                 // No update available. You've the latest version.
+      Critical,                 // There are critical bugs fixed.
+      Major                     // New major version.
     };
 
     CheckUpdateResponse();

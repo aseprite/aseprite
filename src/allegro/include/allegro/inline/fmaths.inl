@@ -129,19 +129,19 @@ AL_INLINE(fixed, fixsub, (fixed x, fixed y),
       LONG_LONG lres = (lx*ly);
 
       if (lres > 0x7FFFFFFF0000LL) {
-	 *allegro_errno = ERANGE;
-	 return 0x7FFFFFFF;
+         *allegro_errno = ERANGE;
+         return 0x7FFFFFFF;
       }
       else if (lres < -0x7FFFFFFF0000LL) {
-	 *allegro_errno = ERANGE;
-	 return 0x80000000;
+         *allegro_errno = ERANGE;
+         return 0x80000000;
       }
       else {
-	 int res = lres >> 16;
-	 return res;
+         int res = lres >> 16;
+         return res;
       }
    })
-#endif	    /* fixmul() C implementations */
+#endif      /* fixmul() C implementations */
 
 
 AL_INLINE(fixed, fixdiv, (fixed x, fixed y),
@@ -234,5 +234,3 @@ AL_INLINE(fixed, fixasin, (fixed x),
 #endif
 
 #endif          /* ifndef ALLEGRO_FMATHS_INL */
-
-

@@ -1,6 +1,6 @@
-/*         ______   ___    ___ 
- *        /\  _  \ /\_ \  /\_ \ 
- *        \ \ \L\ \\//\ \ \//\ \      __     __   _ __   ___ 
+/*         ______   ___    ___
+ *        /\  _  \ /\_ \  /\_ \
+ *        \ \ \L\ \\//\ \ \//\ \      __     __   _ __   ___
  *         \ \  __ \ \ \ \  \ \ \   /'__`\ /'_ `\/\`'__\/ __`\
  *          \ \ \/\ \ \_\ \_ \_\ \_/\  __//\ \L\ \ \ \//\ \L\ \
  *           \ \_\ \_\/\____\/\____\ \____\ \____ \ \_\\ \____/
@@ -105,7 +105,7 @@ static void destroy_resource_path_list(void);
 char *fix_filename_case(char *filename)
 {
    ASSERT(filename);
-   
+
    if (!ALLEGRO_LFN)
       ustrupr(filename);
 
@@ -125,7 +125,7 @@ char *fix_filename_slashes(char *filename)
    for (pos=0; ugetc(filename+pos); pos+=uwidth(filename+pos)) {
       c = ugetc(filename+pos);
       if ((c == '/') || (c == '\\'))
-	 usetat(filename+pos, 0, OTHER_PATH_SEPARATOR);
+         usetat(filename+pos, 0, OTHER_PATH_SEPARATOR);
    }
 
    return filename;
@@ -154,17 +154,17 @@ char *canonicalize_filename(char *dest, AL_CONST char *filename, int size)
       /* check whether we have a drive letter */
       c1 = utolower(ugetc(filename));
       if ((c1 >= 'a') && (c1 <= 'z')) {
-	 int c2 = ugetat(filename, 1);
-	 if (c2 == DEVICE_SEPARATOR) {
-	    drive = c1 - 'a';
-	    filename += uwidth(filename);
-	    filename += uwidth(filename);
-	 }
+         int c2 = ugetat(filename, 1);
+         if (c2 == DEVICE_SEPARATOR) {
+            drive = c1 - 'a';
+            filename += uwidth(filename);
+            filename += uwidth(filename);
+         }
       }
 
       /* if not, use the current drive */
       if (drive < 0)
-	 drive = _al_getdrive();
+         drive = _al_getdrive();
 
       pos += usetc(buf+pos, drive+'a');
       pos += usetc(buf+pos, DEVICE_SEPARATOR);
@@ -175,67 +175,67 @@ char *canonicalize_filename(char *dest, AL_CONST char *filename, int size)
 
       /* if the filename starts with ~ then it's relative to a home directory */
       if ((ugetc(filename) == '~')) {
-	 AL_CONST char *tail = filename + uwidth(filename); /* could be the username */
-	 char *home = NULL;                /* their home directory */
+         AL_CONST char *tail = filename + uwidth(filename); /* could be the username */
+         char *home = NULL;                /* their home directory */
 
-	 if (ugetc(tail) == '/' || !ugetc(tail)) {
-	    /* easy */
-	    home = getenv("HOME");
-	    if (home)
-	       home = _al_strdup(home);
-	 }
-	 else {
-	    /* harder */
-	    char *username = (char *)tail, *ascii_username, *ch;
-	    int userlen;
-	    struct passwd *pwd;
+         if (ugetc(tail) == '/' || !ugetc(tail)) {
+            /* easy */
+            home = getenv("HOME");
+            if (home)
+               home = _al_strdup(home);
+         }
+         else {
+            /* harder */
+            char *username = (char *)tail, *ascii_username, *ch;
+            int userlen;
+            struct passwd *pwd;
 
-	    /* find the end of the username */
-	    tail = ustrchr(username, '/');
-	    if (!tail)
-	       tail = ustrchr(username, '\0');
+            /* find the end of the username */
+            tail = ustrchr(username, '/');
+            if (!tail)
+               tail = ustrchr(username, '\0');
 
-	    /* this ought to be the ASCII length, but I can't see a Unicode
-	     * function to return the difference in characters between two
-	     * pointers. This code is safe on the assumption that ASCII is
-	     * the most efficient encoding, but wasteful of memory */
-	    userlen = tail - username + ucwidth('\0');
-	    ascii_username = _AL_MALLOC_ATOMIC(userlen);
+            /* this ought to be the ASCII length, but I can't see a Unicode
+             * function to return the difference in characters between two
+             * pointers. This code is safe on the assumption that ASCII is
+             * the most efficient encoding, but wasteful of memory */
+            userlen = tail - username + ucwidth('\0');
+            ascii_username = _AL_MALLOC_ATOMIC(userlen);
 
-	    if (ascii_username) {
-	       /* convert the username to ASCII, find the password entry,
-		* and copy their home directory. */
-	       do_uconvert(username, U_CURRENT, ascii_username, U_ASCII, userlen);
+            if (ascii_username) {
+               /* convert the username to ASCII, find the password entry,
+                * and copy their home directory. */
+               do_uconvert(username, U_CURRENT, ascii_username, U_ASCII, userlen);
 
-	       if ((ch = strchr(ascii_username, '/')))
-		  *ch = '\0';
+               if ((ch = strchr(ascii_username, '/')))
+                  *ch = '\0';
 
-	       setpwent();
+               setpwent();
 
-	       while (((pwd = getpwent()) != NULL) && 
-		      (strcmp(pwd->pw_name, ascii_username) != 0))
-		  ;
+               while (((pwd = getpwent()) != NULL) &&
+                      (strcmp(pwd->pw_name, ascii_username) != 0))
+                  ;
 
-	       _AL_FREE(ascii_username);
+               _AL_FREE(ascii_username);
 
-	       if (pwd)
-		  home = _al_strdup(pwd->pw_dir);
+               if (pwd)
+                  home = _al_strdup(pwd->pw_dir);
 
-	       endpwent();
-	    }
-	 }
+               endpwent();
+            }
+         }
 
-	 /* If we got a home directory, prepend it to the filename. Otherwise
-	  * we leave the filename alone, like bash but not tcsh; bash is better
-	  * anyway. :)
-	  */
-	 if (home) {
-	    do_uconvert(home, U_ASCII, buf+pos, U_CURRENT, sizeof(buf)-pos);
-	    _AL_FREE(home);
-	    pos = ustrsize(buf);
-	    filename = tail;
-	    goto no_relativisation;
-	 }
+         /* If we got a home directory, prepend it to the filename. Otherwise
+          * we leave the filename alone, like bash but not tcsh; bash is better
+          * anyway. :)
+          */
+         if (home) {
+            do_uconvert(home, U_ASCII, buf+pos, U_CURRENT, sizeof(buf)-pos);
+            _AL_FREE(home);
+            pos = ustrsize(buf);
+            filename = tail;
+            goto no_relativisation;
+         }
       }
 
    #endif   /* Unix */
@@ -247,7 +247,7 @@ char *canonicalize_filename(char *dest, AL_CONST char *filename, int size)
 
       p = buf2;
       if ((utolower(p[0]) >= 'a') && (utolower(p[0]) <= 'z') && (p[1] == DEVICE_SEPARATOR))
-	 p += 2;
+         p += 2;
 
       ustrzcpy(buf+pos, sizeof(buf)-pos, p);
       pos = ustrsize(buf);
@@ -291,22 +291,22 @@ char *canonicalize_filename(char *dest, AL_CONST char *filename, int size)
 
    while ((p = ustrstr(buf, buf2)) != NULL) {
       for (i=0; buf+uoffset(buf, i) < p; i++)
-	 ;
+         ;
 
       while (--i > 0) {
-	 c1 = ugetat(buf, i);
+         c1 = ugetat(buf, i);
 
-	 if (c1 == OTHER_PATH_SEPARATOR)
-	    break;
+         if (c1 == OTHER_PATH_SEPARATOR)
+            break;
 
-	 if (c1 == DEVICE_SEPARATOR) {
-	    i++;
-	    break;
-	 }
+         if (c1 == DEVICE_SEPARATOR) {
+            i++;
+            break;
+         }
       }
 
       if (i < 0)
-	 i = 0;
+         i = 0;
 
       p += ustrsize(buf2);
       memmove(buf+uoffset(buf, i+1), p, ustrsizez(p));
@@ -399,8 +399,8 @@ char *make_relative_filename(char *dest, AL_CONST char *path, AL_CONST char *fil
    p2 = my_filename;
    while (((c1=ugetx(&p1)) == (c2=ugetx(&p2))) && c1 && c2) {
       if ((c1 == '/') || (c1 == OTHER_PATH_SEPARATOR)) {
-	 reduced_path = p1;
-	 reduced_filename = p2;
+         reduced_path = p1;
+         reduced_filename = p2;
       }
    }
 
@@ -408,25 +408,25 @@ char *make_relative_filename(char *dest, AL_CONST char *path, AL_CONST char *fil
       /* If the path is exhausted, we are in one of the two former cases. */
 
       if (!c2) {
-	 /* If the filename is also exhausted, we are in the second case.
-	  * Prepend './' to the reduced filename.
-	  */
-	 pos = usetc(dest, '.');
-	 pos += usetc(dest+pos, OTHER_PATH_SEPARATOR);
-	 usetc(dest+pos, 0);
+         /* If the filename is also exhausted, we are in the second case.
+          * Prepend './' to the reduced filename.
+          */
+         pos = usetc(dest, '.');
+         pos += usetc(dest+pos, OTHER_PATH_SEPARATOR);
+         usetc(dest+pos, 0);
       }
       else {
-	 /* Otherwise we are in the first case. Nothing to do. */
-	 usetc(dest, 0);
+         /* Otherwise we are in the first case. Nothing to do. */
+         usetc(dest, 0);
       }
    }
    else {
       /* Bail out if previously something went wrong (eg. user supplied
        * paths are not canonical and we can't understand them). */
       if (!reduced_path) {
-	 _AL_FREE(my_path);
-	 _AL_FREE(my_filename);
-	 return NULL;
+         _AL_FREE(my_path);
+         _AL_FREE(my_filename);
+         return NULL;
       }
       /* Otherwise, we are in the latter case and need to count the number
        * of remaining directories in the reduced path and prepend the same
@@ -434,11 +434,11 @@ char *make_relative_filename(char *dest, AL_CONST char *path, AL_CONST char *fil
        */
       pos = 0;
       while ((c=ugetx(&reduced_path))) {
-	 if ((c == '/') || (c == OTHER_PATH_SEPARATOR)) {
-	    pos += usetc(dest+pos, '.');
-	    pos += usetc(dest+pos, '.');
-	    pos += usetc(dest+pos, OTHER_PATH_SEPARATOR);
-	 }
+         if ((c == '/') || (c == OTHER_PATH_SEPARATOR)) {
+            pos += usetc(dest+pos, '.');
+            pos += usetc(dest+pos, '.');
+            pos += usetc(dest+pos, OTHER_PATH_SEPARATOR);
+         }
       }
 
       usetc(dest+pos, 0);
@@ -479,7 +479,7 @@ int is_relative_filename(AL_CONST char *filename)
     * or start with a '/' (Unix) are considered absolute.
     */
 #if (defined ALLEGRO_DOS) || (defined ALLEGRO_WINDOWS)
-   if (ustrchr(filename, DEVICE_SEPARATOR)) 
+   if (ustrchr(filename, DEVICE_SEPARATOR))
       return FALSE;
 #endif
 
@@ -509,7 +509,7 @@ char *replace_filename(char *dest, AL_CONST char *path, AL_CONST char *filename,
    while (pos>0) {
       c = ugetat(path, pos-1);
       if ((c == '/') || (c == OTHER_PATH_SEPARATOR) || (c == DEVICE_SEPARATOR))
-	 break;
+         break;
       pos--;
    }
 
@@ -541,7 +541,7 @@ char *replace_extension(char *dest, AL_CONST char *filename, AL_CONST char *ext,
    while (pos>0) {
       c = ugetat(filename, pos-1);
       if ((c == '.') || (c == '/') || (c == OTHER_PATH_SEPARATOR) || (c == DEVICE_SEPARATOR))
-	 break;
+         break;
       pos--;
    }
 
@@ -578,9 +578,9 @@ char *append_filename(char *dest, AL_CONST char *path, AL_CONST char *filename, 
       c = ugetat(tmp, pos-1);
 
       if ((c != '/') && (c != OTHER_PATH_SEPARATOR) && (c != DEVICE_SEPARATOR)) {
-	 pos = uoffset(tmp, pos);
-	 pos += usetc(tmp+pos, OTHER_PATH_SEPARATOR);
-	 usetc(tmp+pos, 0);
+         pos = uoffset(tmp, pos);
+         pos += usetc(tmp+pos, OTHER_PATH_SEPARATOR);
+         usetc(tmp+pos, 0);
       }
    }
 
@@ -631,7 +631,7 @@ char *get_extension(AL_CONST char *filename)
    while (pos>0) {
       c = ugetat(filename, pos-1);
       if ((c == '.') || (c == '/') || (c == OTHER_PATH_SEPARATOR) || (c == DEVICE_SEPARATOR))
-	 break;
+         break;
       pos--;
    }
 
@@ -657,7 +657,7 @@ void put_backslash(char *filename)
       c = ugetat(filename, -1);
 
       if ((c == '/') || (c == OTHER_PATH_SEPARATOR) || (c == DEVICE_SEPARATOR) || (c == '#'))
-	 return;
+         return;
    }
 
    filename += ustrsize(filename);
@@ -695,8 +695,8 @@ int get_filename_encoding(void)
 /* file_exists:
  *  Checks whether a file matching the given name and attributes exists,
  *  returning non zero if it does. The file attribute may contain any of
- *  the FA_* constants from dir.h. If aret is not null, it will be set 
- *  to the attributes of the matching file. If an error occurs the system 
+ *  the FA_* constants from dir.h. If aret is not null, it will be set
+ *  to the attributes of the matching file. If an error occurs the system
  *  error code will be stored in errno.
  */
 int file_exists(AL_CONST char *filename, int attrib, int *aret)
@@ -707,10 +707,10 @@ int file_exists(AL_CONST char *filename, int attrib, int *aret)
    if (ustrchr(filename, '#')) {
       PACKFILE *f = pack_fopen_special_file(filename, F_READ);
       if (f) {
-	 pack_fclose(f);
-	 if (aret)
-	    *aret = FA_DAT_FLAGS;
-	 return ((attrib & FA_DAT_FLAGS) == FA_DAT_FLAGS) ? TRUE : FALSE;
+         pack_fclose(f);
+         if (aret)
+            *aret = FA_DAT_FLAGS;
+         return ((attrib & FA_DAT_FLAGS) == FA_DAT_FLAGS) ? TRUE : FALSE;
       }
    }
 
@@ -757,11 +757,11 @@ uint64_t file_size_ex(AL_CONST char *filename)
    if (ustrchr(filename, '#')) {
       PACKFILE *f = pack_fopen_special_file(filename, F_READ);
       if (f) {
-	 long ret;
-	 ASSERT(f->is_normal_packfile);
-	 ret = f->normal.todo;
-	 pack_fclose(f);
-	 return ret;
+         long ret;
+         ASSERT(f->is_normal_packfile);
+         ret = f->normal.todo;
+         pack_fclose(f);
+         return ret;
       }
    }
 
@@ -824,7 +824,7 @@ int delete_file(AL_CONST char *filename)
       *allegro_errno = errno;
       return -1;
    }
- 
+
    return 0;
 }
 
@@ -839,7 +839,7 @@ int delete_file(AL_CONST char *filename)
  *  can use this for whatever you like). If an error occurs an error code
  *  will be stored in errno, and callback() can cause for_each_file() to
  *  abort by setting errno itself. Returns the number of successful calls
- *  made to callback(). The file attribute may contain any of the FA_* 
+ *  made to callback(). The file attribute may contain any of the FA_*
  *  flags from dir.h.
  */
 int for_each_file(AL_CONST char *name, int attrib, void (*callback)(AL_CONST char *filename, int attrib, int param), int param)
@@ -867,7 +867,7 @@ int for_each_file(AL_CONST char *name, int attrib, void (*callback)(AL_CONST cha
       (*callback)(buf, info.attrib, param);
 
       if (*allegro_errno) /* evil, evil, evil! */
-	 break;
+         break;
 
       c++;
    } while (al_findnext(&info) == 0);
@@ -909,20 +909,20 @@ int for_each_file_ex(AL_CONST char *name, int in_attrib, int out_attrib, int (*c
    if (al_findfirst(name, &info, ~out_attrib) != 0) {
       /* no entry is not an error for for_each_file_ex() */
       if (*allegro_errno == ENOENT)
-	 *allegro_errno = 0;
+         *allegro_errno = 0;
 
       return 0;
    }
 
    do {
       if ((~info.attrib & in_attrib) == 0) {
-	 replace_filename(buf, name, info.name, sizeof(buf));
-	 ret = (*callback)(buf, info.attrib, param);
+         replace_filename(buf, name, info.name, sizeof(buf));
+         ret = (*callback)(buf, info.attrib, param);
 
-	 if (ret != 0)
-	    break;
+         if (ret != 0)
+            break;
 
-	 c++;
+         c++;
       }
    } while (al_findnext(&info) == 0);
 
@@ -951,15 +951,15 @@ static int find_resource(char *dest, AL_CONST char *path, AL_CONST char *name, A
 
    for (i=0; i<ustrlen(_name); i++) {
       if (ugetat(_name, i) == '.')
-	 usetat(_name, i, '_');
+         usetat(_name, i, '_');
    }
 
    if (objectname) {
       ustrzcpy(_objectname, sizeof(_objectname), objectname);
 
       for (i=0; i<ustrlen(_objectname); i++) {
-	 if (ugetat(_objectname, i) == '.')
-	    usetat(_objectname, i, '_');
+         if (ugetat(_objectname, i) == '.')
+            usetat(_objectname, i, '_');
       }
    }
    else
@@ -967,13 +967,13 @@ static int find_resource(char *dest, AL_CONST char *path, AL_CONST char *name, A
 
    usetc(hash+usetc(hash, '#'), 0);
 
-   /* try path/name */ 
+   /* try path/name */
    if (ugetc(name)) {
       ustrzcpy(dest, size, path);
       ustrzcat(dest, size, name);
 
       if (file_exists(dest, FA_RDONLY | FA_ARCH, NULL))
-	 return 0;
+         return 0;
    }
 
    /* try path#_name */
@@ -982,7 +982,7 @@ static int find_resource(char *dest, AL_CONST char *path, AL_CONST char *name, A
       ustrzcat(dest, size, _name);
 
       if (file_exists(dest, FA_RDONLY | FA_ARCH, NULL))
-	 return 0;
+         return 0;
    }
 
    /* try path/name#_objectname */
@@ -993,7 +993,7 @@ static int find_resource(char *dest, AL_CONST char *path, AL_CONST char *name, A
       ustrzcat(dest, size, _objectname);
 
       if (file_exists(dest, FA_RDONLY | FA_ARCH, NULL))
-	 return 0;
+         return 0;
    }
 
    /* try path/datafile#_name */
@@ -1004,7 +1004,7 @@ static int find_resource(char *dest, AL_CONST char *path, AL_CONST char *name, A
       ustrzcat(dest, size, _name);
 
       if (file_exists(dest, FA_RDONLY | FA_ARCH, NULL))
-	 return 0;
+         return 0;
    }
 
    /* try path/datafile#_objectname */
@@ -1015,16 +1015,16 @@ static int find_resource(char *dest, AL_CONST char *path, AL_CONST char *name, A
       ustrzcat(dest, size, _objectname);
 
       if (file_exists(dest, FA_RDONLY | FA_ARCH, NULL))
-	 return 0;
+         return 0;
    }
 
-   /* try path/objectname */ 
+   /* try path/objectname */
    if (objectname) {
       ustrzcpy(dest, size, path);
       ustrzcat(dest, size, objectname);
 
       if (file_exists(dest, FA_RDONLY | FA_ARCH, NULL))
-	 return 0;
+         return 0;
    }
 
    /* try path#_objectname */
@@ -1033,7 +1033,7 @@ static int find_resource(char *dest, AL_CONST char *path, AL_CONST char *name, A
       ustrzcat(dest, size, _objectname);
 
       if (file_exists(dest, FA_RDONLY | FA_ARCH, NULL))
-	 return 0;
+         return 0;
    }
 
    /* try path/subdir/objectname */
@@ -1044,7 +1044,7 @@ static int find_resource(char *dest, AL_CONST char *path, AL_CONST char *name, A
       ustrzcat(dest, size, objectname);
 
       if (file_exists(dest, FA_RDONLY | FA_ARCH, NULL))
-	 return 0;
+         return 0;
    }
 
    return -1;
@@ -1063,58 +1063,58 @@ int set_allegro_resource_path(int priority, AL_CONST char *path)
    RESOURCE_PATH *node = resource_path_list;
    RESOURCE_PATH *prior_node = NULL;
    RESOURCE_PATH *new_node = NULL;
-   
+
    while (node && node->priority > priority) {
       prior_node = node;
       node = node->next;
    }
-   
+
    if (path) {
       if (node && priority == node->priority)
-	 new_node = node;
+         new_node = node;
       else {
-	 new_node = _AL_MALLOC(sizeof(RESOURCE_PATH));
-	 if (!new_node)
-	    return 0;
-         
-	 new_node->priority = priority;
-         
-	 if (prior_node) {
-	    prior_node->next = new_node;
-	    new_node->next = node;
-	 }
-	 else {
-	    new_node->next = resource_path_list;
-	    resource_path_list = new_node;
-	 }
-         
-	 if (!resource_path_list->next)
-	    _add_exit_func(destroy_resource_path_list,
-			   "destroy_resource_path_list");
+         new_node = _AL_MALLOC(sizeof(RESOURCE_PATH));
+         if (!new_node)
+            return 0;
+
+         new_node->priority = priority;
+
+         if (prior_node) {
+            prior_node->next = new_node;
+            new_node->next = node;
+         }
+         else {
+            new_node->next = resource_path_list;
+            resource_path_list = new_node;
+         }
+
+         if (!resource_path_list->next)
+            _add_exit_func(destroy_resource_path_list,
+                           "destroy_resource_path_list");
       }
-      
+
       ustrzcpy(new_node->path,
-	       sizeof(new_node->path) - ucwidth(OTHER_PATH_SEPARATOR),
-	       path);
+               sizeof(new_node->path) - ucwidth(OTHER_PATH_SEPARATOR),
+               path);
       fix_filename_slashes(new_node->path);
       put_backslash(new_node->path);
    }
    else {
        if (node && node->priority == priority) {
-	  if (prior_node)
-	     prior_node->next = node->next;
-	  else
-	     resource_path_list = node->next;
-          
-	  _AL_FREE(node);
-          
-	  if (!resource_path_list)
-	     _remove_exit_func(destroy_resource_path_list);
+          if (prior_node)
+             prior_node->next = node->next;
+          else
+             resource_path_list = node->next;
+
+          _AL_FREE(node);
+
+          if (!resource_path_list)
+             _remove_exit_func(destroy_resource_path_list);
        }
        else
-	  return 0;
+          return 0;
    }
-   
+
    return 1;
 }
 
@@ -1123,10 +1123,10 @@ int set_allegro_resource_path(int priority, AL_CONST char *path)
 static void destroy_resource_path_list(void)
 {
    RESOURCE_PATH *node = resource_path_list;
-   
+
    if (node)
       _remove_exit_func(destroy_resource_path_list);
-   
+
    while (node) {
       resource_path_list = node->next;
       _AL_FREE(node);
@@ -1154,7 +1154,7 @@ int find_allegro_resource(char *dest, AL_CONST char *resource, AL_CONST char *ex
    char *s;
    int i, c;
    RESOURCE_PATH *rp_list_node = resource_path_list;
-   
+
    ASSERT(dest);
 
    /* if the resource is a path with no filename, look in that location */
@@ -1164,28 +1164,28 @@ int find_allegro_resource(char *dest, AL_CONST char *resource, AL_CONST char *ex
    /* if we have a path+filename, just use it directly */
    if ((resource) && (ustrpbrk(resource, uconvert_ascii("\\/#", tmp)))) {
       if (file_exists(resource, FA_RDONLY | FA_ARCH, NULL)) {
-	 ustrzcpy(dest, size, resource);
+         ustrzcpy(dest, size, resource);
 
-	 /* if the resource is a datafile, try looking inside it */
-	 if ((ustricmp(get_extension(dest), uconvert_ascii("dat", tmp)) == 0) && (objectname)) {
-	    ustrzcat(dest, size, uconvert_ascii("#", tmp));
+         /* if the resource is a datafile, try looking inside it */
+         if ((ustricmp(get_extension(dest), uconvert_ascii("dat", tmp)) == 0) && (objectname)) {
+            ustrzcat(dest, size, uconvert_ascii("#", tmp));
 
-	    for (i=0; i<ustrlen(objectname); i++) {
-	       c = ugetat(objectname, i);
-	       if (c == '.')
-		  c = '_';
-	       if (ustrsizez(dest)+ucwidth(c) <= size)
-		  uinsert(dest, ustrlen(dest), c);
-	    }
+            for (i=0; i<ustrlen(objectname); i++) {
+               c = ugetat(objectname, i);
+               if (c == '.')
+                  c = '_';
+               if (ustrsizez(dest)+ucwidth(c) <= size)
+                  uinsert(dest, ustrlen(dest), c);
+            }
 
-	    if (!file_exists(dest, FA_RDONLY | FA_ARCH, NULL))
-	       return -1;
-	 }
+            if (!file_exists(dest, FA_RDONLY | FA_ARCH, NULL))
+               return -1;
+         }
 
-	 return 0;
+         return 0;
       }
       else
-	 return -1;
+         return -1;
    }
 
    /* clean up the resource name, adding any default extension */
@@ -1193,9 +1193,9 @@ int find_allegro_resource(char *dest, AL_CONST char *resource, AL_CONST char *ex
       ustrzcpy(rname, sizeof(rname), resource);
 
       if (ext) {
-	 s = get_extension(rname);
-	 if (!ugetc(s))
-	    ustrzcat(rname, sizeof(rname), ext);
+         s = get_extension(rname);
+         if (!ugetc(s))
+            ustrzcat(rname, sizeof(rname), ext);
       }
    }
    else
@@ -1204,7 +1204,7 @@ int find_allegro_resource(char *dest, AL_CONST char *resource, AL_CONST char *ex
    /* try resource path list */
    while (rp_list_node) {
       if (find_resource(dest, rp_list_node->path, rname, datafile, objectname,
-			subdir, size) == 0)
+                        subdir, size) == 0)
          return 0;
       rp_list_node = rp_list_node->next;
    }
@@ -1224,7 +1224,7 @@ int find_allegro_resource(char *dest, AL_CONST char *resource, AL_CONST char *ex
       put_backslash(path);
 
       if (find_resource(dest, path, rname, datafile, objectname, subdir, size) == 0)
-	 return 0; 
+         return 0;
    }
 
    /* try any extra environment variable that the parameters say to use */
@@ -1232,11 +1232,11 @@ int find_allegro_resource(char *dest, AL_CONST char *resource, AL_CONST char *ex
       s = getenv(uconvert_tofilename(envvar, tmp));
 
       if (s) {
-	 do_uconvert(s, U_ASCII, path, U_CURRENT, sizeof(path)-ucwidth(OTHER_PATH_SEPARATOR));
-	 put_backslash(path);
+         do_uconvert(s, U_ASCII, path, U_CURRENT, sizeof(path)-ucwidth(OTHER_PATH_SEPARATOR));
+         put_backslash(path);
 
-	 if (find_resource(dest, path, rname, datafile, objectname, subdir, size) == 0)
-	    return 0; 
+         if (find_resource(dest, path, rname, datafile, objectname, subdir, size) == 0)
+            return 0;
       }
    }
 
@@ -1248,28 +1248,28 @@ int find_allegro_resource(char *dest, AL_CONST char *resource, AL_CONST char *ex
 
    if (sys_find_resource) {
       if ((ugetc(rname)) && (sys_find_resource(dest, (char *)rname, size) == 0))
-	 return 0;
+         return 0;
 
       if ((datafile) && ((ugetc(rname)) || (objectname)) && (sys_find_resource(path, (char *)datafile, sizeof(path)) == 0)) {
-	 if (!ugetc(rname))
-	    ustrzcpy(rname, sizeof(rname), objectname);
+         if (!ugetc(rname))
+            ustrzcpy(rname, sizeof(rname), objectname);
 
-	 for (i=0; i<ustrlen(rname); i++) {
-	    if (ugetat(rname, i) == '.')
-	       usetat(rname, i, '_');
-	 }
+         for (i=0; i<ustrlen(rname); i++) {
+            if (ugetat(rname, i) == '.')
+               usetat(rname, i, '_');
+         }
 
-	 ustrzcat(path, sizeof(path), uconvert_ascii("#", tmp));
-	 ustrzcat(path, sizeof(path), rname);
+         ustrzcat(path, sizeof(path), uconvert_ascii("#", tmp));
+         ustrzcat(path, sizeof(path), rname);
 
-	 if (file_exists(path, FA_RDONLY | FA_ARCH, NULL)) {
-	    ustrzcpy(dest, size, path);
-	    return 0;
-	 }
+         if (file_exists(path, FA_RDONLY | FA_ARCH, NULL)) {
+            ustrzcpy(dest, size, path);
+            return 0;
+         }
       }
    }
 
-   /* argh, all that work, and still no biscuit */ 
+   /* argh, all that work, and still no biscuit */
    return -1;
 }
 
@@ -1335,7 +1335,7 @@ static PACKFILE *pack_fopen_exe_file(void)
 
 
 /* pack_fopen_datafile_object:
- *  Recursive helper to handle opening member objects from datafiles, 
+ *  Recursive helper to handle opening member objects from datafiles,
  *  given a fake filename in the form 'object_name[/nestedobject]'.
  */
 static PACKFILE *pack_fopen_datafile_object(PACKFILE *f, AL_CONST char *objname)
@@ -1352,8 +1352,8 @@ static PACKFILE *pack_fopen_datafile_object(PACKFILE *f, AL_CONST char *objname)
 
    while ((c = ugetxc(&objname)) != 0) {
       if ((c == '#') || (c == '/') || (c == OTHER_PATH_SEPARATOR)) {
-	 recurse = TRUE;
-	 break;
+         recurse = TRUE;
+         break;
       }
       pos += usetc(name+pos, c);
    }
@@ -1367,46 +1367,46 @@ static PACKFILE *pack_fopen_datafile_object(PACKFILE *f, AL_CONST char *objname)
       type = pack_mgetl(f);
 
       if (type == DAT_PROPERTY) {
-	 type = pack_mgetl(f);
-	 size = pack_mgetl(f);
-	 if (type == DAT_NAME) {
-	    /* examine name property */
-	    pack_fread(buf, size, f);
-	    buf[size] = 0;
-	    if (ustricmp(uconvert(buf, U_UTF8, tmp, U_CURRENT, sizeof tmp), name) == 0)
-	       use_next = TRUE;
-	 }
-	 else {
-	    /* skip property */
-	    pack_fseek(f, size);
-	 }
+         type = pack_mgetl(f);
+         size = pack_mgetl(f);
+         if (type == DAT_NAME) {
+            /* examine name property */
+            pack_fread(buf, size, f);
+            buf[size] = 0;
+            if (ustricmp(uconvert(buf, U_UTF8, tmp, U_CURRENT, sizeof tmp), name) == 0)
+               use_next = TRUE;
+         }
+         else {
+            /* skip property */
+            pack_fseek(f, size);
+         }
       }
       else {
-	 if (use_next) {
-	    /* found it! */
-	    if (recurse) {
-	       if (type == DAT_FILE)
-		  return pack_fopen_datafile_object(pack_fopen_chunk(f, FALSE), objname);
-	       else
-		  break;
-	    }
-	    else {
-	       _packfile_type = type;
-	       return pack_fopen_chunk(f, FALSE);
-	    }
-	 }
-	 else {
-	    /* skip unwanted object */
-	    size = pack_mgetl(f);
-	    pack_fseek(f, size+4);
-	 }
+         if (use_next) {
+            /* found it! */
+            if (recurse) {
+               if (type == DAT_FILE)
+                  return pack_fopen_datafile_object(pack_fopen_chunk(f, FALSE), objname);
+               else
+                  break;
+            }
+            else {
+               _packfile_type = type;
+               return pack_fopen_chunk(f, FALSE);
+            }
+         }
+         else {
+            /* skip unwanted object */
+            size = pack_mgetl(f);
+            pack_fseek(f, size+4);
+         }
       }
    }
 
    /* oh dear, the object isn't there... */
    pack_fclose(f);
    *allegro_errno = ENOENT;
-   return NULL; 
+   return NULL;
 }
 
 
@@ -1425,8 +1425,8 @@ static PACKFILE *pack_fopen_special_file(AL_CONST char *filename, AL_CONST char 
    /* special files are read-only */
    while ((c = *(mode++)) != 0) {
       if ((c == 'w') || (c == 'W')) {
-	 *allegro_errno = EROFS;
-	 return NULL;
+         *allegro_errno = EROFS;
+         return NULL;
       }
    }
 
@@ -1436,27 +1436,27 @@ static PACKFILE *pack_fopen_special_file(AL_CONST char *filename, AL_CONST char 
    }
    else {
       if (ugetc(filename) == '#') {
-	 /* read object from an appended datafile */
-	 ustrzcpy(fname,  sizeof(fname), uconvert_ascii("#", tmp));
-	 ustrzcpy(objname, sizeof(objname), filename+uwidth(filename));
+         /* read object from an appended datafile */
+         ustrzcpy(fname,  sizeof(fname), uconvert_ascii("#", tmp));
+         ustrzcpy(objname, sizeof(objname), filename+uwidth(filename));
       }
       else {
-	 /* read object from a regular datafile */
-	 ustrzcpy(fname,  sizeof(fname), filename);
-	 p = ustrrchr(fname, '#');
-	 usetat(p, 0, 0);
-	 ustrzcpy(objname, sizeof(objname), p+uwidth(p));
+         /* read object from a regular datafile */
+         ustrzcpy(fname,  sizeof(fname), filename);
+         p = ustrrchr(fname, '#');
+         usetat(p, 0, 0);
+         ustrzcpy(objname, sizeof(objname), p+uwidth(p));
       }
 
       /* open the file */
       f = pack_fopen(fname, F_READ_PACKED);
       if (!f)
-	 return NULL;
+         return NULL;
 
       if (pack_mgetl(f) != DAT_MAGIC) {
-	 pack_fclose(f);
-	 *allegro_errno = ENOTDIR;
-	 return NULL;
+         pack_fclose(f);
+         *allegro_errno = ENOTDIR;
+         return NULL;
       }
 
       /* find the required object */
@@ -1478,9 +1478,9 @@ void packfile_password(AL_CONST char *password)
 
    if (password) {
       while ((c = ugetxc(&password)) != 0) {
-	 the_password[i++] = c;
-	 if (i >= (int)sizeof(the_password)-1)
-	    break;
+         the_password[i++] = c;
+         if (i >= (int)sizeof(the_password)-1)
+            break;
       }
    }
 
@@ -1499,16 +1499,16 @@ static int32_t encrypt_id(long x, int new_format)
 
    if (the_password[0]) {
       for (i=0; the_password[i]; i++)
-	 mask ^= ((int32_t)the_password[i] << ((i&3) * 8));
+         mask ^= ((int32_t)the_password[i] << ((i&3) * 8));
 
       for (i=0, pos=0; i<4; i++) {
-	 mask ^= (int32_t)the_password[pos++] << (24-i*8);
-	 if (!the_password[pos])
-	    pos = 0;
+         mask ^= (int32_t)the_password[pos++] << (24-i*8);
+         if (!the_password[pos])
+            pos = 0;
       }
 
       if (new_format)
-	 mask ^= 42;
+         mask ^= 42;
    }
 
    return x ^ mask;
@@ -1526,8 +1526,8 @@ static int clone_password(PACKFILE *f)
 
    if (the_password[0]) {
       if ((f->normal.passdata = _AL_MALLOC_ATOMIC(strlen(the_password)+1)) == NULL) {
-	 *allegro_errno = ENOMEM;
-	 return FALSE;
+         *allegro_errno = ENOMEM;
+         return FALSE;
       }
       _al_sane_strncpy(f->normal.passdata, the_password, strlen(the_password)+1);
       f->normal.passpos = f->normal.passdata;
@@ -1597,10 +1597,10 @@ static void free_packfile(PACKFILE *f)
        * rely on the old behaviour.
        */
       if (f->is_normal_packfile) {
-	 ASSERT(!f->normal.pack_data);
-	 ASSERT(!f->normal.unpack_data);
-	 ASSERT(!f->normal.passdata);
-	 ASSERT(!f->normal.passpos);
+         ASSERT(!f->normal.pack_data);
+         ASSERT(!f->normal.unpack_data);
+         ASSERT(!f->normal.passdata);
+         ASSERT(!f->normal.passpos);
       }
 
       _AL_FREE(f);
@@ -1632,148 +1632,148 @@ PACKFILE *_pack_fdopen(int fd, AL_CONST char *mode)
 
    while ((c = *(mode++)) != 0) {
       switch (c) {
-	 case 'r': case 'R': f->normal.flags &= ~PACKFILE_FLAG_WRITE; break;
-	 case 'w': case 'W': f->normal.flags |= PACKFILE_FLAG_WRITE; break;
-	 case 'p': case 'P': f->normal.flags |= PACKFILE_FLAG_PACK; break;
-	 case '!': f->normal.flags &= ~PACKFILE_FLAG_PACK; header = TRUE; break;
+         case 'r': case 'R': f->normal.flags &= ~PACKFILE_FLAG_WRITE; break;
+         case 'w': case 'W': f->normal.flags |= PACKFILE_FLAG_WRITE; break;
+         case 'p': case 'P': f->normal.flags |= PACKFILE_FLAG_PACK; break;
+         case '!': f->normal.flags &= ~PACKFILE_FLAG_PACK; header = TRUE; break;
       }
    }
 
    if (f->normal.flags & PACKFILE_FLAG_WRITE) {
       if (f->normal.flags & PACKFILE_FLAG_PACK) {
-	 /* write a packed file */
-	 f->normal.pack_data = create_lzss_pack_data();
-	 ASSERT(!f->normal.unpack_data);
+         /* write a packed file */
+         f->normal.pack_data = create_lzss_pack_data();
+         ASSERT(!f->normal.unpack_data);
 
-	 if (!f->normal.pack_data) {
-	    free_packfile(f);
-	    return NULL;
-	 }
+         if (!f->normal.pack_data) {
+            free_packfile(f);
+            return NULL;
+         }
 
-	 if ((f->normal.parent = _pack_fdopen(fd, F_WRITE)) == NULL) {
-	    free_lzss_pack_data(f->normal.pack_data);
-	    f->normal.pack_data = NULL;
-	    free_packfile(f);
-	    return NULL;
-	 }
+         if ((f->normal.parent = _pack_fdopen(fd, F_WRITE)) == NULL) {
+            free_lzss_pack_data(f->normal.pack_data);
+            f->normal.pack_data = NULL;
+            free_packfile(f);
+            return NULL;
+         }
 
-	 pack_mputl(encrypt_id(F_PACK_MAGIC, TRUE), f->normal.parent);
+         pack_mputl(encrypt_id(F_PACK_MAGIC, TRUE), f->normal.parent);
 
-	 f->normal.todo = 4;
+         f->normal.todo = 4;
       }
       else {
-	 /* write a 'real' file */
-	 if (!clone_password(f)) {
-	    free_packfile(f);
-	    return NULL;
-	 }
+         /* write a 'real' file */
+         if (!clone_password(f)) {
+            free_packfile(f);
+            return NULL;
+         }
 
          f->normal.hndl = fd;
-	 f->normal.todo = 0;
+         f->normal.todo = 0;
 
-	 errno = 0;
+         errno = 0;
 
-	 if (header)
-	    pack_mputl(encrypt_id(F_NOPACK_MAGIC, TRUE), f);
+         if (header)
+            pack_mputl(encrypt_id(F_NOPACK_MAGIC, TRUE), f);
       }
    }
-   else { 
+   else {
       if (f->normal.flags & PACKFILE_FLAG_PACK) {
-	 /* read a packed file */
+         /* read a packed file */
          f->normal.unpack_data = create_lzss_unpack_data();
-	 ASSERT(!f->normal.pack_data);
+         ASSERT(!f->normal.pack_data);
 
          if (!f->normal.unpack_data) {
-	    free_packfile(f);
-	    return NULL;
-	 }
+            free_packfile(f);
+            return NULL;
+         }
 
          if ((f->normal.parent = _pack_fdopen(fd, F_READ)) == NULL) {
-	    free_lzss_unpack_data(f->normal.unpack_data);
-	    f->normal.unpack_data = NULL;
-	    free_packfile(f);
-	    return NULL;
-	 }
+            free_lzss_unpack_data(f->normal.unpack_data);
+            f->normal.unpack_data = NULL;
+            free_packfile(f);
+            return NULL;
+         }
 
-	 header = pack_mgetl(f->normal.parent);
+         header = pack_mgetl(f->normal.parent);
 
-	 if ((f->normal.parent->normal.passpos) &&
-	     ((header == encrypt_id(F_PACK_MAGIC, FALSE)) ||
-	      (header == encrypt_id(F_NOPACK_MAGIC, FALSE))))
-	 {
-	    /* duplicate the file descriptor */
-	    int fd2 = dup(fd);
-  
-	    if (fd2<0) {
-	       pack_fclose(f->normal.parent);
-	       free_packfile(f);
-	       *allegro_errno = errno;
-	       return NULL;
-	    }
-  
-	    /* close the parent file (logically, not physically) */
-	    pack_fclose(f->normal.parent);
-  
-	    /* backward compatibility mode */
-	    if (!clone_password(f)) {
-	       free_packfile(f);
-	       return NULL;
-	    }
-  
-	    f->normal.flags |= PACKFILE_FLAG_OLD_CRYPT;
-  
-	    /* re-open the parent file */
-	    lseek(fd2, 0, SEEK_SET);
-  
-	    if ((f->normal.parent = _pack_fdopen(fd2, F_READ)) == NULL) {
-	       free_packfile(f);
-	       return NULL;
-	    }
-  
-	    f->normal.parent->normal.flags |= PACKFILE_FLAG_OLD_CRYPT;
-  
-	    pack_mgetl(f->normal.parent);
-  
-	    if (header == encrypt_id(F_PACK_MAGIC, FALSE))
-	       header = encrypt_id(F_PACK_MAGIC, TRUE);
-	    else
-	       header = encrypt_id(F_NOPACK_MAGIC, TRUE);
-	 }
+         if ((f->normal.parent->normal.passpos) &&
+             ((header == encrypt_id(F_PACK_MAGIC, FALSE)) ||
+              (header == encrypt_id(F_NOPACK_MAGIC, FALSE))))
+         {
+            /* duplicate the file descriptor */
+            int fd2 = dup(fd);
 
-	 if (header == encrypt_id(F_PACK_MAGIC, TRUE)) {
-	    f->normal.todo = LONG_MAX;
-	 }
-	 else if (header == encrypt_id(F_NOPACK_MAGIC, TRUE)) {
-	    f2 = f->normal.parent;
-	    free_lzss_unpack_data(f->normal.unpack_data);
-	    f->normal.unpack_data = NULL;
- 	    free_packfile(f);
-	    return f2;
-	 }
-	 else {
-	    pack_fclose(f->normal.parent);
-	    free_lzss_unpack_data(f->normal.unpack_data);
-	    f->normal.unpack_data = NULL;
-	    free_packfile(f);
-	    *allegro_errno = EDOM;
-	    return NULL;
-	 }
+            if (fd2<0) {
+               pack_fclose(f->normal.parent);
+               free_packfile(f);
+               *allegro_errno = errno;
+               return NULL;
+            }
+
+            /* close the parent file (logically, not physically) */
+            pack_fclose(f->normal.parent);
+
+            /* backward compatibility mode */
+            if (!clone_password(f)) {
+               free_packfile(f);
+               return NULL;
+            }
+
+            f->normal.flags |= PACKFILE_FLAG_OLD_CRYPT;
+
+            /* re-open the parent file */
+            lseek(fd2, 0, SEEK_SET);
+
+            if ((f->normal.parent = _pack_fdopen(fd2, F_READ)) == NULL) {
+               free_packfile(f);
+               return NULL;
+            }
+
+            f->normal.parent->normal.flags |= PACKFILE_FLAG_OLD_CRYPT;
+
+            pack_mgetl(f->normal.parent);
+
+            if (header == encrypt_id(F_PACK_MAGIC, FALSE))
+               header = encrypt_id(F_PACK_MAGIC, TRUE);
+            else
+               header = encrypt_id(F_NOPACK_MAGIC, TRUE);
+         }
+
+         if (header == encrypt_id(F_PACK_MAGIC, TRUE)) {
+            f->normal.todo = LONG_MAX;
+         }
+         else if (header == encrypt_id(F_NOPACK_MAGIC, TRUE)) {
+            f2 = f->normal.parent;
+            free_lzss_unpack_data(f->normal.unpack_data);
+            f->normal.unpack_data = NULL;
+            free_packfile(f);
+            return f2;
+         }
+         else {
+            pack_fclose(f->normal.parent);
+            free_lzss_unpack_data(f->normal.unpack_data);
+            f->normal.unpack_data = NULL;
+            free_packfile(f);
+            *allegro_errno = EDOM;
+            return NULL;
+         }
       }
       else {
-	 /* read a 'real' file */
-	 f->normal.todo = lseek(fd, 0, SEEK_END);  /* size of the file */
-	 if (f->normal.todo < 0) {
-	    *allegro_errno = errno;
-	    free_packfile(f);
-	    return NULL;
+         /* read a 'real' file */
+         f->normal.todo = lseek(fd, 0, SEEK_END);  /* size of the file */
+         if (f->normal.todo < 0) {
+            *allegro_errno = errno;
+            free_packfile(f);
+            return NULL;
          }
 
          lseek(fd, 0, SEEK_SET);
 
-	 if (!clone_password(f)) {
+         if (!clone_password(f)) {
             free_packfile(f);
-	    return NULL;
-	 }
+            return NULL;
+         }
 
          f->normal.hndl = fd;
       }
@@ -1798,11 +1798,11 @@ PACKFILE *_pack_fdopen(int fd, AL_CONST char *mode)
  *       data does not need to be decompressed.
  *
  *  Instead of these flags, one of the constants F_READ, F_WRITE,
- *  F_READ_PACKED, F_WRITE_PACKED or F_WRITE_NOPACK may be used as the second 
+ *  F_READ_PACKED, F_WRITE_PACKED or F_WRITE_NOPACK may be used as the second
  *  argument to fopen().
  *
  *  On success, fopen() returns a pointer to a file structure, and on error
- *  it returns NULL and stores an error code in errno. An attempt to read a 
+ *  it returns NULL and stores an error code in errno. An attempt to read a
  *  normal file in packed mode will cause errno to be set to EDOM.
  */
 PACKFILE *pack_fopen(AL_CONST char *filename, AL_CONST char *mode)
@@ -1816,7 +1816,7 @@ PACKFILE *pack_fopen(AL_CONST char *filename, AL_CONST char *mode)
    if (ustrchr(filename, '#')) {
       PACKFILE *special = pack_fopen_special_file(filename, mode);
       if (special)
-	 return special;
+         return special;
    }
 
    if (!_al_file_isok(filename))
@@ -1912,12 +1912,12 @@ int pack_fclose(PACKFILE *f)
 
 
 
-/* pack_fopen_chunk: 
+/* pack_fopen_chunk:
  *  Opens a sub-chunk of the specified file, for reading or writing depending
  *  on the type of the file. The returned file pointer describes the sub
  *  chunk, and replaces the original file, which will no longer be valid.
  *  When writing to a chunk file, data is sent to the original file, but
- *  is prefixed with two length counts (32 bit, big-endian). For uncompressed 
+ *  is prefixed with two length counts (32 bit, big-endian). For uncompressed
  *  chunks these will both be set to the length of the data in the chunk.
  *  For compressed chunks, created by setting the pack flag, the first will
  *  contain the raw size of the chunk, and the second will be the negative
@@ -1945,7 +1945,7 @@ PACKFILE *pack_fopen_chunk(PACKFILE *f, int pack)
 
    if (f->normal.flags & PACKFILE_FLAG_WRITE) {
 
-      /* write a sub-chunk */ 
+      /* write a sub-chunk */
       int tmp_fd = -1;
       char *tmp_dir = NULL;
       char *tmp_name = NULL;
@@ -1956,14 +1956,14 @@ PACKFILE *pack_fopen_chunk(PACKFILE *f, int pack)
       #ifdef ALLEGRO_WINDOWS
          int size;
          int new_size = 64;
-         
+
          /* Get the path of the temporary directory */
          do {
             size = new_size;
             tmp_dir = _AL_REALLOC(tmp_dir, size);
             new_size = GetTempPath(size, tmp_dir);
          } while ( (size < new_size) && (new_size > 0) );
-         
+
          /* Check if we retrieved the path OK */
          if (new_size == 0)
             sprintf(tmp_dir, "%s", "");
@@ -2021,7 +2021,7 @@ PACKFILE *pack_fopen_chunk(PACKFILE *f, int pack)
       if (tmp_fd < 0) {
          _AL_FREE(tmp_dir);
          _AL_FREE(tmp_name);
-      
+
          return NULL;
       }
 
@@ -2031,14 +2031,14 @@ PACKFILE *pack_fopen_chunk(PACKFILE *f, int pack)
       if (chunk) {
          chunk->normal.filename = _al_ustrdup(name);
 
-	 if (pack)
-	    chunk->normal.parent->normal.parent = f;
-	 else
-	    chunk->normal.parent = f;
+         if (pack)
+            chunk->normal.parent->normal.parent = f;
+         else
+            chunk->normal.parent = f;
 
-	 chunk->normal.flags |= PACKFILE_FLAG_CHUNK;
+         chunk->normal.flags |= PACKFILE_FLAG_CHUNK;
       }
-      
+
       _AL_FREE(tmp_dir);
       _AL_FREE(tmp_name);
    }
@@ -2054,37 +2054,37 @@ PACKFILE *pack_fopen_chunk(PACKFILE *f, int pack)
       chunk->normal.parent = f;
 
       if (f->normal.flags & PACKFILE_FLAG_OLD_CRYPT) {
-	 /* backward compatibility mode */
-	 if (f->normal.passdata) {
-	    if ((chunk->normal.passdata = _AL_MALLOC_ATOMIC(strlen(f->normal.passdata)+1)) == NULL) {
-	       *allegro_errno = ENOMEM;
-	       _AL_FREE(chunk);
-	       return NULL;
-	    }
-	    _al_sane_strncpy(chunk->normal.passdata, f->normal.passdata, strlen(f->normal.passdata)+1);
-	    chunk->normal.passpos = chunk->normal.passdata + (long)f->normal.passpos - (long)f->normal.passdata;
-	    f->normal.passpos = f->normal.passdata;
-	 }
-	 chunk->normal.flags |= PACKFILE_FLAG_OLD_CRYPT;
+         /* backward compatibility mode */
+         if (f->normal.passdata) {
+            if ((chunk->normal.passdata = _AL_MALLOC_ATOMIC(strlen(f->normal.passdata)+1)) == NULL) {
+               *allegro_errno = ENOMEM;
+               _AL_FREE(chunk);
+               return NULL;
+            }
+            _al_sane_strncpy(chunk->normal.passdata, f->normal.passdata, strlen(f->normal.passdata)+1);
+            chunk->normal.passpos = chunk->normal.passdata + (long)f->normal.passpos - (long)f->normal.passdata;
+            f->normal.passpos = f->normal.passdata;
+         }
+         chunk->normal.flags |= PACKFILE_FLAG_OLD_CRYPT;
       }
 
       if (_packfile_datasize < 0) {
-	 /* read a packed chunk */
+         /* read a packed chunk */
          chunk->normal.unpack_data = create_lzss_unpack_data();
-	 ASSERT(!chunk->normal.pack_data);
+         ASSERT(!chunk->normal.pack_data);
 
-	 if (!chunk->normal.unpack_data) {
+         if (!chunk->normal.unpack_data) {
             free_packfile(chunk);
-	    return NULL;
-	 }
+            return NULL;
+         }
 
-	 _packfile_datasize = -_packfile_datasize;
-	 chunk->normal.todo = _packfile_datasize;
-	 chunk->normal.flags |= PACKFILE_FLAG_PACK;
+         _packfile_datasize = -_packfile_datasize;
+         chunk->normal.todo = _packfile_datasize;
+         chunk->normal.flags |= PACKFILE_FLAG_PACK;
       }
       else {
-	 /* read an uncompressed chunk */
-	 chunk->normal.todo = _packfile_datasize;
+         /* read an uncompressed chunk */
+         chunk->normal.todo = _packfile_datasize;
       }
    }
 
@@ -2096,7 +2096,7 @@ PACKFILE *pack_fopen_chunk(PACKFILE *f, int pack)
 /* pack_fclose_chunk:
  *  Call after reading or writing a sub-chunk. This closes the chunk file,
  *  and returns a pointer to the original file structure (the one you
- *  passed to pack_fopen_chunk()), to allow you to read or write data 
+ *  passed to pack_fopen_chunk()), to allow you to read or write data
  *  after the chunk. If an error occurs, returns NULL and sets errno.
  */
 PACKFILE *pack_fclose_chunk(PACKFILE *f)
@@ -2136,11 +2136,11 @@ PACKFILE *pack_fclose_chunk(PACKFILE *f)
       _packfile_datasize = f->normal.todo + f->normal.buf_size - 4;
 
       if (f->normal.flags & PACKFILE_FLAG_PACK) {
-	 parent = parent->normal.parent;
-	 f->normal.parent->normal.parent = NULL;
+         parent = parent->normal.parent;
+         f->normal.parent->normal.parent = NULL;
       }
       else
-	 f->normal.parent = NULL;
+         f->normal.parent = NULL;
 
       /* close the writeable temp file, it isn't physically closed
        * because the descriptor has been duplicated
@@ -2162,12 +2162,12 @@ PACKFILE *pack_fclose_chunk(PACKFILE *f)
       pack_mputl(_packfile_filesize, parent);
 
       if (header == encrypt_id(F_PACK_MAGIC, TRUE))
-	 pack_mputl(-_packfile_datasize, parent);
+         pack_mputl(-_packfile_datasize, parent);
       else
-	 pack_mputl(_packfile_datasize, parent);
+         pack_mputl(_packfile_datasize, parent);
 
       while ((c = pack_getc(tmp)) != EOF)
-	 pack_putc(c, parent);
+         pack_putc(c, parent);
 
       pack_fclose(tmp);
 
@@ -2177,15 +2177,15 @@ PACKFILE *pack_fclose_chunk(PACKFILE *f)
    else {
       /* finish reading a chunk */
       while (f->normal.todo > 0)
-	 pack_getc(f);
+         pack_getc(f);
 
       if (f->normal.unpack_data) {
-	 free_lzss_unpack_data(f->normal.unpack_data);
-	 f->normal.unpack_data = NULL;
+         free_lzss_unpack_data(f->normal.unpack_data);
+         f->normal.unpack_data = NULL;
       }
 
       if ((f->normal.passpos) && (f->normal.flags & PACKFILE_FLAG_OLD_CRYPT))
-	 parent->normal.passpos = parent->normal.passdata + (long)f->normal.passpos - (long)f->normal.passdata;
+         parent->normal.passpos = parent->normal.passdata + (long)f->normal.passpos - (long)f->normal.passdata;
 
       free_packfile(f);
    }
@@ -2196,7 +2196,7 @@ PACKFILE *pack_fclose_chunk(PACKFILE *f)
 
 
 /* pack_fseek:
- *  Like the stdio fseek() function, but only supports forward seeks 
+ *  Like the stdio fseek() function, but only supports forward seeks
  *  relative to the current file position.
  */
 int pack_fseek(PACKFILE *f, int offset)
@@ -2239,7 +2239,7 @@ int pack_putc(int c, PACKFILE *f)
 
 
 /* pack_feof:
- *  pack_feof() returns nonzero as soon as you reach the end of the file. It 
+ *  pack_feof() returns nonzero as soon as you reach the end of the file. It
  *  does not wait for you to attempt to read beyond the end of the file,
  *  contrary to the ISO C feof() function.
  */
@@ -2279,7 +2279,7 @@ int pack_igetw(PACKFILE *f)
 
    if ((b1 = pack_getc(f)) != EOF)
       if ((b2 = pack_getc(f)) != EOF)
-	 return ((b2 << 8) | b1);
+         return ((b2 << 8) | b1);
 
    return EOF;
 }
@@ -2296,10 +2296,10 @@ long pack_igetl(PACKFILE *f)
 
    if ((b1 = pack_getc(f)) != EOF)
       if ((b2 = pack_getc(f)) != EOF)
-	 if ((b3 = pack_getc(f)) != EOF)
-	    if ((b4 = pack_getc(f)) != EOF)
-	       return (((long)b4 << 24) | ((long)b3 << 16) |
-		       ((long)b2 << 8) | (long)b1);
+         if ((b3 = pack_getc(f)) != EOF)
+            if ((b4 = pack_getc(f)) != EOF)
+               return (((long)b4 << 24) | ((long)b3 << 16) |
+                       ((long)b2 << 8) | (long)b1);
 
    return EOF;
 }
@@ -2319,7 +2319,7 @@ int pack_iputw(int w, PACKFILE *f)
 
    if (pack_putc(b2,f)==b2)
       if (pack_putc(b1,f)==b1)
-	 return w;
+         return w;
 
    return EOF;
 }
@@ -2341,9 +2341,9 @@ long pack_iputl(long l, PACKFILE *f)
 
    if (pack_putc(b4,f)==b4)
       if (pack_putc(b3,f)==b3)
-	 if (pack_putc(b2,f)==b2)
-	    if (pack_putc(b1,f)==b1)
-	       return l;
+         if (pack_putc(b2,f)==b2)
+            if (pack_putc(b1,f)==b1)
+               return l;
 
    return EOF;
 }
@@ -2360,7 +2360,7 @@ int pack_mgetw(PACKFILE *f)
 
    if ((b1 = pack_getc(f)) != EOF)
       if ((b2 = pack_getc(f)) != EOF)
-	 return ((b1 << 8) | b2);
+         return ((b1 << 8) | b2);
 
    return EOF;
 }
@@ -2377,10 +2377,10 @@ long pack_mgetl(PACKFILE *f)
 
    if ((b1 = pack_getc(f)) != EOF)
       if ((b2 = pack_getc(f)) != EOF)
-	 if ((b3 = pack_getc(f)) != EOF)
-	    if ((b4 = pack_getc(f)) != EOF)
-	       return (((long)b1 << 24) | ((long)b2 << 16) |
-		       ((long)b3 << 8) | (long)b4);
+         if ((b3 = pack_getc(f)) != EOF)
+            if ((b4 = pack_getc(f)) != EOF)
+               return (((long)b1 << 24) | ((long)b2 << 16) |
+                       ((long)b3 << 8) | (long)b4);
 
    return EOF;
 }
@@ -2400,7 +2400,7 @@ int pack_mputw(int w, PACKFILE *f)
 
    if (pack_putc(b1,f)==b1)
       if (pack_putc(b2,f)==b2)
-	 return w;
+         return w;
 
    return EOF;
 }
@@ -2422,9 +2422,9 @@ long pack_mputl(long l, PACKFILE *f)
 
    if (pack_putc(b1,f)==b1)
       if (pack_putc(b2,f)==b2)
-	 if (pack_putc(b3,f)==b3)
-	    if (pack_putc(b4,f)==b4)
-	       return l;
+         if (pack_putc(b3,f)==b3)
+            if (pack_putc(b4,f)==b4)
+               return l;
 
    return EOF;
 }
@@ -2432,8 +2432,8 @@ long pack_mputl(long l, PACKFILE *f)
 
 
 /* pack_fread:
- *  Reads n bytes from f and stores them at memory location p. Returns the 
- *  number of items read, which will be less than n if EOF is reached or an 
+ *  Reads n bytes from f and stores them at memory location p. Returns the
+ *  number of items read, which will be less than n if EOF is reached or an
  *  error occurs. Error codes are stored in errno.
  */
 long pack_fread(void *p, long n, PACKFILE *f)
@@ -2450,8 +2450,8 @@ long pack_fread(void *p, long n, PACKFILE *f)
 
 
 /* pack_fwrite:
- *  Writes n bytes to the file f from memory location p. Returns the number 
- *  of items written, which will be less than n if an error occurs. Error 
+ *  Writes n bytes to the file f from memory location p. Returns the number
+ *  of items written, which will be less than n if an error occurs. Error
  *  codes are stored in errno.
  */
 long pack_fwrite(AL_CONST void *p, long n, PACKFILE *f)
@@ -2487,7 +2487,7 @@ int pack_ungetc(int c, PACKFILE *f)
  *  Reads a line from a text file, storing it at location p. Stops when a
  *  linefeed is encountered, or max bytes have been read. Returns a pointer
  *  to where it stored the text, or NULL on error. The end of line is
- *  handled by detecting optional '\r' characters optionally followed 
+ *  handled by detecting optional '\r' characters optionally followed
  *  by '\n' characters. This supports CR-LF (DOS/Windows), LF (Unix), and
  *  CR (Mac) formats.
  */
@@ -2510,22 +2510,22 @@ char *pack_fgets(char *p, int max, PACKFILE *f)
    do {
 
       if (c == '\r' || c == '\n') {
-	 /* Technically we should check there's space in the buffer, and if so,
-	  * add a \n.  But pack_fgets has never done this. */
-	 if (c == '\r') {
-	    /* eat the following \n, if any */
-	    c = pack_getc(f);
-	    if ((c != '\n') && (c != EOF))
-	       pack_ungetc(c, f);
-	 }
-	 break;
+         /* Technically we should check there's space in the buffer, and if so,
+          * add a \n.  But pack_fgets has never done this. */
+         if (c == '\r') {
+            /* eat the following \n, if any */
+            c = pack_getc(f);
+            if ((c != '\n') && (c != EOF))
+               pack_ungetc(c, f);
+         }
+         break;
       }
 
       /* is there room in the buffer? */
       if (ucwidth(c) > pmax - p) {
-	 pack_ungetc(c, f);
-	 c = '\0';
-	 break;
+         pack_ungetc(c, f);
+         c = '\0';
+         break;
       }
 
       /* write the character */
@@ -2568,8 +2568,8 @@ int pack_fputs(AL_CONST char *p, PACKFILE *f)
 
    while (*s) {
       #if (defined ALLEGRO_DOS) || (defined ALLEGRO_WINDOWS)
-	 if (*s == '\n')
-	    pack_putc('\r', f);
+         if (*s == '\n')
+            pack_putc('\r', f);
       #endif
 
       pack_putc(*s, f);
@@ -2647,11 +2647,11 @@ static int normal_fclose(void *_f)
 
    if (f->normal.flags & PACKFILE_FLAG_WRITE) {
       if (f->normal.flags & PACKFILE_FLAG_CHUNK) {
-	 f = pack_fclose_chunk(_f);
-	 if (!f)
-	    return -1;
+         f = pack_fclose_chunk(_f);
+         if (!f)
+            return -1;
 
-	 return pack_fclose(f);
+         return pack_fclose(f);
       }
 
       normal_flush_buffer(f, TRUE);
@@ -2663,7 +2663,7 @@ static int normal_fclose(void *_f)
    else {
       ret = close(f->normal.hndl);
       if (ret != 0)
-	 *allegro_errno = errno;
+         *allegro_errno = errno;
    }
 
    if (f->normal.pack_data) {
@@ -2719,7 +2719,7 @@ static int normal_getc(void *_f)
 
    if (f->normal.buf_size == 0) {
       if (normal_no_more_input(f))
-	 f->normal.flags |= PACKFILE_FLAG_EOF;
+         f->normal.flags |= PACKFILE_FLAG_EOF;
       return *(f->normal.buf_pos++);
    }
 
@@ -2754,7 +2754,7 @@ static long normal_fread(void *p, long n, void *_f)
 
    for (i=0; i<n; i++) {
       if ((c = normal_getc(f)) == EOF)
-	 break;
+         break;
 
       *(cp++) = c;
    }
@@ -2770,7 +2770,7 @@ static int normal_putc(int c, void *_f)
 
    if (f->normal.buf_size + 1 >= F_BUF_SIZE) {
       if (normal_flush_buffer(f, FALSE))
-	 return EOF;
+         return EOF;
    }
 
    f->normal.buf_size++;
@@ -2787,7 +2787,7 @@ static long normal_fwrite(AL_CONST void *p, long n, void *_f)
 
    for (i=0; i<n; i++) {
       if (normal_putc(*cp++, f) == EOF)
-	 break;
+         break;
    }
 
    return i;
@@ -2812,7 +2812,7 @@ static int normal_fseek(void *_f, int offset)
       f->normal.buf_pos += i;
       offset -= i;
       if ((f->normal.buf_size <= 0) && normal_no_more_input(f))
-	 f->normal.flags |= PACKFILE_FLAG_EOF;
+         f->normal.flags |= PACKFILE_FLAG_EOF;
    }
 
    /* need to seek some more? */
@@ -2820,24 +2820,24 @@ static int normal_fseek(void *_f, int offset)
       i = MIN(offset, f->normal.todo);
 
       if ((f->normal.flags & PACKFILE_FLAG_PACK) || (f->normal.passpos)) {
-	 /* for compressed or encrypted files, we just have to read through the data */
-	 while (i > 0) {
-	    pack_getc(f);
-	    i--;
-	 }
+         /* for compressed or encrypted files, we just have to read through the data */
+         while (i > 0) {
+            pack_getc(f);
+            i--;
+         }
       }
       else {
-	 if (f->normal.parent) {
-	    /* pass the seek request on to the parent file */
-	    pack_fseek(f->normal.parent, i);
-	 }
-	 else {
-	    /* do a real seek */
-	    lseek(f->normal.hndl, i, SEEK_CUR);
-	 }
-	 f->normal.todo -= i;
-	 if (normal_no_more_input(f))
-	    f->normal.flags |= PACKFILE_FLAG_EOF;
+         if (f->normal.parent) {
+            /* pass the seek request on to the parent file */
+            pack_fseek(f->normal.parent, i);
+         }
+         else {
+            /* do a real seek */
+            lseek(f->normal.hndl, i, SEEK_CUR);
+         }
+         f->normal.todo -= i;
+         if (normal_no_more_input(f))
+            f->normal.flags |= PACKFILE_FLAG_EOF;
       }
    }
 
@@ -2885,15 +2885,15 @@ static int normal_refill_buffer(PACKFILE *f)
 
    if (f->normal.parent) {
       if (f->normal.flags & PACKFILE_FLAG_PACK) {
-	 f->normal.buf_size = lzss_read(f->normal.parent, f->normal.unpack_data, MIN(F_BUF_SIZE, f->normal.todo), f->normal.buf);
+         f->normal.buf_size = lzss_read(f->normal.parent, f->normal.unpack_data, MIN(F_BUF_SIZE, f->normal.todo), f->normal.buf);
       }
       else {
-	 f->normal.buf_size = pack_fread(f->normal.buf, MIN(F_BUF_SIZE, f->normal.todo), f->normal.parent);
-      } 
+         f->normal.buf_size = pack_fread(f->normal.buf, MIN(F_BUF_SIZE, f->normal.todo), f->normal.parent);
+      }
       if (f->normal.parent->normal.flags & PACKFILE_FLAG_EOF)
-	 f->normal.todo = 0;
+         f->normal.todo = 0;
       if (f->normal.parent->normal.flags & PACKFILE_FLAG_ERROR)
-	 goto Error;
+         goto Error;
    }
    else {
       f->normal.buf_size = MIN(F_BUF_SIZE, f->normal.todo);
@@ -2905,23 +2905,23 @@ static int normal_refill_buffer(PACKFILE *f)
       sz = read(f->normal.hndl, f->normal.buf, f->normal.buf_size);
 
       while (sz+done < f->normal.buf_size) {
-	 if ((sz < 0) && ((errno != EINTR) && (errno != EAGAIN)))
-	    goto Error;
+         if ((sz < 0) && ((errno != EINTR) && (errno != EAGAIN)))
+            goto Error;
 
-	 if (sz > 0)
-	    done += sz;
+         if (sz > 0)
+            done += sz;
 
-	 lseek(f->normal.hndl, offset+done, SEEK_SET);
+         lseek(f->normal.hndl, offset+done, SEEK_SET);
          errno = 0;
-	 sz = read(f->normal.hndl, f->normal.buf+done, f->normal.buf_size-done);
+         sz = read(f->normal.hndl, f->normal.buf+done, f->normal.buf_size-done);
       }
 
       if ((f->normal.passpos) && (!(f->normal.flags & PACKFILE_FLAG_OLD_CRYPT))) {
-	 for (i=0; i<f->normal.buf_size; i++) {
-	    f->normal.buf[i] ^= *(f->normal.passpos++);
-	    if (!*f->normal.passpos)
-	       f->normal.passpos = f->normal.passdata;
-	 }
+         for (i=0; i<f->normal.buf_size; i++) {
+            f->normal.buf[i] ^= *(f->normal.passpos++);
+            if (!*f->normal.passpos)
+               f->normal.passpos = f->normal.passdata;
+         }
       }
    }
 
@@ -2930,7 +2930,7 @@ static int normal_refill_buffer(PACKFILE *f)
    f->normal.buf_size--;
    if (f->normal.buf_size <= 0)
       if (normal_no_more_input(f))
-	 f->normal.flags |= PACKFILE_FLAG_EOF;
+         f->normal.flags |= PACKFILE_FLAG_EOF;
 
    if (f->normal.buf_size < 0)
       return EOF;
@@ -2954,35 +2954,35 @@ static int normal_flush_buffer(PACKFILE *f, int last)
 
    if (f->normal.buf_size > 0) {
       if (f->normal.flags & PACKFILE_FLAG_PACK) {
-	 if (lzss_write(f->normal.parent, f->normal.pack_data, f->normal.buf_size, f->normal.buf, last))
-	    goto Error;
+         if (lzss_write(f->normal.parent, f->normal.pack_data, f->normal.buf_size, f->normal.buf, last))
+            goto Error;
       }
       else {
-	 if ((f->normal.passpos) && (!(f->normal.flags & PACKFILE_FLAG_OLD_CRYPT))) {
-	    for (i=0; i<f->normal.buf_size; i++) {
-	       f->normal.buf[i] ^= *(f->normal.passpos++);
-	       if (!*f->normal.passpos)
-		  f->normal.passpos = f->normal.passdata;
-	    }
-	 }
+         if ((f->normal.passpos) && (!(f->normal.flags & PACKFILE_FLAG_OLD_CRYPT))) {
+            for (i=0; i<f->normal.buf_size; i++) {
+               f->normal.buf[i] ^= *(f->normal.passpos++);
+               if (!*f->normal.passpos)
+                  f->normal.passpos = f->normal.passdata;
+            }
+         }
 
-	 offset = lseek(f->normal.hndl, 0, SEEK_CUR);
-	 done = 0;
+         offset = lseek(f->normal.hndl, 0, SEEK_CUR);
+         done = 0;
 
-	 errno = 0;
-	 sz = write(f->normal.hndl, f->normal.buf, f->normal.buf_size);
+         errno = 0;
+         sz = write(f->normal.hndl, f->normal.buf, f->normal.buf_size);
 
-	 while (sz+done < f->normal.buf_size) {
-	    if ((sz < 0) && ((errno != EINTR) && (errno != EAGAIN)))
-	       goto Error;
+         while (sz+done < f->normal.buf_size) {
+            if ((sz < 0) && ((errno != EINTR) && (errno != EAGAIN)))
+               goto Error;
 
-	    if (sz > 0)
-	       done += sz;
+            if (sz > 0)
+               done += sz;
 
-	    lseek(f->normal.hndl, offset+done, SEEK_SET);
-	    errno = 0;
-	    sz = write(f->normal.hndl, f->normal.buf+done, f->normal.buf_size-done);
-	 }
+            lseek(f->normal.hndl, offset+done, SEEK_SET);
+            errno = 0;
+            sz = write(f->normal.hndl, f->normal.buf+done, f->normal.buf_size-done);
+         }
       }
       f->normal.todo += f->normal.buf_size;
    }

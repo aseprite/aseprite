@@ -44,4 +44,4 @@ public:
 
 } // namespace undo
 
-#endif	// UNDO_UNDOER_H_INCLUDED
+#endif  // UNDO_UNDOER_H_INCLUDED

@@ -36,9 +36,9 @@
 
 /* determine is the characer is a blank space */
 #define IS_BLANK(c) (((c) ==  ' ') ||  \
-		     ((c) == '\t') ||	\
-		     ((c) == '\n') ||	\
-		     ((c) == '\r'))
+                     ((c) == '\t') ||   \
+                     ((c) == '\n') ||   \
+                     ((c) == '\r'))
 
 #define TRANSLATE_ATTR(a) a
 
@@ -96,8 +96,8 @@ static Widget* convert_xmlelement_to_widget(TiXmlElement* elem, Widget* root)
     bool homogeneous = bool_attr_is_true(elem, "homogeneous");
 
     widget = new Box((horizontal ? JI_HORIZONTAL:
-		      vertical ? JI_VERTICAL: 0) |
-		     (homogeneous ? JI_HOMOGENEOUS: 0));
+                      vertical ? JI_VERTICAL: 0) |
+                     (homogeneous ? JI_HOMOGENEOUS: 0));
   }
   else if (ustrcmp(elem_name, "vbox") == 0) {
     bool homogeneous = bool_attr_is_true(elem, "homogeneous");
@@ -130,30 +130,30 @@ static Widget* convert_xmlelement_to_widget(TiXmlElement* elem, Widget* root)
       const char *_bevel = elem->Attribute("bevel");
 
       widget->setAlign((left ? JI_LEFT: (right ? JI_RIGHT: JI_CENTER)) |
-		       (top ? JI_TOP: (bottom ? JI_BOTTOM: JI_MIDDLE)));
+                       (top ? JI_TOP: (bottom ? JI_BOTTOM: JI_MIDDLE)));
 
       if (_bevel != NULL) {
-	char* bevel = base_strdup(_bevel);
-	int c, b[4];
-	char *tok;
+        char* bevel = base_strdup(_bevel);
+        int c, b[4];
+        char *tok;
 
-	for (c=0; c<4; ++c)
-	  b[c] = 0;
+        for (c=0; c<4; ++c)
+          b[c] = 0;
 
-	for (tok=ustrtok(bevel, " "), c=0;
-	     tok;
-	     tok=ustrtok(NULL, " "), ++c) {
-	  if (c < 4)
-	    b[c] = ustrtol(tok, NULL, 10);
-	}
-	base_free(bevel);
+        for (tok=ustrtok(bevel, " "), c=0;
+             tok;
+             tok=ustrtok(NULL, " "), ++c) {
+          if (c < 4)
+            b[c] = ustrtol(tok, NULL, 10);
+        }
+        base_free(bevel);
 
-	setup_bevels(widget, b[0], b[1], b[2], b[3]);
+        setup_bevels(widget, b[0], b[1], b[2], b[3]);
       }
 
       if (closewindow) {
-	static_cast<Button*>(widget)
-	  ->Click.connect(Bind<void>(&Widget::closeWindow, widget));
+        static_cast<Button*>(widget)
+          ->Click.connect(Bind<void>(&Widget::closeWindow, widget));
       }
     }
   }
@@ -178,9 +178,9 @@ static Widget* convert_xmlelement_to_widget(TiXmlElement* elem, Widget* root)
       bool bottom = bool_attr_is_true(elem, "bottom");
 
       widget->setAlign((center ? JI_CENTER:
-			(right ? JI_RIGHT: JI_LEFT)) |
-		       (top    ? JI_TOP:
-			(bottom ? JI_BOTTOM: JI_MIDDLE)));
+                        (right ? JI_RIGHT: JI_LEFT)) |
+                       (top    ? JI_TOP:
+                        (bottom ? JI_BOTTOM: JI_MIDDLE)));
     }
   }
   /* combobox */
@@ -196,10 +196,10 @@ static Widget* convert_xmlelement_to_widget(TiXmlElement* elem, Widget* root)
       bool readonly = bool_attr_is_true(elem, "readonly");
 
       widget = new Entry(ustrtol(maxsize, NULL, 10),
-			 text ? TRANSLATE_ATTR(text): NULL);
+                         text ? TRANSLATE_ATTR(text): NULL);
 
       if (readonly)
-	((Entry*)widget)->setReadOnly(true);
+        ((Entry*)widget)->setReadOnly(true);
     }
   }
   /* grid */
@@ -209,7 +209,7 @@ static Widget* convert_xmlelement_to_widget(TiXmlElement* elem, Widget* root)
 
     if (columns != NULL) {
       widget = new Grid(ustrtol(columns, NULL, 10),
-			same_width_columns);
+                        same_width_columns);
     }
   }
   /* label */
@@ -224,9 +224,9 @@ static Widget* convert_xmlelement_to_widget(TiXmlElement* elem, Widget* root)
       bool bottom = bool_attr_is_true(elem, "bottom");
 
       widget->setAlign((center ? JI_CENTER:
-			(right ? JI_RIGHT: JI_LEFT)) |
-		       (top    ? JI_TOP:
-			(bottom ? JI_BOTTOM: JI_MIDDLE)));
+                        (right ? JI_RIGHT: JI_LEFT)) |
+                       (top    ? JI_TOP:
+                        (bottom ? JI_BOTTOM: JI_MIDDLE)));
     }
   }
   /* listbox */
@@ -245,7 +245,7 @@ static Widget* convert_xmlelement_to_widget(TiXmlElement* elem, Widget* root)
     bool vertical = bool_attr_is_true(elem, "vertical");
 
     widget = jpanel_new(horizontal ? JI_HORIZONTAL:
-			vertical ? JI_VERTICAL: 0);
+                        vertical ? JI_VERTICAL: 0);
   }
   /* radio */
   else if (ustrcmp(elem_name, "radio") == 0) {
@@ -255,7 +255,7 @@ static Widget* convert_xmlelement_to_widget(TiXmlElement* elem, Widget* root)
 
     text = (text ? TRANSLATE_ATTR(text): NULL);
     int radio_group = (group ? ustrtol(group, NULL, 10): 1);
-    
+
     if (looklike != NULL && strcmp(looklike, "button") == 0) {
       widget = new RadioButton(text, radio_group, JI_BUTTON);
     }
@@ -270,9 +270,9 @@ static Widget* convert_xmlelement_to_widget(TiXmlElement* elem, Widget* root)
       bool bottom = bool_attr_is_true(elem, "bottom");
 
       widget->setAlign((center ? JI_CENTER:
-			(right ? JI_RIGHT: JI_LEFT)) |
-		       (top    ? JI_TOP:
-			(bottom ? JI_BOTTOM: JI_MIDDLE)));
+                        (right ? JI_RIGHT: JI_LEFT)) |
+                       (top    ? JI_TOP:
+                        (bottom ? JI_BOTTOM: JI_MIDDLE)));
     }
   }
   /* separator */
@@ -286,12 +286,12 @@ static Widget* convert_xmlelement_to_widget(TiXmlElement* elem, Widget* root)
     bool vertical    = bool_attr_is_true(elem, "vertical");
 
     widget = ji_separator_new(text ? TRANSLATE_ATTR(text): NULL,
-			      (horizontal ? JI_HORIZONTAL: 0) |
-			      (vertical ? JI_VERTICAL: 0) |
-			      (center ? JI_CENTER:
-			       (right ? JI_RIGHT: JI_LEFT)) |
-			      (middle ? JI_MIDDLE:
-			       (bottom ? JI_BOTTOM: JI_TOP)));
+                              (horizontal ? JI_HORIZONTAL: 0) |
+                              (vertical ? JI_VERTICAL: 0) |
+                              (center ? JI_CENTER:
+                               (right ? JI_RIGHT: JI_LEFT)) |
+                              (middle ? JI_MIDDLE:
+                               (bottom ? JI_BOTTOM: JI_TOP)));
   }
   /* slider */
   else if (ustrcmp(elem_name, "slider") == 0) {
@@ -323,9 +323,9 @@ static Widget* convert_xmlelement_to_widget(TiXmlElement* elem, Widget* root)
       bool desktop = bool_attr_is_true(elem, "desktop");
 
       if (desktop)
-	widget = new Frame(true, NULL);
+        widget = new Frame(true, NULL);
       else
-	widget = new Frame(false, TRANSLATE_ATTR(text));
+        widget = new Frame(false, TRANSLATE_ATTR(text));
     }
   }
   /* colorpicker */
@@ -375,14 +375,14 @@ static Widget* convert_xmlelement_to_widget(TiXmlElement* elem, Widget* root)
       widget->child_spacing = ustrtol(childspacing, NULL, 10);
 
     if (width || minwidth ||
-	height || minheight) {
+        height || minheight) {
       int w = (width || minwidth) ? ustrtol(width ? width: minwidth, NULL, 10): 0;
       int h = (height || minheight) ? ustrtol(height ? height: minheight, NULL, 10): 0;
       jwidget_set_min_size(widget, w*jguiscale(), h*jguiscale());
     }
 
     if (width || maxwidth ||
-	height || maxheight) {
+        height || maxheight) {
       int w = (width || maxwidth) ? strtol(width ? width: maxwidth, NULL, 10): INT_MAX;
       int h = (height || maxheight) ? strtol(height ? height: maxheight, NULL, 10): INT_MAX;
       jwidget_set_max_size(widget, w*jguiscale(), h*jguiscale());
@@ -396,27 +396,27 @@ static Widget* convert_xmlelement_to_widget(TiXmlElement* elem, Widget* root)
     while (child_elem) {
       child = convert_xmlelement_to_widget(child_elem, root);
       if (child) {
-	// Attach the child in the view
-	if (widget->type == JI_VIEW) {
-	  static_cast<View*>(widget)->attachToView(child);
-	  break;
-	}
-	// Add the child in the grid
-	else if (widget->type == JI_GRID) {
-	  const char* cell_hspan = child_elem->Attribute("cell_hspan");
-	  const char* cell_vspan = child_elem->Attribute("cell_vspan");
-	  const char* cell_align = child_elem->Attribute("cell_align");
-	  int hspan = cell_hspan ? ustrtol(cell_hspan, NULL, 10): 1;
-	  int vspan = cell_vspan ? ustrtol(cell_vspan, NULL, 10): 1;
-	  int align = cell_align ? convert_align_value_to_flags(cell_align): 0;
-	  Grid* grid = dynamic_cast<Grid*>(widget);
-	  ASSERT(grid != NULL);
+        // Attach the child in the view
+        if (widget->type == JI_VIEW) {
+          static_cast<View*>(widget)->attachToView(child);
+          break;
+        }
+        // Add the child in the grid
+        else if (widget->type == JI_GRID) {
+          const char* cell_hspan = child_elem->Attribute("cell_hspan");
+          const char* cell_vspan = child_elem->Attribute("cell_vspan");
+          const char* cell_align = child_elem->Attribute("cell_align");
+          int hspan = cell_hspan ? ustrtol(cell_hspan, NULL, 10): 1;
+          int vspan = cell_vspan ? ustrtol(cell_vspan, NULL, 10): 1;
+          int align = cell_align ? convert_align_value_to_flags(cell_align): 0;
+          Grid* grid = dynamic_cast<Grid*>(widget);
+          ASSERT(grid != NULL);
 
-	  grid->addChildInCell(child, hspan, vspan, align);
-	}
-	// Just add the child in any other kind of widget
-	else
-	  widget->addChild(child);
+          grid->addChildInCell(child, hspan, vspan, align);
+        }
+        // Just add the child in any other kind of widget
+        else
+          widget->addChild(child);
       }
       child_elem = child_elem->NextSiblingElement();
     }
@@ -424,7 +424,7 @@ static Widget* convert_xmlelement_to_widget(TiXmlElement* elem, Widget* root)
     if (widget->type == JI_VIEW) {
       bool maxsize = bool_attr_is_true(elem, "maxsize");
       if (maxsize)
-	static_cast<View*>(widget)->makeVisibleAllScrollableArea();
+        static_cast<View*>(widget)->makeVisibleAllScrollableArea();
     }
   }
 

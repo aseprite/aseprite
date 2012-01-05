@@ -69,17 +69,17 @@ private:
   void checkSizeLimit();
   static int getUndoSizeLimit();
 
-  ObjectsContainer* m_objects;	// Container of objects to insert & retrieve objects by ID
+  ObjectsContainer* m_objects;  // Container of objects to insert & retrieve objects by ID
   UndoersStack* m_undoers;
   UndoersStack* m_redoers;
   int m_groupLevel;
   int m_diffCount;
   int m_diffSaved;
-  bool m_enabled;		// Is undo enabled?
-  const char* m_label;		// Current label to be applied to all next undo operations.
+  bool m_enabled;               // Is undo enabled?
+  const char* m_label;          // Current label to be applied to all next undo operations.
   Modification m_modification;  // Current label to be applied to all next undo operations.
 };
 
 } // namespace undo
 
-#endif	// UNDO_UNDO_HISTORY_H_INCLUDED
+#endif  // UNDO_UNDO_HISTORY_H_INCLUDED

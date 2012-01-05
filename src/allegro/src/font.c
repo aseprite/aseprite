@@ -1,6 +1,6 @@
-/*         ______   ___    ___ 
- *        /\  _  \ /\_ \  /\_ \ 
- *        \ \ \L\ \\//\ \ \//\ \      __     __   _ __   ___ 
+/*         ______   ___    ___
+ *        /\  _  \ /\_ \  /\_ \
+ *        \ \ \L\ \\//\ \ \//\ \      __     __   _ __   ___
  *         \ \  __ \ \ \ \  \ \ \   /'__`\ /'_ `\/\`'__\/ __`\
  *          \ \ \/\ \ \_\ \_ \_\ \_/\  __//\ \L\ \ \ \//\ \L\ \
  *           \ \_\ \_\/\____\/\____\ \____\ \____ \ \_\\ \____/
@@ -131,17 +131,17 @@ static FONT_GLYPH f_0x7F = { 8, 8, { 0x00, 0x10, 0x38, 0x6C, 0xC6, 0xC6, 0xFE, 0
 /* list of ASCII characters */
 static FONT_GLYPH* ascii_data[] =
 {
-   &f_0x20, &f_0x21, &f_0x22, &f_0x23, &f_0x24, &f_0x25, &f_0x26, &f_0x27, 
+   &f_0x20, &f_0x21, &f_0x22, &f_0x23, &f_0x24, &f_0x25, &f_0x26, &f_0x27,
    &f_0x28, &f_0x29, &f_0x2A, &f_0x2B, &f_0x2C, &f_0x2D, &f_0x2E, &f_0x2F,
-   &f_0x30, &f_0x31, &f_0x32, &f_0x33, &f_0x34, &f_0x35, &f_0x36, &f_0x37, 
+   &f_0x30, &f_0x31, &f_0x32, &f_0x33, &f_0x34, &f_0x35, &f_0x36, &f_0x37,
    &f_0x38, &f_0x39, &f_0x3A, &f_0x3B, &f_0x3C, &f_0x3D, &f_0x3E, &f_0x3F,
-   &f_0x40, &f_0x41, &f_0x42, &f_0x43, &f_0x44, &f_0x45, &f_0x46, &f_0x47, 
+   &f_0x40, &f_0x41, &f_0x42, &f_0x43, &f_0x44, &f_0x45, &f_0x46, &f_0x47,
    &f_0x48, &f_0x49, &f_0x4A, &f_0x4B, &f_0x4C, &f_0x4D, &f_0x4E, &f_0x4F,
-   &f_0x50, &f_0x51, &f_0x52, &f_0x53, &f_0x54, &f_0x55, &f_0x56, &f_0x57, 
+   &f_0x50, &f_0x51, &f_0x52, &f_0x53, &f_0x54, &f_0x55, &f_0x56, &f_0x57,
    &f_0x58, &f_0x59, &f_0x5A, &f_0x5B, &f_0x5C, &f_0x5D, &f_0x5E, &f_0x5F,
-   &f_0x60, &f_0x61, &f_0x62, &f_0x63, &f_0x64, &f_0x65, &f_0x66, &f_0x67, 
+   &f_0x60, &f_0x61, &f_0x62, &f_0x63, &f_0x64, &f_0x65, &f_0x66, &f_0x67,
    &f_0x68, &f_0x69, &f_0x6A, &f_0x6B, &f_0x6C, &f_0x6D, &f_0x6E, &f_0x6F,
-   &f_0x70, &f_0x71, &f_0x72, &f_0x73, &f_0x74, &f_0x75, &f_0x76, &f_0x77, 
+   &f_0x70, &f_0x71, &f_0x72, &f_0x73, &f_0x74, &f_0x75, &f_0x76, &f_0x77,
    &f_0x78, &f_0x79, &f_0x7A, &f_0x7B, &f_0x7C, &f_0x7D, &f_0x7E, &f_0x7F
 };
 
@@ -249,17 +249,17 @@ static FONT_GLYPH f_0xFF = { 8, 8, { 0x00, 0xCC, 0x00, 0xCC, 0xCC, 0x7C, 0x0C, 0
 /* list of Latin-1 characters */
 static FONT_GLYPH* latin1_data[] =
 {
-	    &f_0xA1, &f_0xA2, &f_0xA3, &f_0xA4, &f_0xA5, &f_0xA6, &f_0xA7, 
+            &f_0xA1, &f_0xA2, &f_0xA3, &f_0xA4, &f_0xA5, &f_0xA6, &f_0xA7,
    &f_0xA8, &f_0xA9, &f_0xAA, &f_0xAB, &f_0xAC, &f_0xAD, &f_0xAE, &f_0xAF,
-   &f_0xB0, &f_0xB1, &f_0xB2, &f_0xB3, &f_0xB4, &f_0xB5, &f_0xB6, &f_0xB7, 
+   &f_0xB0, &f_0xB1, &f_0xB2, &f_0xB3, &f_0xB4, &f_0xB5, &f_0xB6, &f_0xB7,
    &f_0xB8, &f_0xB9, &f_0xBA, &f_0xBB, &f_0xBC, &f_0xBD, &f_0xBE, &f_0xBF,
-   &f_0xC0, &f_0xC1, &f_0xC2, &f_0xC3, &f_0xC4, &f_0xC5, &f_0xC6, &f_0xC7, 
+   &f_0xC0, &f_0xC1, &f_0xC2, &f_0xC3, &f_0xC4, &f_0xC5, &f_0xC6, &f_0xC7,
    &f_0xC8, &f_0xC9, &f_0xCA, &f_0xCB, &f_0xCC, &f_0xCD, &f_0xCE, &f_0xCF,
-   &f_0xD0, &f_0xD1, &f_0xD2, &f_0xD3, &f_0xD4, &f_0xD5, &f_0xD6, &f_0xD7, 
+   &f_0xD0, &f_0xD1, &f_0xD2, &f_0xD3, &f_0xD4, &f_0xD5, &f_0xD6, &f_0xD7,
    &f_0xD8, &f_0xD9, &f_0xDA, &f_0xDB, &f_0xDC, &f_0xDD, &f_0xDE, &f_0xDF,
-   &f_0xE0, &f_0xE1, &f_0xE2, &f_0xE3, &f_0xE4, &f_0xE5, &f_0xE6, &f_0xE7, 
+   &f_0xE0, &f_0xE1, &f_0xE2, &f_0xE3, &f_0xE4, &f_0xE5, &f_0xE6, &f_0xE7,
    &f_0xE8, &f_0xE9, &f_0xEA, &f_0xEB, &f_0xEC, &f_0xED, &f_0xEE, &f_0xEF,
-   &f_0xF0, &f_0xF1, &f_0xF2, &f_0xF3, &f_0xF4, &f_0xF5, &f_0xF6, &f_0xF7, 
+   &f_0xF0, &f_0xF1, &f_0xF2, &f_0xF3, &f_0xF4, &f_0xF5, &f_0xF6, &f_0xF7,
    &f_0xF8, &f_0xF9, &f_0xFA, &f_0xFB, &f_0xFC, &f_0xFD, &f_0xFE, &f_0xFF
 };
 
@@ -400,21 +400,21 @@ static FONT_GLYPH f_0x17F = { 8, 8, { 0x38, 0x6C, 0x64, 0xE0, 0x60, 0x60, 0xE0, 
 /* list of Extended-A characters */
 static FONT_GLYPH* extended_a_data[] =
 {
-   &f_0x100, &f_0x101, &f_0x102, &f_0x103, &f_0x104, &f_0x105, &f_0x106, &f_0x107, 
+   &f_0x100, &f_0x101, &f_0x102, &f_0x103, &f_0x104, &f_0x105, &f_0x106, &f_0x107,
    &f_0x108, &f_0x109, &f_0x10A, &f_0x10B, &f_0x10C, &f_0x10D, &f_0x10E, &f_0x10F,
-   &f_0x110, &f_0x111, &f_0x112, &f_0x113, &f_0x114, &f_0x115, &f_0x116, &f_0x117, 
+   &f_0x110, &f_0x111, &f_0x112, &f_0x113, &f_0x114, &f_0x115, &f_0x116, &f_0x117,
    &f_0x118, &f_0x119, &f_0x11A, &f_0x11B, &f_0x11C, &f_0x11D, &f_0x11E, &f_0x11F,
-   &f_0x120, &f_0x121, &f_0x122, &f_0x123, &f_0x124, &f_0x125, &f_0x126, &f_0x127, 
+   &f_0x120, &f_0x121, &f_0x122, &f_0x123, &f_0x124, &f_0x125, &f_0x126, &f_0x127,
    &f_0x128, &f_0x129, &f_0x12A, &f_0x12B, &f_0x12C, &f_0x12D, &f_0x12E, &f_0x12F,
-   &f_0x130, &f_0x131, &f_0x132, &f_0x133, &f_0x134, &f_0x135, &f_0x136, &f_0x137, 
+   &f_0x130, &f_0x131, &f_0x132, &f_0x133, &f_0x134, &f_0x135, &f_0x136, &f_0x137,
    &f_0x138, &f_0x139, &f_0x13A, &f_0x13B, &f_0x13C, &f_0x13D, &f_0x13E, &f_0x13F,
-   &f_0x140, &f_0x141, &f_0x142, &f_0x143, &f_0x144, &f_0x145, &f_0x146, &f_0x147, 
+   &f_0x140, &f_0x141, &f_0x142, &f_0x143, &f_0x144, &f_0x145, &f_0x146, &f_0x147,
    &f_0x148, &f_0x149, &f_0x14A, &f_0x14B, &f_0x14C, &f_0x14D, &f_0x14E, &f_0x14F,
-   &f_0x150, &f_0x151, &f_0x152, &f_0x153, &f_0x154, &f_0x155, &f_0x156, &f_0x157, 
+   &f_0x150, &f_0x151, &f_0x152, &f_0x153, &f_0x154, &f_0x155, &f_0x156, &f_0x157,
    &f_0x158, &f_0x159, &f_0x15A, &f_0x15B, &f_0x15C, &f_0x15D, &f_0x15E, &f_0x15F,
-   &f_0x160, &f_0x161, &f_0x162, &f_0x163, &f_0x164, &f_0x165, &f_0x166, &f_0x167, 
+   &f_0x160, &f_0x161, &f_0x162, &f_0x163, &f_0x164, &f_0x165, &f_0x166, &f_0x167,
    &f_0x168, &f_0x169, &f_0x16A, &f_0x16B, &f_0x16C, &f_0x16D, &f_0x16E, &f_0x16F,
-   &f_0x170, &f_0x171, &f_0x172, &f_0x173, &f_0x174, &f_0x175, &f_0x176, &f_0x177, 
+   &f_0x170, &f_0x171, &f_0x172, &f_0x173, &f_0x174, &f_0x175, &f_0x176, &f_0x177,
    &f_0x178, &f_0x179, &f_0x17A, &f_0x17B, &f_0x17C, &f_0x17D, &f_0x17E, &f_0x17F
 };
 
@@ -519,8 +519,8 @@ static int mono_render_char(AL_CONST FONT* f, int ch, int fg, int bg, BITMAP* bm
 
     g = _mono_find_glyph(f, ch);
     if(g) {
-	bmp->vtable->draw_glyph(bmp, g, x, y + (f->height-g->h)/2, fg, bg);
-	w = g->w;
+        bmp->vtable->draw_glyph(bmp, g, x, y + (f->height-g->h)/2, fg, bg);
+        w = g->w;
     }
 
     release_bitmap(bmp);
@@ -588,14 +588,14 @@ static int mono_get_font_ranges(FONT *f)
     FONT_MONO_DATA* mf = 0;
     int ranges = 0;
 
-    if (!f) 
+    if (!f)
         return -1;
 
     mf = (FONT_MONO_DATA*)(f->data);
 
     while(mf) {
         FONT_MONO_DATA* next = mf->next;
-        
+
         ranges++;
         if (!next)
             return ranges;
@@ -616,9 +616,9 @@ static int mono_get_font_range_begin(FONT* f, int range)
    FONT_MONO_DATA* mf = 0;
    int n;
 
-   if (!f || !f->data) 
+   if (!f || !f->data)
       return -1;
-      
+
    if (range < 0)
       range = 0;
    n = 0;
@@ -626,7 +626,7 @@ static int mono_get_font_range_begin(FONT* f, int range)
    mf = (FONT_MONO_DATA*)(f->data);
    while(mf && n<=range) {
       FONT_MONO_DATA* next = mf->next;
-        
+
       if (!next || range == n)
          return mf->begin;
       mf = next;
@@ -647,7 +647,7 @@ static int mono_get_font_range_end(FONT* f, int range)
    FONT_MONO_DATA* mf = 0;
    int n;
 
-   if (!f) 
+   if (!f)
       return -1;
 
    n = 0;
@@ -676,10 +676,10 @@ static FONT_MONO_DATA *mono_copy_glyph_range(FONT_MONO_DATA *mf, int begin, int 
    FONT_GLYPH **gl;
    FONT_GLYPH *g;
    int num, c;
-   
+
    if (begin<mf->begin || end>mf->end)
       return NULL;
-   
+
    newmf = _AL_MALLOC(sizeof *newmf);
 
    if (!newmf)
@@ -701,7 +701,7 @@ static FONT_MONO_DATA *mono_copy_glyph_range(FONT_MONO_DATA *mf, int begin, int 
       gl[c]->h = g->h;
       memcpy(gl[c]->dat, g->dat, sz * sizeof *(g->dat));
    }
-   
+
    return newmf;
 }
 
@@ -709,7 +709,7 @@ static FONT_MONO_DATA *mono_copy_glyph_range(FONT_MONO_DATA *mf, int begin, int 
 
 /* mono_extract_font_range:
  *  (mono vtable entry)
- *  Extract a range of characters from a mono font 
+ *  Extract a range of characters from a mono font
  */
 static FONT *mono_extract_font_range(FONT *f, int begin, int end)
 {
@@ -753,11 +753,11 @@ static FONT *mono_extract_font_range(FONT *f, int begin, int end)
    while (mfin) {
       /* Find the range that is covered by the requested range. */
       /* Check if the requested and processed ranges at least overlap */
-	  if (((first >= mfin->begin && first < mfin->end) || (last <= mfin->end && last > mfin->begin))
+          if (((first >= mfin->begin && first < mfin->end) || (last <= mfin->end && last > mfin->begin))
       /* Check if the requested range wraps processed ranges */
       || (first < mfin->begin && last > mfin->end)) {
          int local_begin, local_end;
-         
+
          local_begin = MAX(mfin->begin, first);
          local_end = MIN(mfin->end, last);
 
@@ -772,7 +772,7 @@ static FONT *mono_extract_font_range(FONT *f, int begin, int end)
       }
       mfin = mfin->next;
    }
-   
+
    return fontout;
 }
 
@@ -786,10 +786,10 @@ static FONT *mono_merge_fonts(FONT *font1, FONT *font2)
 {
    FONT *fontout = NULL;
    FONT_MONO_DATA *mf, *mf1, *mf2;
-   
+
    if (!font1 || !font2)
       return NULL;
-      
+
    if (!is_mono_font(font1) || !is_mono_font(font2))
       return NULL;
 
@@ -798,7 +798,7 @@ static FONT *mono_merge_fonts(FONT *font1, FONT *font2)
    fontout->height = MAX(font1->height, font2->height);
    fontout->vtable = font1->vtable;
    mf = fontout->data = NULL;
-   
+
    mf1 = font1->data;
    mf2 = font2->data;
    while (mf1 || mf2) {
@@ -839,14 +839,14 @@ static int mono_transpose_font(FONT* f, int drange)
 {
    FONT_MONO_DATA* mf = 0;
 
-   if (!f) 
+   if (!f)
       return -1;
 
    mf = (FONT_MONO_DATA*)(f->data);
 
    while(mf) {
       FONT_MONO_DATA* next = mf->next;
-      
+
       mf->begin += drange;
       mf->end += drange;
       mf = next;
@@ -906,43 +906,43 @@ static int color_render_char(AL_CONST FONT* f, int ch, int fg, int bg, BITMAP* b
     acquire_bitmap(bmp);
 
     if(fg < 0 && bg >= 0) {
-	rectfill(bmp, x, y, x + f->vtable->char_length(f, ch) - 1, y + h - 1, bg);
+        rectfill(bmp, x, y, x + f->vtable->char_length(f, ch) - 1, y + h - 1, bg);
     }
 
     g = _color_find_glyph(f, ch);
     if(g) {
         if (bitmap_color_depth(g) == 8) {
-	    if(fg < 0) {
-	        bmp->vtable->draw_256_sprite(bmp, g, x, y + (h-g->h)/2);
-	    }
+            if(fg < 0) {
+                bmp->vtable->draw_256_sprite(bmp, g, x, y + (h-g->h)/2);
+            }
             else {
-	        bmp->vtable->draw_character(bmp, g, x, y + (h-g->h)/2, fg, bg);
-	    }
+                bmp->vtable->draw_character(bmp, g, x, y + (h-g->h)/2, fg, bg);
+            }
         }
         else {
             if (bitmap_color_depth(g) == bitmap_color_depth(bmp)) {
-	       masked_blit(g, bmp, 0, 0, x, y + (h-g->h)/2, g->w, g->h);
+               masked_blit(g, bmp, 0, 0, x, y + (h-g->h)/2, g->w, g->h);
             }
             else {
                int color_conv_mode;
                BITMAP *tbmp;
                /* We need to do colour conversion - which is slow... */
-               
+
                color_conv_mode = get_color_conversion();
                set_color_conversion(COLORCONV_MOST | COLORCONV_KEEP_TRANS);
-               
+
                tbmp = create_bitmap_ex(bitmap_color_depth(bmp), g->w, g->h);
                blit(g, tbmp, 0, 0, 0, 0, g->w, g->h);
-               
+
                set_color_conversion(color_conv_mode);
-               
+
                masked_blit(tbmp, bmp, 0, 0, x, y + (h-g->h)/2, g->w, g->h);
-               
+
                destroy_bitmap(tbmp);
             }
-        }        
+        }
 
-	w = g->w;
+        w = g->w;
     }
 
     release_bitmap(bmp);
@@ -998,8 +998,8 @@ static void color_render(AL_CONST FONT* f, AL_CONST char* text, int fg, int bg, 
     acquire_bitmap(bmp);
 
     if(fg < 0 && bg >= 0) {
-	rectfill(bmp, x, y, x + text_length(f, text) - 1, y + text_height(f) - 1, bg);
-	bg = -1; /* to avoid filling rectangles for each character */
+        rectfill(bmp, x, y, x + text_length(f, text) - 1, y + text_height(f) - 1, bg);
+        bg = -1; /* to avoid filling rectangles for each character */
     }
 
     while( (ch = ugetxc(&p)) ) {
@@ -1050,14 +1050,14 @@ static int color_get_font_ranges(FONT *f)
     FONT_COLOR_DATA* cf = 0;
     int ranges = 0;
 
-    if (!f) 
+    if (!f)
         return -1;
 
     cf = (FONT_COLOR_DATA*)(f->data);
 
     while(cf) {
         FONT_COLOR_DATA* next = cf->next;
-        
+
         ranges++;
         if (!next)
             return ranges;
@@ -1078,9 +1078,9 @@ static int color_get_font_range_begin(FONT* f, int range)
    FONT_COLOR_DATA* cf = 0;
    int n;
 
-   if (!f || !f->data) 
+   if (!f || !f->data)
       return -1;
-      
+
    if (range < 0)
       range = 0;
    n = 0;
@@ -1088,7 +1088,7 @@ static int color_get_font_range_begin(FONT* f, int range)
    cf = (FONT_COLOR_DATA*)(f->data);
    while(cf && n<=range) {
       FONT_COLOR_DATA* next = cf->next;
-        
+
       if (!next || range == n)
          return cf->begin;
       cf = next;
@@ -1109,7 +1109,7 @@ static int color_get_font_range_end(FONT* f, int range)
    FONT_COLOR_DATA* cf = 0;
    int n;
 
-   if (!f) 
+   if (!f)
       return -1;
 
    n = 0;
@@ -1178,7 +1178,7 @@ static FONT *upgrade_to_color(FONT* f)
         cf_write = cf;
         mf = mf_next;
     }
-    
+
     return outf;
 }
 
@@ -1193,10 +1193,10 @@ static FONT_COLOR_DATA *color_copy_glyph_range(FONT_COLOR_DATA *cf, int begin, i
    BITMAP **gl;
    BITMAP *g;
    int num, c;
-   
+
    if (begin<cf->begin || end>cf->end)
       return NULL;
-   
+
    newcf = _AL_MALLOC(sizeof *newcf);
 
    if (!newcf)
@@ -1221,7 +1221,7 @@ static FONT_COLOR_DATA *color_copy_glyph_range(FONT_COLOR_DATA *cf, int begin, i
 
 /* color_extract_font_range:
  *  (color vtable entry)
- *  Extract a range of characters from a color font 
+ *  Extract a range of characters from a color font
  */
 static FONT *color_extract_font_range(FONT *f, int begin, int end)
 {
@@ -1269,7 +1269,7 @@ static FONT *color_extract_font_range(FONT *f, int begin, int end)
       /* Check if the requested range wraps processed ranges */
       || (first < cfin->begin && last > cfin->end)) {
          int local_begin, local_end;
-         
+
          local_begin = MAX(cfin->begin, first);
          local_end = MIN(cfin->end, last);
 
@@ -1298,14 +1298,14 @@ static FONT *color_merge_fonts(FONT *font1, FONT *font2)
 {
    FONT *fontout = NULL, *font2_upgr = NULL;
    FONT_COLOR_DATA *cf, *cf1, *cf2;
-   
+
    if (!font1 || !font2)
       return NULL;
-      
+
    /* Promote font 2 to colour if it is a monochrome font */
    if (!is_color_font(font1))
       return NULL;
-   
+
    if (is_mono_font(font2)) {
       font2_upgr = upgrade_to_color(font2);
       /* Couldn't update font */
@@ -1323,7 +1323,7 @@ static FONT *color_merge_fonts(FONT *font1, FONT *font2)
    fontout->height = MAX(font1->height, font2->height);
    fontout->vtable = font1->vtable;
    cf = fontout->data = NULL;
-   
+
    cf1 = font1->data;
    cf2 = font2_upgr->data;
    while (cf1 || cf2) {
@@ -1367,14 +1367,14 @@ static int color_transpose_font(FONT* f, int drange)
 {
    FONT_COLOR_DATA* cf = 0;
 
-   if (!f) 
+   if (!f)
       return -1;
 
    cf = (FONT_COLOR_DATA*)(f->data);
 
    while(cf) {
       FONT_COLOR_DATA* next = cf->next;
-      
+
       cf->begin += drange;
       cf->end += drange;
       cf = next;
@@ -1396,7 +1396,7 @@ FONT_VTABLE _font_vtable_mono = {
     mono_render_char,
     mono_render,
     mono_destroy,
-    
+
     mono_get_font_ranges,
     mono_get_font_range_begin,
     mono_get_font_range_end,
@@ -1407,14 +1407,14 @@ FONT_VTABLE _font_vtable_mono = {
 
 FONT_VTABLE* font_vtable_mono = &_font_vtable_mono;
 
-FONT_VTABLE _font_vtable_color = {  
+FONT_VTABLE _font_vtable_color = {
     font_height,
     color_char_length,
     length,
     color_render_char,
     color_render,
     color_destroy,
-    
+
     color_get_font_ranges,
     color_get_font_range_begin,
     color_get_font_range_end,
@@ -1425,7 +1425,7 @@ FONT_VTABLE _font_vtable_color = {
 
 FONT_VTABLE* font_vtable_color = &_font_vtable_color;
 
-FONT_VTABLE _font_vtable_trans = {  
+FONT_VTABLE _font_vtable_trans = {
     font_height,
     color_char_length,
     length,
@@ -1504,7 +1504,7 @@ int is_trans_font(FONT *f)
 int is_color_font(FONT *f)
 {
    ASSERT(f);
-   
+
    return (f->vtable == font_vtable_color || f->vtable == font_vtable_trans);
 }
 
@@ -1516,7 +1516,7 @@ int is_color_font(FONT *f)
 int is_mono_font(FONT *f)
 {
    ASSERT(f);
-   
+
    return f->vtable == font_vtable_mono;
 }
 
@@ -1555,13 +1555,13 @@ FONT *extract_font_range(FONT *f, int begin, int end)
 FONT *merge_fonts(FONT *f1, FONT *f2)
 {
    FONT *f = NULL;
-   
+
    if (f1->vtable->merge_fonts)
       f = f1->vtable->merge_fonts(f1, f2);
-   
+
    if (!f && f2->vtable->merge_fonts)
       f = f2->vtable->merge_fonts(f2, f1);
-      
+
    return f;
 }
 
@@ -1575,7 +1575,7 @@ int get_font_ranges(FONT *f)
 {
    if (f->vtable->get_font_ranges)
       return f->vtable->get_font_ranges(f);
-   
+
    return -1;
 }
 
@@ -1589,7 +1589,7 @@ int get_font_range_begin(FONT *f, int range)
 {
    if (f->vtable->get_font_range_begin)
       return f->vtable->get_font_range_begin(f, range);
-   
+
    return -1;
 }
 
@@ -1618,7 +1618,7 @@ int transpose_font(FONT *f, int drange)
 {
    if (f->vtable->transpose_font)
       return f->vtable->transpose_font(f, drange);
-   
+
    return -1;
 }
 
@@ -1659,5 +1659,3 @@ static FONT default_font = {
 };
 
 FONT* font = &default_font;
-
-

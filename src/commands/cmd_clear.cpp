@@ -45,17 +45,17 @@ protected:
 
 ClearCommand::ClearCommand()
   : Command("Clear",
-	    "Clear",
-	    CmdUIOnlyFlag)
+            "Clear",
+            CmdUIOnlyFlag)
 {
 }
 
 bool ClearCommand::onEnabled(Context* context)
 {
   return context->checkFlags(ContextFlags::ActiveDocumentIsWritable |
-			     ContextFlags::ActiveLayerIsReadable |
-			     ContextFlags::ActiveLayerIsWritable |
-			     ContextFlags::ActiveLayerIsImage);
+                             ContextFlags::ActiveLayerIsReadable |
+                             ContextFlags::ActiveLayerIsWritable |
+                             ContextFlags::ActiveLayerIsImage);
 }
 
 void ClearCommand::onExecute(Context* context)

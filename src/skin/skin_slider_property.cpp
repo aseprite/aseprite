@@ -34,4 +34,3 @@ ISliderBgPainter* SkinSliderProperty::getBgPainter() const
 {
   return m_painter;
 }
-

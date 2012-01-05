@@ -161,18 +161,18 @@ protected:
 
 private:
   void draw_bounds_template(BITMAP* bmp, int x1, int y1, int x2, int y2,
-			    int nw, int n, int ne, int e, int se, int s, int sw, int w);
+                            int nw, int n, int ne, int e, int se, int s, int sw, int w);
   void draw_bounds_template(Graphics* g, const gfx::Rect& rc,
-			    int nw, int n, int ne, int e, int se, int s, int sw, int w);
+                            int nw, int n, int ne, int e, int se, int s, int sw, int w);
 
   BITMAP* cropPartFromSheet(BITMAP* bmp, int x, int y, int w, int h, bool cursor = false);
   int get_bg_color(JWidget widget);
   void draw_textstring(const char *t, int fg_color, int bg_color,
-		       bool fill_bg, JWidget widget, const JRect rect,
-		       int selected_offset);
+                       bool fill_bg, JWidget widget, const JRect rect,
+                       int selected_offset);
   void draw_textstring(Graphics* g, const char *t, int fg_color, int bg_color,
-		       bool fill_bg, JWidget widget, const gfx::Rect& rc,
-		       int selected_offset);
+                       bool fill_bg, JWidget widget, const gfx::Rect& rc,
+                       int selected_offset);
   void draw_entry_caret(Entry* widget, int x, int y);
   void draw_bevel_box(int x1, int y1, int x2, int y2, int c1, int c2, int *bevel);
   void less_bevel(int *bevel);

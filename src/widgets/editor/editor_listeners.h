@@ -40,4 +40,4 @@ private:
   Listeners<EditorListener> m_listeners;
 };
 
-#endif	// WIDGETS_EDITOR_LISTENERS_H_INCLUDED
+#endif  // WIDGETS_EDITOR_LISTENERS_H_INCLUDED

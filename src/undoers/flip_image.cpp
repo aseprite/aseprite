@@ -61,7 +61,7 @@ void FlipImage::revert(ObjectsContainer* objects, UndoersCollector* redoers)
   for (y=0; y<m_h; ++y)
     for (x=0; x<m_w; ++x)
       image_putpixel(image,
-	((m_flipFlags & FlipHorizontal) == FlipHorizontal ? x2-x: m_x+x),
-	((m_flipFlags & FlipVertical) == FlipVertical     ? y2-y: m_y+y),
-	image_getpixel(area, x, y));
+        ((m_flipFlags & FlipHorizontal) == FlipHorizontal ? x2-x: m_x+x),
+        ((m_flipFlags & FlipVertical) == FlipVertical     ? y2-y: m_y+y),
+        image_getpixel(area, x, y));
 }

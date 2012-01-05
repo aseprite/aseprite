@@ -488,7 +488,7 @@ EGifPutPixel(GifFileType * GifFile,
 int
 EGifPutComment(GifFileType * GifFile,
                const char *Comment) {
-  
+
     unsigned int length = strlen(Comment);
     char *buf;
 
@@ -675,7 +675,7 @@ EGifPutCode(GifFileType * GifFile,
     }
 
     /* No need to dump code size as Compression set up does any for us: */
-    /* 
+    /*
      * Buf = CodeSize;
      * if (WRITE(GifFile, &Buf, 1) != 1) {
      *      _GifError = E_GIF_ERR_WRITE_FAILED;
@@ -753,7 +753,7 @@ EGifCloseFile(GifFileType * GifFile) {
         if (Private->HashTable) {
             free((char *) Private->HashTable);
         }
-	    free((char *) Private);
+            free((char *) Private);
     }
     free(GifFile);
 
@@ -855,7 +855,7 @@ EGifCompressLine(GifFileType * GifFile,
 
     while (i < LineLen) {   /* Decode LineLen items. */
         Pixel = Line[i++];  /* Get next pixel from stream. */
-        /* Form a new unique key to search hash table for the code combines 
+        /* Form a new unique key to search hash table for the code combines
          * CrntCode as Prefix string with Pixel as postfix char.
          */
         NewKey = (((UINT32) CrntCode) << 8) + Pixel;

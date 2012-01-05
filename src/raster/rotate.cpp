@@ -42,12 +42,12 @@
 
 static void ase_parallelogram_map_standard(Image *bmp, Image *sprite, fixed xs[4], fixed ys[4]);
 static void ase_rotate_scale_flip_coordinates(fixed w, fixed h,
-					      fixed x, fixed y,
-					      fixed cx, fixed cy,
-					      fixed angle,
-					      fixed scale_x, fixed scale_y,
-					      int h_flip, int v_flip,
-					      fixed xs[4], fixed ys[4]);
+                                              fixed x, fixed y,
+                                              fixed cx, fixed cy,
+                                              fixed angle,
+                                              fixed scale_x, fixed scale_y,
+                                              int h_flip, int v_flip,
+                                              fixed xs[4], fixed ys[4]);
 
 void image_scale(Image *dst, Image *src, int x, int y, int w, int h)
 {
@@ -64,39 +64,39 @@ void image_scale(Image *dst, Image *src, int x, int y, int w, int h)
 
     for (v=0; v<h; v++) {
       for (u=0; u<w; u++) {
-	c = image_getpixel (src, src->w*u/w, src->h*v/h);
+        c = image_getpixel (src, src->w*u/w, src->h*v/h);
 
-	switch (dst->imgtype) {
+        switch (dst->imgtype) {
 
-	  case IMAGE_RGB:
-	  case IMAGE_GRAYSCALE:
-	    image_putpixel (dst, x+u, y+v,
-			    blender (image_getpixel (dst, x+u, y+v), c,
-				     255));
-	    break;
+          case IMAGE_RGB:
+          case IMAGE_GRAYSCALE:
+            image_putpixel (dst, x+u, y+v,
+                            blender (image_getpixel (dst, x+u, y+v), c,
+                                     255));
+            break;
 
-	  case IMAGE_INDEXED:
-	    if (c != 0)
-	      image_putpixel (dst, x+u, y+v, c);
-	    break;
-	}
+          case IMAGE_INDEXED:
+            if (c != 0)
+              image_putpixel (dst, x+u, y+v, c);
+            break;
+        }
       }
     }
   }
 }
 
 void image_rotate(Image *dst, Image *src, int x, int y, int w, int h,
-		  int cx, int cy, double angle)
+                  int cx, int cy, double angle)
 {
   fixed xs[4], ys[4];
 
   ase_rotate_scale_flip_coordinates (itofix (src->w), itofix (src->h),
-				     itofix (x), itofix (y),
-				     itofix (cx), itofix (cy),
-				     ftofix (256 * angle / PI),
-				     fixdiv (itofix (w), itofix (src->w)),
-				     fixdiv (itofix (h), itofix (src->h)),
-				     false, false, xs, ys);
+                                     itofix (x), itofix (y),
+                                     itofix (cx), itofix (cy),
+                                     ftofix (256 * angle / PI),
+                                     fixdiv (itofix (w), itofix (src->w)),
+                                     fixdiv (itofix (h), itofix (src->h)),
+                                     false, false, xs, ys);
 
   ase_parallelogram_map_standard (dst, src, xs, ys);
 }
@@ -106,8 +106,8 @@ void image_rotate(Image *dst, Image *src, int x, int y, int w, int h,
       4-----3
  */
 void image_parallelogram (Image *bmp, Image *sprite,
-			  int x1, int y1, int x2, int y2,
-			  int x3, int y3, int x4, int y4)
+                          int x1, int y1, int x2, int y2,
+                          int x3, int y3, int x4, int y4)
 {
   fixed xs[4], ys[4];
 
@@ -127,10 +127,10 @@ void image_parallelogram (Image *bmp, Image *sprite,
 
 template<class Traits, class Delegate>
 static void draw_scanline(Image *bmp, Image *spr,
-			  fixed l_bmp_x, int bmp_y_i,
-			  fixed r_bmp_x,
-			  fixed l_spr_x, fixed l_spr_y,
-			  fixed spr_dx, fixed spr_dy)
+                          fixed l_bmp_x, int bmp_y_i,
+                          fixed r_bmp_x,
+                          fixed l_spr_x, fixed l_spr_y,
+                          fixed spr_dx, fixed spr_dy)
 {
   Delegate delegate;
 
@@ -183,7 +183,7 @@ class IndexedDelegate : public GenericDelegate<IndexedTraits> {
 public:
   void feedLine(Image* spr, fixed l_spr_x, fixed l_spr_y) {
     register int c = image_getpixel_fast<IndexedTraits>(spr, l_spr_x>>16, l_spr_y>>16);
-    if (c != 0)			// TODO
+    if (c != 0)                 // TODO
       *m_addr = c;
     ++m_addr;
   }
@@ -233,7 +233,7 @@ public:
  */
 template<class Traits, class Delegate>
 static void ase_parallelogram_map(Image *bmp, Image *spr, fixed xs[4], fixed ys[4],
-				  int sub_pixel_accuracy)
+                                  int sub_pixel_accuracy)
 {
   /* Index in xs[] and ys[] to topmost point. */
   int top_index;
@@ -288,9 +288,9 @@ static void ase_parallelogram_map(Image *bmp, Image *spr, fixed xs[4], fixed ys[
 
   /* Get direction of points: clockwise or anti-clockwise. */
   if (fixmul(xs[(top_index+1) & 3] - xs[top_index],
-	     ys[(top_index-1) & 3] - ys[top_index]) >
+             ys[(top_index-1) & 3] - ys[top_index]) >
       fixmul(xs[(top_index-1) & 3] - xs[top_index],
-	     ys[(top_index+1) & 3] - ys[top_index]))
+             ys[(top_index+1) & 3] - ys[top_index]))
     right_index = 1;
   else
     right_index = -1;
@@ -376,16 +376,16 @@ static void ase_parallelogram_map(Image *bmp, Image *spr, fixed xs[4], fixed ys[
   extra_scanline_fraction = (bmp_y_i << 16) + 0x8000 - top_bmp_y;
   /* Calculate x coordinate of beginning of scanline in bmp. */
   l_bmp_dx = fixdiv(left_bmp_x - top_bmp_x,
-		    left_bmp_y - top_bmp_y);
+                    left_bmp_y - top_bmp_y);
   l_bmp_x = top_bmp_x + fixmul(extra_scanline_fraction, l_bmp_dx);
   /* Calculate x coordinate of beginning of scanline in spr. */
   /* note: all these are rounded down which is probably a Good Thing (tm) */
   l_spr_dx = fixdiv(left_spr_x - top_spr_x,
-		    left_bmp_y - top_bmp_y);
+                    left_bmp_y - top_bmp_y);
   l_spr_x = top_spr_x + fixmul(extra_scanline_fraction, l_spr_dx);
   /* Calculate y coordinate of beginning of scanline in spr. */
   l_spr_dy = fixdiv(left_spr_y - top_spr_y,
-		    left_bmp_y - top_bmp_y);
+                    left_bmp_y - top_bmp_y);
   l_spr_y = top_spr_y + fixmul(extra_scanline_fraction, l_spr_dy);
 
   /* Calculate left loop bound. */
@@ -395,16 +395,16 @@ static void ase_parallelogram_map(Image *bmp, Image *spr, fixed xs[4], fixed ys[
 
   /* Calculate x coordinate of end of scanline in bmp. */
   r_bmp_dx = fixdiv(right_bmp_x - top_bmp_x,
-		    right_bmp_y - top_bmp_y);
+                    right_bmp_y - top_bmp_y);
   r_bmp_x = top_bmp_x + fixmul(extra_scanline_fraction, r_bmp_dx);
 #ifdef KEEP_TRACK_OF_RIGHT_SPRITE_SCANLINE
   /* Calculate x coordinate of end of scanline in spr. */
   r_spr_dx = fixdiv(right_spr_x - top_spr_x,
-		    right_bmp_y - top_bmp_y);
+                    right_bmp_y - top_bmp_y);
   r_spr_x = top_spr_x + fixmul(extra_scanline_fraction, r_spr_dx);
   /* Calculate y coordinate of end of scanline in spr. */
   r_spr_dy = fixdiv(right_spr_y - top_spr_y,
-		    right_bmp_y - top_bmp_y);
+                    right_bmp_y - top_bmp_y);
   r_spr_y = top_spr_y + fixmul(extra_scanline_fraction, r_spr_dy);
 #endif
 
@@ -419,11 +419,11 @@ static void ase_parallelogram_map(Image *bmp, Image *spr, fixed xs[4], fixed ys[
      errors will be accumulated along the scanline.
   */
   spr_dx = (fixed)((ys[3] - ys[0]) * 65536.0 * (65536.0 * spr->w) /
-		   ((xs[1] - xs[0]) * (double)(ys[3] - ys[0]) -
-		    (xs[3] - xs[0]) * (double)(ys[1] - ys[0])));
+                   ((xs[1] - xs[0]) * (double)(ys[3] - ys[0]) -
+                    (xs[3] - xs[0]) * (double)(ys[1] - ys[0])));
   spr_dy = (fixed)((ys[1] - ys[0]) * 65536.0 * (65536.0 * spr->h) /
-		   ((xs[3] - xs[0]) * (double)(ys[1] - ys[0]) -
-		    (xs[1] - xs[0]) * (double)(ys[3] - ys[0])));
+                   ((xs[3] - xs[0]) * (double)(ys[1] - ys[0]) -
+                    (xs[1] - xs[0]) * (double)(ys[3] - ys[0])));
 
   /*
    * Loop through scanlines.
@@ -434,30 +434,30 @@ static void ase_parallelogram_map(Image *bmp, Image *spr, fixed xs[4], fixed ys[
     if (bmp_y_i >= l_bmp_y_bottom_i) {
       /* Are we done? */
       if (bmp_y_i >= clip_bottom_i)
-	break;
+        break;
 
       /* Vertical gap between left corner and centre of scanline. */
       extra_scanline_fraction = (bmp_y_i << 16) + 0x8000 - left_bmp_y;
       /* Update x coordinate of beginning of scanline in bmp. */
       l_bmp_dx = fixdiv(bottom_bmp_x - left_bmp_x,
-			bottom_bmp_y - left_bmp_y);
+                        bottom_bmp_y - left_bmp_y);
       l_bmp_x = left_bmp_x + fixmul(extra_scanline_fraction, l_bmp_dx);
       /* Update x coordinate of beginning of scanline in spr. */
       l_spr_dx = fixdiv(bottom_spr_x - left_spr_x,
-			bottom_bmp_y - left_bmp_y);
+                        bottom_bmp_y - left_bmp_y);
       l_spr_x = left_spr_x + fixmul(extra_scanline_fraction, l_spr_dx);
       /* Update y coordinate of beginning of scanline in spr. */
       l_spr_dy = fixdiv(bottom_spr_y - left_spr_y,
-			bottom_bmp_y - left_bmp_y);
+                        bottom_bmp_y - left_bmp_y);
       l_spr_y = left_spr_y + fixmul(extra_scanline_fraction, l_spr_dy);
 
       /* Update loop bound. */
       if (sub_pixel_accuracy)
-	l_bmp_y_bottom_i = (bottom_bmp_y + 0xffff) >> 16;
+        l_bmp_y_bottom_i = (bottom_bmp_y + 0xffff) >> 16;
       else
-	l_bmp_y_bottom_i = (bottom_bmp_y + 0x8000) >> 16;
+        l_bmp_y_bottom_i = (bottom_bmp_y + 0x8000) >> 16;
       if (l_bmp_y_bottom_i > clip_bottom_i)
-	l_bmp_y_bottom_i = clip_bottom_i;
+        l_bmp_y_bottom_i = clip_bottom_i;
     }
 
     /* Has end of scanline passed a corner? */
@@ -466,21 +466,21 @@ static void ase_parallelogram_map(Image *bmp, Image *spr, fixed xs[4], fixed ys[
       extra_scanline_fraction = (bmp_y_i << 16) + 0x8000 - right_bmp_y;
       /* Update x coordinate of end of scanline in bmp. */
       r_bmp_dx = fixdiv(bottom_bmp_x - right_bmp_x,
-			bottom_bmp_y - right_bmp_y);
+                        bottom_bmp_y - right_bmp_y);
       r_bmp_x = right_bmp_x + fixmul(extra_scanline_fraction, r_bmp_dx);
 #ifdef KEEP_TRACK_OF_RIGHT_SPRITE_SCANLINE
       /* Update x coordinate of beginning of scanline in spr. */
       r_spr_dx = fixdiv(bottom_spr_x - right_spr_x,
-			bottom_bmp_y - right_bmp_y);
+                        bottom_bmp_y - right_bmp_y);
       r_spr_x = right_spr_x + fixmul(extra_scanline_fraction, r_spr_dx);
       /* Update y coordinate of beginning of scanline in spr. */
       r_spr_dy = fixdiv(bottom_spr_y - right_spr_y,
-			bottom_bmp_y - right_bmp_y);
+                        bottom_bmp_y - right_bmp_y);
       r_spr_y = right_spr_y + fixmul(extra_scanline_fraction, r_spr_dy);
 #endif
 
       /* Update loop bound: We aren't supposed to use this any more, so
-	 just set it to some big enough value. */
+         just set it to some big enough value. */
       r_bmp_y_bottom_i = clip_bottom_i;
     }
 
@@ -495,15 +495,15 @@ static void ase_parallelogram_map(Image *bmp, Image *spr, fixed xs[4], fixed ys[
     /* ... and move starting point in sprite accordingly. */
     if (sub_pixel_accuracy) {
       l_spr_x_rounded = l_spr_x +
-	fixmul((l_bmp_x_rounded - l_bmp_x), spr_dx);
+        fixmul((l_bmp_x_rounded - l_bmp_x), spr_dx);
       l_spr_y_rounded = l_spr_y +
-	fixmul((l_bmp_x_rounded - l_bmp_x), spr_dy);
+        fixmul((l_bmp_x_rounded - l_bmp_x), spr_dy);
     }
     else {
       l_spr_x_rounded = l_spr_x +
-	fixmul(l_bmp_x_rounded + 0x7fff - l_bmp_x, spr_dx);
+        fixmul(l_bmp_x_rounded + 0x7fff - l_bmp_x, spr_dx);
       l_spr_y_rounded = l_spr_y +
-	fixmul(l_bmp_x_rounded + 0x7fff - l_bmp_x, spr_dy);
+        fixmul(l_bmp_x_rounded + 0x7fff - l_bmp_x, spr_dy);
     }
 
     /* Make right bmp coordinate be an integer and clip it. */
@@ -517,97 +517,97 @@ static void ase_parallelogram_map(Image *bmp, Image *spr, fixed xs[4], fixed ys[
     /* Draw! */
     if (l_bmp_x_rounded <= r_bmp_x_rounded) {
       if (!sub_pixel_accuracy) {
-	/* The bodies of these ifs are only reached extremely seldom,
-	   it's an ugly hack to avoid reading outside the sprite when
-	   the rounding errors are accumulated the wrong way. It would
-	   be nicer if we could ensure that this never happens by making
-	   all multiplications and divisions be rounded up or down at
-	   the correct places.
-	   I did try another approach: recalculate the edges of the
-	   scanline from scratch each scanline rather than incrementally.
-	   Drawing a sprite with that routine took about 25% longer time
-	   though.
-	*/
-	if ((unsigned)(l_spr_x_rounded >> 16) >= (unsigned)spr->w) {
-	  if (((l_spr_x_rounded < 0) && (spr_dx <= 0)) ||
-	      ((l_spr_x_rounded > 0) && (spr_dx >= 0))) {
-	    /* This can happen. */
-	    goto skip_draw;
-	  }
-	  else {
-	    /* I don't think this can happen, but I can't prove it. */
-	    do {
-	      l_spr_x_rounded += spr_dx;
-	      l_bmp_x_rounded += 65536;
-	      if (l_bmp_x_rounded > r_bmp_x_rounded)
-		goto skip_draw;
-	    } while ((unsigned)(l_spr_x_rounded >> 16) >=
-		     (unsigned)spr->w);
+        /* The bodies of these ifs are only reached extremely seldom,
+           it's an ugly hack to avoid reading outside the sprite when
+           the rounding errors are accumulated the wrong way. It would
+           be nicer if we could ensure that this never happens by making
+           all multiplications and divisions be rounded up or down at
+           the correct places.
+           I did try another approach: recalculate the edges of the
+           scanline from scratch each scanline rather than incrementally.
+           Drawing a sprite with that routine took about 25% longer time
+           though.
+        */
+        if ((unsigned)(l_spr_x_rounded >> 16) >= (unsigned)spr->w) {
+          if (((l_spr_x_rounded < 0) && (spr_dx <= 0)) ||
+              ((l_spr_x_rounded > 0) && (spr_dx >= 0))) {
+            /* This can happen. */
+            goto skip_draw;
+          }
+          else {
+            /* I don't think this can happen, but I can't prove it. */
+            do {
+              l_spr_x_rounded += spr_dx;
+              l_bmp_x_rounded += 65536;
+              if (l_bmp_x_rounded > r_bmp_x_rounded)
+                goto skip_draw;
+            } while ((unsigned)(l_spr_x_rounded >> 16) >=
+                     (unsigned)spr->w);
 
-	  }
-	}
-	right_edge_test = l_spr_x_rounded +
-	  ((r_bmp_x_rounded - l_bmp_x_rounded) >> 16) *
-	  spr_dx;
-	if ((unsigned)(right_edge_test >> 16) >= (unsigned)spr->w) {
-	  if (((right_edge_test < 0) && (spr_dx <= 0)) ||
-	      ((right_edge_test > 0) && (spr_dx >= 0))) {
-	    /* This can happen. */
-	    do {
-	      r_bmp_x_rounded -= 65536;
-	      right_edge_test -= spr_dx;
-	      if (l_bmp_x_rounded > r_bmp_x_rounded)
-		goto skip_draw;
-	    } while ((unsigned)(right_edge_test >> 16) >=
-		     (unsigned)spr->w);
-	  }
-	  else {
-	    /* I don't think this can happen, but I can't prove it. */
-	    goto skip_draw;
-	  }
-	}
-	if ((unsigned)(l_spr_y_rounded >> 16) >= (unsigned)spr->h) {
-	  if (((l_spr_y_rounded < 0) && (spr_dy <= 0)) ||
-	      ((l_spr_y_rounded > 0) && (spr_dy >= 0))) {
-	    /* This can happen. */
-	    goto skip_draw;
-	  }
-	  else {
-	    /* I don't think this can happen, but I can't prove it. */
-	    do {
-	      l_spr_y_rounded += spr_dy;
-	      l_bmp_x_rounded += 65536;
-	      if (l_bmp_x_rounded > r_bmp_x_rounded)
-		goto skip_draw;
-	    } while (((unsigned)l_spr_y_rounded >> 16) >=
-		     (unsigned)spr->h);
-	  }
-	}
-	right_edge_test = l_spr_y_rounded +
-	  ((r_bmp_x_rounded - l_bmp_x_rounded) >> 16) *
-	  spr_dy;
-	if ((unsigned)(right_edge_test >> 16) >= (unsigned)spr->h) {
-	  if (((right_edge_test < 0) && (spr_dy <= 0)) ||
-	      ((right_edge_test > 0) && (spr_dy >= 0))) {
-	    /* This can happen. */
-	    do {
-	      r_bmp_x_rounded -= 65536;
-	      right_edge_test -= spr_dy;
-	      if (l_bmp_x_rounded > r_bmp_x_rounded)
-		goto skip_draw;
-	    } while ((unsigned)(right_edge_test >> 16) >=
-		     (unsigned)spr->h);
-	  }
-	  else {
-	    /* I don't think this can happen, but I can't prove it. */
-	    goto skip_draw;
-	  }
-	}
+          }
+        }
+        right_edge_test = l_spr_x_rounded +
+          ((r_bmp_x_rounded - l_bmp_x_rounded) >> 16) *
+          spr_dx;
+        if ((unsigned)(right_edge_test >> 16) >= (unsigned)spr->w) {
+          if (((right_edge_test < 0) && (spr_dx <= 0)) ||
+              ((right_edge_test > 0) && (spr_dx >= 0))) {
+            /* This can happen. */
+            do {
+              r_bmp_x_rounded -= 65536;
+              right_edge_test -= spr_dx;
+              if (l_bmp_x_rounded > r_bmp_x_rounded)
+                goto skip_draw;
+            } while ((unsigned)(right_edge_test >> 16) >=
+                     (unsigned)spr->w);
+          }
+          else {
+            /* I don't think this can happen, but I can't prove it. */
+            goto skip_draw;
+          }
+        }
+        if ((unsigned)(l_spr_y_rounded >> 16) >= (unsigned)spr->h) {
+          if (((l_spr_y_rounded < 0) && (spr_dy <= 0)) ||
+              ((l_spr_y_rounded > 0) && (spr_dy >= 0))) {
+            /* This can happen. */
+            goto skip_draw;
+          }
+          else {
+            /* I don't think this can happen, but I can't prove it. */
+            do {
+              l_spr_y_rounded += spr_dy;
+              l_bmp_x_rounded += 65536;
+              if (l_bmp_x_rounded > r_bmp_x_rounded)
+                goto skip_draw;
+            } while (((unsigned)l_spr_y_rounded >> 16) >=
+                     (unsigned)spr->h);
+          }
+        }
+        right_edge_test = l_spr_y_rounded +
+          ((r_bmp_x_rounded - l_bmp_x_rounded) >> 16) *
+          spr_dy;
+        if ((unsigned)(right_edge_test >> 16) >= (unsigned)spr->h) {
+          if (((right_edge_test < 0) && (spr_dy <= 0)) ||
+              ((right_edge_test > 0) && (spr_dy >= 0))) {
+            /* This can happen. */
+            do {
+              r_bmp_x_rounded -= 65536;
+              right_edge_test -= spr_dy;
+              if (l_bmp_x_rounded > r_bmp_x_rounded)
+                goto skip_draw;
+            } while ((unsigned)(right_edge_test >> 16) >=
+                     (unsigned)spr->h);
+          }
+          else {
+            /* I don't think this can happen, but I can't prove it. */
+            goto skip_draw;
+          }
+        }
       }
       draw_scanline<Traits, Delegate>(bmp, spr,
-				      l_bmp_x_rounded, bmp_y_i, r_bmp_x_rounded,
-				      l_spr_x_rounded, l_spr_y_rounded,
-				      spr_dx, spr_dy);
+                                      l_bmp_x_rounded, bmp_y_i, r_bmp_x_rounded,
+                                      l_spr_x_rounded, l_spr_y_rounded,
+                                      spr_dx, spr_dy);
 
     }
     /* I'm not going to apoligize for this label and its gotos: to get
@@ -636,7 +636,7 @@ static void ase_parallelogram_map(Image *bmp, Image *spr, fixed xs[4], fixed ys[
  *  your own scanline drawer, eg. for anti-aliased rotations.
  */
 static void ase_parallelogram_map_standard(Image *bmp, Image *sprite,
-					   fixed xs[4], fixed ys[4])
+                                           fixed xs[4], fixed ys[4])
 {
   switch (bmp->imgtype) {
 
@@ -663,12 +663,12 @@ static void ase_parallelogram_map_standard(Image *bmp, Image *sprite,
  *  and passes them on to the given function.
  */
 static void ase_rotate_scale_flip_coordinates(fixed w, fixed h,
-					      fixed x, fixed y,
-					      fixed cx, fixed cy,
-					      fixed angle,
-					      fixed scale_x, fixed scale_y,
-					      int h_flip, int v_flip,
-					      fixed xs[4], fixed ys[4])
+                                              fixed x, fixed y,
+                                              fixed cx, fixed cy,
+                                              fixed angle,
+                                              fixed scale_x, fixed scale_y,
+                                              int h_flip, int v_flip,
+                                              fixed xs[4], fixed ys[4])
 {
    fixed fix_cos, fix_sin;
    int tl = 0, tr = 1, bl = 3, br = 2;

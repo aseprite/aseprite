@@ -1,6 +1,6 @@
 /*         ______   ___    ___
- *        /\  _  \ /\_ \  /\_ \ 
- *        \ \ \L\ \\//\ \ \//\ \      __     __   _ __   ___ 
+ *        /\  _  \ /\_ \  /\_ \
+ *        \ \ \L\ \\//\ \ \//\ \      __     __   _ __   ___
  *         \ \  __ \ \ \ \  \ \ \   /'__`\ /'_ `\/\`'__\/ __`\
  *          \ \ \/\ \ \_\ \_ \_\ \_/\  __//\ \L\ \ \ \//\ \L\ \
  *           \ \_\ \_\/\____\/\____\ \____\ \____ \ \_\\ \____/
@@ -47,7 +47,7 @@ typedef struct CONFIG_HOOK
    int (*intgetter)(AL_CONST char *name, int def);
    AL_CONST char *(*stringgetter)(AL_CONST char *name, AL_CONST char *def);
    void (*stringsetter)(AL_CONST char *name, AL_CONST char *value);
-   struct CONFIG_HOOK *next; 
+   struct CONFIG_HOOK *next;
 } CONFIG_HOOK;
 
 
@@ -85,29 +85,29 @@ static void flush_config(CONFIG *cfg)
       f = pack_fopen(cfg->filename, F_WRITE);
 
       if (f) {
-	 pos = cfg->head;
+         pos = cfg->head;
 
-	 while (pos) {
-	    if (pos->name) {
-	       pack_fputs(pos->name, f);
+         while (pos) {
+            if (pos->name) {
+               pack_fputs(pos->name, f);
 
-	       if (ugetc(pos->name) != '[') {
-		  pack_putc(' ', f);
-		  pack_putc('=', f);
-		  pack_putc(' ', f);
-	       }
-	    }
+               if (ugetc(pos->name) != '[') {
+                  pack_putc(' ', f);
+                  pack_putc('=', f);
+                  pack_putc(' ', f);
+               }
+            }
 
-	    if (pos->data)
-	       pack_fputs(pos->data, f);
+            if (pos->data)
+               pack_fputs(pos->data, f);
 
-	    pack_fputs(cr, f);
+            pack_fputs(cr, f);
 
-	    pos = pos->next;
+            pos = pos->next;
          }
 
-	 pack_fclose(f);
-	 cfg->dirty = FALSE;
+         pack_fclose(f);
+         cfg->dirty = FALSE;
       }
    }
 }
@@ -141,22 +141,22 @@ static void destroy_config(CONFIG *cfg)
       flush_config(cfg);
 
       if (cfg->filename)
-	 _AL_FREE(cfg->filename);
+         _AL_FREE(cfg->filename);
 
       /* destroy the variable list */
       pos = cfg->head;
 
       while (pos) {
-	 prev = pos;
-	 pos = pos->next;
+         prev = pos;
+         pos = pos->next;
 
-	 if (prev->name)
-	    _AL_FREE(prev->name);
+         if (prev->name)
+            _AL_FREE(prev->name);
 
-	 if (prev->data)
-	    _AL_FREE(prev->data);
+         if (prev->data)
+            _AL_FREE(prev->data);
 
-	 _AL_FREE(prev);
+         _AL_FREE(prev);
       }
 
       _AL_FREE(cfg);
@@ -176,8 +176,8 @@ static void config_cleanup(void)
 
    for (i=0; i<MAX_CONFIGS; i++) {
       if (config[i]) {
-	 destroy_config(config[i]);
-	 config[i] = NULL;
+         destroy_config(config[i]);
+         config[i] = NULL;
       }
    }
 
@@ -200,12 +200,12 @@ static void config_cleanup(void)
       hook = config_hook;
 
       while (hook) {
-	 if (hook->section)
-	    _AL_FREE(hook->section);
+         if (hook->section)
+            _AL_FREE(hook->section);
 
-	 nexthook = hook->next; 
-	 _AL_FREE(hook);
-	 hook = nexthook;
+         nexthook = hook->next;
+         _AL_FREE(hook);
+         hook = nexthook;
       }
 
       config_hook = NULL;
@@ -213,10 +213,10 @@ static void config_cleanup(void)
 
    _AL_FREE(config_argv);
    config_argv = NULL;
-   
+
    _AL_FREE(argv_buf);
    argv_buf = NULL;
-   
+
    argv_buf_size = 0;
 
    _remove_exit_func(config_cleanup);
@@ -243,9 +243,9 @@ static void init_config(int loaddata)
       cfg_name = uconvert_ascii("allegro.cfg", tmp);
 
       if (find_allegro_resource(filename, cfg_name, NULL, NULL, NULL, NULL, NULL, sizeof(filename)) != 0) {
-	 get_executable_name(filename, sizeof(filename));
-	 usetc(get_filename(filename), 0);
-	 ustrzcat(filename, sizeof(filename), cfg_name);
+         get_executable_name(filename, sizeof(filename));
+         usetc(get_filename(filename), 0);
+         ustrzcat(filename, sizeof(filename), cfg_name);
       }
 
       set_config_file(filename);
@@ -254,9 +254,9 @@ static void init_config(int loaddata)
    if (!system_config) {
       system_config = _AL_MALLOC(sizeof(CONFIG));
       if (system_config) {
-	 system_config->head = NULL;
-	 system_config->filename = NULL;
-	 system_config->dirty = FALSE;
+         system_config->head = NULL;
+         system_config->filename = NULL;
+         system_config->dirty = FALSE;
       }
    }
 }
@@ -292,23 +292,23 @@ static int get_line(AL_CONST char *data, int length, char **name, char **val)
    while (inpos<length) {
       c = ugetc(data+inpos);
       if ((c == '\r') || (c == '\n')) {
-	 inpos += uwidth(data+inpos);
-	 if (inpos < length) {
-	    c2 = ugetc(data+inpos);
-	    if (((c == '\r') && (c2 == '\n')) || ((c == '\n') && (c2 == '\r')))
-	       inpos += uwidth(data+inpos);
-	 }
-	 break;
+         inpos += uwidth(data+inpos);
+         if (inpos < length) {
+            c2 = ugetc(data+inpos);
+            if (((c == '\r') && (c2 == '\n')) || ((c == '\n') && (c2 == '\r')))
+               inpos += uwidth(data+inpos);
+         }
+         break;
       }
 
       /* increase the buffer size if needed */
       if (outpos>=(int)buf_size-w0) {
-	 buf_size *= 2;
-	 buf = _al_sane_realloc(buf, buf_size);
-	 if (!buf) {
-	    *allegro_errno = ENOMEM;
-	    return -1;
-	 }
+         buf_size *= 2;
+         buf = _al_sane_realloc(buf, buf_size);
+         if (!buf) {
+            *allegro_errno = ENOMEM;
+            return -1;
+         }
       }
 
       outpos += usetc(buf+outpos, c);
@@ -340,37 +340,37 @@ static int get_line(AL_CONST char *data, int length, char **name, char **val)
       /* got a variable */
       *name = _AL_MALLOC_ATOMIC(j+w0);
       if (!(*name)) {
-	 *allegro_errno = ENOMEM;
-	 _AL_FREE(buf);
-	 return -1;
+         *allegro_errno = ENOMEM;
+         _AL_FREE(buf);
+         return -1;
       }
 
       ustrzcpy(*name, j+w0, buf+i-j);
 
       while ((c) && ((uisspace(c)) || (c == '='))) {
-	 i += uwidth(buf+i);
-	 c = ugetc(buf+i);
+         i += uwidth(buf+i);
+         c = ugetc(buf+i);
       }
 
       *val = _al_ustrdup(buf+i);
       if (!(*val)) {
-	 _AL_FREE(name);
-	 _AL_FREE(buf);
-	 return -1;
+         _AL_FREE(name);
+         _AL_FREE(buf);
+         return -1;
       }
 
       /* strip trailing spaces */
       i = ustrlen(*val) - 1;
       while ((i >= 0) && (uisspace(ugetat(*val, i))))
-	 usetat(*val, i--, 0);
+         usetat(*val, i--, 0);
    }
    else {
       /* blank line or comment */
       *name = NULL;
       *val = _al_ustrdup(buf);
       if (!(*val)) {
-	 _AL_FREE(buf);
-	 return -1;
+         _AL_FREE(buf);
+         return -1;
       }
    }
 
@@ -409,9 +409,9 @@ static void set_config(CONFIG **config, AL_CONST char *data, int length, AL_CONS
    if (filename) {
       (*config)->filename = _al_ustrdup(filename);
       if (!(*config)->filename) {
-	 _AL_FREE(*config);
-	 *config = NULL;
-	 return;
+         _AL_FREE(*config);
+         *config = NULL;
+         return;
       }
    }
    else
@@ -423,19 +423,19 @@ static void set_config(CONFIG **config, AL_CONST char *data, int length, AL_CONS
    while (pos < length) {
       ret = get_line(data+pos, length-pos, &name, &val);
       if (ret<0) {
-	 _AL_FREE(*config);
-	 *config = NULL;
-	 return;
+         _AL_FREE(*config);
+         *config = NULL;
+         return;
       }
 
       pos += ret;
 
       p = _AL_MALLOC(sizeof(CONFIG_ENTRY));
       if (!p) {
-	 *allegro_errno = ENOMEM;
-	 _AL_FREE(*config);
-	 *config = NULL;
-	 return;
+         *allegro_errno = ENOMEM;
+         _AL_FREE(*config);
+         *config = NULL;
+         return;
       }
 
       p->name = name;
@@ -474,40 +474,40 @@ static void load_config_file(CONFIG **config, AL_CONST char *filename, AL_CONST 
       PACKFILE *f = pack_fopen(filename, F_READ);
 
       if (f) {
-	 tmp = _AL_MALLOC_ATOMIC(length+1);
+         tmp = _AL_MALLOC_ATOMIC(length+1);
 
-	 if (tmp) {
-	    pack_fread(tmp, length, f);
-	    tmp[length] = 0;
+         if (tmp) {
+            pack_fread(tmp, length, f);
+            tmp[length] = 0;
 
-	    if (need_uconvert(tmp, U_UTF8, U_CURRENT)) {
-	       length = uconvert_size(tmp, U_UTF8, U_CURRENT);
-	       tmp2 = _AL_MALLOC_ATOMIC(length);
+            if (need_uconvert(tmp, U_UTF8, U_CURRENT)) {
+               length = uconvert_size(tmp, U_UTF8, U_CURRENT);
+               tmp2 = _AL_MALLOC_ATOMIC(length);
 
-	       if (tmp2)
-		  do_uconvert(tmp, U_UTF8, tmp2, U_CURRENT, length);
+               if (tmp2)
+                  do_uconvert(tmp, U_UTF8, tmp2, U_CURRENT, length);
 
-	       length -= ucwidth(0);
-	    }
-	    else
-	       tmp2 = tmp;
+               length -= ucwidth(0);
+            }
+            else
+               tmp2 = tmp;
 
-	    if (tmp2) {
-	       set_config(config, tmp2, length, savefile);
+            if (tmp2) {
+               set_config(config, tmp2, length, savefile);
 
-	       if (tmp2 != tmp)
-		  _AL_FREE(tmp2);
-	    }
+               if (tmp2 != tmp)
+                  _AL_FREE(tmp2);
+            }
 
-	    _AL_FREE(tmp);
-	 }
-	 else
-	    set_config(config, NULL, 0, savefile);
+            _AL_FREE(tmp);
+         }
+         else
+            set_config(config, NULL, 0, savefile);
 
-	 pack_fclose(f);
+         pack_fclose(f);
       }
       else
-	 set_config(config, NULL, 0, savefile);
+         set_config(config, NULL, 0, savefile);
    }
    else
       set_config(config, NULL, 0, savefile);
@@ -527,7 +527,7 @@ void set_config_file(AL_CONST char *filename)
 
 
 /* set_config_data:
- *  Sets the block of data to be used for all future configuration 
+ *  Sets the block of data to be used for all future configuration
  *  operations.
  */
 void set_config_data(AL_CONST char *data, int length)
@@ -556,7 +556,7 @@ void override_config_file(AL_CONST char *filename)
 
 
 /* override_config_data:
- *  Sets the block of data that will override all future configuration 
+ *  Sets the block of data that will override all future configuration
  *  operations.
  */
 void override_config_data(AL_CONST char *data, int length)
@@ -612,20 +612,20 @@ static void prettify_section_name(AL_CONST char *in, char *out, int out_size)
 
    if ((in) && (ustrlen(in))) {
       if (ugetc(in) != '[') {
-	 p = usetc(out, '[');
-	 usetc(out+p, 0);
+         p = usetc(out, '[');
+         usetc(out+p, 0);
       }
       else
-	 usetc(out, 0);
+         usetc(out, 0);
 
       ustrzcat(out, out_size - ucwidth(']'), in);
 
       out += uoffset(out, -1);
 
       if (ugetc(out) != ']') {
-	 out += uwidth(out);
-	 out += usetc(out, ']');
-	 usetc(out, 0);
+         out += uwidth(out);
+         out += usetc(out, ']');
+         usetc(out, 0);
       }
    }
    else
@@ -635,8 +635,8 @@ static void prettify_section_name(AL_CONST char *in, char *out, int out_size)
 
 
 /* hook_config_section:
- *  Hooks a config section to a set of getter/setter functions. This will 
- *  override the normal table of values, and give the provider of the hooks 
+ *  Hooks a config section to a set of getter/setter functions. This will
+ *  override the normal table of values, and give the provider of the hooks
  *  complete control over that section.
  */
 void hook_config_section(AL_CONST char *section, int (*intgetter)(AL_CONST char *, int), AL_CONST char *(*stringgetter)(AL_CONST char *, AL_CONST char *), void (*stringsetter)(AL_CONST char *, AL_CONST char *))
@@ -653,20 +653,20 @@ void hook_config_section(AL_CONST char *section, int (*intgetter)(AL_CONST char 
 
    while (hook) {
       if (ustricmp(section_name, hook->section) == 0) {
-	 if ((intgetter) || (stringgetter) || (stringsetter)) {
-	    /* modify existing hook */
-	    hook->intgetter = intgetter;
-	    hook->stringgetter = stringgetter;
-	    hook->stringsetter = stringsetter;
-	 }
-	 else {
-	    /* remove a hook */
-	    *prev = hook->next;
-	    _AL_FREE(hook->section);
-	    _AL_FREE(hook);
-	 }
+         if ((intgetter) || (stringgetter) || (stringsetter)) {
+            /* modify existing hook */
+            hook->intgetter = intgetter;
+            hook->stringgetter = stringgetter;
+            hook->stringsetter = stringsetter;
+         }
+         else {
+            /* remove a hook */
+            *prev = hook->next;
+            _AL_FREE(hook->section);
+            _AL_FREE(hook);
+         }
 
-	 return;
+         return;
       }
 
       prev = &hook->next;
@@ -706,7 +706,7 @@ int config_is_hooked(AL_CONST char *section)
 
    while (hook) {
       if (ustricmp(section_name, hook->section) == 0)
-	 return TRUE;
+         return TRUE;
 
       hook = hook->next;
    }
@@ -728,7 +728,7 @@ static CONFIG_ENTRY *find_config_string(CONFIG *config, AL_CONST char *section, 
       p = config->head;
 
       if (prev)
-	 *prev = NULL;
+         *prev = NULL;
 
       if (section && ugetc(section))
          in_section = FALSE;
@@ -736,22 +736,22 @@ static CONFIG_ENTRY *find_config_string(CONFIG *config, AL_CONST char *section, 
          in_section = TRUE;
 
       while (p) {
-	 if (p->name) {
-	    if ((section) && (ugetc(p->name) == '[') && (ugetat(p->name, -1) == ']')) {
-	       /* change section */
-	       in_section = (ustricmp(section, p->name) == 0);
-	    }
-	    if ((in_section) || (ugetc(name) == '[')) {
-	       /* is this the one? */
-	       if (ustricmp(p->name, name) == 0)
-		  return p;
-	    }
-	 }
+         if (p->name) {
+            if ((section) && (ugetc(p->name) == '[') && (ugetat(p->name, -1) == ']')) {
+               /* change section */
+               in_section = (ustricmp(section, p->name) == 0);
+            }
+            if ((in_section) || (ugetc(name) == '[')) {
+               /* is this the one? */
+               if (ustricmp(p->name, name) == 0)
+                  return p;
+            }
+         }
 
-	 if (prev)
-	    *prev = p;
+         if (prev)
+            *prev = p;
 
-	 p = p->next;
+         p = p->next;
       }
    }
 
@@ -778,10 +778,10 @@ AL_CONST char *get_config_string(AL_CONST char *section, AL_CONST char *name, AL
 
    while (hook) {
       if (ustricmp(section_name, hook->section) == 0) {
-	 if (hook->stringgetter)
-	    return hook->stringgetter(name, def);
-	 else
-	    return def;
+         if (hook->stringgetter)
+            return hook->stringgetter(name, def);
+         else
+            return def;
       }
       hook = hook->next;
    }
@@ -791,9 +791,9 @@ AL_CONST char *get_config_string(AL_CONST char *section, AL_CONST char *name, AL
 
    if (!p) {
       if ((ugetc(name) == '#') || ((ugetc(section_name) == '[') && (ugetat(section_name, 1) == '#')))
-	 p = find_config_string(system_config, section_name, name, NULL);
+         p = find_config_string(system_config, section_name, name, NULL);
       else
-	 p = find_config_string(config[0], section_name, name, NULL);
+         p = find_config_string(config[0], section_name, name, NULL);
    }
 
    if (p && p->data && (ustrlen(p->data) != 0))
@@ -820,18 +820,18 @@ int get_config_int(AL_CONST char *section, AL_CONST char *name, int def)
 
    while (hook) {
       if (ustricmp(section_name, hook->section) == 0) {
-	 if (hook->intgetter) {
-	    return hook->intgetter(name, def);
-	 }
-	 else if (hook->stringgetter) {
-	    s = hook->stringgetter(name, NULL);
-	    if ((s) && (ugetc(s)))
-	       return ustrtol(s, NULL, 0);
-	    else
-	       return def;
-	 }
-	 else
-	    return def;
+         if (hook->intgetter) {
+            return hook->intgetter(name, def);
+         }
+         else if (hook->stringgetter) {
+            s = hook->stringgetter(name, NULL);
+            if ((s) && (ugetc(s)))
+               return ustrtol(s, NULL, 0);
+            else
+               return def;
+         }
+         else
+            return def;
       }
       hook = hook->next;
    }
@@ -859,7 +859,7 @@ int get_config_hex(AL_CONST char *section, AL_CONST char *name, int def)
    if ((s) && (ugetc(s))) {
       i = ustrtol(s, NULL, 16);
       if ((i == 0x7FFFFFFF) && (ustricmp(s, uconvert_ascii("7FFFFFFF", tmp)) != 0))
-	 i = -1;
+         i = -1;
       return i;
    }
 
@@ -896,15 +896,15 @@ int get_config_id(AL_CONST char *section, AL_CONST char *name, int def)
    if ((s) && (ugetc(s))) {
       val = ustrtol(s, &endp, 0);
       if (!ugetc(endp))
-	 return val;
+         return val;
 
       tmp[0] = tmp[1] = tmp[2] = tmp[3] = ' ';
 
       for (i=0; i<4; i++) {
-	 if (ugetat(s, i))
-	    tmp[i] = utoupper(ugetat(s ,i));
-	 else
-	    break;
+         if (ugetat(s, i))
+            tmp[i] = utoupper(ugetat(s ,i));
+         else
+            break;
       }
 
       return AL_ID(tmp[0], tmp[1], tmp[2], tmp[3]);
@@ -960,9 +960,9 @@ char **get_config_argv(AL_CONST char *section, AL_CONST char *name, int *argc)
    while ((c) && (c != '#')) {
       /* replace all spaces up to the next word with 0 */
       while ((c) && (uisspace(c))) {
-	 usetat(argv_buf+pos, 0, 0);
-	 pos += ucwidth(0);
-	 c = ugetc(argv_buf+pos);
+         usetat(argv_buf+pos, 0, 0);
+         pos += ucwidth(0);
+         c = ugetc(argv_buf+pos);
       }
 
       /* quit if we reached the end of the buffer or a comment */
@@ -1048,7 +1048,7 @@ static CONFIG_ENTRY *insert_variable(CONFIG *the_config, CONFIG_ENTRY *p, AL_CON
 
    if (p) {
       n->next = p->next;
-      p->next = n; 
+      p->next = n;
    }
    else {
       n->next = NULL;
@@ -1079,9 +1079,9 @@ void set_config_string(AL_CONST char *section, AL_CONST char *name, AL_CONST cha
 
    while (hook) {
       if (ustricmp(section_name, hook->section) == 0) {
-	 if (hook->stringsetter)
-	    hook->stringsetter(name, val);
-	 return;
+         if (hook->stringsetter)
+            hook->stringsetter(name, val);
+         return;
       }
       hook = hook->next;
    }
@@ -1098,62 +1098,62 @@ void set_config_string(AL_CONST char *section, AL_CONST char *name, AL_CONST cha
       p = find_config_string(the_config, section_name, name, &prev);
 
       if (p) {
-	 if ((val) && (ugetc(val))) {
-	    /* modify existing variable */
-	    if (p->data)
-	       _AL_FREE(p->data);
+         if ((val) && (ugetc(val))) {
+            /* modify existing variable */
+            if (p->data)
+               _AL_FREE(p->data);
 
-	    p->data = _al_ustrdup(val);
-	 }
-	 else {
-	    /* delete variable */
-	    if (p->name)
-	       _AL_FREE(p->name);
+            p->data = _al_ustrdup(val);
+         }
+         else {
+            /* delete variable */
+            if (p->name)
+               _AL_FREE(p->name);
 
-	    if (p->data)
-	       _AL_FREE(p->data);
+            if (p->data)
+               _AL_FREE(p->data);
 
-	    if (prev)
-	       prev->next = p->next;
-	    else
-	       the_config->head = p->next;
+            if (prev)
+               prev->next = p->next;
+            else
+               the_config->head = p->next;
 
-	    _AL_FREE(p);
-	 }
+            _AL_FREE(p);
+         }
       }
       else {
-	 if ((val) && (ugetc(val))) {
-	    /* add a new variable */
-	    if (ugetc(section_name)) {
-	       p = find_config_string(the_config, NULL, section_name, &prev);
+         if ((val) && (ugetc(val))) {
+            /* add a new variable */
+            if (ugetc(section_name)) {
+               p = find_config_string(the_config, NULL, section_name, &prev);
 
-	       if (!p) {
-		  /* create a new section */
-		  p = the_config->head;
-		  while ((p) && (p->next))
-		     p = p->next;
+               if (!p) {
+                  /* create a new section */
+                  p = the_config->head;
+                  while ((p) && (p->next))
+                     p = p->next;
 
-		  if ((p) && (p->data) && (ugetc(p->data)))
-		     p = insert_variable(the_config, p, NULL, NULL);
+                  if ((p) && (p->data) && (ugetc(p->data)))
+                     p = insert_variable(the_config, p, NULL, NULL);
 
-		  p = insert_variable(the_config, p, section_name, NULL);
-	       }
+                  p = insert_variable(the_config, p, section_name, NULL);
+               }
 
-	       /* append to the end of the section */
-	       while ((p) && (p->next) && 
-		      (((p->next->name) && (ugetc(p->next->name))) || 
-		       ((p->next->data) && (ugetc(p->next->data)))))
-		  p = p->next;
+               /* append to the end of the section */
+               while ((p) && (p->next) &&
+                      (((p->next->name) && (ugetc(p->next->name))) ||
+                       ((p->next->data) && (ugetc(p->next->data)))))
+                  p = p->next;
 
-	       p = insert_variable(the_config, p, name, val);
-	    }
-	    else {
-	       /* global variable */
-	       p = the_config->head;
-	       insert_variable(the_config, NULL, name, val);
-	       the_config->head->next = p;
-	    }
-	 } 
+               p = insert_variable(the_config, p, name, val);
+            }
+            else {
+               /* global variable */
+               p = the_config->head;
+               insert_variable(the_config, NULL, name, val);
+               the_config->head->next = p;
+            }
+         }
       }
 
       the_config->dirty = TRUE;
@@ -1223,7 +1223,7 @@ void set_config_id(AL_CONST char *section, AL_CONST char *name, int val)
       v[3] = val&0xFF;
 
       for (i=0; (i<4) && (v[i]) && (v[i] != ' '); i++)
-	 pos += usetc(buf+pos, v[i]);
+         pos += usetc(buf+pos, v[i]);
 
       usetc(buf+pos, 0);
    }
@@ -1250,7 +1250,7 @@ void _reload_config(void)
 
 /* reload_config_texts:
  *  Reads in a block of translated system text, looking for either a
- *  user-specified file, a ??text.cfg file, or a language.dat#??TEXT_CFG 
+ *  user-specified file, a ??text.cfg file, or a language.dat#??TEXT_CFG
  *  datafile object. If new_language is not NULL, the language config
  *  variable will be set to new_language before reloading the
  *  configuration files.
@@ -1275,16 +1275,16 @@ void reload_config_texts(AL_CONST char *new_language)
       namecpy = _al_ustrdup(name);
       ustrlwr (namecpy);
       if ((ustrlen(namecpy)<4) || (ustricmp(namecpy+uoffset(namecpy, -4), uconvert_ascii("text", tmp1)) != 0))
-	 ext = uconvert_ascii("text.cfg", tmp1);
+         ext = uconvert_ascii("text.cfg", tmp1);
       else
-	 ext = uconvert_ascii(".cfg", tmp1);
+         ext = uconvert_ascii(".cfg", tmp1);
 
       datafile = uconvert_ascii("language.dat", tmp2);
 
       if (find_allegro_resource(filename, namecpy, ext, datafile, NULL, NULL, NULL, sizeof(filename)) == 0) {
-	 _AL_FREE(namecpy);
-	 load_config_file(&config_language, filename, NULL);
-	 return;
+         _AL_FREE(namecpy);
+         load_config_file(&config_language, filename, NULL);
+         return;
       }
 
       _AL_FREE(namecpy);
@@ -1336,15 +1336,15 @@ AL_CONST char *get_config_text(AL_CONST char *msg)
       size = uconvert_size(msg, U_ASCII, U_CURRENT);
       umsg = _AL_MALLOC_ATOMIC(size);
       if (!umsg) {
-	 *allegro_errno = ENOMEM;
-	 return empty_string;
+         *allegro_errno = ENOMEM;
+         return empty_string;
       }
 
       name = _AL_MALLOC_ATOMIC(size);
       if (!name) {
-	 _AL_FREE((char *)umsg);  /* remove constness */
-	 *allegro_errno = ENOMEM;
-	 return empty_string;
+         _AL_FREE((char *)umsg);  /* remove constness */
+         *allegro_errno = ENOMEM;
+         return empty_string;
       }
 
       do_uconvert(msg, U_ASCII, (char*)umsg, U_CURRENT, size);
@@ -1353,8 +1353,8 @@ AL_CONST char *get_config_text(AL_CONST char *msg)
       umsg = msg;
       name = _AL_MALLOC_ATOMIC(ustrsizez(msg));
       if (!name) {
-	 *allegro_errno = ENOMEM;
-	 return empty_string;
+         *allegro_errno = ENOMEM;
+         return empty_string;
       }
    }
 
@@ -1363,9 +1363,9 @@ AL_CONST char *get_config_text(AL_CONST char *msg)
 
    while ((c = ugetxc(&s)) != 0) {
       if ((uisspace(c)) || (c == '=') || (c == '#'))
-	 pos += usetc(name+pos, '_');
+         pos += usetc(name+pos, '_');
       else
-	 pos += usetc(name+pos, c);
+         pos += usetc(name+pos, c);
    }
 
    usetc(name+pos, 0);
@@ -1375,10 +1375,10 @@ AL_CONST char *get_config_text(AL_CONST char *msg)
 
    while (hook) {
       if (ustricmp(section, hook->section) == 0) {
-	 if (hook->stringgetter) {
-	    ret = hook->stringgetter(name, umsg);
-	    break;
-	 }
+         if (hook->stringgetter) {
+            ret = hook->stringgetter(name, umsg);
+            break;
+         }
       }
 
       hook = hook->next;
@@ -1389,21 +1389,21 @@ AL_CONST char *get_config_text(AL_CONST char *msg)
       p = find_config_string(config_override, section, name, NULL);
 
       if (!p) {
-	 p = find_config_string(config[0], section, name, NULL);
+         p = find_config_string(config[0], section, name, NULL);
 
-	 if (!p)
-	    p = find_config_string(config_language, section, name, NULL);
+         if (!p)
+            p = find_config_string(config_language, section, name, NULL);
       }
 
       if (p) {
-	 ret = (p->data ? p->data : empty_string);
+         ret = (p->data ? p->data : empty_string);
       }
       else {
-	 /* no translation, so store off this value in the file */
-	 p = config_language->head;
-	 insert_variable(config_language, NULL, name, umsg);
-	 config_language->head->next = p;
-	 ret = config_language->head->data;
+         /* no translation, so store off this value in the file */
+         p = config_language->head;
+         insert_variable(config_language, NULL, name, umsg);
+         config_language->head->next = p;
+         ret = config_language->head->data;
       }
    }
 

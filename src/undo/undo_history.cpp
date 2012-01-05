@@ -12,7 +12,7 @@
 #include "undo/undoer.h"
 #include "undo/undoers_stack.h"
 
-#include <allegro/config.h>	// TODO remove this when get_config_int() is removed from here
+#include <allegro/config.h>     // TODO remove this when get_config_int() is removed from here
 
 using namespace undo;
 
@@ -167,9 +167,9 @@ void UndoHistory::runUndo(Direction direction)
     // Adjust m_diffCount (just one time, when the level backs to zero)
     if (level == 0 && itemModification == ModifyDocument) {
       if (direction == UndoDirection)
-	m_diffCount--;
+        m_diffCount--;
       else if (direction == RedoDirection)
-	m_diffCount++;
+        m_diffCount++;
     }
   } while (level);
 }
@@ -262,7 +262,7 @@ int UndoHistory::getUndoSizeLimit()
   // TODO Replace this with the following implementation:
   // * Add the undo limit to UndoHistory class as a normal member (non-static).
   // * Add App signals to listen changes in settings
-  // * Document should listen changes in the undo limit, 
+  // * Document should listen changes in the undo limit,
   // * When a change is produced, Document calls getUndoHistory()->setUndoLimit().
   return (int)get_config_int("Options", "UndoSizeLimit", 8)*1024*1024;
 }

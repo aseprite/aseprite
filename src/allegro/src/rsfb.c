@@ -82,10 +82,10 @@ static int __col;
 
 #define SCANLINE_TRANS_DRAWER8(bits_pp, GETPIXEL)                     \
    static void draw_scanline_trans_##bits_pp(BITMAP *bmp, BITMAP *spr,\
-				       fixed l_bmp_x, int bmp_y_i,    \
-				       fixed r_bmp_x,                 \
-				       fixed l_spr_x, fixed l_spr_y,  \
-				       fixed spr_dx, fixed spr_dy)    \
+                                       fixed l_bmp_x, int bmp_y_i,    \
+                                       fixed r_bmp_x,                 \
+                                       fixed l_spr_x, fixed l_spr_y,  \
+                                       fixed spr_dx, fixed spr_dy)    \
    {                                                                  \
       int c, c2;                                                      \
       uintptr_t addr, end_addr;                                       \
@@ -99,14 +99,14 @@ static int __col;
       end_addr = addr + r_bmp_x * ((bits_pp + 7) / 8);                \
       addr += l_bmp_x * ((bits_pp + 7) / 8);                          \
       for (; addr <= end_addr; addr += ((bits_pp + 7) / 8)) {         \
-	 GETPIXEL;                                                    \
-	 if (c != MASK_COLOR_##bits_pp) {                             \
-	    c2 = bmp_read##bits_pp(addr);                             \
-	    c = DTS_BLEND8(blender, c2, c);                           \
-	    bmp_write##bits_pp(addr, c);                              \
-	 }                                                            \
-	 l_spr_x += spr_dx;                                           \
-	 l_spr_y += spr_dy;                                           \
+         GETPIXEL;                                                    \
+         if (c != MASK_COLOR_##bits_pp) {                             \
+            c2 = bmp_read##bits_pp(addr);                             \
+            c = DTS_BLEND8(blender, c2, c);                           \
+            bmp_write##bits_pp(addr, c);                              \
+         }                                                            \
+         l_spr_x += spr_dx;                                           \
+         l_spr_y += spr_dy;                                           \
       }                                                               \
    }
 
@@ -114,10 +114,10 @@ static int __col;
 
 #define SCANLINE_TRANS_DRAWER15(bits_pp, GETPIXEL)                    \
    static void draw_scanline_trans_##bits_pp(BITMAP *bmp, BITMAP *spr,\
-				       fixed l_bmp_x, int bmp_y_i,    \
-				       fixed r_bmp_x,                 \
-				       fixed l_spr_x, fixed l_spr_y,  \
-				       fixed spr_dx, fixed spr_dy)    \
+                                       fixed l_bmp_x, int bmp_y_i,    \
+                                       fixed r_bmp_x,                 \
+                                       fixed l_spr_x, fixed l_spr_y,  \
+                                       fixed spr_dx, fixed spr_dy)    \
    {                                                                  \
       int c, c2;                                                      \
       uintptr_t addr, end_addr;                                       \
@@ -131,14 +131,14 @@ static int __col;
       end_addr = addr + r_bmp_x * ((bits_pp + 7) / 8);                \
       addr += l_bmp_x * ((bits_pp + 7) / 8);                          \
       for (; addr <= end_addr; addr += ((bits_pp + 7) / 8)) {         \
-	 GETPIXEL;                                                    \
-	 if (c != MASK_COLOR_##bits_pp) {                             \
-	    c2 = bmp_read##bits_pp(addr);                             \
-	    c = DTS_BLEND15(blender, c2, c);                          \
-	    bmp_write##bits_pp(addr, c);                              \
-	 }                                                            \
-	 l_spr_x += spr_dx;                                           \
-	 l_spr_y += spr_dy;                                           \
+         GETPIXEL;                                                    \
+         if (c != MASK_COLOR_##bits_pp) {                             \
+            c2 = bmp_read##bits_pp(addr);                             \
+            c = DTS_BLEND15(blender, c2, c);                          \
+            bmp_write##bits_pp(addr, c);                              \
+         }                                                            \
+         l_spr_x += spr_dx;                                           \
+         l_spr_y += spr_dy;                                           \
       }                                                               \
    }
 
@@ -146,10 +146,10 @@ static int __col;
 
 #define SCANLINE_TRANS_DRAWER16(bits_pp, GETPIXEL)                    \
    static void draw_scanline_trans_##bits_pp(BITMAP *bmp, BITMAP *spr,\
-				       fixed l_bmp_x, int bmp_y_i,    \
-				       fixed r_bmp_x,                 \
-				       fixed l_spr_x, fixed l_spr_y,  \
-				       fixed spr_dx, fixed spr_dy)    \
+                                       fixed l_bmp_x, int bmp_y_i,    \
+                                       fixed r_bmp_x,                 \
+                                       fixed l_spr_x, fixed l_spr_y,  \
+                                       fixed spr_dx, fixed spr_dy)    \
    {                                                                  \
       int c, c2;                                                      \
       uintptr_t addr, end_addr;                                       \
@@ -163,14 +163,14 @@ static int __col;
       end_addr = addr + r_bmp_x * ((bits_pp + 7) / 8);                \
       addr += l_bmp_x * ((bits_pp + 7) / 8);                          \
       for (; addr <= end_addr; addr += ((bits_pp + 7) / 8)) {         \
-	 GETPIXEL;                                                    \
-	 if (c != MASK_COLOR_##bits_pp) {                             \
-	    c2 = bmp_read##bits_pp(addr);                             \
-	    c = DTS_BLEND16(blender, c2, c);                          \
-	    bmp_write##bits_pp(addr, c);                              \
-	 }                                                            \
-	 l_spr_x += spr_dx;                                           \
-	 l_spr_y += spr_dy;                                           \
+         GETPIXEL;                                                    \
+         if (c != MASK_COLOR_##bits_pp) {                             \
+            c2 = bmp_read##bits_pp(addr);                             \
+            c = DTS_BLEND16(blender, c2, c);                          \
+            bmp_write##bits_pp(addr, c);                              \
+         }                                                            \
+         l_spr_x += spr_dx;                                           \
+         l_spr_y += spr_dy;                                           \
       }                                                               \
    }
 
@@ -178,10 +178,10 @@ static int __col;
 
 #define SCANLINE_TRANS_DRAWER24(bits_pp, GETPIXEL)                    \
    static void draw_scanline_trans_##bits_pp(BITMAP *bmp, BITMAP *spr,\
-				       fixed l_bmp_x, int bmp_y_i,    \
-				       fixed r_bmp_x,                 \
-				       fixed l_spr_x, fixed l_spr_y,  \
-				       fixed spr_dx, fixed spr_dy)    \
+                                       fixed l_bmp_x, int bmp_y_i,    \
+                                       fixed r_bmp_x,                 \
+                                       fixed l_spr_x, fixed l_spr_y,  \
+                                       fixed spr_dx, fixed spr_dy)    \
    {                                                                  \
       int c, c2;                                                      \
       uintptr_t addr, end_addr;                                       \
@@ -195,14 +195,14 @@ static int __col;
       end_addr = addr + r_bmp_x * ((bits_pp + 7) / 8);                \
       addr += l_bmp_x * ((bits_pp + 7) / 8);                          \
       for (; addr <= end_addr; addr += ((bits_pp + 7) / 8)) {         \
-	 GETPIXEL;                                                    \
-	 if (c != MASK_COLOR_##bits_pp) {                             \
-	    c2 = bmp_read##bits_pp(addr);                             \
-	    c = DTS_BLEND24(blender, c2, c);                          \
-	    bmp_write##bits_pp(addr, c);                              \
-	 }                                                            \
-	 l_spr_x += spr_dx;                                           \
-	 l_spr_y += spr_dy;                                           \
+         GETPIXEL;                                                    \
+         if (c != MASK_COLOR_##bits_pp) {                             \
+            c2 = bmp_read##bits_pp(addr);                             \
+            c = DTS_BLEND24(blender, c2, c);                          \
+            bmp_write##bits_pp(addr, c);                              \
+         }                                                            \
+         l_spr_x += spr_dx;                                           \
+         l_spr_y += spr_dy;                                           \
       }                                                               \
    }
 
@@ -210,10 +210,10 @@ static int __col;
 
 #define SCANLINE_TRANS_DRAWER32(bits_pp, GETPIXEL)                    \
    static void draw_scanline_trans_##bits_pp(BITMAP *bmp, BITMAP *spr,\
-				       fixed l_bmp_x, int bmp_y_i,    \
-				       fixed r_bmp_x,                 \
-				       fixed l_spr_x, fixed l_spr_y,  \
-				       fixed spr_dx, fixed spr_dy)    \
+                                       fixed l_bmp_x, int bmp_y_i,    \
+                                       fixed r_bmp_x,                 \
+                                       fixed l_spr_x, fixed l_spr_y,  \
+                                       fixed spr_dx, fixed spr_dy)    \
    {                                                                  \
       int c, c2;                                                      \
       uintptr_t addr, end_addr;                                       \
@@ -227,24 +227,24 @@ static int __col;
       end_addr = addr + r_bmp_x * ((bits_pp + 7) / 8);                \
       addr += l_bmp_x * ((bits_pp + 7) / 8);                          \
       for (; addr <= end_addr; addr += ((bits_pp + 7) / 8)) {         \
-	 GETPIXEL;                                                    \
-	 if (c != MASK_COLOR_##bits_pp) {                             \
-	    c2 = bmp_read##bits_pp(addr);                             \
-	    c = DTS_BLEND32(blender, c2, c);                          \
-	    bmp_write##bits_pp(addr, c);                              \
-	 }                                                            \
-	 l_spr_x += spr_dx;                                           \
-	 l_spr_y += spr_dy;                                           \
+         GETPIXEL;                                                    \
+         if (c != MASK_COLOR_##bits_pp) {                             \
+            c2 = bmp_read##bits_pp(addr);                             \
+            c = DTS_BLEND32(blender, c2, c);                          \
+            bmp_write##bits_pp(addr, c);                              \
+         }                                                            \
+         l_spr_x += spr_dx;                                           \
+         l_spr_y += spr_dy;                                           \
       }                                                               \
    }
 
 
 #define SCANLINE_LIT_DRAWER8(bits_pp, GETPIXEL)                       \
    static void draw_scanline_lit_##bits_pp(BITMAP *bmp, BITMAP *spr,  \
-				       fixed l_bmp_x, int bmp_y_i,    \
-				       fixed r_bmp_x,                 \
-				       fixed l_spr_x, fixed l_spr_y,  \
-				       fixed spr_dx, fixed spr_dy)    \
+                                       fixed l_bmp_x, int bmp_y_i,    \
+                                       fixed r_bmp_x,                 \
+                                       fixed l_spr_x, fixed l_spr_y,  \
+                                       fixed spr_dx, fixed spr_dy)    \
    {                                                                  \
       int c;                                                          \
       uintptr_t addr, end_addr;                                       \
@@ -258,13 +258,13 @@ static int __col;
       end_addr = addr + r_bmp_x * ((bits_pp + 7) / 8);                \
       addr += l_bmp_x * ((bits_pp + 7) / 8);                          \
       for (; addr <= end_addr; addr += ((bits_pp + 7) / 8)) {         \
-	 GETPIXEL;                                                    \
-	 if (c != MASK_COLOR_##bits_pp) {                             \
-	    c = DLS_BLEND8(blender, __col, c);                        \
-	    bmp_write##bits_pp(addr, c);                              \
-	 }                                                            \
-	 l_spr_x += spr_dx;                                           \
-	 l_spr_y += spr_dy;                                           \
+         GETPIXEL;                                                    \
+         if (c != MASK_COLOR_##bits_pp) {                             \
+            c = DLS_BLEND8(blender, __col, c);                        \
+            bmp_write##bits_pp(addr, c);                              \
+         }                                                            \
+         l_spr_x += spr_dx;                                           \
+         l_spr_y += spr_dy;                                           \
       }                                                               \
    }
 
@@ -272,10 +272,10 @@ static int __col;
 
 #define SCANLINE_LIT_DRAWER15(bits_pp, GETPIXEL)                      \
    static void draw_scanline_lit_##bits_pp(BITMAP *bmp, BITMAP *spr,  \
-				       fixed l_bmp_x, int bmp_y_i,    \
-				       fixed r_bmp_x,                 \
-				       fixed l_spr_x, fixed l_spr_y,  \
-				       fixed spr_dx, fixed spr_dy)    \
+                                       fixed l_bmp_x, int bmp_y_i,    \
+                                       fixed r_bmp_x,                 \
+                                       fixed l_spr_x, fixed l_spr_y,  \
+                                       fixed spr_dx, fixed spr_dy)    \
    {                                                                  \
       int c;                                                          \
       uintptr_t addr, end_addr;                                       \
@@ -289,13 +289,13 @@ static int __col;
       end_addr = addr + r_bmp_x * ((bits_pp + 7) / 8);                \
       addr += l_bmp_x * ((bits_pp + 7) / 8);                          \
       for (; addr <= end_addr; addr += ((bits_pp + 7) / 8)) {         \
-	 GETPIXEL;                                                    \
-	 if (c != MASK_COLOR_##bits_pp) {                             \
-	    c = DLS_BLEND15(blender, __col, c);                       \
-	    bmp_write##bits_pp(addr, c);                              \
-	 }                                                            \
-	 l_spr_x += spr_dx;                                           \
-	 l_spr_y += spr_dy;                                           \
+         GETPIXEL;                                                    \
+         if (c != MASK_COLOR_##bits_pp) {                             \
+            c = DLS_BLEND15(blender, __col, c);                       \
+            bmp_write##bits_pp(addr, c);                              \
+         }                                                            \
+         l_spr_x += spr_dx;                                           \
+         l_spr_y += spr_dy;                                           \
       }                                                               \
    }
 
@@ -303,10 +303,10 @@ static int __col;
 
 #define SCANLINE_LIT_DRAWER16(bits_pp, GETPIXEL)                      \
    static void draw_scanline_lit_##bits_pp(BITMAP *bmp, BITMAP *spr,  \
-				       fixed l_bmp_x, int bmp_y_i,    \
-				       fixed r_bmp_x,                 \
-				       fixed l_spr_x, fixed l_spr_y,  \
-				       fixed spr_dx, fixed spr_dy)    \
+                                       fixed l_bmp_x, int bmp_y_i,    \
+                                       fixed r_bmp_x,                 \
+                                       fixed l_spr_x, fixed l_spr_y,  \
+                                       fixed spr_dx, fixed spr_dy)    \
    {                                                                  \
       int c;                                                          \
       uintptr_t addr, end_addr;                                       \
@@ -320,13 +320,13 @@ static int __col;
       end_addr = addr + r_bmp_x * ((bits_pp + 7) / 8);                \
       addr += l_bmp_x * ((bits_pp + 7) / 8);                          \
       for (; addr <= end_addr; addr += ((bits_pp + 7) / 8)) {         \
-	 GETPIXEL;                                                    \
-	 if (c != MASK_COLOR_##bits_pp) {                             \
-	    c = DLS_BLEND16(blender, __col, c);                       \
-	    bmp_write##bits_pp(addr, c);                              \
-	 }                                                            \
-	 l_spr_x += spr_dx;                                           \
-	 l_spr_y += spr_dy;                                           \
+         GETPIXEL;                                                    \
+         if (c != MASK_COLOR_##bits_pp) {                             \
+            c = DLS_BLEND16(blender, __col, c);                       \
+            bmp_write##bits_pp(addr, c);                              \
+         }                                                            \
+         l_spr_x += spr_dx;                                           \
+         l_spr_y += spr_dy;                                           \
       }                                                               \
    }
 
@@ -334,10 +334,10 @@ static int __col;
 
 #define SCANLINE_LIT_DRAWER24(bits_pp, GETPIXEL)                      \
    static void draw_scanline_lit_##bits_pp(BITMAP *bmp, BITMAP *spr,  \
-				       fixed l_bmp_x, int bmp_y_i,    \
-				       fixed r_bmp_x,                 \
-				       fixed l_spr_x, fixed l_spr_y,  \
-				       fixed spr_dx, fixed spr_dy)    \
+                                       fixed l_bmp_x, int bmp_y_i,    \
+                                       fixed r_bmp_x,                 \
+                                       fixed l_spr_x, fixed l_spr_y,  \
+                                       fixed spr_dx, fixed spr_dy)    \
    {                                                                  \
       int c;                                                          \
       uintptr_t addr, end_addr;                                       \
@@ -351,13 +351,13 @@ static int __col;
       end_addr = addr + r_bmp_x * ((bits_pp + 7) / 8);                \
       addr += l_bmp_x * ((bits_pp + 7) / 8);                          \
       for (; addr <= end_addr; addr += ((bits_pp + 7) / 8)) {         \
-	 GETPIXEL;                                                    \
-	 if (c != MASK_COLOR_##bits_pp) {                             \
-	    c = DLS_BLEND24(blender, __col, c);                       \
-	    bmp_write##bits_pp(addr, c);                              \
-	 }                                                            \
-	 l_spr_x += spr_dx;                                           \
-	 l_spr_y += spr_dy;                                           \
+         GETPIXEL;                                                    \
+         if (c != MASK_COLOR_##bits_pp) {                             \
+            c = DLS_BLEND24(blender, __col, c);                       \
+            bmp_write##bits_pp(addr, c);                              \
+         }                                                            \
+         l_spr_x += spr_dx;                                           \
+         l_spr_y += spr_dy;                                           \
       }                                                               \
    }
 
@@ -365,10 +365,10 @@ static int __col;
 
 #define SCANLINE_LIT_DRAWER32(bits_pp, GETPIXEL)                      \
    static void draw_scanline_lit_##bits_pp(BITMAP *bmp, BITMAP *spr,  \
-				       fixed l_bmp_x, int bmp_y_i,    \
-				       fixed r_bmp_x,                 \
-				       fixed l_spr_x, fixed l_spr_y,  \
-				       fixed spr_dx, fixed spr_dy)    \
+                                       fixed l_bmp_x, int bmp_y_i,    \
+                                       fixed r_bmp_x,                 \
+                                       fixed l_spr_x, fixed l_spr_y,  \
+                                       fixed spr_dx, fixed spr_dy)    \
    {                                                                  \
       int c;                                                          \
       uintptr_t addr, end_addr;                                       \
@@ -382,13 +382,13 @@ static int __col;
       end_addr = addr + r_bmp_x * ((bits_pp + 7) / 8);                \
       addr += l_bmp_x * ((bits_pp + 7) / 8);                          \
       for (; addr <= end_addr; addr += ((bits_pp + 7) / 8)) {         \
-	 GETPIXEL;                                                    \
-	 if (c != MASK_COLOR_##bits_pp) {                             \
-	    c = DLS_BLEND32(blender, __col, c);                       \
-	    bmp_write##bits_pp(addr, c);                              \
-	 }                                                            \
-	 l_spr_x += spr_dx;                                           \
-	 l_spr_y += spr_dy;                                           \
+         GETPIXEL;                                                    \
+         if (c != MASK_COLOR_##bits_pp) {                             \
+            c = DLS_BLEND32(blender, __col, c);                       \
+            bmp_write##bits_pp(addr, c);                              \
+         }                                                            \
+         l_spr_x += spr_dx;                                           \
+         l_spr_y += spr_dy;                                           \
       }                                                               \
    }
 
@@ -401,60 +401,60 @@ static int __col;
 
 #ifdef ALLEGRO_COLOR16
    SCANLINE_TRANS_DRAWER15(15, c = ((unsigned short *)spr_line[l_spr_y>>16])
-			   [l_spr_x>>16])
+                           [l_spr_x>>16])
    SCANLINE_TRANS_DRAWER16(16, c = ((unsigned short *)spr_line[l_spr_y>>16])
-			   [l_spr_x>>16])
+                           [l_spr_x>>16])
    SCANLINE_LIT_DRAWER15(15, c = ((unsigned short *)spr_line[l_spr_y>>16])
-			   [l_spr_x>>16])
+                           [l_spr_x>>16])
    SCANLINE_LIT_DRAWER16(16, c = ((unsigned short *)spr_line[l_spr_y>>16])
-			   [l_spr_x>>16])
+                           [l_spr_x>>16])
 #endif
 
 #ifdef ALLEGRO_COLOR24
    #ifdef ALLEGRO_LITTLE_ENDIAN
       SCANLINE_TRANS_DRAWER24(24,
-		      {
-			 unsigned char *p = spr_line[l_spr_y>>16] +
-						(l_spr_x>>16) * 3;
-			 c = p[0];
-			 c |= (int)p[1] << 8;
-			 c |= (int)p[2] << 16;
-		      })
+                      {
+                         unsigned char *p = spr_line[l_spr_y>>16] +
+                                                (l_spr_x>>16) * 3;
+                         c = p[0];
+                         c |= (int)p[1] << 8;
+                         c |= (int)p[2] << 16;
+                      })
       SCANLINE_LIT_DRAWER24(24,
-		      {
-			 unsigned char *p = spr_line[l_spr_y>>16] +
-						(l_spr_x>>16) * 3;
-			 c = p[0];
-			 c |= (int)p[1] << 8;
-			 c |= (int)p[2] << 16;
-		      })
+                      {
+                         unsigned char *p = spr_line[l_spr_y>>16] +
+                                                (l_spr_x>>16) * 3;
+                         c = p[0];
+                         c |= (int)p[1] << 8;
+                         c |= (int)p[2] << 16;
+                      })
    #else
       SCANLINE_TRANS_DRAWER24(24,
-		      {
-			 unsigned char *p = spr_line[l_spr_y>>16] +
-					    (l_spr_x>>16) * 3;
-			 c = (int)p[0] << 16;
-			 c |= (int)p[1] << 8;
-			 c |= p[2];
-		      })
+                      {
+                         unsigned char *p = spr_line[l_spr_y>>16] +
+                                            (l_spr_x>>16) * 3;
+                         c = (int)p[0] << 16;
+                         c |= (int)p[1] << 8;
+                         c |= p[2];
+                      })
       SCANLINE_LIT_DRAWER24(24,
-		      {
-			 unsigned char *p = spr_line[l_spr_y>>16] +
-					    (l_spr_x>>16) * 3;
-			 c = (int)p[0] << 16;
-			 c |= (int)p[1] << 8;
-			 c |= p[2];
-		      })
+                      {
+                         unsigned char *p = spr_line[l_spr_y>>16] +
+                                            (l_spr_x>>16) * 3;
+                         c = (int)p[0] << 16;
+                         c |= (int)p[1] << 8;
+                         c |= p[2];
+                      })
    #endif
 #endif
 
 #ifdef ALLEGRO_COLOR32
    SCANLINE_TRANS_DRAWER32(32,
-		   c = ((uint32_t *)spr_line[l_spr_y>>16])
-		       [l_spr_x>>16])
+                   c = ((uint32_t *)spr_line[l_spr_y>>16])
+                       [l_spr_x>>16])
    SCANLINE_LIT_DRAWER32(32,
-		   c = ((uint32_t *)spr_line[l_spr_y>>16])
-		       [l_spr_x>>16])
+                   c = ((uint32_t *)spr_line[l_spr_y>>16])
+                       [l_spr_x>>16])
 #endif
 
 /* _parallelogram_map_standard_trans:
@@ -464,46 +464,46 @@ static int __col;
  *  your own scanline drawer, eg. for anti-aliased rotations.
  */
 static void _parallelogram_map_standard_trans(BITMAP *bmp, BITMAP *sprite,
-				 fixed xs[4], fixed ys[4])
+                                 fixed xs[4], fixed ys[4])
 {
    if (is_linear_bitmap(bmp)) {
       switch (bitmap_color_depth(bmp)) {
-	 #ifdef ALLEGRO_COLOR8
-	    case 8:
-	       _parallelogram_map(bmp, sprite, xs, ys,
-				  draw_scanline_trans_8, FALSE);
-	       break;
-	 #endif
+         #ifdef ALLEGRO_COLOR8
+            case 8:
+               _parallelogram_map(bmp, sprite, xs, ys,
+                                  draw_scanline_trans_8, FALSE);
+               break;
+         #endif
 
-	 #ifdef ALLEGRO_COLOR16
-	    case 15:
-	       _parallelogram_map(bmp, sprite, xs, ys,
-				  draw_scanline_trans_15, FALSE);
-	       break;
+         #ifdef ALLEGRO_COLOR16
+            case 15:
+               _parallelogram_map(bmp, sprite, xs, ys,
+                                  draw_scanline_trans_15, FALSE);
+               break;
 
-	    case 16:
-	       _parallelogram_map(bmp, sprite, xs, ys,
-				  draw_scanline_trans_16, FALSE);
-	       break;
-	 #endif
+            case 16:
+               _parallelogram_map(bmp, sprite, xs, ys,
+                                  draw_scanline_trans_16, FALSE);
+               break;
+         #endif
 
-	 #ifdef ALLEGRO_COLOR24
-	    case 24:
-	       _parallelogram_map(bmp, sprite, xs, ys,
-				  draw_scanline_trans_24, FALSE);
-	       break;
-	 #endif
+         #ifdef ALLEGRO_COLOR24
+            case 24:
+               _parallelogram_map(bmp, sprite, xs, ys,
+                                  draw_scanline_trans_24, FALSE);
+               break;
+         #endif
 
-	 #ifdef ALLEGRO_COLOR32
-	    case 32:
-	       _parallelogram_map(bmp, sprite, xs, ys,
-				  draw_scanline_trans_32, FALSE);
-	       break;
-	 #endif
+         #ifdef ALLEGRO_COLOR32
+            case 32:
+               _parallelogram_map(bmp, sprite, xs, ys,
+                                  draw_scanline_trans_32, FALSE);
+               break;
+         #endif
 
-	 default:
-	    /* NOTREACHED */
-	    ASSERT(0);
+         default:
+            /* NOTREACHED */
+            ASSERT(0);
       }
    }
 }
@@ -516,48 +516,48 @@ static void _parallelogram_map_standard_trans(BITMAP *bmp, BITMAP *sprite,
  *  your own scanline drawer, eg. for anti-aliased rotations.
  */
 static void _parallelogram_map_standard_lit(BITMAP *bmp, BITMAP *sprite,
-				 fixed xs[4], fixed ys[4], int color)
+                                 fixed xs[4], fixed ys[4], int color)
 {
    __col = color;
 
    if (is_linear_bitmap(bmp)) {
       switch (bitmap_color_depth(bmp)) {
-	 #ifdef ALLEGRO_COLOR8
-	    case 8:
-	       _parallelogram_map(bmp, sprite, xs, ys,
-				  draw_scanline_lit_8, FALSE);
-	       break;
-	 #endif
+         #ifdef ALLEGRO_COLOR8
+            case 8:
+               _parallelogram_map(bmp, sprite, xs, ys,
+                                  draw_scanline_lit_8, FALSE);
+               break;
+         #endif
 
-	 #ifdef ALLEGRO_COLOR16
-	    case 15:
-	       _parallelogram_map(bmp, sprite, xs, ys,
-				  draw_scanline_lit_15, FALSE);
-	       break;
+         #ifdef ALLEGRO_COLOR16
+            case 15:
+               _parallelogram_map(bmp, sprite, xs, ys,
+                                  draw_scanline_lit_15, FALSE);
+               break;
 
-	    case 16:
-	       _parallelogram_map(bmp, sprite, xs, ys,
-				  draw_scanline_lit_16, FALSE);
-	       break;
-	 #endif
+            case 16:
+               _parallelogram_map(bmp, sprite, xs, ys,
+                                  draw_scanline_lit_16, FALSE);
+               break;
+         #endif
 
-	 #ifdef ALLEGRO_COLOR24
-	    case 24:
-	       _parallelogram_map(bmp, sprite, xs, ys,
-				  draw_scanline_lit_24, FALSE);
-	       break;
-	 #endif
+         #ifdef ALLEGRO_COLOR24
+            case 24:
+               _parallelogram_map(bmp, sprite, xs, ys,
+                                  draw_scanline_lit_24, FALSE);
+               break;
+         #endif
 
-	 #ifdef ALLEGRO_COLOR32
-	    case 32:
-	       _parallelogram_map(bmp, sprite, xs, ys,
-				  draw_scanline_lit_32, FALSE);
-	       break;
-	 #endif
+         #ifdef ALLEGRO_COLOR32
+            case 32:
+               _parallelogram_map(bmp, sprite, xs, ys,
+                                  draw_scanline_lit_32, FALSE);
+               break;
+         #endif
 
-	 default:
-	    /* NOTREACHED */
-	    ASSERT(0);
+         default:
+            /* NOTREACHED */
+            ASSERT(0);
       }
    }
 }
@@ -568,14 +568,14 @@ static void _parallelogram_map_standard_lit(BITMAP *bmp, BITMAP *sprite,
  *  scales, etc.
  */
 static void _pivot_scaled_sprite_flip_trans(BITMAP *bmp, BITMAP *sprite,
-			       fixed x, fixed y, fixed cx, fixed cy,
-			       fixed angle, fixed scale, int v_flip)
+                               fixed x, fixed y, fixed cx, fixed cy,
+                               fixed angle, fixed scale, int v_flip)
 {
    fixed xs[4], ys[4];
 
    _rotate_scale_flip_coordinates(sprite->w << 16, sprite->h << 16,
-				  x, y, cx, cy, angle, scale, scale,
-				  FALSE, v_flip, xs, ys);
+                                  x, y, cx, cy, angle, scale, scale,
+                                  FALSE, v_flip, xs, ys);
 
    _parallelogram_map_standard_trans(bmp, sprite, xs, ys);
 }
@@ -586,15 +586,15 @@ static void _pivot_scaled_sprite_flip_trans(BITMAP *bmp, BITMAP *sprite,
  *  scales, etc.
  */
 static void _pivot_scaled_sprite_flip_lit(BITMAP *bmp, BITMAP *sprite,
-			       fixed x, fixed y, fixed cx, fixed cy,
-			       fixed angle, fixed scale, int v_flip,
-			       int color)
+                               fixed x, fixed y, fixed cx, fixed cy,
+                               fixed angle, fixed scale, int v_flip,
+                               int color)
 {
    fixed xs[4], ys[4];
 
    _rotate_scale_flip_coordinates(sprite->w << 16, sprite->h << 16,
-				  x, y, cx, cy, angle, scale, scale,
-				  FALSE, v_flip, xs, ys);
+                                  x, y, cx, cy, angle, scale, scale,
+                                  FALSE, v_flip, xs, ys);
 
    _parallelogram_map_standard_lit(bmp, sprite, xs, ys, color);
 }
@@ -766,4 +766,3 @@ void pivot_scaled_sprite_v_flip_lit(BITMAP *bmp, BITMAP *sprite, int x, int y, i
 
    _pivot_scaled_sprite_flip_lit(bmp, sprite, x<<16, y<<16, cx<<16, cy<<16, angle, scale, TRUE, color);
 }
-

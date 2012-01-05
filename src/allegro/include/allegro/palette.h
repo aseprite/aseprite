@@ -38,5 +38,3 @@ typedef RGB PALETTE[PAL_SIZE];
 #endif
 
 #endif          /* ifndef ALLEGRO_PALETTE_H */
-
-

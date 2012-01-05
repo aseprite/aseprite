@@ -5,7 +5,7 @@
 // read LICENSE.txt for more information.
 
 /***********************************************************************
- 
+
   Alert format:
   ------------
 
@@ -45,7 +45,7 @@ Alert::Alert()
 
 AlertPtr Alert::create(const char* format, ...)
 {
-  char buf[4096];		// TODO warning buffer overflow
+  char buf[4096];               // TODO warning buffer overflow
   va_list ap;
 
   // Process arguments
@@ -66,7 +66,7 @@ AlertPtr Alert::create(const char* format, ...)
 // static
 int Alert::show(const char* format, ...)
 {
-  char buf[4096];		// TODO warning buffer overflow
+  char buf[4096];               // TODO warning buffer overflow
   va_list ap;
 
   // Process arguments
@@ -89,8 +89,8 @@ int Alert::show(const char* format, ...)
   if (Widget* killer = window->get_killer()) {
     for (int i=0; i<(int)buttons.size(); ++i) {
       if (killer == buttons[i]) {
-	ret = i+1;
-	break;
+        ret = i+1;
+        break;
       }
     }
   }
@@ -116,58 +116,58 @@ void Alert::processString(char* buf, std::vector<Widget*>& labels, std::vector<W
   beg = buf;
   for (; ; c++) {
     if ((!buf[c]) ||
-	((buf[c] == buf[c+1]) &&
-	 ((buf[c] == '<') ||
-	  (buf[c] == '=') ||
-	  (buf[c] == '>') ||
-	  (buf[c] == '-') ||
-	  (buf[c] == '|')))) {
+        ((buf[c] == buf[c+1]) &&
+         ((buf[c] == '<') ||
+          (buf[c] == '=') ||
+          (buf[c] == '>') ||
+          (buf[c] == '-') ||
+          (buf[c] == '|')))) {
       if (title || label || separator || button) {
-	chr = buf[c];
-	buf[c] = 0;
+        chr = buf[c];
+        buf[c] = 0;
 
-	if (title) {
-	  setText(beg);
-	}
-	else if (label) {
-	  Label* label = new Label(beg);
-	  label->setAlign(align);
-	  labels.push_back(label);
-	}
-	else if (separator) {
-	  labels.push_back(ji_separator_new(NULL, JI_HORIZONTAL));
-	}
-	else if (button) {
-	  char button_name[256];
-	  Button* button_widget = new Button(beg);
-	  jwidget_set_min_size(button_widget, 60*jguiscale(), 0);
-	  buttons.push_back(button_widget);
+        if (title) {
+          setText(beg);
+        }
+        else if (label) {
+          Label* label = new Label(beg);
+          label->setAlign(align);
+          labels.push_back(label);
+        }
+        else if (separator) {
+          labels.push_back(ji_separator_new(NULL, JI_HORIZONTAL));
+        }
+        else if (button) {
+          char button_name[256];
+          Button* button_widget = new Button(beg);
+          jwidget_set_min_size(button_widget, 60*jguiscale(), 0);
+          buttons.push_back(button_widget);
 
-	  usprintf(button_name, "button-%d", buttons.size());
-	  button_widget->setName(button_name);
-	  button_widget->Click.connect(Bind<void>(&Frame::closeWindow, this, button_widget));
-	}
+          usprintf(button_name, "button-%d", buttons.size());
+          button_widget->setName(button_name);
+          button_widget->Click.connect(Bind<void>(&Frame::closeWindow, this, button_widget));
+        }
 
-	buf[c] = chr;
+        buf[c] = chr;
       }
 
       /* done */
       if (!buf[c])
-	break;
+        break;
       /* next widget */
       else {
-	title = label = separator = button = false;
-	beg = buf+c+2;
-	align = 0;
+        title = label = separator = button = false;
+        beg = buf+c+2;
+        align = 0;
 
-	switch (buf[c]) {
-	  case '<': label=true; align=JI_LEFT; break;
-	  case '=': label=true; align=JI_CENTER; break;
-	  case '>': label=true; align=JI_RIGHT; break;
-	  case '-': separator=true; break;
-	  case '|': button=true; break;
-	}
-	c++;
+        switch (buf[c]) {
+          case '<': label=true; align=JI_LEFT; break;
+          case '=': label=true; align=JI_CENTER; break;
+          case '>': label=true; align=JI_RIGHT; break;
+          case '-': separator=true; break;
+          case '|': button=true; break;
+        }
+        c++;
       }
     }
   }
@@ -194,10 +194,10 @@ void Alert::processString(char* buf, std::vector<Widget*>& labels, std::vector<W
 
   addChild(box1);
 
-  box1->addChild(box4);	// Filler
-  box1->addChild(box2);	// Labels
-  box1->addChild(box5);	// Filler
-  box1->addChild(grid);	// Buttons
+  box1->addChild(box4); // Filler
+  box1->addChild(box2); // Labels
+  box1->addChild(box5); // Filler
+  box1->addChild(grid); // Buttons
 
   grid->addChildInCell(box3, 1, 1, JI_CENTER | JI_BOTTOM);
 

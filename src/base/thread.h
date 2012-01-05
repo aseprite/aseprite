@@ -7,7 +7,7 @@
 #ifndef BASE_THREAD_H_INCLUDED
 #define BASE_THREAD_H_INCLUDED
 
-namespace base {		// Based on C++0x threads lib
+namespace base {                // Based on C++0x threads lib
 
   class thread {
   public:
@@ -92,7 +92,7 @@ namespace base {		// Based on C++0x threads lib
     void sleep_for(int milliseconds);
   }
 
-  // This class joins the thread in its destructor. 
+  // This class joins the thread in its destructor.
   class thread_guard {
     thread& m_thread;
   public:
@@ -100,7 +100,7 @@ namespace base {		// Based on C++0x threads lib
     ~thread_guard()
     {
       if (m_thread.joinable())
-	m_thread.join();
+        m_thread.join();
     }
   };
 

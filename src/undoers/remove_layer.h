@@ -49,4 +49,4 @@ private:
 
 } // namespace undoers
 
-#endif	// UNDOERS_REMOVE_LAYER_H_INCLUDED
+#endif  // UNDOERS_REMOVE_LAYER_H_INCLUDED

@@ -22,14 +22,14 @@
 class Image;
 
 void image_scale(Image* dst, Image* src,
-		 int x, int y, int w, int h);
+                 int x, int y, int w, int h);
 
 void image_rotate(Image* dst, Image* src,
-		  int x, int y, int w, int h,
-		  int cx, int cy, double angle);
+                  int x, int y, int w, int h,
+                  int cx, int cy, double angle);
 
 void image_parallelogram(Image* bmp, Image* sprite,
-			 int x1, int y1, int x2, int y2,
-			 int x3, int y3, int x4, int y4);
+                         int x1, int y1, int x2, int y2,
+                         int x3, int y3, int x4, int y4);
 
 #endif

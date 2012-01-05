@@ -1,6 +1,6 @@
-/*         ______   ___    ___ 
- *        /\  _  \ /\_ \  /\_ \ 
- *        \ \ \L\ \\//\ \ \//\ \      __     __   _ __   ___ 
+/*         ______   ___    ___
+ *        /\  _  \ /\_ \  /\_ \
+ *        \ \ \L\ \\//\ \ \//\ \      __     __   _ __   ___
  *         \ \  __ \ \ \ \  \ \ \   /'__`\ /'_ `\/\`'__\/ __`\
  *          \ \ \/\ \ \_\ \_ \_\ \_/\  __//\ \L\ \ \ \//\ \L\ \
  *           \ \_\ \_\/\____\/\____\ \____\ \____ \ \_\\ \____/
@@ -168,8 +168,8 @@ unsigned long _blender_add24(unsigned long x, unsigned long y, unsigned long n)
 unsigned long _blender_burn24(unsigned long x, unsigned long y, unsigned long n)
 {
    return BLEND(24, MAX(getr24(x) - getr24(y), 0),
-		    MAX(getg24(x) - getg24(y), 0),
-		    MAX(getb24(x) - getb24(y), 0));
+                    MAX(getg24(x) - getg24(y), 0),
+                    MAX(getb24(x) - getb24(y), 0));
 }
 
 
@@ -202,8 +202,8 @@ unsigned long _blender_color24(unsigned long x, unsigned long y, unsigned long n
 unsigned long _blender_difference24(unsigned long x, unsigned long y, unsigned long n)
 {
    return BLEND(24, ABS(getr24(y) - getr24(x)),
-		    ABS(getg24(y) - getg24(x)),
-		    ABS(getb24(y) - getb24(x)));
+                    ABS(getg24(y) - getg24(x)),
+                    ABS(getb24(y) - getb24(x)));
 }
 
 
@@ -227,8 +227,8 @@ unsigned long _blender_dissolve24(unsigned long x, unsigned long y, unsigned lon
 unsigned long _blender_dodge24(unsigned long x, unsigned long y, unsigned long n)
 {
    return BLEND(24, getr24(x) + (getr24(y) * n / 256),
-		    getg24(x) + (getg24(y) * n / 256),
-		    getb24(x) + (getb24(y) * n / 256));
+                    getg24(x) + (getg24(y) * n / 256),
+                    getb24(x) + (getb24(y) * n / 256));
 }
 
 
@@ -290,9 +290,9 @@ unsigned long _blender_luminance24(unsigned long x, unsigned long y, unsigned lo
  */
 unsigned long _blender_multiply24(unsigned long x, unsigned long y, unsigned long n)
 {
-   return BLEND(24, getr24(x) * getr24(y) / 256, 
-		    getg24(x) * getg24(y) / 256, 
-		    getb24(x) * getb24(y) / 256);
+   return BLEND(24, getr24(x) * getr24(y) / 256,
+                    getg24(x) * getg24(y) / 256,
+                    getb24(x) * getb24(y) / 256);
 }
 
 
@@ -324,8 +324,8 @@ unsigned long _blender_saturation24(unsigned long x, unsigned long y, unsigned l
 unsigned long _blender_screen24(unsigned long x, unsigned long y, unsigned long n)
 {
    return BLEND(24, 255 - ((255 - getr24(x)) * (255 - getr24(y))) / 256,
-		    255 - ((255 - getg24(x)) * (255 - getg24(y))) / 256,
-		    255 - ((255 - getb24(x)) * (255 - getb24(y))) / 256);
+                    255 - ((255 - getg24(x)) * (255 - getg24(y))) / 256,
+                    255 - ((255 - getb24(x)) * (255 - getb24(y))) / 256);
 }
 
 
@@ -455,8 +455,8 @@ unsigned long _blender_add16(unsigned long x, unsigned long y, unsigned long n)
 unsigned long _blender_burn16(unsigned long x, unsigned long y, unsigned long n)
 {
    return BLEND(16, MAX(getr16(x) - getr16(y), 0),
-		    MAX(getg16(x) - getg16(y), 0),
-		    MAX(getb16(x) - getb16(y), 0));
+                    MAX(getg16(x) - getg16(y), 0),
+                    MAX(getb16(x) - getb16(y), 0));
 }
 
 
@@ -489,8 +489,8 @@ unsigned long _blender_color16(unsigned long x, unsigned long y, unsigned long n
 unsigned long _blender_difference16(unsigned long x, unsigned long y, unsigned long n)
 {
    return BLEND(16, ABS(getr16(y) - getr16(x)),
-		    ABS(getg16(y) - getg16(x)),
-		    ABS(getb16(y) - getb16(x)));
+                    ABS(getg16(y) - getg16(x)),
+                    ABS(getb16(y) - getb16(x)));
 }
 
 
@@ -514,8 +514,8 @@ unsigned long _blender_dissolve16(unsigned long x, unsigned long y, unsigned lon
 unsigned long _blender_dodge16(unsigned long x, unsigned long y, unsigned long n)
 {
    return BLEND(16, getr16(x) + (getr16(y) * n / 256),
-		    getg16(x) + (getg16(y) * n / 256),
-		    getb16(x) + (getb16(y) * n / 256));
+                    getg16(x) + (getg16(y) * n / 256),
+                    getb16(x) + (getb16(y) * n / 256));
 }
 
 
@@ -577,9 +577,9 @@ unsigned long _blender_luminance16(unsigned long x, unsigned long y, unsigned lo
  */
 unsigned long _blender_multiply16(unsigned long x, unsigned long y, unsigned long n)
 {
-   return BLEND(16, getr16(x) * getr16(y) / 256, 
-		    getg16(x) * getg16(y) / 256, 
-		    getb16(x) * getb16(y) / 256);
+   return BLEND(16, getr16(x) * getr16(y) / 256,
+                    getg16(x) * getg16(y) / 256,
+                    getb16(x) * getb16(y) / 256);
 }
 
 
@@ -611,8 +611,8 @@ unsigned long _blender_saturation16(unsigned long x, unsigned long y, unsigned l
 unsigned long _blender_screen16(unsigned long x, unsigned long y, unsigned long n)
 {
    return BLEND(16, 255 - ((255 - getr16(x)) * (255 - getr16(y))) / 256,
-		    255 - ((255 - getg16(x)) * (255 - getg16(y))) / 256,
-		    255 - ((255 - getb16(x)) * (255 - getb16(y))) / 256);
+                    255 - ((255 - getg16(x)) * (255 - getg16(y))) / 256,
+                    255 - ((255 - getb16(x)) * (255 - getb16(y))) / 256);
 }
 
 
@@ -735,8 +735,8 @@ unsigned long _blender_add15(unsigned long x, unsigned long y, unsigned long n)
 unsigned long _blender_burn15(unsigned long x, unsigned long y, unsigned long n)
 {
    return BLEND(15, MAX(getr15(x) - getr15(y), 0),
-		    MAX(getg15(x) - getg15(y), 0),
-		    MAX(getb15(x) - getb15(y), 0));
+                    MAX(getg15(x) - getg15(y), 0),
+                    MAX(getb15(x) - getb15(y), 0));
 }
 
 
@@ -769,8 +769,8 @@ unsigned long _blender_color15(unsigned long x, unsigned long y, unsigned long n
 unsigned long _blender_difference15(unsigned long x, unsigned long y, unsigned long n)
 {
    return BLEND(15, ABS(getr15(y) - getr15(x)),
-		    ABS(getg15(y) - getg15(x)),
-		    ABS(getb15(y) - getb15(x)));
+                    ABS(getg15(y) - getg15(x)),
+                    ABS(getb15(y) - getb15(x)));
 }
 
 
@@ -794,8 +794,8 @@ unsigned long _blender_dissolve15(unsigned long x, unsigned long y, unsigned lon
 unsigned long _blender_dodge15(unsigned long x, unsigned long y, unsigned long n)
 {
    return BLEND(15, getr15(x) + (getr15(y) * n / 256),
-		    getg15(x) + (getg15(y) * n / 256),
-		    getb15(x) + (getb15(y) * n / 256));
+                    getg15(x) + (getg15(y) * n / 256),
+                    getb15(x) + (getb15(y) * n / 256));
 }
 
 
@@ -857,9 +857,9 @@ unsigned long _blender_luminance15(unsigned long x, unsigned long y, unsigned lo
  */
 unsigned long _blender_multiply15(unsigned long x, unsigned long y, unsigned long n)
 {
-   return BLEND(15, getr15(x) * getr15(y) / 256, 
-		    getg15(x) * getg15(y) / 256, 
-		    getb15(x) * getb15(y) / 256);
+   return BLEND(15, getr15(x) * getr15(y) / 256,
+                    getg15(x) * getg15(y) / 256,
+                    getb15(x) * getb15(y) / 256);
 }
 
 
@@ -891,8 +891,8 @@ unsigned long _blender_saturation15(unsigned long x, unsigned long y, unsigned l
 unsigned long _blender_screen15(unsigned long x, unsigned long y, unsigned long n)
 {
    return BLEND(15, 255 - ((255 - getr15(x)) * (255 - getr15(y))) / 256,
-		    255 - ((255 - getg15(x)) * (255 - getg15(y))) / 256,
-		    255 - ((255 - getb15(x)) * (255 - getb15(y))) / 256);
+                    255 - ((255 - getg15(x)) * (255 - getg15(y))) / 256,
+                    255 - ((255 - getb15(x)) * (255 - getb15(y))) / 256);
 }
 
 
@@ -923,9 +923,9 @@ unsigned long _blender_screen15(unsigned long x, unsigned long y, unsigned long 
       if (gfx_driver && gfx_driver->set_blender_mode)          \
          gfx_driver->set_blender_mode(blender_mode_##name, r, g, b, a);\
       set_blender_mode(BF16(_blender_##name##15),              \
-		       BF16(_blender_##name##16),              \
-		       BF24(_blender_##name##24),              \
-		       r, g, b, a);                            \
+                       BF16(_blender_##name##16),              \
+                       BF24(_blender_##name##24),              \
+                       r, g, b, a);                            \
    }
 
 
@@ -969,19 +969,19 @@ void set_alpha_blender(void)
 
       /* decide which 15 bit blender to use */
       if ((_rgb_r_shift_15 == r*10) && (_rgb_g_shift_15 == 5) && (_rgb_b_shift_15 == b*10))
-	 f15 = _blender_alpha15_rgb;
+         f15 = _blender_alpha15_rgb;
       else if ((_rgb_r_shift_15 == b*10) && (_rgb_g_shift_15 == 5) && (_rgb_b_shift_15 == r*10))
-	 f15 = _blender_alpha15_bgr;
+         f15 = _blender_alpha15_bgr;
       else
-	 f15 = _blender_alpha15;
+         f15 = _blender_alpha15;
 
       /* decide which 16 bit blender to use */
       if ((_rgb_r_shift_16 == r*11) && (_rgb_g_shift_16 == 5) && (_rgb_b_shift_16 == b*11))
-	 f16 = _blender_alpha16_rgb;
+         f16 = _blender_alpha16_rgb;
       else if ((_rgb_r_shift_16 == b*11) && (_rgb_g_shift_16 == 5) && (_rgb_b_shift_16 == r*11))
-	 f16 = _blender_alpha16_bgr;
+         f16 = _blender_alpha16_bgr;
       else
-	 f16 = _blender_alpha16;
+         f16 = _blender_alpha16;
 
    #else
 
@@ -995,11 +995,11 @@ void set_alpha_blender(void)
 
       /* decide which 24 bit blender to use */
       if ((_rgb_r_shift_24 == r*16) && (_rgb_g_shift_24 == 8) && (_rgb_b_shift_24 == b*16))
-	 f24 = _blender_alpha32;
+         f24 = _blender_alpha32;
       else if ((_rgb_r_shift_24 == b*16) && (_rgb_g_shift_24 == 8) && (_rgb_b_shift_24 == r*16))
-	 f24 = _blender_alpha24_bgr;
+         f24 = _blender_alpha24_bgr;
       else
-	 f24 = _blender_alpha24;
+         f24 = _blender_alpha24;
 
    #else
 
@@ -1015,7 +1015,7 @@ void set_alpha_blender(void)
    #endif
 
    set_blender_mode_ex(_blender_black, _blender_black, _blender_black,
-		       f32, f15, f16, f24, 0, 0, 0, 0);
+                       f32, f15, f16, f24, 0, 0, 0, 0);
 }
 
 
@@ -1048,8 +1048,7 @@ void set_write_alpha_blender(void)
    #endif
 
    set_blender_mode_ex(_blender_black, _blender_black, _blender_black,
-		       f32, 
-		       _blender_black, _blender_black, _blender_black,
-		       0, 0, 0, 0);
+                       f32,
+                       _blender_black, _blender_black, _blender_black,
+                       0, 0, 0, 0);
 }
-

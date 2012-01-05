@@ -72,5 +72,3 @@ AL_FUNC(int, transpose_font, (FONT *f, int drange));
 #endif
 
 #endif          /* ifndef ALLEGRO_FONT_H */
-
-
