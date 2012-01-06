@@ -57,7 +57,7 @@ public:
 
   void dropImageTemporarily();
   void dropImage();
-  bool isDragging();
+  bool isDragging() const;
 
   gfx::Rect getImageBounds();
 

@@ -363,7 +363,7 @@ void PixelsMovement::dropImage()
   }
 }
 
-bool PixelsMovement::isDragging()
+bool PixelsMovement::isDragging() const
 {
   return m_isDragging;
 }
