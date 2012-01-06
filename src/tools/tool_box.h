@@ -29,6 +29,10 @@ class TiXmlElement;
 
 namespace tools {
 
+namespace WellKnownTools {
+  extern const char* RectangularMarquee;
+};
+
 typedef std::list<Tool*> ToolList;
 typedef ToolList::iterator ToolIterator;
 typedef ToolList::const_iterator ToolConstIterator;

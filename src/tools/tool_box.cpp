@@ -45,6 +45,8 @@ using namespace tools;
 #include "tools/intertwiners.h"
 #include "tools/point_shapes.h"
 
+const char* WellKnownTools::RectangularMarquee = "rectangular_marquee";
+
 //////////////////////////////////////////////////////////////////////
 
 ToolBox::ToolBox()

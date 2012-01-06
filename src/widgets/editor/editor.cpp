@@ -38,6 +38,9 @@
 #include "raster/raster.h"
 #include "settings/settings.h"
 #include "skin/skin_theme.h"
+#include "tools/ink.h"
+#include "tools/tool.h"
+#include "tools/tool_box.h"
 #include "ui_context.h"
 #include "util/boundary.h"
 #include "util/misc.h"
@@ -49,6 +52,7 @@
 #include "widgets/editor/pixels_movement.h"
 #include "widgets/editor/standby_state.h"
 #include "widgets/statebar.h"
+#include "widgets/toolbar.h"
 
 #include <allegro.h>
 #include <stdio.h>
@@ -1157,6 +1161,18 @@ void Editor::setZoomAndCenterInMouse(int zoom, int mouse_x, int mouse_y)
 
 void Editor::pasteImage(const Image* image, int x, int y)
 {
+  // Change to a selection tool: it's necessary for PixelsMovement
+  // which will use the extra cel for transformation preview, and is
+  // not compatible with the drawing cursor preview which overwrite
+  // the extra cel.
+  tools::Tool* currentTool = getCurrentEditorTool();
+  if (!currentTool->getInk(0)->isSelection()) {
+    tools::Tool* defaultSelectionTool =
+      App::instance()->getToolBox()->getToolById(tools::WellKnownTools::RectangularMarquee);
+
+    toolbar_select_tool(app_get_toolbar(), defaultSelectionTool);
+  }
+
   Document* document = getDocument();
   int opacity = 255;
   Sprite* sprite = getSprite();
