@@ -23,6 +23,7 @@
 #include "gfx/transformation.h"
 #include "widgets/editor/editor_decorator.h"
 #include "widgets/editor/editor_state.h"
+#include "widgets/editor/handle_type.h"
 
 class TransformHandles;
 
@@ -68,6 +69,8 @@ protected:
   };
 
 private:
+  void transformSelection(Editor* editor, Message* msg, HandleType handle);
+
   Decorator* m_decorator;
 };
 

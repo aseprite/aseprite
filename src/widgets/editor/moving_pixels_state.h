@@ -31,8 +31,7 @@ class PixelsMovement;
 class MovingPixelsState : public StandbyState, StatusBarListener
 {
 public:
-  MovingPixelsState(Editor* editor, Message* msg, Image* imge, int x, int y, int opacity,
-                    HandleType handle);
+  MovingPixelsState(Editor* editor, Message* msg, PixelsMovement* pixelsMovement, HandleType handle);
   virtual ~MovingPixelsState();
 
   virtual bool onBeforeChangeState(Editor* editor) OVERRIDE;

@@ -32,7 +32,6 @@
 #include "raster/sprite.h"
 #include "tools/ink.h"
 #include "tools/tool.h"
-#include "util/misc.h"
 #include "widgets/editor/editor.h"
 #include "widgets/editor/editor_customization_delegate.h"
 #include "widgets/editor/pixels_movement.h"
@@ -42,36 +41,24 @@
 
 #include <allegro.h>
 
-MovingPixelsState::MovingPixelsState(Editor* editor, Message* msg, Image* imge, int x, int y, int opacity, HandleType handle)
+MovingPixelsState::MovingPixelsState(Editor* editor, Message* msg, PixelsMovement* pixelsMovement, HandleType handle)
 {
   EditorCustomizationDelegate* customization = editor->getCustomizationDelegate();
+  m_pixelsMovement = pixelsMovement;
 
-  // Copy the mask to the extra cel image
-  Document* document = editor->getDocument();
-  Sprite* sprite = editor->getSprite();
-  {
-    UniquePtr<Image> tmpImage(NewImageFromMask(document));
-    x = document->getMask()->x;
-    y = document->getMask()->y;
-    m_pixelsMovement = new PixelsMovement(document, sprite, tmpImage, x, y, opacity);
+  if (handle != NoHandle) {
+    int u, v;
+    editor->screenToEditor(msg->mouse.x, msg->mouse.y, &u, &v);
+    m_pixelsMovement->catchImage(u, v, handle);
+
+    editor->captureMouse();
   }
-
-  // If the Ctrl key is pressed start dragging a copy of the selection
-  if (customization && customization->isCopySelectionKeyPressed())
-    m_pixelsMovement->copyMask();
-  else
-    m_pixelsMovement->cutMask();
-
-  editor->screenToEditor(msg->mouse.x, msg->mouse.y, &x, &y);
-  m_pixelsMovement->catchImage(x, y, handle);
 
   // Setup mask color
   setTransparentColor(app_get_statusbar()->getTransparentColor());
 
   app_get_statusbar()->addListener(this);
   app_get_statusbar()->showMovePixelsOptions();
-
-  editor->captureMouse();
 }
 
 MovingPixelsState::~MovingPixelsState()
@@ -153,7 +140,7 @@ bool MovingPixelsState::onMouseDown(Editor* editor, Message* msg)
     // Re-catch the image
     int x, y;
     editor->screenToEditor(msg->mouse.x, msg->mouse.y, &x, &y);
-    m_pixelsMovement->catchImageAgain(x, y, NoHandle);
+    m_pixelsMovement->catchImageAgain(x, y, MoveHandle);
 
     editor->captureMouse();
     return true;

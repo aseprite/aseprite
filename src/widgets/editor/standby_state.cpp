@@ -36,6 +36,7 @@
 #include "tools/ink.h"
 #include "tools/tool.h"
 #include "ui_context.h"
+#include "util/misc.h"
 #include "widgets/color_bar.h"
 #include "widgets/editor/drawing_state.h"
 #include "widgets/editor/editor.h"
@@ -43,6 +44,7 @@
 #include "widgets/editor/handle_type.h"
 #include "widgets/editor/moving_cel_state.h"
 #include "widgets/editor/moving_pixels_state.h"
+#include "widgets/editor/pixels_movement.h"
 #include "widgets/editor/scrolling_state.h"
 #include "widgets/editor/tool_loop_impl.h"
 #include "widgets/editor/transform_handles.h"
@@ -176,7 +178,7 @@ bool StandbyState::onMouseDown(Editor* editor, Message* msg)
         }
 
         // Change to MovingPixelsState
-        editor->setState(EditorStatePtr(new MovingPixelsState(editor, msg, image, x, y, opacity, handle)));
+        transformSelection(editor, msg, handle);
       }
       return true;
     }
@@ -195,7 +197,7 @@ bool StandbyState::onMouseDown(Editor* editor, Message* msg)
       }
 
       // Change to MovingPixelsState
-      editor->setState(EditorStatePtr(new MovingPixelsState(editor, msg, image, x, y, opacity, NoHandle)));
+      transformSelection(editor, msg, MoveHandle);
     }
     return true;
   }
@@ -465,6 +467,27 @@ bool StandbyState::onUpdateStatusBar(Editor* editor)
 gfx::Transformation StandbyState::getTransformation(Editor* editor)
 {
   return editor->getDocument()->getTransformation();
+}
+
+void StandbyState::transformSelection(Editor* editor, Message* msg, HandleType handle)
+{
+  EditorCustomizationDelegate* customization = editor->getCustomizationDelegate();
+  Document* document = editor->getDocument();
+  UniquePtr<Image> tmpImage(NewImageFromMask(document));
+  int x = document->getMask()->x;
+  int y = document->getMask()->y;
+  int opacity = 255;
+  Sprite* sprite = editor->getSprite();
+  PixelsMovement* pixelsMovement = new PixelsMovement(document, sprite, tmpImage, x, y, opacity,
+                                                      "Transformation");
+
+  // If the Ctrl key is pressed start dragging a copy of the selection
+  if (customization && customization->isCopySelectionKeyPressed())
+    pixelsMovement->copyMask();
+  else
+    pixelsMovement->cutMask();
+
+  editor->setState(EditorStatePtr(new MovingPixelsState(editor, msg, pixelsMovement, handle)));
 }
 
 //////////////////////////////////////////////////////////////////////

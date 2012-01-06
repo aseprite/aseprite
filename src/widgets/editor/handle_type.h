@@ -25,7 +25,7 @@ enum HandleType {
   NoHandle,
   // This is the handle to move the pixels region, generally, the
   // whole region activates this handle.
-  //MoveHandle,
+  MoveHandle,
   // One of the region's corders to scale.
   ScaleNWHandle, ScaleNHandle, ScaleNEHandle,
   ScaleWHandle,                ScaleEHandle,

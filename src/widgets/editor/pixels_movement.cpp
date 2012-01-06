@@ -36,10 +36,11 @@ static inline const la::Vector2d<double> point2Vector(const gfx::PointT<T>& pt) 
   return la::Vector2d<double>(pt.x, pt.y);
 }
 
-PixelsMovement::PixelsMovement(Document* document, Sprite* sprite, const Image* moveThis, int initialX, int initialY, int opacity)
+PixelsMovement::PixelsMovement(Document* document, Sprite* sprite, const Image* moveThis, int initialX, int initialY, int opacity,
+                               const char* operationName)
   : m_documentReader(document)
   , m_sprite(sprite)
-  , m_undoTransaction(document, "Pixels Movement")
+  , m_undoTransaction(document, operationName)
   , m_firstDrop(true)
   , m_isDragging(false)
   , m_adjustPivot(false)
@@ -91,6 +92,8 @@ void PixelsMovement::copyMask()
 
 void PixelsMovement::catchImage(int x, int y, HandleType handle)
 {
+  ASSERT(handle != NoHandle);
+
   m_catchX = x;
   m_catchY = y;
   m_isDragging = true;
@@ -119,6 +122,32 @@ void PixelsMovement::catchImageAgain(int x, int y, HandleType handle)
   update_screen_for_document(m_documentReader);
 }
 
+void PixelsMovement::maskImage(const Image* image, int x, int y)
+{
+  mask_replace(m_currentMask, x, y, image->w, image->h);
+
+  m_currentMask->freeze();
+  image_clear(m_currentMask->bitmap, 0);
+  for (int v=0; v<image->h; ++v) {
+    for (int u=0; u<image->w; ++u) {
+      int bit = (image->getpixel(u, v) != image->mask_color ? 1: 0);
+      m_currentMask->bitmap->putpixel(u, v, bit);
+    }
+  }
+  m_currentMask->unfreeze();
+
+  mask_copy(m_initialMask, m_currentMask);
+
+  DocumentWriter documentWriter(m_documentReader);
+
+  m_undoTransaction.copyToCurrentMask(m_currentMask);
+
+  documentWriter->setMask(m_currentMask);
+  documentWriter->generateMaskBoundaries(m_currentMask);
+
+  update_screen_for_document(m_documentReader);
+}
+
 gfx::Rect PixelsMovement::moveImage(int x, int y)
 {
   DocumentWriter documentWriter(m_documentReader);
@@ -141,7 +170,7 @@ gfx::Rect PixelsMovement::moveImage(int x, int y)
 
   switch (m_handle) {
 
-    case NoHandle:
+    case MoveHandle:
       x1 += dx;
       y1 += dy;
       x2 += dx;

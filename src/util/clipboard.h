@@ -32,7 +32,7 @@ namespace clipboard {
   void cut(DocumentWriter& document);
   void copy(const DocumentReader& document);
   void copy_image(Image* image, Palette* palette);
-  void paste(DocumentWriter& document);
+  void paste();
 
 } // namespace clipboard
 

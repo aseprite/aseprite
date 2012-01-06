@@ -45,6 +45,8 @@
 #include "widgets/color_bar.h"
 #include "widgets/editor/editor_customization_delegate.h"
 #include "widgets/editor/editor_decorator.h"
+#include "widgets/editor/moving_pixels_state.h"
+#include "widgets/editor/pixels_movement.h"
 #include "widgets/editor/standby_state.h"
 #include "widgets/statebar.h"
 
@@ -1151,4 +1153,18 @@ void Editor::setZoomAndCenterInMouse(int zoom, int mouse_x, int mouse_y)
     m_listeners.notifyScrollChanged(this);
   }
   showDrawingCursor();
+}
+
+void Editor::pasteImage(const Image* image, int x, int y)
+{
+  Document* document = getDocument();
+  int opacity = 255;
+  Sprite* sprite = getSprite();
+  PixelsMovement* pixelsMovement = new PixelsMovement(document, sprite, image, x, y, opacity,
+                                                      "Paste");
+
+  // Select the pasted image so the user can move it and transform it.
+  pixelsMovement->maskImage(image, x, y);
+
+  setState(EditorStatePtr(new MovingPixelsState(this, NULL, pixelsMovement, NoHandle)));
 }

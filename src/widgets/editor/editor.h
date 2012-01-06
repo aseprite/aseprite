@@ -136,6 +136,8 @@ public:
 
   bool processKeysToSetZoom(int scancode);
 
+  void pasteImage(const Image* image, int x, int y);
+
   // in cursor.c
 
   static int get_raw_cursor_color();

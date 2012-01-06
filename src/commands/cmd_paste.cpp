@@ -57,8 +57,7 @@ bool PasteCommand::onEnabled(Context* context)
 
 void PasteCommand::onExecute(Context* context)
 {
-  ActiveDocumentWriter document(context);
-  clipboard::paste(document);
+  clipboard::paste();
 }
 
 //////////////////////////////////////////////////////////////////////

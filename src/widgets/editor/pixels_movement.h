@@ -37,13 +37,18 @@ class PixelsMovement
 public:
   // The "moveThis" image specifies the chunk of pixels to be moved.
   // The "x" and "y" parameters specify the initial position of the image.
-  PixelsMovement(Document* document, Sprite* sprite, const Image* moveThis, int x, int y, int opacity);
+  PixelsMovement(Document* document, Sprite* sprite, const Image* moveThis, int x, int y, int opacity,
+                 const char* operationName);
   ~PixelsMovement();
 
   void cutMask();
   void copyMask();
   void catchImage(int x, int y, HandleType handle);
   void catchImageAgain(int x, int y, HandleType handle);
+
+  // Creates a mask for the given image. Useful when the user paste a
+  // image from the clipboard.
+  void maskImage(const Image* image, int x, int y);
 
   // Moves the image to the new position (relative to the start
   // position given in the ctor). Returns the rectangle that should be
