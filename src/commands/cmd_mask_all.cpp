@@ -69,6 +69,7 @@ void MaskAllCommand::onExecute(Context* context)
   // Change the selection
   mask_replace(document->getMask(), 0, 0, sprite->getWidth(), sprite->getHeight());
   document->setMaskVisible(true);
+  document->resetTransformation();
 
   document->generateMaskBoundaries();
   update_screen_for_document(document);
