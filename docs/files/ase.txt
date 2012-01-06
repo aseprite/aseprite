@@ -1,5 +1,5 @@
 ASE Files (.ASE) Format description
-Copyright (C) 2001-2011 by David Capello
+Copyright (C) 2001-2012 by David Capello
 ----------------------------------------------------------------------
 
 1. References

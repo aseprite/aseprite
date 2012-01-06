@@ -1,5 +1,5 @@
 <!-- ASE - Allegro Sprite Editor -->
-<!-- Copyright (C) 2001-2011 by David Capello -->
+<!-- Copyright (C) 2001-2012 by David Capello -->
 <jinete>
 <window text="JPEG Options" name="jpeg_options">
   <grid columns="2">

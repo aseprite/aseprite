@@ -18,7 +18,7 @@
  *
  */
 
-/* Modified by David Capello to use with ASE (2001-2011).
+/* Modified by David Capello to use with ASE (2001-2012).
    See ../README.txt for more information
  */
 

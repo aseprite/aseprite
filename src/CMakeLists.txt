@@ -1,5 +1,5 @@
 # ASE - Allegro Sprite Editor
-# Copyright (C) 2001-2011  David Capello
+# Copyright (C) 2001-2012  David Capello
 
 if(MSVC)
   # Do not link with libcmt.lib (to avoid duplicated symbols with msvcrtd.lib)
