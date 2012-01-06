@@ -92,7 +92,7 @@ HandleType TransformHandles::getHandleAtPoint(Editor* editor, const gfx::Point& 
   }
 
   // Check if the cursor is in the pivot
-  if (getPivotHandleBounds(editor, transform, corners).contains(pt))
+  if (angle != 0 && getPivotHandleBounds(editor, transform, corners).contains(pt))
     return PivotHandle;
 
   return NoHandle;
@@ -140,7 +140,7 @@ void TransformHandles::drawHandles(Editor* editor, const gfx::Transformation& tr
   }
 
   // Draw the pivot
-  {
+  if (angle != 0) {
     gfx::Rect pivotBounds = getPivotHandleBounds(editor, transform, corners);
     SkinTheme* theme = static_cast<SkinTheme*>(CurrentTheme::get());
     BITMAP* gfx = theme->get_part(PART_PIVOT_HANDLE);
