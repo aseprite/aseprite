@@ -1,4 +1,4 @@
-/* ASE - Allegro Sprite Editor
+/* ASEPRITE
  * Copyright (C) 2001-2012  David Capello
  *
  * This program is free software; you can redistribute it and/or modify
@@ -24,7 +24,7 @@
 #include "raster/dirty.h"
 
 /* Algorightm from Allegro (allegro/src/gfx.c)
-   Adapted for ASE by David A. Capello. */
+   Adapted for ASEPRITE by David A. Capello. */
 void algo_line(int x1, int y1, int x2, int y2, void *data, AlgoPixel proc)
 {
   int dx = x2-x1;
@@ -118,7 +118,7 @@ void algo_line(int x1, int y1, int x2, int y2, void *data, AlgoPixel proc)
    Copyright (C) 2002 by Elias Pschernig (eliaspschernig@aon.at)
    for Allegro 4.x.
 
-   Adapted for ASE by David A. Capello. */
+   Adapted for ASEPRITE by David A. Capello. */
 void algo_ellipse(int x1, int y1, int x2, int y2, void *data, AlgoPixel proc)
 {
   int mx, my, rx, ry;
@@ -374,7 +374,7 @@ void algo_ellipsefill(int x1, int y1, int x2, int y2, void *data, AlgoHLine proc
 }
 
 /* Algorightm from Allegro (allegro/src/spline.c)
-   Adapted for ASE by David A. Capello. */
+   Adapted for ASEPRITE by David A. Capello. */
 void algo_spline(double x0, double y0, double x1, double y1,
                  double x2, double y2, double x3, double y3,
                  void *data, AlgoLine proc)

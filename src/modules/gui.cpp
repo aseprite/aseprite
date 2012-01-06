@@ -1,4 +1,4 @@
-/* ASE - Allegro Sprite Editor
+/* ASEPRITE
  * Copyright (C) 2001-2012  David Capello
  *
  * This program is free software; you can redistribute it and/or modify
@@ -259,7 +259,7 @@ int init_module_gui()
 
   for (;;) {
     if (bpp == 8)
-      throw base::Exception("You cannot use ASE in 8 bits per pixel");
+      throw base::Exception("You cannot use ASEPRITE in 8 bits per pixel");
 
     // Original
     set_color_depth(bpp);

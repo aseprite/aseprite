@@ -1,4 +1,4 @@
-/* ASE - Allegro Sprite Editor
+/* ASEPRITE
  * Copyright (C) 2001-2012  David Capello
  *
  * This program is free software; you can redistribute it and/or modify
@@ -152,7 +152,7 @@ FileOp* fop_to_load_document(const char* filename, int flags)
   fop->format = get_fileformat(extension.c_str());
   if (!fop->format ||
       !fop->format->support(FILE_SUPPORT_LOAD)) {
-    fop_error(fop, "ASE can't load \"%s\" files\n", extension.c_str());
+    fop_error(fop, "ASEPRITE can't load \"%s\" files\n", extension.c_str());
     goto done;
   }
 
@@ -245,7 +245,7 @@ FileOp* fop_to_save_document(Document* document)
   fop->format = get_fileformat(extension);
   if (!fop->format ||
       !fop->format->support(FILE_SUPPORT_SAVE)) {
-    fop_error(fop, "ASE can't save \"%s\" files\n", extension);
+    fop_error(fop, "ASEPRITE can't save \"%s\" files\n", extension);
     return fop;
   }
 

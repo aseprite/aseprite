@@ -1,5 +1,5 @@
 
-/* ASE - Allegro Sprite Editor
+/* ASEPRITE
  * Copyright (C) 2001-2012  David Capello
  *
  * This program is free software; you can redistribute it and/or modify

@@ -1,4 +1,4 @@
-/* ASE - Allegro Sprite Editor
+/* ASEPRITE
  * Copyright (C) 2001-2012  David Capello
  *
  * This program is free software; you can redistribute it and/or modify
@@ -91,7 +91,7 @@ void ScreenShotCommand::onExecute(Context* context)
       sprite->setPalette(pal, true);
     }
 
-    // Convert Allegro "BITMAP" to ASE "Image".
+    // Convert Allegro "BITMAP" to ASEPRITE "Image".
     if (imgtype == IMAGE_RGB) {
       uint32_t* address;
 

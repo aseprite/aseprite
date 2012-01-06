@@ -1,4 +1,4 @@
-ASE gui library
+ASEPRITE gui library
 Copyright (c) 2001-2012 David Capello
 All rights reserved.
 

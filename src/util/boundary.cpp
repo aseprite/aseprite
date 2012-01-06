@@ -17,7 +17,7 @@
  *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  *
- * Adapted to ASE by David Capello (2001-2012)
+ * Adapted to ASEPRITE by David Capello (2001-2012)
  * See "LEGAL.txt" for more information.
  */
 
@@ -27,7 +27,7 @@
 #include <string.h>
 
 /**********************************************************************/
-/* for ASE */
+/* for ASEPRITE */
 #include <limits.h>
 #include "base/memory.h"
 #include "raster/image.h"

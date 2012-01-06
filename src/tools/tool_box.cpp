@@ -1,4 +1,4 @@
-/* ASE - Allegro Sprite Editor
+/* ASEPRITE
  * Copyright (C) 2001-2012  David Capello
  *
  * This program is free software; you can redistribute it and/or modify
@@ -126,7 +126,7 @@ Tool* ToolBox::getToolById(const std::string& id)
 
 void ToolBox::loadTools()
 {
-  PRINTF("Loading ASE tools\n");
+  PRINTF("Loading ASEPRITE tools\n");
 
   TiXmlDocument& doc(GuiXml::instance()->doc());
   TiXmlHandle handle(&doc);

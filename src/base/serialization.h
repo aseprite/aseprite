@@ -1,4 +1,4 @@
-// ASE base library
+// ASEPRITE base library
 // Copyright (C) 2001-2012  David Capello
 //
 // This source file is ditributed under a BSD-like license, please

@@ -1,4 +1,4 @@
-/* ASE - Allegro Sprite Editor
+/* ASEPRITE
  * Copyright (C) 2001-2012  David Capello
  *
  * This program is free software; you can redistribute it and/or modify
@@ -33,7 +33,7 @@
 class Graphics;
 class IButtonIcon;
 
-// This is the GUI theme used by ASE (which use images from data/skins
+// This is the GUI theme used by ASEPRITE (which use images from data/skins
 // directory).
 class SkinTheme : public Theme
 {

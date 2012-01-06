@@ -1,4 +1,4 @@
-/* ASE - Allegro Sprite Editor
+/* ASEPRITE
  * Copyright (C) 2001-2012  David Capello
  *
  * This program is free software; you can redistribute it and/or modify
@@ -74,12 +74,12 @@
 #endif
 
 /**
- * ASE modules.
+ * ASEPRITE modules.
  */
 class App::Modules
 {
 public:
-  // ASE Modules
+  // ASEPRITE Modules
   FileSystemModule m_file_system_module;
   tools::ToolBox m_toolbox;
   CommandsModule m_commands_modules;
@@ -322,13 +322,13 @@ int App::run()
   return 0;
 }
 
-// Finishes the ASE application.
+// Finishes the ASEPRITE application.
 App::~App()
 {
   try {
     ASSERT(m_instance == this);
 
-    // Remove ASE handlers
+    // Remove ASEPRITE handlers
     PRINTF("ASE: Uninstalling\n");
 
     // Fire App Exit signal

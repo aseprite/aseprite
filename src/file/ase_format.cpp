@@ -1,4 +1,4 @@
-/* ASE - Allegro Sprite Editor
+/* ASEPRITE
  * Copyright (C) 2001-2012  David Capello
  *
  * This program is free software; you can redistribute it and/or modify
@@ -1017,7 +1017,7 @@ static Cel *ase_file_read_cel_chunk(FILE *f, Sprite *sprite, int frame, int imgt
     return NULL;
   }
   if (!layer->is_image()) {
-    fop_error(fop, "Invalid ASE file (frame %d in layer %d which does not contain images\n",
+    fop_error(fop, "Invalid .ase file (frame %d in layer %d which does not contain images\n",
               frame, layer_index);
     return NULL;
   }

@@ -1,4 +1,4 @@
-/* ASE - Allegro Sprite Editor
+/* ASEPRITE
  * Copyright (C) 2001-2012  David Capello
  *
  * This program is free software; you can redistribute it and/or modify
@@ -210,7 +210,7 @@ static int path_get_element(Path* path, double x, double y)
  */
 
 /* Render a sorted vector path into a graymap.
- * Modified by David A. Capello to use with ASE bitmaps.
+ * Modified by David A. Capello to use with ASEPRITE bitmaps.
  */
 
 typedef struct _ArtBitmapSVPData ArtBitmapSVPData;

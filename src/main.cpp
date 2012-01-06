@@ -1,4 +1,4 @@
-/* ASE - Allegro Sprite Editor
+/* ASEPRITE
  * Copyright (C) 2001-2012  David Capello
  *
  * This program is free software; you can redistribute it and/or modify
@@ -82,7 +82,7 @@ static bool get_memory_dump_filename(std::string& filename)
 #endif
 }
 
-// ASE entry point
+// ASEPRITE entry point
 int main(int argc, char* argv[])
 {
 #ifdef WIN32

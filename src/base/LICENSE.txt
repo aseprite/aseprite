@@ -1,4 +1,4 @@
-ASE base library
+ASEPRITE base library
 Copyright (c) 2001-2012 David Capello
 All rights reserved.
 

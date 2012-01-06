@@ -1,4 +1,4 @@
-# ASE - Allegro Sprite Editor
+# ASEPRITE
 # Copyright (C) 2001-2012  David Capello
 #
 # Parts of this file come from the Allegro 4.4 CMakeLists.txt

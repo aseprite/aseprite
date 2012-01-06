@@ -1,4 +1,4 @@
-/* ASE - Allegro Sprite Editor
+/* ASEPRITE
  * Copyright (C) 2001-2012  David Capello
  *
  * This program is free software; you can redistribute it and/or modify
@@ -55,11 +55,11 @@ public:
   const base::string& getArgv(int i) { return m_args[i]; }
   const std::vector<base::string>& getArgs() const { return m_args; }
 
-  // Returns true if ASE is running with GUI available.
+  // Returns true if ASEPRITE is running with GUI available.
   bool isGui() const { return m_isGui; }
 
-  // Runs the ASE application. In GUI mode it's the top-level window,
-  // in console/scripting it just runs the specified scripts.
+  // Runs the ASEPRITE application. In GUI mode it's the top-level
+  // window, in console/scripting it just runs the specified scripts.
   int run();
 
   LoggerModule* getLogger() const;

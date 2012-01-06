@@ -1,4 +1,4 @@
-/* ASE - Allegro Sprite Editor
+/* ASEPRITE
  * Copyright (C) 2001-2012  David Capello
  *
  * This program is free software; you can redistribute it and/or modify
@@ -27,7 +27,7 @@ class FileFormat;
 // track of all known file extensions supported by ASE.
 typedef std::vector<FileFormat*> FileFormatsList;
 
-// Manages the list of known formats by ASE (image file format that can
+// Manages the list of known formats by ASEPRITE (image file format that can
 // be loaded and/or saved).
 class FileFormatsManager
 {

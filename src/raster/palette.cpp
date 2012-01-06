@@ -1,4 +1,4 @@
-/* ASE - Allegro Sprite Editor
+/* ASEPRITE
  * Copyright (C) 2001-2012  David Capello
  *
  * This program is free software; you can redistribute it and/or modify
@@ -393,7 +393,7 @@ void Palette::sort(int from, int to, SortPalette* sort_palette, std::vector<int>
 //////////////////////////////////////////////////////////////////////
 
 /**
- * @param pal The ASE color palette to copy.
+ * @param pal The ASEPRITE color palette to copy.
  * @param rgb An Allegro's PALETTE.
  *
  * @return The same @a rgb pointer specified in the parameters.
