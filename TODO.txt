@@ -4,7 +4,6 @@ For next release
 + Add IntEntry class in src/gui/ with spin-buttons.
 + Add feedback to "Shift+S" shortcut to switch "snap to grid".
 + Convert jaccel::key_list to std::vector<>
-+ Integrate "copy & paste" loop with selection moving loop.
 + Shade drawing mode.
 + Add color swatches bar.
 + Sort palette entries.
@@ -41,10 +40,7 @@ High priority work
 ------------------
 
 + Selection tools do not have "move" functionality incorporated yet as we talked (they just add/subtract selection)
-+ The following tools do not work: scroll, move.
 - Fix paste behavior:
-  + paste when there are no images (create one image or put the
-    clipboard as the layer's image)
   + create a 'floating' flag for image-layers and make the
     trasformation embedded in the editor
   + Ctrl+T should transform the current cel
