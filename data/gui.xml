@@ -49,7 +49,7 @@
       <key command="GotoPreviousLayer" shortcut="Down" />
       <key command="GotoNextLayer" shortcut="Up" />
       <!-- Frame -->
-      <key command="NewFrame" shortcut="N" />
+      <key command="NewFrame" shortcut="Alt+N" />
       <key command="FrameProperties" shortcut="P">
         <param name="frame" value="current" />
       </key>
