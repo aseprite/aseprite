@@ -87,6 +87,8 @@ static inline bool has_shifts(Message* msg, int shift)
   return ((msg->any.shifts & shift) == shift);
 }
 
+#pragma warning(disable:4355) // warning C4355: 'this' : used in base member initializer list
+
 StandbyState::StandbyState()
   : m_decorator(new Decorator(this))
 {
