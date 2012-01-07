@@ -187,8 +187,13 @@ bool MovingPixelsState::onMouseMove(Editor* editor, Message* msg)
     int x, y;
     editor->screenToEditor(msg->mouse.x, msg->mouse.y, &x, &y);
 
+    PixelsMovement::MoveModifier moveModifier = PixelsMovement::NormalMovement;
+
+    if (editor->getCustomizationDelegate()->isAngleSnapKeyPressed())
+      moveModifier = PixelsMovement::AngleSnapMovement;
+
     // Drag the image to that position
-    gfx::Rect bounds = m_pixelsMovement->moveImage(x, y);
+    gfx::Rect bounds = m_pixelsMovement->moveImage(x, y, moveModifier);
 
     // If "bounds" is empty is because the cel was not moved
     if (!bounds.isEmpty()) {

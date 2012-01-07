@@ -128,6 +128,22 @@ public:
       return false;
   }
 
+  bool isSnapToGridKeyPressed() OVERRIDE {
+    JAccel accel = get_accel_to_snap_to_grid();
+    if (accel)
+      return jaccel_check_from_key(accel);
+    else
+      return false;
+  }
+
+  bool isAngleSnapKeyPressed() OVERRIDE {
+    JAccel accel = get_accel_to_angle_snap();
+    if (accel)
+      return jaccel_check_from_key(accel);
+    else
+      return false;
+  }
+
 };
 
 class MiniEditor : public Editor

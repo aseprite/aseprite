@@ -165,6 +165,14 @@
       <!-- When you drag-and-drop the selection, pressing this
            keyboard shortcut you can copy instead of move -->
       <key action="CopySelection" shortcut="Ctrl" />
+
+      <!-- When you move the selection, pressing this
+           keyboard shortcut you can snap to grid -->
+      <key action="SnapToGrid" shortcut="Shift" />
+
+      <!-- When you rotate the selection, pressing this
+           keyboard shortcut you activate angle snap -->
+      <key action="AngleSnap" shortcut="Shift" />
     </spriteeditor>
 
   </keyboard>

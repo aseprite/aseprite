@@ -65,6 +65,8 @@
 #define MONITOR_TIMER_MSECS     100
 
 #define SPRITEDITOR_ACTION_COPYSELECTION "CopySelection"
+#define SPRITEDITOR_ACTION_SNAPTOGRID    "SnapToGrid"
+#define SPRITEDITOR_ACTION_ANGLESNAP     "AngleSnap"
 
 //////////////////////////////////////////////////////////////////////
 
@@ -933,6 +935,24 @@ JAccel get_accel_to_change_tool(tools::Tool* tool)
 JAccel get_accel_to_copy_selection()
 {
   Shortcut* shortcut = get_keyboard_shortcut_for_spriteeditor(SPRITEDITOR_ACTION_COPYSELECTION);
+  if (shortcut)
+    return shortcut->accel;
+  else
+    return NULL;
+}
+
+JAccel get_accel_to_snap_to_grid()
+{
+  Shortcut* shortcut = get_keyboard_shortcut_for_spriteeditor(SPRITEDITOR_ACTION_SNAPTOGRID);
+  if (shortcut)
+    return shortcut->accel;
+  else
+    return NULL;
+}
+
+JAccel get_accel_to_angle_snap()
+{
+  Shortcut* shortcut = get_keyboard_shortcut_for_spriteeditor(SPRITEDITOR_ACTION_ANGLESNAP);
   if (shortcut)
     return shortcut->accel;
   else

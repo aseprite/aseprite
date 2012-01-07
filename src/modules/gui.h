@@ -116,6 +116,8 @@ Command* get_command_from_key_message(Message* msg);
 JAccel get_accel_to_execute_command(const char* command, Params* params = NULL);
 JAccel get_accel_to_change_tool(tools::Tool* tool);
 JAccel get_accel_to_copy_selection();
+JAccel get_accel_to_snap_to_grid();
+JAccel get_accel_to_angle_snap();
 
 tools::Tool* get_selected_quicktool(tools::Tool* currentTool);
 

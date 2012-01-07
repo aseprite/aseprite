@@ -148,7 +148,7 @@ void PixelsMovement::maskImage(const Image* image, int x, int y)
   update_screen_for_document(m_documentReader);
 }
 
-gfx::Rect PixelsMovement::moveImage(int x, int y)
+gfx::Rect PixelsMovement::moveImage(int x, int y, MoveModifier moveModifier)
 {
   DocumentWriter documentWriter(m_documentReader);
   Image* image = documentWriter->getExtraCelImage();
@@ -240,6 +240,32 @@ gfx::Rect PixelsMovement::moveImage(int x, int y)
                   (double)(+x - abs_pivot.x))
           - atan2((double)(-m_catchY + abs_initial_pivot.y),
                   (double)(+m_catchX - abs_initial_pivot.x));
+
+        // Put the angle in -180 to 180 range.
+        while (newAngle < -PI) newAngle += 2*PI;
+        while (newAngle > PI) newAngle -= 2*PI;
+
+        // Is the "angle snap" is activated, we've to snap the angle
+        // to common (pixel art) angles.
+        if ((moveModifier & AngleSnapMovement) == AngleSnapMovement) {
+          // TODO make this configurable
+          static const double keyAngles[] = {
+            0.0, 26.565, 45.0, 63.435, 90.0, 116.565, 135.0, 153.435, -180.0,
+            180.0, -153.435, -135.0, -116, -90.0, -63.435, -45.0, -26.565
+          };
+
+          double newAngleDegrees = 180.0 * newAngle / PI;
+
+          int closest = 0;
+          int last = sizeof(keyAngles) / sizeof(keyAngles[0]) - 1;
+          for (int i=0; i<=last; ++i) {
+            if (std::fabs(newAngleDegrees-keyAngles[closest]) >
+                std::fabs(newAngleDegrees-keyAngles[i]))
+              closest = i;
+          }
+
+          newAngle = PI * keyAngles[closest] / 180.0;
+        }
 
         m_currentData.angle(newAngle);
       }

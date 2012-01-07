@@ -36,6 +36,12 @@ class Sprite;
 class PixelsMovement
 {
 public:
+  enum MoveModifier {
+    NormalMovement = 1,
+    SnapToGridMovement = 2,
+    AngleSnapMovement = 4
+  };
+
   // The "moveThis" image specifies the chunk of pixels to be moved.
   // The "x" and "y" parameters specify the initial position of the image.
   PixelsMovement(Document* document, Sprite* sprite, const Image* moveThis, int x, int y, int opacity,
@@ -54,7 +60,7 @@ public:
   // Moves the image to the new position (relative to the start
   // position given in the ctor). Returns the rectangle that should be
   // redrawn.
-  gfx::Rect moveImage(int x, int y);
+  gfx::Rect moveImage(int x, int y, MoveModifier moveModifier);
 
   void dropImageTemporarily();
   void dropImage();

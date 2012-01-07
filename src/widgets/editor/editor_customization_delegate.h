@@ -39,6 +39,14 @@ public:
   // Returns true if the user wants to copy the selection instead of
   // to move it.
   virtual bool isCopySelectionKeyPressed() = 0;
+
+  // Returns true if the user wants to snap to grid when he's moving
+  // the selection.
+  virtual bool isSnapToGridKeyPressed() = 0;
+
+  // Returns true if the user wants to activate angle snap, so he can
+  // easily specify common angles (45, 90, 135, 180, etc.).
+  virtual bool isAngleSnapKeyPressed() = 0;
 };
 
 #endif  // WIDGETS_EDITOR_CUSTOMIZATION_DELEGATE_H_INCLUDED
