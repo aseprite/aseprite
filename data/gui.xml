@@ -20,6 +20,7 @@
       <key command="Exit" shortcut="Esc" />
       <!-- Edit -->
       <key command="Undo" shortcut="Ctrl+Z" /> <key command="Undo" shortcut="Ctrl+U" />
+      <key command="Redo" shortcut="Ctrl+Y" />
       <key command="Redo" shortcut="Ctrl+R" />
       <key command="Redo" shortcut="Ctrl+Shift+Z" />
       <key command="Cut" shortcut="Ctrl+X" /> <key command="Cut" shortcut="Shift+Del" />
