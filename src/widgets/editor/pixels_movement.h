@@ -39,7 +39,8 @@ public:
   enum MoveModifier {
     NormalMovement = 1,
     SnapToGridMovement = 2,
-    AngleSnapMovement = 4
+    AngleSnapMovement = 4,
+    MaintainAspectRatioMovement = 8
   };
 
   // The "moveThis" image specifies the chunk of pixels to be moved.

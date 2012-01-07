@@ -173,6 +173,10 @@
       <!-- When you rotate the selection, pressing this
            keyboard shortcut you activate angle snap -->
       <key action="AngleSnap" shortcut="Shift" />
+
+      <!-- When you scale the selection, pressing this
+           keyboard shortcut you maintain aspect ratio -->
+      <key action="MaintainAspectRatio" shortcut="Shift" />
     </spriteeditor>
 
   </keyboard>

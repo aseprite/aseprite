@@ -47,6 +47,10 @@ public:
   // Returns true if the user wants to activate angle snap, so he can
   // easily specify common angles (45, 90, 135, 180, etc.).
   virtual bool isAngleSnapKeyPressed() = 0;
+
+  // Returns true if the user wants to maintain the aspect ratio when
+  // he is scaling the selection.
+  virtual bool isMaintainAspectRatioKeyPressed() = 0;
 };
 
 #endif  // WIDGETS_EDITOR_CUSTOMIZATION_DELEGATE_H_INCLUDED

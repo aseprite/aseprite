@@ -144,6 +144,14 @@ public:
       return false;
   }
 
+  bool isMaintainAspectRatioKeyPressed() OVERRIDE {
+    JAccel accel = get_accel_to_maintain_aspect_ratio();
+    if (accel)
+      return jaccel_check_from_key(accel);
+    else
+      return false;
+  }
+
 };
 
 class MiniEditor : public Editor

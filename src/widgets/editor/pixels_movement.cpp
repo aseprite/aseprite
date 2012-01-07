@@ -197,6 +197,17 @@ gfx::Rect PixelsMovement::moveImage(int x, int y, MoveModifier moveModifier)
     case ScaleNWHandle:
       x1 = MIN(x1+dx, x2-1);
       y1 = MIN(y1+dy, y2-1);
+
+      if ((moveModifier & MaintainAspectRatioMovement) == MaintainAspectRatioMovement) {
+        if (1000 * (x2-x1) / getInitialImageSize().w >
+            1000 * (y2-y1) / getInitialImageSize().h) {
+          y1 = y2 - getInitialImageSize().h * (x2-x1) / getInitialImageSize().w;
+        }
+        else {
+          x1 = x2 - getInitialImageSize().w * (y2-y1) / getInitialImageSize().h;
+        }
+      }
+
       updateBounds = true;
       break;
 
@@ -208,6 +219,17 @@ gfx::Rect PixelsMovement::moveImage(int x, int y, MoveModifier moveModifier)
     case ScaleNEHandle:
       x2 = MAX(x2+dx, x1+1);
       y1 = MIN(y1+dy, y2-1);
+
+      if ((moveModifier & MaintainAspectRatioMovement) == MaintainAspectRatioMovement) {
+        if (1000 * (x2-x1) / getInitialImageSize().w >
+            1000 * (y2-y1) / getInitialImageSize().h) {
+          y1 = y2 - getInitialImageSize().h * (x2-x1) / getInitialImageSize().w;
+        }
+        else {
+          x2 = x1 + getInitialImageSize().w * (y2-y1) / getInitialImageSize().h;
+        }
+      }
+
       updateBounds = true;
       break;
 
@@ -224,6 +246,17 @@ gfx::Rect PixelsMovement::moveImage(int x, int y, MoveModifier moveModifier)
     case ScaleSWHandle:
       x1 = MIN(x1+dx, x2-1);
       y2 = MAX(y2+dy, y1+1);
+
+      if ((moveModifier & MaintainAspectRatioMovement) == MaintainAspectRatioMovement) {
+        if (1000 * (x2-x1) / getInitialImageSize().w >
+            1000 * (y2-y1) / getInitialImageSize().h) {
+          y2 = y1 + getInitialImageSize().h * (x2-x1) / getInitialImageSize().w;
+        }
+        else {
+          x1 = x2 - getInitialImageSize().w * (y2-y1) / getInitialImageSize().h;
+        }
+      }
+
       updateBounds = true;
       break;
 
@@ -235,6 +268,17 @@ gfx::Rect PixelsMovement::moveImage(int x, int y, MoveModifier moveModifier)
     case ScaleSEHandle:
       x2 = MAX(x2+dx, x1+1);
       y2 = MAX(y2+dy, y1+1);
+
+      if ((moveModifier & MaintainAspectRatioMovement) == MaintainAspectRatioMovement) {
+        if (1000 * (x2-x1) / getInitialImageSize().w >
+            1000 * (y2-y1) / getInitialImageSize().h) {
+          y2 = y1 + getInitialImageSize().h * (x2-x1) / getInitialImageSize().w;
+        }
+        else {
+          x2 = x1 + getInitialImageSize().w * (y2-y1) / getInitialImageSize().h;
+        }
+      }
+
       updateBounds = true;
       break;
 

@@ -187,6 +187,7 @@ bool MovingPixelsState::onMouseMove(Editor* editor, Message* msg)
     int x, y;
     editor->screenToEditor(msg->mouse.x, msg->mouse.y, &x, &y);
 
+    // Get the customization for the pixels movement (snap to grid, angle snap, etc.).
     PixelsMovement::MoveModifier moveModifier = PixelsMovement::NormalMovement;
 
     if (editor->getCustomizationDelegate()->isSnapToGridKeyPressed())
@@ -194,6 +195,9 @@ bool MovingPixelsState::onMouseMove(Editor* editor, Message* msg)
 
     if (editor->getCustomizationDelegate()->isAngleSnapKeyPressed())
       moveModifier |= PixelsMovement::AngleSnapMovement;
+
+    if (editor->getCustomizationDelegate()->isMaintainAspectRatioKeyPressed())
+      moveModifier |= PixelsMovement::MaintainAspectRatioMovement;
 
     // Drag the image to that position
     gfx::Rect bounds = m_pixelsMovement->moveImage(x, y, moveModifier);

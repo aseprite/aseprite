@@ -118,6 +118,7 @@ JAccel get_accel_to_change_tool(tools::Tool* tool);
 JAccel get_accel_to_copy_selection();
 JAccel get_accel_to_snap_to_grid();
 JAccel get_accel_to_angle_snap();
+JAccel get_accel_to_maintain_aspect_ratio();
 
 tools::Tool* get_selected_quicktool(tools::Tool* currentTool);
 
