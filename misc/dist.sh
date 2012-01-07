@@ -6,11 +6,6 @@ distdir=aseprite-$version
 zip="zip -9"
 zip_recursive_flag="-r"
 
-if [ -f ./7za.exe ] ; then
-  zip="./7za.exe a"
-  zip_recursive_flag=""
-fi
-
 if [ ! -f dist.sh ]; then
     echo You must run dist.sh from misc/ directory
     exit 1
@@ -71,7 +66,7 @@ if [ ! -f $distdir-win32.zip ] ; then
 
     cd "$dir"
     def_common_files $distdir-win32
-    $zip $distdir-win32.zip $txt_files
+    $zip -l $distdir-win32.zip $txt_files
 
     # Dynamic version of DLLs
     #$zip $distdir-win32.zip $bin_files         \
