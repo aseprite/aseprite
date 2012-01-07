@@ -413,7 +413,7 @@ relate to the DOM.
         TiXmlDeclaration class. It will be the first child of the
         document node.
 
-        This is the only directive/special tag parsed by by TinyXML.
+        This is the only directive/special tag parsed by TinyXML.
         Generally directive tags are stored in TiXmlUnknown so the
         commands wont be lost when it is saved back to disk.
 
@@ -499,7 +499,7 @@ distribution.
 <h2> References  </h2>
 
 The World Wide Web Consortium is the definitive standard body for
-XML, and there web pages contain huge amounts of information.
+XML, and their web pages contain huge amounts of information.
 
 The definitive spec: <a href="http://www.w3.org/TR/2004/REC-xml-20040204/">
 http://www.w3.org/TR/2004/REC-xml-20040204/</a>

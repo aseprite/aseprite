@@ -1,6 +1,5 @@
 /*
 www.sourceforge.net/projects/tinyxml
-Original file by Yves Berquin.
 
 This software is provided 'as-is', without any express or implied
 warranty. In no event will the authors be held liable for any
@@ -21,10 +20,6 @@ must not be misrepresented as being the original software.
 3. This notice may not be removed or altered from any source
 distribution.
 */
-
-/*
- * THIS FILE WAS ALTERED BY Tyge Løvset, 7. April 2005.
- */
 
 
 #ifndef TIXML_USE_STL

@@ -266,3 +266,33 @@ Changes in version 2.1.5
 - Great catch, although there isn't a submitter for the bug. [ 1475201 ] TinyXML parses entities in comments.
   Comments should not, in fact, parse entities. Fixed the code path and added tests.
 - We were not catching all the returns from ftell. Thanks to Bernard for catching that.
+
+2.5.4
+- A TiXMLDocument can't be a sub-node. Block this from happening in the 'replace'. Thanks Noam.
+- [ 1714831 ] TiXmlBase::location is not copied by copy-ctors, fix reported and suggested by Nicola Civran.
+- Fixed possible memory overrun in the comment reading code - thanks gcarlton77
+
+2.5.5
+- Alex van der Wal spotted incorrect types (lf) being used in print and scan. robertnestor pointed out some problems with the simple solution. Types updated.
+- Johannes Hillert pointed out some bug typos.
+- Christian Mueller identified inconsistent error handling with Attributes.
+- olivier barthelemy also reported a problem with double truncation, also related to the %lf issue.
+- zaelsius came up with a great (and simple) suggestion to fix QueryValueAttribute truncating strings.
+- added some null pointer checks suggested by hansenk
+- Sami Väisänen found a (rare) buffer overrun that could occur in parsing.
+- vi tri filed a bug that led to a refactoring of the attribute setting mess (as well as adding a missing SetDoubleAttribute() )
+- removed TIXML_ERROR_OUT_OF_MEMORY. TinyXML does not systematically address OOO, and the notion it does is misleading.
+- vanneto, keithmarshall, others all reported the warning from IsWhiteSpace() usage. Cleaned this up - many thanks to everyone who reported this one.
+- tibur found a bug in end tag parsing
+
+
+2.6.2
+- Switched over to VC 2010
+- Fixed up all the build issues arising from that. (Lots of latent build problems.)
+- Removed the old, now unmaintained and likely not working, build files.
+- Fixed some static analysis issues reported by orbitcowboy from cppcheck.
+- Bayard 95 sent in analysis from a different analyzer - fixes applied from that as well.
+- Tim Kosse sent a patch fixing an infinite loop.
+- Ma Anguo identified a doc issue.
+- Eddie Cohen identified a missing qualifier resulting in a compilation error on some systems.
+- Fixed a line ending bug. (What year is this? Can we all agree on a format for text files? Please? ...oh well.)
