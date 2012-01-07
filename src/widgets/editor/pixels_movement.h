@@ -22,6 +22,7 @@
 #include "document_wrappers.h"
 #include "undo_transaction.h"
 #include "widgets/editor/handle_type.h"
+#include "gfx/size.h"
 
 class Document;
 class Image;
@@ -60,6 +61,7 @@ public:
   bool isDragging() const;
 
   gfx::Rect getImageBounds();
+  gfx::Size getInitialImageSize() const;
 
   void setMaskColor(uint32_t mask_color);
 

@@ -263,11 +263,16 @@ bool MovingPixelsState::onUpdateStatusBar(Editor* editor)
   ASSERT(m_pixelsMovement != NULL);
 
   const gfx::Transformation& transform(getTransformation(editor));
+  Document* document = editor->getDocument();
+  gfx::Size imageSize = m_pixelsMovement->getInitialImageSize();
 
   app_get_statusbar()->setStatusText
-    (100, "Pos %d %d, Size %d %d, Angle %.1f",
+    (100, "Pos %d %d, Size %d %d, Orig: %3d %3d (%.02f%% %.02f%%), Angle %.1f",
      transform.bounds().x, transform.bounds().y,
      transform.bounds().w, transform.bounds().h,
+     imageSize.w, imageSize.h,
+     (double)transform.bounds().w*100.0/imageSize.w,
+     (double)transform.bounds().h*100.0/imageSize.h,
      180.0 * transform.angle() / PI);
 
   return true;
