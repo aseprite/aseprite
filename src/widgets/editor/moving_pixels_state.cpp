@@ -189,8 +189,11 @@ bool MovingPixelsState::onMouseMove(Editor* editor, Message* msg)
 
     PixelsMovement::MoveModifier moveModifier = PixelsMovement::NormalMovement;
 
+    if (editor->getCustomizationDelegate()->isSnapToGridKeyPressed())
+      moveModifier |= PixelsMovement::SnapToGridMovement;
+
     if (editor->getCustomizationDelegate()->isAngleSnapKeyPressed())
-      moveModifier = PixelsMovement::AngleSnapMovement;
+      moveModifier |= PixelsMovement::AngleSnapMovement;
 
     // Drag the image to that position
     gfx::Rect bounds = m_pixelsMovement->moveImage(x, y, moveModifier);

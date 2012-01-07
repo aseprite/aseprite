@@ -21,6 +21,7 @@
 
 #include <map>
 #include <string>
+#include "base/compiler_specific.h"
 #include "settings/settings.h"
 
 class UISettingsImpl : public ISettings
@@ -52,6 +53,8 @@ public:
   void setGridVisible(bool state);
   void setGridBounds(const gfx::Rect& rect);
   void setGridColor(const Color& color);
+
+  void snapToGrid(gfx::Point& point, SnapBehavior snapBehavior) const OVERRIDE;
 
   // Pixel grid
 

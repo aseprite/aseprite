@@ -89,4 +89,10 @@ private:
   Mask* m_currentMask;
 };
 
+inline PixelsMovement::MoveModifier& operator|=(PixelsMovement::MoveModifier& a,
+                                                const PixelsMovement::MoveModifier& b) {
+  a = static_cast<PixelsMovement::MoveModifier>(a | b);
+  return a;
+}
+
 #endif

@@ -197,21 +197,8 @@ void ToolLoopManager::snapToGrid(bool flexible, Point& point)
       !m_toolLoop->getContext()->getSettings()->getSnapToGrid())
     return;
 
-  Rect grid(m_toolLoop->getContext()->getSettings()->getGridBounds());
-  register int w = grid.w;
-  register int h = grid.h;
-  div_t d, dx, dy;
-
-  flexible = flexible ? 1: 0;
-
-  dx = div(grid.x, w);
-  dy = div(grid.y, h);
-
-  d = div(point.x-dx.rem, w);
-  point.x = dx.rem + d.quot*w + ((d.rem > w/2)? w-flexible: 0);
-
-  d = div(point.y-dy.rem, h);
-  point.y = dy.rem + d.quot*h + ((d.rem > h/2)? h-flexible: 0);
+  m_toolLoop->getContext()->getSettings()
+    ->snapToGrid(point, (flexible ? SnapInRightBottom: NormalSnap));
 }
 
 void ToolLoopManager::calculateDirtyArea(ToolLoop* loop, const Points& points, Rect& dirty_area)

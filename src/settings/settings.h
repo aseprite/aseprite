@@ -21,6 +21,7 @@
 
 #include "app/color.h"
 #include "filters/tiled_mode.h"
+#include "gfx/point.h"
 #include "gfx/rect.h"
 #include "raster/pen_type.h"
 
@@ -28,6 +29,11 @@ class IToolSettings;
 class IPenSettings;
 
 namespace tools { class Tool; }
+
+enum SnapBehavior {
+  NormalSnap = 0,
+  SnapInRightBottom = 1
+};
 
 // Settings used in tool <-> drawing <-> editor stuff
 class ISettings
@@ -58,6 +64,8 @@ public:
   virtual void setGridVisible(bool state) = 0;
   virtual void setGridBounds(const gfx::Rect& rect) = 0;
   virtual void setGridColor(const Color& color) = 0;
+
+  virtual void snapToGrid(gfx::Point& point, SnapBehavior snapBehavior) const = 0;
 
   // Pixel grid
 

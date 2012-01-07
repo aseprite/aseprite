@@ -29,6 +29,7 @@
 #include "raster/mask.h"
 #include "raster/rotate.h"
 #include "raster/sprite.h"
+#include "ui_context.h"
 #include "util/expand_cel_canvas.h"
 
 template<typename T>
@@ -176,6 +177,21 @@ gfx::Rect PixelsMovement::moveImage(int x, int y, MoveModifier moveModifier)
       x2 += dx;
       y2 += dy;
       updateBounds = true;
+
+      if ((moveModifier & SnapToGridMovement) == SnapToGridMovement) {
+        // Snap the x1,y1 point to the grid.
+        gfx::Point gridOffset(x1, y1);
+        UIContext::instance()->getSettings()->snapToGrid(gridOffset, NormalSnap);
+
+        // Now we calculate the difference from x1,y1 point and we can
+        // use it to adjust all coordinates (x1, y1, x2, y2).
+        gridOffset -= gfx::Point(x1, y1);
+
+        x1 += gridOffset.x;
+        y1 += gridOffset.y;
+        x2 += gridOffset.x;
+        y2 += gridOffset.y;
+      }
       break;
 
     case ScaleNWHandle:

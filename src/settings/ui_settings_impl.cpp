@@ -174,6 +174,23 @@ void UISettingsImpl::setGridColor(const Color& color)
   m_gridColor = color;
 }
 
+void UISettingsImpl::snapToGrid(gfx::Point& point, SnapBehavior snapBehavior) const
+{
+  register int w = m_gridBounds.w;
+  register int h = m_gridBounds.h;
+  int adjust = (snapBehavior & SnapInRightBottom ? 1: 0);
+  div_t d, dx, dy;
+
+  dx = div(m_gridBounds.x, w);
+  dy = div(m_gridBounds.y, h);
+
+  d = div(point.x-dx.rem, w);
+  point.x = dx.rem + d.quot*w + ((d.rem > w/2)? w-adjust: 0);
+
+  d = div(point.y-dy.rem, h);
+  point.y = dy.rem + d.quot*h + ((d.rem > h/2)? h-adjust: 0);
+}
+
 //////////////////////////////////////////////////////////////////////
 // Pixel grid
 
