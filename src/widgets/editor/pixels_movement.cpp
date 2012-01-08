@@ -125,17 +125,11 @@ void PixelsMovement::catchImageAgain(int x, int y, HandleType handle)
 
 void PixelsMovement::maskImage(const Image* image, int x, int y)
 {
-  mask_replace(m_currentMask, x, y, image->w, image->h);
-
-  m_currentMask->freeze();
-  image_clear(m_currentMask->bitmap, 0);
-  for (int v=0; v<image->h; ++v) {
-    for (int u=0; u<image->w; ++u) {
-      int bit = (image->getpixel(u, v) != image->mask_color ? 1: 0);
-      m_currentMask->bitmap->putpixel(u, v, bit);
-    }
-  }
-  m_currentMask->unfreeze();
+  mask_replace(m_currentMask,
+               m_currentData.bounds().x,
+               m_currentData.bounds().y,
+               m_currentData.bounds().w,
+               m_currentData.bounds().h);
 
   mask_copy(m_initialMask, m_currentMask);
 
