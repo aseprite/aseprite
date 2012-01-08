@@ -75,6 +75,9 @@ public:
   const gfx::Transformation& getTransformation() const { return m_currentData; }
 
 private:
+  void redrawExtraImage(DocumentWriter& documentWriter);
+  void redrawCurrentMask();
+
   const DocumentReader m_documentReader;
   Sprite* m_sprite;
   UndoTransaction m_undoTransaction;

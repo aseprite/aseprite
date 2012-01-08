@@ -342,27 +342,8 @@ gfx::Rect PixelsMovement::moveImage(int x, int y, MoveModifier moveModifier)
     m_adjustPivot = true;
   }
 
-  gfx::Transformation::Corners corners;
-  m_currentData.transformBox(corners);
-
-  // Transform the extra-cel which is the chunk of pixels that the user is moving.
-  image_clear(documentWriter->getExtraCelImage(), 0);
-  image_parallelogram(documentWriter->getExtraCelImage(), m_originalImage,
-                      corners.leftTop().x, corners.leftTop().y,
-                      corners.rightTop().x, corners.rightTop().y,
-                      corners.rightBottom().x, corners.rightBottom().y,
-                      corners.leftBottom().x, corners.leftBottom().y);
-
-  // Transform mask
-  mask_replace(m_currentMask, 0, 0, m_sprite->getWidth(), m_sprite->getHeight());
-  m_currentMask->freeze();
-  image_clear(m_currentMask->bitmap, 0);
-  image_parallelogram(m_currentMask->bitmap, m_initialMask->bitmap,
-                      corners.leftTop().x, corners.leftTop().y,
-                      corners.rightTop().x, corners.rightTop().y,
-                      corners.rightBottom().x, corners.rightBottom().y,
-                      corners.leftBottom().x, corners.leftBottom().y);
-  m_currentMask->unfreeze();
+  redrawExtraImage(documentWriter);
+  redrawCurrentMask();
 
   if (m_firstDrop)
     m_undoTransaction.copyToCurrentMask(m_currentMask);
@@ -468,12 +449,47 @@ void PixelsMovement::setMaskColor(uint32_t mask_color)
 {
   {
     DocumentWriter documentWriter(m_documentReader);
-    Image* image = documentWriter->getExtraCelImage();
+    Image* extraImage = documentWriter->getExtraCelImage();
 
-    ASSERT(image != NULL);
+    ASSERT(extraImage != NULL);
 
-    image->mask_color = mask_color;
+    extraImage->mask_color = mask_color;
+    redrawExtraImage(documentWriter);
   }
 
   update_screen_for_document(m_documentReader);
+}
+
+
+void PixelsMovement::redrawExtraImage(DocumentWriter& documentWriter)
+{
+  gfx::Transformation::Corners corners;
+  m_currentData.transformBox(corners);
+
+  // Transform the extra-cel which is the chunk of pixels that the user is moving.
+  Image* extraImage = documentWriter->getExtraCelImage();
+  image_clear(extraImage, extraImage->mask_color);
+  image_parallelogram(extraImage, m_originalImage,
+                      corners.leftTop().x, corners.leftTop().y,
+                      corners.rightTop().x, corners.rightTop().y,
+                      corners.rightBottom().x, corners.rightBottom().y,
+                      corners.leftBottom().x, corners.leftBottom().y);
+}
+
+void PixelsMovement::redrawCurrentMask()
+{
+  gfx::Transformation::Corners corners;
+  m_currentData.transformBox(corners);
+
+  // Transform mask
+
+  mask_replace(m_currentMask, 0, 0, m_sprite->getWidth(), m_sprite->getHeight());
+  m_currentMask->freeze();
+  image_clear(m_currentMask->bitmap, 0);
+  image_parallelogram(m_currentMask->bitmap, m_initialMask->bitmap,
+                      corners.leftTop().x, corners.leftTop().y,
+                      corners.rightTop().x, corners.rightTop().y,
+                      corners.rightBottom().x, corners.rightBottom().y,
+                      corners.leftBottom().x, corners.leftBottom().y);
+  m_currentMask->unfreeze();
 }
