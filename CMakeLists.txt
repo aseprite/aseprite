@@ -81,6 +81,9 @@ set(ZLIB_DIR            ${CMAKE_SOURCE_DIR}/third_party/zlib)
 include_directories(${CMAKE_SOURCE_DIR}/src/allegro/include)
 include_directories(${CMAKE_BINARY_DIR}/include)
 
+# Zlib generated zconf.h file
+include_directories(${CMAKE_BINARY_DIR}/third_party/zlib)
+
 # Search in the "cmake" directory for additional CMake modules.
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
 
