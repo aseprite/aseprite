@@ -29,8 +29,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#define PNG_NO_TYPECAST_NULL
 #include "png.h"
+#include "pnginfo.h"
+#include "pngstruct.h"
 
 class PngFormat : public FileFormat
 {
@@ -100,7 +101,7 @@ bool PngFormat::onLoad(FileOp* fop)
   if (info_ptr == NULL) {
     fop_error(fop, "png_create_info_struct\n");
     fclose(fp);
-    png_destroy_read_struct(&png_ptr, png_infopp_NULL, png_infopp_NULL);
+    png_destroy_read_struct(&png_ptr, NULL, NULL);
     return false;
   }
 
@@ -110,7 +111,7 @@ bool PngFormat::onLoad(FileOp* fop)
   if (setjmp(png_jmpbuf(png_ptr))) {
     fop_error(fop, "Error reading PNG file\n");
     /* Free all of the memory associated with the png_ptr and info_ptr */
-    png_destroy_read_struct(&png_ptr, &info_ptr, png_infopp_NULL);
+    png_destroy_read_struct(&png_ptr, &info_ptr, NULL);
     fclose(fp);
     /* If we get here, we had a problem reading the file */
     return false;
@@ -128,7 +129,7 @@ bool PngFormat::onLoad(FileOp* fop)
   png_read_info(png_ptr, info_ptr);
 
   png_get_IHDR(png_ptr, info_ptr, &width, &height, &bit_depth, &color_type,
-               &interlace_type, int_p_NULL, int_p_NULL);
+               &interlace_type, NULL, NULL);
 
 
   /* Set up the data transformations you want.  Note that these are all
@@ -147,7 +148,7 @@ bool PngFormat::onLoad(FileOp* fop)
 
   /* Expand grayscale images to the full 8 bits from 1, 2, or 4 bits/pixel */
   if (color_type == PNG_COLOR_TYPE_GRAY && bit_depth < 8)
-    png_set_gray_1_2_4_to_8(png_ptr);
+    png_set_expand_gray_1_2_4_to_8(png_ptr);
 
   /* Turn on interlace handling.  REQUIRED if you are not using
    * png_read_image().  To see how to handle interlacing passes,
@@ -181,7 +182,7 @@ bool PngFormat::onLoad(FileOp* fop)
 
     default:
       fop_error(fop, "Color type not supported\n)");
-      png_destroy_read_struct(&png_ptr, &info_ptr, png_infopp_NULL);
+      png_destroy_read_struct(&png_ptr, &info_ptr, NULL);
       fclose(fp);
       return false;
   }
@@ -189,7 +190,7 @@ bool PngFormat::onLoad(FileOp* fop)
   image = fop_sequence_image(fop, imgtype, info_ptr->width, info_ptr->height);
   if (!image) {
     fop_error(fop, "file_sequence_image %dx%d\n", info_ptr->width, info_ptr->height);
-    png_destroy_read_struct(&png_ptr, &info_ptr, png_infopp_NULL);
+    png_destroy_read_struct(&png_ptr, &info_ptr, NULL);
     fclose(fp);
     return false;
   }
@@ -325,7 +326,7 @@ bool PngFormat::onLoad(FileOp* fop)
   png_free(png_ptr, row_pointer);
 
   /* clean up after the read, and free any memory allocated */
-  png_destroy_read_struct(&png_ptr, &info_ptr, png_infopp_NULL);
+  png_destroy_read_struct(&png_ptr, &info_ptr, NULL);
 
   /* close the file */
   fclose(fp);
@@ -366,7 +367,7 @@ bool PngFormat::onSave(FileOp* fop)
   info_ptr = png_create_info_struct(png_ptr);
   if (info_ptr == NULL) {
     fclose(fp);
-    png_destroy_write_struct(&png_ptr, png_infopp_NULL);
+    png_destroy_write_struct(&png_ptr, NULL);
     return false;
   }
 

@@ -1,6 +1,3 @@
-# ASEPRITE
-# Copyright (C) 2001-2012  David Capello
-
 add_library(libpng
   png.c
   pngerror.c
@@ -17,3 +14,11 @@ add_library(libpng
   pngwrite.c
   pngwtran.c
   pngwutil.c)
+
+# SOME NEEDED DEFINITIONS
+
+add_definitions(-DPNG_CONFIGURE_LIBPNG)
+
+if(MSVC)
+  add_definitions(-D_CRT_SECURE_NO_DEPRECATE)
+endif(MSVC)

@@ -163,3 +163,7 @@
         I haven't tested it.
 
         Released: version 1.5.
+
+------- January 2012 -------
+
+7       David Capello: Updated for libpng 1.5.7

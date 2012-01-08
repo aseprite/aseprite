@@ -5,7 +5,11 @@
  */
 
 
+#define PNG_SETJMP_SUPPORTED
+
 #include <png.h>
+#include <pngstruct.h>
+#include <zlib.h>
 #include <allegro.h>
 #include <allegro/internal/aintern.h>
 #include "loadpng.h"
@@ -276,7 +280,7 @@ BITMAP *load_png_pf(PACKFILE *fp, RGB *pal)
      * the normal method of doing things with libpng).  REQUIRED unless you
      * set up your own error handlers in the png_create_read_struct() earlier.
      */
-    if (setjmp(png_ptr->jmpbuf)) {
+    if (setjmp(png_ptr->longjmp_buffer)) {
         /* Free all of the memory associated with the png_ptr and info_ptr */
         png_destroy_read_struct(&png_ptr, &info_ptr, (png_infopp)NULL);
         /* If we get here, we had a problem reading the file */
@@ -372,7 +376,7 @@ BITMAP *load_memory_png(AL_CONST void *buffer, int bufsize, RGB *pal)
      * the normal method of doing things with libpng).  REQUIRED unless you
      * set up your own error handlers in the png_create_read_struct() earlier.
      */
-    if (setjmp(png_ptr->jmpbuf)) {
+    if (setjmp(png_ptr->longjmp_buffer)) {
         /* Free all of the memory associated with the png_ptr and info_ptr */
         png_destroy_read_struct(&png_ptr, &info_ptr, (png_infopp)NULL);
         /* If we get here, we had a problem reading the file */
