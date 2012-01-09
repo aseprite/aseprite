@@ -19,6 +19,7 @@
 #include "config.h"
 
 #include "base/bind.h"
+#include "base/unique_ptr.h"
 #include "commands/command.h"
 #include "document_wrappers.h"
 #include "gui/gui.h"
@@ -109,30 +110,27 @@ protected:
 
     // Resize mask
     if (m_document->isMaskVisible()) {
-      Image* old_bitmap = image_crop(m_document->getMask()->bitmap, -1, -1,
-                                     m_document->getMask()->bitmap->w+2,
-                                     m_document->getMask()->bitmap->h+2, 0);
+      Image* old_bitmap = image_crop(m_document->getMask()->getBitmap(), -1, -1,
+                                     m_document->getMask()->getBitmap()->w+2,
+                                     m_document->getMask()->getBitmap()->h+2, 0);
 
       int w = scale_x(old_bitmap->w);
       int h = scale_y(old_bitmap->h);
-      Mask* new_mask = mask_new();
-      mask_replace(new_mask,
-                   scale_x(m_document->getMask()->x-1),
-                   scale_y(m_document->getMask()->y-1), MAX(1, w), MAX(1, h));
-      image_resize(old_bitmap, new_mask->bitmap,
+      UniquePtr<Mask> new_mask(new Mask);
+      new_mask->replace(scale_x(m_document->getMask()->getBounds().x-1),
+                        scale_y(m_document->getMask()->getBounds().y-1), MAX(1, w), MAX(1, h));
+      image_resize(old_bitmap, new_mask->getBitmap(),
                    m_resize_method,
                    m_sprite->getCurrentPalette(), // Ignored
                    m_sprite->getRgbMap());        // Ignored
       image_free(old_bitmap);
 
       // reshrink
-      mask_intersect(new_mask,
-                     new_mask->x, new_mask->y,
-                     new_mask->w, new_mask->h);
+      new_mask->intersect(new_mask->getBounds().x, new_mask->getBounds().y,
+                          new_mask->getBounds().w, new_mask->getBounds().h);
 
       // copy new mask
       undoTransaction.copyToCurrentMask(new_mask);
-      mask_free(new_mask);
 
       // regenerate mask
       m_document->generateMaskBoundaries();

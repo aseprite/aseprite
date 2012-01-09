@@ -19,6 +19,7 @@
 #ifndef UNDO_TRANSACTION_H_INCLUDED
 #define UNDO_TRANSACTION_H_INCLUDED
 
+#include "gfx/rect.h"
 #include "raster/dithering_method.h"
 #include "undo/modification.h"
 
@@ -75,7 +76,7 @@ public:
   void setCurrentFrame(int frame);
   void setCurrentLayer(Layer* layer);
   void setSpriteSize(int w, int h);
-  void cropSprite(int x, int y, int w, int h, int bgcolor);
+  void cropSprite(const gfx::Rect& bounds, int bgcolor);
   void autocropSprite(int bgcolor);
   void setImgType(int new_imgtype, DitheringMethod dithering_method);
 

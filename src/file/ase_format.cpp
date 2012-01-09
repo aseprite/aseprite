@@ -1215,7 +1215,7 @@ static Mask *ase_file_read_mask_chunk(FILE *f)
 {
   int c, u, v, byte;
   Mask *mask;
-  /* read chunk data */
+  // Read chunk data
   int x = fgetw(f);
   int y = fgetw(f);
   int w = fgetw(f);
@@ -1224,19 +1224,16 @@ static Mask *ase_file_read_mask_chunk(FILE *f)
   ase_file_read_padding(f, 8);
   std::string name = ase_file_read_string(f);
 
-  mask = mask_new();
-  if (!mask)
-    return NULL;
+  mask = new Mask();
+  mask->setName(name.c_str());
+  mask->replace(x, y, w, h);
 
-  mask_set_name(mask, name.c_str());
-  mask_replace(mask, x, y, w, h);
-
-  /* read image data */
+  // Read image data
   for (v=0; v<h; v++)
     for (u=0; u<(w+7)/8; u++) {
       byte = fgetc(f);
       for (c=0; c<8; c++)
-        image_putpixel(mask->bitmap, u*8+c, v, byte & (1<<(7-c)));
+        image_putpixel(mask->getBitmap(), u*8+c, v, byte & (1<<(7-c)));
     }
 
   return mask;
@@ -1245,24 +1242,25 @@ static Mask *ase_file_read_mask_chunk(FILE *f)
 static void ase_file_write_mask_chunk(FILE *f, Mask *mask)
 {
   int c, u, v, byte;
+  const gfx::Rect& bounds(mask->getBounds());
 
   ase_file_write_start_chunk(f, ASE_FILE_CHUNK_MASK);
 
-  fputw(mask->x, f);
-  fputw(mask->y, f);
-  fputw(mask->w, f);
-  fputw(mask->h, f);
+  fputw(bounds.x, f);
+  fputw(bounds.y, f);
+  fputw(bounds.w, f);
+  fputw(bounds.h, f);
   ase_file_write_padding(f, 8);
 
-  /* name */
-  ase_file_write_string(f, mask->name);
+  // Name
+  ase_file_write_string(f, mask->getName().c_str());
 
-  /* bit map */
-  for (v=0; v<mask->h; v++)
-    for (u=0; u<(mask->w+7)/8; u++) {
+  // Bitmap
+  for (v=0; v<bounds.h; v++)
+    for (u=0; u<(bounds.w+7)/8; u++) {
       byte = 0;
       for (c=0; c<8; c++)
-        if (image_getpixel(mask->bitmap, u*8+c, v))
+        if (image_getpixel(mask->getBitmap(), u*8+c, v))
           byte |= (1<<(7-c));
       fputc(byte, f);
     }

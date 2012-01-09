@@ -458,8 +458,8 @@ bool StandbyState::onUpdateStatusBar(Editor* editor)
     app_get_statusbar()->setStatusText
       (0, "Pos %d %d, Size %d %d, Frame %d",
        x, y,
-       ((mask && mask->bitmap)? mask->w: sprite->getWidth()),
-       ((mask && mask->bitmap)? mask->h: sprite->getHeight()),
+       ((mask && mask->getBitmap())? mask->getBounds().w: sprite->getWidth()),
+       ((mask && mask->getBitmap())? mask->getBounds().h: sprite->getHeight()),
        sprite->getCurrentFrame()+1);
   }
 
@@ -476,8 +476,8 @@ void StandbyState::transformSelection(Editor* editor, Message* msg, HandleType h
   EditorCustomizationDelegate* customization = editor->getCustomizationDelegate();
   Document* document = editor->getDocument();
   UniquePtr<Image> tmpImage(NewImageFromMask(document));
-  int x = document->getMask()->x;
-  int y = document->getMask()->y;
+  int x = document->getMask()->getBounds().x;
+  int y = document->getMask()->getBounds().y;
   int opacity = 255;
   Sprite* sprite = editor->getSprite();
   PixelsMovement* pixelsMovement = new PixelsMovement(document, sprite, tmpImage, x, y, opacity,

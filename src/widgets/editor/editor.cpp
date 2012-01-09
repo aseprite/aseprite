@@ -1114,7 +1114,7 @@ bool Editor::isInsideSelection()
   return
     m_document != NULL &&
     m_document->isMaskVisible() &&
-    m_document->getMask()->contains_point(x, y);
+    m_document->getMask()->containsPoint(x, y);
 }
 
 void Editor::setZoomAndCenterInMouse(int zoom, int mouse_x, int mouse_y)

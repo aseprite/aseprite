@@ -68,7 +68,7 @@ void CropSpriteCommand::onExecute(Context* context)
     UndoTransaction undoTransaction(document, "Sprite Crop");
     int bgcolor = color_utils::color_for_image(app_get_colorbar()->getBgColor(), sprite->getImgType());
 
-    undoTransaction.cropSprite(mask->x, mask->y, mask->w, mask->h, bgcolor);
+    undoTransaction.cropSprite(mask->getBounds(), bgcolor);
     undoTransaction.commit();
   }
   document->generateMaskBoundaries();

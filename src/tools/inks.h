@@ -250,7 +250,7 @@ public:
       if (loop->getMouseButton() == ToolLoop::Left)
         loop->getMask()->add(x1-offset.x, y-offset.y, x2-x1+1, 1);
       else if (loop->getMouseButton() == ToolLoop::Right)
-        mask_subtract(loop->getMask(), x1-offset.x, y-offset.y, x2-x1+1, 1);
+        loop->getMask()->subtract(x1-offset.x, y-offset.y, x2-x1+1, 1);
     }
     else
       image_hline(loop->getDstImage(), x1, y, x2, loop->getPrimaryColor());

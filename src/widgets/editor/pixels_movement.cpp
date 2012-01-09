@@ -125,13 +125,8 @@ void PixelsMovement::catchImageAgain(int x, int y, HandleType handle)
 
 void PixelsMovement::maskImage(const Image* image, int x, int y)
 {
-  mask_replace(m_currentMask,
-               m_currentData.bounds().x,
-               m_currentData.bounds().y,
-               m_currentData.bounds().w,
-               m_currentData.bounds().h);
-
-  mask_copy(m_initialMask, m_currentMask);
+  m_currentMask->replace(m_currentData.bounds());
+  m_initialMask->copyFrom(m_currentMask);
 
   DocumentWriter documentWriter(m_documentReader);
 
@@ -483,10 +478,11 @@ void PixelsMovement::redrawCurrentMask()
 
   // Transform mask
 
-  mask_replace(m_currentMask, 0, 0, m_sprite->getWidth(), m_sprite->getHeight());
+  m_currentMask->replace(0, 0, m_sprite->getWidth(), m_sprite->getHeight());
   m_currentMask->freeze();
-  image_clear(m_currentMask->bitmap, 0);
-  image_parallelogram(m_currentMask->bitmap, m_initialMask->bitmap,
+  image_clear(m_currentMask->getBitmap(), 0);
+  image_parallelogram(m_currentMask->getBitmap(),
+                      m_initialMask->getBitmap(),
                       corners.leftTop().x, corners.leftTop().y,
                       corners.rightTop().x, corners.rightTop().y,
                       corners.rightBottom().x, corners.rightBottom().y,

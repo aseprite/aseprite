@@ -126,33 +126,33 @@ protected:
     // rotate mask
     if (m_document->isMaskVisible()) {
       Mask* origMask = m_document->getMask();
-      Mask* new_mask = mask_new();
+      UniquePtr<Mask> new_mask(new Mask());
+      const gfx::Rect& origBounds = origMask->getBounds();
       int x = 0, y = 0;
 
       switch (m_angle) {
         case 180:
-          x = m_sprite->getWidth() - origMask->x - origMask->w;
-          y = m_sprite->getHeight() - origMask->y - origMask->h;
+          x = m_sprite->getWidth() - origBounds.x - origBounds.w;
+          y = m_sprite->getHeight() - origBounds.y - origBounds.h;
           break;
         case 90:
-          x = m_sprite->getHeight() - origMask->y - origMask->h;
-          y = origMask->x;
+          x = m_sprite->getHeight() - origBounds.y - origBounds.h;
+          y = origBounds.x;
           break;
         case -90:
-          x = origMask->y;
-          y = m_sprite->getWidth() - origMask->x - origMask->w;
+          x = origBounds.y;
+          y = m_sprite->getWidth() - origBounds.x - origBounds.w;
           break;
       }
 
       // create the new rotated mask
-      mask_replace(new_mask, x, y,
-                   m_angle == 180 ? origMask->w: origMask->h,
-                   m_angle == 180 ? origMask->h: origMask->w);
-      image_rotate(origMask->bitmap, new_mask->bitmap, m_angle);
+      new_mask->replace(x, y,
+                        m_angle == 180 ? origBounds.w: origBounds.h,
+                        m_angle == 180 ? origBounds.h: origBounds.w);
+      image_rotate(origMask->getBitmap(), new_mask->getBitmap(), m_angle);
 
       // copy new mask
       undoTransaction.copyToCurrentMask(new_mask);
-      mask_free(new_mask);
 
       // regenerate mask
       m_document->generateMaskBoundaries();

@@ -18,12 +18,13 @@
 
 #include "config.h"
 
-#include <stdlib.h>
-#include <string.h>
+#include "raster/mask.h"
 
 #include "base/memory.h"
 #include "raster/image.h"
-#include "raster/mask.h"
+
+#include <cstdlib>
+#include <cstring>
 
 //////////////////////////////////////////////////////////////////////
 
@@ -37,34 +38,38 @@ Mask::Mask(const Mask& mask)
   : GfxObj(mask)
 {
   initialize();
-  mask_copy(this, &mask);
+  copyFrom(&mask);
+}
+
+Mask::Mask(int x, int y, Image* bitmap)
+  : GfxObj(GFXOBJ_MASK)
+  , m_freeze_count(0)
+  , m_bounds(x, y, bitmap->w, bitmap->h)
+  , m_bitmap(bitmap)
+{
 }
 
 Mask::~Mask()
 {
   ASSERT(m_freeze_count == 0);
-
-  if (this->name)
-    base_free(this->name);
-
-  if (this->bitmap)
-    image_free(this->bitmap);
+  delete m_bitmap;
 }
 
 void Mask::initialize()
 {
-  this->m_freeze_count = 0;
-  this->name = NULL;
-  this->x = 0;
-  this->y = 0;
-  this->w = 0;
-  this->h = 0;
-  this->bitmap = NULL;
+  m_freeze_count = 0;
+  m_bounds = gfx::Rect(0, 0, 0, 0);
+  m_bitmap = NULL;
 }
 
 int Mask::getMemSize() const
 {
-  return sizeof(Mask) + (this->bitmap ? this->bitmap->getMemSize(): 0);
+  return sizeof(Mask) + (m_bitmap ? m_bitmap->getMemSize(): 0);
+}
+
+void Mask::setName(const char *name)
+{
+  m_name = name;
 }
 
 void Mask::freeze()
@@ -83,161 +88,123 @@ void Mask::unfreeze()
     shrink();
 }
 
-gfx::Rect Mask::getBounds() const
+void Mask::copyFrom(const Mask* sourceMask)
 {
-  return gfx::Rect(x, y, w, h);
-}
+  clear();
+  setName(sourceMask->getName().c_str());
 
-//////////////////////////////////////////////////////////////////////
+  if (sourceMask->getBitmap()) {
+    // Add all the area of "mask"
+    add(sourceMask->getBounds());
 
-Mask* mask_new()
-{
-  return new Mask();
-}
-
-Mask* mask_new_copy(const Mask* mask)
-{
-  ASSERT(mask);
-  return new Mask(*mask);
-}
-
-void mask_free(Mask* mask)
-{
-  ASSERT(mask);
-  delete mask;
-}
-
-void mask_set_name(Mask* mask, const char *name)
-{
-  if (mask->name)
-    base_free(mask->name);
-
-  mask->name = name ? base_strdup(name): NULL;
-}
-
-void mask_copy(Mask* mask_dst, const Mask* mask_src)
-{
-  mask_none(mask_dst);
-
-  if (mask_src->name)
-    mask_set_name(mask_dst, mask_src->name);
-
-  if (mask_src->bitmap) {
-    // add all the area of "mask"
-    mask_dst->add(mask_src->x, mask_src->y,
-                  mask_src->w, mask_src->h);
-
-    /* and copy the "mask" bitmap */
-    image_copy(mask_dst->bitmap, mask_src->bitmap, 0, 0);
+    // And copy the "mask" bitmap
+    image_copy(m_bitmap, sourceMask->m_bitmap, 0, 0);
   }
 }
 
-void mask_move(Mask* mask, int x, int y)
+void Mask::offsetOrigin(int dx, int dy)
 {
-  mask->x += x;
-  mask->y += y;
+  m_bounds.offset(dx, dy);
 }
 
-void mask_none(Mask* mask)
+void Mask::clear()
 {
-  if (mask->bitmap) {
-    image_free(mask->bitmap);
-    mask->bitmap = NULL;
-    mask->x = 0;
-    mask->y = 0;
-    mask->w = 0;
-    mask->h = 0;
+  if (m_bitmap) {
+    delete m_bitmap;
+    m_bitmap = NULL;
   }
+  m_bounds = gfx::Rect(0, 0, 0, 0);
 }
 
-void mask_invert(Mask* mask)
+void Mask::invert()
 {
-  if (mask->bitmap) {
+  if (m_bitmap) {
     uint8_t* address;
     int u, v;
     div_t d;
 
-    for (v=0; v<mask->h; v++) {
+    for (v=0; v<m_bounds.h; v++) {
       d.quot = d.rem = 0;
-      address = ((uint8_t**)mask->bitmap->line)[v];
-      for (u=0; u<mask->w; u++) {
+      address = ((uint8_t**)m_bitmap->line)[v];
+      for (u=0; u<m_bounds.w; u++) {
         *address ^= (1<<d.rem);
         _image_bitmap_next_bit(d, address);
       }
     }
 
-    mask->shrink();
+    shrink();
   }
 }
 
-void mask_replace(Mask* mask, int x, int y, int w, int h)
+void Mask::replace(int x, int y, int w, int h)
 {
-  mask->x = x;
-  mask->y = y;
-  mask->w = w;
-  mask->h = h;
+  m_bounds = gfx::Rect(x, y, w, h);
 
-  if (mask->bitmap)
-    image_free(mask->bitmap);
+  delete m_bitmap;
+  m_bitmap = image_new(IMAGE_BITMAP, w, h);
 
-  mask->bitmap = image_new(IMAGE_BITMAP, w, h);
-  image_clear(mask->bitmap, 1);
+  image_clear(m_bitmap, 1);
 }
 
-void mask_union(Mask* mask, int x, int y, int w, int h)
+void Mask::replace(const gfx::Rect& bounds)
 {
-  mask->add(x, y, w, h);
+  replace(bounds.x, bounds.y, bounds.w, bounds.h);
 }
 
 void Mask::add(int x, int y, int w, int h)
 {
   if (m_freeze_count == 0)
-    this->reserve(x, y, w, h);
+    reserve(x, y, w, h);
 
-  image_rectfill(this->bitmap,
-                 x-this->x, y-this->y,
-                 x-this->x+w-1, y-this->y+h-1, 1);
+  image_rectfill(m_bitmap,
+                 x-m_bounds.x, y-m_bounds.y,
+                 x-m_bounds.x+w-1, y-m_bounds.y+h-1, 1);
 }
 
-void mask_subtract(Mask* mask, int x, int y, int w, int h)
+void Mask::add(const gfx::Rect& bounds)
 {
-  if (mask->bitmap) {
-    image_rectfill(mask->bitmap,
-                   x-mask->x, y-mask->y,
-                   x-mask->x+w-1, y-mask->y+h-1, 0);
-    mask->shrink();
+  add(bounds.x, bounds.y, bounds.w, bounds.h);
+}
+
+void Mask::subtract(int x, int y, int w, int h)
+{
+  if (m_bitmap) {
+    image_rectfill(m_bitmap,
+                   x-m_bounds.x,
+                   y-m_bounds.y,
+                   x-m_bounds.x+w-1,
+                   y-m_bounds.y+h-1, 0);
+    shrink();
   }
 }
 
-void mask_intersect(Mask* mask, int x, int y, int w, int h)
+void Mask::intersect(int x, int y, int w, int h)
 {
-  if (mask->bitmap) {
+  if (m_bitmap) {
     Image *image;
-    int x1 = mask->x;
-    int y1 = mask->y;
-    int x2 = MIN(mask->x+mask->w-1, x+w-1);
-    int y2 = MIN(mask->y+mask->h-1, y+h-1);
+    int x1 = m_bounds.x;
+    int y1 = m_bounds.y;
+    int x2 = MIN(m_bounds.x+m_bounds.w-1, x+w-1);
+    int y2 = MIN(m_bounds.y+m_bounds.h-1, y+h-1);
 
-    mask->x = MAX(x, x1);
-    mask->y = MAX(y, y1);
-    mask->w = x2 - mask->x + 1;
-    mask->h = y2 - mask->y + 1;
+    m_bounds.x = MAX(x, x1);
+    m_bounds.y = MAX(y, y1);
+    m_bounds.w = x2 - m_bounds.x + 1;
+    m_bounds.h = y2 - m_bounds.y + 1;
 
-    image = image_crop(mask->bitmap, mask->x-x1, mask->y-y1, mask->w, mask->h, 0);
-    image_free(mask->bitmap);
-    mask->bitmap = image;
+    image = image_crop(m_bitmap, m_bounds.x-x1, m_bounds.y-y1, m_bounds.w, m_bounds.h, 0);
+    image_free(m_bitmap);
+    m_bitmap = image;
 
-    mask->shrink();
+    shrink();
   }
 }
 
-void mask_by_color(Mask* mask, const Image *src, int color, int fuzziness)
+void Mask::byColor(const Image *src, int color, int fuzziness)
 {
-  Image *dst;
+  replace(0, 0, src->w, src->h);
 
-  mask_replace(mask, 0, 0, src->w, src->h);
-
-  dst = mask->bitmap;
+  Image* dst = m_bitmap;
 
   switch (src->imgtype) {
 
@@ -335,10 +302,10 @@ void mask_by_color(Mask* mask, const Image *src, int color, int fuzziness)
     } break;
   }
 
-  mask->shrink();
+  shrink();
 }
 
-void mask_crop(Mask* mask, const Image *image)
+void Mask::crop(const Image *image)
 {
 #define ADVANCE(beg, end, o_end, cmp, op, getpixel1, getpixel)  \
   {                                                             \
@@ -364,18 +331,18 @@ void mask_crop(Mask* mask, const Image *image)
   int done_count = 0;
   int done;
 
-  if (!mask->bitmap)
+  if (!m_bitmap)
     return;
 
-  beg_x1 = mask->x;
-  beg_y1 = mask->y;
-  beg_x2 = beg_x1 + mask->w - 1;
-  beg_y2 = beg_y1 + mask->h - 1;
+  beg_x1 = m_bounds.x;
+  beg_y1 = m_bounds.y;
+  beg_x2 = beg_x1 + m_bounds.w - 1;
+  beg_y2 = beg_y1 + m_bounds.h - 1;
 
-  beg_x1 = MID(0, beg_x1, mask->w-1);
-  beg_y1 = MID(0, beg_y1, mask->h-1);
-  beg_x2 = MID(beg_x1, beg_x2, mask->w-1);
-  beg_y2 = MID(beg_y1, beg_y2, mask->h-1);
+  beg_x1 = MID(0, beg_x1, m_bounds.w-1);
+  beg_y1 = MID(0, beg_y1, m_bounds.h-1);
+  beg_x2 = MID(beg_x1, beg_x2, m_bounds.w-1);
+  beg_y2 = MID(beg_y1, beg_y2, m_bounds.h-1);
 
   /* left */
   ADVANCE(x1, x2, y2, <=, ++,
@@ -395,9 +362,9 @@ void mask_crop(Mask* mask, const Image *image)
           image_getpixel(image, c, y2));
 
   if (done_count < 4)
-    mask_intersect(mask, x1, y1, x2, y2);
+    intersect(x1, y1, x2, y2);
   else
-    mask_none(mask);
+    clear();
 
 #undef ADVANCE
 }
@@ -406,36 +373,36 @@ void Mask::reserve(int x, int y, int w, int h)
 {
   ASSERT(w > 0 && h > 0);
 
-  if (!this->bitmap) {
-    this->x = x;
-    this->y = y;
-    this->w = w;
-    this->h = h;
-    this->bitmap = image_new(IMAGE_BITMAP, w, h);
-    image_clear(this->bitmap, 0);
+  if (!m_bitmap) {
+    m_bounds.x = x;
+    m_bounds.y = y;
+    m_bounds.w = w;
+    m_bounds.h = h;
+    m_bitmap = image_new(IMAGE_BITMAP, w, h);
+    image_clear(m_bitmap, 0);
   }
   else {
-    int x1 = this->x;
-    int y1 = this->y;
-    int x2 = MAX(this->x+this->w-1, x+w-1);
-    int y2 = MAX(this->y+this->h-1, y+h-1);
+    int x1 = m_bounds.x;
+    int y1 = m_bounds.y;
+    int x2 = MAX(m_bounds.x+m_bounds.w-1, x+w-1);
+    int y2 = MAX(m_bounds.y+m_bounds.h-1, y+h-1);
     int new_mask_x = MIN(x, x1);
     int new_mask_y = MIN(y, y1);
     int new_mask_w = x2 - new_mask_x + 1;
     int new_mask_h = y2 - new_mask_y + 1;
 
-    if (this->x != new_mask_x ||
-        this->y != new_mask_y ||
-        this->w != new_mask_w ||
-        this->h != new_mask_h) {
-      this->x = new_mask_x;
-      this->y = new_mask_y;
-      this->w = new_mask_w;
-      this->h = new_mask_h;
+    if (m_bounds.x != new_mask_x ||
+        m_bounds.y != new_mask_y ||
+        m_bounds.w != new_mask_w ||
+        m_bounds.h != new_mask_h) {
+      m_bounds.x = new_mask_x;
+      m_bounds.y = new_mask_y;
+      m_bounds.w = new_mask_w;
+      m_bounds.h = new_mask_h;
 
-      Image* image = image_crop(this->bitmap, this->x-x1, this->y-y1, this->w, this->h, 0);
-      delete this->bitmap;      // image
-      this->bitmap = image;
+      Image* image = image_crop(m_bitmap, m_bounds.x-x1, m_bounds.y-y1, m_bounds.w, m_bounds.h, 0);
+      delete m_bitmap;      // image
+      m_bitmap = image;
     }
   }
 }
@@ -451,7 +418,7 @@ void Mask::shrink()
   {                                                                     \
     for (u = u_begin; u u_op u_final; u u_add) {                        \
       for (v = v_begin; v v_op v_final; v v_add) {                      \
-        if (this->bitmap->getpixel(U, V))                               \
+        if (m_bitmap->getpixel(U, V))                                   \
           break;                                                        \
       }                                                                 \
       if (v == v_final)                                                 \
@@ -463,39 +430,39 @@ void Mask::shrink()
 
   int u, v, x1, y1, x2, y2;
 
-  x1 = this->x;
-  y1 = this->y;
-  x2 = this->x+this->w-1;
-  y2 = this->y+this->h-1;
+  x1 = m_bounds.x;
+  y1 = m_bounds.y;
+  x2 = m_bounds.x+m_bounds.w-1;
+  y2 = m_bounds.y+m_bounds.h-1;
 
-  SHRINK_SIDE(0, <, this->w, ++,
-              0, <, this->h, ++, u, v, x1++);
+  SHRINK_SIDE(0, <, m_bounds.w, ++,
+              0, <, m_bounds.h, ++, u, v, x1++);
 
-  SHRINK_SIDE(0, <, this->h, ++,
-              0, <, this->w, ++, v, u, y1++);
+  SHRINK_SIDE(0, <, m_bounds.h, ++,
+              0, <, m_bounds.w, ++, v, u, y1++);
 
-  SHRINK_SIDE(this->w-1, >, 0, --,
-              0, <, this->h, ++, u, v, x2--);
+  SHRINK_SIDE(m_bounds.w-1, >, 0, --,
+              0, <, m_bounds.h, ++, u, v, x2--);
 
-  SHRINK_SIDE(this->h-1, >, 0, --,
-              0, <, this->w, ++, v, u, y2--);
+  SHRINK_SIDE(m_bounds.h-1, >, 0, --,
+              0, <, m_bounds.w, ++, v, u, y2--);
 
   if ((x1 > x2) || (y1 > y2)) {
-    mask_none(this);
+    clear();
   }
-  else if ((x1 != this->x) || (x2 != this->x+this->w-1) ||
-           (y1 != this->y) || (y2 != this->y+this->h-1)) {
-    u = this->x;
-    v = this->y;
+  else if ((x1 != m_bounds.x) || (x2 != m_bounds.x+m_bounds.w-1) ||
+           (y1 != m_bounds.y) || (y2 != m_bounds.y+m_bounds.h-1)) {
+    u = m_bounds.x;
+    v = m_bounds.y;
 
-    this->x = x1;
-    this->y = y1;
-    this->w = x2 - x1 + 1;
-    this->h = y2 - y1 + 1;
+    m_bounds.x = x1;
+    m_bounds.y = y1;
+    m_bounds.w = x2 - x1 + 1;
+    m_bounds.h = y2 - y1 + 1;
 
-    Image* image = image_crop(this->bitmap, this->x-u, this->y-v, this->w, this->h, 0);
-    image_free(this->bitmap);
-    this->bitmap = image;
+    Image* image = image_crop(m_bitmap, m_bounds.x-u, m_bounds.y-v, m_bounds.w, m_bounds.h, 0);
+    image_free(m_bitmap);
+    m_bitmap = image;
   }
 
 #undef SHRINK_SIDE

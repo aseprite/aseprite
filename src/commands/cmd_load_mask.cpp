@@ -77,7 +77,7 @@ void LoadMaskCommand::onExecute(Context* context)
     m_filename = filename;
   }
 
-  Mask *mask = load_msk_file(m_filename.c_str());
+  UniquePtr<Mask> mask(load_msk_file(m_filename.c_str()));
   if (!mask)
     throw base::Exception("Error loading .msk file: %s",
                           static_cast<const char*>(m_filename.c_str()));
@@ -94,8 +94,6 @@ void LoadMaskCommand::onExecute(Context* context)
     }
 
     documentWriter->setMask(mask);
-    mask_free(mask);
-
     documentWriter->generateMaskBoundaries();
   }
 

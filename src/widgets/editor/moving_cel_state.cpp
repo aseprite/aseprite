@@ -89,8 +89,8 @@ bool MovingCelState::onMouseUp(Editor* editor, Message* msg)
 
        // Move selection if it was visible
        if (m_maskVisible)
-         undoTransaction.setMaskPosition(document->getMask()->x + m_celNewX - m_celStartX,
-                                         document->getMask()->y + m_celNewY - m_celStartY);
+         undoTransaction.setMaskPosition(document->getMask()->getBounds().x + m_celNewX - m_celStartX,
+                                         document->getMask()->getBounds().y + m_celNewY - m_celStartY);
 
        undoTransaction.commit();
      }

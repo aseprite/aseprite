@@ -186,18 +186,19 @@ void UndoTransaction::setSpriteSize(int w, int h)
   m_sprite->setSize(w, h);
 }
 
-void UndoTransaction::cropSprite(int x, int y, int w, int h, int bgcolor)
+void UndoTransaction::cropSprite(const gfx::Rect& bounds, int bgcolor)
 {
-  setSpriteSize(w, h);
+  setSpriteSize(bounds.w, bounds.h);
 
-  displaceLayers(m_sprite->getFolder(), -x, -y);
+  displaceLayers(m_sprite->getFolder(), -bounds.x, -bounds.y);
 
   Layer *background_layer = m_sprite->getBackgroundLayer();
   if (background_layer)
     cropLayer(background_layer, 0, 0, m_sprite->getWidth(), m_sprite->getHeight(), bgcolor);
 
-  if (!m_document->getMask()->is_empty())
-    setMaskPosition(m_document->getMask()->x-x, m_document->getMask()->y-y);
+  if (!m_document->getMask()->isEmpty())
+    setMaskPosition(m_document->getMask()->getBounds().x-bounds.x,
+                    m_document->getMask()->getBounds().y-bounds.y);
 }
 
 void UndoTransaction::autocropSprite(int bgcolor)
@@ -235,7 +236,7 @@ void UndoTransaction::autocropSprite(int bgcolor)
   if (x1 > x2 || y1 > y2)
     return;
 
-  cropSprite(x1, y1, x2-x1+1, y2-y1+1, bgcolor);
+  cropSprite(gfx::Rect(x1, y1, x2-x1+1, y2-y1+1), bgcolor);
 }
 
 void UndoTransaction::setImgType(int new_imgtype, DitheringMethod dithering_method)
@@ -1014,13 +1015,13 @@ void UndoTransaction::clearMask(int bgcolor)
     }
   }
   else {
-    int offset_x = mask->x-cel->getX();
-    int offset_y = mask->y-cel->getY();
+    int offset_x = mask->getBounds().x-cel->getX();
+    int offset_y = mask->getBounds().y-cel->getY();
     int u, v, putx, puty;
     int x1 = MAX(0, offset_x);
     int y1 = MAX(0, offset_y);
-    int x2 = MIN(image->w-1, offset_x+mask->w-1);
-    int y2 = MIN(image->h-1, offset_y+mask->h-1);
+    int x2 = MIN(image->w-1, offset_x+mask->getBounds().w-1);
+    int y2 = MIN(image->h-1, offset_y+mask->getBounds().h-1);
 
     // do nothing
     if (x1 > x2 || y1 > y2)
@@ -1031,11 +1032,11 @@ void UndoTransaction::clearMask(int bgcolor)
           image, x1, y1, x2-x1+1, y2-y1+1));
 
     // clear the masked zones
-    for (v=0; v<mask->h; v++) {
+    for (v=0; v<mask->getBounds().h; v++) {
       div_t d = div(0, 8);
-      uint8_t* address = ((uint8_t**)mask->bitmap->line)[v]+d.quot;
+      uint8_t* address = ((uint8_t**)mask->getBitmap()->line)[v]+d.quot;
 
-      for (u=0; u<mask->w; u++) {
+      for (u=0; u<mask->getBounds().w; u++) {
         if ((*address & (1<<d.rem))) {
           putx = u + offset_x;
           puty = v + offset_y;
@@ -1102,7 +1103,7 @@ void UndoTransaction::copyToCurrentMask(Mask* mask)
     m_undoHistory->pushUndoer(new undoers::SetMask(m_undoHistory->getObjects(),
         m_document));
 
-  mask_copy(m_document->getMask(), mask);
+  m_document->getMask()->copyFrom(mask);
 }
 
 void UndoTransaction::setMaskPosition(int x, int y)
@@ -1112,8 +1113,7 @@ void UndoTransaction::setMaskPosition(int x, int y)
   if (isEnabled())
     m_undoHistory->pushUndoer(new undoers::SetMaskPosition(m_undoHistory->getObjects(), m_document));
 
-  m_document->getMask()->x = x;
-  m_document->getMask()->y = y;
+  m_document->getMask()->setOrigin(x, y);
 }
 
 void UndoTransaction::deselectMask()

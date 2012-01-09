@@ -30,8 +30,8 @@ using namespace undoers;
 
 SetMaskPosition::SetMaskPosition(ObjectsContainer* objects, Document* document)
   : m_documentId(objects->addObject(document))
-  , m_x(document->getMask()->x)
-  , m_y(document->getMask()->y)
+  , m_x(document->getMask()->getBounds().x)
+  , m_y(document->getMask()->getBounds().y)
 {
 }
 
@@ -47,6 +47,5 @@ void SetMaskPosition::revert(ObjectsContainer* objects, UndoersCollector* redoer
   // Push another SetMaskPosition as redoer
   redoers->pushUndoer(new SetMaskPosition(objects, document));
 
-  document->getMask()->x = m_x;
-  document->getMask()->y = m_y;
+  document->getMask()->setOrigin(m_x, m_y);
 }

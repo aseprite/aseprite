@@ -41,16 +41,18 @@ using namespace base::serialization::little_endian;
 
 void write_mask(std::ostream& os, Mask* mask)
 {
-  write16(os, mask->x);                // Xpos
-  write16(os, mask->y);                // Ypos
-  write16(os, mask->bitmap ? mask->w: 0); // Width
-  write16(os, mask->bitmap ? mask->h: 0); // Height
+  const gfx::Rect& bounds = mask->getBounds();
 
-  if (mask->bitmap) {
-    int size = (mask->w+7)/8;
+  write16(os, bounds.x);                        // Xpos
+  write16(os, bounds.y);                        // Ypos
+  write16(os, mask->getBitmap() ? bounds.w: 0); // Width
+  write16(os, mask->getBitmap() ? bounds.h: 0); // Height
 
-    for (int c=0; c<mask->h; c++)
-      os.write((char*)mask->bitmap->line[c], size);
+  if (mask->getBitmap()) {
+    int size = (bounds.w+7)/8;
+
+    for (int c=0; c<bounds.h; c++)
+      os.write((char*)mask->getBitmap()->line[c], size);
   }
 }
 
@@ -61,14 +63,14 @@ Mask* read_mask(std::istream& is)
   int w = read16(is);           // Width
   int h = read16(is);           // Height
 
-  UniquePtr<Mask> mask(mask_new());
+  UniquePtr<Mask> mask(new Mask());
 
   if (w > 0 && h > 0) {
     int size = (w+7)/8;
 
     mask->add(x, y, w, h);
-    for (int c=0; c<mask->h; c++)
-      is.read((char*)mask->bitmap->line[c], size);
+    for (int c=0; c<mask->getBounds().h; c++)
+      is.read((char*)mask->getBitmap()->line[c], size);
   }
 
   return mask.release();

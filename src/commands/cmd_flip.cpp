@@ -110,11 +110,13 @@ void FlipCommand::onExecute(Context* context)
         y2 = image->h-1;
       }
       else {
+        const gfx::Rect& bounds = document->getMask()->getBounds();
+
         // apply the cel offset
-        x1 = document->getMask()->x - x;
-        y1 = document->getMask()->y - y;
-        x2 = document->getMask()->x + document->getMask()->w - 1 - x;
-        y2 = document->getMask()->y + document->getMask()->h - 1 - y;
+        x1 = bounds.x - x;
+        y1 = bounds.y - y;
+        x2 = bounds.x + bounds.w - 1 - x;
+        y2 = bounds.y + bounds.h - 1 - y;
 
         // clip
         x1 = MID(0, x1, image->w-1);

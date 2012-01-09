@@ -40,6 +40,8 @@ Image* NewImageFromMask(const Document* srcDocument)
 {
   const Sprite* srcSprite = srcDocument->getSprite();
   const Mask* srcMask = srcDocument->getMask();
+  const Image* srcBitmap = srcMask->getBitmap();
+  const gfx::Rect& srcBounds = srcMask->getBounds();
   const uint8_t* address;
   int x, y, u, v, getx, gety;
   Image *dst;
@@ -48,10 +50,10 @@ Image* NewImageFromMask(const Document* srcDocument)
 
   ASSERT(srcSprite);
   ASSERT(srcMask);
-  ASSERT(srcMask->bitmap);
+  ASSERT(srcBitmap);
   ASSERT(src);
 
-  dst = image_new(srcSprite->getImgType(), srcMask->w, srcMask->h);
+  dst = image_new(srcSprite->getImgType(), srcBounds.w, srcBounds.h);
   if (!dst)
     return NULL;
 
@@ -59,14 +61,14 @@ Image* NewImageFromMask(const Document* srcDocument)
   image_clear(dst, 0);
 
   // Copy the masked zones
-  for (v=0; v<srcMask->h; v++) {
+  for (v=0; v<srcBounds.h; v++) {
     d = div(0, 8);
-    address = ((const uint8_t**)srcMask->bitmap->line)[v]+d.quot;
+    address = ((const uint8_t**)srcBitmap->line)[v]+d.quot;
 
-    for (u=0; u<srcMask->w; u++) {
+    for (u=0; u<srcBounds.w; u++) {
       if ((*address & (1<<d.rem))) {
-        getx = u+srcMask->x-x;
-        gety = v+srcMask->y-y;
+        getx = u+srcBounds.x-x;
+        gety = v+srcBounds.y-y;
 
         if ((getx >= 0) && (getx < src->w) &&
             (gety >= 0) && (gety < src->h))

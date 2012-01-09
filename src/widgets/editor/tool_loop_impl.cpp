@@ -133,8 +133,9 @@ public:
     int y1 = m_expandCelCanvas.getCel()->getY();
 
     m_mask = m_document->getMask();
-    m_maskOrigin = (!m_mask->is_empty() ? gfx::Point(m_mask->x-x1, m_mask->y-y1):
-                                          gfx::Point(0, 0));
+    m_maskOrigin = (!m_mask->isEmpty() ? gfx::Point(m_mask->getBounds().x-x1,
+                                                    m_mask->getBounds().y-y1):
+                                         gfx::Point(0, 0));
 
     m_opacity = settings->getToolSettings(m_tool)->getOpacity();
     m_tolerance = settings->getToolSettings(m_tool)->getTolerance();

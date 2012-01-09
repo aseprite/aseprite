@@ -75,7 +75,7 @@ FilterManagerImpl::FilterManagerImpl(Document* document, Filter* filter)
 FilterManagerImpl::~FilterManagerImpl()
 {
   if (m_preview_mask)
-    mask_free(m_preview_mask);
+    delete m_preview_mask;
 
   if (m_dst)
     image_free(m_dst);
@@ -113,17 +113,16 @@ void FilterManagerImpl::begin()
 void FilterManagerImpl::beginForPreview()
 {
   if (m_preview_mask) {
-    mask_free(m_preview_mask);
+    delete m_preview_mask;
     m_preview_mask = NULL;
   }
 
   if (m_document->isMaskVisible())
-    m_preview_mask = mask_new_copy(m_document->getMask());
+    m_preview_mask = new Mask(*m_document->getMask());
   else {
-    m_preview_mask = mask_new();
-    mask_replace(m_preview_mask,
-                 m_offset_x, m_offset_y,
-                 m_src->w, m_src->h);
+    m_preview_mask = new Mask();
+    m_preview_mask->replace(m_offset_x, m_offset_y,
+                            m_src->w, m_src->h);
   }
 
   m_row = 0;
@@ -149,17 +148,17 @@ void FilterManagerImpl::beginForPreview()
     h = y2 - y1 + 1;
 
     if ((w < 1) || (h < 1)) {
-      mask_free(m_preview_mask);
+      delete m_preview_mask;
       m_preview_mask = NULL;
       m_row = -1;
       return;
     }
 
-    mask_intersect(m_preview_mask, x, y, w, h);
+    m_preview_mask->intersect(x, y, w, h);
   }
 
   if (!updateMask(m_mask, m_src)) {
-    mask_free(m_preview_mask);
+    delete m_preview_mask;
     m_preview_mask = NULL;
     m_row = -1;
     return;
@@ -169,9 +168,9 @@ void FilterManagerImpl::beginForPreview()
 bool FilterManagerImpl::applyStep()
 {
   if ((m_row >= 0) && (m_row < m_h)) {
-    if ((m_mask) && (m_mask->bitmap)) {
-      m_d = div(m_x-m_mask->x+m_offset_x, 8);
-      m_mask_address = ((uint8_t**)m_mask->bitmap->line)[m_row+m_y-m_mask->y+m_offset_y]+m_d.quot;
+    if ((m_mask) && (m_mask->getBitmap())) {
+      m_d = div(m_x-m_mask->getBounds().x+m_offset_x, 8);
+      m_mask_address = ((uint8_t**)m_mask->getBitmap()->line)[m_row+m_y-m_mask->getBounds().y+m_offset_y]+m_d.quot;
     }
     else
       m_mask_address = NULL;
@@ -348,7 +347,7 @@ void FilterManagerImpl::init(const Layer* layer, Image* image, int offset_x, int
     throw InvalidAreaException();
 
   if (m_preview_mask) {
-    mask_free(m_preview_mask);
+    delete m_preview_mask;
     m_preview_mask = NULL;
   }
 
@@ -381,11 +380,11 @@ bool FilterManagerImpl::updateMask(Mask* mask, const Image* image)
 {
   int x, y, w, h;
 
-  if ((mask) && (mask->bitmap)) {
-    x = mask->x - m_offset_x;
-    y = mask->y - m_offset_y;
-    w = mask->w;
-    h = mask->h;
+  if ((mask) && (mask->getBitmap())) {
+    x = mask->getBounds().x - m_offset_x;
+    y = mask->getBounds().y - m_offset_y;
+    w = mask->getBounds().w;
+    h = mask->getBounds().h;
 
     if (x < 0) {
       w += x;

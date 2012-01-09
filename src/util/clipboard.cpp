@@ -104,8 +104,8 @@ static bool copy_from_document(const Document* document)
   if (!image)
     return false;
 
-  clipboard_x = document->getMask()->x;
-  clipboard_y = document->getMask()->y;
+  clipboard_x = document->getMask()->getBounds().x;
+  clipboard_y = document->getMask()->getBounds().y;
 
   const Palette* pal = document->getSprite()->getPalette(document->getSprite()->getCurrentFrame());
   set_clipboard(image, pal ? new Palette(*pal): NULL, true);

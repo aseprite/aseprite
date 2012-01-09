@@ -22,6 +22,7 @@
 #include "app/color.h"
 #include "app/color_utils.h"
 #include "base/bind.h"
+#include "base/unique_ptr.h"
 #include "document.h"
 #include "document_wrappers.h"
 #include "gui/box.h"
@@ -138,19 +139,18 @@ void dialogs_mask_color(Document* document)
   if (window->get_killer() == button_ok) {
     DocumentWriter documentWriter(documentReader);
     undo::UndoHistory* undo = document->getUndoHistory();
-    Mask* mask;
 
-    /* undo */
     if (undo->isEnabled()) {
       undo->setLabel("Mask by Color");
       undo->setModification(undo::DoesntModifyDocument);
       undo->pushUndoer(new undoers::SetMask(undo->getObjects(), document));
     }
 
-    /* change the mask */
-    mask = gen_mask(sprite);
-    document->setMask(mask);
-    mask_free(mask);
+    // Change the mask
+    {
+      UniquePtr<Mask> mask(gen_mask(sprite));
+      document->setMask(mask);
+    }
 
     set_config_color("MaskColor", "Color", button_color->getColor());
     set_config_int("MaskColor", "Tolerance", slider_tolerance->getValue());
@@ -177,7 +177,7 @@ static void button_2_command(Widget* widget, const DocumentReader& document)
   mask_preview(document);
 }
 
-static Mask *gen_mask(const Sprite* sprite)
+static Mask* gen_mask(const Sprite* sprite)
 {
   int xpos, ypos, color, tolerance;
 
@@ -186,23 +186,21 @@ static Mask *gen_mask(const Sprite* sprite)
   color = color_utils::color_for_image(button_color->getColor(), sprite->getImgType());
   tolerance = slider_tolerance->getValue();
 
-  Mask* mask = mask_new();
-  mask_by_color(mask, image, color, tolerance);
-  mask_move(mask, xpos, ypos);
+  UniquePtr<Mask> mask(new Mask());
+  mask->byColor(image, color, tolerance);
+  mask->offsetOrigin(xpos, ypos);
 
-  return mask;
+  return mask.release();
 }
 
 static void mask_preview(const DocumentReader& document)
 {
   if (check_preview->isSelected()) {
-    Mask* mask = gen_mask(document->getSprite());
+    UniquePtr<Mask> mask(gen_mask(document->getSprite()));
     {
       DocumentWriter documentWriter(document);
       documentWriter->generateMaskBoundaries(mask);
     }
-    mask_free(mask);
-
     update_screen_for_document(document);
   }
 }

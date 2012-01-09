@@ -18,6 +18,7 @@
 
 #include "config.h"
 
+#include "base/unique_ptr.h"
 #include "commands/command.h"
 #include "commands/commands.h"
 #include "document_wrappers.h"
@@ -85,31 +86,33 @@ void InvertMaskCommand::onExecute(Context* context)
     }
 
     /* create a new mask */
-    Mask* mask = mask_new();
+    UniquePtr<Mask> mask(new Mask());
 
     /* select all the sprite area */
-    mask_replace(mask, 0, 0, sprite->getWidth(), sprite->getHeight());
+    mask->replace(0, 0, sprite->getWidth(), sprite->getHeight());
 
     /* remove in the new mask the current sprite marked region */
-    image_rectfill(mask->bitmap,
-                   document->getMask()->x, document->getMask()->y,
-                   document->getMask()->x + document->getMask()->w-1,
-                   document->getMask()->y + document->getMask()->h-1, 0);
+    const gfx::Rect& maskBounds = document->getMask()->getBounds();
+    image_rectfill(mask->getBitmap(),
+                   maskBounds.x, maskBounds.y,
+                   maskBounds.x + maskBounds.w-1,
+                   maskBounds.y + maskBounds.h-1, 0);
 
-    /* invert the current mask in the sprite */
-    mask_invert(document->getMask());
-    if (document->getMask()->bitmap) {
-      /* copy the inverted region in the new mask */
-      image_copy(mask->bitmap, document->getMask()->bitmap,
-                 document->getMask()->x, document->getMask()->y);
+    // Invert the current mask in the sprite
+    document->getMask()->invert();
+    if (document->getMask()->getBitmap()) {
+      // Copy the inverted region in the new mask
+      image_copy(mask->getBitmap(),
+                 document->getMask()->getBitmap(),
+                 document->getMask()->getBounds().x,
+                 document->getMask()->getBounds().y);
     }
 
     /* we need only need the area inside the sprite */
-    mask_intersect(mask, 0, 0, sprite->getWidth(), sprite->getHeight());
+    mask->intersect(0, 0, sprite->getWidth(), sprite->getHeight());
 
-    /* set the new mask */
+    // Set the new mask
     document->setMask(mask);
-    mask_free(mask);
 
     document->generateMaskBoundaries();
     update_screen_for_document(document);

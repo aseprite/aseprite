@@ -36,17 +36,18 @@
   /* Use mask */                                                        \
   if (loop->useMask()) {                                                \
     Point maskOrigin(loop->getMaskOrigin());                            \
+    const Rect& maskBounds(loop->getMask()->getBounds());               \
                                                                         \
-    if ((y < maskOrigin.y) || (y >= maskOrigin.y+loop->getMask()->h))   \
+    if ((y < maskOrigin.y) || (y >= maskOrigin.y+maskBounds.h))         \
       return;                                                           \
                                                                         \
     if (x1 < maskOrigin.x)                                              \
       x1 = maskOrigin.x;                                                \
                                                                         \
-    if (x2 > maskOrigin.x+loop->getMask()->w-1)                         \
-      x2 = maskOrigin.x+loop->getMask()->w-1;                           \
+    if (x2 > maskOrigin.x+maskBounds.w-1)                               \
+      x2 = maskOrigin.x+maskBounds.w-1;                                 \
                                                                         \
-    if (Image* bitmap = loop->getMask()->bitmap) {                      \
+    if (Image* bitmap = loop->getMask()->getBitmap()) {                 \
       addresses_initialize;                                             \
       for (x=x1; x<=x2; ++x) {                                          \
         if (bitmap->getpixel(x-maskOrigin.x, y-maskOrigin.y))           \

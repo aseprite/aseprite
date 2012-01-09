@@ -59,24 +59,19 @@ Mask *load_msk_file(const char *filename)
         image_free(image);
     }
     else {
-      mask = mask_new();
-      mask->x = x;
-      mask->y = y;
-      mask->w = image->w;
-      mask->h = image->h;
-      mask->bitmap = image;
+      mask = new Mask(x, y, image);
     }
   }
-  /* Animator MSK format */
+  // Animator MSK format
   else if (orig_size == 8000) {
-    mask = mask_new();
-    mask_replace(mask, 0, 0, 320, 200);
+    mask = new Mask();
+    mask->replace(0, 0, 320, 200);
 
     u = v = 0;
     for (i=0; i<8000; i++) {
       byte = pack_getc (f);
       for (c=0; c<8; c++) {
-        mask->bitmap->putpixel(u, v, byte & (1<<(7-c)));
+        mask->getBitmap()->putpixel(u, v, byte & (1<<(7-c)));
         u++;
         if (u == 320) {
           u = 0;
@@ -96,8 +91,11 @@ Mask *load_msk_file(const char *filename)
 /* saves an Animator Pro MSK file (really a PIC file) */
 int save_msk_file(const Mask *mask, const char *filename)
 {
-  if (mask->bitmap)
-    return save_pic_file(filename, mask->x, mask->y, NULL, mask->bitmap);
+  if (mask->getBitmap())
+    return save_pic_file(filename,
+                         mask->getBounds().x,
+                         mask->getBounds().y, NULL,
+                         mask->getBitmap());
   else
     return -1;
 }

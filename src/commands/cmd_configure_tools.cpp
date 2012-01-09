@@ -532,9 +532,8 @@ void ConfigureTools::onSetGridClick()
 
     if (document && document->isMaskVisible()) {
       const Mask* mask(document->getMask());
-      Rect bounds(mask->x, mask->y, mask->w, mask->h);
 
-      UIContext::instance()->getSettings()->setGridBounds(bounds);
+      UIContext::instance()->getSettings()->setGridBounds(mask->getBounds());
 
       if (UIContext::instance()->getSettings()->getGridVisible())
         refresh_all_editors();

@@ -210,15 +210,15 @@ void Document::generateMaskBoundaries(Mask* mask)
 
   ASSERT(mask != NULL);
 
-  if (mask->bitmap) {
-    m_bound.seg = find_mask_boundary(mask->bitmap,
+  if (!mask->isEmpty()) {
+    m_bound.seg = find_mask_boundary(mask->getBitmap(),
                                      &m_bound.nseg,
                                      IgnoreBounds, 0, 0, 0, 0);
     for (int c=0; c<m_bound.nseg; c++) {
-      m_bound.seg[c].x1 += mask->x;
-      m_bound.seg[c].y1 += mask->y;
-      m_bound.seg[c].x2 += mask->x;
-      m_bound.seg[c].y2 += mask->y;
+      m_bound.seg[c].x1 += mask->getBounds().x;
+      m_bound.seg[c].y1 += mask->getBounds().y;
+      m_bound.seg[c].x2 += mask->getBounds().x;
+      m_bound.seg[c].y2 += mask->getBounds().y;
     }
   }
 }
@@ -276,7 +276,7 @@ Mask* Document::getMask() const
 
 void Document::setMask(const Mask* mask)
 {
-  m_mask.reset(mask_new_copy(mask));
+  m_mask.reset(new Mask(*mask));
   m_maskVisible = true;
 
   resetTransformation();
@@ -287,7 +287,7 @@ bool Document::isMaskVisible() const
   return
     m_maskVisible &&            // The mask was not hidden by the user explicitly
     m_mask &&                   // The mask does exist
-    !m_mask->is_empty();        // The mask is not empty
+    !m_mask->isEmpty();         // The mask is not empty
 }
 
 void Document::setMaskVisible(bool visible)

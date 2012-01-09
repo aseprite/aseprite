@@ -54,7 +54,7 @@ bool ReselectMaskCommand::onEnabled(Context* context)
      document &&                      // The document does exist
     !document->isMaskVisible() &&     // The mask is hidden
      document->getMask() &&           // The mask does exist
-    !document->getMask()->is_empty(); // But it is not empty
+    !document->getMask()->isEmpty();  // But it is not empty
 }
 
 void ReselectMaskCommand::onExecute(Context* context)
