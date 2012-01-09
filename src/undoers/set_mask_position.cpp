@@ -48,4 +48,5 @@ void SetMaskPosition::revert(ObjectsContainer* objects, UndoersCollector* redoer
   redoers->pushUndoer(new SetMaskPosition(objects, document));
 
   document->getMask()->setOrigin(m_x, m_y);
+  document->resetTransformation();
 }

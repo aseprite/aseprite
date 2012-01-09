@@ -125,14 +125,15 @@ protected:
                    m_sprite->getRgbMap());        // Ignored
       image_free(old_bitmap);
 
-      // reshrink
+      // Reshrink
       new_mask->intersect(new_mask->getBounds().x, new_mask->getBounds().y,
                           new_mask->getBounds().w, new_mask->getBounds().h);
 
-      // copy new mask
+      // Copy new mask
       undoTransaction.copyToCurrentMask(new_mask);
 
-      // regenerate mask
+      // Regenerate mask
+      m_document->resetTransformation();
       m_document->generateMaskBoundaries();
     }
 

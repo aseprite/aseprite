@@ -1114,6 +1114,7 @@ void UndoTransaction::setMaskPosition(int x, int y)
     m_undoHistory->pushUndoer(new undoers::SetMaskPosition(m_undoHistory->getObjects(), m_document));
 
   m_document->getMask()->setOrigin(x, y);
+  m_document->resetTransformation();
 }
 
 void UndoTransaction::deselectMask()

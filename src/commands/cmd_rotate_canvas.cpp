@@ -151,10 +151,11 @@ protected:
                         m_angle == 180 ? origBounds.h: origBounds.w);
       image_rotate(origMask->getBitmap(), new_mask->getBitmap(), m_angle);
 
-      // copy new mask
+      // Copy new mask
       undoTransaction.copyToCurrentMask(new_mask);
 
-      // regenerate mask
+      // Regenerate mask
+      m_document->resetTransformation();
       m_document->generateMaskBoundaries();
     }
 
