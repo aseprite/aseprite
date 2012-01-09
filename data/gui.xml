@@ -58,6 +58,7 @@
       <key command="GotoPreviousFrame" shortcut="Left" />
       <key command="GotoNextFrame" shortcut="Right" />
       <key command="GotoLastFrame" shortcut="End" />
+      <key command="GotoFrame" shortcut="Alt+G" />
       <key command="PlayAnimation" shortcut="Enter" />
       <!-- Select -->
       <key command="MaskAll" shortcut="Ctrl+A" />
@@ -303,6 +304,8 @@
           <item command="GotoPreviousFrame" text="&amp;Previous Frame" />
           <item command="GotoNextFrame" text="&amp;Next Frame" />
           <item command="GotoLastFrame" text="&amp;Last Frame" />
+          <separator />
+          <item command="GotoFrame" text="&amp;Go to Frame" />
         </menu>
         <item command="PlayAnimation" text="&amp;Play Animation" />
         <separator />

@@ -366,6 +366,9 @@ static void keycombo_get_string(KeyCombo *key, char *buf)
   if (key->shifts & KB_CTRL_FLAG)
     ustrcat(buf, "Ctrl+");
 
+  if (key->shifts & KB_ALT_FLAG)
+    ustrcat(buf, "Alt+");
+
   if (key->shifts & KB_SHIFT_FLAG)
     ustrcat(buf, "Shift+");
 

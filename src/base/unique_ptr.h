@@ -41,6 +41,13 @@ public:
   {
   }
 
+  // Constructor with static_cast.
+  template<typename CompatibleT>
+  explicit UniquePtr(CompatibleT* ptr)
+    : m_ptr(static_cast<pointer>(ptr))
+  {
+  }
+
   // Constructor with customized deleter.
   UniquePtr(pointer ptr, deleter_type deleter)
     : m_ptr(ptr)

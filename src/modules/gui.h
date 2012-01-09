@@ -22,6 +22,7 @@
 #include <string>
 #include <list>
 #include "base/exception.h"
+#include "base/unique_ptr.h"
 #include "gui/base.h"
 #include "gui/accel.h"
 #include "skin/skin_property.h"
@@ -133,62 +134,7 @@ void* get_monitor_data(Monitor* monitor);
 //////////////////////////////////////////////////////////////////////
 // Smart Widget* pointer
 
-template<typename T>
-class ScopedPtr
-{
-  T* m_ptr;
-
-  // TODO make this class copyable and count references (so this is
-  //      really "smart" pointer)...
-  ScopedPtr(const ScopedPtr&);
-  ScopedPtr& operator=(const ScopedPtr&);
-
-public:
-  ScopedPtr() {
-    m_ptr = NULL;
-  }
-
-  explicit ScopedPtr(T* widget) {
-    m_ptr = widget;
-  }
-
-  template<typename T2>
-  explicit ScopedPtr(T2* widget) {
-    m_ptr = static_cast<T*>(widget);
-  }
-
-  ~ScopedPtr() {
-    delete m_ptr;
-  }
-
-  ScopedPtr& operator=(T* widget) {
-    if (m_ptr)
-      delete m_ptr;
-
-    m_ptr = widget;
-    return *this;
-  }
-
-  operator T*() {
-    return m_ptr;
-  }
-
-  T* get() {
-    return m_ptr;
-  }
-
-  const T* get() const {
-    return m_ptr;
-  }
-
-  T* operator->() {
-    ASSERT(m_ptr != NULL);
-    return m_ptr;
-  }
-
-};
-
-typedef ScopedPtr<Widget> WidgetPtr;
-typedef ScopedPtr<Frame> FramePtr;
+typedef UniquePtr<Widget> WidgetPtr;
+typedef UniquePtr<Frame> FramePtr;
 
 #endif

@@ -1,0 +1,18 @@
+<!-- ASEPRITE -->
+<!-- Copyright (C) 2001-2012 by David Capello -->
+<jinete>
+<window text="Go to Frame" name="goto_frame">
+  <grid columns="3">
+    <label text="Frame number:" />
+    <entry expansive="true" maxsize="4" name="frame" magnetic="true" />
+    <box cell_align="horizontal" />
+
+    <separator horizontal="true" cell_hspan="3" />
+
+    <box horizontal="true" homogeneous="true" cell_hspan="3" cell_align="right">
+      <button text="&amp;OK" closewindow="true" name="ok" magnetic="true" minwidth="60" />
+      <button text="&amp;Cancel" closewindow="true" />
+    </box>
+  </grid>
+</window>
+</jinete>

@@ -19,11 +19,15 @@
 #include "config.h"
 
 #include "commands/command.h"
-#include "modules/gui.h"
+#include "commands/params.h"
+#include "document_wrappers.h"
+#include "gui/frame.h"
 #include "modules/editors.h"
+#include "modules/gui.h"
 #include "raster/sprite.h"
 #include "widgets/editor/editor.h"
-#include "document_wrappers.h"
+
+#include <allegro/unicode.h>
 
 //////////////////////////////////////////////////////////////////////
 // goto_first_frame
@@ -184,6 +188,75 @@ void GotoLastFrameCommand::onExecute(Context* context)
 }
 
 //////////////////////////////////////////////////////////////////////
+// goto_frame
+
+class GotoFrameCommand : public Command
+
+{
+public:
+  GotoFrameCommand();
+  Command* clone() { return new GotoFrameCommand(*this); }
+
+protected:
+  void onLoadParams(Params* params) OVERRIDE;
+  bool onEnabled(Context* context);
+  void onExecute(Context* context);
+
+private:
+  // The frame to go. 0 is "show the UI dialog", another value is the
+  // frame (1 is the first name for the user).
+  int m_frame;
+};
+
+GotoFrameCommand::GotoFrameCommand()
+  : Command("GotoFrame",
+            "Goto Frame",
+            CmdRecordableFlag)
+  , m_frame(0)
+{
+}
+
+void GotoFrameCommand::onLoadParams(Params* params)
+{
+  std::string frame = params->get("frame");
+  if (!frame.empty()) m_frame = ustrtol(frame.c_str(), NULL, 10);
+  else m_frame = 0;
+}
+
+bool GotoFrameCommand::onEnabled(Context* context)
+{
+  return context->checkFlags(ContextFlags::ActiveDocumentIsReadable);
+}
+
+void GotoFrameCommand::onExecute(Context* context)
+{
+  if (m_frame == 0 && context->isUiAvailable()) {
+    Widget* frame, *ok;
+    FramePtr window(load_widget("goto_frame.xml", "goto_frame"));
+    get_widgets(window,
+                "frame", &frame,
+                "ok", &ok, NULL);
+
+    frame->setTextf("%d", context->getActiveDocument()->getSprite()->getCurrentFrame()+1);
+
+    window->open_window_fg();
+    if (window->get_killer() != ok)
+      return;
+
+    m_frame = strtol(frame->getText(), NULL, 10);
+  }
+
+  ActiveDocumentWriter document(context);
+  Sprite* sprite = document->getSprite();
+  int newFrame = MID(0, m_frame-1, sprite->getTotalFrames()-1);
+
+  sprite->setCurrentFrame(newFrame);
+
+  update_screen_for_document(document);
+  current_editor->updateStatusBar();
+}
+
+//////////////////////////////////////////////////////////////////////
 // CommandFactory
 
 Command* CommandFactory::createGotoFirstFrameCommand()
@@ -204,4 +277,9 @@ Command* CommandFactory::createGotoNextFrameCommand()
 Command* CommandFactory::createGotoLastFrameCommand()
 {
   return new GotoLastFrameCommand;
+}
+
+Command* CommandFactory::createGotoFrameCommand()
+{
+  return new GotoFrameCommand;
 }
