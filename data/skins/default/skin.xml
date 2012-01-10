@@ -83,6 +83,8 @@
     <part id="sunken_focused"                   x="0" y="48" w1="4" w2="4" w3="4" h1="4" h2="4" h3="4" />
     <part id="sunken2_normal"                   x="0" y="64" w1="5" w2="6" w3="5" h1="5" h2="6" h3="5" />
     <part id="sunken2_focused"                  x="0" y="80" w1="5" w2="6" w3="5" h1="5" h2="6" h3="5" />
+    <part id="sunken_mini_normal"               x="16" y="64" w1="4" w2="4" w3="4" h1="4" h2="4" h3="4" />
+    <part id="sunken_mini_focused"              x="16" y="80" w1="4" w2="4" w3="4" h1="4" h2="4" h3="4" />
     <part id="window"                           x="0" y="0" w1="3" w2="7" w3="3" h1="15" h2="4" h3="5" />
     <part id="menu"                             x="0" y="96" w1="3" w2="10" w3="3" h1="3" h2="9" h3="4" />
     <part id="window_close_button_normal"       x="16" y= "0" w="9" h="11" />

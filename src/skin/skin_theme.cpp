@@ -113,6 +113,8 @@ SkinTheme::SkinTheme()
   sheet_mapping["sunken_focused"] = PART_SUNKEN_FOCUSED_NW;
   sheet_mapping["sunken2_normal"] = PART_SUNKEN2_NORMAL_NW;
   sheet_mapping["sunken2_focused"] = PART_SUNKEN2_FOCUSED_NW;
+  sheet_mapping["sunken_mini_normal"] = PART_SUNKEN_MINI_NORMAL_NW;
+  sheet_mapping["sunken_mini_focused"] = PART_SUNKEN_MINI_FOCUSED_NW;
   sheet_mapping["window"] = PART_WINDOW_NW;
   sheet_mapping["menu"] = PART_MENU_NW;
   sheet_mapping["window_close_button_normal"] = PART_WINDOW_CLOSE_BUTTON_NORMAL;
@@ -892,10 +894,16 @@ void SkinTheme::paintEntry(PaintEvent& ev)
 
   bg = COLOR_BACKGROUND;
 
+  bool isMiniLook = false;
+  SharedPtr<SkinProperty> skinPropery = widget->getProperty(SkinProperty::SkinPropertyName);
+  if (skinPropery != NULL)
+    isMiniLook = (skinPropery->getLook() == MiniLook);
+
   draw_bounds_nw(ji_screen,
                  x1, y1, x2, y2,
-                 widget->hasFocus() ? PART_SUNKEN_FOCUSED_NW:
-                                      PART_SUNKEN_NORMAL_NW, bg);
+                 (widget->hasFocus() ?
+                  (isMiniLook ? PART_SUNKEN_MINI_FOCUSED_NW: PART_SUNKEN_FOCUSED_NW):
+                  (isMiniLook ? PART_SUNKEN_MINI_NORMAL_NW : PART_SUNKEN_NORMAL_NW)), bg);
 
   /* draw the text */
   x = widget->rc->x1 + widget->border_width.l;

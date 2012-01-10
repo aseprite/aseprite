@@ -71,6 +71,42 @@ static int statusbar_type()
   return type;
 }
 
+// This widget is used to show the current frame.
+class GotoFrameEntry : public Entry {
+public:
+  GotoFrameEntry() : Entry(4, "") {
+  }
+
+  bool onProcessMessage(Message* msg) OVERRIDE {
+    switch (msg->type) {
+      // When the mouse enter in this entry, it got the focus and the
+      // text is automatically selected.
+      case JM_MOUSEENTER:
+        requestFocus();
+        selectText(0, -1);
+        break;
+
+      case JM_KEYPRESSED:
+        if (msg->key.scancode == KEY_ENTER ||
+            msg->key.scancode == KEY_ENTER_PAD) {
+          Command* cmd = CommandsModule::instance()->getCommandByName(CommandId::GotoFrame);
+          Params params;
+          int frame = strtol(this->getText(), NULL, 10);
+          if (frame > 0) {
+            params.set("frame", this->getText());
+            UIContext::instance()->executeCommand(cmd, &params);
+          }
+          // Select the text again
+          selectText(0, -1);
+          return true;          // Key used.
+        }
+        break;
+    }
+    return Entry::onProcessMessage(msg);
+  }
+
+};
+
 StatusBar::StatusBar()
   : Widget(statusbar_type())
   , m_color(Color::fromMask())
@@ -106,9 +142,15 @@ StatusBar::StatusBar()
     Box* box1 = new Box(JI_HORIZONTAL);
     Box* box2 = new Box(JI_HORIZONTAL | JI_HOMOGENEOUS);
     Box* box3 = new Box(JI_HORIZONTAL);
+    Box* box4 = new Box(JI_HORIZONTAL);
     m_slider = new Slider(0, 255, 255);
+    m_currentFrame = new GotoFrameEntry();
+    m_newFrame = new Button("+");
+    m_newFrame->Click.connect(Bind<void>(&StatusBar::newFrame, this));
 
     setup_mini_look(m_slider);
+    setup_mini_look(m_currentFrame);
+    setup_mini_look(m_newFrame);
 
     ICON_NEW(m_b_first, PART_ANI_FIRST, ACTION_FIRST);
     ICON_NEW(m_b_prev, PART_ANI_PREVIOUS, ACTION_PREV);
@@ -124,6 +166,9 @@ StatusBar::StatusBar()
     jwidget_noborders(box3);
     jwidget_expansive(box3, true);
 
+    box4->addChild(m_currentFrame);
+    box4->addChild(m_newFrame);
+
     box2->addChild(m_b_first);
     box2->addChild(m_b_prev);
     box2->addChild(m_b_play);
@@ -131,6 +176,7 @@ StatusBar::StatusBar()
     box2->addChild(m_b_last);
 
     box1->addChild(box3);
+    box1->addChild(box4);
     box1->addChild(box2);
     box1->addChild(m_slider);
 
@@ -219,6 +265,9 @@ void StatusBar::clearText()
 
 bool StatusBar::setStatusText(int msecs, const char *format, ...)
 {
+  // TODO this call should be in a listener of the "current frame" property changes.
+  updateCurrentFrame();
+
   if ((ji_clock > m_timeout) || (msecs > 0)) {
     char buf[256];              // TODO warning buffer overflow
     va_list ap;
@@ -606,10 +655,13 @@ bool StatusBar::onProcessMessage(Message* msg)
     }
 
     case JM_MOUSEENTER: {
-      bool state = (UIContext::instance()->getActiveDocument() != NULL);
+      const Document* document = UIContext::instance()->getActiveDocument();
+      bool state = (document != NULL);
 
       if (!hasChild(m_movePixelsBox)) {
         if (state && !hasChild(m_commandsBox)) {
+          updateCurrentFrame();
+
           m_b_first->setEnabled(state);
           m_b_prev->setEnabled(state);
           m_b_play->setEnabled(state);
@@ -829,4 +881,18 @@ void StatusBar::updateFromLayer()
     // Disable all
     m_slider->setEnabled(false);
   }
+}
+
+void StatusBar::updateCurrentFrame()
+{
+  const Document* document = UIContext::instance()->getActiveDocument();
+  if (document)
+    m_currentFrame->setTextf("%d", document->getSprite()->getCurrentFrame()+1);
+}
+
+void StatusBar::newFrame()
+{
+  Command* cmd = CommandsModule::instance()->getCommandByName(CommandId::NewFrame);
+  UIContext::instance()->executeCommand(cmd);
+  updateCurrentFrame();
 }
