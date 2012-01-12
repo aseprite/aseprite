@@ -186,11 +186,12 @@ void Editor::setStateInternal(const EditorStatePtr& newState)
 
   // Fire before change state event, set the state, and fire after
   // change state event.
-  bool keepInHistory = m_state->onBeforeChangeState(this);
+  EditorState::BeforeChangeAction beforeChangeAction =
+    m_state->onBeforeChangeState(this, newState);
 
   // Push a new state
   if (newState) {
-    if (!keepInHistory)
+    if (beforeChangeAction == EditorState::DiscardState)
       m_statesHistory.pop();
 
     m_statesHistory.push(newState);
@@ -203,6 +204,8 @@ void Editor::setStateInternal(const EditorStatePtr& newState)
     m_statesHistory.pop();
     m_state = m_statesHistory.top();
   }
+
+  ASSERT(m_state != NULL);
 
   // Change to the new state.
   m_state->onAfterChangeState(this);
@@ -239,8 +242,10 @@ void Editor::setDocument(Document* document)
   //jmanager_free_mouse();      // TODO Why is this here? Review this code
 
   // Reset all states (back to standby).
+  EditorStatePtr firstState(new StandbyState);
   m_statesHistory.clear();
-  setState(EditorStatePtr(new StandbyState));
+  m_statesHistory.push(firstState);
+  setState(firstState);
 
   if (m_cursor_thick)
     editor_clean_cursor();

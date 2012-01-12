@@ -34,13 +34,24 @@ union Message;
 class EditorState
 {
 public:
+  enum BeforeChangeAction {
+    DiscardState,
+    KeepState
+  };
+
   EditorState() { }
   virtual ~EditorState() { }
+
+  // Returns true if this state is a "temporal" state. It means that
+  // this state doesn't go to other state than the previous one.
+  virtual bool isTemporalState() const { return false; }
 
   // Called just before this state is replaced by a new state in the
   // Editor::setState() method.  Returns true if this state should be
   // kept in the EditorStatesHistory.
-  virtual bool onBeforeChangeState(Editor* editor) { return true; }
+  virtual BeforeChangeAction onBeforeChangeState(Editor* editor, EditorState* newState) {
+    return KeepState;
+  }
 
   // Called when this instance is set as the new Editor's state when
   // Editor::setState() method is used.

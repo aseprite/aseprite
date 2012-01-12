@@ -34,7 +34,7 @@ public:
   MovingPixelsState(Editor* editor, Message* msg, PixelsMovement* pixelsMovement, HandleType handle);
   virtual ~MovingPixelsState();
 
-  virtual bool onBeforeChangeState(Editor* editor) OVERRIDE;
+  virtual BeforeChangeAction onBeforeChangeState(Editor* editor, EditorState* newState) OVERRIDE;
   virtual void onCurrentToolChange(Editor* editor) OVERRIDE;
   virtual bool onMouseDown(Editor* editor, Message* msg) OVERRIDE;
   virtual bool onMouseUp(Editor* editor, Message* msg) OVERRIDE;

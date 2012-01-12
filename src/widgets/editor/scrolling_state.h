@@ -27,6 +27,7 @@ class ScrollingState : public EditorState
 public:
   ScrollingState();
   virtual ~ScrollingState();
+  virtual bool isTemporalState() const OVERRIDE { return true; }
   virtual bool onMouseDown(Editor* editor, Message* msg) OVERRIDE;
   virtual bool onMouseUp(Editor* editor, Message* msg) OVERRIDE;
   virtual bool onMouseMove(Editor* editor, Message* msg) OVERRIDE;

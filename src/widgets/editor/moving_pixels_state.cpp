@@ -35,6 +35,7 @@
 #include "widgets/editor/editor.h"
 #include "widgets/editor/editor_customization_delegate.h"
 #include "widgets/editor/pixels_movement.h"
+#include "widgets/editor/scrolling_state.h"
 #include "widgets/editor/standby_state.h"
 #include "widgets/editor/transform_handles.h"
 #include "widgets/statebar.h"
@@ -73,7 +74,7 @@ MovingPixelsState::~MovingPixelsState()
   delete m_pixelsMovement;
 }
 
-bool MovingPixelsState::onBeforeChangeState(Editor* editor)
+EditorState::BeforeChangeAction MovingPixelsState::onBeforeChangeState(Editor* editor, EditorState* newState)
 {
   ASSERT(m_pixelsMovement != NULL);
 
@@ -81,18 +82,25 @@ bool MovingPixelsState::onBeforeChangeState(Editor* editor)
   if (m_pixelsMovement->isDragging())
     m_pixelsMovement->dropImageTemporarily();
 
-  // Drop pixels if the user press a button outside the selection
-  m_pixelsMovement->dropImage();
+  // Drop pixels if we are changing to a non-temporary state (a
+  // temporary state is something like ScrollingState).
+  if (!newState || !newState->isTemporalState()) {
+    m_pixelsMovement->dropImage();
 
-  editor->getDocument()->resetTransformation();
+    editor->getDocument()->resetTransformation();
 
-  delete m_pixelsMovement;
-  m_pixelsMovement = NULL;
+    delete m_pixelsMovement;
+    m_pixelsMovement = NULL;
 
-  editor->releaseMouse();
+    editor->releaseMouse();
 
-  app_get_statusbar()->hideMovePixelsOptions();
-  return false;                 // Don't keep this state in history
+    app_get_statusbar()->hideMovePixelsOptions();
+    return DiscardState;
+  }
+  else {
+    editor->releaseMouse();
+    return KeepState;
+  }
 }
 
 void MovingPixelsState::onCurrentToolChange(Editor* editor)
@@ -117,6 +125,13 @@ bool MovingPixelsState::onMouseDown(Editor* editor, Message* msg)
 
   Decorator* decorator = static_cast<Decorator*>(editor->getDecorator());
   Document* document = editor->getDocument();
+
+  // Start scroll loop
+  if (msg->mouse.middle) { // TODO raw msg->mouse.middle here, this should be customizable
+    editor->setState(EditorStatePtr(new ScrollingState()));
+    editor->captureMouse();
+    return true;
+  }
 
   // Transform selected pixels
   if (document->isMaskVisible() &&
@@ -316,7 +331,7 @@ void MovingPixelsState::setTransparentColor(const Color& color)
 void MovingPixelsState::dropPixels(Editor* editor)
 {
   // Just change to default state (StandbyState generally). We'll
-  // receive an onBeforeChangeState event after this call.
+  // receive an onBeforeChangeState() event after this call.
   editor->backToPreviousState();
 }
 

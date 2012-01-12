@@ -133,7 +133,7 @@ bool StandbyState::onMouseDown(Editor* editor, Message* msg)
   context->setActiveDocument(document);
 
   // Start scroll loop
-  if (msg->mouse.middle || clicked_ink->isScrollMovement()) {
+  if (msg->mouse.middle || clicked_ink->isScrollMovement()) { // TODO raw msg->mouse.middle here, this should be customizable
     editor->setState(EditorStatePtr(new ScrollingState()));
     editor->captureMouse();
     return true;
