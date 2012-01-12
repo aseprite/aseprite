@@ -115,6 +115,22 @@ void StandbyState::onCurrentToolChange(Editor* editor)
   editor->invalidate();
 }
 
+bool StandbyState::checkForScroll(Editor* editor, Message* msg)
+{
+  UIContext* context = UIContext::instance();
+  tools::Tool* currentTool = editor->getCurrentEditorTool();
+  tools::Ink* clickedInk = currentTool->getInk(msg->mouse.right ? 1: 0);
+
+  // Start scroll loop
+  if (msg->mouse.middle || clickedInk->isScrollMovement()) { // TODO raw msg->mouse.middle here, this should be customizable
+    editor->setState(EditorStatePtr(new ScrollingState()));
+    editor->captureMouse();
+    return true;
+  }
+  else
+    return false;
+}
+
 bool StandbyState::onMouseDown(Editor* editor, Message* msg)
 {
   if (editor->hasCapture())
@@ -122,7 +138,7 @@ bool StandbyState::onMouseDown(Editor* editor, Message* msg)
 
   UIContext* context = UIContext::instance();
   tools::Tool* current_tool = editor->getCurrentEditorTool();
-  tools::Ink* clicked_ink = current_tool->getInk(msg->mouse.right ? 1: 0);
+  tools::Ink* clickedInk = current_tool->getInk(msg->mouse.right ? 1: 0);
   Sprite* sprite = editor->getSprite();
 
   // Each time an editor is clicked the current editor and the active
@@ -133,14 +149,11 @@ bool StandbyState::onMouseDown(Editor* editor, Message* msg)
   context->setActiveDocument(document);
 
   // Start scroll loop
-  if (msg->mouse.middle || clicked_ink->isScrollMovement()) { // TODO raw msg->mouse.middle here, this should be customizable
-    editor->setState(EditorStatePtr(new ScrollingState()));
-    editor->captureMouse();
+  if (checkForScroll(editor, msg))
     return true;
-  }
 
   // Move cel X,Y coordinates
-  if (clicked_ink->isCelMovement()) {
+  if (clickedInk->isCelMovement()) {
     if ((sprite->getCurrentLayer()) &&
         (sprite->getCurrentLayer()->getType() == GFXOBJ_LAYER_IMAGE)) {
       // TODO you can move the `Background' with tiled mode
@@ -205,7 +218,7 @@ bool StandbyState::onMouseDown(Editor* editor, Message* msg)
   }
 
   // Call the eyedropper command
-  if (clicked_ink->isEyedropper()) {
+  if (clickedInk->isEyedropper()) {
     Command* eyedropper_cmd =
       CommandsModule::instance()->getCommandByName(CommandId::Eyedropper);
 

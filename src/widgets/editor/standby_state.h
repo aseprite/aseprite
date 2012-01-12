@@ -50,6 +50,10 @@ public:
   virtual gfx::Transformation getTransformation(Editor* editor);
 
 protected:
+  // Returns true and changes to ScrollingState when "msg" says "the
+  // user wants to scroll".
+  bool checkForScroll(Editor* editor, Message* msg);
+
   class Decorator : public EditorDecorator
   {
   public:

@@ -35,7 +35,6 @@
 #include "widgets/editor/editor.h"
 #include "widgets/editor/editor_customization_delegate.h"
 #include "widgets/editor/pixels_movement.h"
-#include "widgets/editor/scrolling_state.h"
 #include "widgets/editor/standby_state.h"
 #include "widgets/editor/transform_handles.h"
 #include "widgets/statebar.h"
@@ -127,11 +126,8 @@ bool MovingPixelsState::onMouseDown(Editor* editor, Message* msg)
   Document* document = editor->getDocument();
 
   // Start scroll loop
-  if (msg->mouse.middle) { // TODO raw msg->mouse.middle here, this should be customizable
-    editor->setState(EditorStatePtr(new ScrollingState()));
-    editor->captureMouse();
+  if (checkForScroll(editor, msg))
     return true;
-  }
 
   // Transform selected pixels
   if (document->isMaskVisible() &&
