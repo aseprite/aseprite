@@ -27,8 +27,9 @@
 #include <algorithm>
 
 Context::Context(ISettings* settings)
+  : m_activeDocument(NULL)
+  , m_settings(settings)
 {
-  m_settings = settings;
 }
 
 Context::~Context()
