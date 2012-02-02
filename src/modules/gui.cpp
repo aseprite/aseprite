@@ -1147,6 +1147,14 @@ static bool manager_msg_proc(JWidget widget, Message* msg)
 {
   switch (msg->type) {
 
+    case JM_CLOSE_APP:
+      {
+        // Execute the "Exit" command.
+        Command* command = CommandsModule::instance()->getCommandByName(CommandId::Exit);
+        UIContext::instance()->executeCommand(command);
+      }
+      break;
+
     case JM_QUEUEPROCESSING:
       gui_feedback();
 

@@ -477,16 +477,12 @@ bool jmanager_generate_messages(JWidget manager)
     jmanager_enqueue_message(msg);
   }
 
-  /* generate ESC key when the user press close button in the system window */
+  // Generate Close message when the user press close button on the system window.
   if (want_close_stage == STAGE_WANT_CLOSE) {
     want_close_stage = STAGE_NORMAL;
 
-    msg = jmessage_new_key_related(JM_KEYPRESSED, (KEY_ESC << 8) | 27);
-    broadcast_key_msg(manager, msg);
-    jmanager_enqueue_message(msg);
-
-    msg = jmessage_new_key_related(JM_KEYRELEASED, (KEY_ESC << 8) | 27);
-    broadcast_key_msg(manager, msg);
+    msg = jmessage_new(JM_CLOSE_APP);
+    jmessage_broadcast_to_children(msg, manager);
     jmanager_enqueue_message(msg);
   }
 

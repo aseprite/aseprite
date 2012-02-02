@@ -17,7 +17,7 @@
       <key command="DeveloperConsole" shortcut="F11" />
       <key command="ScreenShot" shortcut="F12" />
       <key command="Exit" shortcut="Ctrl+Q" />
-      <key command="Exit" shortcut="Esc" />
+      <key command="Exit" shortcut="Alt+F4" />
       <!-- Edit -->
       <key command="Undo" shortcut="Ctrl+Z" /> <key command="Undo" shortcut="Ctrl+U" />
       <key command="Redo" shortcut="Ctrl+Y" />

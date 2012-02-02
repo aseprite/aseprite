@@ -109,6 +109,7 @@ enum {
   // General messages.
   JM_OPEN,                      // Windows is open.
   JM_CLOSE,                     // Windows is closed.
+  JM_CLOSE_APP,                 // The user wants to close the entire application.
   JM_DESTROY,                   // Widget is destroyed.
   JM_DRAW,                      // Widget needs be repainted.
   JM_SIGNAL,                    // Signal from some widget.
