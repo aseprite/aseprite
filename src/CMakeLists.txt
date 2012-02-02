@@ -97,6 +97,7 @@ add_library(aseprite-library
   console.cpp
   context.cpp
   context_flags.cpp
+  context_listener_list.cpp
   document.cpp
   documents.cpp
   drop_files.cpp

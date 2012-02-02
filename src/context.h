@@ -22,8 +22,12 @@
 #include "base/disable_copying.h"
 #include "base/exception.h"
 #include "context_flags.h"
+#include "context_listener.h"
+#include "context_listener_list.h"
 #include "documents.h"
 #include "settings/settings.h"
+
+#include <vector>
 
 class Command;
 class Document;
@@ -65,6 +69,9 @@ public:
 
   virtual void executeCommand(Command* command, Params* params = NULL);
 
+  void addListener(ContextListener* listener);
+  void removeListener(ContextListener* listener);
+
 protected:
 
   // The "settings" are deleted automatically in the ~Context destructor
@@ -90,6 +97,8 @@ private:
 
   // Last updated flags.
   ContextFlags m_flags;
+
+  ContextListenerList m_listeners;
 
   DISABLE_COPYING(Context);
 

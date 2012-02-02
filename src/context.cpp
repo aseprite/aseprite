@@ -103,9 +103,13 @@ Document* Context::getActiveDocument() const
 
 void Context::setActiveDocument(Document* document)
 {
+  m_listeners.notifyActiveDocumentBeforeChange(this);
+
   m_activeDocument = document;
 
   onSetActiveDocument(document);
+
+  m_listeners.notifyActiveDocumentAfterChange(this);
 }
 
 void Context::executeCommand(Command* command, Params* params)
@@ -115,6 +119,7 @@ void Context::executeCommand(Command* command, Params* params)
   ASSERT(command != NULL);
 
   PRINTF("Executing '%s' command.\n", command->short_name());
+  m_listeners.notifyCommandBeforeExecution(this);
 
   try {
     m_flags.update(this);
@@ -122,8 +127,11 @@ void Context::executeCommand(Command* command, Params* params)
     if (params)
       command->loadParams(params);
 
-    if (command->isEnabled(this))
+    if (command->isEnabled(this)) {
       command->execute(this);
+
+      m_listeners.notifyCommandAfterExecution(this);
+    }
   }
   catch (base::Exception& e) {
     PRINTF("Exception caught executing '%s' command\n%s\n",
@@ -149,6 +157,16 @@ void Context::executeCommand(Command* command, Params* params)
                    "memory access, divison by zero, etc.");
   }
 #endif
+}
+
+void Context::addListener(ContextListener* listener)
+{
+  m_listeners.add(listener);
+}
+
+void Context::removeListener(ContextListener* listener)
+{
+  m_listeners.remove(listener);
 }
 
 void Context::onAddDocument(Document* document)
