@@ -63,6 +63,9 @@ public:
   // redrawn.
   gfx::Rect moveImage(int x, int y, MoveModifier moveModifier);
 
+  // Copies the image being dragged in the current position.
+  void stampImage();
+
   void dropImageTemporarily();
   void dropImage();
   bool isDragging() const;

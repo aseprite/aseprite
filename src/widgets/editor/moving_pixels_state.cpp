@@ -23,7 +23,9 @@
 #include "app.h"
 #include "app/color_utils.h"
 #include "base/unique_ptr.h"
+#include "commands/commands.h"
 #include "gfx/rect.h"
+#include "gui/manager.h"
 #include "gui/message.h"
 #include "gui/system.h"
 #include "gui/view.h"
@@ -32,6 +34,7 @@
 #include "raster/sprite.h"
 #include "tools/ink.h"
 #include "tools/tool.h"
+#include "ui_context.h"
 #include "widgets/editor/editor.h"
 #include "widgets/editor/editor_customization_delegate.h"
 #include "widgets/editor/pixels_movement.h"
@@ -42,6 +45,7 @@
 #include <allegro.h>
 
 MovingPixelsState::MovingPixelsState(Editor* editor, Message* msg, PixelsMovement* pixelsMovement, HandleType handle)
+  : m_currentEditor(editor)
 {
   // MovingPixelsState needs a selection tool to avoid problems
   // sharing the extra cel between the drawing cursor preview and the
@@ -62,15 +66,34 @@ MovingPixelsState::MovingPixelsState(Editor* editor, Message* msg, PixelsMovemen
   // Setup mask color
   setTransparentColor(app_get_statusbar()->getTransparentColor());
 
+  // Add this class as:
+  // - listener of the UI context: so we know if the user wants to execute
+  //   other command, so we can drop pixels.
+  // - listener of the status bar to know if the user has changed the
+  //   transparent color.
+  UIContext::instance()->addListener(this);
   app_get_statusbar()->addListener(this);
+
+  // Show controls to modify the "pixels movement" options (e.g. the
+  // transparent color).
   app_get_statusbar()->showMovePixelsOptions();
+
+  // Add the current editor as filter for key message of the manager
+  // so we can catch the Enter key, and avoid to execute the
+  // PlayAnimation command.
+  jmanager_add_msg_filter(JM_KEYPRESSED, m_currentEditor);
+  jmanager_add_msg_filter(JM_KEYRELEASED, m_currentEditor);
 }
 
 MovingPixelsState::~MovingPixelsState()
 {
+  UIContext::instance()->removeListener(this);
   app_get_statusbar()->removeListener(this);
 
   delete m_pixelsMovement;
+
+  jmanager_remove_msg_filter(JM_KEYPRESSED, m_currentEditor);
+  jmanager_remove_msg_filter(JM_KEYRELEASED, m_currentEditor);
 }
 
 EditorState::BeforeChangeAction MovingPixelsState::onBeforeChangeState(Editor* editor, EditorState* newState)
@@ -153,6 +176,13 @@ bool MovingPixelsState::onMouseDown(Editor* editor, Message* msg)
   // Start "moving pixels" loop
   if (editor->isInsideSelection() && (msg->mouse.left ||
                                       msg->mouse.right)) {
+    // In case that the user is pressing the copy-selection keyboard shortcut.
+    EditorCustomizationDelegate* customization = editor->getCustomizationDelegate();
+    if (customization && customization->isCopySelectionKeyPressed()) {
+      // Stamp the pixels to create the copy.
+      m_pixelsMovement->stampImage();
+    }
+
     // Re-catch the image
     int x, y;
     editor->screenToEditor(msg->mouse.x, msg->mouse.y, &x, &y);
@@ -257,15 +287,16 @@ bool MovingPixelsState::onSetCursor(Editor* editor)
 bool MovingPixelsState::onKeyDown(Editor* editor, Message* msg)
 {
   ASSERT(m_pixelsMovement != NULL);
-  EditorCustomizationDelegate* customization = editor->getCustomizationDelegate();
 
-  if (customization && customization->isCopySelectionKeyPressed()) {
-    // If the user presses the CTRL key when he is dragging pixels (but
-    // not pressing the mouse buttons).
-    if (!jmouse_b(0) && m_pixelsMovement) {
-      // Drop pixels (sure the user will press the mouse button to
-      // start dragging a copy).
-      dropPixels(editor);
+  if (msg->key.scancode == KEY_ENTER || // TODO make this key customizable
+      msg->key.scancode == KEY_ENTER_PAD ||
+      msg->key.scancode == KEY_ESC) {
+    dropPixels(editor);
+
+    // The escape key drop pixels and deselect the mask.
+    if (msg->key.scancode == KEY_ESC) { // TODO make this key customizable
+      Command* cmd = CommandsModule::instance()->getCommandByName(CommandId::DeselectMask);
+      UIContext::instance()->executeCommand(cmd);
     }
   }
 
@@ -299,6 +330,13 @@ bool MovingPixelsState::onUpdateStatusBar(Editor* editor)
      180.0 * transform.angle() / PI);
 
   return true;
+}
+
+// Before executing any command, we drop the pixels (go back to standby).
+void MovingPixelsState::onCommandBeforeExecution(Context* context)
+{
+  if (m_pixelsMovement)
+    dropPixels(m_currentEditor);
 }
 
 void MovingPixelsState::dispose()

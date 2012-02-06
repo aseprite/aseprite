@@ -350,6 +350,31 @@ gfx::Rect PixelsMovement::moveImage(int x, int y, MoveModifier moveModifier)
   return gfx::Rect(0, 0, m_sprite->getWidth(), m_sprite->getHeight());
 }
 
+void PixelsMovement::stampImage()
+{
+  const Cel* cel = m_documentReader->getExtraCel();
+  const Image* image = m_documentReader->getExtraCelImage();
+
+  {
+    DocumentWriter documentWriter(m_documentReader);
+    {
+      // Expand the canvas to paste the image in the fully visible
+      // portion of sprite.
+      ExpandCelCanvas expandCelCanvas(documentWriter, m_sprite,
+                                      m_sprite->getCurrentLayer(), TILED_NONE);
+
+      image_merge(expandCelCanvas.getDestCanvas(), image,
+                  -expandCelCanvas.getCel()->getX(),
+                  -expandCelCanvas.getCel()->getY(),
+                  cel->getOpacity(), BLEND_MODE_NORMAL);
+
+      expandCelCanvas.commit();
+    }
+    // TODO
+    // m_undoTransaction.commit();
+  }
+}
+
 void PixelsMovement::dropImageTemporarily()
 {
   m_isDragging = false;
@@ -395,28 +420,12 @@ void PixelsMovement::dropImage()
 {
   m_isDragging = false;
 
-  const Cel* cel = m_documentReader->getExtraCel();
-  const Image* image = m_documentReader->getExtraCelImage();
+  stampImage();
 
-  {
-    DocumentWriter documentWriter(m_documentReader);
-    {
-      // Expand the canvas to paste the image in the fully visible
-      // portion of sprite.
-      ExpandCelCanvas expandCelCanvas(documentWriter, m_sprite,
-                                      m_sprite->getCurrentLayer(), TILED_NONE);
+  m_undoTransaction.commit();
 
-      image_merge(expandCelCanvas.getDestCanvas(), image,
-                  -expandCelCanvas.getCel()->getX(),
-                  -expandCelCanvas.getCel()->getY(),
-                  cel->getOpacity(), BLEND_MODE_NORMAL);
-
-      expandCelCanvas.commit();
-    }
-    m_undoTransaction.commit();
-
-    documentWriter->destroyExtraCel();
-  }
+  DocumentWriter documentWriter(m_documentReader);
+  documentWriter->destroyExtraCel();
 }
 
 bool PixelsMovement::isDragging() const

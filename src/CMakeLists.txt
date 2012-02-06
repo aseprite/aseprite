@@ -122,6 +122,7 @@ add_library(aseprite-library
   commands/cmd_about.cpp
   commands/cmd_advanced_mode.cpp
   commands/cmd_background_from_layer.cpp
+  commands/cmd_cancel.cpp
   commands/cmd_canvas_size.cpp
   commands/cmd_cel_properties.cpp
   commands/cmd_change_color.cpp

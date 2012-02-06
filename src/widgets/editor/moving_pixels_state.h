@@ -20,6 +20,7 @@
 #define WIDGETS_EDITOR_MOVING_PIXELS_STATE_H_INCLUDED
 
 #include "base/compiler_specific.h"
+#include "context_listener.h"
 #include "widgets/editor/handle_type.h"
 #include "widgets/editor/standby_state.h"
 #include "widgets/statebar.h"
@@ -28,12 +29,13 @@ class Editor;
 class Image;
 class PixelsMovement;
 
-class MovingPixelsState : public StandbyState, StatusBarListener
+class MovingPixelsState : public StandbyState, StatusBarListener, ContextListener
 {
 public:
   MovingPixelsState(Editor* editor, Message* msg, PixelsMovement* pixelsMovement, HandleType handle);
   virtual ~MovingPixelsState();
 
+  // EditorState
   virtual BeforeChangeAction onBeforeChangeState(Editor* editor, EditorState* newState) OVERRIDE;
   virtual void onCurrentToolChange(Editor* editor) OVERRIDE;
   virtual bool onMouseDown(Editor* editor, Message* msg) OVERRIDE;
@@ -44,6 +46,9 @@ public:
   virtual bool onKeyDown(Editor* editor, Message* msg) OVERRIDE;
   virtual bool onKeyUp(Editor* editor, Message* msg) OVERRIDE;
   virtual bool onUpdateStatusBar(Editor* editor) OVERRIDE;
+
+  // ContextListener
+  virtual void onCommandBeforeExecution(Context* context) OVERRIDE;
 
   virtual gfx::Transformation getTransformation(Editor* editor) OVERRIDE;
 
@@ -58,6 +63,7 @@ private:
 
   // Helper member to move/translate selection and pixels.
   PixelsMovement* m_pixelsMovement;
+  Editor* m_currentEditor;
 };
 
 #endif  // WIDGETS_EDITOR_MOVING_PIXELS_STATE_H_INCLUDED
