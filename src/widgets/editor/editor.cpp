@@ -1181,8 +1181,33 @@ void Editor::pasteImage(const Image* image, int x, int y)
   Document* document = getDocument();
   int opacity = 255;
   Sprite* sprite = getSprite();
-  PixelsMovement* pixelsMovement = new PixelsMovement(document, sprite, image, x, y, opacity,
-                                                      "Paste");
+
+  // Check bounds where the image will be pasted.
+  {
+    // First we limit the image inside the sprite's bounds.
+    x = MID(0, x, sprite->getWidth() - image->w);
+    y = MID(0, y, sprite->getHeight() - image->h);
+
+    // Then we check if the image will be visible by the user.
+    Rect visibleBounds = getVisibleSpriteBounds();
+    x = MID(visibleBounds.x-image->w, x, visibleBounds.x+visibleBounds.w-1);
+    y = MID(visibleBounds.y-image->h, y, visibleBounds.y+visibleBounds.h-1);
+
+    // If the visible part of the pasted image will not fit in the
+    // visible bounds of the editor, we put the image in the center of
+    // the visible bounds.
+    Rect visiblePasted = visibleBounds.createIntersect(gfx::Rect(x, y, image->w, image->h));
+    if (((visibleBounds.w >= image->w && visiblePasted.w < image->w/2) ||
+         (visibleBounds.w <  image->w && visiblePasted.w < visibleBounds.w/2)) ||
+        ((visibleBounds.h >= image->h && visiblePasted.h < image->w/2) ||
+         (visibleBounds.h <  image->h && visiblePasted.h < visibleBounds.h/2))) {
+      x = visibleBounds.x + visibleBounds.w/2 - image->w/2;
+      y = visibleBounds.y + visibleBounds.h/2 - image->h/2;
+    }
+  }
+
+  PixelsMovement* pixelsMovement =
+    new PixelsMovement(document, sprite, image, x, y, opacity, "Paste");
 
   // Select the pasted image so the user can move it and transform it.
   pixelsMovement->maskImage(image, x, y);
