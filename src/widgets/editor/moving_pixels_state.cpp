@@ -298,6 +298,8 @@ bool MovingPixelsState::onKeyDown(Editor* editor, Message* msg)
       Command* cmd = CommandsModule::instance()->getCommandByName(CommandId::DeselectMask);
       UIContext::instance()->executeCommand(cmd);
     }
+
+    return true;
   }
 
   // Use StandbyState implementation
