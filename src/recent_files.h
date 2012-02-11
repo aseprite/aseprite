@@ -19,18 +19,24 @@
 #ifndef RECENT_FILES_H_INCLUDED
 #define RECENT_FILES_H_INCLUDED
 
-#include <list>
+#include "base/recent_items.h"
+
 #include <string>
 
 class RecentFiles
 {
 public:
-  typedef std::list<std::string> FilesList;
-  typedef FilesList::iterator iterator;
-  typedef FilesList::const_iterator const_iterator;
+  typedef base::RecentItems<std::string> List;
+  typedef List::iterator iterator;
+  typedef List::const_iterator const_iterator;
 
-  const_iterator begin();
-  const_iterator end();
+  // Iterate through recent files.
+  const_iterator files_begin() { return m_files.begin(); }
+  const_iterator files_end() { return m_files.end(); }
+
+  // Iterate through recent paths.
+  const_iterator paths_begin() { return m_paths.begin(); }
+  const_iterator paths_end() { return m_paths.end(); }
 
   RecentFiles();
   ~RecentFiles();
@@ -39,8 +45,8 @@ public:
   void removeRecentFile(const char* filename);
 
 private:
-  RecentFiles::FilesList m_files;
-  int m_limit;
+  List m_files;
+  List m_paths;
 };
 
 #endif

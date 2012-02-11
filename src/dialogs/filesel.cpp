@@ -450,22 +450,10 @@ static void update_location(Widget* window)
     newItem = location->addItem("");
     newItem = location->addItem("-------- Recent Paths --------");
 
-    std::set<std::string> included;
-
-    // For each recent file...
-    RecentFiles::const_iterator it = App::instance()->getRecentFiles()->begin();
-    RecentFiles::const_iterator end = App::instance()->getRecentFiles()->end();
-    for (; it != end; ++it) {
-      // Get the path of the recent file
-      base::string path = base::get_file_path(*it);
-
-      // Check if the path was not already included in the list
-      if (included.find(path) == included.end()) {
-        included.insert(path);
-
-        location->addItem(path);
-      }
-    }
+    RecentFiles::const_iterator it = App::instance()->getRecentFiles()->paths_begin();
+    RecentFiles::const_iterator end = App::instance()->getRecentFiles()->paths_end();
+    for (; it != end; ++it)
+      location->addItem(*it);
   }
 
   // Select the location

@@ -439,8 +439,8 @@ bool app_rebuild_recent_list()
     submenu = new Menu();
     list_menuitem->setSubmenu(submenu);
 
-    RecentFiles::const_iterator it = App::instance()->getRecentFiles()->begin();
-    RecentFiles::const_iterator end = App::instance()->getRecentFiles()->end();
+    RecentFiles::const_iterator it = App::instance()->getRecentFiles()->files_begin();
+    RecentFiles::const_iterator end = App::instance()->getRecentFiles()->files_end();
 
     if (it != end) {
       Params params;

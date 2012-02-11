@@ -21,85 +21,66 @@
 #include "recent_files.h"
 
 #include "app.h"
+#include "base/path.h"
 #include "ini_file.h"
 
-#include <algorithm>
 #include <cstdio>
 #include <cstring>
 
 RecentFiles::RecentFiles()
-  : m_limit(16)
+  : m_files(16)
+  , m_paths(16)
 {
-  const char* filename;
   char buf[512];
-  int c;
 
-  for (c=m_limit-1; c>=0; c--) {
+  for (int c=m_files.limit()-1; c>=0; c--) {
     sprintf(buf, "Filename%02d", c);
 
-    filename = get_config_string("RecentFiles", buf, NULL);
-    if ((filename) && (*filename))
-      addRecentFile(filename);
+    const char* filename = get_config_string("RecentFiles", buf, NULL);
+    if (filename && *filename)
+      m_files.addItem(filename);
+  }
+
+  for (int c=m_paths.limit()-1; c>=0; c--) {
+    sprintf(buf, "Path%02d", c);
+
+    const char* path = get_config_string("RecentPaths", buf, NULL);
+    if (path && *path)
+      m_paths.addItem(path);
   }
 }
 
 RecentFiles::~RecentFiles()
 {
   char buf[512];
-  int c = 0;
 
-  for (const_iterator it = begin(); it != end(); ++it) {
+  int c = 0;
+  for (const_iterator it = files_begin(); it != files_end(); ++it) {
     const char* filename = it->c_str();
     sprintf(buf, "Filename%02d", c);
     set_config_string("RecentFiles", buf, filename);
     c++;
   }
 
-  m_files.clear();
-}
-
-RecentFiles::const_iterator RecentFiles::begin()
-{
-  return m_files.begin();
-}
-
-RecentFiles::const_iterator RecentFiles::end()
-{
-  return m_files.end();
+  c = 0;
+  for (const_iterator it = paths_begin(); it != paths_end(); ++it) {
+    const char* path = it->c_str();
+    sprintf(buf, "Path%02d", c);
+    set_config_string("RecentPaths", buf, path);
+    c++;
+  }
 }
 
 void RecentFiles::addRecentFile(const char* filename)
 {
-  iterator it = std::find(m_files.begin(), m_files.end(), filename);
-
-  // If the filename already exist in the list...
-  if (it != m_files.end()) {
-    // Move it to the first position
-    m_files.erase(it);
-    m_files.insert(m_files.begin(), filename);
-
-    app_rebuild_recent_list();
-    return;
-  }
-
-  // If the filename does not exist...
-
-  // Does the list is full?
-  if ((int)m_files.size() == m_limit) {
-    // Remove the last entry
-    m_files.erase(--m_files.end());
-  }
-
-  m_files.insert(m_files.begin(), filename);
+  m_files.addItem(filename);
+  m_paths.addItem(base::get_file_path(filename));
   app_rebuild_recent_list();
 }
 
 void RecentFiles::removeRecentFile(const char* filename)
 {
-  iterator it = std::find(m_files.begin(), m_files.end(), filename);
-
-  if (it != m_files.end()) {
-    m_files.erase(it);
-    app_rebuild_recent_list();
-  }
+  m_files.removeItem(filename);
+  m_paths.removeItem(base::get_file_path(filename));
+  app_rebuild_recent_list();
 }
