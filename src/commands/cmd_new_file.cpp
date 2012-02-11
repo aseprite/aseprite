@@ -35,6 +35,7 @@
 #include "raster/palette.h"
 #include "raster/sprite.h"
 #include "ui_context.h"
+#include "util/clipboard.h"
 #include "widgets/color_bar.h"
 
 #include <allegro/config.h>
@@ -97,6 +98,14 @@ void NewFileCommand::onExecute(Context* context)
   h = get_config_int("NewSprite", "Height", 240);
   bg = get_config_int("NewSprite", "Background", 4); // Default = Background color
   ncolors = get_config_int("NewSprite", "Colors", 256);
+
+  // If the clipboard contains an image, we can show the size of the
+  // clipboard as default image size.
+  gfx::Size clipboardSize;
+  if (clipboard::get_image_size(clipboardSize)) {
+    w = clipboardSize.w;
+    h = clipboardSize.h;
+  }
 
   width->setTextf("%d", MAX(1, w));
   height->setTextf("%d", MAX(1, h));

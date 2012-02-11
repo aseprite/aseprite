@@ -198,3 +198,20 @@ void clipboard::paste()
   if (src_image != clipboard_image)
       image_free(src_image);
 }
+
+bool clipboard::get_image_size(gfx::Size& size)
+{
+#ifdef ALLEGRO_WINDOWS
+  // Get the image from the clipboard.
+  return get_win32_clipboard_bitmap_size(size);
+#else
+  if (clipboard_image != NULL) {
+    size.w = clipboard_image->w;
+    size.h = clipboard_image->h;
+    return true;
+  }
+  else
+    return false;
+#endif
+}
+

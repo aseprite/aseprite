@@ -19,6 +19,7 @@
 #ifndef UTIL_CLIPBOARD_H_INCLUDED
 #define UTIL_CLIPBOARD_H_INCLUDED
 
+#include "gfx/size.h"
 #include "gui/base.h"
 
 class Image;
@@ -33,6 +34,11 @@ namespace clipboard {
   void copy(const DocumentReader& document);
   void copy_image(Image* image, Palette* palette);
   void paste();
+
+  // Returns true and fills the specified "size"" with the image's
+  // size in the clipboard, or return false in case that the clipboard
+  // doesn't contain an image at all.
+  bool get_image_size(gfx::Size& size);
 
 } // namespace clipboard
 

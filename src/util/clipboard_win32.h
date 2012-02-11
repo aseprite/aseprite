@@ -325,3 +325,20 @@ static void get_win32_clipboard_bitmap(Image*& image, Palette*& palette)
 
   CloseClipboard();
 }
+
+static bool get_win32_clipboard_bitmap_size(gfx::Size& size)
+{
+  bool result = false;
+
+  if (win32_clipboard_contains_bitmap() &&
+      OpenClipboard(win_get_window())) {
+    BITMAPINFO* bi = (BITMAPINFO*)GetClipboardData(CF_DIB);
+    if (bi) {
+      size.w = bi->bmiHeader.biWidth;
+      size.h = ABS(bi->bmiHeader.biHeight);
+      result = true;
+    }
+    CloseClipboard();
+  }
+  return result;
+}
