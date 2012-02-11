@@ -24,6 +24,7 @@ public:
   const_iterator begin() { return m_items.begin(); }
   const_iterator end() { return m_items.end(); }
 
+  bool empty() const { return m_items.empty(); }
   size_t size() const { return m_items.size(); }
   size_t limit() const { return m_limit; }
 

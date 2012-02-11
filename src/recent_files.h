@@ -20,13 +20,12 @@
 #define RECENT_FILES_H_INCLUDED
 
 #include "base/recent_items.h"
-
-#include <string>
+#include "base/string.h"
 
 class RecentFiles
 {
 public:
-  typedef base::RecentItems<std::string> List;
+  typedef base::RecentItems<base::string> List;
   typedef List::iterator iterator;
   typedef List::const_iterator const_iterator;
 

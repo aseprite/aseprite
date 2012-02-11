@@ -26,6 +26,7 @@
 
 #include <cstdio>
 #include <cstring>
+#include <set>
 
 RecentFiles::RecentFiles()
   : m_files(16)
@@ -47,6 +48,25 @@ RecentFiles::RecentFiles()
     const char* path = get_config_string("RecentPaths", buf, NULL);
     if (path && *path)
       m_paths.addItem(path);
+  }
+
+  // Create recent list of paths from filenames (for backward
+  // compatibility with previous versions of ASEPRITE).
+  if (m_paths.empty()) {
+    std::set<std::string> included;
+
+    // For each recent file...
+    const_iterator it = files_begin();
+    const_iterator end = files_end();
+    for (; it != end; ++it) {
+      base::string path = base::get_file_path(*it);
+
+      // Check if the path was not already included in the list
+      if (included.find(path) == included.end()) {
+        included.insert(path);
+        m_paths.addItem(path);
+      }
+    }
   }
 }
 
