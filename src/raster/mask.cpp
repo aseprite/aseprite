@@ -141,7 +141,7 @@ void Mask::replace(int x, int y, int w, int h)
   m_bounds = gfx::Rect(x, y, w, h);
 
   delete m_bitmap;
-  m_bitmap = image_new(IMAGE_BITMAP, w, h);
+  m_bitmap = Image::create(IMAGE_BITMAP, w, h);
 
   image_clear(m_bitmap, 1);
 }
@@ -378,7 +378,7 @@ void Mask::reserve(int x, int y, int w, int h)
     m_bounds.y = y;
     m_bounds.w = w;
     m_bounds.h = h;
-    m_bitmap = image_new(IMAGE_BITMAP, w, h);
+    m_bitmap = Image::create(IMAGE_BITMAP, w, h);
     image_clear(m_bitmap, 0);
   }
   else {

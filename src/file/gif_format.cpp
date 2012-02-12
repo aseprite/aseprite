@@ -189,7 +189,7 @@ bool GifFormat::onLoad(FileOp* fop)
         }
 
         // Create a temporary image to load frame pixels.
-        UniquePtr<Image> frame_image(image_new(IMAGE_INDEXED, frame_w, frame_h));
+        UniquePtr<Image> frame_image(Image::create(IMAGE_INDEXED, frame_w, frame_h));
         IndexedTraits::address_t addr;
 
         if (gif_file->Image.Interlace) {
@@ -348,8 +348,8 @@ bool GifFormat::onPostLoad(FileOp* fop)
   // The previous image is used to support the special disposal method
   // of GIF frames DISPOSAL_METHOD_RESTORE_PREVIOUS (number 3 in
   // Graphics Extension)
-  UniquePtr<Image> current_image(image_new(imgtype, data->sprite_w, data->sprite_h));
-  UniquePtr<Image> previous_image(image_new(imgtype, data->sprite_w, data->sprite_h));
+  UniquePtr<Image> current_image(Image::create(imgtype, data->sprite_w, data->sprite_h));
+  UniquePtr<Image> previous_image(Image::create(imgtype, data->sprite_w, data->sprite_h));
 
   // Clear both images with the transparent color (alpha = 0).
   uint32_t bgcolor = (imgtype == IMAGE_RGB ? _rgba(0, 0, 0, 0):
@@ -407,7 +407,7 @@ bool GifFormat::onPostLoad(FileOp* fop)
     // Create a new Cel and a image with the whole content of "current_image"
     Cel* cel = new Cel(frame_num, 0);
     try {
-      Image* cel_image = image_new_copy(current_image);
+      Image* cel_image = Image::createCopy(current_image);
       try {
         // Add the image in the sprite's stock and update the cel's
         // reference to the new stock's image.
@@ -511,8 +511,8 @@ bool GifFormat::onSave(FileOp* fop)
     throw base::Exception("Error writing GIF header.\n");
 
   UniquePtr<Image> buffer_image;
-  UniquePtr<Image> current_image(image_new(IMAGE_INDEXED, sprite_w, sprite_h));
-  UniquePtr<Image> previous_image(image_new(IMAGE_INDEXED, sprite_w, sprite_h));
+  UniquePtr<Image> current_image(Image::create(IMAGE_INDEXED, sprite_w, sprite_h));
+  UniquePtr<Image> previous_image(Image::create(IMAGE_INDEXED, sprite_w, sprite_h));
   int frame_x, frame_y, frame_w, frame_h;
   int u1, v1, u2, v2;
   int i1, j1, i2, j2;
@@ -520,7 +520,7 @@ bool GifFormat::onSave(FileOp* fop)
   // If the sprite is not Indexed type, we will need a temporary
   // buffer to render the full RGB or Grayscale sprite.
   if (sprite_imgtype != IMAGE_INDEXED)
-    buffer_image.reset(image_new(sprite_imgtype, sprite_w, sprite_h));
+    buffer_image.reset(Image::create(sprite_imgtype, sprite_w, sprite_h));
 
   image_clear(current_image, background_color);
   image_clear(previous_image, background_color);

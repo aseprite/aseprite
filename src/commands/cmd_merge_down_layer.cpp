@@ -119,7 +119,7 @@ void MergeDownLayerCommand::onExecute(Context* context)
         // Copy this cel to the destination layer...
 
         // Creating a copy of the image
-        dst_image = image_new_copy(src_image);
+        dst_image = Image::createCopy(src_image);
 
         // Adding it in the stock of images
         index = sprite->getStock()->addImage(dst_image);

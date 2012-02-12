@@ -42,7 +42,7 @@ Stock::Stock(const Stock& stock)
       if (!stock.getImage(i))
         addImage(NULL);
       else {
-        Image* image_copy = image_new_copy(stock.getImage(i));
+        Image* image_copy = Image::createCopy(stock.getImage(i));
         addImage(image_copy);
       }
     }

@@ -157,7 +157,7 @@ void clipboard::copy(const DocumentReader& document)
 
 void clipboard::copy_image(Image* image, Palette* pal, const gfx::Point& point)
 {
-  set_clipboard(image_new_copy(image),
+  set_clipboard(Image::createCopy(image),
                 pal ? new Palette(*pal): NULL, true);
 
   clipboard_x = point.x;

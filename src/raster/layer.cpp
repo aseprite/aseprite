@@ -324,7 +324,7 @@ LayerImage* layer_new_flatten_copy(Sprite* dst_sprite, const Layer* src_layer,
     // Does this frame have cels to render?
     if (has_cels(src_layer, frame)) {
       // Create a new image
-      Image* image = image_new(flatLayer->getSprite()->getImgType(), w, h);
+      Image* image = Image::create(flatLayer->getSprite()->getImgType(), w, h);
 
       try {
         // Create the new cel for the output layer (add the image to stock too).

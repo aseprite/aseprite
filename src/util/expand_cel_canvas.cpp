@@ -55,7 +55,7 @@ ExpandCelCanvas::ExpandCelCanvas(Document* document, Sprite* sprite, Layer* laye
   // If there is no Cel
   if (m_cel == NULL) {
     // Create the image
-    m_celImage = image_new(m_sprite->getImgType(), m_sprite->getWidth(), m_sprite->getHeight());
+    m_celImage = Image::create(m_sprite->getImgType(), m_sprite->getWidth(), m_sprite->getHeight());
     image_clear(m_celImage, sprite->getTransparentColor());
 
     // create the cel
@@ -90,7 +90,7 @@ ExpandCelCanvas::ExpandCelCanvas(Document* document, Sprite* sprite, Layer* laye
                           y1-m_cel->getY(), x2-x1, y2-y1,
                           m_sprite->getTransparentColor());
 
-  m_dstImage = image_new_copy(m_srcImage);
+  m_dstImage = Image::createCopy(m_srcImage);
 
   // We have to adjust the cel position to match the m_dstImage
   // position (the new m_dstImage will be used in RenderEngine to

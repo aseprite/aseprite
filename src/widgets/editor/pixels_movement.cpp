@@ -46,7 +46,7 @@ PixelsMovement::PixelsMovement(Document* document, Sprite* sprite, const Image* 
   , m_isDragging(false)
   , m_adjustPivot(false)
   , m_handle(NoHandle)
-  , m_originalImage(image_new_copy(moveThis))
+  , m_originalImage(Image::createCopy(moveThis))
 {
   m_initialData = gfx::Transformation(gfx::Rect(initialX, initialY, moveThis->w, moveThis->h));
   m_currentData = m_initialData;
@@ -366,7 +366,7 @@ Image* PixelsMovement::getDraggedImageCopy(gfx::Point& origin)
 
   int width = rightBottom.x - leftTop.x;
   int height = rightBottom.y - leftTop.y;
-  UniquePtr<Image> image(image_new(m_sprite->getImgType(), width, height));
+  UniquePtr<Image> image(Image::create(m_sprite->getImgType(), width, height));
   image_clear(image, image->mask_color);
   image_parallelogram(image, m_originalImage,
                       corners.leftTop().x-leftTop.x, corners.leftTop().y-leftTop.y,

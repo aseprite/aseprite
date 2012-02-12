@@ -118,7 +118,7 @@ void PreviewCommand::onExecute(Context* context)
 
   // Render the sprite
   Image* render = NULL;
-  Image* doublebuf = image_new(IMAGE_RGB, JI_SCREEN_W, JI_SCREEN_H);
+  Image* doublebuf = Image::create(IMAGE_RGB, JI_SCREEN_W, JI_SCREEN_H);
 
   do {
     // Update scroll

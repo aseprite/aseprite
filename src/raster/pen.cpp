@@ -99,7 +99,7 @@ void Pen::regenerate_pen()
 
   clean_pen();
 
-  m_image = image_new(IMAGE_BITMAP, m_size, m_size);
+  m_image = Image::create(IMAGE_BITMAP, m_size, m_size);
   image_clear(m_image, 0);
 
   switch (m_type) {

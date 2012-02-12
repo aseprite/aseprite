@@ -62,7 +62,7 @@ Image* read_image(std::istream& is)
   int height = read16(is);              // Height
   uint32_t maskColor = read32(is);      // Mask color
 
-  UniquePtr<Image> image(image_new(imgtype, width, height));
+  UniquePtr<Image> image(Image::create(imgtype, width, height));
   int size = image_line_size(image, image->w);
 
   for (int c=0; c<image->h; c++)

@@ -414,7 +414,7 @@ int Sprite::getPixel(int x, int y) const
   int color = 0;
 
   if ((x >= 0) && (y >= 0) && (x < m_width) && (y < m_height)) {
-    Image* image = image_new(m_imgtype, 1, 1);
+    Image* image = Image::create(m_imgtype, 1, 1);
     image_clear(image, (m_imgtype == IMAGE_INDEXED ? getTransparentColor(): 0));
     render(image, -x, -y);
     color = image_getpixel(image, 0, 0);

@@ -794,7 +794,7 @@ static void monitor_thumbnail_generation(void *_data)
         data->palette = new Palette(*sprite->getPalette(0));
 
         // Render the 'sprite' in one plain 'image'
-        image = image_new(sprite->getImgType(), sprite->getWidth(), sprite->getHeight());
+        image = Image::create(sprite->getImgType(), sprite->getWidth(), sprite->getHeight());
         sprite->render(image, 0, 0);
 
         // Calculate the thumbnail size
@@ -808,7 +808,7 @@ static void monitor_thumbnail_generation(void *_data)
         thumb_h = MID(1, thumb_h, MAX_THUMBNAIL_SIZE);
 
         // Stretch the 'image'
-        data->thumbnail = image_new(image->imgtype, thumb_w, thumb_h);
+        data->thumbnail = Image::create(image->imgtype, thumb_w, thumb_h);
         image_clear(data->thumbnail, 0);
         image_scale(data->thumbnail, image, 0, 0, thumb_w, thumb_h);
         image_free(image);

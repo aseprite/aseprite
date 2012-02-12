@@ -75,7 +75,7 @@ Image *load_pic_file(const char *filename, int *x, int *y, RGB *palette)
     }
 
     /* read image */
-    image = image_new(IMAGE_INDEXED, w, h);
+    image = Image::create(IMAGE_INDEXED, w, h);
 
     for (v=0; v<h; v++)
       for (u=0; u<w; u++)
@@ -117,7 +117,7 @@ Image *load_pic_file(const char *filename, int *x, int *y, RGB *palette)
 
   size -= 64;                   /* the header uses 64 bytes */
 
-  image = image_new (bpp == 8 ? IMAGE_INDEXED: IMAGE_BITMAP, w, h);
+  image = Image::create(bpp == 8 ? IMAGE_INDEXED: IMAGE_BITMAP, w, h);
 
   /* read blocks to end of file */
   while (size > 0) {

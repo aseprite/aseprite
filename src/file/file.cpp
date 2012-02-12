@@ -542,9 +542,9 @@ void fop_operate(FileOp *fop)
       Sprite* sprite = fop->document->getSprite();
 
       // Create a temporary bitmap
-      fop->seq.image = image_new(sprite->getImgType(),
-                                 sprite->getWidth(),
-                                 sprite->getHeight());
+      fop->seq.image = Image::create(sprite->getImgType(),
+                                     sprite->getWidth(),
+                                     sprite->getHeight());
       if (fop->seq.image != NULL) {
         int old_frame = sprite->getCurrentFrame();
 
@@ -722,7 +722,7 @@ Image* fop_sequence_image(FileOp* fop, int imgtype, int w, int h)
   }
 
   // Create a bitmap
-  Image* image = image_new(imgtype, w, h);
+  Image* image = Image::create(imgtype, w, h);
 
   fop->seq.image = image;
   fop->seq.last_cel = new Cel(fop->seq.frame++, 0);

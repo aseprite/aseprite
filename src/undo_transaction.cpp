@@ -210,9 +210,9 @@ void UndoTransaction::autocropSprite(int bgcolor)
   x1 = y1 = INT_MAX;
   x2 = y2 = INT_MIN;
 
-  Image* image = image_new(m_sprite->getImgType(),
-                           m_sprite->getWidth(),
-                           m_sprite->getHeight());
+  Image* image = Image::create(m_sprite->getImgType(),
+                               m_sprite->getWidth(),
+                               m_sprite->getHeight());
 
   for (int frame=0; frame<m_sprite->getTotalFrames(); ++frame) {
     m_sprite->setCurrentFrame(frame);
@@ -472,9 +472,9 @@ void UndoTransaction::backgroundFromLayer(LayerImage* layer, int bgcolor)
 
   // create a temporary image to draw each frame of the new
   // `Background' layer
-  UniquePtr<Image> bg_image_wrap(image_new(m_sprite->getImgType(),
-                                           m_sprite->getWidth(),
-                                           m_sprite->getHeight()));
+  UniquePtr<Image> bg_image_wrap(Image::create(m_sprite->getImgType(),
+                                               m_sprite->getWidth(),
+                                               m_sprite->getHeight()));
   Image* bg_image = bg_image_wrap.get();
 
   CelIterator it = layer->getCelBegin();
@@ -509,7 +509,7 @@ void UndoTransaction::backgroundFromLayer(LayerImage* layer, int bgcolor)
       image_copy(cel_image, bg_image, 0, 0);
     }
     else {
-      replaceStockImage(cel->getImage(), image_new_copy(bg_image));
+      replaceStockImage(cel->getImage(), Image::createCopy(bg_image));
     }
   }
 
@@ -517,7 +517,7 @@ void UndoTransaction::backgroundFromLayer(LayerImage* layer, int bgcolor)
   for (int frame=0; frame<m_sprite->getTotalFrames(); frame++) {
     Cel* cel = layer->getCel(frame);
     if (!cel) {
-      Image* cel_image = image_new(m_sprite->getImgType(), m_sprite->getWidth(), m_sprite->getHeight());
+      Image* cel_image = Image::create(m_sprite->getImgType(), m_sprite->getWidth(), m_sprite->getHeight());
       image_clear(cel_image, bgcolor);
 
       // Add the new image in the stock
@@ -558,9 +558,9 @@ void UndoTransaction::flattenLayers(int bgcolor)
   int frame;
 
   // create a temporary image
-  UniquePtr<Image> image_wrap(image_new(m_sprite->getImgType(),
-                                        m_sprite->getWidth(),
-                                        m_sprite->getHeight()));
+  UniquePtr<Image> image_wrap(Image::create(m_sprite->getImgType(),
+                                            m_sprite->getWidth(),
+                                            m_sprite->getHeight()));
   Image* image = image_wrap.get();
 
   /* get the background layer from the sprite */
@@ -605,7 +605,7 @@ void UndoTransaction::flattenLayers(int bgcolor)
     else {
       /* if there aren't a cel in this frame in the background, we
          have to create a copy of the image for the new cel */
-      cel_image = image_new_copy(image);
+      cel_image = Image::createCopy(image);
       /* TODO error handling: if (!cel_image) { ... } */
 
       /* here we create the new cel (with the new image `cel_image') */
@@ -769,7 +769,7 @@ void UndoTransaction::copyPreviousFrame(Layer* layer, int frame)
     return;
 
   // copy the image
-  Image* dst_image = image_new_copy(src_image);
+  Image* dst_image = Image::createCopy(src_image);
   int image_index = addImageInStock(dst_image);
 
   // create the new cel
@@ -1088,7 +1088,7 @@ void UndoTransaction::pasteImage(const Image* src_image, int x, int y, int opaci
   ASSERT(cel);
 
   Image* cel_image = m_sprite->getStock()->getImage(cel->getImage());
-  Image* cel_image2 = image_new_copy(cel_image);
+  Image* cel_image2 = Image::createCopy(cel_image);
   image_merge(cel_image2, src_image, x-cel->getX(), y-cel->getY(), opacity, BLEND_MODE_NORMAL);
 
   replaceStockImage(cel->getImage(), cel_image2); // TODO fix this, improve, avoid replacing the whole image

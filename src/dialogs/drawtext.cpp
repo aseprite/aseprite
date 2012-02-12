@@ -198,7 +198,7 @@ static Image* render_text(Sprite* sprite, FONT *f, const char *text, int color)
   clear_to_color(bmp, makecol32 (255, 0, 255));
   textout_ex(bmp, f, text, 0, 0, makecol32 (255, 255, 255), -1);
 
-  image = image_new(sprite->getImgType(), w, h);
+  image = Image::create(sprite->getImgType(), w, h);
   if (!image) {
     destroy_bitmap(bmp);
     return NULL;

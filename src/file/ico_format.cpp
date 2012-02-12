@@ -139,7 +139,7 @@ bool IcoFormat::onLoad(FileOp* fop)
   sprite->getFolder()->add_layer(layer);
 
   // Create the first image/cel
-  Image* image = image_new(imgtype, width, height);
+  Image* image = Image::create(imgtype, width, height);
   int image_index = sprite->getStock()->addImage(image);
   Cel* cel = new Cel(0, image_index);
   layer->addCel(cel);
@@ -279,9 +279,9 @@ bool IcoFormat::onSave(FileOp* fop)
     offset += size;
   }
 
-  Image* image = image_new(sprite->getImgType(),
-                           sprite->getWidth(),
-                           sprite->getHeight());
+  Image* image = Image::create(sprite->getImgType(),
+                               sprite->getWidth(),
+                               sprite->getHeight());
 
   for (n=0; n<num; ++n) {
     image_clear(image, 0);

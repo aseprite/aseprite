@@ -216,7 +216,7 @@ void copy_cel(DocumentWriter& document)
       dst_cel_opacity = 255;
     }
     else {
-      dst_image = image_new_copy(src_image);
+      dst_image = Image::createCopy(src_image);
       dst_cel_x = src_cel->getX();
       dst_cel_y = src_cel->getY();
       dst_cel_opacity = src_cel->getOpacity();

@@ -400,7 +400,7 @@ Image* RenderEngine::renderSprite(const Document* document,
   }
 
   // Create a temporary RGB bitmap to draw all to it
-  image = image_new(IMAGE_RGB, width, height);
+  image = Image::create(IMAGE_RGB, width, height);
   if (!image)
     return NULL;
 

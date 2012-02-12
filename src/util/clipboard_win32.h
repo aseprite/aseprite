@@ -186,10 +186,10 @@ static void get_win32_clipboard_bitmap(Image*& image, Palette*& palette)
     }
 
     try {
-      image = image_new(bi->bmiHeader.biBitCount == 8 ? IMAGE_INDEXED:
-                                                        IMAGE_RGB,
-                        bi->bmiHeader.biWidth,
-                        ABS(bi->bmiHeader.biHeight));
+      image = Image::create(bi->bmiHeader.biBitCount == 8 ? IMAGE_INDEXED:
+                                                            IMAGE_RGB,
+                            bi->bmiHeader.biWidth,
+                            ABS(bi->bmiHeader.biHeight));
 
       bool valid_image = false;
       switch (bi->bmiHeader.biBitCount) {

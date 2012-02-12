@@ -52,6 +52,9 @@ public:
   uint8_t** line;               // Start of each scanline.
   uint32_t mask_color;          // Skipped color in merge process.
 
+  static Image* create(int imgtype, int w, int h);
+  static Image* createCopy(const Image* image);
+
   Image(int imgtype, int w, int h);
   virtual ~Image();
 
@@ -68,8 +71,6 @@ public:
   virtual void to_allegro(BITMAP* bmp, int x, int y, const Palette* palette) const = 0;
 };
 
-Image* image_new(int imgtype, int w, int h);
-Image* image_new_copy(const Image* image);
 void image_free(Image* image);
 
 int image_depth(Image* image);

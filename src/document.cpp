@@ -86,7 +86,7 @@ Document* Document::createBasicDocument(int imgtype, int width, int height, int 
   // Create the main image.
   int indexInStock;
   {
-    UniquePtr<Image> image(image_new(imgtype, width, height));
+    UniquePtr<Image> image(Image::create(imgtype, width, height));
 
     // Clear the image with mask color.
     image_clear(image, 0);
@@ -250,7 +250,7 @@ void Document::prepareExtraCel(int x, int y, int w, int h, int opacity)
       m_extraImage->w != w ||
       m_extraImage->h != h) {
     delete m_extraImage;                // image
-    m_extraImage = image_new(getSprite()->getImgType(), w, h);
+    m_extraImage = Image::create(getSprite()->getImgType(), w, h);
     image_clear(m_extraImage,
                 m_extraImage->mask_color = 0);
   }
@@ -344,7 +344,7 @@ void Document::copyLayerContent(const Layer* sourceLayer0, Document* destDoc, La
       const Image* sourceImage = sourceLayer->getSprite()->getStock()->getImage(sourceCel->getImage());
       ASSERT(sourceImage != NULL);
 
-      Image* newImage = image_new_copy(sourceImage);
+      Image* newImage = Image::createCopy(sourceImage);
       newCel->setImage(destLayer->getSprite()->getStock()->addImage(newImage));
 
       if (undo->isEnabled()) {

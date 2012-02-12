@@ -55,7 +55,7 @@ Palette* quantization::create_palette_from_rgb(const Sprite* sprite)
                          false); // forWrite=false, read only
 
   // Add a flat image with the current sprite's frame rendered
-  flat_image = image_new(sprite->getImgType(), sprite->getWidth(), sprite->getHeight());
+  flat_image = Image::create(sprite->getImgType(), sprite->getWidth(), sprite->getHeight());
   image_clear(flat_image, 0);
   sprite->render(flat_image, 0, 0);
 
@@ -98,7 +98,7 @@ Image* quantization::convert_imgtype(const Image* image, int imgtype,
     return ordered_dithering(image, 0, 0, rgbmap, palette);
   }
 
-  new_image = image_new(imgtype, image->w, image->h);
+  new_image = Image::create(imgtype, image->w, image->h);
   if (!new_image)
     return NULL;
 
@@ -273,7 +273,7 @@ static Image* ordered_dithering(const Image* src_image,
   int nearestcm;
   int c, x, y;
 
-  dst_image = image_new(IMAGE_INDEXED, src_image->w, src_image->h);
+  dst_image = Image::create(IMAGE_INDEXED, src_image->w, src_image->h);
   if (!dst_image)
     return NULL;
 

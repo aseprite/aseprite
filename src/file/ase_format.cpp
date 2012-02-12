@@ -1035,7 +1035,7 @@ static Cel *ase_file_read_cel_chunk(FILE *f, Sprite *sprite, int frame, int imgt
       int h = fgetw(f);
 
       if (w > 0 && h > 0) {
-        Image* image = image_new(imgtype, w, h);
+        Image* image = Image::create(imgtype, w, h);
         if (!image) {
           delete cel;
           // Not enough memory for frame's image
@@ -1070,7 +1070,7 @@ static Cel *ase_file_read_cel_chunk(FILE *f, Sprite *sprite, int frame, int imgt
 
       if (link) {
         // Create a copy of the linked cel (avoid using links cel)
-        Image* image = image_new_copy(sprite->getStock()->getImage(link->getImage()));
+        Image* image = Image::createCopy(sprite->getStock()->getImage(link->getImage()));
         cel->setImage(sprite->getStock()->addImage(image));
       }
       else {
@@ -1087,7 +1087,7 @@ static Cel *ase_file_read_cel_chunk(FILE *f, Sprite *sprite, int frame, int imgt
       int h = fgetw(f);
 
       if (w > 0 && h > 0) {
-        Image* image = image_new(imgtype, w, h);
+        Image* image = Image::create(imgtype, w, h);
         if (!image) {
           delete cel;
           // Not enough memory for frame's image

@@ -63,7 +63,7 @@ int Image::getMemSize() const
 
 //////////////////////////////////////////////////////////////////////
 
-Image* image_new(int imgtype, int w, int h)
+Image* Image::create(int imgtype, int w, int h)
 {
   switch (imgtype) {
     case IMAGE_RGB: return new ImageImpl<RgbTraits>(w, h);
@@ -74,7 +74,7 @@ Image* image_new(int imgtype, int w, int h)
   return NULL;
 }
 
-Image* image_new_copy(const Image* image)
+Image* Image::createCopy(const Image* image)
 {
   ASSERT(image);
   return image_crop(image, 0, 0, image->w, image->h, 0);
@@ -154,7 +154,7 @@ Image* image_crop(const Image* image, int x, int y, int w, int h, int bgcolor)
   if (w < 1) throw std::invalid_argument("image_crop: Width is less than 1");
   if (h < 1) throw std::invalid_argument("image_crop: Height is less than 1");
 
-  Image* trim = image_new(image->imgtype, w, h);
+  Image* trim = Image::create(image->imgtype, w, h);
   trim->mask_color = image->mask_color;
 
   image_clear(trim, bgcolor);

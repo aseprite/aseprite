@@ -109,9 +109,9 @@ protected:
         continue;
 
       // rotate the image
-      Image* new_image = image_new(image->imgtype,
-                                   m_angle == 180 ? image->w: image->h,
-                                   m_angle == 180 ? image->h: image->w);
+      Image* new_image = Image::create(image->imgtype,
+                                       m_angle == 180 ? image->w: image->h,
+                                       m_angle == 180 ? image->h: image->w);
       image_rotate(image, new_image, m_angle);
 
       undoTransaction.replaceStockImage(i, new_image);

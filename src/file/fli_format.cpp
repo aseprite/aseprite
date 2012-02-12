@@ -99,8 +99,8 @@ bool FliFormat::onLoad(FileOp* fop)
   h = fli_header.height;
 
   /* create the bitmaps */
-  bmp = image_new(IMAGE_INDEXED, w, h);
-  old = image_new(IMAGE_INDEXED, w, h);
+  bmp = Image::create(IMAGE_INDEXED, w, h);
+  old = Image::create(IMAGE_INDEXED, w, h);
   pal = new Palette(0, 256);
   if (!bmp || !old || !pal) {
     fop_error(fop, "Not enough memory.\n");
@@ -142,7 +142,7 @@ bool FliFormat::onLoad(FileOp* fop)
         frpos_out++;
 
       /* add the new frame */
-      image = image_new_copy(bmp);
+      image = Image::createCopy(bmp);
       if (!image) {
         fop_error(fop, "Not enough memory\n");
         break;
@@ -247,8 +247,8 @@ bool FliFormat::onSave(FileOp* fop)
   fseek(f, 128, SEEK_SET);
 
   /* create the bitmaps */
-  bmp = image_new(IMAGE_INDEXED, sprite->getWidth(), sprite->getHeight());
-  old = image_new(IMAGE_INDEXED, sprite->getWidth(), sprite->getHeight());
+  bmp = Image::create(IMAGE_INDEXED, sprite->getWidth(), sprite->getHeight());
+  old = Image::create(IMAGE_INDEXED, sprite->getWidth(), sprite->getHeight());
   if ((!bmp) || (!old)) {
     fop_error(fop, "Not enough memory for temporary bitmaps.\n");
     if (bmp) image_free(bmp);
