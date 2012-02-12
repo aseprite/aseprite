@@ -86,17 +86,6 @@ void image_free(Image* image)
   delete image;
 }
 
-int image_depth(Image* image)
-{
-  switch (image->imgtype) {
-    case IMAGE_RGB: return 32;
-    case IMAGE_GRAYSCALE: return 16;
-    case IMAGE_INDEXED: return 8;
-    case IMAGE_BITMAP: return 1;
-    default: return -1;
-  }
-}
-
 int image_getpixel(const Image* image, int x, int y)
 {
   if ((x >= 0) && (y >= 0) && (x < image->w) && (y < image->h))
