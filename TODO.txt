@@ -1,6 +1,7 @@
 For next release
 ----------------
 
++ MovingPixelsState: Add undo information in each transformation step.
 + Add IntEntry class in src/gui/ with spin-buttons.
 + Add feedback to "Shift+S" shortcut to switch "snap to grid".
 + Convert jaccel::key_list to std::vector<>
@@ -39,11 +40,7 @@ Refactoring
 High priority work
 ------------------
 
-+ Selection tools do not have "move" functionality incorporated yet as we talked (they just add/subtract selection)
-- Fix paste behavior:
-  + create a 'floating' flag for image-layers and make the
-    trasformation embedded in the editor
-  + Ctrl+T should transform the current cel
+- Ctrl+T should transform the current cel
 - fix bilinear: when getpixel have alpha = 0 get a neighbor color.
 - fix sliders in Tools Configuration, they are too big
   for small resolutions.
@@ -52,6 +49,7 @@ High priority work
   - pal-operations (sort, quantize, gamma by color-curves, etc.);
   - complete palette operations, and palette editor (it needs a slider
     or something to move between palette changes)
+  - drag & drop colors.
 - if there is activated the Tools Configuration dialog box, the
   Shift+G and Shift+S should update it
 - add two DrawClick2:
@@ -71,6 +69,9 @@ Wish-list
 
 - dacap wish-list:
   + added starred file-items in the file-selector.
+  + tweening of cels (translate, scale, rotate)
+  + tweening of polygons
+  + selection of frames (to modify several frames at the same time)
 - manuq wish-list:
   + layer-with-constant-cel
 - Mateusz Czaplinski ideas:
