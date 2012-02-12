@@ -19,6 +19,7 @@
 #ifndef UTIL_CLIPBOARD_H_INCLUDED
 #define UTIL_CLIPBOARD_H_INCLUDED
 
+#include "gfx/point.h"
 #include "gfx/size.h"
 #include "gui/base.h"
 
@@ -28,11 +29,13 @@ class DocumentWriter;
 
 namespace clipboard {
 
+  // TODO Horrible API: refactor it.
+
   bool can_paste();
 
   void cut(DocumentWriter& document);
   void copy(const DocumentReader& document);
-  void copy_image(Image* image, Palette* palette);
+  void copy_image(Image* image, Palette* palette, const gfx::Point& point);
   void paste();
 
   // Returns true and fills the specified "size"" with the image's

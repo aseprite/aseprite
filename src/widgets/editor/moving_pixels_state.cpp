@@ -23,6 +23,7 @@
 #include "app.h"
 #include "app/color_utils.h"
 #include "base/unique_ptr.h"
+#include "commands/command.h"
 #include "commands/commands.h"
 #include "gfx/rect.h"
 #include "gui/manager.h"
@@ -30,11 +31,13 @@
 #include "gui/system.h"
 #include "gui/view.h"
 #include "modules/editors.h"
+#include "modules/gui.h"
 #include "raster/mask.h"
 #include "raster/sprite.h"
 #include "tools/ink.h"
 #include "tools/tool.h"
 #include "ui_context.h"
+#include "util/clipboard.h"
 #include "widgets/editor/editor.h"
 #include "widgets/editor/editor_customization_delegate.h"
 #include "widgets/editor/pixels_movement.h"
@@ -46,6 +49,7 @@
 
 MovingPixelsState::MovingPixelsState(Editor* editor, Message* msg, PixelsMovement* pixelsMovement, HandleType handle)
   : m_currentEditor(editor)
+  , m_discarded(false)
 {
   // MovingPixelsState needs a selection tool to avoid problems
   // sharing the extra cel between the drawing cursor preview and the
@@ -107,7 +111,8 @@ EditorState::BeforeChangeAction MovingPixelsState::onBeforeChangeState(Editor* e
   // Drop pixels if we are changing to a non-temporary state (a
   // temporary state is something like ScrollingState).
   if (!newState || !newState->isTemporalState()) {
-    m_pixelsMovement->dropImage();
+    if (!m_discarded)
+      m_pixelsMovement->dropImage();
 
     editor->getDocument()->resetTransformation();
 
@@ -290,7 +295,7 @@ bool MovingPixelsState::onKeyDown(Editor* editor, Message* msg)
 
   if (msg->key.scancode == KEY_ENTER || // TODO make this key customizable
       msg->key.scancode == KEY_ENTER_PAD ||
-      msg->key.scancode == KEY_ESC) {
+      msg->key.scancode == KEY_ESC ) {
     dropPixels(editor);
 
     // The escape key drop pixels and deselect the mask.
@@ -300,6 +305,38 @@ bool MovingPixelsState::onKeyDown(Editor* editor, Message* msg)
     }
 
     return true;
+  }
+  else {
+    Command* cmd = get_command_from_key_message(msg);
+    if (cmd) {
+      // Intercept the "Cut" or "Copy" command to handle them locally
+      // with the current m_pixelsMovement data.
+      if (strcmp(cmd->short_name(), CommandId::Cut) == 0 ||
+          strcmp(cmd->short_name(), CommandId::Copy) == 0) {
+        // Copy the floating image to the clipboard.
+        {
+          Document* document = editor->getDocument();
+          gfx::Point origin;
+          UniquePtr<Image> floatingImage(m_pixelsMovement->getDraggedImageCopy(origin));
+          clipboard::copy_image(floatingImage.get(),
+                                document->getSprite()->getCurrentPalette(),
+                                origin);
+        }
+
+        // In case of "Cut" command.
+        if (strcmp(cmd->short_name(), CommandId::Cut) == 0) {
+          // Discard the dragged image.
+          m_pixelsMovement->discardImage();
+          m_discarded = true;
+
+          // Quit from MovingPixelsState, back to standby.
+          editor->backToPreviousState();
+        }
+
+        // Return true because we've used the keyboard shortcut.
+        return true;
+      }
+    }
   }
 
   // Use StandbyState implementation

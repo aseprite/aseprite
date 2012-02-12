@@ -64,6 +64,10 @@ private:
   // Helper member to move/translate selection and pixels.
   PixelsMovement* m_pixelsMovement;
   Editor* m_currentEditor;
+
+  // True if the image was discarded (e.g. when a "Cut" command was
+  // used to remove the dragged image).
+  bool m_discarded;
 };
 
 #endif  // WIDGETS_EDITOR_MOVING_PIXELS_STATE_H_INCLUDED

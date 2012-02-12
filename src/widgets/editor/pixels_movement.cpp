@@ -350,10 +350,41 @@ gfx::Rect PixelsMovement::moveImage(int x, int y, MoveModifier moveModifier)
   return gfx::Rect(0, 0, m_sprite->getWidth(), m_sprite->getHeight());
 }
 
+Image* PixelsMovement::getDraggedImageCopy(gfx::Point& origin)
+{
+  gfx::Transformation::Corners corners;
+  m_currentData.transformBox(corners);
+
+  gfx::Point leftTop(corners[0]);
+  gfx::Point rightBottom(corners[0]);
+  for (size_t i=1; i<corners.size(); ++i) {
+    if (leftTop.x > corners[i].x) leftTop.x = corners[i].x;
+    if (leftTop.y > corners[i].y) leftTop.y = corners[i].y;
+    if (rightBottom.x < corners[i].x) rightBottom.x = corners[i].x;
+    if (rightBottom.y < corners[i].y) rightBottom.y = corners[i].y;
+  }
+
+  int width = rightBottom.x - leftTop.x;
+  int height = rightBottom.y - leftTop.y;
+  UniquePtr<Image> image(image_new(m_sprite->getImgType(), width, height));
+  image_clear(image, image->mask_color);
+  image_parallelogram(image, m_originalImage,
+                      corners.leftTop().x-leftTop.x, corners.leftTop().y-leftTop.y,
+                      corners.rightTop().x-leftTop.x, corners.rightTop().y-leftTop.y,
+                      corners.rightBottom().x-leftTop.x, corners.rightBottom().y-leftTop.y,
+                      corners.leftBottom().x-leftTop.x, corners.leftBottom().y-leftTop.y);
+
+  origin = leftTop;
+
+  return image.release();
+}
+
 void PixelsMovement::stampImage()
 {
   const Cel* cel = m_documentReader->getExtraCel();
   const Image* image = m_documentReader->getExtraCelImage();
+
+  ASSERT(cel && image);
 
   {
     DocumentWriter documentWriter(m_documentReader);
@@ -420,12 +451,31 @@ void PixelsMovement::dropImage()
 {
   m_isDragging = false;
 
+  // Stamp the image in the current layer.
   stampImage();
 
+  // This is the end of the whole undo transaction.
   m_undoTransaction.commit();
 
+  // Destroy the extra cel (this cel will be used by the drawing
+  // cursor surely).
   DocumentWriter documentWriter(m_documentReader);
   documentWriter->destroyExtraCel();
+}
+
+void PixelsMovement::discardImage()
+{
+  m_isDragging = false;
+
+  // Deselect the mask (here we don't stamp the image).
+  m_undoTransaction.deselectMask();
+  m_undoTransaction.commit();
+
+  // Destroy the extra cel and regenerate the mask boundaries (we've
+  // just deselect the mask).
+  DocumentWriter documentWriter(m_documentReader);
+  documentWriter->destroyExtraCel();
+  documentWriter->generateMaskBoundaries();
 }
 
 bool PixelsMovement::isDragging() const
