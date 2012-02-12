@@ -63,6 +63,9 @@ class Tabs : public Widget
     }
   };
 
+  typedef std::vector<Tab*> TabsList;
+  typedef TabsList::iterator TabsListIterator;
+
   enum Ani { ANI_NONE,
              ANI_ADDING_TAB,
              ANI_REMOVING_TAB,
@@ -79,6 +82,8 @@ public:
   void setTabText(const char* text, void* data);
 
   void selectTab(void* data);
+  void selectNextTab();
+  void selectPreviousTab();
   void* getSelectedTab();
 
   void startScrolling();
@@ -91,7 +96,9 @@ private:
   void startAni(Ani ani);
   void stopAni();
 
+  void selectTabInternal(Tab* tab);
   void drawTab(BITMAP* bmp, JRect box, Tab* tab, int y_delta, bool selected);
+  TabsListIterator getTabIteratorByData(void* data);
   Tab* getTabByData(void* data);
   int getMaxScrollX();
   void makeTabVisible(Tab* tab);
@@ -99,7 +106,7 @@ private:
   void calculateHot();
   int calcTabWidth(Tab* tab);
 
-  std::vector<Tab*> m_list_of_tabs;
+  TabsList m_list_of_tabs;
   Tab *m_hot;
   Tab *m_selected;
   int m_scrollX;

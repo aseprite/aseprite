@@ -78,6 +78,9 @@
       <key command="PaletteEditor" shortcut="F4">
         <param name="switch" value="true" />
       </key>
+      <!-- Tabs -->
+      <key command="GotoNextTab" shortcut="Ctrl+Tab" />
+      <key command="GotoPreviousTab" shortcut="Ctrl+Shift+Tab" />
       <!-- Others -->
       <key command="SwitchColors" shortcut="X" />
       <key command="ChangeColor" shortcut="9">

@@ -96,7 +96,7 @@ Tabs::~Tabs()
   stopAni();
 
   // Remove all tabs
-  std::vector<Tab*>::iterator it, end = m_list_of_tabs.end();
+  TabsListIterator it, end = m_list_of_tabs.end();
   for (it = m_list_of_tabs.begin(); it != end; ++it)
     delete *it; // tab
   m_list_of_tabs.clear();
@@ -129,7 +129,7 @@ void Tabs::removeTab(void* data)
     if (m_hot == tab) m_hot = NULL;
     if (m_selected == tab) m_selected = NULL;
 
-    std::vector<Tab*>::iterator it =
+    TabsListIterator it =
       std::find(m_list_of_tabs.begin(), m_list_of_tabs.end(), tab);
 
     ASSERT(it != m_list_of_tabs.end() && "Removing a tab that is not part of the Tabs widget");
@@ -176,11 +176,47 @@ void Tabs::setTabText(const char* text, void* data)
 void Tabs::selectTab(void* data)
 {
   Tab *tab = getTabByData(data);
+  if (tab != NULL)
+    selectTabInternal(tab);
+}
 
-  if (tab != NULL) {
-    m_selected = tab;
-    makeTabVisible(tab);
-    invalidate();
+void Tabs::selectNextTab()
+{
+  TabsListIterator currentTabIt = getTabIteratorByData(m_selected->data);
+  TabsListIterator it = currentTabIt;
+  if (it != m_list_of_tabs.end()) {
+    // If we are at the end of the list, cycle to the first tab.
+    if (it == --m_list_of_tabs.end())
+      it = m_list_of_tabs.begin();
+    // Go to next tab.
+    else
+      ++it;
+
+    if (it != currentTabIt) {
+      selectTabInternal(*it);
+      if (m_delegate)
+        m_delegate->clickTab(this, m_selected->data, 1);
+    }
+  }
+}
+
+void Tabs::selectPreviousTab()
+{
+  TabsListIterator currentTabIt = getTabIteratorByData(m_selected->data);
+  TabsListIterator it = currentTabIt;
+  if (it != m_list_of_tabs.end()) {
+    // If we are at the beginning of the list, cycle to the last tab.
+    if (it == m_list_of_tabs.begin())
+      it = --m_list_of_tabs.end();
+    // Go to previous tab.
+    else
+      --it;
+
+    if (it != currentTabIt) {
+      selectTabInternal(*it);
+      if (m_delegate)
+        m_delegate->clickTab(this, m_selected->data, 1);
+    }
   }
 }
 
@@ -229,7 +265,7 @@ bool Tabs::onProcessMessage(Message* msg)
       box->x1 = box->x2;
 
       // For each tab...
-      std::vector<Tab*>::iterator it, end = m_list_of_tabs.end();
+      TabsListIterator it, end = m_list_of_tabs.end();
 
       for (it = m_list_of_tabs.begin(); it != end; ++it) {
         Tab* tab = *it;
@@ -390,7 +426,7 @@ bool Tabs::onProcessMessage(Message* msg)
         m_button_right->setBgColor(theme->get_tab_selected_face_color());
       }
       else if (msg->signal.num == JI_SIGNAL_SET_FONT) {
-        std::vector<Tab*>::iterator it, end = m_list_of_tabs.end();
+        TabsListIterator it, end = m_list_of_tabs.end();
 
         for (it = m_list_of_tabs.begin(); it != end; ++it) {
           Tab* tab = *it;
@@ -406,6 +442,13 @@ bool Tabs::onProcessMessage(Message* msg)
   }
 
   return Widget::onProcessMessage(msg);
+}
+
+void Tabs::selectTabInternal(Tab* tab)
+{
+  m_selected = tab;
+  makeTabVisible(tab);
+  invalidate();
 }
 
 void Tabs::drawTab(BITMAP* bmp, JRect box, Tab* tab, int y_delta, bool selected)
@@ -461,22 +504,30 @@ void Tabs::drawTab(BITMAP* bmp, JRect box, Tab* tab, int y_delta, bool selected)
 #endif
 }
 
-Tabs::Tab* Tabs::getTabByData(void* data)
+Tabs::TabsListIterator Tabs::getTabIteratorByData(void* data)
 {
-  std::vector<Tab*>::iterator it, end = m_list_of_tabs.end();
+  TabsListIterator it, end = m_list_of_tabs.end();
 
   for (it = m_list_of_tabs.begin(); it != end; ++it) {
-    Tab* tab = *it;
-    if (tab->data == data)
-      return tab;
+    if ((*it)->data == data)
+      break;
   }
 
-  return NULL;
+  return it;
+}
+
+Tabs::Tab* Tabs::getTabByData(void* data)
+{
+  TabsListIterator it = getTabIteratorByData(data);
+  if (it != m_list_of_tabs.end())
+    return *it;
+  else
+    return NULL;
 }
 
 int Tabs::getMaxScrollX()
 {
-  std::vector<Tab*>::iterator it, end = m_list_of_tabs.end();
+  TabsListIterator it, end = m_list_of_tabs.end();
   int x = 0;
 
   for (it = m_list_of_tabs.begin(); it != end; ++it) {
@@ -496,7 +547,7 @@ void Tabs::makeTabVisible(Tab* make_visible_this_tab)
 {
   int x = 0;
   int extra_x = getMaxScrollX() > 0 ? ARROW_W*2: 0;
-  std::vector<Tab*>::iterator it, end = m_list_of_tabs.end();
+  TabsListIterator it, end = m_list_of_tabs.end();
 
   for (it = m_list_of_tabs.begin(); it != end; ++it) {
     Tab* tab = *it;
@@ -566,7 +617,7 @@ void Tabs::calculateHot()
   JRect rect = jwidget_get_rect(this);
   JRect box = jrect_new(rect->x1-m_scrollX, rect->y1, 0, rect->y2-1);
   Tab *hot = NULL;
-  std::vector<Tab*>::iterator it, end = m_list_of_tabs.end();
+  TabsListIterator it, end = m_list_of_tabs.end();
 
   // For each tab
   for (it = m_list_of_tabs.begin(); it != end; ++it) {

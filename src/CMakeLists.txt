@@ -148,6 +148,7 @@ add_library(aseprite-library
   commands/cmd_frame_properties.cpp
   commands/cmd_goto_frame.cpp
   commands/cmd_goto_layer.cpp
+  commands/cmd_goto_tab.cpp
   commands/cmd_grid.cpp
   commands/cmd_import_sprite_sheet.cpp
   commands/cmd_invert_mask.cpp
