@@ -651,6 +651,10 @@ void Editor::drawGrid(const Rect& gridBounds, const Color& color)
 
 void Editor::flashCurrentLayer()
 {
+#if 0                           // TODO this flash effect can be done
+                                // only with hardware acceleration.
+                                // Finish it when the
+                                // Allegro 5 port is ready.
   int x, y;
   const Image* src_image = m_sprite->getCurrentImage(&x, &y);
   if (src_image) {
@@ -679,6 +683,7 @@ void Editor::flashCurrentLayer()
     image_clear(flash_image, flash_image->mask_color);
     drawSpriteSafe(0, 0, m_sprite->getWidth()-1, m_sprite->getHeight()-1);
   }
+#endif
 }
 
 void Editor::controlInfiniteScroll(Message* msg)
