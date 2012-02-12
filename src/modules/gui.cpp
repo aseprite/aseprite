@@ -1255,29 +1255,22 @@ static bool manager_msg_proc(JWidget widget, Message* msg)
             case Shortcut_ExecuteCommand: {
               Command* command = shortcut->command;
 
-              // The screen shot is available in everywhere
-              if (strcmp(command->short_name(), CommandId::ScreenShot) == 0) {
-                UIContext::instance()->executeCommand(command, shortcut->params);
-                return true;
-              }
-              // All other keys are only available in the main-window
-              else {
-                JLink link;
+              // Commands are executed only when the main window is
+              // the current window running at foreground.
+              JLink link;
+              JI_LIST_FOR_EACH(widget->children, link) {
+                Frame* child = reinterpret_cast<Frame*>(link->data);
 
-                JI_LIST_FOR_EACH(widget->children, link) {
-                  Frame* child = reinterpret_cast<Frame*>(link->data);
-
-                  // There are a foreground window executing?
-                  if (child->is_foreground()) {
-                    break;
-                  }
-                  // Is it the desktop and the top-window=
-                  else if (child->is_desktop() && child == app_get_top_window()) {
-                    // OK, so we can execute the command represented
-                    // by the pressed-key in the message...
-                    UIContext::instance()->executeCommand(command, shortcut->params);
-                    return true;
-                  }
+                // There are a foreground window executing?
+                if (child->is_foreground()) {
+                  break;
+                }
+                // Is it the desktop and the top-window=
+                else if (child->is_desktop() && child == app_get_top_window()) {
+                  // OK, so we can execute the command represented
+                  // by the pressed-key in the message...
+                  UIContext::instance()->executeCommand(command, shortcut->params);
+                  return true;
                 }
               }
               break;

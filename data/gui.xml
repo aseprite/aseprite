@@ -15,7 +15,6 @@
       <key command="CloseFile" shortcut="Ctrl+W" />
       <key command="CloseAllFiles" shortcut="Ctrl+Shift+W" />
       <key command="DeveloperConsole" shortcut="F11" />
-      <key command="ScreenShot" shortcut="F12" />
       <key command="Exit" shortcut="Ctrl+Q" />
       <key command="Exit" shortcut="Alt+F4" />
       <key command="Cancel" shortcut="Esc" />
@@ -346,7 +345,6 @@
         <item command="Preview" text="Previe&amp;w" />
         <separator />
         <item command="Refresh" text="&amp;Refresh &amp;&amp; Reload Skin" />
-        <item command="ScreenShot" text="&amp;Screen Shot" />
       </menu>
       <menu text="&amp;Help">
         <item command="Launch" text="Quick &amp;Reference">
