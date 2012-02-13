@@ -159,7 +159,7 @@ protected:
       // As first step, we cut each tile and add them into "animation" list.
       for (int y=m_rect.y; y<sprite->getHeight(); y += m_rect.h) {
         for (int x=m_rect.x; x<sprite->getWidth(); x += m_rect.w) {
-          UniquePtr<Image> resultImage(Image::create(sprite->getImgType(), m_rect.w, m_rect.h));
+          UniquePtr<Image> resultImage(Image::create(sprite->getPixelFormat(), m_rect.w, m_rect.h));
 
           // Clear the image with mask color.
           image_clear(resultImage, 0);

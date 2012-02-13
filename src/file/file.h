@@ -20,6 +20,7 @@
 #define FILE_FILE_H_INCLUDED
 
 #include "base/shared_ptr.h"
+#include "raster/pixeL_format.h"
 
 #include <stdio.h>
 #include <vector>
@@ -115,7 +116,7 @@ void fop_post_load(FileOp* fop);
 void fop_sequence_set_format_options(FileOp* fop, const SharedPtr<FormatOptions>& format_options);
 void fop_sequence_set_color(FileOp* fop, int index, int r, int g, int b);
 void fop_sequence_get_color(FileOp* fop, int index, int *r, int *g, int *b);
-Image* fop_sequence_image(FileOp* fi, int imgtype, int w, int h);
+Image* fop_sequence_image(FileOp* fi, PixelFormat pixelFormat, int w, int h);
 
 void fop_error(FileOp* fop, const char *error, ...);
 void fop_progress(FileOp* fop, float progress);

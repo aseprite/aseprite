@@ -23,17 +23,18 @@
 #include "base/compiler_specific.h"
 #include "base/signal.h"
 #include "gui/button.h"
+#include "raster/pixel_format.h"
 
 class ColorSelector;
 
 class ColorButton : public ButtonBase
 {
 public:
-  ColorButton(const Color& color, int imgtype);
+  ColorButton(const Color& color, PixelFormat pixelFormat);
   ~ColorButton();
 
-  int getImgType() const;
-  void setImgType(int imgtype);
+  PixelFormat getPixelFormat() const;
+  void setPixelFormat(PixelFormat pixelFormat);
 
   Color getColor() const;
   void setColor(const Color& color);
@@ -53,7 +54,7 @@ private:
   void onFrameColorChange(const Color& color);
 
   Color m_color;
-  int m_imgtype;
+  PixelFormat m_pixelFormat;
   ColorSelector* m_frame;
 };
 

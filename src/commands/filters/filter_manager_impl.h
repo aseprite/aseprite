@@ -19,13 +19,15 @@
 #ifndef COMMANDS_FILTERS_FILTER_MANAGER_IMPL_H_INCLUDED
 #define COMMANDS_FILTERS_FILTER_MANAGER_IMPL_H_INCLUDED
 
-#include <cstring>
-#include <stdlib.h>
-
 #include "base/exception.h"
+#include "base/exception.h"
+#include "document_wrappers.h"
 #include "filters/filter_indexed_data.h"
 #include "filters/filter_manager.h"
-#include "document_wrappers.h"
+#include "raster/pixel_format.h"
+
+#include <cstdlib>
+#include <cstring>
 
 class Filter;
 class Image;
@@ -70,7 +72,7 @@ public:
 
   void setProgressDelegate(IProgressDelegate* progressDelegate);
 
-  int getImgType() const;
+  PixelFormat getPixelFormat() const;
 
   void setTarget(Target target);
 

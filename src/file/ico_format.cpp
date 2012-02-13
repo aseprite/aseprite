@@ -129,17 +129,17 @@ bool IcoFormat::onLoad(FileOp* fop)
   int width = (entry.width == 0 ? 256: entry.width);
   int height = (entry.height == 0 ? 256: entry.height);
   int numcolors = (entry.color_count == 0 ? 256: entry.color_count);
-  int imgtype = IMAGE_INDEXED;
+  PixelFormat pixelFormat = IMAGE_INDEXED;
   if (entry.bpp > 8)
-    imgtype = IMAGE_RGB;
+    pixelFormat = IMAGE_RGB;
 
   // Create the sprite with one background layer
-  Sprite* sprite = new Sprite(imgtype, width, height, numcolors);
+  Sprite* sprite = new Sprite(pixelFormat, width, height, numcolors);
   LayerImage* layer = new LayerImage(sprite);
   sprite->getFolder()->add_layer(layer);
 
   // Create the first image/cel
-  Image* image = Image::create(imgtype, width, height);
+  Image* image = Image::create(pixelFormat, width, height);
   int image_index = sprite->getStock()->addImage(image);
   Cel* cel = new Cel(0, image_index);
   layer->addCel(cel);
@@ -258,7 +258,7 @@ bool IcoFormat::onSave(FileOp* fop)
 
   // Entries
   for (n=0; n<num; ++n) {
-    bpp = (sprite->getImgType() == IMAGE_INDEXED) ? 8 : 24;
+    bpp = (sprite->getPixelFormat() == IMAGE_INDEXED) ? 8 : 24;
     bw = (((sprite->getWidth() * bpp / 8) + 3) / 4) * 4;
     bitsw = ((((sprite->getWidth() + 7) / 8) + 3) / 4) * 4;
     size = sprite->getHeight() * (bw + bitsw) + 40;
@@ -279,7 +279,7 @@ bool IcoFormat::onSave(FileOp* fop)
     offset += size;
   }
 
-  Image* image = Image::create(sprite->getImgType(),
+  Image* image = Image::create(sprite->getPixelFormat(),
                                sprite->getWidth(),
                                sprite->getHeight());
 
@@ -287,7 +287,7 @@ bool IcoFormat::onSave(FileOp* fop)
     image_clear(image, 0);
     layer_render(sprite->getFolder(), image, 0, 0, n);
 
-    bpp = (sprite->getImgType() == IMAGE_INDEXED) ? 8 : 24;
+    bpp = (sprite->getPixelFormat() == IMAGE_INDEXED) ? 8 : 24;
     bw = (((image->w * bpp / 8) + 3) / 4) * 4;
     bitsw = ((((image->w + 7) / 8) + 3) / 4) * 4;
     size = image->h * (bw + bitsw) + 40;
@@ -325,7 +325,7 @@ bool IcoFormat::onSave(FileOp* fop)
     // XOR MASK
     for (y=image->h-1; y>=0; --y) {
       for (x=0; x<image->w; ++x) {
-        switch (image->imgtype) {
+        switch (image->getPixelFormat()) {
 
           case IMAGE_RGB:
             c = image_getpixel(image, x, y);
@@ -364,7 +364,7 @@ bool IcoFormat::onSave(FileOp* fop)
         for (b=0; b<8; b++) {
           c = image_getpixel(image, x*8+b, y);
 
-          switch (image->imgtype) {
+          switch (image->getPixelFormat()) {
 
             case IMAGE_RGB:
               if (_rgba_geta(c) == 0)

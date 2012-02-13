@@ -19,13 +19,13 @@
 
 #include "config.h"
 
+#include "raster/algo.h"
+#include "raster/image.h"
+
 #include <allegro.h>
 #include <allegro/internal/aintern.h>
 #include <limits.h>
 #include <math.h>
-
-#include "raster/algo.h"
-#include "raster/image.h"
 
 
 
@@ -112,7 +112,7 @@ static int flooder (Image *image, int x, int y,
   int left = 0, right = 0;
   int c;
 
-  switch (image->imgtype) {
+  switch (image->getPixelFormat()) {
 
     case IMAGE_RGB:
       {

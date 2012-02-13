@@ -57,16 +57,16 @@ void image_scale(Image *dst, Image *src, int x, int y, int w, int h)
     BLEND_COLOR blender = NULL;
     int u, v, c;
 
-    if (dst->imgtype == IMAGE_RGB)
+    if (dst->getPixelFormat() == IMAGE_RGB)
       blender = _rgba_blenders[BLEND_MODE_NORMAL];
-    else if (dst->imgtype == IMAGE_GRAYSCALE)
+    else if (dst->getPixelFormat() == IMAGE_GRAYSCALE)
       blender = _graya_blenders[BLEND_MODE_NORMAL];
 
     for (v=0; v<h; v++) {
       for (u=0; u<w; u++) {
         c = image_getpixel (src, src->w*u/w, src->h*v/h);
 
-        switch (dst->imgtype) {
+        switch (dst->getPixelFormat()) {
 
           case IMAGE_RGB:
           case IMAGE_GRAYSCALE:
@@ -638,7 +638,7 @@ static void ase_parallelogram_map(Image *bmp, Image *spr, fixed xs[4], fixed ys[
 static void ase_parallelogram_map_standard(Image *bmp, Image *sprite,
                                            fixed xs[4], fixed ys[4])
 {
-  switch (bmp->imgtype) {
+  switch (bmp->getPixelFormat()) {
 
     case IMAGE_RGB:
       ase_parallelogram_map<RgbTraits, RgbDelegate>(bmp, sprite, xs, ys, false);

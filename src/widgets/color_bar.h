@@ -25,6 +25,7 @@
 #include "gui/box.h"
 #include "gui/button.h"
 #include "gui/view.h"
+#include "raster/pixel_format.h"
 #include "widgets/color_button.h"
 #include "widgets/palette_view.h"
 
@@ -37,7 +38,7 @@ public:
   ColorBar(int align);
   ~ColorBar();
 
-  void setImgType(int imgtype);
+  void setPixelFormat(PixelFormat pixelFormat);
 
   Color getFgColor();
   Color getBgColor();

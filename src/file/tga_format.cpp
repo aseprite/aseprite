@@ -204,7 +204,6 @@ bool TgaFormat::onLoad(FileOp* fop)
   Image *image;
   int compressed;
   FILE *f;
-  int type;
 
   f = fopen(fop->filename.c_str(), "rb");
   if (!f)
@@ -264,6 +263,8 @@ bool TgaFormat::onLoad(FileOp* fop)
   compressed = (image_type & 8);
   image_type &= 7;
 
+  PixelFormat pixelFormat;
+
   switch (image_type) {
 
     /* paletted image */
@@ -280,7 +281,7 @@ bool TgaFormat::onLoad(FileOp* fop)
                                image_palette[i][0]);
       }
 
-      type = IMAGE_INDEXED;
+      pixelFormat = IMAGE_INDEXED;
       break;
 
     /* truecolor image */
@@ -292,7 +293,7 @@ bool TgaFormat::onLoad(FileOp* fop)
         return false;
       }
 
-      type = IMAGE_RGB;
+      pixelFormat = IMAGE_RGB;
       break;
 
     /* grayscale image */
@@ -305,7 +306,7 @@ bool TgaFormat::onLoad(FileOp* fop)
       for (i=0; i<256; i++)
         fop_sequence_set_color(fop, i, i, i, i);
 
-      type = IMAGE_GRAYSCALE;
+      pixelFormat = IMAGE_GRAYSCALE;
       break;
 
     default:
@@ -315,7 +316,7 @@ bool TgaFormat::onLoad(FileOp* fop)
       return false;
   }
 
-  image = fop_sequence_image(fop, type, image_width, image_height);
+  image = fop_sequence_image(fop, pixelFormat, image_width, image_height);
   if (!image) {
     fclose(f);
     return false;
@@ -408,8 +409,8 @@ bool TgaFormat::onSave(FileOp* fop)
   Image *image = fop->seq.image;
   unsigned char image_palette[256][3];
   int x, y, c, r, g, b;
-  int depth = (image->imgtype == IMAGE_RGB) ? 32 : 8;
-  bool need_pal = (image->imgtype == IMAGE_INDEXED)? true: false;
+  int depth = (image->getPixelFormat() == IMAGE_RGB) ? 32 : 8;
+  bool need_pal = (image->getPixelFormat() == IMAGE_INDEXED)? true: false;
   FILE *f;
 
   f = fopen(fop->filename.c_str(), "wb");
@@ -421,9 +422,9 @@ bool TgaFormat::onSave(FileOp* fop)
   fputc(0, f);                          /* id length (no id saved) */
   fputc((need_pal) ? 1 : 0, f);         /* palette type */
   /* image type */
-  fputc((image->imgtype == IMAGE_RGB      ) ? 2 :
-        (image->imgtype == IMAGE_GRAYSCALE) ? 3 :
-        (image->imgtype == IMAGE_INDEXED  ) ? 1 : 0, f);
+  fputc((image->getPixelFormat() == IMAGE_RGB      ) ? 2 :
+        (image->getPixelFormat() == IMAGE_GRAYSCALE) ? 3 :
+        (image->getPixelFormat() == IMAGE_INDEXED  ) ? 1 : 0, f);
   fputw(0, f);                         /* first colour */
   fputw((need_pal) ? 256 : 0, f);      /* number of colours */
   fputc((need_pal) ? 24 : 0, f);       /* palette entry size */
@@ -434,7 +435,7 @@ bool TgaFormat::onSave(FileOp* fop)
   fputc(depth, f);                     /* bits per pixel */
 
   /* descriptor (bottom to top, 8-bit alpha) */
-  fputc(image->imgtype == IMAGE_RGB ? 8: 0, f);
+  fputc(image->getPixelFormat() == IMAGE_RGB ? 8: 0, f);
 
   if (need_pal) {
     for (y=0; y<256; y++) {
@@ -446,7 +447,7 @@ bool TgaFormat::onSave(FileOp* fop)
     fwrite(image_palette, 1, 768, f);
   }
 
-  switch (image->imgtype) {
+  switch (image->getPixelFormat()) {
 
     case IMAGE_RGB:
       for (y=image->h-1; y>=0; y--) {

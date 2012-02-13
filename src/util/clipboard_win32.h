@@ -64,7 +64,7 @@ static void set_win32_clipboard_bitmap(Image* image, Palette* palette)
   int color_depth = 0;
   int palette_entries = 0;
 
-  switch (image->imgtype) {
+  switch (image->getPixelFormat()) {
     case IMAGE_RGB:
       scanline = sizeof(uint32_t) * image->w;
       color_depth = 32;
@@ -107,7 +107,7 @@ static void set_win32_clipboard_bitmap(Image* image, Palette* palette)
   bi->bV5ClrUsed = palette_entries == 256 ? 0: palette_entries;
 
   // write pixels
-  switch (image->imgtype) {
+  switch (image->getPixelFormat()) {
     case IMAGE_RGB: {
       uint32_t* dst = (uint32_t*)(((uint8_t*)bi)+bi->bV5Size);
       uint32_t c;

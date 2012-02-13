@@ -57,7 +57,7 @@ void FlattenLayersCommand::onExecute(Context* context)
 {
   ActiveDocumentWriter document(context);
   Sprite* sprite = document->getSprite();
-  int bgcolor = color_utils::color_for_image(app_get_colorbar()->getBgColor(), sprite->getImgType());
+  int bgcolor = color_utils::color_for_image(app_get_colorbar()->getBgColor(), sprite->getPixelFormat());
   {
     UndoTransaction undoTransaction(document, "Flatten Layers");
     undoTransaction.flattenLayers(bgcolor);

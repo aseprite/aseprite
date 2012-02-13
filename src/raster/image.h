@@ -19,22 +19,16 @@
 #ifndef RASTER_IMAGE_H_INCLUDED
 #define RASTER_IMAGE_H_INCLUDED
 
-#include <allegro/color.h>
-#include "raster/gfxobj.h"
 #include "raster/blend.h"
+#include "raster/gfxobj.h"
+#include "raster/pixel_format.h"
+
+#include <allegro/color.h>
 
 class Palette;
 
 class Pen;
 class RgbMap;
-
-// Image Types
-enum {
-  IMAGE_RGB,
-  IMAGE_GRAYSCALE,
-  IMAGE_INDEXED,
-  IMAGE_BITMAP
-};
 
 enum ResizeMethod {
   RESIZE_METHOD_NEAREST_NEIGHBOR,
@@ -46,17 +40,18 @@ struct BITMAP;
 class Image : public GfxObj
 {
 public:
-  int imgtype;
   int w, h;
   uint8_t* dat;                 // Pixmap data.
   uint8_t** line;               // Start of each scanline.
   uint32_t mask_color;          // Skipped color in merge process.
 
-  static Image* create(int imgtype, int w, int h);
+  static Image* create(PixelFormat format, int w, int h);
   static Image* createCopy(const Image* image);
 
-  Image(int imgtype, int w, int h);
+  Image(PixelFormat format, int w, int h);
   virtual ~Image();
+
+  PixelFormat getPixelFormat() const { return m_format; }
 
   int getMemSize() const;
 
@@ -69,6 +64,9 @@ public:
   virtual void rectfill(int x1, int y1, int x2, int y2, int color) = 0;
   virtual void rectblend(int x1, int y1, int x2, int y2, int color, int opacity) = 0;
   virtual void to_allegro(BITMAP* bmp, int x, int y, const Palette* palette) const = 0;
+
+private:
+  PixelFormat m_format;
 };
 
 void image_free(Image* image);
@@ -102,20 +100,20 @@ void image_resize(const Image* src, Image* dst, ResizeMethod method, const Palet
 int image_count_diff(const Image* i1, const Image* i2);
 bool image_shrink_rect(Image *image, int *x1, int *y1, int *x2, int *y2, int refpixel);
 
-inline int imgtype_shift(int imgtype)
+inline int pixelformat_shift(PixelFormat pixelFormat)
 {
-  return ((imgtype == IMAGE_RGB)?       2:
-          (imgtype == IMAGE_GRAYSCALE)? 1: 0);
+  return ((pixelFormat == IMAGE_RGB)? 2:
+          (pixelFormat == IMAGE_GRAYSCALE)? 1: 0);
+}
+
+inline int pixelformat_line_size(PixelFormat format, int width)
+{
+  return (width << pixelformat_shift(format));
 }
 
 inline int image_shift(const Image* image)
 {
-  return imgtype_shift(image->imgtype);
-}
-
-inline int imgtype_line_size(int imgtype, int width)
-{
-  return (width << imgtype_shift(imgtype));
+  return pixelformat_shift(image->getPixelFormat());
 }
 
 inline int image_line_size(const Image* image, int width)

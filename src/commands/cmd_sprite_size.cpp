@@ -91,7 +91,7 @@ protected:
       // Resize the image
       int w = scale_x(image->w);
       int h = scale_y(image->h);
-      Image* new_image = Image::create(image->imgtype, MAX(1, w), MAX(1, h));
+      Image* new_image = Image::create(image->getPixelFormat(), MAX(1, w), MAX(1, h));
 
       image_fixup_transparent_colors(image);
       image_resize(image, new_image,

@@ -16,34 +16,30 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#include "config.h"
+#ifndef UNDOERS_SET_STOCK_PIXEL_FORMAT_H_INCLUDED
+#define UNDOERS_SET_STOCK_PIXEL_FORMAT_H_INCLUDED
 
-#include "undoers/set_stock_imgtype.h"
+#include "undo/object_id.h"
+#include "undoers/undoer_base.h"
 
-#include "raster/stock.h"
-#include "undo/objects_container.h"
-#include "undo/undoers_collector.h"
+class Stock;
 
-using namespace undo;
-using namespace undoers;
+namespace undoers {
 
-SetStockImgType::SetStockImgType(ObjectsContainer* objects, Stock* stock)
-  : m_stockId(objects->addObject(stock))
-  , m_imgtype(stock->getImgType())
+class SetStockPixelFormat : public UndoerBase
 {
-}
+public:
+  SetStockPixelFormat(undo::ObjectsContainer* objects, Stock* stock);
 
-void SetStockImgType::dispose()
-{
-  delete this;
-}
+  void dispose() OVERRIDE;
+  int getMemSize() const OVERRIDE { return sizeof(*this); }
+  void revert(undo::ObjectsContainer* objects, undo::UndoersCollector* redoers) OVERRIDE;
 
-void SetStockImgType::revert(ObjectsContainer* objects, UndoersCollector* redoers)
-{
-  Stock* stock = objects->getObjectT<Stock>(m_stockId);
+private:
+  undo::ObjectId m_stockId;
+  uint32_t m_format;
+};
 
-  // Push another SetStockImgType as redoer
-  redoers->pushUndoer(new SetStockImgType(objects, stock));
+} // namespace undoers
 
-  stock->setImgType(m_imgtype);
-}
+#endif  // UNDOERS_SET_STOCK_PIXEL_FORMAT_H_INCLUDED

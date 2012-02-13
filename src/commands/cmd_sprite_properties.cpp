@@ -83,7 +83,7 @@ void SpritePropertiesCommand::onExecute(Context* context)
     const Sprite* sprite(document ? document->getSprite(): NULL);
 
     // Update widgets values
-    switch (sprite->getImgType()) {
+    switch (sprite->getPixelFormat()) {
       case IMAGE_RGB:
         imgtype_text = "RGB";
         break;
@@ -117,7 +117,7 @@ void SpritePropertiesCommand::onExecute(Context* context)
     // How many frames
     frames->setTextf("%d", sprite->getTotalFrames());
 
-    if (sprite->getImgType() == IMAGE_INDEXED) {
+    if (sprite->getPixelFormat() == IMAGE_INDEXED) {
       color_button = new ColorButton(Color::fromIndex(sprite->getTransparentColor()),
                                      IMAGE_INDEXED);
 

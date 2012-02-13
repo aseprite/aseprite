@@ -139,7 +139,7 @@ protected:
 
     int sheet_w = sprite->getWidth()*columns;
     int sheet_h = sprite->getHeight()*((nframes/columns)+((nframes%columns)>0?1:0));
-    UniquePtr<Image> resultImage(Image::create(sprite->getImgType(), sheet_w, sheet_h));
+    UniquePtr<Image> resultImage(Image::create(sprite->getPixelFormat(), sheet_w, sheet_h));
     image_clear(resultImage, 0);
 
     int oldFrame = sprite->getCurrentFrame();

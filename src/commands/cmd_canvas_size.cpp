@@ -204,8 +204,8 @@ void CanvasSizeCommand::onExecute(Context* context)
   {
     DocumentWriter documentWriter(document);
     UndoTransaction undoTransaction(documentWriter, "Canvas Size");
-    int bgcolor = color_utils::color_for_image(context->getSettings()->getBgColor(), sprite->getImgType());
-    bgcolor = color_utils::fixup_color_for_background(sprite->getImgType(), bgcolor);
+    int bgcolor = color_utils::color_for_image(context->getSettings()->getBgColor(), sprite->getPixelFormat());
+    bgcolor = color_utils::fixup_color_for_background(sprite->getPixelFormat(), bgcolor);
 
     undoTransaction.cropSprite(gfx::Rect(x1, y1, x2-x1, y2-y1), bgcolor);
     undoTransaction.commit();

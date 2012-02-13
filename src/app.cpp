@@ -464,14 +464,14 @@ bool app_rebuild_recent_list()
   return true;
 }
 
-int app_get_current_image_type()
+PixelFormat app_get_current_pixel_format()
 {
   Context* context = UIContext::instance();
   ASSERT(context != NULL);
 
   Document* document = context->getActiveDocument();
   if (document != NULL)
-    return document->getSprite()->getImgType();
+    return document->getSprite()->getPixelFormat();
   else if (screen != NULL && bitmap_color_depth(screen) == 8)
     return IMAGE_INDEXED;
   else

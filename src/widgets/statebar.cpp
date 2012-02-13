@@ -516,13 +516,13 @@ bool StatusBar::onProcessMessage(Message* msg)
         draw_color_button(doublebuffer, Rect(x, rc->y1, 32*jguiscale(), rc->y2-rc->y1),
                           true, true, true, true,
                           true, true, true, true,
-                          app_get_current_image_type(), m_color,
+                          app_get_current_pixel_format(), m_color,
                           false, false);
 
         x += (32+4)*jguiscale();
 
         // Draw color description
-        std::string str = m_color.toFormalString(app_get_current_image_type(), true);
+        std::string str = m_color.toFormalString(app_get_current_pixel_format(), true);
         if (m_alpha < 255) {
           char buf[512];
           usprintf(buf, ", Alpha %d", m_alpha);

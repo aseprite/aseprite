@@ -274,7 +274,7 @@ bool GifFormat::onPostLoad(FileOp* fop)
   if (!data)
     return true;
 
-  int imgtype = IMAGE_INDEXED;
+  PixelFormat pixelFormat = IMAGE_INDEXED;
   bool askForConversion = false;
 
   if (!fop->oneframe) {
@@ -326,19 +326,19 @@ bool GifFormat::onPostLoad(FileOp* fop)
                   fop->document->getFilename());
 
     if (result == 1)
-      imgtype = IMAGE_RGB;
+      pixelFormat = IMAGE_RGB;
     else if (result != 2)
       return false;
   }
 
   // Create the sprite with the GIF dimension
-  UniquePtr<Sprite> sprite(new Sprite(imgtype, data->sprite_w, data->sprite_h, 256));
+  UniquePtr<Sprite> sprite(new Sprite(pixelFormat, data->sprite_w, data->sprite_h, 256));
 
   // Create the main layer
   LayerImage* layer = new LayerImage(sprite);
   sprite->getFolder()->add_layer(layer);
 
-  if (imgtype == IMAGE_INDEXED) {
+  if (pixelFormat == IMAGE_INDEXED) {
     if (data->bgcolor_index >= 0)
       sprite->setTransparentColor(data->bgcolor_index);
     else
@@ -348,11 +348,11 @@ bool GifFormat::onPostLoad(FileOp* fop)
   // The previous image is used to support the special disposal method
   // of GIF frames DISPOSAL_METHOD_RESTORE_PREVIOUS (number 3 in
   // Graphics Extension)
-  UniquePtr<Image> current_image(Image::create(imgtype, data->sprite_w, data->sprite_h));
-  UniquePtr<Image> previous_image(Image::create(imgtype, data->sprite_w, data->sprite_h));
+  UniquePtr<Image> current_image(Image::create(pixelFormat, data->sprite_w, data->sprite_h));
+  UniquePtr<Image> previous_image(Image::create(pixelFormat, data->sprite_w, data->sprite_h));
 
   // Clear both images with the transparent color (alpha = 0).
-  uint32_t bgcolor = (imgtype == IMAGE_RGB ? _rgba(0, 0, 0, 0):
+  uint32_t bgcolor = (pixelFormat == IMAGE_RGB ? _rgba(0, 0, 0, 0):
                       (data->bgcolor_index >= 0 ? data->bgcolor_index: 0));
   image_clear(current_image, bgcolor);
   image_clear(previous_image, bgcolor);
@@ -375,7 +375,7 @@ bool GifFormat::onPostLoad(FileOp* fop)
       current_palette = frame_it->palette;
     }
 
-    switch (imgtype) {
+    switch (pixelFormat) {
 
       case IMAGE_INDEXED:
         for (int y = 0; y < frame_it->image->h; ++y)
@@ -490,10 +490,10 @@ bool GifFormat::onSave(FileOp* fop)
   Sprite* sprite = fop->document->getSprite();
   int sprite_w = sprite->getWidth();
   int sprite_h = sprite->getHeight();
-  int sprite_imgtype = sprite->getImgType();
+  PixelFormat sprite_format = sprite->getPixelFormat();
   bool interlace = false;
   int loop = 0;
-  int background_color = (sprite_imgtype == IMAGE_INDEXED ? sprite->getTransparentColor(): 0);
+  int background_color = (sprite_format == IMAGE_INDEXED ? sprite->getTransparentColor(): 0);
   int transparent_index = (sprite->getBackgroundLayer() ? -1: sprite->getTransparentColor());
 
   Palette* current_palette = sprite->getPalette(0);
@@ -519,8 +519,8 @@ bool GifFormat::onSave(FileOp* fop)
 
   // If the sprite is not Indexed type, we will need a temporary
   // buffer to render the full RGB or Grayscale sprite.
-  if (sprite_imgtype != IMAGE_INDEXED)
-    buffer_image.reset(Image::create(sprite_imgtype, sprite_w, sprite_h));
+  if (sprite_format != IMAGE_INDEXED)
+    buffer_image.reset(Image::create(sprite_format, sprite_w, sprite_h));
 
   image_clear(current_image, background_color);
   image_clear(previous_image, background_color);
@@ -529,11 +529,11 @@ bool GifFormat::onSave(FileOp* fop)
     current_palette = sprite->getPalette(frame_num);
 
     // If the sprite is RGB or Grayscale, we must to convert it to Indexed on the fly.
-    if (sprite_imgtype != IMAGE_INDEXED) {
+    if (sprite_format != IMAGE_INDEXED) {
       image_clear(buffer_image, 0);
       layer_render(sprite->getFolder(), buffer_image, 0, 0, frame_num);
 
-      switch (sprite_imgtype) {
+      switch (sprite_format) {
 
         // Convert the RGB image to Indexed
         case IMAGE_RGB:

@@ -39,7 +39,7 @@ public:
 
 private:
   undo::ObjectId m_imageId;
-  uint8_t m_imgtype;
+  uint8_t m_format;
   uint16_t m_x, m_y, m_w, m_h;
   uint8_t m_flipFlags;
 };

@@ -24,6 +24,7 @@
 #include "base/unique_ptr.h"
 #include "document_id.h"
 #include "gfx/transformation.h"
+#include "raster/pixel_format.h"
 
 #include <string>
 
@@ -68,7 +69,7 @@ public:
 
   // Creates a document with one sprite, with one transparent layer,
   // and one frame.
-  static Document* createBasicDocument(int imgtype, int width, int height, int ncolors);
+  static Document* createBasicDocument(PixelFormat format, int width, int height, int ncolors);
 
   Document(Sprite* sprite);
   ~Document();

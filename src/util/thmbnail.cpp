@@ -131,7 +131,7 @@ static void thumbnail_render(BITMAP* bmp, const Image* image, bool has_alpha, co
     rectgrid(bmp, 0, 0, bmp->w-1, bmp->h-1,
              bmp->w/4, bmp->h/4);
 
-    switch (image->imgtype) {
+    switch (image->getPixelFormat()) {
       case IMAGE_RGB:
         for (y=0; y<h; y++)
           for (x=0; x<w; x++) {
@@ -177,7 +177,7 @@ static void thumbnail_render(BITMAP* bmp, const Image* image, bool has_alpha, co
   else {
     clear_to_color(bmp, makecol(128, 128, 128));
 
-    switch (image->imgtype) {
+    switch (image->getPixelFormat()) {
       case IMAGE_RGB:
         for (y=0; y<h; y++)
           for (x=0; x<w; x++) {

@@ -43,10 +43,10 @@ static int colorbutton_type()
   return type;
 }
 
-ColorButton::ColorButton(const Color& color, int imgtype)
+ColorButton::ColorButton(const Color& color, PixelFormat pixelFormat)
   : ButtonBase("", colorbutton_type(), JI_BUTTON, JI_BUTTON)
   , m_color(color)
-  , m_imgtype(imgtype)
+  , m_pixelFormat(pixelFormat)
   , m_frame(NULL)
 {
   jwidget_focusrest(this, true);
@@ -59,14 +59,14 @@ ColorButton::~ColorButton()
   delete m_frame;       // widget, frame
 }
 
-int ColorButton::getImgType() const
+PixelFormat ColorButton::getPixelFormat() const
 {
-  return m_imgtype;
+  return m_pixelFormat;
 }
 
-void ColorButton::setImgType(int imgtype)
+void ColorButton::setPixelFormat(PixelFormat pixelFormat)
 {
-  m_imgtype = imgtype;
+  m_pixelFormat = pixelFormat;
   invalidate();
 }
 
@@ -146,7 +146,7 @@ bool ColorButton::onProcessMessage(Message* msg)
               y = msg->mouse.y;
               editor->screenToEditor(x, y, &x, &y);
               imgcolor = sprite->getPixel(x, y);
-              color = Color::fromImage(sprite->getImgType(), imgcolor);
+              color = Color::fromImage(sprite->getPixelFormat(), imgcolor);
             }
           }
         }
@@ -208,12 +208,12 @@ void ColorButton::onPaint(PaintEvent& ev) // TODO use "ev.getGraphics()"
      this->getBounds(),
      true, true, true, true,
      true, true, true, true,
-     this->m_imgtype,
+     m_pixelFormat,
      color,
      this->hasMouseOver(), false);
 
   // Draw text
-  std::string str = m_color.toFormalString(this->m_imgtype, false);
+  std::string str = m_color.toFormalString(m_pixelFormat, false);
 
   setTextQuiet(str.c_str());
   jwidget_get_texticon_info(this, &box, &text, &icon, 0, 0, 0);

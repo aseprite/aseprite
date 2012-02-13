@@ -77,16 +77,16 @@ Document::~Document()
   destroyExtraCel();
 }
 
-Document* Document::createBasicDocument(int imgtype, int width, int height, int ncolors)
+Document* Document::createBasicDocument(PixelFormat format, int width, int height, int ncolors)
 {
   // Create the sprite.
-  UniquePtr<Sprite> sprite(new Sprite(imgtype, width, height, ncolors));
+  UniquePtr<Sprite> sprite(new Sprite(format, width, height, ncolors));
   sprite->setTotalFrames(1);
 
   // Create the main image.
   int indexInStock;
   {
-    UniquePtr<Image> image(Image::create(imgtype, width, height));
+    UniquePtr<Image> image(Image::create(format, width, height));
 
     // Clear the image with mask color.
     image_clear(image, 0);
@@ -246,11 +246,11 @@ void Document::prepareExtraCel(int x, int y, int w, int h, int opacity)
   m_extraCel->setOpacity(opacity);
 
   if (!m_extraImage ||
-      m_extraImage->imgtype != getSprite()->getImgType() ||
+      m_extraImage->getPixelFormat() != getSprite()->getPixelFormat() ||
       m_extraImage->w != w ||
       m_extraImage->h != h) {
     delete m_extraImage;                // image
-    m_extraImage = Image::create(getSprite()->getImgType(), w, h);
+    m_extraImage = Image::create(getSprite()->getPixelFormat(), w, h);
     image_clear(m_extraImage,
                 m_extraImage->mask_color = 0);
   }
@@ -399,7 +399,7 @@ void Document::copyLayerContent(const Layer* sourceLayer0, Document* destDoc, La
 Document* Document::duplicate(DuplicateType type) const
 {
   const Sprite* sourceSprite = getSprite();
-  UniquePtr<Sprite> spriteCopyPtr(new Sprite(sourceSprite->getImgType(),
+  UniquePtr<Sprite> spriteCopyPtr(new Sprite(sourceSprite->getPixelFormat(),
                                              sourceSprite->getWidth(),
                                              sourceSprite->getHeight(), sourceSprite->getPalette(0)->size()));
   UniquePtr<Document> documentCopy(new Document(spriteCopyPtr));

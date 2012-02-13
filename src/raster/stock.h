@@ -20,6 +20,7 @@
 #define RASTER_STOCK_H_INCLUDED
 
 #include "raster/gfxobj.h"
+#include "raster/pixel_format.h"
 #include <vector>
 
 class Image;
@@ -29,12 +30,12 @@ typedef std::vector<Image*> ImagesList;
 class Stock : public GfxObj
 {
 public:
-  Stock(int imgtype);
+  Stock(PixelFormat format);
   Stock(const Stock& stock);
   virtual ~Stock();
 
-  int getImgType() const;
-  void setImgType(int imgtype);
+  PixelFormat getPixelFormat() const;
+  void setPixelFormat(PixelFormat format);
 
   // Returns the number of image in the stock.
   int size() const {
@@ -63,7 +64,7 @@ public:
   void replaceImage(int index, Image* image);
 
 //private: TODO uncomment this line
-  int m_imgtype;        // Type of images (all images in the stock must be of this type).
+  PixelFormat m_format; // Type of images (all images in the stock must be of this type).
   ImagesList m_image;   // The images-array where the images are.
 };
 

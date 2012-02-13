@@ -75,8 +75,8 @@ bool PngFormat::onLoad(FileOp* fop)
   png_colorp palette;
   png_bytep row_pointer;
   Image *image;
-  int imgtype;
   FILE *fp;
+  PixelFormat pixelFormat;
 
   fp = fopen(fop->filename.c_str(), "rb");
   if (!fp)
@@ -167,17 +167,17 @@ bool PngFormat::onLoad(FileOp* fop)
     case PNG_COLOR_TYPE_RGB_ALPHA:
       fop->seq.has_alpha = true;
     case PNG_COLOR_TYPE_RGB:
-      imgtype = IMAGE_RGB;
+      pixelFormat = IMAGE_RGB;
       break;
 
     case PNG_COLOR_TYPE_GRAY_ALPHA:
       fop->seq.has_alpha = true;
     case PNG_COLOR_TYPE_GRAY:
-      imgtype = IMAGE_GRAYSCALE;
+      pixelFormat = IMAGE_GRAYSCALE;
       break;
 
     case PNG_COLOR_TYPE_PALETTE:
-      imgtype = IMAGE_INDEXED;
+      pixelFormat = IMAGE_INDEXED;
       break;
 
     default:
@@ -187,7 +187,7 @@ bool PngFormat::onLoad(FileOp* fop)
       return false;
   }
 
-  image = fop_sequence_image(fop, imgtype, info_ptr->width, info_ptr->height);
+  image = fop_sequence_image(fop, pixelFormat, info_ptr->width, info_ptr->height);
   if (!image) {
     fop_error(fop, "file_sequence_image %dx%d\n", info_ptr->width, info_ptr->height);
     png_destroy_read_struct(&png_ptr, &info_ptr, NULL);
@@ -395,7 +395,7 @@ bool PngFormat::onSave(FileOp* fop)
   width = image->w;
   height = image->h;
 
-  switch (image->imgtype) {
+  switch (image->getPixelFormat()) {
     case IMAGE_RGB:
       color_type = fop->document->getSprite()->needAlpha() ?
         PNG_COLOR_TYPE_RGB_ALPHA:
@@ -414,7 +414,7 @@ bool PngFormat::onSave(FileOp* fop)
   png_set_IHDR(png_ptr, info_ptr, width, height, 8, color_type,
                PNG_INTERLACE_NONE, PNG_COMPRESSION_TYPE_BASE, PNG_FILTER_TYPE_BASE);
 
-  if (image->imgtype == IMAGE_INDEXED) {
+  if (image->getPixelFormat() == IMAGE_INDEXED) {
     int c, r, g, b;
 
 #if PNG_MAX_PALETTE_LENGTH != 256
@@ -544,7 +544,7 @@ bool PngFormat::onSave(FileOp* fop)
      libpng mallocs info_ptr->palette, libpng will free it).  If you
      allocated it with malloc() instead of png_malloc(), use free() instead
      of png_free(). */
-  if (image->imgtype == IMAGE_INDEXED) {
+  if (image->getPixelFormat() == IMAGE_INDEXED) {
     png_free(png_ptr, palette);
     palette = NULL;
   }

@@ -55,7 +55,7 @@ Palette* quantization::create_palette_from_rgb(const Sprite* sprite)
                          false); // forWrite=false, read only
 
   // Add a flat image with the current sprite's frame rendered
-  flat_image = Image::create(sprite->getImgType(), sprite->getWidth(), sprite->getHeight());
+  flat_image = Image::create(sprite->getPixelFormat(), sprite->getWidth(), sprite->getHeight());
   image_clear(flat_image, 0);
   sprite->render(flat_image, 0, 0);
 
@@ -75,11 +75,12 @@ Palette* quantization::create_palette_from_rgb(const Sprite* sprite)
   return palette;
 }
 
-Image* quantization::convert_imgtype(const Image* image, int imgtype,
-                                     DitheringMethod ditheringMethod,
-                                     const RgbMap* rgbmap,
-                                     const Palette* palette,
-                                     bool has_background_layer)
+Image* quantization::convert_pixel_format(const Image* image,
+                                          PixelFormat pixelFormat,
+                                          DitheringMethod ditheringMethod,
+                                          const RgbMap* rgbmap,
+                                          const Palette* palette,
+                                          bool has_background_layer)
 {
   uint32_t* rgb_address;
   uint16_t* gray_address;
@@ -89,27 +90,27 @@ Image* quantization::convert_imgtype(const Image* image, int imgtype,
   Image *new_image;
 
   // no convertion
-  if (image->imgtype == imgtype)
+  if (image->getPixelFormat() == pixelFormat)
     return NULL;
   // RGB -> Indexed with ordered dithering
-  else if (image->imgtype == IMAGE_RGB &&
-           imgtype == IMAGE_INDEXED &&
+  else if (image->getPixelFormat() == IMAGE_RGB &&
+           pixelFormat == IMAGE_INDEXED &&
            ditheringMethod == DITHERING_ORDERED) {
     return ordered_dithering(image, 0, 0, rgbmap, palette);
   }
 
-  new_image = Image::create(imgtype, image->w, image->h);
+  new_image = Image::create(pixelFormat, image->w, image->h);
   if (!new_image)
     return NULL;
 
   size = image->w*image->h;
 
-  switch (image->imgtype) {
+  switch (image->getPixelFormat()) {
 
     case IMAGE_RGB:
       rgb_address = (uint32_t*)image->dat;
 
-      switch (new_image->imgtype) {
+      switch (new_image->getPixelFormat()) {
 
         // RGB -> Grayscale
         case IMAGE_GRAYSCALE:
@@ -149,7 +150,7 @@ Image* quantization::convert_imgtype(const Image* image, int imgtype,
     case IMAGE_GRAYSCALE:
       gray_address = (uint16_t*)image->dat;
 
-      switch (new_image->imgtype) {
+      switch (new_image->getPixelFormat()) {
 
         // Grayscale -> RGB
         case IMAGE_RGB:
@@ -182,7 +183,7 @@ Image* quantization::convert_imgtype(const Image* image, int imgtype,
     case IMAGE_INDEXED:
       idx_address = image->dat;
 
-      switch (new_image->imgtype) {
+      switch (new_image->getPixelFormat()) {
 
         // Indexed -> RGB
         case IMAGE_RGB:

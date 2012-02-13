@@ -99,7 +99,7 @@ static Palette *ase_file_read_color2_chunk(FILE *f, Sprite *sprite, int frame);
 static void ase_file_write_color2_chunk(FILE *f, Palette *pal);
 static Layer *ase_file_read_layer_chunk(FILE *f, Sprite *sprite, Layer **previous_layer, int *current_level);
 static void ase_file_write_layer_chunk(FILE *f, Layer *layer);
-static Cel *ase_file_read_cel_chunk(FILE *f, Sprite *sprite, int frame, int imgtype, FileOp *fop, ASE_Header *header, size_t chunk_end);
+static Cel *ase_file_read_cel_chunk(FILE *f, Sprite *sprite, int frame, PixelFormat pixelFormat, FileOp *fop, ASE_Header *header, size_t chunk_end);
 static void ase_file_write_cel_chunk(FILE *f, Cel *cel, LayerImage *layer, Sprite *sprite);
 static Mask *ase_file_read_mask_chunk(FILE *f);
 static void ase_file_write_mask_chunk(FILE *f, Mask *mask);
@@ -207,7 +207,7 @@ bool AseFormat::onLoad(FileOp *fop)
           case ASE_FILE_CHUNK_FLI_COLOR2:
             /* fop_error(fop, "Color chunk\n"); */
 
-            if (sprite->getImgType() == IMAGE_INDEXED) {
+            if (sprite->getPixelFormat() == IMAGE_INDEXED) {
               Palette *prev_pal = sprite->getPalette(frame);
               Palette *pal =
                 chunk_type == ASE_FILE_CHUNK_FLI_COLOR ?
@@ -237,7 +237,7 @@ bool AseFormat::onLoad(FileOp *fop)
             /* fop_error(fop, "Cel chunk\n"); */
 
             ase_file_read_cel_chunk(f, sprite, frame,
-                                    sprite->getImgType(), fop, &header,
+                                    sprite->getPixelFormat(), fop, &header,
                                     chunk_pos+chunk_size);
             break;
           }
@@ -318,7 +318,7 @@ bool AseFormat::onSave(FileOp *fop)
     frame_header.duration = sprite->getFrameDuration(frame);
 
     /* the sprite is indexed and the palette changes? (or is the first frame) */
-    if (sprite->getImgType() == IMAGE_INDEXED &&
+    if (sprite->getPixelFormat() == IMAGE_INDEXED &&
         (frame == 0 ||
          sprite->getPalette(frame-1)->countDiff(sprite->getPalette(frame), NULL, NULL) > 0)) {
       /* write the color chunk */
@@ -398,9 +398,9 @@ static void ase_file_prepare_header(FILE *f, ASE_Header *header, const Sprite* s
   header->frames = sprite->getTotalFrames();
   header->width = sprite->getWidth();
   header->height = sprite->getHeight();
-  header->depth = (sprite->getImgType() == IMAGE_RGB ? 32:
-                   sprite->getImgType() == IMAGE_GRAYSCALE ? 16:
-                   sprite->getImgType() == IMAGE_INDEXED ? 8: 0);
+  header->depth = (sprite->getPixelFormat() == IMAGE_RGB ? 32:
+                   sprite->getPixelFormat() == IMAGE_GRAYSCALE ? 16:
+                   sprite->getPixelFormat() == IMAGE_INDEXED ? 8: 0);
   header->flags = 0;
   header->speed = sprite->getFrameDuration(0);
   header->next = 0;
@@ -997,7 +997,9 @@ static void write_compressed_image(FILE* f, Image* image)
 // Cel Chunk
 //////////////////////////////////////////////////////////////////////
 
-static Cel *ase_file_read_cel_chunk(FILE *f, Sprite *sprite, int frame, int imgtype, FileOp *fop, ASE_Header *header, size_t chunk_end)
+static Cel *ase_file_read_cel_chunk(FILE *f, Sprite *sprite, int frame,
+                                    PixelFormat pixelFormat,
+                                    FileOp *fop, ASE_Header *header, size_t chunk_end)
 {
   Cel *cel;
   /* read chunk data */
@@ -1035,7 +1037,7 @@ static Cel *ase_file_read_cel_chunk(FILE *f, Sprite *sprite, int frame, int imgt
       int h = fgetw(f);
 
       if (w > 0 && h > 0) {
-        Image* image = Image::create(imgtype, w, h);
+        Image* image = Image::create(pixelFormat, w, h);
         if (!image) {
           delete cel;
           // Not enough memory for frame's image
@@ -1043,7 +1045,7 @@ static Cel *ase_file_read_cel_chunk(FILE *f, Sprite *sprite, int frame, int imgt
         }
 
         // Read pixel data
-        switch (image->imgtype) {
+        switch (image->getPixelFormat()) {
 
           case IMAGE_RGB:
             read_raw_image<RgbTraits>(f, image, fop, header);
@@ -1087,7 +1089,7 @@ static Cel *ase_file_read_cel_chunk(FILE *f, Sprite *sprite, int frame, int imgt
       int h = fgetw(f);
 
       if (w > 0 && h > 0) {
-        Image* image = Image::create(imgtype, w, h);
+        Image* image = Image::create(pixelFormat, w, h);
         if (!image) {
           delete cel;
           // Not enough memory for frame's image
@@ -1095,7 +1097,7 @@ static Cel *ase_file_read_cel_chunk(FILE *f, Sprite *sprite, int frame, int imgt
         }
 
         // Read pixel data
-        switch (image->imgtype) {
+        switch (image->getPixelFormat()) {
 
           case IMAGE_RGB:
             read_compressed_image<RgbTraits>(f, image, chunk_end, fop, header);
@@ -1146,7 +1148,7 @@ static void ase_file_write_cel_chunk(FILE *f, Cel *cel, LayerImage *layer, Sprit
         fputw(image->h, f);
 
         // Pixel data
-        switch (image->imgtype) {
+        switch (image->getPixelFormat()) {
 
           case IMAGE_RGB:
             write_raw_image<RgbTraits>(f, image);
@@ -1184,7 +1186,7 @@ static void ase_file_write_cel_chunk(FILE *f, Cel *cel, LayerImage *layer, Sprit
         fputw(image->h, f);
 
         // Pixel data
-        switch (image->imgtype) {
+        switch (image->getPixelFormat()) {
 
           case IMAGE_RGB:
             write_compressed_image<RgbTraits>(f, image);

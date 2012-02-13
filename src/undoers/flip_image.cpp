@@ -31,7 +31,7 @@ using namespace undoers;
 
 FlipImage::FlipImage(ObjectsContainer* objects, Image* image, int x, int y, int w, int h, int flipFlags)
   : m_imageId(objects->addObject(image))
-  , m_imgtype(image->imgtype)
+  , m_format(image->getPixelFormat())
   , m_x(x), m_y(y), m_w(w), m_h(h)
   , m_flipFlags(flipFlags)
 {
@@ -48,7 +48,7 @@ void FlipImage::revert(ObjectsContainer* objects, UndoersCollector* redoers)
 {
   Image* image = objects->getObjectT<Image>(m_imageId);
 
-  if (image->imgtype != m_imgtype)
+  if (image->getPixelFormat() != m_format)
     throw UndoException("Image type does not match");
 
   redoers->pushUndoer(new FlipImage(objects, image, m_x, m_y, m_w, m_h, m_flipFlags));

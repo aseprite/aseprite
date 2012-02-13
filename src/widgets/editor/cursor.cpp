@@ -296,7 +296,7 @@ void Editor::editor_draw_cursor(int x, int y, bool refresh)
 
     // In 'indexed' images, if the current color is 0, we have to use
     // a different mask color (different from 0) to draw the extra layer
-    if (m_sprite->getImgType() == IMAGE_INDEXED && pen_color == 0) {
+    if (m_sprite->getPixelFormat() == IMAGE_INDEXED && pen_color == 0) {
       new_mask_color = 1;
     }
     else {
@@ -684,5 +684,5 @@ static int get_pen_color(Sprite *sprite)
   if (sprite->getCurrentLayer() != NULL)
     return color_utils::color_for_layer(c, sprite->getCurrentLayer());
   else
-    return color_utils::color_for_image(c, sprite->getImgType());
+    return color_utils::color_for_image(c, sprite->getPixelFormat());
 }

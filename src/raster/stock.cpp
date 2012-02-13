@@ -23,20 +23,18 @@
 #include "raster/image.h"
 #include "raster/stock.h"
 
-Stock::Stock(int imgtype)
+Stock::Stock(PixelFormat format)
   : GfxObj(GFXOBJ_STOCK)
+  , m_format(format)
 {
-  m_imgtype = imgtype;
-
   // Image with index=0 is always NULL.
   m_image.push_back(NULL);
 }
 
 Stock::Stock(const Stock& stock)
   : GfxObj(stock)
+  , m_format(stock.getPixelFormat())
 {
-  m_imgtype = stock.getImgType();
-
   try {
     for (int i=0; i<stock.size(); ++i) {
       if (!stock.getImage(i))
@@ -66,14 +64,14 @@ Stock::~Stock()
   }
 }
 
-int Stock::getImgType() const
+PixelFormat Stock::getPixelFormat() const
 {
-  return m_imgtype;
+  return m_format;
 }
 
-void Stock::setImgType(int imgtype)
+void Stock::setPixelFormat(PixelFormat pixelFormat)
 {
-  m_imgtype = imgtype;
+  m_format = pixelFormat;
 }
 
 Image* Stock::getImage(int index) const

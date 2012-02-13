@@ -16,8 +16,8 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifndef UNDOERS_SET_SPRITE_IMGTYPE_H_INCLUDED
-#define UNDOERS_SET_SPRITE_IMGTYPE_H_INCLUDED
+#ifndef UNDOERS_SET_SPRITE_PIXEL_FORMAT_H_INCLUDED
+#define UNDOERS_SET_SPRITE_PIXEL_FORMAT_H_INCLUDED
 
 #include "undo/object_id.h"
 #include "undoers/undoer_base.h"
@@ -26,10 +26,10 @@ class Sprite;
 
 namespace undoers {
 
-class SetSpriteImgType : public UndoerBase
+class SetSpritePixelFormat : public UndoerBase
 {
 public:
-  SetSpriteImgType(undo::ObjectsContainer* objects, Sprite* sprite);
+  SetSpritePixelFormat(undo::ObjectsContainer* objects, Sprite* sprite);
 
   void dispose() OVERRIDE;
   int getMemSize() const OVERRIDE { return sizeof(*this); }
@@ -37,9 +37,9 @@ public:
 
 private:
   undo::ObjectId m_spriteId;
-  uint32_t m_imgtype;
+  uint32_t m_format;
 };
 
 } // namespace undoers
 
-#endif  // UNDOERS_SET_SPRITE_IMGTYPE_H_INCLUDED
+#endif  // UNDOERS_SET_SPRITE_PIXEL_FORMAT_H_INCLUDED

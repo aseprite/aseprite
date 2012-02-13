@@ -366,7 +366,7 @@ Image* PixelsMovement::getDraggedImageCopy(gfx::Point& origin)
 
   int width = rightBottom.x - leftTop.x;
   int height = rightBottom.y - leftTop.y;
-  UniquePtr<Image> image(Image::create(m_sprite->getImgType(), width, height));
+  UniquePtr<Image> image(Image::create(m_sprite->getPixelFormat(), width, height));
   image_clear(image, image->mask_color);
   image_parallelogram(image, m_originalImage,
                       corners.leftTop().x-leftTop.x, corners.leftTop().y-leftTop.y,

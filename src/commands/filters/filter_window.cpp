@@ -40,7 +40,7 @@ FilterWindow::FilterWindow(const char* title, const char* cfgSection,
   , m_okButton("&OK")
   , m_cancelButton("&Cancel")
   , m_preview(filterMgr)
-  , m_targetButton(filterMgr->getImgType(), (withChannels == WithChannelsSelector))
+  , m_targetButton(filterMgr->getPixelFormat(), (withChannels == WithChannelsSelector))
   , m_showPreview("&Preview")
   , m_tiledCheck(withTiled == WithTiledCheckBox ? new CheckBox("&Tiled") : NULL)
 {

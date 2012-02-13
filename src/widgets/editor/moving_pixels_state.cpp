@@ -397,8 +397,8 @@ void MovingPixelsState::setTransparentColor(const Color& color)
   Sprite* sprite = current_editor->getSprite();
   ASSERT(sprite != NULL);
 
-  int imgtype = sprite->getImgType();
-  m_pixelsMovement->setMaskColor(color_utils::color_for_image(color, imgtype));
+  PixelFormat format = sprite->getPixelFormat();
+  m_pixelsMovement->setMaskColor(color_utils::color_for_image(color, format));
 }
 
 void MovingPixelsState::dropPixels(Editor* editor)

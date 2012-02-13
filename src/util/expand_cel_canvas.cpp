@@ -55,7 +55,7 @@ ExpandCelCanvas::ExpandCelCanvas(Document* document, Sprite* sprite, Layer* laye
   // If there is no Cel
   if (m_cel == NULL) {
     // Create the image
-    m_celImage = Image::create(m_sprite->getImgType(), m_sprite->getWidth(), m_sprite->getHeight());
+    m_celImage = Image::create(m_sprite->getPixelFormat(), m_sprite->getWidth(), m_sprite->getHeight());
     image_clear(m_celImage, sprite->getTransparentColor());
 
     // create the cel

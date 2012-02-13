@@ -21,6 +21,7 @@
 
 #include "base/disable_copying.h"
 #include "raster/gfxobj.h"
+#include "raster/pixel_format.h"
 
 #include <vector>
 
@@ -45,14 +46,14 @@ public:
   ////////////////////////////////////////
   // Constructors/Destructor
 
-  Sprite(int imgtype, int width, int height, int ncolors);
+  Sprite(PixelFormat format, int width, int height, int ncolors);
   virtual ~Sprite();
 
   ////////////////////////////////////////
   // Main properties
 
-  int getImgType() const { return m_imgtype; }
-  void setImgType(int imgtype);
+  PixelFormat getPixelFormat() const { return m_format; }
+  void setPixelFormat(PixelFormat format);
 
   int getWidth() const { return m_width; }
   int getHeight() const { return m_height; }
@@ -140,7 +141,7 @@ public:
 
 private:
   Sprite* m_self;                        // pointer to the Sprite
-  int m_imgtype;                         // image type
+  PixelFormat m_format;                  // pixel format
   int m_width;                           // image width (in pixels)
   int m_height;                          // image height (in pixels)
   int m_frames;                          // how many frames has this sprite

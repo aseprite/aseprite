@@ -21,6 +21,7 @@
 
 #include "gfx/rect.h"
 #include "raster/dithering_method.h"
+#include "raster/pixel_format.h"
 #include "undo/modification.h"
 
 class Cel;
@@ -78,7 +79,7 @@ public:
   void setSpriteSize(int w, int h);
   void cropSprite(const gfx::Rect& bounds, int bgcolor);
   void autocropSprite(int bgcolor);
-  void setImgType(int new_imgtype, DitheringMethod dithering_method);
+  void setPixelFormat(PixelFormat newFormat, DitheringMethod dithering_method);
 
   // for images in stock
   int addImageInStock(Image* image);

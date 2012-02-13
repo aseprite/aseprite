@@ -18,32 +18,32 @@
 
 #include "config.h"
 
-#include "undoers/set_sprite_imgtype.h"
+#include "undoers/set_stock_pixel_format.h"
 
-#include "raster/sprite.h"
+#include "raster/stock.h"
 #include "undo/objects_container.h"
 #include "undo/undoers_collector.h"
 
 using namespace undo;
 using namespace undoers;
 
-SetSpriteImgType::SetSpriteImgType(ObjectsContainer* objects, Sprite* sprite)
-  : m_spriteId(objects->addObject(sprite))
-  , m_imgtype(sprite->getImgType())
+SetStockPixelFormat::SetStockPixelFormat(ObjectsContainer* objects, Stock* stock)
+  : m_stockId(objects->addObject(stock))
+  , m_format(stock->getPixelFormat())
 {
 }
 
-void SetSpriteImgType::dispose()
+void SetStockPixelFormat::dispose()
 {
   delete this;
 }
 
-void SetSpriteImgType::revert(ObjectsContainer* objects, UndoersCollector* redoers)
+void SetStockPixelFormat::revert(ObjectsContainer* objects, UndoersCollector* redoers)
 {
-  Sprite* sprite = objects->getObjectT<Sprite>(m_spriteId);
+  Stock* stock = objects->getObjectT<Stock>(m_stockId);
 
-  // Push another SetSpriteImgType as redoer
-  redoers->pushUndoer(new SetSpriteImgType(objects, sprite));
+  // Push another SetStockPixelFormat as redoer
+  redoers->pushUndoer(new SetStockPixelFormat(objects, stock));
 
-  sprite->setImgType(m_imgtype);
+  stock->setPixelFormat(static_cast<PixelFormat>(m_format));
 }

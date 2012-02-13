@@ -76,11 +76,11 @@ Color Color::fromIndex(int index)
 }
 
 // static
-Color Color::fromImage(int imgtype, int c)
+Color Color::fromImage(PixelFormat pixelFormat, int c)
 {
   Color color = Color::fromMask();
 
-  switch (imgtype) {
+  switch (pixelFormat) {
 
     case IMAGE_RGB:
       if (_rgba_geta(c) > 0) {
@@ -108,7 +108,7 @@ Color Color::fromImage(int imgtype, int c)
 Color Color::fromImageGetPixel(Image *image, int x, int y)
 {
   if ((x >= 0) && (y >= 0) && (x < image->w) && (y < image->h))
-    return Color::fromImage(image->imgtype, image_getpixel(image, x, y));
+    return Color::fromImage(image->getPixelFormat(), image_getpixel(image, x, y));
   else
     return Color::fromMask();
 }
@@ -186,7 +186,7 @@ std::string Color::toString() const
   return result.str();
 }
 
-std::string Color::toFormalString(int imgtype, bool long_format) const
+std::string Color::toFormalString(PixelFormat pixelFormat, bool long_format) const
 {
   std::stringstream result;
 
@@ -199,7 +199,7 @@ std::string Color::toFormalString(int imgtype, bool long_format) const
         break;
 
       case Color::RgbType:
-        if (imgtype == IMAGE_GRAYSCALE) {
+        if (pixelFormat == IMAGE_GRAYSCALE) {
           result << "Gray " << getGray();
         }
         else {
@@ -208,14 +208,14 @@ std::string Color::toFormalString(int imgtype, bool long_format) const
                  << m_value.rgb.g << " "
                  << m_value.rgb.b;
 
-          if (imgtype == IMAGE_INDEXED)
+          if (pixelFormat == IMAGE_INDEXED)
             result << " Index "
-                   << color_utils::color_for_image(*this, imgtype);
+                   << color_utils::color_for_image(*this, pixelFormat);
         }
         break;
 
       case Color::HsvType:
-        if (imgtype == IMAGE_GRAYSCALE) {
+        if (pixelFormat == IMAGE_GRAYSCALE) {
           result << "Gray " << getGray();
         }
         else {
@@ -224,8 +224,8 @@ std::string Color::toFormalString(int imgtype, bool long_format) const
                  << m_value.hsv.s << " "
                  << m_value.hsv.v;
 
-          if (imgtype == IMAGE_INDEXED)
-            result << " Index " << color_utils::color_for_image(*this, imgtype);
+          if (pixelFormat == IMAGE_INDEXED)
+            result << " Index " << color_utils::color_for_image(*this, pixelFormat);
         }
         break;
 
@@ -265,7 +265,7 @@ std::string Color::toFormalString(int imgtype, bool long_format) const
         break;
 
       case Color::RgbType:
-        if (imgtype == IMAGE_GRAYSCALE) {
+        if (pixelFormat == IMAGE_GRAYSCALE) {
           result << "Gry-" << getGray();
         }
         else {
@@ -277,7 +277,7 @@ std::string Color::toFormalString(int imgtype, bool long_format) const
         break;
 
       case Color::HsvType:
-        if (imgtype == IMAGE_GRAYSCALE) {
+        if (pixelFormat == IMAGE_GRAYSCALE) {
           result << "Gry-" << getGray();
         }
         else {

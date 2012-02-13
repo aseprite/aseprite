@@ -20,6 +20,7 @@
 #define RASTER_QUANTIZATION_H_INCLUDED
 
 #include "raster/dithering_method.h"
+#include "raster/pixel_format.h"
 
 class Image;
 class Palette;
@@ -32,13 +33,14 @@ namespace quantization {
   // Creates a new palette suitable to quantize the given RGB sprite to Indexed color.
   Palette* create_palette_from_rgb(const Sprite* sprite);
 
-  // Changes the "imgtype" of the image. The dithering method is used
-  // only when you want to convert from RGB to Indexed.
-  Image* convert_imgtype(const Image* image, int imgtype,
-                         DitheringMethod ditheringMethod,
-                         const RgbMap* rgbmap,
-                         const Palette* palette,
-                         bool has_background_layer);
+  // Changes the image pixel format. The dithering method is used only
+  // when you want to convert from RGB to Indexed.
+  Image* convert_pixel_format(const Image* image,
+                              PixelFormat pixelFormat,
+                              DitheringMethod ditheringMethod,
+                              const RgbMap* rgbmap,
+                              const Palette* palette,
+                              bool has_background_layer);
 
 }
 

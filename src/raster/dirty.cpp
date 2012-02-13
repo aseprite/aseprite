@@ -18,20 +18,20 @@
 
 #include "config.h"
 
-#include <algorithm>
-
 #include "raster/dirty.h"
 #include "raster/image.h"
 
-Dirty::Dirty(int imgtype, int x1, int y1, int x2, int y2)
-  : m_imgtype(imgtype)
+#include <algorithm>
+
+Dirty::Dirty(PixelFormat format, int x1, int y1, int x2, int y2)
+  : m_format(format)
   , m_x1(x1), m_y1(y1)
   , m_x2(x2), m_y2(y2)
 {
 }
 
 Dirty::Dirty(const Dirty& src)
-  : m_imgtype(src.m_imgtype)
+  : m_format(src.m_format)
   , m_x1(src.m_x1), m_y1(src.m_y1)
   , m_x2(src.m_x2), m_y2(src.m_y2)
 {
@@ -53,7 +53,7 @@ Dirty::Dirty(const Dirty& src)
 }
 
 Dirty::Dirty(Image* image, Image* image_diff)
-  : m_imgtype(image->imgtype)
+  : m_format(image->getPixelFormat())
   , m_x1(0), m_y1(0)
   , m_x2(image->w-1), m_y2(image->h-1)
 {

@@ -379,7 +379,7 @@ Image* RenderEngine::renderSprite(const Document* document,
   uint32_t bg_color = 0;
   Image *image;
 
-  switch (sprite->getImgType()) {
+  switch (sprite->getPixelFormat()) {
 
     case IMAGE_RGB:
       zoomed_func = merge_zoomed_image<RgbTraits, RgbTraits>;
@@ -461,8 +461,8 @@ void RenderEngine::renderCheckedBackground(Image* image,
   int x, y, u, v;
   int tile_w = 16;
   int tile_h = 16;
-  int c1 = color_utils::color_for_image(checked_bg_color1, image->imgtype);
-  int c2 = color_utils::color_for_image(checked_bg_color2, image->imgtype);
+  int c1 = color_utils::color_for_image(checked_bg_color1, image->getPixelFormat());
+  int c2 = color_utils::color_for_image(checked_bg_color2, image->getPixelFormat());
 
   switch (checked_bg_type) {
 
@@ -524,9 +524,9 @@ void RenderEngine::renderImage(Image* rgb_image, Image* src_image, const Palette
 {
   void (*zoomed_func)(Image*, const Image*, const Palette*, int, int, int, int, int);
 
-  ASSERT(rgb_image->imgtype == IMAGE_RGB && "renderImage accepts RGB destination images only");
+  ASSERT(rgb_image->getPixelFormat() == IMAGE_RGB && "renderImage accepts RGB destination images only");
 
-  switch (src_image->imgtype) {
+  switch (src_image->getPixelFormat()) {
 
     case IMAGE_RGB:
       zoomed_func = merge_zoomed_image<RgbTraits, RgbTraits>;

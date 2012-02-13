@@ -52,7 +52,7 @@ public:                         // raw access to pixel-data
 public:
 
   ImageImpl(int w, int h)
-    : Image(Traits::imgtype, w, h)
+    : Image(static_cast<PixelFormat>(Traits::pixel_format), w, h)
   {
     int bytes_per_line = Traits::scanline_size(w);
 

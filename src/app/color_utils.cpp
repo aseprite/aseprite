@@ -108,14 +108,14 @@ int color_utils::color_for_allegro(const Color& color, int depth)
   return c;
 }
 
-int color_utils::color_for_image(const Color& color, int imgtype)
+int color_utils::color_for_image(const Color& color, PixelFormat format)
 {
   if (color.getType() == Color::MaskType)
     return 0;
 
   int c = -1;
 
-  switch (imgtype) {
+  switch (format) {
     case IMAGE_RGB:
       c = _rgba(color.getRed(), color.getGreen(), color.getBlue(), 255);
       break;
@@ -141,8 +141,8 @@ int color_utils::color_for_layer(const Color& color, Layer* layer)
     pixel_color = layer->getSprite()->getTransparentColor();
   }
   else {
-    int imgtype = layer->getSprite()->getImgType();
-    pixel_color = color_for_image(color, imgtype);
+    PixelFormat format = layer->getSprite()->getPixelFormat();
+    pixel_color = color_for_image(color, format);
   }
 
   return fixup_color_for_layer(layer, pixel_color);
@@ -151,14 +151,14 @@ int color_utils::color_for_layer(const Color& color, Layer* layer)
 int color_utils::fixup_color_for_layer(Layer *layer, int color)
 {
   if (layer->is_background())
-    return fixup_color_for_background(layer->getSprite()->getImgType(), color);
+    return fixup_color_for_background(layer->getSprite()->getPixelFormat(), color);
   else
     return color;
 }
 
-int color_utils::fixup_color_for_background(int imgtype, int color)
+int color_utils::fixup_color_for_background(PixelFormat format, int color)
 {
-  switch (imgtype) {
+  switch (format) {
     case IMAGE_RGB:
       if (_rgba_geta(color) < 255) {
         return _rgba(_rgba_getr(color),

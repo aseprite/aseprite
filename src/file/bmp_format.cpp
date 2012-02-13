@@ -603,7 +603,8 @@ bool BmpFormat::onLoad(FileOp *fop)
   Image *image;
   FILE *f;
   unsigned long biSize;
-  int type, format;
+  PixelFormat pixelFormat;
+  int format;
 
   f = fopen(fop->filename.c_str(), "rb");
   if (!f)
@@ -645,9 +646,9 @@ bool BmpFormat::onLoad(FileOp *fop)
   if ((infoheader.biBitCount == 32) ||
       (infoheader.biBitCount == 24) ||
       (infoheader.biBitCount == 16))
-    type = IMAGE_RGB;
+    pixelFormat = IMAGE_RGB;
   else
-    type = IMAGE_INDEXED;
+    pixelFormat = IMAGE_INDEXED;
 
   /* bitfields have the 'mask' for each component */
   if (infoheader.biCompression == BI_BITFIELDS) {
@@ -658,7 +659,7 @@ bool BmpFormat::onLoad(FileOp *fop)
   else
     rmask = gmask = bmask = 0;
 
-  image = fop_sequence_image(fop, type,
+  image = fop_sequence_image(fop, pixelFormat,
                              infoheader.biWidth,
                              ABS((int)infoheader.biHeight));
   if (!image) {
@@ -666,7 +667,7 @@ bool BmpFormat::onLoad(FileOp *fop)
     return false;
   }
 
-  if (type == IMAGE_RGB)
+  if (pixelFormat == IMAGE_RGB)
     image_clear(image, _rgba(0, 0, 0, 255));
   else
     image_clear(image, 0);
@@ -730,7 +731,7 @@ bool BmpFormat::onSave(FileOp *fop)
   FILE *f;
   int bfSize;
   int biSizeImage;
-  int bpp = (image->imgtype == IMAGE_RGB) ? 24 : 8;
+  int bpp = (image->getPixelFormat() == IMAGE_RGB) ? 24 : 8;
   int filler = 3 - ((image->w*(bpp/8)-1) & 3);
   int c, i, j, r, g, b;
 
@@ -795,9 +796,9 @@ bool BmpFormat::onSave(FileOp *fop)
   for (i=image->h-1; i>=0; i--) {
     for (j=0; j<image->w; j++) {
       if (bpp == 8) {
-        if (image->imgtype == IMAGE_INDEXED)
+        if (image->getPixelFormat() == IMAGE_INDEXED)
           fputc(image_getpixel_fast<IndexedTraits>(image, j, i), f);
-        else if (image->imgtype == IMAGE_GRAYSCALE)
+        else if (image->getPixelFormat() == IMAGE_GRAYSCALE)
           fputc(_graya_getv(image_getpixel_fast<GrayscaleTraits>(image, j, i)), f);
       }
       else {

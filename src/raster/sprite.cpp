@@ -33,9 +33,9 @@ static int layer2index(const Layer* layer, const Layer* find_layer, int* index_c
 //////////////////////////////////////////////////////////////////////
 // Constructors/Destructor
 
-Sprite::Sprite(int imgtype, int width, int height, int ncolors)
+Sprite::Sprite(PixelFormat format, int width, int height, int ncolors)
   : GfxObj(GFXOBJ_SPRITE)
-  , m_imgtype(imgtype)
+  , m_format(format)
   , m_width(width)
   , m_height(height)
 {
@@ -44,14 +44,14 @@ Sprite::Sprite(int imgtype, int width, int height, int ncolors)
   m_frames = 1;
   m_frlens.push_back(100);      // First frame with 100 msecs of duration
   m_frame = 0;
-  m_stock = new Stock(imgtype);
+  m_stock = new Stock(format);
   m_folder = new LayerFolder(this);
   m_layer = NULL;
 
   // Generate palette
   Palette pal(0, ncolors);
 
-  switch (imgtype) {
+  switch (format) {
 
     // For colored images
     case IMAGE_RGB:
@@ -103,9 +103,9 @@ Sprite::~Sprite()
 //////////////////////////////////////////////////////////////////////
 // Main properties
 
-void Sprite::setImgType(int imgtype)
+void Sprite::setPixelFormat(PixelFormat format)
 {
-  m_imgtype = imgtype;
+  m_format = format;
 }
 
 void Sprite::setSize(int width, int height)
@@ -119,7 +119,7 @@ void Sprite::setSize(int width, int height)
 
 bool Sprite::needAlpha() const
 {
-  switch (m_imgtype) {
+  switch (m_format) {
     case IMAGE_RGB:
     case IMAGE_GRAYSCALE:
       return (getBackgroundLayer() == NULL);
@@ -375,7 +375,7 @@ void Sprite::getCels(CelList& cels)
 
 void Sprite::remapImages(int frame_from, int frame_to, const std::vector<uint8_t>& mapping)
 {
-  ASSERT(m_imgtype == IMAGE_INDEXED);
+  ASSERT(m_format == IMAGE_INDEXED);
   ASSERT(mapping.size() == 256);
 
   CelList cels;
@@ -404,7 +404,7 @@ void Sprite::remapImages(int frame_from, int frame_to, const std::vector<uint8_t
 void Sprite::render(Image* image, int x, int y) const
 {
   image_rectfill(image, x, y, x+m_width-1, y+m_height-1,
-                 (m_imgtype == IMAGE_INDEXED ? getTransparentColor(): 0));
+                 (m_format == IMAGE_INDEXED ? getTransparentColor(): 0));
 
   layer_render(getFolder(), image, x, y, getCurrentFrame());
 }
@@ -414,8 +414,8 @@ int Sprite::getPixel(int x, int y) const
   int color = 0;
 
   if ((x >= 0) && (y >= 0) && (x < m_width) && (y < m_height)) {
-    Image* image = Image::create(m_imgtype, 1, 1);
-    image_clear(image, (m_imgtype == IMAGE_INDEXED ? getTransparentColor(): 0));
+    Image* image = Image::create(m_format, 1, 1);
+    image_clear(image, (m_format == IMAGE_INDEXED ? getTransparentColor(): 0));
     render(image, -x, -y);
     color = image_getpixel(image, 0, 0);
     image_free(image);

@@ -32,10 +32,10 @@
 
 //////////////////////////////////////////////////////////////////////
 
-Image::Image(int imgtype, int w, int h)
+Image::Image(PixelFormat format, int w, int h)
   : GfxObj(GFXOBJ_IMAGE)
+  , m_format(format)
 {
-  this->imgtype = imgtype;
   this->w = w;
   this->h = h;
   this->dat = NULL;
@@ -53,7 +53,7 @@ int Image::getMemSize() const
 {
   int scanline_size = 0;
 
-  if (imgtype == IMAGE_BITMAP)
+  if (m_format == IMAGE_BITMAP)
     scanline_size = BitmapTraits::scanline_size(this->w);
   else
     scanline_size = image_line_size(this, this->w);
@@ -61,11 +61,10 @@ int Image::getMemSize() const
   return sizeof(Image) + scanline_size*this->h;
 }
 
-//////////////////////////////////////////////////////////////////////
-
-Image* Image::create(int imgtype, int w, int h)
+// static
+Image* Image::create(PixelFormat format, int w, int h)
 {
-  switch (imgtype) {
+  switch (format) {
     case IMAGE_RGB: return new ImageImpl<RgbTraits>(w, h);
     case IMAGE_GRAYSCALE: return new ImageImpl<GrayscaleTraits>(w, h);
     case IMAGE_INDEXED: return new ImageImpl<IndexedTraits>(w, h);
@@ -74,6 +73,7 @@ Image* Image::create(int imgtype, int w, int h)
   return NULL;
 }
 
+// static
 Image* Image::createCopy(const Image* image)
 {
   ASSERT(image);
@@ -143,7 +143,7 @@ Image* image_crop(const Image* image, int x, int y, int w, int h, int bgcolor)
   if (w < 1) throw std::invalid_argument("image_crop: Width is less than 1");
   if (h < 1) throw std::invalid_argument("image_crop: Height is less than 1");
 
-  Image* trim = Image::create(image->imgtype, w, h);
+  Image* trim = Image::create(image->getPixelFormat(), w, h);
   trim->mask_color = image->mask_color;
 
   image_clear(trim, bgcolor);
@@ -360,7 +360,7 @@ void image_fixup_transparent_colors(Image* image)
 {
   int x, y, u, v;
 
-  switch (image->imgtype) {
+  switch (image->getPixelFormat()) {
 
     case IMAGE_RGB: {
       uint32_t c;
@@ -518,7 +518,7 @@ void image_resize(const Image* src, Image* dst, ResizeMethod method, const Palet
           double u2 = 1 - u1;
           double v2 = 1 - v1;
 
-          switch (dst->imgtype) {
+          switch (dst->getPixelFormat()) {
             case IMAGE_RGB: {
               int r = ((_rgba_getr(color[0])*u2 + _rgba_getr(color[1])*u1)*v2 +
                        (_rgba_getr(color[2])*u2 + _rgba_getr(color[3])*u1)*v1);
@@ -575,12 +575,13 @@ int image_count_diff(const Image* i1, const Image* i2)
 {
   int c, size, diff = 0;
 
-  if ((i1->imgtype != i2->imgtype) || (i1->w != i2->w) || (i1->h != i2->h))
+  if ((i1->getPixelFormat() != i2->getPixelFormat()) ||
+      (i1->w != i2->w) || (i1->h != i2->h))
     return -1;
 
   size = i1->w * i1->h;
 
-  switch (i1->imgtype) {
+  switch (i1->getPixelFormat()) {
 
     case IMAGE_RGB:
       {

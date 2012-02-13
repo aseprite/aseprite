@@ -56,9 +56,9 @@
 #include "undoers/set_layer_name.h"
 #include "undoers/set_mask.h"
 #include "undoers/set_mask_position.h"
-#include "undoers/set_sprite_imgtype.h"
+#include "undoers/set_sprite_pixel_format.h"
 #include "undoers/set_sprite_size.h"
-#include "undoers/set_stock_imgtype.h"
+#include "undoers/set_stock_pixel_format.h"
 #include "undoers/set_total_frames.h"
 
 UndoTransaction::UndoTransaction(Document* document, const char* label, undo::Modification modification)
@@ -210,7 +210,7 @@ void UndoTransaction::autocropSprite(int bgcolor)
   x1 = y1 = INT_MAX;
   x2 = y2 = INT_MIN;
 
-  Image* image = Image::create(m_sprite->getImgType(),
+  Image* image = Image::create(m_sprite->getPixelFormat(),
                                m_sprite->getWidth(),
                                m_sprite->getHeight());
 
@@ -239,20 +239,20 @@ void UndoTransaction::autocropSprite(int bgcolor)
   cropSprite(gfx::Rect(x1, y1, x2-x1+1, y2-y1+1), bgcolor);
 }
 
-void UndoTransaction::setImgType(int new_imgtype, DitheringMethod dithering_method)
+void UndoTransaction::setPixelFormat(PixelFormat newFormat, DitheringMethod dithering_method)
 {
   Image *old_image;
   Image *new_image;
   int c;
 
-  if (m_sprite->getImgType() == new_imgtype)
+  if (m_sprite->getPixelFormat() == newFormat)
     return;
 
-  // Change imgtype of the stock of images.
+  // Change pixel format of the stock of images.
   if (isEnabled())
-    m_undoHistory->pushUndoer(new undoers::SetStockImgType(m_undoHistory->getObjects(), m_sprite->getStock()));
+    m_undoHistory->pushUndoer(new undoers::SetStockPixelFormat(m_undoHistory->getObjects(), m_sprite->getStock()));
 
-  m_sprite->getStock()->setImgType(new_imgtype);
+  m_sprite->getStock()->setPixelFormat(newFormat);
 
   // Use the rgbmap for the specified sprite
   const RgbMap* rgbmap = m_sprite->getRgbMap();
@@ -262,25 +262,25 @@ void UndoTransaction::setImgType(int new_imgtype, DitheringMethod dithering_meth
     if (!old_image)
       continue;
 
-    new_image = quantization::convert_imgtype(old_image, new_imgtype, dithering_method, rgbmap,
-                                              // TODO check this out
-                                              m_sprite->getCurrentPalette(),
-                                              m_sprite->getBackgroundLayer() != NULL);
+    new_image = quantization::convert_pixel_format(old_image, newFormat, dithering_method, rgbmap,
+                                                   // TODO check this out
+                                                   m_sprite->getCurrentPalette(),
+                                                   m_sprite->getBackgroundLayer() != NULL);
 
     this->replaceStockImage(c, new_image);
   }
 
-  // Change sprite's "imgtype" field.
+  // Change sprite's pixel format.
   if (isEnabled())
-    m_undoHistory->pushUndoer(new undoers::SetSpriteImgType(m_undoHistory->getObjects(), m_sprite));
+    m_undoHistory->pushUndoer(new undoers::SetSpritePixelFormat(m_undoHistory->getObjects(), m_sprite));
 
-  m_sprite->setImgType(new_imgtype);
+  m_sprite->setPixelFormat(newFormat);
 
   // Regenerate extras
   m_document->destroyExtraCel();
 
   // change "sprite.palette"
-  if (new_imgtype == IMAGE_GRAYSCALE) {
+  if (newFormat == IMAGE_GRAYSCALE) {
     if (isEnabled()) {
       // Save all palettes
       PalettesList palettes = m_sprite->getPalettes();
@@ -472,7 +472,7 @@ void UndoTransaction::backgroundFromLayer(LayerImage* layer, int bgcolor)
 
   // create a temporary image to draw each frame of the new
   // `Background' layer
-  UniquePtr<Image> bg_image_wrap(Image::create(m_sprite->getImgType(),
+  UniquePtr<Image> bg_image_wrap(Image::create(m_sprite->getPixelFormat(),
                                                m_sprite->getWidth(),
                                                m_sprite->getHeight()));
   Image* bg_image = bg_image_wrap.get();
@@ -517,7 +517,7 @@ void UndoTransaction::backgroundFromLayer(LayerImage* layer, int bgcolor)
   for (int frame=0; frame<m_sprite->getTotalFrames(); frame++) {
     Cel* cel = layer->getCel(frame);
     if (!cel) {
-      Image* cel_image = Image::create(m_sprite->getImgType(), m_sprite->getWidth(), m_sprite->getHeight());
+      Image* cel_image = Image::create(m_sprite->getPixelFormat(), m_sprite->getWidth(), m_sprite->getHeight());
       image_clear(cel_image, bgcolor);
 
       // Add the new image in the stock
@@ -558,7 +558,7 @@ void UndoTransaction::flattenLayers(int bgcolor)
   int frame;
 
   // create a temporary image
-  UniquePtr<Image> image_wrap(Image::create(m_sprite->getImgType(),
+  UniquePtr<Image> image_wrap(Image::create(m_sprite->getPixelFormat(),
                                             m_sprite->getWidth(),
                                             m_sprite->getHeight()));
   Image* image = image_wrap.get();

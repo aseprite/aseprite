@@ -177,7 +177,7 @@ bool JpegFormat::onLoad(FileOp* fop)
   }
 
   // Generate a grayscale palette if is necessary.
-  if (image->imgtype == IMAGE_GRAYSCALE)
+  if (image->getPixelFormat() == IMAGE_GRAYSCALE)
     for (c=0; c<256; c++)
       fop_sequence_set_color(fop, c, c, c, c);
 
@@ -190,7 +190,7 @@ bool JpegFormat::onLoad(FileOp* fop)
     num_scanlines = jpeg_read_scanlines(&cinfo, buffer, buffer_height);
 
     /* RGB */
-    if (image->imgtype == IMAGE_RGB) {
+    if (image->getPixelFormat() == IMAGE_RGB) {
       uint8_t* src_address;
       uint32_t* dst_address;
       int x, y, r, g, b;
@@ -269,7 +269,7 @@ bool JpegFormat::onSave(FileOp* fop)
   cinfo.image_width = image->w;
   cinfo.image_height = image->h;
 
-  if (image->imgtype == IMAGE_GRAYSCALE) {
+  if (image->getPixelFormat() == IMAGE_GRAYSCALE) {
     cinfo.input_components = 1;
     cinfo.in_color_space = JCS_GRAYSCALE;
   }
@@ -313,7 +313,7 @@ bool JpegFormat::onSave(FileOp* fop)
   // Write each scan line.
   while (cinfo.next_scanline < cinfo.image_height) {
     // RGB
-    if (image->imgtype == IMAGE_RGB) {
+    if (image->getPixelFormat() == IMAGE_RGB) {
       uint32_t* src_address;
       uint8_t* dst_address;
       int x, y;

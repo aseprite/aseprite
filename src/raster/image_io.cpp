@@ -45,7 +45,7 @@ using namespace base::serialization::little_endian;
 
 void write_image(std::ostream& os, Image* image)
 {
-  write8(os, image->imgtype);             // Imgtype
+  write8(os, image->getPixelFormat());    // Pixel format
   write16(os, image->w);                  // Width
   write16(os, image->h);                  // Height
   write32(os, image->mask_color);         // Mask color
@@ -57,12 +57,12 @@ void write_image(std::ostream& os, Image* image)
 
 Image* read_image(std::istream& is)
 {
-  int imgtype = read8(is);              // Imgtype
+  int pixelFormat = read8(is);          // Pixel format
   int width = read16(is);               // Width
   int height = read16(is);              // Height
   uint32_t maskColor = read32(is);      // Mask color
 
-  UniquePtr<Image> image(Image::create(imgtype, width, height));
+  UniquePtr<Image> image(Image::create(static_cast<PixelFormat>(pixelFormat), width, height));
   int size = image_line_size(image, image->w);
 
   for (int c=0; c<image->h; c++)

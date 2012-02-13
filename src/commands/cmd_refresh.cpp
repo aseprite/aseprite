@@ -18,13 +18,6 @@
 
 #include "config.h"
 
-#include <stdio.h>
-#include <allegro.h>
-#if defined ALLEGRO_WINDOWS && defined DEBUGMODE
-  #include <winalleg.h>
-  #include <psapi.h>
-#endif
-
 #include "app.h"
 #include "commands/command.h"
 #include "gui/system.h"
@@ -32,6 +25,12 @@
 #include "skin/skin_theme.h"
 #include "document_wrappers.h"
 #include "widgets/statebar.h"
+
+#include <allegro.h>
+#if defined ALLEGRO_WINDOWS && defined DEBUGMODE
+  #include <winalleg.h>
+  #include <psapi.h>
+#endif
 
 //////////////////////////////////////////////////////////////////////
 // refresh

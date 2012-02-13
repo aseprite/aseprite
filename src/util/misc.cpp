@@ -53,7 +53,7 @@ Image* NewImageFromMask(const Document* srcDocument)
   ASSERT(srcBitmap);
   ASSERT(src);
 
-  dst = Image::create(srcSprite->getImgType(), srcBounds.w, srcBounds.h);
+  dst = Image::create(srcSprite->getPixelFormat(), srcBounds.w, srcBounds.h);
   if (!dst)
     return NULL;
 

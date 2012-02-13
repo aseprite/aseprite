@@ -52,14 +52,14 @@ public:
     Row(int y) : y(y) { }
   };
 
-  Dirty(int imgtype, int x1, int y1, int x2, int y2);
+  Dirty(PixelFormat format, int x1, int y1, int x2, int y2);
   Dirty(const Dirty& src);
   Dirty(Image* image1, Image* image2);
   ~Dirty();
 
   int getMemSize() const;
 
-  int getImgType() const { return m_imgtype; }
+  PixelFormat getPixelFormat() const { return m_format; }
   int x1() const { return m_x1; }
   int y1() const { return m_y1; }
   int x2() const { return m_x2; }
@@ -69,7 +69,7 @@ public:
   const Row& getRow(int i) const { return *m_rows[i]; }
 
   inline int getLineSize(int width) const {
-    return imgtype_line_size(m_imgtype, width);
+    return pixelformat_line_size(m_format, width);
   }
 
   void saveImagePixels(Image* image);
@@ -86,7 +86,7 @@ public:    // a Dirty instance from a deserialization process,
            // remember to "privatize" these members when the
            // new Undo implementation is finished.
 
-  int m_imgtype;
+  PixelFormat m_format;
   int m_x1, m_y1;
   int m_x2, m_y2;
   RowsList m_rows;

@@ -22,6 +22,7 @@
 #include "base/signal.h"
 #include "base/string.h"
 #include "gui/base.h"
+#include "raster/pixel_format.h"
 
 #include <vector>
 
@@ -96,7 +97,7 @@ void app_update_document_tab(const Document* document);
 // Updates the list of recent files.
 bool app_rebuild_recent_list();
 
-int app_get_current_image_type();
+PixelFormat app_get_current_pixel_format();
 
 Frame* app_get_top_window();
 MenuBar* app_get_menubar();

@@ -69,7 +69,8 @@ NewFileCommand::NewFileCommand()
 void NewFileCommand::onExecute(Context* context)
 {
   JWidget width, height, radio1, radio2, radio3, colors, ok, bg_box;
-  int imgtype, w, h, bg, ncolors;
+  PixelFormat format;
+  int w, h, bg, ncolors;
   char buf[1024];
   Color bg_table[] = {
     Color::fromMask(),
@@ -92,8 +93,11 @@ void NewFileCommand::onExecute(Context* context)
               "bg_box", &bg_box, NULL);
 
   // Default values: Indexed, 320x240, Background color
-  imgtype = get_config_int("NewSprite", "Type", IMAGE_INDEXED);
-  imgtype = MID(IMAGE_RGB, imgtype, IMAGE_INDEXED);
+  format = static_cast<PixelFormat>(get_config_int("NewSprite", "Type", IMAGE_INDEXED));
+  // Invalid format in config file.
+  if (format != IMAGE_RGB && format != IMAGE_INDEXED && format != IMAGE_GRAYSCALE) {
+    format = IMAGE_INDEXED;
+  }
   w = get_config_int("NewSprite", "Width", 320);
   h = get_config_int("NewSprite", "Height", 240);
   bg = get_config_int("NewSprite", "Background", 4); // Default = Background color
@@ -112,7 +116,7 @@ void NewFileCommand::onExecute(Context* context)
   colors->setTextf("%d", MID(2, ncolors, 256));
 
   // Select image-type
-  switch (imgtype) {
+  switch (format) {
     case IMAGE_RGB:       radio1->setSelected(true); break;
     case IMAGE_GRAYSCALE: radio2->setSelected(true); break;
     case IMAGE_INDEXED:   radio3->setSelected(true); break;
@@ -128,9 +132,9 @@ void NewFileCommand::onExecute(Context* context)
     bool ok = false;
 
     // Get the options
-    if (radio1->isSelected())      imgtype = IMAGE_RGB;
-    else if (radio2->isSelected()) imgtype = IMAGE_GRAYSCALE;
-    else if (radio3->isSelected()) imgtype = IMAGE_INDEXED;
+    if (radio1->isSelected())      format = IMAGE_RGB;
+    else if (radio2->isSelected()) format = IMAGE_GRAYSCALE;
+    else if (radio3->isSelected()) format = IMAGE_INDEXED;
 
     w = width->getTextInt();
     h = height->getTextInt();
@@ -151,19 +155,19 @@ void NewFileCommand::onExecute(Context* context)
 
     if (ok) {
       // Save the configuration
-      set_config_int("NewSprite", "Type", imgtype);
+      set_config_int("NewSprite", "Type", format);
       set_config_int("NewSprite", "Width", w);
       set_config_int("NewSprite", "Height", h);
       set_config_int("NewSprite", "Background", bg);
 
       // Create the new sprite
-      ASSERT(imgtype == IMAGE_RGB || imgtype == IMAGE_GRAYSCALE || imgtype == IMAGE_INDEXED);
+      ASSERT(format == IMAGE_RGB || format == IMAGE_GRAYSCALE || format == IMAGE_INDEXED);
       ASSERT(w >= 1 && w <= 9999);
       ASSERT(h >= 1 && h <= 9999);
 
       UniquePtr<Document> document(
-        Document::createBasicDocument(imgtype, w, h,
-                                      (imgtype == IMAGE_INDEXED ? ncolors: 256)));
+        Document::createBasicDocument(format, w, h,
+                                      (format == IMAGE_INDEXED ? ncolors: 256)));
       Sprite* sprite(document->getSprite());
 
       get_default_palette()->copyColorsTo(sprite->getCurrentPalette());
@@ -179,7 +183,7 @@ void NewFileCommand::onExecute(Context* context)
         ASSERT(sprite->getCurrentLayer() && sprite->getCurrentLayer()->is_image());
 
         static_cast<LayerImage*>(sprite->getCurrentLayer())->configureAsBackground();
-        image_clear(sprite->getCurrentImage(), color_utils::color_for_image(color, imgtype));
+        image_clear(sprite->getCurrentImage(), color_utils::color_for_image(color, format));
       }
 
       // Show the sprite to the user

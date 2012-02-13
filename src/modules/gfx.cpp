@@ -355,7 +355,7 @@ void draw_emptyset_symbol(BITMAP* bmp, const Rect& rc, int color)
        center.x+size/2, center.y-size/2, color);
 }
 
-void draw_color(BITMAP* bmp, const Rect& rc, int imgtype, const Color& color)
+void draw_color(BITMAP* bmp, const Rect& rc, PixelFormat pixelFormat, const Color& color)
 {
   Color::Type type = color.getType();
   BITMAP* graph;
@@ -378,11 +378,11 @@ void draw_color(BITMAP* bmp, const Rect& rc, int imgtype, const Color& color)
     return;
   }
 
-  switch (imgtype) {
+  switch (pixelFormat) {
 
     case IMAGE_INDEXED:
       rectfill(bmp, rc.x, rc.y, rc.x+rc.w-1, rc.y+rc.h-1,
-               color_utils::color_for_allegro(Color::fromIndex(color_utils::color_for_image(color, imgtype)),
+               color_utils::color_for_allegro(Color::fromIndex(color_utils::color_for_image(color, pixelFormat)),
                                               bitmap_color_depth(bmp)));
       break;
 
@@ -392,7 +392,7 @@ void draw_color(BITMAP* bmp, const Rect& rc, int imgtype, const Color& color)
         return;
 
       {
-        int rgb_bitmap_color = color_utils::color_for_image(color, imgtype);
+        int rgb_bitmap_color = color_utils::color_for_image(color, pixelFormat);
         Color color2 = Color::fromRgb(_rgba_getr(rgb_bitmap_color),
                                       _rgba_getg(rgb_bitmap_color),
                                       _rgba_getb(rgb_bitmap_color));
@@ -411,7 +411,7 @@ void draw_color(BITMAP* bmp, const Rect& rc, int imgtype, const Color& color)
         return;
 
       {
-        int gray_bitmap_color = color_utils::color_for_image(color, imgtype);
+        int gray_bitmap_color = color_utils::color_for_image(color, pixelFormat);
         Color color2 = Color::fromGray(_graya_getv(gray_bitmap_color));
         rectfill(graph, 0, 0, rc.w-1, rc.h-1,
                  color_utils::color_for_allegro(color2, 32));
@@ -428,7 +428,7 @@ void draw_color_button(BITMAP* bmp,
                        const Rect& rc,
                        bool outer_nw, bool outer_n, bool outer_ne, bool outer_e,
                        bool outer_se, bool outer_s, bool outer_sw, bool outer_w,
-                       int imgtype, const Color& color, bool hot, bool drag)
+                       PixelFormat pixelFormat, const Color& color, bool hot, bool drag)
 {
   SkinTheme* theme = (SkinTheme*)CurrentTheme::get();
   int scale = jguiscale();
@@ -438,7 +438,7 @@ void draw_color_button(BITMAP* bmp,
              Rect(rc.x+1*jguiscale(),
                   rc.y+1*jguiscale(),
                   rc.w-((outer_e) ? 2*jguiscale(): 1*jguiscale()),
-                  rc.h-((outer_s) ? 2*jguiscale(): 1*jguiscale())), imgtype, color);
+                  rc.h-((outer_s) ? 2*jguiscale(): 1*jguiscale())), pixelFormat, color);
 
   // Draw opaque border
   {

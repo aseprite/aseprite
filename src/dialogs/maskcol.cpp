@@ -83,7 +83,7 @@ void dialogs_mask_color(Document* document)
   button_color = new ColorButton
    (get_config_color("MaskColor", "Color",
                      app_get_colorbar()->getFgColor()),
-    sprite->getImgType());
+    sprite->getPixelFormat());
   button_1 = new Button("1");
   button_2 = new Button("2");
   label_tolerance = new Label("Tolerance:");
@@ -183,7 +183,7 @@ static Mask* gen_mask(const Sprite* sprite)
 
   const Image* image = sprite->getCurrentImage(&xpos, &ypos, NULL);
 
-  color = color_utils::color_for_image(button_color->getColor(), sprite->getImgType());
+  color = color_utils::color_for_image(button_color->getColor(), sprite->getPixelFormat());
   tolerance = slider_tolerance->getValue();
 
   UniquePtr<Mask> mask(new Mask());

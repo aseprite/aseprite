@@ -20,6 +20,7 @@
 #define APP_COLOR_UTILS_H_INCLUDED
 
 #include "app/color.h"
+#include "raster/pixel_format.h"
 
 class Layer;
 
@@ -29,11 +30,11 @@ int blackandwhite(int r, int g, int b);
 int blackandwhite_neg(int r, int g, int b);
 
 int color_for_allegro(const Color& color, int depth);
-int color_for_image(const Color& color, int imgtype);
+int color_for_image(const Color& color, PixelFormat format);
 int color_for_layer(const Color& color, Layer* layer);
 
 int fixup_color_for_layer(Layer* layer, int color);
-int fixup_color_for_background(int imgtype, int color);
+int fixup_color_for_background(PixelFormat format, int color);
 
 }
 

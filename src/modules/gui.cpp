@@ -18,16 +18,6 @@
 
 #include "config.h"
 
-#include <algorithm>
-#include <allegro.h>
-#include <allegro/internal/aintern.h>
-#include <list>
-#include <vector>
-
-#ifdef ALLEGRO_WINDOWS
-#include <winalleg.h>
-#endif
-
 #include "app.h"
 #include "base/memory.h"
 #include "base/shared_ptr.h"
@@ -58,6 +48,16 @@
 #include "widgets/statebar.h"
 #include "widgets/toolbar.h"
 #include "xml_widgets.h"
+
+#include <algorithm>
+#include <allegro.h>
+#include <allegro/internal/aintern.h>
+#include <list>
+#include <vector>
+
+#ifdef ALLEGRO_WINDOWS
+#include <winalleg.h>
+#endif
 
 #define REFRESH_FULL_SCREEN     1
 #define SYSTEM_WINDOW_RESIZE    2

@@ -54,7 +54,7 @@ Mask *load_msk_file(const char *filename)
 
     /* just load an Animator Pro PIC file */
     image = load_pic_file(filename, &x, &y, NULL);
-    if ((!image) || (image->imgtype != IMAGE_BITMAP)) {
+    if ((!image) || (image->getPixelFormat() != IMAGE_BITMAP)) {
       if (image)
         image_free(image);
     }

@@ -330,7 +330,7 @@ static Widget* convert_xmlelement_to_widget(TiXmlElement* elem, Widget* root)
   }
   /* colorpicker */
   else if (ustrcmp(elem_name, "colorpicker") == 0) {
-    widget = new ColorButton(Color::fromMask(), app_get_current_image_type());
+    widget = new ColorButton(Color::fromMask(), app_get_current_pixel_format());
   }
 
   // Was the widget created?

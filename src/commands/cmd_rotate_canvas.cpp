@@ -109,7 +109,7 @@ protected:
         continue;
 
       // rotate the image
-      Image* new_image = Image::create(image->imgtype,
+      Image* new_image = Image::create(image->getPixelFormat(),
                                        m_angle == 180 ? image->w: image->h,
                                        m_angle == 180 ? image->h: image->w);
       image_rotate(image, new_image, m_angle);

@@ -144,10 +144,10 @@ ColorBar::~ColorBar()
   set_config_color("ColorBar", "BG", getBgColor());
 }
 
-void ColorBar::setImgType(int imgtype)
+void ColorBar::setPixelFormat(PixelFormat pixelFormat)
 {
-  m_fgColor.setImgType(imgtype);
-  m_bgColor.setImgType(imgtype);
+  m_fgColor.setPixelFormat(pixelFormat);
+  m_bgColor.setPixelFormat(pixelFormat);
 }
 
 Color ColorBar::getFgColor()

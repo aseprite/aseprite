@@ -65,8 +65,8 @@ public:
     }
 
     m_proc = loop->getOpacity() == 255 ?
-      ink_processing[INK_OPAQUE][MID(0, loop->getSprite()->getImgType(), 2)]:
-      ink_processing[INK_TRANSPARENT][MID(0, loop->getSprite()->getImgType(), 2)];
+      ink_processing[INK_OPAQUE][MID(0, loop->getSprite()->getPixelFormat(), 2)]:
+      ink_processing[INK_TRANSPARENT][MID(0, loop->getSprite()->getPixelFormat(), 2)];
   }
 
   void inkHline(int x1, int y, int x2, ToolLoop* loop)
@@ -158,7 +158,7 @@ public:
     switch (m_type) {
 
       case Eraser:
-        m_proc = ink_processing[INK_OPAQUE][MID(0, loop->getSprite()->getImgType(), 2)];
+        m_proc = ink_processing[INK_OPAQUE][MID(0, loop->getSprite()->getPixelFormat(), 2)];
 
         // TODO app_get_color_to_clear_layer should receive the context as parameter
         loop->setPrimaryColor(app_get_color_to_clear_layer(loop->getLayer()));
@@ -166,7 +166,7 @@ public:
         break;
 
       case ReplaceFgWithBg:
-        m_proc = ink_processing[INK_REPLACE][MID(0, loop->getSprite()->getImgType(), 2)];
+        m_proc = ink_processing[INK_REPLACE][MID(0, loop->getSprite()->getPixelFormat(), 2)];
 
         loop->setPrimaryColor(color_utils::color_for_layer(loop->getContext()->getSettings()->getFgColor(),
                                                            loop->getLayer()));
@@ -175,7 +175,7 @@ public:
         break;
 
       case ReplaceBgWithFg:
-        m_proc = ink_processing[INK_REPLACE][MID(0, loop->getSprite()->getImgType(), 2)];
+        m_proc = ink_processing[INK_REPLACE][MID(0, loop->getSprite()->getPixelFormat(), 2)];
 
         loop->setPrimaryColor(color_utils::color_for_layer(loop->getContext()->getSettings()->getBgColor(),
                                                            loop->getLayer()));
@@ -202,7 +202,7 @@ public:
 
   void prepareInk(ToolLoop* loop)
   {
-    m_proc = ink_processing[INK_BLUR][MID(0, loop->getSprite()->getImgType(), 2)];
+    m_proc = ink_processing[INK_BLUR][MID(0, loop->getSprite()->getPixelFormat(), 2)];
   }
 
   void inkHline(int x1, int y, int x2, ToolLoop* loop)
@@ -222,7 +222,7 @@ public:
 
   void prepareInk(ToolLoop* loop)
   {
-    m_proc = ink_processing[INK_JUMBLE][MID(0, loop->getSprite()->getImgType(), 2)];
+    m_proc = ink_processing[INK_JUMBLE][MID(0, loop->getSprite()->getPixelFormat(), 2)];
   }
 
   void inkHline(int x1, int y, int x2, ToolLoop* loop)

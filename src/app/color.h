@@ -19,6 +19,8 @@
 #ifndef APP_COLOR_H_INCLUDED
 #define APP_COLOR_H_INCLUDED
 
+#include "raster/pixel_format.h"
+
 #include <string>
 
 class Image;
@@ -43,12 +45,12 @@ public:
   static Color fromGray(int g);
   static Color fromIndex(int index);
 
-  static Color fromImage(int imgtype, int pixel);
+  static Color fromImage(PixelFormat pixelFormat, int pixel);
   static Color fromImageGetPixel(Image* image, int x, int y);
   static Color fromString(const std::string& str);
 
   std::string toString() const;
-  std::string toFormalString(int imgtype, bool long_format) const;
+  std::string toFormalString(PixelFormat format, bool long_format) const;
 
   bool operator==(const Color& other) const;
   bool operator!=(const Color& other) const {

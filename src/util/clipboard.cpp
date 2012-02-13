@@ -186,13 +186,14 @@ void clipboard::paste()
 
   // Source image (clipboard or a converted copy to the destination 'imgtype')
   Image* src_image;
-  if (clipboard_image->imgtype == sprite->getImgType())
+  if (clipboard_image->getPixelFormat() == sprite->getPixelFormat())
     src_image = clipboard_image;
   else {
     RgbMap* rgbmap = sprite->getRgbMap();
-    src_image = quantization::convert_imgtype(clipboard_image, sprite->getImgType(), DITHERING_NONE,
-                                              rgbmap, sprite->getPalette(sprite->getCurrentFrame()),
-                                              false);
+    src_image = quantization::convert_pixel_format(clipboard_image,
+                                                   sprite->getPixelFormat(), DITHERING_NONE,
+                                                   rgbmap, sprite->getPalette(sprite->getCurrentFrame()),
+                                                   false);
   }
 
   // Change to MovingPixelsState

@@ -286,9 +286,9 @@ add_library(aseprite-library
   undoers/set_mask.cpp
   undoers/set_mask_position.cpp
   undoers/set_palette_colors.cpp
-  undoers/set_sprite_imgtype.cpp
+  undoers/set_sprite_pixel_format.cpp
   undoers/set_sprite_size.cpp
-  undoers/set_stock_imgtype.cpp
+  undoers/set_stock_pixel_format.cpp
   undoers/set_total_frames.cpp
   util/autocrop.cpp
   util/boundary.cpp

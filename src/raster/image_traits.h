@@ -58,7 +58,7 @@ inline uint32_t _rgba(uint8_t r, uint8_t g, uint8_t b, uint8_t a)
 struct RgbTraits
 {
   enum {
-    imgtype = IMAGE_RGB,
+    pixel_format = IMAGE_RGB,
     bits_per_pixel = 32,
     bytes_per_pixel = 4,
     channels = 4,
@@ -107,7 +107,7 @@ inline uint16_t _graya(uint8_t v, uint8_t a)
 struct GrayscaleTraits
 {
   enum {
-    imgtype = IMAGE_GRAYSCALE,
+    pixel_format = IMAGE_GRAYSCALE,
     bits_per_pixel = 16,
     bytes_per_pixel = 2,
     channels = 2,
@@ -137,7 +137,7 @@ struct GrayscaleTraits
 struct IndexedTraits
 {
   enum {
-    imgtype = IMAGE_INDEXED,
+    pixel_format = IMAGE_INDEXED,
     bits_per_pixel = 8,
     bytes_per_pixel = 1,
     channels = 1,
@@ -161,7 +161,7 @@ struct IndexedTraits
 struct BitmapTraits
 {
   enum {
-    imgtype = IMAGE_BITMAP,
+    pixel_format = IMAGE_BITMAP,
     bits_per_pixel = 1,
     bytes_per_pixel = 1,
     channels = 1,

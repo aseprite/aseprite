@@ -450,12 +450,12 @@ bool StandbyState::onUpdateStatusBar(Editor* editor)
   }
   // For eye-dropper
   else if (current_tool->getInk(0)->isEyedropper()) {
-    int imgtype = sprite->getImgType();
+    PixelFormat format = sprite->getPixelFormat();
     uint32_t pixel = sprite->getPixel(x, y);
-    Color color = Color::fromImage(imgtype, pixel);
+    Color color = Color::fromImage(format, pixel);
 
     int alpha = 255;
-    switch (imgtype) {
+    switch (format) {
       case IMAGE_RGB: alpha = _rgba_geta(pixel); break;
       case IMAGE_GRAYSCALE: alpha = _graya_geta(pixel); break;
     }

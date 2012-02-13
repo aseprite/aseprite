@@ -86,9 +86,9 @@ void FilterManagerImpl::setProgressDelegate(IProgressDelegate* progressDelegate)
   m_progressDelegate = progressDelegate;
 }
 
-int FilterManagerImpl::getImgType() const
+PixelFormat FilterManagerImpl::getPixelFormat() const
 {
-  return m_sprite->getImgType();
+  return m_sprite->getPixelFormat();
 }
 
 void FilterManagerImpl::setTarget(int target)
@@ -175,7 +175,7 @@ bool FilterManagerImpl::applyStep()
     else
       m_mask_address = NULL;
 
-    switch (m_sprite->getImgType()) {
+    switch (m_sprite->getPixelFormat()) {
       case IMAGE_RGB:       m_filter->applyToRgba(this); break;
       case IMAGE_GRAYSCALE: m_filter->applyToGrayscale(this); break;
       case IMAGE_INDEXED:   m_filter->applyToIndexed(this); break;
@@ -295,7 +295,7 @@ void FilterManagerImpl::flush()
 
 const void* FilterManagerImpl::getSourceAddress()
 {
-  switch (m_sprite->getImgType()) {
+  switch (m_sprite->getPixelFormat()) {
     case IMAGE_RGB:       return ((uint32_t**)m_src->line)[m_row+m_y]+m_x;
     case IMAGE_GRAYSCALE: return ((uint16_t**)m_src->line)[m_row+m_y]+m_x;
     case IMAGE_INDEXED:   return ((uint8_t**)m_src->line)[m_row+m_y]+m_x;
@@ -305,7 +305,7 @@ const void* FilterManagerImpl::getSourceAddress()
 
 void* FilterManagerImpl::getDestinationAddress()
 {
-  switch (m_sprite->getImgType()) {
+  switch (m_sprite->getPixelFormat()) {
     case IMAGE_RGB:       return ((uint32_t**)m_dst->line)[m_row+m_y]+m_x;
     case IMAGE_GRAYSCALE: return ((uint16_t**)m_dst->line)[m_row+m_y]+m_x;
     case IMAGE_INDEXED:   return ((uint8_t**)m_dst->line)[m_row+m_y]+m_x;

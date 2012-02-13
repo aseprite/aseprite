@@ -47,7 +47,7 @@ using namespace base::serialization::little_endian;
 
 void write_dirty(std::ostream& os, Dirty* dirty)
 {
-  write8(os, dirty->getImgType());
+  write8(os, dirty->getPixelFormat());
   write16(os, dirty->x1());
   write16(os, dirty->y1());
   write16(os, dirty->x2());
@@ -73,12 +73,12 @@ void write_dirty(std::ostream& os, Dirty* dirty)
 Dirty* read_dirty(std::istream& is)
 {
   int u, v, x, y, w;
-  int imgtype = read8(is);
+  int pixelFormat = read8(is);
   int x1 = read16(is);
   int y1 = read16(is);
   int x2 = read16(is);
   int y2 = read16(is);
-  UniquePtr<Dirty> dirty(new Dirty(imgtype, x1, y1, x2, y2));
+  UniquePtr<Dirty> dirty(new Dirty(static_cast<PixelFormat>(pixelFormat), x1, y1, x2, y2));
 
   int noRows = read16(is);
   if (noRows > 0) {

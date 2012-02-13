@@ -30,7 +30,7 @@ using namespace undoers;
 
 ImageArea::ImageArea(ObjectsContainer* objects, Image* image, int x, int y, int w, int h)
   : m_imageId(objects->addObject(image))
-  , m_imgtype(image->imgtype)
+  , m_format(image->getPixelFormat())
   , m_x(x), m_y(y), m_w(w), m_h(h)
   , m_lineSize(image_line_size(image, w))
   , m_data(m_lineSize * h)
@@ -51,7 +51,7 @@ void ImageArea::revert(ObjectsContainer* objects, UndoersCollector* redoers)
 {
   Image* image = objects->getObjectT<Image>(m_imageId);
 
-  if (image->imgtype != m_imgtype)
+  if (image->getPixelFormat() != m_format)
     throw UndoException("Image type does not match");
 
   // Backup the current image portion

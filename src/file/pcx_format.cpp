@@ -202,7 +202,7 @@ bool PcxFormat::onSave(FileOp* fop)
     return false;
   }
 
-  if (image->imgtype == IMAGE_RGB) {
+  if (image->getPixelFormat() == IMAGE_RGB) {
     depth = 24;
     planes = 3;
   }
@@ -243,9 +243,9 @@ bool PcxFormat::onSave(FileOp* fop)
     runchar = 0;
     for (x=0; x<image->w*planes; x++) {  /* for each pixel... */
       if (depth == 8) {
-        if (image->imgtype == IMAGE_INDEXED)
+        if (image->getPixelFormat() == IMAGE_INDEXED)
           ch = image_getpixel_fast<IndexedTraits>(image, x, y);
-        else if (image->imgtype == IMAGE_GRAYSCALE) {
+        else if (image->getPixelFormat() == IMAGE_GRAYSCALE) {
           c = image_getpixel_fast<GrayscaleTraits>(image, x, y);
           ch = _graya_getv(c);
         }

@@ -30,13 +30,13 @@
 
 #include <allegro/unicode.h>
 
-class ChangeImageTypeCommand : public Command
+class ChangePixelFormatCommand : public Command
 {
-  int m_imgtype;
+  PixelFormat m_format;
   DitheringMethod m_dithering;
 public:
-  ChangeImageTypeCommand();
-  Command* clone() const { return new ChangeImageTypeCommand(*this); }
+  ChangePixelFormatCommand();
+  Command* clone() const { return new ChangePixelFormatCommand(*this); }
 
 protected:
   void onLoadParams(Params* params);
@@ -45,21 +45,21 @@ protected:
   void onExecute(Context* context);
 };
 
-ChangeImageTypeCommand::ChangeImageTypeCommand()
-  : Command("ChangeImageType",
-            "Change Image Type",
+ChangePixelFormatCommand::ChangePixelFormatCommand()
+  : Command("ChangePixelFormat",
+            "Change Pixel Format",
             CmdUIOnlyFlag)
 {
-  m_imgtype = IMAGE_RGB;
+  m_format = IMAGE_RGB;
   m_dithering = DITHERING_NONE;
 }
 
-void ChangeImageTypeCommand::onLoadParams(Params* params)
+void ChangePixelFormatCommand::onLoadParams(Params* params)
 {
-  std::string imgtype = params->get("imgtype");
-  if (imgtype == "rgb") m_imgtype = IMAGE_RGB;
-  else if (imgtype == "grayscale") m_imgtype = IMAGE_GRAYSCALE;
-  else if (imgtype == "indexed") m_imgtype = IMAGE_INDEXED;
+  std::string format = params->get("format");
+  if (format == "rgb") m_format = IMAGE_RGB;
+  else if (format == "grayscale") m_format = IMAGE_GRAYSCALE;
+  else if (format == "indexed") m_format = IMAGE_INDEXED;
 
   std::string dithering = params->get("dithering");
   if (dithering == "ordered")
@@ -68,42 +68,42 @@ void ChangeImageTypeCommand::onLoadParams(Params* params)
     m_dithering = DITHERING_NONE;
 }
 
-bool ChangeImageTypeCommand::onEnabled(Context* context)
+bool ChangePixelFormatCommand::onEnabled(Context* context)
 {
   ActiveDocumentWriter document(context);
   Sprite* sprite(document ? document->getSprite(): 0);
 
   if (sprite != NULL &&
-      sprite->getImgType() == IMAGE_INDEXED &&
-      m_imgtype == IMAGE_INDEXED &&
+      sprite->getPixelFormat() == IMAGE_INDEXED &&
+      m_format == IMAGE_INDEXED &&
       m_dithering == DITHERING_ORDERED)
     return false;
 
   return sprite != NULL;
 }
 
-bool ChangeImageTypeCommand::onChecked(Context* context)
+bool ChangePixelFormatCommand::onChecked(Context* context)
 {
   const ActiveDocumentReader document(context);
   const Sprite* sprite(document ? document->getSprite(): 0);
 
   if (sprite != NULL &&
-      sprite->getImgType() == IMAGE_INDEXED &&
-      m_imgtype == IMAGE_INDEXED &&
+      sprite->getPixelFormat() == IMAGE_INDEXED &&
+      m_format == IMAGE_INDEXED &&
       m_dithering == DITHERING_ORDERED)
     return false;
 
   return
     sprite != NULL &&
-    sprite->getImgType() == m_imgtype;
+    sprite->getPixelFormat() == m_format;
 }
 
-void ChangeImageTypeCommand::onExecute(Context* context)
+void ChangePixelFormatCommand::onExecute(Context* context)
 {
   ActiveDocumentWriter document(context);
   {
     UndoTransaction undoTransaction(document, "Color Mode Change");
-    undoTransaction.setImgType(m_imgtype, m_dithering);
+    undoTransaction.setPixelFormat(m_format, m_dithering);
     undoTransaction.commit();
   }
   app_refresh_screen(document);
@@ -112,7 +112,7 @@ void ChangeImageTypeCommand::onExecute(Context* context)
 //////////////////////////////////////////////////////////////////////
 // CommandFactory
 
-Command* CommandFactory::createChangeImageTypeCommand()
+Command* CommandFactory::createChangePixelFormatCommand()
 {
-  return new ChangeImageTypeCommand;
+  return new ChangePixelFormatCommand;
 }

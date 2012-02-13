@@ -254,7 +254,7 @@ FileOp* fop_to_save_document(Document* document)
   fatal = false;
 
   /* check image type support */
-  switch (fop->document->getSprite()->getImgType()) {
+  switch (fop->document->getSprite()->getPixelFormat()) {
 
     case IMAGE_RGB:
       if (!(fop->format->support(FILE_SUPPORT_RGB))) {
@@ -542,7 +542,7 @@ void fop_operate(FileOp *fop)
       Sprite* sprite = fop->document->getSprite();
 
       // Create a temporary bitmap
-      fop->seq.image = Image::create(sprite->getImgType(),
+      fop->seq.image = Image::create(sprite->getPixelFormat(),
                                      sprite->getWidth(),
                                      sprite->getHeight());
       if (fop->seq.image != NULL) {
@@ -654,7 +654,7 @@ void fop_post_load(FileOp* fop)
     }
 
     // Creates a suitable palette for RGB images
-    if (fop->document->getSprite()->getImgType() == IMAGE_RGB &&
+    if (fop->document->getSprite()->getPixelFormat() == IMAGE_RGB &&
         fop->document->getSprite()->getPalettes().size() <= 1 &&
         fop->document->getSprite()->getPalette(0)->isBlack()) {
       SharedPtr<Palette> palette(quantization::create_palette_from_rgb(fop->document->getSprite()));
@@ -687,13 +687,13 @@ void fop_sequence_get_color(FileOp *fop, int index, int *r, int *g, int *b)
   *b = _rgba_getb(c);
 }
 
-Image* fop_sequence_image(FileOp* fop, int imgtype, int w, int h)
+Image* fop_sequence_image(FileOp* fop, PixelFormat pixelFormat, int w, int h)
 {
   Sprite* sprite;
 
   // Create the image
   if (!fop->document) {
-    sprite = new Sprite(imgtype, w, h, 256);
+    sprite = new Sprite(pixelFormat, w, h, 256);
     try {
       LayerImage* layer = new LayerImage(sprite);
 
@@ -712,7 +712,7 @@ Image* fop_sequence_image(FileOp* fop, int imgtype, int w, int h)
   else {
     sprite = fop->document->getSprite();
 
-    if (sprite->getImgType() != imgtype)
+    if (sprite->getPixelFormat() != pixelFormat)
       return NULL;
   }
 
@@ -722,7 +722,7 @@ Image* fop_sequence_image(FileOp* fop, int imgtype, int w, int h)
   }
 
   // Create a bitmap
-  Image* image = Image::create(imgtype, w, h);
+  Image* image = Image::create(pixelFormat, w, h);
 
   fop->seq.image = image;
   fop->seq.last_cel = new Cel(fop->seq.frame++, 0);

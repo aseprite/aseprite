@@ -206,7 +206,7 @@ void Mask::byColor(const Image *src, int color, int fuzziness)
 
   Image* dst = m_bitmap;
 
-  switch (src->imgtype) {
+  switch (src->getPixelFormat()) {
 
     case IMAGE_RGB: {
       uint32_t* src_address;

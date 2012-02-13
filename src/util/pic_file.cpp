@@ -179,9 +179,9 @@ int save_pic_file(const char *filename, int x, int y,
   int c, u, v, bpp, size, byte;
   PACKFILE* f;
 
-  if (image->imgtype == IMAGE_INDEXED)
+  if (image->getPixelFormat() == IMAGE_INDEXED)
     bpp = 8;
-  else if (image->imgtype == IMAGE_BITMAP)
+  else if (image->getPixelFormat() == IMAGE_BITMAP)
     bpp = 1;
   else
     return -1;

@@ -238,17 +238,17 @@
       <menu text="&amp;Sprite">
         <item command="SpriteProperties" text="&amp;Properties..." />
         <menu text="Color &amp;Mode">
-          <item command="ChangeImageType" text="&amp;RGB Color">
-            <param name="imgtype" value="rgb" />
+          <item command="ChangePixelFormat" text="&amp;RGB Color">
+            <param name="format" value="rgb" />
           </item>
-          <item command="ChangeImageType" text="&amp;Grayscale">
-            <param name="imgtype" value="grayscale" />
+          <item command="ChangePixelFormat" text="&amp;Grayscale">
+            <param name="format" value="grayscale" />
           </item>
-          <item command="ChangeImageType" text="&amp;Indexed (No Dithering)">
-            <param name="imgtype" value="indexed" />
+          <item command="ChangePixelFormat" text="&amp;Indexed (No Dithering)">
+            <param name="format" value="indexed" />
           </item>
-          <item command="ChangeImageType" text="Indexed (Ordered &amp;Dither)">
-            <param name="imgtype" value="indexed" />
+          <item command="ChangePixelFormat" text="Indexed (Ordered &amp;Dither)">
+            <param name="format" value="indexed" />
             <param name="dithering" value="ordered" />
           </item>
         </menu>

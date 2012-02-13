@@ -16,30 +16,34 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifndef UNDOERS_SET_IMGTYPE_H_INCLUDED
-#define UNDOERS_SET_IMGTYPE_H_INCLUDED
+#include "config.h"
 
-#include "undo/object_id.h"
-#include "undoers/undoer_base.h"
+#include "undoers/set_sprite_pixel_format.h"
 
-class Sprite;
+#include "raster/sprite.h"
+#include "undo/objects_container.h"
+#include "undo/undoers_collector.h"
 
-namespace undoers {
+using namespace undo;
+using namespace undoers;
 
-class SetImgType : public UndoerBase
+SetSpritePixelFormat::SetSpritePixelFormat(ObjectsContainer* objects, Sprite* sprite)
+  : m_spriteId(objects->addObject(sprite))
+  , m_format(sprite->getPixelFormat())
 {
-public:
-  SetImgType(undo::ObjectsContainer* objects, Sprite* sprite);
+}
 
-  void dispose() OVERRIDE;
-  int getMemSize() const OVERRIDE { return sizeof(*this); }
-  void revert(undo::ObjectsContainer* objects, undo::UndoersCollector* redoers) OVERRIDE;
+void SetSpritePixelFormat::dispose()
+{
+  delete this;
+}
 
-private:
-  undo::ObjectId m_spriteId;
-  uint32_t m_imgtype;
-};
+void SetSpritePixelFormat::revert(ObjectsContainer* objects, UndoersCollector* redoers)
+{
+  Sprite* sprite = objects->getObjectT<Sprite>(m_spriteId);
 
-} // namespace undoers
+  // Push another SetSpritePixelFormat as redoer
+  redoers->pushUndoer(new SetSpritePixelFormat(objects, sprite));
 
-#endif  // UNDOERS_SET_IMGTYPE_H_INCLUDED
+  sprite->setPixelFormat(static_cast<PixelFormat>(m_format));
+}

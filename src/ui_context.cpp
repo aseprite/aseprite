@@ -83,7 +83,7 @@ void UIContext::onSetActiveDocument(Document* document)
   app_get_tabsbar()->selectTab(document);
 
   // Change the image-type of color bar.
-  app_get_colorbar()->setImgType(app_get_current_image_type());
+  app_get_colorbar()->setPixelFormat(app_get_current_pixel_format());
 
   // Change the main frame title.
   base::string defaultTitle = PACKAGE " v" VERSION;
