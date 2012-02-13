@@ -522,7 +522,8 @@ bool StatusBar::onProcessMessage(Message* msg)
         x += (32+4)*jguiscale();
 
         // Draw color description
-        std::string str = m_color.toFormalString(app_get_current_pixel_format(), true);
+        std::string str = m_color.toHumanReadableString(app_get_current_pixel_format(),
+                                                        Color::LongHumanReadableString);
         if (m_alpha < 255) {
           char buf[512];
           usprintf(buf, ", Alpha %d", m_alpha);

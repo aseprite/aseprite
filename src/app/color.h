@@ -36,6 +36,11 @@ public:
     IndexType,
   };
 
+  enum HumanReadableString {
+    ShortHumanReadableString,
+    LongHumanReadableString
+  };
+
   // Default ctor is mask color
   Color() : m_type(MaskType) { }
 
@@ -50,7 +55,7 @@ public:
   static Color fromString(const std::string& str);
 
   std::string toString() const;
-  std::string toFormalString(PixelFormat format, bool long_format) const;
+  std::string toHumanReadableString(PixelFormat format, HumanReadableString type) const;
 
   bool operator==(const Color& other) const;
   bool operator!=(const Color& other) const {

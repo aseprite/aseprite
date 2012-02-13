@@ -186,12 +186,11 @@ std::string Color::toString() const
   return result.str();
 }
 
-std::string Color::toFormalString(PixelFormat pixelFormat, bool long_format) const
+std::string Color::toHumanReadableString(PixelFormat pixelFormat, HumanReadableString humanReadable) const
 {
   std::stringstream result;
 
-  // Long format
-  if (long_format) {
+  if (humanReadable == LongHumanReadableString) {
     switch (getType()) {
 
       case Color::MaskType:
@@ -256,8 +255,7 @@ std::string Color::toFormalString(PixelFormat pixelFormat, bool long_format) con
         break;
     }
   }
-  // Short format
-  else {
+  else if (humanReadable == ShortHumanReadableString) {
     switch (getType()) {
 
       case Color::MaskType:

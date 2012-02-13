@@ -213,7 +213,8 @@ void ColorButton::onPaint(PaintEvent& ev) // TODO use "ev.getGraphics()"
      this->hasMouseOver(), false);
 
   // Draw text
-  std::string str = m_color.toFormalString(m_pixelFormat, false);
+  std::string str = m_color.toHumanReadableString(m_pixelFormat,
+                                                  Color::ShortHumanReadableString);
 
   setTextQuiet(str.c_str());
   jwidget_get_texticon_info(this, &box, &text, &icon, 0, 0, 0);
