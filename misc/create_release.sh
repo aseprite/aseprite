@@ -34,13 +34,13 @@ fi
 
 cd $destdir
 cat config.h \
-	| sed -e "s/define VERSION.*/define VERSION \"$version\"/" \
-	> tmp
+        | sed -e "s/define VERSION.*/define VERSION \"$version\"/" \
+        > tmp
 mv tmp config.h
 
 cat data/gui.xml \
-	| sed -e "s/gui version=\".*/gui version=\"$version\">/" \
-	> tmp
+        | sed -e "s/gui version=\".*/gui version=\"$version\">/" \
+        > tmp
 mv tmp data/gui.xml
 
 # ----------------------------------------------
@@ -51,11 +51,11 @@ if [ ! -d build ] ; then
     mkdir build
     cd build
     cmake \
-	-D "CMAKE_BUILD_TYPE:STRING=RelWithDebInfo" \
-	-D "CMAKE_CXX_FLAGS_RELWITHDEBINFO:STRING = /Zi /MT /O2 /Ob1 /D NDEBUG" \
-	-D "CMAKE_C_FLAGS_RELWITHDEBINFO:STRING = /Zi /MT /O2 /Ob1 /D NDEBUG" \
-	-G "NMake Makefiles" \
-	..
+        -D "CMAKE_BUILD_TYPE:STRING=RelWithDebInfo" \
+        -D "CMAKE_CXX_FLAGS_RELWITHDEBINFO:STRING = /Zi /MT /O2 /Ob1 /D NDEBUG" \
+        -D "CMAKE_C_FLAGS_RELWITHDEBINFO:STRING = /Zi /MT /O2 /Ob1 /D NDEBUG" \
+        -G "NMake Makefiles" \
+        ..
     cd ..
 fi
 

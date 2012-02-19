@@ -218,4 +218,3 @@ bool clipboard::get_image_size(gfx::Size& size)
     return false;
 #endif
 }
-
