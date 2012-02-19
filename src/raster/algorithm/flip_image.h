@@ -16,36 +16,20 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifndef UNDOERS_FLIP_IMAGE_H_INCLUDED
-#define UNDOERS_FLIP_IMAGE_H_INCLUDED
+#ifndef RASTER_ALGORITHM_FLIP_IMAGE_H_INCLUDED
+#define RASTER_ALGORITHM_FLIP_IMAGE_H_INCLUDED
 
 #include "gfx/fwd.h"
 #include "raster/algorithm/flip_type.h"
-#include "undo/object_id.h"
-#include "undoers/undoer_base.h"
 
 class Image;
 
-namespace undoers {
+namespace raster {
+  namespace algorithm {
 
-class FlipImage : public UndoerBase
-{
-public:
-  FlipImage(undo::ObjectsContainer* objects, Image* image,
-            const gfx::Rect& bounds,
-            raster::algorithm::FlipType flipType);
+    void flip_image(Image* image, const gfx::Rect& bounds, FlipType flipType);
 
-  void dispose() OVERRIDE;
-  int getMemSize() const OVERRIDE { return sizeof(*this); }
-  void revert(undo::ObjectsContainer* objects, undo::UndoersCollector* redoers) OVERRIDE;
+  }
+}
 
-private:
-  undo::ObjectId m_imageId;
-  uint8_t m_format;
-  uint16_t m_x, m_y, m_w, m_h;
-  uint8_t m_flipType;
-};
-
-} // namespace undoers
-
-#endif  // UNDOERS_FLIP_IMAGE_H_INCLUDED
+#endif

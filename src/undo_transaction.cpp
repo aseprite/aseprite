@@ -22,6 +22,7 @@
 
 #include "base/unique_ptr.h"
 #include "document.h"
+#include "raster/algorithm/flip_image.h"
 #include "raster/blend.h"
 #include "raster/cel.h"
 #include "raster/dirty.h"
@@ -1049,30 +1050,19 @@ void UndoTransaction::clearMask(int bgcolor)
   }
 }
 
-void UndoTransaction::flipImage(Image* image, int x1, int y1, int x2, int y2,
-                                bool flip_horizontal, bool flip_vertical)
+void UndoTransaction::flipImage(Image* image,
+                                const gfx::Rect& bounds,
+                                raster::algorithm::FlipType flipType)
 {
   // Insert the undo operation.
   if (isEnabled()) {
     m_undoHistory->pushUndoer
       (new undoers::FlipImage
-       (m_undoHistory->getObjects(), image, x1, y1, x2-x1+1, y2-y1+1,
-        (flip_horizontal ? undoers::FlipImage::FlipHorizontal: 0) |
-        (flip_vertical ? undoers::FlipImage::FlipVertical: 0)));
+       (m_undoHistory->getObjects(), image, bounds, flipType));
   }
 
   // Flip the portion of the bitmap.
-  Image* area = image_crop(image, x1, y1, x2-x1+1, y2-y1+1, 0);
-  int x, y;
-
-  for (y=0; y<(y2-y1+1); y++)
-    for (x=0; x<(x2-x1+1); x++)
-      image_putpixel(image,
-                     flip_horizontal ? x2-x: x1+x,
-                     flip_vertical ? y2-y: y1+y,
-                     image_getpixel(area, x, y));
-
-  image_free(area);
+  raster::algorithm::flip_image(image, bounds, flipType);
 }
 
 void UndoTransaction::pasteImage(const Image* src_image, int x, int y, int opacity)

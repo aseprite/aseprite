@@ -226,8 +226,9 @@ add_library(aseprite-library
   modules/palettes.cpp
   modules/rootmenu.cpp
   raster/algo.cpp
-  raster/algofill.cpp
   raster/algo_polygon.cpp
+  raster/algofill.cpp
+  raster/algorithm/flip_image.cpp
   raster/blend.cpp
   raster/cel.cpp
   raster/cel_io.cpp

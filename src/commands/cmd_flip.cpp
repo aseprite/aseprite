@@ -37,10 +37,6 @@
 
 class FlipCommand : public Command
 {
-  bool m_flip_mask;
-  bool m_flip_horizontal;
-  bool m_flip_vertical;
-
 public:
   FlipCommand();
   Command* clone() const { return new FlipCommand(*this); }
@@ -52,6 +48,9 @@ protected:
 
 private:
   static char* read_authors_txt(const char *filename);
+
+  bool m_flipMask;
+  raster::algorithm::FlipType m_flipType;
 };
 
 FlipCommand::FlipCommand()
@@ -59,19 +58,18 @@ FlipCommand::FlipCommand()
             "Flip",
             CmdRecordableFlag)
 {
-  m_flip_mask = false;
-  m_flip_horizontal = false;
-  m_flip_vertical = false;
+  m_flipMask = false;
+  m_flipType = raster::algorithm::FlipHorizontal;
 }
 
 void FlipCommand::onLoadParams(Params* params)
 {
   std::string target = params->get("target");
-  m_flip_mask = (target == "mask");
+  m_flipMask = (target == "mask");
 
   std::string orientation = params->get("orientation");
-  m_flip_horizontal = (orientation == "horizontal");
-  m_flip_vertical = (orientation == "vertical");
+  m_flipType = (orientation == "vertical" ? raster::algorithm::FlipVertical:
+                                            raster::algorithm::FlipHorizontal);
 }
 
 bool FlipCommand::onEnabled(Context* context)
@@ -86,13 +84,15 @@ void FlipCommand::onExecute(Context* context)
 
   {
     UndoTransaction undoTransaction(document,
-                                    m_flip_mask ?
-                                    (m_flip_horizontal ? "Flip Horizontal":
-                                                         "Flip Vertical"):
-                                    (m_flip_horizontal ? "Flip Canvas Horizontal":
-                                                         "Flip Canvas Vertical"));
+                                    m_flipMask ?
+                                    (m_flipType == raster::algorithm::FlipHorizontal ?
+                                     "Flip Horizontal":
+                                     "Flip Vertical"):
+                                    (m_flipType == raster::algorithm::FlipHorizontal ?
+                                     "Flip Canvas Horizontal":
+                                     "Flip Canvas Vertical"));
 
-    if (m_flip_mask) {
+    if (m_flipMask) {
       Image* image;
       int x1, y1, x2, y2;
       int x, y;
@@ -125,8 +125,9 @@ void FlipCommand::onExecute(Context* context)
         y2 = MID(0, y2, image->h-1);
       }
 
-      undoTransaction.flipImage(image, x1, y1, x2, y2,
-                                m_flip_horizontal, m_flip_vertical);
+      undoTransaction.flipImage(image,
+                                gfx::Rect(x1, y1,
+                                          x2-x1+1, y2-y1+1), m_flipType);
     }
     else {
       // get all sprite cels
@@ -140,11 +141,14 @@ void FlipCommand::onExecute(Context* context)
 
         undoTransaction.setCelPosition
           (cel,
-           m_flip_horizontal ? sprite->getWidth() - image->w - cel->getX(): cel->getX(),
-           m_flip_vertical ? sprite->getHeight() - image->h - cel->getY(): cel->getY());
+           (m_flipType == raster::algorithm::FlipHorizontal ?
+            sprite->getWidth() - image->w - cel->getX():
+            cel->getX()),
+           (m_flipType == raster::algorithm::FlipVertical ?
+            sprite->getHeight() - image->h - cel->getY():
+            cel->getY()));
 
-        undoTransaction.flipImage(image, 0, 0, image->w-1, image->h-1,
-                                  m_flip_horizontal, m_flip_vertical);
+        undoTransaction.flipImage(image, gfx::Rect(0, 0, image->w, image->h), m_flipType);
       }
     }
 

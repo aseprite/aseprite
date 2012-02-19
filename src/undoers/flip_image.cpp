@@ -21,6 +21,10 @@
 #include "undoers/flip_image.h"
 
 #include "base/unique_ptr.h"
+#include "gfx/point.h"
+#include "gfx/rect.h"
+#include "gfx/size.h"
+#include "raster/algorithm/flip_image.h"
 #include "raster/image.h"
 #include "undo/objects_container.h"
 #include "undo/undo_exception.h"
@@ -29,14 +33,17 @@
 using namespace undo;
 using namespace undoers;
 
-FlipImage::FlipImage(ObjectsContainer* objects, Image* image, int x, int y, int w, int h, int flipFlags)
+FlipImage::FlipImage(ObjectsContainer* objects, Image* image,
+                     const gfx::Rect& bounds,
+                     raster::algorithm::FlipType flipType)
   : m_imageId(objects->addObject(image))
   , m_format(image->getPixelFormat())
-  , m_x(x), m_y(y), m_w(w), m_h(h)
-  , m_flipFlags(flipFlags)
+  , m_x(bounds.x), m_y(bounds.y)
+  , m_w(bounds.w), m_h(bounds.h)
+  , m_flipType(flipType)
 {
-  ASSERT(w >= 1 && h >= 1);
-  ASSERT(x >= 0 && y >= 0 && x+w <= image->w && y+h <= image->h);
+  ASSERT(m_w >= 1 && m_h >= 1);
+  ASSERT(m_x >= 0 && m_y >= 0 && m_x+m_w <= image->w && m_y+m_h <= image->h);
 }
 
 void FlipImage::dispose()
@@ -47,21 +54,13 @@ void FlipImage::dispose()
 void FlipImage::revert(ObjectsContainer* objects, UndoersCollector* redoers)
 {
   Image* image = objects->getObjectT<Image>(m_imageId);
+  raster::algorithm::FlipType flipType = static_cast<raster::algorithm::FlipType>(m_flipType);
+  gfx::Rect bounds(gfx::Point(m_x, m_y), gfx::Size(m_w, m_h));
 
   if (image->getPixelFormat() != m_format)
     throw UndoException("Image type does not match");
 
-  redoers->pushUndoer(new FlipImage(objects, image, m_x, m_y, m_w, m_h, m_flipFlags));
+  redoers->pushUndoer(new FlipImage(objects, image, bounds, flipType));
 
-  UniquePtr<Image> area(image_crop(image, m_x, m_y, m_w, m_h, 0));
-  int x, y;
-  int x2 = m_x+m_w-1;
-  int y2 = m_y+m_h-1;
-
-  for (y=0; y<m_h; ++y)
-    for (x=0; x<m_w; ++x)
-      image_putpixel(image,
-        ((m_flipFlags & FlipHorizontal) == FlipHorizontal ? x2-x: m_x+x),
-        ((m_flipFlags & FlipVertical) == FlipVertical     ? y2-y: m_y+y),
-        image_getpixel(area, x, y));
+  raster::algorithm::flip_image(image, bounds, flipType);
 }

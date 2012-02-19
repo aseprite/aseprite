@@ -20,6 +20,7 @@
 #define UNDO_TRANSACTION_H_INCLUDED
 
 #include "gfx/rect.h"
+#include "raster/algorithm/flip_type.h"
 #include "raster/dithering_method.h"
 #include "raster/pixel_format.h"
 #include "undo/modification.h"
@@ -118,8 +119,7 @@ public:
   // for image
   Image* getCelImage(Cel* cel);
   void clearMask(int bgcolor);
-  void flipImage(Image* image, int x1, int y1, int x2, int y2,
-                 bool flip_horizontal, bool flip_vertical);
+  void flipImage(Image* image, const gfx::Rect& bounds, raster::algorithm::FlipType flipType);
   void pasteImage(const Image* src_image, int x, int y, int opacity);
 
   // for mask
