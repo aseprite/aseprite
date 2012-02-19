@@ -21,6 +21,7 @@
 #include "commands/command.h"
 #include "commands/params.h"
 #include "document_wrappers.h"
+#include "gfx/size.h"
 #include "gui/list.h"
 #include "modules/editors.h"
 #include "modules/gui.h"
@@ -94,40 +95,33 @@ void FlipCommand::onExecute(Context* context)
 
     if (m_flipMask) {
       Image* image;
-      int x1, y1, x2, y2;
       int x, y;
-
       image = sprite->getCurrentImage(&x, &y);
       if (!image)
         return;
 
-      // Mask is empty?
-      if (!document->isMaskVisible()) {
-        // so we flip the entire image
-        x1 = 0;
-        y1 = 0;
-        x2 = image->w-1;
-        y2 = image->h-1;
-      }
-      else {
-        const gfx::Rect& bounds = document->getMask()->getBounds();
+      // This variable will be the area to be flipped inside the image.
+      gfx::Rect bounds(gfx::Point(0, 0),
+                       gfx::Size(image->w, image->h));
 
-        // apply the cel offset
-        x1 = bounds.x - x;
-        y1 = bounds.y - y;
-        x2 = bounds.x + bounds.w - 1 - x;
-        y2 = bounds.y + bounds.h - 1 - y;
+      // If there is some portion of sprite selected, we flip the
+      // selected region only. If the mask isn't visible, we flip the
+      // whole image.
+      if (document->isMaskVisible()) {
+        Mask* mask = document->getMask();
+        gfx::Rect maskBounds = mask->getBounds();
 
-        // clip
-        x1 = MID(0, x1, image->w-1);
-        y1 = MID(0, y1, image->h-1);
-        x2 = MID(0, x2, image->w-1);
-        y2 = MID(0, y2, image->h-1);
+        // Adjust the mask depending on the cel position.
+        maskBounds.offset(-x, -y);
+
+        // Intersect the full area of the image with the mask's
+        // bounds, so we don't request to flip an area outside the
+        // image's bounds.
+        bounds = bounds.createIntersect(maskBounds);
       }
 
-      undoTransaction.flipImage(image,
-                                gfx::Rect(x1, y1,
-                                          x2-x1+1, y2-y1+1), m_flipType);
+      // Flip the portion of image specified by "bounds" variable.
+      undoTransaction.flipImage(image, bounds, m_flipType);
     }
     else {
       // get all sprite cels
