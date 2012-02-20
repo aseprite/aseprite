@@ -20,25 +20,46 @@
 
 #include "raster/algorithm/flip_image.h"
 
-#include "base/unique_ptr.h"
 #include "gfx/rect.h"
 #include "raster/image.h"
+
+#include <vector>
 
 namespace raster { namespace algorithm {
 
 void flip_image(Image* image, const gfx::Rect& bounds, FlipType flipType)
 {
-  UniquePtr<Image> area(image_crop(image, bounds.x, bounds.y, bounds.w, bounds.h, 0));
-  int x2 = bounds.x+bounds.w-1;
-  int y2 = bounds.y+bounds.h-1;
-  int x, y;
+  switch (flipType) {
 
-  for (y=0; y<bounds.h; ++y)
-    for (x=0; x<bounds.w; ++x)
-      image_putpixel(image,
-                     (flipType == FlipHorizontal ? x2-x: bounds.x+x),
-                     (flipType == FlipVertical   ? y2-y: bounds.y+y),
-                     image_getpixel(area, x, y));
+    case FlipHorizontal:
+      for (int y=bounds.y; y<bounds.y+bounds.h; ++y) {
+        int u = bounds.x+bounds.w-1;
+        for (int x=bounds.x; x<bounds.x+bounds.w/2; ++x, --u) {
+          uint32_t c1 = image_getpixel(image, x, y);
+          uint32_t c2 = image_getpixel(image, u, y);
+          image_putpixel(image, x, y, c2);
+          image_putpixel(image, u, y, c1);
+        }
+      }
+      break;
+
+    case FlipVertical: {
+      int section_size = image_line_size(image, bounds.w);
+      std::vector<uint8_t> tmpline(section_size);
+
+      int v = bounds.y+bounds.h-1;
+      for (int y=bounds.y; y<bounds.y+bounds.h/2; ++y, --v) {
+        uint8_t* address1 = static_cast<uint8_t*>(image_address(image, bounds.x, y));
+        uint8_t* address2 = static_cast<uint8_t*>(image_address(image, bounds.x, v));
+
+        // Swap lines.
+        std::copy(address1, address1+section_size, tmpline.begin());
+        std::copy(address2, address2+section_size, address1);
+        std::copy(tmpline.begin(), tmpline.end(), address2);
+      }
+      break;
+    }
+  }
 }
 
 } }

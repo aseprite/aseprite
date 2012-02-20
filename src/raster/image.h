@@ -100,32 +100,27 @@ void image_resize(const Image* src, Image* dst, ResizeMethod method, const Palet
 int image_count_diff(const Image* i1, const Image* i2);
 bool image_shrink_rect(Image *image, int *x1, int *y1, int *x2, int *y2, int refpixel);
 
-inline int pixelformat_shift(PixelFormat pixelFormat)
-{
-  return ((pixelFormat == IMAGE_RGB)? 2:
-          (pixelFormat == IMAGE_GRAYSCALE)? 1: 0);
-}
+#include "raster/image_traits.h"
 
-inline int pixelformat_line_size(PixelFormat format, int width)
+inline int pixelformat_line_size(PixelFormat pixelFormat, int width)
 {
-  return (width << pixelformat_shift(format));
-}
-
-inline int image_shift(const Image* image)
-{
-  return pixelformat_shift(image->getPixelFormat());
+  switch (pixelFormat) {
+    case IMAGE_RGB:       return RgbTraits::scanline_size(width);
+    case IMAGE_GRAYSCALE: return GrayscaleTraits::scanline_size(width);
+    case IMAGE_INDEXED:   return IndexedTraits::scanline_size(width);
+    case IMAGE_BITMAP:    return BitmapTraits::scanline_size(width);
+  }
+  return 0;
 }
 
 inline int image_line_size(const Image* image, int width)
 {
-  return (width << image_shift(image));
+  return pixelformat_line_size(image->getPixelFormat(), width);
 }
 
 inline void* image_address(Image* image, int x, int y)
 {
   return ((void *)(image->line[y] + image_line_size(image, x)));
 }
-
-#include "raster/image_traits.h"
 
 #endif
