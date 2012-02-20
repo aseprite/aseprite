@@ -49,7 +49,7 @@ void write_mask(std::ostream& os, Mask* mask)
   write16(os, mask->getBitmap() ? bounds.h: 0); // Height
 
   if (mask->getBitmap()) {
-    int size = (bounds.w+7)/8;
+    int size = BitmapTraits::scanline_size(bounds.w);
 
     for (int c=0; c<bounds.h; c++)
       os.write((char*)mask->getBitmap()->line[c], size);
@@ -66,7 +66,7 @@ Mask* read_mask(std::istream& is)
   UniquePtr<Mask> mask(new Mask());
 
   if (w > 0 && h > 0) {
-    int size = (w+7)/8;
+    int size = BitmapTraits::scanline_size(w);
 
     mask->add(x, y, w, h);
     for (int c=0; c<mask->getBounds().h; c++)
