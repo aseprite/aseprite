@@ -18,6 +18,7 @@
 
 #include "config.h"
 
+#include "app.h"
 #include "commands/command.h"
 #include "commands/params.h"
 #include "document_wrappers.h"
@@ -25,6 +26,7 @@
 #include "gui/list.h"
 #include "modules/editors.h"
 #include "modules/gui.h"
+#include "raster/algorithm/flip_image.h"
 #include "raster/cel.h"
 #include "raster/image.h"
 #include "raster/mask.h"
@@ -100,6 +102,9 @@ void FlipCommand::onExecute(Context* context)
       if (!image)
         return;
 
+      Mask* mask = NULL;
+      bool alreadyFlipped = false;
+
       // This variable will be the area to be flipped inside the image.
       gfx::Rect bounds(gfx::Point(0, 0),
                        gfx::Size(image->w, image->h));
@@ -108,7 +113,7 @@ void FlipCommand::onExecute(Context* context)
       // selected region only. If the mask isn't visible, we flip the
       // whole image.
       if (document->isMaskVisible()) {
-        Mask* mask = document->getMask();
+        mask = document->getMask();
         gfx::Rect maskBounds = mask->getBounds();
 
         // Adjust the mask depending on the cel position.
@@ -118,10 +123,39 @@ void FlipCommand::onExecute(Context* context)
         // bounds, so we don't request to flip an area outside the
         // image's bounds.
         bounds = bounds.createIntersect(maskBounds);
+
+        // If the mask isn't a rectangular area, we've to flip the mask too.
+        if (mask->getBitmap() != NULL && !mask->isRectangular()) {
+          int bgcolor = app_get_color_to_clear_layer(sprite->getCurrentLayer());
+
+          // Flip the portion of image specified by the mask.
+          undoTransaction.flipImageWithMask(image, mask, m_flipType, bgcolor);
+          alreadyFlipped = true;
+
+          // Flip the mask.
+          Image* maskBitmap = mask->getBitmap();
+          if (maskBitmap != NULL) {
+            // Create a flipped copy of the current mask.
+            UniquePtr<Mask> newMask(new Mask(*mask));
+            newMask->freeze();
+            raster::algorithm::flip_image(newMask->getBitmap(),
+                                          gfx::Rect(gfx::Point(0, 0),
+                                                gfx::Size(maskBitmap->w, maskBitmap->h)),
+                                          m_flipType);
+            newMask->unfreeze();
+
+            // Change the current mask and generate the new boundaries.
+            undoTransaction.copyToCurrentMask(newMask);
+
+            document->generateMaskBoundaries();
+          }
+        }
       }
 
       // Flip the portion of image specified by "bounds" variable.
-      undoTransaction.flipImage(image, bounds, m_flipType);
+      if (!alreadyFlipped) {
+        undoTransaction.flipImage(image, bounds, m_flipType);
+      }
     }
     else {
       // get all sprite cels

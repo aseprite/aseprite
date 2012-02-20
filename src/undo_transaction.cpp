@@ -1065,6 +1065,25 @@ void UndoTransaction::flipImage(Image* image,
   raster::algorithm::flip_image(image, bounds, flipType);
 }
 
+void UndoTransaction::flipImageWithMask(Image* image, const Mask* mask, raster::algorithm::FlipType flipType, int bgcolor)
+{
+  UniquePtr<Image> flippedImage((Image::createCopy(image)));
+
+  // Flip the portion of the bitmap.
+  raster::algorithm::flip_image_with_mask(flippedImage, mask, flipType, bgcolor);
+
+  // Insert the undo operation.
+  if (isEnabled()) {
+    UniquePtr<Dirty> dirty((new Dirty(image, flippedImage)));
+    dirty->saveImagePixels(image);
+
+    m_undoHistory->pushUndoer(new undoers::DirtyArea(m_undoHistory->getObjects(), image, dirty));
+  }
+
+  // Copy the flipped image into the image specified as argument.
+  image_copy(image, flippedImage, 0, 0);
+}
+
 void UndoTransaction::pasteImage(const Image* src_image, int x, int y, int opacity)
 {
   const Layer* layer = m_sprite->getCurrentLayer();

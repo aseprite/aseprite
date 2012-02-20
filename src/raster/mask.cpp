@@ -88,6 +88,26 @@ void Mask::unfreeze()
     shrink();
 }
 
+bool Mask::isRectangular() const
+{
+  if (!m_bitmap)
+    return false;
+
+  for (int y=0; y<m_bitmap->h; ++y) {
+    uint8_t* address = ((uint8_t**)m_bitmap->line)[y];
+    div_t d = div(0, 8);
+
+    for (int x=0; x<m_bitmap->w; ++x) {
+      if (((*address) & (1 << d.rem)) == 0)
+        return false;
+
+      _image_bitmap_next_bit(d, address);
+    }
+  }
+
+  return true;
+}
+
 void Mask::copyFrom(const Mask* sourceMask)
 {
   clear();

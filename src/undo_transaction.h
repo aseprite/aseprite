@@ -120,6 +120,7 @@ public:
   Image* getCelImage(Cel* cel);
   void clearMask(int bgcolor);
   void flipImage(Image* image, const gfx::Rect& bounds, raster::algorithm::FlipType flipType);
+  void flipImageWithMask(Image* image, const Mask* mask, raster::algorithm::FlipType flipType, int bgcolor);
   void pasteImage(const Image* src_image, int x, int y, int opacity);
 
   // for mask

@@ -74,6 +74,9 @@ public:
   // Returns true if the mask is frozen (See freeze/unfreeze functions).
   bool isFrozen() const { return m_freeze_count > 0; }
 
+  // Returns true if the mask is a rectangular region.
+  bool isRectangular() const;
+
   // Clears the mask.
   void clear();
 

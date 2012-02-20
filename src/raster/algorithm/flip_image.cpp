@@ -20,12 +20,15 @@
 
 #include "raster/algorithm/flip_image.h"
 
+#include "base/unique_ptr.h"
 #include "gfx/rect.h"
 #include "raster/image.h"
+#include "raster/mask.h"
 
 #include <vector>
 
-namespace raster { namespace algorithm {
+namespace raster {
+namespace algorithm {
 
 void flip_image(Image* image, const gfx::Rect& bounds, FlipType flipType)
 {
@@ -62,4 +65,52 @@ void flip_image(Image* image, const gfx::Rect& bounds, FlipType flipType)
   }
 }
 
-} }
+void flip_image_with_mask(Image* image, const Mask* mask, FlipType flipType, int bgcolor)
+{
+  gfx::Rect bounds = mask->getBounds();
+
+  switch (flipType) {
+
+    case FlipHorizontal: {
+      UniquePtr<Image> originalRow(Image::create(image->getPixelFormat(), mask->getBounds().w, 1));
+
+      for (int y=bounds.y; y<bounds.y+bounds.h; ++y) {
+        // Copy the current row.
+        image_copy(originalRow, image, -bounds.x, -y);
+
+        int u = bounds.x+bounds.w-1;
+        for (int x=bounds.x; x<bounds.x+bounds.w; ++x, --u) {
+          if (mask->containsPoint(x, y)) {
+            image_putpixel(image, u, y, image_getpixel(originalRow, x-bounds.x, 0));
+            if (!mask->containsPoint(u, y))
+              image_putpixel(image, x, y, bgcolor);
+          }
+        }
+      }
+      break;
+    }
+
+    case FlipVertical:{
+      UniquePtr<Image> originalCol(Image::create(image->getPixelFormat(), 1, mask->getBounds().h));
+
+      for (int x=bounds.x; x<bounds.x+bounds.w; ++x) {
+        // Copy the current column.
+        image_copy(originalCol, image, -x, -bounds.y);
+
+        int v = bounds.y+bounds.h-1;
+        for (int y=bounds.y; y<bounds.y+bounds.h; ++y, --v) {
+          if (mask->containsPoint(x, y)) {
+            image_putpixel(image, x, v, image_getpixel(originalCol, 0, y-bounds.y));
+            if (!mask->containsPoint(x, v))
+              image_putpixel(image, x, y, bgcolor);
+          }
+        }
+      }
+      break;
+    }
+
+  }
+}
+
+} // namespace algorithm
+} // namespace raster
