@@ -1,6 +1,7 @@
 For next release
 ----------------
 
++ Add a warning when exporting RGB sprite to GIF, hinting at the quantize function.
 + MovingPixelsState: Add undo information in each transformation step.
 + Add IntEntry class in src/gui/ with spin-buttons.
 + Add feedback to "Shift+S" shortcut to switch "snap to grid".
