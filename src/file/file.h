@@ -20,7 +20,7 @@
 #define FILE_FILE_H_INCLUDED
 
 #include "base/shared_ptr.h"
-#include "raster/pixeL_format.h"
+#include "raster/pixel_format.h"
 
 #include <stdio.h>
 #include <vector>
