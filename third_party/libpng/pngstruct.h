@@ -5,7 +5,7 @@
  * (Version 0.96 Copyright (c) 1996, 1997 Andreas Dilger)
  * (Version 0.88 Copyright (c) 1995, 1996 Guy Eric Schalnat, Group 42, Inc.)
  *
- * Last changed in libpng 1.5.5 [September 22, 2011]
+ * Last changed in libpng 1.5.9 [February 18, 2012]
  *
  * This code is released under the libpng license.
  * For conditions of distribution and use, see the disclaimer
@@ -283,9 +283,7 @@ struct png_struct_def
 #endif
 
 /* New member added in libpng-1.0.4 (renamed in 1.0.9) */
-#if defined(PNG_MNG_FEATURES_SUPPORTED) || \
-    defined(PNG_READ_EMPTY_PLTE_SUPPORTED) || \
-    defined(PNG_WRITE_EMPTY_PLTE_SUPPORTED)
+#if defined(PNG_MNG_FEATURES_SUPPORTED)
 /* Changed from png_byte to png_uint_32 at version 1.2.0 */
    png_uint_32 mng_features_permitted;
 #endif

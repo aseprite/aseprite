@@ -1,4 +1,4 @@
-README for libpng version 1.5.7 - December 15, 2011 (shared library 15.0)
+README for libpng version 1.5.9 - February 18, 2012 (shared library 15.0)
 See the note about version numbers near the top of png.h
 
 See INSTALL for instructions on how to install libpng.
@@ -105,7 +105,7 @@ based in a large way on Guy's and Andreas' earlier work), and the PNG
 development group.
 
 Send comments/corrections/commendations to png-mng-implement at
-lists.sourceforge.net (subscription required; visit
+lists.sourceforge.net (subscription required; visit 
 https://lists.sourceforge.net/lists/listinfo/png-mng-implement
 to subscribe) or to glennrp at users.sourceforge.net
 

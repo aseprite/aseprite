@@ -1,7 +1,7 @@
 
 /* pngpread.c - read a png file in push mode
  *
- * Last changed in libpng 1.5.7 [December 15, 2011]
+ * Last changed in libpng 1.5.9 [February 18, 2012]
  * Copyright (c) 1998-2011 Glenn Randers-Pehrson
  * (Version 0.96 Copyright (c) 1996, 1997 Andreas Dilger)
  * (Version 0.88 Copyright (c) 1995, 1996 Guy Eric Schalnat, Group 42, Inc.)
@@ -730,8 +730,7 @@ png_push_save_buffer(png_structp png_ptr)
 
       new_max = png_ptr->save_buffer_size + png_ptr->current_buffer_size + 256;
       old_buffer = png_ptr->save_buffer;
-      png_ptr->save_buffer = (png_bytep)png_malloc_warn(png_ptr,
-          (png_size_t)new_max);
+      png_ptr->save_buffer = (png_bytep)png_malloc_warn(png_ptr, new_max);
 
       if (png_ptr->save_buffer == NULL)
       {
@@ -1201,6 +1200,7 @@ png_push_process_row(png_structp png_ptr)
 void /* PRIVATE */
 png_read_push_finish_row(png_structp png_ptr)
 {
+#ifdef PNG_READ_INTERLACING_SUPPORTED
    /* Arrays to facilitate easy interlacing - use pass (0 - 6) as index */
 
    /* Start of interlace block */
@@ -1219,6 +1219,7 @@ png_read_push_finish_row(png_structp png_ptr)
     * it, uncomment it here and in png.h
    static PNG_CONST png_byte FARDATA png_pass_height[] = {8, 8, 4, 4, 2, 2, 1};
    */
+#endif
 
    png_ptr->row_number++;
    if (png_ptr->row_number < png_ptr->num_rows)
@@ -1285,8 +1286,7 @@ png_push_handle_tEXt(png_structp png_ptr, png_infop info_ptr, png_uint_32
    }
 #endif
 
-   png_ptr->current_text = (png_charp)png_malloc(png_ptr,
-       (png_size_t)(length + 1));
+   png_ptr->current_text = (png_charp)png_malloc(png_ptr, length + 1);
    png_ptr->current_text[length] = '\0';
    png_ptr->current_text_ptr = png_ptr->current_text;
    png_ptr->current_text_size = (png_size_t)length;
@@ -1384,8 +1384,7 @@ png_push_handle_zTXt(png_structp png_ptr, png_infop info_ptr, png_uint_32
    }
 #endif
 
-   png_ptr->current_text = (png_charp)png_malloc(png_ptr,
-       (png_size_t)(length + 1));
+   png_ptr->current_text = (png_charp)png_malloc(png_ptr, length + 1);
    png_ptr->current_text[length] = '\0';
    png_ptr->current_text_ptr = png_ptr->current_text;
    png_ptr->current_text_size = (png_size_t)length;
@@ -1586,8 +1585,7 @@ png_push_handle_iTXt(png_structp png_ptr, png_infop info_ptr, png_uint_32
    }
 #endif
 
-   png_ptr->current_text = (png_charp)png_malloc(png_ptr,
-       (png_size_t)(length + 1));
+   png_ptr->current_text = (png_charp)png_malloc(png_ptr, length + 1);
    png_ptr->current_text[length] = '\0';
    png_ptr->current_text_ptr = png_ptr->current_text;
    png_ptr->current_text_size = (png_size_t)length;
@@ -1732,8 +1730,7 @@ png_push_handle_unknown(png_structp png_ptr, png_infop info_ptr, png_uint_32
        */
       PNG_CSTRING_FROM_CHUNK(png_ptr->unknown_chunk.name, png_ptr->chunk_name);
 
-      /* The following cast should be safe because of the check above. */
-      png_ptr->unknown_chunk.size = (png_size_t)length;
+      png_ptr->unknown_chunk.size = length;
 
       if (length == 0)
          png_ptr->unknown_chunk.data = NULL;
