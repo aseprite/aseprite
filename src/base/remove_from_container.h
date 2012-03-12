@@ -9,8 +9,7 @@
 
 namespace base {
 
-// Removes the first ocurrence of the specified element from the STL
-// container.
+// Removes all ocurrences of the specified element from the STL container.
 template<typename ContainerType>
 void remove_from_container(ContainerType& container,
                            typename ContainerType::const_reference element)
