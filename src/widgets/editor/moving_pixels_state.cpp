@@ -23,6 +23,7 @@
 #include "app.h"
 #include "app/color_utils.h"
 #include "base/unique_ptr.h"
+#include "commands/cmd_flip.h"
 #include "commands/command.h"
 #include "commands/commands.h"
 #include "gfx/rect.h"
@@ -32,6 +33,7 @@
 #include "gui/view.h"
 #include "modules/editors.h"
 #include "modules/gui.h"
+#include "raster/algorithm/flip_image.h"
 #include "raster/mask.h"
 #include "raster/sprite.h"
 #include "tools/ink.h"
@@ -335,6 +337,14 @@ bool MovingPixelsState::onKeyDown(Editor* editor, Message* msg)
 
         // Return true because we've used the keyboard shortcut.
         return true;
+      }
+      // Flip Horizontally/Vertically commands are handled manually to
+      // avoid dropping the floating region of pixels.
+      else if (strcmp(cmd->short_name(), CommandId::Flip) == 0) {
+        if (FlipCommand* flipCommand = dynamic_cast<FlipCommand*>(cmd)) {
+          m_pixelsMovement->flipImage(flipCommand->getFlipType());
+          return true;
+        }
       }
     }
   }

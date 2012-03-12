@@ -20,9 +20,10 @@
 #define WIDGETS_EDITOR_PIXELS_MOVEMENT_H_INCLUDED
 
 #include "document_wrappers.h"
+#include "gfx/size.h"
+#include "raster/algorithm/flip_type.h"
 #include "undo_transaction.h"
 #include "widgets/editor/handle_type.h"
-#include "gfx/size.h"
 
 class Document;
 class Image;
@@ -79,6 +80,12 @@ public:
   gfx::Size getInitialImageSize() const;
 
   void setMaskColor(uint32_t mask_color);
+
+  // Flips the image and mask in the given direction in "flipType".
+  // Flip Horizontally/Vertically commands are replaced calling this
+  // function, so they work more as the user would expect (flip the
+  // current selection instead of dropping and flipping it).
+  void flipImage(raster::algorithm::FlipType flipType);
 
   const gfx::Transformation& getTransformation() const { return m_currentData; }
 

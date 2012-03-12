@@ -24,6 +24,7 @@
 #include "document.h"
 #include "la/vector2d.h"
 #include "modules/gui.h"
+#include "raster/algorithm/flip_image.h"
 #include "raster/cel.h"
 #include "raster/image.h"
 #include "raster/mask.h"
@@ -67,6 +68,37 @@ PixelsMovement::~PixelsMovement()
   delete m_originalImage;
   delete m_initialMask;
   delete m_currentMask;
+}
+
+void PixelsMovement::flipImage(raster::algorithm::FlipType flipType)
+{
+  // Flip the image.
+  raster::algorithm::flip_image(m_originalImage,
+                                gfx::Rect(gfx::Point(0, 0),
+                                          gfx::Size(m_originalImage->w,
+                                                    m_originalImage->h)),
+                                flipType);
+
+  // Flip the mask.
+  raster::algorithm::flip_image(m_initialMask->getBitmap(),
+                                gfx::Rect(gfx::Point(0, 0),
+                                          gfx::Size(m_initialMask->getBounds().w,
+                                                    m_initialMask->getBounds().h)),
+                                flipType);
+
+  {
+    DocumentWriter documentWriter(m_documentReader);
+
+    // Regenerate the transformed (rotated, scaled, etc.) image and
+    // mask.
+    redrawExtraImage(documentWriter);
+    redrawCurrentMask();
+
+    documentWriter->setMask(m_currentMask);
+    documentWriter->generateMaskBoundaries(m_currentMask);
+  }
+
+  update_screen_for_document(m_documentReader);
 }
 
 void PixelsMovement::cutMask()

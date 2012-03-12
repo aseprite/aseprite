@@ -18,13 +18,12 @@
 
 #include "config.h"
 
+#include "commands/cmd_flip.h"
+
 #include "app.h"
-#include "commands/command.h"
 #include "commands/params.h"
 #include "document_wrappers.h"
 #include "gfx/size.h"
-#include "gui/list.h"
-#include "modules/editors.h"
 #include "modules/gui.h"
 #include "raster/algorithm/flip_image.h"
 #include "raster/cel.h"
@@ -32,29 +31,7 @@
 #include "raster/mask.h"
 #include "raster/sprite.h"
 #include "raster/stock.h"
-#include "undo/undo_history.h"
 #include "undo_transaction.h"
-#include "util/misc.h"
-
-#include <allegro/unicode.h>
-
-class FlipCommand : public Command
-{
-public:
-  FlipCommand();
-  Command* clone() const { return new FlipCommand(*this); }
-
-protected:
-  void onLoadParams(Params* params);
-  bool onEnabled(Context* context);
-  void onExecute(Context* context);
-
-private:
-  static char* read_authors_txt(const char *filename);
-
-  bool m_flipMask;
-  raster::algorithm::FlipType m_flipType;
-};
 
 FlipCommand::FlipCommand()
   : Command("Flip",
