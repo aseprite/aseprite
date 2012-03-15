@@ -21,12 +21,14 @@ if(NOT USE_SHARED_LIBPNG)
   add_subdirectory(libpng)
 endif()
 
-if(ENABLE_UPDATER)
+if(NOT USE_SHARED_GIFLIB)
+  add_subdirectory(giflib)
+endif()
+
+if(ENABLE_UPDATER AND NOT USE_SHARED_CURL)
   add_subdirectory(curl)
 endif()
-add_subdirectory(giflib)
+
 add_subdirectory(gtest)
-add_subdirectory(freetype)
-add_subdirectory(libart_lgpl)
 add_subdirectory(loadpng)
 add_subdirectory(tinyxml)

@@ -47,7 +47,7 @@ FONT* ji_font_load_bmp(const char* filepathname)
 }
 
 /**********************************************************************/
-#if 1 /* with FreeType */
+#if 0 /* with FreeType */
 /**********************************************************************/
 
 #include "ft2build.h"

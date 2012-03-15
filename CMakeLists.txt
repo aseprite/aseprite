@@ -30,6 +30,8 @@ project(aseprite C CXX)
 # CMakeCache.txt)
 
 option(USE_STATIC_LIBC    "Use static version of C and C++ runtimes" off)
+option(USE_SHARED_CURL    "Use your installed copy of curl" off)
+option(USE_SHARED_GIFLIB  "Use your installed copy of giflib" off)
 option(USE_SHARED_JPEGLIB "Use your installed copy of jpeglib" off)
 option(USE_SHARED_ZLIB    "Use your installed copy of zlib" off)
 option(USE_SHARED_LIBPNG  "Use your installed copy of libpng" off)

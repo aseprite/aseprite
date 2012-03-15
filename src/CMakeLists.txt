@@ -8,8 +8,15 @@ if(MSVC)
   endif()
 endif(MSVC)
 
+# Libraries in this directory
+set(aseprite_libraries aseprite-library undo-lib filters-lib gui-lib gfx-lib base-lib)
+
+# Directories where .h files can be found
+include_directories(. .. ../third_party)
+
 # Third-party libraries
-set(libs3rdparty freetype libart_lgpl loadpng tinyxml giflib)
+set(libs3rdparty loadpng tinyxml)
+include_directories(${LOADPNG_DIR} ${TINYXML_DIR})
 
 if(USE_SHARED_JPEGLIB)
   find_package(JPEG)
@@ -19,6 +26,7 @@ if(USE_SHARED_JPEGLIB)
   endif(JPEG_FOUND)
 else()
   set(libs3rdparty ${libs3rdparty} jpeg)
+  include_directories(${LIBJPEG_DIR})
 endif()
 
 if(USE_SHARED_ZLIB)
@@ -29,6 +37,7 @@ if(USE_SHARED_ZLIB)
   endif(ZLIB_FOUND)
 else()
   set(libs3rdparty ${libs3rdparty} zlib)
+  include_directories(${ZLIB_DIR})
 endif()
 
 if(USE_SHARED_LIBPNG)
@@ -40,39 +49,45 @@ if(USE_SHARED_LIBPNG)
   endif(PNG_FOUND)
 else()
   set(libs3rdparty ${libs3rdparty} libpng)
+  include_directories(${LIBPNG_DIR})
 endif()
 
-if(CURL_STATICLIB)
-  add_definitions(-DCURL_STATICLIB)
+if(USE_SHARED_GIFLIB)
+  find_library(GIFLIB_LIBRARY gif)
+  find_path(GIFLIB_INCLUDE_DIR gif_lib.h)
+
+  set(libs3rdparty ${libs3rdparty} ${GIFLIB_LIBRARY})
+  include_directories(${GIFLIB_INCLUDE_DIR})
+else()
+  set(libs3rdparty ${libs3rdparty} giflib)
+  include_directories(${GIFLIB_DIR}/lib)
 endif()
 
 if (CMAKE_USE_PTHREADS_INIT)
   set(sys_libs ${sys_libs} ${CMAKE_THREAD_LIBS_INIT})
 endif()
 
-# Libraries in this directory
-set(aseprite_libraries aseprite-library undo-lib filters-lib gui-lib gfx-lib base-lib)
-
 if(ENABLE_UPDATER)
-  set(libs3rdparty ${libs3rdparty} libcurl)
+  if(USE_SHARED_CURL)
+    find_library(LIBCURL_LIBRARY curl)
+    find_path(LIBCURL_INCLUDE_DIR curl/curl.h)
+
+    set(libs3rdparty ${libs3rdparty} ${LIBCURL_LIBRARY})
+    include_directories(${LIBCURL_INCLUDE_DIR})
+  else()
+    set(libs3rdparty ${libs3rdparty} libcurl)
+    include_directories(${CURL_DIR}/include)
+    if(CURL_STATICLIB)
+      add_definitions(-DCURL_STATICLIB)
+    endif()
+  endif()
+
   set(aseprite_libraries ${aseprite_libraries} updater-lib net-lib)
   add_definitions(-DENABLE_UPDATER)
 endif()
 
 # All libraries for .exe files
 set(all_libs ${aseprite_libraries} ${libs3rdparty} allegro ${sys_libs})
-
-# Directories where .h files can be found
-include_directories(
-  . .. ../third_party
-  ${CURL_DIR}/include
-  ${GIFLIB_DIR}/lib
-  ${LIBFREETYPE_DIR}/include
-  ${LIBJPEG_DIR}
-  ${LIBPNG_DIR}
-  ${ZLIB_DIR}
-  ${LOADPNG_DIR}
-  ${TINYXML_DIR})
 
 ######################################################################
 # Sub-libraries
