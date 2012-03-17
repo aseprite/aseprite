@@ -197,7 +197,8 @@ if(WIN32)
     dbghelp
     )
 
-  add_definitions(-D_WIN32_WINNT=0x0500)
+  # Windows XP is the minimum supported platform.
+  add_definitions(-D_WIN32_WINNT=0x0501 -DWINVER=0x0501)
 
 endif(WIN32)
 
