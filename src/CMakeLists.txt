@@ -84,6 +84,7 @@ if(ENABLE_UPDATER)
 
   set(aseprite_libraries ${aseprite_libraries} updater-lib net-lib)
   add_definitions(-DENABLE_UPDATER)
+  add_subdirectory(updater)
 endif()
 
 if(USE_SHARED_ALLEGRO4)
@@ -124,9 +125,6 @@ add_subdirectory(gfx)
 add_subdirectory(gui)
 add_subdirectory(net)
 add_subdirectory(undo)
-if(ENABLE_UPDATER)
-  add_subdirectory(updater)
-endif()
 
 add_library(aseprite-library
   ${EXTRA_SOURCE_FILES}
