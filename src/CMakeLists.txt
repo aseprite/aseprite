@@ -79,8 +79,8 @@ endif()
 
 if(ENABLE_UPDATER)
   if(USE_SHARED_CURL)
-    find_library(LIBCURL_LIBRARY curl)
-    find_path(LIBCURL_INCLUDE_DIR curl/curl.h)
+    find_library(LIBCURL_LIBRARY NAMES curl)
+    find_path(LIBCURL_INCLUDE_DIR NAMES curl/curl.h)
 
     set(libs3rdparty ${libs3rdparty} ${LIBCURL_LIBRARY})
     include_directories(${LIBCURL_INCLUDE_DIR})
