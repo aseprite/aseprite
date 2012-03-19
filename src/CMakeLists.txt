@@ -94,6 +94,8 @@ if(ENABLE_UPDATER)
 
   set(aseprite_libraries ${aseprite_libraries} updater-lib net-lib)
   add_definitions(-DENABLE_UPDATER)
+
+  add_subdirectory(net)
   add_subdirectory(updater)
 endif()
 
@@ -133,7 +135,6 @@ add_subdirectory(base)
 add_subdirectory(filters)
 add_subdirectory(gfx)
 add_subdirectory(gui)
-add_subdirectory(net)
 add_subdirectory(undo)
 
 add_library(aseprite-library
