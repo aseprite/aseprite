@@ -49,7 +49,6 @@ if(USE_SHARED_LIBPNG)
   endif(PNG_FOUND)
 else()
   set(libs3rdparty ${libs3rdparty} libpng)
-  include_directories(${LIBPNG_DIR})
 endif()
 
 if(USE_SHARED_GIFLIB)

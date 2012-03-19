@@ -17,7 +17,6 @@ if(NOT USE_SHARED_ZLIB)
 endif()
 
 if(NOT USE_SHARED_LIBPNG)
-  include_directories(libpng)
   add_subdirectory(libpng)
 endif()
 
