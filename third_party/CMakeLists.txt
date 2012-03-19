@@ -25,10 +25,13 @@ if(NOT USE_SHARED_GIFLIB)
   add_subdirectory(giflib)
 endif()
 
+if(NOT USE_SHARED_TINYXML)
+  add_subdirectory(tinyxml)
+endif()
+
 if(ENABLE_UPDATER AND NOT USE_SHARED_CURL)
   add_subdirectory(curl)
 endif()
 
 add_subdirectory(gtest)
 add_subdirectory(loadpng)
-add_subdirectory(tinyxml)

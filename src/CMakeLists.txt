@@ -15,8 +15,8 @@ set(aseprite_libraries aseprite-library undo-lib filters-lib gui-lib gfx-lib bas
 include_directories(. .. ../third_party)
 
 # Third-party libraries
-set(libs3rdparty loadpng tinyxml)
-include_directories(${LOADPNG_DIR} ${TINYXML_DIR})
+set(libs3rdparty loadpng)
+include_directories(${LOADPNG_DIR})
 
 if(USE_SHARED_JPEGLIB)
   find_package(JPEG)
@@ -61,6 +61,17 @@ if(USE_SHARED_GIFLIB)
 else()
   set(libs3rdparty ${libs3rdparty} giflib)
   include_directories(${GIFLIB_DIR}/lib)
+endif()
+
+if(USE_SHARED_TINYXML)
+  find_library(LIBTINYXML_LIBRARY NAMES tinyxml)
+  find_path(LIBTINYXML_INCLUDE_DIR NAMES tinyxml.h)
+
+  set(libs3rdparty ${libs3rdparty} ${LIBTINYXML_LIBRARY})
+  include_directories(${LIBTINYXML_INCLUDE_DIR})
+else()
+  set(libs3rdparty ${libs3rdparty} tinyxml)
+  include_directories(${TINYXML_DIR})
 endif()
 
 if (CMAKE_USE_PTHREADS_INIT)
