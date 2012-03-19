@@ -86,13 +86,38 @@ if(ENABLE_UPDATER)
   add_definitions(-DENABLE_UPDATER)
 endif()
 
+if(USE_SHARED_ALLEGRO4)
+  # Find the shared Allegro 4 library
+  find_library(LIBALLEGRO4_LIBRARY alleg)
+  find_path(LIBALLEGRO4_INCLUDE_DIR allegro.h)
+
+  if(NOT LIBALLEGRO4_LIBRARY)
+    message(FATAL_ERROR "Allegro 4 not found")
+  endif()
+
+  # Get flags to link programs using allegro-config program
+  execute_process(COMMAND allegro-config --libs --shared
+    OUTPUT_VARIABLE LIBALLEGRO4_LINK_FLAGS
+    OUTPUT_STRIP_TRAILING_WHITESPACE)
+
+  include_directories(${LIBALLEGRO4_INCLUDE_DIR})
+
+  # The config.c must be from the last implementation from 4.4 (the
+  # 4.2 can have a broken override_config_file() impl).
+  set(EXTRA_SOURCE_FILES allegro/src/config.c)
+else()
+  # Use patched version of Allegro 4 (with window resize support).
+  add_subdirectory(allegro)
+  set(libs3rdparty ${libs3rdparty} allegro)
+  add_definitions(-DALLEGRO4_WITH_RESIZE_PATCH)
+endif()
+
 # All libraries for .exe files
-set(all_libs ${aseprite_libraries} ${libs3rdparty} allegro ${sys_libs})
+set(all_libs ${aseprite_libraries} ${libs3rdparty} ${sys_libs})
 
 ######################################################################
-# Sub-libraries
+# ASEPRITE libraries
 
-add_subdirectory(allegro)
 add_subdirectory(base)
 add_subdirectory(filters)
 add_subdirectory(gfx)
@@ -103,10 +128,8 @@ if(ENABLE_UPDATER)
   add_subdirectory(updater)
 endif()
 
-######################################################################
-# aseprite library
-
 add_library(aseprite-library
+  ${EXTRA_SOURCE_FILES}
   app.cpp
   check_args.cpp
   console.cpp
@@ -350,7 +373,7 @@ add_library(aseprite-library
   widgets/toolbar.cpp)
 
 ######################################################################
-# aseprite application
+# ASEPRITE application
 
 if(WIN32)
   set(win32_resources resources_win32.rc)
@@ -361,8 +384,11 @@ if(UNIX)
 endif(UNIX)
 
 add_executable(aseprite WIN32 main.cpp ${win32_resources} ${x11_resources})
-
 target_link_libraries(aseprite ${all_libs})
+if(LIBALLEGRO4_LINK_FLAGS)
+  set_target_properties(aseprite
+    PROPERTIES LINK_FLAGS ${LIBALLEGRO4_LINK_FLAGS})
+endif()
 
 install(TARGETS aseprite
   RUNTIME DESTINATION bin)
@@ -389,8 +415,11 @@ function(find_unittests dir dependencies)
     get_filename_component(testname ${testsourcefile} NAME_WE)
 
     add_executable(${testname} ${testsourcefile})
-
     target_link_libraries(${testname} gtest ${ARGV})
+    if(LIBALLEGRO4_LINK_FLAGS)
+      set_target_properties(${testname}
+	PROPERTIES LINK_FLAGS ${LIBALLEGRO4_LINK_FLAGS})
+    endif()
 
     add_custom_target(run_${testname}
       COMMAND ${testname}
@@ -403,7 +432,7 @@ endfunction()
 
 find_unittests(base base-lib ${sys_libs})
 find_unittests(gfx gfx-lib base-lib ${sys_libs})
-find_unittests(gui gui-lib gfx-lib base-lib ${libs3rdparty} allegro ${sys_libs})
+find_unittests(gui gui-lib gfx-lib base-lib ${libs3rdparty} ${sys_libs})
 find_unittests(app ${all_libs})
 find_unittests(. ${all_libs})
 

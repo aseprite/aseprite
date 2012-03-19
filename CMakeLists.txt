@@ -35,6 +35,7 @@ option(USE_SHARED_GIFLIB  "Use your installed copy of giflib" off)
 option(USE_SHARED_JPEGLIB "Use your installed copy of jpeglib" off)
 option(USE_SHARED_ZLIB    "Use your installed copy of zlib" off)
 option(USE_SHARED_LIBPNG  "Use your installed copy of libpng" off)
+option(USE_SHARED_ALLEGRO4 "Use shared Allegro 4 library (without resize support)" off)
 option(ENABLE_MEMLEAK     "Enable memory-leaks detector (only for developers)" off)
 option(ENABLE_UPDATER     "Enable automatic check for updates" on)
 option(FULLSCREEN_PLATFORM "Enable fullscreen by default" off)
@@ -80,8 +81,10 @@ set(TINYXML_DIR         ${CMAKE_SOURCE_DIR}/third_party/tinyxml)
 set(ZLIB_DIR            ${CMAKE_SOURCE_DIR}/third_party/zlib)
 
 # Allegro header files
-include_directories(${CMAKE_SOURCE_DIR}/src/allegro/include)
-include_directories(${CMAKE_BINARY_DIR}/include)
+if(NOT USE_SHARED_ALLEGRO4)
+  include_directories(${CMAKE_SOURCE_DIR}/src/allegro/include)
+  include_directories(${CMAKE_BINARY_DIR}/include)
+endif()
 
 # Zlib generated zconf.h file
 include_directories(${CMAKE_BINARY_DIR}/third_party/zlib)

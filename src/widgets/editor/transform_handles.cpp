@@ -145,7 +145,11 @@ void TransformHandles::drawHandles(Editor* editor, const gfx::Transformation& tr
     SkinTheme* theme = static_cast<SkinTheme*>(CurrentTheme::get());
     BITMAP* gfx = theme->get_part(PART_PIVOT_HANDLE);
 
+#if ALLEGRO_VERSION == 4 && ALLEGRO_SUB_VERSION >= 4
     draw_sprite_ex(bmp, gfx, pivotBounds.x, pivotBounds.y, DRAW_SPRITE_TRANS, DRAW_SPRITE_NO_FLIP);
+#else
+    draw_trans_sprite(bmp, gfx, pivotBounds.x, pivotBounds.y);
+#endif
   }
 }
 
@@ -183,7 +187,11 @@ void TransformHandles::drawHandle(BITMAP* bmp, int x, int y, fixed angle)
 
   adjustHandle(x, y, gfx->w, gfx->h, angle);
 
+#if ALLEGRO_VERSION == 4 && ALLEGRO_SUB_VERSION >= 4
   draw_sprite_ex(bmp, gfx, x, y, DRAW_SPRITE_TRANS, DRAW_SPRITE_NO_FLIP);
+#else
+  draw_trans_sprite(bmp, gfx, x, y);
+#endif
 }
 
 void TransformHandles::adjustHandle(int& x, int& y, int handle_w, int handle_h, fixed angle)

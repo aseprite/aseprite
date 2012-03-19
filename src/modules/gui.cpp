@@ -176,6 +176,7 @@ static void display_switch_in_callback()
 
 END_OF_STATIC_FUNCTION(display_switch_in_callback);
 
+#ifdef ALLEGRO4_WITH_RESIZE_PATCH
 // Called when the window is resized
 static void resize_callback(RESIZE_DISPLAY_EVENT *ev)
 {
@@ -185,6 +186,7 @@ static void resize_callback(RESIZE_DISPLAY_EVENT *ev)
    }
    next_idle_flags |= SYSTEM_WINDOW_RESIZE;
 }
+#endif // ALLEGRO4_WITH_RESIZE_PATCH
 
 // Initializes GUI.
 int init_module_gui()
@@ -299,8 +301,10 @@ gfx_done:;
   // Setup the GUI theme for all widgets
   CurrentTheme::set(ase_theme = new SkinTheme());
 
+#ifdef ALLEGRO4_WITH_RESIZE_PATCH
   // Setup the handler for window-resize events
   set_resize_callback(resize_callback);
+#endif
 
   #ifdef ALLEGRO_WINDOWS
   if (maximized) {
@@ -472,6 +476,7 @@ void gui_run()
 
 void gui_feedback()
 {
+#ifdef ALLEGRO4_WITH_RESIZE_PATCH
   if (next_idle_flags & SYSTEM_WINDOW_RESIZE) {
     next_idle_flags ^= SYSTEM_WINDOW_RESIZE;
 
@@ -482,6 +487,7 @@ void gui_feedback()
     app_get_top_window()->remap_window();
     jmanager_refresh_screen();
   }
+#endif
 
   if (next_idle_flags & REFRESH_FULL_SCREEN) {
     next_idle_flags ^= REFRESH_FULL_SCREEN;
