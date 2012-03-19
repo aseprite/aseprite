@@ -41,6 +41,7 @@ public:
   HandleType getHandleAtPoint(Editor* editor, const gfx::Point& pt, const gfx::Transformation& transform);
 
   void drawHandles(Editor* editor, const gfx::Transformation& transform);
+  void invalidateHandles(Editor* editor, const gfx::Transformation& transform);
 
 private:
   gfx::Rect getPivotHandleBounds(Editor* editor,

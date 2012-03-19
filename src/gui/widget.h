@@ -277,6 +277,7 @@ public:
   void setDoubleBuffered(bool doubleBuffered);
 
   void invalidate();
+  void invalidateRect(const gfx::Rect& rect);
   void invalidateRect(const JRect rect);
   void invalidateRegion(const JRegion region);
 

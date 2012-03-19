@@ -247,6 +247,11 @@ bool MovingPixelsState::onMouseMove(Editor* editor, Message* msg)
     if (editor->getCustomizationDelegate()->isMaintainAspectRatioKeyPressed())
       moveModifier |= PixelsMovement::MaintainAspectRatioMovement;
 
+    // Invalidate handles area.
+    Decorator* decorator = static_cast<Decorator*>(editor->getDecorator());
+    TransformHandles* transfHandles = decorator->getTransformHandles(editor);
+    transfHandles->invalidateHandles(editor, m_pixelsMovement->getTransformation());
+
     // Drag the image to that position
     gfx::Rect bounds = m_pixelsMovement->moveImage(x, y, moveModifier);
 
@@ -254,10 +259,10 @@ bool MovingPixelsState::onMouseMove(Editor* editor, Message* msg)
     if (!bounds.isEmpty()) {
       // Redraw the extra cel in the new position
       jmouse_hide();
-      editors_draw_sprite_tiled(editor->getSprite(),
-                                bounds.x, bounds.y,
-                                bounds.x+bounds.w-1,
-                                bounds.y+bounds.h-1);
+      editors_draw_sprite(editor->getSprite(),
+                          bounds.x, bounds.y,
+                          bounds.x+bounds.w-1,
+                          bounds.y+bounds.h-1);
       jmouse_show();
     }
     editor->updateStatusBar();

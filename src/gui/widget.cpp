@@ -1154,6 +1154,15 @@ void Widget::invalidate()
   }
 }
 
+void Widget::invalidateRect(const gfx::Rect& rect)
+{
+  if (isVisible()) {
+    JRect tmp = jrect_new(rect.x, rect.y, rect.x+rect.w, rect.y+rect.h);
+    invalidateRect(tmp);
+    jrect_free(tmp);
+  }
+}
+
 void Widget::invalidateRect(const JRect rect)
 {
   if (isVisible()) {

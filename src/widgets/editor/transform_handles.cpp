@@ -153,6 +153,41 @@ void TransformHandles::drawHandles(Editor* editor, const gfx::Transformation& tr
   }
 }
 
+void TransformHandles::invalidateHandles(Editor* editor, const gfx::Transformation& transform)
+{
+  SkinTheme* theme = static_cast<SkinTheme*>(CurrentTheme::get());
+  fixed angle = ftofix(128.0 * transform.angle() / PI);
+
+  gfx::Transformation::Corners corners;
+  transform.transformBox(corners);
+
+  std::vector<int> x(corners.size());
+  std::vector<int> y(corners.size());
+  for (size_t c=0; c<corners.size(); ++c)
+    editor->editorToScreen(corners[c].x, corners[c].y, &x[c], &y[c]);
+
+  // Invalidate each corner handle.
+  for (size_t c=0; c<HANDLES; ++c) {
+    BITMAP* gfx = theme->get_part(PART_TRANSFORMATION_HANDLE);
+    int u = (x[handles_info[c].i1]+x[handles_info[c].i2])/2;
+    int v = (y[handles_info[c].i1]+y[handles_info[c].i2])/2;
+
+    adjustHandle(u, v, gfx->w, gfx->h, angle + handles_info[c].angle);
+
+    editor->invalidateRect(gfx::Rect(u, v, gfx->w, gfx->h));
+  }
+
+  // Invalidate area where the pivot is.
+  if (angle != 0) {
+    gfx::Rect pivotBounds = getPivotHandleBounds(editor, transform, corners);
+    BITMAP* gfx = theme->get_part(PART_PIVOT_HANDLE);
+
+    editor->invalidateRect(gfx::Rect(pivotBounds.x,
+                                     pivotBounds.y,
+                                     gfx->w, gfx->h));
+  }
+}
+
 gfx::Rect TransformHandles::getPivotHandleBounds(Editor* editor,
                                                  const gfx::Transformation& transform,
                                                  const gfx::Transformation::Corners& corners)

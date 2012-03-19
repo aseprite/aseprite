@@ -172,6 +172,9 @@ void PixelsMovement::maskImage(const Image* image, int x, int y)
 
 gfx::Rect PixelsMovement::moveImage(int x, int y, MoveModifier moveModifier)
 {
+  gfx::Transformation::Corners oldCorners;
+  m_currentData.transformBox(oldCorners);
+
   DocumentWriter documentWriter(m_documentReader);
   Image* image = documentWriter->getExtraCelImage();
   Cel* cel = documentWriter->getExtraCel();
@@ -379,7 +382,18 @@ gfx::Rect PixelsMovement::moveImage(int x, int y, MoveModifier moveModifier)
 
   documentWriter->setTransformation(m_currentData);
 
-  return gfx::Rect(0, 0, m_sprite->getWidth(), m_sprite->getHeight());
+  // Get the new transformed corners
+  gfx::Transformation::Corners newCorners;
+  m_currentData.transformBox(newCorners);
+
+  // Create a union of all corners, and that will be the bounds to
+  // redraw of the sprite.
+  gfx::Rect fullBounds;
+  for (int i=0; i<gfx::Transformation::Corners::NUM_OF_CORNERS; ++i) {
+    fullBounds = fullBounds.createUnion(gfx::Rect(oldCorners[i].x, oldCorners[i].y, 1, 1));
+    fullBounds = fullBounds.createUnion(gfx::Rect(newCorners[i].x, newCorners[i].y, 1, 1));
+  }
+  return fullBounds;
 }
 
 Image* PixelsMovement::getDraggedImageCopy(gfx::Point& origin)
