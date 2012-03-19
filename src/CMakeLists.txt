@@ -417,8 +417,10 @@ function(find_unittests dir dependencies)
   file(GLOB tests ${CMAKE_CURRENT_SOURCE_DIR}/${dir}/*_unittest.cpp)
   list(REMOVE_AT ARGV 0)
 
-  # Add gtest include directory so we can #include <gtest/gtest.h> in tests source code
-  include_directories(${CMAKE_SOURCE_DIR}/third_party/gtest/include)
+  if(NOT USE_SHARED_GTEST)
+    # Add gtest include directory so we can #include <gtest/gtest.h> in tests source code
+    include_directories(${CMAKE_SOURCE_DIR}/third_party/gtest/include)
+  endif()
 
   foreach(testsourcefile ${tests})
     get_filename_component(testname ${testsourcefile} NAME_WE)
