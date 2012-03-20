@@ -494,8 +494,10 @@ bool jmanager_generate_messages(JWidget manager)
     msg = jmessage_new_key_related(JM_KEYPRESSED, readkey_value);
 
     c = readkey_value >> 8;
-    old_readed_key[c] = key[c];
-    msg->key.repeat = key_repeated[c]++;
+    if (c >= 0 && c < KEY_MAX) {
+      old_readed_key[c] = key[c];
+      msg->key.repeat = key_repeated[c]++;
+    }
 
     broadcast_key_msg(manager, msg);
     jmanager_enqueue_message(msg);
