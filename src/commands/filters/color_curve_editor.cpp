@@ -221,7 +221,7 @@ bool ColorCurveEditor::onProcessMessage(Message* msg)
                                       NULL, NULL);
         if (m_editPoint) {
           invalidate();
-          jwidget_flush_redraw(this);
+          this->flushRedraw();
 
           if (editNodeManually(*m_editPoint))
             CurveEditorChange();

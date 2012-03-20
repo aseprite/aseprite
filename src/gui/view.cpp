@@ -261,11 +261,12 @@ bool View::onProcessMessage(Message* msg)
 
     case JM_FOCUSENTER:
     case JM_FOCUSLEAVE:
-      /* TODO add something to avoid this (theme specific stuff) */
+      // TODO This is theme specific stuff
+      // Redraw the borders each time the focus enters or leaves the view.
       {
-        JRegion reg1 = jwidget_get_drawable_region(this, JI_GDR_CUTTOPWINDOWS);
-        jregion_union(this->update_region, this->update_region, reg1);
-        jregion_free(reg1);
+        JRegion region = jwidget_get_drawable_region(this, JI_GDR_CUTTOPWINDOWS);
+        invalidateRegion(region);
+        jregion_free(region);
       }
       break;
   }

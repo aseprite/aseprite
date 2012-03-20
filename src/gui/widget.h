@@ -77,10 +77,6 @@ void jwidget_set_min_size(JWidget widget, int w, int h);
 void jwidget_set_max_size(JWidget widget, int w, int h);
 void jwidget_set_bg_color(JWidget widget, int color);
 
-/* drawing methods */
-
-void jwidget_flush_redraw(JWidget widget);
-
 /* signal handle */
 
 void jwidget_signal_on(JWidget widget);
@@ -122,20 +118,15 @@ public:
   /* virtual properties */
   JList hooks;                  /* hooks with msg_proc and specific data */
 
-  /* common widget properties */
 private:
   Theme* m_theme;               // Widget's theme
   int m_align;                  // Widget alignment
   std::string m_text;           // Widget text
   struct FONT *m_font;          // Text font type
   int m_bg_color;               // Background color
+  JRegion m_update_region;      // Region to be redrawed.
+
 public:
-
-  /* drawable cycle */
-  JRegion update_region;        /* region to be redrawed */
-
-  /* more properties... */
-
   // Extra data for the theme
   void *theme_data[4];
 
@@ -279,6 +270,8 @@ public:
   void invalidateRect(const gfx::Rect& rect);
   void invalidateRect(const JRect rect);
   void invalidateRegion(const JRegion region);
+
+  void flushRedraw();
 
   void scrollRegion(JRegion region, int dx, int dy);
 

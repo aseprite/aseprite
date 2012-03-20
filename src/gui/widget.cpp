@@ -69,7 +69,7 @@ Widget::Widget(int type)
   this->m_font = this->m_theme ? this->m_theme->default_font: NULL;
   this->m_bg_color = -1;
 
-  this->update_region = jregion_new(NULL, 0);
+  this->m_update_region = jregion_new(NULL, 0);
 
   this->theme_data[0] = NULL;
   this->theme_data[1] = NULL;
@@ -116,8 +116,8 @@ Widget::~Widget()
   jlist_free(this->children);
 
   /* destroy the update region */
-  if (this->update_region)
-    jregion_free(this->update_region);
+  if (m_update_region)
+    jregion_free(m_update_region);
 
   /* destroy the name */
   if (this->name)
@@ -1065,10 +1065,7 @@ void jwidget_set_bg_color(JWidget widget, int color)
   widget->setBgColor(color);
 }
 
-/**********************************************************************/
-/* drawing methods */
-
-void jwidget_flush_redraw(JWidget widget)
+void Widget::flushRedraw()
 {
   std::queue<Widget*> processing;
   int c, nrects;
@@ -1076,13 +1073,13 @@ void jwidget_flush_redraw(JWidget widget)
   JLink link;
   JRect rc;
 
-  if (widget->flags & JI_DIRTY) {
-    widget->flags ^= JI_DIRTY;
-    processing.push(widget);
+  if (this->flags & JI_DIRTY) {
+    this->flags ^= JI_DIRTY;
+    processing.push(this);
   }
 
   while (!processing.empty()) {
-    widget = processing.front();
+    Widget* widget = processing.front();
     processing.pop();
 
     ASSERT_VALID_WIDGET(widget);
@@ -1099,18 +1096,18 @@ void jwidget_flush_redraw(JWidget widget)
       }
     }
 
-    nrects = JI_REGION_NUM_RECTS(widget->update_region);
+    nrects = JI_REGION_NUM_RECTS(widget->m_update_region);
     if (nrects > 0) {
       /* get areas to draw */
       JRegion region = jwidget_get_drawable_region(widget, JI_GDR_CUTTOPWINDOWS);
-      jregion_intersect(widget->update_region,
-                        widget->update_region, region);
+      jregion_intersect(widget->m_update_region,
+                        widget->m_update_region, region);
       jregion_free(region);
 
-      nrects = JI_REGION_NUM_RECTS(widget->update_region);
+      nrects = JI_REGION_NUM_RECTS(widget->m_update_region);
 
       /* draw the widget */
-      for (c=0, rc=JI_REGION_RECTS(widget->update_region);
+      for (c=0, rc=JI_REGION_RECTS(widget->m_update_region);
            c<nrects;
            c++, rc++) {
         /* create the draw message */
@@ -1123,7 +1120,7 @@ void jwidget_flush_redraw(JWidget widget)
         jmanager_enqueue_message(msg);
       }
 
-      jregion_empty(widget->update_region);
+      jregion_empty(widget->m_update_region);
     }
   }
 }
@@ -1144,7 +1141,7 @@ void Widget::invalidate()
     JRegion reg1 = jwidget_get_drawable_region(this, JI_GDR_CUTTOPWINDOWS);
     JLink link;
 
-    jregion_copy(this->update_region, reg1);
+    jregion_copy(this->m_update_region, reg1);
     jregion_free(reg1);
 
     mark_dirty_flag(this);
@@ -1181,11 +1178,11 @@ void Widget::invalidateRegion(const JRegion region)
                                                JI_GDR_CUTTOPWINDOWS);
     JLink link;
 
-    jregion_union(reg1, this->update_region, region);
-    jregion_intersect(this->update_region, reg1, reg2);
+    jregion_union(reg1, this->m_update_region, region);
+    jregion_intersect(this->m_update_region, reg1, reg2);
     jregion_free(reg2);
 
-    jregion_subtract(reg1, region, this->update_region);
+    jregion_subtract(reg1, region, this->m_update_region);
 
     mark_dirty_flag(this);
 
@@ -1213,13 +1210,13 @@ void Widget::scrollRegion(JRegion region, int dx, int dy)
 
     jregion_translate(reg2, dx, dy);
 
-    jregion_union(this->update_region, this->update_region, region);
-    jregion_subtract(this->update_region, this->update_region, reg2);
+    jregion_union(this->m_update_region, this->m_update_region, region);
+    jregion_subtract(this->m_update_region, this->m_update_region, reg2);
 
     mark_dirty_flag(this);
 
-    // Generate the JM_DRAW messages for the widget's update_region
-    jwidget_flush_redraw(this);
+    // Generate the JM_DRAW messages for the widget's m_update_region
+    this->flushRedraw();
 
     jregion_free(reg2);
   }

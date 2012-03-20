@@ -562,7 +562,7 @@ bool jmanager_generate_messages(JWidget manager)
   }
 
   /* generate redraw events */
-  jwidget_flush_redraw(manager);
+  manager->flushRedraw();
 
   /* make some OSes happy */
   rest(0);

@@ -465,7 +465,7 @@ void ToolBar::openPopupFrame(int group_index, ToolGroup* tool_group)
     jrect_free(rcTemp);
 
     // Flush JM_DRAW messages and send them
-    jwidget_flush_redraw(ji_get_default_manager());
+    ji_get_default_manager()->flushRedraw();
     jmanager_dispatch_messages(ji_get_default_manager());
 
     // Save the area
@@ -605,7 +605,7 @@ void ToolBar::closeTipWindow()
     m_tipWindow = NULL;
 
     // Flush JM_DRAW messages and send them
-    jwidget_flush_redraw(ji_get_default_manager());
+    ji_get_default_manager()->flushRedraw();
     jmanager_dispatch_messages(ji_get_default_manager());
   }
 }
