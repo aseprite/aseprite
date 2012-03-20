@@ -905,20 +905,19 @@ JAccel add_keyboard_shortcut_to_spriteeditor(const char* shortcut_string, const 
   return shortcut->accel;
 }
 
-Command* get_command_from_key_message(Message* msg)
+bool get_command_from_key_message(Message* msg, Command** command, Params** params)
 {
   for (std::vector<Shortcut*>::iterator
          it = shortcuts->begin(); it != shortcuts->end(); ++it) {
     Shortcut* shortcut = *it;
 
-    if (shortcut->type == Shortcut_ExecuteCommand &&
-        // TODO why?
-        // shortcut->argument.empty() &&
-        shortcut->is_pressed(msg)) {
-      return shortcut->command;
+    if (shortcut->type == Shortcut_ExecuteCommand && shortcut->is_pressed(msg)) {
+      if (command) *command = shortcut->command;
+      if (params) *params = shortcut->params;
+      return true;
     }
   }
-  return NULL;
+  return false;
 }
 
 JAccel get_accel_to_execute_command(const char* command_name, Params* params)

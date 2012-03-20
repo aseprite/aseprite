@@ -314,12 +314,13 @@ bool MovingPixelsState::onKeyDown(Editor* editor, Message* msg)
     return true;
   }
   else {
-    Command* cmd = get_command_from_key_message(msg);
-    if (cmd) {
+    Command* command = NULL;
+    Params* params = NULL;
+    if (get_command_from_key_message(msg, &command, &params)) {
       // Intercept the "Cut" or "Copy" command to handle them locally
       // with the current m_pixelsMovement data.
-      if (strcmp(cmd->short_name(), CommandId::Cut) == 0 ||
-          strcmp(cmd->short_name(), CommandId::Copy) == 0) {
+      if (strcmp(command->short_name(), CommandId::Cut) == 0 ||
+          strcmp(command->short_name(), CommandId::Copy) == 0) {
         // Copy the floating image to the clipboard.
         {
           Document* document = editor->getDocument();
@@ -331,7 +332,7 @@ bool MovingPixelsState::onKeyDown(Editor* editor, Message* msg)
         }
 
         // In case of "Cut" command.
-        if (strcmp(cmd->short_name(), CommandId::Cut) == 0) {
+        if (strcmp(command->short_name(), CommandId::Cut) == 0) {
           // Discard the dragged image.
           m_pixelsMovement->discardImage();
           m_discarded = true;
@@ -345,8 +346,9 @@ bool MovingPixelsState::onKeyDown(Editor* editor, Message* msg)
       }
       // Flip Horizontally/Vertically commands are handled manually to
       // avoid dropping the floating region of pixels.
-      else if (strcmp(cmd->short_name(), CommandId::Flip) == 0) {
-        if (FlipCommand* flipCommand = dynamic_cast<FlipCommand*>(cmd)) {
+      else if (strcmp(command->short_name(), CommandId::Flip) == 0) {
+        if (FlipCommand* flipCommand = dynamic_cast<FlipCommand*>(command)) {
+          flipCommand->loadParams(params);
           m_pixelsMovement->flipImage(flipCommand->getFlipType());
           return true;
         }

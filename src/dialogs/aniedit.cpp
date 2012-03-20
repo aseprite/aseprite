@@ -698,7 +698,9 @@ bool AnimationEditor::onProcessMessage(Message* msg)
       break;
 
     case JM_KEYPRESSED: {
-      Command *command = get_command_from_key_message(msg);
+      Command* command = NULL;
+      Params* params = NULL;
+      get_command_from_key_message(msg, &command, &params);
 
       // Close animation editor.
       if ((command && (strcmp(command->short_name(), CommandId::FilmEditor) == 0)) ||
@@ -757,7 +759,7 @@ bool AnimationEditor::onProcessMessage(Message* msg)
             strcmp(command->short_name(), CommandId::GotoNextLayer) == 0 ||
             strcmp(command->short_name(), CommandId::GotoLastFrame) == 0) {
           // execute the command
-          UIContext::instance()->executeCommand(command);
+          UIContext::instance()->executeCommand(command, params);
 
           showCurrentCel();
           invalidate();
