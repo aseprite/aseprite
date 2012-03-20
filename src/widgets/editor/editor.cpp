@@ -325,9 +325,9 @@ void Editor::setEditorScroll(int x, int y, int use_refresh_region)
 
   if (use_refresh_region) {
     // Move screen with blits
-    jwidget_scroll(this, region,
-                   oldScroll.x - newScroll.x,
-                   oldScroll.y - newScroll.y);
+    this->scrollRegion(region,
+                       oldScroll.x - newScroll.x,
+                       oldScroll.y - newScroll.y);
 
     jregion_free(region);
   }

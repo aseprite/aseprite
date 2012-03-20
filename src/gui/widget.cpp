@@ -1196,7 +1196,7 @@ void Widget::invalidateRegion(const JRegion region)
   }
 }
 
-void jwidget_scroll(JWidget widget, JRegion region, int dx, int dy)
+void Widget::scrollRegion(JRegion region, int dx, int dy)
 {
   if (dx != 0 || dy != 0) {
     JRegion reg2 = jregion_new(NULL, 0);
@@ -1213,13 +1213,13 @@ void jwidget_scroll(JWidget widget, JRegion region, int dx, int dy)
 
     jregion_translate(reg2, dx, dy);
 
-    jregion_union(widget->update_region, widget->update_region, region);
-    jregion_subtract(widget->update_region, widget->update_region, reg2);
+    jregion_union(this->update_region, this->update_region, region);
+    jregion_subtract(this->update_region, this->update_region, reg2);
 
-    mark_dirty_flag(widget);
+    mark_dirty_flag(this);
 
     // Generate the JM_DRAW messages for the widget's update_region
-    jwidget_flush_redraw(widget);
+    jwidget_flush_redraw(this);
 
     jregion_free(reg2);
   }

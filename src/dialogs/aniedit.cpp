@@ -1456,7 +1456,7 @@ void AnimationEditor::setScroll(int x, int y, bool use_refresh_region)
     jregion_reset(reg2, rect2);
     jregion_copy(reg1, region);
     jregion_intersect(reg1, reg1, reg2);
-    jwidget_scroll(this, reg1, 0, dy);
+    this->scrollRegion(reg1, 0, dy);
 
     // Scroll header-frame.
     jrect_replace(rect2,
@@ -1467,7 +1467,7 @@ void AnimationEditor::setScroll(int x, int y, bool use_refresh_region)
     jregion_reset(reg2, rect2);
     jregion_copy(reg1, region);
     jregion_intersect(reg1, reg1, reg2);
-    jwidget_scroll(this, reg1, dx, 0);
+    this->scrollRegion(reg1, dx, 0);
 
     // Scroll cels.
     jrect_replace(rect2,
@@ -1478,7 +1478,7 @@ void AnimationEditor::setScroll(int x, int y, bool use_refresh_region)
     jregion_reset(reg2, rect2);
     jregion_copy(reg1, region);
     jregion_intersect(reg1, reg1, reg2);
-    jwidget_scroll(this, reg1, dx, dy);
+    this->scrollRegion(reg1, dx, dy);
 
     jmouse_show();
 

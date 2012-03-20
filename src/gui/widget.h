@@ -80,7 +80,6 @@ void jwidget_set_bg_color(JWidget widget, int color);
 /* drawing methods */
 
 void jwidget_flush_redraw(JWidget widget);
-void jwidget_scroll(JWidget widget, JRegion region, int dx, int dy);
 
 /* signal handle */
 
@@ -280,6 +279,8 @@ public:
   void invalidateRect(const gfx::Rect& rect);
   void invalidateRect(const JRect rect);
   void invalidateRegion(const JRegion region);
+
+  void scrollRegion(JRegion region, int dx, int dy);
 
   // ===============================================================
   // GUI MANAGER
