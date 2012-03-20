@@ -249,11 +249,8 @@ add_library(aseprite-library
   commands/filters/filter_window.cpp
   commands/filters/filter_worker.cpp
   dialogs/aniedit.cpp
-  dialogs/drawtext.cpp
   dialogs/filesel.cpp
   dialogs/maskcol.cpp
-  dialogs/playfli.cpp
-  dialogs/repo.cpp
   file/ase_format.cpp
   file/bmp_format.cpp
   file/file.cpp
