@@ -226,11 +226,6 @@ void ColorBar::onBgColorButtonChange(const Color& color)
 
 void ColorBar::onColorButtonChange(const Color& color)
 {
-  if (color.getType() == Color::IndexType) {
-    int index = color.getIndex();
-
-    // Change palette editor color only if it is not the selected entry
-    if (m_paletteView.getSelectedEntry() != index)
-      m_paletteView.selectColor(index);
-  }
+  if (color.getType() == Color::IndexType)
+    m_paletteView.selectColor(color.getIndex());
 }
