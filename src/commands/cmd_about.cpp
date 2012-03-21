@@ -52,7 +52,7 @@ void AboutCommand::onExecute(Context* context)
   Box* box1 = new Box(JI_VERTICAL);
   Grid* grid = new Grid(2, false);
   Label* title = new Label(PACKAGE " v" VERSION);
-  Label* subtitle = new Label("Animated sprites editor && pixel art tool");
+  Label* subtitle = new Label("Animated sprite editor && pixel art tool");
   Widget* authors_separator1 = ji_separator_new("Authors:", JI_HORIZONTAL | JI_TOP);
   Widget* authors_separator2 = ji_separator_new(NULL, JI_HORIZONTAL);
   Label* author1 = new LinkLabel("http://dacap.com.ar/", "David Capello");
