@@ -80,10 +80,12 @@ protected:
   void onColorHexEntryChange(const Color& color);
   void onColorTypeButtonClick(Event& ev);
   void onMoreOptionsClick(Event& ev);
-  void onLoadCommand(Event& ev);
-  void onSaveCommand(Event& ev);
-  void onRampCommand(Event& ev);
-  void onQuantizeCommand(Event& ev);
+  void onCopyColorsClick(Event& ev);
+  void onPasteColorsClick(Event& ev);
+  void onLoadPaletteClick(Event& ev);
+  void onSavePaletteClick(Event& ev);
+  void onRampClick(Event& ev);
+  void onQuantizeClick(Event& ev);
 
 private:
   void selectColorType(Color::Type type);
@@ -104,6 +106,8 @@ private:
   Button m_moreOptions;
   RgbSliders m_rgbSliders;
   HsvSliders m_hsvSliders;
+  Button m_copyButton;
+  Button m_pasteButton;
   Button m_loadButton;
   Button m_saveButton;
   Button m_rampButton;
@@ -128,6 +132,10 @@ private:
   bool m_selfPalChange;
 
   Signal0<void>::SlotType* m_palChangeSlot;
+
+  // Internal-clipboard to copy & paste colors between palettes. It's
+  // used in onCopy/PasteColorsClick.
+  std::vector<uint32_t> m_clipboardColors;
 };
 
 //////////////////////////////////////////////////////////////////////
@@ -244,6 +252,8 @@ PaletteEntryEditor::PaletteEntryEditor()
   , m_hsvButton("HSB", 1, JI_BUTTON)
   , m_entryLabel("")
   , m_moreOptions("+")
+  , m_copyButton("Copy")
+  , m_pasteButton("Paste")
   , m_loadButton("Load")
   , m_saveButton("Save")
   , m_rampButton("Ramp")
@@ -262,6 +272,8 @@ PaletteEntryEditor::PaletteEntryEditor()
   setup_mini_look(&m_rgbButton);
   setup_mini_look(&m_hsvButton);
   setup_mini_look(&m_moreOptions);
+  setup_mini_look(&m_copyButton);
+  setup_mini_look(&m_pasteButton);
   setup_mini_look(&m_loadButton);
   setup_mini_look(&m_saveButton);
   setup_mini_look(&m_rampButton);
@@ -276,6 +288,13 @@ PaletteEntryEditor::PaletteEntryEditor()
   m_topBox.addChild(&m_moreOptions);
 
   // Bottom box
+  {
+    Box* box = new Box(JI_HORIZONTAL);
+    box->child_spacing = 0;
+    box->addChild(&m_copyButton);
+    box->addChild(&m_pasteButton);
+    m_bottomBox.addChild(box);
+  }
   {
     Box* box = new Box(JI_HORIZONTAL);
     box->child_spacing = 0;
@@ -299,10 +318,12 @@ PaletteEntryEditor::PaletteEntryEditor()
   m_rgbButton.Click.connect(&PaletteEntryEditor::onColorTypeButtonClick, this);
   m_hsvButton.Click.connect(&PaletteEntryEditor::onColorTypeButtonClick, this);
   m_moreOptions.Click.connect(&PaletteEntryEditor::onMoreOptionsClick, this);
-  m_loadButton.Click.connect(&PaletteEntryEditor::onLoadCommand, this);
-  m_saveButton.Click.connect(&PaletteEntryEditor::onSaveCommand, this);
-  m_rampButton.Click.connect(&PaletteEntryEditor::onRampCommand, this);
-  m_quantizeButton.Click.connect(&PaletteEntryEditor::onQuantizeCommand, this);
+  m_copyButton.Click.connect(&PaletteEntryEditor::onCopyColorsClick, this);
+  m_pasteButton.Click.connect(&PaletteEntryEditor::onPasteColorsClick, this);
+  m_loadButton.Click.connect(&PaletteEntryEditor::onLoadPaletteClick, this);
+  m_saveButton.Click.connect(&PaletteEntryEditor::onSavePaletteClick, this);
+  m_rampButton.Click.connect(&PaletteEntryEditor::onRampClick, this);
+  m_quantizeButton.Click.connect(&PaletteEntryEditor::onQuantizeClick, this);
 
   m_rgbSliders.ColorChange.connect(&PaletteEntryEditor::onColorSlidersChange, this);
   m_hsvSliders.ColorChange.connect(&PaletteEntryEditor::onColorSlidersChange, this);
@@ -506,7 +527,56 @@ void PaletteEntryEditor::onMoreOptionsClick(Event& ev)
   invalidate();
 }
 
-void PaletteEntryEditor::onLoadCommand(Event& ev)
+void PaletteEntryEditor::onCopyColorsClick(Event& ev)
+{
+  // Get the selected entries in the palette view.
+  PaletteView* palette_editor = app_get_colorbar()->getPaletteView();
+  PaletteView::SelectedEntries selectedEntries;
+  palette_editor->getSelectedEntries(selectedEntries);
+
+  // Copy all selected entries into "m_clipboardColors" vector. These
+  // entries then are copied back to the palette in the "paste"
+  // operation (onPasteColorsClick).
+  Palette* palette = get_current_palette();
+  m_clipboardColors.clear();
+  for (int i=0; i<(int)selectedEntries.size(); ++i)
+    if (selectedEntries[i])
+      m_clipboardColors.push_back(palette->getEntry(i));
+}
+
+void PaletteEntryEditor::onPasteColorsClick(Event& ev)
+{
+  // Get the selected entries in the palette view.
+  PaletteView* palette_editor = app_get_colorbar()->getPaletteView();
+  PaletteView::SelectedEntries selectedEntries;
+  palette_editor->getSelectedEntries(selectedEntries);
+
+  // Count how many colors are selected so we can continue pasting
+  // colors even if the current number of selected colors is less than
+  // the number of colors into the clipboard.
+  int selectedEntriesCount = 0;
+  for (int i=0; i<(int)selectedEntries.size(); ++i)
+    if (selectedEntries[i])
+      selectedEntriesCount++;
+
+  Palette* palette = get_current_palette();
+  for (int i=0, j=0; i<(int)selectedEntries.size() && j<(int)m_clipboardColors.size(); ++i) {
+    // The color is pasted if the entry is selected or if the
+    // clipboard contains more entries than the current number of
+    // selected palette entries.
+    if (selectedEntries[i] || j >= selectedEntriesCount)
+      palette->setEntry(i, m_clipboardColors[j++]);
+  }
+
+  updateCurrentSpritePalette("Paste Colors");
+  updateColorBar();
+
+  // Generate onPalChange() event so we update all sliders to the new
+  // values.
+  onPalChange();
+}
+
+void PaletteEntryEditor::onLoadPaletteClick(Event& ev)
 {
   Palette *palette;
   base::string filename = ase_file_selector("Load Palette", "", "png,pcx,bmp,tga,lbm,col");
@@ -522,7 +592,7 @@ void PaletteEntryEditor::onLoadCommand(Event& ev)
   }
 }
 
-void PaletteEntryEditor::onSaveCommand(Event& ev)
+void PaletteEntryEditor::onSavePaletteClick(Event& ev)
 {
   base::string filename;
   int ret;
@@ -547,7 +617,7 @@ void PaletteEntryEditor::onSaveCommand(Event& ev)
   }
 }
 
-void PaletteEntryEditor::onRampCommand(Event& ev)
+void PaletteEntryEditor::onRampClick(Event& ev)
 {
   PaletteView* palette_editor = app_get_colorbar()->getPaletteView();
   int index1, index2;
@@ -565,7 +635,7 @@ void PaletteEntryEditor::onRampCommand(Event& ev)
   delete dst_palette;
 }
 
-void PaletteEntryEditor::onQuantizeCommand(Event& ev)
+void PaletteEntryEditor::onQuantizeClick(Event& ev)
 {
   Palette* palette = NULL;
 
