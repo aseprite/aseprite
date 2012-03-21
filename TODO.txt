@@ -21,6 +21,10 @@ For next release
 Refactoring
 -----------
 
++ Command::loadParams() should be called one time when the command
+  params is read from the XML file, not each time the command is
+  executed. For this all commands must be got from the CommandsList,
+  then cloned, and finally filled with params.
 - About Signals/Slots: Add some field in slots to avoid disconnecting
   them from dead signals.
 - Eradicate JList.
