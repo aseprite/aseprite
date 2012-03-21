@@ -34,7 +34,7 @@ using namespace gfx;
 Palette::Palette(int frame, int ncolors)
   : GfxObj(GFXOBJ_PALETTE)
 {
-  ASSERT(ncolors >= 1 && ncolors <= 256);
+  ASSERT(ncolors >= 1 && ncolors <= MaxColors);
 
   m_frame = frame;
   m_colors.resize(ncolors);
@@ -57,15 +57,15 @@ Palette::~Palette()
 
 Palette* Palette::createGrayscale()
 {
-  Palette* graypal = new Palette(0, 256);
-  for (int c=0; c<256; c++)
+  Palette* graypal = new Palette(0, MaxColors);
+  for (int c=0; c<MaxColors; c++)
     graypal->setEntry(c, _rgba(c, c, c, 255));
   return graypal;
 }
 
 void Palette::resize(int ncolors)
 {
-  ASSERT(ncolors >= 1 && ncolors <= 256);
+  ASSERT(ncolors >= 1 && ncolors <= MaxColors);
 
   int old_size = m_colors.size();
   m_colors.resize(ncolors);
@@ -186,7 +186,7 @@ void Palette::makeVertRamp(int from, int to, int columns)
 
   ASSERT(from >= 0 && from <= 255);
   ASSERT(to >= 0 && to <= 255);
-  ASSERT(columns >= 1 && columns <= 256);
+  ASSERT(columns >= 1 && columns <= MaxColors);
 
   /* both indices have to be in the same column */
   ASSERT((from % columns) == (to % columns));
@@ -224,7 +224,7 @@ void Palette::makeRectRamp(int from, int to, int columns)
 
   ASSERT(from >= 0 && from <= 255);
   ASSERT(to >= 0 && to <= 255);
-  ASSERT(columns >= 1 && columns <= 256);
+  ASSERT(columns >= 1 && columns <= MaxColors);
 
   if (from > to)
     std::swap(from, to);
@@ -379,8 +379,8 @@ void Palette::sort(int from, int to, SortPalette* sort_palette, std::vector<int>
   std::sort(temp.begin(), temp.end(), PalEntryWithIndexPredicate(sort_palette));
 
   // Default mapping table (no-mapping)
-  mapping.resize(256);
-  for (int i=0; i<256; ++i)
+  mapping.resize(MaxColors);
+  for (int i=0; i<MaxColors; ++i)
     mapping[i] = i;
 
   for (int i=0; i<(int)temp.size(); ++i) {
@@ -406,7 +406,7 @@ void Palette::toAllegro(RGB *rgb) const
     rgb[i].g = _rgba_getg(m_colors[i]) / 4;
     rgb[i].b = _rgba_getb(m_colors[i]) / 4;
   }
-  for (; i<256; ++i) {
+  for (; i<MaxColors; ++i) {
     rgb[i].r = 0;
     rgb[i].g = 0;
     rgb[i].b = 0;
@@ -416,8 +416,8 @@ void Palette::toAllegro(RGB *rgb) const
 void Palette::fromAllegro(const RGB* rgb)
 {
   int i;
-  m_colors.resize(256);
-  for (i=0; i<256; ++i) {
+  m_colors.resize(MaxColors);
+  for (i=0; i<MaxColors; ++i) {
     m_colors[i] = _rgba(_rgb_scale_6[rgb[i].r],
                         _rgb_scale_6[rgb[i].g],
                         _rgb_scale_6[rgb[i].b], 255);
@@ -444,7 +444,7 @@ Palette* Palette::load(const char *filename)
     if (bmp) {
       destroy_bitmap(bmp);
 
-      pal = new Palette(0, 256);
+      pal = new Palette(0, MaxColors);
       pal->fromAllegro(rgbpal);
     }
   }

@@ -53,6 +53,8 @@ private:
 class Palette : public GfxObj
 {
 public:
+  enum { MaxColors = 256 };
+
   Palette(int frame, int ncolors);
   Palette(const Palette& palette);
   ~Palette();
