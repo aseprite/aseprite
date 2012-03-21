@@ -723,6 +723,18 @@ JWidget jmanager_get_top_window()
     return NULL;
 }
 
+JWidget jmanager_get_foreground_window()
+{
+  JLink link;
+  JI_LIST_FOR_EACH(default_manager->children, link) {
+    Frame* frame = (Frame*)link->data;
+    if (frame->is_foreground() ||
+        frame->is_desktop())
+      return frame;
+  }
+  return NULL;
+}
+
 JWidget jmanager_get_focus()
 {
   return focus_widget;

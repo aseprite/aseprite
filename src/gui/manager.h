@@ -34,6 +34,7 @@ bool jmanager_timer_is_running(int timer_id);
 void jmanager_enqueue_message(Message* msg);
 
 JWidget jmanager_get_top_window();
+JWidget jmanager_get_foreground_window();
 
 JWidget jmanager_get_focus();
 JWidget jmanager_get_mouse();

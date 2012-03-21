@@ -21,13 +21,13 @@
 #include <allegro.h>
 #include <vector>
 
-#include "gui/frame.h"
-
 #include "app.h"
 #include "base/mutex.h"
 #include "base/scoped_lock.h"
 #include "commands/commands.h"
 #include "commands/params.h"
+#include "gui/frame.h"
+#include "gui/manager.h"
 #include "ui_context.h"
 
 #ifdef ALLEGRO_WINDOWS
@@ -73,7 +73,9 @@ void check_for_dropped_files()
   if (!base_wnd_proc)           // drop-files hook not installed
     return;
 
-  if (!app_get_top_window()->is_toplevel())
+  // If the main window is not the current foreground one. We discard
+  // the drop-files event.
+  if (jmanager_get_foreground_window() != app_get_top_window())
     return;
 
   ScopedLock lock(*dropped_files_mutex);
