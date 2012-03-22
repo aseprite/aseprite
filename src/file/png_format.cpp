@@ -30,8 +30,6 @@
 #include <stdlib.h>
 
 #include "png.h"
-#include "pnginfo.h"
-#include "pngstruct.h"
 
 class PngFormat : public FileFormat
 {
@@ -60,7 +58,7 @@ FileFormat* CreatePngFormat()
 
 static void report_png_error(png_structp png_ptr, png_const_charp error)
 {
-  fop_error((FileOp *)png_ptr->error_ptr, "libpng: %s\n", error);
+  fop_error((FileOp*)png_get_error_ptr(png_ptr), "libpng: %s\n", error);
 }
 
 bool PngFormat::onLoad(FileOp* fop)
@@ -162,7 +160,7 @@ bool PngFormat::onLoad(FileOp* fop)
   png_read_update_info(png_ptr, info_ptr);
 
   /* create the output image */
-  switch (info_ptr->color_type) {
+  switch (png_get_color_type(png_ptr, info_ptr)) {
 
     case PNG_COLOR_TYPE_RGB_ALPHA:
       fop->seq.has_alpha = true;
@@ -187,9 +185,11 @@ bool PngFormat::onLoad(FileOp* fop)
       return false;
   }
 
-  image = fop_sequence_image(fop, pixelFormat, info_ptr->width, info_ptr->height);
+  int imageWidth = png_get_image_width(png_ptr, info_ptr);
+  int imageHeight = png_get_image_height(png_ptr, info_ptr);
+  image = fop_sequence_image(fop, pixelFormat, imageWidth, imageHeight);
   if (!image) {
-    fop_error(fop, "file_sequence_image %dx%d\n", info_ptr->width, info_ptr->height);
+    fop_error(fop, "file_sequence_image %dx%d\n", imageWidth, imageHeight);
     png_destroy_read_struct(&png_ptr, &info_ptr, NULL);
     fclose(fp);
     return false;
@@ -200,7 +200,7 @@ bool PngFormat::onLoad(FileOp* fop)
   int mask_entry = -1;
 
   // Read the palette
-  if (info_ptr->color_type == PNG_COLOR_TYPE_PALETTE &&
+  if (png_get_color_type(png_ptr, info_ptr) == PNG_COLOR_TYPE_PALETTE &&
       png_get_PLTE(png_ptr, info_ptr, &palette, &num_palette)) {
     int c;
 
@@ -248,7 +248,7 @@ bool PngFormat::onLoad(FileOp* fop)
       png_read_row(png_ptr, row_pointer, (png_byte*)NULL);
 
       /* RGB_ALPHA */
-      if (info_ptr->color_type == PNG_COLOR_TYPE_RGB_ALPHA) {
+      if (png_get_color_type(png_ptr, info_ptr) == PNG_COLOR_TYPE_RGB_ALPHA) {
         register uint8_t* src_address = row_pointer;
         register uint32_t* dst_address = ((uint32_t**)image->line)[y];
         register unsigned int x, r, g, b, a;
@@ -262,7 +262,7 @@ bool PngFormat::onLoad(FileOp* fop)
         }
       }
       /* RGB */
-      else if (info_ptr->color_type == PNG_COLOR_TYPE_RGB) {
+      else if (png_get_color_type(png_ptr, info_ptr) == PNG_COLOR_TYPE_RGB) {
         register uint8_t* src_address = row_pointer;
         register uint32_t* dst_address = ((uint32_t**)image->line)[y];
         register unsigned int x, r, g, b;
@@ -275,7 +275,7 @@ bool PngFormat::onLoad(FileOp* fop)
         }
       }
       /* GRAY_ALPHA */
-      else if (info_ptr->color_type == PNG_COLOR_TYPE_GRAY_ALPHA) {
+      else if (png_get_color_type(png_ptr, info_ptr) == PNG_COLOR_TYPE_GRAY_ALPHA) {
         register uint8_t* src_address = row_pointer;
         register uint16_t* dst_address = ((uint16_t**)image->line)[y];
         register unsigned int x, k, a;
@@ -287,7 +287,7 @@ bool PngFormat::onLoad(FileOp* fop)
         }
       }
       /* GRAY */
-      else if (info_ptr->color_type == PNG_COLOR_TYPE_GRAY) {
+      else if (png_get_color_type(png_ptr, info_ptr) == PNG_COLOR_TYPE_GRAY) {
         register uint8_t* src_address = row_pointer;
         register uint16_t* dst_address = ((uint16_t**)image->line)[y];
         register unsigned int x, k;
@@ -298,7 +298,7 @@ bool PngFormat::onLoad(FileOp* fop)
         }
       }
       /* PALETTE */
-      else if (info_ptr->color_type == PNG_COLOR_TYPE_PALETTE) {
+      else if (png_get_color_type(png_ptr, info_ptr) == PNG_COLOR_TYPE_PALETTE) {
         register uint8_t* src_address = row_pointer;
         register uint8_t* dst_address = ((uint8_t**)image->line)[y];
         register unsigned int x, c;
@@ -466,7 +466,7 @@ bool PngFormat::onSave(FileOp* fop)
     /* If you are only writing one row at a time, this works */
     for (y = 0; y < height; y++) {
       /* RGB_ALPHA */
-      if (info_ptr->color_type == PNG_COLOR_TYPE_RGB_ALPHA) {
+      if (png_get_color_type(png_ptr, info_ptr) == PNG_COLOR_TYPE_RGB_ALPHA) {
         register uint32_t* src_address = ((uint32_t**)image->line)[y];
         register uint8_t* dst_address = row_pointer;
         register unsigned int x, c;
@@ -480,7 +480,7 @@ bool PngFormat::onSave(FileOp* fop)
         }
       }
       /* RGB */
-      else if (info_ptr->color_type == PNG_COLOR_TYPE_RGB) {
+      else if (png_get_color_type(png_ptr, info_ptr) == PNG_COLOR_TYPE_RGB) {
         register uint32_t* src_address = ((uint32_t**)image->line)[y];
         register uint8_t* dst_address = row_pointer;
         register unsigned int x, c;
@@ -493,7 +493,7 @@ bool PngFormat::onSave(FileOp* fop)
         }
       }
       /* GRAY_ALPHA */
-      else if (info_ptr->color_type == PNG_COLOR_TYPE_GRAY_ALPHA) {
+      else if (png_get_color_type(png_ptr, info_ptr) == PNG_COLOR_TYPE_GRAY_ALPHA) {
         register uint16_t* src_address = ((uint16_t**)image->line)[y];
         register uint8_t* dst_address = row_pointer;
         register unsigned int x, c;
@@ -505,7 +505,7 @@ bool PngFormat::onSave(FileOp* fop)
         }
       }
       /* GRAY */
-      else if (info_ptr->color_type == PNG_COLOR_TYPE_GRAY) {
+      else if (png_get_color_type(png_ptr, info_ptr) == PNG_COLOR_TYPE_GRAY) {
         register uint16_t* src_address = ((uint16_t**)image->line)[y];
         register uint8_t* dst_address = row_pointer;
         register unsigned int x, c;
@@ -516,7 +516,7 @@ bool PngFormat::onSave(FileOp* fop)
         }
       }
       /* PALETTE */
-      else if (info_ptr->color_type == PNG_COLOR_TYPE_PALETTE) {
+      else if (png_get_color_type(png_ptr, info_ptr) == PNG_COLOR_TYPE_PALETTE) {
         register uint8_t* src_address = ((uint8_t**)image->line)[y];
         register uint8_t* dst_address = row_pointer;
         register unsigned int x;
