@@ -12,17 +12,31 @@ if [ ! -f dist.sh ]; then
 fi
 
 ######################################################################
-# Source Distribution (copy all files in the git repository)
+# Full source distribution (with 3rd party code)
 
 if [ ! -f $distdir.zip ] ; then
     cd "$dir/.."
     mkdir "$dir/$distdir"
-    cp --parents $(git grep -l .) "$dir/$distdir"
+    cp --parents $(git ls-files) "$dir/$distdir"
     cd "$dir"
 
-    #tar vczf $distdir.tar.gz $distdir
-    #tar vcjf $distdir.tar.bz2 $distdir
     $zip $zip_recursive_flag $distdir.zip $distdir
+    rm -fr $distdir
+fi
+
+#####################################################################
+# Minimal source distribution (without 3rd party code).
+# Used to compile ASEPRITE with shared libraries.
+
+if [ ! -f $distdir.tar.xz ] ; then
+    cd "$dir/.."
+    mkdir "$dir/$distdir"
+    cp --parents $(git ls-files | grep -v -e ^third_party | grep -v -e ^src/allegro) "$dir/$distdir"
+    cp --parents $(git ls-files third_party/loadpng) "$dir/$distdir"
+    cp --parents third_party/CMakeLists.txt "$dir/$distdir"
+    cd "$dir"
+
+    tar vcfJ $distdir.tar.xz $distdir
     rm -fr $distdir
 fi
 
