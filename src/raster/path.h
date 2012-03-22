@@ -19,6 +19,8 @@
 #ifndef RASTER_PATH_H_INCLUDED
 #define RASTER_PATH_H_INCLUDED
 
+#error This file is deprecated
+
 #include "raster/gfxobj.h"
 #include <string>
 

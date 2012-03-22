@@ -283,7 +283,6 @@ add_library(aseprite-library
   raster/mask_io.cpp
   raster/palette.cpp
   raster/palette_io.cpp
-  raster/path.cpp
   raster/pen.cpp
   raster/quantization.cpp
   raster/rgbmap.cpp
