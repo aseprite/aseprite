@@ -15,6 +15,8 @@
 #include <vector>
 #include <allegro.h>
 
+#include "base/chrono.h"
+#include "base/thread.h"
 #include "gui/gui.h"
 #include "gui/intern.h"
 
@@ -255,13 +257,26 @@ void jmanager_free(JWidget widget)
 
 void jmanager_run(JWidget widget)
 {
+  base::Chrono chrono;
+
   while (!jlist_empty(widget->children)) {
+    chrono.reset();
+
     if (jmanager_generate_messages(widget)) {
       jmanager_dispatch_messages(widget);
     }
     else if (!garbage.empty()) {
       collect_garbage();
     }
+
+    // If the dispatching of messages was faster than 10 milliseconds,
+    // it means that the process is not using a lot of CPU, so we can
+    // wait the difference to cover those 10 milliseconds
+    // sleeping. With this code we can avoid 100% CPU usage (a
+    // property of Allegro 4 polling nature).
+    double elapsedMSecs = chrono.elapsed() * 1000.0;
+    if (elapsedMSecs > 0.0 && elapsedMSecs < 10.0)
+      base::this_thread::sleep_for((10.0 - elapsedMSecs) / 1000.0);
   }
 }
 
