@@ -389,6 +389,9 @@ void PaletteEntryEditor::setColor(const Color& color)
   else if (j-i+1 == i2-i) {
     m_entryLabel.setTextf(" Range: %d-%d", i, j);
   }
+  else if (i == entries.size()) {
+    m_entryLabel.setText(" No Entry");
+  }
   else {
     m_entryLabel.setText(" Multiple Entries");
   }
