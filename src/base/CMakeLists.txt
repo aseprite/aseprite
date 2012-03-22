@@ -14,6 +14,7 @@ if(HAVE_SCHED_YIELD)
 endif()
 
 add_library(base-lib
+  chrono.cpp
   convert_to.cpp
   errno_string.cpp
   exception.cpp
