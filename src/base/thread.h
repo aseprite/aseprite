@@ -89,7 +89,7 @@ namespace base {                // Based on C++0x threads lib
   namespace this_thread
   {
     void yield();
-    void sleep_for(int milliseconds);
+    void sleep_for(double seconds);
   }
 
   // This class joins the thread in its destructor.

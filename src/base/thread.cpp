@@ -15,6 +15,12 @@
   #include <pthread.h>          // Use pthread library in Unix-like systems
 #endif
 
+#if defined(HAVE_SCHED_YIELD) && defined(_POSIX_PRIORITY_SCHEDULING)
+  #include <unistd.h>
+#elif !defined(WIN32)
+  #include <sys/time.h>
+#endif
+
 namespace {
 
 #ifdef WIN32
@@ -116,17 +122,32 @@ void base::thread::details::thread_proxy(void* data)
 void base::this_thread::yield()
 {
 #ifdef WIN32
+
   ::Sleep(0);
+
+#elif defined(HAVE_SCHED_YIELD) && defined(_POSIX_PRIORITY_SCHEDULING)
+
+  sched_yield();
+
 #else
-  // TODO
+
+  struct timeval timeout;
+  timeout.tv_sec = 0;
+  timeout.tv_usec = 0;
+  select(0, NULL, NULL, NULL, &timeout);
+
 #endif
 }
 
-void base::this_thread::sleep_for(int milliseconds)
+void base::this_thread::sleep_for(double seconds)
 {
 #ifdef WIN32
-  ::Sleep(milliseconds);
+
+  ::Sleep(seconds * 1000.0);
+
 #else
-  // TODO
+
+  usleep(seconds * 1000000.0);
+
 #endif
 }
