@@ -114,10 +114,6 @@ if(USE_SHARED_ALLEGRO4)
     OUTPUT_STRIP_TRAILING_WHITESPACE)
 
   include_directories(${LIBALLEGRO4_INCLUDE_DIR})
-
-  # The config.c must be from the last implementation from 4.4 (the
-  # 4.2 can have a broken override_config_file() impl).
-  set(EXTRA_SOURCE_FILES allegro/src/config.c)
 else()
   # Use patched version of Allegro 4 (with window resize support).
   add_subdirectory(allegro)
@@ -138,7 +134,6 @@ add_subdirectory(gui)
 add_subdirectory(undo)
 
 add_library(aseprite-library
-  ${EXTRA_SOURCE_FILES}
   app.cpp
   check_args.cpp
   console.cpp
