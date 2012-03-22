@@ -114,10 +114,6 @@ if(USE_SHARED_ALLEGRO4)
     OUTPUT_STRIP_TRAILING_WHITESPACE)
 
   include_directories(${LIBALLEGRO4_INCLUDE_DIR})
-
-  # The config.c must be from the last implementation from 4.4 (the
-  # 4.2 can have a broken override_config_file() impl).
-  set(EXTRA_SOURCE_FILES allegro/src/config.c)
 else()
   # Use patched version of Allegro 4 (with window resize support).
   add_subdirectory(allegro)
@@ -138,7 +134,6 @@ add_subdirectory(gui)
 add_subdirectory(undo)
 
 add_library(aseprite-library
-  ${EXTRA_SOURCE_FILES}
   app.cpp
   check_args.cpp
   console.cpp
@@ -434,8 +429,14 @@ function(find_unittests dir dependencies)
       DEPENDS ${testname})
 
     set(local_runs ${local_runs} run_${testname})
+
+    string(REGEX MATCH "_ui_unittest" test_requires_ui ${testname})
+    if (NOT test_requires_ui STREQUAL "_ui_unittest")
+      set(local_non_ui_runs ${local_non_ui_runs} run_${testname})
+    endif()
   endforeach()
   set(all_runs ${all_runs} ${local_runs} PARENT_SCOPE)
+  set(non_ui_runs ${non_ui_runs} ${local_non_ui_runs} PARENT_SCOPE)
 endfunction()
 
 find_unittests(base base-lib ${sys_libs})
@@ -446,3 +447,4 @@ find_unittests(. ${all_libs})
 
 # To run tests
 add_custom_target(run_all_unittests DEPENDS ${all_runs})
+add_custom_target(run_non_ui_unittests DEPENDS ${non_ui_runs})
