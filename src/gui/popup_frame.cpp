@@ -98,11 +98,17 @@ bool PopupFrame::onProcessMessage(Message* msg)
       break;
 
     case JM_KEYPRESSED:
-      if (m_filtering &&
-          (msg->key.scancode == KEY_ESC ||
-           msg->key.scancode == KEY_ENTER ||
-           msg->key.scancode == KEY_ENTER_PAD)) {
-        closeWindow(NULL);
+      if (m_filtering) {
+        if (msg->key.scancode == KEY_ESC ||
+            msg->key.scancode == KEY_ENTER ||
+            msg->key.scancode == KEY_ENTER_PAD) {
+          closeWindow(NULL);
+        }
+
+        // If we are filtering messages we don't propagate key-events
+        // to other widgets. As we're a popup frame and we're
+        // filtering messages, the user shouldn't be able to start
+        // other actions pressing keyboard shortcuts.
         return false;
       }
       break;
