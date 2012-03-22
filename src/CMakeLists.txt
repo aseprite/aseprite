@@ -429,8 +429,14 @@ function(find_unittests dir dependencies)
       DEPENDS ${testname})
 
     set(local_runs ${local_runs} run_${testname})
+
+    string(REGEX MATCH "_ui_unittest" test_requires_ui ${testname})
+    if (NOT test_requires_ui STREQUAL "_ui_unittest")
+      set(local_non_ui_runs ${local_non_ui_runs} run_${testname})
+    endif()
   endforeach()
   set(all_runs ${all_runs} ${local_runs} PARENT_SCOPE)
+  set(non_ui_runs ${non_ui_runs} ${local_non_ui_runs} PARENT_SCOPE)
 endfunction()
 
 find_unittests(base base-lib ${sys_libs})
@@ -441,3 +447,4 @@ find_unittests(. ${all_libs})
 
 # To run tests
 add_custom_target(run_all_unittests DEPENDS ${all_runs})
+add_custom_target(run_non_ui_unittests DEPENDS ${non_ui_runs})
