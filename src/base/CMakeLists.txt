@@ -1,6 +1,8 @@
 # ASEPRITE
 # Copyright (C) 2001-2012  David Capello
 
+include(CheckCSourceCompiles)
+
 CHECK_C_SOURCE_COMPILES("
 #include <unistd.h>
 int main() {
