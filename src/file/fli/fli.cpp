@@ -1,4 +1,3 @@
-
 /*
  * Written 1998 Jens Ch. Restemeier <jchrr@hrz.uni-bielefeld.de>
  *
@@ -18,9 +17,7 @@
  *
  */
 
-/* Modified by David Capello to use with ASEPRITE (2001-2012).
-   See ../README.txt for more information
- */
+/* Modified by David Capello to use with ASEPRITE (2001-2012). */
 
 #include <stdio.h>
 #include <stdlib.h>

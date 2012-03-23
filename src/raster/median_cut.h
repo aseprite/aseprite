@@ -249,8 +249,8 @@ namespace quantization {
     int volume;
   }; // end of class Box
 
-  // Median Cut Alqorithm as described in P. Heckbert, “Color image
-  // quantization for frame buffer display,”, Computer Graphics,
+  // Median Cut Algorithm as described in P. Heckbert, "Color image
+  // quantization for frame buffer display,", Computer Graphics,
   // 16(3), pp. 297-307 (1982)
   template<class Histogram>
   void median_cut(const Histogram& histogram, size_t maxBoxes, std::vector<uint32_t>& result)
