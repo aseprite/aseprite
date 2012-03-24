@@ -164,6 +164,5 @@
 
         Released: version 1.5.
 
-------- January 2012 -------
-
-7       David Capello: Updated for libpng 1.5.7
+From December 2007, loadpng lives in the Allegro repository.
+This file is no longer updated.

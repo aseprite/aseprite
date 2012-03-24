@@ -1,7 +1,5 @@
 /* loadpng, Allegro wrapper routines for libpng
  * by Peter Wang (tjaden@users.sf.net).
- *
- * This file is hereby placed in the public domain.
  */
 
 
@@ -39,6 +37,15 @@ static double get_gamma(void)
     }
 
     return _png_screen_gamma;
+}
+
+
+
+static void user_error_fn(png_structp png_ptr, png_const_charp message)
+{
+   jmp_buf *jmpbuf = (jmp_buf *)png_get_error_ptr(png_ptr);
+   (void)message;
+   longjmp(*jmpbuf, 1);
 }
 
 
@@ -90,7 +97,7 @@ static BITMAP *really_load_png(png_structp png_ptr, png_infop info_ptr, RGB *pal
     int tRNS_to_alpha = FALSE;
     int number_passes, pass;
 
-    ASSERT(png_ptr && info_ptr && pal);
+    ASSERT(png_ptr && info_ptr);
 
     /* The call to png_read_info() gives us all of the information from the
      * PNG file before the first IDAT (image data chunk).
@@ -244,6 +251,7 @@ BITMAP *load_png(AL_CONST char *filename, RGB *pal)
  */
 BITMAP *load_png_pf(PACKFILE *fp, RGB *pal)
 {
+    jmp_buf jmpbuf;
     BITMAP *bmp;
     png_structp png_ptr;
     png_infop info_ptr;
@@ -273,16 +281,14 @@ BITMAP *load_png_pf(PACKFILE *fp, RGB *pal)
         return NULL;
     }
 
-    /* Set error handling if you are using the setjmp/longjmp method (this is
-     * the normal method of doing things with libpng).  REQUIRED unless you
-     * set up your own error handlers in the png_create_read_struct() earlier.
-     */
-    if (setjmp(png_jmpbuf(png_ptr))) {
+    /* Set error handling. */
+    if (setjmp(jmpbuf)) {
         /* Free all of the memory associated with the png_ptr and info_ptr */
         png_destroy_read_struct(&png_ptr, &info_ptr, (png_infopp)NULL);
         /* If we get here, we had a problem reading the file */
         return NULL;
     }
+    png_set_error_fn(png_ptr, jmpbuf, user_error_fn, NULL);
 
     /* Use Allegro packfile routines. */
     png_set_read_fn(png_ptr, fp, (png_rw_ptr)read_data);
@@ -340,6 +346,7 @@ static int check_if_png_memory(AL_CONST void *buffer)
  */
 BITMAP *load_memory_png(AL_CONST void *buffer, int bufsize, RGB *pal)
 {
+    jmp_buf jmpbuf;
     MEMORY_READER_STATE memory_reader_state;
     BITMAP *bmp;
     png_structp png_ptr;
@@ -369,16 +376,14 @@ BITMAP *load_memory_png(AL_CONST void *buffer, int bufsize, RGB *pal)
         return NULL;
     }
 
-    /* Set error handling if you are using the setjmp/longjmp method (this is
-     * the normal method of doing things with libpng).  REQUIRED unless you
-     * set up your own error handlers in the png_create_read_struct() earlier.
-     */
-    if (setjmp(png_jmpbuf(png_ptr))) {
+    /* Set error handling. */
+    if (setjmp(jmpbuf)) {
         /* Free all of the memory associated with the png_ptr and info_ptr */
         png_destroy_read_struct(&png_ptr, &info_ptr, (png_infopp)NULL);
         /* If we get here, we had a problem reading the file */
         return NULL;
     }
+    png_set_error_fn(png_ptr, jmpbuf, user_error_fn, NULL);
 
     /* Set up the reader state. */
     memory_reader_state.buffer = (unsigned char *)buffer;

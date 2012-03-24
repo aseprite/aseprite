@@ -1,14 +1,20 @@
 /* loadpng, Allegro wrapper routines for libpng
  * by Peter Wang (tjaden@users.sf.net).
- *
- * This file is hereby placed in the public domain.
  */
 
 
 #include <png.h>
-#include <zlib.h>
 #include <allegro.h>
 #include "loadpng.h"
+
+
+
+static void user_error_fn(png_structp png_ptr, png_const_charp message)
+{
+   jmp_buf *jmpbuf = (jmp_buf *)png_get_error_ptr(png_ptr);
+   (void)message;
+   longjmp(*jmpbuf, 1);
+}
 
 
 
@@ -166,6 +172,7 @@ static int save_rgba(png_structp png_ptr, BITMAP *bmp)
  */
 static int really_save_png(PACKFILE *fp, BITMAP *bmp, AL_CONST RGB *pal)
 {
+    jmp_buf jmpbuf;
     png_structp png_ptr = NULL;
     png_infop info_ptr = NULL;
     int depth;
@@ -189,10 +196,11 @@ static int really_save_png(PACKFILE *fp, BITMAP *bmp, AL_CONST RGB *pal)
         goto Error;
 
     /* Set error handling. */
-    if (setjmp(png_jmpbuf(png_ptr))) {
+    if (setjmp(jmpbuf)) {
         /* If we get here, we had a problem reading the file. */
         goto Error;
     }
+    png_set_error_fn(png_ptr, jmpbuf, user_error_fn, NULL);
 
     /* Use packfile routines. */
     png_set_write_fn(png_ptr, fp, (png_rw_ptr)write_data, flush_data);

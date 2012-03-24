@@ -1,7 +1,5 @@
 /* loadpng, Allegro wrapper routines for libpng
  * by Peter Wang (tjaden@users.sf.net).
- *
- * This file is hereby placed in the public domain.
  */
 
 

@@ -4,8 +4,8 @@
 
 This wrapper is mostly a copy and paste job from example.c in the
 libpng docs, stripping out the useless transformations and making it
-use Allegro BITMAP and PALETTE structures.  It is placed in the public
-domain.
+use Allegro BITMAP and PALETTE structures.  It is released under the
+terms of the zlib license.  See LICENSE.txt for more information.
 
 
 Requirements:
