@@ -223,6 +223,7 @@ add_library(aseprite-library
   commands/cmd_rotate_canvas.cpp
   commands/cmd_save_file.cpp
   commands/cmd_save_mask.cpp
+  commands/cmd_scroll.cpp
   commands/cmd_select_file.cpp
   commands/cmd_sprite_editor.cpp
   commands/cmd_sprite_properties.cpp

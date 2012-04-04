@@ -121,6 +121,28 @@
       <key command="ChangePen" shortcut="Minus Pad">
         <param name="change" value="decrement-size" />
       </key>
+
+      <!-- Scroll with cursor -->
+      <key command="Scroll" shortcut="Ctrl+Left">
+        <param name="direction" value="left" />
+        <param name="units" value="zoomed-tile-width" />
+        <param name="quantity" value="1" />
+      </key>
+      <key command="Scroll" shortcut="Ctrl+Right">
+        <param name="direction" value="right" />
+        <param name="units" value="zoomed-tile-width" />
+        <param name="quantity" value="1" />
+      </key>
+      <key command="Scroll" shortcut="Ctrl+Up">
+        <param name="direction" value="up" />
+        <param name="units" value="zoomed-tile-height" />
+        <param name="quantity" value="1" />
+      </key>
+      <key command="Scroll" shortcut="Ctrl+Down">
+        <param name="direction" value="down" />
+        <param name="units" value="zoomed-tile-height" />
+        <param name="quantity" value="1" />
+      </key>
     </commands>
 
     <!-- Keyboard shortcuts to select tools -->
