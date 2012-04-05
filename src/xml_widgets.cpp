@@ -239,13 +239,13 @@ static Widget* convert_xmlelement_to_widget(TiXmlElement* elem, Widget* root)
 
     widget = jlistitem_new(text ? TRANSLATE_ATTR(text): NULL);
   }
-  /* panel */
-  else if (ustrcmp(elem_name, "panel") == 0) {
+  /* splitter */
+  else if (ustrcmp(elem_name, "splitter") == 0) {
     bool horizontal = bool_attr_is_true(elem, "horizontal");
     bool vertical = bool_attr_is_true(elem, "vertical");
 
-    widget = jpanel_new(horizontal ? JI_HORIZONTAL:
-                        vertical ? JI_VERTICAL: 0);
+    widget = new Splitter(horizontal ? JI_HORIZONTAL:
+                          vertical ? JI_VERTICAL: 0);
   }
   /* radio */
   else if (ustrcmp(elem_name, "radio") == 0) {

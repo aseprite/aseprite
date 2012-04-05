@@ -407,15 +407,15 @@ void split_editor(Editor* editor, int align)
   }
 
   View* view = View::getView(editor);
-  JWidget parent_box = view->getParent(); // Box or panel.
+  JWidget parent_box = view->getParent(); // Box or splitter.
 
   // Create a new box to contain both editors, and a new view to put the new editor.
-  JWidget new_panel = jpanel_new(align);
+  JWidget new_splitter = new Splitter(align);
   View* new_view = new EditorView(EditorView::CurrentEditorMode);
   Editor* new_editor = create_new_editor();
 
   // Insert the "new_box" in the same location that the view.
-  parent_box->replaceChild(view, new_panel);
+  parent_box->replaceChild(view, new_splitter);
 
   // Append the new editor.
   new_view->attachToView(new_editor);
@@ -425,12 +425,12 @@ void split_editor(Editor* editor, int align)
   new_editor->setZoom(editor->getZoom());
 
   // Expansive widgets.
-  new_panel->setExpansive(true);
+  new_splitter->setExpansive(true);
   new_view->setExpansive(true);
 
-  // Append both views to the "new_panel".
-  new_panel->addChild(view);
-  new_panel->addChild(new_view);
+  // Append both views to the "new_splitter".
+  new_splitter->addChild(view);
+  new_splitter->addChild(new_view);
 
   // Same position.
   {

@@ -570,7 +570,7 @@ void SkinTheme::init_widget(JWidget widget)
       widget->child_spacing = 18 * scale;
       break;
 
-    case JI_PANEL:
+    case JI_SPLITTER:
       BORDER(0);
       widget->child_spacing = 3 * scale;
       break;

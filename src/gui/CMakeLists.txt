@@ -30,7 +30,6 @@ add_library(gui-lib
   menu.cpp
   message.cpp
   paint_event.cpp
-  panel.cpp
   popup_frame.cpp
   preferred_size_event.cpp
   property.cpp
@@ -39,6 +38,7 @@ add_library(gui-lib
   scroll_bar.cpp
   separator.cpp
   slider.cpp
+  splitter.cpp
   stream.cpp
   system.cpp
   textbox.cpp
