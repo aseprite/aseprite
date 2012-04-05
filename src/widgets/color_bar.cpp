@@ -98,7 +98,7 @@ ColorBar::ColorBar(int align)
 
   jwidget_set_min_size(&m_scrollableView, w, 0);
 
-  jwidget_expansive(&m_scrollableView, true);
+  m_scrollableView.setExpansive(true);
 
   addChild(&m_paletteButton);
   addChild(&m_scrollableView);

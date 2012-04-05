@@ -363,10 +363,10 @@ static Widget* convert_xmlelement_to_widget(TiXmlElement* elem, Widget* root)
       widget->setEnabled(false);
 
     if (expansive)
-      jwidget_expansive(widget, true);
+      widget->setExpansive(true);
 
     if (magnetic)
-      jwidget_magnetic(widget, true);
+      widget->setFocusMagnet(true);
 
     if (noborders)
       jwidget_noborders(widget);

@@ -41,7 +41,7 @@ class BoxFiller : public Box
 {
 public:
   BoxFiller() : Box(JI_HORIZONTAL) {
-    jwidget_expansive(this, true);
+    this->setExpansive(true);
   }
 };
 

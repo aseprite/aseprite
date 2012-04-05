@@ -182,9 +182,9 @@ base::string ase_file_selector(const base::string& message,
     ASSERT(filetype != NULL);
     filename_entry = window->findChildT<Entry>("filename");
 
-    jwidget_focusrest(goback, false);
-    jwidget_focusrest(goforward, false);
-    jwidget_focusrest(goup, false);
+    goback->setFocusStop(false);
+    goforward->setFocusStop(false);
+    goup->setFocusStop(false);
 
     set_gfxicon_to_button(goback,
                           PART_COMBOBOX_ARROW_LEFT,
@@ -221,7 +221,7 @@ base::string ase_file_selector(const base::string& message,
     fileview->setName("fileview");
 
     view->attachToView(fileview);
-    jwidget_expansive(view, true);
+    view->setExpansive(true);
 
     box->addChild(view);
 

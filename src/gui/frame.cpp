@@ -482,7 +482,7 @@ void Frame::onPreferredSize(PreferredSizeEvent& ev)
     JI_LIST_FOR_EACH(this->children, link) {
       child = (JWidget)link->data;
 
-      if (!jwidget_is_decorative(child)) {
+      if (!child->isDecorative()) {
         reqSize = child->getPreferredSize();
 
         maxSize.w = MAX(maxSize.w, reqSize.w);
@@ -531,7 +531,7 @@ void Frame::window_set_position(JRect rect)
   JI_LIST_FOR_EACH(this->children, link) {
     child = (JWidget)link->data;
 
-    if (jwidget_is_decorative(child))
+    if (child->isDecorative())
       child->getTheme()->map_decorative_widget(child);
     else
       jwidget_set_rect(child, cpos);

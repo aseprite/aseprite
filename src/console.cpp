@@ -70,8 +70,8 @@ Console::Console()
     window->addChild(grid);
 
     view->setVisible(false);
-    jwidget_magnetic(button, true);
-    jwidget_expansive(view, true);
+    button->setFocusMagnet(true);
+    view->setExpansive(true);
 
     /* force foreground mode */
 /*     ji_find_widget(window)->in_foreground = true; */

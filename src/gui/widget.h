@@ -44,18 +44,6 @@ void jwidget_add_hook(JWidget widget, int type,
 JHook jwidget_get_hook(JWidget widget, int type);
 void *jwidget_get_data(JWidget widget, int type);
 
-/* behavior properties */
-
-void jwidget_magnetic(JWidget widget, bool state);
-void jwidget_expansive(JWidget widget, bool state);
-void jwidget_decorative(JWidget widget, bool state);
-void jwidget_focusrest(JWidget widget, bool state);
-
-bool jwidget_is_magnetic(JWidget widget);
-bool jwidget_is_expansive(JWidget widget);
-bool jwidget_is_decorative(JWidget widget);
-bool jwidget_is_focusrest(JWidget widget);
-
 /* position and geometry */
 
 JRect jwidget_get_rect(JWidget widget);
@@ -169,14 +157,38 @@ public:
   // COMMON PROPERTIES
   // ===============================================================
 
+  // True if this widget and all its ancestors are visible.
   bool isVisible() const;
   void setVisible(bool state);
 
+  // True if this widget can receive user input (is not disabled).
   bool isEnabled() const;
   void setEnabled(bool state);
 
+  // True if this widget is selected (pushed in case of a button, or
+  // checked in the case of a check-box).
   bool isSelected() const;
   void setSelected(bool state);
+
+  // True if this widget wants more space when it's inside a Box
+  // parent.
+  bool isExpansive() const;
+  void setExpansive(bool state);
+
+  // True if this is a decorative widget created by the current
+  // theme. Decorative widgets are arranged by the theme instead that
+  // the parent's widget.
+  bool isDecorative() const;
+  void setDecorative(bool state);
+
+  // True if this widget can receive the keyboard focus.
+  bool isFocusStop() const;
+  void setFocusStop(bool state);
+
+  // True if this widget wants the focus by default when it's shown by
+  // first time (e.g. when its parent window is opened).
+  void setFocusMagnet(bool state);
+  bool isFocusMagnet() const;
 
   // ===============================================================
   // LOOK & FEEL

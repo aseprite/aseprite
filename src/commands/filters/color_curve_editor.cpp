@@ -74,7 +74,7 @@ ColorCurveEditor::ColorCurveEditor(ColorCurve* curve, int x1, int y1, int x2, in
   : Widget(JI_WIDGET)
   , m_curve(curve)
 {
-  jwidget_focusrest(this, true);
+  this->setFocusStop(true);
 
   border_width.l = border_width.r = 1;
   border_width.t = border_width.b = 1;

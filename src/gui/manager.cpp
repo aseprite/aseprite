@@ -23,10 +23,10 @@
 #define TOPWND(manager) reinterpret_cast<Frame*>(jlist_first_data((manager)->children))
 
 #define ACCEPT_FOCUS(widget)                            \
-  (((widget)->flags & (JI_FOCUSREST |                   \
+  (((widget)->flags & (JI_FOCUSSTOP |                   \
                        JI_DISABLED |                    \
                        JI_HIDDEN |                      \
-                       JI_DECORATIVE)) == JI_FOCUSREST)
+                       JI_DECORATIVE)) == JI_FOCUSSTOP)
 
 #define DOUBLE_CLICK_TIMEOUT_MSECS   400
 
@@ -119,7 +119,7 @@ static void manager_pump_queue(JWidget widget);
 /* auxiliary */
 static void generate_setcursor_message();
 static void remove_msgs_for(JWidget widget, Message* msg);
-static int some_parent_is_focusrest(JWidget widget);
+static bool some_parent_is_focusstop(JWidget widget);
 static JWidget find_magnetic_widget(JWidget widget);
 static Message* new_mouse_msg(int type, JWidget destination);
 static void broadcast_key_msg(JWidget manager, Message* msg);
@@ -772,7 +772,7 @@ void jmanager_set_focus(JWidget widget)
           || (!(widget->flags & JI_DISABLED)
               && !(widget->flags & JI_HIDDEN)
               && !(widget->flags & JI_DECORATIVE)
-              && some_parent_is_focusrest(widget)))) {
+              && some_parent_is_focusstop(widget)))) {
     JList widget_parents = NULL;
     JWidget common_parent = NULL;
     JLink link, link2;
@@ -826,7 +826,7 @@ void jmanager_set_focus(JWidget widget)
       for (; link != widget_parents->end; link=link->next) {
         JWidget w = (JWidget)link->data;
 
-        if (w->flags & JI_FOCUSREST) {
+        if (w->flags & JI_FOCUSSTOP) {
           w->flags |= JI_HASFOCUS;
 
           jmessage_add_dest(msg, w);
@@ -1417,13 +1417,13 @@ static void remove_msgs_for(JWidget widget, Message* msg)
   }
 }
 
-static int some_parent_is_focusrest(JWidget widget)
+static bool some_parent_is_focusstop(JWidget widget)
 {
-  if (jwidget_is_focusrest(widget))
+  if (widget->isFocusStop())
     return true;
 
   if (widget->parent)
-    return some_parent_is_focusrest(widget->parent);
+    return some_parent_is_focusstop(widget->parent);
   else
     return false;
 }
@@ -1439,7 +1439,7 @@ static JWidget find_magnetic_widget(JWidget widget)
       return found;
   }
 
-  if (jwidget_is_magnetic(widget))
+  if (widget->isFocusMagnet())
     return widget;
   else
     return NULL;

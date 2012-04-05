@@ -30,7 +30,7 @@ ButtonBase::ButtonBase(const char* text, int type, int behaviorType, int drawTyp
 {
   this->setAlign(JI_CENTER | JI_MIDDLE);
   this->setText(text);
-  jwidget_focusrest(this, true);
+  this->setFocusStop(true);
 
   // Initialize theme
   this->type = m_drawType;      // TODO Fix this nasty trick
@@ -110,7 +110,7 @@ bool ButtonBase::onProcessMessage(Message* msg)
             return true;
           }
           /* magnetic */
-          else if (jwidget_is_magnetic(this) &&
+          else if (this->isFocusMagnet() &&
                    ((msg->key.scancode == KEY_ENTER) ||
                     (msg->key.scancode == KEY_ENTER_PAD))) {
             jmanager_set_focus(this);

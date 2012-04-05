@@ -28,7 +28,7 @@ JWidget jtextbox_new(const char *text, int align)
   Widget* widget = new Widget(JI_TEXTBOX);
 
   jwidget_add_hook(widget, JI_TEXTBOX, textbox_msg_proc, NULL);
-  jwidget_focusrest(widget, true);
+  widget->setFocusStop(true);
   widget->setAlign(align);
   widget->setText(text);
   widget->initTheme();

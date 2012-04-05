@@ -49,7 +49,7 @@ ColorButton::ColorButton(const Color& color, PixelFormat pixelFormat)
   , m_pixelFormat(pixelFormat)
   , m_frame(NULL)
 {
-  jwidget_focusrest(this, true);
+  this->setFocusStop(true);
 
   setFont(static_cast<SkinTheme*>(getTheme())->getMiniFont());
 }

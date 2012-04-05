@@ -425,8 +425,8 @@ void split_editor(Editor* editor, int align)
   new_editor->setZoom(editor->getZoom());
 
   // Expansive widgets.
-  jwidget_expansive(new_panel, true);
-  jwidget_expansive(new_view, true);
+  new_panel->setExpansive(true);
+  new_view->setExpansive(true);
 
   // Append both views to the "new_panel".
   new_panel->addChild(view);
@@ -613,7 +613,7 @@ static void create_mini_editor_frame()
 
   // Create the new for the mini editor
   View* newView = new EditorView(EditorView::AlwaysSelected);
-  jwidget_expansive(newView, true);
+  newView->setExpansive(true);
 
   // Create mini editor
   mini_editor = new MiniEditor();

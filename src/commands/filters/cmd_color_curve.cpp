@@ -57,7 +57,7 @@ public:
     , m_editor(filter.getCurve(), 0, 0, 255, 255)
   {
     m_view.attachToView(&m_editor);
-    jwidget_expansive(&m_view, true);
+    m_view.setExpansive(true);
     jwidget_set_min_size(&m_view, 128, 64);
 
     getContainer()->addChild(&m_view);

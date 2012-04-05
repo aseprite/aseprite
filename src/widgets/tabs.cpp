@@ -66,8 +66,8 @@ Tabs::Tabs(TabsDelegate* delegate)
   setup_bevels(m_button_left, 2, 0, 2, 0);
   setup_bevels(m_button_right, 0, 2, 0, 2);
 
-  jwidget_focusrest(m_button_left, false);
-  jwidget_focusrest(m_button_right, false);
+  m_button_left->setFocusStop(false);
+  m_button_right->setFocusStop(false);
 
   set_gfxicon_to_button(m_button_left,
                         PART_COMBOBOX_ARROW_LEFT,

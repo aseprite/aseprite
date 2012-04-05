@@ -199,12 +199,12 @@ int App::run()
     editor = create_new_editor();
 
     // configure all widgets to expansives
-    jwidget_expansive(menubar, true);
-    jwidget_expansive(statusbar, true);
-    jwidget_expansive(colorbar, true);
-    jwidget_expansive(toolbar, true);
-    jwidget_expansive(tabsbar, true);
-    jwidget_expansive(view, true);
+    menubar->setExpansive(true);
+    statusbar->setExpansive(true);
+    colorbar->setExpansive(true);
+    toolbar->setExpansive(true);
+    tabsbar->setExpansive(true);
+    view->setExpansive(true);
 
     /* prepare the first editor */
     view->attachToView(editor);

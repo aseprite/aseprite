@@ -156,7 +156,7 @@ void Box::box_set_position(JRect rect)
                                                                         \
             child_width = reqSize.w;                                    \
                                                                         \
-            if (jwidget_is_expansive(child)) {                          \
+            if (child->isExpansive()) {                                 \
               if (nexpand_children == 1)                                \
                 child_width += width;                                   \
               else                                                      \
@@ -199,7 +199,7 @@ void Box::box_set_position(JRect rect)
 
     if (!(child->flags & JI_HIDDEN)) {
       nvis_children++;
-      if (jwidget_is_expansive(child))
+      if (child->isExpansive())
         nexpand_children++;
     }
   }

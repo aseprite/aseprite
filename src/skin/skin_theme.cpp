@@ -654,7 +654,7 @@ void SkinTheme::init_widget(JWidget widget)
             setup_bevels(button, 0, 0, 0, 0);
             jwidget_add_hook(button, JI_WIDGET,
                              &SkinTheme::theme_frame_button_msg_proc, NULL);
-            jwidget_decorative(button, true);
+            button->setDecorative(true);
             widget->addChild(button);
             button->setName("theme_close_button");
             button->Click.connect(Bind<void>(&Frame::closeWindow, (Frame*)widget, button));
@@ -1652,7 +1652,7 @@ void SkinTheme::paintTooltip(PaintEvent& ev)
 int SkinTheme::get_bg_color(JWidget widget)
 {
   int c = jwidget_get_bg_color(widget);
-  int decorative = jwidget_is_decorative(widget);
+  bool decorative = widget->isDecorative();
 
   return c >= 0 ? c: (decorative ? COLOR_SELECTED:
                                    COLOR_FACE);

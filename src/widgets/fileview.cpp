@@ -107,7 +107,7 @@ JWidget fileview_new(IFileItem* start_folder, const base::string& exts)
 
   jwidget_add_hook(widget, fileview_type(),
                    fileview_msg_proc, fileview);
-  jwidget_focusrest(widget, true);
+  widget->setFocusStop(true);
 
   fileview->current_folder = start_folder;
   fileview->req_valid = false;

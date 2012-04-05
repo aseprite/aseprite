@@ -50,7 +50,7 @@ FilterWindow::FilterWindow(const char* title, const char* cfgSection,
   m_cancelButton.Click.connect(&FilterWindow::onCancel, this);
   m_showPreview.Click.connect(&FilterWindow::onShowPreview, this);
 
-  jwidget_expansive(&m_container, true);
+  m_container.setExpansive(true);
 
   m_hbox.addChild(&m_container);
   m_hbox.addChild(&m_vbox);
@@ -74,7 +74,7 @@ FilterWindow::FilterWindow(const char* title, const char* cfgSection,
   m_showPreview.setSelected(get_config_bool(m_cfgSection, "Preview", true));
 
   // OK is magnetic (the default button)
-  jwidget_magnetic(&m_okButton, true);
+  m_okButton.setFocusMagnet(true);
 }
 
 FilterWindow::~FilterWindow()

@@ -147,7 +147,7 @@ Editor::Editor()
   m_mask_timer_id = jmanager_add_timer(this, 100);
   m_offset_count = 0;
 
-  jwidget_focusrest(this, true);
+  this->setFocusStop(true);
 
   m_currentToolChangeSlot =
     App::instance()->CurrentToolChange.connect(&Editor::onCurrentToolChange, this);

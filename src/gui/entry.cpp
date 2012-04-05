@@ -56,7 +56,7 @@ Entry::Entry(size_t maxsize, const char *format, ...)
   /* widget->align = JI_LEFT | JI_MIDDLE; */
   setText(buf);
 
-  jwidget_focusrest(this, true);
+  this->setFocusStop(true);
   initTheme();
 }
 

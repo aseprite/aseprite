@@ -311,79 +311,9 @@ void Widget::setTheme(Theme* theme)
   setFont(m_theme ? m_theme->default_font: NULL);
 }
 
-/**********************************************************************/
-/* behavior properties */
-
-void jwidget_magnetic(JWidget widget, bool state)
-{
-  ASSERT_VALID_WIDGET(widget);
-
-  if (state)
-    widget->flags |= JI_MAGNETIC;
-  else
-    widget->flags &= ~JI_MAGNETIC;
-}
-
-void jwidget_expansive(JWidget widget, bool state)
-{
-  ASSERT_VALID_WIDGET(widget);
-
-  if (state)
-    widget->flags |= JI_EXPANSIVE;
-  else
-    widget->flags &= ~JI_EXPANSIVE;
-}
-
-void jwidget_decorative(JWidget widget, bool state)
-{
-  ASSERT_VALID_WIDGET(widget);
-
-  if (state)
-    widget->flags |= JI_DECORATIVE;
-  else
-    widget->flags &= ~JI_DECORATIVE;
-}
-
-void jwidget_focusrest(JWidget widget, bool state)
-{
-  ASSERT_VALID_WIDGET(widget);
-
-  if (state)
-    widget->flags |= JI_FOCUSREST;
-  else
-    widget->flags &= ~JI_FOCUSREST;
-}
-
-bool jwidget_is_magnetic(JWidget widget)
-{
-  ASSERT_VALID_WIDGET(widget);
-
-  return (widget->flags & JI_MAGNETIC) ? true: false;
-}
-
-bool jwidget_is_expansive(JWidget widget)
-{
-  ASSERT_VALID_WIDGET(widget);
-
-  return (widget->flags & JI_EXPANSIVE) ? true: false;
-}
-
-bool jwidget_is_decorative(JWidget widget)
-{
-  ASSERT_VALID_WIDGET(widget);
-
-  return (widget->flags & JI_DECORATIVE) ? true: false;
-}
-
-bool jwidget_is_focusrest(JWidget widget)
-{
-  ASSERT_VALID_WIDGET(widget);
-
-  return (widget->flags & JI_FOCUSREST) ? true: false;
-}
-
-/**********************************************************************/
-/* status properties */
+// ===============================================================
+// COMMON PROPERTIES
+// ===============================================================
 
 void Widget::setVisible(bool state)
 {
@@ -447,6 +377,38 @@ void Widget::setSelected(bool state)
   }
 }
 
+void Widget::setExpansive(bool state)
+{
+  if (state)
+    this->flags |= JI_EXPANSIVE;
+  else
+    this->flags &= ~JI_EXPANSIVE;
+}
+
+void Widget::setDecorative(bool state)
+{
+  if (state)
+    this->flags |= JI_DECORATIVE;
+  else
+    this->flags &= ~JI_DECORATIVE;
+}
+
+void Widget::setFocusStop(bool state)
+{
+  if (state)
+    this->flags |= JI_FOCUSSTOP;
+  else
+    this->flags &= ~JI_FOCUSSTOP;
+}
+
+void Widget::setFocusMagnet(bool state)
+{
+  if (state)
+    this->flags |= JI_FOCUSMAGNET;
+  else
+    this->flags &= ~JI_FOCUSMAGNET;
+}
+
 bool Widget::isVisible() const
 {
   const Widget* widget = this;
@@ -478,6 +440,26 @@ bool Widget::isEnabled() const
 bool Widget::isSelected() const
 {
   return (this->flags & JI_SELECTED) ? true: false;
+}
+
+bool Widget::isExpansive() const
+{
+  return (this->flags & JI_EXPANSIVE) ? true: false;
+}
+
+bool Widget::isDecorative() const
+{
+  return (this->flags & JI_DECORATIVE) ? true: false;
+}
+
+bool Widget::isFocusStop() const
+{
+  return (this->flags & JI_FOCUSSTOP) ? true: false;
+}
+
+bool Widget::isFocusMagnet() const
+{
+  return (this->flags & JI_FOCUSMAGNET) ? true: false;
 }
 
 // ===============================================================

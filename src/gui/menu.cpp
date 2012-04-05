@@ -104,7 +104,7 @@ MenuBox::MenuBox(int type)
  : Widget(type)
  , m_base(NULL)
 {
-  jwidget_focusrest(this, true);
+  this->setFocusStop(true);
   initTheme();
 }
 
@@ -259,7 +259,7 @@ void Menu::showPopup(int x, int y)
 
   // Set the focus to the new menubox
   jmanager_set_focus(menubox);
-  jwidget_magnetic(menubox, true);
+  menubox->setFocusMagnet(true);
 
   // Open the window
   window->open_window_fg();
@@ -785,7 +785,7 @@ bool MenuItem::onProcessMessage(Message* msg)
         jrect_free(pos);
 
         // Set the focus to the new menubox
-        jwidget_magnetic(menubox, true);
+        menubox->setFocusMagnet(true);
 
         // Setup the highlight of the new menubox
         if (select_first) {

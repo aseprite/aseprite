@@ -29,7 +29,7 @@ Slider::Slider(int min, int max, int value)
   m_max = max;
   m_value = MID(min, value, max);
 
-  jwidget_focusrest(this, true);
+  this->setFocusStop(true);
   initTheme();
 }
 

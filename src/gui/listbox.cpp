@@ -34,7 +34,7 @@ JWidget jlistbox_new()
   JWidget widget = new Widget(JI_LISTBOX);
 
   jwidget_add_hook(widget, JI_LISTBOX, listbox_msg_proc, NULL);
-  jwidget_focusrest(widget, true);
+  widget->setFocusStop(true);
   widget->initTheme();
 
   return widget;

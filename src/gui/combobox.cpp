@@ -57,10 +57,10 @@ ComboBox::ComboBox()
   // TODO this separation should be from the Theme*
   this->child_spacing = 0;
 
-  jwidget_focusrest(this, true);
+  this->setFocusStop(true);
   jwidget_add_hook(m_entry, JI_WIDGET, combobox_entry_msg_proc, NULL);
 
-  jwidget_expansive(m_entry, true);
+  m_entry->setExpansive(true);
 
   // When the "m_button" is clicked ("Click" signal) call onButtonClick() method
   m_button->Click.connect(&ComboBox::onButtonClick, this);

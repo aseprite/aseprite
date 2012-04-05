@@ -58,7 +58,7 @@ PaletteView::PaletteView(bool editable)
   m_columns = 16;
   m_boxsize = 6;
 
-  jwidget_focusrest(this, true);
+  this->setFocusStop(true);
 
   this->border_width.l = this->border_width.r = 1 * jguiscale();
   this->border_width.t = this->border_width.b = 1 * jguiscale();

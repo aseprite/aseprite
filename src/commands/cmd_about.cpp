@@ -80,10 +80,10 @@ void AboutCommand::onExecute(Context* context)
   grid->addChildInCell(website, 2, 1, 0);
   grid->addChildInCell(bottom_box1, 2, 1, 0);
 
-  jwidget_magnetic(close_button, true);
+  close_button->setFocusMagnet(true);
 
-  jwidget_expansive(bottom_box2, true);
-  jwidget_expansive(bottom_box3, true);
+  bottom_box2->setExpansive(true);
+  bottom_box3->setExpansive(true);
 
   bottom_box1->addChild(bottom_box2);
   bottom_box1->addChild(close_button);

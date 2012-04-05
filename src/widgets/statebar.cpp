@@ -125,7 +125,7 @@ StatusBar::StatusBar()
     set_gfxicon_to_button((name), icon, icon##_SELECTED, icon##_DISABLED, JI_CENTER | JI_MIDDLE); \
   }
 
-  jwidget_focusrest(this, true);
+  this->setFocusStop(true);
 
   m_timeout = 0;
   m_state = SHOW_TEXT;
@@ -164,7 +164,7 @@ StatusBar::StatusBar()
     jwidget_set_border(box1, 2*jguiscale(), 1*jguiscale(), 2*jguiscale(), 2*jguiscale());
     jwidget_noborders(box2);
     jwidget_noborders(box3);
-    jwidget_expansive(box3, true);
+    box3->setExpansive(true);
 
     box4->addChild(m_currentFrame);
     box4->addChild(m_newFrame);
@@ -190,7 +190,7 @@ StatusBar::StatusBar()
 
     jwidget_set_border(box1, 2*jguiscale(), 1*jguiscale(), 2*jguiscale(), 2*jguiscale());
     jwidget_noborders(box2);
-    jwidget_expansive(box2, true);
+    box2->setExpansive(true);
 
     m_linkLabel = new LinkLabel((std::string(WEBSITE) + "donate/").c_str(), "Support This Project");
 
@@ -202,7 +202,7 @@ StatusBar::StatusBar()
   // Construct move-pixels box
   {
     Box* filler = new Box(JI_HORIZONTAL);
-    jwidget_expansive(filler, true);
+    filler->setExpansive(true);
 
     m_movePixelsBox = new Box(JI_HORIZONTAL);
     m_transparentLabel = new Label("Transparent Color:");
