@@ -7,8 +7,17 @@
 #ifndef GUI_TEXTBOX_H_INCLUDED
 #define GUI_TEXTBOX_H_INCLUDED
 
-#include "gui/base.h"
+#include "base/compiler_specific.h"
+#include "gui/widget.h"
 
-JWidget jtextbox_new(const char *text, int align);
+class TextBox : public Widget
+{
+public:
+  TextBox(const char* text, int align);
+
+protected:
+  bool onProcessMessage(Message* msg) OVERRIDE;
+  void onPreferredSize(PreferredSizeEvent& ev) OVERRIDE;
+};
 
 #endif

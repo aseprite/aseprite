@@ -52,7 +52,7 @@ Console::Console()
     Frame* window = new Frame(false, "Errors Console");
     Grid* grid = new Grid(1, false);
     View* view = new View();
-    Widget* textbox = jtextbox_new(NULL, JI_WORDWRAP);
+    TextBox* textbox = new TextBox(NULL, JI_WORDWRAP);
     Button* button = new Button("&Cancel");
 
     if (!grid || !textbox || !button)

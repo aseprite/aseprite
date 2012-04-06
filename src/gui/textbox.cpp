@@ -6,63 +6,49 @@
 
 #include "config.h"
 
-#include <allegro/keyboard.h>
-#include <math.h>
+#include "gui/textbox.h"
 
-#include "gfx/point.h"
-#include "gui/hook.h"
-#include "gui/intern.h"
-#include "gui/manager.h"
+#include "gfx/size.h"
 #include "gui/message.h"
-#include "gui/rect.h"
+#include "gui/preferred_size_event.h"
 #include "gui/system.h"
 #include "gui/theme.h"
 #include "gui/view.h"
-#include "gui/widget.h"
 
-static bool textbox_msg_proc(JWidget widget, Message* msg);
-static void textbox_request_size(JWidget widget, int *w, int *h);
+#include <allegro/keyboard.h>
 
-JWidget jtextbox_new(const char *text, int align)
+TextBox::TextBox(const char* text, int align)
+ : Widget(JI_TEXTBOX)
 {
-  Widget* widget = new Widget(JI_TEXTBOX);
-
-  jwidget_add_hook(widget, JI_TEXTBOX, textbox_msg_proc, NULL);
-  widget->setFocusStop(true);
-  widget->setAlign(align);
-  widget->setText(text);
-  widget->initTheme();
-
-  return widget;
+  setFocusStop(true);
+  setAlign(align);
+  setText(text);
+  initTheme();
 }
 
-static bool textbox_msg_proc(JWidget widget, Message* msg)
+bool TextBox::onProcessMessage(Message* msg)
 {
   switch (msg->type) {
 
-    case JM_REQSIZE:
-      textbox_request_size(widget, &msg->reqsize.w, &msg->reqsize.h);
-      return true;
-
     case JM_DRAW:
-      widget->getTheme()->draw_textbox(widget, &msg->draw.rect);
+      getTheme()->draw_textbox(this, &msg->draw.rect);
       return true;
 
     case JM_SIGNAL:
       if (msg->signal.num == JI_SIGNAL_SET_TEXT) {
-        View* view = View::getView(widget);
+        View* view = View::getView(this);
         if (view)
           view->updateView();
       }
       break;
 
     case JM_KEYPRESSED:
-      if (widget->hasFocus()) {
-        View* view = View::getView(widget);
+      if (hasFocus()) {
+        View* view = View::getView(this);
         if (view) {
           gfx::Rect vp = view->getViewportBounds();
           gfx::Point scroll = view->getViewScroll();
-          int textheight = jwidget_get_text_height(widget);
+          int textheight = jwidget_get_text_height(this);
 
           switch (msg->key.scancode) {
 
@@ -102,7 +88,7 @@ static bool textbox_msg_proc(JWidget widget, Message* msg)
               break;
 
             case KEY_END:
-              scroll.y = jrect_h(widget->rc) - vp.h;
+              scroll.y = jrect_h(this->rc) - vp.h;
               view->setViewScroll(scroll);
               break;
 
@@ -115,9 +101,9 @@ static bool textbox_msg_proc(JWidget widget, Message* msg)
       break;
 
     case JM_BUTTONPRESSED: {
-      View* view = View::getView(widget);
+      View* view = View::getView(this);
       if (view) {
-        widget->captureMouse();
+        captureMouse();
         jmouse_set_cursor(JI_CURSOR_SCROLL);
         return true;
       }
@@ -125,8 +111,8 @@ static bool textbox_msg_proc(JWidget widget, Message* msg)
     }
 
     case JM_MOTION: {
-      View* view = View::getView(widget);
-      if (view && widget->hasCapture()) {
+      View* view = View::getView(this);
+      if (view && hasCapture()) {
         gfx::Rect vp = view->getViewportBounds();
         gfx::Point scroll = view->getViewScroll();
 
@@ -141,9 +127,9 @@ static bool textbox_msg_proc(JWidget widget, Message* msg)
     }
 
     case JM_BUTTONRELEASED: {
-      View* view = View::getView(widget);
-      if (view && widget->hasCapture()) {
-        widget->releaseMouse();
+      View* view = View::getView(this);
+      if (view && hasCapture()) {
+        releaseMouse();
         jmouse_set_cursor(JI_CURSOR_NORMAL);
         return true;
       }
@@ -151,11 +137,11 @@ static bool textbox_msg_proc(JWidget widget, Message* msg)
     }
 
     case JM_WHEEL: {
-      View* view = View::getView(widget);
+      View* view = View::getView(this);
       if (view) {
         gfx::Point scroll = view->getViewScroll();
 
-        scroll.y += (jmouse_z(1) - jmouse_z(0)) * jwidget_get_text_height(widget)*3;
+        scroll.y += (jmouse_z(1) - jmouse_z(0)) * jwidget_get_text_height(this)*3;
 
         view->setViewScroll(scroll);
       }
@@ -163,33 +149,36 @@ static bool textbox_msg_proc(JWidget widget, Message* msg)
     }
   }
 
-  return false;
+  return Widget::onProcessMessage(msg);
 }
 
-static void textbox_request_size(JWidget widget, int *w, int *h)
+void TextBox::onPreferredSize(PreferredSizeEvent& ev)
 {
-  /* TODO */
-/*   *w = widget->border_width.l + widget->border_width.r; */
-/*   *h = widget->border_width.t + widget->border_width.b; */
-  *w = 0;
-  *h = 0;
+  int w = 0;
+  int h = 0;
 
-  _ji_theme_textbox_draw(NULL, widget, w, h, 0, 0);
+  // TODO is it necessary?
+  //w = widget->border_width.l + widget->border_width.r;
+  //h = widget->border_width.t + widget->border_width.b;
 
-  if (widget->getAlign() & JI_WORDWRAP) {
-    View* view = View::getView(widget);
-    int width, min = *w;
+  _ji_theme_textbox_draw(NULL, this, &w, &h, 0, 0);
+
+  if (this->getAlign() & JI_WORDWRAP) {
+    View* view = View::getView(this);
+    int width, min = w;
 
     if (view) {
       width = view->getViewportBounds().w;
     }
     else {
-      width = jrect_w(widget->rc);
+      width = jrect_w(this->rc);
     }
 
-    *w = MAX(min, width);
-    _ji_theme_textbox_draw(NULL, widget, w, h, 0, 0);
+    w = MAX(min, width);
+    _ji_theme_textbox_draw(NULL, this, &w, &h, 0, 0);
 
-    *w = min;
+    w = min;
   }
+
+  ev.setPreferredSize(gfx::Size(w, h));
 }
