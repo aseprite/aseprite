@@ -377,7 +377,7 @@ static bool combobox_listbox_msg_proc(JWidget widget, Message* msg)
 
     case JM_SIGNAL:
       if (msg->signal.num == JI_SIGNAL_LISTBOX_CHANGE) {
-        int index = jlistbox_get_selected_index(widget);
+        int index = static_cast<ListBox*>(widget)->getSelectedIndex();
 
         if (IS_VALID_ITEM(combobox, index))
           combobox->setSelectedItem(index);
@@ -438,7 +438,7 @@ void ComboBox::openListBox()
   if (!m_window) {
     m_window = new Frame(false, NULL);
     View* view = new View();
-    m_listbox = jlistbox_new();
+    m_listbox = new ListBox();
 
     m_listbox->user_data[0] = this;
     jwidget_add_hook(m_listbox, JI_WIDGET,
@@ -447,7 +447,7 @@ void ComboBox::openListBox()
     std::vector<Item*>::iterator it, end = m_items.end();
     for (it = m_items.begin(); it != end; ++it) {
       Item* item = *it;
-      m_listbox->addChild(jlistitem_new(item->text.c_str()));
+      m_listbox->addChild(new ListBox::Item(item->text.c_str()));
     }
 
     m_window->set_ontop(true);
@@ -466,7 +466,7 @@ void ComboBox::openListBox()
     view->attachToView(m_listbox);
 
     jwidget_signal_off(m_listbox);
-    jlistbox_select_index(m_listbox, m_selected);
+    m_listbox->selectIndex(m_selected);
     jwidget_signal_on(m_listbox);
 
     m_window->remap_window();

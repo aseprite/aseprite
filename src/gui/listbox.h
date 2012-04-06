@@ -7,18 +7,41 @@
 #ifndef GUI_LISTBOX_H_INCLUDED
 #define GUI_LISTBOX_H_INCLUDED
 
-#include "gui/base.h"
+#include "base/compiler_specific.h"
+#include "gui/widget.h"
 
-JWidget jlistbox_new();
-JWidget jlistitem_new(const char *text);
+class ListBox : public Widget
+{
+public:
+  class Item : public Widget
+  {
+  public:
+    Item(const char* text);
 
-JWidget jlistbox_get_selected_child(JWidget listbox);
-int jlistbox_get_selected_index(JWidget listbox);
-void jlistbox_select_child(JWidget listbox, JWidget listitem);
-void jlistbox_select_index(JWidget listbox, int index);
+  protected:
+    bool onProcessMessage(Message* msg) OVERRIDE;
+    void onPreferredSize(PreferredSizeEvent& ev) OVERRIDE;
+  };
 
-int jlistbox_get_items_count(JWidget listbox);
+  ListBox();
 
-void jlistbox_center_scroll(JWidget listbox);
+  Item* getSelectedChild();
+  int getSelectedIndex();
+
+  void selectChild(Item* item);
+  void selectIndex(int index);
+
+  int getItemsCount();
+
+  void centerScroll();
+
+protected:
+  bool onProcessMessage(Message* msg) OVERRIDE;
+  void onPreferredSize(PreferredSizeEvent& ev) OVERRIDE;
+
+private:
+  void layoutListBox(JRect rect);
+  void dirtyChildren();
+};
 
 #endif

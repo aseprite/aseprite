@@ -231,13 +231,13 @@ static Widget* convert_xmlelement_to_widget(TiXmlElement* elem, Widget* root)
   }
   /* listbox */
   else if (ustrcmp(elem_name, "listbox") == 0) {
-    widget = jlistbox_new();
+    widget = new ListBox();
   }
   /* listitem */
   else if (ustrcmp(elem_name, "listitem") == 0) {
     const char *text = elem->Attribute("text");
 
-    widget = jlistitem_new(text ? TRANSLATE_ATTR(text): NULL);
+    widget = new ListBox::Item(text ? TRANSLATE_ATTR(text): NULL);
   }
   /* splitter */
   else if (ustrcmp(elem_name, "splitter") == 0) {

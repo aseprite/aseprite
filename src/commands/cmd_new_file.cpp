@@ -68,7 +68,8 @@ NewFileCommand::NewFileCommand()
  */
 void NewFileCommand::onExecute(Context* context)
 {
-  JWidget width, height, radio1, radio2, radio3, colors, ok, bg_box;
+  JWidget width, height, radio1, radio2, radio3, colors, ok;
+  ListBox* bg_box;
   PixelFormat format;
   int w, h, bg, ncolors;
   char buf[1024];
@@ -123,7 +124,7 @@ void NewFileCommand::onExecute(Context* context)
   }
 
   // Select background color
-  jlistbox_select_index(bg_box, bg);
+  bg_box->selectIndex(bg);
 
   // Open the window
   window->open_window_fg();
@@ -139,7 +140,7 @@ void NewFileCommand::onExecute(Context* context)
     w = width->getTextInt();
     h = height->getTextInt();
     ncolors = colors->getTextInt();
-    bg = jlistbox_get_selected_index(bg_box);
+    bg = bg_box->getSelectedIndex();
 
     w = MID(1, w, 9999);
     h = MID(1, h, 9999);
