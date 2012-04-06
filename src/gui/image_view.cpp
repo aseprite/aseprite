@@ -16,8 +16,6 @@
 #include "gui/system.h"
 #include "gui/theme.h"
 
-static bool image_msg_proc(JWidget widget, Message* msg);
-
 ImageView::ImageView(BITMAP* bmp, int align)
  : Widget(JI_IMAGE_VIEW)
 {

@@ -22,7 +22,7 @@ protected:
   void onPaint(PaintEvent& ev) OVERRIDE;
 
 private:
-  void box_set_position(JRect rect);
+  void layoutBox(JRect rect);
 };
 
 class VBox : public Box
