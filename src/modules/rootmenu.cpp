@@ -304,7 +304,7 @@ static Widget* convert_xmlelem_to_menuitem(TiXmlElement* elem)
 {
   // is it a <separator>?
   if (strcmp(elem->Value(), "separator") == 0)
-    return ji_separator_new(NULL, JI_HORIZONTAL);
+    return new Separator(NULL, JI_HORIZONTAL);
 
   const char* command_name = elem->Attribute("command");
   Command* command =
@@ -361,7 +361,7 @@ static Widget* create_invalid_version_menuitem()
   subMenu->addChild(new MenuItem2(PACKAGE " is using a customized gui.xml (maybe from your HOME directory).", NULL, NULL));
   subMenu->addChild(new MenuItem2("You should update your customized gui.xml file to the new version to get", NULL, NULL));
   subMenu->addChild(new MenuItem2("the latest commands available.", NULL, NULL));
-  subMenu->addChild(ji_separator_new(NULL, JI_HORIZONTAL));
+  subMenu->addChild(new Separator(NULL, JI_HORIZONTAL));
   subMenu->addChild(new MenuItem2("You can bypass this validation adding the correct version", NULL, NULL));
   subMenu->addChild(new MenuItem2("number in <gui version=\"" VERSION "\"> element.", NULL, NULL));
   menuitem->setSubmenu(subMenu);

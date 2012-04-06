@@ -285,13 +285,13 @@ static Widget* convert_xmlelement_to_widget(TiXmlElement* elem, Widget* root)
     bool horizontal  = bool_attr_is_true(elem, "horizontal");
     bool vertical    = bool_attr_is_true(elem, "vertical");
 
-    widget = ji_separator_new(text ? TRANSLATE_ATTR(text): NULL,
-                              (horizontal ? JI_HORIZONTAL: 0) |
-                              (vertical ? JI_VERTICAL: 0) |
-                              (center ? JI_CENTER:
-                               (right ? JI_RIGHT: JI_LEFT)) |
-                              (middle ? JI_MIDDLE:
-                               (bottom ? JI_BOTTOM: JI_TOP)));
+    widget = new Separator(text ? TRANSLATE_ATTR(text): NULL,
+                           (horizontal ? JI_HORIZONTAL: 0) |
+                           (vertical ? JI_VERTICAL: 0) |
+                           (center ? JI_CENTER:
+                            (right ? JI_RIGHT: JI_LEFT)) |
+                           (middle ? JI_MIDDLE:
+                            (bottom ? JI_BOTTOM: JI_TOP)));
   }
   /* slider */
   else if (ustrcmp(elem_name, "slider") == 0) {
