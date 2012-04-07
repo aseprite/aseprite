@@ -15,9 +15,8 @@
   #include <pthread.h>          // Use pthread library in Unix-like systems
 #endif
 
-#if defined(HAVE_SCHED_YIELD) && defined(_POSIX_PRIORITY_SCHEDULING)
+#if !defined(WIN32)
   #include <unistd.h>
-#elif !defined(WIN32)
   #include <sys/time.h>
 #endif
 
