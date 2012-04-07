@@ -50,10 +50,10 @@ static int tabs_type()
 Tabs::Tabs(TabsDelegate* delegate)
   : Widget(tabs_type())
   , m_delegate(delegate)
+  , m_timer(this, 1000/60)
 {
   m_hot = NULL;
   m_selected = NULL;
-  m_timerId = jmanager_add_timer(this, 1000/60);
   m_scrollX = 0;
   m_ani = ANI_NONE;
   m_removedTab = NULL;
@@ -103,8 +103,6 @@ Tabs::~Tabs()
 
   delete m_button_left;         // widget
   delete m_button_right;        // widget
-
-  jmanager_remove_timer(m_timerId);
 }
 
 void Tabs::addTab(const char* text, void* data)
@@ -676,13 +674,13 @@ void Tabs::startAni(Ani ani)
 
   m_ani = ani;
   m_ani_t = 0;
-  jmanager_start_timer(m_timerId);
+  m_timer.start();
 }
 
 void Tabs::stopAni()
 {
   m_ani = ANI_NONE;
-  jmanager_stop_timer(m_timerId);
+  m_timer.stop();
 }
 
 static bool tabs_button_msg_proc(JWidget widget, Message* msg)

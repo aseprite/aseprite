@@ -43,12 +43,6 @@ enum {
   STAGE_CLOSE_ALL,
 };
 
-struct Timer {
-  Widget* widget;
-  int interval;
-  int last_time;
-};
-
 #define NFILTERS        (JM_REGISTERED_MESSAGES+1)
 
 struct Filter
@@ -90,8 +84,6 @@ static int want_close_stage;       /* variable to handle the external
                                       enviroments */
 
 static Manager* default_manager = NULL;
-
-static std::vector<Timer*> timers; // Registered timers
 
 static JList new_windows;             // Windows that we should show
 static WidgetsList mouse_widgets_list; // List of widgets to send mouse events
@@ -228,9 +220,7 @@ void jmanager_free(JWidget widget)
     jwidget_free(widget);
 
     // Destroy timers
-    for (c=0; c<(int)timers.size(); ++c)
-      delete timers[c];
-    timers.clear();
+    gui::Timer::checkNoTimers();
 
     /* destroy filters */
     for (c=0; c<NFILTERS; ++c) {
@@ -547,34 +537,7 @@ bool jmanager_generate_messages(JWidget manager)
   }
 
   // Generate messages for timers
-  if (!timers.empty()) {
-    int t = ji_clock;
-    int count;
-
-    for (c=0; c<(int)timers.size(); ++c) {
-      if (timers[c] && timers[c]->last_time >= 0) {
-        count = 0;
-        while (t - timers[c]->last_time > timers[c]->interval) {
-          timers[c]->last_time += timers[c]->interval;
-          ++count;
-
-          /* we spend too much time here */
-          if (ji_clock - t > timers[c]->interval) {
-            timers[c]->last_time = ji_clock;
-            break;
-          }
-        }
-
-        if (count > 0) {
-          msg = jmessage_new(JM_TIMER);
-          msg->timer.count = count;
-          msg->timer.timer_id = c;
-          jmessage_add_dest(msg, timers[c]->widget);
-          jmanager_enqueue_message(msg);
-        }
-      }
-    }
-  }
+  gui::Timer::pollTimers();
 
   /* generate redraw events */
   manager->flushRedraw();
@@ -604,95 +567,6 @@ void jmanager_dispatch_messages(JWidget manager)
 void jmanager_add_to_garbage(Widget* widget)
 {
   garbage.push_back(widget);
-}
-
-/**
- * Adds a timer event for the specified widget.
- *
- * @return A timer ID that can be used with @ref jmanager_remove_timer
- */
-int jmanager_add_timer(JWidget widget, int interval)
-{
-  int c, new_id = -1;
-
-  ASSERT_VALID_WIDGET(widget);
-
-  for (c=0; c<(int)timers.size(); ++c) {
-    // There are an empty slot
-    if (timers[c] == NULL) {
-      new_id = c;
-      break;
-    }
-  }
-
-  if (new_id < 0) {
-    new_id = timers.size();
-    timers.push_back(NULL);
-  }
-
-  Timer* timer = new Timer;
-  timer->widget = widget;
-  timer->interval = interval;
-  timer->last_time = -1;
-  timers[new_id] = timer;
-
-  return new_id;
-}
-
-void jmanager_remove_timer(int timer_id)
-{
-  Message* message;
-  JLink link, next;
-
-  ASSERT(timer_id >= 0 && timer_id < (int)timers.size());
-  ASSERT(timers[timer_id] != NULL);
-
-  delete timers[timer_id];
-  timers[timer_id] = NULL;
-
-  /* remove messages of this timer in the queue */
-  JI_LIST_FOR_EACH_SAFE(msg_queue, link, next) {
-    message = reinterpret_cast<Message*>(link->data);
-    if (!message->any.used &&
-        message->any.type == JM_TIMER &&
-        message->timer.timer_id == timer_id) {
-      printf("REMOVING A TIMER MESSAGE FROM THE QUEUE!!\n"); fflush(stdout);
-      jmessage_free(reinterpret_cast<Message*>(link->data));
-      jlist_delete_link(msg_queue, link);
-    }
-  }
-}
-
-void jmanager_start_timer(int timer_id)
-{
-  ASSERT(timer_id >= 0 && timer_id < (int)timers.size());
-  ASSERT(timers[timer_id] != NULL);
-
-  timers[timer_id]->last_time = ji_clock;
-}
-
-void jmanager_stop_timer(int timer_id)
-{
-  ASSERT(timer_id >= 0 && timer_id < (int)timers.size());
-  ASSERT(timers[timer_id] != NULL);
-
-  timers[timer_id]->last_time = -1;
-}
-
-void jmanager_set_timer_interval(int timer_id, int interval)
-{
-  ASSERT(timer_id >= 0 && timer_id < (int)timers.size());
-  ASSERT(timers[timer_id] != NULL);
-
-  timers[timer_id]->interval = interval;
-}
-
-bool jmanager_timer_is_running(int timer_id)
-{
-  ASSERT(timer_id >= 0 && timer_id < (int)timers.size());
-  ASSERT(timers[timer_id] != NULL);
-
-  return (timers[timer_id]->last_time >= 0);
 }
 
 /**
@@ -977,6 +851,21 @@ void jmanager_remove_messages_for(JWidget widget)
     remove_msgs_for(widget, reinterpret_cast<Message*>(link->data));
 }
 
+void jmanager_remove_messages_for_timer(gui::Timer* timer)
+{
+  JLink link, next;
+
+  JI_LIST_FOR_EACH_SAFE(msg_queue, link, next) {
+    Message* message = reinterpret_cast<Message*>(link->data);
+    if (!message->any.used &&
+        message->any.type == JM_TIMER &&
+        message->timer.timer == timer) {
+      jmessage_free(reinterpret_cast<Message*>(link->data));
+      jlist_delete_link(msg_queue, link);
+    }
+  }
+}
+
 void jmanager_refresh_screen()
 {
   if (default_manager)
@@ -1252,6 +1141,12 @@ static void manager_pump_queue(JWidget widget_manager)
     /* this message is in use */
     msg->any.used = true;
     first_msg = msg;
+
+    // Call gui::Timer::tick() if this is a tick message.
+    if (msg->type == JM_TIMER) {
+      ASSERT(msg->timer.timer != NULL);
+      msg->timer.timer->tick();
+    }
 
     done = false;
     JI_LIST_FOR_EACH(msg->any.widgets, link2) {

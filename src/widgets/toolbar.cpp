@@ -65,7 +65,7 @@ class ToolBar : public Widget
   // Tool-tip window
   TipWindow* m_tipWindow;
 
-  int m_tipTimerId;
+  gui::Timer m_tipTimer;
   bool m_tipOpened;
 
 public:
@@ -148,6 +148,7 @@ void toolbar_select_tool(JWidget toolbar, Tool* tool)
 
 ToolBar::ToolBar()
   : Widget(JI_WIDGET)
+  , m_tipTimer(this, 300)
 {
   this->border_width.l = 1*jguiscale();
   this->border_width.t = 0;
@@ -159,7 +160,6 @@ ToolBar::ToolBar()
   m_open_on_hot = false;
   m_popupFrame = NULL;
   m_tipWindow = NULL;
-  m_tipTimerId = jmanager_add_timer(this, 300);
   m_tipOpened = false;
 
   ToolBox* toolbox = App::instance()->getToolBox();
@@ -172,7 +172,6 @@ ToolBar::ToolBar()
 
 ToolBar::~ToolBar()
 {
-  jmanager_remove_timer(m_tipTimerId);
   delete m_popupFrame;
   delete m_tipWindow;
 }
@@ -387,11 +386,11 @@ bool ToolBar::onProcessMessage(Message* msg)
       break;
 
     case JM_TIMER:
-      if (msg->timer.timer_id == m_tipTimerId) {
+      if (msg->timer.timer == &m_tipTimer) {
         if (m_tipWindow)
           m_tipWindow->open_window();
 
-        jmanager_stop_timer(m_tipTimerId);
+        m_tipTimer.stop();
         m_tipOpened = true;
       }
       break;
@@ -592,12 +591,12 @@ void ToolBar::openTipWindow(int group_index, Tool* tool)
   if (m_tipOpened)
     m_tipWindow->open_window();
   else
-    jmanager_start_timer(m_tipTimerId);
+    m_tipTimer.start();
 }
 
 void ToolBar::closeTipWindow()
 {
-  jmanager_stop_timer(m_tipTimerId);
+  m_tipTimer.stop();
 
   if (m_tipWindow) {
     m_tipWindow->closeWindow(NULL);

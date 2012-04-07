@@ -20,6 +20,7 @@
 #define WIDGETS_TABS_H_INCLUDED
 
 #include "base/compiler_specific.h"
+#include "gui/timer.h"
 #include "gui/widget.h"
 
 #include <vector>
@@ -112,7 +113,7 @@ private:
   int m_scrollX;
 
   // Variables for animation purposes
-  int m_timerId;
+  gui::Timer m_timer;
   int m_begScrollX;             // Initial X position of scroll in the animation when you scroll with mouse wheel
   int m_endScrollX;             // Final X position of scroll in the animation when you scroll with mouse wheel
   Ani m_ani;                    // Current animation

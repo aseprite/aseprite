@@ -300,14 +300,14 @@ void StatusBar::showTip(int msecs, const char *format, ...)
 
   if (m_tipwindow == NULL) {
     m_tipwindow = new TipWindow(buf);
-    m_tipwindow->user_data[0] = (void *)jmanager_add_timer(m_tipwindow, msecs);
+    m_tipwindow->user_data[0] = (void*)new gui::Timer(m_tipwindow, msecs);
     m_tipwindow->user_data[1] = this;
     jwidget_add_hook(m_tipwindow, -1, tipwindow_msg_proc, NULL);
   }
   else {
     m_tipwindow->setText(buf);
 
-    jmanager_set_timer_interval((size_t)m_tipwindow->user_data[0], msecs);
+    ((gui::Timer*)m_tipwindow->user_data[0])->setInterval(msecs);
   }
 
   if (m_tipwindow->isVisible())
@@ -320,7 +320,7 @@ void StatusBar::showTip(int msecs, const char *format, ...)
   y = this->rc->y1 - jrect_h(m_tipwindow->rc);
   m_tipwindow->position_window(x, y);
 
-  jmanager_start_timer((size_t)m_tipwindow->user_data[0]);
+  ((gui::Timer*)m_tipwindow->user_data[0])->start();
 
   // Set the text in status-bar (with inmediate timeout)
   m_timeout = ji_clock;
@@ -805,7 +805,7 @@ static bool tipwindow_msg_proc(JWidget widget, Message* msg)
   switch (msg->type) {
 
     case JM_DESTROY:
-      jmanager_remove_timer((size_t)widget->user_data[0]);
+      delete ((gui::Timer*)widget->user_data[0]);
       break;
 
     case JM_TIMER:

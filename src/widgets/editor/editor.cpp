@@ -125,6 +125,7 @@ Editor::Editor()
   : Widget(editor_type())
   , m_state(new StandbyState())
   , m_decorator(NULL)
+  , m_mask_timer(this, 100)
   , m_customizationDelegate(NULL)
 {
   // Add the first state into the history.
@@ -144,7 +145,6 @@ Editor::Editor()
 
   m_offset_x = 0;
   m_offset_y = 0;
-  m_mask_timer_id = jmanager_add_timer(this, 100);
   m_offset_count = 0;
 
   this->setFocusStop(true);
@@ -160,7 +160,7 @@ Editor::~Editor()
 {
   setCustomizationDelegate(NULL);
 
-  jmanager_remove_timer(m_mask_timer_id);
+  m_mask_timer.stop();
   remove_editor(this);
 
   // Remove this editor as listener of CurrentToolChange signal.
@@ -934,10 +934,10 @@ bool Editor::onProcessMessage(Message* msg)
           // Draw the mask boundaries
           if (m_document->getBoundariesSegments()) {
             drawMask();
-            jmanager_start_timer(m_mask_timer_id);
+            m_mask_timer.start();
           }
           else {
-            jmanager_stop_timer(m_mask_timer_id);
+            m_mask_timer.stop();
           }
 
           // Draw the cursor again
@@ -959,7 +959,7 @@ bool Editor::onProcessMessage(Message* msg)
     }
 
     case JM_TIMER:
-      if (msg->timer.timer_id == m_mask_timer_id) {
+      if (msg->timer.timer == &m_mask_timer) {
         if (m_sprite) {
           drawMaskSafe();
 

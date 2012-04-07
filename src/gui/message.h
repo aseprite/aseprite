@@ -10,6 +10,8 @@
 #include "gui/base.h"
 #include "gui/rect.h"
 
+namespace gui { class Timer; }
+
 /* TODO add mutexes */
 #define JM_MESSAGE(name)                                \
   static int _jm_##name = 0;                            \
@@ -65,8 +67,8 @@ struct MessageSignal
 struct MessageTimer
 {
   MessageAny any;
-  int count;                    /* accumulated calls */
-  int timer_id;                 /* number of timer */
+  int count;                    // Accumulated calls
+  gui::Timer* timer;            // Timer handle
 };
 
 struct MessageSetPos

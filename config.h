@@ -21,7 +21,15 @@
 #endif
 
 #define __ASE_CONFIG_H
-#define _CRT_SECURE_NO_WARNINGS
+
+// In MSVC
+#ifdef _MSC_VER
+  // Avoid warnings about insecure standard C++ functions
+  #define _CRT_SECURE_NO_WARNINGS
+
+  // Disable warning C4355 in MSVC: 'this' used in base member initializer list
+  #pragma warning(disable:4355)
+#endif
 
 // General information
 #define PACKAGE                 "ASEPRITE"

@@ -131,7 +131,6 @@ MenuItem::MenuItem(const char *text)
   m_highlighted = false;
   m_submenu = NULL;
   m_submenu_menubox = NULL;
-  m_submenu_timer = -1;
 
   setText(text);
   initTheme();
@@ -144,12 +143,6 @@ MenuItem::~MenuItem()
 
   if (m_submenu)
     jwidget_free(m_submenu);
-
-  // Stop timer to open the popup
-  if (m_submenu_timer >= 0) {
-    jmanager_remove_timer(m_submenu_timer);
-    m_submenu_timer = -1;
-  }
 }
 
 Menu* MenuBox::getMenu()
@@ -458,7 +451,7 @@ bool MenuBox::onProcessMessage(Message* msg)
         MenuItem* highlight = menu->getHighlightedItem();
         if (highlight &&
             !highlight->hasSubmenuOpened() &&
-            highlight->m_submenu_timer < 0) {
+            highlight->m_submenu_timer == NULL) {
           menu->closeAll();
           highlight->executeClick();
         }
@@ -707,10 +700,8 @@ bool MenuItem::onProcessMessage(Message* msg)
       invalidate();
 
       // Stop timer to open the popup
-      if (m_submenu_timer >= 0) {
-        jmanager_remove_timer(m_submenu_timer);
-        m_submenu_timer = -1;
-      }
+      if (m_submenu_timer)
+        m_submenu_timer.reset();
       break;
 
     default:
@@ -870,7 +861,7 @@ bool MenuItem::onProcessMessage(Message* msg)
       break;
 
     case JM_TIMER:
-      if (msg->timer.timer_id == m_submenu_timer) {
+      if (msg->timer.timer == m_submenu_timer.get()) {
         MenuBaseData* base = get_base(this);
 
         ASSERT(hasSubmenu());
@@ -1134,18 +1125,17 @@ void MenuItem::closeSubmenu(bool last_of_close_chain)
 
 void MenuItem::startTimer()
 {
-  if (m_submenu_timer < 0)
-    m_submenu_timer = jmanager_add_timer(this, TIMEOUT_TO_OPEN_SUBMENU);
-  jmanager_start_timer(m_submenu_timer);
+  if (m_submenu_timer == NULL)
+    m_submenu_timer.reset(new gui::Timer(this, TIMEOUT_TO_OPEN_SUBMENU));
+
+  m_submenu_timer->start();
 }
 
 void MenuItem::stopTimer()
 {
   // Stop timer to open the popup
-  if (m_submenu_timer >= 0) {
-    jmanager_remove_timer(m_submenu_timer);
-    m_submenu_timer = -1;
-  }
+  if (m_submenu_timer)
+    m_submenu_timer.reset();
 }
 
 void Menu::closeAll()

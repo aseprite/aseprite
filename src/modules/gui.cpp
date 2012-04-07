@@ -21,6 +21,7 @@
 #include "app.h"
 #include "base/memory.h"
 #include "base/shared_ptr.h"
+#include "base/unique_ptr.h"
 #include "commands/command.h"
 #include "commands/commands.h"
 #include "commands/params.h"
@@ -142,7 +143,7 @@ struct Monitor
 static JWidget manager = NULL;
 static Theme* ase_theme = NULL;
 
-static int monitor_timer = -1;
+static UniquePtr<gui::Timer> monitor_timer;
 static MonitorList* monitors = NULL;
 static std::vector<Shortcut*>* shortcuts = NULL;
 
@@ -343,6 +344,8 @@ void exit_module_gui()
   shortcuts = NULL;
 
   // destroy monitors
+  monitor_timer.reset(NULL);
+
   ASSERT(monitors != NULL);
   for (MonitorList::iterator
          it2 = monitors->begin(); it2 != monitors->end(); ++it2) {
@@ -1116,10 +1119,10 @@ Monitor* add_gui_monitor(void (*proc)(void *),
 
   monitors->push_back(monitor);
 
-  if (monitor_timer < 0)
-    monitor_timer = jmanager_add_timer(manager, MONITOR_TIMER_MSECS);
+  if (monitor_timer == NULL)
+    monitor_timer.reset(new gui::Timer(manager, MONITOR_TIMER_MSECS));
 
-  jmanager_start_timer(monitor_timer);
+  monitor_timer->start();
 
   return monitor;
 }
@@ -1139,7 +1142,7 @@ void remove_gui_monitor(Monitor* monitor)
 
   monitors->erase(it);
   if (monitors->empty())
-    jmanager_stop_timer(monitor_timer);
+    monitor_timer->stop();
 }
 
 void* get_monitor_data(Monitor* monitor)
@@ -1168,7 +1171,7 @@ static bool manager_msg_proc(JWidget widget, Message* msg)
       break;
 
     case JM_TIMER:
-      if (msg->timer.timer_id == monitor_timer) {
+      if (msg->timer.timer == monitor_timer) {
         for (MonitorList::iterator
                it = monitors->begin(), next; it != monitors->end(); it = next) {
           Monitor* monitor = *it;
@@ -1189,7 +1192,7 @@ static bool manager_msg_proc(JWidget widget, Message* msg)
 
         // is monitors empty? we can stop the timer so
         if (monitors->empty())
-          jmanager_stop_timer(monitor_timer);
+          monitor_timer->stop();
       }
       break;
 

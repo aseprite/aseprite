@@ -9,6 +9,7 @@
 
 #include "base/compiler_specific.h"
 #include "base/signal.h"
+#include "gui/timer.h"
 #include "gui/widget.h"
 
 class Entry : public Widget
@@ -73,7 +74,7 @@ private:
   int m_caret;
   int m_scroll;
   int m_select;
-  int m_timer_id;
+  gui::Timer m_timer;
   bool m_hidden : 1;
   bool m_state : 1;             // show or not the text caret
   bool m_readonly : 1;

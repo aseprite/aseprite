@@ -46,7 +46,7 @@
 
 using namespace gfx;
 
-typedef struct FileView
+struct FileView
 {
   IFileItem* current_folder;
   FileItemList list;
@@ -61,11 +61,14 @@ typedef struct FileView
 
   /* thumbnail generation process */
   IFileItem* item_to_generate_thumbnail;
-  int timer_id;
+  gui::Timer timer;
   MonitorList monitors; // list of monitors watching threads
-} FileView;
 
-typedef struct ThumbnailData
+  FileView(Widget* widget)
+    : timer(widget, 200) { }
+};
+
+struct ThumbnailData
 {
   Monitor* monitor;
   FileOp* fop;
@@ -74,7 +77,7 @@ typedef struct ThumbnailData
   Image* thumbnail;
   base::thread* thread;
   Palette* palette;
-} ThumbnailData;
+};
 
 static FileView* fileview_data(JWidget widget);
 static bool fileview_msg_proc(JWidget widget, Message* msg);
@@ -94,7 +97,7 @@ static void monitor_free_thumbnail_generation(void *data);
 JWidget fileview_new(IFileItem* start_folder, const base::string& exts)
 {
   Widget* widget = new Widget(fileview_type());
-  FileView* fileview = new FileView;
+  FileView* fileview = new FileView(widget);
 
   if (!start_folder)
     start_folder = FileSystemModule::instance()->getRootFileItem();
@@ -118,7 +121,6 @@ JWidget fileview_new(IFileItem* start_folder, const base::string& exts)
   fileview->isearch_clock = 0;
 
   fileview->item_to_generate_thumbnail = NULL;
-  fileview->timer_id = jmanager_add_timer(widget, 200);
 
   fileview_regenerate_list(widget);
 
@@ -204,7 +206,6 @@ static bool fileview_msg_proc(JWidget widget, Message* msg)
       // at this point, can't be threads running in background
       ASSERT(fileview->monitors.empty());
 
-      jmanager_remove_timer(fileview->timer_id);
       delete fileview;
       break;
 
@@ -551,10 +552,10 @@ static bool fileview_msg_proc(JWidget widget, Message* msg)
 
     case JM_TIMER:
       /* is time to generate the thumbnail? */
-      if (msg->timer.timer_id == fileview->timer_id) {
+      if (msg->timer.timer == &fileview->timer) {
         IFileItem* fileitem;
 
-        jmanager_stop_timer(fileview->timer_id);
+        fileview->timer.stop();
 
         fileitem = fileview->item_to_generate_thumbnail;
         fileview_generate_thumbnail(widget, fileitem);
@@ -683,7 +684,7 @@ static void fileview_generate_preview_of_selected_item(JWidget widget)
       !fileview->selected->getThumbnail())
     {
       fileview->item_to_generate_thumbnail = fileview->selected;
-      jmanager_start_timer(fileview->timer_id);
+      fileview->timer.start();
     }
 }
 
@@ -733,7 +734,7 @@ static bool fileview_generate_thumbnail(JWidget widget, IFileItem* fileitem)
 static void fileview_stop_threads(FileView* fileview)
 {
   // stop the generation of threads
-  jmanager_stop_timer(fileview->timer_id);
+  fileview->timer.stop();
 
   // join all threads (removing all monitors)
   for (MonitorList::iterator

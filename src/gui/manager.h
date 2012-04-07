@@ -9,6 +9,8 @@
 
 #include "gui/base.h"
 
+namespace gui { class Timer; }
+
 JWidget ji_get_default_manager();
 
 JWidget jmanager_new();
@@ -19,15 +21,6 @@ bool jmanager_generate_messages(JWidget manager);
 void jmanager_dispatch_messages(JWidget manager);
 
 void jmanager_add_to_garbage(Widget* widget);
-
-/* timers */
-
-int jmanager_add_timer(JWidget widget, int interval);
-void jmanager_remove_timer(int timer_id);
-void jmanager_start_timer(int timer_id);
-void jmanager_stop_timer(int timer_id);
-void jmanager_set_timer_interval(int timer_id, int interval);
-bool jmanager_timer_is_running(int timer_id);
 
 /* routines that uses the ji_get_default_manager() */
 
@@ -51,6 +44,7 @@ void jmanager_free_capture();
 void jmanager_free_widget(JWidget widget);
 void jmanager_remove_message(Message* msg);
 void jmanager_remove_messages_for(JWidget widget);
+void jmanager_remove_messages_for_timer(gui::Timer* timer);
 void jmanager_refresh_screen();
 
 void jmanager_add_msg_filter(int message, JWidget widget);

@@ -47,6 +47,7 @@
 #include "gui/system.h"
 #include "gui/textbox.h"
 #include "gui/theme.h"
+#include "gui/timer.h"
 #include "gui/tooltips.h"
 #include "gui/view.h"
 #include "gui/viewport.h"

@@ -43,6 +43,7 @@ add_library(gui-lib
   system.cpp
   textbox.cpp
   theme.cpp
+  timer.cpp
   tooltips.cpp
   view.cpp
   viewport.cpp

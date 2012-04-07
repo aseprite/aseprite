@@ -26,6 +26,7 @@
 
 Entry::Entry(size_t maxsize, const char *format, ...)
   : Widget(JI_ENTRY)
+  , m_timer(this, 500)
 {
   char buf[4096];
 
@@ -45,7 +46,6 @@ Entry::Entry(size_t maxsize, const char *format, ...)
   m_caret = 0;
   m_scroll = 0;
   m_select = 0;
-  m_timer_id = jmanager_add_timer(this, 500);
   m_hidden = false;
   m_state = false;
   m_password = false;
@@ -62,7 +62,6 @@ Entry::Entry(size_t maxsize, const char *format, ...)
 
 Entry::~Entry()
 {
-  jmanager_remove_timer(m_timer_id);
 }
 
 bool Entry::isReadOnly() const
@@ -121,7 +120,7 @@ void Entry::setCaretPos(int pos)
     }
   } while (m_caret >= c);
 
-  jmanager_start_timer(m_timer_id);
+  m_timer.start();
   m_state = true;
 
   invalidate();
@@ -167,8 +166,7 @@ bool Entry::onProcessMessage(Message* msg)
   switch (msg->type) {
 
     case JM_TIMER:
-      if (this->hasFocus() &&
-          msg->timer.timer_id == m_timer_id) {
+      if (this->hasFocus() && msg->timer.timer == &m_timer) {
         // Blinking caret
         m_state = m_state ? false: true;
         invalidate();
@@ -176,7 +174,7 @@ bool Entry::onProcessMessage(Message* msg)
       break;
 
     case JM_FOCUSENTER:
-      jmanager_start_timer(m_timer_id);
+      m_timer.start();
 
       m_state = true;
       invalidate();
@@ -188,7 +186,7 @@ bool Entry::onProcessMessage(Message* msg)
     case JM_FOCUSLEAVE:
       invalidate();
 
-      jmanager_stop_timer(m_timer_id);
+      m_timer.stop();
 
       deselectText();
       m_recent_focused = false;
@@ -332,7 +330,7 @@ bool Entry::onProcessMessage(Message* msg)
 
         // Show the caret
         if (is_dirty) {
-          jmanager_start_timer(m_timer_id);
+          m_timer.start();
           m_state = true;
         }
 
