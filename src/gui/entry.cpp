@@ -516,7 +516,7 @@ void Entry::executeCmd(EntryCmd::Type cmd, int ascii, bool shift_pressed)
         // *cut* text!
         if (cmd == EntryCmd::Cut) {
           base::string buf = text.substr(selbeg, selend - selbeg + 1);
-          jclipboard_set_text(buf.c_str());
+          gui::clipboard::set_text(buf.c_str());
         }
 
         // remove text
@@ -536,7 +536,7 @@ void Entry::executeCmd(EntryCmd::Type cmd, int ascii, bool shift_pressed)
     case EntryCmd::Paste: {
       const char *clipboard;
 
-      if ((clipboard = jclipboard_get_text())) {
+      if ((clipboard = gui::clipboard::get_text())) {
         // delete the entire selection
         if (selbeg >= 0) {
           text.erase(selbeg, selend-selbeg+1);
@@ -560,7 +560,7 @@ void Entry::executeCmd(EntryCmd::Type cmd, int ascii, bool shift_pressed)
     case EntryCmd::Copy:
       if (selbeg >= 0) {
         base::string buf = text.substr(selbeg, selend - selbeg + 1);
-        jclipboard_set_text(buf.c_str());
+        gui::clipboard::set_text(buf.c_str());
       }
       break;
 

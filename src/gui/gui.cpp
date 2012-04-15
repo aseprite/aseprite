@@ -36,7 +36,7 @@ Jinete::~Jinete()
   CurrentTheme::set(NULL);
 
   // destroy clipboard
-  jclipboard_set_text(NULL);
+  gui::clipboard::set_text(NULL);
 
   // shutdown system
   _ji_widgets_exit();
