@@ -847,9 +847,6 @@ void Manager::_openWindow(Frame* window)
   jlist_prepend(this->children, window);
   window->parent = this;
 
-  /* append signal */
-  jwidget_emit_signal(this, JI_SIGNAL_MANAGER_ADD_WINDOW);
-
   /* broadcast the open message */
   msg = jmessage_new(JM_OPEN);
   jmessage_add_dest(msg, window);
@@ -910,9 +907,6 @@ void Manager::_closeWindow(Frame* window, bool redraw_background)
   /* update manager list stuff */
   jlist_remove(this->children, window);
   window->parent = NULL;
-
-  /* remove signal */
-  jwidget_emit_signal(this, JI_SIGNAL_MANAGER_REMOVE_WINDOW);
 
   /* redraw background */
   if (reg1) {

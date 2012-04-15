@@ -178,7 +178,6 @@ void Frame::remap_window()
   jwidget_set_rect(this, rect);
   jrect_free(rect);
 
-  jwidget_emit_signal(this, JI_SIGNAL_WINDOW_RESIZE);
   invalidate();
 }
 
@@ -400,7 +399,6 @@ bool Frame::onProcessMessage(Message* msg)
               this->move_window(rect, false);
               jrect_free(rect);
 
-              jwidget_emit_signal(this, JI_SIGNAL_WINDOW_RESIZE);
               invalidate();
             }
           }

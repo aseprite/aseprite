@@ -135,14 +135,11 @@ bool ButtonBase::onProcessMessage(Message* msg)
               // Swap the select status
               this->setSelected(!this->isSelected());
 
-              // Signal
-              jwidget_emit_signal(this, JI_SIGNAL_CHECK_CHANGE);
               invalidate();
             }
             else if (m_behaviorType == JI_RADIO) {
               if (!this->isSelected()) {
                 this->setSelected(true);
-                jwidget_emit_signal(this, JI_SIGNAL_RADIO_CHANGE);
               }
             }
             return true;
@@ -211,8 +208,6 @@ bool ButtonBase::onProcessMessage(Message* msg)
 
             case JI_CHECK:
               {
-                jwidget_emit_signal(this, JI_SIGNAL_CHECK_CHANGE);
-
                 // Fire onClick() event
                 Event ev(this);
                 onClick(ev);
@@ -225,8 +220,6 @@ bool ButtonBase::onProcessMessage(Message* msg)
               {
                 this->setSelected(false);
                 this->setSelected(true);
-
-                jwidget_emit_signal(this, JI_SIGNAL_RADIO_CHANGE);
 
                 // Fire onClick() event
                 Event ev(this);
