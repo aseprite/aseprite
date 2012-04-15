@@ -75,10 +75,6 @@ void jwidget_signal_off(JWidget widget);
 
 bool jwidget_emit_signal(JWidget widget, int signal_num);
 
-/* miscellaneous */
-
-bool jwidget_check_underscored(JWidget widget, int scancode);
-
 //////////////////////////////////////////////////////////////////////
 
 class Widget : public Component
@@ -137,8 +133,8 @@ public:
 
   // main properties
 
-  int getType();
-  const char* getName();
+  int getType() const;
+  const char* getName() const;
   int getAlign() const;
 
   void setName(const char* name);
@@ -146,7 +142,7 @@ public:
 
   // text property
 
-  bool hasText() { return flags & JI_NOTEXT ? false: true; }
+  bool hasText() const { return flags & JI_NOTEXT ? false: true; }
 
   const char* getText() const { return m_text.c_str(); }
   int getTextInt() const;
@@ -309,7 +305,7 @@ public:
   void setPreferredSize(int fixedWidth, int fixedHeight);
 
   // ===============================================================
-  // FOCUS & MOUSE
+  // MOUSE, FOCUS & KEYBOARD
   // ===============================================================
 
   void requestFocus();
@@ -320,6 +316,12 @@ public:
   bool hasMouse();
   bool hasMouseOver();
   bool hasCapture();
+
+  // Returns lower-case letter that represet the mnemonic of the widget
+  // (the underscored character, i.e. the letter after & symbol).
+  int getMnemonicChar() const;
+
+  bool isScancodeMnemonic(int scancode) const;
 
 protected:
 

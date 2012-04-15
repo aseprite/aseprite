@@ -1225,12 +1225,8 @@ static MenuItem* check_for_letter(Menu* menu, int ascii)
       continue;
 
     MenuItem* menuitem = static_cast<MenuItem*>(child);
-
-    if (menuitem->hasText())
-      for (int c=0; menuitem->getText()[c]; c++)
-        if ((menuitem->getText()[c] == '&') && (menuitem->getText()[c+1] != '&'))
-          if (tolower(ascii) == tolower(menuitem->getText()[c+1]))
-            return menuitem;
+    if (menuitem->getMnemonicChar() == tolower(ascii))
+      return menuitem;
   }
   return NULL;
 }

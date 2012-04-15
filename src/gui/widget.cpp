@@ -216,12 +216,12 @@ void *jwidget_get_data(JWidget widget, int type)
 /**********************************************************************/
 /* main properties */
 
-int Widget::getType()
+int Widget::getType() const
 {
   return this->type;
 }
 
-const char *Widget::getName()
+const char *Widget::getName() const
 {
   return this->name;
 }
@@ -1409,16 +1409,20 @@ bool Widget::hasCapture()
   return (this->flags & JI_HASCAPTURE) ? true: false;
 }
 
-/**********************************************************************/
-/* miscellaneous */
-
-bool jwidget_check_underscored(JWidget widget, int scancode)
+int Widget::getMnemonicChar() const
 {
-  int c, ascii;
+  if (hasText()) {
+    const char* text = getText();
+    for (int c=0; text[c]; ++c)
+      if ((text[c] == '&') && (text[c+1] != '&'))
+        return tolower(text[c+1]);
+  }
+  return 0;
+}
 
-  ASSERT_VALID_WIDGET(widget);
-
-  ascii = 0;
+bool Widget::isScancodeMnemonic(int scancode) const
+{
+  int ascii = 0;
   if (scancode >= KEY_0 && scancode <= KEY_9)
     ascii = '0' + (scancode - KEY_0);
   else if (scancode >= KEY_A && scancode <= KEY_Z)
@@ -1426,16 +1430,7 @@ bool jwidget_check_underscored(JWidget widget, int scancode)
   else
     return false;
 
-  if (widget->hasText()) {
-    const char* text = widget->getText();
-
-    for (c=0; text[c]; c++)
-      if ((text[c] == '&') && (text[c+1] != '&'))
-        if (ascii == tolower(text[c+1]))
-          return true;
-  }
-
-  return false;
+  return (getMnemonicChar() == ascii);
 }
 
 /**********************************************************************/

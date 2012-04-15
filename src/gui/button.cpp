@@ -103,9 +103,9 @@ bool ButtonBase::onProcessMessage(Message* msg)
               return true;
             }
           }
-          /* the underscored letter with Alt */
+          // Check if the user pressed mnemonic.
           if ((msg->any.shifts & KB_ALT_FLAG) &&
-              (jwidget_check_underscored(this, msg->key.scancode))) {
+              (isScancodeMnemonic(msg->key.scancode))) {
             this->setSelected(true);
             return true;
           }
@@ -130,7 +130,7 @@ bool ButtonBase::onProcessMessage(Message* msg)
           if ((this->hasFocus() &&
                (msg->key.scancode == KEY_SPACE)) ||
               ((msg->any.shifts & KB_ALT_FLAG) &&
-               (jwidget_check_underscored(this, msg->key.scancode)))) {
+               (isScancodeMnemonic(msg->key.scancode)))) {
             if (m_behaviorType == JI_CHECK) {
               // Swap the select status
               this->setSelected(!this->isSelected());
