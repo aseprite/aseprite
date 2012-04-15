@@ -241,7 +241,11 @@ bool Entry::onProcessMessage(Message* msg)
 
           default:
             if (msg->key.ascii >= 32) {
-              cmd = EntryCmd::InsertChar;
+              // Ctrl and Alt must be unpressed to insert a character
+              // in the text-field.
+              if ((msg->any.shifts & (KB_CTRL_FLAG | KB_ALT_FLAG)) == 0) {
+                cmd = EntryCmd::InsertChar;
+              }
             }
             else {
               // map common Windows shortcuts for Cut/Copy/Paste
