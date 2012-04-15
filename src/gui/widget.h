@@ -19,6 +19,7 @@
 
 class PaintEvent;
 class PreferredSizeEvent;
+namespace gui { class Manager; }
 
 #ifndef NDEBUG
 #include "gui/intern.h"
@@ -30,6 +31,8 @@ class PreferredSizeEvent;
 
 struct FONT;
 struct BITMAP;
+
+class Frame;
 
 typedef std::vector<Widget*> WidgetsList;
 
@@ -219,9 +222,9 @@ public:
   // PARENTS & CHILDREN
   // ===============================================================
 
-  Widget* getRoot();
+  Frame* getRoot();
   Widget* getParent();
-  Widget* getManager();
+  gui::Manager* getManager();
 
   // Returns a list of parents (you must free the list), if
   // "ascendant" is true the list is build from child to parents, else
@@ -330,6 +333,7 @@ protected:
   // EVENTS
   // ===============================================================
 
+  virtual void onInvalidateRegion(const JRegion region);
   virtual void onPreferredSize(PreferredSizeEvent& ev);
   virtual void onPaint(PaintEvent& ev);
   virtual void onBroadcastMouseMessage(WidgetsList& targets);

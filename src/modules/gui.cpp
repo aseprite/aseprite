@@ -140,7 +140,7 @@ struct Monitor
 
 //////////////////////////////////////////////////////////////////////
 
-static JWidget manager = NULL;
+static gui::Manager* manager = NULL;
 static Theme* ase_theme = NULL;
 
 static UniquePtr<gui::Timer> monitor_timer;
@@ -296,7 +296,7 @@ int init_module_gui()
 gfx_done:;
 
   // Create the default-manager
-  manager = jmanager_new();
+  manager = new gui::Manager();
   jwidget_add_hook(manager, JI_WIDGET, manager_msg_proc, NULL);
 
   // Setup the GUI theme for all widgets
@@ -364,7 +364,7 @@ void exit_module_gui()
     ji_screen_created = false;
   }
 
-  jmanager_free(manager);
+  delete manager;
 
   // Now we can destroy theme
   CurrentTheme::set(NULL);
@@ -450,7 +450,7 @@ void update_screen_for_document(const Document* document)
     // Well, change to the default palette.
     if (set_current_palette(NULL, false)) {
       // If the palette changes, refresh the whole screen.
-      jmanager_refresh_screen();
+      gui::Manager::getDefault()->invalidate();
     }
   }
   // With a document.
@@ -459,8 +459,9 @@ void update_screen_for_document(const Document* document)
 
     // Select the palette of the sprite.
     if (set_current_palette(sprite->getPalette(sprite->getCurrentFrame()), false)) {
-      // If the palette changes, refresh the whole screen.
-      jmanager_refresh_screen();
+      // If the palette changes, invalidate the whole screen, we've to
+      // redraw it.
+      gui::Manager::getDefault()->invalidate();
     }
     else {
       // If it's the same palette update only the editors with the sprite.
@@ -474,7 +475,7 @@ void update_screen_for_document(const Document* document)
 
 void gui_run()
 {
-  jmanager_run(manager);
+  manager->run();
 }
 
 void gui_feedback()
@@ -488,7 +489,7 @@ void gui_feedback()
 
     gui_setup_screen(false);
     app_get_top_window()->remap_window();
-    jmanager_refresh_screen();
+    gui::Manager::getDefault()->invalidate();
   }
 #endif
 
@@ -1197,7 +1198,7 @@ static bool manager_msg_proc(JWidget widget, Message* msg)
       break;
 
     case JM_KEYPRESSED: {
-      Frame* toplevel_frame = dynamic_cast<Frame*>(jmanager_get_top_window());
+      Frame* toplevel_frame = widget->getManager()->getTopFrame();
 
       // If there is a foreground window as top level...
       if (toplevel_frame &&

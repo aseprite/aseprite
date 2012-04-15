@@ -780,9 +780,9 @@ bool StatusBar::onProcessMessage(Message* msg)
       if (hasChild(m_commandsBox)) {
         // If we want restore the state-bar and the slider doesn't have
         // the capture...
-        if (jmanager_get_capture() != m_slider) {
+        if (getManager()->getCapture() != m_slider) {
           // ...exit from command mode
-          jmanager_free_focus();                // TODO Review this code
+          getManager()->freeFocus();     // TODO Review this code
 
           removeChild(m_commandsBox);
           invalidate();

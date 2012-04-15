@@ -91,7 +91,7 @@ void PreviewCommand::onExecute(Context* context)
   TiledMode tiled = context->getSettings()->getTiledMode();
 
   // Free mouse
-  jmanager_free_mouse();
+  editor->getManager()->freeMouse();
 
   // Clear extras (e.g. pen preview)
   document->destroyExtraCel();
@@ -240,7 +240,7 @@ void PreviewCommand::onExecute(Context* context)
   jmouse_set_position(old_mouse_x, old_mouse_y);
   jmouse_set_cursor(JI_CURSOR_NORMAL);
 
-  jmanager_refresh_screen();
+  gui::Manager::getDefault()->invalidate();
 }
 
 //////////////////////////////////////////////////////////////////////

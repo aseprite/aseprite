@@ -52,7 +52,7 @@ Frame::Frame(bool desktop, const char* text)
 
 Frame::~Frame()
 {
-  _jmanager_close_window(getManager(), this, false);
+  getManager()->_closeWindow(this, false);
 }
 
 Widget* Frame::get_killer()
@@ -218,7 +218,7 @@ void Frame::open_window()
     if (m_is_autoremap)
       center_window();
 
-    _jmanager_open_window(ji_get_default_manager(), this);
+    gui::Manager::getDefault()->_openWindow(this);
   }
 }
 
@@ -226,13 +226,13 @@ void Frame::open_window_fg()
 {
   open_window();
 
-  JWidget manager = getManager();
+  gui::Manager* manager = getManager();
 
   m_is_foreground = true;
 
   while (!(this->flags & JI_HIDDEN)) {
-    if (jmanager_generate_messages(manager))
-      jmanager_dispatch_messages(manager);
+    if (manager->generateMessages())
+      manager->dispatchMessages();
   }
 
   m_is_foreground = false;
@@ -247,7 +247,7 @@ void Frame::closeWindow(Widget* killer)
 {
   m_killer = killer;
 
-  _jmanager_close_window(getManager(), this, true);
+  getManager()->_closeWindow(this, true);
 }
 
 bool Frame::is_toplevel()
@@ -550,7 +550,7 @@ void Frame::move_window(JRect rect, bool use_blit)
 {
 #define FLAGS JI_GDR_CUTTOPWINDOWS | JI_GDR_USECHILDAREA
 
-  JWidget manager = getManager();
+  gui::Manager* manager = getManager();
   JRegion old_drawable_region;
   JRegion new_drawable_region;
   JRegion manager_refresh_region;
@@ -559,7 +559,7 @@ void Frame::move_window(JRect rect, bool use_blit)
   JRect man_pos;
   Message* msg;
 
-  jmanager_dispatch_messages(manager);
+  manager->dispatchMessages();
 
   /* get the window's current position */
   old_pos = jrect_new_copy(this->rc);
@@ -570,7 +570,7 @@ void Frame::move_window(JRect rect, bool use_blit)
   /* sent a JM_WINMOVE message to the window */
   msg = jmessage_new(JM_WINMOVE);
   jmessage_add_dest(msg, this);
-  jmanager_enqueue_message(msg);
+  manager->enqueueMessage(msg);
 
   /* get the region & the drawable region of the window */
   old_drawable_region = jwidget_get_drawable_region(this, FLAGS);
@@ -650,8 +650,8 @@ void Frame::move_window(JRect rect, bool use_blit)
     jregion_free(moveable_region);
   }
 
-  jmanager_invalidate_region(manager, manager_refresh_region);
-  this->invalidateRegion(window_refresh_region);
+  manager->invalidateDisplayRegion(manager_refresh_region);
+  invalidateRegion(window_refresh_region);
 
   jregion_free(old_drawable_region);
   jregion_free(new_drawable_region);

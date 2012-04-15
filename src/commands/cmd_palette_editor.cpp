@@ -768,7 +768,7 @@ void PaletteEntryEditor::setNewPalette(Palette* palette, const char* operationNa
   updateCurrentSpritePalette(operationName);
 
   // Redraw the entire screen
-  jmanager_refresh_screen();
+  gui::Manager::getDefault()->invalidate();
 }
 
 void PaletteEntryEditor::updateCurrentSpritePalette(const char* operationName)

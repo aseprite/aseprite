@@ -460,12 +460,12 @@ void ToolBar::openPopupFrame(int group_index, ToolGroup* tool_group)
   // Redraw the overlapped area and save it to use it in the ToolStrip::onProcessMessage(JM_DRAW)
   {
     JRect rcTemp = jrect_new(rc.x, rc.y, rc.x+rc.w, rc.y+rc.h);
-    ji_get_default_manager()->invalidateRect(rcTemp);
+    getManager()->invalidateRect(rcTemp);
     jrect_free(rcTemp);
 
     // Flush JM_DRAW messages and send them
-    ji_get_default_manager()->flushRedraw();
-    jmanager_dispatch_messages(ji_get_default_manager());
+    getManager()->flushRedraw();
+    getManager()->dispatchMessages();
 
     // Save the area
     toolstrip->saveOverlappedArea(rc);
@@ -604,8 +604,8 @@ void ToolBar::closeTipWindow()
     m_tipWindow = NULL;
 
     // Flush JM_DRAW messages and send them
-    ji_get_default_manager()->flushRedraw();
-    jmanager_dispatch_messages(ji_get_default_manager());
+    getManager()->flushRedraw();
+    getManager()->dispatchMessages();
   }
 }
 

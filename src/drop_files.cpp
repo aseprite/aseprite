@@ -75,7 +75,7 @@ void check_for_dropped_files()
 
   // If the main window is not the current foreground one. We discard
   // the drop-files event.
-  if (jmanager_get_foreground_window() != app_get_top_window())
+  if (gui::Manager::getDefault()->getForegroundFrame() != app_get_top_window())
     return;
 
   ScopedLock lock(*dropped_files_mutex);

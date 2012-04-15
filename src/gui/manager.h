@@ -7,50 +7,87 @@
 #ifndef GUI_MANAGER_H_INCLUDED
 #define GUI_MANAGER_H_INCLUDED
 
-#include "gui/base.h"
+#include "base/compiler_specific.h"
+#include "gui/widget.h"
 
-namespace gui { class Timer; }
+class Frame;
 
-JWidget ji_get_default_manager();
+namespace gui {
 
-JWidget jmanager_new();
-void jmanager_free(JWidget manager);
+  class Timer;
 
-void jmanager_run(JWidget manager);
-bool jmanager_generate_messages(JWidget manager);
-void jmanager_dispatch_messages(JWidget manager);
+  class Manager : public Widget
+  {
+  public:
+    static Manager* getDefault();
 
-void jmanager_add_to_garbage(Widget* widget);
+    Manager();
+    ~Manager();
 
-/* routines that uses the ji_get_default_manager() */
+    void run();
 
-void jmanager_enqueue_message(Message* msg);
+    // Returns true if there are messages in the queue to be
+    // distpatched through jmanager_dispatch_messages().
+    bool generateMessages();
 
-JWidget jmanager_get_top_window();
-JWidget jmanager_get_foreground_window();
+    void dispatchMessages();
 
-JWidget jmanager_get_focus();
-JWidget jmanager_get_mouse();
-JWidget jmanager_get_capture();
+    void addToGarbage(Widget* widget);
 
-void jmanager_set_focus(JWidget widget);
-void jmanager_set_mouse(JWidget widget);
-void jmanager_set_capture(JWidget widget);
-void jmanager_attract_focus(JWidget widget);
-void jmanager_focus_first_child(JWidget widget);
-void jmanager_free_focus();
-void jmanager_free_mouse();
-void jmanager_free_capture();
-void jmanager_free_widget(JWidget widget);
-void jmanager_remove_message(Message* msg);
-void jmanager_remove_messages_for(JWidget widget);
-void jmanager_remove_messages_for_timer(gui::Timer* timer);
-void jmanager_refresh_screen();
+    void enqueueMessage(Message* msg);
 
-void jmanager_add_msg_filter(int message, JWidget widget);
-void jmanager_remove_msg_filter(int message, JWidget widget);
-void jmanager_remove_msg_filter_for(JWidget widget);
+    Frame* getTopFrame();
+    Frame* getForegroundFrame();
 
-void jmanager_invalidate_region(JWidget widget, JRegion region);
+    Widget* getFocus();
+    Widget* getMouse();
+    Widget* getCapture();
+
+    void setFocus(Widget* widget);
+    void setMouse(Widget* widget);
+    void setCapture(Widget* widget);
+    void attractFocus(Widget* widget);
+    void focusFirstChild(Widget* widget);
+    void freeFocus();
+    void freeMouse();
+    void freeCapture();
+    void freeWidget(Widget* widget);
+    void removeMessage(Message* msg);
+    void removeMessagesFor(Widget* widget);
+    void removeMessagesForTimer(gui::Timer* timer);
+
+    void addMessageFilter(int message, Widget* widget);
+    void removeMessageFilter(int message, Widget* widget);
+    void removeMessageFilterFor(Widget* widget);
+
+    void invalidateDisplayRegion(const JRegion region);
+
+    void _openWindow(Frame* window);
+    void _closeWindow(Frame* frame, bool redraw_background);
+
+  protected:
+    bool onProcessMessage(Message* msg) OVERRIDE;
+    void onPreferredSize(PreferredSizeEvent& ev) OVERRIDE;
+    void onBroadcastMouseMessage(WidgetsList& targets) OVERRIDE;
+
+  private:
+    void layoutManager(JRect rect);
+    void pumpQueue();
+    void collectGarbage();
+    void generateSetCursorMessage();
+    static void removeWidgetFromDests(Widget* widget, Message* msg);
+    static bool someParentIsFocusStop(Widget* widget);
+    static Widget* findMagneticWidget(Widget* widget);
+    static Message* newMouseMessage(int type, Widget* destination);
+    void broadcastKeyMsg(Message* msg);
+
+    static Manager* m_defaultManager;
+
+    WidgetsList m_garbage;
+  };
+
+  void InvalidateRegion(Widget* widget, JRegion region);
+
+} // namespace gui
 
 #endif

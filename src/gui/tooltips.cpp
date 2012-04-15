@@ -192,9 +192,9 @@ TipWindow::~TipWindow()
 {
   if (m_filtering) {
     m_filtering = false;
-    jmanager_remove_msg_filter(JM_MOTION, this);
-    jmanager_remove_msg_filter(JM_BUTTONPRESSED, this);
-    jmanager_remove_msg_filter(JM_KEYPRESSED, this);
+    getManager()->removeMessageFilter(JM_MOTION, this);
+    getManager()->removeMessageFilter(JM_BUTTONPRESSED, this);
+    getManager()->removeMessageFilter(JM_KEYPRESSED, this);
   }
   if (m_hot_region != NULL) {
     jregion_free(m_hot_region);
@@ -214,9 +214,9 @@ void TipWindow::set_hotregion(JRegion region)
 
   if (!m_filtering) {
     m_filtering = true;
-    jmanager_add_msg_filter(JM_MOTION, this);
-    jmanager_add_msg_filter(JM_BUTTONPRESSED, this);
-    jmanager_add_msg_filter(JM_KEYPRESSED, this);
+    getManager()->addMessageFilter(JM_MOTION, this);
+    getManager()->addMessageFilter(JM_BUTTONPRESSED, this);
+    getManager()->addMessageFilter(JM_KEYPRESSED, this);
   }
   m_hot_region = region;
 }
@@ -238,9 +238,9 @@ bool TipWindow::onProcessMessage(Message* msg)
     case JM_CLOSE:
       if (m_filtering) {
         m_filtering = false;
-        jmanager_remove_msg_filter(JM_MOTION, this);
-        jmanager_remove_msg_filter(JM_BUTTONPRESSED, this);
-        jmanager_remove_msg_filter(JM_KEYPRESSED, this);
+        getManager()->removeMessageFilter(JM_MOTION, this);
+        getManager()->removeMessageFilter(JM_BUTTONPRESSED, this);
+        getManager()->removeMessageFilter(JM_KEYPRESSED, this);
       }
       break;
 
@@ -285,7 +285,7 @@ bool TipWindow::onProcessMessage(Message* msg)
 
     case JM_MOTION:
       if (m_hot_region != NULL &&
-          jmanager_get_capture() == NULL) {
+          getManager()->getCapture() == NULL) {
         struct jrect box;
 
         /* if the mouse is outside the hot-region we have to close the window */

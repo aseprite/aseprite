@@ -116,6 +116,6 @@ void _ji_reinit_theme_in_all_widgets()
         static_cast<Frame*>((*widgets)[c])->remap_window();
     }
 
-  // Refresh the screen
-  jmanager_refresh_screen();
+  // Redraw the whole screen
+  gui::Manager::getDefault()->invalidate();
 }

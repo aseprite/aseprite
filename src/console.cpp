@@ -119,7 +119,7 @@ void Console::printf(const char *format, ...)
     // Open the window
     if (!wid_console->isVisible()) {
       wid_console->open_window();
-      jmanager_refresh_screen();
+      gui::Manager::getDefault()->invalidate();
     }
 
     /* update the textbox */

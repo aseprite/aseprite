@@ -353,7 +353,7 @@ static bool combobox_entry_msg_proc(JWidget widget, Message* msg)
       }
 
       if (combobox->isEditable()) {
-        jmanager_set_focus(widget);
+        widget->getManager()->setFocus(widget);
       }
       else
         return true;
@@ -475,10 +475,10 @@ void ComboBox::openListBox()
     m_window->position_window(rc->x1, rc->y1);
     jrect_free(rc);
 
-    jmanager_add_msg_filter(JM_BUTTONPRESSED, this);
+    getManager()->addMessageFilter(JM_BUTTONPRESSED, this);
 
     m_window->open_window_bg();
-    jmanager_set_focus(m_listbox);
+    getManager()->setFocus(m_listbox);
   }
 }
 
@@ -489,8 +489,8 @@ void ComboBox::closeListBox()
     delete m_window;            // window, frame
     m_window = NULL;
 
-    jmanager_remove_msg_filter(JM_BUTTONPRESSED, this);
-    jmanager_set_focus(m_entry);
+    getManager()->removeMessageFilter(JM_BUTTONPRESSED, this);
+    getManager()->setFocus(m_entry);
   }
 }
 

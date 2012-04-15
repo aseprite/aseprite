@@ -78,7 +78,7 @@ bool GfxMode::setGfxMode() const
   // Redraw top window
   if (app_get_top_window()) {
     app_get_top_window()->remap_window();
-    jmanager_refresh_screen();
+    gui::Manager::getDefault()->invalidate();
   }
 
   return true;

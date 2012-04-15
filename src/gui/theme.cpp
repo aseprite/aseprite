@@ -64,7 +64,7 @@ void CurrentTheme::set(Theme* theme)
   if (current_theme) {
     current_theme->regenerate();
 
-    Widget* manager = ji_get_default_manager();
+    gui::Manager* manager = gui::Manager::getDefault();
     if (manager && !manager->getTheme())
       manager->setTheme(theme);
   }

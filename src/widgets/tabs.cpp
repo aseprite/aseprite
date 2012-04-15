@@ -382,7 +382,7 @@ bool Tabs::onProcessMessage(Message* msg)
           // Do nothing
           break;
         case ANI_SCROLL: {
-          int dir = jmanager_get_capture() == m_button_left ? -1: 1;
+          int dir = (getManager()->getCapture() == m_button_left ? -1: 1);
           setScrollX(m_scrollX + dir*8*msg->timer.count);
           break;
         }

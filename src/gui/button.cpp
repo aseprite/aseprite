@@ -113,11 +113,11 @@ bool ButtonBase::onProcessMessage(Message* msg)
           else if (this->isFocusMagnet() &&
                    ((msg->key.scancode == KEY_ENTER) ||
                     (msg->key.scancode == KEY_ENTER_PAD))) {
-            jmanager_set_focus(this);
+            getManager()->setFocus(this);
 
-            /* dispatch focus movement messages (because the buttons
-               process them) */
-            jmanager_dispatch_messages(ji_get_default_manager());
+            // Dispatch focus movement messages (because the buttons
+            // process them)
+            getManager()->dispatchMessages();
 
             this->setSelected(true);
             return true;

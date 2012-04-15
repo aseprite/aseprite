@@ -67,7 +67,7 @@ void EyedropperCommand::onLoadParams(Params* params)
 
 void EyedropperCommand::onExecute(Context* context)
 {
-  JWidget widget = jmanager_get_mouse();
+  Widget* widget = gui::Manager::getDefault()->getMouse();
   if (!widget || widget->type != editor_type())
     return;
 

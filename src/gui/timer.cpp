@@ -39,7 +39,7 @@ Timer::~Timer()
   timers.erase(it);
 
   // Remove messages of this timer in the queue
-  jmanager_remove_messages_for_timer(this);
+  Manager::getDefault()->removeMessagesForTimer(this);
 }
 
 bool Timer::isRunning() const
@@ -99,7 +99,7 @@ void Timer::pollTimers()
           msg->timer.count = count;
           msg->timer.timer = timers[c];
           jmessage_add_dest(msg, timers[c]->m_owner);
-          jmanager_enqueue_message(msg);
+          Manager::getDefault()->enqueueMessage(msg);
         }
       }
     }

@@ -131,7 +131,7 @@ bool PopupFrame::onProcessMessage(Message* msg)
     case JM_MOTION:
       if (!is_moveable() &&
           m_hot_region != NULL &&
-          jmanager_get_capture() == NULL) {
+          getManager()->getCapture() == NULL) {
         struct jrect box;
 
         // If the mouse is outside the hot-region we have to close the
@@ -200,9 +200,11 @@ void PopupFrame::startFilteringMessages()
 {
   if (!m_filtering) {
     m_filtering = true;
-    jmanager_add_msg_filter(JM_MOTION, this);
-    jmanager_add_msg_filter(JM_BUTTONPRESSED, this);
-    jmanager_add_msg_filter(JM_KEYPRESSED, this);
+
+    gui::Manager* manager = gui::Manager::getDefault();
+    manager->addMessageFilter(JM_MOTION, this);
+    manager->addMessageFilter(JM_BUTTONPRESSED, this);
+    manager->addMessageFilter(JM_KEYPRESSED, this);
   }
 }
 
@@ -210,8 +212,10 @@ void PopupFrame::stopFilteringMessages()
 {
   if (m_filtering) {
     m_filtering = false;
-    jmanager_remove_msg_filter(JM_MOTION, this);
-    jmanager_remove_msg_filter(JM_BUTTONPRESSED, this);
-    jmanager_remove_msg_filter(JM_KEYPRESSED, this);
+
+    gui::Manager* manager = gui::Manager::getDefault();
+    manager->removeMessageFilter(JM_MOTION, this);
+    manager->removeMessageFilter(JM_BUTTONPRESSED, this);
+    manager->removeMessageFilter(JM_KEYPRESSED, this);
   }
 }

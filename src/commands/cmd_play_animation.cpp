@@ -145,7 +145,7 @@ void PlayAnimationCommand::onExecute(Context* context)
   /* refresh all */
   newpal = sprite->getPalette(sprite->getCurrentFrame());
   set_current_palette(newpal, true);
-  jmanager_refresh_screen();
+  gui::Manager::getDefault()->invalidate();
   gui_feedback();
 
   while (mouse_b)

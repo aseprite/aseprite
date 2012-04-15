@@ -123,7 +123,7 @@ bool ColorButton::onProcessMessage(Message* msg)
 
     case JM_MOTION:
       if (hasCapture()) {
-        Widget* picked = ji_get_default_manager()->pick(msg->mouse.x, msg->mouse.y);
+        Widget* picked = getManager()->pick(msg->mouse.x, msg->mouse.y);
         Color color = m_color;
 
         if (picked && picked != this) {
@@ -248,7 +248,7 @@ void ColorButton::openSelectorDialog()
 
   m_frame->position_window(x, y);
 
-  jmanager_dispatch_messages(m_frame->getManager());
+  m_frame->getManager()->dispatchMessages();
   m_frame->layout();
 
   /* setup the hot-region */

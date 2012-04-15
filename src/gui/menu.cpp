@@ -112,7 +112,7 @@ MenuBox::~MenuBox()
 {
   if (m_base && m_base->is_filtering) {
     m_base->is_filtering = false;
-    jmanager_remove_msg_filter(JM_BUTTONPRESSED, this);
+    gui::Manager::getDefault()->removeMessageFilter(JM_BUTTONPRESSED, this);
   }
 
   delete m_base;
@@ -236,7 +236,7 @@ void Menu::showPopup(int x, int y)
   MenuBaseData* base = menubox->createBase();
   base->was_clicked = true;
   base->is_filtering = true;
-  jmanager_add_msg_filter(JM_BUTTONPRESSED, menubox);
+  gui::Manager::getDefault()->addMessageFilter(JM_BUTTONPRESSED, menubox);
 
   window->set_moveable(false);   // Can't move the window
 
@@ -251,14 +251,14 @@ void Menu::showPopup(int x, int y)
                           MID(0, y, JI_SCREEN_H-jrect_h(window->rc)));
 
   // Set the focus to the new menubox
-  jmanager_set_focus(menubox);
+  gui::Manager::getDefault()->setFocus(menubox);
   menubox->setFocusMagnet(true);
 
   // Open the window
   window->open_window_fg();
 
   // Free the keyboard focus
-  jmanager_free_focus();
+  gui::Manager::getDefault()->freeFocus();
 
   // Fetch the "menu" so it isn't destroyed
   menubox->setMenu(NULL);
@@ -375,7 +375,7 @@ bool MenuBox::onProcessMessage(Message* msg)
         // popuped menu-box) to detect if the user press outside of
         // the widget
         if (msg->type == JM_BUTTONPRESSED && m_base != NULL) {
-          Widget* picked = ji_get_default_manager()->pick(msg->mouse.x, msg->mouse.y);
+          Widget* picked = getManager()->pick(msg->mouse.x, msg->mouse.y);
 
           // If one of these conditions are accomplished we have to
           // close all menus (back to menu-bar or close the popuped
@@ -637,8 +637,7 @@ bool MenuBox::onProcessMessage(Message* msg)
 
     default:
       if (msg->type == JM_CLOSE_POPUP) {
-        _jmanager_close_window(this->getManager(),
-                               static_cast<Frame*>(this->getRoot()), true);
+        this->getManager()->_closeWindow(this->getRoot(), true);
       }
       break;
 
@@ -837,9 +836,9 @@ bool MenuItem::onProcessMessage(Message* msg)
 
         // Set the focus to this menu-box of this menu-item
         if (base->close_all)
-          jmanager_free_focus();
+          getManager()->freeFocus();
         else
-          jmanager_set_focus(this->parent->parent);
+          getManager()->setFocus(this->parent->parent);
 
         // Is not necessary to free this window because it's
         // automatically destroyed by the manager
@@ -1061,7 +1060,7 @@ void MenuItem::openSubmenu(bool select_first)
   msg = jmessage_new(JM_OPEN_MENUITEM);
   msg->user.a = select_first;
   jmessage_add_dest(msg, this);
-  jmanager_enqueue_message(msg);
+  gui::Manager::getDefault()->enqueueMessage(msg);
 
   // Get the 'base'
   MenuBaseData* base = get_base(this);
@@ -1078,7 +1077,7 @@ void MenuItem::openSubmenu(bool select_first)
   // popuped menu-box
   if (!base->is_filtering) {
     base->is_filtering = true;
-    jmanager_add_msg_filter(JM_BUTTONPRESSED, get_base_menubox(this));
+    gui::Manager::getDefault()->addMessageFilter(JM_BUTTONPRESSED, get_base_menubox(this));
   }
 }
 
@@ -1108,7 +1107,7 @@ void MenuItem::closeSubmenu(bool last_of_close_chain)
   msg = jmessage_new(JM_CLOSE_MENUITEM);
   msg->user.a = last_of_close_chain;
   jmessage_add_dest(msg, this);
-  jmanager_enqueue_message(msg);
+  gui::Manager::getDefault()->enqueueMessage(msg);
 
   // If this is the last message of the chain, here we have the
   // responsibility to set is_processing flag to true.
@@ -1153,7 +1152,7 @@ void Menu::closeAll()
   base->was_clicked = false;
   if (base->is_filtering) {
     base->is_filtering = false;
-    jmanager_remove_msg_filter(JM_BUTTONPRESSED, base_menubox);
+    gui::Manager::getDefault()->removeMessageFilter(JM_BUTTONPRESSED, base_menubox);
   }
 
   menu->unhighlightItem();
@@ -1184,7 +1183,7 @@ void MenuBox::closePopup()
 {
   Message* msg = jmessage_new(JM_CLOSE_POPUP);
   jmessage_add_dest(msg, this);
-  jmanager_enqueue_message(msg);
+  gui::Manager::getDefault()->enqueueMessage(msg);
 }
 
 void MenuBox::cancelMenuLoop()
@@ -1194,7 +1193,7 @@ void MenuBox::cancelMenuLoop()
     menu->closeAll();
 
   // Lost focus
-  jmanager_free_focus();
+  gui::Manager::getDefault()->freeFocus();
 }
 
 void MenuItem::executeClick()
@@ -1202,7 +1201,7 @@ void MenuItem::executeClick()
   // Send the message
   Message* msg = jmessage_new(JM_EXE_MENUITEM);
   jmessage_add_dest(msg, this);
-  jmanager_enqueue_message(msg);
+  gui::Manager::getDefault()->enqueueMessage(msg);
 }
 
 static bool window_msg_proc(Widget* widget, Message* msg)
