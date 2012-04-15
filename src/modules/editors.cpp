@@ -473,14 +473,14 @@ void close_editor(Editor* editor)
 
   // Remove this editor.
   parent_box->removeChild(view);
-  jwidget_free(view);
+  delete view;
 
   // Fixup the parent.
   other_widget = reinterpret_cast<JWidget>(jlist_first_data(parent_box->children));
 
   parent_box->removeChild(other_widget);
   parent_box->getParent()->replaceChild(parent_box, other_widget);
-  jwidget_free(parent_box);
+  delete parent_box;
 
   // Find next editor to select.
   if (!current_editor) {

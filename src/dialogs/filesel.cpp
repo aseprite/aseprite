@@ -391,7 +391,7 @@ again:
                       lastpath.c_str());
   }
 
-  jwidget_free(window);
+  delete window;
   window = NULL;
 
   return result;

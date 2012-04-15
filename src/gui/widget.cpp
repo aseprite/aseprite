@@ -85,12 +85,6 @@ Widget::Widget(int type)
   m_doubleBuffered = false;
 }
 
-void jwidget_free(JWidget widget)
-{
-  ASSERT_VALID_WIDGET(widget);
-  delete widget;
-}
-
 Widget::~Widget()
 {
   JLink link, next;
@@ -115,7 +109,7 @@ Widget::~Widget()
 
   /* remove children */
   JI_LIST_FOR_EACH_SAFE(this->children, link, next)
-    jwidget_free(reinterpret_cast<JWidget>(link->data));
+    delete reinterpret_cast<Widget*>(link->data);
   jlist_free(this->children);
 
   /* destroy the update region */

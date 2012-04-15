@@ -112,7 +112,7 @@ FilterTargetButtons::FilterTargetButtons(int imgtype, bool withChannels)
   if (withChannels)
     addChild(hbox);
   else
-    jwidget_free(hbox);
+    delete hbox;
 
   ADD(this, index, onChannelChange);
   ADD(this, images, onImagesChange);

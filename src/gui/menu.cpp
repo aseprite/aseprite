@@ -142,7 +142,7 @@ MenuItem::~MenuItem()
     jaccel_free(m_accel);
 
   if (m_submenu)
-    jwidget_free(m_submenu);
+    delete m_submenu;
 }
 
 Menu* MenuBox::getMenu()
@@ -264,7 +264,7 @@ void Menu::showPopup(int x, int y)
   menubox->setMenu(NULL);
 
   // Destroy the window
-  jwidget_free(window);
+  delete window;
 }
 
 bool Menu::onProcessMessage(Message* msg)
@@ -828,7 +828,7 @@ bool MenuItem::onProcessMessage(Message* msg)
         window = (Frame*)menubox->parent;
         ASSERT(window && window->type == JI_FRAME);
 
-        // Fetch the "menu" to avoid free it with 'jwidget_free()'
+        // Fetch the "menu" to avoid destroy it with 'delete'.
         menubox->setMenu(NULL);
 
         // Destroy the window
@@ -840,9 +840,9 @@ bool MenuItem::onProcessMessage(Message* msg)
         else
           getManager()->setFocus(this->parent->parent);
 
-        // Is not necessary to free this window because it's
+        // It is not necessary to delete this window because it's
         // automatically destroyed by the manager
-        // ... jwidget_free(window);
+        // ... delete window;
 
         if (last_of_close_chain) {
           base->close_all = false;

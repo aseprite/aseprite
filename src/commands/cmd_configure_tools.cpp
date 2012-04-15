@@ -61,7 +61,7 @@ static bool brush_type_change_hook(JWidget widget, void *data);
 static void on_exit_delete_this_widget()
 {
   ASSERT(window != NULL);
-  jwidget_free(window);
+  delete window;
 }
 
 static void on_pen_size_after_change()
@@ -251,7 +251,7 @@ void ConfigureTools::onExecute(Context* context)
                 "onionskin", &m_onionSkin, NULL);
   }
   catch (...) {
-    jwidget_free(window);
+    delete window;
     window = NULL;
     throw;
   }

@@ -32,7 +32,7 @@ PopupFrame::PopupFrame(const char* text, bool close_on_buttonpressed)
   // remove decorative widgets
   JLink link, next;
   JI_LIST_FOR_EACH_SAFE(this->children, link, next)
-    jwidget_free(reinterpret_cast<JWidget>(link->data));
+    delete reinterpret_cast<Widget*>(link->data);
 
   initTheme();
   jwidget_noborders(this);

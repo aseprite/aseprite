@@ -309,13 +309,13 @@ int App::run()
 
     // Delete all editors first because they used signals from other
     // widgets (e.g. color bar).
-    jwidget_free(box_editors);
+    delete box_editors;
 
     // Destroy mini-editor.
     exit_module_editors();
 
     // Destroy the top-window
-    jwidget_free(top_window);
+    delete top_window;
     top_window = NULL;
   }
 

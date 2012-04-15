@@ -183,7 +183,7 @@ TipWindow::TipWindow(const char *text, bool close_on_buttonpressed)
 
   // remove decorative widgets
   JI_LIST_FOR_EACH_SAFE(this->children, link, next)
-    jwidget_free(reinterpret_cast<JWidget>(link->data));
+    delete reinterpret_cast<Widget*>(link->data);
 
   initTheme();
 }

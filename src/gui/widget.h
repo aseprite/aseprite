@@ -38,8 +38,6 @@ typedef std::vector<Widget*> WidgetsList;
 
 int ji_register_widget_type();
 
-void jwidget_free(JWidget widget);
-
 /* hooks */
 
 void jwidget_add_hook(JWidget widget, int type,
