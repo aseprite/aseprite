@@ -824,19 +824,6 @@ void set_gfxicon_to_button(ButtonBase* button,
 // Button style (convert radio or check buttons and draw it like
 // normal buttons)
 
-RadioButton* radio_button_new(int radio_group, int b1, int b2, int b3, int b4)
-{
-  RadioButton* widget = new RadioButton(NULL, radio_group, JI_BUTTON);
-
-  widget->setRadioGroup(radio_group);
-  widget->setAlign(JI_CENTER | JI_MIDDLE);
-
-  setup_mini_look(widget);
-  setup_bevels(widget, b1, b2, b3, b4);
-
-  return widget;
-}
-
 CheckBox* check_button_new(const char *text, int b1, int b2, int b3, int b4)
 {
   CheckBox* widget = new CheckBox(text, JI_BUTTON);

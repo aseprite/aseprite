@@ -34,7 +34,6 @@
 #include "skin/skin_theme.h"
 #include "tools/tool_box.h"
 #include "ui_context.h"
-#include "widgets/groupbut.h"
 #include "widgets/statebar.h"
 
 #include <allegro.h>

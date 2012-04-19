@@ -16,15 +16,31 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifndef WIDGETS_GROUPBUT_H_INCLUDED
-#define WIDGETS_GROUPBUT_H_INCLUDED
+#ifndef WIDGETS_BUTTON_SET_H_INCLUDED
+#define WIDGETS_BUTTON_SET_H_INCLUDED
 
-/* TODO use some JI_SIGNAL_USER */
-#define SIGNAL_GROUP_BUTTON_CHANGE   0x10000
+#include "gui/box.h"
 
-JWidget group_button_new (int w, int h, int first_selected, ...);
+class ButtonSet : public Box
+{
+  class Item;
+  typedef std::vector<Item*> Items;
 
-int group_button_get_selected (JWidget group);
-void group_button_select (JWidget group, int index);
+public:
+  ButtonSet(int w, int h, int firstSelected, ...);
+
+  int getSelectedItem() const;
+  void setSelectedItem(int index);
+
+  Signal0<void> ItemChange;
+
+protected:
+  void onItemChange();
+
+private:
+  Item* findSelectedItem() const;
+
+  Items m_items;
+};
 
 #endif

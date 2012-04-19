@@ -102,7 +102,6 @@ void set_gfxicon_to_button(ButtonBase* button,
                            int selected_part_id,
                            int disabled_part_id, int icon_align);
 
-RadioButton* radio_button_new(int radio_group, int b1, int b2, int b3, int b4);
 CheckBox* check_button_new(const char* text, int b1, int b2, int b3, int b4);
 
 //////////////////////////////////////////////////////////////////////

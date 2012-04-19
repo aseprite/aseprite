@@ -342,6 +342,7 @@ add_library(aseprite-library
   util/pic_file.cpp
   util/render.cpp
   util/thmbnail.cpp
+  widgets/button_set.cpp
   widgets/color_bar.cpp
   widgets/color_button.cpp
   widgets/color_selector.cpp
@@ -364,7 +365,6 @@ add_library(aseprite-library
   widgets/editor/tool_loop_impl.cpp
   widgets/editor/transform_handles.cpp
   widgets/fileview.cpp
-  widgets/groupbut.cpp
   widgets/hex_color_entry.cpp
   widgets/menuitem2.cpp
   widgets/palette_view.cpp
