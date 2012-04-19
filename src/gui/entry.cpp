@@ -390,7 +390,6 @@ void Entry::onPaint(PaintEvent& ev)
 void Entry::onEntryChange()
 {
   EntryChange();
-  jwidget_emit_signal(this, JI_SIGNAL_ENTRY_CHANGE);
 }
 
 int Entry::getCaretFromMouse(Message* msg)

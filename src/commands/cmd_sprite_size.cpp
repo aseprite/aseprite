@@ -147,12 +147,7 @@ protected:
 };
 
 //////////////////////////////////////////////////////////////////////
-// sprite_size
-
-static bool width_px_change_hook(JWidget widget, void *data);
-static bool height_px_change_hook(JWidget widget, void *data);
-static bool width_perc_change_hook(JWidget widget, void *data);
-static bool height_perc_change_hook(JWidget widget, void *data);
+// SpriteSize
 
 class SpriteSizeCommand : public Command
 
@@ -167,8 +162,16 @@ protected:
 
 private:
   void onLockRatioClick();
+  void onWidthPxChange();
+  void onHeightPxChange();
+  void onWidthPercChange();
+  void onHeightPercChange();
 
   CheckBox* m_lockRatio;
+  Entry* m_widthPx;
+  Entry* m_heightPx;
+  Entry* m_widthPerc;
+  Entry* m_heightPerc;
 };
 
 SpriteSizeCommand::SpriteSizeCommand()
@@ -186,7 +189,7 @@ bool SpriteSizeCommand::onEnabled(Context* context)
 
 void SpriteSizeCommand::onExecute(Context* context)
 {
-  JWidget width_px, height_px, width_perc, height_perc, ok;
+  Widget *ok;
   ComboBox* method;
   const ActiveDocumentReader document(context);
   const Sprite* sprite(document ? document->getSprite(): 0);
@@ -194,23 +197,22 @@ void SpriteSizeCommand::onExecute(Context* context)
   // load the window widget
   FramePtr window(load_widget("sprite_size.xml", "sprite_size"));
   get_widgets(window,
-              "width_px", &width_px,
-              "height_px", &height_px,
-              "width_perc", &width_perc,
-              "height_perc", &height_perc,
+              "width_px", &m_widthPx,
+              "height_px", &m_heightPx,
+              "width_perc", &m_widthPerc,
+              "height_perc", &m_heightPerc,
               "lock_ratio", &m_lockRatio,
               "method", &method,
               "ok", &ok, NULL);
 
-  width_px->setTextf("%d", sprite->getWidth());
-  height_px->setTextf("%d", sprite->getHeight());
+  m_widthPx->setTextf("%d", sprite->getWidth());
+  m_heightPx->setTextf("%d", sprite->getHeight());
 
   m_lockRatio->Click.connect(Bind<void>(&SpriteSizeCommand::onLockRatioClick, this));
-
-  HOOK(width_px, JI_SIGNAL_ENTRY_CHANGE, width_px_change_hook, 0);
-  HOOK(height_px, JI_SIGNAL_ENTRY_CHANGE, height_px_change_hook, 0);
-  HOOK(width_perc, JI_SIGNAL_ENTRY_CHANGE, width_perc_change_hook, 0);
-  HOOK(height_perc, JI_SIGNAL_ENTRY_CHANGE, height_perc_change_hook, 0);
+  m_widthPx->EntryChange.connect(Bind<void>(&SpriteSizeCommand::onWidthPxChange, this));
+  m_heightPx->EntryChange.connect(Bind<void>(&SpriteSizeCommand::onHeightPxChange, this));
+  m_widthPerc->EntryChange.connect(Bind<void>(&SpriteSizeCommand::onWidthPercChange, this));
+  m_heightPerc->EntryChange.connect(Bind<void>(&SpriteSizeCommand::onHeightPercChange, this));
 
   method->addItem("Nearest-neighbor");
   method->addItem("Bilinear");
@@ -225,8 +227,8 @@ void SpriteSizeCommand::onExecute(Context* context)
   save_window_pos(window, "SpriteSize");
 
   if (window->get_killer() == ok) {
-    int new_width = width_px->getTextInt();
-    int new_height = height_px->getTextInt();
+    int new_width = m_widthPx->getTextInt();
+    int new_height = m_heightPx->getTextInt();
     ResizeMethod resize_method =
       (ResizeMethod)method->getSelectedItem();
 
@@ -245,74 +247,65 @@ void SpriteSizeCommand::onLockRatioClick()
 {
   const ActiveDocumentReader document(UIContext::instance()); // TODO use the context in sprite size command
 
-  if (m_lockRatio->isSelected())
-    width_px_change_hook(m_lockRatio->findSibling("width_px"), NULL);
+  onWidthPxChange();
 }
 
-static bool width_px_change_hook(JWidget widget, void *data)
+void SpriteSizeCommand::onWidthPxChange()
 {
   const ActiveDocumentReader document(UIContext::instance()); // TODO use the context in sprite size command
   const Sprite* sprite(document->getSprite());
-  int width = widget->getTextInt();
+  int width = m_widthPx->getTextInt();
   double perc = 100.0 * width / sprite->getWidth();
 
-  widget->findSibling("width_perc")->setTextf(PERC_FORMAT, perc);
+  m_widthPerc->setTextf(PERC_FORMAT, perc);
 
-  if (widget->findSibling("lock_ratio")->isSelected()) {
-    widget->findSibling("height_perc")->setTextf(PERC_FORMAT, perc);
-    widget->findSibling("height_px")->setTextf("%d", sprite->getHeight() * width / sprite->getWidth());
+  if (m_lockRatio->isSelected()) {
+    m_heightPerc->setTextf(PERC_FORMAT, perc);
+    m_heightPx->setTextf("%d", sprite->getHeight() * width / sprite->getWidth());
   }
-
-  return true;
 }
 
-static bool height_px_change_hook(JWidget widget, void *data)
+void SpriteSizeCommand::onHeightPxChange()
 {
   const ActiveDocumentReader document(UIContext::instance()); // TODO use the context in sprite size command
   const Sprite* sprite(document->getSprite());
-  int height = widget->getTextInt();
+  int height = m_heightPx->getTextInt();
   double perc = 100.0 * height / sprite->getHeight();
 
-  widget->findSibling("height_perc")->setTextf(PERC_FORMAT, perc);
+  m_heightPerc->setTextf(PERC_FORMAT, perc);
 
-  if (widget->findSibling("lock_ratio")->isSelected()) {
-    widget->findSibling("width_perc")->setTextf(PERC_FORMAT, perc);
-    widget->findSibling("width_px")->setTextf("%d", sprite->getWidth() * height / sprite->getHeight());
+  if (m_lockRatio->isSelected()) {
+    m_widthPerc->setTextf(PERC_FORMAT, perc);
+    m_widthPx->setTextf("%d", sprite->getWidth() * height / sprite->getHeight());
   }
-
-  return true;
 }
 
-static bool width_perc_change_hook(JWidget widget, void *data)
+void SpriteSizeCommand::onWidthPercChange()
 {
   const ActiveDocumentReader document(UIContext::instance()); // TODO use the context in sprite size command
   const Sprite* sprite(document->getSprite());
-  double width = widget->getTextDouble();
+  double width = m_widthPerc->getTextDouble();
 
-  widget->findSibling("width_px")->setTextf("%d", (int)(sprite->getWidth() * width / 100));
+  m_widthPx->setTextf("%d", (int)(sprite->getWidth() * width / 100));
 
-  if (widget->findSibling("lock_ratio")->isSelected()) {
-    widget->findSibling("height_px")->setTextf("%d", (int)(sprite->getHeight() * width / 100));
-    widget->findSibling("height_perc")->setText(widget->getText());
+  if (m_lockRatio->isSelected()) {
+    m_heightPx->setTextf("%d", (int)(sprite->getHeight() * width / 100));
+    m_heightPerc->setText(m_widthPerc->getText());
   }
-
-  return true;
 }
 
-static bool height_perc_change_hook(JWidget widget, void *data)
+void SpriteSizeCommand::onHeightPercChange()
 {
   const ActiveDocumentReader document(UIContext::instance()); // TODO use the context in sprite size command
   const Sprite* sprite(document->getSprite());
-  double height = widget->getTextDouble();
+  double height = m_heightPerc->getTextDouble();
 
-  widget->findSibling("height_px")->setTextf("%d", (int)(sprite->getHeight() * height / 100));
+  m_heightPx->setTextf("%d", (int)(sprite->getHeight() * height / 100));
 
-  if (widget->findSibling("lock_ratio")->isSelected()) {
-    widget->findSibling("width_px")->setTextf("%d", (int)(sprite->getWidth() * height / 100));
-    widget->findSibling("width_perc")->setText(widget->getText());
+  if (m_lockRatio->isSelected()) {
+    m_widthPx->setTextf("%d", (int)(sprite->getWidth() * height / 100));
+    m_widthPerc->setText(m_heightPerc->getText());
   }
-
-  return true;
 }
 
 //////////////////////////////////////////////////////////////////////
