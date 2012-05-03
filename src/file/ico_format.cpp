@@ -23,6 +23,7 @@
 #include "document.h"
 #include "file/file.h"
 #include "file/file_format.h"
+#include "file/file_handle.h"
 #include "file/format_options.h"
 #include "raster/raster.h"
 
@@ -86,9 +87,7 @@ struct BITMAPINFOHEADER
 
 bool IcoFormat::onLoad(FileOp* fop)
 {
-  FILE* f = fopen(fop->filename.c_str(), "rb");
-  if (!f)
-    return false;
+  FileHandle f(fop->filename.c_str(), "rb");
 
   // Read the icon header
   ICONDIR header;
@@ -98,13 +97,11 @@ bool IcoFormat::onLoad(FileOp* fop)
 
   if (header.type != 1) {
     fop_error(fop, "Invalid ICO file type.\n");
-    fclose(f);
     return false;
   }
 
   if (header.entries < 1) {
     fop_error(fop, "This ICO files does not contain images.\n");
-    fclose(f);
     return false;
   }
 
@@ -230,9 +227,6 @@ bool IcoFormat::onLoad(FileOp* fop)
     }
   }
 
-  // Close the file
-  fclose(f);
-
   fop->document = new Document(sprite);
   return true;
 }
@@ -245,9 +239,7 @@ bool IcoFormat::onSave(FileOp* fop)
   int c, x, y, b, m, v;
   int num = sprite->getTotalFrames();
 
-  FILE* f = fopen(fop->filename.c_str(), "wb");
-  if (!f)
-    return false;
+  FileHandle f(fop->filename.c_str(), "wb");
 
   offset = 6 + num*16;  // ICONDIR + ICONDIRENTRYs
 
@@ -397,7 +389,6 @@ bool IcoFormat::onSave(FileOp* fop)
   }
 
   image_free(image);
-  fclose(f);
 
   return true;
 }

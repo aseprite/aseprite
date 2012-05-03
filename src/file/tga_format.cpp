@@ -23,6 +23,7 @@
 
 #include "file/file.h"
 #include "file/file_format.h"
+#include "file/file_handle.h"
 #include "file/format_options.h"
 #include "raster/raster.h"
 
@@ -203,11 +204,8 @@ bool TgaFormat::onLoad(FileOp* fop)
   unsigned int c, i, x, y, yc;
   Image *image;
   int compressed;
-  FILE *f;
 
-  f = fopen(fop->filename.c_str(), "rb");
-  if (!f)
-    return false;
+  FileHandle f(fop->filename.c_str(), "rb");
 
   id_length = fgetc(f);
   palette_type = fgetc(f);
@@ -247,7 +245,6 @@ bool TgaFormat::onLoad(FileOp* fop)
     }
   }
   else if (palette_type != 0) {
-    fclose(f);
     return false;
   }
 
@@ -270,7 +267,6 @@ bool TgaFormat::onLoad(FileOp* fop)
     /* paletted image */
     case 1:
       if ((palette_type != 1) || (bpp != 8)) {
-        fclose(f);
         return false;
       }
 
@@ -289,7 +285,6 @@ bool TgaFormat::onLoad(FileOp* fop)
       if ((palette_type != 0) ||
           ((bpp != 15) && (bpp != 16) &&
            (bpp != 24) && (bpp != 32))) {
-        fclose(f);
         return false;
       }
 
@@ -299,7 +294,6 @@ bool TgaFormat::onLoad(FileOp* fop)
     /* grayscale image */
     case 3:
       if ((palette_type != 0) || (bpp != 8)) {
-        fclose(f);
         return false;
       }
 
@@ -311,16 +305,12 @@ bool TgaFormat::onLoad(FileOp* fop)
 
     default:
       /* TODO add support for more TGA types? */
-
-      fclose(f);
       return false;
   }
 
   image = fop_sequence_image(fop, pixelFormat, image_width, image_height);
-  if (!image) {
-    fclose(f);
+  if (!image)
     return false;
-  }
 
   for (y=image_height; y; y--) {
     yc = (descriptor_bits & 0x20) ? image_height-y : y-1;
@@ -391,11 +381,9 @@ bool TgaFormat::onLoad(FileOp* fop)
 
   if (ferror(f)) {
     fop_error(fop, "Error reading file.\n");
-    fclose(f);
     return false;
   }
   else {
-    fclose(f);
     return true;
   }
 }
@@ -411,13 +399,8 @@ bool TgaFormat::onSave(FileOp* fop)
   int x, y, c, r, g, b;
   int depth = (image->getPixelFormat() == IMAGE_RGB) ? 32 : 8;
   bool need_pal = (image->getPixelFormat() == IMAGE_INDEXED)? true: false;
-  FILE *f;
 
-  f = fopen(fop->filename.c_str(), "wb");
-  if (!f) {
-    fop_error(fop, "Error creating file.\n");
-    return false;
-  }
+  FileHandle f(fop->filename.c_str(), "wb");
 
   fputc(0, f);                          /* id length (no id saved) */
   fputc((need_pal) ? 1 : 0, f);         /* palette type */
@@ -484,11 +467,9 @@ bool TgaFormat::onSave(FileOp* fop)
 
   if (ferror(f)) {
     fop_error(fop, "Error writing file.\n");
-    fclose(f);
     return false;
   }
   else {
-    fclose(f);
     return true;
   }
 }

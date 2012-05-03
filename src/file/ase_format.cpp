@@ -22,6 +22,7 @@
 #include "document.h"
 #include "file/file.h"
 #include "file/file_format.h"
+#include "file/file_handle.h"
 #include "file/format_options.h"
 #include "gui/list.h"
 #include "raster/raster.h"
@@ -143,11 +144,9 @@ bool AseFormat::onLoad(FileOp *fop)
   int chunk_type;
   int c, frame;
 
-  FILE* f = fopen(fop->filename.c_str(), "rb");
+  FileHandle f(fop->filename.c_str(), "rb");
   if (!f)
     return false;
-
-  UniquePtr<FILE, int(*)(FILE*)> fileHandleWrapper(f, fclose);
 
   if (!ase_file_read_header(f, &header)) {
     fop_error(fop, "Error reading header\n");
@@ -297,13 +296,8 @@ bool AseFormat::onSave(FileOp *fop)
   ASE_Header header;
   ASE_FrameHeader frame_header;
   int frame;
-  FILE *f;
 
-  f = fopen(fop->filename.c_str(), "wb");
-  if (!f)
-    return false;
-
-  UniquePtr<FILE, int(*)(FILE*)> fileHandleWrapper(f, fclose);
+  FileHandle f(fop->filename.c_str(), "wb");
 
   /* prepare the header */
   ase_file_prepare_header(f, &header, sprite);
