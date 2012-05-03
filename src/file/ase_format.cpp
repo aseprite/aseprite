@@ -142,15 +142,15 @@ bool AseFormat::onLoad(FileOp *fop)
   int chunk_size;
   int chunk_type;
   int c, frame;
-  FILE *f;
 
-  f = fopen(fop->filename.c_str(), "rb");
+  FILE* f = fopen(fop->filename.c_str(), "rb");
   if (!f)
     return false;
 
+  UniquePtr<FILE, int(*)(FILE*)> fileHandleWrapper(f, fclose);
+
   if (!ase_file_read_header(f, &header)) {
     fop_error(fop, "Error reading header\n");
-    fclose(f);
     return false;
   }
 
@@ -160,7 +160,6 @@ bool AseFormat::onLoad(FileOp *fop)
                       header.width, header.height, header.ncolors);
   if (!sprite) {
     fop_error(fop, "Error creating sprite with file spec\n");
-    fclose(f);
     return false;
   }
 
@@ -285,11 +284,9 @@ bool AseFormat::onLoad(FileOp *fop)
 
   if (ferror(f)) {
     fop_error(fop, "Error reading file.\n");
-    fclose(f);
     return false;
   }
   else {
-    fclose(f);
     return true;
   }
 }
@@ -305,6 +302,8 @@ bool AseFormat::onSave(FileOp *fop)
   f = fopen(fop->filename.c_str(), "wb");
   if (!f)
     return false;
+
+  UniquePtr<FILE, int(*)(FILE*)> fileHandleWrapper(f, fclose);
 
   /* prepare the header */
   ase_file_prepare_header(f, &header, sprite);
@@ -351,11 +350,9 @@ bool AseFormat::onSave(FileOp *fop)
 
   if (ferror(f)) {
     fop_error(fop, "Error writing file.\n");
-    fclose(f);
     return false;
   }
   else {
-    fclose(f);
     return true;
   }
 }
