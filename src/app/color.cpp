@@ -70,6 +70,8 @@ Color Color::fromGray(int g)
 // static
 Color Color::fromIndex(int index)
 {
+  assert(index >= 0 && index < Palette::MaxColors);
+
   Color color(Color::IndexType);
   color.m_value.index = index;
   return color;

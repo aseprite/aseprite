@@ -836,7 +836,9 @@ void PaletteEntryEditor::onPalChange()
 {
   if (!m_selfPalChange) {
     PaletteView* palette_editor = app_get_colorbar()->getPaletteView();
-    setColor(Color::fromIndex(palette_editor->getSelectedEntry()));
+    int index = palette_editor->getSelectedEntry();
+    if (index >= 0)
+      setColor(Color::fromIndex(index));
 
     // Redraw the window
     invalidate();
