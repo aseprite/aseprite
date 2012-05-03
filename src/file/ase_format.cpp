@@ -992,7 +992,6 @@ static Cel *ase_file_read_cel_chunk(FILE *f, Sprite *sprite, int frame,
                                     PixelFormat pixelFormat,
                                     FileOp *fop, ASE_Header *header, size_t chunk_end)
 {
-  Cel *cel;
   /* read chunk data */
   int layer_index = fgetw(f);
   int x = ((short)fgetw(f));
@@ -1016,7 +1015,7 @@ static Cel *ase_file_read_cel_chunk(FILE *f, Sprite *sprite, int frame,
   }
 
   // Create the new frame.
-  cel = new Cel(frame, 0);
+  UniquePtr<Cel> cel(new Cel(frame, 0));
   cel->setPosition(x, y);
   cel->setOpacity(opacity);
 
@@ -1029,11 +1028,6 @@ static Cel *ase_file_read_cel_chunk(FILE *f, Sprite *sprite, int frame,
 
       if (w > 0 && h > 0) {
         Image* image = Image::create(pixelFormat, w, h);
-        if (!image) {
-          delete cel;
-          // Not enough memory for frame's image
-          return NULL;
-        }
 
         // Read pixel data
         switch (image->getPixelFormat()) {
@@ -1067,7 +1061,6 @@ static Cel *ase_file_read_cel_chunk(FILE *f, Sprite *sprite, int frame,
         cel->setImage(sprite->getStock()->addImage(image));
       }
       else {
-        delete cel;
         // Linked cel doesn't found
         return NULL;
       }
@@ -1081,26 +1074,28 @@ static Cel *ase_file_read_cel_chunk(FILE *f, Sprite *sprite, int frame,
 
       if (w > 0 && h > 0) {
         Image* image = Image::create(pixelFormat, w, h);
-        if (!image) {
-          delete cel;
-          // Not enough memory for frame's image
-          return NULL;
+
+        // Try to read pixel data
+        try {
+          switch (image->getPixelFormat()) {
+
+            case IMAGE_RGB:
+              read_compressed_image<RgbTraits>(f, image, chunk_end, fop, header);
+              break;
+
+            case IMAGE_GRAYSCALE:
+              read_compressed_image<GrayscaleTraits>(f, image, chunk_end, fop, header);
+              break;
+
+            case IMAGE_INDEXED:
+              read_compressed_image<IndexedTraits>(f, image, chunk_end, fop, header);
+              break;
+          }
         }
-
-        // Read pixel data
-        switch (image->getPixelFormat()) {
-
-          case IMAGE_RGB:
-            read_compressed_image<RgbTraits>(f, image, chunk_end, fop, header);
-            break;
-
-          case IMAGE_GRAYSCALE:
-            read_compressed_image<GrayscaleTraits>(f, image, chunk_end, fop, header);
-            break;
-
-          case IMAGE_INDEXED:
-            read_compressed_image<IndexedTraits>(f, image, chunk_end, fop, header);
-            break;
+        // OK, in case of error we can show the problem, but continue
+        // loading more cels.
+        catch (const std::exception& e) {
+          fop_error(fop, e.what());
         }
 
         cel->setImage(sprite->getStock()->addImage(image));
@@ -1110,8 +1105,9 @@ static Cel *ase_file_read_cel_chunk(FILE *f, Sprite *sprite, int frame,
 
   }
 
-  static_cast<LayerImage*>(layer)->addCel(cel);
-  return cel;
+  Cel* newCel = cel.release();
+  static_cast<LayerImage*>(layer)->addCel(newCel);
+  return newCel;
 }
 
 static void ase_file_write_cel_chunk(FILE *f, Cel *cel, LayerImage *layer, Sprite *sprite)
