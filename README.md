@@ -92,17 +92,15 @@ USA
 
 ## Authors
 
-David Capello [davidcapello@gmail.com](mailto:davidcapello@gmail.com)
-> Programmer, designer, and maintainer. <br />
+* David Capello [davidcapello@gmail.com](mailto:davidcapello@gmail.com) <br />
+  Programmer, designer, and maintainer. <br />
   http://dacap.com.ar/
-
-Ilija Melentijevic
-> New GUI skin (from ASEPRITE 0.8). A lot of good ideas. <br />
+* Ilija Melentijevic <br />
+  New GUI skin (from ASEPRITE 0.8). A lot of good ideas. <br />
   http://ilkke.blogspot.com/ <br />
   http://www.pixeljoint.com/p/9270.htm
-
-Contributors
-> http://code.google.com/p/aseprite/people/list
+* Contributors <br />
+  http://code.google.com/p/aseprite/people/list
 
 Thanks to all the people who have contributed ideas, patches, bugs
 report, feature requests, donations, and help me developing ASEPRITE.
@@ -130,4 +128,5 @@ of the following projects created by third-parties:
 
 Other parts of code by:
 
-* Gary Oberbrunner: Code to quantize RGB images with ordered dither method.
+* Gary Oberbrunner <br />
+  Code to quantize RGB images with ordered dither method.
