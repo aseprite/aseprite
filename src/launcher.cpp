@@ -26,6 +26,10 @@
 #define BITMAP WINDOWS_BITMAP
 #include <windows.h>
 
+#ifndef SEE_MASK_DEFAULT
+#define SEE_MASK_DEFAULT 0x00000000
+#endif
+
 static void win32_shell_execute(const char* verb, const char* file, const char* params)
 {
   SHELLEXECUTEINFO sh;
