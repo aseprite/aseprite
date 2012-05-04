@@ -110,21 +110,21 @@ report, feature requests, donations, and help me developing ASEPRITE.
 ASEPRITE uses libraries or parts of the original source code
 of the following projects created by third-parties:
 
-* [Allegro 4](http://alleg.sourceforge.net/) - [allegro4 license](docs/licenses/allegro4-LICENSE.txt)
-* [AllegroFont](http://chernsha.sitesled.com/)  - [FTL license](docs/licenses/FTL.txt)
-* [curl](http://curl.haxx.se/) - [curl license](docs/licenses/curl-LICENSE.txt)
-* [FreeType](http://www.freetype.org/) - [FTL license](docs/licenses/FTL.txt)
-* [giflib](http://sourceforge.net/projects/giflib/) - [giflib license](docs/licenses/giflib-LICENSE.txt)
-* [GIMP](http://www.gimp.org/) - [GPL license](docs/licenses/GPL.txt)
-* [GTK+](http://www.gtk.org/) - [LGPL license](docs/licenses/LGPL-2.1.txt)
-* [Google Test](http://code.google.com/p/googletest/) - [gtest license](docs/licenses/gtest-LICENSE.txt)
-* [libart](http://www.levien.com/libart/) - [LGPL license](docs/licenses/LGPL-2.0.txt)
-* [libjpeg](http://www.ijg.org/) - [libjpeg license](docs/licenses/libjpeg-LICENSE.txt)
-* [libpng](http://www.libpng.org/pub/png/) - [libpng license](docs/licenses/libpng-LICENSE.txt)
-* [loadpng](http://tjaden.strangesoft.net/loadpng/) - [zlib license](docs/licenses/ZLIB.txt)
-* [tinyxml](http://www.sourceforge.net/projects/tinyxml) - [zlib license](docs/licenses/ZLIB.txt)
-* [XFree86](http://www.x.org/) - [XFree86 license](docs/licenses/XFree86-LICENSE.txt)
-* [zlib](http://www.gzip.org/zlib/) - [ZLIB license](docs/licenses/ZLIB.txt)
+* [Allegro 4](http://alleg.sourceforge.net/) - [allegro4 license](https://github.com/dacap/aseprite/tree/master/docs/licenses/allegro4-LICENSE.txt)
+* [AllegroFont](http://chernsha.sitesled.com/)  - [FTL license](https://github.com/dacap/aseprite/tree/master/docs/licenses/FTL.txt)
+* [curl](http://curl.haxx.se/) - [curl license](https://github.com/dacap/aseprite/tree/master/docs/licenses/curl-LICENSE.txt)
+* [FreeType](http://www.freetype.org/) - [FTL license](https://github.com/dacap/aseprite/tree/master/docs/licenses/FTL.txt)
+* [giflib](http://sourceforge.net/projects/giflib/) - [giflib license](https://github.com/dacap/aseprite/tree/master/docs/licenses/giflib-LICENSE.txt)
+* [GIMP](http://www.gimp.org/) - [GPL license](https://github.com/dacap/aseprite/tree/master/docs/licenses/GPL.txt)
+* [GTK+](http://www.gtk.org/) - [LGPL license](https://github.com/dacap/aseprite/tree/master/docs/licenses/LGPL-2.1.txt)
+* [Google Test](http://code.google.com/p/googletest/) - [gtest license](https://github.com/dacap/aseprite/tree/master/docs/licenses/gtest-LICENSE.txt)
+* [libart](http://www.levien.com/libart/) - [LGPL license](https://github.com/dacap/aseprite/tree/master/docs/licenses/LGPL-2.0.txt)
+* [libjpeg](http://www.ijg.org/) - [libjpeg license](https://github.com/dacap/aseprite/tree/master/docs/licenses/libjpeg-LICENSE.txt)
+* [libpng](http://www.libpng.org/pub/png/) - [libpng license](https://github.com/dacap/aseprite/tree/master/docs/licenses/libpng-LICENSE.txt)
+* [loadpng](http://tjaden.strangesoft.net/loadpng/) - [zlib license](https://github.com/dacap/aseprite/tree/master/docs/licenses/ZLIB.txt)
+* [tinyxml](http://www.sourceforge.net/projects/tinyxml) - [zlib license](https://github.com/dacap/aseprite/tree/master/docs/licenses/ZLIB.txt)
+* [XFree86](http://www.x.org/) - [XFree86 license](https://github.com/dacap/aseprite/tree/master/docs/licenses/XFree86-LICENSE.txt)
+* [zlib](http://www.gzip.org/zlib/) - [ZLIB license](https://github.com/dacap/aseprite/tree/master/docs/licenses/ZLIB.txt)
 
 Other parts of code by:
 
