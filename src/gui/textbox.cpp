@@ -9,6 +9,7 @@
 #include "gui/textbox.h"
 
 #include "gfx/size.h"
+#include "gui/intern.h"
 #include "gui/message.h"
 #include "gui/preferred_size_event.h"
 #include "gui/system.h"

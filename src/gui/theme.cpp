@@ -13,6 +13,7 @@
 #include "gfx/size.h"
 #include "gui/draw.h"
 #include "gui/font.h"
+#include "gui/intern.h"
 #include "gui/manager.h"
 #include "gui/rect.h"
 #include "gui/system.h"
