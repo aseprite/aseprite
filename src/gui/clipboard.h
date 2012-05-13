@@ -9,7 +9,13 @@
 
 #include "gui/base.h"
 
-const char* jclipboard_get_text();
-void jclipboard_set_text(const char* text);
+namespace gui {
+  namespace clipboard {
+
+    const char* get_text();
+    void set_text(const char* text);
+
+  } // namespace clipboard
+} // namespace gui
 
 #endif // ASE_JINETE_JCLIPBOARD_H

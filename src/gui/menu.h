@@ -9,10 +9,13 @@
 
 #include "base/compiler_specific.h"
 #include "base/signal.h"
+#include "base/unique_ptr.h"
 #include "gui/widget.h"
 
 class MenuItem;
 struct MenuBaseData;
+
+namespace gui { class Timer; }
 
 class Menu : public Widget
 {
@@ -134,7 +137,7 @@ private:
   bool m_highlighted;           // Is it highlighted?
   Menu* m_submenu;              // The sub-menu
   MenuBox* m_submenu_menubox;   // The opened menubox for this menu-item
-  int m_submenu_timer;          // Timer to open the submenu
+  UniquePtr<gui::Timer> m_submenu_timer; // Timer to open the submenu
 
   friend class Menu;
   friend class MenuBox;

@@ -125,7 +125,7 @@ StatusBar::StatusBar()
     set_gfxicon_to_button((name), icon, icon##_SELECTED, icon##_DISABLED, JI_CENTER | JI_MIDDLE); \
   }
 
-  jwidget_focusrest(this, true);
+  this->setFocusStop(true);
 
   m_timeout = 0;
   m_state = SHOW_TEXT;
@@ -164,7 +164,7 @@ StatusBar::StatusBar()
     jwidget_set_border(box1, 2*jguiscale(), 1*jguiscale(), 2*jguiscale(), 2*jguiscale());
     jwidget_noborders(box2);
     jwidget_noborders(box3);
-    jwidget_expansive(box3, true);
+    box3->setExpansive(true);
 
     box4->addChild(m_currentFrame);
     box4->addChild(m_newFrame);
@@ -190,7 +190,7 @@ StatusBar::StatusBar()
 
     jwidget_set_border(box1, 2*jguiscale(), 1*jguiscale(), 2*jguiscale(), 2*jguiscale());
     jwidget_noborders(box2);
-    jwidget_expansive(box2, true);
+    box2->setExpansive(true);
 
     m_linkLabel = new LinkLabel((std::string(WEBSITE) + "donate/").c_str(), "Support This Project");
 
@@ -202,7 +202,7 @@ StatusBar::StatusBar()
   // Construct move-pixels box
   {
     Box* filler = new Box(JI_HORIZONTAL);
-    jwidget_expansive(filler, true);
+    filler->setExpansive(true);
 
     m_movePixelsBox = new Box(JI_HORIZONTAL);
     m_transparentLabel = new Label("Transparent Color:");
@@ -300,14 +300,14 @@ void StatusBar::showTip(int msecs, const char *format, ...)
 
   if (m_tipwindow == NULL) {
     m_tipwindow = new TipWindow(buf);
-    m_tipwindow->user_data[0] = (void *)jmanager_add_timer(m_tipwindow, msecs);
+    m_tipwindow->user_data[0] = (void*)new gui::Timer(m_tipwindow, msecs);
     m_tipwindow->user_data[1] = this;
     jwidget_add_hook(m_tipwindow, -1, tipwindow_msg_proc, NULL);
   }
   else {
     m_tipwindow->setText(buf);
 
-    jmanager_set_timer_interval((size_t)m_tipwindow->user_data[0], msecs);
+    ((gui::Timer*)m_tipwindow->user_data[0])->setInterval(msecs);
   }
 
   if (m_tipwindow->isVisible())
@@ -320,7 +320,7 @@ void StatusBar::showTip(int msecs, const char *format, ...)
   y = this->rc->y1 - jrect_h(m_tipwindow->rc);
   m_tipwindow->position_window(x, y);
 
-  jmanager_start_timer((size_t)m_tipwindow->user_data[0]);
+  ((gui::Timer*)m_tipwindow->user_data[0])->start();
 
   // Set the text in status-bar (with inmediate timeout)
   m_timeout = ji_clock;
@@ -780,9 +780,9 @@ bool StatusBar::onProcessMessage(Message* msg)
       if (hasChild(m_commandsBox)) {
         // If we want restore the state-bar and the slider doesn't have
         // the capture...
-        if (jmanager_get_capture() != m_slider) {
+        if (getManager()->getCapture() != m_slider) {
           // ...exit from command mode
-          jmanager_free_focus();                // TODO Review this code
+          getManager()->freeFocus();     // TODO Review this code
 
           removeChild(m_commandsBox);
           invalidate();
@@ -805,7 +805,7 @@ static bool tipwindow_msg_proc(JWidget widget, Message* msg)
   switch (msg->type) {
 
     case JM_DESTROY:
-      jmanager_remove_timer((size_t)widget->user_data[0]);
+      delete ((gui::Timer*)widget->user_data[0]);
       break;
 
     case JM_TIMER:

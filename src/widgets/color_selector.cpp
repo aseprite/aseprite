@@ -56,7 +56,7 @@ ColorSelector::ColorSelector()
   m_colorPalette.setBoxSize(6*jguiscale());
   m_colorPaletteContainer.attachToView(&m_colorPalette);
 
-  jwidget_expansive(&m_colorPaletteContainer, true);
+  m_colorPaletteContainer.setExpansive(true);
 
   setup_mini_look(&m_indexButton);
   setup_mini_look(&m_rgbButton);

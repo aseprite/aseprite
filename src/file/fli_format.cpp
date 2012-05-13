@@ -21,6 +21,7 @@
 #include "document.h"
 #include "file/file.h"
 #include "file/file_format.h"
+#include "file/file_handle.h"
 #include "file/fli/fli.h"
 #include "file/format_options.h"
 #include "modules/palettes.h"
@@ -78,19 +79,15 @@ bool FliFormat::onLoad(FileOp* fop)
   int frpos_out;
   int index = 0;
   Cel *cel;
-  FILE *f;
 
   /* open the file to read in binary mode */
-  f = fopen(fop->filename.c_str(), "rb");
-  if (!f)
-    return false;
+  FileHandle f(fop->filename.c_str(), "rb");
 
   fli_read_header(f, &fli_header);
   fseek(f, 128, SEEK_SET);
 
   if (fli_header.magic == NO_HEADER) {
     fop_error(fop, "The file doesn't have a FLIC header\n");
-    fclose(f);
     return false;
   }
 
@@ -107,7 +104,6 @@ bool FliFormat::onLoad(FileOp* fop)
     if (bmp) image_free(bmp);
     if (old) image_free(old);
     if (pal) delete pal;
-    fclose(f);
     return false;
   }
 
@@ -196,9 +192,6 @@ bool FliFormat::onLoad(FileOp* fop)
   // Update number of frames
   sprite->setTotalFrames(frpos_out+1);
 
-  // Close the file
-  fclose(f);
-
   // Destroy the bitmaps
   image_free(bmp);
   image_free(old);
@@ -217,7 +210,6 @@ bool FliFormat::onSave(FileOp* fop)
   int c, frpos, times;
   Image *bmp, *old;
   Palette *pal;
-  FILE *f;
 
   /* prepare fli header */
   fli_header.filesize = 0;
@@ -240,9 +232,7 @@ bool FliFormat::onSave(FileOp* fop)
   fli_header.oframe1 = fli_header.oframe2 = 0;
 
   /* open the file to write in binary mode */
-  f = fopen(fop->filename.c_str(), "wb");
-  if (!f)
-    return false;
+  FileHandle f(fop->filename.c_str(), "wb");
 
   fseek(f, 128, SEEK_SET);
 
@@ -253,7 +243,6 @@ bool FliFormat::onSave(FileOp* fop)
     fop_error(fop, "Not enough memory for temporary bitmaps.\n");
     if (bmp) image_free(bmp);
     if (old) image_free(old);
-    fclose(f);
     return false;
   }
 
@@ -298,7 +287,6 @@ bool FliFormat::onSave(FileOp* fop)
 
   /* write the header and close the file */
   fli_write_header(f, &fli_header);
-  fclose(f);
 
   /* destroy the bitmaps */
   image_free(bmp);

@@ -52,13 +52,13 @@ PaletteView::PaletteView(bool editable)
   : Widget(palette_view_type())
   , m_currentEntry(-1)
   , m_rangeAnchor(-1)
-  , m_selectedEntries(256, false)
+  , m_selectedEntries(Palette::MaxColors, false)
 {
   m_editable = editable;
   m_columns = 16;
   m_boxsize = 6;
 
-  jwidget_focusrest(this, true);
+  this->setFocusStop(true);
 
   this->border_width.l = this->border_width.r = 1 * jguiscale();
   this->border_width.t = this->border_width.b = 1 * jguiscale();
@@ -69,7 +69,7 @@ void PaletteView::setColumns(int columns)
 {
   int old_columns = m_columns;
 
-  ASSERT(columns >= 1 && columns <= 256);
+  ASSERT(columns >= 1 && columns <= Palette::MaxColors);
   m_columns = columns;
 
   if (m_columns != old_columns) {
@@ -94,7 +94,7 @@ void PaletteView::clearSelection()
 
 void PaletteView::selectColor(int index)
 {
-  ASSERT(index >= 0 && index <= 255);
+  ASSERT(index >= 0 && index < Palette::MaxColors);
 
   if (m_currentEntry != index || !m_selectedEntries[index]) {
     m_currentEntry = index;
@@ -160,7 +160,7 @@ Color PaletteView::getColorByPosition(int target_x, int target_y)
 {
   Palette* palette = get_current_palette();
   JRect cpos = jwidget_get_child_rect(this);
-  div_t d = div(256, m_columns);
+  div_t d = div(Palette::MaxColors, m_columns);
   int cols = m_columns;
   int rows = d.quot + ((d.rem)? 1: 0);
   int req_w, req_h;
@@ -203,7 +203,7 @@ bool PaletteView::onProcessMessage(Message* msg)
       return true;
 
     case JM_DRAW: {
-      div_t d = div(256, m_columns);
+      div_t d = div(Palette::MaxColors, m_columns);
       int cols = m_columns;
       int rows = d.quot + ((d.rem)? 1: 0);
       int x, y, u, v;
@@ -237,10 +237,11 @@ bool PaletteView::onProcessMessage(Message* msg)
           rectfill(bmp, x, y, x+m_boxsize-1, y+m_boxsize-1, color);
 
           if (m_selectedEntries[c]) {
+            const int max = Palette::MaxColors;
             bool top    = (c >= m_columns            && c-m_columns >= 0  ? m_selectedEntries[c-m_columns]: false);
-            bool bottom = (c < 256-m_columns         && c+m_columns < 256 ? m_selectedEntries[c+m_columns]: false);
+            bool bottom = (c < max-m_columns         && c+m_columns < max ? m_selectedEntries[c+m_columns]: false);
             bool left   = ((c%m_columns)>0           && c-1         >= 0  ? m_selectedEntries[c-1]: false);
-            bool right  = ((c%m_columns)<m_columns-1 && c+1         < 256 ? m_selectedEntries[c+1]: false);
+            bool right  = ((c%m_columns)<m_columns-1 && c+1         < max ? m_selectedEntries[c+1]: false);
 
             if (!top) hline(bmp, x-1, y-1, x+m_boxsize, bordercolor);
             if (!bottom) hline(bmp, x-1, y+m_boxsize, x+m_boxsize, bordercolor);
@@ -328,7 +329,7 @@ bool PaletteView::onProcessMessage(Message* msg)
 
 void PaletteView::request_size(int* w, int* h)
 {
-  div_t d = div(256, m_columns);
+  div_t d = div(Palette::MaxColors, m_columns);
   int cols = m_columns;
   int rows = d.quot + ((d.rem)? 1: 0);
 
@@ -352,7 +353,7 @@ void PaletteView::update_scroll(int color)
 
   scroll = view->getViewScroll();
 
-  d = div(256, m_columns);
+  d = div(Palette::MaxColors, m_columns);
   cols = m_columns;
 
   y = (m_boxsize+this->child_spacing) * (color / cols);

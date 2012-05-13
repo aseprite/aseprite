@@ -6,59 +6,54 @@
 
 #include "config.h"
 
+#include "gui/separator.h"
+
 #include "gfx/size.h"
 #include "gui/list.h"
 #include "gui/message.h"
-#include "gui/rect.h"
+#include "gui/preferred_size_event.h"
 #include "gui/theme.h"
-#include "gui/widget.h"
 
 using namespace gfx;
 
-static bool separator_msg_proc(JWidget widget, Message* msg);
-
-JWidget ji_separator_new(const char* text, int align)
+Separator::Separator(const char* text, int align)
+ : Widget(JI_SEPARATOR)
 {
-  Widget* widget = new Widget(JI_SEPARATOR);
-
-  jwidget_add_hook(widget, JI_SEPARATOR, separator_msg_proc, NULL);
-  widget->setAlign(align);
-  widget->setText(text);
-  widget->initTheme();
-
-  return widget;
+  setAlign(align);
+  setText(text);
+  initTheme();
 }
 
-static bool separator_msg_proc(JWidget widget, Message* msg)
+bool Separator::onProcessMessage(Message* msg)
 {
   switch (msg->type) {
 
-    case JM_REQSIZE: {
-      Size maxSize(0, 0);
-      Size reqSize;
-      JWidget child;
-      JLink link;
-
-      JI_LIST_FOR_EACH(widget->children, link) {
-        child = (JWidget)link->data;
-
-        reqSize = child->getPreferredSize();
-        maxSize.w = MAX(maxSize.w, reqSize.w);
-        maxSize.h = MAX(maxSize.h, reqSize.h);
-      }
-
-      if (widget->hasText())
-        maxSize.w = MAX(maxSize.w, jwidget_get_text_length(widget));
-
-      msg->reqsize.w = widget->border_width.l + maxSize.w + widget->border_width.r;
-      msg->reqsize.h = widget->border_width.t + maxSize.h + widget->border_width.b;
-      return true;
-    }
-
     case JM_DRAW:
-      widget->getTheme()->draw_separator(widget, &msg->draw.rect);
+      getTheme()->draw_separator(this, &msg->draw.rect);
       return true;
   }
 
-  return false;
+  return Widget::onProcessMessage(msg);
+}
+
+void Separator::onPreferredSize(PreferredSizeEvent& ev)
+{
+  Size maxSize(0, 0);
+  JLink link;
+
+  JI_LIST_FOR_EACH(this->children, link) {
+    Widget* child = (Widget*)link->data;
+
+    Size reqSize = child->getPreferredSize();
+    maxSize.w = MAX(maxSize.w, reqSize.w);
+    maxSize.h = MAX(maxSize.h, reqSize.h);
+  }
+
+  if (hasText())
+    maxSize.w = MAX(maxSize.w, jwidget_get_text_length(this));
+
+  int w = this->border_width.l + maxSize.w + this->border_width.r;
+  int h = this->border_width.t + maxSize.h + this->border_width.b;
+
+  ev.setPreferredSize(Size(w, h));
 }

@@ -60,8 +60,8 @@ union Message;
 #define JI_HASFOCUS     0x0008 // Has the input focus.
 #define JI_HASMOUSE     0x0010 // Has the mouse.
 #define JI_HASCAPTURE   0x0020 // Captured the mouse .
-#define JI_FOCUSREST    0x0040 // Want the focus (is a rest for focus).
-#define JI_MAGNETIC     0x0080 // Attract the focus.
+#define JI_FOCUSSTOP    0x0040 // The widget support the focus on it.
+#define JI_FOCUSMAGNET  0x0080 // The widget wants the focus by default (e.g. when the dialog is shown by first time).
 #define JI_EXPANSIVE    0x0100 // Is expansive (want more space).
 #define JI_DECORATIVE   0x0200 // To decorate windows.
 #define JI_INITIALIZED  0x0400 // The widget was already initialized by a theme.
@@ -90,7 +90,7 @@ enum {
   JI_MENUBAR,
   JI_MENUBOX,
   JI_MENUITEM,
-  JI_PANEL,
+  JI_SPLITTER,
   JI_RADIO,
   JI_SEPARATOR,
   JI_SLIDER,
@@ -161,18 +161,11 @@ enum {
 
   // Special widget signals
   JI_SIGNAL_BUTTON_SELECT,
-  JI_SIGNAL_CHECK_CHANGE,
-  JI_SIGNAL_RADIO_CHANGE,
-  JI_SIGNAL_ENTRY_CHANGE,
   JI_SIGNAL_LISTBOX_CHANGE,
   JI_SIGNAL_LISTBOX_SELECT,
   JI_SIGNAL_COMBOBOX_SELECT,
-  JI_SIGNAL_MANAGER_EXTERNAL_CLOSE,
-  JI_SIGNAL_MANAGER_ADD_WINDOW,
-  JI_SIGNAL_MANAGER_REMOVE_WINDOW,
   JI_SIGNAL_MANAGER_LOSTCHAR,
   JI_SIGNAL_MENUITEM_SELECT,
-  JI_SIGNAL_WINDOW_RESIZE,
 };
 
 // Flags for jwidget_get_drawable_region.

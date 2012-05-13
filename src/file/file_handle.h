@@ -16,48 +16,29 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifndef TESTS_TEST_H_INCLUDED
-#define TESTS_TEST_H_INCLUDED
+#ifndef FILE_HANDLE_FORMAT_H_INCLUDED
+#define FILE_HANDLE_FORMAT_H_INCLUDED
 
-#include "config.h"
+#include "base/exception.h"
+#include "base/unique_ptr.h"
 
-#include <gtest/gtest.h>
-#include <allegro.h>
+#include <cstdio>
+#include <string>
 
-#ifdef TEST_GUI
-  #include "gui/gui.h"
-#endif
-
-#ifdef main
-  #undef main
-#endif
-
-int main(int argc, char* argv[])
+class FileHandle
 {
-  int exitcode;
+public:
+  FileHandle(const char* fileName, const char* mode)
+    : m_handle(std::fopen(fileName, mode), std::fclose)
+  {
+    if (!m_handle)
+      throw base::Exception(std::string("Cannot open ") + fileName);
+  }
 
-  ::testing::InitGoogleTest(&argc, argv);
-  allegro_init();
+  operator std::FILE*() { return m_handle; }
 
-  #ifdef TEST_GUI
-    set_color_depth(desktop_color_depth());
-    set_gfx_mode(GFX_AUTODETECT_WINDOWED, 256, 256, 0, 0);
-    install_timer();
-    install_keyboard();
-    install_mouse();
-    {
-      Jinete jinete;
-      UniquePtr<gui::Manager> manager(new gui::Manager());
-  #endif
-
-      exitcode = RUN_ALL_TESTS();
-
-  #ifdef TEST_GUI
-    }
-  #endif
-
-  allegro_exit();
-  return exitcode;
-}
+private:
+  UniquePtr<std::FILE, int(*)(std::FILE*)> m_handle;
+};
 
 #endif

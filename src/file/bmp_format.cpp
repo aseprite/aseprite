@@ -22,6 +22,7 @@
 
 #include "file/file.h"
 #include "file/file_format.h"
+#include "file/file_handle.h"
 #include "file/format_options.h"
 #include "raster/raster.h"
 
@@ -601,19 +602,16 @@ bool BmpFormat::onLoad(FileOp *fop)
   BITMAPFILEHEADER fileheader;
   BITMAPINFOHEADER infoheader;
   Image *image;
-  FILE *f;
   unsigned long biSize;
   PixelFormat pixelFormat;
   int format;
 
-  f = fopen(fop->filename.c_str(), "rb");
+  FileHandle f(fop->filename.c_str(), "rb");
   if (!f)
     return false;
 
-  if (read_bmfileheader(f, &fileheader) != 0) {
-    fclose(f);
+  if (read_bmfileheader(f, &fileheader) != 0)
     return false;
-  }
 
   biSize = fgetl(f);
 
@@ -621,7 +619,6 @@ bool BmpFormat::onLoad(FileOp *fop)
     format = BMP_OPTIONS_FORMAT_WINDOWS;
 
     if (read_win_bminfoheader(f, &infoheader) != 0) {
-      fclose(f);
       return false;
     }
     if (infoheader.biCompression != BI_BITFIELDS)
@@ -631,7 +628,6 @@ bool BmpFormat::onLoad(FileOp *fop)
     format = BMP_OPTIONS_FORMAT_OS2;
 
     if (read_os2_bminfoheader(f, &infoheader) != 0) {
-      fclose(f);
       return false;
     }
     /* compute number of colors recorded */
@@ -639,7 +635,6 @@ bool BmpFormat::onLoad(FileOp *fop)
       read_bmicolors(fop, fileheader.bfOffBits - 26, f, false);
   }
   else {
-    fclose(f);
     return false;
   }
 
@@ -663,7 +658,6 @@ bool BmpFormat::onLoad(FileOp *fop)
                              infoheader.biWidth,
                              ABS((int)infoheader.biHeight));
   if (!image) {
-    fclose(f);
     return false;
   }
 
@@ -690,20 +684,17 @@ bool BmpFormat::onLoad(FileOp *fop)
       if (read_bitfields_image(f, image, &infoheader, rmask, gmask, bmask) < 0) {
         image_free(image);
         fop_error(fop, "Unsupported bitfields in the BMP file.\n");
-        fclose(f);
         return false;
       }
       break;
 
     default:
       fop_error(fop, "Unsupported BMP compression.\n");
-      fclose(f);
       return false;
   }
 
   if (ferror(f)) {
     fop_error(fop, "Error reading file.\n");
-    fclose(f);
     return false;
   }
 
@@ -721,14 +712,12 @@ bool BmpFormat::onLoad(FileOp *fop)
     fop_sequence_set_format_options(fop, bmp_options);
   }
 
-  fclose(f);
   return true;
 }
 
 bool BmpFormat::onSave(FileOp *fop)
 {
   Image *image = fop->seq.image;
-  FILE *f;
   int bfSize;
   int biSizeImage;
   int bpp = (image->getPixelFormat() == IMAGE_RGB) ? 24 : 8;
@@ -746,7 +735,7 @@ bool BmpFormat::onSave(FileOp *fop)
     bfSize = 54 + biSizeImage;       /* header + image data */
   }
 
-  f = fopen(fop->filename.c_str(), "wb");
+  FileHandle f(fop->filename.c_str(), "wb");
   if (!f) {
     fop_error(fop, "Error creating file.\n");
     return false;
@@ -817,11 +806,9 @@ bool BmpFormat::onSave(FileOp *fop)
 
   if (ferror(f)) {
     fop_error(fop, "Error writing file.\n");
-    fclose(f);
     return false;
   }
   else {
-    fclose(f);
     return true;
   }
 }

@@ -6,6 +6,8 @@
 
 #include "config.h"
 
+#include "gui/clipboard.h"
+
 #include <algorithm>
 #include <string>
 
@@ -23,7 +25,7 @@ static void lowlevel_set_clipboard_text(const char *text)
   clipboard_text = text ? text: "";
 }
 
-const char* jclipboard_get_text()
+const char* gui::clipboard::get_text()
 {
 #ifdef WIN32
   if (IsClipboardFormatAvailable(CF_TEXT)) {
@@ -44,7 +46,7 @@ const char* jclipboard_get_text()
   return clipboard_text.c_str();
 }
 
-void jclipboard_set_text(const char *text)
+void gui::clipboard::set_text(const char *text)
 {
   lowlevel_set_clipboard_text(text);
 

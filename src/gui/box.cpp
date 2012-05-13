@@ -18,10 +18,6 @@
 
 using namespace gfx;
 
-static bool box_msg_proc(JWidget widget, Message* msg);
-static void box_request_size(JWidget widget, int *w, int *h);
-static void box_set_position(JWidget widget, JRect rect);
-
 Box::Box(int align)
   : Widget(JI_BOX)
 {
@@ -34,7 +30,7 @@ bool Box::onProcessMessage(Message* msg)
   switch (msg->type) {
 
     case JM_SETPOS:
-      box_set_position(&msg->setpos.rect);
+      layoutBox(&msg->setpos.rect);
       return true;
 
   }
@@ -111,7 +107,7 @@ void Box::onPaint(PaintEvent& ev)
   getTheme()->paintBox(ev);
 }
 
-void Box::box_set_position(JRect rect)
+void Box::layoutBox(JRect rect)
 {
 #define FIXUP(x, y, w, h, l, t, r, b)                                   \
   {                                                                     \
@@ -156,7 +152,7 @@ void Box::box_set_position(JRect rect)
                                                                         \
             child_width = reqSize.w;                                    \
                                                                         \
-            if (jwidget_is_expansive(child)) {                          \
+            if (child->isExpansive()) {                                 \
               if (nexpand_children == 1)                                \
                 child_width += width;                                   \
               else                                                      \
@@ -199,7 +195,7 @@ void Box::box_set_position(JRect rect)
 
     if (!(child->flags & JI_HIDDEN)) {
       nvis_children++;
-      if (jwidget_is_expansive(child))
+      if (child->isExpansive())
         nexpand_children++;
     }
   }

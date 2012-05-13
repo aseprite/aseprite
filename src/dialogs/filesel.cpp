@@ -182,9 +182,9 @@ base::string ase_file_selector(const base::string& message,
     ASSERT(filetype != NULL);
     filename_entry = window->findChildT<Entry>("filename");
 
-    jwidget_focusrest(goback, false);
-    jwidget_focusrest(goforward, false);
-    jwidget_focusrest(goup, false);
+    goback->setFocusStop(false);
+    goforward->setFocusStop(false);
+    goup->setFocusStop(false);
 
     set_gfxicon_to_button(goback,
                           PART_COMBOBOX_ARROW_LEFT,
@@ -221,7 +221,7 @@ base::string ase_file_selector(const base::string& message,
     fileview->setName("fileview");
 
     view->attachToView(fileview);
-    jwidget_expansive(view, true);
+    view->setExpansive(true);
 
     box->addChild(view);
 
@@ -391,7 +391,7 @@ again:
                       lastpath.c_str());
   }
 
-  jwidget_free(window);
+  delete window;
   window = NULL;
 
   return result;
@@ -584,7 +584,7 @@ static bool fileview_msg_proc(Widget* widget, Message* msg)
         IFileItem* fileitem = fileview_get_selected(widget);
 
         if (!fileitem->isFolder()) {
-          Frame* window = static_cast<Frame*>(widget->getRoot());
+          Frame* window = widget->getRoot();
           Widget* entry = window->findChild("filename");
           base::string filename = base::get_file_name(fileitem->getFileName());
 
@@ -601,7 +601,7 @@ static bool fileview_msg_proc(Widget* widget, Message* msg)
 
         /* when the current folder change */
       case SIGNAL_FILEVIEW_CURRENT_FOLDER_CHANGED: {
-        Frame* window = static_cast<Frame*>(widget->getRoot());
+        Frame* window = widget->getRoot();
 
         if (!navigation_locked)
           add_in_navigation_history(fileview_get_current_folder(widget));
@@ -645,7 +645,7 @@ static bool location_msg_proc(Widget* widget, Message* msg)
 
           // Refocus the 'fileview' (the focus in that widget is more
           // useful for the user)
-          jmanager_set_focus(fileview);
+          widget->getManager()->setFocus(fileview);
         }
         break;
       }
@@ -667,7 +667,7 @@ static bool filetype_msg_proc(Widget* widget, Message* msg)
       // change the file-extension in the 'filename' entry widget
       case JI_SIGNAL_COMBOBOX_SELECT: {
         std::string ext = combobox->getItemText(combobox->getSelectedItem());
-        Frame* window = static_cast<Frame*>(combobox->getRoot());
+        Frame* window = combobox->getRoot();
         Entry* entry = window->findChildT<Entry>("filename");
         char buf[MAX_PATH];
         char* p;

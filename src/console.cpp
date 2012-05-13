@@ -52,7 +52,7 @@ Console::Console()
     Frame* window = new Frame(false, "Errors Console");
     Grid* grid = new Grid(1, false);
     View* view = new View();
-    Widget* textbox = jtextbox_new(NULL, JI_WORDWRAP);
+    TextBox* textbox = new TextBox(NULL, JI_WORDWRAP);
     Button* button = new Button("&Cancel");
 
     if (!grid || !textbox || !button)
@@ -70,8 +70,8 @@ Console::Console()
     window->addChild(grid);
 
     view->setVisible(false);
-    jwidget_magnetic(button, true);
-    jwidget_expansive(view, true);
+    button->setFocusMagnet(true);
+    view->setExpansive(true);
 
     /* force foreground mode */
 /*     ji_find_widget(window)->in_foreground = true; */
@@ -119,7 +119,7 @@ void Console::printf(const char *format, ...)
     // Open the window
     if (!wid_console->isVisible()) {
       wid_console->open_window();
-      jmanager_refresh_screen();
+      gui::Manager::getDefault()->invalidate();
     }
 
     /* update the textbox */

@@ -22,6 +22,7 @@
 #include "document.h"
 #include "file/file.h"
 #include "file/file_format.h"
+#include "file/file_handle.h"
 #include "file/format_options.h"
 #include "ini_file.h"
 #include "raster/raster.h"
@@ -73,12 +74,9 @@ bool PngFormat::onLoad(FileOp* fop)
   png_colorp palette;
   png_bytep row_pointer;
   Image *image;
-  FILE *fp;
   PixelFormat pixelFormat;
 
-  fp = fopen(fop->filename.c_str(), "rb");
-  if (!fp)
-    return false;
+  FileHandle fp(fop->filename.c_str(), "rb");
 
   /* Create and initialize the png_struct with the desired error handler
    * functions.  If you want to use the default stderr and longjump method,
@@ -90,7 +88,6 @@ bool PngFormat::onLoad(FileOp* fop)
                                    report_png_error, report_png_error);
   if (png_ptr == NULL) {
     fop_error(fop, "png_create_read_struct\n");
-    fclose(fp);
     return false;
   }
 
@@ -98,7 +95,6 @@ bool PngFormat::onLoad(FileOp* fop)
   info_ptr = png_create_info_struct(png_ptr);
   if (info_ptr == NULL) {
     fop_error(fop, "png_create_info_struct\n");
-    fclose(fp);
     png_destroy_read_struct(&png_ptr, NULL, NULL);
     return false;
   }
@@ -110,7 +106,6 @@ bool PngFormat::onLoad(FileOp* fop)
     fop_error(fop, "Error reading PNG file\n");
     /* Free all of the memory associated with the png_ptr and info_ptr */
     png_destroy_read_struct(&png_ptr, &info_ptr, NULL);
-    fclose(fp);
     /* If we get here, we had a problem reading the file */
     return false;
   }
@@ -181,7 +176,6 @@ bool PngFormat::onLoad(FileOp* fop)
     default:
       fop_error(fop, "Color type not supported\n)");
       png_destroy_read_struct(&png_ptr, &info_ptr, NULL);
-      fclose(fp);
       return false;
   }
 
@@ -191,7 +185,6 @@ bool PngFormat::onLoad(FileOp* fop)
   if (!image) {
     fop_error(fop, "file_sequence_image %dx%d\n", imageWidth, imageHeight);
     png_destroy_read_struct(&png_ptr, &info_ptr, NULL);
-    fclose(fp);
     return false;
   }
 
@@ -327,9 +320,6 @@ bool PngFormat::onLoad(FileOp* fop)
 
   /* clean up after the read, and free any memory allocated */
   png_destroy_read_struct(&png_ptr, &info_ptr, NULL);
-
-  /* close the file */
-  fclose(fp);
   return true;
 }
 
@@ -343,12 +333,9 @@ bool PngFormat::onSave(FileOp* fop)
   png_bytep row_pointer;
   int color_type = 0;
   int pass, number_passes;
-  FILE *fp;
 
   /* open the file */
-  fp = fopen(fop->filename.c_str(), "wb");
-  if (fp == NULL)
-    return false;
+  FileHandle fp(fop->filename.c_str(), "wb");
 
   /* Create and initialize the png_struct with the desired error handler
    * functions.  If you want to use the default stderr and longjump method,
@@ -359,14 +346,12 @@ bool PngFormat::onSave(FileOp* fop)
   png_ptr = png_create_write_struct(PNG_LIBPNG_VER_STRING, (png_voidp)fop,
                                     report_png_error, report_png_error);
   if (png_ptr == NULL) {
-    fclose(fp);
     return false;
   }
 
   /* Allocate/initialize the image information data.  REQUIRED */
   info_ptr = png_create_info_struct(png_ptr);
   if (info_ptr == NULL) {
-    fclose(fp);
     png_destroy_write_struct(&png_ptr, NULL);
     return false;
   }
@@ -376,7 +361,6 @@ bool PngFormat::onSave(FileOp* fop)
    */
   if (setjmp(png_jmpbuf(png_ptr))) {
     /* If we get here, we had a problem reading the file */
-    fclose(fp);
     png_destroy_write_struct(&png_ptr, &info_ptr);
     return false;
   }
@@ -551,9 +535,6 @@ bool PngFormat::onSave(FileOp* fop)
 
   /* clean up after the write, and free any memory allocated */
   png_destroy_write_struct(&png_ptr, &info_ptr);
-
-  /* close the file */
-  fclose(fp);
 
   /* all right */
   return true;

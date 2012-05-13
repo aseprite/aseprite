@@ -119,7 +119,7 @@ private:
   // what the user is writting in the text field.
   bool m_disableHexUpdate;
 
-  int m_redrawTimerId;
+  gui::Timer m_redrawTimer;
   bool m_redrawAll;
 
   // True if the palette change must be graft in the UndoHistory
@@ -262,9 +262,8 @@ PaletteEntryEditor::PaletteEntryEditor()
   , m_redrawAll(false)
   , m_graftChange(false)
   , m_selfPalChange(false)
+  , m_redrawTimer(this, 250)
 {
-  m_redrawTimerId = jmanager_add_timer(this, 250);
-
   m_topBox.setBorder(gfx::Border(0));
   m_topBox.child_spacing = 0;
   m_bottomBox.setBorder(gfx::Border(0));
@@ -350,9 +349,6 @@ PaletteEntryEditor::PaletteEntryEditor()
 
 PaletteEntryEditor::~PaletteEntryEditor()
 {
-  jmanager_remove_timer(m_redrawTimerId);
-  m_redrawTimerId = -1;
-
   App::instance()->PaletteChange.disconnect(m_palChangeSlot);
 }
 
@@ -402,12 +398,12 @@ void PaletteEntryEditor::setColor(const Color& color)
 bool PaletteEntryEditor::onProcessMessage(Message* msg)
 {
   if (msg->type == JM_TIMER &&
-      msg->timer.timer_id == m_redrawTimerId) {
+      msg->timer.timer == &m_redrawTimer) {
     // Redraw all editors
     if (m_redrawAll) {
       m_redrawAll = false;
       m_graftChange = false;
-      jmanager_stop_timer(m_redrawTimerId);
+      m_redrawTimer.stop();
 
       // Call all listener of PaletteChange event.
       m_selfPalChange = true;
@@ -772,7 +768,7 @@ void PaletteEntryEditor::setNewPalette(Palette* palette, const char* operationNa
   updateCurrentSpritePalette(operationName);
 
   // Redraw the entire screen
-  jmanager_refresh_screen();
+  gui::Manager::getDefault()->invalidate();
 }
 
 void PaletteEntryEditor::updateCurrentSpritePalette(const char* operationName)
@@ -824,8 +820,8 @@ void PaletteEntryEditor::updateCurrentSpritePalette(const char* operationName)
   PaletteView* palette_editor = app_get_colorbar()->getPaletteView();
   palette_editor->invalidate();
 
-  if (!jmanager_timer_is_running(m_redrawTimerId))
-    jmanager_start_timer(m_redrawTimerId);
+  if (!m_redrawTimer.isRunning())
+    m_redrawTimer.start();
 
   m_redrawAll = false;
   m_graftChange = true;
@@ -840,7 +836,9 @@ void PaletteEntryEditor::onPalChange()
 {
   if (!m_selfPalChange) {
     PaletteView* palette_editor = app_get_colorbar()->getPaletteView();
-    setColor(Color::fromIndex(palette_editor->getSelectedEntry()));
+    int index = palette_editor->getSelectedEntry();
+    if (index >= 0)
+      setColor(Color::fromIndex(index));
 
     // Redraw the window
     invalidate();

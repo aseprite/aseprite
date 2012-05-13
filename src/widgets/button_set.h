@@ -16,48 +16,31 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifndef TESTS_TEST_H_INCLUDED
-#define TESTS_TEST_H_INCLUDED
+#ifndef WIDGETS_BUTTON_SET_H_INCLUDED
+#define WIDGETS_BUTTON_SET_H_INCLUDED
 
-#include "config.h"
+#include "gui/box.h"
 
-#include <gtest/gtest.h>
-#include <allegro.h>
-
-#ifdef TEST_GUI
-  #include "gui/gui.h"
-#endif
-
-#ifdef main
-  #undef main
-#endif
-
-int main(int argc, char* argv[])
+class ButtonSet : public Box
 {
-  int exitcode;
+  class Item;
+  typedef std::vector<Item*> Items;
 
-  ::testing::InitGoogleTest(&argc, argv);
-  allegro_init();
+public:
+  ButtonSet(int w, int h, int firstSelected, ...);
 
-  #ifdef TEST_GUI
-    set_color_depth(desktop_color_depth());
-    set_gfx_mode(GFX_AUTODETECT_WINDOWED, 256, 256, 0, 0);
-    install_timer();
-    install_keyboard();
-    install_mouse();
-    {
-      Jinete jinete;
-      UniquePtr<gui::Manager> manager(new gui::Manager());
-  #endif
+  int getSelectedItem() const;
+  void setSelectedItem(int index);
 
-      exitcode = RUN_ALL_TESTS();
+  Signal0<void> ItemChange;
 
-  #ifdef TEST_GUI
-    }
-  #endif
+protected:
+  void onItemChange();
 
-  allegro_exit();
-  return exitcode;
-}
+private:
+  Item* findSelectedItem() const;
+
+  Items m_items;
+};
 
 #endif

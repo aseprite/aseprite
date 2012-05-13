@@ -75,7 +75,7 @@ void LayerPropertiesCommand::onExecute(Context* context)
   button_cancel->Click.connect(Bind<void>(&Frame::closeWindow, window.get(), button_cancel));
 
   jwidget_set_min_size(entry_name, 128, 0);
-  jwidget_expansive(entry_name, true);
+  entry_name->setExpansive(true);
 
   box2->addChild(label_name);
   box2->addChild(entry_name);
@@ -85,8 +85,8 @@ void LayerPropertiesCommand::onExecute(Context* context)
   box1->addChild(box3);
   window->addChild(box1);
 
-  jwidget_magnetic(entry_name, true);
-  jwidget_magnetic(button_ok, true);
+  entry_name->setFocusMagnet(true);
+  button_ok->setFocusMagnet(true);
 
   window->open_window_fg();
 

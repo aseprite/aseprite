@@ -28,6 +28,7 @@
 #include "console.h"
 #include "file/file.h"
 #include "file/file_format.h"
+#include "file/file_handle.h"
 #include "file/format_options.h"
 #include "gui/gui.h"
 #include "ini_file.h"
@@ -102,13 +103,12 @@ bool JpegFormat::onLoad(FileOp* fop)
   struct jpeg_decompress_struct cinfo;
   struct error_mgr jerr;
   Image *image;
-  FILE *file;
   JDIMENSION num_scanlines;
   JSAMPARRAY buffer;
   JDIMENSION buffer_height;
   int c;
 
-  file = fopen(fop->filename.c_str(), "rb");
+  FileHandle file(fop->filename.c_str(), "rb");
   if (!file)
     return false;
 
@@ -122,7 +122,6 @@ bool JpegFormat::onLoad(FileOp* fop)
   // Establish the setjmp return context for error_exit to use.
   if (setjmp(jerr.setjmp_buffer)) {
     jpeg_destroy_decompress(&cinfo);
-    fclose(file);
     return false;
   }
 
@@ -150,7 +149,6 @@ bool JpegFormat::onLoad(FileOp* fop)
                              cinfo.output_height);
   if (!image) {
     jpeg_destroy_decompress(&cinfo);
-    fclose(file);
     return false;
   }
 
@@ -159,7 +157,6 @@ bool JpegFormat::onLoad(FileOp* fop)
   buffer = (JSAMPARRAY)base_malloc(sizeof(JSAMPROW) * buffer_height);
   if (!buffer) {
     jpeg_destroy_decompress(&cinfo);
-    fclose(file);
     return false;
   }
 
@@ -171,7 +168,6 @@ bool JpegFormat::onLoad(FileOp* fop)
         base_free(buffer[c]);
       base_free(buffer);
       jpeg_destroy_decompress(&cinfo);
-      fclose(file);
       return false;
     }
   }
@@ -235,7 +231,6 @@ bool JpegFormat::onLoad(FileOp* fop)
   jpeg_finish_decompress(&cinfo);
   jpeg_destroy_decompress(&cinfo);
 
-  fclose(file);
   return true;
 }
 
@@ -244,14 +239,13 @@ bool JpegFormat::onSave(FileOp* fop)
   struct jpeg_compress_struct cinfo;
   struct error_mgr jerr;
   Image *image = fop->seq.image;
-  FILE *file;
   JSAMPARRAY buffer;
   JDIMENSION buffer_height;
   SharedPtr<JpegOptions> jpeg_options = fop->seq.format_options;
   int c;
 
   // Open the file for write in it.
-  file = fopen(fop->filename.c_str(), "wb");
+  FileHandle file(fop->filename.c_str(), "wb");
   if (!file) {
     fop_error(fop, "Error creating file.\n");
     return false;
@@ -292,7 +286,6 @@ bool JpegFormat::onSave(FileOp* fop)
   if (!buffer) {
     fop_error(fop, "Not enough memory for the buffer.\n");
     jpeg_destroy_compress(&cinfo);
-    fclose(file);
     return false;
   }
 
@@ -305,7 +298,6 @@ bool JpegFormat::onSave(FileOp* fop)
         base_free(buffer[c]);
       base_free(buffer);
       jpeg_destroy_compress(&cinfo);
-      fclose(file);
       return false;
     }
   }
@@ -355,9 +347,6 @@ bool JpegFormat::onSave(FileOp* fop)
 
   // Release JPEG compression object.
   jpeg_destroy_compress(&cinfo);
-
-  // We can close the output file.
-  fclose(file);
 
   // All fine.
   return true;

@@ -73,6 +73,15 @@ LoggerModule::~LoggerModule()
 
 void verbose_printf(const char *format, ...)
 {
+  if (!App::instance()) {
+    va_list ap;
+    va_start(ap, format);
+    vfprintf(stderr, format, ap);
+    fflush(stderr);
+    va_end(ap);
+    return;
+  }
+
   if (!App::instance()->getLogger()->isVerbose())
     return;
 

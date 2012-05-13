@@ -20,6 +20,7 @@
 #define COMMANDS_FILTERS_FILTER_PREVIEW_H_INCLUDED
 
 #include "base/compiler_specific.h"
+#include "gui/timer.h"
 #include "gui/widget.h"
 
 class FilterManagerImpl;
@@ -40,7 +41,7 @@ protected:
 
 private:
   FilterManagerImpl* m_filterMgr;
-  int m_timerId;
+  gui::Timer m_timer;
 };
 
 #endif

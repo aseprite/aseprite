@@ -28,7 +28,7 @@ View::View()
 {
   m_hasBars = true;
 
-  jwidget_focusrest(this, true);
+  this->setFocusStop(true);
   addChild(&m_viewport);
   setScrollableSize(Size(0, 0));
 

@@ -24,6 +24,7 @@
 #include "base/signal.h"
 #include "document.h"
 #include "gui/base.h"
+#include "gui/timer.h"
 #include "gui/widget.h"
 #include "widgets/editor/editor_listeners.h"
 #include "widgets/editor/editor_state.h"
@@ -220,7 +221,7 @@ private:
   int m_offset_y;
 
   // Marching ants stuff
-  int m_mask_timer_id;
+  gui::Timer m_mask_timer;
   int m_offset_count;
 
   // This slot is used to disconnect the Editor from CurrentToolChange

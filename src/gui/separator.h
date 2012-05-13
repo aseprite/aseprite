@@ -7,8 +7,17 @@
 #ifndef GUI_SEPARATOR_H_INCLUDED
 #define GUI_SEPARATOR_H_INCLUDED
 
-#include "gui/base.h"
+#include "base/compiler_specific.h"
+#include "gui/widget.h"
 
-JWidget ji_separator_new(const char *text, int align);
+class Separator : public Widget
+{
+public:
+  Separator(const char* text, int align);
+
+protected:
+  bool onProcessMessage(Message* msg) OVERRIDE;
+  void onPreferredSize(PreferredSizeEvent& ev) OVERRIDE;
+};
 
 #endif

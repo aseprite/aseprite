@@ -40,9 +40,9 @@
 #include "tools/point_shape.h"
 #include "tools/tool.h"
 #include "ui_context.h"
+#include "widgets/button_set.h"
 #include "widgets/color_button.h"
 #include "widgets/editor/editor.h"
-#include "widgets/groupbut.h"
 #include "widgets/statebar.h"
 
 #include <allegro.h>
@@ -52,22 +52,64 @@ using namespace tools;
 
 static Frame* window = NULL;
 
-static bool brush_preview_msg_proc(JWidget widget, Message* msg);
-
 static bool window_close_hook(JWidget widget, void *data);
-static bool brush_type_change_hook(JWidget widget, void *data);
+
+class BrushPreview : public Widget
+{
+public:
+  BrushPreview() : Widget(JI_WIDGET) {
+  }
+
+protected:
+  bool onProcessMessage(Message* msg)
+  {
+    switch (msg->type) {
+
+      case JM_DRAW: {
+        BITMAP *bmp = create_bitmap(jrect_w(this->rc),
+                                    jrect_h(this->rc));
+
+        Tool* current_tool = UIContext::instance()
+          ->getSettings()
+          ->getCurrentTool();
+
+        IPenSettings* pen_settings = UIContext::instance()
+          ->getSettings()
+          ->getToolSettings(current_tool)
+          ->getPen();
+
+        ASSERT(pen_settings != NULL);
+
+        UniquePtr<Pen> pen(new Pen(pen_settings->getType(),
+                                   pen_settings->getSize(),
+                                   pen_settings->getAngle()));
+
+        clear_to_color(bmp, makecol(0, 0, 0));
+        image_to_allegro(pen->get_image(), bmp,
+                         bmp->w/2 - pen->get_size()/2,
+                         bmp->h/2 - pen->get_size()/2, NULL);
+        blit(bmp, ji_screen, 0, 0, this->rc->x1, this->rc->y1,
+             bmp->w, bmp->h);
+        destroy_bitmap(bmp);
+        return true;
+      }
+    }
+
+    return Widget::onProcessMessage(msg);
+  }
+};
 
 // Slot for App::Exit signal
 static void on_exit_delete_this_widget()
 {
   ASSERT(window != NULL);
-  jwidget_free(window);
+  delete window;
 }
 
 static void on_pen_size_after_change()
 {
   Slider* brush_size = window->findChildT<Slider>("brush_size");
-  Widget* brush_preview = window->findChild("brush_preview");
+  BrushPreview* brushPreview = window->findChildT<BrushPreview>("brush_preview");
 
   ASSERT(brush_size != NULL);
 
@@ -82,15 +124,15 @@ static void on_pen_size_after_change()
   brush_size->setValue(tool_settings->getPen()->getSize());
 
   // Regenerate the preview
-  brush_preview->invalidate();
+  brushPreview->invalidate();
 }
 
 static void on_current_tool_change()
 {
   Slider* brush_size = window->findChildT<Slider>("brush_size");
   Slider* brush_angle = window->findChildT<Slider>("brush_angle");
-  Widget* brush_type = window->findChild("brush_type");
-  Widget* brush_preview = window->findChild("brush_preview");
+  ButtonSet* brush_type = window->findChildT<ButtonSet>("brush_type");
+  BrushPreview* brushPreview = window->findChildT<BrushPreview>("brush_preview");
   Widget* opacity_label = window->findChild("opacity_label");
   Slider* opacity = window->findChildT<Slider>("opacity");
   Widget* tolerance_label = window->findChild("tolerance_label");
@@ -115,10 +157,10 @@ static void on_current_tool_change()
   air_speed->setValue(tool_settings->getSpraySpeed());
 
   // Select the brush type
-  group_button_select(brush_type, tool_settings->getPen()->getType());
+  brush_type->setSelectedItem(tool_settings->getPen()->getType());
 
   // Regenerate the preview
-  brush_preview->invalidate();
+  brushPreview->invalidate();
 
   // True if the current tool needs opacity options
   bool hasOpacity = (current_tool->getInk(0)->isPaint() ||
@@ -183,6 +225,8 @@ private:
   CheckBox* m_snapToGrid;
   CheckBox* m_onionSkin;
   CheckBox* m_viewGrid;
+  Widget* m_brushPreview;
+  ButtonSet* m_brushType;
   Slider* m_brushSize;
   Slider* m_brushAngle;
   Slider* m_opacity;
@@ -190,6 +234,7 @@ private:
   Slider* m_sprayWidth;
   Slider* m_airSpeed;
 
+  void onWindowClose();
   void onTiledClick();
   void onTiledXYClick(int tiled_axis, CheckBox* checkbox);
   void onViewGridClick();
@@ -197,12 +242,13 @@ private:
   void onSetGridClick();
   void onSnapToGridClick();
   void onOnionSkinClick();
-  void onBrushSizeSliderChange(Widget* brush_preview);
-  void onBrushAngleSliderChange(Widget* brush_preview);
+  void onBrushSizeSliderChange();
+  void onBrushAngleSliderChange();
   void onOpacitySliderChange();
   void onToleranceSliderChange();
   void onSprayWidthSliderChange();
   void onAirSpeedSliderChange();
+  void onBrushTypeChange();
 
 };
 
@@ -216,9 +262,8 @@ ConfigureTools::ConfigureTools()
 void ConfigureTools::onExecute(Context* context)
 {
   Button* set_grid;
-  JWidget brush_preview_box;
-  JWidget brush_type_box, brush_type;
-  JWidget brush_preview;
+  Widget* brush_preview_box;
+  Widget* brush_type_box;
   bool first_time = false;
 
   if (!window) {
@@ -251,23 +296,20 @@ void ConfigureTools::onExecute(Context* context)
                 "onionskin", &m_onionSkin, NULL);
   }
   catch (...) {
-    jwidget_free(window);
+    delete window;
     window = NULL;
     throw;
   }
 
   /* brush-preview */
   if (first_time) {
-    brush_preview = new Widget(JI_WIDGET);
-    brush_preview->min_w = 32 + 4;
-    brush_preview->min_h = 32 + 4;
-
-    brush_preview->setName("brush_preview");
-    jwidget_add_hook(brush_preview, JI_WIDGET,
-                     brush_preview_msg_proc, NULL);
+    m_brushPreview = new BrushPreview();
+    m_brushPreview->min_w = 32 + 4;
+    m_brushPreview->min_h = 32 + 4;
+    m_brushPreview->setName("brush_preview");
   }
   else {
-    brush_preview = window->findChild("brush_preview");
+    m_brushPreview = window->findChild("brush_preview");
   }
 
   // Current settings
@@ -279,15 +321,15 @@ void ConfigureTools::onExecute(Context* context)
   if (first_time) {
     PenType type = tool_settings->getPen()->getType();
 
-    brush_type = group_button_new(3, 1, type,
-                                  PART_BRUSH_CIRCLE,
-                                  PART_BRUSH_SQUARE,
-                                  PART_BRUSH_LINE);
+    m_brushType = new ButtonSet(3, 1, type,
+                                PART_BRUSH_CIRCLE,
+                                PART_BRUSH_SQUARE,
+                                PART_BRUSH_LINE);
 
-    brush_type->setName("brush_type");
+    m_brushType->setName("brush_type");
   }
   else {
-    brush_type = window->findChild("brush_type");
+    m_brushType = window->findChildT<ButtonSet>("brush_type");
   }
 
   if (settings->getTiledMode() != TILED_NONE) {
@@ -303,11 +345,11 @@ void ConfigureTools::onExecute(Context* context)
 
   if (first_time) {
     // Append children
-    brush_preview_box->addChild(brush_preview);
-    brush_type_box->addChild(brush_type);
+    brush_preview_box->addChild(m_brushPreview);
+    brush_type_box->addChild(m_brushType);
 
     // Slots
-    window->Close.connect(Bind<bool>(&window_close_hook, (JWidget)window, (void*)0));
+    window->Close.connect(Bind<void>(&ConfigureTools::onWindowClose, this));
     m_tiled->Click.connect(Bind<void>(&ConfigureTools::onTiledClick, this));
     m_tiledX->Click.connect(Bind<void>(&ConfigureTools::onTiledXYClick, this, TILED_X_AXIS, m_tiledX));
     m_tiledY->Click.connect(Bind<void>(&ConfigureTools::onTiledXYClick, this, TILED_Y_AXIS, m_tiledY));
@@ -322,14 +364,13 @@ void ConfigureTools::onExecute(Context* context)
     App::instance()->CurrentToolChange.connect(&on_current_tool_change);
 
     // Append hooks
-    m_brushSize->Change.connect(Bind<void>(&ConfigureTools::onBrushSizeSliderChange, this, brush_preview));
-    m_brushAngle->Change.connect(Bind<void>(&ConfigureTools::onBrushAngleSliderChange, this, brush_preview));
+    m_brushSize->Change.connect(Bind<void>(&ConfigureTools::onBrushSizeSliderChange, this));
+    m_brushAngle->Change.connect(Bind<void>(&ConfigureTools::onBrushAngleSliderChange, this));
     m_opacity->Change.connect(&ConfigureTools::onOpacitySliderChange, this);
     m_tolerance->Change.connect(&ConfigureTools::onToleranceSliderChange, this);
     m_airSpeed->Change.connect(&ConfigureTools::onAirSpeedSliderChange, this);
     m_sprayWidth->Change.connect(&ConfigureTools::onSprayWidthSliderChange, this);
-
-    HOOK(brush_type, SIGNAL_GROUP_BUTTON_CHANGE, brush_type_change_hook, brush_preview);
+    m_brushType->ItemChange.connect(&ConfigureTools::onBrushTypeChange, this);
   }
 
   // Update current pen properties
@@ -345,59 +386,14 @@ void ConfigureTools::onExecute(Context* context)
   window->open_window_bg();
 }
 
-static bool brush_preview_msg_proc(JWidget widget, Message* msg)
+void ConfigureTools::onWindowClose()
 {
-  switch (msg->type) {
-
-    case JM_DRAW: {
-      BITMAP *bmp = create_bitmap(jrect_w(widget->rc),
-                                  jrect_h(widget->rc));
-
-      Tool* current_tool = UIContext::instance()
-        ->getSettings()
-        ->getCurrentTool();
-
-      IPenSettings* pen_settings = UIContext::instance()
-        ->getSettings()
-        ->getToolSettings(current_tool)
-        ->getPen();
-
-      ASSERT(pen_settings != NULL);
-
-      Pen* pen = new Pen(pen_settings->getType(),
-                         pen_settings->getSize(),
-                         pen_settings->getAngle());
-
-      clear_to_color(bmp, makecol(0, 0, 0));
-      image_to_allegro(pen->get_image(), bmp,
-                       bmp->w/2 - pen->get_size()/2,
-                       bmp->h/2 - pen->get_size()/2, NULL);
-      blit(bmp, ji_screen, 0, 0, widget->rc->x1, widget->rc->y1,
-           bmp->w, bmp->h);
-      destroy_bitmap(bmp);
-
-      delete pen;
-      return true;
-    }
-  }
-
-  return false;
+  save_window_pos(window, "ConfigureTool");
 }
 
-static bool window_close_hook(JWidget widget, void *data)
+void ConfigureTools::onBrushTypeChange()
 {
-  /* isn't running anymore */
-/*   window = NULL; */
-
-  /* save window configuration */
-  save_window_pos(widget, "ConfigureTool");
-
-  return false;
-}
-
-static bool brush_type_change_hook(JWidget widget, void *data)
-{
-  PenType type = (PenType)group_button_get_selected(widget);
+  PenType type = (PenType)m_brushType->getSelectedItem();
 
   Tool* current_tool = UIContext::instance()
     ->getSettings()
@@ -409,7 +405,7 @@ static bool brush_type_change_hook(JWidget widget, void *data)
     ->getPen()
     ->setType(type);
 
-  ((Widget*)data)->invalidate();
+  m_brushPreview->invalidate();
 
   app_get_statusbar()
     ->setStatusText(250,
@@ -417,11 +413,9 @@ static bool brush_type_change_hook(JWidget widget, void *data)
                     type == PEN_TYPE_CIRCLE ? "Circle":
                     type == PEN_TYPE_SQUARE ? "Square":
                     type == PEN_TYPE_LINE ? "Line": "Unknown");
-
-  return true;
 }
 
-void ConfigureTools::onBrushSizeSliderChange(Widget* brush_preview)
+void ConfigureTools::onBrushSizeSliderChange()
 {
   Tool* current_tool = UIContext::instance()
     ->getSettings()
@@ -433,10 +427,10 @@ void ConfigureTools::onBrushSizeSliderChange(Widget* brush_preview)
     ->getPen()
     ->setSize(m_brushSize->getValue());
 
-  brush_preview->invalidate();
+  m_brushPreview->invalidate();
 }
 
-void ConfigureTools::onBrushAngleSliderChange(Widget* brush_preview)
+void ConfigureTools::onBrushAngleSliderChange()
 {
   Tool* current_tool = UIContext::instance()
     ->getSettings()
@@ -448,7 +442,7 @@ void ConfigureTools::onBrushAngleSliderChange(Widget* brush_preview)
     ->getPen()
     ->setAngle(m_brushAngle->getValue());
 
-  brush_preview->invalidate();
+  m_brushPreview->invalidate();
 }
 
 void ConfigureTools::onOpacitySliderChange()

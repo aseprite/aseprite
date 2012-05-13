@@ -34,7 +34,6 @@
 #include "skin/skin_theme.h"
 #include "tools/tool_box.h"
 #include "ui_context.h"
-#include "widgets/groupbut.h"
 #include "widgets/statebar.h"
 
 #include <allegro.h>
@@ -65,7 +64,7 @@ class ToolBar : public Widget
   // Tool-tip window
   TipWindow* m_tipWindow;
 
-  int m_tipTimerId;
+  gui::Timer m_tipTimer;
   bool m_tipOpened;
 
 public:
@@ -148,6 +147,7 @@ void toolbar_select_tool(JWidget toolbar, Tool* tool)
 
 ToolBar::ToolBar()
   : Widget(JI_WIDGET)
+  , m_tipTimer(this, 300)
 {
   this->border_width.l = 1*jguiscale();
   this->border_width.t = 0;
@@ -159,7 +159,6 @@ ToolBar::ToolBar()
   m_open_on_hot = false;
   m_popupFrame = NULL;
   m_tipWindow = NULL;
-  m_tipTimerId = jmanager_add_timer(this, 300);
   m_tipOpened = false;
 
   ToolBox* toolbox = App::instance()->getToolBox();
@@ -172,7 +171,6 @@ ToolBar::ToolBar()
 
 ToolBar::~ToolBar()
 {
-  jmanager_remove_timer(m_tipTimerId);
   delete m_popupFrame;
   delete m_tipWindow;
 }
@@ -387,11 +385,11 @@ bool ToolBar::onProcessMessage(Message* msg)
       break;
 
     case JM_TIMER:
-      if (msg->timer.timer_id == m_tipTimerId) {
+      if (msg->timer.timer == &m_tipTimer) {
         if (m_tipWindow)
           m_tipWindow->open_window();
 
-        jmanager_stop_timer(m_tipTimerId);
+        m_tipTimer.stop();
         m_tipOpened = true;
       }
       break;
@@ -461,12 +459,12 @@ void ToolBar::openPopupFrame(int group_index, ToolGroup* tool_group)
   // Redraw the overlapped area and save it to use it in the ToolStrip::onProcessMessage(JM_DRAW)
   {
     JRect rcTemp = jrect_new(rc.x, rc.y, rc.x+rc.w, rc.y+rc.h);
-    ji_get_default_manager()->invalidateRect(rcTemp);
+    getManager()->invalidateRect(rcTemp);
     jrect_free(rcTemp);
 
     // Flush JM_DRAW messages and send them
-    ji_get_default_manager()->flushRedraw();
-    jmanager_dispatch_messages(ji_get_default_manager());
+    getManager()->flushRedraw();
+    getManager()->dispatchMessages();
 
     // Save the area
     toolstrip->saveOverlappedArea(rc);
@@ -592,12 +590,12 @@ void ToolBar::openTipWindow(int group_index, Tool* tool)
   if (m_tipOpened)
     m_tipWindow->open_window();
   else
-    jmanager_start_timer(m_tipTimerId);
+    m_tipTimer.start();
 }
 
 void ToolBar::closeTipWindow()
 {
-  jmanager_stop_timer(m_tipTimerId);
+  m_tipTimer.stop();
 
   if (m_tipWindow) {
     m_tipWindow->closeWindow(NULL);
@@ -605,8 +603,8 @@ void ToolBar::closeTipWindow()
     m_tipWindow = NULL;
 
     // Flush JM_DRAW messages and send them
-    ji_get_default_manager()->flushRedraw();
-    jmanager_dispatch_messages(ji_get_default_manager());
+    getManager()->flushRedraw();
+    getManager()->dispatchMessages();
   }
 }
 

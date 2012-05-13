@@ -32,12 +32,6 @@ void _ji_reinit_theme_in_all_widgets();
 bool _jwindow_is_moving();
 
 //////////////////////////////////////////////////////////////////////
-// jmanager.c
-
-void _jmanager_open_window(JWidget manager, Frame* frame);
-void _jmanager_close_window(JWidget manager, Frame* frame, bool redraw_background);
-
-//////////////////////////////////////////////////////////////////////
 // theme.cpp
 
 void _ji_theme_draw_sprite_color(BITMAP *bmp, BITMAP *sprite,

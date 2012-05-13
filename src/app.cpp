@@ -178,7 +178,7 @@ int App::run()
 
     // Setup the GUI screen
     jmouse_set_cursor(JI_CURSOR_NORMAL);
-    jmanager_refresh_screen();
+    gui::Manager::getDefault()->invalidate();
 
     // Load main window
     top_window = static_cast<Frame*>(load_widget("main_window.xml", "main_window"));
@@ -199,12 +199,12 @@ int App::run()
     editor = create_new_editor();
 
     // configure all widgets to expansives
-    jwidget_expansive(menubar, true);
-    jwidget_expansive(statusbar, true);
-    jwidget_expansive(colorbar, true);
-    jwidget_expansive(toolbar, true);
-    jwidget_expansive(tabsbar, true);
-    jwidget_expansive(view, true);
+    menubar->setExpansive(true);
+    statusbar->setExpansive(true);
+    colorbar->setExpansive(true);
+    toolbar->setExpansive(true);
+    tabsbar->setExpansive(true);
+    view->setExpansive(true);
 
     /* prepare the first editor */
     view->attachToView(editor);
@@ -230,14 +230,14 @@ int App::run()
     app_rebuild_documents_tabs();
     app_rebuild_recent_list();
 
-    /* set current editor */
+    // Set current editor
     set_current_editor(editor);
 
-    /* open the window */
+    // Open the window
     top_window->open_window();
 
-    /* refresh the screen */
-    jmanager_refresh_screen();
+    // Redraw the whole screen.
+    gui::Manager::getDefault()->invalidate();
   }
 
   /* set background mode for non-GUI modes */
@@ -309,13 +309,13 @@ int App::run()
 
     // Delete all editors first because they used signals from other
     // widgets (e.g. color bar).
-    jwidget_free(box_editors);
+    delete box_editors;
 
     // Destroy mini-editor.
     exit_module_editors();
 
     // Destroy the top-window
-    jwidget_free(top_window);
+    delete top_window;
     top_window = NULL;
   }
 
@@ -386,8 +386,8 @@ void app_refresh_screen(const Document* document)
   else
     set_current_palette(NULL, false);
 
-  // redraw the screen
-  jmanager_refresh_screen();
+  // Invalidate the whole screen.
+  gui::Manager::getDefault()->invalidate();
 }
 
 /**

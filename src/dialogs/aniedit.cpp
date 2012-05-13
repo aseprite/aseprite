@@ -219,7 +219,7 @@ AnimationEditor::AnimationEditor(const Document* document, const Sprite* sprite)
   m_clk_part = A_PART_NOTHING;
   m_space_pressed = false;
 
-  jwidget_focusrest(this, true);
+  this->setFocusStop(true);
 
   regenerateLayers();
 }

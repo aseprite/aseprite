@@ -407,15 +407,15 @@ void split_editor(Editor* editor, int align)
   }
 
   View* view = View::getView(editor);
-  JWidget parent_box = view->getParent(); // Box or panel.
+  JWidget parent_box = view->getParent(); // Box or splitter.
 
   // Create a new box to contain both editors, and a new view to put the new editor.
-  JWidget new_panel = jpanel_new(align);
+  JWidget new_splitter = new Splitter(align);
   View* new_view = new EditorView(EditorView::CurrentEditorMode);
   Editor* new_editor = create_new_editor();
 
   // Insert the "new_box" in the same location that the view.
-  parent_box->replaceChild(view, new_panel);
+  parent_box->replaceChild(view, new_splitter);
 
   // Append the new editor.
   new_view->attachToView(new_editor);
@@ -425,12 +425,12 @@ void split_editor(Editor* editor, int align)
   new_editor->setZoom(editor->getZoom());
 
   // Expansive widgets.
-  jwidget_expansive(new_panel, true);
-  jwidget_expansive(new_view, true);
+  new_splitter->setExpansive(true);
+  new_view->setExpansive(true);
 
-  // Append both views to the "new_panel".
-  new_panel->addChild(view);
-  new_panel->addChild(new_view);
+  // Append both views to the "new_splitter".
+  new_splitter->addChild(view);
+  new_splitter->addChild(new_view);
 
   // Same position.
   {
@@ -473,14 +473,14 @@ void close_editor(Editor* editor)
 
   // Remove this editor.
   parent_box->removeChild(view);
-  jwidget_free(view);
+  delete view;
 
   // Fixup the parent.
   other_widget = reinterpret_cast<JWidget>(jlist_first_data(parent_box->children));
 
   parent_box->removeChild(other_widget);
   parent_box->getParent()->replaceChild(parent_box, other_widget);
-  jwidget_free(parent_box);
+  delete parent_box;
 
   // Find next editor to select.
   if (!current_editor) {
@@ -613,7 +613,7 @@ static void create_mini_editor_frame()
 
   // Create the new for the mini editor
   View* newView = new EditorView(EditorView::AlwaysSelected);
-  jwidget_expansive(newView, true);
+  newView->setExpansive(true);
 
   // Create mini editor
   mini_editor = new MiniEditor();

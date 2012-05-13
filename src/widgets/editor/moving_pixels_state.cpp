@@ -87,8 +87,8 @@ MovingPixelsState::MovingPixelsState(Editor* editor, Message* msg, PixelsMovemen
   // Add the current editor as filter for key message of the manager
   // so we can catch the Enter key, and avoid to execute the
   // PlayAnimation command.
-  jmanager_add_msg_filter(JM_KEYPRESSED, m_currentEditor);
-  jmanager_add_msg_filter(JM_KEYRELEASED, m_currentEditor);
+  m_currentEditor->getManager()->addMessageFilter(JM_KEYPRESSED, m_currentEditor);
+  m_currentEditor->getManager()->addMessageFilter(JM_KEYRELEASED, m_currentEditor);
 }
 
 MovingPixelsState::~MovingPixelsState()
@@ -98,8 +98,8 @@ MovingPixelsState::~MovingPixelsState()
 
   delete m_pixelsMovement;
 
-  jmanager_remove_msg_filter(JM_KEYPRESSED, m_currentEditor);
-  jmanager_remove_msg_filter(JM_KEYRELEASED, m_currentEditor);
+  m_currentEditor->getManager()->removeMessageFilter(JM_KEYPRESSED, m_currentEditor);
+  m_currentEditor->getManager()->removeMessageFilter(JM_KEYRELEASED, m_currentEditor);
 }
 
 EditorState::BeforeChangeAction MovingPixelsState::onBeforeChangeState(Editor* editor, EditorState* newState)

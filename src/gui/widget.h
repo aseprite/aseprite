@@ -19,6 +19,7 @@
 
 class PaintEvent;
 class PreferredSizeEvent;
+namespace gui { class Manager; }
 
 #ifndef NDEBUG
 #include "gui/intern.h"
@@ -31,11 +32,11 @@ class PreferredSizeEvent;
 struct FONT;
 struct BITMAP;
 
+class Frame;
+
 typedef std::vector<Widget*> WidgetsList;
 
 int ji_register_widget_type();
-
-void jwidget_free(JWidget widget);
 
 /* hooks */
 
@@ -43,18 +44,6 @@ void jwidget_add_hook(JWidget widget, int type,
                       MessageFunc msg_proc, void *data);
 JHook jwidget_get_hook(JWidget widget, int type);
 void *jwidget_get_data(JWidget widget, int type);
-
-/* behavior properties */
-
-void jwidget_magnetic(JWidget widget, bool state);
-void jwidget_expansive(JWidget widget, bool state);
-void jwidget_decorative(JWidget widget, bool state);
-void jwidget_focusrest(JWidget widget, bool state);
-
-bool jwidget_is_magnetic(JWidget widget);
-bool jwidget_is_expansive(JWidget widget);
-bool jwidget_is_decorative(JWidget widget);
-bool jwidget_is_focusrest(JWidget widget);
 
 /* position and geometry */
 
@@ -83,10 +72,6 @@ void jwidget_signal_on(JWidget widget);
 void jwidget_signal_off(JWidget widget);
 
 bool jwidget_emit_signal(JWidget widget, int signal_num);
-
-/* miscellaneous */
-
-bool jwidget_check_underscored(JWidget widget, int scancode);
 
 //////////////////////////////////////////////////////////////////////
 
@@ -146,8 +131,8 @@ public:
 
   // main properties
 
-  int getType();
-  const char* getName();
+  int getType() const;
+  const char* getName() const;
   int getAlign() const;
 
   void setName(const char* name);
@@ -155,7 +140,7 @@ public:
 
   // text property
 
-  bool hasText() { return flags & JI_NOTEXT ? false: true; }
+  bool hasText() const { return flags & JI_NOTEXT ? false: true; }
 
   const char* getText() const { return m_text.c_str(); }
   int getTextInt() const;
@@ -169,14 +154,38 @@ public:
   // COMMON PROPERTIES
   // ===============================================================
 
+  // True if this widget and all its ancestors are visible.
   bool isVisible() const;
   void setVisible(bool state);
 
+  // True if this widget can receive user input (is not disabled).
   bool isEnabled() const;
   void setEnabled(bool state);
 
+  // True if this widget is selected (pushed in case of a button, or
+  // checked in the case of a check-box).
   bool isSelected() const;
   void setSelected(bool state);
+
+  // True if this widget wants more space when it's inside a Box
+  // parent.
+  bool isExpansive() const;
+  void setExpansive(bool state);
+
+  // True if this is a decorative widget created by the current
+  // theme. Decorative widgets are arranged by the theme instead that
+  // the parent's widget.
+  bool isDecorative() const;
+  void setDecorative(bool state);
+
+  // True if this widget can receive the keyboard focus.
+  bool isFocusStop() const;
+  void setFocusStop(bool state);
+
+  // True if this widget wants the focus by default when it's shown by
+  // first time (e.g. when its parent window is opened).
+  void setFocusMagnet(bool state);
+  bool isFocusMagnet() const;
 
   // ===============================================================
   // LOOK & FEEL
@@ -207,9 +216,9 @@ public:
   // PARENTS & CHILDREN
   // ===============================================================
 
-  Widget* getRoot();
+  Frame* getRoot();
   Widget* getParent();
-  Widget* getManager();
+  gui::Manager* getManager();
 
   // Returns a list of parents (you must free the list), if
   // "ascendant" is true the list is build from child to parents, else
@@ -294,7 +303,7 @@ public:
   void setPreferredSize(int fixedWidth, int fixedHeight);
 
   // ===============================================================
-  // FOCUS & MOUSE
+  // MOUSE, FOCUS & KEYBOARD
   // ===============================================================
 
   void requestFocus();
@@ -305,6 +314,12 @@ public:
   bool hasMouse();
   bool hasMouseOver();
   bool hasCapture();
+
+  // Returns lower-case letter that represet the mnemonic of the widget
+  // (the underscored character, i.e. the letter after & symbol).
+  int getMnemonicChar() const;
+
+  bool isScancodeMnemonic(int scancode) const;
 
 protected:
 
@@ -318,6 +333,7 @@ protected:
   // EVENTS
   // ===============================================================
 
+  virtual void onInvalidateRegion(const JRegion region);
   virtual void onPreferredSize(PreferredSizeEvent& ev);
   virtual void onPaint(PaintEvent& ev);
   virtual void onBroadcastMouseMessage(WidgetsList& targets);

@@ -21,6 +21,7 @@
 #include "app.h"
 #include "base/memory.h"
 #include "base/shared_ptr.h"
+#include "base/unique_ptr.h"
 #include "commands/command.h"
 #include "commands/commands.h"
 #include "commands/params.h"
@@ -139,10 +140,10 @@ struct Monitor
 
 //////////////////////////////////////////////////////////////////////
 
-static JWidget manager = NULL;
+static gui::Manager* manager = NULL;
 static Theme* ase_theme = NULL;
 
-static int monitor_timer = -1;
+static UniquePtr<gui::Timer> monitor_timer;
 static MonitorList* monitors = NULL;
 static std::vector<Shortcut*>* shortcuts = NULL;
 
@@ -295,7 +296,7 @@ int init_module_gui()
 gfx_done:;
 
   // Create the default-manager
-  manager = jmanager_new();
+  manager = new gui::Manager();
   jwidget_add_hook(manager, JI_WIDGET, manager_msg_proc, NULL);
 
   // Setup the GUI theme for all widgets
@@ -343,6 +344,8 @@ void exit_module_gui()
   shortcuts = NULL;
 
   // destroy monitors
+  monitor_timer.reset(NULL);
+
   ASSERT(monitors != NULL);
   for (MonitorList::iterator
          it2 = monitors->begin(); it2 != monitors->end(); ++it2) {
@@ -361,7 +364,7 @@ void exit_module_gui()
     ji_screen_created = false;
   }
 
-  jmanager_free(manager);
+  delete manager;
 
   // Now we can destroy theme
   CurrentTheme::set(NULL);
@@ -447,7 +450,7 @@ void update_screen_for_document(const Document* document)
     // Well, change to the default palette.
     if (set_current_palette(NULL, false)) {
       // If the palette changes, refresh the whole screen.
-      jmanager_refresh_screen();
+      gui::Manager::getDefault()->invalidate();
     }
   }
   // With a document.
@@ -456,8 +459,9 @@ void update_screen_for_document(const Document* document)
 
     // Select the palette of the sprite.
     if (set_current_palette(sprite->getPalette(sprite->getCurrentFrame()), false)) {
-      // If the palette changes, refresh the whole screen.
-      jmanager_refresh_screen();
+      // If the palette changes, invalidate the whole screen, we've to
+      // redraw it.
+      gui::Manager::getDefault()->invalidate();
     }
     else {
       // If it's the same palette update only the editors with the sprite.
@@ -471,7 +475,7 @@ void update_screen_for_document(const Document* document)
 
 void gui_run()
 {
-  jmanager_run(manager);
+  manager->run();
 }
 
 void gui_feedback()
@@ -485,7 +489,7 @@ void gui_feedback()
 
     gui_setup_screen(false);
     app_get_top_window()->remap_window();
-    jmanager_refresh_screen();
+    gui::Manager::getDefault()->invalidate();
   }
 #endif
 
@@ -820,19 +824,6 @@ void set_gfxicon_to_button(ButtonBase* button,
 // Button style (convert radio or check buttons and draw it like
 // normal buttons)
 
-RadioButton* radio_button_new(int radio_group, int b1, int b2, int b3, int b4)
-{
-  RadioButton* widget = new RadioButton(NULL, radio_group, JI_BUTTON);
-
-  widget->setRadioGroup(radio_group);
-  widget->setAlign(JI_CENTER | JI_MIDDLE);
-
-  setup_mini_look(widget);
-  setup_bevels(widget, b1, b2, b3, b4);
-
-  return widget;
-}
-
 CheckBox* check_button_new(const char *text, int b1, int b2, int b3, int b4)
 {
   CheckBox* widget = new CheckBox(text, JI_BUTTON);
@@ -1116,10 +1107,10 @@ Monitor* add_gui_monitor(void (*proc)(void *),
 
   monitors->push_back(monitor);
 
-  if (monitor_timer < 0)
-    monitor_timer = jmanager_add_timer(manager, MONITOR_TIMER_MSECS);
+  if (monitor_timer == NULL)
+    monitor_timer.reset(new gui::Timer(manager, MONITOR_TIMER_MSECS));
 
-  jmanager_start_timer(monitor_timer);
+  monitor_timer->start();
 
   return monitor;
 }
@@ -1139,7 +1130,7 @@ void remove_gui_monitor(Monitor* monitor)
 
   monitors->erase(it);
   if (monitors->empty())
-    jmanager_stop_timer(monitor_timer);
+    monitor_timer->stop();
 }
 
 void* get_monitor_data(Monitor* monitor)
@@ -1168,7 +1159,7 @@ static bool manager_msg_proc(JWidget widget, Message* msg)
       break;
 
     case JM_TIMER:
-      if (msg->timer.timer_id == monitor_timer) {
+      if (msg->timer.timer == monitor_timer) {
         for (MonitorList::iterator
                it = monitors->begin(), next; it != monitors->end(); it = next) {
           Monitor* monitor = *it;
@@ -1189,12 +1180,12 @@ static bool manager_msg_proc(JWidget widget, Message* msg)
 
         // is monitors empty? we can stop the timer so
         if (monitors->empty())
-          jmanager_stop_timer(monitor_timer);
+          monitor_timer->stop();
       }
       break;
 
     case JM_KEYPRESSED: {
-      Frame* toplevel_frame = dynamic_cast<Frame*>(jmanager_get_top_window());
+      Frame* toplevel_frame = widget->getManager()->getTopFrame();
 
       // If there is a foreground window as top level...
       if (toplevel_frame &&

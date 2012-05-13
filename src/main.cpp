@@ -18,16 +18,15 @@
 
 #include "config.h"
 
-#include <allegro.h>
-
 #include "app.h"
 #include "base/exception.h"
 #include "base/memory.h"
 #include "base/memory_dump.h"
 #include "console.h"
-#include "loadpng.h"
 #include "resource_finder.h"
+#include "scoped_allegro.h"
 
+#include <allegro.h>
 #ifdef WIN32
 #include <winalleg.h>
 #endif
@@ -51,25 +50,6 @@ public:
 };
 #endif
 
-//////////////////////////////////////////////////////////////////////
-// Allegro libray initialization
-
-class Allegro {
-public:
-  Allegro() {
-    allegro_init();
-    set_uformat(U_ASCII);
-    install_timer();
-
-    // Register PNG as a supported bitmap type
-    register_bitmap_file_type("png", load_png, save_png);
-  }
-  ~Allegro() {
-    remove_timer();
-    allegro_exit();
-  }
-};
-
 static bool get_memory_dump_filename(std::string& filename)
 {
 #ifdef WIN32
@@ -90,7 +70,7 @@ int main(int argc, char* argv[])
 #endif
 
   base::MemoryDump memoryDump;
-  Allegro allegro;
+  ScopedAllegro allegro;
 #ifdef MEMLEAK
   MemLeak memleak;
 #endif

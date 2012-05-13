@@ -85,12 +85,6 @@ Widget::Widget(int type)
   m_doubleBuffered = false;
 }
 
-void jwidget_free(JWidget widget)
-{
-  ASSERT_VALID_WIDGET(widget);
-  delete widget;
-}
-
 Widget::~Widget()
 {
   JLink link, next;
@@ -101,18 +95,21 @@ Widget::~Widget()
   sendMessage(msg);
   jmessage_free(msg);
 
-  /* break relationship with the manager */
-  jmanager_free_widget(this);
-  jmanager_remove_messages_for(this);
-  jmanager_remove_msg_filter_for(this);
+  // Break relationship with the manager.
+  if (this->type != JI_MANAGER) {
+    gui::Manager* manager = getManager();
+    manager->freeWidget(this);
+    manager->removeMessagesFor(this);
+    manager->removeMessageFilterFor(this);
+  }
 
-  /* remove from parent */
+  // Remove from parent
   if (this->parent)
     this->parent->removeChild(this);
 
   /* remove children */
   JI_LIST_FOR_EACH_SAFE(this->children, link, next)
-    jwidget_free(reinterpret_cast<JWidget>(link->data));
+    delete reinterpret_cast<Widget*>(link->data);
   jlist_free(this->children);
 
   /* destroy the update region */
@@ -141,7 +138,7 @@ Widget::~Widget()
 
 void Widget::deferDelete()
 {
-  jmanager_add_to_garbage(this);
+  getManager()->addToGarbage(this);
 }
 
 void Widget::initTheme()
@@ -213,12 +210,12 @@ void *jwidget_get_data(JWidget widget, int type)
 /**********************************************************************/
 /* main properties */
 
-int Widget::getType()
+int Widget::getType() const
 {
   return this->type;
 }
 
-const char *Widget::getName()
+const char *Widget::getName() const
 {
   return this->name;
 }
@@ -311,79 +308,9 @@ void Widget::setTheme(Theme* theme)
   setFont(m_theme ? m_theme->default_font: NULL);
 }
 
-/**********************************************************************/
-/* behavior properties */
-
-void jwidget_magnetic(JWidget widget, bool state)
-{
-  ASSERT_VALID_WIDGET(widget);
-
-  if (state)
-    widget->flags |= JI_MAGNETIC;
-  else
-    widget->flags &= ~JI_MAGNETIC;
-}
-
-void jwidget_expansive(JWidget widget, bool state)
-{
-  ASSERT_VALID_WIDGET(widget);
-
-  if (state)
-    widget->flags |= JI_EXPANSIVE;
-  else
-    widget->flags &= ~JI_EXPANSIVE;
-}
-
-void jwidget_decorative(JWidget widget, bool state)
-{
-  ASSERT_VALID_WIDGET(widget);
-
-  if (state)
-    widget->flags |= JI_DECORATIVE;
-  else
-    widget->flags &= ~JI_DECORATIVE;
-}
-
-void jwidget_focusrest(JWidget widget, bool state)
-{
-  ASSERT_VALID_WIDGET(widget);
-
-  if (state)
-    widget->flags |= JI_FOCUSREST;
-  else
-    widget->flags &= ~JI_FOCUSREST;
-}
-
-bool jwidget_is_magnetic(JWidget widget)
-{
-  ASSERT_VALID_WIDGET(widget);
-
-  return (widget->flags & JI_MAGNETIC) ? true: false;
-}
-
-bool jwidget_is_expansive(JWidget widget)
-{
-  ASSERT_VALID_WIDGET(widget);
-
-  return (widget->flags & JI_EXPANSIVE) ? true: false;
-}
-
-bool jwidget_is_decorative(JWidget widget)
-{
-  ASSERT_VALID_WIDGET(widget);
-
-  return (widget->flags & JI_DECORATIVE) ? true: false;
-}
-
-bool jwidget_is_focusrest(JWidget widget)
-{
-  ASSERT_VALID_WIDGET(widget);
-
-  return (widget->flags & JI_FOCUSREST) ? true: false;
-}
-
-/**********************************************************************/
-/* status properties */
+// ===============================================================
+// COMMON PROPERTIES
+// ===============================================================
 
 void Widget::setVisible(bool state)
 {
@@ -397,7 +324,7 @@ void Widget::setVisible(bool state)
   }
   else {
     if (!(this->flags & JI_HIDDEN)) {
-      jmanager_free_widget(this); // Free from manager
+      getManager()->freeWidget(this); // Free from manager
 
       this->flags |= JI_HIDDEN;
       jwidget_emit_signal(this, JI_SIGNAL_HIDE);
@@ -417,7 +344,7 @@ void Widget::setEnabled(bool state)
   }
   else {
     if (!(this->flags & JI_DISABLED)) {
-      jmanager_free_widget(this); // Free from the manager
+      getManager()->freeWidget(this); // Free from the manager
 
       this->flags |= JI_DISABLED;
       invalidate();
@@ -445,6 +372,38 @@ void Widget::setSelected(bool state)
       jwidget_emit_signal(this, JI_SIGNAL_DESELECT);
     }
   }
+}
+
+void Widget::setExpansive(bool state)
+{
+  if (state)
+    this->flags |= JI_EXPANSIVE;
+  else
+    this->flags &= ~JI_EXPANSIVE;
+}
+
+void Widget::setDecorative(bool state)
+{
+  if (state)
+    this->flags |= JI_DECORATIVE;
+  else
+    this->flags &= ~JI_DECORATIVE;
+}
+
+void Widget::setFocusStop(bool state)
+{
+  if (state)
+    this->flags |= JI_FOCUSSTOP;
+  else
+    this->flags &= ~JI_FOCUSSTOP;
+}
+
+void Widget::setFocusMagnet(bool state)
+{
+  if (state)
+    this->flags |= JI_FOCUSMAGNET;
+  else
+    this->flags &= ~JI_FOCUSMAGNET;
 }
 
 bool Widget::isVisible() const
@@ -480,17 +439,37 @@ bool Widget::isSelected() const
   return (this->flags & JI_SELECTED) ? true: false;
 }
 
+bool Widget::isExpansive() const
+{
+  return (this->flags & JI_EXPANSIVE) ? true: false;
+}
+
+bool Widget::isDecorative() const
+{
+  return (this->flags & JI_DECORATIVE) ? true: false;
+}
+
+bool Widget::isFocusStop() const
+{
+  return (this->flags & JI_FOCUSSTOP) ? true: false;
+}
+
+bool Widget::isFocusMagnet() const
+{
+  return (this->flags & JI_FOCUSMAGNET) ? true: false;
+}
+
 // ===============================================================
 // PARENTS & CHILDREN
 // ===============================================================
 
-Widget* Widget::getRoot()
+Frame* Widget::getRoot()
 {
   Widget* widget = this;
 
   while (widget) {
     if (widget->type == JI_FRAME)
-      return widget;
+      return dynamic_cast<Frame*>(widget);
 
     widget = widget->parent;
   }
@@ -503,18 +482,18 @@ Widget* Widget::getParent()
   return this->parent;
 }
 
-Widget* Widget::getManager()
+gui::Manager* Widget::getManager()
 {
   Widget* widget = this;
 
   while (widget) {
     if (widget->type == JI_MANAGER)
-      return widget;
+      return static_cast<gui::Manager*>(widget);
 
     widget = widget->parent;
   }
 
-  return ji_get_default_manager();
+  return gui::Manager::getDefault();
 }
 
 JList Widget::getParents(bool ascendant)
@@ -1117,7 +1096,7 @@ void Widget::flushRedraw()
         jmessage_add_dest(msg, widget);
 
         /* enqueue the draw message */
-        jmanager_enqueue_message(msg);
+        getManager()->enqueueMessage(msg);
       }
 
       jregion_empty(widget->m_update_region);
@@ -1171,26 +1150,7 @@ void Widget::invalidateRect(const JRect rect)
 
 void Widget::invalidateRegion(const JRegion region)
 {
-  if (isVisible() &&
-      jregion_rect_in(region, this->rc) != JI_RGNOUT) {
-    JRegion reg1 = jregion_new(NULL, 0);
-    JRegion reg2 = jwidget_get_drawable_region(this,
-                                               JI_GDR_CUTTOPWINDOWS);
-    JLink link;
-
-    jregion_union(reg1, this->m_update_region, region);
-    jregion_intersect(this->m_update_region, reg1, reg2);
-    jregion_free(reg2);
-
-    jregion_subtract(reg1, region, this->m_update_region);
-
-    mark_dirty_flag(this);
-
-    JI_LIST_FOR_EACH(this->children, link)
-      reinterpret_cast<JWidget>(link->data)->invalidateRegion(reg1);
-
-    jregion_free(reg1);
-  }
+  onInvalidateRegion(region);
 }
 
 void Widget::scrollRegion(JRegion region, int dx, int dy)
@@ -1259,7 +1219,7 @@ bool jwidget_emit_signal(JWidget widget, int signal_num)
 
     /* send the signal to the window too */
     if (!ret && widget->type != JI_FRAME) {
-      Widget* window = widget->getRoot();
+      Frame* window = widget->getRoot();
       if (window)
         ret = window->sendMessage(msg);
     }
@@ -1299,7 +1259,7 @@ bool Widget::sendMessage(Message* msg)
 
 void Widget::closeWindow()
 {
-  if (Frame* frame = static_cast<Frame*>(getRoot()))
+  if (Frame* frame = getRoot())
     frame->closeWindow(this);
 }
 
@@ -1391,13 +1351,13 @@ void Widget::setPreferredSize(int fixedWidth, int fixedHeight)
 
 void Widget::requestFocus()
 {
-  jmanager_set_focus(this);
+  getManager()->setFocus(this);
 }
 
 void Widget::releaseFocus()
 {
   if (hasFocus())
-    jmanager_free_focus();
+    getManager()->freeFocus();
 }
 
 /**
@@ -1406,8 +1366,8 @@ void Widget::releaseFocus()
  */
 void Widget::captureMouse()
 {
-  if (!jmanager_get_capture()) {
-    jmanager_set_capture(this);
+  if (!getManager()->getCapture()) {
+    getManager()->setCapture(this);
     jmouse_capture();
   }
 }
@@ -1417,8 +1377,8 @@ void Widget::captureMouse()
  */
 void Widget::releaseMouse()
 {
-  if (jmanager_get_capture() == this) {
-    jmanager_free_capture();
+  if (getManager()->getCapture() == this) {
+    getManager()->freeCapture();
     jmouse_release();
   }
 }
@@ -1443,16 +1403,20 @@ bool Widget::hasCapture()
   return (this->flags & JI_HASCAPTURE) ? true: false;
 }
 
-/**********************************************************************/
-/* miscellaneous */
-
-bool jwidget_check_underscored(JWidget widget, int scancode)
+int Widget::getMnemonicChar() const
 {
-  int c, ascii;
+  if (hasText()) {
+    const char* text = getText();
+    for (int c=0; text[c]; ++c)
+      if ((text[c] == '&') && (text[c+1] != '&'))
+        return tolower(text[c+1]);
+  }
+  return 0;
+}
 
-  ASSERT_VALID_WIDGET(widget);
-
-  ascii = 0;
+bool Widget::isScancodeMnemonic(int scancode) const
+{
+  int ascii = 0;
   if (scancode >= KEY_0 && scancode <= KEY_9)
     ascii = '0' + (scancode - KEY_0);
   else if (scancode >= KEY_A && scancode <= KEY_Z)
@@ -1460,16 +1424,7 @@ bool jwidget_check_underscored(JWidget widget, int scancode)
   else
     return false;
 
-  if (widget->hasText()) {
-    const char* text = widget->getText();
-
-    for (c=0; text[c]; c++)
-      if ((text[c] == '&') && (text[c+1] != '&'))
-        if (ascii == tolower(text[c+1]))
-          return true;
-  }
-
-  return false;
+  return (getMnemonicChar() == ascii);
 }
 
 /**********************************************************************/
@@ -1606,6 +1561,30 @@ bool Widget::onProcessMessage(Message* msg)
 // ===============================================================
 // EVENTS
 // ===============================================================
+
+void Widget::onInvalidateRegion(const JRegion region)
+{
+  if (isVisible() &&
+      jregion_rect_in(region, this->rc) != JI_RGNOUT) {
+    JRegion reg1 = jregion_new(NULL, 0);
+    JRegion reg2 = jwidget_get_drawable_region(this,
+                                               JI_GDR_CUTTOPWINDOWS);
+    JLink link;
+
+    jregion_union(reg1, this->m_update_region, region);
+    jregion_intersect(this->m_update_region, reg1, reg2);
+    jregion_free(reg2);
+
+    jregion_subtract(reg1, region, this->m_update_region);
+
+    mark_dirty_flag(this);
+
+    JI_LIST_FOR_EACH(this->children, link)
+      reinterpret_cast<JWidget>(link->data)->invalidateRegion(reg1);
+
+    jregion_free(reg1);
+  }
+}
 
 /**
    Calculates the preferred size for the widget.

@@ -104,10 +104,10 @@ void dialogs_mask_color(Document* document)
   slider_tolerance->Change.connect(Bind<void>(&mask_preview, Ref(documentReader)));
   check_preview->Click.connect(Bind<void>(&mask_preview, Ref(documentReader)));
 
-  jwidget_magnetic(button_ok, true);
-  jwidget_expansive(button_color, true);
-  jwidget_expansive(slider_tolerance, true);
-  jwidget_expansive(box2, true);
+  button_ok->setFocusMagnet(true);
+  button_color->setExpansive(true);
+  slider_tolerance->setExpansive(true);
+  box2->setExpansive(true);
 
   window->addChild(box1);
   box1->addChild(box2);

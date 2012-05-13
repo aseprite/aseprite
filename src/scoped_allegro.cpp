@@ -16,48 +16,25 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifndef TESTS_TEST_H_INCLUDED
-#define TESTS_TEST_H_INCLUDED
-
 #include "config.h"
 
-#include <gtest/gtest.h>
+#include "scoped_allegro.h"
+
 #include <allegro.h>
+#include "loadpng.h"
 
-#ifdef TEST_GUI
-  #include "gui/gui.h"
-#endif
-
-#ifdef main
-  #undef main
-#endif
-
-int main(int argc, char* argv[])
+ScopedAllegro::ScopedAllegro()
 {
-  int exitcode;
-
-  ::testing::InitGoogleTest(&argc, argv);
   allegro_init();
+  set_uformat(U_ASCII);
+  install_timer();
 
-  #ifdef TEST_GUI
-    set_color_depth(desktop_color_depth());
-    set_gfx_mode(GFX_AUTODETECT_WINDOWED, 256, 256, 0, 0);
-    install_timer();
-    install_keyboard();
-    install_mouse();
-    {
-      Jinete jinete;
-      UniquePtr<gui::Manager> manager(new gui::Manager());
-  #endif
-
-      exitcode = RUN_ALL_TESTS();
-
-  #ifdef TEST_GUI
-    }
-  #endif
-
-  allegro_exit();
-  return exitcode;
+  // Register PNG as a supported bitmap type
+  register_bitmap_file_type("png", load_png, save_png);
 }
 
-#endif
+ScopedAllegro::~ScopedAllegro()
+{
+  remove_timer();
+  allegro_exit();
+}

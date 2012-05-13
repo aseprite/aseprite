@@ -17,6 +17,7 @@
 class Button;
 class Entry;
 class Frame;
+class ListBox;
 
 class ComboBox : public Widget
 {
@@ -72,7 +73,7 @@ private:
   Entry* m_entry;
   Button* m_button;
   Frame* m_window;
-  Widget* m_listbox;
+  ListBox* m_listbox;
   std::vector<Item*> m_items;
   int m_selected;
   bool m_editable : 1;

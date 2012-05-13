@@ -30,7 +30,7 @@ ButtonBase::ButtonBase(const char* text, int type, int behaviorType, int drawTyp
 {
   this->setAlign(JI_CENTER | JI_MIDDLE);
   this->setText(text);
-  jwidget_focusrest(this, true);
+  this->setFocusStop(true);
 
   // Initialize theme
   this->type = m_drawType;      // TODO Fix this nasty trick
@@ -103,21 +103,21 @@ bool ButtonBase::onProcessMessage(Message* msg)
               return true;
             }
           }
-          /* the underscored letter with Alt */
+          // Check if the user pressed mnemonic.
           if ((msg->any.shifts & KB_ALT_FLAG) &&
-              (jwidget_check_underscored(this, msg->key.scancode))) {
+              (isScancodeMnemonic(msg->key.scancode))) {
             this->setSelected(true);
             return true;
           }
           /* magnetic */
-          else if (jwidget_is_magnetic(this) &&
+          else if (this->isFocusMagnet() &&
                    ((msg->key.scancode == KEY_ENTER) ||
                     (msg->key.scancode == KEY_ENTER_PAD))) {
-            jmanager_set_focus(this);
+            getManager()->setFocus(this);
 
-            /* dispatch focus movement messages (because the buttons
-               process them) */
-            jmanager_dispatch_messages(ji_get_default_manager());
+            // Dispatch focus movement messages (because the buttons
+            // process them)
+            getManager()->dispatchMessages();
 
             this->setSelected(true);
             return true;
@@ -130,19 +130,16 @@ bool ButtonBase::onProcessMessage(Message* msg)
           if ((this->hasFocus() &&
                (msg->key.scancode == KEY_SPACE)) ||
               ((msg->any.shifts & KB_ALT_FLAG) &&
-               (jwidget_check_underscored(this, msg->key.scancode)))) {
+               (isScancodeMnemonic(msg->key.scancode)))) {
             if (m_behaviorType == JI_CHECK) {
               // Swap the select status
               this->setSelected(!this->isSelected());
 
-              // Signal
-              jwidget_emit_signal(this, JI_SIGNAL_CHECK_CHANGE);
               invalidate();
             }
             else if (m_behaviorType == JI_RADIO) {
               if (!this->isSelected()) {
                 this->setSelected(true);
-                jwidget_emit_signal(this, JI_SIGNAL_RADIO_CHANGE);
               }
             }
             return true;
@@ -211,8 +208,6 @@ bool ButtonBase::onProcessMessage(Message* msg)
 
             case JI_CHECK:
               {
-                jwidget_emit_signal(this, JI_SIGNAL_CHECK_CHANGE);
-
                 // Fire onClick() event
                 Event ev(this);
                 onClick(ev);
@@ -225,8 +220,6 @@ bool ButtonBase::onProcessMessage(Message* msg)
               {
                 this->setSelected(false);
                 this->setSelected(true);
-
-                jwidget_emit_signal(this, JI_SIGNAL_RADIO_CHANGE);
 
                 // Fire onClick() event
                 Event ev(this);

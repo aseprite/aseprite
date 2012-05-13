@@ -6,69 +6,51 @@
 
 #include "config.h"
 
-#include <allegro/keyboard.h>
+#include "gui/listbox.h"
 
-#include "gfx/point.h"
-#include "gfx/size.h"
 #include "gui/list.h"
-#include "gui/manager.h"
 #include "gui/message.h"
-#include "gui/rect.h"
+#include "gui/preferred_size_event.h"
 #include "gui/system.h"
 #include "gui/theme.h"
 #include "gui/view.h"
-#include "gui/widget.h"
+
+#include <allegro/keyboard.h>
 
 using namespace gfx;
 
-static bool listbox_msg_proc(JWidget widget, Message* msg);
-static void listbox_request_size(JWidget widget, int *w, int *h);
-static void listbox_set_position(JWidget widget, JRect rect);
-static void listbox_dirty_children(JWidget widget);
-
-static bool listitem_msg_proc(JWidget widget, Message* msg);
-static void listitem_request_size(JWidget widget, int *w, int *h);
-
-JWidget jlistbox_new()
+ListBox::ListBox()
+  : Widget(JI_LISTBOX)
 {
-  JWidget widget = new Widget(JI_LISTBOX);
-
-  jwidget_add_hook(widget, JI_LISTBOX, listbox_msg_proc, NULL);
-  jwidget_focusrest(widget, true);
-  widget->initTheme();
-
-  return widget;
+  setFocusStop(true);
+  initTheme();
 }
 
-JWidget jlistitem_new(const char *text)
+ListBox::Item::Item(const char* text)
+  : Widget(JI_LISTITEM)
 {
-  JWidget widget = new Widget(JI_LISTITEM);
-
-  jwidget_add_hook(widget, JI_LISTITEM, listitem_msg_proc, NULL);
-  widget->setAlign(JI_LEFT | JI_MIDDLE);
-  widget->setText(text);
-  widget->initTheme();
-
-  return widget;
+  setAlign(JI_LEFT | JI_MIDDLE);
+  setText(text);
+  initTheme();
 }
 
-JWidget jlistbox_get_selected_child(JWidget widget)
+ListBox::Item* ListBox::getSelectedChild()
 {
   JLink link;
-  JI_LIST_FOR_EACH(widget->children, link) {
-    if (((JWidget)link->data)->isSelected())
-      return (JWidget)link->data;
+  JI_LIST_FOR_EACH(this->children, link) {
+    if (((Item*)link->data)->isSelected())
+      return (Item*)link->data;
   }
   return 0;
 }
 
-int jlistbox_get_selected_index(JWidget widget)
+int ListBox::getSelectedIndex()
 {
   JLink link;
   int i = 0;
 
-  JI_LIST_FOR_EACH(widget->children, link) {
-    if (((JWidget)link->data)->isSelected())
+  JI_LIST_FOR_EACH(this->children, link) {
+    if (((Item*)link->data)->isSelected())
       return i;
     i++;
   }
@@ -76,104 +58,100 @@ int jlistbox_get_selected_index(JWidget widget)
   return -1;
 }
 
-void jlistbox_select_child(JWidget widget, JWidget listitem)
+void ListBox::selectChild(Item* item)
 {
-  JWidget child;
+  Item* child;
   JLink link;
 
-  JI_LIST_FOR_EACH(widget->children, link) {
-    child = (JWidget)link->data;
+  JI_LIST_FOR_EACH(this->children, link) {
+    child = (Item*)link->data;
 
     if (child->isSelected()) {
-      if ((listitem) && (child == listitem))
+      if (item && child == item)
         return;
 
       child->setSelected(false);
     }
   }
 
-  if (listitem) {
-    View* view = View::getView(widget);
+  if (item) {
+    View* view = View::getView(this);
 
-    listitem->setSelected(true);
+    item->setSelected(true);
 
     if (view) {
       gfx::Rect vp = view->getViewportBounds();
       gfx::Point scroll = view->getViewScroll();
 
-      if (listitem->rc->y1 < vp.y)
-          scroll.y = listitem->rc->y1 - widget->rc->y1;
-      else if (listitem->rc->y1 > vp.y + vp.h - jrect_h(listitem->rc))
-        scroll.y = (listitem->rc->y1 - widget->rc->y1
-                    - vp.h + jrect_h(listitem->rc));
+      if (item->rc->y1 < vp.y)
+          scroll.y = item->rc->y1 - this->rc->y1;
+      else if (item->rc->y1 > vp.y + vp.h - jrect_h(item->rc))
+        scroll.y = (item->rc->y1 - this->rc->y1
+                    - vp.h + jrect_h(item->rc));
 
       view->setViewScroll(scroll);
     }
   }
 
-  jwidget_emit_signal(widget, JI_SIGNAL_LISTBOX_CHANGE);
+  jwidget_emit_signal(this, JI_SIGNAL_LISTBOX_CHANGE);
 }
 
-void jlistbox_select_index(JWidget widget, int index)
+void ListBox::selectIndex(int index)
 {
-  JWidget child = reinterpret_cast<JWidget>(jlist_nth_data(widget->children, index));
+  Item* child = reinterpret_cast<Item*>(jlist_nth_data(this->children, index));
   if (child)
-    jlistbox_select_child(widget, child);
+    selectChild(child);
 }
 
-int jlistbox_get_items_count(JWidget widget)
+int ListBox::getItemsCount()
 {
-  return jlist_length(widget->children);
+  return jlist_length(this->children);
 }
 
 /* setup the scroll to center the selected item in the viewport */
-void jlistbox_center_scroll(JWidget widget)
+void ListBox::centerScroll()
 {
-  View* view = View::getView(widget);
-  Widget* listitem = jlistbox_get_selected_child(widget);
+  View* view = View::getView(this);
+  Item* item = getSelectedChild();
 
-  if (view && listitem) {
+  if (view && item) {
     gfx::Rect vp = view->getViewportBounds();
     gfx::Point scroll = view->getViewScroll();
 
-    scroll.y = ((listitem->rc->y1 - widget->rc->y1)
-                - vp.h/2 + jrect_h(listitem->rc)/2);
+    scroll.y = ((item->rc->y1 - this->rc->y1)
+                - vp.h/2 + jrect_h(item->rc)/2);
 
     view->setViewScroll(scroll);
   }
 }
 
-static bool listbox_msg_proc(JWidget widget, Message* msg)
+bool ListBox::onProcessMessage(Message* msg)
 {
   switch (msg->type) {
 
-    case JM_REQSIZE:
-      listbox_request_size(widget, &msg->reqsize.w, &msg->reqsize.h);
-      return true;
-
     case JM_SETPOS:
-      listbox_set_position(widget, &msg->setpos.rect);
+      layoutListBox(&msg->setpos.rect);
       return true;
 
     case JM_DRAW:
-      widget->getTheme()->draw_listbox(widget, &msg->draw.rect);
+      this->getTheme()->draw_listbox(this, &msg->draw.rect);
       return true;
 
     case JM_DIRTYCHILDREN:
-      listbox_dirty_children(widget);
+      dirtyChildren();
       return true;
 
     case JM_OPEN:
-      jlistbox_center_scroll(widget);
+      centerScroll();
       break;
 
     case JM_BUTTONPRESSED:
-      widget->captureMouse();
+      captureMouse();
 
     case JM_MOTION:
-      if (widget->hasCapture()) {
-        int select = jlistbox_get_selected_index(widget);
-        View* view = View::getView(widget);
+      if (hasCapture()) {
+        int select = getSelectedIndex();
+        View* view = View::getView(this);
         bool pick_item = true;
 
         if (view) {
@@ -181,12 +159,12 @@ static bool listbox_msg_proc(JWidget widget, Message* msg)
 
           if (msg->mouse.y < vp.y) {
             int num = MAX(1, (vp.y - msg->mouse.y) / 8);
-            jlistbox_select_index(widget, select-num);
+            selectIndex(select-num);
             pick_item = false;
           }
           else if (msg->mouse.y >= vp.y + vp.h) {
             int num = MAX(1, (msg->mouse.y - (vp.y+vp.h-1)) / 8);
-            jlistbox_select_index(widget, select+num);
+            selectIndex(select+num);
             pick_item = false;
           }
         }
@@ -198,12 +176,14 @@ static bool listbox_msg_proc(JWidget widget, Message* msg)
             picked = view->getViewport()->pick(msg->mouse.x, msg->mouse.y);
           }
           else {
-            picked = widget->pick(msg->mouse.x, msg->mouse.y);
+            picked = this->pick(msg->mouse.x, msg->mouse.y);
           }
 
           /* if the picked widget is a child of the list, select it */
-          if (picked && widget->hasChild(picked))
-            jlistbox_select_child(widget, picked);
+          if (picked && hasChild(picked)) {
+            if (Item* pickedItem = dynamic_cast<Item*>(picked))
+              selectChild(pickedItem);
+          }
         }
 
         return true;
@@ -211,24 +191,24 @@ static bool listbox_msg_proc(JWidget widget, Message* msg)
       break;
 
     case JM_BUTTONRELEASED:
-      widget->releaseMouse();
+      releaseMouse();
       break;
 
     case JM_WHEEL: {
-      View* view = View::getView(widget);
+      View* view = View::getView(this);
       if (view) {
         gfx::Point scroll = view->getViewScroll();
-        scroll.y += (jmouse_z(1) - jmouse_z(0)) * jwidget_get_text_height(widget)*3;
+        scroll.y += (jmouse_z(1) - jmouse_z(0)) * jwidget_get_text_height(this)*3;
         view->setViewScroll(scroll);
       }
       break;
     }
 
     case JM_KEYPRESSED:
-      if (widget->hasFocus() && !jlist_empty(widget->children)) {
-        int select = jlistbox_get_selected_index(widget);
-        View* view = View::getView(widget);
-        int bottom = MAX(0, jlist_length(widget->children)-1);
+      if (this->hasFocus() && !jlist_empty(this->children)) {
+        int select = getSelectedIndex();
+        View* view = View::getView(this);
+        int bottom = MAX(0, jlist_length(this->children)-1);
 
         switch (msg->key.scancode) {
           case KEY_UP:
@@ -246,7 +226,7 @@ static bool listbox_msg_proc(JWidget widget, Message* msg)
           case KEY_PGUP:
             if (view) {
               gfx::Rect vp = view->getViewportBounds();
-              select -= vp.h / jwidget_get_text_height(widget);
+              select -= vp.h / jwidget_get_text_height(this);
             }
             else
               select = 0;
@@ -254,7 +234,7 @@ static bool listbox_msg_proc(JWidget widget, Message* msg)
           case KEY_PGDN:
             if (view) {
               gfx::Rect vp = view->getViewportBounds();
-              select += vp.h / jwidget_get_text_height(widget);
+              select += vp.h / jwidget_get_text_height(this);
             }
             else
               select = bottom;
@@ -275,48 +255,50 @@ static bool listbox_msg_proc(JWidget widget, Message* msg)
             return false;
         }
 
-        jlistbox_select_index(widget, MID(0, select, bottom));
+        selectIndex(MID(0, select, bottom));
         return true;
       }
       break;
 
     case JM_DOUBLECLICK:
-      jwidget_emit_signal(widget, JI_SIGNAL_LISTBOX_SELECT);
+      jwidget_emit_signal(this, JI_SIGNAL_LISTBOX_SELECT);
       return true;
   }
 
-  return false;
+  return Widget::onProcessMessage(msg);
 }
 
-static void listbox_request_size(JWidget widget, int *w, int *h)
+void ListBox::onPreferredSize(PreferredSizeEvent& ev)
 {
   Size reqSize;
   JLink link;
 
-  *w = *h = 0;
+  int w = 0, h = 0;
 
-  JI_LIST_FOR_EACH(widget->children, link) {
-    reqSize = reinterpret_cast<Widget*>(link->data)->getPreferredSize();
+  JI_LIST_FOR_EACH(this->children, link) {
+    reqSize = reinterpret_cast<Item*>(link->data)->getPreferredSize();
 
-    *w = MAX(*w, reqSize.w);
-    *h += reqSize.h + ((link->next)? widget->child_spacing: 0);
+    w = MAX(w, reqSize.w);
+    h += reqSize.h + ((link->next)? this->child_spacing: 0);
   }
 
-  *w += widget->border_width.l + widget->border_width.r;
-  *h += widget->border_width.t + widget->border_width.b;
+  w += this->border_width.l + this->border_width.r;
+  h += this->border_width.t + this->border_width.b;
+
+  ev.setPreferredSize(Size(w, h));
 }
 
-static void listbox_set_position(JWidget widget, JRect rect)
+void ListBox::layoutListBox(JRect rect)
 {
   Size reqSize;
   JWidget child;
   JRect cpos;
   JLink link;
 
-  jrect_copy(widget->rc, rect);
-  cpos = jwidget_get_child_rect(widget);
+  jrect_copy(this->rc, rect);
+  cpos = jwidget_get_child_rect(this);
 
-  JI_LIST_FOR_EACH(widget->children, link) {
+  JI_LIST_FOR_EACH(this->children, link) {
     child = (JWidget)link->data;
 
     reqSize = child->getPreferredSize();
@@ -324,27 +306,27 @@ static void listbox_set_position(JWidget widget, JRect rect)
     cpos->y2 = cpos->y1+reqSize.h;
     jwidget_set_rect(child, cpos);
 
-    cpos->y1 += jrect_h(child->rc) + widget->child_spacing;
+    cpos->y1 += jrect_h(child->rc) + this->child_spacing;
   }
 
   jrect_free(cpos);
 }
 
-static void listbox_dirty_children(JWidget widget)
+void ListBox::dirtyChildren()
 {
-  View* view = View::getView(widget);
-  JWidget child;
+  View* view = View::getView(this);
+  Item* child;
   JLink link;
 
   if (!view) {
-    JI_LIST_FOR_EACH(widget->children, link)
-      reinterpret_cast<JWidget>(link->data)->invalidate();
+    JI_LIST_FOR_EACH(this->children, link)
+      reinterpret_cast<Item*>(link->data)->invalidate();
   }
   else {
     gfx::Rect vp = view->getViewportBounds();
 
-    JI_LIST_FOR_EACH(widget->children, link) {
-      child = reinterpret_cast<JWidget>(link->data);
+    JI_LIST_FOR_EACH(this->children, link) {
+      child = reinterpret_cast<Item*>(link->data);
 
       if (child->rc->y2 <= vp.y)
         continue;
@@ -356,56 +338,55 @@ static void listbox_dirty_children(JWidget widget)
   }
 }
 
-static bool listitem_msg_proc(JWidget widget, Message* msg)
+bool ListBox::Item::onProcessMessage(Message* msg)
 {
   switch (msg->type) {
-
-    case JM_REQSIZE:
-      listitem_request_size(widget, &msg->reqsize.w, &msg->reqsize.h);
-      return true;
 
     case JM_SETPOS: {
       JRect crect;
       JLink link;
 
-      jrect_copy(widget->rc, &msg->setpos.rect);
-      crect = jwidget_get_child_rect(widget);
+      jrect_copy(this->rc, &msg->setpos.rect);
+      crect = jwidget_get_child_rect(this);
 
-      JI_LIST_FOR_EACH(widget->children, link)
-        jwidget_set_rect(reinterpret_cast<JWidget>(link->data), crect);
+      JI_LIST_FOR_EACH(this->children, link)
+        jwidget_set_rect(reinterpret_cast<Widget*>(link->data), crect);
 
       jrect_free(crect);
       return true;
     }
 
     case JM_DRAW:
-      widget->getTheme()->draw_listitem(widget, &msg->draw.rect);
+      this->getTheme()->draw_listitem(this, &msg->draw.rect);
       return true;
   }
 
-  return false;
+  return Widget::onProcessMessage(msg);
 }
 
-static void listitem_request_size(JWidget widget, int *w, int *h)
+void ListBox::Item::onPreferredSize(PreferredSizeEvent& ev)
 {
+  int w = 0, h = 0;
   Size maxSize;
   Size reqSize;
   JLink link;
 
-  if (widget->hasText()) {
-    maxSize.w = jwidget_get_text_length(widget);
-    maxSize.h = jwidget_get_text_height(widget);
+  if (hasText()) {
+    maxSize.w = jwidget_get_text_length(this);
+    maxSize.h = jwidget_get_text_height(this);
   }
   else
     maxSize.w = maxSize.h = 0;
 
-  JI_LIST_FOR_EACH(widget->children, link) {
+  JI_LIST_FOR_EACH(this->children, link) {
     reqSize = reinterpret_cast<Widget*>(link->data)->getPreferredSize();
 
     maxSize.w = MAX(maxSize.w, reqSize.w);
     maxSize.h = MAX(maxSize.h, reqSize.h);
   }
 
-  *w = widget->border_width.l + maxSize.w + widget->border_width.r;
-  *h = widget->border_width.t + maxSize.h + widget->border_width.b;
+  w = this->border_width.l + maxSize.w + this->border_width.r;
+  h = this->border_width.t + maxSize.h + this->border_width.b;
+
+  ev.setPreferredSize(Size(w, h));
 }

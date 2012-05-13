@@ -9,6 +9,7 @@
 #include <string>
 #include <allegro.h>
 
+#include "base/unique_ptr.h"
 #include "gfx/size.h"
 #include "gui/graphics.h"
 #include "gui/gui.h"
@@ -23,7 +24,7 @@ struct TipData
   Widget* widget;       // Widget that shows the tooltip
   Frame* window;        // Frame where is the tooltip
   std::string text;
-  int timer_id;
+  UniquePtr<gui::Timer> timer;
   int arrowAlign;
 };
 
@@ -42,7 +43,6 @@ void jwidget_add_tooltip_text(JWidget widget, const char *text, int arrowAlign)
     tip->widget = widget;
     tip->window = NULL;
     tip->text = text;
-    tip->timer_id = -1;
     tip->arrowAlign = arrowAlign;
 
     jwidget_add_hook(widget, tip_type(), tip_hook, tip);
@@ -71,17 +71,14 @@ static bool tip_hook(JWidget widget, Message* msg)
   switch (msg->type) {
 
     case JM_DESTROY:
-      if (tip->timer_id >= 0)
-        jmanager_remove_timer(tip->timer_id);
-
       delete tip;
       break;
 
     case JM_MOUSEENTER:
-      if (tip->timer_id < 0)
-        tip->timer_id = jmanager_add_timer(widget, 300);
+      if (tip->timer == NULL)
+        tip->timer.reset(new gui::Timer(widget, 300));
 
-      jmanager_start_timer(tip->timer_id);
+      tip->timer->start();
       break;
 
     case JM_KEYPRESSED:
@@ -93,12 +90,12 @@ static bool tip_hook(JWidget widget, Message* msg)
         tip->window = NULL;
       }
 
-      if (tip->timer_id >= 0)
-        jmanager_stop_timer(tip->timer_id);
+      if (tip->timer != NULL)
+        tip->timer->stop();
       break;
 
     case JM_TIMER:
-      if (msg->timer.timer_id == tip->timer_id) {
+      if (msg->timer.timer == tip->timer) {
         if (!tip->window) {
           TipWindow* window = new TipWindow(tip->text.c_str(), true);
           gfx::Rect bounds = tip->widget->getBounds();
@@ -158,7 +155,7 @@ static bool tip_hook(JWidget widget, Message* msg)
                                   MID(0, y, JI_SCREEN_H-h));
           window->open_window();
         }
-        jmanager_stop_timer(tip->timer_id);
+        tip->timer->stop();
       }
       break;
 
@@ -186,7 +183,7 @@ TipWindow::TipWindow(const char *text, bool close_on_buttonpressed)
 
   // remove decorative widgets
   JI_LIST_FOR_EACH_SAFE(this->children, link, next)
-    jwidget_free(reinterpret_cast<JWidget>(link->data));
+    delete reinterpret_cast<Widget*>(link->data);
 
   initTheme();
 }
@@ -195,9 +192,9 @@ TipWindow::~TipWindow()
 {
   if (m_filtering) {
     m_filtering = false;
-    jmanager_remove_msg_filter(JM_MOTION, this);
-    jmanager_remove_msg_filter(JM_BUTTONPRESSED, this);
-    jmanager_remove_msg_filter(JM_KEYPRESSED, this);
+    getManager()->removeMessageFilter(JM_MOTION, this);
+    getManager()->removeMessageFilter(JM_BUTTONPRESSED, this);
+    getManager()->removeMessageFilter(JM_KEYPRESSED, this);
   }
   if (m_hot_region != NULL) {
     jregion_free(m_hot_region);
@@ -217,9 +214,9 @@ void TipWindow::set_hotregion(JRegion region)
 
   if (!m_filtering) {
     m_filtering = true;
-    jmanager_add_msg_filter(JM_MOTION, this);
-    jmanager_add_msg_filter(JM_BUTTONPRESSED, this);
-    jmanager_add_msg_filter(JM_KEYPRESSED, this);
+    getManager()->addMessageFilter(JM_MOTION, this);
+    getManager()->addMessageFilter(JM_BUTTONPRESSED, this);
+    getManager()->addMessageFilter(JM_KEYPRESSED, this);
   }
   m_hot_region = region;
 }
@@ -241,9 +238,9 @@ bool TipWindow::onProcessMessage(Message* msg)
     case JM_CLOSE:
       if (m_filtering) {
         m_filtering = false;
-        jmanager_remove_msg_filter(JM_MOTION, this);
-        jmanager_remove_msg_filter(JM_BUTTONPRESSED, this);
-        jmanager_remove_msg_filter(JM_KEYPRESSED, this);
+        getManager()->removeMessageFilter(JM_MOTION, this);
+        getManager()->removeMessageFilter(JM_BUTTONPRESSED, this);
+        getManager()->removeMessageFilter(JM_KEYPRESSED, this);
       }
       break;
 
@@ -288,7 +285,7 @@ bool TipWindow::onProcessMessage(Message* msg)
 
     case JM_MOTION:
       if (m_hot_region != NULL &&
-          jmanager_get_capture() == NULL) {
+          getManager()->getCapture() == NULL) {
         struct jrect box;
 
         /* if the mouse is outside the hot-region we have to close the window */

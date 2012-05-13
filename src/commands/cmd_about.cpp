@@ -53,8 +53,8 @@ void AboutCommand::onExecute(Context* context)
   Grid* grid = new Grid(2, false);
   Label* title = new Label(PACKAGE " v" VERSION);
   Label* subtitle = new Label("Animated sprite editor && pixel art tool");
-  Widget* authors_separator1 = ji_separator_new("Authors:", JI_HORIZONTAL | JI_TOP);
-  Widget* authors_separator2 = ji_separator_new(NULL, JI_HORIZONTAL);
+  Separator* authors_separator1 = new Separator("Authors:", JI_HORIZONTAL | JI_TOP);
+  Separator* authors_separator2 = new Separator(NULL, JI_HORIZONTAL);
   Label* author1 = new LinkLabel("http://dacap.com.ar/", "David Capello");
   Label* author1_desc = new Label("| Programming");
   Label* author2 = new LinkLabel("http://ilkke.blogspot.com/", "Ilija Melentijevic");
@@ -80,10 +80,10 @@ void AboutCommand::onExecute(Context* context)
   grid->addChildInCell(website, 2, 1, 0);
   grid->addChildInCell(bottom_box1, 2, 1, 0);
 
-  jwidget_magnetic(close_button, true);
+  close_button->setFocusMagnet(true);
 
-  jwidget_expansive(bottom_box2, true);
-  jwidget_expansive(bottom_box3, true);
+  bottom_box2->setExpansive(true);
+  bottom_box3->setExpansive(true);
 
   bottom_box1->addChild(bottom_box2);
   bottom_box1->addChild(close_button);

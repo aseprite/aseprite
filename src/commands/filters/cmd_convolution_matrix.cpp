@@ -95,13 +95,13 @@ private:
     JI_LIST_FOR_EACH_SAFE(m_stockListBox->children, link, next) {
       Widget* listitem = reinterpret_cast<Widget*>(link->data);
       m_stockListBox->removeChild(listitem);
-      jwidget_free(listitem);
+      delete listitem;
     }
 
     for (ConvolutionMatrixStock::iterator it = m_stock.begin(), end = m_stock.end();
          it != end; ++it) {
       SharedPtr<ConvolutionMatrix> matrix = *it;
-      Widget* listitem = jlistitem_new(matrix->getName()); // TODO convert listitem to a class
+      ListBox::Item* listitem = new ListBox::Item(matrix->getName());
       m_stockListBox->addChild(listitem);
     }
 
@@ -134,7 +134,7 @@ private:
 
   void onMatrixChange()
   {
-    Widget* selected = jlistbox_get_selected_child(m_stockListBox);
+    ListBox::Item* selected = m_stockListBox->getSelectedChild();
     SharedPtr<ConvolutionMatrix> matrix = m_stock.getByName(selected->getText());
     Target newTarget = matrix->getDefaultTarget();
 
@@ -157,7 +157,7 @@ private:
   WidgetPtr m_controlsWidget;
   ConvolutionMatrixStock& m_stock;
   View* m_view;
-  Widget* m_stockListBox;
+  ListBox* m_stockListBox;
   Button* m_reloadButton;
 };
 

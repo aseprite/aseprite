@@ -30,7 +30,7 @@
 FilterPreview::FilterPreview(FilterManagerImpl* filterMgr)
   : Widget(JI_WIDGET)
   , m_filterMgr(filterMgr)
-  , m_timerId(-1)
+  , m_timer(this, 1)
 {
   setVisible(false);
 }
@@ -43,20 +43,13 @@ FilterPreview::~FilterPreview()
 void FilterPreview::stop()
 {
   m_filterMgr = NULL;
-  if (m_timerId >= 0) {
-    jmanager_remove_timer(m_timerId);
-    m_timerId = -1;
-  }
+  m_timer.stop();
 }
 
 void FilterPreview::restartPreview()
 {
   m_filterMgr->beginForPreview();
-
-  if (m_timerId < 0)
-    m_timerId = jmanager_add_timer(this, 1);
-
-  jmanager_start_timer(m_timerId);
+  m_timer.start();
 }
 
 FilterManagerImpl* FilterPreview::getFilterManager() const
@@ -77,7 +70,7 @@ bool FilterPreview::onProcessMessage(Message* msg)
       RenderEngine::setPreviewImage(NULL, NULL);
 
       // Stop the preview timer.
-      jmanager_stop_timer(m_timerId);
+      m_timer.stop();
       break;
 
     case JM_TIMER:
@@ -85,7 +78,7 @@ bool FilterPreview::onProcessMessage(Message* msg)
         if (m_filterMgr->applyStep())
           m_filterMgr->flush();
         else
-          jmanager_stop_timer(m_timerId);
+          m_timer.stop();
       }
       break;
   }

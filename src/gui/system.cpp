@@ -118,7 +118,7 @@ void ji_set_screen(BITMAP *bmp, int width, int height)
   ji_screen_h = height;
 
   if (ji_screen != NULL) {
-    JWidget manager = ji_get_default_manager();
+    gui::Manager* manager = gui::Manager::getDefault();
 
     /* update default-manager size */
     if (manager && (jrect_w(manager->rc) != JI_SCREEN_W ||
@@ -443,7 +443,7 @@ static void update_mouse_position()
       if (!PtInRect(&rc, pt)) {
         /* if the mouse is free we can hide the cursor putting the
            mouse outside the screen (right-bottom corder) */
-        if (!jmanager_get_capture()) {
+        if (!gui::Manager::getDefault()->getCapture()) {
           m_x[0] = JI_SCREEN_W+focus_x;
           m_y[0] = JI_SCREEN_H+focus_y;
         }

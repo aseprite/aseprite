@@ -22,6 +22,7 @@
 #include "document.h"
 #include "file/file.h"
 #include "file/file_format.h"
+#include "file/file_handle.h"
 #include "file/format_options.h"
 #include "gui/list.h"
 #include "raster/raster.h"
@@ -142,15 +143,13 @@ bool AseFormat::onLoad(FileOp *fop)
   int chunk_size;
   int chunk_type;
   int c, frame;
-  FILE *f;
 
-  f = fopen(fop->filename.c_str(), "rb");
+  FileHandle f(fop->filename.c_str(), "rb");
   if (!f)
     return false;
 
   if (!ase_file_read_header(f, &header)) {
     fop_error(fop, "Error reading header\n");
-    fclose(f);
     return false;
   }
 
@@ -160,7 +159,6 @@ bool AseFormat::onLoad(FileOp *fop)
                       header.width, header.height, header.ncolors);
   if (!sprite) {
     fop_error(fop, "Error creating sprite with file spec\n");
-    fclose(f);
     return false;
   }
 
@@ -285,11 +283,9 @@ bool AseFormat::onLoad(FileOp *fop)
 
   if (ferror(f)) {
     fop_error(fop, "Error reading file.\n");
-    fclose(f);
     return false;
   }
   else {
-    fclose(f);
     return true;
   }
 }
@@ -300,11 +296,8 @@ bool AseFormat::onSave(FileOp *fop)
   ASE_Header header;
   ASE_FrameHeader frame_header;
   int frame;
-  FILE *f;
 
-  f = fopen(fop->filename.c_str(), "wb");
-  if (!f)
-    return false;
+  FileHandle f(fop->filename.c_str(), "wb");
 
   /* prepare the header */
   ase_file_prepare_header(f, &header, sprite);
@@ -351,11 +344,9 @@ bool AseFormat::onSave(FileOp *fop)
 
   if (ferror(f)) {
     fop_error(fop, "Error writing file.\n");
-    fclose(f);
     return false;
   }
   else {
-    fclose(f);
     return true;
   }
 }
@@ -916,7 +907,7 @@ static void read_compressed_image(FILE* f, Image* image, size_t chunk_end, FileO
       zstream.avail_out = scanline.size();
 
       err = inflate(&zstream, Z_NO_FLUSH);
-      if (err != Z_OK && err != Z_STREAM_END)
+      if (err != Z_OK && err != Z_STREAM_END && err != Z_BUF_ERROR)
         throw base::Exception("ZLib error %d in inflate().", err);
 
       size_t input_bytes = scanline.size() - zstream.avail_out;
@@ -969,14 +960,15 @@ static void write_compressed_image(FILE* f, Image* image)
 
     zstream.next_in = (Bytef*)&scanline[0];
     zstream.avail_in = scanline.size();
+    int flush = (y == image->h-1 ? Z_FINISH: Z_NO_FLUSH);
 
     do {
       zstream.next_out = (Bytef*)&compressed[0];
       zstream.avail_out = compressed.size();
 
       // Compress
-      err = deflate(&zstream, (y < image->h-1 ? Z_NO_FLUSH: Z_FINISH));
-      if (err != Z_OK && err != Z_STREAM_END)
+      err = deflate(&zstream, flush);
+      if (err != Z_OK && err != Z_STREAM_END && err != Z_BUF_ERROR)
         throw base::Exception("ZLib error %d in deflate().", err);
 
       int output_bytes = compressed.size() - zstream.avail_out;
@@ -1001,7 +993,6 @@ static Cel *ase_file_read_cel_chunk(FILE *f, Sprite *sprite, int frame,
                                     PixelFormat pixelFormat,
                                     FileOp *fop, ASE_Header *header, size_t chunk_end)
 {
-  Cel *cel;
   /* read chunk data */
   int layer_index = fgetw(f);
   int x = ((short)fgetw(f));
@@ -1025,7 +1016,7 @@ static Cel *ase_file_read_cel_chunk(FILE *f, Sprite *sprite, int frame,
   }
 
   // Create the new frame.
-  cel = new Cel(frame, 0);
+  UniquePtr<Cel> cel(new Cel(frame, 0));
   cel->setPosition(x, y);
   cel->setOpacity(opacity);
 
@@ -1038,11 +1029,6 @@ static Cel *ase_file_read_cel_chunk(FILE *f, Sprite *sprite, int frame,
 
       if (w > 0 && h > 0) {
         Image* image = Image::create(pixelFormat, w, h);
-        if (!image) {
-          delete cel;
-          // Not enough memory for frame's image
-          return NULL;
-        }
 
         // Read pixel data
         switch (image->getPixelFormat()) {
@@ -1076,7 +1062,6 @@ static Cel *ase_file_read_cel_chunk(FILE *f, Sprite *sprite, int frame,
         cel->setImage(sprite->getStock()->addImage(image));
       }
       else {
-        delete cel;
         // Linked cel doesn't found
         return NULL;
       }
@@ -1090,26 +1075,28 @@ static Cel *ase_file_read_cel_chunk(FILE *f, Sprite *sprite, int frame,
 
       if (w > 0 && h > 0) {
         Image* image = Image::create(pixelFormat, w, h);
-        if (!image) {
-          delete cel;
-          // Not enough memory for frame's image
-          return NULL;
+
+        // Try to read pixel data
+        try {
+          switch (image->getPixelFormat()) {
+
+            case IMAGE_RGB:
+              read_compressed_image<RgbTraits>(f, image, chunk_end, fop, header);
+              break;
+
+            case IMAGE_GRAYSCALE:
+              read_compressed_image<GrayscaleTraits>(f, image, chunk_end, fop, header);
+              break;
+
+            case IMAGE_INDEXED:
+              read_compressed_image<IndexedTraits>(f, image, chunk_end, fop, header);
+              break;
+          }
         }
-
-        // Read pixel data
-        switch (image->getPixelFormat()) {
-
-          case IMAGE_RGB:
-            read_compressed_image<RgbTraits>(f, image, chunk_end, fop, header);
-            break;
-
-          case IMAGE_GRAYSCALE:
-            read_compressed_image<GrayscaleTraits>(f, image, chunk_end, fop, header);
-            break;
-
-          case IMAGE_INDEXED:
-            read_compressed_image<IndexedTraits>(f, image, chunk_end, fop, header);
-            break;
+        // OK, in case of error we can show the problem, but continue
+        // loading more cels.
+        catch (const std::exception& e) {
+          fop_error(fop, e.what());
         }
 
         cel->setImage(sprite->getStock()->addImage(image));
@@ -1119,8 +1106,9 @@ static Cel *ase_file_read_cel_chunk(FILE *f, Sprite *sprite, int frame,
 
   }
 
-  static_cast<LayerImage*>(layer)->addCel(cel);
-  return cel;
+  Cel* newCel = cel.release();
+  static_cast<LayerImage*>(layer)->addCel(newCel);
+  return newCel;
 }
 
 static void ase_file_write_cel_chunk(FILE *f, Cel *cel, LayerImage *layer, Sprite *sprite)

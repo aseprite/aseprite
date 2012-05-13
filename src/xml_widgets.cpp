@@ -231,21 +231,21 @@ static Widget* convert_xmlelement_to_widget(TiXmlElement* elem, Widget* root)
   }
   /* listbox */
   else if (ustrcmp(elem_name, "listbox") == 0) {
-    widget = jlistbox_new();
+    widget = new ListBox();
   }
   /* listitem */
   else if (ustrcmp(elem_name, "listitem") == 0) {
     const char *text = elem->Attribute("text");
 
-    widget = jlistitem_new(text ? TRANSLATE_ATTR(text): NULL);
+    widget = new ListBox::Item(text ? TRANSLATE_ATTR(text): NULL);
   }
-  /* panel */
-  else if (ustrcmp(elem_name, "panel") == 0) {
+  /* splitter */
+  else if (ustrcmp(elem_name, "splitter") == 0) {
     bool horizontal = bool_attr_is_true(elem, "horizontal");
     bool vertical = bool_attr_is_true(elem, "vertical");
 
-    widget = jpanel_new(horizontal ? JI_HORIZONTAL:
-                        vertical ? JI_VERTICAL: 0);
+    widget = new Splitter(horizontal ? JI_HORIZONTAL:
+                          vertical ? JI_VERTICAL: 0);
   }
   /* radio */
   else if (ustrcmp(elem_name, "radio") == 0) {
@@ -285,13 +285,13 @@ static Widget* convert_xmlelement_to_widget(TiXmlElement* elem, Widget* root)
     bool horizontal  = bool_attr_is_true(elem, "horizontal");
     bool vertical    = bool_attr_is_true(elem, "vertical");
 
-    widget = ji_separator_new(text ? TRANSLATE_ATTR(text): NULL,
-                              (horizontal ? JI_HORIZONTAL: 0) |
-                              (vertical ? JI_VERTICAL: 0) |
-                              (center ? JI_CENTER:
-                               (right ? JI_RIGHT: JI_LEFT)) |
-                              (middle ? JI_MIDDLE:
-                               (bottom ? JI_BOTTOM: JI_TOP)));
+    widget = new Separator(text ? TRANSLATE_ATTR(text): NULL,
+                           (horizontal ? JI_HORIZONTAL: 0) |
+                           (vertical ? JI_VERTICAL: 0) |
+                           (center ? JI_CENTER:
+                            (right ? JI_RIGHT: JI_LEFT)) |
+                           (middle ? JI_MIDDLE:
+                            (bottom ? JI_BOTTOM: JI_TOP)));
   }
   /* slider */
   else if (ustrcmp(elem_name, "slider") == 0) {
@@ -363,10 +363,10 @@ static Widget* convert_xmlelement_to_widget(TiXmlElement* elem, Widget* root)
       widget->setEnabled(false);
 
     if (expansive)
-      jwidget_expansive(widget, true);
+      widget->setExpansive(true);
 
     if (magnetic)
-      jwidget_magnetic(widget, true);
+      widget->setFocusMagnet(true);
 
     if (noborders)
       jwidget_noborders(widget);

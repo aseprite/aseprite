@@ -22,6 +22,7 @@
 
 #include "file/file.h"
 #include "file/file_format.h"
+#include "file/file_handle.h"
 #include "file/format_options.h"
 #include "raster/raster.h"
 
@@ -53,7 +54,6 @@ FileFormat* CreatePcxFormat()
 bool PcxFormat::onLoad(FileOp* fop)
 {
   Image *image;
-  FILE *f;
   int c, r, g, b;
   int width, height;
   int bpp, bytes_per_line;
@@ -61,9 +61,7 @@ bool PcxFormat::onLoad(FileOp* fop)
   int x, y;
   char ch = 0;
 
-  f = fopen(fop->filename.c_str(), "rb");
-  if (!f)
-    return false;
+  FileHandle f(fop->filename.c_str(), "rb");
 
   fgetc(f);                    /* skip manufacturer ID */
   fgetc(f);                    /* skip version flag */
@@ -71,7 +69,6 @@ bool PcxFormat::onLoad(FileOp* fop)
 
   if (fgetc(f) != 8) {         /* we like 8 bit color planes */
     fop_error(fop, "This PCX doesn't have 8 bit color planes.\n");
-    fclose(f);
     return false;
   }
 
@@ -93,7 +90,6 @@ bool PcxFormat::onLoad(FileOp* fop)
 
   bpp = fgetc(f) * 8;          /* how many color planes? */
   if ((bpp != 8) && (bpp != 24)) {
-    fclose(f);
     return false;
   }
 
@@ -107,7 +103,6 @@ bool PcxFormat::onLoad(FileOp* fop)
                                   IMAGE_RGB,
                              width, height);
   if (!image) {
-    fclose(f);
     return false;
   }
 
@@ -176,11 +171,9 @@ bool PcxFormat::onLoad(FileOp* fop)
 
   if (ferror(f)) {
     fop_error(fop, "Error reading file.\n");
-    fclose(f);
     return false;
   }
   else {
-    fclose(f);
     return true;
   }
 }
@@ -188,7 +181,6 @@ bool PcxFormat::onLoad(FileOp* fop)
 bool PcxFormat::onSave(FileOp* fop)
 {
   Image *image = fop->seq.image;
-  FILE *f;
   int c, r, g, b;
   int x, y;
   int runcount;
@@ -196,11 +188,7 @@ bool PcxFormat::onSave(FileOp* fop)
   char runchar;
   char ch = 0;
 
-  f = fopen(fop->filename.c_str(), "wb");
-  if (!f) {
-    fop_error(fop, "Error creating file.\n");
-    return false;
-  }
+  FileHandle f(fop->filename.c_str(), "wb");
 
   if (image->getPixelFormat() == IMAGE_RGB) {
     depth = 24;
@@ -302,11 +290,9 @@ bool PcxFormat::onSave(FileOp* fop)
 
   if (ferror(f)) {
     fop_error(fop, "Error writing file.\n");
-    fclose(f);
     return false;
   }
   else {
-    fclose(f);
     return true;
   }
 }

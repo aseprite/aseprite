@@ -135,7 +135,7 @@ void Alert::processString(char* buf, std::vector<Widget*>& labels, std::vector<W
           labels.push_back(label);
         }
         else if (separator) {
-          labels.push_back(ji_separator_new(NULL, JI_HORIZONTAL));
+          labels.push_back(new Separator(NULL, JI_HORIZONTAL));
         }
         else if (button) {
           char button_name[256];
@@ -185,8 +185,8 @@ void Alert::processString(char* buf, std::vector<Widget*>& labels, std::vector<W
   box4 = new Box(0);
   box5 = new Box(0);
 
-  jwidget_expansive(box4, true);
-  jwidget_expansive(box5, true);
+  box4->setExpansive(true);
+  box5->setExpansive(true);
   jwidget_noborders(box4);
   jwidget_noborders(box5);
 
@@ -209,5 +209,5 @@ void Alert::processString(char* buf, std::vector<Widget*>& labels, std::vector<W
 
   // Default button is the last one
   if (!buttons.empty())
-    jwidget_magnetic(buttons[buttons.size()-1], true);
+    buttons[buttons.size()-1]->setFocusMagnet(true);
 }

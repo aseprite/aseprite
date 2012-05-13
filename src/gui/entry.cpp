@@ -26,6 +26,7 @@
 
 Entry::Entry(size_t maxsize, const char *format, ...)
   : Widget(JI_ENTRY)
+  , m_timer(this, 500)
 {
   char buf[4096];
 
@@ -45,7 +46,6 @@ Entry::Entry(size_t maxsize, const char *format, ...)
   m_caret = 0;
   m_scroll = 0;
   m_select = 0;
-  m_timer_id = jmanager_add_timer(this, 500);
   m_hidden = false;
   m_state = false;
   m_password = false;
@@ -56,13 +56,12 @@ Entry::Entry(size_t maxsize, const char *format, ...)
   /* widget->align = JI_LEFT | JI_MIDDLE; */
   setText(buf);
 
-  jwidget_focusrest(this, true);
+  this->setFocusStop(true);
   initTheme();
 }
 
 Entry::~Entry()
 {
-  jmanager_remove_timer(m_timer_id);
 }
 
 bool Entry::isReadOnly() const
@@ -121,7 +120,7 @@ void Entry::setCaretPos(int pos)
     }
   } while (m_caret >= c);
 
-  jmanager_start_timer(m_timer_id);
+  m_timer.start();
   m_state = true;
 
   invalidate();
@@ -167,8 +166,7 @@ bool Entry::onProcessMessage(Message* msg)
   switch (msg->type) {
 
     case JM_TIMER:
-      if (this->hasFocus() &&
-          msg->timer.timer_id == m_timer_id) {
+      if (this->hasFocus() && msg->timer.timer == &m_timer) {
         // Blinking caret
         m_state = m_state ? false: true;
         invalidate();
@@ -176,7 +174,7 @@ bool Entry::onProcessMessage(Message* msg)
       break;
 
     case JM_FOCUSENTER:
-      jmanager_start_timer(m_timer_id);
+      m_timer.start();
 
       m_state = true;
       invalidate();
@@ -188,7 +186,7 @@ bool Entry::onProcessMessage(Message* msg)
     case JM_FOCUSLEAVE:
       invalidate();
 
-      jmanager_stop_timer(m_timer_id);
+      m_timer.stop();
 
       deselectText();
       m_recent_focused = false;
@@ -243,7 +241,11 @@ bool Entry::onProcessMessage(Message* msg)
 
           default:
             if (msg->key.ascii >= 32) {
-              cmd = EntryCmd::InsertChar;
+              // Ctrl and Alt must be unpressed to insert a character
+              // in the text-field.
+              if ((msg->any.shifts & (KB_CTRL_FLAG | KB_ALT_FLAG)) == 0) {
+                cmd = EntryCmd::InsertChar;
+              }
             }
             else {
               // map common Windows shortcuts for Cut/Copy/Paste
@@ -332,7 +334,7 @@ bool Entry::onProcessMessage(Message* msg)
 
         // Show the caret
         if (is_dirty) {
-          jmanager_start_timer(m_timer_id);
+          m_timer.start();
           m_state = true;
         }
 
@@ -388,7 +390,6 @@ void Entry::onPaint(PaintEvent& ev)
 void Entry::onEntryChange()
 {
   EntryChange();
-  jwidget_emit_signal(this, JI_SIGNAL_ENTRY_CHANGE);
 }
 
 int Entry::getCaretFromMouse(Message* msg)
@@ -518,7 +519,7 @@ void Entry::executeCmd(EntryCmd::Type cmd, int ascii, bool shift_pressed)
         // *cut* text!
         if (cmd == EntryCmd::Cut) {
           base::string buf = text.substr(selbeg, selend - selbeg + 1);
-          jclipboard_set_text(buf.c_str());
+          gui::clipboard::set_text(buf.c_str());
         }
 
         // remove text
@@ -538,7 +539,7 @@ void Entry::executeCmd(EntryCmd::Type cmd, int ascii, bool shift_pressed)
     case EntryCmd::Paste: {
       const char *clipboard;
 
-      if ((clipboard = jclipboard_get_text())) {
+      if ((clipboard = gui::clipboard::get_text())) {
         // delete the entire selection
         if (selbeg >= 0) {
           text.erase(selbeg, selend-selbeg+1);
@@ -562,7 +563,7 @@ void Entry::executeCmd(EntryCmd::Type cmd, int ascii, bool shift_pressed)
     case EntryCmd::Copy:
       if (selbeg >= 0) {
         base::string buf = text.substr(selbeg, selend - selbeg + 1);
-        jclipboard_set_text(buf.c_str());
+        gui::clipboard::set_text(buf.c_str());
       }
       break;
 
