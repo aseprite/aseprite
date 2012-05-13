@@ -907,7 +907,7 @@ static void read_compressed_image(FILE* f, Image* image, size_t chunk_end, FileO
       zstream.avail_out = scanline.size();
 
       err = inflate(&zstream, Z_NO_FLUSH);
-      if (err != Z_OK && err != Z_STREAM_END)
+      if (err != Z_OK && err != Z_STREAM_END && err != Z_BUF_ERROR)
         throw base::Exception("ZLib error %d in inflate().", err);
 
       size_t input_bytes = scanline.size() - zstream.avail_out;
@@ -960,14 +960,15 @@ static void write_compressed_image(FILE* f, Image* image)
 
     zstream.next_in = (Bytef*)&scanline[0];
     zstream.avail_in = scanline.size();
+    int flush = (y == image->h-1 ? Z_FINISH: Z_NO_FLUSH);
 
     do {
       zstream.next_out = (Bytef*)&compressed[0];
       zstream.avail_out = compressed.size();
 
       // Compress
-      err = deflate(&zstream, (y < image->h-1 ? Z_NO_FLUSH: Z_FINISH));
-      if (err != Z_OK && err != Z_STREAM_END)
+      err = deflate(&zstream, flush);
+      if (err != Z_OK && err != Z_STREAM_END && err != Z_BUF_ERROR)
         throw base::Exception("ZLib error %d in deflate().", err);
 
       int output_bytes = compressed.size() - zstream.avail_out;
