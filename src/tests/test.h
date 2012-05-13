@@ -47,13 +47,12 @@ int main(int argc, char* argv[])
     install_mouse();
     {
       Jinete jinete;
-      Widget* manager = jmanager_new();
+      UniquePtr<gui::Manager> manager(new gui::Manager());
   #endif
 
       exitcode = RUN_ALL_TESTS();
 
   #ifdef TEST_GUI
-      jmanager_free(manager);
     }
   #endif
 
