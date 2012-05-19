@@ -19,14 +19,16 @@
 #ifndef RASTER_IMAGE_H_INCLUDED
 #define RASTER_IMAGE_H_INCLUDED
 
+#include "gfx/rect.h"
 #include "raster/blend.h"
 #include "raster/gfxobj.h"
 #include "raster/pixel_format.h"
 
 #include <allegro/color.h>
 
-class Palette;
+struct BITMAP;
 
+class Palette;
 class Pen;
 class RgbMap;
 
@@ -34,8 +36,6 @@ enum ResizeMethod {
   RESIZE_METHOD_NEAREST_NEIGHBOR,
   RESIZE_METHOD_BILINEAR,
 };
-
-struct BITMAP;
 
 class Image : public GfxObj
 {
@@ -98,7 +98,7 @@ void image_to_allegro(const Image* image, BITMAP* bmp, int x, int y, const Palet
 void image_fixup_transparent_colors(Image* image);
 void image_resize(const Image* src, Image* dst, ResizeMethod method, const Palette* palette, const RgbMap* rgbmap);
 int image_count_diff(const Image* i1, const Image* i2);
-bool image_shrink_rect(Image *image, int *x1, int *y1, int *x2, int *y2, int refpixel);
+bool image_shrink_rect(Image *image, gfx::Rect& bounds, int refpixel);
 
 #include "raster/image_traits.h"
 

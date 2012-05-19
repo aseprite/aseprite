@@ -91,7 +91,7 @@ protected:
 
 AutocropSpriteCommand::AutocropSpriteCommand()
   : Command("AutocropSprite",
-            "Autocrop Sprite",
+            "Trim Sprite",
             CmdRecordableFlag)
 {
 }
@@ -109,8 +109,8 @@ void AutocropSpriteCommand::onExecute(Context* context)
   {
     int bgcolor = color_utils::color_for_image(app_get_colorbar()->getBgColor(), sprite->getPixelFormat());
 
-    UndoTransaction undoTransaction(document, "Sprite Autocrop");
-    undoTransaction.autocropSprite(bgcolor);
+    UndoTransaction undoTransaction(document, "Trim Sprite");
+    undoTransaction.trimSprite(bgcolor);
     undoTransaction.commit();
   }
   document->generateMaskBoundaries();

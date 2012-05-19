@@ -634,46 +634,85 @@ int image_count_diff(const Image* i1, const Image* i2)
   return diff;
 }
 
-bool image_shrink_rect(Image *image, int *x1, int *y1, int *x2, int *y2, int refpixel)
+static bool is_same_pixel(PixelFormat pixelFormat, int pixel1, int pixel2)
 {
-#define SHRINK_SIDE(u_begin, u_op, u_final, u_add,              \
-                    v_begin, v_op, v_final, v_add, U, V, var)   \
-  do {                                                          \
-    for (u = u_begin; u u_op u_final; u u_add) {                \
-      for (v = v_begin; v v_op v_final; v v_add) {              \
-        if (image->getpixel(U, V) != refpixel)                  \
-          break;                                                \
-      }                                                         \
-      if (v == v_final)                                         \
-        var;                                                    \
-      else                                                      \
-        break;                                                  \
-    }                                                           \
-  } while (0)
+  switch (pixelFormat) {
+    case IMAGE_RGB:
+      if (_rgba_geta(pixel1) == 0 && _rgba_geta(pixel2) == 0)
+        return true;
+      break;
+    case IMAGE_GRAYSCALE:
+      if (_graya_geta(pixel1) == 0 && _graya_geta(pixel2) == 0)
+        return true;
+      break;
+  }
+  return pixel1 == pixel2;
+}
 
+bool image_shrink_rect(Image *image, gfx::Rect& bounds, int refpixel)
+{
+  bool shrink;
   int u, v;
 
-  *x1 = 0;
-  *y1 = 0;
-  *x2 = image->w-1;
-  *y2 = image->h-1;
+  bounds = gfx::Rect(0, 0, image->w, image->h);
 
-  SHRINK_SIDE(0, <, image->w, ++,
-              0, <, image->h, ++, u, v, (*x1)++);
+  // Shrink left side
+  for (u=bounds.x; u<bounds.x+bounds.w; ++u) {
+    shrink = true;
+    for (v=bounds.y; v<bounds.y+bounds.h; ++v) {
+      if (!is_same_pixel(image->getPixelFormat(), image->getpixel(u, v), refpixel)) {
+        shrink = false;
+        break;
+      }
+    }
+    if (!shrink)
+      break;
+    ++bounds.x;
+    --bounds.w;
+  }
 
-  SHRINK_SIDE(0, <, image->h, ++,
-              0, <, image->w, ++, v, u, (*y1)++);
+  // Shrink right side
+  for (u=bounds.x+bounds.w-1; u>=bounds.x; --u) {
+    shrink = true;
+    for (v=bounds.y; v<bounds.y+bounds.h; ++v) {
+      if (!is_same_pixel(image->getPixelFormat(), image->getpixel(u, v), refpixel)) {
+        shrink = false;
+        break;
+      }
+    }
+    if (!shrink)
+      break;
+    --bounds.w;
+  }
 
-  SHRINK_SIDE(image->w-1, >, 0, --,
-              0, <, image->h, ++, u, v, (*x2)--);
+  // Shrink top side
+  for (v=bounds.y; v<bounds.y+bounds.h; ++v) {
+    shrink = true;
+    for (u=bounds.x; u<bounds.x+bounds.w; ++u) {
+      if (!is_same_pixel(image->getPixelFormat(), image->getpixel(u, v), refpixel)) {
+        shrink = false;
+        break;
+      }
+    }
+    if (!shrink)
+      break;
+    ++bounds.y;
+    --bounds.h;
+  }
 
-  SHRINK_SIDE(image->h-1, >, 0, --,
-              0, <, image->w, ++, v, u, (*y2)--);
+  // Shrink bottom side
+  for (v=bounds.y+bounds.h-1; v>=bounds.y; --v) {
+    shrink = true;
+    for (u=bounds.x; u<bounds.x+bounds.w; ++u) {
+      if (!is_same_pixel(image->getPixelFormat(), image->getpixel(u, v), refpixel)) {
+        shrink = false;
+        break;
+      }
+    }
+    if (!shrink)
+      break;
+    --bounds.h;
+  }
 
-  if ((*x1 > *x2) || (*y1 > *y2))
-    return false;
-  else
-    return true;
-
-#undef SHRINK_SIDE
+  return (!bounds.isEmpty());
 }

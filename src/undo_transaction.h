@@ -79,7 +79,7 @@ public:
   void setCurrentLayer(Layer* layer);
   void setSpriteSize(int w, int h);
   void cropSprite(const gfx::Rect& bounds, int bgcolor);
-  void autocropSprite(int bgcolor);
+  void trimSprite(int bgcolor);
   void setPixelFormat(PixelFormat newFormat, DitheringMethod dithering_method);
 
   // for images in stock

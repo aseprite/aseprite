@@ -202,42 +202,32 @@ void UndoTransaction::cropSprite(const gfx::Rect& bounds, int bgcolor)
                     m_document->getMask()->getBounds().y-bounds.y);
 }
 
-void UndoTransaction::autocropSprite(int bgcolor)
+void UndoTransaction::trimSprite(int bgcolor)
 {
   int old_frame = m_sprite->getCurrentFrame();
-  int x1, y1, x2, y2;
-  int u1, v1, u2, v2;
+  gfx::Rect bounds;
 
-  x1 = y1 = INT_MAX;
-  x2 = y2 = INT_MIN;
-
-  Image* image = Image::create(m_sprite->getPixelFormat(),
-                               m_sprite->getWidth(),
-                               m_sprite->getHeight());
+  UniquePtr<Image> image_wrap(Image::create(m_sprite->getPixelFormat(),
+                                            m_sprite->getWidth(),
+                                            m_sprite->getHeight()));
+  Image* image = image_wrap.get();
 
   for (int frame=0; frame<m_sprite->getTotalFrames(); ++frame) {
+    image->clear(0);
+
     m_sprite->setCurrentFrame(frame);
     m_sprite->render(image, 0, 0);
 
     // TODO configurable (what color pixel to use as "refpixel",
     // here we are using the top-left pixel by default)
-    if (image_shrink_rect(image, &u1, &v1, &u2, &v2,
-                          image_getpixel(image, 0, 0))) {
-      x1 = MIN(x1, u1);
-      y1 = MIN(y1, v1);
-      x2 = MAX(x2, u2);
-      y2 = MAX(y2, v2);
-    }
+    gfx::Rect frameBounds;
+    if (image_shrink_rect(image, frameBounds, image_getpixel(image, 0, 0)))
+      bounds = bounds.createUnion(frameBounds);
   }
   m_sprite->setCurrentFrame(old_frame);
 
-  image_free(image);
-
-  // do nothing
-  if (x1 > x2 || y1 > y2)
-    return;
-
-  cropSprite(gfx::Rect(x1, y1, x2-x1+1, y2-y1+1), bgcolor);
+  if (!bounds.isEmpty())
+    cropSprite(bounds, bgcolor);
 }
 
 void UndoTransaction::setPixelFormat(PixelFormat newFormat, DitheringMethod dithering_method)
