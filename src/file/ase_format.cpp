@@ -897,10 +897,9 @@ static void read_compressed_image(FILE* f, Image* image, size_t chunk_end, FileO
     else
       input_bytes = compressed.size();
 
-    fread(&compressed[0], 1, input_bytes, f);
-
+    size_t bytes_read = fread(&compressed[0], 1, input_bytes, f);
     zstream.next_in = (Bytef*)&compressed[0];
-    zstream.avail_in = input_bytes;
+    zstream.avail_in = bytes_read;
 
     do {
       zstream.next_out = (Bytef*)&scanline[0];
@@ -910,14 +909,15 @@ static void read_compressed_image(FILE* f, Image* image, size_t chunk_end, FileO
       if (err != Z_OK && err != Z_STREAM_END && err != Z_BUF_ERROR)
         throw base::Exception("ZLib error %d in inflate().", err);
 
-      size_t input_bytes = scanline.size() - zstream.avail_out;
-      if (input_bytes > 0) {
-        if (uncompressed_offset+input_bytes > uncompressed.size())
+      size_t uncompressed_bytes = scanline.size() - zstream.avail_out;
+      if (uncompressed_bytes > 0) {
+        if (uncompressed_offset+uncompressed_bytes > uncompressed.size())
           throw base::Exception("Bad compressed image.");
 
-        std::copy(scanline.begin(), scanline.begin()+input_bytes,
+        std::copy(scanline.begin(), scanline.begin()+uncompressed_bytes,
                   uncompressed.begin()+uncompressed_offset);
-        uncompressed_offset += input_bytes;
+
+        uncompressed_offset += uncompressed_bytes;
       }
     } while (zstream.avail_out == 0);
 
