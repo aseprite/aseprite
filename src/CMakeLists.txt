@@ -443,6 +443,7 @@ endfunction()
 find_unittests(base base-lib ${sys_libs})
 find_unittests(gfx gfx-lib base-lib ${sys_libs})
 find_unittests(gui gui-lib gfx-lib base-lib ${libs3rdparty} ${sys_libs})
+find_unittests(file ${all_libs})
 find_unittests(app ${all_libs})
 find_unittests(. ${all_libs})
 
