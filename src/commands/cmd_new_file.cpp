@@ -142,8 +142,8 @@ void NewFileCommand::onExecute(Context* context)
     ncolors = colors->getTextInt();
     bg = bg_box->getSelectedIndex();
 
-    w = MID(1, w, 9999);
-    h = MID(1, h, 9999);
+    w = MID(1, w, 65535);
+    h = MID(1, h, 65535);
     ncolors = MID(2, ncolors, 256);
 
     // Select the color
@@ -163,8 +163,7 @@ void NewFileCommand::onExecute(Context* context)
 
       // Create the new sprite
       ASSERT(format == IMAGE_RGB || format == IMAGE_GRAYSCALE || format == IMAGE_INDEXED);
-      ASSERT(w >= 1 && w <= 9999);
-      ASSERT(h >= 1 && h <= 9999);
+      ASSERT(w > 0 && h > 0);
 
       UniquePtr<Document> document(
         Document::createBasicDocument(format, w, h,
