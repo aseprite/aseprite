@@ -20,6 +20,7 @@
 #define WIDGETS_COLOR_SLIDERS_H_INCLUDED
 
 #include "app/color.h"
+#include "base/compiler_specific.h"
 #include "base/signal.h"
 #include "gui/event.h"
 #include "gui/grid.h"
@@ -87,8 +88,8 @@ public:
   RgbSliders();
 
 private:
-  virtual void onSetColor(const Color& color);
-  virtual Color getColorFromSliders();
+  virtual void onSetColor(const Color& color) OVERRIDE;
+  virtual Color getColorFromSliders() OVERRIDE;
 };
 
 class HsvSliders : public ColorSliders
@@ -97,8 +98,8 @@ public:
   HsvSliders();
 
 private:
-  virtual void onSetColor(const Color& color);
-  virtual Color getColorFromSliders();
+  virtual void onSetColor(const Color& color) OVERRIDE;
+  virtual Color getColorFromSliders() OVERRIDE;
 };
 
 class GraySlider : public ColorSliders
@@ -107,8 +108,8 @@ public:
   GraySlider();
 
 private:
-  virtual void onSetColor(const Color& color);
-  virtual Color getColorFromSliders();
+  virtual void onSetColor(const Color& color) OVERRIDE;
+  virtual Color getColorFromSliders() OVERRIDE;
 };
 
 //////////////////////////////////////////////////////////////////////
