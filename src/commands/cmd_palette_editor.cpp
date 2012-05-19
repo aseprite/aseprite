@@ -682,6 +682,10 @@ void PaletteEntryEditor::setPaletteEntryChannel(const Color& color, ColorSliders
   PaletteView::SelectedEntries entries;
   palView->getSelectedEntries(entries);
 
+  int begSel, endSel;
+  if (!palView->getSelectedRange(begSel, endSel))
+    return;
+
   uint32_t src_color;
   int r, g, b;
 
@@ -697,35 +701,55 @@ void PaletteEntryEditor::setPaletteEntryChannel(const Color& color, ColorSliders
       switch (color.getType()) {
 
         case Color::RgbType:
-          // Setup the new RGB values depending of the modified channel.
-          switch (channel) {
-            case ColorSliders::Red:
-              r = color.getRed();
-            case ColorSliders::Green:
-              g = color.getGreen();
-              break;
-            case ColorSliders::Blue:
-              b = color.getBlue();
-              break;
+          // Modify one entry
+          if (begSel == endSel) {
+            r = color.getRed();
+            g = color.getGreen();
+            b = color.getBlue();
+          }
+          // Modify one channel a set of entries
+          else {
+            // Setup the new RGB values depending of the modified channel.
+            switch (channel) {
+              case ColorSliders::Red:
+                r = color.getRed();
+              case ColorSliders::Green:
+                g = color.getGreen();
+                break;
+              case ColorSliders::Blue:
+                b = color.getBlue();
+                break;
+            }
           }
           break;
 
         case Color::HsvType:
           {
-            // Convert RGB to HSV
-            Hsv hsv(Rgb(r, g, b));
+            Hsv hsv;
 
-            // Only modify the desired HSV channel
-            switch (channel) {
-              case ColorSliders::Hue:
-                hsv.hue(color.getHue());
-                break;
-              case ColorSliders::Saturation:
-                hsv.saturation(double(color.getSaturation()) / 100.0);
-                break;
-              case ColorSliders::Value:
-                hsv.value(double(color.getValue()) / 100.0);
-                break;
+            // Modify one entry
+            if (begSel == endSel) {
+              hsv.hue(color.getHue());
+              hsv.saturation(double(color.getSaturation()) / 100.0);
+              hsv.value(double(color.getValue()) / 100.0);
+            }
+            // Modify one channel a set of entries
+            else {
+              // Convert RGB to HSV
+              hsv = Hsv(Rgb(r, g, b));
+
+              // Only modify the desired HSV channel
+              switch (channel) {
+                case ColorSliders::Hue:
+                  hsv.hue(color.getHue());
+                  break;
+                case ColorSliders::Saturation:
+                  hsv.saturation(double(color.getSaturation()) / 100.0);
+                  break;
+                case ColorSliders::Value:
+                  hsv.value(double(color.getValue()) / 100.0);
+                  break;
+              }
             }
 
             // Convert HSV back to RGB
