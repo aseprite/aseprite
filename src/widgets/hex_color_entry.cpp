@@ -25,10 +25,17 @@
 #include "gui/theme.h"
 #include "widgets/hex_color_entry.h"
 
+static inline bool is_hex_digit(char digit)
+{
+  return ((digit >= '0' && digit <= '9') ||
+          (digit >= 'a' && digit <= 'f') ||
+          (digit >= 'A' && digit <= 'F'));
+}
+
 HexColorEntry::HexColorEntry()
   : Box(JI_HORIZONTAL)
   , m_label("#")
-  , m_entry(6, "")
+  , m_entry(16, "")
 {
   addChild(&m_label);
   addChild(&m_entry);
@@ -53,6 +60,10 @@ void HexColorEntry::onEntryChange()
 {
   std::string text = m_entry.getText();
   int r, g, b;
+
+  // Remove non hex digits
+  while (text.size() > 0 && !is_hex_digit(text[0]))
+    text.erase(0, 1);
 
   // Fill with zeros at the end of the text
   while (text.size() < 6)
