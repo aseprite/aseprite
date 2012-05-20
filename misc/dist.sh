@@ -72,11 +72,17 @@ if [ ! -f $distdir-win32.zip ] ; then
     def_common_files .
     mkdir "$dir/$distdir-win32"
 
+    # Generate README.html
+    pandoc README.md -o README.html
+
     # For Allegro dll / C Runtime dll
     #cp -r --parents $txt_files $bin_files aseprite.exe alleg44.dll msvcr90.dll "$dir/$distdir-win32"
 
     # For Allegro static / static C runtime dll (use /MT to compile Allegro)
     cp -r --parents $txt_files $bin_files aseprite.exe "$dir/$distdir-win32"
+
+    # Remove README.html
+    rm README.html
 
     cd "$dir"
     def_common_files $distdir-win32
