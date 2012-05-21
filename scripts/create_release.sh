@@ -74,5 +74,5 @@ fi
 # Create packages
 # ---------------
 
-cd misc
-sh dist.sh
+cd scripts
+sh create_packages.sh

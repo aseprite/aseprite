@@ -6,8 +6,8 @@ distdir=aseprite-$version
 zip="zip -9"
 zip_recursive_flag="-r"
 
-if [ ! -f dist.sh ]; then
-    echo You must run dist.sh from misc/ directory
+if [ ! -f create_packages.sh ]; then
+    echo You must run create_packages.sh from scripts/ directory
     exit 1
 fi
 
