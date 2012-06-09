@@ -150,9 +150,6 @@ private:
   LayerList m_layers;
 };
 
-LayerImage* layer_new_flatten_copy(Sprite* dst_sprite, const Layer* src_layer,
-                                   int x, int y, int w, int h, int frmin, int frmax);
-
 void layer_render(const Layer* layer, Image *image, int x, int y, int frame);
 
 #endif

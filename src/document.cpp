@@ -25,6 +25,7 @@
 #include "base/scoped_lock.h"
 #include "base/unique_ptr.h"
 #include "file/format_options.h"
+#include "flatten.h"
 #include "objects_container_impl.h"
 #include "raster/cel.h"
 #include "raster/layer.h"
@@ -446,10 +447,10 @@ Document* Document::duplicate(DuplicateType type) const
         // Flatten layers
         ASSERT(sourceSprite->getFolder() != NULL);
 
-        LayerImage* flatLayer = layer_new_flatten_copy
+        LayerImage* flatLayer = create_flatten_layer_copy
             (spriteCopy,
              sourceSprite->getFolder(),
-             0, 0, sourceSprite->getWidth(), sourceSprite->getHeight(),
+             gfx::Rect(0, 0, sourceSprite->getWidth(), sourceSprite->getHeight()),
              0, sourceSprite->getTotalFrames()-1);
 
         // Add and select the new flat layer

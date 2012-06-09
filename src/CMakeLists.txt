@@ -144,6 +144,7 @@ add_library(aseprite-library
   documents.cpp
   drop_files.cpp
   file_system.cpp
+  flatten.cpp
   gfxmode.cpp
   gui_xml.cpp
   ini_file.cpp
