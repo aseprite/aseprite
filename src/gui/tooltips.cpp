@@ -66,7 +66,7 @@ bool TooltipManager::onProcessMessage(Message* msg)
           m_timer->start();
         }
       }
-      break;
+      return false;
     }
 
     case JM_KEYPRESSED:
@@ -79,8 +79,10 @@ bool TooltipManager::onProcessMessage(Message* msg)
 
       if (m_timer)
         m_timer->stop();
-      break;
+
+      return false;
   }
+
   return Widget::onProcessMessage(msg);
 }
 
