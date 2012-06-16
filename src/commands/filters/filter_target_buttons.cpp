@@ -67,17 +67,17 @@ FilterTargetButtons::FilterTargetButtons(int imgtype, bool withChannels)
         g = check_button_new("G", 0, 0, 0, 0);
         b = check_button_new("B", 0, (imgtype == IMAGE_RGB) ? 0: 2, 0, 0);
 
-        r->setName("r");
-        g->setName("g");
-        b->setName("b");
+        r->setId("r");
+        g->setId("g");
+        b->setId("b");
 
         if (imgtype == IMAGE_RGB) {
           a = check_button_new("A", 0, 2, 0, 0);
-          a->setName("a");
+          a->setId("a");
         }
         else {
           index = check_button_new("Index", 0, 0, 0, 0);
-          index->setName("i");
+          index->setId("i");
         }
         break;
 
@@ -85,8 +85,8 @@ FilterTargetButtons::FilterTargetButtons(int imgtype, bool withChannels)
         k = check_button_new("K", 2, 0, 0, 0);
         a = check_button_new("A", 0, 2, 0, 0);
 
-        k->setName("k");
-        a->setName("a");
+        k->setId("k");
+        a->setId("a");
         break;
     }
   }
@@ -133,15 +133,16 @@ void FilterTargetButtons::setTarget(int target)
 void FilterTargetButtons::selectTargetButton(const char* name, int specificTarget)
 {
   Widget* wgt = findChild(name);
-  if (wgt != NULL)
+  if (wgt != NULL) {
     wgt->setSelected((m_target & specificTarget) == specificTarget);
+  }
 }
 
 void FilterTargetButtons::onChannelChange(ButtonBase* button)
 {
   int flag = 0;
 
-  switch (button->name[0]) {
+  switch (button->getId()[0]) {
     case 'r': flag = TARGET_RED_CHANNEL; break;
     case 'g': flag = TARGET_GREEN_CHANNEL; break;
     case 'b': flag = TARGET_BLUE_CHANNEL; break;

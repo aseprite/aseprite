@@ -19,7 +19,6 @@ add_library(gui-lib
   graphics.cpp
   grid.cpp
   gui.cpp
-  hook.cpp
   image_view.cpp
   intern.cpp
   label.cpp

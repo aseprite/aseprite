@@ -40,6 +40,7 @@ public:
 
 protected:
   bool onProcessMessage(Message* msg) OVERRIDE;
+  void onClick() OVERRIDE;
 
 private:
   Command* m_command;

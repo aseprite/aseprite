@@ -37,8 +37,6 @@
 
 #define HAS_ARROWS(tabs) ((m_button_left->getParent() == (tabs)))
 
-static bool tabs_button_msg_proc(JWidget widget, Message* msg);
-
 static int tabs_type()
 {
   static int type = 0;
@@ -46,6 +44,26 @@ static int tabs_type()
     type = ji_register_widget_type();
   return type;
 }
+
+class Tabs::ScrollButton : public Button
+{
+public:
+  ScrollButton(int direction, Tabs* tabs)
+    : Button("")
+    , m_direction(direction)
+    , m_tabs(tabs) {
+  }
+
+  int getDirection() const { return m_direction; }
+
+protected:
+  bool onProcessMessage(Message* msg) OVERRIDE;
+  void onDisable() OVERRIDE;
+
+private:
+  int m_direction;
+  Tabs* m_tabs;
+};
 
 Tabs::Tabs(TabsDelegate* delegate)
   : Widget(tabs_type())
@@ -58,8 +76,8 @@ Tabs::Tabs(TabsDelegate* delegate)
   m_ani = ANI_NONE;
   m_removedTab = NULL;
 
-  m_button_left = new Button(NULL);
-  m_button_right = new Button(NULL);
+  m_button_left = new ScrollButton(-1, this);
+  m_button_right = new ScrollButton(+1, this);
 
   setup_mini_look(m_button_left);
   setup_mini_look(m_button_right);
@@ -78,9 +96,6 @@ Tabs::Tabs(TabsDelegate* delegate)
                         PART_COMBOBOX_ARROW_RIGHT,
                         PART_COMBOBOX_ARROW_RIGHT_SELECTED,
                         PART_COMBOBOX_ARROW_RIGHT_DISABLED, JI_CENTER | JI_MIDDLE);
-
-  jwidget_add_hook(m_button_left, tabs_type(), tabs_button_msg_proc, (void *)-1);
-  jwidget_add_hook(m_button_right, tabs_type(), tabs_button_msg_proc, (void *)+1);
 
   initTheme();
 }
@@ -156,8 +171,7 @@ void Tabs::removeTab(void* data)
 
 void Tabs::setTabText(const char* text, void* data)
 {
-  Tab *tab = getTabByData(data);
-
+  Tab* tab = getTabByData(data);
   if (tab) {
     // Change text of the tab
     tab->text = text;
@@ -382,8 +396,9 @@ bool Tabs::onProcessMessage(Message* msg)
           // Do nothing
           break;
         case ANI_SCROLL: {
-          int dir = (getManager()->getCapture() == m_button_left ? -1: 1);
-          setScrollX(m_scrollX + dir*8*msg->timer.count);
+          ScrollButton* button = dynamic_cast<ScrollButton*>(getManager()->getCapture());
+          if (button != NULL)
+            setScrollX(m_scrollX + button->getDirection()*8*msg->timer.count);
           break;
         }
         case ANI_SMOOTH_SCROLL: {
@@ -418,28 +433,29 @@ bool Tabs::onProcessMessage(Message* msg)
       break;
     }
 
-    case JM_SIGNAL:
-      if (msg->signal.num == JI_SIGNAL_INIT_THEME) {
-        m_button_left->setBgColor(theme->get_tab_selected_face_color());
-        m_button_right->setBgColor(theme->get_tab_selected_face_color());
-      }
-      else if (msg->signal.num == JI_SIGNAL_SET_FONT) {
-        TabsListIterator it, end = m_list_of_tabs.end();
-
-        for (it = m_list_of_tabs.begin(); it != end; ++it) {
-          Tab* tab = *it;
-          tab->width = calcTabWidth(tab);
-        }
-      }
-      else if (msg->signal.num == JI_SIGNAL_INIT_THEME) {
-        /* setup the background color */
-        jwidget_set_bg_color(this, ji_color_face());
-      }
-      break;
-
   }
 
   return Widget::onProcessMessage(msg);
+}
+
+void Tabs::onInitTheme(InitThemeEvent& ev)
+{
+  Widget::onInitTheme(ev);
+
+  SkinTheme* skinTheme = static_cast<SkinTheme*>(ev.getTheme());
+
+  m_button_left->setBgColor(skinTheme->get_tab_selected_face_color());
+  m_button_right->setBgColor(skinTheme->get_tab_selected_face_color());
+}
+
+void Tabs::onSetText()
+{
+  TabsListIterator it, end = m_list_of_tabs.end();
+
+  for (it = m_list_of_tabs.begin(); it != end; ++it) {
+    Tab* tab = *it;
+    tab->width = calcTabWidth(tab);
+  }
 }
 
 void Tabs::selectTabInternal(Tab* tab)
@@ -683,43 +699,36 @@ void Tabs::stopAni()
   m_timer.stop();
 }
 
-static bool tabs_button_msg_proc(JWidget widget, Message* msg)
+bool Tabs::ScrollButton::onProcessMessage(Message* msg)
 {
-  JWidget parent;
-  Tabs* tabs = NULL;
-
-  parent = widget->getParent();
-  if (parent)
-    tabs = dynamic_cast<Tabs*>(parent);
-
   switch (msg->type) {
 
-    case JM_SIGNAL:
-      if (msg->signal.num == JI_SIGNAL_BUTTON_SELECT) {
-        return true;
-      }
-      else if (msg->signal.num == JI_SIGNAL_DISABLE) {
-        ASSERT(tabs != NULL);
-
-        if (widget->isSelected()) {
-          tabs->stopScrolling();
-          widget->setSelected(false);
-        }
-        return true;
-      }
-      break;
-
     case JM_BUTTONPRESSED:
-      ASSERT(tabs != NULL);
-      tabs->startScrolling();
-      break;
+      captureMouse();
+      m_tabs->startScrolling();
+      return true;
 
     case JM_BUTTONRELEASED:
-      ASSERT(tabs != NULL);
-      tabs->stopScrolling();
-      break;
+      if (hasCapture())
+        releaseMouse();
+
+      m_tabs->stopScrolling();
+      return true;
 
   }
 
-  return false;
+  return Button::onProcessMessage(msg);
+}
+
+void Tabs::ScrollButton::onDisable()
+{
+  Button::onDisable();
+
+  if (hasCapture())
+    releaseMouse();
+
+  if (isSelected()) {
+    m_tabs->stopScrolling();
+    setSelected(false);
+  }
 }

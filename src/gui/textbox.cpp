@@ -35,14 +35,6 @@ bool TextBox::onProcessMessage(Message* msg)
       getTheme()->draw_textbox(this, &msg->draw.rect);
       return true;
 
-    case JM_SIGNAL:
-      if (msg->signal.num == JI_SIGNAL_SET_TEXT) {
-        View* view = View::getView(this);
-        if (view)
-          view->updateView();
-      }
-      break;
-
     case JM_KEYPRESSED:
       if (hasFocus()) {
         View* view = View::getView(this);
@@ -182,4 +174,13 @@ void TextBox::onPreferredSize(PreferredSizeEvent& ev)
   }
 
   ev.setPreferredSize(gfx::Size(w, h));
+}
+
+void TextBox::onSetText()
+{
+  View* view = View::getView(this);
+  if (view)
+    view->updateView();
+
+  Widget::onSetText();
 }

@@ -21,6 +21,8 @@
 #include "app.h"
 #include "app/color.h"
 #include "app/color_utils.h"
+#include "app/find_widget.h"
+#include "app/load_widget.h"
 #include "base/unique_ptr.h"
 #include "commands/command.h"
 #include "console.h"
@@ -28,7 +30,6 @@
 #include "gui/gui.h"
 #include "ini_file.h"
 #include "modules/editors.h"
-#include "modules/gui.h"
 #include "modules/palettes.h"
 #include "raster/image.h"
 #include "raster/layer.h"
@@ -68,8 +69,6 @@ NewFileCommand::NewFileCommand()
  */
 void NewFileCommand::onExecute(Context* context)
 {
-  JWidget width, height, radio1, radio2, radio3, colors, ok;
-  ListBox* bg_box;
   PixelFormat format;
   int w, h, bg, ncolors;
   char buf[1024];
@@ -82,16 +81,15 @@ void NewFileCommand::onExecute(Context* context)
   };
 
   // Load the window widget
-  FramePtr window(load_widget("new_sprite.xml", "new_sprite"));
-  get_widgets(window,
-              "width", &width,
-              "height", &height,
-              "radio1", &radio1,
-              "radio2", &radio2,
-              "radio3", &radio3,
-              "colors", &colors,
-              "ok_button", &ok,
-              "bg_box", &bg_box, NULL);
+  UniquePtr<Frame> window(app::load_widget<Frame>("new_sprite.xml", "new_sprite"));
+  Widget* width = app::find_widget<Widget>(window, "width");
+  Widget* height = app::find_widget<Widget>(window, "height");
+  Widget* radio1 = app::find_widget<Widget>(window, "radio1");
+  Widget* radio2 = app::find_widget<Widget>(window, "radio2");
+  Widget* radio3 = app::find_widget<Widget>(window, "radio3");
+  Widget* colors = app::find_widget<Widget>(window, "colors");
+  ListBox* bg_box = app::find_widget<ListBox>(window, "bg_box");
+  Widget* ok = app::find_widget<Widget>(window, "ok_button");
 
   // Default values: Indexed, 320x240, Background color
   format = static_cast<PixelFormat>(get_config_int("NewSprite", "Type", IMAGE_INDEXED));

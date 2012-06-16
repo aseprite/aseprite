@@ -19,6 +19,8 @@
 #include "config.h"
 
 #include "app.h"
+#include "app/find_widget.h"
+#include "app/load_widget.h"
 #include "base/bind.h"
 #include "commands/command.h"
 #include "commands/commands.h"
@@ -267,7 +269,7 @@ void ConfigureTools::onExecute(Context* context)
   bool first_time = false;
 
   if (!window) {
-    window = static_cast<Frame*>(load_widget("tools_configuration.xml", "configure_tool"));
+    window = app::load_widget<Frame>("tools_configuration.xml", "configure_tool");
     first_time = true;
   }
   /* if the window is opened, close it */
@@ -277,23 +279,22 @@ void ConfigureTools::onExecute(Context* context)
   }
 
   try {
-    get_widgets(window,
-                "tiled", &m_tiled,
-                "tiled_x", &m_tiledX,
-                "tiled_y", &m_tiledY,
-                "snap_to_grid", &m_snapToGrid,
-                "view_grid", &m_viewGrid,
-                "pixel_grid", &m_pixelGrid,
-                "set_grid", &set_grid,
-                "brush_size", &m_brushSize,
-                "brush_angle", &m_brushAngle,
-                "opacity", &m_opacity,
-                "tolerance", &m_tolerance,
-                "spray_width", &m_sprayWidth,
-                "air_speed", &m_airSpeed,
-                "brush_preview_box", &brush_preview_box,
-                "brush_type_box", &brush_type_box,
-                "onionskin", &m_onionSkin, NULL);
+    m_tiled = app::find_widget<CheckBox>(window, "tiled");
+    m_tiledX = app::find_widget<CheckBox>(window, "tiled_x");
+    m_tiledY = app::find_widget<CheckBox>(window, "tiled_y");
+    m_snapToGrid = app::find_widget<CheckBox>(window, "snap_to_grid");
+    m_viewGrid = app::find_widget<CheckBox>(window, "view_grid");
+    m_pixelGrid = app::find_widget<CheckBox>(window, "pixel_grid");
+    set_grid = app::find_widget<Button>(window, "set_grid");
+    m_brushSize = app::find_widget<Slider>(window, "brush_size");
+    m_brushAngle = app::find_widget<Slider>(window, "brush_angle");
+    m_opacity = app::find_widget<Slider>(window, "opacity");
+    m_tolerance = app::find_widget<Slider>(window, "tolerance");
+    m_sprayWidth = app::find_widget<Slider>(window, "spray_width");
+    m_airSpeed = app::find_widget<Slider>(window, "air_speed");
+    brush_preview_box = app::find_widget<Widget>(window, "brush_preview_box");
+    brush_type_box = app::find_widget<Widget>(window, "brush_type_box");
+    m_onionSkin = app::find_widget<CheckBox>(window, "onionskin");
   }
   catch (...) {
     delete window;
@@ -306,7 +307,7 @@ void ConfigureTools::onExecute(Context* context)
     m_brushPreview = new BrushPreview();
     m_brushPreview->min_w = 32 + 4;
     m_brushPreview->min_h = 32 + 4;
-    m_brushPreview->setName("brush_preview");
+    m_brushPreview->setId("brush_preview");
   }
   else {
     m_brushPreview = window->findChild("brush_preview");
@@ -326,7 +327,7 @@ void ConfigureTools::onExecute(Context* context)
                                 PART_BRUSH_SQUARE,
                                 PART_BRUSH_LINE);
 
-    m_brushType->setName("brush_type");
+    m_brushType->setId("brush_type");
   }
   else {
     m_brushType = window->findChildT<ButtonSet>("brush_type");

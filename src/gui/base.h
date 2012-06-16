@@ -83,7 +83,6 @@ enum {
   JI_IMAGE_VIEW,
   JI_LABEL,
   JI_LISTBOX,
-  JI_LISTBOX2,
   JI_LISTITEM,
   JI_MANAGER,
   JI_MENU,
@@ -110,9 +109,7 @@ enum {
   JM_OPEN,                      // Windows is open.
   JM_CLOSE,                     // Windows is closed.
   JM_CLOSE_APP,                 // The user wants to close the entire application.
-  JM_DESTROY,                   // Widget is destroyed.
   JM_DRAW,                      // Widget needs be repainted.
-  JM_SIGNAL,                    // Signal from some widget.
   JM_TIMER,                     // A timer timeout.
   JM_REQSIZE,                   // Request size.
   JM_SETPOS,                    // Set position.
@@ -143,29 +140,6 @@ enum {
 
   // Other messages.
   JM_REGISTERED_MESSAGES
-};
-
-// Signals.
-enum {
-  // Generic signals
-  JI_SIGNAL_ENABLE,
-  JI_SIGNAL_DISABLE,
-  JI_SIGNAL_SELECT,
-  JI_SIGNAL_DESELECT,
-  JI_SIGNAL_SHOW,
-  JI_SIGNAL_HIDE,
-  JI_SIGNAL_ADD_CHILD,
-  JI_SIGNAL_SET_TEXT,
-  JI_SIGNAL_SET_FONT,
-  JI_SIGNAL_INIT_THEME,
-
-  // Special widget signals
-  JI_SIGNAL_BUTTON_SELECT,
-  JI_SIGNAL_LISTBOX_CHANGE,
-  JI_SIGNAL_LISTBOX_SELECT,
-  JI_SIGNAL_COMBOBOX_SELECT,
-  JI_SIGNAL_MANAGER_LOSTCHAR,
-  JI_SIGNAL_MENUITEM_SELECT,
 };
 
 // Flags for jwidget_get_drawable_region.

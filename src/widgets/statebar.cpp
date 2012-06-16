@@ -58,7 +58,33 @@ enum AniAction {
   ACTION_LAST,
 };
 
-static bool tipwindow_msg_proc(JWidget widget, Message* msg);
+class StatusBar::CustomizedTipWindow : public gui::TipWindow
+{
+public:
+  CustomizedTipWindow(const char* text)
+    : gui::TipWindow(text)
+  {
+  }
+
+  void setInterval(int msecs)
+  {
+    if (!m_timer)
+      m_timer.reset(new gui::Timer(this, msecs));
+    else
+      m_timer->setInterval(msecs);
+  }
+
+  void startTimer()
+  {
+    m_timer->start();
+  }
+
+protected:
+  bool onProcessMessage(Message* msg);
+
+private:
+  UniquePtr<gui::Timer> m_timer;
+};
 
 static void slider_change_hook(Slider* slider);
 static void ani_button_command(Button* widget, AniAction action);
@@ -299,16 +325,13 @@ void StatusBar::showTip(int msecs, const char *format, ...)
   va_end(ap);
 
   if (m_tipwindow == NULL) {
-    m_tipwindow = new TipWindow(buf);
-    m_tipwindow->user_data[0] = (void*)new gui::Timer(m_tipwindow, msecs);
-    m_tipwindow->user_data[1] = this;
-    jwidget_add_hook(m_tipwindow, -1, tipwindow_msg_proc, NULL);
+    m_tipwindow = new CustomizedTipWindow(buf);
   }
   else {
     m_tipwindow->setText(buf);
-
-    ((gui::Timer*)m_tipwindow->user_data[0])->setInterval(msecs);
   }
+
+  m_tipwindow->setInterval(msecs);
 
   if (m_tipwindow->isVisible())
     m_tipwindow->closeWindow(NULL);
@@ -320,7 +343,7 @@ void StatusBar::showTip(int msecs, const char *format, ...)
   y = this->rc->y1 - jrect_h(m_tipwindow->rc);
   m_tipwindow->position_window(x, y);
 
-  ((gui::Timer*)m_tipwindow->user_data[0])->start();
+  m_tipwindow->startTimer();
 
   // Set the text in status-bar (with inmediate timeout)
   m_timeout = ji_clock;
@@ -800,20 +823,16 @@ bool StatusBar::onProcessMessage(Message* msg)
   return Widget::onProcessMessage(msg);
 }
 
-static bool tipwindow_msg_proc(JWidget widget, Message* msg)
+bool StatusBar::CustomizedTipWindow::onProcessMessage(Message* msg)
 {
   switch (msg->type) {
 
-    case JM_DESTROY:
-      delete ((gui::Timer*)widget->user_data[0]);
-      break;
-
     case JM_TIMER:
-      static_cast<Frame*>(widget)->closeWindow(NULL);
+      closeWindow(NULL);
       break;
   }
 
-  return false;
+  return gui::TipWindow::onProcessMessage(msg);
 }
 
 static void slider_change_hook(Slider* slider)

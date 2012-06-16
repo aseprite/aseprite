@@ -1,12 +1,12 @@
 <!-- ASEPRITE -->
 <!-- Copyright (C) 2001-2012 by David Capello -->
-<jinete>
-  <box vertical="true" name="controls" expansive="true">
-    <view expansive="true" name="view" minwidth="128" minheight="64">
-      <listbox name="stock" />
+<gui>
+  <box vertical="true" id="controls" expansive="true">
+    <view expansive="true" id="view" minwidth="128" minheight="64">
+      <listbox id="stock" />
     </view>
     <box horizontal="true">
-      <button text="&amp;Reload Stock" name="reload" />
+      <button text="&amp;Reload Stock" id="reload" />
     </box>
   </box>
-</jinete>
+</gui>

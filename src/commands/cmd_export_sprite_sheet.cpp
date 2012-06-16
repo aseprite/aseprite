@@ -307,7 +307,7 @@ bool ExportSpriteSheetCommand::onEnabled(Context* context)
 
 void ExportSpriteSheetCommand::onExecute(Context* context)
 {
-  FramePtr frame(new ExportSpriteSheetFrame(context));
+  UniquePtr<Frame> frame(new ExportSpriteSheetFrame(context));
   frame->open_window_fg();
 }
 

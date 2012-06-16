@@ -23,6 +23,8 @@
 #include "app.h"
 #include "app/color.h"
 #include "app/color_utils.h"
+#include "app/find_widget.h"
+#include "app/load_widget.h"
 #include "base/bind.h"
 #include "commands/command.h"
 #include "commands/filters/filter_manager_impl.h"
@@ -31,7 +33,6 @@
 #include "filters/replace_color_filter.h"
 #include "gui/gui.h"
 #include "ini_file.h"
-#include "modules/gui.h"
 #include "raster/image.h"
 #include "raster/mask.h"
 #include "raster/sprite.h"
@@ -77,13 +78,11 @@ public:
                    WithChannelsSelector,
                    WithoutTiledCheckBox)
     , m_filter(filter)
-    , m_controlsWidget(load_widget("replace_color.xml", "controls"))
+    , m_controlsWidget(app::load_widget<Widget>("replace_color.xml", "controls"))
+    , m_fromButton(app::find_widget<ColorButton>(m_controlsWidget, "from"))
+    , m_toButton(app::find_widget<ColorButton>(m_controlsWidget, "to"))
+    , m_toleranceSlider(app::find_widget<Slider>(m_controlsWidget, "tolerance"))
   {
-    get_widgets(m_controlsWidget,
-                "from", &m_fromButton,
-                "to", &m_toButton,
-                "tolerance", &m_toleranceSlider, NULL);
-
     getContainer()->addChild(m_controlsWidget);
 
     m_fromButton->setColor(m_filter.getFrom());
@@ -116,7 +115,7 @@ protected:
 
 private:
   ReplaceColorFilterWrapper& m_filter;
-  WidgetPtr m_controlsWidget;
+  UniquePtr<Widget> m_controlsWidget;
   ColorButton* m_fromButton;
   ColorButton* m_toButton;
   Slider* m_toleranceSlider;

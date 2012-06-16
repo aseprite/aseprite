@@ -18,21 +18,21 @@
 
 #include "config.h"
 
-#include <allegro.h>
-
-#include "base/bind.h"
-#include "gui/gui.h"
-
 #include "app.h"
+#include "app/find_widget.h"
+#include "app/load_widget.h"
+#include "base/bind.h"
 #include "commands/command.h"
 #include "context.h"
+#include "gui/gui.h"
 #include "ini_file.h"
 #include "modules/editors.h"
-#include "modules/gui.h"
 #include "raster/image.h"
 #include "util/render.h"
 #include "widgets/color_button.h"
 #include "widgets/editor/editor.h"
+
+#include <allegro.h>
 
 //////////////////////////////////////////////////////////////////////
 // options
@@ -64,49 +64,35 @@ OptionsCommand::OptionsCommand()
 
 void OptionsCommand::onExecute(Context* context)
 {
-  JWidget check_smooth;
-  ColorButton* cursor_color;
-  ColorButton* grid_color;
-  ColorButton* pixel_grid_color;
-  Widget* cursor_color_box;
-  Widget* grid_color_box;
-  Widget* pixel_grid_color_box;
-  Button* button_ok;
-  Widget* move_click2, *draw_click2;
-  Button* checked_bg_reset;
-  JWidget checked_bg_color1_box, checked_bg_color2_box;
-  JWidget undo_size_limit;
-
   /* load the window widget */
-  FramePtr window(load_widget("options.xml", "options"));
-  get_widgets(window,
-              "smooth", &check_smooth,
-              "move_click2", &move_click2,
-              "draw_click2", &draw_click2,
-              "cursor_color_box", &cursor_color_box,
-              "grid_color_box", &grid_color_box,
-              "pixel_grid_color_box", &pixel_grid_color_box,
-              "checked_bg_size", &m_checked_bg,
-              "checked_bg_zoom", &m_checked_bg_zoom,
-              "checked_bg_color1_box", &checked_bg_color1_box,
-              "checked_bg_color2_box", &checked_bg_color2_box,
-              "checked_bg_reset", &checked_bg_reset,
-              "undo_size_limit", &undo_size_limit,
-              "button_ok", &button_ok, NULL);
+  UniquePtr<Frame> window(app::load_widget<Frame>("options.xml", "options"));
+  Widget* check_smooth = app::find_widget<Widget>(window, "smooth");
+  Widget* move_click2 = app::find_widget<Widget>(window, "move_click2");
+  Widget* draw_click2 = app::find_widget<Widget>(window, "draw_click2");
+  Widget* cursor_color_box = app::find_widget<Widget>(window, "cursor_color_box");
+  Widget* grid_color_box = app::find_widget<Widget>(window, "grid_color_box");
+  Widget* pixel_grid_color_box = app::find_widget<Widget>(window, "pixel_grid_color_box");
+  m_checked_bg = app::find_widget<ComboBox>(window, "checked_bg_size");
+  m_checked_bg_zoom = app::find_widget<Widget>(window, "checked_bg_zoom");
+  Widget* checked_bg_color1_box = app::find_widget<Widget>(window, "checked_bg_color1_box");
+  Widget* checked_bg_color2_box = app::find_widget<Widget>(window, "checked_bg_color2_box");
+  Button* checked_bg_reset = app::find_widget<Button>(window, "checked_bg_reset");
+  Widget* undo_size_limit = app::find_widget<Widget>(window, "undo_size_limit");
+  Widget* button_ok = app::find_widget<Widget>(window, "button_ok");
 
   // Cursor color
-  cursor_color = new ColorButton(Editor::get_cursor_color(), IMAGE_RGB);
-  cursor_color->setName("cursor_color");
+  ColorButton* cursor_color = new ColorButton(Editor::get_cursor_color(), IMAGE_RGB);
+  cursor_color->setId("cursor_color");
   cursor_color_box->addChild(cursor_color);
 
   // Grid color
-  grid_color = new ColorButton(context->getSettings()->getGridColor(), IMAGE_RGB);
-  grid_color->setName("grid_color");
+  ColorButton* grid_color = new ColorButton(context->getSettings()->getGridColor(), IMAGE_RGB);
+  grid_color->setId("grid_color");
   grid_color_box->addChild(grid_color);
 
   // Pixel grid color
-  pixel_grid_color = new ColorButton(context->getSettings()->getPixelGridColor(), IMAGE_RGB);
-  pixel_grid_color->setName("pixel_grid_color");
+  ColorButton* pixel_grid_color = new ColorButton(context->getSettings()->getPixelGridColor(), IMAGE_RGB);
+  pixel_grid_color->setId("pixel_grid_color");
   pixel_grid_color_box->addChild(pixel_grid_color);
 
   // Others

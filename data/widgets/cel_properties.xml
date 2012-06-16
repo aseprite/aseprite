@@ -1,26 +1,26 @@
 <!-- ASEPRITE -->
 <!-- Copyright (C) 2001-2012 by David Capello -->
-<jinete>
-<window text="Cel Properties" name="cel_properties">
+<gui>
+<window text="Cel Properties" id="cel_properties">
   <grid columns="2">
     <label text="Frame:" />
-    <label name="frame" />
+    <label id="frame" />
 
     <label text="Position: " />
-    <label name="pos" readonly="true" tooltip="X axis, Y axis" />
+    <label id="pos" readonly="true" tooltip="X axis, Y axis" />
 
     <label text="Dimension:" />
-    <label name="size" readonly="true" tooltip="Width x Height (Memory size)" />
+    <label id="size" readonly="true" tooltip="Width x Height (Memory size)" />
 
     <label text="Opacity:" />
-    <slider min="0" max="255" name="opacity" cell_align="horizontal" width="128" />
+    <slider min="0" max="255" id="opacity" cell_align="horizontal" width="128" />
 
     <separator horizontal="true" cell_hspan="2" />
 
     <box horizontal="true" homogeneous="true" cell_hspan="2" cell_align="right">
-      <button text="&amp;OK" closewindow="true" name="ok" magnetic="true" minwidth="60" />
+      <button text="&amp;OK" closewindow="true" id="ok" magnet="true" minwidth="60" />
       <button text="&amp;Cancel" closewindow="true" />
     </box>
   </grid>
 </window>
-</jinete>
+</gui>

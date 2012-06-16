@@ -21,6 +21,8 @@
 #include <string.h>
 
 #include "app/color.h"
+#include "app/find_widget.h"
+#include "app/load_widget.h"
 #include "base/bind.h"
 #include "commands/command.h"
 #include "commands/filters/convolution_matrix_stock.h"
@@ -38,7 +40,6 @@
 #include "gui/view.h"
 #include "gui/widget.h"
 #include "ini_file.h"
-#include "modules/gui.h"
 #include "raster/mask.h"
 #include "raster/sprite.h"
 
@@ -56,20 +57,16 @@ public:
                    WithTiledCheckBox,
                    filter.getTiledMode())
     , m_filter(filter)
-    , m_controlsWidget(load_widget("convolution_matrix.xml", "controls"))
+    , m_controlsWidget(app::load_widget<Widget>("convolution_matrix.xml", "controls"))
     , m_stock(stock)
+    , m_view(app::find_widget<View>(m_controlsWidget, "view"))
+    , m_stockListBox(app::find_widget<ListBox>(m_controlsWidget, "stock"))
+    , m_reloadButton(app::find_widget<Button>(m_controlsWidget, "reload"))
   {
-    get_widgets(m_controlsWidget,
-                "view", &m_view,
-                "stock", &m_stockListBox,
-                "reload", &m_reloadButton, NULL);
-
     getContainer()->addChild(m_controlsWidget);
 
     m_reloadButton->Click.connect(&ConvolutionMatrixWindow::onReloadStock, this);
-    // TODO convert listbox to c++ class ListBox
-    //m_stockListBox->Change.connect(Bind<void>(&ConvolutionMatrixWindow::onMatrixChange, this));
-    hook_signal(m_stockListBox, JI_SIGNAL_LISTBOX_CHANGE, &ConvolutionMatrixWindow::listboxChangeHandler, this);
+    m_stockListBox->ChangeSelectedItem.connect(Bind<void>(&ConvolutionMatrixWindow::onMatrixChange, this));
 
     fillStockListBox();
   }
@@ -145,16 +142,8 @@ private:
     restartPreview();
   }
 
-  // TODO This function must be removed if ListBox C++ class is added.
-  static bool listboxChangeHandler(Widget* widget, void *data)
-  {
-    ConvolutionMatrixWindow* window = (ConvolutionMatrixWindow*)data;
-    window->onMatrixChange();
-    return true;
-  }
-
   ConvolutionMatrixFilter& m_filter;
-  WidgetPtr m_controlsWidget;
+  UniquePtr<Widget> m_controlsWidget;
   ConvolutionMatrixStock& m_stock;
   View* m_view;
   ListBox* m_stockListBox;

@@ -18,10 +18,11 @@
 
 #include "config.h"
 
-#include "gui/gui.h"
-
 #include "app.h"
+#include "app/find_widget.h"
+#include "app/load_widget.h"
 #include "commands/command.h"
+#include "gui/gui.h"
 #include "ini_file.h"
 #include "modules/gui.h"
 #include "widgets/color_bar.h"
@@ -71,9 +72,9 @@ void AdvancedModeCommand::onExecute(Context* context)
       char key[1024];
       char buf[1024];
 
-      FramePtr window(load_widget("advanced_mode.xml", "advanced_mode_warning"));
-      Widget* warning_label = find_widget(window, "warning_label");
-      Widget* donot_show = find_widget(window, "donot_show");
+      UniquePtr<Frame> window(app::load_widget<Frame>("advanced_mode.xml", "advanced_mode_warning"));
+      Widget* warning_label = app::find_widget<Widget>(window, "warning_label");
+      Widget* donot_show = app::find_widget<Widget>(window, "donot_show");
 
       strcpy(warning, "You can back pressing the \"%s\" key.");
       jaccel_to_string(accel, key);

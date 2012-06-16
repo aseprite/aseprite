@@ -20,14 +20,14 @@
 
 #include <allegro.h>
 
-#include "gui/gui.h"
-
 #include "app.h"
+#include "app/find_widget.h"
+#include "app/load_widget.h"
 #include "commands/command.h"
 #include "document_wrappers.h"
+#include "gui/gui.h"
 #include "ini_file.h"
 #include "modules/editors.h"
-#include "modules/gui.h"
 #include "raster/sprite.h"
 #include "ui_context.h"
 
@@ -64,7 +64,7 @@ void DuplicateSpriteCommand::onExecute(Context* context)
   char buf[1024];
 
   /* load the window widget */
-  FramePtr window(load_widget("duplicate_sprite.xml", "duplicate_sprite"));
+  UniquePtr<Frame> window(app::load_widget<Frame>("duplicate_sprite.xml", "duplicate_sprite"));
 
   src_name = window->findChild("src_name");
   dst_name = window->findChild("dst_name");

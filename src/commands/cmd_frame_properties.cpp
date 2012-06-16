@@ -18,12 +18,13 @@
 
 #include "config.h"
 
+#include "app/find_widget.h"
+#include "app/load_widget.h"
 #include "base/convert_to.h"
 #include "commands/command.h"
 #include "commands/params.h"
 #include "document_wrappers.h"
 #include "gui/gui.h"
-#include "modules/gui.h"
 #include "raster/sprite.h"
 #include "undo_transaction.h"
 
@@ -82,13 +83,11 @@ void FramePropertiesCommand::onExecute(Context* context)
 {
   const ActiveDocumentReader document(context);
   const Sprite* sprite = document->getSprite();
-  JWidget frame, frlen, ok;
 
-  FramePtr window(load_widget("frame_duration.xml", "frame_duration"));
-  get_widgets(window,
-              "frame", &frame,
-              "frlen", &frlen,
-              "ok", &ok, NULL);
+  UniquePtr<Frame> window(app::load_widget<Frame>("frame_duration.xml", "frame_duration"));
+  Widget* frame = app::find_widget<Widget>(window, "frame");
+  Widget* frlen = app::find_widget<Widget>(window, "frlen");
+  Widget* ok = app::find_widget<Widget>(window, "ok");
 
   int sprite_frame = 0;
   switch (m_frame) {

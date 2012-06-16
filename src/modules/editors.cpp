@@ -34,6 +34,7 @@
 #include "widgets/editor/editor_customization_delegate.h"
 #include "widgets/editor/editor_view.h"
 #include "widgets/popup_frame_pin.h"
+#include "skin/skin_theme.h"
 #include "widgets/statebar.h"
 
 #include <algorithm>
@@ -67,8 +68,6 @@ Editor* current_editor = NULL;
 Widget* box_editors = NULL;
 
 static EditorList editors;
-
-static Frame* mini_editor_frame = NULL;
 static bool mini_editor_enabled = true; // True if the user wants to use the mini editor
 static Editor* mini_editor = NULL;
 
@@ -80,7 +79,6 @@ static int count_parents(Widget* widget);
 static void create_mini_editor_frame();
 static void hide_mini_editor_frame();
 static void update_mini_editor_frame(Editor* editor);
-static void on_mini_editor_frame_close(CloseEvent& ev);
 
 class WrappedEditor : public Editor,
                       public EditorListener,
@@ -164,6 +162,35 @@ public:
     return false;
   }
 };
+
+class MiniEditorFrame : public Frame
+{
+public:
+  // Create mini-editor
+  MiniEditorFrame() : Frame(false, "Mini-Editor") {
+    child_spacing = 0;
+    set_autoremap(false);
+    set_wantfocus(false);
+  }
+
+protected:
+  void onClose(CloseEvent& ev) OVERRIDE {
+    Button* closeButton = dynamic_cast<Button*>(ev.getSource());
+    if (closeButton != NULL &&
+        closeButton->getId() == SkinTheme::kThemeCloseButtonId) {
+      // Here we don't use "enable_mini_editor" to change the state of
+      // "mini_editor_enabled" because we're coming from a close event
+      // of the frame.
+      mini_editor_enabled = false;
+
+      // Redraw the tool bar because it shows the mini editor enabled state.
+      // TODO abstract this event
+      app_get_toolbar()->invalidate();
+    }
+  }
+};
+
+static MiniEditorFrame* mini_editor_frame = NULL;
 
 int init_module_editors()
 {
@@ -603,13 +630,7 @@ static int count_parents(Widget* widget)
 static void create_mini_editor_frame()
 {
   // Create mini-editor
-  mini_editor_frame = new Frame(false, "Mini-Editor");
-  mini_editor_frame->child_spacing = 0;
-  mini_editor_frame->set_autoremap(false);
-  mini_editor_frame->set_wantfocus(false);
-
-  // Hook Close button to disable mini-editor when the frame is closed.
-  mini_editor_frame->Close.connect(&on_mini_editor_frame_close);
+  mini_editor_frame = new MiniEditorFrame();
 
   // Create the new for the mini editor
   View* newView = new EditorView(EditorView::AlwaysSelected);
@@ -678,19 +699,5 @@ static void update_mini_editor_frame(Editor* editor)
   }
   else {
     hide_mini_editor_frame();
-  }
-}
-
-static void on_mini_editor_frame_close(CloseEvent& ev)
-{
-  if (ev.getTrigger() == CloseEvent::ByUser) {
-    // Here we don't use "enable_mini_editor" to change the state of
-    // "mini_editor_enabled" because we're coming from a close event
-    // of the frame.
-    mini_editor_enabled = false;
-
-    // Redraw the tool bar because it shows the mini editor enabled state.
-    // TODO abstract this event
-    app_get_toolbar()->invalidate();
   }
 }

@@ -82,16 +82,6 @@ bool PopupFrame::onProcessMessage(Message* msg)
       stopFilteringMessages();
       break;
 
-    case JM_SIGNAL:
-      if (msg->signal.num == JI_SIGNAL_INIT_THEME) {
-        this->border_width.l = 3 * jguiscale();
-        this->border_width.t = 3 * jguiscale();
-        this->border_width.r = 3 * jguiscale();
-        this->border_width.b = 3 * jguiscale();
-        return true;
-      }
-      break;
-
     case JM_MOUSELEAVE:
       if (m_hot_region == NULL && !is_moveable())
         closeWindow(NULL);
@@ -194,6 +184,16 @@ void PopupFrame::onPaint(PaintEvent& ev)
   pos.shrink(getBorder());
 
   g->drawString(getText(), ji_color_foreground(), this->getBgColor(), pos, getAlign());
+}
+
+void PopupFrame::onInitTheme(InitThemeEvent& ev)
+{
+  Widget::onInitTheme(ev);
+
+  this->border_width.l = 3 * jguiscale();
+  this->border_width.t = 3 * jguiscale();
+  this->border_width.r = 3 * jguiscale();
+  this->border_width.b = 3 * jguiscale();
 }
 
 void PopupFrame::startFilteringMessages()

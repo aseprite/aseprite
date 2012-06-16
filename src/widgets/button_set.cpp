@@ -24,7 +24,6 @@
 #include "base/bind.h"
 #include "gui/box.h"
 #include "gui/button.h"
-#include "gui/hook.h"
 #include "gui/list.h"
 #include "gui/system.h"
 #include "gui/theme.h"
@@ -78,7 +77,7 @@ ButtonSet::ButtonSet(int w, int h, int firstSelected, ...)
       icon = va_arg(ap, int);
 
       Item* item = new Item(c,
-                            this->id + 0x1000,
+                            reinterpret_cast<int>(this),
                             x ==   0 && y ==   0 ? 2: 0,
                             x == w-1 && y ==   0 ? 2: 0,
                             x ==   0 && y == h-1 ? 2: 0,
@@ -87,7 +86,7 @@ ButtonSet::ButtonSet(int w, int h, int firstSelected, ...)
       m_items.push_back(item);
 
       usprintf(buf, "radio%d", c);
-      item->setName(buf);
+      item->setId(buf);
 
       if (icon >= 0)
         set_gfxicon_to_button(item, icon, icon+1, icon, JI_CENTER | JI_MIDDLE);

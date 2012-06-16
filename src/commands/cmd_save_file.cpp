@@ -21,16 +21,16 @@
 #include <allegro.h>
 
 #include "app.h"
+#include "app/file_selector.h"
 #include "base/thread.h"
 #include "commands/command.h"
 #include "console.h"
-#include "dialogs/filesel.h"
+#include "document_wrappers.h"
 #include "file/file.h"
 #include "gui/gui.h"
 #include "modules/gui.h"
 #include "raster/sprite.h"
 #include "recent_files.h"
-#include "document_wrappers.h"
 #include "widgets/statebar.h"
 
 struct SaveFileData
@@ -154,7 +154,7 @@ static void save_as_dialog(const DocumentReader& document, const char* dlg_title
   get_writable_extensions(exts, sizeof(exts));
 
   for (;;) {
-    newfilename = ase_file_selector(dlg_title, filename, exts);
+    newfilename = app::show_file_selector(dlg_title, filename, exts);
     if (newfilename.empty())
       return;
 

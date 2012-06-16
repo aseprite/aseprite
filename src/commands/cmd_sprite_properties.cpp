@@ -18,20 +18,21 @@
 
 #include "config.h"
 
-#include <allegro/unicode.h>
-
-#include "base/bind.h"
-#include "gui/gui.h"
-
 #include "app/color.h"
+#include "app/find_widget.h"
+#include "app/load_widget.h"
+#include "base/bind.h"
 #include "base/mem_utils.h"
 #include "commands/command.h"
+#include "document_wrappers.h"
+#include "gui/gui.h"
 #include "modules/gui.h"
 #include "raster/image.h"
 #include "raster/palette.h"
 #include "raster/sprite.h"
-#include "document_wrappers.h"
 #include "widgets/color_button.h"
+
+#include <allegro/unicode.h>
 
 //////////////////////////////////////////////////////////////////////
 // sprite_properties
@@ -68,14 +69,13 @@ void SpritePropertiesCommand::onExecute(Context* context)
   ColorButton* color_button = NULL;
 
   // Load the window widget
-  FramePtr window(load_widget("sprite_properties.xml", "sprite_properties"));
-  get_widgets(window,
-              "name", &name,
-              "type", &type,
-              "size", &size,
-              "frames", &frames,
-              "ok", &ok,
-              "box_transparent", &box_transparent, NULL);
+  UniquePtr<Frame> window(app::load_widget<Frame>("sprite_properties.xml", "sprite_properties"));
+  name = app::find_widget<Widget>(window, "name");
+  type = app::find_widget<Widget>(window, "type");
+  size = app::find_widget<Widget>(window, "size");
+  frames = app::find_widget<Widget>(window, "frames");
+  ok = app::find_widget<Widget>(window, "ok");
+  box_transparent = app::find_widget<Widget>(window, "box_transparent");
 
   // Get sprite properties and fill frame fields
   {

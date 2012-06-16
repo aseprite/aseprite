@@ -1,16 +1,16 @@
 <!-- ASEPRITE -->
 <!-- Copyright (C) 2001-2012 by David Capello -->
-<jinete>
-<window noborders="true" desktop="true" text="Main Window" name="main_window">
+<gui>
+<window noborders="true" desktop="true" text="Main Window" id="main_window">
   <box noborders="true" vertical="true">
-    <box noborders="true" horizontal="true" name="menubar" />
-    <box noborders="true" horizontal="true" name="tabsbar" />
+    <box noborders="true" horizontal="true" id="menubar" />
+    <box noborders="true" horizontal="true" id="tabsbar" />
     <box noborders="true" horizontal="true" expansive="true">
-      <box noborders="true" vertical="true" name="colorbar" />
-      <box noborders="true" horizontal="true" name="editor" expansive="true" />
-      <box noborders="true" vertical="true" name="toolbar" />
+      <box noborders="true" vertical="true" id="colorbar" />
+      <box noborders="true" horizontal="true" id="editor" expansive="true" />
+      <box noborders="true" vertical="true" id="toolbar" />
     </box>
-    <box noborders="true" horizontal="true" name="statusbar" />
+    <box noborders="true" horizontal="true" id="statusbar" />
   </box>
 </window>
-</jinete>
+</gui>

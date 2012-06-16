@@ -20,10 +20,43 @@ class ComboBoxButton : public Button
 public:
   ComboBoxButton() : Button("") { }
 
-  void onPaint(PaintEvent& ev) OVERRIDE
-  {
+  void onPaint(PaintEvent& ev) OVERRIDE {
     getTheme()->paintComboBoxButton(ev);
   }
+};
+
+class ComboBoxEntry : public Entry
+{
+public:
+  ComboBoxEntry(ComboBox* comboBox)
+    : Entry(256, ""),
+      m_comboBox(comboBox) {
+  }
+
+protected:
+  bool onProcessMessage(Message* msg) OVERRIDE;
+
+private:
+  ComboBox* m_comboBox;
+};
+
+class ComboBoxListBox : public ListBox
+{
+public:
+  ComboBoxListBox(ComboBox* comboBox)
+    : m_comboBox(comboBox) {
+  }
+
+protected:
+  bool onProcessMessage(Message* msg) OVERRIDE;
+  void onChangeSelectedItem() OVERRIDE;
+
+private:
+  bool isValidItem(int index) const {
+    return (index >= 0 && index < m_comboBox->getItemCount());
+  }
+
+  ComboBox* m_comboBox;
 };
 
 struct ComboBox::Item
@@ -34,16 +67,10 @@ struct ComboBox::Item
   Item() : data(NULL) { }
 };
 
-#define IS_VALID_ITEM(combobox, index)                          \
-  (index >= 0 && index < combobox->getItemCount())
-
-static bool combobox_entry_msg_proc(JWidget widget, Message* msg);
-static bool combobox_listbox_msg_proc(JWidget widget, Message* msg);
-
 ComboBox::ComboBox()
   : Widget(JI_COMBOBOX)
 {
-  m_entry = new Entry(256, "");
+  m_entry = new ComboBoxEntry(this);
   m_button = new ComboBoxButton();
   m_window = NULL;
   m_selected = 0;
@@ -51,14 +78,8 @@ ComboBox::ComboBox()
   m_clickopen = true;
   m_casesensitive = true;
 
-  m_entry->user_data[0] = this;
-  m_button->user_data[0] = this;
-
   // TODO this separation should be from the Theme*
   this->child_spacing = 0;
-
-  this->setFocusStop(true);
-  jwidget_add_hook(m_entry, JI_WIDGET, combobox_entry_msg_proc, NULL);
 
   m_entry->setExpansive(true);
 
@@ -68,6 +89,7 @@ ComboBox::ComboBox()
   addChild(m_entry);
   addChild(m_button);
 
+  setFocusStop(true);
   setEditable(m_editable);
 
   initTheme();
@@ -321,26 +343,24 @@ void ComboBox::onPreferredSize(PreferredSizeEvent& ev)
   ev.setPreferredSize(reqSize);
 }
 
-static bool combobox_entry_msg_proc(JWidget widget, Message* msg)
+bool ComboBoxEntry::onProcessMessage(Message* msg)
 {
-  ComboBox* combobox = reinterpret_cast<ComboBox*>(widget->user_data[0]);
-
   switch (msg->type) {
 
     case JM_KEYPRESSED:
-      if (widget->hasFocus()) {
-        if (!combobox->isEditable()) {
+      if (hasFocus()) {
+        if (!m_comboBox->isEditable()) {
           if (msg->key.scancode == KEY_SPACE ||
               msg->key.scancode == KEY_ENTER ||
               msg->key.scancode == KEY_ENTER_PAD) {
-            combobox->switchListBox();
+            m_comboBox->switchListBox();
             return true;
           }
         }
         else {
           if (msg->key.scancode == KEY_ENTER ||
               msg->key.scancode == KEY_ENTER_PAD) {
-            combobox->switchListBox();
+            m_comboBox->switchListBox();
             return true;
           }
         }
@@ -348,52 +368,37 @@ static bool combobox_entry_msg_proc(JWidget widget, Message* msg)
       break;
 
     case JM_BUTTONPRESSED:
-      if (combobox->isClickOpen()) {
-        combobox->switchListBox();
+      if (m_comboBox->isClickOpen()) {
+        m_comboBox->switchListBox();
       }
 
-      if (combobox->isEditable()) {
-        widget->getManager()->setFocus(widget);
+      if (m_comboBox->isEditable()) {
+        getManager()->setFocus(this);
       }
       else
         return true;
       break;
 
     case JM_DRAW:
-      widget->getTheme()->draw_combobox_entry(static_cast<Entry*>(widget),
-                                              &msg->draw.rect);
+      getTheme()->draw_combobox_entry(this, &msg->draw.rect);
       return true;
 
   }
 
-  return false;
+  return Entry::onProcessMessage(msg);
 }
 
-static bool combobox_listbox_msg_proc(JWidget widget, Message* msg)
+bool ComboBoxListBox::onProcessMessage(Message* msg)
 {
-  ComboBox* combobox = reinterpret_cast<ComboBox*>(widget->user_data[0]);
-
   switch (msg->type) {
-
-    case JM_SIGNAL:
-      if (msg->signal.num == JI_SIGNAL_LISTBOX_CHANGE) {
-        int index = static_cast<ListBox*>(widget)->getSelectedIndex();
-
-        if (IS_VALID_ITEM(combobox, index))
-          combobox->setSelectedItem(index);
-      }
-      break;
 
     case JM_BUTTONRELEASED:
       {
-        int index = combobox->getSelectedItem();
+        int index = m_comboBox->getSelectedItem();
+        if (isValidItem(index))
+          m_comboBox->Change();
 
-        combobox->closeListBox();
-
-        if (IS_VALID_ITEM(combobox, index)) {
-          combobox->Change();
-          jwidget_emit_signal(combobox, JI_SIGNAL_COMBOBOX_SELECT);
-        }
+        m_comboBox->closeListBox();
       }
       return true;
 
@@ -413,18 +418,27 @@ static bool combobox_listbox_msg_proc(JWidget widget, Message* msg)
 /*     } */
 
     case JM_KEYPRESSED:
-      if (widget->hasFocus()) {
+      if (hasFocus()) {
         if (msg->key.scancode == KEY_SPACE ||
             msg->key.scancode == KEY_ENTER ||
             msg->key.scancode == KEY_ENTER_PAD) {
-          combobox->closeListBox();
+          m_comboBox->closeListBox();
           return true;
         }
       }
       break;
   }
 
-  return false;
+  return ListBox::onProcessMessage(msg);
+}
+
+void ComboBoxListBox::onChangeSelectedItem()
+{
+  ListBox::onChangeSelectedItem();
+
+  int index = getSelectedIndex();
+  if (isValidItem(index))
+    m_comboBox->setSelectedItem(index);
 }
 
 // When the mouse is clicked we switch the visibility-status of the list-box
@@ -438,11 +452,7 @@ void ComboBox::openListBox()
   if (!m_window) {
     m_window = new Frame(false, NULL);
     View* view = new View();
-    m_listbox = new ListBox();
-
-    m_listbox->user_data[0] = this;
-    jwidget_add_hook(m_listbox, JI_WIDGET,
-                     combobox_listbox_msg_proc, NULL);
+    m_listbox = new ComboBoxListBox(this);
 
     std::vector<Item*>::iterator it, end = m_items.end();
     for (it = m_items.begin(); it != end; ++it) {
@@ -465,9 +475,7 @@ void ComboBox::openListBox()
     m_window->addChild(view);
     view->attachToView(m_listbox);
 
-    jwidget_signal_off(m_listbox);
     m_listbox->selectIndex(m_selected);
-    jwidget_signal_on(m_listbox);
 
     m_window->remap_window();
 

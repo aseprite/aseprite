@@ -93,7 +93,7 @@ void ListBox::selectChild(Item* item)
     }
   }
 
-  jwidget_emit_signal(this, JI_SIGNAL_LISTBOX_CHANGE);
+  onChangeSelectedItem();
 }
 
 void ListBox::selectIndex(int index)
@@ -261,7 +261,7 @@ bool ListBox::onProcessMessage(Message* msg)
       break;
 
     case JM_DOUBLECLICK:
-      jwidget_emit_signal(this, JI_SIGNAL_LISTBOX_SELECT);
+      onDoubleClickItem();
       return true;
   }
 
@@ -286,6 +286,16 @@ void ListBox::onPreferredSize(PreferredSizeEvent& ev)
   h += this->border_width.t + this->border_width.b;
 
   ev.setPreferredSize(Size(w, h));
+}
+
+void ListBox::onChangeSelectedItem()
+{
+  ChangeSelectedItem();
+}
+
+void ListBox::onDoubleClickItem()
+{
+  DoubleClickItem();
 }
 
 void ListBox::layoutListBox(JRect rect)

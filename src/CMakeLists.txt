@@ -159,10 +159,11 @@ add_library(aseprite-library
   ui_context.cpp
   undo_transaction.cpp
   xml_exception.cpp
-  xml_widgets.cpp
   app/check_update.cpp
   app/color.cpp
   app/color_utils.cpp
+  app/file_selector.cpp
+  app/widget_loader.cpp
   commands/cmd_about.cpp
   commands/cmd_advanced_mode.cpp
   commands/cmd_background_from_layer.cpp
@@ -247,7 +248,6 @@ add_library(aseprite-library
   commands/filters/filter_window.cpp
   commands/filters/filter_worker.cpp
   dialogs/aniedit.cpp
-  dialogs/filesel.cpp
   dialogs/maskcol.cpp
   file/ase_format.cpp
   file/bmp_format.cpp
@@ -366,7 +366,8 @@ add_library(aseprite-library
   widgets/editor/standby_state.cpp
   widgets/editor/tool_loop_impl.cpp
   widgets/editor/transform_handles.cpp
-  widgets/fileview.cpp
+  widgets/file_list.cpp
+  widgets/file_selector.cpp
   widgets/hex_color_entry.cpp
   widgets/menuitem2.cpp
   widgets/palette_view.cpp

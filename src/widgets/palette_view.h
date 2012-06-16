@@ -26,9 +26,6 @@
 #include <allegro/color.h>
 #include <vector>
 
-// TODO use some JI_SIGNAL_USER
-#define SIGNAL_PALETTE_EDITOR_CHANGE   0x10005
-
 class PaletteView : public Widget
 {
 public:

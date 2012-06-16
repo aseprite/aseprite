@@ -22,7 +22,6 @@
 #include "commands/command.h"
 #include "commands/commands.h"
 #include "commands/params.h"
-#include "dialogs/filesel.h"
 #include "document_wrappers.h"
 #include "gui/gui.h"
 #include "ini_file.h"
@@ -358,7 +357,7 @@ ImportSpriteSheetCommand::ImportSpriteSheetCommand()
 
 void ImportSpriteSheetCommand::onExecute(Context* context)
 {
-  FramePtr frame(new ImportSpriteSheetFrame(context));
+  UniquePtr<Frame> frame(new ImportSpriteSheetFrame(context));
   frame->open_window_fg();
 }
 

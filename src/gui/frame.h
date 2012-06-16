@@ -15,8 +15,6 @@
 #include "gui/hit_test_event.h"
 #include "gui/widget.h"
 
-class CloseEvent;
-
 class Frame : public Widget
 {
 public:
@@ -57,8 +55,12 @@ protected:
   virtual bool onProcessMessage(Message* msg) OVERRIDE;
   virtual void onPreferredSize(PreferredSizeEvent& ev) OVERRIDE;
   virtual void onPaint(PaintEvent& ev) OVERRIDE;
+  virtual void onBroadcastMouseMessage(WidgetsList& targets) OVERRIDE;
+  virtual void onSetText() OVERRIDE;
+
+  // New events
+  virtual void onClose(CloseEvent& ev);
   virtual void onHitTest(HitTestEvent& ev);
-  virtual void onBroadcastMouseMessage(WidgetsList& targets);
 
 private:
   void window_set_position(JRect rect);

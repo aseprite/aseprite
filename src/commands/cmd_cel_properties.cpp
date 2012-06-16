@@ -19,6 +19,8 @@
 #include "config.h"
 
 #include "app.h"
+#include "app/find_widget.h"
+#include "app/load_widget.h"
 #include "base/mem_utils.h"
 #include "commands/command.h"
 #include "document_wrappers.h"
@@ -60,11 +62,6 @@ bool CelPropertiesCommand::onEnabled(Context* context)
 
 void CelPropertiesCommand::onExecute(Context* context)
 {
-  JWidget label_frame, label_pos, label_size;
-  Widget* button_ok;
-  Slider* slider_opacity;
-  int memsize;
-
   const ActiveDocumentReader document(context);
   const Sprite* sprite = document->getSprite();
   const Layer* layer = sprite->getCurrentLayer();
@@ -72,13 +69,13 @@ void CelPropertiesCommand::onExecute(Context* context)
   // Get current cel (can be NULL)
   const Cel* cel = static_cast<const LayerImage*>(layer)->getCel(sprite->getCurrentFrame());
 
-  FramePtr window(load_widget("cel_properties.xml", "cel_properties"));
-  get_widgets(window,
-              "frame", &label_frame,
-              "pos", &label_pos,
-              "size", &label_size,
-              "opacity", &slider_opacity,
-              "ok", &button_ok, NULL);
+  UniquePtr<Frame> window(app::load_widget<Frame>("cel_properties.xml", "cel_properties"));
+  Widget* label_frame = app::find_widget<Widget>(window, "frame");
+  Widget* label_pos = app::find_widget<Widget>(window, "pos");
+  Widget* label_size = app::find_widget<Widget>(window, "size");
+  Slider* slider_opacity = app::find_widget<Slider>(window, "opacity");
+  Widget* button_ok = app::find_widget<Widget>(window, "ok");
+  gui::TooltipManager* tooltipManager = window->findFirstChildByType<gui::TooltipManager>();
 
   // Mini look for the opacity slider
   setup_mini_look(slider_opacity);
@@ -96,7 +93,7 @@ void CelPropertiesCommand::onExecute(Context* context)
     label_pos->setTextf("%d, %d", cel->getX(), cel->getY());
 
     // Dimension (and memory size)
-    memsize =
+    int memsize =
       image_line_size(sprite->getStock()->getImage(cel->getImage()),
                       sprite->getStock()->getImage(cel->getImage())->w)*
       sprite->getStock()->getImage(cel->getImage())->h;
@@ -110,9 +107,10 @@ void CelPropertiesCommand::onExecute(Context* context)
     slider_opacity->setValue(cel->getOpacity());
     if (layer->is_background()) {
       slider_opacity->setEnabled(false);
-      jwidget_add_tooltip_text(slider_opacity, "The `Background' layer is opaque,\n"
-                                               "you can't change its opacity.",
-                               JI_LEFT);
+      tooltipManager->addTooltipFor(slider_opacity,
+                                    "The `Background' layer is opaque,\n"
+                                    "you can't change its opacity.",
+                                    JI_LEFT);
     }
   }
   else {

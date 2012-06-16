@@ -19,6 +19,8 @@
 #include "config.h"
 
 #include "app/color_utils.h"
+#include "app/find_widget.h"
+#include "app/load_widget.h"
 #include "base/bind.h"
 #include "base/unique_ptr.h"
 #include "commands/command.h"
@@ -53,15 +55,13 @@ public:
     , m_selectBoxState(new SelectBoxState(this, m_rect,
                                           SelectBoxState::PaintRulers |
                                           SelectBoxState::PaintDarkOutside))
+    , m_mainBox(app::load_widget<Widget>("canvas_size.xml", "main_box"))
+    , m_left(app::find_widget<Entry>(m_mainBox, "left"))
+    , m_top(app::find_widget<Entry>(m_mainBox, "top"))
+    , m_right(app::find_widget<Entry>(m_mainBox, "right"))
+    , m_bottom(app::find_widget<Entry>(m_mainBox, "bottom"))
+    , m_ok(app::find_widget<Button>(m_mainBox, "ok"))
   {
-    m_mainBox = load_widget("canvas_size.xml", "main_box");
-    get_widgets(m_mainBox,
-                "left", &m_left,
-                "top", &m_top,
-                "right", &m_right,
-                "bottom", &m_bottom,
-                "ok", &m_ok, NULL);
-
     addChild(m_mainBox);
 
     m_left->setTextf("%d", left);

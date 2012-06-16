@@ -1,13 +1,13 @@
 <!-- ASEPRITE -->
 <!-- Copyright (C) 2001-2012 by David Capello -->
-<jinete>
-<window text="Warning - Important" name="advanced_mode_warning">
+<gui>
+<window text="Warning - Important" id="advanced_mode_warning">
   <grid columns="1">
     <label text="You are going to enter in &quot;Advanced Mode&quot;." />
-    <label text="" name="warning_label" />
-    <check text="Don't show this again" name="donot_show" />
+    <label text="" id="warning_label" />
+    <check text="Don't show this again" id="donot_show" />
     <separator horizontal="true" />
-    <button text="&amp;OK" closewindow="true" magnetic="true" minwidth="60" cell_align="center" />
+    <button text="&amp;OK" closewindow="true" magnet="true" minwidth="60" cell_align="center" />
   </grid>
 </window>
-</jinete>
+</gui>

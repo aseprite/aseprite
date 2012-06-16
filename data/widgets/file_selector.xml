@@ -1,29 +1,27 @@
 <!-- ASEPRITE -->
 <!-- Copyright (C) 2001-2012 by David Capello -->
-<jinete>
-<window text="" name="file_selector">
-  <box vertical="true">
+<gui>
+  <box id="main" vertical="true">
     <box horizontal="true">
       <box horizontal="true" noborders="true">
-        <button text="" name="goback" bevel="2 0 2 0" tooltip="Go back one folder" />
-        <button text="" name="goforward" bevel="0 2 0 2" tooltip="Go forward one folder" />
+        <button text="" id="goback" bevel="2 0 2 0" tooltip="Go back one folder" />
+        <button text="" id="goforward" bevel="0 2 0 2" tooltip="Go forward one folder" />
       </box>
-      <button text="" name="goup" tooltip="Up to parent folder&#10;(Backspace)" />
-      <combobox name="location" expansive="true" />
+      <button text="" id="goup" tooltip="Up to parent folder&#10;(Backspace)" />
+      <combobox id="location" expansive="true" />
     </box>
-    <box vertical="true" expansive="true" name="box" />
+    <view id="fileview_container" expansive="true"></view>
     <box horizontal="true">
       <label text="Name:" />
-      <entry text="" maxsize="256" name="filename" expansive="true" magnetic="true" />
-      <combobox name="filetype" minwidth="70" />
+      <filenameentry id="filename" expansive="true" magnet="true" />
+      <combobox id="filetype" minwidth="70" />
     </box>
     <box horizontal="true">
       <box horizontal="true" expansive="true" />
       <box horizontal="true" homogeneous="true">
-        <button text="&amp;OK" closewindow="true" name="ok" magnetic="true" width="60" />
-        <button text="&amp;Cancel" closewindow="true" name="cancel" />
+        <button text="&amp;OK" closewindow="true" id="ok" magnet="true" width="60" />
+        <button text="&amp;Cancel" closewindow="true" id="cancel" />
       </box>
     </box>
   </box>
-</window>
-</jinete>
+</gui>

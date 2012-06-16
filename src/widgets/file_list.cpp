@@ -18,13 +18,12 @@
 
 #include "config.h"
 
-#include "widgets/fileview.h"
+#include "widgets/file_list.h"
 
 #include "app.h"
 #include "base/thread.h"
 #include "commands/commands.h"
 #include "console.h"
-#include "dialogs/filesel.h"
 #include "document.h"
 #include "file/file.h"
 #include "gui/gui.h"
@@ -46,201 +45,118 @@
 
 using namespace gfx;
 
-struct FileView
-{
-  IFileItem* current_folder;
-  FileItemList list;
-  bool req_valid;
-  int req_w, req_h;
-  IFileItem* selected;
-  base::string exts;
-
-  /* incremental-search */
-  char isearch[256];
-  int isearch_clock;
-
-  /* thumbnail generation process */
-  IFileItem* item_to_generate_thumbnail;
-  gui::Timer timer;
-  MonitorList monitors; // list of monitors watching threads
-
-  FileView(Widget* widget)
-    : timer(widget, 200) { }
-};
+namespace widgets {
 
 struct ThumbnailData
 {
   Monitor* monitor;
   FileOp* fop;
   IFileItem* fileitem;
-  JWidget fileview;
+  FileList* fileview;
   Image* thumbnail;
   base::thread* thread;
   Palette* palette;
 };
 
-static FileView* fileview_data(JWidget widget);
-static bool fileview_msg_proc(JWidget widget, Message* msg);
-static void fileview_get_fileitem_size(JWidget widget, IFileItem* fi, int *w, int *h);
-static void fileview_make_selected_fileitem_visible(JWidget widget);
-static void fileview_regenerate_list(JWidget widget);
-static int fileview_get_selected_index(JWidget widget);
-static void fileview_select_index(JWidget widget, int index);
-static void fileview_generate_preview_of_selected_item(JWidget widget);
-static bool fileview_generate_thumbnail(JWidget widget, IFileItem* fileitem);
-static void fileview_stop_threads(FileView* fileview);
-
 static void openfile_bg(ThumbnailData* data);
 static void monitor_thumbnail_generation(void *data);
 static void monitor_free_thumbnail_generation(void *data);
 
-JWidget fileview_new(IFileItem* start_folder, const base::string& exts)
+FileList::FileList()
+  : Widget(JI_WIDGET)
+  , m_timer(this, 200)
 {
-  Widget* widget = new Widget(fileview_type());
-  FileView* fileview = new FileView(widget);
+  setFocusStop(true);
 
-  if (!start_folder)
-    start_folder = FileSystemModule::instance()->getRootFileItem();
-  else {
-    while (!start_folder->isFolder() &&
-           start_folder->getParent() != NULL) {
-      start_folder = start_folder->getParent();
-    }
-  }
+  m_currentFolder = FileSystemModule::instance()->getRootFileItem();
+  m_req_valid = false;
+  m_selected = NULL;
+  m_isearchClock = 0;
 
-  jwidget_add_hook(widget, fileview_type(),
-                   fileview_msg_proc, fileview);
-  widget->setFocusStop(true);
+  m_itemToGenerateThumbnail = NULL;
 
-  fileview->current_folder = start_folder;
-  fileview->req_valid = false;
-  fileview->selected = NULL;
-  fileview->exts = exts;
-
-  ustrcpy(fileview->isearch, empty_string);
-  fileview->isearch_clock = 0;
-
-  fileview->item_to_generate_thumbnail = NULL;
-
-  fileview_regenerate_list(widget);
-
-  return widget;
+  regenerateList();
 }
 
-int fileview_type()
+FileList::~FileList()
 {
-  static int type = 0;
-  if (!type)
-    type = ji_register_widget_type();
-  return type;
+  stopThreads();
+
+  // at this point, can't be threads running in background
+  ASSERT(m_monitors.empty());
 }
 
-IFileItem* fileview_get_current_folder(JWidget widget)
+void FileList::setExtensions(const char* extensions)
 {
-  return fileview_data(widget)->current_folder;
+  m_exts = extensions;
 }
 
-IFileItem* fileview_get_selected(JWidget widget)
+void FileList::setCurrentFolder(IFileItem* folder)
 {
-  return fileview_data(widget)->selected;
-}
-
-void fileview_set_current_folder(JWidget widget, IFileItem* folder)
-{
-  FileView* fileview = fileview_data(widget);
-
   ASSERT(folder != NULL);
   ASSERT(folder->isBrowsable());
 
-  fileview->current_folder = folder;
-  fileview->req_valid = false;
-  fileview->selected = NULL;
+  m_currentFolder = folder;
+  m_req_valid = false;
+  m_selected = NULL;
 
-  fileview_regenerate_list(widget);
+  regenerateList();
 
   // select first folder
-  if (!fileview->list.empty() && fileview->list.front()->isBrowsable())
-    fileview_select_index(widget, 0);
+  if (!m_list.empty() && m_list.front()->isBrowsable())
+    selectIndex(0);
 
-  jwidget_emit_signal(widget, SIGNAL_FILEVIEW_CURRENT_FOLDER_CHANGED);
+  // Emit "CurrentFolderChanged" event.
+  onCurrentFolderChanged();
 
-  widget->invalidate();
-  View::getView(widget)->updateView();
+  invalidate();
+  View::getView(this)->updateView();
 }
 
-const FileItemList& fileview_get_filelist(JWidget widget)
+void FileList::goUp()
 {
-  FileView* fileview = fileview_data(widget);
-
-  return fileview->list;
-}
-
-void fileview_goup(JWidget widget)
-{
-  FileView* fileview = fileview_data(widget);
-  IFileItem* folder = fileview->current_folder;
+  IFileItem* folder = m_currentFolder;
   IFileItem* parent = folder->getParent();
   if (parent) {
-    fileview_set_current_folder(widget, parent);
-    fileview->selected = folder;
+    setCurrentFolder(parent);
+    m_selected = folder;
 
-    /* make the selected item visible */
-    fileview_make_selected_fileitem_visible(widget);
+    // Make the selected item visible.
+    makeSelectedFileitemVisible();
   }
 }
 
-static FileView* fileview_data(JWidget widget)
+bool FileList::onProcessMessage(Message* msg)
 {
-  return reinterpret_cast<FileView*>(jwidget_get_data(widget, fileview_type()));
-}
-
-static bool fileview_msg_proc(JWidget widget, Message* msg)
-{
-  FileView* fileview = fileview_data(widget);
-
   switch (msg->type) {
 
-    case JM_DESTROY:
-      fileview_stop_threads(fileview);
-
-      // at this point, can't be threads running in background
-      ASSERT(fileview->monitors.empty());
-
-      delete fileview;
-      break;
-
     case JM_REQSIZE:
-      if (!fileview->req_valid) {
-        int w, h, iw, ih;
-
-        w = 0;
-        h = 0;
+      if (!m_req_valid) {
+        gfx::Size reqSize(0, 0);
 
         // rows
         for (FileItemList::iterator
-               it=fileview->list.begin();
-             it!=fileview->list.end(); ++it) {
+               it=m_list.begin();
+             it!=m_list.end(); ++it) {
           IFileItem* fi = *it;
-          fileview_get_fileitem_size(widget, fi, &iw, &ih);
-          w = MAX(w, iw);
-          h += ih;
+          gfx::Size itemSize = getFileItemSize(fi);
+          reqSize.w = MAX(reqSize.w, itemSize.w);
+          reqSize.h += itemSize.h;
         }
 
-        fileview->req_valid = true;
-        fileview->req_w = w;
-        fileview->req_h = h;
+        m_req_valid = true;
+        m_req_w = reqSize.w;
+        m_req_h = reqSize.h;
       }
-
-      msg->reqsize.w = fileview->req_w;
-      msg->reqsize.h = fileview->req_h;
+      msg->reqsize.w = m_req_w;
+      msg->reqsize.h = m_req_h;
       return true;
 
     case JM_DRAW: {
-      View* view = View::getView(widget);
+      View* view = View::getView(this);
       gfx::Rect vp = view->getViewportBounds();
-      int iw, ih;
-      int th = jwidget_get_text_height(widget);
-      int x, y = widget->rc->y1;
+      int th = jwidget_get_text_height(this);
+      int x, y = this->rc->y1;
       int row = 0;
       int bgcolor;
       int fgcolor;
@@ -249,12 +165,12 @@ static bool fileview_msg_proc(JWidget widget, Message* msg)
 
       // rows
       for (FileItemList::iterator
-             it=fileview->list.begin();
-           it!=fileview->list.end(); ++it) {
+             it=m_list.begin();
+           it!=m_list.end(); ++it) {
         IFileItem* fi = *it;
-        fileview_get_fileitem_size(widget, fi, &iw, &ih);
+        gfx::Size itemSize = getFileItemSize(fi);
 
-        if (fi == fileview->selected) {
+        if (fi == m_selected) {
           bgcolor = ji_color_selected();
           fgcolor = ji_color_background();
         }
@@ -268,20 +184,20 @@ static bool fileview_msg_proc(JWidget widget, Message* msg)
                                  ji_color_foreground();
         }
 
-        x = widget->rc->x1+2;
+        x = this->rc->x1+2;
 
         if (fi->isFolder()) {
-          int icon_w = ji_font_text_len(widget->getFont(), "[+]");
-          int icon_h = ji_font_get_size(widget->getFont());
+          int icon_w = ji_font_text_len(getFont(), "[+]");
+          int icon_h = ji_font_get_size(getFont());
 
-          jdraw_text(ji_screen, widget->getFont(),
+          jdraw_text(ji_screen, getFont(),
                      "[+]", x, y+2,
                      fgcolor, bgcolor, true, jguiscale());
 
           // background for the icon
           jrectexclude(ji_screen,
                        /* rectangle to fill */
-                       widget->rc->x1, y,
+                       this->rc->x1, y,
                        x+icon_w+2-1, y+2+th+2-1,
                        /* exclude where is the icon located */
                        x, y+2,
@@ -295,13 +211,13 @@ static bool fileview_msg_proc(JWidget widget, Message* msg)
         else {
           // background for the left side of the item
           rectfill(ji_screen,
-                   widget->rc->x1, y,
+                   this->rc->x1, y,
                    x-1, y+2+th+2-1,
                    bgcolor);
         }
 
         // item name
-        jdraw_text(ji_screen, widget->getFont(),
+        jdraw_text(ji_screen, getFont(),
                    fi->getDisplayName().c_str(), x, y+2,
                    fgcolor, bgcolor, true, jguiscale());
 
@@ -309,20 +225,20 @@ static bool fileview_msg_proc(JWidget widget, Message* msg)
         jrectexclude(ji_screen,
                      /* rectangle to fill */
                      x, y,
-                     widget->rc->x2-1, y+2+th+2-1,
+                     this->rc->x2-1, y+2+th+2-1,
                      /* exclude where is the text located */
                      x, y+2,
-                     x+ji_font_text_len(widget->getFont(),
+                     x+ji_font_text_len(this->getFont(),
                                         fi->getDisplayName().c_str())-1,
-                     y+2+ji_font_get_size(widget->getFont())-1,
+                     y+2+ji_font_get_size(getFont())-1,
                      /* fill with the background color */
                      bgcolor);
 
         // draw progress bar
-        if (!fileview->monitors.empty()) {
+        if (!m_monitors.empty()) {
           for (MonitorList::iterator
-                 it2 = fileview->monitors.begin();
-               it2 != fileview->monitors.end(); ++it2) {
+                 it2 = m_monitors.begin();
+               it2 != m_monitors.end(); ++it2) {
             Monitor* monitor = *it2;
             ThumbnailData* data = (ThumbnailData*)get_monitor_data(monitor);
 
@@ -334,8 +250,8 @@ static bool fileview_msg_proc(JWidget widget, Message* msg)
                 float progress = fop_get_progress(data->fop);
 
                 draw_progress_bar(ji_screen,
-                                  widget->rc->x2-2-64, y+ih/2-3,
-                                  widget->rc->x2-2, y+ih/2+3,
+                                  this->rc->x2-2-64, y+itemSize.h/2-3,
+                                  this->rc->x2-2, y+itemSize.h/2+3,
                                   progress);
               }
               break;
@@ -344,20 +260,20 @@ static bool fileview_msg_proc(JWidget widget, Message* msg)
         }
 
         // thumbnail position
-        if (fi == fileview->selected) {
+        if (fi == m_selected) {
           thumbnail = fi->getThumbnail();
           if (thumbnail)
-            thumbnail_y = y + ih/2;
+            thumbnail_y = y + itemSize.h/2;
         }
 
-        y += ih;
+        y += itemSize.h;
         row ^= 1;
       }
 
-      if (y < widget->rc->y2-1)
+      if (y < this->rc->y2-1)
         rectfill(ji_screen,
-                 widget->rc->x1, y,
-                 widget->rc->x2-1, widget->rc->y2-1,
+                 this->rc->x1, y,
+                 this->rc->x2-1, this->rc->y2-1,
                  ji_color_background());
 
       /* draw the thumbnail */
@@ -373,60 +289,61 @@ static bool fileview_msg_proc(JWidget widget, Message* msg)
       }
 
       // is the current folder empty?
-      if (fileview->list.empty())
+      if (m_list.empty())
         draw_emptyset_symbol(ji_screen, vp, makecol(194, 194, 194));
       return true;
     }
 
     case JM_BUTTONPRESSED:
-      widget->captureMouse();
+      captureMouse();
 
     case JM_MOTION:
-      if (widget->hasCapture()) {
-        int iw, ih;
-        int th = jwidget_get_text_height(widget);
-        int y = widget->rc->y1;
-        IFileItem* old_selected = fileview->selected;
-        fileview->selected = NULL;
+      if (hasCapture()) {
+        int th = jwidget_get_text_height(this);
+        int y = this->rc->y1;
+        IFileItem* old_selected = m_selected;
+        m_selected = NULL;
 
         // rows
         for (FileItemList::iterator
-               it=fileview->list.begin();
-             it!=fileview->list.end(); ++it) {
+               it=m_list.begin();
+             it!=m_list.end(); ++it) {
           IFileItem* fi = *it;
-          fileview_get_fileitem_size(widget, fi, &iw, &ih);
+          gfx::Size itemSize = getFileItemSize(fi);
 
           if (((msg->mouse.y >= y) && (msg->mouse.y < y+2+th+2)) ||
-              (it == fileview->list.begin() && msg->mouse.y < y) ||
-              (it == fileview->list.end()-1 && msg->mouse.y >= y+2+th+2)) {
-            fileview->selected = fi;
-            fileview_make_selected_fileitem_visible(widget);
+              (it == m_list.begin() && msg->mouse.y < y) ||
+              (it == m_list.end()-1 && msg->mouse.y >= y+2+th+2)) {
+            m_selected = fi;
+            makeSelectedFileitemVisible();
             break;
           }
 
-          y += ih;
+          y += itemSize.h;
         }
 
-        if (old_selected != fileview->selected) {
-          fileview_generate_preview_of_selected_item(widget);
+        if (old_selected != m_selected) {
+          generatePreviewOfSelectedItem();
 
-          widget->invalidate();
-          jwidget_emit_signal(widget, SIGNAL_FILEVIEW_FILE_SELECTED);
+          invalidate();
+
+          // Emit "FileSelected" event.
+          onFileSelected();
         }
       }
       break;
 
     case JM_BUTTONRELEASED:
-      if (widget->hasCapture()) {
-        widget->releaseMouse();
+      if (hasCapture()) {
+        releaseMouse();
       }
       break;
 
     case JM_KEYPRESSED:
-      if (widget->hasFocus()) {
-        int select = fileview_get_selected_index(widget);
-        View* view = View::getView(widget);
-        int bottom = fileview->list.size();
+      if (hasFocus()) {
+        int select = getSelectedIndex();
+        View* view = View::getView(this);
+        int bottom = m_list.size();
 
         switch (msg->key.scancode) {
           case KEY_UP:
@@ -453,7 +370,7 @@ static bool fileview_msg_proc(JWidget widget, Message* msg)
             gfx::Rect vp = view->getViewportBounds();
             if (select < 0)
               select = 0;
-            select += sgn * vp.h / (2+jwidget_get_text_height(widget)+2);
+            select += sgn * vp.h / (2+jwidget_get_text_height(this)+2);
             break;
           }
           case KEY_LEFT:
@@ -467,25 +384,25 @@ static bool fileview_msg_proc(JWidget widget, Message* msg)
             }
             break;
           case KEY_ENTER:
-            if (fileview->selected) {
-              if (fileview->selected->isBrowsable()) {
-                fileview_set_current_folder(widget, fileview->selected);
+            if (m_selected) {
+              if (m_selected->isBrowsable()) {
+                setCurrentFolder(m_selected);
                 return true;
               }
-              if (fileview->selected->isFolder()) {
-                // do nothing (is a folder but not browseable
+              if (m_selected->isFolder()) {
+                // Do nothing (is a folder but not browseable.
                 return true;
               }
               else {
-                // a file was selected
-                jwidget_emit_signal(widget, SIGNAL_FILEVIEW_FILE_ACCEPT);
+                // Emit "FileAccepted" event.
+                onFileAccepted();
                 return true;
               }
             }
             else
-              return false;
+              return Widget::onProcessMessage(msg);
           case KEY_BACKSPACE:
-            fileview_goup(widget);
+            goUp();
             return true;
           default:
             if (msg->key.ascii == ' ' ||
@@ -493,58 +410,56 @@ static bool fileview_msg_proc(JWidget widget, Message* msg)
                  utolower(msg->key.ascii) <= 'z') ||
                 (utolower(msg->key.ascii) >= '0' &&
                  utolower(msg->key.ascii) <= '9')) {
-              if (ji_clock - fileview->isearch_clock > ISEARCH_KEYPRESS_INTERVAL_MSECS)
-                ustrcpy(fileview->isearch, empty_string);
+              if (ji_clock - m_isearchClock > ISEARCH_KEYPRESS_INTERVAL_MSECS)
+                m_isearch.clear();
 
-              usprintf(fileview->isearch+ustrsize(fileview->isearch),
-                       "%c", msg->key.ascii);
+              m_isearch.push_back(msg->key.ascii);
 
-              {
-                int i, chrs = ustrlen(fileview->isearch);
-                FileItemList::iterator
-                  link = fileview->list.begin() + ((select >= 0) ? select: 0);
+              int i, chrs = m_isearch.size();
+              FileItemList::iterator
+                link = m_list.begin() + ((select >= 0) ? select: 0);
 
-                for (i=MAX(select, 0); i<bottom; ++i, ++link) {
-                  IFileItem* fi = *link;
-                  if (ustrnicmp(fi->getDisplayName().c_str(),
-                                fileview->isearch,
-                                chrs) == 0) {
-                    select = i;
-                    break;
-                  }
+              for (i=MAX(select, 0); i<bottom; ++i, ++link) {
+                IFileItem* fi = *link;
+                if (ustrnicmp(fi->getDisplayName().c_str(),
+                              m_isearch.c_str(),
+                              chrs) == 0) {
+                  select = i;
+                  break;
                 }
               }
-              fileview->isearch_clock = ji_clock;
-              /* go to fileview_select_index... */
+              m_isearchClock = ji_clock;
+              // Go to selectIndex...
             }
             else
-              return false;
+              return Widget::onProcessMessage(msg);
         }
 
         if (bottom > 0)
-          fileview_select_index(widget, MID(0, select, bottom-1));
+          selectIndex(MID(0, select, bottom-1));
+
         return true;
       }
       break;
 
     case JM_WHEEL: {
-      View* view = View::getView(widget);
+      View* view = View::getView(this);
       if (view) {
         gfx::Point scroll = view->getViewScroll();
-        scroll.y += (jmouse_z(1)-jmouse_z(0)) * 3*(2+jwidget_get_text_height(widget)+2);
+        scroll.y += (jmouse_z(1)-jmouse_z(0)) * 3*(2+jwidget_get_text_height(this)+2);
         view->setViewScroll(scroll);
       }
       break;
     }
 
     case JM_DOUBLECLICK:
-      if (fileview->selected) {
-        if (fileview->selected->isBrowsable()) {
-          fileview_set_current_folder(widget, fileview->selected);
+      if (m_selected) {
+        if (m_selected->isBrowsable()) {
+          setCurrentFolder(m_selected);
           return true;
         }
         else {
-          jwidget_emit_signal(widget, SIGNAL_FILEVIEW_FILE_ACCEPT);
+          onFileAccepted();         // Emit "FileAccepted" event.
           return true;
         }
       }
@@ -552,88 +467,93 @@ static bool fileview_msg_proc(JWidget widget, Message* msg)
 
     case JM_TIMER:
       /* is time to generate the thumbnail? */
-      if (msg->timer.timer == &fileview->timer) {
+      if (msg->timer.timer == &m_timer) {
         IFileItem* fileitem;
 
-        fileview->timer.stop();
+        m_timer.stop();
 
-        fileitem = fileview->item_to_generate_thumbnail;
-        fileview_generate_thumbnail(widget, fileitem);
+        fileitem = m_itemToGenerateThumbnail;
+        generateThumbnail(fileitem);
       }
       break;
 
   }
 
-  return false;
+  return Widget::onProcessMessage(msg);
 }
 
-static void fileview_get_fileitem_size(JWidget widget, IFileItem* fi, int *w, int *h)
+void FileList::onFileSelected()
 {
-/*   char buf[512]; */
+  FileSelected();
+}
+
+void FileList::onFileAccepted()
+{
+  FileAccepted();
+}
+
+void FileList::onCurrentFolderChanged()
+{
+  CurrentFolderChanged();
+}
+
+gfx::Size FileList::getFileItemSize(IFileItem* fi) const
+{
   int len = 0;
 
   if (fi->isFolder()) {
-    len += ji_font_text_len(widget->getFont(), "[+]")+2;
+    len += ji_font_text_len(getFont(), "[+]")+2;
   }
 
-  len += ji_font_text_len(widget->getFont(),
-                          fi->getDisplayName().c_str());
+  len += ji_font_text_len(getFont(), fi->getDisplayName().c_str());
 
-/*   if (!fileitem_is_folder(fi)) { */
-/*     len += 2+ji_font_text_len(widget->text_font, buf); */
-/*   } */
-
-  *w = 2+len+2;
-  *h = 2+jwidget_get_text_height(widget)+2;
+  return gfx::Size(2+len+2,
+                   2+jwidget_get_text_height(this)+2);
 }
 
-static void fileview_make_selected_fileitem_visible(JWidget widget)
+void FileList::makeSelectedFileitemVisible()
 {
-  FileView* fileview = fileview_data(widget);
-  View* view = View::getView(widget);
+  View* view = View::getView(this);
   gfx::Rect vp = view->getViewportBounds();
   gfx::Point scroll = view->getViewScroll();
-  int iw, ih;
-  int th = jwidget_get_text_height(widget);
-  int y = widget->rc->y1;
+  int th = jwidget_get_text_height(this);
+  int y = this->rc->y1;
 
   // rows
   for (FileItemList::iterator
-         it=fileview->list.begin();
-       it!=fileview->list.end(); ++it) {
+         it=m_list.begin();
+       it!=m_list.end(); ++it) {
     IFileItem* fi = *it;
-    fileview_get_fileitem_size(widget, fi, &iw, &ih);
+    gfx::Size itemSize = getFileItemSize(fi);
 
-    if (fi == fileview->selected) {
+    if (fi == m_selected) {
       if (y < vp.y)
-        scroll.y = y - widget->rc->y1;
+        scroll.y = y - this->rc->y1;
       else if (y > vp.y + vp.h - (2+th+2))
-        scroll.y = y - widget->rc->y1 - vp.h + (2+th+2);
+        scroll.y = y - this->rc->y1 - vp.h + (2+th+2);
 
       view->setViewScroll(scroll);
       break;
     }
 
-    y += ih;
+    y += itemSize.h;
   }
 }
 
-static void fileview_regenerate_list(JWidget widget)
+void FileList::regenerateList()
 {
-  FileView* fileview = fileview_data(widget);
-
   // get the children of the current folder
-  fileview->list = fileview->current_folder->getChildren();
+  m_list = m_currentFolder->getChildren();
 
   // filter the list by the available extensions
-  if (!fileview->exts.empty()) {
+  if (!m_exts.empty()) {
     for (FileItemList::iterator
-           it=fileview->list.begin();
-         it!=fileview->list.end(); ) {
+           it=m_list.begin();
+         it!=m_list.end(); ) {
       IFileItem* fileitem = *it;
       if (!fileitem->isFolder() &&
-          !fileitem->hasExtension(fileview->exts.c_str())) {
-        it = fileview->list.erase(it);
+          !fileitem->hasExtension(m_exts.c_str())) {
+        it = m_list.erase(it);
       }
       else
         ++it;
@@ -641,55 +561,50 @@ static void fileview_regenerate_list(JWidget widget)
   }
 }
 
-static int fileview_get_selected_index(JWidget widget)
+int FileList::getSelectedIndex()
 {
-  FileView* fileview = fileview_data(widget);
-
   for (FileItemList::iterator
-         it = fileview->list.begin();
-       it != fileview->list.end(); ++it) {
-    if (*it == fileview->selected)
-      return it - fileview->list.begin();
+         it = m_list.begin();
+       it != m_list.end(); ++it) {
+    if (*it == m_selected)
+      return it - m_list.begin();
   }
 
   return -1;
 }
 
-static void fileview_select_index(JWidget widget, int index)
+void FileList::selectIndex(int index)
 {
-  FileView* fileview = fileview_data(widget);
-  IFileItem* old_selected = fileview->selected;
+  IFileItem* old_selected = m_selected;
 
-  fileview->selected = fileview->list.at(index);
-  if (old_selected != fileview->selected) {
-    fileview_make_selected_fileitem_visible(widget);
+  m_selected = m_list.at(index);
+  if (old_selected != m_selected) {
+    makeSelectedFileitemVisible();
 
-    widget->invalidate();
-    jwidget_emit_signal(widget, SIGNAL_FILEVIEW_FILE_SELECTED);
+    invalidate();
+
+    // Emit "FileSelected" event.
+    onFileSelected();
   }
 
-  fileview_generate_preview_of_selected_item(widget);
+  generatePreviewOfSelectedItem();
 }
 
-/**
- * Puts the selected file-item as the next item to be processed by the
- * round-robin that generate thumbnails
- */
-static void fileview_generate_preview_of_selected_item(JWidget widget)
+// Puts the selected file-item as the next item to be processed by the
+// round-robin that generate thumbnails
+void FileList::generatePreviewOfSelectedItem()
 {
-  FileView* fileview = fileview_data(widget);
-
-  if (fileview->selected &&
-      !fileview->selected->isFolder() &&
-      !fileview->selected->getThumbnail())
+  if (m_selected &&
+      !m_selected->isFolder() &&
+      !m_selected->getThumbnail())
     {
-      fileview->item_to_generate_thumbnail = fileview->selected;
-      fileview->timer.start();
+      m_itemToGenerateThumbnail = m_selected;
+      m_timer.start();
     }
 }
 
-/* returns true if it does some hard work like access to the disk */
-static bool fileview_generate_thumbnail(JWidget widget, IFileItem* fileitem)
+// Returns true if it does some hard work like access to the disk.
+bool FileList::generateThumbnail(IFileItem* fileitem)
 {
   if (fileitem->isBrowsable() ||
       fileitem->getThumbnail() != NULL)
@@ -710,7 +625,7 @@ static bool fileview_generate_thumbnail(JWidget widget, IFileItem* fileitem)
 
     data->fop = fop;
     data->fileitem = fileitem;
-    data->fileview = widget;
+    data->fileview = this;
     data->thumbnail = NULL;
 
     data->thread = new base::thread(&openfile_bg, data);
@@ -719,8 +634,8 @@ static bool fileview_generate_thumbnail(JWidget widget, IFileItem* fileitem)
       data->monitor = add_gui_monitor(monitor_thumbnail_generation,
                                       monitor_free_thumbnail_generation, data);
 
-      fileview_data(widget)->monitors.push_back(data->monitor);
-      widget->invalidate();
+      m_monitors.push_back(data->monitor);
+      invalidate();
     }
     else {
       fop_free(fop);
@@ -731,22 +646,22 @@ static bool fileview_generate_thumbnail(JWidget widget, IFileItem* fileitem)
   return true;
 }
 
-static void fileview_stop_threads(FileView* fileview)
+void FileList::stopThreads()
 {
   // stop the generation of threads
-  fileview->timer.stop();
+  m_timer.stop();
 
   // join all threads (removing all monitors)
   for (MonitorList::iterator
-         it = fileview->monitors.begin();
-       it != fileview->monitors.end(); ) {
+         it = m_monitors.begin();
+       it != m_monitors.end(); ) {
     Monitor* monitor = *it;
     ++it;
     remove_gui_monitor(monitor);
   }
 
   // clear the list of monitors
-  fileview->monitors.clear();
+  m_monitors.clear();
 }
 
 // Thread to do the hard work: load the file from the disk (in
@@ -834,7 +749,7 @@ static void monitor_thumbnail_generation(void *_data)
       data->fileitem->setThumbnail(bmp);
 
       /* is the selected file-item the one that now has a thumbnail? */
-      if (fileview_get_selected(data->fileview) == data->fileitem) {
+      if (data->fileview->getSelectedFileItem() == data->fileitem) {
         /* we have to dirty the file-view to show the thumbnail */
         data->fileview->invalidate();
       }
@@ -859,14 +774,10 @@ static void monitor_free_thumbnail_generation(void *_data)
   data->thread->join();
   delete data->thread;
 
-  // remove the monitor from the list
-  MonitorList& monitors(fileview_data(data->fileview)->monitors);
-  MonitorList::iterator it =
-    std::find(monitors.begin(), monitors.end(), data->monitor);
-  ASSERT(it != monitors.end());
-  monitors.erase(it);
+  // Remove the monitor from the FileList.
+  data->fileview->removeMonitor(data->monitor);
 
-  // destroy the thumbnail
+  // Destroy the thumbnail
   if (data->thumbnail) {
     image_free(data->thumbnail);
     data->thumbnail = NULL;
@@ -875,3 +786,12 @@ static void monitor_free_thumbnail_generation(void *_data)
   fop_free(fop);
   delete data;
 }
+
+void FileList::removeMonitor(Monitor* monitor)
+{
+  MonitorList::iterator it = std::find(m_monitors.begin(), m_monitors.end(), monitor);
+  ASSERT(it != m_monitors.end());
+  m_monitors.erase(it);
+}
+
+} // namespace widgets

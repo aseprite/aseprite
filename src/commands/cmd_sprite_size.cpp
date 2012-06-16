@@ -18,6 +18,8 @@
 
 #include "config.h"
 
+#include "app/find_widget.h"
+#include "app/load_widget.h"
 #include "base/bind.h"
 #include "base/unique_ptr.h"
 #include "commands/command.h"
@@ -189,21 +191,18 @@ bool SpriteSizeCommand::onEnabled(Context* context)
 
 void SpriteSizeCommand::onExecute(Context* context)
 {
-  Widget *ok;
-  ComboBox* method;
   const ActiveDocumentReader document(context);
   const Sprite* sprite(document ? document->getSprite(): 0);
 
   // load the window widget
-  FramePtr window(load_widget("sprite_size.xml", "sprite_size"));
-  get_widgets(window,
-              "width_px", &m_widthPx,
-              "height_px", &m_heightPx,
-              "width_perc", &m_widthPerc,
-              "height_perc", &m_heightPerc,
-              "lock_ratio", &m_lockRatio,
-              "method", &method,
-              "ok", &ok, NULL);
+  UniquePtr<Frame> window(app::load_widget<Frame>("sprite_size.xml", "sprite_size"));
+  m_widthPx = app::find_widget<Entry>(window, "width_px");
+  m_heightPx = app::find_widget<Entry>(window, "height_px");
+  m_widthPerc = app::find_widget<Entry>(window, "width_perc");
+  m_heightPerc = app::find_widget<Entry>(window, "height_perc");
+  m_lockRatio = app::find_widget<CheckBox>(window, "lock_ratio");
+  ComboBox* method = app::find_widget<ComboBox>(window, "method");
+  Widget* ok = app::find_widget<Widget>(window, "ok");
 
   m_widthPx->setTextf("%d", sprite->getWidth());
   m_heightPx->setTextf("%d", sprite->getHeight());

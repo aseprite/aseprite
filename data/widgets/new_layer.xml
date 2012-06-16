@@ -1,32 +1,32 @@
 <!-- ASEPRITE -->
 <!-- Copyright (C) 2001-2012 by David Capello -->
-<jinete>
-<window text="New Image Layer" name="new_layer">
+<gui>
+<window text="New Image Layer" id="new_layer">
   <box vertical="true">
     <box horizontal="true">
       <box vertical="true" homogeneous="true">
         <label text="Name:" />
       </box>
       <box vertical="true" homogeneous="true">
-        <entry maxsize="256" text="New Layer" name="name" magnetic="true" />
+        <entry maxsize="256" text="New Layer" id="name" magnet="true" />
       </box>
     </box>
     <box horizontal="true" homogeneous="true">
-      <button text="&amp;OK" closewindow="true" name="ok" magnetic="true" />
+      <button text="&amp;OK" closewindow="true" id="ok" magnet="true" />
       <button text="&amp;Cancel" closewindow="true" />
     </box>
   </box>
 </window>
-<window text="New Layer Set" name="new_layer_set">
+<window text="New Layer Set" id="new_layer_set">
   <box vertical="true">
     <box horizontal="true">
       <label text="Name:" />
-      <entry maxsize="256" text="New Set" name="name" />
+      <entry maxsize="256" text="New Set" id="name" />
     </box>
     <box horizontal="true" homogeneous="true">
-      <button text="&amp;OK" closewindow="true" name="ok" magnetic="true" />
+      <button text="&amp;OK" closewindow="true" id="ok" magnet="true" />
       <button text="&amp;Cancel" closewindow="true" />
     </box>
   </box>
 </window>
-</jinete>
+</gui>

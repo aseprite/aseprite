@@ -1,16 +1,16 @@
 <!-- ASEPRITE -->
 <!-- Copyright (C) 2001-2012 by David Capello -->
-<jinete>
-  <box vertical="true" expansive="true" name="controls">
+<gui>
+  <box vertical="true" expansive="true" id="controls">
     <box horizontal="true" expansive="true">
-      <grid columns="2" name="controls">
+      <grid columns="2" id="controls">
         <label text="From:" />
-        <colorpicker name="from" cell_align="horizontal" />
+        <colorpicker id="from" cell_align="horizontal" />
         <label text="To:" />
-        <colorpicker name="to" cell_align="horizontal" />
+        <colorpicker id="to" cell_align="horizontal" />
       </grid>
     </box>
     <label text="Tolerance:" />
-    <slider min="0" max="255" name="tolerance" />
+    <slider min="0" max="255" id="tolerance" />
   </box>
-</jinete>
+</gui>

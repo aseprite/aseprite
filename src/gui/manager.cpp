@@ -834,25 +834,23 @@ void Manager::removeMessageFilterFor(JWidget widget)
 /* configures the window for begin the loop */
 void Manager::_openWindow(Frame* window)
 {
-  Message* msg;
-
-  // free all widgets of special states
+  // Free all widgets of special states.
   if (window->is_wantfocus()) {
     freeCapture();
     freeMouse();
     freeFocus();
   }
 
-  /* add the window to manager */
+  // Add the window to manager.
   jlist_prepend(this->children, window);
   window->parent = this;
 
-  /* broadcast the open message */
-  msg = jmessage_new(JM_OPEN);
+  // Broadcast the open message.
+  Message* msg = jmessage_new(JM_OPEN);
   jmessage_add_dest(msg, window);
   enqueueMessage(msg);
 
-  /* update the new windows list to show */
+  // Update the new windows list to show.
   jlist_append(new_windows, window);
 }
 
@@ -886,7 +884,7 @@ void Manager::_closeWindow(Frame* window, bool redraw_background)
     }
   }
 
-  /* free all widgets of special states */
+  // Free all widgets of special states.
   if (capture_widget != NULL && capture_widget->getRoot() == window)
     freeCapture();
 
@@ -896,25 +894,25 @@ void Manager::_closeWindow(Frame* window, bool redraw_background)
   if (focus_widget != NULL && focus_widget->getRoot() == window)
     freeFocus();
 
-  /* hide window */
+  // Hide window.
   window->setVisible(false);
 
-  /* close message */
+  // Close message.
   msg = jmessage_new(JM_CLOSE);
   jmessage_add_dest(msg, window);
   enqueueMessage(msg);
 
-  /* update manager list stuff */
+  // Update manager list stuff.
   jlist_remove(this->children, window);
   window->parent = NULL;
 
-  /* redraw background */
+  // Redraw background.
   if (reg1) {
     invalidateRegion(reg1);
     jregion_free(reg1);
   }
 
-  /* maybe the window is in the "new_windows" list */
+  // Maybe the window is in the "new_windows" list.
   jlist_remove(new_windows, window);
 }
 
@@ -1072,9 +1070,8 @@ void Manager::pumpQueue()
         static char *msg_name[] = {
           "JM_OPEN",
           "JM_CLOSE",
-          "JM_DESTROY",
+          "JM_CLOSE_APP",
           "JM_DRAW",
-          "JM_SIGNAL",
           "JM_TIMER",
           "JM_REQSIZE",
           "JM_SETPOS",
@@ -1082,10 +1079,12 @@ void Manager::pumpQueue()
           "JM_DEFERREDFREE",
           "JM_DIRTYCHILDREN",
           "JM_QUEUEPROCESSING",
+
           "JM_KEYPRESSED",
           "JM_KEYRELEASED",
           "JM_FOCUSENTER",
           "JM_FOCUSLEAVE",
+
           "JM_BUTTONPRESSED",
           "JM_BUTTONRELEASED",
           "JM_DOUBLECLICK",

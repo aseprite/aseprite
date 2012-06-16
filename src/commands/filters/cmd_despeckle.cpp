@@ -20,6 +20,8 @@
 
 #include <stdio.h>
 
+#include "app/find_widget.h"
+#include "app/load_widget.h"
 #include "base/bind.h"
 #include "commands/command.h"
 #include "commands/filters/filter_manager_impl.h"
@@ -32,7 +34,6 @@
 #include "gui/grid.h"
 #include "gui/widget.h"
 #include "ini_file.h"
-#include "modules/gui.h"
 #include "raster/mask.h"
 #include "raster/sprite.h"
 #include "settings/settings.h"
@@ -51,12 +52,10 @@ public:
                    WithTiledCheckBox,
                    filter.getTiledMode())
     , m_filter(filter)
-    , m_controlsWidget(load_widget("despeckle.xml", "controls"))
+    , m_controlsWidget(app::load_widget<Widget>("despeckle.xml", "controls"))
+    , m_widthEntry(app::find_widget<Entry>(m_controlsWidget, "width"))
+    , m_heightEntry(app::find_widget<Entry>(m_controlsWidget, "height"))
   {
-    get_widgets(m_controlsWidget,
-                "width", &m_widthEntry,
-                "height", &m_heightEntry, NULL);
-
     getContainer()->addChild(m_controlsWidget);
 
     m_widthEntry->setTextf("%d", m_filter.getWidth());
@@ -80,7 +79,7 @@ private:
   }
 
   MedianFilter& m_filter;
-  WidgetPtr m_controlsWidget;
+  UniquePtr<Widget> m_controlsWidget;
   Entry* m_widthEntry;
   Entry* m_heightEntry;
 };

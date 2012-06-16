@@ -62,7 +62,7 @@ void LayerPropertiesCommand::onExecute(Context* context)
   const Sprite* sprite(document->getSprite());
   const Layer* layer = sprite->getCurrentLayer();
 
-  FramePtr window(new Frame(false, "Layer Properties"));
+  UniquePtr<Frame> window(new Frame(false, "Layer Properties"));
   Box* box1 = new Box(JI_VERTICAL);
   Box* box2 = new Box(JI_HORIZONTAL);
   Box* box3 = new Box(JI_HORIZONTAL + JI_HOMOGENEOUS);

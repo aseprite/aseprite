@@ -18,9 +18,9 @@
 
 #include "config.h"
 
+#include "app/file_selector.h"
 #include "commands/command.h"
 #include "commands/params.h"
-#include "dialogs/filesel.h"
 #include "document_wrappers.h"
 #include "gui/alert.h"
 #include "modules/gui.h"
@@ -70,7 +70,7 @@ void LoadMaskCommand::onExecute(Context* context)
   base::string filename = m_filename;
 
   if (context->isUiAvailable()) {
-    filename = ase_file_selector("Load .msk File", filename, "msk");
+    filename = app::show_file_selector("Load .msk File", filename, "msk");
     if (filename.empty())
       return;
 

@@ -138,13 +138,13 @@ void Alert::processString(char* buf, std::vector<Widget*>& labels, std::vector<W
           labels.push_back(new Separator(NULL, JI_HORIZONTAL));
         }
         else if (button) {
-          char button_name[256];
+          char buttonId[256];
           Button* button_widget = new Button(beg);
           jwidget_set_min_size(button_widget, 60*jguiscale(), 0);
           buttons.push_back(button_widget);
 
-          usprintf(button_name, "button-%d", buttons.size());
-          button_widget->setName(button_name);
+          usprintf(buttonId, "button-%d", buttons.size());
+          button_widget->setId(buttonId);
           button_widget->Click.connect(Bind<void>(&Frame::closeWindow, this, button_widget));
         }
 
@@ -178,8 +178,8 @@ void Alert::processString(char* buf, std::vector<Widget*>& labels, std::vector<W
   box3 = new Box(JI_HORIZONTAL | JI_HOMOGENEOUS);
 
   // To identify by the user
-  box2->setName("labels");
-  box3->setName("buttons");
+  box2->setId("labels");
+  box3->setId("buttons");
 
   // Pseudo separators (only to fill blank space)
   box4 = new Box(0);

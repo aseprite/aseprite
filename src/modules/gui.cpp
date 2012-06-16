@@ -38,7 +38,6 @@
 #include "modules/palettes.h"
 #include "modules/rootmenu.h"
 #include "raster/sprite.h"
-#include "resource_finder.h"
 #include "skin/button_icon_impl.h"
 #include "skin/skin_property.h"
 #include "skin/skin_theme.h"
@@ -48,7 +47,6 @@
 #include "widgets/editor/editor.h"
 #include "widgets/statebar.h"
 #include "widgets/toolbar.h"
-#include "xml_widgets.h"
 
 #include <algorithm>
 #include <allegro.h>
@@ -140,7 +138,13 @@ struct Monitor
 
 //////////////////////////////////////////////////////////////////////
 
-static gui::Manager* manager = NULL;
+class CustomizedGuiManager : public gui::Manager
+{
+protected:
+  bool onProcessMessage(Message* msg) OVERRIDE;
+};
+
+static CustomizedGuiManager* manager = NULL;
 static Theme* ase_theme = NULL;
 
 static UniquePtr<gui::Timer> monitor_timer;
@@ -165,7 +169,6 @@ static void load_gui_config(int& w, int& h, int& bpp, bool& fullscreen, bool& ma
 static void save_gui_config();
 
 static bool button_with_icon_msg_proc(JWidget widget, Message* msg);
-static bool manager_msg_proc(JWidget widget, Message* msg);
 
 static void on_palette_change_signal();
 
@@ -296,8 +299,7 @@ int init_module_gui()
 gfx_done:;
 
   // Create the default-manager
-  manager = new gui::Manager();
-  jwidget_add_hook(manager, JI_WIDGET, manager_msg_proc, NULL);
+  manager = new CustomizedGuiManager();
 
   // Setup the GUI theme for all widgets
   CurrentTheme::set(ase_theme = new SkinTheme());
@@ -638,136 +640,6 @@ void load_window_pos(JWidget window, const char *section)
 void save_window_pos(JWidget window, const char *section)
 {
   set_config_rect(section, "WindowPos", window->getBounds());
-}
-
-Widget* load_widget(const char* filename, const char* name)
-{
-  Widget* widget;
-  char buf[512];
-  bool found = false;
-
-  ResourceFinder rf;
-
-  rf.addPath(filename);
-
-  usprintf(buf, "widgets/%s", filename);
-  rf.findInDataDir(buf);
-
-  while (const char* path = rf.next()) {
-    if (exists(path)) {
-      ustrcpy(buf, path);
-      found = true;
-      break;
-    }
-  }
-
-  if (!found)
-    throw widget_file_not_found(filename);
-
-  widget = load_widget_from_xmlfile(buf, name);
-  if (!widget)
-    throw widget_not_found(name);
-
-  return widget;
-}
-
-JWidget find_widget(JWidget widget, const char *name)
-{
-  Widget* child = widget->findChild(name);
-  if (!child)
-    throw widget_not_found(name);
-
-  return child;
-}
-
-//////////////////////////////////////////////////////////////////////
-// Hook signals
-
-typedef struct HookData {
-  int signal_num;
-  bool (*signal_handler)(JWidget widget, void *data);
-  void *data;
-} HookData;
-
-static int hook_type()
-{
-  static int type = 0;
-  if (!type)
-    type = ji_register_widget_type();
-  return type;
-}
-
-static bool hook_msg_proc(JWidget widget, Message* msg)
-{
-  switch (msg->type) {
-
-    case JM_DESTROY: {
-      HookData* hook_data = reinterpret_cast<HookData*>(jwidget_get_data(widget, hook_type()));
-      delete hook_data;
-      break;
-    }
-
-    case JM_SIGNAL: {
-      HookData* hook_data = reinterpret_cast<HookData*>(jwidget_get_data(widget, hook_type()));
-      if (hook_data &&
-          hook_data->signal_num == msg->signal.num) {
-        return (*hook_data->signal_handler)(widget, hook_data->data);
-      }
-      break;
-    }
-  }
-
-  return false;
-}
-
-// @warning You can't use this function for the same widget two times.
-void hook_signal(JWidget widget,
-                 int signal_num,
-                 bool (*signal_handler)(JWidget widget, void* data),
-                 void* data)
-{
-  ASSERT(widget != NULL);
-  ASSERT(jwidget_get_data(widget, hook_type()) == NULL);
-
-  HookData* hook_data = new HookData;
-
-  hook_data->signal_num = signal_num;
-  hook_data->signal_handler = signal_handler;
-  hook_data->data = data;
-
-  jwidget_add_hook(widget, hook_type(), hook_msg_proc, hook_data);
-}
-
-/**
- * Utility routine to get various widgets by name.
- *
- * @code
- * if (!get_widgets(wnd,
- *                  "name1", &widget1,
- *                  "name2", &widget2,
- *                  "name3", &widget3,
- *                  NULL)) {
- *   ...
- * }
- * @endcode
- */
-void get_widgets(JWidget window, ...)
-{
-  JWidget *widget;
-  char *name;
-  va_list ap;
-
-  va_start(ap, window);
-  while ((name = va_arg(ap, char *))) {
-    widget = va_arg(ap, JWidget *);
-    if (!widget)
-      break;
-
-    *widget = window->findChild(name);
-    if (!*widget)
-      throw widget_not_found(name);
-  }
-  va_end(ap);
 }
 
 void setup_mini_look(Widget* widget)
@@ -1139,7 +1011,7 @@ void* get_monitor_data(Monitor* monitor)
 }
 
 // Manager event handler.
-static bool manager_msg_proc(JWidget widget, Message* msg)
+bool CustomizedGuiManager::onProcessMessage(Message* msg)
 {
   switch (msg->type) {
 
@@ -1185,7 +1057,7 @@ static bool manager_msg_proc(JWidget widget, Message* msg)
       break;
 
     case JM_KEYPRESSED: {
-      Frame* toplevel_frame = widget->getManager()->getTopFrame();
+      Frame* toplevel_frame = getTopFrame();
 
       // If there is a foreground window as top level...
       if (toplevel_frame &&
@@ -1254,7 +1126,7 @@ static bool manager_msg_proc(JWidget widget, Message* msg)
               // Commands are executed only when the main window is
               // the current window running at foreground.
               JLink link;
-              JI_LIST_FOR_EACH(widget->children, link) {
+              JI_LIST_FOR_EACH(this->children, link) {
                 Frame* child = reinterpret_cast<Frame*>(link->data);
 
                 // There are a foreground window executing?
@@ -1287,7 +1159,7 @@ static bool manager_msg_proc(JWidget widget, Message* msg)
 
   }
 
-  return false;
+  return gui::Manager::onProcessMessage(msg);
 }
 
 // Slot for App::PaletteChange to regenerate graphics when the App palette is changed

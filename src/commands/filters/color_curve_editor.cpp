@@ -18,12 +18,8 @@
 
 #include "config.h"
 
-#include <allegro.h>
-#include <cmath>
-#include <stdio.h>
-#include <stdlib.h>
-#include <vector>
-
+#include "app/find_widget.h"
+#include "app/load_widget.h"
 #include "commands/filters/color_curve_editor.h"
 #include "filters/color_curve.h"
 #include "gui/alert.h"
@@ -35,7 +31,12 @@
 #include "gui/system.h"
 #include "gui/view.h"
 #include "gui/widget.h"
-#include "modules/gui.h"
+
+#include <allegro.h>
+#include <cmath>
+#include <cstdio>
+#include <cstdlib>
+#include <vector>
 
 #define SCR2EDIT_X(xpos)                                        \
   (m_x1 +                                                       \
@@ -356,7 +357,7 @@ int ColorCurveEditor::editNodeManually(gfx::Point& point)
   gfx::Point point_copy = point;
   int res;
 
-  FramePtr window(load_widget("color_curve.xml", "point_properties"));
+  UniquePtr<Frame> window(app::load_widget<Frame>("color_curve.xml", "point_properties"));
 
   entry_x = window->findChild("x");
   entry_y = window->findChild("y");

@@ -17,154 +17,136 @@
 #include "gui/paint_event.h"
 #include "gui/preferred_size_event.h"
 
+#define TOOLTIP_DELAY_MSECS  300
+
 using namespace gfx;
 
-struct TipData
+namespace gui {
+
+TooltipManager::TooltipManager()
+  : Widget(JI_WIDGET)
 {
-  Widget* widget;       // Widget that shows the tooltip
-  Frame* window;        // Frame where is the tooltip
-  std::string text;
-  UniquePtr<gui::Timer> timer;
-  int arrowAlign;
-};
+  Manager* manager = Manager::getDefault();
+  manager->addMessageFilter(JM_MOUSEENTER, this);
+  manager->addMessageFilter(JM_KEYPRESSED, this);
+  manager->addMessageFilter(JM_BUTTONPRESSED, this);
+  manager->addMessageFilter(JM_MOUSELEAVE, this);
 
-static int tip_type();
-static bool tip_hook(JWidget widget, Message* msg);
-
-void jwidget_add_tooltip_text(JWidget widget, const char *text, int arrowAlign)
-{
-  TipData* tip = reinterpret_cast<TipData*>(jwidget_get_data(widget, tip_type()));
-
-  ASSERT(text != NULL);
-
-  if (tip == NULL) {
-    tip = new TipData;
-
-    tip->widget = widget;
-    tip->window = NULL;
-    tip->text = text;
-    tip->arrowAlign = arrowAlign;
-
-    jwidget_add_hook(widget, tip_type(), tip_hook, tip);
-  }
-  else {
-    tip->text = text;
-  }
+  setVisible(false);
 }
 
-/********************************************************************/
-/* hook for widgets that want a tool-tip */
-
-static int tip_type()
+TooltipManager::~TooltipManager()
 {
-  static int type = 0;
-  if (!type)
-    type = ji_register_widget_type();
-  return type;
+  Manager* manager = Manager::getDefault();
+  manager->removeMessageFilterFor(this);
 }
 
-/* hook for the widget in which we added a tooltip */
-static bool tip_hook(JWidget widget, Message* msg)
+void TooltipManager::addTooltipFor(Widget* widget, const char* text, int arrowAlign)
 {
-  TipData* tip = reinterpret_cast<TipData*>(jwidget_get_data(widget, tip_type()));
+  m_tips[widget] = TipInfo(text, arrowAlign);
+}
 
+bool TooltipManager::onProcessMessage(Message* msg)
+{
   switch (msg->type) {
 
-    case JM_DESTROY:
-      delete tip;
-      break;
+    case JM_MOUSEENTER: {
+      JLink link;
+      JI_LIST_FOR_EACH_BACK(msg->any.widgets, link) {
+        Tips::iterator it = m_tips.find((Widget*)link->data);
+        if (it != m_tips.end()) {
+          m_target.widget = it->first;
+          m_target.tipInfo = it->second;
 
-    case JM_MOUSEENTER:
-      if (tip->timer == NULL)
-        tip->timer.reset(new gui::Timer(widget, 300));
+          if (m_timer == NULL) {
+            m_timer.reset(new gui::Timer(this, TOOLTIP_DELAY_MSECS));
+            m_timer->Tick.connect(&TooltipManager::onTick, this);
+          }
 
-      tip->timer->start();
+          m_timer->start();
+        }
+      }
       break;
+    }
 
     case JM_KEYPRESSED:
     case JM_BUTTONPRESSED:
     case JM_MOUSELEAVE:
-      if (tip->window) {
-        tip->window->closeWindow(NULL);
-        delete tip->window;     // widget
-        tip->window = NULL;
+      if (m_tipWindow) {
+        m_tipWindow->closeWindow(NULL);
+        m_tipWindow.reset();
       }
 
-      if (tip->timer != NULL)
-        tip->timer->stop();
+      if (m_timer)
+        m_timer->stop();
       break;
-
-    case JM_TIMER:
-      if (msg->timer.timer == tip->timer) {
-        if (!tip->window) {
-          TipWindow* window = new TipWindow(tip->text.c_str(), true);
-          gfx::Rect bounds = tip->widget->getBounds();
-          int x = jmouse_x(0)+12*jguiscale();
-          int y = jmouse_y(0)+12*jguiscale();
-          int w, h;
-
-          tip->window = window;
-
-          window->setArrowAlign(tip->arrowAlign);
-          window->remap_window();
-
-          w = jrect_w(window->rc);
-          h = jrect_h(window->rc);
-
-          switch (tip->arrowAlign) {
-            case JI_TOP | JI_LEFT:
-              x = bounds.x + bounds.w;
-              y = bounds.y + bounds.h;
-              break;
-            case JI_TOP | JI_RIGHT:
-              x = bounds.x - w;
-              y = bounds.y + bounds.h;
-              break;
-            case JI_BOTTOM | JI_LEFT:
-              x = bounds.x + bounds.w;
-              y = bounds.y - h;
-              break;
-            case JI_BOTTOM | JI_RIGHT:
-              x = bounds.x - w;
-              y = bounds.y - h;
-              break;
-            case JI_TOP:
-              x = bounds.x + bounds.w/2 - w/2;
-              y = bounds.y + bounds.h;
-              break;
-            case JI_BOTTOM:
-              x = bounds.x + bounds.w/2 - w/2;
-              y = bounds.y - h;
-              break;
-            case JI_LEFT:
-              x = bounds.x + bounds.w;
-              y = bounds.y + bounds.h/2 - h/2;
-              break;
-            case JI_RIGHT:
-              x = bounds.x - w;
-              y = bounds.y + bounds.h/2 - h/2;
-              break;
-          }
-
-          // if (x+w > JI_SCREEN_W) {
-          //   x = jmouse_x(0) - w - 4*jguiscale();
-          //   y = jmouse_y(0);
-          // }
-
-          window->position_window(MID(0, x, JI_SCREEN_W-w),
-                                  MID(0, y, JI_SCREEN_H-h));
-          window->open_window();
-        }
-        tip->timer->stop();
-      }
-      break;
-
   }
-  return false;
+  return Widget::onProcessMessage(msg);
 }
 
-/********************************************************************/
-/* TipWindow */
+void TooltipManager::onTick()
+{
+  if (!m_tipWindow) {
+    m_tipWindow.reset(new TipWindow(m_target.tipInfo.text.c_str(), true));
+    gfx::Rect bounds = m_target.widget->getBounds();
+    int x = jmouse_x(0)+12*jguiscale();
+    int y = jmouse_y(0)+12*jguiscale();
+    int w, h;
+
+    m_tipWindow->setArrowAlign(m_target.tipInfo.arrowAlign);
+    m_tipWindow->remap_window();
+
+    w = jrect_w(m_tipWindow->rc);
+    h = jrect_h(m_tipWindow->rc);
+
+    switch (m_target.tipInfo.arrowAlign) {
+      case JI_TOP | JI_LEFT:
+        x = bounds.x + bounds.w;
+        y = bounds.y + bounds.h;
+        break;
+      case JI_TOP | JI_RIGHT:
+        x = bounds.x - w;
+        y = bounds.y + bounds.h;
+        break;
+      case JI_BOTTOM | JI_LEFT:
+        x = bounds.x + bounds.w;
+        y = bounds.y - h;
+        break;
+      case JI_BOTTOM | JI_RIGHT:
+        x = bounds.x - w;
+        y = bounds.y - h;
+        break;
+      case JI_TOP:
+        x = bounds.x + bounds.w/2 - w/2;
+        y = bounds.y + bounds.h;
+        break;
+      case JI_BOTTOM:
+        x = bounds.x + bounds.w/2 - w/2;
+        y = bounds.y - h;
+        break;
+      case JI_LEFT:
+        x = bounds.x + bounds.w;
+        y = bounds.y + bounds.h/2 - h/2;
+        break;
+      case JI_RIGHT:
+        x = bounds.x - w;
+        y = bounds.y + bounds.h/2 - h/2;
+        break;
+    }
+
+    // if (x+w > JI_SCREEN_W) {
+    //   x = jmouse_x(0) - w - 4*jguiscale();
+    //   y = jmouse_y(0);
+    // }
+
+    m_tipWindow->position_window(MID(0, x, JI_SCREEN_W-w),
+                                 MID(0, y, JI_SCREEN_H-h));
+    m_tipWindow->open_window();
+  }
+  m_timer->stop();
+}
+
+// TipWindow
 
 TipWindow::TipWindow(const char *text, bool close_on_buttonpressed)
   : Frame(false, text)
@@ -241,19 +223,6 @@ bool TipWindow::onProcessMessage(Message* msg)
         getManager()->removeMessageFilter(JM_MOTION, this);
         getManager()->removeMessageFilter(JM_BUTTONPRESSED, this);
         getManager()->removeMessageFilter(JM_KEYPRESSED, this);
-      }
-      break;
-
-    case JM_SIGNAL:
-      if (msg->signal.num == JI_SIGNAL_INIT_THEME) {
-        this->border_width.l = 6 * jguiscale();
-        this->border_width.t = 6 * jguiscale();
-        this->border_width.r = 6 * jguiscale();
-        this->border_width.b = 7 * jguiscale();
-
-        // Setup the background color.
-        setBgColor(makecol(255, 255, 200));
-        return true;
       }
       break;
 
@@ -334,7 +303,22 @@ void TipWindow::onPreferredSize(PreferredSizeEvent& ev)
   ev.setPreferredSize(resultSize);
 }
 
+void TipWindow::onInitTheme(InitThemeEvent& ev)
+{
+  Frame::onInitTheme(ev);
+
+  this->border_width.l = 6 * jguiscale();
+  this->border_width.t = 6 * jguiscale();
+  this->border_width.r = 6 * jguiscale();
+  this->border_width.b = 7 * jguiscale();
+
+  // Setup the background color.
+  setBgColor(makecol(255, 255, 200));
+}
+
 void TipWindow::onPaint(PaintEvent& ev)
 {
   getTheme()->paintTooltip(ev);
 }
+
+} // namespace gui

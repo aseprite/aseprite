@@ -20,12 +20,12 @@
 
 #include <allegro/file.h>
 
+#include "app/file_selector.h"
 #include "commands/command.h"
-#include "dialogs/filesel.h"
+#include "document_wrappers.h"
 #include "gui/alert.h"
 #include "raster/mask.h"
 #include "raster/sprite.h"
-#include "document_wrappers.h"
 #include "util/msk_file.h"
 
 //////////////////////////////////////////////////////////////////////
@@ -61,7 +61,7 @@ void SaveMaskCommand::onExecute(Context* context)
   int ret;
 
   for (;;) {
-    filename = ase_file_selector("Save .msk File", filename, "msk");
+    filename = app::show_file_selector("Save .msk File", filename, "msk");
     if (filename.empty())
       return;
 

@@ -24,13 +24,15 @@
 
 ButtonBase::ButtonBase(const char* text, int type, int behaviorType, int drawType)
   : Widget(type)
+  , m_pressedStatus(false)
+  , m_handleSelect(true)
   , m_behaviorType(behaviorType)
   , m_drawType(drawType)
   , m_iconInterface(NULL)
 {
-  this->setAlign(JI_CENTER | JI_MIDDLE);
-  this->setText(text);
-  this->setFocusStop(true);
+  setAlign(JI_CENTER | JI_MIDDLE);
+  setText(text);
+  setFocusStop(true);
 
   // Initialize theme
   this->type = m_drawType;      // TODO Fix this nasty trick
@@ -76,41 +78,41 @@ bool ButtonBase::onProcessMessage(Message* msg)
 
     case JM_FOCUSENTER:
     case JM_FOCUSLEAVE:
-      if (this->isEnabled()) {
+      if (isEnabled()) {
         if (m_behaviorType == JI_BUTTON) {
-          /* deselect the widget (maybe the user press the key, but
-             before release it, changes the focus) */
-          if (this->isSelected())
-            this->setSelected(false);
+          // Deselect the widget (maybe the user press the key, but
+          // before release it, changes the focus).
+          if (isSelected())
+            setSelected(false);
         }
 
-        /* TODO theme specific stuff */
+        // TODO theme specific stuff
         invalidate();
       }
       break;
 
     case JM_KEYPRESSED:
-      /* if the button is enabled */
-      if (this->isEnabled()) {
-        /* for JI_BUTTON */
+      // If the button is enabled.
+      if (isEnabled()) {
+        // For JI_BUTTON
         if (m_behaviorType == JI_BUTTON) {
-          /* has focus and press enter/space */
-          if (this->hasFocus()) {
+          // Has focus and press enter/space
+          if (hasFocus()) {
             if ((msg->key.scancode == KEY_ENTER) ||
                 (msg->key.scancode == KEY_ENTER_PAD) ||
                 (msg->key.scancode == KEY_SPACE)) {
-              this->setSelected(true);
+              setSelected(true);
               return true;
             }
           }
           // Check if the user pressed mnemonic.
           if ((msg->any.shifts & KB_ALT_FLAG) &&
               (isScancodeMnemonic(msg->key.scancode))) {
-            this->setSelected(true);
+            setSelected(true);
             return true;
           }
-          /* magnetic */
-          else if (this->isFocusMagnet() &&
+          // Magnetic widget catches ENTERs
+          else if (isFocusMagnet() &&
                    ((msg->key.scancode == KEY_ENTER) ||
                     (msg->key.scancode == KEY_ENTER_PAD))) {
             getManager()->setFocus(this);
@@ -119,27 +121,27 @@ bool ButtonBase::onProcessMessage(Message* msg)
             // process them)
             getManager()->dispatchMessages();
 
-            this->setSelected(true);
+            setSelected(true);
             return true;
           }
         }
-        /* for JI_CHECK or JI_RADIO */
+        // For JI_CHECK or JI_RADIO
         else {
           /* if the widget has the focus and the user press space or
              if the user press Alt+the underscored letter of the button */
-          if ((this->hasFocus() &&
+          if ((hasFocus() &&
                (msg->key.scancode == KEY_SPACE)) ||
               ((msg->any.shifts & KB_ALT_FLAG) &&
                (isScancodeMnemonic(msg->key.scancode)))) {
             if (m_behaviorType == JI_CHECK) {
               // Swap the select status
-              this->setSelected(!this->isSelected());
+              setSelected(!isSelected());
 
               invalidate();
             }
             else if (m_behaviorType == JI_RADIO) {
-              if (!this->isSelected()) {
-                this->setSelected(true);
+              if (!isSelected()) {
+                setSelected(true);
               }
             }
             return true;
@@ -149,9 +151,9 @@ bool ButtonBase::onProcessMessage(Message* msg)
       break;
 
     case JM_KEYRELEASED:
-      if (this->isEnabled()) {
+      if (isEnabled()) {
         if (m_behaviorType == JI_BUTTON) {
-          if (this->isSelected()) {
+          if (isSelected()) {
             generateButtonSelectSignal();
             return true;
           }
@@ -163,32 +165,32 @@ bool ButtonBase::onProcessMessage(Message* msg)
       switch (m_behaviorType) {
 
         case JI_BUTTON:
-          if (this->isEnabled()) {
-            this->setSelected(true);
+          if (isEnabled()) {
+            setSelected(true);
 
-            m_pressedStatus = this->isSelected();
-            this->captureMouse();
+            m_pressedStatus = isSelected();
+            captureMouse();
           }
           return true;
 
         case JI_CHECK:
-          if (this->isEnabled()) {
-            this->setSelected(!this->isSelected());
+          if (isEnabled()) {
+            setSelected(!isSelected());
 
-            m_pressedStatus = this->isSelected();
-            this->captureMouse();
+            m_pressedStatus = isSelected();
+            captureMouse();
           }
           return true;
 
         case JI_RADIO:
-          if (this->isEnabled()) {
-            if (!this->isSelected()) {
-              jwidget_signal_off(this);
-              this->setSelected(true);
-              jwidget_signal_on(this);
+          if (isEnabled()) {
+            if (!isSelected()) {
+              m_handleSelect = false;
+              setSelected(true);
+              m_handleSelect = true;
 
-              m_pressedStatus = this->isSelected();
-              this->captureMouse();
+              m_pressedStatus = isSelected();
+              captureMouse();
             }
           }
           return true;
@@ -196,10 +198,10 @@ bool ButtonBase::onProcessMessage(Message* msg)
       break;
 
     case JM_BUTTONRELEASED:
-      if (this->hasCapture()) {
-        this->releaseMouse();
+      if (hasCapture()) {
+        releaseMouse();
 
-        if (this->hasMouseOver()) {
+        if (hasMouseOver()) {
           switch (m_behaviorType) {
 
             case JI_BUTTON:
@@ -218,8 +220,8 @@ bool ButtonBase::onProcessMessage(Message* msg)
 
             case JI_RADIO:
               {
-                this->setSelected(false);
-                this->setSelected(true);
+                setSelected(false);
+                setSelected(true);
 
                 // Fire onClick() event
                 Event ev(this);
@@ -233,30 +235,28 @@ bool ButtonBase::onProcessMessage(Message* msg)
       break;
 
     case JM_MOTION:
-      if (this->isEnabled() && this->hasCapture()) {
-        bool hasMouse = this->hasMouseOver();
+      if (isEnabled() && hasCapture()) {
+        bool hasMouse = hasMouseOver();
+
+        m_handleSelect = false;
 
         // Switch state when the mouse go out
-        if (( hasMouse && this->isSelected() != m_pressedStatus) ||
-            (!hasMouse && this->isSelected() == m_pressedStatus)) {
-          jwidget_signal_off(this);
-
-          if (hasMouse) {
-            this->setSelected(m_pressedStatus);
-          }
-          else {
-            this->setSelected(!m_pressedStatus);
-          }
-
-          jwidget_signal_on(this);
+        if ((hasMouse && isSelected() != m_pressedStatus) ||
+            (!hasMouse && isSelected() == m_pressedStatus)) {
+          if (hasMouse)
+            setSelected(m_pressedStatus);
+          else
+            setSelected(!m_pressedStatus);
         }
+
+        m_handleSelect = true;
       }
       break;
 
     case JM_MOUSEENTER:
     case JM_MOUSELEAVE:
       // TODO theme stuff
-      if (this->isEnabled())
+      if (isEnabled())
         invalidate();
       break;
   }
@@ -289,10 +289,7 @@ void ButtonBase::onPaint(PaintEvent& ev)
 void ButtonBase::generateButtonSelectSignal()
 {
   // Deselect
-  this->setSelected(false);
-
-  // Emit JI_SIGNAL_BUTTON_SELECT signal
-  jwidget_emit_signal(this, JI_SIGNAL_BUTTON_SELECT);
+  setSelected(false);
 
   // Fire onClick() event
   Event ev(this);
@@ -367,22 +364,18 @@ void RadioButton::deselectRadioGroup()
   }
 }
 
-bool RadioButton::onProcessMessage(Message* msg)
+void RadioButton::onSelect()
 {
-  switch (msg->type) {
+  ButtonBase::onSelect();
 
-    case JM_SIGNAL:
-      if (getBehaviorType() == JI_RADIO) {
-        if (msg->signal.num == JI_SIGNAL_SELECT) {
-          deselectRadioGroup();
+  if (!m_handleSelect)
+    return;
 
-          jwidget_signal_off(this);
-          this->setSelected(true);
-          jwidget_signal_on(this);
-        }
-      }
-      break;
+  if (getBehaviorType() == JI_RADIO) {
+    deselectRadioGroup();
+
+    m_handleSelect = false;
+    setSelected(true);
+    m_handleSelect = true;
   }
-
-  return ButtonBase::onProcessMessage(msg);
 }

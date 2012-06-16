@@ -20,16 +20,16 @@
 
 #include <allegro/unicode.h>
 
-#include "gui/frame.h"
-
+#include "app.h"
+#include "app/find_widget.h"
+#include "app/load_widget.h"
 #include "commands/command.h"
 #include "context.h"
-#include "app.h"
+#include "gui/frame.h"
 #include "modules/editors.h"
-#include "modules/gui.h"
 #include "settings/settings.h"
-#include "widgets/statebar.h"
 #include "ui_context.h"
+#include "widgets/statebar.h"
 
 using namespace gfx;
 
@@ -131,15 +131,12 @@ bool GridSettingsCommand::onEnabled(Context* context)
 
 void GridSettingsCommand::onExecute(Context* context)
 {
-  JWidget grid_x, grid_y, grid_w, grid_h, button_ok;
-
-  FramePtr window(load_widget("grid_settings.xml", "grid_settings"));
-  get_widgets(window,
-              "ok", &button_ok,
-              "grid_x", &grid_x,
-              "grid_y", &grid_y,
-              "grid_w", &grid_w,
-              "grid_h", &grid_h, NULL);
+  UniquePtr<Frame> window(app::load_widget<Frame>("grid_settings.xml", "grid_settings"));
+  Widget* button_ok = app::find_widget<Widget>(window, "ok");
+  Widget* grid_x = app::find_widget<Widget>(window, "grid_x");
+  Widget* grid_y = app::find_widget<Widget>(window, "grid_y");
+  Widget* grid_w = app::find_widget<Widget>(window, "grid_w");
+  Widget* grid_h = app::find_widget<Widget>(window, "grid_h");
 
   Rect bounds = UIContext::instance()->getSettings()->getGridBounds();
 

@@ -141,7 +141,8 @@ private:
   ColorButton* m_transparentColor;
 
   // Tip window
-  Frame* m_tipwindow;
+  class CustomizedTipWindow;
+  CustomizedTipWindow* m_tipwindow;
 
   int m_hot_layer;
 

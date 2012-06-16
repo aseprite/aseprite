@@ -92,6 +92,12 @@ HitTest Frame::hitTest(const gfx::Point& point)
   return ev.getHit();
 }
 
+void Frame::onClose(CloseEvent& ev)
+{
+  // Fire Close signal
+  Close(ev);
+}
+
 void Frame::onHitTest(HitTestEvent& ev)
 {
   HitTest ht = HitTestNowhere;
@@ -247,6 +253,10 @@ void Frame::closeWindow(Widget* killer)
   m_killer = killer;
 
   getManager()->_closeWindow(this, true);
+
+  // Close event
+  CloseEvent ev(killer);
+  onClose(ev);
 }
 
 bool Frame::is_toplevel()
@@ -269,29 +279,6 @@ bool Frame::onProcessMessage(Message* msg)
 
     case JM_OPEN:
       m_killer = NULL;
-      break;
-
-    case JM_CLOSE:
-      // Fire Close signal
-      {
-        CloseEvent::Trigger trigger;
-        if (m_killer &&
-            m_killer->getName() &&
-            strcmp(m_killer->getName(), "theme_close_button") == 0) {
-          trigger = CloseEvent::ByUser;
-        }
-        else {
-          trigger = CloseEvent::ByCode;
-        }
-
-        CloseEvent ev(this, trigger);
-        Close(ev);
-      }
-      break;
-
-    case JM_SIGNAL:
-      if (msg->signal.num == JI_SIGNAL_SET_TEXT)
-        initTheme();
       break;
 
     case JM_BUTTONPRESSED: {
@@ -513,6 +500,12 @@ void Frame::onBroadcastMouseMessage(WidgetsList& targets)
   Widget* sibling = getNextSibling();
   if (sibling)
     sibling->broadcastMouseMessage(targets);
+}
+
+void Frame::onSetText()
+{
+  Widget::onSetText();
+  initTheme();
 }
 
 void Frame::window_set_position(JRect rect)

@@ -22,7 +22,6 @@
 #include <string>
 #include <list>
 #include "base/exception.h"
-#include "base/unique_ptr.h"
 #include "gui/base.h"
 #include "gui/accel.h"
 #include "skin/skin_property.h"
@@ -37,31 +36,6 @@ class RadioButton;
 class Widget;
 
 namespace tools { class Tool; }
-
-//////////////////////////////////////////////////////////////////////
-
-class widget_file_not_found : public base::Exception
-{
-public:
-  widget_file_not_found(const char* file_name) throw()
-    : base::Exception("Cannot load file: %s\nPlease reinstall %s", file_name, PACKAGE) { }
-};
-
-/**
- * Exception thrown by find_widget() if a widget is not found.
- */
-class widget_not_found : public base::Exception
-{
-public:
-  widget_not_found(const char* widget_name) throw()
-    : base::Exception("A data file is corrupted.\nPlease reinstall %s\n\n"
-                      "Details: Widget not found: %s", PACKAGE, widget_name) { }
-};
-
-//////////////////////////////////////////////////////////////////////
-
-#define HOOK(widget, signal, signal_handler, data)                      \
-  hook_signal((widget), (signal), (signal_handler), (void *)(data))
 
 class Sprite;
 struct Monitor;
@@ -82,16 +56,6 @@ void gui_setup_screen(bool reload_font);
 
 void load_window_pos(Widget* window, const char *section);
 void save_window_pos(Widget* window, const char *section);
-
-Widget* load_widget(const char *filename, const char *name);
-Widget* find_widget(Widget* widget, const char *name);
-
-void hook_signal(Widget* widget,
-                 int signal_num,
-                 bool (*signal_handler)(Widget* widget, void *data),
-                 void *data);
-
-void get_widgets(Widget* window, ...);
 
 void setup_mini_look(Widget* widget);
 void setup_look(Widget* widget, LookType lookType);
@@ -129,11 +93,5 @@ Monitor* add_gui_monitor(void (*proc)(void*),
                          void (*free)(void*), void* data);
 void remove_gui_monitor(Monitor* monitor);
 void* get_monitor_data(Monitor* monitor);
-
-//////////////////////////////////////////////////////////////////////
-// Smart Widget* pointer
-
-typedef UniquePtr<Widget> WidgetPtr;
-typedef UniquePtr<Frame> FramePtr;
 
 #endif

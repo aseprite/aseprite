@@ -14,20 +14,16 @@
 #include "gfx/size.h"
 #include "gui/base.h"
 #include "gui/component.h"
+#include "gui/list.h"
 #include "gui/rect.h"
 #include "gui/widgets_list.h"
 
 class PaintEvent;
 class PreferredSizeEvent;
+class InitThemeEvent;
 namespace gui { class Manager; }
 
-#ifndef NDEBUG
-#include "gui/intern.h"
-#define ASSERT_VALID_WIDGET(widget) ASSERT((widget) != NULL &&          \
-                                           _ji_is_valid_widget((widget)))
-#else
-#define ASSERT_VALID_WIDGET(widget) ((void)0)
-#endif
+#define ASSERT_VALID_WIDGET(widget) ASSERT((widget) != NULL)
 
 struct FONT;
 struct BITMAP;
@@ -38,22 +34,15 @@ typedef std::vector<Widget*> WidgetsList;
 
 int ji_register_widget_type();
 
-/* hooks */
-
-void jwidget_add_hook(JWidget widget, int type,
-                      MessageFunc msg_proc, void *data);
-JHook jwidget_get_hook(JWidget widget, int type);
-void *jwidget_get_data(JWidget widget, int type);
-
-/* position and geometry */
+// Position and geometry
 
 JRect jwidget_get_rect(JWidget widget);
 JRect jwidget_get_child_rect(JWidget widget);
 JRegion jwidget_get_region(JWidget widget);
 JRegion jwidget_get_drawable_region(JWidget widget, int flags);
 int jwidget_get_bg_color(JWidget widget);
-int jwidget_get_text_length(JWidget widget);
-int jwidget_get_text_height(JWidget widget);
+int jwidget_get_text_length(const Widget* widget);
+int jwidget_get_text_height(const Widget* widget);
 void jwidget_get_texticon_info(JWidget widget,
                                JRect box, JRect text, JRect icon,
                                int icon_align, int icon_w, int icon_h);
@@ -66,22 +55,13 @@ void jwidget_set_min_size(JWidget widget, int w, int h);
 void jwidget_set_max_size(JWidget widget, int w, int h);
 void jwidget_set_bg_color(JWidget widget, int color);
 
-/* signal handle */
-
-void jwidget_signal_on(JWidget widget);
-void jwidget_signal_off(JWidget widget);
-
-bool jwidget_emit_signal(JWidget widget, int signal_num);
-
 //////////////////////////////////////////////////////////////////////
 
 class Widget : public Component
 {
 public:
-  JID id;                       /* identify code */
   int type;                     /* widget's type */
 
-  char *name;                   /* widget's name */
   JRect rc;                     /* position rectangle */
   struct {
     int l, t, r, b;
@@ -90,7 +70,6 @@ public:
 
   /* flags */
   int flags;
-  int emit_signals;             /* emit signal counter */
 
   /* widget size limits */
   int min_w, min_h;
@@ -100,10 +79,8 @@ public:
   JList children;                /* sub-objects */
   JWidget parent;                /* who is the parent? */
 
-  /* virtual properties */
-  JList hooks;                  /* hooks with msg_proc and specific data */
-
 private:
+  std::string m_id;             // Widget's id
   Theme* m_theme;               // Widget's theme
   int m_align;                  // Widget alignment
   std::string m_text;           // Widget text
@@ -129,16 +106,17 @@ public:
   // queue anymore.
   void deferDelete();
 
-  // main properties
+  // Main properties.
 
-  int getType() const;
-  const char* getName() const;
-  int getAlign() const;
+  int getType() const { return this->type; }
 
-  void setName(const char* name);
-  void setAlign(int align);
+  const std::string& getId() const { return m_id; }
+  void setId(const char* id) { m_id = id; }
 
-  // text property
+  int getAlign() const { return m_align; }
+  void setAlign(int align) { m_align = align; }
+
+  // Text property.
 
   bool hasText() const { return flags & JI_NOTEXT ? false: true; }
 
@@ -191,7 +169,7 @@ public:
   // LOOK & FEEL
   // ===============================================================
 
-  FONT* getFont();
+  FONT* getFont() const;
   void setFont(FONT* font);
 
   // Gets the background color of the widget.
@@ -234,16 +212,27 @@ public:
 
   Widget* pick(int x, int y);
   bool hasChild(Widget* child);
-  Widget* findChild(const char* name);
+  Widget* findChild(const char* id);
 
   // Returns a widget in the same window that is located "sibling".
-  Widget* findSibling(const char* name);
+  Widget* findSibling(const char* id);
 
-  // Finds a child with the specified name and dynamic-casts it to
-  // type T.
+  // Finds a child with the specified ID and dynamic-casts it to type
+  // T.
   template<class T>
-  T* findChildT(const char* name) {
-    return dynamic_cast<T*>(findChild(name));
+  T* findChildT(const char* id) {
+    return dynamic_cast<T*>(findChild(id));
+  }
+
+  template<class T>
+  T* findFirstChildByType() {
+    JLink link;
+    JI_LIST_FOR_EACH(children, link) {
+      Widget* child = (Widget*)link->data;
+      if (T* specificChild = dynamic_cast<T*>(child))
+        return specificChild;
+    }
+    return NULL;
   }
 
   void addChild(Widget* child);
@@ -337,6 +326,12 @@ protected:
   virtual void onPreferredSize(PreferredSizeEvent& ev);
   virtual void onPaint(PaintEvent& ev);
   virtual void onBroadcastMouseMessage(WidgetsList& targets);
+  virtual void onInitTheme(InitThemeEvent& ev);
+  virtual void onEnable();
+  virtual void onDisable();
+  virtual void onSelect();
+  virtual void onDeselect();
+  virtual void onSetText();
 
 private:
   gfx::Size* m_preferredSize;

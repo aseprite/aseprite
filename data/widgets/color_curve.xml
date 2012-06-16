@@ -1,7 +1,7 @@
 <!-- ASEPRITE -->
 <!-- Copyright (C) 2001-2012 by David Capello -->
-<jinete>
-<window text="Point Properties" name="point_properties">
+<gui>
+<window text="Point Properties" id="point_properties">
   <box vertical="true">
     <box horizontal="true" expansive="true">
       <box vertical="true" homogeneous="true">
@@ -9,14 +9,14 @@
         <label text="Y:" />
       </box>
       <box vertical="true" homogeneous="true" expansive="true">
-        <entry maxsize="32" name="x" magnetic="true" />
-        <entry maxsize="32" name="y" />
+        <entry maxsize="32" id="x" magnet="true" />
+        <entry maxsize="32" id="y" />
       </box>
     </box>
     <box horizontal="true" homogeneous="true">
-      <button text="&amp;OK" closewindow="true" name="button_ok" magnetic="true" />
+      <button text="&amp;OK" closewindow="true" id="button_ok" magnet="true" />
       <button text="&amp;Cancel" closewindow="true" />
     </box>
   </box>
 </window>
-</jinete>
+</gui>

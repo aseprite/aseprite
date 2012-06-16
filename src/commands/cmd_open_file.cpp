@@ -22,11 +22,11 @@
 #include <stdio.h>
 
 #include "app.h"
+#include "app/file_selector.h"
 #include "base/thread.h"
 #include "commands/command.h"
 #include "commands/params.h"
 #include "console.h"
-#include "dialogs/filesel.h"
 #include "document.h"
 #include "file/file.h"
 #include "gui/gui.h"
@@ -143,7 +143,7 @@ void OpenFileCommand::onExecute(Context* context)
   if (context->isUiAvailable() && m_filename.empty()) {
     char exts[4096];
     get_readable_extensions(exts, sizeof(exts));
-    m_filename = ase_file_selector("Open", "", exts);
+    m_filename = app::show_file_selector("Open", "", exts);
   }
 
   if (!m_filename.empty()) {

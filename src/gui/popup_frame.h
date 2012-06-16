@@ -25,6 +25,7 @@ protected:
   bool onProcessMessage(Message* msg) OVERRIDE;
   void onPreferredSize(PreferredSizeEvent& ev) OVERRIDE;
   void onPaint(PaintEvent& ev) OVERRIDE;
+  void onInitTheme(InitThemeEvent& ev) OVERRIDE;
 
 private:
   void startFilteringMessages();

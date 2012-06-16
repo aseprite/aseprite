@@ -18,6 +18,7 @@ public:
 protected:
   bool onProcessMessage(Message* msg) OVERRIDE;
   void onPreferredSize(PreferredSizeEvent& ev) OVERRIDE;
+  void onSetText() OVERRIDE;
 };
 
 #endif

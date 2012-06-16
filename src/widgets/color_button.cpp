@@ -106,21 +106,6 @@ bool ColorButton::onProcessMessage(Message* msg)
       app_get_statusbar()->clearText();
       break;
 
-    case JM_SIGNAL:
-      if (msg->signal.num == JI_SIGNAL_BUTTON_SELECT) {
-        // If the popup window was not created or shown yet..
-        if (m_frame == NULL || !m_frame->isVisible()) {
-          // Open it
-          openSelectorDialog();
-        }
-        else if (!m_frame->is_moveable()) {
-          // If it is visible, close it
-          closeSelectorDialog();
-        }
-        return true;
-      }
-      break;
-
     case JM_MOTION:
       if (hasCapture()) {
         Widget* picked = getManager()->pick(msg->mouse.x, msg->mouse.y);
@@ -225,6 +210,21 @@ void ColorButton::onPaint(PaintEvent& ev) // TODO use "ev.getGraphics()"
 
   jdraw_text(ji_screen, getFont(), getText(), text.x1, text.y1,
              textcolor, -1, false, jguiscale());
+}
+
+void ColorButton::onClick(Event& ev)
+{
+  ButtonBase::onClick(ev);
+
+  // If the popup window was not created or shown yet..
+  if (m_frame == NULL || !m_frame->isVisible()) {
+    // Open it
+    openSelectorDialog();
+  }
+  else if (!m_frame->is_moveable()) {
+    // If it is visible, close it
+    closeSelectorDialog();
+  }
 }
 
 void ColorButton::openSelectorDialog()

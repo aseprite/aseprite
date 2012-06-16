@@ -45,6 +45,8 @@ class SkinTheme : public Theme
   FONT* m_minifont;
 
 public:
+  static const char* kThemeCloseButtonId;
+
   SkinTheme();
   ~SkinTheme();
 
@@ -178,9 +180,6 @@ private:
   void less_bevel(int *bevel);
 
   void paintIcon(Widget* widget, Graphics* g, IButtonIcon* iconInterface, int x, int y);
-
-  static bool theme_frame_button_msg_proc(JWidget widget, Message* msg);
-  static bool theme_combobox_button_msg_proc(JWidget widget, Message* msg);
 
   static FONT* loadFont(const char* userFont, const std::string& path);
 

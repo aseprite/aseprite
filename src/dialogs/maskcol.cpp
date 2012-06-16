@@ -28,7 +28,6 @@
 #include "gui/box.h"
 #include "gui/button.h"
 #include "gui/frame.h"
-#include "gui/hook.h"
 #include "gui/label.h"
 #include "gui/slider.h"
 #include "gui/widget.h"
@@ -74,7 +73,7 @@ void dialogs_mask_color(Document* document)
   if (!image)
     return;
 
-  FramePtr window(new Frame(false, "Mask by Color"));
+  UniquePtr<Frame> window(new Frame(false, "Mask by Color"));
   box1 = new Box(JI_VERTICAL);
   box2 = new Box(JI_HORIZONTAL);
   box3 = new Box(JI_HORIZONTAL);

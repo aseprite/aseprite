@@ -18,14 +18,15 @@
 
 #include "config.h"
 
-#include "gui/gui.h"
-
-#include "commands/command.h"
 #include "app.h"
+#include "app/find_widget.h"
+#include "app/load_widget.h"
+#include "commands/command.h"
+#include "document_wrappers.h"
+#include "gui/gui.h"
 #include "modules/gui.h"
 #include "raster/layer.h"
 #include "raster/sprite.h"
-#include "document_wrappers.h"
 
 //////////////////////////////////////////////////////////////////////
 // new_layer_set
@@ -60,7 +61,7 @@ void NewLayerSetCommand::onExecute(Context* context)
   Sprite* sprite(document->getSprite());
 
   // load the window widget
-  FramePtr window(load_widget("new_layer.xml", "new_layer_set"));
+  UniquePtr<Frame> window(app::load_widget<Frame>("new_layer.xml", "new_layer_set"));
 
   window->open_window_fg();
 

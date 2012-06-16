@@ -19,6 +19,8 @@
 #include "config.h"
 
 #include "app.h"
+#include "app/find_widget.h"
+#include "app/load_widget.h"
 #include "commands/command.h"
 #include "commands/params.h"
 #include "document_wrappers.h"
@@ -89,8 +91,8 @@ void NewLayerCommand::onExecute(Context* context)
   // If params specify to ask the user about the name...
   if (m_ask) {
     // We open the window to ask the name
-    FramePtr window(load_widget("new_layer.xml", "new_layer"));
-    JWidget name_widget = find_widget(window, "name");
+    UniquePtr<Frame> window(app::load_widget<Frame>("new_layer.xml", "new_layer"));
+    Widget* name_widget = app::find_widget<Widget>(window, "name");
     name_widget->setText(name.c_str());
     jwidget_set_min_size(name_widget, 128, 0);
 

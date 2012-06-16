@@ -70,6 +70,32 @@ struct MenuBaseData
 
 };
 
+class CustomizedWindowForMenuBox : public Frame
+{
+public:
+  CustomizedWindowForMenuBox(MenuBox* menubox)
+    : Frame(false, NULL)
+  {
+    set_moveable(false); // Can't move the window
+    addChild(menubox);
+    remap_window();
+  }
+
+protected:
+  bool onProcessMessage(Message* msg) OVERRIDE
+  {
+    switch (msg->type) {
+
+      case JM_CLOSE:
+        // Delete this window automatically
+        deferDelete();
+        break;
+
+    }
+    return Frame::onProcessMessage(msg);
+  }
+};
+
 static MenuBox* get_base_menubox(Widget* widget);
 static MenuBaseData* get_base(Widget* widget);
 
@@ -199,7 +225,7 @@ void MenuItem::setSubmenu(Menu* menu)
  * widget (a menu-item).
  *
  * @warning The specified @a accel will be freed automatically when
- *          the menu-item'll receive JM_DESTROY message.
+ *          the menu-item is deleted.
  */
 void MenuItem::setAccel(JAccel accel)
 {
@@ -715,20 +741,12 @@ bool MenuItem::onProcessMessage(Message* msg)
 
         JRect old_pos = jwidget_get_rect(this->parent->parent);
 
-        // New window and new menu-box
-        Frame* window = new Frame(false, NULL);
-        jwidget_add_hook(window, -1, window_msg_proc, NULL);
-
         MenuBox* menubox = new MenuBox();
         m_submenu_menubox = menubox;
-
-        window->set_moveable(false); // Can't move the window
-
-        // Set children
         menubox->setMenu(m_submenu);
-        window->addChild(menubox);
 
-        window->remap_window();
+        // New window and new menu-box
+        Frame* window = new CustomizedWindowForMenuBox(menubox);
 
         // Menubox position
         pos = jwidget_get_rect(window);
@@ -881,9 +899,6 @@ bool MenuItem::onProcessMessage(Message* msg)
 
 void MenuItem::onClick()
 {
-  // Fire old JI_SIGNAL_MENUITEM_SELECT signal
-  jwidget_emit_signal(this, JI_SIGNAL_MENUITEM_SELECT);
-
   // Fire new Click() signal.
   Click();
 }
@@ -1202,18 +1217,6 @@ void MenuItem::executeClick()
   Message* msg = jmessage_new(JM_EXE_MENUITEM);
   jmessage_add_dest(msg, this);
   gui::Manager::getDefault()->enqueueMessage(msg);
-}
-
-static bool window_msg_proc(Widget* widget, Message* msg)
-{
-  switch (msg->type) {
-
-    case JM_CLOSE:
-      widget->deferDelete();
-      break;
-
-  }
-  return false;
 }
 
 static MenuItem* check_for_letter(Menu* menu, int ascii)

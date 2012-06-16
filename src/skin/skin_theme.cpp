@@ -53,6 +53,57 @@
 
 static std::map<std::string, int> sheet_mapping;
 
+const char* SkinTheme::kThemeCloseButtonId = "theme_close_button";
+
+// Controls the "X" button in a window to close it.
+class WindowCloseButton : public Button
+{
+public:
+  WindowCloseButton() : Button("") {
+    setup_bevels(this, 0, 0, 0, 0);
+    setDecorative(true);
+    setId(SkinTheme::kThemeCloseButtonId);
+  }
+
+protected:
+  void onClick(Event& ev) OVERRIDE {
+    Button::onClick(ev);
+    closeWindow();
+  }
+
+  bool onProcessMessage(Message* msg) OVERRIDE {
+    switch (msg->type) {
+
+      case JM_SETCURSOR:
+        jmouse_set_cursor(JI_CURSOR_NORMAL);
+        return true;
+
+      case JM_DRAW:
+        static_cast<SkinTheme*>(getTheme())->draw_frame_button(this, &msg->draw.rect);
+        return true;
+
+      case JM_KEYPRESSED:
+        if (msg->key.scancode == KEY_ESC) {
+          setSelected(true);
+          return true;
+        }
+        break;
+
+      case JM_KEYRELEASED:
+        if (msg->key.scancode == KEY_ESC) {
+          if (isSelected()) {
+            setSelected(false);
+            closeWindow();
+            return true;
+          }
+        }
+        break;
+    }
+
+    return Button::onProcessMessage(msg);
+  }
+};
+
 static struct
 {
   const char* id;
@@ -648,18 +699,10 @@ void SkinTheme::init_widget(JWidget widget)
           BORDER4(6 * scale, (4+6) * scale, 6 * scale, 6 * scale);
           widget->border_width.t += jwidget_get_text_height(widget);
 
-#if 1                           /* add close button */
           if (!(widget->flags & JI_INITIALIZED)) {
-            Button* button = new Button("");
-            setup_bevels(button, 0, 0, 0, 0);
-            jwidget_add_hook(button, JI_WIDGET,
-                             &SkinTheme::theme_frame_button_msg_proc, NULL);
-            button->setDecorative(true);
+            Button* button = new WindowCloseButton();
             widget->addChild(button);
-            button->setName("theme_close_button");
-            button->Click.connect(Bind<void>(&Frame::closeWindow, (Frame*)widget, button));
           }
-#endif
         }
         else {
           BORDER(3 * scale);
@@ -684,8 +727,7 @@ JRegion SkinTheme::get_window_mask(JWidget widget)
 
 void SkinTheme::map_decorative_widget(JWidget widget)
 {
-  if (widget->name != NULL &&
-      strcmp(widget->name, "theme_close_button") == 0) {
+  if (widget->getId() == kThemeCloseButtonId) {
     JWidget window = widget->parent;
     JRect rect = jrect_new(0, 0, 0, 0);
 
@@ -1593,7 +1635,7 @@ void SkinTheme::draw_frame_button(ButtonBase* widget, JRect clip)
 
 void SkinTheme::paintTooltip(PaintEvent& ev)
 {
-  TipWindow* widget = static_cast<TipWindow*>(ev.getSource());
+  gui::TipWindow* widget = static_cast<gui::TipWindow*>(ev.getSource());
   Graphics* g = ev.getGraphics();
   gfx::Rect rc = widget->getClientBounds();
   int bg = makecol(255, 255, 125);
@@ -2077,46 +2119,6 @@ void SkinTheme::paintIcon(Widget* widget, Graphics* g, IButtonIcon* iconInterfac
 
   if (icon_bmp)
     g->drawAlphaBitmap(icon_bmp, x, y);
-}
-
-/* controls the "X" button in a window to close it */
-bool SkinTheme::theme_frame_button_msg_proc(JWidget widget, Message* msg)
-{
-  switch (msg->type) {
-
-    case JM_SETCURSOR:
-      jmouse_set_cursor(JI_CURSOR_NORMAL);
-      return true;
-
-    case JM_DRAW:
-      {
-        ButtonBase* button = dynamic_cast<ButtonBase*>(widget);
-        ASSERT(button && "theme_frame_button_msg_proc() must be hooked in a ButtonBase widget");
-
-        ((SkinTheme*)button->getTheme())
-          ->draw_frame_button(button, &msg->draw.rect);
-      }
-      return true;
-
-    case JM_KEYPRESSED:
-      if (msg->key.scancode == KEY_ESC) {
-        widget->setSelected(true);
-        return true;
-      }
-      break;
-
-    case JM_KEYRELEASED:
-      if (msg->key.scancode == KEY_ESC) {
-        if (widget->isSelected()) {
-          widget->setSelected(false);
-          widget->closeWindow();
-          return true;
-        }
-      }
-      break;
-  }
-
-  return false;
 }
 
 FONT* SkinTheme::loadFont(const char* userFont, const std::string& path)

@@ -69,6 +69,9 @@ private:
   int m_behaviorType;
   int m_drawType;
   IButtonIcon* m_iconInterface;
+
+protected:
+  bool m_handleSelect;
 };
 
 // Pushable button to execute commands
@@ -85,10 +88,7 @@ public:
   CheckBox(const char* text, int drawType = JI_CHECK);
 };
 
-//////////////////////////////////////////////////////////////////////
 // Radio buttons
-
-// Radio button
 class RadioButton : public ButtonBase
 {
 public:
@@ -100,8 +100,7 @@ public:
   void deselectRadioGroup();
 
 protected:
-  // Events
-  bool onProcessMessage(Message* msg) OVERRIDE;
+  void onSelect() OVERRIDE;
 
 private:
   int m_radioGroup;

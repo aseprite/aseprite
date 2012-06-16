@@ -1,10 +1,10 @@
 <!-- ASEPRITE -->
 <!-- Copyright (C) 2001-2012 by David Capello -->
-<jinete>
-  <grid columns="2" name="controls">
+<gui>
+  <grid columns="2" id="controls">
     <label text="Width:" />
-    <entry name="width" maxsize="4" cell_align="horizontal" />
+    <entry id="width" maxsize="4" cell_align="horizontal" />
     <label text="Height:" />
-    <entry name="height" maxsize="4" cell_align="horizontal" />
+    <entry id="height" maxsize="4" cell_align="horizontal" />
   </grid>
-</jinete>
+</gui>

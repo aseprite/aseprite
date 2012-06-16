@@ -19,11 +19,8 @@
 #include <allegro.h>
 
 #include "base/memory.h"
-#include "gui/graphics.h"
 #include "gui/gui.h"
 #include "gui/intern.h"
-#include "gui/paint_event.h"
-#include "gui/preferred_size_event.h"
 
 using namespace gfx;
 
@@ -46,7 +43,6 @@ Widget::Widget(int type)
   _ji_add_widget(this);
 
   this->type = type;
-  this->name = NULL;
   this->rc = jrect_new(0, 0, 0, 0);
   this->border_width.l = 0;
   this->border_width.t = 0;
@@ -54,7 +50,6 @@ Widget::Widget(int type)
   this->border_width.b = 0;
   this->child_spacing = 0;
   this->flags = 0;
-  this->emit_signals = 0;
   this->min_w = 0;
   this->min_h = 0;
   this->max_w = INT_MAX;
@@ -62,7 +57,6 @@ Widget::Widget(int type)
   this->children = jlist_new();
   this->parent = NULL;
   this->m_theme = CurrentTheme::get();
-  this->hooks = jlist_new();
 
   this->m_align = 0;
   this->m_text = "";
@@ -88,12 +82,6 @@ Widget::Widget(int type)
 Widget::~Widget()
 {
   JLink link, next;
-  Message* msg;
-
-  /* send destroy message */
-  msg = jmessage_new(JM_DESTROY);
-  sendMessage(msg);
-  jmessage_free(msg);
 
   // Break relationship with the manager.
   if (this->type != JI_MANAGER) {
@@ -116,18 +104,9 @@ Widget::~Widget()
   if (m_update_region)
     jregion_free(m_update_region);
 
-  /* destroy the name */
-  if (this->name)
-    base_free(this->name);
-
   /* destroy widget position */
   if (this->rc)
     jrect_free(this->rc);
-
-  /* destroy hooks */
-  JI_LIST_FOR_EACH(this->hooks, link)
-    jhook_free(reinterpret_cast<JHook>(link->data));
-  jlist_free(this->hooks);
 
   // Delete the preferred size
   delete m_preferredSize;
@@ -143,99 +122,8 @@ void Widget::deferDelete()
 
 void Widget::initTheme()
 {
-  if (m_theme) {
-    m_theme->init_widget(this);
-
-    if (!(flags & JI_INITIALIZED))
-      flags |= JI_INITIALIZED;
-
-    jwidget_emit_signal(this, JI_SIGNAL_INIT_THEME);
-  }
-}
-
-/**********************************************************************/
-/* HOOKS */
-
-/**
- * Adds a new hook for the widget.
- *
- * @see jhook
- */
-void jwidget_add_hook(JWidget widget, int type,
-                      MessageFunc msg_proc, void *data)
-{
-  JHook hook;
-
-  ASSERT_VALID_WIDGET(widget);
-
-  hook = jhook_new();
-  hook->type = type;
-  hook->msg_proc = msg_proc;
-  hook->data = data;
-
-  jlist_prepend(widget->hooks, hook);
-}
-
-/**
- * Returns the hook of the specified type.
- */
-JHook jwidget_get_hook(JWidget widget, int type)
-{
-  JLink link;
-  ASSERT_VALID_WIDGET(widget);
-
-  JI_LIST_FOR_EACH(widget->hooks, link) {
-    if (((JHook)link->data)->type == type)
-      return ((JHook)link->data);
-  }
-  return NULL;
-}
-
-/**
- * Returns the data associated to the specified hook.
- */
-void *jwidget_get_data(JWidget widget, int type)
-{
-  register JLink link;
-  ASSERT_VALID_WIDGET(widget);
-
-  JI_LIST_FOR_EACH(widget->hooks, link) {
-    if (((JHook)link->data)->type == type)
-      return ((JHook)link->data)->data;
-  }
-
-  return NULL;
-}
-
-/**********************************************************************/
-/* main properties */
-
-int Widget::getType() const
-{
-  return this->type;
-}
-
-const char *Widget::getName() const
-{
-  return this->name;
-}
-
-int Widget::getAlign() const
-{
-  return m_align;
-}
-
-void Widget::setName(const char *name)
-{
-  if (this->name)
-    base_free(this->name);
-
-  this->name = name ? base_strdup(name) : NULL;
-}
-
-void Widget::setAlign(int align)
-{
-  m_align = align;
+  InitThemeEvent ev(this, m_theme);
+  onInitTheme(ev);
 }
 
 int Widget::getTextInt() const
@@ -250,10 +138,8 @@ double Widget::getTextDouble() const
 
 void Widget::setText(const char *text)
 {
-  this->setTextQuiet(text);
-
-  jwidget_emit_signal(this, JI_SIGNAL_SET_TEXT);
-  invalidate();
+  setTextQuiet(text);
+  onSetText();
 }
 
 void Widget::setTextf(const char *format, ...)
@@ -287,7 +173,7 @@ void Widget::setTextQuiet(const char *text)
   }
 }
 
-FONT *Widget::getFont()
+FONT *Widget::getFont() const
 {
   return m_font;
 }
@@ -295,8 +181,6 @@ FONT *Widget::getFont()
 void Widget::setFont(FONT* f)
 {
   m_font = f;
-
-  jwidget_emit_signal(this, JI_SIGNAL_SET_FONT);
   invalidate();
 }
 
@@ -318,8 +202,6 @@ void Widget::setVisible(bool state)
     if (this->flags & JI_HIDDEN) {
       this->flags &= ~JI_HIDDEN;
       invalidate();
-
-      jwidget_emit_signal(this, JI_SIGNAL_SHOW);
     }
   }
   else {
@@ -327,7 +209,6 @@ void Widget::setVisible(bool state)
       getManager()->freeWidget(this); // Free from manager
 
       this->flags |= JI_HIDDEN;
-      jwidget_emit_signal(this, JI_SIGNAL_HIDE);
     }
   }
 }
@@ -339,7 +220,7 @@ void Widget::setEnabled(bool state)
       this->flags &= ~JI_DISABLED;
       invalidate();
 
-      jwidget_emit_signal(this, JI_SIGNAL_ENABLE);
+      onEnable();
     }
   }
   else {
@@ -349,7 +230,7 @@ void Widget::setEnabled(bool state)
       this->flags |= JI_DISABLED;
       invalidate();
 
-      jwidget_emit_signal(this, JI_SIGNAL_DISABLE);
+      onDisable();
     }
   }
 }
@@ -361,7 +242,7 @@ void Widget::setSelected(bool state)
       this->flags |= JI_SELECTED;
       invalidate();
 
-      jwidget_emit_signal(this, JI_SIGNAL_SELECT);
+      onSelect();
     }
   }
   else {
@@ -369,7 +250,7 @@ void Widget::setSelected(bool state)
       this->flags &= ~JI_SELECTED;
       invalidate();
 
-      jwidget_emit_signal(this, JI_SIGNAL_DESELECT);
+      onDeselect();
     }
   }
 }
@@ -577,28 +458,28 @@ bool Widget::hasChild(Widget* child)
   return jlist_find(this->children, child) != this->children->end ? true: false;
 }
 
-Widget* Widget::findChild(const char* name)
+Widget* Widget::findChild(const char* id)
 {
   Widget* child;
   JLink link;
 
   JI_LIST_FOR_EACH(this->children, link) {
     child = (Widget*)link->data;
-    if (child->name != NULL && strcmp(child->name, name) == 0)
+    if (child->getId() == id)
       return child;
   }
 
   JI_LIST_FOR_EACH(this->children, link) {
-    if ((child = ((Widget*)link->data)->findChild(name)))
+    if ((child = ((Widget*)link->data)->findChild(id)))
       return child;
   }
 
   return 0;
 }
 
-Widget* Widget::findSibling(const char* name)
+Widget* Widget::findSibling(const char* id)
 {
-  return getRoot()->findChild(name);
+  return getRoot()->findChild(id);
 }
 
 void Widget::addChild(Widget* child)
@@ -608,8 +489,6 @@ void Widget::addChild(Widget* child)
 
   jlist_append(children, child);
   child->parent = this;
-
-  jwidget_emit_signal(this, JI_SIGNAL_ADD_CHILD);
 }
 
 void Widget::removeChild(Widget* child)
@@ -636,8 +515,6 @@ void Widget::replaceChild(Widget* oldChild, Widget* newChild)
 
   jlist_insert_before(children, before, newChild);
   newChild->parent = this;
-
-  jwidget_emit_signal(this, JI_SIGNAL_ADD_CHILD);
 }
 
 void Widget::insertChild(int index, Widget* child)
@@ -647,8 +524,6 @@ void Widget::insertChild(int index, Widget* child)
 
   jlist_insert(children, child, index);
   child->parent = this;
-
-  jwidget_emit_signal(this, JI_SIGNAL_ADD_CHILD);
 }
 
 // ===============================================================
@@ -855,7 +730,7 @@ int jwidget_get_bg_color(JWidget widget)
   return widget->getBgColor();
 }
 
-int jwidget_get_text_length(JWidget widget)
+int jwidget_get_text_length(const Widget* widget)
 {
 #if 1
   return ji_font_text_len(widget->getFont(), widget->getText());
@@ -864,7 +739,7 @@ int jwidget_get_text_length(JWidget widget)
 #endif
 }
 
-int jwidget_get_text_height(JWidget widget)
+int jwidget_get_text_height(const Widget* widget)
 {
   ASSERT_VALID_WIDGET(widget);
 
@@ -1182,79 +1057,14 @@ void Widget::scrollRegion(JRegion region, int dx, int dy)
   }
 }
 
-/**********************************************************************/
-/* signal handle */
-
-void jwidget_signal_on(JWidget widget)
-{
-  ASSERT_VALID_WIDGET(widget);
-
-  widget->emit_signals--;
-}
-
-void jwidget_signal_off(JWidget widget)
-{
-  ASSERT_VALID_WIDGET(widget);
-
-  widget->emit_signals++;
-}
-
-bool jwidget_emit_signal(JWidget widget, int signal_num)
-{
-  ASSERT_VALID_WIDGET(widget);
-
-  if (!widget->emit_signals) {
-    Message* msg;
-    bool ret;
-
-#ifdef REPORT_SIGNALS
-    printf("Signal: %d (%d)\n", signal_num, widget->id);
-#endif
-
-    msg = jmessage_new(JM_SIGNAL);
-    msg->signal.num = signal_num;
-    msg->signal.from = widget;
-
-    ret = widget->sendMessage(msg);
-
-    /* send the signal to the window too */
-    if (!ret && widget->type != JI_FRAME) {
-      Frame* window = widget->getRoot();
-      if (window)
-        ret = window->sendMessage(msg);
-    }
-
-    jmessage_free(msg);
-    return ret;
-  }
-  else
-    return false;
-}
-
-/**********************************************************************/
-/* manager handler */
+// ===============================================================
+// GUI MANAGER
+// ===============================================================
 
 bool Widget::sendMessage(Message* msg)
 {
-  bool done = false;
-  JHook hook;
-  JLink link;
-
   ASSERT(msg != NULL);
-
-  JI_LIST_FOR_EACH(this->hooks, link) {
-    hook = reinterpret_cast<JHook>(link->data);
-    if (hook->msg_proc) {
-      done = (*hook->msg_proc)(this, msg);
-      if (done)
-        break;
-    }
-  }
-
-  if (!done)
-    done = this->onProcessMessage(msg);
-
-  return done;
+  return onProcessMessage(msg);
 }
 
 void Widget::closeWindow()
@@ -1444,7 +1254,7 @@ bool Widget::onProcessMessage(Message* msg)
     case JM_WINMOVE: {
       JLink link;
 
-      /* broadcast the message to the children */
+      // Broadcast the message to the children.
       JI_LIST_FOR_EACH(widget->children, link)
         reinterpret_cast<JWidget>(link->data)->sendMessage(msg);
       break;
@@ -1500,7 +1310,7 @@ bool Widget::onProcessMessage(Message* msg)
       jrect_copy(widget->rc, &msg->setpos.rect);
       cpos = jwidget_get_child_rect(widget);
 
-      /* set all the children to the same "cpos" */
+      // Set all the children to the same "cpos".
       JI_LIST_FOR_EACH(widget->children, link)
         jwidget_set_rect(reinterpret_cast<JWidget>(link->data), cpos);
 
@@ -1522,12 +1332,12 @@ bool Widget::onProcessMessage(Message* msg)
       if (msg->key.propagate_to_children) {
         JLink link;
 
-        /* broadcast the message to the children */
+        // Broadcast the message to the children.
         JI_LIST_FOR_EACH(widget->children, link)
           reinterpret_cast<JWidget>(link->data)->sendMessage(msg);
       }
 
-      /* propagate the message to the parent */
+      // Propagate the message to the parent.
       if (msg->key.propagate_to_parent && widget->parent != NULL)
         return widget->parent->sendMessage(msg);
       else
@@ -1538,14 +1348,14 @@ bool Widget::onProcessMessage(Message* msg)
     case JM_DOUBLECLICK:
     case JM_MOTION:
     case JM_WHEEL:
-      /* propagate the message to the parent */
+      // Propagate the message to the parent.
       if (widget->parent != NULL)
         return widget->parent->sendMessage(msg);
       else
         break;
 
     case JM_SETCURSOR:
-      /* propagate the message to the parent */
+      // Propagate the message to the parent.
       if (widget->parent != NULL)
         return widget->parent->sendMessage(msg);
       else {
@@ -1614,4 +1424,39 @@ void Widget::onPaint(PaintEvent& ev)
 void Widget::onBroadcastMouseMessage(WidgetsList& targets)
 {
   // Do nothing
+}
+
+void Widget::onInitTheme(InitThemeEvent& ev)
+{
+  if (m_theme) {
+    m_theme->init_widget(this);
+
+    if (!(flags & JI_INITIALIZED))
+      flags |= JI_INITIALIZED;
+  }
+}
+
+void Widget::onEnable()
+{
+  // Do nothing
+}
+
+void Widget::onDisable()
+{
+  // Do nothing
+}
+
+void Widget::onSelect()
+{
+  // Do nothing
+}
+
+void Widget::onDeselect()
+{
+  // Do nothing
+}
+
+void Widget::onSetText()
+{
+  invalidate();
 }

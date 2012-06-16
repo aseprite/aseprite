@@ -22,6 +22,8 @@
 
 #include "app/check_update.h"
 #include "app/color_utils.h"
+#include "app/find_widget.h"
+#include "app/load_widget.h"
 #include "base/exception.h"
 #include "base/unique_ptr.h"
 #include "check_args.h"
@@ -181,7 +183,7 @@ int App::run()
     gui::Manager::getDefault()->invalidate();
 
     // Load main window
-    top_window = static_cast<Frame*>(load_widget("main_window.xml", "main_window"));
+    top_window = app::load_widget<Frame>("main_window.xml", "main_window");
 
     box_menubar = top_window->findChild("menubar");
     box_editors = top_window->findChild("editor");

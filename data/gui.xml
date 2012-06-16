@@ -14,7 +14,8 @@
       <key command="SaveFileCopyAs" shortcut="Ctrl+Shift+C" />
       <key command="CloseFile" shortcut="Ctrl+W" />
       <key command="CloseAllFiles" shortcut="Ctrl+Shift+W" />
-      <key command="DeveloperConsole" shortcut="F11" />
+      <key command="AdvancedMode" shortcut="F11" />
+      <key command="DeveloperConsole" shortcut="F12" />
       <key command="Exit" shortcut="Ctrl+Q" />
       <key command="Exit" shortcut="Alt+F4" />
       <key command="Cancel" shortcut="Esc" />
@@ -404,7 +405,7 @@
     <menu id="layer_popup">
       <item command="LayerProperties" text="&amp;Properties..." />
       <separator />
-      <item command="NewLayer" text="&amp;New..." />
+      <item command="NewLayer" text="&amp;New" />
       <item command="RemoveLayer" text="&amp;Remove" />
       <item command="BackgroundFromLayer" text="&amp;Background from Layer" />
       <item command="LayerFromBackground" text="&amp;Layer from Background" />

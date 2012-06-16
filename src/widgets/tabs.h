@@ -92,6 +92,8 @@ public:
 
 protected:
   bool onProcessMessage(Message* msg) OVERRIDE;
+  void onInitTheme(InitThemeEvent& ev) OVERRIDE;
+  void onSetText() OVERRIDE;
 
 private:
   void startAni(Ani ani);
@@ -122,8 +124,9 @@ private:
   Tab* m_nextTabOfTheRemovedOne;
 
   // Buttons to scroll tabs (useful when there are more tabs than visible area)
-  Button* m_button_left;
-  Button* m_button_right;
+  class ScrollButton;
+  ScrollButton* m_button_left;
+  ScrollButton* m_button_right;
 
   // Delegate of notifications
   TabsDelegate* m_delegate;

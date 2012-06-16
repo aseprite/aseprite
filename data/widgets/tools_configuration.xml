@@ -1,21 +1,21 @@
 <!-- ASEPRITE -->
 <!-- Copyright (C) 2001-2012 by David Capello -->
-<jinete>
-<window text="Tools Configuration" name="configure_tool">
+<gui>
+<window text="Tools Configuration" id="configure_tool">
   <box vertical="true" childspacing="0">
     <box horizontal="true" expansive="true">
       <box vertical="true" childspacing="2">
         <box horizontal="true" childspacing="0">
-            <check text="Tiled" name="tiled" />
-            <check text="x" name="tiled_x" />
-            <check text="y" name="tiled_y" />
+            <check text="Tiled" id="tiled" />
+            <check text="x" id="tiled_x" />
+            <check text="y" id="tiled_y" />
         </box>
-        <check text="Onionskin" name="onionskin" />
+        <check text="Onionskin" id="onionskin" />
         <separator text="Grid:" horizontal="true" left="true" />
-        <check text="Snap to Grid" name="snap_to_grid" />
-        <check text="View Grid" name="view_grid" />
-        <check text="Pixel Grid" name="pixel_grid" />
-        <button text="Set &amp;Grid" name="set_grid" />
+        <check text="Snap to Grid" id="snap_to_grid" />
+        <check text="View Grid" id="view_grid" />
+        <check text="Pixel Grid" id="pixel_grid" />
+        <button text="Set &amp;Grid" id="set_grid" />
       </box>
       <separator vertical="true" />
       <box vertical="true" expansive="true" childspacing="2">
@@ -23,24 +23,24 @@
           <grid columns="2" childspacing="0" expansive="true">
 
             <label text="Pen:" />
-            <box horizontal="true" childspacing="0" name="brush_type_box" /><!-- custom widget -->
+            <box horizontal="true" childspacing="0" id="brush_type_box" /><!-- custom widget -->
 
             <label text="Size:" />
-            <slider min="1" max="32" name="brush_size" minwidth="32" cell_align="horizontal" />
+            <slider min="1" max="32" id="brush_size" minwidth="32" cell_align="horizontal" />
 
             <label text="Angle:" />
-            <slider min="0" max="180" name="brush_angle" cell_align="horizontal" />
+            <slider min="0" max="180" id="brush_angle" cell_align="horizontal" />
 
-            <label text="Opacity:" name="opacity_label" />
-            <slider min="0" max="255" name="opacity" cell_align="horizontal" />
+            <label text="Opacity:" id="opacity_label" />
+            <slider min="0" max="255" id="opacity" cell_align="horizontal" />
 
-            <label text="Tolerance:" name="tolerance_label" />
-            <slider min="0" max="255" name="tolerance" cell_align="horizontal" />
+            <label text="Tolerance:" id="tolerance_label" />
+            <slider min="0" max="255" id="tolerance" cell_align="horizontal" />
 
           </grid>
-          <box name="brush_preview_box" /><!-- custom widget -->
+          <box id="brush_preview_box" /><!-- custom widget -->
         </box>
-        <box vertical="true" name="spray_box">
+        <box vertical="true" id="spray_box">
           <separator text="Spray:" horizontal="true" left="true" />
           <box horizontal="true">
             <box vertical="true" homogeneous="true" childspacing="0">
@@ -48,8 +48,8 @@
               <label text="Air Speed:" />
             </box>
             <box vertical="true" homogeneous="true" expansive="true" childspacing="0">
-              <slider min="1" max="32" name="spray_width" />
-              <slider min="1" max="100" name="air_speed" />
+              <slider min="1" max="32" id="spray_width" />
+              <slider min="1" max="100" id="air_speed" />
             </box>
           </box>
         </box>
@@ -57,4 +57,4 @@
     </box>
   </box>
 </window>
-</jinete>
+</gui>

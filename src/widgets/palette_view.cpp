@@ -292,8 +292,7 @@ bool PaletteView::onProcessMessage(Message* msg)
           else
             selectColor(idx);
 
-          // Emit signals
-          jwidget_emit_signal(this, SIGNAL_PALETTE_EDITOR_CHANGE);
+          // Emit signal
           IndexChange(idx);
         }
       }

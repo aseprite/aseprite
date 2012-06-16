@@ -18,6 +18,8 @@
 
 #include "config.h"
 
+#include "app/find_widget.h"
+#include "app/load_widget.h"
 #include "commands/command.h"
 #include "commands/params.h"
 #include "document_wrappers.h"
@@ -231,11 +233,9 @@ bool GotoFrameCommand::onEnabled(Context* context)
 void GotoFrameCommand::onExecute(Context* context)
 {
   if (m_frame == 0 && context->isUiAvailable()) {
-    Widget* frame, *ok;
-    FramePtr window(load_widget("goto_frame.xml", "goto_frame"));
-    get_widgets(window,
-                "frame", &frame,
-                "ok", &ok, NULL);
+    UniquePtr<Frame> window(app::load_widget<Frame>("goto_frame.xml", "goto_frame"));
+    Widget* frame = app::find_widget<Widget>(window, "frame");
+    Widget* ok = app::find_widget<Widget>(window, "ok");
 
     frame->setTextf("%d", context->getActiveDocument()->getSprite()->getCurrentFrame()+1);
 

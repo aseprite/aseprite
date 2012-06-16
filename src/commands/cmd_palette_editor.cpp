@@ -21,12 +21,12 @@
 #include "app.h"
 #include "app/color.h"
 #include "app/color_utils.h"
+#include "app/file_selector.h"
 #include "base/bind.h"
 #include "base/compiler_specific.h"
 #include "commands/command.h"
 #include "commands/params.h"
 #include "console.h"
-#include "dialogs/filesel.h"
 #include "document_wrappers.h"
 #include "gfx/hsv.h"
 #include "gfx/rgb.h"
@@ -578,7 +578,7 @@ void PaletteEntryEditor::onPasteColorsClick(Event& ev)
 void PaletteEntryEditor::onLoadPaletteClick(Event& ev)
 {
   Palette *palette;
-  base::string filename = ase_file_selector("Load Palette", "", "png,pcx,bmp,tga,lbm,col");
+  base::string filename = app::show_file_selector("Load Palette", "", "png,pcx,bmp,tga,lbm,col");
   if (!filename.empty()) {
     palette = Palette::load(filename.c_str());
     if (!palette) {
@@ -597,7 +597,7 @@ void PaletteEntryEditor::onSavePaletteClick(Event& ev)
   int ret;
 
  again:
-  filename = ase_file_selector("Save Palette", "", "png,pcx,bmp,tga,col");
+  filename = app::show_file_selector("Save Palette", "", "png,pcx,bmp,tga,col");
   if (!filename.empty()) {
     if (exists(filename.c_str())) {
       ret = Alert::show("Warning<<File exists, overwrite it?<<%s||&Yes||&No||&Cancel",

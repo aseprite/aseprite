@@ -62,7 +62,7 @@ class ToolBar : public Widget
   PopupFrame* m_popupFrame;
 
   // Tool-tip window
-  TipWindow* m_tipWindow;
+  gui::TipWindow* m_tipWindow;
 
   gui::Timer m_tipTimer;
   bool m_tipOpened;
@@ -573,7 +573,7 @@ void ToolBar::openTipWindow(int group_index, Tool* tool)
   else
     return;
 
-  m_tipWindow = new TipWindow(tooltip.c_str(), true);
+  m_tipWindow = new gui::TipWindow(tooltip.c_str(), true);
   m_tipWindow->setArrowAlign(JI_TOP | JI_RIGHT);
   m_tipWindow->remap_window();
 

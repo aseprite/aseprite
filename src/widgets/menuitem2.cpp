@@ -22,7 +22,6 @@
 
 #include "commands/command.h"
 #include "commands/params.h"
-#include "gui/hook.h"
 #include "gui/menu.h"
 #include "gui/message.h"
 #include "gui/widget.h"
@@ -67,22 +66,6 @@ bool MenuItem2::onProcessMessage(Message* msg)
       setEnabled(false);
       break;
 
-    case JM_SIGNAL:
-      if (msg->signal.num == JI_SIGNAL_MENUITEM_SELECT) {
-        UIContext* context = UIContext::instance();
-
-        if (m_command) {
-          if (m_params)
-            m_command->loadParams(m_params);
-
-          if (m_command->isEnabled(context)) {
-            context->executeCommand(m_command);
-            return true;
-          }
-        }
-      }
-      break;
-
     default:
       if (msg->type == jm_open_menuitem()) {
         // Update the context flags after opening the menuitem's
@@ -95,4 +78,18 @@ bool MenuItem2::onProcessMessage(Message* msg)
   }
 
   return MenuItem::onProcessMessage(msg);
+}
+
+void MenuItem2::onClick()
+{
+  MenuItem::onClick();
+
+  if (m_command) {
+    if (m_params)
+      m_command->loadParams(m_params);
+
+    UIContext* context = UIContext::instance();
+    if (m_command->isEnabled(context))
+      context->executeCommand(m_command);
+  }
 }

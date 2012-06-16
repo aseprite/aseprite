@@ -18,11 +18,9 @@
 
 #include "config.h"
 
-#include <setjmp.h>
-#include <stdio.h>
-#include <stdlib.h>
-
 #include "app.h"
+#include "app/find_widget.h"
+#include "app/load_widget.h"
 #include "base/compiler_specific.h"
 #include "base/memory.h"
 #include "console.h"
@@ -32,8 +30,11 @@
 #include "file/format_options.h"
 #include "gui/gui.h"
 #include "ini_file.h"
-#include "modules/gui.h"
 #include "raster/raster.h"
+
+#include <csetjmp>
+#include <cstdio>
+#include <cstdlib>
 
 #include "jpeglib.h"
 
@@ -365,12 +366,9 @@ SharedPtr<FormatOptions> JpegFormat::onGetFormatOptions(FileOp* fop)
       return jpeg_options;
 
     // Load the window to ask to the user the JPEG options he wants.
-    FramePtr window(load_widget("jpeg_options.xml", "jpeg_options"));
-    Slider* slider_quality;
-    Widget* ok;
-    get_widgets(window,
-                "quality", &slider_quality,
-                "ok", &ok, NULL);
+    UniquePtr<Frame> window(app::load_widget<Frame>("jpeg_options.xml", "jpeg_options"));
+    Slider* slider_quality = app::find_widget<Slider>(window, "quality");
+    Widget* ok = app::find_widget<Widget>(window, "ok");
 
     slider_quality->setValue(jpeg_options->quality * 10.0f);
 
