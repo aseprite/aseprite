@@ -352,12 +352,9 @@ Widget* WidgetLoader::convertXmlElementToWidget(const TiXmlElement* elem, Widget
   }
   /* textbox */
   else if (ustrcmp(elem_name, "textbox") == 0) {
-    //bool wordwrap = bool_attr_is_true(elem, "wordwrap");
+    bool wordwrap = bool_attr_is_true(elem, "wordwrap");
 
-    /* TODO add translatable support */
-    /* TODO here we need jxmlelem_get_text(elem) */
-    /* widget = jtextbox_new(tag->text, wordwrap ? JI_WORDWRAP: 0); */
-    ASSERT(false);
+    widget = new TextBox(elem->GetText(), wordwrap ? JI_WORDWRAP: 0);
   }
   /* view */
   else if (ustrcmp(elem_name, "view") == 0) {
