@@ -252,7 +252,7 @@ bool ListBox::onProcessMessage(Message* msg)
             }
             break;
           default:
-            return false;
+            return Widget::onProcessMessage(msg);
         }
 
         selectIndex(MID(0, select, bottom));
