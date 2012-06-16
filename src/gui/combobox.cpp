@@ -18,7 +18,9 @@ using namespace gfx;
 class ComboBoxButton : public Button
 {
 public:
-  ComboBoxButton() : Button("") { }
+  ComboBoxButton() : Button("") {
+    setFocusStop(false);
+  }
 
   void onPaint(PaintEvent& ev) OVERRIDE {
     getTheme()->paintComboBoxButton(ev);
