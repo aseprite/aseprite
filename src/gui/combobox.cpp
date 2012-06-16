@@ -404,21 +404,6 @@ bool ComboBoxListBox::onProcessMessage(Message* msg)
       }
       return true;
 
-/*     case JM_IDLE: { */
-/*       /\* if the user clicks outside the listbox *\/ */
-/*       if (!jmouse_b(1) && jmouse_b(0) && !jwidget_has_mouse(widget)) { */
-/*      ComboBox *combobox = jwidget_get_data(combo_widget, JI_COMBOBOX); */
-
-/*      if (combobox->entry && !jwidget_has_mouse(combobox->entry) && */
-/*          combobox->button && !jwidget_has_mouse(combobox->button) && */
-/*          combobox->window && !jwidget_has_mouse(combobox->window)) { */
-/*        combobox_close_window(combo_widget); */
-/*        return true; */
-/*      } */
-/*       } */
-/*       break; */
-/*     } */
-
     case JM_KEYPRESSED:
       if (hasFocus()) {
         if (msg->key.scancode == KEY_SPACE ||
