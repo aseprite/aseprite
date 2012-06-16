@@ -58,10 +58,7 @@ DrawingState::DrawingState(tools::ToolLoop* toolLoop, Editor* editor, Message* m
 
 DrawingState::~DrawingState()
 {
-  delete m_toolLoopManager;
-  delete m_toolLoop;
-  m_toolLoopManager = NULL;
-  m_toolLoop = NULL;
+  destroyLoop();
 }
 
 bool DrawingState::onMouseDown(Editor* editor, Message* msg)
@@ -75,9 +72,7 @@ bool DrawingState::onMouseDown(Editor* editor, Message* msg)
   // Cancel drawing loop
   if (m_toolLoopManager->isCanceled()) {
     m_toolLoopManager->releaseLoop(pointer_from_msg(msg));
-
-    delete m_toolLoopManager;
-    m_toolLoopManager = NULL;
+    destroyLoop();
 
     // Change to standby state
     editor->backToPreviousState();
@@ -96,6 +91,7 @@ bool DrawingState::onMouseUp(Editor* editor, Message* msg)
     return true;
 
   m_toolLoopManager->releaseLoop(pointer_from_msg(msg));
+  destroyLoop();
 
   // Back to standby state.
   editor->backToPreviousState();
@@ -161,4 +157,12 @@ bool DrawingState::onUpdateStatusBar(Editor* editor)
   // The status bar is updated by ToolLoopImpl::updateStatusBar()
   // method called by the ToolLoopManager.
   return false;
+}
+
+void DrawingState::destroyLoop()
+{
+  delete m_toolLoopManager;
+  delete m_toolLoop;
+  m_toolLoopManager = NULL;
+  m_toolLoop = NULL;
 }

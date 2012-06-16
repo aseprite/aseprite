@@ -45,6 +45,8 @@ public:
   virtual bool requirePenPreview() OVERRIDE { return false; }
 
 private:
+  void destroyLoop();
+
   // The tool-loop.
   tools::ToolLoop* m_toolLoop;
 
