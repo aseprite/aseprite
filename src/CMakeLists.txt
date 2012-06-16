@@ -339,6 +339,7 @@ add_library(aseprite-library
   util/col_file.cpp
   util/expand_cel_canvas.cpp
   util/filetoks.cpp
+  util/gpl_file.cpp
   util/misc.cpp
   util/msk_file.cpp
   util/pic_file.cpp

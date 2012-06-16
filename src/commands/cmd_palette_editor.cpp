@@ -578,7 +578,7 @@ void PaletteEntryEditor::onPasteColorsClick(Event& ev)
 void PaletteEntryEditor::onLoadPaletteClick(Event& ev)
 {
   Palette *palette;
-  base::string filename = app::show_file_selector("Load Palette", "", "png,pcx,bmp,tga,lbm,col");
+  base::string filename = app::show_file_selector("Load Palette", "", "png,pcx,bmp,tga,lbm,col,gpl");
   if (!filename.empty()) {
     palette = Palette::load(filename.c_str());
     if (!palette) {
@@ -597,7 +597,7 @@ void PaletteEntryEditor::onSavePaletteClick(Event& ev)
   int ret;
 
  again:
-  filename = app::show_file_selector("Save Palette", "", "png,pcx,bmp,tga,col");
+  filename = app::show_file_selector("Save Palette", "", "png,pcx,bmp,tga,col,gpl");
   if (!filename.empty()) {
     if (exists(filename.c_str())) {
       ret = Alert::show("Warning<<File exists, overwrite it?<<%s||&Yes||&No||&Cancel",

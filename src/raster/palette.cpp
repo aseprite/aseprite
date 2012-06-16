@@ -25,7 +25,8 @@
 #include "gfx/rgb.h"
 #include "raster/image.h"
 #include "raster/palette.h"
-#include "util/col_file.h"
+#include "util/col_file.h"      // TODO Remove circular dependency between "raster" <-> "util"
+#include "util/gpl_file.h"
 
 using namespace gfx;
 
@@ -451,6 +452,9 @@ Palette* Palette::load(const char *filename)
   else if (ustricmp(ext, "col") == 0) {
     pal = load_col_file(filename);
   }
+  else if (ustricmp(ext, "gpl") == 0) {
+    pal = load_gpl_file(filename);
+  }
 
   return pal;
 }
@@ -482,6 +486,9 @@ bool Palette::save(const char *filename) const
   }
   else if (ustricmp(ext, "col") == 0) {
     success = save_col_file(this, filename);
+  }
+  else if (ustricmp(ext, "gpl") == 0) {
+    success = save_gpl_file(this, filename);
   }
 
   return success;

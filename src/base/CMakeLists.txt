@@ -31,4 +31,5 @@ add_library(base-lib
   split_string.cpp
   string.cpp
   thread.cpp
+  trim_string.cpp
   version.cpp)
