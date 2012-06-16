@@ -140,13 +140,18 @@ protected:
     int sheet_w = sprite->getWidth()*columns;
     int sheet_h = sprite->getHeight()*((nframes/columns)+((nframes%columns)>0?1:0));
     UniquePtr<Image> resultImage(Image::create(sprite->getPixelFormat(), sheet_w, sheet_h));
+    UniquePtr<Image> tempImage(Image::create(sprite->getPixelFormat(), sprite->getWidth(), sprite->getHeight()));
     image_clear(resultImage, 0);
 
     int oldFrame = sprite->getCurrentFrame();
     int column = 0, row = 0;
     for (int frame=0; frame<nframes; ++frame) {
+      // TODO "tempImage" could not be necessary if we could specify
+      // destination clipping bounds in Sprite::render() function.
+      tempImage->clear(0);
       sprite->setCurrentFrame(frame);
-      sprite->render(resultImage, column*sprite->getWidth(), row*sprite->getHeight());
+      sprite->render(tempImage, 0, 0);
+      resultImage->copy(tempImage, column*sprite->getWidth(), row*sprite->getHeight());
 
       if (++column >= columns) {
         column = 0;
