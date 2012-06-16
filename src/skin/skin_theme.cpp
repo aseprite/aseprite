@@ -517,7 +517,7 @@ BITMAP* SkinTheme::set_cursor(int type, int* focus_x, int* focus_y)
   }
 }
 
-void SkinTheme::init_widget(JWidget widget)
+void SkinTheme::init_widget(Widget* widget)
 {
 #define BORDER(n)                       \
   widget->border_width.l = (n);         \
@@ -720,15 +720,15 @@ void SkinTheme::init_widget(JWidget widget)
   }
 }
 
-JRegion SkinTheme::get_window_mask(JWidget widget)
+JRegion SkinTheme::get_window_mask(Widget* widget)
 {
   return jregion_new(widget->rc, 1);
 }
 
-void SkinTheme::map_decorative_widget(JWidget widget)
+void SkinTheme::map_decorative_widget(Widget* widget)
 {
   if (widget->getId() == kThemeCloseButtonId) {
-    JWidget window = widget->parent;
+    Widget* window = widget->parent;
     JRect rect = jrect_new(0, 0, 0, 0);
 
     rect->x2 = m_part[PART_WINDOW_CLOSE_BUTTON_NORMAL]->w;
@@ -1032,12 +1032,12 @@ void SkinTheme::paintLinkLabel(PaintEvent& ev)
   }
 }
 
-void SkinTheme::draw_listbox(JWidget widget, JRect clip)
+void SkinTheme::draw_listbox(Widget* widget, JRect clip)
 {
   jdraw_rectfill(widget->rc, COLOR_BACKGROUND);
 }
 
-void SkinTheme::draw_listitem(JWidget widget, JRect clip)
+void SkinTheme::draw_listitem(Widget* widget, JRect clip)
 {
   int fg, bg;
   int x, y;
@@ -1194,7 +1194,7 @@ void SkinTheme::draw_menuitem(MenuItem* widget, JRect clip)
   }
 }
 
-void SkinTheme::draw_panel(JWidget widget, JRect clip)
+void SkinTheme::draw_panel(Widget* widget, JRect clip)
 {
   jdraw_rectfill(widget->rc, get_panel_face_color());
 }
@@ -1239,7 +1239,7 @@ void SkinTheme::paintRadioButton(PaintEvent& ev)
   }
 }
 
-void SkinTheme::draw_separator(JWidget widget, JRect clip)
+void SkinTheme::draw_separator(Widget* widget, JRect clip)
 {
   int x1, y1, x2, y2;
 
@@ -1511,14 +1511,14 @@ void SkinTheme::paintComboBoxButton(PaintEvent& ev)
   }
 }
 
-void SkinTheme::draw_textbox(JWidget widget, JRect clip)
+void SkinTheme::draw_textbox(Widget* widget, JRect clip)
 {
   _ji_theme_textbox_draw(ji_screen, widget, NULL, NULL,
                          this->textbox_bg_color,
                          this->textbox_fg_color);
 }
 
-void SkinTheme::draw_view(JWidget widget, JRect clip)
+void SkinTheme::draw_view(Widget* widget, JRect clip)
 {
   draw_bounds_nw(ji_screen,
                  widget->rc->x1,
@@ -1530,7 +1530,7 @@ void SkinTheme::draw_view(JWidget widget, JRect clip)
                  COLOR_BACKGROUND);
 }
 
-void SkinTheme::draw_view_scrollbar(JWidget _widget, JRect clip)
+void SkinTheme::draw_view_scrollbar(Widget* _widget, JRect clip)
 {
   ScrollBar* widget = static_cast<ScrollBar*>(_widget);
   int x1, y1, x2, y2;
@@ -1570,7 +1570,7 @@ void SkinTheme::draw_view_scrollbar(JWidget _widget, JRect clip)
                  get_scrollbar_thumb_face_color());
 }
 
-void SkinTheme::draw_view_viewport(JWidget widget, JRect clip)
+void SkinTheme::draw_view_viewport(Widget* widget, JRect clip)
 {
   jdraw_rectfill(widget->rc, BGCOLOR);
 }
@@ -1691,7 +1691,7 @@ void SkinTheme::paintTooltip(PaintEvent& ev)
   g->drawString(widget->getText(), ji_color_foreground(), bg, rc, widget->getAlign());
 }
 
-int SkinTheme::get_bg_color(JWidget widget)
+int SkinTheme::get_bg_color(Widget* widget)
 {
   int c = jwidget_get_bg_color(widget);
   bool decorative = widget->isDecorative();
@@ -1701,7 +1701,7 @@ int SkinTheme::get_bg_color(JWidget widget)
 }
 
 void SkinTheme::draw_textstring(const char *t, int fg_color, int bg_color,
-                                bool fill_bg, JWidget widget, const JRect rect,
+                                bool fill_bg, Widget* widget, const JRect rect,
                                 int selected_offset)
 {
   if (t || widget->hasText()) {
@@ -1771,7 +1771,7 @@ void SkinTheme::draw_textstring(const char *t, int fg_color, int bg_color,
 }
 
 void SkinTheme::draw_textstring(Graphics* g, const char *t, int fg_color, int bg_color,
-                                bool fill_bg, JWidget widget, const gfx::Rect& rc,
+                                bool fill_bg, Widget* widget, const gfx::Rect& rc,
                                 int selected_offset)
 {
   if (t || widget->hasText()) {

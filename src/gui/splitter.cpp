@@ -49,7 +49,7 @@ bool Splitter::onProcessMessage(Message* msg)
 
     case JM_BUTTONPRESSED:
       if (isEnabled()) {
-        JWidget c1, c2;
+        Widget* c1, *c2;
         int x1, y1, x2, y2;
         int bar, click_bar;
         JLink link;
@@ -58,8 +58,8 @@ bool Splitter::onProcessMessage(Message* msg)
 
         JI_LIST_FOR_EACH(this->children, link) {
           if (link->next != this->children->end) {
-            c1 = reinterpret_cast<JWidget>(link->data);
-            c2 = reinterpret_cast<JWidget>(link->next->data);
+            c1 = reinterpret_cast<Widget*>(link->data);
+            c2 = reinterpret_cast<Widget*>(link->next->data);
 
             ++bar;
 
@@ -117,15 +117,15 @@ bool Splitter::onProcessMessage(Message* msg)
 
     case JM_SETCURSOR:
       if (isEnabled()) {
-        JWidget c1, c2;
+        Widget* c1, *c2;
         JLink link;
         int x1, y1, x2, y2;
         bool change_cursor = false;
 
         JI_LIST_FOR_EACH(this->children, link) {
           if (link->next != this->children->end) {
-            c1 = reinterpret_cast<JWidget>(link->data);
-            c2 = reinterpret_cast<JWidget>(link->next->data);
+            c1 = reinterpret_cast<Widget*>(link->data);
+            c2 = reinterpret_cast<Widget*>(link->next->data);
 
             if (this->getAlign() & JI_HORIZONTAL) {
               x1 = c1->rc->x2;
@@ -181,12 +181,12 @@ void Splitter::onPreferredSize(PreferredSizeEvent& ev)
 
   int visibleChildren;
   Size reqSize;
-  JWidget child;
+  Widget* child;
   JLink link;
 
   visibleChildren = 0;
   JI_LIST_FOR_EACH(this->children, link) {
-    child = (JWidget)link->data;
+    child = (Widget*)link->data;
     if (!(child->flags & JI_HIDDEN))
       visibleChildren++;
   }
@@ -195,7 +195,7 @@ void Splitter::onPreferredSize(PreferredSizeEvent& ev)
   w = h = 0;
 
   JI_LIST_FOR_EACH(this->children, link) {
-    child = (JWidget)link->data;
+    child = (Widget*)link->data;
 
     if (child->flags & JI_HIDDEN)
       continue;
@@ -251,8 +251,8 @@ void Splitter::layoutMembers(JRect rect)
   jrect_copy(this->rc, rect);
 
   if (jlist_length(this->children) == 2) {
-    JWidget child1 = reinterpret_cast<JWidget>(jlist_first(this->children)->data);
-    JWidget child2 = reinterpret_cast<JWidget>(jlist_first(this->children)->next->data);
+    Widget* child1 = reinterpret_cast<Widget*>(jlist_first(this->children)->data);
+    Widget* child2 = reinterpret_cast<Widget*>(jlist_first(this->children)->next->data);
     //Size reqSize1 = child1->getPreferredSize();
     //Size reqSize2 = child2->getPreferredSize();
 

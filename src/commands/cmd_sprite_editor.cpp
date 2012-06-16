@@ -19,6 +19,7 @@
 #include "config.h"
 
 #include "commands/command.h"
+#include "gui/base.h"
 #include "modules/editors.h"
 
 //////////////////////////////////////////////////////////////////////

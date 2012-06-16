@@ -50,7 +50,7 @@ struct Filter
   int message;
   Widget* widget;
 
-  Filter(int message, JWidget widget)
+  Filter(int message, Widget* widget)
     : message(message)
     , widget(widget) { }
 };
@@ -84,12 +84,12 @@ static unsigned key_repeated[KEY_MAX];
 /* keyboard focus movement stuff */
 static bool move_focus(gui::Manager* manager, Message* msg);
 static int count_widgets_accept_focus(Widget* widget);
-static bool childs_accept_focus(JWidget widget, bool first);
-static JWidget next_widget(JWidget widget);
-static int cmp_left(JWidget widget, int x, int y);
-static int cmp_right(JWidget widget, int x, int y);
-static int cmp_up(JWidget widget, int x, int y);
-static int cmp_down(JWidget widget, int x, int y);
+static bool childs_accept_focus(Widget* widget, bool first);
+static Widget* next_widget(Widget* widget);
+static int cmp_left(Widget* widget, int x, int y);
+static int cmp_right(Widget* widget, int x, int y);
+static int cmp_up(Widget* widget, int x, int y);
+static int cmp_down(Widget* widget, int x, int y);
 
 /* hooks the close-button in some platform with window support */
 static void allegro_window_close_hook()
@@ -211,8 +211,8 @@ void Manager::run()
 
 bool Manager::generateMessages()
 {
-  JWidget widget;
-  JWidget window;
+  Widget* widget;
+  Widget* window;
   int mousemove;
   Message* msg;
   JLink link;
@@ -234,10 +234,10 @@ bool Manager::generateMessages()
 
   // New windows to show?
   if (!jlist_empty(new_windows)) {
-    JWidget magnet;
+    Widget* magnet;
 
     JI_LIST_FOR_EACH(new_windows, link) {
-      window = reinterpret_cast<JWidget>(link->data);
+      window = reinterpret_cast<Widget*>(link->data);
 
       // Relayout
       window->layout();
@@ -288,7 +288,7 @@ bool Manager::generateMessages()
 
     // Mouse movement
     if (mousemove) {
-      JWidget dst;
+      Widget* dst;
 
       // Reset double click status
       double_click_level = DOUBLE_CLICK_NONE;
@@ -572,7 +572,7 @@ void Manager::setFocus(Widget* widget)
               && !(widget->flags & JI_DECORATIVE)
               && someParentIsFocusStop(widget)))) {
     JList widget_parents = NULL;
-    JWidget common_parent = NULL;
+    Widget* common_parent = NULL;
     JLink link, link2;
     Message* msg;
 
@@ -591,7 +591,7 @@ void Manager::setFocus(Widget* widget)
         if (widget) {
           JI_LIST_FOR_EACH(widget_parents, link2) {
             if (link->data == link2->data) {
-              common_parent = reinterpret_cast<JWidget>(link->data);
+              common_parent = reinterpret_cast<Widget*>(link->data);
               break;
             }
           }
@@ -599,9 +599,9 @@ void Manager::setFocus(Widget* widget)
             break;
         }
 
-        if (reinterpret_cast<JWidget>(link->data)->hasFocus()) {
-          ((JWidget)link->data)->flags &= ~JI_HASFOCUS;
-          jmessage_add_dest(msg, reinterpret_cast<JWidget>(link->data));
+        if (reinterpret_cast<Widget*>(link->data)->hasFocus()) {
+          ((Widget*)link->data)->flags &= ~JI_HASFOCUS;
+          jmessage_add_dest(msg, reinterpret_cast<Widget*>(link->data));
         }
       }
 
@@ -622,7 +622,7 @@ void Manager::setFocus(Widget* widget)
       msg = jmessage_new(JM_FOCUSENTER);
 
       for (; link != widget_parents->end; link=link->next) {
-        JWidget w = (JWidget)link->data;
+        Widget* w = (Widget*)link->data;
 
         if (w->flags & JI_FOCUSSTOP) {
           w->flags |= JI_HASFOCUS;
@@ -642,7 +642,7 @@ void Manager::setMouse(Widget* widget)
 {
   if ((mouse_widget != widget) && (!capture_widget)) {
     JList widget_parents = NULL;
-    JWidget common_parent = NULL;
+    Widget* common_parent = NULL;
     JLink link, link2;
     Message* msg;
 
@@ -661,7 +661,7 @@ void Manager::setMouse(Widget* widget)
         if (widget) {
           JI_LIST_FOR_EACH(widget_parents, link2) {
             if (link->data == link2->data) {
-              common_parent = reinterpret_cast<JWidget>(link->data);
+              common_parent = reinterpret_cast<Widget*>(link->data);
               break;
             }
           }
@@ -669,9 +669,9 @@ void Manager::setMouse(Widget* widget)
             break;
         }
 
-        if (reinterpret_cast<JWidget>(link->data)->hasMouse()) {
-          ((JWidget)link->data)->flags &= ~JI_HASMOUSE;
-          jmessage_add_dest(msg, reinterpret_cast<JWidget>(link->data));
+        if (reinterpret_cast<Widget*>(link->data)->hasMouse()) {
+          ((Widget*)link->data)->flags &= ~JI_HASMOUSE;
+          jmessage_add_dest(msg, reinterpret_cast<Widget*>(link->data));
         }
       }
 
@@ -692,8 +692,8 @@ void Manager::setMouse(Widget* widget)
       msg = jmessage_new(JM_MOUSEENTER);
 
       for (; link != widget_parents->end; link=link->next) {
-        reinterpret_cast<JWidget>(link->data)->flags |= JI_HASMOUSE;
-        jmessage_add_dest(msg, reinterpret_cast<JWidget>(link->data));
+        reinterpret_cast<Widget*>(link->data)->flags |= JI_HASMOUSE;
+        jmessage_add_dest(msg, reinterpret_cast<Widget*>(link->data));
       }
 
       enqueueMessage(msg);
@@ -714,7 +714,7 @@ void Manager::setCapture(Widget* widget)
 void Manager::attractFocus(Widget* widget)
 {
   /* get the magnetic widget */
-  JWidget magnet = findMagneticWidget(widget->getRoot());
+  Widget* magnet = findMagneticWidget(widget->getRoot());
 
   /* if magnetic widget exists and it doesn't have the focus */
   if (magnet && !magnet->hasFocus())
@@ -768,7 +768,7 @@ void Manager::removeMessage(Message* msg)
   jlist_remove(msg_queue, msg);
 }
 
-void Manager::removeMessagesFor(JWidget widget)
+void Manager::removeMessagesFor(Widget* widget)
 {
   JLink link;
   JI_LIST_FOR_EACH(msg_queue, link)
@@ -790,7 +790,7 @@ void Manager::removeMessagesForTimer(gui::Timer* timer)
   }
 }
 
-void Manager::addMessageFilter(int message, JWidget widget)
+void Manager::addMessageFilter(int message, Widget* widget)
 {
   int c = message;
   if (c >= JM_REGISTERED_MESSAGES)
@@ -799,7 +799,7 @@ void Manager::addMessageFilter(int message, JWidget widget)
   jlist_append(msg_filters[c], new Filter(message, widget));
 }
 
-void Manager::removeMessageFilter(int message, JWidget widget)
+void Manager::removeMessageFilter(int message, Widget* widget)
 {
   JLink link, next;
   int c = message;
@@ -815,7 +815,7 @@ void Manager::removeMessageFilter(int message, JWidget widget)
   }
 }
 
-void Manager::removeMessageFilterFor(JWidget widget)
+void Manager::removeMessageFilterFor(Widget* widget)
 {
   JLink link, next;
   int c;
@@ -942,7 +942,7 @@ bool Manager::onProcessMessage(Message* msg)
 
         // Send to the window.
         JI_LIST_FOR_EACH(w->children, link2)
-          if (reinterpret_cast<JWidget>(link2->data)->sendMessage(msg))
+          if (reinterpret_cast<Widget*>(link2->data)->sendMessage(msg))
             return true;
 
         if (w->is_foreground() ||
@@ -984,7 +984,7 @@ void Manager::onPreferredSize(PreferredSizeEvent& ev)
     JLink link;
 
     JI_LIST_FOR_EACH(this->children, link) {
-      cpos = jwidget_get_rect(reinterpret_cast<JWidget>(link->data));
+      cpos = jwidget_get_rect(reinterpret_cast<Widget*>(link->data));
       jrect_union(pos, cpos);
       jrect_free(cpos);
     }
@@ -1000,7 +1000,7 @@ void Manager::onPreferredSize(PreferredSizeEvent& ev)
 void Manager::layoutManager(JRect rect)
 {
   JRect cpos, old_pos;
-  JWidget child;
+  Widget* child;
   JLink link;
   int x, y;
 
@@ -1063,7 +1063,7 @@ void Manager::pumpQueue()
 
     done = false;
     JI_LIST_FOR_EACH(msg->any.widgets, link2) {
-      widget = reinterpret_cast<JWidget>(link2->data);
+      widget = reinterpret_cast<Widget*>(link2->data);
 
 #ifdef REPORT_EVENTS
       {
@@ -1257,7 +1257,7 @@ Widget* Manager::findMagneticWidget(Widget* widget)
   JLink link;
 
   JI_LIST_FOR_EACH(widget->children, link) {
-    found = findMagneticWidget(reinterpret_cast<JWidget>(link->data));
+    found = findMagneticWidget(reinterpret_cast<Widget*>(link->data));
     if (found)
       return found;
   }
@@ -1269,7 +1269,7 @@ Widget* Manager::findMagneticWidget(Widget* widget)
 }
 
 // static
-Message* Manager::newMouseMessage(int type, JWidget widget)
+Message* Manager::newMouseMessage(int type, Widget* widget)
 {
   Message* msg = jmessage_new(type);
   if (!msg)
@@ -1314,7 +1314,7 @@ void Manager::broadcastKeyMsg(Message* msg)
 
 static bool move_focus(gui::Manager* manager, Message* msg)
 {
-  int (*cmp)(JWidget, int, int) = NULL;
+  int (*cmp)(Widget*, int, int) = NULL;
   Widget* focus = NULL;
   Widget* it;
   bool ret = false;
@@ -1392,7 +1392,7 @@ static bool move_focus(gui::Manager* manager, Message* msg)
             for (j=i+1; j<count; j++) {
               /* sort the list in ascending order */
               if ((*cmp) (list[i], x, y) > (*cmp) (list[j], x, y)) {
-                JWidget tmp = list[i];
+                Widget* tmp = list[i];
                 list[i] = list[j];
                 list[j] = tmp;
               }
@@ -1427,7 +1427,7 @@ static int count_widgets_accept_focus(Widget* widget)
   JLink link;
 
   JI_LIST_FOR_EACH(widget->children, link)
-    count += count_widgets_accept_focus(reinterpret_cast<JWidget>(link->data));
+    count += count_widgets_accept_focus(reinterpret_cast<Widget*>(link->data));
 
   if ((count == 0) && (ACCEPT_FOCUS(widget)))
     count++;
@@ -1435,26 +1435,26 @@ static int count_widgets_accept_focus(Widget* widget)
   return count;
 }
 
-static bool childs_accept_focus(JWidget widget, bool first)
+static bool childs_accept_focus(Widget* widget, bool first)
 {
   JLink link;
 
   JI_LIST_FOR_EACH(widget->children, link)
-    if (childs_accept_focus(reinterpret_cast<JWidget>(link->data), false))
+    if (childs_accept_focus(reinterpret_cast<Widget*>(link->data), false))
       return true;
 
   return first ? false: ACCEPT_FOCUS(widget);
 }
 
-static JWidget next_widget(JWidget widget)
+static Widget* next_widget(Widget* widget)
 {
   if (!jlist_empty(widget->children))
-    return reinterpret_cast<JWidget>(jlist_first(widget->children)->data);
+    return reinterpret_cast<Widget*>(jlist_first(widget->children)->data);
 
   while (widget->parent->type != JI_MANAGER) {
     JLink link = jlist_find(widget->parent->children, widget);
     if (link->next != widget->parent->children->end)
-      return reinterpret_cast<JWidget>(link->next->data);
+      return reinterpret_cast<Widget*>(link->next->data);
     else
       widget = widget->parent;
   }
@@ -1462,7 +1462,7 @@ static JWidget next_widget(JWidget widget)
   return NULL;
 }
 
-static int cmp_left(JWidget widget, int x, int y)
+static int cmp_left(Widget* widget, int x, int y)
 {
   int z = x - (widget->rc->x1+widget->rc->x2)/2;
   if (z <= 0)
@@ -1470,7 +1470,7 @@ static int cmp_left(JWidget widget, int x, int y)
   return z + ABS((widget->rc->y1+widget->rc->y2)/2 - y) * 8;
 }
 
-static int cmp_right(JWidget widget, int x, int y)
+static int cmp_right(Widget* widget, int x, int y)
 {
   int z = (widget->rc->x1+widget->rc->x2)/2 - x;
   if (z <= 0)
@@ -1478,7 +1478,7 @@ static int cmp_right(JWidget widget, int x, int y)
   return z + ABS((widget->rc->y1+widget->rc->y2)/2 - y) * 8;
 }
 
-static int cmp_up(JWidget widget, int x, int y)
+static int cmp_up(Widget* widget, int x, int y)
 {
   int z = y - (widget->rc->y1+widget->rc->y2)/2;
   if (z <= 0)
@@ -1486,7 +1486,7 @@ static int cmp_up(JWidget widget, int x, int y)
   return z + ABS((widget->rc->x1+widget->rc->x2)/2 - x) * 8;
 }
 
-static int cmp_down(JWidget widget, int x, int y)
+static int cmp_down(Widget* widget, int x, int y)
 {
   int z = (widget->rc->y1+widget->rc->y2)/2 - y;
   if (z <= 0)

@@ -126,8 +126,8 @@ Widget* WidgetLoader::loadWidgetFromXmlFile(const char* xmlFilename, const char*
 Widget* WidgetLoader::convertXmlElementToWidget(const TiXmlElement* elem, Widget* root)
 {
   const char *elem_name = elem->Value();
-  JWidget widget = NULL;
-  JWidget child;
+  Widget* widget = NULL;
+  Widget* child;
 
   // TODO error handling: add a message if the widget is bad specified
 

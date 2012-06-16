@@ -61,7 +61,7 @@ void dialogs_mask_color(Document* document)
   Widget* label_color;
   Button* button_1;
   Button* button_2;
-  JWidget label_tolerance;
+  Widget* label_tolerance;
   Button* button_ok;
   Button* button_cancel;
   Image *image;

@@ -282,5 +282,5 @@ void View::displaceWidgets(Widget* widget, int x, int y)
   jrect_displace(widget->rc, x, y);
 
   JI_LIST_FOR_EACH(widget->children, link)
-    displaceWidgets(reinterpret_cast<JWidget>(link->data), x, y);
+    displaceWidgets(reinterpret_cast<Widget*>(link->data), x, y);
 }

@@ -168,7 +168,7 @@ static void reload_default_font();
 static void load_gui_config(int& w, int& h, int& bpp, bool& fullscreen, bool& maximized);
 static void save_gui_config();
 
-static bool button_with_icon_msg_proc(JWidget widget, Message* msg);
+static bool button_with_icon_msg_proc(Widget* widget, Message* msg);
 
 static void on_palette_change_signal();
 
@@ -619,7 +619,7 @@ static void reload_default_font()
   _ji_set_font_of_all_widgets(theme->default_font);
 }
 
-void load_window_pos(JWidget window, const char *section)
+void load_window_pos(Widget* window, const char *section)
 {
   // Default position
   Rect orig_pos = window->getBounds();
@@ -637,7 +637,7 @@ void load_window_pos(JWidget window, const char *section)
   window->setBounds(pos);
 }
 
-void save_window_pos(JWidget window, const char *section)
+void save_window_pos(Widget* window, const char *section)
 {
   set_config_rect(section, "WindowPos", window->getBounds());
 }

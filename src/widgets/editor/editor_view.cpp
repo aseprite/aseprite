@@ -56,7 +56,7 @@ bool EditorView::onProcessMessage(Message* msg)
     case JM_DRAW:
       {
         Widget* viewport = getViewport();
-        Widget* child = reinterpret_cast<JWidget>(jlist_first_data(viewport->children));
+        Widget* child = reinterpret_cast<Widget*>(jlist_first_data(viewport->children));
         JRect pos = jwidget_get_rect(this);
         SkinTheme* theme = static_cast<SkinTheme*>(getTheme());
         bool selected = false;

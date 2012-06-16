@@ -19,15 +19,13 @@
 #ifndef MODULES_EDITORS_H_INCLUDED
 #define MODULES_EDITORS_H_INCLUDED
 
-#include "app/color.h"
-#include "gui/base.h"
-
 class Document;
 class Editor;
 class Sprite;
+class Widget;
 
 extern Editor* current_editor;
-extern JWidget box_editors;
+extern Widget* box_editors;
 
 int init_module_editors();
 void exit_module_editors();

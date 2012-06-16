@@ -19,13 +19,12 @@
 #ifndef WIDGETS_TOOLBAR_H_INCLUDED
 #define WIDGETS_TOOLBAR_H_INCLUDED
 
-#include "gui/base.h"
-
+class Widget;
 namespace tools { class Tool; }
 
-JWidget toolbar_new();
+Widget* toolbar_new();
 
-bool toolbar_is_tool_visible(JWidget toolbar, tools::Tool* tool);
-void toolbar_select_tool(JWidget toolbar, tools::Tool* tool);
+bool toolbar_is_tool_visible(Widget* toolbar, tools::Tool* tool);
+void toolbar_select_tool(Widget* toolbar, tools::Tool* tool);
 
 #endif

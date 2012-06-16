@@ -153,11 +153,11 @@ void PopupFrame::onPreferredSize(PreferredSizeEvent& ev)
   if (!jlist_empty(this->children)) {
     Size maxSize(0, 0);
     Size reqSize;
-    JWidget child;
+    Widget* child;
     JLink link;
 
     JI_LIST_FOR_EACH(this->children, link) {
-      child = (JWidget)link->data;
+      child = (Widget*)link->data;
 
       reqSize = child->getPreferredSize();
 

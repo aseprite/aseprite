@@ -56,9 +56,9 @@ public:
   void reload_fonts();
 
   BITMAP* set_cursor(int type, int* focus_x, int* focus_y);
-  void init_widget(JWidget widget);
-  JRegion get_window_mask(JWidget widget);
-  void map_decorative_widget(JWidget widget);
+  void init_widget(Widget* widget);
+  JRegion get_window_mask(Widget* widget);
+  void map_decorative_widget(Widget* widget);
 
   int color_foreground();
   int color_disabled();
@@ -74,20 +74,20 @@ public:
   void paintGrid(PaintEvent& ev);
   void paintLabel(PaintEvent& ev);
   void paintLinkLabel(PaintEvent& ev);
-  void draw_listbox(JWidget widget, JRect clip);
-  void draw_listitem(JWidget widget, JRect clip);
+  void draw_listbox(Widget* widget, JRect clip);
+  void draw_listitem(Widget* widget, JRect clip);
   void draw_menu(Menu* menu, JRect clip);
   void draw_menuitem(MenuItem* menuitem, JRect clip);
-  void draw_panel(JWidget widget, JRect clip);
+  void draw_panel(Widget* widget, JRect clip);
   void paintRadioButton(PaintEvent& ev);
-  void draw_separator(JWidget widget, JRect clip);
+  void draw_separator(Widget* widget, JRect clip);
   void paintSlider(PaintEvent& ev);
   void draw_combobox_entry(Entry* widget, JRect clip);
   void paintComboBoxButton(PaintEvent& ev);
-  void draw_textbox(JWidget widget, JRect clip);
-  void draw_view(JWidget widget, JRect clip);
-  void draw_view_scrollbar(JWidget widget, JRect clip);
-  void draw_view_viewport(JWidget widget, JRect clip);
+  void draw_textbox(Widget* widget, JRect clip);
+  void draw_view(Widget* widget, JRect clip);
+  void draw_view_scrollbar(Widget* widget, JRect clip);
+  void draw_view_viewport(Widget* widget, JRect clip);
   void paintFrame(PaintEvent& ev);
   void draw_frame_button(ButtonBase* widget, JRect clip);
   void paintTooltip(PaintEvent& ev);
@@ -168,12 +168,12 @@ private:
                             int nw, int n, int ne, int e, int se, int s, int sw, int w);
 
   BITMAP* cropPartFromSheet(BITMAP* bmp, int x, int y, int w, int h, bool cursor = false);
-  int get_bg_color(JWidget widget);
+  int get_bg_color(Widget* widget);
   void draw_textstring(const char *t, int fg_color, int bg_color,
-                       bool fill_bg, JWidget widget, const JRect rect,
+                       bool fill_bg, Widget* widget, const JRect rect,
                        int selected_offset);
   void draw_textstring(Graphics* g, const char *t, int fg_color, int bg_color,
-                       bool fill_bg, JWidget widget, const gfx::Rect& rc,
+                       bool fill_bg, Widget* widget, const gfx::Rect& rc,
                        int selected_offset);
   void draw_entry_caret(Entry* widget, int x, int y);
   void draw_bevel_box(int x1, int y1, int x2, int y2, int c1, int c2, int *bevel);

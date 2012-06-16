@@ -61,7 +61,7 @@ struct MessageSignal
 {
   MessageAny any;
   int num;                      /* signal number */
-  JWidget from;                 /* signal generator */
+  Widget* from;                 /* signal generator */
 };
 
 struct MessageTimer
@@ -119,10 +119,10 @@ Message* jmessage_new_copy(const Message* msg);
 Message* jmessage_new_copy_without_dests(const Message* msg);
 void jmessage_free(Message* msg);
 
-void jmessage_add_dest(Message* msg, JWidget widget);
-void jmessage_add_pre_dest(Message* msg, JWidget widget);
+void jmessage_add_dest(Message* msg, Widget* widget);
+void jmessage_add_pre_dest(Message* msg, Widget* widget);
 
-void jmessage_broadcast_to_children(Message* msg, JWidget widget);
-void jmessage_broadcast_to_parents(Message* msg, JWidget widget);
+void jmessage_broadcast_to_children(Message* msg, Widget* widget);
+void jmessage_broadcast_to_parents(Message* msg, Widget* widget);
 
 #endif

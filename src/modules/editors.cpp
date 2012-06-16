@@ -434,10 +434,10 @@ void split_editor(Editor* editor, int align)
   }
 
   View* view = View::getView(editor);
-  JWidget parent_box = view->getParent(); // Box or splitter.
+  Widget* parent_box = view->getParent(); // Box or splitter.
 
   // Create a new box to contain both editors, and a new view to put the new editor.
-  JWidget new_splitter = new Splitter(align);
+  Widget* new_splitter = new Splitter(align);
   View* new_view = new EditorView(EditorView::CurrentEditorMode);
   Editor* new_editor = create_new_editor();
 
@@ -482,8 +482,8 @@ void split_editor(Editor* editor, int align)
 void close_editor(Editor* editor)
 {
   View* view = View::getView(editor);
-  JWidget parent_box = view->getParent(); // Box or panel
-  JWidget other_widget;
+  Widget* parent_box = view->getParent(); // Box or panel
+  Widget* other_widget;
 
   // You can't remove all (normal) editors.
   int normalEditors = 0;
@@ -503,7 +503,7 @@ void close_editor(Editor* editor)
   delete view;
 
   // Fixup the parent.
-  other_widget = reinterpret_cast<JWidget>(jlist_first_data(parent_box->children));
+  other_widget = reinterpret_cast<Widget*>(jlist_first_data(parent_box->children));
 
   parent_box->removeChild(other_widget);
   parent_box->getParent()->replaceChild(parent_box, other_widget);
@@ -511,7 +511,7 @@ void close_editor(Editor* editor)
 
   // Find next editor to select.
   if (!current_editor) {
-    JWidget next_editor = find_next_editor(other_widget);
+    Widget* next_editor = find_next_editor(other_widget);
     if (next_editor) {
       ASSERT(next_editor->type == editor_type());
 
@@ -533,7 +533,7 @@ void make_unique_editor(Editor* editor)
 {
   View* view = View::getView(editor);
   JLink link, next;
-  JWidget child;
+  Widget* child;
 
   // It's the unique editor.
   if (editors.size() == 1)
@@ -544,7 +544,7 @@ void make_unique_editor(Editor* editor)
 
   // Remove all children of main_editor_box.
   JI_LIST_FOR_EACH_SAFE(box_editors->children, link, next) {
-    child = (JWidget)link->data;
+    child = (Widget*)link->data;
 
     box_editors->removeChild(child);
     delete child; // widget
@@ -612,7 +612,7 @@ static Widget* find_next_editor(Widget* widget)
   }
   else {
     JI_LIST_FOR_EACH(widget->children, link)
-      if ((editor = find_next_editor(reinterpret_cast<JWidget>(link->data))))
+      if ((editor = find_next_editor(reinterpret_cast<Widget*>(link->data))))
         break;
   }
 

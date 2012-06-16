@@ -29,7 +29,7 @@ enum {
 static JRect click_pos = NULL;
 static int press_x, press_y;
 
-static void displace_widgets(JWidget widget, int x, int y);
+static void displace_widgets(Widget* widget, int x, int y);
 
 Frame::Frame(bool desktop, const char* text)
   : Widget(JI_FRAME)
@@ -189,7 +189,7 @@ void Frame::remap_window()
 
 void Frame::center_window()
 {
-  JWidget manager = getManager();
+  Widget* manager = getManager();
 
   if (m_is_autoremap)
     this->remap_window();
@@ -261,7 +261,7 @@ void Frame::closeWindow(Widget* killer)
 
 bool Frame::is_toplevel()
 {
-  JWidget manager = getManager();
+  Widget* manager = getManager();
 
   if (!jlist_empty(manager->children))
     return (this == jlist_first(manager->children)->data);
@@ -450,7 +450,7 @@ bool Frame::onProcessMessage(Message* msg)
 
 void Frame::onPreferredSize(PreferredSizeEvent& ev)
 {
-  JWidget manager = getManager();
+  Widget* manager = getManager();
 
   if (m_is_desktop) {
     JRect cpos = jwidget_get_child_rect(manager);
@@ -461,11 +461,11 @@ void Frame::onPreferredSize(PreferredSizeEvent& ev)
   else {
     Size maxSize(0, 0);
     Size reqSize;
-    JWidget child;
+    Widget* child;
     JLink link;
 
     JI_LIST_FOR_EACH(this->children, link) {
-      child = (JWidget)link->data;
+      child = (Widget*)link->data;
 
       if (!child->isDecorative()) {
         reqSize = child->getPreferredSize();
@@ -510,7 +510,7 @@ void Frame::onSetText()
 
 void Frame::window_set_position(JRect rect)
 {
-  JWidget child;
+  Widget* child;
   JRect cpos;
   JLink link;
 
@@ -520,7 +520,7 @@ void Frame::window_set_position(JRect rect)
 
   /* set all the children to the same "child_pos" */
   JI_LIST_FOR_EACH(this->children, link) {
-    child = (JWidget)link->data;
+    child = (Widget*)link->data;
 
     if (child->isDecorative())
       child->getTheme()->map_decorative_widget(child);
@@ -652,12 +652,12 @@ void Frame::move_window(JRect rect, bool use_blit)
   jrect_free(man_pos);
 }
 
-static void displace_widgets(JWidget widget, int x, int y)
+static void displace_widgets(Widget* widget, int x, int y)
 {
   JLink link;
 
   jrect_displace(widget->rc, x, y);
 
   JI_LIST_FOR_EACH(widget->children, link)
-    displace_widgets(reinterpret_cast<JWidget>(link->data), x, y);
+    displace_widgets(reinterpret_cast<Widget*>(link->data), x, y);
 }

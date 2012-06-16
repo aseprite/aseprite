@@ -353,7 +353,7 @@ gfx::Point* ColorCurveEditor::getClosestPoint(int x, int y, int** edit_x, int** 
 
 int ColorCurveEditor::editNodeManually(gfx::Point& point)
 {
-  JWidget entry_x, entry_y, button_ok;
+  Widget* entry_x, *entry_y, *button_ok;
   gfx::Point point_copy = point;
   int res;
 

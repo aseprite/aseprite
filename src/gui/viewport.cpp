@@ -61,7 +61,7 @@ Size Viewport::calculateNeededSize()
 void Viewport::set_position(JRect rect)
 {
   Size reqSize;
-  JWidget child;
+  Widget* child;
   JRect cpos;
   JLink link;
 

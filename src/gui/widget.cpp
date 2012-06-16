@@ -569,7 +569,7 @@ void Widget::setBorder(const Border& br)
 }
 
 /* gets the position of the widget */
-JRect jwidget_get_rect(JWidget widget)
+JRect jwidget_get_rect(Widget* widget)
 {
   ASSERT_VALID_WIDGET(widget);
 
@@ -577,7 +577,7 @@ JRect jwidget_get_rect(JWidget widget)
 }
 
 /* gets the position for children of the widget */
-JRect jwidget_get_child_rect(JWidget widget)
+JRect jwidget_get_child_rect(Widget* widget)
 {
   ASSERT_VALID_WIDGET(widget);
 
@@ -587,7 +587,7 @@ JRect jwidget_get_child_rect(JWidget widget)
                    widget->rc->y2 - widget->border_width.b);
 }
 
-JRegion jwidget_get_region(JWidget widget)
+JRegion jwidget_get_region(Widget* widget)
 {
   JRegion region;
 
@@ -602,9 +602,9 @@ JRegion jwidget_get_region(JWidget widget)
 }
 
 /* gets the region to be able to draw in */
-JRegion jwidget_get_drawable_region(JWidget widget, int flags)
+JRegion jwidget_get_drawable_region(Widget* widget, int flags)
 {
-  JWidget window, manager, view, child;
+  Widget* window, *manager, *view, *child;
   JRegion region, reg1, reg2, reg3;
   JList windows_list;
   JLink link;
@@ -628,7 +628,7 @@ JRegion jwidget_get_drawable_region(JWidget widget, int flags)
           link != windows_list->end) {
         /* subtract the rectangles */
         for (link=link->prev; link != windows_list->end; link=link->prev) {
-          reg1 = jwidget_get_region(reinterpret_cast<JWidget>(link->data));
+          reg1 = jwidget_get_region(reinterpret_cast<Widget*>(link->data));
           jregion_subtract(region, region, reg1);
           jregion_free(reg1);
         }
@@ -645,7 +645,7 @@ JRegion jwidget_get_drawable_region(JWidget widget, int flags)
     reg1 = jregion_new(NULL, 0);
     reg2 = jregion_new(cpos, 1);
     JI_LIST_FOR_EACH(widget->children, link) {
-      child = reinterpret_cast<JWidget>(link->data);
+      child = reinterpret_cast<Widget*>(link->data);
       if (child->isVisible()) {
         reg3 = jwidget_get_region(child);
         if (child->flags & JI_DECORATIVE) {
@@ -666,7 +666,7 @@ JRegion jwidget_get_drawable_region(JWidget widget, int flags)
 
   /* intersect with the parent area */
   if (!(widget->flags & JI_DECORATIVE)) {
-    JWidget parent = widget->parent;
+    Widget* parent = widget->parent;
 
     reg1 = jregion_new(NULL, 0);
 
@@ -682,7 +682,7 @@ JRegion jwidget_get_drawable_region(JWidget widget, int flags)
     jregion_free(reg1);
   }
   else {
-    JWidget parent = widget->parent;
+    Widget* parent = widget->parent;
 
     if (parent) {
       cpos = jwidget_get_rect(parent);
@@ -723,7 +723,7 @@ JRegion jwidget_get_drawable_region(JWidget widget, int flags)
   return region;
 }
 
-int jwidget_get_bg_color(JWidget widget)
+int jwidget_get_bg_color(Widget* widget)
 {
   ASSERT_VALID_WIDGET(widget);
 
@@ -746,7 +746,7 @@ int jwidget_get_text_height(const Widget* widget)
   return text_height(widget->getFont());
 }
 
-void jwidget_get_texticon_info(JWidget widget,
+void jwidget_get_texticon_info(Widget* widget,
                                JRect box, JRect text, JRect icon,
                                int icon_align, int icon_w, int icon_h)
 {
@@ -849,7 +849,7 @@ void jwidget_get_texticon_info(JWidget widget,
   SETRECT(icon);
 }
 
-void jwidget_noborders(JWidget widget)
+void jwidget_noborders(Widget* widget)
 {
   widget->border_width.l = 0;
   widget->border_width.t = 0;
@@ -860,7 +860,7 @@ void jwidget_noborders(JWidget widget)
   widget->invalidate();
 }
 
-void jwidget_set_border(JWidget widget, int value)
+void jwidget_set_border(Widget* widget, int value)
 {
   ASSERT_VALID_WIDGET(widget);
 
@@ -872,7 +872,7 @@ void jwidget_set_border(JWidget widget, int value)
   widget->invalidate();
 }
 
-void jwidget_set_border(JWidget widget, int l, int t, int r, int b)
+void jwidget_set_border(Widget* widget, int l, int t, int r, int b)
 {
   ASSERT_VALID_WIDGET(widget);
 
@@ -884,7 +884,7 @@ void jwidget_set_border(JWidget widget, int l, int t, int r, int b)
   widget->invalidate();
 }
 
-void jwidget_set_rect(JWidget widget, JRect rect)
+void jwidget_set_rect(Widget* widget, JRect rect)
 {
   Message* msg;
 
@@ -896,7 +896,7 @@ void jwidget_set_rect(JWidget widget, JRect rect)
   jmessage_free(msg);
 }
 
-void jwidget_set_min_size(JWidget widget, int w, int h)
+void jwidget_set_min_size(Widget* widget, int w, int h)
 {
   ASSERT_VALID_WIDGET(widget);
 
@@ -904,7 +904,7 @@ void jwidget_set_min_size(JWidget widget, int w, int h)
   widget->min_h = h;
 }
 
-void jwidget_set_max_size(JWidget widget, int w, int h)
+void jwidget_set_max_size(Widget* widget, int w, int h)
 {
   ASSERT_VALID_WIDGET(widget);
 
@@ -912,7 +912,7 @@ void jwidget_set_max_size(JWidget widget, int w, int h)
   widget->max_h = h;
 }
 
-void jwidget_set_bg_color(JWidget widget, int color)
+void jwidget_set_bg_color(Widget* widget, int color)
 {
   ASSERT_VALID_WIDGET(widget);
 
@@ -1001,7 +1001,7 @@ void Widget::invalidate()
     mark_dirty_flag(this);
 
     JI_LIST_FOR_EACH(this->children, link)
-      reinterpret_cast<JWidget>(link->data)->invalidate();
+      reinterpret_cast<Widget*>(link->data)->invalidate();
   }
 }
 
@@ -1242,7 +1242,7 @@ bool Widget::isScancodeMnemonic(int scancode) const
 
 bool Widget::onProcessMessage(Message* msg)
 {
-  JWidget widget = this;
+  Widget* widget = this;
 
   ASSERT(msg != NULL);
   ASSERT_VALID_WIDGET(widget);
@@ -1256,7 +1256,7 @@ bool Widget::onProcessMessage(Message* msg)
 
       // Broadcast the message to the children.
       JI_LIST_FOR_EACH(widget->children, link)
-        reinterpret_cast<JWidget>(link->data)->sendMessage(msg);
+        reinterpret_cast<Widget*>(link->data)->sendMessage(msg);
       break;
     }
 
@@ -1312,7 +1312,7 @@ bool Widget::onProcessMessage(Message* msg)
 
       // Set all the children to the same "cpos".
       JI_LIST_FOR_EACH(widget->children, link)
-        jwidget_set_rect(reinterpret_cast<JWidget>(link->data), cpos);
+        jwidget_set_rect(reinterpret_cast<Widget*>(link->data), cpos);
 
       jrect_free(cpos);
       return true;
@@ -1322,7 +1322,7 @@ bool Widget::onProcessMessage(Message* msg)
       JLink link;
 
       JI_LIST_FOR_EACH(widget->children, link)
-        reinterpret_cast<JWidget>(link->data)->invalidate();
+        reinterpret_cast<Widget*>(link->data)->invalidate();
 
       return true;
     }
@@ -1334,7 +1334,7 @@ bool Widget::onProcessMessage(Message* msg)
 
         // Broadcast the message to the children.
         JI_LIST_FOR_EACH(widget->children, link)
-          reinterpret_cast<JWidget>(link->data)->sendMessage(msg);
+          reinterpret_cast<Widget*>(link->data)->sendMessage(msg);
       }
 
       // Propagate the message to the parent.
@@ -1390,7 +1390,7 @@ void Widget::onInvalidateRegion(const JRegion region)
     mark_dirty_flag(this);
 
     JI_LIST_FOR_EACH(this->children, link)
-      reinterpret_cast<JWidget>(link->data)->invalidateRegion(reg1);
+      reinterpret_cast<Widget*>(link->data)->invalidateRegion(reg1);
 
     jregion_free(reg1);
   }

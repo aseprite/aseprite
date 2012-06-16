@@ -63,7 +63,7 @@ bool SpritePropertiesCommand::onEnabled(Context* context)
 
 void SpritePropertiesCommand::onExecute(Context* context)
 {
-  JWidget name, type, size, frames, ok, box_transparent;
+  Widget* name, *type, *size, *frames, *ok, *box_transparent;
   base::string imgtype_text;
   char buf[256];
   ColorButton* color_button = NULL;

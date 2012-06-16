@@ -36,24 +36,24 @@ int ji_register_widget_type();
 
 // Position and geometry
 
-JRect jwidget_get_rect(JWidget widget);
-JRect jwidget_get_child_rect(JWidget widget);
-JRegion jwidget_get_region(JWidget widget);
-JRegion jwidget_get_drawable_region(JWidget widget, int flags);
-int jwidget_get_bg_color(JWidget widget);
+JRect jwidget_get_rect(Widget* widget);
+JRect jwidget_get_child_rect(Widget* widget);
+JRegion jwidget_get_region(Widget* widget);
+JRegion jwidget_get_drawable_region(Widget* widget, int flags);
+int jwidget_get_bg_color(Widget* widget);
 int jwidget_get_text_length(const Widget* widget);
 int jwidget_get_text_height(const Widget* widget);
-void jwidget_get_texticon_info(JWidget widget,
+void jwidget_get_texticon_info(Widget* widget,
                                JRect box, JRect text, JRect icon,
                                int icon_align, int icon_w, int icon_h);
 
-void jwidget_noborders(JWidget widget);
-void jwidget_set_border(JWidget widget, int value);
-void jwidget_set_border(JWidget widget, int l, int t, int r, int b);
-void jwidget_set_rect(JWidget widget, JRect rect);
-void jwidget_set_min_size(JWidget widget, int w, int h);
-void jwidget_set_max_size(JWidget widget, int w, int h);
-void jwidget_set_bg_color(JWidget widget, int color);
+void jwidget_noborders(Widget* widget);
+void jwidget_set_border(Widget* widget, int value);
+void jwidget_set_border(Widget* widget, int l, int t, int r, int b);
+void jwidget_set_rect(Widget* widget, JRect rect);
+void jwidget_set_min_size(Widget* widget, int w, int h);
+void jwidget_set_max_size(Widget* widget, int w, int h);
+void jwidget_set_bg_color(Widget* widget, int color);
 
 //////////////////////////////////////////////////////////////////////
 
@@ -77,7 +77,7 @@ public:
 
   /* structures */
   JList children;                /* sub-objects */
-  JWidget parent;                /* who is the parent? */
+  Widget* parent;                /* who is the parent? */
 
 private:
   std::string m_id;             // Widget's id

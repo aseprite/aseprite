@@ -54,7 +54,7 @@ using namespace tools;
 
 static Frame* window = NULL;
 
-static bool window_close_hook(JWidget widget, void *data);
+static bool window_close_hook(Widget* widget, void *data);
 
 class BrushPreview : public Widget
 {

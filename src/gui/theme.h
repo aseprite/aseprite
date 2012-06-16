@@ -35,9 +35,9 @@ public:
   void regenerate();
 
   virtual BITMAP* set_cursor(int type, int *focus_x, int *focus_y) = 0;
-  virtual void init_widget(JWidget widget) = 0;
-  virtual JRegion get_window_mask(JWidget widget) = 0;
-  virtual void map_decorative_widget(JWidget widget) = 0;
+  virtual void init_widget(Widget* widget) = 0;
+  virtual JRegion get_window_mask(Widget* widget) = 0;
+  virtual void map_decorative_widget(Widget* widget) = 0;
 
   virtual int color_foreground() = 0;
   virtual int color_disabled() = 0;
@@ -53,20 +53,20 @@ public:
   virtual void paintGrid(PaintEvent& ev) = 0;
   virtual void paintLabel(PaintEvent& ev) = 0;
   virtual void paintLinkLabel(PaintEvent& ev) = 0;
-  virtual void draw_listbox(JWidget widget, JRect clip) = 0;
-  virtual void draw_listitem(JWidget widget, JRect clip) = 0;
+  virtual void draw_listbox(Widget* widget, JRect clip) = 0;
+  virtual void draw_listitem(Widget* widget, JRect clip) = 0;
   virtual void draw_menu(Menu* menu, JRect clip) = 0;
   virtual void draw_menuitem(MenuItem* menuitem, JRect clip) = 0;
-  virtual void draw_panel(JWidget widget, JRect clip) = 0;
+  virtual void draw_panel(Widget* widget, JRect clip) = 0;
   virtual void paintRadioButton(PaintEvent& ev) = 0;
-  virtual void draw_separator(JWidget widget, JRect clip) = 0;
+  virtual void draw_separator(Widget* widget, JRect clip) = 0;
   virtual void paintSlider(PaintEvent& ev) = 0;
   virtual void draw_combobox_entry(Entry* widget, JRect clip) = 0;
   virtual void paintComboBoxButton(PaintEvent& ev) = 0;
-  virtual void draw_textbox(JWidget widget, JRect clip) = 0;
-  virtual void draw_view(JWidget widget, JRect clip) = 0;
-  virtual void draw_view_scrollbar(JWidget widget, JRect clip) = 0;
-  virtual void draw_view_viewport(JWidget widget, JRect clip) = 0;
+  virtual void draw_textbox(Widget* widget, JRect clip) = 0;
+  virtual void draw_view(Widget* widget, JRect clip) = 0;
+  virtual void draw_view_scrollbar(Widget* widget, JRect clip) = 0;
+  virtual void draw_view_viewport(Widget* widget, JRect clip) = 0;
   virtual void paintFrame(PaintEvent& ev) = 0;
   virtual void paintTooltip(PaintEvent& ev) = 0;
 

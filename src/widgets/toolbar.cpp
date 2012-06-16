@@ -130,17 +130,17 @@ static Size getToolIconSize(Widget* widget)
 //////////////////////////////////////////////////////////////////////
 // ToolBar
 
-JWidget toolbar_new()
+Widget* toolbar_new()
 {
   return new ToolBar();
 }
 
-bool toolbar_is_tool_visible(JWidget toolbar, Tool* tool)
+bool toolbar_is_tool_visible(Widget* toolbar, Tool* tool)
 {
   return ((ToolBar*)toolbar)->isToolVisible(tool);
 }
 
-void toolbar_select_tool(JWidget toolbar, Tool* tool)
+void toolbar_select_tool(Widget* toolbar, Tool* tool)
 {
   ((ToolBar*)toolbar)->selectTool(tool);
 }

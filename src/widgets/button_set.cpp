@@ -31,8 +31,8 @@
 #include "modules/gui.h"
 #include "widgets/button_set.h"
 
-static JWidget find_selected(JWidget widget);
-static int select_button(JWidget widget, int index);
+static Widget* find_selected(Widget* widget);
+static int select_button(Widget* widget, int index);
 
 class ButtonSet::Item : public RadioButton
 {

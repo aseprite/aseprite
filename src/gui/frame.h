@@ -68,7 +68,7 @@ private:
   void limit_size(int* w, int* h);
   void move_window(JRect rect, bool use_blit);
 
-  JWidget m_killer;
+  Widget* m_killer;
   bool m_is_desktop : 1;
   bool m_is_moveable : 1;
   bool m_is_sizeable : 1;

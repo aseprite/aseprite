@@ -59,7 +59,7 @@ bool DuplicateSpriteCommand::onEnabled(Context* context)
 
 void DuplicateSpriteCommand::onExecute(Context* context)
 {
-  JWidget src_name, dst_name, flatten;
+  Widget* src_name, *dst_name, *flatten;
   const ActiveDocumentReader document(context);
   char buf[1024];
 

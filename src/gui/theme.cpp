@@ -152,7 +152,7 @@ void _ji_theme_draw_sprite_color(BITMAP *bmp, BITMAP *sprite,
         putpixel(bmp, x+u, y+v, color);
 }
 
-void _ji_theme_textbox_draw(BITMAP *bmp, JWidget widget,
+void _ji_theme_textbox_draw(BITMAP *bmp, Widget* widget,
                             int *w, int *h, int bg, int fg)
 {
   View* view = View::getView(widget);

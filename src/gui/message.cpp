@@ -107,7 +107,7 @@ void jmessage_free(Message* msg)
   base_free(msg);
 }
 
-void jmessage_add_dest(Message* msg, JWidget widget)
+void jmessage_add_dest(Message* msg, Widget* widget)
 {
   ASSERT(msg != NULL);
   ASSERT_VALID_WIDGET(widget);
@@ -115,7 +115,7 @@ void jmessage_add_dest(Message* msg, JWidget widget)
   jlist_append(msg->any.widgets, widget);
 }
 
-void jmessage_add_pre_dest(Message* msg, JWidget widget)
+void jmessage_add_pre_dest(Message* msg, Widget* widget)
 {
   ASSERT(msg != NULL);
   ASSERT_VALID_WIDGET(widget);
@@ -123,7 +123,7 @@ void jmessage_add_pre_dest(Message* msg, JWidget widget)
   jlist_prepend(msg->any.widgets, widget);
 }
 
-void jmessage_broadcast_to_children(Message* msg, JWidget widget)
+void jmessage_broadcast_to_children(Message* msg, Widget* widget)
 {
   JLink link;
 
@@ -131,12 +131,12 @@ void jmessage_broadcast_to_children(Message* msg, JWidget widget)
   ASSERT_VALID_WIDGET(widget);
 
   JI_LIST_FOR_EACH(widget->children, link)
-    jmessage_broadcast_to_children(msg, reinterpret_cast<JWidget>(link->data));
+    jmessage_broadcast_to_children(msg, reinterpret_cast<Widget*>(link->data));
 
   jmessage_add_dest(msg, widget);
 }
 
-void jmessage_broadcast_to_parents(Message* msg, JWidget widget)
+void jmessage_broadcast_to_parents(Message* msg, Widget* widget)
 {
   ASSERT(msg != NULL);
   ASSERT_VALID_WIDGET(widget);

@@ -170,7 +170,7 @@ bool ListBox::onProcessMessage(Message* msg)
         }
 
         if (pick_item) {
-          JWidget picked;
+          Widget* picked;
 
           if (view) {
             picked = view->getViewport()->pick(msg->mouse.x, msg->mouse.y);
@@ -301,7 +301,7 @@ void ListBox::onDoubleClickItem()
 void ListBox::layoutListBox(JRect rect)
 {
   Size reqSize;
-  JWidget child;
+  Widget* child;
   JRect cpos;
   JLink link;
 
@@ -309,7 +309,7 @@ void ListBox::layoutListBox(JRect rect)
   cpos = jwidget_get_child_rect(this);
 
   JI_LIST_FOR_EACH(this->children, link) {
-    child = (JWidget)link->data;
+    child = (Widget*)link->data;
 
     reqSize = child->getPreferredSize();
 

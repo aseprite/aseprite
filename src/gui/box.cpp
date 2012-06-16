@@ -59,12 +59,12 @@ void Box::onPreferredSize(PreferredSizeEvent& ev)
   }
 
   int w, h, nvis_children;
-  JWidget child;
+  Widget* child;
   JLink link;
 
   nvis_children = 0;
   JI_LIST_FOR_EACH(this->children, link) {
-    child = (JWidget)link->data;
+    child = (Widget*)link->data;
     if (!(child->flags & JI_HIDDEN))
       nvis_children++;
   }
@@ -72,7 +72,7 @@ void Box::onPreferredSize(PreferredSizeEvent& ev)
   w = h = 0;
 
   JI_LIST_FOR_EACH(this->children, link) {
-    child = (JWidget)link->data;
+    child = (Widget*)link->data;
 
     if (child->flags & JI_HIDDEN)
       continue;
@@ -135,7 +135,7 @@ void Box::layoutBox(JRect rect)
                  - this->border_width.b);                               \
                                                                         \
       JI_LIST_FOR_EACH(this->children, link) {                          \
-        child = (JWidget)link->data;                                    \
+        child = (Widget*)link->data;                                    \
                                                                         \
         if (!(child->flags & JI_HIDDEN)) {                              \
           if (this->getAlign() & JI_HOMOGENEOUS) {                      \
@@ -191,7 +191,7 @@ void Box::layoutBox(JRect rect)
   jrect_copy(this->rc, rect);
 
   JI_LIST_FOR_EACH(this->children, link) {
-    child = (JWidget)link->data;
+    child = (Widget*)link->data;
 
     if (!(child->flags & JI_HIDDEN)) {
       nvis_children++;

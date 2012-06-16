@@ -157,15 +157,9 @@ typedef struct jlist*           JList;
 typedef struct jstream*         JStream;
 typedef struct jrect*           JRect;
 typedef struct jregion*         JRegion;
-typedef class  Widget*          JWidget;
-typedef struct jxml*            JXml;
-typedef struct jxmlattr*        JXmlAttr;
-typedef struct jxmlnode*        JXmlNode;
-typedef struct jxmlelem*        JXmlElem;
-typedef struct jxmltext*        JXmlText;
 
-typedef bool (*MessageFunc)      (JWidget widget, Message* msg);
-typedef void (*JDrawFunc)        (JWidget widget, JRect clip);
+typedef bool (*MessageFunc)      (Widget* widget, Message* msg);
+typedef void (*JDrawFunc)        (Widget* widget, JRect clip);
 
 class Jinete
 {
