@@ -38,7 +38,6 @@ add_library(gui-lib
   separator.cpp
   slider.cpp
   splitter.cpp
-  stream.cpp
   system.cpp
   textbox.cpp
   theme.cpp

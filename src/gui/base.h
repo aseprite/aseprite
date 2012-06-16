@@ -30,7 +30,6 @@
 #define SGN(x)       (((x) >= 0) ? 1 : -1)
 
 struct jaccel;
-struct jhook;
 struct jlink;
 struct jlist;
 struct jrect;
@@ -151,15 +150,10 @@ typedef unsigned int            JID;
 typedef void*                   JThread;
 
 typedef struct jaccel*          JAccel;
-typedef struct jhook*           JHook;
 typedef struct jlink*           JLink;
 typedef struct jlist*           JList;
-typedef struct jstream*         JStream;
 typedef struct jrect*           JRect;
 typedef struct jregion*         JRegion;
-
-typedef bool (*MessageFunc)      (Widget* widget, Message* msg);
-typedef void (*JDrawFunc)        (Widget* widget, JRect clip);
 
 class Jinete
 {

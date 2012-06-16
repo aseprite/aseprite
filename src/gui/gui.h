@@ -43,7 +43,6 @@
 #include "gui/separator.h"
 #include "gui/slider.h"
 #include "gui/splitter.h"
-#include "gui/stream.h"
 #include "gui/system.h"
 #include "gui/textbox.h"
 #include "gui/theme.h"
