@@ -351,7 +351,6 @@ add_library(aseprite-library
   widgets/color_selector.cpp
   widgets/color_sliders.cpp
   widgets/drop_down_button.cpp
-  widgets/editor/click.cpp
   widgets/editor/cursor.cpp
   widgets/editor/drawing_state.cpp
   widgets/editor/editor.cpp

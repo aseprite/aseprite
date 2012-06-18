@@ -142,7 +142,7 @@ public:
 
   void pasteImage(const Image* image, int x, int y);
 
-  // in cursor.c
+  // in cursor.cpp
 
   static int get_raw_cursor_color();
   static bool is_cursor_mask();
@@ -151,20 +151,6 @@ public:
 
   static void editor_cursor_init();
   static void editor_cursor_exit();
-
-  // click.c
-
-  enum {
-    MODE_CLICKANDRELEASE,
-    MODE_CLICKANDCLICK,
-  };
-
-  void editor_click_start(int mode, int *x, int *y, int *b);
-  void editor_click_continue(int mode, int *x, int *y);
-  void editor_click_done();
-  int editor_click(int *x, int *y, int *update,
-                   void (*scroll_callback) (int before_change));
-  int editor_click_cancel();
 
 protected:
   bool onProcessMessage(ui::Message* msg) OVERRIDE;
