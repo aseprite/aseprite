@@ -14,71 +14,75 @@
 #include <string>
 #include <vector>
 
-class Button;
-class Entry;
-class Frame;
-class ListBox;
+namespace ui {
 
-class ComboBox : public Widget
-{
-public:
-  ComboBox();
-  ~ComboBox();
+  class Button;
+  class Entry;
+  class Frame;
+  class ListBox;
 
-  void setEditable(bool state);
-  void setClickOpen(bool state);
-  void setCaseSensitive(bool state);
+  class ComboBox : public Widget
+  {
+  public:
+    ComboBox();
+    ~ComboBox();
 
-  bool isEditable();
-  bool isClickOpen();
-  bool isCaseSensitive();
+    void setEditable(bool state);
+    void setClickOpen(bool state);
+    void setCaseSensitive(bool state);
 
-  int addItem(const std::string& text);
-  void insertItem(int itemIndex, const std::string& text);
-  void removeItem(int itemIndex);
-  void removeAllItems();
+    bool isEditable();
+    bool isClickOpen();
+    bool isCaseSensitive();
 
-  int getItemCount();
+    int addItem(const std::string& text);
+    void insertItem(int itemIndex, const std::string& text);
+    void removeItem(int itemIndex);
+    void removeAllItems();
 
-  std::string getItemText(int itemIndex);
-  void setItemText(int itemIndex, const std::string& text);
-  int findItemIndex(const std::string& text);
+    int getItemCount();
 
-  int getSelectedItem();
-  void setSelectedItem(int itemIndex);
+    std::string getItemText(int itemIndex);
+    void setItemText(int itemIndex, const std::string& text);
+    int findItemIndex(const std::string& text);
 
-  void* getItemData(int itemIndex);
-  void setItemData(int itemIndex, void* data);
+    int getSelectedItem();
+    void setSelectedItem(int itemIndex);
 
-  Entry* getEntryWidget();
-  Button* getButtonWidget();
+    void* getItemData(int itemIndex);
+    void setItemData(int itemIndex, void* data);
 
-  void openListBox();
-  void closeListBox();
-  void switchListBox();
-  JRect getListBoxPos();
+    Entry* getEntryWidget();
+    Button* getButtonWidget();
 
-  // Signals
-  Signal0<void> Change;
+    void openListBox();
+    void closeListBox();
+    void switchListBox();
+    JRect getListBoxPos();
 
-protected:
-  bool onProcessMessage(Message* msg) OVERRIDE;
-  void onPreferredSize(PreferredSizeEvent& ev) OVERRIDE;
+    // Signals
+    Signal0<void> Change;
 
-private:
-  void onButtonClick(Event& ev);
+  protected:
+    bool onProcessMessage(Message* msg) OVERRIDE;
+    void onPreferredSize(PreferredSizeEvent& ev) OVERRIDE;
 
-  struct Item;
+  private:
+    void onButtonClick(Event& ev);
 
-  Entry* m_entry;
-  Button* m_button;
-  Frame* m_window;
-  ListBox* m_listbox;
-  std::vector<Item*> m_items;
-  int m_selected;
-  bool m_editable : 1;
-  bool m_clickopen : 1;
-  bool m_casesensitive : 1;
-};
+    struct Item;
+
+    Entry* m_entry;
+    Button* m_button;
+    Frame* m_window;
+    ListBox* m_listbox;
+    std::vector<Item*> m_items;
+    int m_selected;
+    bool m_editable : 1;
+    bool m_clickopen : 1;
+    bool m_casesensitive : 1;
+  };
+
+} // namespace ui
 
 #endif

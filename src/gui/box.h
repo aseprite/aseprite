@@ -10,39 +10,43 @@
 #include "base/compiler_specific.h"
 #include "gui/widget.h"
 
-class Box : public Widget
-{
-public:
-  Box(int align);
+namespace ui {
 
-protected:
-  // Events
-  bool onProcessMessage(Message* msg) OVERRIDE;
-  void onPreferredSize(PreferredSizeEvent& ev) OVERRIDE;
-  void onPaint(PaintEvent& ev) OVERRIDE;
+  class Box : public Widget
+  {
+  public:
+    Box(int align);
 
-private:
-  void layoutBox(JRect rect);
-};
+  protected:
+    // Events
+    bool onProcessMessage(Message* msg) OVERRIDE;
+    void onPreferredSize(PreferredSizeEvent& ev) OVERRIDE;
+    void onPaint(PaintEvent& ev) OVERRIDE;
 
-class VBox : public Box
-{
-public:
-  VBox() : Box(JI_VERTICAL) { }
-};
+  private:
+    void layoutBox(JRect rect);
+  };
 
-class HBox : public Box
-{
-public:
-  HBox() : Box(JI_HORIZONTAL) { }
-};
+  class VBox : public Box
+  {
+  public:
+    VBox() : Box(JI_VERTICAL) { }
+  };
 
-class BoxFiller : public Box
-{
-public:
-  BoxFiller() : Box(JI_HORIZONTAL) {
-    this->setExpansive(true);
-  }
-};
+  class HBox : public Box
+  {
+  public:
+    HBox() : Box(JI_HORIZONTAL) { }
+  };
+
+  class BoxFiller : public Box
+  {
+  public:
+    BoxFiller() : Box(JI_HORIZONTAL) {
+      this->setExpansive(true);
+    }
+  };
+
+} // namespace ui
 
 #endif

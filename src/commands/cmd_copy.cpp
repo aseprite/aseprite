@@ -57,7 +57,7 @@ bool CopyCommand::onEnabled(Context* context)
 void CopyCommand::onExecute(Context* context)
 {
   const ActiveDocumentReader document(context);
-  clipboard::copy(document);
+  util::clipboard::copy(document);
 }
 
 //////////////////////////////////////////////////////////////////////

@@ -52,6 +52,8 @@
 
 #include <allegro.h>
 
+using namespace ui;
+
 enum WHEEL_ACTION { WHEEL_NONE,
                     WHEEL_ZOOM,
                     WHEEL_VSCROLL,

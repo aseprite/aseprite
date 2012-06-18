@@ -23,7 +23,7 @@
 
 class SkinTheme;
 
-class ButtonIconImpl : public IButtonIcon
+class ButtonIconImpl : public ui::IButtonIcon
 {
 public:
   ButtonIconImpl(SkinTheme* theme,

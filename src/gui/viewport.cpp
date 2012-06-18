@@ -16,6 +16,8 @@
 
 using namespace gfx;
 
+namespace ui {
+
 Viewport::Viewport()
   : Widget(JI_VIEW_VIEWPORT)
 {
@@ -90,3 +92,5 @@ void Viewport::set_position(JRect rect)
 
   jrect_free(cpos);
 }
+
+} // namespace ui

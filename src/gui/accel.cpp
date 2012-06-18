@@ -16,6 +16,8 @@
 /* #define REPORT_KEYS */
 #define PREPROCESS_KEYS
 
+namespace ui {
+
 struct jaccel
 {
   JList key_list;
@@ -503,3 +505,5 @@ bool jaccel_check_from_key(JAccel accel)
   }
   return false;
 }
+
+} // namespace ui

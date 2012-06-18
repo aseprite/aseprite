@@ -81,7 +81,7 @@ public:
     , m_controlsWidget(app::load_widget<Widget>("replace_color.xml", "controls"))
     , m_fromButton(app::find_widget<ColorButton>(m_controlsWidget, "from"))
     , m_toButton(app::find_widget<ColorButton>(m_controlsWidget, "to"))
-    , m_toleranceSlider(app::find_widget<Slider>(m_controlsWidget, "tolerance"))
+    , m_toleranceSlider(app::find_widget<ui::Slider>(m_controlsWidget, "tolerance"))
   {
     getContainer()->addChild(m_controlsWidget);
 
@@ -115,10 +115,10 @@ protected:
 
 private:
   ReplaceColorFilterWrapper& m_filter;
-  UniquePtr<Widget> m_controlsWidget;
+  UniquePtr<ui::Widget> m_controlsWidget;
   ColorButton* m_fromButton;
   ColorButton* m_toButton;
-  Slider* m_toleranceSlider;
+  ui::Slider* m_toleranceSlider;
 };
 
 //////////////////////////////////////////////////////////////////////

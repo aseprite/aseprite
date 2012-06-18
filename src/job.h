@@ -23,7 +23,6 @@
 
 namespace base { class thread; }
 
-class Frame;
 class Mutex;
 class Progress;
 struct Monitor;
@@ -73,7 +72,7 @@ private:
   Monitor* m_monitor;
   Progress* m_progress;
   Mutex* m_mutex;
-  AlertPtr m_alert_window;
+  ui::AlertPtr m_alert_window;
   float m_last_progress;
   bool m_done_flag;
   bool m_canceled_flag;

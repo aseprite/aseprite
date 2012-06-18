@@ -33,6 +33,8 @@
 #include "raster/image.h"
 #include "skin/skin_parts.h"
 
+using namespace ui;
+
 FilterTargetButtons::FilterTargetButtons(int imgtype, bool withChannels)
   : Box(JI_VERTICAL)
   , m_target(0)

@@ -26,6 +26,8 @@
 #include "commands/command.h"
 #include "modules/gui.h"
 
+using namespace ui;
+
 //////////////////////////////////////////////////////////////////////
 // about
 

@@ -28,18 +28,20 @@
 #include "gui/theme.h"
 #include "gui/system.h"
 
-#include "skin_parts.h"
+#include "skin/skin_parts.h"
 
-class Graphics;
-class IButtonIcon;
+namespace ui {
+  class Graphics;
+  class IButtonIcon;
+}
 
 // This is the GUI theme used by ASEPRITE (which use images from data/skins
 // directory).
-class SkinTheme : public Theme
+class SkinTheme : public ui::Theme
 {
   std::string m_selected_skin;
   BITMAP* m_sheet_bmp;
-  BITMAP* m_cursors[JI_CURSORS];
+  BITMAP* m_cursors[ui::JI_CURSORS];
   BITMAP* m_part[PARTS];
   std::map<std::string, BITMAP*> m_toolicon;
   FONT* m_minifont;
@@ -56,9 +58,9 @@ public:
   void reload_fonts();
 
   BITMAP* set_cursor(int type, int* focus_x, int* focus_y);
-  void init_widget(Widget* widget);
-  JRegion get_window_mask(Widget* widget);
-  void map_decorative_widget(Widget* widget);
+  void init_widget(ui::Widget* widget);
+  ui::JRegion get_window_mask(ui::Widget* widget);
+  void map_decorative_widget(ui::Widget* widget);
 
   int color_foreground();
   int color_disabled();
@@ -67,30 +69,30 @@ public:
   int color_selected();
   int color_background();
 
-  void paintBox(PaintEvent& ev);
-  void paintButton(PaintEvent& ev);
-  void paintCheckBox(PaintEvent& ev);
-  void paintEntry(PaintEvent& ev);
-  void paintGrid(PaintEvent& ev);
-  void paintLabel(PaintEvent& ev);
-  void paintLinkLabel(PaintEvent& ev);
-  void draw_listbox(Widget* widget, JRect clip);
-  void draw_listitem(Widget* widget, JRect clip);
-  void draw_menu(Menu* menu, JRect clip);
-  void draw_menuitem(MenuItem* menuitem, JRect clip);
-  void draw_panel(Widget* widget, JRect clip);
-  void paintRadioButton(PaintEvent& ev);
-  void draw_separator(Widget* widget, JRect clip);
-  void paintSlider(PaintEvent& ev);
-  void draw_combobox_entry(Entry* widget, JRect clip);
-  void paintComboBoxButton(PaintEvent& ev);
-  void draw_textbox(Widget* widget, JRect clip);
-  void draw_view(Widget* widget, JRect clip);
-  void draw_view_scrollbar(Widget* widget, JRect clip);
-  void draw_view_viewport(Widget* widget, JRect clip);
-  void paintFrame(PaintEvent& ev);
-  void draw_frame_button(ButtonBase* widget, JRect clip);
-  void paintTooltip(PaintEvent& ev);
+  void paintBox(ui::PaintEvent& ev);
+  void paintButton(ui::PaintEvent& ev);
+  void paintCheckBox(ui::PaintEvent& ev);
+  void paintEntry(ui::PaintEvent& ev);
+  void paintGrid(ui::PaintEvent& ev);
+  void paintLabel(ui::PaintEvent& ev);
+  void paintLinkLabel(ui::PaintEvent& ev);
+  void draw_listbox(ui::Widget* widget, ui::JRect clip);
+  void draw_listitem(ui::Widget* widget, ui::JRect clip);
+  void draw_menu(ui::Menu* menu, ui::JRect clip);
+  void draw_menuitem(ui::MenuItem* menuitem, ui::JRect clip);
+  void draw_panel(ui::Widget* widget, ui::JRect clip);
+  void paintRadioButton(ui::PaintEvent& ev);
+  void draw_separator(ui::Widget* widget, ui::JRect clip);
+  void paintSlider(ui::PaintEvent& ev);
+  void draw_combobox_entry(ui::Entry* widget, ui::JRect clip);
+  void paintComboBoxButton(ui::PaintEvent& ev);
+  void draw_textbox(ui::Widget* widget, ui::JRect clip);
+  void draw_view(ui::Widget* widget, ui::JRect clip);
+  void draw_view_scrollbar(ui::Widget* widget, ui::JRect clip);
+  void draw_view_viewport(ui::Widget* widget, ui::JRect clip);
+  void paintFrame(ui::PaintEvent& ev);
+  void draw_frame_button(ui::ButtonBase* widget, ui::JRect clip);
+  void paintTooltip(ui::PaintEvent& ev);
 
   int get_button_normal_text_color() const { return makecol(0, 0, 0); }
   int get_button_normal_face_color() const { return makecol(198, 198, 198); }
@@ -147,8 +149,8 @@ public:
   // helper functions to draw bounds/hlines with sheet parts
   void draw_bounds_array(BITMAP* bmp, int x1, int y1, int x2, int y2, int parts[8]);
   void draw_bounds_nw(BITMAP* bmp, int x1, int y1, int x2, int y2, int nw, int bg = -1);
-  void draw_bounds_nw(Graphics* g, const gfx::Rect& rc, int nw, int bg = -1);
-  void draw_bounds_nw2(Graphics* g, const gfx::Rect& rc, int x_mid, int nw1, int nw2, int bg1, int bg2);
+  void draw_bounds_nw(ui::Graphics* g, const gfx::Rect& rc, int nw, int bg = -1);
+  void draw_bounds_nw2(ui::Graphics* g, const gfx::Rect& rc, int x_mid, int nw1, int nw2, int bg1, int bg2);
   void draw_part_as_hline(BITMAP* bmp, int x1, int y1, int x2, int y2, int part);
   void draw_part_as_vline(BITMAP* bmp, int x1, int y1, int x2, int y2, int part);
 
@@ -164,22 +166,22 @@ protected:
 private:
   void draw_bounds_template(BITMAP* bmp, int x1, int y1, int x2, int y2,
                             int nw, int n, int ne, int e, int se, int s, int sw, int w);
-  void draw_bounds_template(Graphics* g, const gfx::Rect& rc,
+  void draw_bounds_template(ui::Graphics* g, const gfx::Rect& rc,
                             int nw, int n, int ne, int e, int se, int s, int sw, int w);
 
   BITMAP* cropPartFromSheet(BITMAP* bmp, int x, int y, int w, int h, bool cursor = false);
-  int get_bg_color(Widget* widget);
+  int get_bg_color(ui::Widget* widget);
   void draw_textstring(const char *t, int fg_color, int bg_color,
-                       bool fill_bg, Widget* widget, const JRect rect,
+                       bool fill_bg, ui::Widget* widget, const ui::JRect rect,
                        int selected_offset);
-  void draw_textstring(Graphics* g, const char *t, int fg_color, int bg_color,
-                       bool fill_bg, Widget* widget, const gfx::Rect& rc,
+  void draw_textstring(ui::Graphics* g, const char *t, int fg_color, int bg_color,
+                       bool fill_bg, ui::Widget* widget, const gfx::Rect& rc,
                        int selected_offset);
-  void draw_entry_caret(Entry* widget, int x, int y);
+  void draw_entry_caret(ui::Entry* widget, int x, int y);
   void draw_bevel_box(int x1, int y1, int x2, int y2, int c1, int c2, int *bevel);
   void less_bevel(int *bevel);
 
-  void paintIcon(Widget* widget, Graphics* g, IButtonIcon* iconInterface, int x, int y);
+  void paintIcon(ui::Widget* widget, ui::Graphics* g, ui::IButtonIcon* iconInterface, int x, int y);
 
   static FONT* loadFont(const char* userFont, const std::string& path);
 

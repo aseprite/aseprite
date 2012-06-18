@@ -23,9 +23,9 @@
 #include "filters/target.h"
 #include "gui/box.h"
 
-class ButtonBase;
+namespace ui { class ButtonBase; }
 
-class FilterTargetButtons : public Box
+class FilterTargetButtons : public ui::Box
 {
 public:
   // Creates a new button to handle "targets" to apply some filter in
@@ -38,8 +38,8 @@ public:
   Signal0<void> TargetChange;
 
 protected:
-  void onChannelChange(ButtonBase* button);
-  void onImagesChange(ButtonBase* button);
+  void onChannelChange(ui::ButtonBase* button);
+  void onImagesChange(ui::ButtonBase* button);
 
 private:
   void selectTargetButton(const char* name, Target specificTarget);

@@ -30,7 +30,7 @@ class FilterManagerImpl;
 
 // A generic window to show parameters for a Filter with integrated
 // preview in the current editor.
-class FilterWindow : public Frame
+class FilterWindow : public ui::Frame
 {
 public:
   enum WithChannels { WithChannelsSelector, WithoutChannelsSelector };
@@ -58,11 +58,11 @@ protected:
   void setNewTarget(Target target);
 
   // Returns the container where derived classes should put controls.
-  Widget* getContainer() { return &m_container; }
+  ui::Widget* getContainer() { return &m_container; }
 
-  void onOk(Event& ev);
-  void onCancel(Event& ev);
-  void onShowPreview(Event& ev);
+  void onOk(ui::Event& ev);
+  void onCancel(ui::Event& ev);
+  void onShowPreview(ui::Event& ev);
   void onTargetButtonChange();
   void onTiledChange();
 
@@ -73,15 +73,15 @@ protected:
 private:
   const char* m_cfgSection;
   FilterManagerImpl* m_filterMgr;
-  Box m_hbox;
-  Box m_vbox;
-  Box m_container;
-  Button m_okButton;
-  Button m_cancelButton;
+  ui::Box m_hbox;
+  ui::Box m_vbox;
+  ui::Box m_container;
+  ui::Button m_okButton;
+  ui::Button m_cancelButton;
   FilterPreview m_preview;
   FilterTargetButtons m_targetButton;
-  CheckBox m_showPreview;
-  CheckBox* m_tiledCheck;
+  ui::CheckBox m_showPreview;
+  ui::CheckBox* m_tiledCheck;
 };
 
 #endif

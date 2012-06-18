@@ -31,6 +31,8 @@
 #include "modules/gui.h"
 #include "widgets/statebar.h"
 
+using namespace ui;
+
 static Frame* wid_console = NULL;
 static Widget* wid_view = NULL;
 static Widget* wid_textbox = NULL;
@@ -119,7 +121,7 @@ void Console::printf(const char *format, ...)
     // Open the window
     if (!wid_console->isVisible()) {
       wid_console->open_window();
-      gui::Manager::getDefault()->invalidate();
+      ui::Manager::getDefault()->invalidate();
     }
 
     /* update the textbox */

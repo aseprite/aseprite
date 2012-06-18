@@ -26,7 +26,7 @@
 #include <allegro/color.h>
 #include <vector>
 
-class PaletteView : public Widget
+class PaletteView : public ui::Widget
 {
 public:
   typedef std::vector<bool> SelectedEntries;
@@ -51,7 +51,7 @@ public:
   Signal1<void, int> IndexChange;
 
 protected:
-  bool onProcessMessage(Message* msg) OVERRIDE;
+  bool onProcessMessage(ui::Message* msg) OVERRIDE;
 
 private:
   void request_size(int* w, int* h);

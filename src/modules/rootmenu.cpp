@@ -39,6 +39,8 @@
 
 #include "tinyxml.h"
 
+using namespace ui;
+
 static Menu* root_menu;
 
 static MenuItem* recent_list_menuitem;

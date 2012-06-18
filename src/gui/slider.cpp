@@ -18,6 +18,8 @@
 #include "gui/theme.h"
 #include "gui/widget.h"
 
+namespace ui {
+
 static int slider_press_x;
 static int slider_press_value;
 static int slider_press_left;
@@ -258,3 +260,5 @@ void Slider::setupSliderCursor()
   else
     jmouse_set_cursor(JI_CURSOR_NORMAL);
 }
+
+} // namespace ui

@@ -19,6 +19,8 @@
 
 using namespace gfx;
 
+namespace ui {
+
 ListBox::ListBox()
   : Widget(JI_LISTBOX)
 {
@@ -400,3 +402,5 @@ void ListBox::Item::onPreferredSize(PreferredSizeEvent& ev)
 
   ev.setPreferredSize(Size(w, h));
 }
+
+} // namespace ui

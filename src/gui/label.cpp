@@ -10,6 +10,8 @@
 #include "gui/label.h"
 #include "gui/theme.h"
 
+namespace ui {
+
 Label::Label(const char *text)
   : Widget(JI_LABEL)
 {
@@ -55,3 +57,5 @@ void Label::onPaint(PaintEvent& ev)
 {
   getTheme()->paintLabel(ev);
 }
+
+} // namespace ui

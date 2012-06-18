@@ -13,29 +13,33 @@
 #include "base/disable_copying.h"
 #include "gui/property.h"
 
-// A component is a visual object, such as widgets or menus.
-//
-// Components are non-copyable.
-class Component
-{
-public:
-  typedef std::map<base::string, PropertyPtr> Properties;
+namespace ui {
 
-  Component();
-  virtual ~Component();
+  // A component is a visual object, such as widgets or menus.
+  //
+  // Components are non-copyable.
+  class Component
+  {
+  public:
+    typedef std::map<base::string, PropertyPtr> Properties;
 
-  PropertyPtr getProperty(const base::string& name);
-  void setProperty(PropertyPtr property);
+    Component();
+    virtual ~Component();
 
-  bool hasProperty(const base::string& name);
-  void removeProperty(const base::string& name);
+    PropertyPtr getProperty(const base::string& name);
+    void setProperty(PropertyPtr property);
 
-  const Properties& getProperties() const;
+    bool hasProperty(const base::string& name);
+    void removeProperty(const base::string& name);
 
-private:
-  Properties m_properties;
+    const Properties& getProperties() const;
 
-  DISABLE_COPYING(Component);
-};
+  private:
+    Properties m_properties;
+
+    DISABLE_COPYING(Component);
+  };
+
+} // namespace ui
 
 #endif

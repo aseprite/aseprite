@@ -75,6 +75,8 @@
   #include <winalleg.h>
 #endif
 
+using namespace ui;
+
 /**
  * ASEPRITE modules.
  */
@@ -180,7 +182,7 @@ int App::run()
 
     // Setup the GUI screen
     jmouse_set_cursor(JI_CURSOR_NORMAL);
-    gui::Manager::getDefault()->invalidate();
+    ui::Manager::getDefault()->invalidate();
 
     // Load main window
     top_window = app::load_widget<Frame>("main_window.xml", "main_window");
@@ -239,7 +241,7 @@ int App::run()
     top_window->open_window();
 
     // Redraw the whole screen.
-    gui::Manager::getDefault()->invalidate();
+    ui::Manager::getDefault()->invalidate();
   }
 
   /* set background mode for non-GUI modes */
@@ -389,7 +391,7 @@ void app_refresh_screen(const Document* document)
     set_current_palette(NULL, false);
 
   // Invalidate the whole screen.
-  gui::Manager::getDefault()->invalidate();
+  ui::Manager::getDefault()->invalidate();
 }
 
 /**

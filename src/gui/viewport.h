@@ -10,19 +10,23 @@
 #include "base/compiler_specific.h"
 #include "gui/widget.h"
 
-class Viewport : public Widget
-{
-public:
-  Viewport();
+namespace ui {
 
-  gfx::Size calculateNeededSize();
+  class Viewport : public Widget
+  {
+  public:
+    Viewport();
 
-protected:
-  // Events
-  bool onProcessMessage(Message* msg) OVERRIDE;
+    gfx::Size calculateNeededSize();
 
-private:
-  void set_position(JRect rect);
-};
+  protected:
+    // Events
+    bool onProcessMessage(Message* msg) OVERRIDE;
+
+  private:
+    void set_position(JRect rect);
+  };
+
+} // namespace ui
 
 #endif

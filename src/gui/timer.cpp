@@ -16,7 +16,7 @@
 #include <algorithm>
 #include <vector>
 
-namespace gui {
+namespace ui {
 
 typedef std::vector<Timer*> Timers;
 
@@ -111,4 +111,4 @@ void Timer::checkNoTimers()
   ASSERT(timers.empty());
 }
 
-} // namespace gui
+} // namespace ui

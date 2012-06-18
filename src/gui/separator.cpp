@@ -16,6 +16,8 @@
 
 using namespace gfx;
 
+namespace ui {
+
 Separator::Separator(const char* text, int align)
  : Widget(JI_SEPARATOR)
 {
@@ -57,3 +59,5 @@ void Separator::onPreferredSize(PreferredSizeEvent& ev)
 
   ev.setPreferredSize(Size(w, h));
 }
+
+} // namespace ui

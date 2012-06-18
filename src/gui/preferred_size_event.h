@@ -10,26 +10,30 @@
 #include "gui/event.h"
 #include "gfx/size.h"
 
-class Widget;
+namespace ui {
 
-class PreferredSizeEvent : public Event
-{
-  gfx::Size m_fitIn;
-  gfx::Size m_preferredSize;
+  class Widget;
 
-public:
+  class PreferredSizeEvent : public Event
+  {
+    gfx::Size m_fitIn;
+    gfx::Size m_preferredSize;
 
-  PreferredSizeEvent(Widget* source, const gfx::Size& fitIn);
-  virtual ~PreferredSizeEvent();
+  public:
 
-  gfx::Size fitInSize() const;
-  int fitInWidth() const;
-  int fitInHeight() const;
+    PreferredSizeEvent(Widget* source, const gfx::Size& fitIn);
+    virtual ~PreferredSizeEvent();
 
-  gfx::Size getPreferredSize() const;
-  void setPreferredSize(const gfx::Size& preferredSize);
-  void setPreferredSize(int w, int h);
+    gfx::Size fitInSize() const;
+    int fitInWidth() const;
+    int fitInHeight() const;
 
-};
+    gfx::Size getPreferredSize() const;
+    void setPreferredSize(const gfx::Size& preferredSize);
+    void setPreferredSize(int w, int h);
+
+  };
+
+} // namespace ui
 
 #endif

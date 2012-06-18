@@ -22,10 +22,12 @@
 #include "base/signal.h"
 #include "gui/box.h"
 
-class Button;
-class Event;
+namespace ui {
+  class Button;
+  class Event;
+}
 
-class DropDownButton : public HBox
+class DropDownButton : public ui::HBox
 {
 public:
   DropDownButton(const char* text);
@@ -34,12 +36,12 @@ public:
   Signal0<void> DropDownClick;
 
 protected:
-  void onButtonClick(Event& ev);
-  void onDropDownButtonClick(Event& ev);
+  void onButtonClick(ui::Event& ev);
+  void onDropDownButtonClick(ui::Event& ev);
 
 private:
-  Button* m_button;
-  Button* m_dropDown;
+  ui::Button* m_button;
+  ui::Button* m_dropDown;
 };
 
 #endif

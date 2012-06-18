@@ -10,9 +10,9 @@
 #include "base/disable_copying.h"
 #include "base/signal.h"
 
-class Widget;
+namespace ui {
 
-namespace gui {
+  class Widget;
 
   class Timer
   {
@@ -46,6 +46,6 @@ namespace gui {
     DISABLE_COPYING(Timer);
   };
 
-} // namespace gui
+} // namespace ui
 
 #endif

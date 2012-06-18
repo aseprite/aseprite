@@ -39,6 +39,8 @@
 
 #include <allegro/unicode.h>
 
+using namespace ui;
+
 #define PERC_FORMAT     "%.1f%%"
 
 class SpriteSizeJob : public Job

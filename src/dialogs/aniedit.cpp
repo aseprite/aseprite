@@ -43,6 +43,7 @@
 #include <allegro.h>
 
 using namespace gfx;
+using namespace ui;
 
 /*
    Animator Editor

@@ -9,6 +9,8 @@
 
 using namespace gfx;
 
+namespace ui {
+
 /**
    Event generated to calculate the preferred size of a widget.
 
@@ -67,3 +69,5 @@ void PreferredSizeEvent::setPreferredSize(int w, int h)
   m_preferredSize.w = w;
   m_preferredSize.h = h;
 }
+
+} // namespace ui

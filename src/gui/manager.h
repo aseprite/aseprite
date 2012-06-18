@@ -10,10 +10,9 @@
 #include "base/compiler_specific.h"
 #include "gui/widget.h"
 
-class Frame;
+namespace ui {
 
-namespace gui {
-
+  class Frame;
   class Timer;
 
   class Manager : public Widget
@@ -54,7 +53,7 @@ namespace gui {
     void freeWidget(Widget* widget);
     void removeMessage(Message* msg);
     void removeMessagesFor(Widget* widget);
-    void removeMessagesForTimer(gui::Timer* timer);
+    void removeMessagesForTimer(Timer* timer);
 
     void addMessageFilter(int message, Widget* widget);
     void removeMessageFilter(int message, Widget* widget);
@@ -86,8 +85,6 @@ namespace gui {
     WidgetsList m_garbage;
   };
 
-  void InvalidateRegion(Widget* widget, JRegion region);
-
-} // namespace gui
+} // namespace ui
 
 #endif

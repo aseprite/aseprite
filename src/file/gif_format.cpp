@@ -23,7 +23,7 @@
 #include "file/file.h"
 #include "file/file_format.h"
 #include "file/format_options.h"
-#include "gui/gui.h"
+#include "gui/alert.h"
 #include "modules/gui.h"
 #include "raster/raster.h"
 #include "util/autocrop.h"
@@ -317,13 +317,13 @@ bool GifFormat::onPostLoad(FileOp* fop)
 
   if (askForConversion) {
     int result =
-      Alert::show("GIF Conversion"
-                  "<<The selected file: %s"
-                  "<<is a transparent GIF image which uses multiple background colors."
-                  "<<ASEPRITE cannot handle this kind of GIF correctly in Indexed format."
-                  "<<What would you like to do?"
-                  "||Convert to &RGBA||Keep &Indexed||&Cancel",
-                  fop->document->getFilename());
+      ui::Alert::show("GIF Conversion"
+                      "<<The selected file: %s"
+                      "<<is a transparent GIF image which uses multiple background colors."
+                      "<<ASEPRITE cannot handle this kind of GIF correctly in Indexed format."
+                      "<<What would you like to do?"
+                      "||Convert to &RGBA||Keep &Indexed||&Cancel",
+                      fop->document->getFilename());
 
     if (result == 1)
       pixelFormat = IMAGE_RGB;

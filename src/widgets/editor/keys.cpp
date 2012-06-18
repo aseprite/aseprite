@@ -35,6 +35,8 @@
 #include "widgets/color_bar.h"
 #include "widgets/editor/editor.h"
 
+using namespace ui;
+
 bool Editor::processKeysToSetZoom(int scancode)
 {
   if ((m_sprite) &&

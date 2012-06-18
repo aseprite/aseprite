@@ -26,7 +26,7 @@
 
 class ColorCurve;
 
-class ColorCurveEditor : public Widget
+class ColorCurveEditor : public ui::Widget
 {
 public:
   ColorCurveEditor(ColorCurve* curve, int x1, int y1, int x2, int y2);
@@ -36,7 +36,7 @@ public:
   Signal0<void> CurveEditorChange;
 
 protected:
-  bool onProcessMessage(Message* msg) OVERRIDE;
+  bool onProcessMessage(ui::Message* msg) OVERRIDE;
 
 private:
   gfx::Point* getClosestPoint(int x, int y, int** edit_x, int** edit_y);

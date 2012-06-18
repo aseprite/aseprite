@@ -11,20 +11,24 @@
 #include "base/disable_copying.h"
 #include "base/shared_ptr.h"
 
-class Property
-{
-  base::string m_name;
+namespace ui {
 
-public:
-  Property(const base::string& name);
-  virtual ~Property();
+  class Property
+  {
+    base::string m_name;
 
-  base::string getName() const;
+  public:
+    Property(const base::string& name);
+    virtual ~Property();
 
-private:
-  DISABLE_COPYING(Property);
-};
+    base::string getName() const;
 
-typedef SharedPtr<Property> PropertyPtr;
+  private:
+    DISABLE_COPYING(Property);
+  };
+
+  typedef SharedPtr<Property> PropertyPtr;
+
+} // namespace ui
 
 #endif

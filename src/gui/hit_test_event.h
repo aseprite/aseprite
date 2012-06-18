@@ -9,37 +9,41 @@
 
 #include "gui/event.h"
 
-enum HitTest
-{
-  HitTestNowhere,
-  HitTestCaption,
-  HitTestClient,
-  HitTestBorderNW,
-  HitTestBorderN,
-  HitTestBorderNE,
-  HitTestBorderE,
-  HitTestBorderSE,
-  HitTestBorderS,
-  HitTestBorderSW,
-  HitTestBorderW,
-};
+namespace ui {
 
-class HitTestEvent : public Event
-{
-public:
-  HitTestEvent(Component* source, const gfx::Point& point, HitTest hit)
-    : Event(source)
-    , m_point(point)
-    , m_hit(hit) { }
+  enum HitTest
+    {
+      HitTestNowhere,
+      HitTestCaption,
+      HitTestClient,
+      HitTestBorderNW,
+      HitTestBorderN,
+      HitTestBorderNE,
+      HitTestBorderE,
+      HitTestBorderSE,
+      HitTestBorderS,
+      HitTestBorderSW,
+      HitTestBorderW,
+    };
 
-  gfx::Point getPoint() const { return m_point; }
+  class HitTestEvent : public Event
+  {
+  public:
+    HitTestEvent(Component* source, const gfx::Point& point, HitTest hit)
+      : Event(source)
+      , m_point(point)
+      , m_hit(hit) { }
 
-  HitTest getHit() const { return m_hit; }
-  void setHit(HitTest hit) { m_hit = hit; }
+    gfx::Point getPoint() const { return m_point; }
 
-private:
-  gfx::Point m_point;
-  HitTest m_hit;
-};
+    HitTest getHit() const { return m_hit; }
+    void setHit(HitTest hit) { m_hit = hit; }
+
+  private:
+    gfx::Point m_point;
+    HitTest m_hit;
+  };
+
+} // namespace ui
 
 #endif  // GUI_HIT_TEST_EVENT_H_INCLUDED

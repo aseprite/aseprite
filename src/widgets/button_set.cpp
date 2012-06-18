@@ -31,6 +31,8 @@
 #include "modules/gui.h"
 #include "widgets/button_set.h"
 
+using namespace ui;
+
 static Widget* find_selected(Widget* widget);
 static int select_button(Widget* widget, int index);
 

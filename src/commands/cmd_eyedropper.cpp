@@ -31,6 +31,8 @@
 #include "widgets/color_bar.h"
 #include "widgets/editor/editor.h"
 
+using namespace ui;
+
 //////////////////////////////////////////////////////////////////////
 // eyedropper
 
@@ -67,7 +69,7 @@ void EyedropperCommand::onLoadParams(Params* params)
 
 void EyedropperCommand::onExecute(Context* context)
 {
-  Widget* widget = gui::Manager::getDefault()->getMouse();
+  Widget* widget = ui::Manager::getDefault()->getMouse();
   if (!widget || widget->type != editor_type())
     return;
 

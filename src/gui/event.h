@@ -7,23 +7,27 @@
 #ifndef GUI_EVENT_H_INCLUDED
 #define GUI_EVENT_H_INCLUDED
 
-class Component;
+namespace ui {
 
-// Base class for every kind of event.
-class Event
-{
-public:
-  // Creates a new event specifying that it was generated from the
-  // source component.
-  Event(Component* source);
-  virtual ~Event();
+  class Component;
 
-  // Returns the component which generated the event.
-  Component* getSource();
+  // Base class for every kind of event.
+  class Event
+  {
+  public:
+    // Creates a new event specifying that it was generated from the
+    // source component.
+    Event(Component* source);
+    virtual ~Event();
 
-private:
-  // The component which generates the event.
-  Component* m_source;
-};
+    // Returns the component which generated the event.
+    Component* getSource();
+
+  private:
+    // The component which generates the event.
+    Component* m_source;
+  };
+
+} // namespace ui
 
 #endif

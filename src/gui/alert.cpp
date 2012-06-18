@@ -37,6 +37,8 @@
 #include "base/bind.h"
 #include "gui/gui.h"
 
+namespace ui {
+
 Alert::Alert()
   : Frame(false, "")
 {
@@ -211,3 +213,5 @@ void Alert::processString(char* buf, std::vector<Widget*>& labels, std::vector<W
   if (!buttons.empty())
     buttons[buttons.size()-1]->setFocusMagnet(true);
 }
+
+} // namespace ui

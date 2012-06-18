@@ -74,7 +74,7 @@ int main(int argc, char* argv[])
 #ifdef MEMLEAK
   MemLeak memleak;
 #endif
-  Jinete jinete;
+  ui::GuiSystem guiSystem;
   App app(argc, argv);
 
   // Change the name of the memory dump file

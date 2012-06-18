@@ -21,8 +21,10 @@
 
 #include "gui/base.h"
 
-class Menu;
-class MenuItem;
+namespace ui {
+  class Menu;
+  class MenuItem;
+}
 
 enum {
   ACCEL_FOR_UNDO,
@@ -35,13 +37,13 @@ enum {
 int init_module_rootmenu();
 void exit_module_rootmenu();
 
-Menu* get_root_menu();
+ui::Menu* get_root_menu();
 
-MenuItem* get_recent_list_menuitem();
-Menu* get_document_tab_popup_menu();
-Menu* get_layer_popup_menu();
-Menu* get_frame_popup_menu();
-Menu* get_cel_popup_menu();
-Menu* get_cel_movement_popup_menu();
+ui::MenuItem* get_recent_list_menuitem();
+ui::Menu* get_document_tab_popup_menu();
+ui::Menu* get_layer_popup_menu();
+ui::Menu* get_frame_popup_menu();
+ui::Menu* get_cel_popup_menu();
+ui::Menu* get_cel_movement_popup_menu();
 
 #endif

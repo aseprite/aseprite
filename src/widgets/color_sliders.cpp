@@ -32,6 +32,7 @@
 #include "widgets/color_sliders.h"
 
 using namespace gfx;
+using namespace ui;
 
 namespace {
 

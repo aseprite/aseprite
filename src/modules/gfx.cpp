@@ -245,7 +245,7 @@ RectTracker* rect_tracker_new(BITMAP* bmp, int x1, int y1, int x2, int y2)
   RectTracker* rt;
   int x, y;
 
-  jmouse_hide();
+  ui::jmouse_hide();
 
   if (x1 > x2) { x = x1; x1 = x2; x2 = x; }
   if (y1 > y2) { y = y1; y1 = y2; y2 = y; }
@@ -269,14 +269,14 @@ RectTracker* rect_tracker_new(BITMAP* bmp, int x1, int y1, int x2, int y2)
   rt->npixel = 0;
   do_rect(bmp, x1, y1, x2, y2, rt, save_rect);
 
-  jmouse_show();
+  ui::jmouse_show();
 
   return rt;
 }
 
 void rect_tracker_free(RectTracker* rt)
 {
-  jmouse_hide();
+  ui::jmouse_hide();
 
   rt->npixel = 0;
   do_rect(rt->bmp, rt->x1, rt->y1, rt->x2, rt->y2, rt, restore_rect);
@@ -284,7 +284,7 @@ void rect_tracker_free(RectTracker* rt)
   delete[] rt->pixel;
   delete rt;
 
-  jmouse_show();
+  ui::jmouse_show();
 }
 
 /**********************************************************************/
@@ -430,15 +430,15 @@ void draw_color_button(BITMAP* bmp,
                        bool outer_se, bool outer_s, bool outer_sw, bool outer_w,
                        PixelFormat pixelFormat, const Color& color, bool hot, bool drag)
 {
-  SkinTheme* theme = (SkinTheme*)CurrentTheme::get();
-  int scale = jguiscale();
+  SkinTheme* theme = (SkinTheme*)ui::CurrentTheme::get();
+  int scale = ui::jguiscale();
 
   // Draw background (the color)
   draw_color(bmp,
-             Rect(rc.x+1*jguiscale(),
-                  rc.y+1*jguiscale(),
-                  rc.w-((outer_e) ? 2*jguiscale(): 1*jguiscale()),
-                  rc.h-((outer_s) ? 2*jguiscale(): 1*jguiscale())), pixelFormat, color);
+             Rect(rc.x+1*scale,
+                  rc.y+1*scale,
+                  rc.w-((outer_e) ? 2*scale: 1*scale),
+                  rc.h-((outer_s) ? 2*scale: 1*scale)), pixelFormat, color);
 
   // Draw opaque border
   {
@@ -473,13 +473,13 @@ void draw_progress_bar(BITMAP* bmp,
   int u = (int)((float)(w-2)*progress);
   u = MID(0, u, w-2);
 
-  rect(bmp, x1, y1, x2, y2, ji_color_foreground());
+  rect(bmp, x1, y1, x2, y2, ui::ji_color_foreground());
 
   if (u > 0)
-    rectfill(bmp, x1+1, y1+1, x1+u, y2-1, ji_color_selected());
+    rectfill(bmp, x1+1, y1+1, x1+u, y2-1, ui::ji_color_selected());
 
   if (1+u < w-2)
-    rectfill(bmp, x1+u+1, y1+1, x2-1, y2-1, ji_color_background());
+    rectfill(bmp, x1+u+1, y1+1, x2-1, y2-1, ui::ji_color_background());
 }
 
 /************************************************************************/

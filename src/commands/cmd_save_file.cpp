@@ -38,7 +38,7 @@ struct SaveFileData
   Monitor *monitor;
   FileOp *fop;
   Progress *progress;
-  AlertPtr alert_window;
+  ui::AlertPtr alert_window;
 };
 
 /**
@@ -102,9 +102,9 @@ static void save_document_in_background(Document* document, bool mark_as_saved)
 
   data->fop = fop;
   data->progress = app_get_statusbar()->addProgress();
-  data->alert_window = Alert::create(PACKAGE
-                                     "<<Saving file:<<%s||&Cancel",
-                                     get_filename(document->getFilename()));
+  data->alert_window = ui::Alert::create(PACKAGE
+                                         "<<Saving file:<<%s||&Cancel",
+                                         get_filename(document->getFilename()));
 
   /* add a monitor to check the saving (FileOp) progress */
   data->monitor = add_gui_monitor(monitor_savefile_bg,
@@ -163,8 +163,8 @@ static void save_as_dialog(const DocumentReader& document, const char* dlg_title
     /* does the file exist? */
     if (exists(filename.c_str())) {
       /* ask if the user wants overwrite the file? */
-      ret = Alert::show("Warning<<File exists, overwrite it?<<%s||&Yes||&No||&Cancel",
-                        get_filename(filename.c_str()));
+      ret = ui::Alert::show("Warning<<File exists, overwrite it?<<%s||&Yes||&No||&Cancel",
+                            get_filename(filename.c_str()));
     }
     else
       break;

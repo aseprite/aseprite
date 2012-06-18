@@ -9,6 +9,8 @@
 #include "gui/paint_event.h"
 #include "gui/widget.h"
 
+namespace ui {
+
 PaintEvent::PaintEvent(Widget* source, Graphics* graphics)
   : Event(source)
   , m_graphics(graphics)
@@ -32,3 +34,5 @@ bool PaintEvent::isPainted() const
 {
   return m_painted;
 }
+
+} // namespace ui

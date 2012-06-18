@@ -24,6 +24,8 @@
 
 using namespace gfx;
 
+namespace ui {
+
 static inline void mark_dirty_flag(Widget* widget)
 {
   while (widget) {
@@ -85,7 +87,7 @@ Widget::~Widget()
 
   // Break relationship with the manager.
   if (this->type != JI_MANAGER) {
-    gui::Manager* manager = getManager();
+    Manager* manager = getManager();
     manager->freeWidget(this);
     manager->removeMessagesFor(this);
     manager->removeMessageFilterFor(this);
@@ -363,18 +365,18 @@ Widget* Widget::getParent()
   return this->parent;
 }
 
-gui::Manager* Widget::getManager()
+Manager* Widget::getManager()
 {
   Widget* widget = this;
 
   while (widget) {
     if (widget->type == JI_MANAGER)
-      return static_cast<gui::Manager*>(widget);
+      return static_cast<Manager*>(widget);
 
     widget = widget->parent;
   }
 
-  return gui::Manager::getDefault();
+  return Manager::getDefault();
 }
 
 JList Widget::getParents(bool ascendant)
@@ -1460,3 +1462,5 @@ void Widget::onSetText()
 {
   invalidate();
 }
+
+} // namespace ui

@@ -52,9 +52,9 @@ public:
                    WithTiledCheckBox,
                    filter.getTiledMode())
     , m_filter(filter)
-    , m_controlsWidget(app::load_widget<Widget>("despeckle.xml", "controls"))
-    , m_widthEntry(app::find_widget<Entry>(m_controlsWidget, "width"))
-    , m_heightEntry(app::find_widget<Entry>(m_controlsWidget, "height"))
+    , m_controlsWidget(app::load_widget<ui::Widget>("despeckle.xml", "controls"))
+    , m_widthEntry(app::find_widget<ui::Entry>(m_controlsWidget, "width"))
+    , m_heightEntry(app::find_widget<ui::Entry>(m_controlsWidget, "height"))
   {
     getContainer()->addChild(m_controlsWidget);
 
@@ -79,9 +79,9 @@ private:
   }
 
   MedianFilter& m_filter;
-  UniquePtr<Widget> m_controlsWidget;
-  Entry* m_widthEntry;
-  Entry* m_heightEntry;
+  UniquePtr<ui::Widget> m_controlsWidget;
+  ui::Entry* m_widthEntry;
+  ui::Entry* m_heightEntry;
 };
 
 //////////////////////////////////////////////////////////////////////

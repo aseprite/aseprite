@@ -22,6 +22,8 @@
 #include <vector>
 #include <allegro.h>
 
+namespace ui {
+
 #define ACCEPT_FOCUS(widget)                            \
   (((widget)->flags & (JI_FOCUSSTOP |                   \
                        JI_DISABLED |                    \
@@ -63,7 +65,7 @@ static int want_close_stage;       /* variable to handle the external
                                       close button in some Windows
                                       enviroments */
 
-gui::Manager* gui::Manager::m_defaultManager = NULL;
+Manager* Manager::m_defaultManager = NULL;
 
 static JList new_windows;             // Windows that we should show
 static WidgetsList mouse_widgets_list; // List of widgets to send mouse events
@@ -82,7 +84,7 @@ static char old_readed_key[KEY_MAX]; /* keyboard status of previous
 static unsigned key_repeated[KEY_MAX];
 
 /* keyboard focus movement stuff */
-static bool move_focus(gui::Manager* manager, Message* msg);
+static bool move_focus(Manager* manager, Message* msg);
 static int count_widgets_accept_focus(Widget* widget);
 static bool childs_accept_focus(Widget* widget, bool first);
 static Widget* next_widget(Widget* widget);
@@ -97,8 +99,6 @@ static void allegro_window_close_hook()
   if (want_close_stage == STAGE_NORMAL)
     want_close_stage = STAGE_WANT_CLOSE;
 }
-
-namespace gui {
 
 // static
 Manager* Manager::getDefault()
@@ -163,7 +163,7 @@ Manager::~Manager()
     jmouse_set_cursor(JI_CURSOR_NULL);
 
     // Destroy timers
-    gui::Timer::checkNoTimers();
+    Timer::checkNoTimers();
 
     // Destroy filters
     for (int c=0; c<NFILTERS; ++c) {
@@ -471,7 +471,7 @@ bool Manager::generateMessages()
   }
 
   // Generate messages for timers
-  gui::Timer::pollTimers();
+  Timer::pollTimers();
 
   // Generate redraw events.
   flushRedraw();
@@ -775,7 +775,7 @@ void Manager::removeMessagesFor(Widget* widget)
     removeWidgetFromDests(widget, reinterpret_cast<Message*>(link->data));
 }
 
-void Manager::removeMessagesForTimer(gui::Timer* timer)
+void Manager::removeMessagesForTimer(Timer* timer)
 {
   JLink link, next;
 
@@ -1055,7 +1055,7 @@ void Manager::pumpQueue()
     msg->any.used = true;
     first_msg = msg;
 
-    // Call gui::Timer::tick() if this is a tick message.
+    // Call Timer::tick() if this is a tick message.
     if (msg->type == JM_TIMER) {
       ASSERT(msg->timer.timer != NULL);
       msg->timer.timer->tick();
@@ -1306,13 +1306,11 @@ void Manager::broadcastKeyMsg(Message* msg)
   }
 }
 
-} // namespace gui
-
 /***********************************************************************
                             Focus Movement
  ***********************************************************************/
 
-static bool move_focus(gui::Manager* manager, Message* msg)
+static bool move_focus(Manager* manager, Message* msg)
 {
   int (*cmp)(Widget*, int, int) = NULL;
   Widget* focus = NULL;
@@ -1413,7 +1411,7 @@ static bool move_focus(gui::Manager* manager, Message* msg)
     }
 
     if ((focus) && (focus != focus_widget))
-      gui::Manager::getDefault()->setFocus(focus);
+      Manager::getDefault()->setFocus(focus);
   }
 
   return ret;
@@ -1493,3 +1491,5 @@ static int cmp_down(Widget* widget, int x, int y)
     return INT_MAX;
   return z + ABS((widget->rc->x1+widget->rc->x2)/2 - x) * 8;
 }
+
+} // namespace ui

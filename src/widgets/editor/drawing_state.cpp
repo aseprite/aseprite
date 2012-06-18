@@ -30,6 +30,8 @@
 
 #include <allegro.h>
 
+using namespace ui;
+
 static tools::ToolLoopManager::Pointer pointer_from_msg(Message* msg)
 {
   tools::ToolLoopManager::Pointer::Button button =

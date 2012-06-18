@@ -10,30 +10,34 @@
 #include "base/compiler_specific.h"
 #include "gui/frame.h"
 
-class PopupFrame : public Frame
-{
-public:
-  PopupFrame(const char* text, bool close_on_buttonpressed);
-  ~PopupFrame();
+namespace ui {
 
-  void setHotRegion(JRegion region);
+  class PopupFrame : public Frame
+  {
+  public:
+    PopupFrame(const char* text, bool close_on_buttonpressed);
+    ~PopupFrame();
 
-  void makeFloating();
-  void makeFixed();
+    void setHotRegion(JRegion region);
 
-protected:
-  bool onProcessMessage(Message* msg) OVERRIDE;
-  void onPreferredSize(PreferredSizeEvent& ev) OVERRIDE;
-  void onPaint(PaintEvent& ev) OVERRIDE;
-  void onInitTheme(InitThemeEvent& ev) OVERRIDE;
+    void makeFloating();
+    void makeFixed();
 
-private:
-  void startFilteringMessages();
-  void stopFilteringMessages();
+  protected:
+    bool onProcessMessage(Message* msg) OVERRIDE;
+    void onPreferredSize(PreferredSizeEvent& ev) OVERRIDE;
+    void onPaint(PaintEvent& ev) OVERRIDE;
+    void onInitTheme(InitThemeEvent& ev) OVERRIDE;
 
-  bool m_close_on_buttonpressed;
-  JRegion m_hot_region;
-  bool m_filtering;
-};
+  private:
+    void startFilteringMessages();
+    void stopFilteringMessages();
+
+    bool m_close_on_buttonpressed;
+    JRegion m_hot_region;
+    bool m_filtering;
+  };
+
+} // namespace ui
 
 #endif

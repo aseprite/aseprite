@@ -17,6 +17,8 @@
 
 using namespace gfx;
 
+namespace ui {
+
 PopupFrame::PopupFrame(const char* text, bool close_on_buttonpressed)
   : Frame(false, text)
 {
@@ -201,7 +203,7 @@ void PopupFrame::startFilteringMessages()
   if (!m_filtering) {
     m_filtering = true;
 
-    gui::Manager* manager = gui::Manager::getDefault();
+    Manager* manager = Manager::getDefault();
     manager->addMessageFilter(JM_MOTION, this);
     manager->addMessageFilter(JM_BUTTONPRESSED, this);
     manager->addMessageFilter(JM_KEYPRESSED, this);
@@ -213,9 +215,11 @@ void PopupFrame::stopFilteringMessages()
   if (m_filtering) {
     m_filtering = false;
 
-    gui::Manager* manager = gui::Manager::getDefault();
+    Manager* manager = Manager::getDefault();
     manager->removeMessageFilter(JM_MOTION, this);
     manager->removeMessageFilter(JM_BUTTONPRESSED, this);
     manager->removeMessageFilter(JM_KEYPRESSED, this);
   }
 }
+
+} // namespace ui

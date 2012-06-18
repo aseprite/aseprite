@@ -29,7 +29,7 @@ class Params;
 // It's like a MenuItme, but it has a extra properties: the name of
 // the command to be executed when it's clicked (also that command is
 // used to check the availability of the command).
-class MenuItem2 : public MenuItem
+class MenuItem2 : public ui::MenuItem
 {
 public:
   MenuItem2(const char* text, Command* command, Params* params);
@@ -39,7 +39,7 @@ public:
   Params* getParams() { return m_params; }
 
 protected:
-  bool onProcessMessage(Message* msg) OVERRIDE;
+  bool onProcessMessage(ui::Message* msg) OVERRIDE;
   void onClick() OVERRIDE;
 
 private:

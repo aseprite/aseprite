@@ -31,15 +31,18 @@ class CheckArgs;
 class ColorBar;
 class ConfigModule;
 class Document;
-class Frame;
 class Layer;
 class LegacyModules;
 class LoggerModule;
-class MenuBar;
 class Params;
 class RecentFiles;
 class StatusBar;
 class Tabs;
+
+namespace ui {
+  class Frame;
+  class MenuBar;
+}
 
 namespace tools { class ToolBox; }
 
@@ -99,11 +102,11 @@ bool app_rebuild_recent_list();
 
 PixelFormat app_get_current_pixel_format();
 
-Frame* app_get_top_window();
-MenuBar* app_get_menubar();
+ui::Frame* app_get_top_window();
+ui::MenuBar* app_get_menubar();
 StatusBar* app_get_statusbar();
 ColorBar* app_get_colorbar();
-Widget* app_get_toolbar();
+ui::Widget* app_get_toolbar();
 Tabs* app_get_tabsbar();
 
 void app_default_statusbar_message();

@@ -16,6 +16,8 @@
 #include "gui/graphics.h"
 #include "gui/theme.h"
 
+namespace ui {
+
 Graphics::Graphics(BITMAP* bmp, int dx, int dy)
   : m_bmp(bmp)
   , m_dx(dx)
@@ -233,3 +235,5 @@ ScreenGraphics::ScreenGraphics()
 ScreenGraphics::~ScreenGraphics()
 {
 }
+
+} // namespace ui

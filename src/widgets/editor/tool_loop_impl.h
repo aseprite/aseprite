@@ -19,14 +19,12 @@
 #ifndef WIDGETS_EDITOR_TOOL_LOOP_IMPL_H_INCLUDED
 #define WIDGETS_EDITOR_TOOL_LOOP_IMPL_H_INCLUDED
 
-namespace tools {
-  class ToolLoop;
-}
+namespace ui { union Message; }
+namespace tools { class ToolLoop; }
 
 class Context;
 class Editor;
-union Message;
 
-tools::ToolLoop* create_tool_loop(Editor* editor, Context* context, Message* msg);
+tools::ToolLoop* create_tool_loop(Editor* editor, Context* context, ui::Message* msg);
 
 #endif

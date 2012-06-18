@@ -29,15 +29,20 @@
 #include "gui/widget.h"
 #include "listeners.h"
 
-class Box;
-class Button;
 class ColorButton;
-class Entry;
-class Frame;
-class Slider;
 class StatusBar;
 
-namespace tools { class Tool; }
+namespace ui {
+  class Box;
+  class Button;
+  class Entry;
+  class Frame;
+  class Slider;
+}
+
+namespace tools {
+  class Tool;
+}
 
 class Progress
 {
@@ -65,7 +70,7 @@ public:
 
 typedef Listeners<StatusBarListener> StatusBarListeners;
 
-class StatusBar : public Widget
+class StatusBar : public ui::Widget
 {
 public:
   StatusBar();
@@ -94,7 +99,7 @@ public:
   void showNotification(const char* text, const char* link);
 
 protected:
-  bool onProcessMessage(Message* msg) OVERRIDE;
+  bool onProcessMessage(ui::Message* msg) OVERRIDE;
 
 private:
   void onCurrentToolChange();
@@ -121,23 +126,23 @@ private:
   ProgressList m_progress;
 
   // Box of main commands
-  Widget* m_commandsBox;
-  Slider* m_slider;             // Opacity slider
-  Entry* m_currentFrame;        // Current frame and go to frame entry
-  Button* m_newFrame;           // Button to create a new frame
-  Button* m_b_first;            // Go to first frame
-  Button* m_b_prev;             // Go to previous frame
-  Button* m_b_play;             // Play animation
-  Button* m_b_next;             // Go to next frame
-  Button* m_b_last;             // Go to last frame
+  ui::Widget* m_commandsBox;
+  ui::Slider* m_slider;             // Opacity slider
+  ui::Entry* m_currentFrame;        // Current frame and go to frame entry
+  ui::Button* m_newFrame;           // Button to create a new frame
+  ui::Button* m_b_first;            // Go to first frame
+  ui::Button* m_b_prev;             // Go to previous frame
+  ui::Button* m_b_play;             // Play animation
+  ui::Button* m_b_next;             // Go to next frame
+  ui::Button* m_b_last;             // Go to last frame
 
   // Box of notifications.
-  Widget* m_notificationsBox;
-  LinkLabel* m_linkLabel;
+  ui::Widget* m_notificationsBox;
+  ui::LinkLabel* m_linkLabel;
 
   // Box with move-pixels commands (when the user drag-and-drop selected pixels using the editor)
-  Box* m_movePixelsBox;
-  Widget* m_transparentLabel;
+  ui::Box* m_movePixelsBox;
+  ui::Widget* m_transparentLabel;
   ColorButton* m_transparentColor;
 
   // Tip window

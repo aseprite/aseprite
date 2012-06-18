@@ -29,6 +29,8 @@
 #include "widgets/statebar.h"
 #include "widgets/tabs.h"
 
+using namespace ui;
+
 class AdvancedModeCommand : public Command
 {
 public:

@@ -23,7 +23,6 @@
 
 class Editor;
 class EditorDecorator;
-class Graphics;
 class Image;
 
 // EditorPreRender and EditorPostRender are two interfaces used to

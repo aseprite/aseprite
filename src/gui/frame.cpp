@@ -17,6 +17,8 @@
 
 using namespace gfx;
 
+namespace ui {
+
 enum {
   WINDOW_NONE = 0,
   WINDOW_MOVE = 1,
@@ -223,7 +225,7 @@ void Frame::open_window()
     if (m_is_autoremap)
       center_window();
 
-    gui::Manager::getDefault()->_openWindow(this);
+    Manager::getDefault()->_openWindow(this);
   }
 }
 
@@ -231,7 +233,7 @@ void Frame::open_window_fg()
 {
   open_window();
 
-  gui::Manager* manager = getManager();
+  Manager* manager = getManager();
 
   m_is_foreground = true;
 
@@ -541,7 +543,7 @@ void Frame::move_window(JRect rect, bool use_blit)
 {
 #define FLAGS JI_GDR_CUTTOPWINDOWS | JI_GDR_USECHILDAREA
 
-  gui::Manager* manager = getManager();
+  Manager* manager = getManager();
   JRegion old_drawable_region;
   JRegion new_drawable_region;
   JRegion manager_refresh_region;
@@ -661,3 +663,5 @@ static void displace_widgets(Widget* widget, int x, int y)
   JI_LIST_FOR_EACH(widget->children, link)
     displace_widgets(reinterpret_cast<Widget*>(link->data), x, y);
 }
+
+} // namespace ui

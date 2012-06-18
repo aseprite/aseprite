@@ -8,6 +8,8 @@
 
 #include "gui/list.h"
 
+namespace ui {
+
 JList jlist_new()
 {
   JList list = new jlist;
@@ -192,3 +194,5 @@ JLink jlist_find(JList list, const void *data)
   }
   return list->end;
 }
+
+} // namespace ui

@@ -35,6 +35,8 @@
 #include "widgets/color_selector.h"
 #include "widgets/palette_view.h"
 
+using namespace ui;
+
 ColorSelector::ColorSelector()
   : PopupFramePin("Color Selector", false)
   , m_color(Color::fromMask())

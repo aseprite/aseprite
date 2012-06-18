@@ -27,6 +27,7 @@ class Image;
 class DocumentReader;
 class DocumentWriter;
 
+namespace util {
 namespace clipboard {
 
   // TODO Horrible API: refactor it.
@@ -44,5 +45,6 @@ namespace clipboard {
   bool get_image_size(gfx::Size& size);
 
 } // namespace clipboard
+} // namespace util
 
 #endif

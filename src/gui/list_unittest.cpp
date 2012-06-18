@@ -19,6 +19,8 @@
 #include <gtest/gtest.h>
 #include "gui/list.h"
 
+using namespace ui;
+
 TEST(JList, AppendAndClear)
 {
   JList q = jlist_new();

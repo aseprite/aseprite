@@ -13,22 +13,26 @@
 
 #include <string>
 
-class LinkLabel : public CustomLabel
-{
-public:
-  LinkLabel(const char* urlOrText);
-  LinkLabel(const char* url, const char* text);
+namespace ui {
 
-  const char* getUrl() const { return m_url.c_str(); }
-  void setUrl(const char* url);
+  class LinkLabel : public CustomLabel
+  {
+  public:
+    LinkLabel(const char* urlOrText);
+    LinkLabel(const char* url, const char* text);
 
-  Signal0<void> Click;
+    const char* getUrl() const { return m_url.c_str(); }
+    void setUrl(const char* url);
 
-protected:
-  bool onProcessMessage(Message* msg) OVERRIDE;
-  void onPaint(PaintEvent& ev) OVERRIDE;
+    Signal0<void> Click;
 
-  std::string m_url;
-};
+  protected:
+    bool onProcessMessage(Message* msg) OVERRIDE;
+    void onPaint(PaintEvent& ev) OVERRIDE;
+
+    std::string m_url;
+  };
+
+} // namespace ui
 
 #endif

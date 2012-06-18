@@ -21,7 +21,7 @@
 
 #include "gui/view.h"
 
-class EditorView : public View
+class EditorView : public ui::View
 {
 public:
   enum Type { CurrentEditorMode, AlwaysSelected };
@@ -29,7 +29,7 @@ public:
   EditorView(Type type);
 
 protected:
-  bool onProcessMessage(Message* msg) OVERRIDE;
+  bool onProcessMessage(ui::Message* msg) OVERRIDE;
 
 private:
   Type m_type;

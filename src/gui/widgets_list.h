@@ -9,8 +9,11 @@
 
 #include <vector>
 
-class Widget;
+namespace ui {
 
-typedef std::vector<Widget*> WidgetsList;
+  class Widget;
+  typedef std::vector<Widget*> WidgetsList;
+
+} // namespace ui
 
 #endif

@@ -23,25 +23,29 @@
 struct FONT;
 struct BITMAP;
 
-void jrectedge(struct BITMAP *bmp, int x1, int y1, int x2, int y2,
-               int c1, int c2);
-void jrectexclude(struct BITMAP *bmp, int x1, int y1, int x2, int y2,
-                  int ex1, int ey1, int ex2, int ey2, int color);
-void jrectshade(struct BITMAP *bmp, int x1, int y1, int x2, int y2,
-                int c1, int c2, int align);
+namespace ui {
 
-void jdraw_rect(const JRect rect, int color);
-void jdraw_rectfill(const JRect rect, int color);
-void jdraw_rectfill(const gfx::Rect& rect, int color);
-void jdraw_rectedge(const JRect rect, int c1, int c2);
-void jdraw_rectshade(const JRect rect, int c1, int c2, int align);
-void jdraw_rectexclude(const JRect rc, const JRect exclude, int color);
+  void jrectedge(struct BITMAP *bmp, int x1, int y1, int x2, int y2,
+                 int c1, int c2);
+  void jrectexclude(struct BITMAP *bmp, int x1, int y1, int x2, int y2,
+                    int ex1, int ey1, int ex2, int ey2, int color);
+  void jrectshade(struct BITMAP *bmp, int x1, int y1, int x2, int y2,
+                  int c1, int c2, int align);
 
-void jdraw_char(FONT* f, int chr, int x, int y, int fg, int bg, bool fill_bg);
-void jdraw_text(BITMAP* bmp, FONT* f, const char* text, int x, int y, int fg, int bg, bool fill_bg, int underline_height = 1);
+  void jdraw_rect(const JRect rect, int color);
+  void jdraw_rectfill(const JRect rect, int color);
+  void jdraw_rectfill(const gfx::Rect& rect, int color);
+  void jdraw_rectedge(const JRect rect, int c1, int c2);
+  void jdraw_rectshade(const JRect rect, int c1, int c2, int align);
+  void jdraw_rectexclude(const JRect rc, const JRect exclude, int color);
 
-void jdraw_inverted_sprite(struct BITMAP *bmp, struct BITMAP *sprite, int x, int y);
+  void jdraw_char(FONT* f, int chr, int x, int y, int fg, int bg, bool fill_bg);
+  void jdraw_text(BITMAP* bmp, FONT* f, const char* text, int x, int y, int fg, int bg, bool fill_bg, int underline_height = 1);
 
-void ji_move_region(JRegion region, int dx, int dy);
+  void jdraw_inverted_sprite(struct BITMAP *bmp, struct BITMAP *sprite, int x, int y);
+
+  void ji_move_region(JRegion region, int dx, int dy);
+
+} // namespace ui
 
 #endif

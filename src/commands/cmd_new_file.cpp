@@ -42,6 +42,8 @@
 #include <allegro/config.h>
 #include <allegro/unicode.h>
 
+using namespace ui;
+
 //////////////////////////////////////////////////////////////////////
 // new_file
 
@@ -105,7 +107,7 @@ void NewFileCommand::onExecute(Context* context)
   // If the clipboard contains an image, we can show the size of the
   // clipboard as default image size.
   gfx::Size clipboardSize;
-  if (clipboard::get_image_size(clipboardSize)) {
+  if (util::clipboard::get_image_size(clipboardSize)) {
     w = clipboardSize.w;
     h = clipboardSize.h;
   }

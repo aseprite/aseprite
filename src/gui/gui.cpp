@@ -10,6 +10,8 @@
 #include "gui/clipboard.h"
 #include "gui/theme.h"
 
+namespace ui {
+
 int _ji_widgets_init();
 void _ji_widgets_exit();
 
@@ -19,10 +21,7 @@ void _ji_system_exit();
 int _ji_font_init();
 void _ji_font_exit();
 
-/**
- * Initializes the Jinete library.
- */
-Jinete::Jinete()
+GuiSystem::GuiSystem()
 {
   // initialize system
   _ji_system_init();
@@ -30,16 +29,18 @@ Jinete::Jinete()
   _ji_widgets_init();
 }
 
-Jinete::~Jinete()
+GuiSystem::~GuiSystem()
 {
   // finish theme
   CurrentTheme::set(NULL);
 
   // destroy clipboard
-  gui::clipboard::set_text(NULL);
+  clipboard::set_text(NULL);
 
   // shutdown system
   _ji_widgets_exit();
   _ji_font_exit();
   _ji_system_exit();
 }
+
+} // namespace ui

@@ -30,6 +30,8 @@
 
 #include <allegro/color.h>
 
+using namespace ui;
+
 SelectBoxState::SelectBoxState(SelectBoxDelegate* delegate, const gfx::Rect& rc, PaintFlags paintFlags)
   : m_delegate(delegate)
   , m_rulers(4)

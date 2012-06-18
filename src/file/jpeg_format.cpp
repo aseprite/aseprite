@@ -366,9 +366,9 @@ SharedPtr<FormatOptions> JpegFormat::onGetFormatOptions(FileOp* fop)
       return jpeg_options;
 
     // Load the window to ask to the user the JPEG options he wants.
-    UniquePtr<Frame> window(app::load_widget<Frame>("jpeg_options.xml", "jpeg_options"));
-    Slider* slider_quality = app::find_widget<Slider>(window, "quality");
-    Widget* ok = app::find_widget<Widget>(window, "ok");
+    UniquePtr<ui::Frame> window(app::load_widget<ui::Frame>("jpeg_options.xml", "jpeg_options"));
+    ui::Slider* slider_quality = app::find_widget<ui::Slider>(window, "quality");
+    ui::Widget* ok = app::find_widget<ui::Widget>(window, "ok");
 
     slider_quality->setValue(jpeg_options->quality * 10.0f);
 

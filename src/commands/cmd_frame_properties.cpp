@@ -28,6 +28,8 @@
 #include "raster/sprite.h"
 #include "undo_transaction.h"
 
+using namespace ui;
+
 //////////////////////////////////////////////////////////////////////
 // frame_properties
 

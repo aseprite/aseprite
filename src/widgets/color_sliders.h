@@ -28,16 +28,18 @@
 
 #include <vector>
 
-class Label;
-class Slider;
-class Entry;
+namespace ui {
+  class Label;
+  class Slider;
+  class Entry;
+}
 
 class ColorSlidersChangeEvent;
 
 //////////////////////////////////////////////////////////////////////
 // ColorSliders class
 
-class ColorSliders : public Widget
+class ColorSliders : public ui::Widget
 {
 public:
   enum Channel { Red, Green, Blue,
@@ -53,7 +55,7 @@ public:
   Signal1<void, ColorSlidersChangeEvent&> ColorChange;
 
 protected:
-  void onPreferredSize(PreferredSizeEvent& ev);
+  void onPreferredSize(ui::PreferredSizeEvent& ev);
 
   // For derived classes
   void addSlider(Channel channel, const char* labelText, int min, int max);
@@ -70,13 +72,13 @@ private:
 
   void updateEntryText(int entryIndex);
   void updateSlidersBgColor(const Color& color);
-  void updateSliderBgColor(Slider* slider, const Color& color);
+  void updateSliderBgColor(ui::Slider* slider, const Color& color);
 
-  std::vector<Label*> m_label;
-  std::vector<Slider*> m_slider;
-  std::vector<Entry*> m_entry;
+  std::vector<ui::Label*> m_label;
+  std::vector<ui::Slider*> m_slider;
+  std::vector<ui::Entry*> m_entry;
   std::vector<Channel> m_channel;
-  Grid m_grid;
+  ui::Grid m_grid;
 };
 
 //////////////////////////////////////////////////////////////////////
@@ -115,10 +117,10 @@ private:
 //////////////////////////////////////////////////////////////////////
 // Events
 
-class ColorSlidersChangeEvent : public Event
+class ColorSlidersChangeEvent : public ui::Event
 {
 public:
-  ColorSlidersChangeEvent(const Color& color, ColorSliders::Channel channel, Component* source)
+  ColorSlidersChangeEvent(const Color& color, ColorSliders::Channel channel, ui::Component* source)
     : Event(source)
     , m_color(color)
     , m_channel(channel) { }

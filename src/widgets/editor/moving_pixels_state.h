@@ -32,19 +32,19 @@ class PixelsMovement;
 class MovingPixelsState : public StandbyState, StatusBarListener, ContextListener
 {
 public:
-  MovingPixelsState(Editor* editor, Message* msg, PixelsMovement* pixelsMovement, HandleType handle);
+  MovingPixelsState(Editor* editor, ui::Message* msg, PixelsMovement* pixelsMovement, HandleType handle);
   virtual ~MovingPixelsState();
 
   // EditorState
   virtual BeforeChangeAction onBeforeChangeState(Editor* editor, EditorState* newState) OVERRIDE;
   virtual void onCurrentToolChange(Editor* editor) OVERRIDE;
-  virtual bool onMouseDown(Editor* editor, Message* msg) OVERRIDE;
-  virtual bool onMouseUp(Editor* editor, Message* msg) OVERRIDE;
-  virtual bool onMouseMove(Editor* editor, Message* msg) OVERRIDE;
-  virtual bool onMouseWheel(Editor* editor, Message* msg) OVERRIDE;
+  virtual bool onMouseDown(Editor* editor, ui::Message* msg) OVERRIDE;
+  virtual bool onMouseUp(Editor* editor, ui::Message* msg) OVERRIDE;
+  virtual bool onMouseMove(Editor* editor, ui::Message* msg) OVERRIDE;
+  virtual bool onMouseWheel(Editor* editor, ui::Message* msg) OVERRIDE;
   virtual bool onSetCursor(Editor* editor) OVERRIDE;
-  virtual bool onKeyDown(Editor* editor, Message* msg) OVERRIDE;
-  virtual bool onKeyUp(Editor* editor, Message* msg) OVERRIDE;
+  virtual bool onKeyDown(Editor* editor, ui::Message* msg) OVERRIDE;
+  virtual bool onKeyUp(Editor* editor, ui::Message* msg) OVERRIDE;
   virtual bool onUpdateStatusBar(Editor* editor) OVERRIDE;
 
   // ContextListener

@@ -45,6 +45,8 @@
 
 static const char* ConfigSection = "ConvolutionMatrix";
 
+using namespace ui;
+
 //////////////////////////////////////////////////////////////////////
 // Convolution Matrix window
 

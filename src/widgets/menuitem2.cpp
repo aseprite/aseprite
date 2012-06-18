@@ -32,6 +32,8 @@
 #include <stdio.h>
 #include <string.h>
 
+using namespace ui;
+
 MenuItem2::MenuItem2(const char* text, Command* command, Params* params)
  : MenuItem(text)
  , m_command(command)

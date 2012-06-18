@@ -34,6 +34,8 @@
 #include "widgets/editor/editor.h"
 #include "widgets/statebar.h"
 
+using namespace ui;
+
 // Applies filters in two threads: a background worker thread to
 // modify the sprite, and the main thread to monitoring the progress
 // (and given to the user the possibility to cancel the process).
@@ -85,8 +87,8 @@ FilterWorker::FilterWorker(FilterManagerImpl* filterMgr)
 
   m_progressBar = app_get_statusbar()->addProgress();
 
-  m_alertWindow = Alert::create(PACKAGE
-                                "<<Applying effect...||&Cancel");
+  m_alertWindow = ui::Alert::create(PACKAGE
+                                    "<<Applying effect...||&Cancel");
 
   m_monitor = add_gui_monitor(FilterWorker::monitor_proxy, NULL, this);
 }

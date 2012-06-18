@@ -51,7 +51,7 @@ void ExitCommand::onExecute(Context* context)
   while (document) {
     // Check if this sprite is modified
     if (document->isModified()) {
-      if (Alert::show("Warning<<There are sprites with changes.<<Do you want quit anyway?||&Yes||&No") != 1) {
+      if (ui::Alert::show("Warning<<There are sprites with changes.<<Do you want quit anyway?||&Yes||&No") != 1) {
         return;
       }
       break;

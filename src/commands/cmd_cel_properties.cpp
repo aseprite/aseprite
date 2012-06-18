@@ -36,6 +36,8 @@
 
 #include <allegro/unicode.h>
 
+using namespace ui;
+
 class CelPropertiesCommand : public Command
 {
 public:
@@ -75,7 +77,7 @@ void CelPropertiesCommand::onExecute(Context* context)
   Widget* label_size = app::find_widget<Widget>(window, "size");
   Slider* slider_opacity = app::find_widget<Slider>(window, "opacity");
   Widget* button_ok = app::find_widget<Widget>(window, "ok");
-  gui::TooltipManager* tooltipManager = window->findFirstChildByType<gui::TooltipManager>();
+  ui::TooltipManager* tooltipManager = window->findFirstChildByType<ui::TooltipManager>();
 
   // Mini look for the opacity slider
   setup_mini_look(slider_opacity);

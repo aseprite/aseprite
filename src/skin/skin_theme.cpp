@@ -40,6 +40,9 @@
 
 #include "tinyxml.h"
 
+using namespace gfx;
+using namespace ui;
+
 #define CHARACTER_LENGTH(f, c)  ((f)->vtable->char_length((f), (c)))
 
 #define BGCOLOR                 (get_bg_color(widget))
@@ -1002,7 +1005,7 @@ void SkinTheme::paintLabel(PaintEvent& ev)
   struct jrect text;
   int bg = BGCOLOR;
   int fg = widget->getTextColor();
-  gfx::Rect rc = widget->getClientBounds();
+  Rect rc = widget->getClientBounds();
 
   g->fillRect(bg, rc);
   rc.shrink(widget->getBorder());
@@ -1011,7 +1014,7 @@ void SkinTheme::paintLabel(PaintEvent& ev)
 
   g->drawString(widget->getText(), fg, bg, false,
                 // TODO "text" coordinates are absolute and we are drawing on client area
-                gfx::Point(text.x1, text.y1) - gfx::Point(widget->rc->x1, widget->rc->y1));
+                Point(text.x1, text.y1) - Point(widget->rc->x1, widget->rc->y1));
 }
 
 void SkinTheme::paintLinkLabel(PaintEvent& ev)
@@ -1300,7 +1303,7 @@ void SkinTheme::paintSlider(PaintEvent& ev)
 
   widget->getSliderThemeInfo(&min, &max, &value);
 
-  gfx::Rect rc(widget->getClientBounds().shrink(widget->getBorder()));
+  Rect rc(widget->getClientBounds().shrink(widget->getBorder()));
   int x;
   if (min != max)
     x = rc.x + rc.w * (value-min) / (max-min);
@@ -1336,7 +1339,7 @@ void SkinTheme::paintSlider(PaintEvent& ev)
     g->drawAlphaBitmap(thumb, x-thumb->w/2, rc.y);
 
     // Draw borders
-    rc.shrink(gfx::Border(3 * jguiscale(),
+    rc.shrink(Border(3 * jguiscale(),
                           thumb->h,
                           3 * jguiscale(),
                           1 * jguiscale()));
@@ -1344,7 +1347,7 @@ void SkinTheme::paintSlider(PaintEvent& ev)
     draw_bounds_nw(g, rc, nw, -1);
 
     // Draw background (using the customized ISliderBgPainter implementation)
-    rc.shrink(gfx::Border(1, 1, 1, 2) * jguiscale());
+    rc.shrink(Border(1, 1, 1, 2) * jguiscale());
     if (!rc.isEmpty())
       bgPainter->paint(widget, g, rc);
   }
@@ -1383,13 +1386,13 @@ void SkinTheme::paintSlider(PaintEvent& ev)
 
     widget->setTextQuiet(buf);
 
-    if (IntersectClip clip = IntersectClip(g, gfx::Rect(rc.x, rc.y, x-rc.x, rc.h))) {
+    if (IntersectClip clip = IntersectClip(g, Rect(rc.x, rc.y, x-rc.x, rc.h))) {
       draw_textstring(g, NULL,
                       get_slider_full_text_color(),
                       get_slider_full_face_color(), false, widget, rc, 0);
     }
 
-    if (IntersectClip clip = IntersectClip(g, gfx::Rect(x+1, rc.y, rc.w-(x-rc.x+1), rc.h))) {
+    if (IntersectClip clip = IntersectClip(g, Rect(x+1, rc.y, rc.w-(x-rc.x+1), rc.h))) {
       draw_textstring(g, NULL,
                       get_slider_empty_text_color(),
                       get_slider_empty_face_color(), false, widget, rc, 0);
@@ -1493,7 +1496,7 @@ void SkinTheme::paintComboBoxButton(PaintEvent& ev)
     part_nw = PART_TOOLBUTTON_LAST_NW;
   }
 
-  gfx::Rect rc = widget->getClientBounds();
+  Rect rc = widget->getClientBounds();
 
   // external background
   g->fillRect(BGCOLOR, rc);
@@ -1635,9 +1638,9 @@ void SkinTheme::draw_frame_button(ButtonBase* widget, JRect clip)
 
 void SkinTheme::paintTooltip(PaintEvent& ev)
 {
-  gui::TipWindow* widget = static_cast<gui::TipWindow*>(ev.getSource());
+  ui::TipWindow* widget = static_cast<ui::TipWindow*>(ev.getSource());
   Graphics* g = ev.getGraphics();
-  gfx::Rect rc = widget->getClientBounds();
+  Rect rc = widget->getClientBounds();
   int bg = makecol(255, 255, 125);
 
   int nw = PART_TOOLTIP_NW;
@@ -1681,7 +1684,7 @@ void SkinTheme::paintTooltip(PaintEvent& ev)
 
 
   // Fill background
-  g->fillRect(bg, gfx::Rect(rc).shrink(gfx::Border(m_part[w]->w,
+  g->fillRect(bg, Rect(rc).shrink(Border(m_part[w]->w,
                                                    m_part[n]->h,
                                                    m_part[e]->w,
                                                    m_part[s]->h)));
@@ -1771,11 +1774,11 @@ void SkinTheme::draw_textstring(const char *t, int fg_color, int bg_color,
 }
 
 void SkinTheme::draw_textstring(Graphics* g, const char *t, int fg_color, int bg_color,
-                                bool fill_bg, Widget* widget, const gfx::Rect& rc,
+                                bool fill_bg, Widget* widget, const Rect& rc,
                                 int selected_offset)
 {
   if (t || widget->hasText()) {
-    gfx::Rect textrc;
+    Rect textrc;
 
     g->setFont(widget->getFont());
 
@@ -1810,7 +1813,7 @@ void SkinTheme::draw_textstring(Graphics* g, const char *t, int fg_color, int bg
     // Background
     if (bg_color >= 0) {
       if (!widget->isEnabled())
-        g->fillRect(bg_color, gfx::Rect(textrc).inflate(jguiscale(), jguiscale()));
+        g->fillRect(bg_color, Rect(textrc).inflate(jguiscale(), jguiscale()));
       else
         g->fillRect(bg_color, textrc);
     }
@@ -1823,7 +1826,7 @@ void SkinTheme::draw_textstring(Graphics* g, const char *t, int fg_color, int bg
 
       // Draw white part
       g->drawString(t, COLOR_BACKGROUND, bg_color, fill_bg,
-                    textrc.getOrigin() + gfx::Point(jguiscale(), jguiscale()));
+                    textrc.getOrigin() + Point(jguiscale(), jguiscale()));
 
       if (fill_bg)
         fill_bg = false;
@@ -1915,7 +1918,7 @@ void SkinTheme::draw_bounds_template(BITMAP* bmp, int x1, int y1, int x2, int y2
   set_clip_rect(bmp, cx1, cy1, cx2, cy2);
 }
 
-void SkinTheme::draw_bounds_template(Graphics* g, const gfx::Rect& rc,
+void SkinTheme::draw_bounds_template(Graphics* g, const Rect& rc,
                                      int nw, int n, int ne, int e, int se, int s, int sw, int w)
 {
   int x, y;
@@ -1924,7 +1927,7 @@ void SkinTheme::draw_bounds_template(Graphics* g, const gfx::Rect& rc,
 
   g->drawAlphaBitmap(m_part[nw], rc.x, rc.y);
 
-  if (IntersectClip clip = IntersectClip(g, gfx::Rect(rc.x+m_part[nw]->w, rc.y,
+  if (IntersectClip clip = IntersectClip(g, Rect(rc.x+m_part[nw]->w, rc.y,
                                                       rc.w-m_part[nw]->w-m_part[ne]->w, rc.h))) {
     for (x = rc.x+m_part[nw]->w;
          x < rc.x+rc.w-m_part[ne]->w;
@@ -1939,7 +1942,7 @@ void SkinTheme::draw_bounds_template(Graphics* g, const gfx::Rect& rc,
 
   g->drawAlphaBitmap(m_part[sw], rc.x, rc.y+rc.h-m_part[sw]->h);
 
-  if (IntersectClip clip = IntersectClip(g, gfx::Rect(rc.x+m_part[sw]->w, rc.y,
+  if (IntersectClip clip = IntersectClip(g, Rect(rc.x+m_part[sw]->w, rc.y,
                                                       rc.w-m_part[sw]->w-m_part[se]->w, rc.h))) {
     for (x = rc.x+m_part[sw]->w;
          x < rc.x+rc.w-m_part[se]->w;
@@ -1950,7 +1953,7 @@ void SkinTheme::draw_bounds_template(Graphics* g, const gfx::Rect& rc,
 
   g->drawAlphaBitmap(m_part[se], rc.x+rc.w-m_part[se]->w, rc.y+rc.h-m_part[se]->h);
 
-  if (IntersectClip clip = IntersectClip(g, gfx::Rect(rc.x, rc.y+m_part[nw]->h,
+  if (IntersectClip clip = IntersectClip(g, Rect(rc.x, rc.y+m_part[nw]->h,
                                                       rc.w, rc.h-m_part[nw]->h-m_part[sw]->h))) {
     // Left
     for (y = rc.y+m_part[nw]->h;
@@ -2003,7 +2006,7 @@ void SkinTheme::draw_bounds_nw(BITMAP* bmp, int x1, int y1, int x2, int y2, int 
   }
 }
 
-void SkinTheme::draw_bounds_nw(Graphics* g, const gfx::Rect& rc, int nw, int bg)
+void SkinTheme::draw_bounds_nw(Graphics* g, const Rect& rc, int nw, int bg)
 {
   draw_bounds_template(g, rc,
                        nw+0, nw+1, nw+2, nw+3,
@@ -2011,16 +2014,16 @@ void SkinTheme::draw_bounds_nw(Graphics* g, const gfx::Rect& rc, int nw, int bg)
 
   // Center
   if (bg >= 0) {
-    g->fillRect(bg, gfx::Rect(rc).shrink(gfx::Border(m_part[nw+7]->w,
+    g->fillRect(bg, Rect(rc).shrink(Border(m_part[nw+7]->w,
                                                      m_part[nw+1]->h,
                                                      m_part[nw+3]->w,
                                                      m_part[nw+5]->h)));
   }
 }
 
-void SkinTheme::draw_bounds_nw2(Graphics* g, const gfx::Rect& rc, int x_mid, int nw1, int nw2, int bg1, int bg2)
+void SkinTheme::draw_bounds_nw2(Graphics* g, const Rect& rc, int x_mid, int nw1, int nw2, int bg1, int bg2)
 {
-  gfx::Rect rc2(rc.x, rc.y, x_mid-rc.x+1, rc.h);
+  Rect rc2(rc.x, rc.y, x_mid-rc.x+1, rc.h);
 
   if (IntersectClip clip = IntersectClip(g, rc2))
     draw_bounds_nw(g, rc, nw1, bg1);

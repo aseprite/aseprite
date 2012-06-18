@@ -45,6 +45,7 @@
 #include <cstring>
 
 using namespace std;
+using namespace ui;
 
 FilterManagerImpl::FilterManagerImpl(Document* document, Filter* filter)
   : m_document(document)

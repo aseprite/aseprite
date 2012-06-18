@@ -10,32 +10,36 @@
 #include "base/compiler_specific.h"
 #include "gui/widget.h"
 
-class ScrollBar : public Widget
-{
-public:
-  ScrollBar(int align);
+namespace ui {
 
-  int getPos() const { return m_pos; }
-  void setPos(int pos);
+  class ScrollBar : public Widget
+  {
+  public:
+    ScrollBar(int align);
 
-  int getSize() const { return m_size; }
-  void setSize(int size);
+    int getPos() const { return m_pos; }
+    void setPos(int pos);
 
-  // For themes
-  void getScrollBarThemeInfo(int* pos, int* len);
+    int getSize() const { return m_size; }
+    void setSize(int size);
 
-protected:
-  // Events
-  bool onProcessMessage(Message* msg) OVERRIDE;
+    // For themes
+    void getScrollBarThemeInfo(int* pos, int* len);
 
-private:
-  void getScrollBarInfo(int* _pos, int* _len, int* _bar_size, int* _viewport_size);
+  protected:
+    // Events
+    bool onProcessMessage(Message* msg) OVERRIDE;
 
-  int m_pos;
-  int m_size;
+  private:
+    void getScrollBarInfo(int* _pos, int* _len, int* _bar_size, int* _viewport_size);
 
-  static int m_wherepos;
-  static int m_whereclick;
-};
+    int m_pos;
+    int m_size;
+
+    static int m_wherepos;
+    static int m_whereclick;
+  };
+
+} // namespace ui
 
 #endif

@@ -18,6 +18,8 @@
 
 using namespace gfx;
 
+namespace ui {
+
 //////////////////////////////////////////////////////////////////////
 // Internal messages: to move between menus
 
@@ -138,7 +140,7 @@ MenuBox::~MenuBox()
 {
   if (m_base && m_base->is_filtering) {
     m_base->is_filtering = false;
-    gui::Manager::getDefault()->removeMessageFilter(JM_BUTTONPRESSED, this);
+    Manager::getDefault()->removeMessageFilter(JM_BUTTONPRESSED, this);
   }
 
   delete m_base;
@@ -262,7 +264,7 @@ void Menu::showPopup(int x, int y)
   MenuBaseData* base = menubox->createBase();
   base->was_clicked = true;
   base->is_filtering = true;
-  gui::Manager::getDefault()->addMessageFilter(JM_BUTTONPRESSED, menubox);
+  Manager::getDefault()->addMessageFilter(JM_BUTTONPRESSED, menubox);
 
   window->set_moveable(false);   // Can't move the window
 
@@ -277,14 +279,14 @@ void Menu::showPopup(int x, int y)
                           MID(0, y, JI_SCREEN_H-jrect_h(window->rc)));
 
   // Set the focus to the new menubox
-  gui::Manager::getDefault()->setFocus(menubox);
+  Manager::getDefault()->setFocus(menubox);
   menubox->setFocusMagnet(true);
 
   // Open the window
   window->open_window_fg();
 
   // Free the keyboard focus
-  gui::Manager::getDefault()->freeFocus();
+  Manager::getDefault()->freeFocus();
 
   // Fetch the "menu" so it isn't destroyed
   menubox->setMenu(NULL);
@@ -1075,7 +1077,7 @@ void MenuItem::openSubmenu(bool select_first)
   msg = jmessage_new(JM_OPEN_MENUITEM);
   msg->user.a = select_first;
   jmessage_add_dest(msg, this);
-  gui::Manager::getDefault()->enqueueMessage(msg);
+  Manager::getDefault()->enqueueMessage(msg);
 
   // Get the 'base'
   MenuBaseData* base = get_base(this);
@@ -1092,7 +1094,7 @@ void MenuItem::openSubmenu(bool select_first)
   // popuped menu-box
   if (!base->is_filtering) {
     base->is_filtering = true;
-    gui::Manager::getDefault()->addMessageFilter(JM_BUTTONPRESSED, get_base_menubox(this));
+    Manager::getDefault()->addMessageFilter(JM_BUTTONPRESSED, get_base_menubox(this));
   }
 }
 
@@ -1122,7 +1124,7 @@ void MenuItem::closeSubmenu(bool last_of_close_chain)
   msg = jmessage_new(JM_CLOSE_MENUITEM);
   msg->user.a = last_of_close_chain;
   jmessage_add_dest(msg, this);
-  gui::Manager::getDefault()->enqueueMessage(msg);
+  Manager::getDefault()->enqueueMessage(msg);
 
   // If this is the last message of the chain, here we have the
   // responsibility to set is_processing flag to true.
@@ -1140,7 +1142,7 @@ void MenuItem::closeSubmenu(bool last_of_close_chain)
 void MenuItem::startTimer()
 {
   if (m_submenu_timer == NULL)
-    m_submenu_timer.reset(new gui::Timer(this, TIMEOUT_TO_OPEN_SUBMENU));
+    m_submenu_timer.reset(new Timer(this, TIMEOUT_TO_OPEN_SUBMENU));
 
   m_submenu_timer->start();
 }
@@ -1167,7 +1169,7 @@ void Menu::closeAll()
   base->was_clicked = false;
   if (base->is_filtering) {
     base->is_filtering = false;
-    gui::Manager::getDefault()->removeMessageFilter(JM_BUTTONPRESSED, base_menubox);
+    Manager::getDefault()->removeMessageFilter(JM_BUTTONPRESSED, base_menubox);
   }
 
   menu->unhighlightItem();
@@ -1198,7 +1200,7 @@ void MenuBox::closePopup()
 {
   Message* msg = jmessage_new(JM_CLOSE_POPUP);
   jmessage_add_dest(msg, this);
-  gui::Manager::getDefault()->enqueueMessage(msg);
+  Manager::getDefault()->enqueueMessage(msg);
 }
 
 void MenuBox::cancelMenuLoop()
@@ -1208,7 +1210,7 @@ void MenuBox::cancelMenuLoop()
     menu->closeAll();
 
   // Lost focus
-  gui::Manager::getDefault()->freeFocus();
+  Manager::getDefault()->freeFocus();
 }
 
 void MenuItem::executeClick()
@@ -1216,7 +1218,7 @@ void MenuItem::executeClick()
   // Send the message
   Message* msg = jmessage_new(JM_EXE_MENUITEM);
   jmessage_add_dest(msg, this);
-  gui::Manager::getDefault()->enqueueMessage(msg);
+  Manager::getDefault()->enqueueMessage(msg);
 }
 
 static MenuItem* check_for_letter(Menu* menu, int ascii)
@@ -1305,3 +1307,5 @@ static MenuItem* find_previtem(Menu* menu, MenuItem* menuitem)
   else
     return NULL;
 }
+
+} // namespace ui

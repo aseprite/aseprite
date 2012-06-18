@@ -27,6 +27,8 @@
 #include "gui/combobox.h"
 #include "gui/frame.h"
 
+using namespace ui;
+
 class DeveloperConsole : public Frame
 {
 public:

@@ -24,9 +24,12 @@
 #include <map>
 #include <string>
 
-class Widget;
 class TiXmlElement;
-namespace gui { class TooltipManager; }
+
+namespace ui {
+  class Widget;
+  class TooltipManager;
+}
 
 namespace app {
 
@@ -38,7 +41,7 @@ namespace app {
     public:
       virtual ~IWidgetTypeCreator() { }
       virtual void dispose() = 0;
-      virtual Widget* createWidgetFromXml(const TiXmlElement* xmlElem) = 0;
+      virtual ui::Widget* createWidgetFromXml(const TiXmlElement* xmlElem) = 0;
     };
 
     WidgetLoader();
@@ -53,11 +56,11 @@ namespace app {
     void addWidgetType(const char* tagName, IWidgetTypeCreator* creator);
 
     // Loads the specified widget from an .xml file.
-    Widget* loadWidget(const char* fileName, const char* widgetId);
+    ui::Widget* loadWidget(const char* fileName, const char* widgetId);
 
     template<class T>
     T* loadWidgetT(const char* fileName, const char* widgetId) {
-      Widget* widget = loadWidget(fileName, widgetId);
+      ui::Widget* widget = loadWidget(fileName, widgetId);
 
       T* specificWidget = dynamic_cast<T*>(widget);
       if (!specificWidget)
@@ -67,13 +70,13 @@ namespace app {
     }
 
   private:
-    Widget* loadWidgetFromXmlFile(const char* xmlFilename, const char* widgetId);
-    Widget* convertXmlElementToWidget(const TiXmlElement* elem, Widget* root);
+    ui::Widget* loadWidgetFromXmlFile(const char* xmlFilename, const char* widgetId);
+    ui::Widget* convertXmlElementToWidget(const TiXmlElement* elem, ui::Widget* root);
 
     typedef std::map<std::string, IWidgetTypeCreator*> TypeCreatorsMap;
 
     TypeCreatorsMap m_typeCreators;
-    ::gui::TooltipManager* m_tooltipManager;
+    ui::TooltipManager* m_tooltipManager;
   };
 
 } // namespace app

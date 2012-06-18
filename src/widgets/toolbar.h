@@ -19,12 +19,12 @@
 #ifndef WIDGETS_TOOLBAR_H_INCLUDED
 #define WIDGETS_TOOLBAR_H_INCLUDED
 
-class Widget;
+namespace ui { class Widget; }
 namespace tools { class Tool; }
 
-Widget* toolbar_new();
+ui::Widget* toolbar_new();
 
-bool toolbar_is_tool_visible(Widget* toolbar, tools::Tool* tool);
-void toolbar_select_tool(Widget* toolbar, tools::Tool* tool);
+bool toolbar_is_tool_visible(ui::Widget* toolbar, tools::Tool* tool);
+void toolbar_select_tool(ui::Widget* toolbar, tools::Tool* tool);
 
 #endif

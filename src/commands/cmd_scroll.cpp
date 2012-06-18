@@ -95,7 +95,7 @@ bool ScrollCommand::onEnabled(Context* context)
 
 void ScrollCommand::onExecute(Context* context)
 {
-  View* view = View::getView(current_editor);
+  ui::View* view = ui::View::getView(current_editor);
   gfx::Rect vp = view->getViewportBounds();
   gfx::Point scroll = view->getViewScroll();
   gfx::Rect gridBounds = context->getSettings()->getGridBounds();

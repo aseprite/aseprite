@@ -22,24 +22,24 @@
 #include "gui/button.h"
 #include "gui/popup_frame.h"
 
-class PopupFramePin : public PopupFrame
+class PopupFramePin : public ui::PopupFrame
 {
 public:
   PopupFramePin(const char* text, bool close_on_buttonpressed);
 
 protected:
-  virtual bool onProcessMessage(Message* msg) OVERRIDE;
-  virtual void onHitTest(HitTestEvent& ev) OVERRIDE;
+  virtual bool onProcessMessage(ui::Message* msg) OVERRIDE;
+  virtual void onHitTest(ui::HitTestEvent& ev) OVERRIDE;
 
   // The pin. Your derived class must add this pin in some place of
   // the frame as a children, and you must to remove the pin from the
   // parent in your class's dtor.
-  CheckBox* getPin() { return &m_pin; }
+  ui::CheckBox* getPin() { return &m_pin; }
 
 private:
-  void onPinClick(Event& ev);
+  void onPinClick(ui::Event& ev);
 
-  CheckBox m_pin;
+  ui::CheckBox m_pin;
 };
 
 #endif

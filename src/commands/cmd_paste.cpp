@@ -48,7 +48,7 @@ PasteCommand::PasteCommand()
 bool PasteCommand::onEnabled(Context* context)
 {
   return
-    clipboard::can_paste() &&
+    util::clipboard::can_paste() &&
     context->checkFlags(ContextFlags::ActiveDocumentIsWritable |
                         ContextFlags::ActiveLayerIsReadable |
                         ContextFlags::ActiveLayerIsWritable |
@@ -57,7 +57,7 @@ bool PasteCommand::onEnabled(Context* context)
 
 void PasteCommand::onExecute(Context* context)
 {
-  clipboard::paste();
+  util::clipboard::paste();
 }
 
 //////////////////////////////////////////////////////////////////////

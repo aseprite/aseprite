@@ -27,7 +27,7 @@
 
 class ColorSelector;
 
-class ColorButton : public ButtonBase
+class ColorButton : public ui::ButtonBase
 {
 public:
   ColorButton(const Color& color, PixelFormat pixelFormat);
@@ -44,10 +44,10 @@ public:
 
 protected:
   // Events
-  bool onProcessMessage(Message* msg) OVERRIDE;
-  void onPreferredSize(PreferredSizeEvent& ev) OVERRIDE;
-  void onPaint(PaintEvent& ev) OVERRIDE;
-  void onClick(Event& ev) OVERRIDE;
+  bool onProcessMessage(ui::Message* msg) OVERRIDE;
+  void onPreferredSize(ui::PreferredSizeEvent& ev) OVERRIDE;
+  void onPaint(ui::PaintEvent& ev) OVERRIDE;
+  void onClick(ui::Event& ev) OVERRIDE;
 
 private:
   void openSelectorDialog();

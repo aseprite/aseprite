@@ -26,7 +26,7 @@
 class FilterManagerImpl;
 
 // Invisible widget to control a effect-preview in the current editor.
-class FilterPreview : public Widget
+class FilterPreview : public ui::Widget
 {
 public:
   FilterPreview(FilterManagerImpl* filterMgr);
@@ -37,11 +37,11 @@ public:
   FilterManagerImpl* getFilterManager() const;
 
 protected:
-  bool onProcessMessage(Message* msg) OVERRIDE;
+  bool onProcessMessage(ui::Message* msg) OVERRIDE;
 
 private:
   FilterManagerImpl* m_filterMgr;
-  gui::Timer m_timer;
+  ui::Timer m_timer;
 };
 
 #endif

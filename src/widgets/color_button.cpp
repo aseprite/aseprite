@@ -35,6 +35,8 @@
 #include "widgets/editor/editor.h"
 #include "widgets/statebar.h"
 
+using namespace ui;
+
 static int colorbutton_type()
 {
   static int type = 0;

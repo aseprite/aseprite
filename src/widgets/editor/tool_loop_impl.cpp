@@ -43,6 +43,8 @@
 
 #include <allegro.h>
 
+using namespace ui;
+
 class ToolLoopImpl : public tools::ToolLoop
 {
   Editor* m_editor;

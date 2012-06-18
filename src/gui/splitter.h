@@ -10,23 +10,27 @@
 #include "base/compiler_specific.h"
 #include "gui/widget.h"
 
-class Splitter : public Widget
-{
-public:
-  Splitter(int align);
+namespace ui {
 
-  double getPosition() const;
-  void setPosition(double pos);
+  class Splitter : public Widget
+  {
+  public:
+    Splitter(int align);
 
-protected:
-  // Events
-  bool onProcessMessage(Message* msg) OVERRIDE;
-  void onPreferredSize(PreferredSizeEvent& ev) OVERRIDE;
+    double getPosition() const;
+    void setPosition(double pos);
 
-private:
-  void layoutMembers(JRect rect);
+  protected:
+    // Events
+    bool onProcessMessage(Message* msg) OVERRIDE;
+    void onPreferredSize(PreferredSizeEvent& ev) OVERRIDE;
 
-  double m_pos;
-};
+  private:
+    void layoutMembers(JRect rect);
+
+    double m_pos;
+  };
+
+} // namespace ui
 
 #endif

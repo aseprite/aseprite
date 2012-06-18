@@ -58,7 +58,7 @@ struct OpenFileData
   Monitor *monitor;
   FileOp *fop;
   Progress *progress;
-  AlertPtr alert_window;
+  ui::AlertPtr alert_window;
 };
 
 /**
@@ -163,9 +163,9 @@ void OpenFileCommand::onExecute(Context* context)
 
         data->fop = fop;
         data->progress = app_get_statusbar()->addProgress();
-        data->alert_window = Alert::create(PACKAGE
-                                           "<<Loading file:<<%s||&Cancel",
-                                           get_filename(m_filename.c_str()));
+        data->alert_window = ui::Alert::create(PACKAGE
+                                               "<<Loading file:<<%s||&Cancel",
+                                               get_filename(m_filename.c_str()));
 
         // Add a monitor to check the loading (FileOp) progress
         data->monitor = add_gui_monitor(monitor_openfile_bg,

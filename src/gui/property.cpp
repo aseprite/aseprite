@@ -6,6 +6,8 @@
 
 #include "gui/property.h"
 
+namespace ui {
+
 Property::Property(const base::string& name)
   : m_name(name)
 {
@@ -19,3 +21,5 @@ base::string Property::getName() const
 {
   return m_name;
 }
+
+} // namespace ui

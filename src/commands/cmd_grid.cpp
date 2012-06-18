@@ -31,6 +31,7 @@
 #include "ui_context.h"
 #include "widgets/statebar.h"
 
+using namespace ui;
 using namespace gfx;
 
 //////////////////////////////////////////////////////////////////////

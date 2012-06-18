@@ -40,6 +40,8 @@
 #include <algorithm>
 #include <vector>
 
+using namespace ui;
+
 #define FIXUP_TOP_WINDOW()                      \
   app_get_top_window()->remap_window();         \
   app_get_top_window()->invalidate();

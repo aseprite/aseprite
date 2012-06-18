@@ -27,6 +27,8 @@
 #include "raster/sprite.h"
 #include "util/render.h"
 
+using namespace ui;
+
 FilterPreview::FilterPreview(FilterManagerImpl* filterMgr)
   : Widget(JI_WIDGET)
   , m_filterMgr(filterMgr)

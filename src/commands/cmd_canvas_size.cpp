@@ -38,6 +38,8 @@
 
 #include <allegro/unicode.h>
 
+using namespace ui;
+
 // Disable warning about usage of "this" in initializer list.
 #pragma warning(disable:4355)
 

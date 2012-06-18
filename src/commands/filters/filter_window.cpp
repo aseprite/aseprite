@@ -26,6 +26,8 @@
 #include "ini_file.h"
 #include "modules/gui.h"
 
+using namespace ui;
+
 FilterWindow::FilterWindow(const char* title, const char* cfgSection,
                            FilterManagerImpl* filterMgr,
                            WithChannels withChannels,

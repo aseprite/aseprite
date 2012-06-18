@@ -168,6 +168,8 @@ static int bitmap_font_count(BITMAP* bmp)
   return num;
 }
 
+namespace ui {
+
 FONT *_ji_bitmap2font(BITMAP *bmp)
 {
   FONT *f;
@@ -240,3 +242,5 @@ FONT *_ji_bitmap2font(BITMAP *bmp)
 
   return f;
 }
+
+} // namespace ui

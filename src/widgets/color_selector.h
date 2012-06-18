@@ -51,7 +51,7 @@ protected:
   void onColorPaletteIndexChange(int index);
   void onColorSlidersChange(ColorSlidersChangeEvent& ev);
   void onColorHexEntryChange(const Color& color);
-  void onColorTypeButtonClick(Event& ev);
+  void onColorTypeButtonClick(ui::Event& ev);
   void onPaletteChange();
 
 private:
@@ -59,21 +59,21 @@ private:
   void setColorWithSignal(const Color& color);
   void findBestfitIndex(const Color& color);
 
-  Box m_vbox;
-  Box m_topBox;
+  ui::Box m_vbox;
+  ui::Box m_topBox;
   Color m_color;
-  View m_colorPaletteContainer;
+  ui::View m_colorPaletteContainer;
   PaletteView m_colorPalette;
-  RadioButton m_indexButton;
-  RadioButton m_rgbButton;
-  RadioButton m_hsvButton;
-  RadioButton m_grayButton;
-  RadioButton m_maskButton;
+  ui::RadioButton m_indexButton;
+  ui::RadioButton m_rgbButton;
+  ui::RadioButton m_hsvButton;
+  ui::RadioButton m_grayButton;
+  ui::RadioButton m_maskButton;
   HexColorEntry m_hexColorEntry;
   RgbSliders m_rgbSliders;
   HsvSliders m_hsvSliders;
   GraySlider m_graySlider;
-  Label m_maskLabel;
+  ui::Label m_maskLabel;
   Signal0<void>::SlotType* m_onPaletteChangeSlot;
 
   // This variable is used to avoid updating the m_hexColorEntry text

@@ -34,13 +34,13 @@ public:
   virtual ~StandbyState();
   virtual void onAfterChangeState(Editor* editor) OVERRIDE;
   virtual void onCurrentToolChange(Editor* editor) OVERRIDE;
-  virtual bool onMouseDown(Editor* editor, Message* msg) OVERRIDE;
-  virtual bool onMouseUp(Editor* editor, Message* msg) OVERRIDE;
-  virtual bool onMouseMove(Editor* editor, Message* msg) OVERRIDE;
-  virtual bool onMouseWheel(Editor* editor, Message* msg) OVERRIDE;
+  virtual bool onMouseDown(Editor* editor, ui::Message* msg) OVERRIDE;
+  virtual bool onMouseUp(Editor* editor, ui::Message* msg) OVERRIDE;
+  virtual bool onMouseMove(Editor* editor, ui::Message* msg) OVERRIDE;
+  virtual bool onMouseWheel(Editor* editor, ui::Message* msg) OVERRIDE;
   virtual bool onSetCursor(Editor* editor) OVERRIDE;
-  virtual bool onKeyDown(Editor* editor, Message* msg) OVERRIDE;
-  virtual bool onKeyUp(Editor* editor, Message* msg) OVERRIDE;
+  virtual bool onKeyDown(Editor* editor, ui::Message* msg) OVERRIDE;
+  virtual bool onKeyUp(Editor* editor, ui::Message* msg) OVERRIDE;
   virtual bool onUpdateStatusBar(Editor* editor) OVERRIDE;
 
   // Returns true as the standby state is the only one which shows the
@@ -52,7 +52,7 @@ public:
 protected:
   // Returns true and changes to ScrollingState when "msg" says "the
   // user wants to scroll".
-  bool checkForScroll(Editor* editor, Message* msg);
+  bool checkForScroll(Editor* editor, ui::Message* msg);
 
   class Decorator : public EditorDecorator
   {
@@ -73,7 +73,7 @@ protected:
   };
 
 private:
-  void transformSelection(Editor* editor, Message* msg, HandleType handle);
+  void transformSelection(Editor* editor, ui::Message* msg, HandleType handle);
 
   Decorator* m_decorator;
 };

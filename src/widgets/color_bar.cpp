@@ -35,6 +35,8 @@
 #include "widgets/color_bar.h"
 #include "widgets/statebar.h"
 
+using namespace ui;
+
 //////////////////////////////////////////////////////////////////////
 // ColorBar::ScrollableView class
 

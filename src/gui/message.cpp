@@ -16,6 +16,8 @@
 #include "gui/rect.h"
 #include "gui/widget.h"
 
+namespace ui {
+
 static int registered_messages = JM_REGISTERED_MESSAGES;
 
 int ji_register_message_type()
@@ -146,3 +148,5 @@ void jmessage_broadcast_to_parents(Message* msg, Widget* widget)
     jmessage_broadcast_to_parents(msg, widget->getParent());
   }
 }
+
+} // namespace ui

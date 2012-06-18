@@ -10,14 +10,18 @@
 #include "base/compiler_specific.h"
 #include "gui/label.h"
 
-class CustomLabel : public Label
-{
-public:
-  CustomLabel(const char *text);
+namespace ui {
 
-protected:
-  bool onProcessMessage(Message* msg) OVERRIDE;
+  class CustomLabel : public Label
+  {
+  public:
+    CustomLabel(const char *text);
 
-};
+  protected:
+    bool onProcessMessage(Message* msg) OVERRIDE;
+
+  };
+
+} // namespace ui
 
 #endif

@@ -9,6 +9,8 @@
 
 #include "gui/custom_label.h"
 
+namespace ui {
+
 CustomLabel::CustomLabel(const char *text)
   : Label(text)
 {
@@ -18,3 +20,5 @@ bool CustomLabel::onProcessMessage(Message* msg)
 {
   return Label::onProcessMessage(msg);
 }
+
+} // namespace ui

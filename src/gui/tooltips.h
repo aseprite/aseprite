@@ -13,7 +13,7 @@
 
 #include <map>
 
-namespace gui {
+namespace ui {
 
   class TipWindow;
 
@@ -44,7 +44,7 @@ namespace gui {
     typedef std::map<Widget*, TipInfo> Tips;
     Tips m_tips;                      // All tips.
     UniquePtr<TipWindow> m_tipWindow; // Frame to show tooltips.
-    UniquePtr<gui::Timer> m_timer;    // Timer to control the tooltip delay.
+    UniquePtr<Timer> m_timer;         // Timer to control the tooltip delay.
     struct {
       Widget* widget;
       TipInfo tipInfo;
@@ -75,6 +75,6 @@ namespace gui {
     int m_arrowAlign;
   };
 
-} // namespace gui
+} // namespace ui
 
 #endif

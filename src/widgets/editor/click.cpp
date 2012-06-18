@@ -29,6 +29,8 @@
 #include "modules/gui.h"
 #include "widgets/editor/editor.h"
 
+using namespace ui;
+
 /**********************************************************************/
 /* editor-click interface */
 /**********************************************************************/

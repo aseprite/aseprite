@@ -40,6 +40,8 @@
 
 #define TRANSLATE_ATTR(a) a
 
+using namespace ui;
+
 static int convert_align_value_to_flags(const char *value);
 static bool bool_attr_is_true(const TiXmlElement* elem, const char* attribute_name);
 
@@ -400,7 +402,7 @@ Widget* WidgetLoader::convertXmlElementToWidget(const TiXmlElement* elem, Widget
 
     if (tooltip != NULL && root != NULL) {
       if (!m_tooltipManager) {
-        m_tooltipManager = new ::gui::TooltipManager();
+        m_tooltipManager = new ::ui::TooltipManager();
         root->addChild(m_tooltipManager);
       }
       m_tooltipManager->addTooltipFor(widget, tooltip, JI_LEFT);

@@ -61,6 +61,7 @@
 #include <vector>
 
 using namespace gfx;
+using namespace ui;
 
 class PaletteEntryEditor : public Frame
 {
@@ -119,7 +120,7 @@ private:
   // what the user is writting in the text field.
   bool m_disableHexUpdate;
 
-  gui::Timer m_redrawTimer;
+  ui::Timer m_redrawTimer;
   bool m_redrawAll;
 
   // True if the palette change must be graft in the UndoHistory
@@ -792,7 +793,7 @@ void PaletteEntryEditor::setNewPalette(Palette* palette, const char* operationNa
   updateCurrentSpritePalette(operationName);
 
   // Redraw the entire screen
-  gui::Manager::getDefault()->invalidate();
+  ui::Manager::getDefault()->invalidate();
 }
 
 void PaletteEntryEditor::updateCurrentSpritePalette(const char* operationName)

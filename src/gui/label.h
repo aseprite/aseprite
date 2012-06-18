@@ -10,20 +10,24 @@
 #include "base/compiler_specific.h"
 #include "gui/widget.h"
 
-class Label : public Widget
-{
-public:
-  Label(const char *text);
+namespace ui {
 
-  int getTextColor() const;
-  void setTextColor(int color);
+  class Label : public Widget
+  {
+  public:
+    Label(const char *text);
 
-protected:
-  bool onProcessMessage(Message* msg) OVERRIDE;
-  void onPaint(PaintEvent& ev) OVERRIDE;
+    int getTextColor() const;
+    void setTextColor(int color);
 
-private:
-  int m_textColor;
-};
+  protected:
+    bool onProcessMessage(Message* msg) OVERRIDE;
+    void onPaint(PaintEvent& ev) OVERRIDE;
+
+  private:
+    int m_textColor;
+  };
+
+} // namespace ui
 
 #endif

@@ -16,6 +16,8 @@
 
 using namespace gfx;
 
+namespace ui {
+
 Splitter::Splitter(int align)
   : Widget(JI_SPLITTER)
   , m_pos(50)
@@ -264,3 +266,5 @@ void Splitter::layoutMembers(JRect rect)
 
   jrect_free(pos);
 }
+
+} // namespace ui

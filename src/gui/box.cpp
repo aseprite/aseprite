@@ -18,6 +18,8 @@
 
 using namespace gfx;
 
+namespace ui {
+
 Box::Box(int align)
   : Widget(JI_BOX)
 {
@@ -209,3 +211,5 @@ void Box::layoutBox(JRect rect)
     FIXUP(y, x, h, w, t, l, b, r);
   }
 }
+
+} // namespace ui

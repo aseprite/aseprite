@@ -50,6 +50,7 @@
 #include <allegro.h>
 
 using namespace gfx;
+using namespace ui;
 using namespace tools;
 
 static Frame* window = NULL;

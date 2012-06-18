@@ -28,6 +28,8 @@
 #include "raster/layer.h"
 #include "raster/sprite.h"
 
+using namespace ui;
+
 //////////////////////////////////////////////////////////////////////
 // new_layer_set
 

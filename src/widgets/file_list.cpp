@@ -44,6 +44,7 @@
 #define ISEARCH_KEYPRESS_INTERVAL_MSECS 500
 
 using namespace gfx;
+using namespace ui;
 
 namespace widgets {
 

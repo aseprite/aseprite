@@ -29,6 +29,8 @@
 #include "skin/skin_theme.h"
 #include "widgets/tabs.h"
 
+using namespace ui;
+
 #define ARROW_W         (12*jguiscale())
 
 #define ANI_ADDING_TAB_TICKS      5

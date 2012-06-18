@@ -21,12 +21,12 @@
 
 #include "app/widget_not_found.h"
 
-class Widget;
+namespace ui { class Widget; }
 
 namespace app {
 
   template<class T>
-  inline T* find_widget(Widget* parent, const char* childId) {
+  inline T* find_widget(ui::Widget* parent, const char* childId) {
     T* child = parent->findChildT<T>(childId);
     if (!child)
       throw WidgetNotFound(childId);

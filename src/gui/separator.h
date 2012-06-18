@@ -10,14 +10,18 @@
 #include "base/compiler_specific.h"
 #include "gui/widget.h"
 
-class Separator : public Widget
-{
-public:
-  Separator(const char* text, int align);
+namespace ui {
 
-protected:
-  bool onProcessMessage(Message* msg) OVERRIDE;
-  void onPreferredSize(PreferredSizeEvent& ev) OVERRIDE;
-};
+  class Separator : public Widget
+  {
+  public:
+    Separator(const char* text, int align);
+
+  protected:
+    bool onProcessMessage(Message* msg) OVERRIDE;
+    void onPreferredSize(PreferredSizeEvent& ev) OVERRIDE;
+  };
+
+} // namespace ui
 
 #endif

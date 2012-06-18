@@ -30,6 +30,8 @@
 #include "widgets/editor/editor.h"
 #include "widgets/statebar.h"
 
+using namespace ui;
+
 MovingCelState::MovingCelState(Editor* editor, Message* msg)
   : m_canceled(false)
 {

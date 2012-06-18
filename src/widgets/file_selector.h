@@ -23,17 +23,20 @@
 #include "base/unique_ptr.h"
 #include "gui/frame.h"
 
-class Button;
-class ComboBox;
-class Entry;
 class IFileItem;
+
+namespace ui {
+  class Button;
+  class ComboBox;
+  class Entry;
+}
 
 namespace widgets {
 
   class FileList;
   class CustomFileNameEntry;
 
-  class FileSelector : public Frame
+  class FileSelector : public ui::Frame
   {
   public:
     FileSelector();
@@ -57,11 +60,11 @@ namespace widgets {
     void onFileListFileAccepted();
     void onFileListCurrentFolderChanged();
 
-    Button* m_goBack;
-    Button* m_goForward;
-    Button* m_goUp;
-    ComboBox* m_location;
-    ComboBox* m_fileType;
+    ui::Button* m_goBack;
+    ui::Button* m_goForward;
+    ui::Button* m_goUp;
+    ui::ComboBox* m_location;
+    ui::ComboBox* m_fileType;
     CustomFileNameEntry* m_fileName;
     FileList* m_fileList;
   };

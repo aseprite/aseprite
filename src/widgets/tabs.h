@@ -26,7 +26,6 @@
 #include <vector>
 
 class Tabs;
-class Button;
 
 // Interface used to control notifications from the Tabs widget.
 class TabsDelegate
@@ -48,7 +47,7 @@ public:
 // Tabs control.
 //
 // Used to show opened files/sprites.
-class Tabs : public Widget
+class Tabs : public ui::Widget
 {
   struct Tab
   {
@@ -91,8 +90,8 @@ public:
   void stopScrolling();
 
 protected:
-  bool onProcessMessage(Message* msg) OVERRIDE;
-  void onInitTheme(InitThemeEvent& ev) OVERRIDE;
+  bool onProcessMessage(ui::Message* msg) OVERRIDE;
+  void onInitTheme(ui::InitThemeEvent& ev) OVERRIDE;
   void onSetText() OVERRIDE;
 
 private:
@@ -100,7 +99,7 @@ private:
   void stopAni();
 
   void selectTabInternal(Tab* tab);
-  void drawTab(BITMAP* bmp, JRect box, Tab* tab, int y_delta, bool selected);
+  void drawTab(BITMAP* bmp, ui::JRect box, Tab* tab, int y_delta, bool selected);
   TabsListIterator getTabIteratorByData(void* data);
   Tab* getTabByData(void* data);
   int getMaxScrollX();
@@ -115,7 +114,7 @@ private:
   int m_scrollX;
 
   // Variables for animation purposes
-  gui::Timer m_timer;
+  ui::Timer m_timer;
   int m_begScrollX;             // Initial X position of scroll in the animation when you scroll with mouse wheel
   int m_endScrollX;             // Final X position of scroll in the animation when you scroll with mouse wheel
   Ani m_ani;                    // Current animation

@@ -57,7 +57,7 @@ bool CutCommand::onEnabled(Context* context)
 void CutCommand::onExecute(Context* context)
 {
   ActiveDocumentWriter document(context);
-  clipboard::cut(document);
+  util::clipboard::cut(document);
 }
 
 //////////////////////////////////////////////////////////////////////

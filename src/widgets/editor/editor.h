@@ -37,13 +37,16 @@ class Context;
 class EditorCustomizationDelegate;
 class PixelsMovement;
 class Sprite;
-class View;
+
+namespace ui {
+  class View;
+}
 
 namespace tools {
   class Tool;
 }
 
-class Editor : public Widget
+class Editor : public ui::Widget
 {
 public:
   Editor();
@@ -123,7 +126,7 @@ public:
   void updateStatusBar();
 
   // Control scroll when cursor goes out of the editor.
-  void controlInfiniteScroll(Message* msg);
+  void controlInfiniteScroll(ui::Message* msg);
 
   tools::Tool* getCurrentEditorTool();
 
@@ -164,7 +167,7 @@ public:
   int editor_click_cancel();
 
 protected:
-  bool onProcessMessage(Message* msg) OVERRIDE;
+  bool onProcessMessage(ui::Message* msg) OVERRIDE;
   void onCurrentToolChange();
   void onFgColorChange();
 
@@ -221,7 +224,7 @@ private:
   int m_offset_y;
 
   // Marching ants stuff
-  gui::Timer m_mask_timer;
+  ui::Timer m_mask_timer;
   int m_offset_count;
 
   // This slot is used to disconnect the Editor from CurrentToolChange

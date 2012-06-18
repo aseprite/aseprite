@@ -24,6 +24,8 @@
 
 #define CHARACTER_LENGTH(f, c) ((f)->vtable->char_length((f), (c)))
 
+namespace ui {
+
 Entry::Entry(size_t maxsize, const char *format, ...)
   : Widget(JI_ENTRY)
   , m_timer(this, 500)
@@ -519,7 +521,7 @@ void Entry::executeCmd(EntryCmd::Type cmd, int ascii, bool shift_pressed)
         // *cut* text!
         if (cmd == EntryCmd::Cut) {
           base::string buf = text.substr(selbeg, selend - selbeg + 1);
-          gui::clipboard::set_text(buf.c_str());
+          clipboard::set_text(buf.c_str());
         }
 
         // remove text
@@ -539,7 +541,7 @@ void Entry::executeCmd(EntryCmd::Type cmd, int ascii, bool shift_pressed)
     case EntryCmd::Paste: {
       const char *clipboard;
 
-      if ((clipboard = gui::clipboard::get_text())) {
+      if ((clipboard = clipboard::get_text())) {
         // delete the entire selection
         if (selbeg >= 0) {
           text.erase(selbeg, selend-selbeg+1);
@@ -563,7 +565,7 @@ void Entry::executeCmd(EntryCmd::Type cmd, int ascii, bool shift_pressed)
     case EntryCmd::Copy:
       if (selbeg >= 0) {
         base::string buf = text.substr(selbeg, selend - selbeg + 1);
-        gui::clipboard::set_text(buf.c_str());
+        clipboard::set_text(buf.c_str());
       }
       break;
 
@@ -637,3 +639,6 @@ void Entry::backwardWord()
   if (m_caret < 0)
     m_caret = 0;
 }
+
+} // namespace ui
+

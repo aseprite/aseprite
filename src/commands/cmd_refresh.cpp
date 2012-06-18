@@ -54,13 +54,13 @@ RefreshCommand::RefreshCommand()
 
 void RefreshCommand::onExecute(Context* context)
 {
-  jmouse_hide();
+  ui::jmouse_hide();
   clear_to_color(screen, makecol(0, 0, 0));
-  jmouse_show();
+  ui::jmouse_show();
 
   // Reload skin
   {
-    SkinTheme* theme = (SkinTheme*)CurrentTheme::get();
+    SkinTheme* theme = (SkinTheme*)ui::CurrentTheme::get();
     theme->reload_skin();
     theme->regenerate();
   }

@@ -12,35 +12,39 @@
 struct FONT;
 struct BITMAP;
 
-class Frame;
-class Widget;
+namespace ui {
 
-//////////////////////////////////////////////////////////////////////
-// jintern.c
+  class Frame;
+  class Widget;
 
-void _ji_add_widget(Widget* widget);
-void _ji_remove_widget(Widget* widget);
+  //////////////////////////////////////////////////////////////////////
+  // jintern.c
 
-void _ji_set_font_of_all_widgets(FONT* f);
-void _ji_reinit_theme_in_all_widgets();
+  void _ji_add_widget(Widget* widget);
+  void _ji_remove_widget(Widget* widget);
 
-//////////////////////////////////////////////////////////////////////
-// jwindow.c
+  void _ji_set_font_of_all_widgets(FONT* f);
+  void _ji_reinit_theme_in_all_widgets();
 
-bool _jwindow_is_moving();
+  //////////////////////////////////////////////////////////////////////
+  // jwindow.c
 
-//////////////////////////////////////////////////////////////////////
-// theme.cpp
+  bool _jwindow_is_moving();
 
-void _ji_theme_draw_sprite_color(BITMAP *bmp, BITMAP *sprite,
-                                 int x, int y, int color);
+  //////////////////////////////////////////////////////////////////////
+  // theme.cpp
 
-void _ji_theme_textbox_draw(BITMAP *bmp, Widget* textbox,
-                            int *w, int *h, int bg, int fg);
+  void _ji_theme_draw_sprite_color(BITMAP *bmp, BITMAP *sprite,
+                                   int x, int y, int color);
 
-//////////////////////////////////////////////////////////////////////
-// jfontbmp.c
+  void _ji_theme_textbox_draw(BITMAP *bmp, Widget* textbox,
+                              int *w, int *h, int bg, int fg);
 
-struct FONT *_ji_bitmap2font(BITMAP *bmp);
+  //////////////////////////////////////////////////////////////////////
+  // jfontbmp.c
+
+  struct FONT *_ji_bitmap2font(BITMAP *bmp);
+
+} // namespace ui
 
 #endif

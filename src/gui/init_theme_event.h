@@ -9,19 +9,23 @@
 
 #include "gui/event.h"
 
-class Theme;
+namespace ui {
 
-class InitThemeEvent : public Event
-{
-public:
-  InitThemeEvent(Component* source, Theme* theme)
-    : Event(source)
-    , m_theme(theme){ }
+  class Theme;
 
-  Theme* getTheme() const { return m_theme; }
+  class InitThemeEvent : public Event
+  {
+  public:
+    InitThemeEvent(Component* source, Theme* theme)
+      : Event(source)
+      , m_theme(theme){ }
 
-private:
-  Theme* m_theme;
-};
+    Theme* getTheme() const { return m_theme; }
+
+  private:
+    Theme* m_theme;
+  };
+
+} // namespace ui
 
 #endif  // GUI_INIT_THEME_EVENT_H_INCLUDED

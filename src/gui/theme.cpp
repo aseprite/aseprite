@@ -21,6 +21,8 @@
 #include "gui/view.h"
 #include "gui/widget.h"
 
+namespace ui {
+
 static Theme* current_theme = NULL;
 
 static void draw_text(BITMAP *bmp, FONT *f, const char *text, int x, int y,
@@ -65,7 +67,7 @@ void CurrentTheme::set(Theme* theme)
   if (current_theme) {
     current_theme->regenerate();
 
-    gui::Manager* manager = gui::Manager::getDefault();
+    Manager* manager = Manager::getDefault();
     if (manager && !manager->getTheme())
       manager->setTheme(theme);
   }
@@ -319,3 +321,5 @@ static void draw_text(BITMAP *bmp, FONT *f, const char *text, int x, int y,
   textout_ex(bmp, f, text, x, y, fg_color, (fill_bg ? bg_color: -1));
   /* TODO */
 }
+
+} // namespace ui

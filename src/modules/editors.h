@@ -22,10 +22,11 @@
 class Document;
 class Editor;
 class Sprite;
-class Widget;
+
+namespace ui { class Widget; }
 
 extern Editor* current_editor;
-extern Widget* box_editors;
+extern ui::Widget* box_editors;
 
 int init_module_editors();
 void exit_module_editors();

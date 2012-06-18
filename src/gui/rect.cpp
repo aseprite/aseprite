@@ -8,6 +8,8 @@
 
 #include "gui/rect.h"
 
+namespace ui {
+
 JRect jrect_new(int x1, int y1, int x2, int y2)
 {
   JRect rect = new jrect;
@@ -99,3 +101,5 @@ void jrect_displace(JRect rect, int dx, int dy)
   rect->x2 += dx;
   rect->y2 += dy;
 }
+
+} // namespace ui

@@ -112,7 +112,7 @@ static bool copy_from_document(const Document* document)
   return true;
 }
 
-bool clipboard::can_paste()
+bool util::clipboard::can_paste()
 {
 #ifdef ALLEGRO_WINDOWS
   if (win32_clipboard_contains_bitmap())
@@ -121,7 +121,7 @@ bool clipboard::can_paste()
   return clipboard_image != NULL;
 }
 
-void clipboard::cut(DocumentWriter& document)
+void util::clipboard::cut(DocumentWriter& document)
 {
   ASSERT(document != NULL);
   ASSERT(document->getSprite() != NULL);
@@ -145,7 +145,7 @@ void clipboard::cut(DocumentWriter& document)
   }
 }
 
-void clipboard::copy(const DocumentReader& document)
+void util::clipboard::copy(const DocumentReader& document)
 {
   ASSERT(document != NULL);
 
@@ -155,7 +155,7 @@ void clipboard::copy(const DocumentReader& document)
   }
 }
 
-void clipboard::copy_image(Image* image, Palette* pal, const gfx::Point& point)
+void util::clipboard::copy_image(Image* image, Palette* pal, const gfx::Point& point)
 {
   set_clipboard(Image::createCopy(image),
                 pal ? new Palette(*pal): NULL, true);
@@ -164,7 +164,7 @@ void clipboard::copy_image(Image* image, Palette* pal, const gfx::Point& point)
   clipboard_y = point.y;
 }
 
-void clipboard::paste()
+void util::clipboard::paste()
 {
   Editor* editor = current_editor;
 
@@ -203,7 +203,7 @@ void clipboard::paste()
       image_free(src_image);
 }
 
-bool clipboard::get_image_size(gfx::Size& size)
+bool util::clipboard::get_image_size(gfx::Size& size)
 {
 #ifdef ALLEGRO_WINDOWS
   // Get the image from the clipboard.

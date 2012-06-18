@@ -30,7 +30,7 @@ enum LookType {
 };
 
 // Property to show widgets with a special look (e.g.: buttons or sliders with mini-borders)
-class SkinProperty : public Property
+class SkinProperty : public ui::Property
 {
 public:
   static const char* SkinPropertyName;

@@ -40,6 +40,8 @@
 #include "widgets/palette_view.h"
 #include "widgets/statebar.h"
 
+using namespace ui;
+
 int palette_view_type()
 {
   static int type = 0;

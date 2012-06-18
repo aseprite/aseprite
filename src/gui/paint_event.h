@@ -9,22 +9,26 @@
 
 #include "gui/event.h"
 
-class Graphics;
-class Widget;
+namespace ui {
 
-class PaintEvent : public Event
-{
-public:
-  PaintEvent(Widget* source, Graphics* graphics);
-  virtual ~PaintEvent();
+  class Graphics;
+  class Widget;
 
-  Graphics* getGraphics();
+  class PaintEvent : public Event
+  {
+  public:
+    PaintEvent(Widget* source, Graphics* graphics);
+    virtual ~PaintEvent();
 
-  bool isPainted() const;
+    Graphics* getGraphics();
 
-private:
-  Graphics* m_graphics;
-  bool m_painted;
-};
+    bool isPainted() const;
+
+  private:
+    Graphics* m_graphics;
+    bool m_painted;
+  };
+
+} // namespace ui
 
 #endif

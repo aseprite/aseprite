@@ -14,6 +14,8 @@
 
 using namespace gfx;
 
+namespace ui {
+
 // Internal stuff shared by all scroll-bars (as the user cannot move
 // two scroll-bars at the same time).
 int ScrollBar::m_wherepos = 0;
@@ -204,3 +206,5 @@ void ScrollBar::getScrollBarInfo(int *_pos, int *_len, int *_bar_size, int *_vie
   if (_bar_size) *_bar_size = bar_size;
   if (_viewport_size) *_viewport_size = viewport_size;
 }
+
+} // namespace ui

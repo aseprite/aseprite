@@ -9,38 +9,40 @@
 
 #include "gui/base.h"
 
-struct jlink
-{
-  void* data;
-  JLink prev;
-  JLink next;
+namespace ui {
 
-  jlink(void* data) : data(data), prev(0), next(0) { }
-};
+  struct jlink
+  {
+    void* data;
+    JLink prev;
+    JLink next;
 
-struct jlist
-{
-  JLink end;
-  unsigned int length;
+    jlink(void* data) : data(data), prev(0), next(0) { }
+  };
 
-  jlist() : end(0), length(0) { }
-};
+  struct jlist
+  {
+    JLink end;
+    unsigned int length;
 
-JList jlist_new();
-void jlist_free(JList list);
-void jlist_clear(JList list);
-void jlist_append(JList list, void *data);
-void jlist_prepend(JList list, void *data);
-void jlist_insert(JList list, void *data, int position);
-void jlist_insert_before(JList list, JLink sibling, void *data);
-void jlist_remove(JList list, const void *data);
-void jlist_remove_all(JList list, const void *data);
-void jlist_remove_link(JList list, JLink link);
-void jlist_delete_link(JList list, JLink link);
-JList jlist_copy(JList list);
-JLink jlist_nth_link(JList list, unsigned int n);
-void *jlist_nth_data(JList list, unsigned int n);
-JLink jlist_find(JList list, const void *data);
+    jlist() : end(0), length(0) { }
+  };
+
+  JList jlist_new();
+  void jlist_free(JList list);
+  void jlist_clear(JList list);
+  void jlist_append(JList list, void *data);
+  void jlist_prepend(JList list, void *data);
+  void jlist_insert(JList list, void *data, int position);
+  void jlist_insert_before(JList list, JLink sibling, void *data);
+  void jlist_remove(JList list, const void *data);
+  void jlist_remove_all(JList list, const void *data);
+  void jlist_remove_link(JList list, JLink link);
+  void jlist_delete_link(JList list, JLink link);
+  JList jlist_copy(JList list);
+  JLink jlist_nth_link(JList list, unsigned int n);
+  void *jlist_nth_data(JList list, unsigned int n);
+  JLink jlist_find(JList list, const void *data);
 
 #define jlist_first(list)               (((JList)(list))->end->next)
 #define jlist_last(list)                (((JList)(list))->end->prev)
@@ -61,13 +63,15 @@ JLink jlist_find(JList list, const void *data);
        link!=((JList)(list))->end;              \
        link=link->prev)
 
-/**
- * Iterator for each item of the list (the body of the "for" can be
- * remove elements in the list).
- */
+  /**
+   * Iterator for each item of the list (the body of the "for" can be
+   * remove elements in the list).
+   */
 #define JI_LIST_FOR_EACH_SAFE(list, link, next)                 \
   for (link=((JList)(list))->end->next, next=link->next;        \
        link!=((JList)(list))->end;                              \
        link=next, next=link->next)
+
+} // namespace ui
 
 #endif

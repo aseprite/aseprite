@@ -31,6 +31,8 @@
 #include <allegro.h>
 #include <vector>
 
+using namespace ui;
+
 PopupFramePin::PopupFramePin(const char* text, bool close_on_buttonpressed)
   : PopupFrame(text, close_on_buttonpressed)
   , m_pin("")

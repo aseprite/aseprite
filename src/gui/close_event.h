@@ -9,11 +9,15 @@
 
 #include "gui/event.h"
 
-class CloseEvent : public Event
-{
-public:
-  CloseEvent(Component* source)
-    : Event(source) { }
-};
+namespace ui {
+
+  class CloseEvent : public Event
+  {
+  public:
+    CloseEvent(Component* source)
+      : Event(source) { }
+  };
+
+} // namespace ui
 
 #endif  // GUI_CLOSE_EVENT_H_INCLUDED

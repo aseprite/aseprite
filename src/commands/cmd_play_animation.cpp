@@ -84,7 +84,7 @@ void PlayAnimationCommand::onExecute(Context* context)
   // desactivate the onionskin
   context->getSettings()->setUseOnionskin(false);
 
-  jmouse_hide();
+  ui::jmouse_hide();
 
   old_frame = sprite->getCurrentFrame();
 
@@ -94,7 +94,7 @@ void PlayAnimationCommand::onExecute(Context* context)
   clear_keybuf();
 
   // Clear all the screen
-  clear_bitmap(ji_screen);
+  clear_bitmap(ui::ji_screen);
 
   // Clear extras (e.g. pen preview)
   document->destroyExtraCel();
@@ -145,7 +145,7 @@ void PlayAnimationCommand::onExecute(Context* context)
   /* refresh all */
   newpal = sprite->getPalette(sprite->getCurrentFrame());
   set_current_palette(newpal, true);
-  gui::Manager::getDefault()->invalidate();
+  ui::Manager::getDefault()->invalidate();
   gui_feedback();
 
   while (mouse_b)
@@ -154,7 +154,7 @@ void PlayAnimationCommand::onExecute(Context* context)
   clear_keybuf();
   remove_int(speed_timer_callback);
 
-  jmouse_show();
+  ui::jmouse_show();
 }
 
 //////////////////////////////////////////////////////////////////////

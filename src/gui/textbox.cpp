@@ -18,6 +18,8 @@
 
 #include <allegro/keyboard.h>
 
+namespace ui {
+
 TextBox::TextBox(const char* text, int align)
  : Widget(JI_TEXTBOX)
 {
@@ -184,3 +186,5 @@ void TextBox::onSetText()
 
   Widget::onSetText();
 }
+
+} // namespace ui

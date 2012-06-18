@@ -31,6 +31,8 @@
 #include "ui_context.h"
 #include "widgets/statebar.h"
 
+using namespace ui;
+
 static bool close_active_document(Context* context);
 
 //////////////////////////////////////////////////////////////////////

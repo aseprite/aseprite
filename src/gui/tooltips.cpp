@@ -21,7 +21,7 @@
 
 using namespace gfx;
 
-namespace gui {
+namespace ui {
 
 TooltipManager::TooltipManager()
   : Widget(JI_WIDGET)
@@ -59,7 +59,7 @@ bool TooltipManager::onProcessMessage(Message* msg)
           m_target.tipInfo = it->second;
 
           if (m_timer == NULL) {
-            m_timer.reset(new gui::Timer(this, TOOLTIP_DELAY_MSECS));
+            m_timer.reset(new Timer(this, TOOLTIP_DELAY_MSECS));
             m_timer->Tick.connect(&TooltipManager::onTick, this);
           }
 
@@ -323,4 +323,4 @@ void TipWindow::onPaint(PaintEvent& ev)
   getTheme()->paintTooltip(ev);
 }
 
-} // namespace gui
+} // namespace ui

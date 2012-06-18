@@ -21,6 +21,8 @@
 #include "gui/theme.h"
 #include "gui/widget.h"
 
+namespace ui {
+
 /* Global output bitmap.  */
 
 BITMAP *ji_screen = NULL;
@@ -118,7 +120,7 @@ void ji_set_screen(BITMAP *bmp, int width, int height)
   ji_screen_h = height;
 
   if (ji_screen != NULL) {
-    gui::Manager* manager = gui::Manager::getDefault();
+    Manager* manager = Manager::getDefault();
 
     /* update default-manager size */
     if (manager && (jrect_w(manager->rc) != JI_SCREEN_W ||
@@ -443,7 +445,7 @@ static void update_mouse_position()
       if (!PtInRect(&rc, pt)) {
         /* if the mouse is free we can hide the cursor putting the
            mouse outside the screen (right-bottom corder) */
-        if (!gui::Manager::getDefault()->getCapture()) {
+        if (!Manager::getDefault()->getCapture()) {
           m_x[0] = JI_SCREEN_W+focus_x;
           m_y[0] = JI_SCREEN_H+focus_y;
         }
@@ -496,3 +498,5 @@ static void restore_covered_area()
     covered_area = NULL;
   }
 }
+
+} // namespace ui

@@ -22,13 +22,15 @@
 #include "gfx/rect.h"
 #include "skin/skin_property.h"
 
-class Slider;
-class Graphics;
+namespace ui {
+  class Slider;
+  class Graphics;
+}
 
 class ISliderBgPainter
 {
 public:
-  virtual void paint(Slider* slider, Graphics* graphics, const gfx::Rect& rc) = 0;
+  virtual void paint(ui::Slider* slider, ui::Graphics* graphics, const gfx::Rect& rc) = 0;
 };
 
 class SkinSliderProperty : public SkinProperty

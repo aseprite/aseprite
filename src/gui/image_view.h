@@ -12,17 +12,21 @@
 
 struct BITMAP;
 
-class ImageView : public Widget
-{
-public:
-   ImageView(BITMAP* bmp, int align);
+namespace ui {
 
-protected:
-  bool onProcessMessage(Message* msg) OVERRIDE;
-  void onPaint(PaintEvent& ev) OVERRIDE;
+  class ImageView : public Widget
+  {
+  public:
+    ImageView(BITMAP* bmp, int align);
 
-private:
-  BITMAP* m_bmp;
-};
+  protected:
+    bool onProcessMessage(Message* msg) OVERRIDE;
+    void onPaint(PaintEvent& ev) OVERRIDE;
+
+  private:
+    BITMAP* m_bmp;
+  };
+
+} // namespace ui
 
 #endif

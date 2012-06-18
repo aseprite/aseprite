@@ -16,6 +16,8 @@
 #include "gui/system.h"
 #include "gui/theme.h"
 
+namespace ui {
+
 ImageView::ImageView(BITMAP* bmp, int align)
  : Widget(JI_IMAGE_VIEW)
 {
@@ -55,3 +57,5 @@ void ImageView::onPaint(PaintEvent& ev)
   blit(m_bmp, ji_screen, 0, 0,
        icon.x1, icon.y1, jrect_w(&icon), jrect_h(&icon));
 }
+
+} // namespace ui

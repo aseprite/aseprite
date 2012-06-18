@@ -44,7 +44,7 @@ Job::Job(const char* job_name)
   m_monitor = add_gui_monitor(&Job::monitor_proc,
                               &Job::monitor_free,
                               (void*)this);
-  m_alert_window = Alert::create("%s<<Working...||&Cancel", job_name);
+  m_alert_window = ui::Alert::create("%s<<Working...||&Cancel", job_name);
 }
 
 Job::~Job()

@@ -43,6 +43,8 @@
 #include "widgets/color_bar.h"
 #include "widgets/color_button.h"
 
+using namespace ui;
+
 static ColorButton* button_color;
 static CheckBox* check_preview;
 static Slider* slider_tolerance;

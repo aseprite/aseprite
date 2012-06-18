@@ -21,6 +21,7 @@
 #include "gfx/size.h"
 
 using namespace gfx;
+using namespace ui;
 
 // Tests two widgets in a row, each one of 10x10 pixels.
 TEST(JGrid, Simple2x1Grid)

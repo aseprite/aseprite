@@ -13,6 +13,8 @@
 #include "gui/theme.h"
 #include "launcher.h"
 
+namespace ui {
+
 LinkLabel::LinkLabel(const char* urlOrText)
   : CustomLabel(urlOrText)
   , m_url(urlOrText)
@@ -65,3 +67,5 @@ void LinkLabel::onPaint(PaintEvent& ev)
 {
   getTheme()->paintLinkLabel(ev);
 }
+
+} // namespace ui

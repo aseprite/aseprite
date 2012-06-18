@@ -58,6 +58,7 @@
 #include <stdio.h>
 
 using namespace gfx;
+using namespace ui;
 
 class EditorPreRenderImpl : public EditorPreRender
 {

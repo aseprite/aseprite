@@ -71,6 +71,7 @@
 //////////////////////////////////////////////////////////////////////
 
 using namespace gfx;
+using namespace ui;
 
 static struct
 {
@@ -138,7 +139,7 @@ struct Monitor
 
 //////////////////////////////////////////////////////////////////////
 
-class CustomizedGuiManager : public gui::Manager
+class CustomizedGuiManager : public Manager
 {
 protected:
   bool onProcessMessage(Message* msg) OVERRIDE;
@@ -147,7 +148,7 @@ protected:
 static CustomizedGuiManager* manager = NULL;
 static Theme* ase_theme = NULL;
 
-static UniquePtr<gui::Timer> monitor_timer;
+static UniquePtr<Timer> monitor_timer;
 static MonitorList* monitors = NULL;
 static std::vector<Shortcut*>* shortcuts = NULL;
 
@@ -452,7 +453,7 @@ void update_screen_for_document(const Document* document)
     // Well, change to the default palette.
     if (set_current_palette(NULL, false)) {
       // If the palette changes, refresh the whole screen.
-      gui::Manager::getDefault()->invalidate();
+      Manager::getDefault()->invalidate();
     }
   }
   // With a document.
@@ -463,7 +464,7 @@ void update_screen_for_document(const Document* document)
     if (set_current_palette(sprite->getPalette(sprite->getCurrentFrame()), false)) {
       // If the palette changes, invalidate the whole screen, we've to
       // redraw it.
-      gui::Manager::getDefault()->invalidate();
+      Manager::getDefault()->invalidate();
     }
     else {
       // If it's the same palette update only the editors with the sprite.
@@ -491,7 +492,7 @@ void gui_feedback()
 
     gui_setup_screen(false);
     app_get_top_window()->remap_window();
-    gui::Manager::getDefault()->invalidate();
+    Manager::getDefault()->invalidate();
   }
 #endif
 
@@ -980,7 +981,7 @@ Monitor* add_gui_monitor(void (*proc)(void *),
   monitors->push_back(monitor);
 
   if (monitor_timer == NULL)
-    monitor_timer.reset(new gui::Timer(manager, MONITOR_TIMER_MSECS));
+    monitor_timer.reset(new Timer(manager, MONITOR_TIMER_MSECS));
 
   monitor_timer->start();
 
@@ -1159,7 +1160,7 @@ bool CustomizedGuiManager::onProcessMessage(Message* msg)
 
   }
 
-  return gui::Manager::onProcessMessage(msg);
+  return Manager::onProcessMessage(msg);
 }
 
 // Slot for App::PaletteChange to regenerate graphics when the App palette is changed

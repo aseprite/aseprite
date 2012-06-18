@@ -10,6 +10,8 @@
 #include "gui/component.h"
 #include "gui/property.h"
 
+namespace ui {
+
 Component::Component()
 {
 }
@@ -49,3 +51,5 @@ const Component::Properties& Component::getProperties() const
 {
   return m_properties;
 }
+
+} // namespace ui

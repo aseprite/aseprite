@@ -25,6 +25,8 @@
 
 #include <allegro.h>
 
+using namespace ui;
+
 static const int HANDLES = 8;
 
 static struct HandlesInfo {

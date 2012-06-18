@@ -22,8 +22,6 @@
 #include <string>
 #include <stdexcept>
 
-class Widget;
-
 namespace app {
 
   class WidgetNotFound : public std::runtime_error

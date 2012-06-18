@@ -32,7 +32,7 @@
 class PaletteView;
 class ColorButton;
 
-class ColorBar : public Box
+class ColorBar : public ui::Box
 {
 public:
   ColorBar(int align);
@@ -63,15 +63,15 @@ protected:
   void onColorButtonChange(const Color& color);
 
 private:
-  class ScrollableView : public View
+  class ScrollableView : public ui::View
   {
   public:
     ScrollableView();
   protected:
-    bool onProcessMessage(Message* msg) OVERRIDE;
+    bool onProcessMessage(ui::Message* msg) OVERRIDE;
   };
 
-  CheckBox m_paletteButton;
+  ui::CheckBox m_paletteButton;
   ScrollableView m_scrollableView;
   PaletteView m_paletteView;
   ColorButton m_fgColor;

@@ -29,6 +29,8 @@
 #include "raster/sprite.h"
 #include "document_wrappers.h"
 
+using namespace ui;
+
 //////////////////////////////////////////////////////////////////////
 // layer_properties
 

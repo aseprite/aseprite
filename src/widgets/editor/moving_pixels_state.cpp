@@ -49,6 +49,8 @@
 
 #include <allegro.h>
 
+using namespace ui;
+
 MovingPixelsState::MovingPixelsState(Editor* editor, Message* msg, PixelsMovement* pixelsMovement, HandleType handle)
   : m_currentEditor(editor)
   , m_discarded(false)
@@ -326,9 +328,9 @@ bool MovingPixelsState::onKeyDown(Editor* editor, Message* msg)
           Document* document = editor->getDocument();
           gfx::Point origin;
           UniquePtr<Image> floatingImage(m_pixelsMovement->getDraggedImageCopy(origin));
-          clipboard::copy_image(floatingImage.get(),
-                                document->getSprite()->getCurrentPalette(),
-                                origin);
+          util::clipboard::copy_image(floatingImage.get(),
+                                      document->getSprite()->getCurrentPalette(),
+                                      origin);
         }
 
         // In case of "Cut" command.

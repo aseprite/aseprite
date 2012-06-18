@@ -25,7 +25,7 @@ static void lowlevel_set_clipboard_text(const char *text)
   clipboard_text = text ? text: "";
 }
 
-const char* gui::clipboard::get_text()
+const char* ui::clipboard::get_text()
 {
 #ifdef WIN32
   if (IsClipboardFormatAvailable(CF_TEXT)) {
@@ -46,7 +46,7 @@ const char* gui::clipboard::get_text()
   return clipboard_text.c_str();
 }
 
-void gui::clipboard::set_text(const char *text)
+void ui::clipboard::set_text(const char *text)
 {
   lowlevel_set_clipboard_text(text);
 

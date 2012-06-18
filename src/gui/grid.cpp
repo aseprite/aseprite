@@ -22,6 +22,8 @@
 
 using namespace gfx;
 
+namespace ui {
+
 Grid::Cell::Cell()
 {
   parent = NULL;
@@ -564,3 +566,5 @@ void Grid::incRowSize(int row, int size)
       ++col;
   }
 }
+
+} // namespace ui

@@ -31,6 +31,8 @@
 #include "undo_transaction.h"
 #include "widgets/statebar.h"
 
+using namespace ui;
+
 //////////////////////////////////////////////////////////////////////
 // new_layer
 

@@ -54,7 +54,7 @@ static void win32_shell_execute(const char* verb, const char* file, const char* 
                          MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
                          reinterpret_cast<LPSTR>(&msgbuf),
                          0, NULL)) {
-        Alert::show("Problem<<Cannot open:<<%s<<%s||&Close", file, msgbuf);
+        ui::Alert::show("Problem<<Cannot open:<<%s<<%s||&Close", file, msgbuf);
         LocalFree(msgbuf);
 
         ret = 0;
@@ -90,7 +90,7 @@ void Launcher::openFile(const std::string& file)
 #endif
 
   if (ret != 0)
-    Alert::show("Problem<<Cannot open:<<%s||&Close", file.c_str());
+    ui::Alert::show("Problem<<Cannot open:<<%s||&Close", file.c_str());
 }
 
 void Launcher::openFolder(const std::string& file)

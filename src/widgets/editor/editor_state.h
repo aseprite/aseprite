@@ -24,7 +24,7 @@
 
 class Editor;
 class EditorDecorator;
-union Message;
+namespace ui { union Message; }
 
 // Represents one state of the sprite's editor (Editor class).  This
 // is a base class, a dummy state that ignores all events from the
@@ -69,16 +69,16 @@ public:
   virtual void onCurrentToolChange(Editor* editor) { }
 
   // Called when the user presses a mouse button over the editor.
-  virtual bool onMouseDown(Editor* editor, Message* msg) { return false; }
+  virtual bool onMouseDown(Editor* editor, ui::Message* msg) { return false; }
 
   // Called when the user releases a mouse button.
-  virtual bool onMouseUp(Editor* editor, Message* msg) { return false; }
+  virtual bool onMouseUp(Editor* editor, ui::Message* msg) { return false; }
 
   // Called when the user moves the mouse over the editor.
-  virtual bool onMouseMove(Editor* editor, Message* msg) { return false; }
+  virtual bool onMouseMove(Editor* editor, ui::Message* msg) { return false; }
 
   // Called when the user moves the mouse wheel over the editor.
-  virtual bool onMouseWheel(Editor* editor, Message* msg) { return false; }
+  virtual bool onMouseWheel(Editor* editor, ui::Message* msg) { return false; }
 
   // Called each time the mouse changes its position so we can set an
   // appropiated cursor depending on the new coordinates of the mouse
@@ -86,10 +86,10 @@ public:
   virtual bool onSetCursor(Editor* editor) { return false; }
 
   // Called when a key is pressed over the current editor.
-  virtual bool onKeyDown(Editor* editor, Message* msg) { return false; }
+  virtual bool onKeyDown(Editor* editor, ui::Message* msg) { return false; }
 
   // Called when a key is released.
-  virtual bool onKeyUp(Editor* editor, Message* msg) { return false; }
+  virtual bool onKeyUp(Editor* editor, ui::Message* msg) { return false; }
 
   // Called when a key is released.
   virtual bool onUpdateStatusBar(Editor* editor) { return false; }

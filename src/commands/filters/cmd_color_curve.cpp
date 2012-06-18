@@ -80,7 +80,7 @@ protected:
 
 private:
   ColorCurveFilter& m_filter;
-  View m_view;
+  ui::View m_view;
   ColorCurveEditor m_editor;
 };
 

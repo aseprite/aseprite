@@ -6,6 +6,8 @@
 
 #include "gui/event.h"
 
+namespace ui {
+
 Event::Event(Component* source)
   : m_source(source)
 {
@@ -19,3 +21,5 @@ Component* Event::getSource()
 {
   return m_source;
 }
+
+} // namespace ui

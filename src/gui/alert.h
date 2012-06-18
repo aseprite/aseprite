@@ -10,19 +10,23 @@
 #include "base/shared_ptr.h"
 #include "gui/frame.h"
 
-class Alert;
-typedef SharedPtr<Alert> AlertPtr;
+namespace ui {
 
-class Alert : public Frame
-{
-public:
-  Alert();
+  class Alert;
+  typedef SharedPtr<Alert> AlertPtr;
 
-  static AlertPtr create(const char* format, ...);
-  static int show(const char* format, ...);
+  class Alert : public Frame
+  {
+  public:
+    Alert();
 
-private:
-  void processString(char* buf, std::vector<Widget*>& labels, std::vector<Widget*>& buttons);
-};
+    static AlertPtr create(const char* format, ...);
+    static int show(const char* format, ...);
+
+  private:
+    void processString(char* buf, std::vector<Widget*>& labels, std::vector<Widget*>& buttons);
+  };
+
+} // namespace ui
 
 #endif

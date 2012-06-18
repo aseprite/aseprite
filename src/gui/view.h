@@ -14,6 +14,8 @@
 #include "gui/viewport.h"
 #include "gui/widget.h"
 
+namespace ui {
+
 class View : public Widget
 {
 public:
@@ -56,5 +58,7 @@ private:
   ScrollBar m_scrollbar_h;
   ScrollBar m_scrollbar_v;
 };
+
+} // namespace ui
 
 #endif

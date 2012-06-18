@@ -15,6 +15,8 @@
 
 using namespace gfx;
 
+namespace ui {
+
 class ComboBoxButton : public Button
 {
 public:
@@ -507,3 +509,5 @@ JRect ComboBox::getListBoxPos()
     jrect_displace(rc, 0, -(jrect_h(rc)+jrect_h(m_entry->rc)));
   return rc;
 }
+
+} // namespace ui

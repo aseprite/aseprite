@@ -37,6 +37,8 @@
 #include "widgets/statebar.h"
 #include "document_wrappers.h"
 
+using namespace ui;
+
 #define PREVIEW_TILED           1
 #define PREVIEW_FIT_ON_SCREEN   2
 
@@ -240,7 +242,7 @@ void PreviewCommand::onExecute(Context* context)
   jmouse_set_position(old_mouse_x, old_mouse_y);
   jmouse_set_cursor(JI_CURSOR_NORMAL);
 
-  gui::Manager::getDefault()->invalidate();
+  ui::Manager::getDefault()->invalidate();
 }
 
 //////////////////////////////////////////////////////////////////////

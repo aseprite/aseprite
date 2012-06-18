@@ -26,7 +26,7 @@
 #include "gui/label.h"
 
 // Little widget to show a color in hexadecimal format (as HTML).
-class HexColorEntry : public Box
+class HexColorEntry : public ui::Box
 {
 public:
   HexColorEntry();
@@ -40,8 +40,8 @@ protected:
   void onEntryChange();
 
 private:
-  Label m_label;
-  Entry m_entry;
+  ui::Label m_label;
+  ui::Entry m_entry;
 };
 
 #endif

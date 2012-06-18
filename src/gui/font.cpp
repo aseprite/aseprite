@@ -18,6 +18,8 @@
 #include "gui/intern.h"
 #include "gui/theme.h"
 
+namespace ui {
+
 FONT* ji_font_load(const char* filepathname)
 {
   FONT* f = ji_font_load_bmp(filepathname);
@@ -1002,3 +1004,5 @@ int ji_font_text_len(struct FONT* f, const char* s)
 }
 
 #endif
+
+} // namespace ui

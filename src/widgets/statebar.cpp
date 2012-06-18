@@ -49,6 +49,7 @@
 #include <cstring>
 
 using namespace gfx;
+using namespace ui;
 
 enum AniAction {
   ACTION_FIRST,
@@ -58,18 +59,18 @@ enum AniAction {
   ACTION_LAST,
 };
 
-class StatusBar::CustomizedTipWindow : public gui::TipWindow
+class StatusBar::CustomizedTipWindow : public ui::TipWindow
 {
 public:
   CustomizedTipWindow(const char* text)
-    : gui::TipWindow(text)
+    : ui::TipWindow(text)
   {
   }
 
   void setInterval(int msecs)
   {
     if (!m_timer)
-      m_timer.reset(new gui::Timer(this, msecs));
+      m_timer.reset(new ui::Timer(this, msecs));
     else
       m_timer->setInterval(msecs);
   }
@@ -83,7 +84,7 @@ protected:
   bool onProcessMessage(Message* msg);
 
 private:
-  UniquePtr<gui::Timer> m_timer;
+  UniquePtr<ui::Timer> m_timer;
 };
 
 static void slider_change_hook(Slider* slider);
@@ -832,7 +833,7 @@ bool StatusBar::CustomizedTipWindow::onProcessMessage(Message* msg)
       break;
   }
 
-  return gui::TipWindow::onProcessMessage(msg);
+  return ui::TipWindow::onProcessMessage(msg);
 }
 
 static void slider_change_hook(Slider* slider)

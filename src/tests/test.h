@@ -46,8 +46,8 @@ int main(int argc, char* argv[])
     install_keyboard();
     install_mouse();
     {
-      Jinete jinete;
-      UniquePtr<gui::Manager> manager(new gui::Manager());
+      ui::GuiSystem guiSystem;
+      UniquePtr<ui::Manager> manager(new ui::Manager());
   #endif
 
       exitcode = RUN_ALL_TESTS();

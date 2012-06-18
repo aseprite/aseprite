@@ -28,6 +28,10 @@
 
 #include <allegro.h>
 
+using namespace ui;
+
+using namespace ui;
+
 EditorView::EditorView(EditorView::Type type)
   : View()
   , m_type(type)

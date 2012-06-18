@@ -16,6 +16,8 @@
 #include "gui/rect.h"
 #include "gui/region.h"
 
+namespace ui {
+
 #define xalloc                  base_malloc
 #define xfree                   base_free
 #define xrealloc                base_realloc
@@ -109,3 +111,5 @@ struct ji_point { int x, y; };
 #define assert                  ASSERT
 
 #include "miregion.cpp"
+
+} // namespace ui

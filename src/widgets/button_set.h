@@ -21,7 +21,7 @@
 
 #include "gui/box.h"
 
-class ButtonSet : public Box
+class ButtonSet : public ui::Box
 {
   class Item;
   typedef std::vector<Item*> Items;

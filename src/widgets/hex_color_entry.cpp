@@ -25,6 +25,8 @@
 #include "gui/theme.h"
 #include "widgets/hex_color_entry.h"
 
+using namespace ui;
+
 static inline bool is_hex_digit(char digit)
 {
   return ((digit >= '0' && digit <= '9') ||

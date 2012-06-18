@@ -9,13 +9,13 @@
 
 #include "gui/base.h"
 
-namespace gui {
+namespace ui {
   namespace clipboard {
 
     const char* get_text();
     void set_text(const char* text);
 
   } // namespace clipboard
-} // namespace gui
+} // namespace ui
 
 #endif // ASE_JINETE_JCLIPBOARD_H

@@ -32,7 +32,7 @@
 
 namespace widgets {
 
-  class FileList : public Widget
+  class FileList : public ui::Widget
   {
   public:
     FileList();
@@ -55,7 +55,7 @@ namespace widgets {
     Signal0<void> CurrentFolderChanged;
 
   protected:
-    virtual bool onProcessMessage(Message* msg) OVERRIDE;
+    virtual bool onProcessMessage(ui::Message* msg) OVERRIDE;
     virtual void onFileSelected();
     virtual void onFileAccepted();
     virtual void onCurrentFolderChanged();
@@ -83,7 +83,7 @@ namespace widgets {
 
     /* thumbnail generation process */
     IFileItem* m_itemToGenerateThumbnail;
-    gui::Timer m_timer;
+    ui::Timer m_timer;
     MonitorList m_monitors; // list of monitors watching threads
 
   };

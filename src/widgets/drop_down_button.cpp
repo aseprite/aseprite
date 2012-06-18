@@ -26,6 +26,8 @@
 #include "skin/skin_property.h"
 #include "skin/skin_theme.h"
 
+using namespace ui;
+
 DropDownButton::DropDownButton(const char* text)
   : HBox()
   , m_button(new Button(text))

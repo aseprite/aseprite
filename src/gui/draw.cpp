@@ -26,6 +26,8 @@ using namespace gfx;
   ji_font_set_aa_mode(f, fill_bg ||                                     \
                          bitmap_color_depth(ji_screen) == 8 ? bg: -1)
 
+namespace ui {
+
 void jrectedge(BITMAP *bmp, int x1, int y1, int x2, int y2,
                int c1, int c2)
 {
@@ -234,3 +236,5 @@ void ji_move_region(JRegion region, int dx, int dy)
     }
   }
 }
+
+} // namespace ui

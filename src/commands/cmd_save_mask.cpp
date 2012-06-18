@@ -68,8 +68,8 @@ void SaveMaskCommand::onExecute(Context* context)
     /* does the file exist? */
     if (exists(filename.c_str())) {
       /* ask if the user wants overwrite the file? */
-      ret = Alert::show("Warning<<File exists, overwrite it?<<%s||&Yes||&No||&Cancel",
-                        get_filename(filename.c_str()));
+      ret = ui::Alert::show("Warning<<File exists, overwrite it?<<%s||&Yes||&No||&Cancel",
+                            get_filename(filename.c_str()));
     }
     else
       break;
@@ -85,7 +85,7 @@ void SaveMaskCommand::onExecute(Context* context)
   }
 
   if (save_msk_file(document->getMask(), filename.c_str()) != 0)
-    Alert::show("Error<<Error saving .msk file<<%s||&Close", filename.c_str());
+    ui::Alert::show("Error<<Error saving .msk file<<%s||&Close", filename.c_str());
 }
 
 //////////////////////////////////////////////////////////////////////

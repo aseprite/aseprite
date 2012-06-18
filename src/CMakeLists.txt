@@ -9,7 +9,7 @@ if(MSVC)
 endif(MSVC)
 
 # Libraries in this directory
-set(aseprite_libraries aseprite-library undo-lib filters-lib gui-lib gfx-lib base-lib)
+set(aseprite_libraries aseprite-library undo-lib filters-lib ui-lib gfx-lib base-lib)
 
 # Directories where .h files can be found
 include_directories(. .. ../third_party)
@@ -445,7 +445,7 @@ endfunction()
 
 find_unittests(base base-lib ${sys_libs})
 find_unittests(gfx gfx-lib base-lib ${sys_libs})
-find_unittests(gui gui-lib gfx-lib base-lib ${libs3rdparty} ${sys_libs})
+find_unittests(gui ui-lib gfx-lib base-lib ${libs3rdparty} ${sys_libs})
 find_unittests(file ${all_libs})
 find_unittests(app ${all_libs})
 find_unittests(. ${all_libs})

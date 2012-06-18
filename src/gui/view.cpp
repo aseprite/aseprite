@@ -21,6 +21,8 @@
 
 using namespace gfx;
 
+namespace ui {
+
 View::View()
   : Widget(JI_VIEW)
   , m_scrollbar_h(JI_HORIZONTAL)
@@ -284,3 +286,5 @@ void View::displaceWidgets(Widget* widget, int x, int y)
   JI_LIST_FOR_EACH(widget->children, link)
     displaceWidgets(reinterpret_cast<Widget*>(link->data), x, y);
 }
+
+} // namespace ui

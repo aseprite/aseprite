@@ -22,6 +22,8 @@
 #include "gui/theme.h"
 #include "gui/widget.h"
 
+namespace ui {
+
 ButtonBase::ButtonBase(const char* text, int type, int behaviorType, int drawType)
   : Widget(type)
   , m_pressedStatus(false)
@@ -379,3 +381,5 @@ void RadioButton::onSelect()
     m_handleSelect = true;
   }
 }
+
+} // namespace ui

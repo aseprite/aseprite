@@ -45,6 +45,8 @@
 #include <allegro/internal/aintern.h>
 #include <cerrno>
 
+using namespace ui;
+
 #if (DEVICE_SEPARATOR != 0) && (DEVICE_SEPARATOR != '\0')
 #  define HAVE_DRIVES
 #endif

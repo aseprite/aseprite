@@ -13,6 +13,8 @@
 
 #include <list>
 
+namespace ui {
+
 static std::list<Widget*>* widgets;
 
 int _ji_widgets_init()
@@ -65,5 +67,7 @@ void _ji_reinit_theme_in_all_widgets()
   }
 
   // Redraw the whole screen
-  gui::Manager::getDefault()->invalidate();
+  Manager::getDefault()->invalidate();
 }
+
+} // namespace ui

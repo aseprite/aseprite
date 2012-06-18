@@ -31,6 +31,8 @@
 #include "raster/sprite.h"
 #include "ui_context.h"
 
+using namespace ui;
+
 //////////////////////////////////////////////////////////////////////
 // duplicate_sprite
 
