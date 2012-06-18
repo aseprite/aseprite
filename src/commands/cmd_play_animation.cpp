@@ -20,9 +20,10 @@
 
 #include <allegro.h>
 
-#include "gui/gui.h"
+#include "ui/gui.h"
 
 #include "commands/command.h"
+#include "document_wrappers.h"
 #include "modules/editors.h"
 #include "modules/gui.h"
 #include "modules/palettes.h"
@@ -30,7 +31,6 @@
 #include "raster/palette.h"
 #include "raster/sprite.h"
 #include "widgets/editor/editor.h"
-#include "document_wrappers.h"
 
 //////////////////////////////////////////////////////////////////////
 // play_animation

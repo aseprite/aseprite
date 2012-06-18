@@ -130,7 +130,7 @@ set(all_libs ${aseprite_libraries} ${libs3rdparty} ${sys_libs})
 add_subdirectory(base)
 add_subdirectory(filters)
 add_subdirectory(gfx)
-add_subdirectory(gui)
+add_subdirectory(ui)
 add_subdirectory(undo)
 
 add_library(aseprite-library
@@ -445,7 +445,7 @@ endfunction()
 
 find_unittests(base base-lib ${sys_libs})
 find_unittests(gfx gfx-lib base-lib ${sys_libs})
-find_unittests(gui ui-lib gfx-lib base-lib ${libs3rdparty} ${sys_libs})
+find_unittests(ui ui-lib gfx-lib base-lib ${libs3rdparty} ${sys_libs})
 find_unittests(file ${all_libs})
 find_unittests(app ${all_libs})
 find_unittests(. ${all_libs})

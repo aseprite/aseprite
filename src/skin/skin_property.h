@@ -19,7 +19,7 @@
 #ifndef SKIN_PROPERTY_H_INCLUDED
 #define SKIN_PROPERTY_H_INCLUDED
 
-#include "gui/property.h"
+#include "ui/property.h"
 
 enum LookType {
   NormalLook,

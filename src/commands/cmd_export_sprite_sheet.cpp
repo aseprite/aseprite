@@ -22,7 +22,6 @@
 #include "commands/command.h"
 #include "commands/commands.h"
 #include "document_wrappers.h"
-#include "gui/gui.h"
 #include "ini_file.h"
 #include "modules/gui.h"
 #include "modules/palettes.h"
@@ -32,6 +31,7 @@
 #include "raster/palette.h"
 #include "raster/sprite.h"
 #include "raster/stock.h"
+#include "ui/gui.h"
 #include "undo/undo_history.h"
 #include "undo_transaction.h"
 

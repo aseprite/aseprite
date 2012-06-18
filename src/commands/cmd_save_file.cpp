@@ -27,10 +27,10 @@
 #include "console.h"
 #include "document_wrappers.h"
 #include "file/file.h"
-#include "gui/gui.h"
 #include "modules/gui.h"
 #include "raster/sprite.h"
 #include "recent_files.h"
+#include "ui/gui.h"
 #include "widgets/statebar.h"
 
 struct SaveFileData

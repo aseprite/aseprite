@@ -19,7 +19,7 @@
 #ifndef WIDGETS_MENUITEM_H_INCLUDED
 #define WIDGETS_MENUITEM_H_INCLUDED
 
-#include "gui/menu.h"
+#include "ui/menu.h"
 
 class Command;
 class Params;

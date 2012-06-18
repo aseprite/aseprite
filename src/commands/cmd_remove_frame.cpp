@@ -20,9 +20,9 @@
 
 #include "commands/command.h"
 #include "document_wrappers.h"
-#include "gui/gui.h"
 #include "modules/gui.h"
 #include "raster/sprite.h"
+#include "ui/gui.h"
 #include "undo_transaction.h"
 
 //////////////////////////////////////////////////////////////////////

@@ -19,7 +19,7 @@
 #ifndef MODULES_ROOTMENU_H_INCLUDED
 #define MODULES_ROOTMENU_H_INCLUDED
 
-#include "gui/base.h"
+#include "ui/base.h"
 
 namespace ui {
   class Menu;

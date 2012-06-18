@@ -27,11 +27,11 @@
 #include "base/path.h"
 #include "base/split_string.h"
 #include "file/file.h"
-#include "gui/gui.h"
 #include "ini_file.h"
 #include "modules/gfx.h"
 #include "recent_files.h"
 #include "skin/skin_parts.h"
+#include "ui/gui.h"
 #include "widgets/file_list.h"
 
 #include <algorithm>

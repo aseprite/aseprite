@@ -20,15 +20,15 @@
 
 #include <allegro.h>
 
-#include "gui/manager.h"
-#include "gui/frame.h"
+#include "ui/frame.h"
+#include "ui/manager.h"
 
 #include "app.h"
-#include "gfxmode.h"
 #include "console.h"
+#include "document_wrappers.h"
+#include "gfxmode.h"
 #include "modules/gui.h"
 #include "modules/palettes.h"
-#include "document_wrappers.h"
 #include "ui_context.h"
 
 //////////////////////////////////////////////////////////////////////

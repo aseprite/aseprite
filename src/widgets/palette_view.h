@@ -21,7 +21,7 @@
 
 #include "base/compiler_specific.h"
 #include "base/signal.h"
-#include "gui/widget.h"
+#include "ui/widget.h"
 
 #include <allegro/color.h>
 #include <vector>

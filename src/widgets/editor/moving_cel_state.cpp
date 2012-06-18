@@ -21,11 +21,11 @@
 #include "widgets/editor/moving_cel_state.h"
 
 #include "app.h"
-#include "gui/message.h"
 #include "raster/cel.h"
 #include "raster/layer.h"
 #include "raster/mask.h"
 #include "raster/sprite.h"
+#include "ui/message.h"
 #include "undo_transaction.h"
 #include "widgets/editor/editor.h"
 #include "widgets/statebar.h"

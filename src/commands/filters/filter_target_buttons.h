@@ -21,7 +21,7 @@
 
 #include "base/signal.h"
 #include "filters/target.h"
-#include "gui/box.h"
+#include "ui/box.h"
 
 namespace ui { class ButtonBase; }
 

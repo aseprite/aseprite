@@ -22,10 +22,10 @@
 #include "context.h"
 #include "document.h"
 #include "documents.h"
-#include "gui/box.h"
-#include "gui/button.h"
-#include "gui/combobox.h"
-#include "gui/frame.h"
+#include "ui/box.h"
+#include "ui/button.h"
+#include "ui/combobox.h"
+#include "ui/frame.h"
 
 using namespace ui;
 

@@ -24,14 +24,14 @@
 #include <string.h>
 
 #include "base/bind.h"
-#include "gui/box.h"
-#include "gui/button.h"
-#include "gui/theme.h"
-#include "gui/widget.h"
 #include "modules/gfx.h"
 #include "modules/gui.h"
 #include "raster/image.h"
 #include "skin/skin_parts.h"
+#include "ui/box.h"
+#include "ui/button.h"
+#include "ui/theme.h"
+#include "ui/widget.h"
 
 using namespace ui;
 

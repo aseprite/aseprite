@@ -19,7 +19,7 @@
 #ifndef WIDGETS_BUTTON_SET_H_INCLUDED
 #define WIDGETS_BUTTON_SET_H_INCLUDED
 
-#include "gui/box.h"
+#include "ui/box.h"
 
 class ButtonSet : public ui::Box
 {

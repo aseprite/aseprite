@@ -20,13 +20,14 @@
 
 #include "app.h"
 #include "commands/command.h"
-#include "gui/system.h"
-#include "gui/theme.h"
-#include "skin/skin_theme.h"
 #include "document_wrappers.h"
+#include "skin/skin_theme.h"
+#include "ui/system.h"
+#include "ui/theme.h"
 #include "widgets/statebar.h"
 
 #include <allegro.h>
+
 #if defined ALLEGRO_WINDOWS && defined DEBUGMODE
   #include <winalleg.h>
   #include <psapi.h>

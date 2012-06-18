@@ -21,7 +21,7 @@
 
 #include "gfx/point.h"
 #include "gfx/size.h"
-#include "gui/base.h"
+#include "ui/base.h"
 
 class Image;
 class DocumentReader;

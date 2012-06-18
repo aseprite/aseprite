@@ -22,10 +22,10 @@
 #include "app/color.h"
 #include "base/compiler_specific.h"
 #include "base/signal.h"
-#include "gui/box.h"
-#include "gui/button.h"
-#include "gui/view.h"
 #include "raster/pixel_format.h"
+#include "ui/box.h"
+#include "ui/button.h"
+#include "ui/view.h"
 #include "widgets/color_button.h"
 #include "widgets/palette_view.h"
 

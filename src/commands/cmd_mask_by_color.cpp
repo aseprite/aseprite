@@ -20,8 +20,8 @@
 
 #include "commands/command.h"
 #include "dialogs/maskcol.h"
-#include "gui/base.h"
 #include "document_wrappers.h"
+#include "ui/base.h"
 
 //////////////////////////////////////////////////////////////////////
 // mask_by_color

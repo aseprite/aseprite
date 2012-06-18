@@ -21,7 +21,7 @@
 
 #include "base/string.h"
 #include "base/unique_ptr.h"
-#include "gui/frame.h"
+#include "ui/frame.h"
 
 class IFileItem;
 

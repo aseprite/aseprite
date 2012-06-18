@@ -20,13 +20,13 @@
 
 #include <allegro/keyboard.h>
 
-#include "gui/manager.h"
-#include "gui/rect.h"
-#include "gui/system.h"
-#include "gui/view.h"
-#include "gui/widget.h"
 #include "ini_file.h"
 #include "modules/gui.h"
+#include "ui/manager.h"
+#include "ui/rect.h"
+#include "ui/system.h"
+#include "ui/view.h"
+#include "ui/widget.h"
 #include "widgets/editor/editor.h"
 
 using namespace ui;

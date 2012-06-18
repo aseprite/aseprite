@@ -26,11 +26,11 @@
 #include "base/scoped_lock.h"
 #include "base/thread.h"
 #include "commands/filters/filter_manager_impl.h"
-#include "gui/gui.h"
 #include "ini_file.h"
 #include "modules/editors.h"
 #include "modules/gui.h"
 #include "raster/sprite.h"
+#include "ui/gui.h"
 #include "widgets/editor/editor.h"
 #include "widgets/statebar.h"
 

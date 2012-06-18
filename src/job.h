@@ -19,7 +19,7 @@
 #ifndef JOB_H_INCLUDED
 #define JOB_H_INCLUDED
 
-#include "gui/alert.h"
+#include "ui/alert.h"
 
 namespace base { class thread; }
 

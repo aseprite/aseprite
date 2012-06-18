@@ -20,14 +20,14 @@
 
 #include <allegro/unicode.h>
 
-#include "gui/gui.h"
+#include "ui/gui.h"
 
+#include "app.h"
 #include "commands/command.h"
 #include "commands/params.h"
-#include "app.h"
 #include "modules/editors.h"
-#include "raster/sprite.h"
 #include "raster/image.h"
+#include "raster/sprite.h"
 #include "widgets/color_bar.h"
 #include "widgets/editor/editor.h"
 

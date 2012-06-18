@@ -25,7 +25,7 @@
 #include <string.h>
 #include <string>
 
-#include "gui/base.h"
+#include "ui/base.h"
 
 #include "app.h"
 #include "log.h"

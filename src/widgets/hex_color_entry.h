@@ -21,9 +21,9 @@
 
 #include "app/color.h"
 #include "base/signal.h"
-#include "gui/box.h"
-#include "gui/entry.h"
-#include "gui/label.h"
+#include "ui/box.h"
+#include "ui/entry.h"
+#include "ui/label.h"
 
 // Little widget to show a color in hexadecimal format (as HTML).
 class HexColorEntry : public ui::Box

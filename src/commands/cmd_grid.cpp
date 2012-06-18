@@ -25,9 +25,9 @@
 #include "app/load_widget.h"
 #include "commands/command.h"
 #include "context.h"
-#include "gui/frame.h"
 #include "modules/editors.h"
 #include "settings/settings.h"
+#include "ui/frame.h"
 #include "ui_context.h"
 #include "widgets/statebar.h"
 

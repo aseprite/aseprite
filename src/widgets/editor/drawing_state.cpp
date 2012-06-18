@@ -20,12 +20,12 @@
 
 #include "widgets/editor/drawing_state.h"
 
-#include "gui/message.h"
-#include "gui/system.h"
 #include "tools/ink.h"
 #include "tools/tool.h"
 #include "tools/tool_loop.h"
 #include "tools/tool_loop_manager.h"
+#include "ui/message.h"
+#include "ui/system.h"
 #include "widgets/editor/editor.h"
 
 #include <allegro.h>

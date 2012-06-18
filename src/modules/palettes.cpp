@@ -21,7 +21,7 @@
 #include <allegro.h>
 #include <string.h>
 
-#include "gui/list.h"
+#include "ui/list.h"
 
 #include "app.h"
 #include "modules/palettes.h"

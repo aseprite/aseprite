@@ -19,12 +19,12 @@
 #ifndef MODULES_GUI_H_INCLUDED
 #define MODULES_GUI_H_INCLUDED
 
-#include <string>
-#include <list>
 #include "base/exception.h"
-#include "gui/base.h"
-#include "gui/accel.h"
 #include "skin/skin_property.h"
+#include "ui/accel.h"
+#include "ui/base.h"
+#include <list>
+#include <string>
 
 class Command;
 class Document;

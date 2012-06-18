@@ -20,8 +20,8 @@
 
 #include "ini_file.h"
 
-#include "gui/rect.h"
 #include "resource_finder.h"
+#include "ui/rect.h"
 
 #include <allegro/config.h>
 #include <allegro/file.h>

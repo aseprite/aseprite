@@ -22,7 +22,7 @@
 
 #include "app.h"
 #include "commands/command.h"
-#include "gui/base.h"
+#include "ui/base.h"
 #include "widgets/color_bar.h"
 
 class SwitchColorsCommand : public Command

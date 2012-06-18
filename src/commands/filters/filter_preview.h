@@ -20,8 +20,8 @@
 #define COMMANDS_FILTERS_FILTER_PREVIEW_H_INCLUDED
 
 #include "base/compiler_specific.h"
-#include "gui/timer.h"
-#include "gui/widget.h"
+#include "ui/timer.h"
+#include "ui/widget.h"
 
 class FilterManagerImpl;
 

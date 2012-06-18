@@ -20,10 +20,10 @@
 
 #include "widgets/editor/editor_view.h"
 
-#include "gui/list.h"
-#include "gui/message.h"
 #include "modules/editors.h"
 #include "skin/skin_theme.h"
+#include "ui/list.h"
+#include "ui/message.h"
 #include "widgets/editor/editor.h"
 
 #include <allegro.h>

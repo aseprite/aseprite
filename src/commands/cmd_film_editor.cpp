@@ -18,7 +18,7 @@
 
 #include "config.h"
 
-#include "gui/gui.h"
+#include "ui/gui.h"
 
 #include "commands/command.h"
 #include "dialogs/aniedit.h"

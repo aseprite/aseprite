@@ -20,8 +20,8 @@
 
 #include "commands/command.h"
 #include "dialogs/aniedit.h"
-#include "gui/base.h"
 #include "document_wrappers.h"
+#include "ui/base.h"
 #include "util/celmove.h"
 
 class CopyCelCommand : public Command

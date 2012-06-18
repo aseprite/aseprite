@@ -25,10 +25,10 @@
 #include "app/load_widget.h"
 #include "commands/command.h"
 #include "document_wrappers.h"
-#include "gui/gui.h"
 #include "ini_file.h"
 #include "modules/editors.h"
 #include "raster/sprite.h"
+#include "ui/gui.h"
 #include "ui_context.h"
 
 using namespace ui;

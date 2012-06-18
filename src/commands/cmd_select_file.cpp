@@ -22,8 +22,8 @@
 #include "commands/command.h"
 #include "commands/params.h"
 #include "document_wrappers.h"
-#include "gui/gui.h"
 #include "modules/editors.h"
+#include "ui/gui.h"
 #include "ui_context.h"
 
 #include <allegro/debug.h>

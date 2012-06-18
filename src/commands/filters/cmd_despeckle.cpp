@@ -28,15 +28,15 @@
 #include "commands/filters/filter_window.h"
 #include "document_wrappers.h"
 #include "filters/median_filter.h"
-#include "gui/button.h"
-#include "gui/entry.h"
-#include "gui/frame.h"
-#include "gui/grid.h"
-#include "gui/widget.h"
 #include "ini_file.h"
 #include "raster/mask.h"
 #include "raster/sprite.h"
 #include "settings/settings.h"
+#include "ui/button.h"
+#include "ui/entry.h"
+#include "ui/frame.h"
+#include "ui/grid.h"
+#include "ui/widget.h"
 
 static const char* ConfigSection = "Despeckle";
 

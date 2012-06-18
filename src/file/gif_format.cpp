@@ -23,9 +23,9 @@
 #include "file/file.h"
 #include "file/file_format.h"
 #include "file/format_options.h"
-#include "gui/alert.h"
 #include "modules/gui.h"
 #include "raster/raster.h"
+#include "ui/alert.h"
 #include "util/autocrop.h"
 
 #include <gif_lib.h>

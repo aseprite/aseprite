@@ -19,7 +19,7 @@
 #ifndef MODULES_H_INCLUDED
 #define MODULES_H_INCLUDED
 
-#include "gui/base.h"
+#include "ui/base.h"
 
 #define REQUIRE_INTERFACE    1
 

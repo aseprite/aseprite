@@ -31,11 +31,11 @@
 #include "commands/filters/filter_window.h"
 #include "document_wrappers.h"
 #include "filters/replace_color_filter.h"
-#include "gui/gui.h"
 #include "ini_file.h"
 #include "raster/image.h"
 #include "raster/mask.h"
 #include "raster/sprite.h"
+#include "ui/gui.h"
 #include "widgets/color_bar.h"
 #include "widgets/color_button.h"
 

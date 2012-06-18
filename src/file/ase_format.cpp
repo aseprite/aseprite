@@ -24,8 +24,8 @@
 #include "file/file_format.h"
 #include "file/file_handle.h"
 #include "file/format_options.h"
-#include "gui/list.h"
 #include "raster/raster.h"
+#include "ui/list.h"
 #include "zlib.h"
 
 #include <stdio.h>

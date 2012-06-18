@@ -21,14 +21,14 @@
 
 #include "app/color.h"
 #include "base/signal.h"
-#include "gui/button.h"
-#include "gui/grid.h"
-#include "gui/label.h"
-#include "gui/view.h"
+#include "ui/button.h"
+#include "ui/grid.h"
+#include "ui/label.h"
+#include "ui/view.h"
 #include "widgets/color_sliders.h"
-#include "widgets/popup_frame_pin.h"
 #include "widgets/hex_color_entry.h"
 #include "widgets/palette_view.h"
+#include "widgets/popup_frame_pin.h"
 
 class ColorSelector : public PopupFramePin
 {

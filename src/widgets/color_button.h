@@ -22,8 +22,8 @@
 #include "app/color.h"
 #include "base/compiler_specific.h"
 #include "base/signal.h"
-#include "gui/button.h"
 #include "raster/pixel_format.h"
+#include "ui/button.h"
 
 class ColorSelector;
 

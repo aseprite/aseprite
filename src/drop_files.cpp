@@ -26,8 +26,8 @@
 #include "base/scoped_lock.h"
 #include "commands/commands.h"
 #include "commands/params.h"
-#include "gui/frame.h"
-#include "gui/manager.h"
+#include "ui/frame.h"
+#include "ui/manager.h"
 #include "ui_context.h"
 
 #ifdef ALLEGRO_WINDOWS

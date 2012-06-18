@@ -21,10 +21,10 @@
 #include <allegro.h>
 #include <allegro/internal/aintern.h>
 
-#include "gui/intern.h"
-#include "gui/rect.h"
-#include "gui/system.h"
-#include "gui/theme.h"
+#include "ui/intern.h"
+#include "ui/rect.h"
+#include "ui/system.h"
+#include "ui/theme.h"
 
 #include "app.h"
 #include "app/color_utils.h"

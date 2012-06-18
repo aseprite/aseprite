@@ -21,7 +21,7 @@
 
 #include "app/color.h"
 #include "gfx/rect.h"
-#include "gui/base.h"
+#include "ui/base.h"
 
 struct FONT;
 struct BITMAP;

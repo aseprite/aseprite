@@ -24,8 +24,8 @@
 #include "commands/command.h"
 #include "commands/params.h"
 #include "document_wrappers.h"
-#include "gui/gui.h"
 #include "raster/sprite.h"
+#include "ui/gui.h"
 #include "undo_transaction.h"
 
 using namespace ui;

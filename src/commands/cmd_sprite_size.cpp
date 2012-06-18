@@ -24,7 +24,6 @@
 #include "base/unique_ptr.h"
 #include "commands/command.h"
 #include "document_wrappers.h"
-#include "gui/gui.h"
 #include "ini_file.h"
 #include "job.h"
 #include "modules/gui.h"
@@ -34,6 +33,7 @@
 #include "raster/mask.h"
 #include "raster/sprite.h"
 #include "raster/stock.h"
+#include "ui/gui.h"
 #include "ui_context.h"
 #include "undo_transaction.h"
 

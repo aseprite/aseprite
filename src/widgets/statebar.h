@@ -19,15 +19,15 @@
 #ifndef WIDGETS_STATEBAR_H_INCLUDED
 #define WIDGETS_STATEBAR_H_INCLUDED
 
-#include <vector>
 #include <string>
+#include <vector>
 
 #include "app/color.h"
 #include "base/compiler_specific.h"
-#include "gui/base.h"
-#include "gui/link_label.h"
-#include "gui/widget.h"
 #include "listeners.h"
+#include "ui/base.h"
+#include "ui/link_label.h"
+#include "ui/widget.h"
 
 class ColorButton;
 class StatusBar;

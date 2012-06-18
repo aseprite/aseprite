@@ -22,10 +22,10 @@
 
 #include "commands/command.h"
 #include "commands/params.h"
-#include "gui/menu.h"
-#include "gui/message.h"
-#include "gui/widget.h"
 #include "modules/gui.h"
+#include "ui/menu.h"
+#include "ui/message.h"
+#include "ui/widget.h"
 #include "ui_context.h"
 
 #include <stdarg.h>

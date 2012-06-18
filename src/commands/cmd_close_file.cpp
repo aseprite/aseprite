@@ -18,16 +18,16 @@
 
 #include "config.h"
 
-#include <memory>
+#include "ui/gui.h"
 #include <allegro.h>
-#include "gui/gui.h"
+#include <memory>
 
+#include "app.h"
 #include "commands/command.h"
 #include "commands/commands.h"
-#include "app.h"
+#include "document_wrappers.h"
 #include "modules/editors.h"
 #include "raster/sprite.h"
-#include "document_wrappers.h"
 #include "ui_context.h"
 #include "widgets/statebar.h"
 

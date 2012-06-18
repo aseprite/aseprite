@@ -22,7 +22,6 @@
 #include <allegro/draw.h>
 #include <allegro/gfx.h>
 
-#include "gui/list.h"
 #include "modules/gfx.h"
 #include "raster/blend.h"
 #include "raster/cel.h"
@@ -31,6 +30,7 @@
 #include "raster/palette.h"
 #include "raster/sprite.h"
 #include "raster/stock.h"
+#include "ui/list.h"
 #include "util/thmbnail.h"
 
 #define THUMBNAIL_W     32

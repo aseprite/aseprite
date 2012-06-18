@@ -19,15 +19,15 @@
 #include "config.h"
 
 /* #include <stdio.h> */
-#include <string.h>
 #include <allegro/unicode.h>
 #include <exception>
+#include <string.h>
 
-#include "gui/gui.h"
+#include "ui/gui.h"
 
-#include "console.h"
 #include "commands/command.h"
 #include "commands/commands.h"
+#include "console.h"
 
 #undef FOR_EACH_COMMAND
   #define FOR_EACH_COMMAND(Name) \

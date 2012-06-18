@@ -22,13 +22,13 @@
 #include <stdarg.h>
 
 #include "base/bind.h"
-#include "gui/box.h"
-#include "gui/button.h"
-#include "gui/list.h"
-#include "gui/system.h"
-#include "gui/theme.h"
-#include "gui/widget.h"
 #include "modules/gui.h"
+#include "ui/box.h"
+#include "ui/button.h"
+#include "ui/list.h"
+#include "ui/system.h"
+#include "ui/theme.h"
+#include "ui/widget.h"
 #include "widgets/button_set.h"
 
 using namespace ui;

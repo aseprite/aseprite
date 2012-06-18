@@ -21,11 +21,11 @@
 
 #include "config.h"
 
-#include <gtest/gtest.h>
 #include <allegro.h>
+#include <gtest/gtest.h>
 
 #ifdef TEST_GUI
-  #include "gui/gui.h"
+  #include "ui/gui.h"
 #endif
 
 #ifdef main

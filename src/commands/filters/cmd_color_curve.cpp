@@ -28,11 +28,11 @@
 #include "document_wrappers.h"
 #include "filters/color_curve.h"
 #include "filters/color_curve_filter.h"
-#include "gui/gui.h"
 #include "ini_file.h"
 #include "modules/gui.h"
 #include "raster/mask.h"
 #include "raster/sprite.h"
+#include "ui/gui.h"
 #include "widgets/color_button.h"
 
 static ColorCurve* the_curve = NULL;

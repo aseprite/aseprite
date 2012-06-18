@@ -19,11 +19,11 @@
 #include "config.h"
 
 #include "commands/command.h"
-#include "gui/base.h"
+#include "document_wrappers.h"
 #include "raster/layer.h"
 #include "raster/mask.h"
 #include "raster/sprite.h"
-#include "document_wrappers.h"
+#include "ui/base.h"
 #include "util/clipboard.h"
 #include "util/misc.h"
 

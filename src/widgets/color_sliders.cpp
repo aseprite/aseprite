@@ -22,13 +22,13 @@
 
 #include "app/color_utils.h"
 #include "base/bind.h"
-#include "gui/box.h"
-#include "gui/entry.h"
-#include "gui/graphics.h"
-#include "gui/label.h"
-#include "gui/preferred_size_event.h"
-#include "gui/slider.h"
 #include "skin/skin_slider_property.h"
+#include "ui/box.h"
+#include "ui/entry.h"
+#include "ui/graphics.h"
+#include "ui/label.h"
+#include "ui/preferred_size_event.h"
+#include "ui/slider.h"
 #include "widgets/color_sliders.h"
 
 using namespace gfx;

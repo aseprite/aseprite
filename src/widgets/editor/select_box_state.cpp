@@ -21,11 +21,11 @@
 #include "widgets/editor/select_box_state.h"
 
 #include "gfx/rect.h"
-#include "gui/message.h"
-#include "gui/system.h"
-#include "gui/view.h"
 #include "raster/image.h"
 #include "raster/sprite.h"
+#include "ui/message.h"
+#include "ui/system.h"
+#include "ui/view.h"
 #include "widgets/editor/editor.h"
 
 #include <allegro/color.h>

@@ -19,7 +19,7 @@
 #ifndef BUTTON_ICON_IMPL_H_INCLUDED
 #define BUTTON_ICON_IMPL_H_INCLUDED
 
-#include "gui/button.h"
+#include "ui/button.h"
 
 class SkinTheme;
 

@@ -24,7 +24,7 @@
 
 #include "base/bind.h"
 #include "base/memory.h"
-#include "gui/gui.h"
+#include "ui/gui.h"
 
 #include "app.h"
 #include "console.h"

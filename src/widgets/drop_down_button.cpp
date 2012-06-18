@@ -20,11 +20,11 @@
 
 #include "widgets/drop_down_button.h"
 
-#include "gui/theme.h"
 #include "modules/gui.h"
 #include "skin/button_icon_impl.h"
 #include "skin/skin_property.h"
 #include "skin/skin_theme.h"
+#include "ui/theme.h"
 
 using namespace ui;
 

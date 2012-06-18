@@ -22,19 +22,19 @@
 
 #include "app.h"
 #include "document_wrappers.h"
-#include "gui/gui.h"
 #include "ini_file.h"
 #include "modules/gui.h"
 #include "modules/palettes.h"
 #include "raster/image.h"
 #include "raster/sprite.h"
+#include "skin/skin_theme.h"
+#include "ui/gui.h"
 #include "ui_context.h"
 #include "util/misc.h"
 #include "widgets/editor/editor.h"
 #include "widgets/editor/editor_customization_delegate.h"
 #include "widgets/editor/editor_view.h"
 #include "widgets/popup_frame_pin.h"
-#include "skin/skin_theme.h"
 #include "widgets/statebar.h"
 
 #include <algorithm>

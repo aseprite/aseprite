@@ -27,8 +27,6 @@
 #include "gfx/point.h"
 #include "gfx/rect.h"
 #include "gfx/size.h"
-#include "gui/gui.h"
-#include "gui/intern.h"
 #include "loadpng.h"
 #include "modules/gui.h"
 #include "resource_finder.h"
@@ -36,6 +34,8 @@
 #include "skin/skin_property.h"
 #include "skin/skin_slider_property.h"
 #include "skin/skin_theme.h"
+#include "ui/gui.h"
+#include "ui/intern.h"
 #include "xml_exception.h"
 
 #include "tinyxml.h"

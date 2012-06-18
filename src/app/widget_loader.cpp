@@ -24,9 +24,9 @@
 #include "app/widget_not_found.h"
 #include "base/bind.h"
 #include "base/memory.h"
-#include "gui/gui.h"
 #include "modules/gui.h"
 #include "resource_finder.h"
+#include "ui/gui.h"
 #include "widgets/color_button.h"
 #include "xml_exception.h"
 

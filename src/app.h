@@ -21,8 +21,8 @@
 
 #include "base/signal.h"
 #include "base/string.h"
-#include "gui/base.h"
 #include "raster/pixel_format.h"
+#include "ui/base.h"
 
 #include <vector>
 

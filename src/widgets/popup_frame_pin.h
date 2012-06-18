@@ -19,8 +19,8 @@
 #ifndef WIDGETS_POPUP_FRAME_PIN_H_INCLUDED
 #define WIDGETS_POPUP_FRAME_PIN_H_INCLUDED
 
-#include "gui/button.h"
-#include "gui/popup_frame.h"
+#include "ui/button.h"
+#include "ui/popup_frame.h"
 
 class PopupFramePin : public ui::PopupFrame
 {

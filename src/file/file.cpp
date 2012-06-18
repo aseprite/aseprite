@@ -29,11 +29,11 @@
 #include "file/file_format.h"
 #include "file/file_formats_manager.h"
 #include "file/format_options.h"
-#include "gui/alert.h"
 #include "modules/gui.h"
 #include "modules/palettes.h"
 #include "raster/quantization.h"
 #include "raster/raster.h"
+#include "ui/alert.h"
 #include "widgets/statebar.h"
 
 #include <allegro.h>

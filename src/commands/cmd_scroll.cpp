@@ -21,9 +21,9 @@
 #include "commands/command.h"
 #include "commands/params.h"
 #include "document_wrappers.h"
-#include "gui/view.h"
 #include "modules/editors.h"
 #include "settings/settings.h"
+#include "ui/view.h"
 #include "widgets/editor/editor.h"
 
 //////////////////////////////////////////////////////////////////////

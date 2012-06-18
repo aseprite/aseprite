@@ -21,10 +21,10 @@
 #include "commands/filters/filter_preview.h"
 
 #include "commands/filters/filter_manager_impl.h"
-#include "gui/manager.h"
-#include "gui/message.h"
-#include "gui/widget.h"
 #include "raster/sprite.h"
+#include "ui/manager.h"
+#include "ui/message.h"
+#include "ui/widget.h"
 #include "util/render.h"
 
 using namespace ui;

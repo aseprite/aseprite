@@ -22,7 +22,7 @@
 #include "base/compiler_specific.h"
 #include "base/signal.h"
 #include "gfx/point.h"
-#include "gui/widget.h"
+#include "ui/widget.h"
 
 class ColorCurve;
 

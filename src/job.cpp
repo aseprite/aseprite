@@ -22,11 +22,11 @@
 #include "base/mutex.h"
 #include "base/scoped_lock.h"
 #include "base/thread.h"
-#include "gui/alert.h"
-#include "gui/frame.h"
-#include "gui/widget.h"
 #include "job.h"
 #include "modules/gui.h"
+#include "ui/alert.h"
+#include "ui/frame.h"
+#include "ui/widget.h"
 #include "widgets/statebar.h"
 
 Job::Job(const char* job_name)

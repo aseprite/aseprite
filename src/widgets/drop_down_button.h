@@ -20,7 +20,7 @@
 #define WIDGETS_DROP_DOWN_BUTTON_H_INCLUDED
 
 #include "base/signal.h"
-#include "gui/box.h"
+#include "ui/box.h"
 
 namespace ui {
   class Button;

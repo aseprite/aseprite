@@ -26,7 +26,6 @@
 #include "console.h"
 #include "document.h"
 #include "file/file.h"
-#include "gui/gui.h"
 #include "modules/editors.h"
 #include "modules/gfx.h"
 #include "modules/gui.h"
@@ -35,6 +34,7 @@
 #include "raster/palette.h"
 #include "raster/rotate.h"
 #include "raster/sprite.h"
+#include "ui/gui.h"
 #include "widgets/statebar.h"
 
 #include <algorithm>

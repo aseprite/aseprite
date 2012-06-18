@@ -29,11 +29,11 @@
 #include "console.h"
 #include "document.h"
 #include "file/file.h"
-#include "gui/gui.h"
 #include "modules/editors.h"
 #include "modules/gui.h"
 #include "raster/sprite.h"
 #include "recent_files.h"
+#include "ui/gui.h"
 #include "ui_context.h"
 #include "widgets/statebar.h"
 

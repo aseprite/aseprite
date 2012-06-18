@@ -22,7 +22,7 @@
 #include "commands/command.h"
 #include "context.h"
 #include "document.h"
-#include "gui/alert.h"
+#include "ui/alert.h"
 
 //////////////////////////////////////////////////////////////////////
 // exit

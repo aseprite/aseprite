@@ -23,9 +23,9 @@
 #include "app/file_selector.h"
 #include "commands/command.h"
 #include "document_wrappers.h"
-#include "gui/alert.h"
 #include "raster/mask.h"
 #include "raster/sprite.h"
+#include "ui/alert.h"
 #include "util/msk_file.h"
 
 //////////////////////////////////////////////////////////////////////

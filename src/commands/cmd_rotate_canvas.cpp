@@ -22,7 +22,6 @@
 #include "commands/command.h"
 #include "commands/params.h"
 #include "document_wrappers.h"
-#include "gui/gui.h"
 #include "job.h"
 #include "modules/gui.h"
 #include "raster/cel.h"
@@ -30,6 +29,7 @@
 #include "raster/mask.h"
 #include "raster/sprite.h"
 #include "raster/stock.h"
+#include "ui/gui.h"
 #include "undo_transaction.h"
 #include "widgets/color_bar.h"
 

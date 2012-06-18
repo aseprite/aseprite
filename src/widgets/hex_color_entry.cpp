@@ -22,7 +22,7 @@
 #include <string>
 
 #include "gfx/border.h"
-#include "gui/theme.h"
+#include "ui/theme.h"
 #include "widgets/hex_color_entry.h"
 
 using namespace ui;

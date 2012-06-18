@@ -22,11 +22,11 @@
 #include <allegro.h>
 #include <cmath>
 
-#include "gui/gui.h"
-#include "gui/intern.h"
 #include "modules/gfx.h"
 #include "modules/gui.h"
 #include "skin/skin_theme.h"
+#include "ui/gui.h"
+#include "ui/intern.h"
 #include "widgets/tabs.h"
 
 using namespace ui;

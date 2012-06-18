@@ -23,10 +23,10 @@
 #include "commands/command.h"
 #include "commands/params.h"
 #include "document_wrappers.h"
-#include "gui/frame.h"
 #include "modules/editors.h"
 #include "modules/gui.h"
 #include "raster/sprite.h"
+#include "ui/frame.h"
 #include "widgets/editor/editor.h"
 
 #include <allegro/unicode.h>

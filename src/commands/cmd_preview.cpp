@@ -21,11 +21,12 @@
 
 #include <allegro.h>
 
-#include "gui/gui.h"
+#include "ui/gui.h"
 
+#include "app.h"
 #include "commands/command.h"
 #include "commands/commands.h"
-#include "app.h"
+#include "document_wrappers.h"
 #include "modules/editors.h"
 #include "modules/gfx.h"
 #include "modules/gui.h"
@@ -35,7 +36,6 @@
 #include "util/render.h"
 #include "widgets/editor/editor.h"
 #include "widgets/statebar.h"
-#include "document_wrappers.h"
 
 using namespace ui;
 

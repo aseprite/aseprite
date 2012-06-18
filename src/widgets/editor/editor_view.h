@@ -19,7 +19,7 @@
 #ifndef WIDGETS_EDITOR_VIEW_H_INCLUDED
 #define WIDGETS_EDITOR_VIEW_H_INCLUDED
 
-#include "gui/view.h"
+#include "ui/view.h"
 
 class EditorView : public ui::View
 {

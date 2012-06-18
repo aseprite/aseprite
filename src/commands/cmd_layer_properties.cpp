@@ -19,15 +19,15 @@
 #include "config.h"
 
 #include "base/bind.h"
-#include "gui/gui.h"
+#include "ui/gui.h"
 
 #include "app.h"
 #include "commands/command.h"
+#include "document_wrappers.h"
 #include "modules/gui.h"
 #include "raster/image.h"
 #include "raster/layer.h"
 #include "raster/sprite.h"
-#include "document_wrappers.h"
 
 using namespace ui;
 

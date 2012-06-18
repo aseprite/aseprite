@@ -20,8 +20,8 @@
 #define WIDGETS_TABS_H_INCLUDED
 
 #include "base/compiler_specific.h"
-#include "gui/timer.h"
-#include "gui/widget.h"
+#include "ui/timer.h"
+#include "ui/widget.h"
 
 #include <vector>
 

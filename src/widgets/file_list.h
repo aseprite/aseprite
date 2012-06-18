@@ -23,8 +23,8 @@
 #include "base/signal.h"
 #include "base/string.h"
 #include "file_system.h"
-#include "gui/timer.h"
-#include "gui/widget.h"
+#include "ui/timer.h"
+#include "ui/widget.h"
 
 #include "modules/gui.h"        // For monitors
 

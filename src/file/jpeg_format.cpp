@@ -28,9 +28,9 @@
 #include "file/file_format.h"
 #include "file/file_handle.h"
 #include "file/format_options.h"
-#include "gui/gui.h"
 #include "ini_file.h"
 #include "raster/raster.h"
+#include "ui/gui.h"
 
 #include <csetjmp>
 #include <cstdio>

@@ -21,10 +21,10 @@
 #include "app.h"
 #include "commands/command.h"
 #include "document_wrappers.h"
-#include "gui/widget.h"
 #include "modules/gui.h"
 #include "raster/layer.h"
 #include "raster/sprite.h"
+#include "ui/widget.h"
 #include "undo_transaction.h"
 #include "widgets/statebar.h"
 

@@ -19,12 +19,12 @@
 #ifndef COMMANDS_FILTERS_FILTER_WINDOW_H_INCLUDED
 #define COMMANDS_FILTERS_FILTER_WINDOW_H_INCLUDED
 
-#include "gui/box.h"
-#include "gui/button.h"
-#include "gui/frame.h"
 #include "commands/filters/filter_preview.h"
 #include "commands/filters/filter_target_buttons.h"
 #include "filters/tiled_mode.h"
+#include "ui/box.h"
+#include "ui/button.h"
+#include "ui/frame.h"
 
 class FilterManagerImpl;
 

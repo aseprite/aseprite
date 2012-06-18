@@ -19,8 +19,8 @@
 #include "config.h"
 
 #include "base/exception.h"
-#include "gui/alert.h"
 #include "launcher.h"
+#include "ui/alert.h"
 
 #if defined ALLEGRO_WINDOWS
 #define BITMAP WINDOWS_BITMAP

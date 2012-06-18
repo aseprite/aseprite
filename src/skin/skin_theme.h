@@ -24,9 +24,9 @@
 #include <string>
 
 #include "gfx/rect.h"
-#include "gui/rect.h"
-#include "gui/theme.h"
-#include "gui/system.h"
+#include "ui/rect.h"
+#include "ui/system.h"
+#include "ui/theme.h"
 
 #include "skin/skin_parts.h"
 

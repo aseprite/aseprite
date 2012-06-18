@@ -26,12 +26,12 @@
 #include "base/bind.h"
 #include "gfx/border.h"
 #include "gfx/size.h"
-#include "gui/gui.h"
 #include "modules/gfx.h"
 #include "modules/gui.h"
 #include "modules/palettes.h"
 #include "raster/image.h"
 #include "raster/palette.h"
+#include "ui/gui.h"
 #include "widgets/color_selector.h"
 #include "widgets/palette_view.h"
 
