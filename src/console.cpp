@@ -29,7 +29,7 @@
 #include "app.h"
 #include "console.h"
 #include "modules/gui.h"
-#include "widgets/statebar.h"
+#include "widgets/status_bar.h"
 
 using namespace ui;
 

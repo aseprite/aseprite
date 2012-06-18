@@ -26,7 +26,7 @@
 #include "base/bind.h"
 #include "ini_file.h"
 #include "modules/gui.h"
-#include "widgets/statebar.h"
+#include "widgets/status_bar.h"
 
 #include <ctime>
 #include <sstream>

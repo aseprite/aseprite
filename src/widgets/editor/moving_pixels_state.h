@@ -23,7 +23,7 @@
 #include "context_listener.h"
 #include "widgets/editor/handle_type.h"
 #include "widgets/editor/standby_state.h"
-#include "widgets/statebar.h"
+#include "widgets/status_bar.h"
 
 class Editor;
 class Image;

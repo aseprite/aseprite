@@ -35,7 +35,7 @@
 #include "recent_files.h"
 #include "ui/gui.h"
 #include "ui_context.h"
-#include "widgets/statebar.h"
+#include "widgets/status_bar.h"
 
 //////////////////////////////////////////////////////////////////////
 // open_file

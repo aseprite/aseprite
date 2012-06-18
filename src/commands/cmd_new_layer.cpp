@@ -29,7 +29,7 @@
 #include "raster/sprite.h"
 #include "ui/gui.h"
 #include "undo_transaction.h"
-#include "widgets/statebar.h"
+#include "widgets/status_bar.h"
 
 using namespace ui;
 

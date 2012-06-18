@@ -45,7 +45,7 @@
 #include "ui/intern.h"
 #include "ui_context.h"
 #include "widgets/editor/editor.h"
-#include "widgets/statebar.h"
+#include "widgets/status_bar.h"
 #include "widgets/toolbar.h"
 
 #include <algorithm>

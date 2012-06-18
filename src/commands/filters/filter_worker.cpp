@@ -32,7 +32,7 @@
 #include "raster/sprite.h"
 #include "ui/gui.h"
 #include "widgets/editor/editor.h"
-#include "widgets/statebar.h"
+#include "widgets/status_bar.h"
 
 using namespace ui;
 

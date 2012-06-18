@@ -24,7 +24,7 @@
 #include "skin/skin_theme.h"
 #include "ui/system.h"
 #include "ui/theme.h"
-#include "widgets/statebar.h"
+#include "widgets/status_bar.h"
 
 #include <allegro.h>
 

@@ -27,7 +27,7 @@
 #include "ui/alert.h"
 #include "ui/frame.h"
 #include "ui/widget.h"
-#include "widgets/statebar.h"
+#include "widgets/status_bar.h"
 
 Job::Job(const char* job_name)
 {

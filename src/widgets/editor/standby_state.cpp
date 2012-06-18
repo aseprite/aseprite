@@ -48,7 +48,7 @@
 #include "widgets/editor/scrolling_state.h"
 #include "widgets/editor/tool_loop_impl.h"
 #include "widgets/editor/transform_handles.h"
-#include "widgets/statebar.h"
+#include "widgets/status_bar.h"
 
 #include <allegro.h>
 

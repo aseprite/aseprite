@@ -53,7 +53,7 @@
 #include "widgets/editor/editor.h"
 #include "widgets/hex_color_entry.h"
 #include "widgets/palette_view.h"
-#include "widgets/statebar.h"
+#include "widgets/status_bar.h"
 
 #include <allegro.h>
 #include <stdio.h>

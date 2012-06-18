@@ -51,7 +51,7 @@
 #include "widgets/editor/moving_pixels_state.h"
 #include "widgets/editor/pixels_movement.h"
 #include "widgets/editor/standby_state.h"
-#include "widgets/statebar.h"
+#include "widgets/status_bar.h"
 #include "widgets/toolbar.h"
 
 #include <allegro.h>

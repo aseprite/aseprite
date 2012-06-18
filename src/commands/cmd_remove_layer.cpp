@@ -26,7 +26,7 @@
 #include "raster/sprite.h"
 #include "ui/widget.h"
 #include "undo_transaction.h"
-#include "widgets/statebar.h"
+#include "widgets/status_bar.h"
 
 //////////////////////////////////////////////////////////////////////
 // remove_layer

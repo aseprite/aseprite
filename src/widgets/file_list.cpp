@@ -35,7 +35,7 @@
 #include "raster/rotate.h"
 #include "raster/sprite.h"
 #include "ui/gui.h"
-#include "widgets/statebar.h"
+#include "widgets/status_bar.h"
 
 #include <algorithm>
 #include <allegro.h>

@@ -34,7 +34,7 @@
 #include "raster/quantization.h"
 #include "raster/raster.h"
 #include "ui/alert.h"
-#include "widgets/statebar.h"
+#include "widgets/status_bar.h"
 
 #include <allegro.h>
 #include <string.h>

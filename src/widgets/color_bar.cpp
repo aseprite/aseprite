@@ -33,7 +33,7 @@
 #include "ui/message.h"
 #include "ui_context.h"
 #include "widgets/color_bar.h"
-#include "widgets/statebar.h"
+#include "widgets/status_bar.h"
 
 using namespace ui;
 

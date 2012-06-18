@@ -38,7 +38,7 @@
 #include "ui/view.h"
 #include "ui/widget.h"
 #include "widgets/palette_view.h"
-#include "widgets/statebar.h"
+#include "widgets/status_bar.h"
 
 using namespace ui;
 

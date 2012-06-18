@@ -373,7 +373,7 @@ add_library(aseprite-library
   widgets/menuitem2.cpp
   widgets/palette_view.cpp
   widgets/popup_frame_pin.cpp
-  widgets/statebar.cpp
+  widgets/status_bar.cpp
   widgets/tabs.cpp
   widgets/toolbar.cpp)
 

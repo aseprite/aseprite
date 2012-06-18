@@ -29,7 +29,7 @@
 #include "settings/settings.h"
 #include "ui/frame.h"
 #include "ui_context.h"
-#include "widgets/statebar.h"
+#include "widgets/status_bar.h"
 
 using namespace ui;
 using namespace gfx;

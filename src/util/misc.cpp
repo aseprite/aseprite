@@ -34,7 +34,7 @@
 #include "ui/widget.h"
 #include "util/misc.h"
 #include "widgets/editor/editor.h"
-#include "widgets/statebar.h"
+#include "widgets/status_bar.h"
 
 Image* NewImageFromMask(const Document* srcDocument)
 {

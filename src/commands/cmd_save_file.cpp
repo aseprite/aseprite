@@ -31,7 +31,7 @@
 #include "raster/sprite.h"
 #include "recent_files.h"
 #include "ui/gui.h"
-#include "widgets/statebar.h"
+#include "widgets/status_bar.h"
 
 struct SaveFileData
 {

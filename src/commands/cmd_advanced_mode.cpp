@@ -26,7 +26,7 @@
 #include "modules/gui.h"
 #include "ui/gui.h"
 #include "widgets/color_bar.h"
-#include "widgets/statebar.h"
+#include "widgets/status_bar.h"
 #include "widgets/tabs.h"
 
 using namespace ui;

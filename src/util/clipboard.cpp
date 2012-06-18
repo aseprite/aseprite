@@ -48,7 +48,7 @@
 #include "util/misc.h"
 #include "widgets/color_bar.h"
 #include "widgets/editor/editor.h"
-#include "widgets/statebar.h"
+#include "widgets/status_bar.h"
 
 #include <allegro.h>
 #include <allegro/internal/aintern.h>

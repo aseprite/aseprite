@@ -39,7 +39,7 @@
 #include "util/expand_cel_canvas.h"
 #include "widgets/color_bar.h"
 #include "widgets/editor/editor.h"
-#include "widgets/statebar.h"
+#include "widgets/status_bar.h"
 
 #include <allegro.h>
 

@@ -34,7 +34,7 @@
 #include "tools/tool_box.h"
 #include "ui/gui.h"
 #include "ui_context.h"
-#include "widgets/statebar.h"
+#include "widgets/status_bar.h"
 
 #include <allegro.h>
 #include <map>

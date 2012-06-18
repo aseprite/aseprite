@@ -35,7 +35,7 @@
 #include "widgets/editor/editor_customization_delegate.h"
 #include "widgets/editor/editor_view.h"
 #include "widgets/popup_frame_pin.h"
-#include "widgets/statebar.h"
+#include "widgets/status_bar.h"
 
 #include <algorithm>
 #include <vector>

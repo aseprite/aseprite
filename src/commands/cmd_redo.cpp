@@ -24,7 +24,7 @@
 #include "modules/gui.h"
 #include "raster/sprite.h"
 #include "undo/undo_history.h"
-#include "widgets/statebar.h"
+#include "widgets/status_bar.h"
 
 class RedoCommand : public Command
 {

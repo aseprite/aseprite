@@ -58,7 +58,7 @@
 #include "widgets/editor/editor.h"
 #include "widgets/editor/editor_view.h"
 #include "widgets/menuitem2.h"
-#include "widgets/statebar.h"
+#include "widgets/status_bar.h"
 #include "widgets/tabs.h"
 #include "widgets/toolbar.h"
 
