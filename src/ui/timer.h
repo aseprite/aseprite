@@ -17,7 +17,7 @@ namespace ui {
   class Timer
   {
   public:
-    Timer(Widget* owner, int interval);
+    Timer(int interval, Widget* owner = NULL);
     virtual ~Timer();
 
     int getInterval() const;

@@ -50,14 +50,14 @@ class Progress
 
 public:
   ~Progress();
-  void setPos(float pos);
-  float getPos() const;
+  void setPos(double pos);
+  double getPos() const;
 
 private:
   Progress();
   Progress(StatusBar* statusbar);
   StatusBar* m_statusbar;
-  float m_pos;
+  double m_pos;
 };
 
 class StatusBarListener

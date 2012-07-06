@@ -156,6 +156,7 @@ add_library(aseprite-library
   recent_files.cpp
   resource_finder.cpp
   scoped_allegro.cpp
+  thumbnail_generator.cpp
   ui_context.cpp
   undo_transaction.cpp
   xml_exception.cpp

@@ -263,7 +263,7 @@ PaletteEntryEditor::PaletteEntryEditor()
   , m_redrawAll(false)
   , m_graftChange(false)
   , m_selfPalChange(false)
-  , m_redrawTimer(this, 250)
+  , m_redrawTimer(250, this)
 {
   m_topBox.setBorder(gfx::Border(0));
   m_topBox.child_spacing = 0;

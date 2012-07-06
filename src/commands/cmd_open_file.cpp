@@ -18,17 +18,17 @@
 
 #include "config.h"
 
-#include <allegro.h>
-#include <stdio.h>
-
 #include "app.h"
 #include "app/file_selector.h"
+#include "base/bind.h"
 #include "base/thread.h"
+#include "base/unique_ptr.h"
 #include "commands/command.h"
 #include "commands/params.h"
 #include "console.h"
 #include "document.h"
 #include "file/file.h"
+#include "job.h"
 #include "modules/editors.h"
 #include "modules/gui.h"
 #include "raster/sprite.h"
@@ -37,13 +37,16 @@
 #include "ui_context.h"
 #include "widgets/status_bar.h"
 
+#include <allegro.h>
+#include <stdio.h>
+
+static const int kMonitoringPeriod = 100;
+
 //////////////////////////////////////////////////////////////////////
 // open_file
 
 class OpenFileCommand : public Command
 {
-  std::string m_filename;
-
 public:
   OpenFileCommand();
   Command* clone() { return new OpenFileCommand(*this); }
@@ -51,71 +54,49 @@ public:
 protected:
   void onLoadParams(Params* params);
   void onExecute(Context* context);
+
+private:
+  std::string m_filename;
 };
 
-struct OpenFileData
+class OpenFileJob : public Job, public IFileOpProgress
 {
-  Monitor *monitor;
-  FileOp *fop;
-  Progress *progress;
-  ui::AlertPtr alert_window;
+public:
+  OpenFileJob(FileOp* fop, const char* filename)
+    : Job("Loading file")
+    , m_fop(fop)
+  {
+  }
+
+  void showProgressWindow() {
+    startJob();
+    fop_stop(m_fop);
+  }
+
+private:
+  // Thread to do the hard work: load the file from the disk.
+  virtual void onJob() OVERRIDE {
+    try {
+      fop_operate(m_fop, this);
+    }
+    catch (const std::exception& e) {
+      fop_error(m_fop, "Error loading file:\n%s", e.what());
+    }
+
+    if (fop_is_stop(m_fop) && m_fop->document) {
+      delete m_fop->document;
+      m_fop->document = NULL;
+    }
+
+    fop_done(m_fop);
+  }
+
+  virtual void ackFileOpProgress(double progress) OVERRIDE {
+    jobProgress(progress);
+  }
+
+  FileOp* m_fop;
 };
-
-/**
- * Thread to do the hard work: load the file from the disk.
- *
- * [loading thread]
- */
-static void openfile_bg(FileOp* fop)
-{
-  try {
-    fop_operate(fop);
-  }
-  catch (const std::exception& e) {
-    fop_error(fop, "Error loading file:\n%s", e.what());
-  }
-
-  if (fop_is_stop(fop) && fop->document) {
-    delete fop->document;
-    fop->document = NULL;
-  }
-
-  fop_done(fop);
-}
-
-/**
- * Called by the gui-monitor (a timer in the gui module that is called
- * every 100 milliseconds).
- *
- * [main thread]
- */
-static void monitor_openfile_bg(void* _data)
-{
-  OpenFileData* data = (OpenFileData*)_data;
-  FileOp* fop = (FileOp*)data->fop;
-
-  if (data->progress)
-    data->progress->setPos(fop_get_progress(fop));
-
-  // Is done? ...ok, now the sprite is in the main thread only...
-  if (fop_is_done(fop))
-    remove_gui_monitor(data->monitor);
-}
-
-/**
- * Called to destroy the data of the monitor.
- *
- * [main thread]
- */
-static void monitor_free(void* _data)
-{
-  OpenFileData* data = (OpenFileData*)_data;
-
-  if (data->alert_window != NULL) {
-    data->monitor = NULL;
-    data->alert_window->closeWindow(NULL);
-  }
-}
 
 OpenFileCommand::OpenFileCommand()
   : Command("OpenFile",
@@ -130,11 +111,6 @@ void OpenFileCommand::onLoadParams(Params* params)
   m_filename = params->get("filename");
 }
 
-/**
- * Command to open a file.
- *
- * [main thread]
- */
 void OpenFileCommand::onExecute(Context* context)
 {
   Console console;
@@ -147,38 +123,17 @@ void OpenFileCommand::onExecute(Context* context)
   }
 
   if (!m_filename.empty()) {
-    FileOp *fop = fop_to_load_document(m_filename.c_str(), FILE_LOAD_SEQUENCE_ASK);
+    UniquePtr<FileOp> fop(fop_to_load_document(m_filename.c_str(), FILE_LOAD_SEQUENCE_ASK));
     bool unrecent = false;
 
     if (fop) {
       if (fop->has_error()) {
         console.printf(fop->error.c_str());
-        fop_free(fop);
-
         unrecent = true;
       }
       else {
-        base::thread thread(&openfile_bg, fop);
-        OpenFileData* data = new OpenFileData;
-
-        data->fop = fop;
-        data->progress = app_get_statusbar()->addProgress();
-        data->alert_window = ui::Alert::create(PACKAGE
-                                               "<<Loading file:<<%s||&Cancel",
-                                               get_filename(m_filename.c_str()));
-
-        // Add a monitor to check the loading (FileOp) progress
-        data->monitor = add_gui_monitor(monitor_openfile_bg,
-                                        monitor_free, data);
-
-        data->alert_window->open_window_fg();
-
-        if (data->monitor != NULL)
-          remove_gui_monitor(data->monitor);
-
-        // Stop the file-operation and wait the thread to exit
-        fop_stop(data->fop);
-        thread.join();
+        OpenFileJob task(fop, get_filename(m_filename.c_str()));
+        task.showProgressWindow();
 
         // Post-load processing, it is called from the GUI because may require user intervention.
         fop_post_load(fop);
@@ -198,10 +153,6 @@ void OpenFileCommand::onExecute(Context* context)
         }
         else if (!fop_is_stop(fop))
           unrecent = true;
-
-        delete data->progress;
-        fop_free(fop);
-        delete data;
       }
 
       // The file was not found or was loaded loaded with errors,

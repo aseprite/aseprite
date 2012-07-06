@@ -91,7 +91,7 @@ Document* load_document(const char* filename)
     return NULL;
 
   /* operate in this same thread */
-  fop_operate(fop);
+  fop_operate(fop, NULL);
   fop_done(fop);
 
   fop_post_load(fop);
@@ -115,7 +115,7 @@ int save_document(Document* document)
     return -1;
 
   /* operate in this same thread */
-  fop_operate(fop);
+  fop_operate(fop, NULL);
   fop_done(fop);
 
   if (fop->has_error()) {
@@ -395,10 +395,12 @@ FileOp* fop_to_save_document(Document* document)
 //
 // After this function you must to mark the "fop" as "done" calling
 // fop_done() function.
-void fop_operate(FileOp *fop)
+void fop_operate(FileOp *fop, IFileOpProgress* progress)
 {
   ASSERT(fop != NULL);
   ASSERT(!fop_is_done(fop));
+
+  fop->progressInterface = progress;
 
   // Load //////////////////////////////////////////////////////////////////////
   if (fop->type == FileOpLoad &&
@@ -441,7 +443,7 @@ void fop_operate(FileOp *fop)
 
       fop->seq.has_alpha = false;
       fop->seq.progress_offset = 0.0f;
-      fop->seq.progress_fraction = 1.0f / (float)frames;
+      fop->seq.progress_fraction = 1.0f / (double)frames;
 
       std::vector<std::string>::iterator it = fop->seq.filename_list.begin();
       std::vector<std::string>::iterator end = fop->seq.filename_list.end();
@@ -549,7 +551,7 @@ void fop_operate(FileOp *fop)
         int old_frame = sprite->getCurrentFrame();
 
         fop->seq.progress_offset = 0.0f;
-        fop->seq.progress_fraction = 1.0f / (float)sprite->getTotalFrames();
+        fop->seq.progress_fraction = 1.0f / (double)sprite->getTotalFrames();
 
         // For each frame in the sprite.
         for (int frame=0; frame < sprite->getTotalFrames(); ++frame) {
@@ -612,17 +614,17 @@ void fop_stop(FileOp *fop)
     fop->stop = true;
 }
 
+FileOp::~FileOp()
+{
+  if (this->format)
+    this->format->destroyData(this);
+
+  delete this->seq.palette;
+  delete this->mutex;
+}
+
 void fop_free(FileOp *fop)
 {
-  if (fop->format)
-    fop->format->destroyData(fop);
-
-  if (fop->seq.palette != NULL)
-    delete fop->seq.palette;
-
-  if (fop->mutex)
-    delete fop->mutex;
-
   delete fop;
 }
 
@@ -746,10 +748,8 @@ void fop_error(FileOp *fop, const char *format, ...)
   }
 }
 
-void fop_progress(FileOp *fop, float progress)
+void fop_progress(FileOp *fop, double progress)
 {
-  //rest(8);
-
   ScopedLock lock(*fop->mutex);
 
   if (fop->is_sequence()) {
@@ -760,11 +760,14 @@ void fop_progress(FileOp *fop, float progress)
   else {
     fop->progress = progress;
   }
+
+  if (fop->progressInterface)
+    fop->progressInterface->ackFileOpProgress(progress);
 }
 
-float fop_get_progress(FileOp *fop)
+double fop_get_progress(FileOp *fop)
 {
-  float progress;
+  double progress;
   {
     ScopedLock lock(*fop->mutex);
     progress = fop->progress;
@@ -805,6 +808,7 @@ static FileOp* fop_new(FileOpType type)
 
   fop->mutex = new Mutex();
   fop->progress = 0.0f;
+  fop->progressInterface = NULL;
   fop->done = false;
   fop->stop = false;
   fop->oneframe = false;

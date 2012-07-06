@@ -61,8 +61,6 @@
 #define REFRESH_FULL_SCREEN     1
 #define SYSTEM_WINDOW_RESIZE    2
 
-#define MONITOR_TIMER_MSECS     100
-
 #define SPRITEDITOR_ACTION_COPYSELECTION        "CopySelection"
 #define SPRITEDITOR_ACTION_SNAPTOGRID           "SnapToGrid"
 #define SPRITEDITOR_ACTION_ANGLESNAP            "AngleSnap"
@@ -123,22 +121,6 @@ static Shortcut* get_keyboard_shortcut_for_spriteeditor(const char* action_name)
 
 //////////////////////////////////////////////////////////////////////
 
-struct Monitor
-{
-  // returns true when the job is done and the monitor can be removed
-  void (*proc)(void *);
-  void (*free)(void *);
-  void *data;
-  bool lock;
-  bool deleted;
-
-  Monitor(void (*proc)(void *),
-          void (*free)(void *), void *data);
-  ~Monitor();
-};
-
-//////////////////////////////////////////////////////////////////////
-
 class CustomizedGuiManager : public Manager
 {
 protected:
@@ -148,8 +130,6 @@ protected:
 static CustomizedGuiManager* manager = NULL;
 static Theme* ase_theme = NULL;
 
-static UniquePtr<Timer> monitor_timer;
-static MonitorList* monitors = NULL;
 static std::vector<Shortcut*>* shortcuts = NULL;
 
 static bool ji_screen_created = false;
@@ -201,7 +181,6 @@ int init_module_gui()
   bool fullscreen;
   bool maximized;
 
-  monitors = new MonitorList;
   shortcuts = new std::vector<Shortcut*>;
 
   // Install the mouse
@@ -346,18 +325,6 @@ void exit_module_gui()
   delete shortcuts;
   shortcuts = NULL;
 
-  // destroy monitors
-  monitor_timer.reset(NULL);
-
-  ASSERT(monitors != NULL);
-  for (MonitorList::iterator
-         it2 = monitors->begin(); it2 != monitors->end(); ++it2) {
-    Monitor* monitor = *it2;
-    delete monitor;
-  }
-  delete monitors;
-  monitors = NULL;
-
   if (double_buffering) {
     BITMAP *old_bmp = ji_screen;
     ji_set_screen(screen, SCREEN_W, SCREEN_H);
@@ -375,22 +342,6 @@ void exit_module_gui()
 
   remove_keyboard();
   remove_mouse();
-}
-
-Monitor::Monitor(void (*proc)(void *),
-                 void (*free)(void *), void *data)
-{
-  this->proc = proc;
-  this->free = free;
-  this->data = data;
-  this->lock = false;
-  this->deleted = false;
-}
-
-Monitor::~Monitor()
-{
-  if (this->free)
-    (*this->free)(this->data);
 }
 
 static void load_gui_config(int& w, int& h, int& bpp, bool& fullscreen, bool& maximized)
@@ -970,47 +921,6 @@ static Shortcut* get_keyboard_shortcut_for_spriteeditor(const char* action_name)
   return NULL;
 }
 
-// Adds a routine to be called each 100 milliseconds to monitor
-// whatever you want. It's mainly used to monitor the progress of a
-// file-operation (see @ref fop_operate)
-Monitor* add_gui_monitor(void (*proc)(void *),
-                         void (*free)(void *), void *data)
-{
-  Monitor* monitor = new Monitor(proc, free, data);
-
-  monitors->push_back(monitor);
-
-  if (monitor_timer == NULL)
-    monitor_timer.reset(new Timer(manager, MONITOR_TIMER_MSECS));
-
-  monitor_timer->start();
-
-  return monitor;
-}
-
-// Removes and frees a previously added monitor.
-void remove_gui_monitor(Monitor* monitor)
-{
-  MonitorList::iterator it =
-    std::find(monitors->begin(), monitors->end(), monitor);
-
-  ASSERT(it != monitors->end());
-
-  if (!monitor->lock)
-    delete monitor;
-  else
-    monitor->deleted = true;
-
-  monitors->erase(it);
-  if (monitors->empty())
-    monitor_timer->stop();
-}
-
-void* get_monitor_data(Monitor* monitor)
-{
-  return monitor->data;
-}
-
 // Manager event handler.
 bool CustomizedGuiManager::onProcessMessage(Message* msg)
 {
@@ -1029,32 +939,6 @@ bool CustomizedGuiManager::onProcessMessage(Message* msg)
 
       // Open dropped files
       check_for_dropped_files();
-      break;
-
-    case JM_TIMER:
-      if (msg->timer.timer == monitor_timer) {
-        for (MonitorList::iterator
-               it = monitors->begin(), next; it != monitors->end(); it = next) {
-          Monitor* monitor = *it;
-          next = it;
-          ++next;
-
-          // is the monitor not lock?
-          if (!monitor->lock) {
-            // call the monitor procedure
-            monitor->lock = true;
-            (*monitor->proc)(monitor->data);
-            monitor->lock = false;
-
-            if (monitor->deleted)
-              delete monitor;
-          }
-        }
-
-        // is monitors empty? we can stop the timer so
-        if (monitors->empty())
-          monitor_timer->stop();
-      }
       break;
 
     case JM_KEYPRESSED: {

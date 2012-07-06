@@ -36,6 +36,8 @@
 
 using namespace ui;
 
+static const int kMonitoringPeriod = 100;
+
 // Applies filters in two threads: a background worker thread to
 // modify the sprite, and the main thread to monitoring the progress
 // (and given to the user the possibility to cancel the process).
@@ -54,16 +56,11 @@ public:
 
 private:
   void applyFilterInBackground();
-  void monitor();
+  void onMonitoringTick();
 
   static void thread_proxy(void* data) {
     FilterWorker* filterWorker = (FilterWorker*)data;
     filterWorker->applyFilterInBackground();
-  }
-
-  static void monitor_proxy(void* data) {
-    FilterWorker* filterWorker = (FilterWorker*)data;
-    filterWorker->monitor();
   }
 
   FilterManagerImpl* m_filterMgr; // Effect to be applied.
@@ -71,13 +68,14 @@ private:
   float m_pos;                  // Current progress position
   bool m_done : 1;              // Was the effect completelly applied?
   bool m_cancelled : 1;         // Was the effect cancelled by the user?
-  Monitor* m_monitor;           // Monitor to update the progress-bar
+  ui::Timer m_timer;            // Monitoring timer to update the progress-bar
   Progress* m_progressBar;      // The progress-bar.
   AlertPtr m_alertWindow;       // Alert for the user to cancel the filter-progress if he wants.
 };
 
 FilterWorker::FilterWorker(FilterManagerImpl* filterMgr)
   : m_filterMgr(filterMgr)
+  , m_timer(kMonitoringPeriod)
 {
   m_filterMgr->setProgressDelegate(this);
 
@@ -90,7 +88,8 @@ FilterWorker::FilterWorker(FilterManagerImpl* filterMgr)
   m_alertWindow = ui::Alert::create(PACKAGE
                                     "<<Applying effect...||&Cancel");
 
-  m_monitor = add_gui_monitor(FilterWorker::monitor_proxy, NULL, this);
+  m_timer.Tick.connect(&FilterWorker::onMonitoringTick, this);
+  m_timer.start();
 }
 
 FilterWorker::~FilterWorker()
@@ -109,8 +108,8 @@ void FilterWorker::run()
   // Open the alert window in foreground (this is modal, locks the main thread)
   m_alertWindow->open_window_fg();
 
-  // Remove the monitor
-  remove_gui_monitor(m_monitor);
+  // Stop the monitoring timer.
+  m_timer.stop();
 
   {
     ScopedLock lock(m_mutex);
@@ -162,10 +161,7 @@ void FilterWorker::applyFilterInBackground()
 
 // Called by the GUI monitor (a timer in the gui module that is called
 // every 100 milliseconds).
-//
-// [main thread]
-//
-void FilterWorker::monitor()
+void FilterWorker::onMonitoringTick()
 {
   ScopedLock lock(m_mutex);
 

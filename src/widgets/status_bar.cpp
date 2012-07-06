@@ -70,7 +70,7 @@ public:
   void setInterval(int msecs)
   {
     if (!m_timer)
-      m_timer.reset(new ui::Timer(this, msecs));
+      m_timer.reset(new ui::Timer(msecs, this));
     else
       m_timer->setInterval(msecs);
   }
@@ -450,7 +450,7 @@ Progress::~Progress()
   }
 }
 
-void Progress::setPos(float pos)
+void Progress::setPos(double pos)
 {
   if (m_pos != pos) {
     m_pos = pos;
@@ -458,7 +458,7 @@ void Progress::setPos(float pos)
   }
 }
 
-float Progress::getPos() const
+double Progress::getPos() const
 {
   return m_pos;
 }

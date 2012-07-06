@@ -22,12 +22,12 @@ typedef std::vector<Timer*> Timers;
 
 static Timers timers; // Registered timers
 
-Timer::Timer(Widget* owner, int interval)
-  : m_owner(owner)
+Timer::Timer(int interval, Widget* owner)
+  : m_owner(owner ? owner: Manager::getDefault())
   , m_interval(interval)
   , m_lastTime(-1)
 {
-  ASSERT_VALID_WIDGET(owner);
+  ASSERT(m_owner != NULL);
 
   timers.push_back(this);
 }
@@ -81,24 +81,27 @@ void Timer::pollTimers()
     int count;
 
     for (int c=0; c<(int)timers.size(); ++c) {
-      if (timers[c] && timers[c]->m_lastTime >= 0) {
+      Timer* timer = timers[c];
+      if (timer && timer->m_lastTime >= 0) {
         count = 0;
-        while (t - timers[c]->m_lastTime > timers[c]->m_interval) {
-          timers[c]->m_lastTime += timers[c]->m_interval;
+        while (t - timer->m_lastTime > timer->m_interval) {
+          timer->m_lastTime += timer->m_interval;
           ++count;
 
           /* we spend too much time here */
-          if (ji_clock - t > timers[c]->m_interval) {
-            timers[c]->m_lastTime = ji_clock;
+          if (ji_clock - t > timer->m_interval) {
+            timer->m_lastTime = ji_clock;
             break;
           }
         }
 
         if (count > 0) {
+          ASSERT(timer->m_owner != NULL);
+
           Message* msg = jmessage_new(JM_TIMER);
           msg->timer.count = count;
-          msg->timer.timer = timers[c];
-          jmessage_add_dest(msg, timers[c]->m_owner);
+          msg->timer.timer = timer;
+          jmessage_add_dest(msg, timer->m_owner);
           Manager::getDefault()->enqueueMessage(msg);
         }
       }

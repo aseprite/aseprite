@@ -26,10 +26,6 @@
 #include "ui/timer.h"
 #include "ui/widget.h"
 
-#include "modules/gui.h"        // For monitors
-
-#include <vector>
-
 namespace widgets {
 
   class FileList : public ui::Widget
@@ -48,8 +44,6 @@ namespace widgets {
 
     void goUp();
 
-    void removeMonitor(Monitor* monitor);
-
     Signal0<void> FileSelected;
     Signal0<void> FileAccepted;
     Signal0<void> CurrentFolderChanged;
@@ -61,14 +55,14 @@ namespace widgets {
     virtual void onCurrentFolderChanged();
 
   private:
+    void onGenerateThumbnailTick();
+    void onMonitoringTick();
     gfx::Size getFileItemSize(IFileItem* fi) const;
     void makeSelectedFileitemVisible();
     void regenerateList();
     int getSelectedIndex();
     void selectIndex(int index);
     void generatePreviewOfSelectedItem();
-    bool generateThumbnail(IFileItem* fileitem);
-    void stopThreads();
 
     IFileItem* m_currentFolder;
     FileItemList m_list;
@@ -81,10 +75,16 @@ namespace widgets {
     std::string m_isearch;
     int m_isearchClock;
 
-    /* thumbnail generation process */
+    // Timer to start generating the thumbnail after an item is
+    // selected.
+    ui::Timer m_generateThumbnailTimer;
+
+    // Monitoring the progress of each thumbnail.
+    ui::Timer m_monitoringTimer;
+
+    // Used keep the last-selected item in the list so we know
+    // thumbnail to generate when the m_generateThumbnailTimer ticks.
     IFileItem* m_itemToGenerateThumbnail;
-    ui::Timer m_timer;
-    MonitorList m_monitors; // list of monitors watching threads
 
   };
 

@@ -14,7 +14,7 @@
 #include "ui/gui.h"
 #include "ui/intern.h"
 
-#define TIMEOUT_TO_OPEN_SUBMENU 250
+static const int kTimeoutToOpenSubmenu = 250;
 
 using namespace gfx;
 
@@ -1142,7 +1142,7 @@ void MenuItem::closeSubmenu(bool last_of_close_chain)
 void MenuItem::startTimer()
 {
   if (m_submenu_timer == NULL)
-    m_submenu_timer.reset(new Timer(this, TIMEOUT_TO_OPEN_SUBMENU));
+    m_submenu_timer.reset(new Timer(kTimeoutToOpenSubmenu, this));
 
   m_submenu_timer->start();
 }

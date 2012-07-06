@@ -23,9 +23,8 @@
 
 #include "base/thread.h"
 #include "base/unique_ptr.h"
+#include "ui/timer.h"
 #include "updater/check_update.h"
-
-struct Monitor;
 
 namespace app {
 
@@ -47,9 +46,7 @@ namespace app {
     }
 
   private:
-    void monitorActivity();
-    static void monitorProxy(void* data);
-
+    void onMonitoringTick();
     void checkForUpdates();
 
     updater::Uuid m_uuid;
@@ -58,7 +55,7 @@ namespace app {
     bool m_doCheck;
     bool m_received;
     updater::CheckUpdateResponse m_response;
-    Monitor* m_guiMonitor;
+    ui::Timer m_timer;
 
     // Mini-stats
     int m_inits;

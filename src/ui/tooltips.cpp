@@ -17,7 +17,7 @@
 #include "ui/paint_event.h"
 #include "ui/preferred_size_event.h"
 
-#define TOOLTIP_DELAY_MSECS  300
+static const int kTooltipDelayMsecs = 300;
 
 using namespace gfx;
 
@@ -59,7 +59,7 @@ bool TooltipManager::onProcessMessage(Message* msg)
           m_target.tipInfo = it->second;
 
           if (m_timer == NULL) {
-            m_timer.reset(new Timer(this, TOOLTIP_DELAY_MSECS));
+            m_timer.reset(new Timer(kTooltipDelayMsecs, this));
             m_timer->Tick.connect(&TooltipManager::onTick, this);
           }
 

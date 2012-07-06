@@ -46,6 +46,13 @@ class FormatOptions;
 typedef enum { FileOpLoad,
                FileOpSave } FileOpType;
 
+class IFileOpProgress
+{
+public:
+  virtual ~IFileOpProgress() { }
+  virtual void ackFileOpProgress(double progress) = 0;
+};
+
 // Structure to load & save files.
 struct FileOp
 {
@@ -57,7 +64,8 @@ struct FileOp
 
   // Shared fields between threads.
   Mutex* mutex;                 // Mutex to access to the next two fields.
-  float progress;               // Progress (1.0 is ready).
+  double progress;              // Progress (1.0 is ready).
+  IFileOpProgress* progressInterface;
   std::string error;            // Error string.
   bool done : 1;                // True if the operation finished.
   bool stop : 1;                // Force the break of the operation.
@@ -71,8 +79,8 @@ struct FileOp
     Palette* palette;           // Palette of the sequence.
     Image* image;               // Image to be saved/loaded.
     // For the progress bar.
-    float progress_offset;      // Progress offset from the current frame.
-    float progress_fraction;    // Progress fraction for one frame.
+    double progress_offset;      // Progress offset from the current frame.
+    double progress_fraction;    // Progress fraction for one frame.
     // To load sequences.
     int frame;
     bool has_alpha;
@@ -80,6 +88,8 @@ struct FileOp
     Cel* last_cel;
     SharedPtr<FormatOptions> format_options;
   } seq;
+
+  ~FileOp();
 
   bool has_error() const {
     return !this->error.empty();
@@ -105,7 +115,7 @@ int save_document(Document* document);
 
 FileOp* fop_to_load_document(const char* filename, int flags);
 FileOp* fop_to_save_document(Document* document);
-void fop_operate(FileOp* fop);
+void fop_operate(FileOp* fop, IFileOpProgress* progress);
 void fop_done(FileOp* fop);
 void fop_stop(FileOp* fop);
 void fop_free(FileOp* fop);
@@ -119,9 +129,9 @@ void fop_sequence_get_color(FileOp* fop, int index, int *r, int *g, int *b);
 Image* fop_sequence_image(FileOp* fi, PixelFormat pixelFormat, int w, int h);
 
 void fop_error(FileOp* fop, const char *error, ...);
-void fop_progress(FileOp* fop, float progress);
+void fop_progress(FileOp* fop, double progress);
 
-float fop_get_progress(FileOp* fop);
+double fop_get_progress(FileOp* fop);
 bool fop_is_done(FileOp* fop);
 bool fop_is_stop(FileOp* fop);
 

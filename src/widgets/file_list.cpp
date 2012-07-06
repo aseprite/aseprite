@@ -20,27 +20,13 @@
 
 #include "widgets/file_list.h"
 
-#include "app.h"
-#include "base/thread.h"
-#include "commands/commands.h"
-#include "console.h"
-#include "document.h"
-#include "file/file.h"
-#include "modules/editors.h"
 #include "modules/gfx.h"
-#include "modules/gui.h"
-#include "modules/palettes.h"
-#include "raster/image.h"
-#include "raster/palette.h"
-#include "raster/rotate.h"
-#include "raster/sprite.h"
+#include "thumbnail_generator.h"
 #include "ui/gui.h"
-#include "widgets/status_bar.h"
 
 #include <algorithm>
 #include <allegro.h>
 
-#define MAX_THUMBNAIL_SIZE              128
 #define ISEARCH_KEYPRESS_INTERVAL_MSECS 500
 
 using namespace gfx;
@@ -48,24 +34,10 @@ using namespace ui;
 
 namespace widgets {
 
-struct ThumbnailData
-{
-  Monitor* monitor;
-  FileOp* fop;
-  IFileItem* fileitem;
-  FileList* fileview;
-  Image* thumbnail;
-  base::thread* thread;
-  Palette* palette;
-};
-
-static void openfile_bg(ThumbnailData* data);
-static void monitor_thumbnail_generation(void *data);
-static void monitor_free_thumbnail_generation(void *data);
-
 FileList::FileList()
   : Widget(JI_WIDGET)
-  , m_timer(this, 200)
+  , m_generateThumbnailTimer(200, this)
+  , m_monitoringTimer(50, this)
 {
   setFocusStop(true);
 
@@ -76,15 +48,21 @@ FileList::FileList()
 
   m_itemToGenerateThumbnail = NULL;
 
+  m_generateThumbnailTimer.Tick.connect(&FileList::onGenerateThumbnailTick, this);
+  m_monitoringTimer.Tick.connect(&FileList::onMonitoringTick, this);
+  m_monitoringTimer.start();
+
   regenerateList();
 }
 
 FileList::~FileList()
 {
-  stopThreads();
+  // Stop timers.
+  m_generateThumbnailTimer.stop();
+  m_monitoringTimer.stop();
 
-  // at this point, can't be threads running in background
-  ASSERT(m_monitors.empty());
+  // Stop workers creating thumbnails.
+  ThumbnailGenerator::instance()->stopAllWorkers();
 }
 
 void FileList::setExtensions(const char* extensions)
@@ -166,8 +144,7 @@ bool FileList::onProcessMessage(Message* msg)
 
       // rows
       for (FileItemList::iterator
-             it=m_list.begin();
-           it!=m_list.end(); ++it) {
+             it=m_list.begin(), end=m_list.end(); it!=end; ++it) {
         IFileItem* fi = *it;
         gfx::Size itemSize = getFileItemSize(fi);
 
@@ -235,32 +212,18 @@ bool FileList::onProcessMessage(Message* msg)
                      /* fill with the background color */
                      bgcolor);
 
-        // draw progress bar
-        if (!m_monitors.empty()) {
-          for (MonitorList::iterator
-                 it2 = m_monitors.begin();
-               it2 != m_monitors.end(); ++it2) {
-            Monitor* monitor = *it2;
-            ThumbnailData* data = (ThumbnailData*)get_monitor_data(monitor);
-
-            // Check if this monitor is for this file-item
-            if (data->fileitem == fi) {
-              // If the file operation is not done, means that we are
-              // still loading the file, so we can show a progress bar
-              if (!fop_is_done(data->fop)) {
-                float progress = fop_get_progress(data->fop);
-
-                draw_progress_bar(ji_screen,
-                                  this->rc->x2-2-64, y+itemSize.h/2-3,
-                                  this->rc->x2-2, y+itemSize.h/2+3,
-                                  progress);
-              }
-              break;
-            }
-          }
+        // draw progress bars
+        double progress;
+        ThumbnailGenerator::WorkerStatus workerStatus =
+          ThumbnailGenerator::instance()->getWorkerStatus(fi, progress);
+        if (workerStatus == ThumbnailGenerator::WorkingOnThumbnail) {
+          draw_progress_bar(ji_screen,
+                            this->rc->x2-2-64, y+itemSize.h/2-3,
+                            this->rc->x2-2, y+itemSize.h/2+3,
+                            progress);
         }
 
-        // thumbnail position
+        // Thumbnail position
         if (fi == m_selected) {
           thumbnail = fi->getThumbnail();
           if (thumbnail)
@@ -277,7 +240,7 @@ bool FileList::onProcessMessage(Message* msg)
                  this->rc->x2-1, this->rc->y2-1,
                  ji_color_background());
 
-      /* draw the thumbnail */
+      // Draw the thumbnail
       if (thumbnail) {
         x = vp.x+vp.w-2-thumbnail->w;
         y = thumbnail_y-thumbnail->h/2;
@@ -466,18 +429,6 @@ bool FileList::onProcessMessage(Message* msg)
       }
       break;
 
-    case JM_TIMER:
-      /* is time to generate the thumbnail? */
-      if (msg->timer.timer == &m_timer) {
-        IFileItem* fileitem;
-
-        m_timer.stop();
-
-        fileitem = m_itemToGenerateThumbnail;
-        generateThumbnail(fileitem);
-      }
-      break;
-
   }
 
   return Widget::onProcessMessage(msg);
@@ -496,6 +447,21 @@ void FileList::onFileAccepted()
 void FileList::onCurrentFolderChanged()
 {
   CurrentFolderChanged();
+}
+
+void FileList::onMonitoringTick()
+{
+  if (ThumbnailGenerator::instance()->checkWorkers())
+    invalidate();
+}
+
+void FileList::onGenerateThumbnailTick()
+{
+  m_generateThumbnailTimer.stop();
+
+  IFileItem* fileitem = m_itemToGenerateThumbnail;
+  if (fileitem)
+    ThumbnailGenerator::instance()->addWorkerToGenerateThumbnail(fileitem);
 }
 
 gfx::Size FileList::getFileItemSize(IFileItem* fi) const
@@ -600,199 +566,8 @@ void FileList::generatePreviewOfSelectedItem()
       !m_selected->getThumbnail())
     {
       m_itemToGenerateThumbnail = m_selected;
-      m_timer.start();
+      m_generateThumbnailTimer.start();
     }
-}
-
-// Returns true if it does some hard work like access to the disk.
-bool FileList::generateThumbnail(IFileItem* fileitem)
-{
-  if (fileitem->isBrowsable() ||
-      fileitem->getThumbnail() != NULL)
-    return false;
-
-  FileOp* fop =
-    fop_to_load_document(fileitem->getFileName().c_str(),
-                         FILE_LOAD_SEQUENCE_NONE |
-                         FILE_LOAD_ONE_FRAME);
-  if (!fop)
-    return true;
-
-  if (fop->has_error()) {
-    fop_free(fop);
-  }
-  else {
-    ThumbnailData* data = new ThumbnailData;
-
-    data->fop = fop;
-    data->fileitem = fileitem;
-    data->fileview = this;
-    data->thumbnail = NULL;
-
-    data->thread = new base::thread(&openfile_bg, data);
-    if (data->thread) {
-      // add a monitor to check the loading (FileOp) progress
-      data->monitor = add_gui_monitor(monitor_thumbnail_generation,
-                                      monitor_free_thumbnail_generation, data);
-
-      m_monitors.push_back(data->monitor);
-      invalidate();
-    }
-    else {
-      fop_free(fop);
-      delete data;
-    }
-  }
-
-  return true;
-}
-
-void FileList::stopThreads()
-{
-  // stop the generation of threads
-  m_timer.stop();
-
-  // join all threads (removing all monitors)
-  for (MonitorList::iterator
-         it = m_monitors.begin();
-       it != m_monitors.end(); ) {
-    Monitor* monitor = *it;
-    ++it;
-    remove_gui_monitor(monitor);
-  }
-
-  // clear the list of monitors
-  m_monitors.clear();
-}
-
-// Thread to do the hard work: load the file from the disk (in
-// background).
-//
-// [loading thread]
-static void openfile_bg(ThumbnailData* data)
-{
-  FileOp* fop = (FileOp*)data->fop;
-
-  try {
-    fop_operate(fop);
-  }
-  catch (const std::exception& e) {
-    fop_error(fop, "Error loading file:\n%s", e.what());
-  }
-
-  fop_done(fop);
-}
-
-/**
- * Called by the GUI-monitor (a timer in the gui module that is called
- * every 100 milliseconds).
- *
- * [main thread]
- */
-static void monitor_thumbnail_generation(void *_data)
-{
-  ThumbnailData* data = (ThumbnailData*)_data;
-  FileOp* fop = data->fop;
-
-  /* is done? ...ok, now the thumbnail is in the main thread only... */
-  if (fop_is_done(fop)) {
-    // Post load
-    fop_post_load(fop);
-
-    // Convert the loaded document into the Allegro bitmap "data->thumbnail".
-    {
-      int thumb_w, thumb_h;
-      Image* image;
-
-      Sprite* sprite = (fop->document && fop->document->getSprite()) ? fop->document->getSprite():
-                                                                       NULL;
-      if (!fop_is_stop(fop) && sprite) {
-        // The palette to convert the Image to a BITMAP
-        data->palette = new Palette(*sprite->getPalette(0));
-
-        // Render the 'sprite' in one plain 'image'
-        image = Image::create(sprite->getPixelFormat(), sprite->getWidth(), sprite->getHeight());
-        sprite->render(image, 0, 0);
-
-        // Calculate the thumbnail size
-        thumb_w = MAX_THUMBNAIL_SIZE * image->w / MAX(image->w, image->h);
-        thumb_h = MAX_THUMBNAIL_SIZE * image->h / MAX(image->w, image->h);
-        if (MAX(thumb_w, thumb_h) > MAX(image->w, image->h)) {
-          thumb_w = image->w;
-          thumb_h = image->h;
-        }
-        thumb_w = MID(1, thumb_w, MAX_THUMBNAIL_SIZE);
-        thumb_h = MID(1, thumb_h, MAX_THUMBNAIL_SIZE);
-
-        // Stretch the 'image'
-        data->thumbnail = Image::create(image->getPixelFormat(), thumb_w, thumb_h);
-        image_clear(data->thumbnail, 0);
-        image_scale(data->thumbnail, image, 0, 0, thumb_w, thumb_h);
-        image_free(image);
-      }
-
-      delete fop->document;
-    }
-
-    /* set the thumbnail of the file-item */
-    if (data->thumbnail) {
-      BITMAP *bmp = create_bitmap_ex(16,
-                                     data->thumbnail->w,
-                                     data->thumbnail->h);
-
-      image_to_allegro(data->thumbnail, bmp, 0, 0, data->palette);
-
-      delete data->thumbnail;   // image
-      delete data->palette;
-      data->thumbnail = NULL;
-      data->palette = NULL;
-
-      data->fileitem->setThumbnail(bmp);
-
-      /* is the selected file-item the one that now has a thumbnail? */
-      if (data->fileview->getSelectedFileItem() == data->fileitem) {
-        /* we have to dirty the file-view to show the thumbnail */
-        data->fileview->invalidate();
-      }
-    }
-
-    remove_gui_monitor(data->monitor);
-  }
-  else {
-    data->fileview->invalidate();
-  }
-}
-
-/**
- * [main thread]
- */
-static void monitor_free_thumbnail_generation(void *_data)
-{
-  ThumbnailData *data = (ThumbnailData*)_data;
-  FileOp *fop = data->fop;
-
-  fop_stop(fop);
-  data->thread->join();
-  delete data->thread;
-
-  // Remove the monitor from the FileList.
-  data->fileview->removeMonitor(data->monitor);
-
-  // Destroy the thumbnail
-  if (data->thumbnail) {
-    image_free(data->thumbnail);
-    data->thumbnail = NULL;
-  }
-
-  fop_free(fop);
-  delete data;
-}
-
-void FileList::removeMonitor(Monitor* monitor)
-{
-  MonitorList::iterator it = std::find(m_monitors.begin(), m_monitors.end(), monitor);
-  ASSERT(it != m_monitors.end());
-  m_monitors.erase(it);
 }
 
 } // namespace widgets

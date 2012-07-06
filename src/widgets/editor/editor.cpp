@@ -126,7 +126,7 @@ Editor::Editor()
   : Widget(editor_type())
   , m_state(new StandbyState())
   , m_decorator(NULL)
-  , m_mask_timer(this, 100)
+  , m_mask_timer(100, this)
   , m_customizationDelegate(NULL)
 {
   // Add the first state into the history.

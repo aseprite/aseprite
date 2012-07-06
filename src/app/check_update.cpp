@@ -25,11 +25,12 @@
 #include "app.h"
 #include "base/bind.h"
 #include "ini_file.h"
-#include "modules/gui.h"
 #include "widgets/status_bar.h"
 
 #include <ctime>
 #include <sstream>
+
+static const int kMonitoringPeriod = 100;
 
 namespace app {
 
@@ -85,10 +86,10 @@ private:
 CheckUpdateThreadLauncher::CheckUpdateThreadLauncher()
   : m_doCheck(true)
   , m_received(false)
-  , m_guiMonitor(NULL)
   , m_inits(get_config_int("Updater", "Inits", 0))
   , m_exits(get_config_int("Updater", "Exits", 0))
   , m_isDeveloper(get_config_bool("Updater", "IsDeveloper", false))
+  , m_timer(kMonitoringPeriod, NULL)
 {
   // Get how many days we have to wait for the next "check for update"
   int waitDays = get_config_int("Updater", "WaitDays", 0);
@@ -112,10 +113,8 @@ CheckUpdateThreadLauncher::CheckUpdateThreadLauncher()
 
 CheckUpdateThreadLauncher::~CheckUpdateThreadLauncher()
 {
-  if (m_guiMonitor) {
-    remove_gui_monitor(m_guiMonitor);
-    m_guiMonitor = NULL;
-  }
+  if (m_timer.isRunning())
+    m_timer.stop();
 
   if (m_thread) {
     if (m_bgJob)
@@ -142,10 +141,11 @@ void CheckUpdateThreadLauncher::launch()
   m_bgJob.reset(new CheckUpdateBackgroundJob);
   m_thread.reset(new base::thread(Bind<void>(&CheckUpdateThreadLauncher::checkForUpdates, this)));
 
-  // Start a timer to monitor the progress of the background job
-  // executed in "m_thread". The "monitorProxy" method will be called
-  // periodically by the GUI main thread.
-  m_guiMonitor = add_gui_monitor(CheckUpdateThreadLauncher::monitorProxy, NULL, (void*)this);
+  // Start a timer to monitoring the progress of the background job
+  // executed in "m_thread". The "onMonitoringTick" method will be
+  // called periodically by the GUI main thread.
+  m_timer.Tick.connect(&CheckUpdateThreadLauncher::onMonitoringTick, this);
+  m_timer.start();
 }
 
 bool CheckUpdateThreadLauncher::isReceived() const
@@ -153,7 +153,7 @@ bool CheckUpdateThreadLauncher::isReceived() const
   return m_received;
 }
 
-void CheckUpdateThreadLauncher::monitorActivity()
+void CheckUpdateThreadLauncher::onMonitoringTick()
 {
   // If we do not receive a response yet...
   if (!m_received)
@@ -185,14 +185,8 @@ void CheckUpdateThreadLauncher::monitorActivity()
   // Save the config file right now
   flush_config_file();
 
-  // Remove the monitor
-  remove_gui_monitor(m_guiMonitor);
-  m_guiMonitor = NULL;
-}
-
-void CheckUpdateThreadLauncher::monitorProxy(void* data)
-{
-  ((CheckUpdateThreadLauncher*)data)->monitorActivity();
+  // Stop the monitoring timer.
+  m_timer.stop();
 }
 
 // This method is executed in a special thread to send the HTTP request.

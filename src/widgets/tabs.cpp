@@ -70,7 +70,7 @@ private:
 Tabs::Tabs(TabsDelegate* delegate)
   : Widget(tabs_type())
   , m_delegate(delegate)
-  , m_timer(this, 1000/60)
+  , m_timer(1000/60, this)
 {
   m_hot = NULL;
   m_selected = NULL;

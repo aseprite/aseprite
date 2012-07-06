@@ -23,32 +23,36 @@
 #include "base/scoped_lock.h"
 #include "base/thread.h"
 #include "job.h"
-#include "modules/gui.h"
 #include "ui/alert.h"
 #include "ui/frame.h"
 #include "ui/widget.h"
 #include "widgets/status_bar.h"
+
+static const int kMonitoringPeriod = 100;
 
 Job::Job(const char* job_name)
 {
   m_mutex = NULL;
   m_thread = NULL;
   m_progress = NULL;
-  m_monitor = NULL;
-  m_last_progress = 0.0f;
+  m_last_progress = 0.0;
   m_done_flag = false;
   m_canceled_flag = false;
 
   m_mutex = new Mutex();
   m_progress = app_get_statusbar()->addProgress();
-  m_monitor = add_gui_monitor(&Job::monitor_proc,
-                              &Job::monitor_free,
-                              (void*)this);
   m_alert_window = ui::Alert::create("%s<<Working...||&Cancel", job_name);
+
+  m_timer.reset(new ui::Timer(kMonitoringPeriod, m_alert_window));
+  m_timer->Tick.connect(&Job::onMonitoringTick, this);
+  m_timer->start();
 }
 
 Job::~Job()
 {
+  if (m_alert_window != NULL)
+    m_alert_window->closeWindow(NULL);
+
   // The job was canceled by the user?
   {
     ScopedLock hold(*m_mutex);
@@ -56,10 +60,8 @@ Job::~Job()
       m_canceled_flag = true;
   }
 
-  if (m_monitor) {
-    remove_gui_monitor(m_monitor);
-    m_monitor = NULL;
-  }
+  if (m_timer->isRunning())
+    m_timer->stop();
 
   if (m_thread) {
     m_thread->join();
@@ -79,7 +81,7 @@ void Job::startJob()
   m_alert_window->open_window_fg();
 }
 
-void Job::jobProgress(float f)
+void Job::jobProgress(double f)
 {
   ScopedLock hold(*m_mutex);
   m_last_progress = f;
@@ -91,12 +93,7 @@ bool Job::isCanceled()
   return m_canceled_flag;
 }
 
-void Job::onJob()
-{
-  // do nothing
-}
-
-void Job::onMonitorTick()
+void Job::onMonitoringTick()
 {
   ScopedLock hold(*m_mutex);
 
@@ -104,14 +101,8 @@ void Job::onMonitorTick()
   m_progress->setPos(m_last_progress);
 
   // is job done? we can close the monitor
-  if (m_done_flag)
-    remove_gui_monitor(m_monitor);
-}
-
-void Job::onMonitorDestroyed()
-{
-  if (m_alert_window != NULL) {
-    m_monitor = NULL;
+  if (m_done_flag || m_canceled_flag) {
+    m_timer->stop();
     m_alert_window->closeWindow(NULL);
   }
 }
@@ -122,14 +113,7 @@ void Job::done()
   m_done_flag = true;
 }
 
-//////////////////////////////////////////////////////////////////////
-// Static methods
-
-/**
- * Called to start the worker thread.
- *
- * [worker thread]
- */
+// Called to start the worker thread.
 void Job::thread_proc(Job* self)
 {
   try {
@@ -138,28 +122,5 @@ void Job::thread_proc(Job* self)
   catch (...) {
     // TODO handle this exception
   }
-
   self->done();
-}
-
-/**
- * Procedure called from the GUI loop to monitoring each 100 milliseconds.
- *
- * [main thread]
- */
-void Job::monitor_proc(void* data)
-{
-  Job* self = (Job*)data;
-  self->onMonitorTick();
-}
-
-/**
- * Function called when the GUI monitor is deleted.
- *
- * [main thread]
- */
-void Job::monitor_free(void* data)
-{
-  Job* self = (Job*)data;
-  self->onMonitorDestroyed();
 }

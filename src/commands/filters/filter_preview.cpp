@@ -32,7 +32,7 @@ using namespace ui;
 FilterPreview::FilterPreview(FilterManagerImpl* filterMgr)
   : Widget(JI_WIDGET)
   , m_filterMgr(filterMgr)
-  , m_timer(this, 1)
+  , m_timer(1, this)
 {
   setVisible(false);
 }

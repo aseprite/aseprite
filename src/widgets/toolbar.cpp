@@ -148,7 +148,7 @@ void toolbar_select_tool(Widget* toolbar, Tool* tool)
 
 ToolBar::ToolBar()
   : Widget(JI_WIDGET)
-  , m_tipTimer(this, 300)
+  , m_tipTimer(300, this)
 {
   this->border_width.l = 1*jguiscale();
   this->border_width.t = 0;

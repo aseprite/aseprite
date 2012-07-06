@@ -40,10 +40,6 @@ namespace ui {
 
 namespace tools { class Tool; }
 
-class Sprite;
-struct Monitor;
-typedef std::list<Monitor*> MonitorList;
-
 int init_module_gui();
 void exit_module_gui();
 
@@ -88,13 +84,5 @@ ui::JAccel get_accel_to_angle_snap();
 ui::JAccel get_accel_to_maintain_aspect_ratio();
 
 tools::Tool* get_selected_quicktool(tools::Tool* currentTool);
-
-//////////////////////////////////////////////////////////////////////
-// Monitors
-
-Monitor* add_gui_monitor(void (*proc)(void*),
-                         void (*free)(void*), void* data);
-void remove_gui_monitor(Monitor* monitor);
-void* get_monitor_data(Monitor* monitor);
 
 #endif

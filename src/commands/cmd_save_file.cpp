@@ -18,114 +18,73 @@
 
 #include "config.h"
 
-#include <allegro.h>
-
 #include "app.h"
 #include "app/file_selector.h"
+#include "base/bind.h"
 #include "base/thread.h"
+#include "base/unique_ptr.h"
 #include "commands/command.h"
 #include "console.h"
 #include "document_wrappers.h"
 #include "file/file.h"
+#include "job.h"
 #include "modules/gui.h"
 #include "raster/sprite.h"
 #include "recent_files.h"
 #include "ui/gui.h"
 #include "widgets/status_bar.h"
 
-struct SaveFileData
+#include <allegro.h>
+
+static const int kMonitoringPeriod = 100;
+
+class SaveFileJob : public Job, public IFileOpProgress
 {
-  Monitor *monitor;
-  FileOp *fop;
-  Progress *progress;
-  ui::AlertPtr alert_window;
+public:
+  SaveFileJob(FileOp* fop, const char* filename)
+    : Job("Saving file")
+    , m_fop(fop)
+  {
+  }
+
+  void showProgressWindow() {
+    startJob();
+    fop_stop(m_fop);
+  }
+
+private:
+
+  // Thread to do the hard work: save the file to the disk.
+  virtual void onJob() OVERRIDE {
+    try {
+      fop_operate(m_fop, this);
+    }
+    catch (const std::exception& e) {
+      fop_error(m_fop, "Error saving file:\n%s", e.what());
+    }
+    fop_done(m_fop);
+  }
+
+  virtual void ackFileOpProgress(double progress) OVERRIDE {
+    jobProgress(progress);
+  }
+
+  FileOp* m_fop;
 };
-
-/**
- * Thread to do the hard work: save the file to the disk.
- *
- * [saving thread]
- */
-static void savefile_bg(void *fop_data)
-{
-  FileOp *fop = (FileOp *)fop_data;
-  try {
-    fop_operate(fop);
-  }
-  catch (const std::exception& e) {
-    fop_error(fop, "Error saving file:\n%s", e.what());
-  }
-  fop_done(fop);
-}
-
-/**
- * Called by the gui-monitor (a timer in the gui module that is called
- * every 100 milliseconds).
- *
- * [main thread]
- */
-static void monitor_savefile_bg(void *_data)
-{
-  SaveFileData *data = (SaveFileData *)_data;
-  FileOp *fop = (FileOp *)data->fop;
-
-  if (data->progress)
-    data->progress->setPos(fop_get_progress(fop));
-
-  if (fop_is_done(fop))
-    remove_gui_monitor(data->monitor);
-}
-
-/**
- * Called when the monitor is destroyed.
- *
- * [main thread]
- */
-static void monitor_free(void *_data)
-{
-  SaveFileData *data = (SaveFileData*)_data;
-
-  if (data->alert_window != NULL) {
-    data->monitor = NULL;
-    data->alert_window->closeWindow(NULL);
-  }
-}
 
 static void save_document_in_background(Document* document, bool mark_as_saved)
 {
-  FileOp *fop = fop_to_save_document(document);
+  UniquePtr<FileOp> fop(fop_to_save_document(document));
   if (!fop)
     return;
 
-  base::thread thread(&savefile_bg, fop);
-  SaveFileData* data = new SaveFileData;
+  SaveFileJob job(fop, get_filename(document->getFilename()));
+  job.showProgressWindow();
 
-  data->fop = fop;
-  data->progress = app_get_statusbar()->addProgress();
-  data->alert_window = ui::Alert::create(PACKAGE
-                                         "<<Saving file:<<%s||&Cancel",
-                                         get_filename(document->getFilename()));
-
-  /* add a monitor to check the saving (FileOp) progress */
-  data->monitor = add_gui_monitor(monitor_savefile_bg,
-                                  monitor_free, data);
-
-  /* TODO error handling */
-
-  data->alert_window->open_window_fg();
-
-  if (data->monitor != NULL)
-    remove_gui_monitor(data->monitor);
-
-  /* wait the `savefile_bg' thread */
-  thread.join();
-
-  /* show any error */
   if (fop->has_error()) {
     Console console;
     console.printf(fop->error.c_str());
   }
-  /* no error? */
   else {
     App::instance()->getRecentFiles()->addRecentFile(document->getFilename());
     if (mark_as_saved)
@@ -135,10 +94,6 @@ static void save_document_in_background(Document* document, bool mark_as_saved)
       ->setStatusText(2000, "File %s, saved.",
                       get_filename(document->getFilename()));
   }
-
-  delete data->progress;
-  fop_free(fop);
-  delete data;
 }
 
 /*********************************************************************/

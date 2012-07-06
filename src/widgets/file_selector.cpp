@@ -29,6 +29,7 @@
 #include "file/file.h"
 #include "ini_file.h"
 #include "modules/gfx.h"
+#include "modules/gui.h"
 #include "recent_files.h"
 #include "skin/skin_parts.h"
 #include "ui/gui.h"

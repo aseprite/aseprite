@@ -309,8 +309,8 @@ bool PngFormat::onLoad(FileOp* fop)
       }
 
       fop_progress(fop,
-                   (float)((float)pass + (float)(y+1) / (float)(height))
-                   / (float)number_passes);
+                   (double)((double)pass + (double)(y+1) / (double)(height))
+                   / (double)number_passes);
 
       if (fop_is_stop(fop))
         break;
@@ -513,8 +513,8 @@ bool PngFormat::onSave(FileOp* fop)
       png_write_rows(png_ptr, &row_pointer, 1);
 
       fop_progress(fop,
-                   (float)((float)pass + (float)(y+1) / (float)(height))
-                   / (float)number_passes);
+                   (double)((double)pass + (double)(y+1) / (double)(height))
+                   / (double)number_passes);
     }
   }
 
