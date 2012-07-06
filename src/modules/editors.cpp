@@ -152,6 +152,14 @@ public:
       return false;
   }
 
+  bool isLockAxisKeyPressed() OVERRIDE {
+    JAccel accel = get_accel_to_lock_axis();
+    if (accel)
+      return jaccel_check_from_key(accel);
+    else
+      return false;
+  }
+
 };
 
 class MiniEditor : public Editor

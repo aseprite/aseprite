@@ -249,6 +249,9 @@ bool MovingPixelsState::onMouseMove(Editor* editor, Message* msg)
     if (editor->getCustomizationDelegate()->isMaintainAspectRatioKeyPressed())
       moveModifier |= PixelsMovement::MaintainAspectRatioMovement;
 
+    if (editor->getCustomizationDelegate()->isLockAxisKeyPressed())
+      moveModifier |= PixelsMovement::LockAxisMovement;
+
     // Invalidate handles area.
     Decorator* decorator = static_cast<Decorator*>(editor->getDecorator());
     TransformHandles* transfHandles = decorator->getTransformHandles(editor);

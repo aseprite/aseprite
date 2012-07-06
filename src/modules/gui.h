@@ -82,6 +82,7 @@ ui::JAccel get_accel_to_copy_selection();
 ui::JAccel get_accel_to_snap_to_grid();
 ui::JAccel get_accel_to_angle_snap();
 ui::JAccel get_accel_to_maintain_aspect_ratio();
+ui::JAccel get_accel_to_lock_axis();
 
 tools::Tool* get_selected_quicktool(tools::Tool* currentTool);
 

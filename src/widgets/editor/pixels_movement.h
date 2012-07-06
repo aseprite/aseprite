@@ -41,7 +41,8 @@ public:
     NormalMovement = 1,
     SnapToGridMovement = 2,
     AngleSnapMovement = 4,
-    MaintainAspectRatioMovement = 8
+    MaintainAspectRatioMovement = 8,
+    LockAxisMovement = 16
   };
 
   // The "moveThis" image specifies the chunk of pixels to be moved.

@@ -196,7 +196,11 @@
 
       <!-- When you move the selection, pressing this
            keyboard shortcut you can snap to grid -->
-      <key action="SnapToGrid" shortcut="Shift" />
+      <key action="SnapToGrid" shortcut="Alt" />
+
+      <!-- When you move the selection, pressing this keyboard
+           shortcut so you lock the movement to one axis -->
+      <key action="LockAxis" shortcut="Shift" />
 
       <!-- When you rotate the selection, pressing this
            keyboard shortcut you activate angle snap -->

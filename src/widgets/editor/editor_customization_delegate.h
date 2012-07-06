@@ -51,6 +51,10 @@ public:
   // Returns true if the user wants to maintain the aspect ratio when
   // he is scaling the selection.
   virtual bool isMaintainAspectRatioKeyPressed() = 0;
+
+  // Returns true if the user wants to lock the X or Y axis when he is
+  // dragging the selection.
+  virtual bool isLockAxisKeyPressed() = 0;
 };
 
 #endif  // WIDGETS_EDITOR_CUSTOMIZATION_DELEGATE_H_INCLUDED

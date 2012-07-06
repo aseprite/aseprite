@@ -216,6 +216,16 @@ gfx::Rect PixelsMovement::moveImage(int x, int y, MoveModifier moveModifier)
         x2 += gridOffset.x;
         y2 += gridOffset.y;
       }
+      else if ((moveModifier & LockAxisMovement) == LockAxisMovement) {
+        if (ABS(dx) < ABS(dy)) {
+          x1 -= dx;
+          x2 -= dx;
+        }
+        else {
+          y1 -= dy;
+          y2 -= dy;
+        }
+      }
       break;
 
     case ScaleNWHandle:

@@ -65,6 +65,7 @@
 #define SPRITEDITOR_ACTION_SNAPTOGRID           "SnapToGrid"
 #define SPRITEDITOR_ACTION_ANGLESNAP            "AngleSnap"
 #define SPRITEDITOR_ACTION_MAINTAINASPECTRATIO  "MaintainAspectRatio"
+#define SPRITEDITOR_ACTION_LOCKAXIS             "LockAxis"
 
 //////////////////////////////////////////////////////////////////////
 
@@ -783,6 +784,15 @@ JAccel get_accel_to_angle_snap()
 JAccel get_accel_to_maintain_aspect_ratio()
 {
   Shortcut* shortcut = get_keyboard_shortcut_for_spriteeditor(SPRITEDITOR_ACTION_MAINTAINASPECTRATIO);
+  if (shortcut)
+    return shortcut->accel;
+  else
+    return NULL;
+}
+
+JAccel get_accel_to_lock_axis()
+{
+  Shortcut* shortcut = get_keyboard_shortcut_for_spriteeditor(SPRITEDITOR_ACTION_LOCKAXIS);
   if (shortcut)
     return shortcut->accel;
   else
