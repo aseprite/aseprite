@@ -32,7 +32,7 @@ public:
   SetFrameDuration(undo::ObjectsContainer* objects, Sprite* sprite, int frame);
 
   void dispose() OVERRIDE;
-  int getMemSize() const OVERRIDE { return sizeof(*this); }
+  size_t getMemSize() const OVERRIDE { return sizeof(*this); }
   void revert(undo::ObjectsContainer* objects, undo::UndoersCollector* redoers) OVERRIDE;
 
 private:

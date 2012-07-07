@@ -34,7 +34,7 @@ public:
   SetLayerName(undo::ObjectsContainer* objects, Layer* layer);
 
   void dispose() OVERRIDE;
-  int getMemSize() const OVERRIDE { return sizeof(*this) + m_name.size(); }
+  size_t getMemSize() const OVERRIDE { return sizeof(*this) + m_name.size(); }
   void revert(undo::ObjectsContainer* objects, undo::UndoersCollector* redoers) OVERRIDE;
 
 private:

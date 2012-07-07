@@ -16,11 +16,12 @@ namespace undo {
 
 class ObjectsContainer;
 class UndoersStack;
+class UndoConfigProvider;
 
 class UndoHistory : public UndoersCollector
 {
 public:
-  UndoHistory(ObjectsContainer* objects);
+  UndoHistory(ObjectsContainer* objects, UndoConfigProvider* configProvider);
   virtual ~UndoHistory();
 
   bool isEnabled() const;
@@ -67,7 +68,7 @@ private:
   void updateUndo();
   void postUndoerAddedEvent(Undoer* undoer);
   void checkSizeLimit();
-  static int getUndoSizeLimit();
+  size_t getUndoSizeLimit();
 
   ObjectsContainer* m_objects;  // Container of objects to insert & retrieve objects by ID
   UndoersStack* m_undoers;
@@ -78,6 +79,7 @@ private:
   bool m_enabled;               // Is undo enabled?
   const char* m_label;          // Current label to be applied to all next undo operations.
   Modification m_modification;  // Current label to be applied to all next undo operations.
+  UndoConfigProvider* m_configProvider;
 };
 
 } // namespace undo

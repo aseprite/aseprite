@@ -34,7 +34,7 @@ public:
   SetMaskPosition(undo::ObjectsContainer* objects, Document* document);
 
   void dispose() OVERRIDE;
-  int getMemSize() const OVERRIDE { return sizeof(*this); }
+  size_t getMemSize() const OVERRIDE { return sizeof(*this); }
   void revert(undo::ObjectsContainer* objects, undo::UndoersCollector* redoers) OVERRIDE;
 
 private:

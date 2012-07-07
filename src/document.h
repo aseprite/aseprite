@@ -19,12 +19,14 @@
 #ifndef DOCUMENT_H_INCLUDED
 #define DOCUMENT_H_INCLUDED
 
+#include "base/compiler_specific.h"
 #include "base/disable_copying.h"
 #include "base/shared_ptr.h"
 #include "base/unique_ptr.h"
 #include "document_id.h"
 #include "gfx/transformation.h"
 #include "raster/pixel_format.h"
+#include "undo/undo_config_provider.h"
 
 #include <string>
 
@@ -58,7 +60,7 @@ enum DuplicateType
 
 // An application document. It is the class used to contain one file
 // opened and being edited by the user (a sprite).
-class Document
+class Document : public undo::UndoConfigProvider
 {
 public:
 
@@ -178,6 +180,8 @@ public:
   void unlock();
 
 private:
+  size_t getUndoSizeLimit() OVERRIDE;
+
   // Unique identifier for this document (it is assigned by Documents class).
   DocumentId m_id;
 

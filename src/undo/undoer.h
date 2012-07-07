@@ -28,7 +28,7 @@ public:
 
   // Returns the amount of memory (in bytes) which this instance is
   // using to revert the action.
-  virtual int getMemSize() const = 0;
+  virtual size_t getMemSize() const = 0;
 
   // Returns true if this undoer is the first action of a group.
   virtual bool isOpenGroup() const = 0;

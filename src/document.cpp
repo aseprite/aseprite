@@ -38,13 +38,15 @@
 #include "undoers/add_layer.h"
 #include "util/boundary.h"
 
+#include <allegro/config.h>     // TODO remove this when get_config_int() is removed from here
+
 using namespace undo;
 
 Document::Document(Sprite* sprite)
   : m_id(WithoutDocumentId)
   , m_sprite(sprite)
   , m_objects(new ObjectsContainerImpl)
-  , m_undoHistory(new UndoHistory(m_objects))
+  , m_undoHistory(new UndoHistory(m_objects, this))
   , m_filename("Sprite")
   , m_associated_to_file(false)
   , m_mutex(new Mutex)
@@ -544,4 +546,9 @@ void Document::unlock()
   else {
     ASSERT(false);
   }
+}
+
+size_t Document::getUndoSizeLimit()
+{
+  return ((size_t)get_config_int("Options", "UndoSizeLimit", 8))*1024*1024;
 }

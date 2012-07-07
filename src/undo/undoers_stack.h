@@ -69,7 +69,7 @@ public:
 
   void clear();
 
-  int getMemSize() const;
+  size_t getMemSize() const;
 
   // UndoersCollector implementation
   void pushUndoer(Undoer* undoer);
@@ -78,14 +78,14 @@ public:
   // deleted by the caller using Undoer::dispose().
   Undoer* popUndoer(PopFrom popFrom);
 
-  int countUndoGroups() const;
+  size_t countUndoGroups() const;
 
 private:
   UndoHistory* m_undoHistory;
   Items m_items;
 
   // Bytes occupied by all undoers in the stack.
-  int m_size;
+  size_t m_size;
 };
 
 } // namespace undo

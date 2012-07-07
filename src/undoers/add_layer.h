@@ -32,7 +32,7 @@ public:
   AddLayer(undo::ObjectsContainer* objects, Layer* folder, Layer* layer);
 
   void dispose() OVERRIDE;
-  int getMemSize() const OVERRIDE { return sizeof(*this); }
+  size_t getMemSize() const OVERRIDE { return sizeof(*this); }
   void revert(undo::ObjectsContainer* objects, undo::UndoersCollector* redoers) OVERRIDE;
 
 private:

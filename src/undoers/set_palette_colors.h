@@ -35,7 +35,7 @@ public:
   SetPaletteColors(undo::ObjectsContainer* objects, Sprite* sprite, Palette* palette, int from, int to);
 
   void dispose() OVERRIDE;
-  int getMemSize() const OVERRIDE { return sizeof(*this) + getStreamSize(); }
+  size_t getMemSize() const OVERRIDE { return sizeof(*this) + getStreamSize(); }
   void revert(undo::ObjectsContainer* objects, undo::UndoersCollector* redoers) OVERRIDE;
 
 private:

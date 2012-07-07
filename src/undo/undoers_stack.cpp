@@ -35,7 +35,7 @@ void UndoersStack::clear()
   m_items.clear();              // Clear the list of items.
 }
 
-int UndoersStack::getMemSize() const
+size_t UndoersStack::getMemSize() const
 {
   return m_size;
 }
@@ -90,9 +90,9 @@ Undoer* UndoersStack::popUndoer(PopFrom popFrom)
   return undoer;
 }
 
-int UndoersStack::countUndoGroups() const
+size_t UndoersStack::countUndoGroups() const
 {
-  int groups = 0;
+  size_t groups = 0;
   int level;
 
   const_iterator it = begin();

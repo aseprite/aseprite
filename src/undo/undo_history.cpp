@@ -9,15 +9,17 @@
 #include "undo/undo_history.h"
 
 #include "undo/objects_container.h"
+#include "undo/undo_config_provider.h"
 #include "undo/undoer.h"
 #include "undo/undoers_stack.h"
 
-#include <allegro/config.h>     // TODO remove this when get_config_int() is removed from here
+#include <limits>
 
 using namespace undo;
 
-UndoHistory::UndoHistory(ObjectsContainer* objects)
+UndoHistory::UndoHistory(ObjectsContainer* objects, UndoConfigProvider* configProvider)
   : m_objects(objects)
+  , m_configProvider(configProvider)
 {
   m_groupLevel = 0;
   m_diffCount = 0;
@@ -250,19 +252,17 @@ void UndoHistory::postUndoerAddedEvent(Undoer* undoer)
 void UndoHistory::checkSizeLimit()
 {
   // Is undo history too big?
-  int groups = m_undoers->countUndoGroups();
+  size_t groups = m_undoers->countUndoGroups();
   while (groups > 1 && m_undoers->getMemSize() > getUndoSizeLimit()) {
     discardTail();
     groups--;
   }
 }
 
-int UndoHistory::getUndoSizeLimit()
+size_t UndoHistory::getUndoSizeLimit()
 {
-  // TODO Replace this with the following implementation:
-  // * Add the undo limit to UndoHistory class as a normal member (non-static).
-  // * Add App signals to listen changes in settings
-  // * Document should listen changes in the undo limit,
-  // * When a change is produced, Document calls getUndoHistory()->setUndoLimit().
-  return (int)get_config_int("Options", "UndoSizeLimit", 8)*1024*1024;
+  if (m_configProvider)
+    return m_configProvider->getUndoSizeLimit();
+  else
+    return std::numeric_limits<size_t>::max();
 }

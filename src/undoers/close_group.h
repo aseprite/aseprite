@@ -28,7 +28,7 @@ class CloseGroup : public undo::Undoer
 {
 public:
   void dispose() OVERRIDE;
-  int getMemSize() const OVERRIDE { return sizeof(*this); }
+  size_t getMemSize() const OVERRIDE { return sizeof(*this); }
   bool isOpenGroup() const OVERRIDE { return false; }
   bool isCloseGroup() const OVERRIDE { return true; }
   void revert(undo::ObjectsContainer* objects, undo::UndoersCollector* redoers) OVERRIDE;

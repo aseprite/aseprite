@@ -34,7 +34,7 @@ public:
   ImageArea(undo::ObjectsContainer* objects, Image* image, int x, int y, int w, int h);
 
   void dispose() OVERRIDE;
-  int getMemSize() const OVERRIDE { return sizeof(*this) + m_data.size(); }
+  size_t getMemSize() const OVERRIDE { return sizeof(*this) + m_data.size(); }
   void revert(undo::ObjectsContainer* objects, undo::UndoersCollector* redoers) OVERRIDE;
 
 private:
