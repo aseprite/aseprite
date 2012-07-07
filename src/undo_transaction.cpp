@@ -37,6 +37,7 @@
 #include "undoers/add_cel.h"
 #include "undoers/add_image.h"
 #include "undoers/add_layer.h"
+#include "undoers/add_palette.h"
 #include "undoers/close_group.h"
 #include "undoers/dirty_area.h"
 #include "undoers/flip_image.h"
@@ -270,18 +271,24 @@ void UndoTransaction::setPixelFormat(PixelFormat newFormat, DitheringMethod dith
   // Regenerate extras
   m_document->destroyExtraCel();
 
-  // change "sprite.palette"
+  // When we are converting to grayscale color mode, we've to destroy
+  // all palettes and put only one grayscaled-palette at the first
+  // frame.
   if (newFormat == IMAGE_GRAYSCALE) {
+    // Add undoers to revert all palette changes.
     if (isEnabled()) {
-      // Save all palettes
       PalettesList palettes = m_sprite->getPalettes();
       for (PalettesList::iterator it = palettes.begin(); it != palettes.end(); ++it) {
         Palette* palette = *it;
         m_undoHistory->pushUndoer(new undoers::RemovePalette(
             m_undoHistory->getObjects(), m_sprite, palette->getFrame()));
       }
+
+      m_undoHistory->pushUndoer(new undoers::AddPalette(
+        m_undoHistory->getObjects(), m_sprite, 0));
     }
 
+    // It's a UniquePtr because setPalette'll create a copy of "graypal".
     UniquePtr<Palette> graypal(Palette::createGrayscale());
 
     m_sprite->resetPalettes();
