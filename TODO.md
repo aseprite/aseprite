@@ -9,7 +9,6 @@
 * Export to sprite sheet: if the file we're using is .ase, select .png by default
   (and then the latest used extension).
 * Fix problem with export sprite sheet when the cel has negative pos
-
 * Add a warning when exporting RGB sprite to GIF, hinting at the quantize function.
 * MovingPixelsState: Add undo information in each transformation step.
 * Add IntEntry class in src/gui/ with spin-buttons.
