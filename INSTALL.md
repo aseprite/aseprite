@@ -16,8 +16,8 @@ the source code in a directory called `aseprite-source`):
 1. Make a build directory to leave all the files that are result of
    the compilation process (`.exe`, `.lib`, `.obj`, `.a`, `.o`, etc).
 
-    C:\...\>cd aseprite-source
-    C:\...\aseprite-source>mkdir build
+       C:\...\>cd aseprite-source
+       C:\...\aseprite-source>mkdir build
 
    In this way, if you want to start with a fresh copy of ASEPRITE
    source code, you can remove the `build` directory and start again.
@@ -25,29 +25,29 @@ the source code in a directory called `aseprite-source`):
 2. Enter in the new directory and execute cmake giving to it
    your compiler as generator:
 
-    C:\...\aseprite-source>cd build
+       C:\...\aseprite-source>cd build
 
    If you have nmake (MSVC compilers):
 
-    C:\...\aseprite-source\build>cmake .. -G "NMake Makefiles"
+       C:\...\aseprite-source\build>cmake .. -G "NMake Makefiles"
 
    If you have Visual Studio you can generate a solution:
 
-    C:\...\aseprite-source\build>cmake .. -G "Visual Studio 8 2005"
-    C:\...\aseprite-source\build>cmake .. -G "Visual Studio 9 2008"
-    C:\...\aseprite-source\build>cmake .. -G "Visual Studio 10"
+       C:\...\aseprite-source\build>cmake .. -G "Visual Studio 8 2005"
+       C:\...\aseprite-source\build>cmake .. -G "Visual Studio 9 2008"
+       C:\...\aseprite-source\build>cmake .. -G "Visual Studio 10"
 
    If you are on Linux:
 
-    /.../aseprite-source/build$ cmake .. -G "Unix Makefiles"
+       /.../aseprite-source/build$ cmake .. -G "Unix Makefiles"
 
    If you have MinGW + MSYS:
 
-    C:\...\aseprite-source\build>cmake .. -G "MSYS Makefiles"
+       C:\...\aseprite-source\build>cmake .. -G "MSYS Makefiles"
 
    If you have MinGW + mingw-make:
 
-    C:\...\aseprite-source\build>cmake .. -G "MinGW Makefiles"
+       C:\...\aseprite-source\build>cmake .. -G "MinGW Makefiles"
 
    For more information in [CMake wiki](http://www.vtk.org/Wiki/CMake_Generator_Specific_Information).
     
