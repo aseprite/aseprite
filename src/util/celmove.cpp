@@ -31,11 +31,9 @@
 #include "raster/layer.h"
 #include "raster/sprite.h"
 #include "raster/stock.h"
-#include "undo/undo_history.h"
+#include "undo_transaction.h"
 #include "undoers/add_cel.h"
 #include "undoers/add_image.h"
-#include "undoers/close_group.h"
-#include "undoers/open_group.h"
 #include "undoers/remove_cel.h"
 #include "undoers/remove_image.h"
 #include "undoers/replace_image.h"
@@ -52,7 +50,7 @@ static Layer* dst_layer = NULL;
 static int src_frame = 0;
 static int dst_frame = 0;
 
-static void remove_cel(Sprite* sprite, undo::UndoHistory* undo, LayerImage *layer, Cel *cel);
+static void remove_cel(Sprite* sprite, UndoTransaction& undo, LayerImage *layer, Cel *cel);
 
 void set_frame_to_handle(Layer *_src_layer, int _src_frame,
                          Layer *_dst_layer, int _dst_frame)
@@ -66,7 +64,6 @@ void set_frame_to_handle(Layer *_src_layer, int _src_frame,
 void move_cel(DocumentWriter& document)
 {
   Sprite* sprite = document->getSprite();
-  undo::UndoHistory* undo = document->getUndoHistory();
   Cel *src_cel, *dst_cel;
 
   ASSERT(src_layer != NULL);
@@ -82,13 +79,10 @@ void move_cel(DocumentWriter& document)
   src_cel = static_cast<LayerImage*>(src_layer)->getCel(src_frame);
   dst_cel = static_cast<LayerImage*>(dst_layer)->getCel(dst_frame);
 
-  if (undo->isEnabled()) {
-    undo->setLabel("Move Cel");
-    undo->setModification(undo::ModifyDocument);
-    undo->pushUndoer(new undoers::OpenGroup());
-
-    undo->pushUndoer(new undoers::SetCurrentLayer(undo->getObjects(), sprite));
-    undo->pushUndoer(new undoers::SetCurrentFrame(undo->getObjects(), sprite));
+  UndoTransaction undo(document, "Move Cel", undo::ModifyDocument);
+  if (undo.isEnabled()) {
+    undo.pushUndoer(new undoers::SetCurrentLayer(undo.getObjects(), sprite));
+    undo.pushUndoer(new undoers::SetCurrentFrame(undo.getObjects(), sprite));
   }
 
   sprite->setCurrentLayer(dst_layer);
@@ -102,15 +96,15 @@ void move_cel(DocumentWriter& document)
   /* move the cel in the same layer */
   if (src_cel != NULL) {
     if (src_layer == dst_layer) {
-      if (undo->isEnabled())
-        undo->pushUndoer(new undoers::SetCelFrame(undo->getObjects(), src_cel));
+      if (undo.isEnabled())
+        undo.pushUndoer(new undoers::SetCelFrame(undo.getObjects(), src_cel));
 
       src_cel->setFrame(dst_frame);
     }
     /* move the cel in different layers */
     else {
-      if (undo->isEnabled())
-        undo->pushUndoer(new undoers::RemoveCel(undo->getObjects(), src_layer, src_cel));
+      if (undo.isEnabled())
+        undo.pushUndoer(new undoers::RemoveCel(undo.getObjects(), src_layer, src_cel));
       static_cast<LayerImage*>(src_layer)->removeCel(src_cel);
 
       src_cel->setFrame(dst_frame);
@@ -127,11 +121,11 @@ void move_cel(DocumentWriter& document)
                                       sprite->getWidth(),
                                       sprite->getHeight(), 0);
 
-        if (undo->isEnabled()) {
-          undo->pushUndoer(new undoers::ReplaceImage(undo->getObjects(),
+        if (undo.isEnabled()) {
+          undo.pushUndoer(new undoers::ReplaceImage(undo.getObjects(),
               sprite->getStock(), src_cel->getImage()));
-          undo->pushUndoer(new undoers::SetCelPosition(undo->getObjects(), src_cel));
-          undo->pushUndoer(new undoers::SetCelOpacity(undo->getObjects(), src_cel));
+          undo.pushUndoer(new undoers::SetCelPosition(undo.getObjects(), src_cel));
+          undo.pushUndoer(new undoers::SetCelOpacity(undo.getObjects(), src_cel));
         }
 
         image_clear(dst_image, app_get_color_to_clear_layer(dst_layer));
@@ -144,15 +138,14 @@ void move_cel(DocumentWriter& document)
         image_free(src_image);
       }
 
-      if (undo->isEnabled())
-        undo->pushUndoer(new undoers::AddCel(undo->getObjects(), dst_layer, src_cel));
+      if (undo.isEnabled())
+        undo.pushUndoer(new undoers::AddCel(undo.getObjects(), dst_layer, src_cel));
 
       static_cast<LayerImage*>(dst_layer)->addCel(src_cel);
     }
   }
 
-  if (undo->isEnabled())
-    undo->pushUndoer(new undoers::CloseGroup());
+  undo.commit();
 
   set_frame_to_handle(NULL, 0, NULL, 0);
 }
@@ -160,7 +153,7 @@ void move_cel(DocumentWriter& document)
 void copy_cel(DocumentWriter& document)
 {
   Sprite* sprite = document->getSprite();
-  undo::UndoHistory* undo = document->getUndoHistory();
+  UndoTransaction undo(document, "Move Cel", undo::ModifyDocument);
   Cel *src_cel, *dst_cel;
 
   ASSERT(src_layer != NULL);
@@ -171,13 +164,9 @@ void copy_cel(DocumentWriter& document)
   src_cel = static_cast<LayerImage*>(src_layer)->getCel(src_frame);
   dst_cel = static_cast<LayerImage*>(dst_layer)->getCel(dst_frame);
 
-  if (undo->isEnabled()) {
-    undo->setLabel("Move Cel");
-    undo->setModification(undo::ModifyDocument);
-    undo->pushUndoer(new undoers::OpenGroup());
-
-    undo->pushUndoer(new undoers::SetCurrentLayer(undo->getObjects(), sprite));
-    undo->pushUndoer(new undoers::SetCurrentFrame(undo->getObjects(), sprite));
+  if (undo.isEnabled()) {
+    undo.pushUndoer(new undoers::SetCurrentLayer(undo.getObjects(), sprite));
+    undo.pushUndoer(new undoers::SetCurrentFrame(undo.getObjects(), sprite));
   }
 
   sprite->setCurrentLayer(dst_layer);
@@ -224,8 +213,8 @@ void copy_cel(DocumentWriter& document)
 
     /* add the image in the stock */
     image_index = sprite->getStock()->addImage(dst_image);
-    if (undo->isEnabled())
-      undo->pushUndoer(new undoers::AddImage(undo->getObjects(),
+    if (undo.isEnabled())
+      undo.pushUndoer(new undoers::AddImage(undo.getObjects(),
           sprite->getStock(), image_index));
 
     /* create the new cel */
@@ -233,19 +222,18 @@ void copy_cel(DocumentWriter& document)
     dst_cel->setPosition(dst_cel_x, dst_cel_y);
     dst_cel->setOpacity(dst_cel_opacity);
 
-    if (undo->isEnabled())
-      undo->pushUndoer(new undoers::AddCel(undo->getObjects(), dst_layer, dst_cel));
+    if (undo.isEnabled())
+      undo.pushUndoer(new undoers::AddCel(undo.getObjects(), dst_layer, dst_cel));
 
     static_cast<LayerImage*>(dst_layer)->addCel(dst_cel);
   }
 
-  if (undo->isEnabled())
-    undo->pushUndoer(new undoers::CloseGroup());
+  undo.commit();
 
   set_frame_to_handle(NULL, 0, NULL, 0);
 }
 
-static void remove_cel(Sprite* sprite, undo::UndoHistory* undo, LayerImage *layer, Cel *cel)
+static void remove_cel(Sprite* sprite, UndoTransaction& undo, LayerImage *layer, Cel *cel)
 {
   Image *image;
   Cel *it;
@@ -264,25 +252,21 @@ static void remove_cel(Sprite* sprite, undo::UndoHistory* undo, LayerImage *laye
       }
     }
 
-    if (undo->isEnabled())
-      undo->pushUndoer(new undoers::OpenGroup());
-
     if (!used) {
       // If the image is only used by this cel, we can remove the
       // image from the stock.
       image = sprite->getStock()->getImage(cel->getImage());
 
-      if (undo->isEnabled())
-        undo->pushUndoer(new undoers::RemoveImage(undo->getObjects(),
+      if (undo.isEnabled())
+        undo.pushUndoer(new undoers::RemoveImage(undo.getObjects(),
             sprite->getStock(), cel->getImage()));
 
       sprite->getStock()->removeImage(image);
       image_free(image);
     }
 
-    if (undo->isEnabled()) {
-      undo->pushUndoer(new undoers::RemoveCel(undo->getObjects(), layer, cel));
-      undo->pushUndoer(new undoers::CloseGroup());
+    if (undo.isEnabled()) {
+      undo.pushUndoer(new undoers::RemoveCel(undo.getObjects(), layer, cel));
     }
 
     // Remove the cel

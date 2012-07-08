@@ -22,8 +22,8 @@
 #include "app/color_utils.h"
 #include "context.h"
 #include "document.h"
+#include "document_undo.h"
 #include "raster/mask.h"
-#include "undo/undo_history.h"
 #include "undoers/set_mask.h"
 
 
@@ -261,7 +261,7 @@ public:
     m_modify_selection = state;
 
     if (state) {
-      undo::UndoHistory* undo = loop->getDocument()->getUndoHistory();
+      DocumentUndo* undo = loop->getDocument()->getUndo();
       if (undo->isEnabled())
         undo->pushUndoer(new undoers::SetMask(undo->getObjects(), loop->getDocument()));
 

@@ -141,6 +141,7 @@ add_library(aseprite-library
   context_flags.cpp
   context_listener_list.cpp
   document.cpp
+  document_undo.cpp
   documents.cpp
   drop_files.cpp
   file_system.cpp

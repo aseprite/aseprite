@@ -25,6 +25,7 @@
 #include "commands/params.h"
 #include "console.h"
 #include "document.h"
+#include "document_undo.h"
 #include "document_wrappers.h"
 #include "gfx/point.h"
 #include "gfx/rect.h"
@@ -35,7 +36,6 @@
 #include "skin/skin_theme.h"
 #include "ui/gui.h"
 #include "ui_context.h"
-#include "undo/undo_history.h"
 #include "undo_transaction.h"
 #include "util/celmove.h"
 #include "util/thmbnail.h"
@@ -713,11 +713,11 @@ bool AnimationEditor::onProcessMessage(Message* msg)
       // Undo.
       if (command && strcmp(command->short_name(), CommandId::Undo) == 0) {
         const DocumentReader document(const_cast<Document*>(m_document));
-        const undo::UndoHistory* undo = document->getUndoHistory();
+        const DocumentUndo* undo = document->getUndo();
 
         if (undo->canUndo()) {
           DocumentWriter document_writer(document);
-          undo::UndoHistory* undo_writer = document_writer->getUndoHistory();
+          DocumentUndo* undo_writer = document_writer->getUndo();
 
           undo_writer->doUndo();
 
@@ -732,11 +732,11 @@ bool AnimationEditor::onProcessMessage(Message* msg)
       // Redo.
       if (command && strcmp(command->short_name(), CommandId::Redo) == 0) {
         const DocumentReader document(const_cast<Document*>(m_document));
-        const undo::UndoHistory* undo = document->getUndoHistory();
+        const DocumentUndo* undo = document->getUndo();
 
         if (undo->canRedo()) {
           DocumentWriter document_writer(document);
-          undo::UndoHistory* undo_writer = document_writer->getUndoHistory();
+          DocumentUndo* undo_writer = document_writer->getUndo();
 
           undo_writer->doRedo();
 

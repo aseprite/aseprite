@@ -37,7 +37,7 @@
 #include "ui/label.h"
 #include "ui/slider.h"
 #include "ui/widget.h"
-#include "undo/undo_history.h"
+#include "undo_transaction.h"
 #include "undoers/set_mask.h"
 #include "util/misc.h"
 #include "widgets/color_bar.h"
@@ -139,19 +139,18 @@ void dialogs_mask_color(Document* document)
 
   if (window->get_killer() == button_ok) {
     DocumentWriter documentWriter(documentReader);
-    undo::UndoHistory* undo = document->getUndoHistory();
+    UndoTransaction undo(document, "Mask by Color", undo::DoesntModifyDocument);
 
-    if (undo->isEnabled()) {
-      undo->setLabel("Mask by Color");
-      undo->setModification(undo::DoesntModifyDocument);
-      undo->pushUndoer(new undoers::SetMask(undo->getObjects(), document));
-    }
+    if (undo.isEnabled())
+      undo.pushUndoer(new undoers::SetMask(undo.getObjects(), document));
 
     // Change the mask
     {
       UniquePtr<Mask> mask(gen_mask(sprite));
       document->setMask(mask);
     }
+
+    undo.commit();
 
     set_config_color("MaskColor", "Color", button_color->getColor());
     set_config_int("MaskColor", "Tolerance", slider_tolerance->getValue());

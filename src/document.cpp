@@ -24,29 +24,23 @@
 #include "base/mutex.h"
 #include "base/scoped_lock.h"
 #include "base/unique_ptr.h"
+#include "document_undo.h"
 #include "file/format_options.h"
 #include "flatten.h"
-#include "objects_container_impl.h"
 #include "raster/cel.h"
 #include "raster/layer.h"
 #include "raster/mask.h"
 #include "raster/palette.h"
 #include "raster/sprite.h"
 #include "raster/stock.h"
-#include "undo/undo_history.h"
 #include "undoers/add_image.h"
 #include "undoers/add_layer.h"
 #include "util/boundary.h"
 
-#include <allegro/config.h>     // TODO remove this when get_config_int() is removed from here
-
-using namespace undo;
-
 Document::Document(Sprite* sprite)
   : m_id(WithoutDocumentId)
   , m_sprite(sprite)
-  , m_objects(new ObjectsContainerImpl)
-  , m_undoHistory(new UndoHistory(m_objects, this))
+  , m_undo(new DocumentUndo)
   , m_filename("Sprite")
   , m_associated_to_file(false)
   , m_mutex(new Mutex)
@@ -147,7 +141,7 @@ void Document::setFilename(const char* filename)
 
 bool Document::isModified() const
 {
-  return !m_undoHistory->isSavedState();
+  return !m_undo->isSavedState();
 }
 
 bool Document::isAssociatedToFile() const
@@ -157,7 +151,7 @@ bool Document::isAssociatedToFile() const
 
 void Document::markAsSaved()
 {
-  m_undoHistory->markSavedState();
+  m_undo->markSavedState();
   m_associated_to_file = true;
 }
 
@@ -324,7 +318,7 @@ void Document::resetTransformation()
 
 void Document::copyLayerContent(const Layer* sourceLayer0, Document* destDoc, Layer* destLayer0) const
 {
-  UndoHistory* undo = destDoc->getUndoHistory();
+  DocumentUndo* undo = destDoc->getUndo();
 
   // Copy the layer name
   destLayer0->setName(sourceLayer0->getName());
@@ -429,7 +423,7 @@ Document* Document::duplicate(DuplicateType type) const
 
     case DuplicateExactCopy:
       // Disable the undo
-      documentCopy->getUndoHistory()->setEnabled(false);
+      documentCopy->getUndo()->setEnabled(false);
 
       // Copy the layer folder
       copyLayerContent(getSprite()->getFolder(), documentCopy, spriteCopy->getFolder());
@@ -441,7 +435,7 @@ Document* Document::duplicate(DuplicateType type) const
       }
 
       // Re-enable the undo
-      documentCopy->getUndoHistory()->setEnabled(true);
+      documentCopy->getUndo()->setEnabled(true);
       break;
 
     case DuplicateWithFlattenLayers:
@@ -546,9 +540,4 @@ void Document::unlock()
   else {
     ASSERT(false);
   }
-}
-
-size_t Document::getUndoSizeLimit()
-{
-  return ((size_t)get_config_int("Options", "UndoSizeLimit", 8))*1024*1024;
 }

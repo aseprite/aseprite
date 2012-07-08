@@ -448,7 +448,8 @@ void PixelsMovement::stampImage()
       // Expand the canvas to paste the image in the fully visible
       // portion of sprite.
       ExpandCelCanvas expandCelCanvas(documentWriter, m_sprite,
-                                      m_sprite->getCurrentLayer(), TILED_NONE);
+                                      m_sprite->getCurrentLayer(), TILED_NONE,
+                                      m_undoTransaction);
 
       image_merge(expandCelCanvas.getDestCanvas(), image,
                   -expandCelCanvas.getCel()->getX(),

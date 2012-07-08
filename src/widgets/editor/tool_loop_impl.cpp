@@ -35,7 +35,7 @@
 #include "tools/tool.h"
 #include "tools/tool_loop.h"
 #include "ui/gui.h"
-#include "undo/undo_history.h"
+#include "undo_transaction.h"
 #include "util/expand_cel_canvas.h"
 #include "widgets/color_bar.h"
 #include "widgets/editor/editor.h"
@@ -71,6 +71,7 @@ class ToolLoopImpl : public tools::ToolLoop
   tools::ToolLoop::Button m_button;
   int m_primary_color;
   int m_secondary_color;
+  UndoTransaction m_undoTransaction;
   ExpandCelCanvas m_expandCelCanvas;
 
 public:
@@ -94,7 +95,13 @@ public:
     , m_button(button)
     , m_primary_color(color_utils::color_for_layer(primary_color, layer))
     , m_secondary_color(color_utils::color_for_layer(secondary_color, layer))
-    , m_expandCelCanvas(document, sprite, layer, m_tiled_mode)
+    , m_undoTransaction(m_document,
+                        m_tool->getText().c_str(),
+                        ((getInk()->isSelection() ||
+                          getInk()->isEyedropper() ||
+                          getInk()->isScrollMovement()) ? undo::DoesntModifyDocument:
+                                                          undo::ModifyDocument))
+    , m_expandCelCanvas(document, sprite, layer, m_tiled_mode, m_undoTransaction)
   {
     // Settings
     ISettings* settings = m_context->getSettings();
@@ -146,19 +153,6 @@ public:
 
     m_offset.x = -x1;
     m_offset.y = -y1;
-
-    // Set undo label for any kind of undo used in the whole loop
-    if (m_document->getUndoHistory()->isEnabled()) {
-      m_document->getUndoHistory()->setLabel(m_tool->getText().c_str());
-
-      if (getInk()->isSelection() ||
-          getInk()->isEyedropper() ||
-          getInk()->isScrollMovement()) {
-        m_document->getUndoHistory()->setModification(undo::DoesntModifyDocument);
-      }
-      else
-        m_document->getUndoHistory()->setModification(undo::ModifyDocument);
-    }
   }
 
   ~ToolLoopImpl()
@@ -172,6 +166,8 @@ public:
       else if (getInk()->isSelection()) {
         m_document->generateMaskBoundaries();
       }
+
+      m_undoTransaction.commit();
     }
 
     // If the trace was not canceled or it is not a 'paint' ink...

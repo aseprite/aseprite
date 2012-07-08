@@ -20,10 +20,10 @@
 
 #include "app.h"
 #include "commands/command.h"
+#include "document_undo.h"
 #include "document_wrappers.h"
 #include "modules/gui.h"
 #include "raster/sprite.h"
-#include "undo/undo_history.h"
 #include "widgets/status_bar.h"
 
 class UndoCommand : public Command
@@ -49,7 +49,7 @@ bool UndoCommand::onEnabled(Context* context)
   ActiveDocumentWriter document(context);
   return
     document != NULL &&
-    document->getUndoHistory()->canUndo();
+    document->getUndo()->canUndo();
 }
 
 void UndoCommand::onExecute(Context* context)
@@ -58,9 +58,9 @@ void UndoCommand::onExecute(Context* context)
 
   app_get_statusbar()
     ->showTip(1000, "Undid %s",
-              document->getUndoHistory()->getNextUndoLabel());
+              document->getUndo()->getNextUndoLabel());
 
-  document->getUndoHistory()->doUndo();
+  document->getUndo()->doUndo();
   document->generateMaskBoundaries();
   document->destroyExtraCel(); // Regenerate extras
 

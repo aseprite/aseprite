@@ -20,10 +20,10 @@
 
 #include "app.h"
 #include "commands/command.h"
+#include "document_undo.h"
 #include "document_wrappers.h"
 #include "modules/gui.h"
 #include "raster/sprite.h"
-#include "undo/undo_history.h"
 #include "widgets/status_bar.h"
 
 class RedoCommand : public Command
@@ -49,7 +49,7 @@ bool RedoCommand::onEnabled(Context* context)
   ActiveDocumentWriter document(context);
   return
     document != NULL &&
-    document->getUndoHistory()->canRedo();
+    document->getUndo()->canRedo();
 }
 
 void RedoCommand::onExecute(Context* context)
@@ -58,9 +58,9 @@ void RedoCommand::onExecute(Context* context)
 
   app_get_statusbar()
     ->showTip(1000, "Redid %s",
-              document->getUndoHistory()->getNextRedoLabel());
+              document->getUndo()->getNextRedoLabel());
 
-  document->getUndoHistory()->doRedo();
+  document->getUndo()->doRedo();
   document->generateMaskBoundaries();
   document->destroyExtraCel(); // Regenerate extras
 

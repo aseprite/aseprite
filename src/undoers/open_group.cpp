@@ -26,6 +26,12 @@
 using namespace undo;
 using namespace undoers;
 
+OpenGroup::OpenGroup(const char* label, undo::Modification modification)
+  : m_label(label)
+  , m_modification(modification)
+{
+}
+
 void OpenGroup::dispose()
 {
   delete this;
@@ -33,5 +39,5 @@ void OpenGroup::dispose()
 
 void OpenGroup::revert(ObjectsContainer* objects, UndoersCollector* redoers)
 {
-  redoers->pushUndoer(new CloseGroup());
+  redoers->pushUndoer(new CloseGroup(m_label, m_modification));
 }

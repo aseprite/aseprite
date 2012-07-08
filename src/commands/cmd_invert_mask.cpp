@@ -26,7 +26,7 @@
 #include "raster/image.h"
 #include "raster/mask.h"
 #include "raster/sprite.h"
-#include "undo/undo_history.h"
+#include "undo_transaction.h"
 #include "undoers/set_mask.h"
 
 //////////////////////////////////////////////////////////////////////
@@ -76,14 +76,9 @@ void InvertMaskCommand::onExecute(Context* context)
   else {
     ActiveDocumentWriter document(context);
     Sprite* sprite(document->getSprite());
-    undo::UndoHistory* undo = document->getUndoHistory();
-
-    /* undo */
-    if (undo->isEnabled()) {
-      undo->setLabel("Mask Invert");
-      undo->setModification(undo::DoesntModifyDocument);
-      undo->pushUndoer(new undoers::SetMask(undo->getObjects(), document));
-    }
+    UndoTransaction undo(document, "Mask Invert", undo::DoesntModifyDocument);
+    if (undo.isEnabled())
+      undo.pushUndoer(new undoers::SetMask(undo.getObjects(), document));
 
     /* create a new mask */
     UniquePtr<Mask> mask(new Mask());
@@ -108,11 +103,12 @@ void InvertMaskCommand::onExecute(Context* context)
                  document->getMask()->getBounds().y);
     }
 
-    /* we need only need the area inside the sprite */
+    // We need only need the area inside the sprite
     mask->intersect(0, 0, sprite->getWidth(), sprite->getHeight());
 
     // Set the new mask
     document->setMask(mask);
+    undo.commit();
 
     document->generateMaskBoundaries();
     update_screen_for_document(document);

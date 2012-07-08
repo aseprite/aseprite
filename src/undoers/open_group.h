@@ -27,11 +27,19 @@ namespace undoers {
 class OpenGroup : public undo::Undoer
 {
 public:
+  OpenGroup(const char* label, undo::Modification modification);
   void dispose() OVERRIDE;
   size_t getMemSize() const OVERRIDE { return sizeof(*this); }
+  undo::Modification getModification() const { return m_modification; }
   bool isOpenGroup() const OVERRIDE { return true; }
   bool isCloseGroup() const OVERRIDE { return false; }
   void revert(undo::ObjectsContainer* objects, undo::UndoersCollector* redoers) OVERRIDE;
+
+  const char* getLabel() { return m_label; }
+
+private:
+  const char* m_label;
+  undo::Modification m_modification;
 };
 
 } // namespace undoers

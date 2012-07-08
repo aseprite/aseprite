@@ -28,11 +28,9 @@
 #include "raster/sprite.h"
 #include "raster/stock.h"
 #include "ui/gui.h"
-#include "undo/undo_history.h"
+#include "undo_transaction.h"
 #include "undoers/add_cel.h"
 #include "undoers/add_image.h"
-#include "undoers/close_group.h"
-#include "undoers/open_group.h"
 #include "undoers/remove_layer.h"
 #include "undoers/replace_image.h"
 #include "undoers/set_cel_position.h"
@@ -81,7 +79,7 @@ void MergeDownLayerCommand::onExecute(Context* context)
 {
   ActiveDocumentWriter document(context);
   Sprite* sprite(document->getSprite());
-  undo::UndoHistory* undo(document->getUndoHistory());
+  UndoTransaction undo(document, "Merge Down Layer", undo::ModifyDocument);
   Layer *src_layer, *dst_layer;
   Cel *src_cel, *dst_cel;
   Image *src_image, *dst_image;
@@ -89,12 +87,6 @@ void MergeDownLayerCommand::onExecute(Context* context)
 
   src_layer = sprite->getCurrentLayer();
   dst_layer = sprite->getCurrentLayer()->get_prev();
-
-  if (undo->isEnabled()) {
-    undo->setLabel("Merge Down Layer");
-    undo->setModification(undo::ModifyDocument);
-    undo->pushUndoer(new undoers::OpenGroup());
-  }
 
   for (frpos=0; frpos<sprite->getTotalFrames(); ++frpos) {
     // Get frames
@@ -123,17 +115,17 @@ void MergeDownLayerCommand::onExecute(Context* context)
 
         // Adding it in the stock of images
         index = sprite->getStock()->addImage(dst_image);
-        if (undo->isEnabled())
-          undo->pushUndoer(new undoers::AddImage(
-              undo->getObjects(), sprite->getStock(), index));
+        if (undo.isEnabled())
+          undo.pushUndoer(new undoers::AddImage(
+              undo.getObjects(), sprite->getStock(), index));
 
         // Creating a copy of the cell
         dst_cel = new Cel(frpos, index);
         dst_cel->setPosition(src_cel->getX(), src_cel->getY());
         dst_cel->setOpacity(src_cel->getOpacity());
 
-        if (undo->isEnabled())
-          undo->pushUndoer(new undoers::AddCel(undo->getObjects(), dst_layer, dst_cel));
+        if (undo.isEnabled())
+          undo.pushUndoer(new undoers::AddCel(undo.getObjects(), dst_layer, dst_cel));
 
         static_cast<LayerImage*>(dst_layer)->addCel(dst_cel);
       }
@@ -171,13 +163,13 @@ void MergeDownLayerCommand::onExecute(Context* context)
                     src_cel->getOpacity(),
                     static_cast<LayerImage*>(src_layer)->getBlendMode());
 
-        if (undo->isEnabled())
-          undo->pushUndoer(new undoers::SetCelPosition(undo->getObjects(), dst_cel));
+        if (undo.isEnabled())
+          undo.pushUndoer(new undoers::SetCelPosition(undo.getObjects(), dst_cel));
 
         dst_cel->setPosition(x1, y1);
 
-        if (undo->isEnabled())
-          undo->pushUndoer(new undoers::ReplaceImage(undo->getObjects(),
+        if (undo.isEnabled())
+          undo.pushUndoer(new undoers::ReplaceImage(undo.getObjects(),
               sprite->getStock(), dst_cel->getImage()));
 
         sprite->getStock()->replaceImage(dst_cel->getImage(), new_image);
@@ -187,10 +179,9 @@ void MergeDownLayerCommand::onExecute(Context* context)
     }
   }
 
-  if (undo->isEnabled()) {
-    undo->pushUndoer(new undoers::SetCurrentLayer(undo->getObjects(), sprite));
-    undo->pushUndoer(new undoers::RemoveLayer(undo->getObjects(), src_layer));
-    undo->pushUndoer(new undoers::CloseGroup());
+  if (undo.isEnabled()) {
+    undo.pushUndoer(new undoers::SetCurrentLayer(undo.getObjects(), sprite));
+    undo.pushUndoer(new undoers::RemoveLayer(undo.getObjects(), src_layer));
   }
 
   sprite->setCurrentLayer(dst_layer);
@@ -198,6 +189,7 @@ void MergeDownLayerCommand::onExecute(Context* context)
 
   delete src_layer;
 
+  undo.commit();
   update_screen_for_document(document);
 }
 

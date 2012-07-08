@@ -17,6 +17,7 @@ namespace undoers {
 class UndoerBase : public undo::Undoer
 {
 public:
+  undo::Modification getModification() const OVERRIDE { return undo::DoesntModifyDocument; }
   bool isOpenGroup() const OVERRIDE { return false; }
   bool isCloseGroup() const OVERRIDE { return false; }
 };

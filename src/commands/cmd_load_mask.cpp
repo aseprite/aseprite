@@ -26,7 +26,7 @@
 #include "raster/mask.h"
 #include "raster/sprite.h"
 #include "ui/alert.h"
-#include "undo/undo_history.h"
+#include "undo_transaction.h"
 #include "undoers/set_mask.h"
 #include "util/msk_file.h"
 
@@ -84,16 +84,15 @@ void LoadMaskCommand::onExecute(Context* context)
 
   {
     DocumentWriter documentWriter(document);
-    undo::UndoHistory* undo(documentWriter->getUndoHistory());
+    UndoTransaction undo(documentWriter, "Mask Load", undo::DoesntModifyDocument);
 
     // Add the mask change into the undo history.
-    if (undo->isEnabled()) {
-      undo->setLabel("Mask Load");
-      undo->setModification(undo::DoesntModifyDocument);
-      undo->pushUndoer(new undoers::SetMask(undo->getObjects(), documentWriter));
-    }
+    if (undo.isEnabled())
+      undo.pushUndoer(new undoers::SetMask(undo.getObjects(), documentWriter));
 
     documentWriter->setMask(mask);
+
+    undo.commit();
     documentWriter->generateMaskBoundaries();
   }
 

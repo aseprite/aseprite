@@ -27,6 +27,7 @@
 
 class Cel;
 class Document;
+class DocumentUndo;
 class Image;
 class Layer;
 class LayerImage;
@@ -34,7 +35,8 @@ class Mask;
 class Sprite;
 
 namespace undo {
-  class UndoHistory;
+  class ObjectsContainer;
+  class Undoer;
 }
 
 // High-level class to group a set of operations to modify the
@@ -72,6 +74,9 @@ public:
   // (if the sprite's undo was enabled when the UndoTransaction was
   // created).
   void commit();
+
+  void pushUndoer(undo::Undoer* undoer);
+  undo::ObjectsContainer* getObjects() const;
 
   // for sprite
   void setNumberOfFrames(int frames);
@@ -135,10 +140,12 @@ private:
 
   Document* m_document;
   Sprite* m_sprite;
-  undo::UndoHistory* m_undoHistory;
+  DocumentUndo* m_undo;
   bool m_closed;
   bool m_committed;
   bool m_enabledFlag;
+  const char* m_label;
+  undo::Modification m_modification;
 };
 
 #endif

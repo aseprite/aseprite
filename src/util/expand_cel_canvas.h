@@ -26,6 +26,7 @@ class Document;
 class Image;
 class Layer;
 class Sprite;
+class UndoTransaction;
 
 // This class can be used to expand the canvas of the current cel to
 // the visible portion of sprite. If the user cancels the operation,
@@ -36,7 +37,7 @@ class Sprite;
 class ExpandCelCanvas
 {
 public:
-  ExpandCelCanvas(Document* document, Sprite* sprite, Layer* layer, TiledMode tiledMode);
+  ExpandCelCanvas(Document* document, Sprite* sprite, Layer* layer, TiledMode tiledMode, UndoTransaction& undo);
   ~ExpandCelCanvas();
 
   // Commit changes made in getDestCanvas() in the cel's image. Adds
@@ -75,6 +76,7 @@ private:
   Image* m_dstImage;
   bool m_closed;
   bool m_committed;
+  UndoTransaction& m_undo;
 };
 
 #endif

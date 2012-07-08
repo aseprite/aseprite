@@ -23,7 +23,7 @@
 #include "modules/gui.h"
 #include "raster/mask.h"
 #include "raster/sprite.h"
-#include "undo/undo_history.h"
+#include "undo_transaction.h"
 #include "undoers/set_mask.h"
 
 //////////////////////////////////////////////////////////////////////
@@ -60,19 +60,18 @@ bool ReselectMaskCommand::onEnabled(Context* context)
 void ReselectMaskCommand::onExecute(Context* context)
 {
   ActiveDocumentWriter document(context);
-  undo::UndoHistory* undo = document->getUndoHistory();
+  {
+    UndoTransaction undo(document, "Mask Reselection", undo::DoesntModifyDocument);
+    if (undo.isEnabled())
+      undo.pushUndoer(new undoers::SetMask(undo.getObjects(), document));
 
-  // Undo
-  if (undo->isEnabled()) {
-    undo->setLabel("Mask Reselection");
-    undo->setModification(undo::DoesntModifyDocument);
-    undo->pushUndoer(new undoers::SetMask(undo->getObjects(), document));
+    // Make the mask visible again.
+    document->setMaskVisible(true);
+
+    undo.commit();
   }
 
-  // Make the mask visible again.
-  document->setMaskVisible(true);
   document->generateMaskBoundaries();
-
   update_screen_for_document(document);
 }
 

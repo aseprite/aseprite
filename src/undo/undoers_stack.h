@@ -7,7 +7,6 @@
 #ifndef UNDO_UNDOERS_STACK_H_INCLUDED
 #define UNDO_UNDOERS_STACK_H_INCLUDED
 
-#include "undo/modification.h"
 #include "undo/undoers_collector.h"
 
 #include <vector>
@@ -29,26 +28,7 @@ public:
     PopFromTail
   };
 
-  // One item in the stack (label + Undoer)
-  class Item
-  {
-  public:
-    Item(const char* label, Modification mod, Undoer* undoer)
-      : m_label(label)
-      , m_mod(mod)
-      , m_undoer(undoer) { }
-
-    const char* getLabel() const { return m_label; }
-    Modification getModification() const { return m_mod; }
-    Undoer* getUndoer() const { return m_undoer; }
-
-  private:
-    const char* m_label;
-    Modification m_mod;
-    Undoer* m_undoer;
-  };
-
-  typedef std::vector<Item*> Items;
+  typedef std::vector<Undoer*> Items;
   typedef Items::iterator iterator;
   typedef Items::const_iterator const_iterator;
 

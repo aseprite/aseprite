@@ -21,6 +21,7 @@
 #include "base/bind.h"
 #include "commands/command.h"
 #include "commands/commands.h"
+#include "document_undo.h"
 #include "document_wrappers.h"
 #include "ini_file.h"
 #include "modules/gui.h"
@@ -32,7 +33,6 @@
 #include "raster/sprite.h"
 #include "raster/stock.h"
 #include "ui/gui.h"
-#include "undo/undo_history.h"
 #include "undo_transaction.h"
 
 #include <limits>
@@ -257,7 +257,9 @@ protected:
 
     // Undo the sprite sheet conversion
     if (undo) {
-      m_document->getUndoHistory()->doUndo();
+      if (m_document->getUndo()->canUndo())
+        m_document->getUndo()->doUndo();
+
       m_document->generateMaskBoundaries();
       m_document->destroyExtraCel(); // Regenerate extras
 

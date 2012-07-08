@@ -24,9 +24,6 @@ public:
   UndoHistory(ObjectsContainer* objects, UndoConfigProvider* configProvider);
   virtual ~UndoHistory();
 
-  bool isEnabled() const;
-  void setEnabled(bool state);
-
   bool canUndo() const;
   bool canRedo() const;
 
@@ -35,18 +32,8 @@ public:
 
   void clearRedo();
 
-  // Current label for next added Undoers.
-  const char* getLabel();
-  void setLabel(const char* label);
-
-  // Change the "modify saved status" flag to be assigned for next
-  // added items. When it is activated means that each added Undoer
-  // modifies the "saved status" of the document.
-  Modification getModification();
-  void setModification(Modification mod);
-
-  const char* getNextUndoLabel() const;
-  const char* getNextRedoLabel() const;
+  Undoer* getNextUndoer();
+  Undoer* getNextRedoer();
 
   bool isSavedState() const;
   void markSavedState();
@@ -58,7 +45,7 @@ public:
 
   // Special method to add new undoers inside the last added group.
   // Returns true if the undoer was added in a group.
-  bool graftUndoerInLastGroup(Undoer* undoer);
+  bool implantUndoerInLastGroup(Undoer* undoer);
 
 private:
   enum Direction { UndoDirection, RedoDirection };
@@ -76,9 +63,6 @@ private:
   int m_groupLevel;
   int m_diffCount;
   int m_diffSaved;
-  bool m_enabled;               // Is undo enabled?
-  const char* m_label;          // Current label to be applied to all next undo operations.
-  Modification m_modification;  // Current label to be applied to all next undo operations.
   UndoConfigProvider* m_configProvider;
 };
 

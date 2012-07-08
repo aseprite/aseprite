@@ -21,12 +21,12 @@
 #include "app.h"
 #include "commands/command.h"
 #include "console.h"
+#include "document_undo.h"
 #include "document_wrappers.h"
 #include "modules/gui.h"
 #include "raster/layer.h"
 #include "raster/sprite.h"
 #include "ui/gui.h"
-#include "undo/undo_history.h"
 #include "undo_transaction.h"
 #include "undoers/add_layer.h"
 #include "undoers/move_layer.h"
@@ -64,8 +64,7 @@ void DuplicateLayerCommand::onExecute(Context* context)
 {
   ActiveDocumentWriter document(context);
   Sprite* sprite = document->getSprite();
-  undo::UndoHistory* undo = document->getUndoHistory();
-  UndoTransaction undoTransaction(document, "Layer Duplication");
+  UndoTransaction undo(document, "Layer Duplication");
   LayerImage* sourceLayer = static_cast<LayerImage*>(sprite->getCurrentLayer());
 
   // Create a new layer
@@ -73,20 +72,20 @@ void DuplicateLayerCommand::onExecute(Context* context)
 
   // Disable undo because the layer content is added as a whole with
   // AddLayer() undoer.
-  document->getUndoHistory()->setEnabled(false);
+  document->getUndo()->setEnabled(false);
 
   // Copy the layer content (cels + images)
   document->copyLayerContent(sourceLayer, document, newLayerPtr);
 
   // Restore enabled status.
-  document->getUndoHistory()->setEnabled(undoTransaction.isEnabled());
+  document->getUndo()->setEnabled(undo.isEnabled());
 
   // Copy the layer name
   newLayerPtr->setName(newLayerPtr->getName() + " Copy");
 
   // Add the new layer in the sprite.
-  if (undo->isEnabled())
-    undo->pushUndoer(new undoers::AddLayer(undo->getObjects(),
+  if (undo.isEnabled())
+    undo.pushUndoer(new undoers::AddLayer(undo.getObjects(),
         sourceLayer->get_parent(), newLayerPtr));
 
   sourceLayer->get_parent()->add_layer(newLayerPtr);
@@ -94,12 +93,12 @@ void DuplicateLayerCommand::onExecute(Context* context)
   // Release the pointer as it is owned by the sprite now
   Layer* newLayer = newLayerPtr.release();
 
-  if (undo->isEnabled()) {
-    undo->pushUndoer(new undoers::MoveLayer(undo->getObjects(), newLayer));
-    undo->pushUndoer(new undoers::SetCurrentLayer(undo->getObjects(), sprite));
+  if (undo.isEnabled()) {
+    undo.pushUndoer(new undoers::MoveLayer(undo.getObjects(), newLayer));
+    undo.pushUndoer(new undoers::SetCurrentLayer(undo.getObjects(), sprite));
   }
 
-  undoTransaction.commit();
+  undo.commit();
 
   sourceLayer->get_parent()->move_layer(newLayer, sourceLayer);
   sprite->setCurrentLayer(newLayer);

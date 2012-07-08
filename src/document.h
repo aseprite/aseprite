@@ -19,18 +19,17 @@
 #ifndef DOCUMENT_H_INCLUDED
 #define DOCUMENT_H_INCLUDED
 
-#include "base/compiler_specific.h"
 #include "base/disable_copying.h"
 #include "base/shared_ptr.h"
 #include "base/unique_ptr.h"
 #include "document_id.h"
 #include "gfx/transformation.h"
 #include "raster/pixel_format.h"
-#include "undo/undo_config_provider.h"
 
 #include <string>
 
 class Cel;
+class DocumentUndo;
 class FormatOptions;
 class Image;
 class Layer;
@@ -38,11 +37,6 @@ class Mask;
 class Mutex;
 class Sprite;
 struct _BoundSeg;
-
-namespace undo {
-  class ObjectsContainer;
-  class UndoHistory;
-}
 
 struct PreferredEditorSettings
 {
@@ -60,7 +54,7 @@ enum DuplicateType
 
 // An application document. It is the class used to contain one file
 // opened and being edited by the user (a sprite).
-class Document : public undo::UndoConfigProvider
+class Document
 {
 public:
 
@@ -83,10 +77,10 @@ public:
   void setId(DocumentId id) { m_id = id; }
 
   const Sprite* getSprite() const { return m_sprite; }
-  const undo::UndoHistory* getUndoHistory() const { return m_undoHistory; }
+  const DocumentUndo* getUndo() const { return m_undo; }
 
   Sprite* getSprite() { return m_sprite; }
-  undo::UndoHistory* getUndoHistory() { return m_undoHistory; }
+  DocumentUndo* getUndo() { return m_undo; }
 
   void addSprite(Sprite* sprite);
 
@@ -180,23 +174,14 @@ public:
   void unlock();
 
 private:
-  size_t getUndoSizeLimit() OVERRIDE;
-
   // Unique identifier for this document (it is assigned by Documents class).
   DocumentId m_id;
 
   // The main sprite.
   UniquePtr<Sprite> m_sprite;
 
-  // Collection of objects used by UndoHistory to reference deleted
-  // objects that are re-created by an Undoer. The container keeps an
-  // ID that is saved in the serialization process, and loaded in the
-  // deserialization process. The ID can be used by different undoers
-  // to keep references to deleted objects.
-  UniquePtr<undo::ObjectsContainer> m_objects;
-
-  // Stack of undoers to undo operations.
-  UniquePtr<undo::UndoHistory> m_undoHistory;
+  // Undo and redo information about the document.
+  UniquePtr<DocumentUndo> m_undo;
 
   // Document's file name (from where it was loaded, where it is saved).
   std::string m_filename;

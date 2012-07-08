@@ -7,6 +7,8 @@
 #ifndef UNDO_UNDOER_H_INCLUDED
 #define UNDO_UNDOER_H_INCLUDED
 
+#include "undo/modification.h"
+
 namespace undo {
 
 class ObjectsContainer;
@@ -29,6 +31,10 @@ public:
   // Returns the amount of memory (in bytes) which this instance is
   // using to revert the action.
   virtual size_t getMemSize() const = 0;
+
+  // Returns the kind of modification that this item does with the
+  // document.
+  virtual Modification getModification() const = 0;
 
   // Returns true if this undoer is the first action of a group.
   virtual bool isOpenGroup() const = 0;

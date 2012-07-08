@@ -23,7 +23,7 @@
 #include "modules/gui.h"
 #include "raster/mask.h"
 #include "raster/sprite.h"
-#include "undo/undo_history.h"
+#include "undo_transaction.h"
 #include "undoers/set_mask.h"
 
 //////////////////////////////////////////////////////////////////////
@@ -57,20 +57,18 @@ void MaskAllCommand::onExecute(Context* context)
 {
   ActiveDocumentWriter document(context);
   Sprite* sprite(document->getSprite());
-  undo::UndoHistory* undo(document->getUndoHistory());
+  UndoTransaction undo(document, "Mask All", undo::DoesntModifyDocument);
 
   // Undo
-  if (undo->isEnabled()) {
-    undo->setLabel("Mask All");
-    undo->setModification(undo::DoesntModifyDocument);
-    undo->pushUndoer(new undoers::SetMask(undo->getObjects(), document));
-  }
+  if (undo.isEnabled())
+    undo.pushUndoer(new undoers::SetMask(undo.getObjects(), document));
 
   // Change the selection
   document->getMask()->replace(0, 0, sprite->getWidth(), sprite->getHeight());
   document->setMaskVisible(true);
   document->resetTransformation();
 
+  undo.commit();
   document->generateMaskBoundaries();
   update_screen_for_document(document);
 }

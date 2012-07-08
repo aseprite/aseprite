@@ -24,9 +24,6 @@ UndoHistory::UndoHistory(ObjectsContainer* objects, UndoConfigProvider* configPr
   m_groupLevel = 0;
   m_diffCount = 0;
   m_diffSaved = 0;
-  m_enabled = true;
-  m_label = NULL;
-  m_modification = ModifyDocument;
 
   m_undoers = new UndoersStack(this);
   try {
@@ -42,16 +39,6 @@ UndoHistory::~UndoHistory()
 {
   delete m_undoers;
   delete m_redoers;
-}
-
-bool UndoHistory::isEnabled() const
-{
-  return m_enabled ? true: false;
-}
-
-void UndoHistory::setEnabled(bool state)
-{
-  m_enabled = state;
 }
 
 bool UndoHistory::canUndo() const
@@ -87,40 +74,20 @@ void UndoHistory::clearRedo()
     m_diffSaved = -1;
 }
 
-const char* UndoHistory::getLabel()
+Undoer* UndoHistory::getNextUndoer()
 {
-  return m_label;
+  if (!m_undoers->empty())
+    return *m_undoers->begin();
+  else
+    return NULL;
 }
 
-void UndoHistory::setLabel(const char* label)
+Undoer* UndoHistory::getNextRedoer()
 {
-  m_label = label;
-}
-
-Modification UndoHistory::getModification()
-{
-  return m_modification;
-}
-
-void UndoHistory::setModification(Modification mod)
-{
-  m_modification = mod;
-}
-
-const char* UndoHistory::getNextUndoLabel() const
-{
-  ASSERT(canUndo());
-
-  UndoersStack::Item* item = *m_undoers->begin();
-  return item->getLabel();
-}
-
-const char* UndoHistory::getNextRedoLabel() const
-{
-  ASSERT(canRedo());
-
-  UndoersStack::Item* item = *m_redoers->begin();
-  return item->getLabel();
+  if (!m_redoers->empty())
+    return *m_redoers->begin();
+  else
+    return NULL;
 }
 
 bool UndoHistory::isSavedState() const
@@ -141,20 +108,13 @@ void UndoHistory::runUndo(Direction direction)
 
   do {
     const char* itemLabel = NULL;
-    Modification itemModification = DoesntModifyDocument;
-
-    if (!undoers->empty()) {
-      UndoersStack::Item* item = *undoers->begin();
-      itemLabel = item->getLabel();
-      itemModification = item->getModification();
-    }
 
     Undoer* undoer = undoers->popUndoer(UndoersStack::PopFromHead);
     if (!undoer)
       break;
 
-    setLabel(itemLabel);
-    setModification(itemModification);
+    Modification itemModification = DoesntModifyDocument;
+    itemModification = undoer->getModification();
 
     undoer->revert(getObjects(), redoers);
 
@@ -202,7 +162,7 @@ void UndoHistory::pushUndoer(Undoer* undoer)
   postUndoerAddedEvent(undoer);
 }
 
-bool UndoHistory::graftUndoerInLastGroup(Undoer* undoer)
+bool UndoHistory::implantUndoerInLastGroup(Undoer* undoer)
 {
   Undoer* lastUndoer = m_undoers->popUndoer(UndoersStack::PopFromHead);
   bool result;
@@ -241,7 +201,7 @@ void UndoHistory::postUndoerAddedEvent(Undoer* undoer)
   // it has passed the undo-limit.
   if (m_groupLevel == 0) {
     // More differences.
-    if (m_modification == ModifyDocument)
+    if (undoer->getModification() == ModifyDocument)
       m_diffCount++;
 
     checkSizeLimit();

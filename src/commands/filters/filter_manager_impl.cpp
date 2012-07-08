@@ -35,10 +35,8 @@
 #include "ui/region.h"
 #include "ui/view.h"
 #include "ui/widget.h"
-#include "undo/undo_history.h"
-#include "undoers/close_group.h"
+#include "undo_transaction.h"
 #include "undoers/image_area.h"
-#include "undoers/open_group.h"
 #include "widgets/editor/editor.h"
 
 #include <cstdlib>
@@ -206,17 +204,16 @@ void FilterManagerImpl::apply()
   }
 
   if (!cancelled) {
-    undo::UndoHistory* undo = m_document->getUndoHistory();
+    UndoTransaction undo(m_document, m_filter->getName(), undo::ModifyDocument);
 
     // Undo stuff
-    if (undo->isEnabled()) {
-      undo->setLabel(m_filter->getName());
-      undo->setModification(undo::ModifyDocument);
-      undo->pushUndoer(new undoers::ImageArea(undo->getObjects(), m_src, m_x, m_y, m_w, m_h));
-    }
+    if (undo.isEnabled())
+      undo.pushUndoer(new undoers::ImageArea(undo.getObjects(), m_src, m_x, m_y, m_w, m_h));
 
     // Copy "dst" to "src"
     image_copy(m_src, m_dst, 0, 0);
+
+    undo.commit();
   }
 }
 
@@ -234,13 +231,7 @@ void FilterManagerImpl::applyToTarget()
   // Initialize writting operation
   DocumentReader doc_reader(m_document);
   DocumentWriter doc_writer(doc_reader);
-  undo::UndoHistory* undo = m_document->getUndoHistory();
-
-  // Open group of undo operations
-  if (images.size() > 1) {
-    if (undo->isEnabled())
-      undo->pushUndoer(new undoers::OpenGroup());
-  }
+  UndoTransaction undo(m_document, m_filter->getName(), undo::ModifyDocument);
 
   m_progressBase = 0.0f;
   m_progressWidth = 1.0f / images.size();
@@ -259,11 +250,7 @@ void FilterManagerImpl::applyToTarget()
     m_progressBase += m_progressWidth;
   }
 
-  // Close group of undo operations
-  if (images.size() > 1) {
-    if (undo->isEnabled())
-      undo->pushUndoer(new undoers::CloseGroup());
-  }
+  undo.commit();
 }
 
 void FilterManagerImpl::flush()

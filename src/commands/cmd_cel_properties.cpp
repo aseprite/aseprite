@@ -31,7 +31,7 @@
 #include "raster/sprite.h"
 #include "raster/stock.h"
 #include "ui/gui.h"
-#include "undo/undo_history.h"
+#include "undo_transaction.h"
 #include "undoers/set_cel_opacity.h"
 
 #include <allegro/unicode.h>
@@ -129,18 +129,16 @@ void CelPropertiesCommand::onExecute(Context* context)
     Sprite* sprite_writer = document_writer->getSprite();
     Layer* layer_writer = sprite_writer->getCurrentLayer();
     Cel* cel_writer = static_cast<LayerImage*>(layer_writer)->getCel(sprite->getCurrentFrame());
-    undo::UndoHistory* undo = document_writer->getUndoHistory();
 
     int new_opacity = slider_opacity->getValue();
 
     // The opacity was changed?
     if (cel_writer != NULL &&
         cel_writer->getOpacity() != new_opacity) {
-      if (undo->isEnabled()) {
-        undo->setLabel("Cel Opacity Change");
-        undo->setModification(undo::ModifyDocument);
-
-        undo->pushUndoer(new undoers::SetCelOpacity(undo->getObjects(), cel_writer));
+      UndoTransaction undo(document_writer, "Cel Opacity Change", undo::ModifyDocument);
+      if (undo.isEnabled()) {
+        undo.pushUndoer(new undoers::SetCelOpacity(undo.getObjects(), cel_writer));
+        undo.commit();
       }
 
       // Change cel opacity.
