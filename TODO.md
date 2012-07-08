@@ -1,4 +1,4 @@
-# Very high priorty (next release?)
+# Very high priority (next release?)
 
 * Fix problem applyToTarget() can throw (it's called from other thread)
 * After flatten show the background if it is hidden.
