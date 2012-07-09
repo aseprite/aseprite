@@ -71,7 +71,7 @@ void CelPropertiesCommand::onExecute(Context* context)
   // Get current cel (can be NULL)
   const Cel* cel = static_cast<const LayerImage*>(layer)->getCel(sprite->getCurrentFrame());
 
-  UniquePtr<Frame> window(app::load_widget<Frame>("cel_properties.xml", "cel_properties"));
+  UniquePtr<Window> window(app::load_widget<Window>("cel_properties.xml", "cel_properties"));
   Widget* label_frame = app::find_widget<Widget>(window, "frame");
   Widget* label_pos = app::find_widget<Widget>(window, "pos");
   Widget* label_size = app::find_widget<Widget>(window, "size");
@@ -122,7 +122,7 @@ void CelPropertiesCommand::onExecute(Context* context)
     slider_opacity->setEnabled(false);
   }
 
-  window->open_window_fg();
+  window->openWindowInForeground();
 
   if (window->get_killer() == button_ok) {
     DocumentWriter document_writer(document);

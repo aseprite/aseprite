@@ -67,7 +67,7 @@ OptionsCommand::OptionsCommand()
 void OptionsCommand::onExecute(Context* context)
 {
   /* load the window widget */
-  UniquePtr<Frame> window(app::load_widget<Frame>("options.xml", "options"));
+  UniquePtr<Window> window(app::load_widget<Window>("options.xml", "options"));
   Widget* check_smooth = app::find_widget<Widget>(window, "smooth");
   Widget* move_click2 = app::find_widget<Widget>(window, "move_click2");
   Widget* draw_click2 = app::find_widget<Widget>(window, "draw_click2");
@@ -132,7 +132,7 @@ void OptionsCommand::onExecute(Context* context)
   undo_size_limit->setTextf("%d", get_config_int("Options", "UndoSizeLimit", 8));
 
   // Show the window and wait the user to close it
-  window->open_window_fg();
+  window->openWindowInForeground();
 
   if (window->get_killer() == button_ok) {
     int undo_size_limit_value;

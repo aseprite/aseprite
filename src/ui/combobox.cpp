@@ -439,7 +439,7 @@ void ComboBox::onButtonClick(Event& ev)
 void ComboBox::openListBox()
 {
   if (!m_window) {
-    m_window = new Frame(false, NULL);
+    m_window = new Window(false, NULL);
     View* view = new View();
     m_listbox = new ComboBoxListBox(this);
 
@@ -474,7 +474,7 @@ void ComboBox::openListBox()
 
     getManager()->addMessageFilter(JM_BUTTONPRESSED, this);
 
-    m_window->open_window_bg();
+    m_window->openWindow();
     getManager()->setFocus(m_listbox);
   }
 }

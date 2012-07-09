@@ -93,12 +93,12 @@ void NewLayerCommand::onExecute(Context* context)
   // If params specify to ask the user about the name...
   if (m_ask) {
     // We open the window to ask the name
-    UniquePtr<Frame> window(app::load_widget<Frame>("new_layer.xml", "new_layer"));
+    UniquePtr<Window> window(app::load_widget<Window>("new_layer.xml", "new_layer"));
     Widget* name_widget = app::find_widget<Widget>(window, "name");
     name_widget->setText(name.c_str());
     jwidget_set_min_size(name_widget, 128, 0);
 
-    window->open_window_fg();
+    window->openWindowInForeground();
 
     if (window->get_killer() != window->findChild("ok"))
       return;

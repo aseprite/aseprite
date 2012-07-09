@@ -24,13 +24,13 @@
 #include "filters/color_curve.h"
 #include "ui/alert.h"
 #include "ui/entry.h"
-#include "ui/frame.h"
 #include "ui/manager.h"
 #include "ui/message.h"
 #include "ui/rect.h"
 #include "ui/system.h"
 #include "ui/view.h"
 #include "ui/widget.h"
+#include "ui/window.h"
 
 #include <allegro.h>
 #include <cmath>
@@ -359,7 +359,7 @@ int ColorCurveEditor::editNodeManually(gfx::Point& point)
   gfx::Point point_copy = point;
   int res;
 
-  UniquePtr<Frame> window(app::load_widget<Frame>("color_curve.xml", "point_properties"));
+  UniquePtr<Window> window(app::load_widget<Window>("color_curve.xml", "point_properties"));
 
   entry_x = window->findChild("x");
   entry_y = window->findChild("y");
@@ -368,7 +368,7 @@ int ColorCurveEditor::editNodeManually(gfx::Point& point)
   entry_x->setTextf("%d", point.x);
   entry_y->setTextf("%d", point.y);
 
-  window->open_window_fg();
+  window->openWindowInForeground();
 
   if (window->get_killer() == button_ok) {
     point.x = entry_x->getTextDouble();

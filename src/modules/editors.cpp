@@ -34,7 +34,7 @@
 #include "widgets/editor/editor.h"
 #include "widgets/editor/editor_customization_delegate.h"
 #include "widgets/editor/editor_view.h"
-#include "widgets/popup_frame_pin.h"
+#include "widgets/popup_window_pin.h"
 #include "widgets/status_bar.h"
 
 #include <algorithm>
@@ -78,9 +78,9 @@ static Document* get_more_reliable_document();
 static Widget* find_next_editor(Widget* widget);
 static int count_parents(Widget* widget);
 
-static void create_mini_editor_frame();
-static void hide_mini_editor_frame();
-static void update_mini_editor_frame(Editor* editor);
+static void create_mini_editor_window();
+static void hide_mini_editor_window();
+static void update_mini_editor_window(Editor* editor);
 
 class WrappedEditor : public Editor,
                       public EditorListener,
@@ -103,12 +103,12 @@ public:
   }
 
   void scrollChanged(Editor* editor) OVERRIDE {
-    update_mini_editor_frame(editor);
+    update_mini_editor_window(editor);
   }
 
   void documentChanged(Editor* editor) OVERRIDE {
     if (editor == current_editor)
-      update_mini_editor_frame(editor);
+      update_mini_editor_window(editor);
   }
 
   void stateChanged(Editor* editor) OVERRIDE {
@@ -173,11 +173,11 @@ public:
   }
 };
 
-class MiniEditorFrame : public Frame
+class MiniEditorWindow : public Window
 {
 public:
   // Create mini-editor
-  MiniEditorFrame() : Frame(false, "Mini-Editor") {
+  MiniEditorWindow() : Window(false, "Mini-Editor") {
     child_spacing = 0;
     set_autoremap(false);
     set_wantfocus(false);
@@ -190,7 +190,7 @@ protected:
         closeButton->getId() == SkinTheme::kThemeCloseButtonId) {
       // Here we don't use "enable_mini_editor" to change the state of
       // "mini_editor_enabled" because we're coming from a close event
-      // of the frame.
+      // of the window.
       mini_editor_enabled = false;
 
       // Redraw the tool bar because it shows the mini editor enabled state.
@@ -200,7 +200,7 @@ protected:
   }
 };
 
-static MiniEditorFrame* mini_editor_frame = NULL;
+static MiniEditorWindow* mini_editor_window = NULL;
 
 int init_module_editors()
 {
@@ -212,11 +212,11 @@ void exit_module_editors()
 {
   set_config_bool("MiniEditor", "Enabled", mini_editor_enabled);
 
-  if (mini_editor_frame) {
-    save_window_pos(mini_editor_frame, "MiniEditor");
+  if (mini_editor_window) {
+    save_window_pos(mini_editor_window, "MiniEditor");
 
-    delete mini_editor_frame;
-    mini_editor_frame = NULL;
+    delete mini_editor_window;
+    mini_editor_window = NULL;
   }
 
   ASSERT(editors.empty());
@@ -389,7 +389,7 @@ void set_current_editor(Editor* editor)
     app_refresh_screen(document);
     app_rebuild_documents_tabs();
 
-    update_mini_editor_frame(editor);
+    update_mini_editor_window(editor);
   }
 }
 
@@ -582,7 +582,7 @@ void enable_mini_editor(bool state)
 {
   mini_editor_enabled = state;
 
-  update_mini_editor_frame(current_editor);
+  update_mini_editor_window(current_editor);
 }
 
 static int is_document_in_some_editor(Document* document)
@@ -637,10 +637,10 @@ static int count_parents(Widget* widget)
   return count;
 }
 
-static void create_mini_editor_frame()
+static void create_mini_editor_window()
 {
   // Create mini-editor
-  mini_editor_frame = new MiniEditorFrame();
+  mini_editor_window = new MiniEditorWindow();
 
   // Create the new for the mini editor
   View* newView = new EditorView(EditorView::AlwaysSelected);
@@ -652,31 +652,31 @@ static void create_mini_editor_frame()
 
   newView->attachToView(mini_editor);
 
-  mini_editor_frame->addChild(newView);
+  mini_editor_window->addChild(newView);
 
   // Default bounds
   int width = JI_SCREEN_W/4;
   int height = JI_SCREEN_H/4;
-  mini_editor_frame->setBounds
+  mini_editor_window->setBounds
     (gfx::Rect(JI_SCREEN_W - width - jrect_w(app_get_toolbar()->rc),
                JI_SCREEN_H - height - jrect_h(app_get_statusbar()->rc),
                width, height));
 
-  load_window_pos(mini_editor_frame, "MiniEditor");
+  load_window_pos(mini_editor_window, "MiniEditor");
 }
 
-static void hide_mini_editor_frame()
+static void hide_mini_editor_window()
 {
-  if (mini_editor_frame &&
-      mini_editor_frame->isVisible()) {
-    mini_editor_frame->closeWindow(NULL);
+  if (mini_editor_window &&
+      mini_editor_window->isVisible()) {
+    mini_editor_window->closeWindow(NULL);
   }
 }
 
-static void update_mini_editor_frame(Editor* editor)
+static void update_mini_editor_window(Editor* editor)
 {
   if (!mini_editor_enabled || !editor) {
-    hide_mini_editor_frame();
+    hide_mini_editor_window();
     return;
   }
 
@@ -688,12 +688,12 @@ static void update_mini_editor_frame(Editor* editor)
   if (document && document->getSprite() &&
       ((!mini_editor && editor->getZoom() > 0) ||
        (mini_editor && mini_editor->getZoom() != editor->getZoom()))) {
-    // If the mini frame does not exist, create it
-    if (!mini_editor_frame)
-      create_mini_editor_frame();
+    // If the mini window does not exist, create it
+    if (!mini_editor_window)
+      create_mini_editor_window();
 
-    if (!mini_editor_frame->isVisible())
-      mini_editor_frame->open_window_bg();
+    if (!mini_editor_window->isVisible())
+      mini_editor_window->openWindow();
 
     gfx::Rect visibleBounds = editor->getVisibleSpriteBounds();
     gfx::Point pt = visibleBounds.getCenter();
@@ -708,6 +708,6 @@ static void update_mini_editor_frame(Editor* editor)
     mini_editor->centerInSpritePoint(pt.x, pt.y);
   }
   else {
-    hide_mini_editor_frame();
+    hide_mini_editor_window();
   }
 }

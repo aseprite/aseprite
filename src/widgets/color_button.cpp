@@ -49,7 +49,7 @@ ColorButton::ColorButton(const Color& color, PixelFormat pixelFormat)
   : ButtonBase("", colorbutton_type(), JI_BUTTON, JI_BUTTON)
   , m_color(color)
   , m_pixelFormat(pixelFormat)
-  , m_frame(NULL)
+  , m_window(NULL)
 {
   this->setFocusStop(true);
 
@@ -58,7 +58,7 @@ ColorButton::ColorButton(const Color& color, PixelFormat pixelFormat)
 
 ColorButton::~ColorButton()
 {
-  delete m_frame;       // widget, frame
+  delete m_window;       // widget, window
 }
 
 PixelFormat ColorButton::getPixelFormat() const
@@ -81,9 +81,9 @@ void ColorButton::setColor(const Color& color)
 {
   m_color = color;
 
-  // Change the color in its related frame
-  if (m_frame)
-    m_frame->setColor(m_color, ColorSelector::DoNotChangeType);
+  // Change the color in its related window
+  if (m_window)
+    m_window->setColor(m_color, ColorSelector::DoNotChangeType);
 
   // Emit signal
   Change(color);
@@ -96,8 +96,8 @@ bool ColorButton::onProcessMessage(Message* msg)
   switch (msg->type) {
 
     case JM_CLOSE:
-      if (m_frame && m_frame->isVisible())
-        m_frame->closeWindow(NULL);
+      if (m_window && m_window->isVisible())
+        m_window->closeWindow(NULL);
       break;
 
     case JM_MOUSEENTER:
@@ -219,11 +219,11 @@ void ColorButton::onClick(Event& ev)
   ButtonBase::onClick(ev);
 
   // If the popup window was not created or shown yet..
-  if (m_frame == NULL || !m_frame->isVisible()) {
+  if (m_window == NULL || !m_window->isVisible()) {
     // Open it
     openSelectorDialog();
   }
-  else if (!m_frame->is_moveable()) {
+  else if (!m_window->is_moveable()) {
     // If it is visible, close it
     closeSelectorDialog();
   }
@@ -233,46 +233,46 @@ void ColorButton::openSelectorDialog()
 {
   int x, y;
 
-  if (m_frame == NULL) {
-    m_frame = new ColorSelector();
-    m_frame->user_data[0] = this;
-    m_frame->ColorChange.connect(&ColorButton::onFrameColorChange, this);
+  if (m_window == NULL) {
+    m_window = new ColorSelector();
+    m_window->user_data[0] = this;
+    m_window->ColorChange.connect(&ColorButton::onWindowColorChange, this);
   }
 
-  m_frame->setColor(m_color, ColorSelector::ChangeType);
-  m_frame->open_window();
+  m_window->setColor(m_color, ColorSelector::ChangeType);
+  m_window->openWindow();
 
-  x = MID(0, this->rc->x1, JI_SCREEN_W-jrect_w(m_frame->rc));
-  if (this->rc->y2 <= JI_SCREEN_H-jrect_h(m_frame->rc))
+  x = MID(0, this->rc->x1, JI_SCREEN_W-jrect_w(m_window->rc));
+  if (this->rc->y2 <= JI_SCREEN_H-jrect_h(m_window->rc))
     y = MAX(0, this->rc->y2);
   else
-    y = MAX(0, this->rc->y1-jrect_h(m_frame->rc));
+    y = MAX(0, this->rc->y1-jrect_h(m_window->rc));
 
-  m_frame->position_window(x, y);
+  m_window->position_window(x, y);
 
-  m_frame->getManager()->dispatchMessages();
-  m_frame->layout();
+  m_window->getManager()->dispatchMessages();
+  m_window->layout();
 
   /* setup the hot-region */
   {
-    JRect rc = jrect_new(MIN(this->rc->x1, m_frame->rc->x1)-8,
-                         MIN(this->rc->y1, m_frame->rc->y1)-8,
-                         MAX(this->rc->x2, m_frame->rc->x2)+8,
-                         MAX(this->rc->y2, m_frame->rc->y2)+8);
+    JRect rc = jrect_new(MIN(this->rc->x1, m_window->rc->x1)-8,
+                         MIN(this->rc->y1, m_window->rc->y1)-8,
+                         MAX(this->rc->x2, m_window->rc->x2)+8,
+                         MAX(this->rc->y2, m_window->rc->y2)+8);
     JRegion rgn = jregion_new(rc, 1);
     jrect_free(rc);
 
-    static_cast<PopupFrame*>(m_frame)->setHotRegion(rgn);
+    static_cast<PopupWindow*>(m_window)->setHotRegion(rgn);
   }
 }
 
 void ColorButton::closeSelectorDialog()
 {
-  if (m_frame != NULL)
-    m_frame->closeWindow(NULL);
+  if (m_window != NULL)
+    m_window->closeWindow(NULL);
 }
 
-void ColorButton::onFrameColorChange(const Color& color)
+void ColorButton::onWindowColorChange(const Color& color)
 {
   setColor(color);
 }

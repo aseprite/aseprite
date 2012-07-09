@@ -18,8 +18,6 @@
 
 #include "config.h"
 
-#include <string.h>
-
 #include "app/color.h"
 #include "app/find_widget.h"
 #include "app/load_widget.h"
@@ -35,13 +33,15 @@
 #include "raster/mask.h"
 #include "raster/sprite.h"
 #include "ui/button.h"
-#include "ui/frame.h"
 #include "ui/label.h"
 #include "ui/list.h"
 #include "ui/listbox.h"
 #include "ui/slider.h"
 #include "ui/view.h"
 #include "ui/widget.h"
+#include "ui/window.h"
+
+#include <string.h>
 
 static const char* ConfigSection = "ConvolutionMatrix";
 

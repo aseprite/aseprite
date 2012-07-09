@@ -43,13 +43,13 @@ using namespace ui;
 // Disable warning about usage of "this" in initializer list.
 #pragma warning(disable:4355)
 
-// Frame used to show canvas parameters.
-class CanvasSizeFrame : public Frame
-                      , public SelectBoxDelegate
+// Window used to show canvas parameters.
+class CanvasSizeWindow : public Window
+                       , public SelectBoxDelegate
 {
 public:
-  CanvasSizeFrame(int left, int top, int right, int bottom)
-    : Frame(false, "Canvas Size")
+  CanvasSizeWindow(int left, int top, int right, int bottom)
+    : Window(false, "Canvas Size")
     , m_editor(current_editor)
     , m_rect(-left, -top,
              current_editor->getSprite()->getWidth() + left + right,
@@ -71,15 +71,15 @@ public:
     m_top->setTextf("%d", top);
     m_bottom->setTextf("%d", bottom);
 
-    m_left  ->EntryChange.connect(Bind<void>(&CanvasSizeFrame::onEntriesChange, this));
-    m_right ->EntryChange.connect(Bind<void>(&CanvasSizeFrame::onEntriesChange, this));
-    m_top   ->EntryChange.connect(Bind<void>(&CanvasSizeFrame::onEntriesChange, this));
-    m_bottom->EntryChange.connect(Bind<void>(&CanvasSizeFrame::onEntriesChange, this));
+    m_left  ->EntryChange.connect(Bind<void>(&CanvasSizeWindow::onEntriesChange, this));
+    m_right ->EntryChange.connect(Bind<void>(&CanvasSizeWindow::onEntriesChange, this));
+    m_top   ->EntryChange.connect(Bind<void>(&CanvasSizeWindow::onEntriesChange, this));
+    m_bottom->EntryChange.connect(Bind<void>(&CanvasSizeWindow::onEntriesChange, this));
 
     m_editor->setState(m_selectBoxState);
   }
 
-  ~CanvasSizeFrame()
+  ~CanvasSizeWindow()
   {
     m_editor->backToPreviousState();
   }
@@ -120,7 +120,7 @@ protected:
 
   virtual void onBroadcastMouseMessage(WidgetsList& targets) OVERRIDE
   {
-    Frame::onBroadcastMouseMessage(targets);
+    Window::onBroadcastMouseMessage(targets);
 
     // Add the editor as receptor of mouse events too.
     targets.push_back(View::getView(m_editor));
@@ -174,14 +174,14 @@ void CanvasSizeCommand::onExecute(Context* context)
 
   if (context->isUiAvailable()) {
     // load the window widget
-    UniquePtr<CanvasSizeFrame> window(new CanvasSizeFrame(0, 0, 0, 0));
+    UniquePtr<CanvasSizeWindow> window(new CanvasSizeWindow(0, 0, 0, 0));
 
     window->remap_window();
     window->center_window();
 
     load_window_pos(window, "CanvasSize");
     window->setVisible(true);
-    window->open_window_fg();
+    window->openWindowInForeground();
     save_window_pos(window, "CanvasSize");
 
     if (!window->pressedOk())

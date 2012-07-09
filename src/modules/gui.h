@@ -33,9 +33,10 @@ class Params;
 namespace ui {
   class ButtonBase;
   class CheckBox;
-  class Frame;
   class RadioButton;
   class Widget;
+  class Window;
+  union Message;
 }
 
 namespace tools { class Tool; }

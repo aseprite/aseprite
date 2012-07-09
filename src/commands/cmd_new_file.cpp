@@ -83,7 +83,7 @@ void NewFileCommand::onExecute(Context* context)
   };
 
   // Load the window widget
-  UniquePtr<Frame> window(app::load_widget<Frame>("new_sprite.xml", "new_sprite"));
+  UniquePtr<Window> window(app::load_widget<Window>("new_sprite.xml", "new_sprite"));
   Widget* width = app::find_widget<Widget>(window, "width");
   Widget* height = app::find_widget<Widget>(window, "height");
   Widget* radio1 = app::find_widget<Widget>(window, "radio1");
@@ -127,7 +127,7 @@ void NewFileCommand::onExecute(Context* context)
   bg_box->selectIndex(bg);
 
   // Open the window
-  window->open_window_fg();
+  window->openWindowInForeground();
 
   if (window->get_killer() == ok) {
     bool ok = false;

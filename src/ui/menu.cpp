@@ -72,11 +72,11 @@ struct MenuBaseData
 
 };
 
-class CustomizedWindowForMenuBox : public Frame
+class CustomizedWindowForMenuBox : public Window
 {
 public:
   CustomizedWindowForMenuBox(MenuBox* menubox)
-    : Frame(false, NULL)
+    : Window(false, NULL)
   {
     set_moveable(false); // Can't move the window
     addChild(menubox);
@@ -94,7 +94,7 @@ protected:
         break;
 
     }
-    return Frame::onProcessMessage(msg);
+    return Window::onProcessMessage(msg);
   }
 };
 
@@ -259,7 +259,7 @@ void Menu::showPopup(int x, int y)
   } while (jmouse_b(0));
 
   // New window and new menu-box
-  Frame* window = new Frame(false, NULL);
+  Window* window = new Window(false, NULL);
   MenuBox* menubox = new MenuBox();
   MenuBaseData* base = menubox->createBase();
   base->was_clicked = true;
@@ -283,7 +283,7 @@ void Menu::showPopup(int x, int y)
   menubox->setFocusMagnet(true);
 
   // Open the window
-  window->open_window_fg();
+  window->openWindowInForeground();
 
   // Free the keyboard focus
   Manager::getDefault()->freeFocus();
@@ -748,7 +748,7 @@ bool MenuItem::onProcessMessage(Message* msg)
         menubox->setMenu(m_submenu);
 
         // New window and new menu-box
-        Frame* window = new CustomizedWindowForMenuBox(menubox);
+        Window* window = new CustomizedWindowForMenuBox(menubox);
 
         // Menubox position
         pos = jwidget_get_rect(window);
@@ -825,7 +825,7 @@ bool MenuItem::onProcessMessage(Message* msg)
           m_submenu->unhighlightItem();
 
         // Run in background
-        window->open_window_bg();
+        window->openWindow();
 
         base->is_processing = false;
 
@@ -834,7 +834,7 @@ bool MenuItem::onProcessMessage(Message* msg)
       }
       else if (msg->type == JM_CLOSE_MENUITEM) {
         MenuBaseData* base = get_base(this);
-        Frame* window;
+        Window* window;
         bool last_of_close_chain = (msg->user.a ? true: false);
 
         ASSERT(base != NULL);
@@ -845,8 +845,8 @@ bool MenuItem::onProcessMessage(Message* msg)
 
         ASSERT(menubox != NULL);
 
-        window = (Frame*)menubox->parent;
-        ASSERT(window && window->type == JI_FRAME);
+        window = (Window*)menubox->parent;
+        ASSERT(window && window->type == JI_WINDOW);
 
         // Fetch the "menu" to avoid destroy it with 'delete'.
         menubox->setMenu(NULL);

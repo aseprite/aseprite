@@ -6,10 +6,10 @@
 
 #include "config.h"
 
-#include "ui/frame.h"
 #include "ui/manager.h"
 #include "ui/theme.h"
 #include "ui/widget.h"
+#include "ui/window.h"
 
 #include <list>
 
@@ -62,8 +62,8 @@ void _ji_reinit_theme_in_all_widgets()
   // Remap the windows
   for (std::list<Widget*>::iterator it=widgets->begin(), end=widgets->end();
        it != end; ++it) {
-    if ((*it)->type == JI_FRAME)
-      static_cast<Frame*>(*it)->remap_window();
+    if ((*it)->type == JI_WINDOW)
+      static_cast<Window*>(*it)->remap_window();
   }
 
   // Redraw the whole screen

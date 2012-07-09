@@ -89,7 +89,7 @@ void FramePropertiesCommand::onExecute(Context* context)
   const ActiveDocumentReader document(context);
   const Sprite* sprite = document->getSprite();
 
-  UniquePtr<Frame> window(app::load_widget<Frame>("frame_duration.xml", "frame_duration"));
+  UniquePtr<Window> window(app::load_widget<Window>("frame_duration.xml", "frame_duration"));
   Widget* frame = app::find_widget<Widget>(window, "frame");
   Widget* frlen = app::find_widget<Widget>(window, "frlen");
   Widget* ok = app::find_widget<Widget>(window, "ok");
@@ -110,13 +110,13 @@ void FramePropertiesCommand::onExecute(Context* context)
   }
 
   if (m_target == ALL_FRAMES)
-    frame->setText("All");
+    window->setText("All");
   else
-    frame->setTextf("%d", sprite_frame);
+    window->setTextf("%d", sprite_frame);
 
   frlen->setTextf("%d", sprite->getFrameDuration(sprite->getCurrentFrame()));
 
-  window->open_window_fg();
+  window->openWindowInForeground();
   if (window->get_killer() == ok) {
     int num = strtol(frlen->getText(), NULL, 10);
 

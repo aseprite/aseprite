@@ -382,7 +382,7 @@ add_library(aseprite-library
   widgets/hex_color_entry.cpp
   widgets/menuitem2.cpp
   widgets/palette_view.cpp
-  widgets/popup_frame_pin.cpp
+  widgets/popup_window_pin.cpp
   widgets/status_bar.cpp
   widgets/tabs.cpp
   widgets/toolbar.cpp)

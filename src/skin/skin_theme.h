@@ -90,8 +90,8 @@ public:
   void draw_view(ui::Widget* widget, ui::JRect clip);
   void draw_view_scrollbar(ui::Widget* widget, ui::JRect clip);
   void draw_view_viewport(ui::Widget* widget, ui::JRect clip);
-  void paintFrame(ui::PaintEvent& ev);
-  void draw_frame_button(ui::ButtonBase* widget, ui::JRect clip);
+  void paintWindow(ui::PaintEvent& ev);
+  void drawWindowButton(ui::ButtonBase* widget, ui::JRect clip);
   void paintTooltip(ui::PaintEvent& ev);
 
   int get_button_normal_text_color() const { return makecol(0, 0, 0); }

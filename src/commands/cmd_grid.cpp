@@ -18,8 +18,6 @@
 
 #include "config.h"
 
-#include <allegro/unicode.h>
-
 #include "app.h"
 #include "app/find_widget.h"
 #include "app/load_widget.h"
@@ -27,9 +25,11 @@
 #include "context.h"
 #include "modules/editors.h"
 #include "settings/settings.h"
-#include "ui/frame.h"
+#include "ui/window.h"
 #include "ui_context.h"
 #include "widgets/status_bar.h"
+
+#include <allegro/unicode.h>
 
 using namespace ui;
 using namespace gfx;
@@ -132,7 +132,7 @@ bool GridSettingsCommand::onEnabled(Context* context)
 
 void GridSettingsCommand::onExecute(Context* context)
 {
-  UniquePtr<Frame> window(app::load_widget<Frame>("grid_settings.xml", "grid_settings"));
+  UniquePtr<Window> window(app::load_widget<Window>("grid_settings.xml", "grid_settings"));
   Widget* button_ok = app::find_widget<Widget>(window, "ok");
   Widget* grid_x = app::find_widget<Widget>(window, "grid_x");
   Widget* grid_y = app::find_widget<Widget>(window, "grid_y");
@@ -146,7 +146,7 @@ void GridSettingsCommand::onExecute(Context* context)
   grid_w->setTextf("%d", bounds.w);
   grid_h->setTextf("%d", bounds.h);
 
-  window->open_window_fg();
+  window->openWindowInForeground();
 
   if (window->get_killer() == button_ok) {
     bounds.x = grid_x->getTextInt();

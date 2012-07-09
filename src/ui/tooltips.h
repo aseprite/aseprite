@@ -9,7 +9,7 @@
 
 #include "base/compiler_specific.h"
 #include "ui/base.h"
-#include "ui/frame.h"
+#include "ui/window.h"
 
 #include <map>
 
@@ -51,7 +51,7 @@ namespace ui {
     } m_target;
   };
 
-  class TipWindow : public Frame
+  class TipWindow : public Window
   {
   public:
     TipWindow(const char *text, bool close_on_buttonpressed = false);

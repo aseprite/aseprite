@@ -33,7 +33,7 @@
 
 using namespace ui;
 
-static Frame* wid_console = NULL;
+static Window* wid_console = NULL;
 static Widget* wid_view = NULL;
 static Widget* wid_textbox = NULL;
 static Widget* wid_cancel = NULL;
@@ -51,7 +51,7 @@ Console::Console()
       console_counter > 1)
     return;
   else {
-    Frame* window = new Frame(false, "Errors Console");
+    Window* window = new Window(false, "Errors Console");
     Grid* grid = new Grid(1, false);
     View* view = new View();
     TextBox* textbox = new TextBox(NULL, JI_WORDWRAP);
@@ -61,7 +61,7 @@ Console::Console()
       return;
 
     // The "button" closes the console
-    button->Click.connect(Bind<void>(&Frame::closeWindow, window, button));
+    button->Click.connect(Bind<void>(&Window::closeWindow, window, button));
 
     view->attachToView(textbox);
 
@@ -96,7 +96,7 @@ Console::~Console()
         && !want_close_flag
         && wid_console->isVisible()) {
       /* open in foreground */
-      wid_console->open_window_fg();
+      wid_console->openWindowInForeground();
     }
 
     delete wid_console;         // window
@@ -120,7 +120,7 @@ void Console::printf(const char *format, ...)
 
     // Open the window
     if (!wid_console->isVisible()) {
-      wid_console->open_window();
+      wid_console->openWindow();
       ui::Manager::getDefault()->invalidate();
     }
 

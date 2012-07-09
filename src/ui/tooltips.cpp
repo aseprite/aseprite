@@ -143,7 +143,7 @@ void TooltipManager::onTick()
 
     m_tipWindow->position_window(MID(0, x, JI_SCREEN_W-w),
                                  MID(0, y, JI_SCREEN_H-h));
-    m_tipWindow->open_window();
+    m_tipWindow->openWindow();
   }
   m_timer->stop();
 }
@@ -151,7 +151,7 @@ void TooltipManager::onTick()
 // TipWindow
 
 TipWindow::TipWindow(const char *text, bool close_on_buttonpressed)
-  : Frame(false, text)
+  : Window(false, text)
 {
   JLink link, next;
 
@@ -269,7 +269,7 @@ bool TipWindow::onProcessMessage(Message* msg)
 
   }
 
-  return Frame::onProcessMessage(msg);
+  return Window::onProcessMessage(msg);
 }
 
 void TipWindow::onPreferredSize(PreferredSizeEvent& ev)
@@ -307,7 +307,7 @@ void TipWindow::onPreferredSize(PreferredSizeEvent& ev)
 
 void TipWindow::onInitTheme(InitThemeEvent& ev)
 {
-  Frame::onInitTheme(ev);
+  Window::onInitTheme(ev);
 
   this->border_width.l = 6 * jguiscale();
   this->border_width.t = 6 * jguiscale();

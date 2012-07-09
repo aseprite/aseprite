@@ -179,7 +179,7 @@ void switch_between_animation_and_sprite_editor()
 
   // Create the window & the animation-editor
   {
-    UniquePtr<Frame> window(new Frame(true, NULL));
+    UniquePtr<Window> window(new Window(true, NULL));
     AnimationEditor* anieditor = new AnimationEditor(document, sprite);
     current_anieditor = anieditor;
 
@@ -189,7 +189,7 @@ void switch_between_animation_and_sprite_editor()
     anieditor->centerCurrentCel();
 
     // Show the window
-    window->open_window_fg();
+    window->openWindowInForeground();
 
     // No more animation editor
     current_anieditor = NULL;

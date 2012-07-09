@@ -63,9 +63,9 @@ void NewLayerSetCommand::onExecute(Context* context)
   Sprite* sprite(document->getSprite());
 
   // load the window widget
-  UniquePtr<Frame> window(app::load_widget<Frame>("new_layer.xml", "new_layer_set"));
+  UniquePtr<Window> window(app::load_widget<Window>("new_layer.xml", "new_layer_set"));
 
-  window->open_window_fg();
+  window->openWindowInForeground();
 
   if (window->get_killer() == window->findChild("ok")) {
     const char *name = window->findChild("name")->getText();

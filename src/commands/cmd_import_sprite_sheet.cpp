@@ -46,14 +46,14 @@
 using namespace ui;
 
 //////////////////////////////////////////////////////////////////////
-// ImportSpriteSheetFrame
+// ImportSpriteSheetWindow
 
-class ImportSpriteSheetFrame : public Frame,
-                               public SelectBoxDelegate
+class ImportSpriteSheetWindow : public Window,
+                                public SelectBoxDelegate
 {
 public:
-  ImportSpriteSheetFrame(Context* context)
-    : Frame(false, "Import Sprite Sheet")
+  ImportSpriteSheetWindow(Context* context)
+    : Window(false, "Import Sprite Sheet")
     , m_context(context)
     , m_document(NULL)
     , m_grid(4, false)
@@ -89,18 +89,18 @@ public:
       m_grid.addChildInCell(hbox1, 4, 1, 0);
     }
 
-    m_x.EntryChange.connect(Bind<void>(&ImportSpriteSheetFrame::onEntriesChange, this));
-    m_y.EntryChange.connect(Bind<void>(&ImportSpriteSheetFrame::onEntriesChange, this));
-    m_width.EntryChange.connect(Bind<void>(&ImportSpriteSheetFrame::onEntriesChange, this));
-    m_height.EntryChange.connect(Bind<void>(&ImportSpriteSheetFrame::onEntriesChange, this));
+    m_x.EntryChange.connect(Bind<void>(&ImportSpriteSheetWindow::onEntriesChange, this));
+    m_y.EntryChange.connect(Bind<void>(&ImportSpriteSheetWindow::onEntriesChange, this));
+    m_width.EntryChange.connect(Bind<void>(&ImportSpriteSheetWindow::onEntriesChange, this));
+    m_height.EntryChange.connect(Bind<void>(&ImportSpriteSheetWindow::onEntriesChange, this));
 
-    m_selectFile.Click.connect(&ImportSpriteSheetFrame::onSelectFile, this);
-    m_selectFile.DropDownClick.connect(&ImportSpriteSheetFrame::onDropDown, this);
-    m_import.Click.connect(Bind<void>(&ImportSpriteSheetFrame::onImport, this));
-    m_cancel.Click.connect(Bind<void>(&ImportSpriteSheetFrame::onCancel, this));
+    m_selectFile.Click.connect(&ImportSpriteSheetWindow::onSelectFile, this);
+    m_selectFile.DropDownClick.connect(&ImportSpriteSheetWindow::onDropDown, this);
+    m_import.Click.connect(Bind<void>(&ImportSpriteSheetWindow::onImport, this));
+    m_cancel.Click.connect(Bind<void>(&ImportSpriteSheetWindow::onCancel, this));
   }
 
-  ~ImportSpriteSheetFrame()
+  ~ImportSpriteSheetWindow()
   {
     releaseEditor();
   }
@@ -127,7 +127,7 @@ protected:
   {
     SharedPtr<Menu> menu(new Menu());
     MenuItem* item = new MenuItem("Use Current Sprite");
-    item->Click.connect(&ImportSpriteSheetFrame::onUseCurrentSprite, this);
+    item->Click.connect(&ImportSpriteSheetWindow::onUseCurrentSprite, this);
 
     if (m_editor || current_editor->getDocument() == NULL)
       item->setEnabled(false);
@@ -263,7 +263,7 @@ protected:
 
   virtual void onBroadcastMouseMessage(WidgetsList& targets) OVERRIDE
   {
-    Frame::onBroadcastMouseMessage(targets);
+    Window::onBroadcastMouseMessage(targets);
 
     // Add the editor as receptor of mouse events too.
     if (m_editor)
@@ -359,8 +359,8 @@ ImportSpriteSheetCommand::ImportSpriteSheetCommand()
 
 void ImportSpriteSheetCommand::onExecute(Context* context)
 {
-  UniquePtr<Frame> frame(new ImportSpriteSheetFrame(context));
-  frame->open_window_fg();
+  UniquePtr<Window> window(new ImportSpriteSheetWindow(context));
+  window->openWindowInForeground();
 }
 
 //////////////////////////////////////////////////////////////////////

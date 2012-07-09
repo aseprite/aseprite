@@ -38,7 +38,7 @@
 using namespace ui;
 
 ColorSelector::ColorSelector()
-  : PopupFramePin("Color Selector", false)
+  : PopupWindowPin("Color Selector", false)
   , m_color(Color::fromMask())
   , m_vbox(JI_VERTICAL)
   , m_topBox(JI_HORIZONTAL)

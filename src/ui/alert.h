@@ -8,14 +8,14 @@
 #define UI_ALERT_H_INCLUDED
 
 #include "base/shared_ptr.h"
-#include "ui/frame.h"
+#include "ui/window.h"
 
 namespace ui {
 
   class Alert;
   typedef SharedPtr<Alert> AlertPtr;
 
-  class Alert : public Frame
+  class Alert : public Window
   {
   public:
     Alert();

@@ -74,7 +74,7 @@ void AdvancedModeCommand::onExecute(Context* context)
       char key[1024];
       char buf[1024];
 
-      UniquePtr<Frame> window(app::load_widget<Frame>("advanced_mode.xml", "advanced_mode_warning"));
+      UniquePtr<Window> window(app::load_widget<Window>("advanced_mode.xml", "advanced_mode_warning"));
       Widget* warning_label = app::find_widget<Widget>(window, "warning_label");
       Widget* donot_show = app::find_widget<Widget>(window, "donot_show");
 
@@ -84,7 +84,7 @@ void AdvancedModeCommand::onExecute(Context* context)
 
       warning_label->setText(buf);
 
-      window->open_window_fg();
+      window->openWindowInForeground();
 
       set_config_bool("AdvancedMode", "Warning", !donot_show->isSelected());
     }

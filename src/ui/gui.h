@@ -20,7 +20,6 @@
 #include "ui/entry.h"
 #include "ui/event.h"
 #include "ui/font.h"
-#include "ui/frame.h"
 #include "ui/graphics.h"
 #include "ui/grid.h"
 #include "ui/hit_test_event.h"
@@ -34,7 +33,7 @@
 #include "ui/menu.h"
 #include "ui/message.h"
 #include "ui/paint_event.h"
-#include "ui/popup_frame.h"
+#include "ui/popup_window.h"
 #include "ui/preferred_size_event.h"
 #include "ui/property.h"
 #include "ui/rect.h"
@@ -52,5 +51,6 @@
 #include "ui/viewport.h"
 #include "ui/widget.h"
 #include "ui/widgets_list.h"
+#include "ui/window.h"
 
 #endif

@@ -380,7 +380,7 @@ bool Manager::generateMessages()
     if (msg->type == JM_BUTTONPRESSED &&
         !capture_widget && mouse_widget) {
       // The clicked window
-      Frame* window = mouse_widget->getRoot();
+      Window* window = mouse_widget->getRoot();
       Manager* win_manager = (window ? window->getManager(): NULL);
 
       if ((window) &&
@@ -391,7 +391,7 @@ bool Manager::generateMessages()
           // which should be kept on top of the foreground one.
           (!window->is_foreground()) &&
           // If the window is not already the top window of the manager.
-          (window != win_manager->getTopFrame())) {
+          (window != win_manager->getTopWindow())) {
         // Put it in the top of the list
         jlist_remove(win_manager->children, window);
 
@@ -400,7 +400,7 @@ bool Manager::generateMessages()
         else {
           int pos = jlist_length(win_manager->children);
           JI_LIST_FOR_EACH_BACK(win_manager->children, link) {
-            if (((Frame*)link->data)->is_ontop())
+            if (((Window*)link->data)->is_ontop())
               break;
             pos--;
           }
@@ -531,19 +531,19 @@ void Manager::enqueueMessage(Message* msg)
     jmessage_free(msg);
 }
 
-Frame* Manager::getTopFrame()
+Window* Manager::getTopWindow()
 {
-  return reinterpret_cast<Frame*>(jlist_first_data(this->children));
+  return reinterpret_cast<Window*>(jlist_first_data(this->children));
 }
 
-Frame* Manager::getForegroundFrame()
+Window* Manager::getForegroundWindow()
 {
   JLink link;
   JI_LIST_FOR_EACH(this->children, link) {
-    Frame* frame = (Frame*)link->data;
-    if (frame->is_foreground() ||
-        frame->is_desktop())
-      return frame;
+    Window* window = (Window*)link->data;
+    if (window->is_foreground() ||
+        window->is_desktop())
+      return window;
   }
   return NULL;
 }
@@ -832,7 +832,7 @@ void Manager::removeMessageFilterFor(Widget* widget)
 }
 
 /* configures the window for begin the loop */
-void Manager::_openWindow(Frame* window)
+void Manager::_openWindow(Window* window)
 {
   // Free all widgets of special states.
   if (window->is_wantfocus()) {
@@ -854,7 +854,7 @@ void Manager::_openWindow(Frame* window)
   jlist_append(new_windows, window);
 }
 
-void Manager::_closeWindow(Frame* window, bool redraw_background)
+void Manager::_closeWindow(Window* window, bool redraw_background)
 {
   Message* msg;
   JRegion reg1;
@@ -879,7 +879,7 @@ void Manager::_closeWindow(Frame* window, bool redraw_background)
         jregion_union(reg1, reg1, reg2);
         jregion_free(reg2);
 
-        _closeWindow(reinterpret_cast<Frame*>(link->data), false);
+        _closeWindow(reinterpret_cast<Window*>(link->data), false);
       }
     }
   }
@@ -938,7 +938,7 @@ bool Manager::onProcessMessage(Message* msg)
       // Continue sending the message to the children of all windows
       // (until a desktop or foreground window).
       JI_LIST_FOR_EACH(this->children, link) {
-        Frame* w = (Frame*)link->data;
+        Window* w = (Window*)link->data;
 
         // Send to the window.
         JI_LIST_FOR_EACH(w->children, link2)
@@ -964,7 +964,7 @@ bool Manager::onProcessMessage(Message* msg)
 
 void Manager::onBroadcastMouseMessage(WidgetsList& targets)
 {
-  // Ask to the first frame in the "children" list to know how to
+  // Ask to the first window in the "children" list to know how to
   // propagate mouse messages.
   Widget* widget = reinterpret_cast<Widget*>(jlist_first_data(children));
   if (widget)
@@ -1169,7 +1169,7 @@ void Manager::invalidateDisplayRegion(const JRegion region)
 
   // Redraw windows from top to background.
   JI_LIST_FOR_EACH(this->children, link) {
-    Frame* window = (Frame*)link->data;
+    Window* window = (Window*)link->data;
 
     // Invalidate regions of this window
     window->invalidateRegion(reg1);
@@ -1316,7 +1316,7 @@ static bool move_focus(Manager* manager, Message* msg)
   Widget* focus = NULL;
   Widget* it;
   bool ret = false;
-  Frame* window = NULL;
+  Window* window = NULL;
   int c, count;
 
   // Who have the focus
@@ -1324,7 +1324,7 @@ static bool move_focus(Manager* manager, Message* msg)
     window = focus_widget->getRoot();
   }
   else if (!jlist_empty(manager->children)) {
-    window = manager->getTopFrame();
+    window = manager->getTopWindow();
   }
 
   if (!window)

@@ -19,6 +19,7 @@ namespace ui {
   class Menu;
   class MenuItem;
   class PaintEvent;
+  class Widget;
 
   class Theme
   {
@@ -69,7 +70,7 @@ namespace ui {
     virtual void draw_view(Widget* widget, JRect clip) = 0;
     virtual void draw_view_scrollbar(Widget* widget, JRect clip) = 0;
     virtual void draw_view_viewport(Widget* widget, JRect clip) = 0;
-    virtual void paintFrame(PaintEvent& ev) = 0;
+    virtual void paintWindow(PaintEvent& ev) = 0;
     virtual void paintTooltip(PaintEvent& ev) = 0;
 
   protected:

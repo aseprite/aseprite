@@ -28,9 +28,9 @@
 #include "widgets/color_sliders.h"
 #include "widgets/hex_color_entry.h"
 #include "widgets/palette_view.h"
-#include "widgets/popup_frame_pin.h"
+#include "widgets/popup_window_pin.h"
 
-class ColorSelector : public PopupFramePin
+class ColorSelector : public PopupWindowPin
 {
 public:
   enum SetColorOptions {

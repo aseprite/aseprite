@@ -370,9 +370,9 @@ Widget* WidgetLoader::convertXmlElementToWidget(const TiXmlElement* elem, Widget
       bool desktop = bool_attr_is_true(elem, "desktop");
 
       if (desktop)
-        widget = new Frame(true, NULL);
+        widget = new Window(true, NULL);
       else
-        widget = new Frame(false, TRANSLATE_ATTR(text));
+        widget = new Window(false, TRANSLATE_ATTR(text));
     }
   }
   /* colorpicker */

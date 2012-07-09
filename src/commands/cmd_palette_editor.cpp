@@ -62,7 +62,7 @@
 using namespace gfx;
 using namespace ui;
 
-class PaletteEntryEditor : public Frame
+class PaletteEntryEditor : public Window
 {
 public:
   PaletteEntryEditor();
@@ -74,7 +74,7 @@ protected:
   bool onProcessMessage(Message* msg) OVERRIDE;
 
   void onExit();
-  void onCloseFrame();
+  void onCloseWindow();
   void onFgBgColorChange(const Color& color);
   void onColorSlidersChange(ColorSlidersChangeEvent& ev);
   void onColorHexEntryChange(const Color& color);
@@ -141,7 +141,7 @@ private:
 //////////////////////////////////////////////////////////////////////
 // PaletteEditorCommand
 
-static PaletteEntryEditor* g_frame = NULL;
+static PaletteEntryEditor* g_window = NULL;
 
 class PaletteEditorCommand : public Command
 {
@@ -193,38 +193,38 @@ void PaletteEditorCommand::onLoadParams(Params* params)
 void PaletteEditorCommand::onExecute(Context* context)
 {
   // If this is the first time the command is execute...
-  if (!g_frame) {
+  if (!g_window) {
     // If the command says "Close the palette editor" and it is not
     // created yet, we just do nothing.
     if (m_close)
       return;
 
     // If this is "open" or "switch", we have to create the frame.
-    g_frame = new PaletteEntryEditor();
+    g_window = new PaletteEntryEditor();
   }
   // If the frame is already created and it's visible, close it (only in "switch" or "close" modes)
-  else if (g_frame->isVisible() && (m_switch || m_close)) {
+  else if (g_window->isVisible() && (m_switch || m_close)) {
     // Hide the frame
-    g_frame->closeWindow(NULL);
+    g_window->closeWindow(NULL);
     return;
   }
 
   if (m_switch || m_open) {
-    if (!g_frame->isVisible()) {
+    if (!g_window->isVisible()) {
       // Default bounds
-      g_frame->remap_window();
+      g_window->remap_window();
 
-      int width = MAX(jrect_w(g_frame->rc), JI_SCREEN_W/2);
-      g_frame->setBounds(Rect(JI_SCREEN_W - width - jrect_w(app_get_toolbar()->rc),
-                              JI_SCREEN_H - jrect_h(g_frame->rc) - jrect_h(app_get_statusbar()->rc),
-                              width, jrect_h(g_frame->rc)));
+      int width = MAX(jrect_w(g_window->rc), JI_SCREEN_W/2);
+      g_window->setBounds(Rect(JI_SCREEN_W - width - jrect_w(app_get_toolbar()->rc),
+                              JI_SCREEN_H - jrect_h(g_window->rc) - jrect_h(app_get_statusbar()->rc),
+                              width, jrect_h(g_window->rc)));
 
       // Load window configuration
-      load_window_pos(g_frame, "PaletteEditor");
+      load_window_pos(g_window, "PaletteEditor");
     }
 
     // Run the frame in background.
-    g_frame->open_window_bg();
+    g_window->openWindow();
     app_get_colorbar()->setPaletteEditorButtonState(true);
   }
 
@@ -234,7 +234,7 @@ void PaletteEditorCommand::onExecute(Context* context)
       (m_background ? context->getSettings()->getBgColor():
                       context->getSettings()->getFgColor());
 
-    g_frame->setColor(color);
+    g_window->setColor(color);
   }
 }
 
@@ -244,7 +244,7 @@ void PaletteEditorCommand::onExecute(Context* context)
 // Based on ColorSelector class.
 
 PaletteEntryEditor::PaletteEntryEditor()
-  : Frame(false, "Palette Editor (F4)")
+  : Window(false, "Palette Editor (F4)")
   , m_vbox(JI_VERTICAL)
   , m_topBox(JI_HORIZONTAL)
   , m_bottomBox(JI_HORIZONTAL)
@@ -334,10 +334,10 @@ PaletteEntryEditor::PaletteEntryEditor()
   app_get_colorbar()->FgColorChange.connect(&PaletteEntryEditor::onFgBgColorChange, this);
   app_get_colorbar()->BgColorChange.connect(&PaletteEntryEditor::onFgBgColorChange, this);
 
-  // We hook the Frame::Close event to save the frame position before closing it.
-  this->Close.connect(Bind<void>(&PaletteEntryEditor::onCloseFrame, this));
+  // We hook the Window::Close event to save the frame position before closing it.
+  this->Close.connect(Bind<void>(&PaletteEntryEditor::onCloseWindow, this));
 
-  // We hook App::Exit signal to destroy the g_frame singleton at exit.
+  // We hook App::Exit signal to destroy the g_window singleton at exit.
   App::instance()->Exit.connect(&PaletteEntryEditor::onExit, this);
 
   // Hook for palette change to redraw the palette editor frame
@@ -425,7 +425,7 @@ bool PaletteEntryEditor::onProcessMessage(Message* msg)
       current_editor->updateEditor();
     }
   }
-  return Frame::onProcessMessage(msg);
+  return Window::onProcessMessage(msg);
 }
 
 void PaletteEntryEditor::onExit()
@@ -433,7 +433,7 @@ void PaletteEntryEditor::onExit()
   delete this;
 }
 
-void PaletteEntryEditor::onCloseFrame()
+void PaletteEntryEditor::onCloseWindow()
 {
   // Save window configuration
   save_window_pos(this, "PaletteEditor");

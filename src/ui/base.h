@@ -37,11 +37,6 @@ namespace ui {
   struct jrect;
   struct jregion;
 
-  class Frame;
-  class Theme;
-  class Widget;
-  union Message;
-
   // Alignment.
 #define JI_HORIZONTAL   0x0001
 #define JI_VERTICAL     0x0002
@@ -98,7 +93,7 @@ namespace ui {
     JI_VIEW,
     JI_VIEW_SCROLLBAR,
     JI_VIEW_VIEWPORT,
-    JI_FRAME,
+    JI_WINDOW,
 
     // User widgets.
     JI_USER_WIDGET,

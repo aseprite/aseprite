@@ -42,14 +42,14 @@ using namespace ui;
 //////////////////////////////////////////////////////////////////////
 // ExportSpriteSheetFrame
 
-class ExportSpriteSheetFrame : public Frame
+class ExportSpriteSheetWindow : public Window
 {
   enum SpriteSheetType { HorizontalStrip, VerticalStrip, Matrix };
   enum ExportAction { SaveCopyAs, SaveAs, Save, DoNotSave };
 
 public:
-  ExportSpriteSheetFrame(Context* context)
-    : Frame(false, "Export Sprite Sheet")
+  ExportSpriteSheetWindow(Context* context)
+    : Window(false, "Export Sprite Sheet")
     , m_context(context)
     , m_document(context->getActiveDocument())
     , m_grid(4, false)
@@ -87,14 +87,14 @@ public:
       m_grid.addChildInCell(hbox1, 4, 1, 0);
     }
 
-    m_sheetType.Change.connect(&ExportSpriteSheetFrame::onSheetTypeChange, this);
-    m_export.Click.connect(Bind<void>(&ExportSpriteSheetFrame::onExport, this));
-    m_cancel.Click.connect(Bind<void>(&ExportSpriteSheetFrame::onCancel, this));
+    m_sheetType.Change.connect(&ExportSpriteSheetWindow::onSheetTypeChange, this);
+    m_export.Click.connect(Bind<void>(&ExportSpriteSheetWindow::onExport, this));
+    m_cancel.Click.connect(Bind<void>(&ExportSpriteSheetWindow::onCancel, this));
 
     onSheetTypeChange();
   }
 
-  ~ExportSpriteSheetFrame()
+  ~ExportSpriteSheetWindow()
   {
   }
 
@@ -316,8 +316,8 @@ bool ExportSpriteSheetCommand::onEnabled(Context* context)
 
 void ExportSpriteSheetCommand::onExecute(Context* context)
 {
-  UniquePtr<Frame> frame(new ExportSpriteSheetFrame(context));
-  frame->open_window_fg();
+  UniquePtr<Window> window(new ExportSpriteSheetWindow(context));
+  window->openWindowInForeground();
 }
 
 //////////////////////////////////////////////////////////////////////

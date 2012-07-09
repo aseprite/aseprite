@@ -952,12 +952,12 @@ bool CustomizedGuiManager::onProcessMessage(Message* msg)
       break;
 
     case JM_KEYPRESSED: {
-      Frame* toplevel_frame = getTopFrame();
+      Window* toplevel_window = getTopWindow();
 
       // If there is a foreground window as top level...
-      if (toplevel_frame &&
-          toplevel_frame != app_get_top_window() &&
-          toplevel_frame->is_foreground()) {
+      if (toplevel_window &&
+          toplevel_window != app_get_top_window() &&
+          toplevel_window->is_foreground()) {
         // We just do not process keyboard shortcuts for menus and tools
         break;
       }
@@ -1022,7 +1022,7 @@ bool CustomizedGuiManager::onProcessMessage(Message* msg)
               // the current window running at foreground.
               JLink link;
               JI_LIST_FOR_EACH(this->children, link) {
-                Frame* child = reinterpret_cast<Frame*>(link->data);
+                Window* child = reinterpret_cast<Window*>(link->data);
 
                 // There are a foreground window executing?
                 if (child->is_foreground()) {

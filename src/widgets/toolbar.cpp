@@ -60,7 +60,7 @@ class ToolBar : public Widget
   bool m_open_on_hot;
 
   // Window displayed to show a tool-group
-  PopupFrame* m_popupFrame;
+  PopupWindow* m_popupWindow;
 
   // Tool-tip window
   TipWindow* m_tipWindow;
@@ -87,7 +87,7 @@ protected:
 
 private:
   int getToolGroupIndex(ToolGroup* group);
-  void openPopupFrame(int group_index, ToolGroup* group);
+  void openPopupWindow(int group_index, ToolGroup* group);
   Rect getToolGroupBounds(int group_index);
   Point getToolPositionInGroup(int group_index, Tool* tool);
   void openTipWindow(int group_index, Tool* tool);
@@ -95,7 +95,7 @@ private:
 };
 
 // Class to show a group of tools (horizontally)
-// This widget is inside the ToolBar::m_popupFrame
+// This widget is inside the ToolBar::m_popupWindow
 class ToolStrip : public Widget
 {
   ToolGroup* m_group;
@@ -158,7 +158,7 @@ ToolBar::ToolBar()
   m_hot_tool = NULL;
   m_hot_index = NoneIndex;
   m_open_on_hot = false;
-  m_popupFrame = NULL;
+  m_popupWindow = NULL;
   m_tipWindow = NULL;
   m_tipOpened = false;
 
@@ -172,7 +172,7 @@ ToolBar::ToolBar()
 
 ToolBar::~ToolBar()
 {
-  delete m_popupFrame;
+  delete m_popupWindow;
   delete m_tipWindow;
 }
 
@@ -300,7 +300,7 @@ bool ToolBar::onProcessMessage(Message* msg)
           UIContext::instance()->getSettings()->setCurrentTool(tool);
           invalidate();
 
-          openPopupFrame(c, tool_group);
+          openPopupWindow(c, tool_group);
         }
       }
 
@@ -339,7 +339,7 @@ bool ToolBar::onProcessMessage(Message* msg)
           new_hot_index = c;
 
           if ((m_open_on_hot) && (m_hot_tool != new_hot_tool))
-            openPopupFrame(c, tool_group);
+            openPopupWindow(c, tool_group);
           break;
         }
       }
@@ -375,7 +375,7 @@ bool ToolBar::onProcessMessage(Message* msg)
     case JM_MOUSELEAVE:
       closeTipWindow();
 
-      if (!m_popupFrame)
+      if (!m_popupWindow)
         m_tipOpened = false;
 
       m_hot_tool = NULL;
@@ -388,7 +388,7 @@ bool ToolBar::onProcessMessage(Message* msg)
     case JM_TIMER:
       if (msg->timer.timer == &m_tipTimer) {
         if (m_tipWindow)
-          m_tipWindow->open_window();
+          m_tipWindow->openWindow();
 
         m_tipTimer.stop();
         m_tipOpened = true;
@@ -414,13 +414,13 @@ int ToolBar::getToolGroupIndex(ToolGroup* group)
   return -1;
 }
 
-void ToolBar::openPopupFrame(int group_index, ToolGroup* tool_group)
+void ToolBar::openPopupWindow(int group_index, ToolGroup* tool_group)
 {
   // Close the current popup window
-  if (m_popupFrame) {
-    m_popupFrame->closeWindow(NULL);
-    delete m_popupFrame;
-    m_popupFrame = NULL;
+  if (m_popupWindow) {
+    m_popupWindow->closeWindow(NULL);
+    delete m_popupWindow;
+    m_popupWindow = NULL;
   }
 
   // Close tip window
@@ -439,11 +439,11 @@ void ToolBar::openPopupFrame(int group_index, ToolGroup* tool_group)
 
   // In case this tool contains more than just one tool, show the popup window
   m_open_on_hot = true;
-  m_popupFrame = new PopupFrame(NULL, false);
-  m_popupFrame->Close.connect(Bind<void, ToolBar, ToolBar>(&ToolBar::onClosePopup, this));
+  m_popupWindow = new PopupWindow(NULL, false);
+  m_popupWindow->Close.connect(Bind<void, ToolBar, ToolBar>(&ToolBar::onClosePopup, this));
 
   ToolStrip* toolstrip = new ToolStrip(tool_group, this);
-  m_popupFrame->addChild(toolstrip);
+  m_popupWindow->addChild(toolstrip);
 
   Rect rc = getToolGroupBounds(group_index);
   int w = 0;
@@ -475,13 +475,13 @@ void ToolBar::openPopupFrame(int group_index, ToolGroup* tool_group)
   {
     jrect rc2 = { rc.x, rc.y, this->rc->x2, rc.y+rc.h };
     JRegion hotregion = jregion_new(&rc2, 1);
-    m_popupFrame->setHotRegion(hotregion);
+    m_popupWindow->setHotRegion(hotregion);
   }
 
-  m_popupFrame->set_autoremap(false);
-  m_popupFrame->setBounds(rc);
+  m_popupWindow->set_autoremap(false);
+  m_popupWindow->setBounds(rc);
   toolstrip->setBounds(rc);
-  m_popupFrame->open_window();
+  m_popupWindow->openWindow();
 
   toolstrip->setBounds(rc);
 }
@@ -582,14 +582,14 @@ void ToolBar::openTipWindow(int group_index, Tool* tool)
   Point arrow = tool ? getToolPositionInGroup(group_index, tool): Point(0, 0);
   int w = jrect_w(m_tipWindow->rc);
   int h = jrect_h(m_tipWindow->rc);
-  int x = toolrc.x - w + (tool && m_popupFrame && m_popupFrame->isVisible() ? arrow.x-m_popupFrame->getBounds().w: 0);
+  int x = toolrc.x - w + (tool && m_popupWindow && m_popupWindow->isVisible() ? arrow.x-m_popupWindow->getBounds().w: 0);
   int y = toolrc.y + toolrc.h;
 
   m_tipWindow->position_window(MID(0, x, JI_SCREEN_W-w),
                                MID(0, y, JI_SCREEN_H-h));
 
   if (m_tipOpened)
-    m_tipWindow->open_window();
+    m_tipWindow->openWindow();
   else
     m_tipTimer.start();
 }

@@ -12,7 +12,7 @@
 
 namespace ui {
 
-  class Frame;
+  class Window;
   class Timer;
 
   class Manager : public Widget
@@ -35,8 +35,8 @@ namespace ui {
 
     void enqueueMessage(Message* msg);
 
-    Frame* getTopFrame();
-    Frame* getForegroundFrame();
+    Window* getTopWindow();
+    Window* getForegroundWindow();
 
     Widget* getFocus();
     Widget* getMouse();
@@ -61,8 +61,8 @@ namespace ui {
 
     void invalidateDisplayRegion(const JRegion region);
 
-    void _openWindow(Frame* window);
-    void _closeWindow(Frame* frame, bool redraw_background);
+    void _openWindow(Window* window);
+    void _closeWindow(Window* window, bool redraw_background);
 
   protected:
     bool onProcessMessage(Message* msg) OVERRIDE;

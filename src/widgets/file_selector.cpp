@@ -167,7 +167,7 @@ public:
 };
 
 FileSelector::FileSelector()
-  : Frame(false, "")
+  : Window(false, "")
 {
   app::WidgetLoader loader;
   loader.addWidgetType("filenameentry", new CustomFileNameEntryCreator);
@@ -316,7 +316,7 @@ base::string FileSelector::show(const base::string& title,
 
   // open the window and run... the user press ok?
 again:
-  open_window_fg();
+  openWindowInForeground();
   if (get_killer() == ok ||
       get_killer() == m_fileList) {
     // open the selected file

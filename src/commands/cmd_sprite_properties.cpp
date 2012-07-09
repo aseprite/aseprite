@@ -71,7 +71,7 @@ void SpritePropertiesCommand::onExecute(Context* context)
   ColorButton* color_button = NULL;
 
   // Load the window widget
-  UniquePtr<Frame> window(app::load_widget<Frame>("sprite_properties.xml", "sprite_properties"));
+  UniquePtr<Window> window(app::load_widget<Window>("sprite_properties.xml", "sprite_properties"));
   name = app::find_widget<Widget>(window, "name");
   type = app::find_widget<Widget>(window, "type");
   size = app::find_widget<Widget>(window, "size");
@@ -135,7 +135,7 @@ void SpritePropertiesCommand::onExecute(Context* context)
 
   load_window_pos(window, "SpriteProperties");
   window->setVisible(true);
-  window->open_window_fg();
+  window->openWindowInForeground();
 
   if (window->get_killer() == ok) {
     if (color_button) {

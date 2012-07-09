@@ -33,10 +33,10 @@
 #include "raster/sprite.h"
 #include "ui/box.h"
 #include "ui/button.h"
-#include "ui/frame.h"
 #include "ui/label.h"
 #include "ui/slider.h"
 #include "ui/widget.h"
+#include "ui/window.h"
 #include "undo_transaction.h"
 #include "undoers/set_mask.h"
 #include "util/misc.h"
@@ -75,7 +75,7 @@ void dialogs_mask_color(Document* document)
   if (!image)
     return;
 
-  UniquePtr<Frame> window(new Frame(false, "Mask by Color"));
+  UniquePtr<Window> window(new Window(false, "Mask by Color"));
   box1 = new Box(JI_VERTICAL);
   box2 = new Box(JI_HORIZONTAL);
   box3 = new Box(JI_HORIZONTAL);
@@ -98,8 +98,8 @@ void dialogs_mask_color(Document* document)
 
   button_1->Click.connect(Bind<void>(&button_1_command, button_1, Ref(documentReader)));
   button_2->Click.connect(Bind<void>(&button_2_command, button_2, Ref(documentReader)));
-  button_ok->Click.connect(Bind<void>(&Frame::closeWindow, window.get(), button_ok));
-  button_cancel->Click.connect(Bind<void>(&Frame::closeWindow, window.get(), button_cancel));
+  button_ok->Click.connect(Bind<void>(&Window::closeWindow, window.get(), button_ok));
+  button_cancel->Click.connect(Bind<void>(&Window::closeWindow, window.get(), button_cancel));
 
   button_color->Change.connect(Bind<void>(&mask_preview, Ref(documentReader)));
   slider_tolerance->Change.connect(Bind<void>(&mask_preview, Ref(documentReader)));
@@ -135,7 +135,7 @@ void dialogs_mask_color(Document* document)
   load_window_pos(window, "MaskColor");
 
   // Open the window
-  window->open_window_fg();
+  window->openWindowInForeground();
 
   if (window->get_killer() == button_ok) {
     DocumentWriter documentWriter(documentReader);

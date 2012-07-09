@@ -31,10 +31,10 @@
 #include "raster/mask.h"
 #include "raster/sprite.h"
 #include "ui/button.h"
-#include "ui/frame.h"
 #include "ui/label.h"
 #include "ui/slider.h"
 #include "ui/widget.h"
+#include "ui/window.h"
 #include "widgets/color_button.h"
 
 static const char* ConfigSection = "InvertColor";

@@ -50,7 +50,7 @@ AboutCommand::AboutCommand()
 
 void AboutCommand::onExecute(Context* context)
 {
-  UniquePtr<Frame> frame(new Frame(false, "About " PACKAGE));
+  UniquePtr<Window> window(new Window(false, "About " PACKAGE));
   Box* box1 = new Box(JI_VERTICAL);
   Grid* grid = new Grid(2, false);
   Label* title = new Label(PACKAGE " v" VERSION);
@@ -92,7 +92,7 @@ void AboutCommand::onExecute(Context* context)
   bottom_box1->addChild(bottom_box3);
 
   box1->addChild(grid);
-  frame->addChild(box1);
+  window->addChild(box1);
 
   jwidget_set_border(close_button,
                      close_button->border_width.l + 16*jguiscale(),
@@ -100,9 +100,9 @@ void AboutCommand::onExecute(Context* context)
                      close_button->border_width.r + 16*jguiscale(),
                      close_button->border_width.b);
 
-  close_button->Click.connect(Bind<void>(&Frame::closeWindow, frame.get(), close_button));
+  close_button->Click.connect(Bind<void>(&Window::closeWindow, window.get(), close_button));
 
-  frame->open_window_fg();
+  window->openWindowInForeground();
 }
 
 //////////////////////////////////////////////////////////////////////

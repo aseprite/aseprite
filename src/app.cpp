@@ -100,7 +100,7 @@ public:
 
 App* App::m_instance = NULL;
 
-static Frame* top_window = NULL;      /* top level window (the desktop) */
+static Window* top_window = NULL;     // Top level window (the desktop)
 static Widget* box_menubar = NULL;    /* box where the menu bar is */
 static Widget* box_colorbar = NULL;   /* box where the color bar is */
 static Widget* box_toolbar = NULL;    /* box where the tools bar is */
@@ -185,7 +185,7 @@ int App::run()
     ui::Manager::getDefault()->invalidate();
 
     // Load main window
-    top_window = app::load_widget<Frame>("main_window.xml", "main_window");
+    top_window = app::load_widget<Window>("main_window.xml", "main_window");
 
     box_menubar = top_window->findChild("menubar");
     box_editors = top_window->findChild("editor");
@@ -238,7 +238,7 @@ int App::run()
     set_current_editor(editor);
 
     // Open the window
-    top_window->open_window();
+    top_window->openWindow();
 
     // Redraw the whole screen.
     ui::Manager::getDefault()->invalidate();
@@ -482,7 +482,7 @@ PixelFormat app_get_current_pixel_format()
     return IMAGE_RGB;
 }
 
-Frame* app_get_top_window() { return top_window; }
+Window* app_get_top_window() { return top_window; }
 MenuBar* app_get_menubar() { return menubar; }
 StatusBar* app_get_statusbar() { return statusbar; }
 ColorBar* app_get_colorbar() { return colorbar; }

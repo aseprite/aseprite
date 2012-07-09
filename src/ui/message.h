@@ -13,6 +13,7 @@
 namespace ui {
 
   class Timer;
+  class Widget;
 
   /* TODO add mutexes */
 #define JM_MESSAGE(name)                        \

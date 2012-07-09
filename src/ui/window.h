@@ -4,8 +4,8 @@
 // This source file is ditributed under a BSD-like license, please
 // read LICENSE.txt for more information.
 
-#ifndef UI_FRAME_H_INCLUDED
-#define UI_FRAME_H_INCLUDED
+#ifndef UI_WINDOW_H_INCLUDED
+#define UI_WINDOW_H_INCLUDED
 
 #include "base/compiler_specific.h"
 #include "base/signal.h"
@@ -17,11 +17,11 @@
 
 namespace ui {
 
-  class Frame : public Widget
+  class Window : public Widget
   {
   public:
-    Frame(bool is_desktop, const char* text);
-    ~Frame();
+    Window(bool is_desktop, const char* text);
+    ~Window();
 
     Widget* get_killer();
 
@@ -36,9 +36,8 @@ namespace ui {
     void position_window(int x, int y);
     void move_window(JRect rect);
 
-    void open_window();
-    void open_window_fg();
-    void open_window_bg();
+    void openWindow();
+    void openWindowInForeground();
     void closeWindow(Widget* killer);
 
     bool is_toplevel();

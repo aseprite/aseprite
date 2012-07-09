@@ -4,19 +4,19 @@
 // This source file is ditributed under a BSD-like license, please
 // read LICENSE.txt for more information.
 
-#ifndef UI_POPUP_FRAME_H_INCLUDED
-#define UI_POPUP_FRAME_H_INCLUDED
+#ifndef UI_POPUP_WINDOW_H_INCLUDED
+#define UI_POPUP_WINDOW_H_INCLUDED
 
 #include "base/compiler_specific.h"
-#include "ui/frame.h"
+#include "ui/window.h"
 
 namespace ui {
 
-  class PopupFrame : public Frame
+  class PopupWindow : public Window
   {
   public:
-    PopupFrame(const char* text, bool close_on_buttonpressed);
-    ~PopupFrame();
+    PopupWindow(const char* text, bool close_on_buttonpressed);
+    ~PopupWindow();
 
     void setHotRegion(JRegion region);
 

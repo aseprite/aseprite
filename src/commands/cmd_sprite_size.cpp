@@ -197,7 +197,7 @@ void SpriteSizeCommand::onExecute(Context* context)
   const Sprite* sprite(document ? document->getSprite(): 0);
 
   // load the window widget
-  UniquePtr<Frame> window(app::load_widget<Frame>("sprite_size.xml", "sprite_size"));
+  UniquePtr<Window> window(app::load_widget<Window>("sprite_size.xml", "sprite_size"));
   m_widthPx = app::find_widget<Entry>(window, "width_px");
   m_heightPx = app::find_widget<Entry>(window, "height_px");
   m_widthPerc = app::find_widget<Entry>(window, "width_perc");
@@ -224,7 +224,7 @@ void SpriteSizeCommand::onExecute(Context* context)
 
   load_window_pos(window, "SpriteSize");
   window->setVisible(true);
-  window->open_window_fg();
+  window->openWindowInForeground();
   save_window_pos(window, "SpriteSize");
 
   if (window->get_killer() == ok) {

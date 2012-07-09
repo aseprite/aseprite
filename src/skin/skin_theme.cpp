@@ -82,7 +82,7 @@ protected:
         return true;
 
       case JM_DRAW:
-        static_cast<SkinTheme*>(getTheme())->draw_frame_button(this, &msg->draw.rect);
+        static_cast<SkinTheme*>(getTheme())->drawWindowButton(this, &msg->draw.rect);
         return true;
 
       case JM_KEYPRESSED:
@@ -696,8 +696,8 @@ void SkinTheme::init_widget(Widget* widget)
       widget->child_spacing = 0;
       break;
 
-    case JI_FRAME:
-      if (!static_cast<Frame*>(widget)->is_desktop()) {
+    case JI_WINDOW:
+      if (!static_cast<Window*>(widget)->is_desktop()) {
         if (widget->hasText()) {
           BORDER4(6 * scale, (4+6) * scale, 6 * scale, 6 * scale);
           widget->border_width.t += jwidget_get_text_height(widget);
@@ -1246,7 +1246,7 @@ void SkinTheme::draw_separator(Widget* widget, JRect clip)
 {
   int x1, y1, x2, y2;
 
-  // frame position
+  // position
   x1 = widget->rc->x1 + widget->border_width.l/2;
   y1 = widget->rc->y1 + widget->border_width.t/2;
   x2 = widget->rc->x2 - 1 - widget->border_width.r/2;
@@ -1578,9 +1578,9 @@ void SkinTheme::draw_view_viewport(Widget* widget, JRect clip)
   jdraw_rectfill(widget->rc, BGCOLOR);
 }
 
-void SkinTheme::paintFrame(PaintEvent& ev)
+void SkinTheme::paintWindow(PaintEvent& ev)
 {
-  Frame* window = static_cast<Frame*>(ev.getSource());
+  Window* window = static_cast<Window*>(ev.getSource());
   JRect pos = jwidget_get_rect(window);
   JRect cpos = jwidget_get_child_rect(window);
 
@@ -1621,7 +1621,7 @@ void SkinTheme::paintFrame(PaintEvent& ev)
   jrect_free(cpos);
 }
 
-void SkinTheme::draw_frame_button(ButtonBase* widget, JRect clip)
+void SkinTheme::drawWindowButton(ButtonBase* widget, JRect clip)
 {
   int part;
 

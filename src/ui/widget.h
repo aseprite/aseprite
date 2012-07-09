@@ -25,11 +25,14 @@ struct BITMAP;
 
 namespace ui {
 
-  class PaintEvent;
-  class PreferredSizeEvent;
+  union Message;
+
   class InitThemeEvent;
   class Manager;
-  class Frame;
+  class PaintEvent;
+  class PreferredSizeEvent;
+  class Theme;
+  class Window;
 
   int ji_register_widget_type();
 
@@ -193,7 +196,7 @@ namespace ui {
     // PARENTS & CHILDREN
     // ===============================================================
 
-    Frame* getRoot();
+    Window* getRoot();
     Widget* getParent();
     Manager* getManager();
 

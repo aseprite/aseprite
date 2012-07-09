@@ -40,7 +40,7 @@
 namespace ui {
 
 Alert::Alert()
-  : Frame(false, "")
+  : Window(false, "")
 {
   // Do nothing
 }
@@ -84,7 +84,7 @@ int Alert::show(const char* format, ...)
   window->processString(buf, labels, buttons);
 
   // Open it
-  window->open_window_fg();
+  window->openWindowInForeground();
 
   // Check the killer
   int ret = 0;
@@ -147,7 +147,7 @@ void Alert::processString(char* buf, std::vector<Widget*>& labels, std::vector<W
 
           usprintf(buttonId, "button-%d", buttons.size());
           button_widget->setId(buttonId);
-          button_widget->Click.connect(Bind<void>(&Frame::closeWindow, this, button_widget));
+          button_widget->Click.connect(Bind<void>(&Window::closeWindow, this, button_widget));
         }
 
         buf[c] = chr;

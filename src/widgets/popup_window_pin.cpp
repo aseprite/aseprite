@@ -18,7 +18,7 @@
 
 #include "config.h"
 
-#include "widgets/popup_frame_pin.h"
+#include "widgets/popup_window_pin.h"
 
 #include "base/bind.h"
 #include "gfx/border.h"
@@ -33,8 +33,8 @@
 
 using namespace ui;
 
-PopupFramePin::PopupFramePin(const char* text, bool close_on_buttonpressed)
-  : PopupFrame(text, close_on_buttonpressed)
+PopupWindowPin::PopupWindowPin(const char* text, bool close_on_buttonpressed)
+  : PopupWindow(text, close_on_buttonpressed)
   , m_pin("")
 {
   // Configure the micro check-box look without borders, only the "pin" icon is shown.
@@ -42,12 +42,12 @@ PopupFramePin::PopupFramePin(const char* text, bool close_on_buttonpressed)
   m_pin.child_spacing = 0;
   m_pin.setBorder(gfx::Border(0));
 
-  m_pin.Click.connect(&PopupFramePin::onPinClick, this);
+  m_pin.Click.connect(&PopupWindowPin::onPinClick, this);
 
   set_gfxicon_to_button(&m_pin, PART_UNPINNED, PART_PINNED, PART_UNPINNED, JI_CENTER | JI_MIDDLE);
 }
 
-void PopupFramePin::onPinClick(Event& ev)
+void PopupWindowPin::onPinClick(Event& ev)
 {
   if (m_pin.isSelected()) {
     makeFloating();
@@ -62,7 +62,7 @@ void PopupFramePin::onPinClick(Event& ev)
   }
 }
 
-bool PopupFramePin::onProcessMessage(Message* msg)
+bool PopupWindowPin::onProcessMessage(Message* msg)
 {
   switch (msg->type) {
 
@@ -77,12 +77,12 @@ bool PopupFramePin::onProcessMessage(Message* msg)
 
   }
 
-  return PopupFrame::onProcessMessage(msg);
+  return PopupWindow::onProcessMessage(msg);
 }
 
-void PopupFramePin::onHitTest(HitTestEvent& ev)
+void PopupWindowPin::onHitTest(HitTestEvent& ev)
 {
-  PopupFrame::onHitTest(ev);
+  PopupWindow::onHitTest(ev);
 
   if (m_pin.isSelected() &&
       ev.getHit() == HitTestClient) {

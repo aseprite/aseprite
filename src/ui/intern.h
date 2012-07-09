@@ -14,8 +14,8 @@ struct BITMAP;
 
 namespace ui {
 
-  class Frame;
   class Widget;
+  class Window;
 
   //////////////////////////////////////////////////////////////////////
   // jintern.c

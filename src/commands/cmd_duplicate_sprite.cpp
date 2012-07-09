@@ -66,7 +66,7 @@ void DuplicateSpriteCommand::onExecute(Context* context)
   char buf[1024];
 
   /* load the window widget */
-  UniquePtr<Frame> window(app::load_widget<Frame>("duplicate_sprite.xml", "duplicate_sprite"));
+  UniquePtr<Window> window(app::load_widget<Window>("duplicate_sprite.xml", "duplicate_sprite"));
 
   src_name = window->findChild("src_name");
   dst_name = window->findChild("dst_name");
@@ -81,7 +81,7 @@ void DuplicateSpriteCommand::onExecute(Context* context)
     flatten->setSelected(true);
 
   /* open the window */
-  window->open_window_fg();
+  window->openWindowInForeground();
 
   if (window->get_killer() == window->findChild("ok")) {
     set_config_bool("DuplicateSprite", "Flatten", flatten->isSelected());

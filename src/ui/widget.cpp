@@ -346,13 +346,13 @@ bool Widget::isFocusMagnet() const
 // PARENTS & CHILDREN
 // ===============================================================
 
-Frame* Widget::getRoot()
+Window* Widget::getRoot()
 {
   Widget* widget = this;
 
   while (widget) {
-    if (widget->type == JI_FRAME)
-      return dynamic_cast<Frame*>(widget);
+    if (widget->type == JI_WINDOW)
+      return dynamic_cast<Window*>(widget);
 
     widget = widget->parent;
   }
@@ -595,7 +595,7 @@ JRegion jwidget_get_region(Widget* widget)
 
   ASSERT_VALID_WIDGET(widget);
 
-  if (widget->type == JI_FRAME)
+  if (widget->type == JI_WINDOW)
     region = widget->getTheme()->get_window_mask(widget);
   else
     region = jregion_new(widget->rc, 1);
@@ -1071,8 +1071,8 @@ bool Widget::sendMessage(Message* msg)
 
 void Widget::closeWindow()
 {
-  if (Frame* frame = getRoot())
-    frame->closeWindow(this);
+  if (Window* window = getRoot())
+    window->closeWindow(this);
 }
 
 void Widget::broadcastMouseMessage(WidgetsList& targets)

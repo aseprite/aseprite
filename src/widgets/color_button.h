@@ -52,11 +52,11 @@ protected:
 private:
   void openSelectorDialog();
   void closeSelectorDialog();
-  void onFrameColorChange(const Color& color);
+  void onWindowColorChange(const Color& color);
 
   Color m_color;
   PixelFormat m_pixelFormat;
-  ColorSelector* m_frame;
+  ColorSelector* m_window;
 };
 
 #endif

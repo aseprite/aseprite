@@ -24,13 +24,13 @@
 #include "filters/tiled_mode.h"
 #include "ui/box.h"
 #include "ui/button.h"
-#include "ui/frame.h"
+#include "ui/window.h"
 
 class FilterManagerImpl;
 
 // A generic window to show parameters for a Filter with integrated
 // preview in the current editor.
-class FilterWindow : public ui::Frame
+class FilterWindow : public ui::Window
 {
 public:
   enum WithChannels { WithChannelsSelector, WithoutChannelsSelector };

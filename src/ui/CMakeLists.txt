@@ -15,7 +15,6 @@ add_library(ui-lib
   event.cpp
   font.cpp
   fontbmp.cpp
-  frame.cpp
   graphics.cpp
   grid.cpp
   gui.cpp
@@ -29,7 +28,7 @@ add_library(ui-lib
   menu.cpp
   message.cpp
   paint_event.cpp
-  popup_frame.cpp
+  popup_window.cpp
   preferred_size_event.cpp
   property.cpp
   rect.cpp
@@ -45,4 +44,5 @@ add_library(ui-lib
   tooltips.cpp
   view.cpp
   viewport.cpp
-  widget.cpp)
+  widget.cpp
+  window.cpp)

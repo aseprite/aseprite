@@ -337,7 +337,7 @@ void StatusBar::showTip(int msecs, const char *format, ...)
   if (m_tipwindow->isVisible())
     m_tipwindow->closeWindow(NULL);
 
-  m_tipwindow->open_window();
+  m_tipwindow->openWindow();
   m_tipwindow->remap_window();
 
   x = this->rc->x2 - jrect_w(m_tipwindow->rc);

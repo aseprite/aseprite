@@ -25,15 +25,15 @@
 #include "ui/box.h"
 #include "ui/button.h"
 #include "ui/combobox.h"
-#include "ui/frame.h"
+#include "ui/window.h"
 
 using namespace ui;
 
-class DeveloperConsole : public Frame
+class DeveloperConsole : public Window
 {
 public:
   DeveloperConsole()
-    : Frame(false, "Developer Console")
+    : Window(false, "Developer Console")
     , m_vbox(JI_VERTICAL)
   {
     m_vbox.addChild(&m_docs);
@@ -96,7 +96,7 @@ void DeveloperConsoleCommand::onExecute(Context* context)
   }
 
   m_devConsole->updateDocuments(context);
-  m_devConsole->open_window_bg();
+  m_devConsole->openWindow();
 }
 
 //////////////////////////////////////////////////////////////////////

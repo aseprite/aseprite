@@ -33,7 +33,7 @@ FilterWindow::FilterWindow(const char* title, const char* cfgSection,
                            WithChannels withChannels,
                            WithTiled withTiled,
                            TiledMode tiledMode)
-  : Frame(false, title)
+  : Window(false, title)
   , m_cfgSection(cfgSection)
   , m_filterMgr(filterMgr)
   , m_hbox(JI_HORIZONTAL)
@@ -103,7 +103,7 @@ bool FilterWindow::doModal()
   restartPreview();
 
   // Open in foreground
-  open_window_fg();
+  openWindowInForeground();
 
   // Did the user press OK?
   if (get_killer() == &m_okButton) {

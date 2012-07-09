@@ -20,12 +20,12 @@
 #define WIDGETS_POPUP_FRAME_PIN_H_INCLUDED
 
 #include "ui/button.h"
-#include "ui/popup_frame.h"
+#include "ui/popup_window.h"
 
-class PopupFramePin : public ui::PopupFrame
+class PopupWindowPin : public ui::PopupWindow
 {
 public:
-  PopupFramePin(const char* text, bool close_on_buttonpressed);
+  PopupWindowPin(const char* text, bool close_on_buttonpressed);
 
 protected:
   virtual bool onProcessMessage(ui::Message* msg) OVERRIDE;

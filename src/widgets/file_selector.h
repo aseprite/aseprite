@@ -21,7 +21,7 @@
 
 #include "base/string.h"
 #include "base/unique_ptr.h"
-#include "ui/frame.h"
+#include "ui/window.h"
 
 class IFileItem;
 
@@ -36,7 +36,7 @@ namespace widgets {
   class FileList;
   class CustomFileNameEntry;
 
-  class FileSelector : public ui::Frame
+  class FileSelector : public ui::Window
   {
   public:
     FileSelector();

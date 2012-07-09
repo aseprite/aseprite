@@ -64,7 +64,7 @@ void LayerPropertiesCommand::onExecute(Context* context)
   const Sprite* sprite(document->getSprite());
   const Layer* layer = sprite->getCurrentLayer();
 
-  UniquePtr<Frame> window(new Frame(false, "Layer Properties"));
+  UniquePtr<Window> window(new Window(false, "Layer Properties"));
   Box* box1 = new Box(JI_VERTICAL);
   Box* box2 = new Box(JI_HORIZONTAL);
   Box* box3 = new Box(JI_HORIZONTAL + JI_HOMOGENEOUS);
@@ -73,8 +73,8 @@ void LayerPropertiesCommand::onExecute(Context* context)
   Button* button_ok = new Button("&OK");
   Button* button_cancel = new Button("&Cancel");
 
-  button_ok->Click.connect(Bind<void>(&Frame::closeWindow, window.get(), button_ok));
-  button_cancel->Click.connect(Bind<void>(&Frame::closeWindow, window.get(), button_cancel));
+  button_ok->Click.connect(Bind<void>(&Window::closeWindow, window.get(), button_ok));
+  button_cancel->Click.connect(Bind<void>(&Window::closeWindow, window.get(), button_cancel));
 
   jwidget_set_min_size(entry_name, 128, 0);
   entry_name->setExpansive(true);
@@ -90,7 +90,7 @@ void LayerPropertiesCommand::onExecute(Context* context)
   entry_name->setFocusMagnet(true);
   button_ok->setFocusMagnet(true);
 
-  window->open_window_fg();
+  window->openWindowInForeground();
 
   if (window->get_killer() == button_ok) {
     DocumentWriter documentWriter(document);

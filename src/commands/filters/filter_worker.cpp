@@ -106,7 +106,7 @@ void FilterWorker::run()
   base::thread thread(&FilterWorker::thread_proxy, this);
 
   // Open the alert window in foreground (this is modal, locks the main thread)
-  m_alertWindow->open_window_fg();
+  m_alertWindow->openWindowInForeground();
 
   // Stop the monitoring timer.
   m_timer.stop();

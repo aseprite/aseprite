@@ -26,8 +26,8 @@
 #include "base/scoped_lock.h"
 #include "commands/commands.h"
 #include "commands/params.h"
-#include "ui/frame.h"
 #include "ui/manager.h"
+#include "ui/window.h"
 #include "ui_context.h"
 
 #ifdef ALLEGRO_WINDOWS
@@ -75,7 +75,7 @@ void check_for_dropped_files()
 
   // If the main window is not the current foreground one. We discard
   // the drop-files event.
-  if (ui::Manager::getDefault()->getForegroundFrame() != app_get_top_window())
+  if (ui::Manager::getDefault()->getForegroundWindow() != app_get_top_window())
     return;
 
   ScopedLock lock(*dropped_files_mutex);

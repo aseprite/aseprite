@@ -53,7 +53,7 @@ using namespace gfx;
 using namespace ui;
 using namespace tools;
 
-static Frame* window = NULL;
+static Window* window = NULL;
 
 static bool window_close_hook(Widget* widget, void *data);
 
@@ -270,7 +270,7 @@ void ConfigureTools::onExecute(Context* context)
   bool first_time = false;
 
   if (!window) {
-    window = app::load_widget<Frame>("tools_configuration.xml", "configure_tool");
+    window = app::load_widget<Window>("tools_configuration.xml", "configure_tool");
     first_time = true;
   }
   /* if the window is opened, close it */
@@ -385,7 +385,7 @@ void ConfigureTools::onExecute(Context* context)
   // Load window configuration
   load_window_pos(window, "ConfigureTool");
 
-  window->open_window_bg();
+  window->openWindow();
 }
 
 void ConfigureTools::onWindowClose()

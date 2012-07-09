@@ -18,8 +18,8 @@ namespace ui {
 
   class Button;
   class Entry;
-  class Frame;
   class ListBox;
+  class Window;
 
   class ComboBox : public Widget
   {
@@ -74,7 +74,7 @@ namespace ui {
 
     Entry* m_entry;
     Button* m_button;
-    Frame* m_window;
+    Window* m_window;
     ListBox* m_listbox;
     std::vector<Item*> m_items;
     int m_selected;

@@ -36,8 +36,8 @@ namespace ui {
   class Box;
   class Button;
   class Entry;
-  class Frame;
   class Slider;
+  class Window;
 }
 
 namespace tools {

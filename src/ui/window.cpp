@@ -33,8 +33,8 @@ static int press_x, press_y;
 
 static void displace_widgets(Widget* widget, int x, int y);
 
-Frame::Frame(bool desktop, const char* text)
-  : Widget(JI_FRAME)
+Window::Window(bool desktop, const char* text)
+  : Widget(JI_WINDOW)
 {
   m_killer = NULL;
   m_is_desktop = desktop;
@@ -52,55 +52,55 @@ Frame::Frame(bool desktop, const char* text)
   initTheme();
 }
 
-Frame::~Frame()
+Window::~Window()
 {
   getManager()->_closeWindow(this, false);
 }
 
-Widget* Frame::get_killer()
+Widget* Window::get_killer()
 {
   return m_killer;
 }
 
-void Frame::set_autoremap(bool state)
+void Window::set_autoremap(bool state)
 {
   m_is_autoremap = state;
 }
 
-void Frame::set_moveable(bool state)
+void Window::set_moveable(bool state)
 {
   m_is_moveable = state;
 }
 
-void Frame::set_sizeable(bool state)
+void Window::set_sizeable(bool state)
 {
   m_is_sizeable = state;
 }
 
-void Frame::set_ontop(bool state)
+void Window::set_ontop(bool state)
 {
   m_is_ontop = state;
 }
 
-void Frame::set_wantfocus(bool state)
+void Window::set_wantfocus(bool state)
 {
   m_is_wantfocus = state;
 }
 
-HitTest Frame::hitTest(const gfx::Point& point)
+HitTest Window::hitTest(const gfx::Point& point)
 {
   HitTestEvent ev(this, point, HitTestNowhere);
   onHitTest(ev);
   return ev.getHit();
 }
 
-void Frame::onClose(CloseEvent& ev)
+void Window::onClose(CloseEvent& ev)
 {
   // Fire Close signal
   Close(ev);
 }
 
-void Frame::onHitTest(HitTestEvent& ev)
+void Window::onHitTest(HitTestEvent& ev)
 {
   HitTest ht = HitTestNowhere;
 
@@ -168,7 +168,7 @@ void Frame::onHitTest(HitTestEvent& ev)
   ev.setHit(ht);
 }
 
-void Frame::remap_window()
+void Window::remap_window()
 {
   Size reqSize;
   JRect rect;
@@ -189,7 +189,7 @@ void Frame::remap_window()
   invalidate();
 }
 
-void Frame::center_window()
+void Window::center_window()
 {
   Widget* manager = getManager();
 
@@ -200,7 +200,7 @@ void Frame::center_window()
                   jrect_h(manager->rc)/2 - jrect_h(this->rc)/2);
 }
 
-void Frame::position_window(int x, int y)
+void Window::position_window(int x, int y)
 {
   JRect rect;
 
@@ -214,12 +214,12 @@ void Frame::position_window(int x, int y)
   invalidate();
 }
 
-void Frame::move_window(JRect rect)
+void Window::move_window(JRect rect)
 {
   move_window(rect, true);
 }
 
-void Frame::open_window()
+void Window::openWindow()
 {
   if (!this->parent) {
     if (m_is_autoremap)
@@ -229,9 +229,9 @@ void Frame::open_window()
   }
 }
 
-void Frame::open_window_fg()
+void Window::openWindowInForeground()
 {
-  open_window();
+  openWindow();
 
   Manager* manager = getManager();
 
@@ -245,12 +245,7 @@ void Frame::open_window_fg()
   m_is_foreground = false;
 }
 
-void Frame::open_window_bg()
-{
-  this->open_window();
-}
-
-void Frame::closeWindow(Widget* killer)
+void Window::closeWindow(Widget* killer)
 {
   m_killer = killer;
 
@@ -261,7 +256,7 @@ void Frame::closeWindow(Widget* killer)
   onClose(ev);
 }
 
-bool Frame::is_toplevel()
+bool Window::is_toplevel()
 {
   Widget* manager = getManager();
 
@@ -271,7 +266,7 @@ bool Frame::is_toplevel()
     return false;
 }
 
-bool Frame::onProcessMessage(Message* msg)
+bool Window::onProcessMessage(Message* msg)
 {
   switch (msg->type) {
 
@@ -450,7 +445,7 @@ bool Frame::onProcessMessage(Message* msg)
   return Widget::onProcessMessage(msg);
 }
 
-void Frame::onPreferredSize(PreferredSizeEvent& ev)
+void Window::onPreferredSize(PreferredSizeEvent& ev)
 {
   Widget* manager = getManager();
 
@@ -485,17 +480,17 @@ void Frame::onPreferredSize(PreferredSizeEvent& ev)
   }
 }
 
-void Frame::onPaint(PaintEvent& ev)
+void Window::onPaint(PaintEvent& ev)
 {
-  getTheme()->paintFrame(ev);
+  getTheme()->paintWindow(ev);
 }
 
-void Frame::onBroadcastMouseMessage(WidgetsList& targets)
+void Window::onBroadcastMouseMessage(WidgetsList& targets)
 {
   targets.push_back(this);
 
-  // Continue sending the message to siblings frames until a desktop
-  // or foreground frame.
+  // Continue sending the message to siblings windows until a desktop
+  // or foreground window.
   if (is_foreground() || is_desktop())
     return;
 
@@ -504,13 +499,13 @@ void Frame::onBroadcastMouseMessage(WidgetsList& targets)
     sibling->broadcastMouseMessage(targets);
 }
 
-void Frame::onSetText()
+void Window::onSetText()
 {
   Widget::onSetText();
   initTheme();
 }
 
-void Frame::window_set_position(JRect rect)
+void Window::window_set_position(JRect rect)
 {
   Widget* child;
   JRect cpos;
@@ -533,13 +528,13 @@ void Frame::window_set_position(JRect rect)
   jrect_free(cpos);
 }
 
-void Frame::limit_size(int *w, int *h)
+void Window::limit_size(int *w, int *h)
 {
   *w = MAX(*w, this->border_width.l+this->border_width.r);
   *h = MAX(*h, this->border_width.t+this->border_width.b);
 }
 
-void Frame::move_window(JRect rect, bool use_blit)
+void Window::move_window(JRect rect, bool use_blit)
 {
 #define FLAGS JI_GDR_CUTTOPWINDOWS | JI_GDR_USECHILDAREA
 

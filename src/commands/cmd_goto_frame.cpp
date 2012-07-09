@@ -26,7 +26,7 @@
 #include "modules/editors.h"
 #include "modules/gui.h"
 #include "raster/sprite.h"
-#include "ui/frame.h"
+#include "ui/window.h"
 #include "widgets/editor/editor.h"
 
 #include <allegro/unicode.h>
@@ -235,13 +235,13 @@ bool GotoFrameCommand::onEnabled(Context* context)
 void GotoFrameCommand::onExecute(Context* context)
 {
   if (m_frame == 0 && context->isUiAvailable()) {
-    UniquePtr<Frame> window(app::load_widget<Frame>("goto_frame.xml", "goto_frame"));
+    UniquePtr<Window> window(app::load_widget<Window>("goto_frame.xml", "goto_frame"));
     Widget* frame = app::find_widget<Widget>(window, "frame");
     Widget* ok = app::find_widget<Widget>(window, "ok");
 
     frame->setTextf("%d", context->getActiveDocument()->getSprite()->getCurrentFrame()+1);
 
-    window->open_window_fg();
+    window->openWindowInForeground();
     if (window->get_killer() != ok)
       return;
 

@@ -40,8 +40,9 @@ class StatusBar;
 class Tabs;
 
 namespace ui {
-  class Frame;
   class MenuBar;
+  class Widget;
+  class Window;
 }
 
 namespace tools { class ToolBox; }
@@ -102,7 +103,7 @@ bool app_rebuild_recent_list();
 
 PixelFormat app_get_current_pixel_format();
 
-ui::Frame* app_get_top_window();
+ui::Window* app_get_top_window();
 ui::MenuBar* app_get_menubar();
 StatusBar* app_get_statusbar();
 ColorBar* app_get_colorbar();

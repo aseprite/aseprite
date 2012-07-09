@@ -20,8 +20,8 @@
 
 #include <allegro.h>
 
-#include "ui/frame.h"
 #include "ui/manager.h"
+#include "ui/window.h"
 
 #include "app.h"
 #include "console.h"

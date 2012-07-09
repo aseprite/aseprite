@@ -366,13 +366,13 @@ SharedPtr<FormatOptions> JpegFormat::onGetFormatOptions(FileOp* fop)
       return jpeg_options;
 
     // Load the window to ask to the user the JPEG options he wants.
-    UniquePtr<ui::Frame> window(app::load_widget<ui::Frame>("jpeg_options.xml", "jpeg_options"));
+    UniquePtr<ui::Window> window(app::load_widget<ui::Window>("jpeg_options.xml", "jpeg_options"));
     ui::Slider* slider_quality = app::find_widget<ui::Slider>(window, "quality");
     ui::Widget* ok = app::find_widget<ui::Widget>(window, "ok");
 
     slider_quality->setValue(jpeg_options->quality * 10.0f);
 
-    window->open_window_fg();
+    window->openWindowInForeground();
 
     if (window->get_killer() == ok) {
       jpeg_options->quality = slider_quality->getValue() / 10.0f;

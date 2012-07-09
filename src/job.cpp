@@ -24,8 +24,8 @@
 #include "base/thread.h"
 #include "job.h"
 #include "ui/alert.h"
-#include "ui/frame.h"
 #include "ui/widget.h"
+#include "ui/window.h"
 #include "widgets/status_bar.h"
 
 static const int kMonitoringPeriod = 100;
@@ -78,7 +78,7 @@ Job::~Job()
 void Job::startJob()
 {
   m_thread = new base::thread(&Job::thread_proc, this);
-  m_alert_window->open_window_fg();
+  m_alert_window->openWindowInForeground();
 }
 
 void Job::jobProgress(double f)

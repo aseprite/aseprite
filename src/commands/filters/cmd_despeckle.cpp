@@ -18,8 +18,6 @@
 
 #include "config.h"
 
-#include <stdio.h>
-
 #include "app/find_widget.h"
 #include "app/load_widget.h"
 #include "base/bind.h"
@@ -34,9 +32,11 @@
 #include "settings/settings.h"
 #include "ui/button.h"
 #include "ui/entry.h"
-#include "ui/frame.h"
 #include "ui/grid.h"
 #include "ui/widget.h"
+#include "ui/window.h"
+
+#include <stdio.h>
 
 static const char* ConfigSection = "Despeckle";
 

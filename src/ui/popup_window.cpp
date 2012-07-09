@@ -19,8 +19,8 @@ using namespace gfx;
 
 namespace ui {
 
-PopupFrame::PopupFrame(const char* text, bool close_on_buttonpressed)
-  : Frame(false, text)
+PopupWindow::PopupWindow(const char* text, bool close_on_buttonpressed)
+  : Window(false, text)
 {
   m_close_on_buttonpressed = close_on_buttonpressed;
   m_hot_region = NULL;
@@ -40,7 +40,7 @@ PopupFrame::PopupFrame(const char* text, bool close_on_buttonpressed)
   jwidget_noborders(this);
 }
 
-PopupFrame::~PopupFrame()
+PopupWindow::~PopupWindow()
 {
   stopFilteringMessages();
 
@@ -52,7 +52,7 @@ PopupFrame::~PopupFrame()
  * @param region The new hot-region. This pointer is holded by the @a widget.
  * So you cannot destroy it after calling this routine.
  */
-void PopupFrame::setHotRegion(JRegion region)
+void PopupWindow::setHotRegion(JRegion region)
 {
   ASSERT(region != NULL);
 
@@ -64,19 +64,19 @@ void PopupFrame::setHotRegion(JRegion region)
   m_hot_region = region;
 }
 
-void PopupFrame::makeFloating()
+void PopupWindow::makeFloating()
 {
   stopFilteringMessages();
   set_moveable(true);
 }
 
-void PopupFrame::makeFixed()
+void PopupWindow::makeFixed()
 {
   startFilteringMessages();
   set_moveable(false);
 }
 
-bool PopupFrame::onProcessMessage(Message* msg)
+bool PopupWindow::onProcessMessage(Message* msg)
 {
   switch (msg->type) {
 
@@ -98,7 +98,7 @@ bool PopupFrame::onProcessMessage(Message* msg)
         }
 
         // If we are filtering messages we don't propagate key-events
-        // to other widgets. As we're a popup frame and we're
+        // to other widgets. As we're a popup window and we're
         // filtering messages, the user shouldn't be able to start
         // other actions pressing keyboard shortcuts.
         return false;
@@ -135,10 +135,10 @@ bool PopupFrame::onProcessMessage(Message* msg)
 
   }
 
-  return Frame::onProcessMessage(msg);
+  return Window::onProcessMessage(msg);
 }
 
-void PopupFrame::onPreferredSize(PreferredSizeEvent& ev)
+void PopupWindow::onPreferredSize(PreferredSizeEvent& ev)
 {
   ScreenGraphics g;
   g.setFont(getFont());
@@ -174,7 +174,7 @@ void PopupFrame::onPreferredSize(PreferredSizeEvent& ev)
   ev.setPreferredSize(resultSize);
 }
 
-void PopupFrame::onPaint(PaintEvent& ev)
+void PopupWindow::onPaint(PaintEvent& ev)
 {
   Graphics* g = ev.getGraphics();
   gfx::Rect pos = getClientBounds();
@@ -188,7 +188,7 @@ void PopupFrame::onPaint(PaintEvent& ev)
   g->drawString(getText(), ji_color_foreground(), this->getBgColor(), pos, getAlign());
 }
 
-void PopupFrame::onInitTheme(InitThemeEvent& ev)
+void PopupWindow::onInitTheme(InitThemeEvent& ev)
 {
   Widget::onInitTheme(ev);
 
@@ -198,7 +198,7 @@ void PopupFrame::onInitTheme(InitThemeEvent& ev)
   this->border_width.b = 3 * jguiscale();
 }
 
-void PopupFrame::startFilteringMessages()
+void PopupWindow::startFilteringMessages()
 {
   if (!m_filtering) {
     m_filtering = true;
@@ -210,7 +210,7 @@ void PopupFrame::startFilteringMessages()
   }
 }
 
-void PopupFrame::stopFilteringMessages()
+void PopupWindow::stopFilteringMessages()
 {
   if (m_filtering) {
     m_filtering = false;

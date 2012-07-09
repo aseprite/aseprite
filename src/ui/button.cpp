@@ -6,14 +6,7 @@
 
 #include "config.h"
 
-#include <allegro/gfx.h>
-#include <allegro/keyboard.h>
-#include <allegro/timer.h>
-#include <queue>
-#include <string.h>
-
 #include "ui/button.h"
-#include "ui/frame.h"
 #include "ui/list.h"
 #include "ui/manager.h"
 #include "ui/message.h"
@@ -21,6 +14,13 @@
 #include "ui/rect.h"
 #include "ui/theme.h"
 #include "ui/widget.h"
+#include "ui/window.h"
+
+#include <allegro/gfx.h>
+#include <allegro/keyboard.h>
+#include <allegro/timer.h>
+#include <queue>
+#include <string.h>
 
 namespace ui {
 
