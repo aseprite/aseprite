@@ -144,6 +144,7 @@ add_subdirectory(undo)
 
 add_library(aseprite-library
   app.cpp
+  app_menus.cpp
   check_args.cpp
   console.cpp
   context.cpp
@@ -277,7 +278,6 @@ add_library(aseprite-library
   modules/gfx.cpp
   modules/gui.cpp
   modules/palettes.cpp
-  modules/rootmenu.cpp
   raster/algo.cpp
   raster/algo_polygon.cpp
   raster/algofill.cpp
@@ -380,6 +380,8 @@ add_library(aseprite-library
   widgets/file_list.cpp
   widgets/file_selector.cpp
   widgets/hex_color_entry.cpp
+  widgets/main_menu_bar.cpp
+  widgets/main_window.cpp
   widgets/menuitem2.cpp
   widgets/palette_view.cpp
   widgets/popup_window_pin.cpp

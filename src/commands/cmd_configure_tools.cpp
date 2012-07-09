@@ -30,7 +30,6 @@
 #include "modules/editors.h"
 #include "modules/gfx.h"
 #include "modules/gui.h"
-#include "modules/rootmenu.h"
 #include "raster/image.h"
 #include "raster/mask.h"
 #include "raster/pen.h"
@@ -409,7 +408,7 @@ void ConfigureTools::onBrushTypeChange()
 
   m_brushPreview->invalidate();
 
-  app_get_statusbar()
+  StatusBar::instance()
     ->setStatusText(250,
                     "Pen shape: %s",
                     type == PEN_TYPE_CIRCLE ? "Circle":

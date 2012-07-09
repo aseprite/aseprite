@@ -28,6 +28,7 @@
 #include "ui_context.h"
 #include "undo/undo_history.h"
 #include "widgets/color_bar.h"
+#include "widgets/main_window.h"
 #include "widgets/tabs.h"
 
 #include <allegro/file.h>
@@ -54,7 +55,8 @@ void UIContext::onAddDocument(Document* document)
   Context::onAddDocument(document);
 
   // add the tab for this sprite
-  app_get_tabsbar()->addTab(get_filename(document->getFilename()), document);
+  App::instance()->getMainWindow()->getTabsBar()
+    ->addTab(get_filename(document->getFilename()), document);
 
   // Rebuild the list of tabs
   app_rebuild_documents_tabs();
@@ -66,7 +68,7 @@ void UIContext::onRemoveDocument(Document* document)
   Context::onRemoveDocument(document);
 
   // Remove this document from tabs
-  app_get_tabsbar()->removeTab(document);
+  App::instance()->getMainWindow()->getTabsBar()->removeTab(document);
 
   // Rebuild the tabs
   app_rebuild_documents_tabs();
@@ -80,10 +82,10 @@ void UIContext::onSetActiveDocument(Document* document)
   Context::onSetActiveDocument(document);
 
   // Select the document in the tabs.
-  app_get_tabsbar()->selectTab(document);
+  App::instance()->getMainWindow()->getTabsBar()->selectTab(document);
 
   // Change the image-type of color bar.
-  app_get_colorbar()->setPixelFormat(app_get_current_pixel_format());
+  ColorBar::instance()->setPixelFormat(app_get_current_pixel_format());
 
   // Change the main frame title.
   base::string defaultTitle = PACKAGE " v" VERSION;

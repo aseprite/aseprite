@@ -19,12 +19,74 @@
 #ifndef WIDGETS_TOOLBAR_H_INCLUDED
 #define WIDGETS_TOOLBAR_H_INCLUDED
 
-namespace ui { class Widget; }
-namespace tools { class Tool; }
+#include "base/compiler_specific.h"
+#include "gfx/point.h"
+#include "ui/timer.h"
+#include "ui/widget.h"
 
-ui::Widget* toolbar_new();
+#include <map>
 
-bool toolbar_is_tool_visible(ui::Widget* toolbar, tools::Tool* tool);
-void toolbar_select_tool(ui::Widget* toolbar, tools::Tool* tool);
+namespace tools {
+  class Tool;
+  class ToolGroup;
+}
+
+namespace ui {
+  class PopupWindow;
+  class TipWindow;
+}
+
+// Class to show selected tools for each tool (vertically)
+class ToolBar : public ui::Widget
+{
+  static ToolBar* m_instance;
+public:
+  static ToolBar* instance() { return m_instance; }
+
+  static const int NoneIndex = -1;
+  static const int ConfigureToolIndex = -2;
+  static const int MiniEditorVisibilityIndex = -3;
+
+  ToolBar();
+  ~ToolBar();
+
+  bool isToolVisible(tools::Tool* tool);
+  void selectTool(tools::Tool* tool);
+
+  void openTipWindow(tools::ToolGroup* tool_group, tools::Tool* tool);
+  void closeTipWindow();
+
+protected:
+  bool onProcessMessage(ui::Message* msg) OVERRIDE;
+
+private:
+  int getToolGroupIndex(tools::ToolGroup* group);
+  void openPopupWindow(int group_index, tools::ToolGroup* group);
+  gfx::Rect getToolGroupBounds(int group_index);
+  gfx::Point getToolPositionInGroup(int group_index, tools::Tool* tool);
+  void openTipWindow(int group_index, tools::Tool* tool);
+  void onClosePopup();
+
+  // What tool is selected for each tool-group
+  std::map<const tools::ToolGroup*, tools::Tool*> m_selected_in_group;
+
+  // Index of the tool group or special button highlighted.
+  int m_hot_index;
+
+  // What tool has the mouse above
+  tools::Tool* m_hot_tool;
+
+  // True if the popup-window must be opened when a tool-button is hot
+  bool m_open_on_hot;
+
+  // Window displayed to show a tool-group
+  ui::PopupWindow* m_popupWindow;
+
+  // Tool-tip window
+  ui::TipWindow* m_tipWindow;
+
+  ui::Timer m_tipTimer;
+  bool m_tipOpened;
+};
 
 #endif

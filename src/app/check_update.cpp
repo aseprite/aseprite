@@ -22,7 +22,6 @@
 
 #include "app/check_update.h"
 
-#include "app.h"
 #include "base/bind.h"
 #include "ini_file.h"
 #include "widgets/status_bar.h"
@@ -168,7 +167,7 @@ void CheckUpdateThreadLauncher::onMonitoringTick()
 
     case updater::CheckUpdateResponse::Critical:
     case updater::CheckUpdateResponse::Major:
-      app_get_statusbar()->showNotification("New Version!", m_response.getUrl().c_str());
+      StatusBar::instance()->showNotification("New Version!", m_response.getUrl().c_str());
       break;
   }
 

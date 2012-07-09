@@ -283,7 +283,7 @@ bool PaletteView::onProcessMessage(Message* msg)
       if (color.getType() == Color::IndexType) {
         int idx = color.getIndex();
 
-        app_get_statusbar()->showColor(0, "", color, 255);
+        StatusBar::instance()->showColor(0, "", color, 255);
 
         if (hasCapture() && idx != m_currentEntry) {
           if (!(msg->any.shifts & KB_CTRL_FLAG))
@@ -320,7 +320,7 @@ bool PaletteView::onProcessMessage(Message* msg)
     }
 
     case JM_MOUSELEAVE:
-      app_get_statusbar()->clearText();
+      StatusBar::instance()->clearText();
       break;
 
   }

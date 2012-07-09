@@ -21,23 +21,19 @@
 
 #include "base/signal.h"
 #include "base/string.h"
+#include "base/unique_ptr.h"
 #include "raster/pixel_format.h"
-#include "ui/base.h"
 
 #include <vector>
 
-class AppTabsDelegate;
 class CheckArgs;
-class ColorBar;
 class ConfigModule;
 class Document;
 class Layer;
 class LegacyModules;
 class LoggerModule;
-class Params;
+class MainWindow;
 class RecentFiles;
-class StatusBar;
-class Tabs;
 
 namespace ui {
   class MenuBar;
@@ -70,6 +66,7 @@ public:
   LoggerModule* getLogger() const;
   tools::ToolBox* getToolBox() const;
   RecentFiles* getRecentFiles() const;
+  MainWindow* getMainWindow() const { return m_mainWindow; }
 
   // App Signals
   Signal0<void> Exit;
@@ -90,7 +87,7 @@ private:
   LegacyModules* m_legacy;
   bool m_isGui;
   std::vector<base::string> m_args;
-  AppTabsDelegate* m_tabsDelegate;
+  UniquePtr<MainWindow> m_mainWindow;
 };
 
 void app_refresh_screen(const Document* document);
@@ -98,17 +95,7 @@ void app_refresh_screen(const Document* document);
 void app_rebuild_documents_tabs();
 void app_update_document_tab(const Document* document);
 
-// Updates the list of recent files.
-bool app_rebuild_recent_list();
-
 PixelFormat app_get_current_pixel_format();
-
-ui::Window* app_get_top_window();
-ui::MenuBar* app_get_menubar();
-StatusBar* app_get_statusbar();
-ColorBar* app_get_colorbar();
-ui::Widget* app_get_toolbar();
-Tabs* app_get_tabsbar();
 
 void app_default_statusbar_message();
 

@@ -23,6 +23,7 @@
 #include "context.h"
 #include "document.h"
 #include "ui/alert.h"
+#include "widgets/main_window.h"
 
 //////////////////////////////////////////////////////////////////////
 // exit
@@ -60,7 +61,7 @@ void ExitCommand::onExecute(Context* context)
   }
 
   // Close the window
-  app_get_top_window()->closeWindow(NULL);
+  App::instance()->getMainWindow()->closeWindow(NULL);
 }
 
 //////////////////////////////////////////////////////////////////////

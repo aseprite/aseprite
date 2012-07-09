@@ -236,7 +236,7 @@ public:
 
   void updateStatusBar(const char* text)
   {
-    app_get_statusbar()->setStatusText(0, text);
+    StatusBar::instance()->setStatusText(0, text);
   }
 };
 
@@ -272,7 +272,7 @@ tools::ToolLoop* create_tool_loop(Editor* editor, Context* context, Message* msg
   }
 
   // Get fg/bg colors
-  ColorBar* colorbar = app_get_colorbar();
+  ColorBar* colorbar = ColorBar::instance();
   Color fg = colorbar->getFgColor();
   Color bg = colorbar->getBgColor();
 

@@ -154,7 +154,7 @@ Editor::Editor()
     App::instance()->CurrentToolChange.connect(&Editor::onCurrentToolChange, this);
 
   m_fgColorChangeSlot =
-    app_get_colorbar()->FgColorChange.connect(Bind<void>(&Editor::onFgColorChange, this));
+    ColorBar::instance()->FgColorChange.connect(Bind<void>(&Editor::onFgColorChange, this));
 }
 
 Editor::~Editor()
@@ -169,7 +169,7 @@ Editor::~Editor()
   delete m_currentToolChangeSlot;
 
   // Remove this editor as listener of FgColorChange
-  app_get_colorbar()->FgColorChange.disconnect(m_fgColorChangeSlot);
+  ColorBar::instance()->FgColorChange.disconnect(m_fgColorChangeSlot);
   delete m_fgColorChangeSlot;
 }
 
@@ -979,7 +979,7 @@ bool Editor::onProcessMessage(Message* msg)
 
     case JM_MOUSELEAVE:
       hideDrawingCursor();
-      app_get_statusbar()->clearText();
+      StatusBar::instance()->clearText();
       break;
 
     case JM_BUTTONPRESSED:
@@ -1178,7 +1178,7 @@ void Editor::pasteImage(const Image* image, int x, int y)
     tools::Tool* defaultSelectionTool =
       App::instance()->getToolBox()->getToolById(tools::WellKnownTools::RectangularMarquee);
 
-    toolbar_select_tool(app_get_toolbar(), defaultSelectionTool);
+    ToolBar::instance()->selectTool(defaultSelectionTool);
   }
 
   Document* document = getDocument();

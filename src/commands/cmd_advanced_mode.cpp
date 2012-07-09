@@ -26,8 +26,11 @@
 #include "modules/gui.h"
 #include "ui/gui.h"
 #include "widgets/color_bar.h"
+#include "widgets/main_menu_bar.h"
+#include "widgets/main_window.h"
 #include "widgets/status_bar.h"
 #include "widgets/tabs.h"
+#include "widgets/toolbar.h"
 
 using namespace ui;
 
@@ -57,14 +60,15 @@ void AdvancedModeCommand::onExecute(Context* context)
 {
   advanced_mode = !advanced_mode;
 
-  app_get_toolbar()->setVisible(!advanced_mode);
-  app_get_menubar()->setVisible(!advanced_mode);
-  app_get_statusbar()->setVisible(!advanced_mode);
-  app_get_colorbar()->setVisible(!advanced_mode);
-  app_get_tabsbar()->setVisible(!advanced_mode);
+  MainWindow* mainWindow = App::instance()->getMainWindow();
+  mainWindow->getMenuBar()->setVisible(!advanced_mode);
+  mainWindow->getTabsBar()->setVisible(!advanced_mode);
+  ToolBar::instance()->setVisible(!advanced_mode);
+  StatusBar::instance()->setVisible(!advanced_mode);
+  ColorBar::instance()->setVisible(!advanced_mode);
 
-  app_get_top_window()->remap_window();
-  app_get_top_window()->invalidate();
+  mainWindow->remap_window();
+  mainWindow->invalidate();
 
   if (advanced_mode &&
       get_config_bool("AdvancedMode", "Warning", true)) {

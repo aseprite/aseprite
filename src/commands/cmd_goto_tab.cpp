@@ -21,6 +21,7 @@
 #include "commands/command.h"
 
 #include "app.h"
+#include "widgets/main_window.h"
 #include "widgets/tabs.h"
 
 class GotoNextTabCommand : public Command
@@ -42,8 +43,7 @@ GotoNextTabCommand::GotoNextTabCommand()
 
 void GotoNextTabCommand::onExecute(Context* context)
 {
-  Tabs* tabs = app_get_tabsbar();
-  tabs->selectNextTab();
+  App::instance()->getMainWindow()->getTabsBar()->selectNextTab();
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -69,10 +69,7 @@ GotoPreviousTabCommand::GotoPreviousTabCommand()
 
 void GotoPreviousTabCommand::onExecute(Context* context)
 {
-  Tabs* tabs = app_get_tabsbar();
-  tabs->selectPreviousTab();
-
-  void* data = tabs->getSelectedTab();
+  App::instance()->getMainWindow()->getTabsBar()->selectPreviousTab();
 }
 
 //////////////////////////////////////////////////////////////////////

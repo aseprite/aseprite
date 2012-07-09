@@ -90,7 +90,7 @@ static void save_document_in_background(Document* document, bool mark_as_saved)
     if (mark_as_saved)
       document->markAsSaved();
 
-    app_get_statusbar()
+    StatusBar::instance()
       ->setStatusText(2000, "File %s, saved.",
                       get_filename(document->getFilename()));
   }

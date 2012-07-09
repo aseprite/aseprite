@@ -18,18 +18,19 @@
 
 #include "config.h"
 
-#include <allegro.h>
-
-#include "ui/manager.h"
-#include "ui/window.h"
+#include "gfxmode.h"
 
 #include "app.h"
 #include "console.h"
 #include "document_wrappers.h"
-#include "gfxmode.h"
 #include "modules/gui.h"
 #include "modules/palettes.h"
+#include "ui/manager.h"
+#include "ui/window.h"
 #include "ui_context.h"
+#include "widgets/main_window.h"
+
+#include <allegro.h>
 
 //////////////////////////////////////////////////////////////////////
 // GfxMode
@@ -76,8 +77,9 @@ bool GfxMode::setGfxMode() const
   }
 
   // Redraw top window
-  if (app_get_top_window()) {
-    app_get_top_window()->remap_window();
+  MainWindow* mainWindow = App::instance()->getMainWindow();
+  if (mainWindow) {
+    mainWindow->remap_window();
     ui::Manager::getDefault()->invalidate();
   }
 

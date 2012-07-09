@@ -20,7 +20,7 @@
 
 #include "recent_files.h"
 
-#include "app.h"
+#include "app_menus.h"
 #include "base/path.h"
 #include "ini_file.h"
 
@@ -95,12 +95,14 @@ void RecentFiles::addRecentFile(const char* filename)
 {
   m_files.addItem(filename);
   m_paths.addItem(base::get_file_path(filename));
-  app_rebuild_recent_list();
+
+  AppMenus::instance()->rebuildRecentList();
 }
 
 void RecentFiles::removeRecentFile(const char* filename)
 {
   m_files.removeItem(filename);
   m_paths.removeItem(base::get_file_path(filename));
-  app_rebuild_recent_list();
+
+  AppMenus::instance()->rebuildRecentList();
 }

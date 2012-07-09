@@ -72,7 +72,10 @@ typedef Listeners<StatusBarListener> StatusBarListeners;
 
 class StatusBar : public ui::Widget
 {
+  static StatusBar* m_instance;
 public:
+  static StatusBar* instance() { return m_instance; }
+
   StatusBar();
   ~StatusBar();
 

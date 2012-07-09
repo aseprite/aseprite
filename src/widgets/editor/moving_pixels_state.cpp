@@ -72,7 +72,7 @@ MovingPixelsState::MovingPixelsState(Editor* editor, Message* msg, PixelsMovemen
   }
 
   // Setup mask color
-  setTransparentColor(app_get_statusbar()->getTransparentColor());
+  setTransparentColor(StatusBar::instance()->getTransparentColor());
 
   // Add this class as:
   // - listener of the UI context: so we know if the user wants to execute
@@ -80,11 +80,11 @@ MovingPixelsState::MovingPixelsState(Editor* editor, Message* msg, PixelsMovemen
   // - listener of the status bar to know if the user has changed the
   //   transparent color.
   UIContext::instance()->addListener(this);
-  app_get_statusbar()->addListener(this);
+  StatusBar::instance()->addListener(this);
 
   // Show controls to modify the "pixels movement" options (e.g. the
   // transparent color).
-  app_get_statusbar()->showMovePixelsOptions();
+  StatusBar::instance()->showMovePixelsOptions();
 
   // Add the current editor as filter for key message of the manager
   // so we can catch the Enter key, and avoid to execute the
@@ -96,7 +96,7 @@ MovingPixelsState::MovingPixelsState(Editor* editor, Message* msg, PixelsMovemen
 MovingPixelsState::~MovingPixelsState()
 {
   UIContext::instance()->removeListener(this);
-  app_get_statusbar()->removeListener(this);
+  StatusBar::instance()->removeListener(this);
 
   delete m_pixelsMovement;
 
@@ -125,7 +125,7 @@ EditorState::BeforeChangeAction MovingPixelsState::onBeforeChangeState(Editor* e
 
     editor->releaseMouse();
 
-    app_get_statusbar()->hideMovePixelsOptions();
+    StatusBar::instance()->hideMovePixelsOptions();
     return DiscardState;
   }
   else {
@@ -381,7 +381,7 @@ bool MovingPixelsState::onUpdateStatusBar(Editor* editor)
   Document* document = editor->getDocument();
   gfx::Size imageSize = m_pixelsMovement->getInitialImageSize();
 
-  app_get_statusbar()->setStatusText
+  StatusBar::instance()->setStatusText
     (100, "Pos %d %d, Size %d %d, Orig: %3d %3d (%.02f%% %.02f%%), Angle %.1f",
      transform.bounds().x, transform.bounds().y,
      transform.bounds().w, transform.bounds().h,

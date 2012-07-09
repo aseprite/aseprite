@@ -56,7 +56,7 @@ void RedoCommand::onExecute(Context* context)
 {
   ActiveDocumentWriter document(context);
 
-  app_get_statusbar()
+  StatusBar::instance()
     ->showTip(1000, "Redid %s",
               document->getUndo()->getNextRedoLabel());
 

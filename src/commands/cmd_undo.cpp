@@ -56,7 +56,7 @@ void UndoCommand::onExecute(Context* context)
 {
   ActiveDocumentWriter document(context);
 
-  app_get_statusbar()
+  StatusBar::instance()
     ->showTip(1000, "Undid %s",
               document->getUndo()->getNextUndoLabel());
 

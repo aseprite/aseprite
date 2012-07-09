@@ -83,7 +83,7 @@ FilterWorker::FilterWorker(FilterManagerImpl* filterMgr)
   m_done = false;
   m_cancelled = false;
 
-  m_progressBar = app_get_statusbar()->addProgress();
+  m_progressBar = StatusBar::instance()->addProgress();
 
   m_alertWindow = ui::Alert::create(PACKAGE
                                     "<<Applying effect...||&Cancel");

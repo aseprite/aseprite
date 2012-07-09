@@ -162,7 +162,7 @@ static bool close_active_document(Context* context)
   // Destroy the sprite (locking it as writer)
   {
     ActiveDocumentWriter document(context);
-    app_get_statusbar()
+    StatusBar::instance()
       ->setStatusText(0, "Sprite '%s' closed.",
                       get_filename(document->getFilename()));
     document.deleteDocument();

@@ -34,7 +34,10 @@ class ColorButton;
 
 class ColorBar : public ui::Box
 {
+  static ColorBar* m_instance;
 public:
+  static ColorBar* instance() { return m_instance; }
+
   ColorBar(int align);
   ~ColorBar();
 

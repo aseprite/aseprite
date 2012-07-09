@@ -16,34 +16,17 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifndef MODULES_ROOTMENU_H_INCLUDED
-#define MODULES_ROOTMENU_H_INCLUDED
+#ifndef WIDGETS_MAIN_MENU_BAR_H_INCLUDED
+#define WIDGETS_MAIN_MENU_BAR_H_INCLUDED
 
-#include "ui/base.h"
+#include "ui/menu.h"
 
-namespace ui {
-  class Menu;
-  class MenuItem;
-}
+class MainMenuBar : public ui::MenuBar
+{
+public:
+  MainMenuBar();
 
-enum {
-  ACCEL_FOR_UNDO,
-  ACCEL_FOR_REDO,
-  ACCEL_FOR_FILMEDITOR,
-  ACCEL_FOR_SCREENSHOT,
-  ACCEL_MAX
+  void reload();
 };
-
-int init_module_rootmenu();
-void exit_module_rootmenu();
-
-ui::Menu* get_root_menu();
-
-ui::MenuItem* get_recent_list_menuitem();
-ui::Menu* get_document_tab_popup_menu();
-ui::Menu* get_layer_popup_menu();
-ui::Menu* get_frame_popup_menu();
-ui::Menu* get_cel_popup_menu();
-ui::Menu* get_cel_movement_popup_menu();
 
 #endif

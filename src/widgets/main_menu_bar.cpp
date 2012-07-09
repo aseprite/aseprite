@@ -18,43 +18,20 @@
 
 #include "config.h"
 
-#include <allegro/unicode.h>
+#include "widgets/main_menu_bar.h"
 
-#include "app.h"
-#include "commands/command.h"
-#include "ui/base.h"
-#include "widgets/color_bar.h"
+#include "app_menus.h"
 
-class SwitchColorsCommand : public Command
-{
-public:
-  SwitchColorsCommand();
-
-protected:
-  void onExecute(Context* context);
-};
-
-SwitchColorsCommand::SwitchColorsCommand()
-  : Command("SwitchColors",
-            "SwitchColors",
-            CmdUIOnlyFlag)
+MainMenuBar::MainMenuBar()
 {
 }
 
-void SwitchColorsCommand::onExecute(Context* context)
+void MainMenuBar::reload()
 {
-  ColorBar* colorbar = ColorBar::instance();
-  Color fg = colorbar->getFgColor();
-  Color bg = colorbar->getBgColor();
+  setMenu(NULL);
 
-  colorbar->setFgColor(bg);
-  colorbar->setBgColor(fg);
-}
+  // Reload all menus.
+  AppMenus::instance()->reload();
 
-//////////////////////////////////////////////////////////////////////
-// CommandFactory
-
-Command* CommandFactory::createSwitchColorsCommand()
-{
-  return new SwitchColorsCommand;
+  setMenu(AppMenus::instance()->getRootMenu());
 }

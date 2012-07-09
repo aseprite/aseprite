@@ -81,12 +81,12 @@ UISettingsImpl::~UISettingsImpl()
 
 Color UISettingsImpl::getFgColor()
 {
-  return app_get_colorbar()->getFgColor();
+  return ColorBar::instance()->getFgColor();
 }
 
 Color UISettingsImpl::getBgColor()
 {
-  return app_get_colorbar()->getBgColor();
+  return ColorBar::instance()->getBgColor();
 }
 
 tools::Tool* UISettingsImpl::getCurrentTool()
@@ -104,12 +104,12 @@ TiledMode UISettingsImpl::getTiledMode()
 
 void UISettingsImpl::setFgColor(const Color& color)
 {
-  app_get_colorbar()->setFgColor(color);
+  ColorBar::instance()->setFgColor(color);
 }
 
 void UISettingsImpl::setBgColor(const Color& color)
 {
-  app_get_colorbar()->setFgColor(color);
+  ColorBar::instance()->setFgColor(color);
 }
 
 void UISettingsImpl::setCurrentTool(tools::Tool* tool)

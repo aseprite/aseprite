@@ -76,6 +76,8 @@ bool ColorBar::ScrollableView::onProcessMessage(Message* msg)
 //////////////////////////////////////////////////////////////////////
 // ColorBar class
 
+ColorBar* ColorBar::m_instance = NULL;
+
 ColorBar::ColorBar(int align)
   : Box(align)
   , m_paletteButton("Edit Palette", JI_BUTTON)
@@ -84,6 +86,8 @@ ColorBar::ColorBar(int align)
   , m_bgColor(Color::fromIndex(0), IMAGE_INDEXED)
   , m_lock(false)
 {
+  m_instance = this;
+
   setBorder(gfx::Border(1*jguiscale()));
   child_spacing = 1*jguiscale();
 

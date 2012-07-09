@@ -72,7 +72,7 @@ void GotoPreviousLayerCommand::onExecute(Context* context)
   ASSERT(current_editor != NULL && "Current editor cannot be null when we have a current sprite");
   current_editor->flashCurrentLayer();
 
-  app_get_statusbar()
+  StatusBar::instance()
     ->setStatusText(1000, "Layer `%s' selected",
                     sprite->getCurrentLayer()->getName().c_str());
 }
@@ -121,7 +121,7 @@ void GotoNextLayerCommand::onExecute(Context* context)
   ASSERT(current_editor != NULL && "Current editor cannot be null when we have a current sprite");
   current_editor->flashCurrentLayer();
 
-  app_get_statusbar()
+  StatusBar::instance()
     ->setStatusText(1000, "Layer `%s' selected",
                     sprite->getCurrentLayer()->getName().c_str());
 }

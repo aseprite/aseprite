@@ -53,6 +53,7 @@
 #include "widgets/hex_color_entry.h"
 #include "widgets/palette_view.h"
 #include "widgets/status_bar.h"
+#include "widgets/toolbar.h"
 
 #include <allegro.h>
 #include <stdio.h>
@@ -215,8 +216,8 @@ void PaletteEditorCommand::onExecute(Context* context)
       g_window->remap_window();
 
       int width = MAX(jrect_w(g_window->rc), JI_SCREEN_W/2);
-      g_window->setBounds(Rect(JI_SCREEN_W - width - jrect_w(app_get_toolbar()->rc),
-                              JI_SCREEN_H - jrect_h(g_window->rc) - jrect_h(app_get_statusbar()->rc),
+      g_window->setBounds(Rect(JI_SCREEN_W - width - jrect_w(ToolBar::instance()->rc),
+                               JI_SCREEN_H - jrect_h(g_window->rc) - jrect_h(StatusBar::instance()->rc),
                               width, jrect_h(g_window->rc)));
 
       // Load window configuration
@@ -225,7 +226,7 @@ void PaletteEditorCommand::onExecute(Context* context)
 
     // Run the frame in background.
     g_window->openWindow();
-    app_get_colorbar()->setPaletteEditorButtonState(true);
+    ColorBar::instance()->setPaletteEditorButtonState(true);
   }
 
   // Show the specified target color
@@ -331,8 +332,8 @@ PaletteEntryEditor::PaletteEntryEditor()
   selectColorType(Color::RgbType);
 
   // We hook fg/bg color changes (by eyedropper mainly) to update the selected entry color
-  app_get_colorbar()->FgColorChange.connect(&PaletteEntryEditor::onFgBgColorChange, this);
-  app_get_colorbar()->BgColorChange.connect(&PaletteEntryEditor::onFgBgColorChange, this);
+  ColorBar::instance()->FgColorChange.connect(&PaletteEntryEditor::onFgBgColorChange, this);
+  ColorBar::instance()->BgColorChange.connect(&PaletteEntryEditor::onFgBgColorChange, this);
 
   // We hook the Window::Close event to save the frame position before closing it.
   this->Close.connect(Bind<void>(&PaletteEntryEditor::onCloseWindow, this));
@@ -359,7 +360,7 @@ void PaletteEntryEditor::setColor(const Color& color)
   if (!m_disableHexUpdate)
     m_hexColorEntry.setColor(color);
 
-  PaletteView* palette_editor = app_get_colorbar()->getPaletteView();
+  PaletteView* palette_editor = ColorBar::instance()->getPaletteView();
   PaletteView::SelectedEntries entries;
   palette_editor->getSelectedEntries(entries);
   int i, j, i2;
@@ -439,7 +440,7 @@ void PaletteEntryEditor::onCloseWindow()
   save_window_pos(this, "PaletteEditor");
 
   // Uncheck the "Edit Palette" button.
-  app_get_colorbar()->setPaletteEditorButtonState(false);
+  ColorBar::instance()->setPaletteEditorButtonState(false);
 }
 
 void PaletteEntryEditor::onFgBgColorChange(const Color& color)
@@ -529,7 +530,7 @@ void PaletteEntryEditor::onMoreOptionsClick(Event& ev)
 void PaletteEntryEditor::onCopyColorsClick(Event& ev)
 {
   // Get the selected entries in the palette view.
-  PaletteView* palette_editor = app_get_colorbar()->getPaletteView();
+  PaletteView* palette_editor = ColorBar::instance()->getPaletteView();
   PaletteView::SelectedEntries selectedEntries;
   palette_editor->getSelectedEntries(selectedEntries);
 
@@ -546,7 +547,7 @@ void PaletteEntryEditor::onCopyColorsClick(Event& ev)
 void PaletteEntryEditor::onPasteColorsClick(Event& ev)
 {
   // Get the selected entries in the palette view.
-  PaletteView* palette_editor = app_get_colorbar()->getPaletteView();
+  PaletteView* palette_editor = ColorBar::instance()->getPaletteView();
   PaletteView::SelectedEntries selectedEntries;
   palette_editor->getSelectedEntries(selectedEntries);
 
@@ -618,7 +619,7 @@ void PaletteEntryEditor::onSavePaletteClick(Event& ev)
 
 void PaletteEntryEditor::onRampClick(Event& ev)
 {
-  PaletteView* palette_editor = app_get_colorbar()->getPaletteView();
+  PaletteView* palette_editor = ColorBar::instance()->getPaletteView();
   int index1, index2;
 
   if (!palette_editor->getSelectedRange(index1, index2))
@@ -661,7 +662,7 @@ void PaletteEntryEditor::onQuantizeClick(Event& ev)
 
 void PaletteEntryEditor::setPaletteEntry(const Color& color)
 {
-  PaletteView* palView = app_get_colorbar()->getPaletteView();
+  PaletteView* palView = ColorBar::instance()->getPaletteView();
   PaletteView::SelectedEntries entries;
   palView->getSelectedEntries(entries);
 
@@ -678,7 +679,7 @@ void PaletteEntryEditor::setPaletteEntry(const Color& color)
 
 void PaletteEntryEditor::setPaletteEntryChannel(const Color& color, ColorSliders::Channel channel)
 {
-  PaletteView* palView = app_get_colorbar()->getPaletteView();
+  PaletteView* palView = ColorBar::instance()->getPaletteView();
   PaletteView::SelectedEntries entries;
   palView->getSelectedEntries(entries);
 
@@ -838,7 +839,7 @@ void PaletteEntryEditor::updateCurrentSpritePalette(const char* operationName)
     }
   }
 
-  PaletteView* palette_editor = app_get_colorbar()->getPaletteView();
+  PaletteView* palette_editor = ColorBar::instance()->getPaletteView();
   palette_editor->invalidate();
 
   if (!m_redrawTimer.isRunning())
@@ -850,13 +851,13 @@ void PaletteEntryEditor::updateCurrentSpritePalette(const char* operationName)
 
 void PaletteEntryEditor::updateColorBar()
 {
-  app_get_colorbar()->invalidate();
+  ColorBar::instance()->invalidate();
 }
 
 void PaletteEntryEditor::onPalChange()
 {
   if (!m_selfPalChange) {
-    PaletteView* palette_editor = app_get_colorbar()->getPaletteView();
+    PaletteView* palette_editor = ColorBar::instance()->getPaletteView();
     int index = palette_editor->getSelectedEntry();
     if (index >= 0)
       setColor(Color::fromIndex(index));

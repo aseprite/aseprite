@@ -79,7 +79,7 @@ void NewFileCommand::onExecute(Context* context)
     Color::fromRgb(0, 0, 0),
     Color::fromRgb(255, 255, 255),
     Color::fromRgb(255, 0, 255),
-    app_get_colorbar()->getBgColor()
+    ColorBar::instance()->getBgColor()
   };
 
   // Load the window widget

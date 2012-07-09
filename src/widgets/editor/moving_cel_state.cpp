@@ -129,7 +129,7 @@ bool MovingCelState::onMouseMove(Editor* editor, Message* msg)
 
 bool MovingCelState::onUpdateStatusBar(Editor* editor)
 {
-  app_get_statusbar()->setStatusText
+  StatusBar::instance()->setStatusText
     (0,
      "Pos %3d %3d Offset %3d %3d",
      (int)m_celNewX,

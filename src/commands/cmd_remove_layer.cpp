@@ -70,8 +70,8 @@ void RemoveLayerCommand::onExecute(Context* context)
   }
   update_screen_for_document(document);
 
-  app_get_statusbar()->invalidate();
-  app_get_statusbar()
+  StatusBar::instance()->invalidate();
+  StatusBar::instance()
     ->showTip(1000, "Layer `%s' removed",
               layer_name.c_str());
 }

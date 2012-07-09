@@ -18,11 +18,11 @@
 
 #include "config.h"
 
-#include "app.h"
+#include "job.h"
+
 #include "base/mutex.h"
 #include "base/scoped_lock.h"
 #include "base/thread.h"
-#include "job.h"
 #include "ui/alert.h"
 #include "ui/widget.h"
 #include "ui/window.h"
@@ -40,7 +40,7 @@ Job::Job(const char* job_name)
   m_canceled_flag = false;
 
   m_mutex = new Mutex();
-  m_progress = app_get_statusbar()->addProgress();
+  m_progress = StatusBar::instance()->addProgress();
   m_alert_window = ui::Alert::create("%s<<Working...||&Cancel", job_name);
 
   m_timer.reset(new ui::Timer(kMonitoringPeriod, m_alert_window));

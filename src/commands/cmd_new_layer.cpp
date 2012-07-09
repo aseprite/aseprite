@@ -115,8 +115,8 @@ void NewLayerCommand::onExecute(Context* context)
   layer->setName(name);
   update_screen_for_document(document);
 
-  app_get_statusbar()->invalidate();
-  app_get_statusbar()->showTip(1000, "Layer `%s' created", name.c_str());
+  StatusBar::instance()->invalidate();
+  StatusBar::instance()->showTip(1000, "Layer `%s' created", name.c_str());
 }
 
 static std::string get_unique_layer_name(Sprite* sprite)

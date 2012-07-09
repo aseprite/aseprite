@@ -154,8 +154,8 @@ void ReplaceColorCommand::onExecute(Context* context)
   Sprite* sprite(document->getSprite());
 
   ReplaceColorFilterWrapper filter(sprite->getCurrentLayer());
-  filter.setFrom(get_config_color(ConfigSection, "Color1", app_get_colorbar()->getFgColor()));
-  filter.setTo(get_config_color(ConfigSection, "Color2", app_get_colorbar()->getBgColor()));
+  filter.setFrom(get_config_color(ConfigSection, "Color1", ColorBar::instance()->getFgColor()));
+  filter.setTo(get_config_color(ConfigSection, "Color2", ColorBar::instance()->getBgColor()));
   filter.setTolerance(get_config_int(ConfigSection, "Tolerance", 0));
 
   FilterManagerImpl filterMgr(document, &filter);

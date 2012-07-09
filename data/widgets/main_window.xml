@@ -1,8 +1,7 @@
 <!-- ASEPRITE -->
 <!-- Copyright (C) 2001-2012 by David Capello -->
 <gui>
-<window noborders="true" desktop="true" text="Main Window" id="main_window">
-  <box noborders="true" vertical="true">
+  <box noborders="true" vertical="true" id="main_box">
     <box noborders="true" horizontal="true" id="menubar" />
     <box noborders="true" horizontal="true" id="tabsbar" />
     <box noborders="true" horizontal="true" expansive="true">
@@ -12,5 +11,4 @@
     </box>
     <box noborders="true" horizontal="true" id="statusbar" />
   </box>
-</window>
 </gui>

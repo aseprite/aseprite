@@ -101,11 +101,11 @@ bool ColorButton::onProcessMessage(Message* msg)
       break;
 
     case JM_MOUSEENTER:
-      app_get_statusbar()->showColor(0, "", m_color, 255);
+      StatusBar::instance()->showColor(0, "", m_color, 255);
       break;
 
     case JM_MOUSELEAVE:
-      app_get_statusbar()->clearText();
+      StatusBar::instance()->clearText();
       break;
 
     case JM_MOTION:

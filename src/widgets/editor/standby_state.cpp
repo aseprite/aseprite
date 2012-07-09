@@ -297,11 +297,11 @@ bool StandbyState::onMouseWheel(Editor* editor, Message* msg)
       // if (m_state == EDITOR_STATE_STANDBY)
       {
         int newIndex = 0;
-        if (app_get_colorbar()->getFgColor().getType() == Color::IndexType) {
-          newIndex = app_get_colorbar()->getFgColor().getIndex() + dz;
+        if (ColorBar::instance()->getFgColor().getType() == Color::IndexType) {
+          newIndex = ColorBar::instance()->getFgColor().getIndex() + dz;
           newIndex = MID(0, newIndex, 255);
         }
-        app_get_colorbar()->setFgColor(Color::fromIndex(newIndex));
+        ColorBar::instance()->setFgColor(Color::fromIndex(newIndex));
       }
       break;
 
@@ -309,11 +309,11 @@ bool StandbyState::onMouseWheel(Editor* editor, Message* msg)
       // if (m_state == EDITOR_STATE_STANDBY)
       {
         int newIndex = 0;
-        if (app_get_colorbar()->getBgColor().getType() == Color::IndexType) {
-          newIndex = app_get_colorbar()->getBgColor().getIndex() + dz;
+        if (ColorBar::instance()->getBgColor().getType() == Color::IndexType) {
+          newIndex = ColorBar::instance()->getBgColor().getIndex() + dz;
           newIndex = MID(0, newIndex, 255);
         }
-        app_get_colorbar()->setBgColor(Color::fromIndex(newIndex));
+        ColorBar::instance()->setBgColor(Color::fromIndex(newIndex));
       }
       break;
 
@@ -448,7 +448,7 @@ bool StandbyState::onUpdateStatusBar(Editor* editor)
   editor->screenToEditor(jmouse_x(0), jmouse_y(0), &x, &y);
 
   if (!sprite) {
-    app_get_statusbar()->clearText();
+    StatusBar::instance()->clearText();
   }
   // For eye-dropper
   else if (current_tool->getInk(0)->isEyedropper()) {
@@ -465,12 +465,12 @@ bool StandbyState::onUpdateStatusBar(Editor* editor)
     char buf[256];
     usprintf(buf, "- Pos %d %d", x, y);
 
-    app_get_statusbar()->showColor(0, buf, color, alpha);
+    StatusBar::instance()->showColor(0, buf, color, alpha);
   }
   else {
     Mask* mask = editor->getDocument()->getMask();
 
-    app_get_statusbar()->setStatusText
+    StatusBar::instance()->setStatusText
       (0, "Pos %d %d, Size %d %d, Frame %d",
        x, y,
        ((mask && mask->getBitmap())? mask->getBounds().w: sprite->getWidth()),

@@ -83,7 +83,7 @@ void dialogs_mask_color(Document* document)
   label_color = new Label("Color:");
   button_color = new ColorButton
    (get_config_color("MaskColor", "Color",
-                     app_get_colorbar()->getFgColor()),
+                     ColorBar::instance()->getFgColor()),
     sprite->getPixelFormat());
   button_1 = new Button("1");
   button_2 = new Button("2");
@@ -167,13 +167,13 @@ void dialogs_mask_color(Document* document)
 
 static void button_1_command(Widget* widget, const DocumentReader& document)
 {
-  button_color->setColor(app_get_colorbar()->getFgColor());
+  button_color->setColor(ColorBar::instance()->getFgColor());
   mask_preview(document);
 }
 
 static void button_2_command(Widget* widget, const DocumentReader& document)
 {
-  button_color->setColor(app_get_colorbar()->getBgColor());
+  button_color->setColor(ColorBar::instance()->getBgColor());
   mask_preview(document);
 }
 

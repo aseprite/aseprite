@@ -70,7 +70,7 @@ void ChangeColorCommand::onLoadParams(Params* params)
 
 void ChangeColorCommand::onExecute(Context* context)
 {
-  ColorBar* colorbar = app_get_colorbar();
+  ColorBar* colorbar = ColorBar::instance();
   Color color = m_background ? colorbar->getBgColor():
                                colorbar->getFgColor();
 

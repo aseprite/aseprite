@@ -25,6 +25,7 @@
 #include "console.h"
 #include "resource_finder.h"
 #include "scoped_allegro.h"
+#include "ui/base.h"
 
 #include <allegro.h>
 #ifdef WIN32

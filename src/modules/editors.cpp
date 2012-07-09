@@ -34,17 +34,19 @@
 #include "widgets/editor/editor.h"
 #include "widgets/editor/editor_customization_delegate.h"
 #include "widgets/editor/editor_view.h"
+#include "widgets/main_window.h"
 #include "widgets/popup_window_pin.h"
 #include "widgets/status_bar.h"
+#include "widgets/toolbar.h"
 
 #include <algorithm>
 #include <vector>
 
 using namespace ui;
 
-#define FIXUP_TOP_WINDOW()                      \
-  app_get_top_window()->remap_window();         \
-  app_get_top_window()->invalidate();
+#define FIXUP_TOP_WINDOW()                             \
+  App::instance()->getMainWindow()->remap_window();    \
+  App::instance()->getMainWindow()->invalidate();
 
 class EditorItem
 {
@@ -195,7 +197,7 @@ protected:
 
       // Redraw the tool bar because it shows the mini editor enabled state.
       // TODO abstract this event
-      app_get_toolbar()->invalidate();
+      ToolBar::instance()->invalidate();
     }
   }
 };
@@ -658,8 +660,8 @@ static void create_mini_editor_window()
   int width = JI_SCREEN_W/4;
   int height = JI_SCREEN_H/4;
   mini_editor_window->setBounds
-    (gfx::Rect(JI_SCREEN_W - width - jrect_w(app_get_toolbar()->rc),
-               JI_SCREEN_H - height - jrect_h(app_get_statusbar()->rc),
+    (gfx::Rect(JI_SCREEN_W - width - jrect_w(ToolBar::instance()->rc),
+               JI_SCREEN_H - height - jrect_h(StatusBar::instance()->rc),
                width, height));
 
   load_window_pos(mini_editor_window, "MiniEditor");

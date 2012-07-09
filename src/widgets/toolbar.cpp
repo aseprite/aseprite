@@ -37,72 +37,16 @@
 #include "widgets/status_bar.h"
 
 #include <allegro.h>
-#include <map>
 #include <string>
 
 using namespace gfx;
 using namespace ui;
 using namespace tools;
 
-// Class to show selected tools for each tool (vertically)
-class ToolBar : public Widget
-{
-  // What tool is selected for each tool-group
-  std::map<const ToolGroup*, Tool*> m_selected_in_group;
-
-  // Index of the tool group or special button highlighted.
-  int m_hot_index;
-
-  // What tool has the mouse above
-  Tool* m_hot_tool;
-
-  // True if the popup-window must be opened when a tool-button is hot
-  bool m_open_on_hot;
-
-  // Window displayed to show a tool-group
-  PopupWindow* m_popupWindow;
-
-  // Tool-tip window
-  TipWindow* m_tipWindow;
-
-  Timer m_tipTimer;
-  bool m_tipOpened;
-
-public:
-  static const int NoneIndex = -1;
-  static const int ConfigureToolIndex = -2;
-  static const int MiniEditorVisibilityIndex = -3;
-
-  ToolBar();
-  ~ToolBar();
-
-  bool isToolVisible(Tool* tool);
-  void selectTool(Tool* tool);
-
-  void openTipWindow(ToolGroup* tool_group, Tool* tool);
-  void closeTipWindow();
-
-protected:
-  bool onProcessMessage(Message* msg) OVERRIDE;
-
-private:
-  int getToolGroupIndex(ToolGroup* group);
-  void openPopupWindow(int group_index, ToolGroup* group);
-  Rect getToolGroupBounds(int group_index);
-  Point getToolPositionInGroup(int group_index, Tool* tool);
-  void openTipWindow(int group_index, Tool* tool);
-  void onClosePopup();
-};
-
 // Class to show a group of tools (horizontally)
 // This widget is inside the ToolBar::m_popupWindow
 class ToolStrip : public Widget
 {
-  ToolGroup* m_group;
-  Tool* m_hot_tool;
-  ToolBar* m_toolbar;
-  BITMAP* m_overlapped;
-
 public:
   ToolStrip(ToolGroup* group, ToolBar* toolbar);
   ~ToolStrip();
@@ -116,6 +60,11 @@ protected:
 
 private:
   Rect getToolBounds(int index);
+
+  ToolGroup* m_group;
+  Tool* m_hot_tool;
+  ToolBar* m_toolbar;
+  BITMAP* m_overlapped;
 };
 
 static Size getToolIconSize(Widget* widget)
@@ -131,25 +80,14 @@ static Size getToolIconSize(Widget* widget)
 //////////////////////////////////////////////////////////////////////
 // ToolBar
 
-Widget* toolbar_new()
-{
-  return new ToolBar();
-}
-
-bool toolbar_is_tool_visible(Widget* toolbar, Tool* tool)
-{
-  return ((ToolBar*)toolbar)->isToolVisible(tool);
-}
-
-void toolbar_select_tool(Widget* toolbar, Tool* tool)
-{
-  ((ToolBar*)toolbar)->selectTool(tool);
-}
+ToolBar* ToolBar::m_instance = NULL;
 
 ToolBar::ToolBar()
   : Widget(JI_WIDGET)
   , m_tipTimer(300, this)
 {
+  m_instance = this;
+
   this->border_width.l = 1*jguiscale();
   this->border_width.t = 0;
   this->border_width.r = 1*jguiscale();
@@ -367,7 +305,7 @@ bool ToolBar::onProcessMessage(Message* msg)
           closeTipWindow();
 
         if (m_hot_tool)
-          app_get_statusbar()->showTool(0, m_hot_tool);
+          StatusBar::instance()->showTool(0, m_hot_tool);
       }
       break;
     }
@@ -382,7 +320,7 @@ bool ToolBar::onProcessMessage(Message* msg)
       m_hot_index = NoneIndex;
       invalidate();
 
-      app_get_statusbar()->clearText();
+      StatusBar::instance()->clearText();
       break;
 
     case JM_TIMER:
@@ -766,7 +704,7 @@ bool ToolStrip::onProcessMessage(Message* msg)
           m_toolbar->closeTipWindow();
 
         if (m_hot_tool)
-          app_get_statusbar()->showTool(0, m_hot_tool);
+          StatusBar::instance()->showTool(0, m_hot_tool);
       }
       break;
     }

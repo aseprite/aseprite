@@ -66,7 +66,7 @@ void CropSpriteCommand::onExecute(Context* context)
   const Mask* mask(document->getMask());
   {
     UndoTransaction undoTransaction(document, "Sprite Crop");
-    int bgcolor = color_utils::color_for_image(app_get_colorbar()->getBgColor(), sprite->getPixelFormat());
+    int bgcolor = color_utils::color_for_image(ColorBar::instance()->getBgColor(), sprite->getPixelFormat());
 
     undoTransaction.cropSprite(mask->getBounds(), bgcolor);
     undoTransaction.commit();
@@ -107,7 +107,7 @@ void AutocropSpriteCommand::onExecute(Context* context)
   ActiveDocumentWriter document(context);
   Sprite* sprite(document->getSprite());
   {
-    int bgcolor = color_utils::color_for_image(app_get_colorbar()->getBgColor(), sprite->getPixelFormat());
+    int bgcolor = color_utils::color_for_image(ColorBar::instance()->getBgColor(), sprite->getPixelFormat());
 
     UndoTransaction undoTransaction(document, "Trim Sprite");
     undoTransaction.trimSprite(bgcolor);

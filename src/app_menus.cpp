@@ -18,94 +18,54 @@
 
 #include "config.h"
 
-#include <allegro/file.h>
-#include <allegro/unicode.h>
-#include <stdio.h>
-#include <string.h>
-
-#include "ui/gui.h"
+#include "app_menus.h"
 
 #include "app.h"
+#include "base/bind.h"
 #include "commands/command.h"
 #include "commands/commands.h"
 #include "commands/params.h"
 #include "console.h"
 #include "gui_xml.h"
 #include "modules/gui.h"
-#include "modules/rootmenu.h"
+#include "recent_files.h"
 #include "tools/tool_box.h"
+#include "ui/gui.h"
 #include "util/filetoks.h"
+#include "widgets/main_window.h"
 #include "widgets/menuitem2.h"
 
 #include "tinyxml.h"
+#include <allegro/file.h>
+#include <allegro/unicode.h>
+#include <stdio.h>
+#include <string.h>
 
 using namespace ui;
 
-static Menu* root_menu;
-
-static MenuItem* recent_list_menuitem;
-static Menu* document_tab_popup_menu;
-static Menu* layer_popup_menu;
-static Menu* frame_popup_menu;
-static Menu* cel_popup_menu;
-static Menu* cel_movement_popup_menu;
-
-static int load_root_menu();
-static Menu* load_menu_by_id(TiXmlHandle& handle, const char *id);
-static Menu* convert_xmlelem_to_menu(TiXmlElement* elem);
-static Widget* convert_xmlelem_to_menuitem(TiXmlElement* elem);
-static Widget* create_invalid_version_menuitem();
-static void apply_shortcut_to_menuitems_with_command(Menu* menu, Command* command, Params* params, JAccel accel);
-
-int init_module_rootmenu()
+static void destroy_instance(AppMenus* instance)
 {
-  root_menu = NULL;
-  document_tab_popup_menu = NULL;
-  layer_popup_menu = NULL;
-  frame_popup_menu = NULL;
-  cel_popup_menu = NULL;
-  cel_movement_popup_menu = NULL;
-  recent_list_menuitem = NULL;
-
-  return load_root_menu();
+  delete instance;
 }
 
-void exit_module_rootmenu()
+// static
+AppMenus* AppMenus::instance()
 {
-  delete root_menu;
-  delete document_tab_popup_menu;
-  delete layer_popup_menu;
-  delete frame_popup_menu;
-  delete cel_popup_menu;
-  delete cel_movement_popup_menu;
+  static AppMenus* instance = NULL;
+  if (!instance) {
+    instance = new AppMenus;
+    App::instance()->Exit.connect(Bind<void>(&destroy_instance, instance));
+  }
+  return instance;
 }
 
-Menu* get_root_menu() { return root_menu; }
-
-MenuItem* get_recent_list_menuitem() { return recent_list_menuitem; }
-Menu* get_document_tab_popup_menu() { return document_tab_popup_menu; }
-Menu* get_layer_popup_menu() { return layer_popup_menu; }
-Menu* get_frame_popup_menu() { return frame_popup_menu; }
-Menu* get_cel_popup_menu() { return cel_popup_menu; }
-Menu* get_cel_movement_popup_menu() { return cel_movement_popup_menu; }
-
-static int load_root_menu()
+AppMenus::AppMenus()
+  : m_recentListMenuitem(NULL)
 {
-  if (app_get_menubar())
-    app_get_menubar()->setMenu(NULL);
+}
 
-  // destroy `root-menu'
-  delete root_menu;             // widget
-
-  // create a new empty-menu
-  root_menu = NULL;
-  recent_list_menuitem = NULL;
-  document_tab_popup_menu = NULL;
-  layer_popup_menu = NULL;
-  frame_popup_menu = NULL;
-  cel_popup_menu = NULL;
-  cel_movement_popup_menu = NULL;
-
+void AppMenus::reload()
+{
   TiXmlDocument& doc(GuiXml::instance()->doc());
   TiXmlHandle handle(&doc);
   const char* path = GuiXml::instance()->filename();
@@ -116,22 +76,19 @@ static int load_root_menu()
 
   PRINTF(" - Loading menus from \"%s\"...\n", path);
 
-  root_menu = load_menu_by_id(handle, "main_menu");
-  if (!root_menu)
-    throw base::Exception("Error loading main menu from file:\n%s\nReinstall the application.",
-                          static_cast<const char*>(path));
+  m_rootMenu.reset(loadMenuById(handle, "main_menu"));
 
   // Add a warning element because the user is not using the last well-known gui.xml file.
   if (GuiXml::instance()->version() != VERSION)
-    root_menu->insertChild(0, create_invalid_version_menuitem());
+    m_rootMenu->insertChild(0, createInvalidVersionMenuitem());
 
   PRINTF("Main menu loaded.\n");
 
-  document_tab_popup_menu = load_menu_by_id(handle, "document_tab_popup");
-  layer_popup_menu = load_menu_by_id(handle, "layer_popup");
-  frame_popup_menu = load_menu_by_id(handle, "frame_popup");
-  cel_popup_menu = load_menu_by_id(handle, "cel_popup");
-  cel_movement_popup_menu = load_menu_by_id(handle, "cel_movement_popup");
+  m_documentTabPopupMenu.reset(loadMenuById(handle, "document_tab_popup"));
+  m_layerPopupMenu.reset(loadMenuById(handle, "layer_popup"));
+  m_framePopupMenu.reset(loadMenuById(handle, "frame_popup"));
+  m_celPopupMenu.reset(loadMenuById(handle, "cel_popup"));
+  m_celMovementPopupMenu.reset(loadMenuById(handle, "cel_movement_popup"));
 
   /**************************************************/
   /* load keyboard shortcuts for commands           */
@@ -179,7 +136,7 @@ static int load_root_menu()
         // command (this is only visual, the "manager_msg_proc"
         // is the only one that process keyboard shortcuts)
         if (first_shortcut)
-          apply_shortcut_to_menuitems_with_command(root_menu, command, &params, accel);
+          applyShortcutToMenuitemsWithCommand(m_rootMenu, command, &params, accel);
       }
     }
 
@@ -246,22 +203,60 @@ static int load_root_menu()
     }
     xmlKey = xmlKey->NextSiblingElement();
   }
-
-  // Sets the "menu" of the "menu-bar" to the new "root-menu"
-  if (app_get_menubar()) {
-    app_get_menubar()->setMenu(root_menu);
-    app_get_top_window()->remap_window();
-    app_get_top_window()->invalidate();
-  }
-
-  return 0;
 }
 
-static Menu* load_menu_by_id(TiXmlHandle& handle, const char* id)
+bool AppMenus::rebuildRecentList()
+{
+  MenuItem* list_menuitem = m_recentListMenuitem;
+  MenuItem* menuitem;
+
+  // Update the recent file list menu item
+  if (list_menuitem) {
+    if (list_menuitem->hasSubmenuOpened())
+      return false;
+
+    Command* cmd_open_file = CommandsModule::instance()->getCommandByName(CommandId::OpenFile);
+
+    Menu* submenu = list_menuitem->getSubmenu();
+    if (submenu) {
+      list_menuitem->setSubmenu(NULL);
+      submenu->deferDelete();
+    }
+
+    // Build the menu of recent files
+    submenu = new Menu();
+    list_menuitem->setSubmenu(submenu);
+
+    RecentFiles::const_iterator it = App::instance()->getRecentFiles()->files_begin();
+    RecentFiles::const_iterator end = App::instance()->getRecentFiles()->files_end();
+
+    if (it != end) {
+      Params params;
+
+      for (; it != end; ++it) {
+        const char* filename = it->c_str();
+
+        params.set("filename", filename);
+
+        menuitem = new MenuItem2(get_filename(filename), cmd_open_file, &params);
+        submenu->addChild(menuitem);
+      }
+    }
+    else {
+      menuitem = new MenuItem2("Nothing", NULL, NULL);
+      menuitem->setEnabled(false);
+      submenu->addChild(menuitem);
+    }
+  }
+
+  return true;
+}
+
+Menu* AppMenus::loadMenuById(TiXmlHandle& handle, const char* id)
 {
   ASSERT(id != NULL);
 
-  //PRINTF("load_menu_by_id(%s)\n", id);
+  //PRINTF("loadMenuById(%s)\n", id);
 
   // <gui><menus><menu>
   TiXmlElement* xmlMenu = handle
@@ -272,24 +267,23 @@ static Menu* load_menu_by_id(TiXmlHandle& handle, const char* id)
     const char* menu_id = xmlMenu->Attribute("id");
 
     if (menu_id && strcmp(menu_id, id) == 0)
-      return convert_xmlelem_to_menu(xmlMenu);
+      return convertXmlelemToMenu(xmlMenu);
 
     xmlMenu = xmlMenu->NextSiblingElement();
   }
 
-  PRINTF(" - \"%s\" element was not found\n", id);
-  return NULL;
+  throw base::Exception("Error loading menu '%s'\nReinstall the application.", id);
 }
 
-static Menu* convert_xmlelem_to_menu(TiXmlElement* elem)
+Menu* AppMenus::convertXmlelemToMenu(TiXmlElement* elem)
 {
   Menu* menu = new Menu();
 
-  //PRINTF("convert_xmlelem_to_menu(%s, %s, %s)\n", elem->Value(), elem->Attribute("id"), elem->Attribute("text"));
+  //PRINTF("convertXmlelemToMenu(%s, %s, %s)\n", elem->Value(), elem->Attribute("id"), elem->Attribute("text"));
 
   TiXmlElement* child = elem->FirstChildElement();
   while (child) {
-    Widget* menuitem = convert_xmlelem_to_menuitem(child);
+    Widget* menuitem = convertXmlelemToMenuitem(child);
     if (menuitem)
       menu->addChild(menuitem);
     else
@@ -302,7 +296,7 @@ static Menu* convert_xmlelem_to_menu(TiXmlElement* elem)
   return menu;
 }
 
-static Widget* convert_xmlelem_to_menuitem(TiXmlElement* elem)
+Widget* AppMenus::convertXmlelemToMenuitem(TiXmlElement* elem)
 {
   // is it a <separator>?
   if (strcmp(elem->Value(), "separator") == 0)
@@ -339,14 +333,14 @@ static Widget* convert_xmlelem_to_menuitem(TiXmlElement* elem)
   if (id) {
     /* recent list menu */
     if (strcmp(id, "recent_list") == 0) {
-      recent_list_menuitem = menuitem;
+      m_recentListMenuitem = menuitem;
     }
   }
 
   // Has it a sub-menu (<menu>)?
   if (strcmp(elem->Value(), "menu") == 0) {
     // Create the sub-menu
-    Menu* subMenu = convert_xmlelem_to_menu(elem);
+    Menu* subMenu = convertXmlelemToMenu(elem);
     if (!subMenu)
       throw base::Exception("Error reading the sub-menu\n");
 
@@ -356,7 +350,7 @@ static Widget* convert_xmlelem_to_menuitem(TiXmlElement* elem)
   return menuitem;
 }
 
-static Widget* create_invalid_version_menuitem()
+Widget* AppMenus::createInvalidVersionMenuitem()
 {
   MenuItem2* menuitem = new MenuItem2("WARNING!", NULL, NULL);
   Menu* subMenu = new Menu();
@@ -370,7 +364,7 @@ static Widget* create_invalid_version_menuitem()
   return menuitem;
 }
 
-static void apply_shortcut_to_menuitems_with_command(Menu* menu, Command *command, Params* params, JAccel accel)
+void AppMenus::applyShortcutToMenuitemsWithCommand(Menu* menu, Command *command, Params* params, JAccel accel)
 {
   JList children = menu->getChildren();
   JLink link;
@@ -394,7 +388,7 @@ static void apply_shortcut_to_menuitems_with_command(Menu* menu, Command *comman
       }
 
       if (Menu* submenu = menuitem->getSubmenu())
-        apply_shortcut_to_menuitems_with_command(submenu, command, params, accel);
+        applyShortcutToMenuitemsWithCommand(submenu, command, params, accel);
     }
   }
 

@@ -134,10 +134,14 @@ public:
 
 };
 
+StatusBar* StatusBar::m_instance = NULL;
+
 StatusBar::StatusBar()
   : Widget(statusbar_type())
   , m_color(Color::fromMask())
 {
+  m_instance = this;
+
 #define BUTTON_NEW(name, text, action)                                  \
   {                                                                     \
     (name) = new Button(text);                                          \

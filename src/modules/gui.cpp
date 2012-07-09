@@ -34,7 +34,6 @@
 #include "modules/gfx.h"
 #include "modules/gui.h"
 #include "modules/palettes.h"
-#include "modules/rootmenu.h"
 #include "raster/sprite.h"
 #include "skin/button_icon_impl.h"
 #include "skin/skin_property.h"
@@ -45,6 +44,9 @@
 #include "ui/intern.h"
 #include "ui_context.h"
 #include "widgets/editor/editor.h"
+#include "widgets/main_menu_bar.h"
+#include "widgets/main_menu_bar.h"
+#include "widgets/main_window.h"
 #include "widgets/status_bar.h"
 #include "widgets/toolbar.h"
 
@@ -443,7 +445,7 @@ void gui_feedback()
       set_gfx_mode(GFX_AUTODETECT_WINDOWED, 320, 240, 0, 0);
 
     gui_setup_screen(false);
-    app_get_top_window()->remap_window();
+    App::instance()->getMainWindow()->remap_window();
     Manager::getDefault()->invalidate();
   }
 #endif
@@ -956,7 +958,7 @@ bool CustomizedGuiManager::onProcessMessage(Message* msg)
 
       // If there is a foreground window as top level...
       if (toplevel_window &&
-          toplevel_window != app_get_top_window() &&
+          toplevel_window != App::instance()->getMainWindow() &&
           toplevel_window->is_foreground()) {
         // We just do not process keyboard shortcuts for menus and tools
         break;
@@ -968,7 +970,7 @@ bool CustomizedGuiManager::onProcessMessage(Message* msg)
 
         if (shortcut->is_pressed(msg)) {
           // Cancel menu-bar loops (to close any popup menu)
-          app_get_menubar()->cancelMenuLoop();
+          App::instance()->getMainWindow()->getMenuBar()->cancelMenuLoop();
 
           switch (shortcut->type) {
 
@@ -992,7 +994,7 @@ bool CustomizedGuiManager::onProcessMessage(Message* msg)
 
                 for (size_t i=0; i<possibles.size(); ++i) {
                   if (possibles[i] != current_tool &&
-                      toolbar_is_tool_visible(app_get_toolbar(), possibles[i])) {
+                      ToolBar::instance()->isToolVisible(possibles[i])) {
                     select_this_tool = possibles[i];
                     done = true;
                     break;
@@ -1011,7 +1013,7 @@ bool CustomizedGuiManager::onProcessMessage(Message* msg)
                 }
               }
 
-              toolbar_select_tool(app_get_toolbar(), select_this_tool);
+              ToolBar::instance()->selectTool(select_this_tool);
               return true;
             }
 
@@ -1029,7 +1031,7 @@ bool CustomizedGuiManager::onProcessMessage(Message* msg)
                   break;
                 }
                 // Is it the desktop and the top-window=
-                else if (child->is_desktop() && child == app_get_top_window()) {
+                else if (child->is_desktop() && child == App::instance()->getMainWindow()) {
                   // OK, so we can execute the command represented
                   // by the pressed-key in the message...
                   UIContext::instance()->executeCommand(command, shortcut->params);

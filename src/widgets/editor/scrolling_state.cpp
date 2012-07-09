@@ -65,7 +65,7 @@ bool ScrollingState::onMouseMove(Editor* editor, Message* msg)
 
   int x, y;
   editor->screenToEditor(jmouse_x(0), jmouse_y(0), &x, &y);
-  app_get_statusbar()->setStatusText
+  StatusBar::instance()->setStatusText
     (0, "Pos %3d %3d (Size %3d %3d)", x, y,
      editor->getSprite()->getWidth(),
      editor->getSprite()->getHeight());

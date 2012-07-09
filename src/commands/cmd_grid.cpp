@@ -100,7 +100,7 @@ protected:
     usprintf(buf, "Snap to grid: %s",
              (settings->getSnapToGrid() ? "On": "Off"));
 
-    app_get_statusbar()->setStatusText(250, buf);
+    StatusBar::instance()->setStatusText(250, buf);
   }
 };
 

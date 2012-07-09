@@ -18,6 +18,7 @@
 
 #include "config.h"
 
+#include "app_menus.h"
 #include "base/compiler_specific.h"
 #include "base/memory.h"
 #include "commands/command.h"
@@ -31,7 +32,6 @@
 #include "gfx/rect.h"
 #include "modules/gfx.h"
 #include "modules/gui.h"
-#include "modules/rootmenu.h"
 #include "raster/raster.h"
 #include "skin/skin_theme.h"
 #include "ui/gui.h"
@@ -528,7 +528,7 @@ bool AnimationEditor::onProcessMessage(Message* msg)
             // Show the frame pop-up menu.
             if (msg->mouse.right) {
               if (m_clk_frame == m_hot_frame) {
-                Menu* popup_menu = get_frame_popup_menu();
+                Menu* popup_menu = AppMenus::instance()->getFramePopupMenu();
                 if (popup_menu != NULL) {
                   popup_menu->showPopup(msg->mouse.x, msg->mouse.y);
 
@@ -570,7 +570,7 @@ bool AnimationEditor::onProcessMessage(Message* msg)
             // Show the layer pop-up menu.
             if (msg->mouse.right) {
               if (m_clk_layer == m_hot_layer) {
-                Menu* popup_menu = get_layer_popup_menu();
+                Menu* popup_menu = AppMenus::instance()->getLayerPopupMenu();
                 if (popup_menu != NULL) {
                   popup_menu->showPopup(msg->mouse.x, msg->mouse.y);
 
@@ -653,8 +653,8 @@ bool AnimationEditor::onProcessMessage(Message* msg)
 
             // Show the cel pop-up menu.
             if (msg->mouse.right) {
-              Menu* popup_menu = movement ? get_cel_movement_popup_menu():
-                                            get_cel_popup_menu();
+              Menu* popup_menu = movement ? AppMenus::instance()->getCelMovementPopupMenu():
+                                            AppMenus::instance()->getCelPopupMenu();
               if (popup_menu != NULL) {
                 popup_menu->showPopup(msg->mouse.x, msg->mouse.y);
 
