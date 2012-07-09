@@ -32,6 +32,7 @@
 #include "ui/manager.h"
 #include "ui/menu.h"
 #include "ui/message.h"
+#include "ui/message_loop.h"
 #include "ui/paint_event.h"
 #include "ui/popup_window.h"
 #include "ui/preferred_size_event.h"

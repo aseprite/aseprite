@@ -28,12 +28,11 @@ namespace ui {
     // Returns true if there are messages in the queue to be
     // distpatched through jmanager_dispatch_messages().
     bool generateMessages();
-
     void dispatchMessages();
+    void enqueueMessage(Message* msg);
 
     void addToGarbage(Widget* widget);
-
-    void enqueueMessage(Message* msg);
+    void collectGarbage();
 
     Window* getTopWindow();
     Window* getForegroundWindow();
@@ -72,7 +71,6 @@ namespace ui {
   private:
     void layoutManager(JRect rect);
     void pumpQueue();
-    void collectGarbage();
     void generateSetCursorMessage();
     static void removeWidgetFromDests(Widget* widget, Message* msg);
     static bool someParentIsFocusStop(Widget* widget);

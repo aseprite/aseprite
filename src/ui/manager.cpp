@@ -11,8 +11,6 @@
 
 #include "ui/manager.h"
 
-#include "base/chrono.h"
-#include "base/thread.h"
 #include "ui/gui.h"
 #include "ui/intern.h"
 
@@ -186,27 +184,10 @@ Manager::~Manager()
 
 void Manager::run()
 {
-  base::Chrono chrono;
+  MessageLoop loop(this);
 
-  while (!jlist_empty(this->children)) {
-    chrono.reset();
-
-    if (generateMessages()) {
-      dispatchMessages();
-    }
-    else if (!m_garbage.empty()) {
-      collectGarbage();
-    }
-
-    // If the dispatching of messages was faster than 10 milliseconds,
-    // it means that the process is not using a lot of CPU, so we can
-    // wait the difference to cover those 10 milliseconds
-    // sleeping. With this code we can avoid 100% CPU usage (a
-    // property of Allegro 4 polling nature).
-    double elapsedMSecs = chrono.elapsed() * 1000.0;
-    if (elapsedMSecs > 0.0 && elapsedMSecs < 10.0)
-      base::this_thread::sleep_for((10.0 - elapsedMSecs) / 1000.0);
-  }
+  while (!jlist_empty(this->children))
+    loop.pumpMessages();
 }
 
 bool Manager::generateMessages()
@@ -1196,6 +1177,9 @@ void Manager::invalidateDisplayRegion(const JRegion region)
 
 void Manager::collectGarbage()
 {
+  if (m_garbage.empty())
+    return;
+
   for (WidgetsList::iterator
          it = m_garbage.begin(),
          end = m_garbage.end(); it != end; ++it) {

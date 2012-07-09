@@ -233,14 +233,12 @@ void Window::openWindowInForeground()
 {
   openWindow();
 
-  Manager* manager = getManager();
+  MessageLoop loop(getManager());
 
   m_is_foreground = true;
 
-  while (!(this->flags & JI_HIDDEN)) {
-    if (manager->generateMessages())
-      manager->dispatchMessages();
-  }
+  while (!(this->flags & JI_HIDDEN))
+    loop.pumpMessages();
 
   m_is_foreground = false;
 }
