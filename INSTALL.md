@@ -60,3 +60,9 @@ the source code in a directory called `aseprite-source`):
    Studio project, you can copy the whole `data/` directory to
    `build/src/RelWithDebInfo/` so you can run/debug the program from
    Visual Studio IDE.
+
+# How to profile ASEPRITE?
+
+You must compile with `Profile` configuration. For example on Linux:
+
+    /.../aseprite-source/build$ cmake .. -G "Unix Makefiles" -DCMAKE_BUILD_TYPE:STRING=Profile -DCOMPILER_GCC:BOOL=ON
