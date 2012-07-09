@@ -14,11 +14,11 @@
 #include "ui/widget.h"
 
 #include <algorithm>
-#include <vector>
+#include <list>
 
 namespace ui {
 
-typedef std::vector<Timer*> Timers;
+typedef std::list<Timer*> Timers;
 
 static Timers timers; // Registered timers
 
@@ -80,8 +80,8 @@ void Timer::pollTimers()
     int t = ji_clock;
     int count;
 
-    for (int c=0; c<(int)timers.size(); ++c) {
-      Timer* timer = timers[c];
+    for (Timers::iterator it=timers.begin(), end=timers.end(); it != end; ++it) {
+      Timer* timer = *it;
       if (timer && timer->m_lastTime >= 0) {
         count = 0;
         while (t - timer->m_lastTime > timer->m_interval) {
