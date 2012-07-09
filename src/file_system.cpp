@@ -756,21 +756,23 @@ static void update_by_pidl(FileItem* fileitem)
   /****************************************/
   /* get the name to display */
 
-  if (pFolder &&
+  if (fileitem->isFolder() &&
+      pFolder &&
       pFolder->GetDisplayNameOf(fileitem->pidl,
                                 SHGDN_INFOLDER,
                                 &strret) == S_OK) {
     StrRetToBuf(&strret, fileitem->pidl, pszName, MAX_PATH);
     fileitem->displayname = pszName;
   }
-  else if (shl_idesktop->GetDisplayNameOf(fileitem->fullpidl,
+  else if (fileitem->isFolder() &&
+           shl_idesktop->GetDisplayNameOf(fileitem->fullpidl,
                                           SHGDN_INFOLDER,
                                           &strret) == S_OK) {
     StrRetToBuf(&strret, fileitem->fullpidl, pszName, MAX_PATH);
     fileitem->displayname = pszName;
   }
   else {
-    fileitem->displayname = "ERR";
+    fileitem->displayname = base::get_file_name(fileitem->filename);
   }
 
   if (pFolder != NULL && pFolder != shl_idesktop) {
@@ -951,10 +953,9 @@ static FileItem* get_fileitem_by_fullpidl(LPITEMIDLIST fullpidl, bool create_if_
   fileitem->fullpidl = clone_pidl(fullpidl);
 
   fileitem->attrib = SFGAO_FOLDER;
-  shl_idesktop->GetAttributesOf(1, (LPCITEMIDLIST *)&fileitem->fullpidl,
-                                &fileitem->attrib);
-
-  {
+  HRESULT hr = shl_idesktop->GetAttributesOf(1, (LPCITEMIDLIST *)&fileitem->fullpidl,
+                                             &fileitem->attrib);
+  if (hr == S_OK) {
     LPITEMIDLIST parent_fullpidl = clone_pidl(fileitem->fullpidl);
     remove_last_pidl(parent_fullpidl);
 
