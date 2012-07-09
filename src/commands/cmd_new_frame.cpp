@@ -77,8 +77,8 @@ void NewFrameCommand::onExecute(Context* context)
   update_screen_for_document(document);
   StatusBar::instance()
     ->showTip(1000, "New frame %d/%d",
-              sprite->getCurrentFrame()+1,
-              sprite->getTotalFrames());
+              (int)sprite->getCurrentFrame()+1,
+              (int)sprite->getTotalFrames());
 }
 
 //////////////////////////////////////////////////////////////////////

@@ -156,7 +156,7 @@ bool GifFormat::onLoad(FileOp* fop)
         if (frame_x < 0 || frame_y < 0 ||
             frame_x + frame_w > data->sprite_w ||
             frame_y + frame_h > data->sprite_h)
-          throw base::Exception("Image %d is out of sprite bounds.\n", frame_num);
+          throw base::Exception("Image %d is out of sprite bounds.\n", (int)frame_num);
 
         // Add a new frames.
         if (frame_num >= FrameNumber(data->frames.size()))
@@ -214,7 +214,7 @@ bool GifFormat::onLoad(FileOp* fop)
         data->frames[frame_num].disposal_method = disposal_method;
         data->frames[frame_num].mask_index = transparent_index;
 
-        PRINTF("Frame[%d] transparent index  = %d\n", frame_num, transparent_index);
+        PRINTF("Frame[%d] transparent index  = %d\n", (int)frame_num, transparent_index);
 
         ++frame_num;
 
@@ -595,16 +595,16 @@ bool GifFormat::onSave(FileOp* fop)
 
       memcpy(extension_bytes, "NETSCAPE2.0", 11);
       if (EGifPutExtensionFirst(gif_file, APPLICATION_EXT_FUNC_CODE, 11, extension_bytes) == GIF_ERROR)
-        throw base::Exception("Error writing GIF graphics extension record for frame %d.\n", frame_num);
+        throw base::Exception("Error writing GIF graphics extension record for frame %d.\n", (int)frame_num);
 
       extension_bytes[0] = 1;
       extension_bytes[1] = (loop & 0xff);
       extension_bytes[2] = (loop >> 8) & 0xff;
       if (EGifPutExtensionNext(gif_file, APPLICATION_EXT_FUNC_CODE, 3, extension_bytes) == GIF_ERROR)
-        throw base::Exception("Error writing GIF graphics extension record for frame %d.\n", frame_num);
+        throw base::Exception("Error writing GIF graphics extension record for frame %d.\n", (int)frame_num);
 
       if (EGifPutExtensionLast(gif_file, APPLICATION_EXT_FUNC_CODE, 0, NULL) == GIF_ERROR)
-        throw base::Exception("Error writing GIF graphics extension record for frame %d.\n", frame_num);
+        throw base::Exception("Error writing GIF graphics extension record for frame %d.\n", (int)frame_num);
     }
 
     // Write graphics extension record (to save the duration of the
@@ -622,7 +622,7 @@ bool GifFormat::onSave(FileOp* fop)
       extension_bytes[3] = (transparent_index >= 0 ? transparent_index: 0);
 
       if (EGifPutExtension(gif_file, GRAPHICS_EXT_FUNC_CODE, 4, extension_bytes) == GIF_ERROR)
-        throw base::Exception("Error writing GIF graphics extension record for frame %d.\n", frame_num);
+        throw base::Exception("Error writing GIF graphics extension record for frame %d.\n", (int)frame_num);
     }
 
     // Image color map
@@ -642,7 +642,7 @@ bool GifFormat::onSave(FileOp* fop)
                          frame_x, frame_y,
                          frame_w, frame_h, interlace ? 1: 0,
                          image_color_map) == GIF_ERROR)
-      throw base::Exception("Error writing GIF frame %d.\n", frame_num);
+      throw base::Exception("Error writing GIF frame %d.\n", (int)frame_num);
 
     // Write the image data (pixels).
     if (interlace) {
@@ -651,7 +651,7 @@ bool GifFormat::onSave(FileOp* fop)
         for (int y = interlaced_offset[i]; y < frame_h; y += interlaced_jumps[i]) {
           IndexedTraits::address_t addr = image_address_fast<IndexedTraits>(current_image, frame_x, frame_y + y);
           if (EGifPutLine(gif_file, addr, frame_w) == GIF_ERROR)
-            throw base::Exception("Error writing GIF image scanlines for frame %d.\n", frame_num);
+            throw base::Exception("Error writing GIF image scanlines for frame %d.\n", (int)frame_num);
         }
     }
     else {
@@ -659,7 +659,7 @@ bool GifFormat::onSave(FileOp* fop)
       for (int y = 0; y < frame_h; ++y) {
         IndexedTraits::address_t addr = image_address_fast<IndexedTraits>(current_image, frame_x, frame_y + y);
         if (EGifPutLine(gif_file, addr, frame_w) == GIF_ERROR)
-          throw base::Exception("Error writing GIF image scanlines for frame %d.\n", frame_num);
+          throw base::Exception("Error writing GIF image scanlines for frame %d.\n", (int)frame_num);
       }
     }
 

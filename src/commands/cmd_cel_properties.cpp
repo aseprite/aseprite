@@ -88,7 +88,9 @@ void CelPropertiesCommand::onExecute(Context* context)
     button_ok->setEnabled(false);
   }
 
-  label_frame->setTextf("%d/%d", sprite->getCurrentFrame()+1, sprite->getTotalFrames());
+  label_frame->setTextf("%d/%d",
+                        (int)sprite->getCurrentFrame()+1,
+                        (int)sprite->getTotalFrames());
 
   if (cel != NULL) {
     // Position

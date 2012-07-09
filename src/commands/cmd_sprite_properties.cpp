@@ -117,7 +117,7 @@ void SpritePropertiesCommand::onExecute(Context* context)
     size->setText(buf);
 
     // How many frames
-    frames->setTextf("%d", sprite->getTotalFrames());
+    frames->setTextf("%d", (int)sprite->getTotalFrames());
 
     if (sprite->getPixelFormat() == IMAGE_INDEXED) {
       color_button = new ColorButton(Color::fromIndex(sprite->getTransparentColor()),

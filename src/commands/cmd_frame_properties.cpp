@@ -112,7 +112,7 @@ void FramePropertiesCommand::onExecute(Context* context)
   if (m_target == ALL_FRAMES)
     window->setText("All");
   else
-    window->setTextf("%d", sprite_frame);
+    window->setTextf("%d", (int)sprite_frame);
 
   frlen->setTextf("%d", sprite->getFrameDuration(sprite->getCurrentFrame()));
 
