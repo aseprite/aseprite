@@ -28,7 +28,7 @@
 using namespace undo;
 using namespace undoers;
 
-AddPalette::AddPalette(ObjectsContainer* objects, Sprite* sprite, int paletteFrame)
+AddPalette::AddPalette(ObjectsContainer* objects, Sprite* sprite, FrameNumber paletteFrame)
   : m_spriteId(objects->addObject(sprite))
   , m_paletteFrame(paletteFrame)
 {
@@ -42,9 +42,9 @@ void AddPalette::dispose()
 void AddPalette::revert(ObjectsContainer* objects, UndoersCollector* redoers)
 {
   Sprite* sprite = objects->getObjectT<Sprite>(m_spriteId);
-  Palette* palette = sprite->getPalette(m_paletteFrame);
+  Palette* palette = sprite->getPalette(FrameNumber(m_paletteFrame));
 
-  redoers->pushUndoer(new RemovePalette(objects, sprite, m_paletteFrame));
+  redoers->pushUndoer(new RemovePalette(objects, sprite, FrameNumber(m_paletteFrame)));
 
   sprite->deletePalette(palette);
 }

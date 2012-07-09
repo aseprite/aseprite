@@ -19,9 +19,11 @@
 #ifndef RASTER_LAYER_H_INCLUDED
 #define RASTER_LAYER_H_INCLUDED
 
-#include <string>
-#include "raster/gfxobj.h"
 #include "raster/blend.h"
+#include "raster/frame_number.h"
+#include "raster/gfxobj.h"
+
+#include <string>
 
 class Cel;
 class Image;
@@ -101,8 +103,8 @@ public:
 
   void addCel(Cel *cel);
   void removeCel(Cel *cel);
-  const Cel* getCel(int frame) const;
-  Cel* getCel(int frame);
+  const Cel* getCel(FrameNumber frame) const;
+  Cel* getCel(FrameNumber frame);
 
   void getCels(CelList& cels);
 
@@ -150,6 +152,6 @@ private:
   LayerList m_layers;
 };
 
-void layer_render(const Layer* layer, Image *image, int x, int y, int frame);
+void layer_render(const Layer* layer, Image *image, int x, int y, FrameNumber frame);
 
 #endif

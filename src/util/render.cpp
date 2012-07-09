@@ -370,7 +370,7 @@ Image* RenderEngine::renderSprite(const Document* document,
                                   const Sprite* sprite,
                                   int source_x, int source_y,
                                   int width, int height,
-                                  int frame, int zoom,
+                                  FrameNumber frame, int zoom,
                                   bool draw_tiled_bg)
 {
   void (*zoomed_func)(Image*, const Image*, const Palette*, int, int, int, int, int);
@@ -425,8 +425,8 @@ Image* RenderEngine::renderSprite(const Document* document,
       int opacity_base = settings->getOnionskinOpacityBase();
       int opacity_step = settings->getOnionskinOpacityStep();
 
-      for (int f=frame-prevs; f <= frame+nexts; ++f) {
-        if (f == frame || f < 0 || f >= sprite->getTotalFrames())
+      for (FrameNumber f=frame.previous(prevs); f <= frame.next(nexts); ++f) {
+        if (f == frame || f < 0 || f > sprite->getLastFrame())
           continue;
         else if (f < frame)
           global_opacity = opacity_base - opacity_step * ((frame - f)-1);
@@ -553,7 +553,7 @@ void RenderEngine::renderLayer(const Document* document,
                                const Layer* layer,
                                Image *image,
                                int source_x, int source_y,
-                               int frame, int zoom,
+                               FrameNumber frame, int zoom,
                                void (*zoomed_func)(Image*, const Image*, const Palette*, int, int, int, int, int),
                                bool render_background,
                                bool render_transparent)

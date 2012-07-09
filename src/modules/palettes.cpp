@@ -43,10 +43,10 @@ static Palette* ase_current_palette = NULL;
 
 int init_module_palette()
 {
-  ase_default_palette = new Palette(0, 256);
+  ase_default_palette = new Palette(FrameNumber(0), 256);
   ase_default_palette->fromAllegro(default_palette);
 
-  ase_current_palette = new Palette(0, 256);
+  ase_current_palette = new Palette(FrameNumber(0), 256);
   ase_current_palette->fromAllegro(black_palette);
 
   return 0;
@@ -106,7 +106,7 @@ bool set_current_palette(const Palette *_palette, bool forced)
 
 void set_black_palette()
 {
-  Palette* p = new Palette(0, 256);
+  Palette* p = new Palette(FrameNumber(0), 256);
   set_current_palette(p, true);
   delete p;
 }

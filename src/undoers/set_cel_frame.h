@@ -19,6 +19,7 @@
 #ifndef UNDOERS_SET_CEL_FRAME_H_INCLUDED
 #define UNDOERS_SET_CEL_FRAME_H_INCLUDED
 
+#include "raster/frame_number.h"
 #include "undo/object_id.h"
 #include "undoers/undoer_base.h"
 
@@ -38,7 +39,7 @@ public:
 
 private:
   undo::ObjectId m_celId;
-  int m_frame;
+  FrameNumber m_frame;
 };
 
 } // namespace undoers

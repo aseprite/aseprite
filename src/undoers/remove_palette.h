@@ -19,6 +19,7 @@
 #ifndef UNDOERS_REMOVE_PALETTE_H_INCLUDED
 #define UNDOERS_REMOVE_PALETTE_H_INCLUDED
 
+#include "raster/frame_number.h"
 #include "undo/object_id.h"
 #include "undoers/undoer_base.h"
 
@@ -31,7 +32,7 @@ namespace undoers {
 class RemovePalette : public UndoerBase
 {
 public:
-  RemovePalette(undo::ObjectsContainer* objects, Sprite* sprite, int paletteFrame);
+  RemovePalette(undo::ObjectsContainer* objects, Sprite* sprite, FrameNumber paletteFrame);
 
   void dispose() OVERRIDE;
   size_t getMemSize() const OVERRIDE { return sizeof(*this) + getStreamSize(); }

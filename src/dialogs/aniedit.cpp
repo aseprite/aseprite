@@ -117,9 +117,9 @@ protected:
 private:
   void setCursor(int x, int y);
   void getDrawableLayers(JRect clip, int* first_layer, int* last_layer);
-  void getDrawableFrames(JRect clip, int* first_frame, int* last_frame);
+  void getDrawableFrames(JRect clip, FrameNumber* first_frame, FrameNumber* last_frame);
   void drawHeader(JRect clip);
-  void drawHeaderFrame(JRect clip, int frame);
+  void drawHeaderFrame(JRect clip, FrameNumber frame);
   void drawHeaderPart(JRect clip, int x1, int y1, int x2, int y2,
                       bool is_hot, bool is_clk,
                       const char* line1, int align1,
@@ -127,12 +127,12 @@ private:
   void drawSeparator(JRect clip);
   void drawLayer(JRect clip, int layer_index);
   void drawLayerPadding();
-  void drawCel(JRect clip, int layer_index, int frame, Cel* cel);
-  bool drawPart(int part, int layer, int frame);
+  void drawCel(JRect clip, int layer_index, FrameNumber frame, Cel* cel);
+  bool drawPart(int part, int layer, FrameNumber frame);
   void regenerateLayers();
-  void hotThis(int hot_part, int hot_layer, int hot_frame);
-  void centerCel(int layer, int frame);
-  void showCel(int layer, int frame);
+  void hotThis(int hot_part, int hot_layer, FrameNumber hotFrame);
+  void centerCel(int layer, FrameNumber frame);
+  void showCel(int layer, FrameNumber frame);
   void showCurrentCel();
   void cleanClk();
   void setScroll(int x, int y, bool use_refresh_region);
@@ -150,11 +150,11 @@ private:
   // The 'hot' part is where the mouse is on top of
   int m_hot_part;
   int m_hot_layer;
-  int m_hot_frame;
+  FrameNumber m_hot_frame;
   // The 'clk' part is where the mouse's button was pressed (maybe for a drag & drop operation)
   int m_clk_part;
   int m_clk_layer;
-  int m_clk_frame;
+  FrameNumber m_clk_frame;
   // Keys
   bool m_space_pressed;
 };
@@ -245,7 +245,7 @@ bool AnimationEditor::onProcessMessage(Message* msg)
     case JM_DRAW: {
       JRect clip = &msg->draw.rect;
       int layer, first_layer, last_layer;
-      int frame, first_frame, last_frame;
+      FrameNumber frame, first_frame, last_frame;
 
       getDrawableLayers(clip, &first_layer, &last_layer);
       getDrawableFrames(clip, &first_frame, &last_frame);
@@ -254,7 +254,7 @@ bool AnimationEditor::onProcessMessage(Message* msg)
       drawHeader(clip);
 
       // Draw the header for each visible frame.
-      for (frame=first_frame; frame<=last_frame; frame++)
+      for (frame=first_frame; frame<=last_frame; ++frame)
         drawHeaderFrame(clip, frame);
 
       // Draw the separator.
@@ -338,7 +338,7 @@ bool AnimationEditor::onProcessMessage(Message* msg)
           const DocumentReader document(const_cast<Document*>(m_document));
           const Sprite* sprite = m_sprite;
           int old_layer = getLayerIndex(sprite->getCurrentLayer());
-          int frame = m_sprite->getCurrentFrame();
+          FrameNumber frame = m_sprite->getCurrentFrame();
 
           // Did the user select another layer?
           if (old_layer != m_clk_layer) {
@@ -373,7 +373,7 @@ bool AnimationEditor::onProcessMessage(Message* msg)
           const DocumentReader document(const_cast<Document*>(m_document));
           const Sprite* sprite = document->getSprite();
           int old_layer = getLayerIndex(sprite->getCurrentLayer());
-          int old_frame = sprite->getCurrentFrame();
+          FrameNumber old_frame = sprite->getCurrentFrame();
 
           // Select the new clicked-part.
           if (old_layer != m_clk_layer ||
@@ -389,9 +389,7 @@ bool AnimationEditor::onProcessMessage(Message* msg)
             // Redraw the old & new selected layer.
             if (old_layer != m_clk_layer) {
               drawPart(A_PART_LAYER, old_layer, old_frame);
-              drawPart(A_PART_LAYER,
-                       m_clk_layer,
-                       m_clk_frame);
+              drawPart(A_PART_LAYER, m_clk_layer, m_clk_frame);
             }
             // Redraw the old selected cel.
             drawPart(A_PART_CEL, old_layer, old_frame);
@@ -419,7 +417,7 @@ bool AnimationEditor::onProcessMessage(Message* msg)
     case JM_MOTION: {
       int hot_part = A_PART_NOTHING;
       int hot_layer = -1;
-      int hot_frame = -1;
+      FrameNumber hot_frame(-1);
       int mx = msg->mouse.x - rc->x1;
       int my = msg->mouse.y - rc->y1;
 
@@ -454,10 +452,10 @@ bool AnimationEditor::onProcessMessage(Message* msg)
         // Is on a frame header?
         else {
           hot_part = A_PART_HEADER_FRAME;
-          hot_frame = (mx
-                       - m_separator_x
-                       - m_separator_w
-                       + m_scroll_x) / FRMSIZE;
+          hot_frame = FrameNumber((mx
+                                   - m_separator_x
+                                   - m_separator_w
+                                   + m_scroll_x) / FRMSIZE);
         }
       }
       else {
@@ -495,10 +493,10 @@ bool AnimationEditor::onProcessMessage(Message* msg)
         }
         else {
           hot_part = A_PART_CEL;
-          hot_frame = (mx
-                       - m_separator_x
-                       - m_separator_w
-                       + m_scroll_x) / FRMSIZE;
+          hot_frame = FrameNumber((mx
+                                   - m_separator_x
+                                   - m_separator_w
+                                   + m_scroll_x) / FRMSIZE);
         }
       }
 
@@ -879,16 +877,16 @@ void AnimationEditor::setCursor(int x, int y)
   }
 }
 
-void AnimationEditor::getDrawableLayers(JRect clip, int *first_layer, int *last_layer)
+void AnimationEditor::getDrawableLayers(JRect clip, int* first_layer, int* last_layer)
 {
   *first_layer = 0;
   *last_layer = m_nlayers-1;
 }
 
-void AnimationEditor::getDrawableFrames(JRect clip, int *first_frame, int *last_frame)
+void AnimationEditor::getDrawableFrames(JRect clip, FrameNumber* first_frame, FrameNumber* last_frame)
 {
-  *first_frame = 0;
-  *last_frame = m_sprite->getTotalFrames()-1;
+  *first_frame = FrameNumber(0);
+  *last_frame = m_sprite->getLastFrame();
 }
 
 void AnimationEditor::drawHeader(JRect clip)
@@ -910,7 +908,7 @@ void AnimationEditor::drawHeader(JRect clip)
                  "Layers", -1);
 }
 
-void AnimationEditor::drawHeaderFrame(JRect clip, int frame)
+void AnimationEditor::drawHeaderFrame(JRect clip, FrameNumber frame)
 {
   bool is_hot = (m_hot_part == A_PART_HEADER_FRAME &&
                  m_hot_frame == frame);
@@ -1152,7 +1150,7 @@ void AnimationEditor::drawLayerPadding()
   }
 }
 
-void AnimationEditor::drawCel(JRect clip, int layer_index, int frame, Cel* cel)
+void AnimationEditor::drawCel(JRect clip, int layer_index, FrameNumber frame, Cel* cel)
 {
   SkinTheme* theme = static_cast<SkinTheme*>(this->getTheme());
   Layer *layer = m_layers[layer_index];
@@ -1258,7 +1256,7 @@ void AnimationEditor::drawCel(JRect clip, int layer_index, int frame, Cel* cel)
   set_clip_rect(ji_screen, cx1, cy1, cx2, cy2);
 }
 
-bool AnimationEditor::drawPart(int part, int layer, int frame)
+bool AnimationEditor::drawPart(int part, int layer, FrameNumber frame)
 {
   switch (part) {
     case A_PART_NOTHING:
@@ -1318,7 +1316,7 @@ void AnimationEditor::regenerateLayers()
   }
 }
 
-void AnimationEditor::hotThis(int hot_part, int hot_layer, int hot_frame)
+void AnimationEditor::hotThis(int hot_part, int hot_layer, FrameNumber hot_frame)
 {
   int old_hot_part;
 
@@ -1349,7 +1347,7 @@ void AnimationEditor::hotThis(int hot_part, int hot_layer, int hot_frame)
   }
 }
 
-void AnimationEditor::centerCel(int layer, int frame)
+void AnimationEditor::centerCel(int layer, FrameNumber frame)
 {
   int target_x = (this->rc->x1 + m_separator_x + m_separator_w + this->rc->x2)/2 - FRMSIZE/2;
   int target_y = (this->rc->y1 + HDRSIZE + this->rc->y2)/2 - LAYSIZE/2;
@@ -1359,7 +1357,7 @@ void AnimationEditor::centerCel(int layer, int frame)
   setScroll(scroll_x, scroll_y, false);
 }
 
-void AnimationEditor::showCel(int layer, int frame)
+void AnimationEditor::showCel(int layer, FrameNumber frame)
 {
   int scroll_x, scroll_y;
   int x1, y1, x2, y2;

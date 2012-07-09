@@ -20,6 +20,7 @@
 #define RASTER_SPRITE_H_INCLUDED
 
 #include "base/disable_copying.h"
+#include "raster/frame_number.h"
 #include "raster/gfxobj.h"
 #include "raster/pixel_format.h"
 
@@ -85,7 +86,7 @@ public:
   ////////////////////////////////////////
   // Palettes
 
-  Palette* getPalette(int frame) const;
+  Palette* getPalette(FrameNumber frame) const;
   const PalettesList& getPalettes() const;
 
   void setPalette(const Palette* pal, bool truncate);
@@ -98,24 +99,25 @@ public:
   Palette* getCurrentPalette() const;
 
   RgbMap* getRgbMap();
-  RgbMap* getRgbMap(int frame);
+  RgbMap* getRgbMap(FrameNumber frame);
 
   ////////////////////////////////////////
   // Frames
 
-  int getTotalFrames() const { return m_frames; }
+  FrameNumber getTotalFrames() const { return m_frames; }
+  FrameNumber getLastFrame() const { return m_frames.previous(); }
 
   // Changes the quantity of frames
-  void setTotalFrames(int frames);
+  void setTotalFrames(FrameNumber frames);
 
-  int getFrameDuration(int frame) const;
-  void setFrameDuration(int frame, int msecs);
+  int getFrameDuration(FrameNumber frame) const;
+  void setFrameDuration(FrameNumber frame, int msecs);
 
   // Sets a constant frame-rate.
   void setDurationForAllFrames(int msecs);
 
-  int getCurrentFrame() const { return m_frame; }
-  void setCurrentFrame(int frame);
+  FrameNumber getCurrentFrame() const { return m_frame; }
+  void setCurrentFrame(FrameNumber frame);
 
   ////////////////////////////////////////
   // Images
@@ -126,7 +128,7 @@ public:
 
   void getCels(CelList& cels);
 
-  void remapImages(int frame_from, int frame_to, const std::vector<uint8_t>& mapping);
+  void remapImages(FrameNumber frameFrom, FrameNumber frameTo, const std::vector<uint8_t>& mapping);
 
   // Draws the sprite in the given image at the given position. Before
   // drawing the sprite, this function clears (with the sprite's
@@ -144,9 +146,9 @@ private:
   PixelFormat m_format;                  // pixel format
   int m_width;                           // image width (in pixels)
   int m_height;                          // image height (in pixels)
-  int m_frames;                          // how many frames has this sprite
+  FrameNumber m_frames;                  // how many frames has this sprite
   std::vector<int> m_frlens;             // duration per frame
-  int m_frame;                           // current frame, range [0,frames)
+  FrameNumber m_frame;                   // current frame, range [0,frames)
   PalettesList m_palettes;               // list of palettes
   Stock* m_stock;                        // stock to get images
   LayerFolder* m_folder;                 // main folder of layers

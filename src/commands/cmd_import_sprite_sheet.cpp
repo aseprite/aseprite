@@ -196,7 +196,7 @@ protected:
         animation[i] = NULL;
 
         // Create the cel.
-        UniquePtr<Cel> resultCel(new Cel(i, indexInStock));
+        UniquePtr<Cel> resultCel(new Cel(FrameNumber(i), indexInStock));
 
         // Add the cel in the layer.
         undoTransaction.addCel(resultLayer, resultCel);
@@ -213,8 +213,8 @@ protected:
       }
 
       // Change the number of frames
-      undoTransaction.setNumberOfFrames(animation.size());
-      undoTransaction.setCurrentFrame(0);
+      undoTransaction.setNumberOfFrames(FrameNumber(animation.size()));
+      undoTransaction.setCurrentFrame(FrameNumber(0));
 
       // Set the size of the sprite to the tile size.
       undoTransaction.setSpriteSize(m_rect.w, m_rect.h);

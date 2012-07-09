@@ -78,7 +78,7 @@ Document* Document::createBasicDocument(PixelFormat format, int width, int heigh
 {
   // Create the sprite.
   UniquePtr<Sprite> sprite(new Sprite(format, width, height, ncolors));
-  sprite->setTotalFrames(1);
+  sprite->setTotalFrames(FrameNumber(1));
 
   // Create the main image.
   int indexInStock;
@@ -100,7 +100,7 @@ Document* Document::createBasicDocument(PixelFormat format, int width, int heigh
 
     // Create the cel.
     {
-      UniquePtr<Cel> cel(new Cel(0, indexInStock));
+      UniquePtr<Cel> cel(new Cel(FrameNumber(0), indexInStock));
       cel->setPosition(0, 0);
 
       // Add the cel in the layer.
@@ -237,7 +237,7 @@ void Document::prepareExtraCel(int x, int y, int w, int h, int opacity)
   ASSERT(getSprite() != NULL);
 
   if (!m_extraCel)
-    m_extraCel = new Cel(0, 0); // Ignored fields for this cell (frame, and image index)
+    m_extraCel = new Cel(FrameNumber(0), 0); // Ignored fields for this cell (frame, and image index)
 
   m_extraCel->setPosition(x, y);
   m_extraCel->setOpacity(opacity);
@@ -398,7 +398,8 @@ Document* Document::duplicate(DuplicateType type) const
   const Sprite* sourceSprite = getSprite();
   UniquePtr<Sprite> spriteCopyPtr(new Sprite(sourceSprite->getPixelFormat(),
                                              sourceSprite->getWidth(),
-                                             sourceSprite->getHeight(), sourceSprite->getPalette(0)->size()));
+                                             sourceSprite->getHeight(),
+                                             sourceSprite->getPalette(FrameNumber(0))->size()));
   UniquePtr<Document> documentCopy(new Document(spriteCopyPtr));
   Sprite* spriteCopy = spriteCopyPtr.release();
 
@@ -406,7 +407,7 @@ Document* Document::duplicate(DuplicateType type) const
   spriteCopy->setCurrentFrame(sourceSprite->getCurrentFrame());
 
   // Copy frames duration
-  for (int i = 0; i < sourceSprite->getTotalFrames(); ++i)
+  for (FrameNumber i(0); i < sourceSprite->getTotalFrames(); ++i)
     spriteCopy->setFrameDuration(i, sourceSprite->getFrameDuration(i));
 
   // Copy color palettes
@@ -447,7 +448,7 @@ Document* Document::duplicate(DuplicateType type) const
             (spriteCopy,
              sourceSprite->getFolder(),
              gfx::Rect(0, 0, sourceSprite->getWidth(), sourceSprite->getHeight()),
-             0, sourceSprite->getTotalFrames()-1);
+             FrameNumber(0), sourceSprite->getLastFrame());
 
         // Add and select the new flat layer
         spriteCopy->getFolder()->add_layer(flatLayer);

@@ -625,7 +625,7 @@ void PaletteEntryEditor::onRampClick(Event& ev)
     return;
 
   Palette* src_palette = get_current_palette();
-  Palette* dst_palette = new Palette(0, 256);
+  Palette* dst_palette = new Palette(FrameNumber(0), 256);
 
   src_palette->copyColorsTo(dst_palette);
   dst_palette->makeHorzRamp(index1, index2);

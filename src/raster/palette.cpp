@@ -32,7 +32,7 @@ using namespace gfx;
 
 //////////////////////////////////////////////////////////////////////
 
-Palette::Palette(int frame, int ncolors)
+Palette::Palette(FrameNumber frame, int ncolors)
   : GfxObj(GFXOBJ_PALETTE)
 {
   ASSERT(ncolors >= 1 && ncolors <= MaxColors);
@@ -58,7 +58,7 @@ Palette::~Palette()
 
 Palette* Palette::createGrayscale()
 {
-  Palette* graypal = new Palette(0, MaxColors);
+  Palette* graypal = new Palette(FrameNumber(0), MaxColors);
   for (int c=0; c<MaxColors; c++)
     graypal->setEntry(c, _rgba(c, c, c, 255));
   return graypal;
@@ -81,7 +81,7 @@ void Palette::resize(int ncolors)
   ++m_modifications;
 }
 
-void Palette::setFrame(int frame)
+void Palette::setFrame(FrameNumber frame)
 {
   ASSERT(frame >= 0);
 
@@ -445,7 +445,7 @@ Palette* Palette::load(const char *filename)
     if (bmp) {
       destroy_bitmap(bmp);
 
-      pal = new Palette(0, MaxColors);
+      pal = new Palette(FrameNumber(0), MaxColors);
       pal->fromAllegro(rgbpal);
     }
   }

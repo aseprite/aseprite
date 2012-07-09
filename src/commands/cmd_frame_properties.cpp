@@ -45,14 +45,16 @@ protected:
   void onExecute(Context* context);
 
 private:
-  enum {
-    CURRENT_FRAME = 0,
+  enum Target {
     ALL_FRAMES = -1,
+    CURRENT_FRAME = 0,
+    SPECIFIC_FRAME = 1
   };
 
   // Frame to be shown. It can be ALL_FRAMES, CURRENT_FRAME, or a
   // number indicating a specific frame (1 is the first frame).
-  int m_frame;
+  Target m_target;
+  FrameNumber m_frame;
 };
 
 FramePropertiesCommand::FramePropertiesCommand()
@@ -66,13 +68,14 @@ void FramePropertiesCommand::onLoadParams(Params* params)
 {
   std::string frame = params->get("frame");
   if (frame == "all") {
-    m_frame = ALL_FRAMES;
+    m_target = ALL_FRAMES;
   }
   else if (frame == "current") {
-    m_frame = CURRENT_FRAME;
+    m_target = CURRENT_FRAME;
   }
   else {
-    m_frame = base::convert_to<int>(frame);
+    m_target = SPECIFIC_FRAME;
+    m_frame = FrameNumber(base::convert_to<int>(frame)-1);
   }
 }
 
@@ -91,22 +94,22 @@ void FramePropertiesCommand::onExecute(Context* context)
   Widget* frlen = app::find_widget<Widget>(window, "frlen");
   Widget* ok = app::find_widget<Widget>(window, "ok");
 
-  int sprite_frame = 0;
-  switch (m_frame) {
+  FrameNumber sprite_frame(0);
+  switch (m_target) {
 
     case ALL_FRAMES:
       break;
 
     case CURRENT_FRAME:
-      sprite_frame = sprite->getCurrentFrame()+1;
+      sprite_frame = sprite->getCurrentFrame();
       break;
 
-    default:
+    case SPECIFIC_FRAME:
       sprite_frame = m_frame;
       break;
   }
 
-  if (m_frame == ALL_FRAMES)
+  if (m_target == ALL_FRAMES)
     frame->setText("All");
   else
     frame->setTextf("%d", sprite_frame);
@@ -117,7 +120,7 @@ void FramePropertiesCommand::onExecute(Context* context)
   if (window->get_killer() == ok) {
     int num = strtol(frlen->getText(), NULL, 10);
 
-    if (m_frame == ALL_FRAMES) {
+    if (m_target == ALL_FRAMES) {
       if (Alert::show("Warning"
                       "<<Do you want to change the duration of all frames?"
                       "||&Yes||&No") == 1) {
@@ -130,7 +133,7 @@ void FramePropertiesCommand::onExecute(Context* context)
     else {
       DocumentWriter document_writer(document);
       UndoTransaction undoTransaction(document_writer, "Frame Duration");
-      undoTransaction.setFrameDuration(sprite_frame-1, num);
+      undoTransaction.setFrameDuration(sprite_frame, num);
       undoTransaction.commit();
     }
   }

@@ -29,7 +29,9 @@
 using namespace undo;
 using namespace undoers;
 
-RemapPalette::RemapPalette(ObjectsContainer* objects, Sprite* sprite, int frameFrom, int frameTo, const std::vector<uint8_t>& mapping)
+RemapPalette::RemapPalette(ObjectsContainer* objects, Sprite* sprite,
+                           FrameNumber frameFrom, FrameNumber frameTo,
+                           const std::vector<uint8_t>& mapping)
   : m_spriteId(objects->addObject(sprite))
   , m_frameFrom(frameFrom)
   , m_frameTo(frameTo)
@@ -53,7 +55,9 @@ void RemapPalette::revert(ObjectsContainer* objects, UndoersCollector* redoers)
     inverse_mapping[m_mapping[c]] = c;
 
   // Push an RemapPalette as redoer
-  redoers->pushUndoer(new RemapPalette(objects, sprite, m_frameFrom, m_frameTo, inverse_mapping));
+  redoers->pushUndoer(new RemapPalette(objects, sprite,
+                                       m_frameFrom,
+                                       m_frameTo, inverse_mapping));
 
   // Remap in inverse order
   sprite->remapImages(m_frameFrom, m_frameTo, inverse_mapping);

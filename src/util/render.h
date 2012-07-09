@@ -20,6 +20,7 @@
 #define UTIL_RENDER_H_INCLUDED
 
 #include "app/color.h"
+#include "raster/frame_number.h"
 
 class Document;
 class Image;
@@ -61,7 +62,7 @@ public:
                              const Sprite* sprite,
                              int source_x, int source_y,
                              int width, int height,
-                             int frpos, int zoom,
+                             FrameNumber frame, int zoom,
                              bool draw_tiled_bg);
 
   //////////////////////////////////////////////////////////////////////
@@ -80,7 +81,7 @@ private:
                           const Layer* layer,
                           Image* image,
                           int source_x, int source_y,
-                          int frame, int zoom,
+                          FrameNumber frame, int zoom,
                           void (*zoomed_func)(Image*, const Image*, const Palette*, int, int, int, int, int),
                           bool render_background,
                           bool render_transparent);

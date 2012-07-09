@@ -19,6 +19,7 @@
 #ifndef RASTER_CEL_H_INCLUDED
 #define RASTER_CEL_H_INCLUDED
 
+#include "raster/frame_number.h"
 #include "raster/gfxobj.h"
 
 class LayerImage;
@@ -26,17 +27,17 @@ class LayerImage;
 class Cel : public GfxObj
 {
 public:
-  Cel(int frame, int image);
+  Cel(FrameNumber frame, int image);
   Cel(const Cel& cel);
   virtual ~Cel();
 
-  int getFrame() const { return m_frame; }
+  FrameNumber getFrame() const { return m_frame; }
   int getImage() const { return m_image; }
   int getX() const { return m_x; }
   int getY() const { return m_y; }
   int getOpacity() const { return m_opacity; }
 
-  void setFrame(int frame) { m_frame = frame; }
+  void setFrame(FrameNumber frame) { m_frame = frame; }
   void setImage(int image) { m_image = image; }
   void setPosition(int x, int y) { m_x = x; m_y = y; }
   void setOpacity(int opacity) { m_opacity = opacity; }
@@ -46,7 +47,7 @@ public:
   }
 
 private:
-  int m_frame;                  // Frame position
+  FrameNumber m_frame;          // Frame position
   int m_image;                  // Image index of stock
   int m_x, m_y;                 // X/Y screen position
   int m_opacity;                // Opacity level

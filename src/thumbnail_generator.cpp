@@ -72,7 +72,7 @@ private:
                                                                                  NULL;
       if (!fop_is_stop(m_fop) && sprite) {
         // The palette to convert the Image to a BITMAP
-        m_palette.reset(new Palette(*sprite->getPalette(0)));
+        m_palette.reset(new Palette(*sprite->getPalette(FrameNumber(0))));
 
         // Render the 'sprite' in one plain 'image'
         UniquePtr<Image> image(Image::create(sprite->getPixelFormat(),

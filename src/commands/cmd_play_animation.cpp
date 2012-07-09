@@ -72,7 +72,7 @@ void PlayAnimationCommand::onExecute(Context* context)
 {
   ActiveDocumentWriter document(context);
   Sprite* sprite(document->getSprite());
-  int old_frame, msecs;
+  int msecs;
   bool done = false;
   bool onionskin_state = context->getSettings()->getUseOnionskin();
   Palette *oldpal, *newpal;
@@ -86,7 +86,7 @@ void PlayAnimationCommand::onExecute(Context* context)
 
   ui::jmouse_hide();
 
-  old_frame = sprite->getCurrentFrame();
+  FrameNumber old_frame = sprite->getCurrentFrame();
 
   LOCK_VARIABLE(speed_timer);
   LOCK_FUNCTION(speed_timer_callback);
@@ -124,9 +124,9 @@ void PlayAnimationCommand::onExecute(Context* context)
     } while (!done && (speed_timer <= 0));
 
     if (!done) {
-      int frame = sprite->getCurrentFrame()+1;
-      if (frame >= sprite->getTotalFrames())
-        frame = 0;
+      FrameNumber frame = sprite->getCurrentFrame().next();
+      if (frame > sprite->getLastFrame())
+        frame = FrameNumber(0);
       sprite->setCurrentFrame(frame);
 
       speed_timer--;

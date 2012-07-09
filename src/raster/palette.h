@@ -19,7 +19,9 @@
 #ifndef RASTER_PALETTE_H_INCLUDED
 #define RASTER_PALETTE_H_INCLUDED
 
+#include "raster/frame_number.h"
 #include "raster/gfxobj.h"
+
 #include <allegro/color.h>
 #include <vector>
 
@@ -55,7 +57,7 @@ class Palette : public GfxObj
 public:
   enum { MaxColors = 256 };
 
-  Palette(int frame, int ncolors);
+  Palette(FrameNumber frame, int ncolors);
   Palette(const Palette& palette);
   ~Palette();
 
@@ -66,8 +68,8 @@ public:
 
   int getModifications() const { return m_modifications; }
 
-  int getFrame() const { return m_frame; }
-  void setFrame(int frame);
+  FrameNumber getFrame() const { return m_frame; }
+  void setFrame(FrameNumber frame);
 
   uint32_t getEntry(int i) const {
     ASSERT(i >= 0 && i < size());
@@ -98,7 +100,7 @@ public:
   int findBestfit(int r, int g, int b) const;
 
 private:
-  int m_frame;
+  FrameNumber m_frame;
   std::vector<uint32_t> m_colors;
   int m_modifications;
 };

@@ -122,7 +122,7 @@ protected:
   void onExport()
   {
     Sprite* sprite = m_document->getSprite();
-    int nframes = sprite->getTotalFrames();
+    FrameNumber nframes = sprite->getTotalFrames();
     int columns;
 
     switch (m_sheetType.getSelectedItem()) {
@@ -145,9 +145,9 @@ protected:
     UniquePtr<Image> tempImage(Image::create(sprite->getPixelFormat(), sprite->getWidth(), sprite->getHeight()));
     image_clear(resultImage, 0);
 
-    int oldFrame = sprite->getCurrentFrame();
+    FrameNumber oldFrame = sprite->getCurrentFrame();
     int column = 0, row = 0;
-    for (int frame=0; frame<nframes; ++frame) {
+    for (FrameNumber frame(0); frame<nframes; ++frame) {
       // TODO "tempImage" could not be necessary if we could specify
       // destination clipping bounds in Sprite::render() function.
       tempImage->clear(0);
@@ -175,7 +175,7 @@ protected:
       resultImage.release();
 
       // Create the cel.
-      UniquePtr<Cel> resultCel(new Cel(0, indexInStock));
+      UniquePtr<Cel> resultCel(new Cel(FrameNumber(0), indexInStock));
 
       // Add the cel in the layer.
       undoTransaction.addCel(resultLayer, resultCel);
@@ -191,8 +191,8 @@ protected:
       }
 
       // Change the number of frames (just one, the sprite sheet)
-      undoTransaction.setNumberOfFrames(1);
-      undoTransaction.setCurrentFrame(0);
+      undoTransaction.setNumberOfFrames(FrameNumber(1));
+      undoTransaction.setCurrentFrame(FrameNumber(0));
 
       // Set the size of the sprite to the tile size.
       undoTransaction.setSpriteSize(sheet_w, sheet_h);

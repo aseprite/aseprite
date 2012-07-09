@@ -138,7 +138,7 @@ bool IcoFormat::onLoad(FileOp* fop)
   // Create the first image/cel
   Image* image = Image::create(pixelFormat, width, height);
   int image_index = sprite->getStock()->addImage(image);
-  Cel* cel = new Cel(0, image_index);
+  Cel* cel = new Cel(FrameNumber(0), image_index);
   layer->addCel(cel);
   image_clear(image, 0);
 
@@ -161,7 +161,7 @@ bool IcoFormat::onLoad(FileOp* fop)
 
   // Read the palette
   if (entry.bpp <= 8) {
-    Palette* pal = new Palette(0, numcolors);
+    Palette* pal = new Palette(FrameNumber(0), numcolors);
 
     for (int i=0; i<numcolors; ++i) {
       int b = fgetc(f);
@@ -235,9 +235,9 @@ bool IcoFormat::onSave(FileOp* fop)
 {
   Sprite* sprite = fop->document->getSprite();
   int bpp, bw, bitsw;
-  int size, offset, n, i;
+  int size, offset, i;
   int c, x, y, b, m, v;
-  int num = sprite->getTotalFrames();
+  FrameNumber n, num = sprite->getTotalFrames();
 
   FileHandle f(fop->filename.c_str(), "wb");
 
@@ -249,7 +249,7 @@ bool IcoFormat::onSave(FileOp* fop)
   fputw(num, f);                // number of icons
 
   // Entries
-  for (n=0; n<num; ++n) {
+  for (n=FrameNumber(0); n<num; ++n) {
     bpp = (sprite->getPixelFormat() == IMAGE_INDEXED) ? 8 : 24;
     bw = (((sprite->getWidth() * bpp / 8) + 3) / 4) * 4;
     bitsw = ((((sprite->getWidth() + 7) / 8) + 3) / 4) * 4;
@@ -275,7 +275,7 @@ bool IcoFormat::onSave(FileOp* fop)
                                sprite->getWidth(),
                                sprite->getHeight());
 
-  for (n=0; n<num; ++n) {
+  for (n=FrameNumber(0); n<num; ++n) {
     image_clear(image, 0);
     layer_render(sprite->getFolder(), image, 0, 0, n);
 

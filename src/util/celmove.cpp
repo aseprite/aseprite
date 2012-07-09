@@ -47,13 +47,13 @@
    frame indicates where to move it) */
 static Layer* src_layer = NULL; // TODO warning not thread safe
 static Layer* dst_layer = NULL;
-static int src_frame = 0;
-static int dst_frame = 0;
+static FrameNumber src_frame = FrameNumber(0);
+static FrameNumber dst_frame = FrameNumber(0);
 
 static void remove_cel(Sprite* sprite, UndoTransaction& undo, LayerImage *layer, Cel *cel);
 
-void set_frame_to_handle(Layer *_src_layer, int _src_frame,
-                         Layer *_dst_layer, int _dst_frame)
+void set_frame_to_handle(Layer *_src_layer, FrameNumber _src_frame,
+                         Layer *_dst_layer, FrameNumber _dst_frame)
 {
   src_layer = _src_layer;
   src_frame = _src_frame;
@@ -147,7 +147,7 @@ void move_cel(DocumentWriter& document)
 
   undo.commit();
 
-  set_frame_to_handle(NULL, 0, NULL, 0);
+  set_frame_to_handle(NULL, FrameNumber(0), NULL, FrameNumber(0));
 }
 
 void copy_cel(DocumentWriter& document)
@@ -230,21 +230,20 @@ void copy_cel(DocumentWriter& document)
 
   undo.commit();
 
-  set_frame_to_handle(NULL, 0, NULL, 0);
+  set_frame_to_handle(NULL, FrameNumber(0), NULL, FrameNumber(0));
 }
 
 static void remove_cel(Sprite* sprite, UndoTransaction& undo, LayerImage *layer, Cel *cel)
 {
   Image *image;
   Cel *it;
-  int frame;
   bool used;
 
   if (sprite != NULL && layer->is_image() && cel != NULL) {
     /* find if the image that use the cel to remove, is used by
        another cels */
     used = false;
-    for (frame=0; frame<sprite->getTotalFrames(); ++frame) {
+    for (FrameNumber frame(0); frame<sprite->getTotalFrames(); ++frame) {
       it = layer->getCel(frame);
       if (it != NULL && it != cel && it->getImage() == cel->getImage()) {
         used = true;

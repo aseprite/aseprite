@@ -19,13 +19,15 @@
 #ifndef UTIL_CELMOVE_H_INCLUDED
 #define UTIL_CELMOVE_H_INCLUDED
 
+#include "raster/frame_number.h"
+
 class Cel;
 class Layer;
 class Sprite;
 class DocumentWriter;
 
-void set_frame_to_handle(Layer* src_layer, int src_frame,
-                         Layer* dst_layer, int dst_frame);
+void set_frame_to_handle(Layer* src_layer, FrameNumber src_frame,
+                         Layer* dst_layer, FrameNumber dst_frame);
 
 void move_cel(DocumentWriter& document);
 void copy_cel(DocumentWriter& document);

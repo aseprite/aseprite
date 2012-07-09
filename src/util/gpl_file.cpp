@@ -40,7 +40,7 @@ Palette* load_gpl_file(const char *filename)
   base::trim_string(line, line);
   if (line != "GIMP Palette") return NULL;
 
-  UniquePtr<Palette> pal(new Palette(0, 256));
+  UniquePtr<Palette> pal(new Palette(FrameNumber(0), 256));
   int entryCounter = 0;
 
   while (std::getline(f, line)) {

@@ -175,7 +175,7 @@ void LayerImage::removeCel(Cel *cel)
   m_cels.erase(it);
 }
 
-const Cel* LayerImage::getCel(int frame) const
+const Cel* LayerImage::getCel(FrameNumber frame) const
 {
   CelConstIterator it = getCelBegin();
   CelConstIterator end = getCelEnd();
@@ -189,7 +189,7 @@ const Cel* LayerImage::getCel(int frame) const
   return NULL;
 }
 
-Cel* LayerImage::getCel(int frame)
+Cel* LayerImage::getCel(FrameNumber frame)
 {
   return const_cast<Cel*>(static_cast<const LayerImage*>(this)->getCel(frame));
 }
@@ -301,7 +301,7 @@ void LayerFolder::move_layer(Layer* layer, Layer* after)
   //   jlist_prepend(m_layers, layer);
 }
 
-void layer_render(const Layer* layer, Image* image, int x, int y, int frame)
+void layer_render(const Layer* layer, Image* image, int x, int y, FrameNumber frame)
 {
   if (!layer->is_readable())
     return;

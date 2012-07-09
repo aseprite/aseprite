@@ -27,7 +27,7 @@
 using namespace undo;
 using namespace undoers;
 
-SetFrameDuration::SetFrameDuration(ObjectsContainer* objects, Sprite* sprite, int frame)
+SetFrameDuration::SetFrameDuration(ObjectsContainer* objects, Sprite* sprite, FrameNumber frame)
   : m_spriteId(objects->addObject(sprite))
   , m_frame(frame)
 {

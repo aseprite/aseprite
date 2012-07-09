@@ -31,7 +31,7 @@
 using namespace undo;
 using namespace undoers;
 
-RemovePalette::RemovePalette(ObjectsContainer* objects, Sprite* sprite, int paletteFrame)
+RemovePalette::RemovePalette(ObjectsContainer* objects, Sprite* sprite, FrameNumber paletteFrame)
   : m_spriteId(objects->addObject(sprite))
 {
   raster::write_palette(m_stream, sprite->getPalette(paletteFrame));

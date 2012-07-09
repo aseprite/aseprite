@@ -46,7 +46,7 @@ static void create_palette_from_bitmaps(const std::vector<Image*>& images, Palet
 Palette* quantization::create_palette_from_rgb(const Sprite* sprite)
 {
   bool has_background_layer = (sprite->getBackgroundLayer() != NULL);
-  Palette* palette = new Palette(0, 256);
+  Palette* palette = new Palette(FrameNumber(0), 256);
   Image* flat_image;
 
   ImagesCollector images(sprite,

@@ -20,6 +20,7 @@
 #define FLATTEN_H_INCLUDED
 
 #include "gfx/Rect.h"
+#include "raster/frame_number.h"
 
 class Sprite;
 class Layer;
@@ -33,6 +34,7 @@ class LayerImage;
 // it, so you'll be able to add the flatten layer only into the given
 // sprite.
 LayerImage* create_flatten_layer_copy(Sprite* dstSprite, const Layer* srcLayer,
-                                      const gfx::Rect& bounds, int frmin, int frmax);
+                                      const gfx::Rect& bounds,
+                                      FrameNumber frmin, FrameNumber frmax);
 
 #endif

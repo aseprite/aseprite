@@ -39,7 +39,6 @@ ImagesCollector::ImagesCollector(const Sprite* sprite, bool allLayers, bool allF
 void ImagesCollector::collectFromLayer(Layer* layer)
 {
   const Sprite* sprite = layer->getSprite();
-  int frame = sprite->getCurrentFrame();
 
   if (!layer->is_readable())
     return;
@@ -51,13 +50,14 @@ void ImagesCollector::collectFromLayer(Layer* layer)
 
     case GFXOBJ_LAYER_IMAGE: {
       if (m_allFrames) {
-        for (frame=0; frame<sprite->getTotalFrames(); frame++) {
+        for (FrameNumber frame(0); frame<sprite->getTotalFrames(); ++frame) {
           Cel* cel = static_cast<LayerImage*>(layer)->getCel(frame);
           if (cel != NULL)
             collectImage(layer, cel);
         }
       }
       else {
+        FrameNumber frame = sprite->getCurrentFrame();
         Cel* cel = static_cast<LayerImage*>(layer)->getCel(frame);
         if (cel != NULL)
           collectImage(layer, cel);

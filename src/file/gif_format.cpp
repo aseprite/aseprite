@@ -111,8 +111,8 @@ bool GifFormat::onLoad(FileOp* fop)
   data->sprite_w = gif_file->SWidth;
   data->sprite_h = gif_file->SHeight;
 
-  UniquePtr<Palette> current_palette(new Palette(0, 256));
-  UniquePtr<Palette> previous_palette(new Palette(0, 256));
+  UniquePtr<Palette> current_palette(new Palette(FrameNumber(0), 256));
+  UniquePtr<Palette> previous_palette(new Palette(FrameNumber(0), 256));
 
   // If the GIF image has a global palette, it has a valid
   // background color (so the GIF is not transparent).
@@ -133,7 +133,7 @@ bool GifFormat::onLoad(FileOp* fop)
 
   // Scan the content of the GIF file (read record by record)
   GifRecordType record_type;
-  size_t frame_num = 0;
+  FrameNumber frame_num(0);
   DisposalMethod disposal_method = DISPOSAL_METHOD_NONE;
   int transparent_index = -1;
   int frame_delay = -1;
@@ -159,8 +159,8 @@ bool GifFormat::onLoad(FileOp* fop)
           throw base::Exception("Image %d is out of sprite bounds.\n", frame_num);
 
         // Add a new frames.
-        if (frame_num >= data->frames.size())
-          data->frames.resize(frame_num+1);
+        if (frame_num >= FrameNumber(data->frames.size()))
+          data->frames.resize(frame_num.next());
 
         data->frames[frame_num].x = frame_x;
         data->frames[frame_num].y = frame_y;
@@ -358,10 +358,10 @@ bool GifFormat::onPostLoad(FileOp* fop)
   image_clear(previous_image, bgcolor);
 
   // Add all frames in the sprite.
-  sprite->setTotalFrames(data->frames.size());
+  sprite->setTotalFrames(FrameNumber(data->frames.size()));
   Palette* current_palette = NULL;
 
-  size_t frame_num = 0;
+  FrameNumber frame_num(0);
   for (GifFrames::iterator
          frame_it=data->frames.begin(),
          frame_end=data->frames.end(); frame_it != frame_end; ++frame_it, ++frame_num) {
@@ -496,7 +496,7 @@ bool GifFormat::onSave(FileOp* fop)
   int background_color = (sprite_format == IMAGE_INDEXED ? sprite->getTransparentColor(): 0);
   int transparent_index = (sprite->getBackgroundLayer() ? -1: sprite->getTransparentColor());
 
-  Palette* current_palette = sprite->getPalette(0);
+  Palette* current_palette = sprite->getPalette(FrameNumber(0));
   Palette* previous_palette = current_palette;
   ColorMapObject* color_map = MakeMapObject(current_palette->size(), NULL);
   for (int i = 0; i < current_palette->size(); ++i) {
@@ -525,7 +525,7 @@ bool GifFormat::onSave(FileOp* fop)
   image_clear(current_image, background_color);
   image_clear(previous_image, background_color);
 
-  for (int frame_num=0; frame_num<sprite->getTotalFrames(); ++frame_num) {
+  for (FrameNumber frame_num(0); frame_num<sprite->getTotalFrames(); ++frame_num) {
     current_palette = sprite->getPalette(frame_num);
 
     // If the sprite is RGB or Grayscale, we must to convert it to Indexed on the fly.

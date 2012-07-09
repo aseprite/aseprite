@@ -19,6 +19,7 @@
 #ifndef UNDOERS_SET_CURRENT_FRAME_H_INCLUDED
 #define UNDOERS_SET_CURRENT_FRAME_H_INCLUDED
 
+#include "raster/frame_number.h"
 #include "undo/object_id.h"
 #include "undoers/undoer_base.h"
 
@@ -39,7 +40,7 @@ public:
 
 private:
   undo::ObjectId m_spriteId;
-  uint32_t m_frame;
+  FrameNumber m_frame;
 };
 
 } // namespace undoers

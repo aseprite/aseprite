@@ -20,11 +20,11 @@
 
 #include "raster/cel.h"
 
-Cel::Cel(int frame, int image)
+Cel::Cel(FrameNumber frame, int image)
   : GfxObj(GFXOBJ_CEL)
+  , m_frame(frame)
+  , m_image(image)
 {
-  m_frame = frame;
-  m_image = image;
   m_x = 0;
   m_y = 0;
   m_opacity = 255;
@@ -32,9 +32,9 @@ Cel::Cel(int frame, int image)
 
 Cel::Cel(const Cel& cel)
   : GfxObj(cel)
+  , m_frame(cel.m_frame)
+  , m_image(cel.m_image)
 {
-  m_frame = cel.m_frame;
-  m_image = cel.m_image;
   m_x = cel.m_x;
   m_y = cel.m_y;
   m_opacity = cel.m_opacity;

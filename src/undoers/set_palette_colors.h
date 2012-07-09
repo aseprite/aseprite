@@ -19,6 +19,7 @@
 #ifndef UNDOERS_SET_PALETTE_COLORS_H_INCLUDED
 #define UNDOERS_SET_PALETTE_COLORS_H_INCLUDED
 
+#include "raster/frame_number.h"
 #include "undo/object_id.h"
 #include "undoers/undoer_base.h"
 
@@ -44,7 +45,7 @@ private:
   }
 
   undo::ObjectId m_spriteId;
-  uint32_t m_frame;
+  FrameNumber m_frame;
   uint8_t m_from;
   uint8_t m_to;
   std::stringstream m_stream;

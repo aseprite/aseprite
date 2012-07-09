@@ -75,8 +75,8 @@ bool FliFormat::onLoad(FileOp* fop)
   LayerImage *layer;
   Palette *pal;
   int c, w, h;
-  int frpos_in;
-  int frpos_out;
+  FrameNumber frpos_in;
+  FrameNumber frpos_out;
   int index = 0;
   Cel *cel;
 
@@ -98,7 +98,7 @@ bool FliFormat::onLoad(FileOp* fop)
   /* create the bitmaps */
   bmp = Image::create(IMAGE_INDEXED, w, h);
   old = Image::create(IMAGE_INDEXED, w, h);
-  pal = new Palette(0, 256);
+  pal = new Palette(FrameNumber(0), 256);
   if (!bmp || !old || !pal) {
     fop_error(fop, "Not enough memory.\n");
     if (bmp) image_free(bmp);
@@ -114,13 +114,13 @@ bool FliFormat::onLoad(FileOp* fop)
   layer->configureAsBackground();
 
   // Set frames and speed
-  sprite->setTotalFrames(fli_header.frames);
+  sprite->setTotalFrames(FrameNumber(fli_header.frames));
   sprite->setDurationForAllFrames(fli_header.speed);
 
   /* write frame by frame */
-  for (frpos_in=frpos_out=0;
-       frpos_in<sprite->getTotalFrames();
-       frpos_in++) {
+  for (frpos_in = frpos_out = FrameNumber(0);
+       frpos_in < sprite->getTotalFrames();
+       ++frpos_in) {
     /* read the frame */
     fli_read_frame(f, &fli_header,
                    (unsigned char *)old->dat, omap,
@@ -135,7 +135,7 @@ bool FliFormat::onLoad(FileOp* fop)
         ) {
       /* the image changes? */
       if (frpos_in != 0)
-        frpos_out++;
+        ++frpos_out;
 
       /* add the new frame */
       image = Image::createCopy(bmp);
@@ -161,7 +161,7 @@ bool FliFormat::onLoad(FileOp* fop)
 #ifdef USE_LINK
     /* the palette changes */
     else if (memcmp(omap, cmap, 768) != 0) {
-      frpos_out++;
+      ++frpos_out;
       SETPAL();
 
       // Add link
@@ -190,7 +190,7 @@ bool FliFormat::onLoad(FileOp* fop)
   }
 
   // Update number of frames
-  sprite->setTotalFrames(frpos_out+1);
+  sprite->setTotalFrames(frpos_out.next());
 
   // Destroy the bitmaps
   image_free(bmp);
@@ -207,7 +207,7 @@ bool FliFormat::onSave(FileOp* fop)
   unsigned char cmap[768];
   unsigned char omap[768];
   s_fli_header fli_header;
-  int c, frpos, times;
+  int c, times;
   Image *bmp, *old;
   Palette *pal;
 
@@ -247,9 +247,9 @@ bool FliFormat::onSave(FileOp* fop)
   }
 
   /* write frame by frame */
-  for (frpos=0;
-       frpos<sprite->getTotalFrames();
-       frpos++) {
+  for (FrameNumber frpos(0);
+       frpos < sprite->getTotalFrames();
+       ++frpos) {
     /* get color map */
     pal = sprite->getPalette(frpos);
     for (c=0; c<256; c++) {
@@ -282,7 +282,7 @@ bool FliFormat::onSave(FileOp* fop)
     }
 
     /* update progress */
-    fop_progress(fop, (float)(frpos+1) / (float)(sprite->getTotalFrames()));
+    fop_progress(fop, (float)(frpos.next()) / (float)(sprite->getTotalFrames()));
   }
 
   /* write the header and close the file */
@@ -298,10 +298,9 @@ bool FliFormat::onSave(FileOp* fop)
 static int get_time_precision(Sprite *sprite)
 {
   int precision = 1000;
-  int c, len;
 
-  for (c = 0; c < sprite->getTotalFrames() && precision > 1; c++) {
-    len = sprite->getFrameDuration(c);
+  for (FrameNumber c(0); c < sprite->getTotalFrames() && precision > 1; ++c) {
+    int len = sprite->getFrameDuration(c);
 
     while (len / precision == 0)
       precision /= 10;

@@ -20,11 +20,12 @@
 #define FILE_FILE_H_INCLUDED
 
 #include "base/shared_ptr.h"
+#include "raster/frame_number.h"
 #include "raster/pixel_format.h"
 
 #include <stdio.h>
-#include <vector>
 #include <string>
+#include <vector>
 
 #define FILE_LOAD_SEQUENCE_NONE         0x00000001
 #define FILE_LOAD_SEQUENCE_ASK          0x00000002
@@ -82,7 +83,7 @@ struct FileOp
     double progress_offset;      // Progress offset from the current frame.
     double progress_fraction;    // Progress fraction for one frame.
     // To load sequences.
-    int frame;
+    FrameNumber frame;
     bool has_alpha;
     LayerImage* layer;
     Cel* last_cel;

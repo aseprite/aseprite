@@ -23,6 +23,7 @@
 #include "raster/blend.h"
 #include "raster/cel.h"
 #include "raster/dirty.h"
+#include "raster/frame_number.h"
 #include "raster/gfxobj.h"
 #include "raster/image.h"
 #include "raster/layer.h"

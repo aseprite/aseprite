@@ -64,7 +64,7 @@ void GotoFirstFrameCommand::onExecute(Context* context)
   ActiveDocumentWriter document(context);
   Sprite* sprite = document->getSprite();
 
-  sprite->setCurrentFrame(0);
+  sprite->setCurrentFrame(FrameNumber(0));
 
   update_screen_for_document(document);
   current_editor->updateStatusBar();
@@ -101,12 +101,12 @@ void GotoPreviousFrameCommand::onExecute(Context* context)
 {
   ActiveDocumentWriter document(context);
   Sprite* sprite = document->getSprite();
-  int frame = sprite->getCurrentFrame();
+  FrameNumber frame = sprite->getCurrentFrame();
 
-  if (frame > 0)
-    sprite->setCurrentFrame(frame-1);
+  if (frame > FrameNumber(0))
+    sprite->setCurrentFrame(frame.previous());
   else
-    sprite->setCurrentFrame(sprite->getTotalFrames()-1);
+    sprite->setCurrentFrame(sprite->getLastFrame());
 
   update_screen_for_document(document);
   current_editor->updateStatusBar();
@@ -143,12 +143,12 @@ void GotoNextFrameCommand::onExecute(Context* context)
 {
   ActiveDocumentWriter document(context);
   Sprite* sprite = document->getSprite();
-  int frame = sprite->getCurrentFrame();
+  FrameNumber frame = sprite->getCurrentFrame();
 
-  if (frame < sprite->getTotalFrames()-1)
-    sprite->setCurrentFrame(frame+1);
+  if (frame < sprite->getLastFrame())
+    sprite->setCurrentFrame(frame.next());
   else
-    sprite->setCurrentFrame(0);
+    sprite->setCurrentFrame(FrameNumber(0));
 
   update_screen_for_document(document);
   current_editor->updateStatusBar();
@@ -185,7 +185,7 @@ void GotoLastFrameCommand::onExecute(Context* context)
 {
   ActiveDocumentWriter document(context);
   Sprite* sprite = document->getSprite();
-  sprite->setCurrentFrame(sprite->getTotalFrames()-1);
+  sprite->setCurrentFrame(sprite->getLastFrame());
 
   update_screen_for_document(document);
   current_editor->updateStatusBar();
@@ -250,7 +250,7 @@ void GotoFrameCommand::onExecute(Context* context)
 
   ActiveDocumentWriter document(context);
   Sprite* sprite = document->getSprite();
-  int newFrame = MID(0, m_frame-1, sprite->getTotalFrames()-1);
+  FrameNumber newFrame(MID(0, m_frame-1, sprite->getLastFrame()));
 
   sprite->setCurrentFrame(newFrame);
 

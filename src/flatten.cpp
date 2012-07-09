@@ -21,19 +21,21 @@
 #include "base/unique_ptr.h"
 #include "gfx/rect.h"
 #include "raster/cel.h"
+#include "raster/frame_number.h"
 #include "raster/image.h"
 #include "raster/layer.h"
 #include "raster/sprite.h"
 #include "raster/stock.h"
 
-static bool has_cels(const Layer* layer, int frame);
+static bool has_cels(const Layer* layer, FrameNumber frame);
 
 LayerImage* create_flatten_layer_copy(Sprite* dstSprite, const Layer* srcLayer,
-                                      const gfx::Rect& bounds, int frmin, int frmax)
+                                      const gfx::Rect& bounds,
+                                      FrameNumber frmin, FrameNumber frmax)
 {
   UniquePtr<LayerImage> flatLayer(new LayerImage(dstSprite));
 
-  for (int frame=frmin; frame<=frmax; frame++) {
+  for (FrameNumber frame=frmin; frame<=frmax; ++frame) {
     // Does this frame have cels to render?
     if (has_cels(srcLayer, frame)) {
       // Create a new image to render each frame.
@@ -62,7 +64,7 @@ LayerImage* create_flatten_layer_copy(Sprite* dstSprite, const Layer* srcLayer,
 
 // Returns true if the "layer" or its children have any cel to render
 // in the given "frame".
-static bool has_cels(const Layer* layer, int frame)
+static bool has_cels(const Layer* layer, FrameNumber frame)
 {
   if (!layer->is_readable())
     return false;

@@ -19,6 +19,7 @@
 #ifndef UNDOERS_SET_FRAME_DURATION_H_INCLUDED
 #define UNDOERS_SET_FRAME_DURATION_H_INCLUDED
 
+#include "raster/frame_number.h"
 #include "undo/object_id.h"
 #include "undoers/undoer_base.h"
 
@@ -29,7 +30,7 @@ namespace undoers {
 class SetFrameDuration : public UndoerBase
 {
 public:
-  SetFrameDuration(undo::ObjectsContainer* objects, Sprite* sprite, int frame);
+  SetFrameDuration(undo::ObjectsContainer* objects, Sprite* sprite, FrameNumber frame);
 
   void dispose() OVERRIDE;
   size_t getMemSize() const OVERRIDE { return sizeof(*this); }
@@ -37,7 +38,7 @@ public:
 
 private:
   undo::ObjectId m_spriteId;
-  uint32_t m_frame;
+  FrameNumber m_frame;
   uint32_t m_duration;
 };
 

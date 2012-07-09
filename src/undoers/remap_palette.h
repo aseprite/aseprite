@@ -19,6 +19,7 @@
 #ifndef UNDOERS_REMAP_PALETTE_H_INCLUDED
 #define UNDOERS_REMAP_PALETTE_H_INCLUDED
 
+#include "raster/frame_number.h"
 #include "undo/object_id.h"
 #include "undoers/undoer_base.h"
 
@@ -31,7 +32,9 @@ namespace undoers {
 class RemapPalette : public UndoerBase
 {
 public:
-  RemapPalette(undo::ObjectsContainer* objects, Sprite* sprite, int frameFrom, int frameTo, const std::vector<uint8_t>& mapping);
+  RemapPalette(undo::ObjectsContainer* objects, Sprite* sprite,
+               FrameNumber frameFrom, FrameNumber frameTo,
+               const std::vector<uint8_t>& mapping);
 
   void dispose() OVERRIDE;
   size_t getMemSize() const OVERRIDE { return sizeof(*this); }
@@ -39,8 +42,8 @@ public:
 
 private:
   undo::ObjectId m_spriteId;
-  uint32_t m_frameFrom;
-  uint32_t m_frameTo;
+  FrameNumber m_frameFrom;
+  FrameNumber m_frameTo;
   std::vector<uint8_t> m_mapping;
 };
 

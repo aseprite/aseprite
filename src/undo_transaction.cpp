@@ -150,7 +150,7 @@ undo::ObjectsContainer* UndoTransaction::getObjects() const
   return m_undo->getObjects();
 }
 
-void UndoTransaction::setNumberOfFrames(int frames)
+void UndoTransaction::setNumberOfFrames(FrameNumber frames)
 {
   ASSERT(frames >= 1);
 
@@ -162,7 +162,7 @@ void UndoTransaction::setNumberOfFrames(int frames)
   m_sprite->setTotalFrames(frames);
 }
 
-void UndoTransaction::setCurrentFrame(int frame)
+void UndoTransaction::setCurrentFrame(FrameNumber frame)
 {
   ASSERT(frame >= 0);
 
@@ -215,7 +215,7 @@ void UndoTransaction::cropSprite(const gfx::Rect& bounds, int bgcolor)
 
 void UndoTransaction::trimSprite(int bgcolor)
 {
-  int old_frame = m_sprite->getCurrentFrame();
+  FrameNumber old_frame = m_sprite->getCurrentFrame();
   gfx::Rect bounds;
 
   UniquePtr<Image> image_wrap(Image::create(m_sprite->getPixelFormat(),
@@ -223,7 +223,7 @@ void UndoTransaction::trimSprite(int bgcolor)
                                             m_sprite->getHeight()));
   Image* image = image_wrap.get();
 
-  for (int frame=0; frame<m_sprite->getTotalFrames(); ++frame) {
+  for (FrameNumber frame(0); frame<m_sprite->getTotalFrames(); ++frame) {
     image->clear(0);
 
     m_sprite->setCurrentFrame(frame);
@@ -295,7 +295,7 @@ void UndoTransaction::setPixelFormat(PixelFormat newFormat, DitheringMethod dith
       }
 
       m_undo->pushUndoer(new undoers::AddPalette(
-        m_undo->getObjects(), m_sprite, 0));
+        m_undo->getObjects(), m_sprite, FrameNumber(0)));
     }
 
     // It's a UniquePtr because setPalette'll create a copy of "graypal".
@@ -419,12 +419,12 @@ void UndoTransaction::removeLayer(Layer* layer)
   delete layer;
 }
 
-void UndoTransaction::moveLayerAfter(Layer* layer, Layer* after_this)
+void UndoTransaction::moveLayerAfter(Layer* layer, Layer* afterThis)
 {
   if (isEnabled())
     m_undo->pushUndoer(new undoers::MoveLayer(m_undo->getObjects(), layer));
 
-  layer->get_parent()->move_layer(layer, after_this);
+  layer->get_parent()->move_layer(layer, afterThis);
 }
 
 void UndoTransaction::cropLayer(Layer* layer, int x, int y, int w, int h, int bgcolor)
@@ -522,7 +522,7 @@ void UndoTransaction::backgroundFromLayer(LayerImage* layer, int bgcolor)
   }
 
   // Fill all empty cels with a flat-image filled with bgcolor
-  for (int frame=0; frame<m_sprite->getTotalFrames(); frame++) {
+  for (FrameNumber frame(0); frame<m_sprite->getTotalFrames(); ++frame) {
     Cel* cel = layer->getCel(frame);
     if (!cel) {
       Image* cel_image = Image::create(m_sprite->getPixelFormat(), m_sprite->getWidth(), m_sprite->getHeight());
@@ -563,7 +563,6 @@ void UndoTransaction::flattenLayers(int bgcolor)
 {
   Image* cel_image;
   Cel* cel;
-  int frame;
 
   // create a temporary image
   UniquePtr<Image> image_wrap(Image::create(m_sprite->getPixelFormat(),
@@ -591,7 +590,7 @@ void UndoTransaction::flattenLayers(int bgcolor)
   }
 
   /* copy all frames to the background */
-  for (frame=0; frame<m_sprite->getTotalFrames(); frame++) {
+  for (FrameNumber frame(0); frame<m_sprite->getTotalFrames(); ++frame) {
     /* clear the image and render this frame */
     image_clear(image, bgcolor);
     layer_render(m_sprite->getFolder(), image, 0, 0, frame);
@@ -671,18 +670,19 @@ void UndoTransaction::configureLayerAsBackground(LayerImage* layer)
 
 void UndoTransaction::newFrame()
 {
+  FrameNumber newFrame = m_sprite->getCurrentFrame().next();
+
   // add a new cel to every layer
-  newFrameForLayer(m_sprite->getFolder(),
-                   m_sprite->getCurrentFrame()+1);
+  newFrameForLayer(m_sprite->getFolder(), newFrame);
 
   // increment frames counter in the sprite
-  setNumberOfFrames(m_sprite->getTotalFrames()+1);
+  setNumberOfFrames(m_sprite->getTotalFrames() + FrameNumber(1));
 
   // go to next frame (the new one)
-  setCurrentFrame(m_sprite->getCurrentFrame()+1);
+  setCurrentFrame(newFrame);
 }
 
-void UndoTransaction::newFrameForLayer(Layer* layer, int frame)
+void UndoTransaction::newFrameForLayer(Layer* layer, FrameNumber frame)
 {
   ASSERT(layer);
   ASSERT(frame >= 0);
@@ -691,10 +691,10 @@ void UndoTransaction::newFrameForLayer(Layer* layer, int frame)
 
     case GFXOBJ_LAYER_IMAGE:
       // displace all cels in '>=frame' to the next frame
-      for (int c=m_sprite->getTotalFrames()-1; c>=frame; --c) {
+      for (FrameNumber c=m_sprite->getLastFrame(); c>=frame; --c) {
         Cel* cel = static_cast<LayerImage*>(layer)->getCel(c);
         if (cel)
-          setCelFramePosition(cel, cel->getFrame()+1);
+          setCelFramePosition(cel, cel->getFrame().next());
       }
 
       copyPreviousFrame(layer, frame);
@@ -712,7 +712,7 @@ void UndoTransaction::newFrameForLayer(Layer* layer, int frame)
   }
 }
 
-void UndoTransaction::removeFrame(int frame)
+void UndoTransaction::removeFrame(FrameNumber frame)
 {
   ASSERT(frame >= 0);
 
@@ -721,17 +721,17 @@ void UndoTransaction::removeFrame(int frame)
   removeFrameOfLayer(m_sprite->getFolder(), frame);
 
   // New value for totalFrames propety
-  int newTotalFrames = m_sprite->getTotalFrames()-1;
+  FrameNumber newTotalFrames = m_sprite->getTotalFrames() - FrameNumber(1);
 
   // Move backward if we will be outside the range of frames
   if (m_sprite->getCurrentFrame() >= newTotalFrames)
-    setCurrentFrame(newTotalFrames-1);
+    setCurrentFrame(newTotalFrames.previous());
 
   // Decrement frames counter in the sprite
   setNumberOfFrames(newTotalFrames);
 }
 
-void UndoTransaction::removeFrameOfLayer(Layer* layer, int frame)
+void UndoTransaction::removeFrameOfLayer(Layer* layer, FrameNumber frame)
 {
   ASSERT(layer);
   ASSERT(frame >= 0);
@@ -744,7 +744,7 @@ void UndoTransaction::removeFrameOfLayer(Layer* layer, int frame)
 
       for (++frame; frame<m_sprite->getTotalFrames(); ++frame)
         if (Cel* cel = static_cast<LayerImage*>(layer)->getCel(frame))
-          setCelFramePosition(cel, cel->getFrame()-1);
+          setCelFramePosition(cel, cel->getFrame().previous());
       break;
 
     case GFXOBJ_LAYER_FOLDER: {
@@ -762,13 +762,13 @@ void UndoTransaction::removeFrameOfLayer(Layer* layer, int frame)
 /**
  * Copies the previous cel of @a frame to @frame.
  */
-void UndoTransaction::copyPreviousFrame(Layer* layer, int frame)
+void UndoTransaction::copyPreviousFrame(Layer* layer, FrameNumber frame)
 {
   ASSERT(layer);
   ASSERT(frame > 0);
 
   // create a copy of the previous cel
-  Cel* src_cel = static_cast<LayerImage*>(layer)->getCel(frame-1);
+  Cel* src_cel = static_cast<LayerImage*>(layer)->getCel(frame.previous());
   Image* src_image = src_cel ? m_sprite->getStock()->getImage(src_cel->getImage()):
                                NULL;
 
@@ -811,7 +811,7 @@ void UndoTransaction::removeCel(LayerImage* layer, Cel* cel)
   // find if the image that use the cel to remove, is used by
   // another cels
   bool used = false;
-  for (int frame=0; frame<m_sprite->getTotalFrames(); ++frame) {
+  for (FrameNumber frame(0); frame<m_sprite->getTotalFrames(); ++frame) {
     Cel* it = layer->getCel(frame);
     if (it && it != cel && it->getImage() == cel->getImage()) {
       used = true;
@@ -835,7 +835,7 @@ void UndoTransaction::removeCel(LayerImage* layer, Cel* cel)
   delete cel;
 }
 
-void UndoTransaction::setCelFramePosition(Cel* cel, int frame)
+void UndoTransaction::setCelFramePosition(Cel* cel, FrameNumber frame)
 {
   ASSERT(cel);
   ASSERT(frame >= 0);
@@ -856,7 +856,7 @@ void UndoTransaction::setCelPosition(Cel* cel, int x, int y)
   cel->setPosition(x, y);
 }
 
-void UndoTransaction::setFrameDuration(int frame, int msecs)
+void UndoTransaction::setFrameDuration(FrameNumber frame, int msecs)
 {
   if (isEnabled())
     m_undo->pushUndoer(new undoers::SetFrameDuration(
@@ -868,7 +868,7 @@ void UndoTransaction::setFrameDuration(int frame, int msecs)
 void UndoTransaction::setConstantFrameRate(int msecs)
 {
   if (isEnabled()) {
-    for (int fr=0; fr<m_sprite->getTotalFrames(); ++fr)
+    for (FrameNumber fr(0); fr<m_sprite->getTotalFrames(); ++fr)
       m_undo->pushUndoer(new undoers::SetFrameDuration(
           m_undo->getObjects(), m_sprite, fr));
   }
@@ -876,38 +876,37 @@ void UndoTransaction::setConstantFrameRate(int msecs)
   m_sprite->setDurationForAllFrames(msecs);
 }
 
-void UndoTransaction::moveFrameBefore(int frame, int before_frame)
+void UndoTransaction::moveFrameBefore(FrameNumber frame, FrameNumber beforeFrame)
 {
-  if (frame != before_frame &&
+  if (frame != beforeFrame &&
       frame >= 0 &&
-      frame < m_sprite->getTotalFrames() &&
-      before_frame >= 0 &&
-      before_frame < m_sprite->getTotalFrames()) {
-    // change the frame-lengths...
-
+      frame <= m_sprite->getLastFrame() &&
+      beforeFrame >= 0 &&
+      beforeFrame <= m_sprite->getLastFrame()) {
+    // Change the frame-lengths...
     int frlen_aux = m_sprite->getFrameDuration(frame);
 
-    // moving the frame to the future
-    if (frame < before_frame) {
-      for (int c=frame; c<before_frame-1; c++)
-        setFrameDuration(c, m_sprite->getFrameDuration(c+1));
+    // Moving the frame to the future.
+    if (frame < beforeFrame) {
+      for (FrameNumber c=frame; c<beforeFrame.previous(); ++c)
+        setFrameDuration(c, m_sprite->getFrameDuration(c.next()));
 
-      setFrameDuration(before_frame-1, frlen_aux);
+      setFrameDuration(beforeFrame.previous(), frlen_aux);
     }
-    // moving the frame to the past
-    else if (before_frame < frame) {
-      for (int c=frame; c>before_frame; c--)
-        setFrameDuration(c, m_sprite->getFrameDuration(c-1));
+    // Moving the frame to the past.
+    else if (beforeFrame < frame) {
+      for (FrameNumber c=frame; c>beforeFrame; --c)
+        setFrameDuration(c, m_sprite->getFrameDuration(c.previous()));
 
-      setFrameDuration(before_frame, frlen_aux);
+      setFrameDuration(beforeFrame, frlen_aux);
     }
 
     // change the cels of position...
-    moveFrameBeforeLayer(m_sprite->getFolder(), frame, before_frame);
+    moveFrameBeforeLayer(m_sprite->getFolder(), frame, beforeFrame);
   }
 }
 
-void UndoTransaction::moveFrameBeforeLayer(Layer* layer, int frame, int before_frame)
+void UndoTransaction::moveFrameBeforeLayer(Layer* layer, FrameNumber frame, FrameNumber beforeFrame)
 {
   ASSERT(layer);
 
@@ -919,31 +918,31 @@ void UndoTransaction::moveFrameBeforeLayer(Layer* layer, int frame, int before_f
 
       for (; it != end; ++it) {
         Cel* cel = *it;
-        int new_frame = cel->getFrame();
+        FrameNumber newFrame = cel->getFrame();
 
         // moving the frame to the future
-        if (frame < before_frame) {
+        if (frame < beforeFrame) {
           if (cel->getFrame() == frame) {
-            new_frame = before_frame-1;
+            newFrame = beforeFrame.previous();
           }
           else if (cel->getFrame() > frame &&
-                   cel->getFrame() < before_frame) {
-            new_frame--;
+                   cel->getFrame() < beforeFrame) {
+            --newFrame;
           }
         }
         // moving the frame to the past
-        else if (before_frame < frame) {
+        else if (beforeFrame < frame) {
           if (cel->getFrame() == frame) {
-            new_frame = before_frame;
+            newFrame = beforeFrame;
           }
-          else if (cel->getFrame() >= before_frame &&
+          else if (cel->getFrame() >= beforeFrame &&
                    cel->getFrame() < frame) {
-            new_frame++;
+            ++newFrame;
           }
         }
 
-        if (cel->getFrame() != new_frame)
-          setCelFramePosition(cel, new_frame);
+        if (cel->getFrame() != newFrame)
+          setCelFramePosition(cel, newFrame);
       }
       break;
     }
@@ -953,7 +952,7 @@ void UndoTransaction::moveFrameBeforeLayer(Layer* layer, int frame, int before_f
       LayerIterator end = static_cast<LayerFolder*>(layer)->get_layer_end();
 
       for (; it != end; ++it)
-        moveFrameBeforeLayer(*it, frame, before_frame);
+        moveFrameBeforeLayer(*it, frame, beforeFrame);
       break;
     }
 

@@ -22,6 +22,7 @@
 #include "gfx/rect.h"
 #include "raster/algorithm/flip_type.h"
 #include "raster/dithering_method.h"
+#include "raster/frame_number.h"
 #include "raster/pixel_format.h"
 #include "undo/modification.h"
 
@@ -79,8 +80,8 @@ public:
   undo::ObjectsContainer* getObjects() const;
 
   // for sprite
-  void setNumberOfFrames(int frames);
-  void setCurrentFrame(int frame);
+  void setNumberOfFrames(FrameNumber frames);
+  void setCurrentFrame(FrameNumber frame);
   void setCurrentLayer(Layer* layer);
   void setSpriteSize(int w, int h);
   void cropSprite(const gfx::Rect& bounds, int bgcolor);
@@ -95,7 +96,7 @@ public:
   // for layers
   LayerImage* newLayer();
   void removeLayer(Layer* layer);
-  void moveLayerAfter(Layer *layer, Layer *after_this);
+  void moveLayerAfter(Layer* layer, Layer* afterThis);
   void cropLayer(Layer* layer, int x, int y, int w, int h, int bgcolor);
   void displaceLayers(Layer* layer, int dx, int dy);
   void backgroundFromLayer(LayerImage* layer, int bgcolor);
@@ -104,19 +105,19 @@ public:
 
   // for frames
   void newFrame();
-  void newFrameForLayer(Layer* layer, int frame);
-  void removeFrame(int frame);
-  void removeFrameOfLayer(Layer* layer, int frame);
-  void copyPreviousFrame(Layer* layer, int frame);
-  void setFrameDuration(int frame, int msecs);
+  void newFrameForLayer(Layer* layer, FrameNumber frame);
+  void removeFrame(FrameNumber frame);
+  void removeFrameOfLayer(Layer* layer, FrameNumber frame);
+  void copyPreviousFrame(Layer* layer, FrameNumber frame);
+  void setFrameDuration(FrameNumber frame, int msecs);
   void setConstantFrameRate(int msecs);
-  void moveFrameBefore(int frame, int before_frame);
-  void moveFrameBeforeLayer(Layer* layer, int frame, int before_frame);
+  void moveFrameBefore(FrameNumber frame, FrameNumber beforeFrame);
+  void moveFrameBeforeLayer(Layer* layer, FrameNumber frame, FrameNumber beforeFrame);
 
   // for cels
   void addCel(LayerImage* layer, Cel* cel);
   void removeCel(LayerImage* layer, Cel* cel);
-  void setCelFramePosition(Cel* cel, int frame);
+  void setCelFramePosition(Cel* cel, FrameNumber frame);
   void setCelPosition(Cel* cel, int x, int y);
   Cel* getCurrentCel();
   void cropCel(Cel* cel, int x, int y, int w, int h, int bgcolor);
