@@ -15,8 +15,6 @@ set(aseprite_libraries aseprite-library undo-lib filters-lib ui-lib gfx-lib base
 include_directories(. .. ../third_party)
 
 # Third-party libraries
-set(libs3rdparty loadpng)
-include_directories(${LOADPNG_DIR})
 
 if(USE_SHARED_JPEGLIB)
   find_package(JPEG)
@@ -71,6 +69,17 @@ if(USE_SHARED_TINYXML)
 else()
   set(libs3rdparty ${libs3rdparty} tinyxml)
   include_directories(${TINYXML_DIR})
+endif()
+
+if(USE_SHARED_LIBLOADPNG)
+  find_library(LIBLOADPNG_LIBRARY NAMES loadpng)
+  find_path(LIBLOADPNG_INCLUDE_DIR NAMES loadpng.h)
+
+  set(libs3rdparty ${libs3rdparty} ${LIBLOADPNG_LIBRARY})
+  include_directories(${LIBLOADPNG_INCLUDE_DIR})
+else()
+  set(libs3rdparty ${libs3rdparty} loadpng)
+  include_directories(${LOADPNG_DIR})
 endif()
 
 if (CMAKE_USE_PTHREADS_INIT)

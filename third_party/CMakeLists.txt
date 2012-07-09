@@ -36,4 +36,6 @@ if(ENABLE_UPDATER AND NOT USE_SHARED_CURL)
   add_subdirectory(curl)
 endif()
 
-add_subdirectory(loadpng)
+if(NOT USE_SHARED_LIBLOADPNG)
+ add_subdirectory(loadpng)
+endif()
