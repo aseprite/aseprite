@@ -482,13 +482,9 @@ const FileItemList& FileItem::getChildren()
           while (pEnum->Next(256, itempidl, &fetched) == S_OK && fetched > 0) {
             /* request the SFGAO_FOLDER attribute to know what of the
                item is a folder */
-            for (c=0; c<fetched; ++c)
+            for (c=0; c<fetched; ++c) {
               attribs[c] = SFGAO_FOLDER;
-
-            if (pFolder->GetAttributesOf(fetched,
-                                         (LPCITEMIDLIST *)itempidl, attribs) != S_OK) {
-              for (c=0; c<fetched; ++c)
-                attribs[c] = 0;
+              pFolder->GetAttributesOf(1, (LPCITEMIDLIST *)itempidl, attribs+c);
             }
 
             /* generate the FileItems */
