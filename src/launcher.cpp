@@ -101,11 +101,11 @@ void Launcher::openFolder(const std::string& file)
 
 #elif defined ALLEGRO_MACOSX
 
-  Alert::show("Problem<<This command is not supported on Mac OS X||&Close");
+  ui::Alert::show("Problem<<This command is not supported on Mac OS X||&Close");
 
 #else  // Linux
 
-  Alert::show("Problem<<This command is not supported on Linux||&Close");
+  ui::Alert::show("Problem<<This command is not supported on Linux||&Close");
 
 #endif
 }

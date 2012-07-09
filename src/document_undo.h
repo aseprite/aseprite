@@ -23,10 +23,10 @@
 #include "base/disable_copying.h"
 #include "base/unique_ptr.h"
 #include "undo/undo_config_provider.h"
+#include "undo/undo_history.h"
 
 namespace undo {
   class ObjectsContainer;
-  class UndoHistory;
   class Undoer;
 }
 

@@ -13,9 +13,7 @@
 #include <cstdarg>
 #include <cstring>
 #include <queue>
-#ifdef REPORT_SIGNALS
-#  include <cstdio>
-#endif
+#include <cstdio>
 #include <allegro.h>
 
 #include "base/memory.h"

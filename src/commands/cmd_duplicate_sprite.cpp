@@ -18,8 +18,6 @@
 
 #include "config.h"
 
-#include <allegro.h>
-
 #include "app.h"
 #include "app/find_widget.h"
 #include "app/load_widget.h"
@@ -30,6 +28,9 @@
 #include "raster/sprite.h"
 #include "ui/gui.h"
 #include "ui_context.h"
+
+#include <allegro.h>
+#include <cstdio>
 
 using namespace ui;
 
@@ -74,7 +75,7 @@ void DuplicateSpriteCommand::onExecute(Context* context)
 
   src_name->setText(get_filename(document->getFilename()));
 
-  sprintf(buf, "%s Copy", document->getFilename());
+  std::sprintf(buf, "%s Copy", document->getFilename());
   dst_name->setText(buf);
 
   if (get_config_bool("DuplicateSprite", "Flatten", false))

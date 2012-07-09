@@ -31,6 +31,8 @@
 #include "undo_transaction.h"
 #include "widgets/status_bar.h"
 
+#include <cstdio>
+
 using namespace ui;
 
 //////////////////////////////////////////////////////////////////////
@@ -122,7 +124,7 @@ void NewLayerCommand::onExecute(Context* context)
 static std::string get_unique_layer_name(Sprite* sprite)
 {
   char buf[1024];
-  sprintf(buf, "Layer %d", get_max_layer_num(sprite->getFolder())+1);
+  std::sprintf(buf, "Layer %d", get_max_layer_num(sprite->getFolder())+1);
   return buf;
 }
 

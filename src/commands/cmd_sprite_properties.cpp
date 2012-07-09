@@ -33,6 +33,7 @@
 #include "widgets/color_button.h"
 
 #include <allegro/unicode.h>
+#include <cstdio>
 
 using namespace ui;
 
@@ -93,7 +94,7 @@ void SpritePropertiesCommand::onExecute(Context* context)
         imgtype_text = "Grayscale";
         break;
       case IMAGE_INDEXED:
-        sprintf(buf, "Indexed (%d colors)", sprite->getPalette(FrameNumber(0))->size());
+        std::sprintf(buf, "Indexed (%d colors)", sprite->getPalette(FrameNumber(0))->size());
         imgtype_text = buf;
         break;
       default:

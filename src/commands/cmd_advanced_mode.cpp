@@ -32,6 +32,8 @@
 #include "widgets/tabs.h"
 #include "widgets/toolbar.h"
 
+#include <cstdio>
+
 using namespace ui;
 
 class AdvancedModeCommand : public Command
@@ -84,7 +86,7 @@ void AdvancedModeCommand::onExecute(Context* context)
 
       strcpy(warning, "You can back pressing the \"%s\" key.");
       jaccel_to_string(accel, key);
-      sprintf(buf, warning, key);
+      std::sprintf(buf, warning, key);
 
       warning_label->setText(buf);
 

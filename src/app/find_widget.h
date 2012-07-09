@@ -20,8 +20,7 @@
 #define APP_GUI_FIND_WIDGET_H_INCLUDED
 
 #include "app/widget_not_found.h"
-
-namespace ui { class Widget; }
+#include "ui/widget.h"
 
 namespace app {
 

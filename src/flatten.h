@@ -19,7 +19,7 @@
 #ifndef FLATTEN_H_INCLUDED
 #define FLATTEN_H_INCLUDED
 
-#include "gfx/Rect.h"
+#include "gfx/rect.h"
 #include "raster/frame_number.h"
 
 class Sprite;

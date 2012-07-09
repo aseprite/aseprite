@@ -27,6 +27,7 @@
 #include "document_undo.h"
 #include "file/format_options.h"
 #include "flatten.h"
+#include "objects_container_impl.h"
 #include "raster/cel.h"
 #include "raster/layer.h"
 #include "raster/mask.h"
