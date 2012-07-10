@@ -20,14 +20,18 @@
 #define UNDOERS_OPEN_GROUP_H_INCLUDED
 
 #include "base/compiler_specific.h"
+#include "raster/frame_number.h"
+#include "undo/object_id.h"
 #include "undo/undoer.h"
+
+class Layer;
 
 namespace undoers {
 
 class OpenGroup : public undo::Undoer
 {
 public:
-  OpenGroup(const char* label, undo::Modification modification);
+  OpenGroup(undo::ObjectsContainer* objects, const char* label, undo::Modification modification, Layer* layer, FrameNumber frame);
   void dispose() OVERRIDE;
   size_t getMemSize() const OVERRIDE { return sizeof(*this); }
   undo::Modification getModification() const { return m_modification; }
@@ -35,11 +39,11 @@ public:
   bool isCloseGroup() const OVERRIDE { return false; }
   void revert(undo::ObjectsContainer* objects, undo::UndoersCollector* redoers) OVERRIDE;
 
-  const char* getLabel() { return m_label; }
-
 private:
   const char* m_label;
   undo::Modification m_modification;
+  undo::ObjectId m_activeLayerId;
+  FrameNumber m_activeFrame;
 };
 
 } // namespace undoers

@@ -20,15 +20,18 @@
 
 #include "undoers/open_group.h"
 
+#include "undo/objects_container.h"
 #include "undo/undoers_collector.h"
 #include "undoers/close_group.h"
 
 using namespace undo;
 using namespace undoers;
 
-OpenGroup::OpenGroup(const char* label, undo::Modification modification)
+OpenGroup::OpenGroup(undo::ObjectsContainer* objects, const char* label, undo::Modification modification, Layer* layer, FrameNumber frame)
   : m_label(label)
   , m_modification(modification)
+  , m_activeLayerId(objects->addObject(layer))
+  , m_activeFrame(frame)
 {
 }
 
@@ -39,5 +42,7 @@ void OpenGroup::dispose()
 
 void OpenGroup::revert(ObjectsContainer* objects, UndoersCollector* redoers)
 {
-  redoers->pushUndoer(new CloseGroup(m_label, m_modification));
+  Layer* layer = objects->getObjectT<Layer>(m_activeLayerId);
+
+  redoers->pushUndoer(new CloseGroup(objects, m_label, m_modification, layer, m_activeFrame));
 }

@@ -32,6 +32,10 @@
         <label text="MB" />
       </box>
 
+      <box horizontal="true">
+        <check id="undo_goto_modified" text="Go to modified frame/layer" tooltip="When it's enabled each time you undo/redo&#10;the current frame &amp; layer will be modified&#10;to focus the undid/redid change." />
+      </box>
+
       </box>
       <separator vertical="true" />
       <box vertical="true">

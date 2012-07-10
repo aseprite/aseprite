@@ -20,14 +20,18 @@
 #define UNDOERS_CLOSE_GROUP_H_INCLUDED
 
 #include "base/compiler_specific.h"
+#include "raster/frame_number.h"
+#include "undo/object_id.h"
 #include "undo/undoer.h"
+
+class Layer;
 
 namespace undoers {
 
 class CloseGroup : public undo::Undoer
 {
 public:
-  CloseGroup(const char* label, undo::Modification modification);
+  CloseGroup(undo::ObjectsContainer* objects, const char* label, undo::Modification modification, Layer* layer, FrameNumber frame);
   void dispose() OVERRIDE;
   size_t getMemSize() const OVERRIDE { return sizeof(*this); }
   undo::Modification getModification() const { return m_modification; }
@@ -36,10 +40,14 @@ public:
   void revert(undo::ObjectsContainer* objects, undo::UndoersCollector* redoers) OVERRIDE;
 
   const char* getLabel() { return m_label; }
+  FrameNumber getFrame() { return m_activeFrame; }
+  Layer* getLayer(undo::ObjectsContainer* objects);
 
 private:
   const char* m_label;
   undo::Modification m_modification;
+  undo::ObjectId m_activeLayerId;
+  FrameNumber m_activeFrame;
 };
 
 } // namespace undoers

@@ -26,6 +26,7 @@
 
 #include <allegro/config.h>     // TODO remove this when get_config_int() is removed from here
 #include <cassert>
+#include <stdexcept>
 
 DocumentUndo::DocumentUndo()
   : m_objects(new ObjectsContainerImpl)
@@ -92,36 +93,54 @@ size_t DocumentUndo::getUndoSizeLimit()
 
 const char* DocumentUndo::getNextUndoLabel() const
 {
-  undo::Undoer* undoer = m_undoHistory->getNextUndoer();
-  if (undoer) {
-    if (undoers::CloseGroup* closeGroup = dynamic_cast<undoers::CloseGroup*>(undoer)) {
-      return closeGroup->getLabel();
-    }
-    else {
-      assert(false && "There are some action without a CloseGroup");
-      return "";
-    }
-  }
-  else {
-    assert(false && "There are some action without label");
-    return "";
-  }
+  return getNextUndoGroup()->getLabel();
 }
 
 const char* DocumentUndo::getNextRedoLabel() const
 {
+  return getNextRedoGroup()->getLabel();
+}
+
+Layer* DocumentUndo::getNextUndoLayer() const
+{
+  return getNextUndoGroup()->getLayer(m_objects);
+}
+
+Layer* DocumentUndo::getNextRedoLayer() const
+{
+  return getNextRedoGroup()->getLayer(m_objects);
+}
+
+FrameNumber DocumentUndo::getNextUndoFrame() const
+{
+  return getNextUndoGroup()->getFrame();
+}
+
+FrameNumber DocumentUndo::getNextRedoFrame() const
+{
+  return getNextRedoGroup()->getFrame();
+}
+
+undoers::CloseGroup* DocumentUndo::getNextUndoGroup() const
+{
+  undo::Undoer* undoer = m_undoHistory->getNextUndoer();
+  if (!undoer)
+    throw std::logic_error("There are some action without label");
+
+  if (undoers::CloseGroup* closeGroup = dynamic_cast<undoers::CloseGroup*>(undoer))
+    return closeGroup;
+  else
+    throw std::logic_error("There are some action without a CloseGroup");
+}
+
+undoers::CloseGroup* DocumentUndo::getNextRedoGroup() const
+{
   undo::Undoer* undoer = m_undoHistory->getNextRedoer();
-  if (undoer) {
-    if (undoers::CloseGroup* closeGroup = dynamic_cast<undoers::CloseGroup*>(undoer)) {
-      return closeGroup->getLabel();
-    }
-    else {
-      assert(false && "There are some action without a CloseGroup");
-      return "";
-    }
-  }
-  else {
-    assert(false && "There are some action without label");
-    return "";
-  }
+  if (!undoer)
+    throw std::logic_error("There are some action without label");
+
+  if (undoers::CloseGroup* closeGroup = dynamic_cast<undoers::CloseGroup*>(undoer))
+    return closeGroup;
+  else
+    throw std::logic_error("There are some action without a CloseGroup");
 }

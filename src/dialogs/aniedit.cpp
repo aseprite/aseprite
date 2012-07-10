@@ -708,35 +708,11 @@ bool AnimationEditor::onProcessMessage(Message* msg)
         return true;
       }
 
-      // Undo.
-      if (command && strcmp(command->short_name(), CommandId::Undo) == 0) {
-        const DocumentReader document(const_cast<Document*>(m_document));
-        const DocumentUndo* undo = document->getUndo();
-
-        if (undo->canUndo()) {
-          DocumentWriter document_writer(document);
-          DocumentUndo* undo_writer = document_writer->getUndo();
-
-          undo_writer->doUndo();
-
-          destroy_thumbnails();
-          regenerateLayers();
-          showCurrentCel();
-          invalidate();
-        }
-        return true;
-      }
-
-      // Redo.
-      if (command && strcmp(command->short_name(), CommandId::Redo) == 0) {
-        const DocumentReader document(const_cast<Document*>(m_document));
-        const DocumentUndo* undo = document->getUndo();
-
-        if (undo->canRedo()) {
-          DocumentWriter document_writer(document);
-          DocumentUndo* undo_writer = document_writer->getUndo();
-
-          undo_writer->doRedo();
+      // Undo or redo.
+      if (command && (strcmp(command->short_name(), CommandId::Undo) == 0 ||
+                      strcmp(command->short_name(), CommandId::Redo) == 0)) {
+        if (command->isEnabled(UIContext::instance())) {
+          UIContext::instance()->executeCommand(command, params);
 
           destroy_thumbnails();
           regenerateLayers();

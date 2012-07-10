@@ -80,6 +80,7 @@ void OptionsCommand::onExecute(Context* context)
   Widget* checked_bg_color2_box = app::find_widget<Widget>(window, "checked_bg_color2_box");
   Button* checked_bg_reset = app::find_widget<Button>(window, "checked_bg_reset");
   Widget* undo_size_limit = app::find_widget<Widget>(window, "undo_size_limit");
+  Widget* undo_goto_modified = app::find_widget<Widget>(window, "undo_goto_modified");
   Widget* button_ok = app::find_widget<Widget>(window, "button_ok");
 
   // Cursor color
@@ -131,6 +132,10 @@ void OptionsCommand::onExecute(Context* context)
   // Undo limit
   undo_size_limit->setTextf("%d", get_config_int("Options", "UndoSizeLimit", 8));
 
+  // Goto modified frame/layer on undo/redo
+  if (get_config_bool("Options", "UndoGotoModified", true))
+    undo_goto_modified->setSelected(true);
+
   // Show the window and wait the user to close it
   window->openWindowInForeground();
 
@@ -153,6 +158,7 @@ void OptionsCommand::onExecute(Context* context)
     undo_size_limit_value = undo_size_limit->getTextInt();
     undo_size_limit_value = MID(1, undo_size_limit_value, 9999);
     set_config_int("Options", "UndoSizeLimit", undo_size_limit_value);
+    set_config_bool("Options", "UndoGotoModified", undo_goto_modified->isSelected());
 
     // Save configuration
     flush_config_file();

@@ -22,12 +22,19 @@
 #include "base/compiler_specific.h"
 #include "base/disable_copying.h"
 #include "base/unique_ptr.h"
+#include "raster/frame_number.h"
 #include "undo/undo_config_provider.h"
 #include "undo/undo_history.h"
+
+class Layer;
 
 namespace undo {
   class ObjectsContainer;
   class Undoer;
+}
+
+namespace undoers {
+  class CloseGroup;
 }
 
 class DocumentUndo : public undo::UndoConfigProvider
@@ -58,8 +65,17 @@ public:
   const char* getNextUndoLabel() const;
   const char* getNextRedoLabel() const;
 
+  Layer* getNextUndoLayer() const;
+  Layer* getNextRedoLayer() const;
+
+  FrameNumber getNextUndoFrame() const;
+  FrameNumber getNextRedoFrame() const;
+
 private:
   size_t getUndoSizeLimit() OVERRIDE;
+
+  undoers::CloseGroup* getNextUndoGroup() const;
+  undoers::CloseGroup* getNextRedoGroup() const;
 
   // Collection of objects used by UndoHistory to reference deleted
   // objects that are re-created by an Undoer. The container keeps an

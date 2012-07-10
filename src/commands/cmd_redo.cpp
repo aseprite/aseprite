@@ -19,11 +19,15 @@
 #include "config.h"
 
 #include "app.h"
+#include "base/thread.h"
 #include "commands/command.h"
 #include "document_undo.h"
 #include "document_wrappers.h"
+#include "ini_file.h"
+#include "modules/editors.h"
 #include "modules/gui.h"
 #include "raster/sprite.h"
+#include "widgets/editor/editor.h"
 #include "widgets/status_bar.h"
 
 class RedoCommand : public Command
@@ -55,12 +59,28 @@ bool RedoCommand::onEnabled(Context* context)
 void RedoCommand::onExecute(Context* context)
 {
   ActiveDocumentWriter document(context);
+  DocumentUndo* undo = document->getUndo();
+  Sprite* sprite = document->getSprite();
+
+  if (get_config_bool("Options", "UndoGotoModified", true)) {
+    if (undo->getNextRedoFrame() != sprite->getCurrentFrame() ||
+        undo->getNextRedoLayer() != sprite->getCurrentLayer()) {
+      sprite->setCurrentFrame(undo->getNextRedoFrame());
+      sprite->setCurrentLayer(undo->getNextRedoLayer());
+
+      current_editor->drawSpriteSafe(0, 0, sprite->getWidth(), sprite->getHeight());
+      update_screen_for_document(document);
+      gui_feedback();
+
+      base::this_thread::sleep_for(0.01);
+    }
+  }
 
   StatusBar::instance()
     ->showTip(1000, "Redid %s",
-              document->getUndo()->getNextRedoLabel());
+              undo->getNextRedoLabel());
 
-  document->getUndo()->doRedo();
+  undo->doRedo();
   document->generateMaskBoundaries();
   document->destroyExtraCel(); // Regenerate extras
 

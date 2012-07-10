@@ -19,11 +19,15 @@
 #include "config.h"
 
 #include "app.h"
+#include "base/thread.h"
 #include "commands/command.h"
 #include "document_undo.h"
 #include "document_wrappers.h"
+#include "ini_file.h"
+#include "modules/editors.h"
 #include "modules/gui.h"
 #include "raster/sprite.h"
+#include "widgets/editor/editor.h"
 #include "widgets/status_bar.h"
 
 class UndoCommand : public Command
@@ -55,12 +59,28 @@ bool UndoCommand::onEnabled(Context* context)
 void UndoCommand::onExecute(Context* context)
 {
   ActiveDocumentWriter document(context);
+  DocumentUndo* undo = document->getUndo();
+  Sprite* sprite = document->getSprite();
+
+  if (get_config_bool("Options", "UndoGotoModified", true)) {
+    if (undo->getNextUndoFrame() != sprite->getCurrentFrame() ||
+        undo->getNextUndoLayer() != sprite->getCurrentLayer()) {
+      sprite->setCurrentFrame(undo->getNextUndoFrame());
+      sprite->setCurrentLayer(undo->getNextUndoLayer());
+
+      current_editor->drawSpriteSafe(0, 0, sprite->getWidth(), sprite->getHeight());
+      update_screen_for_document(document);
+      gui_feedback();
+
+      base::this_thread::sleep_for(0.01);
+    }
+  }
 
   StatusBar::instance()
     ->showTip(1000, "Undid %s",
-              document->getUndo()->getNextUndoLabel());
+              undo->getNextUndoLabel());
 
-  document->getUndo()->doUndo();
+  undo->doUndo();
   document->generateMaskBoundaries();
   document->destroyExtraCel(); // Regenerate extras
 

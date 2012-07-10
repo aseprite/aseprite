@@ -78,7 +78,11 @@ UndoTransaction::UndoTransaction(Document* document, const char* label, undo::Mo
   m_enabledFlag = m_undo->isEnabled();
 
   if (isEnabled())
-    m_undo->pushUndoer(new undoers::OpenGroup(m_label, m_modification));
+    m_undo->pushUndoer(new undoers::OpenGroup(getObjects(),
+                                              m_label,
+                                              m_modification,
+                                              m_startLayer = m_sprite->getCurrentLayer(),
+                                              m_startFrame = m_sprite->getCurrentFrame()));
 }
 
 UndoTransaction::~UndoTransaction()
@@ -106,7 +110,11 @@ void UndoTransaction::closeUndoGroup()
 
   if (isEnabled()) {
     // Close the undo information.
-    m_undo->pushUndoer(new undoers::CloseGroup(m_label, m_modification));
+    m_undo->pushUndoer(new undoers::CloseGroup(getObjects(),
+                                               m_label,
+                                               m_modification,
+                                               m_startLayer,
+                                               m_startFrame));
     m_closed = true;
   }
 }
