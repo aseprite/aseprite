@@ -24,32 +24,37 @@
 #include "base/memory_dump.h"
 #include "console.h"
 #include "resource_finder.h"
-#include "scoped_allegro.h"
+#include "she/she.h"
 #include "ui/base.h"
 
-#include <allegro.h>
 #ifdef WIN32
-#include <winalleg.h>
+#include <windows.h>
 #endif
 
 //////////////////////////////////////////////////////////////////////
 // Information for "ident".
 
-const char ase_ident[] =
+const char aseprite_ident[] =
     "$" PACKAGE ": " VERSION " " COPYRIGHT " $\n"
     "$Website: " WEBSITE " $\n";
 
 //////////////////////////////////////////////////////////////////////
 // Memory leak detector wrapper
 
-#ifdef MEMLEAK
 class MemLeak
 {
 public:
-  MemLeak() { base_memleak_init(); }
-  ~MemLeak() { base_memleak_exit(); }
-};
+  MemLeak() {
+#ifdef MEMLEAK
+    base_memleak_init();
 #endif
+  }
+  ~MemLeak() {
+#ifdef MEMLEAK
+    base_memleak_exit();
+#endif
+  }
+};
 
 static bool get_memory_dump_filename(std::string& filename)
 {
@@ -71,10 +76,8 @@ int main(int argc, char* argv[])
 #endif
 
   base::MemoryDump memoryDump;
-  ScopedAllegro allegro;
-#ifdef MEMLEAK
+  she::ScopedHandle<she::System> system(she::CreateSystem());
   MemLeak memleak;
-#endif
   ui::GuiSystem guiSystem;
   App app(argc, argv);
 
@@ -87,5 +90,3 @@ int main(int argc, char* argv[])
 
   return app.run();
 }
-
-END_OF_MAIN();

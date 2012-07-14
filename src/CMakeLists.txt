@@ -1,6 +1,8 @@
 # ASEPRITE
 # Copyright (C) 2001-2012  David Capello
 
+add_definitions(-DHAVE_CONFIG_H)
+
 if(MSVC)
   # Do not link with libcmt.lib (to avoid duplicated symbols with msvcrtd.lib)
   if(CMAKE_BUILD_TYPE STREQUAL Debug)
@@ -9,7 +11,7 @@ if(MSVC)
 endif(MSVC)
 
 # Libraries in this directory
-set(aseprite_libraries aseprite-library undo-lib filters-lib ui-lib gfx-lib base-lib)
+set(aseprite_libraries aseprite-library undo-lib filters-lib ui-lib she gfx-lib base-lib)
 
 # Directories where .h files can be found
 include_directories(. .. ../third_party)
@@ -139,6 +141,7 @@ set(all_libs ${aseprite_libraries} ${libs3rdparty} ${sys_libs})
 add_subdirectory(base)
 add_subdirectory(filters)
 add_subdirectory(gfx)
+add_subdirectory(she)
 add_subdirectory(ui)
 add_subdirectory(undo)
 
@@ -166,7 +169,6 @@ add_library(aseprite-library
   objects_container_impl.cpp
   recent_files.cpp
   resource_finder.cpp
-  scoped_allegro.cpp
   thumbnail_generator.cpp
   ui_context.cpp
   undo_transaction.cpp
