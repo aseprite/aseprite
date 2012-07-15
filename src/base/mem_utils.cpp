@@ -16,7 +16,7 @@ string get_pretty_memory_size(size_t memsize)
   char buf[256];
 
   if (memsize < 1000) {
-    sprintf(buf, "%d bytes", memsize);
+    sprintf(buf, "%lu bytes", memsize);
   }
   else if (memsize < 1000*1000) {
     sprintf(buf, "%0.1fK", memsize/1024.0f);

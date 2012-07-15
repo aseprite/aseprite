@@ -145,7 +145,7 @@ void Alert::processString(char* buf, std::vector<Widget*>& labels, std::vector<W
           jwidget_set_min_size(button_widget, 60*jguiscale(), 0);
           buttons.push_back(button_widget);
 
-          usprintf(buttonId, "button-%d", buttons.size());
+          usprintf(buttonId, "button-%lu", buttons.size());
           button_widget->setId(buttonId);
           button_widget->Click.connect(Bind<void>(&Window::closeWindow, this, button_widget));
         }
