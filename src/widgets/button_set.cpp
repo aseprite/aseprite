@@ -79,7 +79,7 @@ ButtonSet::ButtonSet(int w, int h, int firstSelected, ...)
       icon = va_arg(ap, int);
 
       Item* item = new Item(c,
-                            reinterpret_cast<int>(this),
+                            (int)(reinterpret_cast<unsigned long>(this) & 0xffffffff),
                             x ==   0 && y ==   0 ? 2: 0,
                             x == w-1 && y ==   0 ? 2: 0,
                             x ==   0 && y == h-1 ? 2: 0,
