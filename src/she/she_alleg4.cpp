@@ -45,6 +45,7 @@ System* CreateSystem() {
   
 }
 
+#ifdef main
 int main(int argc, char* argv[]) {
 #undef main
   extern int main(int argc, char* argv[]);
@@ -52,3 +53,4 @@ int main(int argc, char* argv[]) {
 }
 
 END_OF_MAIN();
+#endif
