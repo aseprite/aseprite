@@ -25,7 +25,7 @@
 #include "file/file.h"
 #include "file/file_formats_manager.h"
 #include "raster/raster.h"
-#include "scoped_allegro.h"
+#include "she/she.h"
 
 #include <cstdio>
 #include <cstdlib>
@@ -33,7 +33,7 @@
 
 TEST(File, SeveralSizes)
 {
-  ScopedAllegro allegro;
+  she::ScopedHandle<she::System> system(she::CreateSystem());
   // Register all possible image formats.
   FileFormatsManager::instance().registerAllFormats();
   std::vector<char> fn(256);
