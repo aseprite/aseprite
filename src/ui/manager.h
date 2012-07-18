@@ -12,8 +12,9 @@
 
 namespace ui {
 
-  class Window;
+  class LayoutIO;
   class Timer;
+  class Window;
 
   class Manager : public Widget
   {
@@ -60,6 +61,8 @@ namespace ui {
 
     void invalidateDisplayRegion(const JRegion region);
 
+    LayoutIO* getLayoutIO();
+
     void _openWindow(Window* window);
     void _closeWindow(Window* window, bool redraw_background);
 
@@ -67,6 +70,7 @@ namespace ui {
     bool onProcessMessage(Message* msg) OVERRIDE;
     void onPreferredSize(PreferredSizeEvent& ev) OVERRIDE;
     void onBroadcastMouseMessage(WidgetsList& targets) OVERRIDE;
+    virtual LayoutIO* onGetLayoutIO();
 
   private:
     void layoutManager(JRect rect);

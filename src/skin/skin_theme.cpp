@@ -1196,9 +1196,10 @@ void SkinTheme::draw_menuitem(MenuItem* widget, JRect clip)
   }
 }
 
-void SkinTheme::draw_panel(Widget* widget, JRect clip)
+void SkinTheme::drawSplitter(PaintEvent& ev)
 {
-  jdraw_rectfill(widget->rc, get_panel_face_color());
+  Splitter* splitter = static_cast<Splitter*>(ev.getSource());
+  jdraw_rectfill(splitter->rc, get_splitter_normal_face_color());
 }
 
 void SkinTheme::paintRadioButton(PaintEvent& ev)

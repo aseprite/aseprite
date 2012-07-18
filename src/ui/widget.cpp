@@ -8,17 +8,18 @@
 
 #include "config.h"
 
+#include "base/memory.h"
+#include "ui/gui.h"
+#include "ui/intern.h"
+
 #include <cctype>
 #include <climits>
 #include <cstdarg>
 #include <cstring>
 #include <queue>
 #include <cstdio>
+#include <sstream>
 #include <allegro.h>
-
-#include "base/memory.h"
-#include "ui/gui.h"
-#include "ui/intern.h"
 
 using namespace gfx;
 
@@ -521,6 +522,45 @@ void Widget::layout()
 {
   jwidget_set_rect(this, rc);
   invalidate();
+}
+
+void Widget::loadLayout()
+{
+  if (!m_id.empty()) {
+    LayoutIO* io = getManager()->getLayoutIO();
+    if (io) {
+      std::string layout = io->loadLayout(this);
+      if (!layout.empty()) {
+        std::stringstream s(layout);
+        LoadLayoutEvent ev(this, s);
+        onLoadLayout(ev);
+      }
+    }
+  }
+
+  // Do for all children
+  UI_FOREACH_WIDGET(m_children, it)
+    (*it)->loadLayout();
+}
+
+void Widget::saveLayout()
+{
+  if (!m_id.empty()) {
+    LayoutIO* io = getManager()->getLayoutIO();
+    if (io) {
+      std::stringstream s;
+      SaveLayoutEvent ev(this, s);
+      onSaveLayout(ev);
+
+      std::string layout = s.str();
+      if (!layout.empty())
+        io->saveLayout(this, layout);
+    }
+  }
+
+  // Do for all children
+  UI_FOREACH_WIDGET(m_children, it)
+    (*it)->saveLayout();
 }
 
 /**********************************************************************/
@@ -1381,6 +1421,16 @@ void Widget::onPreferredSize(PreferredSizeEvent& ev)
   jmessage_free(msg);
 
   ev.setPreferredSize(sz);
+}
+
+void Widget::onLoadLayout(LoadLayoutEvent& ev)
+{
+  // Do nothing
+}
+
+void Widget::onSaveLayout(SaveLayoutEvent& ev)
+{
+  // Do nothing
 }
 
 void Widget::onPaint(PaintEvent& ev)

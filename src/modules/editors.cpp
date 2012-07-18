@@ -449,7 +449,7 @@ void split_editor(Editor* editor, int align)
   Widget* parent_box = view->getParent(); // Box or splitter.
 
   // Create a new box to contain both editors, and a new view to put the new editor.
-  Widget* new_splitter = new Splitter(align);
+  Widget* new_splitter = new Splitter(Splitter::ByPercentage, align);
   View* new_view = new EditorView(EditorView::CurrentEditorMode);
   Editor* new_editor = create_new_editor();
 

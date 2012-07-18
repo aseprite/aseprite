@@ -60,7 +60,7 @@ namespace ui {
     virtual void draw_listitem(Widget* widget, JRect clip) = 0;
     virtual void draw_menu(Menu* menu, JRect clip) = 0;
     virtual void draw_menuitem(MenuItem* menuitem, JRect clip) = 0;
-    virtual void draw_panel(Widget* widget, JRect clip) = 0;
+    virtual void drawSplitter(PaintEvent& ev) = 0;
     virtual void paintRadioButton(PaintEvent& ev) = 0;
     virtual void draw_separator(Widget* widget, JRect clip) = 0;
     virtual void paintSlider(PaintEvent& ev) = 0;

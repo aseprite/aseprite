@@ -80,7 +80,7 @@ public:
   void draw_listitem(ui::Widget* widget, ui::JRect clip);
   void draw_menu(ui::Menu* menu, ui::JRect clip);
   void draw_menuitem(ui::MenuItem* menuitem, ui::JRect clip);
-  void draw_panel(ui::Widget* widget, ui::JRect clip);
+  void drawSplitter(ui::PaintEvent& ev);
   void paintRadioButton(ui::PaintEvent& ev);
   void draw_separator(ui::Widget* widget, ui::JRect clip);
   void paintSlider(ui::PaintEvent& ev);
@@ -138,7 +138,7 @@ public:
   int get_tab_normal_text_color() const { return makecol(0, 0, 0); }
   int get_tab_normal_face_color() const { return makecol(199, 199, 199); }
 
-  int get_panel_face_color() const { return makecol(125, 146, 158); }
+  int get_splitter_normal_face_color() const { return makecol(125, 146, 158); }
 
   int get_scrollbar_bg_face_color() const { return makecol(125, 146, 158); }
   int get_scrollbar_thumb_face_color() const { return makecol(199, 199, 199); }

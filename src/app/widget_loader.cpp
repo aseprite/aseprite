@@ -293,9 +293,20 @@ Widget* WidgetLoader::convertXmlElementToWidget(const TiXmlElement* elem, Widget
   else if (ustrcmp(elem_name, "splitter") == 0) {
     bool horizontal = bool_attr_is_true(elem, "horizontal");
     bool vertical = bool_attr_is_true(elem, "vertical");
+    const char* by = elem->Attribute("by");
+    const char* position = elem->Attribute("position");
+    Splitter::Type type = (by && strcmp(by, "pixel") == 0 ?
+                           Splitter::ByPixel:
+                           Splitter::ByPercentage);
 
-    widget = new Splitter(horizontal ? JI_HORIZONTAL:
-                          vertical ? JI_VERTICAL: 0);
+    Splitter* splitter = new Splitter(type,
+                                      horizontal ? JI_HORIZONTAL:
+                                      vertical ? JI_VERTICAL: 0);
+    if (position) {
+      splitter->setPosition(strtod(position, NULL)
+                            * (type == Splitter::ByPixel ? jguiscale(): 1));
+    }
+    widget = splitter;
   }
   /* radio */
   else if (ustrcmp(elem_name, "radio") == 0) {

@@ -63,6 +63,7 @@ private:
   int m_currentEntry;
   int m_rangeAnchor;
   SelectedEntries m_selectedEntries;
+  bool m_isUpdatingColumns;
 };
 
 int palette_view_type();

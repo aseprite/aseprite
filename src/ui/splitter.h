@@ -15,7 +15,9 @@ namespace ui {
   class Splitter : public Widget
   {
   public:
-    Splitter(int align);
+    enum Type { ByPercentage, ByPixel };
+
+    Splitter(Type type, int align);
 
     double getPosition() const;
     void setPosition(double pos);
@@ -23,11 +25,15 @@ namespace ui {
   protected:
     // Events
     bool onProcessMessage(Message* msg) OVERRIDE;
+    void onPaint(PaintEvent& ev) OVERRIDE;
     void onPreferredSize(PreferredSizeEvent& ev) OVERRIDE;
+    void onLoadLayout(LoadLayoutEvent& ev) OVERRIDE;
+    void onSaveLayout(SaveLayoutEvent& ev) OVERRIDE;
 
   private:
     void layoutMembers(JRect rect);
 
+    Type m_type;
     double m_pos;
   };
 

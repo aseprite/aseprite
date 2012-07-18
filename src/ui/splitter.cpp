@@ -8,8 +8,10 @@
 
 #include "ui/splitter.h"
 
+#include "ui/load_layout_event.h"
 #include "ui/message.h"
 #include "ui/preferred_size_event.h"
+#include "ui/save_layout_event.h"
 #include "ui/system.h"
 #include "ui/theme.h"
 
@@ -17,8 +19,9 @@ using namespace gfx;
 
 namespace ui {
 
-Splitter::Splitter(int align)
+Splitter::Splitter(Type type, int align)
   : Widget(JI_SPLITTER)
+  , m_type(type)
   , m_pos(50)
 {
   setAlign(align);
@@ -42,10 +45,6 @@ bool Splitter::onProcessMessage(Message* msg)
 
     case JM_SETPOS:
       layoutMembers(&msg->setpos.rect);
-      return true;
-
-    case JM_DRAW:
-      getTheme()->draw_panel(this, &msg->draw.rect);
       return true;
 
     case JM_BUTTONPRESSED:
@@ -94,13 +93,27 @@ bool Splitter::onProcessMessage(Message* msg)
     case JM_MOTION:
       if (this->hasCapture()) {
         if (this->getAlign() & JI_HORIZONTAL) {
-          m_pos = 100.0 * (msg->mouse.x-this->rc->x1) / jrect_w(this->rc);
+          switch (m_type) {
+            case ByPercentage:
+              m_pos = 100.0 * (msg->mouse.x-this->rc->x1) / jrect_w(this->rc);
+              m_pos = MID(0, m_pos, 100);
+              break;
+            case ByPixel:
+              m_pos = msg->mouse.x-this->rc->x1;
+              break;
+          }
         }
         else {
-          m_pos = 100.0 * (msg->mouse.y-this->rc->y1) / jrect_h(this->rc);
+          switch (m_type) {
+            case ByPercentage:
+              m_pos = 100.0 * (msg->mouse.y-this->rc->y1) / jrect_h(this->rc);
+              m_pos = MID(0, m_pos, 100);
+              break;
+            case ByPixel:
+              m_pos = (msg->mouse.y-this->rc->y1);
+              break;
+          }
         }
-
-        m_pos = MID(0, m_pos, 100);
 
         jwidget_set_rect(this, this->rc);
         invalidate();
@@ -154,14 +167,17 @@ bool Splitter::onProcessMessage(Message* msg)
             jmouse_set_cursor(JI_CURSOR_SIZE_T);
           return true;
         }
-        else
-          return false;
       }
       break;
 
   }
 
   return Widget::onProcessMessage(msg);
+}
+
+void Splitter::onPaint(PaintEvent& ev)
+{
+  getTheme()->drawSplitter(ev);
 }
 
 void Splitter::onPreferredSize(PreferredSizeEvent& ev)
@@ -218,6 +234,24 @@ void Splitter::onPreferredSize(PreferredSizeEvent& ev)
   ev.setPreferredSize(Size(w, h));
 }
 
+void Splitter::onLoadLayout(LoadLayoutEvent& ev)
+{
+  ev.stream() >> m_pos;
+
+  // Do for all children
+  UI_FOREACH_WIDGET(getChildren(), it)
+    (*it)->loadLayout();
+}
+
+void Splitter::onSaveLayout(SaveLayoutEvent& ev)
+{
+  ev.stream() << m_pos;
+
+  // Do for all children
+  UI_FOREACH_WIDGET(getChildren(), it)
+    (*it)->saveLayout();
+}
+
 void Splitter::layoutMembers(JRect rect)
 {
 #define FIXUP(x, y, w, h, l, t, r, b)                                   \
@@ -226,8 +260,16 @@ void Splitter::layoutMembers(JRect rect)
                                                                         \
     pos->x##1 = this->rc->x##1;                                         \
     pos->y##1 = this->rc->y##1;                                         \
-    pos->x##2 = pos->x##1 + avail*m_pos/100;                            \
-    /* TODO uncomment this to make a restricted panel */                \
+    switch (m_type) {                                                   \
+      case ByPercentage:                                                \
+      pos->x##2 = pos->x##1 + avail*m_pos/100;                          \
+      break;                                                            \
+    case ByPixel:                                                       \
+      pos->x##2 = pos->x##1 + m_pos;                                    \
+      break;                                                            \
+    }                                                                   \
+                                                                        \
+    /* TODO uncomment this to make a restricted splitter */             \
     /* pos->w = MID(reqSize1.w, pos->w, avail-reqSize2.w); */           \
     pos->y##2 = pos->y##1 + jrect_##h(this->rc);                        \
                                                                         \

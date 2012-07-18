@@ -125,9 +125,15 @@ static Shortcut* get_keyboard_shortcut_for_spriteeditor(const char* action_name)
 //////////////////////////////////////////////////////////////////////
 
 class CustomizedGuiManager : public Manager
+                           , public LayoutIO
 {
 protected:
   bool onProcessMessage(Message* msg) OVERRIDE;
+  LayoutIO* onGetLayoutIO() OVERRIDE { return this; }
+
+  // LayoutIO implementation
+  std::string loadLayout(Widget* widget) OVERRIDE;
+  void saveLayout(Widget* widget, const std::string& str) OVERRIDE;
 };
 
 static CustomizedGuiManager* manager = NULL;
@@ -1055,6 +1061,28 @@ bool CustomizedGuiManager::onProcessMessage(Message* msg)
   }
 
   return Manager::onProcessMessage(msg);
+}
+
+std::string CustomizedGuiManager::loadLayout(Widget* widget)
+{
+  if (widget->getRoot() == NULL)
+    return "";
+
+  std::string rootId = widget->getRoot()->getId();
+  std::string widgetId = widget->getId();
+
+  return get_config_string(("layout:"+rootId).c_str(), widgetId.c_str(), "");
+}
+
+void CustomizedGuiManager::saveLayout(Widget* widget, const std::string& str)
+{
+  if (widget->getRoot() == NULL)
+    return;
+
+  std::string rootId = widget->getRoot()->getId();
+  std::string widgetId = widget->getId();
+
+  set_config_string(("layout:"+rootId).c_str(), widgetId.c_str(), str.c_str());
 }
 
 // Slot for App::PaletteChange to regenerate graphics when the App palette is changed

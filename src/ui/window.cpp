@@ -192,6 +192,9 @@ void Window::remap_window()
   jwidget_set_rect(this, rect);
   jrect_free(rect);
 
+  // load layout
+  loadLayout();
+
   invalidate();
 }
 
@@ -279,6 +282,10 @@ bool Window::onProcessMessage(Message* msg)
 
     case JM_OPEN:
       m_killer = NULL;
+      break;
+
+    case JM_CLOSE:
+      saveLayout();
       break;
 
     case JM_BUTTONPRESSED: {

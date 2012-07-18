@@ -5,8 +5,12 @@
     <box noborders="true" horizontal="true" id="menubar" />
     <box noborders="true" horizontal="true" id="tabsbar" />
     <box noborders="true" horizontal="true" expansive="true">
-      <box noborders="true" vertical="true" id="colorbar" />
-      <box noborders="true" horizontal="true" id="editor" expansive="true" />
+      <splitter id="colorbarsplitter"
+		horizontal="true" expansive="true"
+		by="pixel" position="52">
+	<box noborders="true" vertical="true" id="colorbar" />
+	<box noborders="true" horizontal="true" id="editor" expansive="true" />
+      </splitter>
       <box noborders="true" vertical="true" id="toolbar" />
     </box>
     <box noborders="true" horizontal="true" id="statusbar" />

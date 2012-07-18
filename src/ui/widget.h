@@ -27,9 +27,11 @@ namespace ui {
   union Message;
 
   class InitThemeEvent;
+  class LoadLayoutEvent;
   class Manager;
   class PaintEvent;
   class PreferredSizeEvent;
+  class SaveLayoutEvent;
   class Theme;
   class Window;
 
@@ -243,6 +245,8 @@ namespace ui {
     // ===============================================================
 
     void layout();
+    void loadLayout();
+    void saveLayout();
 
     // ===============================================================
     // POSITION & GEOMETRY
@@ -322,6 +326,8 @@ namespace ui {
 
     virtual void onInvalidateRegion(const JRegion region);
     virtual void onPreferredSize(PreferredSizeEvent& ev);
+    virtual void onLoadLayout(LoadLayoutEvent& ev);
+    virtual void onSaveLayout(SaveLayoutEvent& ev);
     virtual void onPaint(PaintEvent& ev);
     virtual void onBroadcastMouseMessage(WidgetsList& targets);
     virtual void onInitTheme(InitThemeEvent& ev);

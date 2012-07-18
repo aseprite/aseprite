@@ -940,6 +940,11 @@ void Manager::onBroadcastMouseMessage(WidgetsList& targets)
     widget->broadcastMouseMessage(targets);
 }
 
+LayoutIO* Manager::onGetLayoutIO()
+{
+  return NULL;
+}
+
 void Manager::onPreferredSize(PreferredSizeEvent& ev)
 {
   int w = 0, h = 0;
@@ -1154,6 +1159,11 @@ void Manager::invalidateDisplayRegion(const JRegion region)
 
   jregion_free(reg1);
   jregion_free(reg2);
+}
+
+LayoutIO* Manager::getLayoutIO()
+{
+  return onGetLayoutIO();
 }
 
 void Manager::collectGarbage()

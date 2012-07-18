@@ -48,6 +48,8 @@ public:
 MainWindow::MainWindow()
   : Window(true, NULL)
 {
+  setId("main_window");
+
   // Load all menus by first time.
   AppMenus::instance()->reload();
 

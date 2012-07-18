@@ -55,6 +55,7 @@ PaletteView::PaletteView(bool editable)
   , m_currentEntry(-1)
   , m_rangeAnchor(-1)
   , m_selectedEntries(Palette::MaxColors, false)
+  , m_isUpdatingColumns(false)
 {
   m_editable = editable;
   m_columns = 16;
@@ -203,6 +204,20 @@ bool PaletteView::onProcessMessage(Message* msg)
     case JM_REQSIZE:
       request_size(&msg->reqsize.w, &msg->reqsize.h);
       return true;
+
+    case JM_SETPOS:
+      if (!m_isUpdatingColumns) {
+        m_isUpdatingColumns = true;
+        View* view = View::getView(this);
+        if (view) {
+          int columns =
+            (view->getViewportBounds().w-this->child_spacing*2)
+            / (m_boxsize+this->child_spacing);
+          setColumns(MID(1, columns, Palette::MaxColors));
+        }
+        m_isUpdatingColumns = false;
+      }
+      break;
 
     case JM_DRAW: {
       div_t d = div(Palette::MaxColors, m_columns);
