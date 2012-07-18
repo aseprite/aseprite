@@ -31,9 +31,6 @@
 
 namespace ui {
 
-  struct jaccel;
-  struct jlink;
-  struct jlist;
   struct jrect;
   struct jregion;
 
@@ -144,11 +141,6 @@ namespace ui {
 
   typedef unsigned int            JID;
 
-  typedef void*                   JThread;
-
-  typedef struct jaccel*          JAccel;
-  typedef struct jlink*           JLink;
-  typedef struct jlist*           JList;
   typedef struct jrect*           JRect;
   typedef struct jregion*         JRegion;
 

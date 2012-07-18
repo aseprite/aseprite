@@ -49,6 +49,8 @@ namespace ui {
 
     HitTest hitTest(const gfx::Point& point);
 
+    void removeDecorativeWidgets();
+
     // Signals
     Signal1<void, CloseEvent&> Close;
 

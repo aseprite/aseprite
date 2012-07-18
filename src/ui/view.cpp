@@ -8,7 +8,6 @@
 
 #include "gfx/size.h"
 #include "ui/intern.h"
-#include "ui/list.h"
 #include "ui/message.h"
 #include "ui/rect.h"
 #include "ui/region.h"
@@ -45,8 +44,6 @@ bool View::hasScrollBars()
 void View::attachToView(Widget* viewable_widget)
 {
   m_viewport.addChild(viewable_widget);
-  /* TODO */
-  /* jwidget_emit_signal(this, JI_SIGNAL_VIEW_ATTACH); */
 }
 
 void View::makeVisibleAllScrollableArea()
@@ -195,7 +192,7 @@ void View::setViewScroll(const Point& pt)
 
 void View::updateView()
 {
-  Widget* vw = reinterpret_cast<Widget*>(jlist_first_data(m_viewport.children));
+  Widget* vw = UI_FIRST_WIDGET(m_viewport.getChildren());
   Point scroll = getViewScroll();
 
   // Set minimum (remove scroll-bars)
@@ -279,12 +276,10 @@ bool View::onProcessMessage(Message* msg)
 // static
 void View::displaceWidgets(Widget* widget, int x, int y)
 {
-  JLink link;
-
   jrect_displace(widget->rc, x, y);
 
-  JI_LIST_FOR_EACH(widget->children, link)
-    displaceWidgets(reinterpret_cast<Widget*>(link->data), x, y);
+  UI_FOREACH_WIDGET(widget->getChildren(), it)
+    displaceWidgets(*it, x, y);
 }
 
 } // namespace ui

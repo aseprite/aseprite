@@ -8,7 +8,6 @@
 
 #include "ui/splitter.h"
 
-#include "ui/list.h"
 #include "ui/message.h"
 #include "ui/preferred_size_event.h"
 #include "ui/system.h"
@@ -54,14 +53,13 @@ bool Splitter::onProcessMessage(Message* msg)
         Widget* c1, *c2;
         int x1, y1, x2, y2;
         int bar, click_bar;
-        JLink link;
 
         bar = click_bar = 0;
 
-        JI_LIST_FOR_EACH(this->children, link) {
-          if (link->next != this->children->end) {
-            c1 = reinterpret_cast<Widget*>(link->data);
-            c2 = reinterpret_cast<Widget*>(link->next->data);
+        UI_FOREACH_WIDGET_WITH_END(getChildren(), it, end) {
+          if (it+1 != end) {
+            c1 = *it;
+            c2 = *(it+1);
 
             ++bar;
 
@@ -120,14 +118,13 @@ bool Splitter::onProcessMessage(Message* msg)
     case JM_SETCURSOR:
       if (isEnabled()) {
         Widget* c1, *c2;
-        JLink link;
         int x1, y1, x2, y2;
         bool change_cursor = false;
 
-        JI_LIST_FOR_EACH(this->children, link) {
-          if (link->next != this->children->end) {
-            c1 = reinterpret_cast<Widget*>(link->data);
-            c2 = reinterpret_cast<Widget*>(link->next->data);
+        UI_FOREACH_WIDGET_WITH_END(getChildren(), it, end) {
+          if (it+1 != end) {
+            c1 = *it;
+            c2 = *(it+1);
 
             if (this->getAlign() & JI_HORIZONTAL) {
               x1 = c1->rc->x2;
@@ -183,12 +180,10 @@ void Splitter::onPreferredSize(PreferredSizeEvent& ev)
 
   int visibleChildren;
   Size reqSize;
-  Widget* child;
-  JLink link;
 
   visibleChildren = 0;
-  JI_LIST_FOR_EACH(this->children, link) {
-    child = (Widget*)link->data;
+  UI_FOREACH_WIDGET(getChildren(), it) {
+    Widget* child = *it;
     if (!(child->flags & JI_HIDDEN))
       visibleChildren++;
   }
@@ -196,8 +191,8 @@ void Splitter::onPreferredSize(PreferredSizeEvent& ev)
   int w, h;
   w = h = 0;
 
-  JI_LIST_FOR_EACH(this->children, link) {
-    child = (Widget*)link->data;
+  UI_FOREACH_WIDGET(getChildren(), it) {
+    Widget* child = *it;
 
     if (child->flags & JI_HIDDEN)
       continue;
@@ -252,11 +247,9 @@ void Splitter::layoutMembers(JRect rect)
 
   jrect_copy(this->rc, rect);
 
-  if (jlist_length(this->children) == 2) {
-    Widget* child1 = reinterpret_cast<Widget*>(jlist_first(this->children)->data);
-    Widget* child2 = reinterpret_cast<Widget*>(jlist_first(this->children)->next->data);
-    //Size reqSize1 = child1->getPreferredSize();
-    //Size reqSize2 = child2->getPreferredSize();
+  if (getChildren().size() == 2) {
+    Widget* child1 = getChildren()[0];
+    Widget* child2 = getChildren()[1];
 
     if (this->getAlign() & JI_HORIZONTAL)
       FIXUP(x, y, w, h, l, t, r, b);

@@ -31,10 +31,7 @@ PopupWindow::PopupWindow(const char* text, bool close_on_buttonpressed)
   set_wantfocus(false);
   setAlign(JI_LEFT | JI_TOP);
 
-  // remove decorative widgets
-  JLink link, next;
-  JI_LIST_FOR_EACH_SAFE(this->children, link, next)
-    delete reinterpret_cast<Widget*>(link->data);
+  removeDecorativeWidgets();
 
   initTheme();
   jwidget_noborders(this);
@@ -152,14 +149,12 @@ void PopupWindow::onPreferredSize(PreferredSizeEvent& ev)
   resultSize.w += border_width.l + border_width.r;
   resultSize.h += border_width.t + border_width.b;
 
-  if (!jlist_empty(this->children)) {
+  if (!getChildren().empty()) {
     Size maxSize(0, 0);
     Size reqSize;
-    Widget* child;
-    JLink link;
 
-    JI_LIST_FOR_EACH(this->children, link) {
-      child = (Widget*)link->data;
+    UI_FOREACH_WIDGET(getChildren(), it) {
+      Widget* child = *it;
 
       reqSize = child->getPreferredSize();
 

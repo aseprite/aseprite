@@ -6,77 +6,31 @@
 
 #include "config.h"
 
+#include "ui/accelerator.h"
+
+#include "base/unique_ptr.h"
+
 #include <allegro/keyboard.h>
 #include <allegro/unicode.h>
 #include <ctype.h>
-
-#include "ui/accel.h"
-#include "ui/list.h"
 
 /* #define REPORT_KEYS */
 #define PREPROCESS_KEYS
 
 namespace ui {
 
-struct jaccel
+void Accelerator::addKey(int shifts, int ascii, int scancode)
 {
-  JList key_list;
-};
+  KeyCombo key;
 
-struct KeyCombo
-{
-  int shifts;
-  int ascii;
-  int scancode;
-};
+  key.shifts = shifts & (KB_SHIFT_FLAG | KB_CTRL_FLAG | KB_ALT_FLAG);
+  key.ascii = ascii;
+  key.scancode = scancode;
 
-JAccel jaccel_new()
-{
-  JAccel accel = new jaccel;
-
-  accel->key_list = jlist_new();
-
-  return accel;
+  m_combos.push_back(key);
 }
 
-JAccel jaccel_new_copy(JAccel accel)
-{
-  KeyCombo *key;
-  JAccel copy;
-  JLink link;
-
-  copy = jaccel_new();
-
-  JI_LIST_FOR_EACH(accel->key_list, link) {
-    key = (KeyCombo *)link->data;
-    jaccel_add_key(copy, key->shifts, key->ascii, key->scancode);
-  }
-
-  return copy;
-}
-
-void jaccel_free(JAccel accel)
-{
-  JLink link;
-  JI_LIST_FOR_EACH(accel->key_list, link) {
-    delete (KeyCombo*)link->data;
-  }
-  jlist_free(accel->key_list);
-  delete accel;
-}
-
-void jaccel_add_key(JAccel accel, int shifts, int ascii, int scancode)
-{
-  KeyCombo *key = new KeyCombo;
-
-  key->shifts = shifts & (KB_SHIFT_FLAG | KB_CTRL_FLAG | KB_ALT_FLAG);
-  key->ascii = ascii;
-  key->scancode = scancode;
-
-  jlist_append(accel->key_list, key);
-}
-
-static void proc_one_word(JAccel accel, char* word)
+static void process_one_word(Accelerator* accel, char* word)
 {
   int shifts = 0;
   int ascii = 0;
@@ -85,7 +39,7 @@ static void proc_one_word(JAccel accel, char* word)
 
   // Special case: plus sign
   if (word[0] == '+' && word[1] == 0) {
-    jaccel_add_key(accel, 0, '+', 0);
+    accel->addKey(0, '+', 0);
     return;
   }
 
@@ -215,11 +169,10 @@ static void proc_one_word(JAccel accel, char* word)
     }
   }
 
-  jaccel_add_key(accel, shifts, ascii, scancode);
+  accel->addKey(shifts, ascii, scancode);
 }
 
-/* process strings like "<Ctrl+Q> <ESC>" */
-void jaccel_add_keys_from_string(JAccel accel, const char *string)
+void Accelerator::addKeysFromString(const char* string)
 {
   char *s, *begin, buf[256];
   int backup;
@@ -235,7 +188,7 @@ void jaccel_add_keys_from_string(JAccel accel, const char *string)
       backup = *s;
       *s = 0;
 
-      proc_one_word(accel, begin);
+      process_one_word(this, begin);
 
       *s = backup;
     }
@@ -245,12 +198,7 @@ void jaccel_add_keys_from_string(JAccel accel, const char *string)
   }
 }
 
-bool jaccel_is_empty(JAccel accel)
-{
-  return jlist_empty(accel->key_list);
-}
-
-static void keycombo_get_string(KeyCombo *key, char *buf)
+std::string Accelerator::KeyCombo::toString()
 {
   /* same order that Allegro scancodes */
   static const char *table[] = {
@@ -359,42 +307,41 @@ static void keycombo_get_string(KeyCombo *key, char *buf)
     "Kanji",
   };
 
+  char buf[256];
   ustrcpy(buf, "");
 
-  if (!key)
-    return;
-
-  /* shifts */
-  if (key->shifts & KB_CTRL_FLAG)
+  // Shifts
+  if (this->shifts & KB_CTRL_FLAG)
     ustrcat(buf, "Ctrl+");
 
-  if (key->shifts & KB_ALT_FLAG)
+  if (this->shifts & KB_ALT_FLAG)
     ustrcat(buf, "Alt+");
 
-  if (key->shifts & KB_SHIFT_FLAG)
+  if (this->shifts & KB_SHIFT_FLAG)
     ustrcat(buf, "Shift+");
 
-  /* key */
-  if (key->ascii)
-    usprintf(buf+ustrlen(buf), "%c", toupper(key->ascii));
-  else if (key->scancode)
-    ustrcat(buf, table[key->scancode]);
+  // Key
+  if (this->ascii)
+    usprintf(buf+ustrlen(buf), "%c", toupper(this->ascii));
+  else if (this->scancode)
+    ustrcat(buf, table[this->scancode]);
   else
     ustrcat(buf, "Unknown");
+
+  return buf;
 }
 
-void jaccel_to_string(JAccel accel, char *buf)
+std::string Accelerator::toString()
 {
-  keycombo_get_string(reinterpret_cast<KeyCombo*>(jlist_first(accel->key_list)->data), buf);
+  ASSERT(!m_combos.empty());
+  return m_combos.front().toString();
 }
 
-bool jaccel_check(JAccel accel, int shifts, int ascii, int scancode)
+bool Accelerator::check(int shifts, int ascii, int scancode)
 {
-  KeyCombo *key;
-  JLink link;
 #ifdef REPORT_KEYS
   char buf[256];
-  char buf2[256];
+  std::string buf2;
 #endif
 
   /* preprocess the character to be compared with the accelerator */
@@ -450,25 +397,23 @@ bool jaccel_check(JAccel accel, int shifts, int ascii, int scancode)
 
 #ifdef REPORT_KEYS
   {
-    JAccel *a2 = jaccel_new();
-    jaccel_add_key(a2, shifts, ascii, scancode);
-    jaccel_get_string(a2, buf2);
-    jaccel_free(a2);
+    UniquePtr<Accelerator> a2(new Accelerator);
+    a2->addKey(shifts, ascii, scancode);
+    buf2 = a2->getString();
   }
 #endif
 
-  JI_LIST_FOR_EACH(accel->key_list, link) {
-    key = (KeyCombo *)link->data;
-
+  for (KeyCombos::iterator it = m_combos.begin(), end = m_combos.end();
+       it != end; ++it) {
 #ifdef REPORT_KEYS
-    keycombo_get_string(key, buf);
     printf("%3d==%3d %3d==%3d %s==%s ",
-           key->scancode, scancode, key->ascii, ascii, buf, buf2);
+           it->scancode, scancode, it->ascii, ascii,
+           it->getString().c_str(), buf2.c_str();
 #endif
 
-    if (((key->scancode && key->scancode == scancode)
-         || (key->ascii && key->ascii == ascii))
-        && (key->shifts == (shifts & (KB_SHIFT_FLAG | KB_CTRL_FLAG | KB_ALT_FLAG)))) {
+    if (((it->scancode && it->scancode == scancode)
+         || (it->ascii && it->ascii == ascii))
+        && (it->shifts == (shifts & (KB_SHIFT_FLAG | KB_CTRL_FLAG | KB_ALT_FLAG)))) {
 
 #ifdef REPORT_KEYS
       printf("true\n");
@@ -484,7 +429,7 @@ bool jaccel_check(JAccel accel, int shifts, int ascii, int scancode)
   return false;
 }
 
-bool jaccel_check_from_key(JAccel accel)
+bool Accelerator::checkFromAllegroKeyArray()
 {
   int shifts = 0;
 
@@ -494,12 +439,10 @@ bool jaccel_check_from_key(JAccel accel)
   if (key[KEY_RCONTROL]) shifts |= KB_CTRL_FLAG;
   if (key[KEY_ALT]) shifts |= KB_ALT_FLAG;
 
-  JLink link;
-  JI_LIST_FOR_EACH(accel->key_list, link) {
-    KeyCombo* keyCombo = (KeyCombo*)link->data;
-
-    if ((keyCombo->scancode == 0 || key[keyCombo->scancode]) &&
-        (keyCombo->shifts == (shifts & (KB_SHIFT_FLAG | KB_CTRL_FLAG | KB_ALT_FLAG)))) {
+  for (KeyCombos::iterator it = m_combos.begin(), end = m_combos.end();
+       it != end; ++it) {
+    if ((it->scancode == 0 || key[it->scancode]) &&
+        (it->shifts == (shifts & (KB_SHIFT_FLAG | KB_CTRL_FLAG | KB_ALT_FLAG)))) {
       return true;
     }
   }

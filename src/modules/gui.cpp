@@ -99,7 +99,7 @@ enum ShortcutType { Shortcut_ExecuteCommand,
 
 struct Shortcut
 {
-  JAccel accel;
+  Accelerator* accel;
   ShortcutType type;
   union {
     Command* command;
@@ -666,7 +666,7 @@ CheckBox* check_button_new(const char *text, int b1, int b2, int b3, int b4)
 // Keyboard shortcuts
 //////////////////////////////////////////////////////////////////////
 
-JAccel add_keyboard_shortcut_to_execute_command(const char* shortcut_string, const char* command_name, Params* params)
+Accelerator* add_keyboard_shortcut_to_execute_command(const char* shortcut_string, const char* command_name, Params* params)
 {
   Shortcut* shortcut = get_keyboard_shortcut_for_command(command_name, params);
   if (!shortcut) {
@@ -681,7 +681,7 @@ JAccel add_keyboard_shortcut_to_execute_command(const char* shortcut_string, con
   return shortcut->accel;
 }
 
-JAccel add_keyboard_shortcut_to_change_tool(const char* shortcut_string, tools::Tool* tool)
+Accelerator* add_keyboard_shortcut_to_change_tool(const char* shortcut_string, tools::Tool* tool)
 {
   Shortcut* shortcut = get_keyboard_shortcut_for_tool(tool);
   if (!shortcut) {
@@ -695,7 +695,7 @@ JAccel add_keyboard_shortcut_to_change_tool(const char* shortcut_string, tools::
   return shortcut->accel;
 }
 
-JAccel add_keyboard_shortcut_to_quicktool(const char* shortcut_string, tools::Tool* tool)
+Accelerator* add_keyboard_shortcut_to_quicktool(const char* shortcut_string, tools::Tool* tool)
 {
   Shortcut* shortcut = get_keyboard_shortcut_for_quicktool(tool);
   if (!shortcut) {
@@ -709,7 +709,7 @@ JAccel add_keyboard_shortcut_to_quicktool(const char* shortcut_string, tools::To
   return shortcut->accel;
 }
 
-JAccel add_keyboard_shortcut_to_spriteeditor(const char* shortcut_string, const char* action_name)
+Accelerator* add_keyboard_shortcut_to_spriteeditor(const char* shortcut_string, const char* action_name)
 {
   Shortcut* shortcut = get_keyboard_shortcut_for_spriteeditor(action_name);
   if (!shortcut) {
@@ -738,7 +738,7 @@ bool get_command_from_key_message(Message* msg, Command** command, Params** para
   return false;
 }
 
-JAccel get_accel_to_execute_command(const char* command_name, Params* params)
+Accelerator* get_accel_to_execute_command(const char* command_name, Params* params)
 {
   Shortcut* shortcut = get_keyboard_shortcut_for_command(command_name, params);
   if (shortcut)
@@ -747,7 +747,7 @@ JAccel get_accel_to_execute_command(const char* command_name, Params* params)
     return NULL;
 }
 
-JAccel get_accel_to_change_tool(tools::Tool* tool)
+Accelerator* get_accel_to_change_tool(tools::Tool* tool)
 {
   Shortcut* shortcut = get_keyboard_shortcut_for_tool(tool);
   if (shortcut)
@@ -756,7 +756,7 @@ JAccel get_accel_to_change_tool(tools::Tool* tool)
     return NULL;
 }
 
-JAccel get_accel_to_copy_selection()
+Accelerator* get_accel_to_copy_selection()
 {
   Shortcut* shortcut = get_keyboard_shortcut_for_spriteeditor(SPRITEDITOR_ACTION_COPYSELECTION);
   if (shortcut)
@@ -765,7 +765,7 @@ JAccel get_accel_to_copy_selection()
     return NULL;
 }
 
-JAccel get_accel_to_snap_to_grid()
+Accelerator* get_accel_to_snap_to_grid()
 {
   Shortcut* shortcut = get_keyboard_shortcut_for_spriteeditor(SPRITEDITOR_ACTION_SNAPTOGRID);
   if (shortcut)
@@ -774,7 +774,7 @@ JAccel get_accel_to_snap_to_grid()
     return NULL;
 }
 
-JAccel get_accel_to_angle_snap()
+Accelerator* get_accel_to_angle_snap()
 {
   Shortcut* shortcut = get_keyboard_shortcut_for_spriteeditor(SPRITEDITOR_ACTION_ANGLESNAP);
   if (shortcut)
@@ -783,7 +783,7 @@ JAccel get_accel_to_angle_snap()
     return NULL;
 }
 
-JAccel get_accel_to_maintain_aspect_ratio()
+Accelerator* get_accel_to_maintain_aspect_ratio()
 {
   Shortcut* shortcut = get_keyboard_shortcut_for_spriteeditor(SPRITEDITOR_ACTION_MAINTAINASPECTRATIO);
   if (shortcut)
@@ -792,7 +792,7 @@ JAccel get_accel_to_maintain_aspect_ratio()
     return NULL;
 }
 
-JAccel get_accel_to_lock_axis()
+Accelerator* get_accel_to_lock_axis()
 {
   Shortcut* shortcut = get_keyboard_shortcut_for_spriteeditor(SPRITEDITOR_ACTION_LOCKAXIS);
   if (shortcut)
@@ -804,8 +804,8 @@ JAccel get_accel_to_lock_axis()
 tools::Tool* get_selected_quicktool(tools::Tool* currentTool)
 {
   if (currentTool && currentTool->getInk(0)->isSelection()) {
-    JAccel copyselection_accel = get_accel_to_copy_selection();
-    if (copyselection_accel && jaccel_check_from_key(copyselection_accel))
+    Accelerator* copyselection_accel = get_accel_to_copy_selection();
+    if (copyselection_accel && copyselection_accel->checkFromAllegroKeyArray())
       return NULL;
   }
 
@@ -827,7 +827,7 @@ tools::Tool* get_selected_quicktool(tools::Tool* currentTool)
 Shortcut::Shortcut(ShortcutType type)
 {
   this->type = type;
-  this->accel = jaccel_new();
+  this->accel = new Accelerator;
   this->command = NULL;
   this->tool = NULL;
   this->params = NULL;
@@ -838,21 +838,20 @@ Shortcut::~Shortcut()
   delete params;
   if (type == Shortcut_SpriteEditor)
     base_free(action);
-  jaccel_free(accel);
+  delete accel;
 }
 
 void Shortcut::add_shortcut(const char* shortcut_string)
 {
   char buf[256];
   usprintf(buf, "<%s>", shortcut_string);
-  jaccel_add_keys_from_string(this->accel, buf);
+  this->accel->addKeysFromString(buf);
 }
 
 bool Shortcut::is_pressed(Message* msg)
 {
   if (accel) {
-    return jaccel_check(accel,
-                        msg->any.shifts,
+    return accel->check(msg->any.shifts,
                         msg->key.ascii,
                         msg->key.scancode);
   }
@@ -862,7 +861,7 @@ bool Shortcut::is_pressed(Message* msg)
 bool Shortcut::is_pressed_from_key_array()
 {
   if (accel) {
-    return jaccel_check_from_key(accel);
+    return accel->checkFromAllegroKeyArray();
   }
   return false;
 }
@@ -1022,9 +1021,8 @@ bool CustomizedGuiManager::onProcessMessage(Message* msg)
 
               // Commands are executed only when the main window is
               // the current window running at foreground.
-              JLink link;
-              JI_LIST_FOR_EACH(this->children, link) {
-                Window* child = reinterpret_cast<Window*>(link->data);
+              UI_FOREACH_WIDGET(getChildren(), it) {
+                Window* child = static_cast<Window*>(*it);
 
                 // There are a foreground window executing?
                 if (child->is_foreground()) {

@@ -442,13 +442,12 @@ void FileSelector::updateLocation()
 {
   IFileItem* currentFolder = m_fileList->getCurrentFolder();
   IFileItem* fileItem = currentFolder;
-  JList locations = jlist_new();
-  JLink link;
+  std::list<IFileItem*> locations;
   int selected_index = -1;
   int newItem;
 
   while (fileItem != NULL) {
-    jlist_prepend(locations, fileItem);
+    locations.push_front(fileItem);
     fileItem = fileItem->getParent();
   }
 
@@ -457,8 +456,9 @@ void FileSelector::updateLocation()
 
   // Add item by item (from root to the specific current folder)
   int level = 0;
-  JI_LIST_FOR_EACH(locations, link) {
-    fileItem = reinterpret_cast<IFileItem*>(link->data);
+  for (std::list<IFileItem*>::iterator it=locations.begin(), end=locations.end();
+       it != end; ++it) {
+    fileItem = *it;
 
     // Indentation
     base::string buf;
@@ -495,8 +495,6 @@ void FileSelector::updateLocation()
     m_location->getEntryWidget()->setText(currentFolder->getDisplayName().c_str());
     m_location->getEntryWidget()->deselectText();
   }
-
-  jlist_free(locations);
 }
 
 void FileSelector::updateNavigationButtons()
@@ -572,7 +570,7 @@ void FileSelector::onGoBack()
 
 void FileSelector::onGoForward()
 {
-  if (jlist_length(navigation_history) > 1) {
+  if (navigation_history->size() > 1) {
     if (navigation_position.isNull())
       navigation_position.setIterator(navigation_history->begin());
 

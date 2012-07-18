@@ -34,7 +34,6 @@
 #include "raster/sprite.h"
 #include "ui/button.h"
 #include "ui/label.h"
-#include "ui/list.h"
 #include "ui/listbox.h"
 #include "ui/slider.h"
 #include "ui/view.h"
@@ -88,11 +87,10 @@ private:
   void fillStockListBox()
   {
     const char* oldSelected = (m_filter.getMatrix() ? m_filter.getMatrix()->getName(): NULL);
-    JLink link, next;
 
     // Clean the list
-    JI_LIST_FOR_EACH_SAFE(m_stockListBox->children, link, next) {
-      Widget* listitem = reinterpret_cast<Widget*>(link->data);
+    while (!m_stockListBox->getChildren().empty()) {
+      Widget* listitem = m_stockListBox->getChildren().front();
       m_stockListBox->removeChild(listitem);
       delete listitem;
     }
@@ -109,12 +107,11 @@ private:
 
   void selectMatrixByName(const char* oldSelected)
   {
-    Widget* select_this = reinterpret_cast<Widget*>(jlist_first_data(m_stockListBox->children));
+    Widget* select_this = UI_FIRST_WIDGET(m_stockListBox->getChildren());
 
     if (oldSelected) {
-      JLink link;
-      JI_LIST_FOR_EACH(m_stockListBox->children, link) {
-        Widget* child = reinterpret_cast<Widget*>(link->data);
+      UI_FOREACH_WIDGET(m_stockListBox->getChildren(), it) {
+        Widget* child = *it;
 
         if (strcmp(child->getText(), oldSelected) == 0) {
           select_this = child;

@@ -167,7 +167,7 @@ MenuItem::MenuItem(const char *text)
 MenuItem::~MenuItem()
 {
   if (m_accel)
-    jaccel_free(m_accel);
+    delete m_accel;
 
   if (m_submenu)
     delete m_submenu;
@@ -175,10 +175,10 @@ MenuItem::~MenuItem()
 
 Menu* MenuBox::getMenu()
 {
-  if (jlist_empty(children))
+  if (getChildren().empty())
     return NULL;
   else
-    return static_cast<Menu*>(jlist_first(children)->data);
+    return static_cast<Menu*>(getChildren().front());
 }
 
 MenuBaseData* MenuBox::createBase()
@@ -193,7 +193,7 @@ Menu* MenuItem::getSubmenu()
   return m_submenu;
 }
 
-JAccel MenuItem::getAccel()
+Accelerator* MenuItem::getAccel()
 {
   return m_accel;
 }
@@ -229,10 +229,10 @@ void MenuItem::setSubmenu(Menu* menu)
  * @warning The specified @a accel will be freed automatically when
  *          the menu-item is deleted.
  */
-void MenuItem::setAccel(JAccel accel)
+void MenuItem::setAccel(Accelerator* accel)
 {
   if (m_accel)
-    jaccel_free(m_accel);
+    delete m_accel;
 
   m_accel = accel;
 }
@@ -249,7 +249,7 @@ void MenuItem::setHighlighted(bool state)
 
 bool MenuItem::hasSubmenu() const
 {
-  return (m_submenu && !jlist_empty(m_submenu->children));
+  return (m_submenu && !m_submenu->getChildren().empty());
 }
 
 void Menu::showPopup(int x, int y)
@@ -319,22 +319,19 @@ bool Menu::onProcessMessage(Message* msg)
 void Menu::requestSize(int *w, int *h)
 {
   Size reqSize;
-  JLink link;
 
   *w = *h = 0;
 
-  JI_LIST_FOR_EACH(this->children, link) {
-    reqSize = ((Widget*)link->data)->getPreferredSize();
+  UI_FOREACH_WIDGET_WITH_END(getChildren(), it, end) {
+    reqSize = (*it)->getPreferredSize();
 
-    if (this->parent->type == JI_MENUBAR) {
-      *w += reqSize.w + ((link->next != this->children->end) ?
-                         this->child_spacing: 0);
+    if (this->getParent()->type == JI_MENUBAR) {
+      *w += reqSize.w + ((it+1 != end) ? this->child_spacing: 0);
       *h = MAX(*h, reqSize.h);
     }
     else {
       *w = MAX(*w, reqSize.w);
-      *h += reqSize.h + ((link->next != this->children->end) ?
-                         this->child_spacing: 0);
+      *h += reqSize.h + ((it+1 != end) ? this->child_spacing: 0);
     }
   }
 
@@ -347,24 +344,23 @@ void Menu::set_position(JRect rect)
   Size reqSize;
   Widget* child;
   JRect cpos;
-  JLink link;
 
   jrect_copy(this->rc, rect);
   cpos = jwidget_get_child_rect(this);
 
-  JI_LIST_FOR_EACH(this->children, link) {
-    child = (Widget*)link->data;
+  UI_FOREACH_WIDGET(getChildren(), it) {
+    child = *it;
 
     reqSize = child->getPreferredSize();
 
-    if (this->parent->type == JI_MENUBAR)
+    if (this->getParent()->type == JI_MENUBAR)
       cpos->x2 = cpos->x1+reqSize.w;
     else
       cpos->y2 = cpos->y1+reqSize.h;
 
     jwidget_set_rect(child, cpos);
 
-    if (this->parent->type == JI_MENUBAR)
+    if (this->getParent()->type == JI_MENUBAR)
       cpos->x1 += jrect_w(cpos);
     else
       cpos->y1 += jrect_h(cpos);
@@ -510,12 +506,11 @@ bool MenuBox::onProcessMessage(Message* msg)
         if (this->hasFocus()) {
           MenuItem* highlight = menu->getHighlightedItem();
           MenuItem* child_with_submenu_opened = NULL;
-          JLink link;
           bool used = false;
 
           // Search a child with highlight or the submenu opened
-          JI_LIST_FOR_EACH(menu->children, link) {
-            Widget* child = (Widget*)link->data;
+          UI_FOREACH_WIDGET(menu->getChildren(), it) {
+            Widget* child = *it;
             if (child->type != JI_MENUITEM)
               continue;
 
@@ -592,7 +587,7 @@ bool MenuBox::onProcessMessage(Message* msg)
               else {
                 // Go to parent
                 if (menu->m_menuitem) {
-                  Widget* parent = menu->m_menuitem->parent->parent;
+                  Widget* parent = menu->m_menuitem->getParent()->getParent();
 
                   // Go to the previous item in the parent
 
@@ -741,7 +736,7 @@ bool MenuItem::onProcessMessage(Message* msg)
         ASSERT(base->is_processing);
         ASSERT(hasSubmenu());
 
-        JRect old_pos = jwidget_get_rect(this->parent->parent);
+        JRect old_pos = jwidget_get_rect(this->getParent()->getParent());
 
         MenuBox* menubox = new MenuBox();
         m_submenu_menubox = menubox;
@@ -753,7 +748,7 @@ bool MenuItem::onProcessMessage(Message* msg)
         // Menubox position
         pos = jwidget_get_rect(window);
 
-        if (this->parent->parent->type == JI_MENUBAR) {
+        if (this->getParent()->getParent()->type == JI_MENUBAR) {
           jrect_moveto(pos,
                        MID(0, this->rc->x1, JI_SCREEN_W-jrect_w(pos)),
                        MID(0, this->rc->y2, JI_SCREEN_H-jrect_h(pos)));
@@ -800,12 +795,10 @@ bool MenuItem::onProcessMessage(Message* msg)
         // Setup the highlight of the new menubox
         if (select_first) {
           // Select the first child
-          Widget* child;
           MenuItem* first_child = NULL;
-          JLink link;
 
-          JI_LIST_FOR_EACH(m_submenu->children, link) {
-            child = (Widget*)link->data;
+          UI_FOREACH_WIDGET(m_submenu->getChildren(), it) {
+            Widget* child = *it;
 
             if (child->type != JI_MENUITEM)
               continue;
@@ -845,7 +838,7 @@ bool MenuItem::onProcessMessage(Message* msg)
 
         ASSERT(menubox != NULL);
 
-        window = (Window*)menubox->parent;
+        window = (Window*)menubox->getParent();
         ASSERT(window && window->type == JI_WINDOW);
 
         // Fetch the "menu" to avoid destroy it with 'delete'.
@@ -858,7 +851,7 @@ bool MenuItem::onProcessMessage(Message* msg)
         if (base->close_all)
           getManager()->freeFocus();
         else
-          getManager()->setFocus(this->parent->parent);
+          getManager()->setFocus(this->getParent()->getParent());
 
         // It is not necessary to delete this window because it's
         // automatically destroyed by the manager
@@ -907,7 +900,7 @@ void MenuItem::onClick()
 
 void MenuItem::requestSize(int *w, int *h)
 {
-  int bar = (this->parent->parent->type == JI_MENUBAR);
+  int bar = (this->getParent()->getParent()->type == JI_MENUBAR);
 
   if (this->hasText()) {
     *w =
@@ -921,10 +914,8 @@ void MenuItem::requestSize(int *w, int *h)
       + jwidget_get_text_height(this)
       + this->border_width.b;
 
-    if (m_accel) {
-      char buf[256];
-      jaccel_to_string(m_accel, buf);
-      *w += ji_font_text_len(this->getFont(), buf);
+    if (m_accel && !m_accel->isEmpty()) {
+      *w += ji_font_text_len(this->getFont(), m_accel->toString().c_str());
     }
   }
   else {
@@ -955,10 +946,10 @@ static MenuBox* get_base_menubox(Widget* widget)
     // We are in a menuitem
     else {
       ASSERT(widget->type == JI_MENUITEM);
-      ASSERT(widget->parent != NULL);
-      ASSERT(widget->parent->type == JI_MENU);
+      ASSERT(widget->getParent() != NULL);
+      ASSERT(widget->getParent()->type == JI_MENU);
 
-      widget = widget->parent->parent;
+      widget = widget->getParent()->getParent();
     }
   }
 
@@ -974,9 +965,8 @@ static MenuBaseData* get_base(Widget* widget)
 
 MenuItem* Menu::getHighlightedItem()
 {
-  JLink link;
-  JI_LIST_FOR_EACH(this->children, link) {
-    Widget* child = (Widget*)link->data;
+  UI_FOREACH_WIDGET(getChildren(), it) {
+    Widget* child = *it;
     if (child->type != JI_MENUITEM)
       continue;
 
@@ -989,13 +979,9 @@ MenuItem* Menu::getHighlightedItem()
 
 void Menu::highlightItem(MenuItem* menuitem, bool click, bool open_submenu, bool select_first_child)
 {
-  Menu* menu = this;
-  Widget* child;
-  JLink link;
-
   // Find the menuitem with the highlight
-  JI_LIST_FOR_EACH(menu->children, link) {
-    child = (Widget*)link->data;
+  UI_FOREACH_WIDGET(getChildren(), it) {
+    Widget* child = *it;
     if (child->type != JI_MENUITEM)
       continue;
 
@@ -1015,9 +1001,9 @@ void Menu::highlightItem(MenuItem* menuitem, bool click, bool open_submenu, bool
     }
 
     // Highlight parents
-    if (menu->getOwnerMenuItem() != NULL) {
-      static_cast<Menu*>(menu->getOwnerMenuItem()->parent)
-        ->highlightItem(menu->getOwnerMenuItem(), false, false, false);
+    if (getOwnerMenuItem() != NULL) {
+      static_cast<Menu*>(getOwnerMenuItem()->getParent())
+        ->highlightItem(getOwnerMenuItem(), false, false, false);
     }
 
     // Open submenu of the menitem
@@ -1033,7 +1019,7 @@ void Menu::highlightItem(MenuItem* menuitem, bool click, bool open_submenu, bool
     }
     // Execute menuitem action
     else if (click) {
-      menu->closeAll();
+      closeAll();
       menuitem->executeClick();
     }
   }
@@ -1047,13 +1033,11 @@ void Menu::unhighlightItem()
 void MenuItem::openSubmenu(bool select_first)
 {
   Widget* menu;
-  Widget* child;
   Message* msg;
-  JLink link;
 
   ASSERT(hasSubmenu());
 
-  menu = this->parent;
+  menu = this->getParent();
 
   // The menu item is already opened?
   ASSERT(m_submenu_menubox == NULL);
@@ -1061,9 +1045,9 @@ void MenuItem::openSubmenu(bool select_first)
   ASSERT_VALID_WIDGET(menu);
 
   // Close all siblings of 'menuitem'
-  if (menu->parent) {
-    JI_LIST_FOR_EACH(menu->children, link) {
-      child = reinterpret_cast<Widget*>(link->data);
+  if (menu->getParent()) {
+    UI_FOREACH_WIDGET(menu->getChildren(), it) {
+      Widget* child = *it;
       if (child->type != JI_MENUITEM)
         continue;
 
@@ -1100,9 +1084,8 @@ void MenuItem::openSubmenu(bool select_first)
 
 void MenuItem::closeSubmenu(bool last_of_close_chain)
 {
-  Widget* menu, *child;
+  Widget* menu;
   Message* msg;
-  JLink link;
   MenuBaseData* base;
 
   ASSERT(m_submenu_menubox != NULL);
@@ -1111,8 +1094,8 @@ void MenuItem::closeSubmenu(bool last_of_close_chain)
   menu = m_submenu_menubox->getMenu();
   ASSERT(menu != NULL);
 
-  JI_LIST_FOR_EACH(menu->children, link) {
-    child = reinterpret_cast<Widget*>(link->data);
+  UI_FOREACH_WIDGET(menu->getChildren(), it) {
+    Widget* child = *it;
     if (child->type != JI_MENUITEM)
       continue;
 
@@ -1160,10 +1143,10 @@ void Menu::closeAll()
   MenuItem* menuitem = NULL;
   while (menu->m_menuitem) {
     menuitem = menu->m_menuitem;
-    menu = static_cast<Menu*>(menuitem->parent);
+    menu = static_cast<Menu*>(menuitem->getParent());
   }
 
-  MenuBox* base_menubox = get_base_menubox(menu->parent);
+  MenuBox* base_menubox = get_base_menubox(menu->getParent());
   MenuBaseData* base = base_menubox->getBase();
   base->close_all = true;
   base->was_clicked = false;
@@ -1179,9 +1162,8 @@ void Menu::closeAll()
       menuitem->closeSubmenu(true);
   }
   else {
-    JLink link;
-    JI_LIST_FOR_EACH(menu->children, link) {
-      Widget* child = reinterpret_cast<Widget*>(link->data);
+    UI_FOREACH_WIDGET(menu->getChildren(), it) {
+      Widget* child = *it;
       if (child->type != JI_MENUITEM)
         continue;
 
@@ -1223,9 +1205,8 @@ void MenuItem::executeClick()
 
 static MenuItem* check_for_letter(Menu* menu, int ascii)
 {
-  JLink link;
-  JI_LIST_FOR_EACH(menu->children, link) {
-    Widget* child = (Widget*)link->data;
+  UI_FOREACH_WIDGET(menu->getChildren(), it) {
+    Widget* child = *it;
     if (child->type != JI_MENUITEM)
       continue;
 
@@ -1238,9 +1219,8 @@ static MenuItem* check_for_letter(Menu* menu, int ascii)
 
 static MenuItem* check_for_accel(Menu* menu, Message* msg)
 {
-  JLink link;
-  JI_LIST_FOR_EACH(menu->children, link) {
-    Widget* child = (Widget*)link->data;
+  UI_FOREACH_WIDGET(menu->getChildren(), it) {
+    Widget* child = *it;
     if (child->type != JI_MENUITEM)
       continue;
 
@@ -1252,10 +1232,9 @@ static MenuItem* check_for_accel(Menu* menu, Message* msg)
     }
     else if (menuitem->getAccel()) {
       if ((menuitem->isEnabled()) &&
-          (jaccel_check(menuitem->getAccel(),
-                        msg->any.shifts,
-                        msg->key.ascii,
-                        msg->key.scancode)))
+          (menuitem->getAccel()->check(msg->any.shifts,
+                                       msg->key.ascii,
+                                       msg->key.scancode)))
         return menuitem;
     }
   }
@@ -1266,16 +1245,19 @@ static MenuItem* check_for_accel(Menu* menu, Message* msg)
 // from the first item in `menu'
 static MenuItem* find_nextitem(Menu* menu, MenuItem* menuitem)
 {
-  Widget* nextitem;
-  JLink link;
+  WidgetsList::const_iterator begin = menu->getChildren().begin();
+  WidgetsList::const_iterator it, end = menu->getChildren().end();
 
-  if (menuitem)
-    link = jlist_find(menu->children, menuitem)->next;
+  if (menuitem) {
+    it = std::find(begin, end, menuitem);
+    if (it != end)
+      ++it;
+  }
   else
-    link = jlist_first(menu->children);
+    it = begin;
 
-  for (; link != menu->children->end; link=link->next) {
-    nextitem = (Widget*)link->data;
+  for (; it != end; ++it) {
+    Widget* nextitem = *it;
     if ((nextitem->type == JI_MENUITEM) && nextitem->isEnabled())
       return static_cast<MenuItem*>(nextitem);
   }
@@ -1288,16 +1270,19 @@ static MenuItem* find_nextitem(Menu* menu, MenuItem* menuitem)
 
 static MenuItem* find_previtem(Menu* menu, MenuItem* menuitem)
 {
-  Widget* nextitem;
-  JLink link;
+  WidgetsList::const_reverse_iterator begin = menu->getChildren().rbegin();
+  WidgetsList::const_reverse_iterator it, end = menu->getChildren().rend();
 
-  if (menuitem)
-    link = jlist_find(menu->children, menuitem)->prev;
+  if (menuitem) {
+    it = std::find(begin, end, menuitem);
+    if (it != end)
+      ++it;
+  }
   else
-    link = jlist_last(menu->children);
+    it = begin;
 
-  for (; link != menu->children->end; link=link->prev) {
-    nextitem = (Widget*)link->data;
+  for (; it != end; ++it) {
+    Widget* nextitem = *it;
     if ((nextitem->type == JI_MENUITEM) && nextitem->isEnabled())
       return static_cast<MenuItem*>(nextitem);
   }

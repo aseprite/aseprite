@@ -9,7 +9,6 @@
 #include "ui/separator.h"
 
 #include "gfx/size.h"
-#include "ui/list.h"
 #include "ui/message.h"
 #include "ui/preferred_size_event.h"
 #include "ui/theme.h"
@@ -41,11 +40,9 @@ bool Separator::onProcessMessage(Message* msg)
 void Separator::onPreferredSize(PreferredSizeEvent& ev)
 {
   Size maxSize(0, 0);
-  JLink link;
 
-  JI_LIST_FOR_EACH(this->children, link) {
-    Widget* child = (Widget*)link->data;
-
+  UI_FOREACH_WIDGET(getChildren(), it) {
+    Widget* child = *it;
     Size reqSize = child->getPreferredSize();
     maxSize.w = MAX(maxSize.w, reqSize.w);
     maxSize.h = MAX(maxSize.h, reqSize.h);

@@ -373,12 +373,10 @@ void StatusBar::showTool(int msecs, tools::Tool* tool)
   std::string text = tool->getText();
 
   // Tool shortcut
-  JAccel accel = get_accel_to_change_tool(tool);
+  Accelerator* accel = get_accel_to_change_tool(tool);
   if (accel) {
-    char buf[512];              // TODO possible buffer overflow
-    jaccel_to_string(accel, buf);
     text += ", Shortcut: ";
-    text += buf;
+    text += accel->toString();
   }
 
   // Set text

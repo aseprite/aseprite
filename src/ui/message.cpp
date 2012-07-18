@@ -10,7 +10,6 @@
 #include <string.h>
 
 #include "base/memory.h"
-#include "ui/list.h"
 #include "ui/manager.h"
 #include "ui/message.h"
 #include "ui/rect.h"
@@ -27,12 +26,12 @@ int ji_register_message_type()
 
 Message* jmessage_new(int type)
 {
-  Message* msg = (Message*)base_malloc0(sizeof(Message));
-  if (!msg)
-    return NULL;
+  Message* msg = new Message;
+
+  memset(msg, 0, sizeof(Message));
 
   msg->type = type;
-  msg->any.widgets = jlist_new();
+  msg->any.widgets = new WidgetsList;
   msg->any.shifts =
     (key[KEY_LSHIFT] || key[KEY_RSHIFT] ? KB_SHIFT_FLAG: 0) |
     (key[KEY_LCONTROL] || key[KEY_RCONTROL] ? KB_CTRL_FLAG: 0) |
@@ -73,13 +72,13 @@ Message* jmessage_new_copy(const Message* msg)
 
   ASSERT(msg != NULL);
 
-  copy = (Message*)base_malloc(sizeof(Message));
+  copy = new Message;
   if (!copy)
     return NULL;
 
   memcpy(copy, msg, sizeof(Message));
 
-  copy->any.widgets = jlist_copy(msg->any.widgets);
+  copy->any.widgets = new WidgetsList(*msg->any.widgets);
   copy->any.used = false;
 
   return copy;
@@ -89,13 +88,13 @@ Message* jmessage_new_copy_without_dests(const Message* msg)
 {
   ASSERT(msg != NULL);
 
-  Message* copy = (Message*)base_malloc(sizeof(Message));
+  Message* copy = new Message;
   if (!copy)
     return NULL;
 
   memcpy(copy, msg, sizeof(Message));
 
-  copy->any.widgets = jlist_new();
+  copy->any.widgets = new WidgetsList;
   copy->any.used = false;
 
   return copy;
@@ -105,8 +104,8 @@ void jmessage_free(Message* msg)
 {
   ASSERT(msg != NULL);
 
-  jlist_free(msg->any.widgets);
-  base_free(msg);
+  delete msg->any.widgets;
+  delete msg;
 }
 
 void jmessage_add_dest(Message* msg, Widget* widget)
@@ -114,7 +113,7 @@ void jmessage_add_dest(Message* msg, Widget* widget)
   ASSERT(msg != NULL);
   ASSERT_VALID_WIDGET(widget);
 
-  jlist_append(msg->any.widgets, widget);
+  msg->any.widgets->push_back(widget);
 }
 
 void jmessage_add_pre_dest(Message* msg, Widget* widget)
@@ -122,18 +121,16 @@ void jmessage_add_pre_dest(Message* msg, Widget* widget)
   ASSERT(msg != NULL);
   ASSERT_VALID_WIDGET(widget);
 
-  jlist_prepend(msg->any.widgets, widget);
+  msg->any.widgets->insert(msg->any.widgets->begin(), widget);
 }
 
 void jmessage_broadcast_to_children(Message* msg, Widget* widget)
 {
-  JLink link;
-
   ASSERT(msg != NULL);
   ASSERT_VALID_WIDGET(widget);
 
-  JI_LIST_FOR_EACH(widget->children, link)
-    jmessage_broadcast_to_children(msg, reinterpret_cast<Widget*>(link->data));
+  UI_FOREACH_WIDGET(widget->getChildren(), it)
+    jmessage_broadcast_to_children(msg, *it);
 
   jmessage_add_dest(msg, widget);
 }

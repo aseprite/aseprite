@@ -123,41 +123,41 @@ public:
   }
 
   bool isCopySelectionKeyPressed() OVERRIDE {
-    JAccel accel = get_accel_to_copy_selection();
+    Accelerator* accel = get_accel_to_copy_selection();
     if (accel)
-      return jaccel_check_from_key(accel);
+      return accel->checkFromAllegroKeyArray();
     else
       return false;
   }
 
   bool isSnapToGridKeyPressed() OVERRIDE {
-    JAccel accel = get_accel_to_snap_to_grid();
+    Accelerator* accel = get_accel_to_snap_to_grid();
     if (accel)
-      return jaccel_check_from_key(accel);
+      return accel->checkFromAllegroKeyArray();
     else
       return false;
   }
 
   bool isAngleSnapKeyPressed() OVERRIDE {
-    JAccel accel = get_accel_to_angle_snap();
+    Accelerator* accel = get_accel_to_angle_snap();
     if (accel)
-      return jaccel_check_from_key(accel);
+      return accel->checkFromAllegroKeyArray();
     else
       return false;
   }
 
   bool isMaintainAspectRatioKeyPressed() OVERRIDE {
-    JAccel accel = get_accel_to_maintain_aspect_ratio();
+    Accelerator* accel = get_accel_to_maintain_aspect_ratio();
     if (accel)
-      return jaccel_check_from_key(accel);
+      return accel->checkFromAllegroKeyArray();
     else
       return false;
   }
 
   bool isLockAxisKeyPressed() OVERRIDE {
-    JAccel accel = get_accel_to_lock_axis();
+    Accelerator* accel = get_accel_to_lock_axis();
     if (accel)
-      return jaccel_check_from_key(accel);
+      return accel->checkFromAllegroKeyArray();
     else
       return false;
   }
@@ -515,7 +515,7 @@ void close_editor(Editor* editor)
   delete view;
 
   // Fixup the parent.
-  other_widget = reinterpret_cast<Widget*>(jlist_first_data(parent_box->children));
+  other_widget = UI_FIRST_WIDGET(parent_box->getChildren());
 
   parent_box->removeChild(other_widget);
   parent_box->getParent()->replaceChild(parent_box, other_widget);
@@ -544,8 +544,6 @@ void close_editor(Editor* editor)
 void make_unique_editor(Editor* editor)
 {
   View* view = View::getView(editor);
-  JLink link, next;
-  Widget* child;
 
   // It's the unique editor.
   if (editors.size() == 1)
@@ -555,9 +553,8 @@ void make_unique_editor(Editor* editor)
   view->getParent()->removeChild(view);
 
   // Remove all children of main_editor_box.
-  JI_LIST_FOR_EACH_SAFE(box_editors->children, link, next) {
-    child = (Widget*)link->data;
-
+  while (!box_editors->getChildren().empty()) {
+    Widget* child = box_editors->getChildren().front();
     box_editors->removeChild(child);
     delete child; // widget
   }
@@ -617,14 +614,13 @@ static Document* get_more_reliable_document()
 static Widget* find_next_editor(Widget* widget)
 {
   Widget* editor = NULL;
-  JLink link;
 
   if (widget->type == JI_VIEW) {
-    editor = reinterpret_cast<Widget*>(jlist_first_data(static_cast<View*>(widget)->getViewport()->children));
+    editor = UI_FIRST_WIDGET(static_cast<View*>(widget)->getViewport()->getChildren());
   }
   else {
-    JI_LIST_FOR_EACH(widget->children, link)
-      if ((editor = find_next_editor(reinterpret_cast<Widget*>(link->data))))
+    UI_FOREACH_WIDGET(widget->getChildren(), it)
+      if ((editor = find_next_editor(*it)))
         break;
   }
 

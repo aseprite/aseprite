@@ -29,6 +29,8 @@ class Params;
 class TiXmlElement;
 class TiXmlHandle;
 
+namespace ui { class Accelerator; }
+
 // Class to handle/get/reload available menus in gui.xml file.
 class AppMenus
 {
@@ -56,7 +58,7 @@ private:
   ui::Menu* convertXmlelemToMenu(TiXmlElement* elem);
   ui::Widget* convertXmlelemToMenuitem(TiXmlElement* elem);
   ui::Widget* createInvalidVersionMenuitem();
-  void applyShortcutToMenuitemsWithCommand(ui::Menu* menu, Command* command, Params* params, ui::JAccel accel);
+  void applyShortcutToMenuitemsWithCommand(ui::Menu* menu, Command* command, Params* params, ui::Accelerator* accel);
 
   UniquePtr<ui::Menu> m_rootMenu;
   ui::MenuItem* m_recentListMenuitem;

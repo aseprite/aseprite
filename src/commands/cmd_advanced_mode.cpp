@@ -74,10 +74,9 @@ void AdvancedModeCommand::onExecute(Context* context)
 
   if (advanced_mode &&
       get_config_bool("AdvancedMode", "Warning", true)) {
-    JAccel accel = get_accel_to_execute_command(short_name());
+    Accelerator* accel = get_accel_to_execute_command(short_name());
     if (accel != NULL) {
       char warning[1024];
-      char key[1024];
       char buf[1024];
 
       UniquePtr<Window> window(app::load_widget<Window>("advanced_mode.xml", "advanced_mode_warning"));
@@ -85,8 +84,7 @@ void AdvancedModeCommand::onExecute(Context* context)
       Widget* donot_show = app::find_widget<Widget>(window, "donot_show");
 
       strcpy(warning, "You can back pressing the \"%s\" key.");
-      jaccel_to_string(accel, key);
-      std::sprintf(buf, warning, key);
+      std::sprintf(buf, warning, accel->toString().c_str());
 
       warning_label->setText(buf);
 

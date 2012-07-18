@@ -129,7 +129,7 @@ void AppMenus::reload()
         PRINTF(" - Shortcut for command `%s' <%s>\n", command_name, command_key);
 
         // add the keyboard shortcut to the command
-        JAccel accel =
+        Accelerator* accel =
           add_keyboard_shortcut_to_execute_command(command_key, command_name, &params);
 
         // add the shortcut to the menuitems with this
@@ -364,13 +364,10 @@ Widget* AppMenus::createInvalidVersionMenuitem()
   return menuitem;
 }
 
-void AppMenus::applyShortcutToMenuitemsWithCommand(Menu* menu, Command *command, Params* params, JAccel accel)
+void AppMenus::applyShortcutToMenuitemsWithCommand(Menu* menu, Command *command, Params* params, Accelerator* accel)
 {
-  JList children = menu->getChildren();
-  JLink link;
-
-  JI_LIST_FOR_EACH(children, link) {
-    Widget* child = (Widget*)link->data;
+  UI_FOREACH_WIDGET(menu->getChildren(), it) {
+    Widget* child = *it;
 
     if (child->getType() == JI_MENUITEM) {
       ASSERT(dynamic_cast<MenuItem2*>(child) != NULL);
@@ -384,13 +381,11 @@ void AppMenus::applyShortcutToMenuitemsWithCommand(Menu* menu, Command *command,
           ((mi_params && *mi_params == *params) ||
            (Params() == *params))) {
         // Set the accelerator to be shown in this menu-item
-        menuitem->setAccel(jaccel_new_copy(accel));
+        menuitem->setAccel(new Accelerator(*accel));
       }
 
       if (Menu* submenu = menuitem->getSubmenu())
         applyShortcutToMenuitemsWithCommand(submenu, command, params, accel);
     }
   }
-
-  jlist_free(children);
 }

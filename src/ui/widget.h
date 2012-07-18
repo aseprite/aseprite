@@ -14,7 +14,6 @@
 #include "gfx/size.h"
 #include "ui/base.h"
 #include "ui/component.h"
-#include "ui/list.h"
 #include "ui/rect.h"
 #include "ui/widgets_list.h"
 
@@ -77,10 +76,6 @@ namespace ui {
     int min_w, min_h;
     int max_w, max_h;
 
-    /* structures */
-    JList children;                /* sub-objects */
-    Widget* parent;                /* who is the parent? */
-
   private:
     std::string m_id;             // Widget's id
     Theme* m_theme;               // Widget's theme
@@ -89,6 +84,8 @@ namespace ui {
     struct FONT *m_font;          // Text font type
     int m_bg_color;               // Background color
     JRegion m_update_region;      // Region to be redrawed.
+    WidgetsList m_children;       // Sub-widgets
+    Widget* m_parent;             // Who is the parent?
 
   public:
     // Extra data for the theme
@@ -176,8 +173,8 @@ namespace ui {
 
     // Gets the background color of the widget.
     int getBgColor() const {
-      if (m_bg_color < 0 && parent)
-        return parent->getBgColor();
+      if (m_bg_color < 0 && m_parent)
+        return m_parent->getBgColor();
       else
         return m_bg_color;
     }
@@ -197,16 +194,16 @@ namespace ui {
     // ===============================================================
 
     Window* getRoot();
-    Widget* getParent();
+    Widget* getParent() { return m_parent; }
     Manager* getManager();
 
     // Returns a list of parents (you must free the list), if
     // "ascendant" is true the list is build from child to parents, else
     // the list is from parent to children.
-    JList getParents(bool ascendant);
+    void getParents(bool ascendant, WidgetsList& parents);
 
     // Returns a list of children (you must free the list).
-    JList getChildren();
+    const WidgetsList& getChildren() const { return m_children; }
 
     // Returns the next or previous siblings.
     Widget* getNextSibling();
@@ -228,9 +225,8 @@ namespace ui {
 
     template<class T>
     T* findFirstChildByType() {
-      JLink link;
-      JI_LIST_FOR_EACH(children, link) {
-        Widget* child = (Widget*)link->data;
+      UI_FOREACH_WIDGET(m_children, it) {
+        Widget* child = *it;
         if (T* specificChild = dynamic_cast<T*>(child))
           return specificChild;
       }

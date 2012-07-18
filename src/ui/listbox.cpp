@@ -8,7 +8,6 @@
 
 #include "ui/listbox.h"
 
-#include "ui/list.h"
 #include "ui/message.h"
 #include "ui/preferred_size_event.h"
 #include "ui/system.h"
@@ -38,21 +37,21 @@ ListBox::Item::Item(const char* text)
 
 ListBox::Item* ListBox::getSelectedChild()
 {
-  JLink link;
-  JI_LIST_FOR_EACH(this->children, link) {
-    if (((Item*)link->data)->isSelected())
-      return (Item*)link->data;
+  UI_FOREACH_WIDGET(getChildren(), it) {
+    ASSERT(dynamic_cast<Item*>(*it) != NULL);
+
+    if (static_cast<Item*>(*it)->isSelected())
+      return static_cast<Item*>(*it);
   }
   return 0;
 }
 
 int ListBox::getSelectedIndex()
 {
-  JLink link;
   int i = 0;
 
-  JI_LIST_FOR_EACH(this->children, link) {
-    if (((Item*)link->data)->isSelected())
+  UI_FOREACH_WIDGET(getChildren(), it) {
+    if (static_cast<Item*>(*it)->isSelected())
       return i;
     i++;
   }
@@ -62,11 +61,8 @@ int ListBox::getSelectedIndex()
 
 void ListBox::selectChild(Item* item)
 {
-  Item* child;
-  JLink link;
-
-  JI_LIST_FOR_EACH(this->children, link) {
-    child = (Item*)link->data;
+  UI_FOREACH_WIDGET(getChildren(), it) {
+    Item* child = static_cast<Item*>(*it);
 
     if (child->isSelected()) {
       if (item && child == item)
@@ -100,14 +96,18 @@ void ListBox::selectChild(Item* item)
 
 void ListBox::selectIndex(int index)
 {
-  Item* child = reinterpret_cast<Item*>(jlist_nth_data(this->children, index));
-  if (child)
-    selectChild(child);
+  const WidgetsList& children = getChildren();
+  if (index < 0 || index >= (int)children.size())
+    return;
+
+  Item* child = static_cast<Item*>(children[index]);
+  ASSERT(child);
+  selectChild(child);
 }
 
-int ListBox::getItemsCount()
+size_t ListBox::getItemsCount() const
 {
-  return jlist_length(this->children);
+  return getChildren().size();
 }
 
 /* setup the scroll to center the selected item in the viewport */
@@ -207,10 +207,10 @@ bool ListBox::onProcessMessage(Message* msg)
     }
 
     case JM_KEYPRESSED:
-      if (this->hasFocus() && !jlist_empty(this->children)) {
+      if (hasFocus() && !getChildren().empty()) {
         int select = getSelectedIndex();
         View* view = View::getView(this);
-        int bottom = MAX(0, jlist_length(this->children)-1);
+        int bottom = MAX(0, getChildren().size()-1);
 
         switch (msg->key.scancode) {
           case KEY_UP:
@@ -272,16 +272,13 @@ bool ListBox::onProcessMessage(Message* msg)
 
 void ListBox::onPreferredSize(PreferredSizeEvent& ev)
 {
-  Size reqSize;
-  JLink link;
-
   int w = 0, h = 0;
 
-  JI_LIST_FOR_EACH(this->children, link) {
-    reqSize = reinterpret_cast<Item*>(link->data)->getPreferredSize();
+  UI_FOREACH_WIDGET_WITH_END(getChildren(), it, end) {
+    Size reqSize = static_cast<Item*>(*it)->getPreferredSize();
 
     w = MAX(w, reqSize.w);
-    h += reqSize.h + ((link->next)? this->child_spacing: 0);
+    h += reqSize.h + (it+1 != end ? this->child_spacing: 0);
   }
 
   w += this->border_width.l + this->border_width.r;
@@ -303,15 +300,13 @@ void ListBox::onDoubleClickItem()
 void ListBox::layoutListBox(JRect rect)
 {
   Size reqSize;
-  Widget* child;
   JRect cpos;
-  JLink link;
 
   jrect_copy(this->rc, rect);
   cpos = jwidget_get_child_rect(this);
 
-  JI_LIST_FOR_EACH(this->children, link) {
-    child = (Widget*)link->data;
+  UI_FOREACH_WIDGET(getChildren(), it) {
+    Widget* child = *it;
 
     reqSize = child->getPreferredSize();
 
@@ -327,18 +322,15 @@ void ListBox::layoutListBox(JRect rect)
 void ListBox::dirtyChildren()
 {
   View* view = View::getView(this);
-  Item* child;
-  JLink link;
-
   if (!view) {
-    JI_LIST_FOR_EACH(this->children, link)
-      reinterpret_cast<Item*>(link->data)->invalidate();
+    UI_FOREACH_WIDGET(getChildren(), it)
+      static_cast<Item*>(*it)->invalidate();
   }
   else {
     gfx::Rect vp = view->getViewportBounds();
 
-    JI_LIST_FOR_EACH(this->children, link) {
-      child = reinterpret_cast<Item*>(link->data);
+    UI_FOREACH_WIDGET(getChildren(), it) {
+      Item* child = static_cast<Item*>(*it);
 
       if (child->rc->y2 <= vp.y)
         continue;
@@ -356,13 +348,12 @@ bool ListBox::Item::onProcessMessage(Message* msg)
 
     case JM_SETPOS: {
       JRect crect;
-      JLink link;
 
       jrect_copy(this->rc, &msg->setpos.rect);
       crect = jwidget_get_child_rect(this);
 
-      JI_LIST_FOR_EACH(this->children, link)
-        jwidget_set_rect(reinterpret_cast<Widget*>(link->data), crect);
+      UI_FOREACH_WIDGET(getChildren(), it)
+        jwidget_set_rect(*it, crect);
 
       jrect_free(crect);
       return true;
@@ -380,8 +371,6 @@ void ListBox::Item::onPreferredSize(PreferredSizeEvent& ev)
 {
   int w = 0, h = 0;
   Size maxSize;
-  Size reqSize;
-  JLink link;
 
   if (hasText()) {
     maxSize.w = jwidget_get_text_length(this);
@@ -390,8 +379,8 @@ void ListBox::Item::onPreferredSize(PreferredSizeEvent& ev)
   else
     maxSize.w = maxSize.h = 0;
 
-  JI_LIST_FOR_EACH(this->children, link) {
-    reqSize = reinterpret_cast<Widget*>(link->data)->getPreferredSize();
+  UI_FOREACH_WIDGET(getChildren(), it) {
+    Size reqSize = (*it)->getPreferredSize();
 
     maxSize.w = MAX(maxSize.w, reqSize.w);
     maxSize.h = MAX(maxSize.h, reqSize.h);

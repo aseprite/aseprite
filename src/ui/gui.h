@@ -7,7 +7,7 @@
 #ifndef UI_GUI_H_INCLUDED
 #define UI_GUI_H_INCLUDED
 
-#include "ui/accel.h"
+#include "ui/accelerator.h"
 #include "ui/alert.h"
 #include "ui/base.h"
 #include "ui/box.h"
@@ -27,7 +27,6 @@
 #include "ui/init_theme_event.h"
 #include "ui/label.h"
 #include "ui/link_label.h"
-#include "ui/list.h"
 #include "ui/listbox.h"
 #include "ui/manager.h"
 #include "ui/menu.h"

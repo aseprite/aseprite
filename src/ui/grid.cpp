@@ -13,7 +13,6 @@
 #include "base/memory.h"
 #include "gfx/size.h"
 #include "ui/grid.h"
-#include "ui/list.h"
 #include "ui/message.h"
 #include "ui/preferred_size_event.h"
 #include "ui/rect.h"

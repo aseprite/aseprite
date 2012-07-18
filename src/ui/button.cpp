@@ -7,7 +7,6 @@
 #include "config.h"
 
 #include "ui/button.h"
-#include "ui/list.h"
 #include "ui/manager.h"
 #include "ui/message.h"
 #include "ui/preferred_size_event.h"
@@ -359,9 +358,8 @@ void RadioButton::deselectRadioGroup()
         radioButton->setSelected(false);
     }
 
-    JLink link;
-    JI_LIST_FOR_EACH(widget->children, link) {
-      allChildrens.push((Widget*)link->data);
+    UI_FOREACH_WIDGET(widget->getChildren(), it) {
+      allChildrens.push(*it);
     }
   }
 }

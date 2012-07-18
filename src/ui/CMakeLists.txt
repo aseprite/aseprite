@@ -2,7 +2,7 @@
 # Copyright (C) 2001-2012  David Capello
 
 add_library(ui-lib
-  accel.cpp
+  accelerator.cpp
   alert.cpp
   box.cpp
   button.cpp
@@ -22,7 +22,6 @@ add_library(ui-lib
   intern.cpp
   label.cpp
   link_label.cpp
-  list.cpp
   listbox.cpp
   manager.cpp
   menu.cpp

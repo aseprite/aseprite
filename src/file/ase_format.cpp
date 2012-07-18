@@ -25,7 +25,6 @@
 #include "file/file_handle.h"
 #include "file/format_options.h"
 #include "raster/raster.h"
-#include "ui/list.h"
 #include "zlib.h"
 
 #include <stdio.h>

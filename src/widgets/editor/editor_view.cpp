@@ -22,7 +22,6 @@
 
 #include "modules/editors.h"
 #include "skin/skin_theme.h"
-#include "ui/list.h"
 #include "ui/message.h"
 #include "widgets/editor/editor.h"
 
@@ -60,7 +59,7 @@ bool EditorView::onProcessMessage(Message* msg)
     case JM_DRAW:
       {
         Widget* viewport = getViewport();
-        Widget* child = reinterpret_cast<Widget*>(jlist_first_data(viewport->children));
+        Widget* child = UI_FIRST_WIDGET(viewport->getChildren());
         JRect pos = jwidget_get_rect(this);
         SkinTheme* theme = static_cast<SkinTheme*>(getTheme());
         bool selected = false;

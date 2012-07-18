@@ -29,7 +29,6 @@
 #include "modules/gui.h"
 #include "raster/image.h"
 #include "skin/skin_theme.h"
-#include "ui/list.h"
 #include "ui/message.h"
 #include "ui_context.h"
 #include "widgets/color_bar.h"
@@ -57,10 +56,7 @@ bool ColorBar::ScrollableView::onProcessMessage(Message* msg)
 
     case JM_DRAW:
       {
-        Viewport* viewport = getViewport();
-        Widget* child = reinterpret_cast<Widget*>(jlist_first_data(viewport->children));
         SkinTheme* theme = static_cast<SkinTheme*>(getTheme());
-
         theme->draw_bounds_nw(ji_screen,
                               rc->x1, rc->y1,
                               rc->x2-1, rc->y2-1,

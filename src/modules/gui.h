@@ -21,7 +21,7 @@
 
 #include "base/exception.h"
 #include "skin/skin_property.h"
-#include "ui/accel.h"
+#include "ui/accelerator.h"
 #include "ui/base.h"
 #include <list>
 #include <string>
@@ -71,19 +71,19 @@ ui::CheckBox* check_button_new(const char* text, int b1, int b2, int b3, int b4)
 //////////////////////////////////////////////////////////////////////
 // Keyboard shortcuts
 
-ui::JAccel add_keyboard_shortcut_to_execute_command(const char* shortcut, const char* command_name, Params* params);
-ui::JAccel add_keyboard_shortcut_to_change_tool(const char* shortcut, tools::Tool* tool);
-ui::JAccel add_keyboard_shortcut_to_quicktool(const char* shortcut, tools::Tool* tool);
-ui::JAccel add_keyboard_shortcut_to_spriteeditor(const char* shortcut, const char* action_name);
+ui::Accelerator* add_keyboard_shortcut_to_execute_command(const char* shortcut, const char* command_name, Params* params);
+ui::Accelerator* add_keyboard_shortcut_to_change_tool(const char* shortcut, tools::Tool* tool);
+ui::Accelerator* add_keyboard_shortcut_to_quicktool(const char* shortcut, tools::Tool* tool);
+ui::Accelerator* add_keyboard_shortcut_to_spriteeditor(const char* shortcut, const char* action_name);
 
 bool get_command_from_key_message(ui::Message* msg, Command** command, Params** params);
-ui::JAccel get_accel_to_execute_command(const char* command, Params* params = NULL);
-ui::JAccel get_accel_to_change_tool(tools::Tool* tool);
-ui::JAccel get_accel_to_copy_selection();
-ui::JAccel get_accel_to_snap_to_grid();
-ui::JAccel get_accel_to_angle_snap();
-ui::JAccel get_accel_to_maintain_aspect_ratio();
-ui::JAccel get_accel_to_lock_axis();
+ui::Accelerator* get_accel_to_execute_command(const char* command, Params* params = NULL);
+ui::Accelerator* get_accel_to_change_tool(tools::Tool* tool);
+ui::Accelerator* get_accel_to_copy_selection();
+ui::Accelerator* get_accel_to_snap_to_grid();
+ui::Accelerator* get_accel_to_angle_snap();
+ui::Accelerator* get_accel_to_maintain_aspect_ratio();
+ui::Accelerator* get_accel_to_lock_axis();
 
 tools::Tool* get_selected_quicktool(tools::Tool* currentTool);
 

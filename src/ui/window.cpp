@@ -94,6 +94,12 @@ HitTest Window::hitTest(const gfx::Point& point)
   return ev.getHit();
 }
 
+void Window::removeDecorativeWidgets()
+{
+  while (!getChildren().empty())
+    delete getChildren().front();
+}
+
 void Window::onClose(CloseEvent& ev)
 {
   // Fire Close signal
@@ -221,7 +227,7 @@ void Window::move_window(JRect rect)
 
 void Window::openWindow()
 {
-  if (!this->parent) {
+  if (!getParent()) {
     if (m_is_autoremap)
       center_window();
 
@@ -257,9 +263,8 @@ void Window::closeWindow(Widget* killer)
 bool Window::is_toplevel()
 {
   Widget* manager = getManager();
-
-  if (!jlist_empty(manager->children))
-    return (this == jlist_first(manager->children)->data);
+  if (!manager->getChildren().empty())
+    return (this == UI_FIRST_WIDGET(manager->getChildren()));
   else
     return false;
 }
@@ -456,11 +461,9 @@ void Window::onPreferredSize(PreferredSizeEvent& ev)
   else {
     Size maxSize(0, 0);
     Size reqSize;
-    Widget* child;
-    JLink link;
 
-    JI_LIST_FOR_EACH(this->children, link) {
-      child = (Widget*)link->data;
+    UI_FOREACH_WIDGET(getChildren(), it) {
+      Widget* child = *it;
 
       if (!child->isDecorative()) {
         reqSize = child->getPreferredSize();
@@ -505,17 +508,13 @@ void Window::onSetText()
 
 void Window::window_set_position(JRect rect)
 {
-  Widget* child;
-  JRect cpos;
-  JLink link;
-
   /* copy the new position rectangle */
   jrect_copy(this->rc, rect);
-  cpos = jwidget_get_child_rect(this);
+  JRect cpos = jwidget_get_child_rect(this);
 
   /* set all the children to the same "child_pos" */
-  JI_LIST_FOR_EACH(this->children, link) {
-    child = (Widget*)link->data;
+  UI_FOREACH_WIDGET(getChildren(), it) {
+    Widget* child = *it;
 
     if (child->isDecorative())
       child->getTheme()->map_decorative_widget(child);
@@ -649,12 +648,10 @@ void Window::move_window(JRect rect, bool use_blit)
 
 static void displace_widgets(Widget* widget, int x, int y)
 {
-  JLink link;
-
   jrect_displace(widget->rc, x, y);
 
-  JI_LIST_FOR_EACH(widget->children, link)
-    displace_widgets(reinterpret_cast<Widget*>(link->data), x, y);
+  UI_FOREACH_WIDGET(widget->getChildren(), it)
+    displace_widgets((*it), x, y);
 }
 
 } // namespace ui

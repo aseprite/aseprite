@@ -14,9 +14,10 @@
 
 namespace ui {
 
+  class Accelerator;
   class MenuItem;
-  struct MenuBaseData;
   class Timer;
+  struct MenuBaseData;
 
   class Menu : public Widget
   {
@@ -99,8 +100,8 @@ namespace ui {
     Menu* getSubmenu();
     void setSubmenu(Menu* submenu);
 
-    JAccel getAccel();
-    void setAccel(JAccel accel);
+    Accelerator* getAccel();
+    void setAccel(Accelerator* accel);
 
     bool isHighlighted() const;
     void setHighlighted(bool state);
@@ -134,7 +135,7 @@ namespace ui {
     void stopTimer();
     void executeClick();
 
-    JAccel m_accel;               // Hot-key
+    Accelerator* m_accel;         // Hot-key
     bool m_highlighted;           // Is it highlighted?
     Menu* m_submenu;              // The sub-menu
     MenuBox* m_submenu_menubox;   // The opened menubox for this menu-item

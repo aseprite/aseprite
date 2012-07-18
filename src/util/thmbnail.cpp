@@ -30,7 +30,6 @@
 #include "raster/palette.h"
 #include "raster/sprite.h"
 #include "raster/stock.h"
-#include "ui/list.h"
 #include "util/thmbnail.h"
 
 #define THUMBNAIL_W     32

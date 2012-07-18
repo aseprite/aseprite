@@ -25,7 +25,6 @@
 #include "ini_file.h"
 #include "raster/raster.h"
 #include "settings/settings.h"
-#include "ui/list.h"
 #include "ui_context.h"
 
 //////////////////////////////////////////////////////////////////////

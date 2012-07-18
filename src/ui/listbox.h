@@ -34,7 +34,7 @@ namespace ui {
     void selectChild(Item* item);
     void selectIndex(int index);
 
-    int getItemsCount();
+    size_t getItemsCount() const;
 
     void centerScroll();
 

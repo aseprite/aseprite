@@ -28,7 +28,6 @@
 #include "modules/gui.h"
 #include "modules/palettes.h"
 #include "raster/raster.h"
-#include "ui/list.h"
 #include "ui/manager.h"
 #include "ui/system.h"
 #include "ui/widget.h"

@@ -10,7 +10,6 @@
 
 #include "gfx/size.h"
 #include "ui/box.h"
-#include "ui/list.h"
 #include "ui/message.h"
 #include "ui/preferred_size_event.h"
 #include "ui/rect.h"
@@ -61,20 +60,18 @@ void Box::onPreferredSize(PreferredSizeEvent& ev)
   }
 
   int w, h, nvis_children;
-  Widget* child;
-  JLink link;
 
   nvis_children = 0;
-  JI_LIST_FOR_EACH(this->children, link) {
-    child = (Widget*)link->data;
+  UI_FOREACH_WIDGET(getChildren(), it) {
+    Widget* child = *it;
     if (!(child->flags & JI_HIDDEN))
       nvis_children++;
   }
 
   w = h = 0;
 
-  JI_LIST_FOR_EACH(this->children, link) {
-    child = (Widget*)link->data;
+  UI_FOREACH_WIDGET(getChildren(), it) {
+    Widget* child = *it;
 
     if (child->flags & JI_HIDDEN)
       continue;
@@ -136,8 +133,8 @@ void Box::layoutBox(JRect rect)
                  - this->border_width.t                                 \
                  - this->border_width.b);                               \
                                                                         \
-      JI_LIST_FOR_EACH(this->children, link) {                          \
-        child = (Widget*)link->data;                                    \
+      UI_FOREACH_WIDGET(getChildren(), it) {                            \
+        child = *it;                                                    \
                                                                         \
         if (!(child->flags & JI_HIDDEN)) {                              \
           if (this->getAlign() & JI_HOMOGENEOUS) {                      \
@@ -185,15 +182,14 @@ void Box::layoutBox(JRect rect)
   int nvis_children = 0;
   int nexpand_children = 0;
   int child_width;
-  JLink link;
   int width;
   int extra;
   int x, y, w, h;
 
   jrect_copy(this->rc, rect);
 
-  JI_LIST_FOR_EACH(this->children, link) {
-    child = (Widget*)link->data;
+  UI_FOREACH_WIDGET(getChildren(), it) {
+    child = *it;
 
     if (!(child->flags & JI_HIDDEN)) {
       nvis_children++;

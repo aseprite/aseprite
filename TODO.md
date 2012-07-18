@@ -13,7 +13,6 @@
 * MovingPixelsState: Add undo information in each transformation step.
 * Add IntEntry class in src/gui/ with spin-buttons.
 * Add feedback to "Shift+S" shortcut to switch "snap to grid".
-* Convert jaccel::key_list to std::vector<>
 * Add color swatches bar.
 * Sort palette entries.
 * Add "Remap" button to palette editor after a palette entry is modified:
@@ -38,7 +37,6 @@
   then cloned, and finally filled with params.
 * About Signals/Slots: Add some field in slots to avoid disconnecting
   them from dead signals.
-* Eradicate JList.
 * Replace JRect & jrect with gfx::Rect.
 * Create gfx::Region to replace JRegion & jregion.
 * editors_ -> MultiEditors class widget
@@ -47,7 +45,6 @@
   * move all functions (jwidget_*) to methods in Widget class.
   * the same for each widget (e.g. jbutton_* to Button widget)
   * AppHooks to Vaca::Signals
-  * Convert all JI_SIGNAL to base::Signals
 * all member functions should be named verbNoun instead of verb_noun or noun_verb.
 * all functions to handle an object should be converted to member functions:
   * e.g. jwidget_set_text -> Widget::setText

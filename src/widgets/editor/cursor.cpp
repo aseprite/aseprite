@@ -31,7 +31,6 @@
 #include "tools/ink.h"
 #include "tools/tool.h"
 #include "ui/base.h"
-#include "ui/list.h"
 #include "ui/rect.h"
 #include "ui/region.h"
 #include "ui/system.h"

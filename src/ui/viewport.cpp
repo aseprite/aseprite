@@ -8,7 +8,6 @@
 
 #include "gfx/point.h"
 #include "gfx/size.h"
-#include "ui/list.h"
 #include "ui/message.h"
 #include "ui/theme.h"
 #include "ui/view.h"
@@ -49,10 +48,9 @@ Size Viewport::calculateNeededSize()
 {
   Size maxSize(0, 0);
   Size reqSize;
-  JLink link;
 
-  JI_LIST_FOR_EACH(this->children, link) {
-    reqSize = ((Widget*)link->data)->getPreferredSize();
+  UI_FOREACH_WIDGET(getChildren(), it) {
+    reqSize = (*it)->getPreferredSize();
     maxSize.w = MAX(maxSize.w, reqSize.w);
     maxSize.h = MAX(maxSize.h, reqSize.h);
   }
@@ -63,9 +61,7 @@ Size Viewport::calculateNeededSize()
 void Viewport::set_position(JRect rect)
 {
   Size reqSize;
-  Widget* child;
   JRect cpos;
-  JLink link;
 
   jrect_copy(this->rc, rect);
 
@@ -75,8 +71,8 @@ void Viewport::set_position(JRect rect)
   cpos->x1 = this->rc->x1 + this->border_width.l - scroll.x;
   cpos->y1 = this->rc->y1 + this->border_width.t - scroll.y;
 
-  JI_LIST_FOR_EACH(this->children, link) {
-    child = (Widget*)link->data;
+  UI_FOREACH_WIDGET(getChildren(), it) {
+    Widget* child = *it;
     reqSize = child->getPreferredSize();
 
     cpos->x2 = cpos->x1 + MAX(reqSize.w, jrect_w(this->rc)

@@ -492,12 +492,10 @@ void ToolBar::openTipWindow(int group_index, Tool* tool)
     }
 
     // Tool shortcut
-    JAccel accel = get_accel_to_change_tool(tool);
+    Accelerator* accel = get_accel_to_change_tool(tool);
     if (accel) {
-      char buf[512];            // TODO possible buffer overflow
-      jaccel_to_string(accel, buf);
       tooltip += "\n\nShortcut: ";
-      tooltip += buf;
+      tooltip += accel->toString();
     }
   }
   else if (group_index == ConfigureToolIndex) {

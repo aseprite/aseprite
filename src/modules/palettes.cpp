@@ -21,8 +21,6 @@
 #include <allegro.h>
 #include <string.h>
 
-#include "ui/list.h"
-
 #include "app.h"
 #include "modules/palettes.h"
 #include "raster/blend.h"

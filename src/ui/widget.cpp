@@ -28,7 +28,7 @@ static inline void mark_dirty_flag(Widget* widget)
 {
   while (widget) {
     widget->flags |= JI_DIRTY;
-    widget = widget->parent;
+    widget = widget->getParent();
   }
 }
 
@@ -54,8 +54,7 @@ Widget::Widget(int type)
   this->min_h = 0;
   this->max_w = INT_MAX;
   this->max_h = INT_MAX;
-  this->children = jlist_new();
-  this->parent = NULL;
+  this->m_parent = NULL;
   this->m_theme = CurrentTheme::get();
 
   this->m_align = 0;
@@ -81,8 +80,6 @@ Widget::Widget(int type)
 
 Widget::~Widget()
 {
-  JLink link, next;
-
   // Break relationship with the manager.
   if (this->type != JI_MANAGER) {
     Manager* manager = getManager();
@@ -92,13 +89,13 @@ Widget::~Widget()
   }
 
   // Remove from parent
-  if (this->parent)
-    this->parent->removeChild(this);
+  if (m_parent)
+    m_parent->removeChild(this);
 
-  /* remove children */
-  JI_LIST_FOR_EACH_SAFE(this->children, link, next)
-    delete reinterpret_cast<Widget*>(link->data);
-  jlist_free(this->children);
+  // Remove children. The ~Widget dtor modifies the parent's
+  // m_children.
+  while (!m_children.empty())
+    delete m_children.front();
 
   /* destroy the update region */
   if (m_update_region)
@@ -295,7 +292,7 @@ bool Widget::isVisible() const
     if (widget->flags & JI_HIDDEN)
       return false;
 
-    widget = widget->parent;
+    widget = widget->m_parent;
   } while (widget);
 
   return true;
@@ -309,7 +306,7 @@ bool Widget::isEnabled() const
     if (widget->flags & JI_DISABLED)
       return false;
 
-    widget = widget->parent;
+    widget = widget->m_parent;
   } while (widget);
 
   return true;
@@ -352,15 +349,10 @@ Window* Widget::getRoot()
     if (widget->type == JI_WINDOW)
       return dynamic_cast<Window*>(widget);
 
-    widget = widget->parent;
+    widget = widget->m_parent;
   }
 
   return NULL;
-}
-
-Widget* Widget::getParent()
-{
-  return this->parent;
 }
 
 Manager* Widget::getManager()
@@ -371,76 +363,67 @@ Manager* Widget::getManager()
     if (widget->type == JI_MANAGER)
       return static_cast<Manager*>(widget);
 
-    widget = widget->parent;
+    widget = widget->m_parent;
   }
 
   return Manager::getDefault();
 }
 
-JList Widget::getParents(bool ascendant)
+void Widget::getParents(bool ascendant, WidgetsList& parents)
 {
-  JList list = jlist_new();
-
-  for (Widget* widget=this; widget; widget=widget->parent) {
+  for (Widget* widget=this; widget; widget=widget->m_parent) {
     // append parents in tail
     if (ascendant)
-      jlist_append(list, widget);
+      parents.push_back(widget);
     // append parents in head
     else
-      jlist_prepend(list, widget);
+      parents.insert(parents.begin(), widget);
   }
-
-  return list;
-}
-
-JList Widget::getChildren()
-{
-  return jlist_copy(this->children);
 }
 
 Widget* Widget::getNextSibling()
 {
-  if (!parent)
+  if (!m_parent)
     return NULL;
 
-  JLink link = jlist_find(parent->children, this);
-  ASSERT(link != NULL);
-  if (!link)
+  WidgetsList::iterator begin = m_parent->m_children.begin();
+  WidgetsList::iterator end = m_parent->m_children.end();
+  WidgetsList::iterator it = std::find(begin, end, this);
+
+  if (it == end)
     return NULL;
 
-  if (link == jlist_last(parent->children))
+  if (++it == end)
     return NULL;
 
-  return reinterpret_cast<Widget*>(link->next->data);
+  return *it;
 }
 
 Widget* Widget::getPreviousSibling()
 {
-  if (!parent)
+  if (!m_parent)
     return NULL;
 
-  JLink link = jlist_find(parent->children, this);
-  ASSERT(link != NULL);
-  if (!link)
+  WidgetsList::iterator begin = m_parent->m_children.begin();
+  WidgetsList::iterator end = m_parent->m_children.end();
+  WidgetsList::iterator it = std::find(begin, end, this);
+
+  if (it == begin || it == end)
     return NULL;
 
-  if (link == jlist_first(parent->children))
-    return NULL;
-
-  return reinterpret_cast<Widget*>(link->prev->data);
+  return *(++it);
 }
 
 Widget* Widget::pick(int x, int y)
 {
   Widget* inside, *picked = NULL;
-  JLink link;
 
   if (!(this->flags & JI_HIDDEN) &&   /* is visible */
       jrect_point_in(this->rc, x, y)) { /* the point is inside the bounds */
     picked = this;
 
-    JI_LIST_FOR_EACH(this->children, link) {
-      inside = reinterpret_cast<Widget*>(link->data)->pick(x, y);
+    UI_FOREACH_WIDGET(m_children, it) {
+      inside = (*it)->pick(x, y);
       if (inside) {
         picked = inside;
         break;
@@ -455,26 +438,25 @@ bool Widget::hasChild(Widget* child)
 {
   ASSERT_VALID_WIDGET(child);
 
-  return jlist_find(this->children, child) != this->children->end ? true: false;
+  return std::find(m_children.begin(), m_children.end(), child) != m_children.end();
 }
 
 Widget* Widget::findChild(const char* id)
 {
   Widget* child;
-  JLink link;
 
-  JI_LIST_FOR_EACH(this->children, link) {
-    child = (Widget*)link->data;
+  UI_FOREACH_WIDGET(m_children, it) {
+    child = *it;
     if (child->getId() == id)
       return child;
   }
 
-  JI_LIST_FOR_EACH(this->children, link) {
-    if ((child = ((Widget*)link->data)->findChild(id)))
+  UI_FOREACH_WIDGET(m_children, it) {
+    if ((child = (*it)->findChild(id)))
       return child;
   }
 
-  return 0;
+  return NULL;
 }
 
 Widget* Widget::findSibling(const char* id)
@@ -487,8 +469,8 @@ void Widget::addChild(Widget* child)
   ASSERT_VALID_WIDGET(this);
   ASSERT_VALID_WIDGET(child);
 
-  jlist_append(children, child);
-  child->parent = this;
+  m_children.push_back(child);
+  child->m_parent = this;
 }
 
 void Widget::removeChild(Widget* child)
@@ -496,8 +478,11 @@ void Widget::removeChild(Widget* child)
   ASSERT_VALID_WIDGET(this);
   ASSERT_VALID_WIDGET(child);
 
-  jlist_remove(children, child);
-  child->parent = NULL;
+  WidgetsList::iterator it = std::find(m_children.begin(), m_children.end(), child);
+  if (it != m_children.end())
+    m_children.erase(it);
+
+  child->m_parent = NULL;
 }
 
 void Widget::replaceChild(Widget* oldChild, Widget* newChild)
@@ -505,16 +490,18 @@ void Widget::replaceChild(Widget* oldChild, Widget* newChild)
   ASSERT_VALID_WIDGET(oldChild);
   ASSERT_VALID_WIDGET(newChild);
 
-  JLink before = jlist_find(children, oldChild);
-  if (!before)
+  WidgetsList::iterator before =
+    std::find(m_children.begin(), m_children.end(), oldChild);
+  if (before == m_children.end()) {
+    ASSERT(false);
     return;
-
-  before = before->next;
+  }
+  int index = before - m_children.begin();
 
   removeChild(oldChild);
 
-  jlist_insert_before(children, before, newChild);
-  newChild->parent = this;
+  m_children.insert(m_children.begin()+index, newChild);
+  newChild->m_parent = this;
 }
 
 void Widget::insertChild(int index, Widget* child)
@@ -522,8 +509,8 @@ void Widget::insertChild(int index, Widget* child)
   ASSERT_VALID_WIDGET(this);
   ASSERT_VALID_WIDGET(child);
 
-  jlist_insert(children, child, index);
-  child->parent = this;
+  m_children.insert(m_children.begin()+index, child);
+  child->m_parent = this;
 }
 
 // ===============================================================
@@ -604,31 +591,30 @@ JRegion jwidget_get_region(Widget* widget)
 /* gets the region to be able to draw in */
 JRegion jwidget_get_drawable_region(Widget* widget, int flags)
 {
-  Widget* window, *manager, *view, *child;
+  Widget* window, *manager, *view;
   JRegion region, reg1, reg2, reg3;
-  JList windows_list;
-  JLink link;
   JRect cpos;
 
   ASSERT_VALID_WIDGET(widget);
 
   region = jwidget_get_region(widget);
 
-  /* cut the top windows areas */
+  // Cut the top windows areas
   if (flags & JI_GDR_CUTTOPWINDOWS) {
     window = widget->getRoot();
     manager = window ? window->getManager(): NULL;
 
     while (manager) {
-      windows_list = manager->children;
-      link = jlist_find(windows_list, window);
+      const WidgetsList& windows_list = manager->getChildren();
+      WidgetsList::const_reverse_iterator it =
+        std::find(windows_list.rbegin(), windows_list.rend(), window);
 
-      if (!jlist_empty(windows_list) &&
-          window != jlist_first(windows_list)->data &&
-          link != windows_list->end) {
-        /* subtract the rectangles */
-        for (link=link->prev; link != windows_list->end; link=link->prev) {
-          reg1 = jwidget_get_region(reinterpret_cast<Widget*>(link->data));
+      if (!windows_list.empty() &&
+          window != windows_list.front() &&
+          it != windows_list.rend()) {
+        // Subtract the rectangles
+        for (++it; it != windows_list.rend(); ++it) {
+          reg1 = jwidget_get_region(*it);
           jregion_subtract(region, region, reg1);
           jregion_free(reg1);
         }
@@ -639,13 +625,14 @@ JRegion jwidget_get_drawable_region(Widget* widget, int flags)
     }
   }
 
-  /* clip the areas where are children */
-  if (!(flags & JI_GDR_USECHILDAREA) && !jlist_empty(widget->children)) {
+  // Clip the areas where are children
+  if (!(flags & JI_GDR_USECHILDAREA) && !widget->getChildren().empty()) {
     cpos = jwidget_get_child_rect(widget);
     reg1 = jregion_new(NULL, 0);
     reg2 = jregion_new(cpos, 1);
-    JI_LIST_FOR_EACH(widget->children, link) {
-      child = reinterpret_cast<Widget*>(link->data);
+
+    UI_FOREACH_WIDGET(widget->getChildren(), it) {
+      Widget* child = *it;
       if (child->isVisible()) {
         reg3 = jwidget_get_region(child);
         if (child->flags & JI_DECORATIVE) {
@@ -664,9 +651,9 @@ JRegion jwidget_get_drawable_region(Widget* widget, int flags)
     jrect_free(cpos);
   }
 
-  /* intersect with the parent area */
+  // Intersect with the parent area
   if (!(widget->flags & JI_DECORATIVE)) {
-    Widget* parent = widget->parent;
+    Widget* parent = widget->getParent();
 
     reg1 = jregion_new(NULL, 0);
 
@@ -676,14 +663,13 @@ JRegion jwidget_get_drawable_region(Widget* widget, int flags)
       jregion_intersect(region, region, reg1);
       jrect_free(cpos);
 
-      parent = parent->parent;
+      parent = parent->getParent();
     }
 
     jregion_free(reg1);
   }
   else {
-    Widget* parent = widget->parent;
-
+    Widget* parent = widget->getParent();
     if (parent) {
       cpos = jwidget_get_rect(parent);
       reg1 = jregion_new(cpos, 1);
@@ -693,7 +679,7 @@ JRegion jwidget_get_drawable_region(Widget* widget, int flags)
     }
   }
 
-  /* limit to the manager area */
+  // Limit to the manager area
   window = widget->getRoot();
   manager = window ? window->getManager(): NULL;
 
@@ -924,7 +910,6 @@ void Widget::flushRedraw()
   std::queue<Widget*> processing;
   int c, nrects;
   Message* msg;
-  JLink link;
   JRect rc;
 
   if (this->flags & JI_DIRTY) {
@@ -942,8 +927,8 @@ void Widget::flushRedraw()
     if (!widget->isVisible())
       continue;
 
-    JI_LIST_FOR_EACH(widget->children, link) {
-      Widget* child = (Widget*)link->data;
+    UI_FOREACH_WIDGET(widget->getChildren(), it) {
+      Widget* child = *it;
       if (child->flags & JI_DIRTY) {
         child->flags ^= JI_DIRTY;
         processing.push(child);
@@ -993,15 +978,14 @@ void Widget::invalidate()
 {
   if (isVisible()) {
     JRegion reg1 = jwidget_get_drawable_region(this, JI_GDR_CUTTOPWINDOWS);
-    JLink link;
 
     jregion_copy(this->m_update_region, reg1);
     jregion_free(reg1);
 
     mark_dirty_flag(this);
 
-    JI_LIST_FOR_EACH(this->children, link)
-      reinterpret_cast<Widget*>(link->data)->invalidate();
+    UI_FOREACH_WIDGET(getChildren(), it)
+      (*it)->invalidate();
   }
 }
 
@@ -1242,23 +1226,17 @@ bool Widget::isScancodeMnemonic(int scancode) const
 
 bool Widget::onProcessMessage(Message* msg)
 {
-  Widget* widget = this;
-
   ASSERT(msg != NULL);
-  ASSERT_VALID_WIDGET(widget);
 
   switch (msg->type) {
 
     case JM_OPEN:
     case JM_CLOSE:
-    case JM_WINMOVE: {
-      JLink link;
-
+    case JM_WINMOVE:
       // Broadcast the message to the children.
-      JI_LIST_FOR_EACH(widget->children, link)
-        reinterpret_cast<Widget*>(link->data)->sendMessage(msg);
+      UI_FOREACH_WIDGET(getChildren(), it)
+        (*it)->sendMessage(msg);
       break;
-    }
 
     case JM_DRAW:
       // With double-buffering we create a temporary bitmap to draw
@@ -1299,47 +1277,38 @@ bool Widget::onProcessMessage(Message* msg)
       }
 
     case JM_REQSIZE:
-      msg->reqsize.w = widget->min_w;
-      msg->reqsize.h = widget->min_h;
+      msg->reqsize.w = this->min_w;
+      msg->reqsize.h = this->min_h;
       return true;
 
     case JM_SETPOS: {
-      JRect cpos;
-      JLink link;
-
-      jrect_copy(widget->rc, &msg->setpos.rect);
-      cpos = jwidget_get_child_rect(widget);
+      jrect_copy(this->rc, &msg->setpos.rect);
+      JRect cpos = jwidget_get_child_rect(this);
 
       // Set all the children to the same "cpos".
-      JI_LIST_FOR_EACH(widget->children, link)
-        jwidget_set_rect(reinterpret_cast<Widget*>(link->data), cpos);
+      UI_FOREACH_WIDGET(getChildren(), it)
+        jwidget_set_rect(*it, cpos);
 
       jrect_free(cpos);
       return true;
     }
 
-    case JM_DIRTYCHILDREN: {
-      JLink link;
-
-      JI_LIST_FOR_EACH(widget->children, link)
-        reinterpret_cast<Widget*>(link->data)->invalidate();
-
+    case JM_DIRTYCHILDREN:
+      UI_FOREACH_WIDGET(getChildren(), it)
+        (*it)->invalidate();
       return true;
-    }
 
     case JM_KEYPRESSED:
     case JM_KEYRELEASED:
       if (msg->key.propagate_to_children) {
-        JLink link;
-
         // Broadcast the message to the children.
-        JI_LIST_FOR_EACH(widget->children, link)
-          reinterpret_cast<Widget*>(link->data)->sendMessage(msg);
+        UI_FOREACH_WIDGET(getChildren(), it)
+          (*it)->sendMessage(msg);
       }
 
       // Propagate the message to the parent.
-      if (msg->key.propagate_to_parent && widget->parent != NULL)
-        return widget->parent->sendMessage(msg);
+      if (msg->key.propagate_to_parent && getParent() != NULL)
+        return getParent()->sendMessage(msg);
       else
         break;
 
@@ -1349,15 +1318,15 @@ bool Widget::onProcessMessage(Message* msg)
     case JM_MOTION:
     case JM_WHEEL:
       // Propagate the message to the parent.
-      if (widget->parent != NULL)
-        return widget->parent->sendMessage(msg);
+      if (getParent() != NULL)
+        return getParent()->sendMessage(msg);
       else
         break;
 
     case JM_SETCURSOR:
       // Propagate the message to the parent.
-      if (widget->parent != NULL)
-        return widget->parent->sendMessage(msg);
+      if (getParent() != NULL)
+        return getParent()->sendMessage(msg);
       else {
         jmouse_set_cursor(JI_CURSOR_NORMAL);
         return true;
@@ -1377,9 +1346,7 @@ void Widget::onInvalidateRegion(const JRegion region)
   if (isVisible() &&
       jregion_rect_in(region, this->rc) != JI_RGNOUT) {
     JRegion reg1 = jregion_new(NULL, 0);
-    JRegion reg2 = jwidget_get_drawable_region(this,
-                                               JI_GDR_CUTTOPWINDOWS);
-    JLink link;
+    JRegion reg2 = jwidget_get_drawable_region(this, JI_GDR_CUTTOPWINDOWS);
 
     jregion_union(reg1, this->m_update_region, region);
     jregion_intersect(this->m_update_region, reg1, reg2);
@@ -1389,8 +1356,8 @@ void Widget::onInvalidateRegion(const JRegion region)
 
     mark_dirty_flag(this);
 
-    JI_LIST_FOR_EACH(this->children, link)
-      reinterpret_cast<Widget*>(link->data)->invalidateRegion(reg1);
+    UI_FOREACH_WIDGET(getChildren(), it)
+      (*it)->invalidateRegion(reg1);
 
     jregion_free(reg1);
   }

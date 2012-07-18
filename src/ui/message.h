@@ -9,6 +9,7 @@
 
 #include "ui/base.h"
 #include "ui/rect.h"
+#include "ui/widgets_list.h"
 
 namespace ui {
 
@@ -27,10 +28,10 @@ namespace ui {
 
   struct MessageAny
   {
-    int type;             /* type of message */
-    JList widgets;        /* destination widgets */
-    bool used : 1;        /* was used */
-    int shifts;           /* key shifts pressed when message was created */
+    int type;                   // Type of message
+    WidgetsList* widgets;       // Destination widgets
+    bool used : 1;              // Was used
+    int shifts;                 // Key shifts pressed when message was created
   };
 
   struct MessageKey

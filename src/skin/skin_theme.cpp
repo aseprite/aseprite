@@ -731,7 +731,7 @@ JRegion SkinTheme::get_window_mask(Widget* widget)
 void SkinTheme::map_decorative_widget(Widget* widget)
 {
   if (widget->getId() == kThemeCloseButtonId) {
-    Widget* window = widget->parent;
+    Widget* window = widget->getParent();
     JRect rect = jrect_new(0, 0, 0, 0);
 
     rect->x2 = m_part[PART_WINDOW_CLOSE_BUTTON_NORMAL]->w;
@@ -1092,10 +1092,10 @@ void SkinTheme::draw_menuitem(MenuItem* widget, JRect clip)
   JRect pos;
 
   /* TODO ASSERT? */
-  if (!widget->parent->parent)
+  if (!widget->getParent()->getParent())
     return;
 
-  bar = (widget->parent->parent->type == JI_MENUBAR);
+  bar = (widget->getParent()->getParent()->type == JI_MENUBAR);
 
   /* colors */
   if (!widget->isEnabled()) {
@@ -1178,18 +1178,17 @@ void SkinTheme::draw_menuitem(MenuItem* widget, JRect clip)
                 (widget->rc->y1+widget->rc->y2)/2+c, COLOR_DISABLED);
       }
     }
-    /* draw the keyboard shortcut */
+    // Draw the keyboard shortcut
     else if (widget->getAccel()) {
       int old_align = widget->getAlign();
-      char buf[256];
 
       pos = jwidget_get_rect(widget);
       pos->x2 -= widget->child_spacing/4;
 
-      jaccel_to_string(widget->getAccel(), buf);
+      std::string buf = widget->getAccel()->toString();
 
       widget->setAlign(JI_RIGHT | JI_MIDDLE);
-      draw_textstring(buf, fg, bg, false, widget, pos, 0);
+      draw_textstring(buf.c_str(), fg, bg, false, widget, pos, 0);
       widget->setAlign(old_align);
 
       jrect_free(pos);

@@ -51,9 +51,8 @@ bool TooltipManager::onProcessMessage(Message* msg)
   switch (msg->type) {
 
     case JM_MOUSEENTER: {
-      JLink link;
-      JI_LIST_FOR_EACH_BACK(msg->any.widgets, link) {
-        Tips::iterator it = m_tips.find((Widget*)link->data);
+      UI_FOREACH_WIDGET(*msg->any.widgets, itWidget) {
+        Tips::iterator it = m_tips.find(*itWidget);
         if (it != m_tips.end()) {
           m_target.widget = it->first;
           m_target.tipInfo = it->second;
@@ -153,8 +152,6 @@ void TooltipManager::onTick()
 TipWindow::TipWindow(const char *text, bool close_on_buttonpressed)
   : Window(false, text)
 {
-  JLink link, next;
-
   m_close_on_buttonpressed = close_on_buttonpressed;
   m_hot_region = NULL;
   m_filtering = false;
@@ -165,9 +162,7 @@ TipWindow::TipWindow(const char *text, bool close_on_buttonpressed)
   set_wantfocus(false);
   setAlign(JI_LEFT | JI_TOP);
 
-  // remove decorative widgets
-  JI_LIST_FOR_EACH_SAFE(this->children, link, next)
-    delete reinterpret_cast<Widget*>(link->data);
+  removeDecorativeWidgets();
 
   initTheme();
 }
@@ -283,14 +278,12 @@ void TipWindow::onPreferredSize(PreferredSizeEvent& ev)
   resultSize.w += this->border_width.l + this->border_width.r;
   resultSize.h += this->border_width.t + this->border_width.b;
 
-  if (!jlist_empty(this->children)) {
+  if (!getChildren().empty()) {
     Size maxSize(0, 0);
     Size reqSize;
-    Widget* child;
-    JLink link;
 
-    JI_LIST_FOR_EACH(this->children, link) {
-      child = (Widget*)link->data;
+    UI_FOREACH_WIDGET(getChildren(), it) {
+      Widget* child = *it;
 
       reqSize = child->getPreferredSize();
 
