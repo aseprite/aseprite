@@ -1211,7 +1211,8 @@ static MenuItem* check_for_letter(Menu* menu, int ascii)
       continue;
 
     MenuItem* menuitem = static_cast<MenuItem*>(child);
-    if (menuitem->getMnemonicChar() == tolower(ascii))
+    int mnemonic = menuitem->getMnemonicChar();
+    if (mnemonic > 0 && mnemonic == tolower(ascii))
       return menuitem;
   }
   return NULL;

@@ -1200,10 +1200,9 @@ bool Widget::hasCapture()
 int Widget::getMnemonicChar() const
 {
   if (hasText()) {
-    const char* text = getText();
-    for (int c=0; text[c]; ++c)
-      if ((text[c] == '&') && (text[c+1] != '&'))
-        return tolower(text[c+1]);
+    for (int c=0; m_text[c]; ++c)
+      if ((m_text[c] == '&') && (m_text[c+1] != '&'))
+        return tolower(m_text[c+1]);
   }
   return 0;
 }
@@ -1218,7 +1217,8 @@ bool Widget::isScancodeMnemonic(int scancode) const
   else
     return false;
 
-  return (getMnemonicChar() == ascii);
+  int mnemonic = getMnemonicChar();
+  return (mnemonic > 0 && mnemonic == ascii);
 }
 
 /**********************************************************************/
