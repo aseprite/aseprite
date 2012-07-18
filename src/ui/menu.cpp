@@ -619,7 +619,7 @@ bool MenuBox::onProcessMessage(Message* msg)
               // In menu-boxes
               else {
                 // Enter in sub-menu
-                if ((highlight) && highlight->hasSubmenu()) {
+                if (highlight && highlight->hasSubmenu()) {
                   menu->highlightItem(highlight, true, true, true);
                 }
                 // Go to parent
