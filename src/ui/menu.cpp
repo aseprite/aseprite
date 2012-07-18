@@ -1188,11 +1188,17 @@ void MenuBox::closePopup()
 void MenuBox::cancelMenuLoop()
 {
   Menu* menu = getMenu();
-  if (menu)
+  if (menu) {
+    // Do not close the popup menus if we're already processing
+    // open/close popup messages.
+    if (get_base(this)->is_processing)
+      return;
+
     menu->closeAll();
 
-  // Lost focus
-  Manager::getDefault()->freeFocus();
+    // Lost focus
+    Manager::getDefault()->freeFocus();
+  }
 }
 
 void MenuItem::executeClick()
