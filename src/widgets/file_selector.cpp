@@ -280,7 +280,8 @@ base::string FileSelector::show(const base::string& title,
   center_window();
 
   m_fileList->setExtensions(showExtensions.c_str());
-  m_fileList->setCurrentFolder(start_folder);
+  if (start_folder)
+    m_fileList->setCurrentFolder(start_folder);
 
   // current location
   navigation_position.reset();
