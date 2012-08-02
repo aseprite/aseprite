@@ -314,6 +314,9 @@ void rectdotted(BITMAP* bmp, int x1, int y1, int x2, int y2, int fg, int bg)
 
 void rectgrid(BITMAP* bmp, int x1, int y1, int x2, int y2, int w, int h)
 {
+  if (w < 1 || h < 1)
+    return;
+
   int x, y, u, v, c1, c2;
 
   c1 = makecol_depth(bitmap_color_depth(bmp), 128, 128, 128);
