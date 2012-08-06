@@ -15,6 +15,8 @@
 #include "ui/system.h"
 #include "ui/theme.h"
 
+#include <sstream>
+
 using namespace gfx;
 
 namespace ui {
