@@ -100,16 +100,21 @@ public:
     clear_to_color(m_bmp, 0);
   }
 
-  void blitTo(LockedSurface* dest, int x, int y) const {
+  void blitTo(LockedSurface* dest, int srcx, int srcy, int dstx, int dsty, int width, int height) const {
     ASSERT(m_bmp);
     ASSERT(dest);
     ASSERT(static_cast<Alleg4Surface*>(dest)->m_bmp);
 
     blit(m_bmp,
          static_cast<Alleg4Surface*>(dest)->m_bmp,
-         0, 0,
-         x, y,
-         m_bmp->w, m_bmp->h);
+         srcx, srcy,
+         dstx, dsty,
+         width, height);
+  }
+
+  void drawAlphaSurface(const LockedSurface* src, int dstx, int dsty) {
+    set_alpha_blender();
+    draw_trans_sprite(m_bmp, static_cast<const Alleg4Surface*>(src)->m_bmp, dstx, dsty);
   }
 
 private:
@@ -193,8 +198,8 @@ public:
     m_surface = newSurface;
   }
 
-  Surface* getSurface() {
-    return m_surface;
+  NotDisposableSurface* getSurface() {
+    return static_cast<NotDisposableSurface*>(m_surface);
   }
 
   bool flip() {

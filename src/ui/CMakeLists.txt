@@ -27,6 +27,8 @@ add_library(ui-lib
   menu.cpp
   message.cpp
   message_loop.cpp
+  overlay.cpp
+  overlay_manager.cpp
   paint_event.cpp
   popup_window.cpp
   preferred_size_event.cpp

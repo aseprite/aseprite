@@ -14,7 +14,8 @@ namespace she {
     virtual ~LockedSurface() { }
     virtual void unlock() = 0;
     virtual void clear() = 0;
-    virtual void blitTo(LockedSurface* dest, int x, int y) const = 0;
+    virtual void blitTo(LockedSurface* dest, int srcx, int srcy, int dstx, int dsty, int width, int height) const = 0;
+    virtual void drawAlphaSurface(const LockedSurface* src, int dstx, int dsty) = 0;
   };
 
 } // namespace she

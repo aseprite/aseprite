@@ -10,6 +10,7 @@
 namespace she {
 
   class Surface;
+  class NotDisposableSurface;
 
   // A display or window to show graphics.
   class Display {
@@ -31,7 +32,8 @@ namespace she {
     virtual void setScale(int scale) = 0;
 
     // Returns the main surface to draw into this display.
-    virtual Surface* getSurface() = 0;
+    // You must not dispose this surface.
+    virtual NotDisposableSurface* getSurface() = 0;
 
     // Flips all graphics in the surface to the real display.  Returns
     // false if the flip couldn't be done because the display was

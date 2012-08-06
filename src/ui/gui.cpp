@@ -8,6 +8,7 @@
 
 #include "ui/base.h"
 #include "ui/clipboard.h"
+#include "ui/overlay_manager.h"
 #include "ui/theme.h"
 
 namespace ui {
@@ -31,6 +32,8 @@ GuiSystem::GuiSystem()
 
 GuiSystem::~GuiSystem()
 {
+  OverlayManager::destroyInstance();
+
   // finish theme
   CurrentTheme::set(NULL);
 

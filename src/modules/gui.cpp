@@ -302,14 +302,23 @@ void gui_run()
 
 void gui_feedback()
 {
+  Manager* manager = Manager::getDefault();
+  OverlayManager* overlays = OverlayManager::instance();
+
   jmouse_draw_cursor();
 
-  if (!Manager::getDefault()->getDisplay()->flip()) {
+  // Draw overlays.
+  overlays->captureOverlappedAreas();
+  overlays->drawOverlays();
+
+  if (!manager->getDisplay()->flip()) {
     // In case that the display was resized.
     gui_setup_screen(false);
     App::instance()->getMainWindow()->remap_window();
-    Manager::getDefault()->invalidate();
+    manager->invalidate();
   }
+  else
+    overlays->restoreOverlappedAreas();
 }
 
 // Sets the ji_screen variable. This routine should be called
