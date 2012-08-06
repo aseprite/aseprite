@@ -24,8 +24,8 @@ PaintEvent::~PaintEvent()
 
 Graphics* PaintEvent::getGraphics()
 {
-  // If someone requests the graphics pointer, it means that this
-  // "someone" will paint something.
+  // If someone requested the graphics pointer, it means that this
+  // "someone" has painted the widget.
   m_painted = true;
   return m_graphics;
 }

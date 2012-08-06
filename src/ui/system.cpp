@@ -6,6 +6,17 @@
 
 #include "config.h"
 
+#include "ui/system.h"
+
+#include "she/display.h"
+#include "she/surface.h"
+#include "ui/intern.h"
+#include "ui/manager.h"
+#include "ui/rect.h"
+#include "ui/region.h"
+#include "ui/theme.h"
+#include "ui/widget.h"
+
 #include <allegro.h>
 #if defined(ALLEGRO_WINDOWS)
   #include <winalleg.h>
@@ -13,19 +24,11 @@
   #include <xalleg.h>
 #endif
 
-#include "ui/intern.h"
-#include "ui/manager.h"
-#include "ui/rect.h"
-#include "ui/region.h"
-#include "ui/system.h"
-#include "ui/theme.h"
-#include "ui/widget.h"
-
 namespace ui {
 
 /* Global output bitmap.  */
 
-BITMAP *ji_screen = NULL;
+BITMAP* ji_screen = NULL;
 JRegion ji_dirty_region = NULL;
 int ji_screen_w = 0;
 int ji_screen_h = 0;
@@ -83,9 +86,6 @@ static void set_cursor(BITMAP *bmp, int x, int y)
 
 int _ji_system_init()
 {
-  /* Update screen pointer.  */
-  ji_set_screen(screen, SCREEN_W, SCREEN_H);
-
   /* Install timer related stuff.  */
   LOCK_VARIABLE(ji_clock);
   LOCK_VARIABLE(m_b);
@@ -105,100 +105,35 @@ int _ji_system_init()
 
 void _ji_system_exit()
 {
-  ji_set_screen(NULL, 0, 0);
+  SetDisplay(NULL);
 
   remove_int(clock_inc);
 }
 
-void ji_set_screen(BITMAP *bmp, int width, int height)
+void SetDisplay(she::Display* display)
 {
-  int cursor = jmouse_get_cursor(); /* get mouse cursor */
+  int cursor = jmouse_get_cursor();
 
   jmouse_set_cursor(JI_CURSOR_NULL);
-  ji_screen = bmp;
-  ji_screen_w = width;
-  ji_screen_h = height;
+  ji_screen = (display ? reinterpret_cast<BITMAP*>(display->getSurface()->nativeHandle()): NULL);
+  ji_screen_w = (ji_screen ? ji_screen->w: 0);
+  ji_screen_h = (ji_screen ? ji_screen->h: 0);
 
   if (ji_screen != NULL) {
     Manager* manager = Manager::getDefault();
+    if (manager) {
+      manager->setDisplay(display);
 
-    /* update default-manager size */
-    if (manager && (jrect_w(manager->rc) != JI_SCREEN_W ||
-                    jrect_h(manager->rc) != JI_SCREEN_H)) {
-      JRect rect = jrect_new(0, 0, JI_SCREEN_W, JI_SCREEN_H);
-      jwidget_set_rect(manager, rect);
-      jrect_free(rect);
-
-      if (ji_dirty_region)
-        jregion_reset(ji_dirty_region, manager->rc);
+      // Update default-manager size
+      if ((jrect_w(manager->rc) != JI_SCREEN_W ||
+           jrect_h(manager->rc) != JI_SCREEN_H)) {
+        JRect rect = jrect_new(0, 0, JI_SCREEN_W, JI_SCREEN_H);
+        jwidget_set_rect(manager, rect);
+        jrect_free(rect);
+      }
     }
 
     jmouse_set_cursor(cursor);  /* restore mouse cursor */
-  }
-}
-
-void ji_add_dirty_rect(JRect rect)
-{
-  JRegion reg1;
-
-  ASSERT(ji_dirty_region != NULL);
-
-  reg1 = jregion_new(rect, 1);
-  jregion_union(ji_dirty_region, ji_dirty_region, reg1);
-  jregion_free(reg1);
-}
-
-void ji_add_dirty_region(JRegion region)
-{
-  ASSERT(ji_dirty_region != NULL);
-
-  jregion_union(ji_dirty_region, ji_dirty_region, region);
-}
-
-void ji_flip_dirty_region()
-{
-  int c, nrects;
-  JRect rc;
-
-  ASSERT(ji_dirty_region != NULL);
-
-  nrects = JI_REGION_NUM_RECTS(ji_dirty_region);
-
-  if (nrects == 1) {
-    rc = JI_REGION_RECTS(ji_dirty_region);
-    ji_flip_rect(rc);
-  }
-  else if (nrects > 1) {
-    for (c=0, rc=JI_REGION_RECTS(ji_dirty_region);
-         c<nrects;
-         c++, rc++)
-      ji_flip_rect(rc);
-  }
-
-  jregion_empty(ji_dirty_region);
-}
-
-void ji_flip_rect(JRect rect)
-{
-  ASSERT(ji_screen != screen);
-
-  if (JI_SCREEN_W == SCREEN_W && JI_SCREEN_H == SCREEN_H) {
-    blit(ji_screen, screen,
-         rect->x1, rect->y1,
-         rect->x1, rect->y1,
-         jrect_w(rect),
-         jrect_h(rect));
-  }
-  else {
-    stretch_blit(ji_screen, screen,
-                 rect->x1,
-                 rect->y1,
-                 jrect_w(rect),
-                 jrect_h(rect),
-                 rect->x1 * SCREEN_W / JI_SCREEN_W,
-                 rect->y1 * SCREEN_H / JI_SCREEN_H,
-                 jrect_w(rect) * SCREEN_W / JI_SCREEN_W,
-                 jrect_h(rect) * SCREEN_H / JI_SCREEN_H);
   }
 }
 
@@ -257,10 +192,6 @@ void jmouse_draw_cursor()
     ji_get_default_manager()->invalidateRect(rect);
     /* rectfill(ji_screen, rect->x1, rect->y1, rect->x2-1, rect->y2-1, makecol(0, 0, 255)); */
     draw_sprite(ji_screen, sprite_cursor, x, y);
-
-    if (ji_dirty_region)
-      ji_add_dirty_rect(rect);
-
     jrect_free(rect);
   }
 #endif
@@ -273,14 +204,6 @@ void jmouse_draw_cursor()
     capture_covered_area();
 
     draw_sprite(ji_screen, sprite_cursor, x, y);
-
-    if (ji_dirty_region) {
-      JRect rect = jrect_new(x, y,
-                             x+sprite_cursor->w,
-                             y+sprite_cursor->h);
-      ji_add_dirty_rect(rect);
-      jrect_free(rect);
-    }
   }
 }
 

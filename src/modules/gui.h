@@ -51,7 +51,6 @@ void update_screen_for_document(const Document* document);
 
 void gui_run();
 void gui_feedback();
-void gui_flip_screen();
 void gui_setup_screen(bool reload_font);
 
 void load_window_pos(ui::Widget* window, const char *section);

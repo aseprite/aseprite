@@ -28,13 +28,15 @@
 #include "console.h"
 #include "document_wrappers.h"
 #include "drop_files.h"
-#include "gfxmode.h"
 #include "ini_file.h"
 #include "modules/editors.h"
 #include "modules/gfx.h"
 #include "modules/gui.h"
 #include "modules/palettes.h"
 #include "raster/sprite.h"
+#include "she/display.h"
+#include "she/surface.h"
+#include "she/system.h"
 #include "skin/button_icon_impl.h"
 #include "skin/skin_property.h"
 #include "skin/skin_theme.h"
@@ -60,9 +62,6 @@
 #include <winalleg.h>
 #endif
 
-#define REFRESH_FULL_SCREEN     1
-#define SYSTEM_WINDOW_RESIZE    2
-
 #define SPRITEDITOR_ACTION_COPYSELECTION        "CopySelection"
 #define SPRITEDITOR_ACTION_SNAPTOGRID           "SnapToGrid"
 #define SPRITEDITOR_ACTION_ANGLESNAP            "AngleSnap"
@@ -87,8 +86,6 @@ static struct
                         {    0,   0, 0 } };
 
 static int try_depths[] = { 32, 24, 16, 15 };
-
-static GfxMode lastWorkingGfxMode;
 
 //////////////////////////////////////////////////////////////////////
 
@@ -141,177 +138,70 @@ static Theme* ase_theme = NULL;
 
 static std::vector<Shortcut*>* shortcuts = NULL;
 
-static bool ji_screen_created = false;
-
-static volatile int next_idle_flags = 0;
-
 static volatile int restored_width = 0;
 static volatile int restored_height = 0;
 
 // Default GUI screen configuration
-static bool double_buffering;
 static int screen_scaling;
 
 static void reload_default_font();
 
 // Load & save graphics configuration
-static void load_gui_config(int& w, int& h, int& bpp, bool& fullscreen, bool& maximized);
+static void load_gui_config(int& w, int& h, bool& maximized);
 static void save_gui_config();
 
 static bool button_with_icon_msg_proc(Widget* widget, Message* msg);
 
 static void on_palette_change_signal();
 
-// Used by set_display_switch_callback(SWITCH_IN, ...).
-static void display_switch_in_callback()
-{
-  next_idle_flags |= REFRESH_FULL_SCREEN;
-}
-
-END_OF_STATIC_FUNCTION(display_switch_in_callback);
-
-#ifdef ALLEGRO4_WITH_RESIZE_PATCH
-// Called when the window is resized
-static void resize_callback(RESIZE_DISPLAY_EVENT *ev)
-{
-   if (ev->is_maximized) {
-      restored_width = ev->old_w;
-      restored_height = ev->old_h;
-   }
-   next_idle_flags |= SYSTEM_WINDOW_RESIZE;
-}
-#endif // ALLEGRO4_WITH_RESIZE_PATCH
-
 // Initializes GUI.
 int init_module_gui()
 {
-  int min_possible_dsk_res = 0;
-  int c, w, h, bpp, autodetect;
-  bool fullscreen;
+  int c, w, h, min_possible_dsk_res = 0;
   bool maximized;
 
   shortcuts = new std::vector<Shortcut*>;
 
-  // Install the mouse
-  if (install_mouse() < 0)
-    throw base::Exception("Error installing mouse handler");
-
-  // Install the keyboard
-  if (install_keyboard() < 0)
-    throw base::Exception("Error installing keyboard handler");
-
-  // Disable Ctrl+Shift+End in non-DOS
-#if !defined(ALLEGRO_DOS)
-  three_finger_flag = false;
-#endif
-  three_finger_flag = true;     // TODO remove this line
-
   // Set the graphics mode...
-  load_gui_config(w, h, bpp, fullscreen, maximized);
+  load_gui_config(w, h, maximized);
 
-  autodetect = fullscreen ? GFX_AUTODETECT_FULLSCREEN:
-                            GFX_AUTODETECT_WINDOWED;
-
-  // Default resolution
-  if (!w || !h) {
-    bool has_desktop = false;
-    int dsk_w, dsk_h;
-
-    has_desktop = get_desktop_resolution(&dsk_w, &dsk_h) == 0;
-
-#ifndef FULLSCREEN_PLATFORM
-    // We must extract some space for the windows borders
-    dsk_w -= 16;
-    dsk_h -= 32;
-#endif
-
-    // Try to get desktop resolution
-    if (has_desktop) {
-      for (c=0; try_resolutions[c].width; ++c) {
-        if (try_resolutions[c].width <= dsk_w &&
-            try_resolutions[c].height <= dsk_h) {
-          min_possible_dsk_res = c;
-          fullscreen = false;
-          w = try_resolutions[c].width;
-          h = try_resolutions[c].height;
-          screen_scaling = try_resolutions[c].scale;
-          break;
-        }
-      }
-    }
-    // Full screen
-    else {
-      fullscreen = true;
-      w = 320;
-      h = 200;
-      screen_scaling = 1;
-    }
+  she::Display* display = NULL;
+  try {
+    display = she::Instance()->createDisplay(w, h, screen_scaling);
   }
-
-  // Default color depth
-  if (!bpp) {
-    bpp = desktop_color_depth();
-    if (!bpp)
-      bpp = 16;
-  }
-
-  for (;;) {
-    if (bpp == 8)
-      throw base::Exception("You cannot use ASEPRITE in 8 bits per pixel");
-
-    // Original
-    set_color_depth(bpp);
-    if (set_gfx_mode(autodetect, w, h, 0, 0) == 0)
-      break;
-
+  catch (const she::DisplayCreationException&) {
     for (c=min_possible_dsk_res; try_resolutions[c].width; ++c) {
-      if (set_gfx_mode(autodetect,
-                       try_resolutions[c].width,
-                       try_resolutions[c].height, 0, 0) == 0) {
+      try {
+        display = she::Instance()->createDisplay(try_resolutions[c].width,
+                                                 try_resolutions[c].height,
+                                                 try_resolutions[c].scale);
+
         screen_scaling = try_resolutions[c].scale;
-        goto gfx_done;
-      }
-    }
-
-    if (bpp == 15)
-      throw base::Exception("Error setting graphics mode\n%s\n"
-                            "Try \"ase -res WIDTHxHEIGHTxBPP\"\n", allegro_error);
-
-    for (c=0; try_depths[c]; ++c) {
-      if (bpp == try_depths[c]) {
-        bpp = try_depths[c+1];
         break;
       }
+      catch (const she::DisplayCreationException&) {
+        // Ignore
+      }
     }
   }
 
-gfx_done:;
+  if (!display) {
+    allegro_message("Unable to create a user-interface display.\n");
+    return -1;
+  }
 
   // Create the default-manager
   manager = new CustomizedGuiManager();
+  manager->setDisplay(display);
 
   // Setup the GUI theme for all widgets
   CurrentTheme::set(ase_theme = new SkinTheme());
 
-#ifdef ALLEGRO4_WITH_RESIZE_PATCH
-  // Setup the handler for window-resize events
-  set_resize_callback(resize_callback);
-#endif
-
-  #ifdef ALLEGRO_WINDOWS
-  if (maximized) {
-    ShowWindow(win_get_window(), SW_MAXIMIZE);
-  }
-  #endif
+  if (maximized)
+    display->maximize();
 
   // Configure ji_screen
   gui_setup_screen(true);
-
-  // Add a hook to display-switch so when the user returns to the
-  // screen it's completelly refreshed/redrawn.
-  LOCK_VARIABLE(next_idle_flags);
-  LOCK_FUNCTION(display_switch_in_callback);
-  set_display_switch_callback(SWITCH_IN, display_switch_in_callback);
 
   // Set graphics options for next time
   save_gui_config();
@@ -334,15 +224,6 @@ void exit_module_gui()
   delete shortcuts;
   shortcuts = NULL;
 
-  if (double_buffering) {
-    BITMAP *old_bmp = ji_screen;
-    ji_set_screen(screen, SCREEN_W, SCREEN_H);
-
-    if (ji_screen_created)
-      destroy_bitmap(old_bmp);
-    ji_screen_created = false;
-  }
-
   delete manager;
 
   // Now we can destroy theme
@@ -353,46 +234,24 @@ void exit_module_gui()
   remove_mouse();
 }
 
-static void load_gui_config(int& w, int& h, int& bpp, bool& fullscreen, bool& maximized)
+static void load_gui_config(int& w, int& h, bool& maximized)
 {
   w = get_config_int("GfxMode", "Width", 0);
   h = get_config_int("GfxMode", "Height", 0);
-  bpp = get_config_int("GfxMode", "Depth", 0);
-  fullscreen = get_config_bool("GfxMode", "FullScreen",
-#ifdef FULLSCREEN_PLATFORM
-                               true
-#else
-                               false
-#endif
-                               );
   screen_scaling = get_config_int("GfxMode", "ScreenScale", 2);
   screen_scaling = MID(1, screen_scaling, 4);
   maximized = get_config_bool("GfxMode", "Maximized", false);
-
-  // Avoid 8 bpp
-  if (bpp == 8)
-    bpp = 32;
 }
 
 static void save_gui_config()
 {
-  bool is_maximized = false;
-
-#ifdef WIN32
-  is_maximized = (GetWindowLong(win_get_window(), GWL_STYLE) & WS_MAXIMIZE ? true: false);
-#endif
-
-  set_config_bool("GfxMode", "Maximized", is_maximized);
-
-  if (screen) {
-    set_config_int("GfxMode", "Width", is_maximized ? restored_width: SCREEN_W);
-    set_config_int("GfxMode", "Height", is_maximized ? restored_height: SCREEN_H);
+  she::Display* display = Manager::getDefault()->getDisplay();
+  if (display) {
+    set_config_bool("GfxMode", "Maximized", display->isMaximized());
+    set_config_int("GfxMode", "Width", display->originalWidth());
+    set_config_int("GfxMode", "Height", display->originalHeight());
     set_config_int("GfxMode", "Depth", bitmap_color_depth(screen));
   }
-
-  if (gfx_driver)
-    set_config_bool("GfxMode", "FullScreen", gfx_driver->windowed ? false: true);
-
   set_config_int("GfxMode", "ScreenScale", screen_scaling);
 }
 
@@ -443,70 +302,14 @@ void gui_run()
 
 void gui_feedback()
 {
-#ifdef ALLEGRO4_WITH_RESIZE_PATCH
-  if (next_idle_flags & SYSTEM_WINDOW_RESIZE) {
-    next_idle_flags ^= SYSTEM_WINDOW_RESIZE;
+  jmouse_draw_cursor();
 
-    if (acknowledge_resize() < 0)
-      set_gfx_mode(GFX_AUTODETECT_WINDOWED, 320, 240, 0, 0);
-
+  if (!Manager::getDefault()->getDisplay()->flip()) {
+    // In case that the display was resized.
     gui_setup_screen(false);
     App::instance()->getMainWindow()->remap_window();
     Manager::getDefault()->invalidate();
   }
-#endif
-
-  if (next_idle_flags & REFRESH_FULL_SCREEN) {
-    next_idle_flags ^= REFRESH_FULL_SCREEN;
-
-    try {
-      const ActiveDocumentReader document(UIContext::instance());
-      update_screen_for_document(document);
-    }
-    catch (...) {
-      // do nothing
-    }
-  }
-
-  gui_flip_screen();
-}
-
-void gui_flip_screen()
-{
-  // Double buffering?
-  if (double_buffering && ji_screen && screen) {
-    jmouse_draw_cursor();
-
-    if (ji_dirty_region) {
-      ji_flip_dirty_region();
-    }
-    else {
-      if (JI_SCREEN_W == SCREEN_W && JI_SCREEN_H == SCREEN_H) {
-        blit(ji_screen, screen, 0, 0, 0, 0, SCREEN_W, SCREEN_H);
-      }
-      else {
-        stretch_blit(ji_screen, screen,
-                     0, 0, JI_SCREEN_W, JI_SCREEN_H,
-                     0, 0, SCREEN_W, SCREEN_H);
-      }
-    }
-  }
-  // This is a strange Allegro bug where the "screen" pointer is lost,
-  // so we have to reconstruct it changing the gfx mode again
-  else if (screen == NULL) {
-    PRINTF("Gfx mode lost, trying to restore gfx mode...\n");
-
-    if (!lastWorkingGfxMode.setGfxMode()) {
-      PRINTF("Fatal error\n");
-      set_gfx_mode(GFX_TEXT, 0, 0, 0, 0);
-      allegro_message("FATAL ERROR: Unable to restore the old graphics mode!\n");
-      exit(1);
-    }
-
-    PRINTF("Successfully restored\n");
-  }
-  else
-    lastWorkingGfxMode.updateWithCurrentMode();
 }
 
 // Sets the ji_screen variable. This routine should be called
@@ -516,27 +319,8 @@ void gui_setup_screen(bool reload_font)
   bool regen = false;
   bool reinit = false;
 
-  // Double buffering is required when screen scaling is used
-  double_buffering = (screen_scaling > 1);
-
-  // Is double buffering active?
-  if (double_buffering) {
-    BITMAP *old_bmp = ji_screen;
-    int new_w = SCREEN_W / screen_scaling;
-    int new_h = SCREEN_H / screen_scaling;
-    BITMAP *new_bmp = create_bitmap(new_w, new_h);
-
-    ji_set_screen(new_bmp, new_w, new_h);
-
-    if (ji_screen_created)
-      destroy_bitmap(old_bmp);
-
-    ji_screen_created = true;
-  }
-  else {
-    ji_set_screen(screen, SCREEN_W, SCREEN_H);
-    ji_screen_created = false;
-  }
+  Manager::getDefault()->getDisplay()->setScale(screen_scaling);
+  ui::SetDisplay(Manager::getDefault()->getDisplay());
 
   // Update guiscale factor
   int old_guiscale = jguiscale();

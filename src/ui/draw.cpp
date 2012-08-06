@@ -203,12 +203,6 @@ void ji_move_region(JRegion region, int dx, int dy)
   int c, nrects = JI_REGION_NUM_RECTS(region);
   JRect rc;
 
-  if (ji_dirty_region) {
-    jregion_translate(region, dx, dy);
-    ji_add_dirty_region(region);
-    jregion_translate(region, -dx, -dy);
-  }
-
   // Blit directly screen to screen.
   if (is_linear_bitmap(ji_screen) && nrects == 1) {
     rc = JI_REGION_RECTS(region);

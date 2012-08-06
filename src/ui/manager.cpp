@@ -112,9 +112,6 @@ Manager::Manager()
   : Widget(JI_MANAGER)
 {
   if (!m_defaultManager) {
-    if (!ji_screen)
-      ji_set_screen(screen, SCREEN_W, SCREEN_H);
-
     // Hook the window close message
     want_close_stage = STAGE_NORMAL;
     set_close_button_callback(allegro_window_close_hook);
@@ -1101,10 +1098,6 @@ void Manager::pumpQueue()
       /* restore clip */
       if (msg->type == JM_DRAW) {
         set_clip_rect(ji_screen, 0, 0, JI_SCREEN_W-1, JI_SCREEN_H-1);
-
-        /* dirty rectangles */
-        if (ji_dirty_region)
-          ji_add_dirty_rect(&msg->draw.rect);
 
         release_bitmap(ji_screen);
         jmouse_show();

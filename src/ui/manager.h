@@ -10,6 +10,8 @@
 #include "base/compiler_specific.h"
 #include "ui/widget.h"
 
+namespace she { class Display; }
+
 namespace ui {
 
   class LayoutIO;
@@ -23,6 +25,9 @@ namespace ui {
 
     Manager();
     ~Manager();
+
+    she::Display* getDisplay() { return m_display; }
+    void setDisplay(she::Display* display) { m_display = display; }
 
     void run();
 
@@ -85,6 +90,7 @@ namespace ui {
     static Manager* m_defaultManager;
 
     WidgetsList m_garbage;
+    she::Display* m_display;
   };
 
 } // namespace ui

@@ -1,0 +1,26 @@
+// SHE library
+// Copyright (C) 2012  David Capello
+//
+// This source file is ditributed under a BSD-like license, please
+// read LICENSE.txt for more information.
+
+#ifndef SHE_SURFACE_H_INCLUDED
+#define SHE_SURFACE_H_INCLUDED
+
+namespace she {
+
+  class LockedSurface;
+
+  class Surface {
+  public:
+    virtual ~Surface() { }
+    virtual void dispose() = 0;
+    virtual int width() const = 0;
+    virtual int height() const = 0;
+    virtual LockedSurface* lock() = 0;
+    virtual void* nativeHandle() = 0;
+  };
+
+} // namespace she
+
+#endif
