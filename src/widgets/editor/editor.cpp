@@ -1099,7 +1099,7 @@ void Editor::editor_setcursor()
 
   if (!used) {
     hideDrawingCursor();
-    jmouse_set_cursor(JI_CURSOR_NORMAL);
+    jmouse_set_cursor(kArrowCursor);
   }
 }
 

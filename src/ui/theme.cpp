@@ -50,8 +50,8 @@ Theme::~Theme()
 
 void Theme::regenerate()
 {
-  int type = jmouse_get_cursor();
-  jmouse_set_cursor(JI_CURSOR_NULL);
+  CursorType type = jmouse_get_cursor();
+  jmouse_set_cursor(kNoCursor);
 
   onRegenerate();
 

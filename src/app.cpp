@@ -156,7 +156,7 @@ int App::run()
     PRINTF("GUI mode\n");
 
     // Setup the GUI screen
-    jmouse_set_cursor(JI_CURSOR_NORMAL);
+    jmouse_set_cursor(kArrowCursor);
     ui::Manager::getDefault()->invalidate();
 
     // Create the main window and show it.

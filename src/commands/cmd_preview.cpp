@@ -104,7 +104,7 @@ void PreviewCommand::onExecute(Context* context)
   int old_mouse_x = jmouse_x(0);
   int old_mouse_y = jmouse_y(0);
 
-  jmouse_set_cursor(JI_CURSOR_NULL);
+  jmouse_set_cursor(kNoCursor);
   jmouse_set_position(JI_SCREEN_W/2, JI_SCREEN_H/2);
 
   int pos_x = - scroll.x + vp.x + editor->getOffsetX();
@@ -240,7 +240,7 @@ void PreviewCommand::onExecute(Context* context)
   clear_keybuf();
 
   jmouse_set_position(old_mouse_x, old_mouse_y);
-  jmouse_set_cursor(JI_CURSOR_NORMAL);
+  jmouse_set_cursor(kArrowCursor);
 
   ui::Manager::getDefault()->invalidate();
 }

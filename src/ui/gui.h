@@ -15,6 +15,8 @@
 #include "ui/clipboard.h"
 #include "ui/combobox.h"
 #include "ui/component.h"
+#include "ui/cursor.h"
+#include "ui/cursor_type.h"
 #include "ui/custom_label.h"
 #include "ui/draw.h"
 #include "ui/entry.h"

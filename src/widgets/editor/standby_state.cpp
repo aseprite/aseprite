@@ -62,26 +62,26 @@ enum WHEEL_ACTION { WHEEL_NONE,
                     WHEEL_BG,
                     WHEEL_FRAME };
 
-static int rotated_size_cursors[] = {
-  JI_CURSOR_SIZE_R,
-  JI_CURSOR_SIZE_TR,
-  JI_CURSOR_SIZE_T,
-  JI_CURSOR_SIZE_TL,
-  JI_CURSOR_SIZE_L,
-  JI_CURSOR_SIZE_BL,
-  JI_CURSOR_SIZE_B,
-  JI_CURSOR_SIZE_BR
+static CursorType rotated_size_cursors[] = {
+  kSizeRCursor,
+  kSizeTRCursor,
+  kSizeTCursor,
+  kSizeTLCursor,
+  kSizeLCursor,
+  kSizeBLCursor,
+  kSizeBCursor,
+  kSizeBRCursor
 };
 
-static int rotated_rotate_cursors[] = {
-  JI_CURSOR_ROTATE_R,
-  JI_CURSOR_ROTATE_TR,
-  JI_CURSOR_ROTATE_T,
-  JI_CURSOR_ROTATE_TL,
-  JI_CURSOR_ROTATE_L,
-  JI_CURSOR_ROTATE_BL,
-  JI_CURSOR_ROTATE_B,
-  JI_CURSOR_ROTATE_BR
+static CursorType rotated_rotate_cursors[] = {
+  kRotateRCursor,
+  kRotateTRCursor,
+  kRotateTCursor,
+  kRotateTLCursor,
+  kRotateLCursor,
+  kRotateBLCursor,
+  kRotateBCursor,
+  kRotateBRCursor
 };
 
 static inline bool has_shifts(Message* msg, int shift)
@@ -391,39 +391,39 @@ bool StandbyState::onSetCursor(Editor* editor)
         editor->hideDrawingCursor();
 
         if (customization && customization->isCopySelectionKeyPressed())
-          jmouse_set_cursor(JI_CURSOR_NORMAL_ADD);
+          jmouse_set_cursor(kArrowPlusCursor);
         else
-          jmouse_set_cursor(JI_CURSOR_MOVE);
+          jmouse_set_cursor(kMoveCursor);
 
         return true;
       }
     }
     else if (current_ink->isEyedropper()) {
       editor->hideDrawingCursor();
-      jmouse_set_cursor(JI_CURSOR_EYEDROPPER);
+      jmouse_set_cursor(kEyedropperCursor);
       return true;
     }
     else if (current_ink->isScrollMovement()) {
       editor->hideDrawingCursor();
-      jmouse_set_cursor(JI_CURSOR_SCROLL);
+      jmouse_set_cursor(kScrollCursor);
       return true;
     }
     else if (current_ink->isCelMovement()) {
       editor->hideDrawingCursor();
-      jmouse_set_cursor(JI_CURSOR_MOVE);
+      jmouse_set_cursor(kMoveCursor);
       return true;
     }
   }
 
   // Draw
   if (editor->canDraw()) {
-    jmouse_set_cursor(JI_CURSOR_NULL);
+    jmouse_set_cursor(kNoCursor);
     editor->showDrawingCursor();
   }
   // Forbidden
   else {
     editor->hideDrawingCursor();
-    jmouse_set_cursor(JI_CURSOR_FORBIDDEN);
+    jmouse_set_cursor(kForbiddenCursor);
   }
 
   return true;
@@ -540,26 +540,26 @@ bool StandbyState::Decorator::onSetCursor(Editor* editor)
                                            gfx::Point(jmouse_x(0), jmouse_y(0)),
                                            transformation);
 
-  int newCursor = JI_CURSOR_NORMAL;
+  CursorType newCursor = kArrowCursor;
 
   switch (handle) {
-    case ScaleNWHandle:         newCursor = JI_CURSOR_SIZE_TL; break;
-    case ScaleNHandle:          newCursor = JI_CURSOR_SIZE_T; break;
-    case ScaleNEHandle:         newCursor = JI_CURSOR_SIZE_TR; break;
-    case ScaleWHandle:          newCursor = JI_CURSOR_SIZE_L; break;
-    case ScaleEHandle:          newCursor = JI_CURSOR_SIZE_R; break;
-    case ScaleSWHandle:         newCursor = JI_CURSOR_SIZE_BL; break;
-    case ScaleSHandle:          newCursor = JI_CURSOR_SIZE_B; break;
-    case ScaleSEHandle:         newCursor = JI_CURSOR_SIZE_BR; break;
-    case RotateNWHandle:        newCursor = JI_CURSOR_ROTATE_TL; break;
-    case RotateNHandle:         newCursor = JI_CURSOR_ROTATE_T; break;
-    case RotateNEHandle:        newCursor = JI_CURSOR_ROTATE_TR; break;
-    case RotateWHandle:         newCursor = JI_CURSOR_ROTATE_L; break;
-    case RotateEHandle:         newCursor = JI_CURSOR_ROTATE_R; break;
-    case RotateSWHandle:        newCursor = JI_CURSOR_ROTATE_BL; break;
-    case RotateSHandle:         newCursor = JI_CURSOR_ROTATE_B; break;
-    case RotateSEHandle:        newCursor = JI_CURSOR_ROTATE_BR; break;
-    case PivotHandle:           newCursor = JI_CURSOR_HAND; break;
+    case ScaleNWHandle:         newCursor = kSizeTLCursor; break;
+    case ScaleNHandle:          newCursor = kSizeTCursor; break;
+    case ScaleNEHandle:         newCursor = kSizeTRCursor; break;
+    case ScaleWHandle:          newCursor = kSizeLCursor; break;
+    case ScaleEHandle:          newCursor = kSizeRCursor; break;
+    case ScaleSWHandle:         newCursor = kSizeBLCursor; break;
+    case ScaleSHandle:          newCursor = kSizeBCursor; break;
+    case ScaleSEHandle:         newCursor = kSizeBRCursor; break;
+    case RotateNWHandle:        newCursor = kRotateTLCursor; break;
+    case RotateNHandle:         newCursor = kRotateTCursor; break;
+    case RotateNEHandle:        newCursor = kRotateTRCursor; break;
+    case RotateWHandle:         newCursor = kRotateLCursor; break;
+    case RotateEHandle:         newCursor = kRotateRCursor; break;
+    case RotateSWHandle:        newCursor = kRotateBLCursor; break;
+    case RotateSHandle:         newCursor = kRotateBCursor; break;
+    case RotateSEHandle:        newCursor = kRotateBRCursor; break;
+    case PivotHandle:           newCursor = kHandCursor; break;
     default:
       return false;
   }
@@ -571,7 +571,7 @@ bool StandbyState::Decorator::onSetCursor(Editor* editor)
   angle >>= 16;
   angle /= 32;
 
-  if (newCursor >= JI_CURSOR_SIZE_TL && newCursor <= JI_CURSOR_SIZE_BR) {
+  if (newCursor >= kSizeTLCursor && newCursor <= kSizeBRCursor) {
     size_t num = sizeof(rotated_size_cursors) / sizeof(rotated_size_cursors[0]);
     size_t c;
     for (c=num-1; c>0; --c)
@@ -580,7 +580,7 @@ bool StandbyState::Decorator::onSetCursor(Editor* editor)
 
     newCursor = rotated_size_cursors[(c+angle) % num];
   }
-  else if (newCursor >= JI_CURSOR_ROTATE_TL && newCursor <= JI_CURSOR_ROTATE_BR) {
+  else if (newCursor >= kRotateTLCursor && newCursor <= kRotateBRCursor) {
     size_t num = sizeof(rotated_rotate_cursors) / sizeof(rotated_rotate_cursors[0]);
     size_t c;
     for (c=num-1; c>0; --c)

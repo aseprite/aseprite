@@ -9,6 +9,7 @@
 
 #include "gfx/rect.h"
 #include "ui/base.h"
+#include "ui/cursor_type.h"
 
 struct BITMAP;
 
@@ -36,37 +37,10 @@ namespace ui {
   /***********************************************************************/
   /* mouse related */
 
-  enum {
-    JI_CURSOR_NULL,
-    JI_CURSOR_NORMAL,
-    JI_CURSOR_NORMAL_ADD,
-    JI_CURSOR_FORBIDDEN,
-    JI_CURSOR_HAND,
-    JI_CURSOR_SCROLL,
-    JI_CURSOR_MOVE,
-    JI_CURSOR_SIZE_TL,
-    JI_CURSOR_SIZE_T,
-    JI_CURSOR_SIZE_TR,
-    JI_CURSOR_SIZE_L,
-    JI_CURSOR_SIZE_R,
-    JI_CURSOR_SIZE_BL,
-    JI_CURSOR_SIZE_B,
-    JI_CURSOR_SIZE_BR,
-    JI_CURSOR_ROTATE_TL,
-    JI_CURSOR_ROTATE_T,
-    JI_CURSOR_ROTATE_TR,
-    JI_CURSOR_ROTATE_L,
-    JI_CURSOR_ROTATE_R,
-    JI_CURSOR_ROTATE_BL,
-    JI_CURSOR_ROTATE_B,
-    JI_CURSOR_ROTATE_BR,
-    JI_CURSOR_EYEDROPPER,
-    JI_CURSORS
-  };
+  void UpdateCursorOverlay();
 
-  int jmouse_get_cursor();
-  int jmouse_set_cursor(int type);
-  void jmouse_draw_cursor();
+  CursorType jmouse_get_cursor();
+  void jmouse_set_cursor(CursorType type);
 
   void jmouse_hide();
   void jmouse_show();

@@ -39,7 +39,7 @@ bool LinkLabel::onProcessMessage(Message* msg)
     case JM_SETCURSOR:
       // TODO theme stuff
       if (isEnabled()) {
-        jmouse_set_cursor(JI_CURSOR_HAND);
+        jmouse_set_cursor(kHandCursor);
         return true;
       }
       break;

@@ -50,20 +50,22 @@ namespace she {
 class Alleg4Surface : public Surface
                     , public LockedSurface {
 public:
-  Alleg4Surface(BITMAP* bmp)
+  enum DestroyFlag { NoDestroy, AutoDestroy };
+
+  Alleg4Surface(BITMAP* bmp, DestroyFlag destroy)
     : m_bmp(bmp)
-    , m_destroy(false)
+    , m_destroy(destroy)
   {
   }
 
   Alleg4Surface(int width, int height)
     : m_bmp(create_bitmap(width, height))
-    , m_destroy(true)
+    , m_destroy(AutoDestroy)
   {
   }
 
   ~Alleg4Surface() {
-    if (m_destroy)
+    if (m_destroy == AutoDestroy)
       destroy_bitmap(m_bmp);
   }
 
@@ -119,7 +121,7 @@ public:
 
 private:
   BITMAP* m_bmp;
-  bool m_destroy;
+  DestroyFlag m_destroy;
 };
 
 class Alleg4Display : public Display {
@@ -286,6 +288,11 @@ public:
 
   Surface* createSurface(int width, int height) {
     return new Alleg4Surface(width, height);
+  }
+
+  Surface* createSurfaceFromNativeHandle(void* nativeHandle) {
+    return new Alleg4Surface(reinterpret_cast<BITMAP*>(nativeHandle),
+                             Alleg4Surface::AutoDestroy);
   }
 
 };

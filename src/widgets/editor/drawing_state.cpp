@@ -131,10 +131,10 @@ bool DrawingState::onSetCursor(Editor* editor)
 {
   if (m_toolLoop->getInk()->isEyedropper()) {
     editor->hideDrawingCursor();
-    jmouse_set_cursor(JI_CURSOR_EYEDROPPER);
+    jmouse_set_cursor(kEyedropperCursor);
   }
   else {
-    jmouse_set_cursor(JI_CURSOR_NULL);
+    jmouse_set_cursor(kNoCursor);
     editor->showDrawingCursor();
   }
   return true;

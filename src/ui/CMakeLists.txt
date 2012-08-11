@@ -9,6 +9,7 @@ add_library(ui-lib
   clipboard.cpp
   combobox.cpp
   component.cpp
+  cursor.cpp
   custom_label.cpp
   draw.cpp
   entry.cpp

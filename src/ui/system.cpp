@@ -8,10 +8,14 @@
 
 #include "ui/system.h"
 
+#include "gfx/point.h"
 #include "she/display.h"
 #include "she/surface.h"
+#include "ui/cursor.h"
 #include "ui/intern.h"
 #include "ui/manager.h"
+#include "ui/overlay.h"
+#include "ui/overlay_manager.h"
 #include "ui/rect.h"
 #include "ui/region.h"
 #include "ui/theme.h"
@@ -37,16 +41,11 @@ int ji_screen_h = 0;
 
 volatile int ji_clock = 0;
 
-/* Current mouse cursor type.  */
+// Current mouse cursor type.
 
-static int m_cursor;
-static BITMAP *sprite_cursor = NULL;
-static int focus_x;
-static int focus_y;
-
-static BITMAP *covered_area = NULL;
-static int covered_area_x;
-static int covered_area_y;
+static CursorType mouse_cursor_type = kNoCursor;
+static Cursor* mouse_cursor = NULL;
+static Overlay* mouse_cursor_overlay = NULL;
 
 /* Mouse information (button and position).  */
 
@@ -60,12 +59,8 @@ static int mouse_scares = 0;
 
 /* Local routines.  */
 
-static void set_cursor(BITMAP *bmp, int x, int y);
 static void clock_inc();
 static void update_mouse_position();
-
-static void capture_covered_area();
-static void restore_covered_area();
 
 static void clock_inc()
 {
@@ -74,14 +69,27 @@ static void clock_inc()
 
 END_OF_STATIC_FUNCTION(clock_inc);
 
-static void set_cursor(BITMAP *bmp, int x, int y)
+static void set_mouse_cursor(Cursor* cursor)
 {
-  sprite_cursor = bmp;
-  focus_x = x;
-  focus_y = y;
+  mouse_cursor = cursor;
 
-  set_mouse_sprite(bmp);
-  set_mouse_sprite_focus(x, y);
+  if (mouse_cursor) {
+    if (!mouse_cursor_overlay) {
+      mouse_cursor_overlay = new Overlay(mouse_cursor->getSurface(),
+                                         gfx::Point(), Overlay::MouseZOrder);
+      OverlayManager::instance()->addOverlay(mouse_cursor_overlay);
+    }
+    else {
+      mouse_cursor_overlay->setSurface(mouse_cursor->getSurface());
+      UpdateCursorOverlay();
+    }
+  }
+  else if (mouse_cursor_overlay) {
+    OverlayManager::instance()->removeOverlay(mouse_cursor_overlay);
+    mouse_cursor_overlay->setSurface(NULL);
+    delete mouse_cursor_overlay;
+    mouse_cursor_overlay = NULL;
+  }
 }
 
 int _ji_system_init()
@@ -98,7 +106,7 @@ int _ji_system_init()
     jmouse_poll();
 
   moved = true;
-  m_cursor = JI_CURSOR_NULL;
+  mouse_cursor_type = kNoCursor;
 
   return 0;
 }
@@ -106,15 +114,16 @@ int _ji_system_init()
 void _ji_system_exit()
 {
   SetDisplay(NULL);
+  set_mouse_cursor(NULL);
 
   remove_int(clock_inc);
 }
 
 void SetDisplay(she::Display* display)
 {
-  int cursor = jmouse_get_cursor();
+  CursorType cursor = jmouse_get_cursor();
 
-  jmouse_set_cursor(JI_CURSOR_NULL);
+  jmouse_set_cursor(kNoCursor);
   ji_screen = (display ? reinterpret_cast<BITMAP*>(display->getSurface()->nativeHandle()): NULL);
   ji_screen_w = (ji_screen ? ji_screen->w: 0);
   ji_screen_h = (ji_screen ? ji_screen->h: 0);
@@ -133,89 +142,43 @@ void SetDisplay(she::Display* display)
       }
     }
 
-    jmouse_set_cursor(cursor);  /* restore mouse cursor */
+    jmouse_set_cursor(cursor);  // Restore mouse cursor
   }
 }
 
-int jmouse_get_cursor()
+void UpdateCursorOverlay()
 {
-  return m_cursor;
+  if (mouse_cursor_overlay != NULL && mouse_scares == 0)
+    mouse_cursor_overlay->moveOverlay(gfx::Point(m_x[0]-mouse_cursor->getFocus().x,
+                                                 m_y[0]-mouse_cursor->getFocus().y));
 }
 
-int jmouse_set_cursor(int type)
+CursorType jmouse_get_cursor()
 {
-  if (m_cursor == type)
-    return type;
+  return mouse_cursor_type;
+}
+
+void jmouse_set_cursor(CursorType type)
+{
+  if (mouse_cursor_type == type)
+    return;
+
+  Theme* theme = CurrentTheme::get();
+  mouse_cursor_type = type;
+
+  if (type == kNoCursor) {
+    show_mouse(NULL);
+    set_mouse_cursor(NULL);
+  }
   else {
-    Theme* theme = CurrentTheme::get();
-    int old = m_cursor;
-    m_cursor = type;
-
-    if (m_cursor == JI_CURSOR_NULL) {
-      show_mouse(NULL);
-      set_cursor(NULL, 0, 0);
-    }
-    else {
-      show_mouse(NULL);
-
-      {
-        BITMAP *sprite;
-        int x = 0;
-        int y = 0;
-
-        sprite = theme->set_cursor(type, &x, &y);
-        set_cursor(sprite, x, y);
-      }
-
-      if (ji_screen == screen)
-        show_mouse(ji_screen);
-    }
-
-    return old;
-  }
-}
-
-/**
- * Use this routine if your "ji_screen" isn't Allegro's "screen" so
- * you must to draw the cursor by your self using this routine.
- */
-void jmouse_draw_cursor()
-{
-#if 0
-  if (sprite_cursor != NULL && mouse_scares == 0) {
-    int x = m_x[0]-focus_x;
-    int y = m_y[0]-focus_y;
-    JRect rect = jrect_new(x, y,
-                           x+sprite_cursor->w,
-                           y+sprite_cursor->h);
-
-    ji_get_default_manager()->invalidateRect(rect);
-    /* rectfill(ji_screen, rect->x1, rect->y1, rect->x2-1, rect->y2-1, makecol(0, 0, 255)); */
-    draw_sprite(ji_screen, sprite_cursor, x, y);
-    jrect_free(rect);
-  }
-#endif
-
-  if (sprite_cursor != NULL && mouse_scares == 0) {
-    int x = m_x[0]-focus_x;
-    int y = m_y[0]-focus_y;
-
-    restore_covered_area();
-    capture_covered_area();
-
-    draw_sprite(ji_screen, sprite_cursor, x, y);
+    show_mouse(NULL);
+    set_mouse_cursor(theme->getCursor(type));
   }
 }
 
 void jmouse_hide()
 {
   ASSERT(mouse_scares >= 0);
-
-  if (ji_screen == screen)
-    scare_mouse();
-  else if (mouse_scares == 0)
-    restore_covered_area();
-
   mouse_scares++;
 }
 
@@ -223,9 +186,6 @@ void jmouse_show()
 {
   ASSERT(mouse_scares > 0);
   mouse_scares--;
-
-  if (ji_screen == screen)
-    unscare_mouse();
 }
 
 bool jmouse_is_hidden()
@@ -280,13 +240,8 @@ void jmouse_set_position(int x, int y)
   m_x[0] = m_x[1] = x;
   m_y[0] = m_y[1] = y;
 
-  if (ji_screen == screen) {
-    position_mouse(x, y);
-  }
-  else {
-    position_mouse(SCREEN_W * x / JI_SCREEN_W,
-                   SCREEN_H * y / JI_SCREEN_H);
-  }
+  position_mouse(SCREEN_W * x / JI_SCREEN_W,
+                 SCREEN_H * y / JI_SCREEN_H);
 }
 
 void jmouse_capture()
@@ -346,19 +301,13 @@ bool jmouse_control_infinite_scroll(const gfx::Rect& rect)
 
 static void update_mouse_position()
 {
-  if (ji_screen == screen) {
-    m_x[0] = mouse_x;
-    m_y[0] = mouse_y;
-  }
-  else {
-    m_x[0] = JI_SCREEN_W * mouse_x / SCREEN_W;
-    m_y[0] = JI_SCREEN_H * mouse_y / SCREEN_H;
-  }
+  m_x[0] = JI_SCREEN_W * mouse_x / SCREEN_W;
+  m_y[0] = JI_SCREEN_H * mouse_y / SCREEN_H;
 
   if (is_windowed_mode()) {
 #ifdef ALLEGRO_WINDOWS
-  /* this help us (in windows) to get mouse feedback when we capture
-     the mouse but we are outside the Allegro window */
+    // This help us (in windows) to get mouse feedback when we capture
+    // the mouse but we are outside the window.
     POINT pt;
     RECT rc;
 
@@ -366,25 +315,22 @@ static void update_mouse_position()
       MapWindowPoints(win_get_window(), NULL, (LPPOINT)&rc, 2);
 
       if (!PtInRect(&rc, pt)) {
-        /* if the mouse is free we can hide the cursor putting the
-           mouse outside the screen (right-bottom corder) */
+        // If the mouse is free we can hide the cursor putting the
+        // mouse outside the screen (right-bottom corder).
         if (!Manager::getDefault()->getCapture()) {
-          m_x[0] = JI_SCREEN_W+focus_x;
-          m_y[0] = JI_SCREEN_H+focus_y;
+          if (mouse_cursor) {
+            m_x[0] = JI_SCREEN_W + mouse_cursor->getFocus().x;
+            m_y[0] = JI_SCREEN_H + mouse_cursor->getFocus().y;
+          }
         }
-        /* if the mouse is captured we can put it in the edges of the screen */
+        // If the mouse is captured we can put it in the edges of the
+        // screen.
         else {
           pt.x -= rc.left;
           pt.y -= rc.top;
 
-          if (ji_screen == screen) {
-            m_x[0] = pt.x;
-            m_y[0] = pt.y;
-          }
-          else {
-            m_x[0] = JI_SCREEN_W * pt.x / SCREEN_W;
-            m_y[0] = JI_SCREEN_H * pt.y / SCREEN_H;
-          }
+          m_x[0] = JI_SCREEN_W * pt.x / SCREEN_W;
+          m_y[0] = JI_SCREEN_H * pt.y / SCREEN_H;
 
           m_x[0] = MID(0, m_x[0], JI_SCREEN_W-1);
           m_y[0] = MID(0, m_y[0], JI_SCREEN_H-1);
@@ -392,33 +338,6 @@ static void update_mouse_position()
       }
     }
 #endif
-  }
-}
-
-static void capture_covered_area()
-{
-  if (sprite_cursor != NULL && mouse_scares == 0) {
-    ASSERT(covered_area == NULL);
-
-    covered_area = create_bitmap(sprite_cursor->w, sprite_cursor->h);
-    covered_area_x = m_x[0]-focus_x;
-    covered_area_y = m_y[0]-focus_y;
-
-    blit(ji_screen, covered_area,
-         covered_area_x, covered_area_y, 0, 0,
-         covered_area->w, covered_area->h);
-  }
-}
-
-static void restore_covered_area()
-{
-  if (covered_area != NULL) {
-    blit(covered_area, ji_screen,
-         0, 0, covered_area_x, covered_area_y,
-         covered_area->w, covered_area->h);
-
-    destroy_bitmap(covered_area);
-    covered_area = NULL;
   }
 }
 

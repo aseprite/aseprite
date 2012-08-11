@@ -8,6 +8,7 @@
 #define UI_THEME_H_INCLUDED
 
 #include "ui/base.h"
+#include "ui/cursor_type.h"
 
 struct BITMAP;
 struct FONT;
@@ -15,6 +16,7 @@ struct FONT;
 namespace ui {
 
   class ButtonBase;
+  class Cursor;
   class Entry;
   class Menu;
   class MenuItem;
@@ -37,7 +39,7 @@ namespace ui {
 
     void regenerate();
 
-    virtual BITMAP* set_cursor(int type, int *focus_x, int *focus_y) = 0;
+    virtual Cursor* getCursor(CursorType type) = 0;
     virtual void init_widget(Widget* widget) = 0;
     virtual ui::JRegion get_window_mask(ui::Widget* widget) = 0;
     virtual void map_decorative_widget(ui::Widget* widget) = 0;

@@ -210,12 +210,12 @@ bool ColorCurveEditor::onProcessMessage(Message* msg)
       // Change scroll
       if (msg->any.shifts & KB_SHIFT_FLAG) {
         m_status = STATUS_SCROLLING;
-        jmouse_set_cursor(JI_CURSOR_SCROLL);
+        jmouse_set_cursor(kScrollCursor);
       }
       /* scaling */
 /*       else if (msg->shifts & KB_CTRL_FLAG) { */
 /*      m_status = STATUS_SCALING; */
-/*      jmouse_set_cursor(JI_CURSOR_SCROLL); */
+/*      jmouse_set_cursor(kScrollCursor); */
 /*       } */
       // Show manual-entry dialog
       else if (msg->mouse.right) {
@@ -243,7 +243,7 @@ bool ColorCurveEditor::onProcessMessage(Message* msg)
                                       &m_editY);
 
         m_status = STATUS_MOVING_POINT;
-        jmouse_set_cursor(JI_CURSOR_HAND);
+        jmouse_set_cursor(kHandCursor);
       }
 
       captureMouse();
@@ -300,15 +300,15 @@ bool ColorCurveEditor::onProcessMessage(Message* msg)
         switch (m_status) {
 
           case STATUS_SCROLLING:
-            jmouse_set_cursor(JI_CURSOR_NORMAL);
+            jmouse_set_cursor(kArrowCursor);
             break;
 
 /*        case STATUS_SCALING: */
-/*          jmouse_set_cursor(JI_CURSOR_NORMAL); */
+/*          jmouse_set_cursor(kArrowCursor); */
 /*          break; */
 
           case STATUS_MOVING_POINT:
-            jmouse_set_cursor(JI_CURSOR_NORMAL);
+            jmouse_set_cursor(kArrowCursor);
             CurveEditorChange();
 
             m_editPoint = NULL;
