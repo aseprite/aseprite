@@ -18,8 +18,6 @@
 
 #include "config.h"
 
-#include <allegro.h>
-
 #include "base/bind.h"
 #include "ui/gui.h"
 

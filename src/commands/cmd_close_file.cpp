@@ -18,18 +18,18 @@
 
 #include "config.h"
 
-#include "ui/gui.h"
-#include <allegro.h>
-#include <memory>
-
 #include "app.h"
+#include "base/path.h"
 #include "commands/command.h"
 #include "commands/commands.h"
 #include "document_wrappers.h"
 #include "modules/editors.h"
 #include "raster/sprite.h"
+#include "ui/gui.h"
 #include "ui_context.h"
 #include "widgets/status_bar.h"
+
+#include <memory>
 
 using namespace ui;
 
@@ -129,7 +129,7 @@ static bool close_active_document(Context* context)
       while (document->isModified()) {
         // ask what want to do the user with the changes in the sprite
         int ret = Alert::show("Warning<<Saving changes in:<<%s||&Save||Do&n't Save||&Cancel",
-                              get_filename(document->getFilename()));
+                              base::get_file_name(document->getFilename()).c_str());
 
         if (ret == 1) {
           // "save": save the changes
@@ -164,7 +164,7 @@ static bool close_active_document(Context* context)
     ActiveDocumentWriter document(context);
     StatusBar::instance()
       ->setStatusText(0, "Sprite '%s' closed.",
-                      get_filename(document->getFilename()));
+                      base::get_file_name(document->getFilename()).c_str());
     document.deleteDocument();
   }
   return true;
