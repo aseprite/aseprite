@@ -480,6 +480,10 @@ void Editor::drawSprite(int x1, int y1, int x2, int y2)
     this->drawGrid(settings->getGridBounds(),
                    settings->getGridColor());
 
+  // Draw the mask
+  if (m_document->getBoundariesSegments())
+    this->drawMask();
+
   // Post-render decorator.
   if (m_decorator) {
     EditorPostRenderImpl postRender(this);
@@ -955,7 +959,6 @@ bool Editor::onProcessMessage(Message* msg)
           jdraw_rectfill(vp, theme->get_editor_face_color());
         }
       }
-
       return true;
     }
 
