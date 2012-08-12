@@ -21,10 +21,10 @@
 
 #include "config.h"
 
-#include <allegro.h>
 #include <gtest/gtest.h>
 
 #ifdef TEST_GUI
+  #include "she/she.h"
   #include "ui/gui.h"
 #endif
 
@@ -35,17 +35,11 @@
 int main(int argc, char* argv[])
 {
   int exitcode;
-
   ::testing::InitGoogleTest(&argc, argv);
-  allegro_init();
 
   #ifdef TEST_GUI
-    set_color_depth(desktop_color_depth());
-    set_gfx_mode(GFX_AUTODETECT_WINDOWED, 256, 256, 0, 0);
-    install_timer();
-    install_keyboard();
-    install_mouse();
     {
+      she::ScopedHandle<she::System> system(she::CreateSystem());
       ui::GuiSystem guiSystem;
       UniquePtr<ui::Manager> manager(new ui::Manager());
   #endif
@@ -56,7 +50,6 @@ int main(int argc, char* argv[])
     }
   #endif
 
-  allegro_exit();
   return exitcode;
 }
 
