@@ -80,7 +80,7 @@ if(USE_SHARED_LIBLOADPNG)
   set(libs3rdparty ${libs3rdparty} ${LIBLOADPNG_LIBRARY})
   include_directories(${LIBLOADPNG_INCLUDE_DIR})
 else()
-  set(libs3rdparty ${libs3rdparty} loadpng)
+  set(libs3rdparty loadpng ${libs3rdparty})
   include_directories(${LOADPNG_DIR})
 endif()
 
