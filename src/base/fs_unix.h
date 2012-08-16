@@ -29,7 +29,7 @@ void make_directory(const string& path)
   int result = mkdir(path.c_str(), 0777);
   if (result < 0) {
     // TODO add errno into the exception
-    throw runtime_error("Error creating directory");
+    throw std::runtime_error("Error creating directory");
   }
 }
 
@@ -38,7 +38,7 @@ void remove_directory(const string& path)
   int result = rmdir(path.c_str());
   if (result != 0) {
     // TODO add errno into the exception
-    throw runtime_error("Error removing directory");
+    throw std::runtime_error("Error removing directory");
   }
 }
 
