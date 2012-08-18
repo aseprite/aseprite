@@ -22,6 +22,7 @@
 
 #include "base/unique_ptr.h"
 #include "document.h"
+#include "document_observer.h"
 #include "document_undo.h"
 #include "raster/algorithm/flip_image.h"
 #include "raster/blend.h"
@@ -387,6 +388,8 @@ LayerImage* UndoTransaction::newLayer()
   // select the new layer
   setCurrentLayer(layer);
 
+  m_document->notifyObservers<Document*, Layer*>(&DocumentObserver::onAddLayer, m_document, layer);
+
   return layer;
 }
 
@@ -396,6 +399,8 @@ LayerImage* UndoTransaction::newLayer()
 void UndoTransaction::removeLayer(Layer* layer)
 {
   ASSERT(layer);
+
+  m_document->notifyObservers(&DocumentObserver::onRemoveLayer, m_document, layer);
 
   LayerFolder* parent = layer->get_parent();
 
@@ -688,6 +693,8 @@ void UndoTransaction::newFrame()
 
   // go to next frame (the new one)
   setCurrentFrame(newFrame);
+
+  m_document->notifyObservers(&DocumentObserver::onAddFrame, m_document, newFrame);
 }
 
 void UndoTransaction::newFrameForLayer(Layer* layer, FrameNumber frame)
@@ -723,6 +730,8 @@ void UndoTransaction::newFrameForLayer(Layer* layer, FrameNumber frame)
 void UndoTransaction::removeFrame(FrameNumber frame)
 {
   ASSERT(frame >= 0);
+
+  m_document->notifyObservers(&DocumentObserver::onRemoveFrame, m_document, frame);
 
   // Remove cels from this frame (and displace one position backward
   // all next frames)

@@ -24,6 +24,7 @@
 #include "base/mutex.h"
 #include "base/scoped_lock.h"
 #include "base/unique_ptr.h"
+#include "document_observer.h"
 #include "document_undo.h"
 #include "file/format_options.h"
 #include "flatten.h"
@@ -69,6 +70,8 @@ Document::Document(Sprite* sprite)
 
 Document::~Document()
 {
+  notifyObservers(&DocumentObserver::onRemoveSprite, this, m_sprite.get());
+
   if (m_bound.seg)
     base_free(m_bound.seg);
 
@@ -128,6 +131,8 @@ void Document::addSprite(Sprite* sprite)
 {
   ASSERT(m_sprite == NULL);     // TODO add support for more sprites in the future (e.g. for .ico files)
   m_sprite.reset(sprite);
+
+  notifyObservers(&DocumentObserver::onAddSprite, this, m_sprite.get());
 }
 
 const char* Document::getFilename() const

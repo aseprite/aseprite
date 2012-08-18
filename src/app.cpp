@@ -30,6 +30,7 @@
 #include "commands/commands.h"
 #include "commands/params.h"
 #include "console.h"
+#include "document_observer.h"
 #include "drop_files.h"
 #include "file/file.h"
 #include "file/file_formats_manager.h"
