@@ -103,13 +103,13 @@ Document* Context::getActiveDocument() const
 
 void Context::setActiveDocument(Document* document)
 {
-  m_listeners.notifyActiveDocumentBeforeChange(this);
+  m_observers.notifyActiveDocumentBeforeChange(this);
 
   m_activeDocument = document;
 
   onSetActiveDocument(document);
 
-  m_listeners.notifyActiveDocumentAfterChange(this);
+  m_observers.notifyActiveDocumentAfterChange(this);
 }
 
 void Context::executeCommand(Command* command, Params* params)
@@ -119,7 +119,7 @@ void Context::executeCommand(Command* command, Params* params)
   ASSERT(command != NULL);
 
   PRINTF("Executing '%s' command.\n", command->short_name());
-  m_listeners.notifyCommandBeforeExecution(this);
+  m_observers.notifyCommandBeforeExecution(this);
 
   try {
     m_flags.update(this);
@@ -130,7 +130,7 @@ void Context::executeCommand(Command* command, Params* params)
     if (command->isEnabled(this)) {
       command->execute(this);
 
-      m_listeners.notifyCommandAfterExecution(this);
+      m_observers.notifyCommandAfterExecution(this);
     }
   }
   catch (base::Exception& e) {
@@ -159,14 +159,14 @@ void Context::executeCommand(Command* command, Params* params)
 #endif
 }
 
-void Context::addListener(ContextListener* listener)
+void Context::addObserver(ContextObserver* observer)
 {
-  m_listeners.add(listener);
+  m_observers.addObserver(observer);
 }
 
-void Context::removeListener(ContextListener* listener)
+void Context::removeObserver(ContextObserver* observer)
 {
-  m_listeners.remove(listener);
+  m_observers.removeObserver(observer);
 }
 
 void Context::onAddDocument(Document* document)

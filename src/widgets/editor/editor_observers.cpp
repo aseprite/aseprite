@@ -16,33 +16,38 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifndef CONTEXT_LISTENER_LIST_H_INCLUDED
-#define CONTEXT_LISTENER_LIST_H_INCLUDED
+#include "config.h"
 
-#include <vector>
+#include "widgets/editor/editor_observers.h"
 
-class Context;
-class ContextListener;
+#include "base/bind.h"
+#include "widgets/editor/editor_observer.h"
 
-class ContextListenerList
+EditorObservers::EditorObservers()
 {
-public:
-  typedef std::vector<ContextListener*> list_type;
-  typedef std::vector<ContextListener*>::iterator iterator;
-  typedef std::vector<ContextListener*>::const_iterator const_iterator;
+}
 
-  ContextListenerList();
+void EditorObservers::addObserver(EditorObserver* observer)
+{
+  m_observers.addObserver(observer);
+}
 
-  void add(ContextListener* listener);
-  void remove(ContextListener* listener);
+void EditorObservers::removeObserver(EditorObserver* observer)
+{
+  m_observers.removeObserver(observer);
+}
 
-  void notifyActiveDocumentBeforeChange(Context* context);
-  void notifyActiveDocumentAfterChange(Context* context);
-  void notifyCommandBeforeExecution(Context* context);
-  void notifyCommandAfterExecution(Context* context);
+void EditorObservers::notifyStateChanged(Editor* editor)
+{
+  m_observers.notifyObservers(&EditorObserver::stateChanged, editor);
+}
 
-private:
-  list_type m_listener;
-};
+void EditorObservers::notifyScrollChanged(Editor* editor)
+{
+  m_observers.notifyObservers(&EditorObserver::scrollChanged, editor);
+}
 
-#endif
+void EditorObservers::notifyDocumentChanged(Editor* editor)
+{
+  m_observers.notifyObservers(&EditorObserver::documentChanged, editor);
+}

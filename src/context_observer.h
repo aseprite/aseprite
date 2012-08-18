@@ -16,38 +16,21 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#include "config.h"
+#ifndef CONTEXT_OBSERVER_H_INCLUDED
+#define CONTEXT_OBSERVER_H_INCLUDED
 
-#include "widgets/editor/editor_listeners.h"
+class Context;
 
-#include "base/bind.h"
-#include "widgets/editor/editor_listener.h"
-
-EditorListeners::EditorListeners()
+// Observer of context events. The default implementation does nothing
+// in each handler, so you can override the required events.
+class ContextObserver
 {
-}
+public:
+  virtual ~ContextObserver() { }
+  virtual void onActiveDocumentBeforeChange(Context* context) { }
+  virtual void onActiveDocumentAfterChange(Context* context) { }
+  virtual void onCommandBeforeExecution(Context* context) { }
+  virtual void onCommandAfterExecution(Context* context) { }
+};
 
-void EditorListeners::addListener(EditorListener* listener)
-{
-  m_listeners.addListener(listener);
-}
-
-void EditorListeners::removeListener(EditorListener* listener)
-{
-  m_listeners.removeListener(listener);
-}
-
-void EditorListeners::notifyStateChanged(Editor* editor)
-{
-  m_listeners.notify(&EditorListener::stateChanged, editor);
-}
-
-void EditorListeners::notifyScrollChanged(Editor* editor)
-{
-  m_listeners.notify(&EditorListener::scrollChanged, editor);
-}
-
-void EditorListeners::notifyDocumentChanged(Editor* editor)
-{
-  m_listeners.notify(&EditorListener::documentChanged, editor);
-}
+#endif

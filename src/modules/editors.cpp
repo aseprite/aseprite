@@ -85,21 +85,21 @@ static void hide_mini_editor_window();
 static void update_mini_editor_window(Editor* editor);
 
 class WrappedEditor : public Editor,
-                      public EditorListener,
+                      public EditorObserver,
                       public EditorCustomizationDelegate
 {
 public:
   WrappedEditor() {
-    addListener(this);
+    addObserver(this);
     setCustomizationDelegate(this);
   }
 
   ~WrappedEditor() {
-    removeListener(this);
+    removeObserver(this);
     setCustomizationDelegate(NULL);
   }
 
-  // EditorListener implementation
+  // EditorObserver implementation
   void dispose() OVERRIDE {
     // Do nothing
   }

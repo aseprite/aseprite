@@ -26,7 +26,7 @@
 #include "ui/base.h"
 #include "ui/timer.h"
 #include "ui/widget.h"
-#include "widgets/editor/editor_listeners.h"
+#include "widgets/editor/editor_observers.h"
 #include "widgets/editor/editor_state.h"
 #include "widgets/editor/editor_states_history.h"
 
@@ -108,8 +108,8 @@ public:
   void hideDrawingCursor();
   void moveDrawingCursor();
 
-  void addListener(EditorListener* listener);
-  void removeListener(EditorListener* listener);
+  void addObserver(EditorObserver* observer);
+  void removeObserver(EditorObserver* observer);
 
   void setCustomizationDelegate(EditorCustomizationDelegate* delegate);
 
@@ -221,7 +221,7 @@ private:
 
   Slot1<void, const Color&>* m_fgColorChangeSlot;
 
-  EditorListeners m_listeners;
+  EditorObservers m_observers;
 
   EditorCustomizationDelegate* m_customizationDelegate;
 

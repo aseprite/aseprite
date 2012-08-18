@@ -24,7 +24,7 @@
 
 #include "app/color.h"
 #include "base/compiler_specific.h"
-#include "listeners.h"
+#include "observers.h"
 #include "ui/base.h"
 #include "ui/link_label.h"
 #include "ui/widget.h"
@@ -60,15 +60,15 @@ private:
   double m_pos;
 };
 
-class StatusBarListener
+class StatusBarObserver
 {
 public:
-  virtual ~StatusBarListener() { }
+  virtual ~StatusBarObserver() { }
   virtual void dispose() = 0;
   virtual void onChangeTransparentColor(const Color& color) = 0;
 };
 
-typedef Listeners<StatusBarListener> StatusBarListeners;
+typedef Observers<StatusBarObserver> StatusBarObservers;
 
 class StatusBar : public ui::Widget
 {
@@ -79,8 +79,8 @@ public:
   StatusBar();
   ~StatusBar();
 
-  void addListener(StatusBarListener* listener);
-  void removeListener(StatusBarListener* listener);
+  void addObserver(StatusBarObserver* observer);
+  void removeObserver(StatusBarObserver* observer);
 
   void clearText();
 
@@ -154,7 +154,7 @@ private:
 
   int m_hot_layer;
 
-  StatusBarListeners m_listeners;
+  StatusBarObservers m_observers;
 };
 
 #endif

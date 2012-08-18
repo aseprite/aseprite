@@ -262,14 +262,14 @@ StatusBar::~StatusBar()
   delete m_notificationsBox;
 }
 
-void StatusBar::addListener(StatusBarListener* listener)
+void StatusBar::addObserver(StatusBarObserver* observer)
 {
-  m_listeners.addListener(listener);
+  m_observers.addObserver(observer);
 }
 
-void StatusBar::removeListener(StatusBarListener* listener)
+void StatusBar::removeObserver(StatusBarObserver* observer)
 {
-  m_listeners.removeListener(listener);
+  m_observers.removeObserver(observer);
 }
 
 void StatusBar::onCurrentToolChange()
@@ -285,8 +285,8 @@ void StatusBar::onCurrentToolChange()
 
 void StatusBar::onTransparentColorChange()
 {
-  m_listeners.notify<const Color&>(&StatusBarListener::onChangeTransparentColor,
-                                   getTransparentColor());
+  m_observers.notifyObservers<const Color&>(&StatusBarObserver::onChangeTransparentColor,
+                                            getTransparentColor());
 }
 
 void StatusBar::clearText()
@@ -296,7 +296,7 @@ void StatusBar::clearText()
 
 bool StatusBar::setStatusText(int msecs, const char *format, ...)
 {
-  // TODO this call should be in a listener of the "current frame" property changes.
+  // TODO this call should be in an observer of the "current frame" property changes.
   updateCurrentFrame();
 
   if ((ji_clock > m_timeout) || (msecs > 0)) {

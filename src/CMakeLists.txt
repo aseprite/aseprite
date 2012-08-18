@@ -152,7 +152,7 @@ add_library(aseprite-library
   console.cpp
   context.cpp
   context_flags.cpp
-  context_listener_list.cpp
+  context_observer_list.cpp
   document.cpp
   document_undo.cpp
   documents.cpp
@@ -367,7 +367,7 @@ add_library(aseprite-library
   widgets/editor/cursor.cpp
   widgets/editor/drawing_state.cpp
   widgets/editor/editor.cpp
-  widgets/editor/editor_listeners.cpp
+  widgets/editor/editor_observers.cpp
   widgets/editor/editor_states_history.cpp
   widgets/editor/editor_view.cpp
   widgets/editor/keys.cpp

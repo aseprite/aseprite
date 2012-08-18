@@ -20,7 +20,7 @@
 #define WIDGETS_EDITOR_MOVING_PIXELS_STATE_H_INCLUDED
 
 #include "base/compiler_specific.h"
-#include "context_listener.h"
+#include "context_observer.h"
 #include "widgets/editor/handle_type.h"
 #include "widgets/editor/standby_state.h"
 #include "widgets/status_bar.h"
@@ -29,7 +29,7 @@ class Editor;
 class Image;
 class PixelsMovement;
 
-class MovingPixelsState : public StandbyState, StatusBarListener, ContextListener
+class MovingPixelsState : public StandbyState, StatusBarObserver, ContextObserver
 {
 public:
   MovingPixelsState(Editor* editor, ui::Message* msg, PixelsMovement* pixelsMovement, HandleType handle);
@@ -47,13 +47,13 @@ public:
   virtual bool onKeyUp(Editor* editor, ui::Message* msg) OVERRIDE;
   virtual bool onUpdateStatusBar(Editor* editor) OVERRIDE;
 
-  // ContextListener
+  // ContextObserver
   virtual void onCommandBeforeExecution(Context* context) OVERRIDE;
 
   virtual gfx::Transformation getTransformation(Editor* editor) OVERRIDE;
 
 protected:
-  // StatusBarListener interface
+  // StatusBarObserver interface
   virtual void dispose() OVERRIDE;
   virtual void onChangeTransparentColor(const Color& color) OVERRIDE;
 
