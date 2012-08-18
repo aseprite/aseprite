@@ -41,23 +41,20 @@ public:
 
   Observers() { }
 
-  ~Observers()
-  {
+  ~Observers() {
     disposeAllObservers();
   }
 
   // Adds the observer in the collection. The observer is owned by the
   // collection and will be destroyed calling the T::dispose() member
   // function.
-  void addObserver(observer_type* observer)
-  {
+  void addObserver(observer_type* observer) {
     m_observers.push_back(observer);
   }
 
   // Removes the observer from the collection. After calling this
   // function you own the observer so you have to dispose it.
-  void removeObserver(observer_type* observer)
-  {
+  void removeObserver(observer_type* observer) {
     iterator it = std::find(m_observers.begin(), m_observers.end(), observer);
     if (it != end())
       m_observers.erase(it);
@@ -65,16 +62,14 @@ public:
 
   // Disposes all observers. It's called automatically in the
   // Observers dtor.
-  void disposeAllObservers()
-  {
+  void disposeAllObservers() {
     while (!empty())
       (*begin())->dispose();
 
     m_observers.clear();
   }
 
-  void notifyObservers(void (observer_type::*method)())
-  {
+  void notifyObservers(void (observer_type::*method)()) {
     for (iterator
            it = this->begin(),
            end = this->end(); it != end; ++it) {
@@ -82,13 +77,30 @@ public:
     }
   }
 
-  template<typename Arg1>
-  void notifyObservers(void (observer_type::*method)(Arg1), Arg1 arg1)
-  {
+  template<typename A1>
+  void notifyObservers(void (observer_type::*method)(A1), A1 a1) {
     for (iterator
            it = this->begin(),
            end = this->end(); it != end; ++it) {
-      ((*it)->*method)(arg1);
+      ((*it)->*method)(a1);
+    }
+  }
+
+  template<typename A1, typename A2>
+  void notifyObservers(void (observer_type::*method)(A1, A2), A1 a1, A2 a2) {
+    for (iterator
+           it = this->begin(),
+           end = this->end(); it != end; ++it) {
+      ((*it)->*method)(a1, a2);
+    }
+  }
+
+  template<typename A1, typename A2, typename A3>
+  void notifyObservers(void (observer_type::*method)(A1, A2, A3), A1 a1, A2 a2, A3 a3) {
+    for (iterator
+           it = this->begin(),
+           end = this->end(); it != end; ++it) {
+      ((*it)->*method)(a1, a2, a3);
     }
   }
 
