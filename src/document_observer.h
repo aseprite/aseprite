@@ -21,9 +21,7 @@
 
 #include "raster/frame_number.h"
 
-class Document;
-class Layer;
-class Sprite;
+class DocumentEvent;
 
 // Observer of document events. The default implementation does
 // nothing in each handler, so you can override the required events.
@@ -31,23 +29,28 @@ class DocumentObserver {
 public:
   virtual ~DocumentObserver() { }
 
-  virtual void onAddSprite(Document* document, Sprite* sprite) { }
+  virtual void onAddSprite(DocumentEvent& ev) { }
+  virtual void onAddLayer(DocumentEvent& ev) { }
+  virtual void onAddFrame(DocumentEvent& ev) { }
+  virtual void onAddCel(DocumentEvent& ev) { }
 
-  virtual void onAddLayer(Document* document, Layer* layer) { }
+  virtual void onRemoveSprite(DocumentEvent& ev) { }
+  virtual void onRemoveLayer(DocumentEvent& ev) { }
+  virtual void onRemoveFrame(DocumentEvent& ev) { }
+  virtual void onRemoveCel(DocumentEvent& ev) { }
 
-  virtual void onAddFrame(Document* document, FrameNumber frame) { }
+  virtual void onSpriteSizeChanged(DocumentEvent& ev) { }
 
-  virtual void onRemoveSprite(Document* document, Sprite* sprite) { }
+  virtual void onLayerRestacked(DocumentEvent& ev) { }
 
-  virtual void onRemoveLayer(Document* document, Layer* layer) { }
+  virtual void onCelFrameChanged(DocumentEvent& ev) { }
+  virtual void onCelPositionChanged(DocumentEvent& ev) { }
+  virtual void onCelOpacityChanged(DocumentEvent& ev) { }
 
-  virtual void onRemoveFrame(Document* document, FrameNumber frame) { }
+  virtual void onFrameDurationChanged(DocumentEvent& ev) { }
 
-  // Called when the active cel data was modified (position, opacity, etc.).
-  virtual void onModifyCel(Document* document) { }
-
-  // Called when the active cel's image pixels were modified.
-  virtual void onModifyCelImage(Document* document) { }
+  virtual void onImageReplaced(DocumentEvent& ev) { }
+  virtual void onImagePixelsModified(DocumentEvent& ev) { }
 
   // Called to destroy the observer. (Here you could call "delete this".)
   virtual void dispose() { }
