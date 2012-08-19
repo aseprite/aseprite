@@ -594,8 +594,8 @@ bool AnimationEditor::onProcessMessage(Message* msg)
                     Sprite* sprite_writer = const_cast<Sprite*>(m_sprite);
 
                     UndoTransaction undoTransaction(document_writer, "Move Layer");
-                    undoTransaction.moveLayerAfter(m_layers[m_clk_layer],
-                                                   m_layers[m_hot_layer]);
+                    undoTransaction.restackLayerAfter(m_layers[m_clk_layer],
+                                                      m_layers[m_hot_layer]);
                     undoTransaction.commit();
 
                     // Select the new layer.

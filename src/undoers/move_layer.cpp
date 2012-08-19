@@ -50,6 +50,6 @@ void MoveLayer::revert(ObjectsContainer* objects, UndoersCollector* redoers)
   // Backup the current layer position
   redoers->pushUndoer(new MoveLayer(objects, layer));
 
-  // Move the layer
-  folder->move_layer(layer, after);
+  // Restack the layer
+  folder->stackLayer(layer, after);
 }

@@ -140,9 +140,9 @@ public:
   LayerConstIterator get_layer_end() const { return m_layers.end(); }
   int get_layers_count() const { return m_layers.size(); }
 
-  void add_layer(Layer* layer);
-  void remove_layer(Layer* layer);
-  void move_layer(Layer* layer, Layer* after);
+  void addLayer(Layer* layer);
+  void removeLayer(Layer* layer);
+  void stackLayer(Layer* layer, Layer* after);
 
   void getCels(CelList& cels);
 

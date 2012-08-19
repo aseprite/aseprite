@@ -336,7 +336,7 @@ bool GifFormat::onPostLoad(FileOp* fop)
 
   // Create the main layer
   LayerImage* layer = new LayerImage(sprite);
-  sprite->getFolder()->add_layer(layer);
+  sprite->getFolder()->addLayer(layer);
 
   if (pixelFormat == IMAGE_INDEXED) {
     if (data->bgcolor_index >= 0)

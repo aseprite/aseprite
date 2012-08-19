@@ -185,7 +185,7 @@ void MergeDownLayerCommand::onExecute(Context* context)
   }
 
   sprite->setCurrentLayer(dst_layer);
-  src_layer->get_parent()->remove_layer(src_layer);
+  src_layer->get_parent()->removeLayer(src_layer);
 
   delete src_layer;
 

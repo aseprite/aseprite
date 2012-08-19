@@ -383,7 +383,7 @@ LayerImage* UndoTransaction::newLayer()
     m_undo->pushUndoer(new undoers::AddLayer(m_undo->getObjects(),
         m_sprite->getFolder(), layer));
 
-  m_sprite->getFolder()->add_layer(layer);
+  m_sprite->getFolder()->addLayer(layer);
 
   // select the new layer
   setCurrentLayer(layer);
@@ -426,18 +426,18 @@ void UndoTransaction::removeLayer(Layer* layer)
     m_undo->pushUndoer(new undoers::RemoveLayer(m_undo->getObjects(),
         layer));
 
-  parent->remove_layer(layer);
+  parent->removeLayer(layer);
 
   // destroy the layer
   delete layer;
 }
 
-void UndoTransaction::moveLayerAfter(Layer* layer, Layer* afterThis)
+void UndoTransaction::restackLayerAfter(Layer* layer, Layer* afterThis)
 {
   if (isEnabled())
     m_undo->pushUndoer(new undoers::MoveLayer(m_undo->getObjects(), layer));
 
-  layer->get_parent()->move_layer(layer, afterThis);
+  layer->get_parent()->stackLayer(layer, afterThis);
 }
 
 void UndoTransaction::cropLayer(Layer* layer, int x, int y, int w, int h, int bgcolor)
@@ -593,7 +593,7 @@ void UndoTransaction::flattenLayers(int bgcolor)
       m_undo->pushUndoer(new undoers::AddLayer(m_undo->getObjects(),
           m_sprite->getFolder(), background));
 
-    m_sprite->getFolder()->add_layer(background);
+    m_sprite->getFolder()->addLayer(background);
 
     if (isEnabled())
       m_undo->pushUndoer(new undoers::MoveLayer(m_undo->getObjects(),
@@ -662,7 +662,7 @@ void UndoTransaction::flattenLayers(int bgcolor)
         m_undo->pushUndoer(new undoers::RemoveLayer(m_undo->getObjects(),
             old_layer));
 
-      m_sprite->getFolder()->remove_layer(old_layer);
+      m_sprite->getFolder()->removeLayer(old_layer);
 
       // Destroy the layer
       delete old_layer;
