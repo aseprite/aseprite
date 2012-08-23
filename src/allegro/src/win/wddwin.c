@@ -40,7 +40,7 @@ static void gfx_directx_win_exit(struct BITMAP *bmp);
 static BITMAP *gfx_directx_acknowledge_resize(void);
 
 static BITMAP *_create_directx_forefront_bitmap(int w, int h, int color_depth);
-static void _destroy_directx_forefront_bitmap(void);
+static void _destroy_directx_forefront_bitmap_extras(void);
 
 
 GFX_DRIVER gfx_directx_win =
@@ -750,15 +750,13 @@ static void gfx_directx_win_exit(struct BITMAP *bmp)
    /* disconnect from the system driver */
    win_gfx_driver = NULL;
 
-   _destroy_directx_forefront_bitmap();
+   _destroy_directx_forefront_bitmap_extras();
 
    /* release the color conversion blitter */
    if (colorconv_blit) {
       _release_colorconv_blitter(colorconv_blit);
       colorconv_blit = NULL;
    }
-
-   _destroy_directx_forefront_bitmap();
 
    gfx_directx_exit(NULL);
 
@@ -785,7 +783,7 @@ static BITMAP *gfx_directx_acknowledge_resize(void)
 
    /* Destroy old screen */
    destroy_bitmap(gfx_directx_forefront_bitmap);
-   _destroy_directx_forefront_bitmap();
+   _destroy_directx_forefront_bitmap_extras();
 
    /* Re-create the screen */
    new_screen = _create_directx_forefront_bitmap(w, h, color_depth);
@@ -871,7 +869,7 @@ Error:
 
 
 
-static void _destroy_directx_forefront_bitmap(void)
+static void _destroy_directx_forefront_bitmap_extras(void)
 {
    /* destroy dirty lines array */
    if (_al_wd_dirty_lines) {
