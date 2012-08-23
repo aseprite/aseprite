@@ -32,21 +32,14 @@ fi
 # Update version
 # --------------
 
-cd $destdir
-cat config.h \
-        | sed -e "s/define VERSION.*/define VERSION \"$version\"/" \
-        > tmp
-mv tmp config.h
-
-cat data/gui.xml \
-        | sed -e "s/gui version=\".*/gui version=\"$version\">/" \
-        > tmp
-mv tmp data/gui.xml
+cd $destdir/scripts
+sh update_version.sh $version
 
 # ----------------------------------------------
 # Make a build/ directory and compile with cmake
 # ----------------------------------------------
 
+cd $destdir
 if [ ! -d build ] ; then
     mkdir build
     cd build
