@@ -16,24 +16,24 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifndef CONTEXT_OBSERVER_H_INCLUDED
-#define CONTEXT_OBSERVER_H_INCLUDED
+#include "config.h"
 
-class Context;
-class Document;
+#include "app/backup.h"
 
-// Observer of context events. The default implementation does nothing
-// in each handler, so you can override the required events.
-class ContextObserver
+namespace app {
+
+Backup::Backup(const base::string& path)
+  : m_path(path)
 {
-public:
-  virtual ~ContextObserver() { }
-  virtual void onActiveDocumentBeforeChange(Context* context) { }
-  virtual void onActiveDocumentAfterChange(Context* context) { }
-  virtual void onCommandBeforeExecution(Context* context) { }
-  virtual void onCommandAfterExecution(Context* context) { }
-  virtual void onAddDocument(Context* context, Document* document) { }
-  virtual void onRemoveDocument(Context* context, Document* document) { }
-};
+}
 
-#endif
+Backup::~Backup()
+{
+}
+
+bool Backup::hasDataToRestore()
+{
+  return false;
+}
+
+} // namespace app

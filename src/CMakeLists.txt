@@ -173,9 +173,11 @@ add_library(aseprite-library
   ui_context.cpp
   undo_transaction.cpp
   xml_exception.cpp
+  app/backup.cpp
   app/check_update.cpp
   app/color.cpp
   app/color_utils.cpp
+  app/data_recovery.cpp
   app/file_selector.cpp
   app/widget_loader.cpp
   commands/cmd_about.cpp

@@ -16,24 +16,29 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifndef CONTEXT_OBSERVER_H_INCLUDED
-#define CONTEXT_OBSERVER_H_INCLUDED
+#ifndef APP_BACKUP_H_INCLUDED
+#define APP_BACKUP_H_INCLUDED
 
-class Context;
-class Document;
+#include "base/disable_copying.h"
+#include "base/string.h"
 
-// Observer of context events. The default implementation does nothing
-// in each handler, so you can override the required events.
-class ContextObserver
-{
-public:
-  virtual ~ContextObserver() { }
-  virtual void onActiveDocumentBeforeChange(Context* context) { }
-  virtual void onActiveDocumentAfterChange(Context* context) { }
-  virtual void onCommandBeforeExecution(Context* context) { }
-  virtual void onCommandAfterExecution(Context* context) { }
-  virtual void onAddDocument(Context* context, Document* document) { }
-  virtual void onRemoveDocument(Context* context, Document* document) { }
-};
+namespace app {
+
+  // A class to record/restore backup information.
+  class Backup {
+  public:
+    Backup(const base::string& path);
+    ~Backup();
+
+    // Returns true if there are items that can be restored.
+    bool hasDataToRestore();
+
+  private:
+    DISABLE_COPYING(Backup);
+
+    base::string m_path;
+  };
+
+} // namespace app
 
 #endif

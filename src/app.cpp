@@ -22,6 +22,7 @@
 
 #include "app/check_update.h"
 #include "app/color_utils.h"
+#include "app/data_recovery.h"
 #include "app/find_widget.h"
 #include "app/load_widget.h"
 #include "base/exception.h"
@@ -78,18 +79,19 @@
 
 using namespace ui;
 
-/**
- * ASEPRITE modules.
- */
 class App::Modules
 {
 public:
-  // ASEPRITE Modules
   FileSystemModule m_file_system_module;
   tools::ToolBox m_toolbox;
   CommandsModule m_commands_modules;
   UIContext m_ui_context;
   RecentFiles m_recent_files;
+  app::DataRecovery m_recovery;
+
+  App::Modules()
+    : m_recovery(&m_ui_context) {
+  }
 };
 
 App* App::m_instance = NULL;
@@ -143,8 +145,6 @@ App::App(int argc, char* argv[])
   /* set system palette to the default one */
   set_current_palette(NULL, true);
 }
-
-
 
 int App::run()
 {
@@ -248,10 +248,10 @@ App::~App()
     // Remove ASEPRITE handlers
     PRINTF("ASE: Uninstalling\n");
 
-    // Fire App Exit signal
+    // Fire App Exit signal.
     App::instance()->Exit();
 
-    // Finalize modules, configuration and core
+    // Finalize modules, configuration and core.
     Editor::editor_cursor_exit();
     boundary_exit();
 

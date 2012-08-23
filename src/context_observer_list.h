@@ -23,6 +23,7 @@
 
 class Context;
 class ContextObserver;
+class Document;
 
 class ContextObserverList
 {
@@ -40,6 +41,8 @@ public:
   void notifyActiveDocumentAfterChange(Context* context);
   void notifyCommandBeforeExecution(Context* context);
   void notifyCommandAfterExecution(Context* context);
+  void notifyAddDocument(Context* context, Document* document);
+  void notifyRemoveDocument(Context* context, Document* document);
 
 private:
   list_type m_observer;

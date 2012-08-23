@@ -68,3 +68,17 @@ void ContextObserverList::notifyCommandAfterExecution(Context* context)
   std::for_each(copy.begin(), copy.end(),
                 std::bind2nd(std::mem_fun(&ContextObserver::onCommandAfterExecution), context));
 }
+
+void ContextObserverList::notifyAddDocument(Context* context, Document* document)
+{
+  list_type copy = m_observer;
+  for (iterator it=copy.begin(), end=copy.end(); it!=end; ++it)
+    (*it)->onAddDocument(context, document);
+}
+
+void ContextObserverList::notifyRemoveDocument(Context* context, Document* document)
+{
+  list_type copy = m_observer;
+  for (iterator it=copy.begin(), end=copy.end(); it!=end; ++it)
+    (*it)->onRemoveDocument(context, document);
+}
