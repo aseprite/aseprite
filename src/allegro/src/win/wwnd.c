@@ -133,7 +133,7 @@ static LRESULT CALLBACK directx_wnd_proc(HWND wnd, UINT message, WPARAM wparam, 
          break;
 
       case WM_SETCURSOR:
-         if (_mouse_installed) {
+         if (win_gfx_driver && _mouse_installed) {
             int hittest = LOWORD(lparam);
             if (hittest == HTCLIENT) {
                mouse_set_syscursor();
@@ -318,7 +318,7 @@ static LRESULT CALLBACK directx_wnd_proc(HWND wnd, UINT message, WPARAM wparam, 
 
       case WM_LBUTTONDOWN:
       case WM_LBUTTONUP:
-         if (_mouse_installed) {
+         if (win_gfx_driver && _mouse_installed) {
             int mx = GET_X_LPARAM(lparam);
             int my = GET_Y_LPARAM(lparam);
             BOOL down = (message == WM_LBUTTONDOWN);
@@ -328,7 +328,7 @@ static LRESULT CALLBACK directx_wnd_proc(HWND wnd, UINT message, WPARAM wparam, 
 
       case WM_MBUTTONDOWN:
       case WM_MBUTTONUP:
-         if (_mouse_installed) {
+         if (win_gfx_driver && _mouse_installed) {
             int mx = GET_X_LPARAM(lparam);
             int my = GET_Y_LPARAM(lparam);
             BOOL down = (message == WM_MBUTTONDOWN);
@@ -338,7 +338,7 @@ static LRESULT CALLBACK directx_wnd_proc(HWND wnd, UINT message, WPARAM wparam, 
 
       case WM_RBUTTONDOWN:
       case WM_RBUTTONUP:
-         if (_mouse_installed) {
+         if (win_gfx_driver && _mouse_installed) {
             int mx = GET_X_LPARAM(lparam);
             int my = GET_Y_LPARAM(lparam);
             BOOL down = (message == WM_RBUTTONDOWN);
@@ -348,7 +348,7 @@ static LRESULT CALLBACK directx_wnd_proc(HWND wnd, UINT message, WPARAM wparam, 
 
       case WM_XBUTTONDOWN:
       case WM_XBUTTONUP:
-         if (_mouse_installed) {
+         if (win_gfx_driver && _mouse_installed) {
             int mx = GET_X_LPARAM(lparam);
             int my = GET_Y_LPARAM(lparam);
             int button = HIWORD(wparam);
@@ -362,7 +362,7 @@ static LRESULT CALLBACK directx_wnd_proc(HWND wnd, UINT message, WPARAM wparam, 
          break;
 
       case WM_MOUSEWHEEL:
-         if (_mouse_installed) {
+         if (win_gfx_driver && _mouse_installed) {
             int d = GET_WHEEL_DELTA_WPARAM(wparam);
             _al_win_mouse_handle_wheel(wnd, d / WHEEL_DELTA, FALSE);
             return TRUE;
@@ -370,7 +370,7 @@ static LRESULT CALLBACK directx_wnd_proc(HWND wnd, UINT message, WPARAM wparam, 
          break;
 
       case WM_MOUSEMOVE:
-         if (_mouse_installed) {
+         if (win_gfx_driver && _mouse_installed) {
             POINTS p = MAKEPOINTS(lparam);
             _al_win_mouse_handle_move(wnd, p.x, p.y);
             return 0;
