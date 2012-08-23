@@ -26,6 +26,9 @@
 
 # Refactoring
 
+* Split UndoTransaction class into:
+  * DocumentTransaction class, and
+  * DocumentOperations namespace or something like that.
 * Use streams instead of FILEs.
 * Destroy modules/gui.h.
 * Convert update_screen_for_document in an event from contexts or
