@@ -1,7 +1,7 @@
 #! /bin/sh
 
-if [ ! -f update_packages.sh ]; then
-    echo You must run update_packages.sh from scripts/ directory
+if [ ! -f upload_packages.sh ]; then
+    echo You must run upload_packages.sh from scripts/ directory
     exit 1
 fi
 

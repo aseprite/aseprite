@@ -27,6 +27,10 @@ class MainMenuBar;
 class StatusBar;
 class Tabs;
 
+namespace ui {
+  class Splitter;
+}
+
 class MainWindow : public ui::Window
 {
 public:
@@ -39,13 +43,22 @@ public:
   void reloadMenus();
   void createFirstEditor();
 
+  bool isAdvancedMode() const { return m_advancedMode; }
+  void setAdvancedMode(bool advanced);
+
+protected:
+  void onSaveLayout(ui::SaveLayoutEvent& ev) OVERRIDE;
+
 private:
   AppTabsDelegate* m_tabsDelegate;
   MainMenuBar* m_menuBar;       // the menu bar widget
   StatusBar* m_statusBar;       // the status bar widget
   ColorBar* m_colorBar;         // the color bar widget
+  ui::Splitter* m_colorBarSplitter;
   ui::Widget* m_toolBar;        // the tool bar widget
   Tabs* m_tabsBar;              // The tabs bar widget
+  double m_lastSplitterPos;
+  bool m_advancedMode;
 };
 
 #endif
