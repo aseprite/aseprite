@@ -233,7 +233,6 @@ add_library(aseprite-library
   commands/cmd_paste.cpp
   commands/cmd_play_animation.cpp
   commands/cmd_preview.cpp
-  commands/cmd_redo.cpp
   commands/cmd_refresh.cpp
   commands/cmd_remove_cel.cpp
   commands/cmd_remove_frame.cpp

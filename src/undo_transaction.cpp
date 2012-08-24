@@ -83,8 +83,7 @@ UndoTransaction::UndoTransaction(Document* document, const char* label, undo::Mo
     m_undo->pushUndoer(new undoers::OpenGroup(getObjects(),
                                               m_label,
                                               m_modification,
-                                              m_startLayer = m_sprite->getCurrentLayer(),
-                                              m_startFrame = m_sprite->getCurrentFrame()));
+                                              m_sprite));
 }
 
 UndoTransaction::~UndoTransaction()
@@ -115,8 +114,7 @@ void UndoTransaction::closeUndoGroup()
     m_undo->pushUndoer(new undoers::CloseGroup(getObjects(),
                                                m_label,
                                                m_modification,
-                                               m_startLayer,
-                                               m_startFrame));
+                                               m_sprite));
     m_closed = true;
   }
 }

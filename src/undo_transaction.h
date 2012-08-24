@@ -147,8 +147,6 @@ private:
   bool m_enabledFlag;
   const char* m_label;
   undo::Modification m_modification;
-  Layer* m_startLayer;
-  FrameNumber m_startFrame;
 };
 
 #endif

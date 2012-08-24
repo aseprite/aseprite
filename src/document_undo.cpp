@@ -101,24 +101,14 @@ const char* DocumentUndo::getNextRedoLabel() const
   return getNextRedoGroup()->getLabel();
 }
 
-Layer* DocumentUndo::getNextUndoLayer() const
+SpritePosition DocumentUndo::getNextUndoSpritePosition() const
 {
-  return getNextUndoGroup()->getLayer(m_objects);
+  return getNextUndoGroup()->getSpritePosition();
 }
 
-Layer* DocumentUndo::getNextRedoLayer() const
+SpritePosition DocumentUndo::getNextRedoSpritePosition() const
 {
-  return getNextRedoGroup()->getLayer(m_objects);
-}
-
-FrameNumber DocumentUndo::getNextUndoFrame() const
-{
-  return getNextUndoGroup()->getFrame();
-}
-
-FrameNumber DocumentUndo::getNextRedoFrame() const
-{
-  return getNextRedoGroup()->getFrame();
+  return getNextRedoGroup()->getSpritePosition();
 }
 
 undoers::CloseGroup* DocumentUndo::getNextUndoGroup() const
