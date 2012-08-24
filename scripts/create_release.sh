@@ -34,12 +34,12 @@ fi
 
 cd $destdir/scripts
 sh update_version.sh $version
+cd ..
 
 # ----------------------------------------------
 # Make a build/ directory and compile with cmake
 # ----------------------------------------------
 
-cd $destdir
 if [ ! -d build ] ; then
     mkdir build
     cd build
