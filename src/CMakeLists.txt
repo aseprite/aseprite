@@ -433,6 +433,12 @@ function(find_unittests dir dependencies)
     include_directories(${CMAKE_SOURCE_DIR}/third_party/gtest/include)
   endif()
 
+  # See if the test is linked with "she" library.
+  string(REGEX MATCH "she" link_with_she ${ARGV})
+  if (link_with_she STREQUAL "she")
+    set(extra_definitions -DLINKED_WITH_SHE)
+  endif()
+
   foreach(testsourcefile ${tests})
     get_filename_component(testname ${testsourcefile} NAME_WE)
 
@@ -441,6 +447,11 @@ function(find_unittests dir dependencies)
     if(LIBALLEGRO4_LINK_FLAGS)
       set_target_properties(${testname}
 	PROPERTIES LINK_FLAGS ${LIBALLEGRO4_LINK_FLAGS})
+    endif()
+
+    if(extra_definitions)
+      set_target_properties(${testname}
+	PROPERTIES COMPILE_FLAGS ${extra_definitions})
     endif()
 
     add_custom_target(run_${testname}

@@ -28,7 +28,18 @@
   #include "ui/gui.h"
 #endif
 
-int app_main(int argc, char* argv[])
+#ifdef LINKED_WITH_SHE
+  #undef main
+  #ifdef WIN32
+    int main(int argc, char* argv[]) {
+      extern int app_main(int argc, char* argv[]);
+      return app_main(argc, argv);
+    }
+  #endif
+  #define main app_main
+#endif
+
+int main(int argc, char* argv[])
 {
   int exitcode;
   ::testing::InitGoogleTest(&argc, argv);
