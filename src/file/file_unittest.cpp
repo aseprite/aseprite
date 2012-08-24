@@ -16,9 +16,7 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#include <gtest/gtest.h>
-
-#include "config.h"
+#include "tests/test.h"
 
 #include "app.h"
 #include "document.h"

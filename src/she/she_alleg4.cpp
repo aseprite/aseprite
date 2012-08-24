@@ -310,12 +310,11 @@ System* Instance()
 
 }
 
-#ifdef main
+// It must be defined by the user program code.
+extern int app_main(int argc, char* argv[]);
+
 int main(int argc, char* argv[]) {
-#undef main
-  extern int main(int argc, char* argv[]);
-  return main(argc, argv);
+  return app_main(argc, argv);
 }
 
 END_OF_MAIN();
-#endif

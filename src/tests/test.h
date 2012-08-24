@@ -28,11 +28,7 @@
   #include "ui/gui.h"
 #endif
 
-#ifdef main
-  #undef main
-#endif
-
-int main(int argc, char* argv[])
+int app_main(int argc, char* argv[])
 {
   int exitcode;
   ::testing::InitGoogleTest(&argc, argv);
