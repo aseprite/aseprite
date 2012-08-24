@@ -25,12 +25,7 @@
 #include "ini_file.h"
 #include "modules/gui.h"
 #include "ui/gui.h"
-#include "widgets/color_bar.h"
-#include "widgets/main_menu_bar.h"
 #include "widgets/main_window.h"
-#include "widgets/status_bar.h"
-#include "widgets/tabs.h"
-#include "widgets/toolbar.h"
 
 #include <cstdio>
 
@@ -44,12 +39,7 @@ public:
 
 protected:
   void onExecute(Context* context);
-
-private:
-  static bool advanced_mode;
 };
-
-bool AdvancedModeCommand::advanced_mode = false;
 
 AdvancedModeCommand::AdvancedModeCommand()
   : Command("AdvancedMode",
@@ -60,19 +50,12 @@ AdvancedModeCommand::AdvancedModeCommand()
 
 void AdvancedModeCommand::onExecute(Context* context)
 {
-  advanced_mode = !advanced_mode;
-
+  // Switch advanced mode.
   MainWindow* mainWindow = App::instance()->getMainWindow();
-  mainWindow->getMenuBar()->setVisible(!advanced_mode);
-  mainWindow->getTabsBar()->setVisible(!advanced_mode);
-  ToolBar::instance()->setVisible(!advanced_mode);
-  StatusBar::instance()->setVisible(!advanced_mode);
-  ColorBar::instance()->setVisible(!advanced_mode);
+  bool advancedMode = !mainWindow->isAdvancedMode();
+  mainWindow->setAdvancedMode(advancedMode);
 
-  mainWindow->remap_window();
-  mainWindow->invalidate();
-
-  if (advanced_mode &&
+  if (advancedMode &&
       get_config_bool("AdvancedMode", "Warning", true)) {
     Accelerator* accel = get_accel_to_execute_command(short_name());
     if (accel != NULL) {

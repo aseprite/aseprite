@@ -21,10 +21,11 @@
 #include "widgets/main_window.h"
 
 #include "app.h"
-#include "app_menus.h"
 #include "app/load_widget.h"
+#include "app_menus.h"
 #include "commands/commands.h"
 #include "modules/editors.h"
+#include "ui/splitter.h"
 #include "ui/system.h"
 #include "ui/view.h"
 #include "ui_context.h"
@@ -47,6 +48,8 @@ public:
 
 MainWindow::MainWindow()
   : Window(true, NULL)
+  , m_lastSplitterPos(0.0)
+  , m_advancedMode(false)
 {
   setId("main_window");
 
@@ -71,6 +74,7 @@ MainWindow::MainWindow()
   m_colorBar = new ColorBar(box_colorbar->getAlign());
   m_toolBar = new ToolBar();
   m_tabsBar = new Tabs(m_tabsDelegate = new AppTabsDelegate());
+  m_colorBarSplitter = findChildT<Splitter>("colorbarsplitter");
 
   // configure all widgets to expansives
   m_menuBar->setExpansive(true);
@@ -123,7 +127,7 @@ void MainWindow::reloadMenus()
 {
   m_menuBar->reload();
 
-  remap_window();
+  layout();
   invalidate();
 }
 
@@ -141,6 +145,39 @@ void MainWindow::createFirstEditor()
 
   // Set current editor
   set_current_editor(editor);   // TODO remove this line from here
+}
+
+void MainWindow::setAdvancedMode(bool advanced)
+{
+  // Check if we already are in the given mode.
+  if (m_advancedMode == advanced)
+    return;
+
+  m_advancedMode = advanced;
+
+  if (m_advancedMode) {
+    m_lastSplitterPos = m_colorBarSplitter->getPosition();
+    m_colorBarSplitter->setPosition(0.0);
+  }
+  else if (m_colorBarSplitter->getPosition() == 0.0)
+    m_colorBarSplitter->setPosition(m_lastSplitterPos);
+
+  m_menuBar->setVisible(!advanced);
+  m_tabsBar->setVisible(!advanced);
+  m_toolBar->setVisible(!advanced);
+  m_statusBar->setVisible(!advanced);
+
+  layout();
+}
+
+void MainWindow::onSaveLayout(SaveLayoutEvent& ev)
+{
+  Window::onSaveLayout(ev);
+
+  // Restore splitter position if we are in advanced mode, so we save
+  // the original splitter position in the layout.
+  if (m_colorBarSplitter->getPosition() == 0.0)
+    m_colorBarSplitter->setPosition(m_lastSplitterPos);
 }
 
 //////////////////////////////////////////////////////////////////////

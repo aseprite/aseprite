@@ -37,7 +37,11 @@ double Splitter::getPosition() const
 
 void Splitter::setPosition(double pos)
 {
-  m_pos = MID(0, pos, 100);
+  if (m_type == ByPercentage)
+    m_pos = MID(0, pos, 100);
+  else
+    m_pos = pos;
+
   invalidate();
 }
 
