@@ -310,6 +310,10 @@ void gui_feedback()
 
   ui::UpdateCursorOverlay();
 
+  // Avoid updating a non-dirty screen over and over again.
+  if (!dirty_display_flag)
+    return;
+
   // Draw overlays.
   overlays->captureOverlappedAreas();
   overlays->drawOverlays();
@@ -322,6 +326,8 @@ void gui_feedback()
   }
   else
     overlays->restoreOverlappedAreas();
+
+  dirty_display_flag = false;
 }
 
 // Sets the ji_screen variable. This routine should be called

@@ -27,6 +27,7 @@
 #include "modules/editors.h"
 #include "modules/gui.h"
 #include "raster/sprite.h"
+#include "ui/system.h"
 #include "widgets/editor/editor.h"
 #include "widgets/status_bar.h"
 
@@ -82,6 +83,8 @@ void UndoCommand::onExecute(Context* context)
 
       current_editor->drawSpriteSafe(0, 0, sprite->getWidth(), sprite->getHeight());
       update_screen_for_document(document);
+
+      ui::dirty_display_flag = true;
       gui_feedback();
 
       base::this_thread::sleep_for(0.01);

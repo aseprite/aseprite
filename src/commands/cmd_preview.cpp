@@ -143,6 +143,7 @@ void PreviewCommand::onExecute(Context* context)
     // Redraw the screen
     if (redraw) {
       redraw = false;
+      dirty_display_flag = true;
 
       x = pos_x + ((delta_x >> zoom) << zoom);
       y = pos_y + ((delta_y >> zoom) << zoom);

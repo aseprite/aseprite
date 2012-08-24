@@ -37,6 +37,8 @@ JRegion ji_dirty_region = NULL;
 int ji_screen_w = 0;
 int ji_screen_h = 0;
 
+bool dirty_display_flag = true;
+
 /* Global timer.  */
 
 volatile int ji_clock = 0;
@@ -148,9 +150,15 @@ void SetDisplay(she::Display* display)
 
 void UpdateCursorOverlay()
 {
-  if (mouse_cursor_overlay != NULL && mouse_scares == 0)
-    mouse_cursor_overlay->moveOverlay(gfx::Point(m_x[0]-mouse_cursor->getFocus().x,
-                                                 m_y[0]-mouse_cursor->getFocus().y));
+  if (mouse_cursor_overlay != NULL && mouse_scares == 0) {
+    gfx::Point newPos(m_x[0]-mouse_cursor->getFocus().x,
+                      m_y[0]-mouse_cursor->getFocus().y);
+
+    if (newPos != mouse_cursor_overlay->getPosition()) {
+      mouse_cursor_overlay->moveOverlay(newPos);
+      dirty_display_flag = true;
+    }
+  }
 }
 
 CursorType jmouse_get_cursor()
@@ -174,6 +182,8 @@ void jmouse_set_cursor(CursorType type)
     show_mouse(NULL);
     set_mouse_cursor(theme->getCursor(type));
   }
+
+  dirty_display_flag = true;
 }
 
 void jmouse_hide()

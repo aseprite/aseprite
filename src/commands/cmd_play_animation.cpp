@@ -115,6 +115,8 @@ void PlayAnimationCommand::onExecute(Context* context)
 
     current_editor->drawSpriteSafe(0, 0, sprite->getWidth(), sprite->getHeight());
 
+    ui::dirty_display_flag = true;
+
     do {
       poll_mouse();
       poll_keyboard();

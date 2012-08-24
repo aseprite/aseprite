@@ -27,6 +27,10 @@ namespace ui {
   extern int ji_screen_w;
   extern int ji_screen_h;
 
+  // Simple flag to indicate that something in the screen was modified
+  // so a flip to the real screen is needed.
+  extern bool dirty_display_flag;
+
   void SetDisplay(she::Display* display);
 
   /***********************************************************************/
@@ -37,6 +41,8 @@ namespace ui {
   /***********************************************************************/
   /* mouse related */
 
+  // Updates the position of the mouse cursor overlay depending on the
+  // current mouse position.
   void UpdateCursorOverlay();
 
   CursorType jmouse_get_cursor();

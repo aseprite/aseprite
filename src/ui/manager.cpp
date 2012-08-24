@@ -1090,6 +1090,8 @@ void Manager::pumpQueue()
 #endif
         /* rectfill(ji_screen, 0, 0, JI_SCREEN_W-1, JI_SCREEN_H-1, makecol(255, 0, 0)); */
         /* vsync(); vsync(); vsync(); vsync(); */
+
+        dirty_display_flag = true;
       }
 
       /* call message handler */

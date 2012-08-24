@@ -30,6 +30,7 @@ namespace ui {
 
     she::Surface* setSurface(she::Surface* newSurface);
 
+    const gfx::Point& getPosition() const { return m_pos; }
     gfx::Rect getBounds() const;
 
     void captureOverlappedArea(she::LockedSurface* screen);
