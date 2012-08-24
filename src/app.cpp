@@ -89,7 +89,7 @@ public:
   RecentFiles m_recent_files;
   app::DataRecovery m_recovery;
 
-  App::Modules()
+  Modules()
     : m_recovery(&m_ui_context) {
   }
 };
