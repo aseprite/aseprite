@@ -46,6 +46,6 @@ void AddLayer::revert(ObjectsContainer* objects, UndoersCollector* redoers)
 
   redoers->pushUndoer(new RemoveLayer(objects, layer));
 
-  folder->remove_layer(layer);
+  folder->removeLayer(layer);
   delete layer;
 }

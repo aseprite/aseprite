@@ -161,7 +161,7 @@ StatusBar::StatusBar()
   m_timeout = 0;
   m_state = SHOW_TEXT;
   m_tipwindow = NULL;
-  m_hot_layer = -1;
+  m_hot_layer = LayerIndex(-1);
 
   // The extra pixel in left and right borders are necessary so
   // m_commandsBox and m_movePixelsBox do not overlap the upper-left
@@ -262,14 +262,14 @@ StatusBar::~StatusBar()
   delete m_notificationsBox;
 }
 
-void StatusBar::addListener(StatusBarListener* listener)
+void StatusBar::addObserver(StatusBarObserver* observer)
 {
-  m_listeners.addListener(listener);
+  m_observers.addObserver(observer);
 }
 
-void StatusBar::removeListener(StatusBarListener* listener)
+void StatusBar::removeObserver(StatusBarObserver* observer)
 {
-  m_listeners.removeListener(listener);
+  m_observers.removeObserver(observer);
 }
 
 void StatusBar::onCurrentToolChange()
@@ -285,8 +285,8 @@ void StatusBar::onCurrentToolChange()
 
 void StatusBar::onTransparentColorChange()
 {
-  m_listeners.notify<const Color&>(&StatusBarListener::onChangeTransparentColor,
-                                   getTransparentColor());
+  m_observers.notifyObservers<const Color&>(&StatusBarObserver::onChangeTransparentColor,
+                                            getTransparentColor());
 }
 
 void StatusBar::clearText()
@@ -296,7 +296,7 @@ void StatusBar::clearText()
 
 bool StatusBar::setStatusText(int msecs, const char *format, ...)
 {
-  // TODO this call should be in a listener of the "current frame" property changes.
+  // TODO this call should be in an observer of the "current frame" property changes.
   updateCurrentFrame();
 
   if ((ji_clock > m_timeout) || (msecs > 0)) {
@@ -632,7 +632,7 @@ bool StatusBar::onProcessMessage(Message* msg)
               int x1 = rc->x2-width + c*width/count;
               int x2 = rc->x2-width + (c+1)*width/count;
               bool hot = (*it == sprite->getCurrentLayer())
-                || (c == m_hot_layer);
+                || (LayerIndex(c) == m_hot_layer);
 
               theme->draw_bounds_nw(doublebuffer,
                                     x1, rc->y1, x2, rc->y2,
@@ -726,7 +726,7 @@ bool StatusBar::onProcessMessage(Message* msg)
       try {
         --rc->y2;
 
-        int hot_layer = -1;
+        LayerIndex hot_layer = LayerIndex(-1);
 
         const ActiveDocumentReader document(UIContext::instance());
         const Sprite* sprite(document ? document->getSprite(): NULL);
@@ -744,7 +744,7 @@ bool StatusBar::onProcessMessage(Message* msg)
             if (Rect(Point(x1, rc->y1),
                      Point(x2, rc->y2)).contains(Point(msg->mouse.x,
                                                        msg->mouse.y))) {
-              hot_layer = c;
+              hot_layer = LayerIndex(c);
               break;
             }
           }
@@ -757,7 +757,7 @@ bool StatusBar::onProcessMessage(Message* msg)
           if (Rect(Point(x1, rc->y1),
                    Point(x2, rc->y2)).contains(Point(msg->mouse.x,
                                                      msg->mouse.y))) {
-            hot_layer = 0;
+            hot_layer = LayerIndex(0);
           }
         }
 
@@ -815,7 +815,7 @@ bool StatusBar::onProcessMessage(Message* msg)
         }
 
         if (m_hot_layer >= 0) {
-          m_hot_layer = -1;
+          m_hot_layer = LayerIndex(-1);
           invalidate();
         }
       }

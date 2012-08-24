@@ -154,7 +154,7 @@ Manager::~Manager()
   // Finish the main manager.
   if (m_defaultManager == this) {
     // No more cursor
-    jmouse_set_cursor(JI_CURSOR_NULL);
+    jmouse_set_cursor(kNoCursor);
 
     // Destroy timers
     Timer::checkNoTimers();
@@ -199,7 +199,7 @@ bool Manager::generateMessages()
     first_time_poll = false;
 
     Manager::getDefault()->invalidate();
-    jmouse_set_cursor(JI_CURSOR_NORMAL);
+    jmouse_set_cursor(kArrowCursor);
   }
 
   // First check: there are windows to manage?
@@ -1090,6 +1090,8 @@ void Manager::pumpQueue()
 #endif
         /* rectfill(ji_screen, 0, 0, JI_SCREEN_W-1, JI_SCREEN_H-1, makecol(255, 0, 0)); */
         /* vsync(); vsync(); vsync(); vsync(); */
+
+        dirty_display_flag = true;
       }
 
       /* call message handler */
@@ -1192,7 +1194,7 @@ void Manager::generateSetCursorMessage()
     enqueueMessage(msg);
   }
   else
-    jmouse_set_cursor(JI_CURSOR_NORMAL);
+    jmouse_set_cursor(kArrowCursor);
 }
 
 // static

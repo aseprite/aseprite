@@ -75,12 +75,12 @@ MovingPixelsState::MovingPixelsState(Editor* editor, Message* msg, PixelsMovemen
   setTransparentColor(StatusBar::instance()->getTransparentColor());
 
   // Add this class as:
-  // - listener of the UI context: so we know if the user wants to execute
-  //   other command, so we can drop pixels.
-  // - listener of the status bar to know if the user has changed the
+  // - observer of the UI context: so we know if the user wants to
+  //   execute other command, so we can drop pixels.
+  // - observer of the status bar to know if the user has changed the
   //   transparent color.
-  UIContext::instance()->addListener(this);
-  StatusBar::instance()->addListener(this);
+  UIContext::instance()->addObserver(this);
+  StatusBar::instance()->addObserver(this);
 
   // Show controls to modify the "pixels movement" options (e.g. the
   // transparent color).
@@ -95,8 +95,8 @@ MovingPixelsState::MovingPixelsState(Editor* editor, Message* msg, PixelsMovemen
 
 MovingPixelsState::~MovingPixelsState()
 {
-  UIContext::instance()->removeListener(this);
-  StatusBar::instance()->removeListener(this);
+  UIContext::instance()->removeObserver(this);
+  StatusBar::instance()->removeObserver(this);
 
   delete m_pixelsMovement;
 
@@ -293,7 +293,7 @@ bool MovingPixelsState::onSetCursor(Editor* editor)
   // Move selection
   if (m_pixelsMovement->isDragging()) {
     editor->hideDrawingCursor();
-    jmouse_set_cursor(JI_CURSOR_MOVE);
+    jmouse_set_cursor(kMoveCursor);
     return true;
   }
 
@@ -403,7 +403,7 @@ void MovingPixelsState::onCommandBeforeExecution(Context* context)
 void MovingPixelsState::dispose()
 {
   // Never called as MovingPixelsState is removed automatically as
-  // StatusBar's listener.
+  // StatusBar's observer.
 }
 
 void MovingPixelsState::onChangeTransparentColor(const Color& color)

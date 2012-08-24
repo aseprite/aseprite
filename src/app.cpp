@@ -22,6 +22,7 @@
 
 #include "app/check_update.h"
 #include "app/color_utils.h"
+#include "app/data_recovery.h"
 #include "app/find_widget.h"
 #include "app/load_widget.h"
 #include "base/exception.h"
@@ -30,6 +31,7 @@
 #include "commands/commands.h"
 #include "commands/params.h"
 #include "console.h"
+#include "document_observer.h"
 #include "drop_files.h"
 #include "file/file.h"
 #include "file/file_formats_manager.h"
@@ -77,18 +79,19 @@
 
 using namespace ui;
 
-/**
- * ASEPRITE modules.
- */
 class App::Modules
 {
 public:
-  // ASEPRITE Modules
   FileSystemModule m_file_system_module;
   tools::ToolBox m_toolbox;
   CommandsModule m_commands_modules;
   UIContext m_ui_context;
   RecentFiles m_recent_files;
+  app::DataRecovery m_recovery;
+
+  Modules()
+    : m_recovery(&m_ui_context) {
+  }
 };
 
 App* App::m_instance = NULL;
@@ -143,20 +146,14 @@ App::App(int argc, char* argv[])
   set_current_palette(NULL, true);
 }
 
-
-
 int App::run()
 {
-#ifdef ENABLE_UPDATER
-  app::CheckUpdateThreadLauncher checkUpdate;
-#endif
-
   // Initialize GUI interface
   if (isGui()) {
     PRINTF("GUI mode\n");
 
     // Setup the GUI screen
-    jmouse_set_cursor(JI_CURSOR_NORMAL);
+    jmouse_set_cursor(kArrowCursor);
     ui::Manager::getDefault()->invalidate();
 
     // Create the main window and show it.
@@ -222,6 +219,7 @@ int App::run()
 
 #ifdef ENABLE_UPDATER
     // Launch the thread to check for updates.
+    app::CheckUpdateThreadLauncher checkUpdate;
     checkUpdate.launch();
 #endif
 
@@ -247,10 +245,10 @@ App::~App()
     // Remove ASEPRITE handlers
     PRINTF("ASE: Uninstalling\n");
 
-    // Fire App Exit signal
+    // Fire App Exit signal.
     App::instance()->Exit();
 
-    // Finalize modules, configuration and core
+    // Finalize modules, configuration and core.
     Editor::editor_cursor_exit();
     boundary_exit();
 

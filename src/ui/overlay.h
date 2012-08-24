@@ -22,9 +22,15 @@ namespace ui {
   public:
     typedef int ZOrder;
 
+    static const ZOrder NormalZOrder = 0;
+    static const ZOrder MouseZOrder = 5000;
+
     Overlay(she::Surface* overlaySurface, const gfx::Point& pos, ZOrder zorder = 0);
     ~Overlay();
 
+    she::Surface* setSurface(she::Surface* newSurface);
+
+    const gfx::Point& getPosition() const { return m_pos; }
     gfx::Rect getBounds() const;
 
     void captureOverlappedArea(she::LockedSurface* screen);

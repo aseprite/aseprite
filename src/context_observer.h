@@ -16,21 +16,24 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifndef CONTEXT_LISTENER_H_INCLUDED
-#define CONTEXT_LISTENER_H_INCLUDED
+#ifndef CONTEXT_OBSERVER_H_INCLUDED
+#define CONTEXT_OBSERVER_H_INCLUDED
 
 class Context;
+class Document;
 
-// Listener of context events. The default implementation does nothing
+// Observer of context events. The default implementation does nothing
 // in each handler, so you can override the required events.
-class ContextListener
+class ContextObserver
 {
 public:
-  virtual ~ContextListener() { }
+  virtual ~ContextObserver() { }
   virtual void onActiveDocumentBeforeChange(Context* context) { }
   virtual void onActiveDocumentAfterChange(Context* context) { }
   virtual void onCommandBeforeExecution(Context* context) { }
   virtual void onCommandAfterExecution(Context* context) { }
+  virtual void onAddDocument(Context* context, Document* document) { }
+  virtual void onRemoveDocument(Context* context, Document* document) { }
 };
 
 #endif

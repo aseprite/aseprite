@@ -34,6 +34,7 @@
 #include "skin/skin_property.h"
 #include "skin/skin_slider_property.h"
 #include "skin/skin_theme.h"
+#include "she/system.h"
 #include "ui/gui.h"
 #include "ui/intern.h"
 #include "xml_exception.h"
@@ -78,7 +79,7 @@ protected:
     switch (msg->type) {
 
       case JM_SETCURSOR:
-        jmouse_set_cursor(JI_CURSOR_NORMAL);
+        jmouse_set_cursor(kArrowCursor);
         return true;
 
       case JM_DRAW:
@@ -107,38 +108,35 @@ protected:
   }
 };
 
-static struct
-{
-  const char* id;
-  int focusx, focusy;
-} cursors_info[JI_CURSORS] = {
-  { "null",             0, 0 }, // JI_CURSOR_NULL
-  { "normal",           0, 0 }, // JI_CURSOR_NORMAL
-  { "normal_add",       0, 0 }, // JI_CURSOR_NORMAL_ADD
-  { "forbidden",        0, 0 }, // JI_CURSOR_FORBIDDEN
-  { "hand",             0, 0 }, // JI_CURSOR_HAND
-  { "scroll",           0, 0 }, // JI_CURSOR_SCROLL
-  { "move",             0, 0 }, // JI_CURSOR_MOVE
-  { "size_tl",          0, 0 }, // JI_CURSOR_SIZE_TL
-  { "size_t",           0, 0 }, // JI_CURSOR_SIZE_T
-  { "size_tr",          0, 0 }, // JI_CURSOR_SIZE_TR
-  { "size_l",           0, 0 }, // JI_CURSOR_SIZE_L
-  { "size_r",           0, 0 }, // JI_CURSOR_SIZE_R
-  { "size_bl",          0, 0 }, // JI_CURSOR_SIZE_BL
-  { "size_b",           0, 0 }, // JI_CURSOR_SIZE_B
-  { "size_br",          0, 0 }, // JI_CURSOR_SIZE_BR
-  { "rotate_tl",        0, 0 }, // JI_CURSOR_ROTATE_TL
-  { "rotate_t",         0, 0 }, // JI_CURSOR_ROTATE_T
-  { "rotate_tr",        0, 0 }, // JI_CURSOR_ROTATE_TR
-  { "rotate_l",         0, 0 }, // JI_CURSOR_ROTATE_L
-  { "rotate_r",         0, 0 }, // JI_CURSOR_ROTATE_R
-  { "rotate_bl",        0, 0 }, // JI_CURSOR_ROTATE_BL
-  { "rotate_b",         0, 0 }, // JI_CURSOR_ROTATE_B
-  { "rotate_br",        0, 0 }, // JI_CURSOR_ROTATE_BR
-  { "eyedropper",       0, 0 }, // JI_CURSOR_EYEDROPPER
+static const char* cursor_names[kCursorTypes] = {
+  "null",                       // kNoCursor
+  "normal",                     // kArrowCursor
+  "normal_add",                 // kArrowPlusCursor
+  "forbidden",                  // kForbiddenCursor
+  "hand",                       // kHandCursor
+  "scroll",                     // kScrollCursor
+  "move",                       // kMoveCursor
+  "size_tl",                    // kSizeTLCursor
+  "size_t",                     // kSizeTCursor
+  "size_tr",                    // kSizeTRCursor
+  "size_l",                     // kSizeLCursor
+  "size_r",                     // kSizeRCursor
+  "size_bl",                    // kSizeBLCursor
+  "size_b",                     // kSizeBCursor
+  "size_br",                    // kSizeBRCursor
+  "rotate_tl",                  // kRotateTLCursor
+  "rotate_t",                   // kRotateTCursor
+  "rotate_tr",                  // kRotateTRCursor
+  "rotate_l",                   // kRotateLCursor
+  "rotate_r",                   // kRotateRCursor
+  "rotate_bl",                  // kRotateBLCursor
+  "rotate_b",                   // kRotateBCursor
+  "rotate_br",                  // kRotateBRCursor
+  "eyedropper"                  // kEyedropperCursor
 };
 
 SkinTheme::SkinTheme()
+  : m_cursors(ui::kCursorTypes, NULL)
 {
   this->name = "Skin Theme";
   m_selected_skin = get_config_string("Skin", "Selected", "default");
@@ -146,8 +144,6 @@ SkinTheme::SkinTheme()
 
   // Initialize all graphics in NULL (these bitmaps are loaded from the skin)
   m_sheet_bmp = NULL;
-  for (int c=0; c<JI_CURSORS; ++c)
-    m_cursors[c] = NULL;
   for (int c=0; c<PARTS; ++c)
     m_part[c] = NULL;
 
@@ -281,9 +277,9 @@ SkinTheme::SkinTheme()
 
 SkinTheme::~SkinTheme()
 {
-  for (int c=0; c<JI_CURSORS; ++c)
-    if (m_cursors[c])
-      destroy_bitmap(m_cursors[c]);
+  // Delete all cursors.
+  for (size_t c=0; c<m_cursors.size(); ++c)
+    delete m_cursors[c];
 
   for (int c=0; c<PARTS; ++c)
     destroy_bitmap(m_part[c]);
@@ -383,18 +379,23 @@ void SkinTheme::onRegenerate()
         int focusy = strtol(xmlCursor->Attribute("focusy"), NULL, 10);
         int c;
 
-        for (c=0; c<JI_CURSORS; ++c) {
-          if (id != cursors_info[c].id)
+        for (c=0; c<kCursorTypes; ++c) {
+          if (id != cursor_names[c])
             continue;
 
-          cursors_info[c].focusx = focusx;
-          cursors_info[c].focusy = focusy;
+          delete m_cursors[c];
+          m_cursors[c] = NULL;
 
-          m_cursors[c] = cropPartFromSheet(m_cursors[c], x, y, w, h, true);
+          BITMAP* bmp = cropPartFromSheet(NULL, x, y, w, h);
+          she::Surface* surface =
+            she::Instance()->createSurfaceFromNativeHandle(reinterpret_cast<void*>(bmp));
+
+          m_cursors[c] = new Cursor(surface, gfx::Point(focusx*jguiscale(),
+                                                        focusy*jguiscale()));
           break;
         }
 
-        if (c == JI_CURSORS) {
+        if (c == kCursorTypes) {
           throw base::Exception("Unknown cursor specified in '%s':\n"
                                 "<cursor id='%s' ... />\n", xml_filename.c_str(), id.c_str());
         }
@@ -475,9 +476,9 @@ void SkinTheme::onRegenerate()
   }
 }
 
-BITMAP* SkinTheme::cropPartFromSheet(BITMAP* bmp, int x, int y, int w, int h, bool cursor)
+BITMAP* SkinTheme::cropPartFromSheet(BITMAP* bmp, int x, int y, int w, int h)
 {
-  int colordepth = (cursor ? bitmap_color_depth(screen): 32);
+  int colordepth = 32;
 
   if (bmp &&
       (bmp->w != w ||
@@ -490,32 +491,17 @@ BITMAP* SkinTheme::cropPartFromSheet(BITMAP* bmp, int x, int y, int w, int h, bo
   if (!bmp)
     bmp = create_bitmap_ex(colordepth, w, h);
 
-  if (cursor) {
-    clear_to_color(bmp, bitmap_mask_color(bmp));
-
-    set_alpha_blender();
-    draw_trans_sprite(bmp, m_sheet_bmp, -x, -y);
-    set_trans_blender(0, 0, 0, 0);
-  }
-  else {
-    blit(m_sheet_bmp, bmp, x, y, 0, 0, w, h);
-  }
-
+  blit(m_sheet_bmp, bmp, x, y, 0, 0, w, h);
   return ji_apply_guiscale(bmp);
 }
 
-BITMAP* SkinTheme::set_cursor(int type, int* focus_x, int* focus_y)
+Cursor* SkinTheme::getCursor(CursorType type)
 {
-  if (type == JI_CURSOR_NULL) {
-    *focus_x = 0;
-    *focus_y = 0;
+  if (type == kNoCursor) {
     return NULL;
   }
   else {
-    ASSERT(type >= 0 && type < JI_CURSORS);
-
-    *focus_x = cursors_info[type].focusx*jguiscale();
-    *focus_y = cursors_info[type].focusy*jguiscale();
+    ASSERT(type >= kFirstCursorType && type <= kLastCursorType);
     return m_cursors[type];
   }
 }

@@ -152,7 +152,7 @@ add_library(aseprite-library
   console.cpp
   context.cpp
   context_flags.cpp
-  context_listener_list.cpp
+  context_observer_list.cpp
   document.cpp
   document_undo.cpp
   documents.cpp
@@ -173,9 +173,11 @@ add_library(aseprite-library
   ui_context.cpp
   undo_transaction.cpp
   xml_exception.cpp
+  app/backup.cpp
   app/check_update.cpp
   app/color.cpp
   app/color_utils.cpp
+  app/data_recovery.cpp
   app/file_selector.cpp
   app/widget_loader.cpp
   commands/cmd_about.cpp
@@ -231,7 +233,6 @@ add_library(aseprite-library
   commands/cmd_paste.cpp
   commands/cmd_play_animation.cpp
   commands/cmd_preview.cpp
-  commands/cmd_redo.cpp
   commands/cmd_refresh.cpp
   commands/cmd_remove_cel.cpp
   commands/cmd_remove_frame.cpp
@@ -367,7 +368,7 @@ add_library(aseprite-library
   widgets/editor/cursor.cpp
   widgets/editor/drawing_state.cpp
   widgets/editor/editor.cpp
-  widgets/editor/editor_listeners.cpp
+  widgets/editor/editor_observers.cpp
   widgets/editor/editor_states_history.cpp
   widgets/editor/editor_view.cpp
   widgets/editor/keys.cpp
@@ -432,6 +433,12 @@ function(find_unittests dir dependencies)
     include_directories(${CMAKE_SOURCE_DIR}/third_party/gtest/include)
   endif()
 
+  # See if the test is linked with "she" library.
+  string(REGEX MATCH "she" link_with_she ${ARGV})
+  if (link_with_she STREQUAL "she")
+    set(extra_definitions -DLINKED_WITH_SHE)
+  endif()
+
   foreach(testsourcefile ${tests})
     get_filename_component(testname ${testsourcefile} NAME_WE)
 
@@ -440,6 +447,11 @@ function(find_unittests dir dependencies)
     if(LIBALLEGRO4_LINK_FLAGS)
       set_target_properties(${testname}
 	PROPERTIES LINK_FLAGS ${LIBALLEGRO4_LINK_FLAGS})
+    endif()
+
+    if(extra_definitions)
+      set_target_properties(${testname}
+	PROPERTIES COMPILE_FLAGS ${extra_definitions})
     endif()
 
     add_custom_target(run_${testname}

@@ -152,16 +152,16 @@ public:
   void operator()() { f(x1); }
 
   template<typename A1>
-  void operator()(A1& a1) { f(x1); }
+  void operator()(const A1& a1) { f(x1); }
 
   template<typename A1, typename A2>
-  void operator()(A1& a1, A2& a2) { f(x1); }
+  void operator()(const A1& a1, const A2& a2) { f(x1); }
 
   template<typename A1, typename A2, typename A3>
-  void operator()(A1& a1, A2& a2, A3& a3) { f(x1); }
+  void operator()(const A1& a1, const A2& a2, const A3& a3) { f(x1); }
 
   template<typename A1, typename A2, typename A3, typename A4>
-  void operator()(A1& a1, A2& a2, A3& a3, A4& a4) { f(x1); }
+  void operator()(const A1& a1, const A2& a2, const A3& a3, const A4& a4) { f(x1); }
 };
 
 template<typename R, typename F,

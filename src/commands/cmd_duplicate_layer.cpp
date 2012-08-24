@@ -88,7 +88,7 @@ void DuplicateLayerCommand::onExecute(Context* context)
     undo.pushUndoer(new undoers::AddLayer(undo.getObjects(),
         sourceLayer->get_parent(), newLayerPtr));
 
-  sourceLayer->get_parent()->add_layer(newLayerPtr);
+  sourceLayer->get_parent()->addLayer(newLayerPtr);
 
   // Release the pointer as it is owned by the sprite now
   Layer* newLayer = newLayerPtr.release();
@@ -100,7 +100,7 @@ void DuplicateLayerCommand::onExecute(Context* context)
 
   undo.commit();
 
-  sourceLayer->get_parent()->move_layer(newLayer, sourceLayer);
+  sourceLayer->get_parent()->stackLayer(newLayer, sourceLayer);
   sprite->setCurrentLayer(newLayer);
 
   update_screen_for_document(document);

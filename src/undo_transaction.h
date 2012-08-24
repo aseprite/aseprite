@@ -96,7 +96,7 @@ public:
   // for layers
   LayerImage* newLayer();
   void removeLayer(Layer* layer);
-  void moveLayerAfter(Layer* layer, Layer* afterThis);
+  void restackLayerAfter(Layer* layer, Layer* afterThis);
   void cropLayer(Layer* layer, int x, int y, int w, int h, int bgcolor);
   void displaceLayers(Layer* layer, int dx, int dy);
   void backgroundFromLayer(LayerImage* layer, int bgcolor);
@@ -147,8 +147,6 @@ private:
   bool m_enabledFlag;
   const char* m_label;
   undo::Modification m_modification;
-  Layer* m_startLayer;
-  FrameNumber m_startFrame;
 };
 
 #endif

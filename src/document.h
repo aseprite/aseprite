@@ -24,11 +24,13 @@
 #include "base/unique_ptr.h"
 #include "document_id.h"
 #include "gfx/transformation.h"
+#include "observable.h"
 #include "raster/pixel_format.h"
 
 #include <string>
 
 class Cel;
+class DocumentObserver;
 class DocumentUndo;
 class FormatOptions;
 class Image;
@@ -54,8 +56,7 @@ enum DuplicateType
 
 // An application document. It is the class used to contain one file
 // opened and being edited by the user (a sprite).
-class Document
-{
+class Document : public Observable<DocumentObserver> {
 public:
 
   enum LockType {

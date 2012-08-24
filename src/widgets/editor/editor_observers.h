@@ -16,28 +16,28 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifndef WIDGETS_EDITOR_LISTENERS_H_INCLUDED
-#define WIDGETS_EDITOR_LISTENERS_H_INCLUDED
+#ifndef WIDGETS_EDITOR_OBSERVERS_H_INCLUDED
+#define WIDGETS_EDITOR_OBSERVERS_H_INCLUDED
 
-#include "listeners.h"
-#include "widgets/editor/editor_listener.h"
+#include "observers.h"
+#include "widgets/editor/editor_observer.h"
 
 class Editor;
 
-class EditorListeners
+class EditorObservers
 {
 public:
-  EditorListeners();
+  EditorObservers();
 
-  void addListener(EditorListener* listener);
-  void removeListener(EditorListener* listener);
+  void addObserver(EditorObserver* observer);
+  void removeObserver(EditorObserver* observer);
 
   void notifyStateChanged(Editor* editor);
   void notifyScrollChanged(Editor* editor);
   void notifyDocumentChanged(Editor* editor);
 
 private:
-  Listeners<EditorListener> m_listeners;
+  Observers<EditorObserver> m_observers;
 };
 
-#endif  // WIDGETS_EDITOR_LISTENERS_H_INCLUDED
+#endif  // WIDGETS_EDITOR_OBSERVERS_H_INCLUDED

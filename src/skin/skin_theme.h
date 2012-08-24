@@ -19,16 +19,16 @@
 #ifndef SKIN_THEME_H_INCLUDED
 #define SKIN_THEME_H_INCLUDED
 
-#include <allegro/color.h>
-#include <map>
-#include <string>
-
 #include "gfx/rect.h"
+#include "skin/skin_parts.h"
 #include "ui/rect.h"
 #include "ui/system.h"
 #include "ui/theme.h"
 
-#include "skin/skin_parts.h"
+#include <map>
+#include <string>
+
+#include <allegro/color.h>
 
 namespace ui {
   class Graphics;
@@ -41,9 +41,9 @@ class SkinTheme : public ui::Theme
 {
   std::string m_selected_skin;
   BITMAP* m_sheet_bmp;
-  BITMAP* m_cursors[ui::JI_CURSORS];
   BITMAP* m_part[PARTS];
   std::map<std::string, BITMAP*> m_toolicon;
+  std::vector<ui::Cursor*> m_cursors;
   FONT* m_minifont;
 
 public:
@@ -57,7 +57,7 @@ public:
   void reload_skin();
   void reload_fonts();
 
-  BITMAP* set_cursor(int type, int* focus_x, int* focus_y);
+  ui::Cursor* getCursor(ui::CursorType type);
   void init_widget(ui::Widget* widget);
   ui::JRegion get_window_mask(ui::Widget* widget);
   void map_decorative_widget(ui::Widget* widget);
@@ -169,7 +169,7 @@ private:
   void draw_bounds_template(ui::Graphics* g, const gfx::Rect& rc,
                             int nw, int n, int ne, int e, int se, int s, int sw, int w);
 
-  BITMAP* cropPartFromSheet(BITMAP* bmp, int x, int y, int w, int h, bool cursor = false);
+  BITMAP* cropPartFromSheet(BITMAP* bmp, int x, int y, int w, int h);
   int get_bg_color(ui::Widget* widget);
   void draw_textstring(const char *t, int fg_color, int bg_color,
                        bool fill_bg, ui::Widget* widget, const ui::JRect rect,

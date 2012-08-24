@@ -16,38 +16,25 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#include "config.h"
+#ifndef WIDGETS_EDITOR_OBSERVER_H_INCLUDED
+#define WIDGETS_EDITOR_OBSERVER_H_INCLUDED
 
-#include "widgets/editor/editor_listeners.h"
+class Editor;
 
-#include "base/bind.h"
-#include "widgets/editor/editor_listener.h"
-
-EditorListeners::EditorListeners()
+class EditorObserver
 {
-}
+public:
+  virtual ~EditorObserver() { }
+  virtual void dispose() = 0;
 
-void EditorListeners::addListener(EditorListener* listener)
-{
-  m_listeners.addListener(listener);
-}
+  // Called when the editor's state changes.
+  virtual void stateChanged(Editor* editor) = 0;
 
-void EditorListeners::removeListener(EditorListener* listener)
-{
-  m_listeners.removeListener(listener);
-}
+  // Called when the scroll or zoom of the editor changes.
+  virtual void scrollChanged(Editor* editor) = 0;
 
-void EditorListeners::notifyStateChanged(Editor* editor)
-{
-  m_listeners.notify(&EditorListener::stateChanged, editor);
-}
+  // Called when the document shown in the editor changes.
+  virtual void documentChanged(Editor* editor) = 0;
+};
 
-void EditorListeners::notifyScrollChanged(Editor* editor)
-{
-  m_listeners.notify(&EditorListener::scrollChanged, editor);
-}
-
-void EditorListeners::notifyDocumentChanged(Editor* editor)
-{
-  m_listeners.notify(&EditorListener::documentChanged, editor);
-}
+#endif  // WIDGETS_EDITOR_OBSERVER_H_INCLUDED

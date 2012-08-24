@@ -594,8 +594,8 @@ bool AnimationEditor::onProcessMessage(Message* msg)
                     Sprite* sprite_writer = const_cast<Sprite*>(m_sprite);
 
                     UndoTransaction undoTransaction(document_writer, "Move Layer");
-                    undoTransaction.moveLayerAfter(m_layers[m_clk_layer],
-                                                   m_layers[m_hot_layer]);
+                    undoTransaction.restackLayerAfter(m_layers[m_clk_layer],
+                                                      m_layers[m_hot_layer]);
                     undoTransaction.commit();
 
                     // Select the new layer.
@@ -815,19 +815,19 @@ void AnimationEditor::setCursor(int x, int y)
 
   // Is the mouse in the separator.
   if (mx > m_separator_x-2 && mx < m_separator_x+2)  {
-    jmouse_set_cursor(JI_CURSOR_SIZE_L);
+    jmouse_set_cursor(kSizeLCursor);
   }
   // Scrolling.
   else if (m_state == STATE_SCROLLING ||
            m_space_pressed) {
-    jmouse_set_cursor(JI_CURSOR_SCROLL);
+    jmouse_set_cursor(kScrollCursor);
   }
   // Moving a frame.
   else if (m_state == STATE_MOVING_FRAME &&
            m_clk_part == A_PART_HEADER_FRAME &&
            m_hot_part == A_PART_HEADER_FRAME &&
            m_clk_frame != m_hot_frame) {
-    jmouse_set_cursor(JI_CURSOR_MOVE);
+    jmouse_set_cursor(kMoveCursor);
   }
   // Moving a layer.
   else if (m_state == STATE_MOVING_LAYER &&
@@ -835,9 +835,9 @@ void AnimationEditor::setCursor(int x, int y)
            m_hot_part == A_PART_LAYER &&
            m_clk_layer != m_hot_layer) {
     if (m_layers[m_clk_layer]->is_background())
-      jmouse_set_cursor(JI_CURSOR_FORBIDDEN);
+      jmouse_set_cursor(kForbiddenCursor);
     else
-      jmouse_set_cursor(JI_CURSOR_MOVE);
+      jmouse_set_cursor(kMoveCursor);
   }
   // Moving a cel.
   else if (m_state == STATE_MOVING_CEL &&
@@ -845,11 +845,11 @@ void AnimationEditor::setCursor(int x, int y)
            m_hot_part == A_PART_CEL &&
            (m_clk_frame != m_hot_frame ||
             m_clk_layer != m_hot_layer)) {
-    jmouse_set_cursor(JI_CURSOR_MOVE);
+    jmouse_set_cursor(kMoveCursor);
   }
   // Normal state.
   else {
-    jmouse_set_cursor(JI_CURSOR_NORMAL);
+    jmouse_set_cursor(kArrowCursor);
   }
 }
 
@@ -1288,7 +1288,7 @@ void AnimationEditor::regenerateLayers()
     m_layers = (Layer**)base_malloc(sizeof(Layer*) * m_nlayers);
 
     for (c=0; c<m_nlayers; c++)
-      m_layers[c] = (Layer*)m_sprite->indexToLayer(m_nlayers-c-1);
+      m_layers[c] = (Layer*)m_sprite->indexToLayer(LayerIndex(m_nlayers-c-1));
   }
 }
 

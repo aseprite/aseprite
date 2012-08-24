@@ -81,7 +81,7 @@ bool ScrollingState::onMouseWheel(Editor* editor, Message* msg)
 bool ScrollingState::onSetCursor(Editor* editor)
 {
   editor->hideDrawingCursor();
-  jmouse_set_cursor(JI_CURSOR_SCROLL);
+  jmouse_set_cursor(kScrollCursor);
   return true;
 }
 

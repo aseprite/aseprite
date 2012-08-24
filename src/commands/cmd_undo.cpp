@@ -27,24 +27,31 @@
 #include "modules/editors.h"
 #include "modules/gui.h"
 #include "raster/sprite.h"
+#include "ui/system.h"
 #include "widgets/editor/editor.h"
 #include "widgets/status_bar.h"
 
 class UndoCommand : public Command
 {
 public:
-  UndoCommand();
+  enum Type { Undo, Redo };
+
+  UndoCommand(Type type);
   Command* clone() { return new UndoCommand(*this); }
 
 protected:
   bool onEnabled(Context* context);
   void onExecute(Context* context);
+
+private:
+  Type m_type;
 };
 
-UndoCommand::UndoCommand()
-  : Command("Undo",
-            "Undo",
+UndoCommand::UndoCommand(Type type)
+  : Command((type == Undo ? "Undo": "Redo"),
+            (type == Undo ? "Undo": "Redo"),
             CmdUIOnlyFlag)
+  , m_type(type)
 {
 }
 
@@ -53,7 +60,8 @@ bool UndoCommand::onEnabled(Context* context)
   ActiveDocumentWriter document(context);
   return
     document != NULL &&
-    document->getUndo()->canUndo();
+    ((m_type == Undo ? document->getUndo()->canUndo():
+                       document->getUndo()->canRedo()));
 }
 
 void UndoCommand::onExecute(Context* context)
@@ -63,13 +71,20 @@ void UndoCommand::onExecute(Context* context)
   Sprite* sprite = document->getSprite();
 
   if (get_config_bool("Options", "UndoGotoModified", true)) {
-    if (undo->getNextUndoFrame() != sprite->getCurrentFrame() ||
-        undo->getNextUndoLayer() != sprite->getCurrentLayer()) {
-      sprite->setCurrentFrame(undo->getNextUndoFrame());
-      sprite->setCurrentLayer(undo->getNextUndoLayer());
+    SpritePosition spritePosition;
+
+    if (m_type == Undo)
+      spritePosition = undo->getNextUndoSpritePosition();
+    else
+      spritePosition = undo->getNextRedoSpritePosition();
+
+    if (spritePosition != sprite->getCurrentPosition()) {
+      sprite->setCurrentPosition(spritePosition);
 
       current_editor->drawSpriteSafe(0, 0, sprite->getWidth(), sprite->getHeight());
       update_screen_for_document(document);
+
+      ui::dirty_display_flag = true;
       gui_feedback();
 
       base::this_thread::sleep_for(0.01);
@@ -77,10 +92,16 @@ void UndoCommand::onExecute(Context* context)
   }
 
   StatusBar::instance()
-    ->showTip(1000, "Undid %s",
-              undo->getNextUndoLabel());
+    ->showTip(1000, "%s %s",
+              (m_type == Undo ? "Undid": "Redid"),
+              (m_type == Undo ? undo->getNextUndoLabel():
+                                undo->getNextRedoLabel()));
 
-  undo->doUndo();
+  if (m_type == Undo)
+    undo->doUndo();
+  else
+    undo->doRedo();
+
   document->generateMaskBoundaries();
   document->destroyExtraCel(); // Regenerate extras
 
@@ -92,5 +113,10 @@ void UndoCommand::onExecute(Context* context)
 
 Command* CommandFactory::createUndoCommand()
 {
-  return new UndoCommand;
+  return new UndoCommand(UndoCommand::Undo);
+}
+
+Command* CommandFactory::createRedoCommand()
+{
+  return new UndoCommand(UndoCommand::Redo);
 }

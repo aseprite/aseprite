@@ -4,6 +4,11 @@ dir="`pwd`"
 version=$(cat ../config.h | grep VERSION | sed -e 's/.*\"\(.*\)\"/\1/g')
 distdir=ASEPRITE_$version
 
+if [ ! -f create_dmg.sh ]; then
+    echo You must run create_dmg.sh from scripts/ directory
+    exit 1
+fi
+
 if [ ! -f $distdir.dmg ] ; then
     cd "$dir/.."
     mkdir "$dir/$distdir"

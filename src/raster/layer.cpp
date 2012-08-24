@@ -210,7 +210,7 @@ void LayerImage::configureAsBackground()
   set_background(true);
   setName("Background");
 
-  getSprite()->getFolder()->move_layer(this, NULL);
+  getSprite()->getFolder()->stackLayer(this, NULL);
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -262,13 +262,13 @@ void LayerFolder::getCels(CelList& cels)
     (*it)->getCels(cels);
 }
 
-void LayerFolder::add_layer(Layer* layer)
+void LayerFolder::addLayer(Layer* layer)
 {
   m_layers.push_back(layer);
   layer->set_parent(this);
 }
 
-void LayerFolder::remove_layer(Layer* layer)
+void LayerFolder::removeLayer(Layer* layer)
 {
   LayerIterator it = std::find(m_layers.begin(), m_layers.end(), layer);
   ASSERT(it != m_layers.end());
@@ -277,7 +277,7 @@ void LayerFolder::remove_layer(Layer* layer)
   layer->set_parent(NULL);
 }
 
-void LayerFolder::move_layer(Layer* layer, Layer* after)
+void LayerFolder::stackLayer(Layer* layer, Layer* after)
 {
   LayerIterator it = std::find(m_layers.begin(), m_layers.end(), layer);
   ASSERT(it != m_layers.end());

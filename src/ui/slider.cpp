@@ -253,12 +253,12 @@ void Slider::setupSliderCursor()
 {
   if (hasCapture()) {
     if (slider_press_left)
-      jmouse_set_cursor(JI_CURSOR_NORMAL);
+      jmouse_set_cursor(kArrowCursor);
     else
-      jmouse_set_cursor(JI_CURSOR_SIZE_L);
+      jmouse_set_cursor(kSizeLCursor);
   }
   else
-    jmouse_set_cursor(JI_CURSOR_NORMAL);
+    jmouse_set_cursor(kArrowCursor);
 }
 
 } // namespace ui

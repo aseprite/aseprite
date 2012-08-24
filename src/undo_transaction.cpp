@@ -22,6 +22,8 @@
 
 #include "base/unique_ptr.h"
 #include "document.h"
+#include "document_event.h"
+#include "document_observer.h"
 #include "document_undo.h"
 #include "raster/algorithm/flip_image.h"
 #include "raster/blend.h"
@@ -81,8 +83,7 @@ UndoTransaction::UndoTransaction(Document* document, const char* label, undo::Mo
     m_undo->pushUndoer(new undoers::OpenGroup(getObjects(),
                                               m_label,
                                               m_modification,
-                                              m_startLayer = m_sprite->getCurrentLayer(),
-                                              m_startFrame = m_sprite->getCurrentFrame()));
+                                              m_sprite));
 }
 
 UndoTransaction::~UndoTransaction()
@@ -113,8 +114,7 @@ void UndoTransaction::closeUndoGroup()
     m_undo->pushUndoer(new undoers::CloseGroup(getObjects(),
                                                m_label,
                                                m_modification,
-                                               m_startLayer,
-                                               m_startFrame));
+                                               m_sprite));
     m_closed = true;
   }
 }
@@ -204,6 +204,9 @@ void UndoTransaction::setSpriteSize(int w, int h)
     m_undo->pushUndoer(new undoers::SetSpriteSize(m_undo->getObjects(), m_sprite));
 
   m_sprite->setSize(w, h);
+
+  DocumentEvent ev(m_document, m_sprite);
+  m_document->notifyObservers<DocumentEvent&>(&DocumentObserver::onSpriteSizeChanged, ev);
 }
 
 void UndoTransaction::cropSprite(const gfx::Rect& bounds, int bgcolor)
@@ -367,6 +370,9 @@ void UndoTransaction::replaceStockImage(int image_index, Image* new_image)
 
   // destroy the old image
   image_free(old_image);
+
+  DocumentEvent ev(m_document, m_sprite, NULL, NULL, new_image, image_index);
+  m_document->notifyObservers<DocumentEvent&>(&DocumentObserver::onImageReplaced, ev);
 }
 
 /**
@@ -382,10 +388,13 @@ LayerImage* UndoTransaction::newLayer()
     m_undo->pushUndoer(new undoers::AddLayer(m_undo->getObjects(),
         m_sprite->getFolder(), layer));
 
-  m_sprite->getFolder()->add_layer(layer);
+  m_sprite->getFolder()->addLayer(layer);
 
   // select the new layer
   setCurrentLayer(layer);
+
+  DocumentEvent ev(m_document, m_sprite, layer);
+  m_document->notifyObservers<DocumentEvent&>(&DocumentObserver::onAddLayer, ev);
 
   return layer;
 }
@@ -396,6 +405,9 @@ LayerImage* UndoTransaction::newLayer()
 void UndoTransaction::removeLayer(Layer* layer)
 {
   ASSERT(layer);
+
+  DocumentEvent ev(m_document, m_sprite, layer);
+  m_document->notifyObservers<DocumentEvent&>(&DocumentObserver::onRemoveLayer, ev);
 
   LayerFolder* parent = layer->get_parent();
 
@@ -421,18 +433,21 @@ void UndoTransaction::removeLayer(Layer* layer)
     m_undo->pushUndoer(new undoers::RemoveLayer(m_undo->getObjects(),
         layer));
 
-  parent->remove_layer(layer);
+  parent->removeLayer(layer);
 
   // destroy the layer
   delete layer;
 }
 
-void UndoTransaction::moveLayerAfter(Layer* layer, Layer* afterThis)
+void UndoTransaction::restackLayerAfter(Layer* layer, Layer* afterThis)
 {
   if (isEnabled())
     m_undo->pushUndoer(new undoers::MoveLayer(m_undo->getObjects(), layer));
 
-  layer->get_parent()->move_layer(layer, afterThis);
+  layer->get_parent()->stackLayer(layer, afterThis);
+
+  DocumentEvent ev(m_document, m_sprite, layer);
+  m_document->notifyObservers<DocumentEvent&>(&DocumentObserver::onLayerRestacked, ev);
 }
 
 void UndoTransaction::cropLayer(Layer* layer, int x, int y, int w, int h, int bgcolor)
@@ -588,7 +603,7 @@ void UndoTransaction::flattenLayers(int bgcolor)
       m_undo->pushUndoer(new undoers::AddLayer(m_undo->getObjects(),
           m_sprite->getFolder(), background));
 
-    m_sprite->getFolder()->add_layer(background);
+    m_sprite->getFolder()->addLayer(background);
 
     if (isEnabled())
       m_undo->pushUndoer(new undoers::MoveLayer(m_undo->getObjects(),
@@ -657,7 +672,7 @@ void UndoTransaction::flattenLayers(int bgcolor)
         m_undo->pushUndoer(new undoers::RemoveLayer(m_undo->getObjects(),
             old_layer));
 
-      m_sprite->getFolder()->remove_layer(old_layer);
+      m_sprite->getFolder()->removeLayer(old_layer);
 
       // Destroy the layer
       delete old_layer;
@@ -688,6 +703,9 @@ void UndoTransaction::newFrame()
 
   // go to next frame (the new one)
   setCurrentFrame(newFrame);
+
+  DocumentEvent ev(m_document, m_sprite, NULL, NULL, NULL, -1, newFrame);
+  m_document->notifyObservers<DocumentEvent&>(&DocumentObserver::onAddFrame, ev);
 }
 
 void UndoTransaction::newFrameForLayer(Layer* layer, FrameNumber frame)
@@ -723,6 +741,9 @@ void UndoTransaction::newFrameForLayer(Layer* layer, FrameNumber frame)
 void UndoTransaction::removeFrame(FrameNumber frame)
 {
   ASSERT(frame >= 0);
+
+  DocumentEvent ev(m_document, m_sprite, NULL, NULL, NULL, -1, frame);
+  m_document->notifyObservers<DocumentEvent&>(&DocumentObserver::onRemoveFrame, ev);
 
   // Remove cels from this frame (and displace one position backward
   // all next frames)
@@ -809,12 +830,18 @@ void UndoTransaction::addCel(LayerImage* layer, Cel* cel)
         layer, cel));
 
   layer->addCel(cel);
+
+  DocumentEvent ev(m_document, m_sprite, layer, cel);
+  m_document->notifyObservers<DocumentEvent&>(&DocumentObserver::onAddCel, ev);
 }
 
 void UndoTransaction::removeCel(LayerImage* layer, Cel* cel)
 {
   ASSERT(layer);
   ASSERT(cel);
+
+  DocumentEvent ev(m_document, m_sprite, layer, cel);
+  m_document->notifyObservers<DocumentEvent&>(&DocumentObserver::onRemoveCel, ev);
 
   // find if the image that use the cel to remove, is used by
   // another cels
@@ -852,6 +879,9 @@ void UndoTransaction::setCelFramePosition(Cel* cel, FrameNumber frame)
     m_undo->pushUndoer(new undoers::SetCelFrame(m_undo->getObjects(), cel));
 
   cel->setFrame(frame);
+
+  DocumentEvent ev(m_document, m_sprite, NULL, cel);
+  m_document->notifyObservers<DocumentEvent&>(&DocumentObserver::onCelFrameChanged, ev);
 }
 
 void UndoTransaction::setCelPosition(Cel* cel, int x, int y)
@@ -862,6 +892,9 @@ void UndoTransaction::setCelPosition(Cel* cel, int x, int y)
     m_undo->pushUndoer(new undoers::SetCelPosition(m_undo->getObjects(), cel));
 
   cel->setPosition(x, y);
+
+  DocumentEvent ev(m_document, m_sprite, NULL, cel);
+  m_document->notifyObservers<DocumentEvent&>(&DocumentObserver::onCelPositionChanged, ev);
 }
 
 void UndoTransaction::setFrameDuration(FrameNumber frame, int msecs)
@@ -871,6 +904,9 @@ void UndoTransaction::setFrameDuration(FrameNumber frame, int msecs)
         m_undo->getObjects(), m_sprite, frame));
 
   m_sprite->setFrameDuration(frame, msecs);
+
+  DocumentEvent ev(m_document, m_sprite, NULL, NULL, NULL, -1, frame);
+  m_document->notifyObservers<DocumentEvent&>(&DocumentObserver::onFrameDurationChanged, ev);
 }
 
 void UndoTransaction::setConstantFrameRate(int msecs)

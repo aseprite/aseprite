@@ -24,6 +24,8 @@
 #include "base/mutex.h"
 #include "base/scoped_lock.h"
 #include "base/unique_ptr.h"
+#include "document_event.h"
+#include "document_observer.h"
 #include "document_undo.h"
 #include "file/format_options.h"
 #include "flatten.h"
@@ -69,6 +71,9 @@ Document::Document(Sprite* sprite)
 
 Document::~Document()
 {
+  DocumentEvent ev(this, m_sprite);
+  notifyObservers<DocumentEvent&>(&DocumentObserver::onRemoveSprite, ev);
+
   if (m_bound.seg)
     base_free(m_bound.seg);
 
@@ -110,7 +115,7 @@ Document* Document::createBasicDocument(PixelFormat format, int width, int heigh
     }
 
     // Add the layer in the sprite.
-    sprite->getFolder()->add_layer(layer);
+    sprite->getFolder()->addLayer(layer);
 
     // Set the layer as the current one.
     sprite->setCurrentLayer(layer.release()); // Release the layer because it's owned by the sprite
@@ -128,6 +133,9 @@ void Document::addSprite(Sprite* sprite)
 {
   ASSERT(m_sprite == NULL);     // TODO add support for more sprites in the future (e.g. for .ico files)
   m_sprite.reset(sprite);
+
+  DocumentEvent ev(this, m_sprite);
+  notifyObservers<DocumentEvent&>(&DocumentObserver::onAddSprite, ev);
 }
 
 const char* Document::getFilename() const
@@ -385,7 +393,7 @@ void Document::copyLayerContent(const Layer* sourceLayer0, Document* destDoc, La
         undo->pushUndoer(new undoers::AddLayer(undo->getObjects(),
             destLayer, destChild));
 
-      destLayer->add_layer(destChild);
+      destLayer->addLayer(destChild);
       destChild.release();
     }
   }
@@ -432,7 +440,7 @@ Document* Document::duplicate(DuplicateType type) const
 
       // Set as current layer the same layer as the source
       {
-        int index = sourceSprite->layerToIndex(sourceSprite->getCurrentLayer());
+        LayerIndex index = sourceSprite->layerToIndex(sourceSprite->getCurrentLayer());
         spriteCopy->setCurrentLayer(spriteCopy->indexToLayer(index));
       }
 
@@ -452,7 +460,7 @@ Document* Document::duplicate(DuplicateType type) const
              FrameNumber(0), sourceSprite->getLastFrame());
 
         // Add and select the new flat layer
-        spriteCopy->getFolder()->add_layer(flatLayer);
+        spriteCopy->getFolder()->addLayer(flatLayer);
         spriteCopy->setCurrentLayer(flatLayer);
 
         // Configure the layer as background only if the original

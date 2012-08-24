@@ -667,11 +667,11 @@ static Layer *ase_file_read_layer_chunk(FILE *f, Sprite *sprite, Layer **previou
 
     // child level...
     if (child_level == *current_level)
-      (*previous_layer)->get_parent()->add_layer(layer);
+      (*previous_layer)->get_parent()->addLayer(layer);
     else if (child_level > *current_level)
-      static_cast<LayerFolder*>(*previous_layer)->add_layer(layer);
+      static_cast<LayerFolder*>(*previous_layer)->addLayer(layer);
     else if (child_level < *current_level)
-      (*previous_layer)->get_parent()->get_parent()->add_layer(layer);
+      (*previous_layer)->get_parent()->get_parent()->addLayer(layer);
 
     *previous_layer = layer;
     *current_level = child_level;
@@ -984,7 +984,7 @@ static Cel *ase_file_read_cel_chunk(FILE *f, Sprite *sprite, FrameNumber frame,
                                     FileOp *fop, ASE_Header *header, size_t chunk_end)
 {
   /* read chunk data */
-  int layer_index = fgetw(f);
+  LayerIndex layer_index = LayerIndex(fgetw(f));
   int x = ((short)fgetw(f));
   int y = ((short)fgetw(f));
   int opacity = fgetc(f);

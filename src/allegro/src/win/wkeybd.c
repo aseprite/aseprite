@@ -100,6 +100,9 @@ static const unsigned char hw_to_mycode[256] =
  */
 void _al_win_kbd_update_shifts(void)
 {
+   if (!keyboard_driver)
+      return;
+
 #define HANDLE_KEY(mycode, vk)                  \
    if (GetAsyncKeyState(vk) & 0x8000) {         \
       if (!key[mycode])                         \

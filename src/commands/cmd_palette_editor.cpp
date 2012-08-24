@@ -406,7 +406,7 @@ bool PaletteEntryEditor::onProcessMessage(Message* msg)
       m_implantChange = false;
       m_redrawTimer.stop();
 
-      // Call all listener of PaletteChange event.
+      // Call all observers of PaletteChange event.
       m_selfPalChange = true;
       App::instance()->PaletteChange();
       m_selfPalChange = false;

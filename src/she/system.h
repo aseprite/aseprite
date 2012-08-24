@@ -28,6 +28,7 @@ namespace she {
     virtual Capabilities capabilities() const = 0;
     virtual Display* createDisplay(int width, int height, int scale) = 0;
     virtual Surface* createSurface(int width, int height) = 0;
+    virtual Surface* createSurfaceFromNativeHandle(void* nativeHandle) = 0;
   };
 
   System* CreateSystem();

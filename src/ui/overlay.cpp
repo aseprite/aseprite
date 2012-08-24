@@ -25,23 +25,39 @@ Overlay::Overlay(she::Surface* overlaySurface, const gfx::Point& pos, ZOrder zor
 
 Overlay::~Overlay()
 {
-  Manager* manager = Manager::getDefault();
-  if (manager)
-    manager->invalidateRect(gfx::Rect(m_pos.x, m_pos.y,
-                                      m_surface->width(),
-                                      m_surface->height()));
-  m_surface->dispose();
+  if (m_surface) {
+    Manager* manager = Manager::getDefault();
+    if (manager)
+      manager->invalidateRect(gfx::Rect(m_pos.x, m_pos.y,
+                                        m_surface->width(),
+                                        m_surface->height()));
+    m_surface->dispose();
+  }
+
   if (m_overlap)
     m_overlap->dispose();
 }
 
+she::Surface* Overlay::setSurface(she::Surface* newSurface)
+{
+  she::Surface* oldSurface = m_surface;
+  m_surface = newSurface;
+  return oldSurface;
+}
+
 gfx::Rect Overlay::getBounds() const
 {
-  return gfx::Rect(m_pos.x, m_pos.y, m_surface->width(), m_surface->height());
+  if (m_surface)
+    return gfx::Rect(m_pos.x, m_pos.y, m_surface->width(), m_surface->height());
+  else
+    return gfx::Rect(0, 0, 0, 0);
 }
 
 void Overlay::drawOverlay(she::LockedSurface* screen)
 {
+  if (!m_surface)
+    return;
+
   she::ScopedSurfaceLock lockedSurface(m_surface);
   screen->drawAlphaSurface(lockedSurface, m_pos.x, m_pos.y);
 }
@@ -53,6 +69,9 @@ void Overlay::moveOverlay(const gfx::Point& newPos)
 
 void Overlay::captureOverlappedArea(she::LockedSurface* screen)
 {
+  if (!m_surface)
+    return;
+
   if (!m_overlap)
     m_overlap = she::Instance()->createSurface(m_surface->width(), m_surface->height());
 
@@ -63,6 +82,9 @@ void Overlay::captureOverlappedArea(she::LockedSurface* screen)
 
 void Overlay::restoreOverlappedArea(she::LockedSurface* screen)
 {
+  if (!m_surface)
+    return;
+
   if (!m_overlap)
     return;
 

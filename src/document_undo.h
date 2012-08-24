@@ -22,11 +22,9 @@
 #include "base/compiler_specific.h"
 #include "base/disable_copying.h"
 #include "base/unique_ptr.h"
-#include "raster/frame_number.h"
+#include "raster/sprite_position.h"
 #include "undo/undo_config_provider.h"
 #include "undo/undo_history.h"
-
-class Layer;
 
 namespace undo {
   class ObjectsContainer;
@@ -65,11 +63,8 @@ public:
   const char* getNextUndoLabel() const;
   const char* getNextRedoLabel() const;
 
-  Layer* getNextUndoLayer() const;
-  Layer* getNextRedoLayer() const;
-
-  FrameNumber getNextUndoFrame() const;
-  FrameNumber getNextRedoFrame() const;
+  SpritePosition getNextUndoSpritePosition() const;
+  SpritePosition getNextRedoSpritePosition() const;
 
 private:
   size_t getUndoSizeLimit() OVERRIDE;

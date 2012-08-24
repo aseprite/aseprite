@@ -22,8 +22,8 @@
 #include "base/disable_copying.h"
 #include "base/exception.h"
 #include "context_flags.h"
-#include "context_listener.h"
-#include "context_listener_list.h"
+#include "context_observer.h"
+#include "context_observer_list.h"
 #include "documents.h"
 #include "settings/settings.h"
 
@@ -69,8 +69,8 @@ public:
 
   virtual void executeCommand(Command* command, Params* params = NULL);
 
-  void addListener(ContextListener* listener);
-  void removeListener(ContextListener* listener);
+  void addObserver(ContextObserver* observer);
+  void removeObserver(ContextObserver* observer);
 
 protected:
 
@@ -98,7 +98,7 @@ private:
   // Last updated flags.
   ContextFlags m_flags;
 
-  ContextListenerList m_listeners;
+  ContextObserverList m_observers;
 
   DISABLE_COPYING(Context);
 

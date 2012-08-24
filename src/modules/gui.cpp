@@ -133,6 +133,7 @@ protected:
   void saveLayout(Widget* widget, const std::string& str) OVERRIDE;
 };
 
+static she::Display* main_display = NULL;
 static CustomizedGuiManager* manager = NULL;
 static Theme* ase_theme = NULL;
 
@@ -165,16 +166,16 @@ int init_module_gui()
   // Set the graphics mode...
   load_gui_config(w, h, maximized);
 
-  she::Display* display = NULL;
   try {
-    display = she::Instance()->createDisplay(w, h, screen_scaling);
+    main_display = she::Instance()->createDisplay(w, h, screen_scaling);
   }
   catch (const she::DisplayCreationException&) {
     for (c=min_possible_dsk_res; try_resolutions[c].width; ++c) {
       try {
-        display = she::Instance()->createDisplay(try_resolutions[c].width,
-                                                 try_resolutions[c].height,
-                                                 try_resolutions[c].scale);
+        main_display =
+          she::Instance()->createDisplay(try_resolutions[c].width,
+                                         try_resolutions[c].height,
+                                         try_resolutions[c].scale);
 
         screen_scaling = try_resolutions[c].scale;
         break;
@@ -185,20 +186,20 @@ int init_module_gui()
     }
   }
 
-  if (!display) {
+  if (!main_display) {
     allegro_message("Unable to create a user-interface display.\n");
     return -1;
   }
 
   // Create the default-manager
   manager = new CustomizedGuiManager();
-  manager->setDisplay(display);
+  manager->setDisplay(main_display);
 
   // Setup the GUI theme for all widgets
   CurrentTheme::set(ase_theme = new SkinTheme());
 
   if (maximized)
-    display->maximize();
+    main_display->maximize();
 
   // Configure ji_screen
   gui_setup_screen(true);
@@ -232,6 +233,8 @@ void exit_module_gui()
 
   remove_keyboard();
   remove_mouse();
+
+  main_display->dispose();
 }
 
 static void load_gui_config(int& w, int& h, bool& maximized)
@@ -305,7 +308,11 @@ void gui_feedback()
   Manager* manager = Manager::getDefault();
   OverlayManager* overlays = OverlayManager::instance();
 
-  jmouse_draw_cursor();
+  ui::UpdateCursorOverlay();
+
+  // Avoid updating a non-dirty screen over and over again.
+  if (!dirty_display_flag)
+    return;
 
   // Draw overlays.
   overlays->captureOverlappedAreas();
@@ -319,6 +326,8 @@ void gui_feedback()
   }
   else
     overlays->restoreOverlappedAreas();
+
+  dirty_display_flag = false;
 }
 
 // Sets the ji_screen variable. This routine should be called
@@ -328,8 +337,8 @@ void gui_setup_screen(bool reload_font)
   bool regen = false;
   bool reinit = false;
 
-  Manager::getDefault()->getDisplay()->setScale(screen_scaling);
-  ui::SetDisplay(Manager::getDefault()->getDisplay());
+  main_display->setScale(screen_scaling);
+  ui::SetDisplay(main_display);
 
   // Update guiscale factor
   int old_guiscale = jguiscale();

@@ -123,8 +123,8 @@ bool SelectBoxState::onSetCursor(Editor* editor)
 {
   if (m_movingRuler >= 0) {
     switch (m_rulers[m_movingRuler].getOrientation()) {
-      case Ruler::Horizontal: jmouse_set_cursor(JI_CURSOR_SIZE_T); return true;
-      case Ruler::Vertical: jmouse_set_cursor(JI_CURSOR_SIZE_L); return true;
+      case Ruler::Horizontal: jmouse_set_cursor(kSizeTCursor); return true;
+      case Ruler::Vertical: jmouse_set_cursor(kSizeLCursor); return true;
     }
   }
 
@@ -135,10 +135,10 @@ bool SelectBoxState::onSetCursor(Editor* editor)
     if (touchRuler(editor, *it, x, y)) {
       switch (it->getOrientation()) {
         case Ruler::Horizontal:
-          jmouse_set_cursor(JI_CURSOR_SIZE_T);
+          jmouse_set_cursor(kSizeTCursor);
           return true;
         case Ruler::Vertical:
-          jmouse_set_cursor(JI_CURSOR_SIZE_L);
+          jmouse_set_cursor(kSizeLCursor);
           return true;
       }
     }

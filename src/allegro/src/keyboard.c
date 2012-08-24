@@ -432,6 +432,8 @@ static INLINE void update_shifts(void)
  */
 void _handle_key_press(int keycode, int scancode)
 {
+   ASSERT(keyboard_driver);
+
    if ((keyboard_driver->poll) || (!keyboard_polled)) {
       /* process immediately */
       if (scancode > 0) {

@@ -59,14 +59,14 @@ void GotoPreviousLayerCommand::onExecute(Context* context)
 {
   ActiveDocumentWriter document(context);
   Sprite* sprite(document->getSprite());
-  int i = sprite->layerToIndex(sprite->getCurrentLayer());
+  SpritePosition pos = sprite->getCurrentPosition();
 
-  if (i > 0)
-    i--;
+  if (pos.layerIndex() > 0)
+    pos.layerIndex(pos.layerIndex().previous());
   else
-    i = sprite->countLayers()-1;
+    pos.layerIndex(LayerIndex(sprite->countLayers()-1));
 
-  sprite->setCurrentLayer(sprite->indexToLayer(i));
+  sprite->setCurrentPosition(pos);
 
   // Flash the current layer
   ASSERT(current_editor != NULL && "Current editor cannot be null when we have a current sprite");
@@ -108,14 +108,14 @@ void GotoNextLayerCommand::onExecute(Context* context)
 {
   ActiveDocumentWriter document(context);
   Sprite* sprite(document->getSprite());
-  int i = sprite->layerToIndex(sprite->getCurrentLayer());
+  SpritePosition pos = sprite->getCurrentPosition();
 
-  if (i < sprite->countLayers()-1)
-    i++;
+  if (pos.layerIndex() < sprite->countLayers()-1)
+    pos.layerIndex(pos.layerIndex().next());
   else
-    i = 0;
+    pos.layerIndex(LayerIndex(0));
 
-  sprite->setCurrentLayer(sprite->indexToLayer(i));
+  sprite->setCurrentPosition(pos);
 
   // Flash the current layer
   ASSERT(current_editor != NULL && "Current editor cannot be null when we have a current sprite");

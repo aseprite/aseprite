@@ -21,8 +21,10 @@
 
 #include "base/disable_copying.h"
 #include "raster/frame_number.h"
+#include "raster/layer_index.h"
 #include "raster/gfxobj.h"
 #include "raster/pixel_format.h"
+#include "raster/sprite_position.h"
 
 #include <vector>
 
@@ -78,10 +80,10 @@ public:
   Layer* getCurrentLayer() const;
   void setCurrentLayer(Layer* layer);
 
-  int countLayers() const;
+  LayerIndex countLayers() const;
 
-  Layer* indexToLayer(int index) const;
-  int layerToIndex(const Layer* layer) const;
+  Layer* indexToLayer(LayerIndex index) const;
+  LayerIndex layerToIndex(const Layer* layer) const;
 
   ////////////////////////////////////////
   // Palettes
@@ -118,6 +120,12 @@ public:
 
   FrameNumber getCurrentFrame() const { return m_frame; }
   void setCurrentFrame(FrameNumber frame);
+
+  ////////////////////////////////////////
+  // Position
+
+  SpritePosition getCurrentPosition() const;
+  void setCurrentPosition(const SpritePosition& spritePosition);
 
   ////////////////////////////////////////
   // Images

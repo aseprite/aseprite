@@ -313,7 +313,7 @@ bool Window::onProcessMessage(Message* msg)
     case JM_BUTTONRELEASED:
       if (hasCapture()) {
         releaseMouse();
-        jmouse_set_cursor(JI_CURSOR_NORMAL);
+        jmouse_set_cursor(kArrowCursor);
 
         if (click_pos != NULL) {
           jrect_free(click_pos);
@@ -403,44 +403,44 @@ bool Window::onProcessMessage(Message* msg)
     case JM_SETCURSOR:
       if (m_is_moveable) {
         HitTest ht = hitTest(gfx::Point(msg->mouse.x, msg->mouse.y));
-        int cursor = JI_CURSOR_NORMAL;
+        CursorType cursor = kArrowCursor;
 
         switch (ht) {
 
           case HitTestCaption:
-            cursor = JI_CURSOR_NORMAL;
+            cursor = kArrowCursor;
             break;
 
           case HitTestBorderNW:
-            cursor = JI_CURSOR_SIZE_TL;
+            cursor = kSizeTLCursor;
             break;
 
           case HitTestBorderW:
-            cursor = JI_CURSOR_SIZE_L;
+            cursor = kSizeLCursor;
             break;
 
           case HitTestBorderSW:
-            cursor = JI_CURSOR_SIZE_BL;
+            cursor = kSizeBLCursor;
             break;
 
           case HitTestBorderNE:
-            cursor = JI_CURSOR_SIZE_TR;
+            cursor = kSizeTRCursor;
             break;
 
           case HitTestBorderE:
-            cursor = JI_CURSOR_SIZE_R;
+            cursor = kSizeRCursor;
             break;
 
           case HitTestBorderSE:
-            cursor = JI_CURSOR_SIZE_BR;
+            cursor = kSizeBRCursor;
             break;
 
           case HitTestBorderN:
-            cursor = JI_CURSOR_SIZE_T;
+            cursor = kSizeTCursor;
             break;
 
           case HitTestBorderS:
-            cursor = JI_CURSOR_SIZE_B;
+            cursor = kSizeBCursor;
             break;
 
         }

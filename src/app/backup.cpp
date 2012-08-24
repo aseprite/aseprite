@@ -16,25 +16,24 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifndef WIDGETS_EDITOR_LISTENER_H_INCLUDED
-#define WIDGETS_EDITOR_LISTENER_H_INCLUDED
+#include "config.h"
 
-class Editor;
+#include "app/backup.h"
 
-class EditorListener
+namespace app {
+
+Backup::Backup(const base::string& path)
+  : m_path(path)
 {
-public:
-  virtual ~EditorListener() { }
-  virtual void dispose() = 0;
+}
 
-  // Called when the editor's state changes.
-  virtual void stateChanged(Editor* editor) = 0;
+Backup::~Backup()
+{
+}
 
-  // Called when the scroll or zoom of the editor changes.
-  virtual void scrollChanged(Editor* editor) = 0;
+bool Backup::hasDataToRestore()
+{
+  return false;
+}
 
-  // Called when the document shown in the editor changes.
-  virtual void documentChanged(Editor* editor) = 0;
-};
-
-#endif  // WIDGETS_EDITOR_LISTENER_H_INCLUDED
+} // namespace app

@@ -700,7 +700,7 @@ Image* fop_sequence_image(FileOp* fop, PixelFormat pixelFormat, int w, int h)
       LayerImage* layer = new LayerImage(sprite);
 
       // Add the layer
-      sprite->getFolder()->add_layer(layer);
+      sprite->getFolder()->addLayer(layer);
 
       // Done
       fop->document = new Document(sprite);

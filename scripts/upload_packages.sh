@@ -1,5 +1,10 @@
 #! /bin/sh
 
+if [ ! -f update_packages.sh ]; then
+    echo You must run update_packages.sh from scripts/ directory
+    exit 1
+fi
+
 version=$(cat ../config.h | grep VERSION | sed -e 's/.*\"\(.*\)\"/\1/g')
 python=c:/Python27/python.exe
 

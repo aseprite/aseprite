@@ -27,6 +27,9 @@
 #include "she/she.h"
 #include "ui/base.h"
 
+#include <cstdlib>
+#include <ctime>
+
 #ifdef WIN32
 #include <windows.h>
 #endif
@@ -68,9 +71,12 @@ static bool get_memory_dump_filename(std::string& filename)
 #endif
 }
 
-// ASEPRITE entry point
-int main(int argc, char* argv[])
+// ASEPRITE entry point. (Called from she library.)
+int app_main(int argc, char* argv[])
 {
+  // Initialize the random seed.
+  std::srand(static_cast<unsigned int>(std::time(NULL)));
+
 #ifdef WIN32
   CoInitialize(NULL);
 #endif

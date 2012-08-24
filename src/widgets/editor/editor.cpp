@@ -164,11 +164,11 @@ Editor::~Editor()
   m_mask_timer.stop();
   remove_editor(this);
 
-  // Remove this editor as listener of CurrentToolChange signal.
+  // Remove this editor as observer of CurrentToolChange signal.
   App::instance()->CurrentToolChange.disconnect(m_currentToolChangeSlot);
   delete m_currentToolChangeSlot;
 
-  // Remove this editor as listener of FgColorChange
+  // Remove this editor as observer of FgColorChange
   ColorBar::instance()->FgColorChange.disconnect(m_fgColorChangeSlot);
   delete m_fgColorChangeSlot;
 }
@@ -218,8 +218,8 @@ void Editor::setStateInternal(const EditorStatePtr& newState)
   // new state).
   clear_keybuf();
 
-  // Notify listeners
-  m_listeners.notifyStateChanged(this);
+  // Notify observers
+  m_observers.notifyStateChanged(this);
 
   // Setup the new mouse cursor
   editor_setcursor();
@@ -290,8 +290,8 @@ void Editor::setDocument(Document* document)
   // Redraw the entire editor (because we have a new sprite to draw)
   invalidate();
 
-  // Notify listeners
-  m_listeners.notifyDocumentChanged(this);
+  // Notify observers
+  m_observers.notifyDocumentChanged(this);
 }
 
 // Sets the scroll position of the editor
@@ -336,8 +336,8 @@ void Editor::setEditorScroll(int x, int y, int use_refresh_region)
   if (thick)
     editor_draw_cursor(m_cursor_screen_x, m_cursor_screen_y);
 
-  // Notify listeners
-  m_listeners.notifyScrollChanged(this);
+  // Notify observers
+  m_observers.notifyScrollChanged(this);
 }
 
 void Editor::updateEditor()
@@ -479,6 +479,10 @@ void Editor::drawSprite(int x1, int y1, int x2, int y2)
   if (settings->getGridVisible())
     this->drawGrid(settings->getGridBounds(),
                    settings->getGridColor());
+
+  // Draw the mask
+  if (m_document->getBoundariesSegments())
+    this->drawMask();
 
   // Post-render decorator.
   if (m_decorator) {
@@ -804,14 +808,14 @@ void Editor::moveDrawingCursor()
   }
 }
 
-void Editor::addListener(EditorListener* listener)
+void Editor::addObserver(EditorObserver* observer)
 {
-  m_listeners.addListener(listener);
+  m_observers.addObserver(observer);
 }
 
-void Editor::removeListener(EditorListener* listener)
+void Editor::removeObserver(EditorObserver* observer)
 {
-  m_listeners.removeListener(listener);
+  m_observers.removeObserver(observer);
 }
 
 void Editor::setCustomizationDelegate(EditorCustomizationDelegate* delegate)
@@ -855,8 +859,8 @@ void Editor::centerInSpritePoint(int x, int y)
   showDrawingCursor();
   invalidate();
 
-  // Notify listeners
-  m_listeners.notifyScrollChanged(this);
+  // Notify observers
+  m_observers.notifyScrollChanged(this);
 }
 
 void Editor::updateStatusBar()
@@ -955,7 +959,6 @@ bool Editor::onProcessMessage(Message* msg)
           jdraw_rectfill(vp, theme->get_editor_face_color());
         }
       }
-
       return true;
     }
 
@@ -1099,7 +1102,7 @@ void Editor::editor_setcursor()
 
   if (!used) {
     hideDrawingCursor();
-    jmouse_set_cursor(JI_CURSOR_NORMAL);
+    jmouse_set_cursor(kArrowCursor);
   }
 }
 
@@ -1161,8 +1164,8 @@ void Editor::setZoomAndCenterInMouse(int zoom, int mouse_x, int mouse_y)
     if (centerMouse)
       jmouse_set_position(mx, my);
 
-    // Notify listeners
-    m_listeners.notifyScrollChanged(this);
+    // Notify observers
+    m_observers.notifyScrollChanged(this);
   }
   showDrawingCursor();
 }

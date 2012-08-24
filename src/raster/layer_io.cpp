@@ -132,7 +132,7 @@ Layer* read_layer(std::istream& is, LayerSubObjectsSerializer* subObjects, Sprit
       for (int c=0; c<layers; c++) {
         Layer* child = subObjects->read_layer(is);
         if (child)
-          static_cast<LayerFolder*>(layer.get())->add_layer(child);
+          static_cast<LayerFolder*>(layer.get())->addLayer(child);
         else
           break;
       }

@@ -20,6 +20,7 @@
 
 #include "undoers/close_group.h"
 
+#include "raster/sprite.h"
 #include "undo/objects_container.h"
 #include "undo/undoers_collector.h"
 #include "undoers/open_group.h"
@@ -27,11 +28,14 @@
 using namespace undo;
 using namespace undoers;
 
-CloseGroup::CloseGroup(undo::ObjectsContainer* objects, const char* label, undo::Modification modification, Layer* layer, FrameNumber frame)
+CloseGroup::CloseGroup(undo::ObjectsContainer* objects,
+                       const char* label,
+                       undo::Modification modification,
+                       Sprite* sprite)
   : m_label(label)
   , m_modification(modification)
-  , m_activeLayerId(objects->addObject(layer))
-  , m_activeFrame(frame)
+  , m_spriteId(objects->addObject(sprite))
+  , m_spritePosition(sprite->getCurrentPosition())
 {
 }
 
@@ -42,11 +46,7 @@ void CloseGroup::dispose()
 
 void CloseGroup::revert(ObjectsContainer* objects, UndoersCollector* redoers)
 {
-  redoers->pushUndoer(new OpenGroup(objects, m_label, m_modification,
-                                    getLayer(objects), m_activeFrame));
-}
+  Sprite* sprite = objects->getObjectT<Sprite>(m_spriteId);
 
-Layer* CloseGroup::getLayer(undo::ObjectsContainer* objects)
-{
-  return objects->getObjectT<Layer>(m_activeLayerId);
+  redoers->pushUndoer(new OpenGroup(objects, m_label, m_modification, sprite));
 }

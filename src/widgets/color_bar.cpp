@@ -109,7 +109,7 @@ ColorBar::ColorBar(int align)
 
   this->border_width.l = 2*jguiscale();
   this->border_width.t = 2*jguiscale();
-  this->border_width.r = 2*jguiscale();
+  this->border_width.r = 0;
   this->border_width.b = 2*jguiscale();
   this->child_spacing = 2*jguiscale();
 

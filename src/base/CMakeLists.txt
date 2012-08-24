@@ -20,6 +20,7 @@ add_library(base-lib
   convert_to.cpp
   errno_string.cpp
   exception.cpp
+  fs.cpp
   mem_utils.cpp
   memory.cpp
   memory_dump.cpp
@@ -30,6 +31,7 @@ add_library(base-lib
   sha1_rfc3174.c
   split_string.cpp
   string.cpp
+  temp_dir.cpp
   thread.cpp
   trim_string.cpp
   version.cpp)

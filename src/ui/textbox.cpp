@@ -99,7 +99,7 @@ bool TextBox::onProcessMessage(Message* msg)
       View* view = View::getView(this);
       if (view) {
         captureMouse();
-        jmouse_set_cursor(JI_CURSOR_SCROLL);
+        jmouse_set_cursor(kScrollCursor);
         return true;
       }
       break;
@@ -125,7 +125,7 @@ bool TextBox::onProcessMessage(Message* msg)
       View* view = View::getView(this);
       if (view && hasCapture()) {
         releaseMouse();
-        jmouse_set_cursor(JI_CURSOR_NORMAL);
+        jmouse_set_cursor(kArrowCursor);
         return true;
       }
       break;

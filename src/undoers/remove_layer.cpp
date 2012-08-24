@@ -115,6 +115,6 @@ void RemoveLayer::revert(ObjectsContainer* objects, UndoersCollector* redoers)
   // Push an AddLayer as redoer
   redoers->pushUndoer(new AddLayer(objects, folder, layer));
 
-  folder->add_layer(layer);
-  folder->move_layer(layer, after);
+  folder->addLayer(layer);
+  folder->stackLayer(layer, after);
 }
