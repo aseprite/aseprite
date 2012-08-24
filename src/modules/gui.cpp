@@ -311,8 +311,10 @@ void gui_feedback()
   ui::UpdateCursorOverlay();
 
   // Avoid updating a non-dirty screen over and over again.
+#if 0                           // It doesn't work
   if (!dirty_display_flag)
     return;
+#endif
 
   // Draw overlays.
   overlays->captureOverlappedAreas();
