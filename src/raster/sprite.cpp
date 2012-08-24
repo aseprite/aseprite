@@ -27,8 +27,8 @@
 #include <cstring>
 #include <vector>
 
-static Layer* index2layer(const Layer* layer, int index, int* index_count);
-static int layer2index(const Layer* layer, const Layer* find_layer, int* index_count);
+static Layer* index2layer(const Layer* layer, const LayerIndex& index, int* index_count);
+static LayerIndex layer2index(const Layer* layer, const Layer* find_layer, int* index_count);
 
 //////////////////////////////////////////////////////////////////////
 // Constructors/Destructor
@@ -177,18 +177,18 @@ void Sprite::setCurrentLayer(Layer* layer)
   m_layer = layer;
 }
 
-int Sprite::countLayers() const
+LayerIndex Sprite::countLayers() const
 {
-  return getFolder()->get_layers_count();
+  return LayerIndex(getFolder()->get_layers_count());
 }
 
-Layer* Sprite::indexToLayer(int index) const
+Layer* Sprite::indexToLayer(LayerIndex index) const
 {
   int index_count = -1;
   return index2layer(getFolder(), index, &index_count);
 }
 
-int Sprite::layerToIndex(const Layer* layer) const
+LayerIndex Sprite::layerToIndex(const Layer* layer) const
 {
   int index_count = -1;
   return layer2index(getFolder(), layer, &index_count);
@@ -337,6 +337,22 @@ void Sprite::setCurrentFrame(FrameNumber frame)
   m_frame = frame;
 }
 
+SpritePosition Sprite::getCurrentPosition() const
+{
+  return SpritePosition(layerToIndex(getCurrentLayer()),
+                        getCurrentFrame());
+}
+
+void Sprite::setCurrentPosition(const SpritePosition& spritePosition)
+{
+  Layer* layer = indexToLayer(spritePosition.layerIndex());
+  ASSERT(layer);
+  if (layer)
+    setCurrentLayer(layer);
+
+  setCurrentFrame(spritePosition.frameNumber());
+}
+
 //////////////////////////////////////////////////////////////////////
 // Images
 
@@ -425,7 +441,7 @@ int Sprite::getPixel(int x, int y) const
 
 //////////////////////////////////////////////////////////////////////
 
-static Layer* index2layer(const Layer* layer, int index, int* index_count)
+static Layer* index2layer(const Layer* layer, const LayerIndex& index, int* index_count)
 {
   if (index == *index_count)
     return (Layer*)layer;
@@ -448,10 +464,10 @@ static Layer* index2layer(const Layer* layer, int index, int* index_count)
   }
 }
 
-static int layer2index(const Layer* layer, const Layer* find_layer, int* index_count)
+static LayerIndex layer2index(const Layer* layer, const Layer* find_layer, int* index_count)
 {
   if (layer == find_layer)
-    return *index_count;
+    return LayerIndex(*index_count);
   else {
     (*index_count)++;
 
@@ -463,10 +479,10 @@ static int layer2index(const Layer* layer, const Layer* find_layer, int* index_c
 
       for (; it != end; ++it) {
         if ((found = layer2index(*it, find_layer, index_count)) >= 0)
-          return found;
+          return LayerIndex(found);
       }
     }
 
-    return -1;
+    return LayerIndex(-1);
   }
 }

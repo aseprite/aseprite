@@ -1288,7 +1288,7 @@ void AnimationEditor::regenerateLayers()
     m_layers = (Layer**)base_malloc(sizeof(Layer*) * m_nlayers);
 
     for (c=0; c<m_nlayers; c++)
-      m_layers[c] = (Layer*)m_sprite->indexToLayer(m_nlayers-c-1);
+      m_layers[c] = (Layer*)m_sprite->indexToLayer(LayerIndex(m_nlayers-c-1));
   }
 }
 

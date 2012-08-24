@@ -440,7 +440,7 @@ Document* Document::duplicate(DuplicateType type) const
 
       // Set as current layer the same layer as the source
       {
-        int index = sourceSprite->layerToIndex(sourceSprite->getCurrentLayer());
+        LayerIndex index = sourceSprite->layerToIndex(sourceSprite->getCurrentLayer());
         spriteCopy->setCurrentLayer(spriteCopy->indexToLayer(index));
       }
 

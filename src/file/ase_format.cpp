@@ -984,7 +984,7 @@ static Cel *ase_file_read_cel_chunk(FILE *f, Sprite *sprite, FrameNumber frame,
                                     FileOp *fop, ASE_Header *header, size_t chunk_end)
 {
   /* read chunk data */
-  int layer_index = fgetw(f);
+  LayerIndex layer_index = LayerIndex(fgetw(f));
   int x = ((short)fgetw(f));
   int y = ((short)fgetw(f));
   int opacity = fgetc(f);

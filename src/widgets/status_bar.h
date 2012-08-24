@@ -25,6 +25,7 @@
 #include "app/color.h"
 #include "base/compiler_specific.h"
 #include "observers.h"
+#include "raster/layer_index.h"
 #include "ui/base.h"
 #include "ui/link_label.h"
 #include "ui/widget.h"
@@ -152,7 +153,7 @@ private:
   class CustomizedTipWindow;
   CustomizedTipWindow* m_tipwindow;
 
-  int m_hot_layer;
+  LayerIndex m_hot_layer;
 
   StatusBarObservers m_observers;
 };
