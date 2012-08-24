@@ -148,10 +148,6 @@ App::App(int argc, char* argv[])
 
 int App::run()
 {
-#ifdef ENABLE_UPDATER
-  app::CheckUpdateThreadLauncher checkUpdate;
-#endif
-
   // Initialize GUI interface
   if (isGui()) {
     PRINTF("GUI mode\n");
@@ -223,6 +219,7 @@ int App::run()
 
 #ifdef ENABLE_UPDATER
     // Launch the thread to check for updates.
+    app::CheckUpdateThreadLauncher checkUpdate;
     checkUpdate.launch();
 #endif
 
