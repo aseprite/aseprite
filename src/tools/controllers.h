@@ -51,6 +51,10 @@ public:
   }
   void getStatusBarText(const Points& points, std::string& text)
   {
+    ASSERT(!points.empty());
+    if (points.empty())
+      return;
+
     char buf[1024];
     sprintf(buf, "Start %3d %3d End %3d %3d",
             points[0].x, points[0].y,
@@ -78,6 +82,10 @@ public:
   }
   void movement(ToolLoop* loop, Points& points, const Point& point)
   {
+    ASSERT(points.size() >= 2);
+    if (points.size() < 2)
+      return;
+
     points[1] = point;
 
     // Square aspect
@@ -138,11 +146,19 @@ public:
   }
   void getPointsToInterwine(const Points& input, Points& output)
   {
+    ASSERT(input.size() >= 2);
+    if (input.size() < 2)
+      return;
+
     output.push_back(input[0]);
     output.push_back(input[1]);
   }
   void getStatusBarText(const Points& points, std::string& text)
   {
+    ASSERT(points.size() >= 2);
+    if (points.size() < 2)
+      return;
+
     char buf[1024];
     sprintf(buf, "Start %3d %3d End %3d %3d (Size %3d %3d) Angle %.1f",
             points[0].x, points[0].y,
@@ -166,6 +182,10 @@ public:
   }
   bool releaseButton(Points& points, const Point& point)
   {
+    ASSERT(!points.empty());
+    if (points.empty())
+      return false;
+
     if (points[points.size()-2] == point &&
         points[points.size()-1] == point)
       return false;             // Click in the same point (no-drag), we are done
@@ -174,6 +194,10 @@ public:
   }
   void movement(ToolLoop* loop, Points& points, const Point& point)
   {
+    ASSERT(!points.empty());
+    if (points.empty())
+      return;
+
     points[points.size()-1] = point;
   }
   void getPointsToInterwine(const Points& input, Points& output)
@@ -182,6 +206,10 @@ public:
   }
   void getStatusBarText(const Points& points, std::string& text)
   {
+    ASSERT(!points.empty());
+    if (points.empty())
+      return;
+
     char buf[1024];
     sprintf(buf, "Start %3d %3d End %3d %3d",
             points[0].x, points[0].y,
@@ -216,6 +244,10 @@ public:
   }
   void getStatusBarText(const Points& points, std::string& text)
   {
+    ASSERT(!points.empty());
+    if (points.empty())
+      return;
+
     char buf[1024];
     sprintf(buf, "Pos %3d %3d", points[0].x, points[0].y);
     text = buf;
@@ -263,6 +295,10 @@ public:
   }
   void getStatusBarText(const Points& points, std::string& text)
   {
+    ASSERT(points.size() >= 4);
+    if (points.size() < 4)
+      return;
+
     char buf[1024];
     sprintf(buf, "Start %3d %3d End %3d %3d (%3d %3d - %3d %3d)",
             points[0].x, points[0].y,

@@ -72,6 +72,9 @@ void ToolLoopManager::releaseLoop(const Pointer& pointer)
 
 void ToolLoopManager::pressButton(const Pointer& pointer)
 {
+  if (isCanceled())
+    return;
+
   // If the user pressed the other mouse button...
   if ((m_toolLoop->getMouseButton() == ToolLoop::Left && pointer.getButton() == Pointer::Right) ||
       (m_toolLoop->getMouseButton() == ToolLoop::Right && pointer.getButton() == Pointer::Left)) {
@@ -97,6 +100,9 @@ void ToolLoopManager::pressButton(const Pointer& pointer)
 
 bool ToolLoopManager::releaseButton(const Pointer& pointer)
 {
+  if (isCanceled())
+    return false;
+
   Point spritePoint = m_toolLoop->screenToSprite(Point(pointer.getX(), pointer.getY()));
   snapToGrid(true, spritePoint);
 
@@ -113,6 +119,9 @@ bool ToolLoopManager::releaseButton(const Pointer& pointer)
 
 void ToolLoopManager::movement(const Pointer& pointer)
 {
+  if (isCanceled())
+    return;
+
   // Convert the screen point to a sprite point
   Point spritePoint = m_toolLoop->screenToSprite(Point(pointer.getX(), pointer.getY()));
   // Calculate the speed (new sprite point - old sprite point)
