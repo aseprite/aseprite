@@ -1,5 +1,11 @@
 # Very high priority (next release?)
 
+* Paste in place doesn't work as expected sometimes (copy something
+  from one frame, paste in other frame).
+* After moving a frame, all thumbnails are shown incorrectly.
+* New sprite with palette of the clipboard
+* Ctrl+Shift selection should copy and snap axis
+* "Duplicate sprite" should copy the "Background" layer as Background.
 * Fix problem applyToTarget() can throw (it's called from other thread)
 * After flatten show the background if it is hidden.
 * Paste does not paste in the correct position if the cel is moved.
