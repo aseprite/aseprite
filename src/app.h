@@ -26,8 +26,6 @@
 
 #include <vector>
 
-class CheckArgs;
-class ConfigModule;
 class Document;
 class Layer;
 class LegacyModules;
@@ -63,7 +61,6 @@ public:
   // window, in console/scripting it just runs the specified scripts.
   int run();
 
-  LoggerModule* getLogger() const;
   tools::ToolBox* getToolBox() const;
   RecentFiles* getRecentFiles() const;
   MainWindow* getMainWindow() const { return m_mainWindow; }
@@ -80,9 +77,6 @@ private:
 
   static App* m_instance;
 
-  ConfigModule* m_configModule;
-  CheckArgs* m_checkArgs;
-  LoggerModule* m_loggerModule;
   Modules* m_modules;
   LegacyModules* m_legacy;
   bool m_isGui;

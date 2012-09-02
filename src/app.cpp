@@ -59,7 +59,6 @@
 #include "widgets/editor/editor.h"
 #include "widgets/editor/editor_view.h"
 #include "widgets/main_window.h"
-#include "widgets/menuitem2.h"
 #include "widgets/status_bar.h"
 #include "widgets/tabs.h"
 #include "widgets/toolbar.h"
@@ -82,6 +81,9 @@ using namespace ui;
 class App::Modules
 {
 public:
+  ConfigModule m_configModule;
+  CheckArgs m_checkArgs;
+  LoggerModule m_loggerModule;
   FileSystemModule m_file_system_module;
   tools::ToolBox m_toolbox;
   CommandsModule m_commands_modules;
@@ -89,8 +91,10 @@ public:
   RecentFiles m_recent_files;
   app::DataRecovery m_recovery;
 
-  Modules()
-    : m_recovery(&m_ui_context) {
+  Modules(const std::vector<base::string>& args)
+    : m_checkArgs(args)
+    , m_loggerModule(m_checkArgs.isVerbose())
+    , m_recovery(&m_ui_context) {
   }
 };
 
@@ -101,10 +105,7 @@ static char *palette_filename = NULL;
 // Initializes the application loading the modules, setting the
 // graphics mode, loading the configuration and resources, etc.
 App::App(int argc, char* argv[])
-  : m_configModule(NULL)
-  , m_checkArgs(NULL)
-  , m_loggerModule(NULL)
-  , m_modules(NULL)
+  : m_modules(NULL)
   , m_legacy(NULL)
   , m_isGui(false)
 {
@@ -114,11 +115,8 @@ App::App(int argc, char* argv[])
   for (int i = 0; i < argc; ++i)
     m_args.push_back(argv[i]);
 
-  m_configModule = new ConfigModule();
-  m_checkArgs = new CheckArgs(m_args);
-  m_loggerModule = new LoggerModule(m_checkArgs->isVerbose());
-  m_modules = new Modules();
-  m_isGui = !(m_checkArgs->isConsoleOnly());
+  m_modules = new Modules(m_args);
+  m_isGui = !(m_modules->m_checkArgs.isConsoleOnly());
   m_legacy = new LegacyModules(isGui() ? REQUIRE_INTERFACE: 0);
 
   // Register well-known image file types.
@@ -173,12 +171,12 @@ int App::run()
   // Procress options
   PRINTF("Processing options...\n");
 
-  ASSERT(m_checkArgs != NULL);
   {
     Console console;
     for (CheckArgs::iterator
-           it  = m_checkArgs->begin();
-         it != m_checkArgs->end(); ++it) {
+           it  = m_modules->m_checkArgs.begin(),
+           end = m_modules->m_checkArgs.end();
+         it != end; ++it) {
       CheckArgs::Option* option = *it;
 
       switch (option->type()) {
@@ -208,8 +206,6 @@ int App::run()
         }
       }
     }
-    delete m_checkArgs;
-    m_checkArgs = NULL;
   }
 
   // Run the GUI
@@ -254,8 +250,6 @@ App::~App()
 
     delete m_legacy;
     delete m_modules;
-    delete m_loggerModule;
-    delete m_configModule;
 
     // Destroy the loaded gui.xml file.
     delete GuiXml::instance();
@@ -267,12 +261,6 @@ App::~App()
 
     // no re-throw
   }
-}
-
-LoggerModule* App::getLogger() const
-{
-  ASSERT(m_loggerModule != NULL);
-  return m_loggerModule;
 }
 
 tools::ToolBox* App::getToolBox() const
