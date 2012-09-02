@@ -11,7 +11,9 @@ if(MSVC)
 endif(MSVC)
 
 # Libraries in this directory
-set(aseprite_libraries aseprite-library undo-lib filters-lib ui-lib she gfx-lib base-lib)
+set(aseprite_libraries aseprite-library scripting-lib
+                       undo-lib filters-lib ui-lib
+                       she gfx-lib base-lib)
 
 # Directories where .h files can be found
 include_directories(. .. ../third_party)
@@ -132,18 +134,23 @@ else()
   add_definitions(-DALLEGRO4_WITH_RESIZE_PATCH)
 endif()
 
-# All libraries for .exe files
-set(all_libs ${aseprite_libraries} ${libs3rdparty} ${sys_libs})
-
 ######################################################################
 # ASEPRITE libraries
 
 add_subdirectory(base)
 add_subdirectory(filters)
 add_subdirectory(gfx)
+add_subdirectory(scripting)
 add_subdirectory(she)
 add_subdirectory(ui)
 add_subdirectory(undo)
+
+if(V8_FOUND)
+list(APPEND libs3rdparty ${V8_LIBRARIES})
+endif()
+
+# All libraries for .exe files
+set(all_libs ${aseprite_libraries} ${libs3rdparty} ${sys_libs})
 
 add_library(aseprite-library
   app.cpp

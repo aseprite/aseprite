@@ -24,6 +24,7 @@
 #include "base/memory_dump.h"
 #include "console.h"
 #include "resource_finder.h"
+#include "scripting/engine.h"
 #include "she/she.h"
 #include "ui/base.h"
 
@@ -86,6 +87,7 @@ int app_main(int argc, char* argv[])
   MemLeak memleak;
   ui::GuiSystem guiSystem;
   App app(argc, argv);
+  scripting::Engine scriptingEngine;
 
   // Change the name of the memory dump file
   {
