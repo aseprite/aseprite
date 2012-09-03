@@ -26,6 +26,7 @@ add_library(base-lib
   memory_dump.cpp
   mutex.cpp
   path.cpp
+  program_options.cpp
   serialization.cpp
   sha1.cpp
   sha1_rfc3174.c
