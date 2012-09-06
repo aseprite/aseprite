@@ -155,7 +155,6 @@ set(all_libs ${aseprite_libraries} ${libs3rdparty} ${sys_libs})
 add_library(aseprite-library
   app.cpp
   app_menus.cpp
-  check_args.cpp
   console.cpp
   context.cpp
   context_flags.cpp
@@ -180,6 +179,7 @@ add_library(aseprite-library
   ui_context.cpp
   undo_transaction.cpp
   xml_exception.cpp
+  app/app_options.cpp
   app/backup.cpp
   app/check_update.cpp
   app/color.cpp

@@ -30,6 +30,7 @@
 
 #include <cstdlib>
 #include <ctime>
+#include <iostream>
 
 #ifdef WIN32
 #include <windows.h>
@@ -82,19 +83,25 @@ int app_main(int argc, char* argv[])
   CoInitialize(NULL);
 #endif
 
-  base::MemoryDump memoryDump;
-  she::ScopedHandle<she::System> system(she::CreateSystem());
-  MemLeak memleak;
-  ui::GuiSystem guiSystem;
-  App app(argc, argv);
-  scripting::Engine scriptingEngine;
+  try {
+    base::MemoryDump memoryDump;
+    she::ScopedHandle<she::System> system(she::CreateSystem());
+    MemLeak memleak;
+    ui::GuiSystem guiSystem;
+    App app(argc, const_cast<const char**>(argv));
+    scripting::Engine scriptingEngine;
 
-  // Change the name of the memory dump file
-  {
-    std::string filename;
-    if (get_memory_dump_filename(filename))
-      memoryDump.setFileName(filename);
+    // Change the name of the memory dump file
+    {
+      std::string filename;
+      if (get_memory_dump_filename(filename))
+        memoryDump.setFileName(filename);
+    }
+
+    return app.run();
   }
-
-  return app.run();
+  catch (std::exception& e) {
+    std::cerr << e.what() << '\n';
+    return 1;
+  }
 }

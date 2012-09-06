@@ -20,6 +20,7 @@
 
 #include "app.h"
 
+#include "app/app_options.h"
 #include "app/check_update.h"
 #include "app/color_utils.h"
 #include "app/data_recovery.h"
@@ -27,7 +28,6 @@
 #include "app/load_widget.h"
 #include "base/exception.h"
 #include "base/unique_ptr.h"
-#include "check_args.h"
 #include "commands/commands.h"
 #include "commands/params.h"
 #include "console.h"
@@ -82,7 +82,6 @@ class App::Modules
 {
 public:
   ConfigModule m_configModule;
-  CheckArgs m_checkArgs;
   LoggerModule m_loggerModule;
   FileSystemModule m_file_system_module;
   tools::ToolBox m_toolbox;
@@ -91,20 +90,17 @@ public:
   RecentFiles m_recent_files;
   app::DataRecovery m_recovery;
 
-  Modules(const std::vector<base::string>& args)
-    : m_checkArgs(args)
-    , m_loggerModule(m_checkArgs.isVerbose())
+  Modules(bool verbose)
+    : m_loggerModule(verbose)
     , m_recovery(&m_ui_context) {
   }
 };
 
 App* App::m_instance = NULL;
 
-static char *palette_filename = NULL;
-
 // Initializes the application loading the modules, setting the
 // graphics mode, loading the configuration and resources, etc.
-App::App(int argc, char* argv[])
+App::App(int argc, const char* argv[])
   : m_modules(NULL)
   , m_legacy(NULL)
   , m_isGui(false)
@@ -112,12 +108,12 @@ App::App(int argc, char* argv[])
   ASSERT(m_instance == NULL);
   m_instance = this;
 
-  for (int i = 0; i < argc; ++i)
-    m_args.push_back(argv[i]);
+  app::AppOptions options(argc, argv);
 
-  m_modules = new Modules(m_args);
-  m_isGui = !(m_modules->m_checkArgs.isConsoleOnly());
+  m_modules = new Modules(options.verbose());
+  m_isGui = options.startUI();
   m_legacy = new LegacyModules(isGui() ? REQUIRE_INTERFACE: 0);
+  m_files = options.files();
 
   // Register well-known image file types.
   FileFormatsManager::instance().registerAllFormats();
@@ -128,14 +124,14 @@ App::App(int argc, char* argv[])
   // Load RenderEngine configuration
   RenderEngine::loadConfig();
 
-  /* custom default palette? */
-  if (palette_filename) {
-    PRINTF("Loading custom palette file: %s\n", palette_filename);
+  // Default palette.
+  if (!options.paletteFileName().empty()) {
+    const char* palFile = options.paletteFileName().c_str();
+    PRINTF("Loading custom palette file: %s\n", palFile);
 
-    UniquePtr<Palette> pal(Palette::load(palette_filename));
+    UniquePtr<Palette> pal(Palette::load(palFile));
     if (pal.get() == NULL)
-      throw base::Exception("Error loading default palette from: %s",
-                            static_cast<const char*>(palette_filename));
+      throw base::Exception("Error loading default palette from: %s", palFile);
 
     set_default_palette(pal.get());
   }
@@ -173,36 +169,28 @@ int App::run()
 
   {
     Console console;
-    for (CheckArgs::iterator
-           it  = m_modules->m_checkArgs.begin(),
-           end = m_modules->m_checkArgs.end();
+    for (FileList::iterator
+           it  = m_files.begin(),
+           end = m_files.end();
          it != end; ++it) {
-      CheckArgs::Option* option = *it;
+      // Load the sprite
+      Document* document = load_document(it->c_str());
+      if (!document) {
+        if (!isGui())
+          console.printf("Error loading file \"%s\"\n", it->c_str());
+      }
+      else {
+        // Mount and select the sprite
+        UIContext* context = UIContext::instance();
+        context->addDocument(document);
+        context->setActiveDocument(document);
 
-      switch (option->type()) {
+        if (isGui()) {
+          // Show it
+          set_document_in_more_reliable_editor(context->getFirstDocument());
 
-        case CheckArgs::Option::OpenSprite: {
-          // Load the sprite
-          Document* document = load_document(option->data().c_str());
-          if (!document) {
-            if (!isGui())
-              console.printf("Error loading file \"%s\"\n", option->data().c_str());
-          }
-          else {
-            // Mount and select the sprite
-            UIContext* context = UIContext::instance();
-            context->addDocument(document);
-            context->setActiveDocument(document);
-
-            if (isGui()) {
-              // Show it
-              set_document_in_more_reliable_editor(context->getFirstDocument());
-
-              // Recent file
-              getRecentFiles()->addRecentFile(option->data().c_str());
-            }
-          }
-          break;
+          // Recent file
+          getRecentFiles()->addRecentFile(it->c_str());
         }
       }
     }

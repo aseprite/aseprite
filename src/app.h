@@ -44,15 +44,10 @@ namespace tools { class ToolBox; }
 class App
 {
 public:
-  App(int argc, char* argv[]);
+  App(int argc, const char* argv[]);
   ~App();
 
   static App* instance() { return m_instance; }
-
-  // Functions to get the arguments specified in the command line.
-  int getArgc() const { return m_args.size(); }
-  const base::string& getArgv(int i) { return m_args[i]; }
-  const std::vector<base::string>& getArgs() const { return m_args; }
 
   // Returns true if ASEPRITE is running with GUI available.
   bool isGui() const { return m_isGui; }
@@ -73,6 +68,7 @@ public:
   Signal0<void> CurrentToolChange;
 
 private:
+  typedef std::vector<base::string> FileList;
   class Modules;
 
   static App* m_instance;
@@ -80,8 +76,8 @@ private:
   Modules* m_modules;
   LegacyModules* m_legacy;
   bool m_isGui;
-  std::vector<base::string> m_args;
   UniquePtr<MainWindow> m_mainWindow;
+  FileList m_files;
 };
 
 void app_refresh_screen(const Document* document);
