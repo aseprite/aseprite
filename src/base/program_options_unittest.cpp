@@ -16,7 +16,7 @@ TEST(ProgramOptions, OptionMembers)
   ProgramOptions::Option& help =
     po.add("help").mnemonic('h').description("Show the help");
   ProgramOptions::Option& output =
-    po.add("output").mnemonic('O').requiresValue();
+    po.add("output").mnemonic('O').requiresValue("OUTPUT");
 
   EXPECT_EQ("help", help.name());
   EXPECT_EQ("Show the help", help.description());
@@ -35,7 +35,7 @@ TEST(ProgramOptions, Reset)
 {
   ProgramOptions po;
   ProgramOptions::Option& help = po.add("help");
-  ProgramOptions::Option& file = po.add("file").requiresValue();
+  ProgramOptions::Option& file = po.add("file").requiresValue("FILE");
   EXPECT_FALSE(help.enabled());
   EXPECT_FALSE(file.enabled());
   EXPECT_EQ("", file.value());
@@ -56,8 +56,8 @@ TEST(ProgramOptions, Parse)
 {
   ProgramOptions po;
   ProgramOptions::Option& help = po.add("help").mnemonic('?');
-  ProgramOptions::Option& input = po.add("input").mnemonic('i').requiresValue();
-  ProgramOptions::Option& output = po.add("output").mnemonic('o').requiresValue();
+  ProgramOptions::Option& input = po.add("input").mnemonic('i').requiresValue("INPUT");
+  ProgramOptions::Option& output = po.add("output").mnemonic('o').requiresValue("OUTPUT");
 
   const char* argv1[] = { "program.exe", "-?" };
   po.parse(2, argv1);
@@ -111,8 +111,8 @@ TEST(ProgramOptions, ParseErrors)
 {
   ProgramOptions po;
   ProgramOptions::Option& help = po.add("help").mnemonic('?');
-  ProgramOptions::Option& input = po.add("input").mnemonic('i').requiresValue();
-  ProgramOptions::Option& output = po.add("output").mnemonic('o').requiresValue();
+  ProgramOptions::Option& input = po.add("input").mnemonic('i').requiresValue("INPUT");
+  ProgramOptions::Option& output = po.add("output").mnemonic('o').requiresValue("OUTPUT");
 
   const char* argv1[] = { "program.exe", "--input" };
   EXPECT_THROW(po.parse(2, argv1), ProgramOptionNeedsValue);

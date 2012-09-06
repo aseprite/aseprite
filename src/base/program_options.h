@@ -39,20 +39,23 @@ namespace base {
       Option(const std::string& name)
         : m_name(name)
         , m_mnemonic(0)
-        , m_enabled(false)
-        , m_requiresValue(false) {
+        , m_enabled(false) {
       }
       // Getters
       const std::string& name() const { return m_name; }
       const std::string& description() const { return m_description; }
       const std::string& value() const { return m_value; }
+      const std::string& getValueName() const { return m_valueName; }
       char mnemonic() const { return m_mnemonic; }
       bool enabled() const { return m_enabled; }
-      bool doesRequireValue() const { return m_requiresValue; }
+      bool doesRequireValue() const { return !m_valueName.empty(); }
       // Setters
       Option& description(const std::string& desc) { m_description = desc; return *this; }
       Option& mnemonic(char mnemonic) { m_mnemonic = mnemonic; return *this; }
-      Option& requiresValue() { m_requiresValue = true; return *this; }
+      Option& requiresValue(const std::string& valueName) {
+        m_valueName = valueName;
+        return *this;
+      }
     private:
       void setValue(const std::string& value) { m_value = value; }
       void setEnabled(bool enabled) { m_enabled = enabled; }
@@ -60,9 +63,9 @@ namespace base {
       std::string m_name;        // Name of the option (e.g. "help" for "--help")
       std::string m_description; // Description of the option (this can be used when the help is printed).
       std::string m_value;       // The value specified by the user in the command line.
+      std::string m_valueName;   // Empty if this option doesn't require a value, or the name of the expected value.
       char m_mnemonic;           // One character that can be used in the command line to use this option.
       bool m_enabled;            // True if the user specified this argument.
-      bool m_requiresValue;      // True if this option needs another argument.
 
       friend class ProgramOptions;
     };

@@ -134,7 +134,7 @@ void ProgramOptions::parse(int argc, const char* argv[])
             if (i+1 >= argc) {
               stringstream msg;
               msg << "Missing value in '--" << optionName
-                  << "'=VALUE option specification";
+                  << "=" << option->getValueName() << "' option specification";
               throw ProgramOptionNeedsValue(msg.str());
             }
             optionValue = argv[++i];
@@ -173,7 +173,10 @@ std::ostream& operator<<(std::ostream& os, const base::ProgramOptions& po)
   for (base::ProgramOptions::OptionList::const_iterator
          it=po.options().begin(), end=po.options().end(); it != end; ++it) {
     const base::ProgramOptions::Option* option = *it;
-    size_t optionWidth = std::min<int>(26, 6+option->name().size()+1);
+    size_t optionWidth =
+      std::min<int>(26, 6+option->name().size()+1+
+                        (option->doesRequireValue() ? option->getValueName().size()+1: 0));
+
     if (maxOptionWidth < optionWidth)
       maxOptionWidth = optionWidth;
   }
@@ -181,13 +184,16 @@ std::ostream& operator<<(std::ostream& os, const base::ProgramOptions& po)
   for (base::ProgramOptions::OptionList::const_iterator
          it=po.options().begin(), end=po.options().end(); it != end; ++it) {
     const base::ProgramOptions::Option* option = *it;
-    size_t optionWidth = 6+option->name().size()+1;
+    size_t optionWidth = 6+option->name().size()+1+
+      (option->doesRequireValue() ? option->getValueName().size()+1: 0);
 
     if (option->mnemonic() != 0)
       os << setw(3) << '-' << option->mnemonic() << ", ";
     else
       os << setw(6) << ' ';
     os << "--" << option->name();
+    if (option->doesRequireValue())
+      os << " " << option->getValueName();
 
     if (!option->description().empty()) {
       bool multilines = (option->description().find('\n') != string::npos);
