@@ -49,6 +49,8 @@
 #include "raster/palette.h"
 #include "raster/sprite.h"
 #include "recent_files.h"
+#include "scripting/engine.h"
+#include "shell.h"
 #include "tools/tool_box.h"
 #include "ui/gui.h"
 #include "ui/intern.h"
@@ -65,6 +67,7 @@
 
 #include <allegro.h>
 /* #include <allegro/internal/aintern.h> */
+#include <iostream>
 #include <memory>
 #include <stdarg.h>
 #include <stdio.h>
@@ -89,8 +92,9 @@ public:
   UIContext m_ui_context;
   RecentFiles m_recent_files;
   app::DataRecovery m_recovery;
+  scripting::Engine m_scriptingEngine;
 
-  Modules(bool verbose)
+  Modules(bool console, bool verbose)
     : m_loggerModule(verbose)
     , m_recovery(&m_ui_context) {
   }
@@ -104,14 +108,16 @@ App::App(int argc, const char* argv[])
   : m_modules(NULL)
   , m_legacy(NULL)
   , m_isGui(false)
+  , m_isShell(false)
 {
   ASSERT(m_instance == NULL);
   m_instance = this;
 
   app::AppOptions options(argc, argv);
 
-  m_modules = new Modules(options.verbose());
+  m_modules = new Modules(!options.startUI(), options.verbose());
   m_isGui = options.startUI();
+  m_isShell = options.startShell();
   m_legacy = new LegacyModules(isGui() ? REQUIRE_INTERFACE: 0);
   m_files = options.files();
 
@@ -136,7 +142,7 @@ App::App(int argc, const char* argv[])
     set_default_palette(pal.get());
   }
 
-  /* set system palette to the default one */
+  // Set system palette to the default one.
   set_current_palette(NULL, true);
 }
 
@@ -159,10 +165,8 @@ int App::run()
     ui::Manager::getDefault()->invalidate();
   }
 
-  /* set background mode for non-GUI modes */
-/*   if (!(ase_mode & MODE_GUI)) */
-/*     set_display_switch_mode(SWITCH_BACKAMNESIA); */
-    set_display_switch_mode(SWITCH_BACKGROUND);
+  // Set background mode for non-GUI modes
+  set_display_switch_mode(SWITCH_BACKGROUND);
 
   // Procress options
   PRINTF("Processing options...\n");
@@ -215,6 +219,18 @@ int App::run()
 
     // Destroy the window.
     m_mainWindow.reset(NULL);
+  }
+  // Start shell to execute scripts.
+  else if (m_isShell) {
+    m_systemConsole.prepareShell();
+
+    if (m_modules->m_scriptingEngine.supportEval()) {
+      Shell shell;
+      shell.run(m_modules->m_scriptingEngine);
+    }
+    else {
+      std::cerr << "Your version of " PACKAGE " wasn't compiled with shell support.\n";
+    }
   }
 
   return 0;

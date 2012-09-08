@@ -31,9 +31,12 @@ typedef base::ProgramOptions::Option Option;
 AppOptions::AppOptions(int argc, const char* argv[])
   : m_exeName(base::get_file_name(argv[0]))
   , m_startUI(true)
+  , m_startShell(false)
   , m_verbose(false)
 {
   Option& palette = m_po.add("palette").requiresValue("GFXFILE").description("Use a specific palette by default");
+  Option& shell = m_po.add("shell").description("Start an interactive console to execute scripts");
+  Option& batch = m_po.add("batch").description("Do not start the UI");
   Option& verbose = m_po.add("verbose").description("Explain what is being done (in stderr or a log file)");
   Option& help = m_po.add("help").mnemonic('?').description("Display this help and exits");
   Option& version = m_po.add("version").description("Output version information and exit");
@@ -43,6 +46,7 @@ AppOptions::AppOptions(int argc, const char* argv[])
 
     m_verbose = verbose.enabled();
     m_paletteFileName = palette.value();
+    m_startShell = shell.enabled();
 
     if (help.enabled()) {
       showHelp();
@@ -50,6 +54,10 @@ AppOptions::AppOptions(int argc, const char* argv[])
     }
     else if (version.enabled()) {
       showVersion();
+      m_startUI = false;
+    }
+
+    if (shell.enabled() || batch.enabled()) {
       m_startUI = false;
     }
   }

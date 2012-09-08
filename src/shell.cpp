@@ -16,43 +16,29 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifndef APP_APP_OPTIONS_H_INCLUDED
-#define APP_APP_OPTIONS_H_INCLUDED
+#include "config.h"
 
-#include <stdexcept>
+#include "shell.h"
+
+#include "scripting/engine.h"
+
+#include <iostream>
 #include <string>
-#include <vector>
 
-#include "base/program_options.h"
-
-namespace app {
-
-class AppOptions {
-public:
-  AppOptions(int argc, const char* argv[]);
-
-  bool startUI() const { return m_startUI; }
-  bool startShell() const { return m_startShell; }
-  bool verbose() const { return m_verbose; }
-
-  const std::string& paletteFileName() const { return m_paletteFileName; }
-
-  const base::ProgramOptions::ValueList& files() const {
-    return m_po.values();
-  }
-
-private:
-  void showHelp();
-  void showVersion();
-
-  std::string m_exeName;
-  base::ProgramOptions m_po;
-  bool m_startUI;
-  bool m_startShell;
-  bool m_verbose;
-  std::string m_paletteFileName;
-};
-
+Shell::Shell()
+{
 }
 
-#endif
+Shell::~Shell()
+{
+}
+
+void Shell::run(scripting::Engine& engine)
+{
+  std::cout << "Welcome to " PACKAGE " v" VERSION " interactive console" << std::endl;
+  std::string line;
+  while (std::getline(std::cin, line)) {
+    engine.eval(line);
+  }
+  std::cout << "Done\n";
+}

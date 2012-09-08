@@ -175,6 +175,7 @@ add_library(aseprite-library
   objects_container_impl.cpp
   recent_files.cpp
   resource_finder.cpp
+  shell.cpp
   thumbnail_generator.cpp
   ui_context.cpp
   undo_transaction.cpp

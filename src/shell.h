@@ -16,43 +16,18 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifndef APP_APP_OPTIONS_H_INCLUDED
-#define APP_APP_OPTIONS_H_INCLUDED
+#ifndef SHELL_H_INCLUDED
+#define SHELL_H_INCLUDED
 
-#include <stdexcept>
-#include <string>
-#include <vector>
+namespace scripting { class Engine; }
 
-#include "base/program_options.h"
-
-namespace app {
-
-class AppOptions {
+class Shell
+{
 public:
-  AppOptions(int argc, const char* argv[]);
+  Shell();
+  ~Shell();
 
-  bool startUI() const { return m_startUI; }
-  bool startShell() const { return m_startShell; }
-  bool verbose() const { return m_verbose; }
-
-  const std::string& paletteFileName() const { return m_paletteFileName; }
-
-  const base::ProgramOptions::ValueList& files() const {
-    return m_po.values();
-  }
-
-private:
-  void showHelp();
-  void showVersion();
-
-  std::string m_exeName;
-  base::ProgramOptions m_po;
-  bool m_startUI;
-  bool m_startShell;
-  bool m_verbose;
-  std::string m_paletteFileName;
+  void run(scripting::Engine& engine);
 };
-
-}
 
 #endif

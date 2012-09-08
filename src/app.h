@@ -21,6 +21,7 @@
 
 #include "base/signal.h"
 #include "base/string.h"
+#include "base/system_console.h"
 #include "base/unique_ptr.h"
 #include "raster/pixel_format.h"
 
@@ -73,9 +74,11 @@ private:
 
   static App* m_instance;
 
+  base::SystemConsole m_systemConsole;
   Modules* m_modules;
   LegacyModules* m_legacy;
   bool m_isGui;
+  bool m_isShell;
   UniquePtr<MainWindow> m_mainWindow;
   FileList m_files;
 };

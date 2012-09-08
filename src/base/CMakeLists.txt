@@ -32,6 +32,7 @@ add_library(base-lib
   sha1_rfc3174.c
   split_string.cpp
   string.cpp
+  system_console.cpp
   temp_dir.cpp
   thread.cpp
   trim_string.cpp
