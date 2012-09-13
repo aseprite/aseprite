@@ -1,21 +1,9 @@
-/*         ______   ___    ___
- *        /\  _  \ /\_ \  /\_ \
- *        \ \ \L\ \\//\ \ \//\ \      __     __   _ __   ___
- *         \ \  __ \ \ \ \  \ \ \   /'__`\ /'_ `\/\`'__\/ __`\
- *          \ \ \/\ \ \_\ \_ \_\ \_/\  __//\ \L\ \ \ \//\ \L\ \
- *           \ \_\ \_\/\____\/\____\ \____\ \____ \ \_\\ \____/
- *            \/_/\/_/\/____/\/____/\/____/\/___L\ \/_/ \/___/
- *                                           /\____/
- *                                           \_/__/
- *
- *      The floodfill routine.
- *
- *      By Shawn Hargreaves.
- *
- *      See readme.txt for copyright information.
- */
-
+// The floodfill routine.
+// By Shawn Hargreaves.
 // Adapted to ASEPRITE by David Capello
+//
+// This source file is ditributed under a Allegro license, please
+// read allegro4-LICENSE.txt for more information.
 
 #include "config.h"
 
