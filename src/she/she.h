@@ -8,6 +8,7 @@
 #define SHE_H_INCLUDED
 
 #include "she/display.h"
+#include "she/event_loop.h"
 #include "she/locked_surface.h"
 #include "she/scoped_handle.h"
 #include "she/scoped_surface_lock.h"
