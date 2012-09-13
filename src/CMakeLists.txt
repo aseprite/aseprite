@@ -187,6 +187,7 @@ add_library(aseprite-library
   app/color_utils.cpp
   app/data_recovery.cpp
   app/file_selector.cpp
+  app/project.cpp
   app/widget_loader.cpp
   commands/cmd_about.cpp
   commands/cmd_advanced_mode.cpp
