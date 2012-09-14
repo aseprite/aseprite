@@ -31,7 +31,7 @@ fi
 if [ ! -f $distdir.tar.xz ] ; then
     cd "$dir/.."
     mkdir "$dir/$distdir"
-    cp --parents $(git ls-files | grep -v -e ^third_party | grep -v -e ^src/allegro) "$dir/$distdir"
+    cp --parents $(git ls-files | grep -v -e ^third_party | grep -v -e ^src/allegro | grep -v -e ^scripts) "$dir/$distdir"
     cp --parents third_party/CMakeLists.txt "$dir/$distdir"
     cd "$dir"
 
