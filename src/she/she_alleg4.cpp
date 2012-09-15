@@ -258,6 +258,16 @@ private:
   int m_scale;
 };
 
+class Alleg4EventLoop : public EventLoop {
+public:
+  Alleg4EventLoop() {
+  }
+
+  void dispose() {
+    delete this;
+  }
+};
+
 class Alleg4System : public System {
 public:
   Alleg4System() {
@@ -293,6 +303,10 @@ public:
   Surface* createSurfaceFromNativeHandle(void* nativeHandle) {
     return new Alleg4Surface(reinterpret_cast<BITMAP*>(nativeHandle),
                              Alleg4Surface::AutoDestroy);
+  }
+
+  EventLoop* createEventLoop() {
+    return new Alleg4EventLoop();
   }
 
 };
