@@ -4,7 +4,7 @@
 // Optimized by Sven Sandberg.
 // To C++ templates by David Capello
 //
-// This source file is ditributed under a Allegro license, please
+// This source file is distributed under a Allegro license, please
 // read allegro4-LICENSE.txt for more information.
 
 #include "config.h"
