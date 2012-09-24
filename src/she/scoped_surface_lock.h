@@ -1,7 +1,7 @@
 // SHE library
 // Copyright (C) 2012  David Capello
 //
-// This source file is ditributed under a BSD-like license, please
+// This source file is distributed under a BSD-like license, please
 // read LICENSE.txt for more information.
 
 #ifndef SHE_SCOPED_SURFACE_LOCK_H_INCLUDED

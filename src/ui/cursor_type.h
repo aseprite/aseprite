@@ -1,7 +1,7 @@
 // ASEPRITE gui library
 // Copyright (C) 2001-2012  David Capello
 //
-// This source file is ditributed under a BSD-like license, please
+// This source file is distributed under a BSD-like license, please
 // read LICENSE.txt for more information.
 
 #ifndef UI_CURSOR_TYPE_H_INCLUDED
