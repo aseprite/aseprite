@@ -61,13 +61,6 @@ namespace ui {
     bool middle : 1;              /* middle button */
   };
 
-  struct MessageSignal
-  {
-    MessageAny any;
-    int num;                      /* signal number */
-    Widget* from;                 /* signal generator */
-  };
-
   struct MessageTimer
   {
     MessageAny any;
@@ -107,7 +100,6 @@ namespace ui {
     MessageKey key;
     MessageDraw draw;
     MessageMouse mouse;
-    MessageSignal signal;
     MessageTimer timer;
     MessageSetPos setpos;
     MessageReqSize reqsize;
