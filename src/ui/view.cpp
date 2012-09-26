@@ -9,6 +9,7 @@
 #include "gfx/size.h"
 #include "ui/intern.h"
 #include "ui/message.h"
+#include "ui/preferred_size_event.h"
 #include "ui/rect.h"
 #include "ui/region.h"
 #include "ui/system.h"
@@ -239,16 +240,6 @@ bool View::onProcessMessage(Message* msg)
 {
   switch (msg->type) {
 
-    case JM_REQSIZE: {
-      Size viewSize = m_viewport.getPreferredSize();
-      msg->reqsize.w = viewSize.w;
-      msg->reqsize.h = viewSize.h;
-
-      msg->reqsize.w += this->border_width.l + this->border_width.r;
-      msg->reqsize.h += this->border_width.t + this->border_width.b;
-      return true;
-    }
-
     case JM_SETPOS:
       jrect_copy(this->rc, &msg->setpos.rect);
       updateView();
@@ -271,6 +262,14 @@ bool View::onProcessMessage(Message* msg)
   }
 
   return Widget::onProcessMessage(msg);
+}
+
+void View::onPreferredSize(PreferredSizeEvent& ev)
+{
+  Size viewSize = m_viewport.getPreferredSize();
+  viewSize.w += this->border_width.l + this->border_width.r;
+  viewSize.h += this->border_width.t + this->border_width.b;
+  ev.setPreferredSize(viewSize);
 }
 
 // static

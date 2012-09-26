@@ -22,6 +22,7 @@ namespace ui {
   protected:
     // Events
     bool onProcessMessage(Message* msg) OVERRIDE;
+    void onPreferredSize(PreferredSizeEvent& ev) OVERRIDE;
 
   private:
     void set_position(JRect rect);

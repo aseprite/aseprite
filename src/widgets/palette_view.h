@@ -52,6 +52,7 @@ public:
 
 protected:
   bool onProcessMessage(ui::Message* msg) OVERRIDE;
+  void onPreferredSize(ui::PreferredSizeEvent& ev) OVERRIDE;
 
 private:
   void request_size(int* w, int* h);

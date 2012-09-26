@@ -20,7 +20,7 @@ namespace ui {
     ImageView(BITMAP* bmp, int align);
 
   protected:
-    bool onProcessMessage(Message* msg) OVERRIDE;
+    void onPreferredSize(PreferredSizeEvent& ev) OVERRIDE;
     void onPaint(PaintEvent& ev) OVERRIDE;
 
   private:

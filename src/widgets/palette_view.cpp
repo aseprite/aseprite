@@ -32,6 +32,7 @@
 #include "raster/palette.h"
 #include "ui/manager.h"
 #include "ui/message.h"
+#include "ui/preferred_size_event.h"
 #include "ui/rect.h"
 #include "ui/system.h"
 #include "ui/theme.h"
@@ -201,10 +202,6 @@ bool PaletteView::onProcessMessage(Message* msg)
 {
   switch (msg->type) {
 
-    case JM_REQSIZE:
-      request_size(&msg->reqsize.w, &msg->reqsize.h);
-      return true;
-
     case JM_SETPOS:
       if (!m_isUpdatingColumns) {
         m_isUpdatingColumns = true;
@@ -341,6 +338,13 @@ bool PaletteView::onProcessMessage(Message* msg)
   }
 
   return Widget::onProcessMessage(msg);
+}
+
+void PaletteView::onPreferredSize(ui::PreferredSizeEvent& ev)
+{
+  gfx::Size sz;
+  request_size(&sz.w, &sz.h);
+  ev.setPreferredSize(sz);
 }
 
 void PaletteView::request_size(int* w, int* h)

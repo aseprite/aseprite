@@ -104,7 +104,6 @@ namespace ui {
     JM_CLOSE_APP,                 // The user wants to close the entire application.
     JM_DRAW,                      // Widget needs be repainted.
     JM_TIMER,                     // A timer timeout.
-    JM_REQSIZE,                   // Request size.
     JM_SETPOS,                    // Set position.
     JM_WINMOVE,                   // Window movement.
     JM_DEFERREDFREE,              // Deferred jwidget_free call.

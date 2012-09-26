@@ -74,12 +74,6 @@ namespace ui {
     struct jrect rect;            /* set position */
   };
 
-  struct MessageReqSize
-  {
-    MessageAny any;
-    int w, h;                     /* requested size */
-  };
-
   struct MessageDrawRgn
   {
     MessageAny any;
@@ -102,7 +96,6 @@ namespace ui {
     MessageMouse mouse;
     MessageTimer timer;
     MessageSetPos setpos;
-    MessageReqSize reqsize;
     MessageDrawRgn drawrgn;
     MessageUser user;
   };

@@ -9,6 +9,7 @@
 #include "gfx/point.h"
 #include "gfx/size.h"
 #include "ui/message.h"
+#include "ui/preferred_size_event.h"
 #include "ui/theme.h"
 #include "ui/view.h"
 #include "ui/viewport.h"
@@ -27,11 +28,6 @@ bool Viewport::onProcessMessage(Message* msg)
 {
   switch (msg->type) {
 
-    case JM_REQSIZE:
-      msg->reqsize.w = this->border_width.l + 1 + this->border_width.r;
-      msg->reqsize.h = this->border_width.t + 1 + this->border_width.b;
-      return true;
-
     case JM_SETPOS:
       set_position(&msg->setpos.rect);
       return true;
@@ -42,6 +38,12 @@ bool Viewport::onProcessMessage(Message* msg)
   }
 
   return Widget::onProcessMessage(msg);
+}
+
+void Viewport::onPreferredSize(PreferredSizeEvent& ev)
+{
+  ev.setPreferredSize(gfx::Size(this->border_width.l + 1 + this->border_width.r,
+                                this->border_width.t + 1 + this->border_width.b));
 }
 
 Size Viewport::calculateNeededSize()

@@ -299,10 +299,6 @@ bool Menu::onProcessMessage(Message* msg)
 {
   switch (msg->type) {
 
-    case JM_REQSIZE:
-      requestSize(&msg->reqsize.w, &msg->reqsize.h);
-      return true;
-
     case JM_SETPOS:
       set_position(&msg->setpos.rect);
       return true;
@@ -316,27 +312,28 @@ bool Menu::onProcessMessage(Message* msg)
   return Widget::onProcessMessage(msg);
 }
 
-void Menu::requestSize(int *w, int *h)
+void Menu::onPreferredSize(PreferredSizeEvent& ev)
 {
+  Size size(0, 0);
   Size reqSize;
-
-  *w = *h = 0;
 
   UI_FOREACH_WIDGET_WITH_END(getChildren(), it, end) {
     reqSize = (*it)->getPreferredSize();
 
     if (this->getParent()->type == JI_MENUBAR) {
-      *w += reqSize.w + ((it+1 != end) ? this->child_spacing: 0);
-      *h = MAX(*h, reqSize.h);
+      size.w += reqSize.w + ((it+1 != end) ? this->child_spacing: 0);
+      size.h = MAX(size.h, reqSize.h);
     }
     else {
-      *w = MAX(*w, reqSize.w);
-      *h += reqSize.h + ((it+1 != end) ? this->child_spacing: 0);
+      size.w = MAX(size.w, reqSize.w);
+      size.h += reqSize.h + ((it+1 != end) ? this->child_spacing: 0);
     }
   }
 
-  *w += this->border_width.l + this->border_width.r;
-  *h += this->border_width.t + this->border_width.b;
+  size.w += this->border_width.l + this->border_width.r;
+  size.h += this->border_width.t + this->border_width.b;
+
+  ev.setPreferredSize(size);
 }
 
 void Menu::set_position(JRect rect)
@@ -374,10 +371,6 @@ bool MenuBox::onProcessMessage(Message* msg)
   Menu* menu = MenuBox::getMenu();
 
   switch (msg->type) {
-
-    case JM_REQSIZE:
-      requestSize(&msg->reqsize.w, &msg->reqsize.h);
-      return true;
 
     case JM_SETPOS:
       set_position(&msg->setpos.rect);
@@ -669,18 +662,17 @@ bool MenuBox::onProcessMessage(Message* msg)
   return Widget::onProcessMessage(msg);
 }
 
-void MenuBox::requestSize(int* w, int* h)
+void MenuBox::onPreferredSize(PreferredSizeEvent& ev)
 {
-  if (Menu* menu = getMenu()) {
-    Size reqSize = menu->getPreferredSize();
-    *w = reqSize.w;
-    *h = reqSize.h;
-  }
-  else
-    *w = *h = 0;
+  Size size(0, 0);
 
-  *w += this->border_width.l + this->border_width.r;
-  *h += this->border_width.t + this->border_width.b;
+  if (Menu* menu = getMenu())
+    size = menu->getPreferredSize();
+
+  size.w += this->border_width.l + this->border_width.r;
+  size.h += this->border_width.t + this->border_width.b;
+
+  ev.setPreferredSize(size);
 }
 
 void MenuBox::set_position(JRect rect)
@@ -697,10 +689,6 @@ void MenuBox::set_position(JRect rect)
 bool MenuItem::onProcessMessage(Message* msg)
 {
   switch (msg->type) {
-
-    case JM_REQSIZE:
-      requestSize(&msg->reqsize.w, &msg->reqsize.h);
-      return true;
 
     case JM_DRAW:
       getTheme()->draw_menuitem(this, &msg->draw.rect);
@@ -898,29 +886,29 @@ void MenuItem::onClick()
   Click();
 }
 
-void MenuItem::requestSize(int *w, int *h)
+void MenuItem::onPreferredSize(PreferredSizeEvent& ev)
 {
+  Size size(0, 0);
   int bar = (this->getParent()->getParent()->type == JI_MENUBAR);
 
   if (this->hasText()) {
-    *w =
+    size.w =
       + this->border_width.l
       + jwidget_get_text_length(this)
       + ((bar) ? this->child_spacing/4: this->child_spacing)
       + this->border_width.r;
 
-    *h =
+    size.h =
       + this->border_width.t
       + jwidget_get_text_height(this)
       + this->border_width.b;
 
     if (m_accel && !m_accel->isEmpty()) {
-      *w += ji_font_text_len(this->getFont(), m_accel->toString().c_str());
+      size.w += ji_font_text_len(this->getFont(), m_accel->toString().c_str());
     }
   }
-  else {
-    *w = *h = 0;
-  }
+
+  ev.setPreferredSize(size);
 }
 
 // Climbs the hierarchy of menus to get the most-top menubox.

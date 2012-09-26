@@ -472,13 +472,6 @@ bool StatusBar::onProcessMessage(Message* msg)
 {
   switch (msg->type) {
 
-    case JM_REQSIZE:
-      msg->reqsize.w = msg->reqsize.h =
-        4*jguiscale()
-        + jwidget_get_text_height(this)
-        + 4*jguiscale();
-      return true;
-
     case JM_SETPOS:
       jrect_copy(this->rc, &msg->setpos.rect);
       {
@@ -824,6 +817,12 @@ bool StatusBar::onProcessMessage(Message* msg)
   }
 
   return Widget::onProcessMessage(msg);
+}
+
+void StatusBar::onPreferredSize(PreferredSizeEvent& ev)
+{
+  int s = 4*jguiscale() + jwidget_get_text_height(this) + 4*jguiscale();
+  ev.setPreferredSize(Size(s, s));
 }
 
 bool StatusBar::CustomizedTipWindow::onProcessMessage(Message* msg)

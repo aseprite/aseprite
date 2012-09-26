@@ -892,10 +892,6 @@ bool Editor::onProcessMessage(Message* msg)
 {
   switch (msg->type) {
 
-    case JM_REQSIZE:
-      editor_request_size(&msg->reqsize.w, &msg->reqsize.h);
-      return true;
-
     case JM_DRAW: {
       SkinTheme* theme = static_cast<SkinTheme*>(this->getTheme());
 
@@ -1059,6 +1055,27 @@ bool Editor::onProcessMessage(Message* msg)
   return Widget::onProcessMessage(msg);
 }
 
+void Editor::onPreferredSize(PreferredSizeEvent& ev)
+{
+  gfx::Size sz(0, 0);
+
+  if (m_sprite) {
+    View* view = View::getView(this);
+    Rect vp = view->getViewportBounds();
+
+    m_offset_x = std::max<int>(vp.w/2, vp.w - m_sprite->getWidth()/2);
+    m_offset_y = std::max<int>(vp.h/2, vp.h - m_sprite->getHeight()/2);
+
+    sz.w = (m_sprite->getWidth() << m_zoom) + m_offset_x*2;
+    sz.h = (m_sprite->getHeight() << m_zoom) + m_offset_y*2;
+  }
+  else {
+    sz.w = 4;
+    sz.h = 4;
+  }
+  ev.setPreferredSize(sz);
+}
+
 // When the current tool is changed
 void Editor::onCurrentToolChange()
 {
@@ -1070,27 +1087,6 @@ void Editor::onFgColorChange()
   if (m_cursor_thick) {
     hideDrawingCursor();
     showDrawingCursor();
-  }
-}
-
-/**
- * Returns size for the editor viewport
- */
-void Editor::editor_request_size(int *w, int *h)
-{
-  if (m_sprite) {
-    View* view = View::getView(this);
-    Rect vp = view->getViewportBounds();
-
-    m_offset_x = std::max<int>(vp.w/2, vp.w - m_sprite->getWidth()/2);
-    m_offset_y = std::max<int>(vp.h/2, vp.h - m_sprite->getHeight()/2);
-
-    *w = (m_sprite->getWidth() << m_zoom) + m_offset_x*2;
-    *h = (m_sprite->getHeight() << m_zoom) + m_offset_y*2;
-  }
-  else {
-    *w = 4;
-    *h = 4;
   }
 }
 

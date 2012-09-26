@@ -1316,11 +1316,6 @@ bool Widget::onProcessMessage(Message* msg)
         return ev.isPainted();
       }
 
-    case JM_REQSIZE:
-      msg->reqsize.w = this->min_w;
-      msg->reqsize.h = this->min_h;
-      return true;
-
     case JM_SETPOS: {
       jrect_copy(this->rc, &msg->setpos.rect);
       JRect cpos = jwidget_get_child_rect(this);
@@ -1403,24 +1398,9 @@ void Widget::onInvalidateRegion(const JRegion region)
   }
 }
 
-/**
-   Calculates the preferred size for the widget.
-
-   The default implementation get the preferred size of the current
-   layout manager. Also, if there exists layout-free widgets inside
-   this parent (like a StatusBar), they preferred-sizes are
-   accumulated.
-
-   @see Layout#getPreferredSize,
-*/
 void Widget::onPreferredSize(PreferredSizeEvent& ev)
 {
-  Message* msg = jmessage_new(JM_REQSIZE);
-  sendMessage(msg);
-  Size sz(msg->reqsize.w, msg->reqsize.h);
-  jmessage_free(msg);
-
-  ev.setPreferredSize(sz);
+  ev.setPreferredSize(Size(this->min_w, this->min_h));
 }
 
 void Widget::onLoadLayout(LoadLayoutEvent& ev)

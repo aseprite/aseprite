@@ -109,28 +109,6 @@ bool FileList::onProcessMessage(Message* msg)
 {
   switch (msg->type) {
 
-    case JM_REQSIZE:
-      if (!m_req_valid) {
-        gfx::Size reqSize(0, 0);
-
-        // rows
-        for (FileItemList::iterator
-               it=m_list.begin();
-             it!=m_list.end(); ++it) {
-          IFileItem* fi = *it;
-          gfx::Size itemSize = getFileItemSize(fi);
-          reqSize.w = MAX(reqSize.w, itemSize.w);
-          reqSize.h += itemSize.h;
-        }
-
-        m_req_valid = true;
-        m_req_w = reqSize.w;
-        m_req_h = reqSize.h;
-      }
-      msg->reqsize.w = m_req_w;
-      msg->reqsize.h = m_req_h;
-      return true;
-
     case JM_DRAW: {
       View* view = View::getView(this);
       gfx::Rect vp = view->getViewportBounds();
@@ -432,6 +410,28 @@ bool FileList::onProcessMessage(Message* msg)
   }
 
   return Widget::onProcessMessage(msg);
+}
+
+void FileList::onPreferredSize(PreferredSizeEvent& ev)
+{
+  if (!m_req_valid) {
+    gfx::Size reqSize(0, 0);
+
+    // rows
+    for (FileItemList::iterator
+           it=m_list.begin();
+         it!=m_list.end(); ++it) {
+      IFileItem* fi = *it;
+      gfx::Size itemSize = getFileItemSize(fi);
+      reqSize.w = MAX(reqSize.w, itemSize.w);
+      reqSize.h += itemSize.h;
+    }
+
+    m_req_valid = true;
+    m_req_w = reqSize.w;
+    m_req_h = reqSize.h;
+  }
+  ev.setPreferredSize(Size(m_req_w, m_req_h));
 }
 
 void FileList::onFileSelected()

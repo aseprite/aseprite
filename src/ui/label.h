@@ -21,7 +21,7 @@ namespace ui {
     void setTextColor(int color);
 
   protected:
-    bool onProcessMessage(Message* msg) OVERRIDE;
+    void onPreferredSize(PreferredSizeEvent& ev) OVERRIDE;
     void onPaint(PaintEvent& ev) OVERRIDE;
 
   private:

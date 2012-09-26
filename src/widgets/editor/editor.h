@@ -154,6 +154,7 @@ public:
 
 protected:
   bool onProcessMessage(ui::Message* msg) OVERRIDE;
+  void onPreferredSize(ui::PreferredSizeEvent& ev) OVERRIDE;
   void onCurrentToolChange();
   void onFgColorChange();
 
@@ -173,7 +174,6 @@ private:
 
   void drawGrid(const gfx::Rect& gridBounds, const Color& color);
 
-  void editor_request_size(int *w, int *h);
   void editor_setcursor();
 
   void for_each_pixel_of_pen(int screen_x, int screen_y,

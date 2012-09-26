@@ -248,13 +248,6 @@ bool Tabs::onProcessMessage(Message* msg)
 
   switch (msg->type) {
 
-    case JM_REQSIZE:
-      msg->reqsize.w = 0; // msg->reqsize.h = 4 + jwidget_get_text_height(widget) + 5;
-      msg->reqsize.h =
-        theme->get_part(PART_TAB_FILLER)->h +
-        theme->get_part(PART_TAB_BOTTOM_NORMAL)->h;
-      return true;
-
     case JM_SETPOS:
       jrect_copy(this->rc, &msg->setpos.rect);
       setScrollX(m_scrollX);
@@ -438,6 +431,15 @@ bool Tabs::onProcessMessage(Message* msg)
   }
 
   return Widget::onProcessMessage(msg);
+}
+
+void Tabs::onPreferredSize(PreferredSizeEvent& ev)
+{
+  SkinTheme* theme = static_cast<SkinTheme*>(this->getTheme());
+
+  ev.setPreferredSize(gfx::Size(0, // 4 + jwidget_get_text_height(widget) + 5,
+                                theme->get_part(PART_TAB_FILLER)->h +
+                                theme->get_part(PART_TAB_BOTTOM_NORMAL)->h));
 }
 
 void Tabs::onInitTheme(InitThemeEvent& ev)

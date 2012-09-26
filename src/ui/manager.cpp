@@ -1037,7 +1037,6 @@ void Manager::pumpQueue()
           "JM_CLOSE_APP",
           "JM_DRAW",
           "JM_TIMER",
-          "JM_REQSIZE",
           "JM_SETPOS",
           "JM_WINMOVE",
           "JM_DEFERREDFREE",

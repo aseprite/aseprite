@@ -37,6 +37,7 @@ public:
 
 protected:
   bool onProcessMessage(ui::Message* msg) OVERRIDE;
+  void onPreferredSize(ui::PreferredSizeEvent& ev) OVERRIDE;
 
 private:
   gfx::Point* getClosestPoint(int x, int y, int** edit_x, int** edit_y);

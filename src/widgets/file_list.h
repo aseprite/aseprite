@@ -50,6 +50,7 @@ namespace widgets {
 
   protected:
     virtual bool onProcessMessage(ui::Message* msg) OVERRIDE;
+    virtual void onPreferredSize(ui::PreferredSizeEvent& ev) OVERRIDE;
     virtual void onFileSelected();
     virtual void onFileAccepted();
     virtual void onCurrentFolderChanged();

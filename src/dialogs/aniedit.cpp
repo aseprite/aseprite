@@ -113,6 +113,7 @@ public:
 
 protected:
   bool onProcessMessage(Message* msg) OVERRIDE;
+  void onPreferredSize(PreferredSizeEvent& ev) OVERRIDE;
 
 private:
   void setCursor(int x, int y);
@@ -234,13 +235,6 @@ AnimationEditor::~AnimationEditor()
 bool AnimationEditor::onProcessMessage(Message* msg)
 {
   switch (msg->type) {
-
-    case JM_REQSIZE:
-      // This doesn't matter, the AniEditor'll use the entire screen
-      // anyway.
-      msg->reqsize.w = 32;
-      msg->reqsize.h = 32;
-      return true;
 
     case JM_DRAW: {
       JRect clip = &msg->draw.rect;
@@ -806,6 +800,12 @@ bool AnimationEditor::onProcessMessage(Message* msg)
   }
 
   return Widget::onProcessMessage(msg);
+}
+
+void AnimationEditor::onPreferredSize(PreferredSizeEvent& ev)
+{
+  // This doesn't matter, the AniEditor'll use the entire screen anyway.
+  ev.setPreferredSize(Size(32, 32));
 }
 
 void AnimationEditor::setCursor(int x, int y)

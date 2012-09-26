@@ -57,6 +57,7 @@ public:
 
 protected:
   bool onProcessMessage(Message* msg) OVERRIDE;
+  void onPreferredSize(PreferredSizeEvent& ev) OVERRIDE;
 
 private:
   Rect getToolBounds(int index);
@@ -122,13 +123,6 @@ bool ToolBar::isToolVisible(Tool* tool)
 bool ToolBar::onProcessMessage(Message* msg)
 {
   switch (msg->type) {
-
-    case JM_REQSIZE: {
-      Size iconsize = getToolIconSize(this);
-      msg->reqsize.w = iconsize.w + this->border_width.l + this->border_width.r;
-      msg->reqsize.h = iconsize.h + this->border_width.t + this->border_width.b;
-      return true;
-    }
 
     case JM_DRAW: {
       BITMAP *doublebuffer = create_bitmap(jrect_w(&msg->draw.rect),
@@ -336,6 +330,14 @@ bool ToolBar::onProcessMessage(Message* msg)
   }
 
   return Widget::onProcessMessage(msg);
+}
+
+void ToolBar::onPreferredSize(PreferredSizeEvent& ev)
+{
+  Size iconsize = getToolIconSize(this);
+  iconsize.w += this->border_width.l + this->border_width.r;
+  iconsize.h += this->border_width.t + this->border_width.b;
+  ev.setPreferredSize(iconsize);
 }
 
 int ToolBar::getToolGroupIndex(ToolGroup* group)
@@ -602,23 +604,6 @@ bool ToolStrip::onProcessMessage(Message* msg)
 {
   switch (msg->type) {
 
-    case JM_REQSIZE: {
-      ToolBox* toolbox = App::instance()->getToolBox();
-      int c = 0;
-
-      for (ToolIterator it = toolbox->begin(); it != toolbox->end(); ++it) {
-        Tool* tool = *it;
-        if (tool->getGroup() == m_group) {
-          ++c;
-        }
-      }
-
-      Size iconsize = getToolIconSize(this);
-      msg->reqsize.w = iconsize.w * c;
-      msg->reqsize.h = iconsize.h;
-      return true;
-    }
-
     case JM_DRAW: {
       BITMAP *doublebuffer = create_bitmap(jrect_w(&msg->draw.rect),
                                            jrect_h(&msg->draw.rect));
@@ -716,6 +701,22 @@ bool ToolStrip::onProcessMessage(Message* msg)
 
   }
   return Widget::onProcessMessage(msg);
+}
+
+void ToolStrip::onPreferredSize(PreferredSizeEvent& ev)
+{
+  ToolBox* toolbox = App::instance()->getToolBox();
+  int c = 0;
+
+  for (ToolIterator it = toolbox->begin(); it != toolbox->end(); ++it) {
+    Tool* tool = *it;
+    if (tool->getGroup() == m_group) {
+      ++c;
+    }
+  }
+
+  Size iconsize = getToolIconSize(this);
+  ev.setPreferredSize(Size(iconsize.w * c, iconsize.h));
 }
 
 Rect ToolStrip::getToolBounds(int index)
