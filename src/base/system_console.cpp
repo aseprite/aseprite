@@ -87,7 +87,7 @@ namespace base {
 
 SystemConsole::SystemConsole() { }
 SystemConsole::~SystemConsole() { }
-void SystemConsole::prepareShell()() { }
+void SystemConsole::prepareShell() { }
 
 }
 
