@@ -30,6 +30,12 @@
   (allow configuration per document). Use cfg.cpp and settings/ dir.
 * Refactor src/file/ in several layers.
 
+# WIP
+
+* Data recovery (src/app/data_recovery.cpp)
+* Projects (src/app/project.cpp)
+* Scriting support (src/scripting/engine.cpp)
+
 # Refactoring
 
 * Split UndoTransaction class into:
