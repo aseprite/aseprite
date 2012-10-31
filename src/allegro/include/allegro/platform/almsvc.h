@@ -77,9 +77,13 @@
 
 #define INLINE       __inline
 
+#if _MSC_VER < 1700
 #define LONG_LONG    __int64
 #define int64_t      signed __int64
 #define uint64_t     unsigned __int64
+#else
+#define LONG_LONG    long long
+#endif
 
 #define AL_CONST     const
 

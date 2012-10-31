@@ -12,6 +12,8 @@
 #cmakedefine ALLEGRO_UNIX
 #cmakedefine ALLEGRO_WATCOM
 
+#cmakedefine ALLEGRO_HAVE_STDINT_H
+
 /* These are always defined now. */
 #define ALLEGRO_NO_ASM
 #define ALLEGRO_USE_C
