@@ -30,6 +30,7 @@
 #include "raster/image.h"
 #include "raster/palette.h"
 #include "raster/sprite.h"
+#include "settings/document_settings.h"
 #include "widgets/editor/editor.h"
 
 //////////////////////////////////////////////////////////////////////
@@ -74,7 +75,8 @@ void PlayAnimationCommand::onExecute(Context* context)
   Sprite* sprite(document->getSprite());
   int msecs;
   bool done = false;
-  bool onionskin_state = context->getSettings()->getUseOnionskin();
+  IDocumentSettings* docSettings = context->getSettings()->getDocumentSettings(document);
+  bool onionskin_state = docSettings->getUseOnionskin();
   Palette *oldpal, *newpal;
   PALETTE rgbpal;
 
@@ -82,7 +84,7 @@ void PlayAnimationCommand::onExecute(Context* context)
     return;
 
   // desactivate the onionskin
-  context->getSettings()->setUseOnionskin(false);
+  docSettings->setUseOnionskin(false);
 
   ui::jmouse_hide();
 
@@ -136,15 +138,16 @@ void PlayAnimationCommand::onExecute(Context* context)
     gui_feedback();
   }
 
-  // restore onionskin flag
-  context->getSettings()->setUseOnionskin(onionskin_state);
+  // Restore onionskin flag
+  docSettings->setUseOnionskin(onionskin_state);
 
-  /* if right-click or ESC */
-  if (mouse_b == 2 || (keypressed() && (readkey()>>8) == KEY_ESC))
-    /* return to the old frame position */
+  // If right-click or ESC
+  if (mouse_b == 2 || (keypressed() && (readkey()>>8) == KEY_ESC)) {
+    // Return to the old frame position
     sprite->setCurrentFrame(old_frame);
+  }
 
-  /* refresh all */
+  // Refresh all
   newpal = sprite->getPalette(sprite->getCurrentFrame());
   set_current_palette(newpal, true);
   ui::Manager::getDefault()->invalidate();

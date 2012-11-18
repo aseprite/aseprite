@@ -24,6 +24,7 @@
 #include "commands/command.h"
 #include "context.h"
 #include "modules/editors.h"
+#include "settings/document_settings.h"
 #include "settings/settings.h"
 #include "ui/window.h"
 #include "ui_context.h"
@@ -52,17 +53,18 @@ public:
 protected:
   bool onChecked(Context* context)
   {
-    ISettings* settings = context->getSettings();
+    IDocumentSettings* docSettings = context->getSettings()->getDocumentSettings(context->getActiveDocument());
 
-    return settings->getGridVisible();
+    return docSettings->getGridVisible();
   }
 
   void onExecute(Context* context)
   {
-    ISettings* settings = context->getSettings();
+    IDocumentSettings* docSettings = context->getSettings()->getDocumentSettings(context->getActiveDocument());
 
-    settings->setGridVisible(settings->getGridVisible() ? false: true);
-    refresh_all_editors();
+    docSettings->setGridVisible(docSettings->getGridVisible() ? false: true);
+
+    refresh_all_editors();      // TODO this should be done by "setGridVisible" impl
   }
 };
 
@@ -84,21 +86,20 @@ public:
 protected:
   bool onChecked(Context* context)
   {
-    ISettings* settings = context->getSettings();
+    IDocumentSettings* docSettings = context->getSettings()->getDocumentSettings(context->getActiveDocument());
 
-    return settings->getSnapToGrid();
+    return docSettings->getSnapToGrid();
   }
 
   void onExecute(Context* context)
   {
-    ISettings* settings = context->getSettings();
+    IDocumentSettings* docSettings = context->getSettings()->getDocumentSettings(context->getActiveDocument());
     char buf[512];
 
-    settings->setSnapToGrid(settings->getSnapToGrid() ? false: true);
-    refresh_all_editors();
+    docSettings->setSnapToGrid(docSettings->getSnapToGrid() ? false: true);
 
     usprintf(buf, "Snap to grid: %s",
-             (settings->getSnapToGrid() ? "On": "Off"));
+             (docSettings->getSnapToGrid() ? "On": "Off"));
 
     StatusBar::instance()->setStatusText(250, buf);
   }
@@ -139,7 +140,8 @@ void GridSettingsCommand::onExecute(Context* context)
   Widget* grid_w = app::find_widget<Widget>(window, "grid_w");
   Widget* grid_h = app::find_widget<Widget>(window, "grid_h");
 
-  Rect bounds = UIContext::instance()->getSettings()->getGridBounds();
+  IDocumentSettings* docSettings = context->getSettings()->getDocumentSettings(context->getActiveDocument());
+  Rect bounds = docSettings->getGridBounds();
 
   grid_x->setTextf("%d", bounds.x);
   grid_y->setTextf("%d", bounds.y);
@@ -156,10 +158,10 @@ void GridSettingsCommand::onExecute(Context* context)
     bounds.w = MAX(bounds.w, 1);
     bounds.h = MAX(bounds.h, 1);
 
-    UIContext::instance()->getSettings()->setGridBounds(bounds);
+    docSettings->setGridBounds(bounds);
 
-    if (UIContext::instance()->getSettings()->getGridVisible())
-      refresh_all_editors();
+    if (docSettings->getGridVisible())
+        refresh_all_editors();      // TODO this should be done by "setGridBounds" impl
   }
 }
 

@@ -22,6 +22,7 @@
 
 #include "context.h"
 #include "raster/image.h"
+#include "settings/document_settings.h"
 #include "tools/controller.h"
 #include "tools/ink.h"
 #include "tools/intertwine.h"
@@ -203,10 +204,10 @@ void ToolLoopManager::doLoopStep(bool last_step)
 void ToolLoopManager::snapToGrid(bool flexible, Point& point)
 {
   if (!m_toolLoop->getController()->canSnapToGrid() ||
-      !m_toolLoop->getContext()->getSettings()->getSnapToGrid())
+      !m_toolLoop->getDocumentSettings()->getSnapToGrid())
     return;
 
-  m_toolLoop->getContext()->getSettings()
+  m_toolLoop->getDocumentSettings()
     ->snapToGrid(point, (flexible ? SnapInRightBottom: NormalSnap));
 }
 

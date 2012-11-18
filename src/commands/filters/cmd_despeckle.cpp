@@ -29,6 +29,7 @@
 #include "ini_file.h"
 #include "raster/mask.h"
 #include "raster/sprite.h"
+#include "settings/document_settings.h"
 #include "settings/settings.h"
 #include "ui/button.h"
 #include "ui/entry.h"
@@ -113,8 +114,10 @@ bool DespeckleCommand::onEnabled(Context* context)
 
 void DespeckleCommand::onExecute(Context* context)
 {
+  IDocumentSettings* docSettings = context->getSettings()->getDocumentSettings(context->getActiveDocument());
+
   MedianFilter filter;
-  filter.setTiledMode(context->getSettings()->getTiledMode());
+  filter.setTiledMode(docSettings->getTiledMode());
   filter.setSize(get_config_int(ConfigSection, "Width", 3),
                  get_config_int(ConfigSection, "Height", 3));
 
@@ -128,7 +131,6 @@ void DespeckleCommand::onExecute(Context* context)
   if (window.doModal()) {
     set_config_int(ConfigSection, "Width", filter.getWidth());
     set_config_int(ConfigSection, "Height", filter.getHeight());
-    context->getSettings()->setTiledMode(filter.getTiledMode());
   }
 }
 

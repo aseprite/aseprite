@@ -24,6 +24,7 @@
 #include "document.h"
 #include "ini_file.h"
 #include "raster/raster.h"
+#include "settings/document_settings.h"
 #include "settings/settings.h"
 #include "ui_context.h"
 
@@ -410,8 +411,8 @@ Image* RenderEngine::renderSprite(const Document* document,
     image_clear(image, bg_color);
 
   // Onion-skin feature: draw the previous frame
-  ISettings* settings = UIContext::instance()->getSettings();
-  if (settings->getUseOnionskin()) {
+  IDocumentSettings* docSettings = UIContext::instance()->getSettings()->getDocumentSettings(document);
+  if (docSettings->getUseOnionskin()) {
     // Draw background layer of the current frame with opacity=255
     global_opacity = 255;
     renderLayer(document, sprite, sprite->getFolder(), image,
@@ -419,10 +420,10 @@ Image* RenderEngine::renderSprite(const Document* document,
 
     // Draw transparent layers of the previous/next frames with different opacity (<255) (it is the onion-skinning)
     {
-      int prevs = settings->getOnionskinPrevFrames();
-      int nexts = settings->getOnionskinNextFrames();
-      int opacity_base = settings->getOnionskinOpacityBase();
-      int opacity_step = settings->getOnionskinOpacityStep();
+      int prevs = docSettings->getOnionskinPrevFrames();
+      int nexts = docSettings->getOnionskinNextFrames();
+      int opacity_base = docSettings->getOnionskinOpacityBase();
+      int opacity_step = docSettings->getOnionskinOpacityStep();
 
       for (FrameNumber f=frame.previous(prevs); f <= frame.next(nexts); ++f) {
         if (f == frame || f < 0 || f > sprite->getLastFrame())

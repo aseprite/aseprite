@@ -33,6 +33,7 @@
 #include "raster/image.h"
 #include "raster/palette.h"
 #include "raster/sprite.h"
+#include "settings/document_settings.h"
 #include "util/render.h"
 #include "widgets/editor/editor.h"
 #include "widgets/status_bar.h"
@@ -90,7 +91,8 @@ void PreviewCommand::onExecute(Context* context)
   View* view = View::getView(editor);
   int u, v, x, y;
   int index_bg_color = -1;
-  TiledMode tiled = context->getSettings()->getTiledMode();
+  IDocumentSettings* docSettings = context->getSettings()->getDocumentSettings(document);
+  TiledMode tiled = docSettings->getTiledMode();
 
   // Free mouse
   editor->getManager()->freeMouse();

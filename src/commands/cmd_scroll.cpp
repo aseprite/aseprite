@@ -22,6 +22,7 @@
 #include "commands/params.h"
 #include "document_wrappers.h"
 #include "modules/editors.h"
+#include "settings/document_settings.h"
 #include "settings/settings.h"
 #include "ui/view.h"
 #include "widgets/editor/editor.h"
@@ -95,10 +96,11 @@ bool ScrollCommand::onEnabled(Context* context)
 
 void ScrollCommand::onExecute(Context* context)
 {
+  IDocumentSettings* docSettings = context->getSettings()->getDocumentSettings(context->getActiveDocument());
   ui::View* view = ui::View::getView(current_editor);
   gfx::Rect vp = view->getViewportBounds();
   gfx::Point scroll = view->getViewScroll();
-  gfx::Rect gridBounds = context->getSettings()->getGridBounds();
+  gfx::Rect gridBounds = docSettings->getGridBounds();
   int dx = 0;
   int dy = 0;
   int pixels = 0;

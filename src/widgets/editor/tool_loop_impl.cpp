@@ -30,6 +30,7 @@
 #include "raster/mask.h"
 #include "raster/pen.h"
 #include "raster/sprite.h"
+#include "settings/document_settings.h"
 #include "settings/settings.h"
 #include "tools/ink.h"
 #include "tools/tool.h"
@@ -59,7 +60,8 @@ class ToolLoopImpl : public tools::ToolLoop
   bool m_previewFilled;
   int m_sprayWidth;
   int m_spraySpeed;
-  TiledMode m_tiled_mode;
+  ISettings* m_settings;
+  IDocumentSettings* m_docSettings;
   bool m_useMask;
   Mask* m_mask;
   gfx::Point m_maskOrigin;
@@ -91,7 +93,8 @@ public:
     , m_sprite(sprite)
     , m_layer(layer)
     , m_canceled(false)
-    , m_tiled_mode(m_context->getSettings()->getTiledMode())
+    , m_settings(m_context->getSettings())
+    , m_docSettings(m_settings->getDocumentSettings(m_document))
     , m_button(button)
     , m_primary_color(color_utils::color_for_layer(primary_color, layer))
     , m_secondary_color(color_utils::color_for_layer(secondary_color, layer))
@@ -101,11 +104,11 @@ public:
                           getInk()->isEyedropper() ||
                           getInk()->isScrollMovement()) ? undo::DoesntModifyDocument:
                                                           undo::ModifyDocument))
-    , m_expandCelCanvas(document, sprite, layer, m_tiled_mode, m_undoTransaction)
+    , m_expandCelCanvas(document, sprite, layer, m_docSettings->getTiledMode(), m_undoTransaction)
   {
-    // Settings
-    ISettings* settings = m_context->getSettings();
+    IToolSettings* toolSettings = m_settings->getToolSettings(m_tool);
 
+    // Settings
     switch (tool->getFill(m_button)) {
       case tools::FillNone:
         m_filled = false;
@@ -114,16 +117,16 @@ public:
         m_filled = true;
         break;
       case tools::FillOptional:
-        m_filled = settings->getToolSettings(m_tool)->getFilled();
+        m_filled = toolSettings->getFilled();
         break;
     }
-    m_previewFilled = settings->getToolSettings(m_tool)->getPreviewFilled();
+    m_previewFilled = toolSettings->getPreviewFilled();
 
-    m_sprayWidth = settings->getToolSettings(m_tool)->getSprayWidth();
-    m_spraySpeed = settings->getToolSettings(m_tool)->getSpraySpeed();
+    m_sprayWidth = toolSettings->getSprayWidth();
+    m_spraySpeed = toolSettings->getSpraySpeed();
 
     // Create the pen
-    IPenSettings* pen_settings = settings->getToolSettings(m_tool)->getPen();
+    IPenSettings* pen_settings = toolSettings->getPen();
     ASSERT(pen_settings != NULL);
 
     m_pen = new Pen(pen_settings->getType(),
@@ -146,8 +149,8 @@ public:
                                                     m_mask->getBounds().y-y1):
                                          gfx::Point(0, 0));
 
-    m_opacity = settings->getToolSettings(m_tool)->getOpacity();
-    m_tolerance = settings->getToolSettings(m_tool)->getTolerance();
+    m_opacity = toolSettings->getOpacity();
+    m_tolerance = toolSettings->getTolerance();
     m_speed.x = 0;
     m_speed.y = 0;
 
@@ -179,42 +182,42 @@ public:
   }
 
   // IToolLoop interface
-  Context* getContext() { return m_context; }
-  tools::Tool* getTool() { return m_tool; }
-  Pen* getPen() { return m_pen; }
-  Document* getDocument() { return m_document; }
-  Sprite* getSprite() { return m_sprite; }
-  Layer* getLayer() { return m_layer; }
-  Image* getSrcImage() { return m_expandCelCanvas.getSourceCanvas(); }
-  Image* getDstImage() { return m_expandCelCanvas.getDestCanvas(); }
-  bool useMask() { return m_useMask; }
-  Mask* getMask() { return m_mask; }
-  gfx::Point getMaskOrigin() { return m_maskOrigin; }
-  ToolLoop::Button getMouseButton() { return m_button; }
-  int getPrimaryColor() { return m_primary_color; }
-  void setPrimaryColor(int color) { m_primary_color = color; }
-  int getSecondaryColor() { return m_secondary_color; }
-  void setSecondaryColor(int color) { m_secondary_color = color; }
-  int getOpacity() { return m_opacity; }
-  int getTolerance() { return m_tolerance; }
-  TiledMode getTiledMode() { return m_tiled_mode; }
-  bool getFilled() { return m_filled; }
-  bool getPreviewFilled() { return m_previewFilled; }
-  int getSprayWidth() { return m_sprayWidth; }
-  int getSpraySpeed() { return m_spraySpeed; }
-  gfx::Point getOffset() { return m_offset; }
-  void setSpeed(const gfx::Point& speed) { m_speed = speed; }
-  gfx::Point getSpeed() { return m_speed; }
-  tools::Ink* getInk() { return m_tool->getInk(m_button); }
-  tools::Controller* getController() { return m_tool->getController(m_button); }
-  tools::PointShape* getPointShape() { return m_tool->getPointShape(m_button); }
-  tools::Intertwine* getIntertwine() { return m_tool->getIntertwine(m_button); }
-  tools::TracePolicy getTracePolicy() { return m_tool->getTracePolicy(m_button); }
+  tools::Tool* getTool() OVERRIDE { return m_tool; }
+  Pen* getPen() OVERRIDE { return m_pen; }
+  Document* getDocument() OVERRIDE { return m_document; }
+  Sprite* getSprite() OVERRIDE { return m_sprite; }
+  Layer* getLayer() OVERRIDE { return m_layer; }
+  Image* getSrcImage() OVERRIDE { return m_expandCelCanvas.getSourceCanvas(); }
+  Image* getDstImage() OVERRIDE { return m_expandCelCanvas.getDestCanvas(); }
+  bool useMask() OVERRIDE { return m_useMask; }
+  Mask* getMask() OVERRIDE { return m_mask; }
+  gfx::Point getMaskOrigin() OVERRIDE { return m_maskOrigin; }
+  ToolLoop::Button getMouseButton() OVERRIDE { return m_button; }
+  int getPrimaryColor() OVERRIDE { return m_primary_color; }
+  void setPrimaryColor(int color) OVERRIDE { m_primary_color = color; }
+  int getSecondaryColor() OVERRIDE { return m_secondary_color; }
+  void setSecondaryColor(int color) OVERRIDE { m_secondary_color = color; }
+  int getOpacity() OVERRIDE { return m_opacity; }
+  int getTolerance() OVERRIDE { return m_tolerance; }
+  ISettings* getSettings() OVERRIDE { return m_settings; }
+  IDocumentSettings* getDocumentSettings() OVERRIDE { return m_docSettings; }
+  bool getFilled() OVERRIDE { return m_filled; }
+  bool getPreviewFilled() OVERRIDE { return m_previewFilled; }
+  int getSprayWidth() OVERRIDE { return m_sprayWidth; }
+  int getSpraySpeed() OVERRIDE { return m_spraySpeed; }
+  gfx::Point getOffset() OVERRIDE { return m_offset; }
+  void setSpeed(const gfx::Point& speed) OVERRIDE { m_speed = speed; }
+  gfx::Point getSpeed() OVERRIDE { return m_speed; }
+  tools::Ink* getInk() OVERRIDE { return m_tool->getInk(m_button); }
+  tools::Controller* getController() OVERRIDE { return m_tool->getController(m_button); }
+  tools::PointShape* getPointShape() OVERRIDE { return m_tool->getPointShape(m_button); }
+  tools::Intertwine* getIntertwine() OVERRIDE { return m_tool->getIntertwine(m_button); }
+  tools::TracePolicy getTracePolicy() OVERRIDE { return m_tool->getTracePolicy(m_button); }
 
-  void cancel() { m_canceled = true; }
-  bool isCanceled() { return m_canceled; }
+  void cancel() OVERRIDE { m_canceled = true; }
+  bool isCanceled() OVERRIDE { return m_canceled; }
 
-  gfx::Point screenToSprite(const gfx::Point& screenPoint)
+  gfx::Point screenToSprite(const gfx::Point& screenPoint) OVERRIDE
   {
     gfx::Point spritePoint;
     m_editor->screenToEditor(screenPoint.x, screenPoint.y,
@@ -222,7 +225,7 @@ public:
     return spritePoint;
   }
 
-  void updateArea(const gfx::Rect& dirty_area)
+  void updateArea(const gfx::Rect& dirty_area) OVERRIDE
   {
     int x1 = dirty_area.x-m_offset.x;
     int y1 = dirty_area.y-m_offset.y;
@@ -234,7 +237,7 @@ public:
     release_bitmap(ji_screen);
   }
 
-  void updateStatusBar(const char* text)
+  void updateStatusBar(const char* text) OVERRIDE
   {
     StatusBar::instance()->setStatusText(0, text);
   }

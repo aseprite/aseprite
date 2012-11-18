@@ -30,6 +30,7 @@
 #include "raster/mask.h"
 #include "raster/rotate.h"
 #include "raster/sprite.h"
+#include "settings/document_settings.h"
 #include "ui_context.h"
 #include "util/expand_cel_canvas.h"
 
@@ -205,7 +206,7 @@ gfx::Rect PixelsMovement::moveImage(int x, int y, MoveModifier moveModifier)
       if ((moveModifier & SnapToGridMovement) == SnapToGridMovement) {
         // Snap the x1,y1 point to the grid.
         gfx::Point gridOffset(x1, y1);
-        UIContext::instance()->getSettings()->snapToGrid(gridOffset, NormalSnap);
+        UIContext::instance()->getSettings()->getDocumentSettings(documentWriter)->snapToGrid(gridOffset, NormalSnap);
 
         // Now we calculate the difference from x1,y1 point and we can
         // use it to adjust all coordinates (x1, y1, x2, y2).

@@ -35,6 +35,7 @@
 #include "modules/gui.h"
 #include "modules/palettes.h"
 #include "raster/raster.h"
+#include "settings/document_settings.h"
 #include "settings/settings.h"
 #include "skin/skin_theme.h"
 #include "tools/ink.h"
@@ -466,19 +467,20 @@ void Editor::drawSprite(int x1, int y1, int x2, int y2)
   }
 
   // Draw grids
-  ISettings* settings = UIContext::instance()->getSettings();
+  IDocumentSettings* docSettings =
+      UIContext::instance()->getSettings()->getDocumentSettings(m_document);
 
   // Draw the pixel grid
-  if (settings->getPixelGridVisible()) {
+  if (docSettings->getPixelGridVisible()) {
     if (m_zoom > 1)
       this->drawGrid(Rect(0, 0, 1, 1),
-                     settings->getPixelGridColor());
+                     docSettings->getPixelGridColor());
   }
 
   // Draw the grid
-  if (settings->getGridVisible())
-    this->drawGrid(settings->getGridBounds(),
-                   settings->getGridColor());
+  if (docSettings->getGridVisible())
+    this->drawGrid(docSettings->getGridBounds(),
+                   docSettings->getGridColor());
 
   // Draw the mask
   if (m_document->getBoundariesSegments())

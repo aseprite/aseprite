@@ -27,6 +27,7 @@
 #include "ini_file.h"
 #include "modules/editors.h"
 #include "raster/image.h"
+#include "settings/document_settings.h"
 #include "ui/gui.h"
 #include "util/render.h"
 #include "widgets/color_button.h"
@@ -66,7 +67,7 @@ OptionsCommand::OptionsCommand()
 
 void OptionsCommand::onExecute(Context* context)
 {
-  /* load the window widget */
+  // Load the window widget
   UniquePtr<Window> window(app::load_widget<Window>("options.xml", "options"));
   Widget* check_smooth = app::find_widget<Widget>(window, "smooth");
   Widget* move_click2 = app::find_widget<Widget>(window, "move_click2");
@@ -88,13 +89,16 @@ void OptionsCommand::onExecute(Context* context)
   cursor_color->setId("cursor_color");
   cursor_color_box->addChild(cursor_color);
 
+  // Get global settings for documents
+  IDocumentSettings* docSettings = context->getSettings()->getDocumentSettings(NULL);
+
   // Grid color
-  ColorButton* grid_color = new ColorButton(context->getSettings()->getGridColor(), IMAGE_RGB);
+  ColorButton* grid_color = new ColorButton(docSettings->getGridColor(), IMAGE_RGB);
   grid_color->setId("grid_color");
   grid_color_box->addChild(grid_color);
 
   // Pixel grid color
-  ColorButton* pixel_grid_color = new ColorButton(context->getSettings()->getPixelGridColor(), IMAGE_RGB);
+  ColorButton* pixel_grid_color = new ColorButton(docSettings->getPixelGridColor(), IMAGE_RGB);
   pixel_grid_color->setId("pixel_grid_color");
   pixel_grid_color_box->addChild(pixel_grid_color);
 
@@ -143,8 +147,8 @@ void OptionsCommand::onExecute(Context* context)
     int undo_size_limit_value;
 
     Editor::set_cursor_color(cursor_color->getColor());
-    context->getSettings()->setGridColor(grid_color->getColor());
-    context->getSettings()->setPixelGridColor(pixel_grid_color->getColor());
+    docSettings->setGridColor(grid_color->getColor());
+    docSettings->setPixelGridColor(pixel_grid_color->getColor());
 
     set_config_bool("Options", "MoveSmooth", check_smooth->isSelected());
     set_config_bool("Options", "MoveClick2", move_click2->isSelected());

@@ -34,6 +34,7 @@
 #include "raster/mask.h"
 #include "raster/pen.h"
 #include "raster/sprite.h"
+#include "settings/document_settings.h"
 #include "settings/settings.h"
 #include "skin/skin_parts.h"
 #include "tools/ink.h"
@@ -235,6 +236,8 @@ private:
   Slider* m_tolerance;
   Slider* m_sprayWidth;
   Slider* m_airSpeed;
+  ISettings* m_settings;
+  IDocumentSettings* m_docSettings;
 
   void onWindowClose();
   void onTiledClick();
@@ -259,10 +262,15 @@ ConfigureTools::ConfigureTools()
             "Configure Tools",
             CmdUIOnlyFlag)
 {
+  m_settings = NULL;
+  m_docSettings = NULL;
 }
 
 void ConfigureTools::onExecute(Context* context)
 {
+  m_settings = UIContext::instance()->getSettings();
+  m_docSettings = m_settings->getDocumentSettings(NULL);
+
   Button* set_grid;
   Widget* brush_preview_box;
   Widget* brush_type_box;
@@ -272,7 +280,7 @@ void ConfigureTools::onExecute(Context* context)
     window = app::load_widget<Window>("tools_configuration.xml", "configure_tool");
     first_time = true;
   }
-  /* if the window is opened, close it */
+  // If the window is opened, close it
   else if (window->isVisible()) {
     window->closeWindow(NULL);
     return;
@@ -314,9 +322,8 @@ void ConfigureTools::onExecute(Context* context)
   }
 
   // Current settings
-  ISettings* settings = UIContext::instance()->getSettings();
-  Tool* current_tool = settings->getCurrentTool();
-  IToolSettings* tool_settings = settings->getToolSettings(current_tool);
+  Tool* current_tool = m_settings->getCurrentTool();
+  IToolSettings* tool_settings = m_settings->getToolSettings(current_tool);
 
   /* brush-type */
   if (first_time) {
@@ -333,16 +340,16 @@ void ConfigureTools::onExecute(Context* context)
     m_brushType = window->findChildT<ButtonSet>("brush_type");
   }
 
-  if (settings->getTiledMode() != TILED_NONE) {
+  if (m_docSettings->getTiledMode() != TILED_NONE) {
     m_tiled->setSelected(true);
-    if (settings->getTiledMode() & TILED_X_AXIS) m_tiledX->setSelected(true);
-    if (settings->getTiledMode() & TILED_Y_AXIS) m_tiledY->setSelected(true);
+    if (m_docSettings->getTiledMode() & TILED_X_AXIS) m_tiledX->setSelected(true);
+    if (m_docSettings->getTiledMode() & TILED_Y_AXIS) m_tiledY->setSelected(true);
   }
 
-  if (settings->getSnapToGrid()) m_snapToGrid->setSelected(true);
-  if (settings->getGridVisible()) m_viewGrid->setSelected(true);
-  if (settings->getPixelGridVisible()) m_pixelGrid->setSelected(true);
-  if (settings->getUseOnionskin()) m_onionSkin->setSelected(true);
+  if (m_docSettings->getSnapToGrid()) m_snapToGrid->setSelected(true);
+  if (m_docSettings->getGridVisible()) m_viewGrid->setSelected(true);
+  if (m_docSettings->getPixelGridVisible()) m_pixelGrid->setSelected(true);
+  if (m_docSettings->getUseOnionskin()) m_onionSkin->setSelected(true);
 
   if (first_time) {
     // Append children
@@ -396,13 +403,8 @@ void ConfigureTools::onBrushTypeChange()
 {
   PenType type = (PenType)m_brushType->getSelectedItem();
 
-  Tool* current_tool = UIContext::instance()
-    ->getSettings()
-    ->getCurrentTool();
-
-  UIContext::instance()
-    ->getSettings()
-    ->getToolSettings(current_tool)
+  Tool* current_tool = m_settings->getCurrentTool();
+  m_settings->getToolSettings(current_tool)
     ->getPen()
     ->setType(type);
 
@@ -418,13 +420,8 @@ void ConfigureTools::onBrushTypeChange()
 
 void ConfigureTools::onBrushSizeSliderChange()
 {
-  Tool* current_tool = UIContext::instance()
-    ->getSettings()
-    ->getCurrentTool();
-
-  UIContext::instance()
-    ->getSettings()
-    ->getToolSettings(current_tool)
+  Tool* current_tool = m_settings->getCurrentTool();
+  m_settings->getToolSettings(current_tool)
     ->getPen()
     ->setSize(m_brushSize->getValue());
 
@@ -433,13 +430,8 @@ void ConfigureTools::onBrushSizeSliderChange()
 
 void ConfigureTools::onBrushAngleSliderChange()
 {
-  Tool* current_tool = UIContext::instance()
-    ->getSettings()
-    ->getCurrentTool();
-
-  UIContext::instance()
-    ->getSettings()
-    ->getToolSettings(current_tool)
+  Tool* current_tool = m_settings->getCurrentTool();
+  m_settings->getToolSettings(current_tool)
     ->getPen()
     ->setAngle(m_brushAngle->getValue());
 
@@ -448,41 +440,37 @@ void ConfigureTools::onBrushAngleSliderChange()
 
 void ConfigureTools::onOpacitySliderChange()
 {
-  ISettings* settings = UIContext::instance()->getSettings();
-  Tool* current_tool = settings->getCurrentTool();
+  Tool* current_tool = m_settings->getCurrentTool();
 
-  settings->getToolSettings(current_tool)->setOpacity(m_opacity->getValue());
+  m_settings->getToolSettings(current_tool)->setOpacity(m_opacity->getValue());
 }
 
 void ConfigureTools::onToleranceSliderChange()
 {
-  ISettings* settings = UIContext::instance()->getSettings();
-  Tool* current_tool = settings->getCurrentTool();
+  Tool* current_tool = m_settings->getCurrentTool();
 
-  settings->getToolSettings(current_tool)->setTolerance(m_tolerance->getValue());
+  m_settings->getToolSettings(current_tool)->setTolerance(m_tolerance->getValue());
 }
 
 void ConfigureTools::onSprayWidthSliderChange()
 {
-  ISettings* settings = UIContext::instance()->getSettings();
-  Tool* current_tool = settings->getCurrentTool();
+  Tool* current_tool = m_settings->getCurrentTool();
 
-  settings->getToolSettings(current_tool)->setSprayWidth(m_sprayWidth->getValue());
+  m_settings->getToolSettings(current_tool)->setSprayWidth(m_sprayWidth->getValue());
 }
 
 void ConfigureTools::onAirSpeedSliderChange()
 {
-  ISettings* settings = UIContext::instance()->getSettings();
-  Tool* current_tool = settings->getCurrentTool();
+  Tool* current_tool = m_settings->getCurrentTool();
 
-  settings->getToolSettings(current_tool)->setSpraySpeed(m_airSpeed->getValue());
+  m_settings->getToolSettings(current_tool)->setSpraySpeed(m_airSpeed->getValue());
 }
 
 void ConfigureTools::onTiledClick()
 {
   bool flag = m_tiled->isSelected();
 
-  UIContext::instance()->getSettings()->setTiledMode(flag ? TILED_BOTH: TILED_NONE);
+  m_docSettings->setTiledMode(flag ? TILED_BOTH: TILED_NONE);
 
   m_tiledX->setSelected(flag);
   m_tiledY->setSelected(flag);
@@ -490,7 +478,7 @@ void ConfigureTools::onTiledClick()
 
 void ConfigureTools::onTiledXYClick(int tiled_axis, CheckBox* checkbox)
 {
-  int tiled_mode = UIContext::instance()->getSettings()->getTiledMode();
+  int tiled_mode = m_docSettings->getTiledMode();
 
   if (checkbox->isSelected())
     tiled_mode |= tiled_axis;
@@ -499,23 +487,23 @@ void ConfigureTools::onTiledXYClick(int tiled_axis, CheckBox* checkbox)
 
   checkbox->findSibling("tiled")->setSelected(tiled_mode != TILED_NONE);
 
-  UIContext::instance()->getSettings()->setTiledMode((TiledMode)tiled_mode);
+  m_docSettings->setTiledMode((TiledMode)tiled_mode);
 }
 
 void ConfigureTools::onSnapToGridClick()
 {
-  UIContext::instance()->getSettings()->setSnapToGrid(m_snapToGrid->isSelected());
+  m_docSettings->setSnapToGrid(m_snapToGrid->isSelected());
 }
 
 void ConfigureTools::onViewGridClick()
 {
-  UIContext::instance()->getSettings()->setGridVisible(m_viewGrid->isSelected());
+  m_docSettings->setGridVisible(m_viewGrid->isSelected());
   refresh_all_editors();
 }
 
 void ConfigureTools::onPixelGridClick()
 {
-  UIContext::instance()->getSettings()->setPixelGridVisible(m_pixelGrid->isSelected());
+  m_docSettings->setPixelGridVisible(m_pixelGrid->isSelected());
   refresh_all_editors();
 }
 
@@ -528,9 +516,9 @@ void ConfigureTools::onSetGridClick()
     if (document && document->isMaskVisible()) {
       const Mask* mask(document->getMask());
 
-      UIContext::instance()->getSettings()->setGridBounds(mask->getBounds());
+      m_docSettings->setGridBounds(mask->getBounds());
 
-      if (UIContext::instance()->getSettings()->getGridVisible())
+      if (m_docSettings->getGridVisible())
         refresh_all_editors();
     }
     else {
@@ -547,7 +535,7 @@ void ConfigureTools::onSetGridClick()
 
 void ConfigureTools::onOnionSkinClick()
 {
-  UIContext::instance()->getSettings()->setUseOnionskin(m_onionSkin->isSelected());
+  m_docSettings->setUseOnionskin(m_onionSkin->isSelected());
   refresh_all_editors();
 }
 

@@ -32,6 +32,7 @@
 #include "ini_file.h"
 #include "raster/mask.h"
 #include "raster/sprite.h"
+#include "settings/document_settings.h"
 #include "ui/button.h"
 #include "ui/label.h"
 #include "ui/listbox.h"
@@ -187,7 +188,8 @@ void ConvolutionMatrixCommand::onExecute(Context* context)
 
   // Create the filter and setup initial settings
   ConvolutionMatrixFilter filter;
-  filter.setTiledMode(context->getSettings()->getTiledMode());
+  IDocumentSettings* docSettings = context->getSettings()->getDocumentSettings(context->getActiveDocument());
+  filter.setTiledMode(docSettings->getTiledMode());
   if (matrix != 0)
     filter.setMatrix(matrix);
 
