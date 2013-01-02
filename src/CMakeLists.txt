@@ -152,6 +152,10 @@ endif()
 # All libraries for .exe files
 set(all_libs ${aseprite_libraries} ${libs3rdparty} ${sys_libs})
 
+if(LIBALLEGRO4_LINK_FLAGS)
+  set(all_libs ${all_libs} ${LIBALLEGRO4_LINK_FLAGS})
+endif()
+
 add_library(aseprite-library
   app.cpp
   app_menus.cpp
@@ -414,10 +418,6 @@ endif(UNIX)
 
 add_executable(aseprite WIN32 main.cpp ${win32_resources} ${x11_resources})
 target_link_libraries(aseprite ${all_libs})
-if(LIBALLEGRO4_LINK_FLAGS)
-  set_target_properties(aseprite
-    PROPERTIES LINK_FLAGS ${LIBALLEGRO4_LINK_FLAGS})
-endif()
 
 install(TARGETS aseprite
   RUNTIME DESTINATION bin)
@@ -454,8 +454,7 @@ function(find_unittests dir dependencies)
     add_executable(${testname} ${testsourcefile})
     target_link_libraries(${testname} gtest ${ARGV})
     if(LIBALLEGRO4_LINK_FLAGS)
-      set_target_properties(${testname}
-	PROPERTIES LINK_FLAGS ${LIBALLEGRO4_LINK_FLAGS})
+      target_link_libraries(${testname} ${LIBALLEGRO4_LINK_FLAGS})
     endif()
 
     if(extra_definitions)
