@@ -48,7 +48,4 @@ void draw_progress_bar(BITMAP* bmp,
                        int x1, int y1, int x2, int y2,
                        float progress);
 
-int character_length(FONT* font, int chr);
-void render_character(BITMAP* bmp, FONT* font, int chr, int x, int y, int fg, int bg);
-
 #endif

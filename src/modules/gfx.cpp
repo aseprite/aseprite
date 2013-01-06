@@ -448,17 +448,3 @@ void draw_progress_bar(BITMAP* bmp,
     rectfill(bmp, x1+u+1, y1+1, x2-1, y2-1,
              ui::to_system(theme->getColor(ThemeColor::Background)));
 }
-
-/************************************************************************/
-/* Font related */
-
-int character_length(FONT* font, int chr)
-{
-  return font->vtable->char_length(font, chr);
-}
-
-/* renders a character of the font centered in x and y */
-void render_character(BITMAP* bmp, FONT* font, int chr, int x, int y, int fg, int bg)
-{
-  font->vtable->render_char(font, chr, fg, bg, bmp, x, y);
-}
