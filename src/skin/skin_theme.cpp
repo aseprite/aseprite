@@ -2159,14 +2159,6 @@ void SkinTheme::drawProgressBar(BITMAP* bmp, int x1, int y1, int x2, int y2, flo
              ui::to_system(getColor(ThemeColor::Background)));
 }
 
-void SkinTheme::less_bevel(int *bevel)
-{
-  if (bevel[0] > 0) --bevel[0];
-  if (bevel[1] > 0) --bevel[1];
-  if (bevel[2] > 0) --bevel[2];
-  if (bevel[3] > 0) --bevel[3];
-}
-
 void SkinTheme::paintIcon(Widget* widget, Graphics* g, IButtonIcon* iconInterface, int x, int y)
 {
   BITMAP* icon_bmp = NULL;

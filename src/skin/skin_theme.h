@@ -188,7 +188,6 @@ private:
                        bool fill_bg, ui::Widget* widget, const gfx::Rect& rc,
                        int selected_offset);
   void draw_entry_caret(ui::Entry* widget, int x, int y);
-  void less_bevel(int *bevel);
 
   void paintIcon(ui::Widget* widget, ui::Graphics* g, ui::IButtonIcon* iconInterface, int x, int y);
 
