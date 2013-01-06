@@ -44,8 +44,5 @@ void draw_color_button(BITMAP* bmp,
                        bool outer_se, bool outer_s, bool outer_sw, bool outer_w,
                        PixelFormat pixelFormat, const app::Color& color,
                        bool hot, bool drag);
-void draw_progress_bar(BITMAP* bmp,
-                       int x1, int y1, int x2, int y2,
-                       float progress);
 
 #endif

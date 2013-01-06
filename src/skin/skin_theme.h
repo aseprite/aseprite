@@ -168,6 +168,8 @@ public:
     draw_bounds_nw(bmp, rc.x, rc.y, rc.x+rc.w-1, rc.y+rc.h-1, nw, bg);
   }
 
+  void drawProgressBar(BITMAP* bmp, int x1, int y1, int x2, int y2, float progress);
+
 protected:
   void onRegenerate();
 

@@ -588,9 +588,9 @@ bool StatusBar::onProcessMessage(Message* msg)
         for (ProgressList::iterator it = m_progress.begin(); it != m_progress.end(); ++it) {
           Progress* progress = *it;
 
-          draw_progress_bar(doublebuffer,
-                            x, y1, x+width-1, y2,
-                            progress->getPos());
+          theme->drawProgressBar(doublebuffer,
+                                 x, y1, x+width-1, y2,
+                                 progress->getPos());
 
           x -= width+4;
         }

@@ -198,10 +198,10 @@ bool FileList::onProcessMessage(Message* msg)
         ThumbnailGenerator::WorkerStatus workerStatus =
           ThumbnailGenerator::instance()->getWorkerStatus(fi, progress);
         if (workerStatus == ThumbnailGenerator::WorkingOnThumbnail) {
-          draw_progress_bar(ji_screen,
-                            this->rc->x2-2-64, y+itemSize.h/2-3,
-                            this->rc->x2-2, y+itemSize.h/2+3,
-                            progress);
+          theme->drawProgressBar(ji_screen,
+                                 this->rc->x2-2-64, y+itemSize.h/2-3,
+                                 this->rc->x2-2, y+itemSize.h/2+3,
+                                 progress);
         }
 
         // Thumbnail position
