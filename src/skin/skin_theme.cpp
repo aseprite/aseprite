@@ -2142,21 +2142,6 @@ void SkinTheme::draw_part_as_vline(BITMAP* bmp, int x1, int y1, int x2, int y2, 
   }
 }
 
-void SkinTheme::draw_bevel_box(int x1, int y1, int x2, int y2, int c1, int c2, int *bevel)
-{
-  hline(ji_screen, x1+bevel[0], y1, x2-bevel[1], c1); /* top */
-  hline(ji_screen, x1+bevel[2], y2, x2-bevel[3], c2); /* bottom */
-
-  vline(ji_screen, x1, y1+bevel[0], y2-bevel[2], c1); /* left */
-  vline(ji_screen, x2, y1+bevel[1], y2-bevel[3], c2); /* right */
-
-  line(ji_screen, x1, y1+bevel[0], x1+bevel[0], y1, c1); /* top-left */
-  line(ji_screen, x1, y2-bevel[2], x1+bevel[2], y2, c2); /* bottom-left */
-
-  line(ji_screen, x2-bevel[1], y1, x2, y1+bevel[1], c2); /* top-right */
-  line(ji_screen, x2-bevel[3], y2, x2, y2-bevel[3], c2); /* bottom-right */
-}
-
 void SkinTheme::less_bevel(int *bevel)
 {
   if (bevel[0] > 0) --bevel[0];

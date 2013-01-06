@@ -34,7 +34,6 @@ void dotted_mode(int offset);
 RectTracker* rect_tracker_new(BITMAP* bmp, int x1, int y1, int x2, int y2);
 void rect_tracker_free(RectTracker* tracker);
 
-void bevel_box(BITMAP* bmp, int x1, int y1, int x2, int y2, ui::Color c1, ui::Color c2, int bevel);
 void rectgrid(BITMAP* bmp, int x1, int y1, int x2, int y2, int w, int h);
 
 void draw_emptyset_symbol(BITMAP* bmp, const gfx::Rect& rc, ui::Color color);

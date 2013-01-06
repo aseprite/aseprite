@@ -273,21 +273,6 @@ void rect_tracker_free(RectTracker* rt)
 /**********************************************************************/
 /* Rectangles */
 
-void bevel_box(BITMAP* bmp, int x1, int y1, int x2, int y2, int c1, int c2, int bevel)
-{
-  hline(bmp, x1+bevel, y1, x2-bevel, c1); /* top */
-  hline(bmp, x1+bevel, y2, x2-bevel, c2); /* bottom */
-
-  vline(bmp, x1, y1+bevel, y2-bevel, c1); /* left */
-  vline(bmp, x2, y1+bevel, y2-bevel, c2); /* right */
-
-  line(bmp, x1, y1+bevel, x1+bevel, y1, c1); /* top-left */
-  line(bmp, x1, y2-bevel, x1+bevel, y2, c2); /* bottom-left */
-
-  line(bmp, x2-bevel, y1, x2, y1+bevel, c2); /* top-right */
-  line(bmp, x2-bevel, y2, x2, y2-bevel, c2); /* bottom-right */
-}
-
 void rectgrid(BITMAP* bmp, int x1, int y1, int x2, int y2, int w, int h)
 {
   if (w < 1 || h < 1)
