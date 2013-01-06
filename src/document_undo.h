@@ -23,7 +23,6 @@
 #include "base/disable_copying.h"
 #include "base/unique_ptr.h"
 #include "raster/sprite_position.h"
-#include "undo/undo_config_provider.h"
 #include "undo/undo_history.h"
 
 namespace undo {
@@ -35,7 +34,7 @@ namespace undoers {
   class CloseGroup;
 }
 
-class DocumentUndo : public undo::UndoConfigProvider
+class DocumentUndo : public undo::UndoHistoryDelegate
 {
 public:
   DocumentUndo();
@@ -54,7 +53,9 @@ public:
   bool isSavedState() const;
   void markSavedState();
 
-  undo::ObjectsContainer* getObjects() const;
+  // UndoHistoryDelegate implementation.
+  undo::ObjectsContainer* getObjects() const OVERRIDE { return m_objects; }
+  size_t getUndoSizeLimit() const OVERRIDE;
 
   void pushUndoer(undo::Undoer* undoer);
 
@@ -67,8 +68,6 @@ public:
   SpritePosition getNextRedoSpritePosition() const;
 
 private:
-  size_t getUndoSizeLimit() OVERRIDE;
-
   undoers::CloseGroup* getNextUndoGroup() const;
   undoers::CloseGroup* getNextRedoGroup() const;
 

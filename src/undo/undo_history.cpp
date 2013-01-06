@@ -9,7 +9,6 @@
 #include "undo/undo_history.h"
 
 #include "undo/objects_container.h"
-#include "undo/undo_config_provider.h"
 #include "undo/undoer.h"
 #include "undo/undoers_stack.h"
 
@@ -17,9 +16,8 @@
 
 using namespace undo;
 
-UndoHistory::UndoHistory(ObjectsContainer* objects, UndoConfigProvider* configProvider)
-  : m_objects(objects)
-  , m_configProvider(configProvider)
+UndoHistory::UndoHistory(UndoHistoryDelegate* delegate)
+  : m_delegate(delegate)
 {
   m_groupLevel = 0;
   m_diffCount = 0;
@@ -213,16 +211,9 @@ void UndoHistory::checkSizeLimit()
 {
   // Is undo history too big?
   size_t groups = m_undoers->countUndoGroups();
-  while (groups > 1 && m_undoers->getMemSize() > getUndoSizeLimit()) {
+  size_t undoLimit = m_delegate->getUndoSizeLimit();
+  while (groups > 1 && m_undoers->getMemSize() > undoLimit) {
     discardTail();
     groups--;
   }
-}
-
-size_t UndoHistory::getUndoSizeLimit()
-{
-  if (m_configProvider)
-    return m_configProvider->getUndoSizeLimit();
-  else
-    return std::numeric_limits<size_t>::max();
 }

@@ -18,10 +18,22 @@ class ObjectsContainer;
 class UndoersStack;
 class UndoConfigProvider;
 
+class UndoHistoryDelegate
+{
+public:
+  virtual ~UndoHistoryDelegate() { }
+
+  // Container of objects to insert & retrieve objects by ID
+  virtual ObjectsContainer* getObjects() const = 0;
+
+  // Returns the limit of undo history in bytes.
+  virtual size_t getUndoSizeLimit() const = 0;
+};
+
 class UndoHistory : public UndoersCollector
 {
 public:
-  UndoHistory(ObjectsContainer* objects, UndoConfigProvider* configProvider);
+  UndoHistory(UndoHistoryDelegate* delegate);
   virtual ~UndoHistory();
 
   bool canUndo() const;
@@ -38,7 +50,7 @@ public:
   bool isSavedState() const;
   void markSavedState();
 
-  ObjectsContainer* getObjects() const { return m_objects; }
+  ObjectsContainer* getObjects() const { return m_delegate->getObjects(); }
 
   // UndoersCollector interface
   void pushUndoer(Undoer* undoer);
@@ -55,15 +67,13 @@ private:
   void updateUndo();
   void postUndoerAddedEvent(Undoer* undoer);
   void checkSizeLimit();
-  size_t getUndoSizeLimit();
 
-  ObjectsContainer* m_objects;  // Container of objects to insert & retrieve objects by ID
+  UndoHistoryDelegate* m_delegate;
   UndoersStack* m_undoers;
   UndoersStack* m_redoers;
   int m_groupLevel;
   int m_diffCount;
   int m_diffSaved;
-  UndoConfigProvider* m_configProvider;
 };
 
 } // namespace undo
