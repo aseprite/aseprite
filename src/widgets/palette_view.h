@@ -45,7 +45,7 @@ public:
   bool getSelectedRange(int& index1, int& index2) const;
   void getSelectedEntries(SelectedEntries& entries) const;
 
-  Color getColorByPosition(int x, int y);
+  app::Color getColorByPosition(int x, int y);
 
   // Signals
   Signal1<void, int> IndexChange;

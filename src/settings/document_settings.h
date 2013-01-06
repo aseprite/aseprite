@@ -44,22 +44,22 @@ public:
   virtual bool getSnapToGrid() = 0;
   virtual bool getGridVisible() = 0;
   virtual gfx::Rect getGridBounds() = 0;
-  virtual Color getGridColor() = 0;
+  virtual app::Color getGridColor() = 0;
 
   virtual void setSnapToGrid(bool state) = 0;
   virtual void setGridVisible(bool state) = 0;
   virtual void setGridBounds(const gfx::Rect& rect) = 0;
-  virtual void setGridColor(const Color& color) = 0;
+  virtual void setGridColor(const app::Color& color) = 0;
 
   virtual void snapToGrid(gfx::Point& point, SnapBehavior snapBehavior) const = 0;
 
   // Pixel grid
 
   virtual bool getPixelGridVisible() = 0;
-  virtual Color getPixelGridColor() = 0;
+  virtual app::Color getPixelGridColor() = 0;
 
   virtual void setPixelGridVisible(bool state) = 0;
-  virtual void setPixelGridColor(const Color& color) = 0;
+  virtual void setPixelGridColor(const app::Color& color) = 0;
 
   // Onionskin settings
 

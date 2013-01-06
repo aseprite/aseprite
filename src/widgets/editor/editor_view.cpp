@@ -82,7 +82,8 @@ bool EditorView::onProcessMessage(Message* msg)
                               pos->x1, pos->y1,
                               pos->x2-1, pos->y2-1,
                               selected ? PART_EDITOR_SELECTED_NW:
-                                         PART_EDITOR_NORMAL_NW, false);
+                                         PART_EDITOR_NORMAL_NW,
+                              ColorNone);
 
         jrect_free(pos);
       }

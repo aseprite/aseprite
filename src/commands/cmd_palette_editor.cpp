@@ -69,16 +69,16 @@ public:
   PaletteEntryEditor();
   ~PaletteEntryEditor();
 
-  void setColor(const Color& color);
+  void setColor(const app::Color& color);
 
 protected:
   bool onProcessMessage(Message* msg) OVERRIDE;
 
   void onExit();
   void onCloseWindow();
-  void onFgBgColorChange(const Color& color);
+  void onFgBgColorChange(const app::Color& color);
   void onColorSlidersChange(ColorSlidersChangeEvent& ev);
-  void onColorHexEntryChange(const Color& color);
+  void onColorHexEntryChange(const app::Color& color);
   void onColorTypeButtonClick(Event& ev);
   void onMoreOptionsClick(Event& ev);
   void onCopyColorsClick(Event& ev);
@@ -89,9 +89,9 @@ protected:
   void onQuantizeClick(Event& ev);
 
 private:
-  void selectColorType(Color::Type type);
-  void setPaletteEntry(const Color& color);
-  void setPaletteEntryChannel(const Color& color, ColorSliders::Channel channel);
+  void selectColorType(app::Color::Type type);
+  void setPaletteEntry(const app::Color& color);
+  void setPaletteEntryChannel(const app::Color& color, ColorSliders::Channel channel);
   void setNewPalette(Palette* palette, const char* operationName);
   void updateCurrentSpritePalette(const char* operationName);
   void updateColorBar();
@@ -231,7 +231,7 @@ void PaletteEditorCommand::onExecute(Context* context)
 
   // Show the specified target color
   {
-    Color color =
+    app::Color color =
       (m_background ? context->getSettings()->getBgColor():
                       context->getSettings()->getFgColor());
 
@@ -329,7 +329,7 @@ PaletteEntryEditor::PaletteEntryEditor()
   m_hsvSliders.ColorChange.connect(&PaletteEntryEditor::onColorSlidersChange, this);
   m_hexColorEntry.ColorChange.connect(&PaletteEntryEditor::onColorHexEntryChange, this);
 
-  selectColorType(Color::RgbType);
+  selectColorType(app::Color::RgbType);
 
   // We hook fg/bg color changes (by eyedropper mainly) to update the selected entry color
   ColorBar::instance()->FgColorChange.connect(&PaletteEntryEditor::onFgBgColorChange, this);
@@ -353,7 +353,7 @@ PaletteEntryEditor::~PaletteEntryEditor()
   App::instance()->PaletteChange.disconnect(m_palChangeSlot);
 }
 
-void PaletteEntryEditor::setColor(const Color& color)
+void PaletteEntryEditor::setColor(const app::Color& color)
 {
   m_rgbSliders.setColor(color);
   m_hsvSliders.setColor(color);
@@ -443,9 +443,9 @@ void PaletteEntryEditor::onCloseWindow()
   ColorBar::instance()->setPaletteEditorButtonState(false);
 }
 
-void PaletteEntryEditor::onFgBgColorChange(const Color& color)
+void PaletteEntryEditor::onFgBgColorChange(const app::Color& color)
 {
-  if (color.isValid() && color.getType() == Color::IndexType) {
+  if (color.isValid() && color.getType() == app::Color::IndexType) {
     setColor(color);
   }
 }
@@ -458,7 +458,7 @@ void PaletteEntryEditor::onColorSlidersChange(ColorSlidersChangeEvent& ev)
   updateColorBar();
 }
 
-void PaletteEntryEditor::onColorHexEntryChange(const Color& color)
+void PaletteEntryEditor::onColorHexEntryChange(const app::Color& color)
 {
   // Disable updating the hex entry so we don't override what the user
   // is writting in the text field.
@@ -476,8 +476,8 @@ void PaletteEntryEditor::onColorTypeButtonClick(Event& ev)
 {
   RadioButton* source = static_cast<RadioButton*>(ev.getSource());
 
-  if (source == &m_rgbButton) selectColorType(Color::RgbType);
-  else if (source == &m_hsvButton) selectColorType(Color::HsvType);
+  if (source == &m_rgbButton) selectColorType(app::Color::RgbType);
+  else if (source == &m_hsvButton) selectColorType(app::Color::HsvType);
 }
 
 void PaletteEntryEditor::onMoreOptionsClick(Event& ev)
@@ -660,7 +660,7 @@ void PaletteEntryEditor::onQuantizeClick(Event& ev)
   delete palette;
 }
 
-void PaletteEntryEditor::setPaletteEntry(const Color& color)
+void PaletteEntryEditor::setPaletteEntry(const app::Color& color)
 {
   PaletteView* palView = ColorBar::instance()->getPaletteView();
   PaletteView::SelectedEntries entries;
@@ -677,7 +677,7 @@ void PaletteEntryEditor::setPaletteEntry(const Color& color)
   }
 }
 
-void PaletteEntryEditor::setPaletteEntryChannel(const Color& color, ColorSliders::Channel channel)
+void PaletteEntryEditor::setPaletteEntryChannel(const app::Color& color, ColorSliders::Channel channel)
 {
   PaletteView* palView = ColorBar::instance()->getPaletteView();
   PaletteView::SelectedEntries entries;
@@ -701,7 +701,7 @@ void PaletteEntryEditor::setPaletteEntryChannel(const Color& color, ColorSliders
 
       switch (color.getType()) {
 
-        case Color::RgbType:
+        case app::Color::RgbType:
           // Modify one entry
           if (begSel == endSel) {
             r = color.getRed();
@@ -724,7 +724,7 @@ void PaletteEntryEditor::setPaletteEntryChannel(const Color& color, ColorSliders
           }
           break;
 
-        case Color::HsvType:
+        case app::Color::HsvType:
           {
             Hsv hsv;
 
@@ -767,14 +767,14 @@ void PaletteEntryEditor::setPaletteEntryChannel(const Color& color, ColorSliders
   }
 }
 
-void PaletteEntryEditor::selectColorType(Color::Type type)
+void PaletteEntryEditor::selectColorType(app::Color::Type type)
 {
-  m_rgbSliders.setVisible(type == Color::RgbType);
-  m_hsvSliders.setVisible(type == Color::HsvType);
+  m_rgbSliders.setVisible(type == app::Color::RgbType);
+  m_hsvSliders.setVisible(type == app::Color::HsvType);
 
   switch (type) {
-    case Color::RgbType: m_rgbButton.setSelected(true); break;
-    case Color::HsvType: m_hsvButton.setSelected(true); break;
+    case app::Color::RgbType: m_rgbButton.setSelected(true); break;
+    case app::Color::HsvType: m_hsvButton.setSelected(true); break;
   }
 
   m_vbox.layout();
@@ -860,7 +860,7 @@ void PaletteEntryEditor::onPalChange()
     PaletteView* palette_editor = ColorBar::instance()->getPaletteView();
     int index = palette_editor->getSelectedEntry();
     if (index >= 0)
-      setColor(Color::fromIndex(index));
+      setColor(app::Color::fromIndex(index));
 
     // Redraw the window
     invalidate();

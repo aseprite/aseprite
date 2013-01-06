@@ -297,11 +297,11 @@ bool StandbyState::onMouseWheel(Editor* editor, Message* msg)
       // if (m_state == EDITOR_STATE_STANDBY)
       {
         int newIndex = 0;
-        if (ColorBar::instance()->getFgColor().getType() == Color::IndexType) {
+        if (ColorBar::instance()->getFgColor().getType() == app::Color::IndexType) {
           newIndex = ColorBar::instance()->getFgColor().getIndex() + dz;
           newIndex = MID(0, newIndex, 255);
         }
-        ColorBar::instance()->setFgColor(Color::fromIndex(newIndex));
+        ColorBar::instance()->setFgColor(app::Color::fromIndex(newIndex));
       }
       break;
 
@@ -309,11 +309,11 @@ bool StandbyState::onMouseWheel(Editor* editor, Message* msg)
       // if (m_state == EDITOR_STATE_STANDBY)
       {
         int newIndex = 0;
-        if (ColorBar::instance()->getBgColor().getType() == Color::IndexType) {
+        if (ColorBar::instance()->getBgColor().getType() == app::Color::IndexType) {
           newIndex = ColorBar::instance()->getBgColor().getIndex() + dz;
           newIndex = MID(0, newIndex, 255);
         }
-        ColorBar::instance()->setBgColor(Color::fromIndex(newIndex));
+        ColorBar::instance()->setBgColor(app::Color::fromIndex(newIndex));
       }
       break;
 
@@ -454,7 +454,7 @@ bool StandbyState::onUpdateStatusBar(Editor* editor)
   else if (current_tool->getInk(0)->isEyedropper()) {
     PixelFormat format = sprite->getPixelFormat();
     uint32_t pixel = sprite->getPixel(x, y);
-    Color color = Color::fromImage(format, pixel);
+    app::Color color = app::Color::fromImage(format, pixel);
 
     int alpha = 255;
     switch (format) {

@@ -160,7 +160,7 @@ void PaletteView::getSelectedEntries(SelectedEntries& entries) const
   entries = m_selectedEntries;
 }
 
-Color PaletteView::getColorByPosition(int target_x, int target_y)
+app::Color PaletteView::getColorByPosition(int target_x, int target_y)
 {
   Palette* palette = get_current_palette();
   JRect cpos = jwidget_get_child_rect(this);
@@ -185,7 +185,7 @@ Color PaletteView::getColorByPosition(int target_x, int target_y)
 
       if ((target_x >= x) && (target_x <= x+m_boxsize) &&
           (target_y >= y) && (target_y <= y+m_boxsize))
-        return Color::fromIndex(c);
+        return app::Color::fromIndex(c);
 
       x += m_boxsize+this->child_spacing;
       c++;
@@ -195,7 +195,7 @@ Color PaletteView::getColorByPosition(int target_x, int target_y)
   }
 
   jrect_free(cpos);
-  return Color::fromMask();
+  return app::Color::fromMask();
 }
 
 bool PaletteView::onProcessMessage(Message* msg)
@@ -291,8 +291,8 @@ bool PaletteView::onProcessMessage(Message* msg)
 
       jrect_free(cpos);
 
-      Color color = getColorByPosition(mouse_x, mouse_y);
-      if (color.getType() == Color::IndexType) {
+      app::Color color = getColorByPosition(mouse_x, mouse_y);
+      if (color.getType() == app::Color::IndexType) {
         int idx = color.getIndex();
 
         StatusBar::instance()->showColor(0, "", color, 255);

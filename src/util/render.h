@@ -45,10 +45,10 @@ public:
   static void setCheckedBgType(CheckedBgType type);
   static bool getCheckedBgZoom();
   static void setCheckedBgZoom(bool state);
-  static Color getCheckedBgColor1();
-  static void setCheckedBgColor1(const Color& color);
-  static Color getCheckedBgColor2();
-  static void setCheckedBgColor2(const Color& color);
+  static app::Color getCheckedBgColor1();
+  static void setCheckedBgColor1(const app::Color& color);
+  static app::Color getCheckedBgColor2();
+  static void setCheckedBgColor2(const app::Color& color);
 
   //////////////////////////////////////////////////////////////////////
   // Preview image

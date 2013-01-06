@@ -66,7 +66,7 @@ class StatusBarObserver
 public:
   virtual ~StatusBarObserver() { }
   virtual void dispose() = 0;
-  virtual void onChangeTransparentColor(const Color& color) = 0;
+  virtual void onChangeTransparentColor(const app::Color& color) = 0;
 };
 
 typedef Observers<StatusBarObserver> StatusBarObservers;
@@ -87,13 +87,13 @@ public:
 
   bool setStatusText(int msecs, const char *format, ...);
   void showTip(int msecs, const char *format, ...);
-  void showColor(int msecs, const char* text, const Color& color, int alpha);
+  void showColor(int msecs, const char* text, const app::Color& color, int alpha);
   void showTool(int msecs, tools::Tool* tool);
 
   void showMovePixelsOptions();
   void hideMovePixelsOptions();
 
-  Color getTransparentColor();
+  app::Color getTransparentColor();
 
   // Methods to add and remove progress bars
   Progress* addProgress();
@@ -124,7 +124,7 @@ private:
   tools::Tool* m_tool;
 
   // Showing a color
-  Color m_color;
+  app::Color m_color;
   int m_alpha;
 
   // Progress bar

@@ -36,7 +36,7 @@ void set_config_bool(const char *section, const char *name, bool value);
 gfx::Rect get_config_rect(const char *section, const char *name, const gfx::Rect& rect);
 void set_config_rect(const char *section, const char *name, const gfx::Rect& rect);
 
-Color get_config_color(const char *section, const char *name, const Color& value);
-void set_config_color(const char *section, const char *name, const Color& value);
+app::Color get_config_color(const char *section, const char *name, const app::Color& value);
+void set_config_color(const char *section, const char *name, const app::Color& value);
 
 #endif

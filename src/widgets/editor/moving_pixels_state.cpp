@@ -406,12 +406,12 @@ void MovingPixelsState::dispose()
   // StatusBar's observer.
 }
 
-void MovingPixelsState::onChangeTransparentColor(const Color& color)
+void MovingPixelsState::onChangeTransparentColor(const app::Color& color)
 {
   setTransparentColor(color);
 }
 
-void MovingPixelsState::setTransparentColor(const Color& color)
+void MovingPixelsState::setTransparentColor(const app::Color& color)
 {
   ASSERT(current_editor != NULL);
   ASSERT(m_pixelsMovement != NULL);

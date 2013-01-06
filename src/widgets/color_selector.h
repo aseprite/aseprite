@@ -41,27 +41,27 @@ public:
   ColorSelector();
   ~ColorSelector();
 
-  void setColor(const Color& color, SetColorOptions options);
-  Color getColor() const;
+  void setColor(const app::Color& color, SetColorOptions options);
+  app::Color getColor() const;
 
   // Signals
-  Signal1<void, const Color&> ColorChange;
+  Signal1<void, const app::Color&> ColorChange;
 
 protected:
   void onColorPaletteIndexChange(int index);
   void onColorSlidersChange(ColorSlidersChangeEvent& ev);
-  void onColorHexEntryChange(const Color& color);
+  void onColorHexEntryChange(const app::Color& color);
   void onColorTypeButtonClick(ui::Event& ev);
   void onPaletteChange();
 
 private:
-  void selectColorType(Color::Type type);
-  void setColorWithSignal(const Color& color);
-  void findBestfitIndex(const Color& color);
+  void selectColorType(app::Color::Type type);
+  void setColorWithSignal(const app::Color& color);
+  void findBestfitIndex(const app::Color& color);
 
   ui::Box m_vbox;
   ui::Box m_topBox;
-  Color m_color;
+  app::Color m_color;
   ui::View m_colorPaletteContainer;
   PaletteView m_colorPalette;
   ui::RadioButton m_indexButton;

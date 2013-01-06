@@ -128,27 +128,30 @@ bool ToolBar::onProcessMessage(Message* msg)
       BITMAP *doublebuffer = create_bitmap(jrect_w(&msg->draw.rect),
                                            jrect_h(&msg->draw.rect));
       SkinTheme* theme = static_cast<SkinTheme*>(this->getTheme());
+      ui::Color normalFace = theme->getColor(ThemeColor::ButtonNormalFace);
+      ui::Color hotFace = theme->getColor(ThemeColor::ButtonHotFace);
       ToolBox* toolbox = App::instance()->getToolBox();
       ToolGroupList::iterator it = toolbox->begin_group();
       int groups = toolbox->getGroupsCount();
       Rect toolrc;
 
-      clear_to_color(doublebuffer, theme->get_tab_selected_face_color());
+      clear_to_color(doublebuffer, to_system(theme->getColor(ThemeColor::TabSelectedFace)));
 
       for (int c=0; c<groups; ++c, ++it) {
         ToolGroup* tool_group = *it;
         Tool* tool = m_selected_in_group[tool_group];
-        int face, nw;
+        ui::Color face;
+        int nw;
 
         if (UIContext::instance()->getSettings()->getCurrentTool() == tool ||
             m_hot_index == c) {
           nw = PART_TOOLBUTTON_HOT_NW;
-          face = theme->get_button_hot_face_color();
+          face = hotFace;
         }
         else {
           nw = c >= 0 && c < groups-1 ? PART_TOOLBUTTON_NORMAL_NW:
                                         PART_TOOLBUTTON_LAST_NW;
-          face = theme->get_button_normal_face_color();
+          face = normalFace;
         }
 
         toolrc = getToolGroupBounds(c);
@@ -173,8 +176,7 @@ bool ToolBar::onProcessMessage(Message* msg)
                             toolrc,
                             isHot ? PART_TOOLBUTTON_HOT_NW:
                                     PART_TOOLBUTTON_LAST_NW,
-                            isHot ? theme->get_button_hot_face_color():
-                                    theme->get_button_normal_face_color());
+                            isHot ? hotFace: normalFace);
 
       BITMAP* icon = theme->get_toolicon("configuration");
       if (icon) {
@@ -193,8 +195,7 @@ bool ToolBar::onProcessMessage(Message* msg)
                             toolrc,
                             isHot ? PART_TOOLBUTTON_HOT_NW:
                                     PART_TOOLBUTTON_LAST_NW,
-                            isHot ? theme->get_button_hot_face_color():
-                                    theme->get_button_normal_face_color());
+                            isHot ? hotFace: normalFace);
 
       icon = theme->get_toolicon("minieditor");
       if (icon) {
@@ -622,16 +623,17 @@ bool ToolStrip::onProcessMessage(Message* msg)
       for (ToolIterator it = toolbox->begin(); it != toolbox->end(); ++it) {
         Tool* tool = *it;
         if (tool->getGroup() == m_group) {
-          int face, nw;
+          ui::Color face;
+          int nw;
 
           if (UIContext::instance()->getSettings()->getCurrentTool() == tool ||
               m_hot_tool == tool) {
             nw = PART_TOOLBUTTON_HOT_NW;
-            face = theme->get_button_hot_face_color();
+            face = theme->getColor(ThemeColor::ButtonHotFace);
           }
           else {
             nw = PART_TOOLBUTTON_LAST_NW;
-            face = theme->get_button_normal_face_color();
+            face = theme->getColor(ThemeColor::ButtonNormalFace);
           }
 
           toolrc = getToolBounds(index++);

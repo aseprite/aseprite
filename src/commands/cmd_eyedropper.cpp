@@ -83,8 +83,8 @@ void EyedropperCommand::onExecute(Context* context)
   editor->screenToEditor(jmouse_x(0), jmouse_y(0), &x, &y);
 
   // get the color from the image
-  Color color = Color::fromImage(sprite->getPixelFormat(),
-                                 sprite->getPixel(x, y));
+  app::Color color = app::Color::fromImage(sprite->getPixelFormat(),
+                                           sprite->getPixel(x, y));
 
   // TODO replace the color in the "context", not directly from the color-bar
 

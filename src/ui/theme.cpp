@@ -25,16 +25,13 @@ namespace ui {
 
 static Theme* current_theme = NULL;
 
-static void draw_text(BITMAP *bmp, FONT *f, const char *text, int x, int y,
-                      int fg_color, int bg_color, bool fill_bg);
+static void draw_text(BITMAP *bmp, FONT *f, const char* text, int x, int y,
+                      ui::Color fg_color, ui::Color bg_color, bool fill_bg);
 
 Theme::Theme()
 {
   this->name = "Theme";
   this->default_font = font;    // Default Allegro font
-  this->desktop_color = 0;
-  this->textbox_fg_color = 0;
-  this->textbox_bg_color = 0;
   this->scrollbar_size = 0;
   this->guiscale = 1;
 }
@@ -78,52 +75,6 @@ Theme* CurrentTheme::get()
   return current_theme;
 }
 
-int ji_color_foreground()
-{
-  return current_theme->color_foreground();
-}
-
-int ji_color_disabled()
-{
-  return current_theme->color_disabled();
-}
-
-int ji_color_face()
-{
-  return current_theme->color_face();
-}
-
-int ji_color_facelight()
-{
-  register int c = ji_color_face();
-  return makecol(MIN(getr(c)+64, 255),
-                 MIN(getg(c)+64, 255),
-                 MIN(getb(c)+64, 255));
-}
-
-int ji_color_faceshadow()
-{
-  register int c = ji_color_face();
-  return makecol(MAX(getr(c)-64, 0),
-                 MAX(getg(c)-64, 0),
-                 MAX(getb(c)-64, 0));
-}
-
-int ji_color_hotface()
-{
-  return current_theme->color_hotface();
-}
-
-int ji_color_selected()
-{
-  return current_theme->color_selected();
-}
-
-int ji_color_background()
-{
-  return current_theme->color_background();
-}
-
 BITMAP* ji_apply_guiscale(BITMAP* original)
 {
   int scale = jguiscale();
@@ -155,7 +106,7 @@ void _ji_theme_draw_sprite_color(BITMAP *bmp, BITMAP *sprite,
 }
 
 void _ji_theme_textbox_draw(BITMAP *bmp, Widget* widget,
-                            int *w, int *h, int bg, int fg)
+                            int *w, int *h, ui::Color bg, ui::Color fg)
 {
   View* view = View::getView(widget);
   char *text = (char*)widget->getText(); // TODO warning: removing const modifier
@@ -306,20 +257,19 @@ void _ji_theme_textbox_draw(BITMAP *bmp, Widget* widget,
   if (w) *w += widget->border_width.l + widget->border_width.r;
   if (h) *h += widget->border_width.t + widget->border_width.b;
 
-  /* fill bottom area */
+  // Fill bottom area
   if (bmp) {
     if (y <= y2)
-      rectfill(bmp, x1, y, x2, y2, bg);
+      rectfill(bmp, x1, y, x2, y2, to_system(bg));
   }
 }
 
 static void draw_text(BITMAP *bmp, FONT *f, const char *text, int x, int y,
-                      int fg_color, int bg_color, bool fill_bg)
+                      ui::Color fg_color, ui::Color bg_color, bool fill_bg)
 {
-  /* TODO optional anti-aliased textout */
-  ji_font_set_aa_mode(f, bg_color);
-  textout_ex(bmp, f, text, x, y, fg_color, (fill_bg ? bg_color: -1));
-  /* TODO */
+  // TODO Optional anti-aliased textout
+  ji_font_set_aa_mode(f, to_system(bg_color));
+  textout_ex(bmp, f, text, x, y, to_system(fg_color), (fill_bg ? to_system(bg_color): -1));
 }
 
 } // namespace ui

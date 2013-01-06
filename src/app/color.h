@@ -26,6 +26,8 @@
 class Image;
 class Layer;
 
+namespace app {
+
 class Color {
 public:
   enum Type {
@@ -96,5 +98,7 @@ private:
     int index;
   } m_value;
 };
+
+}
 
 #endif

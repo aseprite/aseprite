@@ -245,10 +245,6 @@ bool View::onProcessMessage(Message* msg)
       updateView();
       return true;
 
-    case JM_DRAW:
-      getTheme()->draw_view(this, &msg->draw.rect);
-      return true;
-
     case JM_FOCUSENTER:
     case JM_FOCUSLEAVE:
       // TODO This is theme specific stuff
@@ -270,6 +266,11 @@ void View::onPreferredSize(PreferredSizeEvent& ev)
   viewSize.w += this->border_width.l + this->border_width.r;
   viewSize.h += this->border_width.t + this->border_width.b;
   ev.setPreferredSize(viewSize);
+}
+
+void View::onPaint(PaintEvent& ev)
+{
+  getTheme()->paintView(ev);
 }
 
 // static

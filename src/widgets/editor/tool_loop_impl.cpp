@@ -84,8 +84,8 @@ public:
                Sprite* sprite,
                Layer* layer,
                tools::ToolLoop::Button button,
-               const Color& primary_color,
-               const Color& secondary_color)
+               const app::Color& primary_color,
+               const app::Color& secondary_color)
     : m_editor(editor)
     , m_context(context)
     , m_tool(tool)
@@ -276,8 +276,8 @@ tools::ToolLoop* create_tool_loop(Editor* editor, Context* context, Message* msg
 
   // Get fg/bg colors
   ColorBar* colorbar = ColorBar::instance();
-  Color fg = colorbar->getFgColor();
-  Color bg = colorbar->getBgColor();
+  app::Color fg = colorbar->getFgColor();
+  app::Color bg = colorbar->getBgColor();
 
   if (!fg.isValid() || !bg.isValid()) {
     Alert::show(PACKAGE

@@ -61,7 +61,8 @@ bool ColorBar::ScrollableView::onProcessMessage(Message* msg)
                               rc->x1, rc->y1,
                               rc->x2-1, rc->y2-1,
                               hasFocus() ? PART_EDITOR_SELECTED_NW:
-                                           PART_EDITOR_NORMAL_NW, false);
+                                           PART_EDITOR_NORMAL_NW,
+                              ColorNone);
       }
       return true;
 
@@ -78,8 +79,8 @@ ColorBar::ColorBar(int align)
   : Box(align)
   , m_paletteButton("Edit Palette", JI_BUTTON)
   , m_paletteView(false)
-  , m_fgColor(Color::fromIndex(15), IMAGE_INDEXED)
-  , m_bgColor(Color::fromIndex(0), IMAGE_INDEXED)
+  , m_fgColor(app::Color::fromIndex(15), IMAGE_INDEXED)
+  , m_bgColor(app::Color::fromIndex(0), IMAGE_INDEXED)
   , m_lock(false)
 {
   m_instance = this;
@@ -127,8 +128,8 @@ ColorBar::ColorBar(int align)
   setFgColor(get_config_color("ColorBar", "FG", getFgColor()));
 
   // Change color-bar background color (not ColorBar::setBgColor)
-  Widget::setBgColor(((SkinTheme*)getTheme())->get_tab_selected_face_color());
-  m_paletteView.setBgColor(((SkinTheme*)getTheme())->get_tab_selected_face_color());
+  Widget::setBgColor(((SkinTheme*)getTheme())->getColor(ThemeColor::TabSelectedFace));
+  m_paletteView.setBgColor(((SkinTheme*)getTheme())->getColor(ThemeColor::TabSelectedFace));
 
   // Change labels foreground color
   setup_mini_look(&m_paletteButton);
@@ -152,23 +153,23 @@ void ColorBar::setPixelFormat(PixelFormat pixelFormat)
   m_bgColor.setPixelFormat(pixelFormat);
 }
 
-Color ColorBar::getFgColor()
+app::Color ColorBar::getFgColor()
 {
   return m_fgColor.getColor();
 }
 
-Color ColorBar::getBgColor()
+app::Color ColorBar::getBgColor()
 {
   return m_bgColor.getColor();
 }
 
-void ColorBar::setFgColor(const Color& color)
+void ColorBar::setFgColor(const app::Color& color)
 {
   m_fgColor.setColor(color);
   FgColorChange(color);
 }
 
-void ColorBar::setBgColor(const Color& color)
+void ColorBar::setBgColor(const app::Color& color)
 {
   m_bgColor.setColor(color);
   BgColorChange(color);
@@ -198,7 +199,7 @@ void ColorBar::onPaletteIndexChange(int index)
 {
   m_lock = true;
 
-  Color color = Color::fromIndex(index);
+  app::Color color = app::Color::fromIndex(index);
 
   if (jmouse_b(0) & 2) // TODO create a PaletteChangeEvent and take left/right mouse button from there
     setBgColor(color);
@@ -208,7 +209,7 @@ void ColorBar::onPaletteIndexChange(int index)
   m_lock = false;
 }
 
-void ColorBar::onFgColorButtonChange(const Color& color)
+void ColorBar::onFgColorButtonChange(const app::Color& color)
 {
   if (!m_lock)
     m_paletteView.clearSelection();
@@ -217,7 +218,7 @@ void ColorBar::onFgColorButtonChange(const Color& color)
   onColorButtonChange(color);
 }
 
-void ColorBar::onBgColorButtonChange(const Color& color)
+void ColorBar::onBgColorButtonChange(const app::Color& color)
 {
   if (!m_lock)
     m_paletteView.clearSelection();
@@ -226,8 +227,8 @@ void ColorBar::onBgColorButtonChange(const Color& color)
   onColorButtonChange(color);
 }
 
-void ColorBar::onColorButtonChange(const Color& color)
+void ColorBar::onColorButtonChange(const app::Color& color)
 {
-  if (color.getType() == Color::IndexType)
+  if (color.getType() == app::Color::IndexType)
     m_paletteView.selectColor(color.getIndex());
 }

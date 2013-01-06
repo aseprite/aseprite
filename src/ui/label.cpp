@@ -19,16 +19,14 @@ Label::Label(const char *text)
   setAlign(JI_LEFT | JI_MIDDLE);
   setText(text);
   initTheme();
-
-  m_textColor = ji_color_foreground();
 }
 
-int Label::getTextColor() const
+Color Label::getTextColor() const
 {
   return m_textColor;
 }
 
-void Label::setTextColor(int color)
+void Label::setTextColor(Color color)
 {
   m_textColor = color;
 }

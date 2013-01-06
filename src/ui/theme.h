@@ -28,9 +28,6 @@ namespace ui {
   public:
     const char* name;
     struct FONT* default_font;
-    int desktop_color;
-    int textbox_fg_color;
-    int textbox_bg_color;
     int scrollbar_size;
     int guiscale;
 
@@ -44,13 +41,7 @@ namespace ui {
     virtual ui::JRegion get_window_mask(ui::Widget* widget) = 0;
     virtual void map_decorative_widget(ui::Widget* widget) = 0;
 
-    virtual int color_foreground() = 0;
-    virtual int color_disabled() = 0;
-    virtual int color_face() = 0;
-    virtual int color_hotface() = 0;
-    virtual int color_selected() = 0;
-    virtual int color_background() = 0;
-
+    virtual void paintDesktop(PaintEvent& ev) = 0;
     virtual void paintBox(PaintEvent& ev) = 0;
     virtual void paintButton(PaintEvent& ev) = 0;
     virtual void paintCheckBox(PaintEvent& ev) = 0;
@@ -69,15 +60,15 @@ namespace ui {
     virtual void draw_combobox_entry(Entry* widget, JRect clip) = 0;
     virtual void paintComboBoxButton(PaintEvent& ev) = 0;
     virtual void draw_textbox(Widget* widget, JRect clip) = 0;
-    virtual void draw_view(Widget* widget, JRect clip) = 0;
-    virtual void draw_view_scrollbar(Widget* widget, JRect clip) = 0;
-    virtual void draw_view_viewport(Widget* widget, JRect clip) = 0;
+    virtual void paintView(PaintEvent& ev) = 0;
+    virtual void paintViewScrollbar(PaintEvent& ev) = 0;
+    virtual void paintViewViewport(PaintEvent& ev) = 0;
     virtual void paintWindow(PaintEvent& ev) = 0;
+    virtual void paintPopupWindow(PaintEvent& ev) = 0;
     virtual void paintTooltip(PaintEvent& ev) = 0;
 
   protected:
     virtual void onRegenerate() = 0;
-
   };
 
   namespace CurrentTheme
@@ -85,15 +76,6 @@ namespace ui {
     void set(Theme* theme);
     Theme* get();
   }
-
-  int ji_color_foreground();
-  int ji_color_disabled();
-  int ji_color_face();
-  int ji_color_facelight();
-  int ji_color_faceshadow();
-  int ji_color_hotface();
-  int ji_color_selected();
-  int ji_color_background();
 
   BITMAP* ji_apply_guiscale(BITMAP* original);
 

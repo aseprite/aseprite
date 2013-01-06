@@ -10,6 +10,7 @@
 #include "gfx/point.h"
 #include "gfx/rect.h"
 #include "gfx/size.h"
+#include "ui/color.h"
 
 #include <string>
 
@@ -25,16 +26,15 @@ namespace ui {
     Graphics(BITMAP* bmp, int dx, int dy);
     ~Graphics();
 
-    int getBitsPerPixel() const;
-
     gfx::Rect getClipBounds() const;
     void setClipBounds(const gfx::Rect& rc);
     bool intersectClipRect(const gfx::Rect& rc);
 
-    void drawVLine(int color, int x, int y, int h);
+    void drawHLine(ui::Color color, int x, int y, int w);
+    void drawVLine(ui::Color color, int x, int y, int h);
 
-    void drawRect(int color, const gfx::Rect& rc);
-    void fillRect(int color, const gfx::Rect& rc);
+    void drawRect(ui::Color color, const gfx::Rect& rc);
+    void fillRect(ui::Color color, const gfx::Rect& rc);
 
     void drawBitmap(BITMAP* sprite, int x, int y);
     void drawAlphaBitmap(BITMAP* sprite, int x, int y);
@@ -48,14 +48,14 @@ namespace ui {
     void setFont(FONT* font);
     FONT* getFont();
 
-    void drawString(const std::string& str, int fg_color, int bg_color, bool fillbg, const gfx::Point& pt);
-    void drawString(const std::string& str, int fg_color, int bg_color, const gfx::Rect& rc, int align);
+    void drawString(const std::string& str, Color fg, Color bg, bool fillbg, const gfx::Point& pt);
+    void drawString(const std::string& str, Color fg, Color bg, const gfx::Rect& rc, int align);
 
     gfx::Size measureString(const std::string& str);
     gfx::Size fitString(const std::string& str, int maxWidth, int align);
 
   private:
-    gfx::Size drawStringAlgorithm(const std::string& str, int fg_color, int bg_color, const gfx::Rect& rc, int align, bool draw);
+    gfx::Size drawStringAlgorithm(const std::string& str, Color fg, Color bg, const gfx::Rect& rc, int align, bool draw);
 
     BITMAP* m_bmp;
     int m_dx;

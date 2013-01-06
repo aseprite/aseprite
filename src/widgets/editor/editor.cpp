@@ -612,7 +612,7 @@ void Editor::drawMaskSafe()
   }
 }
 
-void Editor::drawGrid(const Rect& gridBounds, const Color& color)
+void Editor::drawGrid(const Rect& gridBounds, const app::Color& color)
 {
   // Copy the grid bounds
   Rect grid(gridBounds);
@@ -906,8 +906,8 @@ bool Editor::onProcessMessage(Message* msg)
         View* view = View::getView(this);
         Rect vp = view->getViewportBounds();
 
-        jdraw_rectfill(vp, theme->get_editor_face_color());
-        draw_emptyset_symbol(ji_screen, vp, makecol(64, 64, 64));
+        jdraw_rectfill(vp, theme->getColor(ThemeColor::EditorFace));
+        draw_emptyset_symbol(ji_screen, vp, ui::rgba(64, 64, 64));
       }
       // Editor with sprite
       else {
@@ -925,14 +925,14 @@ bool Editor::onProcessMessage(Message* msg)
           jrectexclude(ji_screen,
                        this->rc->x1, this->rc->y1,
                        this->rc->x2-1, this->rc->y2-1,
-                       x1-1, y1-1, x2+1, y2+2, theme->get_editor_face_color());
+                       x1-1, y1-1, x2+1, y2+2, theme->getColor(ThemeColor::EditorFace));
 
           // Draw the sprite in the editor
           drawSprite(0, 0, m_sprite->getWidth()-1, m_sprite->getHeight()-1);
 
           // Draw the sprite boundary
-          rect(ji_screen, x1-1, y1-1, x2+1, y2+1, theme->get_editor_sprite_border());
-          hline(ji_screen, x1-1, y2+2, x2+1, theme->get_editor_sprite_bottom_edge());
+          rect(ji_screen, x1-1, y1-1, x2+1, y2+1, to_system(theme->getColor(ThemeColor::EditorSpriteBorder)));
+          hline(ji_screen, x1-1, y2+2, x2+1, to_system(theme->getColor(ThemeColor::EditorSpriteBottomBorder)));
 
           // Draw the mask boundaries
           if (m_document->getBoundariesSegments()) {
@@ -954,7 +954,7 @@ bool Editor::onProcessMessage(Message* msg)
 
           View* view = View::getView(this);
           Rect vp = view->getViewportBounds();
-          jdraw_rectfill(vp, theme->get_editor_face_color());
+          jdraw_rectfill(vp, theme->getColor(ThemeColor::EditorFace));
         }
       }
       return true;

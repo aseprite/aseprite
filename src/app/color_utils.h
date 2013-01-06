@@ -21,17 +21,19 @@
 
 #include "app/color.h"
 #include "raster/pixel_format.h"
+#include "ui/color.h"
 
 class Layer;
 
 namespace color_utils {
 
-int blackandwhite(int r, int g, int b);
-int blackandwhite_neg(int r, int g, int b);
+ui::Color blackandwhite(ui::Color color);
+ui::Color blackandwhite_neg(ui::Color color);
 
-int color_for_allegro(const Color& color, int depth);
-int color_for_image(const Color& color, PixelFormat format);
-int color_for_layer(const Color& color, Layer* layer);
+ui::Color color_for_ui(const app::Color& color);
+int color_for_allegro(const app::Color& color, int depth);
+int color_for_image(const app::Color& color, PixelFormat format);
+int color_for_layer(const app::Color& color, Layer* layer);
 
 int fixup_color_for_layer(Layer* layer, int color);
 int fixup_color_for_background(PixelFormat format, int color);

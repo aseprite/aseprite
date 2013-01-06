@@ -55,10 +55,10 @@ public:
 protected:
   // StatusBarObserver interface
   virtual void dispose() OVERRIDE;
-  virtual void onChangeTransparentColor(const Color& color) OVERRIDE;
+  virtual void onChangeTransparentColor(const app::Color& color) OVERRIDE;
 
 private:
-  void setTransparentColor(const Color& color);
+  void setTransparentColor(const app::Color& color);
   void dropPixels(Editor* editor);
 
   // Helper member to move/translate selection and pixels.

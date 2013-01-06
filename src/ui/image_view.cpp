@@ -42,8 +42,7 @@ void ImageView::onPaint(PaintEvent& ev)
   jwidget_get_texticon_info(this, &box, &text, &icon,
                             getAlign(), m_bmp->w, m_bmp->h);
 
-  jdraw_rectexclude(rc, &icon,
-                    jwidget_get_bg_color(this));
+  jdraw_rectexclude(rc, &icon, getBgColor());
 
   blit(m_bmp, ji_screen, 0, 0,
        icon.x1, icon.y1, jrect_w(&icon), jrect_h(&icon));

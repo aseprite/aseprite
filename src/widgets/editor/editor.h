@@ -146,8 +146,8 @@ public:
 
   static int get_raw_cursor_color();
   static bool is_cursor_mask();
-  static Color get_cursor_color();
-  static void set_cursor_color(const Color& color);
+  static app::Color get_cursor_color();
+  static void set_cursor_color(const app::Color& color);
 
   static void editor_cursor_init();
   static void editor_cursor_exit();
@@ -172,7 +172,7 @@ private:
   void editor_clean_cursor(bool refresh = true);
   bool editor_cursor_is_subpixel();
 
-  void drawGrid(const gfx::Rect& gridBounds, const Color& color);
+  void drawGrid(const gfx::Rect& gridBounds, const app::Color& color);
 
   void editor_setcursor();
 
@@ -219,7 +219,7 @@ private:
   // signals).
   Slot0<void>* m_currentToolChangeSlot;
 
-  Slot1<void, const Color&>* m_fgColorChangeSlot;
+  Slot1<void, const app::Color&>* m_fgColorChangeSlot;
 
   EditorObservers m_observers;
 

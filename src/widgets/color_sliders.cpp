@@ -45,35 +45,34 @@ namespace {
       : m_channel(channel)
     { }
 
-    void setColor(const Color& color) {
+    void setColor(const app::Color& color) {
       m_color = color;
     }
 
     void paint(Slider* slider, Graphics* g, const gfx::Rect& rc) {
-      int depth = g->getBitsPerPixel();
-      int color;
+      ui::Color color;
       for (int x=0; x < rc.w; ++x) {
         switch (m_channel) {
           case ColorSliders::Red:
-            color = makecol(255 * x / (rc.w-1), m_color.getGreen(), m_color.getBlue());
+            color = ui::rgba(255 * x / (rc.w-1), m_color.getGreen(), m_color.getBlue());
             break;
           case ColorSliders::Green:
-            color = makecol(m_color.getRed(), 255 * x / (rc.w-1), m_color.getBlue());
+            color = ui::rgba(m_color.getRed(), 255 * x / (rc.w-1), m_color.getBlue());
             break;
           case ColorSliders::Blue:
-            color = makecol(m_color.getRed(), m_color.getGreen(), 255 * x / (rc.w-1));
+            color = ui::rgba(m_color.getRed(), m_color.getGreen(), 255 * x / (rc.w-1));
             break;
           case ColorSliders::Hue:
-            color = color_utils::color_for_allegro(Color::fromHsv(360 * x / (rc.w-1), m_color.getSaturation(), m_color.getValue()), depth);
+            color = color_utils::color_for_ui(app::Color::fromHsv(360 * x / (rc.w-1), m_color.getSaturation(), m_color.getValue()));
             break;
           case ColorSliders::Saturation:
-            color = color_utils::color_for_allegro(Color::fromHsv(m_color.getHue(), 100 * x / (rc.w-1), m_color.getValue()), depth);
+            color = color_utils::color_for_ui(app::Color::fromHsv(m_color.getHue(), 100 * x / (rc.w-1), m_color.getValue()));
             break;
           case ColorSliders::Value:
-            color = color_utils::color_for_allegro(Color::fromHsv(m_color.getHue(), m_color.getSaturation(), 100 * x / (rc.w-1)), depth);
+            color = color_utils::color_for_ui(app::Color::fromHsv(m_color.getHue(), m_color.getSaturation(), 100 * x / (rc.w-1)));
             break;
           case ColorSliders::Gray:
-            color = color_utils::color_for_allegro(Color::fromGray(255 * x / (rc.w-1)), depth);
+            color = color_utils::color_for_ui(app::Color::fromGray(255 * x / (rc.w-1)));
             break;
         }
         g->drawVLine(color, rc.x+x, rc.y, rc.h);
@@ -83,7 +82,7 @@ namespace {
   private:
     ColorSliders::Channel m_channel;
     BITMAP* m_cachedBg;
-    Color m_color;
+    app::Color m_color;
   };
 
 }
@@ -102,7 +101,7 @@ ColorSliders::~ColorSliders()
 {
 }
 
-void ColorSliders::setColor(const Color& color)
+void ColorSliders::setColor(const app::Color& color)
 {
   onSetColor(color);
 
@@ -175,7 +174,7 @@ void ColorSliders::onControlChange(int i)
 {
   // Call derived class impl of getColorFromSliders() to update the
   // background color of sliders.
-  Color color = getColorFromSliders();
+  app::Color color = getColorFromSliders();
 
   updateSlidersBgColor(color);
 
@@ -190,13 +189,13 @@ void ColorSliders::updateEntryText(int entryIndex)
   m_entry[entryIndex]->setTextf("%d", m_slider[entryIndex]->getValue());
 }
 
-void ColorSliders::updateSlidersBgColor(const Color& color)
+void ColorSliders::updateSlidersBgColor(const app::Color& color)
 {
   for (size_t i = 0; i < m_slider.size(); ++i)
     updateSliderBgColor(m_slider[i], color);
 }
 
-void ColorSliders::updateSliderBgColor(Slider* slider, const Color& color)
+void ColorSliders::updateSliderBgColor(Slider* slider, const app::Color& color)
 {
   SharedPtr<SkinSliderProperty> sliderProperty(slider->getProperty("SkinProperty"));
 
@@ -216,18 +215,18 @@ RgbSliders::RgbSliders()
   addSlider(Blue,  "B", 0, 255);
 }
 
-void RgbSliders::onSetColor(const Color& color)
+void RgbSliders::onSetColor(const app::Color& color)
 {
   setSliderValue(0, color.getRed());
   setSliderValue(1, color.getGreen());
   setSliderValue(2, color.getBlue());
 }
 
-Color RgbSliders::getColorFromSliders()
+app::Color RgbSliders::getColorFromSliders()
 {
-  return Color::fromRgb(getSliderValue(0),
-                        getSliderValue(1),
-                        getSliderValue(2));
+  return app::Color::fromRgb(getSliderValue(0),
+                             getSliderValue(1),
+                             getSliderValue(2));
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -241,18 +240,18 @@ HsvSliders::HsvSliders()
   addSlider(Value,      "B", 0, 100);
 }
 
-void HsvSliders::onSetColor(const Color& color)
+void HsvSliders::onSetColor(const app::Color& color)
 {
   setSliderValue(0, color.getHue());
   setSliderValue(1, color.getSaturation());
   setSliderValue(2, color.getValue());
 }
 
-Color HsvSliders::getColorFromSliders()
+app::Color HsvSliders::getColorFromSliders()
 {
-  return Color::fromHsv(getSliderValue(0),
-                        getSliderValue(1),
-                        getSliderValue(2));
+  return app::Color::fromHsv(getSliderValue(0),
+                             getSliderValue(1),
+                             getSliderValue(2));
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -264,13 +263,13 @@ GraySlider::GraySlider()
   addSlider(Gray, "V", 0, 255);
 }
 
-void GraySlider::onSetColor(const Color& color)
+void GraySlider::onSetColor(const app::Color& color)
 {
   setSliderValue(0, color.getGray());
 }
 
 
-Color GraySlider::getColorFromSliders()
+app::Color GraySlider::getColorFromSliders()
 {
-  return Color::fromGray(getSliderValue(0));
+  return app::Color::fromGray(getSliderValue(0));
 }

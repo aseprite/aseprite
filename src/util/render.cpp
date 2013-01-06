@@ -280,8 +280,8 @@ done_with_blit:;
 
 static RenderEngine::CheckedBgType checked_bg_type;
 static bool checked_bg_zoom;
-static Color checked_bg_color1;
-static Color checked_bg_color2;
+static app::Color checked_bg_color1;
+static app::Color checked_bg_color2;
 
 static int global_opacity = 255;
 static Layer *selected_layer = NULL;
@@ -293,8 +293,8 @@ void RenderEngine::loadConfig()
   checked_bg_type = (CheckedBgType)get_config_int("Options", "CheckedBgType",
                                                   (int)RenderEngine::CHECKED_BG_16X16);
   checked_bg_zoom = get_config_bool("Options", "CheckedBgZoom", true);
-  checked_bg_color1 = get_config_color("Options", "CheckedBgColor1", Color::fromRgb(128, 128, 128));
-  checked_bg_color2 = get_config_color("Options", "CheckedBgColor2", Color::fromRgb(192, 192, 192));
+  checked_bg_color1 = get_config_color("Options", "CheckedBgColor1", app::Color::fromRgb(128, 128, 128));
+  checked_bg_color2 = get_config_color("Options", "CheckedBgColor2", app::Color::fromRgb(192, 192, 192));
 }
 
 // static
@@ -324,26 +324,26 @@ void RenderEngine::setCheckedBgZoom(bool state)
 }
 
 // static
-Color RenderEngine::getCheckedBgColor1()
+app::Color RenderEngine::getCheckedBgColor1()
 {
   return checked_bg_color1;
 }
 
 // static
-void RenderEngine::setCheckedBgColor1(const Color& color)
+void RenderEngine::setCheckedBgColor1(const app::Color& color)
 {
   checked_bg_color1 = color;
   set_config_color("Options", "CheckedBgColor1", color);
 }
 
 // static
-Color RenderEngine::getCheckedBgColor2()
+app::Color RenderEngine::getCheckedBgColor2()
 {
   return checked_bg_color2;
 }
 
 // static
-void RenderEngine::setCheckedBgColor2(const Color& color)
+void RenderEngine::setCheckedBgColor2(const app::Color& color)
 {
   checked_bg_color2 = color;
   set_config_color("Options", "CheckedBgColor2", color);

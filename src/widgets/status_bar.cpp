@@ -138,7 +138,7 @@ StatusBar* StatusBar::m_instance = NULL;
 
 StatusBar::StatusBar()
   : Widget(statusbar_type())
-  , m_color(Color::fromMask())
+  , m_color(app::Color::fromMask())
 {
   m_instance = this;
 
@@ -237,7 +237,7 @@ StatusBar::StatusBar()
 
     m_movePixelsBox = new Box(JI_HORIZONTAL);
     m_transparentLabel = new Label("Transparent Color:");
-    m_transparentColor = new ColorButton(Color::fromMask(), IMAGE_RGB);
+    m_transparentColor = new ColorButton(app::Color::fromMask(), IMAGE_RGB);
 
     m_movePixelsBox->addChild(filler);
     m_movePixelsBox->addChild(m_transparentLabel);
@@ -285,8 +285,8 @@ void StatusBar::onCurrentToolChange()
 
 void StatusBar::onTransparentColorChange()
 {
-  m_observers.notifyObservers<const Color&>(&StatusBarObserver::onChangeTransparentColor,
-                                            getTransparentColor());
+  m_observers.notifyObservers<const app::Color&>(&StatusBarObserver::onChangeTransparentColor,
+                                                 getTransparentColor());
 }
 
 void StatusBar::clearText()
@@ -356,7 +356,7 @@ void StatusBar::showTip(int msecs, const char *format, ...)
   invalidate();
 }
 
-void StatusBar::showColor(int msecs, const char* text, const Color& color, int alpha)
+void StatusBar::showColor(int msecs, const char* text, const app::Color& color, int alpha)
 {
   if (setStatusText(msecs, text)) {
     m_state = SHOW_COLOR;
@@ -403,7 +403,7 @@ void StatusBar::hideMovePixelsOptions()
   }
 }
 
-Color StatusBar::getTransparentColor()
+app::Color StatusBar::getTransparentColor()
 {
   return m_transparentColor->getColor();
 }
@@ -498,19 +498,16 @@ bool StatusBar::onProcessMessage(Message* msg)
 
     case JM_DRAW: {
       SkinTheme* theme = static_cast<SkinTheme*>(this->getTheme());
-      int text_color = ji_color_foreground();
-      int face_color = ji_color_face();
+      ui::Color text_color = theme->getColor(ThemeColor::Text);
+      ui::Color face_color = theme->getColor(ThemeColor::Face);
       JRect rc = jwidget_get_rect(this);
-      BITMAP *doublebuffer = create_bitmap(jrect_w(&msg->draw.rect),
+      BITMAP* doublebuffer = create_bitmap(jrect_w(&msg->draw.rect),
                                            jrect_h(&msg->draw.rect));
       jrect_displace(rc,
                      -msg->draw.rect.x1,
                      -msg->draw.rect.y1);
 
-      clear_to_color(doublebuffer, face_color);
-
-      putpixel(doublebuffer, rc->x1, rc->y1, theme->get_tab_selected_face_color());
-      putpixel(doublebuffer, rc->x2-1, rc->y1, theme->get_tab_selected_face_color());
+      clear_to_color(doublebuffer, to_system(face_color));
 
       rc->x1 += 2*jguiscale();
       rc->y1 += 1*jguiscale();
@@ -542,7 +539,7 @@ bool StatusBar::onProcessMessage(Message* msg)
 
         // Draw color description
         std::string str = m_color.toHumanReadableString(app_get_current_pixel_format(),
-                                                        Color::LongHumanReadableString);
+                                                        app::Color::LongHumanReadableString);
         if (m_alpha < 255) {
           char buf[512];
           usprintf(buf, ", Alpha %d", m_alpha);
@@ -551,7 +548,7 @@ bool StatusBar::onProcessMessage(Message* msg)
 
         textout_ex(doublebuffer, this->getFont(), str.c_str(),
                    x, (rc->y1+rc->y2)/2-text_height(this->getFont())/2,
-                   text_color, -1);
+                   to_system(text_color), -1);
 
         x += ji_font_text_len(this->getFont(), str.c_str()) + 4*jguiscale();
       }
@@ -574,7 +571,7 @@ bool StatusBar::onProcessMessage(Message* msg)
         textout_ex(doublebuffer, this->getFont(), this->getText(),
                    x,
                    (rc->y1+rc->y2)/2-text_height(this->getFont())/2,
-                   text_color, -1);
+                   to_system(text_color), -1);
 
         x += ji_font_text_len(this->getFont(), this->getText()) + 4*jguiscale();
       }
@@ -631,8 +628,8 @@ bool StatusBar::onProcessMessage(Message* msg)
                                     x1, rc->y1, x2, rc->y2,
                                     hot ? PART_TOOLBUTTON_HOT_NW:
                                           PART_TOOLBUTTON_NORMAL_NW,
-                                    hot ? theme->get_button_hot_face_color():
-                                          theme->get_button_normal_face_color());
+                                    hot ? theme->getColor(ThemeColor::ButtonHotFace):
+                                          theme->getColor(ThemeColor::ButtonNormalFace));
 
               if (count == 1)
                 uszprintf(buf, sizeof(buf), "%s", (*it)->getName().c_str());
@@ -647,8 +644,9 @@ bool StatusBar::onProcessMessage(Message* msg)
               textout_centre_ex(doublebuffer, this->getFont(), buf,
                                 (x1+x2)/2,
                                 (rc->y1+rc->y2)/2-text_height(this->getFont())/2,
-                                hot ? theme->get_button_hot_text_color():
-                                      theme->get_button_normal_text_color(), -1);
+                                to_system(hot ? theme->getColor(ThemeColor::ButtonHotText):
+                                                theme->getColor(ThemeColor::ButtonNormalText)),
+                                -1);
             }
           }
           else {

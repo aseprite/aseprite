@@ -163,13 +163,14 @@ bool ScrollBar::onProcessMessage(Message* msg)
       // TODO add something to avoid this (theme specific stuff)
       invalidate();
       break;
-
-    case JM_DRAW:
-      getTheme()->draw_view_scrollbar(this, &msg->draw.rect);
-      return true;
   }
 
   return Widget::onProcessMessage(msg);
+}
+
+void ScrollBar::onPaint(PaintEvent& ev)
+{
+  getTheme()->paintViewScrollbar(ev);
 }
 
 void ScrollBar::getScrollBarInfo(int *_pos, int *_len, int *_bar_size, int *_viewport_size)

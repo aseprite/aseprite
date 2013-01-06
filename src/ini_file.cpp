@@ -100,12 +100,12 @@ void set_config_rect(const char *section, const char *name, const Rect& rect)
   set_config_string(section, name, buf);
 }
 
-Color get_config_color(const char *section, const char *name, const Color& value)
+app::Color get_config_color(const char *section, const char *name, const app::Color& value)
 {
-  return Color::fromString(get_config_string(section, name, value.toString().c_str()));
+  return app::Color::fromString(get_config_string(section, name, value.toString().c_str()));
 }
 
-void set_config_color(const char *section, const char *name, const Color& value)
+void set_config_color(const char *section, const char *name, const app::Color& value)
 {
   set_config_string(section, name, value.toString().c_str());
 }

@@ -50,7 +50,7 @@ HexColorEntry::HexColorEntry()
   child_spacing = 0;
 }
 
-void HexColorEntry::setColor(const Color& color)
+void HexColorEntry::setColor(const app::Color& color)
 {
   m_entry.setTextf("%02x%02x%02x",
                    color.getRed(),
@@ -78,5 +78,5 @@ void HexColorEntry::onEntryChange()
   g = (hex & 0xff00) >> 8;
   b = (hex & 0xff);
 
-  ColorChange(Color::fromRgb(r, g, b));
+  ColorChange(app::Color::fromRgb(r, g, b));
 }

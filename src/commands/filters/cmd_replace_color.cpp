@@ -49,22 +49,22 @@ class ReplaceColorFilterWrapper : public ReplaceColorFilter
 public:
   ReplaceColorFilterWrapper(Layer* layer) : m_layer(layer) { }
 
-  void setFrom(const Color& from) {
+  void setFrom(const app::Color& from) {
     m_from = from;
     ReplaceColorFilter::setFrom(color_utils::color_for_layer(from, m_layer));
   }
-  void setTo(const Color& to) {
+  void setTo(const app::Color& to) {
     m_to = to;
     ReplaceColorFilter::setTo(color_utils::color_for_layer(to, m_layer));
   }
 
-  Color getFrom() const { return m_from; }
-  Color getTo() const { return m_to; }
+  app::Color getFrom() const { return m_from; }
+  app::Color getTo() const { return m_to; }
 
 private:
   Layer* m_layer;
-  Color m_from;
-  Color m_to;
+  app::Color m_from;
+  app::Color m_to;
 };
 
 //////////////////////////////////////////////////////////////////////
@@ -95,13 +95,13 @@ public:
   }
 
 protected:
-  void onFromChange(const Color& color)
+  void onFromChange(const app::Color& color)
   {
     m_filter.setFrom(color);
     restartPreview();
   }
 
-  void onToChange(const Color& color)
+  void onToChange(const app::Color& color)
   {
     m_filter.setTo(color);
     restartPreview();

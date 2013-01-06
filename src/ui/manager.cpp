@@ -892,10 +892,6 @@ bool Manager::onProcessMessage(Message* msg)
       layoutManager(&msg->setpos.rect);
       return true;
 
-    case JM_DRAW:
-      jdraw_rectfill(&msg->draw.rect, getTheme()->desktop_color);
-      return true;
-
     case JM_KEYPRESSED:
     case JM_KEYRELEASED: {
       msg->key.propagate_to_children = true;
@@ -926,6 +922,11 @@ bool Manager::onProcessMessage(Message* msg)
   }
 
   return Widget::onProcessMessage(msg);
+}
+
+void Manager::onPaint(PaintEvent& ev)
+{
+  getTheme()->paintDesktop(ev);
 }
 
 void Manager::onBroadcastMouseMessage(WidgetsList& targets)
@@ -1087,8 +1088,6 @@ void Manager::pumpQueue()
                msg->draw.rect.x2-1, msg->draw.rect.y2-1);
         fflush(stdout);
 #endif
-        /* rectfill(ji_screen, 0, 0, JI_SCREEN_W-1, JI_SCREEN_H-1, makecol(255, 0, 0)); */
-        /* vsync(); vsync(); vsync(); vsync(); */
 
         dirty_display_flag = true;
       }

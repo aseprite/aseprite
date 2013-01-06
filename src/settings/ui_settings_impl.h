@@ -32,12 +32,12 @@ public:
 
   // General settings
 
-  Color getFgColor() OVERRIDE;
-  Color getBgColor() OVERRIDE;
+  app::Color getFgColor() OVERRIDE;
+  app::Color getBgColor() OVERRIDE;
   tools::Tool* getCurrentTool() OVERRIDE;
 
-  void setFgColor(const Color& color) OVERRIDE;
-  void setBgColor(const Color& color) OVERRIDE;
+  void setFgColor(const app::Color& color) OVERRIDE;
+  void setBgColor(const app::Color& color) OVERRIDE;
   void setCurrentTool(tools::Tool* tool) OVERRIDE;
 
   // Document settings

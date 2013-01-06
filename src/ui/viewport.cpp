@@ -31,10 +31,6 @@ bool Viewport::onProcessMessage(Message* msg)
     case JM_SETPOS:
       set_position(&msg->setpos.rect);
       return true;
-
-    case JM_DRAW:
-      getTheme()->draw_view_viewport(this, &msg->draw.rect);
-      return true;
   }
 
   return Widget::onProcessMessage(msg);
@@ -44,6 +40,11 @@ void Viewport::onPreferredSize(PreferredSizeEvent& ev)
 {
   ev.setPreferredSize(gfx::Size(this->border_width.l + 1 + this->border_width.r,
                                 this->border_width.t + 1 + this->border_width.b));
+}
+
+void Viewport::onPaint(PaintEvent& ev)
+{
+  getTheme()->paintViewViewport(ev);
 }
 
 Size Viewport::calculateNeededSize()

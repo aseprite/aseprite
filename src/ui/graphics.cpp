@@ -29,11 +29,6 @@ Graphics::~Graphics()
 {
 }
 
-int Graphics::getBitsPerPixel() const
-{
-  return bitmap_color_depth(m_bmp);
-}
-
 gfx::Rect Graphics::getClipBounds() const
 {
   return gfx::Rect(m_bmp->cl-m_dx,
@@ -63,30 +58,38 @@ bool Graphics::intersectClipRect(const gfx::Rect& rc)
           m_bmp->ct < m_bmp->cb);
 }
 
-void Graphics::drawVLine(int color, int x, int y, int h)
+void Graphics::drawHLine(ui::Color color, int x, int y, int w)
+{
+  hline(m_bmp,
+        m_dx+x,
+        m_dy+y,
+        m_dx+x+w-1, to_system(color));
+}
+
+void Graphics::drawVLine(ui::Color color, int x, int y, int h)
 {
   vline(m_bmp,
         m_dx+x,
         m_dy+y,
-        m_dy+y+h-1, color);
+        m_dy+y+h-1, to_system(color));
 }
 
-void Graphics::drawRect(int color, const gfx::Rect& rc)
+void Graphics::drawRect(ui::Color color, const gfx::Rect& rc)
 {
   rect(m_bmp,
        m_dx+rc.x,
        m_dy+rc.y,
        m_dx+rc.x+rc.w-1,
-       m_dy+rc.y+rc.h-1, color);
+       m_dy+rc.y+rc.h-1, to_system(color));
 }
 
-void Graphics::fillRect(int color, const gfx::Rect& rc)
+void Graphics::fillRect(ui::Color color, const gfx::Rect& rc)
 {
   rectfill(m_bmp,
            m_dx+rc.x,
            m_dy+rc.y,
            m_dx+rc.x+rc.w-1,
-           m_dy+rc.y+rc.h-1, color);
+           m_dy+rc.y+rc.h-1, to_system(color));
 }
 
 void Graphics::drawBitmap(BITMAP* sprite, int x, int y)
@@ -115,15 +118,15 @@ FONT* Graphics::getFont()
   return m_currentFont;
 }
 
-void Graphics::drawString(const std::string& str, int fg_color, int bg_color, bool fill_bg, const gfx::Point& pt)
+void Graphics::drawString(const std::string& str, Color fg, Color bg, bool fillbg, const gfx::Point& pt)
 {
   jdraw_text(m_bmp, m_currentFont, str.c_str(), m_dx+pt.x, m_dy+pt.y,
-             fg_color, bg_color, fill_bg, 1 * jguiscale());
+             fg, bg, fillbg, 1 * jguiscale());
 }
 
-void Graphics::drawString(const std::string& str, int fg_color, int bg_color, const gfx::Rect& rc, int align)
+void Graphics::drawString(const std::string& str, Color fg, Color bg, const gfx::Rect& rc, int align)
 {
-  drawStringAlgorithm(str, fg_color, bg_color, rc, align, true);
+  drawStringAlgorithm(str, fg, bg, rc, align, true);
 }
 
 gfx::Size Graphics::measureString(const std::string& str)
@@ -134,10 +137,10 @@ gfx::Size Graphics::measureString(const std::string& str)
 
 gfx::Size Graphics::fitString(const std::string& str, int maxWidth, int align)
 {
-  return drawStringAlgorithm(str, 0, 0, gfx::Rect(0, 0, maxWidth, 0), align, false);
+  return drawStringAlgorithm(str, ColorNone, ColorNone, gfx::Rect(0, 0, maxWidth, 0), align, false);
 }
 
-gfx::Size Graphics::drawStringAlgorithm(const std::string& str, int fg_color, int bg_color, const gfx::Rect& rc, int align, bool draw)
+gfx::Size Graphics::drawStringAlgorithm(const std::string& str, Color fg, Color bg, const gfx::Rect& rc, int align, bool draw)
 {
   gfx::Size calculatedSize(0, 0);
   size_t beg, end, new_word_beg, old_end;
@@ -200,12 +203,12 @@ gfx::Size Graphics::drawStringAlgorithm(const std::string& str, int fg_color, in
       else
         xout = pt.x;
 
-      ji_font_set_aa_mode(m_currentFont, bg_color);
-      textout_ex(m_bmp, m_currentFont, line.c_str(), m_dx+xout, m_dy+pt.y, fg_color, bg_color);
+      ji_font_set_aa_mode(m_currentFont, to_system(bg));
+      textout_ex(m_bmp, m_currentFont, line.c_str(), m_dx+xout, m_dy+pt.y, to_system(fg), to_system(bg));
 
       jrectexclude(m_bmp,
                    m_dx+rc.x, m_dy+pt.y, m_dx+rc.x+rc.w-1, m_dy+pt.y+lineSize.h-1,
-                   m_dx+xout, m_dy+pt.y, m_dx+xout+lineSize.w-1, m_dy+pt.y+lineSize.h-1, bg_color);
+                   m_dx+xout, m_dy+pt.y, m_dx+xout+lineSize.w-1, m_dy+pt.y+lineSize.h-1, bg);
     }
 
     pt.y += lineSize.h;
@@ -217,7 +220,7 @@ gfx::Size Graphics::drawStringAlgorithm(const std::string& str, int fg_color, in
   // Fill bottom area
   if (draw) {
     if (pt.y < rc.y+rc.h)
-      fillRect(bg_color, gfx::Rect(rc.x, pt.y, rc.w, rc.y+rc.h-pt.y));
+      fillRect(bg, gfx::Rect(rc.x, pt.y, rc.w, rc.y+rc.h-pt.y));
   }
 
   return calculatedSize;

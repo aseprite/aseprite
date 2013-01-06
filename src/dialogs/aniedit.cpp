@@ -886,6 +886,7 @@ void AnimationEditor::drawHeader(JRect clip)
 
 void AnimationEditor::drawHeaderFrame(JRect clip, FrameNumber frame)
 {
+  SkinTheme* theme = static_cast<SkinTheme*>(getTheme());
   bool is_hot = (m_hot_part == A_PART_HEADER_FRAME &&
                  m_hot_frame == frame);
   bool is_clk = (m_clk_part == A_PART_HEADER_FRAME &&
@@ -920,16 +921,19 @@ void AnimationEditor::drawHeaderFrame(JRect clip, FrameNumber frame)
   // user can move frames.
   if (is_hot && !is_clk &&
       m_clk_part == A_PART_HEADER_FRAME) {
-    rectfill(ji_screen, x1+1, y1+1, x1+4, y2-1, ji_color_selected());
+    rectfill(ji_screen, x1+1, y1+1, x1+4, y2-1,
+             to_system(theme->getColor(ThemeColor::Selected)));
   }
 
   // Padding in the right side.
   if (frame == m_sprite->getTotalFrames()-1) {
     if (x2+1 <= this->rc->x2-1) {
       // Right side.
-      vline(ji_screen, x2+1, y1, y2, ji_color_foreground());
+      vline(ji_screen, x2+1, y1, y2,
+            to_system(theme->getColor(ThemeColor::Text)));
       if (x2+2 <= this->rc->x2-1)
-        rectfill(ji_screen, x2+2, y1, this->rc->x2-1, y2, ji_color_face());
+        rectfill(ji_screen, x2+2, y1, this->rc->x2-1, y2,
+                 to_system(theme->getColor(ThemeColor::Face)));
     }
   }
 
@@ -941,23 +945,20 @@ void AnimationEditor::drawHeaderPart(JRect clip, int x1, int y1, int x2, int y2,
                                      const char *line1, int align1,
                                      const char *line2, int align2)
 {
-  int x, fg, face, facelight, faceshadow;
+  SkinTheme* theme = static_cast<SkinTheme*>(getTheme());
+  ui::Color fg, face;
+  int x;
 
   if ((x2 < clip->x1) || (x1 >= clip->x2) ||
       (y2 < clip->y1) || (y1 >= clip->y2))
     return;
 
-  fg = !is_hot && is_clk ? ji_color_background(): ji_color_foreground();
-  face = is_hot ? ji_color_hotface(): (is_clk ? ji_color_selected():
-                                                ji_color_face());
-  facelight = is_hot && is_clk ? ji_color_faceshadow(): ji_color_facelight();
-  faceshadow = is_hot && is_clk ? ji_color_facelight(): ji_color_faceshadow();
-
-  // Draw the border of this text.
-  jrectedge(ji_screen, x1, y1, x2, y2, facelight, faceshadow);
+  fg = theme->getColor(!is_hot && is_clk ? ThemeColor::Background: ThemeColor::Text);
+  face = theme->getColor(is_hot ? ThemeColor::HotFace: (is_clk ? ThemeColor::Selected:
+                                                                 ThemeColor::Face));
 
   // Fill the background of the part.
-  rectfill(ji_screen, x1+1, y1+1, x2-1, y2-1, face);
+  rectfill(ji_screen, x1, y1, x2, y2, to_system(face));
 
   // Draw the text inside this header.
   if (line1 != NULL) {
@@ -988,6 +989,7 @@ void AnimationEditor::drawHeaderPart(JRect clip, int x1, int y1, int x2, int y2,
 
 void AnimationEditor::drawSeparator(JRect clip)
 {
+  SkinTheme* theme = static_cast<SkinTheme*>(getTheme());
   bool is_hot = (m_hot_part == A_PART_SEPARATOR);
   int x1, y1, x2, y2;
 
@@ -1000,8 +1002,9 @@ void AnimationEditor::drawSeparator(JRect clip)
       (y2 < clip->y1) || (y1 >= clip->y2))
     return;
 
-  vline(ji_screen, x1, y1, y2, is_hot ? ji_color_selected():
-                                        ji_color_foreground());
+  vline(ji_screen, x1, y1, y2,
+        to_system(is_hot ? theme->getColor(ThemeColor::Selected):
+                           theme->getColor(ThemeColor::Text)));
 }
 
 void AnimationEditor::drawLayer(JRect clip, int layer_index)
@@ -1011,11 +1014,11 @@ void AnimationEditor::drawLayer(JRect clip, int layer_index)
   bool selected_layer = (layer == m_sprite->getCurrentLayer());
   bool is_hot = (m_hot_part == A_PART_LAYER && m_hot_layer == layer_index);
   bool is_clk = (m_clk_part == A_PART_LAYER && m_clk_layer == layer_index);
-  int bg = selected_layer ?
-    ji_color_selected(): (is_hot ? ji_color_hotface():
-                          (is_clk ? ji_color_selected():
-                                    ji_color_face()));
-  int fg = selected_layer ? ji_color_background(): ji_color_foreground();
+  ui::Color bg = theme->getColor(selected_layer ? ThemeColor::Selected:
+                                 (is_hot ? ThemeColor::HotFace:
+                                  (is_clk ? ThemeColor::Selected:
+                                            ThemeColor::Face)));
+  ui::Color fg = theme->getColor(selected_layer ? ThemeColor::Background: ThemeColor::Text);
   BITMAP* icon1 = theme->get_part(layer->is_readable() ? PART_LAYER_VISIBLE: PART_LAYER_HIDDEN);
   BITMAP* icon2 = theme->get_part(layer->is_writable() ? PART_LAYER_EDITABLE: PART_LAYER_LOCKED);
   BITMAP* icon1_selected = theme->get_part(layer->is_readable() ? PART_LAYER_VISIBLE_SELECTED: PART_LAYER_HIDDEN_SELECTED);
@@ -1038,21 +1041,17 @@ void AnimationEditor::drawLayer(JRect clip, int layer_index)
                 this->rc->x1 + m_separator_x - 1,
                 this->rc->y2-1);
 
-  if (is_hot) {
-    jrectedge(ji_screen, x1, y1, x2, y2-1, ji_color_facelight(), ji_color_faceshadow());
-    rectfill(ji_screen, x1+1, y1+1, x2-1, y2-2, bg);
-  }
-  else {
-    rectfill(ji_screen, x1, y1, x2, y2-1, bg);
-  }
-  hline(ji_screen, x1, y2, x2, ji_color_foreground());
+  rectfill(ji_screen, x1, y1, x2, y2-1, to_system(bg));
+  hline(ji_screen, x1, y2, x2,
+        to_system(theme->getColor(ThemeColor::Text)));
 
   // If this layer wasn't clicked but there are another layer clicked,
   // we have to draw some indicators to show that the user can move
   // layers.
   if (is_hot && !is_clk &&
       m_clk_part == A_PART_LAYER) {
-    rectfill(ji_screen, x1+1, y1+1, x2-1, y1+5, ji_color_selected());
+    rectfill(ji_screen, x1+1, y1+1, x2-1, y1+5,
+             to_system(theme->getColor(ThemeColor::Selected)));
   }
 
   // u = the position where to put the next element (like eye-icon,
@@ -1098,7 +1097,7 @@ void AnimationEditor::drawLayer(JRect clip, int layer_index)
           u,
           y_mid - ji_font_get_size(this->getFont())/2 + ji_font_get_size(this->getFont()) + 1,
           u + text_length(this->getFont(), layer->getName().c_str()),
-          fg);
+          to_system(fg));
   }
 
   set_clip_rect(ji_screen, cx1, cy1, cx2, cy2);
@@ -1117,12 +1116,12 @@ void AnimationEditor::drawLayerPadding()
 
   // Padding in the bottom side.
   if (y2+1 <= this->rc->y2-1) {
-    rectfill(ji_screen, x1, y2+1, x2, this->rc->y2-1,
-             theme->get_editor_face_color());
+    ui::Color color = theme->getColor(ThemeColor::EditorFace);
+    rectfill(ji_screen, x1, y2+1, x2, this->rc->y2-1, to_system(color));
     rectfill(ji_screen,
              x2+1+m_separator_w, y2+1,
              this->rc->x2-1, this->rc->y2-1,
-             theme->get_editor_face_color());
+             to_system(color));
   }
 }
 
@@ -1137,8 +1136,7 @@ void AnimationEditor::drawCel(JRect clip, int layer_index, FrameNumber frame, Ce
   bool is_clk = (m_clk_part == A_PART_CEL &&
                  m_clk_layer == layer_index &&
                  m_clk_frame == frame);
-  int bg = is_hot ? ji_color_hotface():
-                    ji_color_face();
+  ui::Color bg = theme->getColor(is_hot ? ThemeColor::HotFace: ThemeColor::Face);
   int x1, y1, x2, y2;
   int cx1, cy1, cx2, cy2;
   BITMAP *thumbnail;
@@ -1163,25 +1161,13 @@ void AnimationEditor::drawCel(JRect clip, int layer_index, FrameNumber frame, Ce
   // Draw the box for the cel.
   if (selected_layer && frame == m_sprite->getCurrentFrame()) {
     // Current cel.
-    if (is_hot)
-      jrectedge(ji_screen, x1, y1, x2, y2-1,
-                ji_color_facelight(), ji_color_faceshadow());
-    else
-      rect(ji_screen, x1, y1, x2, y2-1, ji_color_selected());
-    rect(ji_screen, x1+1, y1+1, x2-1, y2-2, ji_color_selected());
-    rect(ji_screen, x1+2, y1+2, x2-2, y2-3, bg);
+    rect(ji_screen, x1, y1, x2, y2-1, to_system(theme->getColor(ThemeColor::Selected)));
+    rect(ji_screen, x1+1, y1+1, x2-1, y2-2, to_system(bg));
   }
   else {
-    if (is_hot) {
-      jrectedge(ji_screen, x1, y1, x2, y2-1,
-                ji_color_facelight(), ji_color_faceshadow());
-      rectfill(ji_screen, x1+1, y1+1, x2-1, y2-2, bg);
-    }
-    else {
-      rectfill(ji_screen, x1, y1, x2, y2-1, bg);
-    }
+    rectfill(ji_screen, x1, y1, x2, y2-1, to_system(bg));
   }
-  hline(ji_screen, x1, y2, x2, ji_color_foreground());
+  hline(ji_screen, x1, y2, x2, to_system(theme->getColor(ThemeColor::Text)));
 
   // Empty cel?.
   if (cel == NULL ||
@@ -1189,7 +1175,7 @@ void AnimationEditor::drawCel(JRect clip, int layer_index, FrameNumber frame, Ce
       m_sprite->getStock()->getImage(cel->getImage()) == NULL) {
 
     jdraw_rectfill(thumbnail_rect, bg);
-    draw_emptyset_symbol(ji_screen, thumbnail_rect, ji_color_disabled());
+    draw_emptyset_symbol(ji_screen, thumbnail_rect, theme->getColor(ThemeColor::Disabled));
   }
   else {
     thumbnail = generate_thumbnail(layer, cel, m_sprite);
@@ -1205,27 +1191,29 @@ void AnimationEditor::drawCel(JRect clip, int layer_index, FrameNumber frame, Ce
   // some indicators to show that the user can move cels.
   if (is_hot && !is_clk &&
       m_clk_part == A_PART_CEL) {
-    rectfill(ji_screen, x1+1, y1+1, x1+FRMSIZE/3, y1+4, ji_color_selected());
-    rectfill(ji_screen, x1+1, y1+5, x1+4, y1+FRMSIZE/3, ji_color_selected());
+    int color = to_system(theme->getColor(ThemeColor::Selected));
 
-    rectfill(ji_screen, x2-FRMSIZE/3, y1+1, x2-1, y1+4, ji_color_selected());
-    rectfill(ji_screen, x2-4, y1+5, x2-1, y1+FRMSIZE/3, ji_color_selected());
+    rectfill(ji_screen, x1+1, y1+1, x1+FRMSIZE/3, y1+4, color);
+    rectfill(ji_screen, x1+1, y1+5, x1+4, y1+FRMSIZE/3, color);
 
-    rectfill(ji_screen, x1+1, y2-4, x1+FRMSIZE/3, y2-1, ji_color_selected());
-    rectfill(ji_screen, x1+1, y2-FRMSIZE/3, x1+4, y2-5, ji_color_selected());
+    rectfill(ji_screen, x2-FRMSIZE/3, y1+1, x2-1, y1+4, color);
+    rectfill(ji_screen, x2-4, y1+5, x2-1, y1+FRMSIZE/3, color);
 
-    rectfill(ji_screen, x2-FRMSIZE/3, y2-4, x2-1, y2-1, ji_color_selected());
-    rectfill(ji_screen, x2-4, y2-FRMSIZE/3, x2-1, y2-5, ji_color_selected());
+    rectfill(ji_screen, x1+1, y2-4, x1+FRMSIZE/3, y2-1, color);
+    rectfill(ji_screen, x1+1, y2-FRMSIZE/3, x1+4, y2-5, color);
+
+    rectfill(ji_screen, x2-FRMSIZE/3, y2-4, x2-1, y2-1, color);
+    rectfill(ji_screen, x2-4, y2-FRMSIZE/3, x2-1, y2-5, color);
   }
 
   // Padding in the right side.
   if (frame == m_sprite->getTotalFrames()-1) {
     if (x2+1 <= this->rc->x2-1) {
       // Right side.
-      vline(ji_screen, x2+1, y1, y2, ji_color_foreground());
+      vline(ji_screen, x2+1, y1, y2, to_system(theme->getColor(ThemeColor::Text)));
       if (x2+2 <= this->rc->x2-1)
         rectfill(ji_screen, x2+2, y1, this->rc->x2-1, y2,
-                 theme->get_editor_face_color());
+                 to_system(theme->getColor(ThemeColor::EditorFace)));
     }
   }
 
@@ -1479,18 +1467,14 @@ int AnimationEditor::getLayerIndex(const Layer* layer)
 static void icon_rect(BITMAP* icon_normal, BITMAP* icon_selected, int x1, int y1, int x2, int y2,
                       bool is_selected, bool is_hot, bool is_clk)
 {
+  SkinTheme* theme = static_cast<SkinTheme*>(ui::CurrentTheme::get());
   int icon_x = x1+ICONBORDER;
   int icon_y = (y1+y2)/2-icon_normal->h/2;
-  int facelight = is_hot && is_clk ? ji_color_faceshadow(): ji_color_facelight();
-  int faceshadow = is_hot && is_clk ? ji_color_facelight(): ji_color_faceshadow();
 
-  if (is_hot) {
-    jrectedge(ji_screen, x1, y1, x2, y2, facelight, faceshadow);
-
-    if (!is_selected)
-      rectfill(ji_screen,
-               x1+1, y1+1, x2-1, y2-1,
-               ji_color_hotface());
+  if (is_hot && !is_selected) {
+    rectfill(ji_screen,
+             x1, y1, x2, y2,
+             to_system(theme->getColor(ThemeColor::HotFace)));
   }
 
   set_alpha_blender();

@@ -74,11 +74,11 @@ void NewFileCommand::onExecute(Context* context)
   PixelFormat format;
   int w, h, bg, ncolors;
   char buf[1024];
-  Color bg_table[] = {
-    Color::fromMask(),
-    Color::fromRgb(0, 0, 0),
-    Color::fromRgb(255, 255, 255),
-    Color::fromRgb(255, 0, 255),
+  app::Color bg_table[] = {
+    app::Color::fromMask(),
+    app::Color::fromRgb(0, 0, 0),
+    app::Color::fromRgb(255, 255, 255),
+    app::Color::fromRgb(255, 0, 255),
     ColorBar::instance()->getBgColor()
   };
 
@@ -147,7 +147,7 @@ void NewFileCommand::onExecute(Context* context)
     ncolors = MID(2, ncolors, 256);
 
     // Select the color
-    Color color = Color::fromMask();
+    app::Color color = app::Color::fromMask();
 
     if (bg >= 0 && bg <= 4) {
       color = bg_table[bg];
@@ -177,7 +177,7 @@ void NewFileCommand::onExecute(Context* context)
 
       // If the background color isn't transparent, we have to
       // convert the `Layer 1' in a `Background'
-      if (color.getType() != Color::MaskType) {
+      if (color.getType() != app::Color::MaskType) {
         Sprite* sprite = document->getSprite();
 
         ASSERT(sprite->getCurrentLayer() && sprite->getCurrentLayer()->is_image());

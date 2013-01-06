@@ -8,6 +8,7 @@
 #define UI_LABEL_H_INCLUDED
 
 #include "base/compiler_specific.h"
+#include "ui/color.h"
 #include "ui/widget.h"
 
 namespace ui {
@@ -17,15 +18,15 @@ namespace ui {
   public:
     Label(const char *text);
 
-    int getTextColor() const;
-    void setTextColor(int color);
+    Color getTextColor() const;
+    void setTextColor(Color color);
 
   protected:
     void onPreferredSize(PreferredSizeEvent& ev) OVERRIDE;
     void onPaint(PaintEvent& ev) OVERRIDE;
 
   private:
-    int m_textColor;
+    Color m_textColor;
   };
 
 } // namespace ui

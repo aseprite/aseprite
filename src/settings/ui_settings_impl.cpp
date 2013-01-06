@@ -47,8 +47,8 @@ public:
     , m_snapToGrid(get_config_bool("Grid", "SnapTo", false))
     , m_gridVisible(get_config_bool("Grid", "Visible", false))
     , m_gridBounds(get_config_rect("Grid", "Bounds", Rect(0, 0, 16, 16)))
-    , m_gridColor(get_config_color("Grid", "Color", Color::fromRgb(0, 0, 255)))
-    , m_pixelGridColor(get_config_color("PixelGrid", "Color", Color::fromRgb(200, 200, 200)))
+    , m_gridColor(get_config_color("Grid", "Color", app::Color::fromRgb(0, 0, 255)))
+    , m_pixelGridColor(get_config_color("PixelGrid", "Color", app::Color::fromRgb(200, 200, 200)))
     , m_pixelGridVisible(get_config_bool("PixelGrid", "Visible", false))
   {
     m_tiledMode = (TiledMode)MID(0, (int)m_tiledMode, (int)TILED_BOTH);
@@ -81,22 +81,22 @@ public:
   virtual bool getSnapToGrid() OVERRIDE;
   virtual bool getGridVisible() OVERRIDE;
   virtual gfx::Rect getGridBounds() OVERRIDE;
-  virtual Color getGridColor() OVERRIDE;
+  virtual app::Color getGridColor() OVERRIDE;
 
   virtual void setSnapToGrid(bool state) OVERRIDE;
   virtual void setGridVisible(bool state) OVERRIDE;
   virtual void setGridBounds(const gfx::Rect& rect) OVERRIDE;
-  virtual void setGridColor(const Color& color) OVERRIDE;
+  virtual void setGridColor(const app::Color& color) OVERRIDE;
 
   virtual void snapToGrid(gfx::Point& point, SnapBehavior snapBehavior) const OVERRIDE;
 
   // Pixel grid
 
   virtual bool getPixelGridVisible() OVERRIDE;
-  virtual Color getPixelGridColor() OVERRIDE;
+  virtual app::Color getPixelGridColor() OVERRIDE;
 
   virtual void setPixelGridVisible(bool state) OVERRIDE;
-  virtual void setPixelGridColor(const Color& color) OVERRIDE;
+  virtual void setPixelGridColor(const app::Color& color) OVERRIDE;
 
   // Onionskin settings
 
@@ -122,9 +122,9 @@ private:
   bool m_snapToGrid;
   bool m_gridVisible;
   gfx::Rect m_gridBounds;
-  Color m_gridColor;
+  app::Color m_gridColor;
   bool m_pixelGridVisible;
-  Color m_pixelGridColor;
+  app::Color m_pixelGridColor;
 };
 
 //////////////////////////////////////////////////////////////////////
@@ -149,12 +149,12 @@ UISettingsImpl::~UISettingsImpl()
 //////////////////////////////////////////////////////////////////////
 // General settings
 
-Color UISettingsImpl::getFgColor()
+app::Color UISettingsImpl::getFgColor()
 {
   return ColorBar::instance()->getFgColor();
 }
 
-Color UISettingsImpl::getBgColor()
+app::Color UISettingsImpl::getBgColor()
 {
   return ColorBar::instance()->getBgColor();
 }
@@ -167,12 +167,12 @@ tools::Tool* UISettingsImpl::getCurrentTool()
   return m_currentTool;
 }
 
-void UISettingsImpl::setFgColor(const Color& color)
+void UISettingsImpl::setFgColor(const app::Color& color)
 {
   ColorBar::instance()->setFgColor(color);
 }
 
-void UISettingsImpl::setBgColor(const Color& color)
+void UISettingsImpl::setBgColor(const app::Color& color)
 {
   ColorBar::instance()->setFgColor(color);
 }
@@ -224,7 +224,7 @@ Rect UIDocumentSettingsImpl::getGridBounds()
   return m_gridBounds;
 }
 
-Color UIDocumentSettingsImpl::getGridColor()
+app::Color UIDocumentSettingsImpl::getGridColor()
 {
   return m_gridColor;
 }
@@ -244,7 +244,7 @@ void UIDocumentSettingsImpl::setGridBounds(const Rect& rect)
   m_gridBounds = rect;
 }
 
-void UIDocumentSettingsImpl::setGridColor(const Color& color)
+void UIDocumentSettingsImpl::setGridColor(const app::Color& color)
 {
   m_gridColor = color;
 }
@@ -271,7 +271,7 @@ bool UIDocumentSettingsImpl::getPixelGridVisible()
   return m_pixelGridVisible;
 }
 
-Color UIDocumentSettingsImpl::getPixelGridColor()
+app::Color UIDocumentSettingsImpl::getPixelGridColor()
 {
   return m_pixelGridColor;
 }
@@ -281,7 +281,7 @@ void UIDocumentSettingsImpl::setPixelGridVisible(bool state)
   m_pixelGridVisible = state;
 }
 
-void UIDocumentSettingsImpl::setPixelGridColor(const Color& color)
+void UIDocumentSettingsImpl::setPixelGridColor(const app::Color& color)
 {
   m_pixelGridColor = color;
 }

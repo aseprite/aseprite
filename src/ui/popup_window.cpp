@@ -12,8 +12,8 @@
 #include "ui/graphics.h"
 #include "ui/gui.h"
 #include "ui/intern.h"
-#include "ui/paint_event.h"
 #include "ui/preferred_size_event.h"
+#include "ui/theme.h"
 
 using namespace gfx;
 
@@ -171,16 +171,7 @@ void PopupWindow::onPreferredSize(PreferredSizeEvent& ev)
 
 void PopupWindow::onPaint(PaintEvent& ev)
 {
-  Graphics* g = ev.getGraphics();
-  gfx::Rect pos = getClientBounds();
-
-  g->drawRect(makecol(0, 0, 0), pos);
-  pos.shrink(1);
-
-  g->fillRect(this->getBgColor(), pos);
-  pos.shrink(getBorder());
-
-  g->drawString(getText(), ji_color_foreground(), this->getBgColor(), pos, getAlign());
+  getTheme()->paintPopupWindow(ev);
 }
 
 void PopupWindow::onInitTheme(InitThemeEvent& ev)

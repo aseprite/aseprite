@@ -33,6 +33,8 @@
 
 using namespace gfx;
 
+namespace app {
+
 // static
 Color Color::fromMask()
 {
@@ -615,3 +617,5 @@ int Color::getIndex() const
   ASSERT(false);
   return -1;
 }
+
+} // namespace app

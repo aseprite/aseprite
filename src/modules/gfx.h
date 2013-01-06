@@ -22,39 +22,28 @@
 #include "app/color.h"
 #include "gfx/rect.h"
 #include "ui/base.h"
+#include "ui/color.h"
 
 struct FONT;
 struct BITMAP;
 
-#define COLOR_SHADE(color, r, g, b)             \
-  makecol(MID(getr(color)+r, 0, 255),           \
-          MID(getg(color)+g, 0, 255),           \
-          MID(getb(color)+b, 0, 255))
-
-#define COLOR_INTERP(color1, color2, step, max)                 \
-  makecol(getr(color1)+(getr(color2)-getr(color1))*step/max,    \
-          getg(color1)+(getg(color2)-getg(color1))*step/max,    \
-          getb(color1)+(getb(color2)-getb(color1))*step/max)
-
 typedef struct RectTracker RectTracker;
 
 void dotted_mode(int offset);
-void simple_dotted_mode(BITMAP* bmp, int fg, int bg);
 
-RectTracker *rect_tracker_new(BITMAP* bmp, int x1, int y1, int x2, int y2);
-void rect_tracker_free(RectTracker *tracker);
+RectTracker* rect_tracker_new(BITMAP* bmp, int x1, int y1, int x2, int y2);
+void rect_tracker_free(RectTracker* tracker);
 
-void bevel_box(BITMAP* bmp, int x1, int y1, int x2, int y2, int c1, int c2, int bevel);
-void rectdotted(BITMAP* bmp, int x1, int y1, int x2, int y2, int fg, int bg);
+void bevel_box(BITMAP* bmp, int x1, int y1, int x2, int y2, ui::Color c1, ui::Color c2, int bevel);
 void rectgrid(BITMAP* bmp, int x1, int y1, int x2, int y2, int w, int h);
 
-void draw_emptyset_symbol(BITMAP* bmp, const gfx::Rect& rc, int color);
-void draw_color(BITMAP* bmp, const gfx::Rect& rc, PixelFormat pixelFormat, const Color& color);
+void draw_emptyset_symbol(BITMAP* bmp, const gfx::Rect& rc, ui::Color color);
+void draw_color(BITMAP* bmp, const gfx::Rect& rc, PixelFormat pixelFormat, const app::Color& color);
 void draw_color_button(BITMAP* bmp,
                        const gfx::Rect& rc,
                        bool outer_nw, bool outer_n, bool outer_ne, bool outer_e,
                        bool outer_se, bool outer_s, bool outer_sw, bool outer_w,
-                       PixelFormat pixelFormat, const Color& color,
+                       PixelFormat pixelFormat, const app::Color& color,
                        bool hot, bool drag);
 void draw_progress_bar(BITMAP* bmp,
                        int x1, int y1, int x2, int y2,

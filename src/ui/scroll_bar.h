@@ -29,6 +29,7 @@ namespace ui {
   protected:
     // Events
     bool onProcessMessage(Message* msg) OVERRIDE;
+    void onPaint(PaintEvent& ev) OVERRIDE;
 
   private:
     void getScrollBarInfo(int* _pos, int* _len, int* _bar_size, int* _viewport_size);

@@ -121,7 +121,7 @@ void SpritePropertiesCommand::onExecute(Context* context)
     frames->setTextf("%d", (int)sprite->getTotalFrames());
 
     if (sprite->getPixelFormat() == IMAGE_INDEXED) {
-      color_button = new ColorButton(Color::fromIndex(sprite->getTransparentColor()),
+      color_button = new ColorButton(app::Color::fromIndex(sprite->getTransparentColor()),
                                      IMAGE_INDEXED);
 
       box_transparent->addChild(color_button);

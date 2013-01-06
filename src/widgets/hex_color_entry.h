@@ -31,10 +31,10 @@ class HexColorEntry : public ui::Box
 public:
   HexColorEntry();
 
-  void setColor(const Color& color);
+  void setColor(const app::Color& color);
 
   // Signals
-  Signal1<void, const Color&> ColorChange;
+  Signal1<void, const app::Color&> ColorChange;
 
 protected:
   void onEntryChange();

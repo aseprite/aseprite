@@ -21,6 +21,7 @@
 
 #include "gfx/rect.h"
 #include "skin/skin_parts.h"
+#include "ui/color.h"
 #include "ui/rect.h"
 #include "ui/system.h"
 #include "ui/theme.h"
@@ -35,22 +36,82 @@ namespace ui {
   class IButtonIcon;
 }
 
+namespace ThemeColor {
+  enum Type {
+    Text,
+    Disabled,
+    Face,
+    HotFace,
+    Selected,
+    Background,
+    Desktop,
+    TextBoxText,
+    TextBoxFace,
+    LinkText,
+    ButtonNormalText,
+    ButtonNormalFace,
+    ButtonHotText,
+    ButtonHotFace,
+    ButtonSelectedText,
+    ButtonSelectedFace,
+    CheckHotFace,
+    CheckFocusFace,
+    RadioHotFace,
+    RadioFocusFace,
+    MenuItemNormalText,
+    MenuItemNormalFace,
+    MenuItemHotText,
+    MenuItemHotFace,
+    MenuItemHighlightText,
+    MenuItemHighlightFace,
+    WindowFace,
+    WindowTitlebarText,
+    WindowTitlebarFace,
+    EditorFace,
+    EditorSpriteBorder,
+    EditorSpriteBottomBorder,
+    ListItemNormalText,
+    ListItemNormalFace,
+    ListItemSelectedText,
+    ListItemSelectedFace,
+    SliderEmptyText,
+    SliderEmptyFace,
+    SliderFullText,
+    SliderFullFace,
+    TabNormalText,
+    TabNormalFace,
+    TabSelectedText,
+    TabSelectedFace,
+    SplitterNormalFace,
+    ScrollBarBgFace,
+    ScrollBarThumbFace,
+    PopupWindowBorder,
+    TooltipText,
+    TooltipFace,
+    FileListEvenRowText,
+    FileListEvenRowFace,
+    FileListOddRowText,
+    FileListOddRowFace,
+    FileListSelectedRowText,
+    FileListSelectedRowFace,
+    FileListDisabledRowText,
+    MaxColors
+  };
+} 
+
 // This is the GUI theme used by ASEPRITE (which use images from data/skins
 // directory).
 class SkinTheme : public ui::Theme
 {
-  std::string m_selected_skin;
-  BITMAP* m_sheet_bmp;
-  BITMAP* m_part[PARTS];
-  std::map<std::string, BITMAP*> m_toolicon;
-  std::vector<ui::Cursor*> m_cursors;
-  FONT* m_minifont;
-
 public:
   static const char* kThemeCloseButtonId;
 
   SkinTheme();
   ~SkinTheme();
+
+  ui::Color getColor(ThemeColor::Type k) const {
+    return m_colors[k];
+  }
 
   FONT* getMiniFont() const { return m_minifont; }
 
@@ -62,13 +123,7 @@ public:
   ui::JRegion get_window_mask(ui::Widget* widget);
   void map_decorative_widget(ui::Widget* widget);
 
-  int color_foreground();
-  int color_disabled();
-  int color_face();
-  int color_hotface();
-  int color_selected();
-  int color_background();
-
+  void paintDesktop(ui::PaintEvent& ev);
   void paintBox(ui::PaintEvent& ev);
   void paintButton(ui::PaintEvent& ev);
   void paintCheckBox(ui::PaintEvent& ev);
@@ -87,80 +142,33 @@ public:
   void draw_combobox_entry(ui::Entry* widget, ui::JRect clip);
   void paintComboBoxButton(ui::PaintEvent& ev);
   void draw_textbox(ui::Widget* widget, ui::JRect clip);
-  void draw_view(ui::Widget* widget, ui::JRect clip);
-  void draw_view_scrollbar(ui::Widget* widget, ui::JRect clip);
-  void draw_view_viewport(ui::Widget* widget, ui::JRect clip);
+  void paintView(ui::PaintEvent& ev);
+  void paintViewScrollbar(ui::PaintEvent& ev);
+  void paintViewViewport(ui::PaintEvent& ev);
   void paintWindow(ui::PaintEvent& ev);
+  void paintPopupWindow(ui::PaintEvent& ev);
   void drawWindowButton(ui::ButtonBase* widget, ui::JRect clip);
   void paintTooltip(ui::PaintEvent& ev);
 
-  int get_button_normal_text_color() const { return makecol(0, 0, 0); }
-  int get_button_normal_face_color() const { return makecol(198, 198, 198); }
-  int get_button_hot_text_color() const { return makecol(0, 0, 0); }
-  int get_button_hot_face_color() const { return makecol(255, 255, 255); }
-  int get_button_selected_text_color() const { return makecol(255, 255, 255); }
-  int get_button_selected_face_color() const { return makecol(124, 144, 159); }
-  int get_button_selected_offset() const { return 0; }
-
-  int get_check_hot_face_color() const { return makecol(255, 235, 182); }
-  int get_check_focus_face_color() const { return makecol(198, 198, 198); }
-
-  int get_radio_hot_face_color() const { return makecol(255, 235, 182); }
-  int get_radio_focus_face_color() const { return makecol(198, 198, 198); }
-
-  int get_menuitem_normal_text_color() const { return makecol(0, 0, 0); }
-  int get_menuitem_normal_face_color() const { return makecol(211, 203, 190); }
-  int get_menuitem_hot_text_color() const { return makecol(0, 0, 0); }
-  int get_menuitem_hot_face_color() const { return makecol(255, 235, 182); }
-  int get_menuitem_highlight_text_color() const { return makecol(255, 255, 255); }
-  int get_menuitem_highlight_face_color() const { return makecol(124, 144, 159); }
-
-  int get_window_face_color() const { return makecol(211, 203, 190); }
-  int get_window_titlebar_text_color() const { return makecol(255, 255, 255); }
-  int get_window_titlebar_face_color() const { return makecol(124, 144, 159); }
-
-  int get_editor_face_color() const { return makecol(101, 85, 97); }
-  int get_editor_sprite_border() const { return makecol(0, 0, 0); }
-  int get_editor_sprite_bottom_edge() const { return makecol(65, 65, 44); }
-
-  int get_listitem_normal_text_color() const { return makecol(0, 0, 0); }
-  int get_listitem_normal_face_color() const { return makecol(255, 255, 255); }
-  int get_listitem_selected_text_color() const { return makecol(255, 255, 255); }
-  int get_listitem_selected_face_color() const { return makecol(255, 85, 85); }
-
-  int get_slider_empty_text_color() const { return makecol(0, 0, 0); }
-  int get_slider_empty_face_color() const { return makecol(174, 203, 223); }
-  int get_slider_full_text_color() const { return makecol(255, 255, 255); }
-  int get_slider_full_face_color() const { return makecol(125, 146, 158); }
-
-  int get_tab_selected_text_color() const { return makecol(255, 255, 255); }
-  int get_tab_selected_face_color() const { return makecol(125, 146, 158); }
-  int get_tab_normal_text_color() const { return makecol(0, 0, 0); }
-  int get_tab_normal_face_color() const { return makecol(199, 199, 199); }
-
-  int get_splitter_normal_face_color() const { return makecol(125, 146, 158); }
-
-  int get_scrollbar_bg_face_color() const { return makecol(125, 146, 158); }
-  int get_scrollbar_thumb_face_color() const { return makecol(199, 199, 199); }
+  int get_button_selected_offset() const { return 0; } // TODO Configurable in xml
 
   BITMAP* get_part(int part_i) const { return m_part[part_i]; }
   BITMAP* get_toolicon(const char* tool_id) const;
 
   // helper functions to draw bounds/hlines with sheet parts
   void draw_bounds_array(BITMAP* bmp, int x1, int y1, int x2, int y2, int parts[8]);
-  void draw_bounds_nw(BITMAP* bmp, int x1, int y1, int x2, int y2, int nw, int bg = -1);
-  void draw_bounds_nw(ui::Graphics* g, const gfx::Rect& rc, int nw, int bg = -1);
-  void draw_bounds_nw2(ui::Graphics* g, const gfx::Rect& rc, int x_mid, int nw1, int nw2, int bg1, int bg2);
+  void draw_bounds_nw(BITMAP* bmp, int x1, int y1, int x2, int y2, int nw, ui::Color bg = ui::ColorNone);
+  void draw_bounds_nw(ui::Graphics* g, const gfx::Rect& rc, int nw, ui::Color bg = ui::ColorNone);
+  void draw_bounds_nw2(ui::Graphics* g, const gfx::Rect& rc, int x_mid, int nw1, int nw2, ui::Color bg1, ui::Color bg2);
   void draw_part_as_hline(BITMAP* bmp, int x1, int y1, int x2, int y2, int part);
   void draw_part_as_vline(BITMAP* bmp, int x1, int y1, int x2, int y2, int part);
 
   // Wrapper to use the new "Rect" class (x, y, w, h)
-  void draw_bounds_nw(BITMAP* bmp, const gfx::Rect& rc, int nw, int bg) {
+  void draw_bounds_nw(BITMAP* bmp, const gfx::Rect& rc, int nw, ui::Color bg) {
     draw_bounds_nw(bmp, rc.x, rc.y, rc.x+rc.w-1, rc.y+rc.h-1, nw, bg);
   }
 
 protected:
-
   void onRegenerate();
 
 private:
@@ -170,11 +178,11 @@ private:
                             int nw, int n, int ne, int e, int se, int s, int sw, int w);
 
   BITMAP* cropPartFromSheet(BITMAP* bmp, int x, int y, int w, int h);
-  int get_bg_color(ui::Widget* widget);
-  void draw_textstring(const char *t, int fg_color, int bg_color,
+  ui::Color getWidgetBgColor(ui::Widget* widget);
+  void draw_textstring(const char *t, ui::Color fg_color, ui::Color bg_color,
                        bool fill_bg, ui::Widget* widget, const ui::JRect rect,
                        int selected_offset);
-  void draw_textstring(ui::Graphics* g, const char *t, int fg_color, int bg_color,
+  void draw_textstring(ui::Graphics* g, const char *t, ui::Color fg_color, ui::Color bg_color,
                        bool fill_bg, ui::Widget* widget, const gfx::Rect& rc,
                        int selected_offset);
   void draw_entry_caret(ui::Entry* widget, int x, int y);
@@ -185,6 +193,13 @@ private:
 
   static FONT* loadFont(const char* userFont, const std::string& path);
 
+  std::string m_selected_skin;
+  BITMAP* m_sheet_bmp;
+  BITMAP* m_part[PARTS];
+  std::map<std::string, BITMAP*> m_toolicon;
+  std::vector<ui::Cursor*> m_cursors;
+  std::vector<ui::Color> m_colors;
+  FONT* m_minifont;
 };
 
 #endif

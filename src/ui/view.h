@@ -50,6 +50,7 @@ protected:
   // Events
   bool onProcessMessage(Message* msg) OVERRIDE;
   void onPreferredSize(PreferredSizeEvent& ev) OVERRIDE;
+  void onPaint(PaintEvent& ev) OVERRIDE;
 
 private:
   static void displaceWidgets(Widget* widget, int x, int y);

@@ -346,7 +346,7 @@ void app_default_statusbar_message()
 int app_get_color_to_clear_layer(Layer* layer)
 {
   /* all transparent layers are cleared with the mask color */
-  Color color = Color::fromMask();
+  app::Color color = app::Color::fromMask();
 
   /* the `Background' is erased with the `Background Color' */
   if (layer != NULL && layer->is_background())

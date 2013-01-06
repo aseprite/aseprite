@@ -244,8 +244,6 @@ void* Tabs::getSelectedTab()
 
 bool Tabs::onProcessMessage(Message* msg)
 {
-  SkinTheme* theme = static_cast<SkinTheme*>(this->getTheme());
-
   switch (msg->type) {
 
     case JM_SETPOS:
@@ -254,6 +252,7 @@ bool Tabs::onProcessMessage(Message* msg)
       return true;
 
     case JM_DRAW: {
+      SkinTheme* theme = static_cast<SkinTheme*>(this->getTheme());
       BITMAP *doublebuffer = create_bitmap(jrect_w(&msg->draw.rect),
                                            jrect_h(&msg->draw.rect));
       JRect rect = jwidget_get_rect(this);
@@ -264,7 +263,7 @@ bool Tabs::onProcessMessage(Message* msg)
                             rect->x1-m_scrollX+2*jguiscale(),
                             rect->y1+theme->get_part(PART_TAB_FILLER)->h);
 
-      clear_to_color(doublebuffer, theme->get_window_face_color());
+      clear_to_color(doublebuffer, to_system(theme->getColor(ThemeColor::WindowFace)));
 
       theme->draw_part_as_hline(doublebuffer, box->x1, box->y1, box->x2-1, box->y2-1, PART_TAB_FILLER);
       theme->draw_part_as_hline(doublebuffer, box->x1, box->y2, box->x2-1, rect->y2-1, PART_TAB_BOTTOM_NORMAL);
@@ -446,10 +445,10 @@ void Tabs::onInitTheme(InitThemeEvent& ev)
 {
   Widget::onInitTheme(ev);
 
-  SkinTheme* skinTheme = static_cast<SkinTheme*>(ev.getTheme());
+  SkinTheme* theme = static_cast<SkinTheme*>(ev.getTheme());
 
-  m_button_left->setBgColor(skinTheme->get_tab_selected_face_color());
-  m_button_right->setBgColor(skinTheme->get_tab_selected_face_color());
+  m_button_left->setBgColor(theme->getColor(ThemeColor::TabSelectedFace));
+  m_button_right->setBgColor(theme->getColor(ThemeColor::TabSelectedFace));
 }
 
 void Tabs::onSetText()
@@ -476,25 +475,27 @@ void Tabs::drawTab(BITMAP* bmp, JRect box, Tab* tab, int y_delta, bool selected)
     return;
 
   SkinTheme* theme = static_cast<SkinTheme*>(this->getTheme());
-  int text_color;
-  int face_color;
+  ui::Color text_color;
+  ui::Color face_color;
 
   // Selected
   if (selected) {
-    text_color = theme->get_tab_selected_text_color();
-    face_color = theme->get_tab_selected_face_color();
+    text_color = theme->getColor(ThemeColor::TabSelectedText);
+    face_color = theme->getColor(ThemeColor::TabSelectedFace);
   }
   // Non-selected
   else {
-    text_color = theme->get_tab_normal_text_color();
-    face_color = theme->get_tab_normal_face_color();
+    text_color = theme->getColor(ThemeColor::TabNormalText);
+    face_color = theme->getColor(ThemeColor::TabNormalFace);
   }
 
   if (jrect_w(box) > 2) {
     theme->draw_bounds_nw(bmp,
                           box->x1, box->y1+y_delta, box->x2-1, box->y2-1,
                           (selected) ? PART_TAB_SELECTED_NW:
-                                       PART_TAB_NORMAL_NW, face_color);
+                                       PART_TAB_NORMAL_NW,
+                          face_color);
+
     jdraw_text(bmp, this->getFont(), tab->text.c_str(),
                box->x1+4*jguiscale(),
                (box->y1+box->y2)/2-text_height(this->getFont())/2+1 + y_delta,
@@ -505,7 +506,7 @@ void Tabs::drawTab(BITMAP* bmp, JRect box, Tab* tab, int y_delta, bool selected)
     theme->draw_bounds_nw(bmp,
                           box->x1, box->y2, box->x2-1, this->rc->y2-1,
                           PART_TAB_BOTTOM_SELECTED_NW,
-                          theme->get_tab_selected_face_color());
+                          theme->getColor(ThemeColor::TabSelectedFace));
   }
   else {
     theme->draw_part_as_hline(bmp,

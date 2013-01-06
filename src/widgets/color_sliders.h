@@ -49,7 +49,7 @@ public:
   ColorSliders();
   ~ColorSliders();
 
-  void setColor(const Color& color);
+  void setColor(const app::Color& color);
 
   // Signals
   Signal1<void, ColorSlidersChangeEvent&> ColorChange;
@@ -62,8 +62,8 @@ protected:
   void setSliderValue(int sliderIndex, int value);
   int getSliderValue(int sliderIndex) const;
 
-  virtual void onSetColor(const Color& color) = 0;
-  virtual Color getColorFromSliders() = 0;
+  virtual void onSetColor(const app::Color& color) = 0;
+  virtual app::Color getColorFromSliders() = 0;
 
 private:
   void onSliderChange(int i);
@@ -71,8 +71,8 @@ private:
   void onControlChange(int i);
 
   void updateEntryText(int entryIndex);
-  void updateSlidersBgColor(const Color& color);
-  void updateSliderBgColor(ui::Slider* slider, const Color& color);
+  void updateSlidersBgColor(const app::Color& color);
+  void updateSliderBgColor(ui::Slider* slider, const app::Color& color);
 
   std::vector<ui::Label*> m_label;
   std::vector<ui::Slider*> m_slider;
@@ -90,8 +90,8 @@ public:
   RgbSliders();
 
 private:
-  virtual void onSetColor(const Color& color) OVERRIDE;
-  virtual Color getColorFromSliders() OVERRIDE;
+  virtual void onSetColor(const app::Color& color) OVERRIDE;
+  virtual app::Color getColorFromSliders() OVERRIDE;
 };
 
 class HsvSliders : public ColorSliders
@@ -100,8 +100,8 @@ public:
   HsvSliders();
 
 private:
-  virtual void onSetColor(const Color& color) OVERRIDE;
-  virtual Color getColorFromSliders() OVERRIDE;
+  virtual void onSetColor(const app::Color& color) OVERRIDE;
+  virtual app::Color getColorFromSliders() OVERRIDE;
 };
 
 class GraySlider : public ColorSliders
@@ -110,8 +110,8 @@ public:
   GraySlider();
 
 private:
-  virtual void onSetColor(const Color& color) OVERRIDE;
-  virtual Color getColorFromSliders() OVERRIDE;
+  virtual void onSetColor(const app::Color& color) OVERRIDE;
+  virtual app::Color getColorFromSliders() OVERRIDE;
 };
 
 //////////////////////////////////////////////////////////////////////
@@ -120,17 +120,17 @@ private:
 class ColorSlidersChangeEvent : public ui::Event
 {
 public:
-  ColorSlidersChangeEvent(const Color& color, ColorSliders::Channel channel, ui::Component* source)
+  ColorSlidersChangeEvent(const app::Color& color, ColorSliders::Channel channel, ui::Component* source)
     : Event(source)
     , m_color(color)
     , m_channel(channel) { }
 
-  Color getColor() const { return m_color; }
+  app::Color getColor() const { return m_color; }
 
   ColorSliders::Channel getModifiedChannel() const { return m_channel; }
 
 private:
-  Color m_color;
+  app::Color m_color;
   ColorSliders::Channel m_channel;
 };
 

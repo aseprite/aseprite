@@ -38,12 +38,12 @@ public:
 
   // General settings
 
-  virtual Color getFgColor() = 0;
-  virtual Color getBgColor() = 0;
+  virtual app::Color getFgColor() = 0;
+  virtual app::Color getBgColor() = 0;
   virtual tools::Tool* getCurrentTool() = 0;
 
-  virtual void setFgColor(const Color& color) = 0;
-  virtual void setBgColor(const Color& color) = 0;
+  virtual void setFgColor(const app::Color& color) = 0;
+  virtual void setBgColor(const app::Color& color) = 0;
   virtual void setCurrentTool(tools::Tool* tool) = 0;
 
   // Returns the specific settings for the given document. If the

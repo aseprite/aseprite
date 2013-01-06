@@ -21,6 +21,7 @@
 #include "widgets/file_list.h"
 
 #include "modules/gfx.h"
+#include "skin/skin_theme.h"
 #include "thumbnail_generator.h"
 #include "ui/gui.h"
 
@@ -110,13 +111,14 @@ bool FileList::onProcessMessage(Message* msg)
   switch (msg->type) {
 
     case JM_DRAW: {
+      SkinTheme* theme = static_cast<SkinTheme*>(getTheme());
       View* view = View::getView(this);
       gfx::Rect vp = view->getViewportBounds();
       int th = jwidget_get_text_height(this);
       int x, y = this->rc->y1;
-      int row = 0;
-      int bgcolor;
-      int fgcolor;
+      int evenRow = 0;
+      ui::Color bgcolor;
+      ui::Color fgcolor;
       BITMAP *thumbnail = NULL;
       int thumbnail_y = 0;
 
@@ -127,17 +129,18 @@ bool FileList::onProcessMessage(Message* msg)
         gfx::Size itemSize = getFileItemSize(fi);
 
         if (fi == m_selected) {
-          bgcolor = ji_color_selected();
-          fgcolor = ji_color_background();
+          fgcolor = theme->getColor(ThemeColor::FileListSelectedRowText);
+          bgcolor = theme->getColor(ThemeColor::FileListSelectedRowFace);
         }
         else {
-          bgcolor = row ? makecol(240, 240, 240):
-                          ji_color_background();
+          bgcolor = evenRow ? theme->getColor(ThemeColor::FileListEvenRowFace):
+                              theme->getColor(ThemeColor::FileListOddRowFace);
 
-          fgcolor =
-            fi->isFolder() &&
-            !fi->isBrowsable() ? makecol(255, 200, 200):
-                                 ji_color_foreground();
+          if (fi->isFolder() && !fi->isBrowsable())
+            fgcolor = theme->getColor(ThemeColor::FileListDisabledRowText);
+          else
+            fgcolor = evenRow ? theme->getColor(ThemeColor::FileListEvenRowText):
+                                theme->getColor(ThemeColor::FileListOddRowText);
         }
 
         x = this->rc->x1+2;
@@ -169,7 +172,7 @@ bool FileList::onProcessMessage(Message* msg)
           rectfill(ji_screen,
                    this->rc->x1, y,
                    x-1, y+2+th+2-1,
-                   bgcolor);
+                   to_system(bgcolor));
         }
 
         // item name
@@ -209,14 +212,14 @@ bool FileList::onProcessMessage(Message* msg)
         }
 
         y += itemSize.h;
-        row ^= 1;
+        evenRow ^= 1;
       }
 
       if (y < this->rc->y2-1)
         rectfill(ji_screen,
                  this->rc->x1, y,
                  this->rc->x2-1, this->rc->y2-1,
-                 ji_color_background());
+                 to_system(theme->getColor(ThemeColor::Background)));
 
       // Draw the thumbnail
       if (thumbnail) {
@@ -232,7 +235,7 @@ bool FileList::onProcessMessage(Message* msg)
 
       // is the current folder empty?
       if (m_list.empty())
-        draw_emptyset_symbol(ji_screen, vp, makecol(194, 194, 194));
+        draw_emptyset_symbol(ji_screen, vp, ui::rgba(194, 194, 194));
       return true;
     }
 

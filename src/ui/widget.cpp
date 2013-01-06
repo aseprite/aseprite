@@ -61,7 +61,7 @@ Widget::Widget(int type)
   this->m_align = 0;
   this->m_text = "";
   this->m_font = this->m_theme ? this->m_theme->default_font: NULL;
-  this->m_bg_color = -1;
+  this->m_bgColor = ui::ColorNone;
 
   this->m_update_region = jregion_new(NULL, 0);
 
@@ -749,13 +749,6 @@ JRegion jwidget_get_drawable_region(Widget* widget, int flags)
   return region;
 }
 
-int jwidget_get_bg_color(Widget* widget)
-{
-  ASSERT_VALID_WIDGET(widget);
-
-  return widget->getBgColor();
-}
-
 int jwidget_get_text_length(const Widget* widget)
 {
 #if 1
@@ -936,13 +929,6 @@ void jwidget_set_max_size(Widget* widget, int w, int h)
 
   widget->max_w = w;
   widget->max_h = h;
-}
-
-void jwidget_set_bg_color(Widget* widget, int color)
-{
-  ASSERT_VALID_WIDGET(widget);
-
-  widget->setBgColor(color);
 }
 
 void Widget::flushRedraw()
