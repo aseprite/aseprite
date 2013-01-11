@@ -67,7 +67,7 @@ void NewLayerSetCommand::onExecute(Context* context)
 
   window->openWindowInForeground();
 
-  if (window->get_killer() == window->findChild("ok")) {
+  if (window->getKiller() == window->findChild("ok")) {
     const char *name = window->findChild("name")->getText();
     Layer* layer = new LayerFolder(sprite);
 

@@ -83,7 +83,7 @@ void CelPropertiesCommand::onExecute(Context* context)
   setup_mini_look(slider_opacity);
 
   /* if the layer isn't writable */
-  if (!layer->is_writable()) {
+  if (!layer->isWritable()) {
     button_ok->setText("Locked");
     button_ok->setEnabled(false);
   }
@@ -109,7 +109,7 @@ void CelPropertiesCommand::onExecute(Context* context)
 
     // Opacity
     slider_opacity->setValue(cel->getOpacity());
-    if (layer->is_background()) {
+    if (layer->isBackground()) {
       slider_opacity->setEnabled(false);
       tooltipManager->addTooltipFor(slider_opacity,
                                     "The `Background' layer is opaque,\n"
@@ -126,7 +126,7 @@ void CelPropertiesCommand::onExecute(Context* context)
 
   window->openWindowInForeground();
 
-  if (window->get_killer() == button_ok) {
+  if (window->getKiller() == button_ok) {
     DocumentWriter document_writer(document);
     Sprite* sprite_writer = document_writer->getSprite();
     Layer* layer_writer = sprite_writer->getCurrentLayer();

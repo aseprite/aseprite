@@ -95,7 +95,7 @@ void TooltipManager::onTick()
     int w, h;
 
     m_tipWindow->setArrowAlign(m_target.tipInfo.arrowAlign);
-    m_tipWindow->remap_window();
+    m_tipWindow->remapWindow();
 
     w = jrect_w(m_tipWindow->rc);
     h = jrect_h(m_tipWindow->rc);
@@ -140,8 +140,8 @@ void TooltipManager::onTick()
     //   y = jmouse_y(0);
     // }
 
-    m_tipWindow->position_window(MID(0, x, JI_SCREEN_W-w),
-                                 MID(0, y, JI_SCREEN_H-h));
+    m_tipWindow->positionWindow(MID(0, x, JI_SCREEN_W-w),
+                                MID(0, y, JI_SCREEN_H-h));
     m_tipWindow->openWindow();
   }
   m_timer->stop();
@@ -157,9 +157,9 @@ TipWindow::TipWindow(const char *text, bool close_on_buttonpressed)
   m_filtering = false;
   m_arrowAlign = 0;
 
-  set_sizeable(false);
-  set_moveable(false);
-  set_wantfocus(false);
+  setSizeable(false);
+  setMoveable(false);
+  setWantFocus(false);
   setAlign(JI_LEFT | JI_TOP);
 
   removeDecorativeWidgets();
@@ -184,7 +184,7 @@ TipWindow::~TipWindow()
  * @param region The new hot-region. This pointer is holded by the @a widget.
  * So you can't destroy it after calling this routine.
  */
-void TipWindow::set_hotregion(JRegion region)
+void TipWindow::setHotRegion(JRegion region)
 {
   ASSERT(region != NULL);
 

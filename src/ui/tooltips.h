@@ -57,7 +57,7 @@ namespace ui {
     TipWindow(const char *text, bool close_on_buttonpressed = false);
     ~TipWindow();
 
-    void set_hotregion(JRegion region);
+    void setHotRegion(JRegion region);
 
     int getArrowAlign() const;
     void setArrowAlign(int arrowAlign);

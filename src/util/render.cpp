@@ -375,7 +375,7 @@ Image* RenderEngine::renderSprite(const Document* document,
 {
   void (*zoomed_func)(Image*, const Image*, const Palette*, int, int, int, int, int);
   const LayerImage* background = sprite->getBackgroundLayer();
-  bool need_checked_bg = (background != NULL ? !background->is_readable(): true);
+  bool need_checked_bg = (background != NULL ? !background->isReadable(): true);
   uint32_t bg_color = 0;
   Image *image;
 
@@ -559,14 +559,14 @@ void RenderEngine::renderLayer(const Document* document,
                                bool render_transparent)
 {
   // we can't read from this layer
-  if (!layer->is_readable())
+  if (!layer->isReadable())
     return;
 
   switch (layer->getType()) {
 
     case GFXOBJ_LAYER_IMAGE: {
-      if ((!render_background  &&  layer->is_background()) ||
-          (!render_transparent && !layer->is_background()))
+      if ((!render_background  &&  layer->isBackground()) ||
+          (!render_transparent && !layer->isBackground()))
         break;
 
       const Cel* cel = static_cast<const LayerImage*>(layer)->getCel(frame);
@@ -606,8 +606,8 @@ void RenderEngine::renderLayer(const Document* document,
     }
 
     case GFXOBJ_LAYER_FOLDER: {
-      LayerConstIterator it = static_cast<const LayerFolder*>(layer)->get_layer_begin();
-      LayerConstIterator end = static_cast<const LayerFolder*>(layer)->get_layer_end();
+      LayerConstIterator it = static_cast<const LayerFolder*>(layer)->getLayerBegin();
+      LayerConstIterator end = static_cast<const LayerFolder*>(layer)->getLayerEnd();
 
       for (; it != end; ++it) {
         renderLayer(document, sprite, *it, image,

@@ -295,7 +295,7 @@ FileOp* fop_to_save_document(Document* document)
   }
 
   // layers support
-  if (fop->document->getSprite()->getFolder()->get_layers_count() > 1) {
+  if (fop->document->getSprite()->getFolder()->getLayersCount() > 1) {
     if (!(fop->format->support(FILE_SUPPORT_LAYERS))) {
       usprintf(buf+ustrlen(buf), "<<- Layers");
     }
@@ -650,8 +650,8 @@ void fop_post_load(FileOp* fop)
 
   if (fop->document->getSprite() != NULL) {
     // Select the last layer
-    if (fop->document->getSprite()->getFolder()->get_layers_count() > 0) {
-      LayerIterator last_layer = --fop->document->getSprite()->getFolder()->get_layer_end();
+    if (fop->document->getSprite()->getFolder()->getLayersCount() > 0) {
+      LayerIterator last_layer = --fop->document->getSprite()->getFolder()->getLayerEnd();
       fop->document->getSprite()->setCurrentLayer(*last_layer);
     }
 

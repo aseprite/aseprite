@@ -78,9 +78,9 @@ public:
   CustomizedWindowForMenuBox(MenuBox* menubox)
     : Window(false, NULL)
   {
-    set_moveable(false); // Can't move the window
+    setMoveable(false); // Can't move the window
     addChild(menubox);
-    remap_window();
+    remapWindow();
   }
 
 protected:
@@ -266,17 +266,17 @@ void Menu::showPopup(int x, int y)
   base->is_filtering = true;
   Manager::getDefault()->addMessageFilter(JM_BUTTONPRESSED, menubox);
 
-  window->set_moveable(false);   // Can't move the window
+  window->setMoveable(false);   // Can't move the window
 
   // Set children
   menubox->setMenu(this);
   window->addChild(menubox);
 
-  window->remap_window();
+  window->remapWindow();
 
   // Menubox position
-  window->position_window(MID(0, x, JI_SCREEN_W-jrect_w(window->rc)),
-                          MID(0, y, JI_SCREEN_H-jrect_h(window->rc)));
+  window->positionWindow(MID(0, x, JI_SCREEN_W-jrect_w(window->rc)),
+                         MID(0, y, JI_SCREEN_H-jrect_h(window->rc)));
 
   // Set the focus to the new menubox
   Manager::getDefault()->setFocus(menubox);
@@ -774,7 +774,7 @@ bool MenuItem::onProcessMessage(Message* msg)
           jrect_moveto(pos, x, y);
         }
 
-        window->position_window(pos->x1, pos->y1);
+        window->positionWindow(pos->x1, pos->y1);
         jrect_free(pos);
 
         // Set the focus to the new menubox

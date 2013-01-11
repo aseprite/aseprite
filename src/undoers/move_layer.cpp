@@ -28,10 +28,10 @@ using namespace undo;
 using namespace undoers;
 
 MoveLayer::MoveLayer(ObjectsContainer* objects, Layer* layer)
-  : m_folderId(objects->addObject(layer->get_parent()))
+  : m_folderId(objects->addObject(layer->getParent()))
   , m_layerId(objects->addObject(layer))
 {
-  Layer* after = layer->get_prev();
+  Layer* after = layer->getPrevious();
 
   m_afterId = (after ? objects->addObject(after): 0);
 }

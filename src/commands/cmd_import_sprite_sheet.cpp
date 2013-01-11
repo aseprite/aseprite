@@ -204,7 +204,7 @@ protected:
       }
 
       // Copy the list of layers (because we will modify it in the iteration).
-      LayerList layers = sprite->getFolder()->get_layers_list();
+      LayerList layers = sprite->getFolder()->getLayersList();
 
       // Remove all other layers
       for (LayerIterator it=layers.begin(), end=layers.end(); it!=end; ++it) {

@@ -342,11 +342,11 @@ void StatusBar::showTip(int msecs, const char *format, ...)
     m_tipwindow->closeWindow(NULL);
 
   m_tipwindow->openWindow();
-  m_tipwindow->remap_window();
+  m_tipwindow->remapWindow();
 
   x = this->rc->x2 - jrect_w(m_tipwindow->rc);
   y = this->rc->y1 - jrect_h(m_tipwindow->rc);
-  m_tipwindow->position_window(x, y);
+  m_tipwindow->positionWindow(x, y);
 
   m_tipwindow->startTimer();
 
@@ -613,9 +613,9 @@ bool StatusBar::onProcessMessage(Message* msg)
             }
 
             const LayerFolder* folder = sprite->getFolder();
-            LayerConstIterator it = folder->get_layer_begin();
-            LayerConstIterator end = folder->get_layer_end();
-            int count = folder->get_layers_count();
+            LayerConstIterator it = folder->getLayerBegin();
+            LayerConstIterator end = folder->getLayerEnd();
+            int count = folder->getLayersCount();
             char buf[256];
 
             for (int c=0; it != end; ++it, ++c) {
@@ -724,9 +724,9 @@ bool StatusBar::onProcessMessage(Message* msg)
         // Check which sprite's layer has the mouse over
         if (sprite) {
           const LayerFolder* folder = sprite->getFolder();
-          LayerConstIterator it = folder->get_layer_begin();
-          LayerConstIterator end = folder->get_layer_end();
-          int count = folder->get_layers_count();
+          LayerConstIterator it = folder->getLayerBegin();
+          LayerConstIterator end = folder->getLayerEnd();
+          int count = folder->getLayersCount();
 
           for (int c=0; it != end; ++it, ++c) {
             int x1 = rc->x2-width + c*width/count;
@@ -842,7 +842,7 @@ static void slider_change_hook(Slider* slider)
     Sprite* sprite(document ? document->getSprite(): NULL);
     if (sprite) {
       if ((sprite->getCurrentLayer()) &&
-          (sprite->getCurrentLayer()->is_image())) {
+          (sprite->getCurrentLayer()->isImage())) {
         Cel* cel = ((LayerImage*)sprite->getCurrentLayer())->getCel(sprite->getCurrentFrame());
         if (cel) {
           // Update the opacity
@@ -886,8 +886,8 @@ void StatusBar::updateFromLayer()
     // Opacity layer
     if (sprite &&
         sprite->getCurrentLayer() &&
-        sprite->getCurrentLayer()->is_image() &&
-        !sprite->getCurrentLayer()->is_background() &&
+        sprite->getCurrentLayer()->isImage() &&
+        !sprite->getCurrentLayer()->isBackground() &&
         (cel = ((LayerImage*)sprite->getCurrentLayer())->getCel(sprite->getCurrentFrame()))) {
       m_slider->setValue(MID(0, cel->getOpacity(), 255));
       m_slider->setEnabled(true);

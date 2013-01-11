@@ -65,11 +65,11 @@ bool MergeDownLayerCommand::onEnabled(Context* context)
     return false;
 
   Layer* src_layer = sprite->getCurrentLayer();
-  if (!src_layer || !src_layer->is_image())
+  if (!src_layer || !src_layer->isImage())
     return false;
 
-  Layer* dst_layer = sprite->getCurrentLayer()->get_prev();
-  if (!dst_layer || !dst_layer->is_image())
+  Layer* dst_layer = sprite->getCurrentLayer()->getPrevious();
+  if (!dst_layer || !dst_layer->isImage())
     return false;
 
   return true;
@@ -86,7 +86,7 @@ void MergeDownLayerCommand::onExecute(Context* context)
   int index;
 
   src_layer = sprite->getCurrentLayer();
-  dst_layer = sprite->getCurrentLayer()->get_prev();
+  dst_layer = sprite->getCurrentLayer()->getPrevious();
 
   for (FrameNumber frpos(0); frpos<sprite->getTotalFrames(); ++frpos) {
     // Get frames
@@ -135,7 +135,7 @@ void MergeDownLayerCommand::onExecute(Context* context)
         Image *new_image;
 
         /* merge down in the background layer */
-        if (dst_layer->is_background()) {
+        if (dst_layer->isBackground()) {
           x1 = 0;
           y1 = 0;
           x2 = sprite->getWidth();
@@ -185,7 +185,7 @@ void MergeDownLayerCommand::onExecute(Context* context)
   }
 
   sprite->setCurrentLayer(dst_layer);
-  src_layer->get_parent()->removeLayer(src_layer);
+  src_layer->getParent()->removeLayer(src_layer);
 
   delete src_layer;
 

@@ -70,11 +70,11 @@ void write_layer(std::ostream& os, LayerSubObjectsSerializer* subObjects, Layer*
     }
 
     case GFXOBJ_LAYER_FOLDER: {
-      LayerIterator it = static_cast<LayerFolder*>(layer)->get_layer_begin();
-      LayerIterator end = static_cast<LayerFolder*>(layer)->get_layer_end();
+      LayerIterator it = static_cast<LayerFolder*>(layer)->getLayerBegin();
+      LayerIterator end = static_cast<LayerFolder*>(layer)->getLayerEnd();
 
       // Number of sub-layers
-      write16(os, static_cast<LayerFolder*>(layer)->get_layers_count());
+      write16(os, static_cast<LayerFolder*>(layer)->getLayersCount());
 
       for (; it != end; ++it)
         subObjects->write_layer(os, *it);

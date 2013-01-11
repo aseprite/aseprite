@@ -199,7 +199,7 @@ static void on_current_tool_change()
     if (rect->y2 > JI_SCREEN_H)
       jrect_displace(rect, 0, JI_SCREEN_H - rect->y2);
 
-    window->move_window(rect);
+    window->moveWindow(rect);
     jrect_free(rect);
   }
   else
@@ -385,8 +385,8 @@ void ConfigureTools::onExecute(Context* context)
   on_current_tool_change();
 
   // Default position
-  window->remap_window();
-  window->center_window();
+  window->remapWindow();
+  window->centerWindow();
 
   // Load window configuration
   load_window_pos(window, "ConfigureTool");

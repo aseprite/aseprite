@@ -159,12 +159,12 @@ bool StandbyState::onMouseDown(Editor* editor, Message* msg)
     if ((sprite->getCurrentLayer()) &&
         (sprite->getCurrentLayer()->getType() == GFXOBJ_LAYER_IMAGE)) {
       // TODO you can move the `Background' with tiled mode
-      if (sprite->getCurrentLayer()->is_background()) {
+      if (sprite->getCurrentLayer()->isBackground()) {
         Alert::show(PACKAGE
                     "<<You can't move the `Background' layer."
                     "||&Close");
       }
-      else if (!sprite->getCurrentLayer()->is_moveable()) {
+      else if (!sprite->getCurrentLayer()->isMoveable()) {
         Alert::show(PACKAGE "<<The layer movement is locked.||&Close");
       }
       else {
@@ -189,7 +189,7 @@ bool StandbyState::onMouseDown(Editor* editor, Message* msg)
       int x, y, opacity;
       Image* image = sprite->getCurrentImage(&x, &y, &opacity);
       if (image) {
-        if (!sprite->getCurrentLayer()->is_writable()) {
+        if (!sprite->getCurrentLayer()->isWritable()) {
           Alert::show(PACKAGE "<<The layer is locked.||&Close");
           return true;
         }
@@ -208,7 +208,7 @@ bool StandbyState::onMouseDown(Editor* editor, Message* msg)
     int x, y, opacity;
     Image* image = sprite->getCurrentImage(&x, &y, &opacity);
     if (image) {
-      if (!sprite->getCurrentLayer()->is_writable()) {
+      if (!sprite->getCurrentLayer()->isWritable()) {
         Alert::show(PACKAGE "<<The layer is locked.||&Close");
         return true;
       }

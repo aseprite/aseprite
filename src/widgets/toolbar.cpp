@@ -419,7 +419,7 @@ void ToolBar::openPopupWindow(int group_index, ToolGroup* tool_group)
     m_popupWindow->setHotRegion(hotregion);
   }
 
-  m_popupWindow->set_autoremap(false);
+  m_popupWindow->setAutoRemap(false);
   m_popupWindow->setBounds(rc);
   toolstrip->setBounds(rc);
   m_popupWindow->openWindow();
@@ -515,7 +515,7 @@ void ToolBar::openTipWindow(int group_index, Tool* tool)
 
   m_tipWindow = new TipWindow(tooltip.c_str(), true);
   m_tipWindow->setArrowAlign(JI_TOP | JI_RIGHT);
-  m_tipWindow->remap_window();
+  m_tipWindow->remapWindow();
 
   Rect toolrc = getToolGroupBounds(group_index);
   Point arrow = tool ? getToolPositionInGroup(group_index, tool): Point(0, 0);
@@ -524,8 +524,8 @@ void ToolBar::openTipWindow(int group_index, Tool* tool)
   int x = toolrc.x - w + (tool && m_popupWindow && m_popupWindow->isVisible() ? arrow.x-m_popupWindow->getBounds().w: 0);
   int y = toolrc.y + toolrc.h;
 
-  m_tipWindow->position_window(MID(0, x, JI_SCREEN_W-w),
-                               MID(0, y, JI_SCREEN_H-h));
+  m_tipWindow->positionWindow(MID(0, x, JI_SCREEN_W-w),
+                              MID(0, y, JI_SCREEN_H-h));
 
   if (m_tipOpened)
     m_tipWindow->openWindow();

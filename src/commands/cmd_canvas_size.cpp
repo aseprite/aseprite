@@ -84,7 +84,7 @@ public:
     m_editor->backToPreviousState();
   }
 
-  bool pressedOk() { return get_killer() == m_ok; }
+  bool pressedOk() { return getKiller() == m_ok; }
 
   int getLeft()   const { return m_left->getTextInt(); }
   int getRight()  const { return m_right->getTextInt(); }
@@ -176,8 +176,8 @@ void CanvasSizeCommand::onExecute(Context* context)
     // load the window widget
     UniquePtr<CanvasSizeWindow> window(new CanvasSizeWindow(0, 0, 0, 0));
 
-    window->remap_window();
-    window->center_window();
+    window->remapWindow();
+    window->centerWindow();
 
     load_window_pos(window, "CanvasSize");
     window->setVisible(true);

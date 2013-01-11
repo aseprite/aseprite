@@ -26,9 +26,9 @@ PopupWindow::PopupWindow(const char* text, bool close_on_buttonpressed)
   m_hot_region = NULL;
   m_filtering = false;
 
-  set_sizeable(false);
-  set_moveable(false);
-  set_wantfocus(false);
+  setSizeable(false);
+  setMoveable(false);
+  setWantFocus(false);
   setAlign(JI_LEFT | JI_TOP);
 
   removeDecorativeWidgets();
@@ -64,13 +64,13 @@ void PopupWindow::setHotRegion(JRegion region)
 void PopupWindow::makeFloating()
 {
   stopFilteringMessages();
-  set_moveable(true);
+  setMoveable(true);
 }
 
 void PopupWindow::makeFixed()
 {
   startFilteringMessages();
-  set_moveable(false);
+  setMoveable(false);
 }
 
 bool PopupWindow::onProcessMessage(Message* msg)
@@ -82,7 +82,7 @@ bool PopupWindow::onProcessMessage(Message* msg)
       break;
 
     case JM_MOUSELEAVE:
-      if (m_hot_region == NULL && !is_moveable())
+      if (m_hot_region == NULL && !isMoveable())
         closeWindow(NULL);
       break;
 
@@ -118,7 +118,7 @@ bool PopupWindow::onProcessMessage(Message* msg)
       break;
 
     case JM_MOTION:
-      if (!is_moveable() &&
+      if (!isMoveable() &&
           m_hot_region != NULL &&
           getManager()->getCapture() == NULL) {
         struct jrect box;

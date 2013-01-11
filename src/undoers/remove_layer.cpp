@@ -88,9 +88,9 @@ private:
 };
 
 RemoveLayer::RemoveLayer(ObjectsContainer* objects, Layer* layer)
-  : m_folderId(objects->addObject(layer->get_parent()))
+  : m_folderId(objects->addObject(layer->getParent()))
 {
-  Layer* after = layer->get_prev();
+  Layer* after = layer->getPrevious();
 
   m_afterId = (after ? objects->addObject(after): 0);
 

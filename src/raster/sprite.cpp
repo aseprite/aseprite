@@ -156,11 +156,11 @@ LayerFolder* Sprite::getFolder() const
 
 LayerImage* Sprite::getBackgroundLayer() const
 {
-  if (getFolder()->get_layers_count() > 0) {
-    Layer* bglayer = *getFolder()->get_layer_begin();
+  if (getFolder()->getLayersCount() > 0) {
+    Layer* bglayer = *getFolder()->getLayerBegin();
 
-    if (bglayer->is_background()) {
-      ASSERT(bglayer->is_image());
+    if (bglayer->isBackground()) {
+      ASSERT(bglayer->isImage());
       return static_cast<LayerImage*>(bglayer);
     }
   }
@@ -179,7 +179,7 @@ void Sprite::setCurrentLayer(Layer* layer)
 
 LayerIndex Sprite::countLayers() const
 {
-  return LayerIndex(getFolder()->get_layers_count());
+  return LayerIndex(getFolder()->getLayersCount());
 }
 
 Layer* Sprite::indexToLayer(LayerIndex index) const
@@ -366,7 +366,7 @@ Image* Sprite::getCurrentImage(int* x, int* y, int* opacity) const
   Image* image = NULL;
 
   if (getCurrentLayer() != NULL &&
-      getCurrentLayer()->is_image()) {
+      getCurrentLayer()->isImage()) {
     const Cel* cel = static_cast<const LayerImage*>(getCurrentLayer())->getCel(getCurrentFrame());
     if (cel) {
       ASSERT((cel->getImage() >= 0) &&
@@ -448,11 +448,11 @@ static Layer* index2layer(const Layer* layer, const LayerIndex& index, int* inde
   else {
     (*index_count)++;
 
-    if (layer->is_folder()) {
+    if (layer->isFolder()) {
       Layer *found;
 
-      LayerConstIterator it = static_cast<const LayerFolder*>(layer)->get_layer_begin();
-      LayerConstIterator end = static_cast<const LayerFolder*>(layer)->get_layer_end();
+      LayerConstIterator it = static_cast<const LayerFolder*>(layer)->getLayerBegin();
+      LayerConstIterator end = static_cast<const LayerFolder*>(layer)->getLayerEnd();
 
       for (; it != end; ++it) {
         if ((found = index2layer(*it, index, index_count)))
@@ -471,11 +471,11 @@ static LayerIndex layer2index(const Layer* layer, const Layer* find_layer, int* 
   else {
     (*index_count)++;
 
-    if (layer->is_folder()) {
+    if (layer->isFolder()) {
       int found;
 
-      LayerConstIterator it = static_cast<const LayerFolder*>(layer)->get_layer_begin();
-      LayerConstIterator end = static_cast<const LayerFolder*>(layer)->get_layer_end();
+      LayerConstIterator it = static_cast<const LayerFolder*>(layer)->getLayerBegin();
+      LayerConstIterator end = static_cast<const LayerFolder*>(layer)->getLayerEnd();
 
       for (; it != end; ++it) {
         if ((found = layer2index(*it, find_layer, index_count)) >= 0)

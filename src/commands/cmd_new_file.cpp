@@ -129,7 +129,7 @@ void NewFileCommand::onExecute(Context* context)
   // Open the window
   window->openWindowInForeground();
 
-  if (window->get_killer() == ok) {
+  if (window->getKiller() == ok) {
     bool ok = false;
 
     // Get the options
@@ -180,7 +180,7 @@ void NewFileCommand::onExecute(Context* context)
       if (color.getType() != app::Color::MaskType) {
         Sprite* sprite = document->getSprite();
 
-        ASSERT(sprite->getCurrentLayer() && sprite->getCurrentLayer()->is_image());
+        ASSERT(sprite->getCurrentLayer() && sprite->getCurrentLayer()->isImage());
 
         static_cast<LayerImage*>(sprite->getCurrentLayer())->configureAsBackground();
         image_clear(sprite->getCurrentImage(), color_utils::color_for_image(color, format));

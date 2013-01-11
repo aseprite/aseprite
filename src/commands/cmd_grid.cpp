@@ -150,7 +150,7 @@ void GridSettingsCommand::onExecute(Context* context)
 
   window->openWindowInForeground();
 
-  if (window->get_killer() == button_ok) {
+  if (window->getKiller() == button_ok) {
     bounds.x = grid_x->getTextInt();
     bounds.y = grid_y->getTextInt();
     bounds.w = grid_w->getTextInt();

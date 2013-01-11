@@ -58,16 +58,16 @@ void ContextFlags::update(Context* context)
         if (layer) {
           m_flags |= HasActiveLayer;
 
-          if (layer->is_background())
+          if (layer->isBackground())
             m_flags |= ActiveLayerIsBackground;
 
-          if (layer->is_readable())
+          if (layer->isReadable())
             m_flags |= ActiveLayerIsReadable;
 
-          if (layer->is_writable())
+          if (layer->isWritable())
             m_flags |= ActiveLayerIsWritable;
 
-          if (layer->is_image()) {
+          if (layer->isImage()) {
             m_flags |= ActiveLayerIsImage;
 
             Cel* cel = static_cast<LayerImage*>(layer)->getCel(sprite->getCurrentFrame());

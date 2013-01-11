@@ -409,7 +409,7 @@ void UndoTransaction::removeLayer(Layer* layer)
   DocumentEvent ev(m_document, m_sprite, layer);
   m_document->notifyObservers<DocumentEvent&>(&DocumentObserver::onRemoveLayer, ev);
 
-  LayerFolder* parent = layer->get_parent();
+  LayerFolder* parent = layer->getParent();
 
   // if the layer to be removed is the selected layer
   if (layer == m_sprite->getCurrentLayer()) {
@@ -417,10 +417,10 @@ void UndoTransaction::removeLayer(Layer* layer)
 
     // select: previous layer, or next layer, or parent(if it is not the
     // main layer of sprite set)
-    if (layer->get_prev())
-      layer_select = layer->get_prev();
-    else if (layer->get_next())
-      layer_select = layer->get_next();
+    if (layer->getPrevious())
+      layer_select = layer->getPrevious();
+    else if (layer->getNext())
+      layer_select = layer->getNext();
     else if (parent != m_sprite->getFolder())
       layer_select = parent;
 
@@ -444,7 +444,7 @@ void UndoTransaction::restackLayerAfter(Layer* layer, Layer* afterThis)
   if (isEnabled())
     m_undo->pushUndoer(new undoers::MoveLayer(m_undo->getObjects(), layer));
 
-  layer->get_parent()->stackLayer(layer, afterThis);
+  layer->getParent()->stackLayer(layer, afterThis);
 
   DocumentEvent ev(m_document, m_sprite, layer);
   m_document->notifyObservers<DocumentEvent&>(&DocumentObserver::onLayerRestacked, ev);
@@ -452,10 +452,10 @@ void UndoTransaction::restackLayerAfter(Layer* layer, Layer* afterThis)
 
 void UndoTransaction::cropLayer(Layer* layer, int x, int y, int w, int h, int bgcolor)
 {
-  if (!layer->is_image())
+  if (!layer->isImage())
     return;
 
-  if (!layer->is_background())
+  if (!layer->isBackground())
     bgcolor = 0;
 
   CelIterator it = ((LayerImage*)layer)->getCelBegin();
@@ -482,8 +482,8 @@ void UndoTransaction::displaceLayers(Layer* layer, int dx, int dy)
     }
 
     case GFXOBJ_LAYER_FOLDER: {
-      LayerIterator it = ((LayerFolder*)layer)->get_layer_begin();
-      LayerIterator end = ((LayerFolder*)layer)->get_layer_end();
+      LayerIterator it = ((LayerFolder*)layer)->getLayerBegin();
+      LayerIterator end = ((LayerFolder*)layer)->getLayerEnd();
       for (; it != end; ++it)
         displaceLayers(*it, dx, dy);
       break;
@@ -495,9 +495,9 @@ void UndoTransaction::displaceLayers(Layer* layer, int dx, int dy)
 void UndoTransaction::backgroundFromLayer(LayerImage* layer, int bgcolor)
 {
   ASSERT(layer);
-  ASSERT(layer->is_image());
-  ASSERT(layer->is_readable());
-  ASSERT(layer->is_writable());
+  ASSERT(layer->isImage());
+  ASSERT(layer->isReadable());
+  ASSERT(layer->isWritable());
   ASSERT(layer->getSprite() == m_sprite);
   ASSERT(m_sprite->getBackgroundLayer() == NULL);
 
@@ -567,18 +567,18 @@ void UndoTransaction::layerFromBackground()
 {
   ASSERT(m_sprite->getBackgroundLayer() != NULL);
   ASSERT(m_sprite->getCurrentLayer() != NULL);
-  ASSERT(m_sprite->getCurrentLayer()->is_image());
-  ASSERT(m_sprite->getCurrentLayer()->is_readable());
-  ASSERT(m_sprite->getCurrentLayer()->is_writable());
-  ASSERT(m_sprite->getCurrentLayer()->is_background());
+  ASSERT(m_sprite->getCurrentLayer()->isImage());
+  ASSERT(m_sprite->getCurrentLayer()->isReadable());
+  ASSERT(m_sprite->getCurrentLayer()->isWritable());
+  ASSERT(m_sprite->getCurrentLayer()->isBackground());
 
   if (isEnabled()) {
     m_undo->pushUndoer(new undoers::SetLayerFlags(m_undo->getObjects(), m_sprite->getCurrentLayer()));
     m_undo->pushUndoer(new undoers::SetLayerName(m_undo->getObjects(), m_sprite->getCurrentLayer()));
   }
 
-  m_sprite->getCurrentLayer()->set_background(false);
-  m_sprite->getCurrentLayer()->set_moveable(true);
+  m_sprite->getCurrentLayer()->setBackground(false);
+  m_sprite->getCurrentLayer()->setMoveable(true);
   m_sprite->getCurrentLayer()->setName("Layer 0");
 }
 
@@ -659,7 +659,7 @@ void UndoTransaction::flattenLayers(int bgcolor)
   }
 
   // Remove old layers.
-  LayerList layers = m_sprite->getFolder()->get_layers_list();
+  LayerList layers = m_sprite->getFolder()->getLayersList();
   LayerIterator it = layers.begin();
   LayerIterator end = layers.end();
 
@@ -727,8 +727,8 @@ void UndoTransaction::newFrameForLayer(Layer* layer, FrameNumber frame)
       break;
 
     case GFXOBJ_LAYER_FOLDER: {
-      LayerIterator it = static_cast<LayerFolder*>(layer)->get_layer_begin();
-      LayerIterator end = static_cast<LayerFolder*>(layer)->get_layer_end();
+      LayerIterator it = static_cast<LayerFolder*>(layer)->getLayerBegin();
+      LayerIterator end = static_cast<LayerFolder*>(layer)->getLayerEnd();
 
       for (; it != end; ++it)
         newFrameForLayer(*it, frame);
@@ -777,8 +777,8 @@ void UndoTransaction::removeFrameOfLayer(Layer* layer, FrameNumber frame)
       break;
 
     case GFXOBJ_LAYER_FOLDER: {
-      LayerIterator it = static_cast<LayerFolder*>(layer)->get_layer_begin();
-      LayerIterator end = static_cast<LayerFolder*>(layer)->get_layer_end();
+      LayerIterator it = static_cast<LayerFolder*>(layer)->getLayerBegin();
+      LayerIterator end = static_cast<LayerFolder*>(layer)->getLayerEnd();
 
       for (; it != end; ++it)
         removeFrameOfLayer(*it, frame);
@@ -992,8 +992,8 @@ void UndoTransaction::moveFrameBeforeLayer(Layer* layer, FrameNumber frame, Fram
     }
 
     case GFXOBJ_LAYER_FOLDER: {
-      LayerIterator it = static_cast<LayerFolder*>(layer)->get_layer_begin();
-      LayerIterator end = static_cast<LayerFolder*>(layer)->get_layer_end();
+      LayerIterator it = static_cast<LayerFolder*>(layer)->getLayerBegin();
+      LayerIterator end = static_cast<LayerFolder*>(layer)->getLayerEnd();
 
       for (; it != end; ++it)
         moveFrameBeforeLayer(*it, frame, beforeFrame);
@@ -1005,7 +1005,7 @@ void UndoTransaction::moveFrameBeforeLayer(Layer* layer, FrameNumber frame, Fram
 
 Cel* UndoTransaction::getCurrentCel()
 {
-  if (m_sprite->getCurrentLayer() && m_sprite->getCurrentLayer()->is_image())
+  if (m_sprite->getCurrentLayer() && m_sprite->getCurrentLayer()->isImage())
     return static_cast<LayerImage*>(m_sprite->getCurrentLayer())->getCel(m_sprite->getCurrentFrame());
   else
     return NULL;
@@ -1051,7 +1051,7 @@ void UndoTransaction::clearMask(int bgcolor)
   // entire image in the cel.
   if (!m_document->isMaskVisible()) {
     // If the layer is the background then we clear the image.
-    if (m_sprite->getCurrentLayer()->is_background()) {
+    if (m_sprite->getCurrentLayer()->isBackground()) {
       if (isEnabled())
         m_undo->pushUndoer(new undoers::ImageArea(m_undo->getObjects(),
             image, 0, 0, image->w, image->h));
@@ -1139,9 +1139,9 @@ void UndoTransaction::pasteImage(const Image* src_image, int x, int y, int opaci
   const Layer* layer = m_sprite->getCurrentLayer();
 
   ASSERT(layer);
-  ASSERT(layer->is_image());
-  ASSERT(layer->is_readable());
-  ASSERT(layer->is_writable());
+  ASSERT(layer->isImage());
+  ASSERT(layer->isReadable());
+  ASSERT(layer->isWritable());
 
   Cel* cel = ((LayerImage*)layer)->getCel(m_sprite->getCurrentFrame());
   ASSERT(cel);

@@ -97,7 +97,7 @@ void FilterManagerImpl::setTarget(int target)
 
   /* the alpha channel of the background layer can't be modified */
   if (m_sprite->getCurrentLayer() &&
-      m_sprite->getCurrentLayer()->is_background())
+      m_sprite->getCurrentLayer()->isBackground())
     m_target &= ~TARGET_ALPHA_CHANNEL;
 }
 
@@ -354,7 +354,7 @@ void FilterManagerImpl::init(const Layer* layer, Image* image, int offset_x, int
   m_target = m_targetOrig;
 
   /* the alpha channel of the background layer can't be modified */
-  if (layer->is_background())
+  if (layer->isBackground())
     m_target &= ~TARGET_ALPHA_CHANNEL;
 }
 

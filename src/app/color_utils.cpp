@@ -191,7 +191,7 @@ int color_utils::color_for_layer(const app::Color& color, Layer* layer)
 
 int color_utils::fixup_color_for_layer(Layer *layer, int color)
 {
-  if (layer->is_background())
+  if (layer->isBackground())
     return fixup_color_for_background(layer->getSprite()->getPixelFormat(), color);
   else
     return color;

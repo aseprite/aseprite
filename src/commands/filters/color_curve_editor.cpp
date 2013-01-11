@@ -359,7 +359,7 @@ int ColorCurveEditor::editNodeManually(gfx::Point& point)
 
   window->openWindowInForeground();
 
-  if (window->get_killer() == button_ok) {
+  if (window->getKiller() == button_ok) {
     point.x = entry_x->getTextDouble();
     point.y = entry_y->getTextDouble();
     res = true;

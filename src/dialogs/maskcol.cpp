@@ -125,8 +125,8 @@ void dialogs_mask_color(Document* document)
   box4->addChild(button_cancel);
 
   // Default position
-  window->remap_window();
-  window->center_window();
+  window->remapWindow();
+  window->centerWindow();
 
   // Mask first preview
   mask_preview(documentReader);
@@ -137,7 +137,7 @@ void dialogs_mask_color(Document* document)
   // Open the window
   window->openWindowInForeground();
 
-  if (window->get_killer() == button_ok) {
+  if (window->getKiller() == button_ok) {
     DocumentWriter documentWriter(documentReader);
     UndoTransaction undo(document, "Mask by Color", undo::DoesntModifyDocument);
 

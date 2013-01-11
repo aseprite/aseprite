@@ -349,7 +349,7 @@ int app_get_color_to_clear_layer(Layer* layer)
   app::Color color = app::Color::fromMask();
 
   /* the `Background' is erased with the `Background Color' */
-  if (layer != NULL && layer->is_background())
+  if (layer != NULL && layer->isBackground())
     color = ColorBar::instance()->getBgColor();
 
   return color_utils::color_for_layer(color, layer);

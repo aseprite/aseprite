@@ -38,7 +38,7 @@ MovingCelState::MovingCelState(Editor* editor, Message* msg)
   Document* document = editor->getDocument();
   Sprite* sprite = editor->getSprite();
 
-  ASSERT(sprite->getCurrentLayer()->is_image());
+  ASSERT(sprite->getCurrentLayer()->isImage());
 
   LayerImage* layer = static_cast<LayerImage*>(sprite->getCurrentLayer());
 

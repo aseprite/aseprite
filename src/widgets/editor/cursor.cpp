@@ -268,7 +268,7 @@ void Editor::editor_draw_cursor(int x, int y, bool refresh)
            // or when the FG color is mask and we are not in the background layer
            (UIContext::instance()->getSettings()->getFgColor().getType() == app::Color::MaskType &&
             (m_sprite->getCurrentLayer() != NULL &&
-             !m_sprite->getCurrentLayer()->is_background()))) {
+             !m_sprite->getCurrentLayer()->isBackground()))) {
     cursor_type = CURSOR_BOUNDS;
   }
   else {
