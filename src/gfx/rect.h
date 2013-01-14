@@ -1,5 +1,5 @@
 // ASEPRITE gfx library
-// Copyright (C) 2001-2012  David Capello
+// Copyright (C) 2001-2013  David Capello
 //
 // This source file is distributed under a BSD-like license, please
 // read LICENSE.txt for more information.
@@ -19,6 +19,9 @@ class RectT
 {
 public:
   T x, y, w, h;
+
+  T x2() const { return x+w; }
+  T y2() const { return y+h; }
 
   // Creates a new empty rectangle with the origin in 0,0.
   RectT() : x(0), y(0), w(0), h(0) {
