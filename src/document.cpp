@@ -332,7 +332,7 @@ void Document::copyLayerContent(const Layer* sourceLayer0, Document* destDoc, La
   // Copy the layer name
   destLayer0->setName(sourceLayer0->getName());
 
-  if (sourceLayer0->is_image() && destLayer0->is_image()) {
+  if (sourceLayer0->isImage() && destLayer0->isImage()) {
     const LayerImage* sourceLayer = static_cast<const LayerImage*>(sourceLayer0);
     LayerImage* destLayer = static_cast<LayerImage*>(destLayer0);
 
@@ -363,22 +363,22 @@ void Document::copyLayerContent(const Layer* sourceLayer0, Document* destDoc, La
       newCel.release();
     }
   }
-  else if (sourceLayer0->is_folder() && destLayer0->is_folder()) {
+  else if (sourceLayer0->isFolder() && destLayer0->isFolder()) {
     const LayerFolder* sourceLayer = static_cast<const LayerFolder*>(sourceLayer0);
     LayerFolder* destLayer = static_cast<LayerFolder*>(destLayer0);
 
-    LayerConstIterator it = sourceLayer->get_layer_begin();
-    LayerConstIterator end = sourceLayer->get_layer_end();
+    LayerConstIterator it = sourceLayer->getLayerBegin();
+    LayerConstIterator end = sourceLayer->getLayerEnd();
 
     for (; it != end; ++it) {
       Layer* sourceChild = *it;
       UniquePtr<Layer> destChild(NULL);
 
-      if (sourceChild->is_image()) {
+      if (sourceChild->isImage()) {
         destChild.reset(new LayerImage(destLayer->getSprite()));
         copyLayerContent(sourceChild, destDoc, destChild);
       }
-      else if (sourceChild->is_folder()) {
+      else if (sourceChild->isFolder()) {
         destChild.reset(new LayerFolder(destLayer->getSprite()));
         copyLayerContent(sourceChild, destDoc, destChild);
       }

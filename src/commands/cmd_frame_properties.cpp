@@ -117,7 +117,7 @@ void FramePropertiesCommand::onExecute(Context* context)
   frlen->setTextf("%d", sprite->getFrameDuration(sprite->getCurrentFrame()));
 
   window->openWindowInForeground();
-  if (window->get_killer() == ok) {
+  if (window->getKiller() == ok) {
     int num = strtol(frlen->getText(), NULL, 10);
 
     if (m_target == ALL_FRAMES) {

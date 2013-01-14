@@ -224,7 +224,7 @@ void ColorButton::onClick(Event& ev)
     // Open it
     openSelectorDialog();
   }
-  else if (!m_window->is_moveable()) {
+  else if (!m_window->isMoveable()) {
     // If it is visible, close it
     closeSelectorDialog();
   }
@@ -249,7 +249,7 @@ void ColorButton::openSelectorDialog()
   else
     y = MAX(0, this->rc->y1-jrect_h(m_window->rc));
 
-  m_window->position_window(x, y);
+  m_window->positionWindow(x, y);
 
   m_window->getManager()->dispatchMessages();
   m_window->layout();

@@ -25,9 +25,9 @@ PopupWindow::PopupWindow(const char* text, bool close_on_buttonpressed)
   m_close_on_buttonpressed = close_on_buttonpressed;
   m_filtering = false;
 
-  set_sizeable(false);
-  set_moveable(false);
-  set_wantfocus(false);
+  setSizeable(false);
+  setMoveable(false);
+  setWantFocus(false);
   setAlign(JI_LEFT | JI_TOP);
 
   removeDecorativeWidgets();
@@ -55,13 +55,13 @@ void PopupWindow::setHotRegion(const gfx::Region& region)
 void PopupWindow::makeFloating()
 {
   stopFilteringMessages();
-  set_moveable(true);
+  setMoveable(true);
 }
 
 void PopupWindow::makeFixed()
 {
   startFilteringMessages();
-  set_moveable(false);
+  setMoveable(false);
 }
 
 bool PopupWindow::onProcessMessage(Message* msg)
@@ -73,7 +73,7 @@ bool PopupWindow::onProcessMessage(Message* msg)
       break;
 
     case JM_MOUSELEAVE:
-      if (m_hotRegion.isEmpty() && !is_moveable())
+      if (m_hotRegion.isEmpty() && !isMoveable())
         closeWindow(NULL);
       break;
 
@@ -109,7 +109,7 @@ bool PopupWindow::onProcessMessage(Message* msg)
       break;
 
     case JM_MOTION:
-      if (!is_moveable() &&
+      if (!isMoveable() &&
           !m_hotRegion.isEmpty() &&
           getManager()->getCapture() == NULL) {
         // If the mouse is outside the hot-region we have to close the

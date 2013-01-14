@@ -113,7 +113,7 @@ protected:
 
     gfx::Size reqSize = getPreferredSize();
     JRect rect = jrect_new(rc->x1, rc->y1, rc->x1+reqSize.w, rc->y1+reqSize.h);
-    move_window(rect);
+    moveWindow(rect);
     jrect_free(rect);
 
     invalidate();
@@ -182,7 +182,7 @@ protected:
       resultCel.release();
 
       // Copy the list of layers (because we will modify it in the iteration).
-      LayerList layers = sprite->getFolder()->get_layers_list();
+      LayerList layers = sprite->getFolder()->getLayersList();
 
       // Remove all other layers
       for (LayerIterator it=layers.begin(), end=layers.end(); it!=end; ++it) {

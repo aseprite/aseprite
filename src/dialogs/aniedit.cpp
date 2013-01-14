@@ -185,7 +185,7 @@ void switch_between_animation_and_sprite_editor()
     current_anieditor = anieditor;
 
     window->addChild(anieditor);
-    window->remap_window();
+    window->remapWindow();
 
     anieditor->centerCurrentCel();
 
@@ -261,7 +261,7 @@ bool AnimationEditor::onProcessMessage(Message* msg)
         // Get the first CelIterator to be drawn (it is the first cel with cel->frame >= first_frame)
         CelIterator it, end;
         Layer* layerPtr = m_layers[layer];
-        if (layerPtr->is_image()) {
+        if (layerPtr->isImage()) {
           it = static_cast<LayerImage*>(layerPtr)->getCelBegin();
           end = static_cast<LayerImage*>(layerPtr)->getCelEnd();
           for (; it != end && (*it)->getFrame() < first_frame; ++it)
@@ -270,7 +270,7 @@ bool AnimationEditor::onProcessMessage(Message* msg)
 
         // Draw every visible cel for each layer.
         for (frame=first_frame; frame<=last_frame; ++frame) {
-          Cel* cel = (layerPtr->is_image() && it != end && (*it)->getFrame() == frame ? *it: NULL);
+          Cel* cel = (layerPtr->isImage() && it != end && (*it)->getFrame() == frame ? *it: NULL);
 
           drawCel(clip, layer, frame, cel);
 
@@ -580,7 +580,7 @@ bool AnimationEditor::onProcessMessage(Message* msg)
                   m_hot_layer < m_nlayers &&
                   m_hot_layer != m_clk_layer &&
                   m_hot_layer != m_clk_layer+1) {
-                if (!m_layers[m_clk_layer]->is_background()) {
+                if (!m_layers[m_clk_layer]->isBackground()) {
                   // move the clicked-layer after the hot-layer
                   try {
                     const DocumentReader document(const_cast<Document*>(m_document));
@@ -615,7 +615,7 @@ bool AnimationEditor::onProcessMessage(Message* msg)
                 m_hot_layer < m_nlayers) {
               Layer* layer = m_layers[m_clk_layer];
               ASSERT(layer != NULL);
-              layer->set_readable(!layer->is_readable());
+              layer->setReadable(!layer->isReadable());
             }
             break;
           case A_PART_LAYER_LOCK_ICON:
@@ -625,7 +625,7 @@ bool AnimationEditor::onProcessMessage(Message* msg)
                 m_hot_layer < m_nlayers) {
               Layer* layer = m_layers[m_clk_layer];
               ASSERT(layer != NULL);
-              layer->set_writable(!layer->is_writable());
+              layer->setWritable(!layer->isWritable());
             }
             break;
           case A_PART_CEL: {
@@ -834,7 +834,7 @@ void AnimationEditor::setCursor(int x, int y)
            m_clk_part == A_PART_LAYER &&
            m_hot_part == A_PART_LAYER &&
            m_clk_layer != m_hot_layer) {
-    if (m_layers[m_clk_layer]->is_background())
+    if (m_layers[m_clk_layer]->isBackground())
       jmouse_set_cursor(kForbiddenCursor);
     else
       jmouse_set_cursor(kMoveCursor);
@@ -1019,10 +1019,10 @@ void AnimationEditor::drawLayer(JRect clip, int layer_index)
                                   (is_clk ? ThemeColor::Selected:
                                             ThemeColor::Face)));
   ui::Color fg = theme->getColor(selected_layer ? ThemeColor::Background: ThemeColor::Text);
-  BITMAP* icon1 = theme->get_part(layer->is_readable() ? PART_LAYER_VISIBLE: PART_LAYER_HIDDEN);
-  BITMAP* icon2 = theme->get_part(layer->is_writable() ? PART_LAYER_EDITABLE: PART_LAYER_LOCKED);
-  BITMAP* icon1_selected = theme->get_part(layer->is_readable() ? PART_LAYER_VISIBLE_SELECTED: PART_LAYER_HIDDEN_SELECTED);
-  BITMAP* icon2_selected = theme->get_part(layer->is_writable() ? PART_LAYER_EDITABLE_SELECTED: PART_LAYER_LOCKED_SELECTED);
+  BITMAP* icon1 = theme->get_part(layer->isReadable() ? PART_LAYER_VISIBLE: PART_LAYER_HIDDEN);
+  BITMAP* icon2 = theme->get_part(layer->isWritable() ? PART_LAYER_EDITABLE: PART_LAYER_LOCKED);
+  BITMAP* icon1_selected = theme->get_part(layer->isReadable() ? PART_LAYER_VISIBLE_SELECTED: PART_LAYER_HIDDEN_SELECTED);
+  BITMAP* icon2_selected = theme->get_part(layer->isWritable() ? PART_LAYER_EDITABLE_SELECTED: PART_LAYER_LOCKED_SELECTED);
   int x1, y1, x2, y2, y_mid;
   int cx1, cy1, cx2, cy2;
   int u;
@@ -1092,7 +1092,7 @@ void AnimationEditor::drawLayer(JRect clip, int layer_index)
              fg, bg, true, jguiscale());
 
   // The background should be underlined.
-  if (layer->is_background()) {
+  if (layer->isBackground()) {
     hline(ji_screen,
           u,
           y_mid - ji_font_get_size(this->getFont())/2 + ji_font_get_size(this->getFont()) + 1,
@@ -1249,7 +1249,7 @@ bool AnimationEditor::drawPart(int part, int layer, FrameNumber frame)
     case A_PART_CEL:
       if (layer >= 0 && layer < m_nlayers &&
           frame >= 0 && frame < m_sprite->getTotalFrames()) {
-        Cel* cel = (m_layers[layer]->is_image() ? static_cast<LayerImage*>(m_layers[layer])->getCel(frame): NULL);
+        Cel* cel = (m_layers[layer]->isImage() ? static_cast<LayerImage*>(m_layers[layer])->getCel(frame): NULL);
 
         drawCel(this->rc, layer, frame, cel);
         return true;

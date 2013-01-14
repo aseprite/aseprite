@@ -213,7 +213,7 @@ void PaletteEditorCommand::onExecute(Context* context)
   if (m_switch || m_open) {
     if (!g_window->isVisible()) {
       // Default bounds
-      g_window->remap_window();
+      g_window->remapWindow();
 
       int width = MAX(jrect_w(g_window->rc), JI_SCREEN_W/2);
       g_window->setBounds(Rect(JI_SCREEN_W - width - jrect_w(ToolBar::instance()->rc),
@@ -496,7 +496,7 @@ void PaletteEntryEditor::onMoreOptionsClick(Event& ev)
     {
       JRect rect = jrect_new(rc->x1, rc->y1,
                              rc->x2, rc->y2 - reqSize.h);
-      move_window(rect);
+      moveWindow(rect);
       jrect_free(rect);
     }
   }
@@ -516,7 +516,7 @@ void PaletteEntryEditor::onMoreOptionsClick(Event& ev)
       if (rect->y2 > JI_SCREEN_H)
         jrect_displace(rect, 0, JI_SCREEN_H - rect->y2);
 
-      move_window(rect);
+      moveWindow(rect);
       jrect_free(rect);
     }
     else

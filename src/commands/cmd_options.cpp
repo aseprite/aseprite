@@ -143,7 +143,7 @@ void OptionsCommand::onExecute(Context* context)
   // Show the window and wait the user to close it
   window->openWindowInForeground();
 
-  if (window->get_killer() == button_ok) {
+  if (window->getKiller() == button_ok) {
     int undo_size_limit_value;
 
     Editor::set_cursor_color(cursor_color->getColor());

@@ -40,10 +40,10 @@ void ImagesCollector::collectFromLayer(Layer* layer)
 {
   const Sprite* sprite = layer->getSprite();
 
-  if (!layer->is_readable())
+  if (!layer->isReadable())
     return;
 
-  if (m_forWrite && !layer->is_writable())
+  if (m_forWrite && !layer->isWritable())
     return;
 
   switch (layer->getType()) {
@@ -66,8 +66,8 @@ void ImagesCollector::collectFromLayer(Layer* layer)
     }
 
     case GFXOBJ_LAYER_FOLDER: {
-      LayerIterator it = static_cast<LayerFolder*>(layer)->get_layer_begin();
-      LayerIterator end = static_cast<LayerFolder*>(layer)->get_layer_end();
+      LayerIterator it = static_cast<LayerFolder*>(layer)->getLayerBegin();
+      LayerIterator end = static_cast<LayerFolder*>(layer)->getLayerEnd();
 
       for (; it != end; ++it)
         collectFromLayer(*it);

@@ -56,22 +56,24 @@ public:
   void setName(const std::string& name) { m_name = name; }
 
   Sprite* getSprite() const { return m_sprite; }
-  LayerFolder* get_parent() const { return m_parent; }
-  void set_parent(LayerFolder* folder) { m_parent = folder; }
-  Layer* get_prev() const;
-  Layer* get_next() const;
+  LayerFolder* getParent() const { return m_parent; }
+  void setParent(LayerFolder* folder) { m_parent = folder; }
 
-  bool is_image() const { return getType() == GFXOBJ_LAYER_IMAGE; }
-  bool is_folder() const { return getType() == GFXOBJ_LAYER_FOLDER; }
-  bool is_background() const { return (m_flags & LAYER_IS_BACKGROUND) == LAYER_IS_BACKGROUND; }
-  bool is_moveable() const { return (m_flags & LAYER_IS_LOCKMOVE) == 0; }
-  bool is_readable() const { return (m_flags & LAYER_IS_READABLE) == LAYER_IS_READABLE; }
-  bool is_writable() const { return (m_flags & LAYER_IS_WRITABLE) == LAYER_IS_WRITABLE; }
+  // Gets the previous sibling of this layer.
+  Layer* getPrevious() const;
+  Layer* getNext() const;
 
-  void set_background(bool b) { if (b) m_flags |= LAYER_IS_BACKGROUND; else m_flags &= ~LAYER_IS_BACKGROUND; }
-  void set_moveable(bool b) { if (b) m_flags &= ~LAYER_IS_LOCKMOVE; else m_flags |= LAYER_IS_LOCKMOVE; }
-  void set_readable(bool b) { if (b) m_flags |= LAYER_IS_READABLE; else m_flags &= ~LAYER_IS_READABLE; }
-  void set_writable(bool b) { if (b) m_flags |= LAYER_IS_WRITABLE; else m_flags &= ~LAYER_IS_WRITABLE; }
+  bool isImage() const { return getType() == GFXOBJ_LAYER_IMAGE; }
+  bool isFolder() const { return getType() == GFXOBJ_LAYER_FOLDER; }
+  bool isBackground() const { return (m_flags & LAYER_IS_BACKGROUND) == LAYER_IS_BACKGROUND; }
+  bool isMoveable() const { return (m_flags & LAYER_IS_LOCKMOVE) == 0; }
+  bool isReadable() const { return (m_flags & LAYER_IS_READABLE) == LAYER_IS_READABLE; }
+  bool isWritable() const { return (m_flags & LAYER_IS_WRITABLE) == LAYER_IS_WRITABLE; }
+
+  void setBackground(bool b) { if (b) m_flags |= LAYER_IS_BACKGROUND; else m_flags &= ~LAYER_IS_BACKGROUND; }
+  void setMoveable(bool b) { if (b) m_flags &= ~LAYER_IS_LOCKMOVE; else m_flags |= LAYER_IS_LOCKMOVE; }
+  void setReadable(bool b) { if (b) m_flags |= LAYER_IS_READABLE; else m_flags &= ~LAYER_IS_READABLE; }
+  void setWritable(bool b) { if (b) m_flags |= LAYER_IS_WRITABLE; else m_flags &= ~LAYER_IS_WRITABLE; }
 
   uint32_t getFlags() const { return m_flags; }
   void setFlags(uint32_t flags) { m_flags = flags; }
@@ -133,12 +135,12 @@ public:
 
   int getMemSize() const;
 
-  const LayerList& get_layers_list() { return m_layers; }
-  LayerIterator get_layer_begin() { return m_layers.begin(); }
-  LayerIterator get_layer_end() { return m_layers.end(); }
-  LayerConstIterator get_layer_begin() const { return m_layers.begin(); }
-  LayerConstIterator get_layer_end() const { return m_layers.end(); }
-  int get_layers_count() const { return m_layers.size(); }
+  const LayerList& getLayersList() { return m_layers; }
+  LayerIterator getLayerBegin() { return m_layers.begin(); }
+  LayerIterator getLayerEnd() { return m_layers.end(); }
+  LayerConstIterator getLayerBegin() const { return m_layers.begin(); }
+  LayerConstIterator getLayerEnd() const { return m_layers.end(); }
+  int getLayersCount() const { return m_layers.size(); }
 
   void addLayer(Layer* layer);
   void removeLayer(Layer* layer);

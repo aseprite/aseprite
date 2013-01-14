@@ -323,7 +323,7 @@ void gui_feedback()
   if (!manager->getDisplay()->flip()) {
     // In case that the display was resized.
     gui_setup_screen(false);
-    App::instance()->getMainWindow()->remap_window();
+    App::instance()->getMainWindow()->remapWindow();
     manager->invalidate();
   }
   else
@@ -768,7 +768,7 @@ bool CustomizedGuiManager::onProcessMessage(Message* msg)
       // If there is a foreground window as top level...
       if (toplevel_window &&
           toplevel_window != App::instance()->getMainWindow() &&
-          toplevel_window->is_foreground()) {
+          toplevel_window->isForeground()) {
         // We just do not process keyboard shortcuts for menus and tools
         break;
       }
@@ -835,11 +835,11 @@ bool CustomizedGuiManager::onProcessMessage(Message* msg)
                 Window* child = static_cast<Window*>(*it);
 
                 // There are a foreground window executing?
-                if (child->is_foreground()) {
+                if (child->isForeground()) {
                   break;
                 }
                 // Is it the desktop and the top-window=
-                else if (child->is_desktop() && child == App::instance()->getMainWindow()) {
+                else if (child->isDesktop() && child == App::instance()->getMainWindow()) {
                   // OK, so we can execute the command represented
                   // by the pressed-key in the message...
                   UIContext::instance()->executeCommand(command, shortcut->params);

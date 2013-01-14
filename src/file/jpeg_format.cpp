@@ -374,7 +374,7 @@ SharedPtr<FormatOptions> JpegFormat::onGetFormatOptions(FileOp* fop)
 
     window->openWindowInForeground();
 
-    if (window->get_killer() == ok) {
+    if (window->getKiller() == ok) {
       jpeg_options->quality = slider_quality->getValue() / 10.0f;
       set_config_float("JPEG", "Quality", jpeg_options->quality);
     }

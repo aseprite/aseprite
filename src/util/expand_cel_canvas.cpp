@@ -45,7 +45,7 @@ ExpandCelCanvas::ExpandCelCanvas(Document* document, Sprite* sprite, Layer* laye
   , m_committed(false)
   , m_undo(undo)
 {
-  if (m_layer->is_image()) {
+  if (m_layer->isImage()) {
     m_cel = static_cast<LayerImage*>(layer)->getCel(m_sprite->getCurrentFrame());
     if (m_cel)
       m_celImage = m_sprite->getStock()->getImage(m_cel->getImage());

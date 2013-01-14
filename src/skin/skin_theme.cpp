@@ -755,7 +755,7 @@ void SkinTheme::initWidget(Widget* widget)
       break;
 
     case JI_WINDOW:
-      if (!static_cast<Window*>(widget)->is_desktop()) {
+      if (!static_cast<Window*>(widget)->isDesktop()) {
         if (widget->hasText()) {
           BORDER4(6 * scale, (4+6) * scale, 6 * scale, 6 * scale);
           widget->border_width.t += jwidget_get_text_height(widget);
@@ -1626,7 +1626,7 @@ void SkinTheme::paintWindow(PaintEvent& ev)
   JRect pos = jwidget_get_rect(window);
   JRect cpos = jwidget_get_child_rect(window);
 
-  if (!window->is_desktop()) {
+  if (!window->isDesktop()) {
     // window frame
     if (window->hasText()) {
       draw_bounds_nw(ji_screen,

@@ -79,7 +79,7 @@ bool GfxMode::setGfxMode() const
   // Redraw top window
   MainWindow* mainWindow = App::instance()->getMainWindow();
   if (mainWindow) {
-    mainWindow->remap_window();
+    mainWindow->remapWindow();
     ui::Manager::getDefault()->invalidate();
   }
 

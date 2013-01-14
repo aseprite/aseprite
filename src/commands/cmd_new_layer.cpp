@@ -102,7 +102,7 @@ void NewLayerCommand::onExecute(Context* context)
 
     window->openWindowInForeground();
 
-    if (window->get_killer() != window->findChild("ok"))
+    if (window->getKiller() != window->findChild("ok"))
       return;
 
     name = window->findChild("name")->getText();
@@ -135,9 +135,9 @@ static int get_max_layer_num(Layer* layer)
   if (strncmp(layer->getName().c_str(), "Layer ", 6) == 0)
     max = strtol(layer->getName().c_str()+6, NULL, 10);
 
-  if (layer->is_folder()) {
-    LayerIterator it = static_cast<LayerFolder*>(layer)->get_layer_begin();
-    LayerIterator end = static_cast<LayerFolder*>(layer)->get_layer_end();
+  if (layer->isFolder()) {
+    LayerIterator it = static_cast<LayerFolder*>(layer)->getLayerBegin();
+    LayerIterator end = static_cast<LayerFolder*>(layer)->getLayerEnd();
 
     for (; it != end; ++it) {
       int tmp = get_max_layer_num(*it);

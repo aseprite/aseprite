@@ -310,8 +310,8 @@ bool AseFormat::onSave(FileOp *fop)
 
     /* write extra chunks in the first frame */
     if (frame == 0) {
-      LayerIterator it = sprite->getFolder()->get_layer_begin();
-      LayerIterator end = sprite->getFolder()->get_layer_end();
+      LayerIterator it = sprite->getFolder()->getLayerBegin();
+      LayerIterator end = sprite->getFolder()->getLayerEnd();
 
       /* write layer chunks */
       for (; it != end; ++it)
@@ -467,9 +467,9 @@ static void ase_file_write_layers(FILE *f, Layer *layer)
 {
   ase_file_write_layer_chunk(f, layer);
 
-  if (layer->is_folder()) {
-    LayerIterator it = static_cast<LayerFolder*>(layer)->get_layer_begin();
-    LayerIterator end = static_cast<LayerFolder*>(layer)->get_layer_end();
+  if (layer->isFolder()) {
+    LayerIterator it = static_cast<LayerFolder*>(layer)->getLayerBegin();
+    LayerIterator end = static_cast<LayerFolder*>(layer)->getLayerEnd();
 
     for (; it != end; ++it)
       ase_file_write_layers(f, *it);
@@ -478,7 +478,7 @@ static void ase_file_write_layers(FILE *f, Layer *layer)
 
 static void ase_file_write_cels(FILE *f, Sprite *sprite, Layer *layer, FrameNumber frame)
 {
-  if (layer->is_image()) {
+  if (layer->isImage()) {
     Cel* cel = static_cast<LayerImage*>(layer)->getCel(frame);
     if (cel) {
 /*       fop_error(fop, "New cel in frame %d, in layer %d\n", */
@@ -488,9 +488,9 @@ static void ase_file_write_cels(FILE *f, Sprite *sprite, Layer *layer, FrameNumb
     }
   }
 
-  if (layer->is_folder()) {
-    LayerIterator it = static_cast<LayerFolder*>(layer)->get_layer_begin();
-    LayerIterator end = static_cast<LayerFolder*>(layer)->get_layer_end();
+  if (layer->isFolder()) {
+    LayerIterator it = static_cast<LayerFolder*>(layer)->getLayerBegin();
+    LayerIterator end = static_cast<LayerFolder*>(layer)->getLayerEnd();
 
     for (; it != end; ++it)
       ase_file_write_cels(f, sprite, *it, frame);
@@ -667,11 +667,11 @@ static Layer *ase_file_read_layer_chunk(FILE *f, Sprite *sprite, Layer **previou
 
     // child level...
     if (child_level == *current_level)
-      (*previous_layer)->get_parent()->addLayer(layer);
+      (*previous_layer)->getParent()->addLayer(layer);
     else if (child_level > *current_level)
       static_cast<LayerFolder*>(*previous_layer)->addLayer(layer);
     else if (child_level < *current_level)
-      (*previous_layer)->get_parent()->get_parent()->addLayer(layer);
+      (*previous_layer)->getParent()->getParent()->addLayer(layer);
 
     *previous_layer = layer;
     *current_level = child_level;
@@ -688,21 +688,21 @@ static void ase_file_write_layer_chunk(FILE *f, Layer *layer)
   fputw(layer->getFlags(), f);
 
   /* layer type */
-  fputw(layer->is_image() ? 0: (layer->is_folder() ? 1: -1), f);
+  fputw(layer->isImage() ? 0: (layer->isFolder() ? 1: -1), f);
 
   /* layer child level */
-  LayerFolder* parent = layer->get_parent();
+  LayerFolder* parent = layer->getParent();
   int child_level = -1;
   while (parent != NULL) {
     child_level++;
-    parent = parent->get_parent();
+    parent = parent->getParent();
   }
   fputw(child_level, f);
 
   /* default width & height, and blend mode */
   fputw(0, f);
   fputw(0, f);
-  fputw(layer->is_image() ? static_cast<LayerImage*>(layer)->getBlendMode(): 0, f);
+  fputw(layer->isImage() ? static_cast<LayerImage*>(layer)->getBlendMode(): 0, f);
 
   /* padding */
   ase_file_write_padding(f, 4);
@@ -999,7 +999,7 @@ static Cel *ase_file_read_cel_chunk(FILE *f, Sprite *sprite, FrameNumber frame,
               (int)frame, layer_index);
     return NULL;
   }
-  if (!layer->is_image()) {
+  if (!layer->isImage()) {
     fop_error(fop, "Invalid .ase file (frame %d in layer %d which does not contain images\n",
               (int)frame, layer_index);
     return NULL;

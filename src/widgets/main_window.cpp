@@ -97,7 +97,7 @@ MainWindow::MainWindow()
   if (box_tabsbar) box_tabsbar->addChild(m_tabsBar);
 
   // Prepare the window
-  remap_window();
+  remapWindow();
 
   // Initialize editors.
   init_module_editors();

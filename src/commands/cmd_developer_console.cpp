@@ -39,8 +39,8 @@ public:
     m_vbox.addChild(&m_docs);
     addChild(&m_vbox);
 
-    remap_window();
-    center_window();
+    remapWindow();
+    centerWindow();
   }
 
   void updateDocuments(Context* context)

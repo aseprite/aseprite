@@ -242,7 +242,7 @@ void GotoFrameCommand::onExecute(Context* context)
     frame->setTextf("%d", context->getActiveDocument()->getSprite()->getCurrentFrame()+1);
 
     window->openWindowInForeground();
-    if (window->get_killer() != ok)
+    if (window->getKiller() != ok)
       return;
 
     m_frame = strtol(frame->getText(), NULL, 10);

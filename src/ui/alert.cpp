@@ -88,7 +88,7 @@ int Alert::show(const char* format, ...)
 
   // Check the killer
   int ret = 0;
-  if (Widget* killer = window->get_killer()) {
+  if (Widget* killer = window->getKiller()) {
     for (int i=0; i<(int)buttons.size(); ++i) {
       if (killer == buttons[i]) {
         ret = i+1;

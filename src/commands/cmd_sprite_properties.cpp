@@ -131,14 +131,14 @@ void SpritePropertiesCommand::onExecute(Context* context)
     }
   }
 
-  window->remap_window();
-  window->center_window();
+  window->remapWindow();
+  window->centerWindow();
 
   load_window_pos(window, "SpriteProperties");
   window->setVisible(true);
   window->openWindowInForeground();
 
-  if (window->get_killer() == ok) {
+  if (window->getKiller() == ok) {
     if (color_button) {
       ActiveDocumentWriter document(context);
       Sprite* sprite(document->getSprite());

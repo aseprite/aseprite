@@ -45,7 +45,7 @@
 using namespace ui;
 
 #define FIXUP_TOP_WINDOW()                             \
-  App::instance()->getMainWindow()->remap_window();    \
+  App::instance()->getMainWindow()->remapWindow();    \
   App::instance()->getMainWindow()->invalidate();
 
 class EditorItem
@@ -181,8 +181,8 @@ public:
   // Create mini-editor
   MiniEditorWindow() : Window(false, "Mini-Editor") {
     child_spacing = 0;
-    set_autoremap(false);
-    set_wantfocus(false);
+    setAutoRemap(false);
+    setWantFocus(false);
   }
 
 protected:

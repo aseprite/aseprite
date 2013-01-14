@@ -92,7 +92,7 @@ void LayerPropertiesCommand::onExecute(Context* context)
 
   window->openWindowInForeground();
 
-  if (window->get_killer() == button_ok) {
+  if (window->getKiller() == button_ok) {
     DocumentWriter documentWriter(document);
 
     const_cast<Layer*>(layer)->setName(entry_name->getText());

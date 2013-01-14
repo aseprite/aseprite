@@ -219,15 +219,15 @@ void SpriteSizeCommand::onExecute(Context* context)
   method->addItem("Bilinear");
   method->setSelectedItem(get_config_int("SpriteSize", "Method", RESIZE_METHOD_NEAREST_NEIGHBOR));
 
-  window->remap_window();
-  window->center_window();
+  window->remapWindow();
+  window->centerWindow();
 
   load_window_pos(window, "SpriteSize");
   window->setVisible(true);
   window->openWindowInForeground();
   save_window_pos(window, "SpriteSize");
 
-  if (window->get_killer() == ok) {
+  if (window->getKiller() == ok) {
     int new_width = m_widthPx->getTextInt();
     int new_height = m_heightPx->getTextInt();
     ResizeMethod resize_method =

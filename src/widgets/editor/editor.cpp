@@ -1103,9 +1103,9 @@ bool Editor::canDraw()
   return
     (m_sprite != NULL &&
      m_sprite->getCurrentLayer() != NULL &&
-     m_sprite->getCurrentLayer()->is_image() &&
-     m_sprite->getCurrentLayer()->is_readable() &&
-     m_sprite->getCurrentLayer()->is_writable() /* && */
+     m_sprite->getCurrentLayer()->isImage() &&
+     m_sprite->getCurrentLayer()->isReadable() &&
+     m_sprite->getCurrentLayer()->isWritable() /* && */
      /* layer_get_cel(m_sprite->layer, m_sprite->frame) != NULL */
      );
 }

@@ -71,7 +71,7 @@ void move_cel(DocumentWriter& document)
   ASSERT(src_frame >= 0 && src_frame < sprite->getTotalFrames());
   ASSERT(dst_frame >= 0 && dst_frame < sprite->getTotalFrames());
 
-  if (src_layer->is_background()) {
+  if (src_layer->isBackground()) {
     copy_cel(document);
     return;
   }
@@ -90,7 +90,7 @@ void move_cel(DocumentWriter& document)
 
   /* remove the 'dst_cel' (if it exists) because it must be
      replaced with 'src_cel' */
-  if ((dst_cel != NULL) && (!dst_layer->is_background() || src_cel != NULL))
+  if ((dst_cel != NULL) && (!dst_layer->isBackground() || src_cel != NULL))
     remove_cel(sprite, undo, static_cast<LayerImage*>(dst_layer), dst_cel);
 
   /* move the cel in the same layer */
@@ -112,8 +112,8 @@ void move_cel(DocumentWriter& document)
       /* if we are moving a cel from a transparent layer to the
          background layer, we have to clear the background of the
          image */
-      if (!src_layer->is_background() &&
-          dst_layer->is_background()) {
+      if (!src_layer->isBackground() &&
+          dst_layer->isBackground()) {
         Image *src_image = sprite->getStock()->getImage(src_cel->getImage());
         Image *dst_image = image_crop(src_image,
                                       -src_cel->getX(),
@@ -174,7 +174,7 @@ void copy_cel(DocumentWriter& document)
 
   /* remove the 'dst_cel' (if it exists) because it must be
      replaced with 'src_cel' */
-  if ((dst_cel != NULL) && (!dst_layer->is_background() || src_cel != NULL))
+  if ((dst_cel != NULL) && (!dst_layer->isBackground() || src_cel != NULL))
     remove_cel(sprite, undo, static_cast<LayerImage*>(dst_layer), dst_cel);
 
   /* move the cel in the same layer */
@@ -189,8 +189,8 @@ void copy_cel(DocumentWriter& document)
     /* if we are moving a cel from a transparent layer to the
        background layer, we have to clear the background of the
        image */
-    if (!src_layer->is_background() &&
-        dst_layer->is_background()) {
+    if (!src_layer->isBackground() &&
+        dst_layer->isBackground()) {
       dst_image = image_crop(src_image,
                              -src_cel->getX(),
                              -src_cel->getY(),
@@ -239,7 +239,7 @@ static void remove_cel(Sprite* sprite, UndoTransaction& undo, LayerImage *layer,
   Cel *it;
   bool used;
 
-  if (sprite != NULL && layer->is_image() && cel != NULL) {
+  if (sprite != NULL && layer->isImage() && cel != NULL) {
     /* find if the image that use the cel to remove, is used by
        another cels */
     used = false;

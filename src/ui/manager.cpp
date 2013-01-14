@@ -355,22 +355,22 @@ bool Manager::generateMessages()
 
       if ((window) &&
           // We cannot change Z-order of desktop windows
-          (!window->is_desktop()) &&
+          (!window->isDesktop()) &&
           // We cannot change Z order of foreground windows because a
           // foreground window can launch other background windows
           // which should be kept on top of the foreground one.
-          (!window->is_foreground()) &&
+          (!window->isForeground()) &&
           // If the window is not already the top window of the manager.
           (window != win_manager->getTopWindow())) {
         // Put it in the top of the list
         win_manager->removeChild(window);
 
-        if (window->is_ontop())
+        if (window->isOnTop())
           win_manager->insertChild(0, window);
         else {
           int pos = (int)win_manager->getChildren().size();
           UI_FOREACH_WIDGET_BACKWARD(win_manager->getChildren(), it) {
-            if (static_cast<Window*>(*it)->is_ontop())
+            if (static_cast<Window*>(*it)->isOnTop())
               break;
 
             --pos;
@@ -509,8 +509,8 @@ Window* Manager::getForegroundWindow()
 {
   UI_FOREACH_WIDGET(getChildren(), it) {
     Window* window = static_cast<Window*>(*it);
-    if (window->is_foreground() ||
-        window->is_desktop())
+    if (window->isForeground() ||
+        window->isDesktop())
       return window;
   }
   return NULL;
@@ -803,7 +803,7 @@ void Manager::removeMessageFilterFor(Widget* widget)
 void Manager::_openWindow(Window* window)
 {
   // Free all widgets of special states.
-  if (window->is_wantfocus()) {
+  if (window->isWantFocus()) {
     freeCapture();
     freeMouse();
     freeFocus();
@@ -833,7 +833,7 @@ void Manager::_closeWindow(Window* window, bool redraw_background)
     window->getRegion(reg1);
 
   // Close all windows to this desktop
-  if (window->is_desktop()) {
+  if (window->isDesktop()) {
     while (!getChildren().empty()) {
       Window* child = static_cast<Window*>(getChildren().front());
       if (child == window)
@@ -902,8 +902,8 @@ bool Manager::onProcessMessage(Message* msg)
           if ((*it2)->sendMessage(msg))
             return true;
 
-        if (w->is_foreground() ||
-            w->is_desktop())
+        if (w->isForeground() ||
+            w->isDesktop())
           break;
       }
 
@@ -1125,7 +1125,7 @@ void Manager::invalidateDisplayRegion(const gfx::Region& region)
     window->invalidateRegion(reg1);
 
     // There is desktop?
-    if (window->is_desktop()) {
+    if (window->isDesktop()) {
       withDesktop = true;
       break;                                    // Work done
     }
