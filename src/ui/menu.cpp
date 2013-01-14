@@ -679,11 +679,8 @@ void MenuBox::set_position(JRect rect)
 {
   jrect_copy(this->rc, rect);
 
-  if (Menu* menu = getMenu()) {
-    JRect cpos = jwidget_get_child_rect(this);
-    jwidget_set_rect(menu, cpos);
-    jrect_free(cpos);
-  }
+  if (Menu* menu = getMenu())
+    menu->setBounds(getChildrenBounds());
 }
 
 bool MenuItem::onProcessMessage(Message* msg)

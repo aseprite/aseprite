@@ -32,7 +32,6 @@
 #include "raster/stock.h"
 #include "ui/manager.h"
 #include "ui/rect.h"
-#include "ui/region.h"
 #include "ui/view.h"
 #include "ui/widget.h"
 #include "undo_transaction.h"
@@ -256,28 +255,21 @@ void FilterManagerImpl::applyToTarget()
 void FilterManagerImpl::flush()
 {
   if (m_row >= 0) {
-    JRegion reg1, reg2;
-    struct jrect rect;
+    gfx::Rect rect;
+
     Editor* editor = current_editor;
-
-    reg1 = jregion_new(NULL, 0);
-
     editor->editorToScreen(m_x+m_offset_x,
                            m_y+m_offset_y+m_row-1,
-                           &rect.x1, &rect.y1);
-    rect.x2 = rect.x1 + (m_w << editor->getZoom());
-    rect.y2 = rect.y1 + (1 << editor->getZoom());
+                           &rect.x, &rect.y);
+    rect.w = (m_w << editor->getZoom());
+    rect.h = (1 << editor->getZoom());
 
-    reg2 = jregion_new(&rect, 1);
-    jregion_union(reg1, reg1, reg2);
-    jregion_free(reg2);
-
-    reg2 = jwidget_get_drawable_region(editor, JI_GDR_CUTTOPWINDOWS);
-    jregion_intersect(reg1, reg1, reg2);
-    jregion_free(reg2);
+    gfx::Region reg1(rect);
+    gfx::Region reg2;
+    editor->getDrawableRegion(reg2, Widget::kCutTopWindows);
+    reg1.createIntersection(reg1, reg2);
 
     editor->invalidateRegion(reg1);
-    jregion_free(reg1);
   }
 }
 

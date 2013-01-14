@@ -74,12 +74,6 @@ namespace ui {
     struct jrect rect;            /* set position */
   };
 
-  struct MessageDrawRgn
-  {
-    MessageAny any;
-    JRegion region;               /* region to redraw */
-  };
-
   struct MessageUser
   {
     MessageAny any;
@@ -96,7 +90,6 @@ namespace ui {
     MessageMouse mouse;
     MessageTimer timer;
     MessageSetPos setpos;
-    MessageDrawRgn drawrgn;
     MessageUser user;
   };
 

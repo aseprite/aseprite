@@ -13,6 +13,10 @@
 struct BITMAP;
 struct FONT;
 
+namespace gfx {
+  class Region;
+}
+
 namespace ui {
 
   class ButtonBase;
@@ -37,9 +41,9 @@ namespace ui {
     void regenerate();
 
     virtual Cursor* getCursor(CursorType type) = 0;
-    virtual void init_widget(Widget* widget) = 0;
-    virtual ui::JRegion get_window_mask(ui::Widget* widget) = 0;
-    virtual void map_decorative_widget(ui::Widget* widget) = 0;
+    virtual void initWidget(Widget* widget) = 0;
+    virtual void getWindowMask(ui::Widget* widget, gfx::Region& region) = 0;
+    virtual void mapDecorativeWidget(ui::Widget* widget) = 0;
 
     virtual void paintDesktop(PaintEvent& ev) = 0;
     virtual void paintBox(PaintEvent& ev) = 0;

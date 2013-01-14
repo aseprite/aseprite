@@ -32,7 +32,6 @@
 namespace ui {
 
   struct jrect;
-  struct jregion;
 
   // Alignment.
 #define JI_HORIZONTAL   0x0001
@@ -134,14 +133,9 @@ namespace ui {
     JM_REGISTERED_MESSAGES
   };
 
-  // Flags for jwidget_get_drawable_region.
-#define JI_GDR_CUTTOPWINDOWS    1 // Cut areas where are windows on top.
-#define JI_GDR_USECHILDAREA     2 // Use areas where are children.
-
   typedef unsigned int            JID;
 
   typedef struct jrect*           JRect;
-  typedef struct jregion*         JRegion;
 
   class GuiSystem {
   public:

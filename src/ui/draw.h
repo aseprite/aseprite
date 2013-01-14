@@ -8,6 +8,7 @@
 #define UI_DRAW_H_INCLUDED
 
 #include "gfx/rect.h"
+#include "gfx/region.h"
 #include "ui/base.h"
 #include "ui/color.h"
 
@@ -34,7 +35,7 @@ namespace ui {
 
   void jdraw_inverted_sprite(struct BITMAP *bmp, struct BITMAP *sprite, int x, int y);
 
-  void ji_move_region(JRegion region, int dx, int dy);
+  void ji_move_region(const gfx::Region& region, int dx, int dy);
 
 } // namespace ui
 

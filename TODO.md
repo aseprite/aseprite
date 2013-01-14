@@ -53,7 +53,6 @@
 * About Signals/Slots: Add some field in slots to avoid disconnecting
   them from dead signals.
 * Replace JRect & jrect with gfx::Rect.
-* Create gfx::Region to replace JRegion & jregion.
 * editors_ -> MultiEditors class widget
 * convert all widgets to classes:
   * match UI library design with Vaca library.

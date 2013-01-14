@@ -36,7 +36,6 @@ add_library(ui-lib
   preferred_size_event.cpp
   property.cpp
   rect.cpp
-  region.cpp
   scroll_bar.cpp
   separator.cpp
   slider.cpp

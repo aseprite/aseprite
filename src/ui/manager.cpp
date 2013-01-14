@@ -824,15 +824,13 @@ void Manager::_openWindow(Window* window)
 void Manager::_closeWindow(Window* window, bool redraw_background)
 {
   Message* msg;
-  JRegion reg1;
+  gfx::Region reg1;
 
   if (!hasChild(window))
     return;
 
   if (redraw_background)
-    reg1 = jwidget_get_region(window);
-  else
-    reg1 = NULL;
+    window->getRegion(reg1);
 
   // Close all windows to this desktop
   if (window->is_desktop()) {
@@ -841,9 +839,9 @@ void Manager::_closeWindow(Window* window, bool redraw_background)
       if (child == window)
         break;
       else {
-        JRegion reg2 = jwidget_get_region(window);
-        jregion_union(reg1, reg1, reg2);
-        jregion_free(reg2);
+        gfx::Region reg2;
+        window->getRegion(reg2);
+        reg1.createUnion(reg1, reg2);
 
         _closeWindow(child, false);
       }
@@ -872,10 +870,7 @@ void Manager::_closeWindow(Window* window, bool redraw_background)
   removeChild(window);
 
   // Redraw background.
-  if (reg1) {
-    invalidateRegion(reg1);
-    jregion_free(reg1);
-  }
+  invalidateRegion(reg1);
 
   // Maybe the window is in the "new_windows" list.
   WidgetsList::iterator it =
@@ -1115,14 +1110,11 @@ void Manager::pumpQueue()
   }
 }
 
-void Manager::invalidateDisplayRegion(const JRegion region)
+void Manager::invalidateDisplayRegion(const gfx::Region& region)
 {
-  JRegion reg1 = jregion_new(NULL, 0);
-  JRegion reg2 = jregion_new(this->rc, 0);
-  JRegion reg3;
-
-  // TODO intersect with jwidget_get_drawable_region()???
-  jregion_intersect(reg1, region, reg2);
+  // TODO intersect with getDrawableRegion()???
+  gfx::Region reg1;
+  reg1.createIntersection(region, gfx::Region(getBounds()));
 
   // Redraw windows from top to background.
   bool withDesktop = false;
@@ -1139,19 +1131,15 @@ void Manager::invalidateDisplayRegion(const JRegion region)
     }
 
     // Clip this window area for the next window.
-    reg3 = jwidget_get_region(window);
-    jregion_copy(reg2, reg1);
-    jregion_subtract(reg1, reg2, reg3);
-    jregion_free(reg3);
+    gfx::Region reg3;
+    window->getRegion(reg3);
+    reg1.createSubtraction(reg1, reg3);
   }
 
   // Invalidate areas outside windows (only when there are not a
   // desktop window).
   if (!withDesktop)
     Widget::invalidateRegion(reg1);
-
-  jregion_free(reg1);
-  jregion_free(reg2);
 }
 
 LayoutIO* Manager::getLayoutIO()

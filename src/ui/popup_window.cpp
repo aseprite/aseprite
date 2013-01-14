@@ -23,7 +23,6 @@ PopupWindow::PopupWindow(const char* text, bool close_on_buttonpressed)
   : Window(false, text)
 {
   m_close_on_buttonpressed = close_on_buttonpressed;
-  m_hot_region = NULL;
   m_filtering = false;
 
   set_sizeable(false);
@@ -40,25 +39,17 @@ PopupWindow::PopupWindow(const char* text, bool close_on_buttonpressed)
 PopupWindow::~PopupWindow()
 {
   stopFilteringMessages();
-
-  if (m_hot_region != NULL)
-    jregion_free(m_hot_region);
 }
 
 /**
  * @param region The new hot-region. This pointer is holded by the @a widget.
  * So you cannot destroy it after calling this routine.
  */
-void PopupWindow::setHotRegion(JRegion region)
+void PopupWindow::setHotRegion(const gfx::Region& region)
 {
-  ASSERT(region != NULL);
-
-  if (m_hot_region != NULL)
-    jregion_free(m_hot_region);
-
   startFilteringMessages();
 
-  m_hot_region = region;
+  m_hotRegion = region;
 }
 
 void PopupWindow::makeFloating()
@@ -82,7 +73,7 @@ bool PopupWindow::onProcessMessage(Message* msg)
       break;
 
     case JM_MOUSELEAVE:
-      if (m_hot_region == NULL && !is_moveable())
+      if (m_hotRegion.isEmpty() && !is_moveable())
         closeWindow(NULL);
       break;
 
@@ -119,13 +110,11 @@ bool PopupWindow::onProcessMessage(Message* msg)
 
     case JM_MOTION:
       if (!is_moveable() &&
-          m_hot_region != NULL &&
+          !m_hotRegion.isEmpty() &&
           getManager()->getCapture() == NULL) {
-        struct jrect box;
-
         // If the mouse is outside the hot-region we have to close the
         // window.
-        if (!jregion_point_in(m_hot_region, msg->mouse.x, msg->mouse.y, &box))
+        if (!m_hotRegion.contains(Point(msg->mouse.x, msg->mouse.y)))
           closeWindow(NULL);
       }
       break;

@@ -11,6 +11,7 @@
 
 #include "gfx/border.h"
 #include "gfx/rect.h"
+#include "gfx/region.h"
 #include "gfx/size.h"
 #include "ui/base.h"
 #include "ui/color.h"
@@ -42,8 +43,6 @@ namespace ui {
 
   JRect jwidget_get_rect(Widget* widget);
   JRect jwidget_get_child_rect(Widget* widget);
-  JRegion jwidget_get_region(Widget* widget);
-  JRegion jwidget_get_drawable_region(Widget* widget, int flags);
   int jwidget_get_text_length(const Widget* widget);
   int jwidget_get_text_height(const Widget* widget);
   void jwidget_get_texticon_info(Widget* widget,
@@ -242,10 +241,20 @@ namespace ui {
 
     gfx::Rect getBounds() const;
     gfx::Rect getClientBounds() const;
+    gfx::Rect getChildrenBounds() const;
     void setBounds(const gfx::Rect& rc);
 
     gfx::Border getBorder() const;
     void setBorder(const gfx::Border& border);
+
+    // Flags for getDrawableRegion()
+    enum DrawableRegionFlags {
+      kCutTopWindows = 1, // Cut areas where are windows on top.
+      kUseChildArea = 2,  // Use areas where are children.
+    };
+
+    void getRegion(gfx::Region& region);
+    void getDrawableRegion(gfx::Region& region, DrawableRegionFlags flags);
 
     // ===============================================================
     // REFRESH ISSUES
@@ -256,12 +265,11 @@ namespace ui {
 
     void invalidate();
     void invalidateRect(const gfx::Rect& rect);
-    void invalidateRect(const JRect rect);
-    void invalidateRegion(const JRegion region);
+    void invalidateRegion(const gfx::Region& region);
 
     void flushRedraw();
 
-    void scrollRegion(JRegion region, int dx, int dy);
+    void scrollRegion(const gfx::Region& region, int dx, int dy);
 
     // ===============================================================
     // GUI MANAGER
@@ -312,7 +320,7 @@ namespace ui {
     // EVENTS
     // ===============================================================
 
-    virtual void onInvalidateRegion(const JRegion region);
+    virtual void onInvalidateRegion(const gfx::Region& region);
     virtual void onPreferredSize(PreferredSizeEvent& ev);
     virtual void onLoadLayout(LoadLayoutEvent& ev);
     virtual void onSaveLayout(SaveLayoutEvent& ev);
@@ -332,7 +340,7 @@ namespace ui {
     std::string m_text;           // Widget text
     struct FONT *m_font;          // Text font type
     ui::Color m_bgColor;          // Background color
-    JRegion m_update_region;      // Region to be redrawed.
+    gfx::Region m_updateRegion;;  // Region to be redrawed.
     WidgetsList m_children;       // Sub-widgets
     Widget* m_parent;             // Who is the parent?
     gfx::Size* m_preferredSize;

@@ -63,8 +63,6 @@ Widget::Widget(int type)
   this->m_font = this->m_theme ? this->m_theme->default_font: NULL;
   this->m_bgColor = ui::ColorNone;
 
-  this->m_update_region = jregion_new(NULL, 0);
-
   this->theme_data[0] = NULL;
   this->theme_data[1] = NULL;
   this->theme_data[2] = NULL;
@@ -97,10 +95,6 @@ Widget::~Widget()
   // m_children.
   while (!m_children.empty())
     delete m_children.front();
-
-  /* destroy the update region */
-  if (m_update_region)
-    jregion_free(m_update_region);
 
   /* destroy widget position */
   if (this->rc)
@@ -576,6 +570,14 @@ Rect Widget::getClientBounds() const
   return Rect(0, 0, jrect_w(rc), jrect_h(rc));
 }
 
+Rect Widget::getChildrenBounds() const
+{
+  return Rect(rc->x1+border_width.l,
+              rc->y1+border_width.t,
+              jrect_w(rc) - border_width.l - border_width.r,
+              jrect_h(rc) - border_width.t - border_width.b);
+}
+
 void Widget::setBounds(const Rect& rc)
 {
   jrect jrc = { rc.x, rc.y, rc.x+rc.w, rc.y+rc.h };
@@ -595,6 +597,108 @@ void Widget::setBorder(const Border& br)
   border_width.b = br.bottom();
 }
 
+void Widget::getRegion(gfx::Region& region)
+{
+  if (this->type == JI_WINDOW)
+    getTheme()->getWindowMask(this, region);
+  else
+    region = getBounds();
+}
+
+void Widget::getDrawableRegion(gfx::Region& region, DrawableRegionFlags flags)
+{
+  Widget* window, *manager, *view;
+
+  getRegion(region);
+
+  // Cut the top windows areas
+  if (flags & kCutTopWindows) {
+    window = getRoot();
+    manager = window ? window->getManager(): NULL;
+
+    while (manager) {
+      const WidgetsList& windows_list = manager->getChildren();
+      WidgetsList::const_reverse_iterator it =
+        std::find(windows_list.rbegin(), windows_list.rend(), window);
+
+      if (!windows_list.empty() &&
+          window != windows_list.front() &&
+          it != windows_list.rend()) {
+        // Subtract the rectangles
+        for (++it; it != windows_list.rend(); ++it) {
+          Region reg1;
+          (*it)->getRegion(reg1);
+          region.createSubtraction(region, reg1);
+        }
+      }
+
+      window = manager->getRoot();
+      manager = window ? window->getManager(): NULL;
+    }
+  }
+
+  // Clip the areas where are children
+  if (!(flags & kUseChildArea) && !getChildren().empty()) {
+    Region reg1;
+    Region reg2(getChildrenBounds());
+
+    UI_FOREACH_WIDGET(getChildren(), it) {
+      Widget* child = *it;
+      if (child->isVisible()) {
+        Region reg3;
+        child->getRegion(reg3);
+
+        if (child->flags & JI_DECORATIVE) {
+          reg1 = getBounds();
+          reg1.createIntersection(reg1, reg3);
+        }
+        else {
+          reg1.createIntersection(reg2, reg3);
+        }
+        region.createSubtraction(region, reg1);
+      }
+    }
+  }
+
+  // Intersect with the parent area
+  if (!(this->flags & JI_DECORATIVE)) {
+    Widget* parent = getParent();
+
+    while (parent) {
+      region.createIntersection(region,
+                                Region(parent->getChildrenBounds()));
+      parent = parent->getParent();
+    }
+  }
+  else {
+    Widget* parent = getParent();
+    if (parent) {
+      region.createIntersection(region,
+                                Region(parent->getBounds()));
+    }
+  }
+
+  // Limit to the manager area
+  window = getRoot();
+  manager = (window ? window->getManager(): NULL);
+
+  while (manager) {
+    view = View::getView(manager);
+
+    Rect cpos;
+    if (view) {
+      cpos = static_cast<View*>(view)->getViewportBounds();
+    }
+    else
+      cpos = manager->getChildrenBounds();
+
+    region.createIntersection(region, Region(cpos));
+
+    window = manager->getRoot();
+    manager = (window ? window->getManager(): NULL);
+  }
+}
+
 /* gets the position of the widget */
 JRect jwidget_get_rect(Widget* widget)
 {
@@ -612,141 +716,6 @@ JRect jwidget_get_child_rect(Widget* widget)
                    widget->rc->y1 + widget->border_width.t,
                    widget->rc->x2 - widget->border_width.r,
                    widget->rc->y2 - widget->border_width.b);
-}
-
-JRegion jwidget_get_region(Widget* widget)
-{
-  JRegion region;
-
-  ASSERT_VALID_WIDGET(widget);
-
-  if (widget->type == JI_WINDOW)
-    region = widget->getTheme()->get_window_mask(widget);
-  else
-    region = jregion_new(widget->rc, 1);
-
-  return region;
-}
-
-/* gets the region to be able to draw in */
-JRegion jwidget_get_drawable_region(Widget* widget, int flags)
-{
-  Widget* window, *manager, *view;
-  JRegion region, reg1, reg2, reg3;
-  JRect cpos;
-
-  ASSERT_VALID_WIDGET(widget);
-
-  region = jwidget_get_region(widget);
-
-  // Cut the top windows areas
-  if (flags & JI_GDR_CUTTOPWINDOWS) {
-    window = widget->getRoot();
-    manager = window ? window->getManager(): NULL;
-
-    while (manager) {
-      const WidgetsList& windows_list = manager->getChildren();
-      WidgetsList::const_reverse_iterator it =
-        std::find(windows_list.rbegin(), windows_list.rend(), window);
-
-      if (!windows_list.empty() &&
-          window != windows_list.front() &&
-          it != windows_list.rend()) {
-        // Subtract the rectangles
-        for (++it; it != windows_list.rend(); ++it) {
-          reg1 = jwidget_get_region(*it);
-          jregion_subtract(region, region, reg1);
-          jregion_free(reg1);
-        }
-      }
-
-      window = manager->getRoot();
-      manager = window ? window->getManager(): NULL;
-    }
-  }
-
-  // Clip the areas where are children
-  if (!(flags & JI_GDR_USECHILDAREA) && !widget->getChildren().empty()) {
-    cpos = jwidget_get_child_rect(widget);
-    reg1 = jregion_new(NULL, 0);
-    reg2 = jregion_new(cpos, 1);
-
-    UI_FOREACH_WIDGET(widget->getChildren(), it) {
-      Widget* child = *it;
-      if (child->isVisible()) {
-        reg3 = jwidget_get_region(child);
-        if (child->flags & JI_DECORATIVE) {
-          jregion_reset(reg1, widget->rc);
-          jregion_intersect(reg1, reg1, reg3);
-        }
-        else {
-          jregion_intersect(reg1, reg2, reg3);
-        }
-        jregion_subtract(region, region, reg1);
-        jregion_free(reg3);
-      }
-    }
-    jregion_free(reg1);
-    jregion_free(reg2);
-    jrect_free(cpos);
-  }
-
-  // Intersect with the parent area
-  if (!(widget->flags & JI_DECORATIVE)) {
-    Widget* parent = widget->getParent();
-
-    reg1 = jregion_new(NULL, 0);
-
-    while (parent) {
-      cpos = jwidget_get_child_rect(parent);
-      jregion_reset(reg1, cpos);
-      jregion_intersect(region, region, reg1);
-      jrect_free(cpos);
-
-      parent = parent->getParent();
-    }
-
-    jregion_free(reg1);
-  }
-  else {
-    Widget* parent = widget->getParent();
-    if (parent) {
-      cpos = jwidget_get_rect(parent);
-      reg1 = jregion_new(cpos, 1);
-      jregion_intersect(region, region, reg1);
-      jregion_free(reg1);
-      jrect_free(cpos);
-    }
-  }
-
-  // Limit to the manager area
-  window = widget->getRoot();
-  manager = window ? window->getManager(): NULL;
-
-  while (manager) {
-    view = View::getView(manager);
-    if (view) {
-      Rect vp = static_cast<View*>(view)->getViewportBounds();
-      cpos = jrect_new(vp.x, vp.y, vp.x+vp.w, vp.y+vp.h);
-    }
-    else
-      cpos = jwidget_get_child_rect(manager);
-/*     if (!manager->parent) */
-/*       cpos = jwidget_get_rect(manager); */
-/*     else */
-/*       cpos = jwidget_get_child_rect(manager->parent); */
-
-    reg1 = jregion_new(cpos, 1);
-    jregion_intersect(region, region, reg1);
-    jregion_free(reg1);
-    jrect_free(cpos);
-
-    window = manager->getRoot();
-    manager = window ? window->getManager(): NULL;
-  }
-
-  /* return the region */
-  return region;
 }
 
 int jwidget_get_text_length(const Widget* widget)
@@ -934,9 +903,7 @@ void jwidget_set_max_size(Widget* widget, int w, int h)
 void Widget::flushRedraw()
 {
   std::queue<Widget*> processing;
-  int c, nrects;
   Message* msg;
-  JRect rc;
 
   if (this->flags & JI_DIRTY) {
     this->flags ^= JI_DIRTY;
@@ -961,31 +928,35 @@ void Widget::flushRedraw()
       }
     }
 
-    nrects = JI_REGION_NUM_RECTS(widget->m_update_region);
-    if (nrects > 0) {
-      /* get areas to draw */
-      JRegion region = jwidget_get_drawable_region(widget, JI_GDR_CUTTOPWINDOWS);
-      jregion_intersect(widget->m_update_region,
-                        widget->m_update_region, region);
-      jregion_free(region);
+    if (!widget->m_updateRegion.isEmpty()) {
+      // Intersect m_updateRegion with drawable area.
+      {
+        Region region;
+        widget->getDrawableRegion(region, kCutTopWindows);
+        widget->m_updateRegion.createIntersection(widget->m_updateRegion, region);
+      }
 
-      nrects = JI_REGION_NUM_RECTS(widget->m_update_region);
+      size_t c, nrects = widget->m_updateRegion.size();
+      Region::const_iterator it = widget->m_updateRegion.begin();
 
-      /* draw the widget */
-      for (c=0, rc=JI_REGION_RECTS(widget->m_update_region);
-           c<nrects;
-           c++, rc++) {
-        /* create the draw message */
+      // Draw the widget
+      for (c=0; c<nrects; c++, ++it) {
+        const Rect& rc = *it;
+
+        // Create the draw message
         msg = jmessage_new(JM_DRAW);
         msg->draw.count = nrects-1 - c;
-        msg->draw.rect = *rc;
+        msg->draw.rect.x1 = rc.x;
+        msg->draw.rect.y1 = rc.y;
+        msg->draw.rect.x2 = rc.x2();
+        msg->draw.rect.y2 = rc.y2();
         jmessage_add_dest(msg, widget);
 
-        /* enqueue the draw message */
+        // Enqueue the draw message
         getManager()->enqueueMessage(msg);
       }
 
-      jregion_empty(widget->m_update_region);
+      widget->m_updateRegion.clear();
     }
   }
 }
@@ -1003,10 +974,8 @@ void Widget::setDoubleBuffered(bool doubleBuffered)
 void Widget::invalidate()
 {
   if (isVisible()) {
-    JRegion reg1 = jwidget_get_drawable_region(this, JI_GDR_CUTTOPWINDOWS);
-
-    jregion_copy(this->m_update_region, reg1);
-    jregion_free(reg1);
+    m_updateRegion.clear();
+    getDrawableRegion(m_updateRegion, kCutTopWindows);
 
     mark_dirty_flag(this);
 
@@ -1017,53 +986,37 @@ void Widget::invalidate()
 
 void Widget::invalidateRect(const gfx::Rect& rect)
 {
-  if (isVisible()) {
-    JRect tmp = jrect_new(rect.x, rect.y, rect.x+rect.w, rect.y+rect.h);
-    invalidateRect(tmp);
-    jrect_free(tmp);
-  }
+  if (isVisible())
+    invalidateRegion(Region(rect));
 }
 
-void Widget::invalidateRect(const JRect rect)
-{
-  if (isVisible()) {
-    JRegion reg1 = jregion_new(rect, 1);
-    invalidateRegion(reg1);
-    jregion_free(reg1);
-  }
-}
-
-void Widget::invalidateRegion(const JRegion region)
+void Widget::invalidateRegion(const Region& region)
 {
   onInvalidateRegion(region);
 }
 
-void Widget::scrollRegion(JRegion region, int dx, int dy)
+void Widget::scrollRegion(const Region& region, int dx, int dy)
 {
   if (dx != 0 || dy != 0) {
-    JRegion reg2 = jregion_new(NULL, 0);
+    Region reg2 = region;
+    reg2.offset(dx, dy);
+    reg2.createIntersection(reg2, region);
+    reg2.offset(-dx, -dy);
 
-    jregion_copy(reg2, region);
-    jregion_translate(reg2, dx, dy);
-    jregion_intersect(reg2, reg2, region);
-
-    jregion_translate(reg2, -dx, -dy);
-
+    // Move screen pixels
     jmouse_hide();
     ji_move_region(reg2, dx, dy);
     jmouse_show();
 
-    jregion_translate(reg2, dx, dy);
+    reg2.offset(dx, dy);
 
-    jregion_union(this->m_update_region, this->m_update_region, region);
-    jregion_subtract(this->m_update_region, this->m_update_region, reg2);
+    m_updateRegion.createUnion(m_updateRegion, region);
+    m_updateRegion.createSubtraction(m_updateRegion, reg2);
 
     mark_dirty_flag(this);
 
-    // Generate the JM_DRAW messages for the widget's m_update_region
-    this->flushRedraw();
-
-    jregion_free(reg2);
+    // Generate the JM_DRAW messages for the widget's m_updateRegion
+    flushRedraw();
   }
 }
 
@@ -1362,31 +1315,28 @@ bool Widget::onProcessMessage(Message* msg)
 // EVENTS
 // ===============================================================
 
-void Widget::onInvalidateRegion(const JRegion region)
+void Widget::onInvalidateRegion(const Region& region)
 {
-  if (isVisible() &&
-      jregion_rect_in(region, this->rc) != JI_RGNOUT) {
-    JRegion reg1 = jregion_new(NULL, 0);
-    JRegion reg2 = jwidget_get_drawable_region(this, JI_GDR_CUTTOPWINDOWS);
-
-    jregion_union(reg1, this->m_update_region, region);
-    jregion_intersect(this->m_update_region, reg1, reg2);
-    jregion_free(reg2);
-
-    jregion_subtract(reg1, region, this->m_update_region);
+  if (isVisible() && region.contains(getBounds()) != Region::Out) {
+    Region reg1;
+    reg1.createUnion(m_updateRegion, region);
+    {
+      Region reg2;
+      getDrawableRegion(reg2, kCutTopWindows);
+      m_updateRegion.createIntersection(reg1, reg2);
+    }
+    reg1.createSubtraction(region, m_updateRegion);
 
     mark_dirty_flag(this);
 
     UI_FOREACH_WIDGET(getChildren(), it)
       (*it)->invalidateRegion(reg1);
-
-    jregion_free(reg1);
   }
 }
 
 void Widget::onPreferredSize(PreferredSizeEvent& ev)
 {
-  ev.setPreferredSize(Size(this->min_w, this->min_h));
+  ev.setPreferredSize(Size(min_w, min_h));
 }
 
 void Widget::onLoadLayout(LoadLayoutEvent& ev)
@@ -1412,7 +1362,7 @@ void Widget::onBroadcastMouseMessage(WidgetsList& targets)
 void Widget::onInitTheme(InitThemeEvent& ev)
 {
   if (m_theme) {
-    m_theme->init_widget(this);
+    m_theme->initWidget(this);
 
     if (!(flags & JI_INITIALIZED))
       flags |= JI_INITIALIZED;

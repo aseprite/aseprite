@@ -14,7 +14,6 @@
 #include "ui/font.h"
 #include "ui/intern.h"
 #include "ui/rect.h"
-#include "ui/region.h"
 #include "ui/system.h"
 #include "ui/widget.h"
 
@@ -154,33 +153,33 @@ void jdraw_text(BITMAP* bmp, FONT* font, const char *s, int x, int y,
   }
 }
 
-void ji_move_region(JRegion region, int dx, int dy)
+void ji_move_region(const Region& region, int dx, int dy)
 {
-  int c, nrects = JI_REGION_NUM_RECTS(region);
-  JRect rc;
+  size_t nrects = region.size();
 
   // Blit directly screen to screen.
   if (is_linear_bitmap(ji_screen) && nrects == 1) {
-    rc = JI_REGION_RECTS(region);
-    blit(ji_screen, ji_screen,
-         rc->x1, rc->y1,
-         rc->x1+dx, rc->y1+dy, jrect_w(rc), jrect_h(rc));
+    Rect rc = region[0];
+    blit(ji_screen, ji_screen, rc.x, rc.y, rc.x+dx, rc.y+dy, rc.w, rc.h);
   }
   // Blit saving areas and copy them.
   else if (nrects > 1) {
     std::vector<BITMAP*> images(nrects);
+    Region::const_iterator it, begin=region.begin(), end=region.end();
     BITMAP* bmp;
+    int c;
 
-    for (c=0, rc=JI_REGION_RECTS(region); c<nrects; ++c, ++rc) {
-      bmp = create_bitmap(jrect_w(rc), jrect_h(rc));
-      blit(ji_screen, bmp,
-           rc->x1, rc->y1, 0, 0, bmp->w, bmp->h);
+    for (c=0, it=begin; it != end; ++it, ++c) {
+      const Rect& rc = *it;
+      bmp = create_bitmap(rc.w, rc.h);
+      blit(ji_screen, bmp, rc.x, rc.y, 0, 0, bmp->w, bmp->h);
       images[c] = bmp;
     }
 
-    for (c=0, rc=JI_REGION_RECTS(region); c<nrects; ++c, ++rc) {
+    for (c=0, it=begin; it != end; ++it, ++c) {
+      const Rect& rc = *it;
       bmp = images[c];
-      blit(bmp, ji_screen, 0, 0, rc->x1+dx, rc->y1+dy, bmp->w, bmp->h);
+      blit(bmp, ji_screen, 0, 0, rc.x+dx, rc.y+dy, bmp->w, bmp->h);
       destroy_bitmap(bmp);
     }
   }

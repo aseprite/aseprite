@@ -460,10 +460,8 @@ void Window::onPreferredSize(PreferredSizeEvent& ev)
   Widget* manager = getManager();
 
   if (m_is_desktop) {
-    JRect cpos = jwidget_get_child_rect(manager);
-    ev.setPreferredSize(jrect_w(cpos),
-                        jrect_h(cpos));
-    jrect_free(cpos);
+    Rect cpos = manager->getChildrenBounds();
+    ev.setPreferredSize(cpos.w, cpos.h);
   }
   else {
     Size maxSize(0, 0);
@@ -515,21 +513,19 @@ void Window::onSetText()
 
 void Window::window_set_position(JRect rect)
 {
-  /* copy the new position rectangle */
+  // Copy the new position rectangle
   jrect_copy(this->rc, rect);
-  JRect cpos = jwidget_get_child_rect(this);
+  Rect cpos = getChildrenBounds();
 
   /* set all the children to the same "child_pos" */
   UI_FOREACH_WIDGET(getChildren(), it) {
     Widget* child = *it;
 
     if (child->isDecorative())
-      child->getTheme()->map_decorative_widget(child);
+      child->getTheme()->mapDecorativeWidget(child);
     else
-      jwidget_set_rect(child, cpos);
+      child->setBounds(cpos);
   }
-
-  jrect_free(cpos);
 }
 
 void Window::limit_size(int *w, int *h)
@@ -540,13 +536,13 @@ void Window::limit_size(int *w, int *h)
 
 void Window::move_window(JRect rect, bool use_blit)
 {
-#define FLAGS JI_GDR_CUTTOPWINDOWS | JI_GDR_USECHILDAREA
+#define FLAGS (DrawableRegionFlags)(kCutTopWindows | kUseChildArea)
 
   Manager* manager = getManager();
-  JRegion old_drawable_region;
-  JRegion new_drawable_region;
-  JRegion manager_refresh_region;
-  JRegion window_refresh_region;
+  Region old_drawable_region;
+  Region new_drawable_region;
+  Region manager_refresh_region; // A region to refresh the manager later
+  Region window_refresh_region;  // A new region to refresh the window later
   JRect old_pos;
   JRect man_pos;
   Message* msg;
@@ -564,70 +560,59 @@ void Window::move_window(JRect rect, bool use_blit)
   jmessage_add_dest(msg, this);
   manager->enqueueMessage(msg);
 
-  /* get the region & the drawable region of the window */
-  old_drawable_region = jwidget_get_drawable_region(this, FLAGS);
+  // Get the region & the drawable region of the window
+  getDrawableRegion(old_drawable_region, FLAGS);
 
-  /* if the size of the window changes... */
+  // If the size of the window changes...
   if (jrect_w(old_pos) != jrect_w(rect) ||
       jrect_h(old_pos) != jrect_h(rect)) {
-    /* we have to change the whole positions sending JM_SETPOS
-       messages... */
+    // We have to change the whole positions sending JM_SETPOS
+    // messages...
     window_set_position(rect);
   }
   else {
-    /* we can just displace all the widgets
-       by a delta (new_position - old_position)... */
+    // We can just displace all the widgets by a delta (new_position -
+    // old_position)...
     displace_widgets(this,
                      rect->x1 - old_pos->x1,
                      rect->y1 - old_pos->y1);
   }
 
-  /* get the new drawable region of the window (it's new because we
-     moved the window to "rect") */
-  new_drawable_region = jwidget_get_drawable_region(this, FLAGS);
+  // Get the new drawable region of the window (it's new because we
+  // moved the window to "rect")
+  getDrawableRegion(new_drawable_region, FLAGS);
 
-  /* create a new region to refresh the manager later */
-  manager_refresh_region = jregion_new(NULL, 0);
+  // First of all, we have to refresh the manager in the old window's
+  // drawable region, but we have to substract the new window's
+  // drawable region.
+  manager_refresh_region.createSubtraction(old_drawable_region,
+                                           new_drawable_region);
 
-  /* create a new region to refresh the window later */
-  window_refresh_region = jregion_new(NULL, 0);
+  // In second place, we have to setup the window's refresh region...
 
-  /* first of all, we have to refresh the manager in the old window's
-     drawable region... */
-  jregion_copy(manager_refresh_region, old_drawable_region);
-
-  /* ...but we have to substract the new window's drawable region (and
-     that is all for the manager's refresh region) */
-  jregion_subtract(manager_refresh_region, manager_refresh_region,
-                   new_drawable_region);
-
-  /* now we have to setup the window's refresh region... */
-
-  /* if "use_blit" isn't activated, we have to redraw the whole window
-     (sending JM_DRAW messages) in the new drawable region */
+  // If "use_blit" isn't activated, we have to redraw the whole window
+  // (sending JM_DRAW messages) in the new drawable region
   if (!use_blit) {
-    jregion_copy(window_refresh_region, new_drawable_region);
+    window_refresh_region = new_drawable_region;
   }
-  /* if "use_blit" is activated, we can move the old drawable to the
-     new position (to redraw as little as possible) */
+  // If "use_blit" is activated, we can move the old drawable to the
+  // new position (to redraw as little as possible)
   else {
-    JRegion reg1 = jregion_new(NULL, 0);
-    JRegion moveable_region = jregion_new(NULL, 0);
+    Region reg1;
+    Region moveable_region;
 
-    /* add a region to draw areas which were outside of the screen */
-    jregion_copy(reg1, new_drawable_region);
-    jregion_translate(reg1,
-                      old_pos->x1 - this->rc->x1,
-                      old_pos->y1 - this->rc->y1);
-    jregion_intersect(moveable_region, old_drawable_region, reg1);
+    // Add a region to draw areas which were outside of the screen
+    reg1 = new_drawable_region;
+    reg1.offset(old_pos->x1 - this->rc->x1,
+                old_pos->y1 - this->rc->y1);
+    moveable_region.createIntersection(old_drawable_region, reg1);
 
-    jregion_subtract(reg1, reg1, moveable_region);
-    jregion_translate(reg1,
-                      this->rc->x1 - old_pos->x1,
-                      this->rc->y1 - old_pos->y1);
-    jregion_union(window_refresh_region, window_refresh_region, reg1);
+    reg1.createSubtraction(reg1, moveable_region);
+    reg1.offset(this->rc->x1 - old_pos->x1,
+                this->rc->y1 - old_pos->y1);
+    window_refresh_region.createUnion(window_refresh_region, reg1);
 
-    /* move the window's graphics */
+    // Move the window's graphics
     jmouse_hide();
     set_clip_rect(ji_screen,
                   man_pos->x1, man_pos->y1, man_pos->x2-1, man_pos->y2-1);
@@ -637,18 +622,11 @@ void Window::move_window(JRect rect, bool use_blit)
                    this->rc->y1 - old_pos->y1);
     set_clip_rect(ji_screen, 0, 0, JI_SCREEN_W-1, JI_SCREEN_H-1);
     jmouse_show();
-
-    jregion_free(reg1);
-    jregion_free(moveable_region);
   }
 
   manager->invalidateDisplayRegion(manager_refresh_region);
   invalidateRegion(window_refresh_region);
 
-  jregion_free(old_drawable_region);
-  jregion_free(new_drawable_region);
-  jregion_free(manager_refresh_region);
-  jregion_free(window_refresh_region);
   jrect_free(old_pos);
   jrect_free(man_pos);
 }

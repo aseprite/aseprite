@@ -300,14 +300,14 @@ void Editor::setEditorScroll(int x, int y, int use_refresh_region)
 {
   View* view = View::getView(this);
   Point oldScroll;
-  JRegion region = NULL;
+  Region region;
   int thick = m_cursor_thick;
 
   if (thick)
     editor_clean_cursor();
 
   if (use_refresh_region) {
-    region = jwidget_get_drawable_region(this, JI_GDR_CUTTOPWINDOWS);
+    getDrawableRegion(region, kCutTopWindows);
     oldScroll = view->getViewScroll();
   }
 
@@ -327,11 +327,9 @@ void Editor::setEditorScroll(int x, int y, int use_refresh_region)
 
   if (use_refresh_region) {
     // Move screen with blits
-    this->scrollRegion(region,
-                       oldScroll.x - newScroll.x,
-                       oldScroll.y - newScroll.y);
-
-    jregion_free(region);
+    scrollRegion(region,
+                 oldScroll.x - newScroll.x,
+                 oldScroll.y - newScroll.y);
   }
 
   if (thick)
@@ -495,22 +493,20 @@ void Editor::drawSprite(int x1, int y1, int x2, int y2)
 
 void Editor::drawSpriteSafe(int x1, int y1, int x2, int y2)
 {
-  JRegion region = jwidget_get_drawable_region(this, JI_GDR_CUTTOPWINDOWS);
-  int c, nrects = JI_REGION_NUM_RECTS(region);
-  int cx1, cy1, cx2, cy2;
-  JRect rc;
+  Region region;
+  getDrawableRegion(region, kCutTopWindows);
 
+  int cx1, cy1, cx2, cy2;
   get_clip_rect(ji_screen, &cx1, &cy1, &cx2, &cy2);
 
-  for (c=0, rc=JI_REGION_RECTS(region);
-       c<nrects;
-       c++, rc++) {
-    add_clip_rect(ji_screen, rc->x1, rc->y1, rc->x2-1, rc->y2-1);
+  for (Region::const_iterator it=region.begin(), end=region.end();
+       it != end; ++it) {
+    const Rect& rc = *it;
+
+    add_clip_rect(ji_screen, rc.x, rc.y, rc.x2()-1, rc.y2()-1);
     drawSprite(x1, y1, x2, y2);
     set_clip_rect(ji_screen, cx1, cy1, cx2, cy2);
   }
-
-  jregion_free(region);
 }
 
 /**
@@ -582,9 +578,8 @@ void Editor::drawMaskSafe()
       m_document->getBoundariesSegments()) {
     int thick = m_cursor_thick;
 
-    JRegion region = jwidget_get_drawable_region(this, JI_GDR_CUTTOPWINDOWS);
-    int c, nrects = JI_REGION_NUM_RECTS(region);
-    JRect rc;
+    Region region;
+    getDrawableRegion(region, kCutTopWindows);
 
     acquire_bitmap(ji_screen);
 
@@ -593,14 +588,13 @@ void Editor::drawMaskSafe()
     else
       jmouse_hide();
 
-    for (c=0, rc=JI_REGION_RECTS(region);
-         c<nrects;
-         c++, rc++) {
-      set_clip_rect(ji_screen, rc->x1, rc->y1, rc->x2-1, rc->y2-1);
+    for (Region::const_iterator it=region.begin(), end=region.end();
+         it != end; ++it) {
+      const Rect& rc = *it;
+      set_clip_rect(ji_screen, rc.x, rc.y, rc.x2()-1, rc.y2()-1);
       drawMask();
     }
     set_clip_rect(ji_screen, 0, 0, JI_SCREEN_W-1, JI_SCREEN_H-1);
-    jregion_free(region);
 
     // Draw the cursor
     if (thick)

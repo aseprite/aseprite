@@ -400,9 +400,7 @@ void ToolBar::openPopupWindow(int group_index, ToolGroup* tool_group)
 
   // Redraw the overlapped area and save it to use it in the ToolStrip::onProcessMessage(JM_DRAW)
   {
-    JRect rcTemp = jrect_new(rc.x, rc.y, rc.x+rc.w, rc.y+rc.h);
-    getManager()->invalidateRect(rcTemp);
-    jrect_free(rcTemp);
+    getManager()->invalidateRect(rc);
 
     // Flush JM_DRAW messages and send them
     getManager()->flushRedraw();
@@ -413,11 +411,9 @@ void ToolBar::openPopupWindow(int group_index, ToolGroup* tool_group)
   }
 
   // Set hotregion of popup window
-  {
-    jrect rc2 = { rc.x, rc.y, this->rc->x2, rc.y+rc.h };
-    JRegion hotregion = jregion_new(&rc2, 1);
-    m_popupWindow->setHotRegion(hotregion);
-  }
+  Region rgn(rc);
+  rgn.createUnion(rgn, Region(getBounds()));
+  m_popupWindow->setHotRegion(rgn);
 
   m_popupWindow->set_autoremap(false);
   m_popupWindow->setBounds(rc);

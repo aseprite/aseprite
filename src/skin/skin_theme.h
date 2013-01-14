@@ -119,9 +119,9 @@ public:
   void reload_fonts();
 
   ui::Cursor* getCursor(ui::CursorType type);
-  void init_widget(ui::Widget* widget);
-  ui::JRegion get_window_mask(ui::Widget* widget);
-  void map_decorative_widget(ui::Widget* widget);
+  void initWidget(ui::Widget* widget);
+  void getWindowMask(ui::Widget* widget, gfx::Region& region);
+  void mapDecorativeWidget(ui::Widget* widget);
 
   void paintDesktop(ui::PaintEvent& ev);
   void paintBox(ui::PaintEvent& ev);

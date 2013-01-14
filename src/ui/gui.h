@@ -44,7 +44,6 @@
 #include "ui/preferred_size_event.h"
 #include "ui/property.h"
 #include "ui/rect.h"
-#include "ui/region.h"
 #include "ui/save_layout_event.h"
 #include "ui/scroll_bar.h"
 #include "ui/separator.h"

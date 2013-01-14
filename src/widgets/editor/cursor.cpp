@@ -32,7 +32,6 @@
 #include "tools/tool.h"
 #include "ui/base.h"
 #include "ui/rect.h"
-#include "ui/region.h"
 #include "ui/system.h"
 #include "ui/widget.h"
 #include "ui_context.h"
@@ -85,8 +84,8 @@ static int saved_pixel_n;
 
 // These clipping regions are shared between all editors, so we cannot
 // make assumptions about their old state
-static JRegion clipping_region = NULL;
-static JRegion old_clipping_region = NULL;
+static gfx::Region clipping_region;
+static gfx::Region old_clipping_region;
 
 static void generate_cursor_boundaries();
 
@@ -97,8 +96,6 @@ static void editor_cursor_bounds(Editor *editor, int x, int y, int color, void (
 static void savepixel(BITMAP *bmp, int x, int y, int color);
 static void drawpixel(BITMAP *bmp, int x, int y, int color);
 static void cleanpixel(BITMAP *bmp, int x, int y, int color);
-
-static int point_inside_region(int x, int y, JRegion region);
 
 static int get_pen_color(Sprite *sprite);
 
@@ -240,8 +237,8 @@ void Editor::editor_draw_cursor(int x, int y, bool refresh)
   ASSERT(m_cursor_thick == 0);
   ASSERT(m_sprite != NULL);
 
-  /* get drawable region */
-  clipping_region = jwidget_get_drawable_region(this, JI_GDR_CUTTOPWINDOWS);
+  // Get drawable region
+  getDrawableRegion(clipping_region, kCutTopWindows);
 
   /* get cursor color */
   cursor_negative = is_cursor_mask();
@@ -335,9 +332,7 @@ void Editor::editor_draw_cursor(int x, int y, bool refresh)
   m_cursor_editor_x = x;
   m_cursor_editor_y = y;
 
-  /* save the clipping-region to know where to clean the pixels */
-  if (old_clipping_region)
-    jregion_free(old_clipping_region);
+  // Save the clipping-region to know where to clean the pixels
   old_clipping_region = clipping_region;
 }
 
@@ -404,7 +399,7 @@ void Editor::editor_clean_cursor(bool refresh)
   ASSERT(m_cursor_thick != 0);
   ASSERT(m_sprite != NULL);
 
-  clipping_region = jwidget_get_drawable_region(this, JI_GDR_CUTTOPWINDOWS);
+  getDrawableRegion(clipping_region, kCutTopWindows);
 
   x = m_cursor_editor_x;
   y = m_cursor_editor_y;
@@ -438,12 +433,8 @@ void Editor::editor_clean_cursor(bool refresh)
 
   m_cursor_thick = 0;
 
-  jregion_free(clipping_region);
-  if (old_clipping_region)
-    jregion_free(old_clipping_region);
-
-  clipping_region = NULL;
-  old_clipping_region = NULL;
+  clipping_region.clear();
+  old_clipping_region.clear();
 }
 
 /**
@@ -634,13 +625,13 @@ static void editor_cursor_bounds(Editor *editor, int x, int y, int color, void (
 
 static void savepixel(BITMAP *bmp, int x, int y, int color)
 {
-  if (saved_pixel_n < MAX_SAVED && point_inside_region(x, y, clipping_region))
+  if (saved_pixel_n < MAX_SAVED && clipping_region.contains(gfx::Point(x, y)))
     saved_pixel[saved_pixel_n++] = getpixel(bmp, x, y);
 }
 
 static void drawpixel(BITMAP *bmp, int x, int y, int color)
 {
-  if (saved_pixel_n < MAX_SAVED && point_inside_region(x, y, clipping_region)) {
+  if (saved_pixel_n < MAX_SAVED && clipping_region.contains(gfx::Point(x, y))) {
     if (cursor_negative) {
       int r, g, b, c = saved_pixel[saved_pixel_n++];
 
@@ -659,18 +650,12 @@ static void drawpixel(BITMAP *bmp, int x, int y, int color)
 static void cleanpixel(BITMAP *bmp, int x, int y, int color)
 {
   if (saved_pixel_n < MAX_SAVED) {
-    if (point_inside_region(x, y, clipping_region))
+    if (clipping_region.contains(gfx::Point(x, y)))
       putpixel(bmp, x, y, saved_pixel[saved_pixel_n++]);
-    else if (old_clipping_region &&
-             point_inside_region(x, y, old_clipping_region))
+    else if (!old_clipping_region.isEmpty() &&
+             old_clipping_region.contains(gfx::Point(x, y)))
       saved_pixel_n++;
   }
-}
-
-static int point_inside_region(int x, int y, JRegion region)
-{
-  struct jrect box;
-  return jregion_point_in(region, x, y, &box);
 }
 
 static int get_pen_color(Sprite *sprite)

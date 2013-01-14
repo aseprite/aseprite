@@ -1383,10 +1383,10 @@ void AnimationEditor::setScroll(int x, int y, bool use_refresh_region)
   int old_scroll_y = 0;
   int max_scroll_x;
   int max_scroll_y;
-  JRegion region = NULL;
+  Region region;
 
   if (use_refresh_region) {
-    region = jwidget_get_drawable_region(this, JI_GDR_CUTTOPWINDOWS);
+    getDrawableRegion(region, kCutTopWindows);
     old_scroll_x = m_scroll_x;
     old_scroll_y = m_scroll_y;
   }
@@ -1404,51 +1404,36 @@ void AnimationEditor::setScroll(int x, int y, bool use_refresh_region)
     int new_scroll_y = m_scroll_y;
     int dx = old_scroll_x - new_scroll_x;
     int dy = old_scroll_y - new_scroll_y;
-    JRegion reg1 = jregion_new(NULL, 0);
-    JRegion reg2 = jregion_new(NULL, 0);
-    JRect rect2 = jrect_new(0, 0, 0, 0);
+    Rect rect2;
+    Region reg1;
 
     jmouse_hide();
 
     // Scroll layers.
-    jrect_replace(rect2,
-                  this->rc->x1,
-                  this->rc->y1 + HDRSIZE,
-                  this->rc->x1 + m_separator_x,
-                  this->rc->y2);
-    jregion_reset(reg2, rect2);
-    jregion_copy(reg1, region);
-    jregion_intersect(reg1, reg1, reg2);
-    this->scrollRegion(reg1, 0, dy);
+    rect2 = Rect(this->rc->x1,
+                 this->rc->y1 + HDRSIZE,
+                 m_separator_x,
+                 this->rc->y2 - (this->rc->y1 + HDRSIZE));
+    reg1.createIntersection(region, Region(rect2));
+    scrollRegion(reg1, 0, dy);
 
     // Scroll header-frame.
-    jrect_replace(rect2,
-                  this->rc->x1 + m_separator_x + m_separator_w,
-                  this->rc->y1,
-                  this->rc->x2,
-                  this->rc->y1 + HDRSIZE);
-    jregion_reset(reg2, rect2);
-    jregion_copy(reg1, region);
-    jregion_intersect(reg1, reg1, reg2);
-    this->scrollRegion(reg1, dx, 0);
+    rect2 = Rect(this->rc->x1 + m_separator_x + m_separator_w,
+                 this->rc->y1,
+                 this->rc->x2 - (this->rc->x1 + m_separator_x + m_separator_w),
+                 HDRSIZE);
+    reg1.createIntersection(region, Region(rect2));
+    scrollRegion(reg1, dx, 0);
 
     // Scroll cels.
-    jrect_replace(rect2,
-                  this->rc->x1 + m_separator_x + m_separator_w,
-                  this->rc->y1 + HDRSIZE,
-                  this->rc->x2,
-                  this->rc->y2);
-    jregion_reset(reg2, rect2);
-    jregion_copy(reg1, region);
-    jregion_intersect(reg1, reg1, reg2);
-    this->scrollRegion(reg1, dx, dy);
+    rect2 = Rect(this->rc->x1 + m_separator_x + m_separator_w,
+                 this->rc->y1 + HDRSIZE,
+                 this->rc->x2 - (this->rc->x1 + m_separator_x + m_separator_w),
+                 this->rc->y2 - (this->rc->y1 + HDRSIZE));
+    reg1.createIntersection(region, Region(rect2));
+    scrollRegion(reg1, dx, dy);
 
     jmouse_show();
-
-    jregion_free(region);
-    jregion_free(reg1);
-    jregion_free(reg2);
-    jrect_free(rect2);
   }
 }
 

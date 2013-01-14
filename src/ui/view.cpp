@@ -11,7 +11,6 @@
 #include "ui/message.h"
 #include "ui/preferred_size_event.h"
 #include "ui/rect.h"
-#include "ui/region.h"
 #include "ui/system.h"
 #include "ui/theme.h"
 #include "ui/view.h"
@@ -250,9 +249,9 @@ bool View::onProcessMessage(Message* msg)
       // TODO This is theme specific stuff
       // Redraw the borders each time the focus enters or leaves the view.
       {
-        JRegion region = jwidget_get_drawable_region(this, JI_GDR_CUTTOPWINDOWS);
+        Region region;
+        getDrawableRegion(region, kCutTopWindows);
         invalidateRegion(region);
-        jregion_free(region);
       }
       break;
   }

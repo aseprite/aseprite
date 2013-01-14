@@ -64,7 +64,7 @@ namespace ui {
     void removeMessageFilter(int message, Widget* widget);
     void removeMessageFilterFor(Widget* widget);
 
-    void invalidateDisplayRegion(const JRegion region);
+    void invalidateDisplayRegion(const gfx::Region& region);
 
     LayoutIO* getLayoutIO();
 

@@ -577,7 +577,7 @@ Cursor* SkinTheme::getCursor(CursorType type)
   }
 }
 
-void SkinTheme::init_widget(Widget* widget)
+void SkinTheme::initWidget(Widget* widget)
 {
 #define BORDER(n)                       \
   widget->border_width.l = (n);         \
@@ -781,12 +781,12 @@ void SkinTheme::init_widget(Widget* widget)
   }
 }
 
-JRegion SkinTheme::get_window_mask(Widget* widget)
+void SkinTheme::getWindowMask(Widget* widget, Region& region)
 {
-  return jregion_new(widget->rc, 1);
+  region = widget->getBounds();
 }
 
-void SkinTheme::map_decorative_widget(Widget* widget)
+void SkinTheme::mapDecorativeWidget(Widget* widget)
 {
   if (widget->getId() == kThemeCloseButtonId) {
     Widget* window = widget->getParent();

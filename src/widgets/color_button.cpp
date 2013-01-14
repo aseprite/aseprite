@@ -254,17 +254,11 @@ void ColorButton::openSelectorDialog()
   m_window->getManager()->dispatchMessages();
   m_window->layout();
 
-  /* setup the hot-region */
-  {
-    JRect rc = jrect_new(MIN(this->rc->x1, m_window->rc->x1)-8,
-                         MIN(this->rc->y1, m_window->rc->y1)-8,
-                         MAX(this->rc->x2, m_window->rc->x2)+8,
-                         MAX(this->rc->y2, m_window->rc->y2)+8);
-    JRegion rgn = jregion_new(rc, 1);
-    jrect_free(rc);
-
-    static_cast<PopupWindow*>(m_window)->setHotRegion(rgn);
-  }
+  // Setup the hot-region
+  gfx::Rect rc = getBounds().createUnion(m_window->getBounds());
+  rc.enlarge(8);
+  gfx::Region rgn(rc);
+  static_cast<PopupWindow*>(m_window)->setHotRegion(rgn);
 }
 
 void ColorButton::closeSelectorDialog()
