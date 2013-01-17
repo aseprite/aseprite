@@ -27,7 +27,10 @@ namespace {
   typedef gfx::details::Region region_type_t;
   typedef bool pixman_bool_t;
 
+  #ifndef UINT32_MAX
   #define UINT32_MAX        std::numeric_limits<uint32_t>::max()
+  #endif
+
   #define PIXMAN_REGION_MAX std::numeric_limits<int>::max()
   #define PIXMAN_REGION_MIN std::numeric_limits<int>::min()
 
