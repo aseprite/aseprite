@@ -1267,11 +1267,6 @@ bool Widget::onProcessMessage(Message* msg)
       return true;
     }
 
-    case JM_DIRTYCHILDREN:
-      UI_FOREACH_WIDGET(getChildren(), it)
-        (*it)->invalidate();
-      return true;
-
     case JM_KEYPRESSED:
     case JM_KEYRELEASED:
       if (msg->key.propagate_to_children) {

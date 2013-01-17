@@ -49,7 +49,6 @@ namespace ui {
 
   private:
     void layoutListBox(JRect rect);
-    void dirtyChildren();
   };
 
 } // namespace ui

@@ -105,8 +105,6 @@ namespace ui {
     JM_TIMER,                     // A timer timeout.
     JM_SETPOS,                    // Set position.
     JM_WINMOVE,                   // Window movement.
-    JM_DEFERREDFREE,              // Deferred jwidget_free call.
-    JM_DIRTYCHILDREN,             // Dirty children.
     JM_QUEUEPROCESSING,           // Only sent to manager which indicate
     // the last message in the queue.
 

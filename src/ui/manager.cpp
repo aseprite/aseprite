@@ -1035,8 +1035,6 @@ void Manager::pumpQueue()
           "JM_TIMER",
           "JM_SETPOS",
           "JM_WINMOVE",
-          "JM_DEFERREDFREE",
-          "JM_DIRTYCHILDREN",
           "JM_QUEUEPROCESSING",
 
           "JM_KEYPRESSED",
