@@ -21,6 +21,7 @@
 #include "recent_files.h"
 
 #include "app_menus.h"
+#include "base/fs.h"
 #include "base/path.h"
 #include "ini_file.h"
 
@@ -38,7 +39,7 @@ RecentFiles::RecentFiles()
     sprintf(buf, "Filename%02d", c);
 
     const char* filename = get_config_string("RecentFiles", buf, NULL);
-    if (filename && *filename)
+    if (filename && *filename && base::file_exists(filename))
       m_files.addItem(filename);
   }
 
