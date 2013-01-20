@@ -404,8 +404,8 @@
     <menu id="document_tab_popup">
       <item command="CloseFile" text="&amp;Close" />
       <separator />
-      <item command="OpenInFolder" text="Open In &amp;Folder" />
-      <item command="OpenWithApp" text="Open With Associated &amp;Application" />
+      <item command="OpenWithApp" text="&amp;Open with OS" />
+      <item command="OpenInFolder" text="Open in &amp;Folder" />
     </menu>
 
     <menu id="layer_popup">
