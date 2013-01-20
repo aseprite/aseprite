@@ -152,20 +152,20 @@ static void on_palette_change_update_cursor_color()
 
 static void on_pen_size_before_change()
 {
-  ASSERT(current_editor != NULL);
-
-  pen_size_thick = current_editor->getCursorThick();
-  if (pen_size_thick)
-    current_editor->hideDrawingCursor();
+  if (current_editor != NULL) {
+    pen_size_thick = current_editor->getCursorThick();
+    if (pen_size_thick)
+      current_editor->hideDrawingCursor();
+  }
 }
 
 static void on_pen_size_after_change()
 {
-  ASSERT(current_editor != NULL);
-
-  // Show drawing cursor
-  if (current_editor->getSprite() && pen_size_thick > 0)
-    current_editor->showDrawingCursor();
+  if (current_editor != NULL) {
+    // Show drawing cursor
+    if (current_editor->getSprite() && pen_size_thick > 0)
+      current_editor->showDrawingCursor();
+  }
 }
 
 static Pen* editor_get_current_pen()
@@ -285,10 +285,11 @@ void Editor::editor_draw_cursor(int x, int y, bool refresh)
     int pen_color = get_pen_color(m_sprite);
     uint32_t new_mask_color;
     Pen* pen = editor_get_current_pen();
+    int half = pen->get_size()/2;
 
     // Create the extra cel to show the pen preview
-    m_document->prepareExtraCel(x-pen->get_size()/2,
-                                y-pen->get_size()/2,
+    m_document->prepareExtraCel(x-half,
+                                y-half,
                                 pen->get_size(), pen->get_size(),
                                 tool_settings->getOpacity());
 
@@ -304,14 +305,15 @@ void Editor::editor_draw_cursor(int x, int y, bool refresh)
     Image* extraImage = m_document->getExtraCelImage();
     if (extraImage->mask_color != new_mask_color)
       image_clear(extraImage, extraImage->mask_color = new_mask_color);
-    image_putpen(extraImage, pen, pen->get_size()/2, pen->get_size()/2, pen_color, extraImage->mask_color);
+    image_putpen(extraImage, pen, half, half, pen_color, extraImage->mask_color);
 
     if (refresh) {
-      editors_draw_sprite(m_sprite,
-                          x-pen->get_size()/2,
-                          y-pen->get_size()/2,
-                          x+pen->get_size()/2,
-                          y+pen->get_size()/2);
+      m_document->notifySpritePixelsModified
+        (m_sprite,
+         gfx::Region(gfx::Rect(x-half,
+                               y-half,
+                               pen->get_size(),
+                               pen->get_size())));
     }
   }
 
@@ -361,11 +363,11 @@ void Editor::editor_move_cursor(int x, int y, bool refresh)
 
     if (cursor_type & CURSOR_PENCIL && m_state->requirePenPreview()) {
       Pen* pen = editor_get_current_pen();
-      editors_draw_sprite(m_sprite,
-                          std::min(new_x, old_x)-pen->get_size()/2,
-                          std::min(new_y, old_y)-pen->get_size()/2,
-                          std::max(new_x, old_x)+pen->get_size()/2,
-                          std::max(new_y, old_y)+pen->get_size()/2);
+      int half = pen->get_size()/2;
+      gfx::Rect rc1(old_x-half, old_y-half, pen->get_size(), pen->get_size());
+      gfx::Rect rc2(new_x-half, new_y-half, pen->get_size(), pen->get_size());
+      m_document->notifySpritePixelsModified
+        (m_sprite, gfx::Region(rc1.createUnion(rc2)));
     }
 
     /* save area and draw the cursor */
@@ -423,11 +425,12 @@ void Editor::editor_clean_cursor(bool refresh)
                                 0); // Opacity = 0
 
     if (refresh) {
-      editors_draw_sprite(m_sprite,
-                          x-pen->get_size()/2,
-                          y-pen->get_size()/2,
-                          x+pen->get_size()/2,
-                          y+pen->get_size()/2);
+      m_document->notifySpritePixelsModified
+        (m_sprite,
+         gfx::Region(gfx::Rect(x-pen->get_size()/2,
+                               y-pen->get_size()/2,
+                               pen->get_size(),
+                               pen->get_size())));
     }
   }
 

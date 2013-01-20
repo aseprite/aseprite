@@ -40,7 +40,6 @@
 #include "ini_file.h"
 #include "log.h"
 #include "modules.h"
-#include "modules/editors.h"
 #include "modules/gfx.h"
 #include "modules/gui.h"
 #include "modules/palettes.h"
@@ -158,7 +157,10 @@ int App::run()
 
     // Create the main window and show it.
     m_mainWindow.reset(new MainWindow);
-    m_mainWindow->createFirstEditor();
+
+    // Create the list of tabs
+    app_rebuild_documents_tabs();
+
     m_mainWindow->openWindow();
 
     // Redraw the whole screen.
@@ -190,9 +192,6 @@ int App::run()
         context->setActiveDocument(document);
 
         if (isGui()) {
-          // Show it
-          set_document_in_more_reliable_editor(context->getFirstDocument());
-
           // Recent file
           getRecentFiles()->addRecentFile(it->c_str());
         }
@@ -216,6 +215,11 @@ int App::run()
 
     // Uninstall support to drop files
     uninstall_drop_files();
+
+    // Destroy all documents in the UIContext.
+    const Documents& docs = m_modules->m_ui_context.getDocuments();
+    while (!docs.empty())
+      m_modules->m_ui_context.removeDocument(docs.back());
 
     // Destroy the window.
     m_mainWindow.reset(NULL);
@@ -295,32 +299,9 @@ void app_refresh_screen(const Document* document)
   ui::Manager::getDefault()->invalidate();
 }
 
-/**
- * Regenerates the label for each tab in the @em tabsbar.
- */
 void app_rebuild_documents_tabs()
 {
-  UIContext* context = UIContext::instance();
-  const Documents& docs = context->getDocuments();
-
-  // Insert all other sprites
-  for (Documents::const_iterator
-         it = docs.begin(), end = docs.end(); it != end; ++it) {
-    const Document* document = *it;
-    app_update_document_tab(document);
-  }
-}
-
-void app_update_document_tab(const Document* document)
-{
-  std::string str = get_filename(document->getFilename());
-
-  // Add an asterisk if the document is modified.
-  if (document->isModified())
-    str += "*";
-
-  App::instance()->getMainWindow()->getTabsBar()
-    ->setTabText(str.c_str(), const_cast<Document*>(document));
+  App::instance()->getMainWindow()->getTabsBar()->updateTabsText();
 }
 
 PixelFormat app_get_current_pixel_format()

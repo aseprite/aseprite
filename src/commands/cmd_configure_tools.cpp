@@ -498,13 +498,11 @@ void ConfigureTools::onSnapToGridClick()
 void ConfigureTools::onViewGridClick()
 {
   m_docSettings->setGridVisible(m_viewGrid->isSelected());
-  refresh_all_editors();
 }
 
 void ConfigureTools::onPixelGridClick()
 {
   m_docSettings->setPixelGridVisible(m_pixelGrid->isSelected());
-  refresh_all_editors();
 }
 
 void ConfigureTools::onSetGridClick()
@@ -517,9 +515,6 @@ void ConfigureTools::onSetGridClick()
       const Mask* mask(document->getMask());
 
       m_docSettings->setGridBounds(mask->getBounds());
-
-      if (m_docSettings->getGridVisible())
-        refresh_all_editors();
     }
     else {
       Command* grid_settings_cmd =
@@ -536,7 +531,6 @@ void ConfigureTools::onSetGridClick()
 void ConfigureTools::onOnionSkinClick()
 {
   m_docSettings->setUseOnionskin(m_onionSkin->isSelected());
-  refresh_all_editors();
 }
 
 //////////////////////////////////////////////////////////////////////

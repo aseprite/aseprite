@@ -22,6 +22,7 @@
 
 #include "app.h"
 #include "document.h"
+#include "gfx/region.h"
 #include "la/vector2d.h"
 #include "modules/gui.h"
 #include "raster/algorithm/flip_image.h"
@@ -97,9 +98,8 @@ void PixelsMovement::flipImage(raster::algorithm::FlipType flipType)
 
     documentWriter->setMask(m_currentMask);
     documentWriter->generateMaskBoundaries(m_currentMask);
+    update_screen_for_document(documentWriter);
   }
-
-  update_screen_for_document(m_documentReader);
 }
 
 void PixelsMovement::cutMask()
@@ -119,9 +119,8 @@ void PixelsMovement::copyMask()
   {
     DocumentWriter documentWriter(m_documentReader);
     documentWriter->generateMaskBoundaries(&emptyMask);
+    update_screen_for_document(documentWriter);
   }
-
-  update_screen_for_document(m_documentReader);
 }
 
 void PixelsMovement::catchImage(int x, int y, HandleType handle)
@@ -151,9 +150,8 @@ void PixelsMovement::catchImageAgain(int x, int y, HandleType handle)
   {
     DocumentWriter documentWriter(m_documentReader);
     documentWriter->generateMaskBoundaries(&emptyMask);
+    update_screen_for_document(documentWriter);
   }
-
-  update_screen_for_document(m_documentReader);
 }
 
 void PixelsMovement::maskImage(const Image* image, int x, int y)
@@ -168,10 +166,10 @@ void PixelsMovement::maskImage(const Image* image, int x, int y)
   documentWriter->setMask(m_currentMask);
   documentWriter->generateMaskBoundaries(m_currentMask);
 
-  update_screen_for_document(m_documentReader);
+  update_screen_for_document(documentWriter);
 }
 
-gfx::Rect PixelsMovement::moveImage(int x, int y, MoveModifier moveModifier)
+void PixelsMovement::moveImage(int x, int y, MoveModifier moveModifier)
 {
   gfx::Transformation::Corners oldCorners;
   m_currentData.transformBox(oldCorners);
@@ -404,7 +402,12 @@ gfx::Rect PixelsMovement::moveImage(int x, int y, MoveModifier moveModifier)
     fullBounds = fullBounds.createUnion(gfx::Rect(oldCorners[i].x, oldCorners[i].y, 1, 1));
     fullBounds = fullBounds.createUnion(gfx::Rect(newCorners[i].x, newCorners[i].y, 1, 1));
   }
-  return fullBounds;
+
+  // If "fullBounds" is empty is because the cel was not moved
+  if (!fullBounds.isEmpty()) {
+    // Notify the modified region.
+    documentWriter->notifySpritePixelsModified(m_sprite, gfx::Region(fullBounds));
+  }
 }
 
 Image* PixelsMovement::getDraggedImageCopy(gfx::Point& origin)
@@ -500,9 +503,8 @@ void PixelsMovement::dropImageTemporarily()
     }
 
     documentWriter->generateMaskBoundaries(m_currentMask);
+    update_screen_for_document(documentWriter);
   }
-
-  update_screen_for_document(m_documentReader);
 }
 
 void PixelsMovement::dropImage()
@@ -567,9 +569,8 @@ void PixelsMovement::setMaskColor(uint32_t mask_color)
 
     extraImage->mask_color = mask_color;
     redrawExtraImage(documentWriter);
+    update_screen_for_document(documentWriter);
   }
-
-  update_screen_for_document(m_documentReader);
 }
 
 

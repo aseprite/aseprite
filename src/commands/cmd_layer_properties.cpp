@@ -97,7 +97,7 @@ void LayerPropertiesCommand::onExecute(Context* context)
 
     const_cast<Layer*>(layer)->setName(entry_name->getText());
 
-    update_screen_for_document(document);
+    update_screen_for_document(documentWriter);
   }
 }
 

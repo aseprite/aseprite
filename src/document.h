@@ -40,13 +40,7 @@ class Mutex;
 class Sprite;
 struct _BoundSeg;
 
-struct PreferredEditorSettings
-{
-  int scroll_x;
-  int scroll_y;
-  int zoom;
-  bool virgin;
-};
+namespace gfx { class Region; }
 
 enum DuplicateType
 {
@@ -86,6 +80,12 @@ public:
   void addSprite(Sprite* sprite);
 
   //////////////////////////////////////////////////////////////////////
+  // Notifications
+
+  void notifyGeneralUpdate();
+  void notifySpritePixelsModified(Sprite* sprite, const gfx::Region& region);
+
+  //////////////////////////////////////////////////////////////////////
   // File related properties
 
   const char* getFilename() const;
@@ -99,12 +99,6 @@ public:
   // Loaded options from file
 
   void setFormatOptions(const SharedPtr<FormatOptions>& format_options);
-
-  //////////////////////////////////////////////////////////////////////
-  // Preferred editor settings
-
-  PreferredEditorSettings getPreferredEditorSettings() const;
-  void setPreferredEditorSettings(const PreferredEditorSettings& settings);
 
   //////////////////////////////////////////////////////////////////////
   // Boundaries
@@ -207,9 +201,6 @@ private:
 
   // Data to save the file in the same format that it was loaded
   SharedPtr<FormatOptions> m_format_options;
-
-  // Preferred options in the editor.
-  PreferredEditorSettings m_preferred;
 
   // Extra cel used to draw extra stuff (e.g. editor's pen preview, pixels in movement, etc.)
   Cel* m_extraCel;

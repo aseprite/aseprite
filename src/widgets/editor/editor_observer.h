@@ -32,9 +32,6 @@ public:
 
   // Called when the scroll or zoom of the editor changes.
   virtual void scrollChanged(Editor* editor) = 0;
-
-  // Called when the document shown in the editor changes.
-  virtual void documentChanged(Editor* editor) = 0;
 };
 
 #endif  // WIDGETS_EDITOR_OBSERVER_H_INCLUDED

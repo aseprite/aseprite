@@ -61,9 +61,8 @@ public:
   void maskImage(const Image* image, int x, int y);
 
   // Moves the image to the new position (relative to the start
-  // position given in the ctor). Returns the rectangle that should be
-  // redrawn.
-  gfx::Rect moveImage(int x, int y, MoveModifier moveModifier);
+  // position given in the ctor).
+  void moveImage(int x, int y, MoveModifier moveModifier);
 
   // Returns a copy of the current image being dragged with the
   // current transformation.

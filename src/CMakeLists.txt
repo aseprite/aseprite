@@ -255,7 +255,6 @@ add_library(aseprite-library
   commands/cmd_save_file.cpp
   commands/cmd_save_mask.cpp
   commands/cmd_scroll.cpp
-  commands/cmd_select_file.cpp
   commands/cmd_sprite_editor.cpp
   commands/cmd_sprite_properties.cpp
   commands/cmd_sprite_size.cpp
@@ -377,6 +376,7 @@ add_library(aseprite-library
   widgets/color_button.cpp
   widgets/color_selector.cpp
   widgets/color_sliders.cpp
+  widgets/document_view.cpp
   widgets/drop_down_button.cpp
   widgets/editor/cursor.cpp
   widgets/editor/drawing_state.cpp
@@ -399,11 +399,13 @@ add_library(aseprite-library
   widgets/main_menu_bar.cpp
   widgets/main_window.cpp
   widgets/menuitem2.cpp
+  widgets/mini_editor.cpp
   widgets/palette_view.cpp
   widgets/popup_window_pin.cpp
   widgets/status_bar.cpp
   widgets/tabs.cpp
-  widgets/toolbar.cpp)
+  widgets/toolbar.cpp
+  widgets/workspace.cpp)
 
 ######################################################################
 # ASEPRITE application

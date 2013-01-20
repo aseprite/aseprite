@@ -27,6 +27,17 @@
 
 class Tabs;
 
+// Required interface to be implemented by each new tab that is added
+// in the Tabs widget.
+class TabView
+{
+public:
+  virtual ~TabView() { }
+
+  // Returns the text to be shown in the tab.
+  virtual std::string getTabText() = 0;
+};
+
 // Interface used to control notifications from the Tabs widget.
 class TabsDelegate
 {
@@ -37,29 +48,22 @@ public:
   // button & 1  => left click
   // button & 2  => right click
   // button & 4  => middle click
-  virtual void clickTab(Tabs* tabs, void* data, int button) = 0;
+  virtual void clickTab(Tabs* tabs, TabView* tabView, int button) = 0;
 
   // Called when the mouse is over a tab (the data can be null if the
   // mouse just leave all tabs)
-  virtual void mouseOverTab(Tabs* tabs, void* data) = 0;
+  virtual void mouseOverTab(Tabs* tabs, TabView* tabView) = 0;
 };
 
-// Tabs control.
-//
-// Used to show opened files/sprites.
+// Tabs control. Used to show opened documents.
 class Tabs : public ui::Widget
 {
-  struct Tab
-  {
-    std::string text;           // Label in the tab
-    void* data;                 // Opaque pointer to user data
-    int width;                  // Width of the tab
+  struct Tab {
+    TabView* view;
+    std::string text;
+    int width;
 
-    Tab(const char* text, void* data)
-    {
-      this->text = text;
-      this->data = data;
-      this->width = 0;
+    Tab(TabView* view) : view(view), width(0) {
     }
   };
 
@@ -76,15 +80,14 @@ public:
   Tabs(TabsDelegate* delegate);
   ~Tabs();
 
-  void addTab(const char* text, void* data);
-  void removeTab(void* data);
+  void addTab(TabView* tabView);
+  void removeTab(TabView* tabView);
+  void updateTabsText();
 
-  void setTabText(const char* text, void* data);
-
-  void selectTab(void* data);
+  void selectTab(TabView* tabView);
   void selectNextTab();
   void selectPreviousTab();
-  void* getSelectedTab();
+  TabView* getSelectedTab();
 
   void startScrolling();
   void stopScrolling();
@@ -101,17 +104,17 @@ private:
 
   void selectTabInternal(Tab* tab);
   void drawTab(BITMAP* bmp, ui::JRect box, Tab* tab, int y_delta, bool selected);
-  TabsListIterator getTabIteratorByData(void* data);
-  Tab* getTabByData(void* data);
+  TabsListIterator getTabIteratorByView(TabView* tabView);
+  Tab* getTabByView(TabView* tabView);
   int getMaxScrollX();
   void makeTabVisible(Tab* tab);
   void setScrollX(int scroll_x);
   void calculateHot();
-  int calcTabWidth(Tab* tab);
+  void calcTabWidth(Tab* tab);
 
   TabsList m_list_of_tabs;
-  Tab *m_hot;
-  Tab *m_selected;
+  Tab* m_hot;
+  Tab* m_selected;
   int m_scrollX;
 
   // Variables for animation purposes

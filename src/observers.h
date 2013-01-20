@@ -42,7 +42,7 @@ public:
   Observers() { }
 
   ~Observers() {
-    disposeAllObservers();
+    ASSERT(m_observers.empty());
   }
 
   // Adds the observer in the collection. The observer is owned by the
@@ -58,15 +58,6 @@ public:
     iterator it = std::find(m_observers.begin(), m_observers.end(), observer);
     if (it != end())
       m_observers.erase(it);
-  }
-
-  // Disposes all observers. It's called automatically in the
-  // Observers dtor.
-  void disposeAllObservers() {
-    while (!empty())
-      (*begin())->dispose();
-
-    m_observers.clear();
   }
 
   void notifyObservers(void (observer_type::*method)()) {

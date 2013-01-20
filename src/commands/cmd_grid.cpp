@@ -63,8 +63,6 @@ protected:
     IDocumentSettings* docSettings = context->getSettings()->getDocumentSettings(context->getActiveDocument());
 
     docSettings->setGridVisible(docSettings->getGridVisible() ? false: true);
-
-    refresh_all_editors();      // TODO this should be done by "setGridVisible" impl
   }
 };
 
@@ -159,9 +157,6 @@ void GridSettingsCommand::onExecute(Context* context)
     bounds.h = MAX(bounds.h, 1);
 
     docSettings->setGridBounds(bounds);
-
-    if (docSettings->getGridVisible())
-        refresh_all_editors();      // TODO this should be done by "setGridBounds" impl
   }
 }
 

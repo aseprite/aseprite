@@ -268,7 +268,7 @@ void set_screen_scaling(int scaling)
   screen_scaling = scaling;
 }
 
-void update_screen_for_document(const Document* document)
+void update_screen_for_document(Document* document)
 {
   // Without document.
   if (!document) {
@@ -280,21 +280,10 @@ void update_screen_for_document(const Document* document)
   }
   // With a document.
   else {
-    const Sprite* sprite = document->getSprite();
-
-    // Select the palette of the sprite.
-    if (set_current_palette(sprite->getPalette(sprite->getCurrentFrame()), false)) {
-      // If the palette changes, invalidate the whole screen, we've to
-      // redraw it.
-      Manager::getDefault()->invalidate();
-    }
-    else {
-      // If it's the same palette update only the editors with the sprite.
-      update_editors_with_document(document);
-    }
+    document->notifyGeneralUpdate();
 
     // Update the tabs (maybe the modified status has been changed).
-    app_update_document_tab(document);
+    app_rebuild_documents_tabs();
   }
 }
 
@@ -311,7 +300,7 @@ void gui_feedback()
   ui::UpdateCursorOverlay();
 
   // Avoid updating a non-dirty screen over and over again.
-#if 0                           // It doesn't work
+#if 0                           // TODO It doesn't work yet
   if (!dirty_display_flag)
     return;
 #endif

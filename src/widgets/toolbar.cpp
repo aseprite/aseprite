@@ -34,6 +34,8 @@
 #include "tools/tool_box.h"
 #include "ui/gui.h"
 #include "ui_context.h"
+#include "widgets/main_window.h"
+#include "widgets/mini_editor.h"
 #include "widgets/status_bar.h"
 
 #include <allegro.h>
@@ -190,7 +192,7 @@ bool ToolBar::onProcessMessage(Message* msg)
       toolrc = getToolGroupBounds(MiniEditorVisibilityIndex);
       toolrc.offset(-msg->draw.rect.x1, -msg->draw.rect.y1);
       isHot = (m_hot_index == MiniEditorVisibilityIndex ||
-               is_mini_editor_enabled());
+               App::instance()->getMainWindow()->getMiniEditor()->isMiniEditorEnabled());
       theme->draw_bounds_nw(doublebuffer,
                             toolrc,
                             isHot ? PART_TOOLBUTTON_HOT_NW:
@@ -248,7 +250,10 @@ bool ToolBar::onProcessMessage(Message* msg)
       toolrc = getToolGroupBounds(MiniEditorVisibilityIndex);
       if (msg->mouse.y >= toolrc.y && msg->mouse.y < toolrc.y+toolrc.h) {
         // Switch the state of the mini editor
-        enable_mini_editor(!is_mini_editor_enabled());
+        widgets::MiniEditorWindow* miniEditorWindow =
+          App::instance()->getMainWindow()->getMiniEditor();
+        bool state = miniEditorWindow->isMiniEditorEnabled();
+        miniEditorWindow->setMiniEditorEnabled(!state);
       }
       break;
     }
@@ -501,7 +506,7 @@ void ToolBar::openTipWindow(int group_index, Tool* tool)
     tooltip = "Configure Tool";
   }
   else if (group_index == MiniEditorVisibilityIndex) {
-    if (is_mini_editor_enabled())
+    if (App::instance()->getMainWindow()->getMiniEditor()->isMiniEditorEnabled())
       tooltip = "Disable Mini-Editor";
     else
       tooltip = "Enable Mini-Editor";

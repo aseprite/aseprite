@@ -26,8 +26,11 @@
 #include "tools/point_shape.h"
 #include "tools/tool.h"
 #include "tools/tool_box.h"
+#include "ui/manager.h"
 #include "ui_context.h"
 #include "widgets/color_bar.h"
+#include "widgets/main_window.h"
+#include "widgets/workspace.h"
 
 #include <allegro/color.h>
 #include <string>
@@ -113,6 +116,11 @@ public:
   virtual void setOnionskinOpacityStep(int step) OVERRIDE;
 
 private:
+  void redrawDocumentViews() {
+    // TODO Redraw only document's views
+    ui::Manager::getDefault()->invalidate();
+  }
+
   TiledMode m_tiledMode;
   bool m_use_onionskin;
   int m_prev_frames_onionskin;
@@ -237,16 +245,19 @@ void UIDocumentSettingsImpl::setSnapToGrid(bool state)
 void UIDocumentSettingsImpl::setGridVisible(bool state)
 {
   m_gridVisible = state;
+  redrawDocumentViews();
 }
 
 void UIDocumentSettingsImpl::setGridBounds(const Rect& rect)
 {
   m_gridBounds = rect;
+  redrawDocumentViews();
 }
 
 void UIDocumentSettingsImpl::setGridColor(const app::Color& color)
 {
   m_gridColor = color;
+  redrawDocumentViews();
 }
 
 void UIDocumentSettingsImpl::snapToGrid(gfx::Point& point, SnapBehavior snapBehavior) const
@@ -279,11 +290,13 @@ app::Color UIDocumentSettingsImpl::getPixelGridColor()
 void UIDocumentSettingsImpl::setPixelGridVisible(bool state)
 {
   m_pixelGridVisible = state;
+  redrawDocumentViews();
 }
 
 void UIDocumentSettingsImpl::setPixelGridColor(const app::Color& color)
 {
   m_pixelGridColor = color;
+  redrawDocumentViews();
 }
 
 bool UIDocumentSettingsImpl::getUseOnionskin()

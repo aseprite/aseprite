@@ -779,8 +779,8 @@ bool StatusBar::onProcessMessage(Message* msg)
                 sprite->setCurrentLayer(layer);
 
               // Flash the current layer
-              ASSERT(current_editor != NULL); // Cannot be null when we have a current sprite
-              current_editor->flashCurrentLayer();
+              if (current_editor != NULL)
+                current_editor->flashCurrentLayer();
 
               // Redraw the status-bar
               invalidate();

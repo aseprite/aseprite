@@ -21,7 +21,9 @@
 #include "tools/tool_loop_manager.h"
 
 #include "context.h"
+#include "gfx/region.h"
 #include "raster/image.h"
+#include "raster/sprite.h"
 #include "settings/document_settings.h"
 #include "tools/controller.h"
 #include "tools/ink.h"
@@ -141,7 +143,7 @@ void ToolLoopManager::movement(const Pointer& pointer)
 
 void ToolLoopManager::doLoopStep(bool last_step)
 {
-  static Rect old_dirty_area;   // TODO Not thread safe
+  static Region old_dirty_area;   // TODO Not thread safe
 
   Points points_to_interwine;
   if (!last_step)
@@ -179,21 +181,17 @@ void ToolLoopManager::doLoopStep(bool last_step)
   else
     m_toolLoop->getIntertwine()->fillPoints(m_toolLoop, points_to_interwine);
 
-  // Calculat the area to be updated in the screen/editor/sprite
-  Rect dirty_area;
+  // Calculate the area to be updated in all document observers.
+  Region& dirty_area = m_toolLoop->getDirtyArea();
   calculateDirtyArea(m_toolLoop, points_to_interwine, dirty_area);
 
-  Rect new_dirty_area;
   if (m_toolLoop->getTracePolicy() == TracePolicyLast) {
-    new_dirty_area = old_dirty_area.createUnion(dirty_area);
+    dirty_area.createUnion(dirty_area, old_dirty_area);
     old_dirty_area = dirty_area;
   }
-  else {
-    new_dirty_area = dirty_area;
-  }
 
-  if (!new_dirty_area.isEmpty())
-    m_toolLoop->updateArea(new_dirty_area);
+  if (!dirty_area.isEmpty())
+    m_toolLoop->updateDirtyArea();
 }
 
 // Applies the grid settings to the specified sprite point, if
@@ -211,8 +209,10 @@ void ToolLoopManager::snapToGrid(bool flexible, Point& point)
     ->snapToGrid(point, (flexible ? SnapInRightBottom: NormalSnap));
 }
 
-void ToolLoopManager::calculateDirtyArea(ToolLoop* loop, const Points& points, Rect& dirty_area)
+void ToolLoopManager::calculateDirtyArea(ToolLoop* loop, const Points& points, Region& dirty_area)
 {
+  dirty_area.clear();
+
   if (points.size() > 0) {
     Point minpt, maxpt;
     calculateMinMax(points, minpt, maxpt);
@@ -221,10 +221,54 @@ void ToolLoopManager::calculateDirtyArea(ToolLoop* loop, const Points& points, R
     Rect r1, r2;
     loop->getPointShape()->getModifiedArea(loop, minpt.x, minpt.y, r1);
     loop->getPointShape()->getModifiedArea(loop, maxpt.x, maxpt.y, r2);
-    dirty_area = r1.createUnion(r2);
+
+    dirty_area.createUnion(dirty_area, Region(r1.createUnion(r2)));
   }
-  else
-    dirty_area = Rect();
+
+  // Apply offset mode
+  Point offset(loop->getOffset());
+  dirty_area.offset(-offset);
+
+  // Apply tiled mode
+  TiledMode tiledMode = loop->getDocumentSettings()->getTiledMode();
+  if (tiledMode != TILED_NONE) {
+    int w = loop->getSprite()->getWidth();
+    int h = loop->getSprite()->getHeight();
+    Region sprite_area(Rect(0, 0, w, h));
+    Region outside;
+    outside.createSubtraction(dirty_area, sprite_area);
+
+    switch (tiledMode) {
+      case TILED_X_AXIS:
+        outside.createIntersection(outside, Region(Rect(-w*10000, 0, w*20000, h)));
+        break;
+      case TILED_Y_AXIS:
+        outside.createIntersection(outside, Region(Rect(0, -h*10000, w, h*20000)));
+        break;
+    }
+
+    Rect outsideBounds = outside.getBounds();
+    if (outsideBounds.x < 0) outside.offset(w * (1+((-outsideBounds.x) / w)), 0);
+    if (outsideBounds.y < 0) outside.offset(0, h * (1+((-outsideBounds.y) / h)));
+    int x1 = outside.getBounds().x;
+
+    while (true) {
+      Region in_sprite;
+      in_sprite.createIntersection(outside, sprite_area);
+      outside.createSubtraction(outside, in_sprite);
+      dirty_area.createUnion(dirty_area, in_sprite);
+
+      outsideBounds = outside.getBounds();
+      if (outsideBounds.isEmpty())
+        break;
+      else if (outsideBounds.x+outsideBounds.w > w)
+        outside.offset(-w, 0);
+      else if (outsideBounds.y+outsideBounds.h > h)
+        outside.offset(x1-outsideBounds.x, -h);
+      else
+        break;
+    }
+  }
 }
 
 void ToolLoopManager::calculateMinMax(const Points& points, Point& minpt, Point& maxpt)

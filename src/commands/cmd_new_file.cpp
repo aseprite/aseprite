@@ -38,6 +38,7 @@
 #include "ui_context.h"
 #include "util/clipboard.h"
 #include "widgets/color_bar.h"
+#include "widgets/workspace.h"
 
 #include <allegro/config.h>
 #include <allegro/unicode.h>
@@ -187,11 +188,7 @@ void NewFileCommand::onExecute(Context* context)
       }
 
       // Show the sprite to the user
-      context->addDocument(document);
-
-      // Release the document as it is already owned by the context.
-      // And put the document in a reliable editor.
-      set_document_in_more_reliable_editor(document.release());
+      context->addDocument(document.release());
     }
   }
 }

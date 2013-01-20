@@ -22,7 +22,6 @@
 
 #include "app.h"
 #include "gfx/rect.h"
-#include "modules/editors.h"
 #include "raster/sprite.h"
 #include "ui/message.h"
 #include "ui/system.h"

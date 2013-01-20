@@ -29,6 +29,10 @@ class DocumentObserver {
 public:
   virtual ~DocumentObserver() { }
 
+  // General update. If an observer receives this event, it's because
+  // anything in the document could be changed.
+  virtual void onGeneralUpdate(DocumentEvent& ev) { }
+
   virtual void onAddSprite(DocumentEvent& ev) { }
   virtual void onAddLayer(DocumentEvent& ev) { }
   virtual void onAddFrame(DocumentEvent& ev) { }
@@ -51,6 +55,7 @@ public:
 
   virtual void onImageReplaced(DocumentEvent& ev) { }
   virtual void onImagePixelsModified(DocumentEvent& ev) { }
+  virtual void onSpritePixelsModified(DocumentEvent& ev) { }
 
   // Called to destroy the observer. (Here you could call "delete this".)
   virtual void dispose() { }

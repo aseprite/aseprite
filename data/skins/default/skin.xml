@@ -61,6 +61,7 @@
     <color id="filelist_selected_row_text" value="#ffffff" />
     <color id="filelist_selected_row_face" value="#2c4c91" />
     <color id="filelist_disabled_row_text" value="#ffc8c8" />
+    <color id="workspace" value="#7d929e" />
   </colors>
 
   <cursors>

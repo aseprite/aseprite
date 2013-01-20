@@ -27,11 +27,15 @@
 #include "raster/sprite.h"
 #include "ui/gui.h"
 #include "ui_context.h"
+#include "widgets/document_view.h"
+#include "widgets/main_window.h"
 #include "widgets/status_bar.h"
+#include "widgets/workspace.h"
 
 #include <memory>
 
 using namespace ui;
+using namespace widgets;
 
 static bool close_active_document(Context* context);
 
@@ -61,7 +65,23 @@ protected:
 
   void onExecute(Context* context)
   {
-    close_active_document(context);
+    Workspace* workspace = App::instance()->getMainWindow()->getWorkspace();
+
+    if (workspace->getActiveView() == NULL)
+      return;
+
+    if (DocumentView* docView =
+          dynamic_cast<DocumentView*>(workspace->getActiveView())) {
+      Document* document = docView->getDocument();
+      if (static_cast<UIContext*>(context)->countViewsOf(document) == 1) {
+        // If we have only one view for this document, close the file.
+        close_active_document(context);
+        return;
+      }
+    }
+
+    // Close the active view.
+    workspace->closeView(workspace->getActiveView());
   }
 
 private:
@@ -92,13 +112,13 @@ protected:
 
   void onExecute(Context* context)
   {
-    if (!context->getActiveDocument())
-      set_document_in_more_reliable_editor(context->getFirstDocument());
-
     while (true) {
       if (context->getActiveDocument() != NULL) {
         if (!close_active_document(context))
           break;
+      }
+      else if (context->getFirstDocument() != NULL) {
+        context->setActiveDocument(context->getFirstDocument());
       }
       else
         break;
@@ -115,6 +135,7 @@ protected:
  */
 static bool close_active_document(Context* context)
 {
+  Document* nextDocument = NULL;
   bool save_it;
   bool try_again = true;
 
@@ -124,6 +145,7 @@ static bool close_active_document(Context* context)
     {
       // The sprite is locked as reader temporaly
       ActiveDocumentReader document(context);
+      nextDocument = context->getNextDocument(document);
 
       // see if the sprite has changes
       while (document->isModified()) {
@@ -167,6 +189,10 @@ static bool close_active_document(Context* context)
                       base::get_file_name(document->getFilename()).c_str());
     document.deleteDocument();
   }
+
+  // Select next document in the context
+  context->setActiveDocument(nextDocument);
+
   return true;
 }
 

@@ -22,7 +22,6 @@
 
 #include "app.h"
 #include "app/color.h"
-#include "modules/editors.h"
 #include "modules/gui.h"
 #include "raster/image.h"
 #include "raster/sprite.h"

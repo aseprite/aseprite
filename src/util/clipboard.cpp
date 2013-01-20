@@ -167,6 +167,8 @@ void util::clipboard::copy_image(Image* image, Palette* pal, const gfx::Point& p
 void util::clipboard::paste()
 {
   Editor* editor = current_editor;
+  if (editor == NULL)
+    return;
 
 #ifdef ALLEGRO_WINDOWS
   // Get the image from the clipboard.

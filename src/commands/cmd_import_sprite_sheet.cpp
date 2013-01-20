@@ -40,6 +40,7 @@
 #include "widgets/editor/editor_decorator.h"
 #include "widgets/editor/select_box_state.h"
 #include "widgets/editor/standby_state.h"
+#include "widgets/workspace.h"
 
 #include <allegro/color.h>
 
@@ -129,7 +130,7 @@ protected:
     MenuItem* item = new MenuItem("Use Current Sprite");
     item->Click.connect(&ImportSpriteSheetWindow::onUseCurrentSprite, this);
 
-    if (m_editor || current_editor->getDocument() == NULL)
+    if (m_editor || !current_editor || current_editor->getDocument() == NULL)
       item->setEnabled(false);
 
     menu->addChild(item);

@@ -86,7 +86,6 @@ private:
 void app_refresh_screen(const Document* document);
 
 void app_rebuild_documents_tabs();
-void app_update_document_tab(const Document* document);
 
 PixelFormat app_get_current_pixel_format();
 

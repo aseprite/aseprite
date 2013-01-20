@@ -142,6 +142,8 @@ static void save_as_dialog(const DocumentReader& document, const char* dlg_title
 
     // Save the document
     save_document_in_background(documentWriter, mark_as_saved);
+
+    update_screen_for_document(documentWriter);
   }
 }
 
@@ -185,6 +187,7 @@ void SaveFileCommand::onExecute(Context* context)
     DocumentWriter documentWriter(document);
 
     save_document_in_background(documentWriter, true);
+    update_screen_for_document(documentWriter);
   }
   // If the document isn't associated to a file, we must to show the
   // save-as dialog to the user to select for first time the file-name
@@ -192,8 +195,6 @@ void SaveFileCommand::onExecute(Context* context)
   else {
     save_as_dialog(document, "Save File", true);
   }
-
-  update_screen_for_document(document);
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -226,7 +227,6 @@ void SaveFileAsCommand::onExecute(Context* context)
 {
   const ActiveDocumentReader document(context);
   save_as_dialog(document, "Save As", true);
-  update_screen_for_document(document);
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -267,9 +267,8 @@ void SaveFileCopyAsCommand::onExecute(Context* context)
   {
     DocumentWriter documentWriter(document);
     documentWriter->setFilename(old_filename.c_str());
+    update_screen_for_document(documentWriter);
   }
-
-  update_screen_for_document(document);
 }
 
 //////////////////////////////////////////////////////////////////////

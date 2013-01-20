@@ -40,6 +40,9 @@ public:
   const_iterator begin() const { return m_documents.begin(); }
   const_iterator end() const { return m_documents.end(); }
 
+  Document* front() const { return m_documents.front(); }
+  Document* back() const { return m_documents.back(); }
+
   int size() const { return m_documents.size(); }
   bool empty() const { return m_documents.empty(); }
 

@@ -198,8 +198,6 @@ void switch_between_animation_and_sprite_editor()
 
   // Destroy thumbnails
   destroy_thumbnails();
-
-  update_screen_for_document(document);
 }
 
 //////////////////////////////////////////////////////////////////////

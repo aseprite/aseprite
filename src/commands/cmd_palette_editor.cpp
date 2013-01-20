@@ -413,8 +413,9 @@ bool PaletteEntryEditor::onProcessMessage(Message* msg)
 
       // Redraw all editors
       try {
-        const ActiveDocumentReader document(UIContext::instance());
-        update_editors_with_document(document);
+        ActiveDocumentWriter document(UIContext::instance());
+        if (document != NULL)
+          document->notifyGeneralUpdate();
       }
       catch (...) {
         // Do nothing
@@ -423,7 +424,8 @@ bool PaletteEntryEditor::onProcessMessage(Message* msg)
     // Redraw just the current editor
     else {
       m_redrawAll = true;
-      current_editor->updateEditor();
+      if (current_editor != NULL)
+        current_editor->updateEditor();
     }
   }
   return Window::onProcessMessage(msg);

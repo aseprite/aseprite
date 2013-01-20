@@ -200,7 +200,7 @@ static void mask_preview(const DocumentReader& document)
     {
       DocumentWriter documentWriter(document);
       documentWriter->generateMaskBoundaries(mask);
+      update_screen_for_document(documentWriter);
     }
-    update_screen_for_document(document);
   }
 }

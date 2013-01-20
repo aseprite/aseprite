@@ -166,9 +166,6 @@ void OptionsCommand::onExecute(Context* context)
 
     // Save configuration
     flush_config_file();
-
-    // Refresh all editors
-    refresh_all_editors();
   }
 }
 

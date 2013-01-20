@@ -30,7 +30,6 @@
 #include "commands/params.h"
 #include "document_wrappers.h"
 #include "ini_file.h"
-#include "modules/editors.h"
 #include "modules/gfx.h"
 #include "modules/gui.h"
 #include "modules/palettes.h"
@@ -123,19 +122,19 @@ private:
   Editor* m_editor;
 };
 
-Editor::Editor()
+Editor::Editor(Document* document)
   : Widget(editor_type())
   , m_state(new StandbyState())
   , m_decorator(NULL)
+  , m_document(document)
+  , m_sprite(m_document->getSprite())
+  , m_zoom(0)
   , m_mask_timer(100, this)
   , m_customizationDelegate(NULL)
+  , m_docView(NULL)
 {
   // Add the first state into the history.
   m_statesHistory.push(m_state);
-
-  m_document = NULL;
-  m_sprite = NULL;
-  m_zoom = 0;
 
   m_cursor_thick = 0;
   m_cursor_screen_x = 0;
@@ -163,7 +162,6 @@ Editor::~Editor()
   setCustomizationDelegate(NULL);
 
   m_mask_timer.stop();
-  remove_editor(this);
 
   // Remove this editor as observer of CurrentToolChange signal.
   App::instance()->CurrentToolChange.disconnect(m_currentToolChangeSlot);
@@ -238,61 +236,13 @@ void Editor::backToPreviousState()
   setStateInternal(EditorStatePtr(NULL));
 }
 
-void Editor::setDocument(Document* document)
+void Editor::setDefaultScroll()
 {
-  //if (this->hasMouse())
-  //jmanager_free_mouse();      // TODO Why is this here? Review this code
+  View* view = View::getView(this);
+  Rect vp = view->getViewportBounds();
 
-  // Reset all states (back to standby).
-  EditorStatePtr firstState(new StandbyState);
-  m_statesHistory.clear();
-  m_statesHistory.push(firstState);
-  setState(firstState);
-
-  if (m_cursor_thick)
-    editor_clean_cursor();
-
-  // Change the sprite
-  m_document = document;
-  if (m_document) {
-    m_sprite = m_document->getSprite();
-
-    // Get the preferred doc's settings to edit it
-    PreferredEditorSettings preferred = m_document->getPreferredEditorSettings();
-
-    // Change the editor's configuration using the retrieved doc's settings
-    m_zoom = preferred.zoom;
-
-    updateEditor();
-
-    if (preferred.virgin) {
-      View* view = View::getView(this);
-      Rect vp = view->getViewportBounds();
-
-      preferred.virgin = false;
-      preferred.scroll_x = -vp.w/2 + (m_sprite->getWidth()/2);
-      preferred.scroll_y = -vp.h/2 + (m_sprite->getHeight()/2);
-
-      m_document->setPreferredEditorSettings(preferred);
-    }
-
-    setEditorScroll(m_offset_x + preferred.scroll_x,
-                    m_offset_y + preferred.scroll_y,
-                    false);
-  }
-  // In this case document is NULL
-  else {
-    m_sprite = NULL;
-
-    updateEditor();
-    setEditorScroll(0, 0, false); // No scroll
-  }
-
-  // Redraw the entire editor (because we have a new sprite to draw)
-  invalidate();
-
-  // Notify observers
-  m_observers.notifyDocumentChanged(this);
+  setEditorScroll(m_offset_x - vp.w/2 + (m_sprite->getWidth()/2),
+                  m_offset_y - vp.h/2 + (m_sprite->getHeight()/2), false);
 }
 
 // Sets the scroll position of the editor
@@ -314,17 +264,6 @@ void Editor::setEditorScroll(int x, int y, int use_refresh_region)
   view->setViewScroll(Point(x, y));
   Point newScroll = view->getViewScroll();
 
-  if (m_document && changePreferredSettings()) {
-    PreferredEditorSettings preferred;
-
-    preferred.virgin = false;
-    preferred.scroll_x = newScroll.x - m_offset_x;
-    preferred.scroll_y = newScroll.y - m_offset_y;
-    preferred.zoom = m_zoom;
-
-    m_document->setPreferredEditorSettings(preferred);
-  }
-
   if (use_refresh_region) {
     // Move screen with blits
     scrollRegion(region,
@@ -344,7 +283,7 @@ void Editor::updateEditor()
   View::getView(this)->updateView();
 }
 
-void Editor::drawSprite(int x1, int y1, int x2, int y2)
+void Editor::drawSpriteUnclippedRect(const gfx::Rect& rc)
 {
   View* view = View::getView(this);
   Rect vp = view->getViewportBounds();
@@ -356,12 +295,12 @@ void Editor::drawSprite(int x1, int y1, int x2, int y2)
 
   // Output information
 
-  source_x = x1 << m_zoom;
-  source_y = y1 << m_zoom;
+  source_x = rc.x << m_zoom;
+  source_y = rc.y << m_zoom;
   dest_x   = vp.x - scroll.x + m_offset_x + source_x;
   dest_y   = vp.y - scroll.y + m_offset_y + source_y;
-  width    = (x2 - x1 + 1) << m_zoom;
-  height   = (y2 - y1 + 1) << m_zoom;
+  width    = rc.w << m_zoom;
+  height   = rc.h << m_zoom;
 
   // Clip from viewport
 
@@ -491,7 +430,7 @@ void Editor::drawSprite(int x1, int y1, int x2, int y2)
   }
 }
 
-void Editor::drawSpriteSafe(int x1, int y1, int x2, int y2)
+void Editor::drawSpriteClipped(const gfx::Region& updateRegion)
 {
   Region region;
   getDrawableRegion(region, kCutTopWindows);
@@ -499,12 +438,17 @@ void Editor::drawSpriteSafe(int x1, int y1, int x2, int y2)
   int cx1, cy1, cx2, cy2;
   get_clip_rect(ji_screen, &cx1, &cy1, &cx2, &cy2);
 
-  for (Region::const_iterator it=region.begin(), end=region.end();
-       it != end; ++it) {
+  for (Region::const_iterator
+         it=region.begin(), end=region.end(); it != end; ++it) {
     const Rect& rc = *it;
 
     add_clip_rect(ji_screen, rc.x, rc.y, rc.x2()-1, rc.y2()-1);
-    drawSprite(x1, y1, x2, y2);
+
+    for (Region::const_iterator
+           it2=updateRegion.begin(), end2=updateRegion.end(); it2 != end2; ++it2) {
+      drawSpriteUnclippedRect(*it2);
+    }
+
     set_clip_rect(ji_screen, cx1, cy1, cx2, cy2);
   }
 }
@@ -922,7 +866,7 @@ bool Editor::onProcessMessage(Message* msg)
                        x1-1, y1-1, x2+1, y2+2, theme->getColor(ThemeColor::EditorFace));
 
           // Draw the sprite in the editor
-          drawSprite(0, 0, m_sprite->getWidth()-1, m_sprite->getHeight()-1);
+          drawSpriteUnclippedRect(gfx::Rect(0, 0, m_sprite->getWidth(), m_sprite->getHeight()));
 
           // Draw the sprite boundary
           rect(ji_screen, x1-1, y1-1, x2+1, y2+1, to_system(theme->getColor(ThemeColor::EditorSpriteBorder)));
@@ -956,7 +900,7 @@ bool Editor::onProcessMessage(Message* msg)
 
     case JM_TIMER:
       if (msg->timer.timer == &m_mask_timer) {
-        if (m_sprite) {
+        if (isVisible() && m_sprite) {
           drawMaskSafe();
 
           // Set offset to make selection-movement effect
@@ -964,6 +908,9 @@ bool Editor::onProcessMessage(Message* msg)
             m_offset_count++;
           else
             m_offset_count = 0;
+        }
+        else if (m_mask_timer.isRunning()) {
+          m_mask_timer.stop();
         }
       }
       break;

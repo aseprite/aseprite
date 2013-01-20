@@ -213,9 +213,8 @@ void CanvasSizeCommand::onExecute(Context* context)
     undoTransaction.commit();
 
     documentWriter->generateMaskBoundaries();
+    update_screen_for_document(documentWriter);
   }
-
-  update_screen_for_document(document);
 }
 
 //////////////////////////////////////////////////////////////////////

@@ -16,8 +16,38 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#include "config.h"
+#ifndef WIDGETS_WORKSPACE_H_INCLUDED
+#define WIDGETS_WORKSPACE_H_INCLUDED
 
-#include "modules/editors.h"
+#include "ui/box.h"
+#include <vector>
 
-Editor* current_editor = NULL;
+namespace widgets {
+
+  class WorkspaceView;
+  typedef std::vector<WorkspaceView*> WorkspaceViews;
+
+  class Workspace : public ui::Box
+  {
+  public:
+    Workspace();
+    ~Workspace();
+
+    void addView(WorkspaceView* view);
+    void removeView(WorkspaceView* view);
+
+    WorkspaceView* getActiveView() { return m_activeView; }
+    void setActiveView(WorkspaceView* view);
+
+    void splitView(WorkspaceView* view, int orientation);
+    void closeView(WorkspaceView* view);
+    void makeUnique(WorkspaceView* view);
+
+  private:
+    WorkspaceView* m_activeView;
+    WorkspaceViews m_views;
+  };
+
+} // namespace widgets
+
+#endif

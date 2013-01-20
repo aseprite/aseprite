@@ -95,6 +95,7 @@ namespace ThemeColor {
     FileListSelectedRowText,
     FileListSelectedRowFace,
     FileListDisabledRowText,
+    Workspace,
     MaxColors
   };
 } 

@@ -61,12 +61,6 @@ Document::Document(Sprite* sprite)
   // Boundary stuff
   m_bound.nseg = 0;
   m_bound.seg = NULL;
-
-  // Preferred edition options
-  m_preferred.scroll_x = 0;
-  m_preferred.scroll_y = 0;
-  m_preferred.zoom = 0;
-  m_preferred.virgin = true;
 }
 
 Document::~Document()
@@ -138,6 +132,18 @@ void Document::addSprite(Sprite* sprite)
   notifyObservers<DocumentEvent&>(&DocumentObserver::onAddSprite, ev);
 }
 
+void Document::notifyGeneralUpdate()
+{
+  DocumentEvent ev(this);
+  notifyObservers<DocumentEvent&>(&DocumentObserver::onGeneralUpdate, ev);
+}
+
+void Document::notifySpritePixelsModified(Sprite* sprite, const gfx::Region& region)
+{
+  DocumentEvent ev(this, sprite, NULL, NULL, NULL, -1, FrameNumber(), region);
+  notifyObservers<DocumentEvent&>(&DocumentObserver::onSpritePixelsModified, ev);
+}
+
 const char* Document::getFilename() const
 {
   return m_filename.c_str();
@@ -170,19 +176,6 @@ void Document::markAsSaved()
 void Document::setFormatOptions(const SharedPtr<FormatOptions>& format_options)
 {
   m_format_options = format_options;
-}
-
-//////////////////////////////////////////////////////////////////////
-// Preferred editor settings
-
-PreferredEditorSettings Document::getPreferredEditorSettings() const
-{
-  return m_preferred;
-}
-
-void Document::setPreferredEditorSettings(const PreferredEditorSettings& settings)
-{
-  m_preferred = settings;
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -473,7 +466,6 @@ Document* Document::duplicate(DuplicateType type) const
 
   documentCopy->setMask(getMask());
   documentCopy->m_maskVisible = m_maskVisible;
-  documentCopy->m_preferred = m_preferred;
   documentCopy->generateMaskBoundaries();
 
   return documentCopy.release();

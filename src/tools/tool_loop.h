@@ -21,7 +21,6 @@
 
 #include "filters/tiled_mode.h"
 #include "gfx/point.h"
-#include "gfx/rect.h"
 #include "tools/trace_policy.h"
 
 class Context;
@@ -33,6 +32,8 @@ class Layer;
 class Mask;
 class Pen;
 class Sprite;
+
+namespace gfx { class Region; }
 
 namespace tools {
 
@@ -166,8 +167,12 @@ public:
   // Converts a coordinate in the screen to the sprite.
   virtual gfx::Point screenToSprite(const gfx::Point& screenPoint) = 0;
 
-  // Redraws in the screen the specified are of sprite.
-  virtual void updateArea(const gfx::Rect& dirty_area) = 0;
+  // This region is modified by the ToolLoopManager so then you know
+  // what must be updated in updateDirtyArea().
+  virtual gfx::Region& getDirtyArea() = 0;
+
+  // Redraws the dirty area.
+  virtual void updateDirtyArea() = 0;
 
   virtual void updateStatusBar(const char* text) = 0;
 

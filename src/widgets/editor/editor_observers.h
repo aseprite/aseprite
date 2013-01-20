@@ -34,7 +34,6 @@ public:
 
   void notifyStateChanged(Editor* editor);
   void notifyScrollChanged(Editor* editor);
-  void notifyDocumentChanged(Editor* editor);
 
 private:
   Observers<EditorObserver> m_observers;

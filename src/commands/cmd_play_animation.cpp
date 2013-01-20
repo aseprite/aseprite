@@ -115,7 +115,8 @@ void PlayAnimationCommand::onExecute(Context* context)
       oldpal = newpal;
     }
 
-    current_editor->drawSpriteSafe(0, 0, sprite->getWidth(), sprite->getHeight());
+    current_editor->drawSpriteClipped
+      (gfx::Region(gfx::Rect(0, 0, sprite->getWidth(), sprite->getHeight())));
 
     ui::dirty_display_flag = true;
 

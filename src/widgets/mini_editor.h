@@ -16,8 +16,35 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#include "config.h"
+#ifndef WIDGETS_MINI_EDITOR_VIEW_H_INCLUDED
+#define WIDGETS_MINI_EDITOR_VIEW_H_INCLUDED
 
-#include "modules/editors.h"
+#include "ui/window.h"
+#include "widgets/document_view.h"
 
-Editor* current_editor = NULL;
+namespace widgets {
+
+  class MiniEditorWindow : public ui::Window
+  {
+  public:
+    MiniEditorWindow();
+    ~MiniEditorWindow();
+
+    bool isMiniEditorEnabled() const { return m_isEnabled; }
+    void setMiniEditorEnabled(bool state);
+
+    void updateUsingEditor(Editor* editor);
+
+  protected:
+    void onClose(ui::CloseEvent& ev) OVERRIDE;
+
+  private:
+    void hideWindow();
+
+    bool m_isEnabled;
+    DocumentView* m_docView;
+  };
+
+} // namespace widgets
+
+#endif

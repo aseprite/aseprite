@@ -81,7 +81,9 @@ void UndoCommand::onExecute(Context* context)
     if (spritePosition != sprite->getCurrentPosition()) {
       sprite->setCurrentPosition(spritePosition);
 
-      current_editor->drawSpriteSafe(0, 0, sprite->getWidth(), sprite->getHeight());
+      current_editor->drawSpriteClipped
+        (gfx::Region(gfx::Rect(0, 0, sprite->getWidth(), sprite->getHeight())));
+
       update_screen_for_document(document);
 
       ui::dirty_display_flag = true;

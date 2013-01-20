@@ -240,7 +240,8 @@ void SpriteSizeCommand::onExecute(Context* context)
       job.startJob();
     }
 
-    update_screen_for_document(document);
+    DocumentWriter docWriter(document);
+    update_screen_for_document(docWriter);
   }
 }
 

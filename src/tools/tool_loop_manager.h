@@ -22,7 +22,8 @@
 #include <vector>
 
 #include "gfx/point.h"
-#include "gfx/rect.h"
+
+namespace gfx { class Region; }
 
 namespace tools {
 
@@ -99,7 +100,7 @@ private:
 
   static void calculateDirtyArea(ToolLoop* loop,
                                  const Points& points,
-                                 gfx::Rect& dirty_area);
+                                 gfx::Region& dirty_area);
 
   static void calculateMinMax(const Points& points,
                               gfx::Point& minpt,

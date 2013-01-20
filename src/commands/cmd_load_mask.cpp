@@ -94,9 +94,8 @@ void LoadMaskCommand::onExecute(Context* context)
 
     undo.commit();
     documentWriter->generateMaskBoundaries();
+    update_screen_for_document(documentWriter);
   }
-
-  update_screen_for_document(document);
 }
 
 //////////////////////////////////////////////////////////////////////

@@ -148,8 +148,6 @@ void OpenFileCommand::onExecute(Context* context)
 
           App::instance()->getRecentFiles()->addRecentFile(fop->filename.c_str());
           context->addDocument(document);
-
-          set_document_in_more_reliable_editor(document);
         }
         else if (!fop_is_stop(fop))
           unrecent = true;

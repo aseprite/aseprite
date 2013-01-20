@@ -46,8 +46,3 @@ void EditorObservers::notifyScrollChanged(Editor* editor)
 {
   m_observers.notifyObservers(&EditorObserver::scrollChanged, editor);
 }
-
-void EditorObservers::notifyDocumentChanged(Editor* editor)
-{
-  m_observers.notifyObservers(&EditorObserver::documentChanged, editor);
-}

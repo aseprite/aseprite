@@ -25,7 +25,6 @@
 #include "commands/params.h"
 #include "gfx/rect.h"
 #include "ini_file.h"
-#include "modules/editors.h"
 #include "raster/layer.h"
 #include "raster/mask.h"
 #include "raster/sprite.h"
@@ -142,13 +141,10 @@ bool StandbyState::onMouseDown(Editor* editor, Message* msg)
   tools::Tool* current_tool = editor->getCurrentEditorTool();
   tools::Ink* clickedInk = current_tool->getInk(msg->mouse.right ? 1: 0);
   Sprite* sprite = editor->getSprite();
-
-  // Each time an editor is clicked the current editor and the active
-  // document are set.
-  set_current_editor(editor);
-
   Document* document = editor->getDocument();
-  context->setActiveDocument(document);
+
+  // When an editor is clicked the current view is changed.
+  context->setActiveView(editor->getDocumentView());
 
   // Start scroll loop
   if (checkForScroll(editor, msg))

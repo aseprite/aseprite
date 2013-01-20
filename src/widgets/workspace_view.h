@@ -16,8 +16,21 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#include "config.h"
+#ifndef WIDGETS_WORKSPACE_VIEW_H_INCLUDED
+#define WIDGETS_WORKSPACE_VIEW_H_INCLUDED
 
-#include "modules/editors.h"
+namespace ui { class Widget; }
 
-Editor* current_editor = NULL;
+namespace widgets {
+
+  class WorkspaceView
+  {
+  public:
+    virtual ~WorkspaceView() { }
+
+    virtual ui::Widget* getContentWidget() = 0;
+  };
+
+} // namespace widgets
+
+#endif

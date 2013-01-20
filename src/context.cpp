@@ -34,6 +34,9 @@ Context::Context(ISettings* settings)
 
 Context::~Context()
 {
+  // The context must be empty at this point.
+  ASSERT(m_documents.empty());
+
   delete m_settings;
 }
 
@@ -54,13 +57,23 @@ Document* Context::getNextDocument(Document* document) const
 {
   ASSERT(document != NULL);
 
-  Documents::const_iterator it = std::find(m_documents.begin(), m_documents.end(), document);
+  Documents::const_iterator begin = m_documents.begin();
+  Documents::const_iterator end = m_documents.end();
+  Documents::const_iterator it = std::find(begin, end, document);
+  ASSERT(it != end);
 
-  if (it != m_documents.end()) {
-    ++it;
-    if (it != m_documents.end())
+  if (it != end) {
+    if (it != begin) {
+      --it;
       return *it;
+    }
+    else {
+      ++it;
+      if (it != end)
+        return *it;
+    }
   }
+
   return NULL;
 }
 
@@ -103,6 +116,9 @@ Document* Context::getActiveDocument() const
 
 void Context::setActiveDocument(Document* document)
 {
+  if (document == m_activeDocument)
+    return;
+
   m_observers.notifyActiveDocumentBeforeChange(this);
 
   m_activeDocument = document;

@@ -97,7 +97,6 @@ void DuplicateSpriteCommand::onExecute(Context* context)
     docCopy->setFilename(dst_name->getText());
 
     context->addDocument(docCopy);
-    set_document_in_more_reliable_editor(docCopy);
   }
 }
 

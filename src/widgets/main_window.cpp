@@ -30,21 +30,18 @@
 #include "ui/view.h"
 #include "ui_context.h"
 #include "widgets/color_bar.h"
+#include "widgets/document_view.h"
 #include "widgets/editor/editor.h"
 #include "widgets/editor/editor_view.h"
 #include "widgets/main_menu_bar.h"
+#include "widgets/mini_editor.h"
 #include "widgets/status_bar.h"
 #include "widgets/tabs.h"
 #include "widgets/toolbar.h"
+#include "widgets/workspace.h"
 
 using namespace ui;
-
-class AppTabsDelegate : public TabsDelegate
-{
-public:
-  void clickTab(Tabs* tabs, void* data, int button);
-  void mouseOverTab(Tabs* tabs, void* data);
-};
+using namespace widgets;
 
 MainWindow::MainWindow()
   : Window(true, NULL)
@@ -59,21 +56,20 @@ MainWindow::MainWindow()
   Widget* mainBox = app::load_widget<Widget>("main_window.xml", "main_box");
   addChild(mainBox);
 
-  box_editors = findChild("editor"); // WARNING / TODO this is a
-                                     // global variable defined in
-                                     // legacy "editors" modules
-
   Widget* box_menubar = findChild("menubar");
   Widget* box_colorbar = findChild("colorbar");
   Widget* box_toolbar = findChild("toolbar");
   Widget* box_statusbar = findChild("statusbar");
   Widget* box_tabsbar = findChild("tabsbar");
+  Widget* box_workspace = findChild("workspace");
 
   m_menuBar = new MainMenuBar();
   m_statusBar = new StatusBar();
   m_colorBar = new ColorBar(box_colorbar->getAlign());
   m_toolBar = new ToolBar();
-  m_tabsBar = new Tabs(m_tabsDelegate = new AppTabsDelegate());
+  m_tabsBar = new Tabs(this);
+  m_workspace = new Workspace();
+  m_miniEditor = new MiniEditorWindow();
   m_colorBarSplitter = findChildT<Splitter>("colorbarsplitter");
 
   // configure all widgets to expansives
@@ -82,45 +78,40 @@ MainWindow::MainWindow()
   m_colorBar->setExpansive(true);
   m_toolBar->setExpansive(true);
   m_tabsBar->setExpansive(true);
+  m_workspace->setExpansive(true);
 
   // Setup the menus
   m_menuBar->setMenu(AppMenus::instance()->getRootMenu());
 
-  /* start text of status bar */
+  // Start text of status bar
   app_default_statusbar_message();
 
-  /* add the widgets in the boxes */
+  // Add the widgets in the boxes
   if (box_menubar) box_menubar->addChild(m_menuBar);
   if (box_colorbar) box_colorbar->addChild(m_colorBar);
   if (box_toolbar) box_toolbar->addChild(m_toolBar);
   if (box_statusbar) box_statusbar->addChild(m_statusBar);
   if (box_tabsbar) box_tabsbar->addChild(m_tabsBar);
+  if (box_workspace) box_workspace->addChild(m_workspace);
 
   // Prepare the window
   remapWindow();
 
-  // Initialize editors.
-  init_module_editors();
-
-  // Create the list of tabs
-  app_rebuild_documents_tabs();
   AppMenus::instance()->rebuildRecentList();
 }
 
 MainWindow::~MainWindow()
 {
-  delete m_tabsDelegate;
+  delete m_miniEditor;
+
+  // Destroy the workspace first so ~Editor can dettach slots from
+  // ColorBar. TODO this is a terrible hack for slot/signal stuff,
+  // connections should be handle in a better/safer way.
+  delete m_workspace;
 
   // Remove the root-menu from the menu-bar (because the rootmenu
   // module should destroy it).
   m_menuBar->setMenu(NULL);
-
-  // Delete all editors first because they used signals from other
-  // widgets (e.g. color bar).
-  delete box_editors;
-
-  // Destroy mini-editor.
-  exit_module_editors();
 }
 
 void MainWindow::reloadMenus()
@@ -129,22 +120,6 @@ void MainWindow::reloadMenus()
 
   layout();
   invalidate();
-}
-
-void MainWindow::createFirstEditor()
-{
-  View* view = new EditorView(EditorView::CurrentEditorMode);
-  Editor* editor = create_new_editor();
-
-  // Prepare the first editor
-  view->attachToView(editor);
-  view->setExpansive(true);
-
-  if (box_editors)
-    box_editors->addChild(view);
-
-  // Set current editor
-  set_current_editor(editor);   // TODO remove this line from here
 }
 
 void MainWindow::setAdvancedMode(bool advanced)
@@ -180,47 +155,43 @@ void MainWindow::onSaveLayout(SaveLayoutEvent& ev)
     m_colorBarSplitter->setPosition(m_lastSplitterPos);
 }
 
-//////////////////////////////////////////////////////////////////////
-// AppTabsDelegate
-
-void AppTabsDelegate::clickTab(Tabs* tabs, void* data, int button)
+void MainWindow::clickTab(Tabs* tabs, TabView* tabView, int button)
 {
-  Document* document = reinterpret_cast<Document*>(data);
+  if (!tabView)
+    return;
 
-  // put as current sprite
-  set_document_in_more_reliable_editor(document);
+  DocumentView* docView = static_cast<DocumentView*>(tabView);
+  Document* document = docView->getDocument();
 
-  if (document) {
-    Context* context = UIContext::instance();
-    context->updateFlags();
+  UIContext* context = UIContext::instance();
+  context->setActiveView(docView);
+  context->updateFlags();
 
-    // right-button: popup-menu
-    if (button & 2) {
-      Menu* popup_menu = AppMenus::instance()->getDocumentTabPopupMenu();
-      if (popup_menu != NULL) {
-        popup_menu->showPopup(jmouse_x(0), jmouse_y(0));
-      }
+  // Right-button: popup-menu
+  if (button & 2) {
+    Menu* popup_menu = AppMenus::instance()->getDocumentTabPopupMenu();
+    if (popup_menu != NULL) {
+      popup_menu->showPopup(jmouse_x(0), jmouse_y(0));
     }
-    // middle-button: close the sprite
-    else if (button & 4) {
-      Command* close_file_cmd =
-        CommandsModule::instance()->getCommandByName(CommandId::CloseFile);
+  }
+  // Middle-button: close the sprite
+  else if (button & 4) {
+    Command* close_file_cmd =
+      CommandsModule::instance()->getCommandByName(CommandId::CloseFile);
 
-      context->executeCommand(close_file_cmd, NULL);
-    }
+    context->executeCommand(close_file_cmd, NULL);
   }
 }
 
-void AppTabsDelegate::mouseOverTab(Tabs* tabs, void* data)
+void MainWindow::mouseOverTab(Tabs* tabs, TabView* tabView)
 {
-  // Note: data can be NULL
-  Document* document = (Document*)data;
-
-  if (data) {
-    StatusBar::instance()->setStatusText(250, "%s",
-                                         static_cast<const char*>(document->getFilename()));
+  // Note: tabView can be NULL
+  if (tabView) {
+    DocumentView* docView = static_cast<DocumentView*>(tabView);
+    Document* document = docView->getDocument();
+    m_statusBar->setStatusText(250, "%s", static_cast<const char*>(document->getFilename()));
   }
   else {
-    StatusBar::instance()->clearText();
+    m_statusBar->clearText();
   }
 }

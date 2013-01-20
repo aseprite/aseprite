@@ -19,6 +19,7 @@
 #ifndef DOCUMENT_EVENT_H_INCLUDED
 #define DOCUMENT_EVENT_H_INCLUDED
 
+#include "gfx/region.h"
 #include "raster/frame_number.h"
 
 class Cel;
@@ -36,14 +37,16 @@ public:
                 Cel* cel = NULL,
                 Image* image = NULL,
                 int imageIndex = -1,
-                FrameNumber frame = FrameNumber())
+                FrameNumber frame = FrameNumber(),
+                const gfx::Region& region = gfx::Region())
     : m_document(document)
     , m_sprite(sprite)
     , m_layer(layer)
     , m_cel(cel)
     , m_image(image)
     , m_imageIndex(imageIndex)
-    , m_frame(frame) {
+    , m_frame(frame)
+    , m_region(region) {
   }
 
   Document* document() const { return m_document; }
@@ -53,6 +56,7 @@ public:
   Image* image() const { return m_image; }
   int imageIndex() const { return m_imageIndex; }
   FrameNumber frame() const { return m_frame; }
+  const gfx::Region& region() const { return m_region; }
 
 private:
   Document* m_document;
@@ -62,6 +66,7 @@ private:
   Image* m_image;
   int m_imageIndex;
   FrameNumber m_frame;
+  gfx::Region m_region;
 };
 
 #endif

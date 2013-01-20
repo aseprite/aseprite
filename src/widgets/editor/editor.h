@@ -23,6 +23,7 @@
 #include "base/compiler_specific.h"
 #include "base/signal.h"
 #include "document.h"
+#include "gfx/rect.h"
 #include "ui/base.h"
 #include "ui/timer.h"
 #include "ui/widget.h"
@@ -38,19 +39,19 @@ class EditorCustomizationDelegate;
 class PixelsMovement;
 class Sprite;
 
-namespace ui {
-  class View;
-}
-
-namespace tools {
-  class Tool;
-}
+namespace gfx { class Region; }
+namespace tools { class Tool; }
+namespace ui { class View; }
+namespace widgets { class DocumentView; }
 
 class Editor : public ui::Widget
 {
 public:
-  Editor();
+  Editor(Document* document);
   ~Editor();
+
+  widgets::DocumentView* getDocumentView() { return m_docView; }
+  void setDocumentView(widgets::DocumentView* docView) { m_docView = docView; }
 
   // Returns the current state.
   EditorStatePtr getState() { return m_state; }
@@ -67,7 +68,6 @@ public:
   void setDecorator(EditorDecorator* decorator) { m_decorator = decorator; }
 
   Document* getDocument() { return m_document; }
-  void setDocument(Document* document);
 
   Sprite* getSprite() { return m_sprite; }
 
@@ -80,19 +80,14 @@ public:
   void setOffsetX(int x) { m_offset_x = x; }
   void setOffsetY(int y) { m_offset_y = y; }
 
+  void setDefaultScroll();
   void setEditorScroll(int x, int y, int use_refresh_region);
 
   // Updates the Editor's view.
   void updateEditor();
 
-  // Draws the specified portion of sprite in the editor.
-  // Warning: You should setup the clip of the ji_screen before
-  // calling this routine.
-  void drawSprite(int x1, int y1, int x2, int y2);
-
   // Draws the sprite taking care of the whole clipping region.
-  // For each rectangle calls Editor::drawSprite.
-  void drawSpriteSafe(int x1, int y1, int x2, int y2);
+  void drawSpriteClipped(const gfx::Region& updateRegion);
 
   void drawMask();
   void drawMaskSafe();
@@ -158,12 +153,6 @@ protected:
   void onCurrentToolChange();
   void onFgColorChange();
 
-  // Returns true if this editor should change the preferred document
-  // settings.
-  virtual bool changePreferredSettings() {
-    return true;
-  }
-
 private:
   void setStateInternal(const EditorStatePtr& newState);
   void editor_update_quicktool();
@@ -179,6 +168,11 @@ private:
   void for_each_pixel_of_pen(int screen_x, int screen_y,
                              int sprite_x, int sprite_y, int color,
                              void (*pixel)(BITMAP *bmp, int x, int y, int color));
+
+  // Draws the specified portion of sprite in the editor.  Warning:
+  // You should setup the clip of the screen before calling this
+  // routine.
+  void drawSpriteUnclippedRect(const gfx::Rect& rc);
 
   // Stack of states. The top element in the stack is the current state (m_state).
   EditorStatesHistory m_statesHistory;
@@ -225,6 +219,10 @@ private:
 
   EditorCustomizationDelegate* m_customizationDelegate;
 
+  // TODO This field shouldn't be here. It should be removed when
+  // editors.cpp are finally replaced with a fully funtional Workspace
+  // widget.
+  widgets::DocumentView* m_docView;
 };
 
 int editor_type();

@@ -24,7 +24,6 @@
 #include "app/color.h"
 #include "app/color_utils.h"
 #include "context.h"
-#include "modules/editors.h"
 #include "raster/cel.h"
 #include "raster/layer.h"
 #include "raster/mask.h"
@@ -75,6 +74,7 @@ class ToolLoopImpl : public tools::ToolLoop
   int m_secondary_color;
   UndoTransaction m_undoTransaction;
   ExpandCelCanvas m_expandCelCanvas;
+  gfx::Region m_dirtyArea;
 
 public:
   ToolLoopImpl(Editor* editor,
@@ -225,16 +225,14 @@ public:
     return spritePoint;
   }
 
-  void updateArea(const gfx::Rect& dirty_area) OVERRIDE
+  gfx::Region& getDirtyArea() OVERRIDE
   {
-    int x1 = dirty_area.x-m_offset.x;
-    int y1 = dirty_area.y-m_offset.y;
-    int x2 = dirty_area.x-m_offset.x+dirty_area.w-1;
-    int y2 = dirty_area.y-m_offset.y+dirty_area.h-1;
+    return m_dirtyArea;
+  }
 
-    acquire_bitmap(ji_screen);
-    editors_draw_sprite_tiled(m_sprite, x1, y1, x2, y2);
-    release_bitmap(ji_screen);
+  void updateDirtyArea() OVERRIDE
+  {
+    m_document->notifySpritePixelsModified(m_sprite, m_dirtyArea);
   }
 
   void updateStatusBar(const char* text) OVERRIDE

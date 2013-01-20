@@ -324,6 +324,7 @@ SkinTheme::SkinTheme()
   color_mapping["filelist_selected_row_text"] = ThemeColor::FileListSelectedRowText;
   color_mapping["filelist_selected_row_face"] = ThemeColor::FileListSelectedRowFace;
   color_mapping["filelist_disabled_row_text"] = ThemeColor::FileListDisabledRowText;
+  color_mapping["workspace"] = ThemeColor::Workspace;
 
   reload_skin();
 }

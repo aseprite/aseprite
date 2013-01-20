@@ -122,10 +122,10 @@ Tabs::~Tabs()
   delete m_button_right;        // widget
 }
 
-void Tabs::addTab(const char* text, void* data)
+void Tabs::addTab(TabView* tabView)
 {
-  Tab *tab = new Tab(text, data);
-  tab->width = calcTabWidth(tab);
+  Tab* tab = new Tab(tabView);
+  calcTabWidth(tab);
 
   m_list_of_tabs.push_back(tab);
 
@@ -133,70 +133,66 @@ void Tabs::addTab(const char* text, void* data)
   setScrollX(m_scrollX);
 
   startAni(ANI_ADDING_TAB);
-  //invalidate();
 }
 
-void Tabs::removeTab(void* data)
+void Tabs::removeTab(TabView* tabView)
 {
-  Tab *tab = getTabByData(data);
+  Tab* tab = getTabByView(tabView);
+  if (!tab)
+    return;
 
-  if (tab) {
-    if (m_hot == tab) m_hot = NULL;
-    if (m_selected == tab) m_selected = NULL;
+  if (m_hot == tab) m_hot = NULL;
+  if (m_selected == tab) m_selected = NULL;
 
-    TabsListIterator it =
-      std::find(m_list_of_tabs.begin(), m_list_of_tabs.end(), tab);
+  TabsListIterator it =
+    std::find(m_list_of_tabs.begin(), m_list_of_tabs.end(), tab);
 
-    ASSERT(it != m_list_of_tabs.end() && "Removing a tab that is not part of the Tabs widget");
+  ASSERT(it != m_list_of_tabs.end() && "Removing a tab that is not part of the Tabs widget");
 
-    it = m_list_of_tabs.erase(it);
+  it = m_list_of_tabs.erase(it);
 
-    // Width of the removed tab
-    if (m_removedTab) {
-      delete m_removedTab;
-      m_removedTab = NULL;
-    }
-    m_removedTab = tab;
-
-    // Next tab in the list
-    if (it != m_list_of_tabs.end())
-      m_nextTabOfTheRemovedOne = *it;
-    else
-      m_nextTabOfTheRemovedOne = NULL;
-
-    // Update scroll (in the same position if we can)
-    setScrollX(m_scrollX);
-
-    startAni(ANI_REMOVING_TAB);
+  // Width of the removed tab
+  if (m_removedTab) {
+    delete m_removedTab;
+    m_removedTab = NULL;
   }
+  m_removedTab = tab;
+
+  // Next tab in the list
+  if (it != m_list_of_tabs.end())
+    m_nextTabOfTheRemovedOne = *it;
+  else
+    m_nextTabOfTheRemovedOne = NULL;
+
+  // Update scroll (in the same position if we can)
+  setScrollX(m_scrollX);
+
+  startAni(ANI_REMOVING_TAB);
 }
 
-void Tabs::setTabText(const char* text, void* data)
+void Tabs::updateTabsText()
 {
-  Tab* tab = getTabByData(data);
-  if (tab) {
+  TabsListIterator it, end = m_list_of_tabs.end();
+
+  for (it = m_list_of_tabs.begin(); it != end; ++it) {
+    Tab* tab = *it;
+
     // Change text of the tab
-    tab->text = text;
-    tab->width = calcTabWidth(tab);
-
-    // Make it visible (if it's the selected)
-    if (m_selected == tab)
-      makeTabVisible(tab);
-
-    invalidate();
+    calcTabWidth(tab);
   }
+  invalidate();
 }
 
-void Tabs::selectTab(void* data)
+void Tabs::selectTab(TabView* tabView)
 {
-  Tab *tab = getTabByData(data);
+  Tab *tab = getTabByView(tabView);
   if (tab != NULL)
     selectTabInternal(tab);
 }
 
 void Tabs::selectNextTab()
 {
-  TabsListIterator currentTabIt = getTabIteratorByData(m_selected->data);
+  TabsListIterator currentTabIt = getTabIteratorByView(m_selected->view);
   TabsListIterator it = currentTabIt;
   if (it != m_list_of_tabs.end()) {
     // If we are at the end of the list, cycle to the first tab.
@@ -209,14 +205,14 @@ void Tabs::selectNextTab()
     if (it != currentTabIt) {
       selectTabInternal(*it);
       if (m_delegate)
-        m_delegate->clickTab(this, m_selected->data, 1);
+        m_delegate->clickTab(this, m_selected->view, 1);
     }
   }
 }
 
 void Tabs::selectPreviousTab()
 {
-  TabsListIterator currentTabIt = getTabIteratorByData(m_selected->data);
+  TabsListIterator currentTabIt = getTabIteratorByView(m_selected->view);
   TabsListIterator it = currentTabIt;
   if (it != m_list_of_tabs.end()) {
     // If we are at the beginning of the list, cycle to the last tab.
@@ -229,15 +225,15 @@ void Tabs::selectPreviousTab()
     if (it != currentTabIt) {
       selectTabInternal(*it);
       if (m_delegate)
-        m_delegate->clickTab(this, m_selected->data, 1);
+        m_delegate->clickTab(this, m_selected->view, 1);
     }
   }
 }
 
-void* Tabs::getSelectedTab()
+TabView* Tabs::getSelectedTab()
 {
   if (m_selected != NULL)
-    return m_selected->data;
+    return m_selected->view;
   else
     return NULL;
 }
@@ -359,7 +355,7 @@ bool Tabs::onProcessMessage(Message* msg)
 
         if (m_selected && m_delegate)
           m_delegate->clickTab(this,
-                               m_selected->data,
+                               m_selected->view,
                                msg->mouse.flags);
       }
       return true;
@@ -457,7 +453,7 @@ void Tabs::onSetText()
 
   for (it = m_list_of_tabs.begin(); it != end; ++it) {
     Tab* tab = *it;
-    tab->width = calcTabWidth(tab);
+    calcTabWidth(tab);
   }
 }
 
@@ -523,21 +519,21 @@ void Tabs::drawTab(BITMAP* bmp, JRect box, Tab* tab, int y_delta, bool selected)
 #endif
 }
 
-Tabs::TabsListIterator Tabs::getTabIteratorByData(void* data)
+Tabs::TabsListIterator Tabs::getTabIteratorByView(TabView* tabView)
 {
   TabsListIterator it, end = m_list_of_tabs.end();
 
   for (it = m_list_of_tabs.begin(); it != end; ++it) {
-    if ((*it)->data == data)
+    if ((*it)->view == tabView)
       break;
   }
 
   return it;
 }
 
-Tabs::Tab* Tabs::getTabByData(void* data)
+Tabs::Tab* Tabs::getTabByView(TabView* tabView)
 {
-  TabsListIterator it = getTabIteratorByData(data);
+  TabsListIterator it = getTabIteratorByView(tabView);
   if (it != m_list_of_tabs.end())
     return *it;
   else
@@ -656,7 +652,7 @@ void Tabs::calculateHot()
     m_hot = hot;
 
     if (m_delegate)
-      m_delegate->mouseOverTab(this, m_hot ? m_hot->data: NULL);
+      m_delegate->mouseOverTab(this, m_hot ? m_hot->view: NULL);
 
     invalidate();
   }
@@ -665,15 +661,18 @@ void Tabs::calculateHot()
   jrect_free(box);
 }
 
-int Tabs::calcTabWidth(Tab* tab)
+void Tabs::calcTabWidth(Tab* tab)
 {
+  // Cache current tab text
+  tab->text = tab->view->getTabText();
+
   int border = 4*jguiscale();
 #ifdef CLOSE_BUTTON_IN_EACH_TAB
   SkinTheme* theme = static_cast<SkinTheme*>(this->theme);
   int close_icon_w = theme->get_part(PART_WINDOW_CLOSE_BUTTON_NORMAL)->w;
-  return (border + text_length(getFont(), tab->text.c_str()) + border + close_icon_w + border);
+  tab->width = (border + text_length(getFont(), tab->text.c_str()) + border + close_icon_w + border);
 #else
-  return (border + text_length(getFont(), tab->text.c_str()) + border);
+  tab->width = (border + text_length(getFont(), tab->text.c_str()) + border);
 #endif
 }
 

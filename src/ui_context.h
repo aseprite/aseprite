@@ -21,6 +21,11 @@
 
 #include "context.h"
 
+class Editor;
+namespace widgets { class DocumentView; }
+
+typedef std::vector<widgets::DocumentView*> DocumentViews;
+
 class UIContext : public Context
 {
 public:
@@ -31,14 +36,29 @@ public:
 
   virtual bool isUiAvailable() const { return true; }
 
+  widgets::DocumentView* getActiveView();
+  void setActiveView(widgets::DocumentView* documentView);
+
+  // Returns the number of views that the given document has.
+  size_t countViewsOf(Document* document) const;
+
+  // Returns the current editor. It can be null.
+  Editor* getActiveEditor();
+
+  // Returns the active editor for the given document, or creates a
+  // new one if it's necessary.
+  Editor* getEditorFor(Document* document);
+
 protected:
   virtual void onAddDocument(Document* document);
   virtual void onRemoveDocument(Document* document);
   virtual void onSetActiveDocument(Document* document);
 
 private:
-  static UIContext* m_instance;
+  DocumentViews m_allViews;
+  widgets::DocumentView* m_activeView;
 
+  static UIContext* m_instance;
 };
 
 #endif

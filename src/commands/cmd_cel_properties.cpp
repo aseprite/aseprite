@@ -146,7 +146,7 @@ void CelPropertiesCommand::onExecute(Context* context)
       // Change cel opacity.
       cel_writer->setOpacity(new_opacity);
 
-      update_screen_for_document(document);
+      update_screen_for_document(document_writer);
     }
   }
 }
