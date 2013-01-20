@@ -1,5 +1,8 @@
 # Very high priority (next release?)
 
+* Warning icon when selecting RGB/HSB color in indexed image.
+* Warning message when we open a file that is already opened file
+  (show an option to create a second view).
 * Paste in place doesn't work as expected sometimes (copy something
   from one frame, paste in other frame).
 * After moving a frame, all thumbnails are shown incorrectly.
