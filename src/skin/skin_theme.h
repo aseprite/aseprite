@@ -19,7 +19,7 @@
 #ifndef SKIN_THEME_H_INCLUDED
 #define SKIN_THEME_H_INCLUDED
 
-#include "gfx/rect.h"
+#include "gfx/fwd.h"
 #include "skin/skin_parts.h"
 #include "ui/color.h"
 #include "ui/rect.h"
@@ -122,7 +122,7 @@ public:
   ui::Cursor* getCursor(ui::CursorType type);
   void initWidget(ui::Widget* widget);
   void getWindowMask(ui::Widget* widget, gfx::Region& region);
-  void mapDecorativeWidget(ui::Widget* widget);
+  void setDecorativeWidgetBounds(ui::Widget* widget);
 
   void paintDesktop(ui::PaintEvent& ev);
   void paintBox(ui::PaintEvent& ev);
@@ -155,6 +155,7 @@ public:
 
   BITMAP* get_part(int part_i) const { return m_part[part_i]; }
   BITMAP* get_toolicon(const char* tool_id) const;
+  gfx::Size get_part_size(int part_i) const;
 
   // helper functions to draw bounds/hlines with sheet parts
   void draw_bounds_array(BITMAP* bmp, int x1, int y1, int x2, int y2, int parts[8]);

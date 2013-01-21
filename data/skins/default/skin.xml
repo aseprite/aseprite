@@ -128,9 +128,9 @@
   </tools>
 
   <parts>
-    <part id="radio_normal"                     x="32" y="32" w="8" h="8" />
-    <part id="radio_selected"                   x="32" y="48" w="8" h="8" />
-    <part id="radio_disabled"                   x="32" y="32" w="8" h="8" />
+    <part id="radio_normal"                     x="64" y="64" w="8" h="8" />
+    <part id="radio_selected"                   x="64" y="80" w="8" h="8" />
+    <part id="radio_disabled"                   x="64" y="64" w="8" h="8" />
     <part id="check_normal"                     x="48" y="64" w="8" h="8" />
     <part id="check_selected"                   x="48" y="80" w="8" h="8" />
     <part id="check_disabled"                   x="48" y="64" w="8" h="8" />
@@ -151,6 +151,12 @@
     <part id="window_close_button_normal"       x="16" y= "0" w="9" h="11" />
     <part id="window_close_button_hot"          x="16" y="16" w="9" h="11" />
     <part id="window_close_button_selected"     x="16" y="32" w="9" h="11" />
+    <part id="window_play_button_normal"        x="25" y= "0" w="9" h="11" />
+    <part id="window_play_button_hot"           x="25" y="16" w="9" h="11" />
+    <part id="window_play_button_selected"      x="25" y="32" w="9" h="11" />
+    <part id="window_stop_button_normal"        x="34" y= "0" w="9" h="11" />
+    <part id="window_stop_button_hot"           x="34" y="16" w="9" h="11" />
+    <part id="window_stop_button_selected"      x="34" y="32" w="9" h="11" />
     <part id="slider_full"                      x="0" y="144" w1="5" w2="6" w3="5" h1="5" h2="5" h3="6" />
     <part id="slider_empty"                     x="16" y="144" w1="5" w2="6" w3="5" h1="5" h2="5" h3="6" />
     <part id="slider_full_focused"              x="0" y="160" w1="5" w2="6" w3="5" h1="5" h2="5" h3="6" />

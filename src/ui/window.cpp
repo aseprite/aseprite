@@ -517,12 +517,12 @@ void Window::windowSetPosition(JRect rect)
   jrect_copy(this->rc, rect);
   Rect cpos = getChildrenBounds();
 
-  /* set all the children to the same "child_pos" */
+  // Set all the children to the same "cpos"
   UI_FOREACH_WIDGET(getChildren(), it) {
     Widget* child = *it;
 
     if (child->isDecorative())
-      child->getTheme()->mapDecorativeWidget(child);
+      child->setDecorativeWidgetBounds();
     else
       child->setBounds(cpos);
   }

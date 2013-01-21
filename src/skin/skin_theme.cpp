@@ -165,6 +165,12 @@ SkinTheme::SkinTheme()
   sheet_mapping["window_close_button_normal"] = PART_WINDOW_CLOSE_BUTTON_NORMAL;
   sheet_mapping["window_close_button_hot"] = PART_WINDOW_CLOSE_BUTTON_HOT;
   sheet_mapping["window_close_button_selected"] = PART_WINDOW_CLOSE_BUTTON_SELECTED;
+  sheet_mapping["window_play_button_normal"] = PART_WINDOW_PLAY_BUTTON_NORMAL;
+  sheet_mapping["window_play_button_hot"] = PART_WINDOW_PLAY_BUTTON_HOT;
+  sheet_mapping["window_play_button_selected"] = PART_WINDOW_PLAY_BUTTON_SELECTED;
+  sheet_mapping["window_stop_button_normal"] = PART_WINDOW_STOP_BUTTON_NORMAL;
+  sheet_mapping["window_stop_button_hot"] = PART_WINDOW_STOP_BUTTON_HOT;
+  sheet_mapping["window_stop_button_selected"] = PART_WINDOW_STOP_BUTTON_SELECTED;
   sheet_mapping["slider_full"] = PART_SLIDER_FULL_NW;
   sheet_mapping["slider_empty"] = PART_SLIDER_EMPTY_NW;
   sheet_mapping["slider_full_focused"] = PART_SLIDER_FULL_FOCUSED_NW;
@@ -392,6 +398,12 @@ void SkinTheme::reload_fonts()
 
   default_font = loadFont("UserFont", "skins/" + m_selected_skin + "/font.png");
   m_minifont = loadFont("UserMiniFont", "skins/" + m_selected_skin + "/minifont.png");
+}
+
+gfx::Size SkinTheme::get_part_size(int part_i) const
+{
+  BITMAP* bmp = get_part(part_i);
+  return gfx::Size(bmp->w, bmp->h);
 }
 
 void SkinTheme::onRegenerate()
@@ -787,7 +799,7 @@ void SkinTheme::getWindowMask(Widget* widget, Region& region)
   region = widget->getBounds();
 }
 
-void SkinTheme::mapDecorativeWidget(Widget* widget)
+void SkinTheme::setDecorativeWidgetBounds(Widget* widget)
 {
   if (widget->getId() == kThemeCloseButtonId) {
     Widget* window = widget->getParent();
@@ -797,8 +809,8 @@ void SkinTheme::mapDecorativeWidget(Widget* widget)
     rect->y2 = m_part[PART_WINDOW_CLOSE_BUTTON_NORMAL]->h;
 
     jrect_displace(rect,
-                   window->rc->x2 - 3 - jrect_w(rect),
-                   window->rc->y1 + 3);
+                   window->rc->x2 - 3*jguiscale() - jrect_w(rect),
+                   window->rc->y1 + 3*jguiscale());
 
     jwidget_set_rect(widget, rect);
     jrect_free(rect);

@@ -19,10 +19,13 @@
 #ifndef WIDGETS_MINI_EDITOR_VIEW_H_INCLUDED
 #define WIDGETS_MINI_EDITOR_VIEW_H_INCLUDED
 
+#include "ui/timer.h"
 #include "ui/window.h"
 #include "widgets/document_view.h"
 
 namespace widgets {
+
+  class MiniPlayButton;
 
   class MiniEditorWindow : public ui::Window
   {
@@ -39,10 +42,15 @@ namespace widgets {
     void onClose(ui::CloseEvent& ev) OVERRIDE;
 
   private:
+    void onPlayClicked();
+    void onPlaybackTick();
     void hideWindow();
+    void resetTimer();
 
     bool m_isEnabled;
     DocumentView* m_docView;
+    MiniPlayButton* m_playButton;
+    ui::Timer m_playTimer;
   };
 
 } // namespace widgets

@@ -43,7 +43,7 @@ namespace ui {
     virtual Cursor* getCursor(CursorType type) = 0;
     virtual void initWidget(Widget* widget) = 0;
     virtual void getWindowMask(ui::Widget* widget, gfx::Region& region) = 0;
-    virtual void mapDecorativeWidget(ui::Widget* widget) = 0;
+    virtual void setDecorativeWidgetBounds(ui::Widget* widget) = 0;
 
     virtual void paintDesktop(PaintEvent& ev) = 0;
     virtual void paintBox(PaintEvent& ev) = 0;

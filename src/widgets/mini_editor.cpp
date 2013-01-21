@@ -20,14 +20,17 @@
 
 #include "widgets/mini_editor.h"
 
+#include "base/bind.h"
 #include "gfx/rect.h"
 #include "ini_file.h"
 #include "modules/editors.h"
 #include "modules/gui.h"
+#include "skin/skin_button.h"
 #include "skin/skin_theme.h"
 #include "ui/base.h"
 #include "ui/button.h"
 #include "ui/close_event.h"
+#include "ui/message.h"
 #include "ui/rect.h"
 #include "ui/system.h"
 #include "widgets/editor/editor.h"
@@ -38,9 +41,78 @@ using namespace ui;
 
 namespace widgets {
 
+class MiniPlayButton : public SkinButton<Button>
+{
+public:
+  MiniPlayButton()
+    : SkinButton<Button>(PART_WINDOW_PLAY_BUTTON_NORMAL,
+                         PART_WINDOW_PLAY_BUTTON_HOT,
+                         PART_WINDOW_PLAY_BUTTON_SELECTED)
+    , m_isPlaying(false)
+  {
+    setup_bevels(this, 0, 0, 0, 0);
+    setDecorative(true);
+  }
+
+  bool isPlaying() { return m_isPlaying; }
+
+protected:
+  void onClick(Event& ev) OVERRIDE
+  {
+    SkinButton<Button>::onClick(ev);
+
+    m_isPlaying = !m_isPlaying;
+    if (m_isPlaying)
+      setParts(PART_WINDOW_STOP_BUTTON_NORMAL,
+               PART_WINDOW_STOP_BUTTON_HOT,
+               PART_WINDOW_STOP_BUTTON_SELECTED);
+    else
+      setParts(PART_WINDOW_PLAY_BUTTON_NORMAL,
+               PART_WINDOW_PLAY_BUTTON_HOT,
+               PART_WINDOW_PLAY_BUTTON_SELECTED);
+  }
+
+  void onSetDecorativeWidgetBounds() OVERRIDE
+  {
+    SkinTheme* theme = static_cast<SkinTheme*>(getTheme());
+    Widget* window = getParent();
+    JRect rect = jrect_new(0, 0, 0, 0);
+    gfx::Size playSize = theme->get_part_size(PART_WINDOW_PLAY_BUTTON_NORMAL);
+    gfx::Size closeSize = theme->get_part_size(PART_WINDOW_CLOSE_BUTTON_NORMAL);
+
+    rect->x2 = playSize.w;
+    rect->y2 = playSize.h;
+
+    jrect_displace(rect,
+                   window->rc->x2 - 3*jguiscale()
+                   - playSize.w - 1*jguiscale() - closeSize.w,
+                   window->rc->y1 + 3*jguiscale());
+
+    jwidget_set_rect(this, rect);
+    jrect_free(rect);
+  }
+
+  bool onProcessMessage(Message* msg) OVERRIDE
+  {
+    switch (msg->type) {
+
+      case JM_SETCURSOR:
+        jmouse_set_cursor(kArrowCursor);
+        return true;
+    }
+
+    return SkinButton<Button>::onProcessMessage(msg);
+  }
+
+private:
+  bool m_isPlaying;
+};
+
 MiniEditorWindow::MiniEditorWindow()
   : Window(false, "Mini-Editor")
   , m_docView(NULL)
+  , m_playButton(new MiniPlayButton())
+  , m_playTimer(10)
 {
   child_spacing = 0;
   setAutoRemap(false);
@@ -56,6 +128,11 @@ MiniEditorWindow::MiniEditorWindow()
   load_window_pos(this, "MiniEditor");
 
   m_isEnabled = get_config_bool("MiniEditor", "Enabled", true);
+
+  m_playButton->Click.connect(Bind<void>(&MiniEditorWindow::onPlayClicked, this));
+  addChild(m_playButton);
+
+  m_playTimer.Tick.connect(&MiniEditorWindow::onPlaybackTick, this);
 }
 
 MiniEditorWindow::~MiniEditorWindow()
@@ -88,6 +165,11 @@ void MiniEditorWindow::onClose(ui::CloseEvent& ev)
     delete m_docView;
     m_docView = NULL;
   }
+}
+
+void MiniEditorWindow::onPlayClicked()
+{
+  resetTimer();
 }
 
 void MiniEditorWindow::updateUsingEditor(Editor* editor)
@@ -139,6 +221,22 @@ void MiniEditorWindow::hideWindow()
 
   if (isVisible())
     closeWindow(NULL);
+}
+
+void MiniEditorWindow::resetTimer()
+{
+  if (m_playButton->isPlaying()) {
+    m_playTimer.start();
+  }
+  else {
+    m_playTimer.stop();
+  }
+}
+
+void MiniEditorWindow::onPlaybackTick()
+{
+  // TODO
+  invalidate();
 }
 
 } // namespace widgets

@@ -557,6 +557,11 @@ void Widget::saveLayout()
     (*it)->saveLayout();
 }
 
+void Widget::setDecorativeWidgetBounds()
+{
+  onSetDecorativeWidgetBounds();
+}
+
 /**********************************************************************/
 /* position and geometry */
 
@@ -1361,6 +1366,13 @@ void Widget::onInitTheme(InitThemeEvent& ev)
 
     if (!(flags & JI_INITIALIZED))
       flags |= JI_INITIALIZED;
+  }
+}
+
+void Widget::onSetDecorativeWidgetBounds()
+{
+  if (m_theme) {
+    m_theme->setDecorativeWidgetBounds(this);
   }
 }
 

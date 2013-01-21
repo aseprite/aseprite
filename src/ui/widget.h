@@ -235,6 +235,8 @@ namespace ui {
     void loadLayout();
     void saveLayout();
 
+    void setDecorativeWidgetBounds();
+
     // ===============================================================
     // POSITION & GEOMETRY
     // ===============================================================
@@ -327,6 +329,7 @@ namespace ui {
     virtual void onPaint(PaintEvent& ev);
     virtual void onBroadcastMouseMessage(WidgetsList& targets);
     virtual void onInitTheme(InitThemeEvent& ev);
+    virtual void onSetDecorativeWidgetBounds();
     virtual void onEnable();
     virtual void onDisable();
     virtual void onSelect();
