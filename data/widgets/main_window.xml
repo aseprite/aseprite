@@ -1,5 +1,5 @@
 <!-- ASEPRITE -->
-<!-- Copyright (C) 2001-2012 by David Capello -->
+<!-- Copyright (C) 2001-2013 by David Capello -->
 <gui>
   <box noborders="true" vertical="true" id="main_box">
     <box noborders="true" horizontal="true" id="menubar" />
