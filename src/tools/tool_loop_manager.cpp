@@ -143,8 +143,6 @@ void ToolLoopManager::movement(const Pointer& pointer)
 
 void ToolLoopManager::doLoopStep(bool last_step)
 {
-  static Region old_dirty_area;   // TODO Not thread safe
-
   Points points_to_interwine;
   if (!last_step)
     m_toolLoop->getController()->getPointsToInterwine(m_points, points_to_interwine);
@@ -186,8 +184,9 @@ void ToolLoopManager::doLoopStep(bool last_step)
   calculateDirtyArea(m_toolLoop, points_to_interwine, dirty_area);
 
   if (m_toolLoop->getTracePolicy() == TracePolicyLast) {
-    dirty_area.createUnion(dirty_area, old_dirty_area);
-    old_dirty_area = dirty_area;
+    Region prev_dirty_area = dirty_area;
+    dirty_area.createUnion(dirty_area, m_oldDirtyArea);
+    m_oldDirtyArea = prev_dirty_area;
   }
 
   if (!dirty_area.isEmpty())

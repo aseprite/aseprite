@@ -22,6 +22,7 @@
 #include <vector>
 
 #include "gfx/point.h"
+#include "gfx/region.h"
 
 namespace gfx { class Region; }
 
@@ -109,6 +110,7 @@ private:
   ToolLoop* m_toolLoop;
   Points m_points;
   gfx::Point m_oldPoint;
+  gfx::Region m_oldDirtyArea;
 };
 
 } // namespace tools
