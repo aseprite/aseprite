@@ -79,6 +79,9 @@ void UIContext::setActiveView(widgets::DocumentView* docView)
   setActiveDocument(docView ? docView->getDocument(): NULL);
 
   App::instance()->getMainWindow()->getMiniEditor()->updateUsingEditor(current_editor);
+
+  // Restore the palette of the selected document.
+  app_refresh_screen(docView ? docView->getDocument(): NULL);
 }
 
 size_t UIContext::countViewsOf(Document* document) const
