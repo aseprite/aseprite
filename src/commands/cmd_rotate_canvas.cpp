@@ -21,7 +21,8 @@
 #include "app.h"
 #include "commands/command.h"
 #include "commands/params.h"
-#include "document_wrappers.h"
+#include "context_access.h"
+#include "document_api.h"
 #include "job.h"
 #include "modules/gui.h"
 #include "raster/cel.h"
@@ -54,16 +55,18 @@ protected:
 
 class RotateCanvasJob : public Job
 {
-  DocumentWriter m_document;
+  ContextWriter m_writer;
+  Document* m_document;
   Sprite* m_sprite;
   int m_angle;
 
 public:
 
-  RotateCanvasJob(const DocumentReader& document, int angle)
+  RotateCanvasJob(const ContextReader& reader, int angle)
     : Job("Rotate Canvas")
-    , m_document(document)
-    , m_sprite(m_document->getSprite())
+    , m_writer(reader)
+    , m_document(m_writer.document())
+    , m_sprite(m_writer.sprite())
   {
     m_angle = angle;
   }
@@ -75,7 +78,8 @@ protected:
    */
   virtual void onJob()
   {
-    UndoTransaction undoTransaction(m_document, "Rotate Canvas");
+    UndoTransaction undoTransaction(m_writer.context(), "Rotate Canvas");
+    DocumentApi api = m_document->getApi();
 
     // get all sprite cels
     CelList cels;
@@ -89,15 +93,15 @@ protected:
       // change it location
       switch (m_angle) {
         case 180:
-          undoTransaction.setCelPosition(cel,
-                                         m_sprite->getWidth() - cel->getX() - image->w,
-                                         m_sprite->getHeight() - cel->getY() - image->h);
+          api.setCelPosition(m_sprite, cel,
+                             m_sprite->getWidth() - cel->getX() - image->w,
+                             m_sprite->getHeight() - cel->getY() - image->h);
           break;
         case 90:
-          undoTransaction.setCelPosition(cel, m_sprite->getHeight() - cel->getY() - image->h, cel->getX());
+          api.setCelPosition(m_sprite, cel, m_sprite->getHeight() - cel->getY() - image->h, cel->getX());
           break;
         case -90:
-          undoTransaction.setCelPosition(cel, cel->getY(), m_sprite->getWidth() - cel->getX() - image->w);
+          api.setCelPosition(m_sprite, cel, cel->getY(), m_sprite->getWidth() - cel->getX() - image->w);
           break;
       }
     }
@@ -114,7 +118,7 @@ protected:
                                        m_angle == 180 ? image->h: image->w);
       image_rotate(image, new_image, m_angle);
 
-      undoTransaction.replaceStockImage(i, new_image);
+      api.replaceStockImage(m_sprite, i, new_image);
 
       jobProgress((float)i / m_sprite->getStock()->size());
 
@@ -152,7 +156,7 @@ protected:
       image_rotate(origMask->getBitmap(), new_mask->getBitmap(), m_angle);
 
       // Copy new mask
-      undoTransaction.copyToCurrentMask(new_mask);
+      api.copyToCurrentMask(new_mask);
 
       // Regenerate mask
       m_document->resetTransformation();
@@ -161,7 +165,7 @@ protected:
 
     // change the sprite's size
     if (m_angle != 180)
-      undoTransaction.setSpriteSize(m_sprite->getHeight(), m_sprite->getWidth());
+      api.setSpriteSize(m_sprite, m_sprite->getHeight(), m_sprite->getWidth());
 
     // commit changes
     undoTransaction.commit();
@@ -192,13 +196,13 @@ bool RotateCanvasCommand::onEnabled(Context* context)
 
 void RotateCanvasCommand::onExecute(Context* context)
 {
-  ActiveDocumentReader document(context);
+  ContextReader reader(context);
   {
-    RotateCanvasJob job(document, m_angle);
+    RotateCanvasJob job(reader, m_angle);
     job.startJob();
   }
-  document->generateMaskBoundaries();
-  update_screen_for_document(document);
+  reader.document()->generateMaskBoundaries();
+  update_screen_for_document(reader.document());
 }
 
 //////////////////////////////////////////////////////////////////////

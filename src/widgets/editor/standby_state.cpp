@@ -23,6 +23,7 @@
 #include "app.h"
 #include "commands/commands.h"
 #include "commands/params.h"
+#include "document_location.h"
 #include "gfx/rect.h"
 #include "ini_file.h"
 #include "raster/layer.h"
@@ -140,8 +141,11 @@ bool StandbyState::onMouseDown(Editor* editor, Message* msg)
   UIContext* context = UIContext::instance();
   tools::Tool* current_tool = editor->getCurrentEditorTool();
   tools::Ink* clickedInk = current_tool->getInk(msg->mouse.right ? 1: 0);
-  Sprite* sprite = editor->getSprite();
-  Document* document = editor->getDocument();
+  DocumentLocation location;
+  editor->getDocumentLocation(&location);
+  Document* document = location.document();
+  Sprite* sprite = location.sprite();
+  Layer* layer = location.layer();
 
   // When an editor is clicked the current view is changed.
   context->setActiveView(editor->getDocumentView());
@@ -152,15 +156,15 @@ bool StandbyState::onMouseDown(Editor* editor, Message* msg)
 
   // Move cel X,Y coordinates
   if (clickedInk->isCelMovement()) {
-    if ((sprite->getCurrentLayer()) &&
-        (sprite->getCurrentLayer()->getType() == GFXOBJ_LAYER_IMAGE)) {
+    if ((layer) &&
+        (layer->getType() == GFXOBJ_LAYER_IMAGE)) {
       // TODO you can move the `Background' with tiled mode
-      if (sprite->getCurrentLayer()->isBackground()) {
+      if (layer->isBackground()) {
         Alert::show(PACKAGE
                     "<<You can't move the `Background' layer."
                     "||&Close");
       }
-      else if (!sprite->getCurrentLayer()->isMoveable()) {
+      else if (!layer->isMoveable()) {
         Alert::show(PACKAGE "<<The layer movement is locked.||&Close");
       }
       else {
@@ -183,9 +187,9 @@ bool StandbyState::onMouseDown(Editor* editor, Message* msg)
 
     if (handle != NoHandle) {
       int x, y, opacity;
-      Image* image = sprite->getCurrentImage(&x, &y, &opacity);
+      Image* image = location.image(&x, &y, &opacity);
       if (image) {
-        if (!sprite->getCurrentLayer()->isWritable()) {
+        if (!layer->isWritable()) {
           Alert::show(PACKAGE "<<The layer is locked.||&Close");
           return true;
         }
@@ -202,9 +206,9 @@ bool StandbyState::onMouseDown(Editor* editor, Message* msg)
       current_tool->getInk(0)->isSelection() &&
       msg->mouse.left) {
     int x, y, opacity;
-    Image* image = sprite->getCurrentImage(&x, &y, &opacity);
+    Image* image = location.image(&x, &y, &opacity);
     if (image) {
-      if (!sprite->getCurrentLayer()->isWritable()) {
+      if (!layer->isWritable()) {
         Alert::show(PACKAGE "<<The layer is locked.||&Close");
         return true;
       }
@@ -228,7 +232,7 @@ bool StandbyState::onMouseDown(Editor* editor, Message* msg)
   }
 
   // Start the Tool-Loop
-  if (sprite->getCurrentLayer()) {
+  if (layer) {
     tools::ToolLoop* toolLoop = create_tool_loop(editor, context, msg);
     if (toolLoop)
       editor->setState(EditorStatePtr(new DrawingState(toolLoop, editor, msg)));
@@ -449,7 +453,7 @@ bool StandbyState::onUpdateStatusBar(Editor* editor)
   // For eye-dropper
   else if (current_tool->getInk(0)->isEyedropper()) {
     PixelFormat format = sprite->getPixelFormat();
-    uint32_t pixel = sprite->getPixel(x, y);
+    uint32_t pixel = sprite->getPixel(x, y, editor->getFrame());
     app::Color color = app::Color::fromImage(format, pixel);
 
     int alpha = 255;
@@ -464,14 +468,16 @@ bool StandbyState::onUpdateStatusBar(Editor* editor)
     StatusBar::instance()->showColor(0, buf, color, alpha);
   }
   else {
-    Mask* mask = editor->getDocument()->getMask();
+    Mask* mask =
+      (editor->getDocument()->isMaskVisible() ? 
+       editor->getDocument()->getMask(): NULL);
 
     StatusBar::instance()->setStatusText
       (0, "Pos %d %d, Size %d %d, Frame %d",
        x, y,
-       ((mask && mask->getBitmap())? mask->getBounds().w: sprite->getWidth()),
-       ((mask && mask->getBitmap())? mask->getBounds().h: sprite->getHeight()),
-       sprite->getCurrentFrame()+1);
+       (mask ? mask->getBounds().w: sprite->getWidth()),
+       (mask ? mask->getBounds().h: sprite->getHeight()),
+       editor->getFrame()+1);
   }
 
   return true;
@@ -486,13 +492,17 @@ void StandbyState::transformSelection(Editor* editor, Message* msg, HandleType h
 {
   EditorCustomizationDelegate* customization = editor->getCustomizationDelegate();
   Document* document = editor->getDocument();
-  UniquePtr<Image> tmpImage(NewImageFromMask(document));
+  UniquePtr<Image> tmpImage(NewImageFromMask(editor->getDocumentLocation()));
   int x = document->getMask()->getBounds().x;
   int y = document->getMask()->getBounds().y;
   int opacity = 255;
   Sprite* sprite = editor->getSprite();
-  PixelsMovement* pixelsMovement = new PixelsMovement(document, sprite, tmpImage, x, y, opacity,
-                                                      "Transformation");
+  Layer* layer = editor->getLayer();
+  PixelsMovement* pixelsMovement =
+    new PixelsMovement(UIContext::instance(),
+                       document, sprite, layer,
+                       tmpImage, x, y, opacity,
+                       "Transformation");
 
   // If the Ctrl key is pressed start dragging a copy of the selection
   if (customization && customization->isCopySelectionKeyPressed())

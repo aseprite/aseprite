@@ -23,6 +23,7 @@
 
 #include "app.h"
 #include "app/color.h"
+#include "document_location.h"
 #include "ini_file.h"
 #include "modules/editors.h"
 #include "modules/gui.h"
@@ -35,16 +36,16 @@
 #include "widgets/editor/editor.h"
 #include "widgets/status_bar.h"
 
-Image* NewImageFromMask(const Document* srcDocument)
+Image* NewImageFromMask(const DocumentLocation& location)
 {
-  const Sprite* srcSprite = srcDocument->getSprite();
-  const Mask* srcMask = srcDocument->getMask();
+  const Sprite* srcSprite = location.sprite();
+  const Mask* srcMask = location.document()->getMask();
   const Image* srcBitmap = srcMask->getBitmap();
   const gfx::Rect& srcBounds = srcMask->getBounds();
   const uint8_t* address;
   int x, y, u, v, getx, gety;
   Image *dst;
-  const Image *src = srcSprite->getCurrentImage(&x, &y);
+  const Image *src = location.image(&x, &y);
   div_t d;
 
   ASSERT(srcSprite);

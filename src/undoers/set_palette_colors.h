@@ -33,7 +33,7 @@ namespace undoers {
 class SetPaletteColors : public UndoerBase
 {
 public:
-  SetPaletteColors(undo::ObjectsContainer* objects, Sprite* sprite, Palette* palette, int from, int to);
+  SetPaletteColors(undo::ObjectsContainer* objects, Sprite* sprite, Palette* palette, FrameNumber frame, int from, int to);
 
   void dispose() OVERRIDE;
   size_t getMemSize() const OVERRIDE { return sizeof(*this) + getStreamSize(); }

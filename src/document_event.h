@@ -31,24 +31,19 @@ class Sprite;
 
 class DocumentEvent {
 public:
-  DocumentEvent(Document* document,
-                Sprite* sprite = NULL,
-                Layer* layer = NULL,
-                Cel* cel = NULL,
-                Image* image = NULL,
-                int imageIndex = -1,
-                FrameNumber frame = FrameNumber(),
-                const gfx::Region& region = gfx::Region())
+  DocumentEvent(Document* document)
     : m_document(document)
-    , m_sprite(sprite)
-    , m_layer(layer)
-    , m_cel(cel)
-    , m_image(image)
-    , m_imageIndex(imageIndex)
-    , m_frame(frame)
-    , m_region(region) {
+    , m_sprite(NULL)
+    , m_layer(NULL)
+    , m_cel(NULL)
+    , m_image(NULL)
+    , m_imageIndex(-1)
+    , m_frame(0)
+    , m_targetLayer(NULL)
+    , m_targetFrame(0) {
   }
 
+  // Source of the event.
   Document* document() const { return m_document; }
   Sprite* sprite() const { return m_sprite; }
   Layer* layer() const { return m_layer; }
@@ -57,6 +52,21 @@ public:
   int imageIndex() const { return m_imageIndex; }
   FrameNumber frame() const { return m_frame; }
   const gfx::Region& region() const { return m_region; }
+
+  void sprite(Sprite* sprite) { m_sprite = sprite; }
+  void layer(Layer* layer) { m_layer = layer; }
+  void cel(Cel* cel) { m_cel = cel; }
+  void image(Image* image) { m_image = image; }
+  void imageIndex(int imageIndex) { m_imageIndex = imageIndex; }
+  void frame(FrameNumber frame) { m_frame = frame; }
+  void region(const gfx::Region& rgn) { m_region = rgn; }
+
+  // Destination of the operation.
+  Layer* targetLayer() const { return m_targetLayer; }
+  FrameNumber targetFrame() const { return m_targetFrame; }
+
+  void targetLayer(Layer* layer) { m_targetLayer = layer; }
+  void targetFrame(FrameNumber frame) { m_targetFrame = frame; }
 
 private:
   Document* m_document;
@@ -67,6 +77,11 @@ private:
   int m_imageIndex;
   FrameNumber m_frame;
   gfx::Region m_region;
+
+  // For copy/move commands, the m_layer/m_frame are source of the
+  // operation, and these are the destination of the operation.
+  Layer* m_targetLayer;
+  FrameNumber m_targetFrame;
 };
 
 #endif

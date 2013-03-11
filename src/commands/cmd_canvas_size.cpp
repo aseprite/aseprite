@@ -24,7 +24,8 @@
 #include "base/bind.h"
 #include "base/unique_ptr.h"
 #include "commands/command.h"
-#include "document_wrappers.h"
+#include "context_access.h"
+#include "document_api.h"
 #include "modules/editors.h"
 #include "modules/gui.h"
 #include "raster/image.h"
@@ -169,8 +170,8 @@ bool CanvasSizeCommand::onEnabled(Context* context)
 
 void CanvasSizeCommand::onExecute(Context* context)
 {
-  const ActiveDocumentReader document(context);
-  const Sprite* sprite(document->getSprite());
+  const ContextReader reader(context);
+  const Sprite* sprite(reader.sprite());
 
   if (context->isUiAvailable()) {
     // load the window widget
@@ -204,16 +205,19 @@ void CanvasSizeCommand::onExecute(Context* context)
   if (y2 <= y1) y2 = y1+1;
 
   {
-    DocumentWriter documentWriter(document);
-    UndoTransaction undoTransaction(documentWriter, "Canvas Size");
+    ContextWriter writer(reader);
+    Document* document = writer.document();
+    Sprite* sprite = writer.sprite();
+    UndoTransaction undoTransaction(writer.context(), "Canvas Size");
+    DocumentApi api = document->getApi();
     int bgcolor = color_utils::color_for_image(context->getSettings()->getBgColor(), sprite->getPixelFormat());
     bgcolor = color_utils::fixup_color_for_background(sprite->getPixelFormat(), bgcolor);
 
-    undoTransaction.cropSprite(gfx::Rect(x1, y1, x2-x1, y2-y1), bgcolor);
+    api.cropSprite(sprite, gfx::Rect(x1, y1, x2-x1, y2-y1), bgcolor);
     undoTransaction.commit();
 
-    documentWriter->generateMaskBoundaries();
-    update_screen_for_document(documentWriter);
+    document->generateMaskBoundaries();
+    update_screen_for_document(document);
   }
 }
 

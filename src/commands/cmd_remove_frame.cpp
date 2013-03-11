@@ -19,7 +19,8 @@
 #include "config.h"
 
 #include "commands/command.h"
-#include "document_wrappers.h"
+#include "context_access.h"
+#include "document_api.h"
 #include "modules/gui.h"
 #include "raster/sprite.h"
 #include "ui/gui.h"
@@ -48,8 +49,8 @@ RemoveFrameCommand::RemoveFrameCommand()
 
 bool RemoveFrameCommand::onEnabled(Context* context)
 {
-  ActiveDocumentWriter document(context);
-  Sprite* sprite(document ? document->getSprite(): NULL);
+  ContextWriter writer(context);
+  Sprite* sprite(writer.sprite());
   return
     sprite &&
     sprite->getTotalFrames() > 1;
@@ -57,11 +58,12 @@ bool RemoveFrameCommand::onEnabled(Context* context)
 
 void RemoveFrameCommand::onExecute(Context* context)
 {
-  ActiveDocumentWriter document(context);
-  const Sprite* sprite(document->getSprite());
+  ContextWriter writer(context);
+  Document* document(writer.document());
+  Sprite* sprite(writer.sprite());
   {
-    UndoTransaction undoTransaction(document, "Remove Frame");
-    undoTransaction.removeFrame(sprite->getCurrentFrame());
+    UndoTransaction undoTransaction(writer.context(), "Remove Frame");
+    document->getApi().removeFrame(sprite, writer.frame());
     undoTransaction.commit();
   }
   update_screen_for_document(document);

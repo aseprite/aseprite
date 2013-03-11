@@ -18,33 +18,45 @@
 
 #include "config.h"
 
-#include "undoers/set_current_layer.h"
+#include "undoers/add_frame.h"
 
+#include "document.h"
+#include "document_event.h"
+#include "document_observer.h"
 #include "raster/sprite.h"
 #include "undo/objects_container.h"
 #include "undo/undoers_collector.h"
+#include "undoers/remove_frame.h"
 
 using namespace undo;
 using namespace undoers;
 
-SetCurrentLayer::SetCurrentLayer(ObjectsContainer* objects, Sprite* sprite)
-  : m_spriteId(objects->addObject(sprite))
-  , m_layerId(sprite->getCurrentLayer() ? objects->addObject(sprite->getCurrentLayer()): 0)
+AddFrame::AddFrame(ObjectsContainer* objects, Document* document, Sprite* sprite, FrameNumber frame)
+  : m_documentId(objects->addObject(document))
+  , m_spriteId(objects->addObject(sprite))
+  , m_frame(frame)
 {
 }
 
-void SetCurrentLayer::dispose()
+void AddFrame::dispose()
 {
   delete this;
 }
 
-void SetCurrentLayer::revert(ObjectsContainer* objects, UndoersCollector* redoers)
+void AddFrame::revert(ObjectsContainer* objects, UndoersCollector* redoers)
 {
+  Document* document = objects->getObjectT<Document>(m_documentId);
   Sprite* sprite = objects->getObjectT<Sprite>(m_spriteId);
-  Layer* layer = (m_layerId ? objects->getObjectT<Layer>(m_layerId): NULL);
 
-  // Push another SetCurrentLayer as redoer
-  redoers->pushUndoer(new SetCurrentLayer(objects, sprite));
+  // TODO Merge this code with DocumentApi::removeFrame
 
-  sprite->setCurrentLayer(layer);
+  redoers->pushUndoer(new RemoveFrame(objects, document, sprite, m_frame));
+
+  sprite->removeFrame(m_frame);
+
+  // Notify observers.
+  DocumentEvent ev(document);
+  ev.sprite(sprite);
+  ev.frame(m_frame);
+  document->notifyObservers<DocumentEvent&>(&DocumentObserver::onRemoveFrame, ev);
 }

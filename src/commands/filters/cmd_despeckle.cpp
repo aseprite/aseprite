@@ -24,7 +24,7 @@
 #include "commands/command.h"
 #include "commands/filters/filter_manager_impl.h"
 #include "commands/filters/filter_window.h"
-#include "document_wrappers.h"
+#include "context.h"
 #include "filters/median_filter.h"
 #include "ini_file.h"
 #include "raster/mask.h"
@@ -121,7 +121,7 @@ void DespeckleCommand::onExecute(Context* context)
   filter.setSize(get_config_int(ConfigSection, "Width", 3),
                  get_config_int(ConfigSection, "Height", 3));
 
-  FilterManagerImpl filterMgr(context->getActiveDocument(), &filter);
+  FilterManagerImpl filterMgr(context, &filter);
   filterMgr.setTarget(TARGET_RED_CHANNEL |
                       TARGET_GREEN_CHANNEL |
                       TARGET_BLUE_CHANNEL |

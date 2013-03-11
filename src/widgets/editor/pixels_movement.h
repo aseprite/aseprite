@@ -19,7 +19,7 @@
 #ifndef WIDGETS_EDITOR_PIXELS_MOVEMENT_H_INCLUDED
 #define WIDGETS_EDITOR_PIXELS_MOVEMENT_H_INCLUDED
 
-#include "document_wrappers.h"
+#include "context_access.h"
 #include "gfx/size.h"
 #include "raster/algorithm/flip_type.h"
 #include "undo_transaction.h"
@@ -47,7 +47,9 @@ public:
 
   // The "moveThis" image specifies the chunk of pixels to be moved.
   // The "x" and "y" parameters specify the initial position of the image.
-  PixelsMovement(Document* document, Sprite* sprite, const Image* moveThis, int x, int y, int opacity,
+  PixelsMovement(Context* context,
+                 Document* document, Sprite* sprite, Layer* layer,
+                 const Image* moveThis, int x, int y, int opacity,
                  const char* operationName);
   ~PixelsMovement();
 
@@ -90,11 +92,13 @@ public:
   const gfx::Transformation& getTransformation() const { return m_currentData; }
 
 private:
-  void redrawExtraImage(DocumentWriter& documentWriter);
+  void redrawExtraImage();
   void redrawCurrentMask();
 
-  const DocumentReader m_documentReader;
+  const ContextReader m_reader;
+  Document* m_document;
   Sprite* m_sprite;
+  Layer* m_layer;
   UndoTransaction m_undoTransaction;
   bool m_firstDrop;
   bool m_isDragging;

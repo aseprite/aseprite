@@ -20,6 +20,8 @@
 
 #include "undoers/add_layer.h"
 
+#include "document.h"
+#include "document_api.h"
 #include "raster/layer.h"
 #include "undo/objects_container.h"
 #include "undo/undoers_collector.h"
@@ -28,8 +30,8 @@
 using namespace undo;
 using namespace undoers;
 
-AddLayer::AddLayer(ObjectsContainer* objects, Layer* folder, Layer* layer)
-  : m_folderId(objects->addObject(folder))
+AddLayer::AddLayer(ObjectsContainer* objects, Document* document, Layer* layer)
+  : m_documentId(objects->addObject(document))
   , m_layerId(objects->addObject(layer))
 {
 }
@@ -41,11 +43,8 @@ void AddLayer::dispose()
 
 void AddLayer::revert(ObjectsContainer* objects, UndoersCollector* redoers)
 {
-  LayerFolder* folder = objects->getObjectT<LayerFolder>(m_folderId);
+  Document* document = objects->getObjectT<Document>(m_documentId);
   Layer* layer = objects->getObjectT<Layer>(m_layerId);
 
-  redoers->pushUndoer(new RemoveLayer(objects, layer));
-
-  folder->removeLayer(layer);
-  delete layer;
+  document->getApi(redoers).removeLayer(layer);
 }

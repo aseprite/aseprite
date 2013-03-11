@@ -25,7 +25,7 @@
 #include "commands/command.h"
 #include "commands/commands.h"
 #include "console.h"
-#include "document_wrappers.h"
+#include "context_access.h"
 #include "gfx/size.h"
 #include "modules/editors.h"
 #include "modules/gfx.h"
@@ -509,7 +509,8 @@ void ConfigureTools::onSetGridClick()
 {
   try {
     // TODO use the same context as in ConfigureTools::onExecute
-    const ActiveDocumentReader document(UIContext::instance());
+    const ContextReader reader(UIContext::instance());
+    const Document* document = reader.document();
 
     if (document && document->isMaskVisible()) {
       const Mask* mask(document->getMask());

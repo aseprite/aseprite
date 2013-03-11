@@ -77,8 +77,6 @@ public:
 
   LayerFolder* getFolder() const;
   LayerImage* getBackgroundLayer() const;
-  Layer* getCurrentLayer() const;
-  void setCurrentLayer(Layer* layer);
 
   LayerIndex countLayers() const;
 
@@ -98,9 +96,6 @@ public:
 
   void deletePalette(Palette* pal);
 
-  Palette* getCurrentPalette() const;
-
-  RgbMap* getRgbMap();
   RgbMap* getRgbMap(FrameNumber frame);
 
   ////////////////////////////////////////
@@ -109,7 +104,8 @@ public:
   FrameNumber getTotalFrames() const { return m_frames; }
   FrameNumber getLastFrame() const { return m_frames.previous(); }
 
-  // Changes the quantity of frames
+  void addFrame(FrameNumber newFrame);
+  void removeFrame(FrameNumber newFrame);
   void setTotalFrames(FrameNumber frames);
 
   int getFrameDuration(FrameNumber frame) const;
@@ -118,21 +114,10 @@ public:
   // Sets a constant frame-rate.
   void setDurationForAllFrames(int msecs);
 
-  FrameNumber getCurrentFrame() const { return m_frame; }
-  void setCurrentFrame(FrameNumber frame);
-
-  ////////////////////////////////////////
-  // Position
-
-  SpritePosition getCurrentPosition() const;
-  void setCurrentPosition(const SpritePosition& spritePosition);
-
   ////////////////////////////////////////
   // Images
 
   Stock* getStock() const;
-
-  Image* getCurrentImage(int* x = NULL, int* y = NULL, int* opacity = NULL) const;
 
   void getCels(CelList& cels);
 
@@ -142,12 +127,12 @@ public:
   // drawing the sprite, this function clears (with the sprite's
   // background color) the rectangle area that will occupy the drawn
   // sprite.
-  void render(Image* image, int x, int y) const;
+  void render(Image* image, int x, int y, FrameNumber frame) const;
 
   // Gets a pixel from the sprite in the specified position. If in the
   // specified coordinates there're background this routine will
   // return the 0 color (the mask-color).
-  int getPixel(int x, int y) const;
+  int getPixel(int x, int y, FrameNumber frame) const;
 
 private:
   Sprite* m_self;                        // pointer to the Sprite
@@ -156,11 +141,9 @@ private:
   int m_height;                          // image height (in pixels)
   FrameNumber m_frames;                  // how many frames has this sprite
   std::vector<int> m_frlens;             // duration per frame
-  FrameNumber m_frame;                   // current frame, range [0,frames)
   PalettesList m_palettes;               // list of palettes
   Stock* m_stock;                        // stock to get images
   LayerFolder* m_folder;                 // main folder of layers
-  Layer* m_layer;                        // current layer
 
   // Current rgb map
   RgbMap* m_rgbMap;

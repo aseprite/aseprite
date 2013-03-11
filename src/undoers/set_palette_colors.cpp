@@ -31,9 +31,9 @@ using namespace undo;
 using namespace undoers;
 using namespace base::serialization::little_endian;
 
-SetPaletteColors::SetPaletteColors(ObjectsContainer* objects, Sprite* sprite, Palette* palette, int from, int to)
+SetPaletteColors::SetPaletteColors(ObjectsContainer* objects, Sprite* sprite, Palette* palette, FrameNumber frame, int from, int to)
   : m_spriteId(objects->addObject(sprite))
-  , m_frame(sprite->getCurrentFrame())
+  , m_frame(frame)
   , m_from(from)
   , m_to(to)
 {
@@ -56,7 +56,7 @@ void SetPaletteColors::revert(ObjectsContainer* objects, UndoersCollector* redoe
     throw UndoException("Palette not found when restoring colors");
 
   // Push another SetPaletteColors as redoer
-  redoers->pushUndoer(new SetPaletteColors(objects, sprite, palette, m_from, m_to));
+  redoers->pushUndoer(new SetPaletteColors(objects, sprite, palette, m_frame, m_from, m_to));
 
   // Read palette color entries
   for (int i=m_from; i<=m_to; ++i) {

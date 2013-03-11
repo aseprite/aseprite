@@ -76,12 +76,24 @@ void UIContext::setActiveView(widgets::DocumentView* docView)
   if (current_editor)
     current_editor->requestFocus();
 
-  setActiveDocument(docView ? docView->getDocument(): NULL);
-
   App::instance()->getMainWindow()->getMiniEditor()->updateUsingEditor(current_editor);
 
+  // Change the image-type of color bar.
+  ColorBar::instance()->setPixelFormat(app_get_current_pixel_format());
+
   // Restore the palette of the selected document.
-  app_refresh_screen(docView ? docView->getDocument(): NULL);
+  app_refresh_screen();
+
+  // Change the main frame title.
+  base::string defaultTitle = PACKAGE " v" VERSION;
+  base::string title;
+  if (m_activeView) {
+    // Prepend the document's filename.
+    title += base::get_file_name(m_activeView->getDocument()->getFilename());
+    title += " - ";
+  }
+  title += defaultTitle;
+  set_window_title(title.c_str());
 }
 
 size_t UIContext::countViewsOf(Document* document) const
@@ -128,6 +140,9 @@ void UIContext::onRemoveDocument(Document* document)
 {
   Context::onRemoveDocument(document);
 
+  DocumentView* newActiveView = NULL;
+  bool activeViewChanged = false;
+
   // Remove all views of this document
   for (DocumentViews::iterator it=m_allViews.begin(); it != m_allViews.end(); ) {
     DocumentView* view = *it;
@@ -136,9 +151,16 @@ void UIContext::onRemoveDocument(Document* document)
       App::instance()->getMainWindow()->getTabsBar()->removeTab(view);
       App::instance()->getMainWindow()->getWorkspace()->removeView(view);
 
-      // We cannot point as "active view" this view that we're destroying.
-      if (view == m_activeView)
+      // We cannot point as "active view" this view that we're
+      // destroying.  In this case we go to the next view (or the
+      // previous one if we are at the end).
+      if (view == m_activeView ||
+          view == newActiveView) {
         m_activeView = NULL;
+        newActiveView = ((it+1) != m_allViews.end() ? *(it+1):
+                         (it != m_allViews.begin() ? *(it-1): NULL));
+        activeViewChanged = true;
+      }
 
       delete view;
       it = m_allViews.erase(it);
@@ -147,39 +169,16 @@ void UIContext::onRemoveDocument(Document* document)
       ++it;
   }
 
+  // Select the next view as current view.
+  if (activeViewChanged)
+    setActiveView(newActiveView);
+
   // Rebuild the tabs
   app_rebuild_documents_tabs();
 }
 
-void UIContext::onSetActiveDocument(Document* document)
+void UIContext::onGetActiveLocation(DocumentLocation* location) const
 {
-  Context::onSetActiveDocument(document);
-
-  if (!document)
-    setActiveView(NULL);
-
-  // Select the first view with the given document.
-  for (DocumentViews::iterator it=m_allViews.begin(), end=m_allViews.end();
-       it != end; ++it) {
-    DocumentView* view = *it;
-
-    if (view->getDocument() == document) {
-      setActiveView(view);
-      break;
-    }
-  }
-
-  // Change the image-type of color bar.
-  ColorBar::instance()->setPixelFormat(app_get_current_pixel_format());
-
-  // Change the main frame title.
-  base::string defaultTitle = PACKAGE " v" VERSION;
-  base::string title;
-  if (document) {
-    // Prepend the document's filename.
-    title += base::get_file_name(document->getFilename());
-    title += " - ";
-  }
-  title += defaultTitle;
-  set_window_title(title.c_str());
+  if (m_activeView)
+    m_activeView->getDocumentLocation(location);
 }

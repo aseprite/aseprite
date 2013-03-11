@@ -146,6 +146,9 @@ public:
   void removeLayer(Layer* layer);
   void stackLayer(Layer* layer, Layer* after);
 
+  Layer* getFirstLayer() { return (m_layers.empty() ? NULL: m_layers.front()); }
+  Layer* getLastLayer() { return (m_layers.empty() ? NULL: m_layers.back()); }
+
   void getCels(CelList& cels);
 
 private:

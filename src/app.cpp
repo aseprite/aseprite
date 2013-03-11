@@ -31,6 +31,7 @@
 #include "commands/commands.h"
 #include "commands/params.h"
 #include "console.h"
+#include "document_location.h"
 #include "document_observer.h"
 #include "drop_files.h"
 #include "file/file.h"
@@ -189,7 +190,6 @@ int App::run()
         // Mount and select the sprite
         UIContext* context = UIContext::instance();
         context->addDocument(document);
-        context->setActiveDocument(document);
 
         if (isGui()) {
           // Recent file
@@ -283,15 +283,18 @@ RecentFiles* App::getRecentFiles() const
   return &m_modules->m_recent_files;
 }
 
-/**
- * Updates palette and redraw the screen.
- */
-void app_refresh_screen(const Document* document)
+// Updates palette and redraw the screen.
+void app_refresh_screen()
 {
   ASSERT(screen != NULL);
 
-  if (document && document->getSprite())
-    set_current_palette(document->getSprite()->getCurrentPalette(), false);
+  Context* context = UIContext::instance();
+  ASSERT(context != NULL);
+
+  DocumentLocation location = context->getActiveLocation();
+
+  if (Palette* pal = location.palette())
+    set_current_palette(pal, false);
   else
     set_current_palette(NULL, false);
 

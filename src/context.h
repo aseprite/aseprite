@@ -31,6 +31,7 @@
 
 class Command;
 class Document;
+class DocumentLocation;
 class Params;
 
 class CommandPreconditionException : public base::Exception
@@ -53,8 +54,6 @@ public:
   ISettings* getSettings() { return m_settings; }
 
   const Documents& getDocuments() const;
-  Document* getFirstDocument() const;
-  Document* getNextDocument(Document* document) const;
 
   bool checkFlags(uint32_t flags) const { return m_flags.check(flags); }
   void updateFlags() { m_flags.update(this); }
@@ -65,7 +64,7 @@ public:
   void sendDocumentToTop(Document* document);
 
   Document* getActiveDocument() const;
-  void setActiveDocument(Document* document);
+  DocumentLocation getActiveLocation() const;
 
   virtual void executeCommand(Command* command, Params* params = NULL);
 
@@ -79,7 +78,7 @@ protected:
 
   virtual void onAddDocument(Document* document);
   virtual void onRemoveDocument(Document* document);
-  virtual void onSetActiveDocument(Document* document);
+  virtual void onGetActiveLocation(DocumentLocation* location) const = 0;
 
 private:
 

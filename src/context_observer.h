@@ -28,8 +28,6 @@ class ContextObserver
 {
 public:
   virtual ~ContextObserver() { }
-  virtual void onActiveDocumentBeforeChange(Context* context) { }
-  virtual void onActiveDocumentAfterChange(Context* context) { }
   virtual void onCommandBeforeExecution(Context* context) { }
   virtual void onCommandAfterExecution(Context* context) { }
   virtual void onAddDocument(Context* context, Document* document) { }

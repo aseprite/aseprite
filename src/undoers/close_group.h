@@ -34,7 +34,8 @@ public:
   CloseGroup(undo::ObjectsContainer* objects,
              const char* label,
              undo::Modification modification,
-             Sprite* sprite);
+             Sprite* sprite,
+             const SpritePosition& pos);
 
   void dispose() OVERRIDE;
   size_t getMemSize() const OVERRIDE { return sizeof(*this); }

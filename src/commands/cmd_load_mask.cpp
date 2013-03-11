@@ -21,7 +21,7 @@
 #include "app/file_selector.h"
 #include "commands/command.h"
 #include "commands/params.h"
-#include "document_wrappers.h"
+#include "context_access.h"
 #include "modules/gui.h"
 #include "raster/mask.h"
 #include "raster/sprite.h"
@@ -65,7 +65,7 @@ bool LoadMaskCommand::onEnabled(Context* context)
 
 void LoadMaskCommand::onExecute(Context* context)
 {
-  const ActiveDocumentReader document(context);
+  const ContextReader reader(context);
 
   base::string filename = m_filename;
 
@@ -83,18 +83,19 @@ void LoadMaskCommand::onExecute(Context* context)
                           static_cast<const char*>(m_filename.c_str()));
 
   {
-    DocumentWriter documentWriter(document);
-    UndoTransaction undo(documentWriter, "Mask Load", undo::DoesntModifyDocument);
+    ContextWriter writer(reader);
+    Document* document = writer.document();
+    UndoTransaction undo(writer.context(), "Mask Load", undo::DoesntModifyDocument);
 
     // Add the mask change into the undo history.
     if (undo.isEnabled())
-      undo.pushUndoer(new undoers::SetMask(undo.getObjects(), documentWriter));
+      undo.pushUndoer(new undoers::SetMask(undo.getObjects(), document));
 
-    documentWriter->setMask(mask);
+    document->setMask(mask);
 
     undo.commit();
-    documentWriter->generateMaskBoundaries();
-    update_screen_for_document(documentWriter);
+    document->generateMaskBoundaries();
+    update_screen_for_document(document);
   }
 }
 

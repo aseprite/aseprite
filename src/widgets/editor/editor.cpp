@@ -28,7 +28,7 @@
 #include "base/bind.h"
 #include "commands/commands.h"
 #include "commands/params.h"
-#include "document_wrappers.h"
+#include "document_location.h"
 #include "ini_file.h"
 #include "modules/gfx.h"
 #include "modules/gui.h"
@@ -128,6 +128,8 @@ Editor::Editor(Document* document)
   , m_decorator(NULL)
   , m_document(document)
   , m_sprite(m_document->getSprite())
+  , m_layer(m_sprite->getFolder()->getFirstLayer())
+  , m_frame(FrameNumber(0))
   , m_zoom(0)
   , m_mask_timer(100, this)
   , m_customizationDelegate(NULL)
@@ -234,6 +236,37 @@ void Editor::setState(const EditorStatePtr& newState)
 void Editor::backToPreviousState()
 {
   setStateInternal(EditorStatePtr(NULL));
+}
+
+void Editor::setLayer(const Layer* layer)
+{
+  m_layer = const_cast<Layer*>(layer);
+  updateStatusBar();
+}
+
+void Editor::setFrame(FrameNumber frame)
+{
+  if (m_frame != frame) {
+    m_frame = frame;
+
+    invalidate();
+    updateStatusBar();
+  }
+}
+
+void Editor::getDocumentLocation(DocumentLocation* location) const
+{
+  location->document(m_document);
+  location->sprite(m_sprite);
+  location->layer(m_layer);
+  location->frame(m_frame);
+}
+
+DocumentLocation Editor::getDocumentLocation() const
+{
+  DocumentLocation location;
+  getDocumentLocation(&location);
+  return location;
 }
 
 void Editor::setDefaultScroll()
@@ -367,13 +400,11 @@ void Editor::drawSpriteUnclippedRect(const gfx::Rect& rc)
   // Draw the sprite
 
   if ((width > 0) && (height > 0)) {
+    RenderEngine renderEngine(m_document, m_sprite, m_layer, m_frame);
+
     // Generate the rendered image
-    Image* rendered = RenderEngine::renderSprite(m_document,
-                                                 m_sprite,
-                                                 source_x, source_y,
-                                                 width, height,
-                                                 m_sprite->getCurrentFrame(),
-                                                 m_zoom, true);
+    Image* rendered = renderEngine.renderSprite(source_x, source_y, width, height,
+                                                m_frame, m_zoom, true);
 
     if (rendered) {
       // Pre-render decorator.
@@ -386,16 +417,15 @@ void Editor::drawSpriteUnclippedRect(const gfx::Rect& rc)
 #ifdef DRAWSPRITE_DOUBLEBUFFERED
       BITMAP *bmp = create_bitmap(width, height);
 
-      use_current_sprite_rgb_map();
-      image_to_allegro(rendered, bmp, 0, 0, m_sprite->getCurrentPalette());
+      image_to_allegro(rendered, bmp, 0, 0, m_sprite->getPalette(m_frame));
       blit(bmp, ji_screen, 0, 0, dest_x, dest_y, width, height);
-      restore_rgb_map();
 
       image_free(rendered);
       destroy_bitmap(bmp);
 #else
       acquire_bitmap(ji_screen);
-      image_to_allegro(rendered, ji_screen, dest_x, dest_y, m_sprite->getCurrentPalette());
+      image_to_allegro(rendered, ji_screen, dest_x, dest_y,
+                       m_sprite->getPalette(m_frame));
       release_bitmap(ji_screen);
 
       image_free(rendered);
@@ -1047,14 +1077,10 @@ void Editor::editor_setcursor()
 
 bool Editor::canDraw()
 {
-  return
-    (m_sprite != NULL &&
-     m_sprite->getCurrentLayer() != NULL &&
-     m_sprite->getCurrentLayer()->isImage() &&
-     m_sprite->getCurrentLayer()->isReadable() &&
-     m_sprite->getCurrentLayer()->isWritable() /* && */
-     /* layer_get_cel(m_sprite->layer, m_sprite->frame) != NULL */
-     );
+  return (m_layer != NULL &&
+          m_layer->isImage() &&
+          m_layer->isReadable() &&
+          m_layer->isWritable());
 }
 
 bool Editor::isInsideSelection()
@@ -1126,6 +1152,7 @@ void Editor::pasteImage(const Image* image, int x, int y)
   Document* document = getDocument();
   int opacity = 255;
   Sprite* sprite = getSprite();
+  Layer* layer = getLayer();
 
   // Check bounds where the image will be pasted.
   {
@@ -1152,7 +1179,9 @@ void Editor::pasteImage(const Image* image, int x, int y)
   }
 
   PixelsMovement* pixelsMovement =
-    new PixelsMovement(document, sprite, image, x, y, opacity, "Paste");
+    new PixelsMovement(UIContext::instance(),
+                       document, sprite, layer,
+                       image, x, y, opacity, "Paste");
 
   // Select the pasted image so the user can move it and transform it.
   pixelsMovement->maskImage(image, x, y);

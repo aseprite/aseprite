@@ -25,12 +25,13 @@
 
 class Context;
 class Document;
-class ISettings;
 class IDocumentSettings;
+class ISettings;
 class Image;
 class Layer;
 class Mask;
 class Pen;
+class RgbMap;
 class Sprite;
 
 namespace gfx { class Region; }
@@ -77,6 +78,9 @@ public:
 
   // Should return an image where we can write pixels
   virtual Image* getDstImage() = 0;
+
+  // Returns the RGB map used to convert RGB values to palette index.
+  virtual RgbMap* getRgbMap() = 0;
 
   // Returns true if we should use the mask to limit the paint area.
   virtual bool useMask() = 0;

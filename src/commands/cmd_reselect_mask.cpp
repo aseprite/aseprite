@@ -19,7 +19,7 @@
 #include "config.h"
 
 #include "commands/command.h"
-#include "document_wrappers.h"
+#include "context_access.h"
 #include "modules/gui.h"
 #include "raster/mask.h"
 #include "raster/sprite.h"
@@ -49,7 +49,8 @@ ReselectMaskCommand::ReselectMaskCommand()
 
 bool ReselectMaskCommand::onEnabled(Context* context)
 {
-  ActiveDocumentWriter document(context);
+  ContextWriter writer(context);
+  Document* document(writer.document());
   return
      document &&                      // The document does exist
     !document->isMaskVisible() &&     // The mask is hidden
@@ -59,9 +60,10 @@ bool ReselectMaskCommand::onEnabled(Context* context)
 
 void ReselectMaskCommand::onExecute(Context* context)
 {
-  ActiveDocumentWriter document(context);
+  ContextWriter writer(context);
+  Document* document(writer.document());
   {
-    UndoTransaction undo(document, "Mask Reselection", undo::DoesntModifyDocument);
+    UndoTransaction undo(writer.context(), "Mask Reselection", undo::DoesntModifyDocument);
     if (undo.isEnabled())
       undo.pushUndoer(new undoers::SetMask(undo.getObjects(), document));
 

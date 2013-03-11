@@ -25,11 +25,13 @@
 #include "document_id.h"
 #include "gfx/transformation.h"
 #include "observable.h"
+#include "raster/frame_number.h"
 #include "raster/pixel_format.h"
 
 #include <string>
 
 class Cel;
+class DocumentApi;
 class DocumentObserver;
 class DocumentUndo;
 class FormatOptions;
@@ -41,6 +43,7 @@ class Sprite;
 struct _BoundSeg;
 
 namespace gfx { class Region; }
+namespace undo { class UndoersCollector; }
 
 enum DuplicateType
 {
@@ -65,6 +68,9 @@ public:
   Document(Sprite* sprite);
   ~Document();
 
+  // Returns a high-level API: observable and undoable methods.
+  DocumentApi getApi(undo::UndoersCollector* undoers = NULL);
+
   //////////////////////////////////////////////////////////////////////
   // Main properties
 
@@ -84,6 +90,9 @@ public:
 
   void notifyGeneralUpdate();
   void notifySpritePixelsModified(Sprite* sprite, const gfx::Region& region);
+  void notifyLayerMergedDown(Layer* srcLayer, Layer* targetLayer);
+  void notifyCelMoved(Layer* fromLayer, FrameNumber fromFrame, Layer* toLayer, FrameNumber toFrame);
+  void notifyCelCopied(Layer* fromLayer, FrameNumber fromFrame, Layer* toLayer, FrameNumber toFrame);
 
   //////////////////////////////////////////////////////////////////////
   // File related properties

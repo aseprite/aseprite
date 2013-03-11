@@ -97,7 +97,7 @@ static void savepixel(BITMAP *bmp, int x, int y, int color);
 static void drawpixel(BITMAP *bmp, int x, int y, int color);
 static void cleanpixel(BITMAP *bmp, int x, int y, int color);
 
-static int get_pen_color(Sprite *sprite);
+static int get_pen_color(Sprite* sprite, Layer* layer);
 
 //////////////////////////////////////////////////////////////////////
 // CURSOR COLOR
@@ -201,7 +201,7 @@ static Pen* editor_get_current_pen()
 
 void Editor::editor_cursor_init()
 {
-  /* cursor color */
+  // Cursor color
   set_cursor_color(get_config_color("Tools", "CursorColor", app::Color::fromMask()));
 
   App::instance()->PaletteChange.connect(&on_palette_change_update_cursor_color);
@@ -264,8 +264,7 @@ void Editor::editor_draw_cursor(int x, int y, bool refresh)
            current_tool->getInk(0)->isEffect() ||
            // or when the FG color is mask and we are not in the background layer
            (UIContext::instance()->getSettings()->getFgColor().getType() == app::Color::MaskType &&
-            (m_sprite->getCurrentLayer() != NULL &&
-             !m_sprite->getCurrentLayer()->isBackground()))) {
+            (m_layer != NULL && !m_layer->isBackground()))) {
     cursor_type = CURSOR_BOUNDS;
   }
   else {
@@ -282,7 +281,7 @@ void Editor::editor_draw_cursor(int x, int y, bool refresh)
       ->getSettings()
       ->getToolSettings(current_tool);
 
-    int pen_color = get_pen_color(m_sprite);
+    int pen_color = get_pen_color(m_sprite, m_layer);
     uint32_t new_mask_color;
     Pen* pen = editor_get_current_pen();
     int half = pen->get_size()/2;
@@ -661,7 +660,7 @@ static void cleanpixel(BITMAP *bmp, int x, int y, int color)
   }
 }
 
-static int get_pen_color(Sprite *sprite)
+static int get_pen_color(Sprite* sprite, Layer* layer)
 {
   app::Color c = UIContext::instance()->getSettings()->getFgColor();
   ASSERT(sprite != NULL);
@@ -670,8 +669,8 @@ static int get_pen_color(Sprite *sprite)
   if (!c.isValid())
     return 0;
 
-  if (sprite->getCurrentLayer() != NULL)
-    return color_utils::color_for_layer(c, sprite->getCurrentLayer());
+  if (layer != NULL)
+    return color_utils::color_for_layer(c, layer);
   else
     return color_utils::color_for_image(c, sprite->getPixelFormat());
 }

@@ -41,20 +41,6 @@ void ContextObserverList::removeObserver(ContextObserver* observer)
   m_observer.erase(it);
 }
 
-void ContextObserverList::notifyActiveDocumentBeforeChange(Context* context)
-{
-  list_type copy = m_observer;
-  std::for_each(copy.begin(), copy.end(),
-                std::bind2nd(std::mem_fun(&ContextObserver::onActiveDocumentBeforeChange), context));
-}
-
-void ContextObserverList::notifyActiveDocumentAfterChange(Context* context)
-{
-  list_type copy = m_observer;
-  std::for_each(copy.begin(), copy.end(),
-                std::bind2nd(std::mem_fun(&ContextObserver::onActiveDocumentAfterChange), context));
-}
-
 void ContextObserverList::notifyCommandBeforeExecution(Context* context)
 {
   list_type copy = m_observer;

@@ -18,37 +18,47 @@
 
 #include "config.h"
 
-#include "undoers/close_group.h"
+#include "undoers/remove_frame.h"
 
+#include "document.h"
+#include "document_event.h"
+#include "document_observer.h"
 #include "raster/sprite.h"
 #include "undo/objects_container.h"
 #include "undo/undoers_collector.h"
-#include "undoers/open_group.h"
+#include "undoers/add_frame.h"
 
 using namespace undo;
 using namespace undoers;
 
-CloseGroup::CloseGroup(undo::ObjectsContainer* objects,
-                       const char* label,
-                       undo::Modification modification,
-                       Sprite* sprite,
-                       const SpritePosition& pos)
-  : m_label(label)
-  , m_modification(modification)
+RemoveFrame::RemoveFrame(undo::ObjectsContainer* objects, Document* document, Sprite* sprite, FrameNumber frame)
+  : m_documentId(objects->addObject(document))
   , m_spriteId(objects->addObject(sprite))
-  , m_spritePosition(pos)
+  , m_frame(frame)
+  , m_frameDuration(sprite->getFrameDuration(frame))
 {
 }
 
-void CloseGroup::dispose()
+void RemoveFrame::dispose()
 {
   delete this;
 }
 
-void CloseGroup::revert(ObjectsContainer* objects, UndoersCollector* redoers)
+void RemoveFrame::revert(ObjectsContainer* objects, UndoersCollector* redoers)
 {
+  Document* document = objects->getObjectT<Document>(m_documentId);
   Sprite* sprite = objects->getObjectT<Sprite>(m_spriteId);
 
-  redoers->pushUndoer(new OpenGroup(objects, m_label, m_modification, sprite,
-                                    m_spritePosition));
+  // TODO Merge this code with DocumentApi::addFrame
+
+  redoers->pushUndoer(new AddFrame(objects, document, sprite, m_frame));
+
+  sprite->addFrame(m_frame);
+  sprite->setFrameDuration(m_frame, m_frameDuration);
+
+  // Notify observers.
+  DocumentEvent ev(document);
+  ev.sprite(sprite);
+  ev.frame(m_frame);
+  document->notifyObservers<DocumentEvent&>(&DocumentObserver::onAddFrame, ev);
 }

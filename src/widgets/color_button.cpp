@@ -132,7 +132,7 @@ bool ColorButton::onProcessMessage(Message* msg)
               x = msg->mouse.x;
               y = msg->mouse.y;
               editor->screenToEditor(x, y, &x, &y);
-              imgcolor = sprite->getPixel(x, y);
+              imgcolor = sprite->getPixel(x, y, editor->getFrame());
               color = app::Color::fromImage(sprite->getPixelFormat(), imgcolor);
             }
           }

@@ -141,7 +141,7 @@ static void ink_hline16_transparent(int x1, int y, int x2, ToolLoop* loop)
 static void ink_hline8_transparent(int x1, int y, int x2, ToolLoop* loop)
 {
   Palette* pal = get_current_palette();
-  RgbMap* rgbmap = loop->getSprite()->getRgbMap();
+  RgbMap* rgbmap = loop->getRgbMap();
   uint32_t c;
   uint32_t tc = pal->getEntry(loop->getPrimaryColor());
   int opacity = loop->getOpacity();
@@ -282,7 +282,7 @@ static void ink_hline16_blur(int x1, int y, int x2, ToolLoop* loop)
 static void ink_hline8_blur(int x1, int y, int x2, ToolLoop* loop)
 {
   const Palette *pal = get_current_palette();
-  RgbMap* rgbmap = loop->getSprite()->getRgbMap();
+  RgbMap* rgbmap = loop->getRgbMap();
   int opacity = loop->getOpacity();
   TiledMode tiledMode = loop->getDocumentSettings()->getTiledMode();
   const Image* src = loop->getSrcImage();
@@ -346,7 +346,7 @@ static void ink_hline8_replace(int x1, int y, int x2, ToolLoop* loop)
 {
   int color1 = loop->getPrimaryColor();
   const Palette *pal = get_current_palette();
-  RgbMap* rgbmap = loop->getSprite()->getRgbMap();
+  RgbMap* rgbmap = loop->getRgbMap();
   uint32_t c;
   uint32_t tc = pal->getEntry(loop->getSecondaryColor());
   int opacity = loop->getOpacity();
@@ -425,7 +425,7 @@ static void ink_hline16_jumble(int x1, int y, int x2, ToolLoop* loop)
 static void ink_hline8_jumble(int x1, int y, int x2, ToolLoop* loop)
 {
   const Palette *pal = get_current_palette();
-  const RgbMap* rgbmap = loop->getSprite()->getRgbMap();
+  const RgbMap* rgbmap = loop->getRgbMap();
   uint32_t c, tc;
   int opacity = loop->getOpacity();
   Point speed(loop->getSpeed() / 4);

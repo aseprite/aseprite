@@ -19,10 +19,10 @@
 #include "config.h"
 
 #include "commands/command.h"
+#include "context.h"
 #include "raster/layer.h"
 #include "raster/sprite.h"
 #include "util/clipboard.h"
-#include "document_wrappers.h"
 
 //////////////////////////////////////////////////////////////////////
 // paste

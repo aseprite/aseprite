@@ -20,7 +20,7 @@
 
 #include "commands/command.h"
 #include "commands/params.h"
-#include "document_wrappers.h"
+#include "context_access.h"
 #include "modules/editors.h"
 #include "settings/document_settings.h"
 #include "settings/settings.h"
@@ -90,8 +90,8 @@ void ScrollCommand::onLoadParams(Params* params)
 
 bool ScrollCommand::onEnabled(Context* context)
 {
-  ActiveDocumentWriter document(context);
-  return document != NULL;
+  ContextWriter writer(context);
+  return (writer.document() != NULL);
 }
 
 void ScrollCommand::onExecute(Context* context)

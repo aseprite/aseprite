@@ -26,7 +26,7 @@
 #include "commands/filters/convolution_matrix_stock.h"
 #include "commands/filters/filter_manager_impl.h"
 #include "commands/filters/filter_window.h"
-#include "document_wrappers.h"
+#include "context.h"
 #include "filters/convolution_matrix.h"
 #include "filters/convolution_matrix_filter.h"
 #include "ini_file.h"
@@ -193,7 +193,7 @@ void ConvolutionMatrixCommand::onExecute(Context* context)
   if (matrix != 0)
     filter.setMatrix(matrix);
 
-  FilterManagerImpl filterMgr(context->getActiveDocument(), &filter);
+  FilterManagerImpl filterMgr(context, &filter);
 
   ConvolutionMatrixWindow window(filter, filterMgr, m_stock);
   if (window.doModal()) {

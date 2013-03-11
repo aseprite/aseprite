@@ -29,7 +29,7 @@
 #include "commands/command.h"
 #include "commands/filters/filter_manager_impl.h"
 #include "commands/filters/filter_window.h"
-#include "document_wrappers.h"
+#include "context.h"
 #include "filters/replace_color_filter.h"
 #include "ini_file.h"
 #include "raster/image.h"
@@ -150,15 +150,14 @@ bool ReplaceColorCommand::onEnabled(Context* context)
 
 void ReplaceColorCommand::onExecute(Context* context)
 {
-  Document* document = context->getActiveDocument();
-  Sprite* sprite(document->getSprite());
+  DocumentLocation location = context->getActiveLocation();
 
-  ReplaceColorFilterWrapper filter(sprite->getCurrentLayer());
+  ReplaceColorFilterWrapper filter(location.layer());
   filter.setFrom(get_config_color(ConfigSection, "Color1", ColorBar::instance()->getFgColor()));
   filter.setTo(get_config_color(ConfigSection, "Color2", ColorBar::instance()->getBgColor()));
   filter.setTolerance(get_config_int(ConfigSection, "Tolerance", 0));
 
-  FilterManagerImpl filterMgr(document, &filter);
+  FilterManagerImpl filterMgr(context, &filter);
   filterMgr.setTarget(TARGET_RED_CHANNEL |
                       TARGET_GREEN_CHANNEL |
                       TARGET_BLUE_CHANNEL |

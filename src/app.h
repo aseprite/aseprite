@@ -83,14 +83,10 @@ private:
   FileList m_files;
 };
 
-void app_refresh_screen(const Document* document);
-
+void app_refresh_screen();
 void app_rebuild_documents_tabs();
-
 PixelFormat app_get_current_pixel_format();
-
 void app_default_statusbar_message();
-
 int app_get_color_to_clear_layer(Layer* layer);
 
 #endif

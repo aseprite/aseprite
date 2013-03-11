@@ -22,8 +22,6 @@
 
 #include "commands/commands.h"
 #include "context.h"
-#include "document.h"
-#include "document_wrappers.h"
 
 class CancelCommand : public Command
 {

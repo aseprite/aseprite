@@ -284,8 +284,8 @@ static app::Color checked_bg_color1;
 static app::Color checked_bg_color2;
 
 static int global_opacity = 255;
-static Layer *selected_layer = NULL;
-static Image *rastering_image = NULL;
+static const Layer* selected_layer = NULL;
+static Image* rastering_image = NULL;
 
 // static
 void RenderEngine::loadConfig()
@@ -351,8 +351,19 @@ void RenderEngine::setCheckedBgColor2(const app::Color& color)
 
 //////////////////////////////////////////////////////////////////////
 
+RenderEngine::RenderEngine(const Document* document,
+                           const Sprite* sprite,
+                           const Layer* currentLayer,
+                           FrameNumber currentFrame)
+  : m_document(document)
+  , m_sprite(sprite)
+  , m_currentLayer(currentLayer)
+  , m_currentFrame(currentFrame)
+{
+}
+
 // static
-void RenderEngine::setPreviewImage(Layer *layer, Image *image)
+void RenderEngine::setPreviewImage(const Layer* layer, Image* image)
 {
   selected_layer = layer;
   rastering_image = image;
@@ -365,21 +376,18 @@ void RenderEngine::setPreviewImage(Layer *layer, Image *image)
    Positions source_x, source_y, width and height must have the
    zoom applied (sorce_x<<zoom, source_y<<zoom, width<<zoom, etc.)
  */
-// static
-Image* RenderEngine::renderSprite(const Document* document,
-                                  const Sprite* sprite,
-                                  int source_x, int source_y,
+Image* RenderEngine::renderSprite(int source_x, int source_y,
                                   int width, int height,
                                   FrameNumber frame, int zoom,
                                   bool draw_tiled_bg)
 {
   void (*zoomed_func)(Image*, const Image*, const Palette*, int, int, int, int, int);
-  const LayerImage* background = sprite->getBackgroundLayer();
+  const LayerImage* background = m_sprite->getBackgroundLayer();
   bool need_checked_bg = (background != NULL ? !background->isReadable(): true);
   uint32_t bg_color = 0;
   Image *image;
 
-  switch (sprite->getPixelFormat()) {
+  switch (m_sprite->getPixelFormat()) {
 
     case IMAGE_RGB:
       zoomed_func = merge_zoomed_image<RgbTraits, RgbTraits>;
@@ -392,7 +400,7 @@ Image* RenderEngine::renderSprite(const Document* document,
     case IMAGE_INDEXED:
       zoomed_func = merge_zoomed_image<RgbTraits, IndexedTraits>;
       if (!need_checked_bg)
-        bg_color = sprite->getPalette(frame)->getEntry(sprite->getTransparentColor());
+        bg_color = m_sprite->getPalette(frame)->getEntry(m_sprite->getTransparentColor());
       break;
 
     default:
@@ -411,12 +419,15 @@ Image* RenderEngine::renderSprite(const Document* document,
     image_clear(image, bg_color);
 
   // Onion-skin feature: draw the previous frame
-  IDocumentSettings* docSettings = UIContext::instance()->getSettings()->getDocumentSettings(document);
+  IDocumentSettings* docSettings = UIContext::instance()
+    ->getSettings()->getDocumentSettings(m_document);
+
   if (docSettings->getUseOnionskin()) {
     // Draw background layer of the current frame with opacity=255
     global_opacity = 255;
-    renderLayer(document, sprite, sprite->getFolder(), image,
-                source_x, source_y, frame, zoom, zoomed_func, true, false);
+    renderLayer(m_sprite->getFolder(), image,
+                source_x, source_y, frame, zoom, zoomed_func,
+                true, false);
 
     // Draw transparent layers of the previous/next frames with different opacity (<255) (it is the onion-skinning)
     {
@@ -426,7 +437,7 @@ Image* RenderEngine::renderSprite(const Document* document,
       int opacity_step = docSettings->getOnionskinOpacityStep();
 
       for (FrameNumber f=frame.previous(prevs); f <= frame.next(nexts); ++f) {
-        if (f == frame || f < 0 || f > sprite->getLastFrame())
+        if (f == frame || f < 0 || f > m_sprite->getLastFrame())
           continue;
         else if (f < frame)
           global_opacity = opacity_base - opacity_step * ((frame - f)-1);
@@ -434,20 +445,23 @@ Image* RenderEngine::renderSprite(const Document* document,
           global_opacity = opacity_base - opacity_step * ((f - frame)-1);
 
         if (global_opacity > 0)
-          renderLayer(document, sprite, sprite->getFolder(), image,
-                      source_x, source_y, f, zoom, zoomed_func, false, true);
+          renderLayer(m_sprite->getFolder(), image,
+                      source_x, source_y, f, zoom, zoomed_func,
+                      false, true);
       }
     }
 
     // Draw transparent layers of the current frame with opacity=255
     global_opacity = 255;
-    renderLayer(document, sprite, sprite->getFolder(), image,
-                source_x, source_y, frame, zoom, zoomed_func, false, true);
+    renderLayer(m_sprite->getFolder(), image,
+                source_x, source_y, frame, zoom, zoomed_func,
+                false, true);
   }
   // Onion-skin is disabled: just draw the current frame
   else {
-    renderLayer(document, sprite, sprite->getFolder(), image,
-                source_x, source_y, frame, zoom, zoomed_func, true, true);
+    renderLayer(m_sprite->getFolder(), image,
+                source_x, source_y, frame, zoom, zoomed_func,
+                true, true);
   }
 
   return image;
@@ -547,10 +561,7 @@ void RenderEngine::renderImage(Image* rgb_image, Image* src_image, const Palette
   (*zoomed_func)(rgb_image, src_image, pal, x, y, 255, BLEND_MODE_NORMAL, zoom);
 }
 
-// static
-void RenderEngine::renderLayer(const Document* document,
-                               const Sprite* sprite,
-                               const Layer* layer,
+void RenderEngine::renderLayer(const Layer* layer,
                                Image *image,
                                int source_x, int source_y,
                                FrameNumber frame, int zoom,
@@ -573,16 +584,16 @@ void RenderEngine::renderLayer(const Document* document,
       if (cel != NULL) {
         Image* src_image;
 
-        /* is the 'rastering_image' setted to be used with this layer? */
-        if ((frame == sprite->getCurrentFrame()) &&
+        // Is the 'rastering_image' set to be used with this layer?
+        if ((frame == m_currentFrame) &&
             (selected_layer == layer) &&
             (rastering_image != NULL)) {
           src_image = rastering_image;
         }
-        /* if not, we use the original cel-image from the images' stock */
+        // If not, we use the original cel-image from the images' stock
         else if ((cel->getImage() >= 0) &&
-                 (cel->getImage() < layer->getSprite()->getStock()->size()))
-          src_image = layer->getSprite()->getStock()->getImage(cel->getImage());
+                 (cel->getImage() < m_sprite->getStock()->size()))
+          src_image = m_sprite->getStock()->getImage(cel->getImage());
         else
           src_image = NULL;
 
@@ -593,9 +604,9 @@ void RenderEngine::renderLayer(const Document* document,
           output_opacity = MID(0, cel->getOpacity(), 255);
           output_opacity = INT_MULT(output_opacity, global_opacity, t);
 
-          src_image->mask_color = sprite->getTransparentColor();
+          src_image->mask_color = m_sprite->getTransparentColor();
 
-          (*zoomed_func)(image, src_image, sprite->getPalette(frame),
+          (*zoomed_func)(image, src_image, m_sprite->getPalette(frame),
                          (cel->getX() << zoom) - source_x,
                          (cel->getY() << zoom) - source_y,
                          output_opacity,
@@ -610,7 +621,7 @@ void RenderEngine::renderLayer(const Document* document,
       LayerConstIterator end = static_cast<const LayerFolder*>(layer)->getLayerEnd();
 
       for (; it != end; ++it) {
-        renderLayer(document, sprite, *it, image,
+        renderLayer(*it, image,
                     source_x, source_y,
                     frame, zoom, zoomed_func,
                     render_background,
@@ -622,13 +633,13 @@ void RenderEngine::renderLayer(const Document* document,
   }
 
   // Draw extras
-  if (layer == sprite->getCurrentLayer() &&
-      document->getExtraCel() != NULL) {
-    Cel* extraCel = document->getExtraCel();
+  if (layer == m_currentLayer &&
+      m_document->getExtraCel() != NULL) {
+    Cel* extraCel = m_document->getExtraCel();
     if (extraCel->getOpacity() > 0) {
-      Image* extraImage = document->getExtraCelImage();
+      Image* extraImage = m_document->getExtraCelImage();
 
-      (*zoomed_func)(image, extraImage, sprite->getPalette(frame),
+      (*zoomed_func)(image, extraImage, m_sprite->getPalette(frame),
                      (extraCel->getX() << zoom) - source_x,
                      (extraCel->getY() << zoom) - source_y,
                      extraCel->getOpacity(), BLEND_MODE_NORMAL, zoom);

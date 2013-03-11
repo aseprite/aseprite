@@ -23,12 +23,12 @@
 #include "commands/command.h"
 #include "console.h"
 #include "document.h"
+#include "document_location.h"
 
 #include <algorithm>
 
 Context::Context(ISettings* settings)
-  : m_activeDocument(NULL)
-  , m_settings(settings)
+  : m_settings(settings)
 {
 }
 
@@ -43,38 +43,6 @@ Context::~Context()
 const Documents& Context::getDocuments() const
 {
   return m_documents;
-}
-
-Document* Context::getFirstDocument() const
-{
-  if (!m_documents.empty())
-    return m_documents.getByIndex(0);
-  else
-    return NULL;
-}
-
-Document* Context::getNextDocument(Document* document) const
-{
-  ASSERT(document != NULL);
-
-  Documents::const_iterator begin = m_documents.begin();
-  Documents::const_iterator end = m_documents.end();
-  Documents::const_iterator it = std::find(begin, end, document);
-  ASSERT(it != end);
-
-  if (it != end) {
-    if (it != begin) {
-      --it;
-      return *it;
-    }
-    else {
-      ++it;
-      if (it != end)
-        return *it;
-    }
-  }
-
-  return NULL;
 }
 
 void Context::addDocument(Document* document)
@@ -96,10 +64,6 @@ void Context::removeDocument(Document* document)
 
   // generate onRemoveDocument event
   onRemoveDocument(document);
-
-  // The active document cannot be the removed one.
-  if (m_activeDocument == document)
-    setActiveDocument(NULL);
 }
 
 void Context::sendDocumentToTop(Document* document)
@@ -111,21 +75,16 @@ void Context::sendDocumentToTop(Document* document)
 
 Document* Context::getActiveDocument() const
 {
-  return m_activeDocument;
+  DocumentLocation location;
+  onGetActiveLocation(&location);
+  return location.document();
 }
 
-void Context::setActiveDocument(Document* document)
+DocumentLocation Context::getActiveLocation() const
 {
-  if (document == m_activeDocument)
-    return;
-
-  m_observers.notifyActiveDocumentBeforeChange(this);
-
-  m_activeDocument = document;
-
-  onSetActiveDocument(document);
-
-  m_observers.notifyActiveDocumentAfterChange(this);
+  DocumentLocation location;
+  onGetActiveLocation(&location);
+  return location;
 }
 
 void Context::executeCommand(Command* command, Params* params)
@@ -191,11 +150,6 @@ void Context::onAddDocument(Document* document)
 }
 
 void Context::onRemoveDocument(Document* document)
-{
-  // do nothing
-}
-
-void Context::onSetActiveDocument(Document* document)
 {
   // do nothing
 }

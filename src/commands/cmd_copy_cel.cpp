@@ -19,8 +19,8 @@
 #include "config.h"
 
 #include "commands/command.h"
+#include "context_access.h"
 #include "dialogs/aniedit.h"
-#include "document_wrappers.h"
 #include "ui/base.h"
 #include "util/celmove.h"
 
@@ -49,8 +49,8 @@ bool CopyCelCommand::onEnabled(Context* context)
 
 void CopyCelCommand::onExecute(Context* context)
 {
-  ActiveDocumentWriter document(context);
-  copy_cel(document);
+  ContextWriter writer(context);
+  copy_cel(writer);
 }
 
 //////////////////////////////////////////////////////////////////////

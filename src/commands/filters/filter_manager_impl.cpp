@@ -20,6 +20,7 @@
 
 #include "commands/filters/filter_manager_impl.h"
 
+#include "context_access.h"
 #include "filters/filter.h"
 #include "ini_file.h"
 #include "modules/editors.h"
@@ -44,9 +45,9 @@
 using namespace std;
 using namespace ui;
 
-FilterManagerImpl::FilterManagerImpl(Document* document, Filter* filter)
-  : m_document(document)
-  , m_sprite(document->getSprite())
+FilterManagerImpl::FilterManagerImpl(Context* context, Filter* filter)
+  : m_context(context)
+  , m_location(context->getActiveLocation())
   , m_filter(filter)
   , m_progressDelegate(NULL)
 {
@@ -63,11 +64,11 @@ FilterManagerImpl::FilterManagerImpl(Document* document, Filter* filter)
   m_targetOrig = TARGET_ALL_CHANNELS;
   m_target = TARGET_ALL_CHANNELS;
 
-  Image* image = m_sprite->getCurrentImage(&offset_x, &offset_y);
+  Image* image = m_location.image(&offset_x, &offset_y);
   if (image == NULL)
     throw NoImageException();
 
-  init(m_sprite->getCurrentLayer(), image, offset_x, offset_y);
+  init(m_location.layer(), image, offset_x, offset_y);
 }
 
 FilterManagerImpl::~FilterManagerImpl()
@@ -86,7 +87,7 @@ void FilterManagerImpl::setProgressDelegate(IProgressDelegate* progressDelegate)
 
 PixelFormat FilterManagerImpl::getPixelFormat() const
 {
-  return m_sprite->getPixelFormat();
+  return m_location.sprite()->getPixelFormat();
 }
 
 void FilterManagerImpl::setTarget(int target)
@@ -94,29 +95,33 @@ void FilterManagerImpl::setTarget(int target)
   m_targetOrig = target;
   m_target = target;
 
-  /* the alpha channel of the background layer can't be modified */
-  if (m_sprite->getCurrentLayer() &&
-      m_sprite->getCurrentLayer()->isBackground())
+  // The alpha channel of the background layer can't be modified.
+  if (m_location.layer() &&
+      m_location.layer()->isBackground())
     m_target &= ~TARGET_ALPHA_CHANNEL;
 }
 
 void FilterManagerImpl::begin()
 {
+  Document* document = m_location.document();
+
   m_row = 0;
-  m_mask = (m_document->isMaskVisible() ? m_document->getMask(): NULL);
+  m_mask = (document->isMaskVisible() ? document->getMask(): NULL);
 
   updateMask(m_mask, m_src);
 }
 
 void FilterManagerImpl::beginForPreview()
 {
+  Document* document = m_location.document();
+
   if (m_preview_mask) {
     delete m_preview_mask;
     m_preview_mask = NULL;
   }
 
-  if (m_document->isMaskVisible())
-    m_preview_mask = new Mask(*m_document->getMask());
+  if (document->isMaskVisible())
+    m_preview_mask = new Mask(*document->getMask());
   else {
     m_preview_mask = new Mask();
     m_preview_mask->replace(m_offset_x, m_offset_y,
@@ -128,6 +133,7 @@ void FilterManagerImpl::beginForPreview()
 
   {
     Editor* editor = current_editor;
+    Sprite* sprite = m_location.sprite();
     gfx::Rect vp = View::getView(editor)->getViewportBounds();
     int x1, y1, x2, y2;
     int x, y, w, h;
@@ -137,8 +143,8 @@ void FilterManagerImpl::beginForPreview()
 
     if (x1 < 0) x1 = 0;
     if (y1 < 0) y1 = 0;
-    if (x2 >= m_sprite->getWidth()) x2 = m_sprite->getWidth()-1;
-    if (y2 >= m_sprite->getHeight()) y2 = m_sprite->getHeight()-1;
+    if (x2 >= sprite->getWidth()) x2 = sprite->getWidth()-1;
+    if (y2 >= sprite->getHeight()) y2 = sprite->getHeight()-1;
 
     x = x1;
     y = y1;
@@ -173,7 +179,7 @@ bool FilterManagerImpl::applyStep()
     else
       m_mask_address = NULL;
 
-    switch (m_sprite->getPixelFormat()) {
+    switch (m_location.sprite()->getPixelFormat()) {
       case IMAGE_RGB:       m_filter->applyToRgba(this); break;
       case IMAGE_GRAYSCALE: m_filter->applyToGrayscale(this); break;
       case IMAGE_INDEXED:   m_filter->applyToIndexed(this); break;
@@ -203,7 +209,7 @@ void FilterManagerImpl::apply()
   }
 
   if (!cancelled) {
-    UndoTransaction undo(m_document, m_filter->getName(), undo::ModifyDocument);
+    UndoTransaction undo(m_context, m_filter->getName(), undo::ModifyDocument);
 
     // Undo stuff
     if (undo.isEnabled())
@@ -220,17 +226,19 @@ void FilterManagerImpl::applyToTarget()
 {
   bool cancelled = false;
 
-  ImagesCollector images(m_sprite,
-                         (m_target & TARGET_ALL_LAYERS) == TARGET_ALL_LAYERS,
+  ImagesCollector images((m_target & TARGET_ALL_LAYERS ?
+                          m_location.sprite()->getFolder():
+                          m_location.layer()),
+                         m_location.frame(),
                          (m_target & TARGET_ALL_FRAMES) == TARGET_ALL_FRAMES,
                          true); // we will write in each image
   if (images.empty())
     return;
 
   // Initialize writting operation
-  DocumentReader doc_reader(m_document);
-  DocumentWriter doc_writer(doc_reader);
-  UndoTransaction undo(m_document, m_filter->getName(), undo::ModifyDocument);
+  ContextReader reader(m_context);
+  ContextWriter writer(reader);
+  UndoTransaction undo(writer.context(), m_filter->getName(), undo::ModifyDocument);
 
   m_progressBase = 0.0f;
   m_progressWidth = 1.0f / images.size();
@@ -275,7 +283,7 @@ void FilterManagerImpl::flush()
 
 const void* FilterManagerImpl::getSourceAddress()
 {
-  switch (m_sprite->getPixelFormat()) {
+  switch (m_location.sprite()->getPixelFormat()) {
     case IMAGE_RGB:       return ((uint32_t**)m_src->line)[m_row+m_y]+m_x;
     case IMAGE_GRAYSCALE: return ((uint16_t**)m_src->line)[m_row+m_y]+m_x;
     case IMAGE_INDEXED:   return ((uint8_t**)m_src->line)[m_row+m_y]+m_x;
@@ -285,7 +293,7 @@ const void* FilterManagerImpl::getSourceAddress()
 
 void* FilterManagerImpl::getDestinationAddress()
 {
-  switch (m_sprite->getPixelFormat()) {
+  switch (m_location.sprite()->getPixelFormat()) {
     case IMAGE_RGB:       return ((uint32_t**)m_dst->line)[m_row+m_y]+m_x;
     case IMAGE_GRAYSCALE: return ((uint16_t**)m_dst->line)[m_row+m_y]+m_x;
     case IMAGE_INDEXED:   return ((uint8_t**)m_dst->line)[m_row+m_y]+m_x;
@@ -310,12 +318,12 @@ bool FilterManagerImpl::skipPixel()
 
 Palette* FilterManagerImpl::getPalette()
 {
-  return m_sprite->getCurrentPalette();
+  return m_location.sprite()->getPalette(m_location.frame());
 }
 
 RgbMap* FilterManagerImpl::getRgbMap()
 {
-  return m_sprite->getRgbMap();
+  return m_location.sprite()->getRgbMap(m_location.frame());
 }
 
 void FilterManagerImpl::init(const Layer* layer, Image* image, int offset_x, int offset_y)
@@ -323,7 +331,7 @@ void FilterManagerImpl::init(const Layer* layer, Image* image, int offset_x, int
   m_offset_x = offset_x;
   m_offset_y = offset_y;
 
-  if (!updateMask(m_document->getMask(), image))
+  if (!updateMask(m_location.document()->getMask(), image))
     throw InvalidAreaException();
 
   if (m_preview_mask) {

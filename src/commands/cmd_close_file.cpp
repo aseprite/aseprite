@@ -22,7 +22,8 @@
 #include "base/path.h"
 #include "commands/command.h"
 #include "commands/commands.h"
-#include "document_wrappers.h"
+#include "context_access.h"
+#include "document_access.h"
 #include "modules/editors.h"
 #include "raster/sprite.h"
 #include "ui/gui.h"
@@ -58,8 +59,8 @@ protected:
 
   bool onEnabled(Context* context)
   {
-    const ActiveDocumentReader document(context);
-    const Sprite* sprite(document ? document->getSprite(): 0);
+    const ContextReader reader(context);
+    const Sprite* sprite(reader.sprite());
     return sprite != NULL;
   }
 
@@ -117,9 +118,6 @@ protected:
         if (!close_active_document(context))
           break;
       }
-      else if (context->getFirstDocument() != NULL) {
-        context->setActiveDocument(context->getFirstDocument());
-      }
       else
         break;
     }
@@ -129,13 +127,11 @@ protected:
 
 //////////////////////////////////////////////////////////////////////
 
-/**
- * Closes the active document, asking to the user to save it if it is
- * modified.
- */
+// Closes the active document, asking to the user to save it if it is
+// modified.
 static bool close_active_document(Context* context)
 {
-  Document* nextDocument = NULL;
+  Document* closedDocument = NULL;
   bool save_it;
   bool try_again = true;
 
@@ -144,8 +140,9 @@ static bool close_active_document(Context* context)
     save_it = false;
     {
       // The sprite is locked as reader temporaly
-      ActiveDocumentReader document(context);
-      nextDocument = context->getNextDocument(document);
+      const ContextReader reader(context);
+      const Document* document = reader.document();
+      closedDocument = const_cast<Document*>(document);
 
       // see if the sprite has changes
       while (document->isModified()) {
@@ -183,15 +180,12 @@ static bool close_active_document(Context* context)
 
   // Destroy the sprite (locking it as writer)
   {
-    ActiveDocumentWriter document(context);
+    DocumentDestroyer document(context, closedDocument);
     StatusBar::instance()
       ->setStatusText(0, "Sprite '%s' closed.",
                       base::get_file_name(document->getFilename()).c_str());
-    document.deleteDocument();
+    document.destroyDocument();
   }
-
-  // Select next document in the context
-  context->setActiveDocument(nextDocument);
 
   return true;
 }

@@ -19,7 +19,7 @@
 #include "config.h"
 
 #include "commands/command.h"
-#include "document_wrappers.h"
+#include "context_access.h"
 #include "raster/layer.h"
 #include "raster/mask.h"
 #include "raster/sprite.h"
@@ -56,8 +56,8 @@ bool CopyCommand::onEnabled(Context* context)
 
 void CopyCommand::onExecute(Context* context)
 {
-  const ActiveDocumentReader document(context);
-  util::clipboard::copy(document);
+  const ContextReader reader(context);
+  util::clipboard::copy(reader);
 }
 
 //////////////////////////////////////////////////////////////////////

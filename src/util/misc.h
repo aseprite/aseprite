@@ -19,9 +19,8 @@
 #ifndef UTIL_MISC_H_INCLUDED
 #define UTIL_MISC_H_INCLUDED
 
-class Image;
-class Document;
+class DocumentLocation;
 
-Image* NewImageFromMask(const Document* srcDocument);
+Image* NewImageFromMask(const DocumentLocation& location);
 
 #endif

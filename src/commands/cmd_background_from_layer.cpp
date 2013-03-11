@@ -20,7 +20,9 @@
 
 #include "app/color_utils.h"
 #include "commands/command.h"
-#include "document_wrappers.h"
+#include "context_access.h"
+#include "document_api.h"
+#include "document_location.h"
 #include "modules/gui.h"
 #include "raster/layer.h"
 #include "raster/sprite.h"
@@ -58,8 +60,9 @@ bool BackgroundFromLayerCommand::onEnabled(Context* context)
 
 void BackgroundFromLayerCommand::onExecute(Context* context)
 {
-  ActiveDocumentWriter document(context);
-  Sprite* sprite(document->getSprite());
+  ContextWriter writer(context);
+  Document* document(writer.document());
+  Sprite* sprite(writer.sprite());
 
   // each frame of the layer to be converted as `Background' must be
   // cleared using the selected background color in the color-bar
@@ -67,8 +70,8 @@ void BackgroundFromLayerCommand::onExecute(Context* context)
   bgcolor = color_utils::fixup_color_for_background(sprite->getPixelFormat(), bgcolor);
 
   {
-    UndoTransaction undo_transaction(document, "Background from Layer");
-    undo_transaction.backgroundFromLayer(static_cast<LayerImage*>(sprite->getCurrentLayer()), bgcolor);
+    UndoTransaction undo_transaction(writer.context(), "Background from Layer");
+    document->getApi().backgroundFromLayer(static_cast<LayerImage*>(writer.layer()), bgcolor);
     undo_transaction.commit();
   }
   update_screen_for_document(document);

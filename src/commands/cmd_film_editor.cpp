@@ -21,8 +21,8 @@
 #include "ui/gui.h"
 
 #include "commands/command.h"
+#include "context.h"
 #include "dialogs/aniedit.h"
-#include "document_wrappers.h"
 
 //////////////////////////////////////////////////////////////////////
 // film_editor
@@ -52,7 +52,7 @@ bool FilmEditorCommand::onEnabled(Context* context)
 
 void FilmEditorCommand::onExecute(Context* context)
 {
-  switch_between_animation_and_sprite_editor();
+  switch_between_animation_and_sprite_editor(context);
 }
 
 //////////////////////////////////////////////////////////////////////

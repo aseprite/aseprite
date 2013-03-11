@@ -19,8 +19,10 @@
 #ifndef DIALOGS_ANIEDIT_H_INCLUDED
 #define DIALOGS_ANIEDIT_H_INCLUDED
 
+class Context;
+
 bool animation_editor_is_movingcel();
 
-void switch_between_animation_and_sprite_editor();
+void switch_between_animation_and_sprite_editor(Context* context);
 
 #endif

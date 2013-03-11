@@ -31,7 +31,11 @@ class Sprite;
 class RenderEngine
 {
 public:
-
+  RenderEngine(const Document* document,
+               const Sprite* sprite,
+               const Layer* currentLayer,
+               FrameNumber currentFrame);
+  
   //////////////////////////////////////////////////////////////////////
   // Checked background configuration
 
@@ -53,17 +57,15 @@ public:
   //////////////////////////////////////////////////////////////////////
   // Preview image
 
-  static void setPreviewImage(Layer* layer, Image* drawable);
+  static void setPreviewImage(const Layer* layer, Image* drawable);
 
   //////////////////////////////////////////////////////////////////////
   // Main function used by sprite-editors to render the sprite
 
-  static Image* renderSprite(const Document* document,
-                             const Sprite* sprite,
-                             int source_x, int source_y,
-                             int width, int height,
-                             FrameNumber frame, int zoom,
-                             bool draw_tiled_bg);
+  Image* renderSprite(int source_x, int source_y,
+                      int width, int height,
+                      FrameNumber frame, int zoom,
+                      bool draw_tiled_bg);
 
   //////////////////////////////////////////////////////////////////////
   // Extra functions
@@ -76,15 +78,18 @@ public:
                           int x, int y, int zoom);
 
 private:
-  static void renderLayer(const Document* document,
-                          const Sprite* sprite,
-                          const Layer* layer,
-                          Image* image,
-                          int source_x, int source_y,
-                          FrameNumber frame, int zoom,
-                          void (*zoomed_func)(Image*, const Image*, const Palette*, int, int, int, int, int),
-                          bool render_background,
-                          bool render_transparent);
+  void renderLayer(const Layer* layer,
+                   Image* image,
+                   int source_x, int source_y,
+                   FrameNumber frame, int zoom,
+                   void (*zoomed_func)(Image*, const Image*, const Palette*, int, int, int, int, int),
+                   bool render_background,
+                   bool render_transparent);
+
+  const Document* m_document;
+  const Sprite* m_sprite;
+  const Layer* m_currentLayer;
+  FrameNumber m_currentFrame;
 };
 
 #endif

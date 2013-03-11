@@ -22,6 +22,7 @@
 #include "filters/tiled_mode.h"
 
 class Cel;
+class Context;
 class Document;
 class Image;
 class Layer;
@@ -37,7 +38,7 @@ class UndoTransaction;
 class ExpandCelCanvas
 {
 public:
-  ExpandCelCanvas(Document* document, Sprite* sprite, Layer* layer, TiledMode tiledMode, UndoTransaction& undo);
+  ExpandCelCanvas(Context* context, TiledMode tiledMode, UndoTransaction& undo);
   ~ExpandCelCanvas();
 
   // Commit changes made in getDestCanvas() in the cel's image. Adds

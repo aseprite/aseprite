@@ -22,12 +22,10 @@
 
 #include "app.h"
 #include "console.h"
-#include "document_wrappers.h"
 #include "modules/gui.h"
 #include "modules/palettes.h"
 #include "ui/manager.h"
 #include "ui/window.h"
-#include "ui_context.h"
 #include "widgets/main_window.h"
 
 #include <allegro.h>
@@ -71,10 +69,7 @@ bool GfxMode::setGfxMode() const
   set_black_palette();
 
   // Restore palette all screen stuff
-  {
-    const ActiveDocumentReader document(UIContext::instance());
-    app_refresh_screen(document);
-  }
+  app_refresh_screen();
 
   // Redraw top window
   MainWindow* mainWindow = App::instance()->getMainWindow();

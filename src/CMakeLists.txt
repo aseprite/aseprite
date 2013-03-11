@@ -164,6 +164,8 @@ add_library(aseprite-library
   context_flags.cpp
   context_observer_list.cpp
   document.cpp
+  document_api.cpp
+  document_location.cpp
   document_undo.cpp
   documents.cpp
   drop_files.cpp
@@ -328,6 +330,7 @@ add_library(aseprite-library
   tools/tool_box.cpp
   tools/tool_loop_manager.cpp
   undoers/add_cel.cpp
+  undoers/add_frame.cpp
   undoers/add_image.cpp
   undoers/add_layer.cpp
   undoers/add_palette.cpp
@@ -339,6 +342,7 @@ add_library(aseprite-library
   undoers/open_group.cpp
   undoers/remap_palette.cpp
   undoers/remove_cel.cpp
+  undoers/remove_frame.cpp
   undoers/remove_image.cpp
   undoers/remove_layer.cpp
   undoers/remove_palette.cpp
@@ -346,8 +350,6 @@ add_library(aseprite-library
   undoers/set_cel_frame.cpp
   undoers/set_cel_opacity.cpp
   undoers/set_cel_position.cpp
-  undoers/set_current_frame.cpp
-  undoers/set_current_layer.cpp
   undoers/set_frame_duration.cpp
   undoers/set_layer_flags.cpp
   undoers/set_layer_name.cpp

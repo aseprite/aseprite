@@ -39,14 +39,12 @@ Sprite::Sprite(PixelFormat format, int width, int height, int ncolors)
   , m_width(width)
   , m_height(height)
   , m_frames(1)
-  , m_frame(0)
 {
   ASSERT(width > 0 && height > 0);
 
   m_frlens.push_back(100);      // First frame with 100 msecs of duration
   m_stock = new Stock(format);
   m_folder = new LayerFolder(this);
-  m_layer = NULL;
 
   // Generate palette
   Palette pal(FrameNumber(0), ncolors);
@@ -167,16 +165,6 @@ LayerImage* Sprite::getBackgroundLayer() const
   return NULL;
 }
 
-Layer* Sprite::getCurrentLayer() const
-{
-  return m_layer;
-}
-
-void Sprite::setCurrentLayer(Layer* layer)
-{
-  m_layer = layer;
-}
-
 LayerIndex Sprite::countLayers() const
 {
   return LayerIndex(getFolder()->getLayersCount());
@@ -275,16 +263,6 @@ void Sprite::deletePalette(Palette* pal)
   delete pal;                   // palette
 }
 
-Palette* Sprite::getCurrentPalette() const
-{
-  return getPalette(getCurrentFrame());
-}
-
-RgbMap* Sprite::getRgbMap()
-{
-  return getRgbMap(getCurrentFrame());
-}
-
 RgbMap* Sprite::getRgbMap(FrameNumber frame)
 {
   if (m_rgbMap == NULL) {
@@ -299,6 +277,21 @@ RgbMap* Sprite::getRgbMap(FrameNumber frame)
 
 //////////////////////////////////////////////////////////////////////
 // Frames
+
+void Sprite::addFrame(FrameNumber newFrame)
+{
+  setTotalFrames(m_frames.next());
+  for (FrameNumber i=m_frames.previous(); i>=newFrame; i=i.previous())
+    setFrameDuration(i, getFrameDuration(i.previous()));
+}
+
+void Sprite::removeFrame(FrameNumber newFrame)
+{
+  FrameNumber newTotal = m_frames.previous();
+  for (FrameNumber i=newFrame; i<newTotal; i=i.next())
+    setFrameDuration(i, getFrameDuration(i.next()));
+  setTotalFrames(newTotal);
+}
 
 void Sprite::setTotalFrames(FrameNumber frames)
 {
@@ -332,55 +325,12 @@ void Sprite::setDurationForAllFrames(int msecs)
   std::fill(m_frlens.begin(), m_frlens.end(), MID(1, msecs, 65535));
 }
 
-void Sprite::setCurrentFrame(FrameNumber frame)
-{
-  m_frame = frame;
-}
-
-SpritePosition Sprite::getCurrentPosition() const
-{
-  return SpritePosition(layerToIndex(getCurrentLayer()),
-                        getCurrentFrame());
-}
-
-void Sprite::setCurrentPosition(const SpritePosition& spritePosition)
-{
-  Layer* layer = indexToLayer(spritePosition.layerIndex());
-  ASSERT(layer);
-  if (layer)
-    setCurrentLayer(layer);
-
-  setCurrentFrame(spritePosition.frameNumber());
-}
-
 //////////////////////////////////////////////////////////////////////
 // Images
 
 Stock* Sprite::getStock() const
 {
   return m_stock;
-}
-
-Image* Sprite::getCurrentImage(int* x, int* y, int* opacity) const
-{
-  Image* image = NULL;
-
-  if (getCurrentLayer() != NULL &&
-      getCurrentLayer()->isImage()) {
-    const Cel* cel = static_cast<const LayerImage*>(getCurrentLayer())->getCel(getCurrentFrame());
-    if (cel) {
-      ASSERT((cel->getImage() >= 0) &&
-             (cel->getImage() < getStock()->size()));
-
-      image = getStock()->getImage(cel->getImage());
-
-      if (x) *x = cel->getX();
-      if (y) *y = cel->getY();
-      if (opacity) *opacity = MID(0, cel->getOpacity(), 255);
-    }
-  }
-
-  return image;
 }
 
 void Sprite::getCels(CelList& cels)
@@ -416,22 +366,22 @@ void Sprite::remapImages(FrameNumber frameFrom, FrameNumber frameTo, const std::
 //////////////////////////////////////////////////////////////////////
 // Drawing
 
-void Sprite::render(Image* image, int x, int y) const
+void Sprite::render(Image* image, int x, int y, FrameNumber frame) const
 {
   image_rectfill(image, x, y, x+m_width-1, y+m_height-1,
                  (m_format == IMAGE_INDEXED ? getTransparentColor(): 0));
 
-  layer_render(getFolder(), image, x, y, getCurrentFrame());
+  layer_render(getFolder(), image, x, y, frame);
 }
 
-int Sprite::getPixel(int x, int y) const
+int Sprite::getPixel(int x, int y, FrameNumber frame) const
 {
   int color = 0;
 
   if ((x >= 0) && (y >= 0) && (x < m_width) && (y < m_height)) {
     Image* image = Image::create(m_format, 1, 1);
     image_clear(image, (m_format == IMAGE_INDEXED ? getTransparentColor(): 0));
-    render(image, -x, -y);
+    render(image, -x, -y, frame);
     color = image_getpixel(image, 0, 0);
     image_free(image);
   }

@@ -16,34 +16,36 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#include "config.h"
+#ifndef UNDOERS_REMOVE_FRAME_H_INCLUDED
+#define UNDOERS_REMOVE_FRAME_H_INCLUDED
 
-#include "undoers/set_current_frame.h"
+#include "raster/frame_number.h"
+#include "undo/object_id.h"
+#include "undoers/undoer_base.h"
 
-#include "raster/sprite.h"
-#include "undo/objects_container.h"
-#include "undo/undoers_collector.h"
+#include <sstream>
 
-using namespace undo;
-using namespace undoers;
+class Document;
+class Sprite;
 
-SetCurrentFrame::SetCurrentFrame(ObjectsContainer* objects, Sprite* sprite)
-  : m_spriteId(objects->addObject(sprite))
-  , m_frame(sprite->getCurrentFrame())
+namespace undoers {
+
+class RemoveFrame : public UndoerBase
 {
-}
+public:
+  RemoveFrame(undo::ObjectsContainer* objects, Document* document, Sprite* sprite, FrameNumber frame);
 
-void SetCurrentFrame::dispose()
-{
-  delete this;
-}
+  void dispose() OVERRIDE;
+  size_t getMemSize() const OVERRIDE { return sizeof(*this); }
+  void revert(undo::ObjectsContainer* objects, undo::UndoersCollector* redoers) OVERRIDE;
 
-void SetCurrentFrame::revert(ObjectsContainer* objects, UndoersCollector* redoers)
-{
-  Sprite* sprite = objects->getObjectT<Sprite>(m_spriteId);
+private:
+  undo::ObjectId m_documentId;
+  undo::ObjectId m_spriteId;
+  FrameNumber m_frame;
+  int m_frameDuration;
+};
 
-  // Push another SetCurrentFrame as redoer
-  redoers->pushUndoer(new SetCurrentFrame(objects, sprite));
+} // namespace undoers
 
-  sprite->setCurrentFrame(m_frame);
-}
+#endif  // UNDOERS_REMOVE_FRAME_H_INCLUDED

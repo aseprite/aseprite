@@ -20,11 +20,12 @@
 
 #include "app.h"
 #include "commands/command.h"
-#include "document_wrappers.h"
+#include "context_access.h"
+#include "document_api.h"
+#include "document_location.h"
 #include "modules/gui.h"
 #include "raster/layer.h"
 #include "raster/mask.h"
-#include "raster/sprite.h"
 #include "undo/undo_history.h"
 #include "undo_transaction.h"
 #include "widgets/color_bar.h"
@@ -60,14 +61,17 @@ bool ClearCommand::onEnabled(Context* context)
 
 void ClearCommand::onExecute(Context* context)
 {
-  ActiveDocumentWriter document(context);
-  Sprite* sprite(document->getSprite());
+  ContextWriter writer(context);
+  Document* document = writer.document();
   bool visibleMask = document->isMaskVisible();
   {
-    UndoTransaction undoTransaction(document, "Clear");
-    undoTransaction.clearMask(app_get_color_to_clear_layer(sprite->getCurrentLayer()));
+    UndoTransaction undoTransaction(writer.context(), "Clear");
+    DocumentApi api = document->getApi();
+    api.clearMask(writer.layer(), writer.cel(),
+                  app_get_color_to_clear_layer(writer.layer()));
     if (visibleMask)
-      undoTransaction.deselectMask();
+      api.deselectMask();
+
     undoTransaction.commit();
   }
   if (visibleMask)

@@ -24,6 +24,7 @@
 
 #include <sstream>
 
+class Document;
 class Layer;
 
 namespace undoers {
@@ -31,7 +32,7 @@ namespace undoers {
 class RemoveLayer : public UndoerBase
 {
 public:
-  RemoveLayer(undo::ObjectsContainer* objects, Layer* layer);
+  RemoveLayer(undo::ObjectsContainer* objects, Document* document, Layer* layer);
 
   void dispose() OVERRIDE;
   size_t getMemSize() const OVERRIDE { return sizeof(*this) + getStreamSize(); }
@@ -42,6 +43,7 @@ private:
     return const_cast<std::stringstream*>(&m_stream)->tellp();
   }
 
+  undo::ObjectId m_documentId;
   undo::ObjectId m_folderId;
   undo::ObjectId m_afterId;
   std::stringstream m_stream;

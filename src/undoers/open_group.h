@@ -31,7 +31,12 @@ namespace undoers {
 class OpenGroup : public undo::Undoer
 {
 public:
-  OpenGroup(undo::ObjectsContainer* objects, const char* label, undo::Modification modification, Sprite* sprite);
+  OpenGroup(undo::ObjectsContainer* objects,
+            const char* label,
+            undo::Modification modification,
+            Sprite* sprite,
+            const SpritePosition& pos);
+
   void dispose() OVERRIDE;
   size_t getMemSize() const OVERRIDE { return sizeof(*this); }
   undo::Modification getModification() const { return m_modification; }

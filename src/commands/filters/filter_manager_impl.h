@@ -21,7 +21,7 @@
 
 #include "base/exception.h"
 #include "base/exception.h"
-#include "document_wrappers.h"
+#include "document_location.h"
 #include "filters/filter_indexed_data.h"
 #include "filters/filter_manager.h"
 #include "raster/pixel_format.h"
@@ -29,6 +29,8 @@
 #include <cstdlib>
 #include <cstring>
 
+class Context;
+class Document;
 class Filter;
 class Image;
 class Layer;
@@ -67,7 +69,7 @@ public:
     virtual bool isCancelled() = 0;
   };
 
-  FilterManagerImpl(Document* document, Filter* filter);
+  FilterManagerImpl(Context* context, Filter* filter);
   ~FilterManagerImpl();
 
   void setProgressDelegate(IProgressDelegate* progressDelegate);
@@ -81,8 +83,9 @@ public:
   bool applyStep();
   void applyToTarget();
 
-  Document* getDocument() const { return m_document; }
-  Sprite* getSprite() const { return m_sprite; }
+  Document* getDocument() { return m_location.document(); }
+  Sprite* getSprite() { return m_location.sprite(); }
+  Layer* getLayer() { return m_location.layer(); }
   Image* getDestinationImage() const { return m_dst; }
 
   // Updates the current editor to show the progress of the preview.
@@ -109,8 +112,8 @@ private:
   void applyToImage(Layer* layer, Image* image, int x, int y);
   bool updateMask(Mask* mask, const Image* image);
 
-  Document* m_document;
-  Sprite* m_sprite;
+  Context* m_context;
+  DocumentLocation m_location;
   Filter* m_filter;
   Image* m_src;
   Image* m_dst;

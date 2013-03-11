@@ -20,7 +20,7 @@
 
 #include "commands/command.h"
 #include "dialogs/aniedit.h"
-#include "document_wrappers.h"
+#include "context_access.h"
 #include "ui/base.h"
 #include "util/celmove.h"
 
@@ -49,8 +49,8 @@ bool MoveCelCommand::onEnabled(Context* context)
 
 void MoveCelCommand::onExecute(Context* context)
 {
-  ActiveDocumentWriter document(context);
-  move_cel(document);
+  ContextWriter writer(context);
+  move_cel(writer);
 }
 
 //////////////////////////////////////////////////////////////////////

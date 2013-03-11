@@ -21,11 +21,14 @@
 #include "widgets/editor/moving_cel_state.h"
 
 #include "app.h"
+#include "context_access.h"
+#include "document_api.h"
 #include "raster/cel.h"
 #include "raster/layer.h"
 #include "raster/mask.h"
 #include "raster/sprite.h"
 #include "ui/message.h"
+#include "ui_context.h"
 #include "undo_transaction.h"
 #include "widgets/editor/editor.h"
 #include "widgets/status_bar.h"
@@ -37,12 +40,10 @@ MovingCelState::MovingCelState(Editor* editor, Message* msg)
 {
   Document* document = editor->getDocument();
   Sprite* sprite = editor->getSprite();
+  LayerImage* layer = static_cast<LayerImage*>(editor->getLayer());
+  ASSERT(layer->isImage());
 
-  ASSERT(sprite->getCurrentLayer()->isImage());
-
-  LayerImage* layer = static_cast<LayerImage*>(sprite->getCurrentLayer());
-
-  m_cel = layer->getCel(sprite->getCurrentFrame());
+  m_cel = layer->getCel(editor->getFrame());
   if (m_cel) {
     m_celStartX = m_cel->getX();
     m_celStartY = m_cel->getY();
@@ -83,19 +84,21 @@ bool MovingCelState::onMouseUp(Editor* editor, Message* msg)
 
     // If the user didn't cancel the operation...
     if (!m_canceled) {
-       UndoTransaction undoTransaction(document, "Cel Movement", undo::ModifyDocument);
+      ContextWriter writer(UIContext::instance());
+      UndoTransaction undoTransaction(writer.context(), "Cel Movement", undo::ModifyDocument);
+      DocumentApi api = document->getApi();
 
-       // And now we move the cel to the new position.
-       if (m_cel)
-         undoTransaction.setCelPosition(m_cel, m_celNewX, m_celNewY);
+      // And now we move the cel to the new position.
+      if (m_cel)
+        api.setCelPosition(writer.sprite(), m_cel, m_celNewX, m_celNewY);
 
-       // Move selection if it was visible
-       if (m_maskVisible)
-         undoTransaction.setMaskPosition(document->getMask()->getBounds().x + m_celNewX - m_celStartX,
-                                         document->getMask()->getBounds().y + m_celNewY - m_celStartY);
+      // Move selection if it was visible
+      if (m_maskVisible)
+        api.setMaskPosition(document->getMask()->getBounds().x + m_celNewX - m_celStartX,
+                            document->getMask()->getBounds().y + m_celNewY - m_celStartY);
 
-       undoTransaction.commit();
-     }
+      undoTransaction.commit();
+    }
   }
 
   // Restore the mask visibility.

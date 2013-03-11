@@ -23,11 +23,10 @@
 
 #include "app.h"
 #include "commands/command.h"
-#include "document_wrappers.h"
+#include "context_access.h"
 #include "modules/gui.h"
 #include "raster/image.h"
 #include "raster/layer.h"
-#include "raster/sprite.h"
 
 using namespace ui;
 
@@ -60,9 +59,8 @@ bool LayerPropertiesCommand::onEnabled(Context* context)
 
 void LayerPropertiesCommand::onExecute(Context* context)
 {
-  const ActiveDocumentReader document(context);
-  const Sprite* sprite(document->getSprite());
-  const Layer* layer = sprite->getCurrentLayer();
+  const ContextReader reader(context);
+  const Layer* layer = reader.layer();
 
   UniquePtr<Window> window(new Window(false, "Layer Properties"));
   Box* box1 = new Box(JI_VERTICAL);
@@ -93,11 +91,11 @@ void LayerPropertiesCommand::onExecute(Context* context)
   window->openWindowInForeground();
 
   if (window->getKiller() == button_ok) {
-    DocumentWriter documentWriter(document);
+    ContextWriter writer(reader);
 
-    const_cast<Layer*>(layer)->setName(entry_name->getText());
+    writer.layer()->setName(entry_name->getText());
 
-    update_screen_for_document(documentWriter);
+    update_screen_for_document(writer.document());
   }
 }
 

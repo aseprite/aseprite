@@ -24,6 +24,7 @@
 #include "app/color.h"
 #include "app/color_utils.h"
 #include "context.h"
+#include "context_access.h"
 #include "raster/cel.h"
 #include "raster/layer.h"
 #include "raster/mask.h"
@@ -54,6 +55,7 @@ class ToolLoopImpl : public tools::ToolLoop
   Document* m_document;
   Sprite* m_sprite;
   Layer* m_layer;
+  FrameNumber m_frame;
   Cel* m_cel;
   bool m_filled;
   bool m_previewFilled;
@@ -81,8 +83,6 @@ public:
                Context* context,
                tools::Tool* tool,
                Document* document,
-               Sprite* sprite,
-               Layer* layer,
                tools::ToolLoop::Button button,
                const app::Color& primary_color,
                const app::Color& secondary_color)
@@ -90,21 +90,22 @@ public:
     , m_context(context)
     , m_tool(tool)
     , m_document(document)
-    , m_sprite(sprite)
-    , m_layer(layer)
+    , m_sprite(editor->getSprite())
+    , m_layer(editor->getLayer())
+    , m_frame(editor->getFrame())
     , m_canceled(false)
     , m_settings(m_context->getSettings())
     , m_docSettings(m_settings->getDocumentSettings(m_document))
     , m_button(button)
-    , m_primary_color(color_utils::color_for_layer(primary_color, layer))
-    , m_secondary_color(color_utils::color_for_layer(secondary_color, layer))
-    , m_undoTransaction(m_document,
+    , m_primary_color(color_utils::color_for_layer(primary_color, m_layer))
+    , m_secondary_color(color_utils::color_for_layer(secondary_color, m_layer))
+    , m_undoTransaction(m_context,
                         m_tool->getText().c_str(),
                         ((getInk()->isSelection() ||
                           getInk()->isEyedropper() ||
                           getInk()->isScrollMovement()) ? undo::DoesntModifyDocument:
                                                           undo::ModifyDocument))
-    , m_expandCelCanvas(document, sprite, layer, m_docSettings->getTiledMode(), m_undoTransaction)
+    , m_expandCelCanvas(m_context, m_docSettings->getTiledMode(), m_undoTransaction)
   {
     IToolSettings* toolSettings = m_settings->getToolSettings(m_tool);
 
@@ -189,6 +190,7 @@ public:
   Layer* getLayer() OVERRIDE { return m_layer; }
   Image* getSrcImage() OVERRIDE { return m_expandCelCanvas.getSourceCanvas(); }
   Image* getDstImage() OVERRIDE { return m_expandCelCanvas.getDestCanvas(); }
+  RgbMap* getRgbMap() OVERRIDE { return m_sprite->getRgbMap(m_frame); }
   bool useMask() OVERRIDE { return m_useMask; }
   Mask* getMask() OVERRIDE { return m_mask; }
   gfx::Point getMaskOrigin() OVERRIDE { return m_maskOrigin; }
@@ -247,9 +249,7 @@ tools::ToolLoop* create_tool_loop(Editor* editor, Context* context, Message* msg
   if (!current_tool)
     return NULL;
 
-  Sprite* sprite = editor->getSprite();
-  Layer* layer = sprite->getCurrentLayer();
-
+  Layer* layer = editor->getLayer();
   if (!layer) {
     Alert::show(PACKAGE "<<The current sprite does not have any layer.||&Close");
     return NULL;
@@ -291,7 +291,6 @@ tools::ToolLoop* create_tool_loop(Editor* editor, Context* context, Message* msg
                      context,
                      current_tool,
                      editor->getDocument(),
-                     sprite, layer,
                      msg->mouse.left ? tools::ToolLoop::Left:
                                        tools::ToolLoop::Right,
                      msg->mouse.left ? fg: bg,

@@ -22,6 +22,7 @@
 
 #include "context.h"
 #include "document.h"
+#include "document_location.h"
 #include "raster/cel.h"
 #include "raster/layer.h"
 #include "raster/sprite.h"
@@ -34,7 +35,8 @@ ContextFlags::ContextFlags()
 
 void ContextFlags::update(Context* context)
 {
-  Document* document = context->getActiveDocument();
+  DocumentLocation location = context->getActiveLocation();
+  Document* document = location.document();
 
   m_flags = 0;
 
@@ -47,14 +49,14 @@ void ContextFlags::update(Context* context)
       if (document->isMaskVisible())
         m_flags |= HasVisibleMask;
 
-      Sprite* sprite = document->getSprite();
+      Sprite* sprite = location.sprite();
       if (sprite) {
         m_flags |= HasActiveSprite;
 
         if (sprite->getBackgroundLayer())
           m_flags |= HasBackgroundLayer;
 
-        Layer* layer = sprite->getCurrentLayer();
+        Layer* layer = location.layer();
         if (layer) {
           m_flags |= HasActiveLayer;
 
@@ -70,7 +72,7 @@ void ContextFlags::update(Context* context)
           if (layer->isImage()) {
             m_flags |= ActiveLayerIsImage;
 
-            Cel* cel = static_cast<LayerImage*>(layer)->getCel(sprite->getCurrentFrame());
+            Cel* cel = static_cast<LayerImage*>(layer)->getCel(location.frame());
             if (cel) {
               m_flags |= HasActiveCel;
 

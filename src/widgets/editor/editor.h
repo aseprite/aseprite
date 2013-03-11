@@ -24,6 +24,7 @@
 #include "base/signal.h"
 #include "document.h"
 #include "gfx/rect.h"
+#include "raster/frame_number.h"
 #include "ui/base.h"
 #include "ui/timer.h"
 #include "ui/widget.h"
@@ -35,9 +36,11 @@
 #define MAX_ZOOM 5
 
 class Context;
+class DocumentLocation;
 class EditorCustomizationDelegate;
 class PixelsMovement;
 class Sprite;
+class Layer;
 
 namespace gfx { class Region; }
 namespace tools { class Tool; }
@@ -68,8 +71,14 @@ public:
   void setDecorator(EditorDecorator* decorator) { m_decorator = decorator; }
 
   Document* getDocument() { return m_document; }
-
   Sprite* getSprite() { return m_sprite; }
+  Layer* getLayer() { return m_layer; }
+  FrameNumber getFrame() { return m_frame; }
+  void getDocumentLocation(DocumentLocation* location) const;
+  DocumentLocation getDocumentLocation() const;
+
+  void setLayer(const Layer* layer);
+  void setFrame(FrameNumber frame);
 
   int getZoom() const { return m_zoom; }
   int getOffsetX() const { return m_offset_x; }
@@ -186,6 +195,8 @@ private:
 
   Document* m_document;         // Active document in the editor
   Sprite* m_sprite;             // Active sprite in the editor
+  Layer* m_layer;               // Active layer in the editor
+  FrameNumber m_frame;          // Active frame in the editor
   int m_zoom;                   // Zoom in the editor
 
   // Drawing cursor
@@ -199,7 +210,7 @@ private:
   // the user is not pressing any keyboard key).
   tools::Tool* m_quicktool;
 
-  /* offset for the sprite */
+  // Offset for the sprite
   int m_offset_x;
   int m_offset_y;
 

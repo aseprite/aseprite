@@ -25,6 +25,8 @@
 #include "document_event.h"
 #include "modules/editors.h"
 #include "modules/gui.h"
+#include "raster/layer.h"
+#include "raster/sprite.h"
 #include "ui/accelerator.h"
 #include "ui/message.h"
 #include "ui/view.h"
@@ -136,6 +138,11 @@ DocumentView::~DocumentView()
   delete m_editor;
 }
 
+void DocumentView::getDocumentLocation(DocumentLocation* location) const
+{
+  m_editor->getDocumentLocation(location);
+}
+
 std::string DocumentView::getTabText()
 {
   std::string str = base::get_file_name(m_document->getFilename());
@@ -167,4 +174,70 @@ void DocumentView::onSpritePixelsModified(DocumentEvent& ev)
 {
   if (m_editor->isVisible())
     m_editor->drawSpriteClipped(ev.region());
+}
+
+void DocumentView::onLayerMergedDown(DocumentEvent& ev)
+{
+  m_editor->setLayer(ev.targetLayer());
+}
+
+void DocumentView::onAddLayer(DocumentEvent& ev)
+{
+  if (current_editor == m_editor) {
+    ASSERT(ev.layer() != NULL);
+    m_editor->setLayer(ev.layer());
+  }
+}
+
+void DocumentView::onRemoveLayer(DocumentEvent& ev)
+{
+  Sprite* sprite = ev.sprite();
+  Layer* layer = ev.layer();
+
+  // If the layer that was removed is the selected one
+  if (layer == m_editor->getLayer()) {
+    LayerFolder* parent = layer->getParent();
+    Layer* layer_select = NULL;
+
+    // Select previous layer, or next layer, or the parent (if it is
+    // not the main layer of sprite set).
+    if (layer->getPrevious())
+      layer_select = layer->getPrevious();
+    else if (layer->getNext())
+      layer_select = layer->getNext();
+    else if (parent != sprite->getFolder())
+      layer_select = parent;
+
+    m_editor->setLayer(layer_select);
+  }
+}
+
+void DocumentView::onAddFrame(DocumentEvent& ev)
+{
+  if (current_editor == m_editor)
+    m_editor->setFrame(ev.frame());
+  else if (m_editor->getFrame() > ev.frame())
+    m_editor->setFrame(m_editor->getFrame().next());
+}
+
+void DocumentView::onRemoveFrame(DocumentEvent& ev)
+{
+  // Adjust current frame of all editors that are in a frame more
+  // advanced that the removed one.
+  if (m_editor->getFrame() > ev.frame()) {
+    m_editor->setFrame(m_editor->getFrame().previous());
+  }
+  // If the editor was in the previous "last frame" (current value of
+  // getTotalFrames()), we've to adjust it to the new last frame
+  // (getLastFrame())
+  else if (m_editor->getFrame() >= m_editor->getSprite()->getTotalFrames()) {
+    m_editor->setFrame(m_editor->getSprite()->getLastFrame());
+  }
+}
+
+void DocumentView::onTotalFramesChanged(DocumentEvent& ev)
+{
+  if (m_editor->getFrame() >= m_editor->getSprite()->getTotalFrames()) {
+    m_editor->setFrame(m_editor->getSprite()->getLastFrame());
+  }
 }

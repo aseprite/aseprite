@@ -64,7 +64,7 @@ bool FilterPreview::onProcessMessage(Message* msg)
   switch (msg->type) {
 
     case JM_OPEN:
-      RenderEngine::setPreviewImage(m_filterMgr->getSprite()->getCurrentLayer(),
+      RenderEngine::setPreviewImage(m_filterMgr->getLayer(),
                                     m_filterMgr->getDestinationImage());
       break;
 

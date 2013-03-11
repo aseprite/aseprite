@@ -21,7 +21,7 @@
 #include "base/unique_ptr.h"
 #include "commands/command.h"
 #include "commands/commands.h"
-#include "document_wrappers.h"
+#include "context_access.h"
 #include "modules/gui.h"
 #include "raster/image.h"
 #include "raster/mask.h"
@@ -60,8 +60,8 @@ void InvertMaskCommand::onExecute(Context* context)
 {
   bool hasMask = false;
   {
-    const ActiveDocumentReader document(context);
-    if (document->isMaskVisible())
+    const ContextReader reader(context);
+    if (reader.document()->isMaskVisible())
       hasMask = true;
   }
 
@@ -74,9 +74,10 @@ void InvertMaskCommand::onExecute(Context* context)
   }
   // invert the current mask
   else {
-    ActiveDocumentWriter document(context);
-    Sprite* sprite(document->getSprite());
-    UndoTransaction undo(document, "Mask Invert", undo::DoesntModifyDocument);
+    ContextWriter writer(context);
+    Document* document(writer.document());
+    Sprite* sprite(writer.sprite());
+    UndoTransaction undo(writer.context(), "Mask Invert", undo::DoesntModifyDocument);
     if (undo.isEnabled())
       undo.pushUndoer(new undoers::SetMask(undo.getObjects(), document));
 

@@ -20,8 +20,10 @@
 
 #include "app.h"
 #include "console.h"
+#include "context_access.h"
 #include "document.h"
-#include "document_wrappers.h"
+#include "document_api.h"
+#include "document_location.h"
 #include "modules/editors.h"
 #include "modules/gfx.h"
 #include "modules/gui.h"
@@ -60,7 +62,7 @@
 #endif
 
 static void set_clipboard(Image* image, Palette* palette, bool set_system_clipboard);
-static bool copy_from_document(const Document* document);
+static bool copy_from_document(const DocumentLocation& location);
 
 static bool first_time = true;
 
@@ -95,19 +97,21 @@ static void set_clipboard(Image* image, Palette* palette, bool set_system_clipbo
 #endif
 }
 
-static bool copy_from_document(const Document* document)
+static bool copy_from_document(const DocumentLocation& location)
 {
+  const Document* document = location.document();
+
   ASSERT(document != NULL);
   ASSERT(document->isMaskVisible());
 
-  Image* image = NewImageFromMask(document);
+  Image* image = NewImageFromMask(location);
   if (!image)
     return false;
 
   clipboard_x = document->getMask()->getBounds().x;
   clipboard_y = document->getMask()->getBounds().y;
 
-  const Palette* pal = document->getSprite()->getPalette(document->getSprite()->getCurrentFrame());
+  const Palette* pal = document->getSprite()->getPalette(location.frame());
   set_clipboard(image, pal ? new Palette(*pal): NULL, true);
   return true;
 }
@@ -121,35 +125,37 @@ bool util::clipboard::can_paste()
   return clipboard_image != NULL;
 }
 
-void util::clipboard::cut(DocumentWriter& document)
+void util::clipboard::cut(ContextWriter& writer)
 {
-  ASSERT(document != NULL);
-  ASSERT(document->getSprite() != NULL);
-  ASSERT(document->getSprite()->getCurrentLayer() != NULL);
+  ASSERT(writer.document() != NULL);
+  ASSERT(writer.sprite() != NULL);
+  ASSERT(writer.layer() != NULL);
 
-  if (!copy_from_document(document)) {
+  if (!copy_from_document(*writer.location())) {
     Console console;
     console.printf("Can't copying an image portion from the current layer\n");
   }
   else {
     {
-      Sprite* sprite = document->getSprite();
+      UndoTransaction undoTransaction(writer.context(), "Cut");
+      DocumentApi api(writer.document()->getApi());
 
-      UndoTransaction undoTransaction(document, "Cut");
-      undoTransaction.clearMask(app_get_color_to_clear_layer(sprite->getCurrentLayer()));
-      undoTransaction.deselectMask();
+      api.clearMask(writer.layer(), writer.cel(),
+                    app_get_color_to_clear_layer(writer.layer()));
+      api.deselectMask();
+
       undoTransaction.commit();
     }
-    document->generateMaskBoundaries();
-    update_screen_for_document(document);
+    writer.document()->generateMaskBoundaries();
+    update_screen_for_document(writer.document());
   }
 }
 
-void util::clipboard::copy(const DocumentReader& document)
+void util::clipboard::copy(const ContextReader& reader)
 {
-  ASSERT(document != NULL);
+  ASSERT(reader.document() != NULL);
 
-  if (!copy_from_document(document)) {
+  if (!copy_from_document(*reader.location())) {
     Console console;
     console.printf("Can't copying an image portion from the current layer\n");
   }
@@ -191,10 +197,11 @@ void util::clipboard::paste()
   if (clipboard_image->getPixelFormat() == sprite->getPixelFormat())
     src_image = clipboard_image;
   else {
-    RgbMap* rgbmap = sprite->getRgbMap();
+    RgbMap* rgbmap = sprite->getRgbMap(editor->getFrame());
     src_image = quantization::convert_pixel_format(clipboard_image,
                                                    sprite->getPixelFormat(), DITHERING_NONE,
-                                                   rgbmap, sprite->getPalette(sprite->getCurrentFrame()),
+                                                   rgbmap,
+                                                   sprite->getPalette(editor->getFrame()),
                                                    false);
   }
 

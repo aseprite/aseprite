@@ -24,6 +24,7 @@
 #include "base/mutex.h"
 #include "base/scoped_lock.h"
 #include "base/unique_ptr.h"
+#include "document_api.h"
 #include "document_event.h"
 #include "document_observer.h"
 #include "document_undo.h"
@@ -65,13 +66,19 @@ Document::Document(Sprite* sprite)
 
 Document::~Document()
 {
-  DocumentEvent ev(this, m_sprite);
+  DocumentEvent ev(this);
+  ev.sprite(m_sprite);
   notifyObservers<DocumentEvent&>(&DocumentObserver::onRemoveSprite, ev);
 
   if (m_bound.seg)
     base_free(m_bound.seg);
 
   destroyExtraCel();
+}
+
+DocumentApi Document::getApi(undo::UndoersCollector* undoers)
+{
+  return DocumentApi(this, undoers ? undoers: m_undo->getDefaultUndoersCollector());
 }
 
 Document* Document::createBasicDocument(PixelFormat format, int width, int height, int ncolors)
@@ -109,10 +116,7 @@ Document* Document::createBasicDocument(PixelFormat format, int width, int heigh
     }
 
     // Add the layer in the sprite.
-    sprite->getFolder()->addLayer(layer);
-
-    // Set the layer as the current one.
-    sprite->setCurrentLayer(layer.release()); // Release the layer because it's owned by the sprite
+    sprite->getFolder()->addLayer(layer.release()); // Release the layer because it's owned by the sprite
   }
 
   // Create the document with the new sprite.
@@ -128,7 +132,8 @@ void Document::addSprite(Sprite* sprite)
   ASSERT(m_sprite == NULL);     // TODO add support for more sprites in the future (e.g. for .ico files)
   m_sprite.reset(sprite);
 
-  DocumentEvent ev(this, m_sprite);
+  DocumentEvent ev(this);
+  ev.sprite(m_sprite);
   notifyObservers<DocumentEvent&>(&DocumentObserver::onAddSprite, ev);
 }
 
@@ -140,8 +145,41 @@ void Document::notifyGeneralUpdate()
 
 void Document::notifySpritePixelsModified(Sprite* sprite, const gfx::Region& region)
 {
-  DocumentEvent ev(this, sprite, NULL, NULL, NULL, -1, FrameNumber(), region);
+  DocumentEvent ev(this);
+  ev.sprite(sprite);
+  ev.region(region);
   notifyObservers<DocumentEvent&>(&DocumentObserver::onSpritePixelsModified, ev);
+}
+
+void Document::notifyLayerMergedDown(Layer* srcLayer, Layer* targetLayer)
+{
+  DocumentEvent ev(this);
+  ev.sprite(srcLayer->getSprite());
+  ev.layer(srcLayer);
+  ev.targetLayer(targetLayer);
+  notifyObservers<DocumentEvent&>(&DocumentObserver::onLayerMergedDown, ev);
+}
+
+void Document::notifyCelMoved(Layer* fromLayer, FrameNumber fromFrame, Layer* toLayer, FrameNumber toFrame)
+{
+  DocumentEvent ev(this);
+  ev.sprite(fromLayer->getSprite());
+  ev.layer(fromLayer);
+  ev.frame(fromFrame);
+  ev.targetLayer(toLayer);
+  ev.targetFrame(toFrame);
+  notifyObservers<DocumentEvent&>(&DocumentObserver::onCelMoved, ev);
+}
+
+void Document::notifyCelCopied(Layer* fromLayer, FrameNumber fromFrame, Layer* toLayer, FrameNumber toFrame)
+{
+  DocumentEvent ev(this);
+  ev.sprite(fromLayer->getSprite());
+  ev.layer(fromLayer);
+  ev.frame(fromFrame);
+  ev.targetLayer(toLayer);
+  ev.targetFrame(toFrame);
+  notifyObservers<DocumentEvent&>(&DocumentObserver::onCelCopied, ev);
 }
 
 const char* Document::getFilename() const
@@ -382,12 +420,9 @@ void Document::copyLayerContent(const Layer* sourceLayer0, Document* destDoc, La
       ASSERT(destChild != NULL);
 
       // Add the new layer in the sprite.
-      if (undo->isEnabled())
-        undo->pushUndoer(new undoers::AddLayer(undo->getObjects(),
-            destLayer, destChild));
-
-      destLayer->addLayer(destChild);
-      destChild.release();
+      destDoc->getApi().addLayer(destLayer,
+                                 destChild.release(),
+                                 destLayer->getLastLayer());
     }
   }
   else  {
@@ -406,7 +441,6 @@ Document* Document::duplicate(DuplicateType type) const
   Sprite* spriteCopy = spriteCopyPtr.release();
 
   spriteCopy->setTotalFrames(sourceSprite->getTotalFrames());
-  spriteCopy->setCurrentFrame(sourceSprite->getCurrentFrame());
 
   // Copy frames duration
   for (FrameNumber i(0); i < sourceSprite->getTotalFrames(); ++i)
@@ -431,12 +465,6 @@ Document* Document::duplicate(DuplicateType type) const
       // Copy the layer folder
       copyLayerContent(getSprite()->getFolder(), documentCopy, spriteCopy->getFolder());
 
-      // Set as current layer the same layer as the source
-      {
-        LayerIndex index = sourceSprite->layerToIndex(sourceSprite->getCurrentLayer());
-        spriteCopy->setCurrentLayer(spriteCopy->indexToLayer(index));
-      }
-
       // Re-enable the undo
       documentCopy->getUndo()->setEnabled(true);
       break;
@@ -454,7 +482,6 @@ Document* Document::duplicate(DuplicateType type) const
 
         // Add and select the new flat layer
         spriteCopy->getFolder()->addLayer(flatLayer);
-        spriteCopy->setCurrentLayer(flatLayer);
 
         // Configure the layer as background only if the original
         // sprite has a background layer.

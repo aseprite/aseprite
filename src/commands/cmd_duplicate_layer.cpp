@@ -21,8 +21,10 @@
 #include "app.h"
 #include "commands/command.h"
 #include "console.h"
+#include "context_access.h"
+#include "document_api.h"
 #include "document_undo.h"
-#include "document_wrappers.h"
+#include "modules/editors.h"
 #include "modules/gui.h"
 #include "raster/layer.h"
 #include "raster/sprite.h"
@@ -30,7 +32,7 @@
 #include "undo_transaction.h"
 #include "undoers/add_layer.h"
 #include "undoers/move_layer.h"
-#include "undoers/set_current_layer.h"
+#include "widgets/editor/editor.h"
 
 //////////////////////////////////////////////////////////////////////
 // Duplicate Layer command
@@ -62,10 +64,11 @@ bool DuplicateLayerCommand::onEnabled(Context* context)
 
 void DuplicateLayerCommand::onExecute(Context* context)
 {
-  ActiveDocumentWriter document(context);
-  Sprite* sprite = document->getSprite();
-  UndoTransaction undo(document, "Layer Duplication");
-  LayerImage* sourceLayer = static_cast<LayerImage*>(sprite->getCurrentLayer());
+  ContextWriter writer(context);
+  Document* document = writer.document();
+  Sprite* sprite = writer.sprite();
+  UndoTransaction undo(writer.context(), "Layer Duplication");
+  LayerImage* sourceLayer = static_cast<LayerImage*>(writer.layer());
 
   // Create a new layer
   UniquePtr<LayerImage> newLayerPtr(new LayerImage(sprite));
@@ -84,24 +87,12 @@ void DuplicateLayerCommand::onExecute(Context* context)
   newLayerPtr->setName(newLayerPtr->getName() + " Copy");
 
   // Add the new layer in the sprite.
-  if (undo.isEnabled())
-    undo.pushUndoer(new undoers::AddLayer(undo.getObjects(),
-        sourceLayer->getParent(), newLayerPtr));
-
-  sourceLayer->getParent()->addLayer(newLayerPtr);
+  document->getApi().addLayer(sourceLayer->getParent(), newLayerPtr, sourceLayer);
 
   // Release the pointer as it is owned by the sprite now
   Layer* newLayer = newLayerPtr.release();
 
-  if (undo.isEnabled()) {
-    undo.pushUndoer(new undoers::MoveLayer(undo.getObjects(), newLayer));
-    undo.pushUndoer(new undoers::SetCurrentLayer(undo.getObjects(), sprite));
-  }
-
   undo.commit();
-
-  sourceLayer->getParent()->stackLayer(newLayer, sourceLayer);
-  sprite->setCurrentLayer(newLayer);
 
   update_screen_for_document(document);
 }

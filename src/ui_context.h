@@ -19,6 +19,7 @@
 #ifndef UI_CONTEXT_H_INCLUDED
 #define UI_CONTEXT_H_INCLUDED
 
+#include "base/compiler_specific.h"
 #include "context.h"
 
 class Editor;
@@ -50,9 +51,9 @@ public:
   Editor* getEditorFor(Document* document);
 
 protected:
-  virtual void onAddDocument(Document* document);
-  virtual void onRemoveDocument(Document* document);
-  virtual void onSetActiveDocument(Document* document);
+  virtual void onAddDocument(Document* document) OVERRIDE;
+  virtual void onRemoveDocument(Document* document) OVERRIDE;
+  virtual void onGetActiveLocation(DocumentLocation* location) const OVERRIDE;
 
 private:
   DocumentViews m_allViews;

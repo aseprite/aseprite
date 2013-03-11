@@ -30,10 +30,12 @@
 #include "ini_file.h"
 #include "modules/editors.h"
 #include "modules/palettes.h"
+#include "raster/cel.h"
 #include "raster/image.h"
 #include "raster/layer.h"
 #include "raster/palette.h"
 #include "raster/sprite.h"
+#include "raster/stock.h"
 #include "ui/gui.h"
 #include "ui_context.h"
 #include "util/clipboard.h"
@@ -171,7 +173,7 @@ void NewFileCommand::onExecute(Context* context)
                                       (format == IMAGE_INDEXED ? ncolors: 256)));
       Sprite* sprite(document->getSprite());
 
-      get_default_palette()->copyColorsTo(sprite->getCurrentPalette());
+      get_default_palette()->copyColorsTo(sprite->getPalette(FrameNumber(0)));
 
       usprintf(buf, "Sprite-%04d", ++_sprite_counter);
       document->setFilename(buf);
@@ -180,11 +182,15 @@ void NewFileCommand::onExecute(Context* context)
       // convert the `Layer 1' in a `Background'
       if (color.getType() != app::Color::MaskType) {
         Sprite* sprite = document->getSprite();
+        Layer* layer = sprite->getFolder()->getFirstLayer();
 
-        ASSERT(sprite->getCurrentLayer() && sprite->getCurrentLayer()->isImage());
+        if (layer && layer->isImage()) {
+          LayerImage* layerImage = static_cast<LayerImage*>(layer);
+          layerImage->configureAsBackground();
 
-        static_cast<LayerImage*>(sprite->getCurrentLayer())->configureAsBackground();
-        image_clear(sprite->getCurrentImage(), color_utils::color_for_image(color, format));
+          Image* image = sprite->getStock()->getImage(layerImage->getCel(FrameNumber(0))->getImage());
+          image_clear(image, color_utils::color_for_image(color, format));
+        }
       }
 
       // Show the sprite to the user

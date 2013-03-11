@@ -22,7 +22,7 @@
 #include "base/bind.h"
 #include "commands/commands.h"
 #include "commands/params.h"
-#include "document_wrappers.h"
+#include "context_access.h"
 #include "gfx/size.h"
 #include "modules/editors.h"
 #include "modules/gfx.h"
@@ -604,8 +604,8 @@ bool StatusBar::onProcessMessage(Message* msg)
         try {
           --rc->y2;
 
-          const ActiveDocumentReader document(UIContext::instance());
-          const Sprite* sprite(document ? document->getSprite(): NULL);
+          const ContextReader reader(UIContext::instance());
+          const Sprite* sprite(reader.sprite());
           if (sprite) {
             if (hasChild(m_notificationsBox)) {
               removeChild(m_notificationsBox);
@@ -621,8 +621,8 @@ bool StatusBar::onProcessMessage(Message* msg)
             for (int c=0; it != end; ++it, ++c) {
               int x1 = rc->x2-width + c*width/count;
               int x2 = rc->x2-width + (c+1)*width/count;
-              bool hot = (*it == sprite->getCurrentLayer())
-                || (LayerIndex(c) == m_hot_layer);
+              bool hot = ((*it == reader.layer())
+                          || (LayerIndex(c) == m_hot_layer));
 
               theme->draw_bounds_nw(doublebuffer,
                                     x1, rc->y1, x2, rc->y2,
@@ -719,8 +719,8 @@ bool StatusBar::onProcessMessage(Message* msg)
 
         LayerIndex hot_layer = LayerIndex(-1);
 
-        const ActiveDocumentReader document(UIContext::instance());
-        const Sprite* sprite(document ? document->getSprite(): NULL);
+        const ContextReader reader(UIContext::instance());
+        const Sprite* sprite(reader.sprite());
         // Check which sprite's layer has the mouse over
         if (sprite) {
           const LayerFolder* folder = sprite->getFolder();
@@ -769,18 +769,17 @@ bool StatusBar::onProcessMessage(Message* msg)
       // When the user press the mouse-button over a hot-layer-button...
       if (m_hot_layer >= 0) {
         try {
-          ActiveDocumentWriter document(UIContext::instance());
-          Sprite* sprite(document ? document->getSprite(): NULL);
+          ContextWriter writer(UIContext::instance());
+          Sprite* sprite(writer.sprite());
           if (sprite) {
             Layer* layer = sprite->indexToLayer(m_hot_layer);
             if (layer) {
-              // Set the current layer
-              if (layer != sprite->getCurrentLayer())
-                sprite->setCurrentLayer(layer);
-
               // Flash the current layer
               if (current_editor != NULL)
+              {
+                current_editor->setLayer(layer);
                 current_editor->flashCurrentLayer();
+              }
 
               // Redraw the status-bar
               invalidate();
@@ -838,20 +837,14 @@ bool StatusBar::CustomizedTipWindow::onProcessMessage(Message* msg)
 static void slider_change_hook(Slider* slider)
 {
   try {
-    ActiveDocumentWriter document(UIContext::instance());
-    Sprite* sprite(document ? document->getSprite(): NULL);
-    if (sprite) {
-      if ((sprite->getCurrentLayer()) &&
-          (sprite->getCurrentLayer()->isImage())) {
-        Cel* cel = ((LayerImage*)sprite->getCurrentLayer())->getCel(sprite->getCurrentFrame());
-        if (cel) {
-          // Update the opacity
-          cel->setOpacity(slider->getValue());
+    ContextWriter writer(UIContext::instance());
+    Cel* cel = writer.cel();
+    if (cel) {
+      // Update the opacity
+      cel->setOpacity(slider->getValue());
 
-          // Update the editors
-          update_screen_for_document(document);
-        }
-      }
+      // Update the editors
+      update_screen_for_document(writer.document());
     }
   }
   catch (LockedDocumentException&) {
@@ -879,16 +872,14 @@ static void ani_button_command(Button* widget, AniAction action)
 void StatusBar::updateFromLayer()
 {
   try {
-    const ActiveDocumentReader document(UIContext::instance());
-    const Sprite* sprite(document ? document->getSprite(): NULL);
-    Cel *cel;
+    const ContextReader reader(UIContext::instance());
+    const Cel* cel;
 
     // Opacity layer
-    if (sprite &&
-        sprite->getCurrentLayer() &&
-        sprite->getCurrentLayer()->isImage() &&
-        !sprite->getCurrentLayer()->isBackground() &&
-        (cel = ((LayerImage*)sprite->getCurrentLayer())->getCel(sprite->getCurrentFrame()))) {
+    if (reader.layer() &&
+        reader.layer()->isImage() &&
+        !reader.layer()->isBackground() &&
+        (cel = reader.cel())) {
       m_slider->setValue(MID(0, cel->getOpacity(), 255));
       m_slider->setEnabled(true);
     }
@@ -905,9 +896,9 @@ void StatusBar::updateFromLayer()
 
 void StatusBar::updateCurrentFrame()
 {
-  const Document* document = UIContext::instance()->getActiveDocument();
-  if (document)
-    m_currentFrame->setTextf("%d", document->getSprite()->getCurrentFrame()+1);
+  DocumentLocation location = UIContext::instance()->getActiveLocation();
+  if (location.sprite())
+    m_currentFrame->setTextf("%d", location.frame()+1);
 }
 
 void StatusBar::newFrame()

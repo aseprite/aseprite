@@ -19,12 +19,13 @@
 #include "config.h"
 
 #include "commands/command.h"
+#include "context_access.h"
+#include "document_api.h"
 #include "modules/gui.h"
 #include "raster/cel.h"
 #include "raster/layer.h"
 #include "raster/sprite.h"
 #include "undo_transaction.h"
-#include "document_wrappers.h"
 
 //////////////////////////////////////////////////////////////////////
 // remove_cel
@@ -58,12 +59,12 @@ bool RemoveCelCommand::onEnabled(Context* context)
 
 void RemoveCelCommand::onExecute(Context* context)
 {
-  ActiveDocumentWriter document(context);
-  Sprite* sprite(document->getSprite());
-  Cel* cel = static_cast<LayerImage*>(sprite->getCurrentLayer())->getCel(sprite->getCurrentFrame());
+  ContextWriter writer(context);
+  Document* document(writer.document());
+  Cel* cel = writer.cel();
   {
-    UndoTransaction undoTransaction(document, "Remove Cel");
-    undoTransaction.removeCel(static_cast<LayerImage*>(sprite->getCurrentLayer()), cel);
+    UndoTransaction undoTransaction(writer.context(), "Remove Cel");
+    document->getApi().removeCel(static_cast<LayerImage*>(writer.layer()), cel);
     undoTransaction.commit();
   }
   update_screen_for_document(document);

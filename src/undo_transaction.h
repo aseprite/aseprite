@@ -19,20 +19,11 @@
 #ifndef UNDO_TRANSACTION_H_INCLUDED
 #define UNDO_TRANSACTION_H_INCLUDED
 
-#include "gfx/rect.h"
-#include "raster/algorithm/flip_type.h"
-#include "raster/dithering_method.h"
-#include "raster/frame_number.h"
-#include "raster/pixel_format.h"
 #include "undo/modification.h"
 
-class Cel;
+class Context;
 class Document;
 class DocumentUndo;
-class Image;
-class Layer;
-class LayerImage;
-class Mask;
 class Sprite;
 
 namespace undo {
@@ -46,11 +37,11 @@ namespace undo {
 // exceptions) in the middle of the procedure.
 //
 // You have to wrap every call to an undo transaction with a
-// DocumentWriter. The preferred usage is as the following:
+// ContextWriter. The preferred usage is as the following:
 //
 // {
-//   DocumentWriter documentWriter(document);
-//   UndoTransaction undoTransaction(documentWriter, "My big operation");
+//   ContextWriter writer(context);
+//   UndoTransaction undoTransaction(context, "My big operation");
 //   ...
 //   undoTransaction.commit();
 // }
@@ -62,10 +53,9 @@ public:
   // Starts a undoable sequence of operations in a transaction that
   // can be committed or rollbacked.  All the operations will be
   // grouped in the sprite's undo as an atomic operation.
-  UndoTransaction(Document* document, const char* label, undo::Modification mod = undo::ModifyDocument);
+  UndoTransaction(Context* context, const char* label, undo::Modification mod = undo::ModifyDocument);
   virtual ~UndoTransaction();
 
-  inline Sprite* getSprite() const { return m_sprite;  }
   inline bool isEnabled() const { return m_enabledFlag; }
 
   // This must be called to commit all the changes, so the undo will
@@ -79,66 +69,11 @@ public:
   void pushUndoer(undo::Undoer* undoer);
   undo::ObjectsContainer* getObjects() const;
 
-  // for sprite
-  void setNumberOfFrames(FrameNumber frames);
-  void setCurrentFrame(FrameNumber frame);
-  void setCurrentLayer(Layer* layer);
-  void setSpriteSize(int w, int h);
-  void cropSprite(const gfx::Rect& bounds, int bgcolor);
-  void trimSprite(int bgcolor);
-  void setPixelFormat(PixelFormat newFormat, DitheringMethod dithering_method);
-
-  // for images in stock
-  int addImageInStock(Image* image);
-  void removeImageFromStock(int image_index);
-  void replaceStockImage(int image_index, Image* new_image);
-
-  // for layers
-  LayerImage* newLayer();
-  void removeLayer(Layer* layer);
-  void restackLayerAfter(Layer* layer, Layer* afterThis);
-  void cropLayer(Layer* layer, int x, int y, int w, int h, int bgcolor);
-  void displaceLayers(Layer* layer, int dx, int dy);
-  void backgroundFromLayer(LayerImage* layer, int bgcolor);
-  void layerFromBackground();
-  void flattenLayers(int bgcolor);
-
-  // for frames
-  void newFrame();
-  void newFrameForLayer(Layer* layer, FrameNumber frame);
-  void removeFrame(FrameNumber frame);
-  void removeFrameOfLayer(Layer* layer, FrameNumber frame);
-  void copyPreviousFrame(Layer* layer, FrameNumber frame);
-  void setFrameDuration(FrameNumber frame, int msecs);
-  void setConstantFrameRate(int msecs);
-  void moveFrameBefore(FrameNumber frame, FrameNumber beforeFrame);
-  void moveFrameBeforeLayer(Layer* layer, FrameNumber frame, FrameNumber beforeFrame);
-
-  // for cels
-  void addCel(LayerImage* layer, Cel* cel);
-  void removeCel(LayerImage* layer, Cel* cel);
-  void setCelFramePosition(Cel* cel, FrameNumber frame);
-  void setCelPosition(Cel* cel, int x, int y);
-  Cel* getCurrentCel();
-  void cropCel(Cel* cel, int x, int y, int w, int h, int bgcolor);
-
-  // for image
-  Image* getCelImage(Cel* cel);
-  void clearMask(int bgcolor);
-  void flipImage(Image* image, const gfx::Rect& bounds, raster::algorithm::FlipType flipType);
-  void flipImageWithMask(Image* image, const Mask* mask, raster::algorithm::FlipType flipType, int bgcolor);
-  void pasteImage(const Image* src_image, int x, int y, int opacity);
-
-  // for mask
-  void copyToCurrentMask(Mask* mask);
-  void setMaskPosition(int x, int y);
-  void deselectMask();
-
 private:
-  void configureLayerAsBackground(LayerImage* layer);
   void closeUndoGroup();
   void rollback();
 
+  Context* m_context;
   Document* m_document;
   Sprite* m_sprite;
   DocumentUndo* m_undo;

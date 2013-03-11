@@ -28,6 +28,7 @@
 #include "raster/color_histogram.h"
 #include "raster/image.h"
 #include "raster/images_collector.h"
+#include "raster/layer.h"
 #include "raster/palette.h"
 #include "raster/quantization.h"
 #include "raster/rgbmap.h"
@@ -43,21 +44,21 @@ static Image* ordered_dithering(const Image* src_image,
 
 static void create_palette_from_bitmaps(const std::vector<Image*>& images, Palette* palette, bool has_background_layer);
 
-Palette* quantization::create_palette_from_rgb(const Sprite* sprite)
+Palette* quantization::create_palette_from_rgb(const Sprite* sprite, FrameNumber frameNumber)
 {
   bool has_background_layer = (sprite->getBackgroundLayer() != NULL);
   Palette* palette = new Palette(FrameNumber(0), 256);
   Image* flat_image;
 
-  ImagesCollector images(sprite,
-                         true,   // all layers
-                         true,   // all frames,
+  ImagesCollector images(sprite->getFolder(), // All layers
+                         frameNumber,         // Ignored, we'll use all frames
+                         true,                // All frames,
                          false); // forWrite=false, read only
 
   // Add a flat image with the current sprite's frame rendered
   flat_image = Image::create(sprite->getPixelFormat(), sprite->getWidth(), sprite->getHeight());
   image_clear(flat_image, 0);
-  sprite->render(flat_image, 0, 0);
+  sprite->render(flat_image, 0, 0, frameNumber);
 
   // Create an array of images
   size_t nimage = images.size() + 1; // +1 for flat_image

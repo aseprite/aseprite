@@ -67,6 +67,10 @@ public:
   SpritePosition getNextUndoSpritePosition() const;
   SpritePosition getNextRedoSpritePosition() const;
 
+  undo::UndoersCollector* getDefaultUndoersCollector() {
+    return m_undoHistory;
+  }
+
 private:
   undoers::CloseGroup* getNextUndoGroup() const;
   undoers::CloseGroup* getNextRedoGroup() const;

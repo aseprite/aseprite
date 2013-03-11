@@ -19,8 +19,8 @@
 #ifndef DIALOGS_MASKCOL_H_INCLUDED
 #define DIALOGS_MASKCOL_H_INCLUDED
 
-class Document;
+class Context;
 
-void dialogs_mask_color(Document* document);
+void dialogs_mask_color(Context* context);
 
 #endif

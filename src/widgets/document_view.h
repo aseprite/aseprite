@@ -26,6 +26,7 @@
 #include "widgets/workspace_view.h"
 
 class Document;
+class DocumentLocation;
 class Editor;
 
 namespace ui { class View; }
@@ -47,6 +48,7 @@ namespace widgets {
     ~DocumentView();
 
     Document* getDocument() const { return m_document; }
+    void getDocumentLocation(DocumentLocation* location) const;
     Editor* getEditor() { return m_editor; }
 
     // TabView implementation
@@ -56,9 +58,15 @@ namespace widgets {
     ui::Widget* getContentWidget() OVERRIDE { return this; }
 
     // DocumentObserver implementation
-    void onGeneralUpdate(DocumentEvent& ev);
-    void onSpritePixelsModified(DocumentEvent& ev);
-    
+    void onGeneralUpdate(DocumentEvent& ev) OVERRIDE;
+    void onSpritePixelsModified(DocumentEvent& ev) OVERRIDE;
+    void onLayerMergedDown(DocumentEvent& ev) OVERRIDE;
+    void onAddLayer(DocumentEvent& ev) OVERRIDE;
+    void onRemoveLayer(DocumentEvent& ev) OVERRIDE;
+    void onAddFrame(DocumentEvent& ev) OVERRIDE;
+    void onRemoveFrame(DocumentEvent& ev) OVERRIDE;
+    void onTotalFramesChanged(DocumentEvent& ev) OVERRIDE;
+
   protected:
     bool onProcessMessage(ui::Message* msg) OVERRIDE;
 

@@ -19,7 +19,7 @@
 #include "config.h"
 
 #include "commands/command.h"
-#include "document_wrappers.h"
+#include "context_access.h"
 #include "modules/gui.h"
 #include "raster/mask.h"
 #include "raster/sprite.h"
@@ -55,9 +55,10 @@ bool MaskAllCommand::onEnabled(Context* context)
 
 void MaskAllCommand::onExecute(Context* context)
 {
-  ActiveDocumentWriter document(context);
-  Sprite* sprite(document->getSprite());
-  UndoTransaction undo(document, "Mask All", undo::DoesntModifyDocument);
+  ContextWriter writer(context);
+  Document* document(writer.document());
+  Sprite* sprite(writer.sprite());
+  UndoTransaction undo(writer.context(), "Mask All", undo::DoesntModifyDocument);
 
   // Undo
   if (undo.isEnabled())

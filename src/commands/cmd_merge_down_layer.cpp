@@ -20,7 +20,9 @@
 
 #include "app.h"
 #include "commands/command.h"
-#include "document_wrappers.h"
+#include "context_access.h"
+#include "document.h"
+#include "document_api.h"
 #include "modules/gui.h"
 #include "raster/cel.h"
 #include "raster/image.h"
@@ -34,7 +36,6 @@
 #include "undoers/remove_layer.h"
 #include "undoers/replace_image.h"
 #include "undoers/set_cel_position.h"
-#include "undoers/set_current_layer.h"
 
 //////////////////////////////////////////////////////////////////////
 // merge_down_layer
@@ -59,16 +60,16 @@ MergeDownLayerCommand::MergeDownLayerCommand()
 
 bool MergeDownLayerCommand::onEnabled(Context* context)
 {
-  ActiveDocumentWriter document(context);
-  Sprite* sprite(document ? document->getSprite(): 0);
+  ContextWriter writer(context);
+  Sprite* sprite(writer.sprite());
   if (!sprite)
     return false;
 
-  Layer* src_layer = sprite->getCurrentLayer();
+  Layer* src_layer = writer.layer();
   if (!src_layer || !src_layer->isImage())
     return false;
 
-  Layer* dst_layer = sprite->getCurrentLayer()->getPrevious();
+  Layer* dst_layer = src_layer->getPrevious();
   if (!dst_layer || !dst_layer->isImage())
     return false;
 
@@ -77,16 +78,15 @@ bool MergeDownLayerCommand::onEnabled(Context* context)
 
 void MergeDownLayerCommand::onExecute(Context* context)
 {
-  ActiveDocumentWriter document(context);
-  Sprite* sprite(document->getSprite());
-  UndoTransaction undo(document, "Merge Down Layer", undo::ModifyDocument);
-  Layer *src_layer, *dst_layer;
+  ContextWriter writer(context);
+  Document* document(writer.document());
+  Sprite* sprite(writer.sprite());
+  UndoTransaction undo(writer.context(), "Merge Down Layer", undo::ModifyDocument);
+  Layer* src_layer = writer.layer();
+  Layer* dst_layer = src_layer->getPrevious();
   Cel *src_cel, *dst_cel;
   Image *src_image, *dst_image;
   int index;
-
-  src_layer = sprite->getCurrentLayer();
-  dst_layer = sprite->getCurrentLayer()->getPrevious();
 
   for (FrameNumber frpos(0); frpos<sprite->getTotalFrames(); ++frpos) {
     // Get frames
@@ -179,15 +179,8 @@ void MergeDownLayerCommand::onExecute(Context* context)
     }
   }
 
-  if (undo.isEnabled()) {
-    undo.pushUndoer(new undoers::SetCurrentLayer(undo.getObjects(), sprite));
-    undo.pushUndoer(new undoers::RemoveLayer(undo.getObjects(), src_layer));
-  }
-
-  sprite->setCurrentLayer(dst_layer);
-  src_layer->getParent()->removeLayer(src_layer);
-
-  delete src_layer;
+  document->notifyLayerMergedDown(src_layer, dst_layer);
+  document->getApi().removeLayer(src_layer); // src_layer is deleted inside removeLayer()
 
   undo.commit();
   update_screen_for_document(document);

@@ -19,7 +19,7 @@
 #include "config.h"
 
 #include "commands/command.h"
-#include "document_wrappers.h"
+#include "context_access.h"
 #include "raster/layer.h"
 #include "raster/mask.h"
 #include "raster/sprite.h"
@@ -56,8 +56,8 @@ bool CutCommand::onEnabled(Context* context)
 
 void CutCommand::onExecute(Context* context)
 {
-  ActiveDocumentWriter document(context);
-  util::clipboard::cut(document);
+  ContextWriter writer(context);
+  util::clipboard::cut(writer);
 }
 
 //////////////////////////////////////////////////////////////////////

@@ -22,7 +22,8 @@
 #include "app/color.h"
 #include "commands/command.h"
 #include "console.h"
-#include "document_wrappers.h"
+#include "context_access.h"
+#include "document_api.h"
 #include "modules/gui.h"
 #include "raster/cel.h"
 #include "raster/image.h"
@@ -67,17 +68,19 @@ bool NewFrameCommand::onEnabled(Context* context)
 
 void NewFrameCommand::onExecute(Context* context)
 {
-  ActiveDocumentWriter document(context);
-  Sprite* sprite(document->getSprite());
+  ContextWriter writer(context);
+  Document* document(writer.document());
+  Sprite* sprite(writer.sprite());
   {
-    UndoTransaction undoTransaction(document, "New Frame");
-    undoTransaction.newFrame();
+    UndoTransaction undoTransaction(writer.context(), "New Frame");
+    document->getApi().addFrame(sprite, writer.frame().next());
     undoTransaction.commit();
   }
   update_screen_for_document(document);
+
   StatusBar::instance()
     ->showTip(1000, "New frame %d/%d",
-              (int)sprite->getCurrentFrame()+1,
+              (int)context->getActiveLocation().frame()+1,
               (int)sprite->getTotalFrames());
 }
 

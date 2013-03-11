@@ -26,17 +26,17 @@
 #include "raster/sprite.h"
 #include "raster/stock.h"
 
-ImagesCollector::ImagesCollector(const Sprite* sprite, bool allLayers, bool allFrames, bool forWrite)
+ImagesCollector::ImagesCollector(Layer* layer,
+                                 FrameNumber frame,
+                                 bool allFrames,
+                                 bool forWrite)
   : m_allFrames(allFrames)
   , m_forWrite(forWrite)
 {
-  Layer* layer = allLayers ? sprite->getFolder():
-                             sprite->getCurrentLayer();
-
-  collectFromLayer(layer);
+  collectFromLayer(layer, frame);
 }
 
-void ImagesCollector::collectFromLayer(Layer* layer)
+void ImagesCollector::collectFromLayer(Layer* layer, FrameNumber frame)
 {
   const Sprite* sprite = layer->getSprite();
 
@@ -57,7 +57,6 @@ void ImagesCollector::collectFromLayer(Layer* layer)
         }
       }
       else {
-        FrameNumber frame = sprite->getCurrentFrame();
         Cel* cel = static_cast<LayerImage*>(layer)->getCel(frame);
         if (cel != NULL)
           collectImage(layer, cel);
@@ -70,7 +69,7 @@ void ImagesCollector::collectFromLayer(Layer* layer)
       LayerIterator end = static_cast<LayerFolder*>(layer)->getLayerEnd();
 
       for (; it != end; ++it)
-        collectFromLayer(*it);
+        collectFromLayer(*it, frame);
 
       break;
     }

@@ -23,7 +23,8 @@
 #include "app/load_widget.h"
 #include "commands/command.h"
 #include "commands/params.h"
-#include "document_wrappers.h"
+#include "context_access.h"
+#include "document_api.h"
 #include "modules/gui.h"
 #include "raster/layer.h"
 #include "raster/sprite.h"
@@ -82,8 +83,9 @@ bool NewLayerCommand::onEnabled(Context* context)
 
 void NewLayerCommand::onExecute(Context* context)
 {
-  ActiveDocumentWriter document(context);
-  Sprite* sprite(document->getSprite());
+  ContextWriter writer(context);
+  Document* document(writer.document());
+  Sprite* sprite(writer.sprite());
   std::string name;
 
   // Default name (m_name is a name specified in params)
@@ -110,8 +112,8 @@ void NewLayerCommand::onExecute(Context* context)
 
   Layer* layer;
   {
-    UndoTransaction undoTransaction(document, "New Layer");
-    layer = undoTransaction.newLayer();
+    UndoTransaction undoTransaction(writer.context(), "New Layer");
+    layer = document->getApi().newLayer(sprite);
     undoTransaction.commit();
   }
   layer->setName(name);

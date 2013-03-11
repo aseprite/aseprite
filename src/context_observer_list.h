@@ -37,8 +37,6 @@ public:
   void addObserver(ContextObserver* observer);
   void removeObserver(ContextObserver* observer);
 
-  void notifyActiveDocumentBeforeChange(Context* context);
-  void notifyActiveDocumentAfterChange(Context* context);
   void notifyCommandBeforeExecution(Context* context);
   void notifyCommandAfterExecution(Context* context);
   void notifyAddDocument(Context* context, Document* document);

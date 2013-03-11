@@ -27,8 +27,8 @@
 #include "commands/command.h"
 #include "commands/params.h"
 #include "console.h"
+#include "context_access.h"
 #include "document_undo.h"
-#include "document_wrappers.h"
 #include "gfx/hsv.h"
 #include "gfx/rgb.h"
 #include "gfx/size.h"
@@ -413,7 +413,8 @@ bool PaletteEntryEditor::onProcessMessage(Message* msg)
 
       // Redraw all editors
       try {
-        ActiveDocumentWriter document(UIContext::instance());
+        ContextWriter writer(UIContext::instance());
+        Document* document(writer.document());
         if (document != NULL)
           document->notifyGeneralUpdate();
       }
@@ -642,8 +643,8 @@ void PaletteEntryEditor::onQuantizeClick(Event& ev)
   Palette* palette = NULL;
 
   {
-    const ActiveDocumentReader document(UIContext::instance());
-    const Sprite* sprite(document ? document->getSprite(): NULL);
+    const ContextReader reader(UIContext::instance());
+    const Sprite* sprite(reader.sprite());
 
     if (sprite == NULL) {
       Alert::show("Error<<There is no sprite selected to quantize.||&OK");
@@ -655,7 +656,7 @@ void PaletteEntryEditor::onQuantizeClick(Event& ev)
       return;
     }
 
-    palette = quantization::create_palette_from_rgb(sprite);
+    palette = quantization::create_palette_from_rgb(sprite, reader.frame());
   }
 
   setNewPalette(palette, "Quantize Palette");
@@ -803,10 +804,12 @@ void PaletteEntryEditor::updateCurrentSpritePalette(const char* operationName)
   if (UIContext::instance()->getActiveDocument() &&
       UIContext::instance()->getActiveDocument()->getSprite()) {
     try {
-      ActiveDocumentWriter document(UIContext::instance());
-      Sprite* sprite(document->getSprite());
+      ContextWriter writer(UIContext::instance());
+      Document* document(writer.document());
+      Sprite* sprite(writer.sprite());
       Palette* newPalette = get_current_palette(); // System current pal
-      Palette* currentSpritePalette = sprite->getPalette(sprite->getCurrentFrame()); // Sprite current pal
+      FrameNumber frame = writer.frame();
+      Palette* currentSpritePalette = sprite->getPalette(frame); // Sprite current pal
       int from, to;
 
       // Check differences between current sprite palette and current system palette
@@ -821,13 +824,15 @@ void PaletteEntryEditor::updateCurrentSpritePalette(const char* operationName)
           if (m_implantChange && strcmp(undo->getNextUndoLabel(), operationName) == 0) {
             undo->implantUndoerInLastGroup
               (new undoers::SetPaletteColors(undo->getObjects(),
-                                             sprite, currentSpritePalette, from, to));
+                                             sprite, currentSpritePalette,
+                                             frame, from, to));
           }
           else {
-            UndoTransaction undoTransaction(document, operationName, undo::ModifyDocument);
+            UndoTransaction undoTransaction(writer.context(), operationName, undo::ModifyDocument);
             undoTransaction.pushUndoer
               (new undoers::SetPaletteColors(undoTransaction.getObjects(),
-                                             sprite, currentSpritePalette, from, to));
+                                             sprite, currentSpritePalette,
+                                             frame, from, to));
             undoTransaction.commit();
           }
         }

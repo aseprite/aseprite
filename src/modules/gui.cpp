@@ -26,7 +26,6 @@
 #include "commands/commands.h"
 #include "commands/params.h"
 #include "console.h"
-#include "document_wrappers.h"
 #include "drop_files.h"
 #include "ini_file.h"
 #include "modules/editors.h"
