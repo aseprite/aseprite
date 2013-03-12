@@ -21,10 +21,12 @@
 #include "widgets/mini_editor.h"
 
 #include "base/bind.h"
+#include "document.h"
 #include "gfx/rect.h"
 #include "ini_file.h"
 #include "modules/editors.h"
 #include "modules/gui.h"
+#include "raster/sprite.h"
 #include "skin/skin_button.h"
 #include "skin/skin_theme.h"
 #include "ui/base.h"
@@ -59,8 +61,6 @@ public:
 protected:
   void onClick(Event& ev) OVERRIDE
   {
-    SkinButton<Button>::onClick(ev);
-
     m_isPlaying = !m_isPlaying;
     if (m_isPlaying)
       setParts(PART_WINDOW_STOP_BUTTON_NORMAL,
@@ -70,6 +70,8 @@ protected:
       setParts(PART_WINDOW_PLAY_BUTTON_NORMAL,
                PART_WINDOW_PLAY_BUTTON_HOT,
                PART_WINDOW_PLAY_BUTTON_SELECTED);
+
+    SkinButton<Button>::onClick(ev);
   }
 
   void onSetDecorativeWidgetBounds() OVERRIDE
@@ -227,6 +229,12 @@ void MiniEditorWindow::resetTimer()
 {
   if (m_playButton->isPlaying()) {
     m_playTimer.start();
+
+    Editor* miniEditor = (m_docView ? m_docView->getEditor(): NULL);
+    if (miniEditor && miniEditor->getDocument() != NULL)
+      m_nextFrameTime = miniEditor->getSprite()->getFrameDuration(miniEditor->getFrame());
+    else
+      m_nextFrameTime = -1;
   }
   else {
     m_playTimer.stop();
@@ -235,7 +243,21 @@ void MiniEditorWindow::resetTimer()
 
 void MiniEditorWindow::onPlaybackTick()
 {
-  // TODO
+  Editor* miniEditor = (m_docView ? m_docView->getEditor(): NULL);
+  if (!miniEditor)
+    return;
+
+  if (m_nextFrameTime >= 0) {
+    m_nextFrameTime -= 10;      // onPlaybackTick()
+    if (m_nextFrameTime <= 0) {
+      FrameNumber frame = miniEditor->getFrame().next();
+      if (frame > miniEditor->getSprite()->getLastFrame())
+        frame = FrameNumber(0);
+      miniEditor->setFrame(frame);
+
+      m_nextFrameTime = miniEditor->getSprite()->getFrameDuration(miniEditor->getFrame());
+    }
+  }
   invalidate();
 }
 

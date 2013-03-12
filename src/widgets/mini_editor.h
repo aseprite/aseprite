@@ -51,6 +51,10 @@ namespace widgets {
     DocumentView* m_docView;
     MiniPlayButton* m_playButton;
     ui::Timer m_playTimer;
+
+    // Number of milliseconds to go to the next frame if m_playTimer
+    // is activated.
+    int m_nextFrameTime;
   };
 
 } // namespace widgets
