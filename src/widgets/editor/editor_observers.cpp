@@ -39,10 +39,15 @@ void EditorObservers::removeObserver(EditorObserver* observer)
 
 void EditorObservers::notifyStateChanged(Editor* editor)
 {
-  m_observers.notifyObservers(&EditorObserver::stateChanged, editor);
+  m_observers.notifyObservers(&EditorObserver::onStateChanged, editor);
 }
 
 void EditorObservers::notifyScrollChanged(Editor* editor)
 {
-  m_observers.notifyObservers(&EditorObserver::scrollChanged, editor);
+  m_observers.notifyObservers(&EditorObserver::onScrollChanged, editor);
+}
+
+void EditorObservers::notifyFrameChanged(Editor* editor)
+{
+  m_observers.notifyObservers(&EditorObserver::onFrameChanged, editor);
 }

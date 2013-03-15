@@ -60,12 +60,16 @@ public:
     App::instance()->getMainWindow()->getMiniEditor()->updateUsingEditor(NULL);
   }
 
-  void scrollChanged(Editor* editor) OVERRIDE {
+  void onScrollChanged(Editor* editor) OVERRIDE {
     App::instance()->getMainWindow()->getMiniEditor()->updateUsingEditor(this);
   }
 
-  void stateChanged(Editor* editor) OVERRIDE {
+  void onStateChanged(Editor* editor) OVERRIDE {
     // Do nothing
+  }
+
+  void onFrameChanged(Editor* editor) OVERRIDE {
+    App::instance()->getMainWindow()->getMiniEditor()->updateUsingEditor(this);
   }
 
   // EditorCustomizationDelegate implementation

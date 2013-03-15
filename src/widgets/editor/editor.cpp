@@ -248,6 +248,7 @@ void Editor::setFrame(FrameNumber frame)
 {
   if (m_frame != frame) {
     m_frame = frame;
+    m_observers.notifyFrameChanged(this);
 
     invalidate();
     updateStatusBar();

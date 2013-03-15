@@ -210,6 +210,7 @@ void MiniEditorWindow::updateUsingEditor(Editor* editor)
     }
 
     miniEditor->centerInSpritePoint(pt.x, pt.y);
+    miniEditor->setFrame(editor->getFrame());
   }
   else {
     hideWindow();

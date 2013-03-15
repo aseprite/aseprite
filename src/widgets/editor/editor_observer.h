@@ -28,10 +28,13 @@ public:
   virtual void dispose() = 0;
 
   // Called when the editor's state changes.
-  virtual void stateChanged(Editor* editor) = 0;
+  virtual void onStateChanged(Editor* editor) = 0;
 
   // Called when the scroll or zoom of the editor changes.
-  virtual void scrollChanged(Editor* editor) = 0;
+  virtual void onScrollChanged(Editor* editor) = 0;
+
+  // Called when the current frame of the editor changes.
+  virtual void onFrameChanged(Editor* editor) = 0;
 };
 
 #endif  // WIDGETS_EDITOR_OBSERVER_H_INCLUDED
