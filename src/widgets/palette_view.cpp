@@ -1,5 +1,5 @@
 /* ASEPRITE
- * Copyright (C) 2001-2012  David Capello
+ * Copyright (C) 2001-2013  David Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -32,6 +32,7 @@
 #include "raster/palette.h"
 #include "ui/manager.h"
 #include "ui/message.h"
+#include "ui/preferred_size_event.h"
 #include "ui/rect.h"
 #include "ui/system.h"
 #include "ui/theme.h"
@@ -159,7 +160,7 @@ void PaletteView::getSelectedEntries(SelectedEntries& entries) const
   entries = m_selectedEntries;
 }
 
-Color PaletteView::getColorByPosition(int target_x, int target_y)
+app::Color PaletteView::getColorByPosition(int target_x, int target_y)
 {
   Palette* palette = get_current_palette();
   JRect cpos = jwidget_get_child_rect(this);
@@ -184,7 +185,7 @@ Color PaletteView::getColorByPosition(int target_x, int target_y)
 
       if ((target_x >= x) && (target_x <= x+m_boxsize) &&
           (target_y >= y) && (target_y <= y+m_boxsize))
-        return Color::fromIndex(c);
+        return app::Color::fromIndex(c);
 
       x += m_boxsize+this->child_spacing;
       c++;
@@ -194,16 +195,12 @@ Color PaletteView::getColorByPosition(int target_x, int target_y)
   }
 
   jrect_free(cpos);
-  return Color::fromMask();
+  return app::Color::fromMask();
 }
 
 bool PaletteView::onProcessMessage(Message* msg)
 {
   switch (msg->type) {
-
-    case JM_REQSIZE:
-      request_size(&msg->reqsize.w, &msg->reqsize.h);
-      return true;
 
     case JM_SETPOS:
       if (!m_isUpdatingColumns) {
@@ -294,8 +291,8 @@ bool PaletteView::onProcessMessage(Message* msg)
 
       jrect_free(cpos);
 
-      Color color = getColorByPosition(mouse_x, mouse_y);
-      if (color.getType() == Color::IndexType) {
+      app::Color color = getColorByPosition(mouse_x, mouse_y);
+      if (color.getType() == app::Color::IndexType) {
         int idx = color.getIndex();
 
         StatusBar::instance()->showColor(0, "", color, 255);
@@ -341,6 +338,13 @@ bool PaletteView::onProcessMessage(Message* msg)
   }
 
   return Widget::onProcessMessage(msg);
+}
+
+void PaletteView::onPreferredSize(ui::PreferredSizeEvent& ev)
+{
+  gfx::Size sz;
+  request_size(&sz.w, &sz.h);
+  ev.setPreferredSize(sz);
 }
 
 void PaletteView::request_size(int* w, int* h)

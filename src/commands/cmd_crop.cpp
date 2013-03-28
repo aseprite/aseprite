@@ -1,5 +1,5 @@
 /* ASEPRITE
- * Copyright (C) 2001-2012  David Capello
+ * Copyright (C) 2001-2013  David Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,7 +21,8 @@
 #include "app.h"
 #include "app/color_utils.h"
 #include "commands/command.h"
-#include "document_wrappers.h"
+#include "context_access.h"
+#include "document_api.h"
 #include "modules/gui.h"
 #include "raster/image.h"
 #include "raster/layer.h"
@@ -61,14 +62,16 @@ bool CropSpriteCommand::onEnabled(Context* context)
 
 void CropSpriteCommand::onExecute(Context* context)
 {
-  ActiveDocumentWriter document(context);
-  const Sprite* sprite(document->getSprite());
-  const Mask* mask(document->getMask());
+  ContextWriter writer(context);
+  Document* document(writer.document());
+  Sprite* sprite(writer.sprite());
+  Mask* mask(document->getMask());
   {
-    UndoTransaction undoTransaction(document, "Sprite Crop");
-    int bgcolor = color_utils::color_for_image(ColorBar::instance()->getBgColor(), sprite->getPixelFormat());
+    UndoTransaction undoTransaction(writer.context(), "Sprite Crop");
+    int bgcolor = color_utils::color_for_image(ColorBar::instance()->getBgColor(),
+                                               sprite->getPixelFormat());
 
-    undoTransaction.cropSprite(mask->getBounds(), bgcolor);
+    document->getApi().cropSprite(sprite, mask->getBounds(), bgcolor);
     undoTransaction.commit();
   }
   document->generateMaskBoundaries();
@@ -104,13 +107,15 @@ bool AutocropSpriteCommand::onEnabled(Context* context)
 
 void AutocropSpriteCommand::onExecute(Context* context)
 {
-  ActiveDocumentWriter document(context);
-  Sprite* sprite(document->getSprite());
+  ContextWriter writer(context);
+  Document* document(writer.document());
+  Sprite* sprite(writer.sprite());
   {
-    int bgcolor = color_utils::color_for_image(ColorBar::instance()->getBgColor(), sprite->getPixelFormat());
+    int bgcolor = color_utils::color_for_image(ColorBar::instance()->getBgColor(),
+                                               sprite->getPixelFormat());
 
-    UndoTransaction undoTransaction(document, "Trim Sprite");
-    undoTransaction.trimSprite(bgcolor);
+    UndoTransaction undoTransaction(writer.context(), "Trim Sprite");
+    document->getApi().trimSprite(sprite, bgcolor);
     undoTransaction.commit();
   }
   document->generateMaskBoundaries();

@@ -1,5 +1,5 @@
 /* ASEPRITE
- * Copyright (C) 2001-2012  David Capello
+ * Copyright (C) 2001-2013  David Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -24,12 +24,12 @@
 class Cel;
 class Layer;
 class Sprite;
-class DocumentWriter;
+class ContextWriter;
 
 void set_frame_to_handle(Layer* src_layer, FrameNumber src_frame,
                          Layer* dst_layer, FrameNumber dst_frame);
 
-void move_cel(DocumentWriter& document);
-void copy_cel(DocumentWriter& document);
+void move_cel(ContextWriter& writer);
+void copy_cel(ContextWriter& writer);
 
 #endif

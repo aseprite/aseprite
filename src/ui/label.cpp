@@ -1,5 +1,5 @@
 // ASEPRITE gui library
-// Copyright (C) 2001-2012  David Capello
+// Copyright (C) 2001-2013  David Capello
 //
 // This source file is distributed under a BSD-like license, please
 // read LICENSE.txt for more information.
@@ -8,6 +8,7 @@
 
 #include "ui/label.h"
 #include "ui/message.h"
+#include "ui/preferred_size_event.h"
 #include "ui/theme.h"
 
 namespace ui {
@@ -18,39 +19,31 @@ Label::Label(const char *text)
   setAlign(JI_LEFT | JI_MIDDLE);
   setText(text);
   initTheme();
-
-  m_textColor = ji_color_foreground();
 }
 
-int Label::getTextColor() const
+Color Label::getTextColor() const
 {
   return m_textColor;
 }
 
-void Label::setTextColor(int color)
+void Label::setTextColor(Color color)
 {
   m_textColor = color;
 }
 
-bool Label::onProcessMessage(Message* msg)
+void Label::onPreferredSize(PreferredSizeEvent& ev)
 {
-  switch (msg->type) {
+  gfx::Size sz(0, 0);
 
-    case JM_REQSIZE:
-      if (this->hasText()) {
-        msg->reqsize.w = jwidget_get_text_length(this);
-        msg->reqsize.h = jwidget_get_text_height(this);
-      }
-      else
-        msg->reqsize.w = msg->reqsize.h = 0;
-
-      msg->reqsize.w += this->border_width.l + this->border_width.r;
-      msg->reqsize.h += this->border_width.t + this->border_width.b;
-      return true;
-
+  if (this->hasText()) {
+    sz.w = jwidget_get_text_length(this);
+    sz.h = jwidget_get_text_height(this);
   }
 
-  return Widget::onProcessMessage(msg);
+  sz.w += this->border_width.l + this->border_width.r;
+  sz.h += this->border_width.t + this->border_width.b;
+
+  ev.setPreferredSize(sz);
 }
 
 void Label::onPaint(PaintEvent& ev)

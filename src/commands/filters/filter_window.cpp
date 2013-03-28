@@ -1,5 +1,5 @@
 /* ASEPRITE
- * Copyright (C) 2001-2012  David Capello
+ * Copyright (C) 2001-2013  David Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -93,8 +93,8 @@ bool FilterWindow::doModal()
   bool result = false;
 
   // Default position
-  remap_window();
-  center_window();
+  remapWindow();
+  centerWindow();
 
   // Load window configuration
   load_window_pos(this, m_cfgSection);
@@ -106,7 +106,7 @@ bool FilterWindow::doModal()
   openWindowInForeground();
 
   // Did the user press OK?
-  if (get_killer() == &m_okButton) {
+  if (getKiller() == &m_okButton) {
     m_preview.stop();
 
     // Apply the filter in background

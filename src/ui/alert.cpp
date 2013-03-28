@@ -1,5 +1,5 @@
 // ASEPRITE gui library
-// Copyright (C) 2001-2012  David Capello
+// Copyright (C) 2001-2013  David Capello
 //
 // This source file is distributed under a BSD-like license, please
 // read LICENSE.txt for more information.
@@ -88,7 +88,7 @@ int Alert::show(const char* format, ...)
 
   // Check the killer
   int ret = 0;
-  if (Widget* killer = window->get_killer()) {
+  if (Widget* killer = window->getKiller()) {
     for (int i=0; i<(int)buttons.size(); ++i) {
       if (killer == buttons[i]) {
         ret = i+1;

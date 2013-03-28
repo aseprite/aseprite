@@ -1,5 +1,5 @@
 /* ASEPRITE
- * Copyright (C) 2001-2012  David Capello
+ * Copyright (C) 2001-2013  David Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -39,8 +39,8 @@ public:
     m_vbox.addChild(&m_docs);
     addChild(&m_vbox);
 
-    remap_window();
-    center_window();
+    remapWindow();
+    centerWindow();
   }
 
   void updateDocuments(Context* context)

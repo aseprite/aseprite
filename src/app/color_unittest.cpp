@@ -1,5 +1,5 @@
 /* ASEPRITE
- * Copyright (C) 2001-2012  David Capello
+ * Copyright (C) 2001-2013  David Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,6 +19,8 @@
 #include "tests/test.h"
 
 #include "app/color.h"
+
+using namespace app;
 
 inline std::ostream& operator<<(std::ostream& os, const Color& color) {
   return os << color.toString();

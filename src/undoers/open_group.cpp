@@ -1,5 +1,5 @@
 /* ASEPRITE
- * Copyright (C) 2001-2012  David Capello
+ * Copyright (C) 2001-2013  David Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -28,11 +28,15 @@
 using namespace undo;
 using namespace undoers;
 
-OpenGroup::OpenGroup(undo::ObjectsContainer* objects, const char* label, undo::Modification modification, Sprite* sprite)
+OpenGroup::OpenGroup(undo::ObjectsContainer* objects,
+                     const char* label,
+                     undo::Modification modification,
+                     Sprite* sprite,
+                     const SpritePosition& pos)
   : m_label(label)
   , m_modification(modification)
   , m_spriteId(objects->addObject(sprite))
-  , m_spritePosition(sprite->getCurrentPosition())
+  , m_spritePosition(pos)
 {
 }
 
@@ -45,5 +49,6 @@ void OpenGroup::revert(ObjectsContainer* objects, UndoersCollector* redoers)
 {
   Sprite* sprite = objects->getObjectT<Sprite>(m_spriteId);
 
-  redoers->pushUndoer(new CloseGroup(objects, m_label, m_modification, sprite));
+  redoers->pushUndoer(new CloseGroup(objects, m_label, m_modification, sprite,
+                                     m_spritePosition));
 }

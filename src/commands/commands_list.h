@@ -1,5 +1,5 @@
 /* ASEPRITE
- * Copyright (C) 2001-2012  David Capello
+ * Copyright (C) 2001-2013  David Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -28,7 +28,6 @@ FOR_EACH_COMMAND(ChangePen)
 FOR_EACH_COMMAND(ChangePixelFormat)
 FOR_EACH_COMMAND(Clear)
 FOR_EACH_COMMAND(CloseAllFiles)
-FOR_EACH_COMMAND(CloseEditor)
 FOR_EACH_COMMAND(CloseFile)
 FOR_EACH_COMMAND(ColorCurve)
 FOR_EACH_COMMAND(ConfigureTools)
@@ -96,7 +95,6 @@ FOR_EACH_COMMAND(SaveFileAs)
 FOR_EACH_COMMAND(SaveFileCopyAs)
 FOR_EACH_COMMAND(SaveMask)
 FOR_EACH_COMMAND(Scroll)
-FOR_EACH_COMMAND(SelectFile)
 FOR_EACH_COMMAND(ShowGrid)
 FOR_EACH_COMMAND(SnapToGrid)
 FOR_EACH_COMMAND(SplitEditorHorizontally)

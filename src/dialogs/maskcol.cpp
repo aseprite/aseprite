@@ -1,5 +1,5 @@
 /* ASEPRITE
- * Copyright (C) 2001-2012  David Capello
+ * Copyright (C) 2001-2013  David Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -23,8 +23,8 @@
 #include "app/color_utils.h"
 #include "base/bind.h"
 #include "base/unique_ptr.h"
+#include "context_access.h"
 #include "document.h"
-#include "document_wrappers.h"
 #include "ini_file.h"
 #include "modules/editors.h"
 #include "modules/gui.h"
@@ -49,29 +49,24 @@ static ColorButton* button_color;
 static CheckBox* check_preview;
 static Slider* slider_tolerance;
 
-static void button_1_command(Widget* widget, const DocumentReader& document);
-static void button_2_command(Widget* widget, const DocumentReader& document);
+static Mask* gen_mask(const Sprite* sprite, const Image* image, int xpos, int ypos);
+static void mask_preview(const ContextReader& reader);
 
-static Mask* gen_mask(const Sprite* sprite);
-static void mask_preview(const DocumentReader& document);
-
-void dialogs_mask_color(Document* document)
+void dialogs_mask_color(Context* context)
 {
-  DocumentReader documentReader(document);
-  Sprite* sprite = document->getSprite();
+  const ContextReader reader(context);
+  const Sprite* sprite = reader.sprite();
   Box* box1, *box2, *box3, *box4;
   Widget* label_color;
-  Button* button_1;
-  Button* button_2;
   Widget* label_tolerance;
   Button* button_ok;
   Button* button_cancel;
-  Image *image;
 
   if (!App::instance()->isGui() || !sprite)
     return;
 
-  image = sprite->getCurrentImage();
+  int xpos, ypos;
+  const Image* image = reader.image(&xpos, &ypos);
   if (!image)
     return;
 
@@ -85,8 +80,6 @@ void dialogs_mask_color(Document* document)
    (get_config_color("MaskColor", "Color",
                      ColorBar::instance()->getFgColor()),
     sprite->getPixelFormat());
-  button_1 = new Button("1");
-  button_2 = new Button("2");
   label_tolerance = new Label("Tolerance:");
   slider_tolerance = new Slider(0, 255, get_config_int("MaskColor", "Tolerance", 0));
   check_preview = new CheckBox("&Preview");
@@ -96,14 +89,12 @@ void dialogs_mask_color(Document* document)
   if (get_config_bool("MaskColor", "Preview", true))
     check_preview->setSelected(true);
 
-  button_1->Click.connect(Bind<void>(&button_1_command, button_1, Ref(documentReader)));
-  button_2->Click.connect(Bind<void>(&button_2_command, button_2, Ref(documentReader)));
   button_ok->Click.connect(Bind<void>(&Window::closeWindow, window.get(), button_ok));
   button_cancel->Click.connect(Bind<void>(&Window::closeWindow, window.get(), button_cancel));
 
-  button_color->Change.connect(Bind<void>(&mask_preview, Ref(documentReader)));
-  slider_tolerance->Change.connect(Bind<void>(&mask_preview, Ref(documentReader)));
-  check_preview->Click.connect(Bind<void>(&mask_preview, Ref(documentReader)));
+  button_color->Change.connect(Bind<void>(&mask_preview, Ref(reader)));
+  slider_tolerance->Change.connect(Bind<void>(&mask_preview, Ref(reader)));
+  check_preview->Click.connect(Bind<void>(&mask_preview, Ref(reader)));
 
   button_ok->setFocusMagnet(true);
   button_color->setExpansive(true);
@@ -117,19 +108,17 @@ void dialogs_mask_color(Document* document)
   box1->addChild(box4);
   box2->addChild(label_color);
   box2->addChild(button_color);
-  box2->addChild(button_1);
-  box2->addChild(button_2);
   box3->addChild(label_tolerance);
   box3->addChild(slider_tolerance);
   box4->addChild(button_ok);
   box4->addChild(button_cancel);
 
   // Default position
-  window->remap_window();
-  window->center_window();
+  window->remapWindow();
+  window->centerWindow();
 
   // Mask first preview
-  mask_preview(documentReader);
+  mask_preview(reader);
 
   // Load window configuration
   load_window_pos(window, "MaskColor");
@@ -137,16 +126,20 @@ void dialogs_mask_color(Document* document)
   // Open the window
   window->openWindowInForeground();
 
-  if (window->get_killer() == button_ok) {
-    DocumentWriter documentWriter(documentReader);
-    UndoTransaction undo(document, "Mask by Color", undo::DoesntModifyDocument);
+  bool apply = (window->getKiller() == button_ok);
+
+  ContextWriter writer(reader);
+  Document* document(writer.document());
+
+  if (apply) {
+    UndoTransaction undo(writer.context(), "Mask by Color", undo::DoesntModifyDocument);
 
     if (undo.isEnabled())
       undo.pushUndoer(new undoers::SetMask(undo.getObjects(), document));
 
     // Change the mask
     {
-      UniquePtr<Mask> mask(gen_mask(sprite));
+      UniquePtr<Mask> mask(gen_mask(sprite, image, xpos, ypos));
       document->setMask(mask);
     }
 
@@ -157,31 +150,17 @@ void dialogs_mask_color(Document* document)
     set_config_bool("MaskColor", "Preview", check_preview->isSelected());
   }
 
-  /* update boundaries and editors */
+  // Update boundaries and editors.
   document->generateMaskBoundaries();
   update_screen_for_document(document);
 
-  /* save window configuration */
+  // Save window configuration.
   save_window_pos(window, "MaskColor");
 }
 
-static void button_1_command(Widget* widget, const DocumentReader& document)
+static Mask* gen_mask(const Sprite* sprite, const Image* image, int xpos, int ypos)
 {
-  button_color->setColor(ColorBar::instance()->getFgColor());
-  mask_preview(document);
-}
-
-static void button_2_command(Widget* widget, const DocumentReader& document)
-{
-  button_color->setColor(ColorBar::instance()->getBgColor());
-  mask_preview(document);
-}
-
-static Mask* gen_mask(const Sprite* sprite)
-{
-  int xpos, ypos, color, tolerance;
-
-  const Image* image = sprite->getCurrentImage(&xpos, &ypos, NULL);
+  int color, tolerance;
 
   color = color_utils::color_for_image(button_color->getColor(), sprite->getPixelFormat());
   tolerance = slider_tolerance->getValue();
@@ -193,14 +172,16 @@ static Mask* gen_mask(const Sprite* sprite)
   return mask.release();
 }
 
-static void mask_preview(const DocumentReader& document)
+static void mask_preview(const ContextReader& reader)
 {
   if (check_preview->isSelected()) {
-    UniquePtr<Mask> mask(gen_mask(document->getSprite()));
+    int xpos, ypos;
+    const Image* image = reader.image(&xpos, &ypos);
+    UniquePtr<Mask> mask(gen_mask(reader.sprite(), image, xpos, ypos));
     {
-      DocumentWriter documentWriter(document);
-      documentWriter->generateMaskBoundaries(mask);
+      ContextWriter writer(reader);
+      writer.document()->generateMaskBoundaries(mask);
+      update_screen_for_document(writer.document());
     }
-    update_screen_for_document(document);
   }
 }

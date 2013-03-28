@@ -1,5 +1,5 @@
 /* ASEPRITE
- * Copyright (C) 2001-2012  David Capello
+ * Copyright (C) 2001-2013  David Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -27,8 +27,8 @@
 #include "commands/command.h"
 #include "commands/params.h"
 #include "console.h"
+#include "context_access.h"
 #include "document_undo.h"
-#include "document_wrappers.h"
 #include "gfx/hsv.h"
 #include "gfx/rgb.h"
 #include "gfx/size.h"
@@ -69,16 +69,16 @@ public:
   PaletteEntryEditor();
   ~PaletteEntryEditor();
 
-  void setColor(const Color& color);
+  void setColor(const app::Color& color);
 
 protected:
   bool onProcessMessage(Message* msg) OVERRIDE;
 
   void onExit();
   void onCloseWindow();
-  void onFgBgColorChange(const Color& color);
+  void onFgBgColorChange(const app::Color& color);
   void onColorSlidersChange(ColorSlidersChangeEvent& ev);
-  void onColorHexEntryChange(const Color& color);
+  void onColorHexEntryChange(const app::Color& color);
   void onColorTypeButtonClick(Event& ev);
   void onMoreOptionsClick(Event& ev);
   void onCopyColorsClick(Event& ev);
@@ -89,9 +89,9 @@ protected:
   void onQuantizeClick(Event& ev);
 
 private:
-  void selectColorType(Color::Type type);
-  void setPaletteEntry(const Color& color);
-  void setPaletteEntryChannel(const Color& color, ColorSliders::Channel channel);
+  void selectColorType(app::Color::Type type);
+  void setPaletteEntry(const app::Color& color);
+  void setPaletteEntryChannel(const app::Color& color, ColorSliders::Channel channel);
   void setNewPalette(Palette* palette, const char* operationName);
   void updateCurrentSpritePalette(const char* operationName);
   void updateColorBar();
@@ -213,7 +213,7 @@ void PaletteEditorCommand::onExecute(Context* context)
   if (m_switch || m_open) {
     if (!g_window->isVisible()) {
       // Default bounds
-      g_window->remap_window();
+      g_window->remapWindow();
 
       int width = MAX(jrect_w(g_window->rc), JI_SCREEN_W/2);
       g_window->setBounds(Rect(JI_SCREEN_W - width - jrect_w(ToolBar::instance()->rc),
@@ -231,7 +231,7 @@ void PaletteEditorCommand::onExecute(Context* context)
 
   // Show the specified target color
   {
-    Color color =
+    app::Color color =
       (m_background ? context->getSettings()->getBgColor():
                       context->getSettings()->getFgColor());
 
@@ -329,7 +329,7 @@ PaletteEntryEditor::PaletteEntryEditor()
   m_hsvSliders.ColorChange.connect(&PaletteEntryEditor::onColorSlidersChange, this);
   m_hexColorEntry.ColorChange.connect(&PaletteEntryEditor::onColorHexEntryChange, this);
 
-  selectColorType(Color::RgbType);
+  selectColorType(app::Color::RgbType);
 
   // We hook fg/bg color changes (by eyedropper mainly) to update the selected entry color
   ColorBar::instance()->FgColorChange.connect(&PaletteEntryEditor::onFgBgColorChange, this);
@@ -353,7 +353,7 @@ PaletteEntryEditor::~PaletteEntryEditor()
   App::instance()->PaletteChange.disconnect(m_palChangeSlot);
 }
 
-void PaletteEntryEditor::setColor(const Color& color)
+void PaletteEntryEditor::setColor(const app::Color& color)
 {
   m_rgbSliders.setColor(color);
   m_hsvSliders.setColor(color);
@@ -413,8 +413,10 @@ bool PaletteEntryEditor::onProcessMessage(Message* msg)
 
       // Redraw all editors
       try {
-        const ActiveDocumentReader document(UIContext::instance());
-        update_editors_with_document(document);
+        ContextWriter writer(UIContext::instance());
+        Document* document(writer.document());
+        if (document != NULL)
+          document->notifyGeneralUpdate();
       }
       catch (...) {
         // Do nothing
@@ -423,7 +425,8 @@ bool PaletteEntryEditor::onProcessMessage(Message* msg)
     // Redraw just the current editor
     else {
       m_redrawAll = true;
-      current_editor->updateEditor();
+      if (current_editor != NULL)
+        current_editor->updateEditor();
     }
   }
   return Window::onProcessMessage(msg);
@@ -443,9 +446,9 @@ void PaletteEntryEditor::onCloseWindow()
   ColorBar::instance()->setPaletteEditorButtonState(false);
 }
 
-void PaletteEntryEditor::onFgBgColorChange(const Color& color)
+void PaletteEntryEditor::onFgBgColorChange(const app::Color& color)
 {
-  if (color.isValid() && color.getType() == Color::IndexType) {
+  if (color.isValid() && color.getType() == app::Color::IndexType) {
     setColor(color);
   }
 }
@@ -458,7 +461,7 @@ void PaletteEntryEditor::onColorSlidersChange(ColorSlidersChangeEvent& ev)
   updateColorBar();
 }
 
-void PaletteEntryEditor::onColorHexEntryChange(const Color& color)
+void PaletteEntryEditor::onColorHexEntryChange(const app::Color& color)
 {
   // Disable updating the hex entry so we don't override what the user
   // is writting in the text field.
@@ -476,8 +479,8 @@ void PaletteEntryEditor::onColorTypeButtonClick(Event& ev)
 {
   RadioButton* source = static_cast<RadioButton*>(ev.getSource());
 
-  if (source == &m_rgbButton) selectColorType(Color::RgbType);
-  else if (source == &m_hsvButton) selectColorType(Color::HsvType);
+  if (source == &m_rgbButton) selectColorType(app::Color::RgbType);
+  else if (source == &m_hsvButton) selectColorType(app::Color::HsvType);
 }
 
 void PaletteEntryEditor::onMoreOptionsClick(Event& ev)
@@ -496,7 +499,7 @@ void PaletteEntryEditor::onMoreOptionsClick(Event& ev)
     {
       JRect rect = jrect_new(rc->x1, rc->y1,
                              rc->x2, rc->y2 - reqSize.h);
-      move_window(rect);
+      moveWindow(rect);
       jrect_free(rect);
     }
   }
@@ -516,7 +519,7 @@ void PaletteEntryEditor::onMoreOptionsClick(Event& ev)
       if (rect->y2 > JI_SCREEN_H)
         jrect_displace(rect, 0, JI_SCREEN_H - rect->y2);
 
-      move_window(rect);
+      moveWindow(rect);
       jrect_free(rect);
     }
     else
@@ -640,8 +643,8 @@ void PaletteEntryEditor::onQuantizeClick(Event& ev)
   Palette* palette = NULL;
 
   {
-    const ActiveDocumentReader document(UIContext::instance());
-    const Sprite* sprite(document ? document->getSprite(): NULL);
+    const ContextReader reader(UIContext::instance());
+    const Sprite* sprite(reader.sprite());
 
     if (sprite == NULL) {
       Alert::show("Error<<There is no sprite selected to quantize.||&OK");
@@ -653,14 +656,14 @@ void PaletteEntryEditor::onQuantizeClick(Event& ev)
       return;
     }
 
-    palette = quantization::create_palette_from_rgb(sprite);
+    palette = quantization::create_palette_from_rgb(sprite, reader.frame());
   }
 
   setNewPalette(palette, "Quantize Palette");
   delete palette;
 }
 
-void PaletteEntryEditor::setPaletteEntry(const Color& color)
+void PaletteEntryEditor::setPaletteEntry(const app::Color& color)
 {
   PaletteView* palView = ColorBar::instance()->getPaletteView();
   PaletteView::SelectedEntries entries;
@@ -677,7 +680,7 @@ void PaletteEntryEditor::setPaletteEntry(const Color& color)
   }
 }
 
-void PaletteEntryEditor::setPaletteEntryChannel(const Color& color, ColorSliders::Channel channel)
+void PaletteEntryEditor::setPaletteEntryChannel(const app::Color& color, ColorSliders::Channel channel)
 {
   PaletteView* palView = ColorBar::instance()->getPaletteView();
   PaletteView::SelectedEntries entries;
@@ -701,7 +704,7 @@ void PaletteEntryEditor::setPaletteEntryChannel(const Color& color, ColorSliders
 
       switch (color.getType()) {
 
-        case Color::RgbType:
+        case app::Color::RgbType:
           // Modify one entry
           if (begSel == endSel) {
             r = color.getRed();
@@ -724,7 +727,7 @@ void PaletteEntryEditor::setPaletteEntryChannel(const Color& color, ColorSliders
           }
           break;
 
-        case Color::HsvType:
+        case app::Color::HsvType:
           {
             Hsv hsv;
 
@@ -767,14 +770,14 @@ void PaletteEntryEditor::setPaletteEntryChannel(const Color& color, ColorSliders
   }
 }
 
-void PaletteEntryEditor::selectColorType(Color::Type type)
+void PaletteEntryEditor::selectColorType(app::Color::Type type)
 {
-  m_rgbSliders.setVisible(type == Color::RgbType);
-  m_hsvSliders.setVisible(type == Color::HsvType);
+  m_rgbSliders.setVisible(type == app::Color::RgbType);
+  m_hsvSliders.setVisible(type == app::Color::HsvType);
 
   switch (type) {
-    case Color::RgbType: m_rgbButton.setSelected(true); break;
-    case Color::HsvType: m_hsvButton.setSelected(true); break;
+    case app::Color::RgbType: m_rgbButton.setSelected(true); break;
+    case app::Color::HsvType: m_hsvButton.setSelected(true); break;
   }
 
   m_vbox.layout();
@@ -801,10 +804,12 @@ void PaletteEntryEditor::updateCurrentSpritePalette(const char* operationName)
   if (UIContext::instance()->getActiveDocument() &&
       UIContext::instance()->getActiveDocument()->getSprite()) {
     try {
-      ActiveDocumentWriter document(UIContext::instance());
-      Sprite* sprite(document->getSprite());
+      ContextWriter writer(UIContext::instance());
+      Document* document(writer.document());
+      Sprite* sprite(writer.sprite());
       Palette* newPalette = get_current_palette(); // System current pal
-      Palette* currentSpritePalette = sprite->getPalette(sprite->getCurrentFrame()); // Sprite current pal
+      FrameNumber frame = writer.frame();
+      Palette* currentSpritePalette = sprite->getPalette(frame); // Sprite current pal
       int from, to;
 
       // Check differences between current sprite palette and current system palette
@@ -819,13 +824,15 @@ void PaletteEntryEditor::updateCurrentSpritePalette(const char* operationName)
           if (m_implantChange && strcmp(undo->getNextUndoLabel(), operationName) == 0) {
             undo->implantUndoerInLastGroup
               (new undoers::SetPaletteColors(undo->getObjects(),
-                                             sprite, currentSpritePalette, from, to));
+                                             sprite, currentSpritePalette,
+                                             frame, from, to));
           }
           else {
-            UndoTransaction undoTransaction(document, operationName, undo::ModifyDocument);
+            UndoTransaction undoTransaction(writer.context(), operationName, undo::ModifyDocument);
             undoTransaction.pushUndoer
               (new undoers::SetPaletteColors(undoTransaction.getObjects(),
-                                             sprite, currentSpritePalette, from, to));
+                                             sprite, currentSpritePalette,
+                                             frame, from, to));
             undoTransaction.commit();
           }
         }
@@ -860,7 +867,7 @@ void PaletteEntryEditor::onPalChange()
     PaletteView* palette_editor = ColorBar::instance()->getPaletteView();
     int index = palette_editor->getSelectedEntry();
     if (index >= 0)
-      setColor(Color::fromIndex(index));
+      setColor(app::Color::fromIndex(index));
 
     // Redraw the window
     invalidate();

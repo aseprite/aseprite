@@ -1,5 +1,5 @@
 /* ASEPRITE
- * Copyright (C) 2001-2012  David Capello
+ * Copyright (C) 2001-2013  David Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,22 +20,17 @@
 #define SETTINGS_SETTINGS_H_INCLUDED
 
 #include "app/color.h"
-#include "filters/tiled_mode.h"
 #include "gfx/point.h"
 #include "gfx/rect.h"
 #include "raster/pen_type.h"
 
+class Document;
+class IDocumentSettings;
 class IToolSettings;
 class IPenSettings;
 
 namespace tools { class Tool; }
 
-enum SnapBehavior {
-  NormalSnap = 0,
-  SnapInRightBottom = 1
-};
-
-// Settings used in tool <-> drawing <-> editor stuff
 class ISettings
 {
 public:
@@ -43,54 +38,20 @@ public:
 
   // General settings
 
-  virtual Color getFgColor() = 0;
-  virtual Color getBgColor() = 0;
+  virtual app::Color getFgColor() = 0;
+  virtual app::Color getBgColor() = 0;
   virtual tools::Tool* getCurrentTool() = 0;
-  virtual TiledMode getTiledMode() = 0;
 
-  virtual void setFgColor(const Color& color) = 0;
-  virtual void setBgColor(const Color& color) = 0;
+  virtual void setFgColor(const app::Color& color) = 0;
+  virtual void setBgColor(const app::Color& color) = 0;
   virtual void setCurrentTool(tools::Tool* tool) = 0;
-  virtual void setTiledMode(TiledMode mode) = 0;
 
-  // Grid settings
+  // Returns the specific settings for the given document. If the
+  // document is null, it should return an interface for
+  // global/default settings.
+  virtual IDocumentSettings* getDocumentSettings(const Document* document) = 0;
 
-  virtual bool getSnapToGrid() = 0;
-  virtual bool getGridVisible() = 0;
-  virtual gfx::Rect getGridBounds() = 0;
-  virtual Color getGridColor() = 0;
-
-  virtual void setSnapToGrid(bool state) = 0;
-  virtual void setGridVisible(bool state) = 0;
-  virtual void setGridBounds(const gfx::Rect& rect) = 0;
-  virtual void setGridColor(const Color& color) = 0;
-
-  virtual void snapToGrid(gfx::Point& point, SnapBehavior snapBehavior) const = 0;
-
-  // Pixel grid
-
-  virtual bool getPixelGridVisible() = 0;
-  virtual Color getPixelGridColor() = 0;
-
-  virtual void setPixelGridVisible(bool state) = 0;
-  virtual void setPixelGridColor(const Color& color) = 0;
-
-  // Onionskin settings
-
-  virtual bool getUseOnionskin() = 0;
-  virtual int getOnionskinPrevFrames() = 0;
-  virtual int getOnionskinNextFrames() = 0;
-  virtual int getOnionskinOpacityBase() = 0;
-  virtual int getOnionskinOpacityStep() = 0;
-
-  virtual void setUseOnionskin(bool state) = 0;
-  virtual void setOnionskinPrevFrames(int frames) = 0;
-  virtual void setOnionskinNextFrames(int frames) = 0;
-  virtual void setOnionskinOpacityBase(int base) = 0;
-  virtual void setOnionskinOpacityStep(int step) = 0;
-
-  // Tools settings
-
+  // Specific configuration for the given tool.
   virtual IToolSettings* getToolSettings(tools::Tool* tool) = 0;
 
 };

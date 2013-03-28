@@ -1,5 +1,5 @@
 /* ASEPRITE
- * Copyright (C) 2001-2012  David Capello
+ * Copyright (C) 2001-2013  David Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -66,7 +66,7 @@ LayerImage* create_flatten_layer_copy(Sprite* dstSprite, const Layer* srcLayer,
 // in the given "frame".
 static bool has_cels(const Layer* layer, FrameNumber frame)
 {
-  if (!layer->is_readable())
+  if (!layer->isReadable())
     return false;
 
   switch (layer->getType()) {
@@ -75,8 +75,8 @@ static bool has_cels(const Layer* layer, FrameNumber frame)
       return static_cast<const LayerImage*>(layer)->getCel(frame) ? true: false;
 
     case GFXOBJ_LAYER_FOLDER: {
-      LayerConstIterator it = static_cast<const LayerFolder*>(layer)->get_layer_begin();
-      LayerConstIterator end = static_cast<const LayerFolder*>(layer)->get_layer_end();
+      LayerConstIterator it = static_cast<const LayerFolder*>(layer)->getLayerBegin();
+      LayerConstIterator end = static_cast<const LayerFolder*>(layer)->getLayerEnd();
 
       for (; it != end; ++it) {
         if (has_cels(*it, frame))

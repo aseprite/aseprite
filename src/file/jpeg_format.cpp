@@ -1,5 +1,5 @@
 /* ASEPRITE
- * Copyright (C) 2001-2012  David Capello
+ * Copyright (C) 2001-2013  David Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -374,7 +374,7 @@ SharedPtr<FormatOptions> JpegFormat::onGetFormatOptions(FileOp* fop)
 
     window->openWindowInForeground();
 
-    if (window->get_killer() == ok) {
+    if (window->getKiller() == ok) {
       jpeg_options->quality = slider_quality->getValue() / 10.0f;
       set_config_float("JPEG", "Quality", jpeg_options->quality);
     }

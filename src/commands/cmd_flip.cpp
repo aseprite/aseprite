@@ -1,5 +1,5 @@
 /* ASEPRITE
- * Copyright (C) 2001-2012  David Capello
+ * Copyright (C) 2001-2013  David Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -22,7 +22,8 @@
 
 #include "app.h"
 #include "commands/params.h"
-#include "document_wrappers.h"
+#include "context_access.h"
+#include "document_api.h"
 #include "gfx/size.h"
 #include "modules/gui.h"
 #include "raster/algorithm/flip_image.h"
@@ -59,11 +60,13 @@ bool FlipCommand::onEnabled(Context* context)
 
 void FlipCommand::onExecute(Context* context)
 {
-  ActiveDocumentWriter document(context);
-  Sprite* sprite = document->getSprite();
+  ContextWriter writer(context);
+  Document* document = writer.document();
+  Sprite* sprite = writer.sprite();
+  DocumentApi api = document->getApi();
 
   {
-    UndoTransaction undoTransaction(document,
+    UndoTransaction undoTransaction(writer.context(),
                                     m_flipMask ?
                                     (m_flipType == raster::algorithm::FlipHorizontal ?
                                      "Flip Horizontal":
@@ -73,9 +76,8 @@ void FlipCommand::onExecute(Context* context)
                                      "Flip Canvas Vertical"));
 
     if (m_flipMask) {
-      Image* image;
       int x, y;
-      image = sprite->getCurrentImage(&x, &y);
+      Image* image = writer.image(&x, &y);
       if (!image)
         return;
 
@@ -103,10 +105,10 @@ void FlipCommand::onExecute(Context* context)
 
         // If the mask isn't a rectangular area, we've to flip the mask too.
         if (mask->getBitmap() != NULL && !mask->isRectangular()) {
-          int bgcolor = app_get_color_to_clear_layer(sprite->getCurrentLayer());
+          int bgcolor = app_get_color_to_clear_layer(writer.layer());
 
           // Flip the portion of image specified by the mask.
-          undoTransaction.flipImageWithMask(image, mask, m_flipType, bgcolor);
+          api.flipImageWithMask(image, mask, m_flipType, bgcolor);
           alreadyFlipped = true;
 
           // Flip the mask.
@@ -122,7 +124,7 @@ void FlipCommand::onExecute(Context* context)
             newMask->unfreeze();
 
             // Change the current mask and generate the new boundaries.
-            undoTransaction.copyToCurrentMask(newMask);
+            api.copyToCurrentMask(newMask);
 
             document->generateMaskBoundaries();
           }
@@ -131,7 +133,7 @@ void FlipCommand::onExecute(Context* context)
 
       // Flip the portion of image specified by "bounds" variable.
       if (!alreadyFlipped) {
-        undoTransaction.flipImage(image, bounds, m_flipType);
+        api.flipImage(image, bounds, m_flipType);
       }
     }
     else {
@@ -144,8 +146,8 @@ void FlipCommand::onExecute(Context* context)
         Cel* cel = *it;
         Image* image = sprite->getStock()->getImage(cel->getImage());
 
-        undoTransaction.setCelPosition
-          (cel,
+        api.setCelPosition
+          (sprite, cel,
            (m_flipType == raster::algorithm::FlipHorizontal ?
             sprite->getWidth() - image->w - cel->getX():
             cel->getX()),
@@ -153,7 +155,7 @@ void FlipCommand::onExecute(Context* context)
             sprite->getHeight() - image->h - cel->getY():
             cel->getY()));
 
-        undoTransaction.flipImage(image, gfx::Rect(0, 0, image->w, image->h), m_flipType);
+        api.flipImage(image, gfx::Rect(0, 0, image->w, image->h), m_flipType);
       }
     }
 

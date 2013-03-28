@@ -1,5 +1,5 @@
 # ASEPRITE
-# Copyright (C) 2001-2012  David Capello
+# Copyright (C) 2001-2013  David Capello
 
 add_definitions(-DHAVE_CONFIG_H)
 
@@ -11,7 +11,9 @@ if(MSVC)
 endif(MSVC)
 
 # Libraries in this directory
-set(aseprite_libraries aseprite-library undo-lib filters-lib ui-lib she gfx-lib base-lib)
+set(aseprite_libraries aseprite-library scripting-lib
+                       undo-lib filters-lib ui-lib
+                       she gfx-lib base-lib)
 
 # Directories where .h files can be found
 include_directories(. .. ../third_party)
@@ -132,6 +134,21 @@ else()
   add_definitions(-DALLEGRO4_WITH_RESIZE_PATCH)
 endif()
 
+######################################################################
+# ASEPRITE libraries
+
+add_subdirectory(base)
+add_subdirectory(filters)
+add_subdirectory(gfx)
+add_subdirectory(scripting)
+add_subdirectory(she)
+add_subdirectory(ui)
+add_subdirectory(undo)
+
+if(V8_FOUND)
+list(APPEND libs3rdparty ${V8_LIBRARIES})
+endif()
+
 # All libraries for .exe files
 set(all_libs ${aseprite_libraries} ${libs3rdparty} ${sys_libs})
 
@@ -139,25 +156,16 @@ if(LIBALLEGRO4_LINK_FLAGS)
   set(all_libs ${all_libs} ${LIBALLEGRO4_LINK_FLAGS})
 endif()
 
-######################################################################
-# ASEPRITE libraries
-
-add_subdirectory(base)
-add_subdirectory(filters)
-add_subdirectory(gfx)
-add_subdirectory(she)
-add_subdirectory(ui)
-add_subdirectory(undo)
-
 add_library(aseprite-library
   app.cpp
   app_menus.cpp
-  check_args.cpp
   console.cpp
   context.cpp
   context_flags.cpp
   context_observer_list.cpp
   document.cpp
+  document_api.cpp
+  document_location.cpp
   document_undo.cpp
   documents.cpp
   drop_files.cpp
@@ -173,16 +181,19 @@ add_library(aseprite-library
   objects_container_impl.cpp
   recent_files.cpp
   resource_finder.cpp
+  shell.cpp
   thumbnail_generator.cpp
   ui_context.cpp
   undo_transaction.cpp
   xml_exception.cpp
+  app/app_options.cpp
   app/backup.cpp
   app/check_update.cpp
   app/color.cpp
   app/color_utils.cpp
   app/data_recovery.cpp
   app/file_selector.cpp
+  app/project.cpp
   app/widget_loader.cpp
   commands/cmd_about.cpp
   commands/cmd_advanced_mode.cpp
@@ -246,7 +257,6 @@ add_library(aseprite-library
   commands/cmd_save_file.cpp
   commands/cmd_save_mask.cpp
   commands/cmd_scroll.cpp
-  commands/cmd_select_file.cpp
   commands/cmd_sprite_editor.cpp
   commands/cmd_sprite_properties.cpp
   commands/cmd_sprite_size.cpp
@@ -320,6 +330,7 @@ add_library(aseprite-library
   tools/tool_box.cpp
   tools/tool_loop_manager.cpp
   undoers/add_cel.cpp
+  undoers/add_frame.cpp
   undoers/add_image.cpp
   undoers/add_layer.cpp
   undoers/add_palette.cpp
@@ -331,6 +342,7 @@ add_library(aseprite-library
   undoers/open_group.cpp
   undoers/remap_palette.cpp
   undoers/remove_cel.cpp
+  undoers/remove_frame.cpp
   undoers/remove_image.cpp
   undoers/remove_layer.cpp
   undoers/remove_palette.cpp
@@ -338,8 +350,6 @@ add_library(aseprite-library
   undoers/set_cel_frame.cpp
   undoers/set_cel_opacity.cpp
   undoers/set_cel_position.cpp
-  undoers/set_current_frame.cpp
-  undoers/set_current_layer.cpp
   undoers/set_frame_duration.cpp
   undoers/set_layer_flags.cpp
   undoers/set_layer_name.cpp
@@ -368,6 +378,7 @@ add_library(aseprite-library
   widgets/color_button.cpp
   widgets/color_selector.cpp
   widgets/color_sliders.cpp
+  widgets/document_view.cpp
   widgets/drop_down_button.cpp
   widgets/editor/cursor.cpp
   widgets/editor/drawing_state.cpp
@@ -390,11 +401,14 @@ add_library(aseprite-library
   widgets/main_menu_bar.cpp
   widgets/main_window.cpp
   widgets/menuitem2.cpp
+  widgets/mini_editor.cpp
   widgets/palette_view.cpp
   widgets/popup_window_pin.cpp
   widgets/status_bar.cpp
   widgets/tabs.cpp
-  widgets/toolbar.cpp)
+  widgets/toolbar.cpp
+  widgets/workspace.cpp
+  widgets/workspace_part.cpp)
 
 ######################################################################
 # ASEPRITE application

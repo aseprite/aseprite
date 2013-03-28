@@ -1,5 +1,5 @@
 // ASEPRITE gui library
-// Copyright (C) 2001-2012  David Capello
+// Copyright (C) 2001-2013  David Capello
 //
 // This source file is distributed under a BSD-like license, please
 // read LICENSE.txt for more information.
@@ -57,7 +57,7 @@ namespace ui {
     TipWindow(const char *text, bool close_on_buttonpressed = false);
     ~TipWindow();
 
-    void set_hotregion(JRegion region);
+    void setHotRegion(const gfx::Region& region);
 
     int getArrowAlign() const;
     void setArrowAlign(int arrowAlign);
@@ -70,7 +70,7 @@ namespace ui {
 
   private:
     bool m_close_on_buttonpressed;
-    JRegion m_hot_region;
+    gfx::Region m_hotRegion;
     bool m_filtering;
     int m_arrowAlign;
   };

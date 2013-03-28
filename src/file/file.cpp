@@ -1,5 +1,5 @@
 /* ASEPRITE
- * Copyright (C) 2001-2012  David Capello
+ * Copyright (C) 2001-2013  David Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -295,7 +295,7 @@ FileOp* fop_to_save_document(Document* document)
   }
 
   // layers support
-  if (fop->document->getSprite()->getFolder()->get_layers_count() > 1) {
+  if (fop->document->getSprite()->getFolder()->getLayersCount() > 1) {
     if (!(fop->format->support(FILE_SUPPORT_LAYERS))) {
       usprintf(buf+ustrlen(buf), "<<- Layers");
     }
@@ -548,27 +548,24 @@ void fop_operate(FileOp *fop, IFileOpProgress* progress)
                                      sprite->getWidth(),
                                      sprite->getHeight());
       if (fop->seq.image != NULL) {
-        FrameNumber old_frame = sprite->getCurrentFrame();
-
         fop->seq.progress_offset = 0.0f;
         fop->seq.progress_fraction = 1.0f / (double)sprite->getTotalFrames();
 
         // For each frame in the sprite.
         for (FrameNumber frame(0); frame < sprite->getTotalFrames(); ++frame) {
           // Draw the "frame" in "fop->seq.image"
-          sprite->setCurrentFrame(frame);
-          sprite->render(fop->seq.image, 0, 0);
+          sprite->render(fop->seq.image, 0, 0, frame);
 
           // Setup the palette.
-          sprite->getPalette(sprite->getCurrentFrame())->copyColorsTo(fop->seq.palette);
+          sprite->getPalette(frame)->copyColorsTo(fop->seq.palette);
 
           // Setup the filename to be used.
-          fop->filename = fop->seq.filename_list[sprite->getCurrentFrame()];
+          fop->filename = fop->seq.filename_list[frame];
 
           // Call the "save" procedure... did it fail?
           if (!fop->format->save(fop)) {
             fop_error(fop, "Error saving frame %d in the file \"%s\"\n",
-                      sprite->getCurrentFrame()+1, fop->filename.c_str());
+                      frame+1, fop->filename.c_str());
             break;
           }
 
@@ -578,9 +575,6 @@ void fop_operate(FileOp *fop, IFileOpProgress* progress)
 
         // Destroy the image
         image_free(fop->seq.image);
-
-        // Restore frame
-        sprite->setCurrentFrame(old_frame);
       }
       else {
         fop_error(fop, "Not enough memory for the temporary bitmap.\n");
@@ -649,17 +643,13 @@ void fop_post_load(FileOp* fop)
   }
 
   if (fop->document->getSprite() != NULL) {
-    // Select the last layer
-    if (fop->document->getSprite()->getFolder()->get_layers_count() > 0) {
-      LayerIterator last_layer = --fop->document->getSprite()->getFolder()->get_layer_end();
-      fop->document->getSprite()->setCurrentLayer(*last_layer);
-    }
-
     // Creates a suitable palette for RGB images
     if (fop->document->getSprite()->getPixelFormat() == IMAGE_RGB &&
         fop->document->getSprite()->getPalettes().size() <= 1 &&
         fop->document->getSprite()->getPalette(FrameNumber(0))->isBlack()) {
-      SharedPtr<Palette> palette(quantization::create_palette_from_rgb(fop->document->getSprite()));
+      SharedPtr<Palette> palette
+        (quantization::create_palette_from_rgb(fop->document->getSprite(),
+                                               FrameNumber(0)));
 
       fop->document->getSprite()->resetPalettes();
       fop->document->getSprite()->setPalette(palette, false);

@@ -1,5 +1,5 @@
 /* ASEPRITE
- * Copyright (C) 2001-2012  David Capello
+ * Copyright (C) 2001-2013  David Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -148,8 +148,6 @@ void OpenFileCommand::onExecute(Context* context)
 
           App::instance()->getRecentFiles()->addRecentFile(fop->filename.c_str());
           context->addDocument(document);
-
-          set_document_in_more_reliable_editor(document);
         }
         else if (!fop_is_stop(fop))
           unrecent = true;

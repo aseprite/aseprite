@@ -1,5 +1,5 @@
 /* ASEPRITE
- * Copyright (C) 2001-2012  David Capello
+ * Copyright (C) 2001-2013  David Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -24,7 +24,8 @@
 #include "base/bind.h"
 #include "base/unique_ptr.h"
 #include "commands/command.h"
-#include "document_wrappers.h"
+#include "context_access.h"
+#include "document_api.h"
 #include "modules/editors.h"
 #include "modules/gui.h"
 #include "raster/image.h"
@@ -84,7 +85,7 @@ public:
     m_editor->backToPreviousState();
   }
 
-  bool pressedOk() { return get_killer() == m_ok; }
+  bool pressedOk() { return getKiller() == m_ok; }
 
   int getLeft()   const { return m_left->getTextInt(); }
   int getRight()  const { return m_right->getTextInt(); }
@@ -169,15 +170,15 @@ bool CanvasSizeCommand::onEnabled(Context* context)
 
 void CanvasSizeCommand::onExecute(Context* context)
 {
-  const ActiveDocumentReader document(context);
-  const Sprite* sprite(document->getSprite());
+  const ContextReader reader(context);
+  const Sprite* sprite(reader.sprite());
 
   if (context->isUiAvailable()) {
     // load the window widget
     UniquePtr<CanvasSizeWindow> window(new CanvasSizeWindow(0, 0, 0, 0));
 
-    window->remap_window();
-    window->center_window();
+    window->remapWindow();
+    window->centerWindow();
 
     load_window_pos(window, "CanvasSize");
     window->setVisible(true);
@@ -204,18 +205,20 @@ void CanvasSizeCommand::onExecute(Context* context)
   if (y2 <= y1) y2 = y1+1;
 
   {
-    DocumentWriter documentWriter(document);
-    UndoTransaction undoTransaction(documentWriter, "Canvas Size");
+    ContextWriter writer(reader);
+    Document* document = writer.document();
+    Sprite* sprite = writer.sprite();
+    UndoTransaction undoTransaction(writer.context(), "Canvas Size");
+    DocumentApi api = document->getApi();
     int bgcolor = color_utils::color_for_image(context->getSettings()->getBgColor(), sprite->getPixelFormat());
     bgcolor = color_utils::fixup_color_for_background(sprite->getPixelFormat(), bgcolor);
 
-    undoTransaction.cropSprite(gfx::Rect(x1, y1, x2-x1, y2-y1), bgcolor);
+    api.cropSprite(sprite, gfx::Rect(x1, y1, x2-x1, y2-y1), bgcolor);
     undoTransaction.commit();
 
-    documentWriter->generateMaskBoundaries();
+    document->generateMaskBoundaries();
+    update_screen_for_document(document);
   }
-
-  update_screen_for_document(document);
 }
 
 //////////////////////////////////////////////////////////////////////

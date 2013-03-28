@@ -1,5 +1,5 @@
 // ASEPRITE gui library
-// Copyright (C) 2001-2012  David Capello
+// Copyright (C) 2001-2013  David Capello
 //
 // This source file is distributed under a BSD-like license, please
 // read LICENSE.txt for more information.
@@ -12,6 +12,7 @@
 #include "ui/draw.h"
 #include "ui/image_view.h"
 #include "ui/message.h"
+#include "ui/preferred_size_event.h"
 #include "ui/rect.h"
 #include "ui/system.h"
 #include "ui/theme.h"
@@ -24,24 +25,14 @@ ImageView::ImageView(BITMAP* bmp, int align)
   setAlign(align);
 }
 
-bool ImageView::onProcessMessage(Message* msg)
+void ImageView::onPreferredSize(PreferredSizeEvent& ev)
 {
-  switch (msg->type) {
+  struct jrect box, text, icon;
+  jwidget_get_texticon_info(this, &box, &text, &icon,
+                            getAlign(), m_bmp->w, m_bmp->h);
 
-    case JM_REQSIZE: {
-      struct jrect box, text, icon;
-
-      jwidget_get_texticon_info(this, &box, &text, &icon,
-                                getAlign(), m_bmp->w, m_bmp->h);
-
-      msg->reqsize.w = border_width.l + jrect_w(&box) + border_width.r;
-      msg->reqsize.h = border_width.t + jrect_h(&box) + border_width.b;
-      return true;
-    }
-
-  }
-
-  return Widget::onProcessMessage(msg);
+  ev.setPreferredSize(gfx::Size(border_width.l + jrect_w(&box) + border_width.r,
+                                border_width.t + jrect_h(&box) + border_width.b));
 }
 
 void ImageView::onPaint(PaintEvent& ev)
@@ -51,8 +42,7 @@ void ImageView::onPaint(PaintEvent& ev)
   jwidget_get_texticon_info(this, &box, &text, &icon,
                             getAlign(), m_bmp->w, m_bmp->h);
 
-  jdraw_rectexclude(rc, &icon,
-                    jwidget_get_bg_color(this));
+  jdraw_rectexclude(rc, &icon, getBgColor());
 
   blit(m_bmp, ji_screen, 0, 0,
        icon.x1, icon.y1, jrect_w(&icon), jrect_h(&icon));

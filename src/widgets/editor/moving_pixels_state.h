@@ -1,5 +1,5 @@
 /* ASEPRITE
- * Copyright (C) 2001-2012  David Capello
+ * Copyright (C) 2001-2013  David Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -55,10 +55,10 @@ public:
 protected:
   // StatusBarObserver interface
   virtual void dispose() OVERRIDE;
-  virtual void onChangeTransparentColor(const Color& color) OVERRIDE;
+  virtual void onChangeTransparentColor(const app::Color& color) OVERRIDE;
 
 private:
-  void setTransparentColor(const Color& color);
+  void setTransparentColor(const app::Color& color);
   void dropPixels(Editor* editor);
 
   // Helper member to move/translate selection and pixels.

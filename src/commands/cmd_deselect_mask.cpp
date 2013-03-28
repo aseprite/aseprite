@@ -1,5 +1,5 @@
 /* ASEPRITE
- * Copyright (C) 2001-2012  David Capello
+ * Copyright (C) 2001-2013  David Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,7 +19,8 @@
 #include "config.h"
 
 #include "commands/command.h"
-#include "document_wrappers.h"
+#include "context_access.h"
+#include "document_api.h"
 #include "modules/gui.h"
 #include "raster/mask.h"
 #include "raster/sprite.h"
@@ -54,10 +55,11 @@ bool DeselectMaskCommand::onEnabled(Context* context)
 
 void DeselectMaskCommand::onExecute(Context* context)
 {
-  ActiveDocumentWriter document(context);
+  ContextWriter writer(context);
+  Document* document(writer.document());
   {
-    UndoTransaction undoTransaction(document, "Mask Deselection", undo::DoesntModifyDocument);
-    undoTransaction.deselectMask();
+    UndoTransaction undoTransaction(writer.context(), "Mask Deselection", undo::DoesntModifyDocument);
+    document->getApi().deselectMask();
     undoTransaction.commit();
   }
   document->generateMaskBoundaries();

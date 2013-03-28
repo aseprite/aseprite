@@ -1,5 +1,5 @@
 /* ASEPRITE
- * Copyright (C) 2001-2012  David Capello
+ * Copyright (C) 2001-2013  David Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -31,10 +31,10 @@ class HexColorEntry : public ui::Box
 public:
   HexColorEntry();
 
-  void setColor(const Color& color);
+  void setColor(const app::Color& color);
 
   // Signals
-  Signal1<void, const Color&> ColorChange;
+  Signal1<void, const app::Color&> ColorChange;
 
 protected:
   void onEntryChange();

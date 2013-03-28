@@ -1,5 +1,5 @@
 /* ASEPRITE
- * Copyright (C) 2001-2012  David Capello
+ * Copyright (C) 2001-2013  David Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,7 +20,8 @@
 
 #include "app.h"
 #include "commands/command.h"
-#include "document_wrappers.h"
+#include "context_access.h"
+#include "document_api.h"
 #include "modules/gui.h"
 #include "raster/layer.h"
 #include "raster/sprite.h"
@@ -58,14 +59,15 @@ bool RemoveLayerCommand::onEnabled(Context* context)
 void RemoveLayerCommand::onExecute(Context* context)
 {
   std::string layer_name;
-  ActiveDocumentWriter document(context);
-  Sprite* sprite(document->getSprite());
+  ContextWriter writer(context);
+  Document* document(writer.document());
+  Layer* layer(writer.layer());
   {
-    UndoTransaction undoTransaction(document, "Remove Layer");
+    UndoTransaction undoTransaction(writer.context(), "Remove Layer");
 
-    layer_name = sprite->getCurrentLayer()->getName();
+    layer_name = layer->getName();
 
-    undoTransaction.removeLayer(sprite->getCurrentLayer());
+    document->getApi().removeLayer(layer);
     undoTransaction.commit();
   }
   update_screen_for_document(document);

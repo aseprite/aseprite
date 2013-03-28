@@ -1,5 +1,5 @@
 /* ASEPRITE
- * Copyright (C) 2001-2012  David Capello
+ * Copyright (C) 2001-2013  David Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -31,7 +31,11 @@ class Sprite;
 class RenderEngine
 {
 public:
-
+  RenderEngine(const Document* document,
+               const Sprite* sprite,
+               const Layer* currentLayer,
+               FrameNumber currentFrame);
+  
   //////////////////////////////////////////////////////////////////////
   // Checked background configuration
 
@@ -45,25 +49,23 @@ public:
   static void setCheckedBgType(CheckedBgType type);
   static bool getCheckedBgZoom();
   static void setCheckedBgZoom(bool state);
-  static Color getCheckedBgColor1();
-  static void setCheckedBgColor1(const Color& color);
-  static Color getCheckedBgColor2();
-  static void setCheckedBgColor2(const Color& color);
+  static app::Color getCheckedBgColor1();
+  static void setCheckedBgColor1(const app::Color& color);
+  static app::Color getCheckedBgColor2();
+  static void setCheckedBgColor2(const app::Color& color);
 
   //////////////////////////////////////////////////////////////////////
   // Preview image
 
-  static void setPreviewImage(Layer* layer, Image* drawable);
+  static void setPreviewImage(const Layer* layer, Image* drawable);
 
   //////////////////////////////////////////////////////////////////////
   // Main function used by sprite-editors to render the sprite
 
-  static Image* renderSprite(const Document* document,
-                             const Sprite* sprite,
-                             int source_x, int source_y,
-                             int width, int height,
-                             FrameNumber frame, int zoom,
-                             bool draw_tiled_bg);
+  Image* renderSprite(int source_x, int source_y,
+                      int width, int height,
+                      FrameNumber frame, int zoom,
+                      bool draw_tiled_bg);
 
   //////////////////////////////////////////////////////////////////////
   // Extra functions
@@ -76,15 +78,18 @@ public:
                           int x, int y, int zoom);
 
 private:
-  static void renderLayer(const Document* document,
-                          const Sprite* sprite,
-                          const Layer* layer,
-                          Image* image,
-                          int source_x, int source_y,
-                          FrameNumber frame, int zoom,
-                          void (*zoomed_func)(Image*, const Image*, const Palette*, int, int, int, int, int),
-                          bool render_background,
-                          bool render_transparent);
+  void renderLayer(const Layer* layer,
+                   Image* image,
+                   int source_x, int source_y,
+                   FrameNumber frame, int zoom,
+                   void (*zoomed_func)(Image*, const Image*, const Palette*, int, int, int, int, int),
+                   bool render_background,
+                   bool render_transparent);
+
+  const Document* m_document;
+  const Sprite* m_sprite;
+  const Layer* m_currentLayer;
+  FrameNumber m_currentFrame;
 };
 
 #endif

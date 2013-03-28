@@ -1,5 +1,5 @@
 /* ASEPRITE
- * Copyright (C) 2001-2012  David Capello
+ * Copyright (C) 2001-2013  David Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -32,70 +32,25 @@ public:
 
   // General settings
 
-  Color getFgColor();
-  Color getBgColor();
-  tools::Tool* getCurrentTool();
-  TiledMode getTiledMode();
+  app::Color getFgColor() OVERRIDE;
+  app::Color getBgColor() OVERRIDE;
+  tools::Tool* getCurrentTool() OVERRIDE;
 
-  void setFgColor(const Color& color);
-  void setBgColor(const Color& color);
-  void setCurrentTool(tools::Tool* tool);
-  void setTiledMode(TiledMode mode);
+  void setFgColor(const app::Color& color) OVERRIDE;
+  void setBgColor(const app::Color& color) OVERRIDE;
+  void setCurrentTool(tools::Tool* tool) OVERRIDE;
 
-  // Grid settings
+  // Document settings
 
-  bool getSnapToGrid();
-  bool getGridVisible();
-  gfx::Rect getGridBounds();
-  Color getGridColor();
-
-  void setSnapToGrid(bool state);
-  void setGridVisible(bool state);
-  void setGridBounds(const gfx::Rect& rect);
-  void setGridColor(const Color& color);
-
-  void snapToGrid(gfx::Point& point, SnapBehavior snapBehavior) const OVERRIDE;
-
-  // Pixel grid
-
-  bool getPixelGridVisible();
-  Color getPixelGridColor();
-
-  void setPixelGridVisible(bool state);
-  void setPixelGridColor(const Color& color);
-
-  // Onionskin settings
-
-  bool getUseOnionskin();
-  int getOnionskinPrevFrames();
-  int getOnionskinNextFrames();
-  int getOnionskinOpacityBase();
-  int getOnionskinOpacityStep();
-
-  void setUseOnionskin(bool state);
-  void setOnionskinPrevFrames(int frames);
-  void setOnionskinNextFrames(int frames);
-  void setOnionskinOpacityBase(int base);
-  void setOnionskinOpacityStep(int step);
+  IDocumentSettings* getDocumentSettings(const Document* document) OVERRIDE;
 
   // Tools settings
 
-  IToolSettings* getToolSettings(tools::Tool* tool);
+  IToolSettings* getToolSettings(tools::Tool* tool) OVERRIDE;
 
 private:
   tools::Tool* m_currentTool;
-  TiledMode m_tiledMode;
-  bool m_use_onionskin;
-  int m_prev_frames_onionskin;
-  int m_next_frames_onionskin;
-  int m_onionskin_opacity_base;
-  int m_onionskin_opacity_step;
-  bool m_snapToGrid;
-  bool m_gridVisible;
-  gfx::Rect m_gridBounds;
-  Color m_gridColor;
-  bool m_pixelGridVisible;
-  Color m_pixelGridColor;
+  IDocumentSettings* m_globalDocumentSettings;
   std::map<std::string, IToolSettings*> m_toolSettings;
 };
 

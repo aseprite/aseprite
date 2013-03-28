@@ -1,5 +1,5 @@
 /* ASEPRITE
- * Copyright (C) 2001-2012  David Capello
+ * Copyright (C) 2001-2013  David Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -28,13 +28,13 @@
 #include "base/bind.h"
 #include "commands/commands.h"
 #include "commands/params.h"
-#include "document_wrappers.h"
+#include "document_location.h"
 #include "ini_file.h"
-#include "modules/editors.h"
 #include "modules/gfx.h"
 #include "modules/gui.h"
 #include "modules/palettes.h"
 #include "raster/raster.h"
+#include "settings/document_settings.h"
 #include "settings/settings.h"
 #include "skin/skin_theme.h"
 #include "tools/ink.h"
@@ -122,19 +122,21 @@ private:
   Editor* m_editor;
 };
 
-Editor::Editor()
+Editor::Editor(Document* document)
   : Widget(editor_type())
   , m_state(new StandbyState())
   , m_decorator(NULL)
+  , m_document(document)
+  , m_sprite(m_document->getSprite())
+  , m_layer(m_sprite->getFolder()->getFirstLayer())
+  , m_frame(FrameNumber(0))
+  , m_zoom(0)
   , m_mask_timer(100, this)
   , m_customizationDelegate(NULL)
+  , m_docView(NULL)
 {
   // Add the first state into the history.
   m_statesHistory.push(m_state);
-
-  m_document = NULL;
-  m_sprite = NULL;
-  m_zoom = 0;
 
   m_cursor_thick = 0;
   m_cursor_screen_x = 0;
@@ -162,7 +164,6 @@ Editor::~Editor()
   setCustomizationDelegate(NULL);
 
   m_mask_timer.stop();
-  remove_editor(this);
 
   // Remove this editor as observer of CurrentToolChange signal.
   App::instance()->CurrentToolChange.disconnect(m_currentToolChangeSlot);
@@ -237,61 +238,45 @@ void Editor::backToPreviousState()
   setStateInternal(EditorStatePtr(NULL));
 }
 
-void Editor::setDocument(Document* document)
+void Editor::setLayer(const Layer* layer)
 {
-  //if (this->hasMouse())
-  //jmanager_free_mouse();      // TODO Why is this here? Review this code
+  m_layer = const_cast<Layer*>(layer);
+  updateStatusBar();
+}
 
-  // Reset all states (back to standby).
-  EditorStatePtr firstState(new StandbyState);
-  m_statesHistory.clear();
-  m_statesHistory.push(firstState);
-  setState(firstState);
+void Editor::setFrame(FrameNumber frame)
+{
+  if (m_frame != frame) {
+    m_frame = frame;
+    m_observers.notifyFrameChanged(this);
 
-  if (m_cursor_thick)
-    editor_clean_cursor();
-
-  // Change the sprite
-  m_document = document;
-  if (m_document) {
-    m_sprite = m_document->getSprite();
-
-    // Get the preferred doc's settings to edit it
-    PreferredEditorSettings preferred = m_document->getPreferredEditorSettings();
-
-    // Change the editor's configuration using the retrieved doc's settings
-    m_zoom = preferred.zoom;
-
-    updateEditor();
-
-    if (preferred.virgin) {
-      View* view = View::getView(this);
-      Rect vp = view->getViewportBounds();
-
-      preferred.virgin = false;
-      preferred.scroll_x = -vp.w/2 + (m_sprite->getWidth()/2);
-      preferred.scroll_y = -vp.h/2 + (m_sprite->getHeight()/2);
-
-      m_document->setPreferredEditorSettings(preferred);
-    }
-
-    setEditorScroll(m_offset_x + preferred.scroll_x,
-                    m_offset_y + preferred.scroll_y,
-                    false);
+    invalidate();
+    updateStatusBar();
   }
-  // In this case document is NULL
-  else {
-    m_sprite = NULL;
+}
 
-    updateEditor();
-    setEditorScroll(0, 0, false); // No scroll
-  }
+void Editor::getDocumentLocation(DocumentLocation* location) const
+{
+  location->document(m_document);
+  location->sprite(m_sprite);
+  location->layer(m_layer);
+  location->frame(m_frame);
+}
 
-  // Redraw the entire editor (because we have a new sprite to draw)
-  invalidate();
+DocumentLocation Editor::getDocumentLocation() const
+{
+  DocumentLocation location;
+  getDocumentLocation(&location);
+  return location;
+}
 
-  // Notify observers
-  m_observers.notifyDocumentChanged(this);
+void Editor::setDefaultScroll()
+{
+  View* view = View::getView(this);
+  Rect vp = view->getViewportBounds();
+
+  setEditorScroll(m_offset_x - vp.w/2 + (m_sprite->getWidth()/2),
+                  m_offset_y - vp.h/2 + (m_sprite->getHeight()/2), false);
 }
 
 // Sets the scroll position of the editor
@@ -299,38 +284,25 @@ void Editor::setEditorScroll(int x, int y, int use_refresh_region)
 {
   View* view = View::getView(this);
   Point oldScroll;
-  JRegion region = NULL;
+  Region region;
   int thick = m_cursor_thick;
 
   if (thick)
     editor_clean_cursor();
 
   if (use_refresh_region) {
-    region = jwidget_get_drawable_region(this, JI_GDR_CUTTOPWINDOWS);
+    getDrawableRegion(region, kCutTopWindows);
     oldScroll = view->getViewScroll();
   }
 
   view->setViewScroll(Point(x, y));
   Point newScroll = view->getViewScroll();
 
-  if (m_document && changePreferredSettings()) {
-    PreferredEditorSettings preferred;
-
-    preferred.virgin = false;
-    preferred.scroll_x = newScroll.x - m_offset_x;
-    preferred.scroll_y = newScroll.y - m_offset_y;
-    preferred.zoom = m_zoom;
-
-    m_document->setPreferredEditorSettings(preferred);
-  }
-
   if (use_refresh_region) {
     // Move screen with blits
-    this->scrollRegion(region,
-                       oldScroll.x - newScroll.x,
-                       oldScroll.y - newScroll.y);
-
-    jregion_free(region);
+    scrollRegion(region,
+                 oldScroll.x - newScroll.x,
+                 oldScroll.y - newScroll.y);
   }
 
   if (thick)
@@ -345,7 +317,7 @@ void Editor::updateEditor()
   View::getView(this)->updateView();
 }
 
-void Editor::drawSprite(int x1, int y1, int x2, int y2)
+void Editor::drawSpriteUnclippedRect(const gfx::Rect& rc)
 {
   View* view = View::getView(this);
   Rect vp = view->getViewportBounds();
@@ -357,12 +329,12 @@ void Editor::drawSprite(int x1, int y1, int x2, int y2)
 
   // Output information
 
-  source_x = x1 << m_zoom;
-  source_y = y1 << m_zoom;
+  source_x = rc.x << m_zoom;
+  source_y = rc.y << m_zoom;
   dest_x   = vp.x - scroll.x + m_offset_x + source_x;
   dest_y   = vp.y - scroll.y + m_offset_y + source_y;
-  width    = (x2 - x1 + 1) << m_zoom;
-  height   = (y2 - y1 + 1) << m_zoom;
+  width    = rc.w << m_zoom;
+  height   = rc.h << m_zoom;
 
   // Clip from viewport
 
@@ -429,13 +401,11 @@ void Editor::drawSprite(int x1, int y1, int x2, int y2)
   // Draw the sprite
 
   if ((width > 0) && (height > 0)) {
+    RenderEngine renderEngine(m_document, m_sprite, m_layer, m_frame);
+
     // Generate the rendered image
-    Image* rendered = RenderEngine::renderSprite(m_document,
-                                                 m_sprite,
-                                                 source_x, source_y,
-                                                 width, height,
-                                                 m_sprite->getCurrentFrame(),
-                                                 m_zoom, true);
+    Image* rendered = renderEngine.renderSprite(source_x, source_y, width, height,
+                                                m_frame, m_zoom, true);
 
     if (rendered) {
       // Pre-render decorator.
@@ -448,16 +418,15 @@ void Editor::drawSprite(int x1, int y1, int x2, int y2)
 #ifdef DRAWSPRITE_DOUBLEBUFFERED
       BITMAP *bmp = create_bitmap(width, height);
 
-      use_current_sprite_rgb_map();
-      image_to_allegro(rendered, bmp, 0, 0, m_sprite->getCurrentPalette());
+      image_to_allegro(rendered, bmp, 0, 0, m_sprite->getPalette(m_frame));
       blit(bmp, ji_screen, 0, 0, dest_x, dest_y, width, height);
-      restore_rgb_map();
 
       image_free(rendered);
       destroy_bitmap(bmp);
 #else
       acquire_bitmap(ji_screen);
-      image_to_allegro(rendered, ji_screen, dest_x, dest_y, m_sprite->getCurrentPalette());
+      image_to_allegro(rendered, ji_screen, dest_x, dest_y,
+                       m_sprite->getPalette(m_frame));
       release_bitmap(ji_screen);
 
       image_free(rendered);
@@ -466,19 +435,20 @@ void Editor::drawSprite(int x1, int y1, int x2, int y2)
   }
 
   // Draw grids
-  ISettings* settings = UIContext::instance()->getSettings();
+  IDocumentSettings* docSettings =
+      UIContext::instance()->getSettings()->getDocumentSettings(m_document);
 
   // Draw the pixel grid
-  if (settings->getPixelGridVisible()) {
+  if (docSettings->getPixelGridVisible()) {
     if (m_zoom > 1)
       this->drawGrid(Rect(0, 0, 1, 1),
-                     settings->getPixelGridColor());
+                     docSettings->getPixelGridColor());
   }
 
   // Draw the grid
-  if (settings->getGridVisible())
-    this->drawGrid(settings->getGridBounds(),
-                   settings->getGridColor());
+  if (docSettings->getGridVisible())
+    this->drawGrid(docSettings->getGridBounds(),
+                   docSettings->getGridColor());
 
   // Draw the mask
   if (m_document->getBoundariesSegments())
@@ -491,24 +461,27 @@ void Editor::drawSprite(int x1, int y1, int x2, int y2)
   }
 }
 
-void Editor::drawSpriteSafe(int x1, int y1, int x2, int y2)
+void Editor::drawSpriteClipped(const gfx::Region& updateRegion)
 {
-  JRegion region = jwidget_get_drawable_region(this, JI_GDR_CUTTOPWINDOWS);
-  int c, nrects = JI_REGION_NUM_RECTS(region);
-  int cx1, cy1, cx2, cy2;
-  JRect rc;
+  Region region;
+  getDrawableRegion(region, kCutTopWindows);
 
+  int cx1, cy1, cx2, cy2;
   get_clip_rect(ji_screen, &cx1, &cy1, &cx2, &cy2);
 
-  for (c=0, rc=JI_REGION_RECTS(region);
-       c<nrects;
-       c++, rc++) {
-    add_clip_rect(ji_screen, rc->x1, rc->y1, rc->x2-1, rc->y2-1);
-    drawSprite(x1, y1, x2, y2);
+  for (Region::const_iterator
+         it=region.begin(), end=region.end(); it != end; ++it) {
+    const Rect& rc = *it;
+
+    add_clip_rect(ji_screen, rc.x, rc.y, rc.x2()-1, rc.y2()-1);
+
+    for (Region::const_iterator
+           it2=updateRegion.begin(), end2=updateRegion.end(); it2 != end2; ++it2) {
+      drawSpriteUnclippedRect(*it2);
+    }
+
     set_clip_rect(ji_screen, cx1, cy1, cx2, cy2);
   }
-
-  jregion_free(region);
 }
 
 /**
@@ -580,9 +553,8 @@ void Editor::drawMaskSafe()
       m_document->getBoundariesSegments()) {
     int thick = m_cursor_thick;
 
-    JRegion region = jwidget_get_drawable_region(this, JI_GDR_CUTTOPWINDOWS);
-    int c, nrects = JI_REGION_NUM_RECTS(region);
-    JRect rc;
+    Region region;
+    getDrawableRegion(region, kCutTopWindows);
 
     acquire_bitmap(ji_screen);
 
@@ -591,14 +563,13 @@ void Editor::drawMaskSafe()
     else
       jmouse_hide();
 
-    for (c=0, rc=JI_REGION_RECTS(region);
-         c<nrects;
-         c++, rc++) {
-      set_clip_rect(ji_screen, rc->x1, rc->y1, rc->x2-1, rc->y2-1);
+    for (Region::const_iterator it=region.begin(), end=region.end();
+         it != end; ++it) {
+      const Rect& rc = *it;
+      set_clip_rect(ji_screen, rc.x, rc.y, rc.x2()-1, rc.y2()-1);
       drawMask();
     }
     set_clip_rect(ji_screen, 0, 0, JI_SCREEN_W-1, JI_SCREEN_H-1);
-    jregion_free(region);
 
     // Draw the cursor
     if (thick)
@@ -610,7 +581,7 @@ void Editor::drawMaskSafe()
   }
 }
 
-void Editor::drawGrid(const Rect& gridBounds, const Color& color)
+void Editor::drawGrid(const Rect& gridBounds, const app::Color& color)
 {
   // Copy the grid bounds
   Rect grid(gridBounds);
@@ -892,10 +863,6 @@ bool Editor::onProcessMessage(Message* msg)
 {
   switch (msg->type) {
 
-    case JM_REQSIZE:
-      editor_request_size(&msg->reqsize.w, &msg->reqsize.h);
-      return true;
-
     case JM_DRAW: {
       SkinTheme* theme = static_cast<SkinTheme*>(this->getTheme());
 
@@ -908,8 +875,8 @@ bool Editor::onProcessMessage(Message* msg)
         View* view = View::getView(this);
         Rect vp = view->getViewportBounds();
 
-        jdraw_rectfill(vp, theme->get_editor_face_color());
-        draw_emptyset_symbol(ji_screen, vp, makecol(64, 64, 64));
+        jdraw_rectfill(vp, theme->getColor(ThemeColor::EditorFace));
+        draw_emptyset_symbol(ji_screen, vp, ui::rgba(64, 64, 64));
       }
       // Editor with sprite
       else {
@@ -927,14 +894,14 @@ bool Editor::onProcessMessage(Message* msg)
           jrectexclude(ji_screen,
                        this->rc->x1, this->rc->y1,
                        this->rc->x2-1, this->rc->y2-1,
-                       x1-1, y1-1, x2+1, y2+2, theme->get_editor_face_color());
+                       x1-1, y1-1, x2+1, y2+2, theme->getColor(ThemeColor::EditorFace));
 
           // Draw the sprite in the editor
-          drawSprite(0, 0, m_sprite->getWidth()-1, m_sprite->getHeight()-1);
+          drawSpriteUnclippedRect(gfx::Rect(0, 0, m_sprite->getWidth(), m_sprite->getHeight()));
 
           // Draw the sprite boundary
-          rect(ji_screen, x1-1, y1-1, x2+1, y2+1, theme->get_editor_sprite_border());
-          hline(ji_screen, x1-1, y2+2, x2+1, theme->get_editor_sprite_bottom_edge());
+          rect(ji_screen, x1-1, y1-1, x2+1, y2+1, to_system(theme->getColor(ThemeColor::EditorSpriteBorder)));
+          hline(ji_screen, x1-1, y2+2, x2+1, to_system(theme->getColor(ThemeColor::EditorSpriteBottomBorder)));
 
           // Draw the mask boundaries
           if (m_document->getBoundariesSegments()) {
@@ -956,7 +923,7 @@ bool Editor::onProcessMessage(Message* msg)
 
           View* view = View::getView(this);
           Rect vp = view->getViewportBounds();
-          jdraw_rectfill(vp, theme->get_editor_face_color());
+          jdraw_rectfill(vp, theme->getColor(ThemeColor::EditorFace));
         }
       }
       return true;
@@ -964,7 +931,7 @@ bool Editor::onProcessMessage(Message* msg)
 
     case JM_TIMER:
       if (msg->timer.timer == &m_mask_timer) {
-        if (m_sprite) {
+        if (isVisible() && m_sprite) {
           drawMaskSafe();
 
           // Set offset to make selection-movement effect
@@ -972,6 +939,9 @@ bool Editor::onProcessMessage(Message* msg)
             m_offset_count++;
           else
             m_offset_count = 0;
+        }
+        else if (m_mask_timer.isRunning()) {
+          m_mask_timer.stop();
         }
       }
       break;
@@ -1059,6 +1029,27 @@ bool Editor::onProcessMessage(Message* msg)
   return Widget::onProcessMessage(msg);
 }
 
+void Editor::onPreferredSize(PreferredSizeEvent& ev)
+{
+  gfx::Size sz(0, 0);
+
+  if (m_sprite) {
+    View* view = View::getView(this);
+    Rect vp = view->getViewportBounds();
+
+    m_offset_x = std::max<int>(vp.w/2, vp.w - m_sprite->getWidth()/2);
+    m_offset_y = std::max<int>(vp.h/2, vp.h - m_sprite->getHeight()/2);
+
+    sz.w = (m_sprite->getWidth() << m_zoom) + m_offset_x*2;
+    sz.h = (m_sprite->getHeight() << m_zoom) + m_offset_y*2;
+  }
+  else {
+    sz.w = 4;
+    sz.h = 4;
+  }
+  ev.setPreferredSize(sz);
+}
+
 // When the current tool is changed
 void Editor::onCurrentToolChange()
 {
@@ -1070,27 +1061,6 @@ void Editor::onFgColorChange()
   if (m_cursor_thick) {
     hideDrawingCursor();
     showDrawingCursor();
-  }
-}
-
-/**
- * Returns size for the editor viewport
- */
-void Editor::editor_request_size(int *w, int *h)
-{
-  if (m_sprite) {
-    View* view = View::getView(this);
-    Rect vp = view->getViewportBounds();
-
-    m_offset_x = std::max<int>(vp.w/2, vp.w - m_sprite->getWidth()/2);
-    m_offset_y = std::max<int>(vp.h/2, vp.h - m_sprite->getHeight()/2);
-
-    *w = (m_sprite->getWidth() << m_zoom) + m_offset_x*2;
-    *h = (m_sprite->getHeight() << m_zoom) + m_offset_y*2;
-  }
-  else {
-    *w = 4;
-    *h = 4;
   }
 }
 
@@ -1108,14 +1078,10 @@ void Editor::editor_setcursor()
 
 bool Editor::canDraw()
 {
-  return
-    (m_sprite != NULL &&
-     m_sprite->getCurrentLayer() != NULL &&
-     m_sprite->getCurrentLayer()->is_image() &&
-     m_sprite->getCurrentLayer()->is_readable() &&
-     m_sprite->getCurrentLayer()->is_writable() /* && */
-     /* layer_get_cel(m_sprite->layer, m_sprite->frame) != NULL */
-     );
+  return (m_layer != NULL &&
+          m_layer->isImage() &&
+          m_layer->isReadable() &&
+          m_layer->isWritable());
 }
 
 bool Editor::isInsideSelection()
@@ -1187,6 +1153,7 @@ void Editor::pasteImage(const Image* image, int x, int y)
   Document* document = getDocument();
   int opacity = 255;
   Sprite* sprite = getSprite();
+  Layer* layer = getLayer();
 
   // Check bounds where the image will be pasted.
   {
@@ -1213,7 +1180,9 @@ void Editor::pasteImage(const Image* image, int x, int y)
   }
 
   PixelsMovement* pixelsMovement =
-    new PixelsMovement(document, sprite, image, x, y, opacity, "Paste");
+    new PixelsMovement(UIContext::instance(),
+                       document, sprite, layer,
+                       image, x, y, opacity, "Paste");
 
   // Select the pasted image so the user can move it and transform it.
   pixelsMovement->maskImage(image, x, y);

@@ -1,5 +1,5 @@
 /* ASEPRITE
- * Copyright (C) 2001-2012  David Capello
+ * Copyright (C) 2001-2013  David Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,8 +20,9 @@
 
 #include "commands/command.h"
 #include "commands/params.h"
-#include "document_wrappers.h"
+#include "context_access.h"
 #include "modules/editors.h"
+#include "settings/document_settings.h"
 #include "settings/settings.h"
 #include "ui/view.h"
 #include "widgets/editor/editor.h"
@@ -89,16 +90,17 @@ void ScrollCommand::onLoadParams(Params* params)
 
 bool ScrollCommand::onEnabled(Context* context)
 {
-  ActiveDocumentWriter document(context);
-  return document != NULL;
+  ContextWriter writer(context);
+  return (writer.document() != NULL);
 }
 
 void ScrollCommand::onExecute(Context* context)
 {
+  IDocumentSettings* docSettings = context->getSettings()->getDocumentSettings(context->getActiveDocument());
   ui::View* view = ui::View::getView(current_editor);
   gfx::Rect vp = view->getViewportBounds();
   gfx::Point scroll = view->getViewScroll();
-  gfx::Rect gridBounds = context->getSettings()->getGridBounds();
+  gfx::Rect gridBounds = docSettings->getGridBounds();
   int dx = 0;
   int dy = 0;
   int pixels = 0;

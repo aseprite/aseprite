@@ -1,5 +1,5 @@
 /* ASEPRITE
- * Copyright (C) 2001-2012  David Capello
+ * Copyright (C) 2001-2013  David Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -55,18 +55,15 @@ int Layer::getMemSize() const
   return sizeof(Layer);
 }
 
-/**
- * Gets the previous layer of "layer" that are in the parent set.
- */
-Layer* Layer::get_prev() const
+Layer* Layer::getPrevious() const
 {
   if (m_parent != NULL) {
     LayerConstIterator it =
-      std::find(m_parent->get_layer_begin(),
-                m_parent->get_layer_end(), this);
+      std::find(m_parent->getLayerBegin(),
+                m_parent->getLayerEnd(), this);
 
-    if (it != m_parent->get_layer_end() &&
-        it != m_parent->get_layer_begin()) {
+    if (it != m_parent->getLayerEnd() &&
+        it != m_parent->getLayerBegin()) {
       it--;
       return *it;
     }
@@ -74,16 +71,16 @@ Layer* Layer::get_prev() const
   return NULL;
 }
 
-Layer* Layer::get_next() const
+Layer* Layer::getNext() const
 {
   if (m_parent != NULL) {
     LayerConstIterator it =
-      std::find(m_parent->get_layer_begin(),
-                m_parent->get_layer_end(), this);
+      std::find(m_parent->getLayerBegin(),
+                m_parent->getLayerEnd(), this);
 
-    if (it != m_parent->get_layer_end()) {
+    if (it != m_parent->getLayerEnd()) {
       it++;
-      if (it != m_parent->get_layer_end())
+      if (it != m_parent->getLayerEnd())
         return *it;
     }
   }
@@ -206,8 +203,8 @@ void LayerImage::configureAsBackground()
   ASSERT(getSprite() != NULL);
   ASSERT(getSprite()->getBackgroundLayer() == NULL);
 
-  set_moveable(false);
-  set_background(true);
+  setMoveable(false);
+  setBackground(true);
   setName("Background");
 
   getSprite()->getFolder()->stackLayer(this, NULL);
@@ -229,8 +226,8 @@ LayerFolder::~LayerFolder()
 
 void LayerFolder::destroyAllLayers()
 {
-  LayerIterator it = get_layer_begin();
-  LayerIterator end = get_layer_end();
+  LayerIterator it = getLayerBegin();
+  LayerIterator end = getLayerEnd();
 
   for (; it != end; ++it) {
     Layer* layer = *it;
@@ -242,8 +239,8 @@ void LayerFolder::destroyAllLayers()
 int LayerFolder::getMemSize() const
 {
   int size = sizeof(LayerFolder);
-  LayerConstIterator it = get_layer_begin();
-  LayerConstIterator end = get_layer_end();
+  LayerConstIterator it = getLayerBegin();
+  LayerConstIterator end = getLayerEnd();
 
   for (; it != end; ++it) {
     const Layer* layer = *it;
@@ -255,8 +252,8 @@ int LayerFolder::getMemSize() const
 
 void LayerFolder::getCels(CelList& cels)
 {
-  LayerIterator it = get_layer_begin();
-  LayerIterator end = get_layer_end();
+  LayerIterator it = getLayerBegin();
+  LayerIterator end = getLayerEnd();
 
   for (; it != end; ++it)
     (*it)->getCels(cels);
@@ -265,7 +262,7 @@ void LayerFolder::getCels(CelList& cels)
 void LayerFolder::addLayer(Layer* layer)
 {
   m_layers.push_back(layer);
-  layer->set_parent(this);
+  layer->setParent(this);
 }
 
 void LayerFolder::removeLayer(Layer* layer)
@@ -274,7 +271,7 @@ void LayerFolder::removeLayer(Layer* layer)
   ASSERT(it != m_layers.end());
   m_layers.erase(it);
 
-  layer->set_parent(NULL);
+  layer->setParent(NULL);
 }
 
 void LayerFolder::stackLayer(Layer* layer, Layer* after)
@@ -303,7 +300,7 @@ void LayerFolder::stackLayer(Layer* layer, Layer* after)
 
 void layer_render(const Layer* layer, Image* image, int x, int y, FrameNumber frame)
 {
-  if (!layer->is_readable())
+  if (!layer->isReadable())
     return;
 
   switch (layer->getType()) {
@@ -331,8 +328,8 @@ void layer_render(const Layer* layer, Image* image, int x, int y, FrameNumber fr
     }
 
     case GFXOBJ_LAYER_FOLDER: {
-      LayerConstIterator it = static_cast<const LayerFolder*>(layer)->get_layer_begin();
-      LayerConstIterator end = static_cast<const LayerFolder*>(layer)->get_layer_end();
+      LayerConstIterator it = static_cast<const LayerFolder*>(layer)->getLayerBegin();
+      LayerConstIterator end = static_cast<const LayerFolder*>(layer)->getLayerEnd();
 
       for (; it != end; ++it)
         layer_render(*it, image, x, y, frame);

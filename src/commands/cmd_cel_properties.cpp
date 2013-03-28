@@ -1,5 +1,5 @@
 /* ASEPRITE
- * Copyright (C) 2001-2012  David Capello
+ * Copyright (C) 2001-2013  David Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -23,7 +23,7 @@
 #include "app/load_widget.h"
 #include "base/mem_utils.h"
 #include "commands/command.h"
-#include "document_wrappers.h"
+#include "context_access.h"
 #include "modules/gui.h"
 #include "raster/cel.h"
 #include "raster/image.h"
@@ -64,12 +64,11 @@ bool CelPropertiesCommand::onEnabled(Context* context)
 
 void CelPropertiesCommand::onExecute(Context* context)
 {
-  const ActiveDocumentReader document(context);
-  const Sprite* sprite = document->getSprite();
-  const Layer* layer = sprite->getCurrentLayer();
-
-  // Get current cel (can be NULL)
-  const Cel* cel = static_cast<const LayerImage*>(layer)->getCel(sprite->getCurrentFrame());
+  const ContextReader reader(context);
+  const Document* document = reader.document();
+  const Sprite* sprite = reader.sprite();
+  const Layer* layer = reader.layer();
+  const Cel* cel = reader.cel(); // Get current cel (can be NULL)
 
   UniquePtr<Window> window(app::load_widget<Window>("cel_properties.xml", "cel_properties"));
   Widget* label_frame = app::find_widget<Widget>(window, "frame");
@@ -83,13 +82,13 @@ void CelPropertiesCommand::onExecute(Context* context)
   setup_mini_look(slider_opacity);
 
   /* if the layer isn't writable */
-  if (!layer->is_writable()) {
+  if (!layer->isWritable()) {
     button_ok->setText("Locked");
     button_ok->setEnabled(false);
   }
 
   label_frame->setTextf("%d/%d",
-                        (int)sprite->getCurrentFrame()+1,
+                        (int)reader.frame()+1,
                         (int)sprite->getTotalFrames());
 
   if (cel != NULL) {
@@ -109,7 +108,7 @@ void CelPropertiesCommand::onExecute(Context* context)
 
     // Opacity
     slider_opacity->setValue(cel->getOpacity());
-    if (layer->is_background()) {
+    if (layer->isBackground()) {
       slider_opacity->setEnabled(false);
       tooltipManager->addTooltipFor(slider_opacity,
                                     "The `Background' layer is opaque,\n"
@@ -126,18 +125,17 @@ void CelPropertiesCommand::onExecute(Context* context)
 
   window->openWindowInForeground();
 
-  if (window->get_killer() == button_ok) {
-    DocumentWriter document_writer(document);
-    Sprite* sprite_writer = document_writer->getSprite();
-    Layer* layer_writer = sprite_writer->getCurrentLayer();
-    Cel* cel_writer = static_cast<LayerImage*>(layer_writer)->getCel(sprite->getCurrentFrame());
+  if (window->getKiller() == button_ok) {
+    ContextWriter writer(reader);
+    Document* document_writer = writer.document();
+    Cel* cel_writer = writer.cel();
 
     int new_opacity = slider_opacity->getValue();
 
     // The opacity was changed?
     if (cel_writer != NULL &&
         cel_writer->getOpacity() != new_opacity) {
-      UndoTransaction undo(document_writer, "Cel Opacity Change", undo::ModifyDocument);
+      UndoTransaction undo(writer.context(), "Cel Opacity Change", undo::ModifyDocument);
       if (undo.isEnabled()) {
         undo.pushUndoer(new undoers::SetCelOpacity(undo.getObjects(), cel_writer));
         undo.commit();
@@ -146,7 +144,7 @@ void CelPropertiesCommand::onExecute(Context* context)
       // Change cel opacity.
       cel_writer->setOpacity(new_opacity);
 
-      update_screen_for_document(document);
+      update_screen_for_document(document_writer);
     }
   }
 }

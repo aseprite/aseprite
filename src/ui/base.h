@@ -1,5 +1,5 @@
 // ASEPRITE gui library
-// Copyright (C) 2001-2012  David Capello
+// Copyright (C) 2001-2013  David Capello
 //
 // This source file is distributed under a BSD-like license, please
 // read LICENSE.txt for more information.
@@ -32,7 +32,6 @@
 namespace ui {
 
   struct jrect;
-  struct jregion;
 
   // Alignment.
 #define JI_HORIZONTAL   0x0001
@@ -104,11 +103,8 @@ namespace ui {
     JM_CLOSE_APP,                 // The user wants to close the entire application.
     JM_DRAW,                      // Widget needs be repainted.
     JM_TIMER,                     // A timer timeout.
-    JM_REQSIZE,                   // Request size.
     JM_SETPOS,                    // Set position.
     JM_WINMOVE,                   // Window movement.
-    JM_DEFERREDFREE,              // Deferred jwidget_free call.
-    JM_DIRTYCHILDREN,             // Dirty children.
     JM_QUEUEPROCESSING,           // Only sent to manager which indicate
     // the last message in the queue.
 
@@ -135,14 +131,9 @@ namespace ui {
     JM_REGISTERED_MESSAGES
   };
 
-  // Flags for jwidget_get_drawable_region.
-#define JI_GDR_CUTTOPWINDOWS    1 // Cut areas where are windows on top.
-#define JI_GDR_USECHILDAREA     2 // Use areas where are children.
-
   typedef unsigned int            JID;
 
   typedef struct jrect*           JRect;
-  typedef struct jregion*         JRegion;
 
   class GuiSystem {
   public:

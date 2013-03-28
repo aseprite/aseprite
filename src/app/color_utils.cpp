@@ -1,5 +1,5 @@
 /* ASEPRITE
- * Copyright (C) 2001-2012  David Capello
+ * Copyright (C) 2001-2013  David Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -52,45 +52,86 @@ int get_mask_for_bitmap(int depth)
 
 }
 
-int color_utils::blackandwhite(int r, int g, int b)
+ui::Color color_utils::blackandwhite(ui::Color color)
 {
-  return (r*30+g*59+b*11)/100 < 128 ?
-    makecol(0, 0, 0):
-    makecol(255, 255, 255);
+  if ((ui::getr(color)*30+ui::getg(color)*59+ui::getb(color)*11)/100 < 128)
+    return ui::rgba(0, 0, 0);
+  else
+    return ui::rgba(255, 255, 255);
 }
 
-int color_utils::blackandwhite_neg(int r, int g, int b)
+ui::Color color_utils::blackandwhite_neg(ui::Color color)
 {
-  return (r*30+g*59+b*11)/100 < 128 ?
-    makecol(255, 255, 255):
-    makecol(0, 0, 0);
+  if ((ui::getr(color)*30+ui::getg(color)*59+ui::getb(color)*11)/100 < 128)
+    return ui::rgba(255, 255, 255);
+  else
+    return ui::rgba(0, 0, 0);
 }
 
-int color_utils::color_for_allegro(const Color& color, int depth)
+ui::Color color_utils::color_for_ui(const app::Color& color)
+{
+  ui::Color c = ui::ColorNone;
+
+  switch (color.getType()) {
+
+    case app::Color::MaskType:
+      c = ui::ColorNone;
+      break;
+
+    case app::Color::RgbType:
+    case app::Color::HsvType:
+      c = ui::rgba(color.getRed(),
+                   color.getGreen(),
+                   color.getBlue(), 255);
+      break;
+
+    case app::Color::GrayType:
+      c = ui::rgba(color.getGray(),
+                   color.getGray(),
+                   color.getGray(), 255);
+      break;
+
+    case app::Color::IndexType: {
+      int i = color.getIndex();
+      ASSERT(i >= 0 && i < (int)get_current_palette()->size());
+
+      uint32_t _c = get_current_palette()->getEntry(i);
+      c = ui::rgba(_rgba_getr(_c),
+                   _rgba_getg(_c),
+                   _rgba_getb(_c), 255);
+      break;
+    }
+
+  }
+
+  return c;
+}
+
+int color_utils::color_for_allegro(const app::Color& color, int depth)
 {
   int c = -1;
 
   switch (color.getType()) {
 
-    case Color::MaskType:
+    case app::Color::MaskType:
       c = get_mask_for_bitmap(depth);
       break;
 
-    case Color::RgbType:
-    case Color::HsvType:
+    case app::Color::RgbType:
+    case app::Color::HsvType:
       c = makeacol_depth(depth,
                          color.getRed(),
                          color.getGreen(),
                          color.getBlue(), 255);
       break;
 
-    case Color::GrayType:
+    case app::Color::GrayType:
       c = color.getGray();
       if (depth != 8)
         c = makeacol_depth(depth, c, c, c, 255);
       break;
 
-    case Color::IndexType:
+    case app::Color::IndexType:
       c = color.getIndex();
       if (depth != 8) {
         ASSERT(c >= 0 && c < (int)get_current_palette()->size());
@@ -108,9 +149,9 @@ int color_utils::color_for_allegro(const Color& color, int depth)
   return c;
 }
 
-int color_utils::color_for_image(const Color& color, PixelFormat format)
+int color_utils::color_for_image(const app::Color& color, PixelFormat format)
 {
-  if (color.getType() == Color::MaskType)
+  if (color.getType() == app::Color::MaskType)
     return 0;
 
   int c = -1;
@@ -123,7 +164,7 @@ int color_utils::color_for_image(const Color& color, PixelFormat format)
       c = _graya(color.getGray(), 255);
       break;
     case IMAGE_INDEXED:
-      if (color.getType() == Color::IndexType)
+      if (color.getType() == app::Color::IndexType)
         c = color.getIndex();
       else
         c = get_current_palette()->findBestfit(color.getRed(), color.getGreen(), color.getBlue());
@@ -133,11 +174,11 @@ int color_utils::color_for_image(const Color& color, PixelFormat format)
   return c;
 }
 
-int color_utils::color_for_layer(const Color& color, Layer* layer)
+int color_utils::color_for_layer(const app::Color& color, Layer* layer)
 {
   int pixel_color;
 
-  if (color.getType() == Color::MaskType) {
+  if (color.getType() == app::Color::MaskType) {
     pixel_color = layer->getSprite()->getTransparentColor();
   }
   else {
@@ -150,7 +191,7 @@ int color_utils::color_for_layer(const Color& color, Layer* layer)
 
 int color_utils::fixup_color_for_layer(Layer *layer, int color)
 {
-  if (layer->is_background())
+  if (layer->isBackground())
     return fixup_color_for_background(layer->getSprite()->getPixelFormat(), color);
   else
     return color;

@@ -1,5 +1,5 @@
 /* ASEPRITE
- * Copyright (C) 2001-2012  David Capello
+ * Copyright (C) 2001-2013  David Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,15 +18,15 @@
 
 #include "config.h"
 
-#include "commands/command.h"
 #include "app.h"
-#include "modules/gui.h"
+#include "commands/command.h"
+#include "context_access.h"
 #include "modules/editors.h"
+#include "modules/gui.h"
 #include "raster/layer.h"
 #include "raster/sprite.h"
 #include "widgets/editor/editor.h"
 #include "widgets/status_bar.h"
-#include "document_wrappers.h"
 
 //////////////////////////////////////////////////////////////////////
 // goto_previous_layer
@@ -57,24 +57,23 @@ bool GotoPreviousLayerCommand::onEnabled(Context* context)
 
 void GotoPreviousLayerCommand::onExecute(Context* context)
 {
-  ActiveDocumentWriter document(context);
-  Sprite* sprite(document->getSprite());
-  SpritePosition pos = sprite->getCurrentPosition();
+  const ContextReader reader(context);
+  const Sprite* sprite = reader.sprite();
+  DocumentLocation location = *reader.location();
 
-  if (pos.layerIndex() > 0)
-    pos.layerIndex(pos.layerIndex().previous());
+  if (location.layerIndex() > 0)
+    location.layerIndex(location.layerIndex().previous());
   else
-    pos.layerIndex(LayerIndex(sprite->countLayers()-1));
-
-  sprite->setCurrentPosition(pos);
+    location.layerIndex(LayerIndex(sprite->countLayers()-1));
 
   // Flash the current layer
   ASSERT(current_editor != NULL && "Current editor cannot be null when we have a current sprite");
+  current_editor->setLayer(location.layer());
   current_editor->flashCurrentLayer();
 
   StatusBar::instance()
     ->setStatusText(1000, "Layer `%s' selected",
-                    sprite->getCurrentLayer()->getName().c_str());
+                    location.layer()->getName().c_str());
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -106,24 +105,23 @@ bool GotoNextLayerCommand::onEnabled(Context* context)
 
 void GotoNextLayerCommand::onExecute(Context* context)
 {
-  ActiveDocumentWriter document(context);
-  Sprite* sprite(document->getSprite());
-  SpritePosition pos = sprite->getCurrentPosition();
+  const ContextReader reader(context);
+  const Sprite* sprite = reader.sprite();
+  DocumentLocation location = *reader.location();
 
-  if (pos.layerIndex() < sprite->countLayers()-1)
-    pos.layerIndex(pos.layerIndex().next());
+  if (location.layerIndex() < sprite->countLayers()-1)
+    location.layerIndex(location.layerIndex().next());
   else
-    pos.layerIndex(LayerIndex(0));
-
-  sprite->setCurrentPosition(pos);
+    location.layerIndex(LayerIndex(0));
 
   // Flash the current layer
   ASSERT(current_editor != NULL && "Current editor cannot be null when we have a current sprite");
+  current_editor->setLayer(location.layer());
   current_editor->flashCurrentLayer();
 
   StatusBar::instance()
     ->setStatusText(1000, "Layer `%s' selected",
-                    sprite->getCurrentLayer()->getName().c_str());
+                    location.layer()->getName().c_str());
 }
 
 //////////////////////////////////////////////////////////////////////

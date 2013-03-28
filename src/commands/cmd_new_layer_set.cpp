@@ -1,5 +1,5 @@
 /* ASEPRITE
- * Copyright (C) 2001-2012  David Capello
+ * Copyright (C) 2001-2013  David Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -22,11 +22,15 @@
 #include "app/find_widget.h"
 #include "app/load_widget.h"
 #include "commands/command.h"
-#include "document_wrappers.h"
+#include "context_access.h"
+#include "document_api.h"
+#include "document_api.h"
 #include "modules/gui.h"
 #include "raster/layer.h"
 #include "raster/sprite.h"
 #include "ui/gui.h"
+#include "undo_transaction.h"
+#include "widgets/status_bar.h"
 
 using namespace ui;
 
@@ -59,24 +63,31 @@ bool NewLayerSetCommand::onEnabled(Context* context)
 
 void NewLayerSetCommand::onExecute(Context* context)
 {
-  ActiveDocumentWriter document(context);
-  Sprite* sprite(document->getSprite());
+  ContextWriter writer(context);
+  Document* document(writer.document());
+  Sprite* sprite(writer.sprite());
 
   // load the window widget
   UniquePtr<Window> window(app::load_widget<Window>("new_layer.xml", "new_layer_set"));
 
   window->openWindowInForeground();
 
-  if (window->get_killer() == window->findChild("ok")) {
-    const char *name = window->findChild("name")->getText();
-    Layer* layer = new LayerFolder(sprite);
+  if (window->getKiller() != window->findChild("ok"))
+    return;
 
-    layer->setName(name);
-    sprite->getFolder()->addLayer(layer);
-    sprite->setCurrentLayer(layer);
-
-    update_screen_for_document(document);
+  std::string name = window->findChild("name")->getText();
+  Layer* layer;
+  {
+    UndoTransaction undoTransaction(writer.context(), "New Layer");
+    layer = document->getApi().newLayerFolder(sprite);
+    undoTransaction.commit();
   }
+  layer->setName(name);
+
+  update_screen_for_document(document);
+
+  StatusBar::instance()->invalidate();
+  StatusBar::instance()->showTip(1000, "Layer `%s' created", name.c_str());
 }
 
 //////////////////////////////////////////////////////////////////////

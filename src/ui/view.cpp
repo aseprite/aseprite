@@ -1,5 +1,5 @@
 // ASEPRITE gui library
-// Copyright (C) 2001-2012  David Capello
+// Copyright (C) 2001-2013  David Capello
 //
 // This source file is distributed under a BSD-like license, please
 // read LICENSE.txt for more information.
@@ -9,8 +9,8 @@
 #include "gfx/size.h"
 #include "ui/intern.h"
 #include "ui/message.h"
+#include "ui/preferred_size_event.h"
 #include "ui/rect.h"
-#include "ui/region.h"
 #include "ui/system.h"
 #include "ui/theme.h"
 #include "ui/view.h"
@@ -239,23 +239,9 @@ bool View::onProcessMessage(Message* msg)
 {
   switch (msg->type) {
 
-    case JM_REQSIZE: {
-      Size viewSize = m_viewport.getPreferredSize();
-      msg->reqsize.w = viewSize.w;
-      msg->reqsize.h = viewSize.h;
-
-      msg->reqsize.w += this->border_width.l + this->border_width.r;
-      msg->reqsize.h += this->border_width.t + this->border_width.b;
-      return true;
-    }
-
     case JM_SETPOS:
       jrect_copy(this->rc, &msg->setpos.rect);
       updateView();
-      return true;
-
-    case JM_DRAW:
-      getTheme()->draw_view(this, &msg->draw.rect);
       return true;
 
     case JM_FOCUSENTER:
@@ -263,14 +249,27 @@ bool View::onProcessMessage(Message* msg)
       // TODO This is theme specific stuff
       // Redraw the borders each time the focus enters or leaves the view.
       {
-        JRegion region = jwidget_get_drawable_region(this, JI_GDR_CUTTOPWINDOWS);
+        Region region;
+        getDrawableRegion(region, kCutTopWindows);
         invalidateRegion(region);
-        jregion_free(region);
       }
       break;
   }
 
   return Widget::onProcessMessage(msg);
+}
+
+void View::onPreferredSize(PreferredSizeEvent& ev)
+{
+  Size viewSize = m_viewport.getPreferredSize();
+  viewSize.w += this->border_width.l + this->border_width.r;
+  viewSize.h += this->border_width.t + this->border_width.b;
+  ev.setPreferredSize(viewSize);
+}
+
+void View::onPaint(PaintEvent& ev)
+{
+  getTheme()->paintView(ev);
 }
 
 // static

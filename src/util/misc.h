@@ -1,5 +1,5 @@
 /* ASEPRITE
- * Copyright (C) 2001-2012  David Capello
+ * Copyright (C) 2001-2013  David Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,9 +19,8 @@
 #ifndef UTIL_MISC_H_INCLUDED
 #define UTIL_MISC_H_INCLUDED
 
-class Image;
-class Document;
+class DocumentLocation;
 
-Image* NewImageFromMask(const Document* srcDocument);
+Image* NewImageFromMask(const DocumentLocation& location);
 
 #endif

@@ -1,5 +1,5 @@
 // ASEPRITE gui library
-// Copyright (C) 2001-2012  David Capello
+// Copyright (C) 2001-2013  David Capello
 //
 // This source file is distributed under a BSD-like license, please
 // read LICENSE.txt for more information.
@@ -20,32 +20,32 @@ namespace ui {
   class Window : public Widget
   {
   public:
-    Window(bool is_desktop, const char* text);
+    Window(bool isDesktop, const char* text);
     ~Window();
 
-    Widget* get_killer();
+    Widget* getKiller();
 
-    void set_autoremap(bool state);
-    void set_moveable(bool state);
-    void set_sizeable(bool state);
-    void set_ontop(bool state);
-    void set_wantfocus(bool state);
+    void setAutoRemap(bool state);
+    void setMoveable(bool state);
+    void setSizeable(bool state);
+    void setOnTop(bool state);
+    void setWantFocus(bool state);
 
-    void remap_window();
-    void center_window();
-    void position_window(int x, int y);
-    void move_window(JRect rect);
+    void remapWindow();
+    void centerWindow();
+    void positionWindow(int x, int y);
+    void moveWindow(JRect rect);
 
     void openWindow();
     void openWindowInForeground();
     void closeWindow(Widget* killer);
 
-    bool is_toplevel();
-    bool is_foreground() const { return m_is_foreground; }
-    bool is_desktop() const { return m_is_desktop; }
-    bool is_ontop() const { return m_is_ontop; }
-    bool is_wantfocus() const { return m_is_wantfocus; }
-    bool is_moveable() const { return m_is_moveable; }
+    bool isTopLevel();
+    bool isForeground() const { return m_isForeground; }
+    bool isDesktop() const { return m_isDesktop; }
+    bool isOnTop() const { return m_isOnTop; }
+    bool isWantFocus() const { return m_isWantFocus; }
+    bool isMoveable() const { return m_isMoveable; }
 
     HitTest hitTest(const gfx::Point& point);
 
@@ -66,19 +66,19 @@ namespace ui {
     virtual void onHitTest(HitTestEvent& ev);
 
   private:
-    void window_set_position(JRect rect);
-    int get_action(int x, int y);
-    void limit_size(int* w, int* h);
-    void move_window(JRect rect, bool use_blit);
+    void windowSetPosition(JRect rect);
+    int getAction(int x, int y);
+    void limitSize(int* w, int* h);
+    void moveWindow(JRect rect, bool use_blit);
 
     Widget* m_killer;
-    bool m_is_desktop : 1;
-    bool m_is_moveable : 1;
-    bool m_is_sizeable : 1;
-    bool m_is_ontop : 1;
-    bool m_is_wantfocus : 1;
-    bool m_is_foreground : 1;
-    bool m_is_autoremap : 1;
+    bool m_isDesktop : 1;
+    bool m_isMoveable : 1;
+    bool m_isSizeable : 1;
+    bool m_isOnTop : 1;
+    bool m_isWantFocus : 1;
+    bool m_isForeground : 1;
+    bool m_isAutoRemap : 1;
     int m_hitTest;
   };
 

@@ -1,5 +1,5 @@
 /* ASEPRITE
- * Copyright (C) 2001-2012  David Capello
+ * Copyright (C) 2001-2013  David Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -39,20 +39,6 @@ void ContextObserverList::removeObserver(ContextObserver* observer)
   iterator it = std::find(m_observer.begin(), m_observer.end(), observer);
   ASSERT(it != m_observer.end());
   m_observer.erase(it);
-}
-
-void ContextObserverList::notifyActiveDocumentBeforeChange(Context* context)
-{
-  list_type copy = m_observer;
-  std::for_each(copy.begin(), copy.end(),
-                std::bind2nd(std::mem_fun(&ContextObserver::onActiveDocumentBeforeChange), context));
-}
-
-void ContextObserverList::notifyActiveDocumentAfterChange(Context* context)
-{
-  list_type copy = m_observer;
-  std::for_each(copy.begin(), copy.end(),
-                std::bind2nd(std::mem_fun(&ContextObserver::onActiveDocumentAfterChange), context));
 }
 
 void ContextObserverList::notifyCommandBeforeExecution(Context* context)

@@ -1,5 +1,5 @@
 /* ASEPRITE
- * Copyright (C) 2001-2012  David Capello
+ * Copyright (C) 2001-2013  David Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -23,7 +23,8 @@
 #include "base/convert_to.h"
 #include "commands/command.h"
 #include "commands/params.h"
-#include "document_wrappers.h"
+#include "context_access.h"
+#include "document_api.h"
 #include "raster/sprite.h"
 #include "ui/gui.h"
 #include "undo_transaction.h"
@@ -86,8 +87,8 @@ bool FramePropertiesCommand::onEnabled(Context* context)
 
 void FramePropertiesCommand::onExecute(Context* context)
 {
-  const ActiveDocumentReader document(context);
-  const Sprite* sprite = document->getSprite();
+  const ContextReader reader(context);
+  const Sprite* sprite = reader.sprite();
 
   UniquePtr<Window> window(app::load_widget<Window>("frame_duration.xml", "frame_duration"));
   Widget* frame = app::find_widget<Widget>(window, "frame");
@@ -101,7 +102,7 @@ void FramePropertiesCommand::onExecute(Context* context)
       break;
 
     case CURRENT_FRAME:
-      sprite_frame = sprite->getCurrentFrame();
+      sprite_frame = reader.frame();
       break;
 
     case SPECIFIC_FRAME:
@@ -114,26 +115,26 @@ void FramePropertiesCommand::onExecute(Context* context)
   else
     frame->setTextf("%d", (int)sprite_frame+1);
 
-  frlen->setTextf("%d", sprite->getFrameDuration(sprite->getCurrentFrame()));
+  frlen->setTextf("%d", sprite->getFrameDuration(reader.frame()));
 
   window->openWindowInForeground();
-  if (window->get_killer() == ok) {
+  if (window->getKiller() == ok) {
     int num = strtol(frlen->getText(), NULL, 10);
 
     if (m_target == ALL_FRAMES) {
       if (Alert::show("Warning"
                       "<<Do you want to change the duration of all frames?"
                       "||&Yes||&No") == 1) {
-        DocumentWriter document_writer(document);
-        UndoTransaction undoTransaction(document_writer, "Constant Frame-Rate");
-        undoTransaction.setConstantFrameRate(num);
+        ContextWriter writer(reader);
+        UndoTransaction undoTransaction(writer.context(), "Constant Frame-Rate");
+        writer.document()->getApi().setConstantFrameRate(writer.sprite(), num);
         undoTransaction.commit();
       }
     }
     else {
-      DocumentWriter document_writer(document);
-      UndoTransaction undoTransaction(document_writer, "Frame Duration");
-      undoTransaction.setFrameDuration(sprite_frame, num);
+      ContextWriter writer(reader);
+      UndoTransaction undoTransaction(writer.context(), "Frame Duration");
+      writer.document()->getApi().setFrameDuration(writer.sprite(), sprite_frame, num);
       undoTransaction.commit();
     }
   }

@@ -1,5 +1,5 @@
 /* ASEPRITE
- * Copyright (C) 2001-2012  David Capello
+ * Copyright (C) 2001-2013  David Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,7 +20,7 @@
 #define SKIN_PARTS_H_INCLUDED
 
 // Available parts in the skin sheet
-enum {
+enum SkinPart {
 
   PART_RADIO_NORMAL,
   PART_RADIO_SELECTED,
@@ -159,6 +159,14 @@ enum {
   PART_WINDOW_CLOSE_BUTTON_NORMAL,
   PART_WINDOW_CLOSE_BUTTON_HOT,
   PART_WINDOW_CLOSE_BUTTON_SELECTED,
+
+  PART_WINDOW_PLAY_BUTTON_NORMAL,
+  PART_WINDOW_PLAY_BUTTON_HOT,
+  PART_WINDOW_PLAY_BUTTON_SELECTED,
+
+  PART_WINDOW_STOP_BUTTON_NORMAL,
+  PART_WINDOW_STOP_BUTTON_HOT,
+  PART_WINDOW_STOP_BUTTON_SELECTED,
 
   PART_SLIDER_FULL_NW,
   PART_SLIDER_FULL_N,

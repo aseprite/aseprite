@@ -1,5 +1,5 @@
 /* ASEPRITE
- * Copyright (C) 2001-2012  David Capello
+ * Copyright (C) 2001-2013  David Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -27,6 +27,7 @@
 #include "ini_file.h"
 #include "modules/editors.h"
 #include "raster/image.h"
+#include "settings/document_settings.h"
 #include "ui/gui.h"
 #include "util/render.h"
 #include "widgets/color_button.h"
@@ -66,7 +67,7 @@ OptionsCommand::OptionsCommand()
 
 void OptionsCommand::onExecute(Context* context)
 {
-  /* load the window widget */
+  // Load the window widget
   UniquePtr<Window> window(app::load_widget<Window>("options.xml", "options"));
   Widget* check_smooth = app::find_widget<Widget>(window, "smooth");
   Widget* move_click2 = app::find_widget<Widget>(window, "move_click2");
@@ -88,13 +89,16 @@ void OptionsCommand::onExecute(Context* context)
   cursor_color->setId("cursor_color");
   cursor_color_box->addChild(cursor_color);
 
+  // Get global settings for documents
+  IDocumentSettings* docSettings = context->getSettings()->getDocumentSettings(NULL);
+
   // Grid color
-  ColorButton* grid_color = new ColorButton(context->getSettings()->getGridColor(), IMAGE_RGB);
+  ColorButton* grid_color = new ColorButton(docSettings->getGridColor(), IMAGE_RGB);
   grid_color->setId("grid_color");
   grid_color_box->addChild(grid_color);
 
   // Pixel grid color
-  ColorButton* pixel_grid_color = new ColorButton(context->getSettings()->getPixelGridColor(), IMAGE_RGB);
+  ColorButton* pixel_grid_color = new ColorButton(docSettings->getPixelGridColor(), IMAGE_RGB);
   pixel_grid_color->setId("pixel_grid_color");
   pixel_grid_color_box->addChild(pixel_grid_color);
 
@@ -139,12 +143,12 @@ void OptionsCommand::onExecute(Context* context)
   // Show the window and wait the user to close it
   window->openWindowInForeground();
 
-  if (window->get_killer() == button_ok) {
+  if (window->getKiller() == button_ok) {
     int undo_size_limit_value;
 
     Editor::set_cursor_color(cursor_color->getColor());
-    context->getSettings()->setGridColor(grid_color->getColor());
-    context->getSettings()->setPixelGridColor(pixel_grid_color->getColor());
+    docSettings->setGridColor(grid_color->getColor());
+    docSettings->setPixelGridColor(pixel_grid_color->getColor());
 
     set_config_bool("Options", "MoveSmooth", check_smooth->isSelected());
     set_config_bool("Options", "MoveClick2", move_click2->isSelected());
@@ -162,9 +166,6 @@ void OptionsCommand::onExecute(Context* context)
 
     // Save configuration
     flush_config_file();
-
-    // Refresh all editors
-    refresh_all_editors();
   }
 }
 
@@ -173,8 +174,8 @@ void OptionsCommand::onResetCheckedBg()
   // Default values
   m_checked_bg->setSelectedItem((int)RenderEngine::CHECKED_BG_16X16);
   m_checked_bg_zoom->setSelected(true);
-  m_checked_bg_color1->setColor(Color::fromRgb(128, 128, 128));
-  m_checked_bg_color2->setColor(Color::fromRgb(192, 192, 192));
+  m_checked_bg_color1->setColor(app::Color::fromRgb(128, 128, 128));
+  m_checked_bg_color2->setColor(app::Color::fromRgb(192, 192, 192));
 }
 
 //////////////////////////////////////////////////////////////////////

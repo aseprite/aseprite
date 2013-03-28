@@ -1,5 +1,5 @@
 /* ASEPRITE
- * Copyright (C) 2001-2012  David Capello
+ * Copyright (C) 2001-2013  David Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,6 +20,7 @@
 
 #include "app.h"
 
+#include "app/app_options.h"
 #include "app/check_update.h"
 #include "app/color_utils.h"
 #include "app/data_recovery.h"
@@ -27,10 +28,10 @@
 #include "app/load_widget.h"
 #include "base/exception.h"
 #include "base/unique_ptr.h"
-#include "check_args.h"
 #include "commands/commands.h"
 #include "commands/params.h"
 #include "console.h"
+#include "document_location.h"
 #include "document_observer.h"
 #include "drop_files.h"
 #include "file/file.h"
@@ -40,7 +41,6 @@
 #include "ini_file.h"
 #include "log.h"
 #include "modules.h"
-#include "modules/editors.h"
 #include "modules/gfx.h"
 #include "modules/gui.h"
 #include "modules/palettes.h"
@@ -49,6 +49,8 @@
 #include "raster/palette.h"
 #include "raster/sprite.h"
 #include "recent_files.h"
+#include "scripting/engine.h"
+#include "shell.h"
 #include "tools/tool_box.h"
 #include "ui/gui.h"
 #include "ui/intern.h"
@@ -59,13 +61,13 @@
 #include "widgets/editor/editor.h"
 #include "widgets/editor/editor_view.h"
 #include "widgets/main_window.h"
-#include "widgets/menuitem2.h"
 #include "widgets/status_bar.h"
 #include "widgets/tabs.h"
 #include "widgets/toolbar.h"
 
 #include <allegro.h>
 /* #include <allegro/internal/aintern.h> */
+#include <iostream>
 #include <memory>
 #include <stdarg.h>
 #include <stdio.h>
@@ -82,44 +84,42 @@ using namespace ui;
 class App::Modules
 {
 public:
+  ConfigModule m_configModule;
+  LoggerModule m_loggerModule;
   FileSystemModule m_file_system_module;
   tools::ToolBox m_toolbox;
   CommandsModule m_commands_modules;
   UIContext m_ui_context;
   RecentFiles m_recent_files;
   app::DataRecovery m_recovery;
+  scripting::Engine m_scriptingEngine;
 
-  Modules()
-    : m_recovery(&m_ui_context) {
+  Modules(bool console, bool verbose)
+    : m_loggerModule(verbose)
+    , m_recovery(&m_ui_context) {
   }
 };
 
 App* App::m_instance = NULL;
 
-static char *palette_filename = NULL;
-
 // Initializes the application loading the modules, setting the
 // graphics mode, loading the configuration and resources, etc.
-App::App(int argc, char* argv[])
-  : m_configModule(NULL)
-  , m_checkArgs(NULL)
-  , m_loggerModule(NULL)
-  , m_modules(NULL)
+App::App(int argc, const char* argv[])
+  : m_modules(NULL)
   , m_legacy(NULL)
   , m_isGui(false)
+  , m_isShell(false)
 {
   ASSERT(m_instance == NULL);
   m_instance = this;
 
-  for (int i = 0; i < argc; ++i)
-    m_args.push_back(argv[i]);
+  app::AppOptions options(argc, argv);
 
-  m_configModule = new ConfigModule();
-  m_checkArgs = new CheckArgs(m_args);
-  m_loggerModule = new LoggerModule(m_checkArgs->isVerbose());
-  m_modules = new Modules();
-  m_isGui = !(m_checkArgs->isConsoleOnly());
+  m_modules = new Modules(!options.startUI(), options.verbose());
+  m_isGui = options.startUI();
+  m_isShell = options.startShell();
   m_legacy = new LegacyModules(isGui() ? REQUIRE_INTERFACE: 0);
+  m_files = options.files();
 
   // Register well-known image file types.
   FileFormatsManager::instance().registerAllFormats();
@@ -130,19 +130,19 @@ App::App(int argc, char* argv[])
   // Load RenderEngine configuration
   RenderEngine::loadConfig();
 
-  /* custom default palette? */
-  if (palette_filename) {
-    PRINTF("Loading custom palette file: %s\n", palette_filename);
+  // Default palette.
+  if (!options.paletteFileName().empty()) {
+    const char* palFile = options.paletteFileName().c_str();
+    PRINTF("Loading custom palette file: %s\n", palFile);
 
-    UniquePtr<Palette> pal(Palette::load(palette_filename));
+    UniquePtr<Palette> pal(Palette::load(palFile));
     if (pal.get() == NULL)
-      throw base::Exception("Error loading default palette from: %s",
-                            static_cast<const char*>(palette_filename));
+      throw base::Exception("Error loading default palette from: %s", palFile);
 
     set_default_palette(pal.get());
   }
 
-  /* set system palette to the default one */
+  // Set system palette to the default one.
   set_current_palette(NULL, true);
 }
 
@@ -158,58 +158,46 @@ int App::run()
 
     // Create the main window and show it.
     m_mainWindow.reset(new MainWindow);
-    m_mainWindow->createFirstEditor();
+
+    // Default status of the main window.
+    app_rebuild_documents_tabs();
+    app_default_statusbar_message();
+
     m_mainWindow->openWindow();
 
     // Redraw the whole screen.
     ui::Manager::getDefault()->invalidate();
   }
 
-  /* set background mode for non-GUI modes */
-/*   if (!(ase_mode & MODE_GUI)) */
-/*     set_display_switch_mode(SWITCH_BACKAMNESIA); */
-    set_display_switch_mode(SWITCH_BACKGROUND);
+  // Set background mode for non-GUI modes
+  set_display_switch_mode(SWITCH_BACKGROUND);
 
   // Procress options
   PRINTF("Processing options...\n");
 
-  ASSERT(m_checkArgs != NULL);
   {
     Console console;
-    for (CheckArgs::iterator
-           it  = m_checkArgs->begin();
-         it != m_checkArgs->end(); ++it) {
-      CheckArgs::Option* option = *it;
+    for (FileList::iterator
+           it  = m_files.begin(),
+           end = m_files.end();
+         it != end; ++it) {
+      // Load the sprite
+      Document* document = load_document(it->c_str());
+      if (!document) {
+        if (!isGui())
+          console.printf("Error loading file \"%s\"\n", it->c_str());
+      }
+      else {
+        // Mount and select the sprite
+        UIContext* context = UIContext::instance();
+        context->addDocument(document);
 
-      switch (option->type()) {
-
-        case CheckArgs::Option::OpenSprite: {
-          // Load the sprite
-          Document* document = load_document(option->data().c_str());
-          if (!document) {
-            if (!isGui())
-              console.printf("Error loading file \"%s\"\n", option->data().c_str());
-          }
-          else {
-            // Mount and select the sprite
-            UIContext* context = UIContext::instance();
-            context->addDocument(document);
-            context->setActiveDocument(document);
-
-            if (isGui()) {
-              // Show it
-              set_document_in_more_reliable_editor(context->getFirstDocument());
-
-              // Recent file
-              getRecentFiles()->addRecentFile(option->data().c_str());
-            }
-          }
-          break;
+        if (isGui()) {
+          // Recent file
+          getRecentFiles()->addRecentFile(it->c_str());
         }
       }
     }
-    delete m_checkArgs;
-    m_checkArgs = NULL;
   }
 
   // Run the GUI
@@ -229,8 +217,25 @@ int App::run()
     // Uninstall support to drop files
     uninstall_drop_files();
 
+    // Destroy all documents in the UIContext.
+    const Documents& docs = m_modules->m_ui_context.getDocuments();
+    while (!docs.empty())
+      m_modules->m_ui_context.removeDocument(docs.back());
+
     // Destroy the window.
     m_mainWindow.reset(NULL);
+  }
+  // Start shell to execute scripts.
+  else if (m_isShell) {
+    m_systemConsole.prepareShell();
+
+    if (m_modules->m_scriptingEngine.supportEval()) {
+      Shell shell;
+      shell.run(m_modules->m_scriptingEngine);
+    }
+    else {
+      std::cerr << "Your version of " PACKAGE " wasn't compiled with shell support.\n";
+    }
   }
 
   return 0;
@@ -254,8 +259,6 @@ App::~App()
 
     delete m_legacy;
     delete m_modules;
-    delete m_loggerModule;
-    delete m_configModule;
 
     // Destroy the loaded gui.xml file.
     delete GuiXml::instance();
@@ -267,12 +270,6 @@ App::~App()
 
     // no re-throw
   }
-}
-
-LoggerModule* App::getLogger() const
-{
-  ASSERT(m_loggerModule != NULL);
-  return m_loggerModule;
 }
 
 tools::ToolBox* App::getToolBox() const
@@ -287,15 +284,18 @@ RecentFiles* App::getRecentFiles() const
   return &m_modules->m_recent_files;
 }
 
-/**
- * Updates palette and redraw the screen.
- */
-void app_refresh_screen(const Document* document)
+// Updates palette and redraw the screen.
+void app_refresh_screen()
 {
   ASSERT(screen != NULL);
 
-  if (document && document->getSprite())
-    set_current_palette(document->getSprite()->getCurrentPalette(), false);
+  Context* context = UIContext::instance();
+  ASSERT(context != NULL);
+
+  DocumentLocation location = context->getActiveLocation();
+
+  if (Palette* pal = location.palette())
+    set_current_palette(pal, false);
   else
     set_current_palette(NULL, false);
 
@@ -303,32 +303,9 @@ void app_refresh_screen(const Document* document)
   ui::Manager::getDefault()->invalidate();
 }
 
-/**
- * Regenerates the label for each tab in the @em tabsbar.
- */
 void app_rebuild_documents_tabs()
 {
-  UIContext* context = UIContext::instance();
-  const Documents& docs = context->getDocuments();
-
-  // Insert all other sprites
-  for (Documents::const_iterator
-         it = docs.begin(), end = docs.end(); it != end; ++it) {
-    const Document* document = *it;
-    app_update_document_tab(document);
-  }
-}
-
-void app_update_document_tab(const Document* document)
-{
-  std::string str = get_filename(document->getFilename());
-
-  // Add an asterisk if the document is modified.
-  if (document->isModified())
-    str += "*";
-
-  App::instance()->getMainWindow()->getTabsBar()
-    ->setTabText(str.c_str(), const_cast<Document*>(document));
+  App::instance()->getMainWindow()->getTabsBar()->updateTabsText();
 }
 
 PixelFormat app_get_current_pixel_format()
@@ -354,10 +331,10 @@ void app_default_statusbar_message()
 int app_get_color_to_clear_layer(Layer* layer)
 {
   /* all transparent layers are cleared with the mask color */
-  Color color = Color::fromMask();
+  app::Color color = app::Color::fromMask();
 
   /* the `Background' is erased with the `Background Color' */
-  if (layer != NULL && layer->is_background())
+  if (layer != NULL && layer->isBackground())
     color = ColorBar::instance()->getBgColor();
 
   return color_utils::color_for_layer(color, layer);

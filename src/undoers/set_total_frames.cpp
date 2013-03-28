@@ -1,5 +1,5 @@
 /* ASEPRITE
- * Copyright (C) 2001-2012  David Capello
+ * Copyright (C) 2001-2013  David Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,6 +20,8 @@
 
 #include "undoers/set_total_frames.h"
 
+#include "document.h"
+#include "document_api.h"
 #include "raster/sprite.h"
 #include "undo/objects_container.h"
 #include "undo/undoers_collector.h"
@@ -27,8 +29,9 @@
 using namespace undo;
 using namespace undoers;
 
-SetTotalFrames::SetTotalFrames(ObjectsContainer* objects, Sprite* sprite)
-  : m_spriteId(objects->addObject(sprite))
+SetTotalFrames::SetTotalFrames(ObjectsContainer* objects, Document* document, Sprite* sprite)
+  : m_documentId(objects->addObject(document))
+  , m_spriteId(objects->addObject(sprite))
   , m_totalFrames(sprite->getTotalFrames())
 {
 }
@@ -40,10 +43,8 @@ void SetTotalFrames::dispose()
 
 void SetTotalFrames::revert(ObjectsContainer* objects, UndoersCollector* redoers)
 {
+  Document* document = objects->getObjectT<Document>(m_documentId);
   Sprite* sprite = objects->getObjectT<Sprite>(m_spriteId);
 
-  // Push another SetTotalFrames as redoer
-  redoers->pushUndoer(new SetTotalFrames(objects, sprite));
-
-  sprite->setTotalFrames(m_totalFrames);
+  document->getApi(redoers).setTotalFrames(sprite, m_totalFrames);
 }

@@ -1,5 +1,5 @@
 /* ASEPRITE
- * Copyright (C) 2001-2012  David Capello
+ * Copyright (C) 2001-2013  David Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,7 +20,6 @@
 
 #include "app.h"
 #include "commands/command.h"
-#include "document_wrappers.h"
 #include "skin/skin_theme.h"
 #include "ui/system.h"
 #include "ui/theme.h"
@@ -30,6 +29,7 @@
 
 #if defined ALLEGRO_WINDOWS && defined DEBUGMODE
   #include <winalleg.h>
+
   #include <psapi.h>
 #endif
 
@@ -66,10 +66,7 @@ void RefreshCommand::onExecute(Context* context)
     theme->regenerate();
   }
 
-  {
-    const ActiveDocumentReader document(context);
-    app_refresh_screen(document);
-  }
+  app_refresh_screen();
 
   // Print memory information
 #if defined ALLEGRO_WINDOWS && defined DEBUGMODE

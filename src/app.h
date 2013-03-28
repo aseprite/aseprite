@@ -1,5 +1,5 @@
 /* ASEPRITE
- * Copyright (C) 2001-2012  David Capello
+ * Copyright (C) 2001-2013  David Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,13 +21,12 @@
 
 #include "base/signal.h"
 #include "base/string.h"
+#include "base/system_console.h"
 #include "base/unique_ptr.h"
 #include "raster/pixel_format.h"
 
 #include <vector>
 
-class CheckArgs;
-class ConfigModule;
 class Document;
 class Layer;
 class LegacyModules;
@@ -46,15 +45,10 @@ namespace tools { class ToolBox; }
 class App
 {
 public:
-  App(int argc, char* argv[]);
+  App(int argc, const char* argv[]);
   ~App();
 
   static App* instance() { return m_instance; }
-
-  // Functions to get the arguments specified in the command line.
-  int getArgc() const { return m_args.size(); }
-  const base::string& getArgv(int i) { return m_args[i]; }
-  const std::vector<base::string>& getArgs() const { return m_args; }
 
   // Returns true if ASEPRITE is running with GUI available.
   bool isGui() const { return m_isGui; }
@@ -63,7 +57,6 @@ public:
   // window, in console/scripting it just runs the specified scripts.
   int run();
 
-  LoggerModule* getLogger() const;
   tools::ToolBox* getToolBox() const;
   RecentFiles* getRecentFiles() const;
   MainWindow* getMainWindow() const { return m_mainWindow; }
@@ -76,29 +69,24 @@ public:
   Signal0<void> CurrentToolChange;
 
 private:
+  typedef std::vector<base::string> FileList;
   class Modules;
 
   static App* m_instance;
 
-  ConfigModule* m_configModule;
-  CheckArgs* m_checkArgs;
-  LoggerModule* m_loggerModule;
+  base::SystemConsole m_systemConsole;
   Modules* m_modules;
   LegacyModules* m_legacy;
   bool m_isGui;
-  std::vector<base::string> m_args;
+  bool m_isShell;
   UniquePtr<MainWindow> m_mainWindow;
+  FileList m_files;
 };
 
-void app_refresh_screen(const Document* document);
-
+void app_refresh_screen();
 void app_rebuild_documents_tabs();
-void app_update_document_tab(const Document* document);
-
 PixelFormat app_get_current_pixel_format();
-
 void app_default_statusbar_message();
-
 int app_get_color_to_clear_layer(Layer* layer);
 
 #endif

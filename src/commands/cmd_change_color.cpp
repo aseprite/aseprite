@@ -1,5 +1,5 @@
 /* ASEPRITE
- * Copyright (C) 2001-2012  David Capello
+ * Copyright (C) 2001-2013  David Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -71,30 +71,30 @@ void ChangeColorCommand::onLoadParams(Params* params)
 void ChangeColorCommand::onExecute(Context* context)
 {
   ColorBar* colorbar = ColorBar::instance();
-  Color color = m_background ? colorbar->getBgColor():
-                               colorbar->getFgColor();
+  app::Color color = m_background ? colorbar->getBgColor():
+                                    colorbar->getFgColor();
 
   switch (m_change) {
     case None:
       // do nothing
       break;
     case IncrementIndex:
-      if (color.getType() == Color::IndexType) {
+      if (color.getType() == app::Color::IndexType) {
         int index = color.getIndex();
         if (index < 255)        // TODO use sprite palette limit
-          color = Color::fromIndex(index+1);
+          color = app::Color::fromIndex(index+1);
       }
       else
-        color = Color::fromIndex(0);
+        color = app::Color::fromIndex(0);
       break;
     case DecrementIndex:
-      if (color.getType() == Color::IndexType) {
+      if (color.getType() == app::Color::IndexType) {
         int index = color.getIndex();
         if (index > 0)
-          color = Color::fromIndex(index-1);
+          color = app::Color::fromIndex(index-1);
       }
       else
-        color = Color::fromIndex(0);
+        color = app::Color::fromIndex(0);
       break;
   }
 

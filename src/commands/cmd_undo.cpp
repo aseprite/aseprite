@@ -1,5 +1,5 @@
 /* ASEPRITE
- * Copyright (C) 2001-2012  David Capello
+ * Copyright (C) 2001-2013  David Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,8 +21,8 @@
 #include "app.h"
 #include "base/thread.h"
 #include "commands/command.h"
+#include "context_access.h"
 #include "document_undo.h"
-#include "document_wrappers.h"
 #include "ini_file.h"
 #include "modules/editors.h"
 #include "modules/gui.h"
@@ -57,7 +57,8 @@ UndoCommand::UndoCommand(Type type)
 
 bool UndoCommand::onEnabled(Context* context)
 {
-  ActiveDocumentWriter document(context);
+  ContextWriter writer(context);
+  Document* document(writer.document());
   return
     document != NULL &&
     ((m_type == Undo ? document->getUndo()->canUndo():
@@ -66,23 +67,29 @@ bool UndoCommand::onEnabled(Context* context)
 
 void UndoCommand::onExecute(Context* context)
 {
-  ActiveDocumentWriter document(context);
+  ContextWriter writer(context);
+  Document* document(writer.document());
   DocumentUndo* undo = document->getUndo();
   Sprite* sprite = document->getSprite();
 
   if (get_config_bool("Options", "UndoGotoModified", true)) {
     SpritePosition spritePosition;
+    SpritePosition currentPosition(writer.location()->layerIndex(),
+                                   writer.location()->frame());
 
     if (m_type == Undo)
       spritePosition = undo->getNextUndoSpritePosition();
     else
       spritePosition = undo->getNextRedoSpritePosition();
 
-    if (spritePosition != sprite->getCurrentPosition()) {
-      sprite->setCurrentPosition(spritePosition);
+    if (spritePosition != currentPosition) {
+      current_editor->setLayer(sprite->indexToLayer(spritePosition.layerIndex()));
+      current_editor->setFrame(spritePosition.frameNumber());
 
-      current_editor->drawSpriteSafe(0, 0, sprite->getWidth(), sprite->getHeight());
-      update_screen_for_document(document);
+      // Draw the current layer/frame (which is not undone yet) so the
+      // user can see the doUndo/doRedo effect.
+      current_editor->drawSpriteClipped
+        (gfx::Region(gfx::Rect(0, 0, sprite->getWidth(), sprite->getHeight())));
 
       ui::dirty_display_flag = true;
       gui_feedback();
@@ -97,6 +104,7 @@ void UndoCommand::onExecute(Context* context)
               (m_type == Undo ? undo->getNextUndoLabel():
                                 undo->getNextRedoLabel()));
 
+  // Effectively undo/redo.
   if (m_type == Undo)
     undo->doUndo();
   else

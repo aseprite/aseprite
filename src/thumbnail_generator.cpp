@@ -1,5 +1,5 @@
 /* ASEPRITE
- * Copyright (C) 2001-2012  David Capello
+ * Copyright (C) 2001-2013  David Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -78,7 +78,7 @@ private:
         UniquePtr<Image> image(Image::create(sprite->getPixelFormat(),
                                              sprite->getWidth(),
                                              sprite->getHeight()));
-        sprite->render(image, 0, 0);
+        sprite->render(image, 0, 0, FrameNumber(0));
 
         // Calculate the thumbnail size
         int thumb_w = MAX_THUMBNAIL_SIZE * image->w / MAX(image->w, image->h);

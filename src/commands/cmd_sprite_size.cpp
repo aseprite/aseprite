@@ -1,5 +1,5 @@
 /* ASEPRITE
- * Copyright (C) 2001-2012  David Capello
+ * Copyright (C) 2001-2013  David Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -23,7 +23,8 @@
 #include "base/bind.h"
 #include "base/unique_ptr.h"
 #include "commands/command.h"
-#include "document_wrappers.h"
+#include "context_access.h"
+#include "document_api.h"
 #include "ini_file.h"
 #include "job.h"
 #include "modules/gui.h"
@@ -45,7 +46,8 @@ using namespace ui;
 
 class SpriteSizeJob : public Job
 {
-  DocumentWriter m_document;
+  ContextWriter m_writer;
+  Document* m_document;
   Sprite* m_sprite;
   int m_new_width;
   int m_new_height;
@@ -56,10 +58,11 @@ class SpriteSizeJob : public Job
 
 public:
 
-  SpriteSizeJob(const DocumentReader& document, int new_width, int new_height, ResizeMethod resize_method)
+  SpriteSizeJob(const ContextReader& reader, int new_width, int new_height, ResizeMethod resize_method)
     : Job("Sprite Size")
-    , m_document(document)
-    , m_sprite(m_document->getSprite())
+    , m_writer(reader)
+    , m_document(m_writer.document())
+    , m_sprite(m_writer.sprite())
   {
     m_new_width = new_width;
     m_new_height = new_height;
@@ -73,7 +76,8 @@ protected:
    */
   virtual void onJob()
   {
-    UndoTransaction undoTransaction(m_document, "Sprite Size");
+    UndoTransaction undoTransaction(m_writer.context(), "Sprite Size");
+    DocumentApi api = m_writer.document()->getApi();
 
     // Get all sprite cels
     CelList cels;
@@ -85,7 +89,7 @@ protected:
       Cel* cel = *it;
 
       // Change its location
-      undoTransaction.setCelPosition(cel, scale_x(cel->getX()), scale_y(cel->getY()));
+      api.setCelPosition(m_sprite, cel, scale_x(cel->getX()), scale_y(cel->getY()));
 
       // Get cel's image
       Image* image = m_sprite->getStock()->getImage(cel->getImage());
@@ -103,7 +107,7 @@ protected:
                    m_sprite->getPalette(cel->getFrame()),
                    m_sprite->getRgbMap(cel->getFrame()));
 
-      undoTransaction.replaceStockImage(cel->getImage(), new_image);
+      api.replaceStockImage(m_sprite, cel->getImage(), new_image);
 
       jobProgress((float)progress / cels.size());
 
@@ -125,8 +129,8 @@ protected:
                         scale_y(m_document->getMask()->getBounds().y-1), MAX(1, w), MAX(1, h));
       image_resize(old_bitmap, new_mask->getBitmap(),
                    m_resize_method,
-                   m_sprite->getCurrentPalette(), // Ignored
-                   m_sprite->getRgbMap());        // Ignored
+                   m_sprite->getPalette(FrameNumber(0)), // Ignored
+                   m_sprite->getRgbMap(FrameNumber(0))); // Ignored
       image_free(old_bitmap);
 
       // Reshrink
@@ -134,7 +138,7 @@ protected:
                           new_mask->getBounds().w, new_mask->getBounds().h);
 
       // Copy new mask
-      undoTransaction.copyToCurrentMask(new_mask);
+      api.copyToCurrentMask(new_mask);
 
       // Regenerate mask
       m_document->resetTransformation();
@@ -142,7 +146,7 @@ protected:
     }
 
     // resize sprite
-    undoTransaction.setSpriteSize(m_new_width, m_new_height);
+    api.setSpriteSize(m_sprite, m_new_width, m_new_height);
 
     // commit changes
     undoTransaction.commit();
@@ -193,8 +197,8 @@ bool SpriteSizeCommand::onEnabled(Context* context)
 
 void SpriteSizeCommand::onExecute(Context* context)
 {
-  const ActiveDocumentReader document(context);
-  const Sprite* sprite(document ? document->getSprite(): 0);
+  const ContextReader reader(UIContext::instance()); // TODO use the context in sprite size command
+  const Sprite* sprite(reader.sprite());
 
   // load the window widget
   UniquePtr<Window> window(app::load_widget<Window>("sprite_size.xml", "sprite_size"));
@@ -219,15 +223,15 @@ void SpriteSizeCommand::onExecute(Context* context)
   method->addItem("Bilinear");
   method->setSelectedItem(get_config_int("SpriteSize", "Method", RESIZE_METHOD_NEAREST_NEIGHBOR));
 
-  window->remap_window();
-  window->center_window();
+  window->remapWindow();
+  window->centerWindow();
 
   load_window_pos(window, "SpriteSize");
   window->setVisible(true);
   window->openWindowInForeground();
   save_window_pos(window, "SpriteSize");
 
-  if (window->get_killer() == ok) {
+  if (window->getKiller() == ok) {
     int new_width = m_widthPx->getTextInt();
     int new_height = m_heightPx->getTextInt();
     ResizeMethod resize_method =
@@ -236,25 +240,26 @@ void SpriteSizeCommand::onExecute(Context* context)
     set_config_int("SpriteSize", "Method", resize_method);
 
     {
-      SpriteSizeJob job(document, new_width, new_height, resize_method);
+      SpriteSizeJob job(reader, new_width, new_height, resize_method);
       job.startJob();
     }
 
-    update_screen_for_document(document);
+    ContextWriter writer(reader);
+    update_screen_for_document(writer.document());
   }
 }
 
 void SpriteSizeCommand::onLockRatioClick()
 {
-  const ActiveDocumentReader document(UIContext::instance()); // TODO use the context in sprite size command
+  const ContextReader reader(UIContext::instance()); // TODO use the context in sprite size command
 
   onWidthPxChange();
 }
 
 void SpriteSizeCommand::onWidthPxChange()
 {
-  const ActiveDocumentReader document(UIContext::instance()); // TODO use the context in sprite size command
-  const Sprite* sprite(document->getSprite());
+  const ContextReader reader(UIContext::instance()); // TODO use the context in sprite size command
+  const Sprite* sprite(reader.sprite());
   int width = m_widthPx->getTextInt();
   double perc = 100.0 * width / sprite->getWidth();
 
@@ -268,8 +273,8 @@ void SpriteSizeCommand::onWidthPxChange()
 
 void SpriteSizeCommand::onHeightPxChange()
 {
-  const ActiveDocumentReader document(UIContext::instance()); // TODO use the context in sprite size command
-  const Sprite* sprite(document->getSprite());
+  const ContextReader reader(UIContext::instance()); // TODO use the context in sprite size command
+  const Sprite* sprite(reader.sprite());
   int height = m_heightPx->getTextInt();
   double perc = 100.0 * height / sprite->getHeight();
 
@@ -283,8 +288,8 @@ void SpriteSizeCommand::onHeightPxChange()
 
 void SpriteSizeCommand::onWidthPercChange()
 {
-  const ActiveDocumentReader document(UIContext::instance()); // TODO use the context in sprite size command
-  const Sprite* sprite(document->getSprite());
+  const ContextReader reader(UIContext::instance()); // TODO use the context in sprite size command
+  const Sprite* sprite(reader.sprite());
   double width = m_widthPerc->getTextDouble();
 
   m_widthPx->setTextf("%d", (int)(sprite->getWidth() * width / 100));
@@ -297,8 +302,8 @@ void SpriteSizeCommand::onWidthPercChange()
 
 void SpriteSizeCommand::onHeightPercChange()
 {
-  const ActiveDocumentReader document(UIContext::instance()); // TODO use the context in sprite size command
-  const Sprite* sprite(document->getSprite());
+  const ContextReader reader(UIContext::instance()); // TODO use the context in sprite size command
+  const Sprite* sprite(reader.sprite());
   double height = m_heightPerc->getTextDouble();
 
   m_heightPx->setTextf("%d", (int)(sprite->getHeight() * height / 100));

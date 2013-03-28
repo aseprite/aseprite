@@ -1,5 +1,5 @@
 // SHE library
-// Copyright (C) 2012  David Capello
+// Copyright (C) 2012-2013  David Capello
 //
 // This source file is distributed under a BSD-like license, please
 // read LICENSE.txt for more information.

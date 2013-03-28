@@ -3,6 +3,67 @@
       author="Ilija Melentijevic &amp; David Capello"
       url="http://ilkke.blogspot.com/">
 
+  <colors>
+    <color id="text" value="#000000" />
+    <color id="disabled" value="#968275" />
+    <color id="face" value="#d3cbbe" />
+    <color id="hot_face" value="#faf0e6" />
+    <color id="selected" value="#2c4c91" />
+    <color id="background" value="#ffffff" />
+    <color id="desktop" value="#968275" />
+    <color id="textbox_text" value="#000000" />
+    <color id="textbox_face" value="#ffffff" />
+    <color id="link_text" value="#0000ff" />
+    <color id="button_normal_text" value="#000000" />
+    <color id="button_normal_face" value="#c6c6c6" />
+    <color id="button_hot_text" value="#000000" />
+    <color id="button_hot_face" value="#ffffff" />
+    <color id="button_selected_text" value="#ffffff" />
+    <color id="button_selected_face" value="#7c909f" />
+    <color id="check_hot_face" value="#ffebb6" />
+    <color id="check_focus_face" value="#c6c6c6" />
+    <color id="radio_hot_face" value="#ffebb6" />
+    <color id="radio_focus_face" value="#c6c6c6" />
+    <color id="menuitem_normal_text" value="#000000" />
+    <color id="menuitem_normal_face" value="#d3cbbe" />
+    <color id="menuitem_hot_text" value="#000000" />
+    <color id="menuitem_hot_face" value="#ffebb6" />
+    <color id="menuitem_highlight_text" value="#ffffff" />
+    <color id="menuitem_highlight_face" value="#7c909f" />
+    <color id="window_face" value="#d3cbbe" />
+    <color id="window_titlebar_text" value="#ffffff" />
+    <color id="window_titlebar_face" value="#7c909f" />
+    <color id="editor_face" value="#655561" />
+    <color id="editor_sprite_border" value="#000000" />
+    <color id="editor_sprite_bottom_border" value="#41412c" />
+    <color id="listitem_normal_text" value="#000000" />
+    <color id="listitem_normal_face" value="#ffffff" />
+    <color id="listitem_selected_text" value="#ffffff" />
+    <color id="listitem_selected_face" value="#ff5555" />
+    <color id="slider_empty_text" value="#000000" />
+    <color id="slider_empty_face" value="#aecbdf" />
+    <color id="slider_full_text" value="#ffffff" />
+    <color id="slider_full_face" value="#7d929e" />
+    <color id="tab_normal_text" value="#000000" />
+    <color id="tab_normal_face" value="#c6c6c6" />
+    <color id="tab_selected_text" value="#ffffff" />
+    <color id="tab_selected_face" value="#7d929e" />
+    <color id="splitter_normal_face" value="#7d929e" />
+    <color id="scrollbar_bg_face" value="#7d929e" />
+    <color id="scrollbar_thumb_face" value="#c6c6c6" />
+    <color id="popup_window_border" value="#000000" />
+    <color id="tooltip_text" value="#000000" />
+    <color id="tooltip_face" value="#ffff7d" />
+    <color id="filelist_even_row_text" value="#000000" />
+    <color id="filelist_even_row_face" value="#f0f0f0" />
+    <color id="filelist_odd_row_text" value="#000000" />
+    <color id="filelist_odd_row_face" value="#ffffff" />
+    <color id="filelist_selected_row_text" value="#ffffff" />
+    <color id="filelist_selected_row_face" value="#2c4c91" />
+    <color id="filelist_disabled_row_text" value="#ffc8c8" />
+    <color id="workspace" value="#7d929e" />
+  </colors>
+
   <cursors>
     <cursor id="normal"         x="80" y="0" w="16" h="16"      focusx="0" focusy="0" />
     <cursor id="normal_add"     x="80" y="16" w="16" h="16"     focusx="0" focusy="0" />
@@ -67,9 +128,9 @@
   </tools>
 
   <parts>
-    <part id="radio_normal"                     x="32" y="32" w="8" h="8" />
-    <part id="radio_selected"                   x="32" y="48" w="8" h="8" />
-    <part id="radio_disabled"                   x="32" y="32" w="8" h="8" />
+    <part id="radio_normal"                     x="64" y="64" w="8" h="8" />
+    <part id="radio_selected"                   x="64" y="80" w="8" h="8" />
+    <part id="radio_disabled"                   x="64" y="64" w="8" h="8" />
     <part id="check_normal"                     x="48" y="64" w="8" h="8" />
     <part id="check_selected"                   x="48" y="80" w="8" h="8" />
     <part id="check_disabled"                   x="48" y="64" w="8" h="8" />
@@ -90,6 +151,12 @@
     <part id="window_close_button_normal"       x="16" y= "0" w="9" h="11" />
     <part id="window_close_button_hot"          x="16" y="16" w="9" h="11" />
     <part id="window_close_button_selected"     x="16" y="32" w="9" h="11" />
+    <part id="window_play_button_normal"        x="25" y= "0" w="9" h="11" />
+    <part id="window_play_button_hot"           x="25" y="16" w="9" h="11" />
+    <part id="window_play_button_selected"      x="25" y="32" w="9" h="11" />
+    <part id="window_stop_button_normal"        x="34" y= "0" w="9" h="11" />
+    <part id="window_stop_button_hot"           x="34" y="16" w="9" h="11" />
+    <part id="window_stop_button_selected"      x="34" y="32" w="9" h="11" />
     <part id="slider_full"                      x="0" y="144" w1="5" w2="6" w3="5" h1="5" h2="5" h3="6" />
     <part id="slider_empty"                     x="16" y="144" w1="5" w2="6" w3="5" h1="5" h2="5" h3="6" />
     <part id="slider_full_focused"              x="0" y="160" w1="5" w2="6" w3="5" h1="5" h2="5" h3="6" />

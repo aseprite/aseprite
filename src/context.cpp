@@ -1,5 +1,5 @@
 /* ASEPRITE
- * Copyright (C) 2001-2012  David Capello
+ * Copyright (C) 2001-2013  David Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -23,45 +23,26 @@
 #include "commands/command.h"
 #include "console.h"
 #include "document.h"
+#include "document_location.h"
 
 #include <algorithm>
 
 Context::Context(ISettings* settings)
-  : m_activeDocument(NULL)
-  , m_settings(settings)
+  : m_settings(settings)
 {
 }
 
 Context::~Context()
 {
+  // The context must be empty at this point.
+  ASSERT(m_documents.empty());
+
   delete m_settings;
 }
 
 const Documents& Context::getDocuments() const
 {
   return m_documents;
-}
-
-Document* Context::getFirstDocument() const
-{
-  if (!m_documents.empty())
-    return m_documents.getByIndex(0);
-  else
-    return NULL;
-}
-
-Document* Context::getNextDocument(Document* document) const
-{
-  ASSERT(document != NULL);
-
-  Documents::const_iterator it = std::find(m_documents.begin(), m_documents.end(), document);
-
-  if (it != m_documents.end()) {
-    ++it;
-    if (it != m_documents.end())
-      return *it;
-  }
-  return NULL;
 }
 
 void Context::addDocument(Document* document)
@@ -83,10 +64,6 @@ void Context::removeDocument(Document* document)
 
   // generate onRemoveDocument event
   onRemoveDocument(document);
-
-  // The active document cannot be the removed one.
-  if (m_activeDocument == document)
-    setActiveDocument(NULL);
 }
 
 void Context::sendDocumentToTop(Document* document)
@@ -98,18 +75,16 @@ void Context::sendDocumentToTop(Document* document)
 
 Document* Context::getActiveDocument() const
 {
-  return m_activeDocument;
+  DocumentLocation location;
+  onGetActiveLocation(&location);
+  return location.document();
 }
 
-void Context::setActiveDocument(Document* document)
+DocumentLocation Context::getActiveLocation() const
 {
-  m_observers.notifyActiveDocumentBeforeChange(this);
-
-  m_activeDocument = document;
-
-  onSetActiveDocument(document);
-
-  m_observers.notifyActiveDocumentAfterChange(this);
+  DocumentLocation location;
+  onGetActiveLocation(&location);
+  return location;
 }
 
 void Context::executeCommand(Command* command, Params* params)
@@ -175,11 +150,6 @@ void Context::onAddDocument(Document* document)
 }
 
 void Context::onRemoveDocument(Document* document)
-{
-  // do nothing
-}
-
-void Context::onSetActiveDocument(Document* document)
 {
   // do nothing
 }

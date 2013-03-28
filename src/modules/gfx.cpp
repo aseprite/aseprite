@@ -1,5 +1,5 @@
 /* ASEPRITE
- * Copyright (C) 2001-2012  David Capello
+ * Copyright (C) 2001-2013  David Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,6 +21,7 @@
 #include <allegro.h>
 #include <allegro/internal/aintern.h>
 
+#include "ui/color.h"
 #include "ui/intern.h"
 #include "ui/rect.h"
 #include "ui/system.h"
@@ -160,24 +161,6 @@ void dotted_mode(int offset)
   drawing_mode(DRAW_MODE_COPY_PATTERN, pattern, 0, 0);
 }
 
-void simple_dotted_mode(BITMAP* bmp, int fg, int bg)
-{
-  static BITMAP* pattern = NULL;
-
-  if (pattern && bitmap_color_depth(pattern) != bitmap_color_depth(bmp))
-    destroy_bitmap(pattern);
-
-  pattern = create_bitmap_ex(bitmap_color_depth(bmp), 2, 2);
-  clear_bitmap(pattern);
-
-  putpixel(pattern, 0, 0, fg);
-  putpixel(pattern, 0, 1, bg);
-  putpixel(pattern, 1, 0, bg);
-  putpixel(pattern, 1, 1, fg);
-
-  drawing_mode(DRAW_MODE_COPY_PATTERN, pattern, 0, 0);
-}
-
 /**********************************************************************/
 /* Rectangle Tracker (Save/Restore rectangles from/to the screen) */
 
@@ -290,28 +273,6 @@ void rect_tracker_free(RectTracker* rt)
 /**********************************************************************/
 /* Rectangles */
 
-void bevel_box(BITMAP* bmp, int x1, int y1, int x2, int y2, int c1, int c2, int bevel)
-{
-  hline(bmp, x1+bevel, y1, x2-bevel, c1); /* top */
-  hline(bmp, x1+bevel, y2, x2-bevel, c2); /* bottom */
-
-  vline(bmp, x1, y1+bevel, y2-bevel, c1); /* left */
-  vline(bmp, x2, y1+bevel, y2-bevel, c2); /* right */
-
-  line(bmp, x1, y1+bevel, x1+bevel, y1, c1); /* top-left */
-  line(bmp, x1, y2-bevel, x1+bevel, y2, c2); /* bottom-left */
-
-  line(bmp, x2-bevel, y1, x2, y1+bevel, c2); /* top-right */
-  line(bmp, x2-bevel, y2, x2, y2-bevel, c2); /* bottom-right */
-}
-
-void rectdotted(BITMAP* bmp, int x1, int y1, int x2, int y2, int fg, int bg)
-{
-  simple_dotted_mode(bmp, fg, bg);
-  rect(bmp, x1, y1, x2, y2, 0);
-  solid_mode();
-}
-
 void rectgrid(BITMAP* bmp, int x1, int y1, int x2, int y2, int w, int h)
 {
   if (w < 1 || h < 1)
@@ -346,28 +307,28 @@ void rectgrid(BITMAP* bmp, int x1, int y1, int x2, int y2, int w, int h)
 /**********************************************************************/
 /* Specials */
 
-void draw_emptyset_symbol(BITMAP* bmp, const Rect& rc, int color)
+void draw_emptyset_symbol(BITMAP* bmp, const Rect& rc, ui::Color color)
 {
   Point center = rc.getCenter();
   int size = MIN(rc.w, rc.h) - 8;
   size = MID(4, size, 64);
 
-  circle(bmp, center.x, center.y, size*4/10, color);
+  circle(bmp, center.x, center.y, size*4/10, ui::to_system(color));
   line(bmp,
        center.x-size/2, center.y+size/2,
-       center.x+size/2, center.y-size/2, color);
+       center.x+size/2, center.y-size/2, ui::to_system(color));
 }
 
-void draw_color(BITMAP* bmp, const Rect& rc, PixelFormat pixelFormat, const Color& color)
+void draw_color(BITMAP* bmp, const Rect& rc, PixelFormat pixelFormat, const app::Color& color)
 {
-  Color::Type type = color.getType();
+  app::Color::Type type = color.getType();
   BITMAP* graph;
 
-  if (type == Color::MaskType) {
+  if (type == app::Color::MaskType) {
     rectgrid(bmp, rc.x, rc.y, rc.x+rc.w-1, rc.y+rc.h-1, rc.w/4, rc.h/2);
     return;
   }
-  else if (type == Color::IndexType) {
+  else if (type == app::Color::IndexType) {
     int index = color.getIndex();
 
     if (index >= 0 && index < get_current_palette()->size()) {
@@ -385,7 +346,7 @@ void draw_color(BITMAP* bmp, const Rect& rc, PixelFormat pixelFormat, const Colo
 
     case IMAGE_INDEXED:
       rectfill(bmp, rc.x, rc.y, rc.x+rc.w-1, rc.y+rc.h-1,
-               color_utils::color_for_allegro(Color::fromIndex(color_utils::color_for_image(color, pixelFormat)),
+               color_utils::color_for_allegro(app::Color::fromIndex(color_utils::color_for_image(color, pixelFormat)),
                                               bitmap_color_depth(bmp)));
       break;
 
@@ -396,9 +357,9 @@ void draw_color(BITMAP* bmp, const Rect& rc, PixelFormat pixelFormat, const Colo
 
       {
         int rgb_bitmap_color = color_utils::color_for_image(color, pixelFormat);
-        Color color2 = Color::fromRgb(_rgba_getr(rgb_bitmap_color),
-                                      _rgba_getg(rgb_bitmap_color),
-                                      _rgba_getb(rgb_bitmap_color));
+        app::Color color2 = app::Color::fromRgb(_rgba_getr(rgb_bitmap_color),
+                                                _rgba_getg(rgb_bitmap_color),
+                                                _rgba_getb(rgb_bitmap_color));
         rectfill(graph, 0, 0, rc.w-1, rc.h-1,
                  color_utils::color_for_allegro(color2, 32));
       }
@@ -415,7 +376,7 @@ void draw_color(BITMAP* bmp, const Rect& rc, PixelFormat pixelFormat, const Colo
 
       {
         int gray_bitmap_color = color_utils::color_for_image(color, pixelFormat);
-        Color color2 = Color::fromGray(_graya_getv(gray_bitmap_color));
+        app::Color color2 = app::Color::fromGray(_graya_getv(gray_bitmap_color));
         rectfill(graph, 0, 0, rc.w-1, rc.h-1,
                  color_utils::color_for_allegro(color2, 32));
       }
@@ -431,7 +392,7 @@ void draw_color_button(BITMAP* bmp,
                        const Rect& rc,
                        bool outer_nw, bool outer_n, bool outer_ne, bool outer_e,
                        bool outer_se, bool outer_s, bool outer_sw, bool outer_w,
-                       PixelFormat pixelFormat, const Color& color, bool hot, bool drag)
+                       PixelFormat pixelFormat, const app::Color& color, bool hot, bool drag)
 {
   SkinTheme* theme = (SkinTheme*)ui::CurrentTheme::get();
   int scale = ui::jguiscale();
@@ -466,35 +427,4 @@ void draw_color_button(BITMAP* bmp,
                           rc.y+rc.h-1 - (outer_s ? 1*scale: 0),
                           PART_COLORBAR_BORDER_HOTFG_NW);
   }
-}
-
-void draw_progress_bar(BITMAP* bmp,
-                       int x1, int y1, int x2, int y2,
-                       float progress)
-{
-  int w = x2 - x1 + 1;
-  int u = (int)((float)(w-2)*progress);
-  u = MID(0, u, w-2);
-
-  rect(bmp, x1, y1, x2, y2, ui::ji_color_foreground());
-
-  if (u > 0)
-    rectfill(bmp, x1+1, y1+1, x1+u, y2-1, ui::ji_color_selected());
-
-  if (1+u < w-2)
-    rectfill(bmp, x1+u+1, y1+1, x2-1, y2-1, ui::ji_color_background());
-}
-
-/************************************************************************/
-/* Font related */
-
-int character_length(FONT* font, int chr)
-{
-  return font->vtable->char_length(font, chr);
-}
-
-/* renders a character of the font centered in x and y */
-void render_character(BITMAP* bmp, FONT* font, int chr, int x, int y, int fg, int bg)
-{
-  font->vtable->render_char(font, chr, fg, bg, bmp, x, y);
 }

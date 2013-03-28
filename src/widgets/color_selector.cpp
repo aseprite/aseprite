@@ -1,5 +1,5 @@
 /* ASEPRITE
- * Copyright (C) 2001-2012  David Capello
+ * Copyright (C) 2001-2013  David Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -39,7 +39,7 @@ using namespace ui;
 
 ColorSelector::ColorSelector()
   : PopupWindowPin("Color Selector", false)
-  , m_color(Color::fromMask())
+  , m_color(app::Color::fromMask())
   , m_vbox(JI_VERTICAL)
   , m_topBox(JI_HORIZONTAL)
   , m_colorPalette(false)
@@ -97,7 +97,7 @@ ColorSelector::ColorSelector()
   m_graySlider.ColorChange.connect(&ColorSelector::onColorSlidersChange, this);
   m_hexColorEntry.ColorChange.connect(&ColorSelector::onColorHexEntryChange, this);
 
-  selectColorType(Color::RgbType);
+  selectColorType(app::Color::RgbType);
   setPreferredSize(gfx::Size(300*jguiscale(), getPreferredSize().h));
 
   m_onPaletteChangeSlot =
@@ -114,11 +114,11 @@ ColorSelector::~ColorSelector()
   getPin()->getParent()->removeChild(getPin());
 }
 
-void ColorSelector::setColor(const Color& color, SetColorOptions options)
+void ColorSelector::setColor(const app::Color& color, SetColorOptions options)
 {
   m_color = color;
 
-  if (color.getType() == Color::IndexType) {
+  if (color.getType() == app::Color::IndexType) {
     m_colorPalette.clearSelection();
     m_colorPalette.selectColor(color.getIndex());
   }
@@ -133,14 +133,14 @@ void ColorSelector::setColor(const Color& color, SetColorOptions options)
     selectColorType(m_color.getType());
 }
 
-Color ColorSelector::getColor() const
+app::Color ColorSelector::getColor() const
 {
   return m_color;
 }
 
 void ColorSelector::onColorPaletteIndexChange(int index)
 {
-  setColorWithSignal(Color::fromIndex(index));
+  setColorWithSignal(app::Color::fromIndex(index));
 }
 
 void ColorSelector::onColorSlidersChange(ColorSlidersChangeEvent& ev)
@@ -149,7 +149,7 @@ void ColorSelector::onColorSlidersChange(ColorSlidersChangeEvent& ev)
   findBestfitIndex(ev.getColor());
 }
 
-void ColorSelector::onColorHexEntryChange(const Color& color)
+void ColorSelector::onColorHexEntryChange(const app::Color& color)
 {
   // Disable updating the hex entry so we don't override what the user
   // is writting in the text field.
@@ -165,13 +165,13 @@ void ColorSelector::onColorTypeButtonClick(Event& ev)
 {
   RadioButton* source = static_cast<RadioButton*>(ev.getSource());
 
-  if (source == &m_indexButton) selectColorType(Color::IndexType);
-  else if (source == &m_rgbButton) selectColorType(Color::RgbType);
-  else if (source == &m_hsvButton) selectColorType(Color::HsvType);
-  else if (source == &m_grayButton) selectColorType(Color::GrayType);
+  if (source == &m_indexButton) selectColorType(app::Color::IndexType);
+  else if (source == &m_rgbButton) selectColorType(app::Color::RgbType);
+  else if (source == &m_hsvButton) selectColorType(app::Color::HsvType);
+  else if (source == &m_grayButton) selectColorType(app::Color::GrayType);
   else if (source == &m_maskButton) {
     // Select mask color directly when the radio button is pressed
-    setColorWithSignal(Color::fromMask());
+    setColorWithSignal(app::Color::fromMask());
   }
 }
 
@@ -181,7 +181,7 @@ void ColorSelector::onPaletteChange()
   invalidate();
 }
 
-void ColorSelector::findBestfitIndex(const Color& color)
+void ColorSelector::findBestfitIndex(const app::Color& color)
 {
   // Find bestfit palette entry
   int r = color.getRed();
@@ -196,7 +196,7 @@ void ColorSelector::findBestfitIndex(const Color& color)
   }
 }
 
-void ColorSelector::setColorWithSignal(const Color& color)
+void ColorSelector::setColorWithSignal(const app::Color& color)
 {
   setColor(color, ChangeType);
 
@@ -204,20 +204,20 @@ void ColorSelector::setColorWithSignal(const Color& color)
   ColorChange(color);
 }
 
-void ColorSelector::selectColorType(Color::Type type)
+void ColorSelector::selectColorType(app::Color::Type type)
 {
-  m_colorPaletteContainer.setVisible(type == Color::IndexType);
-  m_rgbSliders.setVisible(type == Color::RgbType);
-  m_hsvSliders.setVisible(type == Color::HsvType);
-  m_graySlider.setVisible(type == Color::GrayType);
-  m_maskLabel.setVisible(type == Color::MaskType);
+  m_colorPaletteContainer.setVisible(type == app::Color::IndexType);
+  m_rgbSliders.setVisible(type == app::Color::RgbType);
+  m_hsvSliders.setVisible(type == app::Color::HsvType);
+  m_graySlider.setVisible(type == app::Color::GrayType);
+  m_maskLabel.setVisible(type == app::Color::MaskType);
 
   switch (type) {
-    case Color::IndexType: m_indexButton.setSelected(true); break;
-    case Color::RgbType:   m_rgbButton.setSelected(true); break;
-    case Color::HsvType:   m_hsvButton.setSelected(true); break;
-    case Color::GrayType:  m_grayButton.setSelected(true); break;
-    case Color::MaskType:  m_maskButton.setSelected(true); break;
+    case app::Color::IndexType: m_indexButton.setSelected(true); break;
+    case app::Color::RgbType:   m_rgbButton.setSelected(true); break;
+    case app::Color::HsvType:   m_hsvButton.setSelected(true); break;
+    case app::Color::GrayType:  m_grayButton.setSelected(true); break;
+    case app::Color::MaskType:  m_maskButton.setSelected(true); break;
   }
 
   m_vbox.layout();

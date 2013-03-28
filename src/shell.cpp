@@ -1,5 +1,5 @@
 /* ASEPRITE
- * Copyright (C) 2001-2012  David Capello
+ * Copyright (C) 2001-2013  David Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,32 +18,27 @@
 
 #include "config.h"
 
-#include "undoers/set_current_frame.h"
+#include "shell.h"
 
-#include "raster/sprite.h"
-#include "undo/objects_container.h"
-#include "undo/undoers_collector.h"
+#include "scripting/engine.h"
 
-using namespace undo;
-using namespace undoers;
+#include <iostream>
+#include <string>
 
-SetCurrentFrame::SetCurrentFrame(ObjectsContainer* objects, Sprite* sprite)
-  : m_spriteId(objects->addObject(sprite))
-  , m_frame(sprite->getCurrentFrame())
+Shell::Shell()
 {
 }
 
-void SetCurrentFrame::dispose()
+Shell::~Shell()
 {
-  delete this;
 }
 
-void SetCurrentFrame::revert(ObjectsContainer* objects, UndoersCollector* redoers)
+void Shell::run(scripting::Engine& engine)
 {
-  Sprite* sprite = objects->getObjectT<Sprite>(m_spriteId);
-
-  // Push another SetCurrentFrame as redoer
-  redoers->pushUndoer(new SetCurrentFrame(objects, sprite));
-
-  sprite->setCurrentFrame(m_frame);
+  std::cout << "Welcome to " PACKAGE " v" VERSION " interactive console" << std::endl;
+  std::string line;
+  while (std::getline(std::cin, line)) {
+    engine.eval(line);
+  }
+  std::cout << "Done\n";
 }

@@ -1,5 +1,5 @@
 // ASEPRITE gui library
-// Copyright (C) 2001-2012  David Capello
+// Copyright (C) 2001-2013  David Capello
 //
 // This source file is distributed under a BSD-like license, please
 // read LICENSE.txt for more information.
@@ -8,6 +8,7 @@
 #define UI_INTERN_H_INCLUDED
 
 #include "ui/base.h"
+#include "ui/color.h"
 
 struct FONT;
 struct BITMAP;
@@ -35,10 +36,10 @@ namespace ui {
   // theme.cpp
 
   void _ji_theme_draw_sprite_color(BITMAP *bmp, BITMAP *sprite,
-                                   int x, int y, int color);
+                                   int x, int y, ui::Color color);
 
   void _ji_theme_textbox_draw(BITMAP *bmp, Widget* textbox,
-                              int *w, int *h, int bg, int fg);
+                              int *w, int *h, ui::Color bg, ui::Color fg);
 
   //////////////////////////////////////////////////////////////////////
   // jfontbmp.c

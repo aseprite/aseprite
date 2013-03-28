@@ -1,5 +1,5 @@
 /* ASEPRITE
- * Copyright (C) 2001-2012  David Capello
+ * Copyright (C) 2001-2013  David Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -22,7 +22,9 @@
 #include <vector>
 
 #include "gfx/point.h"
-#include "gfx/rect.h"
+#include "gfx/region.h"
+
+namespace gfx { class Region; }
 
 namespace tools {
 
@@ -99,7 +101,7 @@ private:
 
   static void calculateDirtyArea(ToolLoop* loop,
                                  const Points& points,
-                                 gfx::Rect& dirty_area);
+                                 gfx::Region& dirty_area);
 
   static void calculateMinMax(const Points& points,
                               gfx::Point& minpt,
@@ -108,6 +110,7 @@ private:
   ToolLoop* m_toolLoop;
   Points m_points;
   gfx::Point m_oldPoint;
+  gfx::Region m_oldDirtyArea;
 };
 
 } // namespace tools

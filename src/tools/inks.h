@@ -1,5 +1,5 @@
 /* ASEPRITE
- * Copyright (C) 2001-2012  David Capello
+ * Copyright (C) 2001-2013  David Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -55,8 +55,8 @@ public:
       case WithBg:
         {
           int color = color_utils::color_for_layer(m_type == WithFg ?
-                                                   loop->getContext()->getSettings()->getFgColor():
-                                                   loop->getContext()->getSettings()->getBgColor(),
+                                                   loop->getSettings()->getFgColor():
+                                                   loop->getSettings()->getBgColor(),
                                                    loop->getLayer());
           loop->setPrimaryColor(color);
           loop->setSecondaryColor(color);
@@ -168,18 +168,18 @@ public:
       case ReplaceFgWithBg:
         m_proc = ink_processing[INK_REPLACE][MID(0, loop->getSprite()->getPixelFormat(), 2)];
 
-        loop->setPrimaryColor(color_utils::color_for_layer(loop->getContext()->getSettings()->getFgColor(),
+        loop->setPrimaryColor(color_utils::color_for_layer(loop->getSettings()->getFgColor(),
                                                            loop->getLayer()));
-        loop->setSecondaryColor(color_utils::color_for_layer(loop->getContext()->getSettings()->getBgColor(),
+        loop->setSecondaryColor(color_utils::color_for_layer(loop->getSettings()->getBgColor(),
                                                              loop->getLayer()));
         break;
 
       case ReplaceBgWithFg:
         m_proc = ink_processing[INK_REPLACE][MID(0, loop->getSprite()->getPixelFormat(), 2)];
 
-        loop->setPrimaryColor(color_utils::color_for_layer(loop->getContext()->getSettings()->getBgColor(),
+        loop->setPrimaryColor(color_utils::color_for_layer(loop->getSettings()->getBgColor(),
                                                            loop->getLayer()));
-        loop->setSecondaryColor(color_utils::color_for_layer(loop->getContext()->getSettings()->getFgColor(),
+        loop->setSecondaryColor(color_utils::color_for_layer(loop->getSettings()->getFgColor(),
                                                              loop->getLayer()));
         break;
     }

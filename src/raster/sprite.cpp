@@ -1,5 +1,5 @@
 /* ASEPRITE
- * Copyright (C) 2001-2012  David Capello
+ * Copyright (C) 2001-2013  David Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -39,14 +39,12 @@ Sprite::Sprite(PixelFormat format, int width, int height, int ncolors)
   , m_width(width)
   , m_height(height)
   , m_frames(1)
-  , m_frame(0)
 {
   ASSERT(width > 0 && height > 0);
 
   m_frlens.push_back(100);      // First frame with 100 msecs of duration
   m_stock = new Stock(format);
   m_folder = new LayerFolder(this);
-  m_layer = NULL;
 
   // Generate palette
   Palette pal(FrameNumber(0), ncolors);
@@ -156,30 +154,20 @@ LayerFolder* Sprite::getFolder() const
 
 LayerImage* Sprite::getBackgroundLayer() const
 {
-  if (getFolder()->get_layers_count() > 0) {
-    Layer* bglayer = *getFolder()->get_layer_begin();
+  if (getFolder()->getLayersCount() > 0) {
+    Layer* bglayer = *getFolder()->getLayerBegin();
 
-    if (bglayer->is_background()) {
-      ASSERT(bglayer->is_image());
+    if (bglayer->isBackground()) {
+      ASSERT(bglayer->isImage());
       return static_cast<LayerImage*>(bglayer);
     }
   }
   return NULL;
 }
 
-Layer* Sprite::getCurrentLayer() const
-{
-  return m_layer;
-}
-
-void Sprite::setCurrentLayer(Layer* layer)
-{
-  m_layer = layer;
-}
-
 LayerIndex Sprite::countLayers() const
 {
-  return LayerIndex(getFolder()->get_layers_count());
+  return LayerIndex(getFolder()->getLayersCount());
 }
 
 Layer* Sprite::indexToLayer(LayerIndex index) const
@@ -275,16 +263,6 @@ void Sprite::deletePalette(Palette* pal)
   delete pal;                   // palette
 }
 
-Palette* Sprite::getCurrentPalette() const
-{
-  return getPalette(getCurrentFrame());
-}
-
-RgbMap* Sprite::getRgbMap()
-{
-  return getRgbMap(getCurrentFrame());
-}
-
 RgbMap* Sprite::getRgbMap(FrameNumber frame)
 {
   if (m_rgbMap == NULL) {
@@ -299,6 +277,21 @@ RgbMap* Sprite::getRgbMap(FrameNumber frame)
 
 //////////////////////////////////////////////////////////////////////
 // Frames
+
+void Sprite::addFrame(FrameNumber newFrame)
+{
+  setTotalFrames(m_frames.next());
+  for (FrameNumber i=m_frames.previous(); i>=newFrame; i=i.previous())
+    setFrameDuration(i, getFrameDuration(i.previous()));
+}
+
+void Sprite::removeFrame(FrameNumber newFrame)
+{
+  FrameNumber newTotal = m_frames.previous();
+  for (FrameNumber i=newFrame; i<newTotal; i=i.next())
+    setFrameDuration(i, getFrameDuration(i.next()));
+  setTotalFrames(newTotal);
+}
 
 void Sprite::setTotalFrames(FrameNumber frames)
 {
@@ -332,55 +325,12 @@ void Sprite::setDurationForAllFrames(int msecs)
   std::fill(m_frlens.begin(), m_frlens.end(), MID(1, msecs, 65535));
 }
 
-void Sprite::setCurrentFrame(FrameNumber frame)
-{
-  m_frame = frame;
-}
-
-SpritePosition Sprite::getCurrentPosition() const
-{
-  return SpritePosition(layerToIndex(getCurrentLayer()),
-                        getCurrentFrame());
-}
-
-void Sprite::setCurrentPosition(const SpritePosition& spritePosition)
-{
-  Layer* layer = indexToLayer(spritePosition.layerIndex());
-  ASSERT(layer);
-  if (layer)
-    setCurrentLayer(layer);
-
-  setCurrentFrame(spritePosition.frameNumber());
-}
-
 //////////////////////////////////////////////////////////////////////
 // Images
 
 Stock* Sprite::getStock() const
 {
   return m_stock;
-}
-
-Image* Sprite::getCurrentImage(int* x, int* y, int* opacity) const
-{
-  Image* image = NULL;
-
-  if (getCurrentLayer() != NULL &&
-      getCurrentLayer()->is_image()) {
-    const Cel* cel = static_cast<const LayerImage*>(getCurrentLayer())->getCel(getCurrentFrame());
-    if (cel) {
-      ASSERT((cel->getImage() >= 0) &&
-             (cel->getImage() < getStock()->size()));
-
-      image = getStock()->getImage(cel->getImage());
-
-      if (x) *x = cel->getX();
-      if (y) *y = cel->getY();
-      if (opacity) *opacity = MID(0, cel->getOpacity(), 255);
-    }
-  }
-
-  return image;
 }
 
 void Sprite::getCels(CelList& cels)
@@ -416,22 +366,22 @@ void Sprite::remapImages(FrameNumber frameFrom, FrameNumber frameTo, const std::
 //////////////////////////////////////////////////////////////////////
 // Drawing
 
-void Sprite::render(Image* image, int x, int y) const
+void Sprite::render(Image* image, int x, int y, FrameNumber frame) const
 {
   image_rectfill(image, x, y, x+m_width-1, y+m_height-1,
                  (m_format == IMAGE_INDEXED ? getTransparentColor(): 0));
 
-  layer_render(getFolder(), image, x, y, getCurrentFrame());
+  layer_render(getFolder(), image, x, y, frame);
 }
 
-int Sprite::getPixel(int x, int y) const
+int Sprite::getPixel(int x, int y, FrameNumber frame) const
 {
   int color = 0;
 
   if ((x >= 0) && (y >= 0) && (x < m_width) && (y < m_height)) {
     Image* image = Image::create(m_format, 1, 1);
     image_clear(image, (m_format == IMAGE_INDEXED ? getTransparentColor(): 0));
-    render(image, -x, -y);
+    render(image, -x, -y, frame);
     color = image_getpixel(image, 0, 0);
     image_free(image);
   }
@@ -448,11 +398,11 @@ static Layer* index2layer(const Layer* layer, const LayerIndex& index, int* inde
   else {
     (*index_count)++;
 
-    if (layer->is_folder()) {
+    if (layer->isFolder()) {
       Layer *found;
 
-      LayerConstIterator it = static_cast<const LayerFolder*>(layer)->get_layer_begin();
-      LayerConstIterator end = static_cast<const LayerFolder*>(layer)->get_layer_end();
+      LayerConstIterator it = static_cast<const LayerFolder*>(layer)->getLayerBegin();
+      LayerConstIterator end = static_cast<const LayerFolder*>(layer)->getLayerEnd();
 
       for (; it != end; ++it) {
         if ((found = index2layer(*it, index, index_count)))
@@ -471,11 +421,11 @@ static LayerIndex layer2index(const Layer* layer, const Layer* find_layer, int* 
   else {
     (*index_count)++;
 
-    if (layer->is_folder()) {
+    if (layer->isFolder()) {
       int found;
 
-      LayerConstIterator it = static_cast<const LayerFolder*>(layer)->get_layer_begin();
-      LayerConstIterator end = static_cast<const LayerFolder*>(layer)->get_layer_end();
+      LayerConstIterator it = static_cast<const LayerFolder*>(layer)->getLayerBegin();
+      LayerConstIterator end = static_cast<const LayerFolder*>(layer)->getLayerEnd();
 
       for (; it != end; ++it) {
         if ((found = layer2index(*it, find_layer, index_count)) >= 0)

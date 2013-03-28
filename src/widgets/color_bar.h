@@ -1,5 +1,5 @@
 /* ASEPRITE
- * Copyright (C) 2001-2012  David Capello
+ * Copyright (C) 2001-2013  David Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -43,10 +43,10 @@ public:
 
   void setPixelFormat(PixelFormat pixelFormat);
 
-  Color getFgColor();
-  Color getBgColor();
-  void setFgColor(const Color& color);
-  void setBgColor(const Color& color);
+  app::Color getFgColor();
+  app::Color getBgColor();
+  void setFgColor(const app::Color& color);
+  void setBgColor(const app::Color& color);
 
   PaletteView* getPaletteView();
 
@@ -55,15 +55,15 @@ public:
   void setPaletteEditorButtonState(bool state);
 
   // Signals
-  Signal1<void, const Color&> FgColorChange;
-  Signal1<void, const Color&> BgColorChange;
+  Signal1<void, const app::Color&> FgColorChange;
+  Signal1<void, const app::Color&> BgColorChange;
 
 protected:
   void onPaletteButtonClick();
   void onPaletteIndexChange(int index);
-  void onFgColorButtonChange(const Color& color);
-  void onBgColorButtonChange(const Color& color);
-  void onColorButtonChange(const Color& color);
+  void onFgColorButtonChange(const app::Color& color);
+  void onBgColorButtonChange(const app::Color& color);
+  void onColorButtonChange(const app::Color& color);
 
 private:
   class ScrollableView : public ui::View

@@ -1,5 +1,5 @@
 /* ASEPRITE
- * Copyright (C) 2001-2012  David Capello
+ * Copyright (C) 2001-2013  David Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -28,10 +28,10 @@ using namespace undo;
 using namespace undoers;
 
 MoveLayer::MoveLayer(ObjectsContainer* objects, Layer* layer)
-  : m_folderId(objects->addObject(layer->get_parent()))
+  : m_folderId(objects->addObject(layer->getParent()))
   , m_layerId(objects->addObject(layer))
 {
-  Layer* after = layer->get_prev();
+  Layer* after = layer->getPrevious();
 
   m_afterId = (after ? objects->addObject(after): 0);
 }

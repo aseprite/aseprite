@@ -1,5 +1,5 @@
 /* ASEPRITE
- * Copyright (C) 2001-2012  David Capello
+ * Copyright (C) 2001-2013  David Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -23,7 +23,7 @@
 #include "commands/command.h"
 #include "commands/filters/filter_manager_impl.h"
 #include "commands/filters/filter_window.h"
-#include "document_wrappers.h"
+#include "context.h"
 #include "filters/invert_color_filter.h"
 #include "ini_file.h"
 #include "modules/gui.h"
@@ -87,7 +87,7 @@ bool InvertColorCommand::onEnabled(Context* context)
 void InvertColorCommand::onExecute(Context* context)
 {
   InvertColorFilter filter;
-  FilterManagerImpl filterMgr(context->getActiveDocument(), &filter);
+  FilterManagerImpl filterMgr(context, &filter);
   filterMgr.setTarget(TARGET_RED_CHANNEL |
                       TARGET_GREEN_CHANNEL |
                       TARGET_BLUE_CHANNEL |

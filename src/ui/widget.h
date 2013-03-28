@@ -1,5 +1,5 @@
 // ASEPRITE gui library
-// Copyright (C) 2001-2012  David Capello
+// Copyright (C) 2001-2013  David Capello
 //
 // This source file is distributed under a BSD-like license, please
 // read LICENSE.txt for more information.
@@ -11,8 +11,10 @@
 
 #include "gfx/border.h"
 #include "gfx/rect.h"
+#include "gfx/region.h"
 #include "gfx/size.h"
 #include "ui/base.h"
+#include "ui/color.h"
 #include "ui/component.h"
 #include "ui/rect.h"
 #include "ui/widgets_list.h"
@@ -41,9 +43,6 @@ namespace ui {
 
   JRect jwidget_get_rect(Widget* widget);
   JRect jwidget_get_child_rect(Widget* widget);
-  JRegion jwidget_get_region(Widget* widget);
-  JRegion jwidget_get_drawable_region(Widget* widget, int flags);
-  int jwidget_get_bg_color(Widget* widget);
   int jwidget_get_text_length(const Widget* widget);
   int jwidget_get_text_height(const Widget* widget);
   void jwidget_get_texticon_info(Widget* widget,
@@ -56,7 +55,6 @@ namespace ui {
   void jwidget_set_rect(Widget* widget, JRect rect);
   void jwidget_set_min_size(Widget* widget, int w, int h);
   void jwidget_set_max_size(Widget* widget, int w, int h);
-  void jwidget_set_bg_color(Widget* widget, int color);
 
   //////////////////////////////////////////////////////////////////////
 
@@ -77,17 +75,6 @@ namespace ui {
     /* widget size limits */
     int min_w, min_h;
     int max_w, max_h;
-
-  private:
-    std::string m_id;             // Widget's id
-    Theme* m_theme;               // Widget's theme
-    int m_align;                  // Widget alignment
-    std::string m_text;           // Widget text
-    struct FONT *m_font;          // Text font type
-    int m_bg_color;               // Background color
-    JRegion m_update_region;      // Region to be redrawed.
-    WidgetsList m_children;       // Sub-widgets
-    Widget* m_parent;             // Who is the parent?
 
   public:
     // Extra data for the theme
@@ -174,16 +161,16 @@ namespace ui {
     void setFont(FONT* font);
 
     // Gets the background color of the widget.
-    int getBgColor() const {
-      if (m_bg_color < 0 && m_parent)
+    ui::Color getBgColor() const {
+      if (ui::geta(m_bgColor) == 0 && m_parent)
         return m_parent->getBgColor();
       else
-        return m_bg_color;
+        return m_bgColor;
     }
 
     // Sets the background color of the widget
-    void setBgColor(int bg_color) {
-      m_bg_color = bg_color;
+    void setBgColor(ui::Color bg_color) {
+      m_bgColor = bg_color;
     }
 
     Theme* getTheme() const { return m_theme; }
@@ -199,13 +186,18 @@ namespace ui {
     Widget* getParent() { return m_parent; }
     Manager* getManager();
 
-    // Returns a list of parents (you must free the list), if
-    // "ascendant" is true the list is build from child to parents, else
-    // the list is from parent to children.
+    // Returns a list of parents, if "ascendant" is true the list is
+    // build from child to parents, else the list is from parent to
+    // children.
     void getParents(bool ascendant, WidgetsList& parents);
 
-    // Returns a list of children (you must free the list).
+    // Returns a list of children.
     const WidgetsList& getChildren() const { return m_children; }
+
+    // Returns the first child or NULL if it doesn't exist.
+    Widget* getFirstChild() {
+      return (!m_children.empty() ? m_children.front(): NULL);
+    }
 
     // Returns the next or previous siblings.
     Widget* getNextSibling();
@@ -248,16 +240,28 @@ namespace ui {
     void loadLayout();
     void saveLayout();
 
+    void setDecorativeWidgetBounds();
+
     // ===============================================================
     // POSITION & GEOMETRY
     // ===============================================================
 
     gfx::Rect getBounds() const;
     gfx::Rect getClientBounds() const;
+    gfx::Rect getChildrenBounds() const;
     void setBounds(const gfx::Rect& rc);
 
     gfx::Border getBorder() const;
     void setBorder(const gfx::Border& border);
+
+    // Flags for getDrawableRegion()
+    enum DrawableRegionFlags {
+      kCutTopWindows = 1, // Cut areas where are windows on top.
+      kUseChildArea = 2,  // Use areas where are children.
+    };
+
+    void getRegion(gfx::Region& region);
+    void getDrawableRegion(gfx::Region& region, DrawableRegionFlags flags);
 
     // ===============================================================
     // REFRESH ISSUES
@@ -268,12 +272,11 @@ namespace ui {
 
     void invalidate();
     void invalidateRect(const gfx::Rect& rect);
-    void invalidateRect(const JRect rect);
-    void invalidateRegion(const JRegion region);
+    void invalidateRegion(const gfx::Region& region);
 
     void flushRedraw();
 
-    void scrollRegion(JRegion region, int dx, int dy);
+    void scrollRegion(const gfx::Region& region, int dx, int dy);
 
     // ===============================================================
     // GUI MANAGER
@@ -324,13 +327,14 @@ namespace ui {
     // EVENTS
     // ===============================================================
 
-    virtual void onInvalidateRegion(const JRegion region);
+    virtual void onInvalidateRegion(const gfx::Region& region);
     virtual void onPreferredSize(PreferredSizeEvent& ev);
     virtual void onLoadLayout(LoadLayoutEvent& ev);
     virtual void onSaveLayout(SaveLayoutEvent& ev);
     virtual void onPaint(PaintEvent& ev);
     virtual void onBroadcastMouseMessage(WidgetsList& targets);
     virtual void onInitTheme(InitThemeEvent& ev);
+    virtual void onSetDecorativeWidgetBounds();
     virtual void onEnable();
     virtual void onDisable();
     virtual void onSelect();
@@ -338,6 +342,15 @@ namespace ui {
     virtual void onSetText();
 
   private:
+    std::string m_id;             // Widget's id
+    Theme* m_theme;               // Widget's theme
+    int m_align;                  // Widget alignment
+    std::string m_text;           // Widget text
+    struct FONT *m_font;          // Text font type
+    ui::Color m_bgColor;          // Background color
+    gfx::Region m_updateRegion;;  // Region to be redrawed.
+    WidgetsList m_children;       // Sub-widgets
+    Widget* m_parent;             // Who is the parent?
     gfx::Size* m_preferredSize;
     bool m_doubleBuffered : 1;
   };

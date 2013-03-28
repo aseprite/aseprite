@@ -1,5 +1,5 @@
 /* ASEPRITE
- * Copyright (C) 2001-2012  David Capello
+ * Copyright (C) 2001-2013  David Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -24,6 +24,7 @@
 #include "base/mutex.h"
 #include "base/scoped_lock.h"
 #include "base/unique_ptr.h"
+#include "document_api.h"
 #include "document_event.h"
 #include "document_observer.h"
 #include "document_undo.h"
@@ -61,23 +62,23 @@ Document::Document(Sprite* sprite)
   // Boundary stuff
   m_bound.nseg = 0;
   m_bound.seg = NULL;
-
-  // Preferred edition options
-  m_preferred.scroll_x = 0;
-  m_preferred.scroll_y = 0;
-  m_preferred.zoom = 0;
-  m_preferred.virgin = true;
 }
 
 Document::~Document()
 {
-  DocumentEvent ev(this, m_sprite);
+  DocumentEvent ev(this);
+  ev.sprite(m_sprite);
   notifyObservers<DocumentEvent&>(&DocumentObserver::onRemoveSprite, ev);
 
   if (m_bound.seg)
     base_free(m_bound.seg);
 
   destroyExtraCel();
+}
+
+DocumentApi Document::getApi(undo::UndoersCollector* undoers)
+{
+  return DocumentApi(this, undoers ? undoers: m_undo->getDefaultUndoersCollector());
 }
 
 Document* Document::createBasicDocument(PixelFormat format, int width, int height, int ncolors)
@@ -115,10 +116,7 @@ Document* Document::createBasicDocument(PixelFormat format, int width, int heigh
     }
 
     // Add the layer in the sprite.
-    sprite->getFolder()->addLayer(layer);
-
-    // Set the layer as the current one.
-    sprite->setCurrentLayer(layer.release()); // Release the layer because it's owned by the sprite
+    sprite->getFolder()->addLayer(layer.release()); // Release the layer because it's owned by the sprite
   }
 
   // Create the document with the new sprite.
@@ -134,8 +132,54 @@ void Document::addSprite(Sprite* sprite)
   ASSERT(m_sprite == NULL);     // TODO add support for more sprites in the future (e.g. for .ico files)
   m_sprite.reset(sprite);
 
-  DocumentEvent ev(this, m_sprite);
+  DocumentEvent ev(this);
+  ev.sprite(m_sprite);
   notifyObservers<DocumentEvent&>(&DocumentObserver::onAddSprite, ev);
+}
+
+void Document::notifyGeneralUpdate()
+{
+  DocumentEvent ev(this);
+  notifyObservers<DocumentEvent&>(&DocumentObserver::onGeneralUpdate, ev);
+}
+
+void Document::notifySpritePixelsModified(Sprite* sprite, const gfx::Region& region)
+{
+  DocumentEvent ev(this);
+  ev.sprite(sprite);
+  ev.region(region);
+  notifyObservers<DocumentEvent&>(&DocumentObserver::onSpritePixelsModified, ev);
+}
+
+void Document::notifyLayerMergedDown(Layer* srcLayer, Layer* targetLayer)
+{
+  DocumentEvent ev(this);
+  ev.sprite(srcLayer->getSprite());
+  ev.layer(srcLayer);
+  ev.targetLayer(targetLayer);
+  notifyObservers<DocumentEvent&>(&DocumentObserver::onLayerMergedDown, ev);
+}
+
+void Document::notifyCelMoved(Layer* fromLayer, FrameNumber fromFrame, Layer* toLayer, FrameNumber toFrame)
+{
+  DocumentEvent ev(this);
+  ev.sprite(fromLayer->getSprite());
+  ev.layer(fromLayer);
+  ev.frame(fromFrame);
+  ev.targetLayer(toLayer);
+  ev.targetFrame(toFrame);
+  notifyObservers<DocumentEvent&>(&DocumentObserver::onCelMoved, ev);
+}
+
+void Document::notifyCelCopied(Layer* fromLayer, FrameNumber fromFrame, Layer* toLayer, FrameNumber toFrame)
+{
+  DocumentEvent ev(this);
+  ev.sprite(fromLayer->getSprite());
+  ev.layer(fromLayer);
+  ev.frame(fromFrame);
+  ev.targetLayer(toLayer);
+  ev.targetFrame(toFrame);
+  notifyObservers<DocumentEvent&>(&DocumentObserver::onCelCopied, ev);
 }
 
 const char* Document::getFilename() const
@@ -170,19 +214,6 @@ void Document::markAsSaved()
 void Document::setFormatOptions(const SharedPtr<FormatOptions>& format_options)
 {
   m_format_options = format_options;
-}
-
-//////////////////////////////////////////////////////////////////////
-// Preferred editor settings
-
-PreferredEditorSettings Document::getPreferredEditorSettings() const
-{
-  return m_preferred;
-}
-
-void Document::setPreferredEditorSettings(const PreferredEditorSettings& settings)
-{
-  m_preferred = settings;
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -332,7 +363,7 @@ void Document::copyLayerContent(const Layer* sourceLayer0, Document* destDoc, La
   // Copy the layer name
   destLayer0->setName(sourceLayer0->getName());
 
-  if (sourceLayer0->is_image() && destLayer0->is_image()) {
+  if (sourceLayer0->isImage() && destLayer0->isImage()) {
     const LayerImage* sourceLayer = static_cast<const LayerImage*>(sourceLayer0);
     LayerImage* destLayer = static_cast<LayerImage*>(destLayer0);
 
@@ -363,22 +394,22 @@ void Document::copyLayerContent(const Layer* sourceLayer0, Document* destDoc, La
       newCel.release();
     }
   }
-  else if (sourceLayer0->is_folder() && destLayer0->is_folder()) {
+  else if (sourceLayer0->isFolder() && destLayer0->isFolder()) {
     const LayerFolder* sourceLayer = static_cast<const LayerFolder*>(sourceLayer0);
     LayerFolder* destLayer = static_cast<LayerFolder*>(destLayer0);
 
-    LayerConstIterator it = sourceLayer->get_layer_begin();
-    LayerConstIterator end = sourceLayer->get_layer_end();
+    LayerConstIterator it = sourceLayer->getLayerBegin();
+    LayerConstIterator end = sourceLayer->getLayerEnd();
 
     for (; it != end; ++it) {
       Layer* sourceChild = *it;
       UniquePtr<Layer> destChild(NULL);
 
-      if (sourceChild->is_image()) {
+      if (sourceChild->isImage()) {
         destChild.reset(new LayerImage(destLayer->getSprite()));
         copyLayerContent(sourceChild, destDoc, destChild);
       }
-      else if (sourceChild->is_folder()) {
+      else if (sourceChild->isFolder()) {
         destChild.reset(new LayerFolder(destLayer->getSprite()));
         copyLayerContent(sourceChild, destDoc, destChild);
       }
@@ -389,12 +420,9 @@ void Document::copyLayerContent(const Layer* sourceLayer0, Document* destDoc, La
       ASSERT(destChild != NULL);
 
       // Add the new layer in the sprite.
-      if (undo->isEnabled())
-        undo->pushUndoer(new undoers::AddLayer(undo->getObjects(),
-            destLayer, destChild));
-
-      destLayer->addLayer(destChild);
-      destChild.release();
+      destDoc->getApi().addLayer(destLayer,
+                                 destChild.release(),
+                                 destLayer->getLastLayer());
     }
   }
   else  {
@@ -413,7 +441,6 @@ Document* Document::duplicate(DuplicateType type) const
   Sprite* spriteCopy = spriteCopyPtr.release();
 
   spriteCopy->setTotalFrames(sourceSprite->getTotalFrames());
-  spriteCopy->setCurrentFrame(sourceSprite->getCurrentFrame());
 
   // Copy frames duration
   for (FrameNumber i(0); i < sourceSprite->getTotalFrames(); ++i)
@@ -438,12 +465,6 @@ Document* Document::duplicate(DuplicateType type) const
       // Copy the layer folder
       copyLayerContent(getSprite()->getFolder(), documentCopy, spriteCopy->getFolder());
 
-      // Set as current layer the same layer as the source
-      {
-        LayerIndex index = sourceSprite->layerToIndex(sourceSprite->getCurrentLayer());
-        spriteCopy->setCurrentLayer(spriteCopy->indexToLayer(index));
-      }
-
       // Re-enable the undo
       documentCopy->getUndo()->setEnabled(true);
       break;
@@ -461,7 +482,6 @@ Document* Document::duplicate(DuplicateType type) const
 
         // Add and select the new flat layer
         spriteCopy->getFolder()->addLayer(flatLayer);
-        spriteCopy->setCurrentLayer(flatLayer);
 
         // Configure the layer as background only if the original
         // sprite has a background layer.
@@ -473,7 +493,6 @@ Document* Document::duplicate(DuplicateType type) const
 
   documentCopy->setMask(getMask());
   documentCopy->m_maskVisible = m_maskVisible;
-  documentCopy->m_preferred = m_preferred;
   documentCopy->generateMaskBoundaries();
 
   return documentCopy.release();

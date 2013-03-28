@@ -1,5 +1,5 @@
 // ASEPRITE gui library
-// Copyright (C) 2001-2012  David Capello
+// Copyright (C) 2001-2013  David Capello
 //
 // This source file is distributed under a BSD-like license, please
 // read LICENSE.txt for more information.
@@ -156,7 +156,7 @@ void TextBox::onPreferredSize(PreferredSizeEvent& ev)
   //w = widget->border_width.l + widget->border_width.r;
   //h = widget->border_width.t + widget->border_width.b;
 
-  _ji_theme_textbox_draw(NULL, this, &w, &h, 0, 0);
+  _ji_theme_textbox_draw(NULL, this, &w, &h, ColorNone, ColorNone);
 
   if (this->getAlign() & JI_WORDWRAP) {
     View* view = View::getView(this);
@@ -170,7 +170,7 @@ void TextBox::onPreferredSize(PreferredSizeEvent& ev)
     }
 
     w = MAX(min, width);
-    _ji_theme_textbox_draw(NULL, this, &w, &h, 0, 0);
+    _ji_theme_textbox_draw(NULL, this, &w, &h, ColorNone, ColorNone);
 
     w = min;
   }

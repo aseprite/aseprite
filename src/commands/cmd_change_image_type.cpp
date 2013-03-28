@@ -1,5 +1,5 @@
 /* ASEPRITE
- * Copyright (C) 2001-2012  David Capello
+ * Copyright (C) 2001-2013  David Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,9 +21,11 @@
 #include "app.h"
 #include "commands/command.h"
 #include "commands/params.h"
-#include "document_wrappers.h"
+#include "context_access.h"
+#include "document_api.h"
 #include "modules/gui.h"
 #include "modules/palettes.h"
+#include "raster/dithering_method.h"
 #include "raster/image.h"
 #include "raster/sprite.h"
 #include "undo_transaction.h"
@@ -70,8 +72,8 @@ void ChangePixelFormatCommand::onLoadParams(Params* params)
 
 bool ChangePixelFormatCommand::onEnabled(Context* context)
 {
-  ActiveDocumentWriter document(context);
-  Sprite* sprite(document ? document->getSprite(): 0);
+  ContextWriter writer(context);
+  Sprite* sprite(writer.sprite());
 
   if (sprite != NULL &&
       sprite->getPixelFormat() == IMAGE_INDEXED &&
@@ -84,8 +86,8 @@ bool ChangePixelFormatCommand::onEnabled(Context* context)
 
 bool ChangePixelFormatCommand::onChecked(Context* context)
 {
-  const ActiveDocumentReader document(context);
-  const Sprite* sprite(document ? document->getSprite(): 0);
+  const ContextReader reader(context);
+  const Sprite* sprite = reader.sprite();
 
   if (sprite != NULL &&
       sprite->getPixelFormat() == IMAGE_INDEXED &&
@@ -100,13 +102,16 @@ bool ChangePixelFormatCommand::onChecked(Context* context)
 
 void ChangePixelFormatCommand::onExecute(Context* context)
 {
-  ActiveDocumentWriter document(context);
   {
-    UndoTransaction undoTransaction(document, "Color Mode Change");
-    undoTransaction.setPixelFormat(m_format, m_dithering);
+    ContextWriter writer(context);
+    UndoTransaction undoTransaction(writer.context(), "Color Mode Change");
+    Document* document(writer.document());
+    Sprite* sprite(writer.sprite());
+
+    document->getApi().setPixelFormat(sprite, m_format, m_dithering);
     undoTransaction.commit();
   }
-  app_refresh_screen(document);
+  app_refresh_screen();
 }
 
 //////////////////////////////////////////////////////////////////////

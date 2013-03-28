@@ -1,5 +1,5 @@
 /* ASEPRITE
- * Copyright (C) 2001-2012  David Capello
+ * Copyright (C) 2001-2013  David Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -22,6 +22,7 @@
 
 #include "context.h"
 #include "document.h"
+#include "document_location.h"
 #include "raster/cel.h"
 #include "raster/layer.h"
 #include "raster/sprite.h"
@@ -34,7 +35,8 @@ ContextFlags::ContextFlags()
 
 void ContextFlags::update(Context* context)
 {
-  Document* document = context->getActiveDocument();
+  DocumentLocation location = context->getActiveLocation();
+  Document* document = location.document();
 
   m_flags = 0;
 
@@ -47,30 +49,30 @@ void ContextFlags::update(Context* context)
       if (document->isMaskVisible())
         m_flags |= HasVisibleMask;
 
-      Sprite* sprite = document->getSprite();
+      Sprite* sprite = location.sprite();
       if (sprite) {
         m_flags |= HasActiveSprite;
 
         if (sprite->getBackgroundLayer())
           m_flags |= HasBackgroundLayer;
 
-        Layer* layer = sprite->getCurrentLayer();
+        Layer* layer = location.layer();
         if (layer) {
           m_flags |= HasActiveLayer;
 
-          if (layer->is_background())
+          if (layer->isBackground())
             m_flags |= ActiveLayerIsBackground;
 
-          if (layer->is_readable())
+          if (layer->isReadable())
             m_flags |= ActiveLayerIsReadable;
 
-          if (layer->is_writable())
+          if (layer->isWritable())
             m_flags |= ActiveLayerIsWritable;
 
-          if (layer->is_image()) {
+          if (layer->isImage()) {
             m_flags |= ActiveLayerIsImage;
 
-            Cel* cel = static_cast<LayerImage*>(layer)->getCel(sprite->getCurrentFrame());
+            Cel* cel = static_cast<LayerImage*>(layer)->getCel(location.frame());
             if (cel) {
               m_flags |= HasActiveCel;
 

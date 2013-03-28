@@ -1,5 +1,5 @@
 /* ASEPRITE
- * Copyright (C) 2001-2012  David Capello
+ * Copyright (C) 2001-2013  David Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -30,11 +30,10 @@
 
 DocumentUndo::DocumentUndo()
   : m_objects(new ObjectsContainerImpl)
-  , m_undoHistory(new undo::UndoHistory(m_objects, this))
+  , m_undoHistory(new undo::UndoHistory(this))
   , m_enabled(true)
 {
 }
-
 
 bool DocumentUndo::canUndo() const
 {
@@ -71,11 +70,6 @@ void DocumentUndo::markSavedState()
   return m_undoHistory->markSavedState();
 }
 
-undo::ObjectsContainer* DocumentUndo::getObjects() const
-{
-  return m_undoHistory->getObjects();
-}
-
 void DocumentUndo::pushUndoer(undo::Undoer* undoer)
 {
   return m_undoHistory->pushUndoer(undoer);
@@ -86,7 +80,7 @@ bool DocumentUndo::implantUndoerInLastGroup(undo::Undoer* undoer)
   return m_undoHistory->implantUndoerInLastGroup(undoer);
 }
 
-size_t DocumentUndo::getUndoSizeLimit()
+size_t DocumentUndo::getUndoSizeLimit() const
 {
   return ((size_t)get_config_int("Options", "UndoSizeLimit", 8))*1024*1024;
 }

@@ -1,5 +1,5 @@
 /* ASEPRITE
- * Copyright (C) 2001-2012  David Capello
+ * Copyright (C) 2001-2013  David Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -25,6 +25,7 @@
 
 #include <sstream>
 
+class Document;
 class Sprite;
 
 namespace undoers {
@@ -32,13 +33,14 @@ namespace undoers {
 class SetTotalFrames : public UndoerBase
 {
 public:
-  SetTotalFrames(undo::ObjectsContainer* objects, Sprite* sprite);
+  SetTotalFrames(undo::ObjectsContainer* objects, Document* document, Sprite* sprite);
 
   void dispose() OVERRIDE;
   size_t getMemSize() const OVERRIDE { return sizeof(*this); }
   void revert(undo::ObjectsContainer* objects, undo::UndoersCollector* redoers) OVERRIDE;
 
 private:
+  undo::ObjectId m_documentId;
   undo::ObjectId m_spriteId;
   FrameNumber m_totalFrames;
 };

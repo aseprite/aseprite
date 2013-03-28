@@ -1,5 +1,5 @@
 /* ASEPRITE
- * Copyright (C) 2001-2012  David Capello
+ * Copyright (C) 2001-2013  David Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -27,7 +27,6 @@
 #include "commands/command.h"
 #include "commands/commands.h"
 #include "gfx/rect.h"
-#include "modules/editors.h"
 #include "modules/gui.h"
 #include "raster/algorithm/flip_image.h"
 #include "raster/mask.h"
@@ -258,18 +257,8 @@ bool MovingPixelsState::onMouseMove(Editor* editor, Message* msg)
     transfHandles->invalidateHandles(editor, m_pixelsMovement->getTransformation());
 
     // Drag the image to that position
-    gfx::Rect bounds = m_pixelsMovement->moveImage(x, y, moveModifier);
+    m_pixelsMovement->moveImage(x, y, moveModifier);
 
-    // If "bounds" is empty is because the cel was not moved
-    if (!bounds.isEmpty()) {
-      // Redraw the extra cel in the new position
-      jmouse_hide();
-      editors_draw_sprite(editor->getSprite(),
-                          bounds.x, bounds.y,
-                          bounds.x+bounds.w-1,
-                          bounds.y+bounds.h-1);
-      jmouse_show();
-    }
     editor->updateStatusBar();
     return true;
   }
@@ -332,7 +321,7 @@ bool MovingPixelsState::onKeyDown(Editor* editor, Message* msg)
           gfx::Point origin;
           UniquePtr<Image> floatingImage(m_pixelsMovement->getDraggedImageCopy(origin));
           util::clipboard::copy_image(floatingImage.get(),
-                                      document->getSprite()->getCurrentPalette(),
+                                      document->getSprite()->getPalette(editor->getFrame()),
                                       origin);
         }
 
@@ -406,17 +395,16 @@ void MovingPixelsState::dispose()
   // StatusBar's observer.
 }
 
-void MovingPixelsState::onChangeTransparentColor(const Color& color)
+void MovingPixelsState::onChangeTransparentColor(const app::Color& color)
 {
   setTransparentColor(color);
 }
 
-void MovingPixelsState::setTransparentColor(const Color& color)
+void MovingPixelsState::setTransparentColor(const app::Color& color)
 {
-  ASSERT(current_editor != NULL);
   ASSERT(m_pixelsMovement != NULL);
 
-  Sprite* sprite = current_editor->getSprite();
+  Sprite* sprite = m_currentEditor->getSprite();
   ASSERT(sprite != NULL);
 
   PixelFormat format = sprite->getPixelFormat();

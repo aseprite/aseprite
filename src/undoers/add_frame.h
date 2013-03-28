@@ -1,5 +1,5 @@
 /* ASEPRITE
- * Copyright (C) 2001-2012  David Capello
+ * Copyright (C) 2001-2013  David Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,32 +16,33 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifndef UNDOERS_SET_CURRENT_LAYER_H_INCLUDED
-#define UNDOERS_SET_CURRENT_LAYER_H_INCLUDED
+#ifndef UNDOERS_ADD_FRAME_H_INCLUDED
+#define UNDOERS_ADD_FRAME_H_INCLUDED
 
+#include "raster/frame_number.h"
 #include "undo/object_id.h"
 #include "undoers/undoer_base.h"
 
-#include <sstream>
-
+class Document;
 class Sprite;
 
 namespace undoers {
 
-class SetCurrentLayer : public UndoerBase
+class AddFrame : public UndoerBase
 {
 public:
-  SetCurrentLayer(undo::ObjectsContainer* objects, Sprite* sprite);
+  AddFrame(undo::ObjectsContainer* objects, Document* document, Sprite* sprite, FrameNumber frame);
 
   void dispose() OVERRIDE;
   size_t getMemSize() const OVERRIDE { return sizeof(*this); }
   void revert(undo::ObjectsContainer* objects, undo::UndoersCollector* redoers) OVERRIDE;
 
 private:
+  undo::ObjectId m_documentId;
   undo::ObjectId m_spriteId;
-  undo::ObjectId m_layerId;
+  FrameNumber m_frame;
 };
 
 } // namespace undoers
 
-#endif  // UNDOERS_SET_CURRENT_LAYER_H_INCLUDED
+#endif  // UNDOERS_ADD_FRAME_H_INCLUDED

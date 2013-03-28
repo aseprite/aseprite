@@ -1,5 +1,5 @@
 /* ASEPRITE
- * Copyright (C) 2001-2012  David Capello
+ * Copyright (C) 2001-2013  David Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -23,6 +23,8 @@
 #include "base/compiler_specific.h"
 #include "base/signal.h"
 #include "document.h"
+#include "gfx/rect.h"
+#include "raster/frame_number.h"
 #include "ui/base.h"
 #include "ui/timer.h"
 #include "ui/widget.h"
@@ -34,23 +36,25 @@
 #define MAX_ZOOM 5
 
 class Context;
+class DocumentLocation;
 class EditorCustomizationDelegate;
 class PixelsMovement;
 class Sprite;
+class Layer;
 
-namespace ui {
-  class View;
-}
-
-namespace tools {
-  class Tool;
-}
+namespace gfx { class Region; }
+namespace tools { class Tool; }
+namespace ui { class View; }
+namespace widgets { class DocumentView; }
 
 class Editor : public ui::Widget
 {
 public:
-  Editor();
+  Editor(Document* document);
   ~Editor();
+
+  widgets::DocumentView* getDocumentView() { return m_docView; }
+  void setDocumentView(widgets::DocumentView* docView) { m_docView = docView; }
 
   // Returns the current state.
   EditorStatePtr getState() { return m_state; }
@@ -67,9 +71,14 @@ public:
   void setDecorator(EditorDecorator* decorator) { m_decorator = decorator; }
 
   Document* getDocument() { return m_document; }
-  void setDocument(Document* document);
-
   Sprite* getSprite() { return m_sprite; }
+  Layer* getLayer() { return m_layer; }
+  FrameNumber getFrame() { return m_frame; }
+  void getDocumentLocation(DocumentLocation* location) const;
+  DocumentLocation getDocumentLocation() const;
+
+  void setLayer(const Layer* layer);
+  void setFrame(FrameNumber frame);
 
   int getZoom() const { return m_zoom; }
   int getOffsetX() const { return m_offset_x; }
@@ -80,19 +89,14 @@ public:
   void setOffsetX(int x) { m_offset_x = x; }
   void setOffsetY(int y) { m_offset_y = y; }
 
+  void setDefaultScroll();
   void setEditorScroll(int x, int y, int use_refresh_region);
 
   // Updates the Editor's view.
   void updateEditor();
 
-  // Draws the specified portion of sprite in the editor.
-  // Warning: You should setup the clip of the ji_screen before
-  // calling this routine.
-  void drawSprite(int x1, int y1, int x2, int y2);
-
   // Draws the sprite taking care of the whole clipping region.
-  // For each rectangle calls Editor::drawSprite.
-  void drawSpriteSafe(int x1, int y1, int x2, int y2);
+  void drawSpriteClipped(const gfx::Region& updateRegion);
 
   void drawMask();
   void drawMaskSafe();
@@ -146,22 +150,17 @@ public:
 
   static int get_raw_cursor_color();
   static bool is_cursor_mask();
-  static Color get_cursor_color();
-  static void set_cursor_color(const Color& color);
+  static app::Color get_cursor_color();
+  static void set_cursor_color(const app::Color& color);
 
   static void editor_cursor_init();
   static void editor_cursor_exit();
 
 protected:
   bool onProcessMessage(ui::Message* msg) OVERRIDE;
+  void onPreferredSize(ui::PreferredSizeEvent& ev) OVERRIDE;
   void onCurrentToolChange();
   void onFgColorChange();
-
-  // Returns true if this editor should change the preferred document
-  // settings.
-  virtual bool changePreferredSettings() {
-    return true;
-  }
 
 private:
   void setStateInternal(const EditorStatePtr& newState);
@@ -171,14 +170,18 @@ private:
   void editor_clean_cursor(bool refresh = true);
   bool editor_cursor_is_subpixel();
 
-  void drawGrid(const gfx::Rect& gridBounds, const Color& color);
+  void drawGrid(const gfx::Rect& gridBounds, const app::Color& color);
 
-  void editor_request_size(int *w, int *h);
   void editor_setcursor();
 
   void for_each_pixel_of_pen(int screen_x, int screen_y,
                              int sprite_x, int sprite_y, int color,
                              void (*pixel)(BITMAP *bmp, int x, int y, int color));
+
+  // Draws the specified portion of sprite in the editor.  Warning:
+  // You should setup the clip of the screen before calling this
+  // routine.
+  void drawSpriteUnclippedRect(const gfx::Rect& rc);
 
   // Stack of states. The top element in the stack is the current state (m_state).
   EditorStatesHistory m_statesHistory;
@@ -192,6 +195,8 @@ private:
 
   Document* m_document;         // Active document in the editor
   Sprite* m_sprite;             // Active sprite in the editor
+  Layer* m_layer;               // Active layer in the editor
+  FrameNumber m_frame;          // Active frame in the editor
   int m_zoom;                   // Zoom in the editor
 
   // Drawing cursor
@@ -205,7 +210,7 @@ private:
   // the user is not pressing any keyboard key).
   tools::Tool* m_quicktool;
 
-  /* offset for the sprite */
+  // Offset for the sprite
   int m_offset_x;
   int m_offset_y;
 
@@ -219,12 +224,16 @@ private:
   // signals).
   Slot0<void>* m_currentToolChangeSlot;
 
-  Slot1<void, const Color&>* m_fgColorChangeSlot;
+  Slot1<void, const app::Color&>* m_fgColorChangeSlot;
 
   EditorObservers m_observers;
 
   EditorCustomizationDelegate* m_customizationDelegate;
 
+  // TODO This field shouldn't be here. It should be removed when
+  // editors.cpp are finally replaced with a fully funtional Workspace
+  // widget.
+  widgets::DocumentView* m_docView;
 };
 
 int editor_type();

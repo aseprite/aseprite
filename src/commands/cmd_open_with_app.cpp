@@ -1,5 +1,5 @@
 /* ASEPRITE
- * Copyright (C) 2001-2012  David Capello
+ * Copyright (C) 2001-2013  David Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,9 +20,9 @@
 
 #include "base/compiler_specific.h"
 #include "commands/command.h"
-#include "document.h"
-#include "document_wrappers.h"
 #include "context.h"
+#include "context_access.h"
+#include "document.h"
 #include "launcher.h"
 
 class OpenWithAppCommand : public Command
@@ -45,8 +45,10 @@ OpenWithAppCommand::OpenWithAppCommand()
 
 bool OpenWithAppCommand::onEnabled(Context* context)
 {
-  const ActiveDocumentReader document(context);
-  return document && document->isAssociatedToFile();
+  const ContextReader reader(context);
+  return
+    reader.document() &&
+    reader.document()->isAssociatedToFile();
 }
 
 void OpenWithAppCommand::onExecute(Context* context)

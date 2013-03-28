@@ -1,5 +1,5 @@
 // ASEPRITE gui library
-// Copyright (C) 2001-2012  David Capello
+// Copyright (C) 2001-2013  David Capello
 //
 // This source file is distributed under a BSD-like license, please
 // read LICENSE.txt for more information.
@@ -13,6 +13,7 @@
 #include "ui/box.h"
 #include "ui/button.h"
 #include "ui/clipboard.h"
+#include "ui/color.h"
 #include "ui/combobox.h"
 #include "ui/component.h"
 #include "ui/cursor.h"
@@ -43,7 +44,6 @@
 #include "ui/preferred_size_event.h"
 #include "ui/property.h"
 #include "ui/rect.h"
-#include "ui/region.h"
 #include "ui/save_layout_event.h"
 #include "ui/scroll_bar.h"
 #include "ui/separator.h"

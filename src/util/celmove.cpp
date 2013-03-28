@@ -1,5 +1,5 @@
 /* ASEPRITE
- * Copyright (C) 2001-2012  David Capello
+ * Copyright (C) 2001-2013  David Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -23,7 +23,7 @@
 #include "app.h"
 #include "app/color.h"
 #include "console.h"
-#include "document_wrappers.h"
+#include "context_access.h"
 #include "modules/gui.h"
 #include "raster/blend.h"
 #include "raster/cel.h"
@@ -40,20 +40,18 @@
 #include "undoers/set_cel_frame.h"
 #include "undoers/set_cel_opacity.h"
 #include "undoers/set_cel_position.h"
-#include "undoers/set_current_frame.h"
-#include "undoers/set_current_layer.h"
 
-/* these variables indicate what cel to move (and the sprite's
-   frame indicates where to move it) */
+// These variables indicate what cel to move (and the sprite's frame
+// indicates where to move it).
 static Layer* src_layer = NULL; // TODO warning not thread safe
 static Layer* dst_layer = NULL;
 static FrameNumber src_frame = FrameNumber(0);
 static FrameNumber dst_frame = FrameNumber(0);
 
-static void remove_cel(Sprite* sprite, UndoTransaction& undo, LayerImage *layer, Cel *cel);
+static void remove_cel(Sprite* sprite, UndoTransaction& undo, LayerImage* layer, Cel* cel);
 
-void set_frame_to_handle(Layer *_src_layer, FrameNumber _src_frame,
-                         Layer *_dst_layer, FrameNumber _dst_frame)
+void set_frame_to_handle(Layer* _src_layer, FrameNumber _src_frame,
+                         Layer* _dst_layer, FrameNumber _dst_frame)
 {
   src_layer = _src_layer;
   src_frame = _src_frame;
@@ -61,9 +59,10 @@ void set_frame_to_handle(Layer *_src_layer, FrameNumber _src_frame,
   dst_frame = _dst_frame;
 }
 
-void move_cel(DocumentWriter& document)
+void move_cel(ContextWriter& writer)
 {
-  Sprite* sprite = document->getSprite();
+  Document* document = writer.document();
+  Sprite* sprite = writer.sprite();
   Cel *src_cel, *dst_cel;
 
   ASSERT(src_layer != NULL);
@@ -71,26 +70,19 @@ void move_cel(DocumentWriter& document)
   ASSERT(src_frame >= 0 && src_frame < sprite->getTotalFrames());
   ASSERT(dst_frame >= 0 && dst_frame < sprite->getTotalFrames());
 
-  if (src_layer->is_background()) {
-    copy_cel(document);
+  if (src_layer->isBackground()) {
+    copy_cel(writer);
     return;
   }
 
   src_cel = static_cast<LayerImage*>(src_layer)->getCel(src_frame);
   dst_cel = static_cast<LayerImage*>(dst_layer)->getCel(dst_frame);
 
-  UndoTransaction undo(document, "Move Cel", undo::ModifyDocument);
-  if (undo.isEnabled()) {
-    undo.pushUndoer(new undoers::SetCurrentLayer(undo.getObjects(), sprite));
-    undo.pushUndoer(new undoers::SetCurrentFrame(undo.getObjects(), sprite));
-  }
-
-  sprite->setCurrentLayer(dst_layer);
-  sprite->setCurrentFrame(dst_frame);
+  UndoTransaction undo(writer.context(), "Move Cel", undo::ModifyDocument);
 
   /* remove the 'dst_cel' (if it exists) because it must be
      replaced with 'src_cel' */
-  if ((dst_cel != NULL) && (!dst_layer->is_background() || src_cel != NULL))
+  if ((dst_cel != NULL) && (!dst_layer->isBackground() || src_cel != NULL))
     remove_cel(sprite, undo, static_cast<LayerImage*>(dst_layer), dst_cel);
 
   /* move the cel in the same layer */
@@ -112,8 +104,8 @@ void move_cel(DocumentWriter& document)
       /* if we are moving a cel from a transparent layer to the
          background layer, we have to clear the background of the
          image */
-      if (!src_layer->is_background() &&
-          dst_layer->is_background()) {
+      if (!src_layer->isBackground() &&
+          dst_layer->isBackground()) {
         Image *src_image = sprite->getStock()->getImage(src_cel->getImage());
         Image *dst_image = image_crop(src_image,
                                       -src_cel->getX(),
@@ -147,13 +139,15 @@ void move_cel(DocumentWriter& document)
 
   undo.commit();
 
+  document->notifyCelMoved(src_layer, src_frame, dst_layer, dst_frame);
   set_frame_to_handle(NULL, FrameNumber(0), NULL, FrameNumber(0));
 }
 
-void copy_cel(DocumentWriter& document)
+void copy_cel(ContextWriter& writer)
 {
-  Sprite* sprite = document->getSprite();
-  UndoTransaction undo(document, "Move Cel", undo::ModifyDocument);
+  Document* document = writer.document();
+  Sprite* sprite = writer.sprite();
+  UndoTransaction undo(writer.context(), "Move Cel", undo::ModifyDocument);
   Cel *src_cel, *dst_cel;
 
   ASSERT(src_layer != NULL);
@@ -164,20 +158,12 @@ void copy_cel(DocumentWriter& document)
   src_cel = static_cast<LayerImage*>(src_layer)->getCel(src_frame);
   dst_cel = static_cast<LayerImage*>(dst_layer)->getCel(dst_frame);
 
-  if (undo.isEnabled()) {
-    undo.pushUndoer(new undoers::SetCurrentLayer(undo.getObjects(), sprite));
-    undo.pushUndoer(new undoers::SetCurrentFrame(undo.getObjects(), sprite));
-  }
-
-  sprite->setCurrentLayer(dst_layer);
-  sprite->setCurrentFrame(dst_frame);
-
-  /* remove the 'dst_cel' (if it exists) because it must be
-     replaced with 'src_cel' */
-  if ((dst_cel != NULL) && (!dst_layer->is_background() || src_cel != NULL))
+  // Remove the 'dst_cel' (if it exists) because it must be replaced
+  // with 'src_cel'
+  if ((dst_cel != NULL) && (!dst_layer->isBackground() || src_cel != NULL))
     remove_cel(sprite, undo, static_cast<LayerImage*>(dst_layer), dst_cel);
 
-  /* move the cel in the same layer */
+  // Move the cel in the same layer.
   if (src_cel != NULL) {
     Image *src_image = sprite->getStock()->getImage(src_cel->getImage());
     Image *dst_image;
@@ -186,11 +172,10 @@ void copy_cel(DocumentWriter& document)
     int dst_cel_y;
     int dst_cel_opacity;
 
-    /* if we are moving a cel from a transparent layer to the
-       background layer, we have to clear the background of the
-       image */
-    if (!src_layer->is_background() &&
-        dst_layer->is_background()) {
+    // If we are moving a cel from a transparent layer to the
+    // background layer, we have to clear the background of the image.
+    if (!src_layer->isBackground() &&
+        dst_layer->isBackground()) {
       dst_image = image_crop(src_image,
                              -src_cel->getX(),
                              -src_cel->getY(),
@@ -211,13 +196,13 @@ void copy_cel(DocumentWriter& document)
       dst_cel_opacity = src_cel->getOpacity();
     }
 
-    /* add the image in the stock */
+    // Add the image in the stock
     image_index = sprite->getStock()->addImage(dst_image);
     if (undo.isEnabled())
       undo.pushUndoer(new undoers::AddImage(undo.getObjects(),
           sprite->getStock(), image_index));
 
-    /* create the new cel */
+    // Create the new cel
     dst_cel = new Cel(dst_frame, image_index);
     dst_cel->setPosition(dst_cel_x, dst_cel_y);
     dst_cel->setOpacity(dst_cel_opacity);
@@ -230,6 +215,7 @@ void copy_cel(DocumentWriter& document)
 
   undo.commit();
 
+  document->notifyCelCopied(src_layer, src_frame, dst_layer, dst_frame);
   set_frame_to_handle(NULL, FrameNumber(0), NULL, FrameNumber(0));
 }
 
@@ -239,7 +225,7 @@ static void remove_cel(Sprite* sprite, UndoTransaction& undo, LayerImage *layer,
   Cel *it;
   bool used;
 
-  if (sprite != NULL && layer->is_image() && cel != NULL) {
+  if (sprite != NULL && layer->isImage() && cel != NULL) {
     /* find if the image that use the cel to remove, is used by
        another cels */
     used = false;

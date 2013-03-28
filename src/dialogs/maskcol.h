@@ -1,5 +1,5 @@
 /* ASEPRITE
- * Copyright (C) 2001-2012  David Capello
+ * Copyright (C) 2001-2013  David Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,8 +19,8 @@
 #ifndef DIALOGS_MASKCOL_H_INCLUDED
 #define DIALOGS_MASKCOL_H_INCLUDED
 
-class Document;
+class Context;
 
-void dialogs_mask_color(Document* document);
+void dialogs_mask_color(Context* context);
 
 #endif

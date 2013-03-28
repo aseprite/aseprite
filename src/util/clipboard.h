@@ -1,5 +1,5 @@
 /* ASEPRITE
- * Copyright (C) 2001-2012  David Capello
+ * Copyright (C) 2001-2013  David Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -24,8 +24,8 @@
 #include "ui/base.h"
 
 class Image;
-class DocumentReader;
-class DocumentWriter;
+class ContextReader;
+class ContextWriter;
 
 namespace util {
 namespace clipboard {
@@ -34,8 +34,8 @@ namespace clipboard {
 
   bool can_paste();
 
-  void cut(DocumentWriter& document);
-  void copy(const DocumentReader& document);
+  void cut(ContextWriter& context);
+  void copy(const ContextReader& context);
   void copy_image(Image* image, Palette* palette, const gfx::Point& point);
   void paste();
 

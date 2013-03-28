@@ -1,5 +1,5 @@
 /* ASEPRITE
- * Copyright (C) 2001-2012  David Capello
+ * Copyright (C) 2001-2013  David Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,7 +19,8 @@
 #include "config.h"
 
 #include "commands/command.h"
-#include "document_wrappers.h"
+#include "context_access.h"
+#include "document_api.h"
 #include "modules/gui.h"
 #include "raster/layer.h"
 #include "raster/sprite.h"
@@ -60,10 +61,11 @@ bool LayerFromBackgroundCommand::onEnabled(Context* context)
 
 void LayerFromBackgroundCommand::onExecute(Context* context)
 {
-  ActiveDocumentWriter document(context);
+  ContextWriter writer(context);
+  Document* document(writer.document());
   {
-    UndoTransaction undoTransaction(document, "Layer from Background");
-    undoTransaction.layerFromBackground();
+    UndoTransaction undoTransaction(writer.context(), "Layer from Background");
+    document->getApi().layerFromBackground(writer.layer());
     undoTransaction.commit();
   }
   update_screen_for_document(document);

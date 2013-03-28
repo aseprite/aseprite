@@ -1,5 +1,5 @@
 // ASEPRITE gui library
-// Copyright (C) 2001-2012  David Capello
+// Copyright (C) 2001-2013  David Capello
 //
 // This source file is distributed under a BSD-like license, please
 // read LICENSE.txt for more information.
@@ -29,6 +29,7 @@ namespace ui {
   protected:
     // Events
     bool onProcessMessage(Message* msg) OVERRIDE;
+    void onPaint(PaintEvent& ev) OVERRIDE;
 
   private:
     void getScrollBarInfo(int* _pos, int* _len, int* _bar_size, int* _viewport_size);

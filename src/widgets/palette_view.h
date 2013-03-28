@@ -1,5 +1,5 @@
 /* ASEPRITE
- * Copyright (C) 2001-2012  David Capello
+ * Copyright (C) 2001-2013  David Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -45,13 +45,14 @@ public:
   bool getSelectedRange(int& index1, int& index2) const;
   void getSelectedEntries(SelectedEntries& entries) const;
 
-  Color getColorByPosition(int x, int y);
+  app::Color getColorByPosition(int x, int y);
 
   // Signals
   Signal1<void, int> IndexChange;
 
 protected:
   bool onProcessMessage(ui::Message* msg) OVERRIDE;
+  void onPreferredSize(ui::PreferredSizeEvent& ev) OVERRIDE;
 
 private:
   void request_size(int* w, int* h);

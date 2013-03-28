@@ -1,5 +1,5 @@
 /* ASEPRITE
- * Copyright (C) 2001-2012  David Capello
+ * Copyright (C) 2001-2013  David Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,7 +21,9 @@
 #include "util/expand_cel_canvas.h"
 
 #include "base/unique_ptr.h"
+#include "context.h"
 #include "document.h"
+#include "document_location.h"
 #include "raster/cel.h"
 #include "raster/dirty.h"
 #include "raster/layer.h"
@@ -34,19 +36,21 @@
 #include "undoers/replace_image.h"
 #include "undoers/set_cel_position.h"
 
-ExpandCelCanvas::ExpandCelCanvas(Document* document, Sprite* sprite, Layer* layer, TiledMode tiledMode, UndoTransaction& undo)
-  : m_document(document)
-  , m_sprite(sprite)
-  , m_layer(layer)
-  , m_cel(NULL)
+ExpandCelCanvas::ExpandCelCanvas(Context* context, TiledMode tiledMode, UndoTransaction& undo)
+  : m_cel(NULL)
   , m_celImage(NULL)
   , m_celCreated(false)
   , m_closed(false)
   , m_committed(false)
   , m_undo(undo)
 {
-  if (m_layer->is_image()) {
-    m_cel = static_cast<LayerImage*>(layer)->getCel(m_sprite->getCurrentFrame());
+  DocumentLocation location = context->getActiveLocation();
+  m_document = location.document();
+  m_sprite = location.sprite();
+  m_layer = location.layer();
+
+  if (m_layer->isImage()) {
+    m_cel = static_cast<LayerImage*>(m_layer)->getCel(location.frame());
     if (m_cel)
       m_celImage = m_sprite->getStock()->getImage(m_cel->getImage());
   }
@@ -55,10 +59,10 @@ ExpandCelCanvas::ExpandCelCanvas(Document* document, Sprite* sprite, Layer* laye
   if (m_cel == NULL) {
     // Create the image
     m_celImage = Image::create(m_sprite->getPixelFormat(), m_sprite->getWidth(), m_sprite->getHeight());
-    image_clear(m_celImage, sprite->getTransparentColor());
+    image_clear(m_celImage, m_sprite->getTransparentColor());
 
-    // create the cel
-    m_cel = new Cel(m_sprite->getCurrentFrame(), 0);
+    // Create the cel
+    m_cel = new Cel(location.frame(), 0);
     static_cast<LayerImage*>(m_layer)->addCel(m_cel);
 
     m_celCreated = true;
@@ -67,16 +71,16 @@ ExpandCelCanvas::ExpandCelCanvas(Document* document, Sprite* sprite, Layer* laye
   m_originalCelX = m_cel->getX();
   m_originalCelY = m_cel->getY();
 
-  // region to draw
+  // Region to draw
   int x1, y1, x2, y2;
 
-  if (tiledMode == TILED_NONE) { // non-tiled
+  if (tiledMode == TILED_NONE) { // Non-tiled
     x1 = MIN(m_cel->getX(), 0);
     y1 = MIN(m_cel->getY(), 0);
     x2 = MAX(m_cel->getX()+m_celImage->w, m_sprite->getWidth());
     y2 = MAX(m_cel->getY()+m_celImage->h, m_sprite->getHeight());
   }
-  else {                        // tiled
+  else {                        // Tiled
     x1 = 0;
     y1 = 0;
     x2 = m_sprite->getWidth();
@@ -134,17 +138,17 @@ void ExpandCelCanvas::commit()
       // Is the undo enabled?.
       if (m_undo.isEnabled()) {
         // We can temporary remove the cel.
-        static_cast<LayerImage*>(m_sprite->getCurrentLayer())->removeCel(m_cel);
+        static_cast<LayerImage*>(m_layer)->removeCel(m_cel);
 
         // We create the undo information (for the new m_celImage
         // in the stock and the new cel in the layer)...
         m_undo.pushUndoer(new undoers::AddImage(m_undo.getObjects(),
                                                 m_sprite->getStock(), m_cel->getImage()));
         m_undo.pushUndoer(new undoers::AddCel(m_undo.getObjects(),
-                                              m_sprite->getCurrentLayer(), m_cel));
+                                              m_layer, m_cel));
 
         // And finally we add the cel again in the layer.
-        static_cast<LayerImage*>(m_sprite->getCurrentLayer())->addCel(m_cel);
+        static_cast<LayerImage*>(m_layer)->addCel(m_cel);
       }
     }
     // If the m_celImage was already created before the whole process...

@@ -1,5 +1,5 @@
 /* ASEPRITE
- * Copyright (C) 2001-2012  David Capello
+ * Copyright (C) 2001-2013  David Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,8 +16,8 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifndef DOCUMENT_WRAPPERS_H_INCLUDED
-#define DOCUMENT_WRAPPERS_H_INCLUDED
+#ifndef DOCUMENT_ACCESS_H_INCLUDED
+#define DOCUMENT_ACCESS_H_INCLUDED
 
 #include "base/exception.h"
 #include "context.h"
@@ -34,18 +34,18 @@ public:
                     "Try again later.") { }
 };
 
-//////////////////////////////////////////////////////////////////////
-
-// Wraps a document access.
-class DocumentWrapper
+// This class acts like a wrapper for the given document.  It's
+// specialized by DocumentReader/Writer to handle document read/write
+// locks.
+class DocumentAccess
 {
 public:
-  DocumentWrapper() : m_document(NULL) { }
-  DocumentWrapper(const DocumentWrapper& copy) : m_document(copy.m_document) { }
-  explicit DocumentWrapper(Document* document) : m_document(document) { }
-  ~DocumentWrapper() { }
+  DocumentAccess() : m_document(NULL) { }
+  DocumentAccess(const DocumentAccess& copy) : m_document(copy.m_document) { }
+  explicit DocumentAccess(Document* document) : m_document(document) { }
+  ~DocumentAccess() { }
 
-  DocumentWrapper& operator=(const DocumentWrapper& copy)
+  DocumentAccess& operator=(const DocumentAccess& copy)
   {
     m_document = copy.m_document;
     return *this;
@@ -70,8 +70,10 @@ protected:
   Document* m_document;
 };
 
-// Class to view the document's state.
-class DocumentReader : public DocumentWrapper
+// Class to view the document's state. Its constructor request a
+// reader-lock of the document, or throws an exception in case that
+// the lock cannot be obtained.
+class DocumentReader : public DocumentAccess
 {
 public:
 
@@ -80,14 +82,14 @@ public:
   }
 
   explicit DocumentReader(Document* document)
-    : DocumentWrapper(document)
+    : DocumentAccess(document)
   {
     if (m_document && !m_document->lock(Document::ReadLock))
       throw LockedDocumentException();
   }
 
   explicit DocumentReader(const DocumentReader& copy)
-    : DocumentWrapper(copy)
+    : DocumentAccess(copy)
   {
     if (m_document && !m_document->lock(Document::ReadLock))
       throw LockedDocumentException();
@@ -99,7 +101,7 @@ public:
     if (m_document)
       m_document->unlock();
 
-    DocumentWrapper::operator=(copy);
+    DocumentAccess::operator=(copy);
 
     // relock the document
     if (m_document && !m_document->lock(Document::ReadLock))
@@ -117,8 +119,12 @@ public:
 
 };
 
-// Class to modify the document's state.
-class DocumentWriter : public DocumentWrapper
+// Class to modify the document's state. Its constructor request a
+// writer-lock of the document, or throws an exception in case that
+// the lock cannot be obtained. Also, it contains a special
+// constructor that receives a DocumentReader, to elevate the
+// reader-lock to writer-lock.
+class DocumentWriter : public DocumentAccess
 {
 public:
 
@@ -129,7 +135,7 @@ public:
   }
 
   explicit DocumentWriter(Document* document)
-    : DocumentWrapper(document)
+    : DocumentAccess(document)
     , m_from_reader(false)
     , m_locked(false)
   {
@@ -141,8 +147,10 @@ public:
     }
   }
 
+  // Constructor that can be used to elevate the given reader-lock to
+  // writer permission.
   explicit DocumentWriter(const DocumentReader& document)
-    : DocumentWrapper(document)
+    : DocumentAccess(document)
     , m_from_reader(true)
     , m_locked(false)
   {
@@ -163,7 +171,7 @@ public:
   {
     unlockWriter();
 
-    DocumentWrapper::operator=(copy);
+    DocumentAccess::operator=(copy);
 
     if (m_document) {
       m_from_reader = true;
@@ -199,36 +207,17 @@ private:
   DocumentWriter& operator=(const DocumentWriter&);
 };
 
-class ActiveDocumentReader : public DocumentReader
+// Used to destroy the active document in the context.
+class DocumentDestroyer : public DocumentWriter
 {
 public:
-
-  explicit ActiveDocumentReader(Context* context)
-    : DocumentReader(context->getActiveDocument())
-  {
-  }
-
-  ~ActiveDocumentReader()
-  {
-  }
-
-};
-
-class ActiveDocumentWriter : public DocumentWriter
-{
-public:
-
-  explicit ActiveDocumentWriter(Context* context)
-    : DocumentWriter(context->getActiveDocument())
+  explicit DocumentDestroyer(Context* context, Document* document)
+    : DocumentWriter(document)
     , m_context(context)
   {
   }
 
-  ~ActiveDocumentWriter()
-  {
-  }
-
-  void deleteDocument()
+  void destroyDocument()
   {
     ASSERT(m_document != NULL);
 

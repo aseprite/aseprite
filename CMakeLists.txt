@@ -1,5 +1,5 @@
 # ASEPRITE
-# Copyright (C) 2001-2012  David Capello
+# Copyright (C) 2001-2013  David Capello
 #
 # Parts of this file come from the Allegro 4.4 CMakeLists.txt
 
@@ -121,6 +121,13 @@ endif()
 
 if(ENABLE_MEMLEAK)
   add_definitions(-DMEMLEAK)
+endif()
+
+# Fix to compile gtest with VC11 (2012)
+if(NOT USE_SHARED_GTEST)
+  if (MSVC_VERSION EQUAL 1700)
+    add_definitions(-D_VARIADIC_MAX=10)
+  endif()
 endif()
 
 ######################################################################

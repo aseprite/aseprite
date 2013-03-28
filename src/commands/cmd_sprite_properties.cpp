@@ -1,5 +1,5 @@
 /* ASEPRITE
- * Copyright (C) 2001-2012  David Capello
+ * Copyright (C) 2001-2013  David Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -24,7 +24,7 @@
 #include "base/bind.h"
 #include "base/mem_utils.h"
 #include "commands/command.h"
-#include "document_wrappers.h"
+#include "context_access.h"
 #include "modules/gui.h"
 #include "raster/image.h"
 #include "raster/palette.h"
@@ -82,8 +82,9 @@ void SpritePropertiesCommand::onExecute(Context* context)
 
   // Get sprite properties and fill frame fields
   {
-    const ActiveDocumentReader document(context);
-    const Sprite* sprite(document ? document->getSprite(): NULL);
+    const ContextReader reader(context);
+    const Document* document(reader.document());
+    const Sprite* sprite(reader.sprite());
 
     // Update widgets values
     switch (sprite->getPixelFormat()) {
@@ -121,7 +122,7 @@ void SpritePropertiesCommand::onExecute(Context* context)
     frames->setTextf("%d", (int)sprite->getTotalFrames());
 
     if (sprite->getPixelFormat() == IMAGE_INDEXED) {
-      color_button = new ColorButton(Color::fromIndex(sprite->getTransparentColor()),
+      color_button = new ColorButton(app::Color::fromIndex(sprite->getTransparentColor()),
                                      IMAGE_INDEXED);
 
       box_transparent->addChild(color_button);
@@ -131,17 +132,17 @@ void SpritePropertiesCommand::onExecute(Context* context)
     }
   }
 
-  window->remap_window();
-  window->center_window();
+  window->remapWindow();
+  window->centerWindow();
 
   load_window_pos(window, "SpriteProperties");
   window->setVisible(true);
   window->openWindowInForeground();
 
-  if (window->get_killer() == ok) {
+  if (window->getKiller() == ok) {
     if (color_button) {
-      ActiveDocumentWriter document(context);
-      Sprite* sprite(document->getSprite());
+      ContextWriter writer(context);
+      Sprite* sprite(writer.sprite());
 
       // If the transparent color index has changed, we update the
       // property in the sprite.
@@ -149,7 +150,7 @@ void SpritePropertiesCommand::onExecute(Context* context)
       if (index != sprite->getTransparentColor()) {
         // TODO Add undo handling
         sprite->setTransparentColor(color_button->getColor().getIndex());
-        update_screen_for_document(document);
+        update_screen_for_document(writer.document());
       }
     }
   }

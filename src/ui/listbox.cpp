@@ -1,5 +1,5 @@
 // ASEPRITE gui library
-// Copyright (C) 2001-2012  David Capello
+// Copyright (C) 2001-2013  David Capello
 //
 // This source file is distributed under a BSD-like license, please
 // read LICENSE.txt for more information.
@@ -137,10 +137,6 @@ bool ListBox::onProcessMessage(Message* msg)
 
     case JM_DRAW:
       this->getTheme()->draw_listbox(this, &msg->draw.rect);
-      return true;
-
-    case JM_DIRTYCHILDREN:
-      dirtyChildren();
       return true;
 
     case JM_OPEN:
@@ -317,29 +313,6 @@ void ListBox::layoutListBox(JRect rect)
   }
 
   jrect_free(cpos);
-}
-
-void ListBox::dirtyChildren()
-{
-  View* view = View::getView(this);
-  if (!view) {
-    UI_FOREACH_WIDGET(getChildren(), it)
-      static_cast<Item*>(*it)->invalidate();
-  }
-  else {
-    gfx::Rect vp = view->getViewportBounds();
-
-    UI_FOREACH_WIDGET(getChildren(), it) {
-      Item* child = static_cast<Item*>(*it);
-
-      if (child->rc->y2 <= vp.y)
-        continue;
-      else if (child->rc->y1 >= vp.y+vp.h)
-        break;
-
-      child->invalidate();
-    }
-  }
 }
 
 bool ListBox::Item::onProcessMessage(Message* msg)

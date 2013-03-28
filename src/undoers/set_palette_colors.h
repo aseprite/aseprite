@@ -1,5 +1,5 @@
 /* ASEPRITE
- * Copyright (C) 2001-2012  David Capello
+ * Copyright (C) 2001-2013  David Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -33,7 +33,7 @@ namespace undoers {
 class SetPaletteColors : public UndoerBase
 {
 public:
-  SetPaletteColors(undo::ObjectsContainer* objects, Sprite* sprite, Palette* palette, int from, int to);
+  SetPaletteColors(undo::ObjectsContainer* objects, Sprite* sprite, Palette* palette, FrameNumber frame, int from, int to);
 
   void dispose() OVERRIDE;
   size_t getMemSize() const OVERRIDE { return sizeof(*this) + getStreamSize(); }

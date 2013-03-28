@@ -1,5 +1,5 @@
 // ASEPRITE gui library
-// Copyright (C) 2001-2012  David Capello
+// Copyright (C) 2001-2013  David Capello
 //
 // This source file is distributed under a BSD-like license, please
 // read LICENSE.txt for more information.
@@ -9,6 +9,7 @@
 #include "gfx/point.h"
 #include "gfx/size.h"
 #include "ui/message.h"
+#include "ui/preferred_size_event.h"
 #include "ui/theme.h"
 #include "ui/view.h"
 #include "ui/viewport.h"
@@ -27,21 +28,23 @@ bool Viewport::onProcessMessage(Message* msg)
 {
   switch (msg->type) {
 
-    case JM_REQSIZE:
-      msg->reqsize.w = this->border_width.l + 1 + this->border_width.r;
-      msg->reqsize.h = this->border_width.t + 1 + this->border_width.b;
-      return true;
-
     case JM_SETPOS:
       set_position(&msg->setpos.rect);
-      return true;
-
-    case JM_DRAW:
-      getTheme()->draw_view_viewport(this, &msg->draw.rect);
       return true;
   }
 
   return Widget::onProcessMessage(msg);
+}
+
+void Viewport::onPreferredSize(PreferredSizeEvent& ev)
+{
+  ev.setPreferredSize(gfx::Size(this->border_width.l + 1 + this->border_width.r,
+                                this->border_width.t + 1 + this->border_width.b));
+}
+
+void Viewport::onPaint(PaintEvent& ev)
+{
+  getTheme()->paintViewViewport(ev);
 }
 
 Size Viewport::calculateNeededSize()

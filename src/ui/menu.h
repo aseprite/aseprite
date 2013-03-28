@@ -1,5 +1,5 @@
 // ASEPRITE gui library
-// Copyright (C) 2001-2012  David Capello
+// Copyright (C) 2001-2013  David Capello
 //
 // This source file is distributed under a BSD-like license, please
 // read LICENSE.txt for more information.
@@ -34,13 +34,13 @@ namespace ui {
 
   protected:
     virtual bool onProcessMessage(Message* msg) OVERRIDE;
+    virtual void onPreferredSize(PreferredSizeEvent& ev) OVERRIDE;
 
   private:
     void setOwnerMenuItem(MenuItem* ownerMenuItem) {
       m_menuitem = ownerMenuItem;
     }
 
-    void requestSize(int* w, int* h);
     void set_position(JRect rect);
     void closeAll();
 
@@ -73,10 +73,10 @@ namespace ui {
 
   protected:
     virtual bool onProcessMessage(Message* msg) OVERRIDE;
+    virtual void onPreferredSize(PreferredSizeEvent& ev) OVERRIDE;
     MenuBaseData* createBase();
 
   private:
-    void requestSize(int* w, int* h);
     void set_position(JRect rect);
     void closePopup();
 
@@ -125,10 +125,10 @@ namespace ui {
 
   protected:
     virtual bool onProcessMessage(Message* msg) OVERRIDE;
+    virtual void onPreferredSize(PreferredSizeEvent& ev) OVERRIDE;
     virtual void onClick();
 
   private:
-    void requestSize(int* w, int* h);
     void openSubmenu(bool select_first);
     void closeSubmenu(bool last_of_close_chain);
     void startTimer();

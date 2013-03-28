@@ -1,5 +1,5 @@
 /* ASEPRITE
- * Copyright (C) 2001-2012  David Capello
+ * Copyright (C) 2001-2013  David Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,37 +19,7 @@
 #ifndef MODULES_EDITORS_H_INCLUDED
 #define MODULES_EDITORS_H_INCLUDED
 
-class Document;
 class Editor;
-class Sprite;
-
-namespace ui { class Widget; }
-
 extern Editor* current_editor;
-extern ui::Widget* box_editors;
-
-int init_module_editors();
-void exit_module_editors();
-
-Editor* create_new_editor();
-void remove_editor(Editor* editor);
-
-void set_current_editor(Editor* editor);
-
-void refresh_all_editors();
-void update_editors_with_document(const Document* document);
-void editors_draw_sprite(const Sprite* sprite, int x1, int y1, int x2, int y2);
-void editors_draw_sprite_tiled(const Sprite* sprite, int x1, int y1, int x2, int y2);
-void editors_hide_document(const Document* document);
-
-void set_document_in_current_editor(Document* document);
-void set_document_in_more_reliable_editor(Document* document);
-
-void split_editor(Editor* editor, int align);
-void close_editor(Editor* editor);
-void make_unique_editor(Editor* editor);
-
-bool is_mini_editor_enabled();
-void enable_mini_editor(bool state);
 
 #endif

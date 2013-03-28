@@ -1,5 +1,5 @@
 // ASEPRITE gui library
-// Copyright (C) 2001-2012  David Capello
+// Copyright (C) 2001-2013  David Capello
 //
 // This source file is distributed under a BSD-like license, please
 // read LICENSE.txt for more information.
@@ -63,7 +63,7 @@ void _ji_reinit_theme_in_all_widgets()
   for (std::list<Widget*>::iterator it=widgets->begin(), end=widgets->end();
        it != end; ++it) {
     if ((*it)->type == JI_WINDOW)
-      static_cast<Window*>(*it)->remap_window();
+      static_cast<Window*>(*it)->remapWindow();
   }
 
   // Redraw the whole screen

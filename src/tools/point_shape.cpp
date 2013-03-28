@@ -1,5 +1,5 @@
 /* ASEPRITE
- * Copyright (C) 2001-2012  David Capello
+ * Copyright (C) 2001-2013  David Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,6 +21,7 @@
 #include "tools/point_shape.h"
 
 #include "raster/image.h"
+#include "settings/document_settings.h"
 #include "tools/ink.h"
 #include "tools/tool_loop.h"
 
@@ -28,11 +29,12 @@ using namespace tools;
 
 void PointShape::doInkHline(int x1, int y, int x2, ToolLoop* loop)
 {
+  register TiledMode tiledMode = loop->getDocumentSettings()->getTiledMode();
   register int w, size; // width or height
   register int x;
 
   // Tiled in Y axis
-  if (loop->getTiledMode() & TILED_Y_AXIS) {
+  if (tiledMode & TILED_Y_AXIS) {
     size = loop->getDstImage()->h;      // size = image height
     if (y < 0)
       y = size - (-(y+1) % size) - 1;
@@ -43,7 +45,7 @@ void PointShape::doInkHline(int x1, int y, int x2, ToolLoop* loop)
       return;
 
   // Tiled in X axis
-  if (loop->getTiledMode() & TILED_X_AXIS) {
+  if (tiledMode & TILED_X_AXIS) {
     if (x1 > x2)
       return;
 

@@ -1,5 +1,5 @@
 /* ASEPRITE
- * Copyright (C) 2001-2012  David Capello
+ * Copyright (C) 2001-2013  David Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -24,11 +24,12 @@
 #include "commands/command.h"
 #include "commands/filters/filter_manager_impl.h"
 #include "commands/filters/filter_window.h"
-#include "document_wrappers.h"
+#include "context.h"
 #include "filters/median_filter.h"
 #include "ini_file.h"
 #include "raster/mask.h"
 #include "raster/sprite.h"
+#include "settings/document_settings.h"
 #include "settings/settings.h"
 #include "ui/button.h"
 #include "ui/entry.h"
@@ -113,12 +114,14 @@ bool DespeckleCommand::onEnabled(Context* context)
 
 void DespeckleCommand::onExecute(Context* context)
 {
+  IDocumentSettings* docSettings = context->getSettings()->getDocumentSettings(context->getActiveDocument());
+
   MedianFilter filter;
-  filter.setTiledMode(context->getSettings()->getTiledMode());
+  filter.setTiledMode(docSettings->getTiledMode());
   filter.setSize(get_config_int(ConfigSection, "Width", 3),
                  get_config_int(ConfigSection, "Height", 3));
 
-  FilterManagerImpl filterMgr(context->getActiveDocument(), &filter);
+  FilterManagerImpl filterMgr(context, &filter);
   filterMgr.setTarget(TARGET_RED_CHANNEL |
                       TARGET_GREEN_CHANNEL |
                       TARGET_BLUE_CHANNEL |
@@ -128,7 +131,6 @@ void DespeckleCommand::onExecute(Context* context)
   if (window.doModal()) {
     set_config_int(ConfigSection, "Width", filter.getWidth());
     set_config_int(ConfigSection, "Height", filter.getHeight());
-    context->getSettings()->setTiledMode(filter.getTiledMode());
   }
 }
 

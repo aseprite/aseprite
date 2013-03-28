@@ -1,5 +1,5 @@
 <!-- ASEPRITE -->
-<!-- Copyright (C) 2001-2012 by David Capello -->
+<!-- Copyright (C) 2001-2013 by David Capello -->
 <gui>
 <window text="Tools Configuration" id="configure_tool">
   <box vertical="true" childspacing="0">

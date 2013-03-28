@@ -1,5 +1,5 @@
 /* ASEPRITE
- * Copyright (C) 2001-2012  David Capello
+ * Copyright (C) 2001-2013  David Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -30,17 +30,17 @@ class ColorSelector;
 class ColorButton : public ui::ButtonBase
 {
 public:
-  ColorButton(const Color& color, PixelFormat pixelFormat);
+  ColorButton(const app::Color& color, PixelFormat pixelFormat);
   ~ColorButton();
 
   PixelFormat getPixelFormat() const;
   void setPixelFormat(PixelFormat pixelFormat);
 
-  Color getColor() const;
-  void setColor(const Color& color);
+  app::Color getColor() const;
+  void setColor(const app::Color& color);
 
   // Signals
-  Signal1<void, const Color&> Change;
+  Signal1<void, const app::Color&> Change;
 
 protected:
   // Events
@@ -52,9 +52,9 @@ protected:
 private:
   void openSelectorDialog();
   void closeSelectorDialog();
-  void onWindowColorChange(const Color& color);
+  void onWindowColorChange(const app::Color& color);
 
-  Color m_color;
+  app::Color m_color;
   PixelFormat m_pixelFormat;
   ColorSelector* m_window;
 };

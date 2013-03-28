@@ -1,5 +1,5 @@
 /* ASEPRITE
- * Copyright (C) 2001-2012  David Capello
+ * Copyright (C) 2001-2013  David Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -26,7 +26,6 @@
 #include "commands/commands.h"
 #include "commands/params.h"
 #include "console.h"
-#include "document_wrappers.h"
 #include "drop_files.h"
 #include "ini_file.h"
 #include "modules/editors.h"
@@ -268,7 +267,7 @@ void set_screen_scaling(int scaling)
   screen_scaling = scaling;
 }
 
-void update_screen_for_document(const Document* document)
+void update_screen_for_document(Document* document)
 {
   // Without document.
   if (!document) {
@@ -280,21 +279,10 @@ void update_screen_for_document(const Document* document)
   }
   // With a document.
   else {
-    const Sprite* sprite = document->getSprite();
-
-    // Select the palette of the sprite.
-    if (set_current_palette(sprite->getPalette(sprite->getCurrentFrame()), false)) {
-      // If the palette changes, invalidate the whole screen, we've to
-      // redraw it.
-      Manager::getDefault()->invalidate();
-    }
-    else {
-      // If it's the same palette update only the editors with the sprite.
-      update_editors_with_document(document);
-    }
+    document->notifyGeneralUpdate();
 
     // Update the tabs (maybe the modified status has been changed).
-    app_update_document_tab(document);
+    app_rebuild_documents_tabs();
   }
 }
 
@@ -311,7 +299,7 @@ void gui_feedback()
   ui::UpdateCursorOverlay();
 
   // Avoid updating a non-dirty screen over and over again.
-#if 0                           // It doesn't work
+#if 0                           // TODO It doesn't work yet
   if (!dirty_display_flag)
     return;
 #endif
@@ -323,7 +311,7 @@ void gui_feedback()
   if (!manager->getDisplay()->flip()) {
     // In case that the display was resized.
     gui_setup_screen(false);
-    App::instance()->getMainWindow()->remap_window();
+    App::instance()->getMainWindow()->remapWindow();
     manager->invalidate();
   }
   else
@@ -768,7 +756,7 @@ bool CustomizedGuiManager::onProcessMessage(Message* msg)
       // If there is a foreground window as top level...
       if (toplevel_window &&
           toplevel_window != App::instance()->getMainWindow() &&
-          toplevel_window->is_foreground()) {
+          toplevel_window->isForeground()) {
         // We just do not process keyboard shortcuts for menus and tools
         break;
       }
@@ -835,11 +823,11 @@ bool CustomizedGuiManager::onProcessMessage(Message* msg)
                 Window* child = static_cast<Window*>(*it);
 
                 // There are a foreground window executing?
-                if (child->is_foreground()) {
+                if (child->isForeground()) {
                   break;
                 }
                 // Is it the desktop and the top-window=
-                else if (child->is_desktop() && child == App::instance()->getMainWindow()) {
+                else if (child->isDesktop() && child == App::instance()->getMainWindow()) {
                   // OK, so we can execute the command represented
                   // by the pressed-key in the message...
                   UIContext::instance()->executeCommand(command, shortcut->params);

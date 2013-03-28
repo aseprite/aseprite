@@ -1,5 +1,5 @@
 /* ASEPRITE
- * Copyright (C) 2001-2012  David Capello
+ * Copyright (C) 2001-2013  David Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -82,7 +82,8 @@ bool EditorView::onProcessMessage(Message* msg)
                               pos->x1, pos->y1,
                               pos->x2-1, pos->y2-1,
                               selected ? PART_EDITOR_SELECTED_NW:
-                                         PART_EDITOR_NORMAL_NW, false);
+                                         PART_EDITOR_NORMAL_NW,
+                              ColorNone);
 
         jrect_free(pos);
       }

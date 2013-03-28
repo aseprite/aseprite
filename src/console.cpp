@@ -1,5 +1,5 @@
 /* ASEPRITE
- * Copyright (C) 2001-2012  David Capello
+ * Copyright (C) 2001-2013  David Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -131,9 +131,9 @@ void Console::printf(const char *format, ...)
 
       wid_view->setVisible(true);
 
-      wid_console->remap_window();
+      wid_console->remapWindow();
       jwidget_set_rect(wid_console, rect);
-      wid_console->center_window();
+      wid_console->centerWindow();
       wid_console->invalidate();
 
       jrect_free(rect);

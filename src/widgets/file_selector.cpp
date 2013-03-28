@@ -1,5 +1,5 @@
 /* ASEPRITE
- * Copyright (C) 2001-2012  David Capello
+ * Copyright (C) 2001-2013  David Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -276,8 +276,8 @@ base::string FileSelector::show(const base::string& title,
   PRINTF("start_folder_path = %s (%p)\n", start_folder_path.c_str(), start_folder);
 
   jwidget_set_min_size(this, JI_SCREEN_W*9/10, JI_SCREEN_H*9/10);
-  remap_window();
-  center_window();
+  remapWindow();
+  centerWindow();
 
   m_fileList->setExtensions(showExtensions.c_str());
   if (start_folder)
@@ -318,8 +318,8 @@ base::string FileSelector::show(const base::string& title,
   // open the window and run... the user press ok?
 again:
   openWindowInForeground();
-  if (get_killer() == ok ||
-      get_killer() == m_fileList) {
+  if (getKiller() == ok ||
+      getKiller() == m_fileList) {
     // open the selected file
     IFileItem* folder = m_fileList->getCurrentFolder();
     ASSERT(folder);

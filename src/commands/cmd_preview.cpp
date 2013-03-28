@@ -1,5 +1,5 @@
 /* ASEPRITE
- * Copyright (C) 2001-2012  David Capello
+ * Copyright (C) 2001-2013  David Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -26,13 +26,14 @@
 #include "app.h"
 #include "commands/command.h"
 #include "commands/commands.h"
-#include "document_wrappers.h"
+#include "context.h"
 #include "modules/editors.h"
 #include "modules/gfx.h"
 #include "modules/gui.h"
 #include "raster/image.h"
 #include "raster/palette.h"
 #include "raster/sprite.h"
+#include "settings/document_settings.h"
 #include "util/render.h"
 #include "widgets/editor/editor.h"
 #include "widgets/status_bar.h"
@@ -85,12 +86,13 @@ void PreviewCommand::onExecute(Context* context)
   // will call other sub-commands (e.g. previous frame, next frame,
   // etc.).
   Document* document = editor->getDocument();
-  Sprite* sprite = document->getSprite();
-  const Palette* pal = sprite->getCurrentPalette();
+  Sprite* sprite = editor->getSprite();
+  const Palette* pal = sprite->getPalette(editor->getFrame());
   View* view = View::getView(editor);
   int u, v, x, y;
   int index_bg_color = -1;
-  TiledMode tiled = context->getSettings()->getTiledMode();
+  IDocumentSettings* docSettings = context->getSettings()->getDocumentSettings(document);
+  TiledMode tiled = docSettings->getTiledMode();
 
   // Free mouse
   editor->getManager()->freeMouse();
@@ -135,9 +137,12 @@ void PreviewCommand::onExecute(Context* context)
 
     // Render sprite and leave the result in 'render' variable
     if (render == NULL) {
-      render = RenderEngine::renderSprite(document, sprite,
-                                          0, 0, sprite->getWidth(), sprite->getHeight(),
-                                          sprite->getCurrentFrame(), 0, false);
+      RenderEngine renderEngine(document, sprite,
+                                editor->getLayer(),
+                                editor->getFrame());
+      render =
+        renderEngine.renderSprite(0, 0, sprite->getWidth(), sprite->getHeight(),
+                                  editor->getFrame(), 0, false);
     }
 
     // Redraw the screen

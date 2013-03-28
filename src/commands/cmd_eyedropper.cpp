@@ -1,5 +1,5 @@
 /* ASEPRITE
- * Copyright (C) 2001-2012  David Capello
+ * Copyright (C) 2001-2013  David Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -78,13 +78,15 @@ void EyedropperCommand::onExecute(Context* context)
   if (!sprite)
     return;
 
+  FrameNumber frame = editor->getFrame();
+
   // pixel position to get
   int x, y;
   editor->screenToEditor(jmouse_x(0), jmouse_y(0), &x, &y);
 
   // get the color from the image
-  Color color = Color::fromImage(sprite->getPixelFormat(),
-                                 sprite->getPixel(x, y));
+  app::Color color = app::Color::fromImage(sprite->getPixelFormat(),
+                                           sprite->getPixel(x, y, frame));
 
   // TODO replace the color in the "context", not directly from the color-bar
 

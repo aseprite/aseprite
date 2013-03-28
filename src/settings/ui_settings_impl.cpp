@@ -1,5 +1,5 @@
 /* ASEPRITE
- * Copyright (C) 2001-2012  David Capello
+ * Copyright (C) 2001-2013  David Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -22,55 +22,133 @@
 
 #include "app.h"
 #include "ini_file.h"
+#include "settings/document_settings.h"
 #include "tools/point_shape.h"
 #include "tools/tool.h"
 #include "tools/tool_box.h"
+#include "ui/manager.h"
 #include "ui_context.h"
 #include "widgets/color_bar.h"
+#include "widgets/main_window.h"
+#include "widgets/workspace.h"
 
 #include <allegro/color.h>
 #include <string>
 
 using namespace gfx;
 
+class UIDocumentSettingsImpl : public IDocumentSettings
+{
+public:
+  UIDocumentSettingsImpl()
+    : m_tiledMode((TiledMode)get_config_int("Tools", "Tiled", (int)TILED_NONE))
+    , m_use_onionskin(get_config_bool("Onionskin", "Enabled", false))
+    , m_prev_frames_onionskin(get_config_int("Onionskin", "PrevFrames", 1))
+    , m_next_frames_onionskin(get_config_int("Onionskin", "NextFrames", 0))
+    , m_onionskin_opacity_base(get_config_int("Onionskin", "OpacityBase", 128))
+    , m_onionskin_opacity_step(get_config_int("Onionskin", "OpacityStep", 32))
+    , m_snapToGrid(get_config_bool("Grid", "SnapTo", false))
+    , m_gridVisible(get_config_bool("Grid", "Visible", false))
+    , m_gridBounds(get_config_rect("Grid", "Bounds", Rect(0, 0, 16, 16)))
+    , m_gridColor(get_config_color("Grid", "Color", app::Color::fromRgb(0, 0, 255)))
+    , m_pixelGridColor(get_config_color("PixelGrid", "Color", app::Color::fromRgb(200, 200, 200)))
+    , m_pixelGridVisible(get_config_bool("PixelGrid", "Visible", false))
+  {
+    m_tiledMode = (TiledMode)MID(0, (int)m_tiledMode, (int)TILED_BOTH);
+  }
+
+  ~UIDocumentSettingsImpl()
+  {
+    set_config_int("Tools", "Tiled", m_tiledMode);
+    set_config_bool("Grid", "SnapTo", m_snapToGrid);
+    set_config_bool("Grid", "Visible", m_gridVisible);
+    set_config_rect("Grid", "Bounds", m_gridBounds);
+    set_config_color("Grid", "Color", m_gridColor);
+    set_config_bool("PixelGrid", "Visible", m_pixelGridVisible);
+    set_config_color("PixelGrid", "Color", m_pixelGridColor);
+
+    set_config_bool("Onionskin", "Enabled", m_use_onionskin);
+    set_config_int("Onionskin", "PrevFrames", m_prev_frames_onionskin);
+    set_config_int("Onionskin", "NextFrames", m_next_frames_onionskin);
+    set_config_int("Onionskin", "OpacityBase", m_onionskin_opacity_base);
+    set_config_int("Onionskin", "OpacityStep", m_onionskin_opacity_step);
+  }
+
+  // Tiled mode
+
+  virtual TiledMode getTiledMode() OVERRIDE;
+  virtual void setTiledMode(TiledMode mode) OVERRIDE;
+
+  // Grid settings
+
+  virtual bool getSnapToGrid() OVERRIDE;
+  virtual bool getGridVisible() OVERRIDE;
+  virtual gfx::Rect getGridBounds() OVERRIDE;
+  virtual app::Color getGridColor() OVERRIDE;
+
+  virtual void setSnapToGrid(bool state) OVERRIDE;
+  virtual void setGridVisible(bool state) OVERRIDE;
+  virtual void setGridBounds(const gfx::Rect& rect) OVERRIDE;
+  virtual void setGridColor(const app::Color& color) OVERRIDE;
+
+  virtual void snapToGrid(gfx::Point& point, SnapBehavior snapBehavior) const OVERRIDE;
+
+  // Pixel grid
+
+  virtual bool getPixelGridVisible() OVERRIDE;
+  virtual app::Color getPixelGridColor() OVERRIDE;
+
+  virtual void setPixelGridVisible(bool state) OVERRIDE;
+  virtual void setPixelGridColor(const app::Color& color) OVERRIDE;
+
+  // Onionskin settings
+
+  virtual bool getUseOnionskin() OVERRIDE;
+  virtual int getOnionskinPrevFrames() OVERRIDE;
+  virtual int getOnionskinNextFrames() OVERRIDE;
+  virtual int getOnionskinOpacityBase() OVERRIDE;
+  virtual int getOnionskinOpacityStep() OVERRIDE;
+
+  virtual void setUseOnionskin(bool state) OVERRIDE;
+  virtual void setOnionskinPrevFrames(int frames) OVERRIDE;
+  virtual void setOnionskinNextFrames(int frames) OVERRIDE;
+  virtual void setOnionskinOpacityBase(int base) OVERRIDE;
+  virtual void setOnionskinOpacityStep(int step) OVERRIDE;
+
+private:
+  void redrawDocumentViews() {
+    // TODO Redraw only document's views
+    ui::Manager::getDefault()->invalidate();
+  }
+
+  TiledMode m_tiledMode;
+  bool m_use_onionskin;
+  int m_prev_frames_onionskin;
+  int m_next_frames_onionskin;
+  int m_onionskin_opacity_base;
+  int m_onionskin_opacity_step;
+  bool m_snapToGrid;
+  bool m_gridVisible;
+  gfx::Rect m_gridBounds;
+  app::Color m_gridColor;
+  bool m_pixelGridVisible;
+  app::Color m_pixelGridColor;
+};
+
 //////////////////////////////////////////////////////////////////////
 // UISettingsImpl
 
 UISettingsImpl::UISettingsImpl()
   : m_currentTool(NULL)
-  , m_tiledMode((TiledMode)get_config_int("Tools", "Tiled", (int)TILED_NONE))
-  , m_use_onionskin(get_config_bool("Onionskin", "Enabled", false))
-  , m_prev_frames_onionskin(get_config_int("Onionskin", "PrevFrames", 1))
-  , m_next_frames_onionskin(get_config_int("Onionskin", "NextFrames", 0))
-  , m_onionskin_opacity_base(get_config_int("Onionskin", "OpacityBase", 128))
-  , m_onionskin_opacity_step(get_config_int("Onionskin", "OpacityStep", 32))
-  , m_snapToGrid(get_config_bool("Grid", "SnapTo", false))
-  , m_gridVisible(get_config_bool("Grid", "Visible", false))
-  , m_gridBounds(get_config_rect("Grid", "Bounds", Rect(0, 0, 16, 16)))
-  , m_gridColor(get_config_color("Grid", "Color", Color::fromRgb(0, 0, 255)))
-  , m_pixelGridColor(get_config_color("PixelGrid", "Color", Color::fromRgb(200, 200, 200)))
-  , m_pixelGridVisible(get_config_bool("PixelGrid", "Visible", false))
+  , m_globalDocumentSettings(new UIDocumentSettingsImpl)
 {
-  m_tiledMode = (TiledMode)MID(0, (int)m_tiledMode, (int)TILED_BOTH);
 }
 
 UISettingsImpl::~UISettingsImpl()
 {
-  set_config_int("Tools", "Tiled", m_tiledMode);
-  set_config_bool("Grid", "SnapTo", m_snapToGrid);
-  set_config_bool("Grid", "Visible", m_gridVisible);
-  set_config_rect("Grid", "Bounds", m_gridBounds);
-  set_config_color("Grid", "Color", m_gridColor);
-  set_config_bool("PixelGrid", "Visible", m_pixelGridVisible);
-  set_config_color("PixelGrid", "Color", m_pixelGridColor);
+  delete m_globalDocumentSettings;
 
-  set_config_bool("Onionskin", "Enabled", m_use_onionskin);
-  set_config_int("Onionskin", "PrevFrames", m_prev_frames_onionskin);
-  set_config_int("Onionskin", "NextFrames", m_next_frames_onionskin);
-  set_config_int("Onionskin", "OpacityBase", m_onionskin_opacity_base);
-  set_config_int("Onionskin", "OpacityStep", m_onionskin_opacity_step);
-
-  // delete all tool settings
+  // Delete all tool settings.
   std::map<std::string, IToolSettings*>::iterator it;
   for (it = m_toolSettings.begin(); it != m_toolSettings.end(); ++it)
     delete it->second;
@@ -79,12 +157,12 @@ UISettingsImpl::~UISettingsImpl()
 //////////////////////////////////////////////////////////////////////
 // General settings
 
-Color UISettingsImpl::getFgColor()
+app::Color UISettingsImpl::getFgColor()
 {
   return ColorBar::instance()->getFgColor();
 }
 
-Color UISettingsImpl::getBgColor()
+app::Color UISettingsImpl::getBgColor()
 {
   return ColorBar::instance()->getBgColor();
 }
@@ -97,17 +175,12 @@ tools::Tool* UISettingsImpl::getCurrentTool()
   return m_currentTool;
 }
 
-TiledMode UISettingsImpl::getTiledMode()
-{
-  return m_tiledMode;
-}
-
-void UISettingsImpl::setFgColor(const Color& color)
+void UISettingsImpl::setFgColor(const app::Color& color)
 {
   ColorBar::instance()->setFgColor(color);
 }
 
-void UISettingsImpl::setBgColor(const Color& color)
+void UISettingsImpl::setBgColor(const app::Color& color)
 {
   ColorBar::instance()->setFgColor(color);
 }
@@ -126,55 +199,68 @@ void UISettingsImpl::setCurrentTool(tools::Tool* tool)
   }
 }
 
-void UISettingsImpl::setTiledMode(TiledMode mode)
+IDocumentSettings* UISettingsImpl::getDocumentSettings(const Document* document)
+{
+  return m_globalDocumentSettings;
+}
+
+//////////////////////////////////////////////////////////////////////
+// IDocumentSettings implementation
+
+TiledMode UIDocumentSettingsImpl::getTiledMode()
+{
+  return m_tiledMode;
+}
+
+void UIDocumentSettingsImpl::setTiledMode(TiledMode mode)
 {
   m_tiledMode = mode;
 }
 
-//////////////////////////////////////////////////////////////////////
-// Grid settings
-
-bool UISettingsImpl::getSnapToGrid()
+bool UIDocumentSettingsImpl::getSnapToGrid()
 {
   return m_snapToGrid;
 }
 
-bool UISettingsImpl::getGridVisible()
+bool UIDocumentSettingsImpl::getGridVisible()
 {
   return m_gridVisible;
 }
 
-Rect UISettingsImpl::getGridBounds()
+Rect UIDocumentSettingsImpl::getGridBounds()
 {
   return m_gridBounds;
 }
 
-Color UISettingsImpl::getGridColor()
+app::Color UIDocumentSettingsImpl::getGridColor()
 {
   return m_gridColor;
 }
 
-void UISettingsImpl::setSnapToGrid(bool state)
+void UIDocumentSettingsImpl::setSnapToGrid(bool state)
 {
   m_snapToGrid = state;
 }
 
-void UISettingsImpl::setGridVisible(bool state)
+void UIDocumentSettingsImpl::setGridVisible(bool state)
 {
   m_gridVisible = state;
+  redrawDocumentViews();
 }
 
-void UISettingsImpl::setGridBounds(const Rect& rect)
+void UIDocumentSettingsImpl::setGridBounds(const Rect& rect)
 {
   m_gridBounds = rect;
+  redrawDocumentViews();
 }
 
-void UISettingsImpl::setGridColor(const Color& color)
+void UIDocumentSettingsImpl::setGridColor(const app::Color& color)
 {
   m_gridColor = color;
+  redrawDocumentViews();
 }
 
-void UISettingsImpl::snapToGrid(gfx::Point& point, SnapBehavior snapBehavior) const
+void UIDocumentSettingsImpl::snapToGrid(gfx::Point& point, SnapBehavior snapBehavior) const
 {
   register int w = m_gridBounds.w;
   register int h = m_gridBounds.h;
@@ -191,78 +277,74 @@ void UISettingsImpl::snapToGrid(gfx::Point& point, SnapBehavior snapBehavior) co
   point.y = dy.rem + d.quot*h + ((d.rem > h/2)? h-adjust: 0);
 }
 
-//////////////////////////////////////////////////////////////////////
-// Pixel grid
-
-bool UISettingsImpl::getPixelGridVisible()
+bool UIDocumentSettingsImpl::getPixelGridVisible()
 {
   return m_pixelGridVisible;
 }
 
-Color UISettingsImpl::getPixelGridColor()
+app::Color UIDocumentSettingsImpl::getPixelGridColor()
 {
   return m_pixelGridColor;
 }
 
-void UISettingsImpl::setPixelGridVisible(bool state)
+void UIDocumentSettingsImpl::setPixelGridVisible(bool state)
 {
   m_pixelGridVisible = state;
+  redrawDocumentViews();
 }
 
-void UISettingsImpl::setPixelGridColor(const Color& color)
+void UIDocumentSettingsImpl::setPixelGridColor(const app::Color& color)
 {
   m_pixelGridColor = color;
+  redrawDocumentViews();
 }
 
-//////////////////////////////////////////////////////////////////////
-// Onionskin settings
-
-bool UISettingsImpl::getUseOnionskin()
+bool UIDocumentSettingsImpl::getUseOnionskin()
 {
   return m_use_onionskin;
 }
 
-int UISettingsImpl::getOnionskinPrevFrames()
+int UIDocumentSettingsImpl::getOnionskinPrevFrames()
 {
   return m_prev_frames_onionskin;
 }
 
-int UISettingsImpl::getOnionskinNextFrames()
+int UIDocumentSettingsImpl::getOnionskinNextFrames()
 {
   return m_next_frames_onionskin;
 }
 
-int UISettingsImpl::getOnionskinOpacityBase()
+int UIDocumentSettingsImpl::getOnionskinOpacityBase()
 {
   return m_onionskin_opacity_base;
 }
 
-int UISettingsImpl::getOnionskinOpacityStep()
+int UIDocumentSettingsImpl::getOnionskinOpacityStep()
 {
   return m_onionskin_opacity_step;
 }
 
-void UISettingsImpl::setUseOnionskin(bool state)
+void UIDocumentSettingsImpl::setUseOnionskin(bool state)
 {
   m_use_onionskin = state;
 }
 
-void UISettingsImpl::setOnionskinPrevFrames(int frames)
+void UIDocumentSettingsImpl::setOnionskinPrevFrames(int frames)
 {
   m_prev_frames_onionskin = frames;
 }
 
-void UISettingsImpl::setOnionskinNextFrames(int frames)
+void UIDocumentSettingsImpl::setOnionskinNextFrames(int frames)
 {
   m_next_frames_onionskin = frames;
 }
 
-void UISettingsImpl::setOnionskinOpacityBase(int base)
+void UIDocumentSettingsImpl::setOnionskinOpacityBase(int base)
 {
   m_onionskin_opacity_base = base;
 }
 
-void UISettingsImpl::setOnionskinOpacityStep(int step)
+void UIDocumentSettingsImpl::setOnionskinOpacityStep(int step)
 {
   m_onionskin_opacity_step = step;
 }

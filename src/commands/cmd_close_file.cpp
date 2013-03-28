@@ -1,5 +1,5 @@
 /* ASEPRITE
- * Copyright (C) 2001-2012  David Capello
+ * Copyright (C) 2001-2013  David Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -22,16 +22,21 @@
 #include "base/path.h"
 #include "commands/command.h"
 #include "commands/commands.h"
-#include "document_wrappers.h"
+#include "context_access.h"
+#include "document_access.h"
 #include "modules/editors.h"
 #include "raster/sprite.h"
 #include "ui/gui.h"
 #include "ui_context.h"
+#include "widgets/document_view.h"
+#include "widgets/main_window.h"
 #include "widgets/status_bar.h"
+#include "widgets/workspace.h"
 
 #include <memory>
 
 using namespace ui;
+using namespace widgets;
 
 static bool close_active_document(Context* context);
 
@@ -54,14 +59,32 @@ protected:
 
   bool onEnabled(Context* context)
   {
-    const ActiveDocumentReader document(context);
-    const Sprite* sprite(document ? document->getSprite(): 0);
+    const ContextReader reader(context);
+    const Sprite* sprite(reader.sprite());
     return sprite != NULL;
   }
 
   void onExecute(Context* context)
   {
-    close_active_document(context);
+    Workspace* workspace = App::instance()->getMainWindow()->getWorkspace();
+
+    if (workspace->getActiveView() == NULL)
+      return;
+
+    if (DocumentView* docView =
+          dynamic_cast<DocumentView*>(workspace->getActiveView())) {
+      Document* document = docView->getDocument();
+      if (static_cast<UIContext*>(context)->countViewsOf(document) == 1) {
+        // If we have only one view for this document, close the file.
+        close_active_document(context);
+        return;
+      }
+    }
+
+    // Close the active view.
+    WorkspaceView* view = workspace->getActiveView();
+    workspace->removeView(view);
+    delete view;
   }
 
 private:
@@ -92,9 +115,6 @@ protected:
 
   void onExecute(Context* context)
   {
-    if (!context->getActiveDocument())
-      set_document_in_more_reliable_editor(context->getFirstDocument());
-
     while (true) {
       if (context->getActiveDocument() != NULL) {
         if (!close_active_document(context))
@@ -109,12 +129,11 @@ protected:
 
 //////////////////////////////////////////////////////////////////////
 
-/**
- * Closes the active document, asking to the user to save it if it is
- * modified.
- */
+// Closes the active document, asking to the user to save it if it is
+// modified.
 static bool close_active_document(Context* context)
 {
+  Document* closedDocument = NULL;
   bool save_it;
   bool try_again = true;
 
@@ -123,7 +142,9 @@ static bool close_active_document(Context* context)
     save_it = false;
     {
       // The sprite is locked as reader temporaly
-      ActiveDocumentReader document(context);
+      const ContextReader reader(context);
+      const Document* document = reader.document();
+      closedDocument = const_cast<Document*>(document);
 
       // see if the sprite has changes
       while (document->isModified()) {
@@ -161,12 +182,13 @@ static bool close_active_document(Context* context)
 
   // Destroy the sprite (locking it as writer)
   {
-    ActiveDocumentWriter document(context);
+    DocumentDestroyer document(context, closedDocument);
     StatusBar::instance()
       ->setStatusText(0, "Sprite '%s' closed.",
                       base::get_file_name(document->getFilename()).c_str());
-    document.deleteDocument();
+    document.destroyDocument();
   }
+
   return true;
 }
 

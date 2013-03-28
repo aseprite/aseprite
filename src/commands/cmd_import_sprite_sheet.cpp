@@ -1,5 +1,5 @@
 /* ASEPRITE
- * Copyright (C) 2001-2012  David Capello
+ * Copyright (C) 2001-2013  David Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -22,7 +22,10 @@
 #include "commands/command.h"
 #include "commands/commands.h"
 #include "commands/params.h"
-#include "document_wrappers.h"
+#include "context.h"
+#include "context_access.h"
+#include "document_access.h"
+#include "document_api.h"
 #include "ini_file.h"
 #include "modules/editors.h"
 #include "modules/gui.h"
@@ -40,6 +43,7 @@
 #include "widgets/editor/editor_decorator.h"
 #include "widgets/editor/select_box_state.h"
 #include "widgets/editor/standby_state.h"
+#include "widgets/workspace.h"
 
 #include <allegro/color.h>
 
@@ -129,7 +133,7 @@ protected:
     MenuItem* item = new MenuItem("Use Current Sprite");
     item->Click.connect(&ImportSpriteSheetWindow::onUseCurrentSprite, this);
 
-    if (m_editor || current_editor->getDocument() == NULL)
+    if (m_editor || !current_editor || current_editor->getDocument() == NULL)
       item->setEnabled(false);
 
     menu->addChild(item);
@@ -156,6 +160,7 @@ protected:
 
     try {
       Sprite* sprite = m_document->getSprite();
+      FrameNumber currentFrame = m_context->getActiveLocation().frame();
 
       // As first step, we cut each tile and add them into "animation" list.
       for (int y=m_rect.y; y<sprite->getHeight(); y += m_rect.h) {
@@ -166,7 +171,7 @@ protected:
           image_clear(resultImage, 0);
 
           // Render the portion of sheet.
-          sprite->render(resultImage, -x, -y);
+          sprite->render(resultImage, -x, -y, currentFrame);
           animation.push_back(resultImage);
           resultImage.release();
         }
@@ -182,42 +187,43 @@ protected:
 
       // The following steps modify the sprite, so we wrap all
       // operations in a undo-transaction.
-      UndoTransaction undoTransaction(m_document, "Import Sprite Sheet", undo::ModifyDocument);
+      ContextWriter writer(m_context);
+      UndoTransaction undoTransaction(writer.context(), "Import Sprite Sheet", undo::ModifyDocument);
+      DocumentApi api = m_document->getApi();
 
       // Add the layer in the sprite.
-      LayerImage* resultLayer = undoTransaction.newLayer();
+      LayerImage* resultLayer = api.newLayer(sprite);
 
       // Add all frames+cels to the new layer
       for (size_t i=0; i<animation.size(); ++i) {
         int indexInStock;
 
         // Add the image into the sprite's stock
-        indexInStock = undoTransaction.addImageInStock(animation[i]);
+        indexInStock = api.addImageInStock(sprite, animation[i]);
         animation[i] = NULL;
 
         // Create the cel.
         UniquePtr<Cel> resultCel(new Cel(FrameNumber(i), indexInStock));
 
         // Add the cel in the layer.
-        undoTransaction.addCel(resultLayer, resultCel);
+        api.addCel(resultLayer, resultCel);
         resultCel.release();
       }
 
       // Copy the list of layers (because we will modify it in the iteration).
-      LayerList layers = sprite->getFolder()->get_layers_list();
+      LayerList layers = sprite->getFolder()->getLayersList();
 
       // Remove all other layers
       for (LayerIterator it=layers.begin(), end=layers.end(); it!=end; ++it) {
         if (*it != resultLayer)
-          undoTransaction.removeLayer(*it);
+          api.removeLayer(*it);
       }
 
       // Change the number of frames
-      undoTransaction.setNumberOfFrames(FrameNumber(animation.size()));
-      undoTransaction.setCurrentFrame(FrameNumber(0));
+      api.setTotalFrames(sprite, FrameNumber(animation.size()));
 
       // Set the size of the sprite to the tile size.
-      undoTransaction.setSpriteSize(m_rect.w, m_rect.h);
+      api.setSpriteSize(sprite, m_rect.w, m_rect.h);
 
       undoTransaction.commit();
     }
@@ -287,13 +293,11 @@ private:
     Document* oldDocument = m_document;
     m_document = m_context->getActiveDocument();
 
-    // If the user already have selected a file, we have to close that
-    // file in order to select the new one.
+    // If the user already have selected a file, we have to destroy
+    // that file in order to select the new one.
     if (oldDocument && m_fileOpened) {
-      m_context->setActiveDocument(oldDocument);
-
-      Command* closeFile = CommandsModule::instance()->getCommandByName(CommandId::CloseFile);
-      closeFile->execute(m_context);
+      DocumentDestroyer destroyer(m_context, oldDocument);
+      destroyer.destroyDocument();
     }
 
     captureEditor();

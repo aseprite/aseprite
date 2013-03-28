@@ -1,5 +1,5 @@
 /* ASEPRITE
- * Copyright (C) 2001-2012  David Capello
+ * Copyright (C) 2001-2013  David Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,34 +18,11 @@
 
 #include "config.h"
 
+#include "app.h"
 #include "commands/command.h"
-#include "modules/editors.h"
 #include "ui/base.h"
-
-//////////////////////////////////////////////////////////////////////
-// close_editor
-
-class CloseEditorCommand : public Command
-{
-public:
-  CloseEditorCommand();
-  Command* clone() { return new CloseEditorCommand(*this); }
-
-protected:
-  void onExecute(Context* context);
-};
-
-CloseEditorCommand::CloseEditorCommand()
-  : Command("CloseEditor",
-            "Close Editor",
-            CmdUIOnlyFlag)
-{
-}
-
-void CloseEditorCommand::onExecute(Context* context)
-{
-  close_editor(current_editor);
-}
+#include "widgets/main_window.h"
+#include "widgets/workspace.h"
 
 //////////////////////////////////////////////////////////////////////
 // make_unique_editor
@@ -69,7 +46,9 @@ MakeUniqueEditorCommand::MakeUniqueEditorCommand()
 
 void MakeUniqueEditorCommand::onExecute(Context* context)
 {
-  make_unique_editor(current_editor);
+  widgets::Workspace* workspace = App::instance()->getMainWindow()->getWorkspace();
+  if (workspace->getActiveView() != NULL)
+    workspace->makeUnique(workspace->getActiveView());
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -94,7 +73,9 @@ SplitEditorHorizontallyCommand::SplitEditorHorizontallyCommand()
 
 void SplitEditorHorizontallyCommand::onExecute(Context* context)
 {
-  split_editor(current_editor, JI_HORIZONTAL);
+  widgets::Workspace* workspace = App::instance()->getMainWindow()->getWorkspace();
+  if (workspace->getActiveView() != NULL)
+    workspace->splitView(workspace->getActiveView(), JI_HORIZONTAL);
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -119,16 +100,13 @@ SplitEditorVerticallyCommand::SplitEditorVerticallyCommand()
 
 void SplitEditorVerticallyCommand::onExecute(Context* context)
 {
-  split_editor(current_editor, JI_VERTICAL);
+  widgets::Workspace* workspace = App::instance()->getMainWindow()->getWorkspace();
+  if (workspace->getActiveView() != NULL)
+    workspace->splitView(workspace->getActiveView(), JI_VERTICAL);
 }
 
 //////////////////////////////////////////////////////////////////////
 // CommandFactory
-
-Command* CommandFactory::createCloseEditorCommand()
-{
-  return new CloseEditorCommand;
-}
 
 Command* CommandFactory::createMakeUniqueEditorCommand()
 {

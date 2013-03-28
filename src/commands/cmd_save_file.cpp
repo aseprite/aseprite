@@ -1,5 +1,5 @@
 /* ASEPRITE
- * Copyright (C) 2001-2012  David Capello
+ * Copyright (C) 2001-2013  David Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -25,7 +25,7 @@
 #include "base/unique_ptr.h"
 #include "commands/command.h"
 #include "console.h"
-#include "document_wrappers.h"
+#include "context_access.h"
 #include "file/file.h"
 #include "job.h"
 #include "modules/gui.h"
@@ -98,8 +98,9 @@ static void save_document_in_background(Document* document, bool mark_as_saved)
 
 /*********************************************************************/
 
-static void save_as_dialog(const DocumentReader& document, const char* dlg_title, bool mark_as_saved)
+static void save_as_dialog(const ContextReader& reader, const char* dlg_title, bool mark_as_saved)
 {
+  const Document* document = reader.document();
   char exts[4096];
   base::string filename;
   base::string newfilename;
@@ -135,13 +136,16 @@ static void save_as_dialog(const DocumentReader& document, const char* dlg_title
   }
 
   {
-    DocumentWriter documentWriter(document);
+    ContextWriter writer(reader);
+    Document* documentWriter = writer.document();
 
     // Change the document file name
     documentWriter->setFilename(filename.c_str());
 
     // Save the document
     save_document_in_background(documentWriter, mark_as_saved);
+
+    update_screen_for_document(documentWriter);
   }
 }
 
@@ -177,23 +181,24 @@ bool SaveFileCommand::onEnabled(Context* context)
 // [main thread]
 void SaveFileCommand::onExecute(Context* context)
 {
-  const ActiveDocumentReader document(context);
+  const ContextReader reader(context);
+  const Document* document(reader.document());
 
   // If the document is associated to a file in the file-system, we can
   // save it directly without user interaction.
   if (document->isAssociatedToFile()) {
-    DocumentWriter documentWriter(document);
+    ContextWriter writer(reader);
+    Document* documentWriter = writer.document();
 
     save_document_in_background(documentWriter, true);
+    update_screen_for_document(documentWriter);
   }
   // If the document isn't associated to a file, we must to show the
   // save-as dialog to the user to select for first time the file-name
   // for this document.
   else {
-    save_as_dialog(document, "Save File", true);
+    save_as_dialog(reader, "Save File", true);
   }
-
-  update_screen_for_document(document);
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -224,9 +229,8 @@ bool SaveFileAsCommand::onEnabled(Context* context)
 
 void SaveFileAsCommand::onExecute(Context* context)
 {
-  const ActiveDocumentReader document(context);
-  save_as_dialog(document, "Save As", true);
-  update_screen_for_document(document);
+  const ContextReader reader(context);
+  save_as_dialog(reader, "Save As", true);
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -257,19 +261,19 @@ bool SaveFileCopyAsCommand::onEnabled(Context* context)
 
 void SaveFileCopyAsCommand::onExecute(Context* context)
 {
-  const ActiveDocumentReader document(context);
+  const ContextReader reader(context);
+  const Document* document(reader.document());
   base::string old_filename = document->getFilename();
 
   // show "Save As" dialog
-  save_as_dialog(document, "Save Copy As", false);
+  save_as_dialog(reader, "Save Copy As", false);
 
   // Restore the file name.
   {
-    DocumentWriter documentWriter(document);
-    documentWriter->setFilename(old_filename.c_str());
+    ContextWriter writer(reader);
+    writer.document()->setFilename(old_filename.c_str());
+    update_screen_for_document(writer.document());
   }
-
-  update_screen_for_document(document);
 }
 
 //////////////////////////////////////////////////////////////////////

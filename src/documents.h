@@ -1,5 +1,5 @@
 /* ASEPRITE
- * Copyright (C) 2001-2012  David Capello
+ * Copyright (C) 2001-2013  David Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -39,6 +39,9 @@ public:
   iterator end() { return m_documents.end(); }
   const_iterator begin() const { return m_documents.begin(); }
   const_iterator end() const { return m_documents.end(); }
+
+  Document* front() const { return m_documents.front(); }
+  Document* back() const { return m_documents.back(); }
 
   int size() const { return m_documents.size(); }
   bool empty() const { return m_documents.empty(); }

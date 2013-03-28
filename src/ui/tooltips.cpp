@@ -1,5 +1,5 @@
 // ASEPRITE gui library
-// Copyright (C) 2001-2012  David Capello
+// Copyright (C) 2001-2013  David Capello
 //
 // This source file is distributed under a BSD-like license, please
 // read LICENSE.txt for more information.
@@ -95,7 +95,7 @@ void TooltipManager::onTick()
     int w, h;
 
     m_tipWindow->setArrowAlign(m_target.tipInfo.arrowAlign);
-    m_tipWindow->remap_window();
+    m_tipWindow->remapWindow();
 
     w = jrect_w(m_tipWindow->rc);
     h = jrect_h(m_tipWindow->rc);
@@ -140,8 +140,8 @@ void TooltipManager::onTick()
     //   y = jmouse_y(0);
     // }
 
-    m_tipWindow->position_window(MID(0, x, JI_SCREEN_W-w),
-                                 MID(0, y, JI_SCREEN_H-h));
+    m_tipWindow->positionWindow(MID(0, x, JI_SCREEN_W-w),
+                                MID(0, y, JI_SCREEN_H-h));
     m_tipWindow->openWindow();
   }
   m_timer->stop();
@@ -153,13 +153,12 @@ TipWindow::TipWindow(const char *text, bool close_on_buttonpressed)
   : Window(false, text)
 {
   m_close_on_buttonpressed = close_on_buttonpressed;
-  m_hot_region = NULL;
   m_filtering = false;
   m_arrowAlign = 0;
 
-  set_sizeable(false);
-  set_moveable(false);
-  set_wantfocus(false);
+  setSizeable(false);
+  setMoveable(false);
+  setWantFocus(false);
   setAlign(JI_LEFT | JI_TOP);
 
   removeDecorativeWidgets();
@@ -175,29 +174,18 @@ TipWindow::~TipWindow()
     getManager()->removeMessageFilter(JM_BUTTONPRESSED, this);
     getManager()->removeMessageFilter(JM_KEYPRESSED, this);
   }
-  if (m_hot_region != NULL) {
-    jregion_free(m_hot_region);
-  }
 }
 
-/**
- * @param region The new hot-region. This pointer is holded by the @a widget.
- * So you can't destroy it after calling this routine.
- */
-void TipWindow::set_hotregion(JRegion region)
+void TipWindow::setHotRegion(const Region& region)
 {
-  ASSERT(region != NULL);
-
-  if (m_hot_region != NULL)
-    jregion_free(m_hot_region);
-
   if (!m_filtering) {
     m_filtering = true;
     getManager()->addMessageFilter(JM_MOTION, this);
     getManager()->addMessageFilter(JM_BUTTONPRESSED, this);
     getManager()->addMessageFilter(JM_KEYPRESSED, this);
   }
-  m_hot_region = region;
+
+  m_hotRegion = region;
 }
 
 int TipWindow::getArrowAlign() const
@@ -224,8 +212,8 @@ bool TipWindow::onProcessMessage(Message* msg)
       break;
 
     case JM_MOUSELEAVE:
-      if (m_hot_region == NULL)
-        this->closeWindow(NULL);
+      if (m_hotRegion.isEmpty())
+        closeWindow(NULL);
       break;
 
     case JM_KEYPRESSED:
@@ -250,14 +238,11 @@ bool TipWindow::onProcessMessage(Message* msg)
       break;
 
     case JM_MOTION:
-      if (m_hot_region != NULL &&
+      if (!m_hotRegion.isEmpty() &&
           getManager()->getCapture() == NULL) {
-        struct jrect box;
-
-        /* if the mouse is outside the hot-region we have to close the window */
-        if (!jregion_point_in(m_hot_region,
-                              msg->mouse.x, msg->mouse.y, &box)) {
-          this->closeWindow(NULL);
+        // If the mouse is outside the hot-region we have to close the window
+        if (!m_hotRegion.contains(Point(msg->mouse.x, msg->mouse.y))) {
+          closeWindow(NULL);
         }
       }
       break;
@@ -308,7 +293,7 @@ void TipWindow::onInitTheme(InitThemeEvent& ev)
   this->border_width.b = 7 * jguiscale();
 
   // Setup the background color.
-  setBgColor(makecol(255, 255, 200));
+  setBgColor(ui::rgba(255, 255, 200));
 }
 
 void TipWindow::onPaint(PaintEvent& ev)

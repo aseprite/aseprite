@@ -280,8 +280,8 @@ BITMAP *load_tga_pf(PACKFILE *f, RGB *pal)
    unsigned char image_id[256], image_palette[256][3];
    unsigned char id_length, palette_type, image_type, palette_entry_size;
    unsigned char bpp, descriptor_bits;
-   short unsigned int first_color, palette_colors;
-   short unsigned int left, top, image_width, image_height;
+   short unsigned int palette_colors;
+   short unsigned int image_width, image_height;
    unsigned int c, i, y, yc;
    int dest_depth;
    int compressed;
@@ -299,11 +299,11 @@ BITMAP *load_tga_pf(PACKFILE *f, RGB *pal)
    id_length = pack_getc(f);
    palette_type = pack_getc(f);
    image_type = pack_getc(f);
-   first_color = pack_igetw(f);
+   /*first_color = */ pack_igetw(f);
    palette_colors  = pack_igetw(f);
    palette_entry_size = pack_getc(f);
-   left = pack_igetw(f);
-   top = pack_igetw(f);
+   /*left = */ pack_igetw(f);
+   /*top = */ pack_igetw(f);
    image_width = pack_igetw(f);
    image_height = pack_igetw(f);
    bpp = pack_getc(f);

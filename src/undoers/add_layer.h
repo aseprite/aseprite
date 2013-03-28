@@ -1,5 +1,5 @@
 /* ASEPRITE
- * Copyright (C) 2001-2012  David Capello
+ * Copyright (C) 2001-2013  David Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -22,6 +22,7 @@
 #include "undo/object_id.h"
 #include "undoers/undoer_base.h"
 
+class Document;
 class Layer;
 
 namespace undoers {
@@ -29,14 +30,14 @@ namespace undoers {
 class AddLayer : public UndoerBase
 {
 public:
-  AddLayer(undo::ObjectsContainer* objects, Layer* folder, Layer* layer);
+  AddLayer(undo::ObjectsContainer* objects, Document* document, Layer* layer);
 
   void dispose() OVERRIDE;
   size_t getMemSize() const OVERRIDE { return sizeof(*this); }
   void revert(undo::ObjectsContainer* objects, undo::UndoersCollector* redoers) OVERRIDE;
 
 private:
-  undo::ObjectId m_folderId;
+  undo::ObjectId m_documentId;
   undo::ObjectId m_layerId;
 };
 

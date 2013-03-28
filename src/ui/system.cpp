@@ -1,5 +1,5 @@
 // ASEPRITE gui library
-// Copyright (C) 2001-2012  David Capello
+// Copyright (C) 2001-2013  David Capello
 //
 // This source file is distributed under a BSD-like license, please
 // read LICENSE.txt for more information.
@@ -17,7 +17,6 @@
 #include "ui/overlay.h"
 #include "ui/overlay_manager.h"
 #include "ui/rect.h"
-#include "ui/region.h"
 #include "ui/theme.h"
 #include "ui/widget.h"
 
@@ -33,7 +32,6 @@ namespace ui {
 /* Global output bitmap.  */
 
 BITMAP* ji_screen = NULL;
-JRegion ji_dirty_region = NULL;
 int ji_screen_w = 0;
 int ji_screen_h = 0;
 

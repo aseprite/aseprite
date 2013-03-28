@@ -1,5 +1,5 @@
 /* ASEPRITE
- * Copyright (C) 2001-2012  David Capello
+ * Copyright (C) 2001-2013  David Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,6 +20,8 @@
 
 #include "undoers/remove_layer.h"
 
+#include "document.h"
+#include "document_api.h"
 #include "raster/cel.h"
 #include "raster/cel_io.h"
 #include "raster/image.h"
@@ -87,11 +89,11 @@ private:
   Sprite* m_sprite;
 };
 
-RemoveLayer::RemoveLayer(ObjectsContainer* objects, Layer* layer)
-  : m_folderId(objects->addObject(layer->get_parent()))
+RemoveLayer::RemoveLayer(ObjectsContainer* objects, Document* document, Layer* layer)
+  : m_documentId(objects->addObject(document))
+  , m_folderId(objects->addObject(layer->getParent()))
 {
-  Layer* after = layer->get_prev();
-
+  Layer* after = layer->getPrevious();
   m_afterId = (after ? objects->addObject(after): 0);
 
   LayerSubObjectsSerializerImpl serializer(objects, layer->getSprite());
@@ -105,6 +107,7 @@ void RemoveLayer::dispose()
 
 void RemoveLayer::revert(ObjectsContainer* objects, UndoersCollector* redoers)
 {
+  Document* document = objects->getObjectT<Document>(m_documentId);
   LayerFolder* folder = objects->getObjectT<LayerFolder>(m_folderId);
   Layer* after = (m_afterId != 0 ? objects->getObjectT<Layer>(m_afterId): NULL);
 
@@ -112,9 +115,5 @@ void RemoveLayer::revert(ObjectsContainer* objects, UndoersCollector* redoers)
   LayerSubObjectsSerializerImpl serializer(objects, folder->getSprite());
   Layer* layer = read_object<Layer>(objects, m_stream, serializer);
 
-  // Push an AddLayer as redoer
-  redoers->pushUndoer(new AddLayer(objects, folder, layer));
-
-  folder->addLayer(layer);
-  folder->stackLayer(layer, after);
+  document->getApi(redoers).addLayer(folder, layer, after);
 }

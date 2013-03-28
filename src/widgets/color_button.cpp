@@ -1,5 +1,5 @@
 /* ASEPRITE
- * Copyright (C) 2001-2012  David Capello
+ * Copyright (C) 2001-2013  David Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -45,7 +45,7 @@ static int colorbutton_type()
   return type;
 }
 
-ColorButton::ColorButton(const Color& color, PixelFormat pixelFormat)
+ColorButton::ColorButton(const app::Color& color, PixelFormat pixelFormat)
   : ButtonBase("", colorbutton_type(), JI_BUTTON, JI_BUTTON)
   , m_color(color)
   , m_pixelFormat(pixelFormat)
@@ -72,12 +72,12 @@ void ColorButton::setPixelFormat(PixelFormat pixelFormat)
   invalidate();
 }
 
-Color ColorButton::getColor() const
+app::Color ColorButton::getColor() const
 {
   return m_color;
 }
 
-void ColorButton::setColor(const Color& color)
+void ColorButton::setColor(const app::Color& color)
 {
   m_color = color;
 
@@ -111,7 +111,7 @@ bool ColorButton::onProcessMessage(Message* msg)
     case JM_MOTION:
       if (hasCapture()) {
         Widget* picked = getManager()->pick(msg->mouse.x, msg->mouse.y);
-        Color color = m_color;
+        app::Color color = m_color;
 
         if (picked && picked != this) {
           // Pick a color from another color-button
@@ -132,8 +132,8 @@ bool ColorButton::onProcessMessage(Message* msg)
               x = msg->mouse.x;
               y = msg->mouse.y;
               editor->screenToEditor(x, y, &x, &y);
-              imgcolor = sprite->getPixel(x, y);
-              color = Color::fromImage(sprite->getPixelFormat(), imgcolor);
+              imgcolor = sprite->getPixel(x, y, editor->getFrame());
+              color = app::Color::fromImage(sprite->getPixelFormat(), imgcolor);
             }
           }
         }
@@ -174,21 +174,22 @@ void ColorButton::onPaint(PaintEvent& ev) // TODO use "ev.getGraphics()"
   struct jrect box, text, icon;
   jwidget_get_texticon_info(this, &box, &text, &icon, 0, 0, 0);
 
-  int bg = getBgColor();
-  if (bg < 0) bg = ji_color_face();
+  ui::Color bg = getBgColor();
+  if (is_transparent(bg))
+    bg = static_cast<SkinTheme*>(getTheme())->getColor(ThemeColor::Face);
   jdraw_rectfill(this->rc, bg);
 
-  Color color;
+  app::Color color;
 
   // When the button is pushed, show the negative
   if (isSelected()) {
-    color = Color::fromRgb(255-m_color.getRed(),
-                           255-m_color.getGreen(),
-                           255-m_color.getBlue());
+    color = app::Color::fromRgb(255-m_color.getRed(),
+                                255-m_color.getGreen(),
+                                255-m_color.getBlue());
   }
   // When the button is not pressed, show the real color
   else
-    color = this->m_color;
+    color = m_color;
 
   draw_color_button
     (ji_screen,
@@ -201,17 +202,17 @@ void ColorButton::onPaint(PaintEvent& ev) // TODO use "ev.getGraphics()"
 
   // Draw text
   std::string str = m_color.toHumanReadableString(m_pixelFormat,
-                                                  Color::ShortHumanReadableString);
+                                                  app::Color::ShortHumanReadableString);
 
   setTextQuiet(str.c_str());
   jwidget_get_texticon_info(this, &box, &text, &icon, 0, 0, 0);
 
-  int textcolor = makecol(255, 255, 255);
+  ui::Color textcolor = ui::rgba(255, 255, 255);
   if (color.isValid())
-    textcolor = color_utils::blackandwhite_neg(color.getRed(), color.getGreen(), color.getBlue());
+    textcolor = color_utils::blackandwhite_neg(ui::rgba(color.getRed(), color.getGreen(), color.getBlue()));
 
   jdraw_text(ji_screen, getFont(), getText(), text.x1, text.y1,
-             textcolor, -1, false, jguiscale());
+             textcolor, ColorNone, false, jguiscale());
 }
 
 void ColorButton::onClick(Event& ev)
@@ -223,7 +224,7 @@ void ColorButton::onClick(Event& ev)
     // Open it
     openSelectorDialog();
   }
-  else if (!m_window->is_moveable()) {
+  else if (!m_window->isMoveable()) {
     // If it is visible, close it
     closeSelectorDialog();
   }
@@ -248,22 +249,16 @@ void ColorButton::openSelectorDialog()
   else
     y = MAX(0, this->rc->y1-jrect_h(m_window->rc));
 
-  m_window->position_window(x, y);
+  m_window->positionWindow(x, y);
 
   m_window->getManager()->dispatchMessages();
   m_window->layout();
 
-  /* setup the hot-region */
-  {
-    JRect rc = jrect_new(MIN(this->rc->x1, m_window->rc->x1)-8,
-                         MIN(this->rc->y1, m_window->rc->y1)-8,
-                         MAX(this->rc->x2, m_window->rc->x2)+8,
-                         MAX(this->rc->y2, m_window->rc->y2)+8);
-    JRegion rgn = jregion_new(rc, 1);
-    jrect_free(rc);
-
-    static_cast<PopupWindow*>(m_window)->setHotRegion(rgn);
-  }
+  // Setup the hot-region
+  gfx::Rect rc = getBounds().createUnion(m_window->getBounds());
+  rc.enlarge(8);
+  gfx::Region rgn(rc);
+  static_cast<PopupWindow*>(m_window)->setHotRegion(rgn);
 }
 
 void ColorButton::closeSelectorDialog()
@@ -272,7 +267,7 @@ void ColorButton::closeSelectorDialog()
     m_window->closeWindow(NULL);
 }
 
-void ColorButton::onWindowColorChange(const Color& color)
+void ColorButton::onWindowColorChange(const app::Color& color)
 {
   setColor(color);
 }

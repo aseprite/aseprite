@@ -1,5 +1,5 @@
 /* ASEPRITE
- * Copyright (C) 2001-2012  David Capello
+ * Copyright (C) 2001-2013  David Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,6 +21,7 @@
 #include "raster/palette.h"
 #include "raster/rgbmap.h"
 #include "raster/sprite.h"
+#include "settings/document_settings.h"
 
 //////////////////////////////////////////////////////////////////////
 // Ink Processing
@@ -140,7 +141,7 @@ static void ink_hline16_transparent(int x1, int y, int x2, ToolLoop* loop)
 static void ink_hline8_transparent(int x1, int y, int x2, ToolLoop* loop)
 {
   Palette* pal = get_current_palette();
-  RgbMap* rgbmap = loop->getSprite()->getRgbMap();
+  RgbMap* rgbmap = loop->getRgbMap();
   uint32_t c;
   uint32_t tc = pal->getEntry(loop->getPrimaryColor());
   int opacity = loop->getOpacity();
@@ -219,7 +220,7 @@ namespace {
 static void ink_hline32_blur(int x1, int y, int x2, ToolLoop* loop)
 {
   int opacity = loop->getOpacity();
-  TiledMode tiledMode = loop->getTiledMode();
+  TiledMode tiledMode = loop->getDocumentSettings()->getTiledMode();
   const Image* src = loop->getSrcImage();
   BlurGetPixelsDelegateRgba delegate;
 
@@ -252,7 +253,7 @@ static void ink_hline32_blur(int x1, int y, int x2, ToolLoop* loop)
 static void ink_hline16_blur(int x1, int y, int x2, ToolLoop* loop)
 {
   int opacity = loop->getOpacity();
-  TiledMode tiledMode = loop->getTiledMode();
+  TiledMode tiledMode = loop->getDocumentSettings()->getTiledMode();
   const Image* src = loop->getSrcImage();
   BlurGetPixelsDelegateGrayscale delegate;
 
@@ -281,9 +282,9 @@ static void ink_hline16_blur(int x1, int y, int x2, ToolLoop* loop)
 static void ink_hline8_blur(int x1, int y, int x2, ToolLoop* loop)
 {
   const Palette *pal = get_current_palette();
-  RgbMap* rgbmap = loop->getSprite()->getRgbMap();
+  RgbMap* rgbmap = loop->getRgbMap();
   int opacity = loop->getOpacity();
-  TiledMode tiledMode = loop->getTiledMode();
+  TiledMode tiledMode = loop->getDocumentSettings()->getTiledMode();
   const Image* src = loop->getSrcImage();
   BlurGetPixelsDelegateIndexed delegate(pal);
 
@@ -345,7 +346,7 @@ static void ink_hline8_replace(int x1, int y, int x2, ToolLoop* loop)
 {
   int color1 = loop->getPrimaryColor();
   const Palette *pal = get_current_palette();
-  RgbMap* rgbmap = loop->getSprite()->getRgbMap();
+  RgbMap* rgbmap = loop->getRgbMap();
   uint32_t c;
   uint32_t tc = pal->getEntry(loop->getSecondaryColor());
   int opacity = loop->getOpacity();
@@ -393,7 +394,7 @@ static void ink_hline32_jumble(int x1, int y, int x2, ToolLoop* loop)
 {
   int opacity = loop->getOpacity();
   Point speed(loop->getSpeed() / 4);
-  TiledMode tiled = loop->getTiledMode();
+  TiledMode tiled = loop->getDocumentSettings()->getTiledMode();
   int u, v, color;
 
   DEFINE_INK_PROCESSING_SRCDST
@@ -409,7 +410,7 @@ static void ink_hline16_jumble(int x1, int y, int x2, ToolLoop* loop)
 {
   int opacity = loop->getOpacity();
   Point speed(loop->getSpeed() / 4);
-  TiledMode tiled = loop->getTiledMode();
+  TiledMode tiled = loop->getDocumentSettings()->getTiledMode();
   int u, v, color;
 
   DEFINE_INK_PROCESSING_SRCDST
@@ -424,11 +425,11 @@ static void ink_hline16_jumble(int x1, int y, int x2, ToolLoop* loop)
 static void ink_hline8_jumble(int x1, int y, int x2, ToolLoop* loop)
 {
   const Palette *pal = get_current_palette();
-  const RgbMap* rgbmap = loop->getSprite()->getRgbMap();
+  const RgbMap* rgbmap = loop->getRgbMap();
   uint32_t c, tc;
   int opacity = loop->getOpacity();
   Point speed(loop->getSpeed() / 4);
-  TiledMode tiled = loop->getTiledMode();
+  TiledMode tiled = loop->getDocumentSettings()->getTiledMode();
   int u, v, color;
 
   DEFINE_INK_PROCESSING_SRCDST

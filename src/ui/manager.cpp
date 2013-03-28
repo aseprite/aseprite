@@ -1,5 +1,5 @@
 // ASEPRITE gui library
-// Copyright (C) 2001-2012  David Capello
+// Copyright (C) 2001-2013  David Capello
 //
 // This source file is distributed under a BSD-like license, please
 // read LICENSE.txt for more information.
@@ -355,22 +355,22 @@ bool Manager::generateMessages()
 
       if ((window) &&
           // We cannot change Z-order of desktop windows
-          (!window->is_desktop()) &&
+          (!window->isDesktop()) &&
           // We cannot change Z order of foreground windows because a
           // foreground window can launch other background windows
           // which should be kept on top of the foreground one.
-          (!window->is_foreground()) &&
+          (!window->isForeground()) &&
           // If the window is not already the top window of the manager.
           (window != win_manager->getTopWindow())) {
         // Put it in the top of the list
         win_manager->removeChild(window);
 
-        if (window->is_ontop())
+        if (window->isOnTop())
           win_manager->insertChild(0, window);
         else {
           int pos = (int)win_manager->getChildren().size();
           UI_FOREACH_WIDGET_BACKWARD(win_manager->getChildren(), it) {
-            if (static_cast<Window*>(*it)->is_ontop())
+            if (static_cast<Window*>(*it)->isOnTop())
               break;
 
             --pos;
@@ -509,8 +509,8 @@ Window* Manager::getForegroundWindow()
 {
   UI_FOREACH_WIDGET(getChildren(), it) {
     Window* window = static_cast<Window*>(*it);
-    if (window->is_foreground() ||
-        window->is_desktop())
+    if (window->isForeground() ||
+        window->isDesktop())
       return window;
   }
   return NULL;
@@ -803,7 +803,7 @@ void Manager::removeMessageFilterFor(Widget* widget)
 void Manager::_openWindow(Window* window)
 {
   // Free all widgets of special states.
-  if (window->is_wantfocus()) {
+  if (window->isWantFocus()) {
     freeCapture();
     freeMouse();
     freeFocus();
@@ -824,26 +824,24 @@ void Manager::_openWindow(Window* window)
 void Manager::_closeWindow(Window* window, bool redraw_background)
 {
   Message* msg;
-  JRegion reg1;
+  gfx::Region reg1;
 
   if (!hasChild(window))
     return;
 
   if (redraw_background)
-    reg1 = jwidget_get_region(window);
-  else
-    reg1 = NULL;
+    window->getRegion(reg1);
 
   // Close all windows to this desktop
-  if (window->is_desktop()) {
+  if (window->isDesktop()) {
     while (!getChildren().empty()) {
       Window* child = static_cast<Window*>(getChildren().front());
       if (child == window)
         break;
       else {
-        JRegion reg2 = jwidget_get_region(window);
-        jregion_union(reg1, reg1, reg2);
-        jregion_free(reg2);
+        gfx::Region reg2;
+        window->getRegion(reg2);
+        reg1.createUnion(reg1, reg2);
 
         _closeWindow(child, false);
       }
@@ -872,10 +870,7 @@ void Manager::_closeWindow(Window* window, bool redraw_background)
   removeChild(window);
 
   // Redraw background.
-  if (reg1) {
-    invalidateRegion(reg1);
-    jregion_free(reg1);
-  }
+  invalidateRegion(reg1);
 
   // Maybe the window is in the "new_windows" list.
   WidgetsList::iterator it =
@@ -890,10 +885,6 @@ bool Manager::onProcessMessage(Message* msg)
 
     case JM_SETPOS:
       layoutManager(&msg->setpos.rect);
-      return true;
-
-    case JM_DRAW:
-      jdraw_rectfill(&msg->draw.rect, getTheme()->desktop_color);
       return true;
 
     case JM_KEYPRESSED:
@@ -911,8 +902,8 @@ bool Manager::onProcessMessage(Message* msg)
           if ((*it2)->sendMessage(msg))
             return true;
 
-        if (w->is_foreground() ||
-            w->is_desktop())
+        if (w->isForeground() ||
+            w->isDesktop())
           break;
       }
 
@@ -926,6 +917,11 @@ bool Manager::onProcessMessage(Message* msg)
   }
 
   return Widget::onProcessMessage(msg);
+}
+
+void Manager::onPaint(PaintEvent& ev)
+{
+  getTheme()->paintDesktop(ev);
 }
 
 void Manager::onBroadcastMouseMessage(WidgetsList& targets)
@@ -1037,11 +1033,8 @@ void Manager::pumpQueue()
           "JM_CLOSE_APP",
           "JM_DRAW",
           "JM_TIMER",
-          "JM_REQSIZE",
           "JM_SETPOS",
           "JM_WINMOVE",
-          "JM_DEFERREDFREE",
-          "JM_DIRTYCHILDREN",
           "JM_QUEUEPROCESSING",
 
           "JM_KEYPRESSED",
@@ -1088,8 +1081,6 @@ void Manager::pumpQueue()
                msg->draw.rect.x2-1, msg->draw.rect.y2-1);
         fflush(stdout);
 #endif
-        /* rectfill(ji_screen, 0, 0, JI_SCREEN_W-1, JI_SCREEN_H-1, makecol(255, 0, 0)); */
-        /* vsync(); vsync(); vsync(); vsync(); */
 
         dirty_display_flag = true;
       }
@@ -1117,14 +1108,11 @@ void Manager::pumpQueue()
   }
 }
 
-void Manager::invalidateDisplayRegion(const JRegion region)
+void Manager::invalidateDisplayRegion(const gfx::Region& region)
 {
-  JRegion reg1 = jregion_new(NULL, 0);
-  JRegion reg2 = jregion_new(this->rc, 0);
-  JRegion reg3;
-
-  // TODO intersect with jwidget_get_drawable_region()???
-  jregion_intersect(reg1, region, reg2);
+  // TODO intersect with getDrawableRegion()???
+  gfx::Region reg1;
+  reg1.createIntersection(region, gfx::Region(getBounds()));
 
   // Redraw windows from top to background.
   bool withDesktop = false;
@@ -1135,25 +1123,21 @@ void Manager::invalidateDisplayRegion(const JRegion region)
     window->invalidateRegion(reg1);
 
     // There is desktop?
-    if (window->is_desktop()) {
+    if (window->isDesktop()) {
       withDesktop = true;
       break;                                    // Work done
     }
 
     // Clip this window area for the next window.
-    reg3 = jwidget_get_region(window);
-    jregion_copy(reg2, reg1);
-    jregion_subtract(reg1, reg2, reg3);
-    jregion_free(reg3);
+    gfx::Region reg3;
+    window->getRegion(reg3);
+    reg1.createSubtraction(reg1, reg3);
   }
 
   // Invalidate areas outside windows (only when there are not a
   // desktop window).
   if (!withDesktop)
     Widget::invalidateRegion(reg1);
-
-  jregion_free(reg1);
-  jregion_free(reg2);
 }
 
 LayoutIO* Manager::getLayoutIO()

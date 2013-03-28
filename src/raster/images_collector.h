@@ -1,5 +1,5 @@
 /* ASEPRITE
- * Copyright (C) 2001-2012  David Capello
+ * Copyright (C) 2001-2013  David Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,6 +20,7 @@
 #define RASTER_IMAGES_REF_H_INCLUDED
 
 #include <list>
+#include "raster/frame_number.h"
 
 class Sprite;
 class Image;
@@ -53,13 +54,14 @@ public:
 
   // Creates a collection of images from the specified sprite.
   // Parameters:
-  // * allLayers: True if you want to collect images from all layers or
-  //              false if you want to images from the current layer only.
   // * allFrames: True if you want to collect images from all frames
-  //              or false if you need images from the current frame.
+  //              or false if you need images from the given "frame" param.
   // * forWrite: True if you will modify the images (it is used to avoid
   //             returning images from layers which are read-only/write-locked).
-  ImagesCollector(const Sprite* sprite, bool allLayers, bool allFrames, bool forWrite);
+  ImagesCollector(Layer* layer,
+                  FrameNumber frame,
+                  bool allFrames,
+                  bool forWrite);
 
   ItemsIterator begin() { return m_items.begin(); }
   ItemsIterator end() { return m_items.end(); }
@@ -68,7 +70,7 @@ public:
   bool empty() const { return m_items.empty(); }
 
 private:
-  void collectFromLayer(Layer* layer);
+  void collectFromLayer(Layer* layer, FrameNumber frame);
   void collectImage(Layer* layer, Cel* cel);
 
   Items m_items;

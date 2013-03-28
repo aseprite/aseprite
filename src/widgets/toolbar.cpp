@@ -1,5 +1,5 @@
 /* ASEPRITE
- * Copyright (C) 2001-2012  David Capello
+ * Copyright (C) 2001-2013  David Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -34,6 +34,8 @@
 #include "tools/tool_box.h"
 #include "ui/gui.h"
 #include "ui_context.h"
+#include "widgets/main_window.h"
+#include "widgets/mini_editor.h"
 #include "widgets/status_bar.h"
 
 #include <allegro.h>
@@ -57,6 +59,7 @@ public:
 
 protected:
   bool onProcessMessage(Message* msg) OVERRIDE;
+  void onPreferredSize(PreferredSizeEvent& ev) OVERRIDE;
 
 private:
   Rect getToolBounds(int index);
@@ -123,38 +126,34 @@ bool ToolBar::onProcessMessage(Message* msg)
 {
   switch (msg->type) {
 
-    case JM_REQSIZE: {
-      Size iconsize = getToolIconSize(this);
-      msg->reqsize.w = iconsize.w + this->border_width.l + this->border_width.r;
-      msg->reqsize.h = iconsize.h + this->border_width.t + this->border_width.b;
-      return true;
-    }
-
     case JM_DRAW: {
       BITMAP *doublebuffer = create_bitmap(jrect_w(&msg->draw.rect),
                                            jrect_h(&msg->draw.rect));
       SkinTheme* theme = static_cast<SkinTheme*>(this->getTheme());
+      ui::Color normalFace = theme->getColor(ThemeColor::ButtonNormalFace);
+      ui::Color hotFace = theme->getColor(ThemeColor::ButtonHotFace);
       ToolBox* toolbox = App::instance()->getToolBox();
       ToolGroupList::iterator it = toolbox->begin_group();
       int groups = toolbox->getGroupsCount();
       Rect toolrc;
 
-      clear_to_color(doublebuffer, theme->get_tab_selected_face_color());
+      clear_to_color(doublebuffer, to_system(theme->getColor(ThemeColor::TabSelectedFace)));
 
       for (int c=0; c<groups; ++c, ++it) {
         ToolGroup* tool_group = *it;
         Tool* tool = m_selected_in_group[tool_group];
-        int face, nw;
+        ui::Color face;
+        int nw;
 
         if (UIContext::instance()->getSettings()->getCurrentTool() == tool ||
             m_hot_index == c) {
           nw = PART_TOOLBUTTON_HOT_NW;
-          face = theme->get_button_hot_face_color();
+          face = hotFace;
         }
         else {
           nw = c >= 0 && c < groups-1 ? PART_TOOLBUTTON_NORMAL_NW:
                                         PART_TOOLBUTTON_LAST_NW;
-          face = theme->get_button_normal_face_color();
+          face = normalFace;
         }
 
         toolrc = getToolGroupBounds(c);
@@ -179,8 +178,7 @@ bool ToolBar::onProcessMessage(Message* msg)
                             toolrc,
                             isHot ? PART_TOOLBUTTON_HOT_NW:
                                     PART_TOOLBUTTON_LAST_NW,
-                            isHot ? theme->get_button_hot_face_color():
-                                    theme->get_button_normal_face_color());
+                            isHot ? hotFace: normalFace);
 
       BITMAP* icon = theme->get_toolicon("configuration");
       if (icon) {
@@ -194,13 +192,12 @@ bool ToolBar::onProcessMessage(Message* msg)
       toolrc = getToolGroupBounds(MiniEditorVisibilityIndex);
       toolrc.offset(-msg->draw.rect.x1, -msg->draw.rect.y1);
       isHot = (m_hot_index == MiniEditorVisibilityIndex ||
-               is_mini_editor_enabled());
+               App::instance()->getMainWindow()->getMiniEditor()->isMiniEditorEnabled());
       theme->draw_bounds_nw(doublebuffer,
                             toolrc,
                             isHot ? PART_TOOLBUTTON_HOT_NW:
                                     PART_TOOLBUTTON_LAST_NW,
-                            isHot ? theme->get_button_hot_face_color():
-                                    theme->get_button_normal_face_color());
+                            isHot ? hotFace: normalFace);
 
       icon = theme->get_toolicon("minieditor");
       if (icon) {
@@ -253,7 +250,10 @@ bool ToolBar::onProcessMessage(Message* msg)
       toolrc = getToolGroupBounds(MiniEditorVisibilityIndex);
       if (msg->mouse.y >= toolrc.y && msg->mouse.y < toolrc.y+toolrc.h) {
         // Switch the state of the mini editor
-        enable_mini_editor(!is_mini_editor_enabled());
+        widgets::MiniEditorWindow* miniEditorWindow =
+          App::instance()->getMainWindow()->getMiniEditor();
+        bool state = miniEditorWindow->isMiniEditorEnabled();
+        miniEditorWindow->setMiniEditorEnabled(!state);
       }
       break;
     }
@@ -338,6 +338,14 @@ bool ToolBar::onProcessMessage(Message* msg)
   return Widget::onProcessMessage(msg);
 }
 
+void ToolBar::onPreferredSize(PreferredSizeEvent& ev)
+{
+  Size iconsize = getToolIconSize(this);
+  iconsize.w += this->border_width.l + this->border_width.r;
+  iconsize.h += this->border_width.t + this->border_width.b;
+  ev.setPreferredSize(iconsize);
+}
+
 int ToolBar::getToolGroupIndex(ToolGroup* group)
 {
   ToolBox* toolbox = App::instance()->getToolBox();
@@ -397,9 +405,7 @@ void ToolBar::openPopupWindow(int group_index, ToolGroup* tool_group)
 
   // Redraw the overlapped area and save it to use it in the ToolStrip::onProcessMessage(JM_DRAW)
   {
-    JRect rcTemp = jrect_new(rc.x, rc.y, rc.x+rc.w, rc.y+rc.h);
-    getManager()->invalidateRect(rcTemp);
-    jrect_free(rcTemp);
+    getManager()->invalidateRect(rc);
 
     // Flush JM_DRAW messages and send them
     getManager()->flushRedraw();
@@ -410,13 +416,11 @@ void ToolBar::openPopupWindow(int group_index, ToolGroup* tool_group)
   }
 
   // Set hotregion of popup window
-  {
-    jrect rc2 = { rc.x, rc.y, this->rc->x2, rc.y+rc.h };
-    JRegion hotregion = jregion_new(&rc2, 1);
-    m_popupWindow->setHotRegion(hotregion);
-  }
+  Region rgn(rc);
+  rgn.createUnion(rgn, Region(getBounds()));
+  m_popupWindow->setHotRegion(rgn);
 
-  m_popupWindow->set_autoremap(false);
+  m_popupWindow->setAutoRemap(false);
   m_popupWindow->setBounds(rc);
   toolstrip->setBounds(rc);
   m_popupWindow->openWindow();
@@ -502,7 +506,7 @@ void ToolBar::openTipWindow(int group_index, Tool* tool)
     tooltip = "Configure Tool";
   }
   else if (group_index == MiniEditorVisibilityIndex) {
-    if (is_mini_editor_enabled())
+    if (App::instance()->getMainWindow()->getMiniEditor()->isMiniEditorEnabled())
       tooltip = "Disable Mini-Editor";
     else
       tooltip = "Enable Mini-Editor";
@@ -512,7 +516,7 @@ void ToolBar::openTipWindow(int group_index, Tool* tool)
 
   m_tipWindow = new TipWindow(tooltip.c_str(), true);
   m_tipWindow->setArrowAlign(JI_TOP | JI_RIGHT);
-  m_tipWindow->remap_window();
+  m_tipWindow->remapWindow();
 
   Rect toolrc = getToolGroupBounds(group_index);
   Point arrow = tool ? getToolPositionInGroup(group_index, tool): Point(0, 0);
@@ -521,8 +525,8 @@ void ToolBar::openTipWindow(int group_index, Tool* tool)
   int x = toolrc.x - w + (tool && m_popupWindow && m_popupWindow->isVisible() ? arrow.x-m_popupWindow->getBounds().w: 0);
   int y = toolrc.y + toolrc.h;
 
-  m_tipWindow->position_window(MID(0, x, JI_SCREEN_W-w),
-                               MID(0, y, JI_SCREEN_H-h));
+  m_tipWindow->positionWindow(MID(0, x, JI_SCREEN_W-w),
+                              MID(0, y, JI_SCREEN_H-h));
 
   if (m_tipOpened)
     m_tipWindow->openWindow();
@@ -602,23 +606,6 @@ bool ToolStrip::onProcessMessage(Message* msg)
 {
   switch (msg->type) {
 
-    case JM_REQSIZE: {
-      ToolBox* toolbox = App::instance()->getToolBox();
-      int c = 0;
-
-      for (ToolIterator it = toolbox->begin(); it != toolbox->end(); ++it) {
-        Tool* tool = *it;
-        if (tool->getGroup() == m_group) {
-          ++c;
-        }
-      }
-
-      Size iconsize = getToolIconSize(this);
-      msg->reqsize.w = iconsize.w * c;
-      msg->reqsize.h = iconsize.h;
-      return true;
-    }
-
     case JM_DRAW: {
       BITMAP *doublebuffer = create_bitmap(jrect_w(&msg->draw.rect),
                                            jrect_h(&msg->draw.rect));
@@ -637,16 +624,17 @@ bool ToolStrip::onProcessMessage(Message* msg)
       for (ToolIterator it = toolbox->begin(); it != toolbox->end(); ++it) {
         Tool* tool = *it;
         if (tool->getGroup() == m_group) {
-          int face, nw;
+          ui::Color face;
+          int nw;
 
           if (UIContext::instance()->getSettings()->getCurrentTool() == tool ||
               m_hot_tool == tool) {
             nw = PART_TOOLBUTTON_HOT_NW;
-            face = theme->get_button_hot_face_color();
+            face = theme->getColor(ThemeColor::ButtonHotFace);
           }
           else {
             nw = PART_TOOLBUTTON_LAST_NW;
-            face = theme->get_button_normal_face_color();
+            face = theme->getColor(ThemeColor::ButtonNormalFace);
           }
 
           toolrc = getToolBounds(index++);
@@ -716,6 +704,22 @@ bool ToolStrip::onProcessMessage(Message* msg)
 
   }
   return Widget::onProcessMessage(msg);
+}
+
+void ToolStrip::onPreferredSize(PreferredSizeEvent& ev)
+{
+  ToolBox* toolbox = App::instance()->getToolBox();
+  int c = 0;
+
+  for (ToolIterator it = toolbox->begin(); it != toolbox->end(); ++it) {
+    Tool* tool = *it;
+    if (tool->getGroup() == m_group) {
+      ++c;
+    }
+  }
+
+  Size iconsize = getToolIconSize(this);
+  ev.setPreferredSize(Size(iconsize.w * c, iconsize.h));
 }
 
 Rect ToolStrip::getToolBounds(int index)

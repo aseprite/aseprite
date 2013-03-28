@@ -1,5 +1,5 @@
 /* ASEPRITE
- * Copyright (C) 2001-2012  David Capello
+ * Copyright (C) 2001-2013  David Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,33 +16,34 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifndef UNDOERS_SET_CURRENT_FRAME_H_INCLUDED
-#define UNDOERS_SET_CURRENT_FRAME_H_INCLUDED
+#ifndef WIDGETS_WORKSPACE_PART_H_INCLUDED
+#define WIDGETS_WORKSPACE_PART_H_INCLUDED
 
-#include "raster/frame_number.h"
-#include "undo/object_id.h"
-#include "undoers/undoer_base.h"
+#include "ui/box.h"
+#include "widgets/workspace_views.h"
+#include <vector>
 
-#include <sstream>
+namespace widgets {
 
-class Sprite;
+  class WorkspacePart : public ui::Box
+  {
+  public:
+    WorkspacePart();
+    ~WorkspacePart();
 
-namespace undoers {
+    size_t getViewCount() { return m_views.size(); }
 
-class SetCurrentFrame : public UndoerBase
-{
-public:
-  SetCurrentFrame(undo::ObjectsContainer* objects, Sprite* sprite);
+    void addView(WorkspaceView* view);
+    void removeView(WorkspaceView* view);
 
-  void dispose() OVERRIDE;
-  size_t getMemSize() const OVERRIDE { return sizeof(*this); }
-  void revert(undo::ObjectsContainer* objects, undo::UndoersCollector* redoers) OVERRIDE;
+    WorkspaceView* getActiveView() { return m_activeView; }
+    void setActiveView(WorkspaceView* view);
 
-private:
-  undo::ObjectId m_spriteId;
-  FrameNumber m_frame;
-};
+  private:
+    WorkspaceView* m_activeView;
+    WorkspaceViews m_views;
+  };
 
-} // namespace undoers
+} // namespace widgets
 
-#endif  // UNDOERS_SET_CURRENT_FRAME_H_INCLUDED
+#endif

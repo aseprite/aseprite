@@ -1,5 +1,5 @@
 /* ASEPRITE
- * Copyright (C) 2001-2012  David Capello
+ * Copyright (C) 2001-2013  David Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -34,7 +34,7 @@ public:
 
   void notifyStateChanged(Editor* editor);
   void notifyScrollChanged(Editor* editor);
-  void notifyDocumentChanged(Editor* editor);
+  void notifyFrameChanged(Editor* editor);
 
 private:
   Observers<EditorObserver> m_observers;

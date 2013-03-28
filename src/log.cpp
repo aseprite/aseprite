@@ -1,5 +1,5 @@
 /* ASEPRITE
- * Copyright (C) 2001-2012  David Capello
+ * Copyright (C) 2001-2013  David Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -47,9 +47,13 @@ static std::string log_filename;
 static FILE *log_fileptr = NULL;
 #endif
 
+static LoggerModule* logger_instance = NULL;
+
 LoggerModule::LoggerModule(bool verbose)
   : m_verbose(verbose)
 {
+  logger_instance = this;
+
 #ifdef NEED_LOG
   ResourceFinder rf;
   rf.findInBinDir("aseprite.log");
@@ -67,13 +71,15 @@ LoggerModule::~LoggerModule()
     log_fileptr = NULL;
   }
 #endif
+
+  logger_instance = NULL;
 }
 
 //////////////////////////////////////////////////////////////////////
 
-void verbose_printf(const char *format, ...)
+void verbose_printf(const char* format, ...)
 {
-  if (!App::instance()) {
+  if (!logger_instance) {
     va_list ap;
     va_start(ap, format);
     vfprintf(stderr, format, ap);
@@ -82,7 +88,7 @@ void verbose_printf(const char *format, ...)
     return;
   }
 
-  if (!App::instance()->getLogger()->isVerbose())
+  if (!logger_instance->isVerbose())
     return;
 
 #ifdef NEED_LOG

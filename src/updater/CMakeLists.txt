@@ -1,5 +1,5 @@
 # ASEPRITE
-# Copyright (C) 2001-2012  David Capello
+# Copyright (C) 2001-2013  David Capello
 
 set(UPDATER_LIB_SOURCES
   check_update.cpp

@@ -1,5 +1,5 @@
 /* ASEPRITE
- * Copyright (C) 2001-2012  David Capello
+ * Copyright (C) 2001-2013  David Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -53,11 +53,9 @@ void PopupWindowPin::onPinClick(Event& ev)
     makeFloating();
   }
   else {
-    JRect rc = jrect_new(this->rc->x1-8, this->rc->y1-8, this->rc->x2+8, this->rc->y2+8);
-    JRegion rgn = jregion_new(rc, 1);
-    jrect_free(rc);
-
-    setHotRegion(rgn);
+    gfx::Rect rc = getBounds();
+    rc.enlarge(8);
+    setHotRegion(gfx::Region(rc));
     makeFixed();
   }
 }

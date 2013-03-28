@@ -1,5 +1,5 @@
 /* ASEPRITE
- * Copyright (C) 2001-2012  David Capello
+ * Copyright (C) 2001-2013  David Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,7 +19,13 @@
 #ifndef UI_CONTEXT_H_INCLUDED
 #define UI_CONTEXT_H_INCLUDED
 
+#include "base/compiler_specific.h"
 #include "context.h"
+
+class Editor;
+namespace widgets { class DocumentView; }
+
+typedef std::vector<widgets::DocumentView*> DocumentViews;
 
 class UIContext : public Context
 {
@@ -31,14 +37,26 @@ public:
 
   virtual bool isUiAvailable() const { return true; }
 
+  widgets::DocumentView* getActiveView() const;
+  void setActiveView(widgets::DocumentView* documentView);
+
+  // Returns the number of views that the given document has.
+  size_t countViewsOf(Document* document) const;
+
+  // Returns the current editor. It can be null.
+  Editor* getActiveEditor();
+
+  // Returns the active editor for the given document, or creates a
+  // new one if it's necessary.
+  Editor* getEditorFor(Document* document);
+
 protected:
-  virtual void onAddDocument(Document* document);
-  virtual void onRemoveDocument(Document* document);
-  virtual void onSetActiveDocument(Document* document);
+  virtual void onAddDocument(Document* document) OVERRIDE;
+  virtual void onRemoveDocument(Document* document) OVERRIDE;
+  virtual void onGetActiveLocation(DocumentLocation* location) const OVERRIDE;
 
 private:
   static UIContext* m_instance;
-
 };
 
 #endif

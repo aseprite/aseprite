@@ -1,5 +1,5 @@
 /* ASEPRITE
- * Copyright (C) 2001-2012  David Capello
+ * Copyright (C) 2001-2013  David Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -47,17 +47,20 @@ ExitCommand::ExitCommand()
 
 void ExitCommand::onExecute(Context* context)
 {
-  Document* document = context->getFirstDocument();
+  const Documents& docs = context->getDocuments();
+  bool modifiedFiles = false;
 
-  while (document) {
-    // Check if this sprite is modified
+  for (Documents::const_iterator it=docs.begin(), end=docs.end(); it!=end; ++it) {
+    const Document* document = *it;
     if (document->isModified()) {
-      if (ui::Alert::show("Warning<<There are sprites with changes.<<Do you want quit anyway?||&Yes||&No") != 1) {
-        return;
-      }
+      modifiedFiles = true;
       break;
     }
-    document = context->getNextDocument(document);
+  }
+
+  if (modifiedFiles) {
+    if (ui::Alert::show("Warning<<There are sprites with changes.<<Do you want quit anyway?||&Yes||&No") != 1)
+      return; // In this case the user doesn't want to close with modified files
   }
 
   // Close the window

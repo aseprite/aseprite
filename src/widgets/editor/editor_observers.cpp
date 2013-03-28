@@ -1,5 +1,5 @@
 /* ASEPRITE
- * Copyright (C) 2001-2012  David Capello
+ * Copyright (C) 2001-2013  David Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -39,15 +39,15 @@ void EditorObservers::removeObserver(EditorObserver* observer)
 
 void EditorObservers::notifyStateChanged(Editor* editor)
 {
-  m_observers.notifyObservers(&EditorObserver::stateChanged, editor);
+  m_observers.notifyObservers(&EditorObserver::onStateChanged, editor);
 }
 
 void EditorObservers::notifyScrollChanged(Editor* editor)
 {
-  m_observers.notifyObservers(&EditorObserver::scrollChanged, editor);
+  m_observers.notifyObservers(&EditorObserver::onScrollChanged, editor);
 }
 
-void EditorObservers::notifyDocumentChanged(Editor* editor)
+void EditorObservers::notifyFrameChanged(Editor* editor)
 {
-  m_observers.notifyObservers(&EditorObserver::documentChanged, editor);
+  m_observers.notifyObservers(&EditorObserver::onFrameChanged, editor);
 }

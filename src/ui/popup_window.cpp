@@ -1,5 +1,5 @@
 // ASEPRITE gui library
-// Copyright (C) 2001-2012  David Capello
+// Copyright (C) 2001-2013  David Capello
 //
 // This source file is distributed under a BSD-like license, please
 // read LICENSE.txt for more information.
@@ -12,8 +12,8 @@
 #include "ui/graphics.h"
 #include "ui/gui.h"
 #include "ui/intern.h"
-#include "ui/paint_event.h"
 #include "ui/preferred_size_event.h"
+#include "ui/theme.h"
 
 using namespace gfx;
 
@@ -23,12 +23,11 @@ PopupWindow::PopupWindow(const char* text, bool close_on_buttonpressed)
   : Window(false, text)
 {
   m_close_on_buttonpressed = close_on_buttonpressed;
-  m_hot_region = NULL;
   m_filtering = false;
 
-  set_sizeable(false);
-  set_moveable(false);
-  set_wantfocus(false);
+  setSizeable(false);
+  setMoveable(false);
+  setWantFocus(false);
   setAlign(JI_LEFT | JI_TOP);
 
   removeDecorativeWidgets();
@@ -40,37 +39,29 @@ PopupWindow::PopupWindow(const char* text, bool close_on_buttonpressed)
 PopupWindow::~PopupWindow()
 {
   stopFilteringMessages();
-
-  if (m_hot_region != NULL)
-    jregion_free(m_hot_region);
 }
 
 /**
  * @param region The new hot-region. This pointer is holded by the @a widget.
  * So you cannot destroy it after calling this routine.
  */
-void PopupWindow::setHotRegion(JRegion region)
+void PopupWindow::setHotRegion(const gfx::Region& region)
 {
-  ASSERT(region != NULL);
-
-  if (m_hot_region != NULL)
-    jregion_free(m_hot_region);
-
   startFilteringMessages();
 
-  m_hot_region = region;
+  m_hotRegion = region;
 }
 
 void PopupWindow::makeFloating()
 {
   stopFilteringMessages();
-  set_moveable(true);
+  setMoveable(true);
 }
 
 void PopupWindow::makeFixed()
 {
   startFilteringMessages();
-  set_moveable(false);
+  setMoveable(false);
 }
 
 bool PopupWindow::onProcessMessage(Message* msg)
@@ -82,7 +73,7 @@ bool PopupWindow::onProcessMessage(Message* msg)
       break;
 
     case JM_MOUSELEAVE:
-      if (m_hot_region == NULL && !is_moveable())
+      if (m_hotRegion.isEmpty() && !isMoveable())
         closeWindow(NULL);
       break;
 
@@ -118,14 +109,12 @@ bool PopupWindow::onProcessMessage(Message* msg)
       break;
 
     case JM_MOTION:
-      if (!is_moveable() &&
-          m_hot_region != NULL &&
+      if (!isMoveable() &&
+          !m_hotRegion.isEmpty() &&
           getManager()->getCapture() == NULL) {
-        struct jrect box;
-
         // If the mouse is outside the hot-region we have to close the
         // window.
-        if (!jregion_point_in(m_hot_region, msg->mouse.x, msg->mouse.y, &box))
+        if (!m_hotRegion.contains(Point(msg->mouse.x, msg->mouse.y)))
           closeWindow(NULL);
       }
       break;
@@ -171,16 +160,7 @@ void PopupWindow::onPreferredSize(PreferredSizeEvent& ev)
 
 void PopupWindow::onPaint(PaintEvent& ev)
 {
-  Graphics* g = ev.getGraphics();
-  gfx::Rect pos = getClientBounds();
-
-  g->drawRect(makecol(0, 0, 0), pos);
-  pos.shrink(1);
-
-  g->fillRect(this->getBgColor(), pos);
-  pos.shrink(getBorder());
-
-  g->drawString(getText(), ji_color_foreground(), this->getBgColor(), pos, getAlign());
+  getTheme()->paintPopupWindow(ev);
 }
 
 void PopupWindow::onInitTheme(InitThemeEvent& ev)

@@ -1,5 +1,5 @@
 /* ASEPRITE
- * Copyright (C) 2001-2012  David Capello
+ * Copyright (C) 2001-2013  David Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -28,8 +28,6 @@ class ContextObserver
 {
 public:
   virtual ~ContextObserver() { }
-  virtual void onActiveDocumentBeforeChange(Context* context) { }
-  virtual void onActiveDocumentAfterChange(Context* context) { }
   virtual void onCommandBeforeExecution(Context* context) { }
   virtual void onCommandAfterExecution(Context* context) { }
   virtual void onAddDocument(Context* context, Document* document) { }

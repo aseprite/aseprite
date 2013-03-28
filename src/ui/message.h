@@ -1,5 +1,5 @@
 // ASEPRITE gui library
-// Copyright (C) 2001-2012  David Capello
+// Copyright (C) 2001-2013  David Capello
 //
 // This source file is distributed under a BSD-like license, please
 // read LICENSE.txt for more information.
@@ -61,13 +61,6 @@ namespace ui {
     bool middle : 1;              /* middle button */
   };
 
-  struct MessageSignal
-  {
-    MessageAny any;
-    int num;                      /* signal number */
-    Widget* from;                 /* signal generator */
-  };
-
   struct MessageTimer
   {
     MessageAny any;
@@ -79,18 +72,6 @@ namespace ui {
   {
     MessageAny any;
     struct jrect rect;            /* set position */
-  };
-
-  struct MessageReqSize
-  {
-    MessageAny any;
-    int w, h;                     /* requested size */
-  };
-
-  struct MessageDrawRgn
-  {
-    MessageAny any;
-    JRegion region;               /* region to redraw */
   };
 
   struct MessageUser
@@ -107,11 +88,8 @@ namespace ui {
     MessageKey key;
     MessageDraw draw;
     MessageMouse mouse;
-    MessageSignal signal;
     MessageTimer timer;
     MessageSetPos setpos;
-    MessageReqSize reqsize;
-    MessageDrawRgn drawrgn;
     MessageUser user;
   };
 

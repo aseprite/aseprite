@@ -1,5 +1,5 @@
 // ASEPRITE gui library
-// Copyright (C) 2001-2012  David Capello
+// Copyright (C) 2001-2013  David Capello
 //
 // This source file is distributed under a BSD-like license, please
 // read LICENSE.txt for more information.
@@ -8,6 +8,7 @@
 #define UI_LABEL_H_INCLUDED
 
 #include "base/compiler_specific.h"
+#include "ui/color.h"
 #include "ui/widget.h"
 
 namespace ui {
@@ -17,15 +18,15 @@ namespace ui {
   public:
     Label(const char *text);
 
-    int getTextColor() const;
-    void setTextColor(int color);
+    Color getTextColor() const;
+    void setTextColor(Color color);
 
   protected:
-    bool onProcessMessage(Message* msg) OVERRIDE;
+    void onPreferredSize(PreferredSizeEvent& ev) OVERRIDE;
     void onPaint(PaintEvent& ev) OVERRIDE;
 
   private:
-    int m_textColor;
+    Color m_textColor;
   };
 
 } // namespace ui

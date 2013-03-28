@@ -1,5 +1,5 @@
 /* ASEPRITE
- * Copyright (C) 2001-2012  David Capello
+ * Copyright (C) 2001-2013  David Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -26,24 +26,24 @@
 #include "raster/sprite.h"
 #include "raster/stock.h"
 
-ImagesCollector::ImagesCollector(const Sprite* sprite, bool allLayers, bool allFrames, bool forWrite)
+ImagesCollector::ImagesCollector(Layer* layer,
+                                 FrameNumber frame,
+                                 bool allFrames,
+                                 bool forWrite)
   : m_allFrames(allFrames)
   , m_forWrite(forWrite)
 {
-  Layer* layer = allLayers ? sprite->getFolder():
-                             sprite->getCurrentLayer();
-
-  collectFromLayer(layer);
+  collectFromLayer(layer, frame);
 }
 
-void ImagesCollector::collectFromLayer(Layer* layer)
+void ImagesCollector::collectFromLayer(Layer* layer, FrameNumber frame)
 {
   const Sprite* sprite = layer->getSprite();
 
-  if (!layer->is_readable())
+  if (!layer->isReadable())
     return;
 
-  if (m_forWrite && !layer->is_writable())
+  if (m_forWrite && !layer->isWritable())
     return;
 
   switch (layer->getType()) {
@@ -57,7 +57,6 @@ void ImagesCollector::collectFromLayer(Layer* layer)
         }
       }
       else {
-        FrameNumber frame = sprite->getCurrentFrame();
         Cel* cel = static_cast<LayerImage*>(layer)->getCel(frame);
         if (cel != NULL)
           collectImage(layer, cel);
@@ -66,11 +65,11 @@ void ImagesCollector::collectFromLayer(Layer* layer)
     }
 
     case GFXOBJ_LAYER_FOLDER: {
-      LayerIterator it = static_cast<LayerFolder*>(layer)->get_layer_begin();
-      LayerIterator end = static_cast<LayerFolder*>(layer)->get_layer_end();
+      LayerIterator it = static_cast<LayerFolder*>(layer)->getLayerBegin();
+      LayerIterator end = static_cast<LayerFolder*>(layer)->getLayerEnd();
 
       for (; it != end; ++it)
-        collectFromLayer(*it);
+        collectFromLayer(*it, frame);
 
       break;
     }

@@ -1,5 +1,5 @@
 /* ASEPRITE
- * Copyright (C) 2001-2012  David Capello
+ * Copyright (C) 2001-2013  David Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -26,6 +26,7 @@
 #include "ui/entry.h"
 #include "ui/manager.h"
 #include "ui/message.h"
+#include "ui/preferred_size_event.h"
 #include "ui/rect.h"
 #include "ui/system.h"
 #include "ui/view.h"
@@ -98,24 +99,6 @@ ColorCurveEditor::ColorCurveEditor(ColorCurve* curve, int x1, int y1, int x2, in
 bool ColorCurveEditor::onProcessMessage(Message* msg)
 {
   switch (msg->type) {
-
-    case JM_REQSIZE: {
-#if 0
-      msg->reqsize.w =
-        + border_width.l
-        + ((m_x2 - m_x1 + 1))
-        + border_width.r;
-
-      msg->reqsize.h =
-        + border_width.t
-        + ((m_y2 - m_y1 + 1))
-        + border_width.b;
-#else
-      msg->reqsize.w = border_width.l + 1 + border_width.r;
-      msg->reqsize.h = border_width.t + 1 + border_width.b;
-#endif
-      return true;
-    }
 
     case JM_KEYPRESSED: {
       switch (msg->key.scancode) {
@@ -325,6 +308,12 @@ bool ColorCurveEditor::onProcessMessage(Message* msg)
   return Widget::onProcessMessage(msg);
 }
 
+void ColorCurveEditor::onPreferredSize(PreferredSizeEvent& ev)
+{
+  ev.setPreferredSize(gfx::Size(border_width.l + 1 + border_width.r,
+                                border_width.t + 1 + border_width.b));
+}
+
 gfx::Point* ColorCurveEditor::getClosestPoint(int x, int y, int** edit_x, int** edit_y)
 {
 #define CALCDIST(xx, yy)                                \
@@ -370,7 +359,7 @@ int ColorCurveEditor::editNodeManually(gfx::Point& point)
 
   window->openWindowInForeground();
 
-  if (window->get_killer() == button_ok) {
+  if (window->getKiller() == button_ok) {
     point.x = entry_x->getTextDouble();
     point.y = entry_y->getTextDouble();
     res = true;

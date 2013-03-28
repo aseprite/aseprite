@@ -1,5 +1,5 @@
 /* ASEPRITE
- * Copyright (C) 2001-2012  David Capello
+ * Copyright (C) 2001-2013  David Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,6 +21,7 @@
 #include "recent_files.h"
 
 #include "app_menus.h"
+#include "base/fs.h"
 #include "base/path.h"
 #include "ini_file.h"
 
@@ -38,7 +39,7 @@ RecentFiles::RecentFiles()
     sprintf(buf, "Filename%02d", c);
 
     const char* filename = get_config_string("RecentFiles", buf, NULL);
-    if (filename && *filename)
+    if (filename && *filename && base::file_exists(filename))
       m_files.addItem(filename);
   }
 

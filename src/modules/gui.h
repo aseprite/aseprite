@@ -1,5 +1,5 @@
 /* ASEPRITE
- * Copyright (C) 2001-2012  David Capello
+ * Copyright (C) 2001-2013  David Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -47,7 +47,7 @@ void exit_module_gui();
 int get_screen_scaling();
 void set_screen_scaling(int scaling);
 
-void update_screen_for_document(const Document* document);
+void update_screen_for_document(Document* document);
 
 void gui_run();
 void gui_feedback();

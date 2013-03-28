@@ -1,5 +1,5 @@
 // ASEPRITE gui library
-// Copyright (C) 2001-2012  David Capello
+// Copyright (C) 2001-2013  David Capello
 //
 // This source file is distributed under a BSD-like license, please
 // read LICENSE.txt for more information.
@@ -13,15 +13,14 @@
 
 struct BITMAP;
 
+#define JI_SCREEN_W ui::ji_screen_w
+#define JI_SCREEN_H ui::ji_screen_h
+
 namespace she { class Display; }
 
 namespace ui {
 
-  /***********************************************************************/
-  /* screen related */
-
-#define JI_SCREEN_W ji_screen_w
-#define JI_SCREEN_H ji_screen_h
+  // Screen related
 
   extern struct BITMAP* ji_screen;
   extern int ji_screen_w;
@@ -33,13 +32,11 @@ namespace ui {
 
   void SetDisplay(she::Display* display);
 
-  /***********************************************************************/
-  /* timer related */
+  // Timer related
 
   extern int volatile ji_clock;   /* in milliseconds */
 
-  /***********************************************************************/
-  /* mouse related */
+  // Mouse related
 
   // Updates the position of the mouse cursor overlay depending on the
   // current mouse position.

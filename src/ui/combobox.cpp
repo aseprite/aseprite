@@ -1,5 +1,5 @@
 // ASEPRITE gui library
-// Copyright (C) 2001-2012  David Capello
+// Copyright (C) 2001-2013  David Capello
 //
 // This source file is distributed under a BSD-like license, please
 // read LICENSE.txt for more information.
@@ -303,7 +303,7 @@ bool ComboBox::onProcessMessage(Message* msg)
     case JM_WINMOVE:
       if (m_window) {
         JRect rc = getListBoxPos();
-        m_window->move_window(rc);
+        m_window->moveWindow(rc);
         jrect_free(rc);
       }
       break;
@@ -449,7 +449,7 @@ void ComboBox::openListBox()
       m_listbox->addChild(new ListBox::Item(item->text.c_str()));
     }
 
-    m_window->set_ontop(true);
+    m_window->setOnTop(true);
     jwidget_noborders(m_window);
 
     Widget* viewport = view->getViewport();
@@ -466,10 +466,10 @@ void ComboBox::openListBox()
 
     m_listbox->selectIndex(m_selected);
 
-    m_window->remap_window();
+    m_window->remapWindow();
 
     JRect rc = getListBoxPos();
-    m_window->position_window(rc->x1, rc->y1);
+    m_window->positionWindow(rc->x1, rc->y1);
     jrect_free(rc);
 
     getManager()->addMessageFilter(JM_BUTTONPRESSED, this);

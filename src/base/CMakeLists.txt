@@ -1,5 +1,5 @@
 # ASEPRITE
-# Copyright (C) 2001-2012  David Capello
+# Copyright (C) 2001-2013  David Capello
 
 include(CheckCSourceCompiles)
 
@@ -26,11 +26,13 @@ add_library(base-lib
   memory_dump.cpp
   mutex.cpp
   path.cpp
+  program_options.cpp
   serialization.cpp
   sha1.cpp
   sha1_rfc3174.c
   split_string.cpp
   string.cpp
+  system_console.cpp
   temp_dir.cpp
   thread.cpp
   trim_string.cpp

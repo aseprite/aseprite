@@ -1,5 +1,5 @@
 /* ASEPRITE
- * Copyright (C) 2001-2012  David Capello
+ * Copyright (C) 2001-2013  David Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -29,7 +29,7 @@
 #include "commands/command.h"
 #include "commands/filters/filter_manager_impl.h"
 #include "commands/filters/filter_window.h"
-#include "document_wrappers.h"
+#include "context.h"
 #include "filters/replace_color_filter.h"
 #include "ini_file.h"
 #include "raster/image.h"
@@ -49,22 +49,22 @@ class ReplaceColorFilterWrapper : public ReplaceColorFilter
 public:
   ReplaceColorFilterWrapper(Layer* layer) : m_layer(layer) { }
 
-  void setFrom(const Color& from) {
+  void setFrom(const app::Color& from) {
     m_from = from;
     ReplaceColorFilter::setFrom(color_utils::color_for_layer(from, m_layer));
   }
-  void setTo(const Color& to) {
+  void setTo(const app::Color& to) {
     m_to = to;
     ReplaceColorFilter::setTo(color_utils::color_for_layer(to, m_layer));
   }
 
-  Color getFrom() const { return m_from; }
-  Color getTo() const { return m_to; }
+  app::Color getFrom() const { return m_from; }
+  app::Color getTo() const { return m_to; }
 
 private:
   Layer* m_layer;
-  Color m_from;
-  Color m_to;
+  app::Color m_from;
+  app::Color m_to;
 };
 
 //////////////////////////////////////////////////////////////////////
@@ -95,13 +95,13 @@ public:
   }
 
 protected:
-  void onFromChange(const Color& color)
+  void onFromChange(const app::Color& color)
   {
     m_filter.setFrom(color);
     restartPreview();
   }
 
-  void onToChange(const Color& color)
+  void onToChange(const app::Color& color)
   {
     m_filter.setTo(color);
     restartPreview();
@@ -150,15 +150,14 @@ bool ReplaceColorCommand::onEnabled(Context* context)
 
 void ReplaceColorCommand::onExecute(Context* context)
 {
-  Document* document = context->getActiveDocument();
-  Sprite* sprite(document->getSprite());
+  DocumentLocation location = context->getActiveLocation();
 
-  ReplaceColorFilterWrapper filter(sprite->getCurrentLayer());
+  ReplaceColorFilterWrapper filter(location.layer());
   filter.setFrom(get_config_color(ConfigSection, "Color1", ColorBar::instance()->getFgColor()));
   filter.setTo(get_config_color(ConfigSection, "Color2", ColorBar::instance()->getBgColor()));
   filter.setTolerance(get_config_int(ConfigSection, "Tolerance", 0));
 
-  FilterManagerImpl filterMgr(document, &filter);
+  FilterManagerImpl filterMgr(context, &filter);
   filterMgr.setTarget(TARGET_RED_CHANNEL |
                       TARGET_GREEN_CHANNEL |
                       TARGET_BLUE_CHANNEL |

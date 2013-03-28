@@ -1,5 +1,14 @@
 # Very high priority (next release?)
 
+* Warning icon when selecting RGB/HSB color in indexed image.
+* Warning message when we open a file that is already opened file
+  (show an option to create a second view).
+* Paste in place doesn't work as expected sometimes (copy something
+  from one frame, paste in other frame).
+* After moving a frame, all thumbnails are shown incorrectly.
+* New sprite with palette of the clipboard
+* Ctrl+Shift selection should copy and snap axis
+* "Duplicate sprite" should copy the "Background" layer as Background.
 * Fix problem applyToTarget() can throw (it's called from other thread)
 * After flatten show the background if it is hidden.
 * Paste does not paste in the correct position if the cel is moved.
@@ -24,6 +33,12 @@
   (allow configuration per document). Use cfg.cpp and settings/ dir.
 * Refactor src/file/ in several layers.
 
+# WIP
+
+* Data recovery (src/app/data_recovery.cpp)
+* Projects (src/app/project.cpp)
+* Scriting support (src/scripting/engine.cpp)
+
 # Refactoring
 
 * Split UndoTransaction class into:
@@ -41,7 +56,6 @@
 * About Signals/Slots: Add some field in slots to avoid disconnecting
   them from dead signals.
 * Replace JRect & jrect with gfx::Rect.
-* Create gfx::Region to replace JRegion & jregion.
 * editors_ -> MultiEditors class widget
 * convert all widgets to classes:
   * match UI library design with Vaca library.

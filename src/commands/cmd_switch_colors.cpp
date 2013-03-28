@@ -1,5 +1,5 @@
 /* ASEPRITE
- * Copyright (C) 2001-2012  David Capello
+ * Copyright (C) 2001-2013  David Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -44,8 +44,8 @@ SwitchColorsCommand::SwitchColorsCommand()
 void SwitchColorsCommand::onExecute(Context* context)
 {
   ColorBar* colorbar = ColorBar::instance();
-  Color fg = colorbar->getFgColor();
-  Color bg = colorbar->getBgColor();
+  app::Color fg = colorbar->getFgColor();
+  app::Color bg = colorbar->getBgColor();
 
   colorbar->setFgColor(bg);
   colorbar->setBgColor(fg);

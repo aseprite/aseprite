@@ -1,5 +1,5 @@
 /* ASEPRITE
- * Copyright (C) 2001-2012  David Capello
+ * Copyright (C) 2001-2013  David Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,7 +21,8 @@
 #include "app.h"
 #include "app/color_utils.h"
 #include "commands/command.h"
-#include "document_wrappers.h"
+#include "context_access.h"
+#include "document_api.h"
 #include "modules/gui.h"
 #include "raster/sprite.h"
 #include "undo_transaction.h"
@@ -55,15 +56,17 @@ bool FlattenLayersCommand::onEnabled(Context* context)
 
 void FlattenLayersCommand::onExecute(Context* context)
 {
-  ActiveDocumentWriter document(context);
-  Sprite* sprite = document->getSprite();
-  int bgcolor = color_utils::color_for_image(ColorBar::instance()->getBgColor(), sprite->getPixelFormat());
+  ContextWriter writer(context);
+  Document* document = writer.document();
+  Sprite* sprite = writer.sprite();
+  int bgcolor = color_utils::color_for_image(ColorBar::instance()->getBgColor(),
+                                             sprite->getPixelFormat());
   {
-    UndoTransaction undoTransaction(document, "Flatten Layers");
-    undoTransaction.flattenLayers(bgcolor);
+    UndoTransaction undoTransaction(writer.context(), "Flatten Layers");
+    document->getApi().flattenLayers(sprite, bgcolor);
     undoTransaction.commit();
   }
-  update_screen_for_document(document);
+  update_screen_for_document(writer.document());
 }
 
 //////////////////////////////////////////////////////////////////////

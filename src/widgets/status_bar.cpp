@@ -1,5 +1,5 @@
 /* ASEPRITE
- * Copyright (C) 2001-2012  David Capello
+ * Copyright (C) 2001-2013  David Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -22,7 +22,7 @@
 #include "base/bind.h"
 #include "commands/commands.h"
 #include "commands/params.h"
-#include "document_wrappers.h"
+#include "context_access.h"
 #include "gfx/size.h"
 #include "modules/editors.h"
 #include "modules/gfx.h"
@@ -138,7 +138,7 @@ StatusBar* StatusBar::m_instance = NULL;
 
 StatusBar::StatusBar()
   : Widget(statusbar_type())
-  , m_color(Color::fromMask())
+  , m_color(app::Color::fromMask())
 {
   m_instance = this;
 
@@ -237,7 +237,7 @@ StatusBar::StatusBar()
 
     m_movePixelsBox = new Box(JI_HORIZONTAL);
     m_transparentLabel = new Label("Transparent Color:");
-    m_transparentColor = new ColorButton(Color::fromMask(), IMAGE_RGB);
+    m_transparentColor = new ColorButton(app::Color::fromMask(), IMAGE_RGB);
 
     m_movePixelsBox->addChild(filler);
     m_movePixelsBox->addChild(m_transparentLabel);
@@ -285,8 +285,8 @@ void StatusBar::onCurrentToolChange()
 
 void StatusBar::onTransparentColorChange()
 {
-  m_observers.notifyObservers<const Color&>(&StatusBarObserver::onChangeTransparentColor,
-                                            getTransparentColor());
+  m_observers.notifyObservers<const app::Color&>(&StatusBarObserver::onChangeTransparentColor,
+                                                 getTransparentColor());
 }
 
 void StatusBar::clearText()
@@ -342,11 +342,11 @@ void StatusBar::showTip(int msecs, const char *format, ...)
     m_tipwindow->closeWindow(NULL);
 
   m_tipwindow->openWindow();
-  m_tipwindow->remap_window();
+  m_tipwindow->remapWindow();
 
   x = this->rc->x2 - jrect_w(m_tipwindow->rc);
   y = this->rc->y1 - jrect_h(m_tipwindow->rc);
-  m_tipwindow->position_window(x, y);
+  m_tipwindow->positionWindow(x, y);
 
   m_tipwindow->startTimer();
 
@@ -356,7 +356,7 @@ void StatusBar::showTip(int msecs, const char *format, ...)
   invalidate();
 }
 
-void StatusBar::showColor(int msecs, const char* text, const Color& color, int alpha)
+void StatusBar::showColor(int msecs, const char* text, const app::Color& color, int alpha)
 {
   if (setStatusText(msecs, text)) {
     m_state = SHOW_COLOR;
@@ -403,7 +403,7 @@ void StatusBar::hideMovePixelsOptions()
   }
 }
 
-Color StatusBar::getTransparentColor()
+app::Color StatusBar::getTransparentColor()
 {
   return m_transparentColor->getColor();
 }
@@ -472,13 +472,6 @@ bool StatusBar::onProcessMessage(Message* msg)
 {
   switch (msg->type) {
 
-    case JM_REQSIZE:
-      msg->reqsize.w = msg->reqsize.h =
-        4*jguiscale()
-        + jwidget_get_text_height(this)
-        + 4*jguiscale();
-      return true;
-
     case JM_SETPOS:
       jrect_copy(this->rc, &msg->setpos.rect);
       {
@@ -505,19 +498,16 @@ bool StatusBar::onProcessMessage(Message* msg)
 
     case JM_DRAW: {
       SkinTheme* theme = static_cast<SkinTheme*>(this->getTheme());
-      int text_color = ji_color_foreground();
-      int face_color = ji_color_face();
+      ui::Color text_color = theme->getColor(ThemeColor::Text);
+      ui::Color face_color = theme->getColor(ThemeColor::Face);
       JRect rc = jwidget_get_rect(this);
-      BITMAP *doublebuffer = create_bitmap(jrect_w(&msg->draw.rect),
+      BITMAP* doublebuffer = create_bitmap(jrect_w(&msg->draw.rect),
                                            jrect_h(&msg->draw.rect));
       jrect_displace(rc,
                      -msg->draw.rect.x1,
                      -msg->draw.rect.y1);
 
-      clear_to_color(doublebuffer, face_color);
-
-      putpixel(doublebuffer, rc->x1, rc->y1, theme->get_tab_selected_face_color());
-      putpixel(doublebuffer, rc->x2-1, rc->y1, theme->get_tab_selected_face_color());
+      clear_to_color(doublebuffer, to_system(face_color));
 
       rc->x1 += 2*jguiscale();
       rc->y1 += 1*jguiscale();
@@ -549,7 +539,7 @@ bool StatusBar::onProcessMessage(Message* msg)
 
         // Draw color description
         std::string str = m_color.toHumanReadableString(app_get_current_pixel_format(),
-                                                        Color::LongHumanReadableString);
+                                                        app::Color::LongHumanReadableString);
         if (m_alpha < 255) {
           char buf[512];
           usprintf(buf, ", Alpha %d", m_alpha);
@@ -558,7 +548,7 @@ bool StatusBar::onProcessMessage(Message* msg)
 
         textout_ex(doublebuffer, this->getFont(), str.c_str(),
                    x, (rc->y1+rc->y2)/2-text_height(this->getFont())/2,
-                   text_color, -1);
+                   to_system(text_color), -1);
 
         x += ji_font_text_len(this->getFont(), str.c_str()) + 4*jguiscale();
       }
@@ -581,7 +571,7 @@ bool StatusBar::onProcessMessage(Message* msg)
         textout_ex(doublebuffer, this->getFont(), this->getText(),
                    x,
                    (rc->y1+rc->y2)/2-text_height(this->getFont())/2,
-                   text_color, -1);
+                   to_system(text_color), -1);
 
         x += ji_font_text_len(this->getFont(), this->getText()) + 4*jguiscale();
       }
@@ -598,9 +588,9 @@ bool StatusBar::onProcessMessage(Message* msg)
         for (ProgressList::iterator it = m_progress.begin(); it != m_progress.end(); ++it) {
           Progress* progress = *it;
 
-          draw_progress_bar(doublebuffer,
-                            x, y1, x+width-1, y2,
-                            progress->getPos());
+          theme->drawProgressBar(doublebuffer,
+                                 x, y1, x+width-1, y2,
+                                 progress->getPos());
 
           x -= width+4;
         }
@@ -614,8 +604,8 @@ bool StatusBar::onProcessMessage(Message* msg)
         try {
           --rc->y2;
 
-          const ActiveDocumentReader document(UIContext::instance());
-          const Sprite* sprite(document ? document->getSprite(): NULL);
+          const ContextReader reader(UIContext::instance());
+          const Sprite* sprite(reader.sprite());
           if (sprite) {
             if (hasChild(m_notificationsBox)) {
               removeChild(m_notificationsBox);
@@ -623,23 +613,23 @@ bool StatusBar::onProcessMessage(Message* msg)
             }
 
             const LayerFolder* folder = sprite->getFolder();
-            LayerConstIterator it = folder->get_layer_begin();
-            LayerConstIterator end = folder->get_layer_end();
-            int count = folder->get_layers_count();
+            LayerConstIterator it = folder->getLayerBegin();
+            LayerConstIterator end = folder->getLayerEnd();
+            int count = folder->getLayersCount();
             char buf[256];
 
             for (int c=0; it != end; ++it, ++c) {
               int x1 = rc->x2-width + c*width/count;
               int x2 = rc->x2-width + (c+1)*width/count;
-              bool hot = (*it == sprite->getCurrentLayer())
-                || (LayerIndex(c) == m_hot_layer);
+              bool hot = ((*it == reader.layer())
+                          || (LayerIndex(c) == m_hot_layer));
 
               theme->draw_bounds_nw(doublebuffer,
                                     x1, rc->y1, x2, rc->y2,
                                     hot ? PART_TOOLBUTTON_HOT_NW:
                                           PART_TOOLBUTTON_NORMAL_NW,
-                                    hot ? theme->get_button_hot_face_color():
-                                          theme->get_button_normal_face_color());
+                                    hot ? theme->getColor(ThemeColor::ButtonHotFace):
+                                          theme->getColor(ThemeColor::ButtonNormalFace));
 
               if (count == 1)
                 uszprintf(buf, sizeof(buf), "%s", (*it)->getName().c_str());
@@ -654,8 +644,9 @@ bool StatusBar::onProcessMessage(Message* msg)
               textout_centre_ex(doublebuffer, this->getFont(), buf,
                                 (x1+x2)/2,
                                 (rc->y1+rc->y2)/2-text_height(this->getFont())/2,
-                                hot ? theme->get_button_hot_text_color():
-                                      theme->get_button_normal_text_color(), -1);
+                                to_system(hot ? theme->getColor(ThemeColor::ButtonHotText):
+                                                theme->getColor(ThemeColor::ButtonNormalText)),
+                                -1);
             }
           }
           else {
@@ -728,14 +719,14 @@ bool StatusBar::onProcessMessage(Message* msg)
 
         LayerIndex hot_layer = LayerIndex(-1);
 
-        const ActiveDocumentReader document(UIContext::instance());
-        const Sprite* sprite(document ? document->getSprite(): NULL);
+        const ContextReader reader(UIContext::instance());
+        const Sprite* sprite(reader.sprite());
         // Check which sprite's layer has the mouse over
         if (sprite) {
           const LayerFolder* folder = sprite->getFolder();
-          LayerConstIterator it = folder->get_layer_begin();
-          LayerConstIterator end = folder->get_layer_end();
-          int count = folder->get_layers_count();
+          LayerConstIterator it = folder->getLayerBegin();
+          LayerConstIterator end = folder->getLayerEnd();
+          int count = folder->getLayersCount();
 
           for (int c=0; it != end; ++it, ++c) {
             int x1 = rc->x2-width + c*width/count;
@@ -778,18 +769,17 @@ bool StatusBar::onProcessMessage(Message* msg)
       // When the user press the mouse-button over a hot-layer-button...
       if (m_hot_layer >= 0) {
         try {
-          ActiveDocumentWriter document(UIContext::instance());
-          Sprite* sprite(document ? document->getSprite(): NULL);
+          ContextWriter writer(UIContext::instance());
+          Sprite* sprite(writer.sprite());
           if (sprite) {
             Layer* layer = sprite->indexToLayer(m_hot_layer);
             if (layer) {
-              // Set the current layer
-              if (layer != sprite->getCurrentLayer())
-                sprite->setCurrentLayer(layer);
-
               // Flash the current layer
-              ASSERT(current_editor != NULL); // Cannot be null when we have a current sprite
-              current_editor->flashCurrentLayer();
+              if (current_editor != NULL)
+              {
+                current_editor->setLayer(layer);
+                current_editor->flashCurrentLayer();
+              }
 
               // Redraw the status-bar
               invalidate();
@@ -826,6 +816,12 @@ bool StatusBar::onProcessMessage(Message* msg)
   return Widget::onProcessMessage(msg);
 }
 
+void StatusBar::onPreferredSize(PreferredSizeEvent& ev)
+{
+  int s = 4*jguiscale() + jwidget_get_text_height(this) + 4*jguiscale();
+  ev.setPreferredSize(Size(s, s));
+}
+
 bool StatusBar::CustomizedTipWindow::onProcessMessage(Message* msg)
 {
   switch (msg->type) {
@@ -841,20 +837,14 @@ bool StatusBar::CustomizedTipWindow::onProcessMessage(Message* msg)
 static void slider_change_hook(Slider* slider)
 {
   try {
-    ActiveDocumentWriter document(UIContext::instance());
-    Sprite* sprite(document ? document->getSprite(): NULL);
-    if (sprite) {
-      if ((sprite->getCurrentLayer()) &&
-          (sprite->getCurrentLayer()->is_image())) {
-        Cel* cel = ((LayerImage*)sprite->getCurrentLayer())->getCel(sprite->getCurrentFrame());
-        if (cel) {
-          // Update the opacity
-          cel->setOpacity(slider->getValue());
+    ContextWriter writer(UIContext::instance());
+    Cel* cel = writer.cel();
+    if (cel) {
+      // Update the opacity
+      cel->setOpacity(slider->getValue());
 
-          // Update the editors
-          update_screen_for_document(document);
-        }
-      }
+      // Update the editors
+      update_screen_for_document(writer.document());
     }
   }
   catch (LockedDocumentException&) {
@@ -882,16 +872,14 @@ static void ani_button_command(Button* widget, AniAction action)
 void StatusBar::updateFromLayer()
 {
   try {
-    const ActiveDocumentReader document(UIContext::instance());
-    const Sprite* sprite(document ? document->getSprite(): NULL);
-    Cel *cel;
+    const ContextReader reader(UIContext::instance());
+    const Cel* cel;
 
     // Opacity layer
-    if (sprite &&
-        sprite->getCurrentLayer() &&
-        sprite->getCurrentLayer()->is_image() &&
-        !sprite->getCurrentLayer()->is_background() &&
-        (cel = ((LayerImage*)sprite->getCurrentLayer())->getCel(sprite->getCurrentFrame()))) {
+    if (reader.layer() &&
+        reader.layer()->isImage() &&
+        !reader.layer()->isBackground() &&
+        (cel = reader.cel())) {
       m_slider->setValue(MID(0, cel->getOpacity(), 255));
       m_slider->setEnabled(true);
     }
@@ -908,9 +896,9 @@ void StatusBar::updateFromLayer()
 
 void StatusBar::updateCurrentFrame()
 {
-  const Document* document = UIContext::instance()->getActiveDocument();
-  if (document)
-    m_currentFrame->setTextf("%d", document->getSprite()->getCurrentFrame()+1);
+  DocumentLocation location = UIContext::instance()->getActiveLocation();
+  if (location.sprite())
+    m_currentFrame->setTextf("%d", location.frame()+1);
 }
 
 void StatusBar::newFrame()

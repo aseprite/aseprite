@@ -1,5 +1,5 @@
 /* ASEPRITE
- * Copyright (C) 2001-2012  David Capello
+ * Copyright (C) 2001-2013  David Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -30,14 +30,17 @@
 #include "ini_file.h"
 #include "modules/editors.h"
 #include "modules/palettes.h"
+#include "raster/cel.h"
 #include "raster/image.h"
 #include "raster/layer.h"
 #include "raster/palette.h"
 #include "raster/sprite.h"
+#include "raster/stock.h"
 #include "ui/gui.h"
 #include "ui_context.h"
 #include "util/clipboard.h"
 #include "widgets/color_bar.h"
+#include "widgets/workspace.h"
 
 #include <allegro/config.h>
 #include <allegro/unicode.h>
@@ -74,11 +77,11 @@ void NewFileCommand::onExecute(Context* context)
   PixelFormat format;
   int w, h, bg, ncolors;
   char buf[1024];
-  Color bg_table[] = {
-    Color::fromMask(),
-    Color::fromRgb(0, 0, 0),
-    Color::fromRgb(255, 255, 255),
-    Color::fromRgb(255, 0, 255),
+  app::Color bg_table[] = {
+    app::Color::fromMask(),
+    app::Color::fromRgb(0, 0, 0),
+    app::Color::fromRgb(255, 255, 255),
+    app::Color::fromRgb(255, 0, 255),
     ColorBar::instance()->getBgColor()
   };
 
@@ -129,7 +132,7 @@ void NewFileCommand::onExecute(Context* context)
   // Open the window
   window->openWindowInForeground();
 
-  if (window->get_killer() == ok) {
+  if (window->getKiller() == ok) {
     bool ok = false;
 
     // Get the options
@@ -147,7 +150,7 @@ void NewFileCommand::onExecute(Context* context)
     ncolors = MID(2, ncolors, 256);
 
     // Select the color
-    Color color = Color::fromMask();
+    app::Color color = app::Color::fromMask();
 
     if (bg >= 0 && bg <= 4) {
       color = bg_table[bg];
@@ -170,28 +173,28 @@ void NewFileCommand::onExecute(Context* context)
                                       (format == IMAGE_INDEXED ? ncolors: 256)));
       Sprite* sprite(document->getSprite());
 
-      get_default_palette()->copyColorsTo(sprite->getCurrentPalette());
+      get_default_palette()->copyColorsTo(sprite->getPalette(FrameNumber(0)));
 
       usprintf(buf, "Sprite-%04d", ++_sprite_counter);
       document->setFilename(buf);
 
       // If the background color isn't transparent, we have to
       // convert the `Layer 1' in a `Background'
-      if (color.getType() != Color::MaskType) {
+      if (color.getType() != app::Color::MaskType) {
         Sprite* sprite = document->getSprite();
+        Layer* layer = sprite->getFolder()->getFirstLayer();
 
-        ASSERT(sprite->getCurrentLayer() && sprite->getCurrentLayer()->is_image());
+        if (layer && layer->isImage()) {
+          LayerImage* layerImage = static_cast<LayerImage*>(layer);
+          layerImage->configureAsBackground();
 
-        static_cast<LayerImage*>(sprite->getCurrentLayer())->configureAsBackground();
-        image_clear(sprite->getCurrentImage(), color_utils::color_for_image(color, format));
+          Image* image = sprite->getStock()->getImage(layerImage->getCel(FrameNumber(0))->getImage());
+          image_clear(image, color_utils::color_for_image(color, format));
+        }
       }
 
       // Show the sprite to the user
-      context->addDocument(document);
-
-      // Release the document as it is already owned by the context.
-      // And put the document in a reliable editor.
-      set_document_in_more_reliable_editor(document.release());
+      context->addDocument(document.release());
     }
   }
 }

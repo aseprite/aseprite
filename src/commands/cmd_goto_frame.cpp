@@ -1,5 +1,5 @@
 /* ASEPRITE
- * Copyright (C) 2001-2012  David Capello
+ * Copyright (C) 2001-2013  David Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -22,7 +22,6 @@
 #include "app/load_widget.h"
 #include "commands/command.h"
 #include "commands/params.h"
-#include "document_wrappers.h"
 #include "modules/editors.h"
 #include "modules/gui.h"
 #include "raster/sprite.h"
@@ -33,230 +32,140 @@
 
 using namespace ui;
 
-//////////////////////////////////////////////////////////////////////
-// goto_first_frame
+class GotoCommand : public Command
+{
+protected:
+  GotoCommand(const char* short_name, const char* friendly_name)
+    : Command(short_name, friendly_name, CmdRecordableFlag) { }
 
-class GotoFirstFrameCommand : public Command
+  bool onEnabled(Context* context) OVERRIDE {
+    return (current_editor != NULL);
+  }
+
+  void onExecute(Context* context) OVERRIDE {
+    ASSERT(current_editor != NULL);
+
+    current_editor->setFrame(onGetFrame(current_editor));
+  }
+
+  virtual FrameNumber onGetFrame(Editor* editor) = 0;
+};
+
+
+
+class GotoFirstFrameCommand : public GotoCommand
 {
 public:
-  GotoFirstFrameCommand();
+  GotoFirstFrameCommand()
+    : GotoCommand("GotoFirstFrame",
+                  "Goto First Frame") { }
   Command* clone() { return new GotoFirstFrameCommand(*this); }
 
 protected:
-  bool onEnabled(Context* context);
-  void onExecute(Context* context);
+  FrameNumber onGetFrame(Editor* editor) OVERRIDE {
+    return FrameNumber(0);
+  }
 };
 
-GotoFirstFrameCommand::GotoFirstFrameCommand()
-  : Command("GotoFirstFrame",
-            "Goto First Frame",
-            CmdRecordableFlag)
-{
-}
 
-bool GotoFirstFrameCommand::onEnabled(Context* context)
-{
-  return context->checkFlags(ContextFlags::ActiveDocumentIsReadable);
-}
 
-void GotoFirstFrameCommand::onExecute(Context* context)
-{
-  ActiveDocumentWriter document(context);
-  Sprite* sprite = document->getSprite();
-
-  sprite->setCurrentFrame(FrameNumber(0));
-
-  update_screen_for_document(document);
-  current_editor->updateStatusBar();
-}
-
-//////////////////////////////////////////////////////////////////////
-// goto_previous_frame
-
-class GotoPreviousFrameCommand : public Command
+class GotoPreviousFrameCommand : public GotoCommand
 
 {
 public:
-  GotoPreviousFrameCommand();
+  GotoPreviousFrameCommand()
+    : GotoCommand("GotoPreviousFrame",
+                  "Goto Previous Frame") { }
   Command* clone() { return new GotoPreviousFrameCommand(*this); }
 
 protected:
-  bool onEnabled(Context* context);
-  void onExecute(Context* context);
+  FrameNumber onGetFrame(Editor* editor) OVERRIDE {
+    FrameNumber frame = editor->getFrame();
+
+    if (frame > FrameNumber(0))
+      return frame.previous();
+    else
+      return editor->getSprite()->getLastFrame();
+  }
 };
 
-GotoPreviousFrameCommand::GotoPreviousFrameCommand()
-  : Command("GotoPreviousFrame",
-            "Goto Previous Frame",
-            CmdRecordableFlag)
-{
-}
 
-bool GotoPreviousFrameCommand::onEnabled(Context* context)
-{
-  return context->checkFlags(ContextFlags::ActiveDocumentIsReadable);
-}
 
-void GotoPreviousFrameCommand::onExecute(Context* context)
-{
-  ActiveDocumentWriter document(context);
-  Sprite* sprite = document->getSprite();
-  FrameNumber frame = sprite->getCurrentFrame();
-
-  if (frame > FrameNumber(0))
-    sprite->setCurrentFrame(frame.previous());
-  else
-    sprite->setCurrentFrame(sprite->getLastFrame());
-
-  update_screen_for_document(document);
-  current_editor->updateStatusBar();
-}
-
-//////////////////////////////////////////////////////////////////////
-// goto_next_frame
-
-class GotoNextFrameCommand : public Command
+class GotoNextFrameCommand : public GotoCommand
 
 {
 public:
-  GotoNextFrameCommand();
+  GotoNextFrameCommand() : GotoCommand("GotoNextFrame",
+                                       "Goto Next Frame") { }
   Command* clone() { return new GotoNextFrameCommand(*this); }
 
 protected:
-  bool onEnabled(Context* context);
-  void onExecute(Context* context);
+  FrameNumber onGetFrame(Editor* editor) OVERRIDE {
+    FrameNumber frame = editor->getFrame();
+    if (frame < editor->getSprite()->getLastFrame())
+      return frame.next();
+    else
+      return FrameNumber(0);
+  }
 };
 
-GotoNextFrameCommand::GotoNextFrameCommand()
-  : Command("GotoNextFrame",
-            "Goto Next Frame",
-            CmdRecordableFlag)
-{
-}
 
-bool GotoNextFrameCommand::onEnabled(Context* context)
-{
-  return context->checkFlags(ContextFlags::ActiveDocumentIsReadable);
-}
 
-void GotoNextFrameCommand::onExecute(Context* context)
-{
-  ActiveDocumentWriter document(context);
-  Sprite* sprite = document->getSprite();
-  FrameNumber frame = sprite->getCurrentFrame();
-
-  if (frame < sprite->getLastFrame())
-    sprite->setCurrentFrame(frame.next());
-  else
-    sprite->setCurrentFrame(FrameNumber(0));
-
-  update_screen_for_document(document);
-  current_editor->updateStatusBar();
-}
-
-//////////////////////////////////////////////////////////////////////
-// goto_last_frame
-
-class GotoLastFrameCommand : public Command
-
+class GotoLastFrameCommand : public GotoCommand
 {
 public:
-  GotoLastFrameCommand();
+  GotoLastFrameCommand() : GotoCommand("GotoLastFrame",
+                                       "Goto Last Frame") { }
   Command* clone() { return new GotoLastFrameCommand(*this); }
 
 protected:
-  bool onEnabled(Context* context);
-  void onExecute(Context* context);
+  FrameNumber onGetFrame(Editor* editor) OVERRIDE {
+    return editor->getSprite()->getLastFrame();
+  }
 };
 
-GotoLastFrameCommand::GotoLastFrameCommand()
-  : Command("GotoLastFrame",
-            "Goto Last Frame",
-            CmdRecordableFlag)
-{
-}
 
-bool GotoLastFrameCommand::onEnabled(Context* context)
-{
-  return context->checkFlags(ContextFlags::ActiveDocumentIsReadable);
-}
 
-void GotoLastFrameCommand::onExecute(Context* context)
-{
-  ActiveDocumentWriter document(context);
-  Sprite* sprite = document->getSprite();
-  sprite->setCurrentFrame(sprite->getLastFrame());
-
-  update_screen_for_document(document);
-  current_editor->updateStatusBar();
-}
-
-//////////////////////////////////////////////////////////////////////
-// goto_frame
-
-class GotoFrameCommand : public Command
+class GotoFrameCommand : public GotoCommand
 
 {
 public:
-  GotoFrameCommand();
+  GotoFrameCommand() : GotoCommand("GotoFrame",
+                                   "Goto Frame")
+                     , m_frame(0) { }
   Command* clone() { return new GotoFrameCommand(*this); }
 
 protected:
-  void onLoadParams(Params* params) OVERRIDE;
-  bool onEnabled(Context* context);
-  void onExecute(Context* context);
+  void onLoadParams(Params* params) OVERRIDE
+  {
+    std::string frame = params->get("frame");
+    if (!frame.empty()) m_frame = ustrtol(frame.c_str(), NULL, 10);
+    else m_frame = 0;
+  }
+
+  FrameNumber onGetFrame(Editor* editor) OVERRIDE {
+    if (m_frame == 0) {
+      UniquePtr<Window> window(app::load_widget<Window>("goto_frame.xml", "goto_frame"));
+      Widget* frame = app::find_widget<Widget>(window, "frame");
+      Widget* ok = app::find_widget<Widget>(window, "ok");
+
+      frame->setTextf("%d", editor->getFrame()+1);
+
+      window->openWindowInForeground();
+      if (window->getKiller() != ok)
+        return editor->getFrame();
+
+      m_frame = strtol(frame->getText(), NULL, 10);
+    }
+
+    return MID(FrameNumber(0), FrameNumber(m_frame-1), editor->getSprite()->getLastFrame());
+  }
 
 private:
   // The frame to go. 0 is "show the UI dialog", another value is the
   // frame (1 is the first name for the user).
   int m_frame;
 };
-
-GotoFrameCommand::GotoFrameCommand()
-  : Command("GotoFrame",
-            "Goto Frame",
-            CmdRecordableFlag)
-  , m_frame(0)
-{
-}
-
-void GotoFrameCommand::onLoadParams(Params* params)
-{
-  std::string frame = params->get("frame");
-  if (!frame.empty()) m_frame = ustrtol(frame.c_str(), NULL, 10);
-  else m_frame = 0;
-}
-
-bool GotoFrameCommand::onEnabled(Context* context)
-{
-  return context->checkFlags(ContextFlags::ActiveDocumentIsReadable);
-}
-
-void GotoFrameCommand::onExecute(Context* context)
-{
-  if (m_frame == 0 && context->isUiAvailable()) {
-    UniquePtr<Window> window(app::load_widget<Window>("goto_frame.xml", "goto_frame"));
-    Widget* frame = app::find_widget<Widget>(window, "frame");
-    Widget* ok = app::find_widget<Widget>(window, "ok");
-
-    frame->setTextf("%d", context->getActiveDocument()->getSprite()->getCurrentFrame()+1);
-
-    window->openWindowInForeground();
-    if (window->get_killer() != ok)
-      return;
-
-    m_frame = strtol(frame->getText(), NULL, 10);
-  }
-
-  ActiveDocumentWriter document(context);
-  Sprite* sprite = document->getSprite();
-  FrameNumber newFrame(MID(0, m_frame-1, sprite->getLastFrame()));
-
-  sprite->setCurrentFrame(newFrame);
-
-  update_screen_for_document(document);
-  current_editor->updateStatusBar();
-}
 
 //////////////////////////////////////////////////////////////////////
 // CommandFactory

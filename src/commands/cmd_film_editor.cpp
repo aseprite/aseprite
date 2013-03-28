@@ -1,5 +1,5 @@
 /* ASEPRITE
- * Copyright (C) 2001-2012  David Capello
+ * Copyright (C) 2001-2013  David Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,8 +21,8 @@
 #include "ui/gui.h"
 
 #include "commands/command.h"
+#include "context.h"
 #include "dialogs/aniedit.h"
-#include "document_wrappers.h"
 
 //////////////////////////////////////////////////////////////////////
 // film_editor
@@ -52,7 +52,7 @@ bool FilmEditorCommand::onEnabled(Context* context)
 
 void FilmEditorCommand::onExecute(Context* context)
 {
-  switch_between_animation_and_sprite_editor();
+  switch_between_animation_and_sprite_editor(context);
 }
 
 //////////////////////////////////////////////////////////////////////

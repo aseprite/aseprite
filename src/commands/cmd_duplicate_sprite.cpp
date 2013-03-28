@@ -1,5 +1,5 @@
 /* ASEPRITE
- * Copyright (C) 2001-2012  David Capello
+ * Copyright (C) 2001-2013  David Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -22,7 +22,7 @@
 #include "app/find_widget.h"
 #include "app/load_widget.h"
 #include "commands/command.h"
-#include "document_wrappers.h"
+#include "context_access.h"
 #include "ini_file.h"
 #include "modules/editors.h"
 #include "raster/sprite.h"
@@ -63,7 +63,8 @@ bool DuplicateSpriteCommand::onEnabled(Context* context)
 void DuplicateSpriteCommand::onExecute(Context* context)
 {
   Widget* src_name, *dst_name, *flatten;
-  const ActiveDocumentReader document(context);
+  const ContextReader reader(context);
+  const Document* document = reader.document();
   char buf[1024];
 
   /* load the window widget */
@@ -81,13 +82,13 @@ void DuplicateSpriteCommand::onExecute(Context* context)
   if (get_config_bool("DuplicateSprite", "Flatten", false))
     flatten->setSelected(true);
 
-  /* open the window */
+  // Open the window
   window->openWindowInForeground();
 
-  if (window->get_killer() == window->findChild("ok")) {
+  if (window->getKiller() == window->findChild("ok")) {
     set_config_bool("DuplicateSprite", "Flatten", flatten->isSelected());
 
-    // make a copy of the document
+    // Make a copy of the document
     Document* docCopy;
     if (flatten->isSelected())
       docCopy = document->duplicate(DuplicateWithFlattenLayers);
@@ -97,7 +98,6 @@ void DuplicateSpriteCommand::onExecute(Context* context)
     docCopy->setFilename(dst_name->getText());
 
     context->addDocument(docCopy);
-    set_document_in_more_reliable_editor(docCopy);
   }
 }
 

@@ -1,5 +1,5 @@
 /* ASEPRITE
- * Copyright (C) 2001-2012  David Capello
+ * Copyright (C) 2001-2013  David Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,7 +20,7 @@
 
 #include "commands/command.h"
 #include "dialogs/aniedit.h"
-#include "document_wrappers.h"
+#include "context_access.h"
 #include "ui/base.h"
 #include "util/celmove.h"
 
@@ -49,8 +49,8 @@ bool MoveCelCommand::onEnabled(Context* context)
 
 void MoveCelCommand::onExecute(Context* context)
 {
-  ActiveDocumentWriter document(context);
-  move_cel(document);
+  ContextWriter writer(context);
+  move_cel(writer);
 }
 
 //////////////////////////////////////////////////////////////////////

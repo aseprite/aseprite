@@ -1,5 +1,5 @@
 /* ASEPRITE
- * Copyright (C) 2001-2012  David Capello
+ * Copyright (C) 2001-2013  David Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,9 +21,13 @@
 #include "base/bind.h"
 #include "commands/command.h"
 #include "commands/commands.h"
+#include "context.h"
+#include "context_access.h"
+#include "document.h"
+#include "document_api.h"
 #include "document_undo.h"
-#include "document_wrappers.h"
 #include "ini_file.h"
+#include "modules/editors.h"
 #include "modules/gui.h"
 #include "modules/palettes.h"
 #include "raster/cel.h"
@@ -34,6 +38,7 @@
 #include "raster/stock.h"
 #include "ui/gui.h"
 #include "undo_transaction.h"
+#include "widgets/editor/editor.h"
 
 #include <limits>
 
@@ -113,7 +118,7 @@ protected:
 
     gfx::Size reqSize = getPreferredSize();
     JRect rect = jrect_new(rc->x1, rc->y1, rc->x1+reqSize.w, rc->y1+reqSize.h);
-    move_window(rect);
+    moveWindow(rect);
     jrect_free(rect);
 
     invalidate();
@@ -145,14 +150,12 @@ protected:
     UniquePtr<Image> tempImage(Image::create(sprite->getPixelFormat(), sprite->getWidth(), sprite->getHeight()));
     image_clear(resultImage, 0);
 
-    FrameNumber oldFrame = sprite->getCurrentFrame();
     int column = 0, row = 0;
     for (FrameNumber frame(0); frame<nframes; ++frame) {
       // TODO "tempImage" could not be necessary if we could specify
       // destination clipping bounds in Sprite::render() function.
       tempImage->clear(0);
-      sprite->setCurrentFrame(frame);
-      sprite->render(tempImage, 0, 0);
+      sprite->render(tempImage, 0, 0, frame);
       resultImage->copy(tempImage, column*sprite->getWidth(), row*sprite->getHeight());
 
       if (++column >= columns) {
@@ -160,42 +163,51 @@ protected:
         ++row;
       }
     }
-    sprite->setCurrentFrame(oldFrame);
+
+    // Store the frame in the current editor so we can restore it
+    // after change and restore the setTotalFrames() number.
+    FrameNumber oldSelectedFrame = (current_editor ? current_editor->getFrame():
+                                                     FrameNumber(0));
 
     {
       // The following steps modify the sprite, so we wrap all
       // operations in a undo-transaction.
-      UndoTransaction undoTransaction(m_document, "Export Sprite Sheet", undo::ModifyDocument);
+      ContextWriter writer(m_context);
+      UndoTransaction undoTransaction(writer.context(), "Export Sprite Sheet", undo::ModifyDocument);
+      DocumentApi api = m_document->getApi();
 
       // Add the layer in the sprite.
-      LayerImage* resultLayer = undoTransaction.newLayer();
+      LayerImage* resultLayer = api.newLayer(sprite);
 
       // Add the image into the sprite's stock
-      int indexInStock = undoTransaction.addImageInStock(resultImage);
+      int indexInStock = api.addImageInStock(sprite, resultImage);
       resultImage.release();
 
       // Create the cel.
       UniquePtr<Cel> resultCel(new Cel(FrameNumber(0), indexInStock));
 
       // Add the cel in the layer.
-      undoTransaction.addCel(resultLayer, resultCel);
+      api.addCel(resultLayer, resultCel);
       resultCel.release();
 
       // Copy the list of layers (because we will modify it in the iteration).
-      LayerList layers = sprite->getFolder()->get_layers_list();
+      LayerList layers = sprite->getFolder()->getLayersList();
 
       // Remove all other layers
       for (LayerIterator it=layers.begin(), end=layers.end(); it!=end; ++it) {
         if (*it != resultLayer)
-          undoTransaction.removeLayer(*it);
+          api.removeLayer(*it);
       }
 
-      // Change the number of frames (just one, the sprite sheet)
-      undoTransaction.setNumberOfFrames(FrameNumber(1));
-      undoTransaction.setCurrentFrame(FrameNumber(0));
+      // Change the number of frames (just one, the sprite sheet). As
+      // we are using the observable API, all DocumentView will change
+      // its current frame to frame 1. We'll try to restore the
+      // selected frame for the current_editor later.
+      api.setTotalFrames(sprite, FrameNumber(1));
 
       // Set the size of the sprite to the tile size.
-      undoTransaction.setSpriteSize(sheet_w, sheet_h);
+      api.setSpriteSize(sprite, sheet_w, sheet_h);
+
       undoTransaction.commit();
 
       // Draw the document with the new dimensions in the screen.
@@ -257,8 +269,19 @@ protected:
 
     // Undo the sprite sheet conversion
     if (undo) {
-      if (m_document->getUndo()->canUndo())
+      if (m_document->getUndo()->canUndo()) {
         m_document->getUndo()->doUndo();
+
+        // We've to restore the previously selected frame. As we've
+        // called setTotalFrames(), all document observers
+        // (current_editor included) have changed its current frame to
+        // the first one (to a visible/editable frame). The "undo"
+        // action doesn't restore the previously selected frame in
+        // observers, so at least we can restore the current_editor's
+        // frame.
+        if (current_editor)
+          current_editor->setFrame(oldSelectedFrame);
+      }
 
       m_document->generateMaskBoundaries();
       m_document->destroyExtraCel(); // Regenerate extras

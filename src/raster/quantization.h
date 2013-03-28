@@ -1,5 +1,5 @@
 /* ASEPRITE
- * Copyright (C) 2001-2012  David Capello
+ * Copyright (C) 2001-2013  David Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,6 +20,7 @@
 #define RASTER_QUANTIZATION_H_INCLUDED
 
 #include "raster/dithering_method.h"
+#include "raster/frame_number.h"
 #include "raster/pixel_format.h"
 
 class Image;
@@ -31,7 +32,7 @@ class Stock;
 namespace quantization {
 
   // Creates a new palette suitable to quantize the given RGB sprite to Indexed color.
-  Palette* create_palette_from_rgb(const Sprite* sprite);
+  Palette* create_palette_from_rgb(const Sprite* sprite, FrameNumber frameNumber);
 
   // Changes the image pixel format. The dithering method is used only
   // when you want to convert from RGB to Indexed.

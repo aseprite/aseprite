@@ -1,5 +1,5 @@
 /* ASEPRITE
- * Copyright (C) 2001-2012  David Capello
+ * Copyright (C) 2001-2013  David Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -22,6 +22,8 @@
 
 #include "app.h"
 #include "document.h"
+#include "document_api.h"
+#include "gfx/region.h"
 #include "la/vector2d.h"
 #include "modules/gui.h"
 #include "raster/algorithm/flip_image.h"
@@ -30,6 +32,7 @@
 #include "raster/mask.h"
 #include "raster/rotate.h"
 #include "raster/sprite.h"
+#include "settings/document_settings.h"
 #include "ui_context.h"
 #include "util/expand_cel_canvas.h"
 
@@ -38,11 +41,15 @@ static inline const la::Vector2d<double> point2Vector(const gfx::PointT<T>& pt) 
   return la::Vector2d<double>(pt.x, pt.y);
 }
 
-PixelsMovement::PixelsMovement(Document* document, Sprite* sprite, const Image* moveThis, int initialX, int initialY, int opacity,
+PixelsMovement::PixelsMovement(Context* context,
+                               Document* document, Sprite* sprite, Layer* layer,
+                               const Image* moveThis, int initialX, int initialY, int opacity,
                                const char* operationName)
-  : m_documentReader(document)
+  : m_reader(context)
+  , m_document(document)
   , m_sprite(sprite)
-  , m_undoTransaction(document, operationName)
+  , m_layer(layer)
+  , m_undoTransaction(context, operationName)
   , m_firstDrop(true)
   , m_isDragging(false)
   , m_adjustPivot(false)
@@ -52,15 +59,15 @@ PixelsMovement::PixelsMovement(Document* document, Sprite* sprite, const Image* 
   m_initialData = gfx::Transformation(gfx::Rect(initialX, initialY, moveThis->w, moveThis->h));
   m_currentData = m_initialData;
 
-  DocumentWriter documentWriter(m_documentReader);
-  documentWriter->prepareExtraCel(0, 0, m_sprite->getWidth(), m_sprite->getHeight(), opacity);
+  ContextWriter writer(m_reader);
+  m_document->prepareExtraCel(0, 0, m_sprite->getWidth(), m_sprite->getHeight(), opacity);
 
-  Image* extraImage = documentWriter->getExtraCelImage();
+  Image* extraImage = m_document->getExtraCelImage();
   image_clear(extraImage, extraImage->mask_color);
   image_copy(extraImage, moveThis, initialX, initialY);
 
-  m_initialMask = new Mask(*documentWriter->getMask());
-  m_currentMask = new Mask(*documentWriter->getMask());
+  m_initialMask = new Mask(*m_document->getMask());
+  m_currentMask = new Mask(*m_document->getMask());
 }
 
 PixelsMovement::~PixelsMovement()
@@ -87,25 +94,25 @@ void PixelsMovement::flipImage(raster::algorithm::FlipType flipType)
                                 flipType);
 
   {
-    DocumentWriter documentWriter(m_documentReader);
+    ContextWriter writer(m_reader);
 
     // Regenerate the transformed (rotated, scaled, etc.) image and
     // mask.
-    redrawExtraImage(documentWriter);
+    redrawExtraImage();
     redrawCurrentMask();
 
-    documentWriter->setMask(m_currentMask);
-    documentWriter->generateMaskBoundaries(m_currentMask);
+    m_document->setMask(m_currentMask);
+    m_document->generateMaskBoundaries(m_currentMask);
+    update_screen_for_document(m_document);
   }
-
-  update_screen_for_document(m_documentReader);
 }
 
 void PixelsMovement::cutMask()
 {
   {
-    DocumentWriter documentWriter(m_documentReader);
-    m_undoTransaction.clearMask(app_get_color_to_clear_layer(m_sprite->getCurrentLayer()));
+    ContextWriter writer(m_reader);
+    m_document->getApi().clearMask(m_layer, writer.cel(),
+                                   app_get_color_to_clear_layer(m_layer));
   }
 
   copyMask();
@@ -116,11 +123,10 @@ void PixelsMovement::copyMask()
   // Hide the mask (do not deselect it, it will be moved them using m_undoTransaction.setMaskPosition)
   Mask emptyMask;
   {
-    DocumentWriter documentWriter(m_documentReader);
-    documentWriter->generateMaskBoundaries(&emptyMask);
+    ContextWriter writer(m_reader);
+    m_document->generateMaskBoundaries(&emptyMask);
+    update_screen_for_document(m_document);
   }
-
-  update_screen_for_document(m_documentReader);
 }
 
 void PixelsMovement::catchImage(int x, int y, HandleType handle)
@@ -148,11 +154,10 @@ void PixelsMovement::catchImageAgain(int x, int y, HandleType handle)
   // m_undoTransaction.setMaskPosition)
   Mask emptyMask;
   {
-    DocumentWriter documentWriter(m_documentReader);
-    documentWriter->generateMaskBoundaries(&emptyMask);
+    ContextWriter writer(m_reader);
+    m_document->generateMaskBoundaries(&emptyMask);
+    update_screen_for_document(m_document);
   }
-
-  update_screen_for_document(m_documentReader);
 }
 
 void PixelsMovement::maskImage(const Image* image, int x, int y)
@@ -160,24 +165,24 @@ void PixelsMovement::maskImage(const Image* image, int x, int y)
   m_currentMask->replace(m_currentData.bounds());
   m_initialMask->copyFrom(m_currentMask);
 
-  DocumentWriter documentWriter(m_documentReader);
+  ContextWriter writer(m_reader);
 
-  m_undoTransaction.copyToCurrentMask(m_currentMask);
+  m_document->getApi().copyToCurrentMask(m_currentMask);
 
-  documentWriter->setMask(m_currentMask);
-  documentWriter->generateMaskBoundaries(m_currentMask);
+  m_document->setMask(m_currentMask);
+  m_document->generateMaskBoundaries(m_currentMask);
 
-  update_screen_for_document(m_documentReader);
+  update_screen_for_document(m_document);
 }
 
-gfx::Rect PixelsMovement::moveImage(int x, int y, MoveModifier moveModifier)
+void PixelsMovement::moveImage(int x, int y, MoveModifier moveModifier)
 {
   gfx::Transformation::Corners oldCorners;
   m_currentData.transformBox(oldCorners);
 
-  DocumentWriter documentWriter(m_documentReader);
-  Image* image = documentWriter->getExtraCelImage();
-  Cel* cel = documentWriter->getExtraCel();
+  ContextWriter writer(m_reader);
+  Image* image = m_document->getExtraCelImage();
+  Cel* cel = m_document->getExtraCel();
   int x1, y1, x2, y2;
 
   x1 = m_initialData.bounds().x;
@@ -205,7 +210,8 @@ gfx::Rect PixelsMovement::moveImage(int x, int y, MoveModifier moveModifier)
       if ((moveModifier & SnapToGridMovement) == SnapToGridMovement) {
         // Snap the x1,y1 point to the grid.
         gfx::Point gridOffset(x1, y1);
-        UIContext::instance()->getSettings()->snapToGrid(gridOffset, NormalSnap);
+        UIContext::instance()->getSettings()
+          ->getDocumentSettings(m_document)->snapToGrid(gridOffset, NormalSnap);
 
         // Now we calculate the difference from x1,y1 point and we can
         // use it to adjust all coordinates (x1, y1, x2, y2).
@@ -382,15 +388,15 @@ gfx::Rect PixelsMovement::moveImage(int x, int y, MoveModifier moveModifier)
     m_adjustPivot = true;
   }
 
-  redrawExtraImage(documentWriter);
+  redrawExtraImage();
   redrawCurrentMask();
 
   if (m_firstDrop)
-    m_undoTransaction.copyToCurrentMask(m_currentMask);
+    m_document->getApi().copyToCurrentMask(m_currentMask);
   else
-    documentWriter->setMask(m_currentMask);
+    m_document->setMask(m_currentMask);
 
-  documentWriter->setTransformation(m_currentData);
+  m_document->setTransformation(m_currentData);
 
   // Get the new transformed corners
   gfx::Transformation::Corners newCorners;
@@ -403,7 +409,12 @@ gfx::Rect PixelsMovement::moveImage(int x, int y, MoveModifier moveModifier)
     fullBounds = fullBounds.createUnion(gfx::Rect(oldCorners[i].x, oldCorners[i].y, 1, 1));
     fullBounds = fullBounds.createUnion(gfx::Rect(newCorners[i].x, newCorners[i].y, 1, 1));
   }
-  return fullBounds;
+
+  // If "fullBounds" is empty is because the cel was not moved
+  if (!fullBounds.isEmpty()) {
+    // Notify the modified region.
+    m_document->notifySpritePixelsModified(m_sprite, gfx::Region(fullBounds));
+  }
 }
 
 Image* PixelsMovement::getDraggedImageCopy(gfx::Point& origin)
@@ -437,18 +448,17 @@ Image* PixelsMovement::getDraggedImageCopy(gfx::Point& origin)
 
 void PixelsMovement::stampImage()
 {
-  const Cel* cel = m_documentReader->getExtraCel();
-  const Image* image = m_documentReader->getExtraCelImage();
+  const Cel* cel = m_document->getExtraCel();
+  const Image* image = m_document->getExtraCelImage();
 
   ASSERT(cel && image);
 
   {
-    DocumentWriter documentWriter(m_documentReader);
+    ContextWriter writer(m_reader);
     {
       // Expand the canvas to paste the image in the fully visible
       // portion of sprite.
-      ExpandCelCanvas expandCelCanvas(documentWriter, m_sprite,
-                                      m_sprite->getCurrentLayer(), TILED_NONE,
+      ExpandCelCanvas expandCelCanvas(writer.context(), TILED_NONE,
                                       m_undoTransaction);
 
       image_merge(expandCelCanvas.getDestCanvas(), image,
@@ -468,7 +478,7 @@ void PixelsMovement::dropImageTemporarily()
   m_isDragging = false;
 
   {
-    DocumentWriter documentWriter(m_documentReader);
+    ContextWriter writer(m_reader);
 
     // TODO Add undo information so the user can undo each transformation step.
 
@@ -498,10 +508,9 @@ void PixelsMovement::dropImageTemporarily()
       m_currentData.displacePivotTo(gfx::Point(newPivot.x, newPivot.y));
     }
 
-    documentWriter->generateMaskBoundaries(m_currentMask);
+    m_document->generateMaskBoundaries(m_currentMask);
+    update_screen_for_document(m_document);
   }
-
-  update_screen_for_document(m_documentReader);
 }
 
 void PixelsMovement::dropImage()
@@ -516,8 +525,8 @@ void PixelsMovement::dropImage()
 
   // Destroy the extra cel (this cel will be used by the drawing
   // cursor surely).
-  DocumentWriter documentWriter(m_documentReader);
-  documentWriter->destroyExtraCel();
+  ContextWriter writer(m_reader);
+  m_document->destroyExtraCel();
 }
 
 void PixelsMovement::discardImage()
@@ -525,14 +534,14 @@ void PixelsMovement::discardImage()
   m_isDragging = false;
 
   // Deselect the mask (here we don't stamp the image).
-  m_undoTransaction.deselectMask();
+  m_document->getApi().deselectMask();
   m_undoTransaction.commit();
 
   // Destroy the extra cel and regenerate the mask boundaries (we've
   // just deselect the mask).
-  DocumentWriter documentWriter(m_documentReader);
-  documentWriter->destroyExtraCel();
-  documentWriter->generateMaskBoundaries();
+  ContextWriter writer(m_reader);
+  m_document->destroyExtraCel();
+  m_document->generateMaskBoundaries();
 }
 
 bool PixelsMovement::isDragging() const
@@ -542,8 +551,8 @@ bool PixelsMovement::isDragging() const
 
 gfx::Rect PixelsMovement::getImageBounds()
 {
-  const Cel* cel = m_documentReader->getExtraCel();
-  const Image* image = m_documentReader->getExtraCelImage();
+  const Cel* cel = m_document->getExtraCel();
+  const Image* image = m_document->getExtraCelImage();
 
   ASSERT(cel != NULL);
   ASSERT(image != NULL);
@@ -559,26 +568,25 @@ gfx::Size PixelsMovement::getInitialImageSize() const
 void PixelsMovement::setMaskColor(uint32_t mask_color)
 {
   {
-    DocumentWriter documentWriter(m_documentReader);
-    Image* extraImage = documentWriter->getExtraCelImage();
+    ContextWriter writer(m_reader);
+    Image* extraImage = m_document->getExtraCelImage();
 
     ASSERT(extraImage != NULL);
 
     extraImage->mask_color = mask_color;
-    redrawExtraImage(documentWriter);
+    redrawExtraImage();
+    update_screen_for_document(m_document);
   }
-
-  update_screen_for_document(m_documentReader);
 }
 
 
-void PixelsMovement::redrawExtraImage(DocumentWriter& documentWriter)
+void PixelsMovement::redrawExtraImage()
 {
   gfx::Transformation::Corners corners;
   m_currentData.transformBox(corners);
 
   // Transform the extra-cel which is the chunk of pixels that the user is moving.
-  Image* extraImage = documentWriter->getExtraCelImage();
+  Image* extraImage = m_document->getExtraCelImage();
   image_clear(extraImage, extraImage->mask_color);
   image_parallelogram(extraImage, m_originalImage,
                       corners.leftTop().x, corners.leftTop().y,

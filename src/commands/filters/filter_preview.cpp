@@ -1,5 +1,5 @@
 /* ASEPRITE
- * Copyright (C) 2001-2012  David Capello
+ * Copyright (C) 2001-2013  David Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -64,7 +64,7 @@ bool FilterPreview::onProcessMessage(Message* msg)
   switch (msg->type) {
 
     case JM_OPEN:
-      RenderEngine::setPreviewImage(m_filterMgr->getSprite()->getCurrentLayer(),
+      RenderEngine::setPreviewImage(m_filterMgr->getLayer(),
                                     m_filterMgr->getDestinationImage());
       break;
 

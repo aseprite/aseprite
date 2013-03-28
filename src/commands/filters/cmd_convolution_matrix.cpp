@@ -1,5 +1,5 @@
 /* ASEPRITE
- * Copyright (C) 2001-2012  David Capello
+ * Copyright (C) 2001-2013  David Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -26,12 +26,13 @@
 #include "commands/filters/convolution_matrix_stock.h"
 #include "commands/filters/filter_manager_impl.h"
 #include "commands/filters/filter_window.h"
-#include "document_wrappers.h"
+#include "context.h"
 #include "filters/convolution_matrix.h"
 #include "filters/convolution_matrix_filter.h"
 #include "ini_file.h"
 #include "raster/mask.h"
 #include "raster/sprite.h"
+#include "settings/document_settings.h"
 #include "ui/button.h"
 #include "ui/label.h"
 #include "ui/listbox.h"
@@ -187,11 +188,12 @@ void ConvolutionMatrixCommand::onExecute(Context* context)
 
   // Create the filter and setup initial settings
   ConvolutionMatrixFilter filter;
-  filter.setTiledMode(context->getSettings()->getTiledMode());
+  IDocumentSettings* docSettings = context->getSettings()->getDocumentSettings(context->getActiveDocument());
+  filter.setTiledMode(docSettings->getTiledMode());
   if (matrix != 0)
     filter.setMatrix(matrix);
 
-  FilterManagerImpl filterMgr(context->getActiveDocument(), &filter);
+  FilterManagerImpl filterMgr(context, &filter);
 
   ConvolutionMatrixWindow window(filter, filterMgr, m_stock);
   if (window.doModal()) {
