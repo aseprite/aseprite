@@ -63,11 +63,12 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
+#if 0
 #include <stdlib.h>
 #include <limits.h>
 #include <string.h>
 #include <stdio.h>
-#if 0
+
 #include "pixman-private.h"
 #endif
 

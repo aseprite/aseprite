@@ -11,6 +11,11 @@
 #include <limits>
 #include <cassert>
 
+#include <stdlib.h>
+#include <limits.h>
+#include <string.h>
+#include <stdio.h>
+
 // Anonymous namespace to include pixman-region.c. Macros doesn't respect
 // namespaces but anyway they are defined inside it just for reference
 // (to know that they are needed only for pixman-region.c).

@@ -41,6 +41,8 @@ namespace gfx {
     template<typename T>
     class RegionIterator : public std::iterator<std::forward_iterator_tag, T> {
     public:
+      typedef typename std::iterator<std::forward_iterator_tag, T>::reference reference;
+
       RegionIterator() : m_ptr(NULL) { }
       RegionIterator(const RegionIterator& o) : m_ptr(o.m_ptr) { }
       template<typename T2>

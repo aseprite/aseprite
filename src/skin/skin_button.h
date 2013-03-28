@@ -45,19 +45,19 @@ public:
     m_partNormal = partNormal;
     m_partHot = partHot;
     m_partSelected = partSelected;
-    invalidate();
+    Base::invalidate();
   }
 
 protected:
   void onPaint(ui::PaintEvent& ev) OVERRIDE {
-    gfx::Rect bounds(getClientBounds());
-    Graphics* g = ev.getGraphics();
-    SkinTheme* theme = static_cast<SkinTheme*>(getTheme());
+    gfx::Rect bounds(Base::getClientBounds());
+    ui::Graphics* g = ev.getGraphics();
+    SkinTheme* theme = static_cast<SkinTheme*>(Base::getTheme());
     SkinPart part;
 
-    if (isSelected())
+    if (Base::isSelected())
       part = m_partSelected;
-    else if (hasMouseOver())
+    else if (Base::hasMouseOver())
       part = m_partHot;
     else
       part = m_partNormal;
