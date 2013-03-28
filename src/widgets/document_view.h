@@ -56,6 +56,8 @@ namespace widgets {
 
     // WorkspaceView implementation
     ui::Widget* getContentWidget() OVERRIDE { return this; }
+    WorkspaceView* cloneWorkspaceView() OVERRIDE;
+    void onClonedFrom(WorkspaceView* from) OVERRIDE;
 
     // DocumentObserver implementation
     void onGeneralUpdate(DocumentEvent& ev) OVERRIDE;

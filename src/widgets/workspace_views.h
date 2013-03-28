@@ -16,26 +16,15 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifndef WIDGETS_WORKSPACE_VIEW_H_INCLUDED
-#define WIDGETS_WORKSPACE_VIEW_H_INCLUDED
+#ifndef WIDGETS_WORKSPACE_VIEWS_H_INCLUDED
+#define WIDGETS_WORKSPACE_VIEWS_H_INCLUDED
 
-namespace ui { class Widget; }
+#include <vector>
 
 namespace widgets {
 
-  class WorkspaceView
-  {
-  public:
-    virtual ~WorkspaceView() { }
-
-    virtual ui::Widget* getContentWidget() = 0;
-    virtual WorkspaceView* cloneWorkspaceView() = 0;
-
-    // Called after the view is added in the correct position inside
-    // the workspace. It can be used to copy/clone scroll position
-    // from the original view.
-    virtual void onClonedFrom(WorkspaceView* from) = 0;
-  };
+  class WorkspaceView;
+  typedef std::vector<WorkspaceView*> WorkspaceViews;
 
 } // namespace widgets
 

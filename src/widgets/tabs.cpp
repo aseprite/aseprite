@@ -185,6 +185,8 @@ void Tabs::updateTabsText()
 
 void Tabs::selectTab(TabView* tabView)
 {
+  ASSERT(tabView != NULL);
+
   Tab *tab = getTabByView(tabView);
   if (tab != NULL)
     selectTabInternal(tab);

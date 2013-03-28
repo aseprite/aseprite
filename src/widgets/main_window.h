@@ -56,6 +56,7 @@ public:
 
 protected:
   void onSaveLayout(ui::SaveLayoutEvent& ev) OVERRIDE;
+  void onActiveViewChange();
 
 private:
   MainMenuBar* m_menuBar;       // the menu bar widget

@@ -37,7 +37,7 @@ public:
 
   virtual bool isUiAvailable() const { return true; }
 
-  widgets::DocumentView* getActiveView();
+  widgets::DocumentView* getActiveView() const;
   void setActiveView(widgets::DocumentView* documentView);
 
   // Returns the number of views that the given document has.
@@ -56,9 +56,6 @@ protected:
   virtual void onGetActiveLocation(DocumentLocation* location) const OVERRIDE;
 
 private:
-  DocumentViews m_allViews;
-  widgets::DocumentView* m_activeView;
-
   static UIContext* m_instance;
 };
 

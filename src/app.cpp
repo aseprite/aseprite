@@ -159,8 +159,9 @@ int App::run()
     // Create the main window and show it.
     m_mainWindow.reset(new MainWindow);
 
-    // Create the list of tabs
+    // Default status of the main window.
     app_rebuild_documents_tabs();
+    app_default_statusbar_message();
 
     m_mainWindow->openWindow();
 

@@ -407,7 +407,8 @@ add_library(aseprite-library
   widgets/status_bar.cpp
   widgets/tabs.cpp
   widgets/toolbar.cpp
-  widgets/workspace.cpp)
+  widgets/workspace.cpp
+  widgets/workspace_part.cpp)
 
 ######################################################################
 # ASEPRITE application

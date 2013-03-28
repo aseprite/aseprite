@@ -158,6 +158,24 @@ std::string DocumentView::getTabText()
   return str;
 }
 
+WorkspaceView* DocumentView::cloneWorkspaceView()
+{
+  return new DocumentView(m_document, Normal);
+}
+
+void DocumentView::onClonedFrom(WorkspaceView* from)
+{
+  Editor* newEditor = getEditor();
+  Editor* srcEditor = static_cast<DocumentView*>(from)->getEditor();
+
+  newEditor->setLayer(srcEditor->getLayer());
+  newEditor->setFrame(srcEditor->getFrame());
+  newEditor->setZoom(srcEditor->getZoom());
+
+  View::getView(newEditor)
+    ->setViewScroll(View::getView(srcEditor)->getViewScroll());
+}
+
 bool DocumentView::onProcessMessage(Message* msg)
 {
   switch (msg->type) {

@@ -82,7 +82,9 @@ protected:
     }
 
     // Close the active view.
-    workspace->closeView(workspace->getActiveView());
+    WorkspaceView* view = workspace->getActiveView();
+    workspace->removeView(view);
+    delete view;
   }
 
 private:

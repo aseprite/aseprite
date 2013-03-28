@@ -69,6 +69,7 @@ MainWindow::MainWindow()
   m_toolBar = new ToolBar();
   m_tabsBar = new Tabs(this);
   m_workspace = new Workspace();
+  m_workspace->ActiveViewChanged.connect(&MainWindow::onActiveViewChange, this);
   m_miniEditor = new MiniEditorWindow();
   m_colorBarSplitter = findChildT<Splitter>("colorbarsplitter");
 
@@ -82,9 +83,6 @@ MainWindow::MainWindow()
 
   // Setup the menus
   m_menuBar->setMenu(AppMenus::instance()->getRootMenu());
-
-  // Start text of status bar
-  app_default_statusbar_message();
 
   // Add the widgets in the boxes
   if (box_menubar) box_menubar->addChild(m_menuBar);
@@ -153,6 +151,15 @@ void MainWindow::onSaveLayout(SaveLayoutEvent& ev)
   // the original splitter position in the layout.
   if (m_colorBarSplitter->getPosition() == 0.0)
     m_colorBarSplitter->setPosition(m_lastSplitterPos);
+}
+
+// When the active view is changed from methods like
+// Workspace::splitView(), this function is called, and we have to
+// inform to the UIContext that the current view has changed.
+void MainWindow::onActiveViewChange()
+{
+  if (DocumentView* docView = dynamic_cast<DocumentView*>(m_workspace->getActiveView()))
+    UIContext::instance()->setActiveView(docView);
 }
 
 void MainWindow::clickTab(Tabs* tabs, TabView* tabView, int button)

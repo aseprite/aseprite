@@ -16,47 +16,32 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifndef WIDGETS_WORKSPACE_H_INCLUDED
-#define WIDGETS_WORKSPACE_H_INCLUDED
+#ifndef WIDGETS_WORKSPACE_PART_H_INCLUDED
+#define WIDGETS_WORKSPACE_PART_H_INCLUDED
 
-#include "base/signal.h"
 #include "ui/box.h"
 #include "widgets/workspace_views.h"
 #include <vector>
 
 namespace widgets {
 
-  class WorkspacePart;
-
-  class Workspace : public ui::Box
+  class WorkspacePart : public ui::Box
   {
   public:
-    typedef WorkspaceViews::iterator iterator;
+    WorkspacePart();
+    ~WorkspacePart();
 
-    Workspace();
-    ~Workspace();
-
-    iterator begin() { return m_views.begin(); }
-    iterator end() { return m_views.end(); }
+    size_t getViewCount() { return m_views.size(); }
 
     void addView(WorkspaceView* view);
     void removeView(WorkspaceView* view);
 
-    WorkspaceView* getActiveView();
+    WorkspaceView* getActiveView() { return m_activeView; }
     void setActiveView(WorkspaceView* view);
 
-    void splitView(WorkspaceView* view, int orientation);
-    void makeUnique(WorkspaceView* view);
-
-    Signal0<void> ActiveViewChanged;
-
   private:
-    WorkspacePart* destroyPart(WorkspacePart* part);
-
-    // All views of all parts.
+    WorkspaceView* m_activeView;
     WorkspaceViews m_views;
-    WorkspacePart* m_mainPart;
-    WorkspacePart* m_activePart;
   };
 
 } // namespace widgets

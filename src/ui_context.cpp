@@ -47,31 +47,34 @@ UIContext::UIContext()
 {
   ASSERT(m_instance == NULL);
   m_instance = this;
-  m_activeView = NULL;
 }
 
 UIContext::~UIContext()
 {
-  // No views at this point.
-  ASSERT(m_allViews.empty());
-  ASSERT(m_activeView == NULL);
-
   ASSERT(m_instance == this);
   m_instance = NULL;
 }
 
-widgets::DocumentView* UIContext::getActiveView()
+widgets::DocumentView* UIContext::getActiveView() const
 {
-  return m_activeView;
+  Workspace* workspace = App::instance()->getMainWindow()->getWorkspace();
+  WorkspaceView* view = workspace->getActiveView();
+  if (DocumentView* docView = dynamic_cast<DocumentView*>(view))
+    return docView;
+  else
+    return NULL;
 }
 
 void UIContext::setActiveView(widgets::DocumentView* docView)
 {
-  m_activeView = docView;
-  current_editor = (docView ? docView->getEditor(): NULL);
+  if (docView != NULL) {
+    App::instance()->getMainWindow()->getTabsBar()->selectTab(docView);
 
-  App::instance()->getMainWindow()->getTabsBar()->selectTab(docView);
-  App::instance()->getMainWindow()->getWorkspace()->setActiveView(docView);
+    if (App::instance()->getMainWindow()->getWorkspace()->getActiveView() != docView)
+      App::instance()->getMainWindow()->getWorkspace()->setActiveView(docView);
+  }
+
+  current_editor = (docView ? docView->getEditor(): NULL);
 
   if (current_editor)
     current_editor->requestFocus();
@@ -87,9 +90,9 @@ void UIContext::setActiveView(widgets::DocumentView* docView)
   // Change the main frame title.
   base::string defaultTitle = PACKAGE " v" VERSION;
   base::string title;
-  if (m_activeView) {
+  if (docView) {
     // Prepend the document's filename.
-    title += base::get_file_name(m_activeView->getDocument()->getFilename());
+    title += base::get_file_name(docView->getDocument()->getFilename());
     title += " - ";
   }
   title += defaultTitle;
@@ -98,20 +101,26 @@ void UIContext::setActiveView(widgets::DocumentView* docView)
 
 size_t UIContext::countViewsOf(Document* document) const
 {
+  Workspace* workspace = App::instance()->getMainWindow()->getWorkspace();
   size_t counter = 0;
-  for (DocumentViews::const_iterator
-         it=m_allViews.begin(), end=m_allViews.end(); it != end; ++it) {
-    DocumentView* view = *it;
-    if (view->getDocument() == document)
-      ++counter;
+
+  for (Workspace::iterator it=workspace->begin(); it != workspace->end(); ++it) {
+    WorkspaceView* view = *it;
+    if (DocumentView* docView = dynamic_cast<DocumentView*>(view)) {
+      if (docView->getDocument() == document) {
+        ++counter;
+      }
+    }
   }
+
   return counter;
 }
 
 Editor* UIContext::getActiveEditor()
 {
-  if (m_activeView)
-    return m_activeView->getEditor();
+  DocumentView* activeView = getActiveView();
+  if (activeView)
+    return activeView->getEditor();
   else
     return NULL;
 }
@@ -123,62 +132,41 @@ void UIContext::onAddDocument(Document* document)
 
   // Add a new view for this document
   DocumentView* view = new DocumentView(document, DocumentView::Normal);
-  m_allViews.push_back(view);
 
   // Add a tab with the new view for the document
-  App::instance()->getMainWindow()->getTabsBar()->addTab(view);
   App::instance()->getMainWindow()->getWorkspace()->addView(view);
 
   setActiveView(view);
   view->getEditor()->setDefaultScroll();
-
-  // Rebuild the list of tabs
-  app_rebuild_documents_tabs();
 }
 
 void UIContext::onRemoveDocument(Document* document)
 {
   Context::onRemoveDocument(document);
 
-  DocumentView* newActiveView = NULL;
-  bool activeViewChanged = false;
+  Workspace* workspace = App::instance()->getMainWindow()->getWorkspace();
+  DocumentViews docViews;
 
-  // Remove all views of this document
-  for (DocumentViews::iterator it=m_allViews.begin(); it != m_allViews.end(); ) {
-    DocumentView* view = *it;
-
-    if (view->getDocument() == document) {
-      App::instance()->getMainWindow()->getTabsBar()->removeTab(view);
-      App::instance()->getMainWindow()->getWorkspace()->removeView(view);
-
-      // We cannot point as "active view" this view that we're
-      // destroying.  In this case we go to the next view (or the
-      // previous one if we are at the end).
-      if (view == m_activeView ||
-          view == newActiveView) {
-        m_activeView = NULL;
-        newActiveView = ((it+1) != m_allViews.end() ? *(it+1):
-                         (it != m_allViews.begin() ? *(it-1): NULL));
-        activeViewChanged = true;
+  // Collect all views related to the document.
+  for (Workspace::iterator it=workspace->begin(); it != workspace->end(); ++it) {
+    WorkspaceView* view = *it;
+    if (DocumentView* docView = dynamic_cast<DocumentView*>(view)) {
+      if (docView->getDocument() == document) {
+        docViews.push_back(docView);
       }
-
-      delete view;
-      it = m_allViews.erase(it);
     }
-    else
-      ++it;
   }
 
-  // Select the next view as current view.
-  if (activeViewChanged)
-    setActiveView(newActiveView);
-
-  // Rebuild the tabs
-  app_rebuild_documents_tabs();
+  for (DocumentViews::iterator it=docViews.begin(); it != docViews.end(); ++it) {
+    DocumentView* docView = *it;
+    workspace->removeView(docView);
+    delete docView;
+  }
 }
 
 void UIContext::onGetActiveLocation(DocumentLocation* location) const
 {
-  if (m_activeView)
-    m_activeView->getDocumentLocation(location);
+  widgets::DocumentView* activeView = getActiveView();
+  if (activeView)
+    activeView->getDocumentLocation(location);
 }
