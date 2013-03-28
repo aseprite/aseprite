@@ -186,13 +186,18 @@ namespace ui {
     Widget* getParent() { return m_parent; }
     Manager* getManager();
 
-    // Returns a list of parents (you must free the list), if
-    // "ascendant" is true the list is build from child to parents, else
-    // the list is from parent to children.
+    // Returns a list of parents, if "ascendant" is true the list is
+    // build from child to parents, else the list is from parent to
+    // children.
     void getParents(bool ascendant, WidgetsList& parents);
 
-    // Returns a list of children (you must free the list).
+    // Returns a list of children.
     const WidgetsList& getChildren() const { return m_children; }
+
+    // Returns the first child or NULL if it doesn't exist.
+    Widget* getFirstChild() {
+      return (!m_children.empty() ? m_children.front(): NULL);
+    }
 
     // Returns the next or previous siblings.
     Widget* getNextSibling();
