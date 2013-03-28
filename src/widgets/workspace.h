@@ -55,7 +55,6 @@ namespace widgets {
 
     // All views of all parts.
     WorkspaceViews m_views;
-    WorkspacePart* m_mainPart;
     WorkspacePart* m_activePart;
   };
 

@@ -35,13 +35,12 @@ using namespace widgets;
 
 Workspace::Workspace()
   : Box(JI_VERTICAL)
-  , m_mainPart(new WorkspacePart)
-  , m_activePart(m_mainPart)
+  , m_activePart(new WorkspacePart)
 {
   SkinTheme* theme = static_cast<SkinTheme*>(getTheme());
   setBgColor(theme->getColor(ThemeColor::Workspace));
 
-  addChild(m_mainPart);
+  addChild(m_activePart);
 }
 
 Workspace::~Workspace()
