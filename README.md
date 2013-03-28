@@ -2,76 +2,45 @@
 *Copyright (C) 2001-2013 David Capello*
 
 > THIS PROGRAM IS DISTRIBUTED WITHOUT ANY WARRANTY<br/>
-> See the license section for more information.
+> See the [license section](#license) for more information.
 
 ## Introduction
 
-**Aseprite** is an open source program to create animated
-sprites. Sprites are little images that can be used in your website or
-in a video game. You can draw characters with movement, intros,
-textures, patterns, backgrounds, logos, color palettes, isometric
-levels, etc.
+**Aseprite** is an open source program to create animated sprites.
+Its main features are:
 
-What makes Aseprite different? It focuses on pixel editing, to do
-pixel-art. Indeed, it isn't a photo retouching tool or a vector
-graphics editor. Mainly it is a tool to create tiny animations
-pixel-by-pixel.
-
-## Features
-
-The main features of Aseprite are:
-
-* Sprites are composed by **layers** &amp; **frames**.
+* Sprites are composed by **layers** &amp; **frames** (as separated concepts).
 * Supported color modes: **RGBA**, **Indexed** (palettes up to 256
   colors), and Grayscale.
-* Supported image formats (load/save): **PNG**, **GIF**, JPG, FLC,
-  FLI, BMP, PCX, TGA, and ASE (special format).
-* Load and save animations in a **sequence of bitmaps**
-  (e.g. frame1.png, frame2.png, etc.).
+* Load/save sequence of **PNG** files and **GIF** animations (also
+  FLC, FLI, JPG, BMP, PCX, TGA).
+* Export/import animations to/from **Sprite Sheets**.
 * **Tiled** drawing mode, useful to draw **patterns** and textures.
 * **Undo/Redo** for every operation.
-* **Multiple editors** support. You can split an editor horizontally
-  or vertically multiple times to edit and view the same sprite with
-  different zooms, or different sprites.
-* Import/Export **Sprite Sheets**.
+* Mini-editor with **real-time animation preview**.
+* **Multiple editors** support.
 * Pixel art specific tools like filled **Contour** &amp; **Polygon**.
 * **Onion skinning**
 
-## Configuration files
+## Issues
 
-In Windows XP/Vista/7 the main configuration file is `aseprite.ini`
-which is saved in the same folder of `aseprite.exe` executable file
-(in this way Aseprite is a portable application, i.e. you can
-transport a copy of the program in your USB drive).
+There are a list of
+[Known Issues](https://code.google.com/p/aseprite/issues/list) (things
+to be fixed or that aren't yet implemented).
 
-The following is a list of all configuration files that you could
-modify (it is not recommended to do so, but is useful if you want to
-super-customize Aseprite):
+If you found a bug, or you have a new idea/feature for the program,
+you can report then using the following links:
 
-    aseprite.ini          Program configuration
-    data/gui.xml          Menus, shortcuts, and tools
-    data/convmatr.def     Convolutions matrices
-    data/skins/*.*        Aseprite skins
-    data/widgets/*.xml    XML files with dialogs
+* [Report a bug](http://code.google.com/p/aseprite/issues/entry)
+* [Report a feature](http://code.google.com/p/aseprite/issues/entry?template=New%20feature)
 
-In GNU/Linux, the configuration file is ~/.asepriterc, and the data/
-files are searched in these locations (in priority order):
+## Support
 
-    $HOME/.aseprite/
-    ../share/aseprite/
-    ./data/
+You can ask for help in:
 
-## Contact Information
-
-You can report problems (bugs) or features in the Google Code project:
-
-* [Bugs](http://code.google.com/p/aseprite/issues/entry)
-* [Request features](http://code.google.com/p/aseprite/issues/entry?template=New%20feature)
-* [Aseprite Group](http://groups.google.com/group/aseprite-discuss) ([subscribe](mailto:aseprite-discuss+subscribe@googlegroups.com))
-
-For more information, visit the official page of the project:
-
-   http://www.aseprite.org/
+* [Aseprite mailing list](http://groups.google.com/group/aseprite-discuss) ([subscribe](mailto:aseprite-discuss+subscribe@googlegroups.com))
+* [Twitter](http://twitter.com/aseprite/)
+* [Website](http://www.aseprite.org/) (IRC, G+, Facebook, deviantArt, etc.)
 
 ## License
 
