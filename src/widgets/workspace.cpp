@@ -29,6 +29,7 @@
 #include "widgets/workspace_view.h"
 
 #include <algorithm>
+#include <queue>
 
 using namespace ui;
 using namespace widgets;
@@ -168,5 +169,43 @@ WorkspacePart* Workspace::destroyPart(WorkspacePart* part)
 
 void Workspace::makeUnique(WorkspaceView* view)
 {
-  // TODO
+  std::vector<WorkspacePart*> parts;
+  std::queue<Widget*> remaining;
+  remaining.push(getFirstChild());
+  while (!remaining.empty()) {
+    Widget* widget = remaining.front();
+    remaining.pop();
+
+    WorkspacePart* part = dynamic_cast<WorkspacePart*>(widget);
+    if (part && part->getParent() != this) {
+      while (part->getActiveView()) {
+        part->removeView(part->getActiveView());
+      }
+      parts.push_back(part);
+    }
+    else {
+      UI_FOREACH_WIDGET(widget->getChildren(), it) {
+        remaining.push(*it);
+      }
+    }
+  }
+
+  for (std::vector<WorkspacePart*>::iterator
+         it = parts.begin(), end = parts.end(); it != end; ++it) {
+    WorkspacePart* part = *it;
+    if (part->getParent() != this)
+      destroyPart(part);
+  }
+
+  WorkspacePart* uniquePart = dynamic_cast<WorkspacePart*>(getFirstChild());
+  ASSERT(uniquePart != NULL);
+  m_activePart = uniquePart;
+
+  for (WorkspaceViews::iterator it = m_views.begin(), end = m_views.end(); it != end; ++it) {
+    WorkspaceView* v = *it;
+    if (!v->getContentWidget()->getParent())
+      uniquePart->addView(v);
+  }
+
+  setActiveView(view);
 }
