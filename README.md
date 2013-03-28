@@ -29,10 +29,10 @@ There are a list of
 to be fixed or that aren't yet implemented).
 
 If you found a bug, or you have a new idea/feature for the program,
-you can report then using the following links:
+you can report them using the following links:
 
 * [Report a bug](http://code.google.com/p/aseprite/issues/entry)
-* [Report a feature](http://code.google.com/p/aseprite/issues/entry?template=New%20feature)
+* [Fill a feature request](http://code.google.com/p/aseprite/issues/entry?template=New%20feature)
 
 ## Support
 
