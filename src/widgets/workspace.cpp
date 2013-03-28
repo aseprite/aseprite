@@ -143,7 +143,7 @@ WorkspacePart* Workspace::destroyPart(WorkspacePart* part)
   delete part;
   ASSERT(splitter->getChildren().size() == 1);
 
-  Widget* otherWidget = splitter->getChildren().front();
+  Widget* otherWidget = splitter->getFirstChild();
   WorkspacePart* otherPart = dynamic_cast<WorkspacePart*>(otherWidget);
   if (otherPart == NULL) {
     Widget* widget = otherWidget;
@@ -152,7 +152,7 @@ WorkspacePart* Workspace::destroyPart(WorkspacePart* part)
       if (otherPart != NULL)
         break;
 
-      widget = widget->getChildren().front();
+      widget = widget->getFirstChild();
     }
   }
   ASSERT(otherPart != NULL);
