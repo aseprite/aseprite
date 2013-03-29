@@ -282,6 +282,7 @@ SkinTheme::SkinTheme()
   color_mapping["desktop"] = ThemeColor::Desktop;
   color_mapping["textbox_text"] = ThemeColor::TextBoxText;
   color_mapping["textbox_face"] = ThemeColor::TextBoxFace;
+  color_mapping["entry_suffix"] = ThemeColor::EntrySuffix;
   color_mapping["link_text"] = ThemeColor::LinkText;
   color_mapping["button_normal_text"] = ThemeColor::ButtonNormalText;
   color_mapping["button_normal_face"] = ThemeColor::ButtonNormalFace;
@@ -1024,12 +1025,18 @@ void SkinTheme::paintEntry(PaintEvent& ev)
     }
 
     // Disabled
-    if (!widget->isEnabled() || (c >= suffixIndex)) {
+    if (!widget->isEnabled()) {
+      bg = ColorNone;
+      fg = getColor(ThemeColor::Disabled);
+    }
+
+    // Suffix
+    if (c >= suffixIndex) {
       if (widget->hasFocus())
         break;
 
       bg = ColorNone;
-      fg = getColor(ThemeColor::Disabled);
+      fg = getColor(ThemeColor::EntrySuffix);
     }
 
     w = CHARACTER_LENGTH(widget->getFont(), ch);

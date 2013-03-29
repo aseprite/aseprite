@@ -47,6 +47,7 @@ namespace ThemeColor {
     Desktop,
     TextBoxText,
     TextBoxFace,
+    EntrySuffix,
     LinkText,
     ButtonNormalText,
     ButtonNormalFace,
