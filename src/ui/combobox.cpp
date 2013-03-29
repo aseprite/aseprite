@@ -400,7 +400,7 @@ bool ComboBoxListBox::onProcessMessage(Message* msg)
       {
         int index = m_comboBox->getSelectedItem();
         if (isValidItem(index))
-          m_comboBox->Change();
+          m_comboBox->onChange();
 
         m_comboBox->closeListBox();
       }
@@ -508,6 +508,11 @@ JRect ComboBox::getListBoxPos()
   if (rc->y2 > JI_SCREEN_H)
     jrect_displace(rc, 0, -(jrect_h(rc)+jrect_h(m_entry->rc)));
   return rc;
+}
+
+void ComboBox::onChange()
+{
+  Change();
 }
 
 } // namespace ui

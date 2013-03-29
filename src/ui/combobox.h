@@ -21,8 +21,12 @@ namespace ui {
   class ListBox;
   class Window;
 
+  class ComboBoxListBox;
+
   class ComboBox : public Widget
   {
+    friend class ComboBoxListBox;
+
   public:
     ComboBox();
     ~ComboBox();
@@ -66,6 +70,7 @@ namespace ui {
   protected:
     bool onProcessMessage(Message* msg) OVERRIDE;
     void onPreferredSize(PreferredSizeEvent& ev) OVERRIDE;
+    virtual void onChange();
 
   private:
     void onButtonClick(Event& ev);
