@@ -145,6 +145,12 @@ void Entry::deselectText()
   invalidate();
 }
 
+void Entry::setSuffix(const std::string& suffix)
+{
+  m_suffix = suffix;
+  invalidate();
+}
+
 void Entry::getEntryThemeInfo(int* scroll, int* caret, int* state,
                               int* selbeg, int* selend)
 {
@@ -641,4 +647,3 @@ void Entry::backwardWord()
 }
 
 } // namespace ui
-

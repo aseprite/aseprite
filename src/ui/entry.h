@@ -32,6 +32,9 @@ namespace ui {
     void selectText(int from, int to);
     void deselectText();
 
+    void setSuffix(const std::string& suffix);
+    const std::string& getSuffix() { return m_suffix; }
+
     // for themes
     void getEntryThemeInfo(int* scroll, int* caret, int* state,
                            int* selbeg, int* selend);
@@ -82,6 +85,7 @@ namespace ui {
     bool m_readonly : 1;
     bool m_password : 1;
     bool m_recent_focused : 1;
+    std::string m_suffix;
   };
 
 } // namespace ui

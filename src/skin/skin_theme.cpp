@@ -975,7 +975,9 @@ void SkinTheme::paintEntry(PaintEvent& ev)
   Entry* widget = static_cast<Entry*>(ev.getSource());
   bool password = widget->isPassword();
   int scroll, caret, state, selbeg, selend;
-  const char *text = widget->getText();
+  std::string textString = widget->getText() + widget->getSuffix();
+  int suffixIndex = widget->getTextSize();
+  const char* text = textString.c_str();
   int c, ch, x, y, w;
   int x1, y1, x2, y2;
   int caret_x;
@@ -1022,7 +1024,10 @@ void SkinTheme::paintEntry(PaintEvent& ev)
     }
 
     // Disabled
-    if (!widget->isEnabled()) {
+    if (!widget->isEnabled() || (c >= suffixIndex)) {
+      if (widget->hasFocus())
+        break;
+
       bg = ColorNone;
       fg = getColor(ThemeColor::Disabled);
     }
