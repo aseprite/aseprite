@@ -46,7 +46,9 @@ TEST(File, SeveralSizes)
         doc->setFilename(&fn[0]);
 
         // Random pixels
-        Image* image = doc->getSprite()->getCurrentImage();
+        LayerImage* layer = dynamic_cast<LayerImage*>(doc->getSprite()->getFolder()->getFirstLayer());
+        ASSERT_TRUE(layer != NULL);
+        Image* image = doc->getSprite()->getStock()->getImage(layer->getCel(FrameNumber(0))->getImage());
         std::srand(w*h);
         int c = std::rand()%256;
         for (int y=0; y<h; y++) {
@@ -66,7 +68,9 @@ TEST(File, SeveralSizes)
         ASSERT_EQ(h, doc->getSprite()->getHeight());
 
         // Same random pixels (see the seed)
-        Image* image = doc->getSprite()->getCurrentImage();
+        LayerImage* layer = dynamic_cast<LayerImage*>(doc->getSprite()->getFolder()->getFirstLayer());
+        ASSERT_TRUE(layer != NULL);
+        Image* image = doc->getSprite()->getStock()->getImage(layer->getCel(FrameNumber(0))->getImage());
         std::srand(w*h);
         int c = std::rand()%256;
         for (int y=0; y<h; y++) {
