@@ -461,40 +461,37 @@ void fop_operate(FileOp *fop, IFileOpProgress* progress)
         if (!old_image) {
           // Error reading the first frame
           if (!loadres || !fop->document || !fop->seq.last_cel) {
-            if (fop->seq.image) image_free(fop->seq.image);
-            if (fop->seq.last_cel) delete fop->seq.last_cel;
-            if (fop->document) {
-              delete fop->document;
-              fop->document = NULL;
-            }
+            delete fop->seq.image;
+            delete fop->seq.last_cel;
+            delete fop->document;
+            fop->document = NULL;
             break;
           }
           // Read ok
           else {
-            /* add the keyframe */
+            // Add the keyframe
             SEQUENCE_IMAGE();
           }
         }
-        /* for other frames */
+        // For other frames
         else {
-          /* all done (or maybe not enough memory) */
+          // All done (or maybe not enough memory)
           if (!loadres || !fop->seq.last_cel) {
-            if (fop->seq.image) image_free(fop->seq.image);
-            if (fop->seq.last_cel) delete fop->seq.last_cel;
-
+            delete fop->seq.image;
+            delete fop->seq.last_cel;
             break;
           }
 
-          /* compare the old frame with the new one */
-#if USE_LINK /* TODO this should be configurable through a check-box */
+          // Compare the old frame with the new one
+#if USE_LINK // TODO this should be configurable through a check-box
           if (image_count_diff(old_image, fop->seq.image)) {
             SEQUENCE_IMAGE();
           }
-          /* we don't need this image */
+          // We don't need this image
           else {
-            image_free(fop->seq.image);
+            delete fop->seq.image;
 
-            /* but add a link frame */
+            // But add a link frame
             fop->seq.last_cel->image = image_index;
             layer_add_frame(fop->seq.layer, fop->seq.last_cel);
 
@@ -574,7 +571,7 @@ void fop_operate(FileOp *fop, IFileOpProgress* progress)
         fop->filename = *fop->seq.filename_list.begin();
 
         // Destroy the image
-        image_free(fop->seq.image);
+        delete fop->seq.image;
       }
       else {
         fop_error(fop, "Not enough memory for the temporary bitmap.\n");

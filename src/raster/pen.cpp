@@ -80,7 +80,7 @@ void Pen::set_angle(int angle)
 void Pen::clean_pen()
 {
   if (m_image) {
-    image_free(m_image);
+    delete m_image;
     m_image = NULL;
   }
 

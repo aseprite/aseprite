@@ -20,7 +20,7 @@
 #define COMMANDS_FILTERS_FILTER_MANAGER_IMPL_H_INCLUDED
 
 #include "base/exception.h"
-#include "base/exception.h"
+#include "base/unique_ptr.h"
 #include "document_location.h"
 #include "filters/filter_indexed_data.h"
 #include "filters/filter_manager.h"
@@ -116,12 +116,12 @@ private:
   DocumentLocation m_location;
   Filter* m_filter;
   Image* m_src;
-  Image* m_dst;
+  UniquePtr<Image> m_dst;
   int m_row;
   int m_x, m_y, m_w, m_h;
   int m_offset_x, m_offset_y;
   Mask* m_mask;
-  Mask* m_preview_mask;
+  UniquePtr<Mask> m_preview_mask;
   unsigned char* m_mask_address;
   div_t m_d;
   Target m_targetOrig;          // Original targets

@@ -22,6 +22,7 @@
 
 #include "base/memory.h"
 #include "base/remove_from_container.h"
+#include "base/unique_ptr.h"
 #include "raster/raster.h"
 
 #include <cstring>
@@ -379,11 +380,10 @@ int Sprite::getPixel(int x, int y, FrameNumber frame) const
   int color = 0;
 
   if ((x >= 0) && (y >= 0) && (x < m_width) && (y < m_height)) {
-    Image* image = Image::create(m_format, 1, 1);
+    UniquePtr<Image> image(Image::create(m_format, 1, 1));
     image_clear(image, (m_format == IMAGE_INDEXED ? getTransparentColor(): 0));
     render(image, -x, -y, frame);
     color = image_getpixel(image, 0, 0);
-    image_free(image);
   }
 
   return color;

@@ -69,8 +69,6 @@ private:
   PixelFormat m_format;
 };
 
-void image_free(Image* image);
-
 int image_getpixel(const Image* image, int x, int y);
 void image_putpixel(Image* image, int x, int y, int color);
 void image_putpen(Image* image, Pen* pen, int x, int y, int fg_color, int bg_color);

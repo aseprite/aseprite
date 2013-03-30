@@ -271,9 +271,9 @@ bool IcoFormat::onSave(FileOp* fop)
     offset += size;
   }
 
-  Image* image = Image::create(sprite->getPixelFormat(),
-                               sprite->getWidth(),
-                               sprite->getHeight());
+  UniquePtr<Image> image(Image::create(sprite->getPixelFormat(),
+                                       sprite->getWidth(),
+                                       sprite->getHeight()));
 
   for (n=FrameNumber(0); n<num; ++n) {
     image_clear(image, 0);
@@ -387,8 +387,6 @@ bool IcoFormat::onSave(FileOp* fop)
       }
     }
   }
-
-  image_free(image);
 
   return true;
 }

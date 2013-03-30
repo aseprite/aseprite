@@ -58,6 +58,6 @@ void ReplaceImage::revert(ObjectsContainer* objects, UndoersCollector* redoers)
   // Replace the image in the stock
   stock->replaceImage(m_imageIndex, image);
 
-  // destroy the old image
-  image_free(oldImage);
+  // Destroy the old image
+  delete oldImage;
 }

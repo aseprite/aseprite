@@ -103,7 +103,6 @@ bool JpegFormat::onLoad(FileOp* fop)
 {
   struct jpeg_decompress_struct cinfo;
   struct error_mgr jerr;
-  Image *image;
   JDIMENSION num_scanlines;
   JSAMPARRAY buffer;
   JDIMENSION buffer_height;
@@ -143,11 +142,11 @@ bool JpegFormat::onLoad(FileOp* fop)
   jpeg_start_decompress(&cinfo);
 
   // Create the image.
-  image = fop_sequence_image(fop,
-                             (cinfo.out_color_space == JCS_RGB ? IMAGE_RGB:
-                                                                 IMAGE_GRAYSCALE),
-                             cinfo.output_width,
-                             cinfo.output_height);
+  Image* image = fop_sequence_image(fop,
+                                    (cinfo.out_color_space == JCS_RGB ? IMAGE_RGB:
+                                                                        IMAGE_GRAYSCALE),
+                                    cinfo.output_width,
+                                    cinfo.output_height);
   if (!image) {
     jpeg_destroy_decompress(&cinfo);
     return false;

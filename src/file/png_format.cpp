@@ -73,7 +73,6 @@ bool PngFormat::onLoad(FileOp* fop)
   int num_palette;
   png_colorp palette;
   png_bytep row_pointer;
-  Image *image;
   PixelFormat pixelFormat;
 
   FileHandle fp(fop->filename.c_str(), "rb");
@@ -181,7 +180,7 @@ bool PngFormat::onLoad(FileOp* fop)
 
   int imageWidth = png_get_image_width(png_ptr, info_ptr);
   int imageHeight = png_get_image_height(png_ptr, info_ptr);
-  image = fop_sequence_image(fop, pixelFormat, imageWidth, imageHeight);
+  Image* image = fop_sequence_image(fop, pixelFormat, imageWidth, imageHeight);
   if (!image) {
     fop_error(fop, "file_sequence_image %dx%d\n", imageWidth, imageHeight);
     png_destroy_read_struct(&png_ptr, &info_ptr, NULL);

@@ -601,7 +601,6 @@ bool BmpFormat::onLoad(FileOp *fop)
   unsigned long rmask, gmask, bmask;
   BITMAPFILEHEADER fileheader;
   BITMAPINFOHEADER infoheader;
-  Image *image;
   unsigned long biSize;
   PixelFormat pixelFormat;
   int format;
@@ -654,9 +653,9 @@ bool BmpFormat::onLoad(FileOp *fop)
   else
     rmask = gmask = bmask = 0;
 
-  image = fop_sequence_image(fop, pixelFormat,
-                             infoheader.biWidth,
-                             ABS((int)infoheader.biHeight));
+  Image* image = fop_sequence_image(fop, pixelFormat,
+                                    infoheader.biWidth,
+                                    ABS((int)infoheader.biHeight));
   if (!image) {
     return false;
   }
@@ -682,7 +681,6 @@ bool BmpFormat::onLoad(FileOp *fop)
 
     case BI_BITFIELDS:
       if (read_bitfields_image(f, image, &infoheader, rmask, gmask, bmask) < 0) {
-        image_free(image);
         fop_error(fop, "Unsupported bitfields in the BMP file.\n");
         return false;
       }

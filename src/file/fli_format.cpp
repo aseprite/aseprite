@@ -70,17 +70,12 @@ bool FliFormat::onLoad(FileOp* fop)
   unsigned char cmap[768];
   unsigned char omap[768];
   s_fli_header fli_header;
-  Image *bmp, *old, *image;
-  Sprite *sprite;
-  LayerImage *layer;
-  Palette *pal;
   int c, w, h;
   FrameNumber frpos_in;
   FrameNumber frpos_out;
   int index = 0;
-  Cel *cel;
 
-  /* open the file to read in binary mode */
+  // Open the file to read in binary mode
   FileHandle f(fop->filename.c_str(), "rb");
 
   fli_read_header(f, &fli_header);
@@ -95,21 +90,14 @@ bool FliFormat::onLoad(FileOp* fop)
   w = fli_header.width;
   h = fli_header.height;
 
-  /* create the bitmaps */
-  bmp = Image::create(IMAGE_INDEXED, w, h);
-  old = Image::create(IMAGE_INDEXED, w, h);
-  pal = new Palette(FrameNumber(0), 256);
-  if (!bmp || !old || !pal) {
-    fop_error(fop, "Not enough memory.\n");
-    if (bmp) image_free(bmp);
-    if (old) image_free(old);
-    if (pal) delete pal;
-    return false;
-  }
+  // Create the bitmaps
+  UniquePtr<Image> bmp(Image::create(IMAGE_INDEXED, w, h));
+  UniquePtr<Image> old(Image::create(IMAGE_INDEXED, w, h));
+  UniquePtr<Palette> pal(new Palette(FrameNumber(0), 256));
 
   // Create the image
-  sprite = new Sprite(IMAGE_INDEXED, w, h, 256);
-  layer = new LayerImage(sprite);
+  Sprite* sprite = new Sprite(IMAGE_INDEXED, w, h, 256);
+  LayerImage* layer = new LayerImage(sprite);
   sprite->getFolder()->addLayer(layer);
   layer->configureAsBackground();
 
@@ -137,21 +125,11 @@ bool FliFormat::onLoad(FileOp* fop)
       if (frpos_in != 0)
         ++frpos_out;
 
-      /* add the new frame */
-      image = Image::createCopy(bmp);
-      if (!image) {
-        fop_error(fop, "Not enough memory\n");
-        break;
-      }
-
+      // Add the new frame
+      Image* image = Image::createCopy(bmp);
       index = sprite->getStock()->addImage(image);
-      if (index < 0) {
-        image_free(image);
-        fop_error(fop, "Not enough memory\n");
-        break;
-      }
 
-      cel = new Cel(frpos_out, index);
+      Cel* cel = new Cel(frpos_out, index);
       layer->addCel(cel);
 
       /* first frame or the palette changes */
@@ -165,7 +143,7 @@ bool FliFormat::onLoad(FileOp* fop)
       SETPAL();
 
       // Add link
-      cel = new Cel(frpos_out, index);
+      Cel* cel = new Cel(frpos_out, index);
       layer_add_cel(layer, cel);
     }
 #endif
@@ -192,11 +170,6 @@ bool FliFormat::onLoad(FileOp* fop)
   // Update number of frames
   sprite->setTotalFrames(frpos_out.next());
 
-  // Destroy the bitmaps
-  image_free(bmp);
-  image_free(old);
-  delete pal;
-
   fop->document = new Document(sprite);
   return true;
 }
@@ -208,7 +181,6 @@ bool FliFormat::onSave(FileOp* fop)
   unsigned char omap[768];
   s_fli_header fli_header;
   int c, times;
-  Image *bmp, *old;
   Palette *pal;
 
   /* prepare fli header */
@@ -236,17 +208,11 @@ bool FliFormat::onSave(FileOp* fop)
 
   fseek(f, 128, SEEK_SET);
 
-  /* create the bitmaps */
-  bmp = Image::create(IMAGE_INDEXED, sprite->getWidth(), sprite->getHeight());
-  old = Image::create(IMAGE_INDEXED, sprite->getWidth(), sprite->getHeight());
-  if ((!bmp) || (!old)) {
-    fop_error(fop, "Not enough memory for temporary bitmaps.\n");
-    if (bmp) image_free(bmp);
-    if (old) image_free(old);
-    return false;
-  }
+  // Create the bitmaps
+  UniquePtr<Image> bmp(Image::create(IMAGE_INDEXED, sprite->getWidth(), sprite->getHeight()));
+  UniquePtr<Image> old(Image::create(IMAGE_INDEXED, sprite->getWidth(), sprite->getHeight()));
 
-  /* write frame by frame */
+  // Write frame by frame
   for (FrameNumber frpos(0);
        frpos < sprite->getTotalFrames();
        ++frpos) {
@@ -285,12 +251,8 @@ bool FliFormat::onSave(FileOp* fop)
     fop_progress(fop, (float)(frpos.next()) / (float)(sprite->getTotalFrames()));
   }
 
-  /* write the header and close the file */
+  // Write the header and close the file
   fli_write_header(f, &fli_header);
-
-  /* destroy the bitmaps */
-  image_free(bmp);
-  image_free(old);
 
   return true;
 }

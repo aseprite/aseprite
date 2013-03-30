@@ -118,9 +118,10 @@ protected:
 
     // Resize mask
     if (m_document->isMaskVisible()) {
-      Image* old_bitmap = image_crop(m_document->getMask()->getBitmap(), -1, -1,
-                                     m_document->getMask()->getBitmap()->w+2,
-                                     m_document->getMask()->getBitmap()->h+2, 0);
+      UniquePtr<Image> old_bitmap
+        (image_crop(m_document->getMask()->getBitmap(), -1, -1,
+                    m_document->getMask()->getBitmap()->w+2,
+                    m_document->getMask()->getBitmap()->h+2, 0));
 
       int w = scale_x(old_bitmap->w);
       int h = scale_y(old_bitmap->h);
@@ -131,7 +132,6 @@ protected:
                    m_resize_method,
                    m_sprite->getPalette(FrameNumber(0)), // Ignored
                    m_sprite->getRgbMap(FrameNumber(0))); // Ignored
-      image_free(old_bitmap);
 
       // Reshrink
       new_mask->intersect(new_mask->getBounds().x, new_mask->getBounds().y,

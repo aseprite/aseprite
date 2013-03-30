@@ -209,7 +209,7 @@ void util::clipboard::paste()
   editor->pasteImage(src_image, clipboard_x, clipboard_y);
 
   if (src_image != clipboard_image)
-      image_free(src_image);
+      delete src_image;
 }
 
 bool util::clipboard::get_image_size(gfx::Size& size)

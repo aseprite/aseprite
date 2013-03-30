@@ -106,8 +106,8 @@ void move_cel(ContextWriter& writer)
          image */
       if (!src_layer->isBackground() &&
           dst_layer->isBackground()) {
-        Image *src_image = sprite->getStock()->getImage(src_cel->getImage());
-        Image *dst_image = image_crop(src_image,
+        Image* src_image = sprite->getStock()->getImage(src_cel->getImage());
+        Image* dst_image = image_crop(src_image,
                                       -src_cel->getX(),
                                       -src_cel->getY(),
                                       sprite->getWidth(),
@@ -127,7 +127,7 @@ void move_cel(ContextWriter& writer)
         src_cel->setOpacity(255);
 
         sprite->getStock()->replaceImage(src_cel->getImage(), dst_image);
-        image_free(src_image);
+        delete src_image;
       }
 
       if (undo.isEnabled())
@@ -247,7 +247,7 @@ static void remove_cel(Sprite* sprite, UndoTransaction& undo, LayerImage *layer,
             sprite->getStock(), cel->getImage()));
 
       sprite->getStock()->removeImage(image);
-      image_free(image);
+      delete image;
     }
 
     if (undo.isEnabled()) {

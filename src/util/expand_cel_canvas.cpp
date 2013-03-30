@@ -189,7 +189,7 @@ void ExpandCelCanvas::commit()
     m_sprite->getStock()->replaceImage(m_cel->getImage(), m_dstImage);
 
     // Destroy the old cel image.
-    image_free(m_celImage);
+    delete m_celImage;
 
     // Now the m_dstImage is used, so we haven't to destroy it.
     m_dstImage = NULL;

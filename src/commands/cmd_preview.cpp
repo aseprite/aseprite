@@ -121,8 +121,8 @@ void PreviewCommand::onExecute(Context* context)
   bool redraw = true;
 
   // Render the sprite
-  Image* render = NULL;
-  Image* doublebuf = Image::create(IMAGE_RGB, JI_SCREEN_W, JI_SCREEN_H);
+  UniquePtr<Image> render;
+  UniquePtr<Image> doublebuf(Image::create(IMAGE_RGB, JI_SCREEN_W, JI_SCREEN_H));
 
   do {
     // Update scroll
@@ -140,9 +140,8 @@ void PreviewCommand::onExecute(Context* context)
       RenderEngine renderEngine(document, sprite,
                                 editor->getLayer(),
                                 editor->getFrame());
-      render =
-        renderEngine.renderSprite(0, 0, sprite->getWidth(), sprite->getHeight(),
-                                  editor->getFrame(), 0, false);
+      render.reset(renderEngine.renderSprite(0, 0, sprite->getWidth(), sprite->getHeight(),
+                                             editor->getFrame(), 0, false));
     }
 
     // Redraw the screen
@@ -206,9 +205,7 @@ void PreviewCommand::onExecute(Context* context)
         redraw = true;
 
         // Re-render
-        if (render)
-          image_free(render);
-        render = NULL;
+        render.reset(NULL);
       }
       // Play the animation
       else if (command != NULL &&
@@ -235,9 +232,6 @@ void PreviewCommand::onExecute(Context* context)
         break;
     }
   } while (!jmouse_b(0));
-
-  if (render) image_free(render);
-  if (doublebuf) image_free(doublebuf);
 
   do {
     jmouse_poll();

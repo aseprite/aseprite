@@ -19,6 +19,7 @@
 #include "config.h"
 
 #include "app.h"
+#include "base/unique_ptr.h"
 #include "commands/command.h"
 #include "context_access.h"
 #include "document.h"
@@ -85,7 +86,8 @@ void MergeDownLayerCommand::onExecute(Context* context)
   Layer* src_layer = writer.layer();
   Layer* dst_layer = src_layer->getPrevious();
   Cel *src_cel, *dst_cel;
-  Image *src_image, *dst_image;
+  Image *src_image;
+  UniquePtr<Image> dst_image;
   int index;
 
   for (FrameNumber frpos(0); frpos<sprite->getTotalFrames(); ++frpos) {
@@ -100,9 +102,7 @@ void MergeDownLayerCommand::onExecute(Context* context)
       src_image = NULL;
 
     if (dst_cel != NULL)
-      dst_image = sprite->getStock()->getImage(dst_cel->getImage());
-    else
-      dst_image = NULL;
+      dst_image.reset(sprite->getStock()->getImage(dst_cel->getImage()));
 
     // With source image?
     if (src_image != NULL) {
@@ -111,10 +111,10 @@ void MergeDownLayerCommand::onExecute(Context* context)
         // Copy this cel to the destination layer...
 
         // Creating a copy of the image
-        dst_image = Image::createCopy(src_image);
+        dst_image.reset(Image::createCopy(src_image));
 
         // Adding it in the stock of images
-        index = sprite->getStock()->addImage(dst_image);
+        index = sprite->getStock()->addImage(dst_image.release());
         if (undo.isEnabled())
           undo.pushUndoer(new undoers::AddImage(
               undo.getObjects(), sprite->getStock(), index));
@@ -129,12 +129,12 @@ void MergeDownLayerCommand::onExecute(Context* context)
 
         static_cast<LayerImage*>(dst_layer)->addCel(dst_cel);
       }
-      /* with destination */
+      // With destination
       else {
         int x1, y1, x2, y2, bgcolor;
         Image *new_image;
 
-        /* merge down in the background layer */
+        // Merge down in the background layer
         if (dst_layer->isBackground()) {
           x1 = 0;
           y1 = 0;
@@ -142,7 +142,7 @@ void MergeDownLayerCommand::onExecute(Context* context)
           y2 = sprite->getHeight();
           bgcolor = app_get_color_to_clear_layer(dst_layer);
         }
-        /* merge down in a transparent layer */
+        // Merge down in a transparent layer
         else {
           x1 = MIN(src_cel->getX(), dst_cel->getX());
           y1 = MIN(src_cel->getY(), dst_cel->getY());
@@ -156,7 +156,7 @@ void MergeDownLayerCommand::onExecute(Context* context)
                                y1-dst_cel->getY(),
                                x2-x1+1, y2-y1+1, bgcolor);
 
-        /* merge src_image in new_image */
+        // Merge src_image in new_image
         image_merge(new_image, src_image,
                     src_cel->getX()-x1,
                     src_cel->getY()-y1,
@@ -173,8 +173,6 @@ void MergeDownLayerCommand::onExecute(Context* context)
               sprite->getStock(), dst_cel->getImage()));
 
         sprite->getStock()->replaceImage(dst_cel->getImage(), new_image);
-
-        image_free(dst_image);
       }
     }
   }

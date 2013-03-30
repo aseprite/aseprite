@@ -21,16 +21,17 @@
 #include <allegro/color.h>
 #include <allegro/file.h>
 
+#include "base/unique_ptr.h"
 #include "raster/image.h"
 
-/* loads a PIC file (Animator and Animator Pro format) */
-Image *load_pic_file(const char *filename, int *x, int *y, RGB *palette)
+// Loads a PIC file (Animator and Animator Pro format)
+Image* load_pic_file(const char* filename, int* x, int* y, RGB* palette)
 {
+  UniquePtr<Image> image;
   int size, compression;
   int image_size;
   int block_size;
   int block_type;
-  Image *image;
   PACKFILE *f;
   int version;
   int r, g, b;
@@ -74,15 +75,15 @@ Image *load_pic_file(const char *filename, int *x, int *y, RGB *palette)
       }
     }
 
-    /* read image */
-    image = Image::create(IMAGE_INDEXED, w, h);
+    // Read image
+    image.reset(Image::create(IMAGE_INDEXED, w, h));
 
     for (v=0; v<h; v++)
       for (u=0; u<w; u++)
         image->putpixel(u, v, pack_getc(f));
 
-    pack_fclose (f);
-    return image;
+    pack_fclose(f);
+    return image.release();
   }
 
   /* rewind */
@@ -117,7 +118,7 @@ Image *load_pic_file(const char *filename, int *x, int *y, RGB *palette)
 
   size -= 64;                   /* the header uses 64 bytes */
 
-  image = Image::create(bpp == 8 ? IMAGE_INDEXED: IMAGE_BITMAP, w, h);
+  image.reset(Image::create(bpp == 8 ? IMAGE_INDEXED: IMAGE_BITMAP, w, h));
 
   /* read blocks to end of file */
   while (size > 0) {
@@ -130,7 +131,6 @@ Image *load_pic_file(const char *filename, int *x, int *y, RGB *palette)
       case 0:
         version = pack_igetw (f);       /* palette version */
         if (version != 0) {
-          image_free (image);
           pack_fclose (f);
           return NULL;
         }
@@ -169,10 +169,10 @@ Image *load_pic_file(const char *filename, int *x, int *y, RGB *palette)
   }
 
   pack_fclose (f);
-  return image;
+  return image.release();
 }
 
-/* saves an Animator Pro PIC file */
+// Saves an Animator Pro PIC file
 int save_pic_file(const char *filename, int x, int y,
                   const RGB* palette, const Image* image)
 {

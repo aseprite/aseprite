@@ -202,7 +202,6 @@ bool TgaFormat::onLoad(FileOp* fop)
   short unsigned int first_color, palette_colors;
   short unsigned int left, top, image_width, image_height;
   unsigned int c, i, x, y, yc;
-  Image *image;
   int compressed;
 
   FileHandle f(fop->filename.c_str(), "rb");
@@ -308,7 +307,7 @@ bool TgaFormat::onLoad(FileOp* fop)
       return false;
   }
 
-  image = fop_sequence_image(fop, pixelFormat, image_width, image_height);
+  Image* image = fop_sequence_image(fop, pixelFormat, image_width, image_height);
   if (!image)
     return false;
 

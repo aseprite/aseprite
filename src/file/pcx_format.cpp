@@ -53,7 +53,6 @@ FileFormat* CreatePcxFormat()
 
 bool PcxFormat::onLoad(FileOp* fop)
 {
-  Image *image;
   int c, r, g, b;
   int width, height;
   int bpp, bytes_per_line;
@@ -98,10 +97,10 @@ bool PcxFormat::onLoad(FileOp* fop)
   for (c=0; c<60; c++)             /* skip some more junk */
     fgetc(f);
 
-  image = fop_sequence_image(fop, bpp == 8 ?
-                                  IMAGE_INDEXED:
-                                  IMAGE_RGB,
-                             width, height);
+  Image* image = fop_sequence_image(fop, bpp == 8 ?
+                                         IMAGE_INDEXED:
+                                         IMAGE_RGB,
+                                    width, height);
   if (!image) {
     return false;
   }

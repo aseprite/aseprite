@@ -129,7 +129,7 @@ void LayerImage::destroyAllCels()
     ASSERT(image != NULL);
 
     getSprite()->getStock()->removeImage(image);
-    image_free(image);
+    delete image;
     delete cel;
   }
   m_cels.clear();

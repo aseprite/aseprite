@@ -26,6 +26,7 @@
 #include "app/color.h"
 #include "app/color_utils.h"
 #include "base/bind.h"
+#include "base/unique_ptr.h"
 #include "commands/commands.h"
 #include "commands/params.h"
 #include "document_location.h"
@@ -404,8 +405,9 @@ void Editor::drawSpriteUnclippedRect(const gfx::Rect& rc)
     RenderEngine renderEngine(m_document, m_sprite, m_layer, m_frame);
 
     // Generate the rendered image
-    Image* rendered = renderEngine.renderSprite(source_x, source_y, width, height,
-                                                m_frame, m_zoom, true);
+    UniquePtr<Image> rendered
+      (renderEngine.renderSprite(source_x, source_y, width, height,
+                                 m_frame, m_zoom, true));
 
     if (rendered) {
       // Pre-render decorator.
@@ -421,15 +423,12 @@ void Editor::drawSpriteUnclippedRect(const gfx::Rect& rc)
       image_to_allegro(rendered, bmp, 0, 0, m_sprite->getPalette(m_frame));
       blit(bmp, ji_screen, 0, 0, dest_x, dest_y, width, height);
 
-      image_free(rendered);
       destroy_bitmap(bmp);
 #else
       acquire_bitmap(ji_screen);
       image_to_allegro(rendered, ji_screen, dest_x, dest_y,
                        m_sprite->getPalette(m_frame));
       release_bitmap(ji_screen);
-
-      image_free(rendered);
 #endif
     }
   }

@@ -80,12 +80,6 @@ Image* Image::createCopy(const Image* image)
   return image_crop(image, 0, 0, image->w, image->h, 0);
 }
 
-void image_free(Image* image)
-{
-  ASSERT(image);
-  delete image;
-}
-
 int image_getpixel(const Image* image, int x, int y)
 {
   if ((x >= 0) && (y >= 0) && (x < image->w) && (y < image->h))

@@ -84,7 +84,13 @@ Image* Stock::getImage(int index) const
 int Stock::addImage(Image* image)
 {
   int i = m_image.size();
-  m_image.resize(m_image.size()+1);
+  try {
+    m_image.resize(m_image.size()+1);
+  }
+  catch (...) {
+    delete image;
+    throw;
+  }
   m_image[i] = image;
   return i;
 }

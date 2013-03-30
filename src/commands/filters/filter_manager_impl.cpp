@@ -50,16 +50,16 @@ FilterManagerImpl::FilterManagerImpl(Context* context, Filter* filter)
   , m_location(context->getActiveLocation())
   , m_filter(filter)
   , m_progressDelegate(NULL)
+  , m_dst(NULL)
+  , m_preview_mask(NULL)
 {
   int offset_x, offset_y;
 
   m_src = NULL;
-  m_dst = NULL;
   m_row = 0;
   m_offset_x = 0;
   m_offset_y = 0;
   m_mask = NULL;
-  m_preview_mask = NULL;
   m_mask_address = NULL;
   m_targetOrig = TARGET_ALL_CHANNELS;
   m_target = TARGET_ALL_CHANNELS;
@@ -73,11 +73,6 @@ FilterManagerImpl::FilterManagerImpl(Context* context, Filter* filter)
 
 FilterManagerImpl::~FilterManagerImpl()
 {
-  if (m_preview_mask)
-    delete m_preview_mask;
-
-  if (m_dst)
-    image_free(m_dst);
 }
 
 void FilterManagerImpl::setProgressDelegate(IProgressDelegate* progressDelegate)
@@ -115,15 +110,10 @@ void FilterManagerImpl::beginForPreview()
 {
   Document* document = m_location.document();
 
-  if (m_preview_mask) {
-    delete m_preview_mask;
-    m_preview_mask = NULL;
-  }
-
   if (document->isMaskVisible())
-    m_preview_mask = new Mask(*document->getMask());
+    m_preview_mask.reset(new Mask(*document->getMask()));
   else {
-    m_preview_mask = new Mask();
+    m_preview_mask.reset(new Mask());
     m_preview_mask->replace(m_offset_x, m_offset_y,
                             m_src->w, m_src->h);
   }
@@ -152,8 +142,7 @@ void FilterManagerImpl::beginForPreview()
     h = y2 - y1 + 1;
 
     if ((w < 1) || (h < 1)) {
-      delete m_preview_mask;
-      m_preview_mask = NULL;
+      m_preview_mask.reset(NULL);
       m_row = -1;
       return;
     }
@@ -162,8 +151,7 @@ void FilterManagerImpl::beginForPreview()
   }
 
   if (!updateMask(m_mask, m_src)) {
-    delete m_preview_mask;
-    m_preview_mask = NULL;
+    m_preview_mask.reset(NULL);
     m_row = -1;
     return;
   }
@@ -334,21 +322,11 @@ void FilterManagerImpl::init(const Layer* layer, Image* image, int offset_x, int
   if (!updateMask(m_location.document()->getMask(), image))
     throw InvalidAreaException();
 
-  if (m_preview_mask) {
-    delete m_preview_mask;
-    m_preview_mask = NULL;
-  }
-
-  if (m_dst) {
-    image_free(m_dst);
-    m_dst = NULL;
-  }
-
   m_src = image;
-  m_dst = image_crop(image, 0, 0, image->w, image->h, 0);
+  m_dst.reset(image_crop(image, 0, 0, image->w, image->h, 0));
   m_row = -1;
   m_mask = NULL;
-  m_preview_mask = NULL;
+  m_preview_mask.reset(NULL);
   m_mask_address = NULL;
 
   m_target = m_targetOrig;

@@ -20,12 +20,13 @@
 
 #include <allegro.h>
 
+#include "base/unique_ptr.h"
 #include "raster/image.h"
 #include "raster/mask.h"
 #include "util/pic_file.h"
 
-/* loads a MSK file (Animator and Animator Pro format) */
-Mask *load_msk_file(const char *filename)
+// Loads a MSK file (Animator and Animator Pro format)
+Mask* load_msk_file(const char* filename)
 {
 #if (MAKE_VERSION(4, 2, 1) >= MAKE_VERSION(ALLEGRO_VERSION,             \
                                            ALLEGRO_SUB_VERSION,         \
@@ -45,21 +46,16 @@ Mask *load_msk_file(const char *filename)
   size = pack_igetl(f);
   magic = pack_igetw(f);
 
-  /* Animator Pro MSK format */
+  // Animator Pro MSK format
   if ((size == orig_size) && (magic == 0x9500)) {
-    Image *image;
     int x, y;
 
     pack_fclose(f);
 
-    /* just load an Animator Pro PIC file */
-    image = load_pic_file(filename, &x, &y, NULL);
-    if ((!image) || (image->getPixelFormat() != IMAGE_BITMAP)) {
-      if (image)
-        image_free(image);
-    }
-    else {
-      mask = new Mask(x, y, image);
+    // Just load an Animator Pro PIC file
+    UniquePtr<Image> image(load_pic_file(filename, &x, &y, NULL));
+    if (image != NULL && (image->getPixelFormat() == IMAGE_BITMAP)) {
+      mask = new Mask(x, y, image.release());
     }
   }
   // Animator MSK format
@@ -88,8 +84,8 @@ Mask *load_msk_file(const char *filename)
   return mask;
 }
 
-/* saves an Animator Pro MSK file (really a PIC file) */
-int save_msk_file(const Mask *mask, const char *filename)
+// Saves an Animator Pro MSK file (really a PIC file)
+int save_msk_file(const Mask* mask, const char* filename)
 {
   if (mask->getBitmap())
     return save_pic_file(filename,
