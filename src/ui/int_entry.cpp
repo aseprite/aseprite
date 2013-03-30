@@ -69,10 +69,6 @@ bool IntEntry::onProcessMessage(Message* msg)
       openPopup();
       break;
 
-    case JM_FOCUSLEAVE:
-      closePopup();
-      break;
-
     case JM_WHEEL:
       if (isEnabled()) {
         int oldValue = getValue();
