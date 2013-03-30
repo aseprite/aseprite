@@ -12,8 +12,8 @@
             <label text="Height:" />
           </box>
           <box vertical="true" homogeneous="true" expansive="true">
-            <entry expansive="true" id="width_px" maxsize="8" magnet="true" tooltip="New width for the sprite (in pixels)" />
-            <entry expansive="true" id="height_px" maxsize="8" tooltip="New height for the sprite (in pixels)" />
+            <entry expansive="true" id="width_px" suffix="px" maxsize="8" magnet="true" tooltip="New width for the sprite (in pixels)" />
+            <entry expansive="true" id="height_px" suffix="px" maxsize="8" tooltip="New height for the sprite (in pixels)" />
           </box>
           <check text="Lock Ratio" id="lock_ratio" selected="true" />
         </box>
@@ -26,8 +26,8 @@
             <label text="Height:" />
           </box>
           <box vertical="true" homogeneous="true" expansive="true">
-            <entry expansive="true" text="100%%" id="width_perc" maxsize="8" magnet="true" tooltip="New width for the sprite&#10;Percentage of current width." />
-            <entry expansive="true" text="100%%" id="height_perc" maxsize="8" tooltip="New height for the sprite&#10;Percentage of current height." />
+            <entry expansive="true" text="100" suffix="%" id="width_perc" maxsize="8" magnet="true" tooltip="New width for the sprite&#10;Percentage of current width." />
+            <entry expansive="true" text="100" suffix="%" id="height_perc" maxsize="8" tooltip="New height for the sprite&#10;Percentage of current height." />
           </box>
           <box horizontal="true" width="64" />
         </box>

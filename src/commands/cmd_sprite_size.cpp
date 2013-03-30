@@ -42,7 +42,7 @@
 
 using namespace ui;
 
-#define PERC_FORMAT     "%.1f%%"
+#define PERC_FORMAT     "%.1f"
 
 class SpriteSizeJob : public Job
 {

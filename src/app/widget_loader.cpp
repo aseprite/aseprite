@@ -239,8 +239,9 @@ Widget* WidgetLoader::convertXmlElementToWidget(const TiXmlElement* elem, Widget
   }
   /* entry */
   else if (ustrcmp(elem_name, "entry") == 0) {
-    const char *maxsize = elem->Attribute("maxsize");
-    const char *text = elem->Attribute("text");
+    const char* maxsize = elem->Attribute("maxsize");
+    const char* text = elem->Attribute("text");
+    const char* suffix = elem->Attribute("suffix");
 
     if (maxsize != NULL) {
       bool readonly = bool_attr_is_true(elem, "readonly");
@@ -250,7 +251,12 @@ Widget* WidgetLoader::convertXmlElementToWidget(const TiXmlElement* elem, Widget
 
       if (readonly)
         ((Entry*)widget)->setReadOnly(true);
+
+      if (suffix)
+        ((Entry*)widget)->setSuffix(suffix);
     }
+    else
+      throw std::runtime_error("<entry> element found without 'maxsize' attribute");
   }
   /* grid */
   else if (ustrcmp(elem_name, "grid") == 0) {
