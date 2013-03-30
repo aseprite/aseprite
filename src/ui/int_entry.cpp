@@ -100,6 +100,9 @@ void IntEntry::openPopup()
   rc.y += rc.h;
   rc.h += 2*jguiscale();
   rc.w = 128*jguiscale();
+  if (rc.x+rc.w > JI_SCREEN_W)
+    rc.x = rc.x - rc.w + getBounds().w;
+
   m_popupWindow = new PopupWindow(NULL, false);
   m_popupWindow->setAutoRemap(false);
   m_popupWindow->setBounds(rc);
