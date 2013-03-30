@@ -1597,9 +1597,9 @@ void SkinTheme::paintComboBoxButton(PaintEvent& ev)
 
 void SkinTheme::draw_textbox(Widget* widget, JRect clip)
 {
-  _ji_theme_textbox_draw(ji_screen, widget, NULL, NULL,
-                         getColor(ThemeColor::TextBoxFace),
-                         getColor(ThemeColor::TextBoxText));
+  drawTextBox(ji_screen, widget, NULL, NULL,
+              getColor(ThemeColor::TextBoxFace),
+              getColor(ThemeColor::TextBoxText));
 }
 
 void SkinTheme::paintView(PaintEvent& ev)

@@ -41,7 +41,7 @@ FONT* ji_font_load_bmp(const char* filepathname)
 
   if (bmp) {
     bmp = ji_apply_guiscale(bmp);
-    f = _ji_bitmap2font(bmp);
+    f = bitmapToFont(bmp);
     destroy_bitmap(bmp);
   }
 

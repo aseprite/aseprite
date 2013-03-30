@@ -94,19 +94,8 @@ BITMAP* ji_apply_guiscale(BITMAP* original)
     return original;
 }
 
-void _ji_theme_draw_sprite_color(BITMAP *bmp, BITMAP *sprite,
-                                 int x, int y, int color)
-{
-  int u, v, mask = bitmap_mask_color(sprite);
-
-  for (v=0; v<sprite->h; v++)
-    for (u=0; u<sprite->w; u++)
-      if (getpixel(sprite, u, v) != mask)
-        putpixel(bmp, x+u, y+v, color);
-}
-
-void _ji_theme_textbox_draw(BITMAP *bmp, Widget* widget,
-                            int *w, int *h, ui::Color bg, ui::Color fg)
+void drawTextBox(BITMAP* bmp, Widget* widget,
+                 int* w, int* h, ui::Color bg, ui::Color fg)
 {
   View* view = View::getView(widget);
   char *text = (char*)widget->getText(); // TODO warning: removing const modifier

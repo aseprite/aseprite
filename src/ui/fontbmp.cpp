@@ -170,7 +170,7 @@ static int bitmap_font_count(BITMAP* bmp)
 
 namespace ui {
 
-FONT *_ji_bitmap2font(BITMAP *bmp)
+FONT* bitmapToFont(BITMAP* bmp)
 {
   FONT *f;
   int begin = ' ';

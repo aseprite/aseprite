@@ -41,7 +41,7 @@ int ji_register_widget_type()
 
 Widget::Widget(int type)
 {
-  _ji_add_widget(this);
+  addWidget(this);
 
   this->type = type;
   this->rc = jrect_new(0, 0, 0, 0);
@@ -103,8 +103,8 @@ Widget::~Widget()
   // Delete the preferred size
   delete m_preferredSize;
 
-  /* low level free */
-  _ji_remove_widget(this);
+  // Low level free
+  removeWidget(this);
 }
 
 void Widget::deferDelete()

@@ -354,7 +354,7 @@ void gui_setup_screen(bool reload_font)
   }
 
   if (reinit)
-    _ji_reinit_theme_in_all_widgets();
+    reinitThemeForAllWidgets();
 
   // Set the configuration
   save_gui_config();
@@ -369,7 +369,7 @@ static void reload_default_font()
   skin_theme->reload_fonts();
 
   // Set all widgets fonts
-  _ji_set_font_of_all_widgets(theme->default_font);
+  setFontOfAllWidgets(theme->default_font);
 }
 
 void load_window_pos(Widget* window, const char *section)
