@@ -1000,8 +1000,8 @@ void ImageImpl<BitmapTraits>::to_allegro(BITMAP *bmp, int _x, int _y, const Pale
       break;
 
     case 32:
-      color[0] = makeacol32 (0, 0, 0, 255);
-      color[1] = makeacol32 (255, 255, 255, 255);
+      color[0] = makeacol32(0, 0, 0, 0);
+      color[1] = makeacol32(0, 0, 0, 255);
 
       _x <<= 2;
 

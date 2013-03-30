@@ -31,9 +31,11 @@
 #include "ui/combobox.h"
 #include "ui/int_entry.h"
 #include "ui/label.h"
+#include "ui/popup_window.h"
 #include "ui/preferred_size_event.h"
 #include "ui/theme.h"
 #include "ui_context.h"
+#include "widgets/button_set.h"
 #include "widgets/context_bar.h"
 
 #include <allegro.h>
@@ -46,7 +48,10 @@ class ContextBar::BrushTypeField : public Button
                                  , public IButtonIcon
 {
 public:
-  BrushTypeField() : Button("") {
+  BrushTypeField()
+    : Button("")
+    , m_popupWindow(NULL)
+    , m_brushType(NULL) {
     setup_mini_look(this);
     setIconInterface(this);
 
@@ -55,12 +60,13 @@ public:
   }
 
   ~BrushTypeField() {
+    closePopup();
     setIconInterface(NULL);
     destroy_bitmap(m_bitmap);
   }
 
   void setPenSettings(IPenSettings* penSettings) {
-    UniquePtr<Pen> pen(new Pen(penSettings->getType(),
+    UniquePtr<Pen> pen(new Pen(m_penType = penSettings->getType(),
                                std::min(10, penSettings->getSize()),
                                penSettings->getAngle()));
     Image* image = pen->get_image();
@@ -106,13 +112,66 @@ public:
   }
 
 protected:
+  void onClick(Event& ev) OVERRIDE {
+    Button::onClick(ev);
+
+    if (!m_popupWindow || !m_popupWindow->isVisible())
+      openPopup();
+    else
+      closePopup();
+  }
+
   void onPreferredSize(PreferredSizeEvent& ev) {
     ev.setPreferredSize(Size(16*jguiscale(),
                              16*jguiscale()));
   }
 
 private:
+  void openPopup() {
+    Rect rc = getBounds();
+    rc.y += rc.h;
+    rc.w *= 3;
+    m_popupWindow = new PopupWindow(NULL, false);
+    m_popupWindow->setAutoRemap(false);
+    m_popupWindow->setBounds(rc);
+
+    Region rgn(rc.createUnion(getBounds()));
+    m_popupWindow->setHotRegion(rgn);
+    m_brushType = new ButtonSet(3, 1, m_penType,
+                                PART_BRUSH_CIRCLE,
+                                PART_BRUSH_SQUARE,
+                                PART_BRUSH_LINE);
+
+    m_brushType->ItemChange.connect(&BrushTypeField::onBrushTypeChange, this);
+
+    m_popupWindow->addChild(m_brushType);
+    m_popupWindow->openWindow();
+  }
+
+  void closePopup() {
+    if (m_popupWindow) {
+      m_popupWindow->closeWindow(NULL);
+      delete m_popupWindow;
+      m_popupWindow = NULL;
+      m_brushType = NULL;
+    }
+  }
+
+  void onBrushTypeChange() {
+    m_penType = (PenType)m_brushType->getSelectedItem();
+
+    ISettings* settings = UIContext::instance()->getSettings();
+    Tool* currentTool = settings->getCurrentTool();
+    IPenSettings* penSettings = settings->getToolSettings(currentTool)->getPen();
+    penSettings->setType(m_penType);
+
+    setPenSettings(penSettings);
+  }
+
   BITMAP* m_bitmap;
+  PenType m_penType;
+  PopupWindow* m_popupWindow;
+  ButtonSet* m_brushType;
 };
 
 class ContextBar::BrushSizeField : public IntEntry
