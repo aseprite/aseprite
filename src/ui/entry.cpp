@@ -6,13 +6,9 @@
 
 #include "config.h"
 
-#include <allegro.h>
-#include <allegro/internal/aintern.h>
-#include <stdarg.h>
-#include <stdio.h>
+#include "ui/entry.h"
 
 #include "ui/clipboard.h"
-#include "ui/entry.h"
 #include "ui/font.h"
 #include "ui/manager.h"
 #include "ui/message.h"
@@ -21,6 +17,11 @@
 #include "ui/system.h"
 #include "ui/theme.h"
 #include "ui/widget.h"
+
+#include <allegro.h>
+#include <allegro/internal/aintern.h>
+#include <stdarg.h>
+#include <stdio.h>
 
 #define CHARACTER_LENGTH(f, c) ((f)->vtable->char_length((f), (c)))
 
