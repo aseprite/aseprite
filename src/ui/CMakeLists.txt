@@ -21,6 +21,7 @@ add_library(ui-lib
   grid.cpp
   gui.cpp
   image_view.cpp
+  int_entry.cpp
   intern.cpp
   label.cpp
   link_label.cpp
