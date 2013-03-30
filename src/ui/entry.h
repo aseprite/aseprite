@@ -49,7 +49,7 @@ namespace ui {
     void onPaint(PaintEvent& ev) OVERRIDE;
 
     // New Events
-    void onEntryChange();
+    virtual void onEntryChange();
 
   private:
     struct EntryCmd {
