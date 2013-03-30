@@ -9,7 +9,10 @@
 		horizontal="true" expansive="true"
 		by="pixel" position="52">
 	<box noborders="true" vertical="true" id="colorbar" />
-	<box noborders="true" horizontal="true" id="workspace" expansive="true" />
+	<vbox noborders="true" expansive="true">
+	  <vbox noborders="true" id="contextbar" />
+	  <hbox noborders="true" id="workspace" expansive="true" />
+	</vbox>
       </splitter>
       <box noborders="true" vertical="true" id="toolbar" />
     </box>

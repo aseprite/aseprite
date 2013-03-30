@@ -23,6 +23,7 @@
 #include "widgets/tabs.h"
 
 class ColorBar;
+class ContextBar;
 class MainMenuBar;
 class StatusBar;
 class Tabs;
@@ -41,6 +42,7 @@ public:
   ~MainWindow();
 
   MainMenuBar* getMenuBar() { return m_menuBar; }
+  ContextBar* getContextBar() { return m_contextBar; }
   Tabs* getTabsBar() { return m_tabsBar; }
   widgets::Workspace* getWorkspace() { return m_workspace; }
   widgets::MiniEditorWindow* getMiniEditor() { return m_miniEditor; }
@@ -59,15 +61,16 @@ protected:
   void onActiveViewChange();
 
 private:
-  MainMenuBar* m_menuBar;       // the menu bar widget
-  StatusBar* m_statusBar;       // the status bar widget
-  ColorBar* m_colorBar;         // the color bar widget
+  MainMenuBar* m_menuBar;
+  ContextBar* m_contextBar;
+  StatusBar* m_statusBar;
+  ColorBar* m_colorBar;
   ui::Splitter* m_colorBarSplitter;
-  ui::Widget* m_toolBar;        // the tool bar widget
-  Tabs* m_tabsBar;              // The tabs bar widget
+  ui::Widget* m_toolBar;
+  Tabs* m_tabsBar;
   double m_lastSplitterPos;
   bool m_advancedMode;
-  widgets::Workspace* m_workspace; // The workspace (document's views)
+  widgets::Workspace* m_workspace;
   widgets::MiniEditorWindow* m_miniEditor;
 };
 

@@ -30,6 +30,7 @@
 #include "ui/view.h"
 #include "ui_context.h"
 #include "widgets/color_bar.h"
+#include "widgets/context_bar.h"
 #include "widgets/document_view.h"
 #include "widgets/editor/editor.h"
 #include "widgets/editor/editor_view.h"
@@ -57,6 +58,7 @@ MainWindow::MainWindow()
   addChild(mainBox);
 
   Widget* box_menubar = findChild("menubar");
+  Widget* box_contextbar = findChild("contextbar");
   Widget* box_colorbar = findChild("colorbar");
   Widget* box_toolbar = findChild("toolbar");
   Widget* box_statusbar = findChild("statusbar");
@@ -64,6 +66,7 @@ MainWindow::MainWindow()
   Widget* box_workspace = findChild("workspace");
 
   m_menuBar = new MainMenuBar();
+  m_contextBar = new ContextBar();
   m_statusBar = new StatusBar();
   m_colorBar = new ColorBar(box_colorbar->getAlign());
   m_toolBar = new ToolBar();
@@ -75,6 +78,7 @@ MainWindow::MainWindow()
 
   // configure all widgets to expansives
   m_menuBar->setExpansive(true);
+  m_contextBar->setExpansive(true);
   m_statusBar->setExpansive(true);
   m_colorBar->setExpansive(true);
   m_toolBar->setExpansive(true);
@@ -86,6 +90,7 @@ MainWindow::MainWindow()
 
   // Add the widgets in the boxes
   if (box_menubar) box_menubar->addChild(m_menuBar);
+  if (box_contextbar) box_contextbar->addChild(m_contextBar);
   if (box_colorbar) box_colorbar->addChild(m_colorBar);
   if (box_toolbar) box_toolbar->addChild(m_toolBar);
   if (box_statusbar) box_statusbar->addChild(m_statusBar);
@@ -100,6 +105,7 @@ MainWindow::MainWindow()
 
 MainWindow::~MainWindow()
 {
+  delete m_contextBar;
   delete m_miniEditor;
 
   // Destroy the workspace first so ~Editor can dettach slots from
@@ -139,6 +145,7 @@ void MainWindow::setAdvancedMode(bool advanced)
   m_tabsBar->setVisible(!advanced);
   m_toolBar->setVisible(!advanced);
   m_statusBar->setVisible(!advanced);
+  m_contextBar->setVisible(!advanced);
 
   layout();
 }
