@@ -47,6 +47,7 @@ namespace ui {
     bool onProcessMessage(Message* msg) OVERRIDE;
     void onPreferredSize(PreferredSizeEvent& ev) OVERRIDE;
     void onPaint(PaintEvent& ev) OVERRIDE;
+    void onSetText() OVERRIDE;
 
     // New Events
     virtual void onEntryChange();

@@ -395,6 +395,14 @@ void Entry::onPaint(PaintEvent& ev)
   getTheme()->paintEntry(ev);
 }
 
+void Entry::onSetText()
+{
+  Widget::onSetText();
+
+  if (m_caret >= 0 && (size_t)m_caret > getTextSize())
+    m_caret = (int)getTextSize();
+}
+
 void Entry::onEntryChange()
 {
   EntryChange();
@@ -450,8 +458,10 @@ void Entry::executeCmd(EntryCmd::Type cmd, int ascii, bool shift_pressed)
       }
 
       // put the character
-      if (text.size() < m_maxsize)
+      if (text.size() < m_maxsize) {
+        ASSERT((size_t)m_caret <= text.size());
         text.insert(m_caret++, 1, ascii);
+      }
 
       m_select = -1;
       break;
