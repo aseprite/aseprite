@@ -108,7 +108,7 @@ void IntEntry::openPopup()
   m_popupWindow->setAutoRemap(false);
   m_popupWindow->setBounds(rc);
 
-  Region rgn(rc);
+  Region rgn(rc.createUnion(getBounds()));
   rgn.createUnion(rgn, Region(getBounds()));
   m_popupWindow->setHotRegion(rgn);
 
