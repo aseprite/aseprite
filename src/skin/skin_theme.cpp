@@ -985,6 +985,9 @@ void SkinTheme::paintEntry(PaintEvent& ev)
 
   widget->getEntryThemeInfo(&scroll, &caret, &state, &selbeg, &selend);
 
+  // Outside borders
+  jdraw_rectfill(widget->rc, BGCOLOR);
+
   // Main pos
   x1 = widget->rc->x1;
   y1 = widget->rc->y1;
@@ -1483,7 +1486,10 @@ void SkinTheme::draw_combobox_entry(Entry* widget, JRect clip)
 
   widget->getEntryThemeInfo(&scroll, &caret, &state, &selbeg, &selend);
 
-  /* main pos */
+  // Outside borders
+  jdraw_rectfill(widget->rc, BGCOLOR);
+
+  // Main pos
   x1 = widget->rc->x1;
   y1 = widget->rc->y1;
   x2 = widget->rc->x2-1;
@@ -1600,6 +1606,9 @@ void SkinTheme::paintView(PaintEvent& ev)
 {
   Graphics* g = ev.getGraphics();
   View* widget = static_cast<View*>(ev.getSource());
+
+  // Outside borders
+  jdraw_rectfill(widget->rc, BGCOLOR);
 
   draw_bounds_nw(g, widget->getClientBounds(),
                  widget->hasFocus() ? PART_SUNKEN_FOCUSED_NW:
