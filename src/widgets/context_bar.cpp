@@ -26,6 +26,7 @@
 #include "settings/settings.h"
 #include "skin/skin_theme.h"
 #include "tools/ink.h"
+#include "tools/point_shape.h"
 #include "tools/tool.h"
 #include "ui/button.h"
 #include "ui/combobox.h"
@@ -288,16 +289,18 @@ ContextBar::ContextBar()
   SkinTheme* theme = static_cast<SkinTheme*>(getTheme());
   setBgColor(theme->getColor(ThemeColor::Workspace));
 
-  addChild(new Label("Brush:"));
+  addChild(m_brushLabel = new Label("Brush:"));
   addChild(m_brushType = new BrushTypeField());
   addChild(m_brushSize = new BrushSizeField());
   addChild(m_brushAngle = new BrushAngleField(m_brushType));
 
-  addChild(new Label("Tolerance:"));
+  addChild(m_toleranceLabel = new Label("Tolerance:"));
   addChild(m_tolerance = new ToleranceField());
 
   addChild(new Label("Ink:"));
   addChild(m_inkType = new InkTypeField());
+
+  addChild(m_opacityLabel = new Label("Opacity:"));
   addChild(m_inkOpacity = new InkOpacityField());
   // addChild(new InkChannelTargetField());
   // addChild(new InkShadeField());
@@ -345,4 +348,32 @@ void ContextBar::onCurrentToolChange()
   Ink* ink = currentTool->getInk(0);
   m_inkType->updateSelectedInk(ink);
   m_inkOpacity->setTextf("%d", toolSettings->getOpacity());
+
+  // True if the current tool needs opacity options
+  bool hasOpacity = (currentTool->getInk(0)->isPaint() ||
+                     currentTool->getInk(0)->isEffect() ||
+                     currentTool->getInk(1)->isPaint() ||
+                     currentTool->getInk(1)->isEffect());
+
+  // True if the current tool needs tolerance options
+  bool hasTolerance = (currentTool->getPointShape(0)->isFloodFill() ||
+                       currentTool->getPointShape(1)->isFloodFill());
+
+  // True if the current tool needs spray options
+  bool hasSprayOptions = (currentTool->getPointShape(0)->isSpray() ||
+                          currentTool->getPointShape(1)->isSpray());
+
+  // Show/Hide fields
+  m_brushLabel->setVisible(hasOpacity);
+  m_brushType->setVisible(hasOpacity);
+  m_brushSize->setVisible(hasOpacity);
+  m_brushAngle->setVisible(hasOpacity);
+  m_opacityLabel->setVisible(hasOpacity);
+  m_inkOpacity->setVisible(hasOpacity);
+  m_toleranceLabel->setVisible(hasTolerance);
+  m_tolerance->setVisible(hasTolerance);
+
+  //m_sprayBox->setVisible(hasSprayOptions);
+
+  layout();
 }

@@ -22,6 +22,10 @@
 #include "base/compiler_specific.h"
 #include "ui/box.h"
 
+namespace ui {
+  class Label;
+}
+
 class ContextBar : public ui::Box
 {
 public:
@@ -42,11 +46,14 @@ private:
   class InkTypeField;
   class InkOpacityField;
 
+  ui::Label* m_brushLabel;
   BrushTypeField* m_brushType;
   BrushAngleField* m_brushAngle;
   BrushSizeField* m_brushSize;
+  ui::Label* m_toleranceLabel;
   ToleranceField* m_tolerance;
   InkTypeField* m_inkType;
+  ui::Label* m_opacityLabel;
   InkOpacityField* m_inkOpacity;
 };
 
