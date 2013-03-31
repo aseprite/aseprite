@@ -23,6 +23,7 @@
 #include "ui/box.h"
 
 namespace ui {
+  class Box;
   class Label;
 }
 
@@ -45,6 +46,8 @@ private:
   class ToleranceField;
   class InkTypeField;
   class InkOpacityField;
+  class SprayWidthField;
+  class SpraySpeedField;
 
   ui::Label* m_brushLabel;
   BrushTypeField* m_brushType;
@@ -55,6 +58,9 @@ private:
   InkTypeField* m_inkType;
   ui::Label* m_opacityLabel;
   InkOpacityField* m_inkOpacity;
+  ui::Box* m_sprayBox;
+  SprayWidthField* m_sprayWidth;
+  SpraySpeedField* m_spraySpeed;
 };
 
 #endif

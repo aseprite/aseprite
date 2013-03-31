@@ -35,6 +35,7 @@
 #include "ui/popup_window.h"
 #include "ui/preferred_size_event.h"
 #include "ui/theme.h"
+#include "ui/tooltips.h"
 #include "ui_context.h"
 #include "widgets/button_set.h"
 #include "widgets/context_bar.h"
@@ -281,6 +282,40 @@ protected:
   }
 };
 
+class ContextBar::SprayWidthField : public IntEntry
+{
+public:
+  SprayWidthField() : IntEntry(1, 32) {
+  }
+
+protected:
+  void onValueChange() OVERRIDE {
+    IntEntry::onValueChange();
+
+    ISettings* settings = UIContext::instance()->getSettings();
+    Tool* currentTool = settings->getCurrentTool();
+    settings->getToolSettings(currentTool)
+      ->setSprayWidth(getValue());
+  }
+};
+
+class ContextBar::SpraySpeedField : public IntEntry
+{
+public:
+  SpraySpeedField() : IntEntry(1, 100) {
+  }
+
+protected:
+  void onValueChange() OVERRIDE {
+    IntEntry::onValueChange();
+
+    ISettings* settings = UIContext::instance()->getSettings();
+    Tool* currentTool = settings->getCurrentTool();
+    settings->getToolSettings(currentTool)
+      ->setSpraySpeed(getValue());
+  }
+};
+
 ContextBar::ContextBar()
   : Box(JI_HORIZONTAL)
 {
@@ -305,6 +340,21 @@ ContextBar::ContextBar()
   // addChild(new InkChannelTargetField());
   // addChild(new InkShadeField());
   // addChild(new InkSelectionField());
+
+  addChild(m_sprayBox = new HBox());
+  m_sprayBox->addChild(new Label("Spray:"));
+  m_sprayBox->addChild(m_sprayWidth = new SprayWidthField());
+  m_sprayBox->addChild(m_spraySpeed = new SpraySpeedField());
+
+  TooltipManager* tooltipManager = new TooltipManager();
+  addChild(tooltipManager);
+
+  tooltipManager->addTooltipFor(m_brushType, "Brush Type", JI_CENTER | JI_BOTTOM);
+  tooltipManager->addTooltipFor(m_brushSize, "Brush Size (in pixels)", JI_CENTER | JI_BOTTOM);
+  tooltipManager->addTooltipFor(m_brushAngle, "Brush Angle (in degrees)", JI_CENTER | JI_BOTTOM);
+  tooltipManager->addTooltipFor(m_inkOpacity, "Opacity (Alpha value in RGBA)", JI_CENTER | JI_BOTTOM);
+  tooltipManager->addTooltipFor(m_sprayWidth, "Spray Width", JI_CENTER | JI_BOTTOM);
+  tooltipManager->addTooltipFor(m_spraySpeed, "Spray Speed", JI_CENTER | JI_BOTTOM);
 
   App::instance()->PenSizeAfterChange.connect(&ContextBar::onPenSizeAfterChange, this);
   App::instance()->CurrentToolChange.connect(&ContextBar::onCurrentToolChange, this);
@@ -349,6 +399,9 @@ void ContextBar::onCurrentToolChange()
   m_inkType->updateSelectedInk(ink);
   m_inkOpacity->setTextf("%d", toolSettings->getOpacity());
 
+  m_sprayWidth->setValue(toolSettings->getSprayWidth());
+  m_spraySpeed->setValue(toolSettings->getSpraySpeed());
+
   // True if the current tool needs opacity options
   bool hasOpacity = (currentTool->getInk(0)->isPaint() ||
                      currentTool->getInk(0)->isEffect() ||
@@ -372,8 +425,7 @@ void ContextBar::onCurrentToolChange()
   m_inkOpacity->setVisible(hasOpacity);
   m_toleranceLabel->setVisible(hasTolerance);
   m_tolerance->setVisible(hasTolerance);
-
-  //m_sprayBox->setVisible(hasSprayOptions);
+  m_sprayBox->setVisible(hasSprayOptions);
 
   layout();
 }
