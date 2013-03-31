@@ -225,7 +225,7 @@ private:
 class ContextBar::ToleranceField : public IntEntry
 {
 public:
-  ToleranceField() : IntEntry(0, 100) {
+  ToleranceField() : IntEntry(0, 255) {
   }
 
 protected:
