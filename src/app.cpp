@@ -26,6 +26,7 @@
 #include "app/data_recovery.h"
 #include "app/find_widget.h"
 #include "app/load_widget.h"
+#include "app/webserver.h"
 #include "base/exception.h"
 #include "base/unique_ptr.h"
 #include "commands/commands.h"
@@ -209,6 +210,12 @@ int App::run()
     // Launch the thread to check for updates.
     app::CheckUpdateThreadLauncher checkUpdate;
     checkUpdate.launch();
+#endif
+
+#ifdef ENABLE_WEBSERVER
+    // Launch the webserver.
+    app::WebServer webServer;
+    webServer.start();
 #endif
 
     // Run the GUI main message loop

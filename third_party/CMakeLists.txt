@@ -39,3 +39,7 @@ endif()
 if(NOT USE_SHARED_LIBLOADPNG)
  add_subdirectory(loadpng)
 endif()
+
+if(ENABLE_WEBSERVER)
+  add_subdirectory(mongoose)
+endif()

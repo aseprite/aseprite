@@ -112,6 +112,16 @@ if(ENABLE_UPDATER)
   add_subdirectory(updater)
 endif()
 
+if(ENABLE_WEBSERVER)
+  set(libs3rdparty ${libs3rdparty} mongoose)
+  include_directories(${MONGOOSE_DIR})
+
+  set(aseprite_libraries ${aseprite_libraries} webserver-lib)
+  add_definitions(-DENABLE_WEBSERVER)
+
+  add_subdirectory(webserver)
+endif()
+
 if(USE_SHARED_ALLEGRO4)
   # Find the shared Allegro 4 library
   find_library(LIBALLEGRO4_LIBRARY alleg)
@@ -194,6 +204,7 @@ add_library(aseprite-library
   app/data_recovery.cpp
   app/file_selector.cpp
   app/project.cpp
+  app/webserver.cpp
   app/widget_loader.cpp
   commands/cmd_about.cpp
   commands/cmd_advanced_mode.cpp

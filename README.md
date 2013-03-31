@@ -87,6 +87,7 @@ of the following projects created by third-parties:
 * [GIMP](http://www.gimp.org/) - [GPL license](https://github.com/dacap/aseprite/tree/master/docs/licenses/GPL.txt)
 * [GTK+](http://www.gtk.org/) - [LGPL license](https://github.com/dacap/aseprite/tree/master/docs/licenses/LGPL-2.1.txt)
 * [Google Test](http://code.google.com/p/googletest/) - [gtest license](https://github.com/dacap/aseprite/tree/master/docs/licenses/gtest-LICENSE.txt)
+* [mongoose](https://github.com/valenok/mongoose) - [MIT license](https://github.com/valenok/mongoose/blob/master/LICENSE)
 * [libart](http://www.levien.com/libart/) - [LGPL license](https://github.com/dacap/aseprite/tree/master/docs/licenses/LGPL-2.0.txt)
 * [libjpeg](http://www.ijg.org/) - [libjpeg license](https://github.com/dacap/aseprite/tree/master/docs/licenses/libjpeg-LICENSE.txt)
 * [libpng](http://www.libpng.org/pub/png/) - [libpng license](https://github.com/dacap/aseprite/tree/master/docs/licenses/libpng-LICENSE.txt)

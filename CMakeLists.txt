@@ -41,6 +41,7 @@ option(USE_SHARED_GTEST   "Use your installed copy of gtest" off)
 option(USE_SHARED_ALLEGRO4 "Use shared Allegro 4 library (without resize support)" off)
 option(ENABLE_MEMLEAK     "Enable memory-leaks detector (only for developers)" off)
 option(ENABLE_UPDATER     "Enable automatic check for updates" on)
+option(ENABLE_WEBSERVER   "Enable support to run a webserver (for HTML5 gamedev)" off)
 option(FULLSCREEN_PLATFORM "Enable fullscreen by default" off)
 
 ######################################################################
@@ -80,6 +81,7 @@ set(LIBFREETYPE_DIR     ${CMAKE_SOURCE_DIR}/third_party/freetype)
 set(LIBJPEG_DIR         ${CMAKE_SOURCE_DIR}/third_party/jpeg)
 set(LIBPNG_DIR          ${CMAKE_SOURCE_DIR}/third_party/libpng)
 set(LOADPNG_DIR         ${CMAKE_SOURCE_DIR}/third_party/loadpng)
+set(MONGOOSE_DIR        ${CMAKE_SOURCE_DIR}/third_party/mongoose)
 set(TINYXML_DIR         ${CMAKE_SOURCE_DIR}/third_party/tinyxml)
 set(ZLIB_DIR            ${CMAKE_SOURCE_DIR}/third_party/zlib)
 
