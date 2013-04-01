@@ -417,6 +417,7 @@ class UIToolSettingsImpl : public IToolSettings
   bool m_previewFilled;
   int m_spray_width;
   int m_spray_speed;
+  InkType m_inkType;
 
 public:
 
@@ -433,6 +434,7 @@ public:
     m_previewFilled = get_config_bool(cfg_section.c_str(), "PreviewFilled", false);
     m_spray_width = 16;
     m_spray_speed = 32;
+    m_inkType = (InkType)get_config_int(cfg_section.c_str(), "InkType", (int)kDefaultInk);
 
     m_pen.enableSignals(false);
     m_pen.setType((PenType)get_config_int(cfg_section.c_str(), "PenType", (int)PEN_TYPE_CIRCLE));
@@ -456,6 +458,8 @@ public:
     set_config_int(cfg_section.c_str(), "PenType", m_pen.getType());
     set_config_int(cfg_section.c_str(), "PenSize", m_pen.getSize());
     set_config_int(cfg_section.c_str(), "PenAngle", m_pen.getAngle());
+    set_config_int(cfg_section.c_str(), "PenAngle", m_pen.getAngle());
+    set_config_int(cfg_section.c_str(), "InkType", m_inkType);
 
     if (m_tool->getPointShape(0)->isSpray() ||
         m_tool->getPointShape(1)->isSpray()) {
@@ -468,19 +472,21 @@ public:
 
   IPenSettings* getPen() { return &m_pen; }
 
-  int getOpacity() { return m_opacity; }
-  int getTolerance() { return m_tolerance; }
-  bool getFilled() { return m_filled; }
-  bool getPreviewFilled() { return m_previewFilled; }
-  int getSprayWidth() { return m_spray_width; }
-  int getSpraySpeed() { return m_spray_speed; }
+  int getOpacity() OVERRIDE { return m_opacity; }
+  int getTolerance() OVERRIDE { return m_tolerance; }
+  bool getFilled() OVERRIDE { return m_filled; }
+  bool getPreviewFilled() OVERRIDE { return m_previewFilled; }
+  int getSprayWidth() OVERRIDE { return m_spray_width; }
+  int getSpraySpeed() OVERRIDE { return m_spray_speed; }
+  InkType getInkType() OVERRIDE { return m_inkType; }
 
-  void setOpacity(int opacity) { m_opacity = opacity; }
-  void setTolerance(int tolerance) { m_tolerance = tolerance; }
-  void setFilled(bool state) { m_filled = state; }
-  void setPreviewFilled(bool state) { m_previewFilled = state; }
-  void setSprayWidth(int width) { m_spray_width = width; }
-  void setSpraySpeed(int speed) { m_spray_speed = speed; }
+  void setOpacity(int opacity) OVERRIDE { m_opacity = opacity; }
+  void setTolerance(int tolerance) OVERRIDE { m_tolerance = tolerance; }
+  void setFilled(bool state) OVERRIDE { m_filled = state; }
+  void setPreviewFilled(bool state) OVERRIDE { m_previewFilled = state; }
+  void setSprayWidth(int width) OVERRIDE { m_spray_width = width; }
+  void setSpraySpeed(int speed) OVERRIDE { m_spray_speed = speed; }
+  void setInkType(InkType inkType) OVERRIDE { m_inkType = inkType; }
 
 private:
   std::string getCfgSection() const {

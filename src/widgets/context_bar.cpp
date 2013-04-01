@@ -26,6 +26,7 @@
 #include "settings/settings.h"
 #include "skin/skin_theme.h"
 #include "tools/ink.h"
+#include "tools/ink_type.h"
 #include "tools/point_shape.h"
 #include "tools/tool.h"
 #include "ui/button.h"
@@ -242,26 +243,31 @@ protected:
 
 class ContextBar::InkTypeField : public ComboBox
 {
-  enum { kMerge, kCopy, kShade, kSelection };
-
 public:
   InkTypeField() {
+    // The same order as in InkType
+    addItem("Default");
+    addItem("Opaque");
     addItem("Merge");
-    addItem("Copy");
-    addItem("Shade");
+    addItem("Shading");
+    addItem("Replace");
     addItem("Selection");
-
-    setSelectedItem(0);
+    addItem("Blur");
+    addItem("Jumble");
   }
 
-  void updateSelectedInk(Ink* ink) {
-    if (ink->isPaint()) setSelectedItem(kMerge);
-    else if (ink->isSelection()) setSelectedItem(kSelection);
+  void setInkType(InkType inkType) {
+    setSelectedItem((int)inkType);
   }
 
 protected:
   void onChange() OVERRIDE {
     ComboBox::onChange();
+
+    ISettings* settings = UIContext::instance()->getSettings();
+    Tool* currentTool = settings->getCurrentTool();
+    settings->getToolSettings(currentTool)
+      ->setInkType((InkType)getSelectedItem());
   }
 };
 
@@ -395,8 +401,7 @@ void ContextBar::onCurrentToolChange()
 
   m_tolerance->setTextf("%d", toolSettings->getTolerance());
 
-  Ink* ink = currentTool->getInk(0);
-  m_inkType->updateSelectedInk(ink);
+  m_inkType->setInkType(toolSettings->getInkType());
   m_inkOpacity->setTextf("%d", toolSettings->getOpacity());
 
   m_sprayWidth->setValue(toolSettings->getSprayWidth());

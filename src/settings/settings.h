@@ -23,6 +23,7 @@
 #include "gfx/point.h"
 #include "gfx/rect.h"
 #include "raster/pen_type.h"
+#include "tools/ink_type.h"
 
 class Document;
 class IDocumentSettings;
@@ -70,12 +71,15 @@ public:
   virtual bool getPreviewFilled() = 0;
   virtual int getSprayWidth() = 0;
   virtual int getSpraySpeed() = 0;
+  virtual InkType getInkType() = 0;
 
   virtual void setOpacity(int opacity) = 0;
   virtual void setTolerance(int tolerance) = 0;
   virtual void setFilled(bool state) = 0;
+  virtual void setPreviewFilled(bool state) = 0;
   virtual void setSprayWidth(int width) = 0;
   virtual void setSpraySpeed(int speed) = 0;
+  virtual void setInkType(InkType inkType) = 0;
 };
 
 // Settings for a tool's pen
