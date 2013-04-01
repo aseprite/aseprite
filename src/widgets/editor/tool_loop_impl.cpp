@@ -271,6 +271,9 @@ private:
         else
           id = WellKnownInks::ReplaceFgWithBg;
         break;
+      case kEraseInk:
+        id = WellKnownInks::Eraser;
+        break;
       case kSelectionInk:
         id = WellKnownInks::Selection;
         break;

@@ -251,6 +251,7 @@ public:
     addItem("Merge");
     addItem("Shading");
     addItem("Replace");
+    addItem("Erase");
     addItem("Selection");
     addItem("Blur");
     addItem("Jumble");

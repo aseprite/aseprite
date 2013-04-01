@@ -19,14 +19,17 @@
 #ifndef SETTINGS_INK_TYPE_H_INCLUDED
 #define SETTINGS_INK_TYPE_H_INCLUDED
 
-// If you change this enumeration, you should change update the
-// ContextBar::InkTypeField() UI widget
+// If you change this enumeration, you should update the
+// ContextBar::InkTypeField() UI widget. Also, remember that these
+// indexes are loaded/saved from/to the user configuration file, so
+// you shouldn't change them.
 enum InkType {
   kDefaultInk,
   kOpaqueInk,
   kMergeInk,
   kShadingInk,
   kReplaceInk,
+  kEraseInk,
   kSelectionInk,
   kBlurInk,
   kJumbleInk,
