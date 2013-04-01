@@ -23,7 +23,7 @@
 #include "gfx/point.h"
 #include "gfx/rect.h"
 #include "raster/pen_type.h"
-#include "tools/ink_type.h"
+#include "settings/ink_type.h"
 
 class Document;
 class IDocumentSettings;

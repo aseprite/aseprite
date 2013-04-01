@@ -16,8 +16,8 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifndef TOOLS_INK_TYPE_H_INCLUDED
-#define TOOLS_INK_TYPE_H_INCLUDED
+#ifndef SETTINGS_INK_TYPE_H_INCLUDED
+#define SETTINGS_INK_TYPE_H_INCLUDED
 
 // If you change this enumeration, you should change update the
 // ContextBar::InkTypeField() UI widget
@@ -33,4 +33,4 @@ enum InkType {
   kMaxInks
 };
 
-#endif // TOOLS_INK_TYPE_H_INCLUDED
+#endif // SETTINGS_INK_TYPE_H_INCLUDED
