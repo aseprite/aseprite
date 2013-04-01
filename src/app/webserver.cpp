@@ -22,13 +22,29 @@
 
 #include "app/webserver.h"
 
+#include "base/fs.h"
+#include "base/path.h"
+#include "resource_finder.h"
 #include "webserver/webserver.h"
+
+#include <fstream>
+
+#define API_VERSION 1
 
 namespace app {
 
 WebServer::WebServer()
   : m_webServer(NULL)
 {
+  ResourceFinder rf;
+  rf.findInDataDir("www");
+
+  while (const char* path = rf.next()) {
+    if (base::directory_exists(path)) {
+      m_wwwpath = path;
+      break;
+    }
+  }
 }
 
 WebServer::~WebServer()
@@ -38,7 +54,38 @@ WebServer::~WebServer()
 
 void WebServer::start()
 {
-  m_webServer = new webserver::WebServer;
+  m_webServer = new webserver::WebServer(this);
+}
+
+void WebServer::onProcessRequest(webserver::IRequest* request,
+                                 webserver::IResponse* response)
+{
+  std::string uri = request->getUri();
+  if (!uri.empty() && uri[uri.size()-1] == '/')
+    uri.erase(uri.size()-1);
+
+  if (uri == "/version") {
+    response->setContentType("text/plain");
+    response->getStream() << "{\"package\":\"" << PACKAGE "\","
+                          << "\"version\":\"" << VERSION << "\","
+                          << "\"webserver\":\"" << m_webServer->getName() << "\","
+                          << "\"api\":\"" << API_VERSION << "\"}";
+  }
+  else {
+    if (uri == "/" || uri.empty())
+      uri = "/index.html";
+
+    std::string fn = base::join_path(m_wwwpath, uri);
+    if (base::file_exists(fn)) {
+      response->sendFile(fn.c_str());
+    }
+    else {
+      response->setStatusCode(404);
+      response->getStream() << "Not found\n"
+                            << "URI = " << uri << "\n"
+                            << "Local file = " << fn;
+    }
+  }
 }
 
 }

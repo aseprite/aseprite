@@ -21,11 +21,12 @@
 
 #ifdef ENABLE_WEBSERVER
 
+#include "base/compiler_specific.h"
 #include "webserver/webserver.h"
 
 namespace app {
 
-  class WebServer
+  class WebServer : public webserver::IDelegate
   {
   public:
     WebServer();
@@ -33,8 +34,13 @@ namespace app {
 
     void start();
 
+    // webserver::IDelegate implementation
+    virtual void onProcessRequest(webserver::IRequest* request,
+                                  webserver::IResponse* response) OVERRIDE;
+
   private:
     webserver::WebServer* m_webServer;
+    std::string m_wwwpath;
   };
 
 }
