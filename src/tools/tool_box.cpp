@@ -47,25 +47,39 @@ using namespace tools;
 
 const char* WellKnownTools::RectangularMarquee = "rectangular_marquee";
 
+const char* WellKnownInks::Selection = "selection";
+const char* WellKnownInks::Paint = "paint";
+const char* WellKnownInks::PaintFg = "paint_fg";
+const char* WellKnownInks::PaintBg = "paint_bg";
+const char* WellKnownInks::Eraser = "eraser";
+const char* WellKnownInks::ReplaceFgWithBg = "replace_fg_with_bg";
+const char* WellKnownInks::ReplaceBgWithFg = "replace_bg_with_fg";
+const char* WellKnownInks::PickFg = "pick_fg";
+const char* WellKnownInks::PickBg = "pick_bg";
+const char* WellKnownInks::Scroll = "scroll";
+const char* WellKnownInks::Move = "move";
+const char* WellKnownInks::Blur = "blur";
+const char* WellKnownInks::Jumble = "jumble";
+
 //////////////////////////////////////////////////////////////////////
 
 ToolBox::ToolBox()
 {
   PRINTF("Toolbox module: installing\n");
 
-  m_inks["selection"]                    = new SelectionInk();
-  m_inks["paint"]                        = new PaintInk(PaintInk::Normal);
-  m_inks["paint_fg"]                     = new PaintInk(PaintInk::WithFg);
-  m_inks["paint_bg"]                     = new PaintInk(PaintInk::WithBg);
-  m_inks["eraser"]                       = new EraserInk(EraserInk::Eraser);
-  m_inks["replace_fg_with_bg"]           = new EraserInk(EraserInk::ReplaceFgWithBg);
-  m_inks["replace_bg_with_fg"]           = new EraserInk(EraserInk::ReplaceBgWithFg);
-  m_inks["pick_fg"]                      = new PickInk(PickInk::Fg);
-  m_inks["pick_bg"]                      = new PickInk(PickInk::Bg);
-  m_inks["scroll"]                       = new ScrollInk();
-  m_inks["move"]                         = new MoveInk();
-  m_inks["blur"]                         = new BlurInk();
-  m_inks["jumble"]                       = new JumbleInk();
+  m_inks[WellKnownInks::Selection]       = new SelectionInk();
+  m_inks[WellKnownInks::Paint]           = new PaintInk(PaintInk::Normal);
+  m_inks[WellKnownInks::PaintFg]         = new PaintInk(PaintInk::WithFg);
+  m_inks[WellKnownInks::PaintBg]         = new PaintInk(PaintInk::WithBg);
+  m_inks[WellKnownInks::Eraser]          = new EraserInk(EraserInk::Eraser);
+  m_inks[WellKnownInks::ReplaceFgWithBg] = new EraserInk(EraserInk::ReplaceFgWithBg);
+  m_inks[WellKnownInks::ReplaceBgWithFg] = new EraserInk(EraserInk::ReplaceBgWithFg);
+  m_inks[WellKnownInks::PickFg]          = new PickInk(PickInk::Fg);
+  m_inks[WellKnownInks::PickBg]          = new PickInk(PickInk::Bg);
+  m_inks[WellKnownInks::Scroll]          = new ScrollInk();
+  m_inks[WellKnownInks::Move]            = new MoveInk();
+  m_inks[WellKnownInks::Blur]            = new BlurInk();
+  m_inks[WellKnownInks::Jumble]          = new JumbleInk();
 
   m_controllers["freehand"]              = new FreehandController();
   m_controllers["point_by_point"]        = new PointByPointController();
@@ -114,7 +128,7 @@ ToolBox::~ToolBox()
 
 Tool* ToolBox::getToolById(const std::string& id)
 {
-  for (ToolIterator it = begin(); it != end(); ++it) {
+  for (ToolIterator it = begin(), end = this->end(); it != end; ++it) {
     Tool* tool = *it;
     if (tool->getId() == id)
       return tool;
@@ -122,6 +136,11 @@ Tool* ToolBox::getToolById(const std::string& id)
   // PRINTF("Error get_tool_by_name() with '%s'\n", name.c_str());
   // ASSERT(false);
   return NULL;
+}
+
+Ink* ToolBox::getInkById(const std::string& id)
+{
+  return m_inks[id];
 }
 
 void ToolBox::loadTools()

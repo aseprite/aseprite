@@ -33,6 +33,22 @@ namespace WellKnownTools {
   extern const char* RectangularMarquee;
 };
 
+namespace WellKnownInks {
+  extern const char* Selection;
+  extern const char* Paint;
+  extern const char* PaintFg;
+  extern const char* PaintBg;
+  extern const char* Eraser;
+  extern const char* ReplaceFgWithBg;
+  extern const char* ReplaceBgWithFg;
+  extern const char* PickFg;
+  extern const char* PickBg;
+  extern const char* Scroll;
+  extern const char* Move;
+  extern const char* Blur;
+  extern const char* Jumble;
+};
+
 typedef std::list<Tool*> ToolList;
 typedef ToolList::iterator ToolIterator;
 typedef ToolList::const_iterator ToolConstIterator;
@@ -55,6 +71,7 @@ public:
   ToolConstIterator end() const { return m_tools.end(); }
 
   Tool* getToolById(const std::string& id);
+  Ink* getInkById(const std::string& id);
   int getGroupsCount() const { return m_groups.size(); }
 
 private:

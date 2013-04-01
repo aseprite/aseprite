@@ -34,6 +34,7 @@
 #include "settings/settings.h"
 #include "tools/ink.h"
 #include "tools/tool.h"
+#include "tools/tool_box.h"
 #include "tools/tool_loop.h"
 #include "ui/gui.h"
 #include "undo_transaction.h"
@@ -63,6 +64,7 @@ class ToolLoopImpl : public tools::ToolLoop
   int m_spraySpeed;
   ISettings* m_settings;
   IDocumentSettings* m_docSettings;
+  IToolSettings* m_toolSettings;
   bool m_useMask;
   Mask* m_mask;
   gfx::Point m_maskOrigin;
@@ -72,6 +74,7 @@ class ToolLoopImpl : public tools::ToolLoop
   gfx::Point m_speed;
   bool m_canceled;
   tools::ToolLoop::Button m_button;
+  tools::Ink* m_ink;
   int m_primary_color;
   int m_secondary_color;
   UndoTransaction m_undoTransaction;
@@ -96,7 +99,9 @@ public:
     , m_canceled(false)
     , m_settings(m_context->getSettings())
     , m_docSettings(m_settings->getDocumentSettings(m_document))
+    , m_toolSettings(m_settings->getToolSettings(m_tool))
     , m_button(button)
+    , m_ink(getInkFromType())
     , m_primary_color(color_utils::color_for_layer(primary_color, m_layer))
     , m_secondary_color(color_utils::color_for_layer(secondary_color, m_layer))
     , m_undoTransaction(m_context,
@@ -107,8 +112,6 @@ public:
                                                           undo::ModifyDocument))
     , m_expandCelCanvas(m_context, m_docSettings->getTiledMode(), m_undoTransaction)
   {
-    IToolSettings* toolSettings = m_settings->getToolSettings(m_tool);
-
     // Settings
     switch (tool->getFill(m_button)) {
       case tools::FillNone:
@@ -118,16 +121,16 @@ public:
         m_filled = true;
         break;
       case tools::FillOptional:
-        m_filled = toolSettings->getFilled();
+        m_filled = m_toolSettings->getFilled();
         break;
     }
-    m_previewFilled = toolSettings->getPreviewFilled();
+    m_previewFilled = m_toolSettings->getPreviewFilled();
 
-    m_sprayWidth = toolSettings->getSprayWidth();
-    m_spraySpeed = toolSettings->getSpraySpeed();
+    m_sprayWidth = m_toolSettings->getSprayWidth();
+    m_spraySpeed = m_toolSettings->getSpraySpeed();
 
     // Create the pen
-    IPenSettings* pen_settings = toolSettings->getPen();
+    IPenSettings* pen_settings = m_toolSettings->getPen();
     ASSERT(pen_settings != NULL);
 
     m_pen = new Pen(pen_settings->getType(),
@@ -150,8 +153,8 @@ public:
                                                     m_mask->getBounds().y-y1):
                                          gfx::Point(0, 0));
 
-    m_opacity = toolSettings->getOpacity();
-    m_tolerance = toolSettings->getTolerance();
+    m_opacity = m_toolSettings->getOpacity();
+    m_tolerance = m_toolSettings->getTolerance();
     m_speed.x = 0;
     m_speed.y = 0;
 
@@ -210,7 +213,7 @@ public:
   gfx::Point getOffset() OVERRIDE { return m_offset; }
   void setSpeed(const gfx::Point& speed) OVERRIDE { m_speed = speed; }
   gfx::Point getSpeed() OVERRIDE { return m_speed; }
-  tools::Ink* getInk() OVERRIDE { return m_tool->getInk(m_button); }
+  tools::Ink* getInk() OVERRIDE { return m_ink; }
   tools::Controller* getController() OVERRIDE { return m_tool->getController(m_button); }
   tools::PointShape* getPointShape() OVERRIDE { return m_tool->getPointShape(m_button); }
   tools::Intertwine* getIntertwine() OVERRIDE { return m_tool->getIntertwine(m_button); }
@@ -241,6 +244,46 @@ public:
   {
     StatusBar::instance()->setStatusText(0, text);
   }
+
+private:
+  tools::Ink* getInkFromType()
+  {
+    using namespace tools;
+
+    InkType inkType = m_toolSettings->getInkType();
+    if (inkType == kDefaultInk)
+      return m_tool->getInk(m_button);
+
+    const char* id = WellKnownInks::Paint;
+    switch (inkType) {
+      case kOpaqueInk:
+        id = WellKnownInks::Paint;
+        break;
+      case kMergeInk:
+        id = WellKnownInks::Paint;
+        break;
+      case kShadingInk:
+        id = WellKnownInks::Paint;
+        break;
+      case kReplaceInk:
+        if (m_button == ToolLoop::Left)
+          id = WellKnownInks::ReplaceBgWithFg;
+        else
+          id = WellKnownInks::ReplaceFgWithBg;
+        break;
+      case kSelectionInk:
+        id = WellKnownInks::Selection;
+        break;
+      case kBlurInk:
+        id = WellKnownInks::Blur;
+        break;
+      case kJumbleInk:
+        id = WellKnownInks::Jumble;
+        break;
+    }
+    return App::instance()->getToolBox()->getInkById(id);
+  }
+
 };
 
 tools::ToolLoop* create_tool_loop(Editor* editor, Context* context, Message* msg)
