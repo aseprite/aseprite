@@ -339,7 +339,7 @@ ContextBar::ContextBar()
   addChild(m_toleranceLabel = new Label("Tolerance:"));
   addChild(m_tolerance = new ToleranceField());
 
-  addChild(new Label("Ink:"));
+  addChild(m_inkLabel = new Label("Ink:"));
   addChild(m_inkType = new InkTypeField());
 
   addChild(m_opacityLabel = new Label("Opacity:"));
@@ -414,6 +414,10 @@ void ContextBar::onCurrentToolChange()
                      currentTool->getInk(1)->isPaint() ||
                      currentTool->getInk(1)->isEffect());
 
+  // True if it makes sense to change the ink property for the current
+  // tool.
+  bool hasInk = hasOpacity;
+
   // True if the current tool needs tolerance options
   bool hasTolerance = (currentTool->getPointShape(0)->isFloodFill() ||
                        currentTool->getPointShape(1)->isFloodFill());
@@ -428,6 +432,8 @@ void ContextBar::onCurrentToolChange()
   m_brushSize->setVisible(hasOpacity);
   m_brushAngle->setVisible(hasOpacity);
   m_opacityLabel->setVisible(hasOpacity);
+  m_inkLabel->setVisible(hasInk);
+  m_inkType->setVisible(hasInk);
   m_inkOpacity->setVisible(hasOpacity);
   m_toleranceLabel->setVisible(hasTolerance);
   m_tolerance->setVisible(hasTolerance);
