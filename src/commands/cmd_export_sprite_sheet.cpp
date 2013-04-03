@@ -108,7 +108,7 @@ protected:
   void onSheetTypeChange()
   {
     bool state = false;
-    switch (m_sheetType.getSelectedItem()) {
+    switch (m_sheetType.getSelectedItemIndex()) {
       case Matrix:
         state = true;
         break;
@@ -130,7 +130,7 @@ protected:
     FrameNumber nframes = sprite->getTotalFrames();
     int columns;
 
-    switch (m_sheetType.getSelectedItem()) {
+    switch (m_sheetType.getSelectedItemIndex()) {
       case HorizontalStrip:
         columns = nframes;
         break;
@@ -219,7 +219,7 @@ protected:
     bool undo = false;
 
     // Do the "Export Action"
-    switch (m_exportAction.getSelectedItem()) {
+    switch (m_exportAction.getSelectedItemIndex()) {
 
       case SaveCopyAs:
         {

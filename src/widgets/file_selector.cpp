@@ -166,6 +166,30 @@ public:
   }
 };
 
+class CustomFileNameItem : public ListItem
+{
+public:
+  CustomFileNameItem(const char* text, IFileItem* fileItem)
+    : ListItem(text)
+    , m_fileItem(fileItem)
+  {
+  }
+
+  IFileItem* getFileItem() { return m_fileItem; }
+
+private:
+  IFileItem* m_fileItem;
+};
+
+class CustomFolderNameItem : public ListItem
+{
+public:
+  CustomFolderNameItem(const char* text)
+    : ListItem(text)
+  {
+  }
+};
+
 FileSelector::FileSelector()
   : Window(false, "")
 {
@@ -422,7 +446,7 @@ again:
     // selected in the filetype combo-box
     if (base::get_file_extension(buf).empty()) {
       buf += '.';
-      buf += m_fileType->getItemText(m_fileType->getSelectedItem());
+      buf += m_fileType->getItemText(m_fileType->getSelectedItemIndex());
     }
 
     // duplicate the buffer to return a new string
@@ -470,8 +494,7 @@ void FileSelector::updateLocation()
     buf += fileItem->getDisplayName();
 
     // Add the new location to the combo-box
-    newItem = m_location->addItem(buf.c_str());
-    m_location->setItemData(newItem, fileItem);
+    m_location->addItem(new CustomFileNameItem(buf.c_str(), fileItem));
 
     if (fileItem == currentFolder)
       selected_index = level;
@@ -487,12 +510,12 @@ void FileSelector::updateLocation()
     RecentFiles::const_iterator it = App::instance()->getRecentFiles()->paths_begin();
     RecentFiles::const_iterator end = App::instance()->getRecentFiles()->paths_end();
     for (; it != end; ++it)
-      m_location->addItem(*it);
+      m_location->addItem(new CustomFolderNameItem(it->c_str()));
   }
 
   // Select the location
   {
-    m_location->setSelectedItem(selected_index);
+    m_location->setSelectedItemIndex(selected_index);
     m_location->getEntryWidget()->setText(currentFolder->getDisplayName().c_str());
     m_location->getEntryWidget()->deselectText();
   }
@@ -549,7 +572,7 @@ void FileSelector::selectFileTypeFromFileName()
   if (p && *p != 0) {
     ustrcpy(buf, get_extension(filename));
     ustrlwr(buf);
-    m_fileType->setSelectedItem(m_fileType->findItemIndex(buf));
+    m_fileType->setSelectedItemIndex(m_fileType->findItemIndex(buf));
   }
 }
 
@@ -595,14 +618,19 @@ void FileSelector::onLocationChange()
 {
   // When the user change the location we have to set the
   // current-folder in the 'fileview' widget
-  int itemIndex = m_location->getSelectedItem();
-  IFileItem* fileItem = reinterpret_cast<IFileItem*>(m_location->getItemData(itemIndex));
+  int itemIndex = m_location->getSelectedItemIndex();
+  CustomFileNameItem* comboFileItem = dynamic_cast<CustomFileNameItem*>(m_location->getSelectedItem());
+  IFileItem* fileItem = (comboFileItem != NULL ? comboFileItem->getFileItem(): NULL);
 
   // Maybe the user selected a recent file path
   if (fileItem == NULL) {
-    base::string path = m_location->getItemText(itemIndex);
-    if (!path.empty())
+    CustomFolderNameItem* comboFolderItem =
+      dynamic_cast<CustomFolderNameItem*>(m_location->getSelectedItem());
+
+    if (comboFolderItem != NULL) {
+      base::string path = comboFolderItem->getText();
       fileItem = FileSystemModule::instance()->getFileItemFromPath(path);
+    }
   }
 
   if (fileItem != NULL) {
@@ -618,7 +646,7 @@ void FileSelector::onLocationChange()
 // change the file-extension in the 'filename' entry widget
 void FileSelector::onFileTypeChange()
 {
-  std::string newExtension = m_fileType->getItemText(m_fileType->getSelectedItem());
+  std::string newExtension = m_fileType->getItemText(m_fileType->getSelectedItemIndex());
   std::string fileName = m_fileName->getText();
   std::string currentExtension = base::get_file_extension(fileName);
 

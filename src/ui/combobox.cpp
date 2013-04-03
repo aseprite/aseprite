@@ -9,8 +9,6 @@
 #include "base/compiler_specific.h"
 #include "gfx/size.h"
 #include "ui/gui.h"
-#include "ui/listitem.h"
-#include "ui/preferred_size_event.h"
 
 #include <allegro.h>
 
@@ -49,7 +47,22 @@ class ComboBoxListBox : public ListBox
 {
 public:
   ComboBoxListBox(ComboBox* comboBox)
-    : m_comboBox(comboBox) {
+    : m_comboBox(comboBox)
+  {
+    for (ComboBox::ListItems::iterator
+           it = comboBox->begin(), end = comboBox->end(); it != end; ++it)
+      addChild(*it);
+  }
+
+  void clean()
+  {
+    // Remove all added items so ~Widget() don't delete them.
+    while (getLastChild())
+      removeChild(getLastChild());
+
+    ASSERT(getChildren().empty());
+
+    selectChild(NULL);
   }
 
 protected:
@@ -62,14 +75,6 @@ private:
   }
 
   ComboBox* m_comboBox;
-};
-
-struct ComboBox::Item
-{
-  std::string text;
-  void* data;
-
-  Item() : data(NULL) { }
 };
 
 ComboBox::ComboBox()
@@ -144,37 +149,55 @@ bool ComboBox::isCaseSensitive()
   return m_casesensitive;
 }
 
-int ComboBox::addItem(const std::string& text)
+int ComboBox::addItem(ListItem* item)
 {
   bool sel_first = m_items.empty();
-  Item* item = new Item();
-  item->text = text;
 
   m_items.push_back(item);
 
   if (sel_first)
-    setSelectedItem(0);
+    setSelectedItemIndex(0);
 
   return m_items.size()-1;
 }
 
-void ComboBox::insertItem(int itemIndex, const std::string& text)
+int ComboBox::addItem(const char* text)
+{
+  return addItem(new ListItem(text));
+}
+
+void ComboBox::insertItem(int itemIndex, ListItem* item)
 {
   bool sel_first = m_items.empty();
-  Item* item = new Item();
-  item->text = text;
 
   m_items.insert(m_items.begin() + itemIndex, item);
 
   if (sel_first)
-    setSelectedItem(0);
+    setSelectedItemIndex(0);
+}
+
+void ComboBox::insertItem(int itemIndex, const char* text)
+{
+  insertItem(itemIndex, new ListItem(text));
+}
+
+void ComboBox::removeItem(ListItem* item)
+{
+  ListItems::iterator it = std::find(m_items.begin(), m_items.end(), item);
+
+  ASSERT(it != m_items.end());
+
+  if (it != m_items.end())
+    m_items.erase(it);
+
+  // Do not delete the given "item"
 }
 
 void ComboBox::removeItem(int itemIndex)
 {
   ASSERT(itemIndex >= 0 && (size_t)itemIndex < m_items.size());
 
-  Item* item = m_items[itemIndex];
+  ListItem* item = m_items[itemIndex];
 
   m_items.erase(m_items.begin() + itemIndex);
   delete item;
@@ -182,46 +205,55 @@ void ComboBox::removeItem(int itemIndex)
 
 void ComboBox::removeAllItems()
 {
-  std::vector<Item*>::iterator it, end = m_items.end();
+  ListItems::iterator it, end = m_items.end();
   for (it = m_items.begin(); it != end; ++it)
     delete *it;
 
   m_items.clear();
 }
 
-int ComboBox::getItemCount()
+int ComboBox::getItemCount() const
 {
   return m_items.size();
 }
 
-std::string ComboBox::getItemText(int itemIndex)
+ListItem* ComboBox::getItem(int itemIndex)
 {
   if (itemIndex >= 0 && (size_t)itemIndex < m_items.size()) {
-    Item* item = m_items[itemIndex];
-    return item->text;
+    return m_items[itemIndex];
+  }
+  else
+    return NULL;
+}
+
+const char* ComboBox::getItemText(int itemIndex) const
+{
+  if (itemIndex >= 0 && (size_t)itemIndex < m_items.size()) {
+    ListItem* item = m_items[itemIndex];
+    return item->getText();
   }
   else
     return "";
 }
 
-void ComboBox::setItemText(int itemIndex, const std::string& text)
+void ComboBox::setItemText(int itemIndex, const char* text)
 {
   ASSERT(itemIndex >= 0 && (size_t)itemIndex < m_items.size());
 
-  Item* item = m_items[itemIndex];
-  item->text = text;
+  ListItem* item = m_items[itemIndex];
+  item->setText(text);
 }
 
-int ComboBox::findItemIndex(const std::string& text)
+int ComboBox::findItemIndex(const char* text)
 {
   int itemIndex = 0;
 
-  std::vector<Item*>::iterator it, end = m_items.end();
+  ListItems::iterator it, end = m_items.end();
   for (it = m_items.begin(); it != end; ++it) {
-    Item* item = *it;
+    ListItem* item = *it;
 
-    if ((m_casesensitive && ustrcmp(item->text.c_str(), text.c_str()) == 0) ||
-        (!m_casesensitive && ustricmp(item->text.c_str(), text.c_str()) == 0)) {
+    if ((m_casesensitive && ustrcmp(item->getText(), text) == 0) ||
+        (!m_casesensitive && ustricmp(item->getText(), text) == 0)) {
       return itemIndex;
     }
 
@@ -231,38 +263,35 @@ int ComboBox::findItemIndex(const std::string& text)
   return -1;
 }
 
-int ComboBox::getSelectedItem()
+ListItem* ComboBox::getSelectedItem() const
 {
-  return !m_items.empty() ? m_selected: -1;
+  return (!m_items.empty() ? m_items[m_selected]: NULL);
 }
 
-void ComboBox::setSelectedItem(int itemIndex)
+void ComboBox::setSelectedItem(ListItem* item)
+{
+  ListItems::iterator it = std::find(m_items.begin(), m_items.end(), item);
+
+  ASSERT(it != m_items.end());
+
+  if (it != m_items.end())
+    setSelectedItemIndex(std::distance(m_items.begin(), it));
+}
+
+int ComboBox::getSelectedItemIndex() const
+{
+  return (!m_items.empty() ? m_selected: -1);
+}
+
+void ComboBox::setSelectedItemIndex(int itemIndex)
 {
   if (itemIndex >= 0 && (size_t)itemIndex < m_items.size()) {
     m_selected = itemIndex;
 
-    std::vector<Item*>::iterator it = m_items.begin() + itemIndex;
-    Item* item = *it;
-    m_entry->setText(item->text.c_str());
+    ListItems::iterator it = m_items.begin() + itemIndex;
+    ListItem* item = *it;
+    m_entry->setText(item->getText());
   }
-}
-
-void* ComboBox::getItemData(int itemIndex)
-{
-  if (itemIndex >= 0 && (size_t)itemIndex < m_items.size()) {
-    Item* item = m_items[itemIndex];
-    return item->data;
-  }
-  else
-    return NULL;
-}
-
-void ComboBox::setItemData(int itemIndex, void* data)
-{
-  ASSERT(itemIndex >= 0 && (size_t)itemIndex < m_items.size());
-
-  Item* item = m_items[itemIndex];
-  item->data = data;
 }
 
 Entry* ComboBox::getEntryWidget()
@@ -329,11 +358,11 @@ void ComboBox::onPreferredSize(PreferredSizeEvent& ev)
   Size entrySize = m_entry->getPreferredSize();
 
   // Get the text-length of every item and put in 'w' the maximum value
-  std::vector<Item*>::iterator it, end = m_items.end();
+  ListItems::iterator it, end = m_items.end();
   for (it = m_items.begin(); it != end; ++it) {
     int item_w =
       2*jguiscale()+
-      text_length(this->getFont(), (*it)->text.c_str())+
+      text_length(this->getFont(), (*it)->getText())+
       10*jguiscale();
 
     reqSize.w = MAX(reqSize.w, item_w);
@@ -399,7 +428,7 @@ bool ComboBoxListBox::onProcessMessage(Message* msg)
 
     case JM_BUTTONRELEASED:
       {
-        int index = m_comboBox->getSelectedItem();
+        int index = m_comboBox->getSelectedItemIndex();
         if (isValidItem(index))
           m_comboBox->onChange();
 
@@ -428,7 +457,7 @@ void ComboBoxListBox::onChangeSelectedItem()
 
   int index = getSelectedIndex();
   if (isValidItem(index))
-    m_comboBox->setSelectedItem(index);
+    m_comboBox->setSelectedItemIndex(index);
 }
 
 // When the mouse is clicked we switch the visibility-status of the list-box
@@ -443,13 +472,6 @@ void ComboBox::openListBox()
     m_window = new Window(false, NULL);
     View* view = new View();
     m_listbox = new ComboBoxListBox(this);
-
-    std::vector<Item*>::iterator it, end = m_items.end();
-    for (it = m_items.begin(); it != end; ++it) {
-      Item* item = *it;
-      m_listbox->addChild(new ListItem(item->text.c_str()));
-    }
-
     m_window->setOnTop(true);
     jwidget_noborders(m_window);
 
@@ -483,6 +505,8 @@ void ComboBox::openListBox()
 void ComboBox::closeListBox()
 {
   if (m_window) {
+    m_listbox->clean();
+
     m_window->closeWindow(this);
     delete m_window;            // window, frame
     m_window = NULL;

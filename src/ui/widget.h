@@ -194,9 +194,12 @@ namespace ui {
     // Returns a list of children.
     const WidgetsList& getChildren() const { return m_children; }
 
-    // Returns the first child or NULL if it doesn't exist.
+    // Returns the first/last child or NULL if it doesn't exist.
     Widget* getFirstChild() {
       return (!m_children.empty() ? m_children.front(): NULL);
+    }
+    Widget* getLastChild() {
+      return (!m_children.empty() ? m_children.back(): NULL);
     }
 
     // Returns the next or previous siblings.

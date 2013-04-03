@@ -19,6 +19,7 @@ namespace ui {
   class Button;
   class Entry;
   class ListBox;
+  class ListItem;
   class Window;
 
   class ComboBoxListBox;
@@ -28,8 +29,13 @@ namespace ui {
     friend class ComboBoxListBox;
 
   public:
+    typedef std::vector<ListItem*> ListItems;
+
     ComboBox();
     ~ComboBox();
+
+    ListItems::iterator begin() { return m_items.begin(); }
+    ListItems::iterator end() { return m_items.end(); }
 
     void setEditable(bool state);
     void setClickOpen(bool state);
@@ -39,22 +45,31 @@ namespace ui {
     bool isClickOpen();
     bool isCaseSensitive();
 
-    int addItem(const std::string& text);
-    void insertItem(int itemIndex, const std::string& text);
+    int addItem(ListItem* item);
+    int addItem(const char* text);
+    void insertItem(int itemIndex, ListItem* item);
+    void insertItem(int itemIndex, const char* text);
+
+    // Removes the given item (you must delete it).
+    void removeItem(ListItem* item);
+
+    // Removes and deletes the given item.
     void removeItem(int itemIndex);
+
     void removeAllItems();
 
-    int getItemCount();
+    int getItemCount() const;
 
-    std::string getItemText(int itemIndex);
-    void setItemText(int itemIndex, const std::string& text);
-    int findItemIndex(const std::string& text);
+    ListItem* getItem(int itemIndex);
+    const char* getItemText(int itemIndex) const;
+    void setItemText(int itemIndex, const char* text);
+    int findItemIndex(const char* text);
 
-    int getSelectedItem();
-    void setSelectedItem(int itemIndex);
+    ListItem* getSelectedItem() const;
+    void setSelectedItem(ListItem* item);
 
-    void* getItemData(int itemIndex);
-    void setItemData(int itemIndex, void* data);
+    int getSelectedItemIndex() const;
+    void setSelectedItemIndex(int itemIndex);
 
     Entry* getEntryWidget();
     Button* getButtonWidget();
@@ -75,13 +90,11 @@ namespace ui {
   private:
     void onButtonClick(Event& ev);
 
-    struct Item;
-
     Entry* m_entry;
     Button* m_button;
     Window* m_window;
-    ListBox* m_listbox;
-    std::vector<Item*> m_items;
+    ComboBoxListBox* m_listbox;
+    ListItems m_items;
     int m_selected;
     bool m_editable : 1;
     bool m_clickopen : 1;

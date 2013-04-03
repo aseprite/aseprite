@@ -117,7 +117,7 @@ void OptionsCommand::onExecute(Context* context)
   m_checked_bg->addItem("8x8");
   m_checked_bg->addItem("4x4");
   m_checked_bg->addItem("2x2");
-  m_checked_bg->setSelectedItem((int)RenderEngine::getCheckedBgType());
+  m_checked_bg->setSelectedItemIndex((int)RenderEngine::getCheckedBgType());
 
   // Zoom checked background
   if (RenderEngine::getCheckedBgZoom())
@@ -154,7 +154,7 @@ void OptionsCommand::onExecute(Context* context)
     set_config_bool("Options", "MoveClick2", move_click2->isSelected());
     set_config_bool("Options", "DrawClick2", draw_click2->isSelected());
 
-    RenderEngine::setCheckedBgType((RenderEngine::CheckedBgType)m_checked_bg->getSelectedItem());
+    RenderEngine::setCheckedBgType((RenderEngine::CheckedBgType)m_checked_bg->getSelectedItemIndex());
     RenderEngine::setCheckedBgZoom(m_checked_bg_zoom->isSelected());
     RenderEngine::setCheckedBgColor1(m_checked_bg_color1->getColor());
     RenderEngine::setCheckedBgColor2(m_checked_bg_color2->getColor());

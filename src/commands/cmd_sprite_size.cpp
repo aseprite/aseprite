@@ -221,7 +221,7 @@ void SpriteSizeCommand::onExecute(Context* context)
 
   method->addItem("Nearest-neighbor");
   method->addItem("Bilinear");
-  method->setSelectedItem(get_config_int("SpriteSize", "Method", RESIZE_METHOD_NEAREST_NEIGHBOR));
+  method->setSelectedItemIndex(get_config_int("SpriteSize", "Method", RESIZE_METHOD_NEAREST_NEIGHBOR));
 
   window->remapWindow();
   window->centerWindow();
@@ -235,7 +235,7 @@ void SpriteSizeCommand::onExecute(Context* context)
     int new_width = m_widthPx->getTextInt();
     int new_height = m_heightPx->getTextInt();
     ResizeMethod resize_method =
-      (ResizeMethod)method->getSelectedItem();
+      (ResizeMethod)method->getSelectedItemIndex();
 
     set_config_int("SpriteSize", "Method", resize_method);
 

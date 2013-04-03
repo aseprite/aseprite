@@ -258,7 +258,7 @@ public:
   }
 
   void setInkType(InkType inkType) {
-    setSelectedItem((int)inkType);
+    setSelectedItemIndex((int)inkType);
   }
 
 protected:
@@ -268,7 +268,7 @@ protected:
     ISettings* settings = UIContext::instance()->getSettings();
     Tool* currentTool = settings->getCurrentTool();
     settings->getToolSettings(currentTool)
-      ->setInkType((InkType)getSelectedItem());
+      ->setInkType((InkType)getSelectedItemIndex());
   }
 };
 
