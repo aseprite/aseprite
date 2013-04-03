@@ -296,6 +296,8 @@ private:
     // If the user already have selected a file, we have to destroy
     // that file in order to select the new one.
     if (oldDocument && m_fileOpened) {
+      releaseEditor();
+
       DocumentDestroyer destroyer(m_context, oldDocument);
       destroyer.destroyDocument();
     }
@@ -305,7 +307,7 @@ private:
 
   void captureEditor()
   {
-    releaseEditor();
+    ASSERT(m_editor == NULL);
 
     if (m_document && !m_editor) {
       m_rect = getRectFromEntries();
