@@ -22,6 +22,8 @@
 #include "raster/rgbmap.h"
 #include "raster/sprite.h"
 #include "settings/document_settings.h"
+#include "tools/shade_table.h"
+#include "tools/shading_options.h"
 
 //////////////////////////////////////////////////////////////////////
 // Ink Processing
@@ -452,6 +454,33 @@ static void ink_hline8_jumble(int x1, int y, int x2, ToolLoop* loop)
 }
 
 //////////////////////////////////////////////////////////////////////
+// Shading Ink
+//////////////////////////////////////////////////////////////////////
+
+static void ink_hline32_shading(int x1, int y, int x2, ToolLoop* loop)
+{
+}
+
+static void ink_hline16_shading(int x1, int y, int x2, ToolLoop* loop)
+{
+}
+
+static void ink_hline8_shading(int x1, int y, int x2, ToolLoop* loop)
+{
+  const Palette* pal = get_current_palette();
+  tools::ShadeTable8* shadeTable = loop->getShadingOptions()->getShadeTable();
+  bool left = (loop->getMouseButton() == ToolLoop::Left);
+
+  DEFINE_INK_PROCESSING_SRCDST
+    (IndexedTraits,
+     if (left)
+       *dst_address = shadeTable->left(*src_address);
+     else
+       *dst_address = shadeTable->right(*src_address);
+     );
+}
+
+//////////////////////////////////////////////////////////////////////
 
 enum {
   INK_OPAQUE,
@@ -459,6 +488,7 @@ enum {
   INK_BLUR,
   INK_REPLACE,
   INK_JUMBLE,
+  INK_SHADING,
   MAX_INKS
 };
 
@@ -473,5 +503,6 @@ static AlgoHLine ink_processing[][3] =
   DEF_INK(transparent),
   DEF_INK(blur),
   DEF_INK(replace),
-  DEF_INK(jumble)
+  DEF_INK(jumble),
+  DEF_INK(shading)
 };

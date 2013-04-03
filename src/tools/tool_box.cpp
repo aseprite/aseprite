@@ -51,6 +51,7 @@ const char* WellKnownInks::Selection = "selection";
 const char* WellKnownInks::Paint = "paint";
 const char* WellKnownInks::PaintFg = "paint_fg";
 const char* WellKnownInks::PaintBg = "paint_bg";
+const char* WellKnownInks::Shading = "shading";
 const char* WellKnownInks::Eraser = "eraser";
 const char* WellKnownInks::ReplaceFgWithBg = "replace_fg_with_bg";
 const char* WellKnownInks::ReplaceBgWithFg = "replace_bg_with_fg";
@@ -71,6 +72,7 @@ ToolBox::ToolBox()
   m_inks[WellKnownInks::Paint]           = new PaintInk(PaintInk::Normal);
   m_inks[WellKnownInks::PaintFg]         = new PaintInk(PaintInk::WithFg);
   m_inks[WellKnownInks::PaintBg]         = new PaintInk(PaintInk::WithBg);
+  m_inks[WellKnownInks::Shading]         = new ShadingInk();
   m_inks[WellKnownInks::Eraser]          = new EraserInk(EraserInk::Eraser);
   m_inks[WellKnownInks::ReplaceFgWithBg] = new EraserInk(EraserInk::ReplaceFgWithBg);
   m_inks[WellKnownInks::ReplaceBgWithFg] = new EraserInk(EraserInk::ReplaceBgWithFg);

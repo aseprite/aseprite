@@ -26,10 +26,12 @@
 #include "settings/ink_type.h"
 
 class Document;
+class IColorSwatchesStore;
 class IDocumentSettings;
-class IToolSettings;
 class IPenSettings;
+class IToolSettings;
 
+namespace app { class ColorSwatches; }
 namespace tools { class Tool; }
 
 class ISettings
@@ -42,10 +44,12 @@ public:
   virtual app::Color getFgColor() = 0;
   virtual app::Color getBgColor() = 0;
   virtual tools::Tool* getCurrentTool() = 0;
+  virtual app::ColorSwatches* getColorSwatches() = 0;
 
   virtual void setFgColor(const app::Color& color) = 0;
   virtual void setBgColor(const app::Color& color) = 0;
   virtual void setCurrentTool(tools::Tool* tool) = 0;
+  virtual void setColorSwatches(app::ColorSwatches* colorSwatches) = 0;
 
   // Returns the specific settings for the given document. If the
   // document is null, it should return an interface for
@@ -55,6 +59,7 @@ public:
   // Specific configuration for the given tool.
   virtual IToolSettings* getToolSettings(tools::Tool* tool) = 0;
 
+  virtual IColorSwatchesStore* getColorSwatchesStore() = 0;
 };
 
 // Tool's settings
@@ -95,6 +100,14 @@ public:
   virtual void setType(PenType type) = 0;
   virtual void setSize(int size) = 0;
   virtual void setAngle(int angle) = 0;
+};
+
+class IColorSwatchesStore
+{
+public:
+  virtual ~IColorSwatchesStore() { }
+  virtual void addColorSwatches(app::ColorSwatches* colorSwatches) = 0;
+  virtual void removeColorSwatches(app::ColorSwatches* colorSwatches) = 0;
 };
 
 #endif

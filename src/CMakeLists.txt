@@ -200,6 +200,7 @@ add_library(aseprite-library
   app/backup.cpp
   app/check_update.cpp
   app/color.cpp
+  app/color_swatches.cpp
   app/color_utils.cpp
   app/data_recovery.cpp
   app/file_selector.cpp
@@ -338,6 +339,7 @@ add_library(aseprite-library
   skin/skin_slider_property.cpp
   tools/intertwine.cpp
   tools/point_shape.cpp
+  tools/shade_table.cpp
   tools/tool_box.cpp
   tools/tool_loop_manager.cpp
   undoers/add_cel.cpp

@@ -42,6 +42,7 @@ class Controller;
 class Ink;
 class Intertwine;
 class PointShape;
+class ShadingOptions;
 class Tool;
 
 // Interface to communicate the sprite editor with the tool when the user
@@ -160,6 +161,8 @@ public:
   virtual PointShape* getPointShape() = 0;
   virtual Intertwine* getIntertwine() = 0;
   virtual TracePolicy getTracePolicy() = 0;
+
+  virtual ShadingOptions* getShadingOptions() = 0;
 
   // Used by the tool when the user cancels the operation pressing the
   // other mouse button.

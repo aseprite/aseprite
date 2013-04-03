@@ -33,6 +33,8 @@
 #include "settings/document_settings.h"
 #include "settings/settings.h"
 #include "tools/ink.h"
+#include "tools/shade_table.h"
+#include "tools/shading_options.h"
 #include "tools/tool.h"
 #include "tools/tool_box.h"
 #include "tools/tool_loop.h"
@@ -47,7 +49,8 @@
 
 using namespace ui;
 
-class ToolLoopImpl : public tools::ToolLoop
+class ToolLoopImpl : public tools::ToolLoop,
+                     public tools::ShadingOptions
 {
   Editor* m_editor;
   Context* m_context;
@@ -80,6 +83,7 @@ class ToolLoopImpl : public tools::ToolLoop
   UndoTransaction m_undoTransaction;
   ExpandCelCanvas m_expandCelCanvas;
   gfx::Region m_dirtyArea;
+  tools::ShadeTable8* m_shadeTable;
 
 public:
   ToolLoopImpl(Editor* editor,
@@ -111,6 +115,7 @@ public:
                           getInk()->isScrollMovement()) ? undo::DoesntModifyDocument:
                                                           undo::ModifyDocument))
     , m_expandCelCanvas(m_context, m_docSettings->getTiledMode(), m_undoTransaction)
+    , m_shadeTable(NULL)
   {
     // Settings
     switch (tool->getFill(m_button)) {
@@ -183,6 +188,7 @@ public:
     }
 
     delete m_pen;
+    delete m_shadeTable;
   }
 
   // IToolLoop interface
@@ -218,6 +224,7 @@ public:
   tools::PointShape* getPointShape() OVERRIDE { return m_tool->getPointShape(m_button); }
   tools::Intertwine* getIntertwine() OVERRIDE { return m_tool->getIntertwine(m_button); }
   tools::TracePolicy getTracePolicy() OVERRIDE { return m_tool->getTracePolicy(m_button); }
+  tools::ShadingOptions* getShadingOptions() OVERRIDE { return this; }
 
   void cancel() OVERRIDE { m_canceled = true; }
   bool isCanceled() OVERRIDE { return m_canceled; }
@@ -245,6 +252,18 @@ public:
     StatusBar::instance()->setStatusText(0, text);
   }
 
+  // ShadingOptions implementation
+  tools::ShadeTable8* getShadeTable() OVERRIDE
+  {
+    if (m_shadeTable == NULL) {
+      app::ColorSwatches* colorSwatches = m_settings->getColorSwatches();
+      ASSERT(colorSwatches != NULL);
+      m_shadeTable = new tools::ShadeTable8(*colorSwatches,
+                                            tools::kRotateShadingMode);
+    }
+    return m_shadeTable;
+  }
+
 private:
   tools::Ink* getInkFromType()
   {
@@ -263,7 +282,7 @@ private:
         id = WellKnownInks::Paint;
         break;
       case kShadingInk:
-        id = WellKnownInks::Paint;
+        id = WellKnownInks::Shading;
         break;
       case kReplaceInk:
         if (m_button == ToolLoop::Left)

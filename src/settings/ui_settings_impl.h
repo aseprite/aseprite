@@ -21,37 +21,43 @@
 
 #include <map>
 #include <string>
+#include <vector>
+
 #include "base/compiler_specific.h"
 #include "settings/settings.h"
 
-class UISettingsImpl : public ISettings
+class UISettingsImpl : public ISettings,
+                       public IColorSwatchesStore
 {
 public:
   UISettingsImpl();
   ~UISettingsImpl();
 
-  // General settings
+  // ISettings implementation
 
   app::Color getFgColor() OVERRIDE;
   app::Color getBgColor() OVERRIDE;
   tools::Tool* getCurrentTool() OVERRIDE;
-
+  app::ColorSwatches* getColorSwatches() OVERRIDE;
   void setFgColor(const app::Color& color) OVERRIDE;
   void setBgColor(const app::Color& color) OVERRIDE;
   void setCurrentTool(tools::Tool* tool) OVERRIDE;
-
-  // Document settings
-
+  void setColorSwatches(app::ColorSwatches* colorSwatches) OVERRIDE;
   IDocumentSettings* getDocumentSettings(const Document* document) OVERRIDE;
-
-  // Tools settings
-
   IToolSettings* getToolSettings(tools::Tool* tool) OVERRIDE;
+  IColorSwatchesStore* getColorSwatchesStore() OVERRIDE;
+
+  // IColorSwatchesStore implementation
+
+  void addColorSwatches(app::ColorSwatches* colorSwatches) OVERRIDE;
+  void removeColorSwatches(app::ColorSwatches* colorSwatches) OVERRIDE;
 
 private:
   tools::Tool* m_currentTool;
   IDocumentSettings* m_globalDocumentSettings;
   std::map<std::string, IToolSettings*> m_toolSettings;
+  app::ColorSwatches* m_colorSwatches;
+  std::vector<app::ColorSwatches*> m_colorSwatchesStore;
 };
 
 #endif

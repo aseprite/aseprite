@@ -76,6 +76,28 @@ public:
 };
 
 
+class ShadingInk : public Ink
+{
+private:
+  AlgoHLine m_proc;
+
+public:
+  ShadingInk() { }
+
+  bool isPaint() const { return true; }
+
+  void prepareInk(ToolLoop* loop)
+  {
+    m_proc = ink_processing[INK_SHADING][MID(0, loop->getSprite()->getPixelFormat(), 2)];
+  }
+
+  void inkHline(int x1, int y, int x2, ToolLoop* loop)
+  {
+    (*m_proc)(x1, y, x2, loop);
+  }
+};
+
+
 class PickInk : public Ink
 {
 public:

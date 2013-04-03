@@ -38,6 +38,7 @@ namespace WellKnownInks {
   extern const char* Paint;
   extern const char* PaintFg;
   extern const char* PaintBg;
+  extern const char* Shading;
   extern const char* Eraser;
   extern const char* ReplaceFgWithBg;
   extern const char* ReplaceBgWithFg;

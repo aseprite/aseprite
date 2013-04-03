@@ -21,6 +21,7 @@
 #include "settings/ui_settings_impl.h"
 
 #include "app.h"
+#include "app/color_swatches.h"
 #include "ini_file.h"
 #include "settings/document_settings.h"
 #include "tools/point_shape.h"
@@ -32,6 +33,7 @@
 #include "widgets/main_window.h"
 #include "widgets/workspace.h"
 
+#include <algorithm>
 #include <allegro/color.h>
 #include <string>
 
@@ -141,7 +143,13 @@ private:
 UISettingsImpl::UISettingsImpl()
   : m_currentTool(NULL)
   , m_globalDocumentSettings(new UIDocumentSettingsImpl)
+  , m_colorSwatches(NULL)
 {
+  m_colorSwatches = new app::ColorSwatches("Default");
+  for (size_t i=0; i<16; ++i)
+    m_colorSwatches->addColor(app::Color::fromIndex(i));
+
+  addColorSwatches(m_colorSwatches);
 }
 
 UISettingsImpl::~UISettingsImpl()
@@ -149,9 +157,17 @@ UISettingsImpl::~UISettingsImpl()
   delete m_globalDocumentSettings;
 
   // Delete all tool settings.
-  std::map<std::string, IToolSettings*>::iterator it;
-  for (it = m_toolSettings.begin(); it != m_toolSettings.end(); ++it)
+  for (std::map<std::string, IToolSettings*>::iterator
+         it = m_toolSettings.begin(), end = m_toolSettings.end(); it != end; ++it) {
     delete it->second;
+  }
+
+  // Delete all color swatches
+  for (std::vector<app::ColorSwatches*>::iterator
+         it = m_colorSwatchesStore.begin(), end = m_colorSwatchesStore.end();
+       it != end; ++it) {
+    delete *it;
+  }
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -173,6 +189,11 @@ tools::Tool* UISettingsImpl::getCurrentTool()
     m_currentTool = App::instance()->getToolBox()->getToolById("pencil");
 
   return m_currentTool;
+}
+
+app::ColorSwatches* UISettingsImpl::getColorSwatches()
+{
+  return m_colorSwatches;
 }
 
 void UISettingsImpl::setFgColor(const app::Color& color)
@@ -199,9 +220,37 @@ void UISettingsImpl::setCurrentTool(tools::Tool* tool)
   }
 }
 
+void UISettingsImpl::setColorSwatches(app::ColorSwatches* colorSwatches)
+{
+  m_colorSwatches = colorSwatches;
+}
+
 IDocumentSettings* UISettingsImpl::getDocumentSettings(const Document* document)
 {
   return m_globalDocumentSettings;
+}
+
+IColorSwatchesStore* UISettingsImpl::getColorSwatchesStore()
+{
+  return this;
+}
+
+void UISettingsImpl::addColorSwatches(app::ColorSwatches* colorSwatches)
+{
+  m_colorSwatchesStore.push_back(colorSwatches);
+}
+
+void UISettingsImpl::removeColorSwatches(app::ColorSwatches* colorSwatches)
+{
+  std::vector<app::ColorSwatches*>::iterator it =
+    std::find(m_colorSwatchesStore.begin(),
+              m_colorSwatchesStore.end(),
+              colorSwatches);
+
+  ASSERT(it != m_colorSwatchesStore.end());
+
+  if (it != m_colorSwatchesStore.end())
+    m_colorSwatchesStore.erase(it);
 }
 
 //////////////////////////////////////////////////////////////////////
