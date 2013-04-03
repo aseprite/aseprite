@@ -477,6 +477,11 @@ void Widget::removeChild(Widget* child)
   if (it != m_children.end())
     m_children.erase(it);
 
+  // Free from manager
+  Manager* manager = getManager();
+  if (manager)
+    manager->freeWidget(this);
+
   child->m_parent = NULL;
 }
 
