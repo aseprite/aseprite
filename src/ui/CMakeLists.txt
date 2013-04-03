@@ -26,6 +26,7 @@ add_library(ui-lib
   label.cpp
   link_label.cpp
   listbox.cpp
+  listitem.cpp
   manager.cpp
   menu.cpp
   message.cpp

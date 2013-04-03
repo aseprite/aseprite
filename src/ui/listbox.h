@@ -13,25 +13,17 @@
 
 namespace ui {
 
+  class ListItem;
+
   class ListBox : public Widget
   {
   public:
-    class Item : public Widget
-    {
-    public:
-      Item(const char* text);
-
-    protected:
-      bool onProcessMessage(Message* msg) OVERRIDE;
-      void onPreferredSize(PreferredSizeEvent& ev) OVERRIDE;
-    };
-
     ListBox();
 
-    Item* getSelectedChild();
+    ListItem* getSelectedChild();
     int getSelectedIndex();
 
-    void selectChild(Item* item);
+    void selectChild(ListItem* item);
     void selectIndex(int index);
 
     size_t getItemsCount() const;

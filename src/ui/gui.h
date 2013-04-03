@@ -32,6 +32,7 @@
 #include "ui/layout_io.h"
 #include "ui/link_label.h"
 #include "ui/listbox.h"
+#include "ui/listitem.h"
 #include "ui/load_layout_event.h"
 #include "ui/manager.h"
 #include "ui/menu.h"

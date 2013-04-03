@@ -293,7 +293,7 @@ Widget* WidgetLoader::convertXmlElementToWidget(const TiXmlElement* elem, Widget
   else if (ustrcmp(elem_name, "listitem") == 0) {
     const char *text = elem->Attribute("text");
 
-    widget = new ListBox::Item(text ? TRANSLATE_ATTR(text): NULL);
+    widget = new ListItem(text ? TRANSLATE_ATTR(text): NULL);
   }
   /* splitter */
   else if (ustrcmp(elem_name, "splitter") == 0) {

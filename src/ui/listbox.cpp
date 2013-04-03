@@ -8,6 +8,7 @@
 
 #include "ui/listbox.h"
 
+#include "ui/listitem.h"
 #include "ui/message.h"
 #include "ui/preferred_size_event.h"
 #include "ui/system.h"
@@ -27,21 +28,13 @@ ListBox::ListBox()
   initTheme();
 }
 
-ListBox::Item::Item(const char* text)
-  : Widget(JI_LISTITEM)
-{
-  setAlign(JI_LEFT | JI_MIDDLE);
-  setText(text);
-  initTheme();
-}
-
-ListBox::Item* ListBox::getSelectedChild()
+ListItem* ListBox::getSelectedChild()
 {
   UI_FOREACH_WIDGET(getChildren(), it) {
-    ASSERT(dynamic_cast<Item*>(*it) != NULL);
+    ASSERT(dynamic_cast<ListItem*>(*it) != NULL);
 
-    if (static_cast<Item*>(*it)->isSelected())
-      return static_cast<Item*>(*it);
+    if (static_cast<ListItem*>(*it)->isSelected())
+      return static_cast<ListItem*>(*it);
   }
   return 0;
 }
@@ -51,7 +44,7 @@ int ListBox::getSelectedIndex()
   int i = 0;
 
   UI_FOREACH_WIDGET(getChildren(), it) {
-    if (static_cast<Item*>(*it)->isSelected())
+    if (static_cast<ListItem*>(*it)->isSelected())
       return i;
     i++;
   }
@@ -59,10 +52,10 @@ int ListBox::getSelectedIndex()
   return -1;
 }
 
-void ListBox::selectChild(Item* item)
+void ListBox::selectChild(ListItem* item)
 {
   UI_FOREACH_WIDGET(getChildren(), it) {
-    Item* child = static_cast<Item*>(*it);
+    ListItem* child = static_cast<ListItem*>(*it);
 
     if (child->isSelected()) {
       if (item && child == item)
@@ -100,7 +93,7 @@ void ListBox::selectIndex(int index)
   if (index < 0 || index >= (int)children.size())
     return;
 
-  Item* child = static_cast<Item*>(children[index]);
+  ListItem* child = static_cast<ListItem*>(children[index]);
   ASSERT(child);
   selectChild(child);
 }
@@ -114,7 +107,7 @@ size_t ListBox::getItemsCount() const
 void ListBox::centerScroll()
 {
   View* view = View::getView(this);
-  Item* item = getSelectedChild();
+  ListItem* item = getSelectedChild();
 
   if (view && item) {
     gfx::Rect vp = view->getViewportBounds();
@@ -179,7 +172,7 @@ bool ListBox::onProcessMessage(Message* msg)
 
           /* if the picked widget is a child of the list, select it */
           if (picked && hasChild(picked)) {
-            if (Item* pickedItem = dynamic_cast<Item*>(picked))
+            if (ListItem* pickedItem = dynamic_cast<ListItem*>(picked))
               selectChild(pickedItem);
           }
         }
@@ -271,7 +264,7 @@ void ListBox::onPreferredSize(PreferredSizeEvent& ev)
   int w = 0, h = 0;
 
   UI_FOREACH_WIDGET_WITH_END(getChildren(), it, end) {
-    Size reqSize = static_cast<Item*>(*it)->getPreferredSize();
+    Size reqSize = static_cast<ListItem*>(*it)->getPreferredSize();
 
     w = MAX(w, reqSize.w);
     h += reqSize.h + (it+1 != end ? this->child_spacing: 0);
@@ -313,56 +306,6 @@ void ListBox::layoutListBox(JRect rect)
   }
 
   jrect_free(cpos);
-}
-
-bool ListBox::Item::onProcessMessage(Message* msg)
-{
-  switch (msg->type) {
-
-    case JM_SETPOS: {
-      JRect crect;
-
-      jrect_copy(this->rc, &msg->setpos.rect);
-      crect = jwidget_get_child_rect(this);
-
-      UI_FOREACH_WIDGET(getChildren(), it)
-        jwidget_set_rect(*it, crect);
-
-      jrect_free(crect);
-      return true;
-    }
-
-    case JM_DRAW:
-      this->getTheme()->draw_listitem(this, &msg->draw.rect);
-      return true;
-  }
-
-  return Widget::onProcessMessage(msg);
-}
-
-void ListBox::Item::onPreferredSize(PreferredSizeEvent& ev)
-{
-  int w = 0, h = 0;
-  Size maxSize;
-
-  if (hasText()) {
-    maxSize.w = jwidget_get_text_length(this);
-    maxSize.h = jwidget_get_text_height(this);
-  }
-  else
-    maxSize.w = maxSize.h = 0;
-
-  UI_FOREACH_WIDGET(getChildren(), it) {
-    Size reqSize = (*it)->getPreferredSize();
-
-    maxSize.w = MAX(maxSize.w, reqSize.w);
-    maxSize.h = MAX(maxSize.h, reqSize.h);
-  }
-
-  w = this->border_width.l + maxSize.w + this->border_width.r;
-  h = this->border_width.t + maxSize.h + this->border_width.b;
-
-  ev.setPreferredSize(Size(w, h));
 }
 
 } // namespace ui

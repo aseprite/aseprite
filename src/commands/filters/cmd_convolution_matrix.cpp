@@ -36,6 +36,7 @@
 #include "ui/button.h"
 #include "ui/label.h"
 #include "ui/listbox.h"
+#include "ui/listitem.h"
 #include "ui/slider.h"
 #include "ui/view.h"
 #include "ui/widget.h"
@@ -99,7 +100,7 @@ private:
     for (ConvolutionMatrixStock::iterator it = m_stock.begin(), end = m_stock.end();
          it != end; ++it) {
       SharedPtr<ConvolutionMatrix> matrix = *it;
-      ListBox::Item* listitem = new ListBox::Item(matrix->getName());
+      ListItem* listitem = new ListItem(matrix->getName());
       m_stockListBox->addChild(listitem);
     }
 
@@ -131,7 +132,7 @@ private:
 
   void onMatrixChange()
   {
-    ListBox::Item* selected = m_stockListBox->getSelectedChild();
+    ListItem* selected = m_stockListBox->getSelectedChild();
     SharedPtr<ConvolutionMatrix> matrix = m_stock.getByName(selected->getText());
     Target newTarget = matrix->getDefaultTarget();
 

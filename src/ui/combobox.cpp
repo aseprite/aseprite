@@ -9,6 +9,7 @@
 #include "base/compiler_specific.h"
 #include "gfx/size.h"
 #include "ui/gui.h"
+#include "ui/listitem.h"
 #include "ui/preferred_size_event.h"
 
 #include <allegro.h>
@@ -446,7 +447,7 @@ void ComboBox::openListBox()
     std::vector<Item*>::iterator it, end = m_items.end();
     for (it = m_items.begin(); it != end; ++it) {
       Item* item = *it;
-      m_listbox->addChild(new ListBox::Item(item->text.c_str()));
+      m_listbox->addChild(new ListItem(item->text.c_str()));
     }
 
     m_window->setOnTop(true);
