@@ -25,7 +25,7 @@ static int slider_press_value;
 static int slider_press_left;
 
 Slider::Slider(int min, int max, int value)
-  : Widget(JI_SLIDER)
+  : Widget(kSliderWidget)
 {
   m_min = min;
   m_max = max;

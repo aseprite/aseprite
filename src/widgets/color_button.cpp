@@ -37,16 +37,16 @@
 
 using namespace ui;
 
-static int colorbutton_type()
+static WidgetType colorbutton_type()
 {
-  static int type = 0;
-  if (!type)
-    type = ji_register_widget_type();
+  static WidgetType type = kGenericWidget;
+  if (type == kGenericWidget)
+    type = register_widget_type();
   return type;
 }
 
 ColorButton::ColorButton(const app::Color& color, PixelFormat pixelFormat)
-  : ButtonBase("", colorbutton_type(), JI_BUTTON, JI_BUTTON)
+  : ButtonBase("", colorbutton_type(), kButtonWidget, kButtonWidget)
   , m_color(color)
   , m_pixelFormat(pixelFormat)
   , m_window(NULL)

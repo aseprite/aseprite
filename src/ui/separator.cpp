@@ -18,7 +18,7 @@ using namespace gfx;
 namespace ui {
 
 Separator::Separator(const char* text, int align)
- : Widget(JI_SEPARATOR)
+ : Widget(kSeparatorWidget)
 {
   setAlign(align);
   setText(text);

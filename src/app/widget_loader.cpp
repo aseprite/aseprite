@@ -215,7 +215,7 @@ Widget* WidgetLoader::convertXmlElementToWidget(const TiXmlElement* elem, Widget
     text = (text ? TRANSLATE_ATTR(text): NULL);
 
     if (looklike != NULL && strcmp(looklike, "button") == 0) {
-      widget = new CheckBox(text, JI_BUTTON);
+      widget = new CheckBox(text, kButtonWidget);
     }
     else {
       widget = new CheckBox(text);
@@ -324,7 +324,7 @@ Widget* WidgetLoader::convertXmlElementToWidget(const TiXmlElement* elem, Widget
     int radio_group = (group ? ustrtol(group, NULL, 10): 1);
 
     if (looklike != NULL && strcmp(looklike, "button") == 0) {
-      widget = new RadioButton(text, radio_group, JI_BUTTON);
+      widget = new RadioButton(text, radio_group, kButtonWidget);
     }
     else {
       widget = new RadioButton(text, radio_group);
@@ -466,12 +466,12 @@ Widget* WidgetLoader::convertXmlElementToWidget(const TiXmlElement* elem, Widget
       child = convertXmlElementToWidget(childElem, root);
       if (child) {
         // Attach the child in the view
-        if (widget->type == JI_VIEW) {
+        if (widget->type == kViewWidget) {
           static_cast<View*>(widget)->attachToView(child);
           break;
         }
         // Add the child in the grid
-        else if (widget->type == JI_GRID) {
+        else if (widget->type == kGridWidget) {
           const char* cell_hspan = childElem->Attribute("cell_hspan");
           const char* cell_vspan = childElem->Attribute("cell_vspan");
           const char* cell_align = childElem->Attribute("cell_align");
@@ -490,7 +490,7 @@ Widget* WidgetLoader::convertXmlElementToWidget(const TiXmlElement* elem, Widget
       childElem = childElem->NextSiblingElement();
     }
 
-    if (widget->type == JI_VIEW) {
+    if (widget->type == kViewWidget) {
       bool maxsize = bool_attr_is_true(elem, "maxsize");
       if (maxsize)
         static_cast<View*>(widget)->makeVisibleAllScrollableArea();

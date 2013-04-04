@@ -62,7 +62,7 @@ void reinitThemeForAllWidgets()
   // Remap the windows
   for (std::list<Widget*>::iterator it=widgets->begin(), end=widgets->end();
        it != end; ++it) {
-    if ((*it)->type == JI_WINDOW)
+    if ((*it)->type == kWindowWidget)
       static_cast<Window*>(*it)->remapWindow();
   }
 

@@ -22,7 +22,7 @@ int ScrollBar::m_wherepos = 0;
 int ScrollBar::m_whereclick = 0;
 
 ScrollBar::ScrollBar(int align)
-  : Widget(JI_VIEW_SCROLLBAR)
+  : Widget(kViewScrollbarWidget)
   , m_pos(0)
   , m_size(0)
 {

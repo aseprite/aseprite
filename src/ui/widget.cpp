@@ -33,13 +33,13 @@ static inline void mark_dirty_flag(Widget* widget)
   }
 }
 
-int ji_register_widget_type()
+WidgetType register_widget_type()
 {
-  static int type = JI_USER_WIDGET;
-  return type++;
+  static int type = (int)kFirstUserWidget;
+  return (WidgetType)type++;
 }
 
-Widget::Widget(int type)
+Widget::Widget(WidgetType type)
 {
   addWidget(this);
 
@@ -80,7 +80,7 @@ Widget::Widget(int type)
 Widget::~Widget()
 {
   // Break relationship with the manager.
-  if (this->type != JI_MANAGER) {
+  if (this->type != kManagerWidget) {
     Manager* manager = getManager();
     manager->freeWidget(this);
     manager->removeMessagesFor(this);
@@ -341,7 +341,7 @@ Window* Widget::getRoot()
   Widget* widget = this;
 
   while (widget) {
-    if (widget->type == JI_WINDOW)
+    if (widget->type == kWindowWidget)
       return dynamic_cast<Window*>(widget);
 
     widget = widget->m_parent;
@@ -355,7 +355,7 @@ Manager* Widget::getManager()
   Widget* widget = this;
 
   while (widget) {
-    if (widget->type == JI_MANAGER)
+    if (widget->type == kManagerWidget)
       return static_cast<Manager*>(widget);
 
     widget = widget->m_parent;
@@ -609,7 +609,7 @@ void Widget::setBorder(const Border& br)
 
 void Widget::getRegion(gfx::Region& region)
 {
-  if (this->type == JI_WINDOW)
+  if (this->type == kWindowWidget)
     getTheme()->getWindowMask(this, region);
   else
     region = getBounds();

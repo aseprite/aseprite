@@ -236,7 +236,7 @@ void switch_between_animation_and_sprite_editor(Context* context)
 // The Animation Editor
 
 AnimationEditor::AnimationEditor(Context* context)
-  : Widget(JI_WIDGET)
+  : Widget(kGenericWidget)
   , m_context(context)
 {
   DocumentLocation location = context->getActiveLocation();

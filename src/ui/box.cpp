@@ -20,7 +20,7 @@ using namespace gfx;
 namespace ui {
 
 Box::Box(int align)
-  : Widget(JI_BOX)
+  : Widget(kBoxWidget)
 {
   setAlign(align);
   initTheme();

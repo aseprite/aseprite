@@ -22,7 +22,7 @@ using namespace gfx;
 namespace ui {
 
 ListBox::ListBox()
-  : Widget(JI_LISTBOX)
+  : Widget(kListBoxWidget)
 {
   setFocusStop(true);
   initTheme();

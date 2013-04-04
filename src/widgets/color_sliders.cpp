@@ -91,7 +91,7 @@ namespace {
 // ColorSliders
 
 ColorSliders::ColorSliders()
-  : Widget(JI_WIDGET)
+  : Widget(kGenericWidget)
   , m_grid(3, false)
 {
   addChild(&m_grid);

@@ -23,7 +23,7 @@ using namespace gfx;
 namespace ui {
 
 View::View()
-  : Widget(JI_VIEW)
+  : Widget(kViewWidget)
   , m_scrollbar_h(JI_HORIZONTAL)
   , m_scrollbar_v(JI_VERTICAL)
 {
@@ -227,9 +227,9 @@ Rect View::getViewportBounds()
 View* View::getView(Widget* widget)
 {
   if ((widget->getParent()) &&
-      (widget->getParent()->type == JI_VIEW_VIEWPORT) &&
+      (widget->getParent()->type == kViewViewportWidget) &&
       (widget->getParent()->getParent()) &&
-      (widget->getParent()->getParent()->type == JI_VIEW))
+      (widget->getParent()->getParent()->type == kViewWidget))
     return static_cast<View*>(widget->getParent()->getParent());
   else
     return 0;

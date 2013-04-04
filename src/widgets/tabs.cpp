@@ -39,11 +39,11 @@ using namespace ui;
 
 #define HAS_ARROWS(tabs) ((m_button_left->getParent() == (tabs)))
 
-static int tabs_type()
+static WidgetType tabs_type()
 {
-  static int type = 0;
-  if (!type)
-    type = ji_register_widget_type();
+  static WidgetType type = kGenericWidget;
+  if (type == kGenericWidget)
+    type = register_widget_type();
   return type;
 }
 

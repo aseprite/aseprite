@@ -78,7 +78,7 @@ private:
 };
 
 ComboBox::ComboBox()
-  : Widget(JI_COMBOBOX)
+  : Widget(kComboBoxWidget)
 {
   m_entry = new ComboBoxEntry(this);
   m_button = new ComboBoxButton();

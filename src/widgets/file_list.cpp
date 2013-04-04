@@ -36,7 +36,7 @@ using namespace ui;
 namespace widgets {
 
 FileList::FileList()
-  : Widget(JI_WIDGET)
+  : Widget(kGenericWidget)
   , m_generateThumbnailTimer(200, this)
   , m_monitoringTimer(50, this)
 {

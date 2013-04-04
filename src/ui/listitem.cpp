@@ -18,7 +18,7 @@ using namespace gfx;
 namespace ui {
 
 ListItem::ListItem(const char* text)
-  : Widget(JI_LISTITEM)
+  : Widget(kListItemWidget)
 {
   setAlign(JI_LEFT | JI_MIDDLE);
   setText(text);

@@ -75,7 +75,7 @@ enum {
 using namespace ui;
 
 ColorCurveEditor::ColorCurveEditor(ColorCurve* curve, int x1, int y1, int x2, int y2)
-  : Widget(JI_WIDGET)
+  : Widget(kGenericWidget)
   , m_curve(curve)
 {
   this->setFocusStop(true);

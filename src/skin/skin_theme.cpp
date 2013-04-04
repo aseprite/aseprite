@@ -609,12 +609,12 @@ void SkinTheme::initWidget(Widget* widget)
 
   switch (widget->type) {
 
-    case JI_BOX:
+    case kBoxWidget:
       BORDER(0);
       widget->child_spacing = 4 * scale;
       break;
 
-    case JI_BUTTON:
+    case kButtonWidget:
       BORDER4(m_part[PART_BUTTON_NORMAL_W]->w,
               m_part[PART_BUTTON_NORMAL_N]->h,
               m_part[PART_BUTTON_NORMAL_E]->w,
@@ -622,7 +622,7 @@ void SkinTheme::initWidget(Widget* widget)
       widget->child_spacing = 0;
       break;
 
-    case JI_CHECK:
+    case kCheckWidget:
       BORDER(2 * scale);
       widget->child_spacing = 4 * scale;
 
@@ -634,33 +634,33 @@ void SkinTheme::initWidget(Widget* widget)
                             JI_LEFT | JI_MIDDLE));
       break;
 
-    case JI_ENTRY:
+    case kEntryWidget:
       BORDER4(m_part[PART_SUNKEN_NORMAL_W]->w,
               m_part[PART_SUNKEN_NORMAL_N]->h,
               m_part[PART_SUNKEN_NORMAL_E]->w,
               m_part[PART_SUNKEN_NORMAL_S]->h);
       break;
 
-    case JI_GRID:
+    case kGridWidget:
       BORDER(0);
       widget->child_spacing = 4 * scale;
       break;
 
-    case JI_LABEL:
+    case kLabelWidget:
       BORDER(1 * scale);
       static_cast<Label*>(widget)->setTextColor(getColor(ThemeColor::Text));
       break;
 
-    case JI_LISTBOX:
+    case kListBoxWidget:
       BORDER(0);
       widget->child_spacing = 0;
       break;
 
-    case JI_LISTITEM:
+    case kListItemWidget:
       BORDER(1 * scale);
       break;
 
-    case JI_COMBOBOX:
+    case kComboBoxWidget:
       {
         ComboBox* combobox = dynamic_cast<ComboBox*>(widget);
         ASSERT(combobox != NULL);
@@ -684,24 +684,24 @@ void SkinTheme::initWidget(Widget* widget)
       }
       break;
 
-    case JI_MENU:
-    case JI_MENUBAR:
-    case JI_MENUBOX:
+    case kMenuWidget:
+    case kMenuBarWidget:
+    case kMenuBoxWidget:
       BORDER(0);
       widget->child_spacing = 0;
       break;
 
-    case JI_MENUITEM:
+    case kMenuItemWidget:
       BORDER(2 * scale);
       widget->child_spacing = 18 * scale;
       break;
 
-    case JI_SPLITTER:
+    case kSplitterWidget:
       BORDER(0);
       widget->child_spacing = 3 * scale;
       break;
 
-    case JI_RADIO:
+    case kRadioWidget:
       BORDER(2 * scale);
       widget->child_spacing = 4 * scale;
 
@@ -713,7 +713,7 @@ void SkinTheme::initWidget(Widget* widget)
                             JI_LEFT | JI_MIDDLE));
       break;
 
-    case JI_SEPARATOR:
+    case kSeparatorWidget:
       /* frame */
       if ((widget->getAlign() & JI_HORIZONTAL) &&
           (widget->getAlign() & JI_VERTICAL)) {
@@ -736,7 +736,7 @@ void SkinTheme::initWidget(Widget* widget)
       }
       break;
 
-    case JI_SLIDER:
+    case kSliderWidget:
       BORDER4(m_part[PART_SLIDER_EMPTY_W]->w-1*scale,
               m_part[PART_SLIDER_EMPTY_N]->h,
               m_part[PART_SLIDER_EMPTY_E]->w-1*scale,
@@ -745,12 +745,12 @@ void SkinTheme::initWidget(Widget* widget)
       widget->setAlign(JI_CENTER | JI_MIDDLE);
       break;
 
-    case JI_TEXTBOX:
+    case kTextBoxWidget:
       BORDER(0);
       widget->child_spacing = 0;
       break;
 
-    case JI_VIEW:
+    case kViewWidget:
       BORDER4(m_part[PART_SUNKEN_NORMAL_W]->w-1*scale,
               m_part[PART_SUNKEN_NORMAL_N]->h,
               m_part[PART_SUNKEN_NORMAL_E]->w-1*scale,
@@ -758,17 +758,17 @@ void SkinTheme::initWidget(Widget* widget)
       widget->child_spacing = 0;
       break;
 
-    case JI_VIEW_SCROLLBAR:
+    case kViewScrollbarWidget:
       BORDER(1 * scale);
       widget->child_spacing = 0;
       break;
 
-    case JI_VIEW_VIEWPORT:
+    case kViewViewportWidget:
       BORDER(0);
       widget->child_spacing = 0;
       break;
 
-    case JI_WINDOW:
+    case kWindowWidget:
       if (!static_cast<Window*>(widget)->isDesktop()) {
         if (widget->hasText()) {
           BORDER4(6 * scale, (4+6) * scale, 6 * scale, 6 * scale);
@@ -1166,7 +1166,7 @@ void SkinTheme::draw_menuitem(MenuItem* widget, JRect clip)
   if (!widget->getParent()->getParent())
     return;
 
-  bar = (widget->getParent()->getParent()->type == JI_MENUBAR);
+  bar = (widget->getParent()->getParent()->type == kMenuBarWidget);
 
   // Colors
   if (!widget->isEnabled()) {

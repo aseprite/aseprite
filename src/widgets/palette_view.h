@@ -67,6 +67,6 @@ private:
   bool m_isUpdatingColumns;
 };
 
-int palette_view_type();
+ui::WidgetType palette_view_type();
 
 #endif

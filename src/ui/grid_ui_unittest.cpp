@@ -27,8 +27,8 @@ using namespace ui;
 TEST(JGrid, Simple2x1Grid)
 {
   Grid* grid = new Grid(2, false);
-  Widget* w1 = new Widget(JI_WIDGET);
-  Widget* w2 = new Widget(JI_WIDGET);
+  Widget* w1 = new Widget(kGenericWidget);
+  Widget* w2 = new Widget(kGenericWidget);
 
   jwidget_set_min_size(w1, 10, 10);
   jwidget_set_min_size(w2, 10, 10);
@@ -66,8 +66,8 @@ TEST(JGrid, Simple2x1Grid)
 TEST(JGrid, Expand2ndWidget)
 {
   Grid* grid = new Grid(2, false);
-  Widget* w1 = new Widget(JI_WIDGET);
-  Widget* w2 = new Widget(JI_WIDGET);
+  Widget* w1 = new Widget(kGenericWidget);
+  Widget* w2 = new Widget(kGenericWidget);
   JRect rect;
 
   jwidget_set_min_size(w1, 20, 20);
@@ -102,8 +102,8 @@ TEST(JGrid, Expand2ndWidget)
 TEST(JGrid, SameWidth2x1Grid)
 {
   Grid* grid = new Grid(2, true);
-  Widget* w1 = new Widget(JI_WIDGET);
-  Widget* w2 = new Widget(JI_WIDGET);
+  Widget* w1 = new Widget(kGenericWidget);
+  Widget* w2 = new Widget(kGenericWidget);
   JRect rect;
 
   jwidget_set_min_size(w1, 20, 20);
@@ -167,10 +167,10 @@ TEST(JGrid, SameWidth2x1Grid)
 TEST(JGrid, Intrincate3x3Grid)
 {
   Grid* grid = new Grid(3, false);
-  Widget* w1 = new Widget(JI_WIDGET);
-  Widget* w2 = new Widget(JI_WIDGET);
-  Widget* w3 = new Widget(JI_WIDGET);
-  Widget* w4 = new Widget(JI_WIDGET);
+  Widget* w1 = new Widget(kGenericWidget);
+  Widget* w2 = new Widget(kGenericWidget);
+  Widget* w3 = new Widget(kGenericWidget);
+  Widget* w4 = new Widget(kGenericWidget);
   JRect rect;
 
   jwidget_set_min_size(w1, 10, 10);

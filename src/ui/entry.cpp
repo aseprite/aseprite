@@ -28,7 +28,7 @@
 namespace ui {
 
 Entry::Entry(size_t maxsize, const char *format, ...)
-  : Widget(JI_ENTRY)
+  : Widget(kEntryWidget)
   , m_timer(500, this)
 {
   char buf[4096];

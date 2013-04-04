@@ -451,7 +451,7 @@ void set_gfxicon_to_button(ButtonBase* button,
 
 CheckBox* check_button_new(const char *text, int b1, int b2, int b3, int b4)
 {
-  CheckBox* widget = new CheckBox(text, JI_BUTTON);
+  CheckBox* widget = new CheckBox(text, kButtonWidget);
 
   widget->setAlign(JI_CENTER | JI_MIDDLE);
 

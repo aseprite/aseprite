@@ -20,7 +20,7 @@
 namespace ui {
 
 ImageView::ImageView(BITMAP* bmp, int align)
- : Widget(JI_IMAGE_VIEW)
+ : Widget(kImageViewWidget)
 {
   setAlign(align);
 }

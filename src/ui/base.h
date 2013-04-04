@@ -60,41 +60,6 @@ namespace ui {
 #define JI_NOTEXT       0x0800 // The widget does not have text.
 #define JI_DIRTY        0x1000 // The widget (or one child) is dirty (update_region != empty).
 
-  // Widget types.
-  enum {
-    // Undefined (or anonymous) widget type.
-    JI_WIDGET,
-
-    // Known widgets.
-    JI_BOX,
-    JI_BUTTON,
-    JI_CHECK,
-    JI_COMBOBOX,
-    JI_ENTRY,
-    JI_GRID,
-    JI_IMAGE_VIEW,
-    JI_LABEL,
-    JI_LISTBOX,
-    JI_LISTITEM,
-    JI_MANAGER,
-    JI_MENU,
-    JI_MENUBAR,
-    JI_MENUBOX,
-    JI_MENUITEM,
-    JI_SPLITTER,
-    JI_RADIO,
-    JI_SEPARATOR,
-    JI_SLIDER,
-    JI_TEXTBOX,
-    JI_VIEW,
-    JI_VIEW_SCROLLBAR,
-    JI_VIEW_VIEWPORT,
-    JI_WINDOW,
-
-    // User widgets.
-    JI_USER_WIDGET,
-  };
-
   // JINETE Message types.
   enum {
     // General messages.

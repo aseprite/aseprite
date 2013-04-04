@@ -110,7 +110,7 @@ static MenuItem* find_nextitem(Menu* menu, MenuItem* menuitem);
 static MenuItem* find_previtem(Menu* menu, MenuItem* menuitem);
 
 Menu::Menu()
-  : Widget(JI_MENU)
+  : Widget(kMenuWidget)
   , m_menuitem(NULL)
 {
   initTheme();
@@ -128,7 +128,7 @@ Menu::~Menu()
   }
 }
 
-MenuBox::MenuBox(int type)
+MenuBox::MenuBox(WidgetType type)
  : Widget(type)
  , m_base(NULL)
 {
@@ -147,13 +147,13 @@ MenuBox::~MenuBox()
 }
 
 MenuBar::MenuBar()
-  : MenuBox(JI_MENUBAR)
+  : MenuBox(kMenuBarWidget)
 {
   createBase();
 }
 
 MenuItem::MenuItem(const char *text)
-  : Widget(JI_MENUITEM)
+  : Widget(kMenuItemWidget)
 {
   m_accel = NULL;
   m_highlighted = false;
@@ -320,7 +320,7 @@ void Menu::onPreferredSize(PreferredSizeEvent& ev)
   UI_FOREACH_WIDGET_WITH_END(getChildren(), it, end) {
     reqSize = (*it)->getPreferredSize();
 
-    if (this->getParent()->type == JI_MENUBAR) {
+    if (this->getParent()->type == kMenuBarWidget) {
       size.w += reqSize.w + ((it+1 != end) ? this->child_spacing: 0);
       size.h = MAX(size.h, reqSize.h);
     }
@@ -350,14 +350,14 @@ void Menu::set_position(JRect rect)
 
     reqSize = child->getPreferredSize();
 
-    if (this->getParent()->type == JI_MENUBAR)
+    if (this->getParent()->type == kMenuBarWidget)
       cpos->x2 = cpos->x1+reqSize.w;
     else
       cpos->y2 = cpos->y1+reqSize.h;
 
     jwidget_set_rect(child, cpos);
 
-    if (this->getParent()->type == JI_MENUBAR)
+    if (this->getParent()->type == kMenuBarWidget)
       cpos->x1 += jrect_w(cpos);
     else
       cpos->y1 += jrect_h(cpos);
@@ -400,9 +400,9 @@ bool MenuBox::onProcessMessage(Message* msg)
           if (picked == NULL ||         // If the button was clicked nowhere
               picked == this ||         // If the button was clicked in this menubox
               // The picked widget isn't menu-related
-              (picked->type != JI_MENUBOX &&
-               picked->type != JI_MENUBAR &&
-               picked->type != JI_MENUITEM) ||
+              (picked->type != kMenuBoxWidget &&
+               picked->type != kMenuBarWidget &&
+               picked->type != kMenuItemWidget) ||
               // The picked widget (that is menu-related) isn't from
               // the same tree of menus
               (get_base_menubox(picked) != this)) {
@@ -416,7 +416,7 @@ bool MenuBox::onProcessMessage(Message* msg)
         // Get the widget below the mouse cursor
         Widget* picked = menu->pick(msg->mouse.x, msg->mouse.y);
         if (picked) {
-          if ((picked->type == JI_MENUITEM) &&
+          if ((picked->type == kMenuItemWidget) &&
               !(picked->flags & JI_DISABLED)) {
 
             // If the picked menu-item is not highlighted...
@@ -424,7 +424,7 @@ bool MenuBox::onProcessMessage(Message* msg)
               // In menu-bar always open the submenu, in other popup-menus
               // open the submenu only if the user does click
               bool open_submenu =
-                (this->type == JI_MENUBAR) ||
+                (this->type == kMenuBarWidget) ||
                 (msg->type == JM_BUTTONPRESSED);
 
               menu->highlightItem(static_cast<MenuItem*>(picked), false, open_submenu, false);
@@ -485,9 +485,9 @@ bool MenuBox::onProcessMessage(Message* msg)
         get_base(this)->was_clicked = false;
 
         // Check for ALT+some underlined letter
-        if (((this->type == JI_MENUBOX) && (msg->any.shifts == 0 || // Inside menu-boxes we can use letters without Alt modifier pressed
-                                            msg->any.shifts == KB_ALT_FLAG)) ||
-            ((this->type == JI_MENUBAR) && (msg->any.shifts == KB_ALT_FLAG))) {
+        if (((this->type == kMenuBoxWidget) && (msg->any.shifts == 0 || // Inside menu-boxes we can use letters without Alt modifier pressed
+                                                msg->any.shifts == KB_ALT_FLAG)) ||
+            ((this->type == kMenuBarWidget) && (msg->any.shifts == KB_ALT_FLAG))) {
           selected = check_for_letter(menu, scancode_to_ascii(msg->key.scancode));
           if (selected) {
             menu->highlightItem(selected, true, true, true);
@@ -504,7 +504,7 @@ bool MenuBox::onProcessMessage(Message* msg)
           // Search a child with highlight or the submenu opened
           UI_FOREACH_WIDGET(menu->getChildren(), it) {
             Widget* child = *it;
-            if (child->type != JI_MENUITEM)
+            if (child->type != kMenuItemWidget)
               continue;
 
             if (static_cast<MenuItem*>(child)->hasSubmenuOpened())
@@ -518,7 +518,7 @@ bool MenuBox::onProcessMessage(Message* msg)
 
             case KEY_ESC:
               // In menu-bar
-              if (this->type == JI_MENUBAR) {
+              if (this->type == kMenuBarWidget) {
                 if (highlight) {
                   cancelMenuLoop();
                   used = true;
@@ -541,7 +541,7 @@ bool MenuBox::onProcessMessage(Message* msg)
 
             case KEY_UP:
               // In menu-bar
-              if (this->type == JI_MENUBAR) {
+              if (this->type == kMenuBarWidget) {
                 if (child_with_submenu_opened)
                   child_with_submenu_opened->closeSubmenu(true);
               }
@@ -556,7 +556,7 @@ bool MenuBox::onProcessMessage(Message* msg)
 
             case KEY_DOWN:
               // In menu-bar
-              if (this->type == JI_MENUBAR) {
+              if (this->type == kMenuBarWidget) {
                 // Select the active menu
                 menu->highlightItem(highlight, true, true, true);
               }
@@ -571,7 +571,7 @@ bool MenuBox::onProcessMessage(Message* msg)
 
             case KEY_LEFT:
               // In menu-bar
-              if (this->type == JI_MENUBAR) {
+              if (this->type == kMenuBarWidget) {
                 // Go to previous
                 highlight = find_previtem(menu, highlight);
                 menu->highlightItem(highlight, false, false, false);
@@ -585,7 +585,7 @@ bool MenuBox::onProcessMessage(Message* msg)
                   // Go to the previous item in the parent
 
                   // If the parent is the menu-bar
-                  if (parent->type == JI_MENUBAR) {
+                  if (parent->type == kMenuBarWidget) {
                     menu = static_cast<MenuBar*>(parent)->getMenu();
                     MenuItem* menuitem = find_previtem(menu, menu->getHighlightedItem());
 
@@ -604,7 +604,7 @@ bool MenuBox::onProcessMessage(Message* msg)
 
             case KEY_RIGHT:
               // In menu-bar
-              if (this->type == JI_MENUBAR) {
+              if (this->type == kMenuBarWidget) {
                 // Go to next
                 highlight = find_nextitem(menu, highlight);
                 menu->highlightItem(highlight, false, false, false);
@@ -733,7 +733,7 @@ bool MenuItem::onProcessMessage(Message* msg)
         // Menubox position
         pos = jwidget_get_rect(window);
 
-        if (this->getParent()->getParent()->type == JI_MENUBAR) {
+        if (this->getParent()->getParent()->type == kMenuBarWidget) {
           jrect_moveto(pos,
                        MID(0, this->rc->x1, JI_SCREEN_W-jrect_w(pos)),
                        MID(0, this->rc->y2, JI_SCREEN_H-jrect_h(pos)));
@@ -785,7 +785,7 @@ bool MenuItem::onProcessMessage(Message* msg)
           UI_FOREACH_WIDGET(m_submenu->getChildren(), it) {
             Widget* child = *it;
 
-            if (child->type != JI_MENUITEM)
+            if (child->type != kMenuItemWidget)
               continue;
 
             if (child->isEnabled()) {
@@ -824,7 +824,7 @@ bool MenuItem::onProcessMessage(Message* msg)
         ASSERT(menubox != NULL);
 
         window = (Window*)menubox->getParent();
-        ASSERT(window && window->type == JI_WINDOW);
+        ASSERT(window && window->type == kWindowWidget);
 
         // Fetch the "menu" to avoid destroy it with 'delete'.
         menubox->setMenu(NULL);
@@ -886,7 +886,7 @@ void MenuItem::onClick()
 void MenuItem::onPreferredSize(PreferredSizeEvent& ev)
 {
   Size size(0, 0);
-  int bar = (this->getParent()->getParent()->type == JI_MENUBAR);
+  int bar = (this->getParent()->getParent()->type == kMenuBarWidget);
 
   if (this->hasText()) {
     size.w =
@@ -915,7 +915,7 @@ static MenuBox* get_base_menubox(Widget* widget)
     ASSERT_VALID_WIDGET(widget);
 
     // We are in a menubox
-    if (widget->type == JI_MENUBOX || widget->type == JI_MENUBAR) {
+    if (widget->type == kMenuBoxWidget || widget->type == kMenuBarWidget) {
       if (static_cast<MenuBox*>(widget)->getBase()) {
         return static_cast<MenuBox*>(widget);
       }
@@ -930,9 +930,9 @@ static MenuBox* get_base_menubox(Widget* widget)
     }
     // We are in a menuitem
     else {
-      ASSERT(widget->type == JI_MENUITEM);
+      ASSERT(widget->type == kMenuItemWidget);
       ASSERT(widget->getParent() != NULL);
-      ASSERT(widget->getParent()->type == JI_MENU);
+      ASSERT(widget->getParent()->type == kMenuWidget);
 
       widget = widget->getParent()->getParent();
     }
@@ -952,7 +952,7 @@ MenuItem* Menu::getHighlightedItem()
 {
   UI_FOREACH_WIDGET(getChildren(), it) {
     Widget* child = *it;
-    if (child->type != JI_MENUITEM)
+    if (child->type != kMenuItemWidget)
       continue;
 
     MenuItem* menuitem = static_cast<MenuItem*>(child);
@@ -967,7 +967,7 @@ void Menu::highlightItem(MenuItem* menuitem, bool click, bool open_submenu, bool
   // Find the menuitem with the highlight
   UI_FOREACH_WIDGET(getChildren(), it) {
     Widget* child = *it;
-    if (child->type != JI_MENUITEM)
+    if (child->type != kMenuItemWidget)
       continue;
 
     if (child != menuitem) {
@@ -1033,7 +1033,7 @@ void MenuItem::openSubmenu(bool select_first)
   if (menu->getParent()) {
     UI_FOREACH_WIDGET(menu->getChildren(), it) {
       Widget* child = *it;
-      if (child->type != JI_MENUITEM)
+      if (child->type != kMenuItemWidget)
         continue;
 
       MenuItem* childMenuItem = static_cast<MenuItem*>(child);
@@ -1081,7 +1081,7 @@ void MenuItem::closeSubmenu(bool last_of_close_chain)
 
   UI_FOREACH_WIDGET(menu->getChildren(), it) {
     Widget* child = *it;
-    if (child->type != JI_MENUITEM)
+    if (child->type != kMenuItemWidget)
       continue;
 
     if (static_cast<MenuItem*>(child)->hasSubmenuOpened())
@@ -1149,7 +1149,7 @@ void Menu::closeAll()
   else {
     UI_FOREACH_WIDGET(menu->getChildren(), it) {
       Widget* child = *it;
-      if (child->type != JI_MENUITEM)
+      if (child->type != kMenuItemWidget)
         continue;
 
       menuitem = static_cast<MenuItem*>(child);
@@ -1159,7 +1159,7 @@ void Menu::closeAll()
   }
 
   // For popuped menus
-  if (base_menubox->type == JI_MENUBOX)
+  if (base_menubox->type == kMenuBoxWidget)
     base_menubox->closePopup();
 }
 
@@ -1198,7 +1198,7 @@ static MenuItem* check_for_letter(Menu* menu, int ascii)
 {
   UI_FOREACH_WIDGET(menu->getChildren(), it) {
     Widget* child = *it;
-    if (child->type != JI_MENUITEM)
+    if (child->type != kMenuItemWidget)
       continue;
 
     MenuItem* menuitem = static_cast<MenuItem*>(child);
@@ -1213,7 +1213,7 @@ static MenuItem* check_for_accel(Menu* menu, Message* msg)
 {
   UI_FOREACH_WIDGET(menu->getChildren(), it) {
     Widget* child = *it;
-    if (child->type != JI_MENUITEM)
+    if (child->type != kMenuItemWidget)
       continue;
 
     MenuItem* menuitem = static_cast<MenuItem*>(child);
@@ -1250,7 +1250,7 @@ static MenuItem* find_nextitem(Menu* menu, MenuItem* menuitem)
 
   for (; it != end; ++it) {
     Widget* nextitem = *it;
-    if ((nextitem->type == JI_MENUITEM) && nextitem->isEnabled())
+    if ((nextitem->type == kMenuItemWidget) && nextitem->isEnabled())
       return static_cast<MenuItem*>(nextitem);
   }
 
@@ -1275,7 +1275,7 @@ static MenuItem* find_previtem(Menu* menu, MenuItem* menuitem)
 
   for (; it != end; ++it) {
     Widget* nextitem = *it;
-    if ((nextitem->type == JI_MENUITEM) && nextitem->isEnabled())
+    if ((nextitem->type == kMenuItemWidget) && nextitem->isEnabled())
       return static_cast<MenuItem*>(nextitem);
   }
 

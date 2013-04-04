@@ -140,7 +140,7 @@ void jmessage_broadcast_to_parents(Message* msg, Widget* widget)
   ASSERT(msg != NULL);
   ASSERT_VALID_WIDGET(widget);
 
-  if (widget && widget->type != JI_MANAGER) {
+  if (widget && widget->type != kManagerWidget) {
     jmessage_add_dest(msg, widget);
     jmessage_broadcast_to_parents(msg, widget->getParent());
   }

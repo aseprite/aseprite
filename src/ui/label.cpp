@@ -14,7 +14,7 @@
 namespace ui {
 
 Label::Label(const char *text)
-  : Widget(JI_LABEL)
+  : Widget(kLabelWidget)
 {
   setAlign(JI_LEFT | JI_MIDDLE);
   setText(text);

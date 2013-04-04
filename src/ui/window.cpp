@@ -34,7 +34,7 @@ static int press_x, press_y;
 static void displace_widgets(Widget* widget, int x, int y);
 
 Window::Window(bool desktop, const char* text)
-  : Widget(JI_WINDOW)
+  : Widget(kWindowWidget)
 {
   m_killer = NULL;
   m_isDesktop = desktop;

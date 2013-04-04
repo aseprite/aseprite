@@ -57,7 +57,7 @@ namespace ui {
   class MenuBox : public Widget
   {
   public:
-    MenuBox(int type = JI_MENUBOX);
+    MenuBox(WidgetType type = kMenuBoxWidget);
     ~MenuBox();
 
     Menu* getMenu();

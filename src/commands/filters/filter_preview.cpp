@@ -30,7 +30,7 @@
 using namespace ui;
 
 FilterPreview::FilterPreview(FilterManagerImpl* filterMgr)
-  : Widget(JI_WIDGET)
+  : Widget(kGenericWidget)
   , m_filterMgr(filterMgr)
   , m_timer(1, this)
 {

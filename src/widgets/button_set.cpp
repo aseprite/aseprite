@@ -39,7 +39,7 @@ class ButtonSet::Item : public RadioButton
 {
 public:
   Item(int index, int radioGroup, int b1, int b2, int b3, int b4)
-    : RadioButton(NULL, radioGroup, JI_BUTTON)
+    : RadioButton(NULL, radioGroup, kButtonWidget)
     , m_index(index)
   {
     setRadioGroup(radioGroup);

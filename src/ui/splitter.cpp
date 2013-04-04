@@ -22,7 +22,7 @@ using namespace gfx;
 namespace ui {
 
 Splitter::Splitter(Type type, int align)
-  : Widget(JI_SPLITTER)
+  : Widget(kSplitterWidget)
   , m_type(type)
   , m_pos(50)
 {

@@ -175,11 +175,11 @@ Editor::~Editor()
   delete m_fgColorChangeSlot;
 }
 
-int editor_type()
+WidgetType editor_type()
 {
-  static int type = 0;
-  if (!type)
-    type = ji_register_widget_type();
+  static WidgetType type = kGenericWidget;
+  if (type == kGenericWidget)
+    type = register_widget_type();
   return type;
 }
 

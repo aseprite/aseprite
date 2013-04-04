@@ -21,7 +21,7 @@
 namespace ui {
 
 TextBox::TextBox(const char* text, int align)
- : Widget(JI_TEXTBOX)
+ : Widget(kTextBoxWidget)
 {
   setFocusStop(true);
   setAlign(align);

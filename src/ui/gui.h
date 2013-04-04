@@ -58,6 +58,7 @@
 #include "ui/view.h"
 #include "ui/viewport.h"
 #include "ui/widget.h"
+#include "ui/widget_type.h"
 #include "ui/widgets_list.h"
 #include "ui/window.h"
 

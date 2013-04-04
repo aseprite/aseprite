@@ -24,7 +24,7 @@ using namespace gfx;
 namespace ui {
 
 TooltipManager::TooltipManager()
-  : Widget(JI_WIDGET)
+  : Widget(kGenericWidget)
 {
   Manager* manager = Manager::getDefault();
   manager->addMessageFilter(JM_MOUSEENTER, this);

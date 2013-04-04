@@ -17,6 +17,7 @@
 #include "ui/color.h"
 #include "ui/component.h"
 #include "ui/rect.h"
+#include "ui/widget_type.h"
 #include "ui/widgets_list.h"
 
 #define ASSERT_VALID_WIDGET(widget) ASSERT((widget) != NULL)
@@ -37,7 +38,7 @@ namespace ui {
   class Theme;
   class Window;
 
-  int ji_register_widget_type();
+  WidgetType register_widget_type();
 
   // Position and geometry
 
@@ -61,7 +62,7 @@ namespace ui {
   class Widget : public Component
   {
   public:
-    int type;                     /* widget's type */
+    WidgetType type;              // widget's type
 
     JRect rc;                     /* position rectangle */
     struct {
@@ -87,7 +88,7 @@ namespace ui {
     // CTOR & DTOR
     // ===============================================================
 
-    Widget(int type);
+    Widget(WidgetType type);
     virtual ~Widget();
 
     // Safe way to delete a widget when it is not in the manager message
@@ -96,7 +97,7 @@ namespace ui {
 
     // Main properties.
 
-    int getType() const { return this->type; }
+    WidgetType getType() const { return this->type; }
 
     const std::string& getId() const { return m_id; }
     void setId(const char* id) { m_id = id; }

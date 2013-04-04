@@ -86,7 +86,7 @@ static Size getToolIconSize(Widget* widget)
 ToolBar* ToolBar::m_instance = NULL;
 
 ToolBar::ToolBar()
-  : Widget(JI_WIDGET)
+  : Widget(kGenericWidget)
   , m_tipTimer(300, this)
 {
   m_instance = this;
@@ -576,7 +576,7 @@ void ToolBar::onClosePopup()
 //////////////////////////////////////////////////////////////////////
 
 ToolStrip::ToolStrip(ToolGroup* group, ToolBar* toolbar)
-  : Widget(JI_WIDGET)
+  : Widget(kGenericWidget)
 {
   m_group = group;
   m_hot_tool = NULL;

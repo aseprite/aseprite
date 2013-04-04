@@ -77,7 +77,7 @@ ColorBar* ColorBar::m_instance = NULL;
 
 ColorBar::ColorBar(int align)
   : Box(align)
-  , m_paletteButton("Edit Palette", JI_BUTTON)
+  , m_paletteButton("Edit Palette", kButtonWidget)
   , m_paletteView(false)
   , m_fgColor(app::Color::fromIndex(15), IMAGE_INDEXED)
   , m_bgColor(app::Color::fromIndex(0), IMAGE_INDEXED)

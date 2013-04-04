@@ -236,6 +236,6 @@ private:
   widgets::DocumentView* m_docView;
 };
 
-int editor_type();
+ui::WidgetType editor_type();
 
 #endif

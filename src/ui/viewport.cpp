@@ -19,7 +19,7 @@ using namespace gfx;
 namespace ui {
 
 Viewport::Viewport()
-  : Widget(JI_VIEW_VIEWPORT)
+  : Widget(kViewViewportWidget)
 {
   initTheme();
 }

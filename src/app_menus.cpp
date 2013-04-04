@@ -369,7 +369,7 @@ void AppMenus::applyShortcutToMenuitemsWithCommand(Menu* menu, Command *command,
   UI_FOREACH_WIDGET(menu->getChildren(), it) {
     Widget* child = *it;
 
-    if (child->getType() == JI_MENUITEM) {
+    if (child->getType() == kMenuItemWidget) {
       ASSERT(dynamic_cast<MenuItem2*>(child) != NULL);
 
       MenuItem2* menuitem = static_cast<MenuItem2*>(child);

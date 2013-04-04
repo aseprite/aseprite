@@ -35,7 +35,7 @@ Grid::Cell::Cell()
 }
 
 Grid::Grid(int columns, bool same_width_columns)
-  : Widget(JI_GRID)
+  : Widget(kGridWidget)
   , m_colstrip(columns)
 {
   ASSERT(columns > 0);
