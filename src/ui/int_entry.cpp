@@ -106,6 +106,7 @@ void IntEntry::openPopup()
   m_popupWindow = new PopupWindow(NULL, false);
   m_popupWindow->setAutoRemap(false);
   m_popupWindow->setBounds(rc);
+  m_popupWindow->setBgColor(rgba(0, 0, 0, 0));
 
   Region rgn(rc.createUnion(getBounds()));
   rgn.createUnion(rgn, Region(getBounds()));

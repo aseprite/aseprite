@@ -1374,6 +1374,11 @@ void SkinTheme::paintSlider(PaintEvent& ev)
   int min, max, value;
   char buf[256];
 
+  // Outside borders
+  ui::Color bgcolor = widget->getBgColor();
+  if (!is_transparent(bgcolor))
+    jdraw_rectfill(widget->rc, bgcolor);
+
   widget->getSliderThemeInfo(&min, &max, &value);
 
   Rect rc(widget->getClientBounds().shrink(widget->getBorder()));
