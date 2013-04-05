@@ -8,6 +8,7 @@
 #define UI_MANAGER_H_INCLUDED
 
 #include "base/compiler_specific.h"
+#include "ui/message_type.h"
 #include "ui/widget.h"
 
 namespace she { class Display; }
@@ -85,7 +86,7 @@ namespace ui {
     static void removeWidgetFromDests(Widget* widget, Message* msg);
     static bool someParentIsFocusStop(Widget* widget);
     static Widget* findMagneticWidget(Widget* widget);
-    static Message* newMouseMessage(int type, Widget* destination);
+    static Message* newMouseMessage(MessageType type, Widget* destination);
     void broadcastKeyMsg(Message* msg);
 
     static Manager* m_defaultManager;

@@ -80,8 +80,8 @@ bool ButtonBase::onProcessMessage(Message* msg)
 {
   switch (msg->type) {
 
-    case JM_FOCUSENTER:
-    case JM_FOCUSLEAVE:
+    case kFocusEnterMessage:
+    case kFocusLeaveMessage:
       if (isEnabled()) {
         if (m_behaviorType == kButtonWidget) {
           // Deselect the widget (maybe the user press the key, but
@@ -95,7 +95,7 @@ bool ButtonBase::onProcessMessage(Message* msg)
       }
       break;
 
-    case JM_KEYPRESSED:
+    case kKeyDownMessage:
       // If the button is enabled.
       if (isEnabled()) {
         // For kButtonWidget
@@ -154,7 +154,7 @@ bool ButtonBase::onProcessMessage(Message* msg)
       }
       break;
 
-    case JM_KEYRELEASED:
+    case kKeyUpMessage:
       if (isEnabled()) {
         if (m_behaviorType == kButtonWidget) {
           if (isSelected()) {
@@ -165,7 +165,7 @@ bool ButtonBase::onProcessMessage(Message* msg)
       }
       break;
 
-    case JM_BUTTONPRESSED:
+    case kMouseDownMessage:
       switch (m_behaviorType) {
 
         case kButtonWidget:
@@ -201,7 +201,7 @@ bool ButtonBase::onProcessMessage(Message* msg)
       }
       break;
 
-    case JM_BUTTONRELEASED:
+    case kMouseUpMessage:
       if (hasCapture()) {
         releaseMouse();
 
@@ -238,7 +238,7 @@ bool ButtonBase::onProcessMessage(Message* msg)
       }
       break;
 
-    case JM_MOTION:
+    case kMouseMoveMessage:
       if (isEnabled() && hasCapture()) {
         bool hasMouse = hasMouseOver();
 
@@ -257,8 +257,8 @@ bool ButtonBase::onProcessMessage(Message* msg)
       }
       break;
 
-    case JM_MOUSEENTER:
-    case JM_MOUSELEAVE:
+    case kMouseEnterMessage:
+    case kMouseLeaveMessage:
       // TODO theme stuff
       if (isEnabled())
         invalidate();

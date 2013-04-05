@@ -244,12 +244,12 @@ bool Tabs::onProcessMessage(Message* msg)
 {
   switch (msg->type) {
 
-    case JM_SETPOS:
+    case kResizeMessage:
       jrect_copy(this->rc, &msg->setpos.rect);
       setScrollX(m_scrollX);
       return true;
 
-    case JM_DRAW: {
+    case kPaintMessage: {
       SkinTheme* theme = static_cast<SkinTheme*>(this->getTheme());
       BITMAP *doublebuffer = create_bitmap(jrect_w(&msg->draw.rect),
                                            jrect_h(&msg->draw.rect));
@@ -336,19 +336,19 @@ bool Tabs::onProcessMessage(Message* msg)
       return true;
     }
 
-    case JM_MOUSEENTER:
-    case JM_MOTION:
+    case kMouseEnterMessage:
+    case kMouseMoveMessage:
       calculateHot();
       return true;
 
-    case JM_MOUSELEAVE:
+    case kMouseLeaveMessage:
       if (m_hot != NULL) {
         m_hot = NULL;
         invalidate();
       }
       return true;
 
-    case JM_BUTTONPRESSED:
+    case kMouseDownMessage:
       if (m_hot != NULL) {
         if (m_selected != m_hot) {
           m_selected = m_hot;
@@ -362,7 +362,7 @@ bool Tabs::onProcessMessage(Message* msg)
       }
       return true;
 
-    case JM_WHEEL: {
+    case kMouseWheelMessage: {
       int dx = (jmouse_z(1) - jmouse_z(0)) * jrect_w(this->rc)/6;
       // setScrollX(m_scrollX+dx);
 
@@ -382,7 +382,7 @@ bool Tabs::onProcessMessage(Message* msg)
       return true;
     }
 
-    case JM_TIMER: {
+    case kTimerMessage: {
       switch (m_ani) {
         case ANI_NONE:
           // Do nothing
@@ -709,12 +709,12 @@ bool Tabs::ScrollButton::onProcessMessage(Message* msg)
 {
   switch (msg->type) {
 
-    case JM_BUTTONPRESSED:
+    case kMouseDownMessage:
       captureMouse();
       m_tabs->startScrolling();
       return true;
 
-    case JM_BUTTONRELEASED:
+    case kMouseUpMessage:
       if (hasCapture())
         releaseMouse();
 

@@ -10,6 +10,7 @@
 #include "base/compiler_specific.h"
 #include "base/signal.h"
 #include "base/unique_ptr.h"
+#include "ui/register_message.h"
 #include "ui/widget.h"
 
 namespace ui {
@@ -145,10 +146,10 @@ namespace ui {
     friend class MenuBox;
   };
 
-  int jm_open_menuitem();
-  int jm_close_menuitem();
-  int jm_close_popup();
-  int jm_exe_menuitem();
+  extern RegisterMessage kOpenMenuItemMessage;
+  extern RegisterMessage kCloseMenuItemMessage;
+  extern RegisterMessage kClosePopupMessage;
+  extern RegisterMessage kExecuteMenuItemMessage;
 
 } // namespace ui
 

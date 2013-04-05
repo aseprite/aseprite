@@ -50,7 +50,7 @@ bool MenuItem2::onProcessMessage(Message* msg)
 {
   switch (msg->type) {
 
-    case JM_OPEN: {
+    case kOpenMessage: {
       UIContext* context = UIContext::instance();
 
       if (m_command) {
@@ -63,13 +63,13 @@ bool MenuItem2::onProcessMessage(Message* msg)
       break;
     }
 
-    case JM_CLOSE:
+    case kCloseMessage:
       // disable the menu (the keyboard shortcuts are processed by "manager_msg_proc")
       setEnabled(false);
       break;
 
     default:
-      if (msg->type == jm_open_menuitem()) {
+      if (msg->type == kOpenMenuItemMessage) {
         // Update the context flags after opening the menuitem's
         // submenu to update the "enabled" flag of each command
         // correctly.

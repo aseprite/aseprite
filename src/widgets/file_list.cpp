@@ -110,7 +110,7 @@ bool FileList::onProcessMessage(Message* msg)
 {
   switch (msg->type) {
 
-    case JM_DRAW: {
+    case kPaintMessage: {
       SkinTheme* theme = static_cast<SkinTheme*>(getTheme());
       View* view = View::getView(this);
       gfx::Rect vp = view->getViewportBounds();
@@ -239,10 +239,10 @@ bool FileList::onProcessMessage(Message* msg)
       return true;
     }
 
-    case JM_BUTTONPRESSED:
+    case kMouseDownMessage:
       captureMouse();
 
-    case JM_MOTION:
+    case kMouseMoveMessage:
       if (hasCapture()) {
         int th = jwidget_get_text_height(this);
         int y = this->rc->y1;
@@ -278,13 +278,13 @@ bool FileList::onProcessMessage(Message* msg)
       }
       break;
 
-    case JM_BUTTONRELEASED:
+    case kMouseUpMessage:
       if (hasCapture()) {
         releaseMouse();
       }
       break;
 
-    case JM_KEYPRESSED:
+    case kKeyDownMessage:
       if (hasFocus()) {
         int select = getSelectedIndex();
         View* view = View::getView(this);
@@ -387,7 +387,7 @@ bool FileList::onProcessMessage(Message* msg)
       }
       break;
 
-    case JM_WHEEL: {
+    case kMouseWheelMessage: {
       View* view = View::getView(this);
       if (view) {
         gfx::Point scroll = view->getViewScroll();
@@ -397,7 +397,7 @@ bool FileList::onProcessMessage(Message* msg)
       break;
     }
 
-    case JM_DOUBLECLICK:
+    case kDoubleClickMessage:
       if (m_selected) {
         if (m_selected->isBrowsable()) {
           setCurrentFolder(m_selected);

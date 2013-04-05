@@ -44,7 +44,7 @@ enum {
   STAGE_CLOSE_ALL,
 };
 
-#define NFILTERS        (JM_REGISTERED_MESSAGES+1)
+static const int NFILTERS = (int)(kFirstRegisteredMessage+1);
 
 struct Filter
 {
@@ -269,7 +269,7 @@ bool Manager::generateMessages()
         dst = mouse_widget;
 
       // Send the mouse movement message
-      msg = newMouseMessage(JM_MOTION, dst);
+      msg = newMouseMessage(kMouseMoveMessage, dst);
       enqueueMessage(msg);
 
       generateSetCursorMessage();
@@ -278,7 +278,7 @@ bool Manager::generateMessages()
 
   // Mouse wheel
   if (jmouse_z(0) != jmouse_z(1)) {
-    msg = newMouseMessage(JM_WHEEL,
+    msg = newMouseMessage(kMouseWheelMessage,
                           capture_widget ? capture_widget:
                                            mouse_widget);
     enqueueMessage(msg);
@@ -292,14 +292,14 @@ bool Manager::generateMessages()
       ((jmouse_b(1) & 2) == 0 && (jmouse_b(0) & 2) == 2) ||
       ((jmouse_b(1) & 4) == 0 && (jmouse_b(0) & 4) == 4);
 
-    msg = newMouseMessage(pressed ? JM_BUTTONPRESSED:
-                                    JM_BUTTONRELEASED,
+    msg = newMouseMessage(pressed ? kMouseDownMessage:
+                                    kMouseUpMessage,
                           capture_widget ? capture_widget:
                                            mouse_widget);
 
     //////////////////////////////////////////////////////////////////////
     // Double Click
-    if (msg->type == JM_BUTTONPRESSED) {
+    if (msg->type == kMouseDownMessage) {
       if (double_click_level != DOUBLE_CLICK_NONE) {
         /* time out, back to NONE */
         if (current_ticks - double_click_ticks > DOUBLE_CLICK_TIMEOUT_MSECS) {
@@ -307,7 +307,7 @@ bool Manager::generateMessages()
         }
         else if (double_click_buttons == msg->mouse.flags) {
           if (double_click_level == DOUBLE_CLICK_UP) {
-            msg->type = JM_DOUBLECLICK;
+            msg->type = kDoubleClickMessage;
           }
           else {
             double_click_level = DOUBLE_CLICK_NONE;
@@ -326,7 +326,7 @@ bool Manager::generateMessages()
         double_click_ticks = current_ticks;
       }
     }
-    else if (msg->type == JM_BUTTONRELEASED) {
+    else if (msg->type == kMouseUpMessage) {
       if (double_click_level != DOUBLE_CLICK_NONE) {
         // Time out, back to NONE
         if (current_ticks - double_click_ticks > DOUBLE_CLICK_TIMEOUT_MSECS) {
@@ -347,7 +347,7 @@ bool Manager::generateMessages()
 
     // Handle Z order: Send the window to top (only when you click in
     // a window that aren't the desktop).
-    if (msg->type == JM_BUTTONPRESSED &&
+    if (msg->type == kMouseDownMessage &&
         !capture_widget && mouse_widget) {
       // The clicked window
       Window* window = mouse_widget->getRoot();
@@ -392,16 +392,16 @@ bool Manager::generateMessages()
   if (want_close_stage == STAGE_WANT_CLOSE) {
     want_close_stage = STAGE_NORMAL;
 
-    msg = jmessage_new(JM_CLOSE_APP);
+    msg = jmessage_new(kCloseAppMessage);
     jmessage_broadcast_to_children(msg, this);
     enqueueMessage(msg);
   }
 
-  // Generate JM_CHAR/JM_KEYPRESSED messages.
+  // Generate kKeyDownMessage messages.
   while (keypressed()) {
     int readkey_value = readkey();
 
-    msg = jmessage_new_key_related(JM_KEYPRESSED, readkey_value);
+    msg = jmessage_new_key_related(kKeyDownMessage, readkey_value);
 
     c = readkey_value >> 8;
     if (c >= 0 && c < KEY_MAX) {
@@ -415,11 +415,11 @@ bool Manager::generateMessages()
 
   for (c=0; c<KEY_MAX; c++) {
     if (old_readed_key[c] != key[c]) {
-      // Generate JM_KEYRELEASED messages (old key state is activated,
+      // Generate kKeyUpMessage messages (old key state is activated,
       // the new one is deactivated).
       if (old_readed_key[c]) {
         // Press/release key interface
-        msg = jmessage_new_key_related(JM_KEYRELEASED,
+        msg = jmessage_new_key_related(kKeyUpMessage,
                                        (c << 8) | scancode_to_ascii(c));
         old_readed_key[c] = key[c];
         key_repeated[c] = 0;
@@ -427,10 +427,10 @@ bool Manager::generateMessages()
         broadcastKeyMsg(msg);
         enqueueMessage(msg);
       }
-      /* generate JM_KEYPRESSED messages for modifiers */
+      /* generate kKeyDownMessage messages for modifiers */
       else if (c >= KEY_MODIFIERS) {
         /* press/release key interface */
-        msg = jmessage_new_key_related(JM_KEYPRESSED,
+        msg = jmessage_new_key_related(kKeyDownMessage,
                                        (c << 8) | scancode_to_ascii(c));
         old_readed_key[c] = key[c];
         msg->key.repeat = key_repeated[c]++;
@@ -456,7 +456,7 @@ bool Manager::generateMessages()
 void Manager::dispatchMessages()
 {
   // Add the "Queue Processing" message for the manager.
-  Message* msg = newMouseMessage(JM_QUEUEPROCESSING, this);
+  Message* msg = newMouseMessage(kQueueProcessingMessage, this);
   enqueueMessage(msg);
 
   pumpQueue();
@@ -480,8 +480,8 @@ void Manager::enqueueMessage(Message* msg)
 
   // Check if this message must be filtered by some widget before
   c = msg->type;
-  if (c >= JM_REGISTERED_MESSAGES)
-    c = JM_REGISTERED_MESSAGES;
+  if (c >= kFirstRegisteredMessage)
+    c = kFirstRegisteredMessage;
 
   if (!msg_filters[c].empty()) { // OK, so are filters to add...
     // Add all the filters in the destination list of the message
@@ -550,7 +550,7 @@ void Manager::setFocus(Widget* widget)
     if (focus_widget) {
       WidgetsList focus_parents;
       focus_widget->getParents(true, focus_parents);
-      msg = jmessage_new(JM_FOCUSLEAVE);
+      msg = jmessage_new(kFocusLeaveMessage);
 
       UI_FOREACH_WIDGET(focus_parents, it) {
         if (widget) {
@@ -588,7 +588,7 @@ void Manager::setFocus(Widget* widget)
       else
         it = widget_parents.begin();
 
-      msg = jmessage_new(JM_FOCUSENTER);
+      msg = jmessage_new(kFocusEnterMessage);
 
       for (; it != widget_parents.end(); ++it) {
         Widget* w = *it;
@@ -619,7 +619,7 @@ void Manager::setMouse(Widget* widget)
     if (mouse_widget) {
       WidgetsList mouse_parents;
       mouse_widget->getParents(true, mouse_parents);
-      msg = jmessage_new(JM_MOUSELEAVE);
+      msg = jmessage_new(kMouseLeaveMessage);
 
       UI_FOREACH_WIDGET(mouse_parents, it) {
         if (widget) {
@@ -657,7 +657,7 @@ void Manager::setMouse(Widget* widget)
       else
         it = widget_parents.begin();
 
-      msg = jmessage_new(JM_MOUSEENTER);
+      msg = jmessage_new(kMouseEnterMessage);
 
       for (; it != widget_parents.end(); ++it) {
         (*it)->flags |= JI_HASMOUSE;
@@ -748,7 +748,7 @@ void Manager::removeMessagesForTimer(Timer* timer)
   for (Messages::iterator it=msg_queue.begin(); it != msg_queue.end(); ) {
     Message* message = *it;
     if (!message->any.used &&
-        message->any.type == JM_TIMER &&
+        message->any.type == kTimerMessage &&
         message->timer.timer == timer) {
       jmessage_free(message);
       it = msg_queue.erase(it);
@@ -761,8 +761,8 @@ void Manager::removeMessagesForTimer(Timer* timer)
 void Manager::addMessageFilter(int message, Widget* widget)
 {
   int c = message;
-  if (c >= JM_REGISTERED_MESSAGES)
-    c = JM_REGISTERED_MESSAGES;
+  if (c >= kFirstRegisteredMessage)
+    c = kFirstRegisteredMessage;
 
   msg_filters[c].push_back(new Filter(message, widget));
 }
@@ -770,8 +770,8 @@ void Manager::addMessageFilter(int message, Widget* widget)
 void Manager::removeMessageFilter(int message, Widget* widget)
 {
   int c = message;
-  if (c >= JM_REGISTERED_MESSAGES)
-    c = JM_REGISTERED_MESSAGES;
+  if (c >= kFirstRegisteredMessage)
+    c = kFirstRegisteredMessage;
 
   for (Filters::iterator it=msg_filters[c].begin(); it != msg_filters[c].end(); ) {
     Filter* filter = *it;
@@ -813,7 +813,7 @@ void Manager::_openWindow(Window* window)
   insertChild(0, window);
 
   // Broadcast the open message.
-  Message* msg = jmessage_new(JM_OPEN);
+  Message* msg = jmessage_new(kOpenMessage);
   jmessage_add_dest(msg, window);
   enqueueMessage(msg);
 
@@ -862,7 +862,7 @@ void Manager::_closeWindow(Window* window, bool redraw_background)
   window->setVisible(false);
 
   // Close message.
-  msg = jmessage_new(JM_CLOSE);
+  msg = jmessage_new(kCloseMessage);
   jmessage_add_dest(msg, window);
   enqueueMessage(msg);
 
@@ -883,12 +883,12 @@ bool Manager::onProcessMessage(Message* msg)
 {
   switch (msg->type) {
 
-    case JM_SETPOS:
+    case kResizeMessage:
       layoutManager(&msg->setpos.rect);
       return true;
 
-    case JM_KEYPRESSED:
-    case JM_KEYRELEASED: {
+    case kKeyDownMessage:
+    case kKeyUpMessage: {
       msg->key.propagate_to_children = true;
       msg->key.propagate_to_parent = false;
 
@@ -908,7 +908,7 @@ bool Manager::onProcessMessage(Message* msg)
       }
 
       // Check the focus movement.
-      if (msg->type == JM_KEYPRESSED)
+      if (msg->type == kKeyDownMessage)
         move_focus(this, msg);
 
       return true;
@@ -1014,7 +1014,7 @@ void Manager::pumpQueue()
     Message* first_msg = msg;
 
     // Call Timer::tick() if this is a tick message.
-    if (msg->type == JM_TIMER) {
+    if (msg->type == kTimerMessage) {
       ASSERT(msg->timer.timer != NULL);
       msg->timer.timer->tick();
     }
@@ -1028,33 +1028,33 @@ void Manager::pumpQueue()
 #ifdef REPORT_EVENTS
       {
         static char *msg_name[] = {
-          "JM_OPEN",
-          "JM_CLOSE",
-          "JM_CLOSE_APP",
-          "JM_DRAW",
-          "JM_TIMER",
-          "JM_SETPOS",
-          "JM_WINMOVE",
-          "JM_QUEUEPROCESSING",
+          "kOpenMessage",
+          "kCloseMessage",
+          "kCloseAppMessage",
+          "kPaintMessage",
+          "kTimerMessage",
+          "kResizeMessage",
+          "kWinMoveMessage",
+          "kQueueProcessingMessage",
 
-          "JM_KEYPRESSED",
-          "JM_KEYRELEASED",
-          "JM_FOCUSENTER",
-          "JM_FOCUSLEAVE",
+          "kKeyDownMessage",
+          "kKeyUpMessage",
+          "kFocusEnterMessage",
+          "kFocusLeaveMessage",
 
-          "JM_BUTTONPRESSED",
-          "JM_BUTTONRELEASED",
-          "JM_DOUBLECLICK",
-          "JM_MOUSEENTER",
-          "JM_MOUSELEAVE",
-          "JM_MOTION",
-          "JM_SETCURSOR",
-          "JM_WHEEL",
+          "kMouseDownMessage",
+          "kMouseUpMessage",
+          "kDoubleClickMessage",
+          "kMouseEnterMessage",
+          "kMouseLeaveMessage",
+          "kMouseMoveMessage",
+          "kSetCursorMessage",
+          "kMouseWheelMessage",
         };
         const char *string =
-          (msg->type >= JM_OPEN &&
-           msg->type <= JM_WHEEL) ? msg_name[msg->type]:
-                                    "Unknown";
+          (msg->type >= kOpenMessage &&
+           msg->type <= kMouseWheelMessage) ? msg_name[msg->type]:
+                                              "Unknown";
 
         printf("Event #%d: %s (%d)\n", msg->type, string, widget->id);
         fflush(stdout);
@@ -1062,7 +1062,7 @@ void Manager::pumpQueue()
 #endif
 
       /* draw message? */
-      if (msg->type == JM_DRAW) {
+      if (msg->type == kPaintMessage) {
         /* hidden? */
         if (widget->flags & JI_HIDDEN)
           continue;
@@ -1089,7 +1089,7 @@ void Manager::pumpQueue()
       done = widget->sendMessage(msg);
 
       /* restore clip */
-      if (msg->type == JM_DRAW) {
+      if (msg->type == kPaintMessage) {
         set_clip_rect(ji_screen, 0, 0, JI_SCREEN_W-1, JI_SCREEN_H-1);
 
         release_bitmap(ji_screen);
@@ -1174,7 +1174,7 @@ void Manager::generateSetCursorMessage()
     dst = mouse_widget;
 
   if (dst) {
-    msg = newMouseMessage(JM_SETCURSOR, dst);
+    msg = newMouseMessage(kSetCursorMessage, dst);
     enqueueMessage(msg);
   }
   else
@@ -1222,7 +1222,7 @@ Widget* Manager::findMagneticWidget(Widget* widget)
 }
 
 // static
-Message* Manager::newMouseMessage(int type, Widget* widget)
+Message* Manager::newMouseMessage(MessageType type, Widget* widget)
 {
   Message* msg = jmessage_new(type);
   if (!msg)
@@ -1230,8 +1230,8 @@ Message* Manager::newMouseMessage(int type, Widget* widget)
 
   msg->mouse.x = jmouse_x(0);
   msg->mouse.y = jmouse_y(0);
-  msg->mouse.flags = (type == JM_BUTTONRELEASED ? jmouse_b(1):
-                                                  jmouse_b(0));
+  msg->mouse.flags = (type == kMouseUpMessage ? jmouse_b(1):
+                                                       jmouse_b(0));
   msg->mouse.left = ((jmouse_b(0) & 1) != (jmouse_b(1) & 1));
   msg->mouse.right = ((jmouse_b(0) & 2) != (jmouse_b(1) & 2));
   msg->mouse.middle = ((jmouse_b(0) & 4) != (jmouse_b(1) & 4));

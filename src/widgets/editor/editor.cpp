@@ -862,7 +862,7 @@ bool Editor::onProcessMessage(Message* msg)
 {
   switch (msg->type) {
 
-    case JM_DRAW: {
+    case kPaintMessage: {
       SkinTheme* theme = static_cast<SkinTheme*>(this->getTheme());
 
       int old_cursor_thick = m_cursor_thick;
@@ -928,7 +928,7 @@ bool Editor::onProcessMessage(Message* msg)
       return true;
     }
 
-    case JM_TIMER:
+    case kTimerMessage:
       if (msg->timer.timer == &m_mask_timer) {
         if (isVisible() && m_sprite) {
           drawMaskSafe();
@@ -945,30 +945,30 @@ bool Editor::onProcessMessage(Message* msg)
       }
       break;
 
-    case JM_MOUSEENTER:
+    case kMouseEnterMessage:
       editor_update_quicktool();
       break;
 
-    case JM_MOUSELEAVE:
+    case kMouseLeaveMessage:
       hideDrawingCursor();
       StatusBar::instance()->clearText();
       break;
 
-    case JM_BUTTONPRESSED:
+    case kMouseDownMessage:
       if (m_sprite) {
         EditorStatePtr holdState(m_state);
         return m_state->onMouseDown(this, msg);
       }
       break;
 
-    case JM_MOTION:
+    case kMouseMoveMessage:
       if (m_sprite) {
         EditorStatePtr holdState(m_state);
         return m_state->onMouseMove(this, msg);
       }
       break;
 
-    case JM_BUTTONRELEASED:
+    case kMouseUpMessage:
       if (m_sprite) {
         EditorStatePtr holdState(m_state);
         if (m_state->onMouseUp(this, msg))
@@ -976,7 +976,7 @@ bool Editor::onProcessMessage(Message* msg)
       }
       break;
 
-    case JM_KEYPRESSED:
+    case kKeyDownMessage:
       if (m_sprite) {
         EditorStatePtr holdState(m_state);
         bool used = m_state->onKeyDown(this, msg);
@@ -991,7 +991,7 @@ bool Editor::onProcessMessage(Message* msg)
       }
       break;
 
-    case JM_KEYRELEASED:
+    case kKeyUpMessage:
       if (m_sprite) {
         EditorStatePtr holdState(m_state);
         bool used = m_state->onKeyUp(this, msg);
@@ -1006,13 +1006,13 @@ bool Editor::onProcessMessage(Message* msg)
       }
       break;
 
-    case JM_FOCUSLEAVE:
+    case kFocusLeaveMessage:
       // As we use keys like Space-bar as modifier, we can clear the
       // keyboard buffer when we lost the focus.
       clear_keybuf();
       break;
 
-    case JM_WHEEL:
+    case kMouseWheelMessage:
       if (m_sprite && hasMouse()) {
         EditorStatePtr holdState(m_state);
         if (m_state->onMouseWheel(this, msg))
@@ -1020,7 +1020,7 @@ bool Editor::onProcessMessage(Message* msg)
       }
       break;
 
-    case JM_SETCURSOR:
+    case kSetCursorMessage:
       editor_setcursor();
       return true;
   }

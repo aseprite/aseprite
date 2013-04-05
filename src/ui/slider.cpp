@@ -67,13 +67,13 @@ bool Slider::onProcessMessage(Message* msg)
 {
   switch (msg->type) {
 
-    case JM_FOCUSENTER:
-    case JM_FOCUSLEAVE:
+    case kFocusEnterMessage:
+    case kFocusLeaveMessage:
       if (isEnabled())
         invalidate();
       break;
 
-    case JM_BUTTONPRESSED:
+    case kMouseDownMessage:
       if (!isEnabled())
         return true;
 
@@ -86,9 +86,9 @@ bool Slider::onProcessMessage(Message* msg)
 
       setupSliderCursor();
 
-      /* continue to JM_MOTION */
+      /* continue to kMouseMoveMessage */
 
-    case JM_MOTION:
+    case kMouseMoveMessage:
       if (hasCapture()) {
         int value, accuracy, range;
         JRect rc = jwidget_get_child_rect(this);
@@ -137,7 +137,7 @@ bool Slider::onProcessMessage(Message* msg)
       }
       break;
 
-    case JM_BUTTONRELEASED:
+    case kMouseUpMessage:
       if (hasCapture()) {
         setSelected(false);
         releaseMouse();
@@ -147,8 +147,8 @@ bool Slider::onProcessMessage(Message* msg)
       }
       break;
 
-    case JM_MOUSEENTER:
-    case JM_MOUSELEAVE:
+    case kMouseEnterMessage:
+    case kMouseLeaveMessage:
 /*       if (jwidget_is_enabled(widget) && */
 /*        jwidget_has_capture(widget)) { */
 /*      /\* swap the select status *\/ */
@@ -165,7 +165,7 @@ bool Slider::onProcessMessage(Message* msg)
         invalidate();
       break;
 
-    case JM_KEYPRESSED:
+    case kKeyDownMessage:
       if (hasFocus()) {
         int min = m_min;
         int max = m_max;
@@ -191,7 +191,7 @@ bool Slider::onProcessMessage(Message* msg)
       }
       break;
 
-    case JM_WHEEL:
+    case kMouseWheelMessage:
       if (isEnabled()) {
         int value = m_value + jmouse_z(0) - jmouse_z(1);
 
@@ -205,7 +205,7 @@ bool Slider::onProcessMessage(Message* msg)
       }
       break;
 
-    case JM_SETCURSOR:
+    case kSetCursorMessage:
       setupSliderCursor();
       return true;
   }

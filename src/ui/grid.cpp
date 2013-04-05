@@ -98,7 +98,7 @@ bool Grid::onProcessMessage(Message* msg)
 {
   switch (msg->type) {
 
-    case JM_SETPOS:
+    case kResizeMessage:
       setGridPosition(&msg->setpos.rect);
       return true;
 

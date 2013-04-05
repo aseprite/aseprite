@@ -38,6 +38,7 @@ add_library(ui-lib
   preferred_size_event.cpp
   property.cpp
   rect.cpp
+  register_message.cpp
   scroll_bar.cpp
   separator.cpp
   slider.cpp

@@ -63,19 +63,19 @@ bool FilterPreview::onProcessMessage(Message* msg)
 {
   switch (msg->type) {
 
-    case JM_OPEN:
+    case kOpenMessage:
       RenderEngine::setPreviewImage(m_filterMgr->getLayer(),
                                     m_filterMgr->getDestinationImage());
       break;
 
-    case JM_CLOSE:
+    case kCloseMessage:
       RenderEngine::setPreviewImage(NULL, NULL);
 
       // Stop the preview timer.
       m_timer.stop();
       break;
 
-    case JM_TIMER:
+    case kTimerMessage:
       if (m_filterMgr) {
         if (m_filterMgr->applyStep())
           m_filterMgr->flush();

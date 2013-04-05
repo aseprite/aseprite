@@ -27,10 +27,10 @@ TooltipManager::TooltipManager()
   : Widget(kGenericWidget)
 {
   Manager* manager = Manager::getDefault();
-  manager->addMessageFilter(JM_MOUSEENTER, this);
-  manager->addMessageFilter(JM_KEYPRESSED, this);
-  manager->addMessageFilter(JM_BUTTONPRESSED, this);
-  manager->addMessageFilter(JM_MOUSELEAVE, this);
+  manager->addMessageFilter(kMouseEnterMessage, this);
+  manager->addMessageFilter(kKeyDownMessage, this);
+  manager->addMessageFilter(kMouseDownMessage, this);
+  manager->addMessageFilter(kMouseLeaveMessage, this);
 
   setVisible(false);
 }
@@ -50,7 +50,7 @@ bool TooltipManager::onProcessMessage(Message* msg)
 {
   switch (msg->type) {
 
-    case JM_MOUSEENTER: {
+    case kMouseEnterMessage: {
       UI_FOREACH_WIDGET(*msg->any.widgets, itWidget) {
         Tips::iterator it = m_tips.find(*itWidget);
         if (it != m_tips.end()) {
@@ -68,9 +68,9 @@ bool TooltipManager::onProcessMessage(Message* msg)
       return false;
     }
 
-    case JM_KEYPRESSED:
-    case JM_BUTTONPRESSED:
-    case JM_MOUSELEAVE:
+    case kKeyDownMessage:
+    case kMouseDownMessage:
+    case kMouseLeaveMessage:
       if (m_tipWindow) {
         m_tipWindow->closeWindow(NULL);
         m_tipWindow.reset();
@@ -170,9 +170,9 @@ TipWindow::~TipWindow()
 {
   if (m_filtering) {
     m_filtering = false;
-    getManager()->removeMessageFilter(JM_MOTION, this);
-    getManager()->removeMessageFilter(JM_BUTTONPRESSED, this);
-    getManager()->removeMessageFilter(JM_KEYPRESSED, this);
+    getManager()->removeMessageFilter(kMouseMoveMessage, this);
+    getManager()->removeMessageFilter(kMouseDownMessage, this);
+    getManager()->removeMessageFilter(kKeyDownMessage, this);
   }
 }
 
@@ -180,9 +180,9 @@ void TipWindow::setHotRegion(const Region& region)
 {
   if (!m_filtering) {
     m_filtering = true;
-    getManager()->addMessageFilter(JM_MOTION, this);
-    getManager()->addMessageFilter(JM_BUTTONPRESSED, this);
-    getManager()->addMessageFilter(JM_KEYPRESSED, this);
+    getManager()->addMessageFilter(kMouseMoveMessage, this);
+    getManager()->addMessageFilter(kMouseDownMessage, this);
+    getManager()->addMessageFilter(kKeyDownMessage, this);
   }
 
   m_hotRegion = region;
@@ -202,26 +202,26 @@ bool TipWindow::onProcessMessage(Message* msg)
 {
   switch (msg->type) {
 
-    case JM_CLOSE:
+    case kCloseMessage:
       if (m_filtering) {
         m_filtering = false;
-        getManager()->removeMessageFilter(JM_MOTION, this);
-        getManager()->removeMessageFilter(JM_BUTTONPRESSED, this);
-        getManager()->removeMessageFilter(JM_KEYPRESSED, this);
+        getManager()->removeMessageFilter(kMouseMoveMessage, this);
+        getManager()->removeMessageFilter(kMouseDownMessage, this);
+        getManager()->removeMessageFilter(kKeyDownMessage, this);
       }
       break;
 
-    case JM_MOUSELEAVE:
+    case kMouseLeaveMessage:
       if (m_hotRegion.isEmpty())
         closeWindow(NULL);
       break;
 
-    case JM_KEYPRESSED:
+    case kKeyDownMessage:
       if (m_filtering && msg->key.scancode < KEY_MODIFIERS)
         this->closeWindow(NULL);
       break;
 
-    case JM_BUTTONPRESSED:
+    case kMouseDownMessage:
       /* if the user click outside the window, we have to close the
          tooltip window */
       if (m_filtering) {
@@ -237,7 +237,7 @@ bool TipWindow::onProcessMessage(Message* msg)
         this->closeWindow(NULL);
       break;
 
-    case JM_MOTION:
+    case kMouseMoveMessage:
       if (!m_hotRegion.isEmpty() &&
           getManager()->getCapture() == NULL) {
         // If the mouse is outside the hot-region we have to close the window

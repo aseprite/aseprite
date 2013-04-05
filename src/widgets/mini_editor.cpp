@@ -98,7 +98,7 @@ protected:
   {
     switch (msg->type) {
 
-      case JM_SETCURSOR:
+      case kSetCursorMessage:
         jmouse_set_cursor(kArrowCursor);
         return true;
     }

@@ -888,7 +888,7 @@ void jwidget_set_rect(Widget* widget, JRect rect)
 
   ASSERT_VALID_WIDGET(widget);
 
-  msg = jmessage_new(JM_SETPOS);
+  msg = jmessage_new(kResizeMessage);
   jrect_copy(&msg->setpos.rect, rect);
   widget->sendMessage(msg);
   jmessage_free(msg);
@@ -954,7 +954,7 @@ void Widget::flushRedraw()
         const Rect& rc = *it;
 
         // Create the draw message
-        msg = jmessage_new(JM_DRAW);
+        msg = jmessage_new(kPaintMessage);
         msg->draw.count = nrects-1 - c;
         msg->draw.rect.x1 = rc.x;
         msg->draw.rect.y1 = rc.y;
@@ -1025,7 +1025,7 @@ void Widget::scrollRegion(const Region& region, int dx, int dy)
 
     mark_dirty_flag(this);
 
-    // Generate the JM_DRAW messages for the widget's m_updateRegion
+    // Generate the kPaintMessage messages for the widget's m_updateRegion
     flushRedraw();
   }
 }
@@ -1145,7 +1145,7 @@ void Widget::releaseFocus()
 
 /**
  * Captures the mouse to send all the future mouse messsages to the
- * specified widget (included the JM_MOTION and JM_SETCURSOR).
+ * specified widget (included the kMouseMoveMessage and kSetCursorMessage).
  */
 void Widget::captureMouse()
 {
@@ -1219,15 +1219,15 @@ bool Widget::onProcessMessage(Message* msg)
 
   switch (msg->type) {
 
-    case JM_OPEN:
-    case JM_CLOSE:
-    case JM_WINMOVE:
+    case kOpenMessage:
+    case kCloseMessage:
+    case kWinMoveMessage:
       // Broadcast the message to the children.
       UI_FOREACH_WIDGET(getChildren(), it)
         (*it)->sendMessage(msg);
       break;
 
-    case JM_DRAW:
+    case kPaintMessage:
       // With double-buffering we create a temporary bitmap to draw
       // the widget on it and then we blit the final result to the
       // real screen. Anyway, if ji_screen is not the real hardware
@@ -1265,7 +1265,7 @@ bool Widget::onProcessMessage(Message* msg)
         return ev.isPainted();
       }
 
-    case JM_SETPOS: {
+    case kResizeMessage: {
       jrect_copy(this->rc, &msg->setpos.rect);
       JRect cpos = jwidget_get_child_rect(this);
 
@@ -1277,8 +1277,8 @@ bool Widget::onProcessMessage(Message* msg)
       return true;
     }
 
-    case JM_KEYPRESSED:
-    case JM_KEYRELEASED:
+    case kKeyDownMessage:
+    case kKeyUpMessage:
       if (msg->key.propagate_to_children) {
         // Broadcast the message to the children.
         UI_FOREACH_WIDGET(getChildren(), it)
@@ -1291,18 +1291,18 @@ bool Widget::onProcessMessage(Message* msg)
       else
         break;
 
-    case JM_BUTTONPRESSED:
-    case JM_BUTTONRELEASED:
-    case JM_DOUBLECLICK:
-    case JM_MOTION:
-    case JM_WHEEL:
+    case kMouseDownMessage:
+    case kMouseUpMessage:
+    case kDoubleClickMessage:
+    case kMouseMoveMessage:
+    case kMouseWheelMessage:
       // Propagate the message to the parent.
       if (getParent() != NULL)
         return getParent()->sendMessage(msg);
       else
         break;
 
-    case JM_SETCURSOR:
+    case kSetCursorMessage:
       // Propagate the message to the parent.
       if (getParent() != NULL)
         return getParent()->sendMessage(msg);

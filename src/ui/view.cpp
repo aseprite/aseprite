@@ -239,13 +239,13 @@ bool View::onProcessMessage(Message* msg)
 {
   switch (msg->type) {
 
-    case JM_SETPOS:
+    case kResizeMessage:
       jrect_copy(this->rc, &msg->setpos.rect);
       updateView();
       return true;
 
-    case JM_FOCUSENTER:
-    case JM_FOCUSLEAVE:
+    case kFocusEnterMessage:
+    case kFocusLeaveMessage:
       // TODO This is theme specific stuff
       // Redraw the borders each time the focus enters or leaves the view.
       {

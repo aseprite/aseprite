@@ -276,19 +276,19 @@ bool Window::onProcessMessage(Message* msg)
 {
   switch (msg->type) {
 
-    case JM_SETPOS:
+    case kResizeMessage:
       windowSetPosition(&msg->setpos.rect);
       return true;
 
-    case JM_OPEN:
+    case kOpenMessage:
       m_killer = NULL;
       break;
 
-    case JM_CLOSE:
+    case kCloseMessage:
       saveLayout();
       break;
 
-    case JM_BUTTONPRESSED: {
+    case kMouseDownMessage: {
       if (!m_isMoveable)
         break;
 
@@ -310,7 +310,7 @@ bool Window::onProcessMessage(Message* msg)
         break;
     }
 
-    case JM_BUTTONRELEASED:
+    case kMouseUpMessage:
       if (hasCapture()) {
         releaseMouse();
         jmouse_set_cursor(kArrowCursor);
@@ -325,7 +325,7 @@ bool Window::onProcessMessage(Message* msg)
       }
       break;
 
-    case JM_MOTION:
+    case kMouseMoveMessage:
       if (!m_isMoveable)
         break;
 
@@ -400,7 +400,7 @@ bool Window::onProcessMessage(Message* msg)
       }
       break;
 
-    case JM_SETCURSOR:
+    case kSetCursorMessage:
       if (m_isMoveable) {
         HitTest ht = hitTest(gfx::Point(msg->mouse.x, msg->mouse.y));
         CursorType cursor = kArrowCursor;
@@ -555,8 +555,8 @@ void Window::moveWindow(JRect rect, bool use_blit)
   /* get the manager's current position */
   man_pos = jwidget_get_rect(manager);
 
-  /* sent a JM_WINMOVE message to the window */
-  msg = jmessage_new(JM_WINMOVE);
+  /* sent a kWinMoveMessage message to the window */
+  msg = jmessage_new(kWinMoveMessage);
   jmessage_add_dest(msg, this);
   manager->enqueueMessage(msg);
 
@@ -566,7 +566,7 @@ void Window::moveWindow(JRect rect, bool use_blit)
   // If the size of the window changes...
   if (jrect_w(old_pos) != jrect_w(rect) ||
       jrect_h(old_pos) != jrect_h(rect)) {
-    // We have to change the whole positions sending JM_SETPOS
+    // We have to change the whole positions sending kResizeMessage
     // messages...
     windowSetPosition(rect);
   }
@@ -591,7 +591,7 @@ void Window::moveWindow(JRect rect, bool use_blit)
   // In second place, we have to setup the window's refresh region...
 
   // If "use_blit" isn't activated, we have to redraw the whole window
-  // (sending JM_DRAW messages) in the new drawable region
+  // (sending kPaintMessage messages) in the new drawable region
   if (!use_blit) {
     window_refresh_region = new_drawable_region;
   }

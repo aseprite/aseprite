@@ -49,11 +49,11 @@ bool Splitter::onProcessMessage(Message* msg)
 {
   switch (msg->type) {
 
-    case JM_SETPOS:
+    case kResizeMessage:
       layoutMembers(&msg->setpos.rect);
       return true;
 
-    case JM_BUTTONPRESSED:
+    case kMouseDownMessage:
       if (isEnabled()) {
         Widget* c1, *c2;
         int x1, y1, x2, y2;
@@ -96,7 +96,7 @@ bool Splitter::onProcessMessage(Message* msg)
       else
         break;
 
-    case JM_MOTION:
+    case kMouseMoveMessage:
       if (this->hasCapture()) {
         if (this->getAlign() & JI_HORIZONTAL) {
           switch (m_type) {
@@ -127,14 +127,14 @@ bool Splitter::onProcessMessage(Message* msg)
       }
       break;
 
-    case JM_BUTTONRELEASED:
+    case kMouseUpMessage:
       if (hasCapture()) {
         releaseMouse();
         return true;
       }
       break;
 
-    case JM_SETCURSOR:
+    case kSetCursorMessage:
       if (isEnabled()) {
         Widget* c1, *c2;
         int x1, y1, x2, y2;

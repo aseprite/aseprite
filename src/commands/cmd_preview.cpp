@@ -187,7 +187,7 @@ void PreviewCommand::onExecute(Context* context)
 
     if (keypressed()) {
       int readkey_value = readkey();
-      Message* msg = jmessage_new_key_related(JM_KEYPRESSED, readkey_value);
+      Message* msg = jmessage_new_key_related(kKeyDownMessage, readkey_value);
       Command* command = NULL;
       get_command_from_key_message(msg, &command, NULL);
       jmessage_free(msg);

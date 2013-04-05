@@ -98,7 +98,7 @@ void Timer::pollTimers()
         if (count > 0) {
           ASSERT(timer->m_owner != NULL);
 
-          Message* msg = jmessage_new(JM_TIMER);
+          Message* msg = jmessage_new(kTimerMessage);
           msg->timer.count = count;
           msg->timer.timer = timer;
           jmessage_add_dest(msg, timer->m_owner);

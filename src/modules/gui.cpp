@@ -735,7 +735,7 @@ bool CustomizedGuiManager::onProcessMessage(Message* msg)
 {
   switch (msg->type) {
 
-    case JM_CLOSE_APP:
+    case kCloseAppMessage:
       {
         // Execute the "Exit" command.
         Command* command = CommandsModule::instance()->getCommandByName(CommandId::Exit);
@@ -743,14 +743,14 @@ bool CustomizedGuiManager::onProcessMessage(Message* msg)
       }
       break;
 
-    case JM_QUEUEPROCESSING:
+    case kQueueProcessingMessage:
       gui_feedback();
 
       // Open dropped files
       check_for_dropped_files();
       break;
 
-    case JM_KEYPRESSED: {
+    case kKeyDownMessage: {
       Window* toplevel_window = getTopWindow();
 
       // If there is a foreground window as top level...

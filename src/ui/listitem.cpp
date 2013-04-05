@@ -29,7 +29,7 @@ bool ListItem::onProcessMessage(Message* msg)
 {
   switch (msg->type) {
 
-    case JM_SETPOS: {
+    case kResizeMessage: {
       JRect crect;
 
       jrect_copy(this->rc, &msg->setpos.rect);
@@ -42,7 +42,7 @@ bool ListItem::onProcessMessage(Message* msg)
       return true;
     }
 
-    case JM_DRAW:
+    case kPaintMessage:
       this->getTheme()->draw_listitem(this, &msg->draw.rect);
       return true;
   }

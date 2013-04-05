@@ -174,7 +174,7 @@ bool Entry::onProcessMessage(Message* msg)
 {
   switch (msg->type) {
 
-    case JM_TIMER:
+    case kTimerMessage:
       if (this->hasFocus() && msg->timer.timer == &m_timer) {
         // Blinking caret
         m_state = m_state ? false: true;
@@ -182,7 +182,7 @@ bool Entry::onProcessMessage(Message* msg)
       }
       break;
 
-    case JM_FOCUSENTER:
+    case kFocusEnterMessage:
       m_timer.start();
 
       m_state = true;
@@ -192,7 +192,7 @@ bool Entry::onProcessMessage(Message* msg)
       m_recent_focused = true;
       break;
 
-    case JM_FOCUSLEAVE:
+    case kFocusLeaveMessage:
       invalidate();
 
       m_timer.stop();
@@ -201,7 +201,7 @@ bool Entry::onProcessMessage(Message* msg)
       m_recent_focused = false;
       break;
 
-    case JM_KEYPRESSED:
+    case kKeyDownMessage:
       if (this->hasFocus() && !isReadOnly()) {
         // Command to execute
         EntryCmd::Type cmd = EntryCmd::NoOp;
@@ -279,10 +279,10 @@ bool Entry::onProcessMessage(Message* msg)
       }
       break;
 
-    case JM_BUTTONPRESSED:
+    case kMouseDownMessage:
       this->captureMouse();
 
-    case JM_MOTION:
+    case kMouseMoveMessage:
       if (this->hasCapture()) {
         const char *text = this->getText();
         bool move, is_dirty;
@@ -338,7 +338,7 @@ bool Entry::onProcessMessage(Message* msg)
           m_recent_focused = false;
           m_select = m_caret;
         }
-        else if (msg->type == JM_BUTTONPRESSED)
+        else if (msg->type == kMouseDownMessage)
           m_select = m_caret;
 
         // Show the caret
@@ -351,20 +351,20 @@ bool Entry::onProcessMessage(Message* msg)
       }
       break;
 
-    case JM_BUTTONRELEASED:
+    case kMouseUpMessage:
       if (this->hasCapture())
         this->releaseMouse();
       return true;
 
-    case JM_DOUBLECLICK:
+    case kDoubleClickMessage:
       forwardWord();
       m_select = m_caret;
       backwardWord();
       invalidate();
       return true;
 
-    case JM_MOUSEENTER:
-    case JM_MOUSELEAVE:
+    case kMouseEnterMessage:
+    case kMouseLeaveMessage:
       /* TODO theme stuff */
       if (this->isEnabled())
         invalidate();

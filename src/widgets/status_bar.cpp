@@ -108,12 +108,12 @@ public:
     switch (msg->type) {
       // When the mouse enter in this entry, it got the focus and the
       // text is automatically selected.
-      case JM_MOUSEENTER:
+      case kMouseEnterMessage:
         requestFocus();
         selectText(0, -1);
         break;
 
-      case JM_KEYPRESSED:
+      case kKeyDownMessage:
         if (msg->key.scancode == KEY_ENTER ||
             msg->key.scancode == KEY_ENTER_PAD) {
           Command* cmd = CommandsModule::instance()->getCommandByName(CommandId::GotoFrame);
@@ -165,7 +165,7 @@ StatusBar::StatusBar()
 
   // The extra pixel in left and right borders are necessary so
   // m_commandsBox and m_movePixelsBox do not overlap the upper-left
-  // and upper-right pixels drawn in JM_DRAW message (see putpixels)
+  // and upper-right pixels drawn in kPaintMessage message (see putpixels)
   jwidget_set_border(this, 1*jguiscale(), 0, 1*jguiscale(), 0);
 
   // Construct the commands box
@@ -472,7 +472,7 @@ bool StatusBar::onProcessMessage(Message* msg)
 {
   switch (msg->type) {
 
-    case JM_SETPOS:
+    case kResizeMessage:
       jrect_copy(this->rc, &msg->setpos.rect);
       {
         JRect rc = jrect_new_copy(this->rc);
@@ -496,7 +496,7 @@ bool StatusBar::onProcessMessage(Message* msg)
       }
       return true;
 
-    case JM_DRAW: {
+    case kPaintMessage: {
       SkinTheme* theme = static_cast<SkinTheme*>(this->getTheme());
       ui::Color text_color = theme->getColor(ThemeColor::Text);
       ui::Color face_color = theme->getColor(ThemeColor::Face);
@@ -672,7 +672,7 @@ bool StatusBar::onProcessMessage(Message* msg)
       return true;
     }
 
-    case JM_MOUSEENTER: {
+    case kMouseEnterMessage: {
       const Document* document = UIContext::instance()->getActiveDocument();
       bool state = (document != NULL);
 
@@ -702,7 +702,7 @@ bool StatusBar::onProcessMessage(Message* msg)
       break;
     }
 
-    case JM_MOTION: {
+    case kMouseMoveMessage: {
       JRect rc = jwidget_get_rect(this);
 
       rc->x1 += 2*jguiscale();
@@ -765,7 +765,7 @@ bool StatusBar::onProcessMessage(Message* msg)
       break;
     }
 
-    case JM_BUTTONPRESSED:
+    case kMouseDownMessage:
       // When the user press the mouse-button over a hot-layer-button...
       if (m_hot_layer >= 0) {
         try {
@@ -792,7 +792,7 @@ bool StatusBar::onProcessMessage(Message* msg)
       }
       break;
 
-    case JM_MOUSELEAVE:
+    case kMouseLeaveMessage:
       if (hasChild(m_commandsBox)) {
         // If we want restore the state-bar and the slider doesn't have
         // the capture...
@@ -826,7 +826,7 @@ bool StatusBar::CustomizedTipWindow::onProcessMessage(Message* msg)
 {
   switch (msg->type) {
 
-    case JM_TIMER:
+    case kTimerMessage:
       closeWindow(NULL);
       break;
   }

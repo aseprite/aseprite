@@ -23,28 +23,23 @@ namespace ui {
 //////////////////////////////////////////////////////////////////////
 // Internal messages: to move between menus
 
-JM_MESSAGE(open_menuitem);
-JM_MESSAGE(close_menuitem);
-JM_MESSAGE(close_popup);
-JM_MESSAGE(exe_menuitem);
-
-// Extra fields for the JM_OPEN_MENUITEM message:
+// Extra fields for the kOpenMenuItemMessage message:
 // bool select_first = msg->user.a;
 //   If this value is true, it means that after opening the menu, we
 //   have to select the first item (i.e. highlighting it).
-#define JM_OPEN_MENUITEM  jm_open_menuitem()
+RegisterMessage kOpenMenuItemMessage;
 
-// Extra fields for the JM_CLOSE_MENUITEM message:
+// Extra fields for the kCloseMenuItemMessage message:
 // bool last_of_close_chain = msg->user.a;
 //   This fields is used to indicate the end of a sequence of
-//   JM_OPEN_MENU and JM_CLOSE_MENUITEM messages. If it is true
+//   kOpenMenuItemMessage and kCloseMenuItemMessage messages. If it is true
 //   the message is the last one of the chain, which means that no
-//   more JM_OPEN_MENU or JM_CLOSE_MENUITEM messages are in the queue.
-#define JM_CLOSE_MENUITEM jm_close_menuitem()
+//   more kOpenMenuItemMessage or kCloseMenuItemMessage messages are in the queue.
+RegisterMessage kCloseMenuItemMessage;
 
-#define JM_CLOSE_POPUP    jm_close_popup()
+RegisterMessage kClosePopupMessage;
 
-#define JM_EXE_MENUITEM   jm_exe_menuitem()
+RegisterMessage kExecuteMenuItemMessage;
 
 // Data for the main jmenubar or the first popuped-jmenubox
 struct MenuBaseData
@@ -52,12 +47,12 @@ struct MenuBaseData
   // True when the menu-items must be opened with the cursor movement
   bool was_clicked : 1;
 
-  // True when there's JM_OPEN/CLOSE_MENUITEM messages in queue, to
+  // True when there's kOpen/CloseMenuItemMessage messages in queue, to
   // avoid start processing another menuitem-request when we're
   // already working in one
   bool is_processing : 1;
 
-  // True when the JM_BUTTONPRESSED is being filtered
+  // True when the kMouseDownMessage is being filtered
   bool is_filtering : 1;
 
   bool close_all : 1;
@@ -88,7 +83,7 @@ protected:
   {
     switch (msg->type) {
 
-      case JM_CLOSE:
+      case kCloseMessage:
         // Delete this window automatically
         deferDelete();
         break;
@@ -140,7 +135,7 @@ MenuBox::~MenuBox()
 {
   if (m_base && m_base->is_filtering) {
     m_base->is_filtering = false;
-    Manager::getDefault()->removeMessageFilter(JM_BUTTONPRESSED, this);
+    Manager::getDefault()->removeMessageFilter(kMouseDownMessage, this);
   }
 
   delete m_base;
@@ -264,7 +259,7 @@ void Menu::showPopup(int x, int y)
   MenuBaseData* base = menubox->createBase();
   base->was_clicked = true;
   base->is_filtering = true;
-  Manager::getDefault()->addMessageFilter(JM_BUTTONPRESSED, menubox);
+  Manager::getDefault()->addMessageFilter(kMouseDownMessage, menubox);
 
   window->setMoveable(false);   // Can't move the window
 
@@ -299,11 +294,11 @@ bool Menu::onProcessMessage(Message* msg)
 {
   switch (msg->type) {
 
-    case JM_SETPOS:
+    case kResizeMessage:
       set_position(&msg->setpos.rect);
       return true;
 
-    case JM_DRAW:
+    case kPaintMessage:
       getTheme()->draw_menu(this, &msg->draw.rect);
       return true;
 
@@ -372,18 +367,18 @@ bool MenuBox::onProcessMessage(Message* msg)
 
   switch (msg->type) {
 
-    case JM_SETPOS:
+    case kResizeMessage:
       set_position(&msg->setpos.rect);
       return true;
 
-    case JM_MOTION:
+    case kMouseMoveMessage:
       /* isn't pressing a button? */
       if (!msg->mouse.flags && !get_base(this)->was_clicked)
         break;
 
       // Fall though
 
-    case JM_BUTTONPRESSED:
+    case kMouseDownMessage:
       if (menu) {
         if (get_base(this)->is_processing)
           break;
@@ -391,7 +386,7 @@ bool MenuBox::onProcessMessage(Message* msg)
         // Here we catch the filtered messages (menu-bar or the
         // popuped menu-box) to detect if the user press outside of
         // the widget
-        if (msg->type == JM_BUTTONPRESSED && m_base != NULL) {
+        if (msg->type == kMouseDownMessage && m_base != NULL) {
           Widget* picked = getManager()->pick(msg->mouse.x, msg->mouse.y);
 
           // If one of these conditions are accomplished we have to
@@ -425,14 +420,14 @@ bool MenuBox::onProcessMessage(Message* msg)
               // open the submenu only if the user does click
               bool open_submenu =
                 (this->type == kMenuBarWidget) ||
-                (msg->type == JM_BUTTONPRESSED);
+                (msg->type == kMouseDownMessage);
 
               menu->highlightItem(static_cast<MenuItem*>(picked), false, open_submenu, false);
             }
             // If the user pressed in a highlighted menu-item (maybe
             // the user was waiting for the timer to open the
             // submenu...)
-            else if (msg->type == JM_BUTTONPRESSED &&
+            else if (msg->type == kMouseDownMessage &&
                      static_cast<MenuItem*>(picked)->hasSubmenu()) {
               static_cast<MenuItem*>(picked)->stopTimer();
 
@@ -448,7 +443,7 @@ bool MenuBox::onProcessMessage(Message* msg)
       }
       break;
 
-    case JM_MOUSELEAVE:
+    case kMouseLeaveMessage:
       if (menu) {
         if (get_base(this)->is_processing)
           break;
@@ -459,7 +454,7 @@ bool MenuBox::onProcessMessage(Message* msg)
       }
       break;
 
-    case JM_BUTTONRELEASED:
+    case kMouseUpMessage:
       if (menu) {
         if (get_base(this)->is_processing)
           break;
@@ -475,7 +470,7 @@ bool MenuBox::onProcessMessage(Message* msg)
       }
       break;
 
-    case JM_KEYPRESSED:
+    case kKeyDownMessage:
       if (menu) {
         MenuItem* selected;
 
@@ -652,7 +647,7 @@ bool MenuBox::onProcessMessage(Message* msg)
       break;
 
     default:
-      if (msg->type == JM_CLOSE_POPUP) {
+      if (msg->type == kClosePopupMessage) {
         this->getManager()->_closeWindow(this->getRoot(), true);
       }
       break;
@@ -687,11 +682,11 @@ bool MenuItem::onProcessMessage(Message* msg)
 {
   switch (msg->type) {
 
-    case JM_DRAW:
+    case kPaintMessage:
       getTheme()->draw_menuitem(this, &msg->draw.rect);
       return true;
 
-    case JM_MOUSEENTER:
+    case kMouseEnterMessage:
       // TODO theme specific!!
       invalidate();
 
@@ -702,7 +697,7 @@ bool MenuItem::onProcessMessage(Message* msg)
       }
       break;
 
-    case JM_MOUSELEAVE:
+    case kMouseLeaveMessage:
       // TODO theme specific!!
       invalidate();
 
@@ -712,7 +707,7 @@ bool MenuItem::onProcessMessage(Message* msg)
       break;
 
     default:
-      if (msg->type == JM_OPEN_MENUITEM) {
+      if (msg->type == kOpenMenuItemMessage) {
         MenuBaseData* base = get_base(this);
         JRect pos;
         bool select_first = msg->user.a ? true: false;
@@ -810,7 +805,7 @@ bool MenuItem::onProcessMessage(Message* msg)
         jrect_free(old_pos);
         return true;
       }
-      else if (msg->type == JM_CLOSE_MENUITEM) {
+      else if (msg->type == kCloseMenuItemMessage) {
         MenuBaseData* base = get_base(this);
         Window* window;
         bool last_of_close_chain = (msg->user.a ? true: false);
@@ -851,13 +846,13 @@ bool MenuItem::onProcessMessage(Message* msg)
         stopTimer();
         return true;
       }
-      else if (msg->type == JM_EXE_MENUITEM) {
+      else if (msg->type == kExecuteMenuItemMessage) {
         onClick();
         return true;
       }
       break;
 
-    case JM_TIMER:
+    case kTimerMessage:
       if (msg->timer.timer == m_submenu_timer.get()) {
         MenuBaseData* base = get_base(this);
 
@@ -1043,7 +1038,7 @@ void MenuItem::openSubmenu(bool select_first)
     }
   }
 
-  msg = jmessage_new(JM_OPEN_MENUITEM);
+  msg = jmessage_new(kOpenMenuItemMessage);
   msg->user.a = select_first;
   jmessage_add_dest(msg, this);
   Manager::getDefault()->enqueueMessage(msg);
@@ -1057,13 +1052,13 @@ void MenuItem::openSubmenu(bool select_first)
   base->close_all = false;
   base->is_processing = true;
 
-  // We need to add a filter of the JM_BUTTONPRESSED to intercept
+  // We need to add a filter of the kMouseDownMessage to intercept
   // clicks outside the menu (and close all the hierarchy in that
   // case); the widget to intercept messages is the base menu-bar or
   // popuped menu-box
   if (!base->is_filtering) {
     base->is_filtering = true;
-    Manager::getDefault()->addMessageFilter(JM_BUTTONPRESSED, get_base_menubox(this));
+    Manager::getDefault()->addMessageFilter(kMouseDownMessage, get_base_menubox(this));
   }
 }
 
@@ -1089,7 +1084,7 @@ void MenuItem::closeSubmenu(bool last_of_close_chain)
   }
 
   // Second: now we can close the 'menuitem'
-  msg = jmessage_new(JM_CLOSE_MENUITEM);
+  msg = jmessage_new(kCloseMenuItemMessage);
   msg->user.a = last_of_close_chain;
   jmessage_add_dest(msg, this);
   Manager::getDefault()->enqueueMessage(msg);
@@ -1137,7 +1132,7 @@ void Menu::closeAll()
   base->was_clicked = false;
   if (base->is_filtering) {
     base->is_filtering = false;
-    Manager::getDefault()->removeMessageFilter(JM_BUTTONPRESSED, base_menubox);
+    Manager::getDefault()->removeMessageFilter(kMouseDownMessage, base_menubox);
   }
 
   menu->unhighlightItem();
@@ -1165,7 +1160,7 @@ void Menu::closeAll()
 
 void MenuBox::closePopup()
 {
-  Message* msg = jmessage_new(JM_CLOSE_POPUP);
+  Message* msg = jmessage_new(kClosePopupMessage);
   jmessage_add_dest(msg, this);
   Manager::getDefault()->enqueueMessage(msg);
 }
@@ -1189,7 +1184,7 @@ void MenuBox::cancelMenuLoop()
 void MenuItem::executeClick()
 {
   // Send the message
-  Message* msg = jmessage_new(JM_EXE_MENUITEM);
+  Message* msg = jmessage_new(kExecuteMenuItemMessage);
   jmessage_add_dest(msg, this);
   Manager::getDefault()->enqueueMessage(msg);
 }

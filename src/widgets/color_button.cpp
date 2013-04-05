@@ -95,20 +95,20 @@ bool ColorButton::onProcessMessage(Message* msg)
 {
   switch (msg->type) {
 
-    case JM_CLOSE:
+    case kCloseMessage:
       if (m_window && m_window->isVisible())
         m_window->closeWindow(NULL);
       break;
 
-    case JM_MOUSEENTER:
+    case kMouseEnterMessage:
       StatusBar::instance()->showColor(0, "", m_color, 255);
       break;
 
-    case JM_MOUSELEAVE:
+    case kMouseLeaveMessage:
       StatusBar::instance()->clearText();
       break;
 
-    case JM_MOTION:
+    case kMouseMoveMessage:
       if (hasCapture()) {
         Widget* picked = getManager()->pick(msg->mouse.x, msg->mouse.y);
         app::Color color = m_color;
@@ -145,7 +145,7 @@ bool ColorButton::onProcessMessage(Message* msg)
       }
       break;
 
-    case JM_SETCURSOR:
+    case kSetCursorMessage:
       if (hasCapture()) {
         jmouse_set_cursor(kEyedropperCursor);
         return true;

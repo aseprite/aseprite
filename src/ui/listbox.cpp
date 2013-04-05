@@ -124,22 +124,22 @@ bool ListBox::onProcessMessage(Message* msg)
 {
   switch (msg->type) {
 
-    case JM_SETPOS:
+    case kResizeMessage:
       layoutListBox(&msg->setpos.rect);
       return true;
 
-    case JM_DRAW:
+    case kPaintMessage:
       this->getTheme()->draw_listbox(this, &msg->draw.rect);
       return true;
 
-    case JM_OPEN:
+    case kOpenMessage:
       centerScroll();
       break;
 
-    case JM_BUTTONPRESSED:
+    case kMouseDownMessage:
       captureMouse();
 
-    case JM_MOTION:
+    case kMouseMoveMessage:
       if (hasCapture()) {
         int select = getSelectedIndex();
         View* view = View::getView(this);
@@ -181,11 +181,11 @@ bool ListBox::onProcessMessage(Message* msg)
       }
       break;
 
-    case JM_BUTTONRELEASED:
+    case kMouseUpMessage:
       releaseMouse();
       break;
 
-    case JM_WHEEL: {
+    case kMouseWheelMessage: {
       View* view = View::getView(this);
       if (view) {
         gfx::Point scroll = view->getViewScroll();
@@ -195,7 +195,7 @@ bool ListBox::onProcessMessage(Message* msg)
       break;
     }
 
-    case JM_KEYPRESSED:
+    case kKeyDownMessage:
       if (hasFocus() && !getChildren().empty()) {
         int select = getSelectedIndex();
         View* view = View::getView(this);
@@ -251,7 +251,7 @@ bool ListBox::onProcessMessage(Message* msg)
       }
       break;
 
-    case JM_DOUBLECLICK:
+    case kDoubleClickMessage:
       onDoubleClickItem();
       return true;
   }

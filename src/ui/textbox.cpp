@@ -33,11 +33,11 @@ bool TextBox::onProcessMessage(Message* msg)
 {
   switch (msg->type) {
 
-    case JM_DRAW:
+    case kPaintMessage:
       getTheme()->draw_textbox(this, &msg->draw.rect);
       return true;
 
-    case JM_KEYPRESSED:
+    case kKeyDownMessage:
       if (hasFocus()) {
         View* view = View::getView(this);
         if (view) {
@@ -95,7 +95,7 @@ bool TextBox::onProcessMessage(Message* msg)
       }
       break;
 
-    case JM_BUTTONPRESSED: {
+    case kMouseDownMessage: {
       View* view = View::getView(this);
       if (view) {
         captureMouse();
@@ -105,7 +105,7 @@ bool TextBox::onProcessMessage(Message* msg)
       break;
     }
 
-    case JM_MOTION: {
+    case kMouseMoveMessage: {
       View* view = View::getView(this);
       if (view && hasCapture()) {
         gfx::Rect vp = view->getViewportBounds();
@@ -121,7 +121,7 @@ bool TextBox::onProcessMessage(Message* msg)
       break;
     }
 
-    case JM_BUTTONRELEASED: {
+    case kMouseUpMessage: {
       View* view = View::getView(this);
       if (view && hasCapture()) {
         releaseMouse();
@@ -131,7 +131,7 @@ bool TextBox::onProcessMessage(Message* msg)
       break;
     }
 
-    case JM_WHEEL: {
+    case kMouseWheelMessage: {
       View* view = View::getView(this);
       if (view) {
         gfx::Point scroll = view->getViewScroll();

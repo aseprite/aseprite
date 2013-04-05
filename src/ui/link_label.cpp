@@ -36,7 +36,7 @@ bool LinkLabel::onProcessMessage(Message* msg)
 {
   switch (msg->type) {
 
-    case JM_SETCURSOR:
+    case kSetCursorMessage:
       // TODO theme stuff
       if (isEnabled()) {
         jmouse_set_cursor(kHandCursor);
@@ -44,14 +44,14 @@ bool LinkLabel::onProcessMessage(Message* msg)
       }
       break;
 
-    case JM_MOUSEENTER:
-    case JM_MOUSELEAVE:
+    case kMouseEnterMessage:
+    case kMouseLeaveMessage:
       // TODO theme stuff
       if (isEnabled())
         invalidate();
       break;
 
-    case JM_BUTTONRELEASED:
+    case kMouseUpMessage:
       if (isEnabled()) {
         if (!m_url.empty())
           Launcher::openUrl(m_url);

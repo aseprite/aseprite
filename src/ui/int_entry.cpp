@@ -60,16 +60,16 @@ bool IntEntry::onProcessMessage(Message* msg)
 
     // When the mouse enter in this entry, it got the focus and the
     // text is automatically selected.
-    case JM_MOUSEENTER:
+    case kMouseEnterMessage:
       requestFocus();
       selectText(0, -1);
       break;
 
-    case JM_BUTTONPRESSED:
+    case kMouseDownMessage:
       openPopup();
       break;
 
-    case JM_WHEEL:
+    case kMouseWheelMessage:
       if (isEnabled()) {
         int oldValue = getValue();
         int newValue = oldValue + jmouse_z(0) - jmouse_z(1);

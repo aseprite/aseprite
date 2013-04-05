@@ -53,7 +53,7 @@ bool ScrollBar::onProcessMessage(Message* msg)
 
   switch (msg->type) {
 
-    case JM_BUTTONPRESSED: {
+    case kMouseDownMessage: {
       View* view = static_cast<View*>(getParent());
       int x1, y1, x2, y2;
       int u1, v1, u2, v2;
@@ -120,10 +120,10 @@ bool ScrollBar::onProcessMessage(Message* msg)
       setSelected(true);
       captureMouse();
 
-      // continue to JM_MOTION handler...
+      // continue to kMouseMoveMessage handler...
     }
 
-    case JM_MOTION:
+    case kMouseMoveMessage:
       if (hasCapture()) {
         View* view = static_cast<View*>(getParent());
         int pos, len, bar_size, viewport_size;
@@ -153,13 +153,13 @@ bool ScrollBar::onProcessMessage(Message* msg)
       }
       break;
 
-    case JM_BUTTONRELEASED:
+    case kMouseUpMessage:
       setSelected(false);
       releaseMouse();
       break;
 
-    case JM_MOUSEENTER:
-    case JM_MOUSELEAVE:
+    case kMouseEnterMessage:
+    case kMouseLeaveMessage:
       // TODO add something to avoid this (theme specific stuff)
       invalidate();
       break;

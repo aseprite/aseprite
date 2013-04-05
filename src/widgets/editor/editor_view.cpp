@@ -49,14 +49,14 @@ bool EditorView::onProcessMessage(Message* msg)
 {
   switch (msg->type) {
 
-    case JM_SETPOS:
+    case kResizeMessage:
       // This avoid the displacement of the widgets in the viewport
 
       jrect_copy(this->rc, &msg->setpos.rect);
       updateView();
       return true;
 
-    case JM_DRAW:
+    case kPaintMessage:
       {
         Widget* viewport = getViewport();
         Widget* child = UI_FIRST_WIDGET(viewport->getChildren());

@@ -6,25 +6,19 @@
 
 #include "config.h"
 
-#include <allegro/keyboard.h>
-#include <string.h>
+#include "ui/message.h"
 
 #include "base/memory.h"
 #include "ui/manager.h"
-#include "ui/message.h"
 #include "ui/rect.h"
 #include "ui/widget.h"
 
+#include <allegro/keyboard.h>
+#include <string.h>
+
 namespace ui {
 
-static int registered_messages = JM_REGISTERED_MESSAGES;
-
-int ji_register_message_type()
-{
-  return registered_messages++;
-}
-
-Message* jmessage_new(int type)
+Message* jmessage_new(MessageType type)
 {
   Message* msg = new Message;
 
@@ -47,7 +41,7 @@ Message* jmessage_new(int type)
   return msg;
 }
 
-Message* jmessage_new_key_related(int type, int readkey_value)
+Message* jmessage_new_key_related(MessageType type, int readkey_value)
 {
   Message* msg = jmessage_new(type);
 
@@ -58,8 +52,8 @@ Message* jmessage_new_key_related(int type, int readkey_value)
   msg->key.propagate_to_parent = true;
 
 #if 0
-  printf("%s: %i %i [%c]\n", type == JM_KEYPRESSED ? "JM_KEYPRESSED":
-                                                     "JM_KEYRELEASED",
+  printf("%s: %i %i [%c]\n", type == kKeyDownMessage ? "kKeyDownMessage":
+                                                       "kKeyUpMessage",
          msg->key.scancode, msg->key.ascii, msg->key.ascii);
   fflush(stdout);
 #endif

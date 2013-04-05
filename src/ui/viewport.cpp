@@ -28,7 +28,7 @@ bool Viewport::onProcessMessage(Message* msg)
 {
   switch (msg->type) {
 
-    case JM_SETPOS:
+    case kResizeMessage:
       set_position(&msg->setpos.rect);
       return true;
   }

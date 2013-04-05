@@ -126,7 +126,7 @@ bool ToolBar::onProcessMessage(Message* msg)
 {
   switch (msg->type) {
 
-    case JM_DRAW: {
+    case kPaintMessage: {
       BITMAP *doublebuffer = create_bitmap(jrect_w(&msg->draw.rect),
                                            jrect_h(&msg->draw.rect));
       SkinTheme* theme = static_cast<SkinTheme*>(this->getTheme());
@@ -217,7 +217,7 @@ bool ToolBar::onProcessMessage(Message* msg)
       return true;
     }
 
-    case JM_BUTTONPRESSED: {
+    case kMouseDownMessage: {
       ToolBox* toolbox = App::instance()->getToolBox();
       int groups = toolbox->getGroupsCount();
       Rect toolrc;
@@ -258,7 +258,7 @@ bool ToolBar::onProcessMessage(Message* msg)
       break;
     }
 
-    case JM_MOTION: {
+    case kMouseMoveMessage: {
       ToolBox* toolbox = App::instance()->getToolBox();
       int groups = toolbox->getGroupsCount();
       Tool* new_hot_tool = NULL;
@@ -310,7 +310,7 @@ bool ToolBar::onProcessMessage(Message* msg)
       break;
     }
 
-    case JM_MOUSELEAVE:
+    case kMouseLeaveMessage:
       closeTipWindow();
 
       if (!m_popupWindow)
@@ -323,7 +323,7 @@ bool ToolBar::onProcessMessage(Message* msg)
       StatusBar::instance()->clearText();
       break;
 
-    case JM_TIMER:
+    case kTimerMessage:
       if (msg->timer.timer == &m_tipTimer) {
         if (m_tipWindow)
           m_tipWindow->openWindow();
@@ -403,11 +403,11 @@ void ToolBar::openPopupWindow(int group_index, ToolGroup* tool_group)
   rc.x -= w;
   rc.w = w;
 
-  // Redraw the overlapped area and save it to use it in the ToolStrip::onProcessMessage(JM_DRAW)
+  // Redraw the overlapped area and save it to use it in the ToolStrip::onProcessMessage(kPaintMessage)
   {
     getManager()->invalidateRect(rc);
 
-    // Flush JM_DRAW messages and send them
+    // Flush kPaintMessage messages and send them
     getManager()->flushRedraw();
     getManager()->dispatchMessages();
 
@@ -543,7 +543,7 @@ void ToolBar::closeTipWindow()
     delete m_tipWindow;
     m_tipWindow = NULL;
 
-    // Flush JM_DRAW messages and send them
+    // Flush kPaintMessage messages and send them
     getManager()->flushRedraw();
     getManager()->dispatchMessages();
   }
@@ -606,7 +606,7 @@ bool ToolStrip::onProcessMessage(Message* msg)
 {
   switch (msg->type) {
 
-    case JM_DRAW: {
+    case kPaintMessage: {
       BITMAP *doublebuffer = create_bitmap(jrect_w(&msg->draw.rect),
                                            jrect_h(&msg->draw.rect));
       SkinTheme* theme = static_cast<SkinTheme*>(this->getTheme());
@@ -661,7 +661,7 @@ bool ToolStrip::onProcessMessage(Message* msg)
       return true;
     }
 
-    case JM_MOTION: {
+    case kMouseMoveMessage: {
       ToolBox* toolbox = App::instance()->getToolBox();
       Tool* hot_tool = NULL;
       Rect toolrc;
@@ -695,7 +695,7 @@ bool ToolStrip::onProcessMessage(Message* msg)
       break;
     }
 
-    case JM_BUTTONPRESSED:
+    case kMouseDownMessage:
       if (m_hot_tool) {
         m_toolbar->selectTool(m_hot_tool);
         closeWindow();

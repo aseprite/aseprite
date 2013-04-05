@@ -100,7 +100,7 @@ bool ColorCurveEditor::onProcessMessage(Message* msg)
 {
   switch (msg->type) {
 
-    case JM_KEYPRESSED: {
+    case kKeyDownMessage: {
       switch (msg->key.scancode) {
 
         case KEY_INSERT: {
@@ -137,7 +137,7 @@ bool ColorCurveEditor::onProcessMessage(Message* msg)
       return true;
     }
 
-    case JM_DRAW: {
+    case kPaintMessage: {
       BITMAP *bmp;
       int x, y, u;
 
@@ -189,7 +189,7 @@ bool ColorCurveEditor::onProcessMessage(Message* msg)
       return true;
     }
 
-    case JM_BUTTONPRESSED:
+    case kMouseDownMessage:
       // Change scroll
       if (msg->any.shifts & KB_SHIFT_FLAG) {
         m_status = STATUS_SCROLLING;
@@ -232,7 +232,7 @@ bool ColorCurveEditor::onProcessMessage(Message* msg)
       captureMouse();
       // continue in motion message...
 
-    case JM_MOTION:
+    case kMouseMoveMessage:
       if (hasCapture()) {
         switch (m_status) {
 
@@ -276,7 +276,7 @@ bool ColorCurveEditor::onProcessMessage(Message* msg)
 #endif
       break;
 
-    case JM_BUTTONRELEASED:
+    case kMouseUpMessage:
       if (hasCapture()) {
         releaseMouse();
 

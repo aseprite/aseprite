@@ -30,7 +30,7 @@ bool Box::onProcessMessage(Message* msg)
 {
   switch (msg->type) {
 
-    case JM_SETPOS:
+    case kResizeMessage:
       layoutBox(&msg->setpos.rect);
       return true;
 

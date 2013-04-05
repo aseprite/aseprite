@@ -179,7 +179,7 @@ void DocumentView::onClonedFrom(WorkspaceView* from)
 bool DocumentView::onProcessMessage(Message* msg)
 {
   switch (msg->type) {
-    case JM_FOCUSENTER:
+    case kFocusEnterMessage:
       m_editor->requestFocus();
       break;
   }

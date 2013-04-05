@@ -54,7 +54,7 @@ bool ColorBar::ScrollableView::onProcessMessage(Message* msg)
 {
   switch (msg->type) {
 
-    case JM_DRAW:
+    case kPaintMessage:
       {
         SkinTheme* theme = static_cast<SkinTheme*>(getTheme());
         theme->draw_bounds_nw(ji_screen,

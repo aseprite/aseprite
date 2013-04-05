@@ -64,12 +64,12 @@ bool PopupWindowPin::onProcessMessage(Message* msg)
 {
   switch (msg->type) {
 
-    case JM_OPEN:
+    case kOpenMessage:
       m_pin.setSelected(false);
       makeFixed();
       break;
 
-    case JM_CLOSE:
+    case kCloseMessage:
       m_pin.setSelected(false);
       break;
 

@@ -308,11 +308,11 @@ bool ComboBox::onProcessMessage(Message* msg)
 {
   switch (msg->type) {
 
-    case JM_CLOSE:
+    case kCloseMessage:
       closeListBox();
       break;
 
-    case JM_SETPOS: {
+    case kResizeMessage: {
       JRect cbox = jrect_new_copy(&msg->setpos.rect);
       jrect_copy(this->rc, cbox);
 
@@ -330,7 +330,7 @@ bool ComboBox::onProcessMessage(Message* msg)
       return true;
     }
 
-    case JM_WINMOVE:
+    case kWinMoveMessage:
       if (m_window) {
         JRect rc = getListBoxPos();
         m_window->moveWindow(rc);
@@ -338,7 +338,7 @@ bool ComboBox::onProcessMessage(Message* msg)
       }
       break;
 
-    case JM_BUTTONPRESSED:
+    case kMouseDownMessage:
       if (m_window != NULL) {
         if (!View::getView(m_listbox)->hasMouse()) {
           closeListBox();
@@ -381,7 +381,7 @@ bool ComboBoxEntry::onProcessMessage(Message* msg)
 {
   switch (msg->type) {
 
-    case JM_KEYPRESSED:
+    case kKeyDownMessage:
       if (hasFocus()) {
         if (!m_comboBox->isEditable()) {
           if (msg->key.scancode == KEY_SPACE ||
@@ -401,7 +401,7 @@ bool ComboBoxEntry::onProcessMessage(Message* msg)
       }
       break;
 
-    case JM_BUTTONPRESSED:
+    case kMouseDownMessage:
       if (m_comboBox->isClickOpen()) {
         m_comboBox->switchListBox();
       }
@@ -413,7 +413,7 @@ bool ComboBoxEntry::onProcessMessage(Message* msg)
         return true;
       break;
 
-    case JM_DRAW:
+    case kPaintMessage:
       getTheme()->draw_combobox_entry(this, &msg->draw.rect);
       return true;
 
@@ -426,7 +426,7 @@ bool ComboBoxListBox::onProcessMessage(Message* msg)
 {
   switch (msg->type) {
 
-    case JM_BUTTONRELEASED:
+    case kMouseUpMessage:
       {
         int index = m_comboBox->getSelectedItemIndex();
         if (isValidItem(index))
@@ -436,7 +436,7 @@ bool ComboBoxListBox::onProcessMessage(Message* msg)
       }
       return true;
 
-    case JM_KEYPRESSED:
+    case kKeyDownMessage:
       if (hasFocus()) {
         if (msg->key.scancode == KEY_SPACE ||
             msg->key.scancode == KEY_ENTER ||
@@ -495,7 +495,7 @@ void ComboBox::openListBox()
     m_window->positionWindow(rc->x1, rc->y1);
     jrect_free(rc);
 
-    getManager()->addMessageFilter(JM_BUTTONPRESSED, this);
+    getManager()->addMessageFilter(kMouseDownMessage, this);
 
     m_window->openWindow();
     getManager()->setFocus(m_listbox);
@@ -511,7 +511,7 @@ void ComboBox::closeListBox()
     delete m_window;            // window, frame
     m_window = NULL;
 
-    getManager()->removeMessageFilter(JM_BUTTONPRESSED, this);
+    getManager()->removeMessageFilter(kMouseDownMessage, this);
     getManager()->setFocus(m_entry);
   }
 }

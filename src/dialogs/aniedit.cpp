@@ -272,7 +272,7 @@ bool AnimationEditor::onProcessMessage(Message* msg)
 {
   switch (msg->type) {
 
-    case JM_DRAW: {
+    case kPaintMessage: {
       JRect clip = &msg->draw.rect;
       int layer, first_layer, last_layer;
       FrameNumber frame, first_frame, last_frame;
@@ -320,18 +320,18 @@ bool AnimationEditor::onProcessMessage(Message* msg)
       return true;
     }
 
-    case JM_TIMER:
+    case kTimerMessage:
       break;
 
-    case JM_MOUSEENTER:
+    case kMouseEnterMessage:
       if (key[KEY_SPACE]) m_space_pressed = true;
       break;
 
-    case JM_MOUSELEAVE:
+    case kMouseLeaveMessage:
       if (m_space_pressed) m_space_pressed = false;
       break;
 
-    case JM_BUTTONPRESSED:
+    case kMouseDownMessage:
       if (msg->mouse.middle || m_space_pressed) {
         captureMouse();
         m_state = STATE_SCROLLING;
@@ -432,7 +432,7 @@ bool AnimationEditor::onProcessMessage(Message* msg)
       jmouse_show();
       break;
 
-    case JM_MOTION: {
+    case kMouseMoveMessage: {
       int hot_part = A_PART_NOTHING;
       int hot_layer = -1;
       FrameNumber hot_frame(-1);
@@ -523,7 +523,7 @@ bool AnimationEditor::onProcessMessage(Message* msg)
       return true;
     }
 
-    case JM_BUTTONRELEASED:
+    case kMouseUpMessage:
       if (hasCapture()) {
         releaseMouse();
 
@@ -712,7 +712,7 @@ bool AnimationEditor::onProcessMessage(Message* msg)
       }
       break;
 
-    case JM_KEYPRESSED: {
+    case kKeyDownMessage: {
       Command* command = NULL;
       Params* params = NULL;
       get_command_from_key_message(msg, &command, &params);
@@ -779,7 +779,7 @@ bool AnimationEditor::onProcessMessage(Message* msg)
       break;
     }
 
-    case JM_KEYRELEASED:
+    case kKeyUpMessage:
       switch (msg->key.scancode) {
 
         case KEY_SPACE:
@@ -795,7 +795,7 @@ bool AnimationEditor::onProcessMessage(Message* msg)
       }
       break;
 
-    case JM_WHEEL: {
+    case kMouseWheelMessage: {
       int dz = jmouse_z(1) - jmouse_z(0);
       int dx = 0;
       int dy = 0;
@@ -815,7 +815,7 @@ bool AnimationEditor::onProcessMessage(Message* msg)
       break;
     }
 
-    case JM_SETCURSOR:
+    case kSetCursorMessage:
       setCursor(msg->mouse.x, msg->mouse.y);
       return true;
 

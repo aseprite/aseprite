@@ -68,16 +68,16 @@ bool PopupWindow::onProcessMessage(Message* msg)
 {
   switch (msg->type) {
 
-    case JM_CLOSE:
+    case kCloseMessage:
       stopFilteringMessages();
       break;
 
-    case JM_MOUSELEAVE:
+    case kMouseLeaveMessage:
       if (m_hotRegion.isEmpty() && !isMoveable())
         closeWindow(NULL);
       break;
 
-    case JM_KEYPRESSED:
+    case kKeyDownMessage:
       if (m_filtering) {
         if (msg->key.scancode == KEY_ESC ||
             msg->key.scancode == KEY_ENTER ||
@@ -93,7 +93,7 @@ bool PopupWindow::onProcessMessage(Message* msg)
       }
       break;
 
-    case JM_BUTTONPRESSED:
+    case kMouseDownMessage:
       // If the user click outside the window, we have to close the
       // tooltip window.
       if (m_filtering) {
@@ -108,7 +108,7 @@ bool PopupWindow::onProcessMessage(Message* msg)
         closeWindow(NULL);
       break;
 
-    case JM_MOTION:
+    case kMouseMoveMessage:
       if (!isMoveable() &&
           !m_hotRegion.isEmpty() &&
           getManager()->getCapture() == NULL) {
@@ -179,9 +179,9 @@ void PopupWindow::startFilteringMessages()
     m_filtering = true;
 
     Manager* manager = Manager::getDefault();
-    manager->addMessageFilter(JM_MOTION, this);
-    manager->addMessageFilter(JM_BUTTONPRESSED, this);
-    manager->addMessageFilter(JM_KEYPRESSED, this);
+    manager->addMessageFilter(kMouseMoveMessage, this);
+    manager->addMessageFilter(kMouseDownMessage, this);
+    manager->addMessageFilter(kKeyDownMessage, this);
   }
 }
 
@@ -191,9 +191,9 @@ void PopupWindow::stopFilteringMessages()
     m_filtering = false;
 
     Manager* manager = Manager::getDefault();
-    manager->removeMessageFilter(JM_MOTION, this);
-    manager->removeMessageFilter(JM_BUTTONPRESSED, this);
-    manager->removeMessageFilter(JM_KEYPRESSED, this);
+    manager->removeMessageFilter(kMouseMoveMessage, this);
+    manager->removeMessageFilter(kMouseDownMessage, this);
+    manager->removeMessageFilter(kKeyDownMessage, this);
   }
 }
 

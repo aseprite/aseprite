@@ -72,22 +72,22 @@ protected:
   bool onProcessMessage(Message* msg) OVERRIDE {
     switch (msg->type) {
 
-      case JM_SETCURSOR:
+      case kSetCursorMessage:
         jmouse_set_cursor(kArrowCursor);
         return true;
 
-      case JM_DRAW:
+      case kPaintMessage:
         static_cast<SkinTheme*>(getTheme())->drawWindowButton(this, &msg->draw.rect);
         return true;
 
-      case JM_KEYPRESSED:
+      case kKeyDownMessage:
         if (msg->key.scancode == KEY_ESC) {
           setSelected(true);
           return true;
         }
         break;
 
-      case JM_KEYRELEASED:
+      case kKeyUpMessage:
         if (msg->key.scancode == KEY_ESC) {
           if (isSelected()) {
             setSelected(false);

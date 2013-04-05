@@ -202,7 +202,7 @@ bool PaletteView::onProcessMessage(Message* msg)
 {
   switch (msg->type) {
 
-    case JM_SETPOS:
+    case kResizeMessage:
       if (!m_isUpdatingColumns) {
         m_isUpdatingColumns = true;
         View* view = View::getView(this);
@@ -216,7 +216,7 @@ bool PaletteView::onProcessMessage(Message* msg)
       }
       break;
 
-    case JM_DRAW: {
+    case kPaintMessage: {
       div_t d = div(Palette::MaxColors, m_columns);
       int cols = m_columns;
       int rows = d.quot + ((d.rem)? 1: 0);
@@ -276,11 +276,11 @@ bool PaletteView::onProcessMessage(Message* msg)
       return true;
     }
 
-    case JM_BUTTONPRESSED:
+    case kMouseDownMessage:
       captureMouse();
       /* continue... */
 
-    case JM_MOTION: {
+    case kMouseMoveMessage: {
       JRect cpos = jwidget_get_child_rect(this);
 
       int req_w, req_h;
@@ -317,11 +317,11 @@ bool PaletteView::onProcessMessage(Message* msg)
       break;
     }
 
-    case JM_BUTTONRELEASED:
+    case kMouseUpMessage:
       releaseMouse();
       return true;
 
-    case JM_WHEEL: {
+    case kMouseWheelMessage: {
       View* view = View::getView(this);
       if (view) {
         gfx::Point scroll = view->getViewScroll();
@@ -331,7 +331,7 @@ bool PaletteView::onProcessMessage(Message* msg)
       break;
     }
 
-    case JM_MOUSELEAVE:
+    case kMouseLeaveMessage:
       StatusBar::instance()->clearText();
       break;
 

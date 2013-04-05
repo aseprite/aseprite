@@ -29,7 +29,7 @@ bool Separator::onProcessMessage(Message* msg)
 {
   switch (msg->type) {
 
-    case JM_DRAW:
+    case kPaintMessage:
       getTheme()->draw_separator(this, &msg->draw.rect);
       return true;
   }

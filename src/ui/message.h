@@ -8,6 +8,7 @@
 #define UI_MESSAGE_H_INCLUDED
 
 #include "ui/base.h"
+#include "ui/message_type.h"
 #include "ui/rect.h"
 #include "ui/widgets_list.h"
 
@@ -16,19 +17,9 @@ namespace ui {
   class Timer;
   class Widget;
 
-  /* TODO add mutexes */
-#define JM_MESSAGE(name)                        \
-  static int _jm_##name = 0;                    \
-  int jm_##name()                               \
-  {                                             \
-    if (!_jm_##name)                            \
-      _jm_##name = ji_register_message_type();  \
-        return _jm_##name;                      \
-  }                                             \
-
   struct MessageAny
   {
-    int type;                   // Type of message
+    MessageType type;           // Type of message
     WidgetsList* widgets;       // Destination widgets
     bool used : 1;              // Was used
     int shifts;                 // Key shifts pressed when message was created
@@ -83,7 +74,7 @@ namespace ui {
 
   union Message
   {
-    int type;
+    MessageType type;
     MessageAny any;
     MessageKey key;
     MessageDraw draw;
@@ -93,10 +84,8 @@ namespace ui {
     MessageUser user;
   };
 
-  int ji_register_message_type();
-
-  Message* jmessage_new(int type);
-  Message* jmessage_new_key_related(int type, int readkey_value);
+  Message* jmessage_new(MessageType type);
+  Message* jmessage_new_key_related(MessageType type, int readkey_value);
   Message* jmessage_new_copy(const Message* msg);
   Message* jmessage_new_copy_without_dests(const Message* msg);
   void jmessage_free(Message* msg);
