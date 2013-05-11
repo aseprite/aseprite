@@ -25,14 +25,13 @@ namespace ui {
   protected:
     // Events
     bool onProcessMessage(Message* msg) OVERRIDE;
+    void onResize(ResizeEvent& ev) OVERRIDE;
     void onPaint(PaintEvent& ev) OVERRIDE;
     void onPreferredSize(PreferredSizeEvent& ev) OVERRIDE;
     void onLoadLayout(LoadLayoutEvent& ev) OVERRIDE;
     void onSaveLayout(SaveLayoutEvent& ev) OVERRIDE;
 
   private:
-    void layoutMembers(JRect rect);
-
     Type m_type;
     double m_pos;
   };

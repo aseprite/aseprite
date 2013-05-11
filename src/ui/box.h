@@ -19,12 +19,9 @@ namespace ui {
 
   protected:
     // Events
-    bool onProcessMessage(Message* msg) OVERRIDE;
     void onPreferredSize(PreferredSizeEvent& ev) OVERRIDE;
+    void onResize(ResizeEvent& ev) OVERRIDE;
     void onPaint(PaintEvent& ev) OVERRIDE;
-
-  private:
-    void layoutBox(JRect rect);
   };
 
   class VBox : public Box

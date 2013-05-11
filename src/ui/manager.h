@@ -74,13 +74,13 @@ namespace ui {
 
   protected:
     bool onProcessMessage(Message* msg) OVERRIDE;
+    void onResize(ResizeEvent& ev) OVERRIDE;
     void onPaint(PaintEvent& ev) OVERRIDE;
     void onPreferredSize(PreferredSizeEvent& ev) OVERRIDE;
     void onBroadcastMouseMessage(WidgetsList& targets) OVERRIDE;
     virtual LayoutIO* onGetLayoutIO();
 
   private:
-    void layoutManager(JRect rect);
     void pumpQueue();
     void generateSetCursorMessage();
     static void removeWidgetFromDests(Widget* widget, Message* msg);

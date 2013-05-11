@@ -804,17 +804,15 @@ void SkinTheme::setDecorativeWidgetBounds(Widget* widget)
 {
   if (widget->getId() == kThemeCloseButtonId) {
     Widget* window = widget->getParent();
-    JRect rect = jrect_new(0, 0, 0, 0);
+    gfx::Rect rect(0, 0, 0, 0);
 
-    rect->x2 = m_part[PART_WINDOW_CLOSE_BUTTON_NORMAL]->w;
-    rect->y2 = m_part[PART_WINDOW_CLOSE_BUTTON_NORMAL]->h;
+    rect.w = m_part[PART_WINDOW_CLOSE_BUTTON_NORMAL]->w;
+    rect.h = m_part[PART_WINDOW_CLOSE_BUTTON_NORMAL]->h;
 
-    jrect_displace(rect,
-                   window->rc->x2 - 3*jguiscale() - jrect_w(rect),
-                   window->rc->y1 + 3*jguiscale());
+    rect.offset(window->rc->x2 - 3*jguiscale() - rect.w,
+                window->rc->y1 + 3*jguiscale());
 
-    jwidget_set_rect(widget, rect);
-    jrect_free(rect);
+    widget->setBounds(rect);
   }
 }
 

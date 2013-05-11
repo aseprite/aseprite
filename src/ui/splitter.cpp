@@ -11,6 +11,7 @@
 #include "ui/load_layout_event.h"
 #include "ui/message.h"
 #include "ui/preferred_size_event.h"
+#include "ui/resize_event.h"
 #include "ui/save_layout_event.h"
 #include "ui/system.h"
 #include "ui/theme.h"
@@ -48,10 +49,6 @@ void Splitter::setPosition(double pos)
 bool Splitter::onProcessMessage(Message* msg)
 {
   switch (msg->type) {
-
-    case kResizeMessage:
-      layoutMembers(&msg->setpos.rect);
-      return true;
 
     case kMouseDownMessage:
       if (isEnabled()) {
@@ -121,8 +118,7 @@ bool Splitter::onProcessMessage(Message* msg)
           }
         }
 
-        jwidget_set_rect(this, this->rc);
-        invalidate();
+        layout();
         return true;
       }
       break;
@@ -179,6 +175,55 @@ bool Splitter::onProcessMessage(Message* msg)
   }
 
   return Widget::onProcessMessage(msg);
+}
+
+void Splitter::onResize(ResizeEvent& ev)
+{
+#define FIXUP(x, y, w, h, l, t, r, b)                                   \
+  do {                                                                  \
+    avail = rect.w - this->child_spacing;                               \
+                                                                        \
+    pos.x = rect.x;                                                     \
+    pos.y = rect.y;                                                     \
+    switch (m_type) {                                                   \
+      case ByPercentage:                                                \
+        pos.w = avail*m_pos/100;                                        \
+        break;                                                          \
+      case ByPixel:                                                     \
+        pos.w = m_pos;                                                  \
+        break;                                                          \
+    }                                                                   \
+                                                                        \
+    /* TODO uncomment this to make a restricted splitter */             \
+    /* pos.w = MID(reqSize1.w, pos.w, avail-reqSize2.w); */             \
+    pos.h = rect.h;                                                     \
+                                                                        \
+    child1->setBounds(pos);                                             \
+    gfx::Rect child1Pos = child1->getBounds();                          \
+                                                                        \
+    pos.x = child1Pos.x + child1Pos.w + this->child_spacing;            \
+    pos.y = rect.y;                                                     \
+    pos.w = avail - child1Pos.w;                                        \
+    pos.h = rect.h;                                                     \
+                                                                        \
+    child2->setBounds(pos);                                             \
+  } while(0)
+
+  gfx::Rect rect(ev.getBounds());
+  gfx::Rect pos(0, 0, 0, 0);
+  int avail;
+
+  setBoundsQuietly(rect);
+
+  if (getChildren().size() == 2) {
+    Widget* child1 = getChildren()[0];
+    Widget* child2 = getChildren()[1];
+
+    if (this->getAlign() & JI_HORIZONTAL)
+      FIXUP(x, y, w, h, l, t, r, b);
+    else
+      FIXUP(y, x, h, w, t, l, b, r);
+  }
 }
 
 void Splitter::onPaint(PaintEvent& ev)
@@ -256,56 +301,6 @@ void Splitter::onSaveLayout(SaveLayoutEvent& ev)
   // Do for all children
   UI_FOREACH_WIDGET(getChildren(), it)
     (*it)->saveLayout();
-}
-
-void Splitter::layoutMembers(JRect rect)
-{
-#define FIXUP(x, y, w, h, l, t, r, b)                                   \
-  do {                                                                  \
-    avail = jrect_##w(this->rc) - this->child_spacing;                  \
-                                                                        \
-    pos->x##1 = this->rc->x##1;                                         \
-    pos->y##1 = this->rc->y##1;                                         \
-    switch (m_type) {                                                   \
-      case ByPercentage:                                                \
-      pos->x##2 = pos->x##1 + avail*m_pos/100;                          \
-      break;                                                            \
-    case ByPixel:                                                       \
-      pos->x##2 = pos->x##1 + m_pos;                                    \
-      break;                                                            \
-    }                                                                   \
-                                                                        \
-    /* TODO uncomment this to make a restricted splitter */             \
-    /* pos->w = MID(reqSize1.w, pos->w, avail-reqSize2.w); */           \
-    pos->y##2 = pos->y##1 + jrect_##h(this->rc);                        \
-                                                                        \
-    jwidget_set_rect(child1, pos);                                      \
-                                                                        \
-    pos->x##1 = child1->rc->x##1 + jrect_##w(child1->rc)                \
-      + this->child_spacing;                                            \
-    pos->y##1 = this->rc->y##1;                                         \
-    pos->x##2 = pos->x##1 + avail - jrect_##w(child1->rc);              \
-    pos->y##2 = pos->y##1 + jrect_##h(this->rc);                        \
-                                                                        \
-    jwidget_set_rect(child2, pos);                                      \
-  } while(0)
-
-  JRect pos = jrect_new(0, 0, 0, 0);
-  int avail;
-
-  jrect_copy(this->rc, rect);
-
-  if (getChildren().size() == 2) {
-    Widget* child1 = getChildren()[0];
-    Widget* child2 = getChildren()[1];
-
-    if (this->getAlign() & JI_HORIZONTAL)
-      FIXUP(x, y, w, h, l, t, r, b);
-    else
-      FIXUP(y, x, h, w, t, l, b, r);
-  }
-
-  jrect_free(pos);
 }
 
 } // namespace ui

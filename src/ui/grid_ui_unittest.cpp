@@ -68,7 +68,6 @@ TEST(JGrid, Expand2ndWidget)
   Grid* grid = new Grid(2, false);
   Widget* w1 = new Widget(kGenericWidget);
   Widget* w2 = new Widget(kGenericWidget);
-  JRect rect;
 
   jwidget_set_min_size(w1, 20, 20);
   jwidget_set_min_size(w2, 10, 10);
@@ -82,9 +81,7 @@ TEST(JGrid, Expand2ndWidget)
   EXPECT_EQ(20, reqSize.h);
 
   // Test layout
-  rect = jrect_new(0, 0, 40, 20);
-  jwidget_set_rect(grid, rect);
-  jrect_free(rect);
+  grid->setBounds(gfx::Rect(0, 0, 40, 20));
 
   EXPECT_EQ(0, w1->rc->x1);
   EXPECT_EQ(0, w1->rc->y1);
@@ -104,7 +101,6 @@ TEST(JGrid, SameWidth2x1Grid)
   Grid* grid = new Grid(2, true);
   Widget* w1 = new Widget(kGenericWidget);
   Widget* w2 = new Widget(kGenericWidget);
-  JRect rect;
 
   jwidget_set_min_size(w1, 20, 20);
   jwidget_set_min_size(w2, 10, 10);
@@ -118,9 +114,7 @@ TEST(JGrid, SameWidth2x1Grid)
   EXPECT_EQ(20, reqSize.h);
 
   // Test layout
-  rect = jrect_new(0, 0, 60, 20);
-  jwidget_set_rect(grid, rect);
-  jrect_free(rect);
+  grid->setBounds(gfx::Rect(0, 0, 60, 20));
 
   EXPECT_EQ(0, w1->rc->x1);
   EXPECT_EQ(30, w2->rc->x1);
@@ -171,7 +165,6 @@ TEST(JGrid, Intrincate3x3Grid)
   Widget* w2 = new Widget(kGenericWidget);
   Widget* w3 = new Widget(kGenericWidget);
   Widget* w4 = new Widget(kGenericWidget);
-  JRect rect;
 
   jwidget_set_min_size(w1, 10, 10);
   jwidget_set_min_size(w2, 10, 10);
@@ -190,9 +183,7 @@ TEST(JGrid, Intrincate3x3Grid)
   EXPECT_EQ(22, reqSize.h);
 
   // Test layout
-  rect = jrect_new(0, 0, 100, 100);
-  jwidget_set_rect(grid, rect);
-  jrect_free(rect);
+  grid->setBounds(gfx::Rect(0, 0, 100, 100));
 
   EXPECT_EQ(0, w1->rc->x1);
   EXPECT_EQ(0, w1->rc->y1);

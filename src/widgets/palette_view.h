@@ -52,6 +52,7 @@ public:
 
 protected:
   bool onProcessMessage(ui::Message* msg) OVERRIDE;
+  void onResize(ui::ResizeEvent& ev) OVERRIDE;
   void onPreferredSize(ui::PreferredSizeEvent& ev) OVERRIDE;
 
 private:

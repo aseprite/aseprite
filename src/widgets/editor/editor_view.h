@@ -30,6 +30,7 @@ public:
 
 protected:
   bool onProcessMessage(ui::Message* msg) OVERRIDE;
+  void onResize(ui::ResizeEvent& ev) OVERRIDE;
 
 private:
   Type m_type;

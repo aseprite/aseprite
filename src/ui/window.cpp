@@ -176,21 +176,13 @@ void Window::onHitTest(HitTestEvent& ev)
 
 void Window::remapWindow()
 {
-  Size reqSize;
-  JRect rect;
-
   if (m_isAutoRemap) {
     m_isAutoRemap = false;
     this->setVisible(true);
   }
 
-  reqSize = this->getPreferredSize();
-
-  rect = jrect_new(this->rc->x1, this->rc->y1,
-                   this->rc->x1+reqSize.w,
-                   this->rc->y1+reqSize.h);
-  jwidget_set_rect(this, rect);
-  jrect_free(rect);
+  setBounds(Rect(Point(this->rc->x1, this->rc->y1),
+                 getPreferredSize()));
 
   // load layout
   loadLayout();
@@ -211,19 +203,15 @@ void Window::centerWindow()
 
 void Window::positionWindow(int x, int y)
 {
-  JRect rect;
-
   if (m_isAutoRemap)
     remapWindow();
 
-  rect = jrect_new(x, y, x+jrect_w(this->rc), y+jrect_h(this->rc));
-  jwidget_set_rect(this, rect);
-  jrect_free(rect);
+  setBounds(Rect(x, y, jrect_w(this->rc), jrect_h(this->rc)));
 
   invalidate();
 }
 
-void Window::moveWindow(JRect rect)
+void Window::moveWindow(const gfx::Rect& rect)
 {
   moveWindow(rect, true);
 }
@@ -275,10 +263,6 @@ bool Window::isTopLevel()
 bool Window::onProcessMessage(Message* msg)
 {
   switch (msg->type) {
-
-    case kResizeMessage:
-      windowSetPosition(&msg->setpos.rect);
-      return true;
 
     case kOpenMessage:
       m_killer = NULL;
@@ -335,11 +319,9 @@ bool Window::onProcessMessage(Message* msg)
         if (m_hitTest == HitTestCaption) {
           int x = click_pos->x1 + (msg->mouse.x - press_x);
           int y = click_pos->y1 + (msg->mouse.y - press_y);
-          JRect rect = jrect_new(x, y,
-                                 x+jrect_w(this->rc),
-                                 y+jrect_h(this->rc));
-          moveWindow(rect, true);
-          jrect_free(rect);
+          moveWindow(gfx::Rect(x, y,
+                               jrect_w(this->rc),
+                               jrect_h(this->rc)), true);
         }
         else {
           int x, y, w, h;
@@ -388,13 +370,8 @@ bool Window::onProcessMessage(Message* msg)
             else
               y = this->rc->y1;
 
-            {
-              JRect rect = jrect_new(x, y, x+w, y+h);
-              moveWindow(rect, false);
-              jrect_free(rect);
-
-              invalidate();
-            }
+            moveWindow(gfx::Rect(x, y, w, h), false);
+            invalidate();
           }
         }
       }
@@ -455,6 +432,11 @@ bool Window::onProcessMessage(Message* msg)
   return Widget::onProcessMessage(msg);
 }
 
+void Window::onResize(ResizeEvent& ev)
+{
+  windowSetPosition(ev.getBounds());
+}
+
 void Window::onPreferredSize(PreferredSizeEvent& ev)
 {
   Widget* manager = getManager();
@@ -511,10 +493,10 @@ void Window::onSetText()
   initTheme();
 }
 
-void Window::windowSetPosition(JRect rect)
+void Window::windowSetPosition(const gfx::Rect& rect)
 {
   // Copy the new position rectangle
-  jrect_copy(this->rc, rect);
+  setBoundsQuietly(rect);
   Rect cpos = getChildrenBounds();
 
   // Set all the children to the same "cpos"
@@ -534,7 +516,7 @@ void Window::limitSize(int *w, int *h)
   *h = MAX(*h, this->border_width.t+this->border_width.b);
 }
 
-void Window::moveWindow(JRect rect, bool use_blit)
+void Window::moveWindow(const gfx::Rect& rect, bool use_blit)
 {
 #define FLAGS (DrawableRegionFlags)(kCutTopWindows | kUseChildArea)
 
@@ -564,18 +546,17 @@ void Window::moveWindow(JRect rect, bool use_blit)
   getDrawableRegion(old_drawable_region, FLAGS);
 
   // If the size of the window changes...
-  if (jrect_w(old_pos) != jrect_w(rect) ||
-      jrect_h(old_pos) != jrect_h(rect)) {
-    // We have to change the whole positions sending kResizeMessage
-    // messages...
+  if (jrect_w(old_pos) != rect.w ||
+      jrect_h(old_pos) != rect.h) {
+    // We have to change the position of all children.
     windowSetPosition(rect);
   }
   else {
     // We can just displace all the widgets by a delta (new_position -
     // old_position)...
     displace_widgets(this,
-                     rect->x1 - old_pos->x1,
-                     rect->y1 - old_pos->y1);
+                     rect.x - old_pos->x1,
+                     rect.y - old_pos->y1);
   }
 
   // Get the new drawable region of the window (it's new because we

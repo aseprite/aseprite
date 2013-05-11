@@ -294,10 +294,6 @@ bool Menu::onProcessMessage(Message* msg)
 {
   switch (msg->type) {
 
-    case kResizeMessage:
-      set_position(&msg->setpos.rect);
-      return true;
-
     case kPaintMessage:
       getTheme()->draw_menu(this, &msg->draw.rect);
       return true;
@@ -305,6 +301,31 @@ bool Menu::onProcessMessage(Message* msg)
   }
 
   return Widget::onProcessMessage(msg);
+}
+
+void Menu::onResize(ResizeEvent& ev)
+{
+  setBoundsQuietly(ev.getBounds());
+
+  Rect cpos = getChildrenBounds();
+  bool isBar = (getParent()->type == kMenuBarWidget);
+
+  UI_FOREACH_WIDGET(getChildren(), it) {
+    Widget* child = *it;
+    Size reqSize = child->getPreferredSize();
+
+    if (isBar)
+      cpos.w = reqSize.w;
+    else
+      cpos.h = reqSize.h;
+
+    child->setBounds(cpos);
+
+    if (isBar)
+      cpos.x += cpos.w;
+    else
+      cpos.y += cpos.h;
+  }
 }
 
 void Menu::onPreferredSize(PreferredSizeEvent& ev)
@@ -331,45 +352,11 @@ void Menu::onPreferredSize(PreferredSizeEvent& ev)
   ev.setPreferredSize(size);
 }
 
-void Menu::set_position(JRect rect)
-{
-  Size reqSize;
-  Widget* child;
-  JRect cpos;
-
-  jrect_copy(this->rc, rect);
-  cpos = jwidget_get_child_rect(this);
-
-  UI_FOREACH_WIDGET(getChildren(), it) {
-    child = *it;
-
-    reqSize = child->getPreferredSize();
-
-    if (this->getParent()->type == kMenuBarWidget)
-      cpos->x2 = cpos->x1+reqSize.w;
-    else
-      cpos->y2 = cpos->y1+reqSize.h;
-
-    jwidget_set_rect(child, cpos);
-
-    if (this->getParent()->type == kMenuBarWidget)
-      cpos->x1 += jrect_w(cpos);
-    else
-      cpos->y1 += jrect_h(cpos);
-  }
-
-  jrect_free(cpos);
-}
-
 bool MenuBox::onProcessMessage(Message* msg)
 {
   Menu* menu = MenuBox::getMenu();
 
   switch (msg->type) {
-
-    case kResizeMessage:
-      set_position(&msg->setpos.rect);
-      return true;
 
     case kMouseMoveMessage:
       /* isn't pressing a button? */
@@ -657,6 +644,14 @@ bool MenuBox::onProcessMessage(Message* msg)
   return Widget::onProcessMessage(msg);
 }
 
+void MenuBox::onResize(ResizeEvent& ev)
+{
+  setBoundsQuietly(ev.getBounds());
+
+  if (Menu* menu = getMenu())
+    menu->setBounds(getChildrenBounds());
+}
+
 void MenuBox::onPreferredSize(PreferredSizeEvent& ev)
 {
   Size size(0, 0);
@@ -668,14 +663,6 @@ void MenuBox::onPreferredSize(PreferredSizeEvent& ev)
   size.h += this->border_width.t + this->border_width.b;
 
   ev.setPreferredSize(size);
-}
-
-void MenuBox::set_position(JRect rect)
-{
-  jrect_copy(this->rc, rect);
-
-  if (Menu* menu = getMenu())
-    menu->setBounds(getChildrenBounds());
 }
 
 bool MenuItem::onProcessMessage(Message* msg)

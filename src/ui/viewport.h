@@ -21,12 +21,9 @@ namespace ui {
 
   protected:
     // Events
-    bool onProcessMessage(Message* msg) OVERRIDE;
+    void onResize(ResizeEvent& ev) OVERRIDE;
     void onPreferredSize(PreferredSizeEvent& ev) OVERRIDE;
     void onPaint(PaintEvent& ev) OVERRIDE;
-
-  private:
-    void set_position(JRect rect);
   };
 
 } // namespace ui

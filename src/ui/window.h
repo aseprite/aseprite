@@ -34,7 +34,7 @@ namespace ui {
     void remapWindow();
     void centerWindow();
     void positionWindow(int x, int y);
-    void moveWindow(JRect rect);
+    void moveWindow(const gfx::Rect& rect);
 
     void openWindow();
     void openWindowInForeground();
@@ -56,6 +56,7 @@ namespace ui {
 
   protected:
     virtual bool onProcessMessage(Message* msg) OVERRIDE;
+    virtual void onResize(ResizeEvent& ev) OVERRIDE;
     virtual void onPreferredSize(PreferredSizeEvent& ev) OVERRIDE;
     virtual void onPaint(PaintEvent& ev) OVERRIDE;
     virtual void onBroadcastMouseMessage(WidgetsList& targets) OVERRIDE;
@@ -66,10 +67,10 @@ namespace ui {
     virtual void onHitTest(HitTestEvent& ev);
 
   private:
-    void windowSetPosition(JRect rect);
+    void windowSetPosition(const gfx::Rect& rect);
     int getAction(int x, int y);
     void limitSize(int* w, int* h);
-    void moveWindow(JRect rect, bool use_blit);
+    void moveWindow(const gfx::Rect& rect, bool use_blit);
 
     Widget* m_killer;
     bool m_isDesktop : 1;

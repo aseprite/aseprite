@@ -126,17 +126,14 @@ void Console::printf(const char *format, ...)
 
     /* update the textbox */
     if (!console_locked) {
-      JRect rect = jrect_new(0, 0, JI_SCREEN_W*9/10, JI_SCREEN_H*6/10);
       console_locked = true;
 
       wid_view->setVisible(true);
 
       wid_console->remapWindow();
-      jwidget_set_rect(wid_console, rect);
+      wid_console->setBounds(gfx::Rect(0, 0, JI_SCREEN_W*9/10, JI_SCREEN_H*6/10));
       wid_console->centerWindow();
       wid_console->invalidate();
-
-      jrect_free(rect);
     }
 
     text = wid_textbox->getText();

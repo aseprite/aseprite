@@ -13,6 +13,7 @@
 #include "ui/message.h"
 #include "ui/preferred_size_event.h"
 #include "ui/rect.h"
+#include "ui/resize_event.h"
 #include "ui/theme.h"
 
 using namespace gfx;
@@ -24,19 +25,6 @@ Box::Box(int align)
 {
   setAlign(align);
   initTheme();
-}
-
-bool Box::onProcessMessage(Message* msg)
-{
-  switch (msg->type) {
-
-    case kResizeMessage:
-      layoutBox(&msg->setpos.rect);
-      return true;
-
-  }
-
-  return Widget::onProcessMessage(msg);
 }
 
 void Box::onPreferredSize(PreferredSizeEvent& ev)
@@ -101,12 +89,7 @@ void Box::onPreferredSize(PreferredSizeEvent& ev)
   ev.setPreferredSize(Size(w, h));
 }
 
-void Box::onPaint(PaintEvent& ev)
-{
-  getTheme()->paintBox(ev);
-}
-
-void Box::layoutBox(JRect rect)
+void Box::onResize(ResizeEvent& ev)
 {
 #define FIXUP(x, y, w, h, l, t, r, b)                                   \
   {                                                                     \
@@ -164,12 +147,13 @@ void Box::layoutBox(JRect rect)
                                                                         \
           w = MAX(1, child_width);                                      \
                                                                         \
-          if (this->getAlign() & JI_HORIZONTAL)                         \
-            jrect_replace(&cpos, x, y, x+w, y+h);                       \
+          gfx::Rect cpos;                                               \
+          if (getAlign() & JI_HORIZONTAL)                               \
+            cpos = gfx::Rect(x, y, w, h);                               \
           else                                                          \
-            jrect_replace(&cpos, y, x, y+h, x+w);                       \
+            cpos = gfx::Rect(y, x, h, w);                               \
                                                                         \
-          jwidget_set_rect(child, &cpos);                               \
+          child->setBounds(cpos);                                       \
                                                                         \
           x += child_width + this->child_spacing;                       \
         }                                                               \
@@ -177,7 +161,6 @@ void Box::layoutBox(JRect rect)
     }                                                                   \
   }
 
-  struct jrect cpos;
   Widget* child;
   int nvis_children = 0;
   int nexpand_children = 0;
@@ -185,8 +168,8 @@ void Box::layoutBox(JRect rect)
   int width;
   int extra;
   int x, y, w, h;
-
-  jrect_copy(this->rc, rect);
+  
+  setBoundsQuietly(ev.getBounds());
 
   UI_FOREACH_WIDGET(getChildren(), it) {
     child = *it;
@@ -198,7 +181,7 @@ void Box::layoutBox(JRect rect)
     }
   }
 
-  Size reqSize = this->getPreferredSize();
+  Size reqSize = getPreferredSize();
 
   if (this->getAlign() & JI_HORIZONTAL) {
     FIXUP(x, y, w, h, l, t, r, b);
@@ -206,6 +189,11 @@ void Box::layoutBox(JRect rect)
   else {
     FIXUP(y, x, h, w, t, l, b, r);
   }
+}
+
+void Box::onPaint(PaintEvent& ev)
+{
+  getTheme()->paintBox(ev);
 }
 
 } // namespace ui

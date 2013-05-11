@@ -496,12 +496,8 @@ void PaletteEntryEditor::onMoreOptionsClick(Event& ev)
     reqSize.h += 4;
 
     // Remove the space occupied by the "More options" panel
-    {
-      JRect rect = jrect_new(rc->x1, rc->y1,
-                             rc->x2, rc->y2 - reqSize.h);
-      moveWindow(rect);
-      jrect_free(rect);
-    }
+    moveWindow(gfx::Rect(rc->x1, rc->y1,
+                         jrect_w(rc), jrect_h(rc) - reqSize.h));
   }
   else {
     set_config_bool("PaletteEditor", "ShowMoreOptions", true);
@@ -512,15 +508,14 @@ void PaletteEntryEditor::onMoreOptionsClick(Event& ev)
 
     // Add space for the "more_options" panel
     if (jrect_h(rc) < reqSize.h) {
-      JRect rect = jrect_new(rc->x1, rc->y1,
-                             rc->x2, rc->y1 + reqSize.h);
+      gfx::Rect rect(rc->x1, rc->y1,
+                     jrect_w(rc), reqSize.h);
 
       // Show the expanded area inside the screen
-      if (rect->y2 > JI_SCREEN_H)
-        jrect_displace(rect, 0, JI_SCREEN_H - rect->y2);
+      if (rect.y2() > JI_SCREEN_H)
+        rect.offset(0, JI_SCREEN_H - rect.y2());
 
       moveWindow(rect);
-      jrect_free(rect);
     }
     else
       setBounds(getBounds()); // TODO layout() method is missing

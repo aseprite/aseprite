@@ -472,30 +472,6 @@ bool StatusBar::onProcessMessage(Message* msg)
 {
   switch (msg->type) {
 
-    case kResizeMessage:
-      jrect_copy(this->rc, &msg->setpos.rect);
-      {
-        JRect rc = jrect_new_copy(this->rc);
-        rc->x1 = rc->x2 - m_notificationsBox->getPreferredSize().w;
-        jwidget_set_rect(m_notificationsBox, rc);
-        jrect_free(rc);
-      }
-      {
-        JRect rc = jrect_new_copy(this->rc);
-        rc->x2 -= jrect_w(rc)/4 + 4*jguiscale();
-        jwidget_set_rect(m_commandsBox, rc);
-        jrect_free(rc);
-      }
-      {
-        JRect rc = jrect_new_copy(this->rc);
-        Size reqSize = m_movePixelsBox->getPreferredSize();
-        rc->x1 = rc->x2 - reqSize.w;
-        rc->x2 -= this->border_width.r;
-        jwidget_set_rect(m_movePixelsBox, rc);
-        jrect_free(rc);
-      }
-      return true;
-
     case kPaintMessage: {
       SkinTheme* theme = static_cast<SkinTheme*>(this->getTheme());
       ui::Color text_color = theme->getColor(ThemeColor::Text);
@@ -814,6 +790,25 @@ bool StatusBar::onProcessMessage(Message* msg)
   }
 
   return Widget::onProcessMessage(msg);
+}
+
+void StatusBar::onResize(ResizeEvent& ev)
+{
+  setBoundsQuietly(ev.getBounds());
+
+  Rect rc = ev.getBounds();
+  rc.x = rc.x2() - m_notificationsBox->getPreferredSize().w;
+  m_notificationsBox->setBounds(rc);
+
+  rc = ev.getBounds();
+  rc.w -= rc.w/4 + 4*jguiscale();
+  m_commandsBox->setBounds(rc);
+
+  rc = ev.getBounds();
+  Size reqSize = m_movePixelsBox->getPreferredSize();
+  rc.x = rc.x2() - reqSize.w;
+  rc.w = reqSize.w;
+  m_movePixelsBox->setBounds(rc);
 }
 
 void StatusBar::onPreferredSize(PreferredSizeEvent& ev)

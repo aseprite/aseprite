@@ -11,6 +11,7 @@
 #include "ui/listitem.h"
 #include "ui/message.h"
 #include "ui/preferred_size_event.h"
+#include "ui/resize_event.h"
 #include "ui/system.h"
 #include "ui/theme.h"
 #include "ui/view.h"
@@ -123,10 +124,6 @@ void ListBox::centerScroll()
 bool ListBox::onProcessMessage(Message* msg)
 {
   switch (msg->type) {
-
-    case kResizeMessage:
-      layoutListBox(&msg->setpos.rect);
-      return true;
 
     case kPaintMessage:
       this->getTheme()->draw_listbox(this, &msg->draw.rect);
@@ -259,6 +256,22 @@ bool ListBox::onProcessMessage(Message* msg)
   return Widget::onProcessMessage(msg);
 }
 
+void ListBox::onResize(ResizeEvent& ev)
+{
+  setBoundsQuietly(ev.getBounds());
+
+  Rect cpos = getChildrenBounds();
+
+  UI_FOREACH_WIDGET(getChildren(), it) {
+    Widget* child = *it;
+
+    cpos.h = child->getPreferredSize().h;
+    child->setBounds(cpos);
+
+    cpos.y += jrect_h(child->rc) + this->child_spacing;
+  }
+}
+
 void ListBox::onPreferredSize(PreferredSizeEvent& ev)
 {
   int w = 0, h = 0;
@@ -284,28 +297,6 @@ void ListBox::onChangeSelectedItem()
 void ListBox::onDoubleClickItem()
 {
   DoubleClickItem();
-}
-
-void ListBox::layoutListBox(JRect rect)
-{
-  Size reqSize;
-  JRect cpos;
-
-  jrect_copy(this->rc, rect);
-  cpos = jwidget_get_child_rect(this);
-
-  UI_FOREACH_WIDGET(getChildren(), it) {
-    Widget* child = *it;
-
-    reqSize = child->getPreferredSize();
-
-    cpos->y2 = cpos->y1+reqSize.h;
-    jwidget_set_rect(child, cpos);
-
-    cpos->y1 += jrect_h(child->rc) + this->child_spacing;
-  }
-
-  jrect_free(cpos);
 }
 
 } // namespace ui

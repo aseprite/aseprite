@@ -202,20 +202,6 @@ bool PaletteView::onProcessMessage(Message* msg)
 {
   switch (msg->type) {
 
-    case kResizeMessage:
-      if (!m_isUpdatingColumns) {
-        m_isUpdatingColumns = true;
-        View* view = View::getView(this);
-        if (view) {
-          int columns =
-            (view->getViewportBounds().w-this->child_spacing*2)
-            / (m_boxsize+this->child_spacing);
-          setColumns(MID(1, columns, Palette::MaxColors));
-        }
-        m_isUpdatingColumns = false;
-      }
-      break;
-
     case kPaintMessage: {
       div_t d = div(Palette::MaxColors, m_columns);
       int cols = m_columns;
@@ -338,6 +324,23 @@ bool PaletteView::onProcessMessage(Message* msg)
   }
 
   return Widget::onProcessMessage(msg);
+}
+
+void PaletteView::onResize(ui::ResizeEvent& ev)
+{
+  if (!m_isUpdatingColumns) {
+    m_isUpdatingColumns = true;
+    View* view = View::getView(this);
+    if (view) {
+      int columns =
+        (view->getViewportBounds().w-this->child_spacing*2)
+        / (m_boxsize+this->child_spacing);
+      setColumns(MID(1, columns, Palette::MaxColors));
+    }
+    m_isUpdatingColumns = false;
+  }
+
+  Widget::onResize(ev);
 }
 
 void PaletteView::onPreferredSize(ui::PreferredSizeEvent& ev)

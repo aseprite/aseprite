@@ -519,7 +519,7 @@ void Widget::insertChild(int index, Widget* child)
 
 void Widget::layout()
 {
-  jwidget_set_rect(this, rc);
+  setBounds(getBounds());
   invalidate();
 }
 
@@ -567,18 +567,9 @@ void Widget::setDecorativeWidgetBounds()
   onSetDecorativeWidgetBounds();
 }
 
-/**********************************************************************/
-/* position and geometry */
-
-Rect Widget::getBounds() const
-{
-  return Rect(rc->x1, rc->y1, jrect_w(rc), jrect_h(rc));
-}
-
-Rect Widget::getClientBounds() const
-{
-  return Rect(0, 0, jrect_w(rc), jrect_h(rc));
-}
+// ===============================================================
+// POSITION & GEOMETRY
+// ===============================================================
 
 Rect Widget::getChildrenBounds() const
 {
@@ -590,8 +581,14 @@ Rect Widget::getChildrenBounds() const
 
 void Widget::setBounds(const Rect& rc)
 {
-  jrect jrc = { rc.x, rc.y, rc.x+rc.w, rc.y+rc.h };
-  jwidget_set_rect(this, &jrc);
+  ResizeEvent ev(this, rc);
+  onResize(ev);
+}
+
+void Widget::setBoundsQuietly(const gfx::Rect& rc)
+{
+  jrect jrc = { rc.x, rc.y, rc.x2(), rc.y2() };
+  jrect_copy(this->rc, &jrc);
 }
 
 Border Widget::getBorder() const
@@ -880,18 +877,6 @@ void jwidget_set_border(Widget* widget, int l, int t, int r, int b)
   widget->border_width.b = b;
 
   widget->invalidate();
-}
-
-void jwidget_set_rect(Widget* widget, JRect rect)
-{
-  Message* msg;
-
-  ASSERT_VALID_WIDGET(widget);
-
-  msg = jmessage_new(kResizeMessage);
-  jrect_copy(&msg->setpos.rect, rect);
-  widget->sendMessage(msg);
-  jmessage_free(msg);
 }
 
 void jwidget_set_min_size(Widget* widget, int w, int h)
@@ -1265,18 +1250,6 @@ bool Widget::onProcessMessage(Message* msg)
         return ev.isPainted();
       }
 
-    case kResizeMessage: {
-      jrect_copy(this->rc, &msg->setpos.rect);
-      JRect cpos = jwidget_get_child_rect(this);
-
-      // Set all the children to the same "cpos".
-      UI_FOREACH_WIDGET(getChildren(), it)
-        jwidget_set_rect(*it, cpos);
-
-      jrect_free(cpos);
-      return true;
-    }
-
     case kKeyDownMessage:
     case kKeyUpMessage:
       if (msg->key.propagate_to_children) {
@@ -1352,6 +1325,16 @@ void Widget::onLoadLayout(LoadLayoutEvent& ev)
 void Widget::onSaveLayout(SaveLayoutEvent& ev)
 {
   // Do nothing
+}
+
+void Widget::onResize(ResizeEvent& ev)
+{
+  setBoundsQuietly(ev.getBounds());
+
+  // Set all the children to the same "cpos".
+  gfx::Rect cpos = getChildrenBounds();
+  UI_FOREACH_WIDGET(getChildren(), it)
+    (*it)->setBounds(cpos);
 }
 
 void Widget::onPaint(PaintEvent& ev)

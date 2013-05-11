@@ -35,12 +35,10 @@ namespace ui {
 
   protected:
     virtual bool onProcessMessage(Message* msg) OVERRIDE;
+    virtual void onResize(ResizeEvent& ev) OVERRIDE;
     virtual void onPreferredSize(PreferredSizeEvent& ev) OVERRIDE;
     virtual void onChangeSelectedItem();
     virtual void onDoubleClickItem();
-
-  private:
-    void layoutListBox(JRect rect);
   };
 
 } // namespace ui

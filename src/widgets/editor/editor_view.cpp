@@ -23,11 +23,10 @@
 #include "modules/editors.h"
 #include "skin/skin_theme.h"
 #include "ui/message.h"
+#include "ui/resize_event.h"
 #include "widgets/editor/editor.h"
 
 #include <allegro.h>
-
-using namespace ui;
 
 using namespace ui;
 
@@ -48,13 +47,6 @@ EditorView::EditorView(EditorView::Type type)
 bool EditorView::onProcessMessage(Message* msg)
 {
   switch (msg->type) {
-
-    case kResizeMessage:
-      // This avoid the displacement of the widgets in the viewport
-
-      jrect_copy(this->rc, &msg->setpos.rect);
-      updateView();
-      return true;
 
     case kPaintMessage:
       {
@@ -92,4 +84,12 @@ bool EditorView::onProcessMessage(Message* msg)
   }
 
   return View::onProcessMessage(msg);
+}
+
+void EditorView::onResize(ResizeEvent& ev)
+{
+  // This avoid the displacement of the widgets in the viewport
+
+  setBoundsQuietly(ev.getBounds());
+  updateView();
 }

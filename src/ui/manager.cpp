@@ -883,10 +883,6 @@ bool Manager::onProcessMessage(Message* msg)
 {
   switch (msg->type) {
 
-    case kResizeMessage:
-      layoutManager(&msg->setpos.rect);
-      return true;
-
     case kKeyDownMessage:
     case kKeyUpMessage: {
       msg->key.propagate_to_children = true;
@@ -917,6 +913,24 @@ bool Manager::onProcessMessage(Message* msg)
   }
 
   return Widget::onProcessMessage(msg);
+}
+
+void Manager::onResize(ResizeEvent& ev)
+{
+  gfx::Rect old_pos = getBounds();
+  gfx::Rect new_pos = ev.getBounds();
+  setBoundsQuietly(new_pos);
+
+  // Offset for all windows
+  int dx = new_pos.x - old_pos.x;
+  int dy = new_pos.y - old_pos.y;
+
+  UI_FOREACH_WIDGET(getChildren(), it) {
+    Widget* child = *it;
+    gfx::Rect cpos = child->getBounds();
+    cpos.offset(dx, dy);
+    child->setBounds(cpos);
+  }
 }
 
 void Manager::onPaint(PaintEvent& ev)
@@ -961,30 +975,6 @@ void Manager::onPreferredSize(PreferredSizeEvent& ev)
   }
 
   ev.setPreferredSize(gfx::Size(w, h));
-}
-
-void Manager::layoutManager(JRect rect)
-{
-  JRect cpos, old_pos;
-  int x, y;
-
-  old_pos = jrect_new_copy(this->rc);
-  jrect_copy(this->rc, rect);
-
-  // Offset for all windows
-  x = this->rc->x1 - old_pos->x1;
-  y = this->rc->y1 - old_pos->y1;
-
-  UI_FOREACH_WIDGET(getChildren(), it) {
-    Widget* child = *it;
-
-    cpos = jwidget_get_rect(child);
-    jrect_displace(cpos, x, y);
-    jwidget_set_rect(child, cpos);
-    jrect_free(cpos);
-  }
-
-  jrect_free(old_pos);
 }
 
 void Manager::pumpQueue()
@@ -1033,7 +1023,6 @@ void Manager::pumpQueue()
           "kCloseAppMessage",
           "kPaintMessage",
           "kTimerMessage",
-          "kResizeMessage",
           "kWinMoveMessage",
           "kQueueProcessingMessage",
 

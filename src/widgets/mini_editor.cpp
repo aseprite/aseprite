@@ -78,20 +78,18 @@ protected:
   {
     SkinTheme* theme = static_cast<SkinTheme*>(getTheme());
     Widget* window = getParent();
-    JRect rect = jrect_new(0, 0, 0, 0);
+    gfx::Rect rect(0, 0, 0, 0);
     gfx::Size playSize = theme->get_part_size(PART_WINDOW_PLAY_BUTTON_NORMAL);
     gfx::Size closeSize = theme->get_part_size(PART_WINDOW_CLOSE_BUTTON_NORMAL);
 
-    rect->x2 = playSize.w;
-    rect->y2 = playSize.h;
+    rect.w = playSize.w;
+    rect.h = playSize.h;
 
-    jrect_displace(rect,
-                   window->rc->x2 - 3*jguiscale()
-                   - playSize.w - 1*jguiscale() - closeSize.w,
-                   window->rc->y1 + 3*jguiscale());
+    rect.offset(window->rc->x2 - 3*jguiscale()
+                - playSize.w - 1*jguiscale() - closeSize.w,
+                window->rc->y1 + 3*jguiscale());
 
-    jwidget_set_rect(this, rect);
-    jrect_free(rect);
+    setBounds(rect);
   }
 
   bool onProcessMessage(Message* msg) OVERRIDE

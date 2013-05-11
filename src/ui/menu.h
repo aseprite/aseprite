@@ -35,6 +35,7 @@ namespace ui {
 
   protected:
     virtual bool onProcessMessage(Message* msg) OVERRIDE;
+    virtual void onResize(ResizeEvent& ev) OVERRIDE;
     virtual void onPreferredSize(PreferredSizeEvent& ev) OVERRIDE;
 
   private:
@@ -42,7 +43,6 @@ namespace ui {
       m_menuitem = ownerMenuItem;
     }
 
-    void set_position(JRect rect);
     void closeAll();
 
     MenuItem* getHighlightedItem();
@@ -74,11 +74,11 @@ namespace ui {
 
   protected:
     virtual bool onProcessMessage(Message* msg) OVERRIDE;
+    virtual void onResize(ResizeEvent& ev) OVERRIDE;
     virtual void onPreferredSize(PreferredSizeEvent& ev) OVERRIDE;
     MenuBaseData* createBase();
 
   private:
-    void set_position(JRect rect);
     void closePopup();
 
     MenuBaseData* m_base;

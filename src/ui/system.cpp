@@ -136,9 +136,7 @@ void SetDisplay(she::Display* display)
       // Update default-manager size
       if ((jrect_w(manager->rc) != JI_SCREEN_W ||
            jrect_h(manager->rc) != JI_SCREEN_H)) {
-        JRect rect = jrect_new(0, 0, JI_SCREEN_W, JI_SCREEN_H);
-        jwidget_set_rect(manager, rect);
-        jrect_free(rect);
+        manager->setBounds(gfx::Rect(0, 0, JI_SCREEN_W, JI_SCREEN_H));
       }
     }
 

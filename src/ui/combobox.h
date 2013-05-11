@@ -77,13 +77,14 @@ namespace ui {
     void openListBox();
     void closeListBox();
     void switchListBox();
-    JRect getListBoxPos();
+    gfx::Rect getListBoxPos() const;
 
     // Signals
     Signal0<void> Change;
 
   protected:
     bool onProcessMessage(Message* msg) OVERRIDE;
+    void onResize(ResizeEvent& ev) OVERRIDE;
     void onPreferredSize(PreferredSizeEvent& ev) OVERRIDE;
     virtual void onChange();
 

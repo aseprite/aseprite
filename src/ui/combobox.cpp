@@ -312,30 +312,9 @@ bool ComboBox::onProcessMessage(Message* msg)
       closeListBox();
       break;
 
-    case kResizeMessage: {
-      JRect cbox = jrect_new_copy(&msg->setpos.rect);
-      jrect_copy(this->rc, cbox);
-
-      // Button
-      Size buttonSize = m_button->getPreferredSize();
-      cbox->x1 = msg->setpos.rect.x2 - buttonSize.w;
-      jwidget_set_rect(m_button, cbox);
-
-      // Entry
-      cbox->x2 = cbox->x1;
-      cbox->x1 = msg->setpos.rect.x1;
-      jwidget_set_rect(m_entry, cbox);
-
-      jrect_free(cbox);
-      return true;
-    }
-
     case kWinMoveMessage:
-      if (m_window) {
-        JRect rc = getListBoxPos();
-        m_window->moveWindow(rc);
-        jrect_free(rc);
-      }
+      if (m_window)
+        m_window->moveWindow(getListBoxPos());
       break;
 
     case kMouseDownMessage:
@@ -350,6 +329,21 @@ bool ComboBox::onProcessMessage(Message* msg)
   }
 
   return Widget::onProcessMessage(msg);
+}
+
+void ComboBox::onResize(ResizeEvent& ev)
+{
+  gfx::Rect bounds = ev.getBounds();
+  setBoundsQuietly(bounds);
+
+  // Button
+  Size buttonSize = m_button->getPreferredSize();
+  m_button->setBounds(Rect(bounds.x2() - buttonSize.w, bounds.y,
+                           buttonSize.w, bounds.h));
+
+  // Entry
+  m_entry->setBounds(Rect(bounds.x, bounds.y,
+                          bounds.w - buttonSize.w, bounds.h));
 }
 
 void ComboBox::onPreferredSize(PreferredSizeEvent& ev)
@@ -491,9 +485,8 @@ void ComboBox::openListBox()
 
     m_window->remapWindow();
 
-    JRect rc = getListBoxPos();
-    m_window->positionWindow(rc->x1, rc->y1);
-    jrect_free(rc);
+    gfx::Rect rc = getListBoxPos();
+    m_window->positionWindow(rc.x, rc.y);
 
     getManager()->addMessageFilter(kMouseDownMessage, this);
 
@@ -524,14 +517,16 @@ void ComboBox::switchListBox()
     closeListBox();
 }
 
-JRect ComboBox::getListBoxPos()
+gfx::Rect ComboBox::getListBoxPos() const
 {
-  JRect rc = jrect_new(m_entry->rc->x1,
-                       m_entry->rc->y2,
-                       m_button->rc->x2,
-                       m_entry->rc->y2+jrect_h(m_window->rc));
-  if (rc->y2 > JI_SCREEN_H)
-    jrect_displace(rc, 0, -(jrect_h(rc)+jrect_h(m_entry->rc)));
+  gfx::Rect rc(gfx::Point(m_entry->rc->x1,
+                          m_entry->rc->y2),
+               gfx::Point(m_button->rc->x2,
+                          m_entry->rc->y2+jrect_h(m_window->rc)));
+
+  if (rc.y2() > JI_SCREEN_H)
+    rc.offset(0, -(rc.h+jrect_h(m_entry->rc)));
+
   return rc;
 }
 

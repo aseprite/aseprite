@@ -244,11 +244,6 @@ bool Tabs::onProcessMessage(Message* msg)
 {
   switch (msg->type) {
 
-    case kResizeMessage:
-      jrect_copy(this->rc, &msg->setpos.rect);
-      setScrollX(m_scrollX);
-      return true;
-
     case kPaintMessage: {
       SkinTheme* theme = static_cast<SkinTheme*>(this->getTheme());
       BITMAP *doublebuffer = create_bitmap(jrect_w(&msg->draw.rect),
@@ -430,6 +425,12 @@ bool Tabs::onProcessMessage(Message* msg)
   return Widget::onProcessMessage(msg);
 }
 
+void Tabs::onResize(ResizeEvent& ev)
+{
+  setBoundsQuietly(ev.getBounds());
+  setScrollX(m_scrollX);
+}
+
 void Tabs::onPreferredSize(PreferredSizeEvent& ev)
 {
   SkinTheme* theme = static_cast<SkinTheme*>(this->getTheme());
@@ -607,19 +608,13 @@ void Tabs::setScrollX(int scroll_x)
     m_button_left->setEnabled(m_scrollX > 0);
     m_button_right->setEnabled(m_scrollX < max_x);
 
-    /* setup the position of each button */
-    {
-      JRect rect = jwidget_get_rect(this);
-      JRect box = jrect_new(rect->x2-ARROW_W*2, rect->y1,
-                            rect->x2-ARROW_W, rect->y2-2);
-      jwidget_set_rect(m_button_left, box);
+    // Setup the position of each button
+    gfx::Rect rect = getBounds();
+    gfx::Rect box(rect.x2()-ARROW_W*2, rect.y, ARROW_W, rect.h-2);
+    m_button_left->setBounds(box);
 
-      jrect_moveto(box, box->x1+ARROW_W, box->y1);
-      jwidget_set_rect(m_button_right, box);
-
-      jrect_free(box);
-      jrect_free(rect);
-    }
+    box.x += ARROW_W;
+    m_button_right->setBounds(box);
   }
   // Remove buttons
   else if (HAS_ARROWS(this)) {

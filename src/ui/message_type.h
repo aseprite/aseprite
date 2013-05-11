@@ -17,7 +17,6 @@ namespace ui {
     kCloseAppMessage, // The user wants to close the entire application.
     kPaintMessage,    // Widget needs be repainted.
     kTimerMessage,    // A timer timeout.
-    kResizeMessage,   // Set position.
     kWinMoveMessage,  // Window movement.
     kQueueProcessingMessage,    // Only sent to manager which indicate
                                 // the last message in the queue.

@@ -10,6 +10,7 @@
 #include "gfx/size.h"
 #include "ui/message.h"
 #include "ui/preferred_size_event.h"
+#include "ui/resize_event.h"
 #include "ui/theme.h"
 #include "ui/view.h"
 #include "ui/viewport.h"
@@ -24,16 +25,31 @@ Viewport::Viewport()
   initTheme();
 }
 
-bool Viewport::onProcessMessage(Message* msg)
+void Viewport::onResize(ResizeEvent& ev)
 {
-  switch (msg->type) {
+  Rect rect = ev.getBounds();
+  setBoundsQuietly(rect);
 
-    case kResizeMessage:
-      set_position(&msg->setpos.rect);
-      return true;
+  Point scroll = static_cast<View*>(this->getParent())->getViewScroll();
+
+  Rect cpos(0, 0, 0, 0);
+  cpos.x = rect.x + this->border_width.l - scroll.x;
+  cpos.y = rect.y + this->border_width.t - scroll.y;
+
+  UI_FOREACH_WIDGET(getChildren(), it) {
+    Widget* child = *it;
+    Size reqSize = child->getPreferredSize();
+
+    cpos.w = MAX(reqSize.w, rect.w
+                            - this->border_width.l
+                            - this->border_width.r);
+
+    cpos.h = MAX(reqSize.h, rect.h
+                            - this->border_width.t
+                            - this->border_width.b);
+
+    child->setBounds(cpos);
   }
-
-  return Widget::onProcessMessage(msg);
 }
 
 void Viewport::onPreferredSize(PreferredSizeEvent& ev)
@@ -59,37 +75,6 @@ Size Viewport::calculateNeededSize()
   }
 
   return maxSize;
-}
-
-void Viewport::set_position(JRect rect)
-{
-  Size reqSize;
-  JRect cpos;
-
-  jrect_copy(this->rc, rect);
-
-  Point scroll = static_cast<View*>(this->getParent())->getViewScroll();
-
-  cpos = jrect_new(0, 0, 0, 0);
-  cpos->x1 = this->rc->x1 + this->border_width.l - scroll.x;
-  cpos->y1 = this->rc->y1 + this->border_width.t - scroll.y;
-
-  UI_FOREACH_WIDGET(getChildren(), it) {
-    Widget* child = *it;
-    reqSize = child->getPreferredSize();
-
-    cpos->x2 = cpos->x1 + MAX(reqSize.w, jrect_w(this->rc)
-                                         - this->border_width.l
-                                         - this->border_width.r);
-
-    cpos->y2 = cpos->y1 + MAX(reqSize.h, jrect_h(this->rc)
-                                         - this->border_width.t
-                                         - this->border_width.b);
-
-    jwidget_set_rect(child, cpos);
-  }
-
-  jrect_free(cpos);
 }
 
 } // namespace ui

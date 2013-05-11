@@ -34,6 +34,7 @@ namespace ui {
   class Manager;
   class PaintEvent;
   class PreferredSizeEvent;
+  class ResizeEvent;
   class SaveLayoutEvent;
   class Theme;
   class Window;
@@ -53,7 +54,6 @@ namespace ui {
   void jwidget_noborders(Widget* widget);
   void jwidget_set_border(Widget* widget, int value);
   void jwidget_set_border(Widget* widget, int l, int t, int r, int b);
-  void jwidget_set_rect(Widget* widget, JRect rect);
   void jwidget_set_min_size(Widget* widget, int w, int h);
   void jwidget_set_max_size(Widget* widget, int w, int h);
 
@@ -250,10 +250,24 @@ namespace ui {
     // POSITION & GEOMETRY
     // ===============================================================
 
-    gfx::Rect getBounds() const;
-    gfx::Rect getClientBounds() const;
+    gfx::Rect getBounds() const {
+      return gfx::Rect(rc->x1, rc->y1, jrect_w(rc), jrect_h(rc));
+    }
+
+    gfx::Rect getClientBounds() const {
+      return gfx::Rect(0, 0, jrect_w(rc), jrect_h(rc));
+    }
+
     gfx::Rect getChildrenBounds() const;
+
+    // Sets the bounds of the widget generating a onResize() event.
     void setBounds(const gfx::Rect& rc);
+
+    // Sets the bounds of the widget without generating any kind of
+    // event. This member function must be used if you override
+    // onResize() and want to change the size of the widget without
+    // generating recursive onResize() events.
+    void setBoundsQuietly(const gfx::Rect& rc);
 
     gfx::Border getBorder() const;
     void setBorder(const gfx::Border& border);
@@ -335,6 +349,7 @@ namespace ui {
     virtual void onPreferredSize(PreferredSizeEvent& ev);
     virtual void onLoadLayout(LoadLayoutEvent& ev);
     virtual void onSaveLayout(SaveLayoutEvent& ev);
+    virtual void onResize(ResizeEvent& ev);
     virtual void onPaint(PaintEvent& ev);
     virtual void onBroadcastMouseMessage(WidgetsList& targets);
     virtual void onInitTheme(InitThemeEvent& ev);

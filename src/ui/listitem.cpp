@@ -10,6 +10,7 @@
 
 #include "ui/message.h"
 #include "ui/preferred_size_event.h"
+#include "ui/resize_event.h"
 #include "ui/theme.h"
 #include "ui/view.h"
 
@@ -29,25 +30,21 @@ bool ListItem::onProcessMessage(Message* msg)
 {
   switch (msg->type) {
 
-    case kResizeMessage: {
-      JRect crect;
-
-      jrect_copy(this->rc, &msg->setpos.rect);
-      crect = jwidget_get_child_rect(this);
-
-      UI_FOREACH_WIDGET(getChildren(), it)
-        jwidget_set_rect(*it, crect);
-
-      jrect_free(crect);
-      return true;
-    }
-
     case kPaintMessage:
       this->getTheme()->draw_listitem(this, &msg->draw.rect);
       return true;
   }
 
   return Widget::onProcessMessage(msg);
+}
+
+void ListItem::onResize(ResizeEvent& ev)
+{
+  setBoundsQuietly(ev.getBounds());
+
+  Rect crect = getChildrenBounds();
+  UI_FOREACH_WIDGET(getChildren(), it)
+    (*it)->setBounds(crect);
 }
 
 void ListItem::onPreferredSize(PreferredSizeEvent& ev)

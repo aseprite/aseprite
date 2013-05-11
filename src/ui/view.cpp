@@ -11,6 +11,7 @@
 #include "ui/message.h"
 #include "ui/preferred_size_event.h"
 #include "ui/rect.h"
+#include "ui/resize_event.h"
 #include "ui/system.h"
 #include "ui/theme.h"
 #include "ui/view.h"
@@ -84,14 +85,12 @@ void View::setScrollableSize(const Size& sz)
   ((sz.w > jrect_##w(m_viewport.rc)                             \
                     - m_viewport.border_width.l                 \
                     - m_viewport.border_width.r) &&             \
-   (BAR_SIZE < jrect_##w(pos)) && (BAR_SIZE < jrect_##h(pos)))
-
-  JRect pos, rect;
+   (BAR_SIZE < pos.w) && (BAR_SIZE < pos.h))
 
   m_scrollbar_h.setSize(sz.w);
   m_scrollbar_v.setSize(sz.h);
 
-  pos = jwidget_get_child_rect(this);
+  gfx::Rect pos = getChildrenBounds();
 
   // Setup scroll-bars
   removeChild(&m_scrollbar_h);
@@ -99,53 +98,45 @@ void View::setScrollableSize(const Size& sz)
 
   if (m_hasBars) {
     if (CHECK(w, h, l, t, r, b)) {
-      pos->y2 -= BAR_SIZE;
+      pos.h -= BAR_SIZE;
       addChild(&m_scrollbar_h);
 
       if (CHECK(h, w, t, l, b, r)) {
-        pos->x2 -= BAR_SIZE;
+        pos.w -= BAR_SIZE;
         if (CHECK(w, h, l, t, r, b))
           addChild(&m_scrollbar_v);
         else {
-          pos->x2 += BAR_SIZE;
-          pos->y2 += BAR_SIZE;
+          pos.w += BAR_SIZE;
+          pos.h += BAR_SIZE;
           removeChild(&m_scrollbar_h);
         }
       }
     }
     else if (CHECK(h, w, t, l, b, r)) {
-      pos->x2 -= BAR_SIZE;
+      pos.w -= BAR_SIZE;
       addChild(&m_scrollbar_v);
 
       if (CHECK(w, h, l, t, r, b)) {
-        pos->y2 -= BAR_SIZE;
+        pos.h -= BAR_SIZE;
         if (CHECK(h, w, t, l, b, r))
           addChild(&m_scrollbar_h);
         else {
-          pos->x2 += BAR_SIZE;
-          pos->y2 += BAR_SIZE;
+          pos.w += BAR_SIZE;
+          pos.h += BAR_SIZE;
           removeChild(&m_scrollbar_v);
         }
       }
     }
 
     if (hasChild(&m_scrollbar_h)) {
-      rect = jrect_new(pos->x1, pos->y2,
-                       pos->x1+jrect_w(pos), pos->y2+BAR_SIZE);
-      jwidget_set_rect(&m_scrollbar_h, rect);
-      jrect_free(rect);
-
+      m_scrollbar_h.setBounds(gfx::Rect(pos.x, pos.y2(), pos.w, BAR_SIZE));
       m_scrollbar_h.setVisible(true);
     }
     else
       m_scrollbar_h.setVisible(false);
 
     if (hasChild(&m_scrollbar_v)) {
-      rect = jrect_new(pos->x2, pos->y1,
-                       pos->x2+BAR_SIZE, pos->y1+jrect_h(pos));
-      jwidget_set_rect(&m_scrollbar_v, rect);
-      jrect_free(rect);
-
+      m_scrollbar_v.setBounds(gfx::Rect(pos.x2(), pos.y, BAR_SIZE, pos.h));
       m_scrollbar_v.setVisible(true);
     }
     else
@@ -154,10 +145,8 @@ void View::setScrollableSize(const Size& sz)
 
   // Setup viewport
   invalidate();
-  jwidget_set_rect(&m_viewport, pos);
+  m_viewport.setBounds(pos);
   setViewScroll(getViewScroll()); // Setup the same scroll-point
-
-  jrect_free(pos);
 }
 
 Size View::getVisibleSize()
@@ -186,8 +175,7 @@ void View::setViewScroll(const Point& pt)
   m_scrollbar_h.setPos(newScroll.x);
   m_scrollbar_v.setPos(newScroll.y);
 
-  jwidget_set_rect(&m_viewport, m_viewport.rc);
-  invalidate();
+  m_viewport.layout();
 }
 
 void View::updateView()
@@ -239,11 +227,6 @@ bool View::onProcessMessage(Message* msg)
 {
   switch (msg->type) {
 
-    case kResizeMessage:
-      jrect_copy(this->rc, &msg->setpos.rect);
-      updateView();
-      return true;
-
     case kFocusEnterMessage:
     case kFocusLeaveMessage:
       // TODO This is theme specific stuff
@@ -257,6 +240,12 @@ bool View::onProcessMessage(Message* msg)
   }
 
   return Widget::onProcessMessage(msg);
+}
+
+void View::onResize(ResizeEvent& ev)
+{
+  setBoundsQuietly(ev.getBounds());
+  updateView();
 }
 
 void View::onPreferredSize(PreferredSizeEvent& ev)
