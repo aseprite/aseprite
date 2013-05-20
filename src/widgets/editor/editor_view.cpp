@@ -52,7 +52,6 @@ bool EditorView::onProcessMessage(Message* msg)
       {
         Widget* viewport = getViewport();
         Widget* child = UI_FIRST_WIDGET(viewport->getChildren());
-        JRect pos = jwidget_get_rect(this);
         SkinTheme* theme = static_cast<SkinTheme*>(getTheme());
         bool selected = false;
 
@@ -70,14 +69,10 @@ bool EditorView::onProcessMessage(Message* msg)
 
         }
 
-        theme->draw_bounds_nw(ji_screen,
-                              pos->x1, pos->y1,
-                              pos->x2-1, pos->y2-1,
+        theme->draw_bounds_nw(ji_screen, getBounds(),
                               selected ? PART_EDITOR_SELECTED_NW:
                                          PART_EDITOR_NORMAL_NW,
                               ColorNone);
-
-        jrect_free(pos);
       }
       return true;
 

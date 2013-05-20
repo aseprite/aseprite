@@ -290,17 +290,9 @@ void Menu::showPopup(int x, int y)
   delete window;
 }
 
-bool Menu::onProcessMessage(Message* msg)
+void Menu::onPaint(PaintEvent& ev)
 {
-  switch (msg->type) {
-
-    case kPaintMessage:
-      getTheme()->draw_menu(this, &msg->draw.rect);
-      return true;
-
-  }
-
-  return Widget::onProcessMessage(msg);
+  getTheme()->paintMenu(ev);
 }
 
 void Menu::onResize(ResizeEvent& ev)
@@ -669,10 +661,6 @@ bool MenuItem::onProcessMessage(Message* msg)
 {
   switch (msg->type) {
 
-    case kPaintMessage:
-      getTheme()->draw_menuitem(this, &msg->draw.rect);
-      return true;
-
     case kMouseEnterMessage:
       // TODO theme specific!!
       invalidate();
@@ -696,14 +684,13 @@ bool MenuItem::onProcessMessage(Message* msg)
     default:
       if (msg->type == kOpenMenuItemMessage) {
         MenuBaseData* base = get_base(this);
-        JRect pos;
         bool select_first = msg->user.a ? true: false;
 
         ASSERT(base != NULL);
         ASSERT(base->is_processing);
         ASSERT(hasSubmenu());
 
-        JRect old_pos = jwidget_get_rect(this->getParent()->getParent());
+        Rect old_pos = getParent()->getParent()->getBounds();
 
         MenuBox* menubox = new MenuBox();
         m_submenu_menubox = menubox;
@@ -713,48 +700,40 @@ bool MenuItem::onProcessMessage(Message* msg)
         Window* window = new CustomizedWindowForMenuBox(menubox);
 
         // Menubox position
-        pos = jwidget_get_rect(window);
+        Rect pos = window->getBounds();
 
         if (this->getParent()->getParent()->type == kMenuBarWidget) {
-          jrect_moveto(pos,
-                       MID(0, this->rc->x1, JI_SCREEN_W-jrect_w(pos)),
-                       MID(0, this->rc->y2, JI_SCREEN_H-jrect_h(pos)));
+          pos.x = MID(0, this->rc->x1, JI_SCREEN_W-pos.w);
+          pos.y = MID(0, this->rc->y2, JI_SCREEN_H-pos.h);
         }
         else {
-          int x_left = this->rc->x1-jrect_w(pos);
+          int x_left = this->rc->x1-pos.w;
           int x_right = this->rc->x2;
           int x, y = this->rc->y1;
-          struct jrect r1, r2;
-          int s1, s2;
+          Rect r1(0, 0, pos.w, pos.h), r2(0, 0, pos.w, pos.h);
 
-          r1.x1 = x_left = MID(0, x_left, JI_SCREEN_W-jrect_w(pos));
-          r2.x1 = x_right = MID(0, x_right, JI_SCREEN_W-jrect_w(pos));
-
-          r1.y1 = r2.y1 = y = MID(0, y, JI_SCREEN_H-jrect_h(pos));
-
-          r1.x2 = r1.x1+jrect_w(pos);
-          r1.y2 = r1.y1+jrect_h(pos);
-          r2.x2 = r2.x1+jrect_w(pos);
-          r2.y2 = r2.y1+jrect_h(pos);
+          r1.x = x_left = MID(0, x_left, JI_SCREEN_W-pos.w);
+          r2.x = x_right = MID(0, x_right, JI_SCREEN_W-pos.w);
+          r1.y = r2.y = y = MID(0, y, JI_SCREEN_H-pos.h);
 
           // Calculate both intersections
-          s1 = jrect_intersect(&r1, old_pos);
-          s2 = jrect_intersect(&r2, old_pos);
+          gfx::Rect s1 = r1.createIntersect(old_pos);
+          gfx::Rect s2 = r2.createIntersect(old_pos);
 
-          if (!s2)
+          if (s2.isEmpty())
             x = x_right;        // Use the right because there aren't intersection with it
-          else if (!s1)
+          else if (s1.isEmpty())
             x = x_left;         // Use the left because there are not intersection
-          else if (jrect_w(&r2)*jrect_h(&r2) <= jrect_w(&r1)*jrect_h(&r1))
+          else if (r2.w*r2.h <= r1.w*r1.h)
             x = x_right;                // Use the right because there are less intersection area
           else
             x = x_left;         // Use the left because there are less intersection area
 
-          jrect_moveto(pos, x, y);
+          pos.x = x;
+          pos.y = y;
         }
 
-        window->positionWindow(pos->x1, pos->y1);
-        jrect_free(pos);
+        window->positionWindow(pos.x, pos.y);
 
         // Set the focus to the new menubox
         menubox->setFocusMagnet(true);
@@ -789,7 +768,6 @@ bool MenuItem::onProcessMessage(Message* msg)
 
         base->is_processing = false;
 
-        jrect_free(old_pos);
         return true;
       }
       else if (msg->type == kCloseMenuItemMessage) {
@@ -857,6 +835,11 @@ bool MenuItem::onProcessMessage(Message* msg)
   }
 
   return Widget::onProcessMessage(msg);
+}
+
+void MenuItem::onPaint(PaintEvent& ev)
+{
+  getTheme()->paintMenuItem(ev);
 }
 
 void MenuItem::onClick()

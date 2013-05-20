@@ -43,8 +43,6 @@ namespace ui {
 
   // Position and geometry
 
-  JRect jwidget_get_rect(Widget* widget);
-  JRect jwidget_get_child_rect(Widget* widget);
   int jwidget_get_text_length(const Widget* widget);
   int jwidget_get_text_height(const Widget* widget);
   void jwidget_get_texticon_info(Widget* widget,
@@ -259,6 +257,7 @@ namespace ui {
     }
 
     gfx::Rect getChildrenBounds() const;
+    gfx::Rect getClientChildrenBounds() const;
 
     // Sets the bounds of the widget generating a onResize() event.
     void setBounds(const gfx::Rect& rc);

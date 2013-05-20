@@ -961,17 +961,15 @@ void Manager::onPreferredSize(PreferredSizeEvent& ev)
     h = jrect_h(this->rc);
   }
   else {
-    JRect cpos, pos = jwidget_get_child_rect(this->getParent());
+    gfx::Rect pos = getParent()->getChildrenBounds();
 
     UI_FOREACH_WIDGET(getChildren(), it) {
-      cpos = jwidget_get_rect(*it);
-      jrect_union(pos, cpos);
-      jrect_free(cpos);
+      gfx::Rect cpos = (*it)->getBounds();
+      pos = pos.createUnion(cpos);
     }
 
-    w = jrect_w(pos);
-    h = jrect_h(pos);
-    jrect_free(pos);
+    w = pos.w;
+    h = pos.h;
   }
 
   ev.setPreferredSize(gfx::Size(w, h));

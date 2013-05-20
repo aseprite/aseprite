@@ -33,10 +33,6 @@ bool TextBox::onProcessMessage(Message* msg)
 {
   switch (msg->type) {
 
-    case kPaintMessage:
-      getTheme()->draw_textbox(this, &msg->draw.rect);
-      return true;
-
     case kKeyDownMessage:
       if (hasFocus()) {
         View* view = View::getView(this);
@@ -145,6 +141,11 @@ bool TextBox::onProcessMessage(Message* msg)
   }
 
   return Widget::onProcessMessage(msg);
+}
+
+void TextBox::onPaint(PaintEvent& ev)
+{
+  getTheme()->paintTextBox(ev);
 }
 
 void TextBox::onPreferredSize(PreferredSizeEvent& ev)

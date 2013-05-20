@@ -27,6 +27,10 @@
 
 class Tabs;
 
+namespace ui {
+  class Graphics;
+}
+
 // Required interface to be implemented by each new tab that is added
 // in the Tabs widget.
 class TabView
@@ -94,6 +98,7 @@ public:
 
 protected:
   bool onProcessMessage(ui::Message* msg) OVERRIDE;
+  void onPaint(ui::PaintEvent& ev) OVERRIDE;
   void onResize(ui::ResizeEvent& ev) OVERRIDE;
   void onPreferredSize(ui::PreferredSizeEvent& ev) OVERRIDE;
   void onInitTheme(ui::InitThemeEvent& ev) OVERRIDE;
@@ -104,7 +109,7 @@ private:
   void stopAni();
 
   void selectTabInternal(Tab* tab);
-  void drawTab(BITMAP* bmp, ui::JRect box, Tab* tab, int y_delta, bool selected);
+  void drawTab(ui::Graphics* g, const gfx::Rect& box, Tab* tab, int y_delta, bool selected);
   TabsListIterator getTabIteratorByView(TabView* tabView);
   Tab* getTabByView(TabView* tabView);
   int getMaxScrollX();

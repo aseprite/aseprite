@@ -18,7 +18,7 @@ namespace ui {
     ListItem(const char* text);
 
   protected:
-    bool onProcessMessage(Message* msg) OVERRIDE;
+    void onPaint(PaintEvent& ev) OVERRIDE;
     void onResize(ResizeEvent& ev) OVERRIDE;
     void onPreferredSize(PreferredSizeEvent& ev) OVERRIDE;
   };

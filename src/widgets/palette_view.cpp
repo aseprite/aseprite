@@ -163,7 +163,7 @@ void PaletteView::getSelectedEntries(SelectedEntries& entries) const
 app::Color PaletteView::getColorByPosition(int target_x, int target_y)
 {
   Palette* palette = get_current_palette();
-  JRect cpos = jwidget_get_child_rect(this);
+  gfx::Rect cpos = getChildrenBounds();
   div_t d = div(Palette::MaxColors, m_columns);
   int cols = m_columns;
   int rows = d.quot + ((d.rem)? 1: 0);
@@ -173,11 +173,11 @@ app::Color PaletteView::getColorByPosition(int target_x, int target_y)
 
   request_size(&req_w, &req_h);
 
-  y = cpos->y1;
+  y = cpos.y;
   c = 0;
 
   for (v=0; v<rows; v++) {
-    x = cpos->x1;
+    x = cpos.x;
 
     for (u=0; u<cols; u++) {
       if (c >= palette->size())
@@ -194,7 +194,6 @@ app::Color PaletteView::getColorByPosition(int target_x, int target_y)
     y += m_boxsize+this->child_spacing;
   }
 
-  jrect_free(cpos);
   return app::Color::fromMask();
 }
 
@@ -267,15 +266,13 @@ bool PaletteView::onProcessMessage(Message* msg)
       /* continue... */
 
     case kMouseMoveMessage: {
-      JRect cpos = jwidget_get_child_rect(this);
+      gfx::Rect cpos = getChildrenBounds();
 
       int req_w, req_h;
       request_size(&req_w, &req_h);
 
-      int mouse_x = MID(cpos->x1, msg->mouse.x, cpos->x1+req_w-this->border_width.r-1);
-      int mouse_y = MID(cpos->y1, msg->mouse.y, cpos->y1+req_h-this->border_width.b-1);
-
-      jrect_free(cpos);
+      int mouse_x = MID(cpos.x, msg->mouse.x, cpos.x+req_w-this->border_width.r-1);
+      int mouse_y = MID(cpos.y, msg->mouse.y, cpos.y+req_h-this->border_width.b-1);
 
       app::Color color = getColorByPosition(mouse_x, mouse_y);
       if (color.getType() == app::Color::IndexType) {

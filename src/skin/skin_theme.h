@@ -32,6 +32,7 @@
 #include <allegro/color.h>
 
 namespace ui {
+  class Entry;
   class Graphics;
   class IButtonIcon;
 }
@@ -133,23 +134,23 @@ public:
   void paintGrid(ui::PaintEvent& ev);
   void paintLabel(ui::PaintEvent& ev);
   void paintLinkLabel(ui::PaintEvent& ev);
-  void draw_listbox(ui::Widget* widget, ui::JRect clip);
-  void draw_listitem(ui::Widget* widget, ui::JRect clip);
-  void draw_menu(ui::Menu* menu, ui::JRect clip);
-  void draw_menuitem(ui::MenuItem* menuitem, ui::JRect clip);
-  void drawSplitter(ui::PaintEvent& ev);
+  void paintListBox(ui::PaintEvent& ev);
+  void paintListItem(ui::PaintEvent& ev);
+  void paintMenu(ui::PaintEvent& ev);
+  void paintMenuItem(ui::PaintEvent& ev);
+  void paintSplitter(ui::PaintEvent& ev);
   void paintRadioButton(ui::PaintEvent& ev);
-  void draw_separator(ui::Widget* widget, ui::JRect clip);
+  void paintSeparator(ui::PaintEvent& ev);
   void paintSlider(ui::PaintEvent& ev);
-  void draw_combobox_entry(ui::Entry* widget, ui::JRect clip);
+  void paintComboBoxEntry(ui::PaintEvent& ev);
   void paintComboBoxButton(ui::PaintEvent& ev);
-  void draw_textbox(ui::Widget* widget, ui::JRect clip);
+  void paintTextBox(ui::PaintEvent& ev);
   void paintView(ui::PaintEvent& ev);
   void paintViewScrollbar(ui::PaintEvent& ev);
   void paintViewViewport(ui::PaintEvent& ev);
   void paintWindow(ui::PaintEvent& ev);
   void paintPopupWindow(ui::PaintEvent& ev);
-  void drawWindowButton(ui::ButtonBase* widget, ui::JRect clip);
+  void paintWindowButton(ui::PaintEvent& ev);
   void paintTooltip(ui::PaintEvent& ev);
 
   int get_button_selected_offset() const { return 0; } // TODO Configurable in xml
@@ -165,6 +166,8 @@ public:
   void draw_bounds_nw2(ui::Graphics* g, const gfx::Rect& rc, int x_mid, int nw1, int nw2, ui::Color bg1, ui::Color bg2);
   void draw_part_as_hline(BITMAP* bmp, int x1, int y1, int x2, int y2, int part);
   void draw_part_as_vline(BITMAP* bmp, int x1, int y1, int x2, int y2, int part);
+  void draw_part_as_hline(ui::Graphics* g, const gfx::Rect& rc, int part);
+  void draw_part_as_vline(ui::Graphics* g, const gfx::Rect& rc, int part);
 
   // Wrapper to use the new "Rect" class (x, y, w, h)
   void draw_bounds_nw(BITMAP* bmp, const gfx::Rect& rc, int nw, ui::Color bg) {
@@ -184,12 +187,12 @@ private:
 
   BITMAP* cropPartFromSheet(BITMAP* bmp, int x, int y, int w, int h);
   ui::Color getWidgetBgColor(ui::Widget* widget);
-  void draw_textstring(const char *t, ui::Color fg_color, ui::Color bg_color,
-                       bool fill_bg, ui::Widget* widget, const ui::JRect rect,
-                       int selected_offset);
-  void draw_textstring(ui::Graphics* g, const char *t, ui::Color fg_color, ui::Color bg_color,
-                       bool fill_bg, ui::Widget* widget, const gfx::Rect& rc,
-                       int selected_offset);
+  void drawTextStringDeprecated(const char *t, ui::Color fg_color, ui::Color bg_color,
+                                bool fill_bg, ui::Widget* widget, const ui::JRect rect,
+                                int selected_offset);
+  void drawTextString(ui::Graphics* g, const char *t, ui::Color fg_color, ui::Color bg_color,
+                      bool fill_bg, ui::Widget* widget, const gfx::Rect& rc,
+                      int selected_offset);
   void draw_entry_caret(ui::Entry* widget, int x, int y);
 
   void paintIcon(ui::Widget* widget, ui::Graphics* g, ui::IButtonIcon* iconInterface, int x, int y);

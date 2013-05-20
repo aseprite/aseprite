@@ -26,7 +26,7 @@ namespace ui {
 static Theme* current_theme = NULL;
 
 static void draw_text(BITMAP *bmp, FONT *f, const char* text, int x, int y,
-                      ui::Color fg_color, ui::Color bg_color, bool fill_bg);
+                      Color fg_color, Color bg_color, bool fill_bg);
 
 Theme::Theme()
 {
@@ -95,7 +95,7 @@ BITMAP* ji_apply_guiscale(BITMAP* original)
 }
 
 void drawTextBox(BITMAP* bmp, Widget* widget,
-                 int* w, int* h, ui::Color bg, ui::Color fg)
+                 int* w, int* h, Color bg, Color fg)
 {
   View* view = View::getView(widget);
   char *text = (char*)widget->getText(); // TODO warning: removing const modifier
@@ -254,7 +254,7 @@ void drawTextBox(BITMAP* bmp, Widget* widget,
 }
 
 static void draw_text(BITMAP *bmp, FONT *f, const char *text, int x, int y,
-                      ui::Color fg_color, ui::Color bg_color, bool fill_bg)
+                      Color fg_color, Color bg_color, bool fill_bg)
 {
   // TODO Optional anti-aliased textout
   ji_font_set_aa_mode(f, to_system(bg_color));

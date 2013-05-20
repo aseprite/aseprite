@@ -34,7 +34,7 @@ namespace ui {
     }
 
   protected:
-    virtual bool onProcessMessage(Message* msg) OVERRIDE;
+    virtual void onPaint(PaintEvent& ev) OVERRIDE;
     virtual void onResize(ResizeEvent& ev) OVERRIDE;
     virtual void onPreferredSize(PreferredSizeEvent& ev) OVERRIDE;
 
@@ -126,6 +126,7 @@ namespace ui {
 
   protected:
     virtual bool onProcessMessage(Message* msg) OVERRIDE;
+    virtual void onPaint(PaintEvent& ev) OVERRIDE;
     virtual void onPreferredSize(PreferredSizeEvent& ev) OVERRIDE;
     virtual void onClick();
 

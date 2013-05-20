@@ -18,7 +18,7 @@ namespace ui {
     Separator(const char* text, int align);
 
   protected:
-    bool onProcessMessage(Message* msg) OVERRIDE;
+    void onPaint(PaintEvent& ev) OVERRIDE;
     void onPreferredSize(PreferredSizeEvent& ev) OVERRIDE;
   };
 

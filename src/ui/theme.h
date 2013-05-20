@@ -19,11 +19,7 @@ namespace gfx {
 
 namespace ui {
 
-  class ButtonBase;
   class Cursor;
-  class Entry;
-  class Menu;
-  class MenuItem;
   class PaintEvent;
   class Widget;
 
@@ -42,8 +38,8 @@ namespace ui {
 
     virtual Cursor* getCursor(CursorType type) = 0;
     virtual void initWidget(Widget* widget) = 0;
-    virtual void getWindowMask(ui::Widget* widget, gfx::Region& region) = 0;
-    virtual void setDecorativeWidgetBounds(ui::Widget* widget) = 0;
+    virtual void getWindowMask(Widget* widget, gfx::Region& region) = 0;
+    virtual void setDecorativeWidgetBounds(Widget* widget) = 0;
 
     virtual void paintDesktop(PaintEvent& ev) = 0;
     virtual void paintBox(PaintEvent& ev) = 0;
@@ -53,17 +49,17 @@ namespace ui {
     virtual void paintGrid(PaintEvent& ev) = 0;
     virtual void paintLabel(PaintEvent& ev) = 0;
     virtual void paintLinkLabel(PaintEvent& ev) = 0;
-    virtual void draw_listbox(Widget* widget, JRect clip) = 0;
-    virtual void draw_listitem(Widget* widget, JRect clip) = 0;
-    virtual void draw_menu(Menu* menu, JRect clip) = 0;
-    virtual void draw_menuitem(MenuItem* menuitem, JRect clip) = 0;
-    virtual void drawSplitter(PaintEvent& ev) = 0;
+    virtual void paintListBox(PaintEvent& ev) = 0;
+    virtual void paintListItem(PaintEvent& ev) = 0;
+    virtual void paintMenu(PaintEvent& ev) = 0;
+    virtual void paintMenuItem(PaintEvent& ev) = 0;
+    virtual void paintSplitter(PaintEvent& ev) = 0;
     virtual void paintRadioButton(PaintEvent& ev) = 0;
-    virtual void draw_separator(Widget* widget, JRect clip) = 0;
+    virtual void paintSeparator(PaintEvent& ev) = 0;
     virtual void paintSlider(PaintEvent& ev) = 0;
-    virtual void draw_combobox_entry(Entry* widget, JRect clip) = 0;
+    virtual void paintComboBoxEntry(PaintEvent& ev) = 0;
     virtual void paintComboBoxButton(PaintEvent& ev) = 0;
-    virtual void draw_textbox(Widget* widget, JRect clip) = 0;
+    virtual void paintTextBox(PaintEvent& ev) = 0;
     virtual void paintView(PaintEvent& ev) = 0;
     virtual void paintViewScrollbar(PaintEvent& ev) = 0;
     virtual void paintViewViewport(PaintEvent& ev) = 0;

@@ -86,22 +86,22 @@ bool Slider::onProcessMessage(Message* msg)
 
       setupSliderCursor();
 
-      /* continue to kMouseMoveMessage */
+      // Continue to kMouseMoveMessage...
 
     case kMouseMoveMessage:
       if (hasCapture()) {
         int value, accuracy, range;
-        JRect rc = jwidget_get_child_rect(this);
+        gfx::Rect rc = getChildrenBounds();
 
         range = m_max - m_min + 1;
 
-        /* with left click */
+        // With left click
         if (slider_press_left) {
-          value = m_min + range * (msg->mouse.x - rc->x1) / jrect_w(rc);
+          value = m_min + range * (msg->mouse.x - rc.x) / rc.w;
         }
-        /* with right click */
+        // With right click
         else {
-          accuracy = MID(1, jrect_w(rc) / range, jrect_w(rc));
+          accuracy = MID(1, rc.w / range, rc.w);
 
           value = slider_press_value +
             (msg->mouse.x - slider_press_x) / accuracy;
@@ -110,29 +110,28 @@ bool Slider::onProcessMessage(Message* msg)
         value = MID(m_min, value, m_max);
 
         if (m_value != value) {
-          this->setValue(value);
+          setValue(value);
           onChange();
         }
 
-        /* for left click */
+        // For left click
         if (slider_press_left) {
           int x = jmouse_x(0);
 
-          if (x < rc->x1-1)
-            x = rc->x1-1;
-          else if (x > rc->x2)
-            x = rc->x2;
+          if (x < rc.x-1)
+            x = rc.x-1;
+          else if (x > rc.x2())
+            x = rc.x2();
 
           if (x != jmouse_x(0))
             jmouse_set_position(x, jmouse_y(0));
         }
-        /* for right click */
+        // For right click
         else if (jmouse_control_infinite_scroll(getBounds() - getBorder())) {
           slider_press_x = jmouse_x(0);
           slider_press_value = m_value;
         }
 
-        jrect_free(rc);
         return true;
       }
       break;

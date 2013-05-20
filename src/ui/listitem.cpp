@@ -26,16 +26,9 @@ ListItem::ListItem(const char* text)
   initTheme();
 }
 
-bool ListItem::onProcessMessage(Message* msg)
+void ListItem::onPaint(PaintEvent& ev)
 {
-  switch (msg->type) {
-
-    case kPaintMessage:
-      this->getTheme()->draw_listitem(this, &msg->draw.rect);
-      return true;
-  }
-
-  return Widget::onProcessMessage(msg);
+  getTheme()->paintListItem(ev);
 }
 
 void ListItem::onResize(ResizeEvent& ev)

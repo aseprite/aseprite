@@ -72,6 +72,8 @@ Tabs::Tabs(TabsDelegate* delegate)
   , m_delegate(delegate)
   , m_timer(1000/60, this)
 {
+  setDoubleBuffered(true);
+
   m_hot = NULL;
   m_selected = NULL;
   m_scrollX = 0;
@@ -244,93 +246,6 @@ bool Tabs::onProcessMessage(Message* msg)
 {
   switch (msg->type) {
 
-    case kPaintMessage: {
-      SkinTheme* theme = static_cast<SkinTheme*>(this->getTheme());
-      BITMAP *doublebuffer = create_bitmap(jrect_w(&msg->draw.rect),
-                                           jrect_h(&msg->draw.rect));
-      JRect rect = jwidget_get_rect(this);
-      jrect_displace(rect, -msg->draw.rect.x1, -msg->draw.rect.y1);
-
-      JRect box = jrect_new(rect->x1-m_scrollX,
-                            rect->y1,
-                            rect->x1-m_scrollX+2*jguiscale(),
-                            rect->y1+theme->get_part(PART_TAB_FILLER)->h);
-
-      clear_to_color(doublebuffer, to_system(theme->getColor(ThemeColor::WindowFace)));
-
-      theme->draw_part_as_hline(doublebuffer, box->x1, box->y1, box->x2-1, box->y2-1, PART_TAB_FILLER);
-      theme->draw_part_as_hline(doublebuffer, box->x1, box->y2, box->x2-1, rect->y2-1, PART_TAB_BOTTOM_NORMAL);
-
-      box->x1 = box->x2;
-
-      // For each tab...
-      TabsListIterator it, end = m_list_of_tabs.end();
-
-      for (it = m_list_of_tabs.begin(); it != end; ++it) {
-        Tab* tab = *it;
-
-        box->x2 = box->x1 + tab->width;
-
-        int x_delta = 0;
-        int y_delta = 0;
-
-        // Y-delta for animating tabs (intros and outros)
-        if (m_ani == ANI_ADDING_TAB && m_selected == tab) {
-          y_delta = (box->y2 - box->y1) * (ANI_ADDING_TAB_TICKS - m_ani_t) / ANI_ADDING_TAB_TICKS;
-        }
-        else if (m_ani == ANI_REMOVING_TAB && m_nextTabOfTheRemovedOne == tab) {
-          x_delta += m_removedTab->width - m_removedTab->width*(1.0-std::exp(-10.0 * m_ani_t / (double)ANI_REMOVING_TAB_TICKS));
-          x_delta = MID(0, x_delta, m_removedTab->width);
-
-          // Draw deleted tab
-          if (m_removedTab) {
-            JRect box2 = jrect_new(box->x1, box->y1, box->x1+x_delta, box->y2);
-            drawTab(doublebuffer, box2, m_removedTab, 0, false);
-            jrect_free(box2);
-          }
-        }
-
-        box->x1 += x_delta;
-        box->x2 += x_delta;
-
-        drawTab(doublebuffer, box, tab, y_delta, (tab == m_selected));
-
-        box->x1 = box->x2;
-      }
-
-      if (m_ani == ANI_REMOVING_TAB && m_nextTabOfTheRemovedOne == NULL) {
-        // Draw deleted tab
-        if (m_removedTab) {
-          int x_delta = m_removedTab->width - m_removedTab->width*(1.0-std::exp(-10.0 * m_ani_t / (double)ANI_REMOVING_TAB_TICKS));
-          x_delta = MID(0, x_delta, m_removedTab->width);
-
-          JRect box2 = jrect_new(box->x1, box->y1, box->x1+x_delta, box->y2);
-          drawTab(doublebuffer, box2, m_removedTab, 0, false);
-          jrect_free(box2);
-
-          box->x1 += x_delta;
-          box->x2 = box->x1;
-        }
-      }
-
-      /* fill the gap to the right-side */
-      if (box->x1 < rect->x2) {
-        theme->draw_part_as_hline(doublebuffer, box->x1, box->y1, rect->x2-1, box->y2-1, PART_TAB_FILLER);
-        theme->draw_part_as_hline(doublebuffer, box->x1, box->y2, rect->x2-1, rect->y2-1, PART_TAB_BOTTOM_NORMAL);
-      }
-
-      jrect_free(rect);
-      jrect_free(box);
-
-      blit(doublebuffer, ji_screen, 0, 0,
-           msg->draw.rect.x1,
-           msg->draw.rect.y1,
-           doublebuffer->w,
-           doublebuffer->h);
-      destroy_bitmap(doublebuffer);
-      return true;
-    }
-
     case kMouseEnterMessage:
     case kMouseMoveMessage:
       calculateHot();
@@ -425,6 +340,76 @@ bool Tabs::onProcessMessage(Message* msg)
   return Widget::onProcessMessage(msg);
 }
 
+void Tabs::onPaint(PaintEvent& ev)
+{
+  SkinTheme* theme = static_cast<SkinTheme*>(this->getTheme());
+  Graphics* g = ev.getGraphics();
+  gfx::Rect rect = getClientBounds();
+  gfx::Rect box(rect.x-m_scrollX,
+                rect.y,
+                2*jguiscale(),
+                theme->get_part(PART_TAB_FILLER)->h);
+
+  g->fillRect(theme->getColor(ThemeColor::WindowFace), g->getClipBounds());
+
+  theme->draw_part_as_hline(g, box, PART_TAB_FILLER);
+  theme->draw_part_as_hline(g, gfx::Rect(box.x, box.y2(), box.w, rect.y2()-box.y2()), PART_TAB_BOTTOM_NORMAL);
+
+  box.x = box.x2();
+
+  // For each tab...
+  TabsListIterator it, end = m_list_of_tabs.end();
+
+  for (it = m_list_of_tabs.begin(); it != end; ++it) {
+    Tab* tab = *it;
+
+    box.w = tab->width;
+
+    int x_delta = 0;
+    int y_delta = 0;
+
+    // Y-delta for animating tabs (intros and outros)
+    if (m_ani == ANI_ADDING_TAB && m_selected == tab) {
+      y_delta = box.h * (ANI_ADDING_TAB_TICKS - m_ani_t) / ANI_ADDING_TAB_TICKS;
+    }
+    else if (m_ani == ANI_REMOVING_TAB && m_nextTabOfTheRemovedOne == tab) {
+      x_delta += m_removedTab->width - m_removedTab->width*(1.0-std::exp(-10.0 * m_ani_t / (double)ANI_REMOVING_TAB_TICKS));
+      x_delta = MID(0, x_delta, m_removedTab->width);
+
+      // Draw deleted tab
+      if (m_removedTab) {
+        gfx::Rect box2(box.x, box.y, x_delta, box.h);
+        drawTab(g, box2, m_removedTab, 0, false);
+      }
+    }
+
+    box.x += x_delta;
+    drawTab(g, box, tab, y_delta, (tab == m_selected));
+
+    box.x = box.x2();
+  }
+
+  if (m_ani == ANI_REMOVING_TAB && m_nextTabOfTheRemovedOne == NULL) {
+    // Draw deleted tab
+    if (m_removedTab) {
+      int x_delta = m_removedTab->width - m_removedTab->width*(1.0-std::exp(-10.0 * m_ani_t / (double)ANI_REMOVING_TAB_TICKS));
+      x_delta = MID(0, x_delta, m_removedTab->width);
+
+      gfx::Rect box2(box.x, box.y, x_delta, box.h);
+      drawTab(g, box2, m_removedTab, 0, false);
+
+      box.x += x_delta;
+      box.w = 0;
+    }
+  }
+
+  // Fill the gap to the right-side
+  if (box.x < rect.x2()) {
+    theme->draw_part_as_hline(g, gfx::Rect(box.x, box.y, rect.x2()-box.x, box.h), PART_TAB_FILLER);
+    theme->draw_part_as_hline(g, gfx::Rect(box.x, box.y2(), rect.x2()-box.x, rect.y2()-box.y2()), PART_TAB_BOTTOM_NORMAL);
+  }
+}
+
 void Tabs::onResize(ResizeEvent& ev)
 {
   setBoundsQuietly(ev.getBounds());
@@ -467,10 +452,10 @@ void Tabs::selectTabInternal(Tab* tab)
   invalidate();
 }
 
-void Tabs::drawTab(BITMAP* bmp, JRect box, Tab* tab, int y_delta, bool selected)
+void Tabs::drawTab(Graphics* g, const gfx::Rect& box, Tab* tab, int y_delta, bool selected)
 {
   // Is the tab outside the bounds of the widget?
-  if (box->x1 >= this->rc->x2 || box->x2 <= this->rc->x1)
+  if (box.x >= this->rc->x2 || box.x2() <= this->rc->x1)
     return;
 
   SkinTheme* theme = static_cast<SkinTheme*>(this->getTheme());
@@ -488,37 +473,33 @@ void Tabs::drawTab(BITMAP* bmp, JRect box, Tab* tab, int y_delta, bool selected)
     face_color = theme->getColor(ThemeColor::TabNormalFace);
   }
 
-  if (jrect_w(box) > 2) {
-    theme->draw_bounds_nw(bmp,
-                          box->x1, box->y1+y_delta, box->x2-1, box->y2-1,
+  if (box.w > 2) {
+    theme->draw_bounds_nw(g,
+                          gfx::Rect(box.x, box.y+y_delta, box.w, box.h),
                           (selected) ? PART_TAB_SELECTED_NW:
                                        PART_TAB_NORMAL_NW,
                           face_color);
 
-    jdraw_text(bmp, this->getFont(), tab->text.c_str(),
-               box->x1+4*jguiscale(),
-               (box->y1+box->y2)/2-text_height(this->getFont())/2+1 + y_delta,
-               text_color, face_color, false, jguiscale());
+    g->drawString(tab->text, text_color, face_color, false,
+                  gfx::Point(box.x + 4*jguiscale(),
+                             box.y + box.h/2 - text_height(this->getFont())/2+1 + y_delta));
   }
 
   if (selected) {
-    theme->draw_bounds_nw(bmp,
-                          box->x1, box->y2, box->x2-1, this->rc->y2-1,
+    theme->draw_bounds_nw(g, gfx::Rect(box.x, box.y2(), box.w, this->rc->y2-box.y2()),
                           PART_TAB_BOTTOM_SELECTED_NW,
                           theme->getColor(ThemeColor::TabSelectedFace));
   }
   else {
-    theme->draw_part_as_hline(bmp,
-                              box->x1, box->y2, box->x2-1, this->rc->y2-1,
+    theme->draw_part_as_hline(g, gfx::Rect(box.x, box.y2(), box.w, this->rc->y2-box.y2()),
                               PART_TAB_BOTTOM_NORMAL);
   }
 
 #ifdef CLOSE_BUTTON_IN_EACH_TAB
   BITMAP* close_icon = theme->get_part(PART_WINDOW_CLOSE_BUTTON_NORMAL);
-  set_alpha_blender();
-  draw_trans_sprite(doublebuffer, close_icon,
-                    box->x2-4*jguiscale()-close_icon->w,
-                    (box->y1+box->y2)/2-close_icon->h/2+1*jguiscale());
+  g->drawAlphaBitmap(close_icon,
+                     box.x2() - 4*jguiscale() - close_icon->w,
+                     box.y + box.h/2 - close_icon->h/2+1 * jguiscale());
 #endif
 }
 
@@ -626,8 +607,8 @@ void Tabs::setScrollX(int scroll_x)
 
 void Tabs::calculateHot()
 {
-  JRect rect = jwidget_get_rect(this);
-  JRect box = jrect_new(rect->x1-m_scrollX, rect->y1, 0, rect->y2-1);
+  gfx::Rect rect = getBounds();
+  gfx::Rect box(rect.x-m_scrollX, rect.y, 0, rect.h-1);
   Tab *hot = NULL;
   TabsListIterator it, end = m_list_of_tabs.end();
 
@@ -635,14 +616,14 @@ void Tabs::calculateHot()
   for (it = m_list_of_tabs.begin(); it != end; ++it) {
     Tab* tab = *it;
 
-    box->x2 = box->x1 + tab->width;
+    box.w = tab->width;
 
-    if (jrect_point_in(box, jmouse_x(0), jmouse_y(0))) {
+    if (box.contains(gfx::Point(jmouse_x(0), jmouse_y(0)))) {
       hot = tab;
       break;
     }
 
-    box->x1 = box->x2;
+    box.x += box.w;
   }
 
   if (m_hot != hot) {
@@ -653,9 +634,6 @@ void Tabs::calculateHot()
 
     invalidate();
   }
-
-  jrect_free(rect);
-  jrect_free(box);
 }
 
 void Tabs::calcTabWidth(Tab* tab)

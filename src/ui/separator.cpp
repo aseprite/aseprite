@@ -25,16 +25,9 @@ Separator::Separator(const char* text, int align)
   initTheme();
 }
 
-bool Separator::onProcessMessage(Message* msg)
+void Separator::onPaint(PaintEvent& ev)
 {
-  switch (msg->type) {
-
-    case kPaintMessage:
-      getTheme()->draw_separator(this, &msg->draw.rect);
-      return true;
-  }
-
-  return Widget::onProcessMessage(msg);
+  getTheme()->paintSeparator(ev);
 }
 
 void Separator::onPreferredSize(PreferredSizeEvent& ev)

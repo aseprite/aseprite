@@ -579,6 +579,14 @@ Rect Widget::getChildrenBounds() const
               jrect_h(rc) - border_width.t - border_width.b);
 }
 
+Rect Widget::getClientChildrenBounds() const
+{
+  return Rect(border_width.l,
+              border_width.t,
+              jrect_w(rc) - border_width.l - border_width.r,
+              jrect_h(rc) - border_width.t - border_width.b);
+}
+
 void Widget::setBounds(const Rect& rc)
 {
   ResizeEvent ev(this, rc);
@@ -704,25 +712,6 @@ void Widget::getDrawableRegion(gfx::Region& region, DrawableRegionFlags flags)
     window = manager->getRoot();
     manager = (window ? window->getManager(): NULL);
   }
-}
-
-/* gets the position of the widget */
-JRect jwidget_get_rect(Widget* widget)
-{
-  ASSERT_VALID_WIDGET(widget);
-
-  return jrect_new_copy(widget->rc);
-}
-
-/* gets the position for children of the widget */
-JRect jwidget_get_child_rect(Widget* widget)
-{
-  ASSERT_VALID_WIDGET(widget);
-
-  return jrect_new(widget->rc->x1 + widget->border_width.l,
-                   widget->rc->y1 + widget->border_width.t,
-                   widget->rc->x2 - widget->border_width.r,
-                   widget->rc->y2 - widget->border_width.b);
 }
 
 int jwidget_get_text_length(const Widget* widget)

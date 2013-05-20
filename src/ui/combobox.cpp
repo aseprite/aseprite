@@ -38,6 +38,7 @@ public:
 
 protected:
   bool onProcessMessage(Message* msg) OVERRIDE;
+  void onPaint(PaintEvent& ev) OVERRIDE;
 
 private:
   ComboBox* m_comboBox;
@@ -407,13 +408,14 @@ bool ComboBoxEntry::onProcessMessage(Message* msg)
         return true;
       break;
 
-    case kPaintMessage:
-      getTheme()->draw_combobox_entry(this, &msg->draw.rect);
-      return true;
-
   }
 
   return Entry::onProcessMessage(msg);
+}
+
+void ComboBoxEntry::onPaint(PaintEvent& ev)
+{
+  getTheme()->paintComboBoxEntry(ev);
 }
 
 bool ComboBoxListBox::onProcessMessage(Message* msg)

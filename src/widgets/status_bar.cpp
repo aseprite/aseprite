@@ -476,21 +476,17 @@ bool StatusBar::onProcessMessage(Message* msg)
       SkinTheme* theme = static_cast<SkinTheme*>(this->getTheme());
       ui::Color text_color = theme->getColor(ThemeColor::Text);
       ui::Color face_color = theme->getColor(ThemeColor::Face);
-      JRect rc = jwidget_get_rect(this);
+      Rect rc = getBounds();
       BITMAP* doublebuffer = create_bitmap(jrect_w(&msg->draw.rect),
                                            jrect_h(&msg->draw.rect));
-      jrect_displace(rc,
-                     -msg->draw.rect.x1,
-                     -msg->draw.rect.y1);
+      rc.offset(-msg->draw.rect.x1, -msg->draw.rect.y1);
 
       clear_to_color(doublebuffer, to_system(face_color));
 
-      rc->x1 += 2*jguiscale();
-      rc->y1 += 1*jguiscale();
-      rc->x2 -= 2*jguiscale();
-      rc->y2 -= 2*jguiscale();
+      rc.shrink(Border(2*jguiscale(), 1*jguiscale(),
+                       2*jguiscale(), 2*jguiscale()));
 
-      int x = rc->x1+4*jguiscale();
+      int x = rc.x + 4*jguiscale();
 
       // Color
       if (m_state == SHOW_COLOR) {
@@ -499,13 +495,13 @@ bool StatusBar::onProcessMessage(Message* msg)
         if (icon) {
           set_alpha_blender();
           draw_trans_sprite(doublebuffer, icon,
-                            x, (rc->y1+rc->y2)/2-icon->h/2);
+                            x, rc.y + rc.h/2 - icon->h/2);
 
           x += icon->w + 4*jguiscale();
         }
 
         // Draw color
-        draw_color_button(doublebuffer, Rect(x, rc->y1, 32*jguiscale(), rc->y2-rc->y1),
+        draw_color_button(doublebuffer, Rect(x, rc.y, 32*jguiscale(), rc.h),
                           true, true, true, true,
                           true, true, true, true,
                           app_get_current_pixel_format(), m_color,
@@ -523,7 +519,7 @@ bool StatusBar::onProcessMessage(Message* msg)
         }
 
         textout_ex(doublebuffer, this->getFont(), str.c_str(),
-                   x, (rc->y1+rc->y2)/2-text_height(this->getFont())/2,
+                   x, rc.y + rc.h/2 - text_height(this->getFont())/2,
                    to_system(text_color), -1);
 
         x += ji_font_text_len(this->getFont(), str.c_str()) + 4*jguiscale();
@@ -535,9 +531,7 @@ bool StatusBar::onProcessMessage(Message* msg)
         BITMAP* icon = theme->get_toolicon(m_tool->getId().c_str());
         if (icon) {
           set_alpha_blender();
-          draw_trans_sprite(doublebuffer, icon,
-                            x, (rc->y1+rc->y2)/2-icon->h/2);
-
+          draw_trans_sprite(doublebuffer, icon, x, rc.y + rc.h/2 - icon->h/2);
           x += icon->w + 4*jguiscale();
         }
       }
@@ -546,7 +540,7 @@ bool StatusBar::onProcessMessage(Message* msg)
       if (this->getTextSize() > 0) {
         textout_ex(doublebuffer, this->getFont(), this->getText(),
                    x,
-                   (rc->y1+rc->y2)/2-text_height(this->getFont())/2,
+                   rc.y + rc.h/2 - text_height(this->getFont())/2,
                    to_system(text_color), -1);
 
         x += ji_font_text_len(this->getFont(), this->getText()) + 4*jguiscale();
@@ -556,10 +550,10 @@ bool StatusBar::onProcessMessage(Message* msg)
       if (!m_progress.empty()) {
         int width = 64;
         int y1, y2;
-        int x = rc->x2 - (width+4);
+        int x = rc.x2() - (width+4);
 
-        y1 = rc->y1;
-        y2 = rc->y2-1;
+        y1 = rc.y;
+        y2 = rc.y2()-1;
 
         for (ProgressList::iterator it = m_progress.begin(); it != m_progress.end(); ++it) {
           Progress* progress = *it;
@@ -574,11 +568,11 @@ bool StatusBar::onProcessMessage(Message* msg)
       // Show layers only when we are not moving pixels
       else if (!hasChild(m_movePixelsBox)) {
         // Available width for layers buttons
-        int width = jrect_w(rc)/4;
+        int width = rc.w/4;
 
         // Draw layers
         try {
-          --rc->y2;
+          --rc.h;
 
           const ContextReader reader(UIContext::instance());
           const Sprite* sprite(reader.sprite());
@@ -595,13 +589,13 @@ bool StatusBar::onProcessMessage(Message* msg)
             char buf[256];
 
             for (int c=0; it != end; ++it, ++c) {
-              int x1 = rc->x2-width + c*width/count;
-              int x2 = rc->x2-width + (c+1)*width/count;
+              int x1 = rc.x2() - width + c*width/count;
+              int x2 = rc.x2() - width + (c+1)*width/count;
               bool hot = ((*it == reader.layer())
                           || (LayerIndex(c) == m_hot_layer));
 
               theme->draw_bounds_nw(doublebuffer,
-                                    x1, rc->y1, x2, rc->y2,
+                                    x1, rc.y, x2, rc.y2(),
                                     hot ? PART_TOOLBUTTON_HOT_NW:
                                           PART_TOOLBUTTON_NORMAL_NW,
                                     hot ? theme->getColor(ThemeColor::ButtonHotFace):
@@ -619,7 +613,7 @@ bool StatusBar::onProcessMessage(Message* msg)
 
               textout_centre_ex(doublebuffer, this->getFont(), buf,
                                 (x1+x2)/2,
-                                (rc->y1+rc->y2)/2-text_height(this->getFont())/2,
+                                rc.y + rc.h/2 - text_height(this->getFont())/2,
                                 to_system(hot ? theme->getColor(ThemeColor::ButtonHotText):
                                                 theme->getColor(ThemeColor::ButtonNormalText)),
                                 -1);
@@ -636,8 +630,6 @@ bool StatusBar::onProcessMessage(Message* msg)
           // Do nothing...
         }
       }
-
-      jrect_free(rc);
 
       blit(doublebuffer, ji_screen, 0, 0,
            msg->draw.rect.x1,
@@ -679,19 +671,15 @@ bool StatusBar::onProcessMessage(Message* msg)
     }
 
     case kMouseMoveMessage: {
-      JRect rc = jwidget_get_rect(this);
-
-      rc->x1 += 2*jguiscale();
-      rc->y1 += 1*jguiscale();
-      rc->x2 -= 2*jguiscale();
-      rc->y2 -= 2*jguiscale();
+      gfx::Rect rc = getBounds().shrink(gfx::Border(2*jguiscale(), 1*jguiscale(),
+                                                    2*jguiscale(), 2*jguiscale()));
 
       // Available width for layers buttons
-      int width = jrect_w(rc)/4;
+      int width = rc.w/4;
 
       // Check layers bounds
       try {
-        --rc->y2;
+        --rc.h;
 
         LayerIndex hot_layer = LayerIndex(-1);
 
@@ -705,12 +693,12 @@ bool StatusBar::onProcessMessage(Message* msg)
           int count = folder->getLayersCount();
 
           for (int c=0; it != end; ++it, ++c) {
-            int x1 = rc->x2-width + c*width/count;
-            int x2 = rc->x2-width + (c+1)*width/count;
+            int x1 = rc.x2()-width + c*width/count;
+            int x2 = rc.x2()-width + (c+1)*width/count;
 
-            if (Rect(Point(x1, rc->y1),
-                     Point(x2, rc->y2)).contains(Point(msg->mouse.x,
-                                                       msg->mouse.y))) {
+            if (Rect(Point(x1, rc.y),
+                     Point(x2, rc.y2())).contains(Point(msg->mouse.x,
+                                                        msg->mouse.y))) {
               hot_layer = LayerIndex(c);
               break;
             }
@@ -718,12 +706,12 @@ bool StatusBar::onProcessMessage(Message* msg)
         }
         // Check if the "Donate" button has the mouse over
         else {
-          int x1 = rc->x2-width;
-          int x2 = rc->x2;
+          int x1 = rc.x2()-width;
+          int x2 = rc.x2();
 
-          if (Rect(Point(x1, rc->y1),
-                   Point(x2, rc->y2)).contains(Point(msg->mouse.x,
-                                                     msg->mouse.y))) {
+          if (Rect(Point(x1, rc.y),
+                   Point(x2, rc.y2())).contains(Point(msg->mouse.x,
+                                                      msg->mouse.y))) {
             hot_layer = LayerIndex(0);
           }
         }
@@ -736,8 +724,6 @@ bool StatusBar::onProcessMessage(Message* msg)
       catch (LockedDocumentException&) {
         // Do nothing...
       }
-
-      jrect_free(rc);
       break;
     }
 

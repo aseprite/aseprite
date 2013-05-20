@@ -228,7 +228,7 @@ void Splitter::onResize(ResizeEvent& ev)
 
 void Splitter::onPaint(PaintEvent& ev)
 {
-  getTheme()->drawSplitter(ev);
+  getTheme()->paintSplitter(ev);
 }
 
 void Splitter::onPreferredSize(PreferredSizeEvent& ev)

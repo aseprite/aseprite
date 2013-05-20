@@ -125,10 +125,6 @@ bool ListBox::onProcessMessage(Message* msg)
 {
   switch (msg->type) {
 
-    case kPaintMessage:
-      this->getTheme()->draw_listbox(this, &msg->draw.rect);
-      return true;
-
     case kOpenMessage:
       centerScroll();
       break;
@@ -254,6 +250,11 @@ bool ListBox::onProcessMessage(Message* msg)
   }
 
   return Widget::onProcessMessage(msg);
+}
+
+void ListBox::onPaint(PaintEvent& ev)
+{
+  getTheme()->paintListBox(ev);
 }
 
 void ListBox::onResize(ResizeEvent& ev)
