@@ -276,7 +276,10 @@ private:
     const char* id = WellKnownInks::Paint;
     switch (inkType) {
       case kOpaqueInk:
-        id = WellKnownInks::Paint;
+        id = WellKnownInks::PaintOpaque;
+        break;
+      case kPutAlphaInk:
+        id = WellKnownInks::PaintPutAlpha;
         break;
       case kMergeInk:
         id = WellKnownInks::Paint;
@@ -303,6 +306,7 @@ private:
         id = WellKnownInks::Jumble;
         break;
     }
+
     return App::instance()->getToolBox()->getInkById(id);
   }
 

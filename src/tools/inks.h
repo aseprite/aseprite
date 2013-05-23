@@ -32,7 +32,7 @@
 class PaintInk : public Ink
 {
 public:
-  enum Type { Normal, WithFg, WithBg };
+  enum Type { Merge, WithFg, WithBg, Opaque, PutAlpha };
 
 private:
   AlgoHLine m_proc;
@@ -47,7 +47,7 @@ public:
   {
     switch (m_type) {
 
-      case Normal:
+      case Merge:
         // Do nothing, use the default colors
         break;
 
@@ -64,9 +64,21 @@ public:
         break;
     }
 
-    m_proc = loop->getOpacity() == 255 ?
-      ink_processing[INK_OPAQUE][MID(0, loop->getSprite()->getPixelFormat(), 2)]:
-      ink_processing[INK_TRANSPARENT][MID(0, loop->getSprite()->getPixelFormat(), 2)];
+    int depth = MID(0, loop->getSprite()->getPixelFormat(), 2);
+
+    switch (m_type) {
+      case Opaque:
+        m_proc = ink_processing[INK_OPAQUE][depth];
+        break;
+      case PutAlpha:
+        m_proc = ink_processing[INK_PUTALPHA][depth];
+        break;
+      default:
+        m_proc = (loop->getOpacity() == 255 ?
+                  ink_processing[INK_OPAQUE][depth]:
+                  ink_processing[INK_TRANSPARENT][depth]);
+        break;
+    }
   }
 
   void inkHline(int x1, int y, int x2, ToolLoop* loop)

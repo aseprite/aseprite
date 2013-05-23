@@ -248,6 +248,7 @@ public:
     // The same order as in InkType
     addItem("Default");
     addItem("Opaque");
+    addItem("Put Alpha");
     addItem("Merge");
     addItem("Shading");
     addItem("Replace");

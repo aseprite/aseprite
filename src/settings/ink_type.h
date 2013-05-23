@@ -26,6 +26,7 @@
 enum InkType {
   kDefaultInk,
   kOpaqueInk,
+  kPutAlphaInk,
   kMergeInk,
   kShadingInk,
   kReplaceInk,

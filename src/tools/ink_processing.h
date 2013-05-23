@@ -117,6 +117,45 @@ static void ink_hline8_opaque(int x1, int y, int x2, ToolLoop* loop)
 }
 
 //////////////////////////////////////////////////////////////////////
+// Putalpha Ink
+//////////////////////////////////////////////////////////////////////
+
+static void ink_hline32_putalpha(int x1, int y, int x2, ToolLoop* loop)
+{
+  int c = loop->getPrimaryColor();
+  int opacity = loop->getOpacity();
+
+  DEFINE_INK_PROCESSING_DST
+    (RgbTraits,
+     *dst_address = _rgba(_rgba_getr(c),
+                          _rgba_getg(c),
+                          _rgba_getb(c),
+                          opacity)
+     );
+}
+
+static void ink_hline16_putalpha(int x1, int y, int x2, ToolLoop* loop)
+{
+  int c = loop->getPrimaryColor();
+  int opacity = loop->getOpacity();
+
+  DEFINE_INK_PROCESSING_DST
+    (GrayscaleTraits,
+     *dst_address = _graya(_graya_getv(c),
+                           opacity)
+     );
+}
+
+static void ink_hline8_putalpha(int x1, int y, int x2, ToolLoop* loop)
+{
+  int c = loop->getPrimaryColor();
+
+  DEFINE_INK_PROCESSING_DST
+    (IndexedTraits,
+     *dst_address = c                   );
+}
+
+//////////////////////////////////////////////////////////////////////
 // Transparent Ink
 //////////////////////////////////////////////////////////////////////
 
@@ -484,6 +523,7 @@ static void ink_hline8_shading(int x1, int y, int x2, ToolLoop* loop)
 
 enum {
   INK_OPAQUE,
+  INK_PUTALPHA,
   INK_TRANSPARENT,
   INK_BLUR,
   INK_REPLACE,
@@ -500,6 +540,7 @@ static AlgoHLine ink_processing[][3] =
     (AlgoHLine)ink_hline8_##name }
 
   DEF_INK(opaque),
+  DEF_INK(putalpha),
   DEF_INK(transparent),
   DEF_INK(blur),
   DEF_INK(replace),
