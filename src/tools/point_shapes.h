@@ -49,23 +49,23 @@ public:
   {
     Pen* pen = loop->getPen();
     std::vector<PenScanline>::const_iterator scanline = pen->get_scanline().begin();
-    register int h = pen->get_size();
-    register int c = h/2;
+    register int v, h = pen->getBounds().h;
 
-    x -= c;
-    y -= c;
+    x += pen->getBounds().x;
+    y += pen->getBounds().y;
 
-    for (c=0; c<h; c++) {
+    for (v=0; v<h; ++v) {
       if (scanline->state)
-        doInkHline(x+scanline->x1, y+c, x+scanline->x2, loop);
+        doInkHline(x+scanline->x1, y+v, x+scanline->x2, loop);
       ++scanline;
     }
   }
   void getModifiedArea(ToolLoop* loop, int x, int y, Rect& area)
   {
     Pen* pen = loop->getPen();
-    int size = pen->get_size();
-    area = Rect(x-size/2, y-size/2, size, size);
+    area = pen->getBounds();
+    area.x += x;
+    area.y += y;
   }
 };
 

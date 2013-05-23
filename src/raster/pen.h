@@ -19,6 +19,8 @@
 #ifndef RASTER_PEN_H_INCLUDED
 #define RASTER_PEN_H_INCLUDED
 
+#include "gfx/point.h"
+#include "gfx/rect.h"
 #include "raster/pen_type.h"
 #include <vector>
 
@@ -43,6 +45,8 @@ public:
   Image* get_image() { return m_image; }
   const std::vector<PenScanline>& get_scanline() const { return m_scanline; }
 
+  const gfx::Rect& getBounds() const { return m_bounds; }
+
   void set_type(PenType type);
   void set_size(int size);
   void set_angle(int angle);
@@ -51,11 +55,12 @@ private:
   void clean_pen();
   void regenerate_pen();
 
-  PenType m_type;                       /* type of pen */
-  int m_size;                           /* size (diameter) */
-  int m_angle;                          /* angle in degrees 0-360 */
-  Image* m_image;                       /* image of the pen */
+  PenType m_type;                       // Type of pen
+  int m_size;                           // Size (diameter)
+  int m_angle;                          // Angle in degrees 0-360
+  Image* m_image;                       // Image of the pen
   std::vector<PenScanline> m_scanline;
+  gfx::Rect m_bounds;
 };
 
 #endif

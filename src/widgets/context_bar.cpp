@@ -363,7 +363,8 @@ ContextBar::ContextBar()
   tooltipManager->addTooltipFor(m_sprayWidth, "Spray Width", JI_CENTER | JI_BOTTOM);
   tooltipManager->addTooltipFor(m_spraySpeed, "Spray Speed", JI_CENTER | JI_BOTTOM);
 
-  App::instance()->PenSizeAfterChange.connect(&ContextBar::onPenSizeAfterChange, this);
+  App::instance()->PenSizeAfterChange.connect(&ContextBar::onPenSizeChange, this);
+  App::instance()->PenAngleAfterChange.connect(&ContextBar::onPenAngleChange, this);
   App::instance()->CurrentToolChange.connect(&ContextBar::onCurrentToolChange, this);
 
   onCurrentToolChange();
@@ -378,7 +379,7 @@ bool ContextBar::onProcessMessage(Message* msg)
   return Box::onProcessMessage(msg);
 }
 
-void ContextBar::onPenSizeAfterChange()
+void ContextBar::onPenSizeChange()
 {
   ISettings* settings = UIContext::instance()->getSettings();
   Tool* currentTool = settings->getCurrentTool();
@@ -387,6 +388,17 @@ void ContextBar::onPenSizeAfterChange()
 
   m_brushType->setPenSettings(penSettings);
   m_brushSize->setTextf("%d", penSettings->getSize());
+}
+
+void ContextBar::onPenAngleChange()
+{
+  ISettings* settings = UIContext::instance()->getSettings();
+  Tool* currentTool = settings->getCurrentTool();
+  IToolSettings* toolSettings = settings->getToolSettings(currentTool);
+  IPenSettings* penSettings = toolSettings->getPen();
+
+  m_brushType->setPenSettings(penSettings);
+  m_brushAngle->setTextf("%d", penSettings->getAngle());
 }
 
 void ContextBar::onCurrentToolChange()

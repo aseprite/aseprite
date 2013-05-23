@@ -33,6 +33,8 @@ class ChangePenCommand : public Command
     None,
     IncrementSize,
     DecrementSize,
+    IncrementAngle,
+    DecrementAngle,
   };
 
   Change m_change;
@@ -58,6 +60,8 @@ void ChangePenCommand::onLoadParams(Params* params)
   std::string change = params->get("change");
   if (change == "increment-size") m_change = IncrementSize;
   else if (change == "decrement-size") m_change = DecrementSize;
+  else if (change == "increment-angle") m_change = IncrementAngle;
+  else if (change == "decrement-angle") m_change = DecrementAngle;
 }
 
 void ChangePenCommand::onExecute(Context* context)
@@ -77,6 +81,14 @@ void ChangePenCommand::onExecute(Context* context)
     case DecrementSize:
       if (pen->getSize() > 1)
         pen->setSize(pen->getSize()-1);
+      break;
+    case IncrementAngle:
+      if (pen->getAngle() < 180)
+        pen->setAngle(pen->getAngle()+1);
+      break;
+    case DecrementAngle:
+      if (pen->getAngle() > 0)
+        pen->setAngle(pen->getAngle()-1);
       break;
   }
 }

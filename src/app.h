@@ -66,6 +66,8 @@ public:
   Signal0<void> PaletteChange;
   Signal0<void> PenSizeBeforeChange;
   Signal0<void> PenSizeAfterChange;
+  Signal0<void> PenAngleBeforeChange;
+  Signal0<void> PenAngleAfterChange;
   Signal0<void> CurrentToolChange;
 
 private:

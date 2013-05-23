@@ -95,63 +95,75 @@ static void algo_hline(int x1, int y, int x2, void *data)
 // Regenerates the pen bitmap and its rectangle's region.
 void Pen::regenerate_pen()
 {
-  int x, y;
-
   clean_pen();
 
-  m_image = Image::create(IMAGE_BITMAP, m_size, m_size);
-  image_clear(m_image, 0);
+  ASSERT(m_size > 0);
 
-  switch (m_type) {
+  int size = m_size;
+  if (m_type == PEN_TYPE_SQUARE && m_angle != 0 && m_size > 2)
+    size = std::sqrt(2*m_size*m_size)+2;
 
-    case PEN_TYPE_CIRCLE:
-      image_ellipsefill(m_image, 0, 0, m_size-1, m_size-1, 1);
-      break;
+  m_image = Image::create(IMAGE_BITMAP, size, size);
 
-    case PEN_TYPE_SQUARE: {
-      double a = PI * m_angle / 180;
-      int r = m_size/2;
-      int x1, y1, x2, y2, x3, y3, x4, y4;
+  if (size == 1) {
+    image_clear(m_image, 1);
+  }
+  else {
+    image_clear(m_image, 0);
 
-      x1 =  cos(a+  PI/4) * r;
-      y1 = -sin(a+  PI/4) * r;
-      x2 =  cos(a+3*PI/4) * r;
-      y2 = -sin(a+3*PI/4) * r;
-      x3 =  cos(a-3*PI/4) * r;
-      y3 = -sin(a-3*PI/4) * r;
-      x4 =  cos(a-  PI/4) * r;
-      y4 = -sin(a-  PI/4) * r;
+    switch (m_type) {
 
-      image_line(m_image, r+x1, r+y1, r+x2, r+y2, 1);
-      image_line(m_image, r+x2, r+y2, r+x3, r+y3, 1);
-      image_line(m_image, r+x3, r+y3, r+x4, r+y4, 1);
-      image_line(m_image, r+x4, r+y4, r+x1, r+y1, 1);
+      case PEN_TYPE_CIRCLE:
+        image_ellipsefill(m_image, 0, 0, size-1, size-1, 1);
+        break;
 
-      algo_floodfill(m_image, r, r, 0, m_image, algo_hline);
-      break;
-    }
+      case PEN_TYPE_SQUARE:
+        if (m_angle == 0 || size <= 2) {
+          image_clear(m_image, 1);
+        }
+        else {
+          double a = PI * m_angle / 180;
+          int c = size/2;
+          int r = m_size/2;
+          int d = m_size;
+          int x1 = c + r*cos(a-PI/2) + r*cos(a-PI);
+          int y1 = c - r*sin(a-PI/2) - r*sin(a-PI);
+          int x2 = x1 + d*cos(a);
+          int y2 = y1 - d*sin(a);
+          int x3 = x2 + d*cos(a+PI/2);
+          int y3 = y2 - d*sin(a+PI/2);
+          int x4 = x3 + d*cos(a+PI);
+          int y4 = y3 - d*sin(a+PI);
+          int points[8] = { x1, y1, x2, y2, x3, y3, x4, y4 };
 
-    case PEN_TYPE_LINE: {
-      double a = PI * m_angle / 180;
-      int r = m_size/2;
+          algo_polygon(4, points, m_image, algo_hline);
+        }
+        break;
 
-      x =  cos(a) * r;
-      y = -sin(a) * r;
-      image_line(m_image, r-x, r-y, r+x, r+y, 1);
-      image_line(m_image, r-x-1, r-y, r+x-1, r+y, 1);
-      break;
+      case PEN_TYPE_LINE: {
+        double a = PI * m_angle / 180;
+        float r = m_size/2;
+        float d = m_size;
+        int x1 = r + r*cos(a+PI);
+        int y1 = r - r*sin(a+PI);
+        int x2 = x1 + d*cos(a);
+        int y2 = y1 - d*sin(a);
+
+        image_line(m_image, x1, y1, x2, y2, 1);
+        break;
+      }
     }
   }
 
-  m_scanline.resize(m_size);
-  for (y=0; y<m_size; y++) {
+  m_scanline.resize(m_image->h);
+  for (int y=0; y<m_image->h; y++) {
     m_scanline[y].state = false;
 
-    for (x=0; x<m_size; x++) {
+    for (int x=0; x<m_image->w; x++) {
       if (image_getpixel(m_image, x, y)) {
         m_scanline[y].x1 = x;
 
-        for (; x<m_size; x++)
+        for (; x<m_image->w; x++)
           if (!image_getpixel(m_image, x, y))
             break;
 
@@ -161,4 +173,7 @@ void Pen::regenerate_pen()
       }
     }
   }
+
+  m_bounds = gfx::Rect(-m_image->w/2, -m_image->h/2,
+                       m_image->w, m_image->h);
 }

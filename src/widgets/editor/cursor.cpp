@@ -150,7 +150,7 @@ static void on_palette_change_update_cursor_color()
   update_cursor_color();
 }
 
-static void on_pen_size_before_change()
+static void on_pen_before_change()
 {
   if (current_editor != NULL) {
     pen_size_thick = current_editor->getCursorThick();
@@ -159,7 +159,7 @@ static void on_pen_size_before_change()
   }
 }
 
-static void on_pen_size_after_change()
+static void on_pen_after_change()
 {
   if (current_editor != NULL) {
     // Show drawing cursor
@@ -205,8 +205,10 @@ void Editor::editor_cursor_init()
   set_cursor_color(get_config_color("Tools", "CursorColor", app::Color::fromMask()));
 
   App::instance()->PaletteChange.connect(&on_palette_change_update_cursor_color);
-  App::instance()->PenSizeBeforeChange.connect(&on_pen_size_before_change);
-  App::instance()->PenSizeAfterChange.connect(&on_pen_size_after_change);
+  App::instance()->PenSizeBeforeChange.connect(&on_pen_before_change);
+  App::instance()->PenSizeAfterChange.connect(&on_pen_after_change);
+  App::instance()->PenAngleBeforeChange.connect(&on_pen_before_change);
+  App::instance()->PenAngleAfterChange.connect(&on_pen_after_change);
 }
 
 void Editor::editor_cursor_exit()
@@ -284,12 +286,11 @@ void Editor::editor_draw_cursor(int x, int y, bool refresh)
     int pen_color = get_pen_color(m_sprite, m_layer);
     uint32_t new_mask_color;
     Pen* pen = editor_get_current_pen();
-    int half = pen->get_size()/2;
+    gfx::Rect penBounds = pen->getBounds();
 
     // Create the extra cel to show the pen preview
-    m_document->prepareExtraCel(x-half,
-                                y-half,
-                                pen->get_size(), pen->get_size(),
+    m_document->prepareExtraCel(x+penBounds.x, y+penBounds.y,
+                                penBounds.w, penBounds.h,
                                 tool_settings->getOpacity());
 
     // In 'indexed' images, if the current color is 0, we have to use
@@ -304,15 +305,15 @@ void Editor::editor_draw_cursor(int x, int y, bool refresh)
     Image* extraImage = m_document->getExtraCelImage();
     if (extraImage->mask_color != new_mask_color)
       image_clear(extraImage, extraImage->mask_color = new_mask_color);
-    image_putpen(extraImage, pen, half, half, pen_color, extraImage->mask_color);
+    image_putpen(extraImage, pen, -penBounds.x, -penBounds.y,
+                 pen_color, extraImage->mask_color);
 
     if (refresh) {
       m_document->notifySpritePixelsModified
         (m_sprite,
-         gfx::Region(gfx::Rect(x-half,
-                               y-half,
-                               pen->get_size(),
-                               pen->get_size())));
+         gfx::Region(gfx::Rect(x+penBounds.x,
+                               y+penBounds.y,
+                               penBounds.w, penBounds.h)));
     }
   }
 
@@ -362,9 +363,9 @@ void Editor::editor_move_cursor(int x, int y, bool refresh)
 
     if (cursor_type & CURSOR_PENCIL && m_state->requirePenPreview()) {
       Pen* pen = editor_get_current_pen();
-      int half = pen->get_size()/2;
-      gfx::Rect rc1(old_x-half, old_y-half, pen->get_size(), pen->get_size());
-      gfx::Rect rc2(new_x-half, new_y-half, pen->get_size(), pen->get_size());
+      gfx::Rect penBounds = pen->getBounds();
+      gfx::Rect rc1(old_x+penBounds.x, old_y+penBounds.y, penBounds.w, penBounds.h);
+      gfx::Rect rc2(new_x+penBounds.x, new_y+penBounds.y, penBounds.w, penBounds.h);
       m_document->notifySpritePixelsModified
         (m_sprite, gfx::Region(rc1.createUnion(rc2)));
     }
@@ -417,19 +418,18 @@ void Editor::editor_clean_cursor(bool refresh)
   // clean pixel/pen preview
   if (cursor_type & CURSOR_PENCIL && m_state->requirePenPreview()) {
     Pen* pen = editor_get_current_pen();
+    gfx::Rect penBounds = pen->getBounds();
 
-    m_document->prepareExtraCel(x-pen->get_size()/2,
-                                y-pen->get_size()/2,
-                                pen->get_size(), pen->get_size(),
+    m_document->prepareExtraCel(x+penBounds.x, y+penBounds.y,
+                                penBounds.w, penBounds.h,
                                 0); // Opacity = 0
 
     if (refresh) {
       m_document->notifySpritePixelsModified
         (m_sprite,
-         gfx::Region(gfx::Rect(x-pen->get_size()/2,
-                               y-pen->get_size()/2,
-                               pen->get_size(),
-                               pen->get_size())));
+         gfx::Region(gfx::Rect(x+penBounds.x,
+                               y+penBounds.y,
+                               penBounds.w, penBounds.h)));
     }
   }
 

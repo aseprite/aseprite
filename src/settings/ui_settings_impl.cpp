@@ -209,14 +209,16 @@ void UISettingsImpl::setBgColor(const app::Color& color)
 void UISettingsImpl::setCurrentTool(tools::Tool* tool)
 {
   if (m_currentTool != tool) {
-    // Fire PenSizeBeforeChange signal (maybe the new selected tool has a different pen size)
+    // Fire signals (maybe the new selected tool has a different pen size)
     App::instance()->PenSizeBeforeChange();
+    App::instance()->PenAngleBeforeChange();
 
     // Change the tool
     m_currentTool = tool;
 
     App::instance()->CurrentToolChange(); // Fire CurrentToolChange signal
     App::instance()->PenSizeAfterChange(); // Fire PenSizeAfterChange signal
+    App::instance()->PenAngleAfterChange(); // Fire PenAngleAfterChange signal
   }
 }
 
@@ -446,7 +448,15 @@ public:
 
   void setAngle(int angle)
   {
+    // Trigger PenAngleBeforeChange signal
+    if (m_fireSignals)
+      App::instance()->PenAngleBeforeChange();
+
     m_angle = MID(0, angle, 360);
+
+    // Trigger PenAngleAfterChange signal
+    if (m_fireSignals)
+      App::instance()->PenAngleAfterChange();
   }
 
   void enableSignals(bool state)

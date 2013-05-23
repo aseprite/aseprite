@@ -37,7 +37,8 @@ protected:
   bool onProcessMessage(ui::Message* msg) OVERRIDE;
 
 private:
-  void onPenSizeAfterChange();
+  void onPenSizeChange();
+  void onPenAngleChange();
   void onCurrentToolChange();
 
   class BrushTypeField;
