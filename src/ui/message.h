@@ -59,12 +59,6 @@ namespace ui {
     Timer* timer;                 // Timer handle
   };
 
-  struct MessageSetPos
-  {
-    MessageAny any;
-    struct jrect rect;            /* set position */
-  };
-
   struct MessageUser
   {
     MessageAny any;
@@ -80,7 +74,6 @@ namespace ui {
     MessageDraw draw;
     MessageMouse mouse;
     MessageTimer timer;
-    MessageSetPos setpos;
     MessageUser user;
   };
 
