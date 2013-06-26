@@ -18,11 +18,11 @@
 
 #include "config.h"
 
-#include <math.h>
-
 #include "raster/algo.h"
 #include "raster/pen.h"
 #include "raster/image.h"
+
+#include <cmath>
 
 Pen::Pen()
 {
@@ -101,7 +101,7 @@ void Pen::regenerate_pen()
 
   int size = m_size;
   if (m_type == PEN_TYPE_SQUARE && m_angle != 0 && m_size > 2)
-    size = std::sqrt(2*m_size*m_size)+2;
+    size = std::sqrt((double)2*m_size*m_size)+2;
 
   m_image = Image::create(IMAGE_BITMAP, size, size);
 
