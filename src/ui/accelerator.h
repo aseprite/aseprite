@@ -10,12 +10,14 @@
 #include <string>
 #include <vector>
 
+#include "ui/keys.h"
+
 namespace ui {
 
   class Accelerator
   {
   public:
-    void addKey(int shifts, int ascii, int scancode);
+    void addKey(KeyModifiers modifiers, KeyScancode scancode, int ascii);
 
     // Adds keys from strings like "<Ctrl+Q> <ESC>"
     void addKeysFromString(const char* string);
@@ -23,14 +25,15 @@ namespace ui {
     bool isEmpty() const { return m_combos.empty(); }
     std::string toString();
 
-    bool check(int shifts, int ascii, int scancode);
+    bool check(KeyModifiers modifiers, KeyScancode scancode, int ascii);
     bool checkFromAllegroKeyArray();
 
   private:
     struct KeyCombo {
-      int shifts;
+      KeyModifiers modifiers;
+      KeyScancode scancode;
       int ascii;
-      int scancode;
+
       std::string toString();
     };
 

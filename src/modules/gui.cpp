@@ -649,9 +649,9 @@ void Shortcut::add_shortcut(const char* shortcut_string)
 bool Shortcut::is_pressed(Message* msg)
 {
   if (accel) {
-    return accel->check(msg->any.shifts,
-                        msg->key.ascii,
-                        msg->key.scancode);
+    return accel->check(msg->keyModifiers(),
+                        static_cast<KeyMessage*>(msg)->scancode(),
+                        static_cast<KeyMessage*>(msg)->ascii());
   }
   return false;
 }
@@ -733,7 +733,7 @@ static Shortcut* get_keyboard_shortcut_for_spriteeditor(const char* action_name)
 // Manager event handler.
 bool CustomizedGuiManager::onProcessMessage(Message* msg)
 {
-  switch (msg->type) {
+  switch (msg->type()) {
 
     case kCloseAppMessage:
       {

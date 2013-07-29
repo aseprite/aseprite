@@ -23,7 +23,7 @@
 #include "base/compiler_specific.h"
 #include "base/signal.h"
 #include "document.h"
-#include "gfx/rect.h"
+#include "gfx/fwd.h"
 #include "raster/frame_number.h"
 #include "ui/base.h"
 #include "ui/timer.h"
@@ -130,7 +130,7 @@ public:
   void updateStatusBar();
 
   // Control scroll when cursor goes out of the editor.
-  void controlInfiniteScroll(ui::Message* msg);
+  gfx::Point controlInfiniteScroll(ui::MouseMessage* msg);
 
   tools::Tool* getCurrentEditorTool();
 
@@ -142,7 +142,7 @@ public:
 
   void setZoomAndCenterInMouse(int zoom, int mouse_x, int mouse_y);
 
-  bool processKeysToSetZoom(int scancode);
+  bool processKeysToSetZoom(ui::KeyMessage* msg);
 
   void pasteImage(const Image* image, int x, int y);
 

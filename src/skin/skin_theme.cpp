@@ -74,21 +74,21 @@ protected:
   }
 
   bool onProcessMessage(Message* msg) OVERRIDE {
-    switch (msg->type) {
+    switch (msg->type()) {
 
       case kSetCursorMessage:
         jmouse_set_cursor(kArrowCursor);
         return true;
 
       case kKeyDownMessage:
-        if (msg->key.scancode == KEY_ESC) {
+        if (static_cast<KeyMessage*>(msg)->scancode() == kKeyEsc) {
           setSelected(true);
           return true;
         }
         break;
 
       case kKeyUpMessage:
-        if (msg->key.scancode == KEY_ESC) {
+        if (static_cast<KeyMessage*>(msg)->scancode() == kKeyEsc) {
           if (isSelected()) {
             setSelected(false);
             closeWindow();

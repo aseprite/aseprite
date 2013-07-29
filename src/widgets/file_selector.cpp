@@ -112,7 +112,8 @@ public:
 
 protected:
   virtual bool onProcessMessage(Message* msg) OVERRIDE {
-    if (msg->type == kKeyUpMessage && msg->key.ascii >= 32) {
+    if (msg->type() == kKeyUpMessage &&
+        static_cast<KeyMessage*>(msg)->ascii() >= 32) {
       // Check if all keys are released
       for (int c=0; c<KEY_MAX; ++c) {
         if (key[c])

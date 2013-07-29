@@ -32,12 +32,20 @@ ScrollBar::ScrollBar(int align)
 
 void ScrollBar::setPos(int pos)
 {
-  m_pos = pos;
+  if (m_pos != pos)
+  {
+    m_pos = pos;
+    invalidate();
+  }
 }
 
 void ScrollBar::setSize(int size)
 {
-  m_size = size;
+  if (m_size != size)
+  {
+    m_size = size;
+    invalidate();
+  }
 }
 
 void ScrollBar::getScrollBarThemeInfo(int* pos, int* len)
@@ -48,12 +56,13 @@ void ScrollBar::getScrollBarThemeInfo(int* pos, int* len)
 bool ScrollBar::onProcessMessage(Message* msg)
 {
 #define MOUSE_IN(x1, y1, x2, y2) \
-  ((msg->mouse.x >= (x1)) && (msg->mouse.x <= (x2)) && \
-   (msg->mouse.y >= (y1)) && (msg->mouse.y <= (y2)))
+  ((mousePos.x >= (x1)) && (mousePos.x <= (x2)) && \
+   (mousePos.y >= (y1)) && (mousePos.y <= (y2)))
 
-  switch (msg->type) {
+  switch (msg->type()) {
 
     case kMouseDownMessage: {
+      gfx::Point mousePos = static_cast<MouseMessage*>(msg)->position();
       View* view = static_cast<View*>(getParent());
       int x1, y1, x2, y2;
       int u1, v1, u2, v2;
@@ -64,8 +73,8 @@ bool ScrollBar::onProcessMessage(Message* msg)
 
       m_wherepos = pos;
       m_whereclick = getAlign() & JI_HORIZONTAL ?
-        msg->mouse.x:
-        msg->mouse.y;
+        mousePos.x:
+        mousePos.y;
 
       x1 = this->rc->x1;
       y1 = this->rc->y1;
@@ -125,6 +134,7 @@ bool ScrollBar::onProcessMessage(Message* msg)
 
     case kMouseMoveMessage:
       if (hasCapture()) {
+        gfx::Point mousePos = static_cast<MouseMessage*>(msg)->position();
         View* view = static_cast<View*>(getParent());
         int pos, len, bar_size, viewport_size;
         int old_pos;
@@ -136,14 +146,14 @@ bool ScrollBar::onProcessMessage(Message* msg)
           Point scroll = view->getViewScroll();
 
           if (this->getAlign() & JI_HORIZONTAL) {
-            pos = (m_wherepos + msg->mouse.x - m_whereclick);
+            pos = (m_wherepos + mousePos.x - m_whereclick);
             pos = MID(0, pos, bar_size - len);
 
             scroll.x = (m_size - viewport_size) * pos / (bar_size - len);
             view->setViewScroll(scroll);
           }
           else {
-            pos = (m_wherepos + msg->mouse.y - m_whereclick);
+            pos = (m_wherepos + mousePos.y - m_whereclick);
             pos = MID(0, pos, bar_size - len);
 
             scroll.y = (m_size - viewport_size) * pos / (bar_size - len);

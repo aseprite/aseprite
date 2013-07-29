@@ -18,126 +18,68 @@
 
 namespace ui {
 
-Message* jmessage_new(MessageType type)
+Message::Message(MessageType type)
+  : m_type(type)
+  , m_used(false)
+  , m_modifiers((KeyModifiers)((key[KEY_LSHIFT] || key[KEY_RSHIFT] ? kKeyShiftModifier: 0) |
+                               (key[KEY_LCONTROL] || key[KEY_RCONTROL] ? kKeyCtrlModifier: 0) |
+                               (key[KEY_ALT] ? kKeyAltModifier: 0)))
 {
-  Message* msg = new Message;
-
-  memset(msg, 0, sizeof(Message));
-
-  msg->type = type;
-  msg->any.widgets = new WidgetsList;
-  msg->any.shifts =
-    (key[KEY_LSHIFT] || key[KEY_RSHIFT] ? KB_SHIFT_FLAG: 0) |
-    (key[KEY_LCONTROL] || key[KEY_RCONTROL] ? KB_CTRL_FLAG: 0) |
-    (key[KEY_ALT] ? KB_ALT_FLAG: 0);
-
-  // printf("type=%02d ", type);
-  // if (msg->any.shifts & KB_SHIFT_FLAG) printf("KB_SHIFT_FLAG ");
-  // if (msg->any.shifts & KB_CTRL_FLAG) printf("KB_CTRL_FLAG ");
-  // if (msg->any.shifts & KB_ALT_FLAG) printf("KB_ALT_FLAG ");
-  // printf("\n");
-  // fflush(stdout);
-
-  return msg;
 }
 
-Message* jmessage_new_key_related(MessageType type, int readkey_value)
+Message::~Message()
 {
-  Message* msg = jmessage_new(type);
-
-  msg->key.scancode = (readkey_value >> 8) & 0xff;
-  msg->key.ascii = readkey_value & 0xff;
-  msg->key.repeat = 0;
-  msg->key.propagate_to_children = false;
-  msg->key.propagate_to_parent = true;
-
-#if 0
-  printf("%s: %i %i [%c]\n", type == kKeyDownMessage ? "kKeyDownMessage":
-                                                       "kKeyUpMessage",
-         msg->key.scancode, msg->key.ascii, msg->key.ascii);
-  fflush(stdout);
-#endif
-  return msg;
 }
 
-Message* jmessage_new_copy(const Message* msg)
+void Message::addRecipient(Widget* widget)
 {
-  Message* copy;
-
-  ASSERT(msg != NULL);
-
-  copy = new Message;
-  if (!copy)
-    return NULL;
-
-  memcpy(copy, msg, sizeof(Message));
-
-  copy->any.widgets = new WidgetsList(*msg->any.widgets);
-  copy->any.used = false;
-
-  return copy;
-}
-
-Message* jmessage_new_copy_without_dests(const Message* msg)
-{
-  ASSERT(msg != NULL);
-
-  Message* copy = new Message;
-  if (!copy)
-    return NULL;
-
-  memcpy(copy, msg, sizeof(Message));
-
-  copy->any.widgets = new WidgetsList;
-  copy->any.used = false;
-
-  return copy;
-}
-
-void jmessage_free(Message* msg)
-{
-  ASSERT(msg != NULL);
-
-  delete msg->any.widgets;
-  delete msg;
-}
-
-void jmessage_add_dest(Message* msg, Widget* widget)
-{
-  ASSERT(msg != NULL);
   ASSERT_VALID_WIDGET(widget);
 
-  msg->any.widgets->push_back(widget);
+  m_recipients.push_back(widget);
 }
 
-void jmessage_add_pre_dest(Message* msg, Widget* widget)
+void Message::prependRecipient(Widget* widget)
 {
-  ASSERT(msg != NULL);
   ASSERT_VALID_WIDGET(widget);
 
-  msg->any.widgets->insert(msg->any.widgets->begin(), widget);
+  m_recipients.insert(m_recipients.begin(), widget);
 }
 
-void jmessage_broadcast_to_children(Message* msg, Widget* widget)
+void Message::removeRecipient(Widget* widget)
 {
-  ASSERT(msg != NULL);
+  for (WidgetsList::iterator
+         it = m_recipients.begin(),
+         end = m_recipients.end(); it != end; ++it) {
+    if (*it == widget)
+      *it = NULL;
+  }
+}
+
+void Message::broadcastToChildren(Widget* widget)
+{
   ASSERT_VALID_WIDGET(widget);
 
   UI_FOREACH_WIDGET(widget->getChildren(), it)
-    jmessage_broadcast_to_children(msg, *it);
+    broadcastToChildren(*it);
 
-  jmessage_add_dest(msg, widget);
+  addRecipient(widget);
 }
 
-void jmessage_broadcast_to_parents(Message* msg, Widget* widget)
+KeyMessage::KeyMessage(MessageType type, KeyScancode scancode, int ascii, int repeat)
+  : Message(type)
+  , m_scancode(scancode)
+  , m_ascii(ascii)
+  , m_repeat(repeat)
+  , m_propagate_to_children(false)
+  , m_propagate_to_parent(true)
 {
-  ASSERT(msg != NULL);
-  ASSERT_VALID_WIDGET(widget);
+}
 
-  if (widget && widget->type != kManagerWidget) {
-    jmessage_add_dest(msg, widget);
-    jmessage_broadcast_to_parents(msg, widget->getParent());
-  }
+KeyMessage* create_message_from_readkey_value(MessageType type, int readkey_value)
+{
+  return new KeyMessage(type,
+                        static_cast<KeyScancode>((readkey_value >> 8) & 0xff),
+                        (readkey_value & 0xff), 0);
 }
 
 } // namespace ui

@@ -209,7 +209,7 @@ void Tabs::selectNextTab()
     if (it != currentTabIt) {
       selectTabInternal(*it);
       if (m_delegate)
-        m_delegate->clickTab(this, m_selected->view, 1);
+        m_delegate->clickTab(this, m_selected->view, kButtonLeft);
     }
   }
 }
@@ -229,7 +229,7 @@ void Tabs::selectPreviousTab()
     if (it != currentTabIt) {
       selectTabInternal(*it);
       if (m_delegate)
-        m_delegate->clickTab(this, m_selected->view, 1);
+        m_delegate->clickTab(this, m_selected->view, kButtonLeft);
     }
   }
 }
@@ -244,7 +244,7 @@ TabView* Tabs::getSelectedTab()
 
 bool Tabs::onProcessMessage(Message* msg)
 {
-  switch (msg->type) {
+  switch (msg->type()) {
 
     case kMouseEnterMessage:
     case kMouseMoveMessage:
@@ -268,7 +268,7 @@ bool Tabs::onProcessMessage(Message* msg)
         if (m_selected && m_delegate)
           m_delegate->clickTab(this,
                                m_selected->view,
-                               msg->mouse.flags);
+                               static_cast<MouseMessage*>(msg)->buttons());
       }
       return true;
 
@@ -300,7 +300,7 @@ bool Tabs::onProcessMessage(Message* msg)
         case ANI_SCROLL: {
           ScrollButton* button = dynamic_cast<ScrollButton*>(getManager()->getCapture());
           if (button != NULL)
-            setScrollX(m_scrollX + button->getDirection()*8*msg->timer.count);
+            setScrollX(m_scrollX + button->getDirection()*8*static_cast<TimerMessage*>(msg)->count());
           break;
         }
         case ANI_SMOOTH_SCROLL: {
@@ -680,7 +680,7 @@ void Tabs::stopAni()
 
 bool Tabs::ScrollButton::onProcessMessage(Message* msg)
 {
-  switch (msg->type) {
+  switch (msg->type()) {
 
     case kMouseDownMessage:
       captureMouse();

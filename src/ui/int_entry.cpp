@@ -56,7 +56,7 @@ void IntEntry::setValue(int value)
 
 bool IntEntry::onProcessMessage(Message* msg)
 {
-  switch (msg->type) {
+  switch (msg->type()) {
 
     // When the mouse enter in this entry, it got the focus and the
     // text is automatically selected.

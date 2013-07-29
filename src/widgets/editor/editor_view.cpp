@@ -46,7 +46,7 @@ EditorView::EditorView(EditorView::Type type)
 
 bool EditorView::onProcessMessage(Message* msg)
 {
-  switch (msg->type) {
+  switch (msg->type()) {
 
     case kPaintMessage:
       {

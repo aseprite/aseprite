@@ -398,8 +398,8 @@ void PaletteEntryEditor::setColor(const app::Color& color)
 
 bool PaletteEntryEditor::onProcessMessage(Message* msg)
 {
-  if (msg->type == kTimerMessage &&
-      msg->timer.timer == &m_redrawTimer) {
+  if (msg->type() == kTimerMessage &&
+      static_cast<TimerMessage*>(msg)->timer() == &m_redrawTimer) {
     // Redraw all editors
     if (m_redrawAll) {
       m_redrawAll = false;

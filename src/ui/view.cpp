@@ -225,7 +225,7 @@ View* View::getView(Widget* widget)
 
 bool View::onProcessMessage(Message* msg)
 {
-  switch (msg->type) {
+  switch (msg->type()) {
 
     case kFocusEnterMessage:
     case kFocusLeaveMessage:

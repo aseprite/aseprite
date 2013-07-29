@@ -199,7 +199,7 @@ app::Color PaletteView::getColorByPosition(int target_x, int target_y)
 
 bool PaletteView::onProcessMessage(Message* msg)
 {
-  switch (msg->type) {
+  switch (msg->type()) {
 
     case kPaintMessage: {
       div_t d = div(Palette::MaxColors, m_columns);
@@ -266,13 +266,14 @@ bool PaletteView::onProcessMessage(Message* msg)
       /* continue... */
 
     case kMouseMoveMessage: {
+      MouseMessage* mouseMsg = static_cast<MouseMessage*>(msg);
       gfx::Rect cpos = getChildrenBounds();
 
       int req_w, req_h;
       request_size(&req_w, &req_h);
 
-      int mouse_x = MID(cpos.x, msg->mouse.x, cpos.x+req_w-this->border_width.r-1);
-      int mouse_y = MID(cpos.y, msg->mouse.y, cpos.y+req_h-this->border_width.b-1);
+      int mouse_x = MID(cpos.x, mouseMsg->position().x, cpos.x+req_w-this->border_width.r-1);
+      int mouse_y = MID(cpos.y, mouseMsg->position().y, cpos.y+req_h-this->border_width.b-1);
 
       app::Color color = getColorByPosition(mouse_x, mouse_y);
       if (color.getType() == app::Color::IndexType) {
@@ -281,10 +282,10 @@ bool PaletteView::onProcessMessage(Message* msg)
         StatusBar::instance()->showColor(0, "", color, 255);
 
         if (hasCapture() && idx != m_currentEntry) {
-          if (!(msg->any.shifts & KB_CTRL_FLAG))
+          if (!msg->ctrlPressed())
             clearSelection();
 
-          if (msg->any.shifts & KB_SHIFT_FLAG)
+          if (msg->shiftPressed())
             selectRange(m_rangeAnchor, idx);
           else
             selectColor(idx);

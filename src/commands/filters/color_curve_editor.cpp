@@ -98,12 +98,12 @@ ColorCurveEditor::ColorCurveEditor(ColorCurve* curve, int x1, int y1, int x2, in
 
 bool ColorCurveEditor::onProcessMessage(Message* msg)
 {
-  switch (msg->type) {
+  switch (msg->type()) {
 
     case kKeyDownMessage: {
-      switch (msg->key.scancode) {
+      switch (static_cast<KeyMessage*>(msg)->scancode()) {
 
-        case KEY_INSERT: {
+        case kKeyInsert: {
           int x = SCR2EDIT_X(jmouse_x(0));
           int y = SCR2EDIT_Y(jmouse_y(0));
 
@@ -115,7 +115,7 @@ bool ColorCurveEditor::onProcessMessage(Message* msg)
           break;
         }
 
-        case KEY_DEL: {
+        case kKeyDel: {
           gfx::Point* point = getClosestPoint(SCR2EDIT_X(jmouse_x(0)),
                                               SCR2EDIT_Y(jmouse_y(0)),
                                               NULL, NULL);
@@ -191,19 +191,20 @@ bool ColorCurveEditor::onProcessMessage(Message* msg)
 
     case kMouseDownMessage:
       // Change scroll
-      if (msg->any.shifts & KB_SHIFT_FLAG) {
+      if (msg->shiftPressed()) {
         m_status = STATUS_SCROLLING;
         jmouse_set_cursor(kScrollCursor);
       }
       /* scaling */
-/*       else if (msg->shifts & KB_CTRL_FLAG) { */
+/*       else if (msg->ctrlPressed()) { */
 /*      m_status = STATUS_SCALING; */
 /*      jmouse_set_cursor(kScrollCursor); */
 /*       } */
       // Show manual-entry dialog
-      else if (msg->mouse.right) {
-        m_editPoint = getClosestPoint(SCR2EDIT_X(msg->mouse.x),
-                                      SCR2EDIT_Y(msg->mouse.y),
+      else if (static_cast<MouseMessage*>(msg)->right()) {
+        gfx::Point mousePos = static_cast<MouseMessage*>(msg)->position();
+        m_editPoint = getClosestPoint(SCR2EDIT_X(mousePos.x),
+                                      SCR2EDIT_Y(mousePos.y),
                                       NULL, NULL);
         if (m_editPoint) {
           invalidate();
@@ -220,8 +221,9 @@ bool ColorCurveEditor::onProcessMessage(Message* msg)
       }
       // Edit node
       else {
-        m_editPoint = getClosestPoint(SCR2EDIT_X(msg->mouse.x),
-                                      SCR2EDIT_Y(msg->mouse.y),
+        gfx::Point mousePos = static_cast<MouseMessage*>(msg)->position();
+        m_editPoint = getClosestPoint(SCR2EDIT_X(mousePos.x),
+                                      SCR2EDIT_Y(mousePos.y),
                                       &m_editX,
                                       &m_editY);
 
@@ -252,8 +254,9 @@ bool ColorCurveEditor::onProcessMessage(Message* msg)
 
           case STATUS_MOVING_POINT:
             if (m_editPoint) {
-              *m_editX = SCR2EDIT_X(msg->mouse.x);
-              *m_editY = SCR2EDIT_Y(msg->mouse.y);
+              gfx::Point mousePos = static_cast<MouseMessage*>(msg)->position();
+              *m_editX = SCR2EDIT_X(mousePos.x);
+              *m_editY = SCR2EDIT_Y(mousePos.y);
               *m_editX = MID(m_x1, *m_editX, m_x2);
               *m_editY = MID(m_y1, *m_editY, m_y2);
 

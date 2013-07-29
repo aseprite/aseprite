@@ -93,7 +93,7 @@ void ColorButton::setColor(const app::Color& color)
 
 bool ColorButton::onProcessMessage(Message* msg)
 {
-  switch (msg->type) {
+  switch (msg->type()) {
 
     case kCloseMessage:
       if (m_window && m_window->isVisible())
@@ -110,7 +110,8 @@ bool ColorButton::onProcessMessage(Message* msg)
 
     case kMouseMoveMessage:
       if (hasCapture()) {
-        Widget* picked = getManager()->pick(msg->mouse.x, msg->mouse.y);
+        gfx::Point mousePos = static_cast<MouseMessage*>(msg)->position();
+        Widget* picked = getManager()->pick(mousePos);
         app::Color color = m_color;
 
         if (picked && picked != this) {
@@ -120,7 +121,7 @@ bool ColorButton::onProcessMessage(Message* msg)
           }
           // Pick a color from the color-bar
           else if (picked->type == palette_view_type()) {
-            color = ((PaletteView*)picked)->getColorByPosition(msg->mouse.x, msg->mouse.y);
+            color = ((PaletteView*)picked)->getColorByPosition(mousePos.x, mousePos.y);
           }
           // Pick a color from a editor
           else if (picked->type == editor_type()) {
@@ -129,8 +130,8 @@ bool ColorButton::onProcessMessage(Message* msg)
             int x, y, imgcolor;
 
             if (sprite) {
-              x = msg->mouse.x;
-              y = msg->mouse.y;
+              x = mousePos.x;
+              y = mousePos.y;
               editor->screenToEditor(x, y, &x, &y);
               imgcolor = sprite->getPixel(x, y, editor->getFrame());
               color = app::Color::fromImage(sprite->getPixelFormat(), imgcolor);

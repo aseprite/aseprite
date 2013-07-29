@@ -68,13 +68,13 @@ void SelectBoxState::onBeforePopState(Editor* editor)
   editor->setDecorator(NULL);
 }
 
-bool SelectBoxState::onMouseDown(Editor* editor, Message* msg)
+bool SelectBoxState::onMouseDown(Editor* editor, MouseMessage* msg)
 {
-  if (msg->mouse.left || msg->mouse.right) {
+  if (msg->left() || msg->right()) {
     m_movingRuler = -1;
 
     for (int i=0; i<(int)m_rulers.size(); ++i) {
-      if (touchRuler(editor, m_rulers[i], msg->mouse.x, msg->mouse.y)) {
+      if (touchRuler(editor, m_rulers[i], msg->position().x, msg->position().y)) {
         m_movingRuler = i;
         break;
       }
@@ -87,17 +87,17 @@ bool SelectBoxState::onMouseDown(Editor* editor, Message* msg)
   return StandbyState::onMouseDown(editor, msg);
 }
 
-bool SelectBoxState::onMouseUp(Editor* editor, Message* msg)
+bool SelectBoxState::onMouseUp(Editor* editor, MouseMessage* msg)
 {
   m_movingRuler = -1;
   return StandbyState::onMouseUp(editor, msg);
 }
 
-bool SelectBoxState::onMouseMove(Editor* editor, Message* msg)
+bool SelectBoxState::onMouseMove(Editor* editor, MouseMessage* msg)
 {
   if (m_movingRuler >= 0) {
     int u, v;
-    editor->screenToEditor(msg->mouse.x, msg->mouse.y, &u, &v);
+    editor->screenToEditor(msg->position().x, msg->position().y, &u, &v);
 
     switch (m_rulers[m_movingRuler].getOrientation()) {
 

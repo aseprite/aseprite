@@ -66,7 +66,7 @@ void PopupWindow::makeFixed()
 
 bool PopupWindow::onProcessMessage(Message* msg)
 {
-  switch (msg->type) {
+  switch (msg->type()) {
 
     case kCloseMessage:
       stopFilteringMessages();
@@ -79,9 +79,12 @@ bool PopupWindow::onProcessMessage(Message* msg)
 
     case kKeyDownMessage:
       if (m_filtering) {
-        if (msg->key.scancode == KEY_ESC ||
-            msg->key.scancode == KEY_ENTER ||
-            msg->key.scancode == KEY_ENTER_PAD) {
+        KeyMessage* keymsg = static_cast<KeyMessage*>(msg);
+        KeyScancode scancode = keymsg->scancode();
+        
+        if (scancode == kKeyEsc ||
+            scancode == kKeyEnter ||
+            scancode == kKeyEnterPad) {
           closeWindow(NULL);
         }
 
@@ -97,7 +100,8 @@ bool PopupWindow::onProcessMessage(Message* msg)
       // If the user click outside the window, we have to close the
       // tooltip window.
       if (m_filtering) {
-        Widget* picked = this->pick(msg->mouse.x, msg->mouse.y);
+        gfx::Point mousePos = static_cast<MouseMessage*>(msg)->position();
+        Widget* picked = pick(mousePos);
         if (!picked || picked->getRoot() != this) {
           closeWindow(NULL);
         }
@@ -112,9 +116,11 @@ bool PopupWindow::onProcessMessage(Message* msg)
       if (!isMoveable() &&
           !m_hotRegion.isEmpty() &&
           getManager()->getCapture() == NULL) {
+        gfx::Point mousePos = static_cast<MouseMessage*>(msg)->position();
+
         // If the mouse is outside the hot-region we have to close the
         // window.
-        if (!m_hotRegion.contains(Point(msg->mouse.x, msg->mouse.y)))
+        if (!m_hotRegion.contains(mousePos))
           closeWindow(NULL);
       }
       break;

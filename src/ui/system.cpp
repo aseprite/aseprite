@@ -271,10 +271,14 @@ void jmouse_release()
 #endif
 }
 
+MouseButtons jmouse_b(int antique)
+{
+  return (MouseButtons)m_b[antique & 1];
+}
+
 int jmouse_x(int antique) { return m_x[antique & 1]; }
 int jmouse_y(int antique) { return m_y[antique & 1]; }
 int jmouse_z(int antique) { return m_z[antique & 1]; }
-int jmouse_b(int antique) { return m_b[antique & 1]; }
 
 bool jmouse_control_infinite_scroll(const gfx::Rect& rect)
 {

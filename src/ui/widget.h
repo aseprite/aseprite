@@ -10,6 +10,7 @@
 #include <string>
 
 #include "gfx/border.h"
+#include "gfx/point.h"
 #include "gfx/rect.h"
 #include "gfx/region.h"
 #include "gfx/size.h"
@@ -27,11 +28,10 @@ struct BITMAP;
 
 namespace ui {
 
-  union Message;
-
   class InitThemeEvent;
   class LoadLayoutEvent;
   class Manager;
+  class Message;
   class PaintEvent;
   class PreferredSizeEvent;
   class ResizeEvent;
@@ -205,7 +205,7 @@ namespace ui {
     Widget* getNextSibling();
     Widget* getPreviousSibling();
 
-    Widget* pick(int x, int y);
+    Widget* pick(const gfx::Point& pt);
     bool hasChild(Widget* child);
     Widget* findChild(const char* id);
 

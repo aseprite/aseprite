@@ -7,8 +7,13 @@
 #ifndef UI_MESSAGE_H_INCLUDED
 #define UI_MESSAGE_H_INCLUDED
 
+#include "base/compiler_specific.h"
+#include "gfx/point.h"
+#include "gfx/rect.h"
 #include "ui/base.h"
+#include "ui/keys.h"
 #include "ui/message_type.h"
+#include "ui/mouse_buttons.h"
 #include "ui/rect.h"
 #include "ui/widgets_list.h"
 
@@ -17,77 +22,112 @@ namespace ui {
   class Timer;
   class Widget;
 
-  struct MessageAny
+  class Message
   {
-    MessageType type;           // Type of message
-    WidgetsList* widgets;       // Destination widgets
-    bool used : 1;              // Was used
-    int shifts;                 // Key shifts pressed when message was created
+  public:
+    typedef WidgetsList::iterator& recipients_iterator;
+
+    Message(MessageType type);
+    virtual ~Message();
+
+    MessageType type() const { return m_type; }
+    const WidgetsList& recipients() const { return m_recipients; }
+    bool hasRecipients() const { return !m_recipients.empty(); }
+    bool isUsed() const { return m_used; }
+    void markAsUsed() { m_used = true; }
+    KeyModifiers keyModifiers() const { return m_modifiers; }
+    bool shiftPressed() const { return (m_modifiers & kKeyShiftModifier) == kKeyShiftModifier; }
+    bool ctrlPressed() const { return (m_modifiers & kKeyCtrlModifier) == kKeyCtrlModifier; }
+    bool altPressed() const { return (m_modifiers & kKeyAltModifier) == kKeyAltModifier; }
+    bool onlyShiftPressed() const { return (m_modifiers & kKeyShiftModifier) == kKeyShiftModifier; }
+    bool onlyCtrlPressed() const { return (m_modifiers & kKeyCtrlModifier) == kKeyCtrlModifier; }
+    bool onlyAltPressed() const { return (m_modifiers & kKeyAltModifier) == kKeyAltModifier; }
+
+    void addRecipient(Widget* widget);
+    void prependRecipient(Widget* widget);
+    void removeRecipient(Widget* widget);
+
+    void broadcastToChildren(Widget* widget);
+
+  private:
+    MessageType m_type;         // Type of message
+    WidgetsList m_recipients; // List of recipients of the message
+    bool m_used;              // Was used
+    KeyModifiers m_modifiers; // Key modifiers pressed when message was created
   };
 
-  struct MessageKey
+  class KeyMessage : public Message
   {
-    MessageAny any;
-    unsigned scancode : 8;        /* Allegro scancode */
-    unsigned ascii : 8;           /* ASCII code */
-    unsigned repeat;              /* repeat=0 means the first time the key is pressed */
-    bool propagate_to_children : 1;
-    bool propagate_to_parent : 1;
+  public:
+    KeyMessage(MessageType type, KeyScancode scancode, int ascii, int repeat);
+
+    KeyScancode scancode() const { return m_scancode; }
+    int ascii() const { return m_ascii; }
+    int repeat() const { return m_repeat; }
+    bool propagateToChildren() const { return m_propagate_to_children; }
+    bool propagateToParent() const { return m_propagate_to_parent; }
+    void setPropagateToChildren(bool flag) { m_propagate_to_children = flag; }
+    void setPropagateToParent(bool flag) { m_propagate_to_parent = flag; }
+
+  private:
+    KeyScancode m_scancode;
+    int m_ascii;
+    int m_repeat; // repeat=0 means the first time the key is pressed
+    bool m_propagate_to_children : 1;
+    bool m_propagate_to_parent : 1;
   };
 
-  struct MessageDraw
+  // Deprecated
+  KeyMessage* create_message_from_readkey_value(MessageType type, int readkey_value);
+
+  class PaintMessage : public Message
   {
-    MessageAny any;
-    int count;                    /* cound=0 if it's last msg of draw-chain */
-    struct jrect rect;            /* area to draw */
+  public:
+    PaintMessage(int count, const gfx::Rect& rect)
+      : Message(kPaintMessage), m_count(count), m_rect(rect) {
+    }
+
+    int count() const { return m_count; }
+    const gfx::Rect& rect() const { return m_rect; }
+
+  private:
+    int m_count;             // Cound=0 if it's last msg of draw-chain
+    gfx::Rect m_rect;        // Area to draw
   };
 
-  struct MessageMouse
+  class MouseMessage : public Message
   {
-    MessageAny any;
-    int x, y;                     /* mouse position */
-    unsigned flags : 4;           /* all buttons */
-    bool left : 1;                /* left button */
-    bool right : 1;               /* right button */
-    bool middle : 1;              /* middle button */
+  public:
+    MouseMessage(MessageType type, MouseButtons buttons, const gfx::Point& pos)
+      : Message(type), m_buttons(buttons), m_pos(pos) {
+    }
+
+    MouseButtons buttons() const { return m_buttons; }
+    bool left() const { return (m_buttons & kButtonLeft) == kButtonLeft; }
+    bool right() const { return (m_buttons & kButtonRight) == kButtonRight; }
+    bool middle() const { return (m_buttons & kButtonMiddle) == kButtonMiddle; }
+
+    const gfx::Point& position() const { return m_pos; }
+
+  private:
+    MouseButtons m_buttons;     // Pressed buttons
+    gfx::Point m_pos;           // Mouse position
   };
 
-  struct MessageTimer
+  class TimerMessage : public Message
   {
-    MessageAny any;
-    int count;                    // Accumulated calls
-    Timer* timer;                 // Timer handle
+  public:
+    TimerMessage(int count, Timer* timer)
+      : Message(kTimerMessage), m_count(count), m_timer(timer) {
+    }
+
+    int count() const { return m_count; }
+    Timer* timer() { return m_timer; }
+
+  private:
+    int m_count;                    // Accumulated calls
+    Timer* m_timer;                 // Timer handle
   };
-
-  struct MessageUser
-  {
-    MessageAny any;
-    int a, b, c;
-    void *dp;
-  };
-
-  union Message
-  {
-    MessageType type;
-    MessageAny any;
-    MessageKey key;
-    MessageDraw draw;
-    MessageMouse mouse;
-    MessageTimer timer;
-    MessageUser user;
-  };
-
-  Message* jmessage_new(MessageType type);
-  Message* jmessage_new_key_related(MessageType type, int readkey_value);
-  Message* jmessage_new_copy(const Message* msg);
-  Message* jmessage_new_copy_without_dests(const Message* msg);
-  void jmessage_free(Message* msg);
-
-  void jmessage_add_dest(Message* msg, Widget* widget);
-  void jmessage_add_pre_dest(Message* msg, Widget* widget);
-
-  void jmessage_broadcast_to_children(Message* msg, Widget* widget);
-  void jmessage_broadcast_to_parents(Message* msg, Widget* widget);
 
 } // namespace ui
 

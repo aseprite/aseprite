@@ -31,7 +31,7 @@ TextBox::TextBox(const char* text, int align)
 
 bool TextBox::onProcessMessage(Message* msg)
 {
-  switch (msg->type) {
+  switch (msg->type()) {
 
     case kKeyDownMessage:
       if (hasFocus()) {
@@ -41,44 +41,44 @@ bool TextBox::onProcessMessage(Message* msg)
           gfx::Point scroll = view->getViewScroll();
           int textheight = jwidget_get_text_height(this);
 
-          switch (msg->key.scancode) {
+          switch (static_cast<KeyMessage*>(msg)->scancode()) {
 
-            case KEY_LEFT:
+            case kKeyLeft:
               scroll.x -= vp.w/2;
               view->setViewScroll(scroll);
               break;
 
-            case KEY_RIGHT:
+            case kKeyRight:
               scroll.x += vp.w/2;
               view->setViewScroll(scroll);
               break;
 
-            case KEY_UP:
+            case kKeyUp:
               scroll.y -= vp.h/2;
               view->setViewScroll(scroll);
               break;
 
-            case KEY_DOWN:
+            case kKeyDown:
               scroll.y += vp.h/2;
               view->setViewScroll(scroll);
               break;
 
-            case KEY_PGUP:
+            case kKeyPageUp:
               scroll.y -= (vp.h-textheight);
               view->setViewScroll(scroll);
               break;
 
-            case KEY_PGDN:
+            case kKeyPageDown:
               scroll.y += (vp.h-textheight);
               view->setViewScroll(scroll);
               break;
 
-            case KEY_HOME:
+            case kKeyHome:
               scroll.y = 0;
               view->setViewScroll(scroll);
               break;
 
-            case KEY_END:
+            case kKeyEnd:
               scroll.y = jrect_h(this->rc) - vp.h;
               view->setViewScroll(scroll);
               break;

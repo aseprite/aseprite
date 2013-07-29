@@ -26,6 +26,7 @@
 #include "raster/image.h"
 #include "raster/sprite.h"
 #include "settings/settings.h"
+#include "ui/message.h"
 #include "ui/rect.h"
 #include "ui/system.h"
 #include "ui/view.h"
@@ -36,30 +37,24 @@
 
 using namespace ui;
 
-bool Editor::processKeysToSetZoom(int scancode)
+bool Editor::processKeysToSetZoom(KeyMessage* msg)
 {
   if ((m_sprite) &&
-      (this->hasMouse()) &&
-      !key[KEY_LSHIFT] &&
-      !key[KEY_RSHIFT] &&
-      !key[KEY_LCONTROL] &&
-      !key[KEY_RCONTROL] &&
-      !key[KEY_ALT]) {
+      (hasMouse()) &&
+      (msg->keyModifiers() == kKeyNoneModifier)) {
     View* view = View::getView(this);
     gfx::Rect vp = view->getViewportBounds();
-    int x, y, zoom;
+    int x = 0;
+    int y = 0;
+    int zoom = -1;
 
-    x = 0;
-    y = 0;
-    zoom = -1;
-
-    switch (scancode) { // TODO make these keys configurable
-      case KEY_1: zoom = 0; break;
-      case KEY_2: zoom = 1; break;
-      case KEY_3: zoom = 2; break;
-      case KEY_4: zoom = 3; break;
-      case KEY_5: zoom = 4; break;
-      case KEY_6: zoom = 5; break;
+    switch (msg->scancode()) { // TODO make these keys configurable
+      case kKey1: zoom = 0; break;
+      case kKey2: zoom = 1; break;
+      case kKey3: zoom = 2; break;
+      case kKey4: zoom = 3; break;
+      case kKey5: zoom = 4; break;
+      case kKey6: zoom = 5; break;
     }
 
     // Change zoom

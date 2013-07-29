@@ -312,7 +312,7 @@ private:
 
 };
 
-tools::ToolLoop* create_tool_loop(Editor* editor, Context* context, Message* msg)
+tools::ToolLoop* create_tool_loop(Editor* editor, Context* context, MouseMessage* msg)
 {
   tools::Tool* current_tool = context->getSettings()->getCurrentTool();
   if (!current_tool)
@@ -360,8 +360,8 @@ tools::ToolLoop* create_tool_loop(Editor* editor, Context* context, Message* msg
                      context,
                      current_tool,
                      editor->getDocument(),
-                     msg->mouse.left ? tools::ToolLoop::Left:
-                                       tools::ToolLoop::Right,
-                     msg->mouse.left ? fg: bg,
-                     msg->mouse.left ? bg: fg);
+                     msg->left() ? tools::ToolLoop::Left:
+                                   tools::ToolLoop::Right,
+                     msg->left() ? fg: bg,
+                     msg->left() ? bg: fg);
 }

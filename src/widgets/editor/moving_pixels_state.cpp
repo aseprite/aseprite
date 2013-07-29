@@ -50,7 +50,7 @@
 
 using namespace ui;
 
-MovingPixelsState::MovingPixelsState(Editor* editor, Message* msg, PixelsMovement* pixelsMovement, HandleType handle)
+MovingPixelsState::MovingPixelsState(Editor* editor, MouseMessage* msg, PixelsMovement* pixelsMovement, HandleType handle)
   : m_currentEditor(editor)
   , m_discarded(false)
 {
@@ -64,7 +64,7 @@ MovingPixelsState::MovingPixelsState(Editor* editor, Message* msg, PixelsMovemen
 
   if (handle != NoHandle) {
     int u, v;
-    editor->screenToEditor(msg->mouse.x, msg->mouse.y, &u, &v);
+    editor->screenToEditor(msg->position().x, msg->position().y, &u, &v);
     m_pixelsMovement->catchImage(u, v, handle);
 
     editor->captureMouse();
@@ -149,7 +149,7 @@ void MovingPixelsState::onCurrentToolChange(Editor* editor)
   }
 }
 
-bool MovingPixelsState::onMouseDown(Editor* editor, Message* msg)
+bool MovingPixelsState::onMouseDown(Editor* editor, MouseMessage* msg)
 {
   ASSERT(m_pixelsMovement != NULL);
 
@@ -167,13 +167,13 @@ bool MovingPixelsState::onMouseDown(Editor* editor, Message* msg)
 
     // Get the handle covered by the mouse.
     HandleType handle = transfHandles->getHandleAtPoint(editor,
-                                                        gfx::Point(msg->mouse.x, msg->mouse.y),
+                                                        msg->position(),
                                                         getTransformation(editor));
 
     if (handle != NoHandle) {
       // Re-catch the image
       int x, y;
-      editor->screenToEditor(msg->mouse.x, msg->mouse.y, &x, &y);
+      editor->screenToEditor(msg->position().x, msg->position().y, &x, &y);
       m_pixelsMovement->catchImageAgain(x, y, handle);
 
       editor->captureMouse();
@@ -182,8 +182,8 @@ bool MovingPixelsState::onMouseDown(Editor* editor, Message* msg)
   }
 
   // Start "moving pixels" loop
-  if (editor->isInsideSelection() && (msg->mouse.left ||
-                                      msg->mouse.right)) {
+  if (editor->isInsideSelection() && (msg->left() ||
+                                      msg->right())) {
     // In case that the user is pressing the copy-selection keyboard shortcut.
     EditorCustomizationDelegate* customization = editor->getCustomizationDelegate();
     if (customization && customization->isCopySelectionKeyPressed()) {
@@ -193,7 +193,7 @@ bool MovingPixelsState::onMouseDown(Editor* editor, Message* msg)
 
     // Re-catch the image
     int x, y;
-    editor->screenToEditor(msg->mouse.x, msg->mouse.y, &x, &y);
+    editor->screenToEditor(msg->position().x, msg->position().y, &x, &y);
     m_pixelsMovement->catchImageAgain(x, y, MoveHandle);
 
     editor->captureMouse();
@@ -209,7 +209,7 @@ bool MovingPixelsState::onMouseDown(Editor* editor, Message* msg)
   return StandbyState::onMouseDown(editor, msg);
 }
 
-bool MovingPixelsState::onMouseUp(Editor* editor, Message* msg)
+bool MovingPixelsState::onMouseUp(Editor* editor, MouseMessage* msg)
 {
   ASSERT(m_pixelsMovement != NULL);
 
@@ -223,18 +223,18 @@ bool MovingPixelsState::onMouseUp(Editor* editor, Message* msg)
   return true;
 }
 
-bool MovingPixelsState::onMouseMove(Editor* editor, Message* msg)
+bool MovingPixelsState::onMouseMove(Editor* editor, MouseMessage* msg)
 {
   ASSERT(m_pixelsMovement != NULL);
 
   // If there is a button pressed
   if (m_pixelsMovement->isDragging()) {
     // Infinite scroll
-    editor->controlInfiniteScroll(msg);
+    gfx::Point mousePos = editor->controlInfiniteScroll(msg);
 
     // Get the position of the mouse in the sprite
     int x, y;
-    editor->screenToEditor(msg->mouse.x, msg->mouse.y, &x, &y);
+    editor->screenToEditor(mousePos.x, mousePos.y, &x, &y);
 
     // Get the customization for the pixels movement (snap to grid, angle snap, etc.).
     PixelsMovement::MoveModifier moveModifier = PixelsMovement::NormalMovement;
@@ -267,7 +267,7 @@ bool MovingPixelsState::onMouseMove(Editor* editor, Message* msg)
   return StandbyState::onMouseMove(editor, msg);
 }
 
-bool MovingPixelsState::onMouseWheel(Editor* editor, Message* msg)
+bool MovingPixelsState::onMouseWheel(Editor* editor, MouseMessage* msg)
 {
   ASSERT(m_pixelsMovement != NULL);
 
@@ -290,17 +290,17 @@ bool MovingPixelsState::onSetCursor(Editor* editor)
   return StandbyState::onSetCursor(editor);
 }
 
-bool MovingPixelsState::onKeyDown(Editor* editor, Message* msg)
+bool MovingPixelsState::onKeyDown(Editor* editor, KeyMessage* msg)
 {
   ASSERT(m_pixelsMovement != NULL);
 
-  if (msg->key.scancode == KEY_ENTER || // TODO make this key customizable
-      msg->key.scancode == KEY_ENTER_PAD ||
-      msg->key.scancode == KEY_ESC ) {
+  if (msg->scancode() == kKeyEnter || // TODO make this key customizable
+      msg->scancode() == kKeyEnterPad ||
+      msg->scancode() == kKeyEsc) {
     dropPixels(editor);
 
     // The escape key drop pixels and deselect the mask.
-    if (msg->key.scancode == KEY_ESC) { // TODO make this key customizable
+    if (msg->scancode() == kKeyEsc) { // TODO make this key customizable
       Command* cmd = CommandsModule::instance()->getCommandByName(CommandId::DeselectMask);
       UIContext::instance()->executeCommand(cmd);
     }
@@ -354,7 +354,7 @@ bool MovingPixelsState::onKeyDown(Editor* editor, Message* msg)
   return StandbyState::onKeyDown(editor, msg);
 }
 
-bool MovingPixelsState::onKeyUp(Editor* editor, Message* msg)
+bool MovingPixelsState::onKeyUp(Editor* editor, KeyMessage* msg)
 {
   ASSERT(m_pixelsMovement != NULL);
 

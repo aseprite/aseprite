@@ -84,11 +84,6 @@ static CursorType rotated_rotate_cursors[] = {
   kRotateBRCursor
 };
 
-static inline bool has_shifts(Message* msg, int shift)
-{
-  return ((msg->any.shifts & shift) == shift);
-}
-
 #pragma warning(disable:4355) // warning C4355: 'this' : used in base member initializer list
 
 StandbyState::StandbyState()
@@ -117,14 +112,14 @@ void StandbyState::onCurrentToolChange(Editor* editor)
   editor->invalidate();
 }
 
-bool StandbyState::checkForScroll(Editor* editor, Message* msg)
+bool StandbyState::checkForScroll(Editor* editor, MouseMessage* msg)
 {
   UIContext* context = UIContext::instance();
   tools::Tool* currentTool = editor->getCurrentEditorTool();
-  tools::Ink* clickedInk = currentTool->getInk(msg->mouse.right ? 1: 0);
+  tools::Ink* clickedInk = currentTool->getInk(msg->right() ? 1: 0);
 
   // Start scroll loop
-  if (msg->mouse.middle || clickedInk->isScrollMovement()) { // TODO raw msg->mouse.middle here, this should be customizable
+  if (msg->middle() || clickedInk->isScrollMovement()) { // TODO msg->middle() should be customizable
     editor->setState(EditorStatePtr(new ScrollingState()));
     editor->captureMouse();
     return true;
@@ -133,14 +128,14 @@ bool StandbyState::checkForScroll(Editor* editor, Message* msg)
     return false;
 }
 
-bool StandbyState::onMouseDown(Editor* editor, Message* msg)
+bool StandbyState::onMouseDown(Editor* editor, MouseMessage* msg)
 {
   if (editor->hasCapture())
     return true;
 
   UIContext* context = UIContext::instance();
   tools::Tool* current_tool = editor->getCurrentEditorTool();
-  tools::Ink* clickedInk = current_tool->getInk(msg->mouse.right ? 1: 0);
+  tools::Ink* clickedInk = current_tool->getInk(msg->right() ? 1: 0);
   DocumentLocation location;
   editor->getDocumentLocation(&location);
   Document* document = location.document();
@@ -182,7 +177,7 @@ bool StandbyState::onMouseDown(Editor* editor, Message* msg)
 
     // Get the handle covered by the mouse.
     HandleType handle = transfHandles->getHandleAtPoint(editor,
-                                                        gfx::Point(msg->mouse.x, msg->mouse.y),
+                                                        msg->position(),
                                                         document->getTransformation());
 
     if (handle != NoHandle) {
@@ -204,7 +199,7 @@ bool StandbyState::onMouseDown(Editor* editor, Message* msg)
   // Move selected pixels
   if (editor->isInsideSelection() &&
       current_tool->getInk(0)->isSelection() &&
-      msg->mouse.left) {
+      msg->left()) {
     int x, y, opacity;
     Image* image = location.image(&x, &y, &opacity);
     if (image) {
@@ -225,7 +220,7 @@ bool StandbyState::onMouseDown(Editor* editor, Message* msg)
       CommandsModule::instance()->getCommandByName(CommandId::Eyedropper);
 
     Params params;
-    params.set("target", msg->mouse.right ? "background": "foreground");
+    params.set("target", msg->right() ? "background": "foreground");
 
     UIContext::instance()->executeCommand(eyedropper_cmd, &params);
     return true;
@@ -242,47 +237,47 @@ bool StandbyState::onMouseDown(Editor* editor, Message* msg)
   return true;
 }
 
-bool StandbyState::onMouseUp(Editor* editor, Message* msg)
+bool StandbyState::onMouseUp(Editor* editor, MouseMessage* msg)
 {
   editor->releaseMouse();
   return true;
 }
 
-bool StandbyState::onMouseMove(Editor* editor, Message* msg)
+bool StandbyState::onMouseMove(Editor* editor, MouseMessage* msg)
 {
   editor->moveDrawingCursor();
   editor->updateStatusBar();
   return true;
 }
 
-bool StandbyState::onMouseWheel(Editor* editor, Message* msg)
+bool StandbyState::onMouseWheel(Editor* editor, MouseMessage* msg)
 {
   int dz = jmouse_z(1) - jmouse_z(0);
   WHEEL_ACTION wheelAction = WHEEL_NONE;
   bool scrollBigSteps = false;
 
   // Without modifiers
-  if (!(msg->any.shifts & (KB_SHIFT_FLAG | KB_ALT_FLAG | KB_CTRL_FLAG))) {
+  if (msg->keyModifiers() == kKeyNoneModifier) {
     wheelAction = WHEEL_ZOOM;
   }
   else {
 #if 1                           // TODO make it configurable
-    if (has_shifts(msg, KB_ALT_FLAG)) {
-      if (has_shifts(msg, KB_SHIFT_FLAG))
+    if (msg->altPressed()) {
+      if (msg->shiftPressed())
         wheelAction = WHEEL_BG;
       else
         wheelAction = WHEEL_FG;
     }
-    else if (has_shifts(msg, KB_CTRL_FLAG)) {
+    else if (msg->ctrlPressed()) {
       wheelAction = WHEEL_FRAME;
     }
 #else
-    if (has_shifts(msg, KB_CTRL_FLAG))
+    if (msg->ctrlPressed())
       wheelAction = WHEEL_HSCROLL;
     else
       wheelAction = WHEEL_VSCROLL;
 
-    if (has_shifts(msg, KB_SHIFT_FLAG))
+    if (msg->shiftPressed())
       scrollBigSteps = true;
 #endif
   }
@@ -329,9 +324,10 @@ bool StandbyState::onMouseWheel(Editor* editor, Message* msg)
       break;
 
     case WHEEL_ZOOM: {
+      MouseMessage* mouseMsg = static_cast<MouseMessage*>(msg);
       int zoom = MID(MIN_ZOOM, editor->getZoom()-dz, MAX_ZOOM);
       if (editor->getZoom() != zoom)
-        editor->setZoomAndCenterInMouse(zoom, msg->mouse.x, msg->mouse.y);
+        editor->setZoomAndCenterInMouse(zoom, mouseMsg->position().x, mouseMsg->position().y);
       break;
     }
 
@@ -429,12 +425,12 @@ bool StandbyState::onSetCursor(Editor* editor)
   return true;
 }
 
-bool StandbyState::onKeyDown(Editor* editor, Message* msg)
+bool StandbyState::onKeyDown(Editor* editor, KeyMessage* msg)
 {
-  return editor->processKeysToSetZoom(msg->key.scancode);
+  return editor->processKeysToSetZoom(msg);
 }
 
-bool StandbyState::onKeyUp(Editor* editor, Message* msg)
+bool StandbyState::onKeyUp(Editor* editor, KeyMessage* msg)
 {
   return false;
 }
@@ -488,7 +484,7 @@ gfx::Transformation StandbyState::getTransformation(Editor* editor)
   return editor->getDocument()->getTransformation();
 }
 
-void StandbyState::transformSelection(Editor* editor, Message* msg, HandleType handle)
+void StandbyState::transformSelection(Editor* editor, MouseMessage* msg, HandleType handle)
 {
   EditorCustomizationDelegate* customization = editor->getCustomizationDelegate();
   Document* document = editor->getDocument();

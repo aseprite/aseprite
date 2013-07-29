@@ -78,7 +78,7 @@ void ButtonBase::onClick(Event& ev)
 
 bool ButtonBase::onProcessMessage(Message* msg)
 {
-  switch (msg->type) {
+  switch (msg->type()) {
 
     case kFocusEnterMessage:
     case kFocusLeaveMessage:
@@ -95,30 +95,32 @@ bool ButtonBase::onProcessMessage(Message* msg)
       }
       break;
 
-    case kKeyDownMessage:
+    case kKeyDownMessage: {
+      KeyMessage* keymsg = static_cast<KeyMessage*>(msg);
+      KeyScancode scancode = keymsg->scancode();
+
       // If the button is enabled.
       if (isEnabled()) {
         // For kButtonWidget
         if (m_behaviorType == kButtonWidget) {
           // Has focus and press enter/space
           if (hasFocus()) {
-            if ((msg->key.scancode == KEY_ENTER) ||
-                (msg->key.scancode == KEY_ENTER_PAD) ||
-                (msg->key.scancode == KEY_SPACE)) {
+            if ((scancode == kKeyEnter) ||
+                (scancode == kKeyEnterPad) ||
+                (scancode == kKeySpace)) {
               setSelected(true);
               return true;
             }
           }
           // Check if the user pressed mnemonic.
-          if ((msg->any.shifts & KB_ALT_FLAG) &&
-              (isScancodeMnemonic(msg->key.scancode))) {
+          if ((msg->altPressed()) && (isScancodeMnemonic(scancode))) {
             setSelected(true);
             return true;
           }
           // Magnetic widget catches ENTERs
           else if (isFocusMagnet() &&
-                   ((msg->key.scancode == KEY_ENTER) ||
-                    (msg->key.scancode == KEY_ENTER_PAD))) {
+                   ((scancode == kKeyEnter) ||
+                    (scancode == kKeyEnterPad))) {
             getManager()->setFocus(this);
 
             // Dispatch focus movement messages (because the buttons
@@ -134,9 +136,9 @@ bool ButtonBase::onProcessMessage(Message* msg)
           /* if the widget has the focus and the user press space or
              if the user press Alt+the underscored letter of the button */
           if ((hasFocus() &&
-               (msg->key.scancode == KEY_SPACE)) ||
-              ((msg->any.shifts & KB_ALT_FLAG) &&
-               (isScancodeMnemonic(msg->key.scancode)))) {
+               (scancode == kKeySpace)) ||
+              ((msg->altPressed()) &&
+               (isScancodeMnemonic(scancode)))) {
             if (m_behaviorType == kCheckWidget) {
               // Swap the select status
               setSelected(!isSelected());
@@ -153,6 +155,7 @@ bool ButtonBase::onProcessMessage(Message* msg)
         }
       }
       break;
+    }
 
     case kKeyUpMessage:
       if (isEnabled()) {

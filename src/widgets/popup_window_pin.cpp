@@ -62,7 +62,7 @@ void PopupWindowPin::onPinClick(Event& ev)
 
 bool PopupWindowPin::onProcessMessage(Message* msg)
 {
-  switch (msg->type) {
+  switch (msg->type()) {
 
     case kOpenMessage:
       m_pin.setSelected(false);

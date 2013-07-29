@@ -146,18 +146,18 @@ protected:
 
 private:
   void setCursor(int x, int y);
-  void getDrawableLayers(JRect clip, int* first_layer, int* last_layer);
-  void getDrawableFrames(JRect clip, FrameNumber* first_frame, FrameNumber* last_frame);
-  void drawHeader(JRect clip);
-  void drawHeaderFrame(JRect clip, FrameNumber frame);
-  void drawHeaderPart(JRect clip, int x1, int y1, int x2, int y2,
+  void getDrawableLayers(const gfx::Rect& clip, int* first_layer, int* last_layer);
+  void getDrawableFrames(const gfx::Rect& clip, FrameNumber* first_frame, FrameNumber* last_frame);
+  void drawHeader(const gfx::Rect& clip);
+  void drawHeaderFrame(const gfx::Rect& clip, FrameNumber frame);
+  void drawHeaderPart(const gfx::Rect& clip, int x1, int y1, int x2, int y2,
                       bool is_hot, bool is_clk,
                       const char* line1, int align1,
                       const char* line2, int align2);
-  void drawSeparator(JRect clip);
-  void drawLayer(JRect clip, int layer_index);
+  void drawSeparator(const gfx::Rect& clip);
+  void drawLayer(const gfx::Rect& clip, int layer_index);
   void drawLayerPadding();
-  void drawCel(JRect clip, int layer_index, FrameNumber frame, Cel* cel);
+  void drawCel(const gfx::Rect& clip, int layer_index, FrameNumber frame, Cel* cel);
   bool drawPart(int part, int layer, FrameNumber frame);
   void regenerateLayers();
   void hotThis(int hot_part, int hot_layer, FrameNumber hotFrame);
@@ -270,10 +270,10 @@ AnimationEditor::~AnimationEditor()
 
 bool AnimationEditor::onProcessMessage(Message* msg)
 {
-  switch (msg->type) {
+  switch (msg->type()) {
 
     case kPaintMessage: {
-      JRect clip = &msg->draw.rect;
+      gfx::Rect clip = static_cast<PaintMessage*>(msg)->rect();
       int layer, first_layer, last_layer;
       FrameNumber frame, first_frame, last_frame;
 
@@ -332,7 +332,7 @@ bool AnimationEditor::onProcessMessage(Message* msg)
       break;
 
     case kMouseDownMessage:
-      if (msg->mouse.middle || m_space_pressed) {
+      if (static_cast<MouseMessage*>(msg)->middle() || m_space_pressed) {
         captureMouse();
         m_state = STATE_SCROLLING;
         return true;
@@ -436,8 +436,9 @@ bool AnimationEditor::onProcessMessage(Message* msg)
       int hot_part = A_PART_NOTHING;
       int hot_layer = -1;
       FrameNumber hot_frame(-1);
-      int mx = msg->mouse.x - rc->x1;
-      int my = msg->mouse.y - rc->y1;
+      gfx::Point mousePos = static_cast<MouseMessage*>(msg)->position();
+      int mx = mousePos.x - rc->x1;
+      int my = mousePos.y - rc->y1;
 
       if (hasCapture()) {
         if (m_state == STATE_SCROLLING) {
@@ -525,6 +526,8 @@ bool AnimationEditor::onProcessMessage(Message* msg)
 
     case kMouseUpMessage:
       if (hasCapture()) {
+        MouseMessage* mouseMsg = static_cast<MouseMessage*>(msg);
+
         releaseMouse();
 
         if (m_state == STATE_SCROLLING) {
@@ -544,11 +547,12 @@ bool AnimationEditor::onProcessMessage(Message* msg)
             break;
           case A_PART_HEADER_FRAME:
             // Show the frame pop-up menu.
-            if (msg->mouse.right) {
+            if (mouseMsg->right()) {
               if (m_clk_frame == m_hot_frame) {
                 Menu* popup_menu = AppMenus::instance()->getFramePopupMenu();
                 if (popup_menu != NULL) {
-                  popup_menu->showPopup(msg->mouse.x, msg->mouse.y);
+                  gfx::Point mousePos = mouseMsg->position();
+                  popup_menu->showPopup(mousePos.x, mousePos.y);
 
                   destroy_thumbnails();
                   invalidate();
@@ -556,7 +560,7 @@ bool AnimationEditor::onProcessMessage(Message* msg)
               }
             }
             // Show the frame's properties dialog.
-            else if (msg->mouse.left) {
+            else if (mouseMsg->left()) {
               if (m_clk_frame == m_hot_frame) {
                 // Execute FrameProperties command for current frame.
                 Command* command = CommandsModule::instance()
@@ -585,11 +589,12 @@ bool AnimationEditor::onProcessMessage(Message* msg)
             break;
           case A_PART_LAYER:
             // Show the layer pop-up menu.
-            if (msg->mouse.right) {
+            if (mouseMsg->right()) {
               if (m_clk_layer == m_hot_layer) {
                 Menu* popup_menu = AppMenus::instance()->getLayerPopupMenu();
                 if (popup_menu != NULL) {
-                  popup_menu->showPopup(msg->mouse.x, msg->mouse.y);
+                  gfx::Point mousePos = mouseMsg->position();
+                  popup_menu->showPopup(mousePos.x, mousePos.y);
 
                   destroy_thumbnails();
                   invalidate();
@@ -598,7 +603,7 @@ bool AnimationEditor::onProcessMessage(Message* msg)
               }
             }
             // Move a layer.
-            else if (msg->mouse.left) {
+            else if (mouseMsg->left()) {
               if (m_hot_layer >= 0 &&
                   m_hot_layer < (int)m_layers.size() &&
                   m_hot_layer != m_clk_layer &&
@@ -668,11 +673,12 @@ bool AnimationEditor::onProcessMessage(Message* msg)
             }
 
             // Show the cel pop-up menu.
-            if (msg->mouse.right) {
+            if (mouseMsg->right()) {
               Menu* popup_menu = movement ? AppMenus::instance()->getCelMovementPopupMenu():
                                             AppMenus::instance()->getCelPopupMenu();
               if (popup_menu != NULL) {
-                popup_menu->showPopup(msg->mouse.x, msg->mouse.y);
+                gfx::Point mousePos = mouseMsg->position();
+                popup_menu->showPopup(mousePos.x, mousePos.y);
 
                 destroy_thumbnails();
                 regenerateLayers();
@@ -680,7 +686,7 @@ bool AnimationEditor::onProcessMessage(Message* msg)
               }
             }
             // Move the cel.
-            else if (msg->mouse.left) {
+            else if (mouseMsg->left()) {
               if (movement) {
                 {
                   const ContextReader reader(m_context);
@@ -707,7 +713,8 @@ bool AnimationEditor::onProcessMessage(Message* msg)
 
         // Restore the cursor.
         m_state = STATE_STANDBY;
-        setCursor(msg->mouse.x, msg->mouse.y);
+        setCursor(mouseMsg->position().x,
+                  mouseMsg->position().y);
         return true;
       }
       break;
@@ -719,7 +726,7 @@ bool AnimationEditor::onProcessMessage(Message* msg)
 
       // Close animation editor.
       if ((command && (strcmp(command->short_name(), CommandId::FilmEditor) == 0)) ||
-          (msg->key.scancode == KEY_ESC)) {
+          (static_cast<KeyMessage*>(msg)->scancode() == kKeyEsc)) {
         closeWindow();
         return true;
       }
@@ -769,8 +776,8 @@ bool AnimationEditor::onProcessMessage(Message* msg)
         }
       }
 
-      switch (msg->key.scancode) {
-        case KEY_SPACE:
+      switch (static_cast<KeyMessage*>(msg)->scancode()) {
+        case kKeySpace:
           m_space_pressed = true;
           setCursor(jmouse_x(0), jmouse_y(0));
           return true;
@@ -780,9 +787,9 @@ bool AnimationEditor::onProcessMessage(Message* msg)
     }
 
     case kKeyUpMessage:
-      switch (msg->key.scancode) {
+      switch (static_cast<KeyMessage*>(msg)->scancode()) {
 
-        case KEY_SPACE:
+        case kKeySpace:
           if (m_space_pressed) {
             // We have to clear all the KEY_SPACE in buffer.
             clear_keybuf();
@@ -800,12 +807,12 @@ bool AnimationEditor::onProcessMessage(Message* msg)
       int dx = 0;
       int dy = 0;
 
-      if ((msg->any.shifts & KB_CTRL_FLAG) == KB_CTRL_FLAG)
+      if (msg->ctrlPressed())
         dx = dz * FRMSIZE;
       else
         dy = dz * LAYSIZE;
 
-      if ((msg->any.shifts & KB_SHIFT_FLAG) == KB_SHIFT_FLAG) {
+      if (msg->shiftPressed()) {
         dx *= 3;
         dy *= 3;
       }
@@ -815,9 +822,11 @@ bool AnimationEditor::onProcessMessage(Message* msg)
       break;
     }
 
-    case kSetCursorMessage:
-      setCursor(msg->mouse.x, msg->mouse.y);
+    case kSetCursorMessage: {
+      gfx::Point mousePos = static_cast<MouseMessage*>(msg)->position();
+      setCursor(mousePos.x, mousePos.y);
       return true;
+    }
 
   }
 
@@ -932,19 +941,19 @@ void AnimationEditor::setCursor(int x, int y)
   }
 }
 
-void AnimationEditor::getDrawableLayers(JRect clip, int* first_layer, int* last_layer)
+void AnimationEditor::getDrawableLayers(const gfx::Rect& clip, int* first_layer, int* last_layer)
 {
   *first_layer = 0;
   *last_layer = m_layers.size()-1;
 }
 
-void AnimationEditor::getDrawableFrames(JRect clip, FrameNumber* first_frame, FrameNumber* last_frame)
+void AnimationEditor::getDrawableFrames(const gfx::Rect& clip, FrameNumber* first_frame, FrameNumber* last_frame)
 {
   *first_frame = FrameNumber(0);
   *last_frame = m_sprite->getLastFrame();
 }
 
-void AnimationEditor::drawHeader(JRect clip)
+void AnimationEditor::drawHeader(const gfx::Rect& clip)
 {
   // bool is_hot = (m_hot_part == A_PART_HEADER_LAYER);
   // bool is_clk = (m_clk_part == A_PART_HEADER_LAYER);
@@ -963,7 +972,7 @@ void AnimationEditor::drawHeader(JRect clip)
                  "Layers", -1);
 }
 
-void AnimationEditor::drawHeaderFrame(JRect clip, FrameNumber frame)
+void AnimationEditor::drawHeaderFrame(const gfx::Rect& clip, FrameNumber frame)
 {
   SkinTheme* theme = static_cast<SkinTheme*>(getTheme());
   bool is_hot = (m_hot_part == A_PART_HEADER_FRAME &&
@@ -1019,7 +1028,7 @@ void AnimationEditor::drawHeaderFrame(JRect clip, FrameNumber frame)
   set_clip_rect(ji_screen, cx1, cy1, cx2, cy2);
 }
 
-void AnimationEditor::drawHeaderPart(JRect clip, int x1, int y1, int x2, int y2,
+void AnimationEditor::drawHeaderPart(const gfx::Rect& clip, int x1, int y1, int x2, int y2,
                                      bool is_hot, bool is_clk,
                                      const char *line1, int align1,
                                      const char *line2, int align2)
@@ -1028,8 +1037,7 @@ void AnimationEditor::drawHeaderPart(JRect clip, int x1, int y1, int x2, int y2,
   ui::Color fg, face;
   int x;
 
-  if ((x2 < clip->x1) || (x1 >= clip->x2) ||
-      (y2 < clip->y1) || (y1 >= clip->y2))
+  if (!clip.intersects(gfx::Rect(x1, y1, x2-x1, y2-y1)))
     return;
 
   fg = theme->getColor(!is_hot && is_clk ? ThemeColor::Background: ThemeColor::Text);
@@ -1066,7 +1074,7 @@ void AnimationEditor::drawHeaderPart(JRect clip, int x1, int y1, int x2, int y2,
   }
 }
 
-void AnimationEditor::drawSeparator(JRect clip)
+void AnimationEditor::drawSeparator(const gfx::Rect& clip)
 {
   SkinTheme* theme = static_cast<SkinTheme*>(getTheme());
   bool is_hot = (m_hot_part == A_PART_SEPARATOR);
@@ -1077,8 +1085,7 @@ void AnimationEditor::drawSeparator(JRect clip)
   x2 = this->rc->x1 + m_separator_x + m_separator_w - 1;
   y2 = this->rc->y2 - 1;
 
-  if ((x2 < clip->x1) || (x1 >= clip->x2) ||
-      (y2 < clip->y1) || (y1 >= clip->y2))
+  if (!clip.intersects(gfx::Rect(x1, y1, x2-x1, y2-y1)))
     return;
 
   vline(ji_screen, x1, y1, y2,
@@ -1086,7 +1093,7 @@ void AnimationEditor::drawSeparator(JRect clip)
                            theme->getColor(ThemeColor::Text)));
 }
 
-void AnimationEditor::drawLayer(JRect clip, int layer_index)
+void AnimationEditor::drawLayer(const gfx::Rect& clip, int layer_index)
 {
   Layer* layer = m_layers[layer_index];
   SkinTheme* theme = static_cast<SkinTheme*>(this->getTheme());
@@ -1204,7 +1211,7 @@ void AnimationEditor::drawLayerPadding()
   }
 }
 
-void AnimationEditor::drawCel(JRect clip, int layer_index, FrameNumber frame, Cel* cel)
+void AnimationEditor::drawCel(const gfx::Rect& clip, int layer_index, FrameNumber frame, Cel* cel)
 {
   SkinTheme* theme = static_cast<SkinTheme*>(this->getTheme());
   Layer *layer = m_layers[layer_index];
@@ -1306,14 +1313,14 @@ bool AnimationEditor::drawPart(int part, int layer, FrameNumber frame)
       // Do nothing.
       return true;
     case A_PART_SEPARATOR:
-      drawSeparator(this->rc);
+      drawSeparator(getBounds());
       return true;
     case A_PART_HEADER_LAYER:
-      drawHeader(this->rc);
+      drawHeader(getBounds());
       return true;
     case A_PART_HEADER_FRAME:
       if (frame >= 0 && frame < m_sprite->getTotalFrames()) {
-        drawHeaderFrame(this->rc, frame);
+        drawHeaderFrame(getBounds(), frame);
         return true;
       }
       break;
@@ -1321,7 +1328,7 @@ bool AnimationEditor::drawPart(int part, int layer, FrameNumber frame)
     case A_PART_LAYER_EYE_ICON:
     case A_PART_LAYER_LOCK_ICON:
       if (layer >= 0 && layer < (int)m_layers.size()) {
-        drawLayer(this->rc, layer);
+        drawLayer(getBounds(), layer);
         return true;
       }
       break;
@@ -1330,7 +1337,7 @@ bool AnimationEditor::drawPart(int part, int layer, FrameNumber frame)
           frame >= 0 && frame < m_sprite->getTotalFrames()) {
         Cel* cel = (m_layers[layer]->isImage() ? static_cast<LayerImage*>(m_layers[layer])->getCel(frame): NULL);
 
-        drawCel(this->rc, layer, frame, cel);
+        drawCel(getBounds(), layer, frame, cel);
         return true;
       }
       break;

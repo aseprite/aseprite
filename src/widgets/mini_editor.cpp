@@ -94,7 +94,7 @@ protected:
 
   bool onProcessMessage(Message* msg) OVERRIDE
   {
-    switch (msg->type) {
+    switch (msg->type()) {
 
       case kSetCursorMessage:
         jmouse_set_cursor(kArrowCursor);

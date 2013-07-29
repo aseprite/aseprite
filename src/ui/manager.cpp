@@ -60,7 +60,7 @@ typedef std::list<Message*> Messages;
 typedef std::list<Filter*> Filters;
 
 static int double_click_level;
-static int double_click_buttons;
+static MouseButtons double_click_buttons;
 static int double_click_ticks;
 
 static int want_close_stage;       /* variable to handle the external
@@ -189,7 +189,6 @@ bool Manager::generateMessages()
 {
   Widget* widget;
   Widget* window;
-  Message* msg;
   int c;
 
   // Poll keyboard
@@ -243,7 +242,7 @@ bool Manager::generateMessages()
     widget = NULL;
 
     UI_FOREACH_WIDGET(mouse_widgets_list, it) {
-      widget = (*it)->pick(jmouse_x(0), jmouse_y(0));
+      widget = (*it)->pick(gfx::Point(jmouse_x(0), jmouse_y(0)));
       if (widget)
         break;
     }
@@ -269,19 +268,18 @@ bool Manager::generateMessages()
         dst = mouse_widget;
 
       // Send the mouse movement message
-      msg = newMouseMessage(kMouseMoveMessage, dst);
-      enqueueMessage(msg);
-
+      enqueueMessage(newMouseMessage(kMouseMoveMessage, dst,
+                                     currentMouseButtons(0)));
       generateSetCursorMessage();
     }
   }
 
   // Mouse wheel
   if (jmouse_z(0) != jmouse_z(1)) {
-    msg = newMouseMessage(kMouseWheelMessage,
-                          capture_widget ? capture_widget:
-                                           mouse_widget);
-    enqueueMessage(msg);
+    enqueueMessage(newMouseMessage(kMouseWheelMessage,
+                                   capture_widget ? capture_widget:
+                                                    mouse_widget,
+                                   currentMouseButtons(0)));
   }
 
   // Mouse clicks
@@ -291,23 +289,20 @@ bool Manager::generateMessages()
       ((jmouse_b(1) & 1) == 0 && (jmouse_b(0) & 1) == 1) ||
       ((jmouse_b(1) & 2) == 0 && (jmouse_b(0) & 2) == 2) ||
       ((jmouse_b(1) & 4) == 0 && (jmouse_b(0) & 4) == 4);
-
-    msg = newMouseMessage(pressed ? kMouseDownMessage:
-                                    kMouseUpMessage,
-                          capture_widget ? capture_widget:
-                                           mouse_widget);
+    MessageType msgType = (pressed ? kMouseDownMessage: kMouseUpMessage);
+    MouseButtons mouseButtons = currentMouseButtons(pressed ? 0: 1);
 
     //////////////////////////////////////////////////////////////////////
     // Double Click
-    if (msg->type == kMouseDownMessage) {
+    if (msgType == kMouseDownMessage) {
       if (double_click_level != DOUBLE_CLICK_NONE) {
-        /* time out, back to NONE */
+        // Time out, back to NONE
         if (current_ticks - double_click_ticks > DOUBLE_CLICK_TIMEOUT_MSECS) {
           double_click_level = DOUBLE_CLICK_NONE;
         }
-        else if (double_click_buttons == msg->mouse.flags) {
+        else if (double_click_buttons == mouseButtons) {
           if (double_click_level == DOUBLE_CLICK_UP) {
-            msg->type = kDoubleClickMessage;
+            msgType = kDoubleClickMessage;
           }
           else {
             double_click_level = DOUBLE_CLICK_NONE;
@@ -322,17 +317,17 @@ bool Manager::generateMessages()
       // This could be the beginning of the state
       if (double_click_level == DOUBLE_CLICK_NONE) {
         double_click_level = DOUBLE_CLICK_DOWN;
-        double_click_buttons = msg->mouse.flags;
+        double_click_buttons = mouseButtons;
         double_click_ticks = current_ticks;
       }
     }
-    else if (msg->type == kMouseUpMessage) {
+    else if (msgType == kMouseUpMessage) {
       if (double_click_level != DOUBLE_CLICK_NONE) {
         // Time out, back to NONE
         if (current_ticks - double_click_ticks > DOUBLE_CLICK_TIMEOUT_MSECS) {
           double_click_level = DOUBLE_CLICK_NONE;
         }
-        else if (double_click_buttons == msg->mouse.flags) {
+        else if (double_click_buttons == mouseButtons) {
           if (double_click_level == DOUBLE_CLICK_DOWN) {
             double_click_level = DOUBLE_CLICK_UP;
             double_click_ticks = current_ticks;
@@ -347,8 +342,7 @@ bool Manager::generateMessages()
 
     // Handle Z order: Send the window to top (only when you click in
     // a window that aren't the desktop).
-    if (msg->type == kMouseDownMessage &&
-        !capture_widget && mouse_widget) {
+    if (msgType == kMouseDownMessage && !capture_widget && mouse_widget) {
       // The clicked window
       Window* window = mouse_widget->getRoot();
       Manager* win_manager = (window ? window->getManager(): NULL);
@@ -385,55 +379,64 @@ bool Manager::generateMessages()
       setFocus(mouse_widget);
     }
 
-    enqueueMessage(msg);
+    enqueueMessage(newMouseMessage(msgType,
+                                   capture_widget ? capture_widget:
+                                                    mouse_widget,
+                                   mouseButtons));
   }
 
   // Generate Close message when the user press close button on the system window.
   if (want_close_stage == STAGE_WANT_CLOSE) {
     want_close_stage = STAGE_NORMAL;
 
-    msg = jmessage_new(kCloseAppMessage);
-    jmessage_broadcast_to_children(msg, this);
+    Message* msg = new Message(kCloseAppMessage);
+    msg->broadcastToChildren(this);
     enqueueMessage(msg);
   }
 
   // Generate kKeyDownMessage messages.
   while (keypressed()) {
     int readkey_value = readkey();
-
-    msg = jmessage_new_key_related(kKeyDownMessage, readkey_value);
+    int repeat = 0;
 
     c = readkey_value >> 8;
     if (c >= 0 && c < KEY_MAX) {
       old_readed_key[c] = key[c];
-      msg->key.repeat = key_repeated[c]++;
+      repeat = key_repeated[c]++;
     }
 
+    Message* msg = new KeyMessage(kKeyDownMessage,
+                                  static_cast<KeyScancode>((readkey_value >> 8) & 0xff),
+                                  (readkey_value & 0xff), repeat);
     broadcastKeyMsg(msg);
     enqueueMessage(msg);
   }
 
   for (c=0; c<KEY_MAX; c++) {
     if (old_readed_key[c] != key[c]) {
+      KeyScancode scancode = static_cast<ui::KeyScancode>(c);
+
       // Generate kKeyUpMessage messages (old key state is activated,
       // the new one is deactivated).
       if (old_readed_key[c]) {
         // Press/release key interface
-        msg = jmessage_new_key_related(kKeyUpMessage,
-                                       (c << 8) | scancode_to_ascii(c));
+        Message* msg = new KeyMessage(kKeyUpMessage,
+                                      scancode,
+                                      scancode_to_ascii(scancode), 0);
         old_readed_key[c] = key[c];
         key_repeated[c] = 0;
 
         broadcastKeyMsg(msg);
         enqueueMessage(msg);
       }
-      /* generate kKeyDownMessage messages for modifiers */
-      else if (c >= KEY_MODIFIERS) {
-        /* press/release key interface */
-        msg = jmessage_new_key_related(kKeyDownMessage,
-                                       (c << 8) | scancode_to_ascii(c));
+      // Generate kKeyDownMessage messages for modifiers
+      else if (c >= kKeyFirstModifierScancode) {
+        // Press/release key interface
+        Message* msg = new KeyMessage(kKeyDownMessage,
+                                      scancode,
+                                      scancode_to_ascii(scancode),
+                                      key_repeated[c]++);
         old_readed_key[c] = key[c];
-        msg->key.repeat = key_repeated[c]++;
 
         broadcastKeyMsg(msg);
         enqueueMessage(msg);
@@ -456,8 +459,8 @@ bool Manager::generateMessages()
 void Manager::dispatchMessages()
 {
   // Add the "Queue Processing" message for the manager.
-  Message* msg = newMouseMessage(kQueueProcessingMessage, this);
-  enqueueMessage(msg);
+  enqueueMessage(newMouseMessage(kQueueProcessingMessage, this,
+                                 currentMouseButtons(0)));
 
   pumpQueue();
 }
@@ -479,7 +482,7 @@ void Manager::enqueueMessage(Message* msg)
   ASSERT(msg != NULL);
 
   // Check if this message must be filtered by some widget before
-  c = msg->type;
+  c = msg->type();
   if (c >= kFirstRegisteredMessage)
     c = kFirstRegisteredMessage;
 
@@ -488,16 +491,15 @@ void Manager::enqueueMessage(Message* msg)
     for (Filters::reverse_iterator it=msg_filters[c].rbegin(),
            end=msg_filters[c].rend(); it != end; ++it) {
       Filter* filter = *it;
-      if (msg->type == filter->message)
-        jmessage_add_pre_dest(msg, filter->widget);
+      if (msg->type() == filter->message)
+        msg->prependRecipient(filter->widget);
     }
   }
 
-  // There are a destination widget at least?
-  if (!msg->any.widgets->empty())
+  if (msg->hasRecipients())
     msg_queue.push_back(msg);
   else
-    jmessage_free(msg);
+    delete msg;
 }
 
 Window* Manager::getTopWindow()
@@ -541,7 +543,6 @@ void Manager::setFocus(Widget* widget)
               && someParentIsFocusStop(widget)))) {
     WidgetsList widget_parents;
     Widget* common_parent = NULL;
-    Message* msg;
 
     if (widget)
       widget->getParents(false, widget_parents);
@@ -550,7 +551,8 @@ void Manager::setFocus(Widget* widget)
     if (focus_widget) {
       WidgetsList focus_parents;
       focus_widget->getParents(true, focus_parents);
-      msg = jmessage_new(kFocusLeaveMessage);
+
+      Message* msg = new Message(kFocusLeaveMessage);
 
       UI_FOREACH_WIDGET(focus_parents, it) {
         if (widget) {
@@ -566,7 +568,7 @@ void Manager::setFocus(Widget* widget)
 
         if ((*it)->hasFocus()) {
           (*it)->flags &= ~JI_HASFOCUS;
-          jmessage_add_dest(msg, *it);
+          msg->addRecipient(*it);
         }
       }
 
@@ -588,7 +590,7 @@ void Manager::setFocus(Widget* widget)
       else
         it = widget_parents.begin();
 
-      msg = jmessage_new(kFocusEnterMessage);
+      Message* msg = new Message(kFocusEnterMessage);
 
       for (; it != widget_parents.end(); ++it) {
         Widget* w = *it;
@@ -596,7 +598,7 @@ void Manager::setFocus(Widget* widget)
         if (w->flags & JI_FOCUSSTOP) {
           w->flags |= JI_HASFOCUS;
 
-          jmessage_add_dest(msg, w);
+          msg->addRecipient(w);
         }
       }
 
@@ -610,7 +612,6 @@ void Manager::setMouse(Widget* widget)
   if ((mouse_widget != widget) && (!capture_widget)) {
     WidgetsList widget_parents;
     Widget* common_parent = NULL;
-    Message* msg;
 
     if (widget)
       widget->getParents(false, widget_parents);
@@ -619,7 +620,8 @@ void Manager::setMouse(Widget* widget)
     if (mouse_widget) {
       WidgetsList mouse_parents;
       mouse_widget->getParents(true, mouse_parents);
-      msg = jmessage_new(kMouseLeaveMessage);
+
+      Message* msg = new Message(kMouseLeaveMessage);
 
       UI_FOREACH_WIDGET(mouse_parents, it) {
         if (widget) {
@@ -635,7 +637,7 @@ void Manager::setMouse(Widget* widget)
 
         if ((*it)->hasMouse()) {
           (*it)->flags &= ~JI_HASMOUSE;
-          jmessage_add_dest(msg, *it);
+          msg->addRecipient(*it);
         }
       }
 
@@ -657,11 +659,11 @@ void Manager::setMouse(Widget* widget)
       else
         it = widget_parents.begin();
 
-      msg = jmessage_new(kMouseEnterMessage);
+      Message* msg = new Message(kMouseEnterMessage);
 
       for (; it != widget_parents.end(); ++it) {
         (*it)->flags |= JI_HASMOUSE;
-        jmessage_add_dest(msg, *it);
+        msg->addRecipient(*it);
       }
 
       enqueueMessage(msg);
@@ -740,17 +742,18 @@ void Manager::removeMessagesFor(Widget* widget)
 {
   for (Messages::iterator it=msg_queue.begin(), end=msg_queue.end();
        it != end; ++it)
-    removeWidgetFromDests(widget, *it);
+    removeWidgetFromRecipients(widget, *it);
 }
 
 void Manager::removeMessagesForTimer(Timer* timer)
 {
   for (Messages::iterator it=msg_queue.begin(); it != msg_queue.end(); ) {
-    Message* message = *it;
-    if (!message->any.used &&
-        message->any.type == kTimerMessage &&
-        message->timer.timer == timer) {
-      jmessage_free(message);
+    Message* msg = *it;
+
+    if (!msg->isUsed() &&
+        msg->type() == kTimerMessage &&
+        static_cast<TimerMessage*>(msg)->timer() == timer) {
+      delete msg;
       it = msg_queue.erase(it);
     }
     else
@@ -813,8 +816,8 @@ void Manager::_openWindow(Window* window)
   insertChild(0, window);
 
   // Broadcast the open message.
-  Message* msg = jmessage_new(kOpenMessage);
-  jmessage_add_dest(msg, window);
+  Message* msg = new Message(kOpenMessage);
+  msg->addRecipient(window);
   enqueueMessage(msg);
 
   // Update the new windows list to show.
@@ -862,8 +865,8 @@ void Manager::_closeWindow(Window* window, bool redraw_background)
   window->setVisible(false);
 
   // Close message.
-  msg = jmessage_new(kCloseMessage);
-  jmessage_add_dest(msg, window);
+  msg = new Message(kCloseMessage);
+  msg->addRecipient(window);
   enqueueMessage(msg);
 
   // Update manager list stuff.
@@ -881,12 +884,13 @@ void Manager::_closeWindow(Window* window, bool redraw_background)
 
 bool Manager::onProcessMessage(Message* msg)
 {
-  switch (msg->type) {
+  switch (msg->type()) {
 
     case kKeyDownMessage:
     case kKeyUpMessage: {
-      msg->key.propagate_to_children = true;
-      msg->key.propagate_to_parent = false;
+      KeyMessage* keymsg = static_cast<KeyMessage*>(msg);
+      keymsg->setPropagateToChildren(true);
+      keymsg->setPropagateToParent(false);
 
       // Continue sending the message to the children of all windows
       // (until a desktop or foreground window).
@@ -904,7 +908,7 @@ bool Manager::onProcessMessage(Message* msg)
       }
 
       // Check the focus movement.
-      if (msg->type == kKeyDownMessage)
+      if (msg->type() == kKeyDownMessage)
         move_focus(this, msg);
 
       return true;
@@ -992,23 +996,23 @@ void Manager::pumpQueue()
     Message* msg = *it;
 
     // Go to next message
-    if (msg->any.used) {
+    if (msg->isUsed()) {
       ++it;
       continue;
     }
 
     // This message is in use
-    msg->any.used = true;
+    msg->markAsUsed();
     Message* first_msg = msg;
 
     // Call Timer::tick() if this is a tick message.
-    if (msg->type == kTimerMessage) {
+    if (msg->type() == kTimerMessage) {
       ASSERT(msg->timer.timer != NULL);
-      msg->timer.timer->tick();
+      static_cast<TimerMessage*>(msg)->timer()->tick();
     }
 
     bool done = false;
-    UI_FOREACH_WIDGET(*msg->any.widgets, it2) {
+    UI_FOREACH_WIDGET(msg->recipients(), it2) {
       Widget* widget = *it2;
       if (!widget)
         continue;
@@ -1048,35 +1052,40 @@ void Manager::pumpQueue()
       }
 #endif
 
-      /* draw message? */
-      if (msg->type == kPaintMessage) {
-        /* hidden? */
+      // We need to configure the clip region for paint messages
+      // before we call Widget::sendMessage().
+      if (msg->type() == kPaintMessage) {
         if (widget->flags & JI_HIDDEN)
           continue;
+
+        PaintMessage* paintMsg = static_cast<PaintMessage*>(msg);
 
         jmouse_hide();
         acquire_bitmap(ji_screen);
 
-        /* set clip */
         ASSERT(get_clip_state(ji_screen));
         set_clip_rect(ji_screen,
-                      msg->draw.rect.x1, msg->draw.rect.y1,
-                      msg->draw.rect.x2-1, msg->draw.rect.y2-1);
+                      paintMsg->rect().x,
+                      paintMsg->rect().y,
+                      paintMsg->rect().x2()-1,
+                      paintMsg->rect().y2()-1);
 #ifdef REPORT_EVENTS
         printf(" - clip(%d, %d, %d, %d)\n",
-               msg->draw.rect.x1, msg->draw.rect.y1,
-               msg->draw.rect.x2-1, msg->draw.rect.y2-1);
+               paintMsg->rect().x,
+               paintMsg->rect().y,
+               paintMsg->rect().x2()-1,
+               paintMsg->rect().y2()-1);
         fflush(stdout);
 #endif
 
         dirty_display_flag = true;
       }
 
-      /* call message handler */
+      // Call the message handler
       done = widget->sendMessage(msg);
 
-      /* restore clip */
-      if (msg->type == kPaintMessage) {
+      // Restore clip region for paint messages.
+      if (msg->type() == kPaintMessage) {
         set_clip_rect(ji_screen, 0, 0, JI_SCREEN_W-1, JI_SCREEN_H-1);
 
         release_bitmap(ji_screen);
@@ -1091,7 +1100,7 @@ void Manager::pumpQueue()
     it = msg_queue.erase(it);
 
     // Destroy the message
-    jmessage_free(first_msg);
+    delete first_msg;
   }
 }
 
@@ -1153,30 +1162,22 @@ void Manager::collectGarbage()
 void Manager::generateSetCursorMessage()
 {
   Widget* dst;
-  Message* msg;
-
   if (capture_widget)
     dst = capture_widget;
   else
     dst = mouse_widget;
 
-  if (dst) {
-    msg = newMouseMessage(kSetCursorMessage, dst);
-    enqueueMessage(msg);
-  }
+  if (dst)
+    enqueueMessage(newMouseMessage(kSetCursorMessage, dst,
+                                   currentMouseButtons(0)));
   else
     jmouse_set_cursor(kArrowCursor);
 }
 
 // static
-void Manager::removeWidgetFromDests(Widget* widget, Message* msg)
+void Manager::removeWidgetFromRecipients(Widget* widget, Message* msg)
 {
-  for (WidgetsList::iterator
-         it = msg->any.widgets->begin(),
-         end = msg->any.widgets->end(); it != end; ++it) {
-    if (*it == widget)
-      *it = NULL;
-  }
+  msg->removeRecipient(widget);
 }
 
 // static
@@ -1209,24 +1210,24 @@ Widget* Manager::findMagneticWidget(Widget* widget)
 }
 
 // static
-Message* Manager::newMouseMessage(MessageType type, Widget* widget)
+Message* Manager::newMouseMessage(MessageType type, Widget* widget,
+                                  MouseButtons buttons)
 {
-  Message* msg = jmessage_new(type);
-  if (!msg)
-    return NULL;
-
-  msg->mouse.x = jmouse_x(0);
-  msg->mouse.y = jmouse_y(0);
-  msg->mouse.flags = (type == kMouseUpMessage ? jmouse_b(1):
-                                                       jmouse_b(0));
-  msg->mouse.left = ((jmouse_b(0) & 1) != (jmouse_b(1) & 1));
-  msg->mouse.right = ((jmouse_b(0) & 2) != (jmouse_b(1) & 2));
-  msg->mouse.middle = ((jmouse_b(0) & 4) != (jmouse_b(1) & 4));
+  Message* msg =
+    new MouseMessage(type, buttons,
+                     gfx::Point(jmouse_x(0),
+                                jmouse_y(0)));
 
   if (widget != NULL)
-    jmessage_add_dest(msg, widget);
+    msg->addRecipient(widget);
 
   return msg;
+}
+
+// static
+MouseButtons Manager::currentMouseButtons(int antique)
+{
+  return jmouse_b(antique);
 }
 
 // static
@@ -1234,15 +1235,15 @@ void Manager::broadcastKeyMsg(Message* msg)
 {
   // Send the message to the widget with capture
   if (capture_widget) {
-    jmessage_add_dest(msg, capture_widget);
+    msg->addRecipient(capture_widget);
   }
   // Send the msg to the focused widget
   else if (focus_widget) {
-    jmessage_add_dest(msg, focus_widget);
+    msg->addRecipient(focus_widget);
   }
   // Finally, send the message to the manager, it'll know what to do
   else {
-    jmessage_add_dest(msg, this);
+    msg->addRecipient(this);
   }
 }
 
@@ -1290,32 +1291,32 @@ static bool move_focus(Manager* manager, Message* msg)
         list[c++] = it;
     }
 
-    /* depend of the pressed key */
-    switch (msg->key.scancode) {
+    // Depending on the pressed key...
+    switch (static_cast<KeyMessage*>(msg)->scancode()) {
 
-      case KEY_TAB:
-        /* reverse tab */
-        if (msg->any.shifts & (KB_SHIFT_FLAG | KB_CTRL_FLAG | KB_ALT_FLAG)) {
+      case kKeyTab:
+        // Reverse tab
+        if ((msg->keyModifiers() & (kKeyShiftModifier | kKeyCtrlModifier | kKeyAltModifier)) != 0) {
           focus = list[count-1];
         }
-        /* normal tab */
+        // Normal tab
         else if (count > 1) {
           focus = list[1];
         }
         ret = true;
         break;
 
-      /* arrow keys */
-      case KEY_LEFT:  if (!cmp) cmp = cmp_left;
-      case KEY_RIGHT: if (!cmp) cmp = cmp_right;
-      case KEY_UP:    if (!cmp) cmp = cmp_up;
-      case KEY_DOWN:  if (!cmp) cmp = cmp_down;
+      // Arrow keys
+      case kKeyLeft:  if (!cmp) cmp = cmp_left;
+      case kKeyRight: if (!cmp) cmp = cmp_right;
+      case kKeyUp:    if (!cmp) cmp = cmp_up;
+      case kKeyDown:  if (!cmp) cmp = cmp_down;
 
-        /* more than one widget */
+        // More than one widget
         if (count > 1) {
           int i, j, x, y;
 
-          /* position where the focus come */
+          // Position where the focus come
           x = ((focus_widget) ? focus_widget->rc->x1+focus_widget->rc->x2:
                                 window->rc->x1+window->rc->x2)
             / 2;
@@ -1325,10 +1326,10 @@ static bool move_focus(Manager* manager, Message* msg)
 
           c = focus_widget ? 1: 0;
 
-          /* rearrange the list */
+          // Rearrange the list
           for (i=c; i<count-1; i++) {
             for (j=i+1; j<count; j++) {
-              /* sort the list in ascending order */
+              // Sort the list in ascending order
               if ((*cmp) (list[i], x, y) > (*cmp) (list[j], x, y)) {
                 Widget* tmp = list[i];
                 list[i] = list[j];
@@ -1337,12 +1338,11 @@ static bool move_focus(Manager* manager, Message* msg)
             }
           }
 
-          /* check if the new widget to put the focus is not
-             in the wrong way */
+          // Check if the new widget to put the focus is not in the wrong way.
           if ((*cmp) (list[c], x, y) < INT_MAX)
             focus = list[c];
         }
-        /* if only there are one widget, put the focus in this */
+        // If only there are one widget, put the focus in this
         else
           focus = list[0];
 

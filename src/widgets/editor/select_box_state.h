@@ -55,9 +55,9 @@ public:
   // EditorState overrides
   virtual void onAfterChangeState(Editor* editor) OVERRIDE;
   virtual void onBeforePopState(Editor* editor) OVERRIDE;
-  virtual bool onMouseDown(Editor* editor, ui::Message* msg) OVERRIDE;
-  virtual bool onMouseUp(Editor* editor, ui::Message* msg) OVERRIDE;
-  virtual bool onMouseMove(Editor* editor, ui::Message* msg) OVERRIDE;
+  virtual bool onMouseDown(Editor* editor, ui::MouseMessage* msg) OVERRIDE;
+  virtual bool onMouseUp(Editor* editor, ui::MouseMessage* msg) OVERRIDE;
+  virtual bool onMouseMove(Editor* editor, ui::MouseMessage* msg) OVERRIDE;
   virtual bool onSetCursor(Editor* editor) OVERRIDE;
 
   // Returns false as it overrides default standby state behavior &

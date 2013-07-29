@@ -98,10 +98,8 @@ void Timer::pollTimers()
         if (count > 0) {
           ASSERT(timer->m_owner != NULL);
 
-          Message* msg = jmessage_new(kTimerMessage);
-          msg->timer.count = count;
-          msg->timer.timer = timer;
-          jmessage_add_dest(msg, timer->m_owner);
+          Message* msg = new TimerMessage(count, timer);
+          msg->addRecipient(timer->m_owner);
           Manager::getDefault()->enqueueMessage(msg);
         }
       }

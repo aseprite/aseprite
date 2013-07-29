@@ -105,7 +105,7 @@ public:
   }
 
   bool onProcessMessage(Message* msg) OVERRIDE {
-    switch (msg->type) {
+    switch (msg->type()) {
       // When the mouse enter in this entry, it got the focus and the
       // text is automatically selected.
       case kMouseEnterMessage:
@@ -113,9 +113,12 @@ public:
         selectText(0, -1);
         break;
 
-      case kKeyDownMessage:
-        if (msg->key.scancode == KEY_ENTER ||
-            msg->key.scancode == KEY_ENTER_PAD) {
+      case kKeyDownMessage: {
+        KeyMessage* keymsg = static_cast<KeyMessage*>(msg);
+        KeyScancode scancode = keymsg->scancode();
+        
+        if (scancode == kKeyEnter || // TODO customizable keys
+            scancode == kKeyEnterPad) {
           Command* cmd = CommandsModule::instance()->getCommandByName(CommandId::GotoFrame);
           Params params;
           int frame = strtol(this->getText(), NULL, 10);
@@ -128,6 +131,7 @@ public:
           return true;          // Key used.
         }
         break;
+      }
     }
     return Entry::onProcessMessage(msg);
   }
@@ -470,16 +474,16 @@ double Progress::getPos() const
 
 bool StatusBar::onProcessMessage(Message* msg)
 {
-  switch (msg->type) {
+  switch (msg->type()) {
 
     case kPaintMessage: {
+      gfx::Rect clip = static_cast<PaintMessage*>(msg)->rect();
       SkinTheme* theme = static_cast<SkinTheme*>(this->getTheme());
       ui::Color text_color = theme->getColor(ThemeColor::Text);
       ui::Color face_color = theme->getColor(ThemeColor::Face);
       Rect rc = getBounds();
-      BITMAP* doublebuffer = create_bitmap(jrect_w(&msg->draw.rect),
-                                           jrect_h(&msg->draw.rect));
-      rc.offset(-msg->draw.rect.x1, -msg->draw.rect.y1);
+      BITMAP* doublebuffer = create_bitmap(clip.w, clip.h);
+      rc.offset(-clip.x, -clip.y);
 
       clear_to_color(doublebuffer, to_system(face_color));
 
@@ -632,8 +636,8 @@ bool StatusBar::onProcessMessage(Message* msg)
       }
 
       blit(doublebuffer, ji_screen, 0, 0,
-           msg->draw.rect.x1,
-           msg->draw.rect.y1,
+           clip.x,
+           clip.y,
            doublebuffer->w,
            doublebuffer->h);
       destroy_bitmap(doublebuffer);
@@ -671,6 +675,7 @@ bool StatusBar::onProcessMessage(Message* msg)
     }
 
     case kMouseMoveMessage: {
+      MouseMessage* mouseMsg = static_cast<MouseMessage*>(msg);
       gfx::Rect rc = getBounds().shrink(gfx::Border(2*jguiscale(), 1*jguiscale(),
                                                     2*jguiscale(), 2*jguiscale()));
 
@@ -697,8 +702,7 @@ bool StatusBar::onProcessMessage(Message* msg)
             int x2 = rc.x2()-width + (c+1)*width/count;
 
             if (Rect(Point(x1, rc.y),
-                     Point(x2, rc.y2())).contains(Point(msg->mouse.x,
-                                                        msg->mouse.y))) {
+                     Point(x2, rc.y2())).contains(mouseMsg->position())) {
               hot_layer = LayerIndex(c);
               break;
             }
@@ -710,8 +714,7 @@ bool StatusBar::onProcessMessage(Message* msg)
           int x2 = rc.x2();
 
           if (Rect(Point(x1, rc.y),
-                   Point(x2, rc.y2())).contains(Point(msg->mouse.x,
-                                                      msg->mouse.y))) {
+                   Point(x2, rc.y2())).contains(mouseMsg->position())) {
             hot_layer = LayerIndex(0);
           }
         }
@@ -805,7 +808,7 @@ void StatusBar::onPreferredSize(PreferredSizeEvent& ev)
 
 bool StatusBar::CustomizedTipWindow::onProcessMessage(Message* msg)
 {
-  switch (msg->type) {
+  switch (msg->type()) {
 
     case kTimerMessage:
       closeWindow(NULL);

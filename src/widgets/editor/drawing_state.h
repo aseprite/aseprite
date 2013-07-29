@@ -30,14 +30,14 @@ namespace tools {
 class DrawingState : public StandbyState
 {
 public:
-  DrawingState(tools::ToolLoop* loop, Editor* editor, ui::Message* msg);
+  DrawingState(tools::ToolLoop* loop, Editor* editor, ui::MouseMessage* msg);
   virtual ~DrawingState();
-  virtual bool onMouseDown(Editor* editor, ui::Message* msg) OVERRIDE;
-  virtual bool onMouseUp(Editor* editor, ui::Message* msg) OVERRIDE;
-  virtual bool onMouseMove(Editor* editor, ui::Message* msg) OVERRIDE;
+  virtual bool onMouseDown(Editor* editor, ui::MouseMessage* msg) OVERRIDE;
+  virtual bool onMouseUp(Editor* editor, ui::MouseMessage* msg) OVERRIDE;
+  virtual bool onMouseMove(Editor* editor, ui::MouseMessage* msg) OVERRIDE;
   virtual bool onSetCursor(Editor* editor) OVERRIDE;
-  virtual bool onKeyDown(Editor* editor, ui::Message* msg) OVERRIDE;
-  virtual bool onKeyUp(Editor* editor, ui::Message* msg) OVERRIDE;
+  virtual bool onKeyDown(Editor* editor, ui::KeyMessage* msg) OVERRIDE;
+  virtual bool onKeyUp(Editor* editor, ui::KeyMessage* msg) OVERRIDE;
   virtual bool onUpdateStatusBar(Editor* editor) OVERRIDE;
 
   // Drawing state doesn't require the pen-preview because we are

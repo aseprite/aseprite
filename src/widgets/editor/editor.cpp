@@ -661,17 +661,16 @@ void Editor::flashCurrentLayer()
 #endif
 }
 
-void Editor::controlInfiniteScroll(Message* msg)
+gfx::Point Editor::controlInfiniteScroll(MouseMessage* msg)
 {
   View* view = View::getView(this);
   Rect vp = view->getViewportBounds();
 
   if (jmouse_control_infinite_scroll(vp)) {
-    int old_x = msg->mouse.x;
-    int old_y = msg->mouse.y;
-
-    msg->mouse.x = jmouse_x(0);
-    msg->mouse.y = jmouse_y(0);
+    int old_x = msg->position().x;
+    int old_y = msg->position().y;
+    int new_x = jmouse_x(0);
+    int new_y = jmouse_y(0);
 
     // Smooth scroll movement
     if (get_config_bool("Options", "MoveSmooth", TRUE)) {
@@ -680,17 +679,22 @@ void Editor::controlInfiniteScroll(Message* msg)
     }
     // This is better for high resolutions: scroll movement by big steps
     else {
-      jmouse_set_position((old_x != msg->mouse.x) ? (old_x + (vp.x+vp.w/2))/2: msg->mouse.x,
-                          (old_y != msg->mouse.y) ? (old_y + (vp.y+vp.h/2))/2: msg->mouse.y);
+      jmouse_set_position((old_x != new_x) ? (old_x + (vp.x+vp.w/2))/2: new_x,
+                          (old_y != new_y) ? (old_y + (vp.y+vp.h/2))/2: new_y);
     }
 
-    msg->mouse.x = jmouse_x(0);
-    msg->mouse.y = jmouse_y(0);
+    // Get new positions.
+    new_x = jmouse_x(0);
+    new_y = jmouse_y(0);
 
     Point scroll = view->getViewScroll();
-    setEditorScroll(scroll.x+old_x-msg->mouse.x,
-                    scroll.y+old_y-msg->mouse.y, true);
+    setEditorScroll(scroll.x+old_x-new_x,
+                    scroll.y+old_y-new_y, true);
+
+    return gfx::Point(new_x, new_y);
   }
+
+  return msg->position();
 }
 
 tools::Tool* Editor::getCurrentEditorTool()
@@ -860,7 +864,7 @@ void Editor::editor_update_quicktool()
 
 bool Editor::onProcessMessage(Message* msg)
 {
-  switch (msg->type) {
+  switch (msg->type()) {
 
     case kPaintMessage: {
       SkinTheme* theme = static_cast<SkinTheme*>(this->getTheme());
@@ -929,7 +933,7 @@ bool Editor::onProcessMessage(Message* msg)
     }
 
     case kTimerMessage:
-      if (msg->timer.timer == &m_mask_timer) {
+      if (static_cast<TimerMessage*>(msg)->timer() == &m_mask_timer) {
         if (isVisible() && m_sprite) {
           drawMaskSafe();
 
@@ -957,21 +961,21 @@ bool Editor::onProcessMessage(Message* msg)
     case kMouseDownMessage:
       if (m_sprite) {
         EditorStatePtr holdState(m_state);
-        return m_state->onMouseDown(this, msg);
+        return m_state->onMouseDown(this, static_cast<MouseMessage*>(msg));
       }
       break;
 
     case kMouseMoveMessage:
       if (m_sprite) {
         EditorStatePtr holdState(m_state);
-        return m_state->onMouseMove(this, msg);
+        return m_state->onMouseMove(this, static_cast<MouseMessage*>(msg));
       }
       break;
 
     case kMouseUpMessage:
       if (m_sprite) {
         EditorStatePtr holdState(m_state);
-        if (m_state->onMouseUp(this, msg))
+        if (m_state->onMouseUp(this, static_cast<MouseMessage*>(msg)))
           return true;
       }
       break;
@@ -979,7 +983,7 @@ bool Editor::onProcessMessage(Message* msg)
     case kKeyDownMessage:
       if (m_sprite) {
         EditorStatePtr holdState(m_state);
-        bool used = m_state->onKeyDown(this, msg);
+        bool used = m_state->onKeyDown(this, static_cast<KeyMessage*>(msg));
 
         if (hasMouse()) {
           editor_update_quicktool();
@@ -994,7 +998,7 @@ bool Editor::onProcessMessage(Message* msg)
     case kKeyUpMessage:
       if (m_sprite) {
         EditorStatePtr holdState(m_state);
-        bool used = m_state->onKeyUp(this, msg);
+        bool used = m_state->onKeyUp(this, static_cast<KeyMessage*>(msg));
 
         if (hasMouse()) {
           editor_update_quicktool();
@@ -1015,7 +1019,7 @@ bool Editor::onProcessMessage(Message* msg)
     case kMouseWheelMessage:
       if (m_sprite && hasMouse()) {
         EditorStatePtr holdState(m_state);
-        if (m_state->onMouseWheel(this, msg))
+        if (m_state->onMouseWheel(this, static_cast<MouseMessage*>(msg)))
           return true;
       }
       break;

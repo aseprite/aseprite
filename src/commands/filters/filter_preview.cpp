@@ -61,7 +61,7 @@ FilterManagerImpl* FilterPreview::getFilterManager() const
 
 bool FilterPreview::onProcessMessage(Message* msg)
 {
-  switch (msg->type) {
+  switch (msg->type()) {
 
     case kOpenMessage:
       RenderEngine::setPreviewImage(m_filterMgr->getLayer(),

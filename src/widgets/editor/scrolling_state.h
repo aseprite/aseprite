@@ -28,13 +28,13 @@ public:
   ScrollingState();
   virtual ~ScrollingState();
   virtual bool isTemporalState() const OVERRIDE { return true; }
-  virtual bool onMouseDown(Editor* editor, ui::Message* msg) OVERRIDE;
-  virtual bool onMouseUp(Editor* editor, ui::Message* msg) OVERRIDE;
-  virtual bool onMouseMove(Editor* editor, ui::Message* msg) OVERRIDE;
-  virtual bool onMouseWheel(Editor* editor, ui::Message* msg) OVERRIDE;
+  virtual bool onMouseDown(Editor* editor, ui::MouseMessage* msg) OVERRIDE;
+  virtual bool onMouseUp(Editor* editor, ui::MouseMessage* msg) OVERRIDE;
+  virtual bool onMouseMove(Editor* editor, ui::MouseMessage* msg) OVERRIDE;
+  virtual bool onMouseWheel(Editor* editor, ui::MouseMessage* msg) OVERRIDE;
   virtual bool onSetCursor(Editor* editor) OVERRIDE;
-  virtual bool onKeyDown(Editor* editor, ui::Message* msg) OVERRIDE;
-  virtual bool onKeyUp(Editor* editor, ui::Message* msg) OVERRIDE;
+  virtual bool onKeyDown(Editor* editor, ui::KeyMessage* msg) OVERRIDE;
+  virtual bool onKeyUp(Editor* editor, ui::KeyMessage* msg) OVERRIDE;
   virtual bool onUpdateStatusBar(Editor* editor) OVERRIDE;
 };
 

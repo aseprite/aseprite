@@ -307,7 +307,7 @@ Button* ComboBox::getButtonWidget()
 
 bool ComboBox::onProcessMessage(Message* msg)
 {
-  switch (msg->type) {
+  switch (msg->type()) {
 
     case kCloseMessage:
       closeListBox();
@@ -374,21 +374,24 @@ void ComboBox::onPreferredSize(PreferredSizeEvent& ev)
 
 bool ComboBoxEntry::onProcessMessage(Message* msg)
 {
-  switch (msg->type) {
+  switch (msg->type()) {
 
     case kKeyDownMessage:
       if (hasFocus()) {
+        KeyMessage* keymsg = static_cast<KeyMessage*>(msg);
+        KeyScancode scancode = keymsg->scancode();
+
         if (!m_comboBox->isEditable()) {
-          if (msg->key.scancode == KEY_SPACE ||
-              msg->key.scancode == KEY_ENTER ||
-              msg->key.scancode == KEY_ENTER_PAD) {
+          if (scancode == kKeySpace ||
+              scancode == kKeyEnter ||
+              scancode == kKeyEnterPad) {
             m_comboBox->switchListBox();
             return true;
           }
         }
         else {
-          if (msg->key.scancode == KEY_ENTER ||
-              msg->key.scancode == KEY_ENTER_PAD) {
+          if (scancode == kKeyEnter ||
+              scancode == kKeyEnterPad) {
             m_comboBox->switchListBox();
             return true;
           }
@@ -420,23 +423,25 @@ void ComboBoxEntry::onPaint(PaintEvent& ev)
 
 bool ComboBoxListBox::onProcessMessage(Message* msg)
 {
-  switch (msg->type) {
+  switch (msg->type()) {
 
-    case kMouseUpMessage:
-      {
-        int index = m_comboBox->getSelectedItemIndex();
-        if (isValidItem(index))
-          m_comboBox->onChange();
+    case kMouseUpMessage: {
+      int index = m_comboBox->getSelectedItemIndex();
+      if (isValidItem(index))
+        m_comboBox->onChange();
 
-        m_comboBox->closeListBox();
-      }
+      m_comboBox->closeListBox();
       return true;
+    }
 
     case kKeyDownMessage:
       if (hasFocus()) {
-        if (msg->key.scancode == KEY_SPACE ||
-            msg->key.scancode == KEY_ENTER ||
-            msg->key.scancode == KEY_ENTER_PAD) {
+        KeyMessage* keymsg = static_cast<KeyMessage*>(msg);
+        KeyScancode scancode = keymsg->scancode();
+
+        if (scancode == kKeySpace ||
+            scancode == kKeyEnter ||
+            scancode == kKeyEnterPad) {
           m_comboBox->closeListBox();
           return true;
         }

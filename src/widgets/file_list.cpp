@@ -108,7 +108,7 @@ void FileList::goUp()
 
 bool FileList::onProcessMessage(Message* msg)
 {
-  switch (msg->type) {
+  switch (msg->type()) {
 
     case kPaintMessage: {
       SkinTheme* theme = static_cast<SkinTheme*>(getTheme());
@@ -244,6 +244,7 @@ bool FileList::onProcessMessage(Message* msg)
 
     case kMouseMoveMessage:
       if (hasCapture()) {
+        MouseMessage* mouseMsg = static_cast<MouseMessage*>(msg);
         int th = jwidget_get_text_height(this);
         int y = this->rc->y1;
         IFileItem* old_selected = m_selected;
@@ -256,9 +257,10 @@ bool FileList::onProcessMessage(Message* msg)
           IFileItem* fi = *it;
           gfx::Size itemSize = getFileItemSize(fi);
 
-          if (((msg->mouse.y >= y) && (msg->mouse.y < y+2+th+2)) ||
-              (it == m_list.begin() && msg->mouse.y < y) ||
-              (it == m_list.end()-1 && msg->mouse.y >= y+2+th+2)) {
+          if (((mouseMsg->position().y >= y) &&
+               (mouseMsg->position().y < y+2+th+2)) ||
+              (it == m_list.begin() && mouseMsg->position().y < y) ||
+              (it == m_list.end()-1 && mouseMsg->position().y >= y+2+th+2)) {
             m_selected = fi;
             makeSelectedFileitemVisible();
             break;
@@ -286,49 +288,52 @@ bool FileList::onProcessMessage(Message* msg)
 
     case kKeyDownMessage:
       if (hasFocus()) {
+        KeyMessage* keyMsg = static_cast<KeyMessage*>(msg);
+        KeyScancode scancode = keyMsg->scancode();
+        int ascii = keyMsg->ascii();
         int select = getSelectedIndex();
         View* view = View::getView(this);
         int bottom = m_list.size();
 
-        switch (msg->key.scancode) {
-          case KEY_UP:
+        switch (scancode) {
+          case kKeyUp:
             if (select >= 0)
               select--;
             else
               select = 0;
             break;
-          case KEY_DOWN:
+          case kKeyDown:
             if (select >= 0)
               select++;
             else
               select = 0;
             break;
-          case KEY_HOME:
+          case kKeyHome:
             select = 0;
             break;
-          case KEY_END:
+          case kKeyEnd:
             select = bottom-1;
             break;
-          case KEY_PGUP:
-          case KEY_PGDN: {
-            int sgn = (msg->key.scancode == KEY_PGUP) ? -1: 1;
+          case kKeyPageUp:
+          case kKeyPageDown: {
+            int sgn = (scancode == kKeyPageUp) ? -1: 1;
             gfx::Rect vp = view->getViewportBounds();
             if (select < 0)
               select = 0;
             select += sgn * vp.h / (2+jwidget_get_text_height(this)+2);
             break;
           }
-          case KEY_LEFT:
-          case KEY_RIGHT:
+          case kKeyLeft:
+          case kKeyRight:
             if (select >= 0) {
               gfx::Rect vp = view->getViewportBounds();
-              int sgn = (msg->key.scancode == KEY_LEFT) ? -1: 1;
+              int sgn = (scancode == kKeyLeft) ? -1: 1;
               gfx::Point scroll = view->getViewScroll();
               scroll.x += vp.w/2*sgn;
               view->setViewScroll(scroll);
             }
             break;
-          case KEY_ENTER:
+          case kKeyEnter:
             if (m_selected) {
               if (m_selected->isBrowsable()) {
                 setCurrentFolder(m_selected);
@@ -346,19 +351,19 @@ bool FileList::onProcessMessage(Message* msg)
             }
             else
               return Widget::onProcessMessage(msg);
-          case KEY_BACKSPACE:
+          case kKeyBackspace:
             goUp();
             return true;
           default:
-            if (msg->key.ascii == ' ' ||
-                (utolower(msg->key.ascii) >= 'a' &&
-                 utolower(msg->key.ascii) <= 'z') ||
-                (utolower(msg->key.ascii) >= '0' &&
-                 utolower(msg->key.ascii) <= '9')) {
+            if (ascii == ' ' ||
+                (utolower(ascii) >= 'a' &&
+                 utolower(ascii) <= 'z') ||
+                (utolower(ascii) >= '0' &&
+                 utolower(ascii) <= '9')) {
               if (ji_clock - m_isearchClock > ISEARCH_KEYPRESS_INTERVAL_MSECS)
                 m_isearch.clear();
 
-              m_isearch.push_back(msg->key.ascii);
+              m_isearch.push_back(ascii);
 
               int i, chrs = m_isearch.size();
               FileItemList::iterator

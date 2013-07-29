@@ -9,6 +9,7 @@
 
 #include "base/compiler_specific.h"
 #include "ui/message_type.h"
+#include "ui/mouse_buttons.h"
 #include "ui/widget.h"
 
 namespace she { class Display; }
@@ -83,10 +84,13 @@ namespace ui {
   private:
     void pumpQueue();
     void generateSetCursorMessage();
-    static void removeWidgetFromDests(Widget* widget, Message* msg);
+    static void removeWidgetFromRecipients(Widget* widget, Message* msg);
     static bool someParentIsFocusStop(Widget* widget);
     static Widget* findMagneticWidget(Widget* widget);
     static Message* newMouseMessage(MessageType type, Widget* destination);
+    static Message* newMouseMessage(MessageType type, Widget* destination,
+                                    MouseButtons mouseButtons);
+    static MouseButtons currentMouseButtons(int antique);
     void broadcastKeyMsg(Message* msg);
 
     static Manager* m_defaultManager;

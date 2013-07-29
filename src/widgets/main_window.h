@@ -53,7 +53,7 @@ public:
   void setAdvancedMode(bool advanced);
 
   // TabsDelegate implementation.
-  void clickTab(Tabs* tabs, TabView* tabView, int button);
+  void clickTab(Tabs* tabs, TabView* tabView, ui::MouseButtons buttons);
   void mouseOverTab(Tabs* tabs, TabView* tabView);
 
 protected:

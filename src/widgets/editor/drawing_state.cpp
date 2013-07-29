@@ -32,17 +32,21 @@
 
 using namespace ui;
 
-static tools::ToolLoopManager::Pointer pointer_from_msg(Message* msg)
+static tools::ToolLoopManager::Pointer::Button button_from_msg(MouseMessage* msg)
 {
-  tools::ToolLoopManager::Pointer::Button button =
-    (msg->mouse.right ? tools::ToolLoopManager::Pointer::Right:
-     (msg->mouse.middle ? tools::ToolLoopManager::Pointer::Middle:
-                          tools::ToolLoopManager::Pointer::Left));
-
-  return tools::ToolLoopManager::Pointer(msg->mouse.x, msg->mouse.y, button);
+  return
+    (msg->right() ? tools::ToolLoopManager::Pointer::Right:
+     (msg->middle() ? tools::ToolLoopManager::Pointer::Middle:
+                      tools::ToolLoopManager::Pointer::Left));
 }
 
-DrawingState::DrawingState(tools::ToolLoop* toolLoop, Editor* editor, Message* msg)
+static tools::ToolLoopManager::Pointer pointer_from_msg(MouseMessage* msg)
+{
+  return
+    tools::ToolLoopManager::Pointer(msg->position().x, msg->position().y, button_from_msg(msg));
+}
+
+DrawingState::DrawingState(tools::ToolLoop* toolLoop, Editor* editor, MouseMessage* msg)
   : m_toolLoop(toolLoop)
   , m_toolLoopManager(new tools::ToolLoopManager(toolLoop))
 {
@@ -63,7 +67,7 @@ DrawingState::~DrawingState()
   destroyLoop();
 }
 
-bool DrawingState::onMouseDown(Editor* editor, Message* msg)
+bool DrawingState::onMouseDown(Editor* editor, MouseMessage* msg)
 {
   // Drawing loop
   ASSERT(m_toolLoopManager != NULL);
@@ -84,7 +88,7 @@ bool DrawingState::onMouseDown(Editor* editor, Message* msg)
   return true;
 }
 
-bool DrawingState::onMouseUp(Editor* editor, Message* msg)
+bool DrawingState::onMouseUp(Editor* editor, MouseMessage* msg)
 {
   ASSERT(m_toolLoopManager != NULL);
 
@@ -101,7 +105,7 @@ bool DrawingState::onMouseUp(Editor* editor, Message* msg)
   return true;
 }
 
-bool DrawingState::onMouseMove(Editor* editor, Message* msg)
+bool DrawingState::onMouseMove(Editor* editor, MouseMessage* msg)
 {
   ASSERT(m_toolLoopManager != NULL);
 
@@ -111,14 +115,16 @@ bool DrawingState::onMouseMove(Editor* editor, Message* msg)
   editor->hideDrawingCursor();
 
   // Infinite scroll
-  editor->controlInfiniteScroll(msg);
+  gfx::Point mousePos = editor->controlInfiniteScroll(msg);
 
   // Hide the cursor again
   editor->hideDrawingCursor();
 
   // notify mouse movement to the tool
   ASSERT(m_toolLoopManager != NULL);
-  m_toolLoopManager->movement(pointer_from_msg(msg));
+  m_toolLoopManager
+    ->movement(tools::ToolLoopManager::Pointer(mousePos.x, mousePos.y,
+                                               button_from_msg(msg)));
 
   // draw the cursor again
   editor->showDrawingCursor();
@@ -140,16 +146,16 @@ bool DrawingState::onSetCursor(Editor* editor)
   return true;
 }
 
-bool DrawingState::onKeyDown(Editor* editor, Message* msg)
+bool DrawingState::onKeyDown(Editor* editor, KeyMessage* msg)
 {
-  if (editor->processKeysToSetZoom(msg->key.scancode))
+  if (editor->processKeysToSetZoom(msg))
     return true;
 
   // When we are drawing, we "eat" all pressed keys.
   return true;
 }
 
-bool DrawingState::onKeyUp(Editor* editor, Message* msg)
+bool DrawingState::onKeyUp(Editor* editor, KeyMessage* msg)
 {
   return true;
 }

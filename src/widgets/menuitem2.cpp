@@ -48,7 +48,7 @@ MenuItem2::~MenuItem2()
 
 bool MenuItem2::onProcessMessage(Message* msg)
 {
-  switch (msg->type) {
+  switch (msg->type()) {
 
     case kOpenMessage: {
       UIContext* context = UIContext::instance();
@@ -69,7 +69,7 @@ bool MenuItem2::onProcessMessage(Message* msg)
       break;
 
     default:
-      if (msg->type == kOpenMenuItemMessage) {
+      if (msg->type() == kOpenMenuItemMessage) {
         // Update the context flags after opening the menuitem's
         // submenu to update the "enabled" flag of each command
         // correctly.

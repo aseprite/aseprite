@@ -34,7 +34,7 @@ void LinkLabel::setUrl(const char* url)
 
 bool LinkLabel::onProcessMessage(Message* msg)
 {
-  switch (msg->type) {
+  switch (msg->type()) {
 
     case kSetCursorMessage:
       // TODO theme stuff

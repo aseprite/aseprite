@@ -52,7 +52,7 @@ ColorBar::ScrollableView::ScrollableView()
 
 bool ColorBar::ScrollableView::onProcessMessage(Message* msg)
 {
-  switch (msg->type) {
+  switch (msg->type()) {
 
     case kPaintMessage:
       {
@@ -201,7 +201,8 @@ void ColorBar::onPaletteIndexChange(int index)
 
   app::Color color = app::Color::fromIndex(index);
 
-  if (jmouse_b(0) & 2) // TODO create a PaletteChangeEvent and take left/right mouse button from there
+  // TODO create a PaletteChangeEvent and take left/right mouse button from there
+  if ((jmouse_b(0) & kButtonRight) == kButtonRight)
     setBgColor(color);
   else
     setFgColor(color);

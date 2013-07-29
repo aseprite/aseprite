@@ -20,6 +20,7 @@
 #define WIDGETS_TABS_H_INCLUDED
 
 #include "base/compiler_specific.h"
+#include "ui/mouse_buttons.h"
 #include "ui/timer.h"
 #include "ui/widget.h"
 
@@ -48,11 +49,8 @@ class TabsDelegate
 public:
   virtual ~TabsDelegate() { }
 
-  // Called when the user presses a mouse button over a tab
-  // button & 1  => left click
-  // button & 2  => right click
-  // button & 4  => middle click
-  virtual void clickTab(Tabs* tabs, TabView* tabView, int button) = 0;
+  // Called when the user presses a mouse button over a tab.
+  virtual void clickTab(Tabs* tabs, TabView* tabView, ui::MouseButtons buttons) = 0;
 
   // Called when the mouse is over a tab (the data can be null if the
   // mouse just leave all tabs)

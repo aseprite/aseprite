@@ -39,19 +39,19 @@ ScrollingState::~ScrollingState()
 {
 }
 
-bool ScrollingState::onMouseDown(Editor* editor, Message* msg)
+bool ScrollingState::onMouseDown(Editor* editor, MouseMessage* msg)
 {
   return true;
 }
 
-bool ScrollingState::onMouseUp(Editor* editor, Message* msg)
+bool ScrollingState::onMouseUp(Editor* editor, MouseMessage* msg)
 {
   editor->backToPreviousState();
   editor->releaseMouse();
   return true;
 }
 
-bool ScrollingState::onMouseMove(Editor* editor, Message* msg)
+bool ScrollingState::onMouseMove(Editor* editor, MouseMessage* msg)
 {
   View* view = View::getView(editor);
   gfx::Rect vp = view->getViewportBounds();
@@ -72,7 +72,7 @@ bool ScrollingState::onMouseMove(Editor* editor, Message* msg)
   return true;
 }
 
-bool ScrollingState::onMouseWheel(Editor* editor, Message* msg)
+bool ScrollingState::onMouseWheel(Editor* editor, MouseMessage* msg)
 {
   return false;
 }
@@ -84,12 +84,12 @@ bool ScrollingState::onSetCursor(Editor* editor)
   return true;
 }
 
-bool ScrollingState::onKeyDown(Editor* editor, Message* msg)
+bool ScrollingState::onKeyDown(Editor* editor, KeyMessage* msg)
 {
   return false;
 }
 
-bool ScrollingState::onKeyUp(Editor* editor, Message* msg)
+bool ScrollingState::onKeyUp(Editor* editor, KeyMessage* msg)
 {
   return false;
 }

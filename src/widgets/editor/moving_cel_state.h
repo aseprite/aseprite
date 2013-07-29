@@ -28,11 +28,11 @@ class Editor;
 class MovingCelState : public StandbyState
 {
 public:
-  MovingCelState(Editor* editor, ui::Message* msg);
+  MovingCelState(Editor* editor, ui::MouseMessage* msg);
   virtual ~MovingCelState();
 
-  virtual bool onMouseUp(Editor* editor, ui::Message* msg) OVERRIDE;
-  virtual bool onMouseMove(Editor* editor, ui::Message* msg) OVERRIDE;
+  virtual bool onMouseUp(Editor* editor, ui::MouseMessage* msg) OVERRIDE;
+  virtual bool onMouseMove(Editor* editor, ui::MouseMessage* msg) OVERRIDE;
   virtual bool onUpdateStatusBar(Editor* editor) OVERRIDE;
 
 private:

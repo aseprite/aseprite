@@ -48,10 +48,10 @@ void TooltipManager::addTooltipFor(Widget* widget, const char* text, int arrowAl
 
 bool TooltipManager::onProcessMessage(Message* msg)
 {
-  switch (msg->type) {
+  switch (msg->type()) {
 
     case kMouseEnterMessage: {
-      UI_FOREACH_WIDGET(*msg->any.widgets, itWidget) {
+      UI_FOREACH_WIDGET(msg->recipients(), itWidget) {
         Tips::iterator it = m_tips.find(*itWidget);
         if (it != m_tips.end()) {
           m_target.widget = it->first;
@@ -200,7 +200,7 @@ void TipWindow::setArrowAlign(int arrowAlign)
 
 bool TipWindow::onProcessMessage(Message* msg)
 {
-  switch (msg->type) {
+  switch (msg->type()) {
 
     case kCloseMessage:
       if (m_filtering) {
@@ -217,31 +217,31 @@ bool TipWindow::onProcessMessage(Message* msg)
       break;
 
     case kKeyDownMessage:
-      if (m_filtering && msg->key.scancode < KEY_MODIFIERS)
-        this->closeWindow(NULL);
+      if (m_filtering && static_cast<KeyMessage*>(msg)->scancode() < kKeyFirstModifierScancode)
+        closeWindow(NULL);
       break;
 
     case kMouseDownMessage:
-      /* if the user click outside the window, we have to close the
-         tooltip window */
+      // If the user click outside the window, we have to close the
+      // tooltip window.
       if (m_filtering) {
-        Widget* picked = this->pick(msg->mouse.x, msg->mouse.y);
+        gfx::Point mousePos = static_cast<MouseMessage*>(msg)->position();
+        Widget* picked = pick(mousePos);
         if (!picked || picked->getRoot() != this) {
           this->closeWindow(NULL);
         }
       }
 
-      /* this is used when the user click inside a small text
-         tooltip */
+      // This is used when the user click inside a small text tooltip.
       if (m_close_on_buttonpressed)
-        this->closeWindow(NULL);
+        closeWindow(NULL);
       break;
 
     case kMouseMoveMessage:
       if (!m_hotRegion.isEmpty() &&
           getManager()->getCapture() == NULL) {
         // If the mouse is outside the hot-region we have to close the window
-        if (!m_hotRegion.contains(Point(msg->mouse.x, msg->mouse.y))) {
+        if (!m_hotRegion.contains(static_cast<MouseMessage*>(msg)->position())) {
           closeWindow(NULL);
         }
       }

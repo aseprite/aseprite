@@ -14,6 +14,8 @@
 
 namespace ui {
 
+  class MouseMessage;
+
   class Entry : public Widget
   {
   public:
@@ -71,7 +73,7 @@ namespace ui {
       };
     };
 
-    int getCaretFromMouse(Message* msg);
+    int getCaretFromMouse(MouseMessage* mousemsg);
     void executeCmd(EntryCmd::Type cmd, int ascii, bool shift_pressed);
     void forwardWord();
     void backwardWord();

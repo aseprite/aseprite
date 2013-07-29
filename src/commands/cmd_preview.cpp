@@ -187,10 +187,10 @@ void PreviewCommand::onExecute(Context* context)
 
     if (keypressed()) {
       int readkey_value = readkey();
-      Message* msg = jmessage_new_key_related(kKeyDownMessage, readkey_value);
+      Message* msg = create_message_from_readkey_value(kKeyDownMessage, readkey_value);
       Command* command = NULL;
       get_command_from_key_message(msg, &command, NULL);
-      jmessage_free(msg);
+      delete msg;
 
       // Change frame
       if (command != NULL &&
@@ -231,12 +231,12 @@ void PreviewCommand::onExecute(Context* context)
       else
         break;
     }
-  } while (!jmouse_b(0));
+  } while (jmouse_b(0) == kButtonNone);
 
   do {
     jmouse_poll();
     gui_feedback();
-  } while (jmouse_b(0));
+  } while (jmouse_b(0) != kButtonNone);
   clear_keybuf();
 
   jmouse_set_position(old_mouse_x, old_mouse_y);

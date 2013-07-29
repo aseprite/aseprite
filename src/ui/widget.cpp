@@ -409,16 +409,16 @@ Widget* Widget::getPreviousSibling()
   return *(++it);
 }
 
-Widget* Widget::pick(int x, int y)
+Widget* Widget::pick(const gfx::Point& pt)
 {
   Widget* inside, *picked = NULL;
 
-  if (!(this->flags & JI_HIDDEN) &&   /* is visible */
-      jrect_point_in(this->rc, x, y)) { /* the point is inside the bounds */
+  if (!(this->flags & JI_HIDDEN) &&           // Is visible
+      jrect_point_in(this->rc, pt.x, pt.y)) { // The point is inside the bounds
     picked = this;
 
     UI_FOREACH_WIDGET(m_children, it) {
-      inside = (*it)->pick(x, y);
+      inside = (*it)->pick(pt);
       if (inside) {
         picked = inside;
         break;
@@ -924,17 +924,11 @@ void Widget::flushRedraw()
       Region::const_iterator it = widget->m_updateRegion.begin();
 
       // Draw the widget
-      for (c=0; c<nrects; c++, ++it) {
-        const Rect& rc = *it;
-
+      int count = nrects-1;
+      for (c=0; c<nrects; ++c, ++it, --count) {
         // Create the draw message
-        msg = jmessage_new(kPaintMessage);
-        msg->draw.count = nrects-1 - c;
-        msg->draw.rect.x1 = rc.x;
-        msg->draw.rect.y1 = rc.y;
-        msg->draw.rect.x2 = rc.x2();
-        msg->draw.rect.y2 = rc.y2();
-        jmessage_add_dest(msg, widget);
+        msg = new PaintMessage(count, *it);
+        msg->addRecipient(widget);
 
         // Enqueue the draw message
         getManager()->enqueueMessage(msg);
@@ -1152,7 +1146,7 @@ bool Widget::hasMouse()
 
 bool Widget::hasMouseOver()
 {
-  return (this == this->pick(jmouse_x(0), jmouse_y(0)));
+  return (this == this->pick(gfx::Point(jmouse_x(0), jmouse_y(0))));
 }
 
 bool Widget::hasCapture()
@@ -1191,7 +1185,7 @@ bool Widget::onProcessMessage(Message* msg)
 {
   ASSERT(msg != NULL);
 
-  switch (msg->type) {
+  switch (msg->type()) {
 
     case kOpenMessage:
     case kCloseMessage:
@@ -1208,14 +1202,16 @@ bool Widget::onProcessMessage(Message* msg)
       // screen, we already are painting off-screen using ji_screen,
       // so we don't need the temporary bitmap.
       if (m_doubleBuffered && ji_screen == screen) {
-        ASSERT(jrect_w(&msg->draw.rect) > 0);
-        ASSERT(jrect_h(&msg->draw.rect) > 0);
+        const PaintMessage* ptmsg = static_cast<const PaintMessage*>(msg);
+
+        ASSERT(ptmsg->rect().w > 0);
+        ASSERT(ptmsg->rect().h > 0);
 
         BITMAP* bmp = create_bitmap_ex(bitmap_color_depth(ji_screen),
-                                       jrect_w(&msg->draw.rect),
-                                       jrect_h(&msg->draw.rect));
+                                       ptmsg->rect().w,
+                                       ptmsg->rect().h);
 
-        Graphics graphics(bmp, rc->x1-msg->draw.rect.x1, rc->y1-msg->draw.rect.y1);
+        Graphics graphics(bmp, rc->x1 - ptmsg->rect().x, rc->y1 - ptmsg->rect().y);
         graphics.setFont(getFont());
 
         PaintEvent ev(this, &graphics);
@@ -1223,7 +1219,7 @@ bool Widget::onProcessMessage(Message* msg)
 
         // Blit the temporary bitmap to the real screen
         if (ev.isPainted())
-          blit(bmp, ji_screen, 0, 0, msg->draw.rect.x1, msg->draw.rect.y1, bmp->w, bmp->h);
+          blit(bmp, ji_screen, 0, 0, ptmsg->rect().x, ptmsg->rect().y, bmp->w, bmp->h);
 
         destroy_bitmap(bmp);
         return ev.isPainted();
@@ -1241,14 +1237,14 @@ bool Widget::onProcessMessage(Message* msg)
 
     case kKeyDownMessage:
     case kKeyUpMessage:
-      if (msg->key.propagate_to_children) {
+      if (static_cast<KeyMessage*>(msg)->propagateToChildren()) {
         // Broadcast the message to the children.
         UI_FOREACH_WIDGET(getChildren(), it)
           (*it)->sendMessage(msg);
       }
 
       // Propagate the message to the parent.
-      if (msg->key.propagate_to_parent && getParent() != NULL)
+      if (static_cast<KeyMessage*>(msg)->propagateToParent() && getParent() != NULL)
         return getParent()->sendMessage(msg);
       else
         break;

@@ -48,13 +48,14 @@ void Splitter::setPosition(double pos)
 
 bool Splitter::onProcessMessage(Message* msg)
 {
-  switch (msg->type) {
+  switch (msg->type()) {
 
     case kMouseDownMessage:
       if (isEnabled()) {
         Widget* c1, *c2;
         int x1, y1, x2, y2;
         int bar, click_bar;
+        gfx::Point mousePos = static_cast<MouseMessage*>(msg)->position();
 
         bar = click_bar = 0;
 
@@ -78,8 +79,8 @@ bool Splitter::onProcessMessage(Message* msg)
               y2 = c2->rc->y1;
             }
 
-            if ((msg->mouse.x >= x1) && (msg->mouse.x < x2) &&
-                (msg->mouse.y >= y1) && (msg->mouse.y < y2))
+            if ((mousePos.x >= x1) && (mousePos.x < x2) &&
+                (mousePos.y >= y1) && (mousePos.y < y2))
               click_bar = bar;
           }
         }
@@ -87,33 +88,36 @@ bool Splitter::onProcessMessage(Message* msg)
         if (!click_bar)
           break;
 
-        this->captureMouse();
-        /* Continue with motion message...  */
+        captureMouse();
+
+        // Continue with motion message...
       }
       else
         break;
 
     case kMouseMoveMessage:
-      if (this->hasCapture()) {
-        if (this->getAlign() & JI_HORIZONTAL) {
+      if (hasCapture()) {
+        gfx::Point mousePos = static_cast<MouseMessage*>(msg)->position();
+
+        if (getAlign() & JI_HORIZONTAL) {
           switch (m_type) {
             case ByPercentage:
-              m_pos = 100.0 * (msg->mouse.x-this->rc->x1) / jrect_w(this->rc);
+              m_pos = 100.0 * (mousePos.x-this->rc->x1) / jrect_w(this->rc);
               m_pos = MID(0, m_pos, 100);
               break;
             case ByPixel:
-              m_pos = msg->mouse.x-this->rc->x1;
+              m_pos = mousePos.x-this->rc->x1;
               break;
           }
         }
         else {
           switch (m_type) {
             case ByPercentage:
-              m_pos = 100.0 * (msg->mouse.y-this->rc->y1) / jrect_h(this->rc);
+              m_pos = 100.0 * (mousePos.y-this->rc->y1) / jrect_h(this->rc);
               m_pos = MID(0, m_pos, 100);
               break;
             case ByPixel:
-              m_pos = (msg->mouse.y-this->rc->y1);
+              m_pos = (mousePos.y-this->rc->y1);
               break;
           }
         }
@@ -132,6 +136,7 @@ bool Splitter::onProcessMessage(Message* msg)
 
     case kSetCursorMessage:
       if (isEnabled()) {
+        gfx::Point mousePos = static_cast<MouseMessage*>(msg)->position();
         Widget* c1, *c2;
         int x1, y1, x2, y2;
         bool change_cursor = false;
@@ -154,8 +159,8 @@ bool Splitter::onProcessMessage(Message* msg)
               y2 = c2->rc->y1;
             }
 
-            if ((msg->mouse.x >= x1) && (msg->mouse.x < x2) &&
-                (msg->mouse.y >= y1) && (msg->mouse.y < y2)) {
+            if ((mousePos.x >= x1) && (mousePos.x < x2) &&
+                (mousePos.y >= y1) && (mousePos.y < y2)) {
               change_cursor = true;
               break;
             }
@@ -163,7 +168,7 @@ bool Splitter::onProcessMessage(Message* msg)
         }
 
         if (change_cursor) {
-          if (this->getAlign() & JI_HORIZONTAL)
+          if (getAlign() & JI_HORIZONTAL)
             jmouse_set_cursor(kSizeLCursor);
           else
             jmouse_set_cursor(kSizeTCursor);

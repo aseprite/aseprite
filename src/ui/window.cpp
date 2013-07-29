@@ -28,8 +28,8 @@ enum {
   WINDOW_RESIZE_BOTTOM = 16,
 };
 
-static JRect click_pos = NULL;
-static int press_x, press_y;
+static gfx::Point clickedMousePos;
+static gfx::Rect* clickedWindowPos = NULL;
 
 static void displace_widgets(Widget* widget, int x, int y);
 
@@ -259,7 +259,7 @@ bool Window::isTopLevel()
 
 bool Window::onProcessMessage(Message* msg)
 {
-  switch (msg->type) {
+  switch (msg->type()) {
 
     case kOpenMessage:
       m_killer = NULL;
@@ -273,16 +273,15 @@ bool Window::onProcessMessage(Message* msg)
       if (!m_isMoveable)
         break;
 
-      press_x = msg->mouse.x;
-      press_y = msg->mouse.y;
-      m_hitTest = hitTest(gfx::Point(press_x, press_y));
+      clickedMousePos = static_cast<MouseMessage*>(msg)->position();
+      m_hitTest = hitTest(clickedMousePos);
 
       if (m_hitTest != HitTestNowhere &&
           m_hitTest != HitTestClient) {
-        if (click_pos == NULL)
-          click_pos = jrect_new_copy(this->rc);
+        if (clickedWindowPos == NULL)
+          clickedWindowPos = new gfx::Rect(getBounds());
         else
-          jrect_copy(click_pos, this->rc);
+          *clickedWindowPos = getBounds();
 
         captureMouse();
         return true;
@@ -296,9 +295,9 @@ bool Window::onProcessMessage(Message* msg)
         releaseMouse();
         jmouse_set_cursor(kArrowCursor);
 
-        if (click_pos != NULL) {
-          jrect_free(click_pos);
-          click_pos = NULL;
+        if (clickedWindowPos != NULL) {
+          delete clickedWindowPos;
+          clickedWindowPos = NULL;
         }
 
         m_hitTest = HitTestNowhere;
@@ -312,10 +311,12 @@ bool Window::onProcessMessage(Message* msg)
 
       // Does it have the mouse captured?
       if (hasCapture()) {
+        gfx::Point mousePos = static_cast<MouseMessage*>(msg)->position();
+
         // Reposition/resize
         if (m_hitTest == HitTestCaption) {
-          int x = click_pos->x1 + (msg->mouse.x - press_x);
-          int y = click_pos->y1 + (msg->mouse.y - press_y);
+          int x = clickedWindowPos->x + (mousePos.x - clickedMousePos.x);
+          int y = clickedWindowPos->y + (mousePos.y - clickedMousePos.y);
           moveWindow(gfx::Rect(x, y,
                                jrect_w(this->rc),
                                jrect_h(this->rc)), true);
@@ -323,8 +324,8 @@ bool Window::onProcessMessage(Message* msg)
         else {
           int x, y, w, h;
 
-          w = jrect_w(click_pos);
-          h = jrect_h(click_pos);
+          w = clickedWindowPos->w;
+          h = clickedWindowPos->h;
 
           bool hitLeft = (m_hitTest == HitTestBorderNW ||
                           m_hitTest == HitTestBorderW ||
@@ -340,17 +341,17 @@ bool Window::onProcessMessage(Message* msg)
                             m_hitTest == HitTestBorderSE);
 
           if (hitLeft) {
-            w += press_x - msg->mouse.x;
+            w += clickedMousePos.x - mousePos.x;
           }
           else if (hitRight) {
-            w += msg->mouse.x - press_x;
+            w += mousePos.x - clickedMousePos.x;
           }
 
           if (hitTop) {
-            h += (press_y - msg->mouse.y);
+            h += (clickedMousePos.y - mousePos.y);
           }
           else if (hitBottom) {
-            h += (msg->mouse.y - press_y);
+            h += (mousePos.y - clickedMousePos.y);
           }
 
           limitSize(&w, &h);
@@ -358,12 +359,12 @@ bool Window::onProcessMessage(Message* msg)
           if ((jrect_w(this->rc) != w) ||
               (jrect_h(this->rc) != h)) {
             if (hitLeft)
-              x = click_pos->x1 - (w - jrect_w(click_pos));
+              x = clickedWindowPos->x - (w - clickedWindowPos->w);
             else
               x = this->rc->x1;
 
             if (hitTop)
-              y = click_pos->y1 - (h - jrect_h(click_pos));
+              y = clickedWindowPos->y - (h - clickedWindowPos->h);
             else
               y = this->rc->y1;
 
@@ -376,7 +377,8 @@ bool Window::onProcessMessage(Message* msg)
 
     case kSetCursorMessage:
       if (m_isMoveable) {
-        HitTest ht = hitTest(gfx::Point(msg->mouse.x, msg->mouse.y));
+        gfx::Point mousePos = static_cast<MouseMessage*>(msg)->position();
+        HitTest ht = hitTest(mousePos);
         CursorType cursor = kArrowCursor;
 
         switch (ht) {
@@ -532,9 +534,9 @@ void Window::moveWindow(const gfx::Rect& rect, bool use_blit)
   // Get the manager's current position
   Rect man_pos = manager->getBounds();
 
-  /* sent a kWinMoveMessage message to the window */
-  msg = jmessage_new(kWinMoveMessage);
-  jmessage_add_dest(msg, this);
+  // Send a kWinMoveMessage message to the window
+  msg = new Message(kWinMoveMessage);
+  msg->addRecipient(this);
   manager->enqueueMessage(msg);
 
   // Get the region & the drawable region of the window

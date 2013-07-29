@@ -10,6 +10,7 @@
 #include "gfx/rect.h"
 #include "ui/base.h"
 #include "ui/cursor_type.h"
+#include "ui/mouse_buttons.h"
 
 struct BITMAP;
 
@@ -57,7 +58,7 @@ namespace ui {
   void jmouse_capture();
   void jmouse_release();
 
-  int jmouse_b(int antique);
+  MouseButtons jmouse_b(int antique);
   int jmouse_x(int antique);
   int jmouse_y(int antique);
   int jmouse_z(int antique);

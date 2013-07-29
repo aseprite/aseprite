@@ -35,7 +35,7 @@
 
 using namespace ui;
 
-MovingCelState::MovingCelState(Editor* editor, Message* msg)
+MovingCelState::MovingCelState(Editor* editor, MouseMessage* msg)
   : m_canceled(false)
 {
   Document* document = editor->getDocument();
@@ -55,7 +55,7 @@ MovingCelState::MovingCelState(Editor* editor, Message* msg)
   m_celNewX = m_celStartX;
   m_celNewY = m_celStartY;
 
-  editor->screenToEditor(msg->mouse.x, msg->mouse.y, &m_mouseStartX, &m_mouseStartY);
+  editor->screenToEditor(msg->position().x, msg->position().y, &m_mouseStartX, &m_mouseStartY);
   editor->captureMouse();
 
   // Hide the mask (temporarily, until mouse-up event)
@@ -70,7 +70,7 @@ MovingCelState::~MovingCelState()
 {
 }
 
-bool MovingCelState::onMouseUp(Editor* editor, Message* msg)
+bool MovingCelState::onMouseUp(Editor* editor, MouseMessage* msg)
 {
   Document* document = editor->getDocument();
 
@@ -112,10 +112,10 @@ bool MovingCelState::onMouseUp(Editor* editor, Message* msg)
   return true;
 }
 
-bool MovingCelState::onMouseMove(Editor* editor, Message* msg)
+bool MovingCelState::onMouseMove(Editor* editor, MouseMessage* msg)
 {
   int newMouseX, newMouseY;
-  editor->screenToEditor(msg->mouse.x, msg->mouse.y, &newMouseX, &newMouseY);
+  editor->screenToEditor(msg->position().x, msg->position().y, &newMouseX, &newMouseY);
 
   m_celNewX = m_celStartX - m_mouseStartX + newMouseX;
   m_celNewY = m_celStartY - m_mouseStartY + newMouseY;

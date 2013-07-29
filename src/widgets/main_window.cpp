@@ -169,7 +169,7 @@ void MainWindow::onActiveViewChange()
     UIContext::instance()->setActiveView(docView);
 }
 
-void MainWindow::clickTab(Tabs* tabs, TabView* tabView, int button)
+void MainWindow::clickTab(Tabs* tabs, TabView* tabView, ui::MouseButtons buttons)
 {
   if (!tabView)
     return;
@@ -182,14 +182,14 @@ void MainWindow::clickTab(Tabs* tabs, TabView* tabView, int button)
   context->updateFlags();
 
   // Right-button: popup-menu
-  if (button & 2) {
+  if (buttons & kButtonRight) {
     Menu* popup_menu = AppMenus::instance()->getDocumentTabPopupMenu();
     if (popup_menu != NULL) {
       popup_menu->showPopup(jmouse_x(0), jmouse_y(0));
     }
   }
   // Middle-button: close the sprite
-  else if (button & 4) {
+  else if (buttons & kButtonMiddle) {
     Command* close_file_cmd =
       CommandsModule::instance()->getCommandByName(CommandId::CloseFile);
 

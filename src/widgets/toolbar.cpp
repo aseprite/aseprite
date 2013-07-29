@@ -124,11 +124,11 @@ bool ToolBar::isToolVisible(Tool* tool)
 
 bool ToolBar::onProcessMessage(Message* msg)
 {
-  switch (msg->type) {
+  switch (msg->type()) {
 
     case kPaintMessage: {
-      BITMAP *doublebuffer = create_bitmap(jrect_w(&msg->draw.rect),
-                                           jrect_h(&msg->draw.rect));
+      const gfx::Rect& drawRect = static_cast<PaintMessage*>(msg)->rect();
+      BITMAP *doublebuffer = create_bitmap(drawRect.w, drawRect.h);
       SkinTheme* theme = static_cast<SkinTheme*>(this->getTheme());
       ui::Color normalFace = theme->getColor(ThemeColor::ButtonNormalFace);
       ui::Color hotFace = theme->getColor(ThemeColor::ButtonHotFace);
@@ -157,7 +157,7 @@ bool ToolBar::onProcessMessage(Message* msg)
         }
 
         toolrc = getToolGroupBounds(c);
-        toolrc.offset(-msg->draw.rect.x1, -msg->draw.rect.y1);
+        toolrc.offset(-drawRect.x, -drawRect.y);
         theme->draw_bounds_nw(doublebuffer, toolrc, nw, face);
 
         // Draw the tool icon
@@ -172,7 +172,7 @@ bool ToolBar::onProcessMessage(Message* msg)
 
       // Draw button to show tool configuration
       toolrc = getToolGroupBounds(ConfigureToolIndex);
-      toolrc.offset(-msg->draw.rect.x1, -msg->draw.rect.y1);
+      toolrc.offset(-drawRect.x, -drawRect.y);
       bool isHot = (m_hot_index == ConfigureToolIndex);
       theme->draw_bounds_nw(doublebuffer,
                             toolrc,
@@ -190,7 +190,7 @@ bool ToolBar::onProcessMessage(Message* msg)
 
       // Draw button to show/hide mini editor
       toolrc = getToolGroupBounds(MiniEditorVisibilityIndex);
-      toolrc.offset(-msg->draw.rect.x1, -msg->draw.rect.y1);
+      toolrc.offset(-drawRect.x, -drawRect.y);
       isHot = (m_hot_index == MiniEditorVisibilityIndex ||
                App::instance()->getMainWindow()->getMiniEditor()->isMiniEditorEnabled());
       theme->draw_bounds_nw(doublebuffer,
@@ -209,8 +209,8 @@ bool ToolBar::onProcessMessage(Message* msg)
 
       // Blit result to screen
       blit(doublebuffer, ji_screen, 0, 0,
-           msg->draw.rect.x1,
-           msg->draw.rect.y1,
+           drawRect.x,
+           drawRect.y,
            doublebuffer->w,
            doublebuffer->h);
       destroy_bitmap(doublebuffer);
@@ -218,6 +218,7 @@ bool ToolBar::onProcessMessage(Message* msg)
     }
 
     case kMouseDownMessage: {
+      MouseMessage* mouseMsg = static_cast<MouseMessage*>(msg);
       ToolBox* toolbox = App::instance()->getToolBox();
       int groups = toolbox->getGroupsCount();
       Rect toolrc;
@@ -231,7 +232,8 @@ bool ToolBar::onProcessMessage(Message* msg)
         Tool* tool = m_selected_in_group[tool_group];
 
         toolrc = getToolGroupBounds(c);
-        if (msg->mouse.y >= toolrc.y && msg->mouse.y < toolrc.y+toolrc.h) {
+        if (mouseMsg->position().y >= toolrc.y &&
+            mouseMsg->position().y < toolrc.y+toolrc.h) {
           UIContext::instance()->getSettings()->setCurrentTool(tool);
           invalidate();
 
@@ -240,7 +242,8 @@ bool ToolBar::onProcessMessage(Message* msg)
       }
 
       toolrc = getToolGroupBounds(ConfigureToolIndex);
-      if (msg->mouse.y >= toolrc.y && msg->mouse.y < toolrc.y+toolrc.h) {
+      if (mouseMsg->position().y >= toolrc.y &&
+          mouseMsg->position().y < toolrc.y+toolrc.h) {
         Command* conf_tools_cmd =
           CommandsModule::instance()->getCommandByName(CommandId::ConfigureTools);
 
@@ -248,7 +251,8 @@ bool ToolBar::onProcessMessage(Message* msg)
       }
 
       toolrc = getToolGroupBounds(MiniEditorVisibilityIndex);
-      if (msg->mouse.y >= toolrc.y && msg->mouse.y < toolrc.y+toolrc.h) {
+      if (mouseMsg->position().y >= toolrc.y &&
+          mouseMsg->position().y < toolrc.y+toolrc.h) {
         // Switch the state of the mini editor
         widgets::MiniEditorWindow* miniEditorWindow =
           App::instance()->getMainWindow()->getMiniEditor();
@@ -259,6 +263,7 @@ bool ToolBar::onProcessMessage(Message* msg)
     }
 
     case kMouseMoveMessage: {
+      MouseMessage* mouseMsg = static_cast<MouseMessage*>(msg);
       ToolBox* toolbox = App::instance()->getToolBox();
       int groups = toolbox->getGroupsCount();
       Tool* new_hot_tool = NULL;
@@ -272,7 +277,8 @@ bool ToolBar::onProcessMessage(Message* msg)
         Tool* tool = m_selected_in_group[tool_group];
 
         toolrc = getToolGroupBounds(c);
-        if (msg->mouse.y >= toolrc.y && msg->mouse.y < toolrc.y+toolrc.h) {
+        if (mouseMsg->position().y >= toolrc.y &&
+            mouseMsg->position().y < toolrc.y+toolrc.h) {
           new_hot_tool = tool;
           new_hot_index = c;
 
@@ -283,12 +289,14 @@ bool ToolBar::onProcessMessage(Message* msg)
       }
 
       toolrc = getToolGroupBounds(ConfigureToolIndex);
-      if (msg->mouse.y >= toolrc.y && msg->mouse.y < toolrc.y+toolrc.h) {
+      if (mouseMsg->position().y >= toolrc.y &&
+          mouseMsg->position().y < toolrc.y+toolrc.h) {
         new_hot_index = ConfigureToolIndex;
       }
 
       toolrc = getToolGroupBounds(MiniEditorVisibilityIndex);
-      if (msg->mouse.y >= toolrc.y && msg->mouse.y < toolrc.y+toolrc.h) {
+      if (mouseMsg->position().y >= toolrc.y &&
+          mouseMsg->position().y < toolrc.y+toolrc.h) {
         new_hot_index = MiniEditorVisibilityIndex;
       }
 
@@ -324,7 +332,7 @@ bool ToolBar::onProcessMessage(Message* msg)
       break;
 
     case kTimerMessage:
-      if (msg->timer.timer == &m_tipTimer) {
+      if (static_cast<TimerMessage*>(msg)->timer() == &m_tipTimer) {
         if (m_tipWindow)
           m_tipWindow->openWindow();
 
@@ -604,20 +612,20 @@ void ToolStrip::saveOverlappedArea(const Rect& bounds)
 
 bool ToolStrip::onProcessMessage(Message* msg)
 {
-  switch (msg->type) {
+  switch (msg->type()) {
 
     case kPaintMessage: {
-      BITMAP *doublebuffer = create_bitmap(jrect_w(&msg->draw.rect),
-                                           jrect_h(&msg->draw.rect));
-      SkinTheme* theme = static_cast<SkinTheme*>(this->getTheme());
+      gfx::Rect paintarea = static_cast<PaintMessage*>(msg)->rect();
+      BITMAP *doublebuffer = create_bitmap(paintarea.w, paintarea.h);
+      SkinTheme* theme = static_cast<SkinTheme*>(getTheme());
       ToolBox* toolbox = App::instance()->getToolBox();
       Rect toolrc;
       int index = 0;
 
       // Get the chunk of screen where we will draw
       blit(m_overlapped, doublebuffer,
-           this->rc->x1 - msg->draw.rect.x1,
-           this->rc->y1 - msg->draw.rect.y1, 0, 0,
+           this->rc->x1 - paintarea.x,
+           this->rc->y1 - paintarea.y, 0, 0,
            doublebuffer->w,
            doublebuffer->h);
 
@@ -638,7 +646,7 @@ bool ToolStrip::onProcessMessage(Message* msg)
           }
 
           toolrc = getToolBounds(index++);
-          toolrc.offset(-msg->draw.rect.x1, -msg->draw.rect.y1);
+          toolrc.offset(-paintarea.x, -paintarea.y);
           theme->draw_bounds_nw(doublebuffer, toolrc, nw, face);
 
           // Draw the tool icon
@@ -653,8 +661,8 @@ bool ToolStrip::onProcessMessage(Message* msg)
       }
 
       blit(doublebuffer, ji_screen, 0, 0,
-           msg->draw.rect.x1,
-           msg->draw.rect.y1,
+           paintarea.x,
+           paintarea.y,
            doublebuffer->w,
            doublebuffer->h);
       destroy_bitmap(doublebuffer);
@@ -662,6 +670,7 @@ bool ToolStrip::onProcessMessage(Message* msg)
     }
 
     case kMouseMoveMessage: {
+      gfx::Point mousePos = static_cast<MouseMessage*>(msg)->position();
       ToolBox* toolbox = App::instance()->getToolBox();
       Tool* hot_tool = NULL;
       Rect toolrc;
@@ -671,7 +680,7 @@ bool ToolStrip::onProcessMessage(Message* msg)
         Tool* tool = *it;
         if (tool->getGroup() == m_group) {
           toolrc = getToolBounds(index++);
-          if (toolrc.contains(Point(msg->mouse.x, msg->mouse.y))) {
+          if (toolrc.contains(Point(mousePos.x, mousePos.y))) {
             hot_tool = tool;
             break;
           }

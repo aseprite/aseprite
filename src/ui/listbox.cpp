@@ -123,7 +123,7 @@ void ListBox::centerScroll()
 
 bool ListBox::onProcessMessage(Message* msg)
 {
-  switch (msg->type) {
+  switch (msg->type()) {
 
     case kOpenMessage:
       centerScroll();
@@ -134,6 +134,7 @@ bool ListBox::onProcessMessage(Message* msg)
 
     case kMouseMoveMessage:
       if (hasCapture()) {
+        gfx::Point mousePos = static_cast<MouseMessage*>(msg)->position();
         int select = getSelectedIndex();
         View* view = View::getView(this);
         bool pick_item = true;
@@ -141,13 +142,13 @@ bool ListBox::onProcessMessage(Message* msg)
         if (view) {
           gfx::Rect vp = view->getViewportBounds();
 
-          if (msg->mouse.y < vp.y) {
-            int num = MAX(1, (vp.y - msg->mouse.y) / 8);
+          if (mousePos.y < vp.y) {
+            int num = MAX(1, (vp.y - mousePos.y) / 8);
             selectIndex(select-num);
             pick_item = false;
           }
-          else if (msg->mouse.y >= vp.y + vp.h) {
-            int num = MAX(1, (msg->mouse.y - (vp.y+vp.h-1)) / 8);
+          else if (mousePos.y >= vp.y + vp.h) {
+            int num = MAX(1, (mousePos.y - (vp.y+vp.h-1)) / 8);
             selectIndex(select+num);
             pick_item = false;
           }
@@ -157,10 +158,10 @@ bool ListBox::onProcessMessage(Message* msg)
           Widget* picked;
 
           if (view) {
-            picked = view->getViewport()->pick(msg->mouse.x, msg->mouse.y);
+            picked = view->getViewport()->pick(mousePos);
           }
           else {
-            picked = this->pick(msg->mouse.x, msg->mouse.y);
+            picked = pick(mousePos);
           }
 
           /* if the picked widget is a child of the list, select it */
@@ -193,21 +194,22 @@ bool ListBox::onProcessMessage(Message* msg)
         int select = getSelectedIndex();
         View* view = View::getView(this);
         int bottom = MAX(0, getChildren().size()-1);
+        KeyMessage* keymsg = static_cast<KeyMessage*>(msg);
 
-        switch (msg->key.scancode) {
-          case KEY_UP:
+        switch (keymsg->scancode()) {
+          case kKeyUp:
             select--;
             break;
-          case KEY_DOWN:
+          case kKeyDown:
             select++;
             break;
-          case KEY_HOME:
+          case kKeyHome:
             select = 0;
             break;
-          case KEY_END:
+          case kKeyEnd:
             select = bottom;
             break;
-          case KEY_PGUP:
+          case kKeyPageUp:
             if (view) {
               gfx::Rect vp = view->getViewportBounds();
               select -= vp.h / jwidget_get_text_height(this);
@@ -215,7 +217,7 @@ bool ListBox::onProcessMessage(Message* msg)
             else
               select = 0;
             break;
-          case KEY_PGDN:
+          case kKeyPageDown:
             if (view) {
               gfx::Rect vp = view->getViewportBounds();
               select += vp.h / jwidget_get_text_height(this);
@@ -223,12 +225,12 @@ bool ListBox::onProcessMessage(Message* msg)
             else
               select = bottom;
             break;
-          case KEY_LEFT:
-          case KEY_RIGHT:
+          case kKeyLeft:
+          case kKeyRight:
             if (view) {
               gfx::Rect vp = view->getViewportBounds();
               gfx::Point scroll = view->getViewScroll();
-              int sgn = (msg->key.scancode == KEY_LEFT) ? -1: 1;
+              int sgn = (keymsg->scancode() == kKeyLeft) ? -1: 1;
 
               scroll.x += vp.w/2*sgn;
 

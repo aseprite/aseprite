@@ -6,13 +6,11 @@
 
 #include "config.h"
 
-#include <allegro.h>
-#include <ctype.h>
-#include <stdio.h>
-
 #include "gfx/size.h"
 #include "ui/gui.h"
 #include "ui/intern.h"
+
+#include <cctype>
 
 static const int kTimeoutToOpenSubmenu = 250;
 
@@ -23,23 +21,42 @@ namespace ui {
 //////////////////////////////////////////////////////////////////////
 // Internal messages: to move between menus
 
-// Extra fields for the kOpenMenuItemMessage message:
-// bool select_first = msg->user.a;
-//   If this value is true, it means that after opening the menu, we
-//   have to select the first item (i.e. highlighting it).
 RegisterMessage kOpenMenuItemMessage;
-
-// Extra fields for the kCloseMenuItemMessage message:
-// bool last_of_close_chain = msg->user.a;
-//   This fields is used to indicate the end of a sequence of
-//   kOpenMenuItemMessage and kCloseMenuItemMessage messages. If it is true
-//   the message is the last one of the chain, which means that no
-//   more kOpenMenuItemMessage or kCloseMenuItemMessage messages are in the queue.
 RegisterMessage kCloseMenuItemMessage;
-
 RegisterMessage kClosePopupMessage;
-
 RegisterMessage kExecuteMenuItemMessage;
+
+class OpenMenuItemMessage : public Message {
+public:
+  OpenMenuItemMessage(bool select_first) :
+    Message(kOpenMenuItemMessage),
+    m_select_first(select_first) {
+  }
+
+  // If this value is true, it means that after opening the menu, we
+  // have to select the first item (i.e. highlighting it).
+  bool select_first() const { return m_select_first; }
+
+private:
+  bool m_select_first;
+};
+
+class CloseMenuItemMessage : public Message {
+public:
+  CloseMenuItemMessage(bool last_of_close_chain) :
+    Message(kCloseMenuItemMessage),
+    m_last_of_close_chain(last_of_close_chain) {
+  }
+
+  // This fields is used to indicate the end of a sequence of
+  // kOpenMenuItemMessage and kCloseMenuItemMessage messages. If it is true
+  // the message is the last one of the chain, which means that no
+  // more kOpenMenuItemMessage or kCloseMenuItemMessage messages are in the queue.
+  bool last_of_close_chain() const { return m_last_of_close_chain; }
+
+private:
+  bool m_last_of_close_chain;
+};
 
 // Data for the main jmenubar or the first popuped-jmenubox
 struct MenuBaseData
@@ -81,7 +98,7 @@ public:
 protected:
   bool onProcessMessage(Message* msg) OVERRIDE
   {
-    switch (msg->type) {
+    switch (msg->type()) {
 
       case kCloseMessage:
         // Delete this window automatically
@@ -99,7 +116,6 @@ static MenuBaseData* get_base(Widget* widget);
 static bool window_msg_proc(Widget* widget, Message* msg);
 
 static MenuItem* check_for_letter(Menu* menu, int ascii);
-static MenuItem* check_for_accel(Menu* menu, Message* msg);
 
 static MenuItem* find_nextitem(Menu* menu, MenuItem* menuitem);
 static MenuItem* find_previtem(Menu* menu, MenuItem* menuitem);
@@ -251,7 +267,7 @@ void Menu::showPopup(int x, int y)
 {
   do {
     jmouse_poll();
-  } while (jmouse_b(0));
+  } while (jmouse_b(0) != kButtonNone);
 
   // New window and new menu-box
   Window* window = new Window(false, NULL);
@@ -348,25 +364,28 @@ bool MenuBox::onProcessMessage(Message* msg)
 {
   Menu* menu = MenuBox::getMenu();
 
-  switch (msg->type) {
+  switch (msg->type()) {
 
     case kMouseMoveMessage:
-      /* isn't pressing a button? */
-      if (!msg->mouse.flags && !get_base(this)->was_clicked)
+      // Isn't pressing a button?
+      if (static_cast<MouseMessage*>(msg)->buttons() == kButtonNone &&
+          !get_base(this)->was_clicked)
         break;
 
-      // Fall though
+      // Fall through
 
     case kMouseDownMessage:
       if (menu) {
         if (get_base(this)->is_processing)
           break;
 
+        gfx::Point mousePos = static_cast<MouseMessage*>(msg)->position();
+
         // Here we catch the filtered messages (menu-bar or the
         // popuped menu-box) to detect if the user press outside of
         // the widget
-        if (msg->type == kMouseDownMessage && m_base != NULL) {
-          Widget* picked = getManager()->pick(msg->mouse.x, msg->mouse.y);
+        if (msg->type() == kMouseDownMessage && m_base != NULL) {
+          Widget* picked = getManager()->pick(mousePos);
 
           // If one of these conditions are accomplished we have to
           // close all menus (back to menu-bar or close the popuped
@@ -388,7 +407,7 @@ bool MenuBox::onProcessMessage(Message* msg)
         }
 
         // Get the widget below the mouse cursor
-        Widget* picked = menu->pick(msg->mouse.x, msg->mouse.y);
+        Widget* picked = menu->pick(mousePos);
         if (picked) {
           if ((picked->type == kMenuItemWidget) &&
               !(picked->flags & JI_DISABLED)) {
@@ -399,14 +418,14 @@ bool MenuBox::onProcessMessage(Message* msg)
               // open the submenu only if the user does click
               bool open_submenu =
                 (this->type == kMenuBarWidget) ||
-                (msg->type == kMouseDownMessage);
+                (msg->type() == kMouseDownMessage);
 
               menu->highlightItem(static_cast<MenuItem*>(picked), false, open_submenu, false);
             }
             // If the user pressed in a highlighted menu-item (maybe
             // the user was waiting for the timer to open the
             // submenu...)
-            else if (msg->type == kMouseDownMessage &&
+            else if (msg->type() == kMouseDownMessage &&
                      static_cast<MenuItem*>(picked)->hasSubmenu()) {
               static_cast<MenuItem*>(picked)->stopTimer();
 
@@ -459,10 +478,10 @@ bool MenuBox::onProcessMessage(Message* msg)
         get_base(this)->was_clicked = false;
 
         // Check for ALT+some underlined letter
-        if (((this->type == kMenuBoxWidget) && (msg->any.shifts == 0 || // Inside menu-boxes we can use letters without Alt modifier pressed
-                                                msg->any.shifts == KB_ALT_FLAG)) ||
-            ((this->type == kMenuBarWidget) && (msg->any.shifts == KB_ALT_FLAG))) {
-          selected = check_for_letter(menu, scancode_to_ascii(msg->key.scancode));
+        if (((this->type == kMenuBoxWidget) && (msg->keyModifiers() == kKeyNoneModifier || // <-- Inside menu-boxes we can use letters without Alt modifier pressed
+                                                msg->keyModifiers() == kKeyAltModifier)) ||
+            ((this->type == kMenuBarWidget) && (msg->keyModifiers() == kKeyAltModifier))) {
+          selected = check_for_letter(menu, ui::scancode_to_ascii(static_cast<KeyMessage*>(msg)->scancode()));
           if (selected) {
             menu->highlightItem(selected, true, true, true);
             return true;
@@ -488,9 +507,9 @@ bool MenuBox::onProcessMessage(Message* msg)
           if (!highlight && child_with_submenu_opened)
             highlight = child_with_submenu_opened;
 
-          switch (msg->key.scancode) {
+          switch (static_cast<KeyMessage*>(msg)->scancode()) {
 
-            case KEY_ESC:
+            case kKeyEsc:
               // In menu-bar
               if (this->type == kMenuBarWidget) {
                 if (highlight) {
@@ -513,7 +532,7 @@ bool MenuBox::onProcessMessage(Message* msg)
               }
               break;
 
-            case KEY_UP:
+            case kKeyUp:
               // In menu-bar
               if (this->type == kMenuBarWidget) {
                 if (child_with_submenu_opened)
@@ -528,7 +547,7 @@ bool MenuBox::onProcessMessage(Message* msg)
               used = true;
               break;
 
-            case KEY_DOWN:
+            case kKeyDown:
               // In menu-bar
               if (this->type == kMenuBarWidget) {
                 // Select the active menu
@@ -543,7 +562,7 @@ bool MenuBox::onProcessMessage(Message* msg)
               used = true;
               break;
 
-            case KEY_LEFT:
+            case kKeyLeft:
               // In menu-bar
               if (this->type == kMenuBarWidget) {
                 // Go to previous
@@ -576,7 +595,7 @@ bool MenuBox::onProcessMessage(Message* msg)
               used = true;
               break;
 
-            case KEY_RIGHT:
+            case kKeyRight:
               // In menu-bar
               if (this->type == kMenuBarWidget) {
                 // Go to next
@@ -605,8 +624,8 @@ bool MenuBox::onProcessMessage(Message* msg)
               used = true;
               break;
 
-            case KEY_ENTER:
-            case KEY_ENTER_PAD:
+            case kKeyEnter:
+            case kKeyEnterPad:
               if (highlight)
                 menu->highlightItem(highlight, true, true, true);
               used = true;
@@ -618,7 +637,7 @@ bool MenuBox::onProcessMessage(Message* msg)
             return true;
           }
           // If the user presses the ALT key we close everything.
-          else if (msg->key.scancode == KEY_ALT) {
+          else if (static_cast<KeyMessage*>(msg)->scancode() == kKeyAlt) {
             cancelMenuLoop();
           }
         }
@@ -626,8 +645,8 @@ bool MenuBox::onProcessMessage(Message* msg)
       break;
 
     default:
-      if (msg->type == kClosePopupMessage) {
-        this->getManager()->_closeWindow(this->getRoot(), true);
+      if (msg->type() == kClosePopupMessage) {
+        getManager()->_closeWindow(getRoot(), true);
       }
       break;
 
@@ -659,7 +678,7 @@ void MenuBox::onPreferredSize(PreferredSizeEvent& ev)
 
 bool MenuItem::onProcessMessage(Message* msg)
 {
-  switch (msg->type) {
+  switch (msg->type()) {
 
     case kMouseEnterMessage:
       // TODO theme specific!!
@@ -682,9 +701,9 @@ bool MenuItem::onProcessMessage(Message* msg)
       break;
 
     default:
-      if (msg->type == kOpenMenuItemMessage) {
+      if (msg->type() == kOpenMenuItemMessage) {
         MenuBaseData* base = get_base(this);
-        bool select_first = msg->user.a ? true: false;
+        bool select_first = static_cast<OpenMenuItemMessage*>(msg)->select_first();
 
         ASSERT(base != NULL);
         ASSERT(base->is_processing);
@@ -770,10 +789,10 @@ bool MenuItem::onProcessMessage(Message* msg)
 
         return true;
       }
-      else if (msg->type == kCloseMenuItemMessage) {
+      else if (msg->type() == kCloseMenuItemMessage) {
+        bool last_of_close_chain = static_cast<CloseMenuItemMessage*>(msg)->last_of_close_chain();
         MenuBaseData* base = get_base(this);
         Window* window;
-        bool last_of_close_chain = (msg->user.a ? true: false);
 
         ASSERT(base != NULL);
         ASSERT(base->is_processing);
@@ -811,14 +830,14 @@ bool MenuItem::onProcessMessage(Message* msg)
         stopTimer();
         return true;
       }
-      else if (msg->type == kExecuteMenuItemMessage) {
+      else if (msg->type() == kExecuteMenuItemMessage) {
         onClick();
         return true;
       }
       break;
 
     case kTimerMessage:
-      if (msg->timer.timer == m_submenu_timer.get()) {
+      if (static_cast<TimerMessage*>(msg)->timer() == m_submenu_timer.get()) {
         MenuBaseData* base = get_base(this);
 
         ASSERT(hasSubmenu());
@@ -1008,9 +1027,8 @@ void MenuItem::openSubmenu(bool select_first)
     }
   }
 
-  msg = jmessage_new(kOpenMenuItemMessage);
-  msg->user.a = select_first;
-  jmessage_add_dest(msg, this);
+  msg = new OpenMenuItemMessage(select_first);
+  msg->addRecipient(this);
   Manager::getDefault()->enqueueMessage(msg);
 
   // Get the 'base'
@@ -1054,9 +1072,8 @@ void MenuItem::closeSubmenu(bool last_of_close_chain)
   }
 
   // Second: now we can close the 'menuitem'
-  msg = jmessage_new(kCloseMenuItemMessage);
-  msg->user.a = last_of_close_chain;
-  jmessage_add_dest(msg, this);
+  msg = new CloseMenuItemMessage(last_of_close_chain);
+  msg->addRecipient(this);
   Manager::getDefault()->enqueueMessage(msg);
 
   // If this is the last message of the chain, here we have the
@@ -1130,8 +1147,8 @@ void Menu::closeAll()
 
 void MenuBox::closePopup()
 {
-  Message* msg = jmessage_new(kClosePopupMessage);
-  jmessage_add_dest(msg, this);
+  Message* msg = new Message(kClosePopupMessage);
+  msg->addRecipient(this);
   Manager::getDefault()->enqueueMessage(msg);
 }
 
@@ -1154,8 +1171,8 @@ void MenuBox::cancelMenuLoop()
 void MenuItem::executeClick()
 {
   // Send the message
-  Message* msg = jmessage_new(kExecuteMenuItemMessage);
-  jmessage_add_dest(msg, this);
+  Message* msg = new Message(kExecuteMenuItemMessage);
+  msg->addRecipient(this);
   Manager::getDefault()->enqueueMessage(msg);
 }
 
@@ -1170,30 +1187,6 @@ static MenuItem* check_for_letter(Menu* menu, int ascii)
     int mnemonic = menuitem->getMnemonicChar();
     if (mnemonic > 0 && mnemonic == tolower(ascii))
       return menuitem;
-  }
-  return NULL;
-}
-
-static MenuItem* check_for_accel(Menu* menu, Message* msg)
-{
-  UI_FOREACH_WIDGET(menu->getChildren(), it) {
-    Widget* child = *it;
-    if (child->type != kMenuItemWidget)
-      continue;
-
-    MenuItem* menuitem = static_cast<MenuItem*>(child);
-
-    if (menuitem->getSubmenu()) {
-      if ((menuitem = check_for_accel(menuitem->getSubmenu(), msg)))
-        return menuitem;
-    }
-    else if (menuitem->getAccel()) {
-      if ((menuitem->isEnabled()) &&
-          (menuitem->getAccel()->check(msg->any.shifts,
-                                       msg->key.ascii,
-                                       msg->key.scancode)))
-        return menuitem;
-    }
   }
   return NULL;
 }
