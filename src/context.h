@@ -88,9 +88,6 @@ private:
   // List of all documents.
   Documents m_documents;
 
-  // Active/selected document to operate.
-  Document* m_activeDocument;
-
   // Settings in this context.
   ISettings* m_settings;
 
