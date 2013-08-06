@@ -21,21 +21,21 @@ because they don't depend on any other component.
 
 ## Level 1
 
-  * [net](net/) -> base: Networking library to send HTTP requests.
-  * [raster](raster/) -> base, gfx: Library to handle graphics entities like sprites, images, frames.
-  * [she](she/) -> allegro: A (Work In Progress) wrapper for Allegro library.
-  * [webserver](webserver/) -> base: HTTP web server (based on [mongoose](https://github.com/valenok/mongoose))
+  * [net](net/) (base): Networking library to send HTTP requests.
+  * [raster](raster/) (base, gfx): Library to handle graphics entities like sprites, images, frames.
+  * [she](she/) (allegro): A (Work In Progress) wrapper for Allegro library.
+  * [webserver](webserver/) (base): HTTP web server (based on [mongoose](https://github.com/valenok/mongoose))
 
 ## Level 2
 
-  * [filters](filters/) -> base, gfx, raster: FX for raster images.
-  * [ui](ui/) -> base, gfx, she: Portable UI library (buttons, windows, text fields, etc.)
-  * [updater](updater/) -> base, net: Component to check for updates.
+  * [filters](filters/) (base, gfx, raster): FX for raster images.
+  * [ui](ui/) (base, gfx, she): Portable UI library (buttons, windows, text fields, etc.)
+  * [updater](updater/) (base, net): Component to check for updates.
 
 ## Level 3
 
-  * [app](app/) -> allegro, base, filters, gfx, raster, scripting, she, ui, undo, updater, webserver
+  * [app](app/) (allegro, base, filters, gfx, raster, scripting, she, ui, undo, updater, webserver)
 
 ## Level 4
 
-  * [main](main/) -> app, base, she, ui
+  * [main](main/) (app, base, she, ui)
