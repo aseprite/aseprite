@@ -7,15 +7,14 @@
 #ifndef UNDO_UNDO_EXCEPTION_H_INCLUDED
 #define UNDO_UNDO_EXCEPTION_H_INCLUDED
 
-#include "base/exception.h"
+#include <stdexcept>
 
 namespace undo {
 
-class UndoException : public base::Exception
-{
-public:
-  UndoException(const char* msg) throw() : base::Exception(msg) { }
-};
+  class UndoException : public std::runtime_error {
+  public:
+    UndoException(const char* msg) throw() : std::runtime_error(msg) { }
+  };
 
 } // namespace undo
 
