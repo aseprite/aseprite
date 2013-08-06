@@ -141,7 +141,7 @@ namespace ui {
     bool m_highlighted;           // Is it highlighted?
     Menu* m_submenu;              // The sub-menu
     MenuBox* m_submenu_menubox;   // The opened menubox for this menu-item
-    UniquePtr<Timer> m_submenu_timer; // Timer to open the submenu
+    base::UniquePtr<Timer> m_submenu_timer; // Timer to open the submenu
 
     friend class Menu;
     friend class MenuBox;

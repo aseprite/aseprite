@@ -27,8 +27,7 @@ namespace updater {
   typedef std::string Uuid;
 
   // Data received by a "check new version" request.
-  class CheckUpdateResponse
-  {
+  class CheckUpdateResponse {
   public:
     enum Type {
       Unknown,
@@ -69,8 +68,7 @@ namespace updater {
 
   // Delegate called by CheckUpdate when the request to the server is
   // done. It must be implemented by the client of CheckUpdate.
-  class CheckUpdateDelegate
-  {
+  class CheckUpdateDelegate {
   public:
     virtual ~CheckUpdateDelegate() { }
 
@@ -84,8 +82,7 @@ namespace updater {
   };
 
   // Checks for new versions.
-  class CheckUpdate
-  {
+  class CheckUpdate {
   public:
     CheckUpdate();
     ~CheckUpdate();

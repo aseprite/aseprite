@@ -33,8 +33,7 @@ namespace ui {
 
 namespace app {
 
-  class WidgetLoader
-  {
+  class WidgetLoader {
   public:
     // Interface used to create customized widgets.
     class IWidgetTypeCreator {

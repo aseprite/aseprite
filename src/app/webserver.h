@@ -26,8 +26,7 @@
 
 namespace app {
 
-  class WebServer : public webserver::IDelegate
-  {
+  class WebServer : public webserver::IDelegate {
   public:
     WebServer();
     ~WebServer();
@@ -43,7 +42,7 @@ namespace app {
     std::string m_wwwpath;
   };
 
-}
+} // namespace app
 
 #endif // ENABLE_WEBSERVER
 

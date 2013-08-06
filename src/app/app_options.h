@@ -53,6 +53,6 @@ private:
   std::string m_paletteFileName;
 };
 
-}
+} // namespace app
 
 #endif

@@ -16,7 +16,9 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
+#ifdef HAVE_CONFIG_H
 #include "config.h"
+#endif
 
 #include "raster/layer.h"
 
@@ -29,8 +31,7 @@
 #include <algorithm>
 #include <string.h>
 
-//////////////////////////////////////////////////////////////////////
-// Layer class
+namespace raster {
 
 Layer::Layer(GfxObjType type, Sprite* sprite)
   : GfxObj(type)
@@ -339,3 +340,5 @@ void layer_render(const Layer* layer, Image* image, int x, int y, FrameNumber fr
 
   }
 }
+
+} // namespace raster

@@ -16,7 +16,9 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
+#ifdef HAVE_CONFIG_H
 #include "config.h"
+#endif
 
 #include "raster/sprite.h"
 
@@ -27,6 +29,8 @@
 
 #include <cstring>
 #include <vector>
+
+namespace raster {
 
 static Layer* index2layer(const Layer* layer, const LayerIndex& index, int* index_count);
 static LayerIndex layer2index(const Layer* layer, const Layer* find_layer, int* index_count);
@@ -380,7 +384,7 @@ int Sprite::getPixel(int x, int y, FrameNumber frame) const
   int color = 0;
 
   if ((x >= 0) && (y >= 0) && (x < m_width) && (y < m_height)) {
-    UniquePtr<Image> image(Image::create(m_format, 1, 1));
+    base::UniquePtr<Image> image(Image::create(m_format, 1, 1));
     image_clear(image, (m_format == IMAGE_INDEXED ? getTransparentColor(): 0));
     render(image, -x, -y, frame);
     color = image_getpixel(image, 0, 0);
@@ -436,3 +440,5 @@ static LayerIndex layer2index(const Layer* layer, const Layer* find_layer, int* 
     return LayerIndex(-1);
   }
 }
+
+} // namespace raster

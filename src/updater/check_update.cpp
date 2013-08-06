@@ -16,7 +16,9 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
+#ifdef HAVE_CONFIG_H
 #include "config.h"
+#endif
 
 #include "updater/check_update.h"
 
@@ -154,4 +156,4 @@ void CheckUpdate::checkNewVersion(const Uuid& uuid, const std::string& extraPara
   m_impl->checkNewVersion(uuid, extraParams, delegate);
 }
 
-}
+} // namespace updater

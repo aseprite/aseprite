@@ -30,8 +30,7 @@ namespace app {
 
   class CheckUpdateBackgroundJob;
 
-  class CheckUpdateThreadLauncher
-  {
+  class CheckUpdateThreadLauncher {
   public:
     CheckUpdateThreadLauncher();
     ~CheckUpdateThreadLauncher();
@@ -50,8 +49,8 @@ namespace app {
     void checkForUpdates();
 
     updater::Uuid m_uuid;
-    UniquePtr<base::thread> m_thread;
-    UniquePtr<CheckUpdateBackgroundJob> m_bgJob;
+    base::UniquePtr<base::thread> m_thread;
+    base::UniquePtr<CheckUpdateBackgroundJob> m_bgJob;
     bool m_doCheck;
     bool m_received;
     updater::CheckUpdateResponse m_response;
@@ -65,7 +64,7 @@ namespace app {
     bool m_isDeveloper;
   };
 
-}
+} // namespace app
 
 #endif // ENABLE_UPDATER
 

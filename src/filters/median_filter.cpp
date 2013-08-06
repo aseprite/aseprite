@@ -16,7 +16,9 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
+#ifdef HAVE_CONFIG_H
 #include "config.h"
+#endif
 
 #include "filters/median_filter.h"
 
@@ -30,6 +32,71 @@
 #include "raster/rgbmap.h"
 
 #include <algorithm>
+
+namespace filters {
+
+using namespace raster;
+
+namespace {
+  struct GetPixelsDelegateRgba {
+    std::vector<std::vector<uint8_t> >& channel;
+    int c;
+
+    GetPixelsDelegateRgba(std::vector<std::vector<uint8_t> >& channel) : channel(channel) { }
+
+    void reset() { c = 0; }
+
+    void operator()(RgbTraits::pixel_t color)
+    {
+      channel[0][c] = _rgba_getr(color);
+      channel[1][c] = _rgba_getg(color);
+      channel[2][c] = _rgba_getb(color);
+      channel[3][c] = _rgba_geta(color);
+      c++;
+    }
+  };
+
+  struct GetPixelsDelegateGrayscale {
+    std::vector<std::vector<uint8_t> >& channel;
+    int c;
+
+    GetPixelsDelegateGrayscale(std::vector<std::vector<uint8_t> >& channel) : channel(channel) { }
+
+    void reset() { c = 0; }
+
+    void operator()(GrayscaleTraits::pixel_t color)
+    {
+      channel[0][c] = _graya_getv(color);
+      channel[1][c] = _graya_geta(color);
+      c++;
+    }
+  };
+
+  struct GetPixelsDelegateIndexed {
+    const Palette* pal;
+    std::vector<std::vector<uint8_t> >& channel;
+    Target target;
+    int c;
+
+    GetPixelsDelegateIndexed(const Palette* pal, std::vector<std::vector<uint8_t> >& channel, Target target)
+      : pal(pal), channel(channel), target(target) { }
+
+    void reset() { c = 0; }
+
+    void operator()(IndexedTraits::pixel_t color)
+    {
+      if (target & TARGET_INDEX_CHANNEL) {
+        channel[0][c] = color;
+      }
+      else {
+        channel[0][c] = _rgba_getr(pal->getEntry(color));
+        channel[1][c] = _rgba_getg(pal->getEntry(color));
+        channel[2][c] = _rgba_getb(pal->getEntry(color));
+      }
+      c++;
+    }
+  };
+};
 
 MedianFilter::MedianFilter()
   : m_tiledMode(TILED_NONE)
@@ -59,70 +126,6 @@ const char* MedianFilter::getName()
 {
   return "Median Blur";
 }
-
-namespace {
-  struct GetPixelsDelegateRgba
-  {
-    std::vector<std::vector<uint8_t> >& channel;
-    int c;
-
-    GetPixelsDelegateRgba(std::vector<std::vector<uint8_t> >& channel) : channel(channel) { }
-
-    void reset() { c = 0; }
-
-    void operator()(RgbTraits::pixel_t color)
-    {
-      channel[0][c] = _rgba_getr(color);
-      channel[1][c] = _rgba_getg(color);
-      channel[2][c] = _rgba_getb(color);
-      channel[3][c] = _rgba_geta(color);
-      c++;
-    }
-  };
-
-  struct GetPixelsDelegateGrayscale
-  {
-    std::vector<std::vector<uint8_t> >& channel;
-    int c;
-
-    GetPixelsDelegateGrayscale(std::vector<std::vector<uint8_t> >& channel) : channel(channel) { }
-
-    void reset() { c = 0; }
-
-    void operator()(GrayscaleTraits::pixel_t color)
-    {
-      channel[0][c] = _graya_getv(color);
-      channel[1][c] = _graya_geta(color);
-      c++;
-    }
-  };
-
-  struct GetPixelsDelegateIndexed
-  {
-    const Palette* pal;
-    std::vector<std::vector<uint8_t> >& channel;
-    Target target;
-    int c;
-
-    GetPixelsDelegateIndexed(const Palette* pal, std::vector<std::vector<uint8_t> >& channel, Target target)
-      : pal(pal), channel(channel), target(target) { }
-
-    void reset() { c = 0; }
-
-    void operator()(IndexedTraits::pixel_t color)
-    {
-      if (target & TARGET_INDEX_CHANNEL) {
-        channel[0][c] = color;
-      }
-      else {
-        channel[0][c] = _rgba_getr(pal->getEntry(color));
-        channel[1][c] = _rgba_getg(pal->getEntry(color));
-        channel[2][c] = _rgba_getb(pal->getEntry(color));
-      }
-      c++;
-    }
-  };
-};
 
 void MedianFilter::applyToRgba(FilterManager* filterMgr)
 {
@@ -279,3 +282,5 @@ void MedianFilter::applyToIndexed(FilterManager* filterMgr)
     }
   }
 }
+
+} // namespace filters

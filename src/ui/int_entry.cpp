@@ -4,7 +4,9 @@
 // This source file is distributed under a BSD-like license, please
 // read LICENSE.txt for more information.
 
+#ifdef HAVE_CONFIG_H
 #include "config.h"
+#endif
 
 #include "ui/int_entry.h"
 
@@ -18,9 +20,9 @@
 
 #include <cmath>
 
-using namespace gfx;
-
 namespace ui {
+
+using namespace gfx;
 
 IntEntry::IntEntry(int min, int max)
   : Entry(std::ceil(std::log10((double)max))+1, "")

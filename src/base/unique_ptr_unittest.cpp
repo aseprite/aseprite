@@ -8,6 +8,8 @@
 
 #include "base/unique_ptr.h"
 
+using namespace base;
+
 TEST(UniquePtr, DefaultCtor)
 {
   UniquePtr<int> a;
@@ -43,8 +45,7 @@ TEST(UniquePtr, CopyValues)
 
 int valueInDtor;
 
-class A
-{
+class A {
   int m_value;
 public:
   A(int value) : m_value(value) { }

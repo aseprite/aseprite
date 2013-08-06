@@ -19,9 +19,8 @@
 #ifndef APP_PROJECT_EVENT_H_INCLUDED
 #define APP_PROJECT_EVENT_H_INCLUDED
 
-class Document;
-
 namespace app {
+  class Document;
 
   class ProjectEvent {
   public:

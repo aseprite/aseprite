@@ -16,19 +16,21 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
+#ifdef HAVE_CONFIG_H
 #include "config.h"
+#endif
 
 #include "app/widget_loader.h"
 
-#include "app.h"
+#include "app/app.h"
+#include "app/modules/gui.h"
+#include "app/resource_finder.h"
+#include "app/ui/color_button.h"
 #include "app/widget_not_found.h"
+#include "app/xml_exception.h"
 #include "base/bind.h"
 #include "base/memory.h"
-#include "modules/gui.h"
-#include "resource_finder.h"
-#include "ui/gui.h"
-#include "widgets/color_button.h"
-#include "xml_exception.h"
+#include "ui/ui.h"
 
 #include "tinyxml.h"
 
@@ -40,12 +42,12 @@
 
 #define TRANSLATE_ATTR(a) a
 
+namespace app {
+
 using namespace ui;
 
 static int convert_align_value_to_flags(const char *value);
 static bool bool_attr_is_true(const TiXmlElement* elem, const char* attribute_name);
-
-namespace app {
 
 WidgetLoader::WidgetLoader()
   : m_tooltipManager(NULL)
@@ -74,7 +76,7 @@ Widget* WidgetLoader::loadWidget(const char* fileName, const char* widgetId)
 
   rf.addPath(fileName);
 
-  buf = "widgets/";
+  buf = "app/ui/";
   buf += fileName;
   rf.findInDataDir(buf.c_str());
 
@@ -419,7 +421,7 @@ Widget* WidgetLoader::convertXmlElementToWidget(const TiXmlElement* elem, Widget
 
     if (tooltip != NULL && root != NULL) {
       if (!m_tooltipManager) {
-        m_tooltipManager = new ::ui::TooltipManager();
+        m_tooltipManager = new ui::TooltipManager();
         root->addChild(m_tooltipManager);
       }
       m_tooltipManager->addTooltipFor(widget, tooltip, JI_LEFT);
@@ -500,8 +502,6 @@ Widget* WidgetLoader::convertXmlElementToWidget(const TiXmlElement* elem, Widget
   return widget;
 }
 
-} // namespace app
-
 static int convert_align_value_to_flags(const char *value)
 {
   char *tok, *ptr = base_strdup(value);
@@ -549,3 +549,5 @@ static bool bool_attr_is_true(const TiXmlElement* elem, const char* attribute_na
 
   return (value != NULL) && (strcmp(value, "true") == 0);
 }
+
+} // namespace app

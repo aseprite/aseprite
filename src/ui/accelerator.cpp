@@ -4,7 +4,9 @@
 // This source file is distributed under a BSD-like license, please
 // read LICENSE.txt for more information.
 
+#ifdef HAVE_CONFIG_H
 #include "config.h"
+#endif
 
 #include "ui/accelerator.h"
 
@@ -397,7 +399,7 @@ bool Accelerator::check(KeyModifiers modifiers, KeyScancode scancode, int ascii)
 
 #ifdef REPORT_KEYS
   {
-    UniquePtr<Accelerator> a2(new Accelerator);
+    base::UniquePtr<Accelerator> a2(new Accelerator);
     a2->addKey(modifiers, scancode, ascii);
     buf2 = a2->getString();
   }

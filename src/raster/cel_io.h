@@ -21,12 +21,12 @@
 
 #include <iosfwd>
 
-class Cel;
-
 namespace raster {
 
-void write_cel(std::ostream& os, Cel* cel);
-Cel* read_cel(std::istream& is);
+  class Cel;
+
+  void write_cel(std::ostream& os, Cel* cel);
+  Cel* read_cel(std::istream& is);
 
 } // namespace raster
 

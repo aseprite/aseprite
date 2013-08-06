@@ -16,12 +16,16 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
+#ifdef HAVE_CONFIG_H
 #include "config.h"
+#endif
 
 #include <vector>
 
 #include "gfx/point.h"
 #include "raster/algo.h"
+
+namespace raster {
 
 using namespace gfx;
 
@@ -145,3 +149,5 @@ void algo_polygon(int vertices, const int* points, void* data, AlgoHLine proc)
     }
   }
 }
+
+} // namespace raster

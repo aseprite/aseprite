@@ -6,18 +6,20 @@
 
 #define REDRAW_MOVEMENT
 
+#ifdef HAVE_CONFIG_H
 #include "config.h"
+#endif
 
 #include <allegro.h>
 
 #include "gfx/size.h"
-#include "ui/gui.h"
 #include "ui/intern.h"
 #include "ui/preferred_size_event.h"
-
-using namespace gfx;
+#include "ui/ui.h"
 
 namespace ui {
+
+using namespace gfx;
 
 enum {
   WINDOW_NONE = 0,

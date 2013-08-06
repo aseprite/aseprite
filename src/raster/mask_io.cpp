@@ -16,7 +16,9 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
+#ifdef HAVE_CONFIG_H
 #include "config.h"
+#endif
 
 #include "raster/mask_io.h"
 
@@ -63,7 +65,7 @@ Mask* read_mask(std::istream& is)
   int w = read16(is);           // Width
   int h = read16(is);           // Height
 
-  UniquePtr<Mask> mask(new Mask());
+  base::UniquePtr<Mask> mask(new Mask());
 
   if (w > 0 && h > 0) {
     int size = BitmapTraits::scanline_size(w);

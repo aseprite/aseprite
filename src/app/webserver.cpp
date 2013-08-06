@@ -16,7 +16,9 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
+#ifdef HAVE_CONFIG_H
 #include "config.h"
+#endif
 
 #ifdef ENABLE_WEBSERVER
 
@@ -24,7 +26,7 @@
 
 #include "base/fs.h"
 #include "base/path.h"
-#include "resource_finder.h"
+#include "app/resource_finder.h"
 #include "webserver/webserver.h"
 
 #include <fstream>

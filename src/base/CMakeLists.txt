@@ -16,11 +16,13 @@ if(HAVE_SCHED_YIELD)
 endif()
 
 add_library(base-lib
+  cfile.cpp
   chrono.cpp
   convert_to.cpp
   errno_string.cpp
   exception.cpp
   fs.cpp
+  launcher.cpp
   mem_utils.cpp
   memory.cpp
   memory_dump.cpp

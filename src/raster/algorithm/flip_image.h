@@ -22,10 +22,11 @@
 #include "gfx/fwd.h"
 #include "raster/algorithm/flip_type.h"
 
-class Image;
-class Mask;
-
 namespace raster {
+
+  class Image;
+  class Mask;
+
   namespace algorithm {
 
     // Flips the rectangular region specified in the "bounds" parameter.

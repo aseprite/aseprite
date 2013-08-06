@@ -6,24 +6,26 @@
 
 /* #define REPORT_SIGNALS */
 
+#ifdef HAVE_CONFIG_H
 #include "config.h"
+#endif
 
 #include "base/memory.h"
-#include "ui/gui.h"
 #include "ui/intern.h"
+#include "ui/ui.h"
 
+#include <allegro.h>
 #include <cctype>
 #include <climits>
 #include <cstdarg>
+#include <cstdio>
 #include <cstring>
 #include <queue>
-#include <cstdio>
 #include <sstream>
-#include <allegro.h>
-
-using namespace gfx;
 
 namespace ui {
+
+using namespace gfx;
 
 static inline void mark_dirty_flag(Widget* widget)
 {

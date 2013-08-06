@@ -6,7 +6,9 @@
 
 /* Based on code from GTK+ 2.1.2 (gtk+/gtk/gtkhbox.c) */
 
+#ifdef HAVE_CONFIG_H
 #include "config.h"
+#endif
 
 #include "gfx/size.h"
 #include "ui/box.h"
@@ -16,9 +18,9 @@
 #include "ui/resize_event.h"
 #include "ui/theme.h"
 
-using namespace gfx;
-
 namespace ui {
+
+using namespace gfx;
 
 Box::Box(int align)
   : Widget(kBoxWidget)

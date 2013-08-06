@@ -4,7 +4,9 @@
 // This source file is distributed under a BSD-like license, please
 // read LICENSE.txt for more information.
 
+#ifdef HAVE_CONFIG_H
 #include "config.h"
+#endif
 
 #include <allegro.h>
 #include <string>
@@ -12,16 +14,16 @@
 #include "base/unique_ptr.h"
 #include "gfx/size.h"
 #include "ui/graphics.h"
-#include "ui/gui.h"
 #include "ui/intern.h"
 #include "ui/paint_event.h"
 #include "ui/preferred_size_event.h"
+#include "ui/ui.h"
 
 static const int kTooltipDelayMsecs = 300;
 
-using namespace gfx;
-
 namespace ui {
+
+using namespace gfx;
 
 TooltipManager::TooltipManager()
   : Widget(kGenericWidget)

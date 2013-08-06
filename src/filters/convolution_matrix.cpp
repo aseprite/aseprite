@@ -16,9 +16,13 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
+#ifdef HAVE_CONFIG_H
 #include "config.h"
+#endif
 
 #include "filters/convolution_matrix.h"
+
+namespace filters {
 
 ConvolutionMatrix::ConvolutionMatrix(int width, int height)
   : m_data(width*height, 0)
@@ -31,3 +35,5 @@ ConvolutionMatrix::ConvolutionMatrix(int width, int height)
   , m_defaultTarget(0)
 {
 }
+
+} // namespace filters

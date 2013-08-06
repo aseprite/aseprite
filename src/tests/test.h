@@ -19,13 +19,15 @@
 #ifndef TESTS_TEST_H_INCLUDED
 #define TESTS_TEST_H_INCLUDED
 
+#ifdef HAVE_CONFIG_H
 #include "config.h"
+#endif
 
 #include <gtest/gtest.h>
 
 #ifdef TEST_GUI
   #include "she/she.h"
-  #include "ui/gui.h"
+  #include "ui/ui.h"
 #endif
 
 #ifdef LINKED_WITH_SHE
@@ -48,7 +50,7 @@ int main(int argc, char* argv[])
     {
       she::ScopedHandle<she::System> system(she::CreateSystem());
       ui::GuiSystem guiSystem;
-      UniquePtr<ui::Manager> manager(new ui::Manager());
+      base::UniquePtr<ui::Manager> manager(new ui::Manager());
   #endif
 
       exitcode = RUN_ALL_TESTS();

@@ -24,43 +24,45 @@
 #include "raster/pen_type.h"
 #include <vector>
 
-class Image;
+namespace raster {
 
-struct PenScanline
-{
-  int state, x1, x2;
-};
+  class Image;
 
-class Pen
-{
-public:
-  Pen();
-  Pen(PenType type, int size, int angle);
-  Pen(const Pen& pen);
-  ~Pen();
+  struct PenScanline {
+    int state, x1, x2;
+  };
 
-  PenType get_type() const { return m_type; }
-  int get_size() const { return m_size; }
-  int get_angle() const { return m_angle; }
-  Image* get_image() { return m_image; }
-  const std::vector<PenScanline>& get_scanline() const { return m_scanline; }
+  class Pen {
+  public:
+    Pen();
+    Pen(PenType type, int size, int angle);
+    Pen(const Pen& pen);
+    ~Pen();
 
-  const gfx::Rect& getBounds() const { return m_bounds; }
+    PenType get_type() const { return m_type; }
+    int get_size() const { return m_size; }
+    int get_angle() const { return m_angle; }
+    Image* get_image() { return m_image; }
+    const std::vector<PenScanline>& get_scanline() const { return m_scanline; }
 
-  void set_type(PenType type);
-  void set_size(int size);
-  void set_angle(int angle);
+    const gfx::Rect& getBounds() const { return m_bounds; }
 
-private:
-  void clean_pen();
-  void regenerate_pen();
+    void set_type(PenType type);
+    void set_size(int size);
+    void set_angle(int angle);
 
-  PenType m_type;                       // Type of pen
-  int m_size;                           // Size (diameter)
-  int m_angle;                          // Angle in degrees 0-360
-  Image* m_image;                       // Image of the pen
-  std::vector<PenScanline> m_scanline;
-  gfx::Rect m_bounds;
-};
+  private:
+    void clean_pen();
+    void regenerate_pen();
+
+    PenType m_type;                       // Type of pen
+    int m_size;                           // Size (diameter)
+    int m_angle;                          // Angle in degrees 0-360
+    Image* m_image;                       // Image of the pen
+    std::vector<PenScanline> m_scanline;
+    gfx::Rect m_bounds;
+  };
+
+} // namespace raster
 
 #endif

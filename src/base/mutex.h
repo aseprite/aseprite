@@ -9,21 +9,24 @@
 
 #include "base/disable_copying.h"
 
-class Mutex
-{
-public:
-  Mutex();
-  ~Mutex();
+namespace base {
 
-  void lock();
-  bool tryLock();
-  void unlock();
+  class mutex {
+  public:
+    mutex();
+    ~mutex();
 
-private:
-  class MutexImpl;
-  MutexImpl* m_impl;
+    void lock();
+    bool try_lock();
+    void unlock();
 
-  DISABLE_COPYING(Mutex);
-};
+  private:
+    class mutex_impl;
+    mutex_impl* m_impl;
+
+    DISABLE_COPYING(mutex);
+  };
+
+} // namespace base
 
 #endif

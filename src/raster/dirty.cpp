@@ -16,12 +16,16 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
+#ifdef HAVE_CONFIG_H
 #include "config.h"
+#endif
 
 #include "raster/dirty.h"
 #include "raster/image.h"
 
 #include <algorithm>
+
+namespace raster {
 
 Dirty::Dirty(PixelFormat format, int x1, int y1, int x2, int y2)
   : m_format(format)
@@ -156,3 +160,5 @@ void Dirty::swapImagePixels(Image* image)
     }
   }
 }
+
+} // namespace raster

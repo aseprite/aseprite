@@ -4,7 +4,9 @@
 // This source file is distributed under a BSD-like license, please
 // read LICENSE.txt for more information.
 
+#ifdef HAVE_CONFIG_H
 #include "config.h"
+#endif
 
 #include "ui/listitem.h"
 
@@ -14,9 +16,9 @@
 #include "ui/theme.h"
 #include "ui/view.h"
 
-using namespace gfx;
-
 namespace ui {
+
+using namespace gfx;
 
 ListItem::ListItem(const char* text)
   : Widget(kListItemWidget)

@@ -19,39 +19,43 @@
 #ifndef RASTER_LAYER_INDEX_H_INCLUDED
 #define RASTER_LAYER_INDEX_H_INCLUDED
 
-class LayerIndex {
-public:
-  LayerIndex() : m_value(0) { }
-  explicit LayerIndex(int value) : m_value(value) { }
+namespace raster {
 
-  LayerIndex next(int i = 1) const { return LayerIndex(m_value+i); };
-  LayerIndex previous(int i = 1) const { return LayerIndex(m_value-i); };
+  class LayerIndex {
+  public:
+    LayerIndex() : m_value(0) { }
+    explicit LayerIndex(int value) : m_value(value) { }
 
-  operator int() { return m_value; }
-  operator const int() const { return m_value; }
+    LayerIndex next(int i = 1) const { return LayerIndex(m_value+i); };
+    LayerIndex previous(int i = 1) const { return LayerIndex(m_value-i); };
 
-  LayerIndex& operator=(const LayerIndex& o) { m_value = o.m_value; return *this; }
-  LayerIndex& operator++() { ++m_value; return *this; }
-  LayerIndex& operator--() { --m_value; return *this; }
-  LayerIndex operator++(int) { LayerIndex old(*this); ++m_value; return old; }
-  LayerIndex operator--(int) { LayerIndex old(*this); --m_value; return old; }
-  bool operator<(const LayerIndex& o) const { return m_value < o.m_value; }
-  bool operator>(const LayerIndex& o) const { return m_value > o.m_value; }
-  bool operator<=(const LayerIndex& o) const { return m_value <= o.m_value; }
-  bool operator>=(const LayerIndex& o) const { return m_value >= o.m_value; }
-  bool operator==(const LayerIndex& o) const { return m_value == o.m_value; }
-  bool operator!=(const LayerIndex& o) const { return m_value != o.m_value; }
+    operator int() { return m_value; }
+    operator const int() const { return m_value; }
 
-private:
-  int m_value;
-};
+    LayerIndex& operator=(const LayerIndex& o) { m_value = o.m_value; return *this; }
+    LayerIndex& operator++() { ++m_value; return *this; }
+    LayerIndex& operator--() { --m_value; return *this; }
+    LayerIndex operator++(int) { LayerIndex old(*this); ++m_value; return old; }
+    LayerIndex operator--(int) { LayerIndex old(*this); --m_value; return old; }
+    bool operator<(const LayerIndex& o) const { return m_value < o.m_value; }
+    bool operator>(const LayerIndex& o) const { return m_value > o.m_value; }
+    bool operator<=(const LayerIndex& o) const { return m_value <= o.m_value; }
+    bool operator>=(const LayerIndex& o) const { return m_value >= o.m_value; }
+    bool operator==(const LayerIndex& o) const { return m_value == o.m_value; }
+    bool operator!=(const LayerIndex& o) const { return m_value != o.m_value; }
 
-inline LayerIndex operator+(const LayerIndex& x, const LayerIndex& y) {
-  return LayerIndex((int)x + (int)y);
-}
+  private:
+    int m_value;
+  };
 
-inline LayerIndex operator-(const LayerIndex& x, const LayerIndex& y) {
-  return LayerIndex((int)x - (int)y);
-}
+  inline LayerIndex operator+(const LayerIndex& x, const LayerIndex& y) {
+    return LayerIndex((int)x + (int)y);
+  }
+
+  inline LayerIndex operator-(const LayerIndex& x, const LayerIndex& y) {
+    return LayerIndex((int)x - (int)y);
+  }
+
+} // namespace raster
 
 #endif

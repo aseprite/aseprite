@@ -19,10 +19,14 @@
 #ifndef RASTER_DITHERING_METHOD_H_INCLUDED
 #define RASTER_DITHERING_METHOD_H_INCLUDED
 
-// Dithering methods
-enum DitheringMethod {
-  DITHERING_NONE,
-  DITHERING_ORDERED,
-};
+namespace raster {
+
+  // Dithering methods
+  enum DitheringMethod {
+    DITHERING_NONE,
+    DITHERING_ORDERED,
+  };
+
+} // namespace raster
 
 #endif

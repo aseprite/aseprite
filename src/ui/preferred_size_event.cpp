@@ -4,14 +4,16 @@
 // This source file is distributed under a BSD-like license, please
 // read LICENSE.txt for more information.
 
+#ifdef HAVE_CONFIG_H
 #include "config.h"
+#endif
 
 #include "ui/preferred_size_event.h"
 #include "ui/widget.h"
 
-using namespace gfx;
-
 namespace ui {
+
+using namespace gfx;
 
 /**
    Event generated to calculate the preferred size of a widget.

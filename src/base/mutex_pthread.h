@@ -10,15 +10,15 @@
 #include <pthread.h>
 #include <errno.h>
 
-class Mutex::MutexImpl
+class base::mutex::mutex_impl
 {
 public:
 
-  MutexImpl() {
+  mutex_impl() {
     pthread_mutex_init(&m_handle, NULL);
   }
 
-  ~MutexImpl() {
+  ~mutex_impl() {
     pthread_mutex_destroy(&m_handle);
   }
 
@@ -26,7 +26,7 @@ public:
     pthread_mutex_lock(&m_handle);
   }
 
-  bool tryLock() {
+  bool try_lock() {
     return pthread_mutex_trylock(&m_handle) != EBUSY;
   }
 

@@ -25,98 +25,101 @@
 
 #include <string>
 
-// Represents the selection (selected pixels, 0/1, 0=non-selected, 1=selected)
-class Mask : public GfxObj
-{
-public:
-  Mask();
-  Mask(const Mask& mask);
-  Mask(int x, int y, Image* bitmap);
-  virtual ~Mask();
+namespace raster {
 
-  int getMemSize() const;
+  // Represents the selection (selected pixels, 0/1, 0=non-selected, 1=selected)
+  class Mask : public GfxObj {
+  public:
+    Mask();
+    Mask(const Mask& mask);
+    Mask(int x, int y, Image* bitmap);
+    virtual ~Mask();
 
-  void setName(const char *name);
-  const std::string& getName() const { return m_name; }
+    int getMemSize() const;
 
-  const Image* getBitmap() const { return m_bitmap; }
-  Image* getBitmap() { return m_bitmap; }
+    void setName(const char *name);
+    const std::string& getName() const { return m_name; }
 
-  // Returns true if the mask is completely empty (i.e. nothing
-  // selected)
-  bool isEmpty() const {
-    return (!m_bitmap ? true: false);
-  }
+    const Image* getBitmap() const { return m_bitmap; }
+    Image* getBitmap() { return m_bitmap; }
 
-  // Returns true if the point is inside the mask
-  bool containsPoint(int u, int v) const {
-    return (m_bitmap &&
-            u >= m_bounds.x && u < m_bounds.x+m_bounds.w &&
-            v >= m_bounds.y && v < m_bounds.y+m_bounds.h &&
-            image_getpixel(m_bitmap, u-m_bounds.x, v-m_bounds.y));
-  }
+    // Returns true if the mask is completely empty (i.e. nothing
+    // selected)
+    bool isEmpty() const {
+      return (!m_bitmap ? true: false);
+    }
 
-  const gfx::Rect& getBounds() const {
-    return m_bounds;
-  }
+    // Returns true if the point is inside the mask
+    bool containsPoint(int u, int v) const {
+      return (m_bitmap &&
+              u >= m_bounds.x && u < m_bounds.x+m_bounds.w &&
+              v >= m_bounds.y && v < m_bounds.y+m_bounds.h &&
+              image_getpixel(m_bitmap, u-m_bounds.x, v-m_bounds.y));
+    }
 
-  void setOrigin(int x, int y) {
-    m_bounds.x = x;
-    m_bounds.y = y;
-  }
+    const gfx::Rect& getBounds() const {
+      return m_bounds;
+    }
 
-  // These functions can be used to disable the automatic call to
-  // "shrink" method (so you can do a lot of modifications without
-  // lossing time shrinking the mask in each little operation).
-  void freeze();
-  void unfreeze();
+    void setOrigin(int x, int y) {
+      m_bounds.x = x;
+      m_bounds.y = y;
+    }
 
-  // Returns true if the mask is frozen (See freeze/unfreeze functions).
-  bool isFrozen() const { return m_freeze_count > 0; }
+    // These functions can be used to disable the automatic call to
+    // "shrink" method (so you can do a lot of modifications without
+    // lossing time shrinking the mask in each little operation).
+    void freeze();
+    void unfreeze();
 
-  // Returns true if the mask is a rectangular region.
-  bool isRectangular() const;
+    // Returns true if the mask is frozen (See freeze/unfreeze functions).
+    bool isFrozen() const { return m_freeze_count > 0; }
 
-  // Clears the mask.
-  void clear();
+    // Returns true if the mask is a rectangular region.
+    bool isRectangular() const;
 
-  // Copies the data from the given mask.
-  void copyFrom(const Mask* sourceMask);
+    // Clears the mask.
+    void clear();
 
-  // Replace the whole mask with the given region.
-  void replace(int x, int y, int w, int h);
-  void replace(const gfx::Rect& bounds);
+    // Copies the data from the given mask.
+    void copyFrom(const Mask* sourceMask);
 
-  // Inverts the mask.
-  void invert();
+    // Replace the whole mask with the given region.
+    void replace(int x, int y, int w, int h);
+    void replace(const gfx::Rect& bounds);
 
-  // Adds the specified rectangle in the mask/selection
-  void add(int x, int y, int w, int h);
-  void add(const gfx::Rect& bounds);
+    // Inverts the mask.
+    void invert();
 
-  void subtract(int x, int y, int w, int h);
-  void intersect(int x, int y, int w, int h);
-  void byColor(const Image* image, int color, int fuzziness);
-  void crop(const Image* image);
+    // Adds the specified rectangle in the mask/selection
+    void add(int x, int y, int w, int h);
+    void add(const gfx::Rect& bounds);
 
-  // Reserves a rectangle to draw onto the bitmap (you should call
-  // shrink after you draw in the bitmap)
-  void reserve(int x, int y, int w, int h);
+    void subtract(int x, int y, int w, int h);
+    void intersect(int x, int y, int w, int h);
+    void byColor(const Image* image, int color, int fuzziness);
+    void crop(const Image* image);
 
-  // Shrinks all sides of the mask to the minimum possible looking at
-  // empty pixels in the bitmap
-  void shrink();
+    // Reserves a rectangle to draw onto the bitmap (you should call
+    // shrink after you draw in the bitmap)
+    void reserve(int x, int y, int w, int h);
 
-  // Displaces the mask bounds origin point.
-  void offsetOrigin(int dx, int dy);
+    // Shrinks all sides of the mask to the minimum possible looking at
+    // empty pixels in the bitmap
+    void shrink();
 
-private:
-  void initialize();
+    // Displaces the mask bounds origin point.
+    void offsetOrigin(int dx, int dy);
 
-  int m_freeze_count;
-  std::string m_name;           // Mask name
-  gfx::Rect m_bounds;           // Region bounds
-  Image* m_bitmap;              // Bitmapped image mask
-};
+  private:
+    void initialize();
+
+    int m_freeze_count;
+    std::string m_name;           // Mask name
+    gfx::Rect m_bounds;           // Region bounds
+    Image* m_bitmap;              // Bitmapped image mask
+  };
+
+} // namespace raster
 
 #endif

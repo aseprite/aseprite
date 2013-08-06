@@ -25,138 +25,141 @@
 
 #include <string>
 
-class Cel;
-class Image;
-class Sprite;
-class Layer;
-class LayerImage;
-class LayerFolder;
+namespace raster {
 
-//////////////////////////////////////////////////////////////////////
-// Layer class
+  class Cel;
+  class Image;
+  class Sprite;
+  class Layer;
+  class LayerImage;
+  class LayerFolder;
 
-enum {
-  LAYER_IS_READABLE = 0x0001,
-  LAYER_IS_WRITABLE = 0x0002,
-  LAYER_IS_LOCKMOVE = 0x0004,
-  LAYER_IS_BACKGROUND = 0x0008,
-};
+  //////////////////////////////////////////////////////////////////////
+  // Layer class
 
-class Layer : public GfxObj
-{
-protected:
-  Layer(GfxObjType type, Sprite* sprite);
+  enum {
+    LAYER_IS_READABLE = 0x0001,
+    LAYER_IS_WRITABLE = 0x0002,
+    LAYER_IS_LOCKMOVE = 0x0004,
+    LAYER_IS_BACKGROUND = 0x0008,
+  };
 
-public:
-  virtual ~Layer();
+  class Layer : public GfxObj {
+  protected:
+    Layer(GfxObjType type, Sprite* sprite);
 
-  int getMemSize() const;
+  public:
+    virtual ~Layer();
 
-  std::string getName() const { return m_name; }
-  void setName(const std::string& name) { m_name = name; }
+    int getMemSize() const;
 
-  Sprite* getSprite() const { return m_sprite; }
-  LayerFolder* getParent() const { return m_parent; }
-  void setParent(LayerFolder* folder) { m_parent = folder; }
+    std::string getName() const { return m_name; }
+    void setName(const std::string& name) { m_name = name; }
 
-  // Gets the previous sibling of this layer.
-  Layer* getPrevious() const;
-  Layer* getNext() const;
+    Sprite* getSprite() const { return m_sprite; }
+    LayerFolder* getParent() const { return m_parent; }
+    void setParent(LayerFolder* folder) { m_parent = folder; }
 
-  bool isImage() const { return getType() == GFXOBJ_LAYER_IMAGE; }
-  bool isFolder() const { return getType() == GFXOBJ_LAYER_FOLDER; }
-  bool isBackground() const { return (m_flags & LAYER_IS_BACKGROUND) == LAYER_IS_BACKGROUND; }
-  bool isMoveable() const { return (m_flags & LAYER_IS_LOCKMOVE) == 0; }
-  bool isReadable() const { return (m_flags & LAYER_IS_READABLE) == LAYER_IS_READABLE; }
-  bool isWritable() const { return (m_flags & LAYER_IS_WRITABLE) == LAYER_IS_WRITABLE; }
+    // Gets the previous sibling of this layer.
+    Layer* getPrevious() const;
+    Layer* getNext() const;
 
-  void setBackground(bool b) { if (b) m_flags |= LAYER_IS_BACKGROUND; else m_flags &= ~LAYER_IS_BACKGROUND; }
-  void setMoveable(bool b) { if (b) m_flags &= ~LAYER_IS_LOCKMOVE; else m_flags |= LAYER_IS_LOCKMOVE; }
-  void setReadable(bool b) { if (b) m_flags |= LAYER_IS_READABLE; else m_flags &= ~LAYER_IS_READABLE; }
-  void setWritable(bool b) { if (b) m_flags |= LAYER_IS_WRITABLE; else m_flags &= ~LAYER_IS_WRITABLE; }
+    bool isImage() const { return getType() == GFXOBJ_LAYER_IMAGE; }
+    bool isFolder() const { return getType() == GFXOBJ_LAYER_FOLDER; }
+    bool isBackground() const { return (m_flags & LAYER_IS_BACKGROUND) == LAYER_IS_BACKGROUND; }
+    bool isMoveable() const { return (m_flags & LAYER_IS_LOCKMOVE) == 0; }
+    bool isReadable() const { return (m_flags & LAYER_IS_READABLE) == LAYER_IS_READABLE; }
+    bool isWritable() const { return (m_flags & LAYER_IS_WRITABLE) == LAYER_IS_WRITABLE; }
 
-  uint32_t getFlags() const { return m_flags; }
-  void setFlags(uint32_t flags) { m_flags = flags; }
+    void setBackground(bool b) { if (b) m_flags |= LAYER_IS_BACKGROUND; else m_flags &= ~LAYER_IS_BACKGROUND; }
+    void setMoveable(bool b) { if (b) m_flags &= ~LAYER_IS_LOCKMOVE; else m_flags |= LAYER_IS_LOCKMOVE; }
+    void setReadable(bool b) { if (b) m_flags |= LAYER_IS_READABLE; else m_flags &= ~LAYER_IS_READABLE; }
+    void setWritable(bool b) { if (b) m_flags |= LAYER_IS_WRITABLE; else m_flags &= ~LAYER_IS_WRITABLE; }
 
-  virtual void getCels(CelList& cels) = 0;
+    uint32_t getFlags() const { return m_flags; }
+    void setFlags(uint32_t flags) { m_flags = flags; }
 
-private:
-  std::string m_name;           // layer name
-  Sprite* m_sprite;             // owner of the layer
-  LayerFolder* m_parent;        // parent layer
-  unsigned short m_flags;
+    virtual void getCels(CelList& cels) = 0;
 
-  // Disable assigment
-  Layer& operator=(const Layer& other);
-};
+  private:
+    std::string m_name;           // layer name
+    Sprite* m_sprite;             // owner of the layer
+    LayerFolder* m_parent;        // parent layer
+    unsigned short m_flags;
 
-//////////////////////////////////////////////////////////////////////
-// LayerImage class
+    // Disable assigment
+    Layer& operator=(const Layer& other);
+  };
 
-class LayerImage : public Layer
-{
-public:
-  explicit LayerImage(Sprite* sprite);
-  virtual ~LayerImage();
+  //////////////////////////////////////////////////////////////////////
+  // LayerImage class
 
-  int getMemSize() const;
+  class LayerImage : public Layer
+  {
+  public:
+    explicit LayerImage(Sprite* sprite);
+    virtual ~LayerImage();
 
-  int getBlendMode() const { return BLEND_MODE_NORMAL; }
+    int getMemSize() const;
 
-  void addCel(Cel *cel);
-  void removeCel(Cel *cel);
-  const Cel* getCel(FrameNumber frame) const;
-  Cel* getCel(FrameNumber frame);
+    int getBlendMode() const { return BLEND_MODE_NORMAL; }
 
-  void getCels(CelList& cels);
+    void addCel(Cel *cel);
+    void removeCel(Cel *cel);
+    const Cel* getCel(FrameNumber frame) const;
+    Cel* getCel(FrameNumber frame);
 
-  void configureAsBackground();
+    void getCels(CelList& cels);
 
-  CelIterator getCelBegin() { return m_cels.begin(); }
-  CelIterator getCelEnd() { return m_cels.end(); }
-  CelConstIterator getCelBegin() const { return m_cels.begin(); }
-  CelConstIterator getCelEnd() const { return m_cels.end(); }
-  int getCelsCount() const { return m_cels.size(); }
+    void configureAsBackground();
 
-private:
-  void destroyAllCels();
+    CelIterator getCelBegin() { return m_cels.begin(); }
+    CelIterator getCelEnd() { return m_cels.end(); }
+    CelConstIterator getCelBegin() const { return m_cels.begin(); }
+    CelConstIterator getCelEnd() const { return m_cels.end(); }
+    int getCelsCount() const { return m_cels.size(); }
 
-  CelList m_cels;   // List of all cels inside this layer used by frames.
-};
+  private:
+    void destroyAllCels();
 
-//////////////////////////////////////////////////////////////////////
-// LayerFolder class
+    CelList m_cels;   // List of all cels inside this layer used by frames.
+  };
 
-class LayerFolder : public Layer
-{
-public:
-  explicit LayerFolder(Sprite* sprite);
-  virtual ~LayerFolder();
+  //////////////////////////////////////////////////////////////////////
+  // LayerFolder class
 
-  int getMemSize() const;
+  class LayerFolder : public Layer
+  {
+  public:
+    explicit LayerFolder(Sprite* sprite);
+    virtual ~LayerFolder();
 
-  const LayerList& getLayersList() { return m_layers; }
-  LayerIterator getLayerBegin() { return m_layers.begin(); }
-  LayerIterator getLayerEnd() { return m_layers.end(); }
-  LayerConstIterator getLayerBegin() const { return m_layers.begin(); }
-  LayerConstIterator getLayerEnd() const { return m_layers.end(); }
-  int getLayersCount() const { return m_layers.size(); }
+    int getMemSize() const;
 
-  void addLayer(Layer* layer);
-  void removeLayer(Layer* layer);
-  void stackLayer(Layer* layer, Layer* after);
+    const LayerList& getLayersList() { return m_layers; }
+    LayerIterator getLayerBegin() { return m_layers.begin(); }
+    LayerIterator getLayerEnd() { return m_layers.end(); }
+    LayerConstIterator getLayerBegin() const { return m_layers.begin(); }
+    LayerConstIterator getLayerEnd() const { return m_layers.end(); }
+    int getLayersCount() const { return m_layers.size(); }
 
-  Layer* getFirstLayer() { return (m_layers.empty() ? NULL: m_layers.front()); }
-  Layer* getLastLayer() { return (m_layers.empty() ? NULL: m_layers.back()); }
+    void addLayer(Layer* layer);
+    void removeLayer(Layer* layer);
+    void stackLayer(Layer* layer, Layer* after);
 
-  void getCels(CelList& cels);
+    Layer* getFirstLayer() { return (m_layers.empty() ? NULL: m_layers.front()); }
+    Layer* getLastLayer() { return (m_layers.empty() ? NULL: m_layers.back()); }
 
-private:
-  void destroyAllLayers();
+    void getCels(CelList& cels);
 
-  LayerList m_layers;
-};
+  private:
+    void destroyAllLayers();
 
-void layer_render(const Layer* layer, Image *image, int x, int y, FrameNumber frame);
+    LayerList m_layers;
+  };
+
+  void layer_render(const Layer* layer, Image *image, int x, int y, FrameNumber frame);
+
+} // namespace raster
 
 #endif

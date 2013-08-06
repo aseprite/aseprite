@@ -16,7 +16,9 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
+#ifdef HAVE_CONFIG_H
 #include "config.h"
+#endif
 
 #include <allegro.h>
 #include <string.h>
@@ -30,7 +32,7 @@
 #include "raster/palette.h"
 #include "raster/rgbmap.h"
 
-//////////////////////////////////////////////////////////////////////
+namespace raster {
 
 Image::Image(PixelFormat format, int w, int h)
   : GfxObj(GFXOBJ_IMAGE)
@@ -711,3 +713,5 @@ bool image_shrink_rect(Image *image, gfx::Rect& bounds, int refpixel)
 
   return (!bounds.isEmpty());
 }
+
+} // namespace raster

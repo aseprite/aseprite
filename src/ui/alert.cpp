@@ -28,14 +28,16 @@
     `-----~---------~-------------~-----------'
  */
 
+#ifdef HAVE_CONFIG_H
 #include "config.h"
+#endif
 
 #include <allegro/unicode.h>
 #include <stdarg.h>
 #include <stdio.h>
 
 #include "base/bind.h"
-#include "ui/gui.h"
+#include "ui/ui.h"
 
 namespace ui {
 

@@ -4,14 +4,16 @@
 // This source file is distributed under a BSD-like license, please
 // read LICENSE.txt for more information.
 
+#ifdef HAVE_CONFIG_H
 #include "config.h"
+#endif
 
 #include "ui/resize_event.h"
 #include "ui/widget.h"
 
-using namespace gfx;
-
 namespace ui {
+
+using namespace gfx;
 
 ResizeEvent::ResizeEvent(Widget* source, const gfx::Rect& bounds)
   : Event(source)

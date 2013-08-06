@@ -19,7 +19,6 @@ add_library(ui-lib
   fontbmp.cpp
   graphics.cpp
   grid.cpp
-  gui.cpp
   image_view.cpp
   int_entry.cpp
   intern.cpp
@@ -50,6 +49,7 @@ add_library(ui-lib
   theme.cpp
   timer.cpp
   tooltips.cpp
+  ui.cpp
   view.cpp
   viewport.cpp
   widget.cpp

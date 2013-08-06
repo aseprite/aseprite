@@ -9,6 +9,10 @@
 
 #include <string>
 
-std::string get_pretty_memory_size(size_t memsize);
+namespace base {
+
+  std::string get_pretty_memory_size(size_t memsize);
+
+} // namespace base
 
 #endif

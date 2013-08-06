@@ -16,7 +16,9 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
+#ifdef HAVE_CONFIG_H
 #include "config.h"
+#endif
 
 #include "raster/layer_io.h"
 
@@ -98,7 +100,7 @@ Layer* read_layer(std::istream& is, LayerSubObjectsSerializer* subObjects, Sprit
   uint32_t flags = read32(is);                     // Flags
   uint16_t layer_type = read16(is);                // Type
 
-  UniquePtr<Layer> layer;
+  base::UniquePtr<Layer> layer;
 
   switch (layer_type) {
 

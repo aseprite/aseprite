@@ -16,11 +16,15 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
+#ifdef HAVE_CONFIG_H
 #include "config.h"
+#endif
 
 #include "filters/color_curve.h"
 
 #include <algorithm>
+
+namespace filters {
 
 ColorCurve::ColorCurve(Type type)
   : m_type(type)
@@ -93,3 +97,5 @@ void ColorCurve::getValues(int x1, int x2, std::vector<int>& values)
     }
   }
 }
+
+} // namespace filters

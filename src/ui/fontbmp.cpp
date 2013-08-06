@@ -9,7 +9,9 @@
    allegro/tools/plugins/datfont.c
 */
 
+#ifdef HAVE_CONFIG_H
 #include "config.h"
+#endif
 
 #include <allegro.h>
 #include <allegro/internal/aintern.h>

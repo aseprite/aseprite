@@ -16,12 +16,17 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
+#ifdef HAVE_CONFIG_H
 #include "config.h"
+#endif
 
-#include <string.h>
+#include "raster/stock.h"
 
 #include "raster/image.h"
-#include "raster/stock.h"
+
+#include <cstring>
+
+namespace raster {
 
 Stock::Stock(PixelFormat format)
   : GfxObj(GFXOBJ_STOCK)
@@ -111,3 +116,5 @@ void Stock::replaceImage(int index, Image* image)
   ASSERT((index > 0) && (index < size()));
   m_image[index] = image;
 }
+
+} // namespace raster

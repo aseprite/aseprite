@@ -4,14 +4,16 @@
 // This source file is distributed under a BSD-like license, please
 // read LICENSE.txt for more information.
 
+#ifdef HAVE_CONFIG_H
 #include "config.h"
+#endif
 
 #include "undo/undoers_stack.h"
 
 #include "undo/undo_history.h"
 #include "undo/undoer.h"
 
-using namespace undo;
+namespace undo {
 
 UndoersStack::UndoersStack(UndoHistory* undoHistory)
 {
@@ -104,3 +106,5 @@ size_t UndoersStack::countUndoGroups() const
 
   return groups;
 }
+
+} // namespace undo

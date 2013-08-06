@@ -23,82 +23,86 @@
 
 #include <string>
 
-class Image;
-class Layer;
+namespace raster {
+  class Image;
+  class Layer;
+}
 
 namespace app {
 
-class Color {
-public:
-  enum Type {
-    MaskType,
-    RgbType,
-    HsvType,
-    GrayType,
-    IndexType,
+  using namespace raster;
+
+  class Color {
+  public:
+    enum Type {
+      MaskType,
+      RgbType,
+      HsvType,
+      GrayType,
+      IndexType,
+    };
+
+    enum HumanReadableString {
+      ShortHumanReadableString,
+      LongHumanReadableString
+    };
+
+    // Default ctor is mask color
+    Color() : m_type(MaskType) { }
+
+    static Color fromMask();
+    static Color fromRgb(int r, int g, int b);
+    static Color fromHsv(int h, int s, int v); // h=[0,360], s=[0,100], v=[0,100]
+    static Color fromGray(int g);
+    static Color fromIndex(int index);
+
+    static Color fromImage(PixelFormat pixelFormat, int pixel);
+    static Color fromImageGetPixel(Image* image, int x, int y);
+    static Color fromString(const std::string& str);
+
+    std::string toString() const;
+    std::string toHumanReadableString(PixelFormat format, HumanReadableString type) const;
+
+    bool operator==(const Color& other) const;
+    bool operator!=(const Color& other) const {
+      return !operator==(other);
+    }
+
+    Type getType() const {
+      return m_type;
+    }
+
+    bool isValid() const;
+
+    // Getters
+    int getRed() const;
+    int getGreen() const;
+    int getBlue() const;
+    int getHue() const;
+    int getSaturation() const;
+    int getValue() const;
+    int getGray() const;
+    int getIndex() const;
+
+  private:
+    Color(Type type) : m_type(type) { }
+
+    // Color type
+    Type m_type;
+
+    // Color value
+    union {
+      struct {
+        int r, g, b;
+      } rgb;
+      struct {
+        int h, s, v;
+      } hsv;
+      int gray;
+      int index;
+    } m_value;
   };
 
-  enum HumanReadableString {
-    ShortHumanReadableString,
-    LongHumanReadableString
-  };
-
-  // Default ctor is mask color
-  Color() : m_type(MaskType) { }
-
-  static Color fromMask();
-  static Color fromRgb(int r, int g, int b);
-  static Color fromHsv(int h, int s, int v); // h=[0,360], s=[0,100], v=[0,100]
-  static Color fromGray(int g);
-  static Color fromIndex(int index);
-
-  static Color fromImage(PixelFormat pixelFormat, int pixel);
-  static Color fromImageGetPixel(Image* image, int x, int y);
-  static Color fromString(const std::string& str);
-
-  std::string toString() const;
-  std::string toHumanReadableString(PixelFormat format, HumanReadableString type) const;
-
-  bool operator==(const Color& other) const;
-  bool operator!=(const Color& other) const {
-    return !operator==(other);
-  }
-
-  Type getType() const {
-    return m_type;
-  }
-
-  bool isValid() const;
-
-  // Getters
-  int getRed() const;
-  int getGreen() const;
-  int getBlue() const;
-  int getHue() const;
-  int getSaturation() const;
-  int getValue() const;
-  int getGray() const;
-  int getIndex() const;
-
-private:
-  Color(Type type) : m_type(type) { }
-
-  // Color type
-  Type m_type;
-
-  // Color value
-  union {
-    struct {
-      int r, g, b;
-    } rgb;
-    struct {
-      int h, s, v;
-    } hsv;
-    int gray;
-    int index;
-  } m_value;
-};
-
-}
+} // namespace app
 
 #endif

@@ -4,20 +4,21 @@
 // This source file is distributed under a BSD-like license, please
 // read LICENSE.txt for more information.
 
+#ifdef HAVE_CONFIG_H
 #include "config.h"
+#endif
 
 #include "base/compiler_specific.h"
 #include "gfx/size.h"
-#include "ui/gui.h"
+#include "ui/ui.h"
 
 #include <allegro.h>
 
-using namespace gfx;
-
 namespace ui {
 
-class ComboBoxButton : public Button
-{
+using namespace gfx;
+
+class ComboBoxButton : public Button {
 public:
   ComboBoxButton() : Button("") {
     setFocusStop(false);

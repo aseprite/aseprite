@@ -21,29 +21,32 @@
 
 #include "filters/filter.h"
 
-class ReplaceColorFilter : public Filter
-{
-public:
-  ReplaceColorFilter();
+namespace filters {
 
-  void setFrom(int from);
-  void setTo(int to);
-  void setTolerance(int tolerance);
+  class ReplaceColorFilter : public Filter {
+  public:
+    ReplaceColorFilter();
 
-  int getFrom() const { return m_from; }
-  int getTo() const { return m_to; }
-  int getTolerance() const { return m_tolerance; }
+    void setFrom(int from);
+    void setTo(int to);
+    void setTolerance(int tolerance);
 
-  // Filter implementation
-  const char* getName();
-  void applyToRgba(FilterManager* filterMgr);
-  void applyToGrayscale(FilterManager* filterMgr);
-  void applyToIndexed(FilterManager* filterMgr);
+    int getFrom() const { return m_from; }
+    int getTo() const { return m_to; }
+    int getTolerance() const { return m_tolerance; }
 
-private:
-  int m_from;
-  int m_to;
-  int m_tolerance;
-};
+    // Filter implementation
+    const char* getName();
+    void applyToRgba(FilterManager* filterMgr);
+    void applyToGrayscale(FilterManager* filterMgr);
+    void applyToIndexed(FilterManager* filterMgr);
+
+  private:
+    int m_from;
+    int m_to;
+    int m_tolerance;
+  };
+
+} // namespace filters
 
 #endif

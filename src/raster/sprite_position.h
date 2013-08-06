@@ -22,28 +22,32 @@
 #include "raster/frame_number.h"
 #include "raster/layer_index.h"
 
-class Sprite;
+namespace raster {
 
-class SpritePosition {
-public:
-  SpritePosition() { }
-  SpritePosition(LayerIndex layerIndex, FrameNumber frameNumber)
-    : m_layerIndex(layerIndex)
-    , m_frameNumber(frameNumber) {
-  }
+  class Sprite;
 
-  const LayerIndex& layerIndex() const { return m_layerIndex; }
-  const FrameNumber& frameNumber() const { return m_frameNumber; }
+  class SpritePosition {
+  public:
+    SpritePosition() { }
+    SpritePosition(LayerIndex layerIndex, FrameNumber frameNumber)
+      : m_layerIndex(layerIndex)
+      , m_frameNumber(frameNumber) {
+    }
 
-  void layerIndex(LayerIndex layerIndex) { m_layerIndex = layerIndex; }
-  void frameNumber(FrameNumber frameNumber) { m_frameNumber = frameNumber; }
+    const LayerIndex& layerIndex() const { return m_layerIndex; }
+    const FrameNumber& frameNumber() const { return m_frameNumber; }
 
-  bool operator==(const SpritePosition& o) const { return m_layerIndex == o.m_layerIndex && m_frameNumber == o.m_frameNumber; }
-  bool operator!=(const SpritePosition& o) const { return m_layerIndex != o.m_layerIndex || m_frameNumber != o.m_frameNumber; }
+    void layerIndex(LayerIndex layerIndex) { m_layerIndex = layerIndex; }
+    void frameNumber(FrameNumber frameNumber) { m_frameNumber = frameNumber; }
 
-private:
-  LayerIndex m_layerIndex;
-  FrameNumber m_frameNumber;
-};
+    bool operator==(const SpritePosition& o) const { return m_layerIndex == o.m_layerIndex && m_frameNumber == o.m_frameNumber; }
+    bool operator!=(const SpritePosition& o) const { return m_layerIndex != o.m_layerIndex || m_frameNumber != o.m_frameNumber; }
+
+  private:
+    LayerIndex m_layerIndex;
+    FrameNumber m_frameNumber;
+  };
+
+} // namespace raster
 
 #endif

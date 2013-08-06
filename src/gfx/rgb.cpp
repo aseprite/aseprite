@@ -8,7 +8,8 @@
 #include "gfx/hsv.h"
 #include <cmath>
 
-using namespace gfx;
+namespace gfx {
+
 using namespace std;
 
 // Reference: http://en.wikipedia.org/wiki/HSL_and_HSV
@@ -77,3 +78,5 @@ int Rgb::minComponent() const
   else
     return (m_green < m_blue) ? m_green: m_blue;
 }
+
+} // namespace gfx

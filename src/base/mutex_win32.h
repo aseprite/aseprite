@@ -9,15 +9,15 @@
 
 #include <windows.h>
 
-class Mutex::MutexImpl
+class base::mutex::mutex_impl
 {
 public:
 
-  MutexImpl() {
+  mutex_impl() {
     InitializeCriticalSection(&m_handle);
   }
 
-  ~MutexImpl() {
+  ~mutex_impl() {
     DeleteCriticalSection(&m_handle);
   }
 
@@ -25,7 +25,7 @@ public:
     EnterCriticalSection(&m_handle);
   }
 
-  bool tryLock() {
+  bool try_lock() {
 #if(_WIN32_WINNT >= 0x0400)
     return TryEnterCriticalSection(&m_handle) ? true: false;
 #else

@@ -57,8 +57,7 @@ namespace ui {
 
   //////////////////////////////////////////////////////////////////////
 
-  class Widget : public Component
-  {
+  class Widget : public Component {
   public:
     WidgetType type;              // widget's type
 

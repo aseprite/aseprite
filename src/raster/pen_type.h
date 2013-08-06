@@ -19,13 +19,17 @@
 #ifndef RASTER_PEN_TYPE_H_INCLUDED
 #define RASTER_PEN_TYPE_H_INCLUDED
 
-enum PenType {
-  PEN_TYPE_CIRCLE   = 0,
-  PEN_TYPE_SQUARE   = 1,
-  PEN_TYPE_LINE     = 2,
+namespace raster {
 
-  PEN_TYPE_FIRST    = PEN_TYPE_CIRCLE,
-  PEN_TYPE_LAST     = PEN_TYPE_LINE,
-};
+  enum PenType {
+    PEN_TYPE_CIRCLE   = 0,
+    PEN_TYPE_SQUARE   = 1,
+    PEN_TYPE_LINE     = 2,
+
+    PEN_TYPE_FIRST    = PEN_TYPE_CIRCLE,
+    PEN_TYPE_LAST     = PEN_TYPE_LINE,
+  };
+
+} // namespace raster
 
 #endif

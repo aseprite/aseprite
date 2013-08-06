@@ -16,7 +16,9 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
+#ifdef HAVE_CONFIG_H
 #include "config.h"
+#endif
 
 #include "app/data_recovery.h"
 
@@ -24,8 +26,8 @@
 #include "base/fs.h"
 #include "base/path.h"
 #include "base/temp_dir.h"
-#include "document.h"
-#include "ui_context.h"
+#include "app/document.h"
+#include "app/ui_context.h"
 
 #include <allegro.h>
 

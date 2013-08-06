@@ -4,7 +4,9 @@
 // This source file is distributed under a BSD-like license, please
 // read LICENSE.txt for more information.
 
+#ifdef HAVE_CONFIG_H
 #include "config.h"
+#endif
 
 #include <cassert>
 #include <cstdio>
@@ -106,14 +108,14 @@ struct slot_t
 
 static bool memleak_status = false;
 static slot_t* headslot;
-static Mutex* mutex = NULL;
+static base::mutex* mutex = NULL;
 
 void base_memleak_init()
 {
   assert(!memleak_status);
 
   headslot = NULL;
-  mutex = new Mutex();
+  mutex = new base::mutex();
 
   memleak_status = true;
 }
@@ -211,7 +213,7 @@ static void addslot(void* ptr, size_t size)
   p->ptr = ptr;
   p->size = size;
 
-  ScopedLock lock(*mutex);
+  scoped_lock lock(*mutex);
   p->next = headslot;
   headslot = p;
 }
@@ -225,7 +227,7 @@ static void delslot(void* ptr)
 
   assert(ptr != NULL);
 
-  ScopedLock lock(*mutex);
+  scoped_lock lock(*mutex);
 
   for (it=headslot; it!=NULL; prev=it, it=it->next) {
     if (it->ptr == ptr) {

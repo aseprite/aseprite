@@ -23,26 +23,29 @@
 #include "raster/frame_number.h"
 #include "raster/pixel_format.h"
 
-class Image;
-class Palette;
-class RgbMap;
-class Sprite;
-class Stock;
+namespace raster {
 
-namespace quantization {
+  class Image;
+  class Palette;
+  class RgbMap;
+  class Sprite;
+  class Stock;
 
-  // Creates a new palette suitable to quantize the given RGB sprite to Indexed color.
-  Palette* create_palette_from_rgb(const Sprite* sprite, FrameNumber frameNumber);
+  namespace quantization {
 
-  // Changes the image pixel format. The dithering method is used only
-  // when you want to convert from RGB to Indexed.
-  Image* convert_pixel_format(const Image* image,
-                              PixelFormat pixelFormat,
-                              DitheringMethod ditheringMethod,
-                              const RgbMap* rgbmap,
-                              const Palette* palette,
-                              bool has_background_layer);
+    // Creates a new palette suitable to quantize the given RGB sprite to Indexed color.
+    Palette* create_palette_from_rgb(const Sprite* sprite, FrameNumber frameNumber);
 
-}
+    // Changes the image pixel format. The dithering method is used only
+    // when you want to convert from RGB to Indexed.
+    Image* convert_pixel_format(const Image* image,
+                                PixelFormat pixelFormat,
+                                DitheringMethod ditheringMethod,
+                                const RgbMap* rgbmap,
+                                const Palette* palette,
+                                bool has_background_layer);
+
+  } // namespace quantization
+} // namespace raster
 
 #endif

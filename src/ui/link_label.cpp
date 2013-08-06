@@ -5,10 +5,13 @@
 // read LICENSE.txt for more information.
 
 
+#ifdef HAVE_CONFIG_H
 #include "config.h"
+#endif
 
-#include "launcher.h"
 #include "ui/link_label.h"
+
+#include "base/launcher.h"
 #include "ui/message.h"
 #include "ui/system.h"
 #include "ui/theme.h"
@@ -54,7 +57,7 @@ bool LinkLabel::onProcessMessage(Message* msg)
     case kMouseUpMessage:
       if (isEnabled()) {
         if (!m_url.empty())
-          Launcher::openUrl(m_url);
+          base::launcher::open_url(m_url);
         Click();
       }
       break;

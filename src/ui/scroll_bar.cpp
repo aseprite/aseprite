@@ -4,7 +4,9 @@
 // This source file is distributed under a BSD-like license, please
 // read LICENSE.txt for more information.
 
+#ifdef HAVE_CONFIG_H
 #include "config.h"
+#endif
 
 #include "gfx/size.h"
 #include "ui/message.h"
@@ -12,9 +14,9 @@
 #include "ui/theme.h"
 #include "ui/view.h"
 
-using namespace gfx;
-
 namespace ui {
+
+using namespace gfx;
 
 // Internal stuff shared by all scroll-bars (as the user cannot move
 // two scroll-bars at the same time).

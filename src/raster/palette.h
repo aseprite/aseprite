@@ -25,84 +25,86 @@
 #include <allegro/color.h>
 #include <vector>
 
-class SortPalette
-{
-public:
-  enum Channel {
-    RGB_Red,
-    RGB_Green,
-    RGB_Blue,
-    HSV_Hue,
-    HSV_Saturation,
-    HSV_Value,
-    HSL_Lightness,
-    YUV_Luma,
+namespace raster {
+
+  class SortPalette {
+  public:
+    enum Channel {
+      RGB_Red,
+      RGB_Green,
+      RGB_Blue,
+      HSV_Hue,
+      HSV_Saturation,
+      HSV_Value,
+      HSL_Lightness,
+      YUV_Luma,
+    };
+
+    SortPalette(Channel channel, bool ascending);
+    ~SortPalette();
+
+    void addChain(SortPalette* chain);
+
+    bool operator()(uint32_t c1, uint32_t c2);
+
+  private:
+    Channel m_channel;
+    bool m_ascending;
+    SortPalette* m_chain;
   };
 
-  SortPalette(Channel channel, bool ascending);
-  ~SortPalette();
+  class Palette : public GfxObj {
+  public:
+    enum { MaxColors = 256 };
 
-  void addChain(SortPalette* chain);
+    Palette(FrameNumber frame, int ncolors);
+    Palette(const Palette& palette);
+    ~Palette();
 
-  bool operator()(uint32_t c1, uint32_t c2);
+    static Palette* createGrayscale();
 
-private:
-  Channel m_channel;
-  bool m_ascending;
-  SortPalette* m_chain;
-};
+    int size() const { return m_colors.size(); }
+    void resize(int ncolors);
 
-class Palette : public GfxObj
-{
-public:
-  enum { MaxColors = 256 };
+    int getModifications() const { return m_modifications; }
 
-  Palette(FrameNumber frame, int ncolors);
-  Palette(const Palette& palette);
-  ~Palette();
+    FrameNumber getFrame() const { return m_frame; }
+    void setFrame(FrameNumber frame);
 
-  static Palette* createGrayscale();
+    uint32_t getEntry(int i) const {
+      ASSERT(i >= 0 && i < size());
+      return m_colors[i];
+    }
 
-  int size() const { return m_colors.size(); }
-  void resize(int ncolors);
+    void setEntry(int i, uint32_t color);
 
-  int getModifications() const { return m_modifications; }
+    void copyColorsTo(Palette* dst) const;
 
-  FrameNumber getFrame() const { return m_frame; }
-  void setFrame(FrameNumber frame);
+    int countDiff(const Palette* other, int* from, int* to) const;
 
-  uint32_t getEntry(int i) const {
-    ASSERT(i >= 0 && i < size());
-    return m_colors[i];
-  }
+    // Returns true if the palette is completelly black.
+    bool isBlack() const;
+    void makeBlack();
 
-  void setEntry(int i, uint32_t color);
+    void makeHorzRamp(int from, int to);
+    void makeVertRamp(int from, int to, int columns);
+    void makeRectRamp(int from, int to, int columns);
+    void sort(int from, int to, SortPalette* sort_palette, std::vector<int>& mapping);
 
-  void copyColorsTo(Palette* dst) const;
+    void toAllegro(RGB* rgb) const;
+    void fromAllegro(const RGB* rgb);
 
-  int countDiff(const Palette* other, int* from, int* to) const;
+    static Palette* load(const char *filename);
+    bool save(const char *filename) const;
 
-  // Returns true if the palette is completelly black.
-  bool isBlack() const;
-  void makeBlack();
+    int findBestfit(int r, int g, int b) const;
 
-  void makeHorzRamp(int from, int to);
-  void makeVertRamp(int from, int to, int columns);
-  void makeRectRamp(int from, int to, int columns);
-  void sort(int from, int to, SortPalette* sort_palette, std::vector<int>& mapping);
+  private:
+    FrameNumber m_frame;
+    std::vector<uint32_t> m_colors;
+    int m_modifications;
+  };
 
-  void toAllegro(RGB* rgb) const;
-  void fromAllegro(const RGB* rgb);
-
-  static Palette* load(const char *filename);
-  bool save(const char *filename) const;
-
-  int findBestfit(int r, int g, int b) const;
-
-private:
-  FrameNumber m_frame;
-  std::vector<uint32_t> m_colors;
-  int m_modifications;
-};
+} // namespace raster
 
 #endif

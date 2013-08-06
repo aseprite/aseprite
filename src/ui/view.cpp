@@ -4,7 +4,9 @@
 // This source file is distributed under a BSD-like license, please
 // read LICENSE.txt for more information.
 
+#ifdef HAVE_CONFIG_H
 #include "config.h"
+#endif
 
 #include "gfx/size.h"
 #include "ui/intern.h"
@@ -19,9 +21,9 @@
 
 #define BAR_SIZE getTheme()->scrollbar_size
 
-using namespace gfx;
-
 namespace ui {
+
+using namespace gfx;
 
 View::View()
   : Widget(kViewWidget)

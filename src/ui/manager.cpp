@@ -7,19 +7,21 @@
 // #define REPORT_EVENTS
 // #define LIMIT_DISPATCH_TIME
 
+#ifdef HAVE_CONFIG_H
 #include "config.h"
+#endif
 
 #include "ui/manager.h"
 
-#include "ui/gui.h"
 #include "ui/intern.h"
+#include "ui/ui.h"
 
 #ifdef REPORT_EVENTS
 #include <cstdio>
 #endif
 #include <allegro.h>
-#include <vector>
 #include <list>
+#include <vector>
 
 namespace ui {
 

@@ -21,12 +21,12 @@
 
 #include <iosfwd>
 
-class Mask;
-
 namespace raster {
 
-void write_mask(std::ostream& os, Mask* mask);
-Mask* read_mask(std::istream& is);
+  class Mask;
+
+  void write_mask(std::ostream& os, Mask* mask);
+  Mask* read_mask(std::istream& is);
 
 } // namespace raster
 

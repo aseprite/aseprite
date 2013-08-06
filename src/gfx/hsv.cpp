@@ -8,7 +8,8 @@
 #include "gfx/rgb.h"
 #include <cmath>
 
-using namespace gfx;
+namespace gfx {
+
 using namespace std;
 
 Hsv::Hsv(double hue, double saturation, double value)
@@ -84,3 +85,5 @@ int Hsv::valueInt() const
 {
   return int(floor(m_value*100.0 + 0.5));
 }
+
+} // namespace gfx

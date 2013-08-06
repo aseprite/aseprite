@@ -23,25 +23,29 @@
 
 #include "filters/filter.h"
 
-class ColorCurve;
+namespace filters {
 
-class ColorCurveFilter : public Filter
-{
-public:
-  ColorCurveFilter();
+  class ColorCurve;
 
-  void setCurve(ColorCurve* curve);
-  ColorCurve* getCurve() const { return m_curve; }
+  class ColorCurveFilter : public Filter
+  {
+  public:
+    ColorCurveFilter();
 
-  // Filter implementation
-  const char* getName();
-  void applyToRgba(FilterManager* filterMgr);
-  void applyToGrayscale(FilterManager* filterMgr);
-  void applyToIndexed(FilterManager* filterMgr);
+    void setCurve(ColorCurve* curve);
+    ColorCurve* getCurve() const { return m_curve; }
 
-private:
-  ColorCurve* m_curve;
-  std::vector<int> m_cmap;
-};
+    // Filter implementation
+    const char* getName();
+    void applyToRgba(FilterManager* filterMgr);
+    void applyToGrayscale(FilterManager* filterMgr);
+    void applyToIndexed(FilterManager* filterMgr);
+
+  private:
+    ColorCurve* m_curve;
+    std::vector<int> m_cmap;
+  };
+
+} // namespace filters
 
 #endif

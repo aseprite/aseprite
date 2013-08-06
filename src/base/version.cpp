@@ -4,11 +4,13 @@
 // This source file is distributed under a BSD-like license, please
 // read LICENSE.txt for more information.
 
+#ifdef HAVE_CONFIG_H
 #include "config.h"
+#endif
 
 #include "base/version.h"
 
-using namespace base;
+namespace base {
 
 Version::Version()
 {
@@ -65,3 +67,5 @@ bool Version::operator<(const Version& other) const
 
   return false;
 }
+
+} // namespace base

@@ -16,24 +16,27 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
+#ifdef HAVE_CONFIG_H
 #include "config.h"
-
-#include <string>
-#include <cstdlib>
-#include <sstream>
-#include <iomanip>
+#endif
 
 #include "app/color.h"
+
 #include "app/color_utils.h"
+#include "app/modules/palettes.h"
 #include "gfx/hsv.h"
 #include "gfx/rgb.h"
-#include "modules/palettes.h"
 #include "raster/image.h"
 #include "raster/palette.h"
 
-using namespace gfx;
+#include <cstdlib>
+#include <iomanip>
+#include <sstream>
+#include <string>
 
 namespace app {
+
+using namespace gfx;
 
 // static
 Color Color::fromMask()

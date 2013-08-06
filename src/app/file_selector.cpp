@@ -16,9 +16,11 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
+#ifdef HAVE_CONFIG_H
 #include "config.h"
+#endif
 
-#include "widgets/file_selector.h"
+#include "app/ui/file_selector.h"
 
 namespace app {
 
@@ -26,7 +28,7 @@ base::string show_file_selector(const base::string& title,
                                 const base::string& initialPath,
                                 const base::string& showExtensions)
 {
-  widgets::FileSelector fileSelector;
+  FileSelector fileSelector;
   return fileSelector.show(title, initialPath, showExtensions);
 }
 

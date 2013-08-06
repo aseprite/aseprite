@@ -16,13 +16,17 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
+#ifdef HAVE_CONFIG_H
 #include "config.h"
+#endif
 
 #include "raster/algo.h"
 #include "raster/pen.h"
 #include "raster/image.h"
 
 #include <cmath>
+
+namespace raster {
 
 Pen::Pen()
 {
@@ -177,3 +181,5 @@ void Pen::regenerate_pen()
   m_bounds = gfx::Rect(-m_image->w/2, -m_image->h/2,
                        m_image->w, m_image->h);
 }
+
+} // namespace raster

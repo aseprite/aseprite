@@ -22,6 +22,7 @@
 #include <list>
 #include <queue>
 
+namespace raster {
 namespace quantization {
 
   template<class Histogram>
@@ -297,6 +298,7 @@ namespace quantization {
     }
   }
 
-}
+} // namespace quantization
+} // namespace raster
 
 #endif

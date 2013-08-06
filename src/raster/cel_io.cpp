@@ -16,7 +16,9 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
+#ifdef HAVE_CONFIG_H
 #include "config.h"
+#endif
 
 #include "raster/cel_io.h"
 
@@ -62,7 +64,7 @@ Cel* read_cel(std::istream& is)
   int y = (int16_t)read16(is);
   int opacity = read16(is);
 
-  UniquePtr<Cel> cel(new Cel(frame, imageIndex));
+  base::UniquePtr<Cel> cel(new Cel(frame, imageIndex));
 
   cel->setPosition(x, y);
   cel->setOpacity(opacity);

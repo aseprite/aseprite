@@ -16,7 +16,9 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
+#ifdef HAVE_CONFIG_H
 #include "config.h"
+#endif
 
 #include "filters/convolution_matrix_filter.h"
 
@@ -28,27 +30,13 @@
 #include "raster/palette.h"
 #include "raster/rgbmap.h"
 
-ConvolutionMatrixFilter::ConvolutionMatrixFilter()
-  : m_matrix(NULL)
-  , m_tiledMode(TILED_NONE)
-{
-}
+namespace filters {
 
-void ConvolutionMatrixFilter::setMatrix(const SharedPtr<ConvolutionMatrix>& matrix)
-{
-  m_matrix = matrix;
-  m_lines.resize(matrix->getHeight());
-}
-
-void ConvolutionMatrixFilter::setTiledMode(TiledMode tiledMode)
-{
-  m_tiledMode = tiledMode;
-}
+using namespace raster;
 
 namespace {
 
-  struct GetPixelsDelegate
-  {
+  struct GetPixelsDelegate {
     uint32_t color;
     int div;
     const int* matrixData;
@@ -60,8 +48,7 @@ namespace {
 
   };
 
-  struct GetPixelsDelegateRgba : public GetPixelsDelegate
-  {
+  struct GetPixelsDelegateRgba : public GetPixelsDelegate {
     int r, g, b, a;
 
     void reset(const ConvolutionMatrix* matrix) {
@@ -86,8 +73,7 @@ namespace {
 
   };
 
-  struct GetPixelsDelegateGrayscale : public GetPixelsDelegate
-  {
+  struct GetPixelsDelegateGrayscale : public GetPixelsDelegate {
     int v, a;
 
     void reset(const ConvolutionMatrix* matrix) {
@@ -110,8 +96,7 @@ namespace {
 
   };
 
-  struct GetPixelsDelegateIndexed : public GetPixelsDelegate
-  {
+  struct GetPixelsDelegateIndexed : public GetPixelsDelegate {
     const Palette* pal;
     int r, g, b, index;
 
@@ -135,6 +120,23 @@ namespace {
 
   };
 
+}
+
+ConvolutionMatrixFilter::ConvolutionMatrixFilter()
+  : m_matrix(NULL)
+  , m_tiledMode(TILED_NONE)
+{
+}
+
+void ConvolutionMatrixFilter::setMatrix(const SharedPtr<ConvolutionMatrix>& matrix)
+{
+  m_matrix = matrix;
+  m_lines.resize(matrix->getHeight());
+}
+
+void ConvolutionMatrixFilter::setTiledMode(TiledMode tiledMode)
+{
+  m_tiledMode = tiledMode;
 }
 
 const char* ConvolutionMatrixFilter::getName()
@@ -331,3 +333,5 @@ void ConvolutionMatrixFilter::applyToIndexed(FilterManager* filterMgr)
     }
   }
 }
+
+} // namespace filters

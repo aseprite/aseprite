@@ -4,7 +4,9 @@
 // This source file is distributed under a BSD-like license, please
 // read LICENSE.txt for more information.
 
+#ifdef HAVE_CONFIG_H
 #include "config.h"
+#endif
 
 #include "ui/separator.h"
 
@@ -13,9 +15,9 @@
 #include "ui/preferred_size_event.h"
 #include "ui/theme.h"
 
-using namespace gfx;
-
 namespace ui {
+
+using namespace gfx;
 
 Separator::Separator(const char* text, int align)
  : Widget(kSeparatorWidget)

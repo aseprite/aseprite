@@ -21,11 +21,11 @@
 
 #include "app/project_observer.h"
 #include "base/disable_copying.h"
-#include "observable.h"
+#include "base/observable.h"
 
 namespace app {
 
-  class Project : public Observable<ProjectObserver> {
+  class Project : public base::Observable<ProjectObserver> {
   public:
     Project();
     ~Project();

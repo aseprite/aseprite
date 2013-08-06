@@ -35,6 +35,10 @@
    TARGET_ALPHA_CHANNEL         |       \
    TARGET_GRAY_CHANNEL          )
 
-typedef int Target;
+namespace filters {
+
+  typedef int Target;
+
+} // namespace filters
 
 #endif

@@ -4,7 +4,9 @@
 // This source file is distributed under a BSD-like license, please
 // read LICENSE.txt for more information.
 
+#ifdef HAVE_CONFIG_H
 #include "config.h"
+#endif
 
 #include <allegro.h>
 #include <allegro/internal/aintern.h>
@@ -17,14 +19,14 @@
 #include "ui/system.h"
 #include "ui/widget.h"
 
-using namespace gfx;
-
 /* TODO optional anti-aliased textout */
 #define SETUP_ANTIALISING(f, bg, fill_bg)                               \
   ji_font_set_aa_mode(f, fill_bg ||                                     \
                          bitmap_color_depth(ji_screen) == 8 ? to_system(bg): -1)
 
 namespace ui {
+
+using namespace gfx;
 
 void jrectedge(BITMAP *bmp, int x1, int y1, int x2, int y2,
                ui::Color c1, ui::Color c2)

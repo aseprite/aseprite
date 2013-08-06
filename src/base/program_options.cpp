@@ -4,7 +4,9 @@
 // This source file is ditributed under a BSD-like license, please
 // read LICENSE.txt for more information.
 
+#ifdef HAVE_CONFIG_H
 #include "config.h"
+#endif
 
 #include "base/program_options.h"
 
@@ -12,9 +14,9 @@
 #include <sstream>
 #include <iomanip>
 
-using namespace std;
-
 namespace base {
+
+using namespace std;
 
 struct same_name {
   const string& name;
@@ -188,26 +190,26 @@ std::ostream& operator<<(std::ostream& os, const base::ProgramOptions& po)
       (option->doesRequireValue() ? option->getValueName().size()+1: 0);
 
     if (option->mnemonic() != 0)
-      os << setw(3) << '-' << option->mnemonic() << ", ";
+      os << std::setw(3) << '-' << option->mnemonic() << ", ";
     else
-      os << setw(6) << ' ';
+      os << std::setw(6) << ' ';
     os << "--" << option->name();
     if (option->doesRequireValue())
       os << " " << option->getValueName();
 
     if (!option->description().empty()) {
-      bool multilines = (option->description().find('\n') != string::npos);
+      bool multilines = (option->description().find('\n') != std::string::npos);
 
       if (!multilines) {
-        os << setw(maxOptionWidth - optionWidth + 1) << ' ' << option->description();
+        os << std::setw(maxOptionWidth - optionWidth + 1) << ' ' << option->description();
       }
       else {
-        istringstream s(option->description());
+        std::istringstream s(option->description());
         std::string line;
         if (std::getline(s, line)) {
-          os << setw(maxOptionWidth - optionWidth + 1) << ' ' << line << '\n';
+          os << std::setw(maxOptionWidth - optionWidth + 1) << ' ' << line << '\n';
           while (std::getline(s, line)) {
-            os << setw(maxOptionWidth+2) << ' ' << line << '\n';
+            os << std::setw(maxOptionWidth+2) << ' ' << line << '\n';
           }
         }
       }

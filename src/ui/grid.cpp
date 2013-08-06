@@ -4,7 +4,9 @@
 // This source file is distributed under a BSD-like license, please
 // read LICENSE.txt for more information.
 
+#ifdef HAVE_CONFIG_H
 #include "config.h"
+#endif
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -20,9 +22,9 @@
 #include "ui/theme.h"
 #include "ui/widget.h"
 
-using namespace gfx;
-
 namespace ui {
+
+using namespace gfx;
 
 Grid::Cell::Cell()
 {

@@ -9,7 +9,7 @@
 
 namespace undo {
 
-typedef uint32_t ObjectId;
+  typedef uint32_t ObjectId;
 
 } // namespace undo
 

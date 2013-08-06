@@ -4,10 +4,14 @@
 // This source file is distributed under a BSD-like license, please
 // read LICENSE.txt for more information.
 
+#ifdef HAVE_CONFIG_H
 #include "config.h"
+#endif
 
 #include <string>
 #include <cstdio>
+
+namespace base {
 
 using namespace std;
 
@@ -27,3 +31,5 @@ string get_pretty_memory_size(size_t memsize)
 
   return buf;
 }
+
+} // namespace base

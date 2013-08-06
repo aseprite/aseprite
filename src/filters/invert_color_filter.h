@@ -21,14 +21,17 @@
 
 #include "filters/filter.h"
 
-class InvertColorFilter : public Filter
-{
-public:
-  // Filter implementation
-  const char* getName();
-  void applyToRgba(FilterManager* filterMgr);
-  void applyToGrayscale(FilterManager* filterMgr);
-  void applyToIndexed(FilterManager* filterMgr);
-};
+namespace filters {
+
+  class InvertColorFilter : public Filter {
+  public:
+    // Filter implementation
+    const char* getName();
+    void applyToRgba(FilterManager* filterMgr);
+    void applyToGrayscale(FilterManager* filterMgr);
+    void applyToIndexed(FilterManager* filterMgr);
+  };
+
+} // namespace filters
 
 #endif

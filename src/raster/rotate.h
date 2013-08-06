@@ -19,17 +19,21 @@
 #ifndef RASTER_ROTATE_H_INCLUDED
 #define RASTER_ROTATE_H_INCLUDED
 
-class Image;
+namespace raster {
 
-void image_scale(Image* dst, Image* src,
-                 int x, int y, int w, int h);
+  class Image;
 
-void image_rotate(Image* dst, Image* src,
-                  int x, int y, int w, int h,
-                  int cx, int cy, double angle);
+  void image_scale(Image* dst, Image* src,
+                   int x, int y, int w, int h);
 
-void image_parallelogram(Image* bmp, Image* sprite,
-                         int x1, int y1, int x2, int y2,
-                         int x3, int y3, int x4, int y4);
+  void image_rotate(Image* dst, Image* src,
+                    int x, int y, int w, int h,
+                    int cx, int cy, double angle);
+
+  void image_parallelogram(Image* bmp, Image* sprite,
+                           int x1, int y1, int x2, int y2,
+                           int x3, int y3, int x4, int y4);
+
+} // namespace raster
 
 #endif

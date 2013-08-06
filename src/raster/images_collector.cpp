@@ -16,7 +16,9 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
+#ifdef HAVE_CONFIG_H
 #include "config.h"
+#endif
 
 #include "raster/cel.h"
 #include "raster/image.h"
@@ -25,6 +27,8 @@
 #include "raster/mask.h"
 #include "raster/sprite.h"
 #include "raster/stock.h"
+
+namespace raster {
 
 ImagesCollector::ImagesCollector(Layer* layer,
                                  FrameNumber frame,
@@ -83,3 +87,5 @@ void ImagesCollector::collectImage(Layer* layer, Cel* cel)
 
   m_items.push_back(Item(layer, cel, image));
 }
+
+} // namespace raster

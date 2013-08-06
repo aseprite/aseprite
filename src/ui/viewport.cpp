@@ -4,7 +4,9 @@
 // This source file is distributed under a BSD-like license, please
 // read LICENSE.txt for more information.
 
+#ifdef HAVE_CONFIG_H
 #include "config.h"
+#endif
 
 #include "gfx/point.h"
 #include "gfx/size.h"
@@ -15,9 +17,9 @@
 #include "ui/view.h"
 #include "ui/viewport.h"
 
-using namespace gfx;
-
 namespace ui {
+
+using namespace gfx;
 
 Viewport::Viewport()
   : Widget(kViewViewportWidget)

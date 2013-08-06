@@ -12,8 +12,7 @@
 
 namespace base {
 
-  class Exception : public std::exception
-  {
+  class Exception : public std::exception {
   public:
     Exception() throw();
     Exception(const char* format, ...) throw();

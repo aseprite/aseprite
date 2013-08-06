@@ -6,7 +6,9 @@
 
 /* Based on code of AllegroFont, Copyright (c) 2001, 2002 Javier Gonzalez */
 
+#ifdef HAVE_CONFIG_H
 #include "config.h"
+#endif
 
 #include <allegro.h>
 #include <allegro/internal/aintern.h>

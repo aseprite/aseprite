@@ -24,55 +24,58 @@
 #include "raster/gfxobj.h"
 #include <string>
 
-struct _ArtBpath;
-class Image;
+namespace raster {
 
-/* path join style */
-enum {
-  PATH_JOIN_MITER,
-  PATH_JOIN_ROUND,
-  PATH_JOIN_BEVEL,
-};
+  class Image;
+  struct _ArtBpath;
 
-/* path cap type */
-enum {
-  PATH_CAP_BUTT,
-  PATH_CAP_ROUND,
-  PATH_CAP_SQUARE,
-};
+  // Path join style
+  enum {
+    PATH_JOIN_MITER,
+    PATH_JOIN_ROUND,
+    PATH_JOIN_BEVEL,
+  };
 
-class Path : public GfxObj
-{
-public:
-  std::string name;
-  int join, cap;
-  int size, end;
-  struct _ArtBpath *bpath;
+  // Path cap type
+  enum {
+    PATH_CAP_BUTT,
+    PATH_CAP_ROUND,
+    PATH_CAP_SQUARE,
+  };
 
-  explicit Path(const char* name);
-  explicit Path(const Path& path);
-  virtual ~Path();
-};
+  class Path : public GfxObj {
+  public:
+    std::string name;
+    int join, cap;
+    int size, end;
+    struct _ArtBpath *bpath;
 
-/* void path_union(Path* path, Path* op); */
-/* void path_intersect(Path* path, Path* op); */
-/* void path_diff(Path* path, Path* op); */
-/* void path_minus(Path* path, Path* op); */
+    explicit Path(const char* name);
+    explicit Path(const Path& path);
+    virtual ~Path();
+  };
 
-void path_set_join(Path* path, int join);
-void path_set_cap(Path* path, int cap);
+  // void path_union(Path* path, Path* op);
+  // void path_intersect(Path* path, Path* op);
+  // void path_diff(Path* path, Path* op);
+  // void path_minus(Path* path, Path* op);
 
-void path_moveto(Path* path, double x, double y);
-void path_lineto(Path* path, double x, double y);
-void path_curveto(Path* path,
-                  double control_x1, double control_y1,
-                  double control_x2, double control_y2,
-                  double end_x, double end_y);
-void path_close(Path* path);
+  void path_set_join(Path* path, int join);
+  void path_set_cap(Path* path, int cap);
 
-void path_move(Path* path, double x, double y);
+  void path_moveto(Path* path, double x, double y);
+  void path_lineto(Path* path, double x, double y);
+  void path_curveto(Path* path,
+                    double control_x1, double control_y1,
+                    double control_x2, double control_y2,
+                    double end_x, double end_y);
+  void path_close(Path* path);
 
-void path_stroke(Path* path, Image* image, int color, double brush_size);
-void path_fill(Path* path, Image* image, int color);
+  void path_move(Path* path, double x, double y);
+
+  void path_stroke(Path* path, Image* image, int color, double brush_size);
+  void path_fill(Path* path, Image* image, int color);
+
+} // namespace raster
 
 #endif

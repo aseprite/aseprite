@@ -7,7 +7,9 @@
 // This source file is distributed under a Allegro license, please
 // read allegro4-LICENSE.txt for more information.
 
+#ifdef HAVE_CONFIG_H
 #include "config.h"
+#endif
 
 #include <allegro.h>
 #include <allegro/internal/aintern.h>
@@ -23,6 +25,8 @@
   #define _AL_SINCOS(x, s, c)  do { (c) = cos(x); (s) = sin(x); } while (0)
 #endif
 #endif
+
+namespace raster {
 
 static void ase_parallelogram_map_standard(Image *bmp, Image *sprite, fixed xs[4], fixed ys[4]);
 static void ase_rotate_scale_flip_coordinates(fixed w, fixed h,
@@ -721,3 +725,5 @@ static void ase_rotate_scale_flip_coordinates(fixed w, fixed h,
    xs[br] = xs[tr] + xs[bl] - xs[tl];
    ys[br] = ys[tr] + ys[bl] - ys[tl];
 }
+
+} // namespace raster

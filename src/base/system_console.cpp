@@ -4,7 +4,9 @@
 // This source file is ditributed under a BSD-like license, please
 // read LICENSE.txt for more information.
 
+#ifdef HAVE_CONFIG_H
 #include "config.h"
+#endif
 
 #include "base/system_console.h"
 

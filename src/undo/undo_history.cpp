@@ -4,7 +4,9 @@
 // This source file is distributed under a BSD-like license, please
 // read LICENSE.txt for more information.
 
+#ifdef HAVE_CONFIG_H
 #include "config.h"
+#endif
 
 #include "undo/undo_history.h"
 
@@ -14,7 +16,7 @@
 
 #include <limits>
 
-using namespace undo;
+namespace undo {
 
 UndoHistory::UndoHistory(UndoHistoryDelegate* delegate)
   : m_delegate(delegate)
@@ -217,3 +219,5 @@ void UndoHistory::checkSizeLimit()
     groups--;
   }
 }
+
+} // namespace undo

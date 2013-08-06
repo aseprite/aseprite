@@ -4,14 +4,16 @@
 // This source file is distributed under a BSD-like license, please
 // read LICENSE.txt for more information.
 
+#ifdef HAVE_CONFIG_H
 #include "config.h"
+#endif
 
 #include "base/string.h"
 #include <cctype>
 
-using namespace base;
+namespace base {
 
-string base::string_to_lower(const string& original)
+string string_to_lower(const string& original)
 {
   string result(original);
 
@@ -21,7 +23,7 @@ string base::string_to_lower(const string& original)
   return result;
 }
 
-string base::string_to_upper(const string& original)
+string string_to_upper(const string& original)
 {
   string result(original);
 
@@ -30,3 +32,5 @@ string base::string_to_upper(const string& original)
 
   return result;
 }
+
+} // namespace base

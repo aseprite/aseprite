@@ -4,19 +4,21 @@
 // This source file is distributed under a BSD-like license, please
 // read LICENSE.txt for more information.
 
+#ifdef HAVE_CONFIG_H
 #include "config.h"
+#endif
 
 #include "gfx/size.h"
-#include "ui/gui.h"
 #include "ui/intern.h"
+#include "ui/ui.h"
 
 #include <cctype>
 
 static const int kTimeoutToOpenSubmenu = 250;
 
-using namespace gfx;
-
 namespace ui {
+
+using namespace gfx;
 
 //////////////////////////////////////////////////////////////////////
 // Internal messages: to move between menus

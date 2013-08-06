@@ -21,12 +21,12 @@
 
 #include <iosfwd>
 
-class Image;
-
 namespace raster {
 
-void write_image(std::ostream& os, Image* image);
-Image* read_image(std::istream& is);
+  class Image;
+
+  void write_image(std::ostream& os, Image* image);
+  Image* read_image(std::istream& is);
 
 } // namespace raster
 

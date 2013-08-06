@@ -4,20 +4,22 @@
 // This source file is distributed under a BSD-like license, please
 // read LICENSE.txt for more information.
 
+#ifdef HAVE_CONFIG_H
 #include "config.h"
+#endif
 
 #include <allegro.h>
 
 #include "gfx/size.h"
 #include "ui/graphics.h"
-#include "ui/gui.h"
 #include "ui/intern.h"
 #include "ui/preferred_size_event.h"
 #include "ui/theme.h"
-
-using namespace gfx;
+#include "ui/ui.h"
 
 namespace ui {
+
+using namespace gfx;
 
 PopupWindow::PopupWindow(const char* text, bool close_on_buttonpressed)
   : Window(false, text)

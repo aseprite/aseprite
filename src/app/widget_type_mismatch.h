@@ -24,8 +24,7 @@
 
 namespace app {
 
-  class WidgetTypeMismatch : public std::runtime_error
-  {
+  class WidgetTypeMismatch : public std::runtime_error {
   public:
     WidgetTypeMismatch(const char* widgetId)
       : std::runtime_error(std::string("Widget ") + widgetId +

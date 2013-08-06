@@ -12,8 +12,7 @@
 
 namespace base {
 
-  class Version
-  {
+  class Version {
   public:
     Version();
     explicit Version(int major, int minor = -1, int revision = -1, int build = -1);
