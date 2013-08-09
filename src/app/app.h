@@ -1,4 +1,4 @@
-/* ASEPRITE
+/* Aseprite
  * Copyright (C) 2001-2013  David Capello
  *
  * This program is free software; you can redistribute it and/or modify
@@ -57,10 +57,10 @@ namespace app {
 
     static App* instance() { return m_instance; }
 
-    // Returns true if ASEPRITE is running with GUI available.
+    // Returns true if Aseprite is running with GUI available.
     bool isGui() const { return m_isGui; }
 
-    // Runs the ASEPRITE application. In GUI mode it's the top-level
+    // Runs the Aseprite application. In GUI mode it's the top-level
     // window, in console/scripting it just runs the specified scripts.
     int run();
 

@@ -1,4 +1,4 @@
-/* ASEPRITE
+/* Aseprite
  * Copyright (C) 2001-2013  David Capello
  *
  * This program is free software; you can redistribute it and/or modify
@@ -250,13 +250,13 @@ int App::run()
   return 0;
 }
 
-// Finishes the ASEPRITE application.
+// Finishes the Aseprite application.
 App::~App()
 {
   try {
     ASSERT(m_instance == this);
 
-    // Remove ASEPRITE handlers
+    // Remove Aseprite handlers
     PRINTF("ASE: Uninstalling\n");
 
     // Fire App Exit signal.

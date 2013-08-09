@@ -1,8 +1,8 @@
 // SHE library
 // Copyright (C) 2012-2013  David Capello
 //
-// This source file is distributed under a BSD-like license, please
-// read LICENSE.txt for more information.
+// This source file is distributed under MIT license,
+// please read LICENSE.txt for more information.
 
 #ifndef SHE_SURFACE_H_INCLUDED
 #define SHE_SURFACE_H_INCLUDED

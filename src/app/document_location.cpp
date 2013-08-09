@@ -1,4 +1,4 @@
-/* ASEPRITE
+/* Aseprite
  * Copyright (C) 2001-2012  David Capello
  *
  * This program is free software; you can redistribute it and/or modify

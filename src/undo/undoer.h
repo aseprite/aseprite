@@ -1,8 +1,8 @@
-// ASEPRITE Undo Library
-// Copyright (C) 2001-2013  David Capello
+// Aseprite Undo Library
+// Copyright (C) 2001-2013 David Capello
 //
-// This source file is distributed under a BSD-like license, please
-// read LICENSE.txt for more information.
+// This source file is distributed under MIT license,
+// please read LICENSE.txt for more information.
 
 #ifndef UNDO_UNDOER_H_INCLUDED
 #define UNDO_UNDOER_H_INCLUDED

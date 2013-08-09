@@ -1,8 +1,8 @@
-// ASEPRITE gui library
+// Aseprite UI Library
 // Copyright (C) 2001-2013  David Capello
 //
-// This source file is distributed under a BSD-like license, please
-// read LICENSE.txt for more information.
+// This source file is distributed under MIT license,
+// please read LICENSE.txt for more information.
 
 #ifndef UI_CUSTOM_LABEL_H_INCLUDED
 #define UI_CUSTOM_LABEL_H_INCLUDED
