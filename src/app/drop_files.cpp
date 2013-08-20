@@ -37,6 +37,8 @@
   #include <winalleg.h>
 #endif
 
+namespace app {
+
 #ifdef ALLEGRO_WINDOWS
 
 #ifdef STRICT
@@ -44,8 +46,6 @@
 #else
   typedef FARPROC wndproc_t;
 #endif
-
-namespace app {
 
 static wndproc_t base_wnd_proc = NULL;
 static std::vector<base::string>* dropped_files;

@@ -1009,7 +1009,7 @@ void Manager::pumpQueue()
 
     // Call Timer::tick() if this is a tick message.
     if (msg->type() == kTimerMessage) {
-      ASSERT(msg->timer.timer != NULL);
+      ASSERT(static_cast<TimerMessage*>(msg)->timer() != NULL);
       static_cast<TimerMessage*>(msg)->timer()->tick();
     }
 

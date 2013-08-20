@@ -29,12 +29,12 @@ ColorSwatches::ColorSwatches(const std::string& name)
 {
 }
 
-void ColorSwatches::addColor(Color& color)
+void ColorSwatches::addColor(const Color& color)
 {
   m_colors.push_back(color);
 }
 
-void ColorSwatches::insertColor(size_t index, Color& color)
+void ColorSwatches::insertColor(size_t index, const Color& color)
 {
   m_colors.insert(m_colors.begin() + index, color);
 }
