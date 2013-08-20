@@ -1,4 +1,4 @@
-/* ASEPRITE
+/* Aseprite
  * Copyright (C) 2001-2013  David Capello
  *
  * This program is free software; you can redistribute it and/or modify
@@ -16,15 +16,19 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
+#ifdef HAVE_CONFIG_H
 #include "config.h"
+#endif
 
 #include <math.h>
 
 #include "raster/algo.h"
 #include "raster/dirty.h"
 
-/* Algorightm from Allegro (allegro/src/gfx.c)
-   Adapted for ASEPRITE by David A. Capello. */
+namespace raster {
+
+// Algorightm from Allegro (allegro/src/gfx.c)
+// Adapted for Aseprite by David Capello.
 void algo_line(int x1, int y1, int x2, int y2, void *data, AlgoPixel proc)
 {
   int dx = x2-x1;
@@ -611,3 +615,5 @@ double algo_spline_get_tan(double x0, double y0, double x1, double y1,
 
   return dy / dx;
 }
+
+} // namespace raster

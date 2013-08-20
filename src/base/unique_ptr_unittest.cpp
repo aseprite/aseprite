@@ -1,12 +1,14 @@
-// ASEPRITE base library
-// Copyright (C) 2001-2013  David Capello
+// Aseprite Base Library
+// Copyright (c) 2001-2013 David Capello
 //
-// This source file is distributed under a BSD-like license, please
-// read LICENSE.txt for more information.
+// This source file is distributed under MIT license,
+// please read LICENSE.txt for more information.
 
 #include <gtest/gtest.h>
 
 #include "base/unique_ptr.h"
+
+using namespace base;
 
 TEST(UniquePtr, DefaultCtor)
 {
@@ -43,8 +45,7 @@ TEST(UniquePtr, CopyValues)
 
 int valueInDtor;
 
-class A
-{
+class A {
   int m_value;
 public:
   A(int value) : m_value(value) { }

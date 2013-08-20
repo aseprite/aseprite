@@ -1,23 +1,25 @@
-// ASEPRITE gui library
+// Aseprite UI Library
 // Copyright (C) 2001-2013  David Capello
 //
-// This source file is distributed under a BSD-like license, please
-// read LICENSE.txt for more information.
+// This source file is distributed under MIT license,
+// please read LICENSE.txt for more information.
 
+#ifdef HAVE_CONFIG_H
 #include "config.h"
+#endif
 
 #include <allegro.h>
 
 #include "gfx/size.h"
 #include "ui/graphics.h"
-#include "ui/gui.h"
 #include "ui/intern.h"
 #include "ui/preferred_size_event.h"
 #include "ui/theme.h"
-
-using namespace gfx;
+#include "ui/ui.h"
 
 namespace ui {
+
+using namespace gfx;
 
 PopupWindow::PopupWindow(const char* text, bool close_on_buttonpressed)
   : Window(false, text)
@@ -66,22 +68,25 @@ void PopupWindow::makeFixed()
 
 bool PopupWindow::onProcessMessage(Message* msg)
 {
-  switch (msg->type) {
+  switch (msg->type()) {
 
-    case JM_CLOSE:
+    case kCloseMessage:
       stopFilteringMessages();
       break;
 
-    case JM_MOUSELEAVE:
+    case kMouseLeaveMessage:
       if (m_hotRegion.isEmpty() && !isMoveable())
         closeWindow(NULL);
       break;
 
-    case JM_KEYPRESSED:
+    case kKeyDownMessage:
       if (m_filtering) {
-        if (msg->key.scancode == KEY_ESC ||
-            msg->key.scancode == KEY_ENTER ||
-            msg->key.scancode == KEY_ENTER_PAD) {
+        KeyMessage* keymsg = static_cast<KeyMessage*>(msg);
+        KeyScancode scancode = keymsg->scancode();
+        
+        if (scancode == kKeyEsc ||
+            scancode == kKeyEnter ||
+            scancode == kKeyEnterPad) {
           closeWindow(NULL);
         }
 
@@ -93,11 +98,12 @@ bool PopupWindow::onProcessMessage(Message* msg)
       }
       break;
 
-    case JM_BUTTONPRESSED:
+    case kMouseDownMessage:
       // If the user click outside the window, we have to close the
       // tooltip window.
       if (m_filtering) {
-        Widget* picked = this->pick(msg->mouse.x, msg->mouse.y);
+        gfx::Point mousePos = static_cast<MouseMessage*>(msg)->position();
+        Widget* picked = pick(mousePos);
         if (!picked || picked->getRoot() != this) {
           closeWindow(NULL);
         }
@@ -108,13 +114,15 @@ bool PopupWindow::onProcessMessage(Message* msg)
         closeWindow(NULL);
       break;
 
-    case JM_MOTION:
+    case kMouseMoveMessage:
       if (!isMoveable() &&
           !m_hotRegion.isEmpty() &&
           getManager()->getCapture() == NULL) {
+        gfx::Point mousePos = static_cast<MouseMessage*>(msg)->position();
+
         // If the mouse is outside the hot-region we have to close the
         // window.
-        if (!m_hotRegion.contains(Point(msg->mouse.x, msg->mouse.y)))
+        if (!m_hotRegion.contains(mousePos))
           closeWindow(NULL);
       }
       break;
@@ -179,9 +187,9 @@ void PopupWindow::startFilteringMessages()
     m_filtering = true;
 
     Manager* manager = Manager::getDefault();
-    manager->addMessageFilter(JM_MOTION, this);
-    manager->addMessageFilter(JM_BUTTONPRESSED, this);
-    manager->addMessageFilter(JM_KEYPRESSED, this);
+    manager->addMessageFilter(kMouseMoveMessage, this);
+    manager->addMessageFilter(kMouseDownMessage, this);
+    manager->addMessageFilter(kKeyDownMessage, this);
   }
 }
 
@@ -191,9 +199,9 @@ void PopupWindow::stopFilteringMessages()
     m_filtering = false;
 
     Manager* manager = Manager::getDefault();
-    manager->removeMessageFilter(JM_MOTION, this);
-    manager->removeMessageFilter(JM_BUTTONPRESSED, this);
-    manager->removeMessageFilter(JM_KEYPRESSED, this);
+    manager->removeMessageFilter(kMouseMoveMessage, this);
+    manager->removeMessageFilter(kMouseDownMessage, this);
+    manager->removeMessageFilter(kKeyDownMessage, this);
   }
 }
 

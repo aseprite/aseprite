@@ -1,4 +1,4 @@
-/* ASEPRITE
+/* Aseprite
  * Copyright (C) 2001-2013  David Capello
  *
  * This program is free software; you can redistribute it and/or modify
@@ -16,7 +16,9 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
+#ifdef HAVE_CONFIG_H
 #include "config.h"
+#endif
 
 #include "filters/invert_color_filter.h"
 
@@ -25,6 +27,10 @@
 #include "raster/image.h"
 #include "raster/palette.h"
 #include "raster/rgbmap.h"
+
+namespace filters {
+
+using namespace raster;
 
 const char* InvertColorFilter::getName()
 {
@@ -125,3 +131,5 @@ void InvertColorFilter::applyToIndexed(FilterManager* filterMgr)
     *(dst_address++) = c;
   }
 }
+
+} // namespace filters

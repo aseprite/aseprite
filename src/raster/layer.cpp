@@ -1,4 +1,4 @@
-/* ASEPRITE
+/* Aseprite
  * Copyright (C) 2001-2013  David Capello
  *
  * This program is free software; you can redistribute it and/or modify
@@ -16,7 +16,9 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
+#ifdef HAVE_CONFIG_H
 #include "config.h"
+#endif
 
 #include "raster/layer.h"
 
@@ -29,8 +31,7 @@
 #include <algorithm>
 #include <string.h>
 
-//////////////////////////////////////////////////////////////////////
-// Layer class
+namespace raster {
 
 Layer::Layer(GfxObjType type, Sprite* sprite)
   : GfxObj(type)
@@ -129,7 +130,7 @@ void LayerImage::destroyAllCels()
     ASSERT(image != NULL);
 
     getSprite()->getStock()->removeImage(image);
-    image_free(image);
+    delete image;
     delete cel;
   }
   m_cels.clear();
@@ -339,3 +340,5 @@ void layer_render(const Layer* layer, Image* image, int x, int y, FrameNumber fr
 
   }
 }
+
+} // namespace raster

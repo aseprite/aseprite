@@ -1,4 +1,4 @@
-/* ASEPRITE
+/* Aseprite
  * Copyright (C) 2001-2013  David Capello
  *
  * This program is free software; you can redistribute it and/or modify
@@ -16,7 +16,9 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
+#ifdef HAVE_CONFIG_H
 #include "config.h"
+#endif
 
 #include "raster/dirty_io.h"
 
@@ -78,7 +80,7 @@ Dirty* read_dirty(std::istream& is)
   int y1 = read16(is);
   int x2 = read16(is);
   int y2 = read16(is);
-  UniquePtr<Dirty> dirty(new Dirty(static_cast<PixelFormat>(pixelFormat), x1, y1, x2, y2));
+  base::UniquePtr<Dirty> dirty(new Dirty(static_cast<PixelFormat>(pixelFormat), x1, y1, x2, y2));
 
   int noRows = read16(is);
   if (noRows > 0) {
@@ -87,7 +89,7 @@ Dirty* read_dirty(std::istream& is)
     for (v=0; v<dirty->getRowsCount(); v++) {
       y = read16(is);
 
-      UniquePtr<Dirty::Row> row(new Dirty::Row(y));
+      base::UniquePtr<Dirty::Row> row(new Dirty::Row(y));
 
       int noCols = read16(is);
       row->cols.resize(noCols);
@@ -96,7 +98,7 @@ Dirty* read_dirty(std::istream& is)
         x = read16(is);
         w = read16(is);
 
-        UniquePtr<Dirty::Col> col(new Dirty::Col(x, w));
+        base::UniquePtr<Dirty::Col> col(new Dirty::Col(x, w));
 
         int size = dirty->getLineSize(col->w);
         ASSERT(size > 0);

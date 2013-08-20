@@ -1,4 +1,4 @@
-/* ASEPRITE
+/* Aseprite
  * Copyright (C) 2001-2013  David Capello
  *
  * This program is free software; you can redistribute it and/or modify
@@ -22,10 +22,11 @@
 #include "gfx/fwd.h"
 #include "raster/algorithm/flip_type.h"
 
-class Image;
-class Mask;
-
 namespace raster {
+
+  class Image;
+  class Mask;
+
   namespace algorithm {
 
     // Flips the rectangular region specified in the "bounds" parameter.

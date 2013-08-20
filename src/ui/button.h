@@ -1,8 +1,8 @@
-// ASEPRITE gui library
+// Aseprite UI Library
 // Copyright (C) 2001-2013  David Capello
 //
-// This source file is distributed under a BSD-like license, please
-// read LICENSE.txt for more information.
+// This source file is distributed under MIT license,
+// please read LICENSE.txt for more information.
 
 #ifndef UI_BUTTON_H_INCLUDED
 #define UI_BUTTON_H_INCLUDED
@@ -37,13 +37,13 @@ namespace ui {
   {
   public:
     ButtonBase(const char* text,
-               int type,
-               int behaviorType,
-               int drawType);
+               WidgetType type,
+               WidgetType behaviorType,
+               WidgetType drawType);
     virtual ~ButtonBase();
 
-    int getBehaviorType() const;
-    int getDrawType() const;
+    WidgetType getBehaviorType() const;
+    WidgetType getDrawType() const;
 
     // Sets the interface used to get icons for the button depending its
     // state. This interface is deleted automatically in the ButtonBase dtor.
@@ -68,8 +68,8 @@ namespace ui {
     void generateButtonSelectSignal();
 
     bool m_pressedStatus;
-    int m_behaviorType;
-    int m_drawType;
+    WidgetType m_behaviorType;
+    WidgetType m_drawType;
     IButtonIcon* m_iconInterface;
 
   protected:
@@ -87,14 +87,14 @@ namespace ui {
   class CheckBox : public ButtonBase
   {
   public:
-    CheckBox(const char* text, int drawType = JI_CHECK);
+    CheckBox(const char* text, WidgetType drawType = kCheckWidget);
   };
 
   // Radio buttons
   class RadioButton : public ButtonBase
   {
   public:
-    RadioButton(const char* text, int radioGroup, int drawType = JI_RADIO);
+    RadioButton(const char* text, int radioGroup, WidgetType drawType = kRadioWidget);
 
     int getRadioGroup() const;
     void setRadioGroup(int radioGroup);

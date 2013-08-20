@@ -1,4 +1,4 @@
-/* ASEPRITE
+/* Aseprite
  * Copyright (C) 2001-2013  David Capello
  *
  * This program is free software; you can redistribute it and/or modify
@@ -19,9 +19,8 @@
 #ifndef APP_PROJECT_EVENT_H_INCLUDED
 #define APP_PROJECT_EVENT_H_INCLUDED
 
-class Document;
-
 namespace app {
+  class Document;
 
   class ProjectEvent {
   public:

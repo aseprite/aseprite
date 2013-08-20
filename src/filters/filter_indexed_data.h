@@ -1,4 +1,4 @@
-/* ASEPRITE
+/* Aseprite
  * Copyright (C) 2001-2013  David Capello
  *
  * This program is free software; you can redistribute it and/or modify
@@ -19,17 +19,22 @@
 #ifndef FILTERS_FILTER_INDEXED_DATA_H_INCLUDED
 #define FILTERS_FILTER_INDEXED_DATA_H_INCLUDED
 
-class Palette;
-class RgbMap;
+namespace raster {
+  class Palette;
+  class RgbMap;
+}
 
-// Provides a Palette and a RgbMap to help a Filter which operate
-// over an indexed image.
-class FilterIndexedData
-{
-public:
-  virtual ~FilterIndexedData() { }
-  virtual Palette* getPalette() = 0;
-  virtual RgbMap* getRgbMap() = 0;
-};
+namespace filters {
+
+  // Provides a Palette and a RgbMap to help a Filter which operate
+  // over an indexed image.
+  class FilterIndexedData {
+  public:
+    virtual ~FilterIndexedData() { }
+    virtual raster::Palette* getPalette() = 0;
+    virtual raster::RgbMap* getRgbMap() = 0;
+  };
+
+} // namespace filters
 
 #endif

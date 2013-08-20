@@ -1,14 +1,16 @@
-// ASEPRITE base library
-// Copyright (C) 2001-2013  David Capello
+// Aseprite Base Library
+// Copyright (c) 2001-2013 David Capello
 //
-// This source file is distributed under a BSD-like license, please
-// read LICENSE.txt for more information.
+// This source file is distributed under MIT license,
+// please read LICENSE.txt for more information.
 
+#ifdef HAVE_CONFIG_H
 #include "config.h"
+#endif
 
 #include "base/version.h"
 
-using namespace base;
+namespace base {
 
 Version::Version()
 {
@@ -65,3 +67,5 @@ bool Version::operator<(const Version& other) const
 
   return false;
 }
+
+} // namespace base

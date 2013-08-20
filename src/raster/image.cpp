@@ -1,4 +1,4 @@
-/* ASEPRITE
+/* Aseprite
  * Copyright (C) 2001-2013  David Capello
  *
  * This program is free software; you can redistribute it and/or modify
@@ -16,7 +16,9 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
+#ifdef HAVE_CONFIG_H
 #include "config.h"
+#endif
 
 #include <allegro.h>
 #include <string.h>
@@ -30,7 +32,7 @@
 #include "raster/palette.h"
 #include "raster/rgbmap.h"
 
-//////////////////////////////////////////////////////////////////////
+namespace raster {
 
 Image::Image(PixelFormat format, int w, int h)
   : GfxObj(GFXOBJ_IMAGE)
@@ -80,12 +82,6 @@ Image* Image::createCopy(const Image* image)
   return image_crop(image, 0, 0, image->w, image->h, 0);
 }
 
-void image_free(Image* image)
-{
-  ASSERT(image);
-  delete image;
-}
-
 int image_getpixel(const Image* image, int x, int y)
 {
   if ((x >= 0) && (y >= 0) && (x < image->w) && (y < image->h))
@@ -103,17 +99,18 @@ void image_putpixel(Image* image, int x, int y, int color)
 void image_putpen(Image* image, Pen* pen, int x, int y, int fg_color, int bg_color)
 {
   Image* pen_image = pen->get_image();
-  int u, v, size = pen->get_size();
+  const gfx::Rect& penBounds = pen->getBounds();
 
-  x -= size/2;
-  y -= size/2;
+  x += penBounds.x;
+  y += penBounds.y;
 
   if (fg_color == bg_color) {
-    image_rectfill(image, x, y, x+pen_image->w-1, y+pen_image->h-1, bg_color);
+    image_rectfill(image, x, y, x+penBounds.w-1, y+penBounds.h-1, bg_color);
   }
   else {
-    for (v=0; v<pen_image->h; v++) {
-      for (u=0; u<pen_image->w; u++) {
+    int u, v;
+    for (v=0; v<penBounds.h; v++) {
+      for (u=0; u<penBounds.w; u++) {
         if (image_getpixel(pen_image, u, v))
           image_putpixel(image, x+u, y+v, fg_color);
         else
@@ -716,3 +713,5 @@ bool image_shrink_rect(Image *image, gfx::Rect& bounds, int refpixel)
 
   return (!bounds.isEmpty());
 }
+
+} // namespace raster

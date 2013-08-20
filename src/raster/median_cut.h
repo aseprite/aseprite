@@ -1,4 +1,4 @@
-/* ASEPRITE
+/* Aseprite
  * Copyright (C) 2001-2013  David Capello
  *
  * This program is free software; you can redistribute it and/or modify
@@ -22,6 +22,7 @@
 #include <list>
 #include <queue>
 
+namespace raster {
 namespace quantization {
 
   template<class Histogram>
@@ -297,6 +298,7 @@ namespace quantization {
     }
   }
 
-}
+} // namespace quantization
+} // namespace raster
 
 #endif

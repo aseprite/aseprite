@@ -1,8 +1,8 @@
-// ASEPRITE gui library
+// Aseprite UI Library
 // Copyright (C) 2001-2013  David Capello
 //
-// This source file is distributed under a BSD-like license, please
-// read LICENSE.txt for more information.
+// This source file is distributed under MIT license,
+// please read LICENSE.txt for more information.
 
 #ifndef UI_SPLITTER_H_INCLUDED
 #define UI_SPLITTER_H_INCLUDED
@@ -25,14 +25,13 @@ namespace ui {
   protected:
     // Events
     bool onProcessMessage(Message* msg) OVERRIDE;
+    void onResize(ResizeEvent& ev) OVERRIDE;
     void onPaint(PaintEvent& ev) OVERRIDE;
     void onPreferredSize(PreferredSizeEvent& ev) OVERRIDE;
     void onLoadLayout(LoadLayoutEvent& ev) OVERRIDE;
     void onSaveLayout(SaveLayoutEvent& ev) OVERRIDE;
 
   private:
-    void layoutMembers(JRect rect);
-
     Type m_type;
     double m_pos;
   };

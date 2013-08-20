@@ -1,4 +1,4 @@
-/* ASEPRITE
+/* Aseprite
  * Copyright (C) 2001-2013  David Capello
  *
  * This program is free software; you can redistribute it and/or modify
@@ -33,8 +33,7 @@ namespace ui {
 
 namespace app {
 
-  class WidgetLoader
-  {
+  class WidgetLoader {
   public:
     // Interface used to create customized widgets.
     class IWidgetTypeCreator {

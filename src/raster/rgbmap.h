@@ -1,4 +1,4 @@
-/* ASEPRITE
+/* Aseprite
  * Copyright (C) 2001-2013  David Capello
  *
  * This program is free software; you can redistribute it and/or modify
@@ -22,23 +22,26 @@
 #include "base/disable_copying.h"
 #include "raster/gfxobj.h"
 
-class Palette;
+namespace raster {
 
-class RgbMap : public GfxObj
-{
-public:
-  RgbMap();
-  virtual ~RgbMap();
+  class Palette;
 
-  bool match(const Palette* palette) const;
-  void regenerate(const Palette* palette);
+  class RgbMap : public GfxObj {
+  public:
+    RgbMap();
+    virtual ~RgbMap();
 
-  int mapColor(int r, int g, int b) const;
+    bool match(const Palette* palette) const;
+    void regenerate(const Palette* palette);
 
-private:
-  class RgbMapImpl* m_impl;
+    int mapColor(int r, int g, int b) const;
 
-  DISABLE_COPYING(RgbMap);
-};
+  private:
+    class RgbMapImpl* m_impl;
+
+    DISABLE_COPYING(RgbMap);
+  };
+
+} // namespace raster
 
 #endif

@@ -1,4 +1,4 @@
-/* ASEPRITE
+/* Aseprite
  * Copyright (C) 2001-2013  David Capello
  *
  * This program is free software; you can redistribute it and/or modify
@@ -21,47 +21,50 @@
 
 #include <list>
 
-enum GfxObjType {
-  GFXOBJ_CEL,
-  GFXOBJ_IMAGE,
-  GFXOBJ_LAYER_IMAGE,
-  GFXOBJ_LAYER_FOLDER,
-  GFXOBJ_MASK,
-  GFXOBJ_PALETTE,
-  GFXOBJ_PATH,
-  GFXOBJ_SPRITE,
-  GFXOBJ_STOCK,
-  GFXOBJ_RGBMAP,
-};
+namespace raster {
 
-class Cel;
-class Layer;
+  enum GfxObjType {
+    GFXOBJ_CEL,
+    GFXOBJ_IMAGE,
+    GFXOBJ_LAYER_IMAGE,
+    GFXOBJ_LAYER_FOLDER,
+    GFXOBJ_MASK,
+    GFXOBJ_PALETTE,
+    GFXOBJ_PATH,
+    GFXOBJ_SPRITE,
+    GFXOBJ_STOCK,
+    GFXOBJ_RGBMAP,
+  };
 
-typedef std::list<Cel*> CelList;
-typedef std::list<Cel*>::iterator CelIterator;
-typedef std::list<Cel*>::const_iterator CelConstIterator;
+  class Cel;
+  class Layer;
 
-typedef std::list<Layer*> LayerList;
-typedef std::list<Layer*>::iterator LayerIterator;
-typedef std::list<Layer*>::const_iterator LayerConstIterator;
+  typedef std::list<Cel*> CelList;
+  typedef std::list<Cel*>::iterator CelIterator;
+  typedef std::list<Cel*>::const_iterator CelConstIterator;
 
-class GfxObj
-{
-public:
-  GfxObj(GfxObjType type);
-  GfxObj(const GfxObj& gfxobj);
-  virtual ~GfxObj();
+  typedef std::list<Layer*> LayerList;
+  typedef std::list<Layer*>::iterator LayerIterator;
+  typedef std::list<Layer*>::const_iterator LayerConstIterator;
 
-  GfxObjType getType() const { return m_type; }
+  class GfxObj {
+  public:
+    GfxObj(GfxObjType type);
+    GfxObj(const GfxObj& gfxobj);
+    virtual ~GfxObj();
 
-  // Returns the approximate amount of memory (in bytes) which this
-  // object use.
-  virtual int getMemSize() const;
+    GfxObjType getType() const { return m_type; }
 
-private:
-  GfxObjType m_type;
+    // Returns the approximate amount of memory (in bytes) which this
+    // object use.
+    virtual int getMemSize() const;
 
-  GfxObj& operator=(const GfxObj&);
-};
+  private:
+    GfxObjType m_type;
+
+    GfxObj& operator=(const GfxObj&);
+  };
+
+} // namespace raster
 
 #endif

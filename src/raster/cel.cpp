@@ -1,4 +1,4 @@
-/* ASEPRITE
+/* Aseprite
  * Copyright (C) 2001-2013  David Capello
  *
  * This program is free software; you can redistribute it and/or modify
@@ -16,9 +16,13 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
+#ifdef HAVE_CONFIG_H
 #include "config.h"
+#endif
 
 #include "raster/cel.h"
+
+namespace raster {
 
 Cel::Cel(FrameNumber frame, int image)
   : GfxObj(GFXOBJ_CEL)
@@ -43,3 +47,5 @@ Cel::Cel(const Cel& cel)
 Cel::~Cel()
 {
 }
+
+} // namespace raster

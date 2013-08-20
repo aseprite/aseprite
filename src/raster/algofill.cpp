@@ -5,7 +5,9 @@
 // This source file is distributed under a Allegro license, please
 // read allegro4-LICENSE.txt for more information.
 
+#ifdef HAVE_CONFIG_H
 #include "config.h"
+#endif
 
 #include "raster/algo.h"
 #include "raster/image.h"
@@ -15,7 +17,7 @@
 #include <limits.h>
 #include <math.h>
 
-
+namespace raster {
 
 typedef struct FLOODED_LINE     /* store segments which have been flooded */
 {
@@ -328,3 +330,5 @@ void algo_floodfill(Image* image, int x, int y, int tolerance, void *data, AlgoH
     }
   } while (!done);
 }
+
+} // namespace raster

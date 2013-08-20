@@ -1,18 +1,21 @@
-// ASEPRITE base library
-// Copyright (C) 2001-2013  David Capello
+// Aseprite Base Library
+// Copyright (c) 2001-2013 David Capello
 //
-// This source file is distributed under a BSD-like license, please
-// read LICENSE.txt for more information.
+// This source file is distributed under MIT license,
+// please read LICENSE.txt for more information.
 
+#ifdef HAVE_CONFIG_H
 #include "config.h"
+#endif
 
 #include "base/exception.h"
 
 #include <cstdio>
 #include <cstdarg>
 
+namespace base {
+
 using namespace std;
-using namespace base;
 
 Exception::Exception() throw()
 {
@@ -68,3 +71,5 @@ const char* Exception::what() const throw()
 {
   return m_msg.c_str();
 }
+
+} // namespace base

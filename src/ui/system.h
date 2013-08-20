@@ -1,8 +1,8 @@
-// ASEPRITE gui library
+// Aseprite UI Library
 // Copyright (C) 2001-2013  David Capello
 //
-// This source file is distributed under a BSD-like license, please
-// read LICENSE.txt for more information.
+// This source file is distributed under MIT license,
+// please read LICENSE.txt for more information.
 
 #ifndef UI_SYSTEM_H_INCLUDED
 #define UI_SYSTEM_H_INCLUDED
@@ -10,6 +10,7 @@
 #include "gfx/rect.h"
 #include "ui/base.h"
 #include "ui/cursor_type.h"
+#include "ui/mouse_buttons.h"
 
 struct BITMAP;
 
@@ -57,7 +58,7 @@ namespace ui {
   void jmouse_capture();
   void jmouse_release();
 
-  int jmouse_b(int antique);
+  MouseButtons jmouse_b(int antique);
   int jmouse_x(int antique);
   int jmouse_y(int antique);
   int jmouse_z(int antique);

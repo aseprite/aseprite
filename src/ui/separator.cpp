@@ -1,10 +1,12 @@
-// ASEPRITE gui library
+// Aseprite UI Library
 // Copyright (C) 2001-2013  David Capello
 //
-// This source file is distributed under a BSD-like license, please
-// read LICENSE.txt for more information.
+// This source file is distributed under MIT license,
+// please read LICENSE.txt for more information.
 
+#ifdef HAVE_CONFIG_H
 #include "config.h"
+#endif
 
 #include "ui/separator.h"
 
@@ -13,28 +15,21 @@
 #include "ui/preferred_size_event.h"
 #include "ui/theme.h"
 
-using namespace gfx;
-
 namespace ui {
 
+using namespace gfx;
+
 Separator::Separator(const char* text, int align)
- : Widget(JI_SEPARATOR)
+ : Widget(kSeparatorWidget)
 {
   setAlign(align);
   setText(text);
   initTheme();
 }
 
-bool Separator::onProcessMessage(Message* msg)
+void Separator::onPaint(PaintEvent& ev)
 {
-  switch (msg->type) {
-
-    case JM_DRAW:
-      getTheme()->draw_separator(this, &msg->draw.rect);
-      return true;
-  }
-
-  return Widget::onProcessMessage(msg);
+  getTheme()->paintSeparator(ev);
 }
 
 void Separator::onPreferredSize(PreferredSizeEvent& ev)

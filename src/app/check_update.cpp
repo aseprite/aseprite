@@ -1,4 +1,4 @@
-/* ASEPRITE
+/* Aseprite
  * Copyright (C) 2001-2013  David Capello
  *
  * This program is free software; you can redistribute it and/or modify
@@ -16,15 +16,17 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
+#ifdef HAVE_CONFIG_H
 #include "config.h"
+#endif
 
 #ifdef ENABLE_UPDATER
 
 #include "app/check_update.h"
 
+#include "app/ini_file.h"
+#include "app/ui/status_bar.h"
 #include "base/bind.h"
-#include "ini_file.h"
-#include "widgets/status_bar.h"
 
 #include <ctime>
 #include <sstream>

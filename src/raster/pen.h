@@ -1,4 +1,4 @@
-/* ASEPRITE
+/* Aseprite
  * Copyright (C) 2001-2013  David Capello
  *
  * This program is free software; you can redistribute it and/or modify
@@ -19,43 +19,50 @@
 #ifndef RASTER_PEN_H_INCLUDED
 #define RASTER_PEN_H_INCLUDED
 
+#include "gfx/point.h"
+#include "gfx/rect.h"
 #include "raster/pen_type.h"
 #include <vector>
 
-class Image;
+namespace raster {
 
-struct PenScanline
-{
-  int state, x1, x2;
-};
+  class Image;
 
-class Pen
-{
-public:
-  Pen();
-  Pen(PenType type, int size, int angle);
-  Pen(const Pen& pen);
-  ~Pen();
+  struct PenScanline {
+    int state, x1, x2;
+  };
 
-  PenType get_type() const { return m_type; }
-  int get_size() const { return m_size; }
-  int get_angle() const { return m_angle; }
-  Image* get_image() { return m_image; }
-  const std::vector<PenScanline>& get_scanline() const { return m_scanline; }
+  class Pen {
+  public:
+    Pen();
+    Pen(PenType type, int size, int angle);
+    Pen(const Pen& pen);
+    ~Pen();
 
-  void set_type(PenType type);
-  void set_size(int size);
-  void set_angle(int angle);
+    PenType get_type() const { return m_type; }
+    int get_size() const { return m_size; }
+    int get_angle() const { return m_angle; }
+    Image* get_image() { return m_image; }
+    const std::vector<PenScanline>& get_scanline() const { return m_scanline; }
 
-private:
-  void clean_pen();
-  void regenerate_pen();
+    const gfx::Rect& getBounds() const { return m_bounds; }
 
-  PenType m_type;                       /* type of pen */
-  int m_size;                           /* size (diameter) */
-  int m_angle;                          /* angle in degrees 0-360 */
-  Image* m_image;                       /* image of the pen */
-  std::vector<PenScanline> m_scanline;
-};
+    void set_type(PenType type);
+    void set_size(int size);
+    void set_angle(int angle);
+
+  private:
+    void clean_pen();
+    void regenerate_pen();
+
+    PenType m_type;                       // Type of pen
+    int m_size;                           // Size (diameter)
+    int m_angle;                          // Angle in degrees 0-360
+    Image* m_image;                       // Image of the pen
+    std::vector<PenScanline> m_scanline;
+    gfx::Rect m_bounds;
+  };
+
+} // namespace raster
 
 #endif

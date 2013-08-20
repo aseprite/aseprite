@@ -1,29 +1,31 @@
-// ASEPRITE gui library
+// Aseprite UI Library
 // Copyright (C) 2001-2013  David Capello
 //
-// This source file is distributed under a BSD-like license, please
-// read LICENSE.txt for more information.
+// This source file is distributed under MIT license,
+// please read LICENSE.txt for more information.
 
 /* #define REPORT_SIGNALS */
 
+#ifdef HAVE_CONFIG_H
 #include "config.h"
+#endif
 
 #include "base/memory.h"
-#include "ui/gui.h"
 #include "ui/intern.h"
+#include "ui/ui.h"
 
+#include <allegro.h>
 #include <cctype>
 #include <climits>
 #include <cstdarg>
+#include <cstdio>
 #include <cstring>
 #include <queue>
-#include <cstdio>
 #include <sstream>
-#include <allegro.h>
-
-using namespace gfx;
 
 namespace ui {
+
+using namespace gfx;
 
 static inline void mark_dirty_flag(Widget* widget)
 {
@@ -33,15 +35,15 @@ static inline void mark_dirty_flag(Widget* widget)
   }
 }
 
-int ji_register_widget_type()
+WidgetType register_widget_type()
 {
-  static int type = JI_USER_WIDGET;
-  return type++;
+  static int type = (int)kFirstUserWidget;
+  return (WidgetType)type++;
 }
 
-Widget::Widget(int type)
+Widget::Widget(WidgetType type)
 {
-  _ji_add_widget(this);
+  addWidget(this);
 
   this->type = type;
   this->rc = jrect_new(0, 0, 0, 0);
@@ -80,7 +82,7 @@ Widget::Widget(int type)
 Widget::~Widget()
 {
   // Break relationship with the manager.
-  if (this->type != JI_MANAGER) {
+  if (this->type != kManagerWidget) {
     Manager* manager = getManager();
     manager->freeWidget(this);
     manager->removeMessagesFor(this);
@@ -103,8 +105,8 @@ Widget::~Widget()
   // Delete the preferred size
   delete m_preferredSize;
 
-  /* low level free */
-  _ji_remove_widget(this);
+  // Low level free
+  removeWidget(this);
 }
 
 void Widget::deferDelete()
@@ -341,7 +343,7 @@ Window* Widget::getRoot()
   Widget* widget = this;
 
   while (widget) {
-    if (widget->type == JI_WINDOW)
+    if (widget->type == kWindowWidget)
       return dynamic_cast<Window*>(widget);
 
     widget = widget->m_parent;
@@ -355,7 +357,7 @@ Manager* Widget::getManager()
   Widget* widget = this;
 
   while (widget) {
-    if (widget->type == JI_MANAGER)
+    if (widget->type == kManagerWidget)
       return static_cast<Manager*>(widget);
 
     widget = widget->m_parent;
@@ -409,16 +411,16 @@ Widget* Widget::getPreviousSibling()
   return *(++it);
 }
 
-Widget* Widget::pick(int x, int y)
+Widget* Widget::pick(const gfx::Point& pt)
 {
   Widget* inside, *picked = NULL;
 
-  if (!(this->flags & JI_HIDDEN) &&   /* is visible */
-      jrect_point_in(this->rc, x, y)) { /* the point is inside the bounds */
+  if (!(this->flags & JI_HIDDEN) &&           // Is visible
+      jrect_point_in(this->rc, pt.x, pt.y)) { // The point is inside the bounds
     picked = this;
 
     UI_FOREACH_WIDGET(m_children, it) {
-      inside = (*it)->pick(x, y);
+      inside = (*it)->pick(pt);
       if (inside) {
         picked = inside;
         break;
@@ -477,6 +479,11 @@ void Widget::removeChild(Widget* child)
   if (it != m_children.end())
     m_children.erase(it);
 
+  // Free from manager
+  Manager* manager = getManager();
+  if (manager)
+    manager->freeWidget(this);
+
   child->m_parent = NULL;
 }
 
@@ -514,7 +521,7 @@ void Widget::insertChild(int index, Widget* child)
 
 void Widget::layout()
 {
-  jwidget_set_rect(this, rc);
+  setBounds(getBounds());
   invalidate();
 }
 
@@ -562,18 +569,9 @@ void Widget::setDecorativeWidgetBounds()
   onSetDecorativeWidgetBounds();
 }
 
-/**********************************************************************/
-/* position and geometry */
-
-Rect Widget::getBounds() const
-{
-  return Rect(rc->x1, rc->y1, jrect_w(rc), jrect_h(rc));
-}
-
-Rect Widget::getClientBounds() const
-{
-  return Rect(0, 0, jrect_w(rc), jrect_h(rc));
-}
+// ===============================================================
+// POSITION & GEOMETRY
+// ===============================================================
 
 Rect Widget::getChildrenBounds() const
 {
@@ -583,10 +581,24 @@ Rect Widget::getChildrenBounds() const
               jrect_h(rc) - border_width.t - border_width.b);
 }
 
+Rect Widget::getClientChildrenBounds() const
+{
+  return Rect(border_width.l,
+              border_width.t,
+              jrect_w(rc) - border_width.l - border_width.r,
+              jrect_h(rc) - border_width.t - border_width.b);
+}
+
 void Widget::setBounds(const Rect& rc)
 {
-  jrect jrc = { rc.x, rc.y, rc.x+rc.w, rc.y+rc.h };
-  jwidget_set_rect(this, &jrc);
+  ResizeEvent ev(this, rc);
+  onResize(ev);
+}
+
+void Widget::setBoundsQuietly(const gfx::Rect& rc)
+{
+  jrect jrc = { rc.x, rc.y, rc.x2(), rc.y2() };
+  jrect_copy(this->rc, &jrc);
 }
 
 Border Widget::getBorder() const
@@ -604,7 +616,7 @@ void Widget::setBorder(const Border& br)
 
 void Widget::getRegion(gfx::Region& region)
 {
-  if (this->type == JI_WINDOW)
+  if (this->type == kWindowWidget)
     getTheme()->getWindowMask(this, region);
   else
     region = getBounds();
@@ -702,25 +714,6 @@ void Widget::getDrawableRegion(gfx::Region& region, DrawableRegionFlags flags)
     window = manager->getRoot();
     manager = (window ? window->getManager(): NULL);
   }
-}
-
-/* gets the position of the widget */
-JRect jwidget_get_rect(Widget* widget)
-{
-  ASSERT_VALID_WIDGET(widget);
-
-  return jrect_new_copy(widget->rc);
-}
-
-/* gets the position for children of the widget */
-JRect jwidget_get_child_rect(Widget* widget)
-{
-  ASSERT_VALID_WIDGET(widget);
-
-  return jrect_new(widget->rc->x1 + widget->border_width.l,
-                   widget->rc->y1 + widget->border_width.t,
-                   widget->rc->x2 - widget->border_width.r,
-                   widget->rc->y2 - widget->border_width.b);
 }
 
 int jwidget_get_text_length(const Widget* widget)
@@ -877,18 +870,6 @@ void jwidget_set_border(Widget* widget, int l, int t, int r, int b)
   widget->invalidate();
 }
 
-void jwidget_set_rect(Widget* widget, JRect rect)
-{
-  Message* msg;
-
-  ASSERT_VALID_WIDGET(widget);
-
-  msg = jmessage_new(JM_SETPOS);
-  jrect_copy(&msg->setpos.rect, rect);
-  widget->sendMessage(msg);
-  jmessage_free(msg);
-}
-
 void jwidget_set_min_size(Widget* widget, int w, int h)
 {
   ASSERT_VALID_WIDGET(widget);
@@ -945,17 +926,11 @@ void Widget::flushRedraw()
       Region::const_iterator it = widget->m_updateRegion.begin();
 
       // Draw the widget
-      for (c=0; c<nrects; c++, ++it) {
-        const Rect& rc = *it;
-
+      int count = nrects-1;
+      for (c=0; c<nrects; ++c, ++it, --count) {
         // Create the draw message
-        msg = jmessage_new(JM_DRAW);
-        msg->draw.count = nrects-1 - c;
-        msg->draw.rect.x1 = rc.x;
-        msg->draw.rect.y1 = rc.y;
-        msg->draw.rect.x2 = rc.x2();
-        msg->draw.rect.y2 = rc.y2();
-        jmessage_add_dest(msg, widget);
+        msg = new PaintMessage(count, *it);
+        msg->addRecipient(widget);
 
         // Enqueue the draw message
         getManager()->enqueueMessage(msg);
@@ -1020,7 +995,7 @@ void Widget::scrollRegion(const Region& region, int dx, int dy)
 
     mark_dirty_flag(this);
 
-    // Generate the JM_DRAW messages for the widget's m_updateRegion
+    // Generate the kPaintMessage messages for the widget's m_updateRegion
     flushRedraw();
   }
 }
@@ -1140,7 +1115,7 @@ void Widget::releaseFocus()
 
 /**
  * Captures the mouse to send all the future mouse messsages to the
- * specified widget (included the JM_MOTION and JM_SETCURSOR).
+ * specified widget (included the kMouseMoveMessage and kSetCursorMessage).
  */
 void Widget::captureMouse()
 {
@@ -1173,7 +1148,7 @@ bool Widget::hasMouse()
 
 bool Widget::hasMouseOver()
 {
-  return (this == this->pick(jmouse_x(0), jmouse_y(0)));
+  return (this == this->pick(gfx::Point(jmouse_x(0), jmouse_y(0))));
 }
 
 bool Widget::hasCapture()
@@ -1212,31 +1187,33 @@ bool Widget::onProcessMessage(Message* msg)
 {
   ASSERT(msg != NULL);
 
-  switch (msg->type) {
+  switch (msg->type()) {
 
-    case JM_OPEN:
-    case JM_CLOSE:
-    case JM_WINMOVE:
+    case kOpenMessage:
+    case kCloseMessage:
+    case kWinMoveMessage:
       // Broadcast the message to the children.
       UI_FOREACH_WIDGET(getChildren(), it)
         (*it)->sendMessage(msg);
       break;
 
-    case JM_DRAW:
+    case kPaintMessage:
       // With double-buffering we create a temporary bitmap to draw
       // the widget on it and then we blit the final result to the
       // real screen. Anyway, if ji_screen is not the real hardware
       // screen, we already are painting off-screen using ji_screen,
       // so we don't need the temporary bitmap.
       if (m_doubleBuffered && ji_screen == screen) {
-        ASSERT(jrect_w(&msg->draw.rect) > 0);
-        ASSERT(jrect_h(&msg->draw.rect) > 0);
+        const PaintMessage* ptmsg = static_cast<const PaintMessage*>(msg);
+
+        ASSERT(ptmsg->rect().w > 0);
+        ASSERT(ptmsg->rect().h > 0);
 
         BITMAP* bmp = create_bitmap_ex(bitmap_color_depth(ji_screen),
-                                       jrect_w(&msg->draw.rect),
-                                       jrect_h(&msg->draw.rect));
+                                       ptmsg->rect().w,
+                                       ptmsg->rect().h);
 
-        Graphics graphics(bmp, rc->x1-msg->draw.rect.x1, rc->y1-msg->draw.rect.y1);
+        Graphics graphics(bmp, rc->x1 - ptmsg->rect().x, rc->y1 - ptmsg->rect().y);
         graphics.setFont(getFont());
 
         PaintEvent ev(this, &graphics);
@@ -1244,7 +1221,7 @@ bool Widget::onProcessMessage(Message* msg)
 
         // Blit the temporary bitmap to the real screen
         if (ev.isPainted())
-          blit(bmp, ji_screen, 0, 0, msg->draw.rect.x1, msg->draw.rect.y1, bmp->w, bmp->h);
+          blit(bmp, ji_screen, 0, 0, ptmsg->rect().x, ptmsg->rect().y, bmp->w, bmp->h);
 
         destroy_bitmap(bmp);
         return ev.isPainted();
@@ -1260,44 +1237,32 @@ bool Widget::onProcessMessage(Message* msg)
         return ev.isPainted();
       }
 
-    case JM_SETPOS: {
-      jrect_copy(this->rc, &msg->setpos.rect);
-      JRect cpos = jwidget_get_child_rect(this);
-
-      // Set all the children to the same "cpos".
-      UI_FOREACH_WIDGET(getChildren(), it)
-        jwidget_set_rect(*it, cpos);
-
-      jrect_free(cpos);
-      return true;
-    }
-
-    case JM_KEYPRESSED:
-    case JM_KEYRELEASED:
-      if (msg->key.propagate_to_children) {
+    case kKeyDownMessage:
+    case kKeyUpMessage:
+      if (static_cast<KeyMessage*>(msg)->propagateToChildren()) {
         // Broadcast the message to the children.
         UI_FOREACH_WIDGET(getChildren(), it)
           (*it)->sendMessage(msg);
       }
 
       // Propagate the message to the parent.
-      if (msg->key.propagate_to_parent && getParent() != NULL)
+      if (static_cast<KeyMessage*>(msg)->propagateToParent() && getParent() != NULL)
         return getParent()->sendMessage(msg);
       else
         break;
 
-    case JM_BUTTONPRESSED:
-    case JM_BUTTONRELEASED:
-    case JM_DOUBLECLICK:
-    case JM_MOTION:
-    case JM_WHEEL:
+    case kMouseDownMessage:
+    case kMouseUpMessage:
+    case kDoubleClickMessage:
+    case kMouseMoveMessage:
+    case kMouseWheelMessage:
       // Propagate the message to the parent.
       if (getParent() != NULL)
         return getParent()->sendMessage(msg);
       else
         break;
 
-    case JM_SETCURSOR:
+    case kSetCursorMessage:
       // Propagate the message to the parent.
       if (getParent() != NULL)
         return getParent()->sendMessage(msg);
@@ -1347,6 +1312,16 @@ void Widget::onLoadLayout(LoadLayoutEvent& ev)
 void Widget::onSaveLayout(SaveLayoutEvent& ev)
 {
   // Do nothing
+}
+
+void Widget::onResize(ResizeEvent& ev)
+{
+  setBoundsQuietly(ev.getBounds());
+
+  // Set all the children to the same "cpos".
+  gfx::Rect cpos = getChildrenBounds();
+  UI_FOREACH_WIDGET(getChildren(), it)
+    (*it)->setBounds(cpos);
 }
 
 void Widget::onPaint(PaintEvent& ev)

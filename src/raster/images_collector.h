@@ -1,4 +1,4 @@
-/* ASEPRITE
+/* Aseprite
  * Copyright (C) 2001-2013  David Capello
  *
  * This program is free software; you can redistribute it and/or modify
@@ -19,63 +19,67 @@
 #ifndef RASTER_IMAGES_REF_H_INCLUDED
 #define RASTER_IMAGES_REF_H_INCLUDED
 
-#include <list>
 #include "raster/frame_number.h"
 
-class Sprite;
-class Image;
-class Layer;
-class Cel;
+#include <list>
 
-// Collects images from a sprite
-class ImagesCollector
-{
-public:
-  class Item {
+namespace raster {
+
+  class Sprite;
+  class Image;
+  class Layer;
+  class Cel;
+
+  // Collects images from a sprite
+  class ImagesCollector {
   public:
-    Item(Layer* layer, Cel* cel, Image* image)
-      : m_layer(layer)
-      , m_cel(cel)
-      , m_image(image)
-    { }
+    class Item {
+    public:
+      Item(Layer* layer, Cel* cel, Image* image)
+        : m_layer(layer)
+        , m_cel(cel)
+        , m_image(image)
+      { }
 
-    Layer* layer() const { return m_layer; }
-    Cel*   cel()   const { return m_cel; }
-    Image* image() const { return m_image; }
+      Layer* layer() const { return m_layer; }
+      Cel*   cel()   const { return m_cel; }
+      Image* image() const { return m_image; }
+
+    private:
+      Layer* m_layer;
+      Cel*   m_cel;
+      Image* m_image;
+    };
+
+    typedef std::list<Item> Items;
+    typedef std::list<Item>::iterator ItemsIterator;
+
+    // Creates a collection of images from the specified sprite.
+    // Parameters:
+    // * allFrames: True if you want to collect images from all frames
+    //              or false if you need images from the given "frame" param.
+    // * forWrite: True if you will modify the images (it is used to avoid
+    //             returning images from layers which are read-only/write-locked).
+    ImagesCollector(Layer* layer,
+                    FrameNumber frame,
+                    bool allFrames,
+                    bool forWrite);
+
+    ItemsIterator begin() { return m_items.begin(); }
+    ItemsIterator end() { return m_items.end(); }
+
+    size_t size() const { return m_items.size(); }
+    bool empty() const { return m_items.empty(); }
 
   private:
-    Layer* m_layer;
-    Cel*   m_cel;
-    Image* m_image;
+    void collectFromLayer(Layer* layer, FrameNumber frame);
+    void collectImage(Layer* layer, Cel* cel);
+
+    Items m_items;
+    bool m_allFrames;
+    bool m_forWrite;
   };
 
-  typedef std::list<Item> Items;
-  typedef std::list<Item>::iterator ItemsIterator;
-
-  // Creates a collection of images from the specified sprite.
-  // Parameters:
-  // * allFrames: True if you want to collect images from all frames
-  //              or false if you need images from the given "frame" param.
-  // * forWrite: True if you will modify the images (it is used to avoid
-  //             returning images from layers which are read-only/write-locked).
-  ImagesCollector(Layer* layer,
-                  FrameNumber frame,
-                  bool allFrames,
-                  bool forWrite);
-
-  ItemsIterator begin() { return m_items.begin(); }
-  ItemsIterator end() { return m_items.end(); }
-
-  size_t size() const { return m_items.size(); }
-  bool empty() const { return m_items.empty(); }
-
-private:
-  void collectFromLayer(Layer* layer, FrameNumber frame);
-  void collectImage(Layer* layer, Cel* cel);
-
-  Items m_items;
-  bool m_allFrames;
-  bool m_forWrite;
-};
+} // namespace raster
 
 #endif

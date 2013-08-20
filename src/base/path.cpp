@@ -1,29 +1,31 @@
-// ASEPRITE base library
-// Copyright (C) 2001-2013  David Capello
+// Aseprite Base Library
+// Copyright (c) 2001-2013 David Capello
 //
-// This source file is distributed under a BSD-like license, please
-// read LICENSE.txt for more information.
+// This source file is distributed under MIT license,
+// please read LICENSE.txt for more information.
 
+#ifdef HAVE_CONFIG_H
 #include "config.h"
+#endif
 
 #include "base/path.h"
 #include <algorithm>
 #include <iterator>
 
-using namespace base;
+namespace base {
 
 #ifdef WIN32
-  const string::value_type base::path_separator = '\\';
+  const string::value_type path_separator = '\\';
 #else
-  const string::value_type base::path_separator = '/';
+  const string::value_type path_separator = '/';
 #endif
 
-bool base::is_path_separator(string::value_type chr)
+bool is_path_separator(string::value_type chr)
 {
   return (chr == '\\' || chr == '/');
 }
 
-string base::get_file_path(const string& filename)
+string get_file_path(const string& filename)
 {
   string::const_reverse_iterator rit;
   string res;
@@ -41,7 +43,7 @@ string base::get_file_path(const string& filename)
   return res;
 }
 
-string base::get_file_name(const string& filename)
+string get_file_name(const string& filename)
 {
   string::const_reverse_iterator rit;
   string result;
@@ -56,7 +58,7 @@ string base::get_file_name(const string& filename)
   return result;
 }
 
-string base::get_file_extension(const string& filename)
+string get_file_extension(const string& filename)
 {
   string::const_reverse_iterator rit;
   string result;
@@ -77,7 +79,7 @@ string base::get_file_extension(const string& filename)
   return result;
 }
 
-string base::get_file_title(const string& filename)
+string get_file_title(const string& filename)
 {
   string::const_reverse_iterator rit;
   string::const_iterator last_dot = filename.end();
@@ -100,7 +102,7 @@ string base::get_file_title(const string& filename)
   return result;
 }
 
-string base::join_path(const string& path, const string& file)
+string join_path(const string& path, const string& file)
 {
   string result(path);
 
@@ -113,7 +115,7 @@ string base::join_path(const string& path, const string& file)
   return result;
 }
 
-string base::remove_path_separator(const string& path)
+string remove_path_separator(const string& path)
 {
   string result(path);
 
@@ -124,7 +126,7 @@ string base::remove_path_separator(const string& path)
   return result;
 }
 
-string base::fix_path_separators(const string& filename)
+string fix_path_separators(const string& filename)
 {
   string result(filename);
 
@@ -135,7 +137,7 @@ string base::fix_path_separators(const string& filename)
   return result;
 }
 
-bool base::has_file_extension(const string& filename, const string& csv_extensions)
+bool has_file_extension(const string& filename, const string& csv_extensions)
 {
   if (!filename.empty()) {
     string ext = string_to_lower(get_file_extension(filename));
@@ -153,3 +155,5 @@ bool base::has_file_extension(const string& filename, const string& csv_extensio
   }
   return false;
 }
+
+} // namespace base

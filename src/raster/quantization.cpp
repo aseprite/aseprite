@@ -1,4 +1,4 @@
-/* ASEPRITE
+/* Aseprite
  * Copyright (C) 2001-2013  David Capello
  *
  * This program is free software; you can redistribute it and/or modify
@@ -16,7 +16,9 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
+#ifdef HAVE_CONFIG_H
 #include "config.h"
+#endif
 
 #include <algorithm>
 #include <limits>
@@ -34,6 +36,9 @@
 #include "raster/rgbmap.h"
 #include "raster/sprite.h"
 
+namespace raster {
+namespace quantization {
+
 using namespace gfx;
 
 // Converts a RGB image to indexed with ordered dithering method.
@@ -44,7 +49,7 @@ static Image* ordered_dithering(const Image* src_image,
 
 static void create_palette_from_bitmaps(const std::vector<Image*>& images, Palette* palette, bool has_background_layer);
 
-Palette* quantization::create_palette_from_rgb(const Sprite* sprite, FrameNumber frameNumber)
+Palette* create_palette_from_rgb(const Sprite* sprite, FrameNumber frameNumber)
 {
   bool has_background_layer = (sprite->getBackgroundLayer() != NULL);
   Palette* palette = new Palette(FrameNumber(0), 256);
@@ -76,12 +81,12 @@ Palette* quantization::create_palette_from_rgb(const Sprite* sprite, FrameNumber
   return palette;
 }
 
-Image* quantization::convert_pixel_format(const Image* image,
-                                          PixelFormat pixelFormat,
-                                          DitheringMethod ditheringMethod,
-                                          const RgbMap* rgbmap,
-                                          const Palette* palette,
-                                          bool has_background_layer)
+Image* convert_pixel_format(const Image* image,
+                            PixelFormat pixelFormat,
+                            DitheringMethod ditheringMethod,
+                            const RgbMap* rgbmap,
+                            const Palette* palette,
+                            bool has_background_layer)
 {
   uint32_t* rgb_address;
   uint16_t* gray_address;
@@ -371,3 +376,6 @@ static void create_palette_from_bitmaps(const std::vector<Image*>& images, Palet
   int used_colors = histogram.createOptimizedPalette(palette, first_usable_entry, 255);
   //palette->resize(first_usable_entry+used_colors);   // TODO
 }
+
+} // namespace quantization
+} // namespace raster

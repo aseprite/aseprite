@@ -1,4 +1,4 @@
-/* ASEPRITE
+/* Aseprite
  * Copyright (C) 2001-2013  David Capello
  *
  * This program is free software; you can redistribute it and/or modify
@@ -21,12 +21,12 @@
 
 #include <iosfwd>
 
-class Cel;
-
 namespace raster {
 
-void write_cel(std::ostream& os, Cel* cel);
-Cel* read_cel(std::istream& is);
+  class Cel;
+
+  void write_cel(std::ostream& os, Cel* cel);
+  Cel* read_cel(std::istream& is);
 
 } // namespace raster
 

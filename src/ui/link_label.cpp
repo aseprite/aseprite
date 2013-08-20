@@ -1,14 +1,17 @@
-// ASEPRITE gui library
+// Aseprite UI Library
 // Copyright (C) 2001-2013  David Capello
 //
-// This source file is distributed under a BSD-like license, please
-// read LICENSE.txt for more information.
+// This source file is distributed under MIT license,
+// please read LICENSE.txt for more information.
 
 
+#ifdef HAVE_CONFIG_H
 #include "config.h"
+#endif
 
-#include "launcher.h"
 #include "ui/link_label.h"
+
+#include "base/launcher.h"
 #include "ui/message.h"
 #include "ui/system.h"
 #include "ui/theme.h"
@@ -34,9 +37,9 @@ void LinkLabel::setUrl(const char* url)
 
 bool LinkLabel::onProcessMessage(Message* msg)
 {
-  switch (msg->type) {
+  switch (msg->type()) {
 
-    case JM_SETCURSOR:
+    case kSetCursorMessage:
       // TODO theme stuff
       if (isEnabled()) {
         jmouse_set_cursor(kHandCursor);
@@ -44,17 +47,17 @@ bool LinkLabel::onProcessMessage(Message* msg)
       }
       break;
 
-    case JM_MOUSEENTER:
-    case JM_MOUSELEAVE:
+    case kMouseEnterMessage:
+    case kMouseLeaveMessage:
       // TODO theme stuff
       if (isEnabled())
         invalidate();
       break;
 
-    case JM_BUTTONRELEASED:
+    case kMouseUpMessage:
       if (isEnabled()) {
         if (!m_url.empty())
-          Launcher::openUrl(m_url);
+          base::launcher::open_url(m_url);
         Click();
       }
       break;

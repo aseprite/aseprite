@@ -1,4 +1,4 @@
-/* ASEPRITE
+/* Aseprite
  * Copyright (C) 2001-2013  David Capello
  *
  * This program is free software; you can redistribute it and/or modify
@@ -16,12 +16,18 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
+#ifdef HAVE_CONFIG_H
 #include "config.h"
+#endif
 
 #include "filters/replace_color_filter.h"
 
 #include "filters/filter_manager.h"
 #include "raster/image.h"
+
+namespace filters {
+
+using namespace raster;
 
 ReplaceColorFilter::ReplaceColorFilter()
 {
@@ -140,3 +146,5 @@ void ReplaceColorFilter::applyToIndexed(FilterManager* filterMgr)
       *(dst_address++) = c;
   }
 }
+
+} // namespace filters

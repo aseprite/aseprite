@@ -1,8 +1,8 @@
-// ASEPRITE gui library
+// Aseprite UI Library
 // Copyright (C) 2001-2013  David Capello
 //
-// This source file is distributed under a BSD-like license, please
-// read LICENSE.txt for more information.
+// This source file is distributed under MIT license,
+// please read LICENSE.txt for more information.
 
 #ifndef UI_WIDGET_H_INCLUDED
 #define UI_WIDGET_H_INCLUDED
@@ -10,6 +10,7 @@
 #include <string>
 
 #include "gfx/border.h"
+#include "gfx/point.h"
 #include "gfx/rect.h"
 #include "gfx/region.h"
 #include "gfx/size.h"
@@ -17,6 +18,7 @@
 #include "ui/color.h"
 #include "ui/component.h"
 #include "ui/rect.h"
+#include "ui/widget_type.h"
 #include "ui/widgets_list.h"
 
 #define ASSERT_VALID_WIDGET(widget) ASSERT((widget) != NULL)
@@ -26,23 +28,21 @@ struct BITMAP;
 
 namespace ui {
 
-  union Message;
-
   class InitThemeEvent;
   class LoadLayoutEvent;
   class Manager;
+  class Message;
   class PaintEvent;
   class PreferredSizeEvent;
+  class ResizeEvent;
   class SaveLayoutEvent;
   class Theme;
   class Window;
 
-  int ji_register_widget_type();
+  WidgetType register_widget_type();
 
   // Position and geometry
 
-  JRect jwidget_get_rect(Widget* widget);
-  JRect jwidget_get_child_rect(Widget* widget);
   int jwidget_get_text_length(const Widget* widget);
   int jwidget_get_text_height(const Widget* widget);
   void jwidget_get_texticon_info(Widget* widget,
@@ -52,16 +52,14 @@ namespace ui {
   void jwidget_noborders(Widget* widget);
   void jwidget_set_border(Widget* widget, int value);
   void jwidget_set_border(Widget* widget, int l, int t, int r, int b);
-  void jwidget_set_rect(Widget* widget, JRect rect);
   void jwidget_set_min_size(Widget* widget, int w, int h);
   void jwidget_set_max_size(Widget* widget, int w, int h);
 
   //////////////////////////////////////////////////////////////////////
 
-  class Widget : public Component
-  {
+  class Widget : public Component {
   public:
-    int type;                     /* widget's type */
+    WidgetType type;              // widget's type
 
     JRect rc;                     /* position rectangle */
     struct {
@@ -87,7 +85,7 @@ namespace ui {
     // CTOR & DTOR
     // ===============================================================
 
-    Widget(int type);
+    Widget(WidgetType type);
     virtual ~Widget();
 
     // Safe way to delete a widget when it is not in the manager message
@@ -96,7 +94,7 @@ namespace ui {
 
     // Main properties.
 
-    int getType() const { return this->type; }
+    WidgetType getType() const { return this->type; }
 
     const std::string& getId() const { return m_id; }
     void setId(const char* id) { m_id = id; }
@@ -194,16 +192,19 @@ namespace ui {
     // Returns a list of children.
     const WidgetsList& getChildren() const { return m_children; }
 
-    // Returns the first child or NULL if it doesn't exist.
+    // Returns the first/last child or NULL if it doesn't exist.
     Widget* getFirstChild() {
       return (!m_children.empty() ? m_children.front(): NULL);
+    }
+    Widget* getLastChild() {
+      return (!m_children.empty() ? m_children.back(): NULL);
     }
 
     // Returns the next or previous siblings.
     Widget* getNextSibling();
     Widget* getPreviousSibling();
 
-    Widget* pick(int x, int y);
+    Widget* pick(const gfx::Point& pt);
     bool hasChild(Widget* child);
     Widget* findChild(const char* id);
 
@@ -246,10 +247,25 @@ namespace ui {
     // POSITION & GEOMETRY
     // ===============================================================
 
-    gfx::Rect getBounds() const;
-    gfx::Rect getClientBounds() const;
+    gfx::Rect getBounds() const {
+      return gfx::Rect(rc->x1, rc->y1, jrect_w(rc), jrect_h(rc));
+    }
+
+    gfx::Rect getClientBounds() const {
+      return gfx::Rect(0, 0, jrect_w(rc), jrect_h(rc));
+    }
+
     gfx::Rect getChildrenBounds() const;
+    gfx::Rect getClientChildrenBounds() const;
+
+    // Sets the bounds of the widget generating a onResize() event.
     void setBounds(const gfx::Rect& rc);
+
+    // Sets the bounds of the widget without generating any kind of
+    // event. This member function must be used if you override
+    // onResize() and want to change the size of the widget without
+    // generating recursive onResize() events.
+    void setBoundsQuietly(const gfx::Rect& rc);
 
     gfx::Border getBorder() const;
     void setBorder(const gfx::Border& border);
@@ -331,6 +347,7 @@ namespace ui {
     virtual void onPreferredSize(PreferredSizeEvent& ev);
     virtual void onLoadLayout(LoadLayoutEvent& ev);
     virtual void onSaveLayout(SaveLayoutEvent& ev);
+    virtual void onResize(ResizeEvent& ev);
     virtual void onPaint(PaintEvent& ev);
     virtual void onBroadcastMouseMessage(WidgetsList& targets);
     virtual void onInitTheme(InitThemeEvent& ev);

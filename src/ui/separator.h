@@ -1,8 +1,8 @@
-// ASEPRITE gui library
+// Aseprite UI Library
 // Copyright (C) 2001-2013  David Capello
 //
-// This source file is distributed under a BSD-like license, please
-// read LICENSE.txt for more information.
+// This source file is distributed under MIT license,
+// please read LICENSE.txt for more information.
 
 #ifndef UI_SEPARATOR_H_INCLUDED
 #define UI_SEPARATOR_H_INCLUDED
@@ -18,7 +18,7 @@ namespace ui {
     Separator(const char* text, int align);
 
   protected:
-    bool onProcessMessage(Message* msg) OVERRIDE;
+    void onPaint(PaintEvent& ev) OVERRIDE;
     void onPreferredSize(PreferredSizeEvent& ev) OVERRIDE;
   };
 

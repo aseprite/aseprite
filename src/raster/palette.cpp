@@ -1,4 +1,4 @@
-/* ASEPRITE
+/* Aseprite
  * Copyright (C) 2001-2013  David Capello
  *
  * This program is free software; you can redistribute it and/or modify
@@ -16,7 +16,9 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
+#ifdef HAVE_CONFIG_H
 #include "config.h"
+#endif
 
 #include <allegro.h>
 #include <algorithm>
@@ -25,12 +27,12 @@
 #include "gfx/rgb.h"
 #include "raster/image.h"
 #include "raster/palette.h"
-#include "util/col_file.h"      // TODO Remove circular dependency between "raster" <-> "util"
-#include "util/gpl_file.h"
+#include "raster/file/col_file.h"      // TODO Remove circular dependency between "raster" <-> "util"
+#include "raster/file/gpl_file.h"
+
+namespace raster {
 
 using namespace gfx;
-
-//////////////////////////////////////////////////////////////////////
 
 Palette::Palette(FrameNumber frame, int ncolors)
   : GfxObj(GFXOBJ_PALETTE)
@@ -450,10 +452,10 @@ Palette* Palette::load(const char *filename)
     }
   }
   else if (ustricmp(ext, "col") == 0) {
-    pal = load_col_file(filename);
+    pal = raster::file::load_col_file(filename);
   }
   else if (ustricmp(ext, "gpl") == 0) {
-    pal = load_gpl_file(filename);
+    pal = raster::file::load_gpl_file(filename);
   }
 
   return pal;
@@ -485,10 +487,10 @@ bool Palette::save(const char *filename) const
     destroy_bitmap(bmp);
   }
   else if (ustricmp(ext, "col") == 0) {
-    success = save_col_file(this, filename);
+    success = raster::file::save_col_file(this, filename);
   }
   else if (ustricmp(ext, "gpl") == 0) {
-    success = save_gpl_file(this, filename);
+    success = raster::file::save_gpl_file(this, filename);
   }
 
   return success;
@@ -556,3 +558,5 @@ int Palette::findBestfit(int r, int g, int b) const
 
   return bestfit;
 }
+
+} // namespace raster

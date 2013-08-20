@@ -1,10 +1,12 @@
-// ASEPRITE gui library
+// Aseprite UI Library
 // Copyright (C) 2001-2013  David Capello
 //
-// This source file is distributed under a BSD-like license, please
-// read LICENSE.txt for more information.
+// This source file is distributed under MIT license,
+// please read LICENSE.txt for more information.
 
+#ifdef HAVE_CONFIG_H
 #include "config.h"
+#endif
 
 #include "ui/manager.h"
 #include "ui/theme.h"
@@ -28,12 +30,12 @@ void _ji_widgets_exit()
   delete widgets;
 }
 
-void _ji_add_widget(Widget* widget)
+void addWidget(Widget* widget)
 {
   widgets->push_back(widget);
 }
 
-void _ji_remove_widget(Widget* widget)
+void removeWidget(Widget* widget)
 {
   std::list<Widget*>::iterator it =
     std::find(widgets->begin(), widgets->end(), widget);
@@ -42,7 +44,7 @@ void _ji_remove_widget(Widget* widget)
     widgets->erase(it);
 }
 
-void _ji_set_font_of_all_widgets(FONT* f)
+void setFontOfAllWidgets(FONT* f)
 {
   for (std::list<Widget*>::iterator it=widgets->begin(), end=widgets->end();
        it != end; ++it) {
@@ -50,7 +52,7 @@ void _ji_set_font_of_all_widgets(FONT* f)
   }
 }
 
-void _ji_reinit_theme_in_all_widgets()
+void reinitThemeForAllWidgets()
 {
   // Reinitialize the theme of each widget
   for (std::list<Widget*>::iterator it=widgets->begin(), end=widgets->end();
@@ -62,7 +64,7 @@ void _ji_reinit_theme_in_all_widgets()
   // Remap the windows
   for (std::list<Widget*>::iterator it=widgets->begin(), end=widgets->end();
        it != end; ++it) {
-    if ((*it)->type == JI_WINDOW)
+    if ((*it)->type == kWindowWidget)
       static_cast<Window*>(*it)->remapWindow();
   }
 

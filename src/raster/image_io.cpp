@@ -1,4 +1,4 @@
-/* ASEPRITE
+/* Aseprite
  * Copyright (C) 2001-2013  David Capello
  *
  * This program is free software; you can redistribute it and/or modify
@@ -16,7 +16,9 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
+#ifdef HAVE_CONFIG_H
 #include "config.h"
+#endif
 
 #include "raster/image_io.h"
 
@@ -62,7 +64,7 @@ Image* read_image(std::istream& is)
   int height = read16(is);              // Height
   uint32_t maskColor = read32(is);      // Mask color
 
-  UniquePtr<Image> image(Image::create(static_cast<PixelFormat>(pixelFormat), width, height));
+  base::UniquePtr<Image> image(Image::create(static_cast<PixelFormat>(pixelFormat), width, height));
   int size = image_line_size(image, image->w);
 
   for (int c=0; c<image->h; c++)

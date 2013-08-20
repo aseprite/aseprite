@@ -1,14 +1,15 @@
-// ASEPRITE gfx library
-// Copyright (C) 2001-2013  David Capello
+// Aseprite Gfx Library
+// Copyright (C) 2001-2013 David Capello
 //
-// This source file is distributed under a BSD-like license, please
-// read LICENSE.txt for more information.
+// This source file is distributed under MIT license,
+// please read LICENSE.txt for more information.
 
 #include "gfx/rgb.h"
 #include "gfx/hsv.h"
 #include <cmath>
 
-using namespace gfx;
+namespace gfx {
+
 using namespace std;
 
 // Reference: http://en.wikipedia.org/wiki/HSL_and_HSV
@@ -77,3 +78,5 @@ int Rgb::minComponent() const
   else
     return (m_green < m_blue) ? m_green: m_blue;
 }
+
+} // namespace gfx

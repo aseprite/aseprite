@@ -1,10 +1,12 @@
-// ASEPRITE gui library
+// Aseprite UI Library
 // Copyright (C) 2001-2013  David Capello
 //
-// This source file is distributed under a BSD-like license, please
-// read LICENSE.txt for more information.
+// This source file is distributed under MIT license,
+// please read LICENSE.txt for more information.
 
+#ifdef HAVE_CONFIG_H
 #include "config.h"
+#endif
 
 #include <allegro.h>
 #include <allegro/internal/aintern.h>
@@ -26,7 +28,7 @@ namespace ui {
 static Theme* current_theme = NULL;
 
 static void draw_text(BITMAP *bmp, FONT *f, const char* text, int x, int y,
-                      ui::Color fg_color, ui::Color bg_color, bool fill_bg);
+                      Color fg_color, Color bg_color, bool fill_bg);
 
 Theme::Theme()
 {
@@ -94,19 +96,8 @@ BITMAP* ji_apply_guiscale(BITMAP* original)
     return original;
 }
 
-void _ji_theme_draw_sprite_color(BITMAP *bmp, BITMAP *sprite,
-                                 int x, int y, int color)
-{
-  int u, v, mask = bitmap_mask_color(sprite);
-
-  for (v=0; v<sprite->h; v++)
-    for (u=0; u<sprite->w; u++)
-      if (getpixel(sprite, u, v) != mask)
-        putpixel(bmp, x+u, y+v, color);
-}
-
-void _ji_theme_textbox_draw(BITMAP *bmp, Widget* widget,
-                            int *w, int *h, ui::Color bg, ui::Color fg)
+void drawTextBox(BITMAP* bmp, Widget* widget,
+                 int* w, int* h, Color bg, Color fg)
 {
   View* view = View::getView(widget);
   char *text = (char*)widget->getText(); // TODO warning: removing const modifier
@@ -265,7 +256,7 @@ void _ji_theme_textbox_draw(BITMAP *bmp, Widget* widget,
 }
 
 static void draw_text(BITMAP *bmp, FONT *f, const char *text, int x, int y,
-                      ui::Color fg_color, ui::Color bg_color, bool fill_bg)
+                      Color fg_color, Color bg_color, bool fill_bg)
 {
   // TODO Optional anti-aliased textout
   ji_font_set_aa_mode(f, to_system(bg_color));

@@ -1,4 +1,4 @@
-/* ASEPRITE
+/* Aseprite
  * Copyright (C) 2001-2013  David Capello
  *
  * This program is free software; you can redistribute it and/or modify
@@ -21,12 +21,12 @@
 
 #include <iosfwd>
 
-class Palette;
-
 namespace raster {
 
-void write_palette(std::ostream& os, Palette* palette);
-Palette* read_palette(std::istream& is);
+  class Palette;
+
+  void write_palette(std::ostream& os, Palette* palette);
+  Palette* read_palette(std::istream& is);
 
 } // namespace raster
 

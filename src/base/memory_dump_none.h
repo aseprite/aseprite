@@ -1,8 +1,8 @@
-// ASEPRITE base library
-// Copyright (C) 2001-2013  David Capello
+// Aseprite Base Library
+// Copyright (c) 2001-2013 David Capello
 //
-// This source file is distributed under a BSD-like license, please
-// read LICENSE.txt for more information.
+// This source file is distributed under MIT license,
+// please read LICENSE.txt for more information.
 
 #ifndef BASE_MEMORY_DUMP_NONE_H_INCLUDED
 #define BASE_MEMORY_DUMP_NONE_H_INCLUDED

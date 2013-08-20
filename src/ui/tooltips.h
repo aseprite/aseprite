@@ -1,8 +1,8 @@
-// ASEPRITE gui library
+// Aseprite UI Library
 // Copyright (C) 2001-2013  David Capello
 //
-// This source file is distributed under a BSD-like license, please
-// read LICENSE.txt for more information.
+// This source file is distributed under MIT license,
+// please read LICENSE.txt for more information.
 
 #ifndef UI_TOOLTIPS_H_INCLUDED
 #define UI_TOOLTIPS_H_INCLUDED
@@ -43,8 +43,8 @@ namespace ui {
 
     typedef std::map<Widget*, TipInfo> Tips;
     Tips m_tips;                      // All tips.
-    UniquePtr<TipWindow> m_tipWindow; // Frame to show tooltips.
-    UniquePtr<Timer> m_timer;         // Timer to control the tooltip delay.
+    base::UniquePtr<TipWindow> m_tipWindow; // Frame to show tooltips.
+    base::UniquePtr<Timer> m_timer;         // Timer to control the tooltip delay.
     struct {
       Widget* widget;
       TipInfo tipInfo;

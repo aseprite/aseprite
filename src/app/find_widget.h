@@ -1,4 +1,4 @@
-/* ASEPRITE
+/* Aseprite
  * Copyright (C) 2001-2013  David Capello
  *
  * This program is free software; you can redistribute it and/or modify
@@ -16,8 +16,8 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifndef APP_GUI_FIND_WIDGET_H_INCLUDED
-#define APP_GUI_FIND_WIDGET_H_INCLUDED
+#ifndef APP_FIND_WIDGET_H_INCLUDED
+#define APP_FIND_WIDGET_H_INCLUDED
 
 #include "app/widget_not_found.h"
 #include "ui/widget.h"

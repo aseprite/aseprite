@@ -1,8 +1,8 @@
-// ASEPRITE base library
-// Copyright (C) 2001-2013  David Capello
+// Aseprite Base Library
+// Copyright (c) 2001-2013 David Capello
 //
-// This source file is distributed under a BSD-like license, please
-// read LICENSE.txt for more information.
+// This source file is distributed under MIT license,
+// please read LICENSE.txt for more information.
 
 #ifndef BASE_MUTEX_PTHREAD_H_INCLUDED
 #define BASE_MUTEX_PTHREAD_H_INCLUDED
@@ -10,15 +10,15 @@
 #include <pthread.h>
 #include <errno.h>
 
-class Mutex::MutexImpl
+class base::mutex::mutex_impl
 {
 public:
 
-  MutexImpl() {
+  mutex_impl() {
     pthread_mutex_init(&m_handle, NULL);
   }
 
-  ~MutexImpl() {
+  ~mutex_impl() {
     pthread_mutex_destroy(&m_handle);
   }
 
@@ -26,7 +26,7 @@ public:
     pthread_mutex_lock(&m_handle);
   }
 
-  bool tryLock() {
+  bool try_lock() {
     return pthread_mutex_trylock(&m_handle) != EBUSY;
   }
 

@@ -1,4 +1,4 @@
-/* ASEPRITE
+/* Aseprite
  * Copyright (C) 2001-2013  David Capello
  *
  * This program is free software; you can redistribute it and/or modify
@@ -21,14 +21,17 @@
 
 #include "filters/filter.h"
 
-class InvertColorFilter : public Filter
-{
-public:
-  // Filter implementation
-  const char* getName();
-  void applyToRgba(FilterManager* filterMgr);
-  void applyToGrayscale(FilterManager* filterMgr);
-  void applyToIndexed(FilterManager* filterMgr);
-};
+namespace filters {
+
+  class InvertColorFilter : public Filter {
+  public:
+    // Filter implementation
+    const char* getName();
+    void applyToRgba(FilterManager* filterMgr);
+    void applyToGrayscale(FilterManager* filterMgr);
+    void applyToIndexed(FilterManager* filterMgr);
+  };
+
+} // namespace filters
 
 #endif

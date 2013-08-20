@@ -1,8 +1,8 @@
-// ASEPRITE gui library
+// Aseprite UI Library
 // Copyright (C) 2001-2013  David Capello
 //
-// This source file is distributed under a BSD-like license, please
-// read LICENSE.txt for more information.
+// This source file is distributed under MIT license,
+// please read LICENSE.txt for more information.
 
 #ifndef UI_LISTBOX_H_INCLUDED
 #define UI_LISTBOX_H_INCLUDED
@@ -13,25 +13,17 @@
 
 namespace ui {
 
+  class ListItem;
+
   class ListBox : public Widget
   {
   public:
-    class Item : public Widget
-    {
-    public:
-      Item(const char* text);
-
-    protected:
-      bool onProcessMessage(Message* msg) OVERRIDE;
-      void onPreferredSize(PreferredSizeEvent& ev) OVERRIDE;
-    };
-
     ListBox();
 
-    Item* getSelectedChild();
+    ListItem* getSelectedChild();
     int getSelectedIndex();
 
-    void selectChild(Item* item);
+    void selectChild(ListItem* item);
     void selectIndex(int index);
 
     size_t getItemsCount() const;
@@ -43,12 +35,11 @@ namespace ui {
 
   protected:
     virtual bool onProcessMessage(Message* msg) OVERRIDE;
+    virtual void onPaint(PaintEvent& ev) OVERRIDE;
+    virtual void onResize(ResizeEvent& ev) OVERRIDE;
     virtual void onPreferredSize(PreferredSizeEvent& ev) OVERRIDE;
     virtual void onChangeSelectedItem();
     virtual void onDoubleClickItem();
-
-  private:
-    void layoutListBox(JRect rect);
   };
 
 } // namespace ui

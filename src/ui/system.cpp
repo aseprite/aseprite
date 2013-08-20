@@ -1,10 +1,12 @@
-// ASEPRITE gui library
+// Aseprite UI Library
 // Copyright (C) 2001-2013  David Capello
 //
-// This source file is distributed under a BSD-like license, please
-// read LICENSE.txt for more information.
+// This source file is distributed under MIT license,
+// please read LICENSE.txt for more information.
 
+#ifdef HAVE_CONFIG_H
 #include "config.h"
+#endif
 
 #include "ui/system.h"
 
@@ -136,9 +138,7 @@ void SetDisplay(she::Display* display)
       // Update default-manager size
       if ((jrect_w(manager->rc) != JI_SCREEN_W ||
            jrect_h(manager->rc) != JI_SCREEN_H)) {
-        JRect rect = jrect_new(0, 0, JI_SCREEN_W, JI_SCREEN_H);
-        jwidget_set_rect(manager, rect);
-        jrect_free(rect);
+        manager->setBounds(gfx::Rect(0, 0, JI_SCREEN_W, JI_SCREEN_H));
       }
     }
 
@@ -273,10 +273,14 @@ void jmouse_release()
 #endif
 }
 
+MouseButtons jmouse_b(int antique)
+{
+  return (MouseButtons)m_b[antique & 1];
+}
+
 int jmouse_x(int antique) { return m_x[antique & 1]; }
 int jmouse_y(int antique) { return m_y[antique & 1]; }
 int jmouse_z(int antique) { return m_z[antique & 1]; }
-int jmouse_b(int antique) { return m_b[antique & 1]; }
 
 bool jmouse_control_infinite_scroll(const gfx::Rect& rect)
 {

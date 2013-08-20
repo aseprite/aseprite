@@ -1,14 +1,15 @@
-// ASEPRITE gfx library
-// Copyright (C) 2001-2013  David Capello
+// Aseprite Gfx Library
+// Copyright (C) 2001-2013 David Capello
 //
-// This source file is distributed under a BSD-like license, please
-// read LICENSE.txt for more information.
+// This source file is distributed under MIT license,
+// please read LICENSE.txt for more information.
 
 #include "gfx/hsv.h"
 #include "gfx/rgb.h"
 #include <cmath>
 
-using namespace gfx;
+namespace gfx {
+
 using namespace std;
 
 Hsv::Hsv(double hue, double saturation, double value)
@@ -84,3 +85,5 @@ int Hsv::valueInt() const
 {
   return int(floor(m_value*100.0 + 0.5));
 }
+
+} // namespace gfx

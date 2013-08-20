@@ -1,23 +1,25 @@
-// ASEPRITE gui library
+// Aseprite UI Library
 // Copyright (C) 2001-2013  David Capello
 //
-// This source file is distributed under a BSD-like license, please
-// read LICENSE.txt for more information.
+// This source file is distributed under MIT license,
+// please read LICENSE.txt for more information.
 
 #define REDRAW_MOVEMENT
 
+#ifdef HAVE_CONFIG_H
 #include "config.h"
+#endif
 
 #include <allegro.h>
 
 #include "gfx/size.h"
-#include "ui/gui.h"
 #include "ui/intern.h"
 #include "ui/preferred_size_event.h"
-
-using namespace gfx;
+#include "ui/ui.h"
 
 namespace ui {
+
+using namespace gfx;
 
 enum {
   WINDOW_NONE = 0,
@@ -28,13 +30,13 @@ enum {
   WINDOW_RESIZE_BOTTOM = 16,
 };
 
-static JRect click_pos = NULL;
-static int press_x, press_y;
+static gfx::Point clickedMousePos;
+static gfx::Rect* clickedWindowPos = NULL;
 
 static void displace_widgets(Widget* widget, int x, int y);
 
 Window::Window(bool desktop, const char* text)
-  : Widget(JI_WINDOW)
+  : Widget(kWindowWidget)
 {
   m_killer = NULL;
   m_isDesktop = desktop;
@@ -117,47 +119,47 @@ void Window::onHitTest(HitTestEvent& ev)
 
   int x = ev.getPoint().x;
   int y = ev.getPoint().y;
-  JRect pos = jwidget_get_rect(this);
-  JRect cpos = jwidget_get_child_rect(this);
+  gfx::Rect pos = getBounds();
+  gfx::Rect cpos = getChildrenBounds();
 
   // Move
   if ((this->hasText())
-      && (((x >= cpos->x1) &&
-           (x < cpos->x2) &&
-           (y >= pos->y1+this->border_width.b) &&
-           (y < cpos->y1)))) {
+      && (((x >= cpos.x) &&
+           (x < cpos.x2()) &&
+           (y >= pos.y+this->border_width.b) &&
+           (y < cpos.y)))) {
     ht = HitTestCaption;
   }
   // Resize
   else if (m_isSizeable) {
-    if ((x >= pos->x1) && (x < cpos->x1)) {
-      if ((y >= pos->y1) && (y < cpos->y1))
+    if ((x >= pos.x) && (x < cpos.x)) {
+      if ((y >= pos.y) && (y < cpos.y))
         ht = HitTestBorderNW;
-      else if ((y > cpos->y2-1) && (y <= pos->y2-1))
+      else if ((y > cpos.y2()-1) && (y <= pos.y2()-1))
         ht = HitTestBorderSW;
       else
         ht = HitTestBorderW;
     }
-    else if ((y >= pos->y1) && (y < cpos->y1)) {
-      if ((x >= pos->x1) && (x < cpos->x1))
+    else if ((y >= pos.y) && (y < cpos.y)) {
+      if ((x >= pos.x) && (x < cpos.x))
         ht = HitTestBorderNW;
-      else if ((x > cpos->x2-1) && (x <= pos->x2-1))
+      else if ((x > cpos.x2()-1) && (x <= pos.x2()-1))
         ht = HitTestBorderNE;
       else
         ht = HitTestBorderN;
     }
-    else if ((x > cpos->x2-1) && (x <= pos->x2-1)) {
-      if ((y >= pos->y1) && (y < cpos->y1))
+    else if ((x > cpos.x2()-1) && (x <= pos.x2()-1)) {
+      if ((y >= pos.y) && (y < cpos.y))
         ht = HitTestBorderNE;
-      else if ((y > cpos->y2-1) && (y <= pos->y2-1))
+      else if ((y > cpos.y2()-1) && (y <= pos.y2()-1))
         ht = HitTestBorderSE;
       else
         ht = HitTestBorderE;
     }
-    else if ((y > cpos->y2-1) && (y <= pos->y2-1)) {
-      if ((x >= pos->x1) && (x < cpos->x1))
+    else if ((y > cpos.y2()-1) && (y <= pos.y2()-1)) {
+      if ((x >= pos.x) && (x < cpos.x))
         ht = HitTestBorderSW;
-      else if ((x > cpos->x2-1) && (x <= pos->x2-1))
+      else if ((x > cpos.x2()-1) && (x <= pos.x2()-1))
         ht = HitTestBorderSE;
       else
         ht = HitTestBorderS;
@@ -168,29 +170,18 @@ void Window::onHitTest(HitTestEvent& ev)
     ht = HitTestClient;
   }
 
-  jrect_free(pos);
-  jrect_free(cpos);
-
   ev.setHit(ht);
 }
 
 void Window::remapWindow()
 {
-  Size reqSize;
-  JRect rect;
-
   if (m_isAutoRemap) {
     m_isAutoRemap = false;
     this->setVisible(true);
   }
 
-  reqSize = this->getPreferredSize();
-
-  rect = jrect_new(this->rc->x1, this->rc->y1,
-                   this->rc->x1+reqSize.w,
-                   this->rc->y1+reqSize.h);
-  jwidget_set_rect(this, rect);
-  jrect_free(rect);
+  setBounds(Rect(Point(this->rc->x1, this->rc->y1),
+                 getPreferredSize()));
 
   // load layout
   loadLayout();
@@ -211,19 +202,15 @@ void Window::centerWindow()
 
 void Window::positionWindow(int x, int y)
 {
-  JRect rect;
-
   if (m_isAutoRemap)
     remapWindow();
 
-  rect = jrect_new(x, y, x+jrect_w(this->rc), y+jrect_h(this->rc));
-  jwidget_set_rect(this, rect);
-  jrect_free(rect);
+  setBounds(Rect(x, y, jrect_w(this->rc), jrect_h(this->rc)));
 
   invalidate();
 }
 
-void Window::moveWindow(JRect rect)
+void Window::moveWindow(const gfx::Rect& rect)
 {
   moveWindow(rect, true);
 }
@@ -274,34 +261,29 @@ bool Window::isTopLevel()
 
 bool Window::onProcessMessage(Message* msg)
 {
-  switch (msg->type) {
+  switch (msg->type()) {
 
-    case JM_SETPOS:
-      windowSetPosition(&msg->setpos.rect);
-      return true;
-
-    case JM_OPEN:
+    case kOpenMessage:
       m_killer = NULL;
       break;
 
-    case JM_CLOSE:
+    case kCloseMessage:
       saveLayout();
       break;
 
-    case JM_BUTTONPRESSED: {
+    case kMouseDownMessage: {
       if (!m_isMoveable)
         break;
 
-      press_x = msg->mouse.x;
-      press_y = msg->mouse.y;
-      m_hitTest = hitTest(gfx::Point(press_x, press_y));
+      clickedMousePos = static_cast<MouseMessage*>(msg)->position();
+      m_hitTest = hitTest(clickedMousePos);
 
       if (m_hitTest != HitTestNowhere &&
           m_hitTest != HitTestClient) {
-        if (click_pos == NULL)
-          click_pos = jrect_new_copy(this->rc);
+        if (clickedWindowPos == NULL)
+          clickedWindowPos = new gfx::Rect(getBounds());
         else
-          jrect_copy(click_pos, this->rc);
+          *clickedWindowPos = getBounds();
 
         captureMouse();
         return true;
@@ -310,14 +292,14 @@ bool Window::onProcessMessage(Message* msg)
         break;
     }
 
-    case JM_BUTTONRELEASED:
+    case kMouseUpMessage:
       if (hasCapture()) {
         releaseMouse();
         jmouse_set_cursor(kArrowCursor);
 
-        if (click_pos != NULL) {
-          jrect_free(click_pos);
-          click_pos = NULL;
+        if (clickedWindowPos != NULL) {
+          delete clickedWindowPos;
+          clickedWindowPos = NULL;
         }
 
         m_hitTest = HitTestNowhere;
@@ -325,27 +307,27 @@ bool Window::onProcessMessage(Message* msg)
       }
       break;
 
-    case JM_MOTION:
+    case kMouseMoveMessage:
       if (!m_isMoveable)
         break;
 
       // Does it have the mouse captured?
       if (hasCapture()) {
+        gfx::Point mousePos = static_cast<MouseMessage*>(msg)->position();
+
         // Reposition/resize
         if (m_hitTest == HitTestCaption) {
-          int x = click_pos->x1 + (msg->mouse.x - press_x);
-          int y = click_pos->y1 + (msg->mouse.y - press_y);
-          JRect rect = jrect_new(x, y,
-                                 x+jrect_w(this->rc),
-                                 y+jrect_h(this->rc));
-          moveWindow(rect, true);
-          jrect_free(rect);
+          int x = clickedWindowPos->x + (mousePos.x - clickedMousePos.x);
+          int y = clickedWindowPos->y + (mousePos.y - clickedMousePos.y);
+          moveWindow(gfx::Rect(x, y,
+                               jrect_w(this->rc),
+                               jrect_h(this->rc)), true);
         }
         else {
           int x, y, w, h;
 
-          w = jrect_w(click_pos);
-          h = jrect_h(click_pos);
+          w = clickedWindowPos->w;
+          h = clickedWindowPos->h;
 
           bool hitLeft = (m_hitTest == HitTestBorderNW ||
                           m_hitTest == HitTestBorderW ||
@@ -361,17 +343,17 @@ bool Window::onProcessMessage(Message* msg)
                             m_hitTest == HitTestBorderSE);
 
           if (hitLeft) {
-            w += press_x - msg->mouse.x;
+            w += clickedMousePos.x - mousePos.x;
           }
           else if (hitRight) {
-            w += msg->mouse.x - press_x;
+            w += mousePos.x - clickedMousePos.x;
           }
 
           if (hitTop) {
-            h += (press_y - msg->mouse.y);
+            h += (clickedMousePos.y - mousePos.y);
           }
           else if (hitBottom) {
-            h += (msg->mouse.y - press_y);
+            h += (mousePos.y - clickedMousePos.y);
           }
 
           limitSize(&w, &h);
@@ -379,30 +361,26 @@ bool Window::onProcessMessage(Message* msg)
           if ((jrect_w(this->rc) != w) ||
               (jrect_h(this->rc) != h)) {
             if (hitLeft)
-              x = click_pos->x1 - (w - jrect_w(click_pos));
+              x = clickedWindowPos->x - (w - clickedWindowPos->w);
             else
               x = this->rc->x1;
 
             if (hitTop)
-              y = click_pos->y1 - (h - jrect_h(click_pos));
+              y = clickedWindowPos->y - (h - clickedWindowPos->h);
             else
               y = this->rc->y1;
 
-            {
-              JRect rect = jrect_new(x, y, x+w, y+h);
-              moveWindow(rect, false);
-              jrect_free(rect);
-
-              invalidate();
-            }
+            moveWindow(gfx::Rect(x, y, w, h), false);
+            invalidate();
           }
         }
       }
       break;
 
-    case JM_SETCURSOR:
+    case kSetCursorMessage:
       if (m_isMoveable) {
-        HitTest ht = hitTest(gfx::Point(msg->mouse.x, msg->mouse.y));
+        gfx::Point mousePos = static_cast<MouseMessage*>(msg)->position();
+        HitTest ht = hitTest(mousePos);
         CursorType cursor = kArrowCursor;
 
         switch (ht) {
@@ -453,6 +431,11 @@ bool Window::onProcessMessage(Message* msg)
   }
 
   return Widget::onProcessMessage(msg);
+}
+
+void Window::onResize(ResizeEvent& ev)
+{
+  windowSetPosition(ev.getBounds());
 }
 
 void Window::onPreferredSize(PreferredSizeEvent& ev)
@@ -511,10 +494,10 @@ void Window::onSetText()
   initTheme();
 }
 
-void Window::windowSetPosition(JRect rect)
+void Window::windowSetPosition(const gfx::Rect& rect)
 {
   // Copy the new position rectangle
-  jrect_copy(this->rc, rect);
+  setBoundsQuietly(rect);
   Rect cpos = getChildrenBounds();
 
   // Set all the children to the same "cpos"
@@ -534,7 +517,7 @@ void Window::limitSize(int *w, int *h)
   *h = MAX(*h, this->border_width.t+this->border_width.b);
 }
 
-void Window::moveWindow(JRect rect, bool use_blit)
+void Window::moveWindow(const gfx::Rect& rect, bool use_blit)
 {
 #define FLAGS (DrawableRegionFlags)(kCutTopWindows | kUseChildArea)
 
@@ -543,39 +526,36 @@ void Window::moveWindow(JRect rect, bool use_blit)
   Region new_drawable_region;
   Region manager_refresh_region; // A region to refresh the manager later
   Region window_refresh_region;  // A new region to refresh the window later
-  JRect old_pos;
-  JRect man_pos;
   Message* msg;
 
   manager->dispatchMessages();
 
-  /* get the window's current position */
-  old_pos = jrect_new_copy(this->rc);
+  // Get the window's current position
+  Rect old_pos = getBounds();
 
-  /* get the manager's current position */
-  man_pos = jwidget_get_rect(manager);
+  // Get the manager's current position
+  Rect man_pos = manager->getBounds();
 
-  /* sent a JM_WINMOVE message to the window */
-  msg = jmessage_new(JM_WINMOVE);
-  jmessage_add_dest(msg, this);
+  // Send a kWinMoveMessage message to the window
+  msg = new Message(kWinMoveMessage);
+  msg->addRecipient(this);
   manager->enqueueMessage(msg);
 
   // Get the region & the drawable region of the window
   getDrawableRegion(old_drawable_region, FLAGS);
 
   // If the size of the window changes...
-  if (jrect_w(old_pos) != jrect_w(rect) ||
-      jrect_h(old_pos) != jrect_h(rect)) {
-    // We have to change the whole positions sending JM_SETPOS
-    // messages...
+  if (old_pos.w != rect.w ||
+      old_pos.h != rect.h) {
+    // We have to change the position of all children.
     windowSetPosition(rect);
   }
   else {
     // We can just displace all the widgets by a delta (new_position -
     // old_position)...
     displace_widgets(this,
-                     rect->x1 - old_pos->x1,
-                     rect->y1 - old_pos->y1);
+                     rect.x - old_pos.x,
+                     rect.y - old_pos.y);
   }
 
   // Get the new drawable region of the window (it's new because we
@@ -591,7 +571,7 @@ void Window::moveWindow(JRect rect, bool use_blit)
   // In second place, we have to setup the window's refresh region...
 
   // If "use_blit" isn't activated, we have to redraw the whole window
-  // (sending JM_DRAW messages) in the new drawable region
+  // (sending kPaintMessage messages) in the new drawable region
   if (!use_blit) {
     window_refresh_region = new_drawable_region;
   }
@@ -603,32 +583,29 @@ void Window::moveWindow(JRect rect, bool use_blit)
 
     // Add a region to draw areas which were outside of the screen
     reg1 = new_drawable_region;
-    reg1.offset(old_pos->x1 - this->rc->x1,
-                old_pos->y1 - this->rc->y1);
+    reg1.offset(old_pos.x - this->rc->x1,
+                old_pos.y - this->rc->y1);
     moveable_region.createIntersection(old_drawable_region, reg1);
 
     reg1.createSubtraction(reg1, moveable_region);
-    reg1.offset(this->rc->x1 - old_pos->x1,
-                this->rc->y1 - old_pos->y1);
+    reg1.offset(this->rc->x1 - old_pos.x,
+                this->rc->y1 - old_pos.y);
     window_refresh_region.createUnion(window_refresh_region, reg1);
 
     // Move the window's graphics
     jmouse_hide();
     set_clip_rect(ji_screen,
-                  man_pos->x1, man_pos->y1, man_pos->x2-1, man_pos->y2-1);
+                  man_pos.x, man_pos.y, man_pos.x2()-1, man_pos.y2()-1);
 
     ji_move_region(moveable_region,
-                   this->rc->x1 - old_pos->x1,
-                   this->rc->y1 - old_pos->y1);
+                   this->rc->x1 - old_pos.x,
+                   this->rc->y1 - old_pos.y);
     set_clip_rect(ji_screen, 0, 0, JI_SCREEN_W-1, JI_SCREEN_H-1);
     jmouse_show();
   }
 
   manager->invalidateDisplayRegion(manager_refresh_region);
   invalidateRegion(window_refresh_region);
-
-  jrect_free(old_pos);
-  jrect_free(man_pos);
 }
 
 static void displace_widgets(Widget* widget, int x, int y)

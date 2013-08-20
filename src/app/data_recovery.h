@@ -1,4 +1,4 @@
-/* ASEPRITE
+/* Aseprite
  * Copyright (C) 2001-2013  David Capello
  *
  * This program is free software; you can redistribute it and/or modify
@@ -16,20 +16,19 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifndef DATA_RECOVERY_H_INCLUDED
-#define DATA_RECOVERY_H_INCLUDED
+#ifndef APP_DATA_RECOVERY_H_INCLUDED
+#define APP_DATA_RECOVERY_H_INCLUDED
 
+#include "app/context_observer.h"
+#include "app/document_observer.h"
+#include "app/documents.h"
 #include "base/compiler_specific.h"
 #include "base/disable_copying.h"
 #include "base/slot.h"
-#include "context_observer.h"
-#include "document_observer.h"
-#include "documents.h"
 
 namespace base { class TempDir; }
 
 namespace app {
-
   class Backup;
 
   class DataRecovery : public ContextObserver

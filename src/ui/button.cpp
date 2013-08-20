@@ -1,10 +1,12 @@
-// ASEPRITE gui library
+// Aseprite UI Library
 // Copyright (C) 2001-2013  David Capello
 //
-// This source file is distributed under a BSD-like license, please
-// read LICENSE.txt for more information.
+// This source file is distributed under MIT license,
+// please read LICENSE.txt for more information.
 
+#ifdef HAVE_CONFIG_H
 #include "config.h"
+#endif
 
 #include "ui/button.h"
 #include "ui/manager.h"
@@ -23,7 +25,10 @@
 
 namespace ui {
 
-ButtonBase::ButtonBase(const char* text, int type, int behaviorType, int drawType)
+ButtonBase::ButtonBase(const char* text,
+                       WidgetType type,
+                       WidgetType behaviorType,
+                       WidgetType drawType)
   : Widget(type)
   , m_pressedStatus(false)
   , m_handleSelect(true)
@@ -47,12 +52,12 @@ ButtonBase::~ButtonBase()
     m_iconInterface->destroy();
 }
 
-int ButtonBase::getBehaviorType() const
+WidgetType ButtonBase::getBehaviorType() const
 {
   return m_behaviorType;
 }
 
-int ButtonBase::getDrawType() const
+WidgetType ButtonBase::getDrawType() const
 {
   return m_drawType;
 }
@@ -75,12 +80,12 @@ void ButtonBase::onClick(Event& ev)
 
 bool ButtonBase::onProcessMessage(Message* msg)
 {
-  switch (msg->type) {
+  switch (msg->type()) {
 
-    case JM_FOCUSENTER:
-    case JM_FOCUSLEAVE:
+    case kFocusEnterMessage:
+    case kFocusLeaveMessage:
       if (isEnabled()) {
-        if (m_behaviorType == JI_BUTTON) {
+        if (m_behaviorType == kButtonWidget) {
           // Deselect the widget (maybe the user press the key, but
           // before release it, changes the focus).
           if (isSelected())
@@ -92,30 +97,32 @@ bool ButtonBase::onProcessMessage(Message* msg)
       }
       break;
 
-    case JM_KEYPRESSED:
+    case kKeyDownMessage: {
+      KeyMessage* keymsg = static_cast<KeyMessage*>(msg);
+      KeyScancode scancode = keymsg->scancode();
+
       // If the button is enabled.
       if (isEnabled()) {
-        // For JI_BUTTON
-        if (m_behaviorType == JI_BUTTON) {
+        // For kButtonWidget
+        if (m_behaviorType == kButtonWidget) {
           // Has focus and press enter/space
           if (hasFocus()) {
-            if ((msg->key.scancode == KEY_ENTER) ||
-                (msg->key.scancode == KEY_ENTER_PAD) ||
-                (msg->key.scancode == KEY_SPACE)) {
+            if ((scancode == kKeyEnter) ||
+                (scancode == kKeyEnterPad) ||
+                (scancode == kKeySpace)) {
               setSelected(true);
               return true;
             }
           }
           // Check if the user pressed mnemonic.
-          if ((msg->any.shifts & KB_ALT_FLAG) &&
-              (isScancodeMnemonic(msg->key.scancode))) {
+          if ((msg->altPressed()) && (isScancodeMnemonic(scancode))) {
             setSelected(true);
             return true;
           }
           // Magnetic widget catches ENTERs
           else if (isFocusMagnet() &&
-                   ((msg->key.scancode == KEY_ENTER) ||
-                    (msg->key.scancode == KEY_ENTER_PAD))) {
+                   ((scancode == kKeyEnter) ||
+                    (scancode == kKeyEnterPad))) {
             getManager()->setFocus(this);
 
             // Dispatch focus movement messages (because the buttons
@@ -126,21 +133,21 @@ bool ButtonBase::onProcessMessage(Message* msg)
             return true;
           }
         }
-        // For JI_CHECK or JI_RADIO
+        // For kCheckWidget or kRadioWidget
         else {
           /* if the widget has the focus and the user press space or
              if the user press Alt+the underscored letter of the button */
           if ((hasFocus() &&
-               (msg->key.scancode == KEY_SPACE)) ||
-              ((msg->any.shifts & KB_ALT_FLAG) &&
-               (isScancodeMnemonic(msg->key.scancode)))) {
-            if (m_behaviorType == JI_CHECK) {
+               (scancode == kKeySpace)) ||
+              ((msg->altPressed()) &&
+               (isScancodeMnemonic(scancode)))) {
+            if (m_behaviorType == kCheckWidget) {
               // Swap the select status
               setSelected(!isSelected());
 
               invalidate();
             }
-            else if (m_behaviorType == JI_RADIO) {
+            else if (m_behaviorType == kRadioWidget) {
               if (!isSelected()) {
                 setSelected(true);
               }
@@ -150,10 +157,11 @@ bool ButtonBase::onProcessMessage(Message* msg)
         }
       }
       break;
+    }
 
-    case JM_KEYRELEASED:
+    case kKeyUpMessage:
       if (isEnabled()) {
-        if (m_behaviorType == JI_BUTTON) {
+        if (m_behaviorType == kButtonWidget) {
           if (isSelected()) {
             generateButtonSelectSignal();
             return true;
@@ -162,10 +170,10 @@ bool ButtonBase::onProcessMessage(Message* msg)
       }
       break;
 
-    case JM_BUTTONPRESSED:
+    case kMouseDownMessage:
       switch (m_behaviorType) {
 
-        case JI_BUTTON:
+        case kButtonWidget:
           if (isEnabled()) {
             setSelected(true);
 
@@ -174,7 +182,7 @@ bool ButtonBase::onProcessMessage(Message* msg)
           }
           return true;
 
-        case JI_CHECK:
+        case kCheckWidget:
           if (isEnabled()) {
             setSelected(!isSelected());
 
@@ -183,7 +191,7 @@ bool ButtonBase::onProcessMessage(Message* msg)
           }
           return true;
 
-        case JI_RADIO:
+        case kRadioWidget:
           if (isEnabled()) {
             if (!isSelected()) {
               m_handleSelect = false;
@@ -198,18 +206,18 @@ bool ButtonBase::onProcessMessage(Message* msg)
       }
       break;
 
-    case JM_BUTTONRELEASED:
+    case kMouseUpMessage:
       if (hasCapture()) {
         releaseMouse();
 
         if (hasMouseOver()) {
           switch (m_behaviorType) {
 
-            case JI_BUTTON:
+            case kButtonWidget:
               generateButtonSelectSignal();
               break;
 
-            case JI_CHECK:
+            case kCheckWidget:
               {
                 // Fire onClick() event
                 Event ev(this);
@@ -219,7 +227,7 @@ bool ButtonBase::onProcessMessage(Message* msg)
               }
               break;
 
-            case JI_RADIO:
+            case kRadioWidget:
               {
                 setSelected(false);
                 setSelected(true);
@@ -235,7 +243,7 @@ bool ButtonBase::onProcessMessage(Message* msg)
       }
       break;
 
-    case JM_MOTION:
+    case kMouseMoveMessage:
       if (isEnabled() && hasCapture()) {
         bool hasMouse = hasMouseOver();
 
@@ -254,8 +262,8 @@ bool ButtonBase::onProcessMessage(Message* msg)
       }
       break;
 
-    case JM_MOUSEENTER:
-    case JM_MOUSELEAVE:
+    case kMouseEnterMessage:
+    case kMouseLeaveMessage:
       // TODO theme stuff
       if (isEnabled())
         invalidate();
@@ -281,9 +289,9 @@ void ButtonBase::onPreferredSize(PreferredSizeEvent& ev)
 void ButtonBase::onPaint(PaintEvent& ev)
 {
   switch (m_drawType) {
-    case JI_BUTTON: getTheme()->paintButton(ev); break;
-    case JI_CHECK:  getTheme()->paintCheckBox(ev); break;
-    case JI_RADIO:  getTheme()->paintRadioButton(ev); break;
+    case kButtonWidget: getTheme()->paintButton(ev); break;
+    case kCheckWidget:  getTheme()->paintCheckBox(ev); break;
+    case kRadioWidget:  getTheme()->paintRadioButton(ev); break;
   }
 }
 
@@ -302,7 +310,7 @@ void ButtonBase::generateButtonSelectSignal()
 // ======================================================================
 
 Button::Button(const char *text)
-  : ButtonBase(text, JI_BUTTON, JI_BUTTON, JI_BUTTON)
+  : ButtonBase(text, kButtonWidget, kButtonWidget, kButtonWidget)
 {
   setAlign(JI_CENTER | JI_MIDDLE);
 }
@@ -311,8 +319,8 @@ Button::Button(const char *text)
 // CheckBox class
 // ======================================================================
 
-CheckBox::CheckBox(const char *text, int drawType)
-  : ButtonBase(text, JI_CHECK, JI_CHECK, drawType)
+CheckBox::CheckBox(const char *text, WidgetType drawType)
+  : ButtonBase(text, kCheckWidget, kCheckWidget, drawType)
 {
   setAlign(JI_LEFT | JI_MIDDLE);
 }
@@ -321,8 +329,8 @@ CheckBox::CheckBox(const char *text, int drawType)
 // RadioButton class
 // ======================================================================
 
-RadioButton::RadioButton(const char *text, int radioGroup, int drawType)
-  : ButtonBase(text, JI_RADIO, JI_RADIO, drawType)
+RadioButton::RadioButton(const char *text, int radioGroup, WidgetType drawType)
+  : ButtonBase(text, kRadioWidget, kRadioWidget, drawType)
 {
   setAlign(JI_LEFT | JI_MIDDLE);
   setRadioGroup(radioGroup);
@@ -371,7 +379,7 @@ void RadioButton::onSelect()
   if (!m_handleSelect)
     return;
 
-  if (getBehaviorType() == JI_RADIO) {
+  if (getBehaviorType() == kRadioWidget) {
     deselectRadioGroup();
 
     m_handleSelect = false;

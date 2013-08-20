@@ -1,4 +1,4 @@
-/* ASEPRITE
+/* Aseprite
  * Copyright (C) 2001-2013  David Capello
  *
  * This program is free software; you can redistribute it and/or modify
@@ -16,12 +16,17 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
+#ifdef HAVE_CONFIG_H
 #include "config.h"
+#endif
 
-#include <string.h>
+#include "raster/stock.h"
 
 #include "raster/image.h"
-#include "raster/stock.h"
+
+#include <cstring>
+
+namespace raster {
 
 Stock::Stock(PixelFormat format)
   : GfxObj(GFXOBJ_STOCK)
@@ -84,7 +89,13 @@ Image* Stock::getImage(int index) const
 int Stock::addImage(Image* image)
 {
   int i = m_image.size();
-  m_image.resize(m_image.size()+1);
+  try {
+    m_image.resize(m_image.size()+1);
+  }
+  catch (...) {
+    delete image;
+    throw;
+  }
   m_image[i] = image;
   return i;
 }
@@ -105,3 +116,5 @@ void Stock::replaceImage(int index, Image* image)
   ASSERT((index > 0) && (index < size()));
   m_image[index] = image;
 }
+
+} // namespace raster

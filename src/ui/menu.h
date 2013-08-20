@@ -1,8 +1,8 @@
-// ASEPRITE gui library
+// Aseprite UI Library
 // Copyright (C) 2001-2013  David Capello
 //
-// This source file is distributed under a BSD-like license, please
-// read LICENSE.txt for more information.
+// This source file is distributed under MIT license,
+// please read LICENSE.txt for more information.
 
 #ifndef UI_MENU_H_INCLUDED
 #define UI_MENU_H_INCLUDED
@@ -10,6 +10,7 @@
 #include "base/compiler_specific.h"
 #include "base/signal.h"
 #include "base/unique_ptr.h"
+#include "ui/register_message.h"
 #include "ui/widget.h"
 
 namespace ui {
@@ -33,7 +34,8 @@ namespace ui {
     }
 
   protected:
-    virtual bool onProcessMessage(Message* msg) OVERRIDE;
+    virtual void onPaint(PaintEvent& ev) OVERRIDE;
+    virtual void onResize(ResizeEvent& ev) OVERRIDE;
     virtual void onPreferredSize(PreferredSizeEvent& ev) OVERRIDE;
 
   private:
@@ -41,7 +43,6 @@ namespace ui {
       m_menuitem = ownerMenuItem;
     }
 
-    void set_position(JRect rect);
     void closeAll();
 
     MenuItem* getHighlightedItem();
@@ -57,7 +58,7 @@ namespace ui {
   class MenuBox : public Widget
   {
   public:
-    MenuBox(int type = JI_MENUBOX);
+    MenuBox(WidgetType type = kMenuBoxWidget);
     ~MenuBox();
 
     Menu* getMenu();
@@ -73,11 +74,11 @@ namespace ui {
 
   protected:
     virtual bool onProcessMessage(Message* msg) OVERRIDE;
+    virtual void onResize(ResizeEvent& ev) OVERRIDE;
     virtual void onPreferredSize(PreferredSizeEvent& ev) OVERRIDE;
     MenuBaseData* createBase();
 
   private:
-    void set_position(JRect rect);
     void closePopup();
 
     MenuBaseData* m_base;
@@ -125,6 +126,7 @@ namespace ui {
 
   protected:
     virtual bool onProcessMessage(Message* msg) OVERRIDE;
+    virtual void onPaint(PaintEvent& ev) OVERRIDE;
     virtual void onPreferredSize(PreferredSizeEvent& ev) OVERRIDE;
     virtual void onClick();
 
@@ -139,16 +141,16 @@ namespace ui {
     bool m_highlighted;           // Is it highlighted?
     Menu* m_submenu;              // The sub-menu
     MenuBox* m_submenu_menubox;   // The opened menubox for this menu-item
-    UniquePtr<Timer> m_submenu_timer; // Timer to open the submenu
+    base::UniquePtr<Timer> m_submenu_timer; // Timer to open the submenu
 
     friend class Menu;
     friend class MenuBox;
   };
 
-  int jm_open_menuitem();
-  int jm_close_menuitem();
-  int jm_close_popup();
-  int jm_exe_menuitem();
+  extern RegisterMessage kOpenMenuItemMessage;
+  extern RegisterMessage kCloseMenuItemMessage;
+  extern RegisterMessage kClosePopupMessage;
+  extern RegisterMessage kExecuteMenuItemMessage;
 
 } // namespace ui
 

@@ -1,4 +1,4 @@
-/* ASEPRITE
+/* Aseprite
  * Copyright (C) 2001-2013  David Capello
  *
  * This program is free software; you can redistribute it and/or modify
@@ -19,11 +19,15 @@
 #ifndef RASTER_PIXEL_FORMAT_H_INCLUDED
 #define RASTER_PIXEL_FORMAT_H_INCLUDED
 
-enum PixelFormat {
-  IMAGE_RGB,
-  IMAGE_GRAYSCALE,
-  IMAGE_INDEXED,
-  IMAGE_BITMAP
-};
+namespace raster {
+
+  enum PixelFormat {
+    IMAGE_RGB,
+    IMAGE_GRAYSCALE,
+    IMAGE_INDEXED,
+    IMAGE_BITMAP
+  };
+
+} // namespace raster
 
 #endif

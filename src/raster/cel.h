@@ -1,4 +1,4 @@
-/* ASEPRITE
+/* Aseprite
  * Copyright (C) 2001-2013  David Capello
  *
  * This program is free software; you can redistribute it and/or modify
@@ -22,35 +22,38 @@
 #include "raster/frame_number.h"
 #include "raster/gfxobj.h"
 
-class LayerImage;
+namespace raster {
 
-class Cel : public GfxObj
-{
-public:
-  Cel(FrameNumber frame, int image);
-  Cel(const Cel& cel);
-  virtual ~Cel();
+  class LayerImage;
 
-  FrameNumber getFrame() const { return m_frame; }
-  int getImage() const { return m_image; }
-  int getX() const { return m_x; }
-  int getY() const { return m_y; }
-  int getOpacity() const { return m_opacity; }
+  class Cel : public GfxObj {
+  public:
+    Cel(FrameNumber frame, int image);
+    Cel(const Cel& cel);
+    virtual ~Cel();
 
-  void setFrame(FrameNumber frame) { m_frame = frame; }
-  void setImage(int image) { m_image = image; }
-  void setPosition(int x, int y) { m_x = x; m_y = y; }
-  void setOpacity(int opacity) { m_opacity = opacity; }
+    FrameNumber getFrame() const { return m_frame; }
+    int getImage() const { return m_image; }
+    int getX() const { return m_x; }
+    int getY() const { return m_y; }
+    int getOpacity() const { return m_opacity; }
 
-  int getMemSize() const {
-    return sizeof(Cel);
-  }
+    void setFrame(FrameNumber frame) { m_frame = frame; }
+    void setImage(int image) { m_image = image; }
+    void setPosition(int x, int y) { m_x = x; m_y = y; }
+    void setOpacity(int opacity) { m_opacity = opacity; }
 
-private:
-  FrameNumber m_frame;          // Frame position
-  int m_image;                  // Image index of stock
-  int m_x, m_y;                 // X/Y screen position
-  int m_opacity;                // Opacity level
-};
+    int getMemSize() const {
+      return sizeof(Cel);
+    }
+
+  private:
+    FrameNumber m_frame;          // Frame position
+    int m_image;                  // Image index of stock
+    int m_x, m_y;                 // X/Y screen position
+    int m_opacity;                // Opacity level
+  };
+
+} // namespace raster
 
 #endif

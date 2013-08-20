@@ -1,15 +1,17 @@
-// ASEPRITE gui library
+// Aseprite UI Library
 // Copyright (C) 2001-2013  David Capello
 //
-// This source file is distributed under a BSD-like license, please
-// read LICENSE.txt for more information.
+// This source file is distributed under MIT license,
+// please read LICENSE.txt for more information.
 
 /* Original code from:
    allegro/tools/datedit.c
    allegro/tools/plugins/datfont.c
 */
 
+#ifdef HAVE_CONFIG_H
 #include "config.h"
+#endif
 
 #include <allegro.h>
 #include <allegro/internal/aintern.h>
@@ -170,7 +172,7 @@ static int bitmap_font_count(BITMAP* bmp)
 
 namespace ui {
 
-FONT *_ji_bitmap2font(BITMAP *bmp)
+FONT* bitmapToFont(BITMAP* bmp)
 {
   FONT *f;
   int begin = ' ';

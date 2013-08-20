@@ -1,13 +1,15 @@
-// ASEPRITE gui library
+// Aseprite UI Library
 // Copyright (C) 2001-2013  David Capello
 //
-// This source file is distributed under a BSD-like license, please
-// read LICENSE.txt for more information.
+// This source file is distributed under MIT license,
+// please read LICENSE.txt for more information.
 
 #ifndef UI_MANAGER_H_INCLUDED
 #define UI_MANAGER_H_INCLUDED
 
 #include "base/compiler_specific.h"
+#include "ui/message_type.h"
+#include "ui/mouse_buttons.h"
 #include "ui/widget.h"
 
 namespace she { class Display; }
@@ -73,19 +75,22 @@ namespace ui {
 
   protected:
     bool onProcessMessage(Message* msg) OVERRIDE;
+    void onResize(ResizeEvent& ev) OVERRIDE;
     void onPaint(PaintEvent& ev) OVERRIDE;
     void onPreferredSize(PreferredSizeEvent& ev) OVERRIDE;
     void onBroadcastMouseMessage(WidgetsList& targets) OVERRIDE;
     virtual LayoutIO* onGetLayoutIO();
 
   private:
-    void layoutManager(JRect rect);
     void pumpQueue();
     void generateSetCursorMessage();
-    static void removeWidgetFromDests(Widget* widget, Message* msg);
+    static void removeWidgetFromRecipients(Widget* widget, Message* msg);
     static bool someParentIsFocusStop(Widget* widget);
     static Widget* findMagneticWidget(Widget* widget);
-    static Message* newMouseMessage(int type, Widget* destination);
+    static Message* newMouseMessage(MessageType type, Widget* destination);
+    static Message* newMouseMessage(MessageType type, Widget* destination,
+                                    MouseButtons mouseButtons);
+    static MouseButtons currentMouseButtons(int antique);
     void broadcastKeyMsg(Message* msg);
 
     static Manager* m_defaultManager;

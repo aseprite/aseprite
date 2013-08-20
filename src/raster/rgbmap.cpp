@@ -1,4 +1,4 @@
-/* ASEPRITE
+/* Aseprite
  * Copyright (C) 2001-2013  David Capello
  *
  * This program is free software; you can redistribute it and/or modify
@@ -16,7 +16,9 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
+#ifdef HAVE_CONFIG_H
 #include "config.h"
+#endif
 
 #include "raster/rgbmap.h"
 
@@ -24,8 +26,9 @@
 
 #include <allegro.h>
 
-class RgbMapImpl
-{
+namespace raster {
+
+class RgbMapImpl {
 public:
   RgbMapImpl() {
     m_allegMap = new RGB_MAP;
@@ -73,9 +76,6 @@ private:
   int m_modifications;
 };
 
-//////////////////////////////////////////////////////////////////////
-// RgbMap
-
 RgbMap::RgbMap()
   : GfxObj(GFXOBJ_RGBMAP)
 {
@@ -101,3 +101,5 @@ int RgbMap::mapColor(int r, int g, int b) const
 {
   return m_impl->mapColor(r, g, b);
 }
+
+} // namespace raster

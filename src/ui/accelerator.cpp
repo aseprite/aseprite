@@ -1,10 +1,12 @@
-// ASEPRITE gui library
+// Aseprite UI Library
 // Copyright (C) 2001-2013  David Capello
 //
-// This source file is distributed under a BSD-like license, please
-// read LICENSE.txt for more information.
+// This source file is distributed under MIT license,
+// please read LICENSE.txt for more information.
 
+#ifdef HAVE_CONFIG_H
 #include "config.h"
+#endif
 
 #include "ui/accelerator.h"
 
@@ -14,50 +16,50 @@
 #include <allegro/unicode.h>
 #include <ctype.h>
 
-/* #define REPORT_KEYS */
+// #define REPORT_KEYS
 #define PREPROCESS_KEYS
 
 namespace ui {
 
-void Accelerator::addKey(int shifts, int ascii, int scancode)
+void Accelerator::addKey(KeyModifiers modifiers, KeyScancode scancode, int ascii)
 {
   KeyCombo key;
 
-  key.shifts = shifts & (KB_SHIFT_FLAG | KB_CTRL_FLAG | KB_ALT_FLAG);
-  key.ascii = ascii;
+  key.modifiers = modifiers;
   key.scancode = scancode;
+  key.ascii = ascii;
 
   m_combos.push_back(key);
 }
 
 static void process_one_word(Accelerator* accel, char* word)
 {
-  int shifts = 0;
+  KeyModifiers modifiers = kKeyNoneModifier;
+  KeyScancode scancode = kKeyNil;
   int ascii = 0;
-  int scancode = 0;
   char* tok;
 
   // Special case: plus sign
   if (word[0] == '+' && word[1] == 0) {
-    accel->addKey(0, '+', 0);
+    accel->addKey(kKeyNoneModifier, kKeyNil, '+');
     return;
   }
 
   for (tok=ustrtok(word, "+"); tok;
        tok=ustrtok(NULL, "+")) {
-    // modifiers
+    // Modifiers
 
-    if (ustricmp (tok, "Shift") == 0) {
-      shifts |= KB_SHIFT_FLAG;
+    if (ustricmp(tok, "Shift") == 0) {
+      modifiers = (KeyModifiers)((int)modifiers | (int)kKeyShiftModifier);
     }
     else if (ustricmp (tok, "Alt") == 0) {
-      shifts |= KB_ALT_FLAG;
+      modifiers = (KeyModifiers)((int)modifiers | (int)kKeyAltModifier);
     }
     else if (ustricmp (tok, "Ctrl") == 0) {
-      shifts |= KB_CTRL_FLAG;
+      modifiers = (KeyModifiers)((int)modifiers | (int)kKeyCtrlModifier);
     }
 
-    // scancode
+    // Scancode
 
     // word with one character
     else if (tok[1] == 0) {
@@ -71,23 +73,23 @@ static void process_one_word(Accelerator* accel, char* word)
 
       if (((*tok >= 'a') && (*tok <= 'z')) ||
           ((*tok >= 'A') && (*tok <= 'Z')))
-        scancode = KEY_A + tolower(*tok) - 'a';
+        scancode = (KeyScancode)((int)kKeyA + tolower(*tok) - 'a');
       else if ((*tok >= '0') && (*tok <= '9'))
-        scancode = KEY_0 + *tok - '0';
+        scancode = (KeyScancode)((int)kKey0 + *tok - '0');
       else {
         switch (*tok) {
-          case '~': scancode = KEY_TILDE; break;
-          case '-': scancode = KEY_MINUS; break;
-          case '=': scancode = KEY_EQUALS; break;
-          case '[': scancode = KEY_OPENBRACE; break;
-          case ']': scancode = KEY_CLOSEBRACE; break;
-          case ';': scancode = KEY_COLON; break;
-          case '\'': scancode = KEY_QUOTE; break;
-          case '\\': scancode = KEY_BACKSLASH; break;
-          case ',': scancode = KEY_COMMA; break;
-          case '.': scancode = KEY_STOP; break;
-          case '/': scancode = KEY_SLASH; break;
-          case '*': scancode = KEY_ASTERISK; break;
+          case '~': scancode = kKeyTilde; break;
+          case '-': scancode = kKeyMinus; break;
+          case '=': scancode = kKeyEquals; break;
+          case '[': scancode = kKeyOpenbrace; break;
+          case ']': scancode = kKeyClosebrace; break;
+          case ';': scancode = kKeyColon; break;
+          case '\'': scancode = kKeyQuote; break;
+          case '\\': scancode = kKeyBackslash; break;
+          case ',': scancode = kKeyComma; break;
+          case '.': scancode = kKeyStop; break;
+          case '/': scancode = kKeySlash; break;
+          case '*': scancode = kKeyAsterisk; break;
         }
       }
     }
@@ -97,79 +99,79 @@ static void process_one_word(Accelerator* accel, char* word)
       if ((toupper (*tok) == 'F') && (ustrlen(tok) <= 3)) {
         int num = ustrtol(tok+1, NULL, 10);
         if ((num >= 1) && (num <= 12))
-          scancode = KEY_F1 + num - 1;
+          scancode = (KeyScancode)((int)kKeyF1 + num - 1);
       }
       else if ((ustricmp(tok, "Escape") == 0) ||
                (ustricmp(tok, "Esc") == 0))
-        scancode = KEY_ESC;
+        scancode = kKeyEsc;
       else if (ustricmp(tok, "Backspace") == 0)
-        scancode = KEY_BACKSPACE;
+        scancode = kKeyBackspace;
       else if (ustricmp(tok, "Tab") == 0)
-        scancode = KEY_TAB;
+        scancode = kKeyTab;
       else if (ustricmp(tok, "Enter") == 0)
-        scancode = KEY_ENTER;
+        scancode = kKeyEnter;
       else if (ustricmp(tok, "Space") == 0)
-        scancode = KEY_SPACE;
+        scancode = kKeySpace;
       else if ((ustricmp(tok, "Insert") == 0) ||
                (ustricmp(tok, "Ins") == 0))
-        scancode = KEY_INSERT;
+        scancode = kKeyInsert;
       else if ((ustricmp(tok, "Delete") == 0) ||
                (ustricmp(tok, "Del") == 0))
-        scancode = KEY_DEL;
+        scancode = kKeyDel;
       else if (ustricmp(tok, "Home") == 0)
-        scancode = KEY_HOME;
+        scancode = kKeyHome;
       else if (ustricmp(tok, "End") == 0)
-        scancode = KEY_END;
+        scancode = kKeyEnd;
       else if ((ustricmp(tok, "Page Up") == 0) ||
                (ustricmp(tok, "PgUp") == 0))
-        scancode = KEY_PGUP;
+        scancode = kKeyPageUp;
       else if ((ustricmp(tok, "Page Down") == 0) ||
                (ustricmp(tok, "PgDn") == 0))
-        scancode = KEY_PGDN;
+        scancode = kKeyPageDown;
       else if (ustricmp(tok, "Left") == 0)
-        scancode = KEY_LEFT;
+        scancode = kKeyLeft;
       else if (ustricmp(tok, "Right") == 0)
-        scancode = KEY_RIGHT;
+        scancode = kKeyRight;
       else if (ustricmp(tok, "Up") == 0)
-        scancode = KEY_UP;
+        scancode = kKeyUp;
       else if (ustricmp(tok, "Down") == 0)
-        scancode = KEY_DOWN;
+        scancode = kKeyDown;
       else if (ustricmp(tok, "0 Pad") == 0)
-        scancode = KEY_0_PAD;
+        scancode = kKey0Pad;
       else if (ustricmp(tok, "1 Pad") == 0)
-        scancode = KEY_1_PAD;
+        scancode = kKey1Pad;
       else if (ustricmp(tok, "2 Pad") == 0)
-        scancode = KEY_2_PAD;
+        scancode = kKey2Pad;
       else if (ustricmp(tok, "3 Pad") == 0)
-        scancode = KEY_3_PAD;
+        scancode = kKey3Pad;
       else if (ustricmp(tok, "4 Pad") == 0)
-        scancode = KEY_4_PAD;
+        scancode = kKey4Pad;
       else if (ustricmp(tok, "5 Pad") == 0)
-        scancode = KEY_5_PAD;
+        scancode = kKey5Pad;
       else if (ustricmp(tok, "6 Pad") == 0)
-        scancode = KEY_6_PAD;
+        scancode = kKey6Pad;
       else if (ustricmp(tok, "7 Pad") == 0)
-        scancode = KEY_7_PAD;
+        scancode = kKey7Pad;
       else if (ustricmp(tok, "8 Pad") == 0)
-        scancode = KEY_8_PAD;
+        scancode = kKey8Pad;
       else if (ustricmp(tok, "9 Pad") == 0)
-        scancode = KEY_9_PAD;
+        scancode = kKey9Pad;
       else if (ustricmp(tok, "Slash Pad") == 0)
-        scancode = KEY_SLASH_PAD;
+        scancode = kKeySlashPad;
       else if (ustricmp(tok, "Asterisk") == 0)
-        scancode = KEY_ASTERISK;
+        scancode = kKeyAsterisk;
       else if (ustricmp(tok, "Minus Pad") == 0)
-        scancode = KEY_MINUS_PAD;
+        scancode = kKeyMinusPad;
       else if (ustricmp(tok, "Plus Pad") == 0)
-        scancode = KEY_PLUS_PAD;
+        scancode = kKeyPlusPad;
       else if (ustricmp(tok, "Del Pad") == 0)
-        scancode = KEY_DEL_PAD;
+        scancode = kKeyDelPad;
       else if (ustricmp(tok, "Enter Pad") == 0)
-        scancode = KEY_ENTER_PAD;
+        scancode = kKeyEnterPad;
     }
   }
 
-  accel->addKey(shifts, ascii, scancode);
+  accel->addKey(modifiers, scancode, ascii);
 }
 
 void Accelerator::addKeysFromString(const char* string)
@@ -200,7 +202,7 @@ void Accelerator::addKeysFromString(const char* string)
 
 std::string Accelerator::KeyCombo::toString()
 {
-  /* same order that Allegro scancodes */
+  // Same order that Allegro scancodes
   static const char *table[] = {
     NULL,
     "A",
@@ -311,13 +313,13 @@ std::string Accelerator::KeyCombo::toString()
   ustrcpy(buf, "");
 
   // Shifts
-  if (this->shifts & KB_CTRL_FLAG)
+  if (this->modifiers & kKeyCtrlModifier)
     ustrcat(buf, "Ctrl+");
 
-  if (this->shifts & KB_ALT_FLAG)
+  if (this->modifiers & kKeyAltModifier)
     ustrcat(buf, "Alt+");
 
-  if (this->shifts & KB_SHIFT_FLAG)
+  if (this->modifiers & kKeyShiftModifier)
     ustrcat(buf, "Shift+");
 
   // Key
@@ -337,29 +339,29 @@ std::string Accelerator::toString()
   return m_combos.front().toString();
 }
 
-bool Accelerator::check(int shifts, int ascii, int scancode)
+bool Accelerator::check(KeyModifiers modifiers, KeyScancode scancode, int ascii)
 {
 #ifdef REPORT_KEYS
   char buf[256];
   std::string buf2;
 #endif
 
-  /* preprocess the character to be compared with the accelerator */
+  // Preprocess the character to be compared with the accelerator
 #ifdef PREPROCESS_KEYS
-  /* directly scancode */
-  if ((scancode >= KEY_F1 && scancode <= KEY_F12) ||
-      (scancode == KEY_ESC) ||
-      (scancode == KEY_BACKSPACE) ||
-      (scancode == KEY_TAB) ||
-      (scancode == KEY_ENTER) ||
-      (scancode == KEY_BACKSLASH) ||
-      (scancode == KEY_BACKSLASH2) ||
-      (scancode >= KEY_SPACE && scancode <= KEY_DOWN) ||
-      (scancode >= KEY_ENTER_PAD && scancode <= KEY_NOCONVERT) ||
-      (scancode == KEY_KANJI)) {
+  // Directly scancode
+  if ((scancode >= kKeyF1 && scancode <= KEY_F12) ||
+      (scancode == kKeyEsc) ||
+      (scancode == kKeyBackspace) ||
+      (scancode == kKeyTab) ||
+      (scancode == kKeyEnter) ||
+      (scancode == kKeyBackslash) ||
+      (scancode == kKeyBackslash2) ||
+      (scancode >= kKeySpace && scancode <= kKeyDown) ||
+      (scancode >= kKeyEnterPad && scancode <= kKeyNoconvert) ||
+      (scancode == kKeyKanji)) {
     ascii = 0;
   }
-  /* for Ctrl+number */
+  // For Ctrl+number
   /*           scancode    ascii
      Ctrl+0    27          0
      Ctrl+1    28          2
@@ -372,33 +374,33 @@ bool Accelerator::check(int shifts, int ascii, int scancode)
      Ctrl+8    35          127
      Ctrl+9    36          2
    */
-  else if ((scancode >= KEY_0 && scancode <= KEY_9) &&
+  else if ((scancode >= kKey0 && scancode <= kKey9) &&
            (ascii < 32 || ascii == 127)) {
-    ascii = '0'+scancode-KEY_0;
-    scancode = 0;
+    ascii = '0' + scancode - kKey0;
+    scancode = kKeyNil;
   }
-  /* for Ctrl+letter */
+  // For Ctrl+letter
   else if (ascii >= 1 && ascii <= 'z'-'a'+1) {
     ascii = 'a'+ascii-1;
-    scancode = 0;
+    scancode = kKeyNil;
   }
-  /* for any other legal ASCII code */
+  // For any other legal ASCII code
   else if (ascii >= ' ') {
     ascii = tolower(ascii);
 
     /* without shift (because characters like '*' can be trigger with
        "Shift+8", so we don't want "Shift+*") */
     if (!(ascii >= 'a' && ascii <= 'z'))
-      shifts &= ~KB_SHIFT_FLAG;
+      modifiers = (KeyModifiers)((int)modifiers & ((int)~kKeyShiftModifier));
 
-    scancode = 0;
+    scancode = kKeyNil;
   }
 #endif
 
 #ifdef REPORT_KEYS
   {
-    UniquePtr<Accelerator> a2(new Accelerator);
-    a2->addKey(shifts, ascii, scancode);
+    base::UniquePtr<Accelerator> a2(new Accelerator);
+    a2->addKey(modifiers, scancode, ascii);
     buf2 = a2->getString();
   }
 #endif
@@ -411,9 +413,9 @@ bool Accelerator::check(int shifts, int ascii, int scancode)
            it->getString().c_str(), buf2.c_str();
 #endif
 
-    if (((it->scancode && it->scancode == scancode)
-         || (it->ascii && it->ascii == ascii))
-        && (it->shifts == (shifts & (KB_SHIFT_FLAG | KB_CTRL_FLAG | KB_ALT_FLAG)))) {
+    if ((it->modifiers == modifiers) &&
+        ((it->scancode != kKeyNil && it->scancode == scancode) ||
+         (it->ascii && it->ascii == ascii))) {
 
 #ifdef REPORT_KEYS
       printf("true\n");
@@ -431,18 +433,18 @@ bool Accelerator::check(int shifts, int ascii, int scancode)
 
 bool Accelerator::checkFromAllegroKeyArray()
 {
-  int shifts = 0;
+  KeyModifiers modifiers = kKeyNoneModifier;
 
-  if (key[KEY_LSHIFT]) shifts |= KB_SHIFT_FLAG;
-  if (key[KEY_RSHIFT]) shifts |= KB_SHIFT_FLAG;
-  if (key[KEY_LCONTROL]) shifts |= KB_CTRL_FLAG;
-  if (key[KEY_RCONTROL]) shifts |= KB_CTRL_FLAG;
-  if (key[KEY_ALT]) shifts |= KB_ALT_FLAG;
+  if (key[KEY_LSHIFT]  ) modifiers = (KeyModifiers)((int)modifiers | (int)kKeyShiftModifier);
+  if (key[KEY_RSHIFT]  ) modifiers = (KeyModifiers)((int)modifiers | (int)kKeyShiftModifier);
+  if (key[KEY_LCONTROL]) modifiers = (KeyModifiers)((int)modifiers | (int)kKeyCtrlModifier);
+  if (key[KEY_RCONTROL]) modifiers = (KeyModifiers)((int)modifiers | (int)kKeyCtrlModifier);
+  if (key[KEY_ALT]     ) modifiers = (KeyModifiers)((int)modifiers | (int)kKeyAltModifier);
 
   for (KeyCombos::iterator it = m_combos.begin(), end = m_combos.end();
        it != end; ++it) {
     if ((it->scancode == 0 || key[it->scancode]) &&
-        (it->shifts == (shifts & (KB_SHIFT_FLAG | KB_CTRL_FLAG | KB_ALT_FLAG)))) {
+        (it->modifiers == modifiers)) {
       return true;
     }
   }

@@ -1,4 +1,4 @@
-/* ASEPRITE
+/* Aseprite
  * Copyright (C) 2001-2013  David Capello
  *
  * This program is free software; you can redistribute it and/or modify
@@ -21,12 +21,12 @@
 
 #include <iosfwd>
 
-class Mask;
-
 namespace raster {
 
-void write_mask(std::ostream& os, Mask* mask);
-Mask* read_mask(std::istream& is);
+  class Mask;
+
+  void write_mask(std::ostream& os, Mask* mask);
+  Mask* read_mask(std::istream& is);
 
 } // namespace raster
 

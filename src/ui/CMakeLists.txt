@@ -19,12 +19,14 @@ add_library(ui-lib
   fontbmp.cpp
   graphics.cpp
   grid.cpp
-  gui.cpp
   image_view.cpp
+  int_entry.cpp
   intern.cpp
+  keys.cpp
   label.cpp
   link_label.cpp
   listbox.cpp
+  listitem.cpp
   manager.cpp
   menu.cpp
   message.cpp
@@ -36,6 +38,8 @@ add_library(ui-lib
   preferred_size_event.cpp
   property.cpp
   rect.cpp
+  register_message.cpp
+  resize_event.cpp
   scroll_bar.cpp
   separator.cpp
   slider.cpp
@@ -45,6 +49,7 @@ add_library(ui-lib
   theme.cpp
   timer.cpp
   tooltips.cpp
+  ui.cpp
   view.cpp
   viewport.cpp
   widget.cpp

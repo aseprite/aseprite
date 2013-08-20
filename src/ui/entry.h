@@ -1,8 +1,8 @@
-// ASEPRITE gui library
+// Aseprite UI Library
 // Copyright (C) 2001-2013  David Capello
 //
-// This source file is distributed under a BSD-like license, please
-// read LICENSE.txt for more information.
+// This source file is distributed under MIT license,
+// please read LICENSE.txt for more information.
 
 #ifndef UI_ENTRY_H_INCLUDED
 #define UI_ENTRY_H_INCLUDED
@@ -13,6 +13,8 @@
 #include "ui/widget.h"
 
 namespace ui {
+
+  class MouseMessage;
 
   class Entry : public Widget
   {
@@ -32,6 +34,9 @@ namespace ui {
     void selectText(int from, int to);
     void deselectText();
 
+    void setSuffix(const std::string& suffix);
+    const std::string& getSuffix() { return m_suffix; }
+
     // for themes
     void getEntryThemeInfo(int* scroll, int* caret, int* state,
                            int* selbeg, int* selend);
@@ -44,9 +49,10 @@ namespace ui {
     bool onProcessMessage(Message* msg) OVERRIDE;
     void onPreferredSize(PreferredSizeEvent& ev) OVERRIDE;
     void onPaint(PaintEvent& ev) OVERRIDE;
+    void onSetText() OVERRIDE;
 
     // New Events
-    void onEntryChange();
+    virtual void onEntryChange();
 
   private:
     struct EntryCmd {
@@ -67,7 +73,7 @@ namespace ui {
       };
     };
 
-    int getCaretFromMouse(Message* msg);
+    int getCaretFromMouse(MouseMessage* mousemsg);
     void executeCmd(EntryCmd::Type cmd, int ascii, bool shift_pressed);
     void forwardWord();
     void backwardWord();
@@ -82,6 +88,7 @@ namespace ui {
     bool m_readonly : 1;
     bool m_password : 1;
     bool m_recent_focused : 1;
+    std::string m_suffix;
   };
 
 } // namespace ui

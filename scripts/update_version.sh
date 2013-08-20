@@ -25,9 +25,9 @@ mv tmp ../config.h
 sed -e "s/gui version=\".*/gui version=\"$version\">/" < ../data/gui.xml > tmp
 mv tmp ../data/gui.xml
 
-sed -e "s/FILEVERSION .*/FILEVERSION $version_win32/" < ../src/resources_win32.rc \
+sed -e "s/FILEVERSION .*/FILEVERSION $version_win32/" < ../src/main/resources_win32.rc \
  | sed -e "s/PRODUCTVERSION .*/PRODUCTVERSION $version_win32/" \
  | sed -e "s/FileVersion\",.*/FileVersion\", \"$version_win32\"/" \
  | sed -e "s/ProductVersion\",.*/ProductVersion\", \"$version_win32\"/" \
  > tmp
-mv tmp ../src/resources_win32.rc
+mv tmp ../src/main/resources_win32.rc

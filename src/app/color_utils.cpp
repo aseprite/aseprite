@@ -1,4 +1,4 @@
-/* ASEPRITE
+/* Aseprite
  * Copyright (C) 2001-2013  David Capello
  *
  * This program is free software; you can redistribute it and/or modify
@@ -16,19 +16,21 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
+#ifdef HAVE_CONFIG_H
 #include "config.h"
+#endif
 
 #include <allegro.h>
 
-#include "app/color_utils.h"
 #include "app/color.h"
+#include "app/color_utils.h"
+#include "app/modules/palettes.h"
 #include "gfx/hsv.h"
 #include "gfx/rgb.h"
-#include "modules/palettes.h"
 #include "raster/image.h"
 #include "raster/layer.h"
-#include "raster/sprite.h"
 #include "raster/palette.h"
+#include "raster/sprite.h"
 
 using namespace gfx;
 
@@ -51,6 +53,8 @@ int get_mask_for_bitmap(int depth)
 }
 
 }
+
+namespace app {
 
 ui::Color color_utils::blackandwhite(ui::Color color)
 {
@@ -215,3 +219,5 @@ int color_utils::fixup_color_for_background(PixelFormat format, int color)
   }
   return color;
 }
+
+} // namespace app

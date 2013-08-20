@@ -1,10 +1,12 @@
-// ASEPRITE gui library
+// Aseprite UI Library
 // Copyright (C) 2001-2013  David Capello
 //
-// This source file is distributed under a BSD-like license, please
-// read LICENSE.txt for more information.
+// This source file is distributed under MIT license,
+// please read LICENSE.txt for more information.
 
+#ifdef HAVE_CONFIG_H
 #include "config.h"
+#endif
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -16,12 +18,13 @@
 #include "ui/message.h"
 #include "ui/preferred_size_event.h"
 #include "ui/rect.h"
+#include "ui/resize_event.h"
 #include "ui/theme.h"
 #include "ui/widget.h"
 
-using namespace gfx;
-
 namespace ui {
+
+using namespace gfx;
 
 Grid::Cell::Cell()
 {
@@ -35,7 +38,7 @@ Grid::Cell::Cell()
 }
 
 Grid::Grid(int columns, bool same_width_columns)
-  : Widget(JI_GRID)
+  : Widget(kGridWidget)
   , m_colstrip(columns)
 {
   ASSERT(columns > 0);
@@ -94,72 +97,22 @@ void Grid::addChildInCell(Widget* child, int hspan, int vspan, int align)
   }
 }
 
-bool Grid::onProcessMessage(Message* msg)
+void Grid::onResize(ResizeEvent& ev)
 {
-  switch (msg->type) {
-
-    case JM_SETPOS:
-      setGridPosition(&msg->setpos.rect);
-      return true;
-
-  }
-
-  return Widget::onProcessMessage(msg);
-}
-
-void Grid::onPreferredSize(PreferredSizeEvent& ev)
-{
-  int w, h;
-
-  w = h = 0;
-
-  calculateSize();
-
-  // Calculate the total
-  sumStripSize(m_colstrip, w);
-  sumStripSize(m_rowstrip, h);
-
-  w += this->border_width.l + this->border_width.r;
-  h += this->border_width.t + this->border_width.b;
-
-  ev.setPreferredSize(Size(w, h));
-}
-
-void Grid::onPaint(PaintEvent& ev)
-{
-  getTheme()->paintGrid(ev);
-}
-
-void Grid::sumStripSize(const std::vector<Strip>& strip, int& size)
-{
-  int i, j;
-
-  size = 0;
-  for (i=j=0; i<(int)strip.size(); ++i) {
-    if (strip[i].size > 0) {
-      size += strip[i].size;
-      if (++j > 1)
-        size += this->child_spacing;
-    }
-  }
-}
-
-void Grid::setGridPosition(JRect rect)
-{
-  JRect cpos = jrect_new(0, 0, 0, 0);
+  gfx::Rect rect = ev.getBounds();
   int pos_x, pos_y;
   Size reqSize;
   int x, y, w, h;
   int col, row;
 
-  jrect_copy(this->rc, rect);
+  setBoundsQuietly(rect);
 
   calculateSize();
   distributeSize(rect);
 
-  pos_y = rect->y1 + this->border_width.t;
+  pos_y = rect.y + this->border_width.t;
   for (row=0; row<(int)m_rowstrip.size(); ++row) {
-    pos_x = rect->x1 + this->border_width.l;
+    pos_x = rect.x + this->border_width.l;
 
     for (col=0; col<(int)m_colstrip.size(); ++col) {
       Cell* cell = m_cells[row][col];
@@ -199,8 +152,7 @@ void Grid::setGridPosition(JRect rect)
           h = reqSize.h;
         }
 
-        jrect_replace(cpos, x, y, x+w, y+h);
-        jwidget_set_rect(cell->child, cpos);
+        cell->child->setBounds(Rect(x, y, w, h));
       }
 
       if (m_colstrip[col].size > 0)
@@ -210,8 +162,43 @@ void Grid::setGridPosition(JRect rect)
     if (m_rowstrip[row].size > 0)
       pos_y += m_rowstrip[row].size + this->child_spacing;
   }
+}
 
-  jrect_free(cpos);
+void Grid::onPreferredSize(PreferredSizeEvent& ev)
+{
+  int w, h;
+
+  w = h = 0;
+
+  calculateSize();
+
+  // Calculate the total
+  sumStripSize(m_colstrip, w);
+  sumStripSize(m_rowstrip, h);
+
+  w += this->border_width.l + this->border_width.r;
+  h += this->border_width.t + this->border_width.b;
+
+  ev.setPreferredSize(Size(w, h));
+}
+
+void Grid::onPaint(PaintEvent& ev)
+{
+  getTheme()->paintGrid(ev);
+}
+
+void Grid::sumStripSize(const std::vector<Strip>& strip, int& size)
+{
+  int i, j;
+
+  size = 0;
+  for (i=j=0; i<(int)strip.size(); ++i) {
+    if (strip[i].size > 0) {
+      size += strip[i].size;
+      if (++j > 1)
+        size += this->child_spacing;
+    }
+  }
 }
 
 void Grid::calculateCellSize(int start, int span, const std::vector<Strip>& strip, int& size)
@@ -377,13 +364,13 @@ void Grid::expandStrip(std::vector<Strip>& colstrip,
   } while (more_span);
 }
 
-void Grid::distributeSize(JRect rect)
+void Grid::distributeSize(const gfx::Rect& rect)
 {
   if (m_rowstrip.size() == 0)
     return;
 
-  distributeStripSize(m_colstrip, jrect_w(rect), this->border_width.l + this->border_width.r, m_same_width_columns);
-  distributeStripSize(m_rowstrip, jrect_h(rect), this->border_width.t + this->border_width.b, false);
+  distributeStripSize(m_colstrip, rect.w, this->border_width.l + this->border_width.r, m_same_width_columns);
+  distributeStripSize(m_rowstrip, rect.h, this->border_width.t + this->border_width.b, false);
 }
 
 void Grid::distributeStripSize(std::vector<Strip>& colstrip,

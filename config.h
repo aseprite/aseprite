@@ -39,7 +39,7 @@
 
 #define PRINTF                  verbose_printf
 
-// Defined in src/log.cpp
+// verbose_printf is defined in src/app/log.cpp and used through PRINTF macro
 void verbose_printf(const char* format, ...);
 
 #include <math.h>

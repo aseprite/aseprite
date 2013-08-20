@@ -1,28 +1,31 @@
-// ASEPRITE gui library
+// Aseprite UI Library
 // Copyright (C) 2001-2013  David Capello
 //
-// This source file is distributed under a BSD-like license, please
-// read LICENSE.txt for more information.
+// This source file is distributed under MIT license,
+// please read LICENSE.txt for more information.
 
+#ifdef HAVE_CONFIG_H
 #include "config.h"
+#endif
 
 #include "ui/splitter.h"
 
 #include "ui/load_layout_event.h"
 #include "ui/message.h"
 #include "ui/preferred_size_event.h"
+#include "ui/resize_event.h"
 #include "ui/save_layout_event.h"
 #include "ui/system.h"
 #include "ui/theme.h"
 
 #include <sstream>
 
-using namespace gfx;
-
 namespace ui {
 
+using namespace gfx;
+
 Splitter::Splitter(Type type, int align)
-  : Widget(JI_SPLITTER)
+  : Widget(kSplitterWidget)
   , m_type(type)
   , m_pos(50)
 {
@@ -47,17 +50,14 @@ void Splitter::setPosition(double pos)
 
 bool Splitter::onProcessMessage(Message* msg)
 {
-  switch (msg->type) {
+  switch (msg->type()) {
 
-    case JM_SETPOS:
-      layoutMembers(&msg->setpos.rect);
-      return true;
-
-    case JM_BUTTONPRESSED:
+    case kMouseDownMessage:
       if (isEnabled()) {
         Widget* c1, *c2;
         int x1, y1, x2, y2;
         int bar, click_bar;
+        gfx::Point mousePos = static_cast<MouseMessage*>(msg)->position();
 
         bar = click_bar = 0;
 
@@ -81,8 +81,8 @@ bool Splitter::onProcessMessage(Message* msg)
               y2 = c2->rc->y1;
             }
 
-            if ((msg->mouse.x >= x1) && (msg->mouse.x < x2) &&
-                (msg->mouse.y >= y1) && (msg->mouse.y < y2))
+            if ((mousePos.x >= x1) && (mousePos.x < x2) &&
+                (mousePos.y >= y1) && (mousePos.y < y2))
               click_bar = bar;
           }
         }
@@ -90,52 +90,55 @@ bool Splitter::onProcessMessage(Message* msg)
         if (!click_bar)
           break;
 
-        this->captureMouse();
-        /* Continue with motion message...  */
+        captureMouse();
+
+        // Continue with motion message...
       }
       else
         break;
 
-    case JM_MOTION:
-      if (this->hasCapture()) {
-        if (this->getAlign() & JI_HORIZONTAL) {
+    case kMouseMoveMessage:
+      if (hasCapture()) {
+        gfx::Point mousePos = static_cast<MouseMessage*>(msg)->position();
+
+        if (getAlign() & JI_HORIZONTAL) {
           switch (m_type) {
             case ByPercentage:
-              m_pos = 100.0 * (msg->mouse.x-this->rc->x1) / jrect_w(this->rc);
+              m_pos = 100.0 * (mousePos.x-this->rc->x1) / jrect_w(this->rc);
               m_pos = MID(0, m_pos, 100);
               break;
             case ByPixel:
-              m_pos = msg->mouse.x-this->rc->x1;
+              m_pos = mousePos.x-this->rc->x1;
               break;
           }
         }
         else {
           switch (m_type) {
             case ByPercentage:
-              m_pos = 100.0 * (msg->mouse.y-this->rc->y1) / jrect_h(this->rc);
+              m_pos = 100.0 * (mousePos.y-this->rc->y1) / jrect_h(this->rc);
               m_pos = MID(0, m_pos, 100);
               break;
             case ByPixel:
-              m_pos = (msg->mouse.y-this->rc->y1);
+              m_pos = (mousePos.y-this->rc->y1);
               break;
           }
         }
 
-        jwidget_set_rect(this, this->rc);
-        invalidate();
+        layout();
         return true;
       }
       break;
 
-    case JM_BUTTONRELEASED:
+    case kMouseUpMessage:
       if (hasCapture()) {
         releaseMouse();
         return true;
       }
       break;
 
-    case JM_SETCURSOR:
+    case kSetCursorMessage:
       if (isEnabled()) {
+        gfx::Point mousePos = static_cast<MouseMessage*>(msg)->position();
         Widget* c1, *c2;
         int x1, y1, x2, y2;
         bool change_cursor = false;
@@ -158,8 +161,8 @@ bool Splitter::onProcessMessage(Message* msg)
               y2 = c2->rc->y1;
             }
 
-            if ((msg->mouse.x >= x1) && (msg->mouse.x < x2) &&
-                (msg->mouse.y >= y1) && (msg->mouse.y < y2)) {
+            if ((mousePos.x >= x1) && (mousePos.x < x2) &&
+                (mousePos.y >= y1) && (mousePos.y < y2)) {
               change_cursor = true;
               break;
             }
@@ -167,7 +170,7 @@ bool Splitter::onProcessMessage(Message* msg)
         }
 
         if (change_cursor) {
-          if (this->getAlign() & JI_HORIZONTAL)
+          if (getAlign() & JI_HORIZONTAL)
             jmouse_set_cursor(kSizeLCursor);
           else
             jmouse_set_cursor(kSizeTCursor);
@@ -181,9 +184,58 @@ bool Splitter::onProcessMessage(Message* msg)
   return Widget::onProcessMessage(msg);
 }
 
+void Splitter::onResize(ResizeEvent& ev)
+{
+#define FIXUP(x, y, w, h, l, t, r, b)                                   \
+  do {                                                                  \
+    avail = rect.w - this->child_spacing;                               \
+                                                                        \
+    pos.x = rect.x;                                                     \
+    pos.y = rect.y;                                                     \
+    switch (m_type) {                                                   \
+      case ByPercentage:                                                \
+        pos.w = avail*m_pos/100;                                        \
+        break;                                                          \
+      case ByPixel:                                                     \
+        pos.w = m_pos;                                                  \
+        break;                                                          \
+    }                                                                   \
+                                                                        \
+    /* TODO uncomment this to make a restricted splitter */             \
+    /* pos.w = MID(reqSize1.w, pos.w, avail-reqSize2.w); */             \
+    pos.h = rect.h;                                                     \
+                                                                        \
+    child1->setBounds(pos);                                             \
+    gfx::Rect child1Pos = child1->getBounds();                          \
+                                                                        \
+    pos.x = child1Pos.x + child1Pos.w + this->child_spacing;            \
+    pos.y = rect.y;                                                     \
+    pos.w = avail - child1Pos.w;                                        \
+    pos.h = rect.h;                                                     \
+                                                                        \
+    child2->setBounds(pos);                                             \
+  } while(0)
+
+  gfx::Rect rect(ev.getBounds());
+  gfx::Rect pos(0, 0, 0, 0);
+  int avail;
+
+  setBoundsQuietly(rect);
+
+  if (getChildren().size() == 2) {
+    Widget* child1 = getChildren()[0];
+    Widget* child2 = getChildren()[1];
+
+    if (this->getAlign() & JI_HORIZONTAL)
+      FIXUP(x, y, w, h, l, t, r, b);
+    else
+      FIXUP(y, x, h, w, t, l, b, r);
+  }
+}
+
 void Splitter::onPaint(PaintEvent& ev)
 {
-  getTheme()->drawSplitter(ev);
+  getTheme()->paintSplitter(ev);
 }
 
 void Splitter::onPreferredSize(PreferredSizeEvent& ev)
@@ -256,56 +308,6 @@ void Splitter::onSaveLayout(SaveLayoutEvent& ev)
   // Do for all children
   UI_FOREACH_WIDGET(getChildren(), it)
     (*it)->saveLayout();
-}
-
-void Splitter::layoutMembers(JRect rect)
-{
-#define FIXUP(x, y, w, h, l, t, r, b)                                   \
-  do {                                                                  \
-    avail = jrect_##w(this->rc) - this->child_spacing;                  \
-                                                                        \
-    pos->x##1 = this->rc->x##1;                                         \
-    pos->y##1 = this->rc->y##1;                                         \
-    switch (m_type) {                                                   \
-      case ByPercentage:                                                \
-      pos->x##2 = pos->x##1 + avail*m_pos/100;                          \
-      break;                                                            \
-    case ByPixel:                                                       \
-      pos->x##2 = pos->x##1 + m_pos;                                    \
-      break;                                                            \
-    }                                                                   \
-                                                                        \
-    /* TODO uncomment this to make a restricted splitter */             \
-    /* pos->w = MID(reqSize1.w, pos->w, avail-reqSize2.w); */           \
-    pos->y##2 = pos->y##1 + jrect_##h(this->rc);                        \
-                                                                        \
-    jwidget_set_rect(child1, pos);                                      \
-                                                                        \
-    pos->x##1 = child1->rc->x##1 + jrect_##w(child1->rc)                \
-      + this->child_spacing;                                            \
-    pos->y##1 = this->rc->y##1;                                         \
-    pos->x##2 = pos->x##1 + avail - jrect_##w(child1->rc);              \
-    pos->y##2 = pos->y##1 + jrect_##h(this->rc);                        \
-                                                                        \
-    jwidget_set_rect(child2, pos);                                      \
-  } while(0)
-
-  JRect pos = jrect_new(0, 0, 0, 0);
-  int avail;
-
-  jrect_copy(this->rc, rect);
-
-  if (getChildren().size() == 2) {
-    Widget* child1 = getChildren()[0];
-    Widget* child2 = getChildren()[1];
-
-    if (this->getAlign() & JI_HORIZONTAL)
-      FIXUP(x, y, w, h, l, t, r, b);
-    else
-      FIXUP(y, x, h, w, t, l, b, r);
-  }
-
-  jrect_free(pos);
 }
 
 } // namespace ui

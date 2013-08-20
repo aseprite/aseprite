@@ -1,8 +1,8 @@
-// ASEPRITE Undo Library
-// Copyright (C) 2001-2013  David Capello
+// Aseprite Undo Library
+// Copyright (C) 2001-2013 David Capello
 //
-// This source file is distributed under a BSD-like license, please
-// read LICENSE.txt for more information.
+// This source file is distributed under MIT license,
+// please read LICENSE.txt for more information.
 
 #ifndef UNDO_UNDO_HISTORY_H_INCLUDED
 #define UNDO_UNDO_HISTORY_H_INCLUDED
@@ -14,67 +14,65 @@
 
 namespace undo {
 
-class ObjectsContainer;
-class UndoersStack;
-class UndoConfigProvider;
+  class ObjectsContainer;
+  class UndoersStack;
+  class UndoConfigProvider;
 
-class UndoHistoryDelegate
-{
-public:
-  virtual ~UndoHistoryDelegate() { }
+  class UndoHistoryDelegate {
+  public:
+    virtual ~UndoHistoryDelegate() { }
 
-  // Container of objects to insert & retrieve objects by ID
-  virtual ObjectsContainer* getObjects() const = 0;
+    // Container of objects to insert & retrieve objects by ID
+    virtual ObjectsContainer* getObjects() const = 0;
 
-  // Returns the limit of undo history in bytes.
-  virtual size_t getUndoSizeLimit() const = 0;
-};
+    // Returns the limit of undo history in bytes.
+    virtual size_t getUndoSizeLimit() const = 0;
+  };
 
-class UndoHistory : public UndoersCollector
-{
-public:
-  UndoHistory(UndoHistoryDelegate* delegate);
-  virtual ~UndoHistory();
+  class UndoHistory : public UndoersCollector {
+  public:
+    UndoHistory(UndoHistoryDelegate* delegate);
+    virtual ~UndoHistory();
 
-  bool canUndo() const;
-  bool canRedo() const;
+    bool canUndo() const;
+    bool canRedo() const;
 
-  void doUndo();
-  void doRedo();
+    void doUndo();
+    void doRedo();
 
-  void clearRedo();
+    void clearRedo();
 
-  Undoer* getNextUndoer();
-  Undoer* getNextRedoer();
+    Undoer* getNextUndoer();
+    Undoer* getNextRedoer();
 
-  bool isSavedState() const;
-  void markSavedState();
+    bool isSavedState() const;
+    void markSavedState();
 
-  ObjectsContainer* getObjects() const { return m_delegate->getObjects(); }
+    ObjectsContainer* getObjects() const { return m_delegate->getObjects(); }
 
-  // UndoersCollector interface
-  void pushUndoer(Undoer* undoer);
+    // UndoersCollector interface
+    void pushUndoer(Undoer* undoer);
 
-  // Special method to add new undoers inside the last added group.
-  // Returns true if the undoer was added in a group.
-  bool implantUndoerInLastGroup(Undoer* undoer);
+    // Special method to add new undoers inside the last added group.
+    // Returns true if the undoer was added in a group.
+    bool implantUndoerInLastGroup(Undoer* undoer);
 
-private:
-  enum Direction { UndoDirection, RedoDirection };
+  private:
+    enum Direction { UndoDirection, RedoDirection };
 
-  void runUndo(Direction direction);
-  void discardTail();
-  void updateUndo();
-  void postUndoerAddedEvent(Undoer* undoer);
-  void checkSizeLimit();
+    void runUndo(Direction direction);
+    void discardTail();
+    void updateUndo();
+    void postUndoerAddedEvent(Undoer* undoer);
+    void checkSizeLimit();
 
-  UndoHistoryDelegate* m_delegate;
-  UndoersStack* m_undoers;
-  UndoersStack* m_redoers;
-  int m_groupLevel;
-  int m_diffCount;
-  int m_diffSaved;
-};
+    UndoHistoryDelegate* m_delegate;
+    UndoersStack* m_undoers;
+    UndoersStack* m_redoers;
+    int m_groupLevel;
+    int m_diffCount;
+    int m_diffSaved;
+  };
 
 } // namespace undo
 

@@ -1,10 +1,12 @@
-// ASEPRITE gui library
+// Aseprite UI Library
 // Copyright (C) 2001-2013  David Capello
 //
-// This source file is distributed under a BSD-like license, please
-// read LICENSE.txt for more information.
+// This source file is distributed under MIT license,
+// please read LICENSE.txt for more information.
 
+#ifdef HAVE_CONFIG_H
 #include "config.h"
+#endif
 
 #include "ui/textbox.h"
 
@@ -21,7 +23,7 @@
 namespace ui {
 
 TextBox::TextBox(const char* text, int align)
- : Widget(JI_TEXTBOX)
+ : Widget(kTextBoxWidget)
 {
   setFocusStop(true);
   setAlign(align);
@@ -31,13 +33,9 @@ TextBox::TextBox(const char* text, int align)
 
 bool TextBox::onProcessMessage(Message* msg)
 {
-  switch (msg->type) {
+  switch (msg->type()) {
 
-    case JM_DRAW:
-      getTheme()->draw_textbox(this, &msg->draw.rect);
-      return true;
-
-    case JM_KEYPRESSED:
+    case kKeyDownMessage:
       if (hasFocus()) {
         View* view = View::getView(this);
         if (view) {
@@ -45,44 +43,44 @@ bool TextBox::onProcessMessage(Message* msg)
           gfx::Point scroll = view->getViewScroll();
           int textheight = jwidget_get_text_height(this);
 
-          switch (msg->key.scancode) {
+          switch (static_cast<KeyMessage*>(msg)->scancode()) {
 
-            case KEY_LEFT:
+            case kKeyLeft:
               scroll.x -= vp.w/2;
               view->setViewScroll(scroll);
               break;
 
-            case KEY_RIGHT:
+            case kKeyRight:
               scroll.x += vp.w/2;
               view->setViewScroll(scroll);
               break;
 
-            case KEY_UP:
+            case kKeyUp:
               scroll.y -= vp.h/2;
               view->setViewScroll(scroll);
               break;
 
-            case KEY_DOWN:
+            case kKeyDown:
               scroll.y += vp.h/2;
               view->setViewScroll(scroll);
               break;
 
-            case KEY_PGUP:
+            case kKeyPageUp:
               scroll.y -= (vp.h-textheight);
               view->setViewScroll(scroll);
               break;
 
-            case KEY_PGDN:
+            case kKeyPageDown:
               scroll.y += (vp.h-textheight);
               view->setViewScroll(scroll);
               break;
 
-            case KEY_HOME:
+            case kKeyHome:
               scroll.y = 0;
               view->setViewScroll(scroll);
               break;
 
-            case KEY_END:
+            case kKeyEnd:
               scroll.y = jrect_h(this->rc) - vp.h;
               view->setViewScroll(scroll);
               break;
@@ -95,7 +93,7 @@ bool TextBox::onProcessMessage(Message* msg)
       }
       break;
 
-    case JM_BUTTONPRESSED: {
+    case kMouseDownMessage: {
       View* view = View::getView(this);
       if (view) {
         captureMouse();
@@ -105,7 +103,7 @@ bool TextBox::onProcessMessage(Message* msg)
       break;
     }
 
-    case JM_MOTION: {
+    case kMouseMoveMessage: {
       View* view = View::getView(this);
       if (view && hasCapture()) {
         gfx::Rect vp = view->getViewportBounds();
@@ -121,7 +119,7 @@ bool TextBox::onProcessMessage(Message* msg)
       break;
     }
 
-    case JM_BUTTONRELEASED: {
+    case kMouseUpMessage: {
       View* view = View::getView(this);
       if (view && hasCapture()) {
         releaseMouse();
@@ -131,7 +129,7 @@ bool TextBox::onProcessMessage(Message* msg)
       break;
     }
 
-    case JM_WHEEL: {
+    case kMouseWheelMessage: {
       View* view = View::getView(this);
       if (view) {
         gfx::Point scroll = view->getViewScroll();
@@ -147,6 +145,11 @@ bool TextBox::onProcessMessage(Message* msg)
   return Widget::onProcessMessage(msg);
 }
 
+void TextBox::onPaint(PaintEvent& ev)
+{
+  getTheme()->paintTextBox(ev);
+}
+
 void TextBox::onPreferredSize(PreferredSizeEvent& ev)
 {
   int w = 0;
@@ -156,7 +159,7 @@ void TextBox::onPreferredSize(PreferredSizeEvent& ev)
   //w = widget->border_width.l + widget->border_width.r;
   //h = widget->border_width.t + widget->border_width.b;
 
-  _ji_theme_textbox_draw(NULL, this, &w, &h, ColorNone, ColorNone);
+  drawTextBox(NULL, this, &w, &h, ColorNone, ColorNone);
 
   if (this->getAlign() & JI_WORDWRAP) {
     View* view = View::getView(this);
@@ -170,7 +173,7 @@ void TextBox::onPreferredSize(PreferredSizeEvent& ev)
     }
 
     w = MAX(min, width);
-    _ji_theme_textbox_draw(NULL, this, &w, &h, ColorNone, ColorNone);
+    drawTextBox(NULL, this, &w, &h, ColorNone, ColorNone);
 
     w = min;
   }

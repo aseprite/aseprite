@@ -1,4 +1,4 @@
-/* ASEPRITE
+/* Aseprite
  * Copyright (C) 2001-2013  David Capello
  *
  * This program is free software; you can redistribute it and/or modify
@@ -22,25 +22,29 @@
 #define INT_MULT(a, b, t)                               \
   ((t) = (a) * (b) + 0x80, ((((t) >> 8) + (t)) >> 8))
 
-enum {
-  BLEND_MODE_NORMAL,
-  BLEND_MODE_COPY,
-  BLEND_MODE_MAX,
-};
+namespace raster {
 
-typedef int (*BLEND_COLOR)(int back, int front, int opacity);
+  enum {
+    BLEND_MODE_NORMAL,
+    BLEND_MODE_COPY,
+    BLEND_MODE_MAX,
+  };
 
-extern BLEND_COLOR _rgba_blenders[];
-extern BLEND_COLOR _graya_blenders[];
+  typedef int (*BLEND_COLOR)(int back, int front, int opacity);
 
-int _rgba_blend_normal(int back, int front, int opacity);
-int _rgba_blend_copy(int back, int front, int opacity);
-int _rgba_blend_forpath(int back, int front, int opacity);
-int _rgba_blend_merge(int back, int front, int opacity);
+  extern BLEND_COLOR _rgba_blenders[];
+  extern BLEND_COLOR _graya_blenders[];
 
-int _graya_blend_normal(int back, int front, int opacity);
-int _graya_blend_copy(int back, int front, int opacity);
-int _graya_blend_forpath(int back, int front, int opacity);
-int _graya_blend_merge(int back, int front, int opacity);
+  int _rgba_blend_normal(int back, int front, int opacity);
+  int _rgba_blend_copy(int back, int front, int opacity);
+  int _rgba_blend_forpath(int back, int front, int opacity);
+  int _rgba_blend_merge(int back, int front, int opacity);
+
+  int _graya_blend_normal(int back, int front, int opacity);
+  int _graya_blend_copy(int back, int front, int opacity);
+  int _graya_blend_forpath(int back, int front, int opacity);
+  int _graya_blend_merge(int back, int front, int opacity);
+
+} // namespace raster
 
 #endif

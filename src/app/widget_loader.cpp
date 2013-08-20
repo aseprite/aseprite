@@ -1,4 +1,4 @@
-/* ASEPRITE
+/* Aseprite
  * Copyright (C) 2001-2013  David Capello
  *
  * This program is free software; you can redistribute it and/or modify
@@ -16,19 +16,21 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
+#ifdef HAVE_CONFIG_H
 #include "config.h"
+#endif
 
 #include "app/widget_loader.h"
 
-#include "app.h"
+#include "app/app.h"
+#include "app/modules/gui.h"
+#include "app/resource_finder.h"
+#include "app/ui/color_button.h"
 #include "app/widget_not_found.h"
+#include "app/xml_exception.h"
 #include "base/bind.h"
 #include "base/memory.h"
-#include "modules/gui.h"
-#include "resource_finder.h"
-#include "ui/gui.h"
-#include "widgets/color_button.h"
-#include "xml_exception.h"
+#include "ui/ui.h"
 
 #include "tinyxml.h"
 
@@ -40,12 +42,12 @@
 
 #define TRANSLATE_ATTR(a) a
 
+namespace app {
+
 using namespace ui;
 
 static int convert_align_value_to_flags(const char *value);
 static bool bool_attr_is_true(const TiXmlElement* elem, const char* attribute_name);
-
-namespace app {
 
 WidgetLoader::WidgetLoader()
   : m_tooltipManager(NULL)
@@ -74,7 +76,7 @@ Widget* WidgetLoader::loadWidget(const char* fileName, const char* widgetId)
 
   rf.addPath(fileName);
 
-  buf = "widgets/";
+  buf = "app/ui/";
   buf += fileName;
   rf.findInDataDir(buf.c_str());
 
@@ -215,7 +217,7 @@ Widget* WidgetLoader::convertXmlElementToWidget(const TiXmlElement* elem, Widget
     text = (text ? TRANSLATE_ATTR(text): NULL);
 
     if (looklike != NULL && strcmp(looklike, "button") == 0) {
-      widget = new CheckBox(text, JI_BUTTON);
+      widget = new CheckBox(text, kButtonWidget);
     }
     else {
       widget = new CheckBox(text);
@@ -239,8 +241,9 @@ Widget* WidgetLoader::convertXmlElementToWidget(const TiXmlElement* elem, Widget
   }
   /* entry */
   else if (ustrcmp(elem_name, "entry") == 0) {
-    const char *maxsize = elem->Attribute("maxsize");
-    const char *text = elem->Attribute("text");
+    const char* maxsize = elem->Attribute("maxsize");
+    const char* text = elem->Attribute("text");
+    const char* suffix = elem->Attribute("suffix");
 
     if (maxsize != NULL) {
       bool readonly = bool_attr_is_true(elem, "readonly");
@@ -250,7 +253,12 @@ Widget* WidgetLoader::convertXmlElementToWidget(const TiXmlElement* elem, Widget
 
       if (readonly)
         ((Entry*)widget)->setReadOnly(true);
+
+      if (suffix)
+        ((Entry*)widget)->setSuffix(suffix);
     }
+    else
+      throw std::runtime_error("<entry> element found without 'maxsize' attribute");
   }
   /* grid */
   else if (ustrcmp(elem_name, "grid") == 0) {
@@ -287,7 +295,7 @@ Widget* WidgetLoader::convertXmlElementToWidget(const TiXmlElement* elem, Widget
   else if (ustrcmp(elem_name, "listitem") == 0) {
     const char *text = elem->Attribute("text");
 
-    widget = new ListBox::Item(text ? TRANSLATE_ATTR(text): NULL);
+    widget = new ListItem(text ? TRANSLATE_ATTR(text): NULL);
   }
   /* splitter */
   else if (ustrcmp(elem_name, "splitter") == 0) {
@@ -318,7 +326,7 @@ Widget* WidgetLoader::convertXmlElementToWidget(const TiXmlElement* elem, Widget
     int radio_group = (group ? ustrtol(group, NULL, 10): 1);
 
     if (looklike != NULL && strcmp(looklike, "button") == 0) {
-      widget = new RadioButton(text, radio_group, JI_BUTTON);
+      widget = new RadioButton(text, radio_group, kButtonWidget);
     }
     else {
       widget = new RadioButton(text, radio_group);
@@ -413,7 +421,7 @@ Widget* WidgetLoader::convertXmlElementToWidget(const TiXmlElement* elem, Widget
 
     if (tooltip != NULL && root != NULL) {
       if (!m_tooltipManager) {
-        m_tooltipManager = new ::ui::TooltipManager();
+        m_tooltipManager = new ui::TooltipManager();
         root->addChild(m_tooltipManager);
       }
       m_tooltipManager->addTooltipFor(widget, tooltip, JI_LEFT);
@@ -460,12 +468,12 @@ Widget* WidgetLoader::convertXmlElementToWidget(const TiXmlElement* elem, Widget
       child = convertXmlElementToWidget(childElem, root);
       if (child) {
         // Attach the child in the view
-        if (widget->type == JI_VIEW) {
+        if (widget->type == kViewWidget) {
           static_cast<View*>(widget)->attachToView(child);
           break;
         }
         // Add the child in the grid
-        else if (widget->type == JI_GRID) {
+        else if (widget->type == kGridWidget) {
           const char* cell_hspan = childElem->Attribute("cell_hspan");
           const char* cell_vspan = childElem->Attribute("cell_vspan");
           const char* cell_align = childElem->Attribute("cell_align");
@@ -484,7 +492,7 @@ Widget* WidgetLoader::convertXmlElementToWidget(const TiXmlElement* elem, Widget
       childElem = childElem->NextSiblingElement();
     }
 
-    if (widget->type == JI_VIEW) {
+    if (widget->type == kViewWidget) {
       bool maxsize = bool_attr_is_true(elem, "maxsize");
       if (maxsize)
         static_cast<View*>(widget)->makeVisibleAllScrollableArea();
@@ -493,8 +501,6 @@ Widget* WidgetLoader::convertXmlElementToWidget(const TiXmlElement* elem, Widget
 
   return widget;
 }
-
-} // namespace app
 
 static int convert_align_value_to_flags(const char *value)
 {
@@ -543,3 +549,5 @@ static bool bool_attr_is_true(const TiXmlElement* elem, const char* attribute_na
 
   return (value != NULL) && (strcmp(value, "true") == 0);
 }
+
+} // namespace app

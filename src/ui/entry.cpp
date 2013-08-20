@@ -1,18 +1,16 @@
-// ASEPRITE gui library
+// Aseprite UI Library
 // Copyright (C) 2001-2013  David Capello
 //
-// This source file is distributed under a BSD-like license, please
-// read LICENSE.txt for more information.
+// This source file is distributed under MIT license,
+// please read LICENSE.txt for more information.
 
+#ifdef HAVE_CONFIG_H
 #include "config.h"
+#endif
 
-#include <allegro.h>
-#include <allegro/internal/aintern.h>
-#include <stdarg.h>
-#include <stdio.h>
+#include "ui/entry.h"
 
 #include "ui/clipboard.h"
-#include "ui/entry.h"
 #include "ui/font.h"
 #include "ui/manager.h"
 #include "ui/message.h"
@@ -22,12 +20,17 @@
 #include "ui/theme.h"
 #include "ui/widget.h"
 
+#include <allegro.h>
+#include <allegro/internal/aintern.h>
+#include <stdarg.h>
+#include <stdio.h>
+
 #define CHARACTER_LENGTH(f, c) ((f)->vtable->char_length((f), (c)))
 
 namespace ui {
 
 Entry::Entry(size_t maxsize, const char *format, ...)
-  : Widget(JI_ENTRY)
+  : Widget(kEntryWidget)
   , m_timer(500, this)
 {
   char buf[4096];
@@ -145,6 +148,12 @@ void Entry::deselectText()
   invalidate();
 }
 
+void Entry::setSuffix(const std::string& suffix)
+{
+  m_suffix = suffix;
+  invalidate();
+}
+
 void Entry::getEntryThemeInfo(int* scroll, int* caret, int* state,
                               int* selbeg, int* selend)
 {
@@ -165,17 +174,17 @@ void Entry::getEntryThemeInfo(int* scroll, int* caret, int* state,
 
 bool Entry::onProcessMessage(Message* msg)
 {
-  switch (msg->type) {
+  switch (msg->type()) {
 
-    case JM_TIMER:
-      if (this->hasFocus() && msg->timer.timer == &m_timer) {
+    case kTimerMessage:
+      if (hasFocus() && static_cast<TimerMessage*>(msg)->timer() == &m_timer) {
         // Blinking caret
         m_state = m_state ? false: true;
         invalidate();
       }
       break;
 
-    case JM_FOCUSENTER:
+    case kFocusEnterMessage:
       m_timer.start();
 
       m_state = true;
@@ -185,7 +194,7 @@ bool Entry::onProcessMessage(Message* msg)
       m_recent_focused = true;
       break;
 
-    case JM_FOCUSLEAVE:
+    case kFocusLeaveMessage:
       invalidate();
 
       m_timer.stop();
@@ -194,22 +203,24 @@ bool Entry::onProcessMessage(Message* msg)
       m_recent_focused = false;
       break;
 
-    case JM_KEYPRESSED:
-      if (this->hasFocus() && !isReadOnly()) {
+    case kKeyDownMessage:
+      if (hasFocus() && !isReadOnly()) {
         // Command to execute
         EntryCmd::Type cmd = EntryCmd::NoOp;
+        KeyMessage* keymsg = static_cast<KeyMessage*>(msg);
+        KeyScancode scancode = keymsg->scancode();
 
-        switch (msg->key.scancode) {
+        switch (scancode) {
 
           case KEY_LEFT:
-            if (msg->any.shifts & KB_CTRL_FLAG)
+            if (msg->ctrlPressed())
               cmd = EntryCmd::BackwardWord;
             else
               cmd = EntryCmd::BackwardChar;
             break;
 
           case KEY_RIGHT:
-            if (msg->any.shifts & KB_CTRL_FLAG)
+            if (msg->ctrlPressed())
               cmd = EntryCmd::ForwardWord;
             else
               cmd = EntryCmd::ForwardChar;
@@ -224,16 +235,16 @@ bool Entry::onProcessMessage(Message* msg)
             break;
 
           case KEY_DEL:
-            if (msg->any.shifts & KB_SHIFT_FLAG)
+            if (msg->shiftPressed())
               cmd = EntryCmd::Cut;
             else
               cmd = EntryCmd::DeleteForward;
             break;
 
           case KEY_INSERT:
-            if (msg->any.shifts & KB_SHIFT_FLAG)
+            if (msg->shiftPressed())
               cmd = EntryCmd::Paste;
-            else if (msg->any.shifts & KB_CTRL_FLAG)
+            else if (msg->ctrlPressed())
               cmd = EntryCmd::Copy;
             break;
 
@@ -242,20 +253,20 @@ bool Entry::onProcessMessage(Message* msg)
             break;
 
           default:
-            if (msg->key.ascii >= 32) {
+            if (keymsg->ascii() >= 32) {
               // Ctrl and Alt must be unpressed to insert a character
               // in the text-field.
-              if ((msg->any.shifts & (KB_CTRL_FLAG | KB_ALT_FLAG)) == 0) {
+              if ((msg->keyModifiers() & (kKeyCtrlModifier | kKeyAltModifier)) == 0) {
                 cmd = EntryCmd::InsertChar;
               }
             }
             else {
-              // map common Windows shortcuts for Cut/Copy/Paste
-              if ((msg->any.shifts & (KB_CTRL_FLAG | KB_SHIFT_FLAG | KB_ALT_FLAG)) == KB_CTRL_FLAG) {
-                switch (msg->key.scancode) {
-                  case KEY_X: cmd = EntryCmd::Cut; break;
-                  case KEY_C: cmd = EntryCmd::Copy; break;
-                  case KEY_V: cmd = EntryCmd::Paste; break;
+              // Map common Windows shortcuts for Cut/Copy/Paste
+              if (msg->onlyCtrlPressed()) {
+                switch (scancode) {
+                  case kKeyX: cmd = EntryCmd::Cut; break;
+                  case kKeyC: cmd = EntryCmd::Copy; break;
+                  case kKeyV: cmd = EntryCmd::Paste; break;
                 }
               }
             }
@@ -265,27 +276,26 @@ bool Entry::onProcessMessage(Message* msg)
         if (cmd == EntryCmd::NoOp)
           break;
 
-        executeCmd(cmd,
-                   msg->key.ascii,
-                   (msg->any.shifts & KB_SHIFT_FLAG) ? true: false);
+        executeCmd(cmd, keymsg->ascii(),
+                   (msg->shiftPressed()) ? true: false);
         return true;
       }
       break;
 
-    case JM_BUTTONPRESSED:
-      this->captureMouse();
+    case kMouseDownMessage:
+      captureMouse();
 
-    case JM_MOTION:
-      if (this->hasCapture()) {
+    case kMouseMoveMessage:
+      if (hasCapture()) {
+        gfx::Point mousePos = static_cast<MouseMessage*>(msg)->position();
         const char *text = this->getText();
-        bool move, is_dirty;
         int c, x;
 
-        move = true;
-        is_dirty = false;
+        bool move = true;
+        bool is_dirty = false;
 
-        /* backward scroll */
-        if (msg->mouse.x < this->rc->x1) {
+        // Backward scroll
+        if (mousePos.x < this->rc->x1) {
           if (m_scroll > 0) {
             m_caret = --m_scroll;
             move = false;
@@ -293,8 +303,8 @@ bool Entry::onProcessMessage(Message* msg)
             invalidate();
           }
         }
-        /* forward scroll */
-        else if (msg->mouse.x >= this->rc->x2) {
+        // Forward scroll
+        else if (mousePos.x >= this->rc->x2) {
           if (m_scroll < ustrlen(text)) {
             m_scroll++;
             x = this->rc->x1 + this->border_width.l;
@@ -317,7 +327,7 @@ bool Entry::onProcessMessage(Message* msg)
 
         // Move caret
         if (move) {
-          c = getCaretFromMouse(msg);
+          c = getCaretFromMouse(static_cast<MouseMessage*>(msg));
 
           if (m_caret != c) {
             m_caret = c;
@@ -331,7 +341,7 @@ bool Entry::onProcessMessage(Message* msg)
           m_recent_focused = false;
           m_select = m_caret;
         }
-        else if (msg->type == JM_BUTTONPRESSED)
+        else if (msg->type() == kMouseDownMessage)
           m_select = m_caret;
 
         // Show the caret
@@ -344,22 +354,22 @@ bool Entry::onProcessMessage(Message* msg)
       }
       break;
 
-    case JM_BUTTONRELEASED:
-      if (this->hasCapture())
-        this->releaseMouse();
+    case kMouseUpMessage:
+      if (hasCapture())
+        releaseMouse();
       return true;
 
-    case JM_DOUBLECLICK:
+    case kDoubleClickMessage:
       forwardWord();
       m_select = m_caret;
       backwardWord();
       invalidate();
       return true;
 
-    case JM_MOUSEENTER:
-    case JM_MOUSELEAVE:
+    case kMouseEnterMessage:
+    case kMouseLeaveMessage:
       /* TODO theme stuff */
-      if (this->isEnabled())
+      if (isEnabled())
         invalidate();
       break;
   }
@@ -389,16 +399,24 @@ void Entry::onPaint(PaintEvent& ev)
   getTheme()->paintEntry(ev);
 }
 
+void Entry::onSetText()
+{
+  Widget::onSetText();
+
+  if (m_caret >= 0 && (size_t)m_caret > getTextSize())
+    m_caret = (int)getTextSize();
+}
+
 void Entry::onEntryChange()
 {
   EntryChange();
 }
 
-int Entry::getCaretFromMouse(Message* msg)
+int Entry::getCaretFromMouse(MouseMessage* mousemsg)
 {
   int c, x, w, mx, caret = m_caret;
 
-  mx = msg->mouse.x;
+  mx = mousemsg->position().x;
   mx = MID(this->rc->x1+this->border_width.l,
            mx,
            this->rc->x2-this->border_width.r-1);
@@ -425,7 +443,7 @@ int Entry::getCaretFromMouse(Message* msg)
 
 void Entry::executeCmd(EntryCmd::Type cmd, int ascii, bool shift_pressed)
 {
-  std::string text = this->getText();
+  std::string text = getText();
   int c, selbeg, selend;
 
   getEntryThemeInfo(NULL, NULL, NULL, &selbeg, &selend);
@@ -444,8 +462,10 @@ void Entry::executeCmd(EntryCmd::Type cmd, int ascii, bool shift_pressed)
       }
 
       // put the character
-      if (text.size() < m_maxsize)
+      if (text.size() < m_maxsize) {
+        ASSERT((size_t)m_caret <= text.size());
         text.insert(m_caret++, 1, ascii);
+      }
 
       m_select = -1;
       break;
@@ -641,4 +661,3 @@ void Entry::backwardWord()
 }
 
 } // namespace ui
-

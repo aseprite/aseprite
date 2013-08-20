@@ -1,10 +1,12 @@
-// ASEPRITE gui library
+// Aseprite UI Library
 // Copyright (C) 2001-2013  David Capello
 //
-// This source file is distributed under a BSD-like license, please
-// read LICENSE.txt for more information.
+// This source file is distributed under MIT license,
+// please read LICENSE.txt for more information.
 
+#ifdef HAVE_CONFIG_H
 #include "config.h"
+#endif
 
 #include "ui/timer.h"
 
@@ -98,10 +100,8 @@ void Timer::pollTimers()
         if (count > 0) {
           ASSERT(timer->m_owner != NULL);
 
-          Message* msg = jmessage_new(JM_TIMER);
-          msg->timer.count = count;
-          msg->timer.timer = timer;
-          jmessage_add_dest(msg, timer->m_owner);
+          Message* msg = new TimerMessage(count, timer);
+          msg->addRecipient(timer->m_owner);
           Manager::getDefault()->enqueueMessage(msg);
         }
       }

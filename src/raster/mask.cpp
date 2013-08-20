@@ -1,4 +1,4 @@
-/* ASEPRITE
+/* Aseprite
  * Copyright (C) 2001-2013  David Capello
  *
  * This program is free software; you can redistribute it and/or modify
@@ -16,7 +16,9 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
+#ifdef HAVE_CONFIG_H
 #include "config.h"
+#endif
 
 #include "raster/mask.h"
 
@@ -26,7 +28,7 @@
 #include <cstdlib>
 #include <cstring>
 
-//////////////////////////////////////////////////////////////////////
+namespace raster {
 
 Mask::Mask()
   : GfxObj(GFXOBJ_MASK)
@@ -201,7 +203,6 @@ void Mask::subtract(int x, int y, int w, int h)
 void Mask::intersect(int x, int y, int w, int h)
 {
   if (m_bitmap) {
-    Image *image;
     int x1 = m_bounds.x;
     int y1 = m_bounds.y;
     int x2 = MIN(m_bounds.x+m_bounds.w-1, x+w-1);
@@ -212,8 +213,8 @@ void Mask::intersect(int x, int y, int w, int h)
     m_bounds.w = x2 - m_bounds.x + 1;
     m_bounds.h = y2 - m_bounds.y + 1;
 
-    image = image_crop(m_bitmap, m_bounds.x-x1, m_bounds.y-y1, m_bounds.w, m_bounds.h, 0);
-    image_free(m_bitmap);
+    Image* image = image_crop(m_bitmap, m_bounds.x-x1, m_bounds.y-y1, m_bounds.w, m_bounds.h, 0);
+    delete m_bitmap;
     m_bitmap = image;
 
     shrink();
@@ -481,9 +482,11 @@ void Mask::shrink()
     m_bounds.h = y2 - y1 + 1;
 
     Image* image = image_crop(m_bitmap, m_bounds.x-u, m_bounds.y-v, m_bounds.w, m_bounds.h, 0);
-    image_free(m_bitmap);
+    delete m_bitmap;
     m_bitmap = image;
   }
 
 #undef SHRINK_SIDE
 }
+
+} // namespace raster

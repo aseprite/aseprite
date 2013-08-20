@@ -1,8 +1,8 @@
-// ASEPRITE gui library
+// Aseprite UI Library
 // Copyright (C) 2001-2013  David Capello
 //
-// This source file is distributed under a BSD-like license, please
-// read LICENSE.txt for more information.
+// This source file is distributed under MIT license,
+// please read LICENSE.txt for more information.
 
 #ifndef UI_GRID_H_INCLUDED
 #define UI_GRID_H_INCLUDED
@@ -24,7 +24,7 @@ namespace ui {
 
   protected:
     // Events
-    bool onProcessMessage(Message* msg) OVERRIDE;
+    void onResize(ResizeEvent& ev) OVERRIDE;
     void onPreferredSize(PreferredSizeEvent& ev) OVERRIDE;
     void onPaint(PaintEvent& ev) OVERRIDE;
 
@@ -46,7 +46,6 @@ namespace ui {
     };
 
     void sumStripSize(const std::vector<Strip>& strip, int& size);
-    void setGridPosition(JRect rect);
     void calculateCellSize(int start, int span, const std::vector<Strip>& strip, int& size);
     void calculateSize();
     void calculateStripSize(std::vector<Strip>& colstrip,
@@ -54,7 +53,7 @@ namespace ui {
     void expandStrip(std::vector<Strip>& colstrip,
                      std::vector<Strip>& rowstrip,
                      void (Grid::*incCol)(int, int));
-    void distributeSize(JRect rect);
+    void distributeSize(const gfx::Rect& rect);
     void distributeStripSize(std::vector<Strip>& colstrip,
                              int rect_size, int border_size, bool same_width);
     bool putWidgetInCell(Widget* child, int hspan, int vspan, int align);

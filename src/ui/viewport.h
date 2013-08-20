@@ -1,8 +1,8 @@
-// ASEPRITE gui library
+// Aseprite UI Library
 // Copyright (C) 2001-2013  David Capello
 //
-// This source file is distributed under a BSD-like license, please
-// read LICENSE.txt for more information.
+// This source file is distributed under MIT license,
+// please read LICENSE.txt for more information.
 
 #ifndef UI_VIEWPORT_H_INCLUDED
 #define UI_VIEWPORT_H_INCLUDED
@@ -21,12 +21,9 @@ namespace ui {
 
   protected:
     // Events
-    bool onProcessMessage(Message* msg) OVERRIDE;
+    void onResize(ResizeEvent& ev) OVERRIDE;
     void onPreferredSize(PreferredSizeEvent& ev) OVERRIDE;
     void onPaint(PaintEvent& ev) OVERRIDE;
-
-  private:
-    void set_position(JRect rect);
   };
 
 } // namespace ui

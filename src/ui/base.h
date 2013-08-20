@@ -1,8 +1,8 @@
-// ASEPRITE gui library
+// Aseprite UI Library
 // Copyright (C) 2001-2013  David Capello
 //
-// This source file is distributed under a BSD-like license, please
-// read LICENSE.txt for more information.
+// This source file is distributed under MIT license,
+// please read LICENSE.txt for more information.
 
 #ifndef UI_BASE_H_INCLUDED
 #define UI_BASE_H_INCLUDED
@@ -59,77 +59,6 @@ namespace ui {
 #define JI_INITIALIZED  0x0400 // The widget was already initialized by a theme.
 #define JI_NOTEXT       0x0800 // The widget does not have text.
 #define JI_DIRTY        0x1000 // The widget (or one child) is dirty (update_region != empty).
-
-  // Widget types.
-  enum {
-    // Undefined (or anonymous) widget type.
-    JI_WIDGET,
-
-    // Known widgets.
-    JI_BOX,
-    JI_BUTTON,
-    JI_CHECK,
-    JI_COMBOBOX,
-    JI_ENTRY,
-    JI_GRID,
-    JI_IMAGE_VIEW,
-    JI_LABEL,
-    JI_LISTBOX,
-    JI_LISTITEM,
-    JI_MANAGER,
-    JI_MENU,
-    JI_MENUBAR,
-    JI_MENUBOX,
-    JI_MENUITEM,
-    JI_SPLITTER,
-    JI_RADIO,
-    JI_SEPARATOR,
-    JI_SLIDER,
-    JI_TEXTBOX,
-    JI_VIEW,
-    JI_VIEW_SCROLLBAR,
-    JI_VIEW_VIEWPORT,
-    JI_WINDOW,
-
-    // User widgets.
-    JI_USER_WIDGET,
-  };
-
-  // JINETE Message types.
-  enum {
-    // General messages.
-    JM_OPEN,                      // Windows is open.
-    JM_CLOSE,                     // Windows is closed.
-    JM_CLOSE_APP,                 // The user wants to close the entire application.
-    JM_DRAW,                      // Widget needs be repainted.
-    JM_TIMER,                     // A timer timeout.
-    JM_SETPOS,                    // Set position.
-    JM_WINMOVE,                   // Window movement.
-    JM_QUEUEPROCESSING,           // Only sent to manager which indicate
-    // the last message in the queue.
-
-    // Keyboard related messages.
-    JM_KEYPRESSED,                // When a any key is pressed.
-    JM_KEYRELEASED,               // When a any key is released.
-    JM_FOCUSENTER,                // Widget gets the focus.
-    JM_FOCUSLEAVE,                // Widget losts the focus.
-
-    // Mouse related messages.
-    JM_BUTTONPRESSED,             // User makes click inside a widget.
-    JM_BUTTONRELEASED,            // User releases mouse button in a widget.
-    JM_DOUBLECLICK,               // User makes double click in some widget.
-    JM_MOUSEENTER,                // A widget gets mouse pointer.
-    JM_MOUSELEAVE,                // A widget losts mouse pointer.
-    JM_MOTION,                    // User moves the mouse on some widget.
-    JM_SETCURSOR,                 // A widget needs to setup the mouse cursor.
-    JM_WHEEL,                     // User moves the wheel.
-
-    // xxx drag'n'drop operation?.
-    // JM_DND_
-
-    // Other messages.
-    JM_REGISTERED_MESSAGES
-  };
 
   typedef unsigned int            JID;
 

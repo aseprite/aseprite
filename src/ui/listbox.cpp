@@ -1,47 +1,43 @@
-// ASEPRITE gui library
+// Aseprite UI Library
 // Copyright (C) 2001-2013  David Capello
 //
-// This source file is distributed under a BSD-like license, please
-// read LICENSE.txt for more information.
+// This source file is distributed under MIT license,
+// please read LICENSE.txt for more information.
 
+#ifdef HAVE_CONFIG_H
 #include "config.h"
+#endif
 
 #include "ui/listbox.h"
 
+#include "ui/listitem.h"
 #include "ui/message.h"
 #include "ui/preferred_size_event.h"
+#include "ui/resize_event.h"
 #include "ui/system.h"
 #include "ui/theme.h"
 #include "ui/view.h"
 
 #include <allegro/keyboard.h>
 
-using namespace gfx;
-
 namespace ui {
 
+using namespace gfx;
+
 ListBox::ListBox()
-  : Widget(JI_LISTBOX)
+  : Widget(kListBoxWidget)
 {
   setFocusStop(true);
   initTheme();
 }
 
-ListBox::Item::Item(const char* text)
-  : Widget(JI_LISTITEM)
-{
-  setAlign(JI_LEFT | JI_MIDDLE);
-  setText(text);
-  initTheme();
-}
-
-ListBox::Item* ListBox::getSelectedChild()
+ListItem* ListBox::getSelectedChild()
 {
   UI_FOREACH_WIDGET(getChildren(), it) {
-    ASSERT(dynamic_cast<Item*>(*it) != NULL);
+    ASSERT(dynamic_cast<ListItem*>(*it) != NULL);
 
-    if (static_cast<Item*>(*it)->isSelected())
-      return static_cast<Item*>(*it);
+    if (static_cast<ListItem*>(*it)->isSelected())
+      return static_cast<ListItem*>(*it);
   }
   return 0;
 }
@@ -51,7 +47,7 @@ int ListBox::getSelectedIndex()
   int i = 0;
 
   UI_FOREACH_WIDGET(getChildren(), it) {
-    if (static_cast<Item*>(*it)->isSelected())
+    if (static_cast<ListItem*>(*it)->isSelected())
       return i;
     i++;
   }
@@ -59,10 +55,10 @@ int ListBox::getSelectedIndex()
   return -1;
 }
 
-void ListBox::selectChild(Item* item)
+void ListBox::selectChild(ListItem* item)
 {
   UI_FOREACH_WIDGET(getChildren(), it) {
-    Item* child = static_cast<Item*>(*it);
+    ListItem* child = static_cast<ListItem*>(*it);
 
     if (child->isSelected()) {
       if (item && child == item)
@@ -100,7 +96,7 @@ void ListBox::selectIndex(int index)
   if (index < 0 || index >= (int)children.size())
     return;
 
-  Item* child = static_cast<Item*>(children[index]);
+  ListItem* child = static_cast<ListItem*>(children[index]);
   ASSERT(child);
   selectChild(child);
 }
@@ -114,7 +110,7 @@ size_t ListBox::getItemsCount() const
 void ListBox::centerScroll()
 {
   View* view = View::getView(this);
-  Item* item = getSelectedChild();
+  ListItem* item = getSelectedChild();
 
   if (view && item) {
     gfx::Rect vp = view->getViewportBounds();
@@ -129,25 +125,18 @@ void ListBox::centerScroll()
 
 bool ListBox::onProcessMessage(Message* msg)
 {
-  switch (msg->type) {
+  switch (msg->type()) {
 
-    case JM_SETPOS:
-      layoutListBox(&msg->setpos.rect);
-      return true;
-
-    case JM_DRAW:
-      this->getTheme()->draw_listbox(this, &msg->draw.rect);
-      return true;
-
-    case JM_OPEN:
+    case kOpenMessage:
       centerScroll();
       break;
 
-    case JM_BUTTONPRESSED:
+    case kMouseDownMessage:
       captureMouse();
 
-    case JM_MOTION:
+    case kMouseMoveMessage:
       if (hasCapture()) {
+        gfx::Point mousePos = static_cast<MouseMessage*>(msg)->position();
         int select = getSelectedIndex();
         View* view = View::getView(this);
         bool pick_item = true;
@@ -155,13 +144,13 @@ bool ListBox::onProcessMessage(Message* msg)
         if (view) {
           gfx::Rect vp = view->getViewportBounds();
 
-          if (msg->mouse.y < vp.y) {
-            int num = MAX(1, (vp.y - msg->mouse.y) / 8);
+          if (mousePos.y < vp.y) {
+            int num = MAX(1, (vp.y - mousePos.y) / 8);
             selectIndex(select-num);
             pick_item = false;
           }
-          else if (msg->mouse.y >= vp.y + vp.h) {
-            int num = MAX(1, (msg->mouse.y - (vp.y+vp.h-1)) / 8);
+          else if (mousePos.y >= vp.y + vp.h) {
+            int num = MAX(1, (mousePos.y - (vp.y+vp.h-1)) / 8);
             selectIndex(select+num);
             pick_item = false;
           }
@@ -171,15 +160,15 @@ bool ListBox::onProcessMessage(Message* msg)
           Widget* picked;
 
           if (view) {
-            picked = view->getViewport()->pick(msg->mouse.x, msg->mouse.y);
+            picked = view->getViewport()->pick(mousePos);
           }
           else {
-            picked = this->pick(msg->mouse.x, msg->mouse.y);
+            picked = pick(mousePos);
           }
 
           /* if the picked widget is a child of the list, select it */
           if (picked && hasChild(picked)) {
-            if (Item* pickedItem = dynamic_cast<Item*>(picked))
+            if (ListItem* pickedItem = dynamic_cast<ListItem*>(picked))
               selectChild(pickedItem);
           }
         }
@@ -188,11 +177,11 @@ bool ListBox::onProcessMessage(Message* msg)
       }
       break;
 
-    case JM_BUTTONRELEASED:
+    case kMouseUpMessage:
       releaseMouse();
       break;
 
-    case JM_WHEEL: {
+    case kMouseWheelMessage: {
       View* view = View::getView(this);
       if (view) {
         gfx::Point scroll = view->getViewScroll();
@@ -202,26 +191,27 @@ bool ListBox::onProcessMessage(Message* msg)
       break;
     }
 
-    case JM_KEYPRESSED:
+    case kKeyDownMessage:
       if (hasFocus() && !getChildren().empty()) {
         int select = getSelectedIndex();
         View* view = View::getView(this);
         int bottom = MAX(0, getChildren().size()-1);
+        KeyMessage* keymsg = static_cast<KeyMessage*>(msg);
 
-        switch (msg->key.scancode) {
-          case KEY_UP:
+        switch (keymsg->scancode()) {
+          case kKeyUp:
             select--;
             break;
-          case KEY_DOWN:
+          case kKeyDown:
             select++;
             break;
-          case KEY_HOME:
+          case kKeyHome:
             select = 0;
             break;
-          case KEY_END:
+          case kKeyEnd:
             select = bottom;
             break;
-          case KEY_PGUP:
+          case kKeyPageUp:
             if (view) {
               gfx::Rect vp = view->getViewportBounds();
               select -= vp.h / jwidget_get_text_height(this);
@@ -229,7 +219,7 @@ bool ListBox::onProcessMessage(Message* msg)
             else
               select = 0;
             break;
-          case KEY_PGDN:
+          case kKeyPageDown:
             if (view) {
               gfx::Rect vp = view->getViewportBounds();
               select += vp.h / jwidget_get_text_height(this);
@@ -237,12 +227,12 @@ bool ListBox::onProcessMessage(Message* msg)
             else
               select = bottom;
             break;
-          case KEY_LEFT:
-          case KEY_RIGHT:
+          case kKeyLeft:
+          case kKeyRight:
             if (view) {
               gfx::Rect vp = view->getViewportBounds();
               gfx::Point scroll = view->getViewScroll();
-              int sgn = (msg->key.scancode == KEY_LEFT) ? -1: 1;
+              int sgn = (keymsg->scancode() == kKeyLeft) ? -1: 1;
 
               scroll.x += vp.w/2*sgn;
 
@@ -258,7 +248,7 @@ bool ListBox::onProcessMessage(Message* msg)
       }
       break;
 
-    case JM_DOUBLECLICK:
+    case kDoubleClickMessage:
       onDoubleClickItem();
       return true;
   }
@@ -266,12 +256,33 @@ bool ListBox::onProcessMessage(Message* msg)
   return Widget::onProcessMessage(msg);
 }
 
+void ListBox::onPaint(PaintEvent& ev)
+{
+  getTheme()->paintListBox(ev);
+}
+
+void ListBox::onResize(ResizeEvent& ev)
+{
+  setBoundsQuietly(ev.getBounds());
+
+  Rect cpos = getChildrenBounds();
+
+  UI_FOREACH_WIDGET(getChildren(), it) {
+    Widget* child = *it;
+
+    cpos.h = child->getPreferredSize().h;
+    child->setBounds(cpos);
+
+    cpos.y += jrect_h(child->rc) + this->child_spacing;
+  }
+}
+
 void ListBox::onPreferredSize(PreferredSizeEvent& ev)
 {
   int w = 0, h = 0;
 
   UI_FOREACH_WIDGET_WITH_END(getChildren(), it, end) {
-    Size reqSize = static_cast<Item*>(*it)->getPreferredSize();
+    Size reqSize = static_cast<ListItem*>(*it)->getPreferredSize();
 
     w = MAX(w, reqSize.w);
     h += reqSize.h + (it+1 != end ? this->child_spacing: 0);
@@ -291,78 +302,6 @@ void ListBox::onChangeSelectedItem()
 void ListBox::onDoubleClickItem()
 {
   DoubleClickItem();
-}
-
-void ListBox::layoutListBox(JRect rect)
-{
-  Size reqSize;
-  JRect cpos;
-
-  jrect_copy(this->rc, rect);
-  cpos = jwidget_get_child_rect(this);
-
-  UI_FOREACH_WIDGET(getChildren(), it) {
-    Widget* child = *it;
-
-    reqSize = child->getPreferredSize();
-
-    cpos->y2 = cpos->y1+reqSize.h;
-    jwidget_set_rect(child, cpos);
-
-    cpos->y1 += jrect_h(child->rc) + this->child_spacing;
-  }
-
-  jrect_free(cpos);
-}
-
-bool ListBox::Item::onProcessMessage(Message* msg)
-{
-  switch (msg->type) {
-
-    case JM_SETPOS: {
-      JRect crect;
-
-      jrect_copy(this->rc, &msg->setpos.rect);
-      crect = jwidget_get_child_rect(this);
-
-      UI_FOREACH_WIDGET(getChildren(), it)
-        jwidget_set_rect(*it, crect);
-
-      jrect_free(crect);
-      return true;
-    }
-
-    case JM_DRAW:
-      this->getTheme()->draw_listitem(this, &msg->draw.rect);
-      return true;
-  }
-
-  return Widget::onProcessMessage(msg);
-}
-
-void ListBox::Item::onPreferredSize(PreferredSizeEvent& ev)
-{
-  int w = 0, h = 0;
-  Size maxSize;
-
-  if (hasText()) {
-    maxSize.w = jwidget_get_text_length(this);
-    maxSize.h = jwidget_get_text_height(this);
-  }
-  else
-    maxSize.w = maxSize.h = 0;
-
-  UI_FOREACH_WIDGET(getChildren(), it) {
-    Size reqSize = (*it)->getPreferredSize();
-
-    maxSize.w = MAX(maxSize.w, reqSize.w);
-    maxSize.h = MAX(maxSize.h, reqSize.h);
-  }
-
-  w = this->border_width.l + maxSize.w + this->border_width.r;
-  h = this->border_width.t + maxSize.h + this->border_width.b;
-
-  ev.setPreferredSize(Size(w, h));
 }
 
 } // namespace ui

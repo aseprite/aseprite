@@ -1,4 +1,4 @@
-/* ASEPRITE
+/* Aseprite
  * Copyright (C) 2001-2013  David Capello
  *
  * This program is free software; you can redistribute it and/or modify
@@ -16,7 +16,9 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
+#ifdef HAVE_CONFIG_H
 #include "config.h"
+#endif
 
 #include "raster/palette_io.h"
 
@@ -54,7 +56,7 @@ Palette* read_palette(std::istream& is)
   FrameNumber frame(read16(is)); // Frame
   int ncolors = read16(is);      // Number of colors
 
-  UniquePtr<Palette> palette(new Palette(frame, ncolors));
+  base::UniquePtr<Palette> palette(new Palette(frame, ncolors));
 
   for (int c=0; c<ncolors; ++c) {
     uint32_t color = read32(is);

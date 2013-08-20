@@ -1,10 +1,12 @@
-// ASEPRITE base library
-// Copyright (C) 2001-2013  David Capello
+// Aseprite Base Library
+// Copyright (c) 2001-2013 David Capello
 //
-// This source file is distributed under a BSD-like license, please
-// read LICENSE.txt for more information.
+// This source file is distributed under MIT license,
+// please read LICENSE.txt for more information.
 
+#ifdef HAVE_CONFIG_H
 #include "config.h"
+#endif
 
 #include "base/mutex.h"
 
@@ -14,27 +16,31 @@
   #include "base/mutex_pthread.h"
 #endif
 
-Mutex::Mutex()
-  : m_impl(new MutexImpl)
+namespace base {
+
+mutex::mutex()
+  : m_impl(new mutex_impl)
 {
 }
 
-Mutex::~Mutex()
+mutex::~mutex()
 {
   delete m_impl;
 }
 
-void Mutex::lock()
+void mutex::lock()
 {
   return m_impl->lock();
 }
 
-bool Mutex::tryLock()
+bool mutex::try_lock()
 {
-  return m_impl->tryLock();
+  return m_impl->try_lock();
 }
 
-void Mutex::unlock()
+void mutex::unlock()
 {
   return m_impl->unlock();
 }
+
+} // namespace base

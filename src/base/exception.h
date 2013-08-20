@@ -1,8 +1,8 @@
-// ASEPRITE base library
-// Copyright (C) 2001-2013  David Capello
+// Aseprite Base Library
+// Copyright (c) 2001-2013 David Capello
 //
-// This source file is distributed under a BSD-like license, please
-// read LICENSE.txt for more information.
+// This source file is distributed under MIT license,
+// please read LICENSE.txt for more information.
 
 #ifndef BASE_EXCEPTION_H_INCLUDED
 #define BASE_EXCEPTION_H_INCLUDED
@@ -12,8 +12,7 @@
 
 namespace base {
 
-  class Exception : public std::exception
-  {
+  class Exception : public std::exception {
   public:
     Exception() throw();
     Exception(const char* format, ...) throw();

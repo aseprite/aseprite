@@ -2,7 +2,8 @@
 
 * Warning icon when selecting RGB/HSB color in indexed image.
 * Warning message when we open a file that is already opened file
-  (show an option to create a second view).
+  (show an option to create a second view, or maybe this should
+  be forbidden).
 * Paste in place doesn't work as expected sometimes (copy something
   from one frame, paste in other frame).
 * After moving a frame, all thumbnails are shown incorrectly.
@@ -20,15 +21,15 @@
 * Fix problem with export sprite sheet when the cel has negative pos
 * Add a warning when exporting RGB sprite to GIF, hinting at the quantize function.
 * MovingPixelsState: Add undo information in each transformation step.
-* Add IntEntry class in src/gui/ with spin-buttons.
+* Add IntEntry class in src/ui/ with spin-buttons.
 * Add feedback to "Shift+S" shortcut to switch "snap to grid".
 * Add color swatches bar.
 * Sort palette entries.
 * Add "Remap" button to palette editor after a palette entry is modified:
   This button should apply a color curve to the whole sprite to remap
   old indexes to the new positions.
-* Move launcher.cpp to base/ lib adding an extension point for "gui" lib.
-* Move src/dialogs/aniedit,filesel to src/widgets (remove dialogs/ directory).
+* Move src/app/dialogs/aniedit,filesel to src/app/ui
+  (remove app/dialogs/ directory).
 * Merge everything related to configuration/settings in one class
   (allow configuration per document). Use cfg.cpp and settings/ dir.
 * Refactor src/file/ in several layers.

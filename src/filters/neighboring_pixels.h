@@ -1,4 +1,4 @@
-/* ASEPRITE
+/* Aseprite
  * Copyright (C) 2001-2013  David Capello
  *
  * This program is free software; you can redistribute it and/or modify
@@ -25,86 +25,91 @@
 
 #include <vector>
 
-// Calls the specified "delegate" for all neighboring pixels in a 2D
-// (width*height) matrix located in (x,y) where its center is the
-// (centerX,centerY) element of the matrix.
-template<typename Traits, typename Delegate>
-inline void get_neighboring_pixels(const Image* sourceImage, int x, int y,
-                                   int width, int height,
-                                   int centerX, int centerY,
-                                   TiledMode tiledMode,
-                                   Delegate& delegate)
-{
-  int dx, dy;
+namespace filters {
+  using namespace raster;
 
-  // Y position to get pixel.
-  int getx, gety = y - centerY;
-  int addx, addy = 0;
-  if (gety < 0) {
-    if (tiledMode & TILED_Y_AXIS)
-      gety = sourceImage->h - (-(gety+1) % sourceImage->h) - 1;
-    else {
-      addy = -gety;
-      gety = 0;
-    }
-  }
-  else if (gety >= sourceImage->h) {
-    if (tiledMode & TILED_Y_AXIS)
-      gety = gety % sourceImage->h;
-    else
-      gety = sourceImage->h-1;
-  }
+  // Calls the specified "delegate" for all neighboring pixels in a 2D
+  // (width*height) matrix located in (x,y) where its center is the
+  // (centerX,centerY) element of the matrix.
+  template<typename Traits, typename Delegate>
+  inline void get_neighboring_pixels(const raster::Image* sourceImage, int x, int y,
+                                     int width, int height,
+                                     int centerX, int centerY,
+                                     TiledMode tiledMode,
+                                     Delegate& delegate)
+  {
+    int dx, dy;
 
-  for (dy=0; dy<height; ++dy) {
-    // X position to get pixel.
-    getx = x - centerX;
-    addx = 0;
-    if (getx < 0) {
-      if (tiledMode & TILED_X_AXIS)
-        getx = sourceImage->w - (-(getx+1) % sourceImage->w) - 1;
+    // Y position to get pixel.
+    int getx, gety = y - centerY;
+    int addx, addy = 0;
+    if (gety < 0) {
+      if (tiledMode & TILED_Y_AXIS)
+        gety = sourceImage->h - (-(gety+1) % sourceImage->h) - 1;
       else {
-        addx = -getx;
-        getx = 0;
+        addy = -gety;
+        gety = 0;
       }
     }
-    else if (getx >= sourceImage->w) {
-      if (tiledMode & TILED_X_AXIS)
-        getx = getx % sourceImage->w;
+    else if (gety >= sourceImage->h) {
+      if (tiledMode & TILED_Y_AXIS)
+        gety = gety % sourceImage->h;
       else
-        getx = sourceImage->w-1;
+        gety = sourceImage->h-1;
     }
 
-    typename Traits::const_address_t srcAddress =
-      image_address_fast<Traits>(sourceImage, getx, gety);
-
-    for (dx=0; dx<width; dx++) {
-      // Call the delegate for each pixel value.
-      delegate(*srcAddress);
-
-      // Update X position to get pixel.
-      if (getx < sourceImage->w-1) {
-        ++getx;
-        if (addx == 0)
-          ++srcAddress;
+    for (dy=0; dy<height; ++dy) {
+      // X position to get pixel.
+      getx = x - centerX;
+      addx = 0;
+      if (getx < 0) {
+        if (tiledMode & TILED_X_AXIS)
+          getx = sourceImage->w - (-(getx+1) % sourceImage->w) - 1;
+        else {
+          addx = -getx;
+          getx = 0;
+        }
+      }
+      else if (getx >= sourceImage->w) {
+        if (tiledMode & TILED_X_AXIS)
+          getx = getx % sourceImage->w;
         else
-          --addx;
+          getx = sourceImage->w-1;
       }
-      else if (tiledMode & TILED_X_AXIS) {
-        getx = 0;
-        srcAddress = image_address_fast<Traits>(sourceImage, getx, gety);
-      }
-    }
 
-    // Update Y position to get pixel
-    if (gety < sourceImage->h-1) {
-      if (addy == 0)
-        ++gety;
-      else
-        --addy;
+      typename Traits::const_address_t srcAddress =
+        image_address_fast<Traits>(sourceImage, getx, gety);
+
+      for (dx=0; dx<width; dx++) {
+        // Call the delegate for each pixel value.
+        delegate(*srcAddress);
+
+        // Update X position to get pixel.
+        if (getx < sourceImage->w-1) {
+          ++getx;
+          if (addx == 0)
+            ++srcAddress;
+          else
+            --addx;
+        }
+        else if (tiledMode & TILED_X_AXIS) {
+          getx = 0;
+          srcAddress = image_address_fast<Traits>(sourceImage, getx, gety);
+        }
+      }
+
+      // Update Y position to get pixel
+      if (gety < sourceImage->h-1) {
+        if (addy == 0)
+          ++gety;
+        else
+          --addy;
+      }
+      else if (tiledMode & TILED_Y_AXIS)
+        gety = 0;
     }
-    else if (tiledMode & TILED_Y_AXIS)
-      gety = 0;
   }
-}
+
+} // namespace filters
 
 #endif

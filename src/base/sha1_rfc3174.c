@@ -29,7 +29,9 @@
  *
  */
 
+#ifdef HAVE_CONFIG_H
 #include "config.h"
+#endif
 #include "sha1_rfc3174.h"
 
 /*

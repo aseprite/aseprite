@@ -17,43 +17,6 @@
         <check text="Pixel Grid" id="pixel_grid" />
         <button text="Set &amp;Grid" id="set_grid" />
       </box>
-      <separator vertical="true" />
-      <box vertical="true" expansive="true" childspacing="2">
-        <box horizontal="true">
-          <grid columns="2" childspacing="0" expansive="true">
-
-            <label text="Pen:" />
-            <box horizontal="true" childspacing="0" id="brush_type_box" /><!-- custom widget -->
-
-            <label text="Size:" />
-            <slider min="1" max="32" id="brush_size" minwidth="32" cell_align="horizontal" />
-
-            <label text="Angle:" />
-            <slider min="0" max="180" id="brush_angle" cell_align="horizontal" />
-
-            <label text="Opacity:" id="opacity_label" />
-            <slider min="0" max="255" id="opacity" cell_align="horizontal" />
-
-            <label text="Tolerance:" id="tolerance_label" />
-            <slider min="0" max="255" id="tolerance" cell_align="horizontal" />
-
-          </grid>
-          <box id="brush_preview_box" /><!-- custom widget -->
-        </box>
-        <box vertical="true" id="spray_box">
-          <separator text="Spray:" horizontal="true" left="true" />
-          <box horizontal="true">
-            <box vertical="true" homogeneous="true" childspacing="0">
-              <label text="Spray Width:" />
-              <label text="Air Speed:" />
-            </box>
-            <box vertical="true" homogeneous="true" expansive="true" childspacing="0">
-              <slider min="1" max="32" id="spray_width" />
-              <slider min="1" max="100" id="air_speed" />
-            </box>
-          </box>
-        </box>
-      </box>
     </box>
   </box>
 </window>

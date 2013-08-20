@@ -1,12 +1,14 @@
-// ASEPRITE gui library
+// Aseprite UI Library
 // Copyright (C) 2001-2013  David Capello
 //
-// This source file is distributed under a BSD-like license, please
-// read LICENSE.txt for more information.
+// This source file is distributed under MIT license,
+// please read LICENSE.txt for more information.
 
 /* Based on code of AllegroFont, Copyright (c) 2001, 2002 Javier Gonzalez */
 
+#ifdef HAVE_CONFIG_H
 #include "config.h"
+#endif
 
 #include <allegro.h>
 #include <allegro/internal/aintern.h>
@@ -41,7 +43,7 @@ FONT* ji_font_load_bmp(const char* filepathname)
 
   if (bmp) {
     bmp = ji_apply_guiscale(bmp);
-    f = _ji_bitmap2font(bmp);
+    f = bitmapToFont(bmp);
     destroy_bitmap(bmp);
   }
 

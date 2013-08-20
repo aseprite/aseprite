@@ -1,4 +1,4 @@
-/* ASEPRITE
+/* Aseprite
  * Copyright (C) 2001-2013  David Capello
  *
  * This program is free software; you can redistribute it and/or modify
@@ -18,7 +18,9 @@
 
 #error This file is deprecated
 
+#ifdef HAVE_CONFIG_H
 #include "config.h"
+#endif
 
 #include <string.h>
 
@@ -27,6 +29,8 @@
 #include "raster/path.h"
 
 #include "libart_lgpl/libart.h"
+
+namespace raster {
 
 static int path_get_element(Path* path, double x, double y);
 static void draw_path(Path* path, Image *image, int color, double brush_size, int fill);
@@ -413,3 +417,5 @@ static void draw_path (Path* path, Image *image, int color, double brush_size, i
   art_image_svp_aa (svp, 0, 0, w-1, h-1, image, color);
   art_free (svp);
 }
+
+} // namespace raster

@@ -1,4 +1,4 @@
-/* ASEPRITE
+/* Aseprite
  * Copyright (C) 2001-2013  David Capello
  *
  * This program is free software; you can redistribute it and/or modify
@@ -35,6 +35,10 @@
    TARGET_ALPHA_CHANNEL         |       \
    TARGET_GRAY_CHANNEL          )
 
-typedef int Target;
+namespace filters {
+
+  typedef int Target;
+
+} // namespace filters
 
 #endif

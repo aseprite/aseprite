@@ -1,8 +1,8 @@
-// ASEPRITE gui library
+// Aseprite UI Library
 // Copyright (C) 2001-2013  David Capello
 //
-// This source file is distributed under a BSD-like license, please
-// read LICENSE.txt for more information.
+// This source file is distributed under MIT license,
+// please read LICENSE.txt for more information.
 
 #ifndef UI_INTERN_H_INCLUDED
 #define UI_INTERN_H_INCLUDED
@@ -18,33 +18,22 @@ namespace ui {
   class Widget;
   class Window;
 
-  //////////////////////////////////////////////////////////////////////
-  // jintern.c
+  // intern.cpp
 
-  void _ji_add_widget(Widget* widget);
-  void _ji_remove_widget(Widget* widget);
+  void addWidget(Widget* widget);
+  void removeWidget(Widget* widget);
 
-  void _ji_set_font_of_all_widgets(FONT* f);
-  void _ji_reinit_theme_in_all_widgets();
+  void setFontOfAllWidgets(FONT* f);
+  void reinitThemeForAllWidgets();
 
-  //////////////////////////////////////////////////////////////////////
-  // jwindow.c
-
-  bool _jwindow_is_moving();
-
-  //////////////////////////////////////////////////////////////////////
   // theme.cpp
 
-  void _ji_theme_draw_sprite_color(BITMAP *bmp, BITMAP *sprite,
-                                   int x, int y, ui::Color color);
+  void drawTextBox(BITMAP* bmp, Widget* textbox,
+                   int* w, int* h, ui::Color bg, ui::Color fg);
 
-  void _ji_theme_textbox_draw(BITMAP *bmp, Widget* textbox,
-                              int *w, int *h, ui::Color bg, ui::Color fg);
+  // fontbmp.c
 
-  //////////////////////////////////////////////////////////////////////
-  // jfontbmp.c
-
-  struct FONT *_ji_bitmap2font(BITMAP *bmp);
+  struct FONT* bitmapToFont(BITMAP* bmp);
 
 } // namespace ui
 

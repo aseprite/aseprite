@@ -1,10 +1,12 @@
-// ASEPRITE gui library
+// Aseprite UI Library
 // Copyright (C) 2001-2013  David Capello
 //
-// This source file is distributed under a BSD-like license, please
-// read LICENSE.txt for more information.
+// This source file is distributed under MIT license,
+// please read LICENSE.txt for more information.
 
+#ifdef HAVE_CONFIG_H
 #include "config.h"
+#endif
 
 #include <allegro.h>
 #include <string>
@@ -12,25 +14,25 @@
 #include "base/unique_ptr.h"
 #include "gfx/size.h"
 #include "ui/graphics.h"
-#include "ui/gui.h"
 #include "ui/intern.h"
 #include "ui/paint_event.h"
 #include "ui/preferred_size_event.h"
+#include "ui/ui.h"
 
 static const int kTooltipDelayMsecs = 300;
 
-using namespace gfx;
-
 namespace ui {
 
+using namespace gfx;
+
 TooltipManager::TooltipManager()
-  : Widget(JI_WIDGET)
+  : Widget(kGenericWidget)
 {
   Manager* manager = Manager::getDefault();
-  manager->addMessageFilter(JM_MOUSEENTER, this);
-  manager->addMessageFilter(JM_KEYPRESSED, this);
-  manager->addMessageFilter(JM_BUTTONPRESSED, this);
-  manager->addMessageFilter(JM_MOUSELEAVE, this);
+  manager->addMessageFilter(kMouseEnterMessage, this);
+  manager->addMessageFilter(kKeyDownMessage, this);
+  manager->addMessageFilter(kMouseDownMessage, this);
+  manager->addMessageFilter(kMouseLeaveMessage, this);
 
   setVisible(false);
 }
@@ -48,10 +50,10 @@ void TooltipManager::addTooltipFor(Widget* widget, const char* text, int arrowAl
 
 bool TooltipManager::onProcessMessage(Message* msg)
 {
-  switch (msg->type) {
+  switch (msg->type()) {
 
-    case JM_MOUSEENTER: {
-      UI_FOREACH_WIDGET(*msg->any.widgets, itWidget) {
+    case kMouseEnterMessage: {
+      UI_FOREACH_WIDGET(msg->recipients(), itWidget) {
         Tips::iterator it = m_tips.find(*itWidget);
         if (it != m_tips.end()) {
           m_target.widget = it->first;
@@ -68,9 +70,9 @@ bool TooltipManager::onProcessMessage(Message* msg)
       return false;
     }
 
-    case JM_KEYPRESSED:
-    case JM_BUTTONPRESSED:
-    case JM_MOUSELEAVE:
+    case kKeyDownMessage:
+    case kMouseDownMessage:
+    case kMouseLeaveMessage:
       if (m_tipWindow) {
         m_tipWindow->closeWindow(NULL);
         m_tipWindow.reset();
@@ -170,9 +172,9 @@ TipWindow::~TipWindow()
 {
   if (m_filtering) {
     m_filtering = false;
-    getManager()->removeMessageFilter(JM_MOTION, this);
-    getManager()->removeMessageFilter(JM_BUTTONPRESSED, this);
-    getManager()->removeMessageFilter(JM_KEYPRESSED, this);
+    getManager()->removeMessageFilter(kMouseMoveMessage, this);
+    getManager()->removeMessageFilter(kMouseDownMessage, this);
+    getManager()->removeMessageFilter(kKeyDownMessage, this);
   }
 }
 
@@ -180,9 +182,9 @@ void TipWindow::setHotRegion(const Region& region)
 {
   if (!m_filtering) {
     m_filtering = true;
-    getManager()->addMessageFilter(JM_MOTION, this);
-    getManager()->addMessageFilter(JM_BUTTONPRESSED, this);
-    getManager()->addMessageFilter(JM_KEYPRESSED, this);
+    getManager()->addMessageFilter(kMouseMoveMessage, this);
+    getManager()->addMessageFilter(kMouseDownMessage, this);
+    getManager()->addMessageFilter(kKeyDownMessage, this);
   }
 
   m_hotRegion = region;
@@ -200,48 +202,48 @@ void TipWindow::setArrowAlign(int arrowAlign)
 
 bool TipWindow::onProcessMessage(Message* msg)
 {
-  switch (msg->type) {
+  switch (msg->type()) {
 
-    case JM_CLOSE:
+    case kCloseMessage:
       if (m_filtering) {
         m_filtering = false;
-        getManager()->removeMessageFilter(JM_MOTION, this);
-        getManager()->removeMessageFilter(JM_BUTTONPRESSED, this);
-        getManager()->removeMessageFilter(JM_KEYPRESSED, this);
+        getManager()->removeMessageFilter(kMouseMoveMessage, this);
+        getManager()->removeMessageFilter(kMouseDownMessage, this);
+        getManager()->removeMessageFilter(kKeyDownMessage, this);
       }
       break;
 
-    case JM_MOUSELEAVE:
+    case kMouseLeaveMessage:
       if (m_hotRegion.isEmpty())
         closeWindow(NULL);
       break;
 
-    case JM_KEYPRESSED:
-      if (m_filtering && msg->key.scancode < KEY_MODIFIERS)
-        this->closeWindow(NULL);
+    case kKeyDownMessage:
+      if (m_filtering && static_cast<KeyMessage*>(msg)->scancode() < kKeyFirstModifierScancode)
+        closeWindow(NULL);
       break;
 
-    case JM_BUTTONPRESSED:
-      /* if the user click outside the window, we have to close the
-         tooltip window */
+    case kMouseDownMessage:
+      // If the user click outside the window, we have to close the
+      // tooltip window.
       if (m_filtering) {
-        Widget* picked = this->pick(msg->mouse.x, msg->mouse.y);
+        gfx::Point mousePos = static_cast<MouseMessage*>(msg)->position();
+        Widget* picked = pick(mousePos);
         if (!picked || picked->getRoot() != this) {
           this->closeWindow(NULL);
         }
       }
 
-      /* this is used when the user click inside a small text
-         tooltip */
+      // This is used when the user click inside a small text tooltip.
       if (m_close_on_buttonpressed)
-        this->closeWindow(NULL);
+        closeWindow(NULL);
       break;
 
-    case JM_MOTION:
+    case kMouseMoveMessage:
       if (!m_hotRegion.isEmpty() &&
           getManager()->getCapture() == NULL) {
         // If the mouse is outside the hot-region we have to close the window
-        if (!m_hotRegion.contains(Point(msg->mouse.x, msg->mouse.y))) {
+        if (!m_hotRegion.contains(static_cast<MouseMessage*>(msg)->position())) {
           closeWindow(NULL);
         }
       }

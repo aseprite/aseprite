@@ -1,10 +1,12 @@
-// ASEPRITE gfx library
-// Copyright (C) 2001-2013  David Capello
+// Aseprite Gfx Library
+// Copyright (C) 2001-2013 David Capello
 //
-// This source file is distributed under a BSD-like license, please
-// read LICENSE.txt for more information.
+// This source file is distributed under MIT license,
+// please read LICENSE.txt for more information.
 
+#ifdef HAVE_CONFIG_H
 #include "config.h"
+#endif
 
 #include "gfx/region.h"
 #include "gfx/point.h"
@@ -51,9 +53,9 @@ namespace {
 
   #include "gfx/pixman/pixman-region.c"
 }
-
-using namespace gfx;
   
+namespace gfx {
+
 Region::Region()
 {
   pixman_region32_init(&m_region);
@@ -193,3 +195,5 @@ const Rect Region::operator[](int i) const
   assert(i >= 0 && i < PIXREGION_NUMRECTS(&m_region));
   return Rect(PIXREGION_RECTS(&m_region)[i]);
 }
+
+} // namespace gfx

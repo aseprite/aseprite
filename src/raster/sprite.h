@@ -1,4 +1,4 @@
-/* ASEPRITE
+/* Aseprite
  * Copyright (C) 2001-2013  David Capello
  *
  * This program is free software; you can redistribute it and/or modify
@@ -28,132 +28,135 @@
 
 #include <vector>
 
-class Image;
-class Layer;
-class LayerFolder;
-class LayerImage;
-class Mask;
-class Palette;
-class Path;
-class Stock;
-class Sprite;
-class RgbMap;
+namespace raster {
 
-typedef std::vector<Palette*> PalettesList;
+  class Image;
+  class Layer;
+  class LayerFolder;
+  class LayerImage;
+  class Mask;
+  class Palette;
+  class Path;
+  class Stock;
+  class Sprite;
+  class RgbMap;
 
-// The main structure used in the whole program to handle a sprite.
-class Sprite : public GfxObj
-{
-public:
+  typedef std::vector<Palette*> PalettesList;
 
-  ////////////////////////////////////////
-  // Constructors/Destructor
+  // The main structure used in the whole program to handle a sprite.
+  class Sprite : public GfxObj {
+  public:
 
-  Sprite(PixelFormat format, int width, int height, int ncolors);
-  virtual ~Sprite();
+    ////////////////////////////////////////
+    // Constructors/Destructor
 
-  ////////////////////////////////////////
-  // Main properties
+    Sprite(PixelFormat format, int width, int height, int ncolors);
+    virtual ~Sprite();
 
-  PixelFormat getPixelFormat() const { return m_format; }
-  void setPixelFormat(PixelFormat format);
+    ////////////////////////////////////////
+    // Main properties
 
-  int getWidth() const { return m_width; }
-  int getHeight() const { return m_height; }
-  void setSize(int width, int height);
+    PixelFormat getPixelFormat() const { return m_format; }
+    void setPixelFormat(PixelFormat format);
 
-  // Returns true if the rendered images will contain alpha values less
-  // than 255. Only RGBA and Grayscale images without background needs
-  // alpha channel in the render.
-  bool needAlpha() const;
+    int getWidth() const { return m_width; }
+    int getHeight() const { return m_height; }
+    void setSize(int width, int height);
 
-  uint32_t getTransparentColor() const { return m_transparentColor; }
-  void setTransparentColor(uint32_t color);
+    // Returns true if the rendered images will contain alpha values less
+    // than 255. Only RGBA and Grayscale images without background needs
+    // alpha channel in the render.
+    bool needAlpha() const;
 
-  int getMemSize() const;
+    uint32_t getTransparentColor() const { return m_transparentColor; }
+    void setTransparentColor(uint32_t color);
 
-  ////////////////////////////////////////
-  // Layers
+    int getMemSize() const;
 
-  LayerFolder* getFolder() const;
-  LayerImage* getBackgroundLayer() const;
+    ////////////////////////////////////////
+    // Layers
 
-  LayerIndex countLayers() const;
+    LayerFolder* getFolder() const;
+    LayerImage* getBackgroundLayer() const;
 
-  Layer* indexToLayer(LayerIndex index) const;
-  LayerIndex layerToIndex(const Layer* layer) const;
+    LayerIndex countLayers() const;
 
-  ////////////////////////////////////////
-  // Palettes
+    Layer* indexToLayer(LayerIndex index) const;
+    LayerIndex layerToIndex(const Layer* layer) const;
 
-  Palette* getPalette(FrameNumber frame) const;
-  const PalettesList& getPalettes() const;
+    ////////////////////////////////////////
+    // Palettes
 
-  void setPalette(const Palette* pal, bool truncate);
+    Palette* getPalette(FrameNumber frame) const;
+    const PalettesList& getPalettes() const;
 
-  // Removes all palettes from the sprites except the first one.
-  void resetPalettes();
+    void setPalette(const Palette* pal, bool truncate);
 
-  void deletePalette(Palette* pal);
+    // Removes all palettes from the sprites except the first one.
+    void resetPalettes();
 
-  RgbMap* getRgbMap(FrameNumber frame);
+    void deletePalette(Palette* pal);
 
-  ////////////////////////////////////////
-  // Frames
+    RgbMap* getRgbMap(FrameNumber frame);
 
-  FrameNumber getTotalFrames() const { return m_frames; }
-  FrameNumber getLastFrame() const { return m_frames.previous(); }
+    ////////////////////////////////////////
+    // Frames
 
-  void addFrame(FrameNumber newFrame);
-  void removeFrame(FrameNumber newFrame);
-  void setTotalFrames(FrameNumber frames);
+    FrameNumber getTotalFrames() const { return m_frames; }
+    FrameNumber getLastFrame() const { return m_frames.previous(); }
 
-  int getFrameDuration(FrameNumber frame) const;
-  void setFrameDuration(FrameNumber frame, int msecs);
+    void addFrame(FrameNumber newFrame);
+    void removeFrame(FrameNumber newFrame);
+    void setTotalFrames(FrameNumber frames);
 
-  // Sets a constant frame-rate.
-  void setDurationForAllFrames(int msecs);
+    int getFrameDuration(FrameNumber frame) const;
+    void setFrameDuration(FrameNumber frame, int msecs);
 
-  ////////////////////////////////////////
-  // Images
+    // Sets a constant frame-rate.
+    void setDurationForAllFrames(int msecs);
 
-  Stock* getStock() const;
+    ////////////////////////////////////////
+    // Images
 
-  void getCels(CelList& cels);
+    Stock* getStock() const;
 
-  void remapImages(FrameNumber frameFrom, FrameNumber frameTo, const std::vector<uint8_t>& mapping);
+    void getCels(CelList& cels);
 
-  // Draws the sprite in the given image at the given position. Before
-  // drawing the sprite, this function clears (with the sprite's
-  // background color) the rectangle area that will occupy the drawn
-  // sprite.
-  void render(Image* image, int x, int y, FrameNumber frame) const;
+    void remapImages(FrameNumber frameFrom, FrameNumber frameTo, const std::vector<uint8_t>& mapping);
 
-  // Gets a pixel from the sprite in the specified position. If in the
-  // specified coordinates there're background this routine will
-  // return the 0 color (the mask-color).
-  int getPixel(int x, int y, FrameNumber frame) const;
+    // Draws the sprite in the given image at the given position. Before
+    // drawing the sprite, this function clears (with the sprite's
+    // background color) the rectangle area that will occupy the drawn
+    // sprite.
+    void render(Image* image, int x, int y, FrameNumber frame) const;
 
-private:
-  Sprite* m_self;                        // pointer to the Sprite
-  PixelFormat m_format;                  // pixel format
-  int m_width;                           // image width (in pixels)
-  int m_height;                          // image height (in pixels)
-  FrameNumber m_frames;                  // how many frames has this sprite
-  std::vector<int> m_frlens;             // duration per frame
-  PalettesList m_palettes;               // list of palettes
-  Stock* m_stock;                        // stock to get images
-  LayerFolder* m_folder;                 // main folder of layers
+    // Gets a pixel from the sprite in the specified position. If in the
+    // specified coordinates there're background this routine will
+    // return the 0 color (the mask-color).
+    int getPixel(int x, int y, FrameNumber frame) const;
 
-  // Current rgb map
-  RgbMap* m_rgbMap;
+  private:
+    Sprite* m_self;                        // pointer to the Sprite
+    PixelFormat m_format;                  // pixel format
+    int m_width;                           // image width (in pixels)
+    int m_height;                          // image height (in pixels)
+    FrameNumber m_frames;                  // how many frames has this sprite
+    std::vector<int> m_frlens;             // duration per frame
+    PalettesList m_palettes;               // list of palettes
+    Stock* m_stock;                        // stock to get images
+    LayerFolder* m_folder;                 // main folder of layers
 
-  // Transparent color used in indexed images
-  uint32_t m_transparentColor;
+    // Current rgb map
+    RgbMap* m_rgbMap;
 
-  // Disable default constructor and copying
-  Sprite();
-  DISABLE_COPYING(Sprite);
-};
+    // Transparent color used in indexed images
+    uint32_t m_transparentColor;
+
+    // Disable default constructor and copying
+    Sprite();
+    DISABLE_COPYING(Sprite);
+  };
+
+} // namespace raster
 
 #endif

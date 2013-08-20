@@ -1,101 +1,103 @@
-// ASEPRITE base library
-// Copyright (C) 2001-2013  David Capello
+// Aseprite Base Library
+// Copyright (c) 2001-2013 David Capello
 //
-// This source file is distributed under a BSD-like license, please
-// read LICENSE.txt for more information.
+// This source file is distributed under MIT license,
+// please read LICENSE.txt for more information.
 
 #ifndef BASE_UNIQUE_PTR_H_INCLUDED
 #define BASE_UNIQUE_PTR_H_INCLUDED
 
 #include "base/disable_copying.h"
 
-// Default deleter used by unique pointers (it calls "delete" operator).
-template<class T>
-class DefaultUniquePtrDeleter
-{
-public:
-  void operator()(T* ptr)
-  {
-    delete ptr;
-  }
-};
+namespace base {
 
-// Keeps the life time of the pointee object between the scope of the
-// UniquePtr instance.
-template<class T, class D = DefaultUniquePtrDeleter<T> >
-class UniquePtr
-{
-public:
-  typedef T* pointer;
-  typedef T element_type;
-  typedef D deleter_type;
+  // Default deleter used by unique pointers (it calls "delete" operator).
+  template<class T>
+  class DefaultUniquePtrDeleter {
+  public:
+    void operator()(T* ptr)
+    {
+      delete ptr;
+    }
+  };
 
-  UniquePtr()
-    : m_ptr(pointer())
-  {
-  }
+  // Keeps the life time of the pointee object between the scope of the
+  // UniquePtr instance.
+  template<class T, class D = DefaultUniquePtrDeleter<T> >
+  class UniquePtr {
+  public:
+    typedef T* pointer;
+    typedef T element_type;
+    typedef D deleter_type;
 
-  // Constructor with default deleter.
-  explicit UniquePtr(pointer ptr)
-    : m_ptr(ptr)
-  {
-  }
+    UniquePtr()
+      : m_ptr(pointer())
+    {
+    }
 
-  // Constructor with static_cast.
-  template<typename CompatibleT>
-  explicit UniquePtr(CompatibleT* ptr)
-    : m_ptr(static_cast<pointer>(ptr))
-  {
-  }
+    // Constructor with default deleter.
+    explicit UniquePtr(pointer ptr)
+      : m_ptr(ptr)
+    {
+    }
 
-  // Constructor with customized deleter.
-  UniquePtr(pointer ptr, deleter_type deleter)
-    : m_ptr(ptr)
-    , m_deleter(deleter)
-  {
-  }
+    // Constructor with static_cast.
+    template<typename CompatibleT>
+    explicit UniquePtr(CompatibleT* ptr)
+      : m_ptr(static_cast<pointer>(ptr))
+    {
+    }
 
-  // Releases one reference from the pointee.
-  ~UniquePtr()
-  {
-    if (m_ptr)
-      m_deleter(m_ptr);
-  }
+    // Constructor with customized deleter.
+    UniquePtr(pointer ptr, deleter_type deleter)
+      : m_ptr(ptr)
+      , m_deleter(deleter)
+    {
+    }
 
-  void reset(pointer ptr = pointer())
-  {
-    if (m_ptr)
-      m_deleter(m_ptr);
+    // Releases one reference from the pointee.
+    ~UniquePtr()
+    {
+      if (m_ptr)
+        m_deleter(m_ptr);
+    }
 
-    m_ptr = ptr;
-  }
+    void reset(pointer ptr = pointer())
+    {
+      if (m_ptr)
+        m_deleter(m_ptr);
 
-  void reset(pointer ptr, deleter_type deleter)
-  {
-    if (m_ptr)
-      m_deleter(m_ptr);
+      m_ptr = ptr;
+    }
 
-    m_ptr = ptr;
-    m_deleter = deleter;
-  }
+    void reset(pointer ptr, deleter_type deleter)
+    {
+      if (m_ptr)
+        m_deleter(m_ptr);
 
-  pointer release()
-  {
-    pointer ptr(m_ptr);
-    m_ptr = pointer();
-    return ptr;
-  }
+      m_ptr = ptr;
+      m_deleter = deleter;
+    }
 
-  pointer get() const { return m_ptr; }
-  element_type& operator*() const { return *m_ptr; }
-  pointer operator->() const { return m_ptr; }
-  operator pointer() const { return m_ptr; }
+    pointer release()
+    {
+      pointer ptr(m_ptr);
+      m_ptr = pointer();
+      return ptr;
+    }
 
-private:
-  pointer m_ptr;                         // The pointee object.
-  deleter_type m_deleter;                // The deleter.
+    pointer get() const { return m_ptr; }
+    element_type& operator*() const { return *m_ptr; }
+    pointer operator->() const { return m_ptr; }
+    operator pointer() const { return m_ptr; }
 
-  DISABLE_COPYING(UniquePtr);
-};
+  private:
+    pointer m_ptr;                         // The pointee object.
+    deleter_type m_deleter;                // The deleter.
+
+    DISABLE_COPYING(UniquePtr);
+  };
+
+} // namespace base
 
 #endif

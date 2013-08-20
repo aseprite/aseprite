@@ -1,4 +1,4 @@
-/* ASEPRITE
+/* Aseprite
  * Copyright (C) 2001-2013  David Capello
  *
  * This program is free software; you can redistribute it and/or modify
@@ -21,12 +21,12 @@
 
 #include <iosfwd>
 
-class Dirty;
-
 namespace raster {
 
-void write_dirty(std::ostream& os, Dirty* dirty);
-Dirty* read_dirty(std::istream& is);
+  class Dirty;
+
+  void write_dirty(std::ostream& os, Dirty* dirty);
+  Dirty* read_dirty(std::istream& is);
 
 } // namespace raster
 

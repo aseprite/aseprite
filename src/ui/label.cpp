@@ -1,10 +1,12 @@
-// ASEPRITE gui library
+// Aseprite UI Library
 // Copyright (C) 2001-2013  David Capello
 //
-// This source file is distributed under a BSD-like license, please
-// read LICENSE.txt for more information.
+// This source file is distributed under MIT license,
+// please read LICENSE.txt for more information.
 
+#ifdef HAVE_CONFIG_H
 #include "config.h"
+#endif
 
 #include "ui/label.h"
 #include "ui/message.h"
@@ -14,7 +16,7 @@
 namespace ui {
 
 Label::Label(const char *text)
-  : Widget(JI_LABEL)
+  : Widget(kLabelWidget)
 {
   setAlign(JI_LEFT | JI_MIDDLE);
   setText(text);

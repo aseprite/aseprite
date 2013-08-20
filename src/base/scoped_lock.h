@@ -1,43 +1,46 @@
-// ASEPRITE base library
-// Copyright (C) 2001-2013  David Capello
+// Aseprite Base Library
+// Copyright (c) 2001-2013 David Capello
 //
-// This source file is distributed under a BSD-like license, please
-// read LICENSE.txt for more information.
+// This source file is distributed under MIT license,
+// please read LICENSE.txt for more information.
 
 #ifndef BASE_SCOPED_LOCK_H_INCLUDED
 #define BASE_SCOPED_LOCK_H_INCLUDED
 
 #include "base/disable_copying.h"
 
-// An object to safely lock and unlock mutexes.
-//
-// The constructor of ScopedLock locks the mutex, and the destructor
-// unlocks the mutex. In this way you can safely use ScopedLock inside
-// a try/catch block without worrying about the lock state of the
-// mutex if some exception is thrown.
-class ScopedLock
-{
-public:
+namespace base {
 
-  ScopedLock(Mutex& mutex) : m_mutex(mutex) {
-    m_mutex.lock();
-  }
+  // An object to safely lock and unlock mutexes.
+  //
+  // The constructor of scoped_lock locks the mutex, and the destructor
+  // unlocks the mutex. In this way you can safely use scoped_lock inside
+  // a try/catch block without worrying about the lock state of the
+  // mutex if some exception is thrown.
+  class scoped_lock {
+  public:
 
-  ~ScopedLock() {
-    m_mutex.unlock();
-  }
+    scoped_lock(mutex& m) : m_mutex(m) {
+      m_mutex.lock();
+    }
 
-  Mutex& getMutex() const {
-    return m_mutex;
-  }
+    ~scoped_lock() {
+      m_mutex.unlock();
+    }
 
-private:
-  Mutex& m_mutex;
+    mutex& get_mutex() const {
+      return m_mutex;
+    }
 
-  // Undefined constructors.
-  ScopedLock();
-  DISABLE_COPYING(ScopedLock);
+  private:
+    mutex& m_mutex;
 
-};
+    // Undefined constructors.
+    scoped_lock();
+    DISABLE_COPYING(scoped_lock);
+
+  };
+
+} // namespace base
 
 #endif

@@ -1,4 +1,4 @@
-/* ASEPRITE
+/* Aseprite
  * Copyright (C) 2001-2013  David Capello
  *
  * This program is free software; you can redistribute it and/or modify
@@ -16,7 +16,9 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
+#ifdef HAVE_CONFIG_H
 #include "config.h"
+#endif
 
 #include "filters/color_curve_filter.h"
 
@@ -29,6 +31,10 @@
 #include "raster/palette.h"
 #include "raster/rgbmap.h"
 #include "raster/sprite.h"
+
+namespace filters {
+
+using namespace raster;
 
 ColorCurveFilter::ColorCurveFilter()
   : m_curve(NULL)
@@ -148,3 +154,5 @@ void ColorCurveFilter::applyToIndexed(FilterManager* filterMgr)
     *(dst_address++) = MID(0, c, pal->size()-1);
   }
 }
+
+} // namespace filters

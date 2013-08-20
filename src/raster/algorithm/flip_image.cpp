@@ -1,4 +1,4 @@
-/* ASEPRITE
+/* Aseprite
  * Copyright (C) 2001-2013  David Capello
  *
  * This program is free software; you can redistribute it and/or modify
@@ -16,7 +16,9 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
+#ifdef HAVE_CONFIG_H
 #include "config.h"
+#endif
 
 #include "raster/algorithm/flip_image.h"
 
@@ -72,7 +74,7 @@ void flip_image_with_mask(Image* image, const Mask* mask, FlipType flipType, int
   switch (flipType) {
 
     case FlipHorizontal: {
-      UniquePtr<Image> originalRow(Image::create(image->getPixelFormat(), mask->getBounds().w, 1));
+      base::UniquePtr<Image> originalRow(Image::create(image->getPixelFormat(), mask->getBounds().w, 1));
 
       for (int y=bounds.y; y<bounds.y+bounds.h; ++y) {
         // Copy the current row.
@@ -91,7 +93,7 @@ void flip_image_with_mask(Image* image, const Mask* mask, FlipType flipType, int
     }
 
     case FlipVertical:{
-      UniquePtr<Image> originalCol(Image::create(image->getPixelFormat(), 1, mask->getBounds().h));
+      base::UniquePtr<Image> originalCol(Image::create(image->getPixelFormat(), 1, mask->getBounds().h));
 
       for (int x=bounds.x; x<bounds.x+bounds.w; ++x) {
         // Copy the current column.
