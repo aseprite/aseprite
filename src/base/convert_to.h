@@ -17,7 +17,11 @@ namespace base {
   // Undefined convertion
   template<typename To, typename From>
   To convert_to(const From& from) {
-    enum { not_supported = 1/(1 == 0) }; // static_assert(false)
+    // As this function doesn't return a value, if a specialization is
+    // not found, a compiler error will be thrown (which means that
+    // the conversion isn't supported).
+
+    // TODO Use a static_assert(false)
   }
 
   template<> int convert_to(const base::string& from);
