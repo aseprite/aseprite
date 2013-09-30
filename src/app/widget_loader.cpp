@@ -76,7 +76,7 @@ Widget* WidgetLoader::loadWidget(const char* fileName, const char* widgetId)
 
   rf.addPath(fileName);
 
-  buf = "app/ui/";
+  buf = "widgets/";
   buf += fileName;
   rf.findInDataDir(buf.c_str());
 
