@@ -53,7 +53,7 @@ public:
     for (Documents::const_iterator
            it = context->getDocuments().begin(),
            end = context->getDocuments().end(); it != end; ++it) {
-      m_docs.addItem((*it)->getFilename());
+      m_docs.addItem((*it)->getFilename().c_str());
     }
     m_docs.addItem("---------");
   }

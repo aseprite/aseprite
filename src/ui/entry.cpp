@@ -10,6 +10,7 @@
 
 #include "ui/entry.h"
 
+#include "base/string.h"
 #include "ui/clipboard.h"
 #include "ui/font.h"
 #include "ui/manager.h"
@@ -22,8 +23,8 @@
 
 #include <allegro.h>
 #include <allegro/internal/aintern.h>
-#include <stdarg.h>
-#include <stdio.h>
+#include <cstdarg>
+#include <cstdio>
 
 #define CHARACTER_LENGTH(f, c) ((f)->vtable->char_length((f), (c)))
 
@@ -44,7 +45,7 @@ Entry::Entry(size_t maxsize, const char *format, ...)
   }
   // empty string
   else {
-    ustrcpy(buf, empty_string);
+    buf[0] = 0;
   }
 
   m_maxsize = maxsize;
@@ -103,22 +104,24 @@ void Entry::hideCaret()
 
 void Entry::setCaretPos(int pos)
 {
-  const char *text = this->getText();
+  base::utf8_const_iterator utf8_begin = base::utf8_const_iterator(getText().begin());
+  int textlen = base::utf8_length(getText());
   int x, c;
 
   m_caret = pos;
 
-  /* backward scroll */
+  // Backward scroll
   if (m_caret < m_scroll)
     m_scroll = m_caret;
 
-  /* forward scroll */
+  // Forward scroll
   m_scroll--;
   do {
     x = this->rc->x1 + this->border_width.l;
     for (c=++m_scroll; ; c++) {
-      x += CHARACTER_LENGTH(this->getFont(),
-                            (c < ustrlen(text))? ugetat(text, c): ' ');
+      int ch = (c < textlen ? *(utf8_begin+c) : ' ');
+
+      x += CHARACTER_LENGTH(getFont(), ch);
 
       if (x >= this->rc->x2-this->border_width.r)
         break;
@@ -133,7 +136,7 @@ void Entry::setCaretPos(int pos)
 
 void Entry::selectText(int from, int to)
 {
-  int end = ustrlen(this->getText());
+  int end = base::utf8_length(getText());
 
   m_select = from;
   setCaretPos(from); // to move scroll
@@ -212,48 +215,48 @@ bool Entry::onProcessMessage(Message* msg)
 
         switch (scancode) {
 
-          case KEY_LEFT:
+          case kKeyLeft:
             if (msg->ctrlPressed())
               cmd = EntryCmd::BackwardWord;
             else
               cmd = EntryCmd::BackwardChar;
             break;
 
-          case KEY_RIGHT:
+          case kKeyRight:
             if (msg->ctrlPressed())
               cmd = EntryCmd::ForwardWord;
             else
               cmd = EntryCmd::ForwardChar;
             break;
 
-          case KEY_HOME:
+          case kKeyHome:
             cmd = EntryCmd::BeginningOfLine;
             break;
 
-          case KEY_END:
+          case kKeyEnd:
             cmd = EntryCmd::EndOfLine;
             break;
 
-          case KEY_DEL:
+          case kKeyDel:
             if (msg->shiftPressed())
               cmd = EntryCmd::Cut;
             else
               cmd = EntryCmd::DeleteForward;
             break;
 
-          case KEY_INSERT:
+          case kKeyInsert:
             if (msg->shiftPressed())
               cmd = EntryCmd::Paste;
             else if (msg->ctrlPressed())
               cmd = EntryCmd::Copy;
             break;
 
-          case KEY_BACKSPACE:
+          case kKeyBackspace:
             cmd = EntryCmd::DeleteBackward;
             break;
 
           default:
-            if (keymsg->ascii() >= 32) {
+            if (keymsg->unicodeChar() >= 32) {
               // Ctrl and Alt must be unpressed to insert a character
               // in the text-field.
               if ((msg->keyModifiers() & (kKeyCtrlModifier | kKeyAltModifier)) == 0) {
@@ -276,7 +279,7 @@ bool Entry::onProcessMessage(Message* msg)
         if (cmd == EntryCmd::NoOp)
           break;
 
-        executeCmd(cmd, keymsg->ascii(),
+        executeCmd(cmd, keymsg->unicodeChar(),
                    (msg->shiftPressed()) ? true: false);
         return true;
       }
@@ -288,7 +291,9 @@ bool Entry::onProcessMessage(Message* msg)
     case kMouseMoveMessage:
       if (hasCapture()) {
         gfx::Point mousePos = static_cast<MouseMessage*>(msg)->position();
-        const char *text = this->getText();
+        base::utf8_const_iterator utf8_begin = base::utf8_const_iterator(getText().begin());
+        base::utf8_const_iterator utf8_end = base::utf8_const_iterator(getText().end());
+        int textlen = base::utf8_length(getText());
         int c, x;
 
         bool move = true;
@@ -305,18 +310,17 @@ bool Entry::onProcessMessage(Message* msg)
         }
         // Forward scroll
         else if (mousePos.x >= this->rc->x2) {
-          if (m_scroll < ustrlen(text)) {
+          if (m_scroll < textlen) {
             m_scroll++;
             x = this->rc->x1 + this->border_width.l;
-            for (c=m_scroll; ; c++) {
-              x += CHARACTER_LENGTH(this->getFont(),
-                                   (c < ustrlen(text))? ugetat(text, c): ' ');
+            for (c=m_scroll; utf8_begin != utf8_end; ++c) {
+              int ch = (c < textlen ? *(utf8_begin+c) : ' ');
+
+              x += CHARACTER_LENGTH(getFont(), ch);
               if (x > this->rc->x2-this->border_width.r) {
                 c--;
                 break;
               }
-              else if (!ugetat (text, c))
-                break;
             }
             m_caret = c;
             move = false;
@@ -414,6 +418,8 @@ void Entry::onEntryChange()
 
 int Entry::getCaretFromMouse(MouseMessage* mousemsg)
 {
+  base::utf8_const_iterator utf8_begin = base::utf8_const_iterator(getText().begin());
+  base::utf8_const_iterator utf8_end = base::utf8_const_iterator(getText().end());
   int c, x, w, mx, caret = m_caret;
 
   mx = mousemsg->position().x;
@@ -422,8 +428,10 @@ int Entry::getCaretFromMouse(MouseMessage* mousemsg)
            this->rc->x2-this->border_width.r-1);
 
   x = this->rc->x1 + this->border_width.l;
-  for (c=m_scroll; ugetat(this->getText(), c); c++) {
-    w = CHARACTER_LENGTH(this->getFont(), ugetat(this->getText(), c));
+
+  base::utf8_const_iterator utf8_it = utf8_begin + m_scroll;
+  for (c=m_scroll; utf8_it != utf8_end; ++c, ++utf8_it) {
+    w = CHARACTER_LENGTH(getFont(), *utf8_it);
     if (x+w >= this->rc->x2-this->border_width.r)
       break;
     if ((mx >= x) && (mx < x+w)) {
@@ -433,17 +441,19 @@ int Entry::getCaretFromMouse(MouseMessage* mousemsg)
     x += w;
   }
 
-  if (!ugetat(this->getText(), c))
+  if (utf8_it == utf8_end) {
     if ((mx >= x) &&
-        (mx <= this->rc->x2-this->border_width.r-1))
+        (mx <= this->rc->x2-this->border_width.r-1)) {
       caret = c;
+    }
+  }
 
   return caret;
 }
 
-void Entry::executeCmd(EntryCmd::Type cmd, int ascii, bool shift_pressed)
+void Entry::executeCmd(EntryCmd::Type cmd, int unicodeChar, bool shift_pressed)
 {
-  std::string text = getText();
+  std::wstring text = base::from_utf8(getText());
   int c, selbeg, selend;
 
   getEntryThemeInfo(NULL, NULL, NULL, &selbeg, &selend);
@@ -464,7 +474,7 @@ void Entry::executeCmd(EntryCmd::Type cmd, int ascii, bool shift_pressed)
       // put the character
       if (text.size() < m_maxsize) {
         ASSERT((size_t)m_caret <= text.size());
-        text.insert(m_caret++, 1, ascii);
+        text.insert(m_caret++, 1, unicodeChar);
       }
 
       m_select = -1;
@@ -540,8 +550,8 @@ void Entry::executeCmd(EntryCmd::Type cmd, int ascii, bool shift_pressed)
       if (selbeg >= 0) {
         // *cut* text!
         if (cmd == EntryCmd::Cut) {
-          base::string buf = text.substr(selbeg, selend - selbeg + 1);
-          clipboard::set_text(buf.c_str());
+          std::wstring selected = text.substr(selbeg, selend - selbeg + 1);
+          clipboard::set_text(base::to_utf8(selected).c_str());
         }
 
         // remove text
@@ -559,9 +569,11 @@ void Entry::executeCmd(EntryCmd::Type cmd, int ascii, bool shift_pressed)
       break;
 
     case EntryCmd::Paste: {
-      const char *clipboard;
+      const char* clipboard_str;
 
-      if ((clipboard = clipboard::get_text())) {
+      if ((clipboard_str = clipboard::get_text())) {
+        base::string clipboard(clipboard_str);
+
         // delete the entire selection
         if (selbeg >= 0) {
           text.erase(selbeg, selend-selbeg+1);
@@ -571,11 +583,13 @@ void Entry::executeCmd(EntryCmd::Type cmd, int ascii, bool shift_pressed)
         }
 
         // paste text
-        for (c=0; c<ustrlen(clipboard); c++)
+        for (c=0; c<base::utf8_length(clipboard); c++) {
           if (text.size() < m_maxsize)
-            text.insert(m_caret+c, 1, ugetat(clipboard, c));
+            text.insert(m_caret+c, 1,
+                        *(base::utf8_const_iterator(clipboard.begin())+c));
           else
             break;
+        }
 
         setCaretPos(m_caret+c);
       }
@@ -584,8 +598,8 @@ void Entry::executeCmd(EntryCmd::Type cmd, int ascii, bool shift_pressed)
 
     case EntryCmd::Copy:
       if (selbeg >= 0) {
-        base::string buf = text.substr(selbeg, selend - selbeg + 1);
-        clipboard::set_text(buf.c_str());
+        std::wstring selected = text.substr(selbeg, selend - selbeg + 1);
+        clipboard::set_text(base::to_utf8(selected).c_str());
       }
       break;
 
@@ -606,8 +620,9 @@ void Entry::executeCmd(EntryCmd::Type cmd, int ascii, bool shift_pressed)
       break;
   }
 
-  if (text != this->getText()) {
-    this->setText(text.c_str());
+  base::string newText = base::to_utf8(text);
+  if (newText != getText()) {
+    setText(newText.c_str());
     onEntryChange();
   }
 
@@ -621,18 +636,20 @@ void Entry::executeCmd(EntryCmd::Type cmd, int ascii, bool shift_pressed)
 
 void Entry::forwardWord()
 {
+  base::utf8_const_iterator utf8_begin = base::utf8_const_iterator(getText().begin());
+  int textlen = base::utf8_length(getText());
   int ch;
 
-  for (; m_caret<ustrlen(this->getText()); m_caret++) {
-    ch = ugetat(this->getText(), m_caret);
-    if (IS_WORD_CHAR (ch))
+  for (; m_caret < textlen; m_caret++) {
+    ch = *(utf8_begin + m_caret);
+    if (IS_WORD_CHAR(ch))
       break;
   }
 
-  for (; m_caret<ustrlen(this->getText()); m_caret++) {
-    ch = ugetat(this->getText(), m_caret);
+  for (; m_caret < textlen; m_caret++) {
+    ch = *(utf8_begin + m_caret);
     if (!IS_WORD_CHAR(ch)) {
-      m_caret++;
+      ++m_caret;
       break;
     }
   }
@@ -640,18 +657,19 @@ void Entry::forwardWord()
 
 void Entry::backwardWord()
 {
+  base::utf8_const_iterator utf8_begin = base::utf8_const_iterator(getText().begin());
   int ch;
 
-  for (m_caret--; m_caret >= 0; m_caret--) {
-    ch = ugetat(this->getText(), m_caret);
+  for (--m_caret; m_caret >= 0; --m_caret) {
+    ch = *(utf8_begin + m_caret);
     if (IS_WORD_CHAR(ch))
       break;
   }
 
-  for (; m_caret >= 0; m_caret--) {
-    ch = ugetat(this->getText(), m_caret);
+  for (; m_caret >= 0; --m_caret) {
+    ch = *(utf8_begin + m_caret);
     if (!IS_WORD_CHAR(ch)) {
-      m_caret++;
+      ++m_caret;
       break;
     }
   }

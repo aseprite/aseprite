@@ -220,6 +220,9 @@ if(WIN32)
   # Windows XP is the minimum supported platform.
   add_definitions(-D_WIN32_WINNT=0x0501 -DWINVER=0x0501)
 
+  # We need Unicode support
+  add_definitions(-DUNICODE -D_UNICODE)
+
 endif(WIN32)
 
 # -- Mac OS X --

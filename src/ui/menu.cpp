@@ -90,7 +90,7 @@ class CustomizedWindowForMenuBox : public Window
 {
 public:
   CustomizedWindowForMenuBox(MenuBox* menubox)
-    : Window(false, NULL)
+    : Window(false, "")
   {
     setMoveable(false); // Can't move the window
     addChild(menubox);
@@ -165,7 +165,7 @@ MenuBar::MenuBar()
   createBase();
 }
 
-MenuItem::MenuItem(const char *text)
+MenuItem::MenuItem(const base::string& text)
   : Widget(kMenuItemWidget)
 {
   m_accel = NULL;
@@ -272,7 +272,7 @@ void Menu::showPopup(int x, int y)
   } while (jmouse_b(0) != kButtonNone);
 
   // New window and new menu-box
-  Window* window = new Window(false, NULL);
+  Window* window = new Window(false, "");
   MenuBox* menubox = new MenuBox();
   MenuBaseData* base = menubox->createBase();
   base->was_clicked = true;
@@ -483,7 +483,7 @@ bool MenuBox::onProcessMessage(Message* msg)
         if (((this->type == kMenuBoxWidget) && (msg->keyModifiers() == kKeyNoneModifier || // <-- Inside menu-boxes we can use letters without Alt modifier pressed
                                                 msg->keyModifiers() == kKeyAltModifier)) ||
             ((this->type == kMenuBarWidget) && (msg->keyModifiers() == kKeyAltModifier))) {
-          selected = check_for_letter(menu, ui::scancode_to_ascii(static_cast<KeyMessage*>(msg)->scancode()));
+          selected = check_for_letter(menu, scancode_to_unicode(static_cast<KeyMessage*>(msg)->scancode()));
           if (selected) {
             menu->highlightItem(selected, true, true, true);
             return true;
@@ -874,7 +874,7 @@ void MenuItem::onPreferredSize(PreferredSizeEvent& ev)
   Size size(0, 0);
   int bar = (this->getParent()->getParent()->type == kMenuBarWidget);
 
-  if (this->hasText()) {
+  if (hasText()) {
     size.w =
       + this->border_width.l
       + jwidget_get_text_length(this)

@@ -156,8 +156,8 @@ void ToolBox::loadTools()
 {
   PRINTF("Loading ASEPRITE tools\n");
 
-  TiXmlDocument& doc(GuiXml::instance()->doc());
-  TiXmlHandle handle(&doc);
+  XmlDocumentRef doc(GuiXml::instance()->doc());
+  TiXmlHandle handle(doc);
 
   // For each group
   TiXmlElement* xmlGroup = handle.FirstChild("gui").FirstChild("tools").FirstChild("group").ToElement();

@@ -39,8 +39,7 @@
 #include "raster/sprite.h"
 #include "ui/ui.h"
 
-#include <allegro.h>
-#include <stdio.h>
+#include <cstdio>
 
 static const int kMonitoringPeriod = 100;
 
@@ -62,7 +61,7 @@ private:
 class OpenFileJob : public Job, public IFileOpProgress
 {
 public:
-  OpenFileJob(FileOp* fop, const char* filename)
+  OpenFileJob(FileOp* fop)
     : Job("Loading file")
     , m_fop(fop)
   {
@@ -132,7 +131,7 @@ void OpenFileCommand::onExecute(Context* context)
         unrecent = true;
       }
       else {
-        OpenFileJob task(fop, get_filename(m_filename.c_str()));
+        OpenFileJob task(fop);
         task.showProgressWindow();
 
         // Post-load processing, it is called from the GUI because may require user intervention.

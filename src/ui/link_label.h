@@ -18,11 +18,11 @@ namespace ui {
   class LinkLabel : public CustomLabel
   {
   public:
-    LinkLabel(const char* urlOrText);
-    LinkLabel(const char* url, const char* text);
+    LinkLabel(const base::string& urlOrText);
+    LinkLabel(const base::string& url, const base::string& text);
 
-    const char* getUrl() const { return m_url.c_str(); }
-    void setUrl(const char* url);
+    const base::string& getUrl() const { return m_url; }
+    void setUrl(const base::string& url);
 
     Signal0<void> Click;
 
@@ -30,7 +30,7 @@ namespace ui {
     bool onProcessMessage(Message* msg) OVERRIDE;
     void onPaint(PaintEvent& ev) OVERRIDE;
 
-    std::string m_url;
+    base::string m_url;
   };
 
 } // namespace ui

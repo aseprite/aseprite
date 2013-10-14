@@ -20,7 +20,6 @@
 #include "config.h"
 #endif
 
-#include <allegro.h>
 #include <stdarg.h>
 #include <stdio.h>
 
@@ -58,7 +57,7 @@ Console::Console()
     Window* window = new Window(false, "Errors Console");
     Grid* grid = new Grid(1, false);
     View* view = new View();
-    TextBox* textbox = new TextBox(NULL, JI_WORDWRAP);
+    TextBox* textbox = new TextBox("", JI_WORDWRAP);
     Button* button = new Button("&Cancel");
 
     if (!grid || !textbox || !button)
@@ -109,19 +108,16 @@ Console::~Console()
   }
 }
 
-void Console::printf(const char *format, ...)
+void Console::printf(const char* format, ...)
 {
-  char buf[1024];               // TODO warning buffer overflow
+  char buf[4096];               // TODO warning buffer overflow
   va_list ap;
 
   va_start(ap, format);
-  uvsprintf(buf, format, ap);
+  vsprintf(buf, format, ap);
   va_end(ap);
 
   if (wid_console) {
-    const char* text;
-    char* final;
-
     // Open the window
     if (!wid_console->isVisible()) {
       wid_console->openWindow();
@@ -140,19 +136,14 @@ void Console::printf(const char *format, ...)
       wid_console->invalidate();
     }
 
-    text = wid_textbox->getText();
-    if (!text)
-      final = base_strdup(buf);
-    else {
-      final = (char*)base_malloc(ustrlen(text) + ustrlen(buf) + 1);
+    const std::string& text = wid_textbox->getText();
 
-      ustrcpy(final, empty_string);
-      ustrcat(final, text);
-      ustrcat(final, buf);
-    }
+    base::string final;
+    if (!text.empty())
+      final += text;
+    final += buf;
 
-    wid_textbox->setText(final);
-    base_free(final);
+    wid_textbox->setText(final.c_str());
   }
   else {
     fputs(buf, stdout);

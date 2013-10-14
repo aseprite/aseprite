@@ -22,9 +22,6 @@
 
 #include "app/commands/filters/filter_target_buttons.h"
 
-#include <allegro.h>
-#include <string.h>
-
 #include "app/modules/gfx.h"
 #include "app/modules/gui.h"
 #include "app/ui/skin/skin_parts.h"
@@ -34,6 +31,8 @@
 #include "ui/button.h"
 #include "ui/theme.h"
 #include "ui/widget.h"
+
+#include <cstring>
 
 namespace app {
 
@@ -100,7 +99,7 @@ FilterTargetButtons::FilterTargetButtons(int imgtype, bool withChannels)
   }
 
   // Create the button to select "image" target
-  images = new Button(NULL);
+  images = new Button("");
   setup_bevels(images,
                withChannels ? 0: 2,
                withChannels ? 0: 2, 2, 2);

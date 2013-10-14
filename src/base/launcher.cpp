@@ -10,6 +10,7 @@
 
 #include "base/launcher.h"
 #include "base/exception.h"
+#include "base/string.h"
 
 #ifdef WIN32
 #include <windows.h>
@@ -17,7 +18,7 @@
 #define SEE_MASK_DEFAULT 0x00000000
 #endif
 
-static int win32_shell_execute(const char* verb, const char* file, const char* params)
+static int win32_shell_execute(const wchar_t* verb, const wchar_t* file, const wchar_t* params)
 {
   SHELLEXECUTEINFO sh;
   ZeroMemory((LPVOID)&sh, sizeof(sh));
@@ -70,7 +71,8 @@ bool open_file(const std::string& file)
 
 #ifdef WIN32
 
-  ret = win32_shell_execute("open", file.c_str(), NULL);
+  ret = win32_shell_execute(L"open",
+                            base::from_utf8(file).c_str(), NULL);
 
 #elif __APPLE__
 
@@ -88,7 +90,10 @@ bool open_file(const std::string& file)
 bool open_folder(const std::string& file)
 {
 #ifdef WIN32
-  int ret = win32_shell_execute(NULL, "explorer", ("/e,/select,\"" + file + "\"").c_str());
+  int ret = win32_shell_execute(NULL,
+                                L"explorer",
+                                (L"/e,/select,\"" + base::from_utf8(file) + L"\"").c_str());
+
   return (ret == 0);
 #else
   return false;

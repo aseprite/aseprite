@@ -24,9 +24,9 @@
 
 #include "app/file/file.h"
 #include "app/file/file_format.h"
-#include "app/file/file_handle.h"
 #include "app/file/format_options.h"
 #include "base/cfile.h"
+#include "base/file_handle.h"
 #include "raster/raster.h"
 
 #include <allegro/color.h>
@@ -611,9 +611,7 @@ bool BmpFormat::onLoad(FileOp *fop)
   PixelFormat pixelFormat;
   int format;
 
-  FileHandle f(fop->filename.c_str(), "rb");
-  if (!f)
-    return false;
+  FileHandle f(open_file_with_exception(fop->filename, "rb"));
 
   if (read_bmfileheader(f, &fileheader) != 0)
     return false;
@@ -739,11 +737,7 @@ bool BmpFormat::onSave(FileOp *fop)
     bfSize = 54 + biSizeImage;       /* header + image data */
   }
 
-  FileHandle f(fop->filename.c_str(), "wb");
-  if (!f) {
-    fop_error(fop, "Error creating file.\n");
-    return false;
-  }
+  FileHandle f(open_file_with_exception(fop->filename, "wb"));
 
   /* file_header */
   fputw(0x4D42, f);              /* bfType ("BM") */

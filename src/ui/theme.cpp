@@ -100,8 +100,8 @@ void drawTextBox(BITMAP* bmp, Widget* widget,
                  int* w, int* h, Color bg, Color fg)
 {
   View* view = View::getView(widget);
-  char *text = (char*)widget->getText(); // TODO warning: removing const modifier
-  char *beg, *end;
+  char* text = const_cast<char*>(widget->getText().c_str());
+  char* beg, *end;
   int x1, y1, x2, y2;
   int x, y, chr, len;
   gfx::Point scroll;
@@ -164,7 +164,7 @@ void drawTextBox(BITMAP* bmp, Widget* widget,
   for (beg=end=text; end; ) {
     x = x1 - scroll.x;
 
-    /* without word-wrap */
+    // Without word-wrap
     if (!(widget->getAlign() & JI_WORDWRAP)) {
       end = ustrchr(beg, '\n');
       if (end) {
@@ -172,7 +172,7 @@ void drawTextBox(BITMAP* bmp, Widget* widget,
         *end = 0;
       }
     }
-    /* with word-wrap */
+    // With word-wrap
     else {
       old_end = NULL;
       for (beg_end=beg;;) {
@@ -182,7 +182,7 @@ void drawTextBox(BITMAP* bmp, Widget* widget,
           *end = 0;
         }
 
-        /* to here we can print */
+        // To here we can print
         if ((old_end) && (x+text_length(font, beg) > x1-scroll.x+width)) {
           if (end)
             *end = chr;
@@ -192,16 +192,16 @@ void drawTextBox(BITMAP* bmp, Widget* widget,
           *end = 0;
           break;
         }
-        /* we can print one word more */
+        // We can print one word more
         else if (end) {
-          /* force break */
+          // Force break
           if (chr == '\n')
             break;
 
           *end = chr;
           beg_end = end+1;
         }
-        /* we are in the end of text */
+        // We are in the end of text
         else
           break;
 

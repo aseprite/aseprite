@@ -37,6 +37,8 @@
   #include <winalleg.h>
 #endif
 
+namespace app {
+
 #ifdef ALLEGRO_WINDOWS
 
 #ifdef STRICT
@@ -44,8 +46,6 @@
 #else
   typedef FARPROC wndproc_t;
 #endif
-
-namespace app {
 
 static wndproc_t base_wnd_proc = NULL;
 static std::vector<base::string>* dropped_files;
@@ -139,7 +139,7 @@ static LRESULT CALLBACK ase_wnd_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM 
           if (length > 0) {
             TCHAR* lpstr = new TCHAR[length+1];
             DragQueryFile(hdrop, index, lpstr, length+1);
-            dropped_files->push_back(lpstr);
+            dropped_files->push_back(base::to_utf8(lpstr));
             delete[] lpstr;
           }
         }

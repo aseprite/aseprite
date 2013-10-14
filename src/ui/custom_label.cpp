@@ -12,7 +12,7 @@
 
 namespace ui {
 
-CustomLabel::CustomLabel(const char *text)
+CustomLabel::CustomLabel(const base::string& text)
   : Label(text)
 {
 }

@@ -10,8 +10,9 @@
 
 #include "ui/clipboard.h"
 
+#include "base/string.h"
+
 #include <algorithm>
-#include <string>
 
 #ifdef WIN32
 #include <allegro.h>
@@ -20,7 +21,7 @@
 
 #pragma warning(disable:4996)   // To void MSVC warning about std::copy() with unsafe arguments
 
-static std::string clipboard_text;
+static base::string clipboard_text;
 
 static void lowlevel_set_clipboard_text(const char *text)
 {
@@ -30,13 +31,13 @@ static void lowlevel_set_clipboard_text(const char *text)
 const char* ui::clipboard::get_text()
 {
 #ifdef WIN32
-  if (IsClipboardFormatAvailable(CF_TEXT)) {
+  if (IsClipboardFormatAvailable(CF_UNICODETEXT)) {
     if (OpenClipboard(win_get_window())) {
-      HGLOBAL hglobal = GetClipboardData(CF_TEXT);
+      HGLOBAL hglobal = GetClipboardData(CF_UNICODETEXT);
       if (hglobal != NULL) {
-        LPSTR lpstr = static_cast<LPSTR>(GlobalLock(hglobal));
+        LPWSTR lpstr = static_cast<LPWSTR>(GlobalLock(hglobal));
         if (lpstr != NULL) {
-          lowlevel_set_clipboard_text(lpstr);
+          lowlevel_set_clipboard_text(base::to_utf8(lpstr).c_str());
           GlobalUnlock(hglobal);
         }
       }
@@ -53,21 +54,22 @@ void ui::clipboard::set_text(const char *text)
   lowlevel_set_clipboard_text(text);
 
 #ifdef WIN32
-  if (IsClipboardFormatAvailable(CF_TEXT)) {
+  if (IsClipboardFormatAvailable(CF_UNICODETEXT)) {
     if (OpenClipboard(win_get_window())) {
       EmptyClipboard();
 
       if (!clipboard_text.empty()) {
-        int len = clipboard_text.size();
+        std::wstring wstr = base::from_utf8(clipboard_text);
+        int len = wstr.size();
 
         HGLOBAL hglobal = GlobalAlloc(GMEM_MOVEABLE |
-                                      GMEM_ZEROINIT, sizeof(char)*(len+1));
+                                      GMEM_ZEROINIT, sizeof(WCHAR)*(len+1));
 
-        LPSTR lpstr = static_cast<LPSTR>(GlobalLock(hglobal));
-        std::copy(clipboard_text.begin(), clipboard_text.end(), lpstr);
+        LPWSTR lpstr = static_cast<LPWSTR>(GlobalLock(hglobal));
+        std::copy(wstr.begin(), wstr.end(), lpstr);
         GlobalUnlock(hglobal);
 
-        SetClipboardData(CF_TEXT, hglobal);
+        SetClipboardData(CF_UNICODETEXT, hglobal);
       }
       CloseClipboard();
     }

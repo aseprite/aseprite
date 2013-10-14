@@ -9,6 +9,7 @@
 
 #include <string>
 
+#include "base/string.h"
 #include "gfx/border.h"
 #include "gfx/point.h"
 #include "gfx/rect.h"
@@ -96,7 +97,7 @@ namespace ui {
 
     WidgetType getType() const { return this->type; }
 
-    const std::string& getId() const { return m_id; }
+    const base::string& getId() const { return m_id; }
     void setId(const char* id) { m_id = id; }
 
     int getAlign() const { return m_align; }
@@ -104,15 +105,15 @@ namespace ui {
 
     // Text property.
 
-    bool hasText() const { return flags & JI_NOTEXT ? false: true; }
+    bool hasText() const { return !m_text.empty(); }
 
-    const char* getText() const { return m_text.c_str(); }
+    const base::string& getText() const { return m_text; }
     int getTextInt() const;
     double getTextDouble() const;
     size_t getTextSize() const { return m_text.size(); }
-    void setText(const char* text);
+    void setText(const base::string& text);
     void setTextf(const char* text, ...);
-    void setTextQuiet(const char* text);
+    void setTextQuiet(const base::string& text);
 
     // ===============================================================
     // COMMON PROPERTIES
@@ -359,10 +360,10 @@ namespace ui {
     virtual void onSetText();
 
   private:
-    std::string m_id;             // Widget's id
+    base::string m_id;            // Widget's id
     Theme* m_theme;               // Widget's theme
     int m_align;                  // Widget alignment
-    std::string m_text;           // Widget text
+    base::string m_text;          // Widget text
     struct FONT *m_font;          // Text font type
     ui::Color m_bgColor;          // Background color
     gfx::Region m_updateRegion;;  // Region to be redrawed.

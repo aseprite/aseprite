@@ -27,7 +27,7 @@ namespace app {
 
   class XmlException : public base::Exception {
   public:
-    XmlException(TiXmlDocument* doc) throw();
+    XmlException(const TiXmlDocument* doc) throw();
   };
 
 } // namespace app

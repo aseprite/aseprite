@@ -163,7 +163,7 @@ int ComboBox::addItem(ListItem* item)
   return m_items.size()-1;
 }
 
-int ComboBox::addItem(const char* text)
+int ComboBox::addItem(const base::string& text)
 {
   return addItem(new ListItem(text));
 }
@@ -178,7 +178,7 @@ void ComboBox::insertItem(int itemIndex, ListItem* item)
     setSelectedItemIndex(0);
 }
 
-void ComboBox::insertItem(int itemIndex, const char* text)
+void ComboBox::insertItem(int itemIndex, const base::string& text)
 {
   insertItem(itemIndex, new ListItem(text));
 }
@@ -228,17 +228,20 @@ ListItem* ComboBox::getItem(int itemIndex)
     return NULL;
 }
 
-const char* ComboBox::getItemText(int itemIndex) const
+const base::string& ComboBox::getItemText(int itemIndex) const
 {
   if (itemIndex >= 0 && (size_t)itemIndex < m_items.size()) {
     ListItem* item = m_items[itemIndex];
     return item->getText();
   }
-  else
-    return "";
+  else {
+    // Returns the text of the combo-box (it should be empty).
+    ASSERT(getText().empty());
+    return getText();
+  }
 }
 
-void ComboBox::setItemText(int itemIndex, const char* text)
+void ComboBox::setItemText(int itemIndex, const base::string& text)
 {
   ASSERT(itemIndex >= 0 && (size_t)itemIndex < m_items.size());
 
@@ -246,7 +249,7 @@ void ComboBox::setItemText(int itemIndex, const char* text)
   item->setText(text);
 }
 
-int ComboBox::findItemIndex(const char* text)
+int ComboBox::findItemIndex(const base::string& text)
 {
   int itemIndex = 0;
 
@@ -254,8 +257,8 @@ int ComboBox::findItemIndex(const char* text)
   for (it = m_items.begin(); it != end; ++it) {
     ListItem* item = *it;
 
-    if ((m_casesensitive && ustrcmp(item->getText(), text) == 0) ||
-        (!m_casesensitive && ustricmp(item->getText(), text) == 0)) {
+    if ((m_casesensitive && item->getText() == text) ||
+        (!m_casesensitive && item->getText() == text)) {
       return itemIndex;
     }
 
@@ -358,7 +361,7 @@ void ComboBox::onPreferredSize(PreferredSizeEvent& ev)
   for (it = m_items.begin(); it != end; ++it) {
     int item_w =
       2*jguiscale()+
-      text_length(this->getFont(), (*it)->getText())+
+      text_length(getFont(), (*it)->getText().c_str())+
       10*jguiscale();
 
     reqSize.w = MAX(reqSize.w, item_w);
@@ -471,7 +474,7 @@ void ComboBox::onButtonClick(Event& ev)
 void ComboBox::openListBox()
 {
   if (!m_window) {
-    m_window = new Window(false, NULL);
+    m_window = new Window(false, "");
     View* view = new View();
     m_listbox = new ComboBoxListBox(this);
     m_window->setOnTop(true);

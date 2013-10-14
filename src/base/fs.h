@@ -17,6 +17,7 @@ namespace base {
   void make_directory(const string& path);
   void remove_directory(const string& path);
 
+  string get_app_path();
   string get_temp_path();
 
 }

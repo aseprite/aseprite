@@ -48,6 +48,8 @@
 #include "app/undoers/set_palette_colors.h"
 #include "base/bind.h"
 #include "base/compiler_specific.h"
+#include "base/fs.h"
+#include "base/path.h"
 #include "gfx/hsv.h"
 #include "gfx/rgb.h"
 #include "gfx/size.h"
@@ -59,9 +61,8 @@
 #include "ui/graphics.h"
 #include "ui/ui.h"
 
-#include <allegro.h>
-#include <stdio.h>
-#include <string.h>
+#include <cstdio>
+#include <cstring>
 #include <vector>
 
 namespace app {
@@ -599,9 +600,9 @@ void PaletteEntryEditor::onSavePaletteClick(Event& ev)
  again:
   filename = app::show_file_selector("Save Palette", "", "png,pcx,bmp,tga,col,gpl");
   if (!filename.empty()) {
-    if (exists(filename.c_str())) {
+    if (base::file_exists(filename)) {
       ret = Alert::show("Warning<<File exists, overwrite it?<<%s||&Yes||&No||&Cancel",
-                        get_filename(filename.c_str()));
+                        base::get_file_name(filename).c_str());
 
       if (ret == 2)
         goto again;

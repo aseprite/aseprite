@@ -189,12 +189,7 @@ void Document::notifyCelCopied(Layer* fromLayer, FrameNumber fromFrame, Layer* t
   notifyObservers<DocumentEvent&>(&DocumentObserver::onCelCopied, ev);
 }
 
-const char* Document::getFilename() const
-{
-  return m_filename.c_str();
-}
-
-void Document::setFilename(const char* filename)
+  void Document::setFilename(const base::string& filename)
 {
   m_filename = filename;
 }

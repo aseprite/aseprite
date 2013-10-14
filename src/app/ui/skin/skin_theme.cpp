@@ -29,8 +29,10 @@
 #include "app/ui/skin/skin_property.h"
 #include "app/ui/skin/skin_slider_property.h"
 #include "app/ui/skin/skin_theme.h"
+#include "app/xml_document.h"
 #include "app/xml_exception.h"
 #include "base/bind.h"
+#include "base/fs.h"
 #include "base/shared_ptr.h"
 #include "gfx/border.h"
 #include "gfx/point.h"
@@ -377,7 +379,7 @@ void SkinTheme::reload_skin()
     rf.findInDataDir(sheet_filename.c_str());
 
     while (const char* path = rf.next()) {
-      if (exists(path)) {
+      if (base::file_exists(path)) {
         int old_color_conv = _color_conv;
         set_color_conversion(COLORCONV_NONE);
 
@@ -421,14 +423,11 @@ void SkinTheme::onRegenerate()
   rf.findInDataDir(xml_filename.c_str());
 
   while (const char* path = rf.next()) {
-    if (!exists(path))
+    if (!base::file_exists(path))
       continue;
 
-    TiXmlDocument doc;
-    if (!doc.LoadFile(path))
-      throw XmlException(&doc);
-
-    TiXmlHandle handle(&doc);
+    XmlDocumentRef doc = open_xml(path);
+    TiXmlHandle handle(doc);
 
     // Load colors
     {
@@ -1134,7 +1133,7 @@ void SkinTheme::paintListItem(ui::PaintEvent& ev)
 
   if (widget->hasText()) {
     // Text
-    jdraw_text(ji_screen, widget->getFont(), widget->getText(), x, y,
+    jdraw_text(ji_screen, widget->getFont(), widget->getText().c_str(), x, y,
                fg, bg, true, jguiscale());
 
     // Background
@@ -1495,7 +1494,7 @@ void SkinTheme::paintComboBoxEntry(ui::PaintEvent& ev)
   Entry* widget = static_cast<Entry*>(ev.getSource());
   bool password = widget->isPassword();
   int scroll, caret, state, selbeg, selend;
-  const char *text = widget->getText();
+  const char *text = widget->getText().c_str();
   int c, ch, x, y, w;
   int x1, y1, x2, y2;
   int caret_x;
@@ -1816,7 +1815,7 @@ void SkinTheme::drawTextStringDeprecated(const char *t, ui::Color fg_color, ui::
     int x, y, w, h;
 
     if (!t) {
-      t = widget->getText();
+      t = widget->getText().c_str();
       w = jwidget_get_text_length(widget);
       h = jwidget_get_text_height(widget);
     }
@@ -1887,7 +1886,7 @@ void SkinTheme::drawTextString(Graphics* g, const char *t, ui::Color fg_color, u
     g->setFont(widget->getFont());
 
     if (!t)
-      t = widget->getText();
+      t = widget->getText().c_str();
 
     textrc.setSize(g->measureString(t));
 

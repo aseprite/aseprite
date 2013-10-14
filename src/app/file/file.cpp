@@ -20,26 +20,29 @@
 #include "config.h"
 #endif
 
+#include "app/file/file.h"
+
 #include "app/app.h"
-#include "app/ui/status_bar.h"
-#include "base/mutex.h"
-#include "base/scoped_lock.h"
-#include "base/shared_ptr.h"
-#include "base/string.h"
 #include "app/console.h"
 #include "app/document.h"
-#include "app/file/file.h"
 #include "app/file/file_format.h"
 #include "app/file/file_formats_manager.h"
 #include "app/file/format_options.h"
 #include "app/modules/gui.h"
 #include "app/modules/palettes.h"
+#include "app/ui/status_bar.h"
+#include "base/fs.h"
+#include "base/mutex.h"
+#include "base/path.h"
+#include "base/scoped_lock.h"
+#include "base/shared_ptr.h"
+#include "base/string.h"
 #include "raster/quantization.h"
 #include "raster/raster.h"
 #include "ui/alert.h"
 
 #include <allegro.h>
-#include <string.h>
+#include <cstring>
 
 namespace app {
 
@@ -143,13 +146,13 @@ FileOp* fop_to_load_document(const char* filename, int flags)
   if (!fop)
     return NULL;
 
-  /* get the extension of the filename (in lower case) */
-  std::string extension = base::string_to_lower(get_extension(filename));
+  // Get the extension of the filename (in lower case)
+  base::string extension = base::string_to_lower(base::get_file_extension(filename));
 
   PRINTF("Loading file \"%s\" (%s)\n", filename, extension.c_str());
 
-  /* does file exist? */
-  if (!file_exists(filename, FA_ALL, NULL)) {
+  // Does file exist?
+  if (!base::file_exists(filename)) {
     fop_error(fop, "File not found: \"%s\"\n", filename);
     goto done;
   }
@@ -230,7 +233,6 @@ done:;
 
 FileOp* fop_to_save_document(Document* document)
 {
-  char extension[32], buf[2048];
   FileOp *fop;
   bool fatal;
 
@@ -238,25 +240,24 @@ FileOp* fop_to_save_document(Document* document)
   if (!fop)
     return NULL;
 
-  /* document to save */
+  // Document to save
   fop->document = document;
 
-  /* get the extension of the filename (in lower case) */
-  ustrcpy(extension, get_extension(fop->document->getFilename()));
-  ustrlwr(extension);
+  // Get the extension of the filename (in lower case)
+  base::string extension = base::string_to_lower(base::get_file_extension(fop->document->getFilename()));
 
-  PRINTF("Saving document \"%s\" (%s)\n", fop->document->getFilename(), extension);
+  PRINTF("Saving document \"%s\" (%s)\n", fop->document->getFilename(), extension.c_str());
 
   /* get the format through the extension of the filename */
-  fop->format = get_fileformat(extension);
+  fop->format = get_fileformat(extension.c_str());
   if (!fop->format ||
       !fop->format->support(FILE_SUPPORT_SAVE)) {
     fop_error(fop, "ASEPRITE can't save \"%s\" files\n", extension);
     return fop;
   }
 
-  /* warnings */
-  ustrcpy(buf, empty_string);
+  // Warnings
+  base::string warnings;
   fatal = false;
 
   /* check image type support */
@@ -264,29 +265,32 @@ FileOp* fop_to_save_document(Document* document)
 
     case IMAGE_RGB:
       if (!(fop->format->support(FILE_SUPPORT_RGB))) {
-        usprintf(buf+ustrlen(buf), "<<- %s", "RGB format");
+        warnings += "<<- RGB format";
         fatal = true;
       }
+
       if (!(fop->format->support(FILE_SUPPORT_RGBA)) &&
           fop->document->getSprite()->needAlpha()) {
-        usprintf(buf+ustrlen(buf), "<<- %s", "Alpha channel");
+
+        warnings += "<<- Alpha channel";
       }
       break;
 
     case IMAGE_GRAYSCALE:
       if (!(fop->format->support(FILE_SUPPORT_GRAY))) {
-        usprintf(buf+ustrlen(buf), "<<- Grayscale format");
+        warnings += "<<- Grayscale format";
         fatal = true;
       }
       if (!(fop->format->support(FILE_SUPPORT_GRAYA)) &&
           fop->document->getSprite()->needAlpha()) {
-        usprintf(buf+ustrlen(buf), "<<- Alpha channel");
+
+        warnings += "<<- Alpha channel";
       }
       break;
 
     case IMAGE_INDEXED:
       if (!(fop->format->support(FILE_SUPPORT_INDEXED))) {
-        usprintf(buf+ustrlen(buf), "<<- Indexed format");
+        warnings += "<<- Indexed format";
         fatal = true;
       }
       break;
@@ -296,14 +300,14 @@ FileOp* fop_to_save_document(Document* document)
   if (fop->document->getSprite()->getTotalFrames() > 1) {
     if (!fop->format->support(FILE_SUPPORT_FRAMES) &&
         !fop->format->support(FILE_SUPPORT_SEQUENCES)) {
-      usprintf(buf+ustrlen(buf), "<<- Frames");
+      warnings += "<<- Frames";
     }
   }
 
   // layers support
   if (fop->document->getSprite()->getFolder()->getLayersCount() > 1) {
     if (!(fop->format->support(FILE_SUPPORT_LAYERS))) {
-      usprintf(buf+ustrlen(buf), "<<- Layers");
+      warnings += "<<- Layers";
     }
   }
 
@@ -311,25 +315,25 @@ FileOp* fop_to_save_document(Document* document)
   if (fop->document->getSprite()->getPalettes().size() > 1) {
     if (!fop->format->support(FILE_SUPPORT_PALETTES) &&
         !fop->format->support(FILE_SUPPORT_SEQUENCES)) {
-      usprintf(buf+ustrlen(buf), "<<- Palette changes between frames");
+      warnings += "<<- Palette changes between frames";
     }
   }
 
-  /* show the confirmation alert */
-  if (ugetc(buf)) {
-    /* interative */
+  // Show the confirmation alert
+  if (!warnings.empty()) {
+    // Interative
     if (App::instance()->isGui()) {
       int ret;
 
       if (fatal)
         ret = ui::Alert::show("Error<<File format \"%s\" doesn't support:%s"
                               "||&Close",
-                              fop->format->name(), buf);
+                              fop->format->name(), warnings.c_str());
       else
         ret = ui::Alert::show("Warning<<File format \"%s\" doesn't support:%s"
                               "<<Do you want continue?"
                               "||&Yes||&No",
-                              fop->format->name(), buf);
+                              fop->format->name(), warnings.c_str());
 
       /* operation can't be done (by fatal error) or the user cancel
          the operation */
@@ -338,9 +342,9 @@ FileOp* fop_to_save_document(Document* document)
         return NULL;
       }
     }
-    /* no interactive & fatal error? */
+    // No interactive & fatal error?
     else if (fatal) {
-      fop_error(fop, buf);
+      fop_error(fop, warnings.c_str());
       return fop;
     }
   }
@@ -355,10 +359,10 @@ FileOp* fop_to_save_document(Document* document)
     }
     // To save more frames
     else {
-      char buf[256], left[256], right[256];
+      char left[256], right[256];
       int width, start_from;
 
-      start_from = split_filename(fop->document->getFilename(), left, right, &width);
+      start_from = split_filename(fop->document->getFilename().c_str(), left, right, &width);
       if (start_from < 0) {
         start_from = 0;
         width =
@@ -368,8 +372,9 @@ FileOp* fop_to_save_document(Document* document)
       }
 
       for (FrameNumber frame(0); frame<fop->document->getSprite()->getTotalFrames(); ++frame) {
-        /* get the name for this frame */
-        usprintf(buf, "%s%0*d%s", left, width, start_from+frame, right);
+        // Get the name for this frame
+        char buf[4096];
+        sprintf(buf, "%s%0*d%s", left, width, start_from+frame, right);
         fop->seq.filename_list.push_back(buf);
       }
     }

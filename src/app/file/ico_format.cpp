@@ -25,9 +25,9 @@
 #include "app/document.h"
 #include "app/file/file.h"
 #include "app/file/file_format.h"
-#include "app/file/file_handle.h"
 #include "app/file/format_options.h"
 #include "base/cfile.h"
+#include "base/file_handle.h"
 #include "raster/raster.h"
 
 #include <allegro/color.h>
@@ -90,7 +90,7 @@ struct BITMAPINFOHEADER {
 
 bool IcoFormat::onLoad(FileOp* fop)
 {
-  FileHandle f(fop->filename.c_str(), "rb");
+  FileHandle f(open_file_with_exception(fop->filename, "rb"));
 
   // Read the icon header
   ICONDIR header;
@@ -242,7 +242,7 @@ bool IcoFormat::onSave(FileOp* fop)
   int c, x, y, b, m, v;
   FrameNumber n, num = sprite->getTotalFrames();
 
-  FileHandle f(fop->filename.c_str(), "wb");
+  FileHandle f(open_file_with_exception(fop->filename, "wb"));
 
   offset = 6 + num*16;  // ICONDIR + ICONDIRENTRYs
 

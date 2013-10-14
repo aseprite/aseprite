@@ -230,4 +230,5 @@ add_library(app-library
   util/thmbnail.cpp
   webserver.cpp
   widget_loader.cpp
+  xml_document.cpp
   xml_exception.cpp)

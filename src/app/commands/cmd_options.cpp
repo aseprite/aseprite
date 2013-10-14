@@ -36,8 +36,6 @@
 #include "raster/image.h"
 #include "ui/ui.h"
 
-#include <allegro.h>
-
 namespace app {
 
 using namespace ui;

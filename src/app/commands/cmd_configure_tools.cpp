@@ -40,8 +40,6 @@
 #include "raster/mask.h"
 #include "ui/ui.h"
 
-#include <allegro.h>
-
 namespace app {
 
 using namespace gfx;

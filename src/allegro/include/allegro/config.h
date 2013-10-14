@@ -54,7 +54,7 @@ AL_FUNC(void, set_config_id, (AL_CONST char *section, AL_CONST char *name, int v
 
 AL_FUNC(int, list_config_entries, (AL_CONST char *section, AL_CONST char ***names));
 AL_FUNC(int, list_config_sections, (AL_CONST char ***names));
-AL_FUNC(void, free_config_entries, (AL_CONST char ***names));
+AL_FUNC(void, free_config_entries, (char ***names));
 
 #ifdef __cplusplus
    }

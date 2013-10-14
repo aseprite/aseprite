@@ -26,7 +26,7 @@ namespace app {
 
   class PopupWindowPin : public ui::PopupWindow {
   public:
-    PopupWindowPin(const char* text, bool close_on_buttonpressed);
+    PopupWindowPin(const base::string& text, bool close_on_buttonpressed);
 
   protected:
     virtual bool onProcessMessage(ui::Message* msg) OVERRIDE;

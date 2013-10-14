@@ -119,7 +119,7 @@ void FramePropertiesCommand::onExecute(Context* context)
 
   window->openWindowInForeground();
   if (window->getKiller() == ok) {
-    int num = strtol(frlen->getText(), NULL, 10);
+    int num = frlen->getTextInt();
 
     if (m_target == ALL_FRAMES) {
       if (Alert::show("Warning"

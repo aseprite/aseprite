@@ -15,7 +15,7 @@ namespace ui {
   class PopupWindow : public Window
   {
   public:
-    PopupWindow(const char* text, bool close_on_buttonpressed);
+    PopupWindow(const base::string& text, bool close_on_buttonpressed);
     ~PopupWindow();
 
     void setHotRegion(const gfx::Region& region);

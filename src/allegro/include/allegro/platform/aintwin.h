@@ -69,7 +69,7 @@ AL_FUNC(void, save_window_pos, (void));
 /* main window */
 #define WND_TITLE_SIZE  128
 
-AL_ARRAY(char, wnd_title);
+AL_ARRAY(wchar_t, wnd_title);
 AL_VAR(int, wnd_x);
 AL_VAR(int, wnd_y);
 AL_VAR(int, wnd_width);

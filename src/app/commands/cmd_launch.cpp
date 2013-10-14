@@ -25,8 +25,7 @@
 #include "app/launcher.h"
 #include "app/resource_finder.h"
 #include "base/compiler_specific.h"
-
-#include <allegro.h>
+#include "base/fs.h"
 
 namespace app {
 
@@ -80,7 +79,7 @@ void LaunchCommand::onExecute(Context* context)
         rf.findInDocsDir(m_path.c_str());
 
         while (const char* path = rf.next()) {
-          if (!exists(path))
+          if (!base::file_exists(path))
             continue;
 
           launcher::open_file(path);

@@ -35,8 +35,8 @@ public:
   const std::string& getName() const { return m_name; }
   void setName(std::string& name) { m_name = name; }
 
-  void addColor(Color& color);
-  void insertColor(size_t index, Color& color);
+  void addColor(const Color& color);
+  void insertColor(size_t index, const Color& color);
   void removeColor(size_t index);
 
   const Color& operator[](size_t index) const {

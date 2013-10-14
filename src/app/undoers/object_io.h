@@ -21,10 +21,7 @@
 
 #include "base/serialization.h"
 #include "base/unique_ptr.h"
-
-namespace undo {
-  class ObjectsContainer;
-}
+#include "undo/objects_container.h"
 
 namespace app {
   namespace undoers {

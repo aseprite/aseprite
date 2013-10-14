@@ -21,13 +21,13 @@
 
 namespace ui {
 
-void Accelerator::addKey(KeyModifiers modifiers, KeyScancode scancode, int ascii)
+void Accelerator::addKey(KeyModifiers modifiers, KeyScancode scancode, int unicodeChar)
 {
   KeyCombo key;
 
   key.modifiers = modifiers;
   key.scancode = scancode;
-  key.ascii = ascii;
+  key.unicodeChar = unicodeChar;
 
   m_combos.push_back(key);
 }
@@ -36,7 +36,7 @@ static void process_one_word(Accelerator* accel, char* word)
 {
   KeyModifiers modifiers = kKeyNoneModifier;
   KeyScancode scancode = kKeyNil;
-  int ascii = 0;
+  int unicodeChar = 0;
   char* tok;
 
   // Special case: plus sign
@@ -65,10 +65,10 @@ static void process_one_word(Accelerator* accel, char* word)
     else if (tok[1] == 0) {
       if (((*tok >= 'a') && (*tok <= 'z')) ||
           ((*tok >= 'A') && (*tok <= 'Z'))) {
-        ascii = tolower(*tok);
+        unicodeChar = tolower(*tok);
       }
       else {
-        ascii = *tok;
+        unicodeChar = *tok;
       }
 
       if (((*tok >= 'a') && (*tok <= 'z')) ||
@@ -171,7 +171,7 @@ static void process_one_word(Accelerator* accel, char* word)
     }
   }
 
-  accel->addKey(modifiers, scancode, ascii);
+  accel->addKey(modifiers, scancode, unicodeChar);
 }
 
 void Accelerator::addKeysFromString(const char* string)
@@ -323,8 +323,8 @@ std::string Accelerator::KeyCombo::toString()
     ustrcat(buf, "Shift+");
 
   // Key
-  if (this->ascii)
-    usprintf(buf+ustrlen(buf), "%c", toupper(this->ascii));
+  if (this->unicodeChar)
+    usprintf(buf+ustrlen(buf), "%c", toupper(this->unicodeChar));
   else if (this->scancode)
     ustrcat(buf, table[this->scancode]);
   else
@@ -339,7 +339,7 @@ std::string Accelerator::toString()
   return m_combos.front().toString();
 }
 
-bool Accelerator::check(KeyModifiers modifiers, KeyScancode scancode, int ascii)
+bool Accelerator::check(KeyModifiers modifiers, KeyScancode scancode, int unicodeChar)
 {
 #ifdef REPORT_KEYS
   char buf[256];
@@ -359,10 +359,10 @@ bool Accelerator::check(KeyModifiers modifiers, KeyScancode scancode, int ascii)
       (scancode >= kKeySpace && scancode <= kKeyDown) ||
       (scancode >= kKeyEnterPad && scancode <= kKeyNoconvert) ||
       (scancode == kKeyKanji)) {
-    ascii = 0;
+    unicodeChar = 0;
   }
   // For Ctrl+number
-  /*           scancode    ascii
+  /*           scancode    unicodeChar
      Ctrl+0    27          0
      Ctrl+1    28          2
      Ctrl+2    29          0
@@ -375,22 +375,22 @@ bool Accelerator::check(KeyModifiers modifiers, KeyScancode scancode, int ascii)
      Ctrl+9    36          2
    */
   else if ((scancode >= kKey0 && scancode <= kKey9) &&
-           (ascii < 32 || ascii == 127)) {
-    ascii = '0' + scancode - kKey0;
+           (unicodeChar < 32 || unicodeChar == 127)) {
+    unicodeChar = '0' + scancode - kKey0;
     scancode = kKeyNil;
   }
   // For Ctrl+letter
-  else if (ascii >= 1 && ascii <= 'z'-'a'+1) {
-    ascii = 'a'+ascii-1;
+  else if (unicodeChar >= 1 && unicodeChar <= 'z'-'a'+1) {
+    unicodeChar = 'a'+unicodeChar-1;
     scancode = kKeyNil;
   }
-  // For any other legal ASCII code
-  else if (ascii >= ' ') {
-    ascii = tolower(ascii);
+  // For any other legal Unicode code
+  else if (unicodeChar >= ' ') {
+    unicodeChar = tolower(unicodeChar);
 
     /* without shift (because characters like '*' can be trigger with
        "Shift+8", so we don't want "Shift+*") */
-    if (!(ascii >= 'a' && ascii <= 'z'))
+    if (!(unicodeChar >= 'a' && unicodeChar <= 'z'))
       modifiers = (KeyModifiers)((int)modifiers & ((int)~kKeyShiftModifier));
 
     scancode = kKeyNil;
@@ -400,7 +400,7 @@ bool Accelerator::check(KeyModifiers modifiers, KeyScancode scancode, int ascii)
 #ifdef REPORT_KEYS
   {
     base::UniquePtr<Accelerator> a2(new Accelerator);
-    a2->addKey(modifiers, scancode, ascii);
+    a2->addKey(modifiers, scancode, unicodeChar);
     buf2 = a2->getString();
   }
 #endif
@@ -409,13 +409,13 @@ bool Accelerator::check(KeyModifiers modifiers, KeyScancode scancode, int ascii)
        it != end; ++it) {
 #ifdef REPORT_KEYS
     printf("%3d==%3d %3d==%3d %s==%s ",
-           it->scancode, scancode, it->ascii, ascii,
+           it->scancode, scancode, it->unicodeChar, unicodeChar,
            it->getString().c_str(), buf2.c_str();
 #endif
 
     if ((it->modifiers == modifiers) &&
         ((it->scancode != kKeyNil && it->scancode == scancode) ||
-         (it->ascii && it->ascii == ascii))) {
+         (it->unicodeChar && it->unicodeChar == unicodeChar))) {
 
 #ifdef REPORT_KEYS
       printf("true\n");

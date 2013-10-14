@@ -24,11 +24,13 @@
 
 #include "app/app.h"
 #include "app/modules/gui.h"
+#include "app/xml_document.h"
 #include "app/resource_finder.h"
 #include "app/ui/color_button.h"
 #include "app/widget_not_found.h"
 #include "app/xml_exception.h"
 #include "base/bind.h"
+#include "base/fs.h"
 #include "base/memory.h"
 #include "ui/ui.h"
 
@@ -76,12 +78,12 @@ Widget* WidgetLoader::loadWidget(const char* fileName, const char* widgetId)
 
   rf.addPath(fileName);
 
-  buf = "app/ui/";
+  buf = "widgets/";
   buf += fileName;
   rf.findInDataDir(buf.c_str());
 
   while (const char* path = rf.next()) {
-    if (exists(path)) {
+    if (base::file_exists(path)) {
       buf = path;
       found = true;
       break;
@@ -91,24 +93,23 @@ Widget* WidgetLoader::loadWidget(const char* fileName, const char* widgetId)
   if (!found)
     throw WidgetNotFound(widgetId);
 
-  widget = loadWidgetFromXmlFile(buf.c_str(), widgetId);
+  widget = loadWidgetFromXmlFile(buf, widgetId);
   if (!widget)
     throw WidgetNotFound(widgetId);
 
   return widget;
 }
 
-Widget* WidgetLoader::loadWidgetFromXmlFile(const char* xmlFilename, const char* widgetId)
+Widget* WidgetLoader::loadWidgetFromXmlFile(const base::string& xmlFilename,
+                                            const base::string& widgetId)
 {
   Widget* widget = NULL;
   m_tooltipManager = NULL;
 
-  TiXmlDocument doc;
-  if (!doc.LoadFile(xmlFilename))
-    throw XmlException(&doc);
+  XmlDocumentRef doc(open_xml(xmlFilename));
+  TiXmlHandle handle(doc);
 
   // Search the requested widget.
-  TiXmlHandle handle(&doc);
   TiXmlElement* xmlElement = handle
     .FirstChild("gui")
     .FirstChildElement().ToElement();
@@ -116,7 +117,7 @@ Widget* WidgetLoader::loadWidgetFromXmlFile(const char* xmlFilename, const char*
   while (xmlElement) {
     const char* nodename = xmlElement->Attribute("id");
 
-    if (nodename && ustrcmp(nodename, widgetId) == 0) {
+    if (nodename && nodename == widgetId) {
       widget = convertXmlElementToWidget(xmlElement, NULL);
       break;
     }
@@ -129,7 +130,7 @@ Widget* WidgetLoader::loadWidgetFromXmlFile(const char* xmlFilename, const char*
 
 Widget* WidgetLoader::convertXmlElementToWidget(const TiXmlElement* elem, Widget* root)
 {
-  const char *elem_name = elem->Value();
+  const std::string elem_name = elem->Value();
   Widget* widget = NULL;
   Widget* child;
 
@@ -142,7 +143,7 @@ Widget* WidgetLoader::convertXmlElementToWidget(const TiXmlElement* elem, Widget
     widget = it->second->createWidgetFromXml(elem);
   }
   // Boxes
-  else if (ustrcmp(elem_name, "box") == 0) {
+  else if (elem_name == "box") {
     bool horizontal  = bool_attr_is_true(elem, "horizontal");
     bool vertical    = bool_attr_is_true(elem, "vertical");
     bool homogeneous = bool_attr_is_true(elem, "homogeneous");
@@ -151,25 +152,25 @@ Widget* WidgetLoader::convertXmlElementToWidget(const TiXmlElement* elem, Widget
                       vertical ? JI_VERTICAL: 0) |
                      (homogeneous ? JI_HOMOGENEOUS: 0));
   }
-  else if (ustrcmp(elem_name, "vbox") == 0) {
+  else if (elem_name == "vbox") {
     bool homogeneous = bool_attr_is_true(elem, "homogeneous");
 
     widget = new VBox();
     if (homogeneous)
       widget->setAlign(widget->getAlign() | JI_HOMOGENEOUS);
   }
-  else if (ustrcmp(elem_name, "hbox") == 0) {
+  else if (elem_name == "hbox") {
     bool homogeneous = bool_attr_is_true(elem, "homogeneous");
 
     widget = new HBox();
     if (homogeneous)
       widget->setAlign(widget->getAlign() | JI_HOMOGENEOUS);
   }
-  else if (ustrcmp(elem_name, "boxfiller") == 0) {
+  else if (elem_name == "boxfiller") {
     widget = new BoxFiller();
   }
   // Button
-  else if (ustrcmp(elem_name, "button") == 0) {
+  else if (elem_name == "button") {
     const char *text = elem->Attribute("text");
 
     widget = new Button(text ? TRANSLATE_ATTR(text): NULL);
@@ -210,7 +211,7 @@ Widget* WidgetLoader::convertXmlElementToWidget(const TiXmlElement* elem, Widget
     }
   }
   // Check
-  else if (ustrcmp(elem_name, "check") == 0) {
+  else if (elem_name == "check") {
     const char *text = elem->Attribute("text");
     const char *looklike = elem->Attribute("looklike");
 
@@ -236,11 +237,11 @@ Widget* WidgetLoader::convertXmlElementToWidget(const TiXmlElement* elem, Widget
     }
   }
   /* combobox */
-  else if (ustrcmp(elem_name, "combobox") == 0) {
+  else if (elem_name == "combobox") {
     widget = new ComboBox();
   }
   /* entry */
-  else if (ustrcmp(elem_name, "entry") == 0) {
+  else if (elem_name == "entry") {
     const char* maxsize = elem->Attribute("maxsize");
     const char* text = elem->Attribute("text");
     const char* suffix = elem->Attribute("suffix");
@@ -261,7 +262,7 @@ Widget* WidgetLoader::convertXmlElementToWidget(const TiXmlElement* elem, Widget
       throw std::runtime_error("<entry> element found without 'maxsize' attribute");
   }
   /* grid */
-  else if (ustrcmp(elem_name, "grid") == 0) {
+  else if (elem_name == "grid") {
     const char *columns = elem->Attribute("columns");
     bool same_width_columns = bool_attr_is_true(elem, "same_width_columns");
 
@@ -271,7 +272,7 @@ Widget* WidgetLoader::convertXmlElementToWidget(const TiXmlElement* elem, Widget
     }
   }
   /* label */
-  else if (ustrcmp(elem_name, "label") == 0) {
+  else if (elem_name == "label") {
     const char *text = elem->Attribute("text");
 
     widget = new Label(text ? TRANSLATE_ATTR(text): NULL);
@@ -288,17 +289,17 @@ Widget* WidgetLoader::convertXmlElementToWidget(const TiXmlElement* elem, Widget
     }
   }
   /* listbox */
-  else if (ustrcmp(elem_name, "listbox") == 0) {
+  else if (elem_name == "listbox") {
     widget = new ListBox();
   }
   /* listitem */
-  else if (ustrcmp(elem_name, "listitem") == 0) {
+  else if (elem_name == "listitem") {
     const char *text = elem->Attribute("text");
 
     widget = new ListItem(text ? TRANSLATE_ATTR(text): NULL);
   }
   /* splitter */
-  else if (ustrcmp(elem_name, "splitter") == 0) {
+  else if (elem_name == "splitter") {
     bool horizontal = bool_attr_is_true(elem, "horizontal");
     bool vertical = bool_attr_is_true(elem, "vertical");
     const char* by = elem->Attribute("by");
@@ -317,7 +318,7 @@ Widget* WidgetLoader::convertXmlElementToWidget(const TiXmlElement* elem, Widget
     widget = splitter;
   }
   /* radio */
-  else if (ustrcmp(elem_name, "radio") == 0) {
+  else if (elem_name == "radio") {
     const char* text = elem->Attribute("text");
     const char* group = elem->Attribute("group");
     const char *looklike = elem->Attribute("looklike");
@@ -345,7 +346,7 @@ Widget* WidgetLoader::convertXmlElementToWidget(const TiXmlElement* elem, Widget
     }
   }
   /* separator */
-  else if (ustrcmp(elem_name, "separator") == 0) {
+  else if (elem_name == "separator") {
     const char *text = elem->Attribute("text");
     bool center      = bool_attr_is_true(elem, "center");
     bool right       = bool_attr_is_true(elem, "right");
@@ -354,7 +355,7 @@ Widget* WidgetLoader::convertXmlElementToWidget(const TiXmlElement* elem, Widget
     bool horizontal  = bool_attr_is_true(elem, "horizontal");
     bool vertical    = bool_attr_is_true(elem, "vertical");
 
-    widget = new Separator(text ? TRANSLATE_ATTR(text): NULL,
+    widget = new Separator(text ? TRANSLATE_ATTR(text): "",
                            (horizontal ? JI_HORIZONTAL: 0) |
                            (vertical ? JI_VERTICAL: 0) |
                            (center ? JI_CENTER:
@@ -363,7 +364,7 @@ Widget* WidgetLoader::convertXmlElementToWidget(const TiXmlElement* elem, Widget
                             (bottom ? JI_BOTTOM: JI_TOP)));
   }
   /* slider */
-  else if (ustrcmp(elem_name, "slider") == 0) {
+  else if (elem_name == "slider") {
     const char *min = elem->Attribute("min");
     const char *max = elem->Attribute("max");
     int min_value = min != NULL ? ustrtol(min, NULL, 10): 0;
@@ -372,30 +373,30 @@ Widget* WidgetLoader::convertXmlElementToWidget(const TiXmlElement* elem, Widget
     widget = new Slider(min_value, max_value, min_value);
   }
   /* textbox */
-  else if (ustrcmp(elem_name, "textbox") == 0) {
+  else if (elem_name == "textbox") {
     bool wordwrap = bool_attr_is_true(elem, "wordwrap");
 
     widget = new TextBox(elem->GetText(), wordwrap ? JI_WORDWRAP: 0);
   }
   /* view */
-  else if (ustrcmp(elem_name, "view") == 0) {
+  else if (elem_name == "view") {
     widget = new View();
   }
   /* window */
-  else if (ustrcmp(elem_name, "window") == 0) {
+  else if (elem_name == "window") {
     const char *text = elem->Attribute("text");
 
     if (text) {
       bool desktop = bool_attr_is_true(elem, "desktop");
 
       if (desktop)
-        widget = new Window(true, NULL);
+        widget = new Window(true, "");
       else
         widget = new Window(false, TRANSLATE_ATTR(text));
     }
   }
   /* colorpicker */
-  else if (ustrcmp(elem_name, "colorpicker") == 0) {
+  else if (elem_name == "colorpicker") {
     widget = new ColorButton(Color::fromMask(), app_get_current_pixel_format());
   }
 

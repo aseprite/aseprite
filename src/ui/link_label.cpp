@@ -18,19 +18,19 @@
 
 namespace ui {
 
-LinkLabel::LinkLabel(const char* urlOrText)
+LinkLabel::LinkLabel(const base::string& urlOrText)
   : CustomLabel(urlOrText)
   , m_url(urlOrText)
 {
 }
 
-LinkLabel::LinkLabel(const char* url, const char* text)
+LinkLabel::LinkLabel(const base::string& url, const base::string& text)
   : CustomLabel(text)
   , m_url(url)
 {
 }
 
-void LinkLabel::setUrl(const char* url)
+void LinkLabel::setUrl(const base::string& url)
 {
   m_url = url;
 }

@@ -221,7 +221,7 @@ void switch_between_animation_and_sprite_editor(Context* context)
 
   // Create the window & the animation-editor
   {
-    base::UniquePtr<Window> window(new Window(true, NULL));
+    base::UniquePtr<Window> window(new Window(true, ""));
     AnimationEditor anieditor(context);
 
     window->addChild(&anieditor);

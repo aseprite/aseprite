@@ -24,6 +24,8 @@
 #include <cstdio>
 
 #include "app/resource_finder.h"
+#include "base/fs.h"
+#include "base/path.h"
 
 namespace app {
 
@@ -48,24 +50,19 @@ const char* ResourceFinder::next()
   return m_paths[m_current++].c_str();
 }
 
-void ResourceFinder::addPath(std::string path)
+void ResourceFinder::addPath(const std::string& path)
 {
   m_paths.push_back(path);
 }
 
 void ResourceFinder::findInBinDir(const char* filename)
 {
-  char buf[1024], path[1024];
-
-  get_executable_name(path, sizeof(path));
-  replace_filename(buf, path, filename, sizeof(buf));
-
-  addPath(buf);
+  addPath(base::join_path(base::get_file_path(base::get_app_path()), filename));
 }
 
 void ResourceFinder::findInDataDir(const char* filename)
 {
-  char buf[1024];
+  char buf[4096];
 
 #if defined ALLEGRO_UNIX || defined ALLEGRO_MACOSX
 
@@ -104,7 +101,7 @@ void ResourceFinder::findInDataDir(const char* filename)
 
 void ResourceFinder::findInDocsDir(const char* filename)
 {
-  char buf[1024];
+  char buf[4096];
 
 #if defined ALLEGRO_UNIX || defined ALLEGRO_MACOSX
 
@@ -140,8 +137,8 @@ void ResourceFinder::findInHomeDir(const char* filename)
 {
 #if defined ALLEGRO_UNIX || defined ALLEGRO_MACOSX
 
-  char *env = getenv("HOME");
-  char buf[1024];
+  char* env = getenv("HOME");
+  char buf[4096];
 
   if ((env) && (*env)) {
     // $HOME/filename
