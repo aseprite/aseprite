@@ -25,6 +25,11 @@
 #include "config.h"
 #endif
 
+#include "app/file_system.h"
+
+#include "base/path.h"
+#include "base/string.h"
+
 #include <algorithm>
 #include <cstdio>
 #include <map>
@@ -57,9 +62,6 @@
   #include <shlobj.h>
   #include <shlwapi.h>
 #endif
-
-#include "app/file_system.h"
-#include "base/path.h"
 
 //////////////////////////////////////////////////////////////////////
 
@@ -320,7 +322,6 @@ IFileItem* FileSystemModule::getFileItemFromPath(const base::string& path)
 #ifdef USE_PIDLS
   {
     ULONG cbEaten;
-    WCHAR wStr[MAX_PATH];
     LPITEMIDLIST fullpidl = NULL;
     SFGAOF attrib = SFGAO_FOLDER;
 
@@ -330,12 +331,10 @@ IFileItem* FileSystemModule::getFileItemFromPath(const base::string& path)
       return fileitem;
     }
 
-    MultiByteToWideChar(CP_ACP, MB_PRECOMPOSED,
-                        path.c_str(), path.size()+1, wStr, MAX_PATH);
-    if (shl_idesktop->ParseDisplayName(NULL, NULL,
-                                       wStr, &cbEaten,
-                                       &fullpidl,
-                                       &attrib) != S_OK) {
+    if (shl_idesktop->ParseDisplayName
+          (NULL, NULL,
+           const_cast<LPWSTR>(base::from_utf8(path).c_str()),
+           &cbEaten, &fullpidl, &attrib) != S_OK) {
       //PRINTF("FS: > (null)\n");
       return NULL;
     }
@@ -708,7 +707,7 @@ int FileItem::compare(const FileItem& that) const
 static void update_by_pidl(FileItem* fileitem)
 {
   STRRET strret;
-  TCHAR pszName[MAX_PATH];
+  WCHAR pszName[MAX_PATH];
   IShellFolder *pFolder = NULL;
 
   if (fileitem == rootitem)
@@ -729,13 +728,13 @@ static void update_by_pidl(FileItem* fileitem)
                                 SHGDN_NORMAL | SHGDN_FORPARSING,
                                 &strret) == S_OK) {
     StrRetToBuf(&strret, fileitem->pidl, pszName, MAX_PATH);
-    fileitem->filename = pszName;
+    fileitem->filename = base::to_utf8(pszName);
   }
   else if (shl_idesktop->GetDisplayNameOf(fileitem->fullpidl,
                                           SHGDN_NORMAL | SHGDN_FORPARSING,
                                           &strret) == S_OK) {
     StrRetToBuf(&strret, fileitem->fullpidl, pszName, MAX_PATH);
-    fileitem->filename = pszName;
+    fileitem->filename = base::to_utf8(pszName);
   }
   else
     fileitem->filename = "ERR";
@@ -749,14 +748,14 @@ static void update_by_pidl(FileItem* fileitem)
                                 SHGDN_INFOLDER,
                                 &strret) == S_OK) {
     StrRetToBuf(&strret, fileitem->pidl, pszName, MAX_PATH);
-    fileitem->displayname = pszName;
+    fileitem->displayname = base::to_utf8(pszName);
   }
   else if (fileitem->isFolder() &&
            shl_idesktop->GetDisplayNameOf(fileitem->fullpidl,
                                           SHGDN_INFOLDER,
                                           &strret) == S_OK) {
     StrRetToBuf(&strret, fileitem->fullpidl, pszName, MAX_PATH);
-    fileitem->displayname = pszName;
+    fileitem->displayname = base::to_utf8(pszName);
   }
   else {
     fileitem->displayname = base::get_file_name(fileitem->filename);
@@ -884,11 +883,9 @@ static base::string get_key_for_pidl(LPITEMIDLIST pidl)
   return key;
 #else
   STRRET strret;
-  TCHAR pszName[MAX_PATH];
-  char key[4096];
+  WCHAR pszName[MAX_PATH];
+  WCHAR key[4096] = { 0 };
   int len;
-
-  ustrcpy(key, empty_string);
 
   // Go pidl by pidl from the fullpidl to the root (desktop)
   //PRINTF("FS: ***\n");
@@ -901,20 +898,20 @@ static base::string get_key_for_pidl(LPITEMIDLIST pidl)
 
       //PRINTF("FS: + %s\n", pszName);
 
-      len = ustrlen(pszName);
+      len = wcslen(pszName);
       if (len > 0) {
         if (*key) {
-          if (pszName[len-1] != '\\') {
-            memmove(key+len+1, key, ustrlen(key)+1);
-            key[len] = '\\';
+          if (pszName[len-1] != L'\\') {
+            memmove(key+len+1, key, sizeof(WCHAR)*(wcslen(key)+1));
+            key[len] = L'\\';
           }
           else
-            memmove(key+len, key, ustrlen(key)+1);
+            memmove(key+len, key, sizeof(WCHAR)*(wcslen(key)+1));
         }
         else
           key[len] = 0;
 
-        memcpy(key, pszName, len);
+        memcpy(key, pszName, sizeof(WCHAR)*len);
       }
     }
     remove_last_pidl(pidl);
@@ -922,7 +919,7 @@ static base::string get_key_for_pidl(LPITEMIDLIST pidl)
   free_pidl(pidl);
 
   //PRINTF("FS: =%s\n***\n", key);
-  return key;
+  return base::to_utf8(key);
 #endif
 }
 

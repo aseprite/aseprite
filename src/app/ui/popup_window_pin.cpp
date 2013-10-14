@@ -38,7 +38,7 @@ namespace app {
 using namespace app::skin;
 using namespace ui;
 
-PopupWindowPin::PopupWindowPin(const char* text, bool close_on_buttonpressed)
+PopupWindowPin::PopupWindowPin(const base::string& text, bool close_on_buttonpressed)
   : PopupWindow(text, close_on_buttonpressed)
   , m_pin("")
 {

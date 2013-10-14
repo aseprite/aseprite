@@ -43,7 +43,7 @@ TooltipManager::~TooltipManager()
   manager->removeMessageFilterFor(this);
 }
 
-void TooltipManager::addTooltipFor(Widget* widget, const char* text, int arrowAlign)
+void TooltipManager::addTooltipFor(Widget* widget, const base::string& text, int arrowAlign)
 {
   m_tips[widget] = TipInfo(text, arrowAlign);
 }

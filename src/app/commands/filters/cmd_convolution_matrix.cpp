@@ -117,7 +117,7 @@ private:
       UI_FOREACH_WIDGET(m_stockListBox->getChildren(), it) {
         Widget* child = *it;
 
-        if (strcmp(child->getText(), oldSelected) == 0) {
+        if (child->getText() == oldSelected) {
           select_this = child;
           break;
         }
@@ -135,7 +135,7 @@ private:
   void onMatrixChange()
   {
     ListItem* selected = m_stockListBox->getSelectedChild();
-    SharedPtr<ConvolutionMatrix> matrix = m_stock.getByName(selected->getText());
+    SharedPtr<ConvolutionMatrix> matrix = m_stock.getByName(selected->getText().c_str());
     Target newTarget = matrix->getDefaultTarget();
 
     m_filter.setMatrix(matrix);

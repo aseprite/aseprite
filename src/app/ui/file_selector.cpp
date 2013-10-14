@@ -115,7 +115,7 @@ public:
 protected:
   virtual bool onProcessMessage(Message* msg) OVERRIDE {
     if (msg->type() == kKeyUpMessage &&
-        static_cast<KeyMessage*>(msg)->ascii() >= 32) {
+        static_cast<KeyMessage*>(msg)->unicodeChar() >= 32) {
       // Check if all keys are released
       for (int c=0; c<KEY_MAX; ++c) {
         if (key[c])
@@ -568,14 +568,11 @@ void FileSelector::addInNavigationHistory(IFileItem* folder)
 
 void FileSelector::selectFileTypeFromFileName()
 {
-  const char *filename = m_fileName->getText();
-  char *p = get_extension(filename);
-  char buf[MAX_PATH];
+  base::string ext = base::get_file_extension(m_fileName->getText());
 
-  if (p && *p != 0) {
-    ustrcpy(buf, get_extension(filename));
-    ustrlwr(buf);
-    m_fileType->setSelectedItemIndex(m_fileType->findItemIndex(buf));
+  if (!ext.empty()) {
+    ext = base::string_to_lower(ext);
+    m_fileType->setSelectedItemIndex(m_fileType->findItemIndex(ext.c_str()));
   }
 }
 

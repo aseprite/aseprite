@@ -20,21 +20,30 @@
 #include "config.h"
 #endif
 
-#include <windows.h>
+#include "app/xml_document.h"
 
-typedef BOOL (WINAPI *LPFN_ISWOW64PROCESS)(HANDLE, PBOOL);
+#include "app/xml_exception.h"
+#include "base/file_handle.h"
 
-static LPFN_ISWOW64PROCESS fnIsWow64Process = NULL;
+#include "tinyxml.h"
 
-BOOL IsWow64()
+namespace app {
+
+using namespace base;
+
+XmlDocumentRef open_xml(const string& filename)
 {
-  BOOL isWow64 = FALSE;
+  FileHandle file(open_file(filename, "rb"));
+  if (!file)
+    throw Exception("Error loading file: " + filename);
 
-  fnIsWow64Process = (LPFN_ISWOW64PROCESS)
-    GetProcAddress(GetModuleHandle(L"kernel32"),
-                   "IsWow64Process");
-  if (fnIsWow64Process != NULL)
-    fnIsWow64Process(GetCurrentProcess(), &isWow64);
+  // Try to load the XML file
+  XmlDocumentRef doc(new TiXmlDocument());
+  doc->SetValue(filename.c_str());
+  if (!doc->LoadFile(file))
+    throw XmlException(doc);
 
-  return isWow64;
+  return doc;
 }
+
+} // namespace app

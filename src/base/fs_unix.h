@@ -42,6 +42,11 @@ void remove_directory(const string& path)
   }
 }
 
+string get_app_path()
+{
+  return getexecname();
+}
+
 string get_temp_path()
 {
   char* tmpdir = getenv("TMPDIR");

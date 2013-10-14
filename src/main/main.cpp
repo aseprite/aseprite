@@ -84,7 +84,7 @@ int app_main(int argc, char* argv[])
   std::srand(static_cast<unsigned int>(std::time(NULL)));
 
 #ifdef WIN32
-  CoInitialize(NULL);
+  ::CoInitialize(NULL);
 #endif
 
   try {
@@ -105,6 +105,9 @@ int app_main(int argc, char* argv[])
   }
   catch (std::exception& e) {
     std::cerr << e.what() << '\n';
+#ifdef WIN32
+    ::MessageBoxA(NULL, e.what(), PACKAGE, MB_OK | MB_ICONERROR);
+#endif
     return 1;
   }
 }

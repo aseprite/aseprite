@@ -24,9 +24,9 @@
 
 #include "app/file/file.h"
 #include "app/file/file_format.h"
-#include "app/file/file_handle.h"
 #include "app/file/format_options.h"
 #include "base/cfile.h"
+#include "base/file_handle.h"
 #include "raster/raster.h"
 
 #include <allegro/color.h>
@@ -66,7 +66,7 @@ bool PcxFormat::onLoad(FileOp* fop)
   int x, y;
   char ch = 0;
 
-  FileHandle f(fop->filename.c_str(), "rb");
+  FileHandle f(open_file_with_exception(fop->filename, "rb"));
 
   fgetc(f);                    /* skip manufacturer ID */
   fgetc(f);                    /* skip version flag */
@@ -193,7 +193,7 @@ bool PcxFormat::onSave(FileOp* fop)
   char runchar;
   char ch = 0;
 
-  FileHandle f(fop->filename.c_str(), "wb");
+  FileHandle f(open_file_with_exception(fop->filename, "wb"));
 
   if (image->getPixelFormat() == IMAGE_RGB) {
     depth = 24;

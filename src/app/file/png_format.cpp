@@ -24,9 +24,9 @@
 #include "app/document.h"
 #include "app/file/file.h"
 #include "app/file/file_format.h"
-#include "app/file/file_handle.h"
 #include "app/file/format_options.h"
 #include "app/ini_file.h"
+#include "base/file_handle.h"
 #include "raster/raster.h"
 
 #include <stdio.h>
@@ -35,6 +35,8 @@
 #include "png.h"
 
 namespace app {
+
+using namespace base;
 
 class PngFormat : public FileFormat {
   const char* onGetName() const { return "png"; }
@@ -78,7 +80,7 @@ bool PngFormat::onLoad(FileOp* fop)
   png_bytep row_pointer;
   PixelFormat pixelFormat;
 
-  FileHandle fp(fop->filename.c_str(), "rb");
+  FileHandle fp(open_file_with_exception(fop->filename, "rb"));
 
   /* Create and initialize the png_struct with the desired error handler
    * functions.  If you want to use the default stderr and longjump method,
@@ -337,7 +339,7 @@ bool PngFormat::onSave(FileOp* fop)
   int pass, number_passes;
 
   /* open the file */
-  FileHandle fp(fop->filename.c_str(), "wb");
+  FileHandle fp(open_file_with_exception(fop->filename, "wb"));
 
   /* Create and initialize the png_struct with the desired error handler
    * functions.  If you want to use the default stderr and longjump method,

@@ -653,7 +653,7 @@ bool Shortcut::is_pressed(Message* msg)
   if (accel) {
     return accel->check(msg->keyModifiers(),
                         static_cast<KeyMessage*>(msg)->scancode(),
-                        static_cast<KeyMessage*>(msg)->ascii());
+                        static_cast<KeyMessage*>(msg)->unicodeChar());
   }
   return false;
 }

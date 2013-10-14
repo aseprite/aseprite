@@ -59,10 +59,10 @@ namespace ui {
   class KeyMessage : public Message
   {
   public:
-    KeyMessage(MessageType type, KeyScancode scancode, int ascii, int repeat);
+    KeyMessage(MessageType type, KeyScancode scancode, int unicodeChar, int repeat);
 
     KeyScancode scancode() const { return m_scancode; }
-    int ascii() const { return m_ascii; }
+    int unicodeChar() const { return m_unicodeChar; }
     int repeat() const { return m_repeat; }
     bool propagateToChildren() const { return m_propagate_to_children; }
     bool propagateToParent() const { return m_propagate_to_parent; }
@@ -71,7 +71,7 @@ namespace ui {
 
   private:
     KeyScancode m_scancode;
-    int m_ascii;
+    int m_unicodeChar;
     int m_repeat; // repeat=0 means the first time the key is pressed
     bool m_propagate_to_children : 1;
     bool m_propagate_to_parent : 1;

@@ -31,12 +31,12 @@
 #include "app/recent_files.h"
 #include "app/ui/status_bar.h"
 #include "base/bind.h"
+#include "base/fs.h"
+#include "base/path.h"
 #include "base/thread.h"
 #include "base/unique_ptr.h"
 #include "raster/sprite.h"
 #include "ui/ui.h"
-
-#include <allegro.h>
 
 static const int kMonitoringPeriod = 100;
 
@@ -44,7 +44,7 @@ namespace app {
 
 class SaveFileJob : public Job, public IFileOpProgress {
 public:
-  SaveFileJob(FileOp* fop, const char* filename)
+  SaveFileJob(FileOp* fop)
     : Job("Saving file")
     , m_fop(fop)
   {
@@ -81,7 +81,7 @@ static void save_document_in_background(Document* document, bool mark_as_saved)
   if (!fop)
     return;
 
-  SaveFileJob job(fop, get_filename(document->getFilename()));
+  SaveFileJob job(fop);
   job.showProgressWindow();
 
   if (fop->has_error()) {
@@ -89,13 +89,13 @@ static void save_document_in_background(Document* document, bool mark_as_saved)
     console.printf(fop->error.c_str());
   }
   else {
-    App::instance()->getRecentFiles()->addRecentFile(document->getFilename());
+    App::instance()->getRecentFiles()->addRecentFile(document->getFilename().c_str());
     if (mark_as_saved)
       document->markAsSaved();
 
     StatusBar::instance()
       ->setStatusText(2000, "File %s, saved.",
-                      get_filename(document->getFilename()));
+                      base::get_file_name(document->getFilename()));
   }
 }
 
@@ -119,23 +119,22 @@ static void save_as_dialog(const ContextReader& reader, const char* dlg_title, b
 
     filename = newfilename;
 
-    /* does the file exist? */
-    if (exists(filename.c_str())) {
-      /* ask if the user wants overwrite the file? */
+    if (base::file_exists(filename.c_str())) {
+      // Ask if the user wants overwrite the existent file?
       ret = ui::Alert::show("Warning<<File exists, overwrite it?<<%s||&Yes||&No||&Cancel",
-                            get_filename(filename.c_str()));
+                            base::get_file_name(filename).c_str());
     }
     else
       break;
 
-    /* "yes": we must continue with the operation... */
+    // "yes": we must continue with the operation...
     if (ret == 1)
       break;
-    /* "cancel" or <esc> per example: we back doing nothing */
+    // "cancel" or <esc> per example: we back doing nothing
     else if (ret != 2)
       return;
 
-    /* "no": we must back to select other file-name */
+    // "no": we must back to select other file-name
   }
 
   {

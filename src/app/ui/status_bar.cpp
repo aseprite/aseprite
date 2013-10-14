@@ -127,9 +127,9 @@ public:
             scancode == kKeyEnterPad) {
           Command* cmd = CommandsModule::instance()->getCommandByName(CommandId::GotoFrame);
           Params params;
-          int frame = strtol(this->getText(), NULL, 10);
+          int frame = getTextInt();
           if (frame > 0) {
-            params.set("frame", this->getText());
+            params.set("frame", getText().c_str());
             UIContext::instance()->executeCommand(cmd, &params);
           }
           // Select the text again
@@ -162,7 +162,7 @@ StatusBar::StatusBar()
 
 #define ICON_NEW(name, icon, action)                                    \
   {                                                                     \
-    BUTTON_NEW((name), NULL, (action));                                 \
+    BUTTON_NEW((name), "", (action));                                   \
     set_gfxicon_to_button((name), icon, icon##_SELECTED, icon##_DISABLED, JI_CENTER | JI_MIDDLE); \
   }
 
@@ -547,13 +547,13 @@ bool StatusBar::onProcessMessage(Message* msg)
       }
 
       // Status bar text
-      if (this->getTextSize() > 0) {
-        textout_ex(doublebuffer, this->getFont(), this->getText(),
+      if (getTextSize() > 0) {
+        textout_ex(doublebuffer, getFont(), getText().c_str(),
                    x,
-                   rc.y + rc.h/2 - text_height(this->getFont())/2,
+                   rc.y + rc.h/2 - text_height(getFont())/2,
                    to_system(text_color), -1);
 
-        x += ji_font_text_len(this->getFont(), this->getText()) + 4*jguiscale();
+        x += ji_font_text_len(getFont(), getText().c_str()) + 4*jguiscale();
       }
 
       // Draw progress bar

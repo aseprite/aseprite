@@ -23,16 +23,18 @@
 #include "app/document.h"
 #include "app/file/file.h"
 #include "app/file/file_format.h"
-#include "app/file/file_handle.h"
 #include "app/file/fli/fli.h"
 #include "app/file/format_options.h"
 #include "app/modules/palettes.h"
+#include "base/file_handle.h"
 #include "raster/raster.h"
 
 #include <allegro/color.h>
 #include <stdio.h>
 
 namespace app {
+
+using namespace base;
 
 static int get_time_precision(Sprite *sprite);
 
@@ -79,7 +81,7 @@ bool FliFormat::onLoad(FileOp* fop)
   int index = 0;
 
   // Open the file to read in binary mode
-  FileHandle f(fop->filename.c_str(), "rb");
+  FileHandle f(open_file_with_exception(fop->filename, "rb"));
 
   fli_read_header(f, &fli_header);
   fseek(f, 128, SEEK_SET);
@@ -94,9 +96,9 @@ bool FliFormat::onLoad(FileOp* fop)
   h = fli_header.height;
 
   // Create the bitmaps
-  base::UniquePtr<Image> bmp(Image::create(IMAGE_INDEXED, w, h));
-  base::UniquePtr<Image> old(Image::create(IMAGE_INDEXED, w, h));
-  base::UniquePtr<Palette> pal(new Palette(FrameNumber(0), 256));
+  UniquePtr<Image> bmp(Image::create(IMAGE_INDEXED, w, h));
+  UniquePtr<Image> old(Image::create(IMAGE_INDEXED, w, h));
+  UniquePtr<Palette> pal(new Palette(FrameNumber(0), 256));
 
   // Create the image
   Sprite* sprite = new Sprite(IMAGE_INDEXED, w, h, 256);
@@ -207,13 +209,13 @@ bool FliFormat::onSave(FileOp* fop)
   fli_header.oframe1 = fli_header.oframe2 = 0;
 
   /* open the file to write in binary mode */
-  FileHandle f(fop->filename.c_str(), "wb");
+  FileHandle f(open_file_with_exception(fop->filename, "wb"));
 
   fseek(f, 128, SEEK_SET);
 
   // Create the bitmaps
-  base::UniquePtr<Image> bmp(Image::create(IMAGE_INDEXED, sprite->getWidth(), sprite->getHeight()));
-  base::UniquePtr<Image> old(Image::create(IMAGE_INDEXED, sprite->getWidth(), sprite->getHeight()));
+  UniquePtr<Image> bmp(Image::create(IMAGE_INDEXED, sprite->getWidth(), sprite->getHeight()));
+  UniquePtr<Image> old(Image::create(IMAGE_INDEXED, sprite->getWidth(), sprite->getHeight()));
 
   // Write frame by frame
   for (FrameNumber frpos(0);

@@ -48,7 +48,7 @@ namespace app {
 using namespace ui;
 
 MainWindow::MainWindow()
-  : Window(true, NULL)
+  : Window(true, "")
   , m_lastSplitterPos(0.0)
   , m_advancedMode(false)
 {
@@ -206,7 +206,8 @@ void MainWindow::mouseOverTab(Tabs* tabs, TabView* tabView)
   if (tabView) {
     DocumentView* docView = static_cast<DocumentView*>(tabView);
     Document* document = docView->getDocument();
-    m_statusBar->setStatusText(250, "%s", static_cast<const char*>(document->getFilename()));
+    m_statusBar->setStatusText(250, "%s",
+                               document->getFilename().c_str());
   }
   else {
     m_statusBar->clearText();

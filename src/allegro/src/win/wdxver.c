@@ -105,7 +105,7 @@ int get_dx_ver(void)
       }
 
       /* First check for DX 8 and 9 */
-      dsetup_hinst = LoadLibrary( "DSETUP.DLL" );
+      dsetup_hinst = LoadLibrary( L"DSETUP.DLL" );
       if ( dsetup_hinst ) {
          DSetupCreate = (DSETUPCREATE)GetProcAddress(dsetup_hinst, "DirectXSetupGetVersion");
          if ( DSetupCreate ) {
@@ -171,10 +171,10 @@ int get_dx_ver(void)
          dx_version = 0x200;
 
          /* we are not supposed to be able to tell which SP we are on, so check for DInput */
-         dinput_hinst = LoadLibrary("DINPUT.DLL");
+         dinput_hinst = LoadLibrary(L"DINPUT.DLL");
          if (!dinput_hinst) {
             /* no DInput... must be DX2 on NT 4 pre-SP3 */
-            OutputDebugString("Couldn't LoadLibrary DInput\r\n");
+            OutputDebugString(L"Couldn't LoadLibrary DInput\r\n");
             return dx_version;
          }
 
@@ -200,7 +200,7 @@ int get_dx_ver(void)
    /* now we know we are in Windows 9x (or maybe 3.1), so anything's possible;
     * first see if DDRAW.DLL even exists.
     */
-   ddraw_hinst = LoadLibrary("DDRAW.DLL");
+   ddraw_hinst = LoadLibrary(L"DDRAW.DLL");
    if (!ddraw_hinst) {
       dx_version = 0;
       goto End;
@@ -236,7 +236,7 @@ int get_dx_ver(void)
    dx_version = 0x200;
 
    /* see if we can create the DirectInput object */
-   dinput_hinst = LoadLibrary("DINPUT.DLL");
+   dinput_hinst = LoadLibrary(L"DINPUT.DLL");
    if (!dinput_hinst) {
       /* no DInput... must be DX2 */
       goto End;

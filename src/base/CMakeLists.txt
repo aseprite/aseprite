@@ -21,6 +21,7 @@ add_library(base-lib
   convert_to.cpp
   errno_string.cpp
   exception.cpp
+  file_handle.cpp
   fs.cpp
   launcher.cpp
   mem_utils.cpp

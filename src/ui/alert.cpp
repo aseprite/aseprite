@@ -139,7 +139,7 @@ void Alert::processString(char* buf, std::vector<Widget*>& labels, std::vector<W
           labels.push_back(label);
         }
         else if (separator) {
-          labels.push_back(new Separator(NULL, JI_HORIZONTAL));
+          labels.push_back(new Separator("", JI_HORIZONTAL));
         }
         else if (button) {
           char buttonId[256];

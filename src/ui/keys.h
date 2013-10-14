@@ -151,7 +151,7 @@ namespace ui {
     kKeyScancodes    = 127
   };
 
-  int scancode_to_ascii(KeyScancode scancode);
+  int scancode_to_unicode(KeyScancode scancode);
 
 } // namespace ui
 

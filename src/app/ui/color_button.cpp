@@ -217,7 +217,7 @@ void ColorButton::onPaint(PaintEvent& ev) // TODO use "ev.getGraphics()"
   if (color.isValid())
     textcolor = color_utils::blackandwhite_neg(ui::rgba(color.getRed(), color.getGreen(), color.getBlue()));
 
-  jdraw_text(ji_screen, getFont(), getText(), text.x1, text.y1,
+  jdraw_text(ji_screen, getFont(), getText().c_str(), text.x1, text.y1,
              textcolor, ColorNone, false, jguiscale());
 }
 

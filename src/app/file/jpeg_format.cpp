@@ -24,12 +24,12 @@
 #include "app/console.h"
 #include "app/file/file.h"
 #include "app/file/file_format.h"
-#include "app/file/file_handle.h"
 #include "app/file/format_options.h"
 #include "app/find_widget.h"
 #include "app/ini_file.h"
 #include "app/load_widget.h"
 #include "base/compiler_specific.h"
+#include "base/file_handle.h"
 #include "base/memory.h"
 #include "raster/raster.h"
 #include "ui/ui.h"
@@ -41,6 +41,8 @@
 #include "jpeglib.h"
 
 namespace app {
+
+using namespace base;
 
 class JpegFormat : public FileFormat {
   // Data for JPEG files
@@ -110,9 +112,7 @@ bool JpegFormat::onLoad(FileOp* fop)
   JDIMENSION buffer_height;
   int c;
 
-  FileHandle file(fop->filename.c_str(), "rb");
-  if (!file)
-    return false;
+  FileHandle file(open_file_with_exception(fop->filename, "rb"));
 
   // Initialize the JPEG decompression object with error handling.
   jerr.fop = fop;
@@ -247,11 +247,7 @@ bool JpegFormat::onSave(FileOp* fop)
   int c;
 
   // Open the file for write in it.
-  FileHandle file(fop->filename.c_str(), "wb");
-  if (!file) {
-    fop_error(fop, "Error creating file.\n");
-    return false;
-  }
+  FileHandle file(open_file_with_exception(fop->filename, "wb"));
 
   // Allocate and initialize JPEG compression object.
   jerr.fop = fop;
@@ -367,7 +363,7 @@ SharedPtr<FormatOptions> JpegFormat::onGetFormatOptions(FileOp* fop)
       return jpeg_options;
 
     // Load the window to ask to the user the JPEG options he wants.
-    base::UniquePtr<ui::Window> window(app::load_widget<ui::Window>("jpeg_options.xml", "jpeg_options"));
+    UniquePtr<ui::Window> window(app::load_widget<ui::Window>("jpeg_options.xml", "jpeg_options"));
     ui::Slider* slider_quality = app::find_widget<ui::Slider>(window, "quality");
     ui::Widget* ok = app::find_widget<ui::Widget>(window, "ok");
 
@@ -385,7 +381,7 @@ SharedPtr<FormatOptions> JpegFormat::onGetFormatOptions(FileOp* fop)
 
     return jpeg_options;
   }
-  catch (base::Exception& e) {
+  catch (std::exception& e) {
     Console::showException(e);
     return SharedPtr<JpegOptions>(0);
   }

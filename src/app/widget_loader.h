@@ -20,9 +20,9 @@
 #define APP_WIDGET_LOADER_H_INCLUDED
 
 #include "app/widget_type_mismatch.h"
+#include "base/string.h"
 
 #include <map>
-#include <string>
 
 class TiXmlElement;
 
@@ -69,10 +69,11 @@ namespace app {
     }
 
   private:
-    ui::Widget* loadWidgetFromXmlFile(const char* xmlFilename, const char* widgetId);
+    ui::Widget* loadWidgetFromXmlFile(const base::string& xmlFilename,
+                                      const base::string& widgetId);
     ui::Widget* convertXmlElementToWidget(const TiXmlElement* elem, ui::Widget* root);
 
-    typedef std::map<std::string, IWidgetTypeCreator*> TypeCreatorsMap;
+    typedef std::map<base::string, IWidgetTypeCreator*> TypeCreatorsMap;
 
     TypeCreatorsMap m_typeCreators;
     ui::TooltipManager* m_tooltipManager;

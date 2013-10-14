@@ -25,9 +25,9 @@
 
 #include "app/file/file.h"
 #include "app/file/file_format.h"
-#include "app/file/file_handle.h"
 #include "app/file/format_options.h"
 #include "base/cfile.h"
+#include "base/file_handle.h"
 #include "raster/raster.h"
 
 #include <allegro/color.h>
@@ -210,7 +210,7 @@ bool TgaFormat::onLoad(FileOp* fop)
   unsigned int c, i, x, y, yc;
   int compressed;
 
-  FileHandle f(fop->filename.c_str(), "rb");
+  FileHandle f(open_file_with_exception(fop->filename, "rb"));
 
   id_length = fgetc(f);
   palette_type = fgetc(f);
@@ -405,7 +405,7 @@ bool TgaFormat::onSave(FileOp* fop)
   int depth = (image->getPixelFormat() == IMAGE_RGB) ? 32 : 8;
   bool need_pal = (image->getPixelFormat() == IMAGE_INDEXED)? true: false;
 
-  FileHandle f(fop->filename.c_str(), "wb");
+  FileHandle f(open_file_with_exception(fop->filename, "wb"));
 
   fputc(0, f);                          /* id length (no id saved) */
   fputc((need_pal) ? 1 : 0, f);         /* palette type */

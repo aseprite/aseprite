@@ -11,6 +11,7 @@
 #include "she.h"
 
 #include <allegro.h>
+#include <allegro/internal/aintern.h>
 #ifdef ALLEGRO_WINDOWS
   #include <winalleg.h>
 #endif
@@ -272,7 +273,8 @@ class Alleg4System : public System {
 public:
   Alleg4System() {
     allegro_init();
-    set_uformat(U_ASCII);
+    set_uformat(U_UTF8);
+    _al_detect_filename_encoding();
     install_timer();
 
     // Register PNG as a supported bitmap type

@@ -53,7 +53,7 @@ void AboutCommand::onExecute(Context* context)
   Label* title = new Label(PACKAGE " v" VERSION);
   Label* subtitle = new Label("Animated sprite editor && pixel art tool");
   Separator* authors_separator1 = new Separator("Authors:", JI_HORIZONTAL | JI_TOP);
-  Separator* authors_separator2 = new Separator(NULL, JI_HORIZONTAL);
+  Separator* authors_separator2 = new Separator("", JI_HORIZONTAL);
   Label* author1 = new LinkLabel("http://dacap.com.ar/", "David Capello");
   Label* author1_desc = new Label("| Programming");
   Label* author2 = new LinkLabel("http://ilkke.blogspot.com/", "Ilija Melentijevic");

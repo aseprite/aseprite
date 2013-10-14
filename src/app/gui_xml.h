@@ -19,8 +19,8 @@
 #ifndef APP_GUI_XML_INCLUDED
 #define APP_GUI_XML_INCLUDED
 
-#include <string>
-#include "tinyxml.h"
+#include "app/xml_document.h"
+#include "base/string.h"
 
 namespace app {
 
@@ -33,19 +33,21 @@ namespace app {
     static GuiXml* instance();
 
     // Returns the tinyxml document instance.
-    TiXmlDocument& doc();
+    XmlDocumentRef doc() {
+      return m_doc;
+    }
 
     // Returns the name of the gui.xml file.
     const char* filename() {
-      return m_doc.Value();
+      return m_doc->Value();
     }
 
-    std::string version();
+    base::string version();
 
   private:
     GuiXml();
 
-    TiXmlDocument m_doc;
+    XmlDocumentRef m_doc;
   };
 
 } // namespace app

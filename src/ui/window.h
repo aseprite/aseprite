@@ -20,7 +20,7 @@ namespace ui {
   class Window : public Widget
   {
   public:
-    Window(bool isDesktop, const char* text);
+    Window(bool isDesktop, const base::string& text);
     ~Window();
 
     Widget* getKiller();

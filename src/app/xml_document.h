@@ -16,29 +16,21 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifndef APP_FILE_HANDLE_FORMAT_H_INCLUDED
-#define APP_FILE_HANDLE_FORMAT_H_INCLUDED
+#ifndef APP_XML_DOCUMENT_H_INCLUDED
+#define APP_XML_DOCUMENT_H_INCLUDED
 
 #include "base/exception.h"
-#include "base/unique_ptr.h"
+#include "base/shared_ptr.h"
+#include "base/string.h"
 
-#include <cstdio>
-#include <string>
+#include "tinyxml.h"
 
-class FileHandle
-{
-public:
-  FileHandle(const char* fileName, const char* mode)
-    : m_handle(std::fopen(fileName, mode), std::fclose)
-  {
-    if (!m_handle)
-      throw base::Exception(std::string("Cannot open ") + fileName);
-  }
+namespace app {
 
-  operator std::FILE*() { return m_handle; }
+  typedef SharedPtr<TiXmlDocument> XmlDocumentRef;
 
-private:
-  base::UniquePtr<std::FILE, int(*)(std::FILE*)> m_handle;
-};
+  XmlDocumentRef open_xml(const base::string& filename);
+
+} // namespace app
 
 #endif

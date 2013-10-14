@@ -16,7 +16,7 @@ namespace ui {
   class Label : public Widget
   {
   public:
-    Label(const char *text);
+    Label(const base::string& text);
 
     Color getTextColor() const;
     void setTextColor(Color color);

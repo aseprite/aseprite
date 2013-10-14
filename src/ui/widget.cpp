@@ -122,15 +122,15 @@ void Widget::initTheme()
 
 int Widget::getTextInt() const
 {
-  return ustrtol(m_text.c_str(), NULL, 10);
+  return strtol(m_text.c_str(), NULL, 10);
 }
 
 double Widget::getTextDouble() const
 {
-  return ustrtod(m_text.c_str(), NULL);
+  return strtod(m_text.c_str(), NULL);
 }
 
-void Widget::setText(const char *text)
+void Widget::setText(const base::string& text)
 {
   setTextQuiet(text);
   onSetText();
@@ -155,16 +155,9 @@ void Widget::setTextf(const char *format, ...)
   setText(buf);
 }
 
-void Widget::setTextQuiet(const char *text)
+void Widget::setTextQuiet(const base::string& text)
 {
-  if (text) {
-    m_text = text;
-    flags &= ~JI_NOTEXT;
-  }
-  else {
-    m_text.clear();
-    flags |= JI_NOTEXT;
-  }
+  m_text = text;
 }
 
 FONT *Widget::getFont() const
@@ -719,7 +712,7 @@ void Widget::getDrawableRegion(gfx::Region& region, DrawableRegionFlags flags)
 int jwidget_get_text_length(const Widget* widget)
 {
 #if 1
-  return ji_font_text_len(widget->getFont(), widget->getText());
+  return ji_font_text_len(widget->getFont(), widget->getText().c_str());
 #else  /* use cached text size */
   return widget->text_size_pix;
 #endif
@@ -751,7 +744,7 @@ void jwidget_get_texticon_info(Widget* widget,
 
   text_x = text_y = 0;
 
-  /* size of the text */
+  // Size of the text
   if (widget->hasText()) {
     text_w = jwidget_get_text_length(widget);
     text_h = jwidget_get_text_height(widget);
@@ -793,9 +786,9 @@ void jwidget_get_texticon_info(Widget* widget,
   else
     box_y = widget->rc->y1 + widget->border_width.t;
 
-  /* with text */
+  // With text
   if (widget->hasText()) {
-    /* text/icon X position */
+    // Text/icon X position
     if (icon_align & JI_RIGHT) {
       text_x = box_x;
       icon_x = box_x + box_w - icon_w;
@@ -809,7 +802,7 @@ void jwidget_get_texticon_info(Widget* widget,
       icon_x = box_x;
     }
 
-    /* text Y position */
+    // Text Y position
     if (icon_align & JI_BOTTOM) {
       text_y = box_y;
       icon_y = box_y + box_h - icon_h;
@@ -823,9 +816,9 @@ void jwidget_get_texticon_info(Widget* widget,
       icon_y = box_y;
     }
   }
-  /* without text */
+  // Without text
   else {
-    /* icon X/Y position */
+    // Icon X/Y position
     icon_x = box_x;
     icon_y = box_y;
   }

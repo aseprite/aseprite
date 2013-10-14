@@ -293,7 +293,7 @@ bool FileList::onProcessMessage(Message* msg)
       if (hasFocus()) {
         KeyMessage* keyMsg = static_cast<KeyMessage*>(msg);
         KeyScancode scancode = keyMsg->scancode();
-        int ascii = keyMsg->ascii();
+        int unicodeChar = keyMsg->unicodeChar();
         int select = getSelectedIndex();
         View* view = View::getView(this);
         int bottom = m_list.size();
@@ -358,15 +358,15 @@ bool FileList::onProcessMessage(Message* msg)
             goUp();
             return true;
           default:
-            if (ascii == ' ' ||
-                (utolower(ascii) >= 'a' &&
-                 utolower(ascii) <= 'z') ||
-                (utolower(ascii) >= '0' &&
-                 utolower(ascii) <= '9')) {
+            if (unicodeChar == ' ' ||
+                (utolower(unicodeChar) >= 'a' &&
+                 utolower(unicodeChar) <= 'z') ||
+                (utolower(unicodeChar) >= '0' &&
+                 utolower(unicodeChar) <= '9')) {
               if (ji_clock - m_isearchClock > ISEARCH_KEYPRESS_INTERVAL_MSECS)
                 m_isearch.clear();
 
-              m_isearch.push_back(ascii);
+              m_isearch.push_back(unicodeChar);
 
               int i, chrs = m_isearch.size();
               FileItemList::iterator

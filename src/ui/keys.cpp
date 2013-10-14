@@ -12,7 +12,7 @@
 
 #include <allegro.h>
 
-int ui::scancode_to_ascii(KeyScancode scancode)
+int ui::scancode_to_unicode(KeyScancode scancode)
 {
   return ::scancode_to_ascii(scancode);
 }

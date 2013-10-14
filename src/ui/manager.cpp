@@ -398,18 +398,20 @@ bool Manager::generateMessages()
 
   // Generate kKeyDownMessage messages.
   while (keypressed()) {
-    int readkey_value = readkey();
+    int scancode;
+    int unicode_char = ureadkey(&scancode);
     int repeat = 0;
-
-    c = readkey_value >> 8;
-    if (c >= 0 && c < KEY_MAX) {
-      old_readed_key[c] = key[c];
-      repeat = key_repeated[c]++;
+    {
+      c = scancode;
+      if (c >= 0 && c < KEY_MAX) {
+        old_readed_key[c] = key[c];
+        repeat = key_repeated[c]++;
+      }
     }
 
     Message* msg = new KeyMessage(kKeyDownMessage,
-                                  static_cast<KeyScancode>((readkey_value >> 8) & 0xff),
-                                  (readkey_value & 0xff), repeat);
+                                  static_cast<KeyScancode>(scancode),
+                                  unicode_char, repeat);
     broadcastKeyMsg(msg);
     enqueueMessage(msg);
   }
@@ -424,7 +426,7 @@ bool Manager::generateMessages()
         // Press/release key interface
         Message* msg = new KeyMessage(kKeyUpMessage,
                                       scancode,
-                                      scancode_to_ascii(scancode), 0);
+                                      scancode_to_unicode(scancode), 0);
         old_readed_key[c] = key[c];
         key_repeated[c] = 0;
 
@@ -436,7 +438,7 @@ bool Manager::generateMessages()
         // Press/release key interface
         Message* msg = new KeyMessage(kKeyDownMessage,
                                       scancode,
-                                      scancode_to_ascii(scancode),
+                                      scancode_to_unicode(scancode),
                                       key_repeated[c]++);
         old_readed_key[c] = key[c];
 

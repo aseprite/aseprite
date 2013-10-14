@@ -139,7 +139,7 @@ private:
     Rect rc = getBounds();
     rc.y += rc.h;
     rc.w *= 3;
-    m_popupWindow = new PopupWindow(NULL, false);
+    m_popupWindow = new PopupWindow("", false);
     m_popupWindow->setAutoRemap(false);
     m_popupWindow->setBounds(rc);
 

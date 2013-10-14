@@ -35,7 +35,7 @@ static gfx::Rect* clickedWindowPos = NULL;
 
 static void displace_widgets(Widget* widget, int x, int y);
 
-Window::Window(bool desktop, const char* text)
+Window::Window(bool desktop, const base::string& text)
   : Widget(kWindowWidget)
 {
   m_killer = NULL;
@@ -123,7 +123,7 @@ void Window::onHitTest(HitTestEvent& ev)
   gfx::Rect cpos = getChildrenBounds();
 
   // Move
-  if ((this->hasText())
+  if ((hasText())
       && (((x >= cpos.x) &&
            (x < cpos.x2()) &&
            (y >= pos.y+this->border_width.b) &&
@@ -461,7 +461,7 @@ void Window::onPreferredSize(PreferredSizeEvent& ev)
       }
     }
 
-    if (this->hasText())
+    if (hasText())
       maxSize.w = MAX(maxSize.w, jwidget_get_text_length(this));
 
     ev.setPreferredSize(this->border_width.l + maxSize.w + this->border_width.r,

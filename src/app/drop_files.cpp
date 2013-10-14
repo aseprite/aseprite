@@ -139,7 +139,7 @@ static LRESULT CALLBACK ase_wnd_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM 
           if (length > 0) {
             TCHAR* lpstr = new TCHAR[length+1];
             DragQueryFile(hdrop, index, lpstr, length+1);
-            dropped_files->push_back(lpstr);
+            dropped_files->push_back(base::to_utf8(lpstr));
             delete[] lpstr;
           }
         }

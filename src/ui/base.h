@@ -57,8 +57,7 @@ namespace ui {
 #define JI_EXPANSIVE    0x0100 // Is expansive (want more space).
 #define JI_DECORATIVE   0x0200 // To decorate windows.
 #define JI_INITIALIZED  0x0400 // The widget was already initialized by a theme.
-#define JI_NOTEXT       0x0800 // The widget does not have text.
-#define JI_DIRTY        0x1000 // The widget (or one child) is dirty (update_region != empty).
+#define JI_DIRTY        0x0800 // The widget (or one child) is dirty (update_region != empty).
 
   typedef unsigned int            JID;
 

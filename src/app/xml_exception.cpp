@@ -28,7 +28,7 @@
 
 namespace app {
 
-XmlException::XmlException(TiXmlDocument* doc) throw()
+XmlException::XmlException(const TiXmlDocument* doc) throw()
 {
   try {
     char buf[4096];             // TODO Overflow
