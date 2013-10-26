@@ -22,7 +22,6 @@
 #include "gfx/fwd.h"
 #include "app/ui/skin/skin_parts.h"
 #include "ui/color.h"
-#include "ui/rect.h"
 #include "ui/system.h"
 #include "ui/theme.h"
 
@@ -189,8 +188,8 @@ namespace app {
 
       BITMAP* cropPartFromSheet(BITMAP* bmp, int x, int y, int w, int h);
       ui::Color getWidgetBgColor(ui::Widget* widget);
-      void drawTextStringDeprecated(const char *t, ui::Color fg_color, ui::Color bg_color,
-                                    bool fill_bg, ui::Widget* widget, const ui::JRect rect,
+      void drawTextStringDeprecated(const char* t, ui::Color fg_color, ui::Color bg_color,
+                                    bool fill_bg, ui::Widget* widget, const gfx::Rect& rect,
                                     int selected_offset);
       void drawTextString(ui::Graphics* g, const char *t, ui::Color fg_color, ui::Color bg_color,
                           bool fill_bg, ui::Widget* widget, const gfx::Rect& rc,

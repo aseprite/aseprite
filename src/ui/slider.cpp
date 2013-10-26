@@ -12,7 +12,6 @@
 #include "ui/manager.h"
 #include "ui/message.h"
 #include "ui/preferred_size_event.h"
-#include "ui/rect.h"
 #include "ui/slider.h"
 #include "ui/system.h"
 #include "ui/theme.h"

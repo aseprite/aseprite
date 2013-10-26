@@ -12,7 +12,6 @@
 #include "ui/manager.h"
 #include "ui/message.h"
 #include "ui/preferred_size_event.h"
-#include "ui/rect.h"
 #include "ui/theme.h"
 #include "ui/widget.h"
 #include "ui/window.h"
@@ -275,15 +274,14 @@ bool ButtonBase::onProcessMessage(Message* msg)
 
 void ButtonBase::onPreferredSize(PreferredSizeEvent& ev)
 {
-  struct jrect box, text, icon;
-
-  jwidget_get_texticon_info(this, &box, &text, &icon,
+  gfx::Rect box;
+  jwidget_get_texticon_info(this, &box, NULL, NULL,
                             m_iconInterface ? m_iconInterface->getIconAlign(): 0,
                             m_iconInterface ? m_iconInterface->getWidth(): 0,
                             m_iconInterface ? m_iconInterface->getHeight(): 0);
 
-  ev.setPreferredSize(this->border_width.l + jrect_w(&box) + this->border_width.r,
-                      this->border_width.t + jrect_h(&box) + this->border_width.b);
+  ev.setPreferredSize(border_width.l + box.w + border_width.r,
+                      border_width.t + box.h + border_width.b);
 }
 
 void ButtonBase::onPaint(PaintEvent& ev)

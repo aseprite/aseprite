@@ -217,10 +217,10 @@ void PaletteEditorCommand::onExecute(Context* context)
       // Default bounds
       g_window->remapWindow();
 
-      int width = MAX(jrect_w(g_window->rc), JI_SCREEN_W/2);
-      g_window->setBounds(Rect(JI_SCREEN_W - width - jrect_w(ToolBar::instance()->rc),
-                               JI_SCREEN_H - jrect_h(g_window->rc) - jrect_h(StatusBar::instance()->rc),
-                              width, jrect_h(g_window->rc)));
+      int width = MAX(g_window->getBounds().w, JI_SCREEN_W/2);
+      g_window->setBounds(Rect(JI_SCREEN_W - width - ToolBar::instance()->getBounds().w,
+                               JI_SCREEN_H - g_window->getBounds().h - StatusBar::instance()->getBounds().h,
+                               width, g_window->getBounds().h));
 
       // Load window configuration
       load_window_pos(g_window, "PaletteEditor");
@@ -498,8 +498,7 @@ void PaletteEntryEditor::onMoreOptionsClick(Event& ev)
     reqSize.h += 4;
 
     // Remove the space occupied by the "More options" panel
-    moveWindow(gfx::Rect(rc->x1, rc->y1,
-                         jrect_w(rc), jrect_h(rc) - reqSize.h));
+    moveWindow(gfx::Rect(getOrigin(), getSize() - gfx::Size(0, reqSize.h)));
   }
   else {
     set_config_bool("PaletteEditor", "ShowMoreOptions", true);
@@ -509,9 +508,8 @@ void PaletteEntryEditor::onMoreOptionsClick(Event& ev)
     reqSize = getPreferredSize();
 
     // Add space for the "more_options" panel
-    if (jrect_h(rc) < reqSize.h) {
-      gfx::Rect rect(rc->x1, rc->y1,
-                     jrect_w(rc), reqSize.h);
+    if (getBounds().h < reqSize.h) {
+      gfx::Rect rect(getOrigin(), gfx::Size(getBounds().w, reqSize.h));
 
       // Show the expanded area inside the screen
       if (rect.y2() > JI_SCREEN_H)

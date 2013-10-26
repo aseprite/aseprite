@@ -16,7 +16,6 @@
 #include "ui/manager.h"
 #include "ui/message.h"
 #include "ui/preferred_size_event.h"
-#include "ui/rect.h"
 #include "ui/system.h"
 #include "ui/theme.h"
 #include "ui/widget.h"
@@ -117,13 +116,13 @@ void Entry::setCaretPos(int pos)
   // Forward scroll
   m_scroll--;
   do {
-    x = this->rc->x1 + this->border_width.l;
+    x = getBounds().x + this->border_width.l;
     for (c=++m_scroll; ; c++) {
       int ch = (c < textlen ? *(utf8_begin+c) : ' ');
 
       x += CHARACTER_LENGTH(getFont(), ch);
 
-      if (x >= this->rc->x2-this->border_width.r)
+      if (x >= getBounds().x2()-this->border_width.r)
         break;
     }
   } while (m_caret >= c);
@@ -300,7 +299,7 @@ bool Entry::onProcessMessage(Message* msg)
         bool is_dirty = false;
 
         // Backward scroll
-        if (mousePos.x < this->rc->x1) {
+        if (mousePos.x < getBounds().x) {
           if (m_scroll > 0) {
             m_caret = --m_scroll;
             move = false;
@@ -309,15 +308,15 @@ bool Entry::onProcessMessage(Message* msg)
           }
         }
         // Forward scroll
-        else if (mousePos.x >= this->rc->x2) {
+        else if (mousePos.x >= getBounds().x2()) {
           if (m_scroll < textlen) {
             m_scroll++;
-            x = this->rc->x1 + this->border_width.l;
+            x = getBounds().x + this->border_width.l;
             for (c=m_scroll; utf8_begin != utf8_end; ++c) {
               int ch = (c < textlen ? *(utf8_begin+c) : ' ');
 
               x += CHARACTER_LENGTH(getFont(), ch);
-              if (x > this->rc->x2-this->border_width.r) {
+              if (x > getBounds().x2()-this->border_width.r) {
                 c--;
                 break;
               }
@@ -423,16 +422,16 @@ int Entry::getCaretFromMouse(MouseMessage* mousemsg)
   int c, x, w, mx, caret = m_caret;
 
   mx = mousemsg->position().x;
-  mx = MID(this->rc->x1+this->border_width.l,
+  mx = MID(getBounds().x+this->border_width.l,
            mx,
-           this->rc->x2-this->border_width.r-1);
+           getBounds().x2()-this->border_width.r-1);
 
-  x = this->rc->x1 + this->border_width.l;
+  x = getBounds().x + this->border_width.l;
 
   base::utf8_const_iterator utf8_it = utf8_begin + m_scroll;
   for (c=m_scroll; utf8_it != utf8_end; ++c, ++utf8_it) {
     w = CHARACTER_LENGTH(getFont(), *utf8_it);
-    if (x+w >= this->rc->x2-this->border_width.r)
+    if (x+w >= getBounds().x2()-this->border_width.r)
       break;
     if ((mx >= x) && (mx < x+w)) {
       caret = c;
@@ -443,7 +442,7 @@ int Entry::getCaretFromMouse(MouseMessage* mousemsg)
 
   if (utf8_it == utf8_end) {
     if ((mx >= x) &&
-        (mx <= this->rc->x2-this->border_width.r-1)) {
+        (mx <= getBounds().x2()-this->border_width.r-1)) {
       caret = c;
     }
   }

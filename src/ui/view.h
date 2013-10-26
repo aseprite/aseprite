@@ -54,8 +54,6 @@ protected:
   void onPaint(PaintEvent& ev) OVERRIDE;
 
 private:
-  static void displaceWidgets(Widget* widget, int x, int y);
-
   bool m_hasBars;
   Viewport m_viewport;
   ScrollBar m_scrollbar_h;

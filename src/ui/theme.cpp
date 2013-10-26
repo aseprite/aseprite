@@ -17,7 +17,6 @@
 #include "ui/font.h"
 #include "ui/intern.h"
 #include "ui/manager.h"
-#include "ui/rect.h"
 #include "ui/system.h"
 #include "ui/theme.h"
 #include "ui/view.h"
@@ -120,10 +119,10 @@ void drawTextBox(BITMAP* bmp, Widget* widget,
     scroll = view->getViewScroll();
   }
   else {
-    x1 = widget->rc->x1 + widget->border_width.l;
-    y1 = widget->rc->y1 + widget->border_width.t;
-    viewport_w = jrect_w(widget->rc) - widget->border_width.l - widget->border_width.r;
-    viewport_h = jrect_h(widget->rc) - widget->border_width.t - widget->border_width.b;
+    x1 = widget->getBounds().x + widget->border_width.l;
+    y1 = widget->getBounds().y + widget->border_width.t;
+    viewport_w = widget->getBounds().w - widget->border_width.l - widget->border_width.r;
+    viewport_h = widget->getBounds().h - widget->border_width.t - widget->border_width.b;
     scroll.x = scroll.y = 0;
   }
   x2 = x1+viewport_w-1;
@@ -133,7 +132,7 @@ void drawTextBox(BITMAP* bmp, Widget* widget,
 
   /* without word-wrap */
   if (!(widget->getAlign() & JI_WORDWRAP)) {
-    width = jrect_w(widget->rc);
+    width = widget->getBounds().w;
   }
   /* with word-wrap */
   else {

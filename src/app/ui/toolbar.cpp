@@ -410,7 +410,7 @@ void ToolBar::openPopupWindow(int group_index, ToolGroup* tool_group)
   for (ToolIterator it = toolbox->begin(); it != toolbox->end(); ++it) {
     Tool* tool = *it;
     if (tool->getGroup() == tool_group)
-      w += jrect_w(this->rc)-this->border_width.l-this->border_width.r-1;
+      w += getBounds().w-this->border_width.l-this->border_width.r-1;
   }
 
   rc.x -= w;
@@ -533,8 +533,8 @@ void ToolBar::openTipWindow(int group_index, Tool* tool)
 
   Rect toolrc = getToolGroupBounds(group_index);
   Point arrow = tool ? getToolPositionInGroup(group_index, tool): Point(0, 0);
-  int w = jrect_w(m_tipWindow->rc);
-  int h = jrect_h(m_tipWindow->rc);
+  int w = m_tipWindow->getBounds().w;
+  int h = m_tipWindow->getBounds().h;
   int x = toolrc.x - w + (tool && m_popupWindow && m_popupWindow->isVisible() ? arrow.x-m_popupWindow->getBounds().w: 0);
   int y = toolrc.y + toolrc.h;
 
@@ -629,8 +629,8 @@ bool ToolStrip::onProcessMessage(Message* msg)
 
       // Get the chunk of screen where we will draw
       blit(m_overlapped, doublebuffer,
-           this->rc->x1 - paintarea.x,
-           this->rc->y1 - paintarea.y, 0, 0,
+           getBounds().x - paintarea.x,
+           getBounds().y - paintarea.y, 0, 0,
            doublebuffer->w,
            doublebuffer->h);
 
@@ -738,10 +738,11 @@ void ToolStrip::onPreferredSize(PreferredSizeEvent& ev)
 
 Rect ToolStrip::getToolBounds(int index)
 {
+  const Rect& bounds(getBounds());
   Size iconsize = getToolIconSize(this);
 
-  return Rect(rc->x1+index*(iconsize.w-1), rc->y1,
-              iconsize.w, jrect_h(rc));
+  return Rect(bounds.x+index*(iconsize.w-1), bounds.y,
+              iconsize.w, bounds.h);
 }
 
 } // namespace app

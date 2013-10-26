@@ -37,7 +37,6 @@
 #include "raster/pen.h"
 #include "raster/sprite.h"
 #include "ui/base.h"
-#include "ui/rect.h"
 #include "ui/system.h"
 #include "ui/widget.h"
 

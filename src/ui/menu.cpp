@@ -288,8 +288,8 @@ void Menu::showPopup(int x, int y)
   window->remapWindow();
 
   // Menubox position
-  window->positionWindow(MID(0, x, JI_SCREEN_W-jrect_w(window->rc)),
-                         MID(0, y, JI_SCREEN_H-jrect_h(window->rc)));
+  window->positionWindow(MID(0, x, JI_SCREEN_W-window->getBounds().w),
+                         MID(0, y, JI_SCREEN_H-window->getBounds().h));
 
   // Set the focus to the new menubox
   Manager::getDefault()->setFocus(menubox);
@@ -724,13 +724,13 @@ bool MenuItem::onProcessMessage(Message* msg)
         Rect pos = window->getBounds();
 
         if (this->getParent()->getParent()->type == kMenuBarWidget) {
-          pos.x = MID(0, this->rc->x1, JI_SCREEN_W-pos.w);
-          pos.y = MID(0, this->rc->y2, JI_SCREEN_H-pos.h);
+          pos.x = MID(0, getBounds().x, JI_SCREEN_W-pos.w);
+          pos.y = MID(0, getBounds().y2(), JI_SCREEN_H-pos.h);
         }
         else {
-          int x_left = this->rc->x1-pos.w;
-          int x_right = this->rc->x2;
-          int x, y = this->rc->y1;
+          int x_left = getBounds().x - pos.w;
+          int x_right = getBounds().x2();
+          int x, y = getBounds().y;
           Rect r1(0, 0, pos.w, pos.h), r2(0, 0, pos.w, pos.h);
 
           r1.x = x_left = MID(0, x_left, JI_SCREEN_W-pos.w);

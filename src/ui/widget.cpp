@@ -42,11 +42,11 @@ WidgetType register_widget_type()
 }
 
 Widget::Widget(WidgetType type)
+  : m_bounds(0, 0, 0, 0)
 {
   addWidget(this);
 
   this->type = type;
-  this->rc = jrect_new(0, 0, 0, 0);
   this->border_width.l = 0;
   this->border_width.t = 0;
   this->border_width.r = 0;
@@ -97,10 +97,6 @@ Widget::~Widget()
   // m_children.
   while (!m_children.empty())
     delete m_children.front();
-
-  /* destroy widget position */
-  if (this->rc)
-    jrect_free(this->rc);
 
   // Delete the preferred size
   delete m_preferredSize;
@@ -408,8 +404,8 @@ Widget* Widget::pick(const gfx::Point& pt)
 {
   Widget* inside, *picked = NULL;
 
-  if (!(this->flags & JI_HIDDEN) &&           // Is visible
-      jrect_point_in(this->rc, pt.x, pt.y)) { // The point is inside the bounds
+  if (!(this->flags & JI_HIDDEN) && // Is visible
+      getBounds().contains(pt)) {   // The point is inside the bounds
     picked = this;
 
     UI_FOREACH_WIDGET(m_children, it) {
@@ -568,18 +564,18 @@ void Widget::setDecorativeWidgetBounds()
 
 Rect Widget::getChildrenBounds() const
 {
-  return Rect(rc->x1+border_width.l,
-              rc->y1+border_width.t,
-              jrect_w(rc) - border_width.l - border_width.r,
-              jrect_h(rc) - border_width.t - border_width.b);
+  return Rect(m_bounds.x+border_width.l,
+              m_bounds.y+border_width.t,
+              m_bounds.w - border_width.l - border_width.r,
+              m_bounds.h - border_width.t - border_width.b);
 }
 
 Rect Widget::getClientChildrenBounds() const
 {
   return Rect(border_width.l,
               border_width.t,
-              jrect_w(rc) - border_width.l - border_width.r,
-              jrect_h(rc) - border_width.t - border_width.b);
+              m_bounds.w - border_width.l - border_width.r,
+              m_bounds.h - border_width.t - border_width.b);
 }
 
 void Widget::setBounds(const Rect& rc)
@@ -590,8 +586,7 @@ void Widget::setBounds(const Rect& rc)
 
 void Widget::setBoundsQuietly(const gfx::Rect& rc)
 {
-  jrect jrc = { rc.x, rc.y, rc.x2(), rc.y2() };
-  jrect_copy(this->rc, &jrc);
+  m_bounds = rc;
 }
 
 Border Widget::getBorder() const
@@ -726,15 +721,17 @@ int jwidget_get_text_height(const Widget* widget)
 }
 
 void jwidget_get_texticon_info(Widget* widget,
-                               JRect box, JRect text, JRect icon,
+                               gfx::Rect* box,
+                               gfx::Rect* text,
+                               gfx::Rect* icon,
                                int icon_align, int icon_w, int icon_h)
 {
 #define SETRECT(r)                              \
   if (r) {                                      \
-    r->x1 = r##_x;                              \
-    r->y1 = r##_y;                              \
-    r->x2 = r##_x+r##_w;                        \
-    r->y2 = r##_y+r##_h;                        \
+    r->x = r##_x;                               \
+    r->y = r##_y;                               \
+    r->w = r##_w;                               \
+    r->h = r##_h;                               \
   }
 
   int box_x, box_y, box_w, box_h, icon_x, icon_y;
@@ -773,18 +770,18 @@ void jwidget_get_texticon_info(Widget* widget,
 
   /* box position */
   if (widget->getAlign() & JI_RIGHT)
-    box_x = widget->rc->x2 - box_w - widget->border_width.r;
+    box_x = widget->getBounds().x2() - box_w - widget->border_width.r;
   else if (widget->getAlign() & JI_CENTER)
-    box_x = (widget->rc->x1+widget->rc->x2)/2 - box_w/2;
+    box_x = (widget->getBounds().x+widget->getBounds().x2())/2 - box_w/2;
   else
-    box_x = widget->rc->x1 + widget->border_width.l;
+    box_x = widget->getBounds().x + widget->border_width.l;
 
   if (widget->getAlign() & JI_BOTTOM)
-    box_y = widget->rc->y2 - box_h - widget->border_width.b;
+    box_y = widget->getBounds().y2() - box_h - widget->border_width.b;
   else if (widget->getAlign() & JI_MIDDLE)
-    box_y = (widget->rc->y1+widget->rc->y2)/2 - box_h/2;
+    box_y = (widget->getBounds().y+widget->getBounds().y2())/2 - box_h/2;
   else
-    box_y = widget->rc->y1 + widget->border_width.t;
+    box_y = widget->getBounds().y + widget->border_width.t;
 
   // With text
   if (widget->hasText()) {
@@ -1206,7 +1203,9 @@ bool Widget::onProcessMessage(Message* msg)
                                        ptmsg->rect().w,
                                        ptmsg->rect().h);
 
-        Graphics graphics(bmp, rc->x1 - ptmsg->rect().x, rc->y1 - ptmsg->rect().y);
+        Graphics graphics(bmp,
+                          getBounds().x - ptmsg->rect().x,
+                          getBounds().y - ptmsg->rect().y);
         graphics.setFont(getFont());
 
         PaintEvent ev(this, &graphics);
@@ -1222,7 +1221,7 @@ bool Widget::onProcessMessage(Message* msg)
       // Paint directly on ji_screen (in this case "ji_screen" can be
       // the screen or a memory bitmap).
       else {
-        Graphics graphics(ji_screen, rc->x1, rc->y1);
+        Graphics graphics(ji_screen, getBounds().x, getBounds().y);
         graphics.setFont(getFont());
 
         PaintEvent ev(this, &graphics);
@@ -1367,6 +1366,14 @@ void Widget::onDeselect()
 void Widget::onSetText()
 {
   invalidate();
+}
+
+void Widget::offsetWidgets(int dx, int dy)
+{
+  m_bounds.offset(dx, dy);
+
+  UI_FOREACH_WIDGET(m_children, it)
+    (*it)->offsetWidgets(dx, dy);
 }
 
 } // namespace ui

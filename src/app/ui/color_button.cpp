@@ -165,25 +165,23 @@ bool ColorButton::onProcessMessage(Message* msg)
 
 void ColorButton::onPreferredSize(PreferredSizeEvent& ev)
 {
-  struct jrect box;
-
+  gfx::Rect box;
   jwidget_get_texticon_info(this, &box, NULL, NULL, 0, 0, 0);
+  box.w = 64;
 
-  box.x2 = box.x1+64;
-
-  ev.setPreferredSize(jrect_w(&box) + border_width.l + border_width.r,
-                      jrect_h(&box) + border_width.t + border_width.b);
+  ev.setPreferredSize(box.w + border_width.l + border_width.r,
+                      box.h + border_width.t + border_width.b);
 }
 
 void ColorButton::onPaint(PaintEvent& ev) // TODO use "ev.getGraphics()"
 {
-  struct jrect box, text, icon;
+  gfx::Rect box, text, icon;
   jwidget_get_texticon_info(this, &box, &text, &icon, 0, 0, 0);
 
   ui::Color bg = getBgColor();
   if (is_transparent(bg))
     bg = static_cast<SkinTheme*>(getTheme())->getColor(ThemeColor::Face);
-  jdraw_rectfill(this->rc, bg);
+  jdraw_rectfill(getBounds(), bg);
 
   app::Color color;
 
@@ -217,7 +215,7 @@ void ColorButton::onPaint(PaintEvent& ev) // TODO use "ev.getGraphics()"
   if (color.isValid())
     textcolor = color_utils::blackandwhite_neg(ui::rgba(color.getRed(), color.getGreen(), color.getBlue()));
 
-  jdraw_text(ji_screen, getFont(), getText().c_str(), text.x1, text.y1,
+  jdraw_text(ji_screen, getFont(), getText().c_str(), text.x, text.y,
              textcolor, ColorNone, false, jguiscale());
 }
 
@@ -249,11 +247,11 @@ void ColorButton::openSelectorDialog()
   m_window->setColor(m_color, ColorSelector::ChangeType);
   m_window->openWindow();
 
-  x = MID(0, this->rc->x1, JI_SCREEN_W-jrect_w(m_window->rc));
-  if (this->rc->y2 <= JI_SCREEN_H-jrect_h(m_window->rc))
-    y = MAX(0, this->rc->y2);
+  x = MID(0, getBounds().x, JI_SCREEN_W-m_window->getBounds().w);
+  if (getBounds().y2() <= JI_SCREEN_H-m_window->getBounds().h)
+    y = MAX(0, getBounds().y2());
   else
-    y = MAX(0, this->rc->y1-jrect_h(m_window->rc));
+    y = MAX(0, getBounds().y-m_window->getBounds().h);
 
   m_window->positionWindow(x, y);
 

@@ -81,7 +81,7 @@ bool TextBox::onProcessMessage(Message* msg)
               break;
 
             case kKeyEnd:
-              scroll.y = jrect_h(this->rc) - vp.h;
+              scroll.y = getBounds().h - vp.h;
               view->setViewScroll(scroll);
               break;
 
@@ -169,7 +169,7 @@ void TextBox::onPreferredSize(PreferredSizeEvent& ev)
       width = view->getViewportBounds().w;
     }
     else {
-      width = jrect_w(this->rc);
+      width = getBounds().w;
     }
 
     w = MAX(min, width);

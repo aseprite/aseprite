@@ -18,7 +18,6 @@
 #include "ui/manager.h"
 #include "ui/overlay.h"
 #include "ui/overlay_manager.h"
-#include "ui/rect.h"
 #include "ui/theme.h"
 #include "ui/widget.h"
 
@@ -136,8 +135,8 @@ void SetDisplay(she::Display* display)
       manager->setDisplay(display);
 
       // Update default-manager size
-      if ((jrect_w(manager->rc) != JI_SCREEN_W ||
-           jrect_h(manager->rc) != JI_SCREEN_H)) {
+      if ((manager->getBounds().w != JI_SCREEN_W ||
+           manager->getBounds().h != JI_SCREEN_H)) {
         manager->setBounds(gfx::Rect(0, 0, JI_SCREEN_W, JI_SCREEN_H));
       }
     }

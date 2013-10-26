@@ -139,7 +139,7 @@ Manager::Manager()
     }
   }
 
-  jrect_replace(this->rc, 0, 0, JI_SCREEN_W, JI_SCREEN_H);
+  setBounds(gfx::Rect(0, 0, JI_SCREEN_W, JI_SCREEN_H));
   setVisible(true);
 
   // Default manager is the first one (and is always visible).
@@ -965,8 +965,8 @@ void Manager::onPreferredSize(PreferredSizeEvent& ev)
   int w = 0, h = 0;
 
   if (!getParent()) {        // hasn' parent?
-    w = jrect_w(this->rc);
-    h = jrect_h(this->rc);
+    w = getBounds().w;
+    h = getBounds().h;
   }
   else {
     gfx::Rect pos = getParent()->getChildrenBounds();
@@ -1321,11 +1321,11 @@ static bool move_focus(Manager* manager, Message* msg)
           int i, j, x, y;
 
           // Position where the focus come
-          x = ((focus_widget) ? focus_widget->rc->x1+focus_widget->rc->x2:
-                                window->rc->x1+window->rc->x2)
+          x = ((focus_widget) ? focus_widget->getBounds().x+focus_widget->getBounds().x2():
+                                window->getBounds().x+window->getBounds().x2())
             / 2;
-          y = ((focus_widget) ? focus_widget->rc->y1+focus_widget->rc->y2:
-                                window->rc->y1+window->rc->y2)
+          y = ((focus_widget) ? focus_widget->getBounds().y+focus_widget->getBounds().y2():
+                                window->getBounds().y+window->getBounds().y2())
             / 2;
 
           c = focus_widget ? 1: 0;
@@ -1408,34 +1408,34 @@ static Widget* next_widget(Widget* widget)
 
 static int cmp_left(Widget* widget, int x, int y)
 {
-  int z = x - (widget->rc->x1+widget->rc->x2)/2;
+  int z = x - (widget->getBounds().x+widget->getBounds().w/2);
   if (z <= 0)
     return INT_MAX;
-  return z + ABS((widget->rc->y1+widget->rc->y2)/2 - y) * 8;
+  return z + ABS((widget->getBounds().y+widget->getBounds().h/2) - y) * 8;
 }
 
 static int cmp_right(Widget* widget, int x, int y)
 {
-  int z = (widget->rc->x1+widget->rc->x2)/2 - x;
+  int z = (widget->getBounds().x+widget->getBounds().w/2) - x;
   if (z <= 0)
     return INT_MAX;
-  return z + ABS((widget->rc->y1+widget->rc->y2)/2 - y) * 8;
+  return z + ABS((widget->getBounds().y+widget->getBounds().h/2) - y) * 8;
 }
 
 static int cmp_up(Widget* widget, int x, int y)
 {
-  int z = y - (widget->rc->y1+widget->rc->y2)/2;
+  int z = y - (widget->getBounds().y+widget->getBounds().h/2);
   if (z <= 0)
     return INT_MAX;
-  return z + ABS((widget->rc->x1+widget->rc->x2)/2 - x) * 8;
+  return z + ABS((widget->getBounds().x+widget->getBounds().w/2) - x) * 8;
 }
 
 static int cmp_down(Widget* widget, int x, int y)
 {
-  int z = (widget->rc->y1+widget->rc->y2)/2 - y;
+  int z = (widget->getBounds().y+widget->getBounds().h/2) - y;
   if (z <= 0)
     return INT_MAX;
-  return z + ABS((widget->rc->x1+widget->rc->x2)/2 - x) * 8;
+  return z + ABS((widget->getBounds().x+widget->getBounds().w/2) - x) * 8;
 }
 
 } // namespace ui

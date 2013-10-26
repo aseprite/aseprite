@@ -118,7 +118,7 @@ bool FileList::onProcessMessage(Message* msg)
       View* view = View::getView(this);
       gfx::Rect vp = view->getViewportBounds();
       int th = jwidget_get_text_height(this);
-      int x, y = this->rc->y1;
+      int x, y = getBounds().y;
       int evenRow = 0;
       ui::Color bgcolor;
       ui::Color fgcolor;
@@ -146,7 +146,7 @@ bool FileList::onProcessMessage(Message* msg)
                                 theme->getColor(ThemeColor::FileListOddRowText);
         }
 
-        x = this->rc->x1+2;
+        x = getBounds().x+2;
 
         if (fi->isFolder()) {
           int icon_w = ji_font_text_len(getFont(), "[+]");
@@ -159,7 +159,7 @@ bool FileList::onProcessMessage(Message* msg)
           // background for the icon
           jrectexclude(ji_screen,
                        /* rectangle to fill */
-                       this->rc->x1, y,
+                       getBounds().x, y,
                        x+icon_w+2-1, y+2+th+2-1,
                        /* exclude where is the icon located */
                        x, y+2,
@@ -173,7 +173,7 @@ bool FileList::onProcessMessage(Message* msg)
         else {
           // background for the left side of the item
           rectfill(ji_screen,
-                   this->rc->x1, y,
+                   getBounds().x, y,
                    x-1, y+2+th+2-1,
                    to_system(bgcolor));
         }
@@ -187,10 +187,10 @@ bool FileList::onProcessMessage(Message* msg)
         jrectexclude(ji_screen,
                      /* rectangle to fill */
                      x, y,
-                     this->rc->x2-1, y+2+th+2-1,
+                     getBounds().x2()-1, y+2+th+2-1,
                      /* exclude where is the text located */
                      x, y+2,
-                     x+ji_font_text_len(this->getFont(),
+                     x+ji_font_text_len(getFont(),
                                         fi->getDisplayName().c_str())-1,
                      y+2+ji_font_get_size(getFont())-1,
                      /* fill with the background color */
@@ -202,8 +202,8 @@ bool FileList::onProcessMessage(Message* msg)
           ThumbnailGenerator::instance()->getWorkerStatus(fi, progress);
         if (workerStatus == ThumbnailGenerator::WorkingOnThumbnail) {
           theme->drawProgressBar(ji_screen,
-                                 this->rc->x2-2-64, y+itemSize.h/2-3,
-                                 this->rc->x2-2, y+itemSize.h/2+3,
+                                 getBounds().x2()-2-64, y+itemSize.h/2-3,
+                                 getBounds().x2()-2, y+itemSize.h/2+3,
                                  progress);
         }
 
@@ -218,10 +218,10 @@ bool FileList::onProcessMessage(Message* msg)
         evenRow ^= 1;
       }
 
-      if (y < this->rc->y2-1)
+      if (y < getBounds().y2()-1)
         rectfill(ji_screen,
-                 this->rc->x1, y,
-                 this->rc->x2-1, this->rc->y2-1,
+                 getBounds().x, y,
+                 getBounds().x2()-1, getBounds().y2()-1,
                  to_system(theme->getColor(ThemeColor::Background)));
 
       // Draw the thumbnail
@@ -249,7 +249,7 @@ bool FileList::onProcessMessage(Message* msg)
       if (hasCapture()) {
         MouseMessage* mouseMsg = static_cast<MouseMessage*>(msg);
         int th = jwidget_get_text_height(this);
-        int y = this->rc->y1;
+        int y = getBounds().y;
         IFileItem* old_selected = m_selected;
         m_selected = NULL;
 
@@ -495,7 +495,7 @@ void FileList::makeSelectedFileitemVisible()
   gfx::Rect vp = view->getViewportBounds();
   gfx::Point scroll = view->getViewScroll();
   int th = jwidget_get_text_height(this);
-  int y = this->rc->y1;
+  int y = getBounds().y;
 
   // rows
   for (FileItemList::iterator
@@ -506,9 +506,9 @@ void FileList::makeSelectedFileitemVisible()
 
     if (fi == m_selected) {
       if (y < vp.y)
-        scroll.y = y - this->rc->y1;
+        scroll.y = y - getBounds().y;
       else if (y > vp.y + vp.h - (2+th+2))
-        scroll.y = y - this->rc->y1 - vp.h + (2+th+2);
+        scroll.y = y - getBounds().y - vp.h + (2+th+2);
 
       view->setViewScroll(scroll);
       break;

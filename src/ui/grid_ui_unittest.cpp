@@ -83,15 +83,15 @@ TEST(JGrid, Expand2ndWidget)
   // Test layout
   grid->setBounds(gfx::Rect(0, 0, 40, 20));
 
-  EXPECT_EQ(0, w1->rc->x1);
-  EXPECT_EQ(0, w1->rc->y1);
-  EXPECT_EQ(20, jrect_w(w1->rc));
-  EXPECT_EQ(20, jrect_h(w1->rc));
+  EXPECT_EQ(0, w1->getBounds().x);
+  EXPECT_EQ(0, w1->getBounds().y);
+  EXPECT_EQ(20, w1->getBounds().w);
+  EXPECT_EQ(20, w1->getBounds().h);
 
-  EXPECT_EQ(20, w2->rc->x1);
-  EXPECT_EQ(0, w2->rc->y1);
-  EXPECT_EQ(20, jrect_w(w2->rc));
-  EXPECT_EQ(10, jrect_h(w2->rc));
+  EXPECT_EQ(20, w2->getBounds().x);
+  EXPECT_EQ(0, w2->getBounds().y);
+  EXPECT_EQ(20, w2->getBounds().w);
+  EXPECT_EQ(10, w2->getBounds().h);
 
   delete grid;
 }
@@ -116,10 +116,10 @@ TEST(JGrid, SameWidth2x1Grid)
   // Test layout
   grid->setBounds(gfx::Rect(0, 0, 60, 20));
 
-  EXPECT_EQ(0, w1->rc->x1);
-  EXPECT_EQ(30, w2->rc->x1);
-  EXPECT_EQ(30, jrect_w(w1->rc));
-  EXPECT_EQ(30, jrect_w(w2->rc));
+  EXPECT_EQ(0, w1->getBounds().x);
+  EXPECT_EQ(30, w2->getBounds().x);
+  EXPECT_EQ(30, w1->getBounds().w);
+  EXPECT_EQ(30, w2->getBounds().w);
 
   delete grid;
 }
@@ -185,23 +185,23 @@ TEST(JGrid, Intrincate3x3Grid)
   // Test layout
   grid->setBounds(gfx::Rect(0, 0, 100, 100));
 
-  EXPECT_EQ(0, w1->rc->x1);
-  EXPECT_EQ(0, w1->rc->y1);
-  EXPECT_EQ(12, w2->rc->x1);
-  EXPECT_EQ(0, w2->rc->y1);
-  EXPECT_EQ(0, w3->rc->x1);
-  EXPECT_EQ(12, w3->rc->y1);
-  EXPECT_EQ(90, w4->rc->x1);
-  EXPECT_EQ(12, w4->rc->y1);
+  EXPECT_EQ(0, w1->getBounds().x);
+  EXPECT_EQ(0, w1->getBounds().y);
+  EXPECT_EQ(12, w2->getBounds().x);
+  EXPECT_EQ(0, w2->getBounds().y);
+  EXPECT_EQ(0, w3->getBounds().x);
+  EXPECT_EQ(12, w3->getBounds().y);
+  EXPECT_EQ(90, w4->getBounds().x);
+  EXPECT_EQ(12, w4->getBounds().y);
 
-  EXPECT_EQ(10, jrect_w(w1->rc));
-  EXPECT_EQ(10, jrect_h(w1->rc));
-  EXPECT_EQ(88, jrect_w(w2->rc));
-  EXPECT_EQ(10, jrect_h(w2->rc));
-  EXPECT_EQ(88, jrect_w(w3->rc));
-  EXPECT_EQ(88, jrect_h(w3->rc));
-  EXPECT_EQ(10, jrect_w(w4->rc));
-  EXPECT_EQ(88, jrect_h(w4->rc));
+  EXPECT_EQ(10, w1->getBounds().w);
+  EXPECT_EQ(10, w1->getBounds().h);
+  EXPECT_EQ(88, w2->getBounds().w);
+  EXPECT_EQ(10, w2->getBounds().h);
+  EXPECT_EQ(88, w3->getBounds().w);
+  EXPECT_EQ(88, w3->getBounds().h);
+  EXPECT_EQ(10, w4->getBounds().w);
+  EXPECT_EQ(88, w4->getBounds().h);
 
   delete grid;
 }

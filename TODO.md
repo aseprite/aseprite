@@ -56,7 +56,6 @@
   then cloned, and finally filled with params.
 * About Signals/Slots: Add some field in slots to avoid disconnecting
   them from dead signals.
-* Replace JRect & jrect with gfx::Rect.
 * editors_ -> MultiEditors class widget
 * convert all widgets to classes:
   * match UI library design with Vaca library.

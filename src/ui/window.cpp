@@ -33,8 +33,6 @@ enum {
 static gfx::Point clickedMousePos;
 static gfx::Rect* clickedWindowPos = NULL;
 
-static void displace_widgets(Widget* widget, int x, int y);
-
 Window::Window(bool desktop, const base::string& text)
   : Widget(kWindowWidget)
 {
@@ -180,7 +178,7 @@ void Window::remapWindow()
     this->setVisible(true);
   }
 
-  setBounds(Rect(Point(this->rc->x1, this->rc->y1),
+  setBounds(Rect(Point(getBounds().x, getBounds().y),
                  getPreferredSize()));
 
   // load layout
@@ -194,10 +192,10 @@ void Window::centerWindow()
   Widget* manager = getManager();
 
   if (m_isAutoRemap)
-    this->remapWindow();
+    remapWindow();
 
-  positionWindow(jrect_w(manager->rc)/2 - jrect_w(this->rc)/2,
-                 jrect_h(manager->rc)/2 - jrect_h(this->rc)/2);
+  positionWindow(manager->getBounds().w/2 - getBounds().w/2,
+                 manager->getBounds().h/2 - getBounds().h/2);
 }
 
 void Window::positionWindow(int x, int y)
@@ -205,7 +203,7 @@ void Window::positionWindow(int x, int y)
   if (m_isAutoRemap)
     remapWindow();
 
-  setBounds(Rect(x, y, jrect_w(this->rc), jrect_h(this->rc)));
+  setBounds(Rect(x, y, getBounds().w, getBounds().h));
 
   invalidate();
 }
@@ -320,8 +318,8 @@ bool Window::onProcessMessage(Message* msg)
           int x = clickedWindowPos->x + (mousePos.x - clickedMousePos.x);
           int y = clickedWindowPos->y + (mousePos.y - clickedMousePos.y);
           moveWindow(gfx::Rect(x, y,
-                               jrect_w(this->rc),
-                               jrect_h(this->rc)), true);
+                               getBounds().w,
+                               getBounds().h), true);
         }
         else {
           int x, y, w, h;
@@ -358,17 +356,17 @@ bool Window::onProcessMessage(Message* msg)
 
           limitSize(&w, &h);
 
-          if ((jrect_w(this->rc) != w) ||
-              (jrect_h(this->rc) != h)) {
+          if ((getBounds().w != w) ||
+              (getBounds().h != h)) {
             if (hitLeft)
               x = clickedWindowPos->x - (w - clickedWindowPos->w);
             else
-              x = this->rc->x1;
+              x = getBounds().x;
 
             if (hitTop)
               y = clickedWindowPos->y - (h - clickedWindowPos->h);
             else
-              y = this->rc->y1;
+              y = getBounds().y;
 
             moveWindow(gfx::Rect(x, y, w, h), false);
             invalidate();
@@ -553,9 +551,8 @@ void Window::moveWindow(const gfx::Rect& rect, bool use_blit)
   else {
     // We can just displace all the widgets by a delta (new_position -
     // old_position)...
-    displace_widgets(this,
-                     rect.x - old_pos.x,
-                     rect.y - old_pos.y);
+    offsetWidgets(rect.x - old_pos.x,
+                  rect.y - old_pos.y);
   }
 
   // Get the new drawable region of the window (it's new because we
@@ -583,13 +580,13 @@ void Window::moveWindow(const gfx::Rect& rect, bool use_blit)
 
     // Add a region to draw areas which were outside of the screen
     reg1 = new_drawable_region;
-    reg1.offset(old_pos.x - this->rc->x1,
-                old_pos.y - this->rc->y1);
+    reg1.offset(old_pos.x - getBounds().x,
+                old_pos.y - getBounds().y);
     moveable_region.createIntersection(old_drawable_region, reg1);
 
     reg1.createSubtraction(reg1, moveable_region);
-    reg1.offset(this->rc->x1 - old_pos.x,
-                this->rc->y1 - old_pos.y);
+    reg1.offset(getBounds().x - old_pos.x,
+                getBounds().y - old_pos.y);
     window_refresh_region.createUnion(window_refresh_region, reg1);
 
     // Move the window's graphics
@@ -598,22 +595,14 @@ void Window::moveWindow(const gfx::Rect& rect, bool use_blit)
                   man_pos.x, man_pos.y, man_pos.x2()-1, man_pos.y2()-1);
 
     ji_move_region(moveable_region,
-                   this->rc->x1 - old_pos.x,
-                   this->rc->y1 - old_pos.y);
+                   getBounds().x - old_pos.x,
+                   getBounds().y - old_pos.y);
     set_clip_rect(ji_screen, 0, 0, JI_SCREEN_W-1, JI_SCREEN_H-1);
     jmouse_show();
   }
 
   manager->invalidateDisplayRegion(manager_refresh_region);
   invalidateRegion(window_refresh_region);
-}
-
-static void displace_widgets(Widget* widget, int x, int y)
-{
-  jrect_displace(widget->rc, x, y);
-
-  UI_FOREACH_WIDGET(widget->getChildren(), it)
-    displace_widgets((*it), x, y);
 }
 
 } // namespace ui
