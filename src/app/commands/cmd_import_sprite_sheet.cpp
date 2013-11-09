@@ -43,6 +43,7 @@
 #include "raster/image.h"
 #include "raster/layer.h"
 #include "raster/palette.h"
+#include "raster/primitives.h"
 #include "raster/sprite.h"
 #include "raster/stock.h"
 #include "ui/ui.h"
@@ -168,7 +169,7 @@ protected:
           base::UniquePtr<Image> resultImage(Image::create(sprite->getPixelFormat(), m_rect.w, m_rect.h));
 
           // Clear the image with mask color.
-          image_clear(resultImage, 0);
+          raster::clear_image(resultImage, 0);
 
           // Render the portion of sheet.
           sprite->render(resultImage, -x, -y, currentFrame);

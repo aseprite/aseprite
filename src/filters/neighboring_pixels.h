@@ -45,17 +45,17 @@ namespace filters {
     int addx, addy = 0;
     if (gety < 0) {
       if (tiledMode & TILED_Y_AXIS)
-        gety = sourceImage->h - (-(gety+1) % sourceImage->h) - 1;
+        gety = sourceImage->getHeight() - (-(gety+1) % sourceImage->getHeight()) - 1;
       else {
         addy = -gety;
         gety = 0;
       }
     }
-    else if (gety >= sourceImage->h) {
+    else if (gety >= sourceImage->getHeight()) {
       if (tiledMode & TILED_Y_AXIS)
-        gety = gety % sourceImage->h;
+        gety = gety % sourceImage->getHeight();
       else
-        gety = sourceImage->h-1;
+        gety = sourceImage->getHeight()-1;
     }
 
     for (dy=0; dy<height; ++dy) {
@@ -64,28 +64,28 @@ namespace filters {
       addx = 0;
       if (getx < 0) {
         if (tiledMode & TILED_X_AXIS)
-          getx = sourceImage->w - (-(getx+1) % sourceImage->w) - 1;
+          getx = sourceImage->getWidth() - (-(getx+1) % sourceImage->getWidth()) - 1;
         else {
           addx = -getx;
           getx = 0;
         }
       }
-      else if (getx >= sourceImage->w) {
+      else if (getx >= sourceImage->getWidth()) {
         if (tiledMode & TILED_X_AXIS)
-          getx = getx % sourceImage->w;
+          getx = getx % sourceImage->getWidth();
         else
-          getx = sourceImage->w-1;
+          getx = sourceImage->getWidth()-1;
       }
 
       typename Traits::const_address_t srcAddress =
-        image_address_fast<Traits>(sourceImage, getx, gety);
+        reinterpret_cast<typename Traits::const_address_t>(sourceImage->getPixelAddress(getx, gety));
 
       for (dx=0; dx<width; dx++) {
         // Call the delegate for each pixel value.
         delegate(*srcAddress);
 
         // Update X position to get pixel.
-        if (getx < sourceImage->w-1) {
+        if (getx < sourceImage->getWidth()-1) {
           ++getx;
           if (addx == 0)
             ++srcAddress;
@@ -94,12 +94,13 @@ namespace filters {
         }
         else if (tiledMode & TILED_X_AXIS) {
           getx = 0;
-          srcAddress = image_address_fast<Traits>(sourceImage, getx, gety);
+          srcAddress =
+            reinterpret_cast<typename Traits::const_address_t>(sourceImage->getPixelAddress(getx, gety));
         }
       }
 
       // Update Y position to get pixel
-      if (gety < sourceImage->h-1) {
+      if (gety < sourceImage->getHeight()-1) {
         if (addy == 0)
           ++gety;
         else

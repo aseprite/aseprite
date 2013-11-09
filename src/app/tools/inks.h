@@ -281,7 +281,7 @@ public:
         loop->getMask()->subtract(x1-offset.x, y-offset.y, x2-x1+1, 1);
     }
     else
-      image_hline(loop->getDstImage(), x1, y, x2, loop->getPrimaryColor());
+      draw_hline(loop->getDstImage(), x1, y, x2, loop->getPrimaryColor());
   }
 
   void setFinalStep(ToolLoop* loop, bool state)

@@ -145,9 +145,8 @@ else()
 endif()
 
 ######################################################################
-# ASEPRITE libraries
+# Aseprite Libraries (in preferred order to be built)
 
-add_subdirectory(app)
 add_subdirectory(base)
 add_subdirectory(filters)
 add_subdirectory(gfx)
@@ -156,6 +155,8 @@ add_subdirectory(scripting)
 add_subdirectory(she)
 add_subdirectory(ui)
 add_subdirectory(undo)
+
+add_subdirectory(app)
 
 if(V8_FOUND)
 list(APPEND libs3rdparty ${V8_LIBRARIES})
@@ -242,6 +243,7 @@ endfunction()
 
 find_unittests(base base-lib ${sys_libs})
 find_unittests(gfx gfx-lib base-lib ${sys_libs})
+find_unittests(raster raster-lib gfx-lib base-lib ${libs3rdparty} ${sys_libs})
 find_unittests(ui ui-lib she gfx-lib base-lib ${libs3rdparty} ${sys_libs})
 find_unittests(file ${all_libs})
 find_unittests(app ${all_libs})

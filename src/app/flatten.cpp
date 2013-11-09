@@ -75,12 +75,12 @@ static bool has_cels(const Layer* layer, FrameNumber frame)
   if (!layer->isReadable())
     return false;
 
-  switch (layer->getType()) {
+  switch (layer->type()) {
 
-    case GFXOBJ_LAYER_IMAGE:
+    case OBJECT_LAYER_IMAGE:
       return static_cast<const LayerImage*>(layer)->getCel(frame) ? true: false;
 
-    case GFXOBJ_LAYER_FOLDER: {
+    case OBJECT_LAYER_FOLDER: {
       LayerConstIterator it = static_cast<const LayerFolder*>(layer)->getLayerBegin();
       LayerConstIterator end = static_cast<const LayerFolder*>(layer)->getLayerEnd();
 

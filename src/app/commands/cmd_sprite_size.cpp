@@ -33,9 +33,11 @@
 #include "app/undo_transaction.h"
 #include "base/bind.h"
 #include "base/unique_ptr.h"
+#include "raster/algorithm/resize_image.h"
 #include "raster/cel.h"
 #include "raster/image.h"
 #include "raster/mask.h"
+#include "raster/primitives.h"
 #include "raster/sprite.h"
 #include "raster/stock.h"
 #include "ui/ui.h"
@@ -47,6 +49,7 @@
 namespace app {
 
 using namespace ui;
+using raster::algorithm::ResizeMethod;
 
 class SpriteSizeJob : public Job {
   ContextWriter m_writer;
@@ -100,15 +103,15 @@ protected:
         continue;
 
       // Resize the image
-      int w = scale_x(image->w);
-      int h = scale_y(image->h);
+      int w = scale_x(image->getWidth());
+      int h = scale_y(image->getHeight());
       Image* new_image = Image::create(image->getPixelFormat(), MAX(1, w), MAX(1, h));
 
-      image_fixup_transparent_colors(image);
-      image_resize(image, new_image,
-                   m_resize_method,
-                   m_sprite->getPalette(cel->getFrame()),
-                   m_sprite->getRgbMap(cel->getFrame()));
+      raster::algorithm::fixup_image_transparent_colors(image);
+      raster::algorithm::resize_image(image, new_image,
+                                      m_resize_method,
+                                      m_sprite->getPalette(cel->getFrame()),
+                                      m_sprite->getRgbMap(cel->getFrame()));
 
       api.replaceStockImage(m_sprite, cel->getImage(), new_image);
 
@@ -122,23 +125,22 @@ protected:
     // Resize mask
     if (m_document->isMaskVisible()) {
       base::UniquePtr<Image> old_bitmap
-        (image_crop(m_document->getMask()->getBitmap(), -1, -1,
-                    m_document->getMask()->getBitmap()->w+2,
-                    m_document->getMask()->getBitmap()->h+2, 0));
+        (crop_image(m_document->getMask()->getBitmap(), -1, -1,
+                    m_document->getMask()->getBitmap()->getWidth()+2,
+                    m_document->getMask()->getBitmap()->getHeight()+2, 0));
 
-      int w = scale_x(old_bitmap->w);
-      int h = scale_y(old_bitmap->h);
+      int w = scale_x(old_bitmap->getWidth());
+      int h = scale_y(old_bitmap->getHeight());
       base::UniquePtr<Mask> new_mask(new Mask);
       new_mask->replace(scale_x(m_document->getMask()->getBounds().x-1),
                         scale_y(m_document->getMask()->getBounds().y-1), MAX(1, w), MAX(1, h));
-      image_resize(old_bitmap, new_mask->getBitmap(),
-                   m_resize_method,
-                   m_sprite->getPalette(FrameNumber(0)), // Ignored
-                   m_sprite->getRgbMap(FrameNumber(0))); // Ignored
+      algorithm::resize_image(old_bitmap, new_mask->getBitmap(),
+                              m_resize_method,
+                              m_sprite->getPalette(FrameNumber(0)), // Ignored
+                              m_sprite->getRgbMap(FrameNumber(0))); // Ignored
 
       // Reshrink
-      new_mask->intersect(new_mask->getBounds().x, new_mask->getBounds().y,
-                          new_mask->getBounds().w, new_mask->getBounds().h);
+      new_mask->intersect(new_mask->getBounds());
 
       // Copy new mask
       api.copyToCurrentMask(new_mask);
@@ -219,7 +221,8 @@ void SpriteSizeCommand::onExecute(Context* context)
 
   method->addItem("Nearest-neighbor");
   method->addItem("Bilinear");
-  method->setSelectedItemIndex(get_config_int("SpriteSize", "Method", RESIZE_METHOD_NEAREST_NEIGHBOR));
+  method->setSelectedItemIndex(get_config_int("SpriteSize", "Method",
+                                              raster::algorithm::RESIZE_METHOD_NEAREST_NEIGHBOR));
 
   window->remapWindow();
   window->centerWindow();

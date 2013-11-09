@@ -1,5 +1,7 @@
 # Very high priority (next release?)
 
+* Remove Image::getPixelAddress() shouldn't be public, and almost
+  everywhere we should use iterators for images.
 * Warning icon when selecting RGB/HSB color in indexed image.
 * Warning message when we open a file that is already opened file
   (show an option to create a second view, or maybe this should

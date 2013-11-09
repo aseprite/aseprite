@@ -49,6 +49,12 @@ FilterPreview::~FilterPreview()
 
 void FilterPreview::stop()
 {
+  if (m_timer.isRunning()) {
+    ASSERT(m_filterMgr != NULL);
+
+    m_filterMgr->end();
+  }
+
   m_filterMgr = NULL;
   m_timer.stop();
 }

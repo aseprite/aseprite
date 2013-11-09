@@ -124,7 +124,7 @@ bool GifFormat::onLoad(FileOp* fop)
     // Setup the first palette using the global color map.
     ColorMapObject* colormap = gif_file->SColorMap;
     for (int i=0; i<colormap->ColorCount; ++i) {
-      current_palette->setEntry(i, _rgba(colormap->Colors[i].Red,
+      current_palette->setEntry(i, rgba(colormap->Colors[i].Red,
                                          colormap->Colors[i].Green,
                                          colormap->Colors[i].Blue, 255));
     }
@@ -175,7 +175,7 @@ bool GifFormat::onLoad(FileOp* fop)
         if (gif_file->Image.ColorMap) {
           ColorMapObject* colormap = gif_file->Image.ColorMap;
           for (int i=0; i<colormap->ColorCount; ++i) {
-            current_palette->setEntry(i, _rgba(colormap->Colors[i].Red,
+            current_palette->setEntry(i, rgba(colormap->Colors[i].Red,
                                                colormap->Colors[i].Green,
                                                colormap->Colors[i].Blue, 255));
           }
@@ -198,14 +198,14 @@ bool GifFormat::onLoad(FileOp* fop)
           // Need to perform 4 passes on the images.
           for (int i=0; i<4; ++i)
             for (int y = interlaced_offset[i]; y < frame_h; y += interlaced_jumps[i]) {
-              addr = image_address_fast<IndexedTraits>(frame_image, 0, y);
+              addr = frame_image->getPixelAddress(0, y);
               if (DGifGetLine(gif_file, addr, frame_w) == GIF_ERROR)
                 throw base::Exception("Invalid interlaced image data.");
             }
         }
         else {
           for (int y = 0; y < frame_h; ++y) {
-            addr = image_address_fast<IndexedTraits>(frame_image, 0, y);
+            addr = frame_image->getPixelAddress(0, y);
             if (DGifGetLine(gif_file, addr, frame_w) == GIF_ERROR)
               throw base::Exception("Invalid image data (%d).\n", GifLastError());
           }
@@ -287,9 +287,9 @@ bool GifFormat::onPostLoad(FileOp* fop)
            frame_end=data->frames.end(); frame_it != frame_end; ++frame_it) {
 
       // Convert the indexed image to RGB
-      for (int y=0; y<frame_it->image->h; ++y) {
-        for (int x=0; x<frame_it->image->w; ++x) {
-          int pixel_index = image_getpixel_fast<IndexedTraits>(frame_it->image, x, y);
+      for (int y=0; y<frame_it->image->getHeight(); ++y) {
+        for (int x=0; x<frame_it->image->getWidth(); ++x) {
+          int pixel_index = get_pixel_fast<IndexedTraits>(frame_it->image, x, y);
 
           if (pixel_index >= 0 && pixel_index < 256) {
             // This pixel matches the frame's transparent color
@@ -354,10 +354,10 @@ bool GifFormat::onPostLoad(FileOp* fop)
   base::UniquePtr<Image> previous_image(Image::create(pixelFormat, data->sprite_w, data->sprite_h));
 
   // Clear both images with the transparent color (alpha = 0).
-  uint32_t bgcolor = (pixelFormat == IMAGE_RGB ? _rgba(0, 0, 0, 0):
+  uint32_t bgcolor = (pixelFormat == IMAGE_RGB ? rgba(0, 0, 0, 0):
                       (data->bgcolor_index >= 0 ? data->bgcolor_index: 0));
-  image_clear(current_image, bgcolor);
-  image_clear(previous_image, bgcolor);
+  clear_image(current_image, bgcolor);
+  clear_image(previous_image, bgcolor);
 
   // Add all frames in the sprite.
   sprite->setTotalFrames(FrameNumber(data->frames.size()));
@@ -380,27 +380,27 @@ bool GifFormat::onPostLoad(FileOp* fop)
     switch (pixelFormat) {
 
       case IMAGE_INDEXED:
-        for (int y = 0; y < frame_it->image->h; ++y)
-          for (int x = 0; x < frame_it->image->w; ++x) {
-            int pixel_index = image_getpixel_fast<IndexedTraits>(frame_it->image, x, y);
+        for (int y = 0; y < frame_it->image->getHeight(); ++y)
+          for (int x = 0; x < frame_it->image->getWidth(); ++x) {
+            int pixel_index = get_pixel_fast<IndexedTraits>(frame_it->image, x, y);
             if (pixel_index != frame_it->mask_index)
-              image_putpixel_fast<IndexedTraits>(current_image,
-                                                 frame_it->x + x,
-                                                 frame_it->y + y,
-                                                 pixel_index);
+              put_pixel_fast<IndexedTraits>(current_image,
+                                            frame_it->x + x,
+                                            frame_it->y + y,
+                                            pixel_index);
           }
         break;
 
       case IMAGE_RGB:
         // Convert the indexed image to RGB
-        for (int y = 0; y < frame_it->image->h; ++y)
-          for (int x = 0; x < frame_it->image->w; ++x) {
-            int pixel_index = image_getpixel_fast<IndexedTraits>(frame_it->image, x, y);
+        for (int y = 0; y < frame_it->image->getHeight(); ++y)
+          for (int x = 0; x < frame_it->image->getWidth(); ++x) {
+            int pixel_index = get_pixel_fast<IndexedTraits>(frame_it->image, x, y);
             if (pixel_index != frame_it->mask_index)
-              image_putpixel_fast<RgbTraits>(current_image,
-                                             frame_it->x + x,
-                                             frame_it->y + y,
-                                             current_palette->getEntry(pixel_index));
+              put_pixel_fast<RgbTraits>(current_image,
+                                        frame_it->x + x,
+                                        frame_it->y + y,
+                                        current_palette->getEntry(pixel_index));
           }
         break;
 
@@ -439,16 +439,16 @@ bool GifFormat::onPostLoad(FileOp* fop)
         break;
 
       case DISPOSAL_METHOD_RESTORE_BGCOLOR:
-        image_rectfill(current_image,
-                       frame_it->x,
-                       frame_it->y,
-                       frame_it->x+frame_it->image->w-1,
-                       frame_it->y+frame_it->image->h-1,
-                       bgcolor);
+        fill_rect(current_image,
+                  frame_it->x,
+                  frame_it->y,
+                  frame_it->x+frame_it->image->getWidth()-1,
+                  frame_it->y+frame_it->image->getHeight()-1,
+                  bgcolor);
         break;
 
       case DISPOSAL_METHOD_RESTORE_PREVIOUS:
-        image_copy(current_image, previous_image, 0, 0);
+        copy_image(current_image, previous_image, 0, 0);
         break;
     }
 
@@ -457,7 +457,7 @@ bool GifFormat::onPostLoad(FileOp* fop)
     // that we have already updated current_image from
     // previous_image).
     if (frame_it->disposal_method != DISPOSAL_METHOD_RESTORE_PREVIOUS)
-      image_copy(previous_image, current_image, 0, 0);
+      copy_image(previous_image, current_image, 0, 0);
   }
 
   fop->document->addSprite(sprite);
@@ -502,9 +502,9 @@ bool GifFormat::onSave(FileOp* fop)
   Palette* previous_palette = current_palette;
   ColorMapObject* color_map = MakeMapObject(current_palette->size(), NULL);
   for (int i = 0; i < current_palette->size(); ++i) {
-    color_map->Colors[i].Red   = _rgba_getr(current_palette->getEntry(i));
-    color_map->Colors[i].Green = _rgba_getg(current_palette->getEntry(i));
-    color_map->Colors[i].Blue  = _rgba_getb(current_palette->getEntry(i));
+    color_map->Colors[i].Red   = rgba_getr(current_palette->getEntry(i));
+    color_map->Colors[i].Green = rgba_getg(current_palette->getEntry(i));
+    color_map->Colors[i].Blue  = rgba_getb(current_palette->getEntry(i));
   }
 
   if (EGifPutScreenDesc(gif_file, sprite_w, sprite_h,
@@ -524,15 +524,15 @@ bool GifFormat::onSave(FileOp* fop)
   if (sprite_format != IMAGE_INDEXED)
     buffer_image.reset(Image::create(sprite_format, sprite_w, sprite_h));
 
-  image_clear(current_image, background_color);
-  image_clear(previous_image, background_color);
+  clear_image(current_image, background_color);
+  clear_image(previous_image, background_color);
 
   for (FrameNumber frame_num(0); frame_num<sprite->getTotalFrames(); ++frame_num) {
     current_palette = sprite->getPalette(frame_num);
 
     // If the sprite is RGB or Grayscale, we must to convert it to Indexed on the fly.
     if (sprite_format != IMAGE_INDEXED) {
-      image_clear(buffer_image, 0);
+      clear_image(buffer_image, 0);
       layer_render(sprite->getFolder(), buffer_image, 0, 0, frame_num);
 
       switch (sprite_format) {
@@ -541,13 +541,13 @@ bool GifFormat::onSave(FileOp* fop)
         case IMAGE_RGB:
           for (int y = 0; y < sprite_h; ++y)
             for (int x = 0; x < sprite_w; ++x) {
-              uint32_t pixel_value = image_getpixel_fast<RgbTraits>(buffer_image, x, y);
-              image_putpixel_fast<IndexedTraits>(current_image, x, y,
-                                                 (_rgba_geta(pixel_value) >= 128) ?
-                                                 current_palette->findBestfit(_rgba_getr(pixel_value),
-                                                                              _rgba_getg(pixel_value),
-                                                                              _rgba_getb(pixel_value)):
-                                                 transparent_index);
+              uint32_t pixel_value = get_pixel_fast<RgbTraits>(buffer_image, x, y);
+              put_pixel_fast<IndexedTraits>(current_image, x, y,
+                                            (rgba_geta(pixel_value) >= 128) ?
+                                            current_palette->findBestfit(rgba_getr(pixel_value),
+                                                                         rgba_getg(pixel_value),
+                                                                         rgba_getb(pixel_value)):
+                                            transparent_index);
             }
           break;
 
@@ -555,20 +555,20 @@ bool GifFormat::onSave(FileOp* fop)
         case IMAGE_GRAYSCALE:
           for (int y = 0; y < sprite_h; ++y)
             for (int x = 0; x < sprite_w; ++x) {
-              uint16_t pixel_value = image_getpixel_fast<GrayscaleTraits>(buffer_image, x, y);
-              image_putpixel_fast<IndexedTraits>(current_image, x, y,
-                                                 (_graya_geta(pixel_value) >= 128) ?
-                                                 current_palette->findBestfit(_graya_getv(pixel_value),
-                                                                              _graya_getv(pixel_value),
-                                                                              _graya_getv(pixel_value)):
-                                                 transparent_index);
+              uint16_t pixel_value = get_pixel_fast<GrayscaleTraits>(buffer_image, x, y);
+              put_pixel_fast<IndexedTraits>(current_image, x, y,
+                                            (graya_geta(pixel_value) >= 128) ?
+                                            current_palette->findBestfit(graya_getv(pixel_value),
+                                                                         graya_getv(pixel_value),
+                                                                         graya_getv(pixel_value)):
+                                            transparent_index);
             }
           break;
       }
     }
     // If the sprite is Indexed, we can render directly into "current_image".
     else {
-      image_clear(current_image, background_color);
+      clear_image(current_image, background_color);
       layer_render(sprite->getFolder(), current_image, 0, 0, frame_num);
     }
 
@@ -632,9 +632,9 @@ bool GifFormat::onSave(FileOp* fop)
     if (current_palette != previous_palette) {
       image_color_map = MakeMapObject(current_palette->size(), NULL);
       for (int i = 0; i < current_palette->size(); ++i) {
-        image_color_map->Colors[i].Red   = _rgba_getr(current_palette->getEntry(i));
-        image_color_map->Colors[i].Green = _rgba_getg(current_palette->getEntry(i));
-        image_color_map->Colors[i].Blue  = _rgba_getb(current_palette->getEntry(i));
+        image_color_map->Colors[i].Red   = rgba_getr(current_palette->getEntry(i));
+        image_color_map->Colors[i].Green = rgba_getg(current_palette->getEntry(i));
+        image_color_map->Colors[i].Blue  = rgba_getb(current_palette->getEntry(i));
       }
       previous_palette = current_palette;
     }
@@ -651,7 +651,9 @@ bool GifFormat::onSave(FileOp* fop)
       // Need to perform 4 passes on the images.
       for (int i=0; i<4; ++i)
         for (int y = interlaced_offset[i]; y < frame_h; y += interlaced_jumps[i]) {
-          IndexedTraits::address_t addr = image_address_fast<IndexedTraits>(current_image, frame_x, frame_y + y);
+          IndexedTraits::address_t addr =
+            (IndexedTraits::address_t)current_image->getPixelAddress(frame_x, frame_y + y);
+
           if (EGifPutLine(gif_file, addr, frame_w) == GIF_ERROR)
             throw base::Exception("Error writing GIF image scanlines for frame %d.\n", (int)frame_num);
         }
@@ -659,13 +661,15 @@ bool GifFormat::onSave(FileOp* fop)
     else {
       // Write all image scanlines (not interlaced in this case).
       for (int y = 0; y < frame_h; ++y) {
-        IndexedTraits::address_t addr = image_address_fast<IndexedTraits>(current_image, frame_x, frame_y + y);
+        IndexedTraits::address_t addr =
+          (IndexedTraits::address_t)current_image->getPixelAddress(frame_x, frame_y + y);
+
         if (EGifPutLine(gif_file, addr, frame_w) == GIF_ERROR)
           throw base::Exception("Error writing GIF image scanlines for frame %d.\n", (int)frame_num);
       }
     }
 
-    image_copy(previous_image, current_image, 0, 0);
+    copy_image(previous_image, current_image, 0, 0);
   }
 
   return true;

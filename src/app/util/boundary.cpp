@@ -33,6 +33,7 @@
 #include <limits.h>
 #include "base/memory.h"
 #include "raster/image.h"
+#include "raster/image_bits.h"
 #include "app/util/boundary.h"
 
 #define g_new(struct_type, n_structs) \
@@ -45,8 +46,7 @@
 #define gboolean        bool
 #define G_MAXINT        INT_MAX
 #define g_message(msg)  {}
-
-typedef const raster::Image PixelRegion;
+#define PixelRegion     const raster::Image
 
 namespace app {
 //////////////////////////////////////////////////////////////////////
@@ -124,20 +124,17 @@ find_empty_segs (PixelRegion  *maskPR,
                  gint          x2,
                  gint          y2)
 {
-  uint8_t* data;
   int x;
   int start, end;
   int val, last;
   int endx, l_num_empty;
-  div_t d;
 
-  data  = NULL;
   start = 0;
   end   = 0;
 
   *num_empty = 0;
 
-  if (scanline < 0 || scanline >= maskPR->h)
+  if (scanline < 0 || scanline >= maskPR->getHeight())
     {
       empty_segs[(*num_empty)++] = 0;
       empty_segs[(*num_empty)++] = G_MAXINT;
@@ -159,7 +156,7 @@ find_empty_segs (PixelRegion  *maskPR,
   else if (type == IgnoreBounds)
     {
       start = 0;
-      end = maskPR->w;
+      end = maskPR->getWidth();
       if (scanline < y1 || scanline >= y2)
         x2 = -1;
     }
@@ -170,8 +167,8 @@ find_empty_segs (PixelRegion  *maskPR,
 
   l_num_empty = *num_empty;
 
-  d = div (start, 8);
-  data = ((uint8_t*)maskPR->line[scanline])+d.quot;
+  const LockImageBits<BitmapTraits> bits(maskPR, gfx::Rect(start, scanline, end - start, 1));
+  LockImageBits<BitmapTraits>::const_iterator it = bits.begin();
 
   for (x = start; x < end;)
     {
@@ -180,15 +177,18 @@ find_empty_segs (PixelRegion  *maskPR,
         {
           for (; x < endx; x++)
             {
-              if (*data & (1<<d.rem))
+              ASSERT(it != bits.end());
+
+              if (*it) {
                 if (x >= x1 && x < x2)
                   val = -1;
                 else
                   val = 1;
+              }
               else
                 val = -1;
 
-              _image_bitmap_next_bit(d, data);
+              ++it;
 
               if (last != val)
                 empty_segs[l_num_empty++] = x;
@@ -200,12 +200,14 @@ find_empty_segs (PixelRegion  *maskPR,
         {
           for (; x < endx; x++)
             {
-              if (*data & (1<<d.rem))
+              ASSERT(it != bits.end());
+
+              if (*it)
                 val = 1;
               else
                 val = -1;
 
-              _image_bitmap_next_bit(d, data);
+              ++it;
 
               if (last != val)
                 empty_segs[l_num_empty++] = x;
@@ -252,9 +254,9 @@ allocate_vert_segs (PixelRegion *PR)
   gint i;
 
   /*  allocate and initialize the vert_segs array  */
-  vert_segs = g_renew (gint, vert_segs, PR->w + 1);
+  vert_segs = g_renew (gint, vert_segs, PR->getWidth() + 1);
 
-  for (i = 0; i <= PR->w; i++)
+  for (i = 0; i <= PR->getWidth(); i++)
     vert_segs[i] = -1;
 }
 
@@ -265,7 +267,7 @@ allocate_empty_segs (PixelRegion *PR)
   gint need_num_segs;
 
   /*  find the maximum possible number of empty segments given the current mask  */
-  need_num_segs = PR->w + 3;
+  need_num_segs = PR->getWidth() + 3;
 
   if (need_num_segs > max_empty_segs)
     {
@@ -369,7 +371,7 @@ generate_boundary (PixelRegion  *PR,
   else if (type == IgnoreBounds)
     {
       start = 0;
-      end   = PR->h;
+      end   = PR->getHeight();
     }
 
   /*  Find the empty segments for the previous and current scanlines  */

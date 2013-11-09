@@ -54,6 +54,7 @@
 #include "app/util/render.h"
 #include "base/bind.h"
 #include "base/unique_ptr.h"
+#include "raster/conversion_alleg.h"
 #include "raster/raster.h"
 #include "ui/ui.h"
 
@@ -88,11 +89,11 @@ public:
 
   void fillRect(const gfx::Rect& rect, uint32_t rgbaColor, int opacity) OVERRIDE
   {
-    image_rectblend(m_image,
-                    m_offset.x + (rect.x << m_zoom),
-                    m_offset.y + (rect.y << m_zoom),
-                    m_offset.x + ((rect.x+rect.w) << m_zoom) - 1,
-                    m_offset.y + ((rect.y+rect.h) << m_zoom) - 1, rgbaColor, opacity);
+    blend_rect(m_image,
+               m_offset.x + (rect.x << m_zoom),
+               m_offset.y + (rect.y << m_zoom),
+               m_offset.x + ((rect.x+rect.w) << m_zoom) - 1,
+               m_offset.y + ((rect.y+rect.h) << m_zoom) - 1, rgbaColor, opacity);
   }
 
 private:
@@ -429,8 +430,8 @@ void Editor::drawSpriteUnclippedRect(const gfx::Rect& rc)
       destroy_bitmap(bmp);
 #else
       acquire_bitmap(ji_screen);
-      image_to_allegro(rendered, ji_screen, dest_x, dest_y,
-                       m_sprite->getPalette(m_frame));
+      convert_image_to_allegro(rendered, ji_screen, dest_x, dest_y,
+                               m_sprite->getPalette(m_frame));
       release_bitmap(ji_screen);
 #endif
     }
@@ -640,16 +641,16 @@ void Editor::flashCurrentLayer()
     Image* flash_image = m_document->getExtraCelImage();
     int u, v;
 
-    image_clear(flash_image, flash_image->mask_color);
-    for (v=0; v<flash_image->h; ++v) {
-      for (u=0; u<flash_image->w; ++u) {
-        if (u-x >= 0 && u-x < src_image->w &&
-            v-y >= 0 && v-y < src_image->h) {
-          uint32_t color = image_getpixel(src_image, u-x, v-y);
+    clear_image(flash_image, flash_image->mask_color);
+    for (v=0; v<flash_image->getHeight(); ++v) {
+      for (u=0; u<flash_image->getWidth(); ++u) {
+        if (u-x >= 0 && u-x < src_image->getWidth() &&
+            v-y >= 0 && v-y < src_image->getHeight()) {
+          uint32_t color = get_pixel(src_image, u-x, v-y);
           if (color != src_image->mask_color) {
             Color ccc = Color::fromRgb(255, 255, 255);
-            image_putpixel(flash_image, u, v,
-                           color_utils::color_for_image(ccc, flash_image->imgtype));
+            put_pixel(flash_image, u, v,
+                      color_utils::color_for_image(ccc, flash_image->imgtype));
           }
         }
       }
@@ -658,7 +659,7 @@ void Editor::flashCurrentLayer()
     drawSpriteSafe(0, 0, m_sprite->getWidth()-1, m_sprite->getHeight()-1);
     gui_flip_screen();
 
-    image_clear(flash_image, flash_image->mask_color);
+    clear_image(flash_image, flash_image->mask_color);
     drawSpriteSafe(0, 0, m_sprite->getWidth()-1, m_sprite->getHeight()-1);
   }
 #endif
@@ -1164,24 +1165,24 @@ void Editor::pasteImage(const Image* image, int x, int y)
   // Check bounds where the image will be pasted.
   {
     // First we limit the image inside the sprite's bounds.
-    x = MID(0, x, sprite->getWidth() - image->w);
-    y = MID(0, y, sprite->getHeight() - image->h);
+    x = MID(0, x, sprite->getWidth() - image->getWidth());
+    y = MID(0, y, sprite->getHeight() - image->getHeight());
 
     // Then we check if the image will be visible by the user.
     Rect visibleBounds = getVisibleSpriteBounds();
-    x = MID(visibleBounds.x-image->w, x, visibleBounds.x+visibleBounds.w-1);
-    y = MID(visibleBounds.y-image->h, y, visibleBounds.y+visibleBounds.h-1);
+    x = MID(visibleBounds.x-image->getWidth(), x, visibleBounds.x+visibleBounds.w-1);
+    y = MID(visibleBounds.y-image->getHeight(), y, visibleBounds.y+visibleBounds.h-1);
 
     // If the visible part of the pasted image will not fit in the
     // visible bounds of the editor, we put the image in the center of
     // the visible bounds.
-    Rect visiblePasted = visibleBounds.createIntersect(gfx::Rect(x, y, image->w, image->h));
-    if (((visibleBounds.w >= image->w && visiblePasted.w < image->w/2) ||
-         (visibleBounds.w <  image->w && visiblePasted.w < visibleBounds.w/2)) ||
-        ((visibleBounds.h >= image->h && visiblePasted.h < image->w/2) ||
-         (visibleBounds.h <  image->h && visiblePasted.h < visibleBounds.h/2))) {
-      x = visibleBounds.x + visibleBounds.w/2 - image->w/2;
-      y = visibleBounds.y + visibleBounds.h/2 - image->h/2;
+    Rect visiblePasted = visibleBounds.createIntersect(gfx::Rect(x, y, image->getWidth(), image->getHeight()));
+    if (((visibleBounds.w >= image->getWidth() && visiblePasted.w < image->getWidth()/2) ||
+         (visibleBounds.w <  image->getWidth() && visiblePasted.w < visibleBounds.w/2)) ||
+        ((visibleBounds.h >= image->getHeight() && visiblePasted.h < image->getWidth()/2) ||
+         (visibleBounds.h <  image->getHeight() && visiblePasted.h < visibleBounds.h/2))) {
+      x = visibleBounds.x + visibleBounds.w/2 - image->getWidth()/2;
+      y = visibleBounds.y + visibleBounds.h/2 - image->getHeight()/2;
     }
   }
 

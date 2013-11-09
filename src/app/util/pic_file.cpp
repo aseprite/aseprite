@@ -22,6 +22,7 @@
 
 #include "base/unique_ptr.h"
 #include "raster/image.h"
+#include "raster/primitives.h"
 
 #include <allegro/color.h>
 #include <allegro/file.h>
@@ -86,7 +87,7 @@ Image* load_pic_file(const char* filename, int* x, int* y, RGB* palette)
 
     for (v=0; v<h; v++)
       for (u=0; u<w; u++)
-        image->putpixel(u, v, pack_getc(f));
+        image->putPixel(u, v, pack_getc(f));
 
     pack_fclose(f);
     return image.release();
@@ -157,7 +158,7 @@ Image* load_pic_file(const char* filename, int* x, int* y, RGB* palette)
       case 1:
         for (v=0; v<h; v++)
           for (u=0; u<w; u++)
-            image->putpixel(u, v, pack_getc(f));
+            image->putPixel(u, v, pack_getc(f));
         break;
 
       /* bit-per-pixel image data */
@@ -166,7 +167,7 @@ Image* load_pic_file(const char* filename, int* x, int* y, RGB* palette)
           for (u=0; u<(w+7)/8; u++) {
             byte = pack_getc (f);
             for (c=0; c<8; c++)
-              image_putpixel (image, u*8+c, v, byte & (1<<(7-c)));
+              put_pixel(image, u*8+c, v, byte & (1<<(7-c)));
           }
         break;
     }
@@ -201,15 +202,15 @@ int save_pic_file(const char *filename, int x, int y, const RGB* palette, const 
   size = 64;
   /* bit-per-pixel image data block */
   if (bpp == 1)
-    size += (4+2+((image->w+7)/8)*image->h);
+    size += (4+2+((image->getWidth()+7)/8)*image->getHeight());
   /* color palette info + byte-per-pixel image data block */
   else
-    size += (4+2+2+256*3) + (4+2+image->w*image->h);
+    size += (4+2+2+256*3) + (4+2+image->getWidth()*image->getHeight());
 
   pack_iputl(size, f);          /* file size */
   pack_iputw(0x9500, f);        /* magic number 9500h */
-  pack_iputw(image->w, f);      /* width */
-  pack_iputw(image->h, f);      /* height */
+  pack_iputw(image->getWidth(), f);      /* width */
+  pack_iputw(image->getHeight(), f);      /* height */
   pack_iputw(x, f);             /* X offset */
   pack_iputw(y, f);             /* Y offset */
   pack_iputl(0, f);             /* user ID, is 0 */
@@ -222,35 +223,35 @@ int save_pic_file(const char *filename, int x, int y, const RGB* palette, const 
   /* 1 bpp */
   if (bpp == 1) {
     /* bit-per-data image data block */
-    pack_iputl ((4+2+((image->w+7)/8)*image->h), f);    /* block size */
-    pack_iputw (2, f);                                  /* block type */
-    for (v=0; v<image->h; v++)                          /* image data */
-      for (u=0; u<(image->w+7)/8; u++) {
+    pack_iputl((4+2+((image->getWidth()+7)/8)*image->getHeight()), f);    /* block size */
+    pack_iputw(2, f);                                  /* block type */
+    for (v=0; v<image->getHeight(); v++)                          /* image data */
+      for (u=0; u<(image->getWidth()+7)/8; u++) {
         byte = 0;
         for (c=0; c<8; c++)
-          if (image_getpixel (image, u*8+c, v))
+          if (get_pixel(image, u*8+c, v))
             byte |= (1<<(7-c));
         pack_putc (byte, f);
       }
   }
-  /* 8 bpp */
+  // 8 bpp
   else {
-    /* color palette info */
-    pack_iputl((4+2+2+256*3), f);       /* block size */
-    pack_iputw(0, f);                   /* block type */
-    pack_iputw(0, f);                   /* version */
-    for (c=0; c<256; c++) {             /* 256 palette entries */
+    // Color palette info
+    pack_iputl((4+2+2+256*3), f);       // Block size
+    pack_iputw(0, f);                   // Block type
+    pack_iputw(0, f);                   // Version
+    for (c=0; c<256; c++) {             // 256 palette entries
       pack_putc(_rgb_scale_6[palette[c].r], f);
       pack_putc(_rgb_scale_6[palette[c].g], f);
       pack_putc(_rgb_scale_6[palette[c].b], f);
     }
 
     /* pixel-per-data image data block */
-    pack_iputl ((4+2+image->w*image->h), f);    /* block size */
-    pack_iputw (1, f);                          /* block type */
-    for (v=0; v<image->h; v++)                  /* image data */
-      for (u=0; u<image->w; u++)
-        pack_putc(image->getpixel(u, v), f);
+    pack_iputl ((4+2+image->getWidth()*image->getHeight()), f); // Block size
+    pack_iputw (1, f);                   // Block type
+    for (v=0; v<image->getHeight(); v++) // Image data
+      for (u=0; u<image->getWidth(); u++)
+        pack_putc(image->getPixel(u, v), f);
   }
 
   pack_fclose (f);

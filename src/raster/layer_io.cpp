@@ -48,11 +48,11 @@ void write_layer(std::ostream& os, LayerSubObjectsSerializer* subObjects, Layer*
     os.write(name.c_str(), name.size());               // Name
 
   write32(os, layer->getFlags());                      // Flags
-  write16(os, layer->getType());                       // Type
+  write16(os, layer->type());                          // Type
 
-  switch (layer->getType()) {
+  switch (layer->type()) {
 
-    case GFXOBJ_LAYER_IMAGE: {
+    case OBJECT_LAYER_IMAGE: {
       // Number of cels
       write16(os, static_cast<LayerImage*>(layer)->getCelsCount());
 
@@ -71,7 +71,7 @@ void write_layer(std::ostream& os, LayerSubObjectsSerializer* subObjects, Layer*
       break;
     }
 
-    case GFXOBJ_LAYER_FOLDER: {
+    case OBJECT_LAYER_FOLDER: {
       LayerIterator it = static_cast<LayerFolder*>(layer)->getLayerBegin();
       LayerIterator end = static_cast<LayerFolder*>(layer)->getLayerEnd();
 
@@ -104,7 +104,7 @@ Layer* read_layer(std::istream& is, LayerSubObjectsSerializer* subObjects, Sprit
 
   switch (layer_type) {
 
-    case GFXOBJ_LAYER_IMAGE: {
+    case OBJECT_LAYER_IMAGE: {
       // Create layer
       layer.reset(new LayerImage(sprite));
 
@@ -125,7 +125,7 @@ Layer* read_layer(std::istream& is, LayerSubObjectsSerializer* subObjects, Sprit
       break;
     }
 
-    case GFXOBJ_LAYER_FOLDER: {
+    case OBJECT_LAYER_FOLDER: {
       // Create the layer set
       layer.reset(new LayerFolder(sprite));
 

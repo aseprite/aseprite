@@ -247,7 +247,7 @@ bool PngFormat::onLoad(FileOp* fop)
       /* RGB_ALPHA */
       if (png_get_color_type(png_ptr, info_ptr) == PNG_COLOR_TYPE_RGB_ALPHA) {
         register uint8_t* src_address = row_pointer;
-        register uint32_t* dst_address = ((uint32_t**)image->line)[y];
+        register uint32_t* dst_address = (uint32_t*)image->getPixelAddress(0, y);
         register unsigned int x, r, g, b, a;
 
         for (x=0; x<width; x++) {
@@ -255,49 +255,49 @@ bool PngFormat::onLoad(FileOp* fop)
           g = *(src_address++);
           b = *(src_address++);
           a = *(src_address++);
-          *(dst_address++) = _rgba(r, g, b, a);
+          *(dst_address++) = rgba(r, g, b, a);
         }
       }
       /* RGB */
       else if (png_get_color_type(png_ptr, info_ptr) == PNG_COLOR_TYPE_RGB) {
         register uint8_t* src_address = row_pointer;
-        register uint32_t* dst_address = ((uint32_t**)image->line)[y];
+        register uint32_t* dst_address = (uint32_t*)image->getPixelAddress(0, y);
         register unsigned int x, r, g, b;
 
         for (x=0; x<width; x++) {
           r = *(src_address++);
           g = *(src_address++);
           b = *(src_address++);
-          *(dst_address++) = _rgba(r, g, b, 255);
+          *(dst_address++) = rgba(r, g, b, 255);
         }
       }
       /* GRAY_ALPHA */
       else if (png_get_color_type(png_ptr, info_ptr) == PNG_COLOR_TYPE_GRAY_ALPHA) {
         register uint8_t* src_address = row_pointer;
-        register uint16_t* dst_address = ((uint16_t**)image->line)[y];
+        register uint16_t* dst_address = (uint16_t*)image->getPixelAddress(0, y);
         register unsigned int x, k, a;
 
         for (x=0; x<width; x++) {
           k = *(src_address++);
           a = *(src_address++);
-          *(dst_address++) = _graya(k, a);
+          *(dst_address++) = graya(k, a);
         }
       }
       /* GRAY */
       else if (png_get_color_type(png_ptr, info_ptr) == PNG_COLOR_TYPE_GRAY) {
         register uint8_t* src_address = row_pointer;
-        register uint16_t* dst_address = ((uint16_t**)image->line)[y];
+        register uint16_t* dst_address = (uint16_t*)image->getPixelAddress(0, y);
         register unsigned int x, k;
 
         for (x=0; x<width; x++) {
           k = *(src_address++);
-          *(dst_address++) = _graya(k, 255);
+          *(dst_address++) = graya(k, 255);
         }
       }
       /* PALETTE */
       else if (png_get_color_type(png_ptr, info_ptr) == PNG_COLOR_TYPE_PALETTE) {
         register uint8_t* src_address = row_pointer;
-        register uint8_t* dst_address = ((uint8_t**)image->line)[y];
+        register uint8_t* dst_address = (uint8_t*)image->getPixelAddress(0, y);
         register unsigned int x, c;
 
         for (x=0; x<width; x++) {
@@ -380,8 +380,8 @@ bool PngFormat::onSave(FileOp* fop)
    * PNG_INTERLACE_ADAM7, and the compression_type and filter_type MUST
    * currently be PNG_COMPRESSION_TYPE_BASE and PNG_FILTER_TYPE_BASE. REQUIRED
    */
-  width = image->w;
-  height = image->h;
+  width = image->getWidth();
+  height = image->getHeight();
 
   switch (image->getPixelFormat()) {
     case IMAGE_RGB:
@@ -455,57 +455,57 @@ bool PngFormat::onSave(FileOp* fop)
     for (y = 0; y < height; y++) {
       /* RGB_ALPHA */
       if (png_get_color_type(png_ptr, info_ptr) == PNG_COLOR_TYPE_RGB_ALPHA) {
-        register uint32_t* src_address = ((uint32_t**)image->line)[y];
+        register uint32_t* src_address = (uint32_t*)image->getPixelAddress(0, y);
         register uint8_t* dst_address = row_pointer;
         register unsigned int x, c;
 
         for (x=0; x<width; x++) {
           c = *(src_address++);
-          *(dst_address++) = _rgba_getr(c);
-          *(dst_address++) = _rgba_getg(c);
-          *(dst_address++) = _rgba_getb(c);
-          *(dst_address++) = _rgba_geta(c);
+          *(dst_address++) = rgba_getr(c);
+          *(dst_address++) = rgba_getg(c);
+          *(dst_address++) = rgba_getb(c);
+          *(dst_address++) = rgba_geta(c);
         }
       }
       /* RGB */
       else if (png_get_color_type(png_ptr, info_ptr) == PNG_COLOR_TYPE_RGB) {
-        register uint32_t* src_address = ((uint32_t**)image->line)[y];
+        register uint32_t* src_address = (uint32_t*)image->getPixelAddress(0, y);
         register uint8_t* dst_address = row_pointer;
         register unsigned int x, c;
 
         for (x=0; x<width; x++) {
           c = *(src_address++);
-          *(dst_address++) = _rgba_getr(c);
-          *(dst_address++) = _rgba_getg(c);
-          *(dst_address++) = _rgba_getb(c);
+          *(dst_address++) = rgba_getr(c);
+          *(dst_address++) = rgba_getg(c);
+          *(dst_address++) = rgba_getb(c);
         }
       }
       /* GRAY_ALPHA */
       else if (png_get_color_type(png_ptr, info_ptr) == PNG_COLOR_TYPE_GRAY_ALPHA) {
-        register uint16_t* src_address = ((uint16_t**)image->line)[y];
+        register uint16_t* src_address = (uint16_t*)image->getPixelAddress(0, y);
         register uint8_t* dst_address = row_pointer;
         register unsigned int x, c;
 
         for (x=0; x<width; x++) {
           c = *(src_address++);
-          *(dst_address++) = _graya_getv(c);
-          *(dst_address++) = _graya_geta(c);
+          *(dst_address++) = graya_getv(c);
+          *(dst_address++) = graya_geta(c);
         }
       }
       /* GRAY */
       else if (png_get_color_type(png_ptr, info_ptr) == PNG_COLOR_TYPE_GRAY) {
-        register uint16_t* src_address = ((uint16_t**)image->line)[y];
+        register uint16_t* src_address = (uint16_t*)image->getPixelAddress(0, y);
         register uint8_t* dst_address = row_pointer;
         register unsigned int x, c;
 
         for (x=0; x<width; x++) {
           c = *(src_address++);
-          *(dst_address++) = _graya_getv(c);
+          *(dst_address++) = graya_getv(c);
         }
       }
       /* PALETTE */
       else if (png_get_color_type(png_ptr, info_ptr) == PNG_COLOR_TYPE_PALETTE) {
-        register uint8_t* src_address = ((uint8_t**)image->line)[y];
+        register uint8_t* src_address = (uint8_t*)image->getPixelAddress(0, y);
         register uint8_t* dst_address = row_pointer;
         register unsigned int x;
 

@@ -116,14 +116,14 @@ static void rle_tga_read32(uint32_t* address, int w, FILE *f)
       c += count;
       fread(value, 1, 4, f);
       while (count--)
-        *(address++) = _rgba(value[2], value[1], value[0], value[3]);
+        *(address++) = rgba(value[2], value[1], value[0], value[3]);
     }
     else {
       count++;
       c += count;
       while (count--) {
         fread(value, 1, 4, f);
-        *(address++) = _rgba(value[2], value[1], value[0], value[3]);
+        *(address++) = rgba(value[2], value[1], value[0], value[3]);
       }
     }
   } while (c < w);
@@ -145,14 +145,14 @@ static void rle_tga_read24(uint32_t* address, int w, FILE *f)
       c += count;
       fread(value, 1, 3, f);
       while (count--)
-        *(address++) = _rgba(value[2], value[1], value[0], 255);
+        *(address++) = rgba(value[2], value[1], value[0], 255);
     }
     else {
       count++;
       c += count;
       while (count--) {
         fread(value, 1, 3, f);
-        *(address++) = _rgba(value[2], value[1], value[0], 255);
+        *(address++) = rgba(value[2], value[1], value[0], 255);
       }
     }
   } while (c < w);
@@ -174,9 +174,9 @@ static void rle_tga_read16(uint32_t* address, int w, FILE *f)
       count = (count & 0x7F) + 1;
       c += count;
       value = fgetw(f);
-      color = _rgba(_rgb_scale_5[((value >> 10) & 0x1F)],
-                    _rgb_scale_5[((value >> 5) & 0x1F)],
-                    _rgb_scale_5[(value & 0x1F)], 255);
+      color = rgba(scale_5bits_to_8bits(((value >> 10) & 0x1F)),
+                   scale_5bits_to_8bits(((value >> 5) & 0x1F)),
+                   scale_5bits_to_8bits((value & 0x1F)), 255);
 
       while (count--)
         *(address++) = color;
@@ -186,9 +186,9 @@ static void rle_tga_read16(uint32_t* address, int w, FILE *f)
       c += count;
       while (count--) {
         value = fgetw(f);
-        color = _rgba(_rgb_scale_5[((value >> 10) & 0x1F)],
-                      _rgb_scale_5[((value >> 5) & 0x1F)],
-                      _rgb_scale_5[(value & 0x1F)], 255);
+        color = rgba(scale_5bits_to_8bits(((value >> 10) & 0x1F)),
+                     scale_5bits_to_8bits(((value >> 5) & 0x1F)),
+                     scale_5bits_to_8bits((value & 0x1F)), 255);
         *(address++) = color;
       }
     }
@@ -325,52 +325,48 @@ bool TgaFormat::onLoad(FileOp* fop)
       case 1:
       case 3:
         if (compressed)
-          rle_tga_read(image->line[yc], image_width, image_type, f);
+          rle_tga_read(image->getPixelAddress(0, yc), image_width, image_type, f);
         else if (image_type == 1)
-          fread(image->line[yc], 1, image_width, f);
+          fread(image->getPixelAddress(0, yc), 1, image_width, f);
         else {
           for (x=0; x<image_width; x++)
-            *(((uint16_t**)image->line)[yc]+x) =
-              _graya(fgetc(f), 255);
+            put_pixel_fast<GrayscaleTraits>(image, x, yc, graya(fgetc(f), 255));
         }
         break;
 
       case 2:
         if (bpp == 32) {
           if (compressed) {
-            rle_tga_read32((uint32_t*)image->line[yc], image_width, f);
+            rle_tga_read32((uint32_t*)image->getPixelAddress(0, yc), image_width, f);
           }
           else {
             for (x=0; x<image_width; x++) {
               fread(rgb, 1, 4, f);
-              *(((uint32_t**)image->line)[yc]+x) =
-                _rgba(rgb[2], rgb[1], rgb[0], rgb[3]);
+              put_pixel_fast<RgbTraits>(image, x, yc, rgba(rgb[2], rgb[1], rgb[0], rgb[3]));
             }
           }
         }
         else if (bpp == 24) {
           if (compressed) {
-            rle_tga_read24((uint32_t*)image->line[yc], image_width, f);
+            rle_tga_read24((uint32_t*)image->getPixelAddress(0, yc), image_width, f);
           }
           else {
             for (x=0; x<image_width; x++) {
               fread(rgb, 1, 3, f);
-              *(((uint32_t**)image->line)[yc]+x) =
-                _rgba(rgb[2], rgb[1], rgb[0], 255);
+              put_pixel_fast<RgbTraits>(image, x, yc, rgba(rgb[2], rgb[1], rgb[0], 255));
             }
           }
         }
         else {
           if (compressed) {
-            rle_tga_read16((uint32_t*)image->line[yc], image_width, f);
+            rle_tga_read16((uint32_t*)image->getPixelAddress(0, yc), image_width, f);
           }
           else {
             for (x=0; x<image_width; x++) {
               c = fgetw(f);
-              *(((uint32_t**)image->line)[yc]+x) =
-                _rgba(((c >> 10) & 0x1F),
-                      ((c >> 5) & 0x1F),
-                      (c & 0x1F), 255);
+              put_pixel_fast<RgbTraits>(image, x, yc, rgba(((c >> 10) & 0x1F),
+                                                           ((c >> 5) & 0x1F),
+                                                           (c & 0x1F), 255));
             }
           }
         }
@@ -418,8 +414,8 @@ bool TgaFormat::onSave(FileOp* fop)
   fputc((need_pal) ? 24 : 0, f);       /* palette entry size */
   fputw(0, f);                         /* left */
   fputw(0, f);                         /* top */
-  fputw(image->w, f);                  /* width */
-  fputw(image->h, f);                  /* height */
+  fputw(image->getWidth(), f);                  /* width */
+  fputw(image->getHeight(), f);                  /* height */
   fputc(depth, f);                     /* bits per pixel */
 
   /* descriptor (bottom to top, 8-bit alpha) */
@@ -438,34 +434,34 @@ bool TgaFormat::onSave(FileOp* fop)
   switch (image->getPixelFormat()) {
 
     case IMAGE_RGB:
-      for (y=image->h-1; y>=0; y--) {
-        for (x=0; x<image->w; x++) {
-          c = image_getpixel(image, x, y);
-          fputc(_rgba_getb(c), f);
-          fputc(_rgba_getg(c), f);
-          fputc(_rgba_getr(c), f);
-          fputc(_rgba_geta(c), f);
+      for (y=image->getHeight()-1; y>=0; y--) {
+        for (x=0; x<image->getWidth(); x++) {
+          c = get_pixel(image, x, y);
+          fputc(rgba_getb(c), f);
+          fputc(rgba_getg(c), f);
+          fputc(rgba_getr(c), f);
+          fputc(rgba_geta(c), f);
         }
 
-        fop_progress(fop, (float)(image->h-y) / (float)(image->h));
+        fop_progress(fop, (float)(image->getHeight()-y) / (float)(image->getHeight()));
       }
       break;
 
     case IMAGE_GRAYSCALE:
-      for (y=image->h-1; y>=0; y--) {
-        for (x=0; x<image->w; x++)
-          fputc(_graya_getv(image_getpixel(image, x, y)), f);
+      for (y=image->getHeight()-1; y>=0; y--) {
+        for (x=0; x<image->getWidth(); x++)
+          fputc(graya_getv(get_pixel(image, x, y)), f);
 
-        fop_progress(fop, (float)(image->h-y) / (float)(image->h));
+        fop_progress(fop, (float)(image->getHeight()-y) / (float)(image->getHeight()));
       }
       break;
 
     case IMAGE_INDEXED:
-      for (y=image->h-1; y>=0; y--) {
-        for (x=0; x<image->w; x++)
-          fputc(image_getpixel(image, x, y), f);
+      for (y=image->getHeight()-1; y>=0; y--) {
+        for (x=0; x<image->getWidth(); x++)
+          fputc(get_pixel(image, x, y), f);
 
-        fop_progress(fop, (float)(image->h-y) / (float)(image->h));
+        fop_progress(fop, (float)(image->getHeight()-y) / (float)(image->getHeight()));
       }
       break;
   }

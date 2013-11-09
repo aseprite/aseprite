@@ -35,6 +35,7 @@
 #include "raster/cel.h"
 #include "raster/dirty.h"
 #include "raster/layer.h"
+#include "raster/primitives.h"
 #include "raster/sprite.h"
 #include "raster/stock.h"
 
@@ -63,7 +64,7 @@ ExpandCelCanvas::ExpandCelCanvas(Context* context, TiledMode tiledMode, UndoTran
   if (m_cel == NULL) {
     // Create the image
     m_celImage = Image::create(m_sprite->getPixelFormat(), m_sprite->getWidth(), m_sprite->getHeight());
-    image_clear(m_celImage, m_sprite->getTransparentColor());
+    clear_image(m_celImage, m_sprite->getTransparentColor());
 
     // Create the cel
     m_cel = new Cel(location.frame(), 0);
@@ -81,8 +82,8 @@ ExpandCelCanvas::ExpandCelCanvas(Context* context, TiledMode tiledMode, UndoTran
   if (tiledMode == TILED_NONE) { // Non-tiled
     x1 = MIN(m_cel->getX(), 0);
     y1 = MIN(m_cel->getY(), 0);
-    x2 = MAX(m_cel->getX()+m_celImage->w, m_sprite->getWidth());
-    y2 = MAX(m_cel->getY()+m_celImage->h, m_sprite->getHeight());
+    x2 = MAX(m_cel->getX()+m_celImage->getWidth(), m_sprite->getWidth());
+    y2 = MAX(m_cel->getY()+m_celImage->getHeight(), m_sprite->getHeight());
   }
   else {                        // Tiled
     x1 = 0;
@@ -92,7 +93,7 @@ ExpandCelCanvas::ExpandCelCanvas(Context* context, TiledMode tiledMode, UndoTran
   }
 
   // create two copies of the image region which we'll modify with the tool
-  m_srcImage = image_crop(m_celImage,
+  m_srcImage = crop_image(m_celImage,
                           x1-m_cel->getX(),
                           y1-m_cel->getY(), x2-x1, y2-y1,
                           m_sprite->getTransparentColor());
@@ -127,14 +128,14 @@ void ExpandCelCanvas::commit()
   // with only the differences between both images.
   if (m_cel->getX() == m_originalCelX &&
       m_cel->getY() == m_originalCelY &&
-      m_celImage->w == m_dstImage->w &&
-      m_celImage->h == m_dstImage->h) {
+      m_celImage->getWidth() == m_dstImage->getWidth() &&
+      m_celImage->getHeight() == m_dstImage->getHeight()) {
     // Was m_celImage created in the start of the tool-loop?.
     if (m_celCreated) {
       // We can keep the m_celImage
 
       // We copy the destination image to the m_celImage
-      image_copy(m_celImage, m_dstImage, 0, 0);
+      copy_image(m_celImage, m_dstImage, 0, 0);
 
       // Add the m_celImage in the images stock of the sprite.
       m_cel->setImage(m_sprite->getStock()->addImage(m_celImage));
@@ -167,7 +168,7 @@ void ExpandCelCanvas::commit()
       }
 
       // Copy the destination to the cel image.
-      image_copy(m_celImage, m_dstImage, 0, 0);
+      copy_image(m_celImage, m_dstImage, 0, 0);
     }
   }
   // If the size of both images are different, we have to

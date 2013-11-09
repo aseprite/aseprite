@@ -31,6 +31,7 @@
 #include "raster/image.h"
 #include "raster/layer.h"
 #include "raster/palette.h"
+#include "raster/primitives.h"
 #include "raster/sprite.h"
 #include "raster/stock.h"
 
@@ -112,12 +113,12 @@ static void thumbnail_render(BITMAP* bmp, const Image* image, bool has_alpha, co
 
   ASSERT(image != NULL);
 
-  sx = (double)image->w / (double)bmp->w;
-  sy = (double)image->h / (double)bmp->h;
+  sx = (double)image->getWidth() / (double)bmp->w;
+  sy = (double)image->getHeight() / (double)bmp->h;
   scale = MAX(sx, sy);
 
-  w = image->w / scale;
-  h = image->h / scale;
+  w = image->getWidth() / scale;
+  h = image->getHeight() / scale;
   w = MIN(bmp->w, w);
   h = MIN(bmp->h, h);
 
@@ -137,38 +138,38 @@ static void thumbnail_render(BITMAP* bmp, const Image* image, bool has_alpha, co
       case IMAGE_RGB:
         for (y=0; y<h; y++)
           for (x=0; x<w; x++) {
-            c = image_getpixel(image, x*scale, y*scale);
+            c = get_pixel(image, x*scale, y*scale);
             c2 = getpixel(bmp, x1+x, y1+y);
-            c = _rgba_blend_normal(_rgba(getr(c2), getg(c2), getb(c2), 255), c, 255);
+            c = rgba_blend_normal(rgba(getr(c2), getg(c2), getb(c2), 255), c, 255);
 
-            putpixel(bmp, x1+x, y1+y, makecol(_rgba_getr(c),
-                                              _rgba_getg(c),
-                                              _rgba_getb(c)));
+            putpixel(bmp, x1+x, y1+y, makecol(rgba_getr(c),
+                                              rgba_getg(c),
+                                              rgba_getb(c)));
           }
         break;
       case IMAGE_GRAYSCALE:
         for (y=0; y<h; y++)
           for (x=0; x<w; x++) {
-            c = image_getpixel(image, x*scale, y*scale);
+            c = get_pixel(image, x*scale, y*scale);
             c2 = getpixel(bmp, x1+x, y1+y);
-            c = _graya_blend_normal(_graya(getr(c2), 255), c, 255);
+            c = graya_blend_normal(graya(getr(c2), 255), c, 255);
 
-            putpixel(bmp, x1+x, y1+y, makecol(_graya_getv(c),
-                                              _graya_getv(c),
-                                              _graya_getv(c)));
+            putpixel(bmp, x1+x, y1+y, makecol(graya_getv(c),
+                                              graya_getv(c),
+                                              graya_getv(c)));
           }
         break;
       case IMAGE_INDEXED: {
         for (y=0; y<h; y++)
           for (x=0; x<w; x++) {
-            c = image_getpixel(image, x*scale, y*scale);
+            c = get_pixel(image, x*scale, y*scale);
             if (c != 0) {
               ASSERT(c >= 0 && c < palette->size());
 
               c = palette->getEntry(MID(0, c, palette->size()-1));
-              putpixel(bmp, x1+x, y1+y, makecol(_rgba_getr(c),
-                                                _rgba_getg(c),
-                                                _rgba_getb(c)));
+              putpixel(bmp, x1+x, y1+y, makecol(rgba_getr(c),
+                                                rgba_getg(c),
+                                                rgba_getb(c)));
             }
           }
         break;
@@ -183,32 +184,32 @@ static void thumbnail_render(BITMAP* bmp, const Image* image, bool has_alpha, co
       case IMAGE_RGB:
         for (y=0; y<h; y++)
           for (x=0; x<w; x++) {
-            c = image_getpixel(image, x*scale, y*scale);
-            putpixel(bmp, x1+x, y1+y, makecol(_rgba_getr(c),
-                                              _rgba_getg(c),
-                                              _rgba_getb(c)));
+            c = get_pixel(image, x*scale, y*scale);
+            putpixel(bmp, x1+x, y1+y, makecol(rgba_getr(c),
+                                              rgba_getg(c),
+                                              rgba_getb(c)));
           }
         break;
       case IMAGE_GRAYSCALE:
         for (y=0; y<h; y++)
           for (x=0; x<w; x++) {
-            c = image_getpixel(image, x*scale, y*scale);
-            putpixel(bmp, x1+x, y1+y, makecol(_graya_getv(c),
-                                              _graya_getv(c),
-                                              _graya_getv(c)));
+            c = get_pixel(image, x*scale, y*scale);
+            putpixel(bmp, x1+x, y1+y, makecol(graya_getv(c),
+                                              graya_getv(c),
+                                              graya_getv(c)));
           }
         break;
       case IMAGE_INDEXED: {
         for (y=0; y<h; y++)
           for (x=0; x<w; x++) {
-            c = image_getpixel(image, x*scale, y*scale);
+            c = get_pixel(image, x*scale, y*scale);
 
             ASSERT(c >= 0 && c < palette->size());
 
             c = palette->getEntry(MID(0, c, palette->size()-1));
-            putpixel(bmp, x1+x, y1+y, makecol(_rgba_getr(c),
-                                              _rgba_getg(c),
-                                              _rgba_getb(c)));
+            putpixel(bmp, x1+x, y1+y, makecol(rgba_getr(c),
+                                              rgba_getg(c),
+                                              rgba_getb(c)));
           }
         break;
       }

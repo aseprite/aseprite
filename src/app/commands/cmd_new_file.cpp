@@ -40,6 +40,7 @@
 #include "raster/image.h"
 #include "raster/layer.h"
 #include "raster/palette.h"
+#include "raster/primitives.h"
 #include "raster/sprite.h"
 #include "raster/stock.h"
 #include "ui/ui.h"
@@ -189,7 +190,7 @@ void NewFileCommand::onExecute(Context* context)
           layerImage->configureAsBackground();
 
           Image* image = sprite->getStock()->getImage(layerImage->getCel(FrameNumber(0))->getImage());
-          image_clear(image, color_utils::color_for_image(color, format));
+          raster::clear_image(image, color_utils::color_for_image(color, format));
         }
       }
 

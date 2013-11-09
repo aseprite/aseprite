@@ -37,8 +37,10 @@
 #include "app/ui/editor/editor.h"
 #include "app/ui/status_bar.h"
 #include "app/util/render.h"
+#include "raster/conversion_alleg.h"
 #include "raster/image.h"
 #include "raster/palette.h"
+#include "raster/primitives.h"
 #include "raster/sprite.h"
 
 #define PREVIEW_TILED           1
@@ -158,7 +160,7 @@ void PreviewCommand::onExecute(Context* context)
       if (index_bg_color == -1)
         RenderEngine::renderCheckedBackground(doublebuf, -pos_x, -pos_y, zoom);
       else
-        image_clear(doublebuf, pal->getEntry(index_bg_color));
+        raster::clear_image(doublebuf, pal->getEntry(index_bg_color));
 
       switch (tiled) {
         case TILED_NONE:
@@ -179,7 +181,7 @@ void PreviewCommand::onExecute(Context* context)
           break;
       }
 
-      image_to_allegro(doublebuf, ji_screen, 0, 0, pal);
+      raster::convert_image_to_allegro(doublebuf, ji_screen, 0, 0, pal);
     }
 
     // It is necessary in case ji_screen is double-bufferred

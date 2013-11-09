@@ -35,6 +35,7 @@
 #include "raster/image.h"
 #include "raster/layer.h"
 #include "raster/pen.h"
+#include "raster/primitives.h"
 #include "raster/sprite.h"
 #include "ui/base.h"
 #include "ui/rect.h"
@@ -102,7 +103,7 @@ static void savepixel(BITMAP *bmp, int x, int y, int color);
 static void drawpixel(BITMAP *bmp, int x, int y, int color);
 static void cleanpixel(BITMAP *bmp, int x, int y, int color);
 
-static int get_pen_color(Sprite* sprite, Layer* layer);
+static color_t get_pen_color(Sprite* sprite, Layer* layer);
 
 //////////////////////////////////////////////////////////////////////
 // CURSOR COLOR
@@ -288,7 +289,7 @@ void Editor::editor_draw_cursor(int x, int y, bool refresh)
       ->getSettings()
       ->getToolSettings(current_tool);
 
-    int pen_color = get_pen_color(m_sprite, m_layer);
+    color_t pen_color = get_pen_color(m_sprite, m_layer);
     uint32_t new_mask_color;
     Pen* pen = editor_get_current_pen();
     gfx::Rect penBounds = pen->getBounds();
@@ -308,10 +309,12 @@ void Editor::editor_draw_cursor(int x, int y, bool refresh)
     }
 
     Image* extraImage = m_document->getExtraCelImage();
-    if (extraImage->mask_color != new_mask_color)
-      image_clear(extraImage, extraImage->mask_color = new_mask_color);
-    image_putpen(extraImage, pen, -penBounds.x, -penBounds.y,
-                 pen_color, extraImage->mask_color);
+    if (extraImage->getMaskColor() != new_mask_color) {
+      extraImage->setMaskColor(new_mask_color);
+      clear_image(extraImage, new_mask_color);
+    }
+    put_pen(extraImage, pen, -penBounds.x, -penBounds.y,
+            pen_color, extraImage->getMaskColor());
 
     if (refresh) {
       m_document->notifySpritePixelsModified
@@ -665,7 +668,7 @@ static void cleanpixel(BITMAP *bmp, int x, int y, int color)
   }
 }
 
-static int get_pen_color(Sprite* sprite, Layer* layer)
+static color_t get_pen_color(Sprite* sprite, Layer* layer)
 {
   app::Color c = UIContext::instance()->getSettings()->getFgColor();
   ASSERT(sprite != NULL);

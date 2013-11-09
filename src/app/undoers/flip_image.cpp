@@ -48,7 +48,7 @@ FlipImage::FlipImage(ObjectsContainer* objects, Image* image,
   , m_flipType(flipType)
 {
   ASSERT(m_w >= 1 && m_h >= 1);
-  ASSERT(m_x >= 0 && m_y >= 0 && m_x+m_w <= image->w && m_y+m_h <= image->h);
+  ASSERT(m_x >= 0 && m_y >= 0 && m_x+m_w <= image->getWidth() && m_y+m_h <= image->getHeight());
 }
 
 void FlipImage::dispose()

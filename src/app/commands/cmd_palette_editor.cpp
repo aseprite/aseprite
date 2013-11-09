@@ -666,9 +666,9 @@ void PaletteEntryEditor::setPaletteEntry(const app::Color& color)
   PaletteView::SelectedEntries entries;
   palView->getSelectedEntries(entries);
 
-  uint32_t new_pal_color = _rgba(color.getRed(),
-                                 color.getGreen(),
-                                 color.getBlue(), 255);
+  color_t new_pal_color = raster::rgba(color.getRed(),
+                                       color.getGreen(),
+                                       color.getBlue(), 255);
 
   Palette* palette = get_current_palette();
   for (int c=0; c<palette->size(); c++) {
@@ -695,9 +695,9 @@ void PaletteEntryEditor::setPaletteEntryChannel(const app::Color& color, ColorSl
     if (entries[c]) {
       // Get the current RGB values of the palette entry
       src_color = palette->getEntry(c);
-      r = _rgba_getr(src_color);
-      g = _rgba_getg(src_color);
-      b = _rgba_getb(src_color);
+      r = rgba_getr(src_color);
+      g = rgba_getg(src_color);
+      b = rgba_getb(src_color);
 
       switch (color.getType()) {
 
@@ -762,7 +762,7 @@ void PaletteEntryEditor::setPaletteEntryChannel(const app::Color& color, ColorSl
           break;
       }
 
-      palette->setEntry(c, _rgba(r, g, b, 255));
+      palette->setEntry(c, raster::rgba(r, g, b, 255));
     }
   }
 }

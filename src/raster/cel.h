@@ -20,13 +20,13 @@
 #define RASTER_CEL_H_INCLUDED
 
 #include "raster/frame_number.h"
-#include "raster/gfxobj.h"
+#include "raster/object.h"
 
 namespace raster {
 
   class LayerImage;
 
-  class Cel : public GfxObj {
+  class Cel : public Object {
   public:
     Cel(FrameNumber frame, int image);
     Cel(const Cel& cel);

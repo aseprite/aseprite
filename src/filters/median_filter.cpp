@@ -29,6 +29,7 @@
 #include "filters/tiled_mode.h"
 #include "raster/image.h"
 #include "raster/palette.h"
+#include "raster/primitives_fast.h"
 #include "raster/rgbmap.h"
 
 #include <algorithm>
@@ -48,10 +49,10 @@ namespace {
 
     void operator()(RgbTraits::pixel_t color)
     {
-      channel[0][c] = _rgba_getr(color);
-      channel[1][c] = _rgba_getg(color);
-      channel[2][c] = _rgba_getb(color);
-      channel[3][c] = _rgba_geta(color);
+      channel[0][c] = rgba_getr(color);
+      channel[1][c] = rgba_getg(color);
+      channel[2][c] = rgba_getb(color);
+      channel[3][c] = rgba_geta(color);
       c++;
     }
   };
@@ -66,8 +67,8 @@ namespace {
 
     void operator()(GrayscaleTraits::pixel_t color)
     {
-      channel[0][c] = _graya_getv(color);
-      channel[1][c] = _graya_geta(color);
+      channel[0][c] = graya_getv(color);
+      channel[1][c] = graya_geta(color);
       c++;
     }
   };
@@ -89,9 +90,9 @@ namespace {
         channel[0][c] = color;
       }
       else {
-        channel[0][c] = _rgba_getr(pal->getEntry(color));
-        channel[1][c] = _rgba_getg(pal->getEntry(color));
-        channel[2][c] = _rgba_getb(pal->getEntry(color));
+        channel[0][c] = rgba_getr(pal->getEntry(color));
+        channel[1][c] = rgba_getg(pal->getEntry(color));
+        channel[2][c] = rgba_getb(pal->getEntry(color));
       }
       c++;
     }
@@ -150,37 +151,37 @@ void MedianFilter::applyToRgba(FilterManager* filterMgr)
     get_neighboring_pixels<RgbTraits>(src, x, y, m_width, m_height, m_width/2, m_height/2,
                                       m_tiledMode, delegate);
 
-    color = image_getpixel_fast<RgbTraits>(src, x, y);
+    color = get_pixel_fast<RgbTraits>(src, x, y);
 
     if (target & TARGET_RED_CHANNEL) {
       std::sort(m_channel[0].begin(), m_channel[0].end());
       r = m_channel[0][m_ncolors/2];
     }
     else
-      r = _rgba_getr(color);
+      r = rgba_getr(color);
 
     if (target & TARGET_GREEN_CHANNEL) {
       std::sort(m_channel[1].begin(), m_channel[1].end());
       g = m_channel[1][m_ncolors/2];
     }
     else
-      g = _rgba_getg(color);
+      g = rgba_getg(color);
 
     if (target & TARGET_BLUE_CHANNEL) {
       std::sort(m_channel[2].begin(), m_channel[2].end());
       b = m_channel[2][m_ncolors/2];
     }
     else
-      b = _rgba_getb(color);
+      b = rgba_getb(color);
 
     if (target & TARGET_ALPHA_CHANNEL) {
       std::sort(m_channel[3].begin(), m_channel[3].end());
       a = m_channel[3][m_ncolors/2];
     }
     else
-      a = _rgba_geta(color);
+      a = rgba_geta(color);
 
-    *(dst_address++) = _rgba(r, g, b, a);
+    *(dst_address++) = rgba(r, g, b, a);
   }
 }
 
@@ -206,23 +207,23 @@ void MedianFilter::applyToGrayscale(FilterManager* filterMgr)
     get_neighboring_pixels<GrayscaleTraits>(src, x, y, m_width, m_height, m_width/2, m_height/2,
                                             m_tiledMode, delegate);
 
-    color = image_getpixel_fast<GrayscaleTraits>(src, x, y);
+    color = get_pixel_fast<GrayscaleTraits>(src, x, y);
 
     if (target & TARGET_GRAY_CHANNEL) {
       std::sort(m_channel[0].begin(), m_channel[0].end());
       k = m_channel[0][m_ncolors/2];
     }
     else
-      k = _graya_getv(color);
+      k = graya_getv(color);
 
     if (target & TARGET_ALPHA_CHANNEL) {
       std::sort(m_channel[1].begin(), m_channel[1].end());
       a = m_channel[1][m_ncolors/2];
     }
     else
-      a = _graya_geta(color);
+      a = graya_geta(color);
 
-    *(dst_address++) = _graya(k, a);
+    *(dst_address++) = graya(k, a);
   }
 }
 
@@ -255,28 +256,28 @@ void MedianFilter::applyToIndexed(FilterManager* filterMgr)
       *(dst_address++) = m_channel[0][m_ncolors/2];
     }
     else {
-      color = image_getpixel_fast<IndexedTraits>(src, x, y);
+      color = get_pixel_fast<IndexedTraits>(src, x, y);
 
       if (target & TARGET_RED_CHANNEL) {
         std::sort(m_channel[0].begin(), m_channel[0].end());
         r = m_channel[0][m_ncolors/2];
       }
       else
-        r = _rgba_getr(pal->getEntry(color));
+        r = rgba_getr(pal->getEntry(color));
 
       if (target & TARGET_GREEN_CHANNEL) {
         std::sort(m_channel[1].begin(), m_channel[1].end());
         g = m_channel[1][m_ncolors/2];
       }
       else
-        g = _rgba_getg(pal->getEntry(color));
+        g = rgba_getg(pal->getEntry(color));
 
       if (target & TARGET_BLUE_CHANNEL) {
         std::sort(m_channel[2].begin(), m_channel[2].end());
         b = m_channel[2][m_ncolors/2];
       }
       else
-        b = _rgba_getb(pal->getEntry(color));
+        b = rgba_getb(pal->getEntry(color));
 
       *(dst_address++) = rgbmap->mapColor(r, g, b);
     }

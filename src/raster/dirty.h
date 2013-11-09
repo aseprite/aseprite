@@ -71,7 +71,7 @@ namespace raster {
     const Row& getRow(int i) const { return *m_rows[i]; }
 
     inline int getLineSize(int width) const {
-      return pixelformat_line_size(m_format, width);
+      return calculate_rowstride_bytes(m_format, width);
     }
 
     void saveImagePixels(Image* image);

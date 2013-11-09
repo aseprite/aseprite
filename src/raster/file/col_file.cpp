@@ -21,10 +21,11 @@
 #endif
 
 #include "base/cfile.h"
+#include "base/clamp.h"
+#include "raster/color_scales.h"
 #include "raster/image.h"
 #include "raster/palette.h"
 
-#include <allegro.h>
 #include <cstdio>
 
 #define PROCOL_MAGIC_NUMBER     0xB123
@@ -37,27 +38,27 @@ using namespace base;
 // Loads a COL file (Animator and Animator Pro format)
 Palette* load_col_file(const char* filename)
 {
-#if (MAKE_VERSION(4, 2, 1) >= MAKE_VERSION(ALLEGRO_VERSION,             \
-                                           ALLEGRO_SUB_VERSION,         \
-                                           ALLEGRO_WIP_VERSION))
-  int size = file_size(filename);
-#else
-  int size = file_size_ex(filename);
-#endif
-  int pro = (size == 768)? false: true; /* is Animator Pro format? */
-  div_t d = div(size-8, 3);
   Palette *pal = NULL;
   int c, r, g, b;
   FILE *f;
-
-  if (!(size) || (pro && d.rem)) /* invalid format */
-    return NULL;
 
   f = fopen(filename, "rb");
   if (!f)
     return NULL;
 
-  /* Animator format */
+  // Get file size.
+  fseek(f, 0, SEEK_END);
+  size_t size = ftell(f);
+  div_t d = div(size-8, 3);
+  fseek(f, 0, SEEK_SET);
+
+  bool pro = (size == 768)? false: true; // is Animator Pro format?
+  if (!(size) || (pro && d.rem)) {       // Invalid format 
+    fclose(f);
+    return NULL;
+  }
+  
+  // Animator format
   if (!pro) {
     pal = new Palette(FrameNumber(0), 256);
 
@@ -68,20 +69,20 @@ Palette* load_col_file(const char* filename)
       if (ferror(f))
         break;
 
-      pal->setEntry(c, _rgba(_rgb_scale_6[MID(0, r, 63)],
-                             _rgb_scale_6[MID(0, g, 63)],
-                             _rgb_scale_6[MID(0, b, 63)], 255));
+      pal->setEntry(c, rgba(scale_6bits_to_8bits(base::clamp(r, 0, 63)),
+                            scale_6bits_to_8bits(base::clamp(g, 0, 63)),
+                            scale_6bits_to_8bits(base::clamp(b, 0, 63)), 255));
     }
   }
-  /* Animator Pro format */
+  // Animator Pro format
   else {
     int magic, version;
 
-    fgetl(f);                   /* skip file size */
-    magic = fgetw(f);           /* file format identifier */
-    version = fgetw(f);         /* version file */
+    fgetl(f);                   // Skip file size
+    magic = fgetw(f);           // File format identifier
+    version = fgetw(f);         // Version file
 
-    /* unknown format */
+    // Unknown format
     if (magic != PROCOL_MAGIC_NUMBER || version != 0) {
       fclose(f);
       return NULL;
@@ -96,9 +97,9 @@ Palette* load_col_file(const char* filename)
       if (ferror(f))
         break;
 
-      pal->setEntry(c, _rgba(MID(0, r, 255),
-                             MID(0, g, 255),
-                             MID(0, b, 255), 255));
+      pal->setEntry(c, rgba(base::clamp(r, 0, 255),
+                            base::clamp(g, 0, 255),
+                            base::clamp(b, 0, 255), 255));
     }
   }
 
@@ -113,17 +114,17 @@ bool save_col_file(const Palette* pal, const char* filename)
   if (!f)
     return false;
 
-  fputl(8+768, f);                 /* file size */
-  fputw(PROCOL_MAGIC_NUMBER, f);   /* file format identifier */
-  fputw(0, f);                     /* version file */
+  fputl(8+768, f);                 // File size
+  fputw(PROCOL_MAGIC_NUMBER, f);   // File format identifier
+  fputw(0, f);                     // Version file
 
   uint32_t c;
   for (int i=0; i<256; i++) {
     c = pal->getEntry(i);
 
-    fputc(_rgba_getr(c), f);
-    fputc(_rgba_getg(c), f);
-    fputc(_rgba_getb(c), f);
+    fputc(rgba_getr(c), f);
+    fputc(rgba_getg(c), f);
+    fputc(rgba_getb(c), f);
     if (ferror(f))
       break;
   }

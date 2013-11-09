@@ -20,6 +20,8 @@
 #include "config.h"
 #endif
 
+#include "app/ui/context_bar.h"
+
 #include "app/app.h"
 #include "app/modules/gui.h"
 #include "app/settings/ink_type.h"
@@ -28,11 +30,12 @@
 #include "app/tools/point_shape.h"
 #include "app/tools/tool.h"
 #include "app/ui/button_set.h"
-#include "app/ui/context_bar.h"
 #include "app/ui/skin/skin_theme.h"
 #include "app/ui_context.h"
 #include "base/unique_ptr.h"
+#include "raster/conversion_alleg.h"
 #include "raster/image.h"
+#include "raster/palette.h"
 #include "raster/pen.h"
 #include "ui/button.h"
 #include "ui/combobox.h"
@@ -74,16 +77,20 @@ public:
   }
 
   void setPenSettings(IPenSettings* penSettings) {
+    base::UniquePtr<Palette> palette(new Palette(FrameNumber(0), 2));
+    palette->setEntry(0, raster::rgba(0, 0, 0, 0));
+    palette->setEntry(1, raster::rgba(0, 0, 0, 255));
+
     base::UniquePtr<Pen> pen(new Pen(m_penType = penSettings->getType(),
-                               std::min(10, penSettings->getSize()),
-                               penSettings->getAngle()));
+                                     std::min(10, penSettings->getSize()),
+                                     penSettings->getAngle()));
     Image* image = pen->get_image();
 
     if (m_bitmap)
       destroy_bitmap(m_bitmap);
-    m_bitmap = create_bitmap_ex(32, image->w, image->h);
+    m_bitmap = create_bitmap_ex(32, image->getWidth(), image->getHeight());
     clear(m_bitmap);
-    image_to_allegro(image, m_bitmap, 0, 0, NULL);
+    convert_image_to_allegro(image, m_bitmap, 0, 0, palette);
 
     invalidate();
   }

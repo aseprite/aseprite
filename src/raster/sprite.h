@@ -22,7 +22,7 @@
 #include "base/disable_copying.h"
 #include "raster/frame_number.h"
 #include "raster/layer_index.h"
-#include "raster/gfxobj.h"
+#include "raster/object.h"
 #include "raster/pixel_format.h"
 #include "raster/sprite_position.h"
 
@@ -44,7 +44,7 @@ namespace raster {
   typedef std::vector<Palette*> PalettesList;
 
   // The main structure used in the whole program to handle a sprite.
-  class Sprite : public GfxObj {
+  class Sprite : public Object {
   public:
 
     ////////////////////////////////////////

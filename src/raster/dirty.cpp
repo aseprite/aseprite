@@ -21,7 +21,9 @@
 #endif
 
 #include "raster/dirty.h"
+
 #include "raster/image.h"
+#include "raster/primitives.h"
 
 #include <algorithm>
 
@@ -59,14 +61,14 @@ Dirty::Dirty(const Dirty& src)
 Dirty::Dirty(Image* image, Image* image_diff)
   : m_format(image->getPixelFormat())
   , m_x1(0), m_y1(0)
-  , m_x2(image->w-1), m_y2(image->h-1)
+  , m_x2(image->getWidth()-1), m_y2(image->getHeight()-1)
 {
   int x, y, x1, x2;
 
-  for (y=0; y<image->h; y++) {
+  for (y=0; y<image->getHeight(); y++) {
     x1 = -1;
-    for (x=0; x<image->w; x++) {
-      if (image_getpixel(image, x, y) != image_getpixel(image_diff, x, y)) {
+    for (x=0; x<image->getWidth(); x++) {
+      if (get_pixel(image, x, y) != get_pixel(image_diff, x, y)) {
         x1 = x;
         break;
       }
@@ -74,8 +76,8 @@ Dirty::Dirty(Image* image, Image* image_diff)
     if (x1 < 0)
       continue;
 
-    for (x2=image->w-1; x2>x1; x2--) {
-      if (image_getpixel(image, x2, y) != image_getpixel(image_diff, x2, y))
+    for (x2=image->getWidth()-1; x2>x1; x2--) {
+      if (get_pixel(image, x2, y) != get_pixel(image_diff, x2, y))
         break;
     }
 
@@ -137,7 +139,7 @@ void Dirty::saveImagePixels(Image* image)
     for (; col_it != col_end; ++col_it) {
       Col* col = *col_it;
 
-      uint8_t* address = (uint8_t*)image_address(image, col->x, row->y);
+      uint8_t* address = (uint8_t*)image->getPixelAddress(col->x, row->y);
       std::copy(address, address+getLineSize(col->w), col->data.begin());
     }
   }
@@ -155,7 +157,7 @@ void Dirty::swapImagePixels(Image* image)
     for (; col_it != col_end; ++col_it) {
       Col* col = *col_it;
 
-      uint8_t* address = (uint8_t*)image_address(image, col->x, row->y);
+      uint8_t* address = (uint8_t*)image->getPixelAddress(col->x, row->y);
       std::swap_ranges(address, address+getLineSize(col->w), col->data.begin());
     }
   }

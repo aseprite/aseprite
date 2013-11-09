@@ -60,9 +60,8 @@ Mask* load_msk_file(const char* filename)
 
     // Just load an Animator Pro PIC file
     base::UniquePtr<Image> image(load_pic_file(filename, &x, &y, NULL));
-    if (image != NULL && (image->getPixelFormat() == IMAGE_BITMAP)) {
+    if (image != NULL && (image->getPixelFormat() == IMAGE_BITMAP))
       mask = new Mask(x, y, image.release());
-    }
   }
   // Animator MSK format
   else if (orig_size == 8000) {
@@ -73,7 +72,7 @@ Mask* load_msk_file(const char* filename)
     for (i=0; i<8000; i++) {
       byte = pack_getc (f);
       for (c=0; c<8; c++) {
-        mask->getBitmap()->putpixel(u, v, byte & (1<<(7-c)));
+        mask->getBitmap()->putPixel(u, v, byte & (1<<(7-c)));
         u++;
         if (u == 320) {
           u = 0;

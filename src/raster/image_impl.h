@@ -21,79 +21,97 @@
 
 #include "raster/blend.h"
 #include "raster/image.h"
+#include "raster/image_bits.h"
+#include "raster/image_iterator.h"
 #include "raster/palette.h"
 
 namespace raster {
 
   template<class Traits>
   class ImageImpl : public Image {
+  private:
     typedef typename Traits::address_t address_t;
     typedef typename Traits::const_address_t const_address_t;
 
-  public:                         // raw access to pixel-data
+    address_t m_bits;            // Pixmap data.
+    address_t* m_rows;           // Start of each scanline.
 
-    inline address_t raw_pixels() {
-      return (address_t)dat;
+    inline address_t getBitsAddress() {
+      return m_bits;
     }
 
-    inline const_address_t raw_pixels() const {
-      return (address_t)dat;
+    inline const_address_t getBitsAddress() const {
+      return m_bits;
     }
 
-    inline address_t line_address(int y) {
-      ASSERT(y >= 0 && y < h);
-      return ((address_t*)line)[y];
+    inline address_t getLineAddress(int y) {
+      ASSERT(y >= 0 && y < getHeight());
+      return m_rows[y];
     }
 
-    inline const_address_t line_address(int y) const {
-      ASSERT(y >= 0 && y < h);
-      return ((const_address_t*)line)[y];
+    inline const_address_t getLineAddress(int y) const {
+      ASSERT(y >= 0 && y < getHeight());
+      return m_rows[y];
     }
 
   public:
-
-    ImageImpl(int w, int h)
-      : Image(static_cast<PixelFormat>(Traits::pixel_format), w, h)
+    ImageImpl(int width, int height)
+      : Image(static_cast<PixelFormat>(Traits::pixel_format), width, height)
     {
-      int bytes_per_line = Traits::scanline_size(w);
+      int rowstrideBytes = Traits::getRowStrideBytes(width);
 
-      dat = new uint8_t[bytes_per_line*h];
+      m_bits = (address_t)new uint8_t[rowstrideBytes * height];
       try {
-        line = (uint8_t**)new address_t*[h];
+        m_rows = new address_t[height];
       }
       catch (...) {
-        delete[] dat;
+        delete[] m_bits;
         throw;
       }
 
-      address_t addr = raw_pixels();
-      for (int y=0; y<h; ++y) {
-        ((address_t*)line)[y] = addr;
-        addr = (address_t)(((uint8_t*)addr) + bytes_per_line);
+      address_t addr = m_bits;
+      for (int y=0; y<getHeight(); ++y) {
+        m_rows[y] = addr;
+        addr = (address_t)(((uint8_t*)addr) + rowstrideBytes);
       }
     }
 
-    virtual int getpixel(int x, int y) const
-    {
-      return image_getpixel_fast<Traits>(this, x, y);
+    ~ImageImpl() {
+      if (m_bits) delete[] m_bits;
+      if (m_rows) delete[] m_rows;
     }
 
-    virtual void putpixel(int x, int y, int color)
-    {
-      image_putpixel_fast<Traits>(this, x, y, color);
+    uint8_t* getPixelAddress(int x, int y) const OVERRIDE {
+      ASSERT(x >= 0 && x < getWidth());
+      ASSERT(y >= 0 && y < getHeight());
+
+      return (uint8_t*)(m_rows[y] + x);
     }
 
-    virtual void clear(int color)
-    {
-      address_t addr = raw_pixels();
-      unsigned int c, size = w*h;
+    color_t getPixel(int x, int y) const OVERRIDE {
+      ASSERT(x >= 0 && x < getWidth());
+      ASSERT(y >= 0 && y < getHeight());
 
-      for (c=0; c<size; c++)
-        *(addr++) = color;
+      return (*(address_t)getPixelAddress(x, y));
     }
 
-    virtual void copy(const Image* src, int x, int y)
-    {
+    void putPixel(int x, int y, color_t color) OVERRIDE {
+      ASSERT(x >= 0 && x < getWidth());
+      ASSERT(y >= 0 && y < getHeight());
+
+      *(address_t)getPixelAddress(x, y) = color;
+    }
+
+    void clear(color_t color) OVERRIDE {
+      LockImageBits<Traits> bits(this);
+      LockImageBits<Traits>::iterator it(bits.begin());
+      LockImageBits<Traits>::iterator end(bits.end());
+
+      for (; it != end; ++it)
+        *it = color;
+    }
+
+    void copy(const Image* src, int x, int y) OVERRIDE {
       Image* dst = this;
       address_t src_address;
       address_t dst_address;
@@ -101,18 +119,18 @@ namespace raster {
       int ybeg, yend, ysrc, ydst;
       int bytes;
 
-      // clipping
+      // Clipping
 
       xsrc = 0;
       ysrc = 0;
 
       xbeg = x;
       ybeg = y;
-      xend = x+src->w-1;
-      yend = y+src->h-1;
+      xend = x+src->getWidth()-1;
+      yend = y+src->getHeight()-1;
 
-      if ((xend < 0) || (xbeg >= dst->w) ||
-          (yend < 0) || (ybeg >= dst->h))
+      if ((xend < 0) || (xbeg >= dst->getWidth()) ||
+          (yend < 0) || (ybeg >= dst->getHeight()))
         return;
 
       if (xbeg < 0) {
@@ -125,28 +143,27 @@ namespace raster {
         ybeg = 0;
       }
 
-      if (xend >= dst->w)
-        xend = dst->w-1;
+      if (xend >= dst->getWidth())
+        xend = dst->getWidth()-1;
 
-      if (yend >= dst->h)
-        yend = dst->h-1;
+      if (yend >= dst->getHeight())
+        yend = dst->getHeight()-1;
 
-      // copy process
+      // Copy process
 
-      bytes = Traits::scanline_size(xend - xbeg + 1);
+      bytes = Traits::getRowStrideBytes(xend - xbeg + 1);
 
-      for (ydst=ybeg; ydst<=yend; ydst++, ysrc++) {
-        src_address = ((ImageImpl<Traits>*)src)->line_address(ysrc)+xsrc;
-        dst_address = ((ImageImpl<Traits>*)dst)->line_address(ydst)+xbeg;
+      for (ydst=ybeg; ydst<=yend; ++ydst, ++ysrc) {
+        src_address = (address_t)src->getPixelAddress(xsrc, ysrc);
+        dst_address = (address_t)dst->getPixelAddress(xbeg, ydst);
 
         memcpy(dst_address, src_address, bytes);
       }
     }
 
-    virtual void merge(const Image* src, int x, int y, int opacity, int blend_mode)
-    {
+    void merge(const Image* src, int x, int y, int opacity, int blend_mode) OVERRIDE {
       BLEND_COLOR blender = Traits::get_blender(blend_mode);
-      register uint32_t mask_color = src->mask_color;
+      register uint32_t mask_color = src->getMaskColor();
       Image* dst = this;
       address_t src_address;
       address_t dst_address;
@@ -164,11 +181,11 @@ namespace raster {
 
       xbeg = x;
       ybeg = y;
-      xend = x+src->w-1;
-      yend = y+src->h-1;
+      xend = x+src->getWidth()-1;
+      yend = y+src->getHeight()-1;
 
-      if ((xend < 0) || (xbeg >= dst->w) ||
-          (yend < 0) || (ybeg >= dst->h))
+      if ((xend < 0) || (xbeg >= dst->getWidth()) ||
+          (yend < 0) || (ybeg >= dst->getHeight()))
         return;
 
       if (xbeg < 0) {
@@ -181,84 +198,92 @@ namespace raster {
         ybeg = 0;
       }
 
-      if (xend >= dst->w)
-        xend = dst->w-1;
+      if (xend >= dst->getWidth())
+        xend = dst->getWidth()-1;
 
-      if (yend >= dst->h)
-        yend = dst->h-1;
+      if (yend >= dst->getHeight())
+        yend = dst->getHeight()-1;
 
-      // merge process
+      // Merge process
 
-      for (ydst=ybeg; ydst<=yend; ydst++, ysrc++) {
-        src_address = ((ImageImpl<Traits>*)src)->line_address(ysrc)+xsrc;
-        dst_address = ((ImageImpl<Traits>*)dst)->line_address(ydst)+xbeg;
+      for (ydst=ybeg; ydst<=yend; ++ydst, ++ysrc) {
+        src_address = (address_t)src->getPixelAddress(xsrc, ysrc);
+        dst_address = (address_t)dst->getPixelAddress(xbeg, ydst);
 
-        for (xdst=xbeg; xdst<=xend; xdst++) {
+        for (xdst=xbeg; xdst<=xend; ++xdst) {
           if (*src_address != mask_color)
             *dst_address = (*blender)(*dst_address, *src_address, opacity);
 
-          dst_address++;
-          src_address++;
+          ++dst_address;
+          ++src_address;
         }
       }
     }
 
-    virtual void hline(int x1, int y, int x2, int color)
-    {
-      address_t addr = line_address(y)+x1;
+    void drawHLine(int x1, int y, int x2, color_t color) OVERRIDE {
+      LockImageBits<Traits> bits(this, gfx::Rect(x1, y, x2 - x1 + 1, 1));
+      LockImageBits<Traits>::iterator it(bits.begin());
+      LockImageBits<Traits>::iterator end(bits.end());
 
-      for (int x=x1; x<=x2; ++x)
-        *(addr++) = color;
+      for (; it != end; ++it)
+        *it = color;
     }
 
-    virtual void rectfill(int x1, int y1, int x2, int y2, int color)
-    {
-      address_t addr;
-      int x, y;
-
-      for (y=y1; y<=y2; ++y) {
-        addr = line_address(y)+x1;
-        for (x=x1; x<=x2; ++x)
-          *(addr++) = color;
-      }
+    void fillRect(int x1, int y1, int x2, int y2, color_t color) OVERRIDE {
+      for (int y=y1; y<=y2; ++y)
+        ImageImpl<Traits>::drawHLine(x1, y, x2, color);
     }
 
-    virtual void rectblend(int x1, int y1, int x2, int y2, int color, int opacity)
-    {
-      rectfill(x1, y1, x2, y2, color);
+    void blendRect(int x1, int y1, int x2, int y2, color_t color, int opacity) OVERRIDE {
+      fillRect(x1, y1, x2, y2, color);
     }
-
-    virtual void to_allegro(BITMAP* bmp, int x, int y, const Palette* palette) const;
-
   };
 
   //////////////////////////////////////////////////////////////////////
   // Specializations
 
   template<>
-  void ImageImpl<RgbTraits>::rectblend(int x1, int y1, int x2, int y2, int color, int opacity)
-  {
+  inline uint8_t* ImageImpl<BitmapTraits>::getPixelAddress(int x, int y) const {
+    return (uint8_t*)(m_rows[y] + x/8);
+  }
+
+  template<>
+  inline color_t ImageImpl<BitmapTraits>::getPixel(int x, int y) const {
+    ASSERT(x >= 0 && x < getWidth());
+    ASSERT(y >= 0 && y < getHeight());
+
+    div_t d = div(x, 8);
+    return ((*(m_rows[y] + d.quot)) & (1<<d.rem)) ? 1: 0;
+  }
+
+  template<>
+  inline void ImageImpl<BitmapTraits>::putPixel(int x, int y, color_t color) {
+    ASSERT(x >= 0 && x < getWidth());
+    ASSERT(y >= 0 && y < getHeight());
+
+    div_t d = div(x, 8);
+    if (color)
+      (*(m_rows[y] + d.quot)) |= (1 << d.rem);
+    else
+      (*(m_rows[y] + d.quot)) &= ~(1 << d.rem);
+  }
+
+  template<>
+  inline void ImageImpl<RgbTraits>::blendRect(int x1, int y1, int x2, int y2, color_t color, int opacity) {
     address_t addr;
     int x, y;
 
     for (y=y1; y<=y2; ++y) {
-      addr = line_address(y)+x1;
+      addr = (address_t)getPixelAddress(x1, y);
       for (x=x1; x<=x2; ++x) {
-        *addr = _rgba_blend_normal(*addr, color, opacity);
+        *addr = rgba_blend_normal(*addr, color, opacity);
         ++addr;
       }
     }
   }
 
   template<>
-  void ImageImpl<IndexedTraits>::clear(int color)
-  {
-    memset(raw_pixels(), color, w*h);
-  }
-
-  template<>
-  void ImageImpl<IndexedTraits>::merge(const Image* src, int x, int y, int opacity, int blend_mode)
-  {
+  inline void ImageImpl<IndexedTraits>::merge(const Image* src, int x, int y, int opacity, int blend_mode) {
     Image* dst = this;
     address_t src_address;
     address_t dst_address;
@@ -272,11 +297,11 @@ namespace raster {
 
     xbeg = x;
     ybeg = y;
-    xend = x+src->w-1;
-    yend = y+src->h-1;
+    xend = x+src->getWidth()-1;
+    yend = y+src->getHeight()-1;
 
-    if ((xend < 0) || (xbeg >= dst->w) ||
-        (yend < 0) || (ybeg >= dst->h))
+    if ((xend < 0) || (xbeg >= dst->getWidth()) ||
+        (yend < 0) || (ybeg >= dst->getHeight()))
       return;
 
     if (xbeg < 0) {
@@ -289,107 +314,52 @@ namespace raster {
       ybeg = 0;
     }
 
-    if (xend >= dst->w)
-      xend = dst->w-1;
+    if (xend >= dst->getWidth())
+      xend = dst->getWidth()-1;
 
-    if (yend >= dst->h)
-      yend = dst->h-1;
+    if (yend >= dst->getHeight())
+      yend = dst->getHeight()-1;
 
     // merge process
 
     // direct copy
     if (blend_mode == BLEND_MODE_COPY) {
-      for (ydst=ybeg; ydst<=yend; ydst++, ysrc++) {
-        src_address = ((ImageImpl<IndexedTraits>*)src)->line_address(ysrc)+xsrc;
-        dst_address = ((ImageImpl<IndexedTraits>*)dst)->line_address(ydst)+xbeg;
+      for (ydst=ybeg; ydst<=yend; ++ydst, ++ysrc) {
+        src_address = src->getPixelAddress(xsrc, ysrc);
+        dst_address = dst->getPixelAddress(xbeg, ydst);
 
         for (xdst=xbeg; xdst<=xend; xdst++) {
           *dst_address = (*src_address);
 
-          dst_address++;
-          src_address++;
+          ++dst_address;
+          ++src_address;
         }
       }
     }
     // with mask
     else {
-      register int mask_color = src->mask_color;
+      register int mask_color = src->getMaskColor();
 
-      for (ydst=ybeg; ydst<=yend; ydst++, ysrc++) {
-        src_address = ((ImageImpl<IndexedTraits>*)src)->line_address(ysrc)+xsrc;
-        dst_address = ((ImageImpl<IndexedTraits>*)dst)->line_address(ydst)+xbeg;
+      for (ydst=ybeg; ydst<=yend; ++ydst, ++ysrc) {
+        src_address = src->getPixelAddress(xsrc, ysrc);
+        dst_address = dst->getPixelAddress(xbeg, ydst);
 
-        for (xdst=xbeg; xdst<=xend; xdst++) {
+        for (xdst=xbeg; xdst<=xend; ++xdst) {
           if (*src_address != mask_color)
             *dst_address = (*src_address);
 
-          dst_address++;
-          src_address++;
+          ++dst_address;
+          ++src_address;
         }
       }
     }
   }
 
   template<>
-  void ImageImpl<BitmapTraits>::clear(int color)
-  {
-    memset(raw_pixels(), color ? 0xff: 0x00, ((w+7)/8) * h);
-  }
-
-#define BITMAP_HLINE(op)                        \
-  for (x=x1; x<=x2; x++) {                      \
-    *addr op (1<<d.rem);                        \
-    _image_bitmap_next_bit(d, addr);            \
-  }
-
-  template<>
-  void ImageImpl<BitmapTraits>::hline(int x1, int y, int x2, int color)
-  {
-    div_t d = div(x1, 8);
-    address_t addr = line_address(y)+d.quot;
-    int x;
-
-    if (color) {
-      BITMAP_HLINE( |= );
-    }
-    else {
-      BITMAP_HLINE( &= ~ );
-    }
-  }
-
-  template<>
-  void ImageImpl<BitmapTraits>::rectfill(int x1, int y1, int x2, int y2, int color)
-  {
-    div_t d, beg_d = div(x1, 8);
-    address_t addr;
-    int x, y;
-
-    if (color) {
-      for (y=y1; y<=y2; y++) {
-        d = beg_d;
-        addr = line_address(y)+d.quot;
-        BITMAP_HLINE( |= );
-      }
-    }
-    else {
-      for (y=y1; y<=y2; y++) {
-        d = beg_d;
-        addr = line_address(y)+d.quot;
-        BITMAP_HLINE( &= ~ );
-      }
-    }
-  }
-
-  template<>
-  void ImageImpl<BitmapTraits>::copy(const Image* src, int x, int y)
-  {
+  inline void ImageImpl<BitmapTraits>::copy(const Image* src, int x, int y) {
     Image* dst = this;
-    address_t src_address;
-    address_t dst_address;
     int xbeg, xend, xsrc, xdst;
     int ybeg, yend, ysrc, ydst;
-    div_t src_d, src_beg_d;
-    div_t dst_d, dst_beg_d;
 
     // clipping
 
@@ -398,11 +368,11 @@ namespace raster {
 
     xbeg = x;
     ybeg = y;
-    xend = x+src->w-1;
-    yend = y+src->h-1;
+    xend = x+src->getWidth()-1;
+    yend = y+src->getHeight()-1;
 
-    if ((xend < 0) || (xbeg >= dst->w) ||
-        (yend < 0) || (ybeg >= dst->h))
+    if ((xend < 0) || (xbeg >= dst->getWidth()) ||
+        (yend < 0) || (ybeg >= dst->getHeight()))
       return;
 
     if (xbeg < 0) {
@@ -415,46 +385,33 @@ namespace raster {
       ybeg = 0;
     }
 
-    if (xend >= dst->w)
-      xend = dst->w-1;
+    if (xend >= dst->getWidth())
+      xend = dst->getWidth()-1;
 
-    if (yend >= dst->h)
-      yend = dst->h-1;
+    if (yend >= dst->getHeight())
+      yend = dst->getHeight()-1;
 
     // copy process
 
-    src_beg_d = div(xsrc, 8);
-    dst_beg_d = div(xbeg, 8);
+    int w = xend - xbeg + 1;
+    int h = yend - ybeg + 1;
+    ImageConstIterator<BitmapTraits> src_it(src, gfx::Rect(xsrc, ysrc, w, h), xsrc, ysrc);
+    ImageIterator<BitmapTraits> dst_it(dst, gfx::Rect(xbeg, ybeg, w, h), xbeg, ybeg);
 
-    for (ydst=ybeg; ydst<=yend; ydst++, ysrc++) {
-      src_d = src_beg_d;
-      dst_d = dst_beg_d;
-
-      src_address = ((ImageImpl<BitmapTraits>*)src)->line_address(ysrc)+src_d.quot;
-      dst_address = ((ImageImpl<BitmapTraits>*)dst)->line_address(ydst)+dst_d.quot;
-
-      for (xdst=xbeg; xdst<=xend; xdst++) {
-        if ((*src_address & (1<<src_d.rem)))
-          *dst_address |= (1<<dst_d.rem);
-        else
-          *dst_address &= ~(1<<dst_d.rem);
-
-        _image_bitmap_next_bit(src_d, src_address);
-        _image_bitmap_next_bit(dst_d, dst_address);
+    for (ydst=ybeg; ydst<=yend; ++ydst, ++ysrc) {
+      for (xdst=xbeg; xdst<=xend; ++xdst) {
+        *dst_it = *src_it;
+        ++src_it;
+        ++dst_it;
       }
     }
   }
 
   template<>
-  void ImageImpl<BitmapTraits>::merge(const Image* src, int x, int y, int opacity, int blend_mode)
-  {
+  inline void ImageImpl<BitmapTraits>::merge(const Image* src, int x, int y, int opacity, int blend_mode) {
     Image* dst = this;
-    address_t src_address;
-    address_t dst_address;
     int xbeg, xend, xsrc, xdst;
     int ybeg, yend, ysrc, ydst;
-    div_t src_d, src_beg_d;
-    div_t dst_d, dst_beg_d;
 
     // clipping
 
@@ -463,11 +420,11 @@ namespace raster {
 
     xbeg = x;
     ybeg = y;
-    xend = x+src->w-1;
-    yend = y+src->h-1;
+    xend = x+src->getWidth()-1;
+    yend = y+src->getHeight()-1;
 
-    if ((xend < 0) || (xbeg >= dst->w) ||
-        (yend < 0) || (ybeg >= dst->h))
+    if ((xend < 0) || (xbeg >= dst->getWidth()) ||
+        (yend < 0) || (ybeg >= dst->getHeight()))
       return;
 
     if (xbeg < 0) {
@@ -480,549 +437,27 @@ namespace raster {
       ybeg = 0;
     }
 
-    if (xend >= dst->w)
-      xend = dst->w-1;
+    if (xend >= dst->getWidth())
+      xend = dst->getWidth()-1;
 
-    if (yend >= dst->h)
-      yend = dst->h-1;
+    if (yend >= dst->getHeight())
+      yend = dst->getHeight()-1;
 
-    // copy process
+    // merge process
 
-    src_beg_d = div(xsrc, 8);
-    dst_beg_d = div(xbeg, 8);
+    int w = xend - xbeg + 1;
+    int h = yend - ybeg + 1;
+    ImageConstIterator<BitmapTraits> src_it(src, gfx::Rect(xsrc, ysrc, w, h), xsrc, ysrc);
+    ImageIterator<BitmapTraits> dst_it(dst, gfx::Rect(xbeg, ybeg, w, h), xbeg, ybeg);
 
-    for (ydst=ybeg; ydst<=yend; ydst++, ysrc++) {
-      src_d = src_beg_d;
-      dst_d = dst_beg_d;
-
-      src_address = ((ImageImpl<BitmapTraits>*)src)->line_address(ysrc)+src_d.quot;
-      dst_address = ((ImageImpl<BitmapTraits>*)dst)->line_address(ydst)+dst_d.quot;
-
-      for (xdst=xbeg; xdst<=xend; xdst++) {
-        if ((*src_address & (1<<src_d.rem)))
-          *dst_address |= (1<<dst_d.rem);
-
-        _image_bitmap_next_bit(src_d, src_address);
-        _image_bitmap_next_bit(dst_d, dst_address);
+    for (ydst=ybeg; ydst<=yend; ++ydst, ++ysrc) {
+      for (xdst=xbeg; xdst<=xend; ++xdst) {
+        if (*dst_it != 0)
+          *dst_it = *src_it;
+        ++src_it;
+        ++dst_it;
       }
     }
-  }
-
-  template<>
-  void ImageImpl<RgbTraits>::to_allegro(BITMAP *bmp, int _x, int _y, const Palette* palette) const
-  {
-    const_address_t addr = raw_pixels();
-    unsigned long bmp_address;
-    int depth = bitmap_color_depth(bmp);
-    int x, y;
-
-    bmp_select(bmp);
-
-    switch (depth) {
-
-      case 8:
-#if defined GFX_MODEX && !defined ALLEGRO_UNIX && !defined ALLEGRO_MACOSX
-        if (is_planar_bitmap(bmp)) {
-          for (y=0; y<h; y++) {
-            bmp_address = (unsigned long)bmp->line[_y];
-
-            for (x=0; x<image->w; x++) {
-              outportw(0x3C4, (0x100<<((_x+x)&3))|2);
-              bmp_write8(bmp_address+((_x+x)>>2),
-                         makecol8((*addr) & 0xff,
-                                  ((*addr)>>8) & 0xff,
-                                  ((*addr)>>16) & 0xff));
-              addr++;
-            }
-
-            _y++;
-          }
-        }
-        else {
-#endif
-          for (y=0; y<h; y++) {
-            bmp_address = bmp_write_line(bmp, _y)+_x;
-
-            for (x=0; x<w; x++) {
-              bmp_write8(bmp_address,
-                         makecol8((*addr) & 0xff,
-                                  ((*addr)>>8) & 0xff,
-                                  ((*addr)>>16) & 0xff));
-              addr++;
-              bmp_address++;
-            }
-
-            _y++;
-          }
-#if defined GFX_MODEX && !defined ALLEGRO_UNIX && !defined ALLEGRO_MACOSX
-        }
-#endif
-        break;
-
-      case 15:
-        _x <<= 1;
-
-        for (y=0; y<h; y++) {
-          bmp_address = bmp_write_line(bmp, _y)+_x;
-
-          for (x=0; x<w; x++) {
-            bmp_write15(bmp_address,
-                        makecol15((*addr) & 0xff,
-                                  ((*addr)>>8) & 0xff,
-                                  ((*addr)>>16) & 0xff));
-            addr++;
-            bmp_address += 2;
-          }
-
-          _y++;
-        }
-        break;
-
-      case 16:
-        _x <<= 1;
-
-        for (y=0; y<h; y++) {
-          bmp_address = bmp_write_line (bmp, _y)+_x;
-
-          for (x=0; x<w; x++) {
-            bmp_write16(bmp_address,
-                        makecol16((*addr) & 0xff,
-                                  ((*addr)>>8) & 0xff,
-                                  ((*addr)>>16) & 0xff));
-            addr++;
-            bmp_address += 2;
-          }
-
-          _y++;
-        }
-        break;
-
-      case 24:
-        _x *= 3;
-
-        for (y=0; y<h; y++) {
-          bmp_address = bmp_write_line(bmp, _y)+_x;
-
-          for (x=0; x<w; x++) {
-            bmp_write24(bmp_address,
-                        makecol24((*addr) & 0xff,
-                                  ((*addr)>>8) & 0xff,
-                                  ((*addr)>>16) & 0xff));
-            addr++;
-            bmp_address += 3;
-          }
-
-          _y++;
-        }
-        break;
-
-      case 32:
-        _x <<= 2;
-
-        for (y=0; y<h; y++) {
-          bmp_address = bmp_write_line(bmp, _y)+_x;
-
-          for (x=0; x<w; x++) {
-            bmp_write32(bmp_address,
-                        makeacol32((*addr) & 0xff,
-                                   ((*addr)>>8) & 0xff,
-                                   ((*addr)>>16) & 0xff,
-                                   ((*addr)>>24) & 0xff));
-            addr++;
-            bmp_address += 4;
-          }
-
-          _y++;
-        }
-        break;
-    }
-
-    bmp_unwrite_line(bmp);
-  }
-
-  template<>
-  void ImageImpl<GrayscaleTraits>::to_allegro(BITMAP *bmp, int _x, int _y, const Palette* palette) const
-  {
-    const_address_t addr = raw_pixels();
-    unsigned long bmp_address;
-    int depth = bitmap_color_depth(bmp);
-    int x, y;
-
-    bmp_select(bmp);
-
-    switch (depth) {
-
-      case 8:
-#if defined GFX_MODEX && !defined ALLEGRO_UNIX && !defined ALLEGRO_MACOSX
-        if (is_planar_bitmap(bmp)) {
-          for (y=0; y<h; y++) {
-            bmp_address = (unsigned long)bmp->line[_y];
-
-            for (x=0; x<w; x++) {
-              outportw(0x3C4, (0x100<<((_x+x)&3))|2);
-              bmp_write8(bmp_address+((_x+x)>>2), (*addr) & 0xff);
-              addr++;
-            }
-
-            _y++;
-          }
-        }
-        else {
-#endif
-          for (y=0; y<h; y++) {
-            bmp_address = bmp_write_line(bmp, _y)+_x;
-
-            for (x=0; x<w; x++) {
-              bmp_write8(bmp_address, (*addr) & 0xff);
-              addr++;
-              bmp_address++;
-            }
-
-            _y++;
-          }
-#if defined GFX_MODEX && !defined ALLEGRO_UNIX && !defined ALLEGRO_MACOSX
-        }
-#endif
-        break;
-
-      case 15:
-        _x <<= 1;
-
-        for (y=0; y<h; y++) {
-          bmp_address = bmp_write_line(bmp, _y)+_x;
-
-          for (x=0; x<w; x++) {
-            bmp_write15(bmp_address,
-                        makecol15((*addr) & 0xff,
-                                  (*addr) & 0xff,
-                                  (*addr) & 0xff));
-            addr++;
-            bmp_address += 2;
-          }
-
-          _y++;
-        }
-        break;
-
-      case 16:
-        _x <<= 1;
-
-        for (y=0; y<h; y++) {
-          bmp_address = bmp_write_line(bmp, _y)+_x;
-
-          for (x=0; x<w; x++) {
-            bmp_write16(bmp_address,
-                        makecol16((*addr) & 0xff,
-                                  (*addr) & 0xff,
-                                  (*addr) & 0xff));
-            addr++;
-            bmp_address += 2;
-          }
-
-          _y++;
-        }
-        break;
-
-      case 24:
-        _x *= 3;
-
-        for (y=0; y<h; y++) {
-          bmp_address = bmp_write_line(bmp, _y)+_x;
-
-          for (x=0; x<w; x++) {
-            bmp_write24(bmp_address,
-                        makecol24((*addr) & 0xff,
-                                  (*addr) & 0xff,
-                                  (*addr) & 0xff));
-            addr++;
-            bmp_address += 3;
-          }
-
-          _y++;
-        }
-        break;
-
-      case 32:
-        _x <<= 2;
-
-        for (y=0; y<h; y++) {
-          bmp_address = bmp_write_line(bmp, _y)+_x;
-
-          for (x=0; x<w; x++) {
-            bmp_write32(bmp_address,
-                        makeacol32((*addr) & 0xff,
-                                   (*addr) & 0xff,
-                                   (*addr) & 0xff, 255));
-            addr++;
-            bmp_address += 4;
-          }
-
-          _y++;
-        }
-        break;
-    }
-
-    bmp_unwrite_line(bmp);
-  }
-
-  template<>
-  void ImageImpl<IndexedTraits>::to_allegro(BITMAP *bmp, int _x, int _y, const Palette* palette) const
-  {
-    const_address_t addr = raw_pixels();
-    unsigned long bmp_address;
-    int depth = bitmap_color_depth(bmp);
-    int x, y;
-    uint32_t c;
-
-    bmp_select(bmp);
-
-    switch (depth) {
-
-      case 8:
-#if defined GFX_MODEX && !defined ALLEGRO_UNIX && !defined ALLEGRO_MACOSX
-        if (is_planar_bitmap (bmp)) {
-          for (y=0; y<h; y++) {
-            bmp_address = (unsigned long)bmp->line[_y];
-
-            for (x=0; x<w; x++) {
-              outportw(0x3C4, (0x100<<((_x+x)&3))|2);
-              bmp_write8(bmp_address+((_x+x)>>2), (*addr));
-              address++;
-            }
-
-            _y++;
-          }
-        }
-        else {
-#endif
-          for (y=0; y<h; y++) {
-            bmp_address = bmp_write_line(bmp, _y)+_x;
-
-            for (x=0; x<w; x++) {
-              bmp_write8(bmp_address, (*addr));
-              addr++;
-              bmp_address++;
-            }
-
-            _y++;
-          }
-#if defined GFX_MODEX && !defined ALLEGRO_UNIX && !defined ALLEGRO_MACOSX
-        }
-#endif
-        break;
-
-      case 15:
-        _x <<= 1;
-
-        for (y=0; y<h; y++) {
-          bmp_address = bmp_write_line(bmp, _y)+_x;
-
-          for (x=0; x<w; x++) {
-            c = palette->getEntry(*addr);
-            bmp_write15(bmp_address, makecol15(_rgba_getr(c), _rgba_getg(c), _rgba_getb(c)));
-            addr++;
-            bmp_address += 2;
-          }
-
-          _y++;
-        }
-        break;
-
-      case 16:
-        _x <<= 1;
-
-        for (y=0; y<h; y++) {
-          bmp_address = bmp_write_line(bmp, _y)+_x;
-
-          for (x=0; x<w; x++) {
-            c = palette->getEntry(*addr);
-            bmp_write16(bmp_address, makecol16(_rgba_getr(c), _rgba_getg(c), _rgba_getb(c)));
-            addr++;
-            bmp_address += 2;
-          }
-
-          _y++;
-        }
-        break;
-
-      case 24:
-        _x *= 3;
-
-        for (y=0; y<h; y++) {
-          bmp_address = bmp_write_line(bmp, _y)+_x;
-
-          for (x=0; x<w; x++) {
-            c = palette->getEntry(*addr);
-            bmp_write24(bmp_address, makecol24(_rgba_getr(c), _rgba_getg(c), _rgba_getb(c)));
-            addr++;
-            bmp_address += 3;
-          }
-
-          _y++;
-        }
-        break;
-
-      case 32:
-        _x <<= 2;
-
-        for (y=0; y<h; y++) {
-          bmp_address = bmp_write_line(bmp, _y)+_x;
-
-          for (x=0; x<w; x++) {
-            c = palette->getEntry(*addr);
-            bmp_write32(bmp_address, makeacol32(_rgba_getr(c), _rgba_getg(c), _rgba_getb(c), 255));
-            addr++;
-            bmp_address += 4;
-          }
-
-          _y++;
-        }
-        break;
-    }
-
-    bmp_unwrite_line(bmp);
-  }
-
-  template<>
-  void ImageImpl<BitmapTraits>::to_allegro(BITMAP *bmp, int _x, int _y, const Palette* palette) const
-  {
-    const_address_t addr;
-    unsigned long bmp_address;
-    int depth = bitmap_color_depth(bmp);
-    div_t d, beg_d = div(0, 8);
-    int color[2];
-    int x, y;
-
-    bmp_select(bmp);
-
-    switch (depth) {
-
-      case 8:
-        color[0] = makecol8(0, 0, 0);
-        color[1] = makecol8(255, 255, 255);
-
-#if defined GFX_MODEX && !defined ALLEGRO_UNIX && !defined ALLEGRO_MACOSX
-        if (is_planar_bitmap(bmp)) {
-          for (y=0; y<h; y++) {
-            addr = line_address(y);
-            bmp_address = (unsigned long)bmp->line[_y];
-
-            d = beg_d;
-            for (x=0; x<w; x++) {
-              outportw (0x3C4, (0x100<<((_x+x)&3))|2);
-              bmp_write8(bmp_addr+((_x+x)>>2),
-                         color[((*addr) & (1<<d.rem))? 1: 0]);
-              _image_bitmap_next_bit(d, addr);
-            }
-
-            _y++;
-          }
-        }
-        else {
-#endif
-          for (y=0; y<h; y++) {
-            addr = line_address(y);
-            bmp_address = bmp_write_line(bmp, _y)+_x;
-
-            d = beg_d;
-            for (x=0; x<w; x++) {
-              bmp_write8 (bmp_address++, color[((*addr) & (1<<d.rem))? 1: 0]);
-              _image_bitmap_next_bit(d, addr);
-            }
-
-            _y++;
-          }
-#if defined GFX_MODEX && !defined ALLEGRO_UNIX && !defined ALLEGRO_MACOSX
-        }
-#endif
-        break;
-
-      case 15:
-        color[0] = makecol15(0, 0, 0);
-        color[1] = makecol15(255, 255, 255);
-
-        _x <<= 1;
-
-        for (y=0; y<h; y++) {
-          addr = line_address(y);
-          bmp_address = bmp_write_line(bmp, _y)+_x;
-
-          d = beg_d;
-          for (x=0; x<w; x++) {
-            bmp_write15(bmp_address, color[((*addr) & (1<<d.rem))? 1: 0]);
-            bmp_address += 2;
-            _image_bitmap_next_bit(d, addr);
-          }
-
-          _y++;
-        }
-        break;
-
-      case 16:
-        color[0] = makecol16(0, 0, 0);
-        color[1] = makecol16(255, 255, 255);
-
-        _x <<= 1;
-
-        for (y=0; y<h; y++) {
-          addr = line_address(y);
-          bmp_address = bmp_write_line(bmp, _y)+_x;
-
-          d = beg_d;
-          for (x=0; x<w; x++) {
-            bmp_write16(bmp_address, color[((*addr) & (1<<d.rem))? 1: 0]);
-            bmp_address += 2;
-            _image_bitmap_next_bit(d, addr);
-          }
-
-          _y++;
-        }
-        break;
-
-      case 24:
-        color[0] = makecol24 (0, 0, 0);
-        color[1] = makecol24 (255, 255, 255);
-
-        _x *= 3;
-
-        for (y=0; y<h; y++) {
-          addr = line_address(y);
-          bmp_address = bmp_write_line(bmp, _y)+_x;
-
-          d = beg_d;
-          for (x=0; x<w; x++) {
-            bmp_write24(bmp_address, color[((*addr) & (1<<d.rem))? 1: 0]);
-            bmp_address += 3;
-            _image_bitmap_next_bit (d, addr);
-          }
-
-          _y++;
-        }
-        break;
-
-      case 32:
-        color[0] = makeacol32(0, 0, 0, 0);
-        color[1] = makeacol32(0, 0, 0, 255);
-
-        _x <<= 2;
-
-        for (y=0; y<h; y++) {
-          addr = line_address(y);
-          bmp_address = bmp_write_line(bmp, _y)+_x;
-
-          d = beg_d;
-          for (x=0; x<w; x++) {
-            bmp_write32(bmp_address, color[((*addr) & (1<<d.rem))? 1: 0]);
-            bmp_address += 4;
-            _image_bitmap_next_bit(d, addr);
-          }
-
-          _y++;
-        }
-        break;
-    }
-
-    bmp_unwrite_line(bmp);
   }
 
 } // namespace raster

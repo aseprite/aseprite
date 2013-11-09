@@ -29,8 +29,10 @@
 #include "base/bind.h"
 #include "base/scoped_lock.h"
 #include "base/thread.h"
+#include "raster/conversion_alleg.h"
 #include "raster/image.h"
 #include "raster/palette.h"
+#include "raster/primitives.h"
 #include "raster/rotate.h"
 #include "raster/sprite.h"
 
@@ -47,7 +49,6 @@ public:
     , m_fileitem(fileitem)
     , m_thumbnail(NULL)
     , m_palette(NULL)
-    , m_thumbnailBitmap(NULL)
     , m_thread(Bind<void>(&Worker::loadBgThread, this)) {
   }
 
@@ -84,18 +85,18 @@ private:
         sprite->render(image, 0, 0, FrameNumber(0));
 
         // Calculate the thumbnail size
-        int thumb_w = MAX_THUMBNAIL_SIZE * image->w / MAX(image->w, image->h);
-        int thumb_h = MAX_THUMBNAIL_SIZE * image->h / MAX(image->w, image->h);
-        if (MAX(thumb_w, thumb_h) > MAX(image->w, image->h)) {
-          thumb_w = image->w;
-          thumb_h = image->h;
+        int thumb_w = MAX_THUMBNAIL_SIZE * image->getWidth() / MAX(image->getWidth(), image->getHeight());
+        int thumb_h = MAX_THUMBNAIL_SIZE * image->getHeight() / MAX(image->getWidth(), image->getHeight());
+        if (MAX(thumb_w, thumb_h) > MAX(image->getWidth(), image->getHeight())) {
+          thumb_w = image->getWidth();
+          thumb_h = image->getHeight();
         }
         thumb_w = MID(1, thumb_w, MAX_THUMBNAIL_SIZE);
         thumb_h = MID(1, thumb_h, MAX_THUMBNAIL_SIZE);
 
         // Stretch the 'image'
         m_thumbnail.reset(Image::create(image->getPixelFormat(), thumb_w, thumb_h));
-        image_clear(m_thumbnail, 0);
+        clear_image(m_thumbnail, 0);
         image_scale(m_thumbnail, image, 0, 0, thumb_w, thumb_h);
       }
 
@@ -103,8 +104,8 @@ private:
 
       // Set the thumbnail of the file-item.
       if (m_thumbnail) {
-        BITMAP* bmp = create_bitmap_ex(16, m_thumbnail->w, m_thumbnail->h);
-        image_to_allegro(m_thumbnail, bmp, 0, 0, m_palette);
+        BITMAP* bmp = create_bitmap_ex(16, m_thumbnail->getWidth(), m_thumbnail->getHeight());
+        convert_image_to_allegro(m_thumbnail, bmp, 0, 0, m_palette);
         m_fileitem->setThumbnail(bmp);
       }
     }
@@ -117,7 +118,6 @@ private:
   FileOp* m_fop;
   IFileItem* m_fileitem;
   base::UniquePtr<Image> m_thumbnail;
-  BITMAP* m_thumbnailBitmap;
   base::UniquePtr<Palette> m_palette;
   base::thread m_thread;
 };

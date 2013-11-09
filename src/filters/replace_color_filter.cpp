@@ -63,10 +63,10 @@ void ReplaceColorFilter::applyToRgba(FilterManager* filterMgr)
   int dst_r, dst_g, dst_b, dst_a;
   int x, c;
 
-  dst_r = _rgba_getr(m_from);
-  dst_g = _rgba_getg(m_from);
-  dst_b = _rgba_getb(m_from);
-  dst_a = _rgba_geta(m_from);
+  dst_r = rgba_getr(m_from);
+  dst_g = rgba_getg(m_from);
+  dst_b = rgba_getb(m_from);
+  dst_a = rgba_geta(m_from);
 
   for (x=0; x<w; x++) {
     if (filterMgr->skipPixel()) {
@@ -77,10 +77,10 @@ void ReplaceColorFilter::applyToRgba(FilterManager* filterMgr)
 
     c = *(src_address++);
 
-    src_r = _rgba_getr(c);
-    src_g = _rgba_getg(c);
-    src_b = _rgba_getb(c);
-    src_a = _rgba_geta(c);
+    src_r = rgba_getr(c);
+    src_g = rgba_getg(c);
+    src_b = rgba_getb(c);
+    src_a = rgba_geta(c);
 
     if ((ABS(src_r-dst_r) <= m_tolerance) &&
         (ABS(src_g-dst_g) <= m_tolerance) &&
@@ -101,8 +101,8 @@ void ReplaceColorFilter::applyToGrayscale(FilterManager* filterMgr)
   int dst_k, dst_a;
   int x, c;
 
-  dst_k = _graya_getv(m_from);
-  dst_a = _graya_geta(m_from);
+  dst_k = graya_getv(m_from);
+  dst_a = graya_geta(m_from);
 
   for (x=0; x<w; x++) {
     if (filterMgr->skipPixel()) {
@@ -113,8 +113,8 @@ void ReplaceColorFilter::applyToGrayscale(FilterManager* filterMgr)
 
     c = *(src_address++);
 
-    src_k = _graya_getv(c);
-    src_a = _graya_geta(c);
+    src_k = graya_getv(c);
+    src_a = graya_geta(c);
 
     if ((ABS(src_k-dst_k) <= m_tolerance) &&
         (ABS(src_a-dst_a) <= m_tolerance))

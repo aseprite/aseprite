@@ -109,12 +109,12 @@ namespace quantization {
       // No colors in the box? This should not be possible.
       assert(count > 0 && "Box without histogram points, you must fill the histogram before using this function.");
       if (count == 0)
-        return _rgba(0, 0, 0, 255);
+        return rgba(0, 0, 0, 255);
 
       // Returns the mean.
-      return _rgba((255 * r / (Histogram::RElements-1)) / count,
-                   (255 * g / (Histogram::GElements-1)) / count,
-                   (255 * b / (Histogram::BElements-1)) / count, 255);
+      return rgba((255 * r / (Histogram::RElements-1)) / count,
+                  (255 * g / (Histogram::GElements-1)) / count,
+                  (255 * b / (Histogram::BElements-1)) / count, 255);
     }
 
     // The boxes will be sort in the priority_queue by volume.

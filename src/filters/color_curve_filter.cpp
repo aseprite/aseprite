@@ -76,17 +76,17 @@ void ColorCurveFilter::applyToRgba(FilterManager* filterMgr)
 
     c = *(src_address++);
 
-    r = _rgba_getr(c);
-    g = _rgba_getg(c);
-    b = _rgba_getb(c);
-    a = _rgba_geta(c);
+    r = rgba_getr(c);
+    g = rgba_getg(c);
+    b = rgba_getb(c);
+    a = rgba_geta(c);
 
     if (target & TARGET_RED_CHANNEL) r = m_cmap[r];
     if (target & TARGET_GREEN_CHANNEL) g = m_cmap[g];
     if (target & TARGET_BLUE_CHANNEL) b = m_cmap[b];
     if (target & TARGET_ALPHA_CHANNEL) a = m_cmap[a];
 
-    *(dst_address++) = _rgba(r, g, b, a);
+    *(dst_address++) = rgba(r, g, b, a);
   }
 }
 
@@ -107,13 +107,13 @@ void ColorCurveFilter::applyToGrayscale(FilterManager* filterMgr)
 
     c = *(src_address++);
 
-    k = _graya_getv(c);
-    a = _graya_geta(c);
+    k = graya_getv(c);
+    a = graya_geta(c);
 
     if (target & TARGET_GRAY_CHANNEL) k = m_cmap[k];
     if (target & TARGET_ALPHA_CHANNEL) a = m_cmap[a];
 
-    *(dst_address++) = _graya(k, a);
+    *(dst_address++) = graya(k, a);
   }
 }
 
@@ -140,9 +140,9 @@ void ColorCurveFilter::applyToIndexed(FilterManager* filterMgr)
       c = m_cmap[c];
     }
     else {
-      r = _rgba_getr(pal->getEntry(c));
-      g = _rgba_getg(pal->getEntry(c));
-      b = _rgba_getb(pal->getEntry(c));
+      r = rgba_getr(pal->getEntry(c));
+      g = rgba_getg(pal->getEntry(c));
+      b = rgba_getb(pal->getEntry(c));
 
       if (target & TARGET_RED_CHANNEL) r = m_cmap[r];
       if (target & TARGET_GREEN_CHANNEL) g = m_cmap[g];

@@ -61,15 +61,15 @@ PixelsMovement::PixelsMovement(Context* context,
   , m_handle(NoHandle)
   , m_originalImage(Image::createCopy(moveThis))
 {
-  m_initialData = gfx::Transformation(gfx::Rect(initialX, initialY, moveThis->w, moveThis->h));
+  m_initialData = gfx::Transformation(gfx::Rect(initialX, initialY, moveThis->getWidth(), moveThis->getHeight()));
   m_currentData = m_initialData;
 
   ContextWriter writer(m_reader);
   m_document->prepareExtraCel(0, 0, m_sprite->getWidth(), m_sprite->getHeight(), opacity);
 
   Image* extraImage = m_document->getExtraCelImage();
-  image_clear(extraImage, extraImage->mask_color);
-  image_copy(extraImage, moveThis, initialX, initialY);
+  clear_image(extraImage, extraImage->getMaskColor());
+  copy_image(extraImage, moveThis, initialX, initialY);
 
   m_initialMask = new Mask(*m_document->getMask());
   m_currentMask = new Mask(*m_document->getMask());
@@ -87,8 +87,8 @@ void PixelsMovement::flipImage(raster::algorithm::FlipType flipType)
   // Flip the image.
   raster::algorithm::flip_image(m_originalImage,
                                 gfx::Rect(gfx::Point(0, 0),
-                                          gfx::Size(m_originalImage->w,
-                                                    m_originalImage->h)),
+                                          gfx::Size(m_originalImage->getWidth(),
+                                                    m_originalImage->getHeight())),
                                 flipType);
 
   // Flip the mask.
@@ -439,7 +439,7 @@ Image* PixelsMovement::getDraggedImageCopy(gfx::Point& origin)
   int width = rightBottom.x - leftTop.x;
   int height = rightBottom.y - leftTop.y;
   base::UniquePtr<Image> image(Image::create(m_sprite->getPixelFormat(), width, height));
-  image_clear(image, image->mask_color);
+  clear_image(image, image->getMaskColor());
   image_parallelogram(image, m_originalImage,
                       corners.leftTop().x-leftTop.x, corners.leftTop().y-leftTop.y,
                       corners.rightTop().x-leftTop.x, corners.rightTop().y-leftTop.y,
@@ -466,10 +466,10 @@ void PixelsMovement::stampImage()
       ExpandCelCanvas expandCelCanvas(writer.context(), TILED_NONE,
                                       m_undoTransaction);
 
-      image_merge(expandCelCanvas.getDestCanvas(), image,
-                  -expandCelCanvas.getCel()->getX(),
-                  -expandCelCanvas.getCel()->getY(),
-                  cel->getOpacity(), BLEND_MODE_NORMAL);
+      composite_image(expandCelCanvas.getDestCanvas(), image,
+                      -expandCelCanvas.getCel()->getX(),
+                      -expandCelCanvas.getCel()->getY(),
+                      cel->getOpacity(), BLEND_MODE_NORMAL);
 
       expandCelCanvas.commit();
     }
@@ -562,7 +562,7 @@ gfx::Rect PixelsMovement::getImageBounds()
   ASSERT(cel != NULL);
   ASSERT(image != NULL);
 
-  return gfx::Rect(cel->getX(), cel->getY(), image->w, image->h);
+  return gfx::Rect(cel->getX(), cel->getY(), image->getWidth(), image->getHeight());
 }
 
 gfx::Size PixelsMovement::getInitialImageSize() const
@@ -578,7 +578,7 @@ void PixelsMovement::setMaskColor(uint32_t mask_color)
 
     ASSERT(extraImage != NULL);
 
-    extraImage->mask_color = mask_color;
+    extraImage->setMaskColor(mask_color);
     redrawExtraImage();
     update_screen_for_document(m_document);
   }
@@ -592,7 +592,7 @@ void PixelsMovement::redrawExtraImage()
 
   // Transform the extra-cel which is the chunk of pixels that the user is moving.
   Image* extraImage = m_document->getExtraCelImage();
-  image_clear(extraImage, extraImage->mask_color);
+  clear_image(extraImage, extraImage->getMaskColor());
   image_parallelogram(extraImage, m_originalImage,
                       corners.leftTop().x, corners.leftTop().y,
                       corners.rightTop().x, corners.rightTop().y,
@@ -609,7 +609,7 @@ void PixelsMovement::redrawCurrentMask()
 
   m_currentMask->replace(0, 0, m_sprite->getWidth(), m_sprite->getHeight());
   m_currentMask->freeze();
-  image_clear(m_currentMask->getBitmap(), 0);
+  clear_image(m_currentMask->getBitmap(), 0);
   image_parallelogram(m_currentMask->getBitmap(),
                       m_initialMask->getBitmap(),
                       corners.leftTop().x, corners.leftTop().y,

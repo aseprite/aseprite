@@ -20,15 +20,16 @@
 #define RASTER_MASK_H_INCLUDED
 
 #include "gfx/rect.h"
-#include "raster/gfxobj.h"
 #include "raster/image.h"
+#include "raster/object.h"
+#include "raster/primitives.h"
 
 #include <string>
 
 namespace raster {
 
   // Represents the selection (selected pixels, 0/1, 0=non-selected, 1=selected)
-  class Mask : public GfxObj {
+  class Mask : public Object {
   public:
     Mask();
     Mask(const Mask& mask);
@@ -54,7 +55,7 @@ namespace raster {
       return (m_bitmap &&
               u >= m_bounds.x && u < m_bounds.x+m_bounds.w &&
               v >= m_bounds.y && v < m_bounds.y+m_bounds.h &&
-              image_getpixel(m_bitmap, u-m_bounds.x, v-m_bounds.y));
+              get_pixel(m_bitmap, u-m_bounds.x, v-m_bounds.y));
     }
 
     const gfx::Rect& getBounds() const {
@@ -96,7 +97,9 @@ namespace raster {
     void add(const gfx::Rect& bounds);
 
     void subtract(int x, int y, int w, int h);
+    void subtract(const gfx::Rect& bounds);
     void intersect(int x, int y, int w, int h);
+    void intersect(const gfx::Rect& bounds);
     void byColor(const Image* image, int color, int fuzziness);
     void crop(const Image* image);
 

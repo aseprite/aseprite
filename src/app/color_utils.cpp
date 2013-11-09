@@ -100,9 +100,9 @@ ui::Color color_utils::color_for_ui(const app::Color& color)
       ASSERT(i >= 0 && i < (int)get_current_palette()->size());
 
       uint32_t _c = get_current_palette()->getEntry(i);
-      c = ui::rgba(_rgba_getr(_c),
-                   _rgba_getg(_c),
-                   _rgba_getb(_c), 255);
+      c = ui::rgba(rgba_getr(_c),
+                   rgba_getg(_c),
+                   rgba_getb(_c), 255);
       break;
     }
 
@@ -142,9 +142,9 @@ int color_utils::color_for_allegro(const app::Color& color, int depth)
 
         uint32_t _c = get_current_palette()->getEntry(c);
         c = makeacol_depth(depth,
-                           _rgba_getr(_c),
-                           _rgba_getg(_c),
-                           _rgba_getb(_c), 255);
+                           rgba_getr(_c),
+                           rgba_getg(_c),
+                           rgba_getb(_c), 255);
       }
       break;
 
@@ -153,19 +153,19 @@ int color_utils::color_for_allegro(const app::Color& color, int depth)
   return c;
 }
 
-int color_utils::color_for_image(const app::Color& color, PixelFormat format)
+raster::color_t color_utils::color_for_image(const app::Color& color, PixelFormat format)
 {
   if (color.getType() == app::Color::MaskType)
     return 0;
 
-  int c = -1;
+  raster::color_t c = -1;
 
   switch (format) {
     case IMAGE_RGB:
-      c = _rgba(color.getRed(), color.getGreen(), color.getBlue(), 255);
+      c = rgba(color.getRed(), color.getGreen(), color.getBlue(), 255);
       break;
     case IMAGE_GRAYSCALE:
-      c = _graya(color.getGray(), 255);
+      c = graya(color.getGray(), 255);
       break;
     case IMAGE_INDEXED:
       if (color.getType() == app::Color::IndexType)
@@ -178,9 +178,9 @@ int color_utils::color_for_image(const app::Color& color, PixelFormat format)
   return c;
 }
 
-int color_utils::color_for_layer(const app::Color& color, Layer* layer)
+raster::color_t color_utils::color_for_layer(const app::Color& color, Layer* layer)
 {
-  int pixel_color;
+  raster::color_t pixel_color;
 
   if (color.getType() == app::Color::MaskType) {
     pixel_color = layer->getSprite()->getTransparentColor();
@@ -193,7 +193,7 @@ int color_utils::color_for_layer(const app::Color& color, Layer* layer)
   return fixup_color_for_layer(layer, pixel_color);
 }
 
-int color_utils::fixup_color_for_layer(Layer *layer, int color)
+raster::color_t color_utils::fixup_color_for_layer(Layer *layer, raster::color_t color)
 {
   if (layer->isBackground())
     return fixup_color_for_background(layer->getSprite()->getPixelFormat(), color);
@@ -201,19 +201,19 @@ int color_utils::fixup_color_for_layer(Layer *layer, int color)
     return color;
 }
 
-int color_utils::fixup_color_for_background(PixelFormat format, int color)
+raster::color_t color_utils::fixup_color_for_background(PixelFormat format, raster::color_t color)
 {
   switch (format) {
     case IMAGE_RGB:
-      if (_rgba_geta(color) < 255) {
-        return _rgba(_rgba_getr(color),
-                     _rgba_getg(color),
-                     _rgba_getb(color), 255);
+      if (rgba_geta(color) < 255) {
+        return rgba(rgba_getr(color),
+                    rgba_getg(color),
+                    rgba_getb(color), 255);
       }
       break;
     case IMAGE_GRAYSCALE:
-      if (_graya_geta(color) < 255) {
-        return _graya(_graya_getv(color), 255);
+      if (graya_geta(color) < 255) {
+        return graya(graya_getv(color), 255);
       }
       break;
   }

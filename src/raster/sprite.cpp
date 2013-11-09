@@ -25,6 +25,8 @@
 #include "base/memory.h"
 #include "base/remove_from_container.h"
 #include "base/unique_ptr.h"
+#include "raster/image_bits.h"
+#include "raster/primitives.h"
 #include "raster/raster.h"
 
 #include <cstring>
@@ -39,7 +41,7 @@ static LayerIndex layer2index(const Layer* layer, const Layer* find_layer, int* 
 // Constructors/Destructor
 
 Sprite::Sprite(PixelFormat format, int width, int height, int ncolors)
-  : GfxObj(GFXOBJ_SPRITE)
+  : Object(OBJECT_SPRITE)
   , m_format(format)
   , m_width(width)
   , m_height(height)
@@ -68,7 +70,7 @@ Sprite::Sprite(PixelFormat format, int width, int height, int ncolors)
       for (int c=0; c<ncolors; c++) {
         int g = 255 * c / (ncolors-1);
         g = MID(0, g, 255);
-        pal.setEntry(c, _rgba(g, g, g, 255));
+        pal.setEntry(c, rgba(g, g, g, 255));
       }
       break;
   }
@@ -143,7 +145,7 @@ int Sprite::getMemSize() const
   for (i=0; i<m_stock->size(); i++) {
     image = m_stock->getImage(i);
     if (image != NULL)
-      size += image_line_size(image, image->w) * image->h;
+      size += image->getRowStrideSize() * image->getHeight();
   }
 
   return size;
@@ -358,12 +360,13 @@ void Sprite::remapImages(FrameNumber frameFrom, FrameNumber frameTo, const std::
     if (cel->getFrame() >= frameFrom &&
         cel->getFrame() <= frameTo) {
       Image* image = getStock()->getImage(cel->getImage());
+      LockImageBits<IndexedTraits> bits(image);
+      LockImageBits<IndexedTraits>::iterator
+        it = bits.begin(),
+        end = bits.end();
 
-      for (int y=0; y<image->h; ++y) {
-        IndexedTraits::address_t ptr = image_address_fast<IndexedTraits>(image, 0, y);
-        for (int x=0; x<image->w; ++x, ++ptr)
-          *ptr = mapping[*ptr];
-      }
+      for (; it != end; ++it)
+        *it = mapping[*it];
     }
   }
 }
@@ -373,8 +376,8 @@ void Sprite::remapImages(FrameNumber frameFrom, FrameNumber frameTo, const std::
 
 void Sprite::render(Image* image, int x, int y, FrameNumber frame) const
 {
-  image_rectfill(image, x, y, x+m_width-1, y+m_height-1,
-                 (m_format == IMAGE_INDEXED ? getTransparentColor(): 0));
+  fill_rect(image, x, y, x+m_width-1, y+m_height-1,
+            (m_format == IMAGE_INDEXED ? getTransparentColor(): 0));
 
   layer_render(getFolder(), image, x, y, frame);
 }
@@ -385,9 +388,9 @@ int Sprite::getPixel(int x, int y, FrameNumber frame) const
 
   if ((x >= 0) && (y >= 0) && (x < m_width) && (y < m_height)) {
     base::UniquePtr<Image> image(Image::create(m_format, 1, 1));
-    image_clear(image, (m_format == IMAGE_INDEXED ? getTransparentColor(): 0));
+    clear_image(image, (m_format == IMAGE_INDEXED ? getTransparentColor(): 0));
     render(image, -x, -y, frame);
-    color = image_getpixel(image, 0, 0);
+    color = get_pixel(image, 0, 0);
   }
 
   return color;

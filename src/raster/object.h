@@ -16,24 +16,24 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifndef RASTER_GFXOBJ_H_INCLUDED
-#define RASTER_GFXOBJ_H_INCLUDED
+#ifndef RASTER_OBJECT_H_INCLUDED
+#define RASTER_OBJECT_H_INCLUDED
 
 #include <list>
 
 namespace raster {
 
-  enum GfxObjType {
-    GFXOBJ_CEL,
-    GFXOBJ_IMAGE,
-    GFXOBJ_LAYER_IMAGE,
-    GFXOBJ_LAYER_FOLDER,
-    GFXOBJ_MASK,
-    GFXOBJ_PALETTE,
-    GFXOBJ_PATH,
-    GFXOBJ_SPRITE,
-    GFXOBJ_STOCK,
-    GFXOBJ_RGBMAP,
+  enum ObjectType {
+    OBJECT_CEL,
+    OBJECT_IMAGE,
+    OBJECT_LAYER_IMAGE,
+    OBJECT_LAYER_FOLDER,
+    OBJECT_MASK,
+    OBJECT_PALETTE,
+    OBJECT_PATH,
+    OBJECT_SPRITE,
+    OBJECT_STOCK,
+    OBJECT_RGBMAP,
   };
 
   class Cel;
@@ -47,22 +47,22 @@ namespace raster {
   typedef std::list<Layer*>::iterator LayerIterator;
   typedef std::list<Layer*>::const_iterator LayerConstIterator;
 
-  class GfxObj {
+  class Object {
   public:
-    GfxObj(GfxObjType type);
-    GfxObj(const GfxObj& gfxobj);
-    virtual ~GfxObj();
+    Object(ObjectType type);
+    Object(const Object& object);
+    virtual ~Object();
 
-    GfxObjType getType() const { return m_type; }
+    ObjectType type() const { return m_type; }
 
     // Returns the approximate amount of memory (in bytes) which this
     // object use.
     virtual int getMemSize() const;
 
   private:
-    GfxObjType m_type;
+    ObjectType m_type;
 
-    GfxObj& operator=(const GfxObj&);
+    Object& operator=(const Object&);
   };
 
 } // namespace raster

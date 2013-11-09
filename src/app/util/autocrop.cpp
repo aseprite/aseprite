@@ -37,7 +37,7 @@ bool get_shrink_rect(int *x1, int *y1, int *x2, int *y2,
   do {                                                          \
     for (u = u_begin; u u_op u_final; u u_add) {                \
       for (v = v_begin; v v_op v_final; v v_add) {              \
-        if (image->getpixel(U, V) != refpixel)                  \
+        if (image->getPixel(U, V) != refpixel)                  \
           break;                                                \
       }                                                         \
       if (v == v_final)                                         \
@@ -51,20 +51,20 @@ bool get_shrink_rect(int *x1, int *y1, int *x2, int *y2,
 
   *x1 = 0;
   *y1 = 0;
-  *x2 = image->w-1;
-  *y2 = image->h-1;
+  *x2 = image->getWidth()-1;
+  *y2 = image->getHeight()-1;
 
-  SHRINK_SIDE(0, <, image->w, ++,
-              0, <, image->h, ++, u, v, (*x1)++);
+  SHRINK_SIDE(0, <, image->getWidth(), ++,
+              0, <, image->getHeight(), ++, u, v, (*x1)++);
 
-  SHRINK_SIDE(0, <, image->h, ++,
-              0, <, image->w, ++, v, u, (*y1)++);
+  SHRINK_SIDE(0, <, image->getHeight(), ++,
+              0, <, image->getWidth(), ++, v, u, (*y1)++);
 
-  SHRINK_SIDE(image->w-1, >, 0, --,
-              0, <, image->h, ++, u, v, (*x2)--);
+  SHRINK_SIDE(image->getWidth()-1, >, 0, --,
+              0, <, image->getHeight(), ++, u, v, (*x2)--);
 
-  SHRINK_SIDE(image->h-1, >, 0, --,
-              0, <, image->w, ++, v, u, (*y2)--);
+  SHRINK_SIDE(image->getHeight()-1, >, 0, --,
+              0, <, image->getWidth(), ++, v, u, (*y2)--);
 
   if ((*x1 > *x2) || (*y1 > *y2))
     return false;
@@ -82,7 +82,7 @@ bool get_shrink_rect2(int *x1, int *y1, int *x2, int *y2,
   do {                                                          \
     for (u = u_begin; u u_op u_final; u u_add) {                \
       for (v = v_begin; v v_op v_final; v v_add) {              \
-        if (image->getpixel(U, V) != refimage->getpixel(U, V))  \
+        if (image->getPixel(U, V) != refimage->getPixel(U, V))  \
           break;                                                \
       }                                                         \
       if (v == v_final)                                         \
@@ -96,20 +96,20 @@ bool get_shrink_rect2(int *x1, int *y1, int *x2, int *y2,
 
   *x1 = 0;
   *y1 = 0;
-  *x2 = image->w-1;
-  *y2 = image->h-1;
+  *x2 = image->getWidth()-1;
+  *y2 = image->getHeight()-1;
 
-  SHRINK_SIDE(0, <, image->w, ++,
-              0, <, image->h, ++, u, v, (*x1)++);
+  SHRINK_SIDE(0, <, image->getWidth(), ++,
+              0, <, image->getHeight(), ++, u, v, (*x1)++);
 
-  SHRINK_SIDE(0, <, image->h, ++,
-              0, <, image->w, ++, v, u, (*y1)++);
+  SHRINK_SIDE(0, <, image->getHeight(), ++,
+              0, <, image->getWidth(), ++, v, u, (*y1)++);
 
-  SHRINK_SIDE(image->w-1, >, 0, --,
-              0, <, image->h, ++, u, v, (*x2)--);
+  SHRINK_SIDE(image->getWidth()-1, >, 0, --,
+              0, <, image->getHeight(), ++, u, v, (*x2)--);
 
-  SHRINK_SIDE(image->h-1, >, 0, --,
-              0, <, image->w, ++, v, u, (*y2)--);
+  SHRINK_SIDE(image->getHeight()-1, >, 0, --,
+              0, <, image->getWidth(), ++, v, u, (*y2)--);
 
   if ((*x1 > *x2) || (*y1 > *y2))
     return false;

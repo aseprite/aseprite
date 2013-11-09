@@ -16,31 +16,21 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifdef HAVE_CONFIG_H
-#include "config.h"
-#endif
+#ifndef RASTER_CONVERSION_ALLEG_H_INCLUDED
+#define RASTER_CONVERSION_ALLEG_H_INCLUDED
 
-#include "raster/gfxobj.h"
+#include <allegro/color.h>
+
+struct BITMAP;
 
 namespace raster {
-  
-GfxObj::GfxObj(GfxObjType type)
-{
-  m_type = type;
-}
+  class Image;
+  class Palette;
 
-GfxObj::GfxObj(const GfxObj& gfxobj)
-{
-  m_type = gfxobj.m_type;
-}
-
-GfxObj::~GfxObj()
-{
-}
-
-int GfxObj::getMemSize() const
-{
-  return sizeof(GfxObj);
-}
+  void convert_image_to_allegro(const Image* image, BITMAP* bmp, int x, int y, const Palette* palette);
+  void convert_palette_to_allegro(const Palette* palette, RGB* rgb);
+  void convert_palette_from_allegro(const RGB* rgb, Palette* palette);
 
 } // namespace raster
+
+#endif

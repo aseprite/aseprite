@@ -50,9 +50,9 @@ void ImagesCollector::collectFromLayer(Layer* layer, FrameNumber frame)
   if (m_forWrite && !layer->isWritable())
     return;
 
-  switch (layer->getType()) {
+  switch (layer->type()) {
 
-    case GFXOBJ_LAYER_IMAGE: {
+    case OBJECT_LAYER_IMAGE: {
       if (m_allFrames) {
         for (FrameNumber frame(0); frame<sprite->getTotalFrames(); ++frame) {
           Cel* cel = static_cast<LayerImage*>(layer)->getCel(frame);
@@ -68,7 +68,7 @@ void ImagesCollector::collectFromLayer(Layer* layer, FrameNumber frame)
       break;
     }
 
-    case GFXOBJ_LAYER_FOLDER: {
+    case OBJECT_LAYER_FOLDER: {
       LayerIterator it = static_cast<LayerFolder*>(layer)->getLayerBegin();
       LayerIterator end = static_cast<LayerFolder*>(layer)->getLayerEnd();
 

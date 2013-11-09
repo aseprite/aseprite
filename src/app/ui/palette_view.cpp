@@ -233,9 +233,9 @@ bool PaletteView::onProcessMessage(Message* msg)
           else
             color = makecol_depth
               (bitmap_color_depth(ji_screen),
-               _rgba_getr(palette->getEntry(c)),
-               _rgba_getg(palette->getEntry(c)),
-               _rgba_getb(palette->getEntry(c)));
+               rgba_getr(palette->getEntry(c)),
+               rgba_getg(palette->getEntry(c)),
+               rgba_getb(palette->getEntry(c)));
 
           rectfill(bmp, x, y, x+m_boxsize-1, y+m_boxsize-1, color);
 

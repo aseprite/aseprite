@@ -20,22 +20,26 @@
 #include "config.h"
 #endif
 
-#include <allegro.h>
-#include <algorithm>
+#include "raster/palette.h"
 
+#include "base/path.h"
 #include "gfx/hsv.h"
 #include "gfx/rgb.h"
-#include "raster/image.h"
-#include "raster/palette.h"
-#include "raster/file/col_file.h"      // TODO Remove circular dependency between "raster" <-> "util"
+#include "raster/conversion_alleg.h"
+#include "raster/file/col_file.h"
 #include "raster/file/gpl_file.h"
+#include "raster/image.h"
+
+#include <algorithm>
+
+#include <allegro.h>            // TODO Remove this dependency
 
 namespace raster {
 
 using namespace gfx;
 
 Palette::Palette(FrameNumber frame, int ncolors)
-  : GfxObj(GFXOBJ_PALETTE)
+  : Object(OBJECT_PALETTE)
 {
   ASSERT(ncolors >= 1 && ncolors <= MaxColors);
 
@@ -43,11 +47,11 @@ Palette::Palette(FrameNumber frame, int ncolors)
   m_colors.resize(ncolors);
   m_modifications = 0;
 
-  std::fill(m_colors.begin(), m_colors.end(), _rgba(0, 0, 0, 255));
+  std::fill(m_colors.begin(), m_colors.end(), rgba(0, 0, 0, 255));
 }
 
 Palette::Palette(const Palette& palette)
-  : GfxObj(palette)
+  : Object(palette)
 {
   m_frame = palette.m_frame;
   m_colors = palette.m_colors;
@@ -62,7 +66,7 @@ Palette* Palette::createGrayscale()
 {
   Palette* graypal = new Palette(FrameNumber(0), MaxColors);
   for (int c=0; c<MaxColors; c++)
-    graypal->setEntry(c, _rgba(c, c, c, 255));
+    graypal->setEntry(c, rgba(c, c, c, 255));
   return graypal;
 }
 
@@ -77,7 +81,7 @@ void Palette::resize(int ncolors)
     // Fill new colors with black
     std::fill(m_colors.begin()+old_size,
               m_colors.begin()+m_colors.size(),
-              _rgba(0, 0, 0, 255));
+              rgba(0, 0, 0, 255));
   }
 
   ++m_modifications;
@@ -90,10 +94,9 @@ void Palette::setFrame(FrameNumber frame)
   m_frame = frame;
 }
 
-void Palette::setEntry(int i, uint32_t color)
+void Palette::setEntry(int i, color_t color)
 {
   ASSERT(i >= 0 && i < size());
-  ASSERT(_rgba_geta(color) == 255);
 
   m_colors[i] = color;
   ++m_modifications;
@@ -134,7 +137,7 @@ int Palette::countDiff(const Palette* other, int* from, int* to) const
 bool Palette::isBlack() const
 {
   for (size_t c=0; c<m_colors.size(); ++c)
-    if (getEntry(c) != _rgba(0, 0, 0, 255))
+    if (getEntry(c) != rgba(0, 0, 0, 255))
       return false;
 
   return true;
@@ -142,7 +145,7 @@ bool Palette::isBlack() const
 
 void Palette::makeBlack()
 {
-  std::fill(m_colors.begin(), m_colors.end(), _rgba(0, 0, 0, 255));
+  std::fill(m_colors.begin(), m_colors.end(), rgba(0, 0, 0, 255));
   ++m_modifications;
 }
 
@@ -164,18 +167,18 @@ void Palette::makeHorzRamp(int from, int to)
   if (n < 2)
     return;
 
-  r1 = _rgba_getr(getEntry(from));
-  g1 = _rgba_getg(getEntry(from));
-  b1 = _rgba_getb(getEntry(from));
-  r2 = _rgba_getr(getEntry(to));
-  g2 = _rgba_getg(getEntry(to));
-  b2 = _rgba_getb(getEntry(to));
+  r1 = rgba_getr(getEntry(from));
+  g1 = rgba_getg(getEntry(from));
+  b1 = rgba_getb(getEntry(from));
+  r2 = rgba_getr(getEntry(to));
+  g2 = rgba_getg(getEntry(to));
+  b2 = rgba_getb(getEntry(to));
 
   for (i=from+1; i<to; ++i) {
     r = r1 + (r2-r1) * (i-from) / n;
     g = g1 + (g2-g1) * (i-from) / n;
     b = b1 + (b2-b1) * (i-from) / n;
-    setEntry(i, _rgba(r, g, b, 255));
+    setEntry(i, rgba(r, g, b, 255));
   }
 }
 
@@ -203,12 +206,12 @@ void Palette::makeVertRamp(int from, int to, int columns)
   if (n < 2)
     return;
 
-  r1 = _rgba_getr(getEntry(from));
-  g1 = _rgba_getg(getEntry(from));
-  b1 = _rgba_getb(getEntry(from));
-  r2 = _rgba_getr(getEntry(to));
-  g2 = _rgba_getg(getEntry(to));
-  b2 = _rgba_getb(getEntry(to));
+  r1 = rgba_getr(getEntry(from));
+  g1 = rgba_getg(getEntry(from));
+  b1 = rgba_getb(getEntry(from));
+  r2 = rgba_getr(getEntry(to));
+  g2 = rgba_getg(getEntry(to));
+  b2 = rgba_getb(getEntry(to));
 
   offset = from % columns;
 
@@ -216,7 +219,7 @@ void Palette::makeVertRamp(int from, int to, int columns)
     r = r1 + (r2-r1) * (y-ybeg) / n;
     g = g1 + (g2-g1) * (y-ybeg) / n;
     b = b1 + (b2-b1) * (y-ybeg) / n;
-    setEntry(y*columns+offset, _rgba(r, g, b, 255));
+    setEntry(y*columns+offset, rgba(r, g, b, 255));
   }
 }
 
@@ -270,36 +273,36 @@ void SortPalette::addChain(SortPalette* chain)
     m_chain = chain;
 }
 
-bool SortPalette::operator()(uint32_t c1, uint32_t c2)
+bool SortPalette::operator()(color_t c1, color_t c2)
 {
   int value1 = 0, value2 = 0;
 
   switch (m_channel) {
 
     case SortPalette::RGB_Red:
-      value1 = _rgba_getr(c1);
-      value2 = _rgba_getr(c2);
+      value1 = rgba_getr(c1);
+      value2 = rgba_getr(c2);
       break;
 
     case SortPalette::RGB_Green:
-      value1 = _rgba_getg(c1);
-      value2 = _rgba_getg(c2);
+      value1 = rgba_getg(c1);
+      value2 = rgba_getg(c2);
       break;
 
     case SortPalette::RGB_Blue:
-      value1 = _rgba_getb(c1);
-      value2 = _rgba_getb(c2);
+      value1 = rgba_getb(c1);
+      value2 = rgba_getb(c2);
       break;
 
     case SortPalette::HSV_Hue:
     case SortPalette::HSV_Saturation:
     case SortPalette::HSV_Value: {
-      Hsv hsv1(Rgb(_rgba_getr(c1),
-                   _rgba_getg(c1),
-                   _rgba_getb(c1)));
-      Hsv hsv2(Rgb(_rgba_getr(c2),
-                   _rgba_getg(c2),
-                   _rgba_getb(c2)));
+      Hsv hsv1(Rgb(rgba_getr(c1),
+                   rgba_getg(c1),
+                   rgba_getb(c1)));
+      Hsv hsv2(Rgb(rgba_getr(c2),
+                   rgba_getg(c2),
+                   rgba_getb(c2)));
 
       switch (m_channel) {
         case SortPalette::HSV_Hue:
@@ -322,16 +325,16 @@ bool SortPalette::operator()(uint32_t c1, uint32_t c2)
     }
 
     case SortPalette::HSL_Lightness: {
-      value1 = (std::max(_rgba_getr(c1), std::max(_rgba_getg(c1), _rgba_getb(c1))) +
-                std::min(_rgba_getr(c1), std::min(_rgba_getg(c1), _rgba_getb(c1)))) / 2;
-      value2 = (std::max(_rgba_getr(c2), std::max(_rgba_getg(c2), _rgba_getb(c2))) +
-                std::min(_rgba_getr(c2), std::min(_rgba_getg(c2), _rgba_getb(c2)))) / 2;
+      value1 = (std::max(rgba_getr(c1), std::max(rgba_getg(c1), rgba_getb(c1))) +
+                std::min(rgba_getr(c1), std::min(rgba_getg(c1), rgba_getb(c1)))) / 2;
+      value2 = (std::max(rgba_getr(c2), std::max(rgba_getg(c2), rgba_getb(c2))) +
+                std::min(rgba_getr(c2), std::min(rgba_getg(c2), rgba_getb(c2)))) / 2;
       break;
     }
 
     case SortPalette::YUV_Luma: {
-      value1 = (_rgba_getr(c1)*299 + _rgba_getg(c1)*587 + _rgba_getb(c1)*114); // do not /1000 (so we get more precission)
-      value2 = (_rgba_getr(c2)*299 + _rgba_getg(c2)*587 + _rgba_getb(c2)*114);
+      value1 = (rgba_getr(c1)*299 + rgba_getg(c1)*587 + rgba_getb(c1)*114); // do not /1000 (so we get more precission)
+      value2 = (rgba_getr(c2)*299 + rgba_getg(c2)*587 + rgba_getb(c2)*114);
       break;
     }
 
@@ -353,7 +356,7 @@ bool SortPalette::operator()(uint32_t c1, uint32_t c2)
 
 struct PalEntryWithIndex {
   int index;
-  uint32_t color;
+  color_t color;
 };
 
 struct PalEntryWithIndexPredicate {
@@ -395,66 +398,31 @@ void Palette::sort(int from, int to, SortPalette* sort_palette, std::vector<int>
 // End of Sort stuff
 //////////////////////////////////////////////////////////////////////
 
-/**
- * @param pal The ASEPRITE color palette to copy.
- * @param rgb An Allegro's PALETTE.
- *
- * @return The same @a rgb pointer specified in the parameters.
- */
-void Palette::toAllegro(RGB *rgb) const
-{
-  int i;
-  for (i=0; i<size(); ++i) {
-    rgb[i].r = _rgba_getr(m_colors[i]) / 4;
-    rgb[i].g = _rgba_getg(m_colors[i]) / 4;
-    rgb[i].b = _rgba_getb(m_colors[i]) / 4;
-  }
-  for (; i<MaxColors; ++i) {
-    rgb[i].r = 0;
-    rgb[i].g = 0;
-    rgb[i].b = 0;
-  }
-}
-
-void Palette::fromAllegro(const RGB* rgb)
-{
-  int i;
-  m_colors.resize(MaxColors);
-  for (i=0; i<MaxColors; ++i) {
-    m_colors[i] = _rgba(_rgb_scale_6[rgb[i].r],
-                        _rgb_scale_6[rgb[i].g],
-                        _rgb_scale_6[rgb[i].b], 255);
-  }
-  ++m_modifications;
-}
-
 Palette* Palette::load(const char *filename)
 {
+  base::string ext = base::string_to_lower(base::get_file_extension(filename));
   Palette* pal = NULL;
-  char ext[64];
 
-  ustrcpy(ext, get_extension(filename));
-
-  if ((ustricmp(ext, "png") == 0) ||
-      (ustricmp(ext, "pcx") == 0) ||
-      (ustricmp(ext, "bmp") == 0) ||
-      (ustricmp(ext, "tga") == 0) ||
-      (ustricmp(ext, "lbm") == 0)) {
+  if (ext == "png" ||
+      ext == "pcx" ||
+      ext == "bmp" ||
+      ext == "tga" ||
+      ext == "lbm") {
     PALETTE rgbpal;
-    BITMAP *bmp;
+    BITMAP* bmp;
 
     bmp = load_bitmap(filename, rgbpal);
     if (bmp) {
       destroy_bitmap(bmp);
 
       pal = new Palette(FrameNumber(0), MaxColors);
-      pal->fromAllegro(rgbpal);
+      convert_palette_from_allegro(rgbpal, pal);
     }
   }
-  else if (ustricmp(ext, "col") == 0) {
+  else if (ext == "col") {
     pal = raster::file::load_col_file(filename);
   }
-  else if (ustricmp(ext, "gpl") == 0) {
+  else if (ext == "gpl") {
     pal = raster::file::load_gpl_file(filename);
   }
 
@@ -463,17 +431,15 @@ Palette* Palette::load(const char *filename)
 
 bool Palette::save(const char *filename) const
 {
+  base::string ext = base::string_to_lower(base::get_file_extension(filename));
   bool success = false;
-  char ext[64];
 
-  ustrcpy(ext, get_extension(filename));
-
-  if ((ustricmp(ext, "png") == 0) ||
-      (ustricmp(ext, "pcx") == 0) ||
-      (ustricmp(ext, "bmp") == 0) ||
-      (ustricmp(ext, "tga") == 0)) {
+  if (ext == "png" ||
+      ext == "pcx" ||
+      ext == "bmp" ||
+      ext == "tga") {
     PALETTE rgbpal;
-    BITMAP *bmp;
+    BITMAP* bmp;
     int c, x, y;
 
     bmp = create_bitmap_ex(8, 16, 16);
@@ -481,23 +447,23 @@ bool Palette::save(const char *filename) const
       for (x=0; x<16; x++)
         putpixel(bmp, x, y, c++);
 
-    toAllegro(rgbpal);
+    convert_palette_to_allegro(this, rgbpal);
 
     success = (save_bitmap(filename, bmp, rgbpal) == 0);
     destroy_bitmap(bmp);
   }
-  else if (ustricmp(ext, "col") == 0) {
+  else if (ext == "col") {
     success = raster::file::save_col_file(this, filename);
   }
-  else if (ustricmp(ext, "gpl") == 0) {
+  else if (ext == "gpl") {
     success = raster::file::save_gpl_file(this, filename);
   }
 
   return success;
 }
 
-/**********************************************************************/
-/* Based on Allegro's bestfit_color */
+//////////////////////////////////////////////////////////////////////
+// Based on Allegro's bestfit_color
 
 static unsigned int col_diff[3*128];
 
@@ -538,13 +504,13 @@ int Palette::findBestfit(int r, int g, int b) const
 
   i = 1;
   while (i < size()) {
-    uint32_t rgb = m_colors[i];
+    color_t rgb = m_colors[i];
 
-    coldiff = (col_diff + 0) [ ((_rgba_getg(rgb)>>3) - g) & 0x7F ];
+    coldiff = (col_diff + 0) [ ((rgba_getg(rgb)>>3) - g) & 0x7F ];
     if (coldiff < lowest) {
-      coldiff += (col_diff + 128) [ ((_rgba_getr(rgb)>>3) - r) & 0x7F ];
+      coldiff += (col_diff + 128) [ ((rgba_getr(rgb)>>3) - r) & 0x7F ];
       if (coldiff < lowest) {
-        coldiff += (col_diff + 256) [ ((_rgba_getb(rgb)>>3) - b) & 0x7F ];
+        coldiff += (col_diff + 256) [ ((rgba_getb(rgb)>>3) - b) & 0x7F ];
         if (coldiff < lowest) {
           bestfit = i;
           if (coldiff == 0)

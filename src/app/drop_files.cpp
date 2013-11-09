@@ -35,17 +35,17 @@
 
 #ifdef ALLEGRO_WINDOWS
   #include <winalleg.h>
+
+  #ifdef STRICT
+    typedef WNDPROC wndproc_t;
+  #else
+    typedef FARPROC wndproc_t;
+  #endif
 #endif
 
 namespace app {
 
 #ifdef ALLEGRO_WINDOWS
-
-#ifdef STRICT
-  typedef WNDPROC wndproc_t;
-#else
-  typedef FARPROC wndproc_t;
-#endif
 
 static wndproc_t base_wnd_proc = NULL;
 static std::vector<base::string>* dropped_files;

@@ -26,6 +26,7 @@
 #include "gfx/rect.h"
 #include "raster/image.h"
 #include "raster/mask.h"
+#include "raster/primitives.h"
 
 #include <vector>
 
@@ -40,22 +41,22 @@ void flip_image(Image* image, const gfx::Rect& bounds, FlipType flipType)
       for (int y=bounds.y; y<bounds.y+bounds.h; ++y) {
         int u = bounds.x+bounds.w-1;
         for (int x=bounds.x; x<bounds.x+bounds.w/2; ++x, --u) {
-          uint32_t c1 = image_getpixel(image, x, y);
-          uint32_t c2 = image_getpixel(image, u, y);
-          image_putpixel(image, x, y, c2);
-          image_putpixel(image, u, y, c1);
+          uint32_t c1 = get_pixel(image, x, y);
+          uint32_t c2 = get_pixel(image, u, y);
+          put_pixel(image, x, y, c2);
+          put_pixel(image, u, y, c1);
         }
       }
       break;
 
     case FlipVertical: {
-      int section_size = image_line_size(image, bounds.w);
+      int section_size = image->getRowStrideSize(bounds.w);
       std::vector<uint8_t> tmpline(section_size);
 
       int v = bounds.y+bounds.h-1;
       for (int y=bounds.y; y<bounds.y+bounds.h/2; ++y, --v) {
-        uint8_t* address1 = static_cast<uint8_t*>(image_address(image, bounds.x, y));
-        uint8_t* address2 = static_cast<uint8_t*>(image_address(image, bounds.x, v));
+        uint8_t* address1 = image->getPixelAddress(bounds.x, y);
+        uint8_t* address2 = image->getPixelAddress(bounds.x, v);
 
         // Swap lines.
         std::copy(address1, address1+section_size, tmpline.begin());
@@ -78,14 +79,14 @@ void flip_image_with_mask(Image* image, const Mask* mask, FlipType flipType, int
 
       for (int y=bounds.y; y<bounds.y+bounds.h; ++y) {
         // Copy the current row.
-        image_copy(originalRow, image, -bounds.x, -y);
+        copy_image(originalRow, image, -bounds.x, -y);
 
         int u = bounds.x+bounds.w-1;
         for (int x=bounds.x; x<bounds.x+bounds.w; ++x, --u) {
           if (mask->containsPoint(x, y)) {
-            image_putpixel(image, u, y, image_getpixel(originalRow, x-bounds.x, 0));
+            put_pixel(image, u, y, get_pixel(originalRow, x-bounds.x, 0));
             if (!mask->containsPoint(u, y))
-              image_putpixel(image, x, y, bgcolor);
+              put_pixel(image, x, y, bgcolor);
           }
         }
       }
@@ -97,14 +98,14 @@ void flip_image_with_mask(Image* image, const Mask* mask, FlipType flipType, int
 
       for (int x=bounds.x; x<bounds.x+bounds.w; ++x) {
         // Copy the current column.
-        image_copy(originalCol, image, -x, -bounds.y);
+        copy_image(originalCol, image, -x, -bounds.y);
 
         int v = bounds.y+bounds.h-1;
         for (int y=bounds.y; y<bounds.y+bounds.h; ++y, --v) {
           if (mask->containsPoint(x, y)) {
-            image_putpixel(image, x, v, image_getpixel(originalCol, 0, y-bounds.y));
+            put_pixel(image, x, v, get_pixel(originalCol, 0, y-bounds.y));
             if (!mask->containsPoint(x, v))
-              image_putpixel(image, x, y, bgcolor);
+              put_pixel(image, x, y, bgcolor);
           }
         }
       }

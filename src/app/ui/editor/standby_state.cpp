@@ -156,7 +156,7 @@ bool StandbyState::onMouseDown(Editor* editor, MouseMessage* msg)
   // Move cel X,Y coordinates
   if (clickedInk->isCelMovement()) {
     if ((layer) &&
-        (layer->getType() == GFXOBJ_LAYER_IMAGE)) {
+        (layer->type() == OBJECT_LAYER_IMAGE)) {
       // TODO you can move the `Background' with tiled mode
       if (layer->isBackground()) {
         Alert::show(PACKAGE
@@ -458,8 +458,8 @@ bool StandbyState::onUpdateStatusBar(Editor* editor)
 
     int alpha = 255;
     switch (format) {
-      case IMAGE_RGB: alpha = _rgba_geta(pixel); break;
-      case IMAGE_GRAYSCALE: alpha = _graya_geta(pixel); break;
+      case IMAGE_RGB: alpha = rgba_geta(pixel); break;
+      case IMAGE_GRAYSCALE: alpha = graya_geta(pixel); break;
     }
 
     char buf[256];

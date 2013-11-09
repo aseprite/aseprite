@@ -38,6 +38,7 @@
 #include "raster/image.h"
 #include "raster/layer.h"
 #include "raster/palette.h"
+#include "raster/primitives.h"
 #include "raster/sprite.h"
 #include "raster/stock.h"
 #include "ui/ui.h"
@@ -146,7 +147,7 @@ protected:
     int sheet_h = sprite->getHeight()*((nframes/columns)+((nframes%columns)>0?1:0));
     base::UniquePtr<Image> resultImage(Image::create(sprite->getPixelFormat(), sheet_w, sheet_h));
     base::UniquePtr<Image> tempImage(Image::create(sprite->getPixelFormat(), sprite->getWidth(), sprite->getHeight()));
-    image_clear(resultImage, 0);
+    raster::clear_image(resultImage, 0);
 
     int column = 0, row = 0;
     for (FrameNumber frame(0); frame<nframes; ++frame) {

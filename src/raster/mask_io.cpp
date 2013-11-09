@@ -51,10 +51,10 @@ void write_mask(std::ostream& os, Mask* mask)
   write16(os, mask->getBitmap() ? bounds.h: 0); // Height
 
   if (mask->getBitmap()) {
-    int size = BitmapTraits::scanline_size(bounds.w);
+    int size = BitmapTraits::getRowStrideBytes(bounds.w);
 
     for (int c=0; c<bounds.h; c++)
-      os.write((char*)mask->getBitmap()->line[c], size);
+      os.write((char*)mask->getBitmap()->getPixelAddress(0, c), size);
   }
 }
 
@@ -68,11 +68,11 @@ Mask* read_mask(std::istream& is)
   base::UniquePtr<Mask> mask(new Mask());
 
   if (w > 0 && h > 0) {
-    int size = BitmapTraits::scanline_size(w);
+    int size = BitmapTraits::getRowStrideBytes(w);
 
     mask->add(x, y, w, h);
     for (int c=0; c<mask->getBounds().h; c++)
-      is.read((char*)mask->getBitmap()->line[c], size);
+      is.read((char*)mask->getBitmap()->getPixelAddress(0, c), size);
   }
 
   return mask.release();

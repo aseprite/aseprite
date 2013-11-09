@@ -495,7 +495,7 @@ void fop_operate(FileOp *fop, IFileOpProgress* progress)
 
           // Compare the old frame with the new one
 #if USE_LINK // TODO this should be configurable through a check-box
-          if (image_count_diff(old_image, fop->seq.image)) {
+          if (count_diff_between_images(old_image, fop->seq.image)) {
             SEQUENCE_IMAGE();
           }
           // We don't need this image
@@ -675,16 +675,16 @@ void fop_sequence_set_format_options(FileOp* fop, const SharedPtr<FormatOptions>
 
 void fop_sequence_set_color(FileOp *fop, int index, int r, int g, int b)
 {
-  fop->seq.palette->setEntry(index, _rgba(r, g, b, 255));
+  fop->seq.palette->setEntry(index, rgba(r, g, b, 255));
 }
 
 void fop_sequence_get_color(FileOp *fop, int index, int *r, int *g, int *b)
 {
   uint32_t c = fop->seq.palette->getEntry(index);
 
-  *r = _rgba_getr(c);
-  *g = _rgba_getg(c);
-  *b = _rgba_getb(c);
+  *r = rgba_getr(c);
+  *g = rgba_getg(c);
+  *b = rgba_getb(c);
 }
 
 Image* fop_sequence_image(FileOp* fop, PixelFormat pixelFormat, int w, int h)

@@ -99,14 +99,12 @@ void CelPropertiesCommand::onExecute(Context* context)
     label_pos->setTextf("%d, %d", cel->getX(), cel->getY());
 
     // Dimension (and memory size)
-    int memsize =
-      image_line_size(sprite->getStock()->getImage(cel->getImage()),
-                      sprite->getStock()->getImage(cel->getImage())->w)*
-      sprite->getStock()->getImage(cel->getImage())->h;
+    Image* image = sprite->getStock()->getImage(cel->getImage());
+    int memsize = image->getRowStrideSize() * image->getHeight();
 
     label_size->setTextf("%dx%d (%s)",
-                         sprite->getStock()->getImage(cel->getImage())->w,
-                         sprite->getStock()->getImage(cel->getImage())->h,
+                         sprite->getStock()->getImage(cel->getImage())->getWidth(),
+                         sprite->getStock()->getImage(cel->getImage())->getHeight(),
                          base::get_pretty_memory_size(memsize).c_str());
 
     // Opacity

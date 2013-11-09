@@ -89,8 +89,7 @@ void FlipCommand::onExecute(Context* context)
       bool alreadyFlipped = false;
 
       // This variable will be the area to be flipped inside the image.
-      gfx::Rect bounds(gfx::Point(0, 0),
-                       gfx::Size(image->w, image->h));
+      gfx::Rect bounds(image->getBounds());
 
       // If there is some portion of sprite selected, we flip the
       // selected region only. If the mask isn't visible, we flip the
@@ -122,8 +121,7 @@ void FlipCommand::onExecute(Context* context)
             base::UniquePtr<Mask> newMask(new Mask(*mask));
             newMask->freeze();
             raster::algorithm::flip_image(newMask->getBitmap(),
-                                          gfx::Rect(gfx::Point(0, 0),
-                                                gfx::Size(maskBitmap->w, maskBitmap->h)),
+                                          maskBitmap->getBounds(),
                                           m_flipType);
             newMask->unfreeze();
 
@@ -153,13 +151,13 @@ void FlipCommand::onExecute(Context* context)
         api.setCelPosition
           (sprite, cel,
            (m_flipType == raster::algorithm::FlipHorizontal ?
-            sprite->getWidth() - image->w - cel->getX():
+            sprite->getWidth() - image->getWidth() - cel->getX():
             cel->getX()),
            (m_flipType == raster::algorithm::FlipVertical ?
-            sprite->getHeight() - image->h - cel->getY():
+            sprite->getHeight() - image->getHeight() - cel->getY():
             cel->getY()));
 
-        api.flipImage(image, gfx::Rect(0, 0, image->w, image->h), m_flipType);
+        api.flipImage(image, image->getBounds(), m_flipType);
       }
     }
 

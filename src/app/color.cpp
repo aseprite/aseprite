@@ -28,6 +28,7 @@
 #include "gfx/rgb.h"
 #include "raster/image.h"
 #include "raster/palette.h"
+#include "raster/primitives.h"
 
 #include <cstdlib>
 #include <iomanip>
@@ -83,23 +84,23 @@ Color Color::fromIndex(int index)
 }
 
 // static
-Color Color::fromImage(PixelFormat pixelFormat, int c)
+Color Color::fromImage(PixelFormat pixelFormat, color_t c)
 {
   Color color = Color::fromMask();
 
   switch (pixelFormat) {
 
     case IMAGE_RGB:
-      if (_rgba_geta(c) > 0) {
-        color = Color::fromRgb(_rgba_getr(c),
-                               _rgba_getg(c),
-                               _rgba_getb(c));
+      if (rgba_geta(c) > 0) {
+        color = Color::fromRgb(rgba_getr(c),
+                               rgba_getg(c),
+                               rgba_getb(c));
       }
       break;
 
     case IMAGE_GRAYSCALE:
-      if (_graya_geta(c) > 0) {
-        color = Color::fromGray(_graya_getv(c));
+      if (graya_geta(c) > 0) {
+        color = Color::fromGray(graya_getv(c));
       }
       break;
 
@@ -114,8 +115,8 @@ Color Color::fromImage(PixelFormat pixelFormat, int c)
 // static
 Color Color::fromImageGetPixel(Image *image, int x, int y)
 {
-  if ((x >= 0) && (y >= 0) && (x < image->w) && (y < image->h))
-    return Color::fromImage(image->getPixelFormat(), image_getpixel(image, x, y));
+  if ((x >= 0) && (y >= 0) && (x < image->getWidth()) && (y < image->getHeight()))
+    return Color::fromImage(image->getPixelFormat(), raster::get_pixel(image, x, y));
   else
     return Color::fromMask();
 }
@@ -245,9 +246,9 @@ std::string Color::toHumanReadableString(PixelFormat pixelFormat, HumanReadableS
           uint32_t _c = get_current_palette()->getEntry(i);
           result << "Index " << i
                  << " (RGB "
-                 << (int)_rgba_getr(_c) << " "
-                 << (int)_rgba_getg(_c) << " "
-                 << (int)_rgba_getb(_c) << ")";
+                 << (int)rgba_getr(_c) << " "
+                 << (int)rgba_getg(_c) << " "
+                 << (int)rgba_getb(_c) << ")";
         }
         else {
           result << "Index "
@@ -381,7 +382,7 @@ int Color::getRed() const
       int i = m_value.index;
       ASSERT(i >= 0 && i < get_current_palette()->size());
 
-      return _rgba_getr(get_current_palette()->getEntry(i));
+      return rgba_getr(get_current_palette()->getEntry(i));
     }
 
   }
@@ -412,7 +413,7 @@ int Color::getGreen() const
       int i = m_value.index;
       ASSERT(i >= 0 && i < get_current_palette()->size());
 
-      return _rgba_getg(get_current_palette()->getEntry(i));
+      return rgba_getg(get_current_palette()->getEntry(i));
     }
 
   }
@@ -443,7 +444,7 @@ int Color::getBlue() const
       int i = m_value.index;
       ASSERT(i >= 0 && i < get_current_palette()->size());
 
-      return _rgba_getb(get_current_palette()->getEntry(i));
+      return rgba_getb(get_current_palette()->getEntry(i));
     }
 
   }
@@ -476,9 +477,9 @@ int Color::getHue() const
 
       uint32_t c = get_current_palette()->getEntry(i);
 
-      return Hsv(Rgb(_rgba_getr(c),
-                     _rgba_getg(c),
-                     _rgba_getb(c))).hueInt();
+      return Hsv(Rgb(rgba_getr(c),
+                     rgba_getg(c),
+                     rgba_getb(c))).hueInt();
     }
 
   }
@@ -511,9 +512,9 @@ int Color::getSaturation() const
 
       uint32_t c = get_current_palette()->getEntry(i);
 
-      return Hsv(Rgb(_rgba_getr(c),
-                     _rgba_getg(c),
-                     _rgba_getb(c))).saturationInt();
+      return Hsv(Rgb(rgba_getr(c),
+                     rgba_getg(c),
+                     rgba_getb(c))).saturationInt();
     }
 
   }
@@ -546,9 +547,9 @@ int Color::getValue() const
 
       uint32_t c = get_current_palette()->getEntry(i);
 
-      return Hsv(Rgb(_rgba_getr(c),
-                     _rgba_getg(c),
-                     _rgba_getb(c))).valueInt();
+      return Hsv(Rgb(rgba_getr(c),
+                     rgba_getg(c),
+                     rgba_getb(c))).valueInt();
     }
 
   }
@@ -581,9 +582,9 @@ int Color::getGray() const
 
       uint32_t c = get_current_palette()->getEntry(i);
 
-      return 255 * Hsv(Rgb(_rgba_getr(c),
-                           _rgba_getg(c),
-                           _rgba_getb(c))).valueInt() / 100;
+      return 255 * Hsv(Rgb(rgba_getr(c),
+                           rgba_getg(c),
+                           rgba_getb(c))).valueInt() / 100;
     }
 
   }

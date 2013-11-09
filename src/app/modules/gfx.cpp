@@ -354,9 +354,9 @@ void draw_color(BITMAP* bmp, const Rect& rc, PixelFormat pixelFormat, const app:
 
       {
         int rgb_bitmap_color = color_utils::color_for_image(color, pixelFormat);
-        app::Color color2 = app::Color::fromRgb(_rgba_getr(rgb_bitmap_color),
-                                                _rgba_getg(rgb_bitmap_color),
-                                                _rgba_getb(rgb_bitmap_color));
+        app::Color color2 = app::Color::fromRgb(rgba_getr(rgb_bitmap_color),
+                                                rgba_getg(rgb_bitmap_color),
+                                                rgba_getb(rgb_bitmap_color));
         rectfill(graph, 0, 0, rc.w-1, rc.h-1,
                  color_utils::color_for_allegro(color2, 32));
       }
@@ -373,7 +373,7 @@ void draw_color(BITMAP* bmp, const Rect& rc, PixelFormat pixelFormat, const app:
 
       {
         int gray_bitmap_color = color_utils::color_for_image(color, pixelFormat);
-        app::Color color2 = app::Color::fromGray(_graya_getv(gray_bitmap_color));
+        app::Color color2 = app::Color::fromGray(graya_getv(gray_bitmap_color));
         rectfill(graph, 0, 0, rc.w-1, rc.h-1,
                  color_utils::color_for_allegro(color2, 32));
       }

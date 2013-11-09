@@ -22,6 +22,7 @@
 
 #include "raster/rgbmap.h"
 
+#include "raster/conversion_alleg.h"
 #include "raster/palette.h"
 
 #include <allegro.h>
@@ -50,7 +51,7 @@ public:
     m_modifications = palette->getModifications();
 
     PALETTE allegPal;
-    palette->toAllegro(allegPal);
+    convert_palette_to_allegro(palette, allegPal);
     create_rgb_table(m_allegMap, allegPal, NULL);
 
     for (int r=0; r<32; ++r)
@@ -77,7 +78,7 @@ private:
 };
 
 RgbMap::RgbMap()
-  : GfxObj(GFXOBJ_RGBMAP)
+  : Object(OBJECT_RGBMAP)
 {
   m_impl = new RgbMapImpl;
 }

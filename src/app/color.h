@@ -19,6 +19,7 @@
 #ifndef APP_COLOR_H_INCLUDED
 #define APP_COLOR_H_INCLUDED
 
+#include "raster/color.h"
 #include "raster/pixel_format.h"
 
 #include <string>
@@ -56,7 +57,7 @@ namespace app {
     static Color fromGray(int g);
     static Color fromIndex(int index);
 
-    static Color fromImage(PixelFormat pixelFormat, int pixel);
+    static Color fromImage(PixelFormat pixelFormat, color_t c);
     static Color fromImageGetPixel(Image* image, int x, int y);
     static Color fromString(const std::string& str);
 

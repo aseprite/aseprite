@@ -36,14 +36,14 @@ ImageArea::ImageArea(ObjectsContainer* objects, Image* image, int x, int y, int 
   : m_imageId(objects->addObject(image))
   , m_format(image->getPixelFormat())
   , m_x(x), m_y(y), m_w(w), m_h(h)
-  , m_lineSize(image_line_size(image, w))
+  , m_lineSize(image->getRowStrideSize(w))
   , m_data(m_lineSize * h)
 {
   ASSERT(w >= 1 && h >= 1);
-  ASSERT(x >= 0 && y >= 0 && x+w <= image->w && y+h <= image->h);
+  ASSERT(x >= 0 && y >= 0 && x+w <= image->getWidth() && y+h <= image->getHeight());
 
   for (int v=0; v<h; ++v)
-    memcpy(&m_data[m_lineSize*v], image_address(image, x, y+v), m_lineSize);
+    memcpy(&m_data[m_lineSize*v], image->getPixelAddress(x, y+v), m_lineSize);
 }
 
 void ImageArea::dispose()
@@ -63,7 +63,7 @@ void ImageArea::revert(ObjectsContainer* objects, UndoersCollector* redoers)
 
   // Restore the old image portion
   for (int v=0; v<m_h; ++v)
-    memcpy(image_address(image, m_x, m_y+v), &m_data[m_lineSize*v], m_lineSize);
+    memcpy(image->getPixelAddress(m_x, m_y+v), &m_data[m_lineSize*v], m_lineSize);
 }
 
 } // namespace undoers

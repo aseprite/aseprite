@@ -32,18 +32,18 @@ namespace raster {
 
   typedef int (*BLEND_COLOR)(int back, int front, int opacity);
 
-  extern BLEND_COLOR _rgba_blenders[];
-  extern BLEND_COLOR _graya_blenders[];
+  extern BLEND_COLOR rgba_blenders[];
+  extern BLEND_COLOR graya_blenders[];
 
-  int _rgba_blend_normal(int back, int front, int opacity);
-  int _rgba_blend_copy(int back, int front, int opacity);
-  int _rgba_blend_forpath(int back, int front, int opacity);
-  int _rgba_blend_merge(int back, int front, int opacity);
+  int rgba_blend_normal(int back, int front, int opacity);
+  int rgba_blend_copy(int back, int front, int opacity);
+  int rgba_blend_forpath(int back, int front, int opacity);
+  int rgba_blend_merge(int back, int front, int opacity);
 
-  int _graya_blend_normal(int back, int front, int opacity);
-  int _graya_blend_copy(int back, int front, int opacity);
-  int _graya_blend_forpath(int back, int front, int opacity);
-  int _graya_blend_merge(int back, int front, int opacity);
+  int graya_blend_normal(int back, int front, int opacity);
+  int graya_blend_copy(int back, int front, int opacity);
+  int graya_blend_forpath(int back, int front, int opacity);
+  int graya_blend_merge(int back, int front, int opacity);
 
 } // namespace raster
 

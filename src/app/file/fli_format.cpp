@@ -64,7 +64,7 @@ bool FliFormat::onLoad(FileOp* fop)
 #define SETPAL()                                                \
   do {                                                          \
       for (c=0; c<256; c++) {                                   \
-        pal->setEntry(c, _rgba(cmap[c*3],                       \
+        pal->setEntry(c, rgba(cmap[c*3],                       \
                                cmap[c*3+1],                     \
                                cmap[c*3+2], 255));              \
       }                                                         \
@@ -96,9 +96,9 @@ bool FliFormat::onLoad(FileOp* fop)
   h = fli_header.height;
 
   // Create the bitmaps
-  UniquePtr<Image> bmp(Image::create(IMAGE_INDEXED, w, h));
-  UniquePtr<Image> old(Image::create(IMAGE_INDEXED, w, h));
-  UniquePtr<Palette> pal(new Palette(FrameNumber(0), 256));
+  base::UniquePtr<Image> bmp(Image::create(IMAGE_INDEXED, w, h));
+  base::UniquePtr<Image> old(Image::create(IMAGE_INDEXED, w, h));
+  base::UniquePtr<Palette> pal(new Palette(FrameNumber(0), 256));
 
   // Create the image
   Sprite* sprite = new Sprite(IMAGE_INDEXED, w, h, 256);
@@ -116,12 +116,12 @@ bool FliFormat::onLoad(FileOp* fop)
        ++frpos_in) {
     /* read the frame */
     fli_read_frame(f, &fli_header,
-                   (unsigned char *)old->dat, omap,
-                   (unsigned char *)bmp->dat, cmap);
+                   (unsigned char *)old->getPixelAddress(0, 0), omap,
+                   (unsigned char *)bmp->getPixelAddress(0, 0), cmap);
 
     /* first frame, or the frames changes, or the palette changes */
     if ((frpos_in == 0) ||
-        (image_count_diff(old, bmp))
+        (count_diff_between_images(old, bmp))
 #ifndef USE_LINK /* TODO this should be configurable through a check-box */
         || (memcmp(omap, cmap, 768) != 0)
 #endif
@@ -159,7 +159,7 @@ bool FliFormat::onLoad(FileOp* fop)
     }
 
     /* update the old image and color-map to the new ones to compare later */
-    image_copy(old, bmp, 0, 0);
+    copy_image(old, bmp, 0, 0);
     memcpy(omap, cmap, 768);
 
     /* update progress */
@@ -214,8 +214,8 @@ bool FliFormat::onSave(FileOp* fop)
   fseek(f, 128, SEEK_SET);
 
   // Create the bitmaps
-  UniquePtr<Image> bmp(Image::create(IMAGE_INDEXED, sprite->getWidth(), sprite->getHeight()));
-  UniquePtr<Image> old(Image::create(IMAGE_INDEXED, sprite->getWidth(), sprite->getHeight()));
+  base::UniquePtr<Image> bmp(Image::create(IMAGE_INDEXED, sprite->getWidth(), sprite->getHeight()));
+  base::UniquePtr<Image> old(Image::create(IMAGE_INDEXED, sprite->getWidth(), sprite->getHeight()));
 
   // Write frame by frame
   for (FrameNumber frpos(0);
@@ -224,13 +224,13 @@ bool FliFormat::onSave(FileOp* fop)
     /* get color map */
     pal = sprite->getPalette(frpos);
     for (c=0; c<256; c++) {
-      cmap[3*c  ] = _rgba_getr(pal->getEntry(c));
-      cmap[3*c+1] = _rgba_getg(pal->getEntry(c));
-      cmap[3*c+2] = _rgba_getb(pal->getEntry(c));
+      cmap[3*c  ] = rgba_getr(pal->getEntry(c));
+      cmap[3*c+1] = rgba_getg(pal->getEntry(c));
+      cmap[3*c+2] = rgba_getb(pal->getEntry(c));
     }
 
     /* render the frame in the bitmap */
-    image_clear(bmp, 0);
+    clear_image(bmp, 0);
     layer_render(sprite->getFolder(), bmp, 0, 0, frpos);
 
     /* how many times this frame should be written to get the same
@@ -241,14 +241,14 @@ bool FliFormat::onSave(FileOp* fop)
       /* write this frame */
       if (frpos == 0 && c == 0)
         fli_write_frame(f, &fli_header, NULL, NULL,
-                        (unsigned char *)bmp->dat, cmap, W_ALL);
+                        (unsigned char *)bmp->getPixelAddress(0, 0), cmap, W_ALL);
       else
         fli_write_frame(f, &fli_header,
-                        (unsigned char *)old->dat, omap,
-                        (unsigned char *)bmp->dat, cmap, W_ALL);
+                        (unsigned char *)old->getPixelAddress(0, 0), omap,
+                        (unsigned char *)bmp->getPixelAddress(0, 0), cmap, W_ALL);
 
       /* update the old image and color-map to the new ones to compare later */
-      image_copy(old, bmp, 0, 0);
+      copy_image(old, bmp, 0, 0);
       memcpy(omap, cmap, 768);
     }
 

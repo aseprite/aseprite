@@ -23,7 +23,6 @@
 #include "raster/algorithm/flip_type.h"
 
 namespace raster {
-
   class Image;
   class Mask;
 

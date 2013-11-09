@@ -19,7 +19,9 @@
 #ifndef RASTER_COLOR_HISTOGRAM_H_INCLUDED
 #define RASTER_COLOR_HISTOGRAM_H_INCLUDED
 
+#include <limits>
 #include <vector>
+
 #include "raster/image.h"
 #include "raster/image_traits.h"
 #include "raster/median_cut.h"
@@ -115,9 +117,9 @@ namespace quantization {
     // parameters.
     size_t histogramIndex(uint32_t color) const
     {
-      return histogramIndex((_rgba_getr(color) >> (8 - RBits)),
-                            (_rgba_getg(color) >> (8 - GBits)),
-                            (_rgba_getb(color) >> (8 - BBits)));
+      return histogramIndex((rgba_getr(color) >> (8 - RBits)),
+                            (rgba_getg(color) >> (8 - GBits)),
+                            (rgba_getb(color) >> (8 - BBits)));
     }
 
     size_t histogramIndex(int i, int j, int k) const
