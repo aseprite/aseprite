@@ -31,8 +31,6 @@
 
 namespace ui {
 
-  struct jrect;
-
   // Alignment.
 #define JI_HORIZONTAL   0x0001
 #define JI_VERTICAL     0x0002
@@ -58,10 +56,6 @@ namespace ui {
 #define JI_DECORATIVE   0x0200 // To decorate windows.
 #define JI_INITIALIZED  0x0400 // The widget was already initialized by a theme.
 #define JI_DIRTY        0x0800 // The widget (or one child) is dirty (update_region != empty).
-
-  typedef unsigned int            JID;
-
-  typedef struct jrect*           JRect;
 
   class GuiSystem {
   public:

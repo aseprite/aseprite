@@ -99,8 +99,8 @@ void TooltipManager::onTick()
     m_tipWindow->setArrowAlign(m_target.tipInfo.arrowAlign);
     m_tipWindow->remapWindow();
 
-    w = jrect_w(m_tipWindow->rc);
-    h = jrect_h(m_tipWindow->rc);
+    w = m_tipWindow->getBounds().w;
+    h = m_tipWindow->getBounds().h;
 
     switch (m_target.tipInfo.arrowAlign) {
       case JI_TOP | JI_LEFT:

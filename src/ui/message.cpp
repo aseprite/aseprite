@@ -12,7 +12,6 @@
 
 #include "base/memory.h"
 #include "ui/manager.h"
-#include "ui/rect.h"
 #include "ui/widget.h"
 
 #include <allegro/keyboard.h>

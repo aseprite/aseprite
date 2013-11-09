@@ -14,7 +14,6 @@
 #include "ui/keys.h"
 #include "ui/message_type.h"
 #include "ui/mouse_buttons.h"
-#include "ui/rect.h"
 #include "ui/widgets_list.h"
 
 namespace ui {

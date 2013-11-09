@@ -812,8 +812,8 @@ void SkinTheme::setDecorativeWidgetBounds(Widget* widget)
     rect.w = m_part[PART_WINDOW_CLOSE_BUTTON_NORMAL]->w;
     rect.h = m_part[PART_WINDOW_CLOSE_BUTTON_NORMAL]->h;
 
-    rect.offset(window->rc->x2 - 3*jguiscale() - rect.w,
-                window->rc->y1 + 3*jguiscale());
+    rect.offset(window->getBounds().x2() - 3*jguiscale() - rect.w,
+                window->getBounds().y + 3*jguiscale());
 
     widget->setBounds(rect);
   }
@@ -840,7 +840,7 @@ void SkinTheme::paintButton(PaintEvent& ev)
   Graphics* g = ev.getGraphics();
   ButtonBase* widget = static_cast<ButtonBase*>(ev.getSource());
   IButtonIcon* iconInterface = widget->getIconInterface();
-  struct jrect box, text, icon;
+  gfx::Rect box, text, icon;
   ui::Color fg, bg;
   int part_nw;
 
@@ -903,13 +903,12 @@ void SkinTheme::paintButton(PaintEvent& ev)
   // Paint the icon
   if (iconInterface) {
     if (widget->isSelected())
-      jrect_displace(&icon,
-                     get_button_selected_offset(),
-                     get_button_selected_offset());
+      icon.offset(get_button_selected_offset(),
+                  get_button_selected_offset());
 
     paintIcon(widget, ev.getGraphics(), iconInterface,
-              icon.x1-widget->rc->x1,
-              icon.y1-widget->rc->y1);
+              icon.x-widget->getBounds().x,
+              icon.y-widget->getBounds().y);
   }
 }
 
@@ -917,7 +916,7 @@ void SkinTheme::paintCheckBox(PaintEvent& ev)
 {
   ButtonBase* widget = static_cast<ButtonBase*>(ev.getSource());
   IButtonIcon* iconInterface = widget->getIconInterface();
-  struct jrect box, text, icon;
+  gfx::Rect box, text, icon;
   ui::Color bg;
 
   jwidget_get_texticon_info(widget, &box, &text, &icon,
@@ -932,30 +931,30 @@ void SkinTheme::paintCheckBox(PaintEvent& ev)
     look = skinPropery->getLook();
 
   // Background
-  jdraw_rectfill(widget->rc, bg = BGCOLOR);
+  jdraw_rectfill(widget->getBounds(), bg = BGCOLOR);
 
   // Mouse
   if (widget->isEnabled()) {
     if (widget->hasMouseOver())
-      jdraw_rectfill(widget->rc, bg = getColor(ThemeColor::CheckHotFace));
+      jdraw_rectfill(widget->getBounds(), bg = getColor(ThemeColor::CheckHotFace));
     else if (widget->hasFocus())
-      jdraw_rectfill(widget->rc, bg = getColor(ThemeColor::CheckFocusFace));
+      jdraw_rectfill(widget->getBounds(), bg = getColor(ThemeColor::CheckFocusFace));
   }
 
   // Text
-  drawTextStringDeprecated(NULL, ColorNone, bg, false, widget, &text, 0);
+  drawTextStringDeprecated(NULL, ColorNone, bg, false, widget, text, 0);
 
   // Paint the icon
   if (iconInterface)
-    paintIcon(widget, ev.getGraphics(), iconInterface, icon.x1-widget->rc->x1, icon.y1-widget->rc->y1);
+    paintIcon(widget, ev.getGraphics(), iconInterface, icon.x-widget->getBounds().x, icon.y-widget->getBounds().y);
 
   // draw focus
   if (look != WithoutBordersLook && widget->hasFocus()) {
     draw_bounds_nw(ji_screen,
-                   widget->rc->x1,
-                   widget->rc->y1,
-                   widget->rc->x2-1,
-                   widget->rc->y2-1, PART_CHECK_FOCUS_NW, ui::ColorNone);
+                   widget->getBounds().x,
+                   widget->getBounds().y,
+                   widget->getBounds().x2()-1,
+                   widget->getBounds().y2()-1, PART_CHECK_FOCUS_NW, ui::ColorNone);
   }
 }
 
@@ -982,13 +981,13 @@ void SkinTheme::paintEntry(PaintEvent& ev)
   widget->getEntryThemeInfo(&scroll, &caret, &state, &selbeg, &selend);
 
   // Outside borders
-  jdraw_rectfill(widget->rc, BGCOLOR);
+  jdraw_rectfill(widget->getBounds(), BGCOLOR);
 
   // Main pos
-  x1 = widget->rc->x1;
-  y1 = widget->rc->y1;
-  x2 = widget->rc->x2-1;
-  y2 = widget->rc->y2-1;
+  x1 = widget->getBounds().x;
+  y1 = widget->getBounds().y;
+  x2 = widget->getBounds().x2()-1;
+  y2 = widget->getBounds().y2()-1;
 
   bool isMiniLook = false;
   SharedPtr<SkinProperty> skinPropery = widget->getProperty(SkinProperty::SkinPropertyName);
@@ -1004,8 +1003,8 @@ void SkinTheme::paintEntry(PaintEvent& ev)
                  bg);
 
   // Draw the text
-  x = widget->rc->x1 + widget->border_width.l;
-  y = (widget->rc->y1+widget->rc->y2)/2 - jwidget_get_text_height(widget)/2;
+  x = widget->getBounds().x + widget->border_width.l;
+  y = widget->getBounds().y + widget->getBounds().h/2 - jwidget_get_text_height(widget)/2;
 
   for (c=scroll; ugetat(text, c); c++) {
     ch = password ? '*': ugetat(text, c);
@@ -1039,7 +1038,7 @@ void SkinTheme::paintEntry(PaintEvent& ev)
     }
 
     w = CHARACTER_LENGTH(widget->getFont(), ch);
-    if (x+w > widget->rc->x2-3)
+    if (x+w > widget->getBounds().x2()-3)
       return;
 
     caret_x = x;
@@ -1068,10 +1067,9 @@ void SkinTheme::paintLabel(PaintEvent& ev)
 {
   Graphics* g = ev.getGraphics();
   Label* widget = static_cast<Label*>(ev.getSource());
-  struct jrect text;
   ui::Color bg = BGCOLOR;
   ui::Color fg = widget->getTextColor();
-  Rect rc = widget->getClientBounds();
+  Rect text, rc = widget->getClientBounds();
 
   g->fillRect(bg, rc);
   rc.shrink(widget->getBorder());
@@ -1080,7 +1078,7 @@ void SkinTheme::paintLabel(PaintEvent& ev)
 
   g->drawString(widget->getText(), fg, bg, false,
                 // TODO "text" coordinates are absolute and we are drawing on client area
-                Point(text.x1, text.y1) - Point(widget->rc->x1, widget->rc->y1));
+                Point(text.x, text.y) - widget->getOrigin());
 }
 
 void SkinTheme::paintLinkLabel(PaintEvent& ev)
@@ -1088,14 +1086,17 @@ void SkinTheme::paintLinkLabel(PaintEvent& ev)
   Widget* widget = static_cast<Widget*>(ev.getSource());
   ui::Color bg = BGCOLOR;
 
-  jdraw_rectfill(widget->rc, bg);
-  drawTextStringDeprecated(NULL, getColor(ThemeColor::LinkText), bg, false, widget, widget->rc, 0);
+  jdraw_rectfill(widget->getBounds(), bg);
+  drawTextStringDeprecated(NULL, getColor(ThemeColor::LinkText), bg, false, widget,
+                           widget->getBounds(), 0);
 
   if (widget->hasMouseOver()) {
     int w = jwidget_get_text_length(widget);
 
     hline(ji_screen,
-          widget->rc->x1, widget->rc->y2-1, widget->rc->x1+w-1,
+          widget->getBounds().x,
+          widget->getBounds().y2()-1,
+          widget->getBounds().x+w-1,
           to_system(getColor(ThemeColor::LinkText)));
   }
 }
@@ -1128,8 +1129,8 @@ void SkinTheme::paintListItem(ui::PaintEvent& ev)
     bg = getColor(ThemeColor::ListItemNormalFace);
   }
 
-  x = widget->rc->x1+widget->border_width.l;
-  y = widget->rc->y1+widget->border_width.t;
+  x = widget->getBounds().x+widget->border_width.l;
+  y = widget->getBounds().y+widget->border_width.t;
 
   if (widget->hasText()) {
     // Text
@@ -1139,15 +1140,15 @@ void SkinTheme::paintListItem(ui::PaintEvent& ev)
     // Background
     jrectexclude
       (ji_screen,
-       widget->rc->x1, widget->rc->y1,
-       widget->rc->x2-1, widget->rc->y2-1,
+       widget->getBounds().x, widget->getBounds().y,
+       widget->getBounds().x2()-1, widget->getBounds().y2()-1,
        x, y,
        x+jwidget_get_text_length(widget)-1,
        y+jwidget_get_text_height(widget)-1, bg);
   }
   // Background
   else {
-    jdraw_rectfill(widget->rc, bg);
+    jdraw_rectfill(widget->getBounds(), bg);
   }
 }
 
@@ -1194,10 +1195,10 @@ void SkinTheme::paintMenuItem(ui::PaintEvent& ev)
   }
 
   /* widget position */
-  x1 = widget->rc->x1;
-  y1 = widget->rc->y1;
-  x2 = widget->rc->x2-1;
-  y2 = widget->rc->y2-1;
+  x1 = widget->getBounds().x;
+  y1 = widget->getBounds().y;
+  x2 = widget->getBounds().x2()-1;
+  y2 = widget->getBounds().y2()-1;
 
   /* background */
   rectfill(ji_screen, x1, y1, x2, y2, to_system(bg));
@@ -1207,8 +1208,8 @@ void SkinTheme::paintMenuItem(ui::PaintEvent& ev)
     BITMAP* icon = m_part[widget->isEnabled() ? PART_CHECK_SELECTED:
                                                 PART_CHECK_DISABLED];
 
-    int x = widget->rc->x1+4-icon->w/2;
-    int y = (widget->rc->y1+widget->rc->y2)/2-icon->h/2;
+    int x = widget->getBounds().x+4-icon->w/2;
+    int y = widget->getBounds().y+widget->getBounds().h/2-icon->h/2;
 
     set_alpha_blender();
     draw_trans_sprite(ji_screen, icon, x, y);
@@ -1235,23 +1236,23 @@ void SkinTheme::paintMenuItem(ui::PaintEvent& ev)
       if (widget->isEnabled()) {
         for (c=0; c<3*scale; c++)
           vline(ji_screen,
-                widget->rc->x2-3*scale-c,
-                (widget->rc->y1+widget->rc->y2)/2-c,
-                (widget->rc->y1+widget->rc->y2)/2+c, to_system(fg));
+                widget->getBounds().x2()-3*scale-c,
+                widget->getBounds().y+widget->getBounds().h/2-c,
+                widget->getBounds().y+widget->getBounds().h/2+c, to_system(fg));
       }
       // Disabled
       else {
         for (c=0; c<3*scale; c++)
           vline(ji_screen,
-                widget->rc->x2-3*scale-c+1,
-                (widget->rc->y1+widget->rc->y2)/2-c+1,
-                (widget->rc->y1+widget->rc->y2)/2+c+1,
+                widget->getBounds().x2()-3*scale-c+1,
+                widget->getBounds().y+widget->getBounds().h/2-c+1,
+                widget->getBounds().y+widget->getBounds().h/2+c+1,
                 to_system(getColor(ThemeColor::Background)));
         for (c=0; c<3*scale; c++)
           vline(ji_screen,
-                widget->rc->x2-3*scale-c,
-                (widget->rc->y1+widget->rc->y2)/2-c,
-                (widget->rc->y1+widget->rc->y2)/2+c,
+                widget->getBounds().x2()-3*scale-c,
+                widget->getBounds().y+widget->getBounds().h/2-c,
+                widget->getBounds().y+widget->getBounds().h/2+c,
                 to_system(getColor(ThemeColor::Disabled)));
       }
     }
@@ -1284,9 +1285,9 @@ void SkinTheme::paintRadioButton(PaintEvent& ev)
   ButtonBase* widget = static_cast<ButtonBase*>(ev.getSource());
   Graphics* g = ev.getGraphics();
   IButtonIcon* iconInterface = widget->getIconInterface();
-  struct jrect box, text, icon;
   ui::Color bg = BGCOLOR;
 
+  gfx::Rect box, text, icon;
   jwidget_get_texticon_info(widget, &box, &text, &icon,
                             iconInterface ? iconInterface->getIconAlign(): 0,
                             iconInterface ? iconInterface->getWidth() : 0,
@@ -1298,25 +1299,22 @@ void SkinTheme::paintRadioButton(PaintEvent& ev)
   // Mouse
   if (widget->isEnabled()) {
     if (widget->hasMouseOver())
-      jdraw_rectfill(widget->rc, bg = getColor(ThemeColor::RadioHotFace));
+      jdraw_rectfill(widget->getBounds(), bg = getColor(ThemeColor::RadioHotFace));
     else if (widget->hasFocus())
-      jdraw_rectfill(widget->rc, bg = getColor(ThemeColor::RadioFocusFace));
+      jdraw_rectfill(widget->getBounds(), bg = getColor(ThemeColor::RadioFocusFace));
   }
 
   // Text
-  drawTextStringDeprecated(NULL, ColorNone, bg, false, widget, &text, 0);
+  drawTextStringDeprecated(NULL, ColorNone, bg, false, widget, text, 0);
 
   // Paint the icon
   if (iconInterface)
-    paintIcon(widget, g, iconInterface, icon.x1-widget->rc->x1, icon.y1-widget->rc->y1);
+    paintIcon(widget, g, iconInterface, icon.x-widget->getBounds().x, icon.y-widget->getBounds().y);
 
   // draw focus
   if (widget->hasFocus()) {
     draw_bounds_nw(ji_screen,
-                   widget->rc->x1,
-                   widget->rc->y1,
-                   widget->rc->x2-1,
-                   widget->rc->y2-1, PART_RADIO_FOCUS_NW, ui::ColorNone);
+                   widget->getBounds(), PART_RADIO_FOCUS_NW, ui::ColorNone);
   }
 }
 
@@ -1327,28 +1325,28 @@ void SkinTheme::paintSeparator(ui::PaintEvent& ev)
   int x1, y1, x2, y2;
 
   // position
-  x1 = widget->rc->x1 + widget->border_width.l/2;
-  y1 = widget->rc->y1 + widget->border_width.t/2;
-  x2 = widget->rc->x2 - 1 - widget->border_width.r/2;
-  y2 = widget->rc->y2 - 1 - widget->border_width.b/2;
+  x1 = widget->getBounds().x + widget->border_width.l/2;
+  y1 = widget->getBounds().y + widget->border_width.t/2;
+  x2 = widget->getBounds().x2() - 1 - widget->border_width.r/2;
+  y2 = widget->getBounds().y2() - 1 - widget->border_width.b/2;
 
   // background
-  jdraw_rectfill(widget->rc, BGCOLOR);
+  jdraw_rectfill(widget->getBounds(), BGCOLOR);
 
   if (widget->getAlign() & JI_HORIZONTAL) {
     draw_part_as_hline(ji_screen,
-                       widget->rc->x1,
-                       widget->rc->y1,
-                       widget->rc->x2-1,
-                       widget->rc->y2-1, PART_SEPARATOR_HORZ);
+                       widget->getBounds().x,
+                       widget->getBounds().y,
+                       widget->getBounds().x2()-1,
+                       widget->getBounds().y2()-1, PART_SEPARATOR_HORZ);
   }
 
   if (widget->getAlign() & JI_VERTICAL) {
     draw_part_as_vline(ji_screen,
-                       widget->rc->x1,
-                       widget->rc->y1,
-                       widget->rc->x2-1,
-                       widget->rc->y2-1, PART_SEPARATOR_VERT);
+                       widget->getBounds().x,
+                       widget->getBounds().y,
+                       widget->getBounds().x2()-1,
+                       widget->getBounds().y2()-1, PART_SEPARATOR_VERT);
   }
 
   // text
@@ -1386,7 +1384,7 @@ void SkinTheme::paintSlider(PaintEvent& ev)
   // Outside borders
   ui::Color bgcolor = widget->getBgColor();
   if (!is_transparent(bgcolor))
-    jdraw_rectfill(widget->rc, bgcolor);
+    jdraw_rectfill(widget->getBounds(), bgcolor);
 
   widget->getSliderThemeInfo(&min, &max, &value);
 
@@ -1502,13 +1500,13 @@ void SkinTheme::paintComboBoxEntry(ui::PaintEvent& ev)
   widget->getEntryThemeInfo(&scroll, &caret, &state, &selbeg, &selend);
 
   // Outside borders
-  jdraw_rectfill(widget->rc, BGCOLOR);
+  jdraw_rectfill(widget->getBounds(), BGCOLOR);
 
   // Main pos
-  x1 = widget->rc->x1;
-  y1 = widget->rc->y1;
-  x2 = widget->rc->x2-1;
-  y2 = widget->rc->y2-1;
+  x1 = widget->getBounds().x;
+  y1 = widget->getBounds().y;
+  x2 = widget->getBounds().x2()-1;
+  y2 = widget->getBounds().y2()-1;
 
   ui::Color fg, bg = getColor(ThemeColor::Background);
 
@@ -1517,18 +1515,18 @@ void SkinTheme::paintComboBoxEntry(ui::PaintEvent& ev)
                  widget->hasFocus() ? PART_SUNKEN2_FOCUSED_NW:
                                       PART_SUNKEN2_NORMAL_NW, bg);
 
-  /* draw the text */
-  x = widget->rc->x1 + widget->border_width.l;
-  y = (widget->rc->y1+widget->rc->y2)/2 - jwidget_get_text_height(widget)/2;
+  // Draw the text
+  x = widget->getBounds().x + widget->border_width.l;
+  y = widget->getBounds().y + widget->getBounds().h/2 - jwidget_get_text_height(widget)/2;
 
   for (c=scroll; ugetat(text, c); c++) {
     ch = password ? '*': ugetat(text, c);
 
-    /* normal text */
+    // Normal text
     bg = ColorNone;
     fg = getColor(ThemeColor::Text);
 
-    /* selected */
+    // Selected
     if ((c >= selbeg) && (c <= selend)) {
       if (widget->hasFocus())
         bg = getColor(ThemeColor::Selected);
@@ -1544,7 +1542,7 @@ void SkinTheme::paintComboBoxEntry(ui::PaintEvent& ev)
     }
 
     w = CHARACTER_LENGTH(widget->getFont(), ch);
-    if (x+w > widget->rc->x2-3)
+    if (x+w > widget->getBounds().x2()-3)
       return;
 
     caret_x = x;
@@ -1624,7 +1622,7 @@ void SkinTheme::paintView(PaintEvent& ev)
   View* widget = static_cast<View*>(ev.getSource());
 
   // Outside borders
-  jdraw_rectfill(widget->rc, BGCOLOR);
+  jdraw_rectfill(widget->getBounds(), BGCOLOR);
 
   draw_bounds_nw(g, widget->getClientBounds(),
                  widget->hasFocus() ? PART_SUNKEN_FOCUSED_NW:
@@ -1807,8 +1805,8 @@ ui::Color SkinTheme::getWidgetBgColor(Widget* widget)
                                                 getColor(ThemeColor::Face)));
 }
 
-void SkinTheme::drawTextStringDeprecated(const char *t, ui::Color fg_color, ui::Color bg_color,
-                                         bool fill_bg, Widget* widget, const JRect rect,
+void SkinTheme::drawTextStringDeprecated(const char* t, ui::Color fg_color, ui::Color bg_color,
+                                         bool fill_bg, Widget* widget, const Rect& rect,
                                          int selected_offset)
 {
   if (t || widget->hasText()) {
@@ -1827,20 +1825,20 @@ void SkinTheme::drawTextStringDeprecated(const char *t, ui::Color fg_color, ui::
     /* horizontally text alignment */
 
     if (widget->getAlign() & JI_RIGHT)
-      x = rect->x2 - w;
+      x = rect.x2() - w;
     else if (widget->getAlign() & JI_CENTER)
-      x = (rect->x1+rect->x2)/2 - w/2;
+      x = rect.x + rect.w/2 - w/2;
     else
-      x = rect->x1;
+      x = rect.x;
 
     /* vertically text alignment */
 
     if (widget->getAlign() & JI_BOTTOM)
-      y = rect->y2 - h;
+      y = rect.y2() - h;
     else if (widget->getAlign() & JI_MIDDLE)
-      y = (rect->y1+rect->y2)/2 - h/2;
+      y = rect.y + rect.h/2 - h/2;
     else
-      y = rect->y1;
+      y = rect.y;
 
     if (widget->isSelected()) {
       x += selected_offset;

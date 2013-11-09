@@ -77,11 +77,11 @@ void ListBox::selectChild(ListItem* item)
       gfx::Rect vp = view->getViewportBounds();
       gfx::Point scroll = view->getViewScroll();
 
-      if (item->rc->y1 < vp.y)
-          scroll.y = item->rc->y1 - this->rc->y1;
-      else if (item->rc->y1 > vp.y + vp.h - jrect_h(item->rc))
-        scroll.y = (item->rc->y1 - this->rc->y1
-                    - vp.h + jrect_h(item->rc));
+      if (item->getBounds().y < vp.y)
+        scroll.y = item->getBounds().y - getBounds().y;
+      else if (item->getBounds().y > vp.y + vp.h - item->getBounds().h)
+        scroll.y = (item->getBounds().y - getBounds().y
+                    - vp.h + item->getBounds().h);
 
       view->setViewScroll(scroll);
     }
@@ -116,8 +116,8 @@ void ListBox::centerScroll()
     gfx::Rect vp = view->getViewportBounds();
     gfx::Point scroll = view->getViewScroll();
 
-    scroll.y = ((item->rc->y1 - this->rc->y1)
-                - vp.h/2 + jrect_h(item->rc)/2);
+    scroll.y = ((item->getBounds().y - getBounds().y)
+                - vp.h/2 + item->getBounds().h/2);
 
     view->setViewScroll(scroll);
   }
@@ -273,7 +273,7 @@ void ListBox::onResize(ResizeEvent& ev)
     cpos.h = child->getPreferredSize().h;
     child->setBounds(cpos);
 
-    cpos.y += jrect_h(child->rc) + this->child_spacing;
+    cpos.y += child->getBounds().h + this->child_spacing;
   }
 }
 

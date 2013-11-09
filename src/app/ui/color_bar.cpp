@@ -63,8 +63,7 @@ bool ColorBar::ScrollableView::onProcessMessage(Message* msg)
       {
         SkinTheme* theme = static_cast<SkinTheme*>(getTheme());
         theme->draw_bounds_nw(ji_screen,
-                              rc->x1, rc->y1,
-                              rc->x2-1, rc->y2-1,
+                              getBounds(),
                               hasFocus() ? PART_EDITOR_SELECTED_NW:
                                            PART_EDITOR_NORMAL_NW,
                               ColorNone);

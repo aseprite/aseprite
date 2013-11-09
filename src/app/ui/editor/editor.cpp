@@ -893,15 +893,15 @@ bool Editor::onProcessMessage(Message* msg)
           int x1, y1, x2, y2;
 
           // Draw the background outside of sprite's bounds
-          x1 = this->rc->x1 + m_offset_x;
-          y1 = this->rc->y1 + m_offset_y;
+          x1 = getBounds().x + m_offset_x;
+          y1 = getBounds().y + m_offset_y;
           x2 = x1 + (m_sprite->getWidth() << m_zoom) - 1;
           y2 = y1 + (m_sprite->getHeight() << m_zoom) - 1;
 
-          jrectexclude(ji_screen,
-                       this->rc->x1, this->rc->y1,
-                       this->rc->x2-1, this->rc->y2-1,
-                       x1-1, y1-1, x2+1, y2+2, theme->getColor(ThemeColor::EditorFace));
+          jdraw_rectexclude(getBounds(),
+                            gfx::Rect(gfx::Point(x1-1, y1-1),
+                                      gfx::Point(x2+1, y2+2)),
+                            theme->getColor(ThemeColor::EditorFace));
 
           // Draw the sprite in the editor
           drawSpriteUnclippedRect(gfx::Rect(0, 0, m_sprite->getWidth(), m_sprite->getHeight()));

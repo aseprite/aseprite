@@ -354,8 +354,8 @@ void StatusBar::showTip(int msecs, const char *format, ...)
   m_tipwindow->openWindow();
   m_tipwindow->remapWindow();
 
-  x = this->rc->x2 - jrect_w(m_tipwindow->rc);
-  y = this->rc->y1 - jrect_h(m_tipwindow->rc);
+  x = getBounds().x2() - m_tipwindow->getBounds().w;
+  y = getBounds().y - m_tipwindow->getBounds().h;
   m_tipwindow->positionWindow(x, y);
 
   m_tipwindow->startTimer();

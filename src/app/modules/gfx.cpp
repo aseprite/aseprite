@@ -25,7 +25,6 @@
 
 #include "ui/color.h"
 #include "ui/intern.h"
-#include "ui/rect.h"
 #include "ui/system.h"
 #include "ui/theme.h"
 

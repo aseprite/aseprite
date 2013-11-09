@@ -484,7 +484,7 @@ void ComboBox::openListBox()
     int size = getItemCount();
     jwidget_set_min_size
       (viewport,
-       m_button->rc->x2 - m_entry->rc->x1 - view->border_width.l - view->border_width.r,
+       m_button->getBounds().x2() - m_entry->getBounds().x - view->border_width.l - view->border_width.r,
        +viewport->border_width.t
        +(2*jguiscale()+jwidget_get_text_height(m_listbox))*MID(1, size, 16)+
        +viewport->border_width.b);
@@ -530,13 +530,13 @@ void ComboBox::switchListBox()
 
 gfx::Rect ComboBox::getListBoxPos() const
 {
-  gfx::Rect rc(gfx::Point(m_entry->rc->x1,
-                          m_entry->rc->y2),
-               gfx::Point(m_button->rc->x2,
-                          m_entry->rc->y2+jrect_h(m_window->rc)));
+  gfx::Rect rc(gfx::Point(m_entry->getBounds().x,
+                          m_entry->getBounds().y2()),
+               gfx::Point(m_button->getBounds().x2(),
+                          m_entry->getBounds().y2()+m_window->getBounds().h));
 
   if (rc.y2() > JI_SCREEN_H)
-    rc.offset(0, -(rc.h+jrect_h(m_entry->rc)));
+    rc.offset(0, -(rc.h + m_entry->getBounds().h));
 
   return rc;
 }

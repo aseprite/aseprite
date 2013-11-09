@@ -47,7 +47,6 @@
 #include "ui/popup_window.h"
 #include "ui/preferred_size_event.h"
 #include "ui/property.h"
-#include "ui/rect.h"
 #include "ui/register_message.h"
 #include "ui/resize_event.h"
 #include "ui/save_layout_event.h"

@@ -24,7 +24,6 @@
 
 #include "app/resource_finder.h"
 #include "base/fs.h"
-#include "ui/rect.h"
 
 #include <allegro/config.h>
 #include <allegro/file.h>

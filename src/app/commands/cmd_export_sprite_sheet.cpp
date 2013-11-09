@@ -118,7 +118,7 @@ protected:
     m_columns.setVisible(state);
 
     gfx::Size reqSize = getPreferredSize();
-    moveWindow(gfx::Rect(rc->x1, rc->y1, reqSize.w, reqSize.h));
+    moveWindow(gfx::Rect(getOrigin(), reqSize));
 
     invalidate();
   }

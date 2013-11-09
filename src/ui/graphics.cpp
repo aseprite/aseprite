@@ -8,15 +8,16 @@
 #include "config.h"
 #endif
 
-#include <allegro.h>
+#include "ui/graphics.h"
 
 #include "gfx/point.h"
 #include "gfx/rect.h"
 #include "gfx/size.h"
 #include "ui/draw.h"
 #include "ui/font.h"
-#include "ui/graphics.h"
 #include "ui/theme.h"
+
+#include <allegro.h>
 
 namespace ui {
 

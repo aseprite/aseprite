@@ -442,8 +442,8 @@ bool AnimationEditor::onProcessMessage(Message* msg)
       int hot_layer = -1;
       FrameNumber hot_frame(-1);
       gfx::Point mousePos = static_cast<MouseMessage*>(msg)->position();
-      int mx = mousePos.x - rc->x1;
-      int my = mousePos.y - rc->y1;
+      int mx = mousePos.x - getBounds().x;
+      int my = mousePos.y - getBounds().y;
 
       if (hasCapture()) {
         if (m_state == STATE_SCROLLING) {
@@ -903,8 +903,8 @@ void AnimationEditor::onTotalFramesChanged(DocumentEvent& ev)
 
 void AnimationEditor::setCursor(int x, int y)
 {
-  int mx = x - rc->x1;
-//int my = y - this->rc->y1;
+  int mx = x - getBounds().x;
+//int my = y - getBounds().y;
 
   // Is the mouse in the separator.
   if (mx > m_separator_x-2 && mx < m_separator_x+2)  {
@@ -964,8 +964,8 @@ void AnimationEditor::drawHeader(const gfx::Rect& clip)
   // bool is_clk = (m_clk_part == A_PART_HEADER_LAYER);
   int x1, y1, x2, y2;
 
-  x1 = this->rc->x1;
-  y1 = this->rc->y1;
+  x1 = getBounds().x;
+  y1 = getBounds().y;
   x2 = x1 + m_separator_x - 1;
   y2 = y1 + HDRSIZE - 1;
 
@@ -991,15 +991,15 @@ void AnimationEditor::drawHeaderFrame(const gfx::Rect& clip, FrameNumber frame)
 
   get_clip_rect(ji_screen, &cx1, &cy1, &cx2, &cy2);
 
-  x1 = this->rc->x1 + m_separator_x + m_separator_w
+  x1 = getBounds().x + m_separator_x + m_separator_w
     + FRMSIZE*frame - m_scroll_x;
-  y1 = this->rc->y1;
+  y1 = getBounds().y;
   x2 = x1 + FRMSIZE - 1;
   y2 = y1 + HDRSIZE - 1;
 
   add_clip_rect(ji_screen,
-                this->rc->x1 + m_separator_x + m_separator_w,
-                y1, this->rc->x2-1, y2);
+                getBounds().x + m_separator_x + m_separator_w,
+                y1, getBounds().x2()-1, y2);
 
   // Draw the header for the layers.
   usprintf(buf1, "%d", frame+1);
@@ -1020,12 +1020,12 @@ void AnimationEditor::drawHeaderFrame(const gfx::Rect& clip, FrameNumber frame)
 
   // Padding in the right side.
   if (frame == m_sprite->getTotalFrames()-1) {
-    if (x2+1 <= this->rc->x2-1) {
+    if (x2+1 <= getBounds().x2()-1) {
       // Right side.
       vline(ji_screen, x2+1, y1, y2,
             to_system(theme->getColor(ThemeColor::Text)));
-      if (x2+2 <= this->rc->x2-1)
-        rectfill(ji_screen, x2+2, y1, this->rc->x2-1, y2,
+      if (x2+2 <= getBounds().x2()-1)
+        rectfill(ji_screen, x2+2, y1, getBounds().x2()-1, y2,
                  to_system(theme->getColor(ThemeColor::Face)));
     }
   }
@@ -1057,11 +1057,11 @@ void AnimationEditor::drawHeaderPart(const gfx::Rect& clip, int x1, int y1, int 
     if (align1 < 0)
       x = x1+3;
     else if (align1 == 0)
-      x = (x1+x2)/2 - text_length(this->getFont(), line1)/2;
+      x = (x1+x2)/2 - text_length(getFont(), line1)/2;
     else
-      x = x2 - 3 - text_length(this->getFont(), line1);
+      x = x2 - 3 - text_length(getFont(), line1);
 
-    jdraw_text(ji_screen, this->getFont(), line1, x, y1+3,
+    jdraw_text(ji_screen, getFont(), line1, x, y1+3,
                fg, face, true, jguiscale());
   }
 
@@ -1085,10 +1085,10 @@ void AnimationEditor::drawSeparator(const gfx::Rect& clip)
   bool is_hot = (m_hot_part == A_PART_SEPARATOR);
   int x1, y1, x2, y2;
 
-  x1 = this->rc->x1 + m_separator_x;
-  y1 = this->rc->y1;
-  x2 = this->rc->x1 + m_separator_x + m_separator_w - 1;
-  y2 = this->rc->y2 - 1;
+  x1 = getBounds().x + m_separator_x;
+  y1 = getBounds().y;
+  x2 = getBounds().x + m_separator_x + m_separator_w - 1;
+  y2 = getBounds().y2() - 1;
 
   if (!clip.intersects(gfx::Rect(x1, y1, x2-x1, y2-y1)))
     return;
@@ -1120,17 +1120,17 @@ void AnimationEditor::drawLayer(const gfx::Rect& clip, int layer_index)
 
   get_clip_rect(ji_screen, &cx1, &cy1, &cx2, &cy2);
 
-  x1 = this->rc->x1;
-  y1 = this->rc->y1 + HDRSIZE + LAYSIZE*layer_index - m_scroll_y;
+  x1 = getBounds().x;
+  y1 = getBounds().y + HDRSIZE + LAYSIZE*layer_index - m_scroll_y;
   x2 = x1 + m_separator_x - 1;
   y2 = y1 + LAYSIZE - 1;
   y_mid = (y1+y2) / 2;
 
   add_clip_rect(ji_screen,
-                this->rc->x1,
-                this->rc->y1 + HDRSIZE,
-                this->rc->x1 + m_separator_x - 1,
-                this->rc->y2-1);
+                getBounds().x,
+                getBounds().y + HDRSIZE,
+                getBounds().x + m_separator_x - 1,
+                getBounds().y2()-1);
 
   rectfill(ji_screen, x1, y1, x2, y2-1, to_system(bg));
   hline(ji_screen, x1, y2, x2,
@@ -1200,18 +1200,18 @@ void AnimationEditor::drawLayerPadding()
   int layer_index = m_layers.size()-1;
   int x1, y1, x2, y2;
 
-  x1 = this->rc->x1;
-  y1 = this->rc->y1 + HDRSIZE + LAYSIZE*layer_index - m_scroll_y;
+  x1 = getBounds().x;
+  y1 = getBounds().y + HDRSIZE + LAYSIZE*layer_index - m_scroll_y;
   x2 = x1 + m_separator_x - 1;
   y2 = y1 + LAYSIZE - 1;
 
   // Padding in the bottom side.
-  if (y2+1 <= this->rc->y2-1) {
+  if (y2+1 <= getBounds().y2()-1) {
     ui::Color color = theme->getColor(ThemeColor::EditorFace);
-    rectfill(ji_screen, x1, y2+1, x2, this->rc->y2-1, to_system(color));
+    rectfill(ji_screen, x1, y2+1, x2, getBounds().y2()-1, to_system(color));
     rectfill(ji_screen,
              x2+1+m_separator_w, y2+1,
-             this->rc->x2-1, this->rc->y2-1,
+             getBounds().x2()-1, getBounds().y2()-1,
              to_system(color));
   }
 }
@@ -1234,18 +1234,18 @@ void AnimationEditor::drawCel(const gfx::Rect& clip, int layer_index, FrameNumbe
 
   get_clip_rect(ji_screen, &cx1, &cy1, &cx2, &cy2);
 
-  x1 = this->rc->x1 + m_separator_x + m_separator_w
+  x1 = getBounds().x + m_separator_x + m_separator_w
     + FRMSIZE*frame - m_scroll_x;
-  y1 = this->rc->y1 + HDRSIZE
+  y1 = getBounds().y + HDRSIZE
     + LAYSIZE*layer_index - m_scroll_y;
   x2 = x1 + FRMSIZE - 1;
   y2 = y1 + LAYSIZE - 1;
 
   add_clip_rect(ji_screen,
-                this->rc->x1 + m_separator_x + m_separator_w,
-                this->rc->y1 + HDRSIZE,
-                this->rc->x2-1,
-                this->rc->y2-1);
+                getBounds().x + m_separator_x + m_separator_w,
+                getBounds().y + HDRSIZE,
+                getBounds().x2()-1,
+                getBounds().y2()-1);
 
   Rect thumbnail_rect(Point(x1+3, y1+3), Point(x2-2, y2-2));
 
@@ -1299,11 +1299,11 @@ void AnimationEditor::drawCel(const gfx::Rect& clip, int layer_index, FrameNumbe
 
   // Padding in the right side.
   if (frame == m_sprite->getTotalFrames()-1) {
-    if (x2+1 <= this->rc->x2-1) {
+    if (x2+1 <= getBounds().x2()-1) {
       // Right side.
       vline(ji_screen, x2+1, y1, y2, to_system(theme->getColor(ThemeColor::Text)));
-      if (x2+2 <= this->rc->x2-1)
-        rectfill(ji_screen, x2+2, y1, this->rc->x2-1, y2,
+      if (x2+2 <= getBounds().x2()-1)
+        rectfill(ji_screen, x2+2, y1, getBounds().x2()-1, y2,
                  to_system(theme->getColor(ThemeColor::EditorFace)));
     }
   }
@@ -1395,10 +1395,10 @@ void AnimationEditor::hotThis(int hot_part, int hot_layer, FrameNumber hot_frame
 
 void AnimationEditor::centerCel(int layer, FrameNumber frame)
 {
-  int target_x = (this->rc->x1 + m_separator_x + m_separator_w + this->rc->x2)/2 - FRMSIZE/2;
-  int target_y = (this->rc->y1 + HDRSIZE + this->rc->y2)/2 - LAYSIZE/2;
-  int scroll_x = this->rc->x1 + m_separator_x + m_separator_w + FRMSIZE*frame - target_x;
-  int scroll_y = this->rc->y1 + HDRSIZE + LAYSIZE*layer - target_y;
+  int target_x = (getBounds().x + m_separator_x + m_separator_w + getBounds().x2())/2 - FRMSIZE/2;
+  int target_y = (getBounds().y + HDRSIZE + getBounds().y2())/2 - LAYSIZE/2;
+  int scroll_x = getBounds().x + m_separator_x + m_separator_w + FRMSIZE*frame - target_x;
+  int scroll_y = getBounds().y + HDRSIZE + LAYSIZE*layer - target_y;
 
   setScroll(scroll_x, scroll_y, false);
 }
@@ -1408,26 +1408,26 @@ void AnimationEditor::showCel(int layer, FrameNumber frame)
   int scroll_x, scroll_y;
   int x1, y1, x2, y2;
 
-  x1 = this->rc->x1 + m_separator_x + m_separator_w + FRMSIZE*frame - m_scroll_x;
-  y1 = this->rc->y1 + HDRSIZE + LAYSIZE*layer - m_scroll_y;
+  x1 = getBounds().x + m_separator_x + m_separator_w + FRMSIZE*frame - m_scroll_x;
+  y1 = getBounds().y + HDRSIZE + LAYSIZE*layer - m_scroll_y;
   x2 = x1 + FRMSIZE - 1;
   y2 = y1 + LAYSIZE - 1;
 
   scroll_x = m_scroll_x;
   scroll_y = m_scroll_y;
 
-  if (x1 < this->rc->x1 + m_separator_x + m_separator_w) {
-    scroll_x -= (this->rc->x1 + m_separator_x + m_separator_w) - (x1);
+  if (x1 < getBounds().x + m_separator_x + m_separator_w) {
+    scroll_x -= (getBounds().x + m_separator_x + m_separator_w) - (x1);
   }
-  else if (x2 > this->rc->x2-1) {
-    scroll_x += (x2) - (this->rc->x2-1);
+  else if (x2 > getBounds().x2()-1) {
+    scroll_x += (x2) - (getBounds().x2()-1);
   }
 
-  if (y1 < this->rc->y1 + HDRSIZE) {
-    scroll_y -= (this->rc->y1 + HDRSIZE) - (y1);
+  if (y1 < getBounds().y + HDRSIZE) {
+    scroll_y -= (getBounds().y + HDRSIZE) - (y1);
   }
-  else if (y2 > this->rc->y2-1) {
-    scroll_y += (y2) - (this->rc->y2-1);
+  else if (y2 > getBounds().y2()-1) {
+    scroll_y += (y2) - (getBounds().y2()-1);
   }
 
   if (scroll_x != m_scroll_x ||
@@ -1473,8 +1473,8 @@ void AnimationEditor::setScroll(int x, int y, bool use_refresh_region)
     old_scroll_y = m_scroll_y;
   }
 
-  max_scroll_x = m_sprite->getTotalFrames() * FRMSIZE - jrect_w(this->rc)/2;
-  max_scroll_y = m_layers.size() * LAYSIZE - jrect_h(this->rc)/2;
+  max_scroll_x = m_sprite->getTotalFrames() * FRMSIZE - getBounds().w/2;
+  max_scroll_y = m_layers.size() * LAYSIZE - getBounds().h/2;
   max_scroll_x = MAX(0, max_scroll_x);
   max_scroll_y = MAX(0, max_scroll_y);
 
@@ -1492,26 +1492,26 @@ void AnimationEditor::setScroll(int x, int y, bool use_refresh_region)
     jmouse_hide();
 
     // Scroll layers.
-    rect2 = Rect(this->rc->x1,
-                 this->rc->y1 + HDRSIZE,
+    rect2 = Rect(getBounds().x,
+                 getBounds().y + HDRSIZE,
                  m_separator_x,
-                 this->rc->y2 - (this->rc->y1 + HDRSIZE));
+                 getBounds().y2() - (getBounds().y + HDRSIZE));
     reg1.createIntersection(region, Region(rect2));
     scrollRegion(reg1, 0, dy);
 
     // Scroll header-frame.
-    rect2 = Rect(this->rc->x1 + m_separator_x + m_separator_w,
-                 this->rc->y1,
-                 this->rc->x2 - (this->rc->x1 + m_separator_x + m_separator_w),
+    rect2 = Rect(getBounds().x + m_separator_x + m_separator_w,
+                 getBounds().y,
+                 getBounds().x2() - (getBounds().x + m_separator_x + m_separator_w),
                  HDRSIZE);
     reg1.createIntersection(region, Region(rect2));
     scrollRegion(reg1, dx, 0);
 
     // Scroll cels.
-    rect2 = Rect(this->rc->x1 + m_separator_x + m_separator_w,
-                 this->rc->y1 + HDRSIZE,
-                 this->rc->x2 - (this->rc->x1 + m_separator_x + m_separator_w),
-                 this->rc->y2 - (this->rc->y1 + HDRSIZE));
+    rect2 = Rect(getBounds().x + m_separator_x + m_separator_w,
+                 getBounds().y + HDRSIZE,
+                 getBounds().x2() - (getBounds().x + m_separator_x + m_separator_w),
+                 getBounds().y2() - (getBounds().y + HDRSIZE));
     reg1.createIntersection(region, Region(rect2));
     scrollRegion(reg1, dx, dy);
 

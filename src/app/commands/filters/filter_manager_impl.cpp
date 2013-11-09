@@ -37,7 +37,6 @@
 #include "raster/sprite.h"
 #include "raster/stock.h"
 #include "ui/manager.h"
-#include "ui/rect.h"
 #include "ui/view.h"
 #include "ui/widget.h"
 
