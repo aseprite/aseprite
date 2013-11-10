@@ -19,6 +19,7 @@
 #ifndef APP_UI_TIMELINE_H_INCLUDED
 #define APP_UI_TIMELINE_H_INCLUDED
 
+#include "app/context_observer.h"
 #include "app/document_observer.h"
 #include "base/compiler_specific.h"
 #include "raster/frame_number.h"
@@ -40,6 +41,7 @@ namespace app {
   class Editor;
 
   class Timeline : public ui::Widget
+                 , public ContextObserver
                  , public DocumentObserver {
   public:
     enum State {
@@ -78,7 +80,11 @@ namespace app {
     void onRemoveFrame(DocumentEvent& ev) OVERRIDE;
     void onTotalFramesChanged(DocumentEvent& ev) OVERRIDE;
 
+    // ContextObserver impl.
+    void onRemoveDocument(Context* context, Document* document) OVERRIDE;
+
   private:
+    void detachDocument();
     void setCursor(int x, int y);
     void getDrawableLayers(const gfx::Rect& clip, int* first_layer, int* last_layer);
     void getDrawableFrames(const gfx::Rect& clip, FrameNumber* first_frame, FrameNumber* last_frame);

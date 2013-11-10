@@ -115,22 +115,27 @@ Timeline::Timeline()
   , m_context(UIContext::instance())
   , m_document(NULL)
 {
+  m_context->addObserver(this);
 }
 
 Timeline::~Timeline()
 {
-  if (m_document)
-    m_document->removeObserver(this);
+  detachDocument();
+
+  m_context->removeObserver(this);
 }
 
 void Timeline::updateUsingEditor(Editor* editor)
 {
-  if (m_document)
-    m_document->removeObserver(this);
-
   DocumentView* view = editor->getDocumentView();
   DocumentLocation location;
   view->getDocumentLocation(&location);
+
+  // Do nothing, we've already viewing this document in the timeline.
+  if (m_document == location.document())
+    return;
+
+  detachDocument();
 
   m_document = location.document();
   m_sprite = location.sprite();
@@ -147,8 +152,16 @@ void Timeline::updateUsingEditor(Editor* editor)
 
   setFocusStop(true);
   regenerateLayers();
+}
 
-  m_document->addObserver(this);
+void Timeline::detachDocument()
+{
+  if (m_document) {
+    m_document->removeObserver(this);
+    m_document = NULL;
+
+    invalidate();
+  }
 }
 
 bool Timeline::isMovingCel() const
@@ -737,6 +750,12 @@ void Timeline::onPreferredSize(PreferredSizeEvent& ev)
 {
   // This doesn't matter, the AniEditor'll use the entire screen anyway.
   ev.setPreferredSize(Size(32, 32));
+}
+
+void Timeline::onRemoveDocument(Context* context, Document* document)
+{
+  if (document == m_document)
+    detachDocument();
 }
 
 void Timeline::onAddLayer(DocumentEvent& ev)
