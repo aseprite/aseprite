@@ -24,6 +24,7 @@
 #include "gfx/size.h"
 #include "raster/blend.h"
 #include "raster/color.h"
+#include "raster/image_buffer.h"
 #include "raster/object.h"
 #include "raster/pixel_format.h"
 
@@ -42,8 +43,10 @@ namespace raster {
       ReadWriteLock             // Read and write
     };
 
-    static Image* create(PixelFormat format, int width, int height);
-    static Image* createCopy(const Image* image);
+    static Image* create(PixelFormat format, int width, int height,
+                         const ImageBufferPtr& buffer = ImageBufferPtr());
+    static Image* createCopy(const Image* image,
+                             const ImageBufferPtr& buffer = ImageBufferPtr());
 
     virtual ~Image();
 

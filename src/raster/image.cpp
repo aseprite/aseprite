@@ -61,22 +61,23 @@ int Image::getRowStrideSize(int pixels_per_row) const
 }
 
 // static
-Image* Image::create(PixelFormat format, int width, int height)
+Image* Image::create(PixelFormat format, int width, int height,
+                     const ImageBufferPtr& buffer)
 {
   switch (format) {
-    case IMAGE_RGB:       return new ImageImpl<RgbTraits>(width, height);
-    case IMAGE_GRAYSCALE: return new ImageImpl<GrayscaleTraits>(width, height);
-    case IMAGE_INDEXED:   return new ImageImpl<IndexedTraits>(width, height);
-    case IMAGE_BITMAP:    return new ImageImpl<BitmapTraits>(width, height);
+    case IMAGE_RGB:       return new ImageImpl<RgbTraits>(width, height, buffer);
+    case IMAGE_GRAYSCALE: return new ImageImpl<GrayscaleTraits>(width, height, buffer);
+    case IMAGE_INDEXED:   return new ImageImpl<IndexedTraits>(width, height, buffer);
+    case IMAGE_BITMAP:    return new ImageImpl<BitmapTraits>(width, height, buffer);
   }
   return NULL;
 }
 
 // static
-Image* Image::createCopy(const Image* image)
+Image* Image::createCopy(const Image* image, const ImageBufferPtr& buffer)
 {
   ASSERT(image);
-  return crop_image(image, 0, 0, image->getWidth(), image->getHeight(), 0);
+  return crop_image(image, 0, 0, image->getWidth(), image->getHeight(), 0, buffer);
 }
 
 } // namespace raster

@@ -33,8 +33,9 @@ namespace raster {
     typedef typename Traits::address_t address_t;
     typedef typename Traits::const_address_t const_address_t;
 
-    address_t m_bits;            // Pixmap data.
-    address_t* m_rows;           // Start of each scanline.
+    ImageBufferPtr m_buffer;
+    address_t m_bits;
+    address_t* m_rows;
 
     inline address_t address(int x, int y) const {
       return (address_t)(m_rows[y] + x / (Traits::pixels_per_byte == 0 ? 1 : Traits::pixels_per_byte));
@@ -59,30 +60,28 @@ namespace raster {
     }
 
   public:
-    ImageImpl(int width, int height)
+    ImageImpl(int width, int height,
+              const ImageBufferPtr& buffer)
       : Image(static_cast<PixelFormat>(Traits::pixel_format), width, height)
+      , m_buffer(buffer)
     {
-      int rowstrideBytes = Traits::getRowStrideBytes(width);
+      size_t for_rows = sizeof(address_t) * height;
+      size_t rowstride_bytes = Traits::getRowStrideBytes(width);
+      size_t required_size = for_rows + rowstride_bytes*height;
 
-      m_bits = (address_t)new uint8_t[rowstrideBytes * height];
-      try {
-        m_rows = new address_t[height];
-      }
-      catch (...) {
-        delete[] m_bits;
-        throw;
-      }
+      if (!m_buffer)
+        m_buffer.reset(new ImageBuffer(required_size));
+      else
+        m_buffer->resizeIfNecessary(required_size);
+
+      m_rows = (address_t*)m_buffer->buffer();
+      m_bits = (address_t)(m_buffer->buffer() + for_rows);
 
       address_t addr = m_bits;
-      for (int y=0; y<getHeight(); ++y) {
+      for (int y=0; y<height; ++y) {
         m_rows[y] = addr;
-        addr = (address_t)(((uint8_t*)addr) + rowstrideBytes);
+        addr = (address_t)(((uint8_t*)addr) + rowstride_bytes);
       }
-    }
-
-    ~ImageImpl() {
-      if (m_bits) delete[] m_bits;
-      if (m_rows) delete[] m_rows;
     }
 
     uint8_t* getPixelAddress(int x, int y) const OVERRIDE {

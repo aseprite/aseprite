@@ -20,6 +20,7 @@
 #define RASTER_PRIMITIVES_H_INCLUDED
 
 #include "raster/color.h"
+#include "raster/image_buffer.h"
 
 namespace raster {
   class Image;
@@ -35,7 +36,7 @@ namespace raster {
   void copy_image(Image* dst, const Image* src, int x, int y);
   void composite_image(Image* dst, const Image* src, int x, int y, int opacity, int blend_mode);
 
-  Image* crop_image(const Image* image, int x, int y, int w, int h, color_t bg);
+  Image* crop_image(const Image* image, int x, int y, int w, int h, color_t bg, const ImageBufferPtr& buffer = ImageBufferPtr());
   void rotate_image(const Image* src, Image* dst, int angle);
 
   void draw_hline(Image* image, int x1, int y, int x2, color_t c);

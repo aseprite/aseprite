@@ -87,12 +87,12 @@ void composite_image(Image* dst, const Image* src, int x, int y, int opacity, in
   dst->merge(src, x, y, opacity, blend_mode);
 }
 
-Image* crop_image(const Image* image, int x, int y, int w, int h, color_t bg)
+Image* crop_image(const Image* image, int x, int y, int w, int h, color_t bg, const ImageBufferPtr& buffer)
 {
   if (w < 1) throw std::invalid_argument("image_crop: Width is less than 1");
   if (h < 1) throw std::invalid_argument("image_crop: Height is less than 1");
 
-  Image* trim = Image::create(image->getPixelFormat(), w, h);
+  Image* trim = Image::create(image->getPixelFormat(), w, h, buffer);
   trim->setMaskColor(image->getMaskColor());
 
   clear_image(trim, bg);

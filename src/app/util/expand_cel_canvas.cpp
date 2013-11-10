@@ -22,6 +22,7 @@
 
 #include "app/util/expand_cel_canvas.h"
 
+#include "app/app.h"
 #include "app/context.h"
 #include "app/document.h"
 #include "app/document_location.h"
@@ -39,6 +40,32 @@
 #include "raster/sprite.h"
 #include "raster/stock.h"
 
+namespace {
+
+static raster::ImageBufferPtr cel_buffer;
+static raster::ImageBufferPtr src_buffer;
+static raster::ImageBufferPtr dst_buffer;
+
+static void destroy_buffers()
+{
+  cel_buffer.reset(NULL);
+  src_buffer.reset(NULL);
+  dst_buffer.reset(NULL);
+}
+
+static void create_buffers()
+{
+  if (!cel_buffer) {
+    app::App::instance()->Exit.connect(&destroy_buffers);
+
+    cel_buffer.reset(new raster::ImageBuffer(1));
+    src_buffer.reset(new raster::ImageBuffer(1));
+    dst_buffer.reset(new raster::ImageBuffer(1));
+  }
+}
+
+}
+
 namespace app {
 
 ExpandCelCanvas::ExpandCelCanvas(Context* context, TiledMode tiledMode, UndoTransaction& undo)
@@ -49,6 +76,8 @@ ExpandCelCanvas::ExpandCelCanvas(Context* context, TiledMode tiledMode, UndoTran
   , m_committed(false)
   , m_undo(undo)
 {
+  create_buffers();
+
   DocumentLocation location = context->getActiveLocation();
   m_document = location.document();
   m_sprite = location.sprite();
@@ -63,7 +92,8 @@ ExpandCelCanvas::ExpandCelCanvas(Context* context, TiledMode tiledMode, UndoTran
   // If there is no Cel
   if (m_cel == NULL) {
     // Create the image
-    m_celImage = Image::create(m_sprite->getPixelFormat(), m_sprite->getWidth(), m_sprite->getHeight());
+    m_celImage = Image::create(m_sprite->getPixelFormat(), m_sprite->getWidth(),
+                               m_sprite->getHeight(), cel_buffer);
     clear_image(m_celImage, m_sprite->getTransparentColor());
 
     // Create the cel
@@ -96,9 +126,11 @@ ExpandCelCanvas::ExpandCelCanvas(Context* context, TiledMode tiledMode, UndoTran
   m_srcImage = crop_image(m_celImage,
                           x1-m_cel->getX(),
                           y1-m_cel->getY(), x2-x1, y2-y1,
-                          m_sprite->getTransparentColor());
+                          m_sprite->getTransparentColor(),
+                          src_buffer);
 
-  m_dstImage = Image::createCopy(m_srcImage);
+  m_dstImage = Image::createCopy(m_srcImage,
+                                 dst_buffer);
 
   // We have to adjust the cel position to match the m_dstImage
   // position (the new m_dstImage will be used in RenderEngine to
