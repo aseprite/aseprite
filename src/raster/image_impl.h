@@ -36,6 +36,10 @@ namespace raster {
     address_t m_bits;            // Pixmap data.
     address_t* m_rows;           // Start of each scanline.
 
+    inline address_t address(int x, int y) const {
+      return (address_t)(m_rows[y] + x / (Traits::pixels_per_byte == 0 ? 1 : Traits::pixels_per_byte));
+    }
+
     inline address_t getBitsAddress() {
       return m_bits;
     }
@@ -85,21 +89,21 @@ namespace raster {
       ASSERT(x >= 0 && x < getWidth());
       ASSERT(y >= 0 && y < getHeight());
 
-      return (uint8_t*)(m_rows[y] + x);
+      return (uint8_t*)address(x, y);
     }
 
     color_t getPixel(int x, int y) const OVERRIDE {
       ASSERT(x >= 0 && x < getWidth());
       ASSERT(y >= 0 && y < getHeight());
 
-      return (*(address_t)getPixelAddress(x, y));
+      return *address(x, y);
     }
 
     void putPixel(int x, int y, color_t color) OVERRIDE {
       ASSERT(x >= 0 && x < getWidth());
       ASSERT(y >= 0 && y < getHeight());
 
-      *(address_t)getPixelAddress(x, y) = color;
+      *address(x, y) = color;
     }
 
     void clear(color_t color) OVERRIDE {
@@ -111,8 +115,9 @@ namespace raster {
         *it = color;
     }
 
-    void copy(const Image* src, int x, int y) OVERRIDE {
-      Image* dst = this;
+    void copy(const Image* _src, int x, int y) OVERRIDE {
+      const ImageImpl<Traits>* src = (const ImageImpl<Traits>*)_src;
+      ImageImpl<Traits>* dst = this;
       address_t src_address;
       address_t dst_address;
       int xbeg, xend, xsrc;
@@ -154,21 +159,22 @@ namespace raster {
       bytes = Traits::getRowStrideBytes(xend - xbeg + 1);
 
       for (ydst=ybeg; ydst<=yend; ++ydst, ++ysrc) {
-        src_address = (address_t)src->getPixelAddress(xsrc, ysrc);
-        dst_address = (address_t)dst->getPixelAddress(xbeg, ydst);
+        src_address = src->address(xsrc, ysrc);
+        dst_address = dst->address(xbeg, ydst);
 
         memcpy(dst_address, src_address, bytes);
       }
     }
 
-    void merge(const Image* src, int x, int y, int opacity, int blend_mode) OVERRIDE {
+    void merge(const Image* _src, int x, int y, int opacity, int blend_mode) OVERRIDE {
       BLEND_COLOR blender = Traits::get_blender(blend_mode);
-      register uint32_t mask_color = src->getMaskColor();
-      Image* dst = this;
+      const ImageImpl<Traits>* src = (const ImageImpl<Traits>*)_src;
+      ImageImpl<Traits>* dst = this;
       address_t src_address;
       address_t dst_address;
       int xbeg, xend, xsrc, xdst;
       int ybeg, yend, ysrc, ydst;
+      register uint32_t mask_color = src->getMaskColor();
 
       // nothing to do
       if (!opacity)
@@ -207,8 +213,8 @@ namespace raster {
       // Merge process
 
       for (ydst=ybeg; ydst<=yend; ++ydst, ++ysrc) {
-        src_address = (address_t)src->getPixelAddress(xsrc, ysrc);
-        dst_address = (address_t)dst->getPixelAddress(xbeg, ydst);
+        src_address = (address_t)src->address(xsrc, ysrc);
+        dst_address = (address_t)dst->address(xbeg, ydst);
 
         for (xdst=xbeg; xdst<=xend; ++xdst) {
           if (*src_address != mask_color)
@@ -241,11 +247,6 @@ namespace raster {
 
   //////////////////////////////////////////////////////////////////////
   // Specializations
-
-  template<>
-  inline uint8_t* ImageImpl<BitmapTraits>::getPixelAddress(int x, int y) const {
-    return (uint8_t*)(m_rows[y] + x/8);
-  }
 
   template<>
   inline color_t ImageImpl<BitmapTraits>::getPixel(int x, int y) const {
