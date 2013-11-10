@@ -256,7 +256,7 @@ void Mask::byColor(const Image *src, int color, int fuzziness)
               (src_g >= dst_g-fuzziness) && (src_g <= dst_g+fuzziness) &&
               (src_b >= dst_b-fuzziness) && (src_b <= dst_b+fuzziness) &&
               (src_a >= dst_a-fuzziness) && (src_a <= dst_a+fuzziness)))
-          (*dst_it) = 1;
+          *dst_it = 0;
       }
       ASSERT(dst_it == dst_end);
       break;
@@ -283,7 +283,7 @@ void Mask::byColor(const Image *src, int color, int fuzziness)
 
         if (!((src_k >= dst_k-fuzziness) && (src_k <= dst_k+fuzziness) &&
               (src_a >= dst_a-fuzziness) && (src_a <= dst_a+fuzziness)))
-          *dst_it = 1;
+          *dst_it = 0;
       }
       ASSERT(dst_it == dst_end);
       break;
@@ -307,7 +307,7 @@ void Mask::byColor(const Image *src, int color, int fuzziness)
         max = color + fuzziness;
 
         if (!((c >= min) && (c <= max)))
-          (*dst_it) = 1;
+          *dst_it = 0;
       }
       ASSERT(dst_it == dst_end);
       break;
