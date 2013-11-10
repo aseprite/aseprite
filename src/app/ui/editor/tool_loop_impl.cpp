@@ -360,15 +360,26 @@ tools::ToolLoop* create_tool_loop(Editor* editor, Context* context, MouseMessage
   }
 
   // Create the new tool loop
-  return
-    new ToolLoopImpl(editor,
-                     context,
-                     current_tool,
-                     editor->getDocument(),
-                     msg->left() ? tools::ToolLoop::Left:
-                                   tools::ToolLoop::Right,
-                     msg->left() ? fg: bg,
-                     msg->left() ? bg: fg);
+  try
+  {
+    return new ToolLoopImpl(editor,
+                            context,
+                            current_tool,
+                            editor->getDocument(),
+                            msg->left() ? tools::ToolLoop::Left:
+                                          tools::ToolLoop::Right,
+                            msg->left() ? fg: bg,
+                            msg->left() ? bg: fg);
+  }
+  catch (const std::exception& ex)
+  {
+    Alert::show(PACKAGE
+                "<<Error drawing ink:"
+                "<<%s"
+                "||&Close",
+                ex.what());
+    return NULL;
+  }
 }
 
 } // namespace app
