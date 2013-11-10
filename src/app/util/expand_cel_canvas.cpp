@@ -151,7 +151,7 @@ ExpandCelCanvas::~ExpandCelCanvas()
   delete m_dstImage;
 }
 
-void ExpandCelCanvas::commit()
+void ExpandCelCanvas::commit(const gfx::Rect& bounds)
 {
   ASSERT(!m_closed);
   ASSERT(!m_committed);
@@ -192,7 +192,10 @@ void ExpandCelCanvas::commit()
     else {
       // Add to the undo history the differences between m_celImage and m_dstImage
       if (m_undo.isEnabled()) {
-        base::UniquePtr<Dirty> dirty(new Dirty(m_celImage, m_dstImage));
+        base::UniquePtr<Dirty> dirty
+          (new Dirty(m_celImage, m_dstImage,
+                     (bounds.isEmpty() ? m_celImage->getBounds():
+                                         bounds)));
 
         dirty->saveImagePixels(m_celImage);
         if (dirty != NULL)

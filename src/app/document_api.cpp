@@ -850,7 +850,7 @@ void DocumentApi::flattenLayers(Sprite* sprite, int bgcolor)
 
       // We have to save the current state of `cel_image' in the undo.
       if (undo->isEnabled()) {
-        Dirty* dirty = new Dirty(cel_image, image);
+        Dirty* dirty = new Dirty(cel_image, image, image->getBounds());
         dirty->saveImagePixels(cel_image);
         m_undoers->pushUndoer(new undoers::DirtyArea(
             getObjects(), cel_image, dirty));
@@ -1033,7 +1033,7 @@ void DocumentApi::flipImageWithMask(Image* image, const Mask* mask, raster::algo
   // Insert the undo operation.
   DocumentUndo* undo = m_document->getUndo();
   if (undo->isEnabled()) {
-    base::UniquePtr<Dirty> dirty((new Dirty(image, flippedImage)));
+    base::UniquePtr<Dirty> dirty((new Dirty(image, flippedImage, image->getBounds())));
     dirty->saveImagePixels(image);
 
     m_undoers->pushUndoer(new undoers::DirtyArea(getObjects(), image, dirty));

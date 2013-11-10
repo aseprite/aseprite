@@ -20,6 +20,7 @@
 #define APP_UTIL_EXPAND_CEL_CANVAS_H_INCLUDED
 
 #include "filters/tiled_mode.h"
+#include "gfx/rect.h"
 
 namespace raster {
   class Cel;
@@ -50,7 +51,7 @@ namespace app {
     // Commit changes made in getDestCanvas() in the cel's image. Adds
     // information in the undo history so the user can undo the
     // modifications in the canvas.
-    void commit();
+    void commit(const gfx::Rect& bounds = gfx::Rect());
 
     // Restore the cel as its original state as when ExpandCelCanvas()
     // was created.
