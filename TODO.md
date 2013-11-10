@@ -79,8 +79,8 @@
   * complete palette operations, and palette editor (it needs a slider
     or something to move between palette changes)
   * drag & drop colors.
-* if there is activated the Tools Configuration dialog box, the
-  Shift+G and Shift+S should update it
+* if the Tools Configuration dialog box is activated, Shift+G and
+  Shift+S keys should update it.
 * add two DrawClick2:
   * DrawClick2FreeHand
   * DrawClick2Shape
