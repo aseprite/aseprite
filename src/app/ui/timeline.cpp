@@ -20,6 +20,8 @@
 #include "config.h"
 #endif
 
+#include "app/ui/timeline.h"
+
 #include "app/app_menus.h"
 #include "app/commands/command.h"
 #include "app/commands/commands.h"
@@ -29,11 +31,11 @@
 #include "app/document.h"
 #include "app/document_api.h"
 #include "app/document_event.h"
-#include "app/document_observer.h"
 #include "app/document_undo.h"
 #include "app/modules/editors.h"
 #include "app/modules/gfx.h"
 #include "app/modules/gui.h"
+#include "app/ui/document_view.h"
 #include "app/ui/editor/editor.h"
 #include "app/ui/skin/skin_theme.h"
 #include "app/ui_context.h"
@@ -51,7 +53,7 @@
 #include <vector>
 
 /*
-   Animator Editor
+   Timeline
 
                         Frames ...
 
@@ -105,146 +107,30 @@ enum {
   A_PART_CEL
 };
 
-class AnimationEditor : public Widget
-                      , public DocumentObserver {
-public:
-  enum State {
-    STATE_STANDBY,
-    STATE_SCROLLING,
-    STATE_MOVING_SEPARATOR,
-    STATE_MOVING_LAYER,
-    STATE_MOVING_CEL,
-    STATE_MOVING_FRAME,
-  };
-
-  AnimationEditor(Context* context);
-  ~AnimationEditor();
-
-  Sprite* getSprite() { return m_sprite; }
-  Layer* getLayer() { return m_layer; }
-  FrameNumber getFrame() { return m_frame; }
-
-  void setLayer(Layer* layer) {
-    m_layer = layer;
-    if (current_editor)
-      current_editor->setLayer(m_layer);
-  }
-  void setFrame(FrameNumber frame) {
-    m_frame = frame;
-    if (current_editor)
-      current_editor->setFrame(m_frame);
-  }
-
-  void centerCurrentCel();
-  State getState() const { return m_state; }
-
-protected:
-  bool onProcessMessage(Message* msg) OVERRIDE;
-  void onPreferredSize(PreferredSizeEvent& ev) OVERRIDE;
-
-  // DocumentObserver impl.
-  void onAddLayer(DocumentEvent& ev) OVERRIDE;
-  void onRemoveLayer(DocumentEvent& ev) OVERRIDE;
-  void onAddFrame(DocumentEvent& ev) OVERRIDE;
-  void onRemoveFrame(DocumentEvent& ev) OVERRIDE;
-  void onTotalFramesChanged(DocumentEvent& ev) OVERRIDE;
-
-private:
-  void setCursor(int x, int y);
-  void getDrawableLayers(const gfx::Rect& clip, int* first_layer, int* last_layer);
-  void getDrawableFrames(const gfx::Rect& clip, FrameNumber* first_frame, FrameNumber* last_frame);
-  void drawHeader(const gfx::Rect& clip);
-  void drawHeaderFrame(const gfx::Rect& clip, FrameNumber frame);
-  void drawHeaderPart(const gfx::Rect& clip, int x1, int y1, int x2, int y2,
-                      bool is_hot, bool is_clk,
-                      const char* line1, int align1,
-                      const char* line2, int align2);
-  void drawSeparator(const gfx::Rect& clip);
-  void drawLayer(const gfx::Rect& clip, int layer_index);
-  void drawLayerPadding();
-  void drawCel(const gfx::Rect& clip, int layer_index, FrameNumber frame, Cel* cel);
-  bool drawPart(int part, int layer, FrameNumber frame);
-  void regenerateLayers();
-  void hotThis(int hot_part, int hot_layer, FrameNumber hotFrame);
-  void centerCel(int layer, FrameNumber frame);
-  void showCel(int layer, FrameNumber frame);
-  void showCurrentCel();
-  void cleanClk();
-  void setScroll(int x, int y, bool use_refresh_region);
-  int getLayerIndex(const Layer* layer);
-
-  Context* m_context;
-  Document* m_document;
-  Sprite* m_sprite;
-  Layer* m_layer;
-  FrameNumber m_frame;
-  State m_state;
-  std::vector<Layer*> m_layers;
-  int m_scroll_x;
-  int m_scroll_y;
-  int m_separator_x;
-  int m_separator_w;
-  // The 'hot' part is where the mouse is on top of
-  int m_hot_part;
-  int m_hot_layer;
-  FrameNumber m_hot_frame;
-  // The 'clk' part is where the mouse's button was pressed (maybe for a drag & drop operation)
-  int m_clk_part;
-  int m_clk_layer;
-  FrameNumber m_clk_frame;
-  // Keys
-  bool m_space_pressed;
-};
-
-static AnimationEditor* current_anieditor = NULL;
-
 static void icon_rect(BITMAP* icon_normal, BITMAP* icon_selected, int x1, int y1, int x2, int y2,
                       bool is_selected, bool is_hot, bool is_clk);
 
-bool animation_editor_is_movingcel()
-{
-  return
-    current_anieditor != NULL &&
-    current_anieditor->getState() == AnimationEditor::STATE_MOVING_CEL;
-}
-
-// Shows the animation editor for the current sprite.
-void switch_between_animation_and_sprite_editor(Context* context)
-{
-  const Document* document;
-  const Sprite* sprite;
-  {
-    const ContextReader reader(context);
-    document = reader.document();
-    sprite = reader.sprite();
-  }
-
-  // Create the window & the animation-editor
-  {
-    base::UniquePtr<Window> window(new Window(true, ""));
-    AnimationEditor anieditor(context);
-
-    window->addChild(&anieditor);
-    window->remapWindow();
-
-    anieditor.centerCurrentCel();
-
-    // Show the window
-    window->openWindowInForeground();
-  }
-
-  // Destroy thumbnails
-  destroy_thumbnails();
-}
-
-//////////////////////////////////////////////////////////////////////
-// The Animation Editor
-
-AnimationEditor::AnimationEditor(Context* context)
+Timeline::Timeline()
   : Widget(kGenericWidget)
-  , m_context(context)
+  , m_context(UIContext::instance())
+  , m_document(NULL)
 {
-  DocumentLocation location = context->getActiveLocation();
+}
+
+Timeline::~Timeline()
+{
+  if (m_document)
+    m_document->removeObserver(this);
+}
+
+void Timeline::updateUsingEditor(Editor* editor)
+{
+  if (m_document)
+    m_document->removeObserver(this);
+
+  DocumentView* view = editor->getDocumentView();
+  DocumentLocation location;
+  view->getDocumentLocation(&location);
 
   m_document = location.document();
   m_sprite = location.sprite();
@@ -259,22 +145,36 @@ AnimationEditor::AnimationEditor(Context* context)
   m_clk_part = A_PART_NOTHING;
   m_space_pressed = false;
 
-  this->setFocusStop(true);
-
+  setFocusStop(true);
   regenerateLayers();
 
-  current_anieditor = this;
   m_document->addObserver(this);
 }
 
-AnimationEditor::~AnimationEditor()
+bool Timeline::isMovingCel() const
 {
-  current_anieditor = NULL;
-  m_document->removeObserver(this);
+  return (m_state == Timeline::STATE_MOVING_CEL);
 }
 
-bool AnimationEditor::onProcessMessage(Message* msg)
+void Timeline::setLayer(Layer* layer)
 {
+  m_layer = layer;
+  if (current_editor)
+    current_editor->setLayer(m_layer);
+}
+
+void Timeline::setFrame(FrameNumber frame)
+{
+  m_frame = frame;
+  if (current_editor)
+    current_editor->setFrame(m_frame);
+}
+
+bool Timeline::onProcessMessage(Message* msg)
+{
+  if (!m_document)
+    return Widget::onProcessMessage(msg);
+
   switch (msg->type()) {
 
     case kPaintMessage: {
@@ -724,17 +624,11 @@ bool AnimationEditor::onProcessMessage(Message* msg)
       }
       break;
 
+#if 0
     case kKeyDownMessage: {
       Command* command = NULL;
       Params* params = NULL;
       get_command_from_key_message(msg, &command, &params);
-
-      // Close animation editor.
-      if ((command && (strcmp(command->short_name(), CommandId::FilmEditor) == 0)) ||
-          (static_cast<KeyMessage*>(msg)->scancode() == kKeyEsc)) {
-        closeWindow();
-        return true;
-      }
 
       // Undo or redo.
       if (command && (strcmp(command->short_name(), CommandId::Undo) == 0 ||
@@ -790,6 +684,7 @@ bool AnimationEditor::onProcessMessage(Message* msg)
 
       break;
     }
+#endif
 
     case kKeyUpMessage:
       switch (static_cast<KeyMessage*>(msg)->scancode()) {
@@ -838,20 +733,19 @@ bool AnimationEditor::onProcessMessage(Message* msg)
   return Widget::onProcessMessage(msg);
 }
 
-void AnimationEditor::onPreferredSize(PreferredSizeEvent& ev)
+void Timeline::onPreferredSize(PreferredSizeEvent& ev)
 {
   // This doesn't matter, the AniEditor'll use the entire screen anyway.
   ev.setPreferredSize(Size(32, 32));
 }
 
-
-void AnimationEditor::onAddLayer(DocumentEvent& ev)
+void Timeline::onAddLayer(DocumentEvent& ev)
 {
   ASSERT(ev.layer() != NULL);
   setLayer(ev.layer());
 }
 
-void AnimationEditor::onRemoveLayer(DocumentEvent& ev)
+void Timeline::onRemoveLayer(DocumentEvent& ev)
 {
   Sprite* sprite = ev.sprite();
   Layer* layer = ev.layer();
@@ -874,12 +768,12 @@ void AnimationEditor::onRemoveLayer(DocumentEvent& ev)
   }
 }
 
-void AnimationEditor::onAddFrame(DocumentEvent& ev)
+void Timeline::onAddFrame(DocumentEvent& ev)
 {
   setFrame(ev.frame());
 }
 
-void AnimationEditor::onRemoveFrame(DocumentEvent& ev)
+void Timeline::onRemoveFrame(DocumentEvent& ev)
 {
   // Adjust current frame of all editors that are in a frame more
   // advanced that the removed one.
@@ -894,14 +788,14 @@ void AnimationEditor::onRemoveFrame(DocumentEvent& ev)
   }
 }
 
-void AnimationEditor::onTotalFramesChanged(DocumentEvent& ev)
+void Timeline::onTotalFramesChanged(DocumentEvent& ev)
 {
   if (getFrame() >= getSprite()->getTotalFrames()) {
     setFrame(getSprite()->getLastFrame());
   }
 }
 
-void AnimationEditor::setCursor(int x, int y)
+void Timeline::setCursor(int x, int y)
 {
   int mx = x - getBounds().x;
 //int my = y - getBounds().y;
@@ -946,19 +840,19 @@ void AnimationEditor::setCursor(int x, int y)
   }
 }
 
-void AnimationEditor::getDrawableLayers(const gfx::Rect& clip, int* first_layer, int* last_layer)
+void Timeline::getDrawableLayers(const gfx::Rect& clip, int* first_layer, int* last_layer)
 {
   *first_layer = 0;
   *last_layer = m_layers.size()-1;
 }
 
-void AnimationEditor::getDrawableFrames(const gfx::Rect& clip, FrameNumber* first_frame, FrameNumber* last_frame)
+void Timeline::getDrawableFrames(const gfx::Rect& clip, FrameNumber* first_frame, FrameNumber* last_frame)
 {
   *first_frame = FrameNumber(0);
   *last_frame = m_sprite->getLastFrame();
 }
 
-void AnimationEditor::drawHeader(const gfx::Rect& clip)
+void Timeline::drawHeader(const gfx::Rect& clip)
 {
   // bool is_hot = (m_hot_part == A_PART_HEADER_LAYER);
   // bool is_clk = (m_clk_part == A_PART_HEADER_LAYER);
@@ -977,7 +871,7 @@ void AnimationEditor::drawHeader(const gfx::Rect& clip)
                  "Layers", -1);
 }
 
-void AnimationEditor::drawHeaderFrame(const gfx::Rect& clip, FrameNumber frame)
+void Timeline::drawHeaderFrame(const gfx::Rect& clip, FrameNumber frame)
 {
   SkinTheme* theme = static_cast<SkinTheme*>(getTheme());
   bool is_hot = (m_hot_part == A_PART_HEADER_FRAME &&
@@ -1033,7 +927,7 @@ void AnimationEditor::drawHeaderFrame(const gfx::Rect& clip, FrameNumber frame)
   set_clip_rect(ji_screen, cx1, cy1, cx2, cy2);
 }
 
-void AnimationEditor::drawHeaderPart(const gfx::Rect& clip, int x1, int y1, int x2, int y2,
+void Timeline::drawHeaderPart(const gfx::Rect& clip, int x1, int y1, int x2, int y2,
                                      bool is_hot, bool is_clk,
                                      const char *line1, int align1,
                                      const char *line2, int align2)
@@ -1079,7 +973,7 @@ void AnimationEditor::drawHeaderPart(const gfx::Rect& clip, int x1, int y1, int 
   }
 }
 
-void AnimationEditor::drawSeparator(const gfx::Rect& clip)
+void Timeline::drawSeparator(const gfx::Rect& clip)
 {
   SkinTheme* theme = static_cast<SkinTheme*>(getTheme());
   bool is_hot = (m_hot_part == A_PART_SEPARATOR);
@@ -1098,7 +992,7 @@ void AnimationEditor::drawSeparator(const gfx::Rect& clip)
                            theme->getColor(ThemeColor::Text)));
 }
 
-void AnimationEditor::drawLayer(const gfx::Rect& clip, int layer_index)
+void Timeline::drawLayer(const gfx::Rect& clip, int layer_index)
 {
   Layer* layer = m_layers[layer_index];
   SkinTheme* theme = static_cast<SkinTheme*>(this->getTheme());
@@ -1161,7 +1055,7 @@ void AnimationEditor::drawLayer(const gfx::Rect& clip, int layer_index)
             (m_clk_part == A_PART_LAYER_EYE_ICON &&
              m_clk_layer == layer_index));
 
-  u += u+ICONBORDER+icon1->w+ICONBORDER;
+  u += ICONBORDER+icon1->w+ICONBORDER;
 
   // Draw the padlock (writable flag).
   icon_rect(icon2, icon2_selected,
@@ -1178,7 +1072,7 @@ void AnimationEditor::drawLayer(const gfx::Rect& clip, int layer_index)
   u += ICONBORDER+icon2->w+ICONBORDER+ICONSEP;
 
   // Draw the layer's name.
-  jdraw_text(ji_screen, this->getFont(), layer->getName().c_str(),
+  jdraw_text(ji_screen, getFont(), layer->getName().c_str(),
              u, y_mid - ji_font_get_size(this->getFont())/2,
              fg, bg, true, jguiscale());
 
@@ -1194,7 +1088,7 @@ void AnimationEditor::drawLayer(const gfx::Rect& clip, int layer_index)
   set_clip_rect(ji_screen, cx1, cy1, cx2, cy2);
 }
 
-void AnimationEditor::drawLayerPadding()
+void Timeline::drawLayerPadding()
 {
   SkinTheme* theme = static_cast<SkinTheme*>(this->getTheme());
   int layer_index = m_layers.size()-1;
@@ -1216,7 +1110,7 @@ void AnimationEditor::drawLayerPadding()
   }
 }
 
-void AnimationEditor::drawCel(const gfx::Rect& clip, int layer_index, FrameNumber frame, Cel* cel)
+void Timeline::drawCel(const gfx::Rect& clip, int layer_index, FrameNumber frame, Cel* cel)
 {
   SkinTheme* theme = static_cast<SkinTheme*>(this->getTheme());
   Layer *layer = m_layers[layer_index];
@@ -1311,7 +1205,7 @@ void AnimationEditor::drawCel(const gfx::Rect& clip, int layer_index, FrameNumbe
   set_clip_rect(ji_screen, cx1, cy1, cx2, cy2);
 }
 
-bool AnimationEditor::drawPart(int part, int layer, FrameNumber frame)
+bool Timeline::drawPart(int part, int layer, FrameNumber frame)
 {
   switch (part) {
     case A_PART_NOTHING:
@@ -1351,7 +1245,7 @@ bool AnimationEditor::drawPart(int part, int layer, FrameNumber frame)
   return false;
 }
 
-void AnimationEditor::regenerateLayers()
+void Timeline::regenerateLayers()
 {
   m_layers.clear();
   size_t nlayers = m_sprite->countLayers();
@@ -1362,7 +1256,7 @@ void AnimationEditor::regenerateLayers()
   }
 }
 
-void AnimationEditor::hotThis(int hot_part, int hot_layer, FrameNumber hot_frame)
+void Timeline::hotThis(int hot_part, int hot_layer, FrameNumber hot_frame)
 {
   int old_hot_part;
 
@@ -1393,7 +1287,7 @@ void AnimationEditor::hotThis(int hot_part, int hot_layer, FrameNumber hot_frame
   }
 }
 
-void AnimationEditor::centerCel(int layer, FrameNumber frame)
+void Timeline::centerCel(int layer, FrameNumber frame)
 {
   int target_x = (getBounds().x + m_separator_x + m_separator_w + getBounds().x2())/2 - FRMSIZE/2;
   int target_y = (getBounds().y + HDRSIZE + getBounds().y2())/2 - LAYSIZE/2;
@@ -1403,7 +1297,7 @@ void AnimationEditor::centerCel(int layer, FrameNumber frame)
   setScroll(scroll_x, scroll_y, false);
 }
 
-void AnimationEditor::showCel(int layer, FrameNumber frame)
+void Timeline::showCel(int layer, FrameNumber frame)
 {
   int scroll_x, scroll_y;
   int x1, y1, x2, y2;
@@ -1435,21 +1329,21 @@ void AnimationEditor::showCel(int layer, FrameNumber frame)
     setScroll(scroll_x, scroll_y, true);
 }
 
-void AnimationEditor::centerCurrentCel()
+void Timeline::centerCurrentCel()
 {
   int layer = getLayerIndex(m_layer);
   if (layer >= 0)
     centerCel(layer, m_frame);
 }
 
-void AnimationEditor::showCurrentCel()
+void Timeline::showCurrentCel()
 {
   int layer = getLayerIndex(m_layer);
   if (layer >= 0)
     showCel(layer, m_frame);
 }
 
-void AnimationEditor::cleanClk()
+void Timeline::cleanClk()
 {
   int clk_part = m_clk_part;
   m_clk_part = A_PART_NOTHING;
@@ -1459,7 +1353,7 @@ void AnimationEditor::cleanClk()
            m_clk_frame);
 }
 
-void AnimationEditor::setScroll(int x, int y, bool use_refresh_region)
+void Timeline::setScroll(int x, int y, bool use_refresh_region)
 {
   int old_scroll_x = 0;
   int old_scroll_y = 0;
@@ -1519,7 +1413,7 @@ void AnimationEditor::setScroll(int x, int y, bool use_refresh_region)
   }
 }
 
-int AnimationEditor::getLayerIndex(const Layer* layer)
+int Timeline::getLayerIndex(const Layer* layer)
 {
   for (size_t i=0; i<m_layers.size(); i++)
     if (m_layers[i] == layer)

@@ -74,7 +74,9 @@
       <key command="Preview" shortcut="F8" />
       <key command="ShowGrid" shortcut="Shift+G" />
       <key command="SnapToGrid" shortcut="Shift+S" />
-      <key command="FilmEditor" shortcut="Tab" />
+      <key command="Timeline" shortcut="Tab">
+        <param name="switch" value="true" />
+      </key>
       <key command="PaletteEditor" shortcut="F4">
         <param name="switch" value="true" />
       </key>
@@ -362,7 +364,9 @@
         <item command="SnapToGrid" text="&amp;Snap to Grid" />
         <item command="GridSettings" text="Gri&amp;d Settings" />
         <separator />
-        <item command="FilmEditor" text="&amp;Animation Editor" />
+        <item command="Timeline" text="&amp;Timeline">
+          <param name="switch" value="true" />
+        </item>
         <item command="PaletteEditor" text="&amp;Palette Editor">
           <param name="switch" value="true" />
         </item>

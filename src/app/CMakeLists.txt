@@ -33,7 +33,6 @@ add_library(app-library
   commands/cmd_exit.cpp
   commands/cmd_export_sprite_sheet.cpp
   commands/cmd_eyedropper.cpp
-  commands/cmd_film_editor.cpp
   commands/cmd_flatten_layers.cpp
   commands/cmd_flip.cpp
   commands/cmd_frame_properties.cpp
@@ -76,6 +75,7 @@ add_library(app-library
   commands/cmd_sprite_properties.cpp
   commands/cmd_sprite_size.cpp
   commands/cmd_switch_colors.cpp
+  commands/cmd_timeline.cpp
   commands/cmd_undo.cpp
   commands/command.cpp
   commands/commands.cpp
@@ -96,7 +96,6 @@ add_library(app-library
   context_flags.cpp
   context_observer_list.cpp
   data_recovery.cpp
-  dialogs/aniedit.cpp
   dialogs/maskcol.cpp
   document.cpp
   document_api.cpp
@@ -181,6 +180,7 @@ add_library(app-library
   ui/skin/skin_theme.cpp
   ui/status_bar.cpp
   ui/tabs.cpp
+  ui/timeline.cpp
   ui/toolbar.cpp
   ui/workspace.cpp
   ui/workspace_part.cpp

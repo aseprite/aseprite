@@ -24,7 +24,9 @@
 
 #include "app/app.h"
 #include "app/app_menus.h"
+#include "app/commands/commands.h"
 #include "app/load_widget.h"
+#include "app/modules/editors.h"
 #include "app/ui/color_bar.h"
 #include "app/ui/context_bar.h"
 #include "app/ui/document_view.h"
@@ -34,14 +36,13 @@
 #include "app/ui/mini_editor.h"
 #include "app/ui/status_bar.h"
 #include "app/ui/tabs.h"
+#include "app/ui/timeline.h"
 #include "app/ui/toolbar.h"
 #include "app/ui/workspace.h"
-#include "app/commands/commands.h"
-#include "app/modules/editors.h"
+#include "app/ui_context.h"
 #include "ui/splitter.h"
 #include "ui/system.h"
 #include "ui/view.h"
-#include "app/ui_context.h"
 
 namespace app {
 
@@ -50,6 +51,7 @@ using namespace ui;
 MainWindow::MainWindow()
   : Window(true, "")
   , m_lastSplitterPos(0.0)
+  , m_lastTimelineSplitterPos(75.0)
   , m_advancedMode(false)
 {
   setId("main_window");
@@ -67,6 +69,7 @@ MainWindow::MainWindow()
   Widget* box_statusbar = findChild("statusbar");
   Widget* box_tabsbar = findChild("tabsbar");
   Widget* box_workspace = findChild("workspace");
+  Widget* box_timeline = findChild("timeline");
 
   m_menuBar = new MainMenuBar();
   m_contextBar = new ContextBar();
@@ -77,7 +80,11 @@ MainWindow::MainWindow()
   m_workspace = new Workspace();
   m_workspace->ActiveViewChanged.connect(&MainWindow::onActiveViewChange, this);
   m_miniEditor = new MiniEditorWindow();
+  m_timeline = new Timeline();
   m_colorBarSplitter = findChildT<Splitter>("colorbarsplitter");
+  m_timelineSplitter = findChildT<Splitter>("timelinesplitter");
+
+  m_lastTimelineSplitterPos = m_timelineSplitter->getPosition();
 
   // configure all widgets to expansives
   m_menuBar->setExpansive(true);
@@ -86,6 +93,7 @@ MainWindow::MainWindow()
   m_colorBar->setExpansive(true);
   m_toolBar->setExpansive(true);
   m_tabsBar->setExpansive(true);
+  m_timeline->setExpansive(true);
   m_workspace->setExpansive(true);
 
   // Setup the menus
@@ -99,6 +107,7 @@ MainWindow::MainWindow()
   if (box_statusbar) box_statusbar->addChild(m_statusBar);
   if (box_tabsbar) box_tabsbar->addChild(m_tabsBar);
   if (box_workspace) box_workspace->addChild(m_workspace);
+  if (box_timeline) box_timeline->addChild(m_timeline);
 
   // Prepare the window
   remapWindow();
@@ -149,6 +158,29 @@ void MainWindow::setAdvancedMode(bool advanced)
   m_toolBar->setVisible(!advanced);
   m_statusBar->setVisible(!advanced);
   m_contextBar->setVisible(!advanced);
+
+  layout();
+}
+
+bool MainWindow::getTimelineVisibility() const
+{
+  return m_timeline->isVisible();
+}
+
+void MainWindow::setTimelineVisibility(bool visible)
+{
+  m_timeline->setVisible(visible);
+
+  if (visible) {
+    if (m_timelineSplitter->getPosition() >= 100.0)
+      m_timelineSplitter->setPosition(m_lastTimelineSplitterPos);
+  }
+  else {
+    if (m_timelineSplitter->getPosition() < 100.0) {
+      m_lastTimelineSplitterPos = m_timelineSplitter->getPosition();
+      m_timelineSplitter->setPosition(100.0);
+    }
+  }
 
   layout();
 }

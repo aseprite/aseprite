@@ -31,8 +31,6 @@
 * Add "Remap" button to palette editor after a palette entry is modified:
   This button should apply a color curve to the whole sprite to remap
   old indexes to the new positions.
-* Move src/app/dialogs/aniedit,filesel to src/app/ui
-  (remove app/dialogs/ directory).
 * Merge everything related to configuration/settings in one class
   (allow configuration per document). Use cfg.cpp and settings/ dir.
 * Refactor src/file/ in several layers.
