@@ -33,11 +33,6 @@ Splitter::Splitter(Type type, int align)
   initTheme();
 }
 
-double Splitter::getPosition() const
-{
-  return m_pos;
-}
-
 void Splitter::setPosition(double pos)
 {
   if (m_type == ByPercentage)

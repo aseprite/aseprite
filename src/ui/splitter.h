@@ -19,7 +19,7 @@ namespace ui {
 
     Splitter(Type type, int align);
 
-    double getPosition() const;
+    double getPosition() const { return m_pos; }
     void setPosition(double pos);
 
   protected:
