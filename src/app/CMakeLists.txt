@@ -96,7 +96,6 @@ add_library(app-library
   context_flags.cpp
   context_observer_list.cpp
   data_recovery.cpp
-  dialogs/maskcol.cpp
   document.cpp
   document_api.cpp
   document_location.cpp
