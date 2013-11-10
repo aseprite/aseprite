@@ -249,6 +249,17 @@ namespace raster {
   // Specializations
 
   template<>
+  void ImageImpl<IndexedTraits>::clear(color_t color) OVERRIDE {
+    memset(m_bits, color, getWidth()*getHeight());
+  }
+
+  template<>
+  void ImageImpl<BitmapTraits>::clear(color_t color) OVERRIDE {
+    memset(m_bits, (color ? 0xff: 0x00),
+           BitmapTraits::getRowStrideBytes(getWidth()) * getHeight());
+  }
+
+  template<>
   inline color_t ImageImpl<BitmapTraits>::getPixel(int x, int y) const {
     ASSERT(x >= 0 && x < getWidth());
     ASSERT(y >= 0 && y < getHeight());
