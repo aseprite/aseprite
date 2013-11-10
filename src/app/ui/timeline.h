@@ -86,8 +86,7 @@ namespace app {
     void drawHeaderFrame(const gfx::Rect& clip, FrameNumber frame);
     void drawHeaderPart(const gfx::Rect& clip, int x1, int y1, int x2, int y2,
                         bool is_hot, bool is_clk,
-                        const char* line1, int align1,
-                        const char* line2, int align2);
+                        const char* text, int text_align);
     void drawSeparator(const gfx::Rect& clip);
     void drawLayer(const gfx::Rect& clip, int layer_index);
     void drawLayerPadding();

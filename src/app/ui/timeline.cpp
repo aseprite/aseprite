@@ -72,16 +72,16 @@
 // Size of the thumbnail in the screen (width x height), the really
 // size of the thumbnail bitmap is specified in the
 // 'generate_thumbnail' routine.
-#define THUMBSIZE       (32*jguiscale())
+#define THUMBSIZE       (12*jguiscale())
 
 // Height of the headers.
-#define HDRSIZE         (3 + text_height(this->getFont())*2 + 3 + 3)
+#define HDRSIZE         THUMBSIZE
 
 // Width of the frames.
-#define FRMSIZE         (3 + THUMBSIZE + 3)
+#define FRMSIZE         THUMBSIZE
 
 // Height of the layers.
-#define LAYSIZE         (3 + MAX(text_height(this->getFont()), THUMBSIZE) + 4)
+#define LAYSIZE         THUMBSIZE
 
 // Space between icons and other information in the layer.
 #define ICONSEP         (2*jguiscale())
@@ -867,8 +867,7 @@ void Timeline::drawHeader(const gfx::Rect& clip)
   drawHeaderPart(clip, x1, y1, x2, y2,
                  // is_hot, is_clk,
                  false, false,
-                 "Frames >>", 1,
-                 "Layers", -1);
+                 "Frames", 1);
 }
 
 void Timeline::drawHeaderFrame(const gfx::Rect& clip, FrameNumber frame)
@@ -880,8 +879,7 @@ void Timeline::drawHeaderFrame(const gfx::Rect& clip, FrameNumber frame)
                  m_clk_frame == frame);
   int x1, y1, x2, y2;
   int cx1, cy1, cx2, cy2;
-  char buf1[256];
-  char buf2[256];
+  char buf[256];
 
   get_clip_rect(ji_screen, &cx1, &cy1, &cx2, &cy2);
 
@@ -896,12 +894,10 @@ void Timeline::drawHeaderFrame(const gfx::Rect& clip, FrameNumber frame)
                 y1, getBounds().x2()-1, y2);
 
   // Draw the header for the layers.
-  usprintf(buf1, "%d", frame+1);
-  usprintf(buf2, "%d", m_sprite->getFrameDuration(frame));
+  usprintf(buf, "%d", frame+1);
   drawHeaderPart(clip, x1, y1, x2, y2,
                  is_hot, is_clk,
-                 buf1, 0,
-                 buf2, 0);
+                 buf, 0);
 
   // If this header wasn't clicked but there are another frame's
   // header clicked, we have to draw some indicators to show that the
@@ -928,9 +924,8 @@ void Timeline::drawHeaderFrame(const gfx::Rect& clip, FrameNumber frame)
 }
 
 void Timeline::drawHeaderPart(const gfx::Rect& clip, int x1, int y1, int x2, int y2,
-                                     bool is_hot, bool is_clk,
-                                     const char *line1, int align1,
-                                     const char *line2, int align2)
+                              bool is_hot, bool is_clk,
+                              const char* text, int text_align)
 {
   SkinTheme* theme = static_cast<SkinTheme*>(getTheme());
   ui::Color fg, face;
@@ -947,28 +942,15 @@ void Timeline::drawHeaderPart(const gfx::Rect& clip, int x1, int y1, int x2, int
   rectfill(ji_screen, x1, y1, x2, y2, to_system(face));
 
   // Draw the text inside this header.
-  if (line1 != NULL) {
-    if (align1 < 0)
+  if (text != NULL) {
+    if (text_align < 0)
       x = x1+3;
-    else if (align1 == 0)
-      x = (x1+x2)/2 - text_length(getFont(), line1)/2;
+    else if (text_align == 0)
+      x = (x1+x2)/2 - text_length(getFont(), text)/2;
     else
-      x = x2 - 3 - text_length(getFont(), line1);
+      x = x2 - 3 - text_length(getFont(), text);
 
-    jdraw_text(ji_screen, getFont(), line1, x, y1+3,
-               fg, face, true, jguiscale());
-  }
-
-  if (line2 != NULL) {
-    if (align2 < 0)
-      x = x1+3;
-    else if (align2 == 0)
-      x = (x1+x2)/2 - text_length(this->getFont(), line2)/2;
-    else
-      x = x2 - 3 - text_length(this->getFont(), line2);
-
-    jdraw_text(ji_screen, this->getFont(), line2,
-               x, y1+3+ji_font_get_size(this->getFont())+3,
+    jdraw_text(ji_screen, getFont(), text, x, y1+3,
                fg, face, true, jguiscale());
   }
 }
