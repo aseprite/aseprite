@@ -192,10 +192,13 @@ void ExpandCelCanvas::commit(const gfx::Rect& bounds)
     else {
       // Add to the undo history the differences between m_celImage and m_dstImage
       if (m_undo.isEnabled()) {
-        base::UniquePtr<Dirty> dirty
-          (new Dirty(m_celImage, m_dstImage,
-                     (bounds.isEmpty() ? m_celImage->getBounds():
-                                         bounds)));
+        gfx::Rect dirtyBounds;
+        if (bounds.isEmpty())
+          dirtyBounds = m_celImage->getBounds();
+        else
+          dirtyBounds = m_celImage->getBounds().createIntersect(bounds);
+
+        base::UniquePtr<Dirty> dirty(new Dirty(m_celImage, m_dstImage, dirtyBounds));
 
         dirty->saveImagePixels(m_celImage);
         if (dirty != NULL)
