@@ -37,10 +37,6 @@ namespace raster {
     address_t m_bits;
     address_t* m_rows;
 
-    inline address_t address(int x, int y) const {
-      return (address_t)(m_rows[y] + x / (Traits::pixels_per_byte == 0 ? 1 : Traits::pixels_per_byte));
-    }
-
     inline address_t getBitsAddress() {
       return m_bits;
     }
@@ -60,6 +56,10 @@ namespace raster {
     }
 
   public:
+    inline address_t address(int x, int y) const {
+      return (address_t)(m_rows[y] + x / (Traits::pixels_per_byte == 0 ? 1 : Traits::pixels_per_byte));
+    }
+
     ImageImpl(int width, int height,
               const ImageBufferPtr& buffer)
       : Image(static_cast<PixelFormat>(Traits::pixel_format), width, height)

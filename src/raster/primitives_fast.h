@@ -20,6 +20,7 @@
 #define RASTER_PRIMITIVES_FAST_H_INCLUDED
 
 #include "raster/color.h"
+#include "raster/image_impl.h"
 
 namespace raster {
   class Image;
@@ -29,7 +30,7 @@ namespace raster {
     ASSERT(x >= 0 && x < image->getWidth());
     ASSERT(y >= 0 && y < image->getHeight());
 
-    return *((typename Traits::address_t)image->getPixelAddress(x, y));
+    return *(((ImageImpl<Traits>*)image)->address(x, y));
   }
 
   template<class Traits>
@@ -37,7 +38,7 @@ namespace raster {
     ASSERT(x >= 0 && x < image->getWidth());
     ASSERT(y >= 0 && y < image->getHeight());
 
-    *((typename Traits::address_t)image->getPixelAddress(x, y)) = color;
+    *(((ImageImpl<Traits>*)image)->address(x, y)) = color;
   }
 
   //////////////////////////////////////////////////////////////////////
