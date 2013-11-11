@@ -41,7 +41,6 @@
 #include "app/ui_context.h"
 #include "app/undo_transaction.h"
 #include "app/util/celmove.h"
-#include "app/util/thmbnail.h"
 #include "base/compiler_specific.h"
 #include "base/memory.h"
 #include "gfx/point.h"
@@ -510,7 +509,6 @@ bool Timeline::onProcessMessage(Message* msg)
                   gfx::Point mousePos = mouseMsg->position();
                   popup_menu->showPopup(mousePos.x, mousePos.y);
 
-                  destroy_thumbnails();
                   invalidate();
                 }
               }
@@ -552,7 +550,6 @@ bool Timeline::onProcessMessage(Message* msg)
                   gfx::Point mousePos = mouseMsg->position();
                   popup_menu->showPopup(mousePos.x, mousePos.y);
 
-                  destroy_thumbnails();
                   invalidate();
                   regenerateLayers();
                 }
@@ -636,7 +633,6 @@ bool Timeline::onProcessMessage(Message* msg)
                 gfx::Point mousePos = mouseMsg->position();
                 popup_menu->showPopup(mousePos.x, mousePos.y);
 
-                destroy_thumbnails();
                 regenerateLayers();
                 invalidate();
               }
@@ -650,7 +646,6 @@ bool Timeline::onProcessMessage(Message* msg)
                   move_cel(writer);
                 }
 
-                destroy_thumbnails();
                 regenerateLayers();
                 invalidate();
               }
@@ -1133,7 +1128,6 @@ void Timeline::drawCel(const gfx::Rect& clip, int layer_index, FrameNumber frame
   ui::Color bg = theme->getColor(is_hot ? ThemeColor::HotFace: ThemeColor::Face);
   int x1, y1, x2, y2;
   int cx1, cy1, cx2, cy2;
-  BITMAP *thumbnail;
 
   get_clip_rect(ji_screen, &cx1, &cy1, &cx2, &cy2);
 
@@ -1150,7 +1144,7 @@ void Timeline::drawCel(const gfx::Rect& clip, int layer_index, FrameNumber frame
                 getBounds().x2()-1,
                 getBounds().y2()-1);
 
-  Rect thumbnail_rect(Point(x1+3, y1+3), Point(x2-2, y2-2));
+  Rect cel_rect(Point(x1+3, y1+3), Point(x2-2, y2-2));
 
   // Draw the box for the cel.
   if (selected_layer && frame == m_frame) {
@@ -1168,17 +1162,11 @@ void Timeline::drawCel(const gfx::Rect& clip, int layer_index, FrameNumber frame
       // TODO why a cel can't have an associated image?
       m_sprite->getStock()->getImage(cel->getImage()) == NULL) {
 
-    jdraw_rectfill(thumbnail_rect, bg);
-    draw_emptyset_symbol(ji_screen, thumbnail_rect, theme->getColor(ThemeColor::Disabled));
+    jdraw_rectfill(cel_rect, bg);
+    draw_emptyset_symbol(ji_screen, cel_rect, theme->getColor(ThemeColor::Disabled));
   }
   else {
-    thumbnail = generate_thumbnail(layer, cel, m_sprite);
-    if (thumbnail != NULL) {
-      stretch_blit(thumbnail, ji_screen,
-                   0, 0, thumbnail->w, thumbnail->h,
-                   thumbnail_rect.x, thumbnail_rect.y,
-                   thumbnail_rect.w, thumbnail_rect.h);
-    }
+    jdraw_rectfill(cel_rect, theme->getColor(ThemeColor::Text));
   }
 
   // If this cel is hot and other cel was clicked, we have to draw

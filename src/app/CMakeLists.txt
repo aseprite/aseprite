@@ -226,7 +226,6 @@ add_library(app-library
   util/msk_file.cpp
   util/pic_file.cpp
   util/render.cpp
-  util/thmbnail.cpp
   webserver.cpp
   widget_loader.cpp
   xml_document.cpp
