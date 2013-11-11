@@ -21,6 +21,7 @@
 
 #include "app/context_observer.h"
 #include "app/document_observer.h"
+#include "app/ui/editor/editor_observer.h"
 #include "base/compiler_specific.h"
 #include "raster/frame_number.h"
 #include "ui/widget.h"
@@ -42,7 +43,8 @@ namespace app {
 
   class Timeline : public ui::Widget
                  , public ContextObserver
-                 , public DocumentObserver {
+                 , public DocumentObserver
+                 , public EditorObserver {
   public:
     enum State {
       STATE_STANDBY,
@@ -78,10 +80,17 @@ namespace app {
     void onRemoveLayer(DocumentEvent& ev) OVERRIDE;
     void onAddFrame(DocumentEvent& ev) OVERRIDE;
     void onRemoveFrame(DocumentEvent& ev) OVERRIDE;
-    void onTotalFramesChanged(DocumentEvent& ev) OVERRIDE;
 
     // ContextObserver impl.
+    void onCommandAfterExecution(Context* context) OVERRIDE;
     void onRemoveDocument(Context* context, Document* document) OVERRIDE;
+
+    // EditorObserver impl.
+    void dispose() OVERRIDE { }
+    void onStateChanged(Editor* editor) OVERRIDE { }
+    void onScrollChanged(Editor* editor) OVERRIDE { }
+    void onFrameChanged(Editor* editor) OVERRIDE;
+    void onLayerChanged(Editor* editor) OVERRIDE;
 
   private:
     void detachDocument();
@@ -108,6 +117,7 @@ namespace app {
     int getLayerIndex(const Layer* layer);
 
     Context* m_context;
+    Editor* m_editor;
     Document* m_document;
     Sprite* m_sprite;
     Layer* m_layer;

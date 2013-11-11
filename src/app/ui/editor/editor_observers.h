@@ -35,6 +35,7 @@ namespace app {
     void notifyStateChanged(Editor* editor);
     void notifyScrollChanged(Editor* editor);
     void notifyFrameChanged(Editor* editor);
+    void notifyLayerChanged(Editor* editor);
 
   private:
     base::Observers<EditorObserver> m_observers;

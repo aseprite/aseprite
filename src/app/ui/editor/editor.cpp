@@ -246,6 +246,8 @@ void Editor::backToPreviousState()
 void Editor::setLayer(const Layer* layer)
 {
   m_layer = const_cast<Layer*>(layer);
+  m_observers.notifyLayerChanged(this);
+
   updateStatusBar();
 }
 

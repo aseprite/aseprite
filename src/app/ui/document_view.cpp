@@ -75,6 +75,10 @@ public:
     App::instance()->getMainWindow()->getMiniEditor()->updateUsingEditor(this);
   }
 
+  void onLayerChanged(Editor* editor) OVERRIDE {
+    // Do nothing
+  }
+
   // EditorCustomizationDelegate implementation
   tools::Tool* getQuickTool(tools::Tool* currentTool) OVERRIDE {
     return get_selected_quicktool(currentTool);

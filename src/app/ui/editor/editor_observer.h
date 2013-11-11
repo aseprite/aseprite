@@ -36,6 +36,9 @@ namespace app {
 
     // Called when the current frame of the editor changes.
     virtual void onFrameChanged(Editor* editor) = 0;
+
+    // Called when the current layer of the editor changes.
+    virtual void onLayerChanged(Editor* editor) = 0;
   };
 
 } // namespace app

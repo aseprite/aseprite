@@ -56,4 +56,9 @@ void EditorObservers::notifyFrameChanged(Editor* editor)
   m_observers.notifyObservers(&EditorObserver::onFrameChanged, editor);
 }
 
+void EditorObservers::notifyLayerChanged(Editor* editor)
+{
+  m_observers.notifyObservers(&EditorObserver::onLayerChanged, editor);
+}
+
 } // namespace app

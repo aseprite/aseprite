@@ -113,6 +113,7 @@ static void icon_rect(BITMAP* icon_normal, BITMAP* icon_selected, int x1, int y1
 Timeline::Timeline()
   : Widget(kGenericWidget)
   , m_context(UIContext::instance())
+  , m_editor(NULL)
   , m_document(NULL)
 {
   m_context->addObserver(this);
@@ -131,8 +132,21 @@ void Timeline::updateUsingEditor(Editor* editor)
   DocumentLocation location;
   view->getDocumentLocation(&location);
 
-  // Do nothing, we've already viewing this document in the timeline.
-  if (m_document == location.document())
+  if (m_editor)
+    m_editor->removeObserver(this);
+
+  // We always update the editor. In this way the timeline keeps in
+  // sync with the active editor.
+  m_editor = editor;
+  if (m_editor)
+    m_editor->addObserver(this);
+
+  // If we are already in the same position as the "editor", we don't
+  // need to update the at all timeline.
+  if (m_document == location.document() &&
+      m_sprite == location.sprite() &&
+      m_layer == location.layer() &&
+      m_frame == location.frame())
     return;
 
   detachDocument();
@@ -159,9 +173,14 @@ void Timeline::detachDocument()
   if (m_document) {
     m_document->removeObserver(this);
     m_document = NULL;
-
-    invalidate();
   }
+
+  if (m_editor) {
+    m_editor->removeObserver(this);
+    m_editor = NULL;
+  }
+
+  invalidate();
 }
 
 bool Timeline::isMovingCel() const
@@ -171,72 +190,83 @@ bool Timeline::isMovingCel() const
 
 void Timeline::setLayer(Layer* layer)
 {
+  ASSERT(m_editor != NULL);
+
   m_layer = layer;
-  if (current_editor)
-    current_editor->setLayer(m_layer);
+
+  if (m_editor->getLayer() != layer)
+    m_editor->setLayer(m_layer);
 }
 
 void Timeline::setFrame(FrameNumber frame)
 {
+  ASSERT(m_editor != NULL);
+
   m_frame = frame;
-  if (current_editor)
-    current_editor->setFrame(m_frame);
+
+  if (m_editor->getFrame() != frame)
+    m_editor->setFrame(m_frame);
 }
 
 bool Timeline::onProcessMessage(Message* msg)
 {
-  if (!m_document)
-    return Widget::onProcessMessage(msg);
-
   switch (msg->type()) {
 
-    case kPaintMessage: {
-      gfx::Rect clip = static_cast<PaintMessage*>(msg)->rect();
-      int layer, first_layer, last_layer;
-      FrameNumber frame, first_frame, last_frame;
+    case kPaintMessage:
+      if (m_document) {
+        gfx::Rect clip = static_cast<PaintMessage*>(msg)->rect();
+        int layer, first_layer, last_layer;
+        FrameNumber frame, first_frame, last_frame;
 
-      getDrawableLayers(clip, &first_layer, &last_layer);
-      getDrawableFrames(clip, &first_frame, &last_frame);
+        getDrawableLayers(clip, &first_layer, &last_layer);
+        getDrawableFrames(clip, &first_frame, &last_frame);
 
-      // Draw the header for layers.
-      drawHeader(clip);
+        // Draw the header for layers.
+        drawHeader(clip);
 
-      // Draw the header for each visible frame.
-      for (frame=first_frame; frame<=last_frame; ++frame)
-        drawHeaderFrame(clip, frame);
+        // Draw the header for each visible frame.
+        for (frame=first_frame; frame<=last_frame; ++frame)
+          drawHeaderFrame(clip, frame);
 
-      // Draw the separator.
-      drawSeparator(clip);
+        // Draw the separator.
+        drawSeparator(clip);
 
-      // Draw each visible layer.
-      for (layer=first_layer; layer<=last_layer; layer++) {
-        drawLayer(clip, layer);
+        // Draw each visible layer.
+        for (layer=first_layer; layer<=last_layer; layer++) {
+          drawLayer(clip, layer);
 
-        // Get the first CelIterator to be drawn (it is the first cel with cel->frame >= first_frame)
-        CelIterator it, end;
-        Layer* layerPtr = m_layers[layer];
-        if (layerPtr->isImage()) {
-          it = static_cast<LayerImage*>(layerPtr)->getCelBegin();
-          end = static_cast<LayerImage*>(layerPtr)->getCelEnd();
-          for (; it != end && (*it)->getFrame() < first_frame; ++it)
-            ;
+          // Get the first CelIterator to be drawn (it is the first cel with cel->frame >= first_frame)
+          CelIterator it, end;
+          Layer* layerPtr = m_layers[layer];
+          if (layerPtr->isImage()) {
+            it = static_cast<LayerImage*>(layerPtr)->getCelBegin();
+            end = static_cast<LayerImage*>(layerPtr)->getCelEnd();
+            for (; it != end && (*it)->getFrame() < first_frame; ++it)
+              ;
+          }
+
+          // Draw every visible cel for each layer.
+          for (frame=first_frame; frame<=last_frame; ++frame) {
+            Cel* cel = (layerPtr->isImage() && it != end && (*it)->getFrame() == frame ? *it: NULL);
+
+            drawCel(clip, layer, frame, cel);
+
+            if (cel)
+              ++it;               // Go to next cel
+          }
         }
 
-        // Draw every visible cel for each layer.
-        for (frame=first_frame; frame<=last_frame; ++frame) {
-          Cel* cel = (layerPtr->isImage() && it != end && (*it)->getFrame() == frame ? *it: NULL);
-
-          drawCel(clip, layer, frame, cel);
-
-          if (cel)
-            ++it;               // Go to next cel
-        }
+        drawLayerPadding();
       }
-
-      drawLayerPadding();
-
+      else {
+        SkinTheme* theme = static_cast<SkinTheme*>(getTheme());
+        rectfill(ji_screen,
+                 getBounds().x, getBounds().y,
+                 getBounds().x2()-1,
+                 getBounds().y2()-1,
+                 to_system(theme->getColor(ThemeColor::Face)));
+      }
       return true;
-    }
 
     case kTimerMessage:
       break;
@@ -250,6 +280,9 @@ bool Timeline::onProcessMessage(Message* msg)
       break;
 
     case kMouseDownMessage:
+      if (!m_document)
+        break;
+
       if (static_cast<MouseMessage*>(msg)->middle() || m_space_pressed) {
         captureMouse();
         m_state = STATE_SCROLLING;
@@ -351,6 +384,9 @@ bool Timeline::onProcessMessage(Message* msg)
       break;
 
     case kMouseMoveMessage: {
+      if (!m_document)
+        break;
+
       int hot_part = A_PART_NOTHING;
       int hot_layer = -1;
       FrameNumber hot_frame(-1);
@@ -444,6 +480,8 @@ bool Timeline::onProcessMessage(Message* msg)
 
     case kMouseUpMessage:
       if (hasCapture()) {
+        ASSERT(m_document != NULL);
+
         MouseMessage* mouseMsg = static_cast<MouseMessage*>(msg);
 
         releaseMouse();
@@ -637,68 +675,6 @@ bool Timeline::onProcessMessage(Message* msg)
       }
       break;
 
-#if 0
-    case kKeyDownMessage: {
-      Command* command = NULL;
-      Params* params = NULL;
-      get_command_from_key_message(msg, &command, &params);
-
-      // Undo or redo.
-      if (command && (strcmp(command->short_name(), CommandId::Undo) == 0 ||
-                      strcmp(command->short_name(), CommandId::Redo) == 0)) {
-        if (command->isEnabled(UIContext::instance())) {
-          UIContext::instance()->executeCommand(command, params);
-
-          destroy_thumbnails();
-          regenerateLayers();
-          showCurrentCel();
-          invalidate();
-        }
-        return true;
-      }
-
-      // New_frame, remove_frame, new_cel, remove_cel.
-      if (command != NULL) {
-        if (strcmp(command->short_name(), CommandId::NewFrame) == 0 ||
-            strcmp(command->short_name(), CommandId::RemoveCel) == 0 ||
-            strcmp(command->short_name(), CommandId::RemoveFrame) == 0 ||
-            strcmp(command->short_name(), CommandId::GotoFirstFrame) == 0 ||
-            strcmp(command->short_name(), CommandId::GotoPreviousFrame) == 0 ||
-            strcmp(command->short_name(), CommandId::GotoPreviousLayer) == 0 ||
-            strcmp(command->short_name(), CommandId::GotoNextFrame) == 0 ||
-            strcmp(command->short_name(), CommandId::GotoNextLayer) == 0 ||
-            strcmp(command->short_name(), CommandId::GotoLastFrame) == 0) {
-          // execute the command
-          UIContext::instance()->executeCommand(command, params);
-
-          showCurrentCel();
-          invalidate();
-          return true;
-        }
-
-        if (strcmp(command->short_name(), CommandId::NewLayer) == 0 ||
-            strcmp(command->short_name(), CommandId::RemoveLayer) == 0) {
-          // execute the command
-          UIContext::instance()->executeCommand(command);
-
-          regenerateLayers();
-          showCurrentCel();
-          invalidate();
-          return true;
-        }
-      }
-
-      switch (static_cast<KeyMessage*>(msg)->scancode()) {
-        case kKeySpace:
-          m_space_pressed = true;
-          setCursor(jmouse_x(0), jmouse_y(0));
-          return true;
-      }
-
-      break;
-    }
-#endif
-
     case kKeyUpMessage:
       switch (static_cast<KeyMessage*>(msg)->scancode()) {
 
@@ -715,32 +691,34 @@ bool Timeline::onProcessMessage(Message* msg)
       }
       break;
 
-    case kMouseWheelMessage: {
-      int dz = jmouse_z(1) - jmouse_z(0);
-      int dx = 0;
-      int dy = 0;
+    case kMouseWheelMessage:
+      if (m_document) {
+        int dz = jmouse_z(1) - jmouse_z(0);
+        int dx = 0;
+        int dy = 0;
 
-      if (msg->ctrlPressed())
-        dx = dz * FRMSIZE;
-      else
-        dy = dz * LAYSIZE;
+        if (msg->ctrlPressed())
+          dx = dz * FRMSIZE;
+        else
+          dy = dz * LAYSIZE;
 
-      if (msg->shiftPressed()) {
-        dx *= 3;
-        dy *= 3;
+        if (msg->shiftPressed()) {
+          dx *= 3;
+          dy *= 3;
+        }
+
+        setScroll(m_scroll_x+dx,
+                  m_scroll_y+dy, true);
       }
-
-      setScroll(m_scroll_x+dx,
-                m_scroll_y+dy, true);
       break;
-    }
 
-    case kSetCursorMessage: {
-      gfx::Point mousePos = static_cast<MouseMessage*>(msg)->position();
-      setCursor(mousePos.x, mousePos.y);
-      return true;
-    }
-
+    case kSetCursorMessage:
+      if (m_document) {
+        gfx::Point mousePos = static_cast<MouseMessage*>(msg)->position();
+        setCursor(mousePos.x, mousePos.y);
+        return true;
+      }
+      break;
   }
 
   return Widget::onProcessMessage(msg);
@@ -752,6 +730,16 @@ void Timeline::onPreferredSize(PreferredSizeEvent& ev)
   ev.setPreferredSize(Size(32, 32));
 }
 
+void Timeline::onCommandAfterExecution(Context* context)
+{
+  if (!m_document)
+    return;
+
+  regenerateLayers();
+  showCurrentCel();
+  invalidate();
+}
+
 void Timeline::onRemoveDocument(Context* context, Document* document)
 {
   if (document == m_document)
@@ -761,7 +749,12 @@ void Timeline::onRemoveDocument(Context* context, Document* document)
 void Timeline::onAddLayer(DocumentEvent& ev)
 {
   ASSERT(ev.layer() != NULL);
+
   setLayer(ev.layer());
+
+  regenerateLayers();
+  showCurrentCel();
+  invalidate();
 }
 
 void Timeline::onRemoveLayer(DocumentEvent& ev)
@@ -785,11 +778,18 @@ void Timeline::onRemoveLayer(DocumentEvent& ev)
 
     setLayer(layer_select);
   }
+
+  regenerateLayers();
+  showCurrentCel();
+  invalidate();
 }
 
 void Timeline::onAddFrame(DocumentEvent& ev)
 {
   setFrame(ev.frame());
+
+  showCurrentCel();
+  invalidate();
 }
 
 void Timeline::onRemoveFrame(DocumentEvent& ev)
@@ -805,13 +805,21 @@ void Timeline::onRemoveFrame(DocumentEvent& ev)
   else if (getFrame() >= getSprite()->getTotalFrames()) {
     setFrame(getSprite()->getLastFrame());
   }
+
+  showCurrentCel();
+  invalidate();
 }
 
-void Timeline::onTotalFramesChanged(DocumentEvent& ev)
+void Timeline::onFrameChanged(Editor* editor)
 {
-  if (getFrame() >= getSprite()->getTotalFrames()) {
-    setFrame(getSprite()->getLastFrame());
-  }
+  setFrame(editor->getFrame());
+  showCurrentCel();
+}
+
+void Timeline::onLayerChanged(Editor* editor)
+{
+  setLayer(editor->getLayer());
+  showCurrentCel();
 }
 
 void Timeline::setCursor(int x, int y)
@@ -1248,13 +1256,19 @@ bool Timeline::drawPart(int part, int layer, FrameNumber frame)
 
 void Timeline::regenerateLayers()
 {
-  m_layers.clear();
+  ASSERT(m_document != NULL);
+  ASSERT(m_sprite != NULL);
+
   size_t nlayers = m_sprite->countLayers();
-  if (nlayers > 0) {
-    m_layers.resize(nlayers, NULL);
-    for (size_t c=0; c<nlayers; c++)
-      m_layers[c] = m_sprite->indexToLayer(LayerIndex(nlayers-c-1));
+  if (m_layers.size() != nlayers) {
+    if (nlayers > 0)
+      m_layers.resize(nlayers, NULL);
+    else
+      m_layers.clear();
   }
+
+  for (size_t c=0; c<nlayers; c++)
+    m_layers[c] = m_sprite->indexToLayer(LayerIndex(nlayers-c-1));
 }
 
 void Timeline::hotThis(int hot_part, int hot_layer, FrameNumber hot_frame)
