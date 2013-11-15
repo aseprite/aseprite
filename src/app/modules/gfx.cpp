@@ -317,6 +317,9 @@ void draw_emptyset_symbol(BITMAP* bmp, const Rect& rc, ui::Color color)
 
 void draw_color(BITMAP* bmp, const Rect& rc, PixelFormat pixelFormat, const app::Color& color)
 {
+  if (rc.w <= 0 || rc.h <= 0)
+    return;
+
   app::Color::Type type = color.getType();
   BITMAP* graph;
 
