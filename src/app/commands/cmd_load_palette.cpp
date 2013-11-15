@@ -24,6 +24,7 @@
 #include "app/context_access.h"
 #include "app/document_api.h"
 #include "app/file_selector.h"
+#include "app/ini_file.h"
 #include "app/modules/palettes.h"
 #include "app/undo_transaction.h"
 #include "base/compiler_specific.h"
@@ -70,6 +71,7 @@ void LoadPaletteCommand::onExecute(Context* context)
     }
     else {
       set_default_palette(palette);
+      set_config_string("GfxMode", "Palette", filename.c_str());
     }
 
     // Set the palette calling the hooks

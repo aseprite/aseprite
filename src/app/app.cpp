@@ -134,11 +134,14 @@ App::App(int argc, const char* argv[])
   RenderEngine::loadConfig();
 
   // Default palette.
-  if (!options.paletteFileName().empty()) {
-    const char* palFile = options.paletteFileName().c_str();
-    PRINTF("Loading custom palette file: %s\n", palFile);
+  base::string palFile(!options.paletteFileName().empty() ?
+                       options.paletteFileName():
+                       base::string(get_config_string("GfxMode", "Palette", "")));
 
-    base::UniquePtr<Palette> pal(Palette::load(palFile));
+  if (!palFile.empty()) {
+    PRINTF("Loading custom palette file: %s\n", palFile.c_str());
+
+    base::UniquePtr<Palette> pal(Palette::load(palFile.c_str()));
     if (pal.get() == NULL)
       throw base::Exception("Error loading default palette from: %s", palFile);
 
