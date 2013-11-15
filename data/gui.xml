@@ -344,6 +344,14 @@
           <param name="frame" value="all" />
         </item>
       </menu>
+      <menu text="&amp;Palette">
+        <item command="PaletteEditor" text="&amp;Palette Editor">
+          <param name="switch" value="true" />
+        </item>
+        <separator />
+        <item command="LoadPalette" text="&amp;Load Palette" />
+        <item command="SavePalette" text="&amp;Save Palette" />
+      </menu>
       <menu text="Selec&amp;t">
         <item command="MaskAll" text="&amp;All" />
         <item command="DeselectMask" text="&amp;Deselect" />
@@ -365,9 +373,6 @@
         <item command="GridSettings" text="Gri&amp;d Settings" />
         <separator />
         <item command="Timeline" text="&amp;Timeline">
-          <param name="switch" value="true" />
-        </item>
-        <item command="PaletteEditor" text="&amp;Palette Editor">
           <param name="switch" value="true" />
         </item>
         <item command="Preview" text="Previe&amp;w" />

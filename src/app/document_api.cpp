@@ -51,6 +51,7 @@
 #include "app/undoers/set_layer_name.h"
 #include "app/undoers/set_mask.h"
 #include "app/undoers/set_mask_position.h"
+#include "app/undoers/set_palette_colors.h"
 #include "app/undoers/set_sprite_pixel_format.h"
 #include "app/undoers/set_sprite_size.h"
 #include "app/undoers/set_stock_pixel_format.h"
@@ -69,6 +70,7 @@
 #include "raster/quantization.h"
 #include "raster/sprite.h"
 #include "raster/stock.h"
+
 
 
 namespace app {
@@ -1087,6 +1089,31 @@ void DocumentApi::deselectMask()
         m_document));
 
   m_document->setMaskVisible(false);
+}
+
+void DocumentApi::setPalette(Sprite* sprite, FrameNumber frame, Palette* newPalette)
+{
+  Palette* currentSpritePalette = sprite->getPalette(frame); // Sprite current pal
+  int from, to;
+
+  // Check differences between current sprite palette and current system palette
+  from = to = -1;
+  currentSpritePalette->countDiff(newPalette, &from, &to);
+
+  if (from >= 0 && to >= from) {
+    DocumentUndo* undo = m_document->getUndo();
+
+    // Add undo information to save the range of pal entries that will be modified.
+    if (undo->isEnabled()) {
+      m_undoers->pushUndoer
+        (new undoers::SetPaletteColors(getObjects(),
+                                       sprite, currentSpritePalette,
+                                       frame, from, to));
+    }
+
+    // Change the sprite palette
+    sprite->setPalette(newPalette, false);
+  }
 }
 
 } // namespace app

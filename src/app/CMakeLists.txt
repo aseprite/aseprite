@@ -46,6 +46,7 @@ add_library(app-library
   commands/cmd_layer_from_background.cpp
   commands/cmd_layer_properties.cpp
   commands/cmd_load_mask.cpp
+  commands/cmd_load_palette.cpp
   commands/cmd_mask_all.cpp
   commands/cmd_mask_by_color.cpp
   commands/cmd_merge_down_layer.cpp
@@ -70,6 +71,7 @@ add_library(app-library
   commands/cmd_rotate_canvas.cpp
   commands/cmd_save_file.cpp
   commands/cmd_save_mask.cpp
+  commands/cmd_save_palette.cpp
   commands/cmd_scroll.cpp
   commands/cmd_sprite_editor.cpp
   commands/cmd_sprite_properties.cpp

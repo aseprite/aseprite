@@ -32,6 +32,7 @@ namespace raster {
   class LayerFolder;
   class LayerImage;
   class Mask;
+  class Palette;
   class Sprite;
 }
 
@@ -106,6 +107,9 @@ namespace app {
     void copyToCurrentMask(Mask* mask);
     void setMaskPosition(int x, int y);
     void deselectMask();
+
+    // Palette API
+    void setPalette(Sprite* sprite, FrameNumber frame, Palette* newPalette);
 
   private:
     undo::ObjectsContainer* getObjects() const;

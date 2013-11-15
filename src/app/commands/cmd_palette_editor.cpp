@@ -89,8 +89,6 @@ protected:
   void onMoreOptionsClick(Event& ev);
   void onCopyColorsClick(Event& ev);
   void onPasteColorsClick(Event& ev);
-  void onLoadPaletteClick(Event& ev);
-  void onSavePaletteClick(Event& ev);
   void onRampClick(Event& ev);
   void onQuantizeClick(Event& ev);
 
@@ -115,8 +113,6 @@ private:
   HsvSliders m_hsvSliders;
   Button m_copyButton;
   Button m_pasteButton;
-  Button m_loadButton;
-  Button m_saveButton;
   Button m_rampButton;
   Button m_quantizeButton;
 
@@ -257,8 +253,6 @@ PaletteEntryEditor::PaletteEntryEditor()
   , m_moreOptions("+")
   , m_copyButton("Copy")
   , m_pasteButton("Paste")
-  , m_loadButton("Load")
-  , m_saveButton("Save")
   , m_rampButton("Ramp")
   , m_quantizeButton("Quantize")
   , m_disableHexUpdate(false)
@@ -276,8 +270,6 @@ PaletteEntryEditor::PaletteEntryEditor()
   setup_mini_look(&m_moreOptions);
   setup_mini_look(&m_copyButton);
   setup_mini_look(&m_pasteButton);
-  setup_mini_look(&m_loadButton);
-  setup_mini_look(&m_saveButton);
   setup_mini_look(&m_rampButton);
   setup_mini_look(&m_quantizeButton);
 
@@ -295,13 +287,6 @@ PaletteEntryEditor::PaletteEntryEditor()
     box->child_spacing = 0;
     box->addChild(&m_copyButton);
     box->addChild(&m_pasteButton);
-    m_bottomBox.addChild(box);
-  }
-  {
-    Box* box = new Box(JI_HORIZONTAL);
-    box->child_spacing = 0;
-    box->addChild(&m_loadButton);
-    box->addChild(&m_saveButton);
     m_bottomBox.addChild(box);
   }
   m_bottomBox.addChild(&m_rampButton);
@@ -322,8 +307,6 @@ PaletteEntryEditor::PaletteEntryEditor()
   m_moreOptions.Click.connect(&PaletteEntryEditor::onMoreOptionsClick, this);
   m_copyButton.Click.connect(&PaletteEntryEditor::onCopyColorsClick, this);
   m_pasteButton.Click.connect(&PaletteEntryEditor::onPasteColorsClick, this);
-  m_loadButton.Click.connect(&PaletteEntryEditor::onLoadPaletteClick, this);
-  m_saveButton.Click.connect(&PaletteEntryEditor::onSavePaletteClick, this);
   m_rampButton.Click.connect(&PaletteEntryEditor::onRampClick, this);
   m_quantizeButton.Click.connect(&PaletteEntryEditor::onQuantizeClick, this);
 
@@ -572,47 +555,6 @@ void PaletteEntryEditor::onPasteColorsClick(Event& ev)
   // Generate onPalChange() event so we update all sliders to the new
   // values.
   onPalChange();
-}
-
-void PaletteEntryEditor::onLoadPaletteClick(Event& ev)
-{
-  Palette *palette;
-  base::string filename = app::show_file_selector("Load Palette", "", "png,pcx,bmp,tga,lbm,col,gpl");
-  if (!filename.empty()) {
-    palette = Palette::load(filename.c_str());
-    if (!palette) {
-      Alert::show("Error<<Loading palette file||&Close");
-    }
-    else {
-      setNewPalette(palette, "Load Palette");
-      delete palette;
-    }
-  }
-}
-
-void PaletteEntryEditor::onSavePaletteClick(Event& ev)
-{
-  base::string filename;
-  int ret;
-
- again:
-  filename = app::show_file_selector("Save Palette", "", "png,pcx,bmp,tga,col,gpl");
-  if (!filename.empty()) {
-    if (base::file_exists(filename)) {
-      ret = Alert::show("Warning<<File exists, overwrite it?<<%s||&Yes||&No||&Cancel",
-                        base::get_file_name(filename).c_str());
-
-      if (ret == 2)
-        goto again;
-      else if (ret != 1)
-        return;
-    }
-
-    Palette* palette = get_current_palette();
-    if (!palette->save(filename.c_str())) {
-      Alert::show("Error<<Saving palette file||&Close");
-    }
-  }
 }
 
 void PaletteEntryEditor::onRampClick(Event& ev)
