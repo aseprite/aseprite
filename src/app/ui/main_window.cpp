@@ -170,6 +170,8 @@ void MainWindow::onActiveViewChange()
 {
   if (DocumentView* docView = dynamic_cast<DocumentView*>(m_workspace->getActiveView()))
     UIContext::instance()->setActiveView(docView);
+  else
+    UIContext::instance()->setActiveView(NULL);
 }
 
 void MainWindow::clickTab(Tabs* tabs, TabView* tabView, ui::MouseButtons buttons)
