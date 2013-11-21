@@ -171,7 +171,7 @@ void OptionsCommand::onExecute(Context* context)
 void OptionsCommand::onResetCheckedBg()
 {
   // Default values
-  m_checked_bg->setSelectedItem((int)RenderEngine::CHECKED_BG_16X16);
+  m_checked_bg->setSelectedItemIndex((int)RenderEngine::CHECKED_BG_16X16);
   m_checked_bg_zoom->setSelected(true);
   m_checked_bg_color1->setColor(app::Color::fromRgb(128, 128, 128));
   m_checked_bg_color2->setColor(app::Color::fromRgb(192, 192, 192));

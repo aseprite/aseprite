@@ -173,6 +173,10 @@ int App::run()
 
     // Redraw the whole screen.
     ui::Manager::getDefault()->invalidate();
+
+    // 2013-11-19 - JRM - Force setting active view to NULL, workaround for setting 
+    // window title to proper devault value. (Issue #285)
+    UIContext::instance()->setActiveView(NULL);
   }
 
   // Set background mode for non-GUI modes
