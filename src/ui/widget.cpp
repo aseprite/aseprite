@@ -61,7 +61,6 @@ Widget::Widget(WidgetType type)
   this->m_theme = CurrentTheme::get();
 
   this->m_align = 0;
-  this->m_text = "";
   this->m_font = this->m_theme ? this->m_theme->default_font: NULL;
   this->m_bgColor = ui::ColorNone;
 
@@ -154,6 +153,7 @@ void Widget::setTextf(const char *format, ...)
 void Widget::setTextQuiet(const base::string& text)
 {
   m_text = text;
+  flags |= JI_HASTEXT;
 }
 
 FONT *Widget::getFont() const

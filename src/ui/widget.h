@@ -105,7 +105,7 @@ namespace ui {
 
     // Text property.
 
-    bool hasText() const { return !m_text.empty(); }
+    bool hasText() const { return (flags & JI_HASTEXT) == JI_HASTEXT; }
 
     const base::string& getText() const { return m_text; }
     int getTextInt() const;
