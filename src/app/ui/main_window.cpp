@@ -49,7 +49,7 @@ namespace app {
 using namespace ui;
 
 MainWindow::MainWindow()
-  : Window(true, "")
+  : Window(DesktopWindow)
   , m_lastSplitterPos(0.0)
   , m_lastTimelineSplitterPos(75.0)
   , m_advancedMode(false)

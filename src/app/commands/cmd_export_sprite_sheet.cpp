@@ -55,7 +55,7 @@ class ExportSpriteSheetWindow : public Window {
 
 public:
   ExportSpriteSheetWindow(Context* context)
-    : Window(false, "Export Sprite Sheet")
+    : Window(WithTitleBar, "Export Sprite Sheet")
     , m_context(context)
     , m_document(context->getActiveDocument())
     , m_grid(4, false)

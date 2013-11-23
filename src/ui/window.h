@@ -20,7 +20,9 @@ namespace ui {
   class Window : public Widget
   {
   public:
-    Window(bool isDesktop, const base::string& text);
+    enum Type { DesktopWindow, WithTitleBar, WithoutTitleBar };
+
+    explicit Window(Type type, const base::string& text = "");
     ~Window();
 
     Widget* getKiller();

@@ -243,7 +243,7 @@ void PaletteEditorCommand::onExecute(Context* context)
 // Based on ColorSelector class.
 
 PaletteEntryEditor::PaletteEntryEditor()
-  : Window(false, "Palette Editor (F4)")
+  : Window(WithTitleBar, "Palette Editor (F4)")
   , m_vbox(JI_VERTICAL)
   , m_topBox(JI_HORIZONTAL)
   , m_bottomBox(JI_HORIZONTAL)

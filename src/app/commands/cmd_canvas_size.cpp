@@ -55,7 +55,7 @@ class CanvasSizeWindow : public Window
 {
 public:
   CanvasSizeWindow(int left, int top, int right, int bottom)
-    : Window(false, "Canvas Size")
+    : Window(WithTitleBar, "Canvas Size")
     , m_editor(current_editor)
     , m_rect(-left, -top,
              current_editor->getSprite()->getWidth() + left + right,

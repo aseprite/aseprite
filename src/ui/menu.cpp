@@ -90,7 +90,7 @@ class CustomizedWindowForMenuBox : public Window
 {
 public:
   CustomizedWindowForMenuBox(MenuBox* menubox)
-    : Window(false, "")
+    : Window(WithoutTitleBar, "")
   {
     setMoveable(false); // Can't move the window
     addChild(menubox);
@@ -272,7 +272,7 @@ void Menu::showPopup(int x, int y)
   } while (jmouse_b(0) != kButtonNone);
 
   // New window and new menu-box
-  Window* window = new Window(false, "");
+  Window* window = new Window(Window::WithoutTitleBar);
   MenuBox* menubox = new MenuBox();
   MenuBaseData* base = menubox->createBase();
   base->was_clicked = true;

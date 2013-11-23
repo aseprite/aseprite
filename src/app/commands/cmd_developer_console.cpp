@@ -36,7 +36,7 @@ using namespace ui;
 class DeveloperConsole : public Window {
 public:
   DeveloperConsole()
-    : Window(false, "Developer Console")
+    : Window(WithTitleBar, "Developer Console")
     , m_vbox(JI_VERTICAL)
   {
     m_vbox.addChild(&m_docs);

@@ -385,15 +385,14 @@ Widget* WidgetLoader::convertXmlElementToWidget(const TiXmlElement* elem, Widget
   /* window */
   else if (elem_name == "window") {
     const char *text = elem->Attribute("text");
+    bool desktop = bool_attr_is_true(elem, "desktop");
 
-    if (text) {
-      bool desktop = bool_attr_is_true(elem, "desktop");
-
-      if (desktop)
-        widget = new Window(true, "");
-      else
-        widget = new Window(false, TRANSLATE_ATTR(text));
-    }
+    if (desktop)
+      widget = new Window(Window::DesktopWindow);
+    else if (text)
+      widget = new Window(Window::WithTitleBar, TRANSLATE_ATTR(text));
+    else
+      widget = new Window(Window::WithoutTitleBar);
   }
   /* colorpicker */
   else if (elem_name == "colorpicker") {

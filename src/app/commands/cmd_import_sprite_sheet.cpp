@@ -58,7 +58,7 @@ class ImportSpriteSheetWindow : public Window,
                                 public SelectBoxDelegate {
 public:
   ImportSpriteSheetWindow(Context* context)
-    : Window(false, "Import Sprite Sheet")
+    : Window(WithTitleBar, "Import Sprite Sheet")
     , m_context(context)
     , m_document(NULL)
     , m_grid(4, false)

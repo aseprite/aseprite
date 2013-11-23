@@ -474,7 +474,7 @@ void ComboBox::onButtonClick(Event& ev)
 void ComboBox::openListBox()
 {
   if (!m_window) {
-    m_window = new Window(false, "");
+    m_window = new Window(Window::WithoutTitleBar);
     View* view = new View();
     m_listbox = new ComboBoxListBox(this);
     m_window->setOnTop(true);

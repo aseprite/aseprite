@@ -194,7 +194,7 @@ public:
 };
 
 FileSelector::FileSelector()
-  : Window(false, "")
+  : Window(WithTitleBar, "")
 {
   app::WidgetLoader loader;
   loader.addWidgetType("filenameentry", new CustomFileNameEntryCreator);

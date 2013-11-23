@@ -47,7 +47,7 @@ AboutCommand::AboutCommand()
 
 void AboutCommand::onExecute(Context* context)
 {
-  base::UniquePtr<Window> window(new Window(false, "About " PACKAGE));
+  base::UniquePtr<Window> window(new Window(Window::WithTitleBar, "About " PACKAGE));
   Box* box1 = new Box(JI_VERTICAL);
   Grid* grid = new Grid(2, false);
   Label* title = new Label(PACKAGE " v" VERSION);

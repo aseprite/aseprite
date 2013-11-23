@@ -54,7 +54,7 @@ Console::Console()
       console_counter > 1)
     return;
   else {
-    Window* window = new Window(false, "Errors Console");
+    Window* window = new Window(Window::WithTitleBar, "Errors Console");
     Grid* grid = new Grid(1, false);
     View* view = new View();
     TextBox* textbox = new TextBox("", JI_WORDWRAP);

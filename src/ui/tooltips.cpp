@@ -152,7 +152,7 @@ void TooltipManager::onTick()
 // TipWindow
 
 TipWindow::TipWindow(const char *text, bool close_on_buttonpressed)
-  : Window(false, text)
+  : Window(WithTitleBar, text)
 {
   m_close_on_buttonpressed = close_on_buttonpressed;
   m_filtering = false;

@@ -42,7 +42,7 @@
 namespace ui {
 
 Alert::Alert()
-  : Window(false, "")
+  : Window(WithTitleBar)
 {
   // Do nothing
 }

@@ -100,7 +100,7 @@ void MaskByColorCommand::onExecute(Context* context)
   if (!image)
     return;
 
-  base::UniquePtr<Window> window(new Window(false, "Mask by Color"));
+  base::UniquePtr<Window> window(new Window(Window::WithTitleBar, "Mask by Color"));
   box1 = new Box(JI_VERTICAL);
   box2 = new Box(JI_HORIZONTAL);
   box3 = new Box(JI_HORIZONTAL);

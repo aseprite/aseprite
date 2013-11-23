@@ -33,21 +33,22 @@ enum {
 static gfx::Point clickedMousePos;
 static gfx::Rect* clickedWindowPos = NULL;
 
-Window::Window(bool desktop, const base::string& text)
+Window::Window(Type type, const base::string& text)
   : Widget(kWindowWidget)
 {
   m_killer = NULL;
-  m_isDesktop = desktop;
-  m_isMoveable = !desktop;
-  m_isSizeable = !desktop;
+  m_isDesktop = (type == DesktopWindow);
+  m_isMoveable = !m_isDesktop;
+  m_isSizeable = !m_isDesktop;
   m_isOnTop = false;
   m_isWantFocus = true;
   m_isForeground = false;
   m_isAutoRemap = true;
 
   setVisible(false);
-  setText(text);
   setAlign(JI_LEFT | JI_MIDDLE);
+  if (type == WithTitleBar)
+    setText(text);
 
   initTheme();
 }
