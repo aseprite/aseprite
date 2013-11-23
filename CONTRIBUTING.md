@@ -62,6 +62,10 @@ You can clone it locally using the following command (read-only URL):
 On Windows you can use programs like
 [msysgit](http://msysgit.github.io/) to clone the repository.
 
+## Compiling
+
+See [INSTALL.md](INSTALL.md) to know how to compile Aseprite.
+
 ## Forking & Pull Requests
 
 You can fork the GitHub repository using the Fork button at
@@ -84,6 +88,15 @@ want to fix three different issues, create three different branches
 from `dev` and then send three different PR. Do not chain all the
 fixes in one single branch. E.g. `fix-issues-3-and-8-and-25`.
 
-## Contact
+## Mailing List
 
-Ask for help in the [Aseprite group](http://groups.google.com/group/aseprite-discuss).
+Subscribe to
+[aseprite-discuss](http://groups.google.com/group/aseprite-discuss)
+group. If you want to start working in something
+(e.g. [an open issue](http://code.google.com/p/aseprite/issues/list)),
+you should send an email to the group describing what you want to do,
+to avoid programming in something that is already done or which
+someone else is working on.
+
+And always remember to look the
+[Roadmap](https://code.google.com/p/aseprite/wiki/Roadmap).

@@ -10,6 +10,10 @@ platforms:
 # How can I compile Aseprite?
 
 The new build system for Aseprite is [CMake](http://www.cmake.org/).
+You will not need any extra library because the repository already
+contains the source code of all dependencies, even a modified version
+of the Allegro library is included in master branch.
+
 The following are the steps to compile Aseprite (in this case we have
 the source code in a directory called `aseprite-source`):
 
@@ -61,6 +65,16 @@ the source code in a directory called `aseprite-source`):
    the whole `data/` directory to `build/src/RelWithDebInfo/` so you
    can run/debug the program from Visual Studio IDE. On Linux, you can
    copy the `data/` directory in `~/.aseprite/` directory.
+
+# How to use installed third party libraries?
+
+If you don't want to use the embedded code of third party libraries
+(i.e. to use your installed versions), you can disable static linking
+configuring each `USE_SHARED_` option.
+
+After running `cmake -G`, you edit `build/CMakeCache.txt` file, and
+enable the `USE_SHARED_` flag (set its value to `ON`) of the library
+that you want to be linked dynamically.
 
 # How to profile Aseprite?
 
