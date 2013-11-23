@@ -214,7 +214,7 @@ public:
   BrushAngleField(BrushTypeField* brushType)
     : IntEntry(0, 180)
     , m_brushType(brushType) {
-    setSuffix("\xB0");
+    setSuffix("\xc2\xb0");
   }
 
 protected:

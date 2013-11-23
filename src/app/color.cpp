@@ -227,7 +227,7 @@ std::string Color::toHumanReadableString(PixelFormat pixelFormat, HumanReadableS
         }
         else {
           result << "HSB "
-                 << m_value.hsv.h << "\xB0 "
+                 << m_value.hsv.h << "\xc2\xb0 "
                  << m_value.hsv.s << " "
                  << m_value.hsv.v;
 
@@ -287,7 +287,7 @@ std::string Color::toHumanReadableString(PixelFormat pixelFormat, HumanReadableS
           result << "Gry-" << getGray();
         }
         else {
-          result << m_value.hsv.h << "\xB0"
+          result << m_value.hsv.h << "\xc2\xb0"
                  << m_value.hsv.s << ","
                  << m_value.hsv.v;
         }
