@@ -127,18 +127,20 @@ Timeline::~Timeline()
 
 void Timeline::updateUsingEditor(Editor* editor)
 {
-  DocumentView* view = editor->getDocumentView();
-  DocumentLocation location;
-  view->getDocumentLocation(&location);
-
-  if (m_editor)
-    m_editor->removeObserver(this);
+  detachDocument();
 
   // We always update the editor. In this way the timeline keeps in
   // sync with the active editor.
   m_editor = editor;
+
   if (m_editor)
     m_editor->addObserver(this);
+  else
+    return;                // No editor specified.
+
+  DocumentLocation location;
+  DocumentView* view = m_editor->getDocumentView();
+  view->getDocumentLocation(&location);
 
   // If we are already in the same position as the "editor", we don't
   // need to update the at all timeline.
@@ -147,8 +149,6 @@ void Timeline::updateUsingEditor(Editor* editor)
       m_layer == location.layer() &&
       m_frame == location.frame())
     return;
-
-  detachDocument();
 
   m_document = location.document();
   m_sprite = location.sprite();
