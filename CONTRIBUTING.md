@@ -1,10 +1,10 @@
 # Contributing
 
 You can contribute to Aseprite in several ways. One of the easiest
-ways to contribute is writting articles, blog posts, recording video
-tutorials, [creating art](http://aseprite.deviantart.com/), or showing
-your love to Aseprite e.g. naming Aseprite in your website and linking
-it to http://www.aseprite.org/, following
+ways is writting articles, blog posts, recording video tutorials,
+[creating pixel art](http://aseprite.deviantart.com/), or showing your love
+to Aseprite e.g. naming Aseprite in your website and linking it to
+http://www.aseprite.org/, following
 [@aseprite](https://twitter.com/aseprite) twitter account, or
 [giving a donation](http://www.aseprite.org/donate/).
 
@@ -72,16 +72,17 @@ The Pull Requests (PR) systems works in this way:
 1. You've to create a new branch from `dev`, e.g. `fix-8` to fix the issue 8.
 1. Start working on that new branch, and push that branch to your fork.
 1. Create a new PR to merge your `fix-8` branch to official `dev`.
-1. If the PR is accepted, your branch is merged with `dev`.
-1. You will need to pull changes from the official `dev` branch (merge
-   it with your own `dev` branch), and finally you can discard your
-   own `fix-8` branch (those changes are already)
-1. Continue from the new `dev`.
+1. If the PR is accepted, your branch is merged into `dev`.
+1. You will need to pull changes from the official `dev` branch, and
+   merge them in your own `dev` branch. Finally you can discard your
+   own `fix-8` branch (because those changes should be already merged
+   into `dev` if the PR was accepted).
+1. Continue working from the new `dev` head.
 
 To keep in mind: **always** start working from the `dev` head, if you
 want to fix three different issues, create three different branches
 from `dev` and then send three different PR. Do not chain all the
-fixes in one branch (e.g. `fix-issues-3-and-8-and-25`).
+fixes in one single branch. E.g. `fix-issues-3-and-8-and-25`.
 
 ## Contact
 
