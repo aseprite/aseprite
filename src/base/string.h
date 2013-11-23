@@ -29,6 +29,8 @@ namespace base {
                                               typename SubIterator::pointer,
                                               typename SubIterator::reference> {
   public:
+    typedef typename SubIterator::pointer pointer; // Needed for GCC
+
     explicit utf8_iteratorT(const SubIterator& it)
       : m_internal(it) {
     }
