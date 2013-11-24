@@ -28,7 +28,7 @@ FILE* open_file_raw(const string& filename, const string& mode)
   return _wfopen(from_utf8(filename).c_str(),
                  from_utf8(mode).c_str());
 #else
-  return fopen(filename.c_str(), mode);
+  return fopen(filename.c_str(), mode.c_str());
 #endif
 }
 

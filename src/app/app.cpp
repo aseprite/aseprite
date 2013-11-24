@@ -143,7 +143,7 @@ App::App(int argc, const char* argv[])
 
     base::UniquePtr<Palette> pal(Palette::load(palFile.c_str()));
     if (pal.get() == NULL)
-      throw base::Exception("Error loading default palette from: %s", palFile);
+	  throw base::Exception("Error loading default palette from: %s", palFile.c_str());
 
     set_default_palette(pal.get());
   }
