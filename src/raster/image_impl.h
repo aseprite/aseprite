@@ -248,12 +248,12 @@ namespace raster {
   // Specializations
 
   template<>
-  void ImageImpl<IndexedTraits>::clear(color_t color) OVERRIDE {
+  inline void ImageImpl<IndexedTraits>::clear(color_t color) OVERRIDE {
     memset(m_bits, color, getWidth()*getHeight());
   }
 
   template<>
-  void ImageImpl<BitmapTraits>::clear(color_t color) OVERRIDE {
+  inline void ImageImpl<BitmapTraits>::clear(color_t color) OVERRIDE {
     memset(m_bits, (color ? 0xff: 0x00),
            BitmapTraits::getRowStrideBytes(getWidth()) * getHeight());
   }
