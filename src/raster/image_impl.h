@@ -107,8 +107,8 @@ namespace raster {
 
     void clear(color_t color) OVERRIDE {
       LockImageBits<Traits> bits(this);
-      LockImageBits<Traits>::iterator it(bits.begin());
-      LockImageBits<Traits>::iterator end(bits.end());
+      typename LockImageBits<Traits>::iterator it(bits.begin());
+      typename LockImageBits<Traits>::iterator end(bits.end());
 
       for (; it != end; ++it)
         *it = color;
@@ -227,8 +227,8 @@ namespace raster {
 
     void drawHLine(int x1, int y, int x2, color_t color) OVERRIDE {
       LockImageBits<Traits> bits(this, gfx::Rect(x1, y, x2 - x1 + 1, 1));
-      LockImageBits<Traits>::iterator it(bits.begin());
-      LockImageBits<Traits>::iterator end(bits.end());
+      typename LockImageBits<Traits>::iterator it(bits.begin());
+      typename LockImageBits<Traits>::iterator end(bits.end());
 
       for (; it != end; ++it)
         *it = color;
