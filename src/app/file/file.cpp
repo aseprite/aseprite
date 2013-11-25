@@ -246,13 +246,14 @@ FileOp* fop_to_save_document(Document* document)
   // Get the extension of the filename (in lower case)
   base::string extension = base::string_to_lower(base::get_file_extension(fop->document->getFilename()));
 
-  PRINTF("Saving document \"%s\" (%s)\n", fop->document->getFilename(), extension.c_str());
+  PRINTF("Saving document \"%s\" (%s)\n", 
+		 fop->document->getFilename().c_str(), extension.c_str());
 
   /* get the format through the extension of the filename */
   fop->format = get_fileformat(extension.c_str());
   if (!fop->format ||
       !fop->format->support(FILE_SUPPORT_SAVE)) {
-    fop_error(fop, "ASEPRITE can't save \"%s\" files\n", extension);
+	fop_error(fop, "ASEPRITE can't save \"%s\" files\n", extension.c_str());
     return fop;
   }
 

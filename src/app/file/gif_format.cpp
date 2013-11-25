@@ -325,7 +325,7 @@ bool GifFormat::onPostLoad(FileOp* fop)
                       "<<ASEPRITE cannot handle this kind of GIF correctly in Indexed format."
                       "<<What would you like to do?"
                       "||Convert to &RGBA||Keep &Indexed||&Cancel",
-                      fop->document->getFilename());
+                      fop->document->getFilename().c_str());
 
     if (result == 1)
       pixelFormat = IMAGE_RGB;
