@@ -26,12 +26,15 @@
 #include "app/modules/gui.h"
 #include "app/settings/ink_type.h"
 #include "app/settings/settings.h"
+#include "app/settings/settings_observers.h"
 #include "app/tools/ink.h"
 #include "app/tools/point_shape.h"
 #include "app/tools/tool.h"
 #include "app/ui/button_set.h"
+#include "app/ui/color_button.h"
 #include "app/ui/skin/skin_theme.h"
 #include "app/ui_context.h"
+#include "base/bind.h"
 #include "base/unique_ptr.h"
 #include "raster/conversion_alleg.h"
 #include "raster/image.h"
@@ -336,6 +339,20 @@ protected:
   }
 };
 
+
+class ContextBar::TransparentColorField : public ColorButton
+{
+public:
+  TransparentColorField() : ColorButton(app::Color::fromMask(), IMAGE_RGB) {
+    Change.connect(Bind<void>(&TransparentColorField::onChange, this));
+  }
+
+protected:
+  void onChange() {
+    UIContext::instance()->settings()->selection()->setMoveTransparentColor(getColor());
+  }
+};
+
 ContextBar::ContextBar()
   : Box(JI_HORIZONTAL)
 {
@@ -366,6 +383,10 @@ ContextBar::ContextBar()
   m_sprayBox->addChild(m_sprayWidth = new SprayWidthField());
   m_sprayBox->addChild(m_spraySpeed = new SpraySpeedField());
 
+  addChild(m_selectionOptionsBox = new HBox());
+  m_selectionOptionsBox->addChild(new Label("Transparent Color:"));
+  m_selectionOptionsBox->addChild(m_transparentColor = new TransparentColorField);
+
   TooltipManager* tooltipManager = new TooltipManager();
   addChild(tooltipManager);
 
@@ -375,6 +396,7 @@ ContextBar::ContextBar()
   tooltipManager->addTooltipFor(m_inkOpacity, "Opacity (Alpha value in RGBA)", JI_CENTER | JI_BOTTOM);
   tooltipManager->addTooltipFor(m_sprayWidth, "Spray Width", JI_CENTER | JI_BOTTOM);
   tooltipManager->addTooltipFor(m_spraySpeed, "Spray Speed", JI_CENTER | JI_BOTTOM);
+  tooltipManager->addTooltipFor(m_transparentColor, "Transparent Color", JI_BOTTOM | JI_BOTTOM);
 
   App::instance()->PenSizeAfterChange.connect(&ContextBar::onPenSizeChange, this);
   App::instance()->PenAngleAfterChange.connect(&ContextBar::onPenAngleChange, this);
@@ -451,6 +473,9 @@ void ContextBar::onCurrentToolChange()
   bool hasSprayOptions = (currentTool->getPointShape(0)->isSpray() ||
                           currentTool->getPointShape(1)->isSpray());
 
+  bool hasSelectOptions = (currentTool->getInk(0)->isSelection() ||
+                           currentTool->getInk(1)->isSelection());
+
   // Show/Hide fields
   m_brushLabel->setVisible(hasOpacity);
   m_brushType->setVisible(hasOpacity);
@@ -463,6 +488,7 @@ void ContextBar::onCurrentToolChange()
   m_toleranceLabel->setVisible(hasTolerance);
   m_tolerance->setVisible(hasTolerance);
   m_sprayBox->setVisible(hasSprayOptions);
+  m_selectionOptionsBox->setVisible(hasSelectOptions);
 
   layout();
 }

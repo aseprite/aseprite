@@ -240,22 +240,6 @@ StatusBar::StatusBar()
     m_notificationsBox = box1;
   }
 
-  // Construct move-pixels box
-  {
-    Box* filler = new Box(JI_HORIZONTAL);
-    filler->setExpansive(true);
-
-    m_movePixelsBox = new Box(JI_HORIZONTAL);
-    m_transparentLabel = new Label("Transparent Color:");
-    m_transparentColor = new ColorButton(app::Color::fromMask(), IMAGE_RGB);
-
-    m_movePixelsBox->addChild(filler);
-    m_movePixelsBox->addChild(m_transparentLabel);
-    m_movePixelsBox->addChild(m_transparentColor);
-
-    m_transparentColor->Change.connect(Bind<void>(&StatusBar::onTransparentColorChange, this));
-  }
-
   addChild(m_notificationsBox);
 
   App::instance()->CurrentToolChange.connect(&StatusBar::onCurrentToolChange, this);
@@ -267,19 +251,8 @@ StatusBar::~StatusBar()
     delete *it;
 
   delete m_tipwindow;           // widget
-  delete m_movePixelsBox;
   delete m_commandsBox;
   delete m_notificationsBox;
-}
-
-void StatusBar::addObserver(StatusBarObserver* observer)
-{
-  m_observers.addObserver(observer);
-}
-
-void StatusBar::removeObserver(StatusBarObserver* observer)
-{
-  m_observers.removeObserver(observer);
 }
 
 void StatusBar::onCurrentToolChange()
@@ -291,12 +264,6 @@ void StatusBar::onCurrentToolChange()
       setTextf("%s Selected", currentTool->getText().c_str());
     }
   }
-}
-
-void StatusBar::onTransparentColorChange()
-{
-  m_observers.notifyObservers<const app::Color&>(&StatusBarObserver::onChangeTransparentColor,
-                                                 getTransparentColor());
 }
 
 void StatusBar::clearText()
@@ -395,27 +362,6 @@ void StatusBar::showTool(int msecs, tools::Tool* tool)
     m_state = SHOW_TOOL;
     m_tool = tool;
   }
-}
-
-void StatusBar::showMovePixelsOptions()
-{
-  if (!hasChild(m_movePixelsBox)) {
-    addChild(m_movePixelsBox);
-    invalidate();
-  }
-}
-
-void StatusBar::hideMovePixelsOptions()
-{
-  if (hasChild(m_movePixelsBox)) {
-    removeChild(m_movePixelsBox);
-    invalidate();
-  }
-}
-
-app::Color StatusBar::getTransparentColor()
-{
-  return m_transparentColor->getColor();
 }
 
 void StatusBar::showNotification(const char* text, const char* link)
@@ -575,8 +521,7 @@ bool StatusBar::onProcessMessage(Message* msg)
           x -= width+4;
         }
       }
-      // Show layers only when we are not moving pixels
-      else if (!hasChild(m_movePixelsBox)) {
+      else {
         // Available width for layers buttons
         int width = rc.w/4;
 
@@ -654,29 +599,28 @@ bool StatusBar::onProcessMessage(Message* msg)
       const Document* document = UIContext::instance()->getActiveDocument();
       bool state = (document != NULL);
 
-      if (!hasChild(m_movePixelsBox)) {
-        if (state && !hasChild(m_commandsBox)) {
-          updateCurrentFrame();
+      if (state && !hasChild(m_commandsBox)) {
+        updateCurrentFrame();
 
-          m_b_first->setEnabled(state);
-          m_b_prev->setEnabled(state);
-          m_b_play->setEnabled(state);
-          m_b_next->setEnabled(state);
-          m_b_last->setEnabled(state);
+        m_b_first->setEnabled(state);
+        m_b_prev->setEnabled(state);
+        m_b_play->setEnabled(state);
+        m_b_next->setEnabled(state);
+        m_b_last->setEnabled(state);
 
-          updateFromLayer();
+        updateFromLayer();
 
-          if (hasChild(m_notificationsBox))
-            removeChild(m_notificationsBox);
+        if (hasChild(m_notificationsBox))
+          removeChild(m_notificationsBox);
 
-          addChild(m_commandsBox);
-          invalidate();
-        }
-        else if (!state && !hasChild(m_notificationsBox)) {
-          addChild(m_notificationsBox);
-          invalidate();
-        }
+        addChild(m_commandsBox);
+        invalidate();
       }
+      else if (!state && !hasChild(m_notificationsBox)) {
+        addChild(m_notificationsBox);
+        invalidate();
+      }
+
       break;
     }
 
@@ -798,12 +742,6 @@ void StatusBar::onResize(ResizeEvent& ev)
   rc = ev.getBounds();
   rc.w -= rc.w/4 + 4*jguiscale();
   m_commandsBox->setBounds(rc);
-
-  rc = ev.getBounds();
-  Size reqSize = m_movePixelsBox->getPreferredSize();
-  rc.x = rc.x2() - reqSize.w;
-  rc.w = reqSize.w;
-  m_movePixelsBox->setBounds(rc);
 }
 
 void StatusBar::onPreferredSize(PreferredSizeEvent& ev)

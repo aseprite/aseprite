@@ -20,8 +20,10 @@
 #define APP_UI_EDITOR_MOVING_PIXELS_STATE_H_INCLUDED
 
 #include "app/context_observer.h"
+#include "app/settings/settings_observers.h"
 #include "app/ui/editor/handle_type.h"
 #include "app/ui/editor/standby_state.h"
+#include "app/ui/context_bar.h"
 #include "app/ui/status_bar.h"
 #include "base/compiler_specific.h"
 
@@ -33,7 +35,10 @@ namespace app {
   class Editor;
   class PixelsMovement;
 
-  class MovingPixelsState : public StandbyState, StatusBarObserver, ContextObserver {
+  class MovingPixelsState
+    : public StandbyState
+    , ContextObserver
+    , SelectionSettingsObserver {
   public:
     MovingPixelsState(Editor* editor, ui::MouseMessage* msg, PixelsMovement* pixelsMovement, HandleType handle);
     virtual ~MovingPixelsState();
@@ -52,13 +57,12 @@ namespace app {
 
     // ContextObserver
     virtual void onCommandBeforeExecution(Context* context) OVERRIDE;
+    
+    // SettingsObserver
+    virtual void onSetMoveTransparentColor(app::Color newColor) OVERRIDE;
 
     virtual gfx::Transformation getTransformation(Editor* editor) OVERRIDE;
 
-  protected:
-    // StatusBarObserver interface
-    virtual void dispose() OVERRIDE;
-    virtual void onChangeTransparentColor(const app::Color& color) OVERRIDE;
 
   private:
     void setTransparentColor(const app::Color& color);
