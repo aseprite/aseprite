@@ -104,12 +104,6 @@ static void allegro_window_close_hook()
     want_close_stage = STAGE_WANT_CLOSE;
 }
 
-// static
-Manager* Manager::getDefault()
-{
-  return m_defaultManager;
-}
-
 Manager::Manager()
   : Widget(kManagerWidget)
 {

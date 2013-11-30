@@ -23,7 +23,9 @@ namespace ui {
   class Manager : public Widget
   {
   public:
-    static Manager* getDefault();
+    static Manager* getDefault() {
+      return m_defaultManager;
+    }
 
     Manager();
     ~Manager();
