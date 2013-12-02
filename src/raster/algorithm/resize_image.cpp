@@ -35,23 +35,22 @@ void resize_image(const Image* src, Image* dst, ResizeMethod method, const Palet
   switch (method) {
 
     // TODO optimize this
-    case RESIZE_METHOD_NEAREST_NEIGHBOR: {
-      uint32_t color;
-      double u, v, du, dv;
-      int x, y;
+    case RESIZE_METHOD_NEAREST_NEIGHBOR: 
+    {
+      int o_width = src->getWidth(), o_height = src->getHeight();
+      int n_width = dst->getWidth(), n_height = dst->getHeight();
+      double x_ratio = o_width / (double)n_width;
+      double y_ratio = o_height / (double)n_height;
+      double px, py;
+      int i;
 
-      u = v = 0.0;
-      du = src->getWidth() * 1.0 / dst->getWidth();
-      dv = src->getHeight() * 1.0 / dst->getHeight();
-      for (y=0; y<dst->getHeight(); ++y) {
-        for (x=0; x<dst->getWidth(); ++x) {
-          color = src->getPixel(MID(0, u, src->getWidth()-1),
-                                MID(0, v, src->getHeight()-1));
-          dst->putPixel(x, y, color);
-          u += du;
+      for (int y = 0; y < n_height; y++) {
+        for (int x = 0; x < n_width; x++) {
+          px = floor(x * x_ratio);
+          py = floor(y * y_ratio);
+          i = (int)(py * o_width + px);
+          dst->putPixel(x, y, src->getPixel(i % o_width, i / o_width));
         }
-        u = 0.0;
-        v += dv;
       }
       break;
     }
