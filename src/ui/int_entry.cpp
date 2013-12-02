@@ -64,7 +64,11 @@ bool IntEntry::onProcessMessage(Message* msg)
     // text is automatically selected.
     case kMouseEnterMessage:
       requestFocus();
-      selectText(0, -1);
+      break;
+
+    // Reset value if it's out of bounds when focus is lost
+    case kFocusLeaveMessage:
+      setValue(MID(m_min, getValue(), m_max));
       break;
 
     case kMouseDownMessage:
