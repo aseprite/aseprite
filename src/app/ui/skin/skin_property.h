@@ -19,7 +19,12 @@
 #ifndef APP_UI_SKIN_SKIN_PROPERTY_H_INCLUDED
 #define APP_UI_SKIN_SKIN_PROPERTY_H_INCLUDED
 
+#include "base/shared_ptr.h"
 #include "ui/property.h"
+
+namespace ui {
+  class Widget;
+}
 
 namespace app {
   namespace skin {
@@ -35,7 +40,7 @@ namespace app {
     // Property to show widgets with a special look (e.g.: buttons or sliders with mini-borders)
     class SkinProperty : public ui::Property {
     public:
-      static const char* SkinPropertyName;
+      static const char* Name;
 
       SkinProperty();
       ~SkinProperty();
@@ -60,6 +65,10 @@ namespace app {
       int m_lowerLeft;
       int m_lowerRight;
     };
+
+    typedef SharedPtr<SkinProperty> SkinPropertyPtr;
+
+    SkinPropertyPtr get_skin_property(ui::Widget* widget);
 
   } // namespace skin
 } // namespace app

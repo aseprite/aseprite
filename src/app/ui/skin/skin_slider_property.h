@@ -19,8 +19,9 @@
 #ifndef APP_UI_SKIN_SKIN_SLIDER_PROPERTY_H_INCLUDED
 #define APP_UI_SKIN_SKIN_SLIDER_PROPERTY_H_INCLUDED
 
-#include "gfx/rect.h"
 #include "app/ui/skin/skin_property.h"
+#include "base/shared_ptr.h"
+#include "gfx/rect.h"
 
 namespace ui {
   class Slider;
@@ -35,8 +36,10 @@ namespace app {
       virtual void paint(ui::Slider* slider, ui::Graphics* graphics, const gfx::Rect& rc) = 0;
     };
 
-    class SkinSliderProperty : public SkinProperty {
+    class SkinSliderProperty : public ui::Property {
     public:
+      static const char* Name;
+
       // The given painter is deleted automatically when this
       // property the destroyed.
       SkinSliderProperty(ISliderBgPainter* painter);
@@ -47,6 +50,8 @@ namespace app {
     private:
       ISliderBgPainter* m_painter;
     };
+
+    typedef SharedPtr<SkinSliderProperty> SkinSliderPropertyPtr;
 
   } // namespace skin
 } // namespace app

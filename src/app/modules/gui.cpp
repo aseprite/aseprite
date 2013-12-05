@@ -404,30 +404,17 @@ void setup_mini_look(Widget* widget)
 
 void setup_look(Widget* widget, LookType lookType)
 {
-  SharedPtr<SkinProperty> skinProp;
-
-  skinProp = widget->getProperty(SkinProperty::SkinPropertyName);
-  if (skinProp == NULL)
-    skinProp.reset(new SkinProperty);
-
+  SkinPropertyPtr skinProp = get_skin_property(widget);
   skinProp->setLook(lookType);
-  widget->setProperty(skinProp);
 }
 
 void setup_bevels(Widget* widget, int b1, int b2, int b3, int b4)
 {
-  SharedPtr<SkinProperty> skinProp;
-
-  skinProp = widget->getProperty(SkinProperty::SkinPropertyName);
-  if (skinProp == NULL)
-    skinProp.reset(new SkinProperty);
-
+  SkinPropertyPtr skinProp = get_skin_property(widget);
   skinProp->setUpperLeft(b1);
   skinProp->setUpperRight(b2);
   skinProp->setLowerLeft(b3);
   skinProp->setLowerRight(b4);
-
-  widget->setProperty(skinProp);
 }
 
 // Sets the IconInterface pointer interface of the button to show the

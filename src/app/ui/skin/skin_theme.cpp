@@ -851,7 +851,7 @@ void SkinTheme::paintButton(PaintEvent& ev)
 
   // Tool buttons are smaller
   LookType look = NormalLook;
-  SharedPtr<SkinProperty> skinPropery = widget->getProperty(SkinProperty::SkinPropertyName);
+  SkinPropertyPtr skinPropery = widget->getProperty(SkinProperty::Name);
   if (skinPropery != NULL)
     look = skinPropery->getLook();
 
@@ -926,7 +926,7 @@ void SkinTheme::paintCheckBox(PaintEvent& ev)
 
   // Check box look
   LookType look = NormalLook;
-  SharedPtr<SkinProperty> skinPropery = widget->getProperty(SkinProperty::SkinPropertyName);
+  SkinPropertyPtr skinPropery = widget->getProperty(SkinProperty::Name);
   if (skinPropery != NULL)
     look = skinPropery->getLook();
 
@@ -990,7 +990,7 @@ void SkinTheme::paintEntry(PaintEvent& ev)
   y2 = widget->getBounds().y2()-1;
 
   bool isMiniLook = false;
-  SharedPtr<SkinProperty> skinPropery = widget->getProperty(SkinProperty::SkinPropertyName);
+  SkinPropertyPtr skinPropery = widget->getProperty(SkinProperty::Name);
   if (skinPropery != NULL)
     isMiniLook = (skinPropery->getLook() == MiniLook);
 
@@ -1404,12 +1404,13 @@ void SkinTheme::paintSlider(PaintEvent& ev)
   // customized background (e.g. RGB sliders)
   ISliderBgPainter* bgPainter = NULL;
 
-  SharedPtr<SkinProperty> skinPropery = widget->getProperty(SkinProperty::SkinPropertyName);
+  SkinPropertyPtr skinPropery = widget->getProperty(SkinProperty::Name);
   if (skinPropery != NULL)
     isMiniLook = (skinPropery->getLook() == MiniLook);
 
-  if (SkinSliderProperty* sliderProperty = dynamic_cast<SkinSliderProperty*>(skinPropery.get()))
-    bgPainter = sliderProperty->getBgPainter();
+  SkinSliderPropertyPtr skinSliderPropery = widget->getProperty(SkinSliderProperty::Name);
+  if (skinSliderPropery != NULL)
+    bgPainter = skinSliderPropery->getBgPainter();
 
   // Draw customized background
   if (bgPainter) {

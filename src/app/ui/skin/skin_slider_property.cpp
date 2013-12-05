@@ -25,8 +25,11 @@
 namespace app {
 namespace skin {
 
+const char* SkinSliderProperty::Name = "SkinSliderProperty";
+
 SkinSliderProperty::SkinSliderProperty(ISliderBgPainter* painter)
-  : m_painter(painter)
+  : Property(Name)
+  , m_painter(painter)
 {
 }
 
