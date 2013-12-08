@@ -29,6 +29,7 @@
 #include "app/commands/params.h"
 #include "app/console.h"
 #include "app/data_recovery.h"
+#include "app/document_exporter.h"
 #include "app/document_location.h"
 #include "app/document_observer.h"
 #include "app/drop_files.h"
@@ -112,6 +113,7 @@ App::App(int argc, const char* argv[])
   , m_legacy(NULL)
   , m_isGui(false)
   , m_isShell(false)
+  , m_exporter(NULL)
 {
   ASSERT(m_instance == NULL);
   m_instance = this;
@@ -123,6 +125,14 @@ App::App(int argc, const char* argv[])
   m_isShell = options.startShell();
   m_legacy = new LegacyModules(isGui() ? REQUIRE_INTERFACE: 0);
   m_files = options.files();
+
+  if (options.hasExporterParams()) {
+    m_exporter.reset(new DocumentExporter);
+
+    m_exporter->setDataFilename(options.data());
+    m_exporter->setTextureFilename(options.sheet());
+    m_exporter->setScale(options.scale());
+  }
 
   // Register well-known image file types.
   FileFormatsManager::instance().registerAllFormats();
@@ -186,6 +196,7 @@ int App::run()
   PRINTF("Processing options...\n");
 
   {
+    UIContext* context = UIContext::instance();
     Console console;
     for (FileList::iterator
            it  = m_files.begin(),
@@ -199,15 +210,27 @@ int App::run()
       }
       else {
         // Mount and select the sprite
-        UIContext* context = UIContext::instance();
         context->addDocument(document);
 
-        if (isGui()) {
-          // Recent file
+        // Add the given file in the argument as a "recent file" only
+        // if we are running in GUI mode. If the program is executed
+        // in batch mode this is not desirable.
+        if (isGui())
           getRecentFiles()->addRecentFile(it->c_str());
-        }
+
+        // Add the document to the exporter.
+        if (m_exporter != NULL)
+          m_exporter->addDocument(document);
       }
     }
+  }
+
+  // Export
+  if (m_exporter != NULL) {
+    PRINTF("Exporting sheet...\n");
+
+    m_exporter->exportSheet();
+    m_exporter.reset(NULL);
   }
 
   // Run the GUI

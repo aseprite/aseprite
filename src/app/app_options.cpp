@@ -24,6 +24,7 @@
 
 #include "base/path.h"
 
+#include <cstdlib>
 #include <iostream>
 
 namespace app {
@@ -35,10 +36,20 @@ AppOptions::AppOptions(int argc, const char* argv[])
   , m_startUI(true)
   , m_startShell(false)
   , m_verbose(false)
+  , m_scale(1.0)
 {
-  Option& palette = m_po.add("palette").requiresValue("GFXFILE").description("Use a specific palette by default");
+  Option& palette = m_po.add("palette").requiresValue("<filename>").description("Use a specific palette by default");
   Option& shell = m_po.add("shell").description("Start an interactive console to execute scripts");
   Option& batch = m_po.add("batch").description("Do not start the UI");
+  // Option& dataFormat = m_po.add("format").requiresValue("<name>").description("Select the format for the sprite sheet data");
+  Option& data = m_po.add("data").requiresValue("<filename>").description("File to store the sprite sheet metadata (.json file)");
+  //Option& textureFormat = m_po.add("texture-format").requiresValue("<name>").description("Output texture format.");
+  Option& sheet = m_po.add("sheet").requiresValue("<filename>").description("Image file to save the texture (.png)");
+  //Option& scale = m_po.add("scale").requiresValue("<float>").description("");
+  //Option& scaleMode = m_po.add("scale-mode").requiresValue("<mode>").description("Export the first given document to a JSON object");
+  //Option& splitLayers = m_po.add("split-layers").description("Specifies that each layer of the given file should be saved as a different image in the sheet.");
+  //Option& rotsprite = m_po.add("rotsprite").requiresValue("<angle1,angle2,...>").description("Specifies different angles to export the given image.");
+  //Option& merge = m_po.add("merge").requiresValue("<datafiles>").description("Merge several sprite sheets in one.");
   Option& verbose = m_po.add("verbose").description("Explain what is being done (in stderr or a log file)");
   Option& help = m_po.add("help").mnemonic('?').description("Display this help and exits");
   Option& version = m_po.add("version").description("Output version information and exit");
@@ -49,6 +60,13 @@ AppOptions::AppOptions(int argc, const char* argv[])
     m_verbose = verbose.enabled();
     m_paletteFileName = palette.value();
     m_startShell = shell.enabled();
+    // m_dataFormat = dataFormat.value();
+    m_data = data.value();
+    // m_textureFormat = textureFormat.value();
+    m_sheet = sheet.value();
+    // if (scale.enabled())
+    //   m_scale = std::strtod(scale.value().c_str(), NULL);
+    // m_scaleMode = scaleMode.value();
 
     if (help.enabled()) {
       showHelp();
