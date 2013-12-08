@@ -100,6 +100,7 @@ add_library(app-library
   data_recovery.cpp
   document.cpp
   document_api.cpp
+  document_exporter.cpp
   document_location.cpp
   document_undo.cpp
   documents.cpp

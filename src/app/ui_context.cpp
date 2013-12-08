@@ -134,6 +134,10 @@ void UIContext::onAddDocument(Document* document)
   // base method
   Context::onAddDocument(document);
 
+  // We don't create views in batch mode.
+  if (!App::instance()->isGui())
+    return;
+
   // Add a new view for this document
   DocumentView* view = new DocumentView(document, DocumentView::Normal);
 

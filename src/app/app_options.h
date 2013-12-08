@@ -41,6 +41,22 @@ public:
     return m_po.values();
   }
 
+  // Export options
+  const std::string& dataFormat() const { return m_dataFormat; }
+  const std::string& data() const { return m_data; }
+  const std::string& textureFormat() const { return m_textureFormat; }
+  const std::string& sheet() const { return m_sheet; }
+  const double scale() const { return m_scale; }
+  const std::string& scaleMode() const { return m_scaleMode; }
+
+  bool hasExporterParams() {
+    return
+      !m_dataFormat.empty() ||
+      !m_data.empty() ||
+      !m_textureFormat.empty() ||
+      !m_sheet.empty();
+  }
+
 private:
   void showHelp();
   void showVersion();
@@ -51,6 +67,13 @@ private:
   bool m_startShell;
   bool m_verbose;
   std::string m_paletteFileName;
+
+  std::string m_dataFormat;
+  std::string m_data;
+  std::string m_textureFormat;
+  std::string m_sheet;
+  double m_scale;
+  std::string m_scaleMode;
 };
 
 } // namespace app

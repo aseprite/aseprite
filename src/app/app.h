@@ -39,6 +39,7 @@ namespace raster {
 
 namespace app {
   class Document;
+  class DocumentExporter;
   class LegacyModules;
   class LoggerModule;
   class MainWindow;
@@ -90,6 +91,7 @@ namespace app {
     bool m_isShell;
     base::UniquePtr<MainWindow> m_mainWindow;
     FileList m_files;
+    base::UniquePtr<DocumentExporter> m_exporter;
   };
 
   void app_refresh_screen();

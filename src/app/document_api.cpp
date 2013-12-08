@@ -91,8 +91,7 @@ void DocumentApi::setSpriteSize(Sprite* sprite, int w, int h)
   ASSERT(w > 0);
   ASSERT(h > 0);
 
-  DocumentUndo* undo = m_document->getUndo();
-  if (undo->isEnabled())
+  if (undoEnabled())
     m_undoers->pushUndoer(new undoers::SetSpriteSize(getObjects(), sprite));
 
   sprite->setSize(w, h);
@@ -151,8 +150,7 @@ void DocumentApi::setPixelFormat(Sprite* sprite, PixelFormat newFormat, Ditherin
     return;
 
   // Change pixel format of the stock of images.
-  DocumentUndo* undo = m_document->getUndo();
-  if (undo->isEnabled())
+  if (undoEnabled())
     m_undoers->pushUndoer(new undoers::SetStockPixelFormat(getObjects(), sprite->getStock()));
 
   sprite->getStock()->setPixelFormat(newFormat);
@@ -177,7 +175,7 @@ void DocumentApi::setPixelFormat(Sprite* sprite, PixelFormat newFormat, Ditherin
   }
 
   // Change sprite's pixel format.
-  if (undo->isEnabled())
+  if (undoEnabled())
     m_undoers->pushUndoer(new undoers::SetSpritePixelFormat(getObjects(), sprite));
 
   sprite->setPixelFormat(newFormat);
@@ -190,7 +188,7 @@ void DocumentApi::setPixelFormat(Sprite* sprite, PixelFormat newFormat, Ditherin
   // frame.
   if (newFormat == IMAGE_GRAYSCALE) {
     // Add undoers to revert all palette changes.
-    if (undo->isEnabled()) {
+    if (undoEnabled()) {
       PalettesList palettes = sprite->getPalettes();
       for (PalettesList::iterator it = palettes.begin(); it != palettes.end(); ++it) {
         Palette* palette = *it;
@@ -217,8 +215,7 @@ void DocumentApi::addFrame(Sprite* sprite, FrameNumber newFrame)
 
   // Add the frame in the sprite structure, it adjusts the total
   // number of frames in the sprite.
-  DocumentUndo* undo = m_document->getUndo();
-  if (undo->isEnabled())
+  if (undoEnabled())
     m_undoers->pushUndoer(new undoers::AddFrame(getObjects(), m_document, sprite, newFrame));
 
   sprite->addFrame(newFrame);
@@ -303,8 +300,7 @@ void DocumentApi::removeFrame(Sprite* sprite, FrameNumber frame)
 
   // Add undoers to restore the removed frame from the sprite (to
   // restore the number and durations of frames).
-  DocumentUndo* undo = m_document->getUndo();
-  if (undo->isEnabled())
+  if (undoEnabled())
     m_undoers->pushUndoer(new undoers::RemoveFrame(getObjects(), m_document, sprite, frame));
 
   // Remove the frame from the sprite. This is the low level
@@ -355,8 +351,7 @@ void DocumentApi::setTotalFrames(Sprite* sprite, FrameNumber frames)
   ASSERT(frames >= 1);
 
   // Add undoers.
-  DocumentUndo* undo = m_document->getUndo();
-  if (undo->isEnabled())
+  if (undoEnabled())
     m_undoers->pushUndoer(new undoers::SetTotalFrames(getObjects(), m_document, sprite));
 
   // Do the action.
@@ -372,8 +367,7 @@ void DocumentApi::setTotalFrames(Sprite* sprite, FrameNumber frames)
 void DocumentApi::setFrameDuration(Sprite* sprite, FrameNumber frame, int msecs)
 {
   // Add undoers.
-  DocumentUndo* undo = m_document->getUndo();
-  if (undo->isEnabled())
+  if (undoEnabled())
     m_undoers->pushUndoer(new undoers::SetFrameDuration(
         getObjects(), sprite, frame));
 
@@ -390,8 +384,7 @@ void DocumentApi::setFrameDuration(Sprite* sprite, FrameNumber frame, int msecs)
 void DocumentApi::setConstantFrameRate(Sprite* sprite, int msecs)
 {
   // Add undoers.
-  DocumentUndo* undo = m_document->getUndo();
-  if (undo->isEnabled()) {
+  if (undoEnabled()) {
     for (FrameNumber fr(0); fr<sprite->getTotalFrames(); ++fr)
       m_undoers->pushUndoer(new undoers::SetFrameDuration(
           getObjects(), sprite, fr));
@@ -489,8 +482,7 @@ void DocumentApi::addCel(LayerImage* layer, Cel* cel)
   ASSERT(layer);
   ASSERT(cel);
 
-  DocumentUndo* undo = m_document->getUndo();
-  if (undo->isEnabled())
+  if (undoEnabled())
     m_undoers->pushUndoer(new undoers::AddCel(getObjects(), layer, cel));
 
   layer->addCel(cel);
@@ -531,8 +523,7 @@ void DocumentApi::removeCel(LayerImage* layer, Cel* cel)
   if (!used)
     removeImageFromStock(sprite, cel->getImage());
 
-  DocumentUndo* undo = m_document->getUndo();
-  if (undo->isEnabled())
+  if (undoEnabled())
     m_undoers->pushUndoer(new undoers::RemoveCel(getObjects(),
         layer, cel));
 
@@ -548,8 +539,7 @@ void DocumentApi::setCelFramePosition(Sprite* sprite, Cel* cel, FrameNumber fram
   ASSERT(cel);
   ASSERT(frame >= 0);
 
-  DocumentUndo* undo = m_document->getUndo();
-  if (undo->isEnabled())
+  if (undoEnabled())
     m_undoers->pushUndoer(new undoers::SetCelFrame(getObjects(), cel));
 
   cel->setFrame(frame);
@@ -565,8 +555,7 @@ void DocumentApi::setCelPosition(Sprite* sprite, Cel* cel, int x, int y)
 {
   ASSERT(cel);
 
-  DocumentUndo* undo = m_document->getUndo();
-  if (undo->isEnabled())
+  if (undoEnabled())
     m_undoers->pushUndoer(new undoers::SetCelPosition(getObjects(), cel));
 
   cel->setPosition(x, y);
@@ -615,8 +604,7 @@ LayerFolder* DocumentApi::newLayerFolder(Sprite* sprite)
 void DocumentApi::addLayer(LayerFolder* folder, Layer* newLayer, Layer* afterThis)
 {
   // Add undoers.
-  DocumentUndo* undo = m_document->getUndo();
-  if (undo->isEnabled())
+  if (undoEnabled())
     m_undoers->pushUndoer(new undoers::AddLayer(getObjects(),
                                                 m_document, newLayer));
 
@@ -643,8 +631,7 @@ void DocumentApi::removeLayer(Layer* layer)
   m_document->notifyObservers<DocumentEvent&>(&DocumentObserver::onRemoveLayer, ev);
 
   // Add undoers.
-  DocumentUndo* undo = m_document->getUndo();
-  if (undo->isEnabled())
+  if (undoEnabled())
     m_undoers->pushUndoer(new undoers::RemoveLayer(getObjects(), m_document, layer));
 
   // Do the action.
@@ -655,8 +642,7 @@ void DocumentApi::removeLayer(Layer* layer)
 void DocumentApi::configureLayerAsBackground(LayerImage* layer)
 {
   // Add undoers.
-  DocumentUndo* undo = m_document->getUndo();
-  if (undo->isEnabled()) {
+  if (undoEnabled()) {
     m_undoers->pushUndoer(new undoers::SetLayerFlags(getObjects(), layer));
     m_undoers->pushUndoer(new undoers::SetLayerName(getObjects(), layer));
     m_undoers->pushUndoer(new undoers::MoveLayer(getObjects(), layer));
@@ -668,8 +654,7 @@ void DocumentApi::configureLayerAsBackground(LayerImage* layer)
 
 void DocumentApi::restackLayerAfter(Layer* layer, Layer* afterThis)
 {
-  DocumentUndo* undo = m_document->getUndo();
-  if (undo->isEnabled())
+  if (undoEnabled())
     m_undoers->pushUndoer(new undoers::MoveLayer(getObjects(), layer));
 
   layer->getParent()->stackLayer(layer, afterThis);
@@ -730,7 +715,6 @@ void DocumentApi::backgroundFromLayer(LayerImage* layer, int bgcolor)
   ASSERT(layer->getSprite() != NULL);
   ASSERT(layer->getSprite()->getBackgroundLayer() == NULL);
 
-  DocumentUndo* undo = m_document->getUndo();
   Sprite* sprite = layer->getSprite();
 
   // create a temporary image to draw each frame of the new
@@ -765,7 +749,7 @@ void DocumentApi::backgroundFromLayer(LayerImage* layer, int bgcolor)
     // same size of cel-image and bg-image
     if (bg_image->getWidth() == cel_image->getWidth() &&
         bg_image->getHeight() == cel_image->getHeight()) {
-      if (undo->isEnabled())
+      if (undoEnabled())
         m_undoers->pushUndoer(new undoers::ImageArea(getObjects(),
           cel_image, 0, 0, cel_image->getWidth(), cel_image->getHeight()));
 
@@ -805,8 +789,7 @@ void DocumentApi::layerFromBackground(Layer* layer)
   ASSERT(layer->getSprite() != NULL);
   ASSERT(layer->getSprite()->getBackgroundLayer() != NULL);
 
-  DocumentUndo* undo = m_document->getUndo();
-  if (undo->isEnabled()) {
+  if (undoEnabled()) {
     m_undoers->pushUndoer(new undoers::SetLayerFlags(getObjects(), layer));
     m_undoers->pushUndoer(new undoers::SetLayerName(getObjects(), layer));
   }
@@ -820,8 +803,6 @@ void DocumentApi::flattenLayers(Sprite* sprite, int bgcolor)
 {
   Image* cel_image;
   Cel* cel;
-
-  DocumentUndo* undo = m_document->getUndo();
 
   // Create a temporary image.
   base::UniquePtr<Image> image_wrap(Image::create(sprite->getPixelFormat(),
@@ -851,7 +832,7 @@ void DocumentApi::flattenLayers(Sprite* sprite, int bgcolor)
       ASSERT(cel_image != NULL);
 
       // We have to save the current state of `cel_image' in the undo.
-      if (undo->isEnabled()) {
+      if (undoEnabled()) {
         Dirty* dirty = new Dirty(cel_image, image, image->getBounds());
         dirty->saveImagePixels(cel_image);
         m_undoers->pushUndoer(new undoers::DirtyArea(
@@ -895,8 +876,7 @@ int DocumentApi::addImageInStock(Sprite* sprite, Image* image)
   int imageIndex = sprite->getStock()->addImage(image);
 
   // Add undoers.
-  DocumentUndo* undo = m_document->getUndo();
-  if (undo->isEnabled())
+  if (undoEnabled())
     m_undoers->pushUndoer(new undoers::AddImage(getObjects(),
         sprite->getStock(), imageIndex));
 
@@ -911,8 +891,7 @@ void DocumentApi::removeImageFromStock(Sprite* sprite, int imageIndex)
   Image* image = sprite->getStock()->getImage(imageIndex);
   ASSERT(image);
 
-  DocumentUndo* undo = m_document->getUndo();
-  if (undo->isEnabled())
+  if (undoEnabled())
     m_undoers->pushUndoer(new undoers::RemoveImage(getObjects(),
         sprite->getStock(), imageIndex));
 
@@ -927,8 +906,7 @@ void DocumentApi::replaceStockImage(Sprite* sprite, int imageIndex, Image* newIm
   ASSERT(oldImage);
 
   // Replace the image in the stock.
-  DocumentUndo* undo = m_document->getUndo();
-  if (undo->isEnabled())
+  if (undoEnabled())
     m_undoers->pushUndoer(new undoers::ReplaceImage(getObjects(),
         sprite->getStock(), imageIndex));
 
@@ -952,14 +930,13 @@ void DocumentApi::clearMask(Layer* layer, Cel* cel, int bgcolor)
     return;
 
   Mask* mask = m_document->getMask();
-  DocumentUndo* undo = m_document->getUndo();
 
   // If the mask is empty or is not visible then we have to clear the
   // entire image in the cel.
   if (!m_document->isMaskVisible()) {
     // If the layer is the background then we clear the image.
     if (layer->isBackground()) {
-      if (undo->isEnabled())
+      if (undoEnabled())
         m_undoers->pushUndoer(new undoers::ImageArea(getObjects(),
           image, 0, 0, image->getWidth(), image->getHeight()));
 
@@ -986,7 +963,7 @@ void DocumentApi::clearMask(Layer* layer, Cel* cel, int bgcolor)
     if (x1 > x2 || y1 > y2)
       return;
 
-    if (undo->isEnabled())
+    if (undoEnabled())
       m_undoers->pushUndoer(new undoers::ImageArea(getObjects(),
           image, x1, y1, x2-x1+1, y2-y1+1));
 
@@ -1014,8 +991,7 @@ void DocumentApi::flipImage(Image* image,
                                 raster::algorithm::FlipType flipType)
 {
   // Insert the undo operation.
-  DocumentUndo* undo = m_document->getUndo();
-  if (undo->isEnabled()) {
+  if (undoEnabled()) {
     m_undoers->pushUndoer
       (new undoers::FlipImage
        (getObjects(), image, bounds, flipType));
@@ -1033,8 +1009,7 @@ void DocumentApi::flipImageWithMask(Image* image, const Mask* mask, raster::algo
   raster::algorithm::flip_image_with_mask(flippedImage, mask, flipType, bgcolor);
 
   // Insert the undo operation.
-  DocumentUndo* undo = m_document->getUndo();
-  if (undo->isEnabled()) {
+  if (undoEnabled()) {
     base::UniquePtr<Dirty> dirty((new Dirty(image, flippedImage, image->getBounds())));
     dirty->saveImagePixels(image);
 
@@ -1061,8 +1036,7 @@ void DocumentApi::copyToCurrentMask(Mask* mask)
   ASSERT(m_document->getMask());
   ASSERT(mask);
 
-  DocumentUndo* undo = m_document->getUndo();
-  if (undo->isEnabled())
+  if (undoEnabled())
     m_undoers->pushUndoer(new undoers::SetMask(getObjects(),
         m_document));
 
@@ -1073,8 +1047,7 @@ void DocumentApi::setMaskPosition(int x, int y)
 {
   ASSERT(m_document->getMask());
 
-  DocumentUndo* undo = m_document->getUndo();
-  if (undo->isEnabled())
+  if (undoEnabled())
     m_undoers->pushUndoer(new undoers::SetMaskPosition(getObjects(), m_document));
 
   m_document->getMask()->setOrigin(x, y);
@@ -1083,8 +1056,7 @@ void DocumentApi::setMaskPosition(int x, int y)
 
 void DocumentApi::deselectMask()
 {
-  DocumentUndo* undo = m_document->getUndo();
-  if (undo->isEnabled())
+  if (undoEnabled())
     m_undoers->pushUndoer(new undoers::SetMask(getObjects(),
         m_document));
 
@@ -1101,10 +1073,8 @@ void DocumentApi::setPalette(Sprite* sprite, FrameNumber frame, Palette* newPale
   currentSpritePalette->countDiff(newPalette, &from, &to);
 
   if (from >= 0 && to >= from) {
-    DocumentUndo* undo = m_document->getUndo();
-
     // Add undo information to save the range of pal entries that will be modified.
-    if (undo->isEnabled()) {
+    if (undoEnabled()) {
       m_undoers->pushUndoer
         (new undoers::SetPaletteColors(getObjects(),
                                        sprite, currentSpritePalette,
@@ -1114,6 +1084,13 @@ void DocumentApi::setPalette(Sprite* sprite, FrameNumber frame, Palette* newPale
     // Change the sprite palette
     sprite->setPalette(newPalette, false);
   }
+}
+
+bool DocumentApi::undoEnabled()
+{
+  return
+    m_undoers != NULL &&
+    m_document->getUndo()->isEnabled();
 }
 
 } // namespace app
