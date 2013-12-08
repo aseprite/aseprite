@@ -118,6 +118,7 @@ namespace app {
     void copyPreviousFrame(Layer* layer, FrameNumber frame);
     void moveFrameBeforeLayer(Layer* layer, FrameNumber frame, FrameNumber beforeFrame);
     void configureLayerAsBackground(LayerImage* layer);
+    bool undoEnabled();
 
     Document* m_document;
     undo::UndoersCollector* m_undoers;
