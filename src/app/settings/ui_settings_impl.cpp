@@ -30,9 +30,7 @@
 #include "app/tools/tool.h"
 #include "app/tools/tool_box.h"
 #include "app/ui/color_bar.h"
-#include "app/ui/main_window.h"
-#include "app/ui/workspace.h"
-#include "app/ui_context.h"
+#include "base/observable.h"
 #include "ui/manager.h"
 
 #include <algorithm>
@@ -149,6 +147,7 @@ UISettingsImpl::UISettingsImpl()
   : m_currentTool(NULL)
   , m_globalDocumentSettings(new UIDocumentSettingsImpl)
   , m_colorSwatches(NULL)
+  , m_selectionSettings(new SelectionSettings)
 {
   m_colorSwatches = new app::ColorSwatches("Default");
   for (size_t i=0; i<16; ++i)
@@ -230,6 +229,7 @@ void UISettingsImpl::setCurrentTool(tools::Tool* tool)
 void UISettingsImpl::setColorSwatches(app::ColorSwatches* colorSwatches)
 {
   m_colorSwatches = colorSwatches;
+  notifyObservers<app::ColorSwatches*>(&GlobalSettingsObserver::onSetColorSwatches, colorSwatches);
 }
 
 IDocumentSettings* UISettingsImpl::getDocumentSettings(const Document* document)
@@ -258,6 +258,14 @@ void UISettingsImpl::removeColorSwatches(app::ColorSwatches* colorSwatches)
 
   if (it != m_colorSwatchesStore.end())
     m_colorSwatchesStore.erase(it);
+}
+
+void UISettingsImpl::addObserver(GlobalSettingsObserver* observer) {
+  base::Observable<GlobalSettingsObserver>::addObserver(observer);
+}
+
+void UISettingsImpl::removeObserver(GlobalSettingsObserver* observer) {
+  base::Observable<GlobalSettingsObserver>::addObserver(observer);
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -408,7 +416,10 @@ void UIDocumentSettingsImpl::setOnionskinOpacityStep(int step)
 //////////////////////////////////////////////////////////////////////
 // Tools & pen settings
 
-class UIPenSettingsImpl : public IPenSettings {
+class UIPenSettingsImpl
+  : public IPenSettings
+  , public base::Observable<PenSettingsObserver> {
+private:
   PenType m_type;
   int m_size;
   int m_angle;
@@ -434,6 +445,7 @@ public:
   void setType(PenType type)
   {
     m_type = MID(PEN_TYPE_FIRST, type, PEN_TYPE_LAST);
+    notifyObservers<PenType>(&PenSettingsObserver::onSetPenType, m_type);
   }
 
   void setSize(int size)
@@ -448,6 +460,7 @@ public:
     // Trigger PenSizeAfterChange signal
     if (m_fireSignals)
       App::instance()->PenSizeAfterChange();
+    notifyObservers<int>(&PenSettingsObserver::onSetPenSize, m_size);
   }
 
   void setAngle(int angle)
@@ -468,9 +481,18 @@ public:
     m_fireSignals = state;
   }
 
+  void addObserver(PenSettingsObserver* observer) OVERRIDE{
+    base::Observable<PenSettingsObserver>::addObserver(observer);
+  }
+
+  void removeObserver(PenSettingsObserver* observer) OVERRIDE{
+    base::Observable<PenSettingsObserver>::addObserver(observer);
+  }
 };
 
-class UIToolSettingsImpl : public IToolSettings {
+class UIToolSettingsImpl
+  : public IToolSettings
+  , base::Observable<ToolSettingsObserver> {
   tools::Tool* m_tool;
   UIPenSettingsImpl m_pen;
   int m_opacity;
@@ -550,6 +572,14 @@ public:
   void setSpraySpeed(int speed) OVERRIDE { m_spray_speed = speed; }
   void setInkType(InkType inkType) OVERRIDE { m_inkType = inkType; }
 
+  void addObserver(ToolSettingsObserver* observer) OVERRIDE {
+    base::Observable<ToolSettingsObserver>::addObserver(observer);
+  }
+
+  void removeObserver(ToolSettingsObserver* observer) OVERRIDE{
+    base::Observable<ToolSettingsObserver>::removeObserver(observer);
+  }
+
 private:
   std::string getCfgSection() const {
     return std::string("Tool:") + m_tool->getId();
@@ -571,6 +601,43 @@ IToolSettings* UISettingsImpl::getToolSettings(tools::Tool* tool)
     m_toolSettings[tool->getId()] = tool_settings;
     return tool_settings;
   }
+}
+
+//////////////////////////////////////////////////////////////////////
+// Selection Settings
+
+SelectionSettings::SelectionSettings() : m_moveTransparentColor(app::Color::fromMask())
+{
+}
+
+SelectionSettings::~SelectionSettings()
+{
+}
+
+ISelectionSettings* UISettingsImpl::selection()
+{
+  return m_selectionSettings;
+}
+
+void SelectionSettings::setMoveTransparentColor(app::Color color)
+{
+  m_moveTransparentColor = color;
+  notifyObservers(&SelectionSettingsObserver::onSetMoveTransparentColor, color);
+}
+
+app::Color SelectionSettings::getMoveTransparentColor()
+{
+  return m_moveTransparentColor;
+}
+
+void SelectionSettings::addObserver(SelectionSettingsObserver* observer)
+{
+  base::Observable<SelectionSettingsObserver>::addObserver(observer);
+}
+
+void SelectionSettings::removeObserver(SelectionSettingsObserver* observer)
+{
+  base::Observable<SelectionSettingsObserver>::removeObserver(observer);
 }
 
 } // namespace app

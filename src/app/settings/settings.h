@@ -26,12 +26,18 @@
 #include "raster/pen_type.h"
 
 namespace app {
+
   class ColorSwatches;
   class Document;
   class IColorSwatchesStore;
   class IDocumentSettings;
   class IPenSettings;
+  class PenSettingsObserver;
   class IToolSettings;
+  class ToolSettingsObserver;
+  class ISelectionSettings;
+  class SelectionSettingsObserver;
+  class GlobalSettingsObserver;
 
   namespace tools {
     class Tool;
@@ -61,7 +67,13 @@ namespace app {
     // Specific configuration for the given tool.
     virtual IToolSettings* getToolSettings(tools::Tool* tool) = 0;
 
+    // Specific configuration for the current selection
+    virtual ISelectionSettings* selection() = 0;
+
     virtual IColorSwatchesStore* getColorSwatchesStore() = 0;
+
+    virtual void addObserver(GlobalSettingsObserver* observer) = 0;
+    virtual void removeObserver(GlobalSettingsObserver *observer) = 0;
   };
 
   // Tool's settings
@@ -86,6 +98,9 @@ namespace app {
     virtual void setSprayWidth(int width) = 0;
     virtual void setSpraySpeed(int speed) = 0;
     virtual void setInkType(InkType inkType) = 0;
+
+    virtual void addObserver(ToolSettingsObserver* observer) = 0;
+    virtual void removeObserver(ToolSettingsObserver *observer) = 0;
   };
 
   // Settings for a tool's pen
@@ -100,6 +115,22 @@ namespace app {
     virtual void setType(PenType type) = 0;
     virtual void setSize(int size) = 0;
     virtual void setAngle(int angle) = 0;
+
+    virtual void addObserver(PenSettingsObserver* observer) = 0;
+    virtual void removeObserver(PenSettingsObserver *observer) = 0;
+  };
+
+  class ISelectionSettings {
+  public:
+    virtual ~ISelectionSettings() {}
+
+    // Mask color used during a move operation
+    virtual app::Color getMoveTransparentColor() = 0;
+
+    virtual void setMoveTransparentColor(app::Color color) = 0;
+
+    virtual void addObserver(SelectionSettingsObserver* observer) = 0;
+    virtual void removeObserver(SelectionSettingsObserver* observer) = 0;
   };
 
   class IColorSwatchesStore {
