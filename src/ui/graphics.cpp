@@ -217,9 +217,10 @@ gfx::Size Graphics::drawStringAlgorithm(const std::string& str, Color fg, Color 
       ji_font_set_aa_mode(m_currentFont, to_system(bg));
       textout_ex(m_bmp, m_currentFont, line.c_str(), m_dx+xout, m_dy+pt.y, to_system(fg), to_system(bg));
 
-      jrectexclude(m_bmp,
-                   m_dx+rc.x, m_dy+pt.y, m_dx+rc.x+rc.w-1, m_dy+pt.y+lineSize.h-1,
-                   m_dx+xout, m_dy+pt.y, m_dx+xout+lineSize.w-1, m_dy+pt.y+lineSize.h-1, bg);
+      if (!is_transparent(bg))
+        jrectexclude(m_bmp,
+          m_dx+rc.x, m_dy+pt.y, m_dx+rc.x+rc.w-1, m_dy+pt.y+lineSize.h-1,
+          m_dx+xout, m_dy+pt.y, m_dx+xout+lineSize.w-1, m_dy+pt.y+lineSize.h-1, bg);
     }
 
     pt.y += lineSize.h;
@@ -228,7 +229,7 @@ gfx::Size Graphics::drawStringAlgorithm(const std::string& str, Color fg, Color 
   }
 
   // Fill bottom area
-  if (draw) {
+  if (draw && !is_transparent(bg)) {
     if (pt.y < rc.y+rc.h)
       fillRect(bg, gfx::Rect(rc.x, pt.y, rc.w, rc.y+rc.h-pt.y));
   }
