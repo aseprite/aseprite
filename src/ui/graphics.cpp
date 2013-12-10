@@ -145,13 +145,21 @@ gfx::Size Graphics::fitString(const std::string& str, int maxWidth, int align)
 
 gfx::Size Graphics::drawStringAlgorithm(const std::string& str, Color fg, Color bg, const gfx::Rect& rc, int align, bool draw)
 {
+  gfx::Point pt(0, rc.y);
+
+  if ((align & (JI_MIDDLE | JI_BOTTOM)) != 0) {
+    gfx::Size preSize = drawStringAlgorithm(str, ColorNone, ColorNone, rc, 0, false);
+    if (align & JI_MIDDLE)
+      pt.y = rc.y + rc.h/2 - preSize.h/2;
+    else if (align & JI_BOTTOM)
+      pt.y = rc.y + rc.h - preSize.h;
+  }
+
   gfx::Size calculatedSize(0, 0);
   size_t beg, end, new_word_beg, old_end;
   std::string line;
-  gfx::Point pt;
 
   // Draw line-by-line
-  pt.y = rc.y;
   for (beg=end=0; end != std::string::npos; ) {
     pt.x = rc.x;
 
@@ -215,10 +223,9 @@ gfx::Size Graphics::drawStringAlgorithm(const std::string& str, Color fg, Color 
     }
 
     pt.y += lineSize.h;
+    calculatedSize.h += lineSize.h;
     beg = end+1;
   }
-
-  calculatedSize.h += pt.y;
 
   // Fill bottom area
   if (draw) {
