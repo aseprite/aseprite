@@ -12,7 +12,7 @@
 
 namespace css {
   
-Style::Style(const std::string& name, Style* base) :
+Style::Style(const std::string& name, const Style* base) :
   m_name(name),
   m_base(base) {
 }

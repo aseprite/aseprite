@@ -19,12 +19,13 @@ namespace css {
   class Style {
   public:
     typedef Values::iterator iterator;
+    typedef Values::const_iterator const_iterator;
 
     Style() { }
-    Style(const std::string& name, Style* base = NULL);
+    Style(const std::string& name, const Style* base = NULL);
 
     const std::string& name() const { return m_name; }
-    Style* base() const { return m_base; }
+    const Style* base() const { return m_base; }
 
     const Value& operator[](const Rule& rule) const {
       return m_values[rule.name()];
@@ -36,14 +37,16 @@ namespace css {
 
     iterator begin() { return m_values.begin(); }
     iterator end() { return m_values.end(); }
+    const_iterator begin() const { return m_values.begin(); }
+    const_iterator end() const { return m_values.end(); }
 
   private:
     std::string m_name;
-    Style* m_base;
+    const Style* m_base;
     Values m_values;
   };
 
-  typedef Map<Style*> Styles;
+  typedef Map<const Style*> Styles;
 
 } // namespace css
 

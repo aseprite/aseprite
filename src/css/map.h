@@ -47,6 +47,10 @@ namespace css {
       m_map[name] = value;
     }
 
+    bool exists(const std::string& name) const {
+      return (m_map.find(name) != m_map.end());
+    }
+
   private:
     map m_map;
     T m_default;

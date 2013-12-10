@@ -12,17 +12,18 @@
 
 namespace css {
 
-void Query::addRuleValue(const std::string& ruleName, Style* style)
+void Query::addFromStyle(const Style* style)
 {
-  m_ruleValue.add(ruleName, style);
-}
-
-void Query::addFromStyle(Style* style)
-{
-  for (Style::iterator it = style->begin(), end = style->end();
+  for (Style::const_iterator it = style->begin(), end = style->end();
        it != end; ++it) {
     addRuleValue(it->first, style);
   }
+}
+
+void Query::addRuleValue(const std::string& ruleName, const Style* style)
+{
+  if (!m_ruleValue.exists(ruleName))
+    m_ruleValue.add(ruleName, style);
 }
   
 } // namespace css

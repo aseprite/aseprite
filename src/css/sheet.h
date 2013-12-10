@@ -27,7 +27,7 @@ namespace css {
     void addRule(Rule* rule);
     void addStyle(Style* style);
 
-    Style* getStyle(const std::string& name);
+    const Style* getStyle(const std::string& name);
 
     Query query(const StatefulStyle& stateful);
     CompoundStyle compoundStyle(const std::string& name);

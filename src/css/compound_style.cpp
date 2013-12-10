@@ -25,7 +25,7 @@ void CompoundStyle::update()
 {
   deleteQueries();
 
-  Style* style = m_sheet->getStyle(m_name);
+  const Style* style = m_sheet->getStyle(m_name);
   if (style)
     m_normal = m_sheet->query(*style);
 }
@@ -56,7 +56,7 @@ const Query& CompoundStyle::operator[](const States& states) const
   if (it != m_queries.end())
     return *it->second;
   else {
-    Style* style = m_sheet->getStyle(m_name);
+    const Style* style = m_sheet->getStyle(m_name);
     if (style == NULL)
       return m_normal;
 

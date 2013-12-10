@@ -19,11 +19,12 @@ namespace css {
   public:
     Query() { }
 
-    void addRuleValue(const std::string& ruleName, Style* style);
-    void addFromStyle(Style* style);
+    // Adds more rules from the given style only if the query doesn't
+    // contain those rules already.
+    void addFromStyle(const Style* style);
 
     const Value& operator[](const Rule& rule) const {
-      Style* style = m_ruleValue[rule.name()];
+      const Style* style = m_ruleValue[rule.name()];
       if (style)
         return (*style)[rule.name()];
       else
@@ -31,6 +32,8 @@ namespace css {
     }
 
   private:
+    void addRuleValue(const std::string& ruleName, const Style* style);
+
     Styles m_ruleValue;
     Value m_none;
   };

@@ -28,6 +28,8 @@ namespace css {
     typedef std::vector<const State*> List;
     typedef List::iterator iterator;
     typedef List::const_iterator const_iterator;
+    typedef List::reverse_iterator reverse_iterator;
+    typedef List::const_reverse_iterator const_reverse_iterator;
 
     States() { }
     States(const State& state) {
@@ -36,9 +38,12 @@ namespace css {
 
     iterator begin() { return m_list.begin(); }
     iterator end() { return m_list.end(); }
-
     const_iterator begin() const { return m_list.begin(); }
     const_iterator end() const { return m_list.end(); }
+    reverse_iterator rbegin() { return m_list.rbegin(); }
+    reverse_iterator rend() { return m_list.rend(); }
+    const_reverse_iterator rbegin() const { return m_list.rbegin(); }
+    const_reverse_iterator rend() const { return m_list.rend(); }
 
     States& operator+=(const State& other) {
       m_list.push_back(&other);

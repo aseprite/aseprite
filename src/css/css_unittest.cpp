@@ -174,6 +174,9 @@ TEST(Css, CompoundStyles)
   Style baseFocus("base:focus");
   Style sub("sub", &base);
   Style subFocus("sub:focus", &base);
+  Style sub2("sub2", &sub);
+  Style sub3("sub3", &sub2);
+  Style sub3FocusHover("sub3:focus:hover", &sub2);
 
   base[bg] = Value(1);
   base[fg] = Value(2);
@@ -183,6 +186,9 @@ TEST(Css, CompoundStyles)
   sub[bg] = Value(5);
   subFocus[fg] = Value(6);
 
+  sub3[bg] = Value(7);
+  sub3FocusHover[fg] = Value(8);
+
   Sheet sheet;
   sheet.addRule(&bg);
   sheet.addRule(&fg);
@@ -191,6 +197,9 @@ TEST(Css, CompoundStyles)
   sheet.addStyle(&baseFocus);
   sheet.addStyle(&sub);
   sheet.addStyle(&subFocus);
+  sheet.addStyle(&sub2);
+  sheet.addStyle(&sub3);
+  sheet.addStyle(&sub3FocusHover);
 
   CompoundStyle compoundBase = sheet.compoundStyle("base");
   EXPECT_EQ(Value(1), compoundBase[bg]);
@@ -211,6 +220,27 @@ TEST(Css, CompoundStyles)
   EXPECT_EQ(Value(6), compoundSub[focus][fg]);
   EXPECT_EQ(Value(4), compoundSub[hover+focus][bg]);
   EXPECT_EQ(Value(6), compoundSub[hover+focus][fg]);
+
+  CompoundStyle compoundSub2 = sheet.compoundStyle("sub2");
+  EXPECT_EQ(Value(5), compoundSub2[bg]);
+  EXPECT_EQ(Value(2), compoundSub2[fg]);
+  EXPECT_EQ(Value(5), compoundSub2[hover][bg]);
+  EXPECT_EQ(Value(3), compoundSub2[hover][fg]);
+  EXPECT_EQ(Value(4), compoundSub2[focus][bg]);
+  EXPECT_EQ(Value(6), compoundSub2[focus][fg]);
+  EXPECT_EQ(Value(4), compoundSub2[hover+focus][bg]);
+  EXPECT_EQ(Value(6), compoundSub2[hover+focus][fg]);
+
+  CompoundStyle compoundSub3 = sheet.compoundStyle("sub3");
+  EXPECT_EQ(Value(7), compoundSub3[bg]);
+  EXPECT_EQ(Value(2), compoundSub3[fg]);
+  EXPECT_EQ(Value(7), compoundSub3[hover][bg]);
+  EXPECT_EQ(Value(3), compoundSub3[hover][fg]);
+  EXPECT_EQ(Value(4), compoundSub3[focus][bg]);
+  EXPECT_EQ(Value(6), compoundSub3[focus][fg]);
+  EXPECT_EQ(Value(4), compoundSub3[hover+focus][bg]);
+  EXPECT_EQ(Value(6), compoundSub3[hover+focus][fg]);
+  EXPECT_EQ(Value(8), compoundSub3[focus+hover][fg]);
 }
 
 int main(int argc, char** argv)

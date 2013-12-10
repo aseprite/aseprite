@@ -36,6 +36,9 @@ namespace css {
     void setUnit(const std::string& unit = "");
 
     bool operator==(const Value& other) const;
+    bool operator!=(const Value& other) const {
+      return !operator==(other);
+    }
 
   private:
     Type m_type;
