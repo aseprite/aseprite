@@ -43,6 +43,8 @@ using namespace gfx;
 using namespace raster;
 using namespace filters;
 
+namespace {
+
 class UIDocumentSettingsImpl : public IDocumentSettings {
 public:
   UIDocumentSettingsImpl()
@@ -140,6 +142,26 @@ private:
   app::Color m_pixelGridColor;
 };
 
+class UISelectionSettingsImpl
+    : public ISelectionSettings
+    , public base::Observable<SelectionSettingsObserver> {
+public:
+  UISelectionSettingsImpl();
+  ~UISelectionSettingsImpl();
+
+  void setMoveTransparentColor(app::Color color);
+
+  app::Color getMoveTransparentColor();
+
+  void addObserver(SelectionSettingsObserver* observer);
+  void removeObserver(SelectionSettingsObserver* observer);
+
+private:
+  app::Color m_moveTransparentColor;
+};
+
+} // anonymous namespace
+
 //////////////////////////////////////////////////////////////////////
 // UISettingsImpl
 
@@ -147,7 +169,7 @@ UISettingsImpl::UISettingsImpl()
   : m_currentTool(NULL)
   , m_globalDocumentSettings(new UIDocumentSettingsImpl)
   , m_colorSwatches(NULL)
-  , m_selectionSettings(new SelectionSettings)
+  , m_selectionSettings(new UISelectionSettingsImpl)
 {
   m_colorSwatches = new app::ColorSwatches("Default");
   for (size_t i=0; i<16; ++i)
@@ -266,6 +288,11 @@ void UISettingsImpl::addObserver(GlobalSettingsObserver* observer) {
 
 void UISettingsImpl::removeObserver(GlobalSettingsObserver* observer) {
   base::Observable<GlobalSettingsObserver>::addObserver(observer);
+}
+
+ISelectionSettings* UISettingsImpl::selection()
+{
+  return m_selectionSettings;
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -606,38 +633,36 @@ IToolSettings* UISettingsImpl::getToolSettings(tools::Tool* tool)
 //////////////////////////////////////////////////////////////////////
 // Selection Settings
 
-SelectionSettings::SelectionSettings() : m_moveTransparentColor(app::Color::fromMask())
+namespace {
+
+UISelectionSettingsImpl::UISelectionSettingsImpl() : m_moveTransparentColor(app::Color::fromMask())
 {
 }
 
-SelectionSettings::~SelectionSettings()
+UISelectionSettingsImpl::~UISelectionSettingsImpl()
 {
 }
 
-ISelectionSettings* UISettingsImpl::selection()
-{
-  return m_selectionSettings;
-}
-
-void SelectionSettings::setMoveTransparentColor(app::Color color)
+void UISelectionSettingsImpl::setMoveTransparentColor(app::Color color)
 {
   m_moveTransparentColor = color;
   notifyObservers(&SelectionSettingsObserver::onSetMoveTransparentColor, color);
 }
 
-app::Color SelectionSettings::getMoveTransparentColor()
+app::Color UISelectionSettingsImpl::getMoveTransparentColor()
 {
   return m_moveTransparentColor;
 }
 
-void SelectionSettings::addObserver(SelectionSettingsObserver* observer)
+void UISelectionSettingsImpl::addObserver(SelectionSettingsObserver* observer)
 {
   base::Observable<SelectionSettingsObserver>::addObserver(observer);
 }
 
-void SelectionSettings::removeObserver(SelectionSettingsObserver* observer)
+void UISelectionSettingsImpl::removeObserver(SelectionSettingsObserver* observer)
 {
   base::Observable<SelectionSettingsObserver>::removeObserver(observer);
 }
 
+} // anonymous namespace
 } // namespace app

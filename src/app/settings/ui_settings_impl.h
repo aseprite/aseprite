@@ -73,24 +73,6 @@ namespace app {
     ISelectionSettings* m_selectionSettings;
   };
 
-  class SelectionSettings
-    : public ISelectionSettings
-    , public base::Observable<SelectionSettingsObserver> {
-  public:
-    SelectionSettings();
-    ~SelectionSettings();
-
-    void setMoveTransparentColor(app::Color color);
-
-    app::Color getMoveTransparentColor();
-
-    void addObserver(SelectionSettingsObserver* observer);
-    void removeObserver(SelectionSettingsObserver* observer);
-
-  private:
-    app::Color m_moveTransparentColor;
-  };
-
 } // namespace app
 
 #endif
