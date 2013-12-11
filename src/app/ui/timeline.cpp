@@ -127,6 +127,8 @@ Timeline::Timeline()
   , m_context(UIContext::instance())
   , m_editor(NULL)
   , m_document(NULL)
+  , m_frameBegin(-1)
+  , m_frameEnd(-1)
 {
   m_context->addObserver(this);
 
@@ -215,8 +217,15 @@ void Timeline::setLayer(Layer* layer)
 void Timeline::setFrame(FrameNumber frame)
 {
   ASSERT(m_editor != NULL);
+  // ASSERT(frame >= 0 && frame < m_sprite->getTotalFrames());
+
+  if (frame < 0)
+    frame = FrameNumber(0);
+  else if (frame >= m_sprite->getTotalFrames())
+    frame = FrameNumber(m_sprite->getTotalFrames()-1);
 
   m_frame = frame;
+  invalidate();
 
   if (m_editor->getFrame() != frame)
     m_editor->setFrame(m_frame);
@@ -268,9 +277,14 @@ bool Timeline::onProcessMessage(Message* msg)
           break;
         case A_PART_HEADER_FRAME:
           setFrame(m_clk_frame);
-          invalidate(); // TODO Replace this by redrawing old current frame and new current frame
           captureMouse();
-          m_state = STATE_MOVING_FRAME;
+          if (msg->shiftPressed())
+            m_state = STATE_MOVING_FRAME;
+          else {
+            m_state = STATE_SELECTING_FRAME;
+            m_frameBegin = m_frame;
+            m_frameEnd = m_frame;
+          }
           break;
         case A_PART_LAYER_TEXT: {
           const DocumentReader document(const_cast<Document*>(m_document));
@@ -307,7 +321,6 @@ bool Timeline::onProcessMessage(Message* msg)
               old_frame != m_clk_frame) {
             setLayer(m_layers[m_clk_layer]);
             setFrame(m_clk_frame);
-            invalidate();
           }
 
           // Change the scroll to show the new selected cel.
@@ -401,6 +414,15 @@ bool Timeline::onProcessMessage(Message* msg)
         }
       }
 
+      if (hasCapture()) {
+        if (m_state == STATE_SELECTING_FRAME) {
+          if (m_frame != m_hot_frame) {
+            m_frameEnd = m_hot_frame;
+            setFrame(m_hot_frame);
+          }
+        }
+      }
+
       // Set the new 'hot' thing.
       hotThis(hot_part, hot_layer, hot_frame);
       return true;
@@ -445,6 +467,7 @@ bool Timeline::onProcessMessage(Message* msg)
                 }
               }
             }
+#if 0
             // Show the frame's properties dialog.
             else if (mouseMsg->left()) {
               if (m_clk_frame == m_hot_frame) {
@@ -472,6 +495,7 @@ bool Timeline::onProcessMessage(Message* msg)
                 }
               }
             }
+#endif
             break;
           case A_PART_LAYER_TEXT:
             // Show the layer pop-up menu.
@@ -788,6 +812,10 @@ void Timeline::onRemoveFrame(DocumentEvent& ev)
 void Timeline::onFrameChanged(Editor* editor)
 {
   setFrame(editor->getFrame());
+
+  if (!hasCapture())
+    m_frameBegin = m_frameEnd = FrameNumber(-1);
+
   showCurrentCel();
 }
 
@@ -885,7 +913,7 @@ void Timeline::drawHeader(ui::Graphics* g)
 
 void Timeline::drawHeaderFrame(ui::Graphics* g, FrameNumber frame)
 {
-  bool is_active = (frame == m_frame);
+  bool is_active = isFrameActive(frame);
   bool is_hover = (m_hot_part == A_PART_HEADER_FRAME && m_hot_frame == frame);
   bool is_clicked = (m_clk_part == A_PART_HEADER_FRAME && m_clk_frame == frame);
 
@@ -901,7 +929,7 @@ void Timeline::drawHeaderFrame(ui::Graphics* g, FrameNumber frame)
 void Timeline::drawLayer(ui::Graphics* g, int layer_index)
 {
   Layer* layer = m_layers[layer_index];
-  bool is_active = (layer == m_layer);
+  bool is_active = isLayerActive(layer);
   bool hotlayer = (m_hot_layer == layer_index);
   bool clklayer = (m_clk_layer == layer_index);
   gfx::Rect bounds = getPartBounds(A_PART_LAYER, layer_index, FrameNumber(0));
@@ -945,8 +973,7 @@ void Timeline::drawCel(ui::Graphics* g, int layer_index, FrameNumber frame, Cel*
   bool is_hover = (m_hot_part == A_PART_CEL &&
     m_hot_layer == layer_index &&
     m_hot_frame == frame);
-  bool is_active = (layer == m_layer ||
-    frame == m_frame);
+  bool is_active = (isLayerActive(layer) || isFrameActive(frame));
   bool is_empty = (cel == NULL ||
     m_sprite->getStock()->getImage(cel->getImage()) == NULL);
   gfx::Rect bounds = getPartBounds(A_PART_CEL, layer_index, frame);
@@ -1236,13 +1263,33 @@ void Timeline::setScroll(int x, int y, bool use_refresh_region)
   }
 }
 
-int Timeline::getLayerIndex(const Layer* layer)
+int Timeline::getLayerIndex(const Layer* layer) const
 {
   for (size_t i=0; i<m_layers.size(); i++)
     if (m_layers[i] == layer)
       return i;
 
   return -1;
+}
+
+bool Timeline::isLayerActive(const Layer* layer) const
+{
+  return layer == m_layer;
+}
+
+bool Timeline::isFrameActive(FrameNumber frame) const
+{
+  if (frame == m_frame)
+    return true;
+  else {
+    if (m_frameBegin < m_frameEnd) {
+      return (frame >= m_frameBegin && frame <= m_frameEnd);
+    }
+    else {
+      return (frame >= m_frameEnd && frame <= m_frameBegin);
+    }
+  }
+  return false;
 }
 
 } // namespace app

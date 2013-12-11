@@ -54,6 +54,7 @@ namespace app {
     enum State {
       STATE_STANDBY,
       STATE_SCROLLING,
+      STATE_SELECTING_FRAME,
       STATE_MOVING_SEPARATOR,
       STATE_MOVING_LAYER,
       STATE_MOVING_CEL,
@@ -121,7 +122,9 @@ namespace app {
     void showCurrentCel();
     void cleanClk();
     void setScroll(int x, int y, bool use_refresh_region);
-    int getLayerIndex(const Layer* layer);
+    int getLayerIndex(const Layer* layer) const;
+    bool isLayerActive(const Layer* layer) const;
+    bool isFrameActive(FrameNumber frame) const;
 
     skin::Style* m_timelineStyle;
     skin::Style* m_timelineBoxStyle;
@@ -143,6 +146,8 @@ namespace app {
     Sprite* m_sprite;
     Layer* m_layer;
     FrameNumber m_frame;
+    FrameNumber m_frameBegin;
+    FrameNumber m_frameEnd;
     State m_state;
     std::vector<Layer*> m_layers;
     int m_scroll_x;
