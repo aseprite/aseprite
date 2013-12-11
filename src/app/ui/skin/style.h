@@ -25,6 +25,7 @@
 #include "css/compound_style.h"
 #include "css/state.h"
 #include "css/stateful_style.h"
+#include "gfx/border.h"
 #include "gfx/fwd.h"
 #include "ui/color.h"
 
@@ -74,6 +75,7 @@ namespace app {
 
       void setAlign(int align) { m_align = align; }
       void setColor(ui::Color color) { m_color = color; }
+      void setPadding(const gfx::Border& padding) { m_padding = padding; }
 
     protected:
       void onPaint(ui::Graphics* g, const gfx::Rect& bounds, const char* text) OVERRIDE;
@@ -81,6 +83,7 @@ namespace app {
     private:
       int m_align;
       ui::Color m_color;
+      gfx::Border m_padding;
     };
 
     class IconRule : public Rule {

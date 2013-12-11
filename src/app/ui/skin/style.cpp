@@ -71,13 +71,14 @@ void TextRule::onPaint(ui::Graphics* g, const gfx::Rect& bounds, const char* tex
 {
   SkinTheme* theme = static_cast<SkinTheme*>(ui::CurrentTheme::get());
 
-  if (text)
+  if (text) {
     g->drawString(text,
       (ui::is_transparent(m_color) ?
         theme->getColor(ThemeColor::Text):
         m_color),
       ui::ColorNone,
-      bounds, m_align);
+      gfx::Rect(bounds).shrink(m_padding), m_align);
+  }
 }
 
 void IconRule::onPaint(ui::Graphics* g, const gfx::Rect& bounds, const char* text)
@@ -113,6 +114,10 @@ Rules::Rules(const css::Query& query) :
   css::Value iconPart = query[StyleSheet::iconPartRule()];
   css::Value textAlign = query[StyleSheet::textAlignRule()];
   css::Value textColor = query[StyleSheet::textColorRule()];
+  css::Value paddingLeft = query[StyleSheet::paddingLeftRule()];
+  css::Value paddingTop = query[StyleSheet::paddingTopRule()];
+  css::Value paddingRight = query[StyleSheet::paddingRightRule()];
+  css::Value paddingBottom = query[StyleSheet::paddingBottomRule()];
   css::Value none;
 
   if (backgroundColor != none
@@ -130,10 +135,17 @@ Rules::Rules(const css::Query& query) :
   }
 
   if (textAlign != none
-    || textColor != none) {
+    || textColor != none
+    || paddingLeft != none
+    || paddingTop != none
+    || paddingRight != none
+    || paddingBottom != none) {
     m_text = new TextRule();
     m_text->setAlign((int)textAlign.number());
     m_text->setColor(StyleSheet::convertColor(textColor));
+    m_text->setPadding(gfx::Border(
+        paddingLeft.number(), paddingTop.number(),
+        paddingRight.number(), paddingBottom.number())*ui::jguiscale());
   }
 }
 

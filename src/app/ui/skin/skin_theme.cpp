@@ -606,6 +606,8 @@ void SkinTheme::onRegenerate()
 
         PRINTF("- Rule '%s' for '%s'\n", ruleName.c_str(), style_id);
 
+        // TODO This code design to read styles could be improved.
+
         const char* part_id = xmlRule->Attribute("part");
         const char* color_id = xmlRule->Attribute("color");
 
@@ -635,6 +637,16 @@ void SkinTheme::onRegenerate()
         else if (ruleName == "text") {
           if (color_id) (*style)[StyleSheet::textColorRule()] = css::Value(color_id);
           if (align) (*style)[StyleSheet::textAlignRule()] = css::Value(align);
+
+          const char* padding_left = xmlRule->Attribute("padding-left");
+          const char* padding_top = xmlRule->Attribute("padding-top");
+          const char* padding_right = xmlRule->Attribute("padding-right");
+          const char* padding_bottom = xmlRule->Attribute("padding-bottom");
+
+          if (padding_left) (*style)[StyleSheet::paddingLeftRule()] = css::Value(strtol(padding_left, NULL, 10));
+          if (padding_top) (*style)[StyleSheet::paddingTopRule()] = css::Value(strtol(padding_top, NULL, 10));
+          if (padding_right) (*style)[StyleSheet::paddingRightRule()] = css::Value(strtol(padding_right, NULL, 10));
+          if (padding_bottom) (*style)[StyleSheet::paddingBottomRule()] = css::Value(strtol(padding_bottom, NULL, 10));
         }
 
         xmlRule = xmlRule->NextSiblingElement();

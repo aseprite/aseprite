@@ -50,6 +50,10 @@ namespace app {
       static css::Rule& iconPartRule() { return m_iconPartRule; }
       static css::Rule& textAlignRule() { return m_textAlignRule; }
       static css::Rule& textColorRule() { return m_textColorRule; }
+      static css::Rule& paddingLeftRule() { return m_paddingLeftRule; }
+      static css::Rule& paddingTopRule() { return m_paddingTopRule; }
+      static css::Rule& paddingRightRule() { return m_paddingRightRule; }
+      static css::Rule& paddingBottomRule() { return m_paddingBottomRule; }
 
       css::Sheet& sheet() { return *m_sheet; }
 
@@ -69,6 +73,11 @@ namespace app {
       static css::Rule m_iconPartRule;
       static css::Rule m_textAlignRule;
       static css::Rule m_textColorRule;
+      static css::Rule m_paddingLeftRule;
+      static css::Rule m_paddingTopRule;
+      static css::Rule m_paddingRightRule;
+      static css::Rule m_paddingBottomRule;
+
       css::Sheet* m_sheet;
       StyleMap m_styles;
     };

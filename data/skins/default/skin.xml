@@ -359,7 +359,7 @@
 
     <!-- timeline_layer -->
     <style id="timeline_layer" base="timeline_box">
-      <text align="left" valign="middle" />
+      <text align="left" valign="middle" padding-left="4" />
     </style>
 
     <!-- timeline_empty_frame -->
