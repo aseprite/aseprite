@@ -171,7 +171,6 @@ StatusBar::StatusBar()
   m_timeout = 0;
   m_state = SHOW_TEXT;
   m_tipwindow = NULL;
-  m_hot_layer = LayerIndex(-1);
 
   // The extra pixel in left and right borders are necessary so
   // m_commandsBox and m_movePixelsBox do not overlap the upper-left
@@ -521,70 +520,8 @@ bool StatusBar::onProcessMessage(Message* msg)
           x -= width+4;
         }
       }
-      else {
-        // Available width for layers buttons
-        int width = rc.w/4;
 
-        // Draw layers
-        try {
-          --rc.h;
-
-          const ContextReader reader(UIContext::instance());
-          const Sprite* sprite(reader.sprite());
-          if (sprite) {
-            if (hasChild(m_notificationsBox)) {
-              removeChild(m_notificationsBox);
-              invalidate();
-            }
-
-            const LayerFolder* folder = sprite->getFolder();
-            LayerConstIterator it = folder->getLayerBegin();
-            LayerConstIterator end = folder->getLayerEnd();
-            int count = folder->getLayersCount();
-            char buf[256];
-
-            for (int c=0; it != end; ++it, ++c) {
-              int x1 = rc.x2() - width + c*width/count;
-              int x2 = rc.x2() - width + (c+1)*width/count;
-              bool hot = ((*it == reader.layer())
-                          || (LayerIndex(c) == m_hot_layer));
-
-              theme->draw_bounds_nw(doublebuffer,
-                                    x1, rc.y, x2, rc.y2(),
-                                    hot ? PART_TOOLBUTTON_HOT_NW:
-                                          PART_TOOLBUTTON_NORMAL_NW,
-                                    hot ? theme->getColor(ThemeColor::ButtonHotFace):
-                                          theme->getColor(ThemeColor::ButtonNormalFace));
-
-              if (count == 1)
-                uszprintf(buf, sizeof(buf), "%s", (*it)->getName().c_str());
-              else
-                {
-                  if (c+'A' <= 'Z')
-                    usprintf(buf, "%c", c+'A');
-                  else
-                    usprintf(buf, "%d", c-('Z'-'A'));
-                }
-
-              textout_centre_ex(doublebuffer, this->getFont(), buf,
-                                (x1+x2)/2,
-                                rc.y + rc.h/2 - text_height(this->getFont())/2,
-                                to_system(hot ? theme->getColor(ThemeColor::ButtonHotText):
-                                                theme->getColor(ThemeColor::ButtonNormalText)),
-                                -1);
-            }
-          }
-          else {
-            if (!hasChild(m_notificationsBox)) {
-              addChild(m_notificationsBox);
-              invalidate();
-            }
-          }
-        }
-        catch (LockedDocumentException&) {
-          // Do nothing...
-        }
-      }
+      updateSubwidgetsVisibility();
 
       blit(doublebuffer, ji_screen, 0, 0,
            clip.x,
@@ -596,116 +533,13 @@ bool StatusBar::onProcessMessage(Message* msg)
     }
 
     case kMouseEnterMessage: {
+      updateSubwidgetsVisibility();
+
       const Document* document = UIContext::instance()->getActiveDocument();
-      bool state = (document != NULL);
-
-      if (state && !hasChild(m_commandsBox)) {
+      if (document != NULL)
         updateCurrentFrame();
-
-        m_b_first->setEnabled(state);
-        m_b_prev->setEnabled(state);
-        m_b_play->setEnabled(state);
-        m_b_next->setEnabled(state);
-        m_b_last->setEnabled(state);
-
-        updateFromLayer();
-
-        if (hasChild(m_notificationsBox))
-          removeChild(m_notificationsBox);
-
-        addChild(m_commandsBox);
-        invalidate();
-      }
-      else if (!state && !hasChild(m_notificationsBox)) {
-        addChild(m_notificationsBox);
-        invalidate();
-      }
-
       break;
     }
-
-    case kMouseMoveMessage: {
-      MouseMessage* mouseMsg = static_cast<MouseMessage*>(msg);
-      gfx::Rect rc = getBounds().shrink(gfx::Border(2*jguiscale(), 1*jguiscale(),
-                                                    2*jguiscale(), 2*jguiscale()));
-
-      // Available width for layers buttons
-      int width = rc.w/4;
-
-      // Check layers bounds
-      try {
-        --rc.h;
-
-        LayerIndex hot_layer = LayerIndex(-1);
-
-        const ContextReader reader(UIContext::instance());
-        const Sprite* sprite(reader.sprite());
-        // Check which sprite's layer has the mouse over
-        if (sprite) {
-          const LayerFolder* folder = sprite->getFolder();
-          LayerConstIterator it = folder->getLayerBegin();
-          LayerConstIterator end = folder->getLayerEnd();
-          int count = folder->getLayersCount();
-
-          for (int c=0; it != end; ++it, ++c) {
-            int x1 = rc.x2()-width + c*width/count;
-            int x2 = rc.x2()-width + (c+1)*width/count;
-
-            if (Rect(Point(x1, rc.y),
-                     Point(x2, rc.y2())).contains(mouseMsg->position())) {
-              hot_layer = LayerIndex(c);
-              break;
-            }
-          }
-        }
-        // Check if the "Donate" button has the mouse over
-        else {
-          int x1 = rc.x2()-width;
-          int x2 = rc.x2();
-
-          if (Rect(Point(x1, rc.y),
-                   Point(x2, rc.y2())).contains(mouseMsg->position())) {
-            hot_layer = LayerIndex(0);
-          }
-        }
-
-        if (m_hot_layer != hot_layer) {
-          m_hot_layer = hot_layer;
-          invalidate();
-        }
-      }
-      catch (LockedDocumentException&) {
-        // Do nothing...
-      }
-      break;
-    }
-
-    case kMouseDownMessage:
-      // When the user press the mouse-button over a hot-layer-button...
-      if (m_hot_layer >= 0) {
-        try {
-          ContextWriter writer(UIContext::instance());
-          Sprite* sprite(writer.sprite());
-          if (sprite) {
-            Layer* layer = sprite->indexToLayer(m_hot_layer);
-            if (layer) {
-              // Flash the current layer
-              if (current_editor != NULL)
-              {
-                current_editor->setLayer(layer);
-                current_editor->flashCurrentLayer();
-              }
-
-              // Redraw the status-bar
-              invalidate();
-            }
-          }
-        }
-        catch (LockedDocumentException&) {
-          // Do nothing...
-        }
-      }
-      break;
 
     case kMouseLeaveMessage:
       if (hasChild(m_commandsBox)) {
@@ -716,11 +550,6 @@ bool StatusBar::onProcessMessage(Message* msg)
           getManager()->freeFocus();     // TODO Review this code
 
           removeChild(m_commandsBox);
-          invalidate();
-        }
-
-        if (m_hot_layer >= 0) {
-          m_hot_layer = LayerIndex(-1);
           invalidate();
         }
       }
@@ -737,6 +566,7 @@ void StatusBar::onResize(ResizeEvent& ev)
 
   Rect rc = ev.getBounds();
   rc.x = rc.x2() - m_notificationsBox->getPreferredSize().w;
+  rc.w = m_notificationsBox->getPreferredSize().w;
   m_notificationsBox->setBounds(rc);
 
   rc = ev.getBounds();
@@ -834,6 +664,39 @@ void StatusBar::newFrame()
   Command* cmd = CommandsModule::instance()->getCommandByName(CommandId::NewFrame);
   UIContext::instance()->executeCommand(cmd);
   updateCurrentFrame();
+}
+
+void StatusBar::updateSubwidgetsVisibility()
+{
+  const Document* document = UIContext::instance()->getActiveDocument();
+  bool commandsVisible = (document != NULL && hasMouse());
+  bool notificationsVisible = (document == NULL);
+
+  if (commandsVisible) {
+    if (!hasChild(m_commandsBox)) {
+      addChild(m_commandsBox);
+      invalidate();
+    }
+  }
+  else {
+    if (hasChild(m_commandsBox)) {
+      removeChild(m_commandsBox);
+      invalidate();
+    }
+  }
+
+  if (notificationsVisible) {
+    if (!hasChild(m_notificationsBox)) {
+      addChild(m_notificationsBox);
+      invalidate();
+    }
+  }
+  else {
+    if (hasChild(m_notificationsBox)) {
+      removeChild(m_notificationsBox);
+      invalidate();
+    }
+  }
 }
 
 } // namespace app

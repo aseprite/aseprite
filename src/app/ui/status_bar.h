@@ -92,6 +92,7 @@ namespace app {
     void updateFromLayer();
     void updateCurrentFrame();
     void newFrame();
+    void updateSubwidgetsVisibility();
 
     enum State { SHOW_TEXT, SHOW_COLOR, SHOW_TOOL };
 
@@ -128,8 +129,6 @@ namespace app {
     // Tip window
     class CustomizedTipWindow;
     CustomizedTipWindow* m_tipwindow;
-
-    raster::LayerIndex m_hot_layer;
   };
 
 } // namespace app
