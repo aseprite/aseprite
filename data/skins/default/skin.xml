@@ -63,6 +63,17 @@
     <color id="filelist_selected_row_face" value="#2c4c91" />
     <color id="filelist_disabled_row_text" value="#ffc8c8" />
     <color id="workspace" value="#7d929e" />
+    <color id="timeline_normal" value="#c6c6c6" />
+    <color id="timeline_normal_text" value="#000000" />
+    <color id="timeline_hover" value="#d9d9d9" />
+    <color id="timeline_hover_text" value="#000000" />
+    <color id="timeline_active" value="#7d929e" />
+    <color id="timeline_active_text" value="#ffffff" />
+    <color id="timeline_active_hover" value="#99b3c2" />
+    <color id="timeline_active_hover_text" value="#ffffff" />
+    <color id="timeline_clicked" value="#536069" />
+    <color id="timeline_clicked_text" value="#ffffff" />
+    <color id="timeline_padding" value="#7d929e" />
   </colors>
 
   <cursors>
@@ -80,14 +91,14 @@
     <cursor id="size_bl"        x="80" y="176" w="16" h="16"    focusx="8" focusy="8" />
     <cursor id="size_b"         x="80" y="192" w="16" h="16"    focusx="8" focusy="8" />
     <cursor id="size_br"        x="80" y="208" w="16" h="16"    focusx="8" focusy="8" />
-    <cursor id="rotate_tl"      x="240" y="96" w="16" h="16"    focusx="8" focusy="8" />
-    <cursor id="rotate_t"       x="240" y="112" w="16" h="16"   focusx="8" focusy="8" />
-    <cursor id="rotate_tr"      x="240" y="128" w="16" h="16"   focusx="8" focusy="8" />
-    <cursor id="rotate_l"       x="240" y="144" w="16" h="16"   focusx="8" focusy="8" />
-    <cursor id="rotate_r"       x="240" y="160" w="16" h="16"   focusx="8" focusy="8" />
-    <cursor id="rotate_bl"      x="240" y="176" w="16" h="16"   focusx="8" focusy="8" />
-    <cursor id="rotate_b"       x="240" y="192" w="16" h="16"   focusx="8" focusy="8" />
-    <cursor id="rotate_br"      x="240" y="208" w="16" h="16"   focusx="8" focusy="8" />
+    <cursor id="rotate_tl"      x="240" y="160" w="16" h="16"    focusx="8" focusy="8" />
+    <cursor id="rotate_tr"      x="256" y="160" w="16" h="16"   focusx="8" focusy="8" />
+    <cursor id="rotate_l"       x="240" y="176" w="16" h="16"   focusx="8" focusy="8" />
+    <cursor id="rotate_r"       x="256" y="176" w="16" h="16"   focusx="8" focusy="8" />
+    <cursor id="rotate_t"       x="240" y="192" w="16" h="16"   focusx="8" focusy="8" />
+    <cursor id="rotate_b"       x="256" y="192" w="16" h="16"   focusx="8" focusy="8" />
+    <cursor id="rotate_bl"      x="240" y="208" w="16" h="16"   focusx="8" focusy="8" />
+    <cursor id="rotate_br"      x="256" y="208" w="16" h="16"   focusx="8" focusy="8" />
     <cursor id="eyedropper"     x="80" y="224" w="16" h="16"    focusx="0" focusy="15" />
   </cursors>
 
@@ -259,6 +270,133 @@
     <part id="drop_down_button_right_selected"  x="71" y="48" w1="2" w2="2" w3="3" h1="4" h2="6" h3="6" />
     <part id="transformation_handle"            x="208" y="144" w="5" h="5" />
     <part id="pivot_handle"                     x="224" y="144" w="9" h="9" />
+    <part id="timeline_normal"                  x="240" y="0" w1="2" w2="8" w3="2" h1="2" h2="8" h3="2" />
+    <part id="timeline_active"                  x="252" y="0" w1="2" w2="8" w3="2" h1="2" h2="8" h3="2" />
+    <part id="timeline_hover"                   x="264" y="0" w1="2" w2="8" w3="2" h1="2" h2="8" h3="2" />
+    <part id="timeline_active_hover"            x="276" y="0" w1="2" w2="8" w3="2" h1="2" h2="8" h3="2" />
+    <part id="timeline_clicked"                 x="288" y="0" w1="2" w2="8" w3="2" h1="2" h2="8" h3="2" />
+    <part id="timeline_open_eye_normal"         x="240" y="12" w="12" h="12" />
+    <part id="timeline_open_eye_active"         x="252" y="12" w="12" h="12" />
+    <part id="timeline_closed_eye_normal"       x="240" y="24" w="12" h="12" />
+    <part id="timeline_closed_eye_active"       x="252" y="24" w="12" h="12" />
+    <part id="timeline_open_padlock_normal"     x="240" y="36" w="12" h="12" />
+    <part id="timeline_open_padlock_active"     x="252" y="36" w="12" h="12" />
+    <part id="timeline_closed_padlock_normal"   x="240" y="48" w="12" h="12" />
+    <part id="timeline_closed_padlock_active"   x="252" y="48" w="12" h="12" />
+    <part id="timeline_empty_frame_normal"      x="240" y="60" w="12" h="12" />
+    <part id="timeline_empty_frame_active"      x="252" y="60" w="12" h="12" />
+    <part id="timeline_keyframe_normal"         x="240" y="72" w="12" h="12" />
+    <part id="timeline_keyframe_active"         x="252" y="72" w="12" h="12" />
+    <part id="timeline_fromleft_normal"         x="240" y="84" w="12" h="12" />
+    <part id="timeline_fromleft_active"         x="252" y="84" w="12" h="12" />
+    <part id="timeline_fromright_normal"        x="240" y="96" w="12" h="12" />
+    <part id="timeline_fromright_active"        x="252" y="96" w="12" h="12" />
+    <part id="timeline_fromboth_normal"         x="240" y="108" w="12" h="12" />
+    <part id="timeline_fromboth_active"         x="252" y="108" w="12" h="12" />
+    <part id="timeline_gear"                    x="264" y="12" w="12" h="12" />
+    <part id="timeline_padding"                 x="276" y="12" w1="2" w2="8" w3="2" h1="2" h2="8" h3="2" />
+    <part id="timeline_padding_tr"              x="288" y="12" w1="2" w2="8" w3="2" h1="2" h2="8" h3="2" />
+    <part id="timeline_padding_bl"              x="276" y="24" w1="2" w2="8" w3="2" h1="2" h2="8" h3="2" />
+    <part id="timeline_padding_br"              x="288" y="24" w1="2" w2="8" w3="2" h1="2" h2="8" h3="2" />
   </parts>
+
+  <stylesheet>
+
+    <!-- timeline -->
+    <style id="timeline">
+      <background color="timeline_normal" part="timeline_normal" />
+    </style>
+
+    <!-- timeline_box -->
+    <style id="timeline_box">
+      <background color="timeline_normal" part="timeline_normal" />
+      <text color="timeline_normal_text" align="center" valign="middle" />
+    </style>
+    <style id="timeline_box:hover">
+      <background color="timeline_hover" part="timeline_hover" />
+      <text color="timeline_hover_text" />
+    </style>
+    <style id="timeline_box:active">
+      <background color="timeline_active" part="timeline_active" />
+      <text color="timeline_active_text" />
+    </style>
+    <style id="timeline_box:active:hover">
+      <background color="timeline_active_hover" part="timeline_active_hover" />
+      <text color="timeline_active_hover_text" />
+    </style>
+    <style id="timeline_box:clicked">
+      <background color="timeline_clicked" part="timeline_clicked" />
+      <text color="timeline_clicked_text" />
+    </style>
+
+    <!-- timeline_eye -->
+    <style id="timeline_open_eye" base="timeline_box">
+      <icon part="timeline_open_eye_normal" />
+    </style>
+    <style id="timeline_open_eye:active">
+      <icon part="timeline_open_eye_active" />
+    </style>
+    <style id="timeline_closed_eye" base="timeline_box">
+      <icon part="timeline_closed_eye_normal" />
+    </style>
+    <style id="timeline_closed_eye:active">
+      <icon part="timeline_closed_eye_active" />
+    </style>
+
+    <!-- timeline_padlock -->
+    <style id="timeline_open_padlock" base="timeline_box">
+      <icon part="timeline_open_padlock_normal" />
+    </style>
+    <style id="timeline_open_padlock:active">
+      <icon part="timeline_open_padlock_active" />
+    </style>
+    <style id="timeline_closed_padlock" base="timeline_box">
+      <icon part="timeline_closed_padlock_normal" />
+    </style>
+    <style id="timeline_closed_padlock:active">
+      <icon part="timeline_closed_padlock_active" />
+    </style>
+
+    <!-- timeline_layer -->
+    <style id="timeline_layer" base="timeline_box">
+      <text align="left" valign="middle" />
+    </style>
+
+    <!-- timeline_empty_frame -->
+    <style id="timeline_empty_frame" base="timeline_box">
+      <icon part="timeline_empty_frame_normal" />
+    </style>
+    <style id="timeline_empty_frame:active">
+      <icon part="timeline_empty_frame_active" />
+    </style>
+
+    <!--timeline_keyframe-->
+    <style id="timeline_keyframe" base="timeline_box">
+      <icon part="timeline_keyframe_normal" />
+    </style>
+    <style id="timeline_keyframe:active">
+      <icon part="timeline_keyframe_active" />
+    </style>
+
+    <!-- timeline_cel -->
+    <style id="timeline_gear" base="timeline_box">
+      <icon part="timeline_gear" />
+    </style>
+
+    <!-- paddings -->
+    <style id="timeline_padding">
+      <background color="timeline_normal" part="timeline_padding" />
+    </style>
+    <style id="timeline_padding_tr">
+      <background color="timeline_normal" part="timeline_padding_tr" />
+    </style>
+    <style id="timeline_padding_bl">
+      <background color="timeline_normal" part="timeline_padding_bl" />
+    </style>
+    <style id="timeline_padding_br">
+      <background color="timeline_normal" part="timeline_padding_br" />
+    </style>
+
+  </stylesheet>
 
 </skin>

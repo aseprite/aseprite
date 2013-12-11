@@ -51,23 +51,6 @@
 #include <allegro.h>
 #include <vector>
 
-/*
-   Timeline
-
-                        Frames ...
-
-   --------------------+-----+-----+-----+---
-            Layers     |msecs|msecs|msecs|...
-   --------------------+-----+-----+-----+---
-    [1] [2] Layer 1    | Cel | Cel | Cel |...
-   --------------------+-----+-----+-----+---
-    [1] [2] Background | Cel | Cel | Cel |...
-   --------------------+-----+-----+-----+---
-
-   [1] Eye-icon
-   [2] Padlock-icon
- */
-
 // Size of the thumbnail in the screen (width x height), the really
 // size of the thumbnail bitmap is specified in the
 // 'generate_thumbnail' routine.
@@ -86,7 +69,7 @@
 #define ICONSEP         (2*jguiscale())
 
 // Space between the icon-bitmap and the edge of the surrounding button.
-#define ICONBORDER      (4*jguiscale())
+#define ICONBORDER      0
 
 namespace app {
 
@@ -95,27 +78,59 @@ using namespace gfx;
 using namespace raster;
 using namespace ui;
 
+static const char* kTimeline = "timeline";
+static const char* kTimelineBox = "timeline_box";
+static const char* kTimelineOpenEye = "timeline_open_eye";
+static const char* kTimelineClosedEye = "timeline_closed_eye";
+static const char* kTimelineOpenPadlock = "timeline_open_padlock";
+static const char* kTimelineClosedPadlock = "timeline_closed_padlock";
+static const char* kTimelineLayer = "timeline_layer";
+static const char* kTimelineEmptyFrame = "timeline_empty_frame";
+static const char* kTimelineKeyframe = "timeline_keyframe";
+static const char* kTimelineGear = "timeline_gear";
+static const char* kTimelinePadding = "timeline_padding";
+static const char* kTimelinePaddingTr = "timeline_padding_tr";
+static const char* kTimelinePaddingBl = "timeline_padding_bl";
+static const char* kTimelinePaddingBr = "timeline_padding_br";
+
+static const char* kTimelineActiveColor = "timeline_active";
+
 enum {
   A_PART_NOTHING,
   A_PART_SEPARATOR,
+  A_PART_HEADER_GEAR,
   A_PART_HEADER_LAYER,
   A_PART_HEADER_FRAME,
   A_PART_LAYER,
   A_PART_LAYER_EYE_ICON,
-  A_PART_LAYER_LOCK_ICON,
+  A_PART_LAYER_PADLOCK_ICON,
+  A_PART_LAYER_TEXT,
   A_PART_CEL
 };
 
-static void icon_rect(BITMAP* icon_normal, BITMAP* icon_selected, int x1, int y1, int x2, int y2,
-                      bool is_selected, bool is_hot, bool is_clk);
-
 Timeline::Timeline()
   : Widget(kGenericWidget)
+  , m_timelineStyle(get_style(kTimeline))
+  , m_timelineBoxStyle(get_style(kTimelineBox))
+  , m_timelineOpenEyeStyle(get_style(kTimelineOpenEye))
+  , m_timelineClosedEyeStyle(get_style(kTimelineClosedEye))
+  , m_timelineOpenPadlockStyle(get_style(kTimelineOpenPadlock))
+  , m_timelineClosedPadlockStyle(get_style(kTimelineClosedPadlock))
+  , m_timelineLayerStyle(get_style(kTimelineLayer))
+  , m_timelineEmptyFrameStyle(get_style(kTimelineEmptyFrame))
+  , m_timelineKeyframeStyle(get_style(kTimelineKeyframe))
+  , m_timelineGearStyle(get_style(kTimelineGear))
+  , m_timelinePaddingStyle(get_style(kTimelinePadding))
+  , m_timelinePaddingTrStyle(get_style(kTimelinePaddingTr))
+  , m_timelinePaddingBlStyle(get_style(kTimelinePaddingBl))
+  , m_timelinePaddingBrStyle(get_style(kTimelinePaddingBr))
   , m_context(UIContext::instance())
   , m_editor(NULL)
   , m_document(NULL)
 {
   m_context->addObserver(this);
+
+  setDoubleBuffered(true);
 }
 
 Timeline::~Timeline()
@@ -211,62 +226,6 @@ bool Timeline::onProcessMessage(Message* msg)
 {
   switch (msg->type()) {
 
-    case kPaintMessage:
-      if (m_document) {
-        gfx::Rect clip = static_cast<PaintMessage*>(msg)->rect();
-        int layer, first_layer, last_layer;
-        FrameNumber frame, first_frame, last_frame;
-
-        getDrawableLayers(clip, &first_layer, &last_layer);
-        getDrawableFrames(clip, &first_frame, &last_frame);
-
-        // Draw the header for layers.
-        drawHeader(clip);
-
-        // Draw the header for each visible frame.
-        for (frame=first_frame; frame<=last_frame; ++frame)
-          drawHeaderFrame(clip, frame);
-
-        // Draw the separator.
-        drawSeparator(clip);
-
-        // Draw each visible layer.
-        for (layer=first_layer; layer<=last_layer; layer++) {
-          drawLayer(clip, layer);
-
-          // Get the first CelIterator to be drawn (it is the first cel with cel->frame >= first_frame)
-          CelIterator it, end;
-          Layer* layerPtr = m_layers[layer];
-          if (layerPtr->isImage()) {
-            it = static_cast<LayerImage*>(layerPtr)->getCelBegin();
-            end = static_cast<LayerImage*>(layerPtr)->getCelEnd();
-            for (; it != end && (*it)->getFrame() < first_frame; ++it)
-              ;
-          }
-
-          // Draw every visible cel for each layer.
-          for (frame=first_frame; frame<=last_frame; ++frame) {
-            Cel* cel = (layerPtr->isImage() && it != end && (*it)->getFrame() == frame ? *it: NULL);
-
-            drawCel(clip, layer, frame, cel);
-
-            if (cel)
-              ++it;               // Go to next cel
-          }
-        }
-
-        drawLayerPadding();
-      }
-      else {
-        SkinTheme* theme = static_cast<SkinTheme*>(getTheme());
-        rectfill(ji_screen,
-                 getBounds().x, getBounds().y,
-                 getBounds().x2()-1,
-                 getBounds().y2()-1,
-                 to_system(theme->getColor(ThemeColor::Face)));
-      }
-      return true;
-
     case kTimerMessage:
       break;
 
@@ -301,6 +260,9 @@ bool Timeline::onProcessMessage(Message* msg)
           captureMouse();
           m_state = STATE_MOVING_SEPARATOR;
           break;
+        case A_PART_HEADER_GEAR:
+          // TODO show config.
+          break;
         case A_PART_HEADER_LAYER:
           // Do nothing.
           break;
@@ -310,7 +272,7 @@ bool Timeline::onProcessMessage(Message* msg)
           captureMouse();
           m_state = STATE_MOVING_FRAME;
           break;
-        case A_PART_LAYER: {
+        case A_PART_LAYER_TEXT: {
           const DocumentReader document(const_cast<Document*>(m_document));
           const Sprite* sprite = m_sprite;
           int old_layer = getLayerIndex(m_layer);
@@ -319,14 +281,7 @@ bool Timeline::onProcessMessage(Message* msg)
           // Did the user select another layer?
           if (old_layer != m_clk_layer) {
             setLayer(m_layers[m_clk_layer]);
-
-            jmouse_hide();
-            // Redraw the old & new selected cel.
-            drawPart(A_PART_CEL, old_layer, frame);
-            drawPart(A_PART_CEL, m_clk_layer, frame);
-            // Redraw the old selected layer.
-            drawPart(A_PART_LAYER, old_layer, frame);
-            jmouse_show();
+            invalidate();
           }
 
           // Change the scroll to show the new selected cel.
@@ -338,7 +293,7 @@ bool Timeline::onProcessMessage(Message* msg)
         case A_PART_LAYER_EYE_ICON:
           captureMouse();
           break;
-        case A_PART_LAYER_LOCK_ICON:
+        case A_PART_LAYER_PADLOCK_ICON:
           captureMouse();
           break;
         case A_PART_CEL: {
@@ -352,16 +307,7 @@ bool Timeline::onProcessMessage(Message* msg)
               old_frame != m_clk_frame) {
             setLayer(m_layers[m_clk_layer]);
             setFrame(m_clk_frame);
-
-            jmouse_hide();
-            // Redraw the old & new selected layer.
-            if (old_layer != m_clk_layer) {
-              drawPart(A_PART_LAYER, old_layer, old_frame);
-              drawPart(A_PART_LAYER, m_clk_layer, m_clk_frame);
-            }
-            // Redraw the old selected cel.
-            drawPart(A_PART_CEL, old_layer, old_frame);
-            jmouse_show();
+            invalidate();
           }
 
           // Change the scroll to show the new selected cel.
@@ -374,12 +320,11 @@ bool Timeline::onProcessMessage(Message* msg)
         }
       }
 
-      // Redraw the new selected part (header, layer or cel).
-      jmouse_hide();
-      drawPart(m_clk_part,
-               m_clk_layer,
-               m_clk_frame);
-      jmouse_show();
+      // Redraw the new clicked part (header, layer or cel).
+      invalidatePart(m_clk_part,
+                     m_clk_layer,
+                     m_clk_frame);
+      invalidate();
       break;
 
     case kMouseMoveMessage: {
@@ -389,9 +334,8 @@ bool Timeline::onProcessMessage(Message* msg)
       int hot_part = A_PART_NOTHING;
       int hot_layer = -1;
       FrameNumber hot_frame(-1);
-      gfx::Point mousePos = static_cast<MouseMessage*>(msg)->position();
-      int mx = mousePos.x - getBounds().x;
-      int my = mousePos.y - getBounds().y;
+      gfx::Point mousePos = static_cast<MouseMessage*>(msg)->position()
+        - getBounds().getOrigin();
 
       if (hasCapture()) {
         if (m_state == STATE_SCROLLING) {
@@ -406,66 +350,51 @@ bool Timeline::onProcessMessage(Message* msg)
         // tracked to the mouse's released).
         else if (m_clk_part == A_PART_SEPARATOR) {
           hot_part = m_clk_part;
-          m_separator_x = mx;
+          m_separator_x = mousePos.x;
           invalidate();
           return true;
         }
       }
 
       // Is the mouse on the separator.
-      if (mx > m_separator_x-4 && mx < m_separator_x+4)  {
+      if (mousePos.x > m_separator_x-4 &&
+          mousePos.x < m_separator_x+4)  {
         hot_part = A_PART_SEPARATOR;
       }
       // Is the mouse on the headers?
-      else if (my < HDRSIZE) {
-        // Is on the layers' header?
-        if (mx < m_separator_x)
+      else if (mousePos.y < HDRSIZE) {
+        if (getPartBounds(A_PART_HEADER_GEAR).contains(mousePos))
+          hot_part = A_PART_HEADER_GEAR;
+        else if (getPartBounds(A_PART_HEADER_LAYER).contains(mousePos))
           hot_part = A_PART_HEADER_LAYER;
         // Is on a frame header?
         else {
           hot_part = A_PART_HEADER_FRAME;
-          hot_frame = FrameNumber((mx
+          hot_frame = FrameNumber((mousePos.x
                                    - m_separator_x
                                    - m_separator_w
                                    + m_scroll_x) / FRMSIZE);
         }
       }
       else {
-        hot_layer = (my
+        hot_layer = (mousePos.y
                      - HDRSIZE
                      + m_scroll_y) / LAYSIZE;
 
         // Is the mouse on a layer's label?
-        if (mx < m_separator_x) {
-          SkinTheme* theme = static_cast<SkinTheme*>(getTheme());
-          BITMAP* icon1 = theme->get_part(PART_LAYER_VISIBLE);
-          BITMAP* icon2 = theme->get_part(PART_LAYER_EDITABLE);
-          int x1, y1, x2, y2, y_mid;
-
-          x1 = 0;
-          y1 = HDRSIZE + LAYSIZE*hot_layer - m_scroll_y;
-          x2 = x1 + m_separator_x - 1;
-          y2 = y1 + LAYSIZE - 1;
-          y_mid = (y1+y2) / 2;
-
-          if (mx >= x1+2 &&
-              mx <= x1+ICONSEP+ICONBORDER+icon1->w+ICONBORDER-1 &&
-              my >= y_mid-icon1->h/2-ICONBORDER &&
-              my <= y_mid+icon1->h/2+ICONBORDER) {
+        if (mousePos.x < m_separator_x) {
+          if (getPartBounds(A_PART_LAYER_EYE_ICON, hot_layer).contains(mousePos))
             hot_part = A_PART_LAYER_EYE_ICON;
-          }
-          else if (mx >= x1+ICONSEP+ICONBORDER+icon1->w+ICONBORDER &&
-                   mx <= x1+ICONSEP+ICONBORDER+icon1->w+ICONBORDER+ICONBORDER+icon2->w+ICONBORDER-1 &&
-                   my >= y_mid-icon2->h/2-ICONBORDER &&
-                   my <= y_mid+icon2->h/2+ICONBORDER) {
-            hot_part = A_PART_LAYER_LOCK_ICON;
-          }
+          else if (getPartBounds(A_PART_LAYER_PADLOCK_ICON, hot_layer).contains(mousePos))
+            hot_part = A_PART_LAYER_PADLOCK_ICON;
+          else if (getPartBounds(A_PART_LAYER_TEXT, hot_layer).contains(mousePos))
+            hot_part = A_PART_LAYER_TEXT;
           else
             hot_part = A_PART_LAYER;
         }
         else {
           hot_part = A_PART_CEL;
-          hot_frame = FrameNumber((mx
+          hot_frame = FrameNumber((mousePos.x
                                    - m_separator_x
                                    - m_separator_w
                                    + m_scroll_x) / FRMSIZE);
@@ -495,6 +424,9 @@ bool Timeline::onProcessMessage(Message* msg)
             // Do nothing.
             break;
           case A_PART_SEPARATOR:
+            // Do nothing.
+            break;
+          case A_PART_HEADER_GEAR:
             // Do nothing.
             break;
           case A_PART_HEADER_LAYER:
@@ -541,7 +473,7 @@ bool Timeline::onProcessMessage(Message* msg)
               }
             }
             break;
-          case A_PART_LAYER:
+          case A_PART_LAYER_TEXT:
             // Show the layer pop-up menu.
             if (mouseMsg->right()) {
               if (m_clk_layer == m_hot_layer) {
@@ -598,7 +530,7 @@ bool Timeline::onProcessMessage(Message* msg)
               layer->setReadable(!layer->isReadable());
             }
             break;
-          case A_PART_LAYER_LOCK_ICON:
+          case A_PART_LAYER_PADLOCK_ICON:
             // Lock/unlock layer.
             if (m_hot_layer == m_clk_layer &&
                 m_hot_layer >= 0 &&
@@ -655,12 +587,10 @@ bool Timeline::onProcessMessage(Message* msg)
         }
 
         // Clean the clicked-part & redraw the hot-part.
-        jmouse_hide();
         cleanClk();
-        drawPart(m_hot_part,
-                 m_hot_layer,
-                 m_hot_frame);
-        jmouse_show();
+        invalidatePart(m_hot_part,
+                       m_hot_layer,
+                       m_hot_frame);
 
         // Restore the cursor.
         m_state = STATE_STANDBY;
@@ -723,6 +653,56 @@ void Timeline::onPreferredSize(PreferredSizeEvent& ev)
 {
   // This doesn't matter, the AniEditor'll use the entire screen anyway.
   ev.setPreferredSize(Size(32, 32));
+}
+
+void Timeline::onPaint(ui::PaintEvent& ev)
+{
+  Graphics* g = ev.getGraphics();
+
+  if (!m_document) {
+    drawPart(g, getClientBounds(), NULL, m_timelinePaddingStyle);
+    return;
+  }
+
+  int layer, first_layer, last_layer;
+  FrameNumber frame, first_frame, last_frame;
+
+  getDrawableLayers(g, &first_layer, &last_layer);
+  getDrawableFrames(g, &first_frame, &last_frame);
+
+  // Draw the header for layers.
+  drawHeader(g);
+
+  // Draw the header for each visible frame.
+  for (frame=first_frame; frame<=last_frame; ++frame)
+    drawHeaderFrame(g, frame);
+
+  // Draw each visible layer.
+  for (layer=first_layer; layer<=last_layer; layer++) {
+    drawLayer(g, layer);
+
+    // Get the first CelIterator to be drawn (it is the first cel with cel->frame >= first_frame)
+    CelIterator it, end;
+    Layer* layerPtr = m_layers[layer];
+    if (layerPtr->isImage()) {
+      it = static_cast<LayerImage*>(layerPtr)->getCelBegin();
+      end = static_cast<LayerImage*>(layerPtr)->getCelEnd();
+      for (; it != end && (*it)->getFrame() < first_frame; ++it)
+        ;
+    }
+
+    // Draw every visible cel for each layer.
+    for (frame=first_frame; frame<=last_frame; ++frame) {
+      Cel* cel = (layerPtr->isImage() && it != end && (*it)->getFrame() == frame ? *it: NULL);
+
+      drawCel(g, layer, frame, cel);
+
+      if (cel)
+        ++it;               // Go to next cel
+    }
+  }
+
+  drawPaddings(g);
 }
 
 void Timeline::onCommandAfterExecution(Context* context)
@@ -840,8 +820,8 @@ void Timeline::setCursor(int x, int y)
   }
   // Moving a layer.
   else if (m_state == STATE_MOVING_LAYER &&
-           m_clk_part == A_PART_LAYER &&
-           m_hot_part == A_PART_LAYER &&
+           m_clk_part == A_PART_LAYER_TEXT &&
+           m_hot_part == A_PART_LAYER_TEXT &&
            m_clk_layer != m_hot_layer) {
     if (m_layers[m_clk_layer]->isBackground())
       jmouse_set_cursor(kForbiddenCursor);
@@ -862,384 +842,233 @@ void Timeline::setCursor(int x, int y)
   }
 }
 
-void Timeline::getDrawableLayers(const gfx::Rect& clip, int* first_layer, int* last_layer)
+void Timeline::getDrawableLayers(ui::Graphics* g, int* first_layer, int* last_layer)
 {
   *first_layer = 0;
   *last_layer = m_layers.size()-1;
 }
 
-void Timeline::getDrawableFrames(const gfx::Rect& clip, FrameNumber* first_frame, FrameNumber* last_frame)
+void Timeline::getDrawableFrames(ui::Graphics* g, FrameNumber* first_frame, FrameNumber* last_frame)
 {
   *first_frame = FrameNumber(0);
   *last_frame = m_sprite->getLastFrame();
 }
 
-void Timeline::drawHeader(const gfx::Rect& clip)
+void Timeline::drawPart(ui::Graphics* g, const gfx::Rect& bounds,
+  const char* text, Style* style,
+  bool is_active, bool is_hover, bool is_clicked)
 {
-  // bool is_hot = (m_hot_part == A_PART_HEADER_LAYER);
-  // bool is_clk = (m_clk_part == A_PART_HEADER_LAYER);
-  int x1, y1, x2, y2;
+  IntersectClip clip(g, bounds);
+  if (!clip)
+    return;
 
-  x1 = getBounds().x;
-  y1 = getBounds().y;
-  x2 = x1 + m_separator_x - 1;
-  y2 = y1 + HDRSIZE - 1;
+  Style::State state;
+  if (is_active) state += Style::active();
+  if (is_hover) state += Style::hover();
+  if (is_clicked) state += Style::clicked();
 
-  // Draw the header for the layers.
-  drawHeaderPart(clip, x1, y1, x2, y2,
-                 // is_hot, is_clk,
-                 false, false,
-                 "Frames", 1);
+  style->paint(g, bounds, text, state);
 }
 
-void Timeline::drawHeaderFrame(const gfx::Rect& clip, FrameNumber frame)
+void Timeline::drawHeader(ui::Graphics* g)
 {
-  SkinTheme* theme = static_cast<SkinTheme*>(getTheme());
-  bool is_hot = (m_hot_part == A_PART_HEADER_FRAME &&
-                 m_hot_frame == frame);
-  bool is_clk = (m_clk_part == A_PART_HEADER_FRAME &&
-                 m_clk_frame == frame);
-  int x1, y1, x2, y2;
-  int cx1, cy1, cx2, cy2;
+  drawPart(g, getPartBounds(A_PART_HEADER_GEAR),
+    NULL, m_timelineGearStyle,
+    false,
+    m_hot_part == A_PART_HEADER_GEAR,
+    m_clk_part == A_PART_HEADER_GEAR);
+
+  // Empty header space.
+  drawPart(g, getPartBounds(A_PART_HEADER_LAYER),
+    NULL, m_timelineBoxStyle, false, false, false);
+}
+
+void Timeline::drawHeaderFrame(ui::Graphics* g, FrameNumber frame)
+{
+  bool is_active = (frame == m_frame);
+  bool is_hover = (m_hot_part == A_PART_HEADER_FRAME && m_hot_frame == frame);
+  bool is_clicked = (m_clk_part == A_PART_HEADER_FRAME && m_clk_frame == frame);
+
+  gfx::Rect bounds = getPartBounds(A_PART_HEADER_FRAME, 0, frame);
+
+  // Draw the header for the layers.
   char buf[256];
-
-  get_clip_rect(ji_screen, &cx1, &cy1, &cx2, &cy2);
-
-  x1 = getBounds().x + m_separator_x + m_separator_w
-    + FRMSIZE*frame - m_scroll_x;
-  y1 = getBounds().y;
-  x2 = x1 + FRMSIZE - 1;
-  y2 = y1 + HDRSIZE - 1;
-
-  add_clip_rect(ji_screen,
-                getBounds().x + m_separator_x + m_separator_w,
-                y1, getBounds().x2()-1, y2);
-
-  // Draw the header for the layers.
-  usprintf(buf, "%d", frame+1);
-  drawHeaderPart(clip, x1, y1, x2, y2,
-                 is_hot, is_clk,
-                 buf, 0);
-
-  // If this header wasn't clicked but there are another frame's
-  // header clicked, we have to draw some indicators to show that the
-  // user can move frames.
-  if (is_hot && !is_clk &&
-      m_clk_part == A_PART_HEADER_FRAME) {
-    rectfill(ji_screen, x1+1, y1+1, x1+4, y2-1,
-             to_system(theme->getColor(ThemeColor::Selected)));
-  }
-
-  // Padding in the right side.
-  if (frame == m_sprite->getTotalFrames()-1) {
-    if (x2+1 <= getBounds().x2()-1) {
-      // Right side.
-      vline(ji_screen, x2+1, y1, y2,
-            to_system(theme->getColor(ThemeColor::Text)));
-      if (x2+2 <= getBounds().x2()-1)
-        rectfill(ji_screen, x2+2, y1, getBounds().x2()-1, y2,
-                 to_system(theme->getColor(ThemeColor::Face)));
-    }
-  }
-
-  set_clip_rect(ji_screen, cx1, cy1, cx2, cy2);
+  sprintf(buf, "%d", frame+1);
+  drawPart(g, bounds, buf, m_timelineBoxStyle,
+    is_active, is_hover, is_clicked);
 }
 
-void Timeline::drawHeaderPart(const gfx::Rect& clip, int x1, int y1, int x2, int y2,
-                              bool is_hot, bool is_clk,
-                              const char* text, int text_align)
-{
-  SkinTheme* theme = static_cast<SkinTheme*>(getTheme());
-  ui::Color fg, face;
-  int x;
-
-  if (!clip.intersects(gfx::Rect(x1, y1, x2-x1, y2-y1)))
-    return;
-
-  fg = theme->getColor(!is_hot && is_clk ? ThemeColor::Background: ThemeColor::Text);
-  face = theme->getColor(is_hot ? ThemeColor::HotFace: (is_clk ? ThemeColor::Selected:
-                                                                 ThemeColor::Face));
-
-  // Fill the background of the part.
-  rectfill(ji_screen, x1, y1, x2, y2, to_system(face));
-
-  // Draw the text inside this header.
-  if (text != NULL) {
-    if (text_align < 0)
-      x = x1+3;
-    else if (text_align == 0)
-      x = (x1+x2)/2 - text_length(getFont(), text)/2;
-    else
-      x = x2 - 3 - text_length(getFont(), text);
-
-    jdraw_text(ji_screen, getFont(), text, x, y1+3,
-               fg, face, true, jguiscale());
-  }
-}
-
-void Timeline::drawSeparator(const gfx::Rect& clip)
-{
-  SkinTheme* theme = static_cast<SkinTheme*>(getTheme());
-  bool is_hot = (m_hot_part == A_PART_SEPARATOR);
-  int x1, y1, x2, y2;
-
-  x1 = getBounds().x + m_separator_x;
-  y1 = getBounds().y;
-  x2 = getBounds().x + m_separator_x + m_separator_w - 1;
-  y2 = getBounds().y2() - 1;
-
-  if (!clip.intersects(gfx::Rect(x1, y1, x2-x1, y2-y1)))
-    return;
-
-  vline(ji_screen, x1, y1, y2,
-        to_system(is_hot ? theme->getColor(ThemeColor::Selected):
-                           theme->getColor(ThemeColor::Text)));
-}
-
-void Timeline::drawLayer(const gfx::Rect& clip, int layer_index)
+void Timeline::drawLayer(ui::Graphics* g, int layer_index)
 {
   Layer* layer = m_layers[layer_index];
-  SkinTheme* theme = static_cast<SkinTheme*>(this->getTheme());
-  bool selected_layer = (layer == m_layer);
-  bool is_hot = (m_hot_part == A_PART_LAYER && m_hot_layer == layer_index);
-  bool is_clk = (m_clk_part == A_PART_LAYER && m_clk_layer == layer_index);
-  ui::Color bg = theme->getColor(selected_layer ? ThemeColor::Selected:
-                                 (is_hot ? ThemeColor::HotFace:
-                                  (is_clk ? ThemeColor::Selected:
-                                            ThemeColor::Face)));
-  ui::Color fg = theme->getColor(selected_layer ? ThemeColor::Background: ThemeColor::Text);
-  BITMAP* icon1 = theme->get_part(layer->isReadable() ? PART_LAYER_VISIBLE: PART_LAYER_HIDDEN);
-  BITMAP* icon2 = theme->get_part(layer->isWritable() ? PART_LAYER_EDITABLE: PART_LAYER_LOCKED);
-  BITMAP* icon1_selected = theme->get_part(layer->isReadable() ? PART_LAYER_VISIBLE_SELECTED: PART_LAYER_HIDDEN_SELECTED);
-  BITMAP* icon2_selected = theme->get_part(layer->isWritable() ? PART_LAYER_EDITABLE_SELECTED: PART_LAYER_LOCKED_SELECTED);
-  int x1, y1, x2, y2, y_mid;
-  int cx1, cy1, cx2, cy2;
-  int u;
+  bool is_active = (layer == m_layer);
+  bool hotlayer = (m_hot_layer == layer_index);
+  bool clklayer = (m_clk_layer == layer_index);
+  gfx::Rect bounds = getPartBounds(A_PART_LAYER, layer_index, FrameNumber(0));
 
-  get_clip_rect(ji_screen, &cx1, &cy1, &cx2, &cy2);
+  // Draw the eye (readable flag).
+  bounds = getPartBounds(A_PART_LAYER_EYE_ICON, layer_index);
+  drawPart(g, bounds, NULL,
+    layer->isReadable() ? m_timelineOpenEyeStyle: m_timelineClosedEyeStyle,
+    is_active,
+    (hotlayer && m_hot_part == A_PART_LAYER_EYE_ICON),
+    (clklayer && m_clk_part == A_PART_LAYER_EYE_ICON));
 
-  x1 = getBounds().x;
-  y1 = getBounds().y + HDRSIZE + LAYSIZE*layer_index - m_scroll_y;
-  x2 = x1 + m_separator_x - 1;
-  y2 = y1 + LAYSIZE - 1;
-  y_mid = (y1+y2) / 2;
+  // Draw the padlock (writable flag).
+  bounds = getPartBounds(A_PART_LAYER_PADLOCK_ICON, layer_index);
+  drawPart(g, bounds, NULL,
+    layer->isWritable() ? m_timelineOpenPadlockStyle: m_timelineClosedPadlockStyle,
+    is_active,
+    (hotlayer && m_hot_part == A_PART_LAYER_PADLOCK_ICON),
+    (clklayer && m_clk_part == A_PART_LAYER_PADLOCK_ICON));
 
-  add_clip_rect(ji_screen,
-                getBounds().x,
-                getBounds().y + HDRSIZE,
-                getBounds().x + m_separator_x - 1,
-                getBounds().y2()-1);
-
-  rectfill(ji_screen, x1, y1, x2, y2-1, to_system(bg));
-  hline(ji_screen, x1, y2, x2,
-        to_system(theme->getColor(ThemeColor::Text)));
+  // Draw the layer's name.
+  bounds = getPartBounds(A_PART_LAYER_TEXT, layer_index);
+  drawPart(g, bounds, layer->getName().c_str(), m_timelineLayerStyle,
+    is_active,
+    (hotlayer && m_hot_part == A_PART_LAYER_TEXT),
+    (clklayer && m_clk_part == A_PART_LAYER_TEXT));
 
   // If this layer wasn't clicked but there are another layer clicked,
   // we have to draw some indicators to show that the user can move
   // layers.
-  if (is_hot && !is_clk &&
-      m_clk_part == A_PART_LAYER) {
-    rectfill(ji_screen, x1+1, y1+1, x2-1, y1+5,
-             to_system(theme->getColor(ThemeColor::Selected)));
-  }
-
-  // u = the position where to put the next element (like eye-icon,
-  //     lock-icon, layer-name)
-  u = x1+ICONSEP;
-
-  // Draw the eye (readable flag).
-  icon_rect(icon1, icon1_selected,
-            u,
-            y_mid-icon1->h/2-ICONBORDER,
-            u+ICONBORDER+icon1->w+ICONBORDER-1,
-            y_mid-icon1->h/2+icon1->h+ICONBORDER-1,
-            selected_layer,
-            (m_hot_part == A_PART_LAYER_EYE_ICON &&
-             m_hot_layer == layer_index),
-            (m_clk_part == A_PART_LAYER_EYE_ICON &&
-             m_clk_layer == layer_index));
-
-  u += ICONBORDER+icon1->w+ICONBORDER;
-
-  // Draw the padlock (writable flag).
-  icon_rect(icon2, icon2_selected,
-            u,
-            y_mid-icon1->h/2-ICONBORDER,
-            u+ICONBORDER+icon2->w+ICONBORDER-1,
-            y_mid-icon1->h/2+icon1->h-1+ICONBORDER,
-            selected_layer,
-            (m_hot_part == A_PART_LAYER_LOCK_ICON &&
-             m_hot_layer == layer_index),
-            (m_clk_part == A_PART_LAYER_LOCK_ICON &&
-             m_clk_layer == layer_index));
-
-  u += ICONBORDER+icon2->w+ICONBORDER+ICONSEP;
-
-  // Draw the layer's name.
-  jdraw_text(ji_screen, getFont(), layer->getName().c_str(),
-             u, y_mid - ji_font_get_size(this->getFont())/2,
-             fg, bg, true, jguiscale());
-
-  // The background should be underlined.
-  if (layer->isBackground()) {
-    hline(ji_screen,
-          u,
-          y_mid - ji_font_get_size(this->getFont())/2 + ji_font_get_size(this->getFont()) + 1,
-          u + text_length(this->getFont(), layer->getName().c_str()),
-          to_system(fg));
-  }
-
-  set_clip_rect(ji_screen, cx1, cy1, cx2, cy2);
-}
-
-void Timeline::drawLayerPadding()
-{
-  SkinTheme* theme = static_cast<SkinTheme*>(this->getTheme());
-  int layer_index = m_layers.size()-1;
-  int x1, y1, x2, y2;
-
-  x1 = getBounds().x;
-  y1 = getBounds().y + HDRSIZE + LAYSIZE*layer_index - m_scroll_y;
-  x2 = x1 + m_separator_x - 1;
-  y2 = y1 + LAYSIZE - 1;
-
-  // Padding in the bottom side.
-  if (y2+1 <= getBounds().y2()-1) {
-    ui::Color color = theme->getColor(ThemeColor::EditorFace);
-    rectfill(ji_screen, x1, y2+1, x2, getBounds().y2()-1, to_system(color));
-    rectfill(ji_screen,
-             x2+1+m_separator_w, y2+1,
-             getBounds().x2()-1, getBounds().y2()-1,
-             to_system(color));
+  if (hotlayer && !is_active && m_clk_part == A_PART_LAYER_TEXT) {
+    // TODO this should be skinneable
+    g->fillRect(get_color_by_id(kTimelineActiveColor),
+                gfx::Rect(bounds.x, bounds.y, bounds.w, 2));
   }
 }
 
-void Timeline::drawCel(const gfx::Rect& clip, int layer_index, FrameNumber frame, Cel* cel)
+void Timeline::drawCel(ui::Graphics* g, int layer_index, FrameNumber frame, Cel* cel)
 {
-  SkinTheme* theme = static_cast<SkinTheme*>(this->getTheme());
   Layer *layer = m_layers[layer_index];
-  bool selected_layer = (layer == m_layer);
-  bool is_hot = (m_hot_part == A_PART_CEL &&
-                 m_hot_layer == layer_index &&
-                 m_hot_frame == frame);
-  bool is_clk = (m_clk_part == A_PART_CEL &&
-                 m_clk_layer == layer_index &&
-                 m_clk_frame == frame);
-  ui::Color bg = theme->getColor(is_hot ? ThemeColor::HotFace: ThemeColor::Face);
-  int x1, y1, x2, y2;
-  int cx1, cy1, cx2, cy2;
+  bool is_hover = (m_hot_part == A_PART_CEL &&
+    m_hot_layer == layer_index &&
+    m_hot_frame == frame);
+  bool is_active = (layer == m_layer ||
+    frame == m_frame);
+  bool is_empty = (cel == NULL ||
+    m_sprite->getStock()->getImage(cel->getImage()) == NULL);
+  gfx::Rect bounds = getPartBounds(A_PART_CEL, layer_index, frame);
 
-  get_clip_rect(ji_screen, &cx1, &cy1, &cx2, &cy2);
-
-  x1 = getBounds().x + m_separator_x + m_separator_w
-    + FRMSIZE*frame - m_scroll_x;
-  y1 = getBounds().y + HDRSIZE
-    + LAYSIZE*layer_index - m_scroll_y;
-  x2 = x1 + FRMSIZE - 1;
-  y2 = y1 + LAYSIZE - 1;
-
-  add_clip_rect(ji_screen,
-                getBounds().x + m_separator_x + m_separator_w,
-                getBounds().y + HDRSIZE,
-                getBounds().x2()-1,
-                getBounds().y2()-1);
-
-  Rect cel_rect(Point(x1+3, y1+3), Point(x2-2, y2-2));
-
-  // Draw the box for the cel.
-  if (selected_layer && frame == m_frame) {
-    // Current cel.
-    rect(ji_screen, x1, y1, x2, y2-1, to_system(theme->getColor(ThemeColor::Selected)));
-    rect(ji_screen, x1+1, y1+1, x2-1, y2-2, to_system(bg));
-  }
-  else {
-    rectfill(ji_screen, x1, y1, x2, y2-1, to_system(bg));
-  }
-  hline(ji_screen, x1, y2, x2, to_system(theme->getColor(ThemeColor::Text)));
-
-  // Empty cel?.
-  if (cel == NULL ||
-      // TODO why a cel can't have an associated image?
-      m_sprite->getStock()->getImage(cel->getImage()) == NULL) {
-
-    jdraw_rectfill(cel_rect, bg);
-    draw_emptyset_symbol(ji_screen, cel_rect, theme->getColor(ThemeColor::Disabled));
-  }
-  else {
-    jdraw_rectfill(cel_rect, theme->getColor(ThemeColor::Text));
-  }
-
-  // If this cel is hot and other cel was clicked, we have to draw
-  // some indicators to show that the user can move cels.
-  if (is_hot && !is_clk &&
-      m_clk_part == A_PART_CEL) {
-    int color = to_system(theme->getColor(ThemeColor::Selected));
-
-    rectfill(ji_screen, x1+1, y1+1, x1+FRMSIZE/3, y1+4, color);
-    rectfill(ji_screen, x1+1, y1+5, x1+4, y1+FRMSIZE/3, color);
-
-    rectfill(ji_screen, x2-FRMSIZE/3, y1+1, x2-1, y1+4, color);
-    rectfill(ji_screen, x2-4, y1+5, x2-1, y1+FRMSIZE/3, color);
-
-    rectfill(ji_screen, x1+1, y2-4, x1+FRMSIZE/3, y2-1, color);
-    rectfill(ji_screen, x1+1, y2-FRMSIZE/3, x1+4, y2-5, color);
-
-    rectfill(ji_screen, x2-FRMSIZE/3, y2-4, x2-1, y2-1, color);
-    rectfill(ji_screen, x2-4, y2-FRMSIZE/3, x2-1, y2-5, color);
-  }
-
-  // Padding in the right side.
-  if (frame == m_sprite->getTotalFrames()-1) {
-    if (x2+1 <= getBounds().x2()-1) {
-      // Right side.
-      vline(ji_screen, x2+1, y1, y2, to_system(theme->getColor(ThemeColor::Text)));
-      if (x2+2 <= getBounds().x2()-1)
-        rectfill(ji_screen, x2+2, y1, getBounds().x2()-1, y2,
-                 to_system(theme->getColor(ThemeColor::EditorFace)));
-    }
-  }
-
-  set_clip_rect(ji_screen, cx1, cy1, cx2, cy2);
+  drawPart(g, bounds, NULL,
+    is_empty ? m_timelineEmptyFrameStyle: m_timelineKeyframeStyle,
+    is_active, is_hover);
 }
 
-bool Timeline::drawPart(int part, int layer, FrameNumber frame)
+void Timeline::drawPaddings(ui::Graphics* g)
 {
+  gfx::Rect client = getClientBounds();
+  gfx::Rect lastLayer = getPartBounds(A_PART_LAYER, m_layers.size()-1);
+  gfx::Rect lastFrame = getPartBounds(A_PART_CEL, 0, --FrameNumber(m_sprite->getTotalFrames()));
+
+  drawPart(g,
+    gfx::Rect(lastFrame.x+lastFrame.w, client.y,
+      client.w - (lastFrame.x+lastFrame.w),
+      lastLayer.y+lastLayer.h),
+    NULL, m_timelinePaddingTrStyle);
+
+  drawPart(g,
+    gfx::Rect(client.x, lastLayer.y+lastLayer.h,
+      lastFrame.x+lastFrame.w - client.x, client.h - (lastLayer.y+lastLayer.h)),
+    NULL, m_timelinePaddingBlStyle);
+
+  drawPart(g,
+    gfx::Rect(lastFrame.x+lastFrame.w, lastLayer.y+lastLayer.h,
+      client.w - (lastFrame.x+lastFrame.w),
+      client.h - (lastLayer.y+lastLayer.h)),
+    NULL, m_timelinePaddingBrStyle);
+}
+
+gfx::Rect Timeline::getPartBounds(int part, int layer, FrameNumber frame) const
+{
+  const gfx::Rect bounds = getBounds();
+
   switch (part) {
+
     case A_PART_NOTHING:
-      // Do nothing.
-      return true;
+      break;
+
     case A_PART_SEPARATOR:
-      drawSeparator(getBounds());
-      return true;
+      return gfx::Rect(m_separator_x, 0,
+                       m_separator_x + m_separator_w,
+                       bounds.h);
+
+    case A_PART_HEADER_GEAR:
+      return gfx::Rect(0, 0,
+                       FRMSIZE,
+                       HDRSIZE);
+
     case A_PART_HEADER_LAYER:
-      drawHeader(getBounds());
-      return true;
+      return gfx::Rect(FRMSIZE, 0,
+                       m_separator_x - FRMSIZE,
+                       HDRSIZE);
+
     case A_PART_HEADER_FRAME:
       if (frame >= 0 && frame < m_sprite->getTotalFrames()) {
-        drawHeaderFrame(getBounds(), frame);
-        return true;
+        return gfx::Rect(m_separator_x + m_separator_w - 1 + FRMSIZE*frame - m_scroll_x,
+                         0,
+                         FRMSIZE,
+                         HDRSIZE);
       }
       break;
+
     case A_PART_LAYER:
-    case A_PART_LAYER_EYE_ICON:
-    case A_PART_LAYER_LOCK_ICON:
       if (layer >= 0 && layer < (int)m_layers.size()) {
-        drawLayer(getBounds(), layer);
-        return true;
+        return gfx::Rect(0,
+                         HDRSIZE + LAYSIZE*layer - m_scroll_y,
+                         m_separator_x,
+                         LAYSIZE);
       }
       break;
+
+    case A_PART_LAYER_EYE_ICON:
+      if (layer >= 0 && layer < (int)m_layers.size()) {
+        return gfx::Rect(0,
+                         HDRSIZE + LAYSIZE*layer - m_scroll_y,
+                         FRMSIZE,
+                         LAYSIZE);
+      }
+      break;
+
+    case A_PART_LAYER_PADLOCK_ICON:
+      if (layer >= 0 && layer < (int)m_layers.size()) {
+        return gfx::Rect(FRMSIZE,
+                         HDRSIZE + LAYSIZE*layer - m_scroll_y,
+                         FRMSIZE,
+                         LAYSIZE);
+      }
+      break;
+
+    case A_PART_LAYER_TEXT:
+      if (layer >= 0 && layer < (int)m_layers.size()) {
+        int x = FRMSIZE*2;
+        return gfx::Rect(x,
+                         HDRSIZE + LAYSIZE*layer - m_scroll_y,
+                         m_separator_x - x,
+                         LAYSIZE);
+      }
+      break;
+
     case A_PART_CEL:
       if (layer >= 0 && layer < (int)m_layers.size() &&
           frame >= 0 && frame < m_sprite->getTotalFrames()) {
         Cel* cel = (m_layers[layer]->isImage() ? static_cast<LayerImage*>(m_layers[layer])->getCel(frame): NULL);
 
-        drawCel(getBounds(), layer, frame, cel);
-        return true;
+        return gfx::Rect(m_separator_x + m_separator_w - 1 + FRMSIZE*frame - m_scroll_x,
+                         HDRSIZE + LAYSIZE*layer - m_scroll_y,
+                         FRMSIZE,
+                         LAYSIZE);
       }
       break;
   }
 
-  return false;
+  return gfx::Rect();
+}
+
+void Timeline::invalidatePart(int part, int layer, FrameNumber frame)
+{
+  invalidateRect(getPartBounds(part, layer, frame).offset(getOrigin()));
 }
 
 void Timeline::regenerateLayers()
@@ -1261,32 +1090,25 @@ void Timeline::regenerateLayers()
 
 void Timeline::hotThis(int hot_part, int hot_layer, FrameNumber hot_frame)
 {
-  int old_hot_part;
-
   // If the part, layer or frame change.
   if (hot_part != m_hot_part ||
       hot_layer != m_hot_layer ||
       hot_frame != m_hot_frame) {
-    jmouse_hide();
-
     // Clean the old 'hot' thing.
-    old_hot_part = m_hot_part;
-    m_hot_part = A_PART_NOTHING;
-
-    drawPart(old_hot_part,
-             m_hot_layer,
-             m_hot_frame);
+    invalidatePart(m_hot_part,
+                   m_hot_layer,
+                   m_hot_frame);
 
     // Draw the new 'hot' thing.
     m_hot_part = hot_part;
     m_hot_layer = hot_layer;
     m_hot_frame = hot_frame;
+    invalidatePart(m_hot_part,
+                   m_hot_layer,
+                   m_hot_frame);
 
-    if (!drawPart(hot_part, hot_layer, hot_frame)) {
+    if (getPartBounds(hot_part, hot_layer, hot_frame).isEmpty())
       m_hot_part = A_PART_NOTHING;
-    }
-
-    jmouse_show();
   }
 }
 
@@ -1351,9 +1173,7 @@ void Timeline::cleanClk()
   int clk_part = m_clk_part;
   m_clk_part = A_PART_NOTHING;
 
-  drawPart(clk_part,
-           m_clk_layer,
-           m_clk_frame);
+  invalidatePart(clk_part, m_clk_layer, m_clk_frame);
 }
 
 void Timeline::setScroll(int x, int y, bool use_refresh_region)
@@ -1423,27 +1243,6 @@ int Timeline::getLayerIndex(const Layer* layer)
       return i;
 
   return -1;
-}
-
-// Auxiliary routine to draw an icon in the layer-part.
-static void icon_rect(BITMAP* icon_normal, BITMAP* icon_selected, int x1, int y1, int x2, int y2,
-                      bool is_selected, bool is_hot, bool is_clk)
-{
-  SkinTheme* theme = static_cast<SkinTheme*>(ui::CurrentTheme::get());
-  int icon_x = x1+ICONBORDER;
-  int icon_y = (y1+y2)/2-icon_normal->h/2;
-
-  if (is_hot && !is_selected) {
-    rectfill(ji_screen,
-             x1, y1, x2, y2,
-             to_system(theme->getColor(ThemeColor::HotFace)));
-  }
-
-  set_alpha_blender();
-  if (is_selected)
-    draw_trans_sprite(ji_screen, icon_selected, icon_x, icon_y);
-  else
-    draw_trans_sprite(ji_screen, icon_normal, icon_x, icon_y);
 }
 
 } // namespace app

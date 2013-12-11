@@ -29,11 +29,14 @@
 #include "app/ui/skin/skin_property.h"
 #include "app/ui/skin/skin_slider_property.h"
 #include "app/ui/skin/skin_theme.h"
+#include "app/ui/skin/style.h"
+#include "app/ui/skin/style_sheet.h"
 #include "app/xml_document.h"
 #include "app/xml_exception.h"
 #include "base/bind.h"
 #include "base/fs.h"
 #include "base/shared_ptr.h"
+#include "css/sheet.h"
 #include "gfx/border.h"
 #include "gfx/point.h"
 #include "gfx/rect.h"
@@ -145,8 +148,7 @@ SkinTheme::SkinTheme()
 
   // Initialize all graphics in NULL (these bitmaps are loaded from the skin)
   m_sheet_bmp = NULL;
-  for (int c=0; c<PARTS; ++c)
-    m_part[c] = NULL;
+  m_part.resize(PARTS, NULL);
 
   sheet_mapping["radio_normal"] = PART_RADIO_NORMAL;
   sheet_mapping["radio_selected"] = PART_RADIO_SELECTED;
@@ -348,8 +350,8 @@ SkinTheme::~SkinTheme()
   for (size_t c=0; c<m_cursors.size(); ++c)
     delete m_cursors[c];
 
-  for (int c=0; c<PARTS; ++c)
-    destroy_bitmap(m_part[c]);
+  m_part.clear();
+  m_parts_by_id.clear();
 
   for (std::map<std::string, BITMAP*>::iterator
          it = m_toolicon.begin(); it != m_toolicon.end(); ++it) {
@@ -364,7 +366,7 @@ SkinTheme::~SkinTheme()
     destroy_font(m_minifont);
 }
 
-// Call ji_regen_theme after this
+// Call Theme::regenerate() after this.
 void SkinTheme::reload_skin()
 {
   if (m_sheet_bmp) {
@@ -417,150 +419,229 @@ void SkinTheme::onRegenerate()
 {
   scrollbar_size = 12 * jguiscale();
 
+  m_part.clear();
+  m_part.resize(PARTS, NULL);
+
   // Load the skin XML
   std::string xml_filename = "skins/" + m_selected_skin + "/skin.xml";
   ResourceFinder rf;
   rf.findInDataDir(xml_filename.c_str());
 
-  while (const char* path = rf.next()) {
-    if (!base::file_exists(path))
-      continue;
+  const char* path;
+  while ((path = rf.next()) &&
+         !base::file_exists(path)) {
+  }
+  if (!path)                    // not found
+    return;
 
-    XmlDocumentRef doc = open_xml(path);
-    TiXmlHandle handle(doc);
+  XmlDocumentRef doc = open_xml(path);
+  TiXmlHandle handle(doc);
 
-    // Load colors
-    {
-      TiXmlElement* xmlColor = handle
-        .FirstChild("skin")
-        .FirstChild("colors")
-        .FirstChild("color").ToElement();
-      while (xmlColor) {
-        std::string id = xmlColor->Attribute("id");
-        uint32_t value = strtol(xmlColor->Attribute("value")+1, NULL, 16);
+  // Load colors
+  {
+    TiXmlElement* xmlColor = handle
+      .FirstChild("skin")
+      .FirstChild("colors")
+      .FirstChild("color").ToElement();
+    while (xmlColor) {
+      std::string id = xmlColor->Attribute("id");
+      uint32_t value = strtol(xmlColor->Attribute("value")+1, NULL, 16);
+      ui::Color color = ui::rgba((value & 0xff0000) >> 16,
+                                 (value & 0xff00) >> 8,
+                                 (value & 0xff));
 
-        std::map<std::string, ThemeColor::Type>::iterator it =
-          color_mapping.find(id);
-        if (it != color_mapping.end()) {
-          m_colors[it->second] = ui::rgba((value & 0xff0000) >> 16,
-                                          (value & 0xff00) >> 8,
-                                          (value & 0xff));
-        }
+      PRINTF("Loading color '%s'...\n", id.c_str());
 
-        xmlColor = xmlColor->NextSiblingElement();
+      m_colors_by_id[id] = color;
+
+      std::map<std::string, ThemeColor::Type>::iterator it = color_mapping.find(id);
+      if (it != color_mapping.end()) {
+        m_colors[it->second] = color;
       }
+
+      xmlColor = xmlColor->NextSiblingElement();
     }
+  }
 
-    // Load cursors
-    {
-      TiXmlElement* xmlCursor = handle
-        .FirstChild("skin")
-        .FirstChild("cursors")
-        .FirstChild("cursor").ToElement();
-      while (xmlCursor) {
-        std::string id = xmlCursor->Attribute("id");
-        int x = strtol(xmlCursor->Attribute("x"), NULL, 10);
-        int y = strtol(xmlCursor->Attribute("y"), NULL, 10);
-        int w = strtol(xmlCursor->Attribute("w"), NULL, 10);
-        int h = strtol(xmlCursor->Attribute("h"), NULL, 10);
-        int focusx = strtol(xmlCursor->Attribute("focusx"), NULL, 10);
-        int focusy = strtol(xmlCursor->Attribute("focusy"), NULL, 10);
-        int c;
+  // Load cursors
+  {
+    TiXmlElement* xmlCursor = handle
+      .FirstChild("skin")
+      .FirstChild("cursors")
+      .FirstChild("cursor").ToElement();
+    while (xmlCursor) {
+      std::string id = xmlCursor->Attribute("id");
+      int x = strtol(xmlCursor->Attribute("x"), NULL, 10);
+      int y = strtol(xmlCursor->Attribute("y"), NULL, 10);
+      int w = strtol(xmlCursor->Attribute("w"), NULL, 10);
+      int h = strtol(xmlCursor->Attribute("h"), NULL, 10);
+      int focusx = strtol(xmlCursor->Attribute("focusx"), NULL, 10);
+      int focusy = strtol(xmlCursor->Attribute("focusy"), NULL, 10);
+      int c;
 
-        for (c=0; c<kCursorTypes; ++c) {
-          if (id != cursor_names[c])
-            continue;
+      PRINTF("Loading cursor '%s'...\n", id.c_str());
 
-          delete m_cursors[c];
-          m_cursors[c] = NULL;
+      for (c=0; c<kCursorTypes; ++c) {
+        if (id != cursor_names[c])
+          continue;
 
-          BITMAP* bmp = cropPartFromSheet(NULL, x, y, w, h);
-          she::Surface* surface =
-            she::Instance()->createSurfaceFromNativeHandle(reinterpret_cast<void*>(bmp));
+        delete m_cursors[c];
+        m_cursors[c] = NULL;
 
-          m_cursors[c] = new Cursor(surface, gfx::Point(focusx*jguiscale(),
-                                                        focusy*jguiscale()));
-          break;
-        }
+        BITMAP* bmp = cropPartFromSheet(NULL, x, y, w, h);
+        she::Surface* surface =
+          she::Instance()->createSurfaceFromNativeHandle(reinterpret_cast<void*>(bmp));
 
-        if (c == kCursorTypes) {
-          throw base::Exception("Unknown cursor specified in '%s':\n"
-                                "<cursor id='%s' ... />\n", xml_filename.c_str(), id.c_str());
-        }
-
-        xmlCursor = xmlCursor->NextSiblingElement();
+        m_cursors[c] = new Cursor(surface, gfx::Point(focusx*jguiscale(),
+                                                      focusy*jguiscale()));
+        break;
       }
-    }
 
-    // Load tool icons
-    {
-      TiXmlElement* xmlIcon = handle
-        .FirstChild("skin")
-        .FirstChild("tools")
-        .FirstChild("tool").ToElement();
-      while (xmlIcon) {
-        // Get the tool-icon rectangle
-        const char* tool_id = xmlIcon->Attribute("id");
-        int x = strtol(xmlIcon->Attribute("x"), NULL, 10);
-        int y = strtol(xmlIcon->Attribute("y"), NULL, 10);
-        int w = strtol(xmlIcon->Attribute("w"), NULL, 10);
-        int h = strtol(xmlIcon->Attribute("h"), NULL, 10);
-
-        // Crop the tool-icon from the sheet
-        m_toolicon[tool_id] = cropPartFromSheet(m_toolicon[tool_id], x, y, w, h);
-
-        xmlIcon = xmlIcon->NextSiblingElement();
+      if (c == kCursorTypes) {
+        throw base::Exception("Unknown cursor specified in '%s':\n"
+                              "<cursor id='%s' ... />\n", xml_filename.c_str(), id.c_str());
       }
+
+      xmlCursor = xmlCursor->NextSiblingElement();
     }
+  }
 
-    // Load parts
-    {
-      TiXmlElement* xmlPart = handle
-        .FirstChild("skin")
-        .FirstChild("parts")
-        .FirstChild("part").ToElement();
-      while (xmlPart) {
-        // Get the tool-icon rectangle
-        const char* part_id = xmlPart->Attribute("id");
-        int x = strtol(xmlPart->Attribute("x"), NULL, 10);
-        int y = strtol(xmlPart->Attribute("y"), NULL, 10);
-        int w = xmlPart->Attribute("w") ? strtol(xmlPart->Attribute("w"), NULL, 10): 0;
-        int h = xmlPart->Attribute("h") ? strtol(xmlPart->Attribute("h"), NULL, 10): 0;
-        std::map<std::string, int>::iterator it = sheet_mapping.find(part_id);
-        if (it == sheet_mapping.end()) {
-          throw base::Exception("Unknown part specified in '%s':\n"
-                                "<part id='%s' ... />\n", xml_filename.c_str(), part_id);
-        }
+  // Load tool icons
+  {
+    TiXmlElement* xmlIcon = handle
+      .FirstChild("skin")
+      .FirstChild("tools")
+      .FirstChild("tool").ToElement();
+    while (xmlIcon) {
+      // Get the tool-icon rectangle
+      const char* tool_id = xmlIcon->Attribute("id");
+      int x = strtol(xmlIcon->Attribute("x"), NULL, 10);
+      int y = strtol(xmlIcon->Attribute("y"), NULL, 10);
+      int w = strtol(xmlIcon->Attribute("w"), NULL, 10);
+      int h = strtol(xmlIcon->Attribute("h"), NULL, 10);
 
+      PRINTF("Loading tool icon '%s'...\n", tool_id);
+
+      // Crop the tool-icon from the sheet
+      m_toolicon[tool_id] = cropPartFromSheet(m_toolicon[tool_id], x, y, w, h);
+
+      xmlIcon = xmlIcon->NextSiblingElement();
+    }
+  }
+
+  // Load parts
+  {
+    TiXmlElement* xmlPart = handle
+      .FirstChild("skin")
+      .FirstChild("parts")
+      .FirstChild("part").ToElement();
+    while (xmlPart) {
+      // Get the tool-icon rectangle
+      const char* part_id = xmlPart->Attribute("id");
+      int x = strtol(xmlPart->Attribute("x"), NULL, 10);
+      int y = strtol(xmlPart->Attribute("y"), NULL, 10);
+      int w = xmlPart->Attribute("w") ? strtol(xmlPart->Attribute("w"), NULL, 10): 0;
+      int h = xmlPart->Attribute("h") ? strtol(xmlPart->Attribute("h"), NULL, 10): 0;
+
+      PRINTF("Loading part '%s'...\n", part_id);
+
+      SkinPartPtr part = m_parts_by_id[part_id];
+      if (part == NULL)
+        part = m_parts_by_id[part_id] = SkinPartPtr(new SkinPart);
+
+      if (w > 0 && h > 0) {
+        part->setBitmap(0, cropPartFromSheet(part->getBitmap(0), x, y, w, h));
+      }
+      else if (xmlPart->Attribute("w1")) { // 3x3-1 part (NW, N, NE, E, SE, S, SW, W)
+        int w1 = strtol(xmlPart->Attribute("w1"), NULL, 10);
+        int w2 = strtol(xmlPart->Attribute("w2"), NULL, 10);
+        int w3 = strtol(xmlPart->Attribute("w3"), NULL, 10);
+        int h1 = strtol(xmlPart->Attribute("h1"), NULL, 10);
+        int h2 = strtol(xmlPart->Attribute("h2"), NULL, 10);
+        int h3 = strtol(xmlPart->Attribute("h3"), NULL, 10);
+
+        part->setBitmap(0, cropPartFromSheet(part->getBitmap(0), x, y, w1, h1)); // NW
+        part->setBitmap(1, cropPartFromSheet(part->getBitmap(1), x+w1, y, w2, h1)); // N
+        part->setBitmap(2, cropPartFromSheet(part->getBitmap(2), x+w1+w2, y, w3, h1)); // NE
+        part->setBitmap(3, cropPartFromSheet(part->getBitmap(3), x+w1+w2, y+h1, w3, h2)); // E
+        part->setBitmap(4, cropPartFromSheet(part->getBitmap(4), x+w1+w2, y+h1+h2, w3, h3)); // SE
+        part->setBitmap(5, cropPartFromSheet(part->getBitmap(5), x+w1, y+h1+h2, w2, h3)); // S
+        part->setBitmap(6, cropPartFromSheet(part->getBitmap(6), x, y+h1+h2, w1, h3)); // SW
+        part->setBitmap(7, cropPartFromSheet(part->getBitmap(7), x, y+h1, w1, h2)); // W
+      }
+
+      // Prepare the m_part vector (which is used for backward
+      // compatibility for widgets that doesn't use SkinStyle).
+      std::map<std::string, int>::iterator it = sheet_mapping.find(part_id);
+      if (it != sheet_mapping.end()) {
         int c = it->second;
-
-        if (w > 0 && h > 0) {
-          // Crop the part from the sheet
-          m_part[c] = cropPartFromSheet(m_part[c], x, y, w, h);
-        }
-        else if (xmlPart->Attribute("w1")) { // 3x3-1 part (NW, N, NE, E, SE, S, SW, W)
-          int w1 = strtol(xmlPart->Attribute("w1"), NULL, 10);
-          int w2 = strtol(xmlPart->Attribute("w2"), NULL, 10);
-          int w3 = strtol(xmlPart->Attribute("w3"), NULL, 10);
-          int h1 = strtol(xmlPart->Attribute("h1"), NULL, 10);
-          int h2 = strtol(xmlPart->Attribute("h2"), NULL, 10);
-          int h3 = strtol(xmlPart->Attribute("h3"), NULL, 10);
-
-          m_part[c  ] = cropPartFromSheet(m_part[c  ], x, y, w1, h1); // NW
-          m_part[c+1] = cropPartFromSheet(m_part[c+1], x+w1, y, w2, h1); // N
-          m_part[c+2] = cropPartFromSheet(m_part[c+2], x+w1+w2, y, w3, h1); // NE
-          m_part[c+3] = cropPartFromSheet(m_part[c+3], x+w1+w2, y+h1, w3, h2); // E
-          m_part[c+4] = cropPartFromSheet(m_part[c+4], x+w1+w2, y+h1+h2, w3, h3); // SE
-          m_part[c+5] = cropPartFromSheet(m_part[c+5], x+w1, y+h1+h2, w2, h3); // S
-          m_part[c+6] = cropPartFromSheet(m_part[c+6], x, y+h1+h2, w1, h3); // SW
-          m_part[c+7] = cropPartFromSheet(m_part[c+7], x, y+h1, w1, h2); // W
-        }
-
-        xmlPart = xmlPart->NextSiblingElement();
+        for (size_t i=0; i<part->size(); ++i)
+          m_part[c+i] = part->getBitmap(i);
       }
-    }
 
-    break;
+      xmlPart = xmlPart->NextSiblingElement();
+    }
+  }
+
+  // Load styles
+  {
+    TiXmlElement* xmlStyle = handle
+      .FirstChild("skin")
+      .FirstChild("stylesheet")
+      .FirstChild("style").ToElement();
+    while (xmlStyle) {
+      const char* style_id = xmlStyle->Attribute("id");
+      const char* base_id = xmlStyle->Attribute("base");
+      const css::Style* base = NULL;
+
+      if (base_id)
+        base = m_stylesheet.sheet().getStyle(base_id);
+
+      css::Style* style = new css::Style(style_id, base);
+      m_stylesheet.sheet().addStyle(style);
+
+      TiXmlElement* xmlRule = xmlStyle->FirstChildElement();
+      while (xmlRule) {
+        const std::string ruleName = xmlRule->Value();
+
+        PRINTF("- Rule '%s' for '%s'\n", ruleName.c_str(), style_id);
+
+        const char* part_id = xmlRule->Attribute("part");
+        const char* color_id = xmlRule->Attribute("color");
+
+        // Style align
+        int align = 0;
+        const char* halign = xmlRule->Attribute("align");
+        const char* valign = xmlRule->Attribute("valign");
+        if (halign) {
+          if (strcmp(halign, "left") == 0) align |= JI_LEFT;
+          else if (strcmp(halign, "right") == 0) align |= JI_RIGHT;
+          else if (strcmp(halign, "center") == 0) align |= JI_CENTER;
+        }
+        if (valign) {
+          if (strcmp(valign, "top") == 0) align |= JI_TOP;
+          else if (strcmp(valign, "bottom") == 0) align |= JI_BOTTOM;
+          else if (strcmp(valign, "middle") == 0) align |= JI_MIDDLE;
+        }
+
+        if (ruleName == "background") {
+          if (color_id) (*style)[StyleSheet::backgroundColorRule()] = css::Value(color_id);
+          if (part_id) (*style)[StyleSheet::backgroundPartRule()] = css::Value(part_id);
+        }
+        else if (ruleName == "icon") {
+          if (align) (*style)[StyleSheet::iconAlignRule()] = css::Value(align);
+          if (part_id) (*style)[StyleSheet::iconPartRule()] = css::Value(part_id);
+        }
+        else if (ruleName == "text") {
+          if (color_id) (*style)[StyleSheet::textColorRule()] = css::Value(color_id);
+          if (align) (*style)[StyleSheet::textAlignRule()] = css::Value(align);
+        }
+
+        xmlRule = xmlRule->NextSiblingElement();
+      }
+
+      xmlStyle = xmlStyle->NextSiblingElement();
+    }
   }
 }
 
@@ -2024,52 +2105,81 @@ void SkinTheme::draw_bounds_template(BITMAP* bmp, int x1, int y1, int x2, int y2
 void SkinTheme::draw_bounds_template(Graphics* g, const Rect& rc,
                                      int nw, int n, int ne, int e, int se, int s, int sw, int w)
 {
+  draw_bounds_template(g, rc,
+                       m_part[nw],
+                       m_part[n],
+                       m_part[ne],
+                       m_part[e],
+                       m_part[se],
+                       m_part[s],
+                       m_part[sw],
+                       m_part[w]);
+}
+
+void SkinTheme::draw_bounds_template(ui::Graphics* g, const gfx::Rect& rc, const SkinPartPtr& skinPart)
+{
+  draw_bounds_template(g, rc,
+                       skinPart->getBitmap(0),
+                       skinPart->getBitmap(1),
+                       skinPart->getBitmap(2),
+                       skinPart->getBitmap(3),
+                       skinPart->getBitmap(4),
+                       skinPart->getBitmap(5),
+                       skinPart->getBitmap(6),
+                       skinPart->getBitmap(7));
+}
+
+void SkinTheme::draw_bounds_template(Graphics* g, const Rect& rc,
+                                     BITMAP* nw, BITMAP* n, BITMAP* ne,
+                                     BITMAP* e, BITMAP* se, BITMAP* s,
+                                     BITMAP* sw, BITMAP* w)
+{
   int x, y;
 
   // Top
 
-  g->drawAlphaBitmap(m_part[nw], rc.x, rc.y);
+  g->drawAlphaBitmap(nw, rc.x, rc.y);
 
-  if (IntersectClip clip = IntersectClip(g, Rect(rc.x+m_part[nw]->w, rc.y,
-                                                      rc.w-m_part[nw]->w-m_part[ne]->w, rc.h))) {
-    for (x = rc.x+m_part[nw]->w;
-         x < rc.x+rc.w-m_part[ne]->w;
-         x += m_part[n]->w) {
-      g->drawAlphaBitmap(m_part[n], x, rc.y);
+  if (IntersectClip clip = IntersectClip(g, Rect(rc.x+nw->w, rc.y,
+                                                 rc.w-nw->w-ne->w, rc.h))) {
+    for (x = rc.x+nw->w;
+         x < rc.x+rc.w-ne->w;
+         x += n->w) {
+      g->drawAlphaBitmap(n, x, rc.y);
     }
   }
 
-  g->drawAlphaBitmap(m_part[ne], rc.x+rc.w-m_part[ne]->w, rc.y);
+  g->drawAlphaBitmap(ne, rc.x+rc.w-ne->w, rc.y);
 
   // Bottom
 
-  g->drawAlphaBitmap(m_part[sw], rc.x, rc.y+rc.h-m_part[sw]->h);
+  g->drawAlphaBitmap(sw, rc.x, rc.y+rc.h-sw->h);
 
-  if (IntersectClip clip = IntersectClip(g, Rect(rc.x+m_part[sw]->w, rc.y,
-                                                      rc.w-m_part[sw]->w-m_part[se]->w, rc.h))) {
-    for (x = rc.x+m_part[sw]->w;
-         x < rc.x+rc.w-m_part[se]->w;
-         x += m_part[s]->w) {
-      g->drawAlphaBitmap(m_part[s], x, rc.y+rc.h-m_part[s]->h);
+  if (IntersectClip clip = IntersectClip(g, Rect(rc.x+sw->w, rc.y,
+                                                 rc.w-sw->w-se->w, rc.h))) {
+    for (x = rc.x+sw->w;
+         x < rc.x+rc.w-se->w;
+         x += s->w) {
+      g->drawAlphaBitmap(s, x, rc.y+rc.h-s->h);
     }
   }
 
-  g->drawAlphaBitmap(m_part[se], rc.x+rc.w-m_part[se]->w, rc.y+rc.h-m_part[se]->h);
+  g->drawAlphaBitmap(se, rc.x+rc.w-se->w, rc.y+rc.h-se->h);
 
-  if (IntersectClip clip = IntersectClip(g, Rect(rc.x, rc.y+m_part[nw]->h,
-                                                      rc.w, rc.h-m_part[nw]->h-m_part[sw]->h))) {
+  if (IntersectClip clip = IntersectClip(g, Rect(rc.x, rc.y+nw->h,
+                                                 rc.w, rc.h-nw->h-sw->h))) {
     // Left
-    for (y = rc.y+m_part[nw]->h;
-         y < rc.y+rc.h-m_part[sw]->h;
-         y += m_part[w]->h) {
-      g->drawAlphaBitmap(m_part[w], rc.x, y);
+    for (y = rc.y+nw->h;
+         y < rc.y+rc.h-sw->h;
+         y += w->h) {
+      g->drawAlphaBitmap(w, rc.x, y);
     }
 
     // Right
-    for (y = rc.y+m_part[ne]->h;
-         y < rc.y+rc.h-m_part[se]->h;
-         y += m_part[e]->h) {
-      g->drawAlphaBitmap(m_part[e], rc.x+rc.w-m_part[e]->w, y);
+    for (y = rc.y+ne->h;
+         y < rc.y+rc.h-se->h;
+         y += e->h) {
+      g->drawAlphaBitmap(e, rc.x+rc.w-e->w, y);
     }
   }
 }
@@ -2121,6 +2231,19 @@ void SkinTheme::draw_bounds_nw(Graphics* g, const Rect& rc, int nw, ui::Color bg
                                            m_part[nw+1]->h,
                                            m_part[nw+3]->w,
                                            m_part[nw+5]->h)));
+  }
+}
+
+void SkinTheme::draw_bounds_nw(ui::Graphics* g, const gfx::Rect& rc, const SkinPartPtr skinPart, ui::Color bg)
+{
+  draw_bounds_template(g, rc, skinPart);
+
+  // Center
+  if (!is_transparent(bg)) {
+    g->fillRect(bg, Rect(rc).shrink(Border(skinPart->getBitmap(7)->w,
+                                           skinPart->getBitmap(1)->h,
+                                           skinPart->getBitmap(3)->w,
+                                           skinPart->getBitmap(5)->h)));
   }
 }
 
