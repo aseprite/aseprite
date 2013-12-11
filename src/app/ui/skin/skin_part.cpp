@@ -20,27 +20,43 @@
 #include "config.h"
 #endif
 
-#include "app/ui/skin/skin_slider_property.h"
+#include "app/ui/skin/skin_part.h"
+
+#include <allegro.h>
 
 namespace app {
 namespace skin {
 
-const char* SkinSliderProperty::Name = "SkinSliderProperty";
-
-SkinSliderProperty::SkinSliderProperty(ISliderBgPainter* painter)
-  : Property(Name)
-  , m_painter(painter)
+SkinPart::SkinPart()
 {
 }
 
-SkinSliderProperty::~SkinSliderProperty()
+SkinPart::~SkinPart()
 {
-  delete m_painter;
+  clear();
 }
 
-ISliderBgPainter* SkinSliderProperty::getBgPainter() const
+void SkinPart::clear()
 {
-  return m_painter;
+  for (Bitmaps::iterator it = m_bitmaps.begin(), end = m_bitmaps.end();
+       it != end; ++it) {
+    destroy_bitmap(*it);
+    *it = NULL;
+  }
+}
+
+void SkinPart::setBitmap(size_t index, BITMAP* bitmap)
+{
+  if (index >= m_bitmaps.size())
+    m_bitmaps.resize(index+1, NULL);
+
+  if (m_bitmaps[index] == bitmap)
+    return;
+
+  if (m_bitmaps[index])
+    destroy_bitmap(m_bitmaps[index]);
+
+  m_bitmaps[index] = bitmap;
 }
 
 } // namespace skin

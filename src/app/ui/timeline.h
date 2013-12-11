@@ -22,6 +22,7 @@
 #include "app/context_observer.h"
 #include "app/document_observer.h"
 #include "app/ui/editor/editor_observer.h"
+#include "app/ui/skin/style.h"
 #include "base/compiler_specific.h"
 #include "raster/frame_number.h"
 #include "ui/widget.h"
@@ -32,6 +33,10 @@ namespace raster {
   class Cel;
   class Layer;
   class Sprite;
+}
+
+namespace ui {
+  class Graphics;
 }
 
 namespace app {
@@ -49,6 +54,7 @@ namespace app {
     enum State {
       STATE_STANDBY,
       STATE_SCROLLING,
+      STATE_SELECTING_FRAME,
       STATE_MOVING_SEPARATOR,
       STATE_MOVING_LAYER,
       STATE_MOVING_CEL,
@@ -74,6 +80,7 @@ namespace app {
   protected:
     bool onProcessMessage(ui::Message* msg) OVERRIDE;
     void onPreferredSize(ui::PreferredSizeEvent& ev) OVERRIDE;
+    void onPaint(ui::PaintEvent& ev) OVERRIDE;
 
     // DocumentObserver impl.
     void onAddLayer(DocumentEvent& ev) OVERRIDE;
@@ -95,18 +102,19 @@ namespace app {
   private:
     void detachDocument();
     void setCursor(int x, int y);
-    void getDrawableLayers(const gfx::Rect& clip, int* first_layer, int* last_layer);
-    void getDrawableFrames(const gfx::Rect& clip, FrameNumber* first_frame, FrameNumber* last_frame);
-    void drawHeader(const gfx::Rect& clip);
-    void drawHeaderFrame(const gfx::Rect& clip, FrameNumber frame);
-    void drawHeaderPart(const gfx::Rect& clip, int x1, int y1, int x2, int y2,
-                        bool is_hot, bool is_clk,
-                        const char* text, int text_align);
-    void drawSeparator(const gfx::Rect& clip);
-    void drawLayer(const gfx::Rect& clip, int layer_index);
-    void drawLayerPadding();
-    void drawCel(const gfx::Rect& clip, int layer_index, FrameNumber frame, Cel* cel);
-    bool drawPart(int part, int layer, FrameNumber frame);
+    void getDrawableLayers(ui::Graphics* g, int* first_layer, int* last_layer);
+    void getDrawableFrames(ui::Graphics* g, FrameNumber* first_frame, FrameNumber* last_frame);
+    void drawPart(ui::Graphics* g, const gfx::Rect& bounds,
+      const char* text, skin::Style* style,
+      bool is_active = false, bool is_hover = false, bool is_clicked = false);
+    void drawHeader(ui::Graphics* g);
+    void drawHeaderFrame(ui::Graphics* g, FrameNumber frame);
+    void drawLayer(ui::Graphics* g, int layer_index);
+    void drawCel(ui::Graphics* g, int layer_index, FrameNumber frame, Cel* cel);
+    void drawPaddings(ui::Graphics* g);
+    bool drawPart(ui::Graphics* g, int part, int layer, FrameNumber frame);
+    gfx::Rect getPartBounds(int part, int layer = 0, FrameNumber frame = FrameNumber(0)) const;
+    void invalidatePart(int part, int layer, FrameNumber frame);
     void regenerateLayers();
     void hotThis(int hot_part, int hot_layer, FrameNumber hotFrame);
     void centerCel(int layer, FrameNumber frame);
@@ -114,14 +122,32 @@ namespace app {
     void showCurrentCel();
     void cleanClk();
     void setScroll(int x, int y, bool use_refresh_region);
-    int getLayerIndex(const Layer* layer);
+    int getLayerIndex(const Layer* layer) const;
+    bool isLayerActive(const Layer* layer) const;
+    bool isFrameActive(FrameNumber frame) const;
 
+    skin::Style* m_timelineStyle;
+    skin::Style* m_timelineBoxStyle;
+    skin::Style* m_timelineOpenEyeStyle;
+    skin::Style* m_timelineClosedEyeStyle;
+    skin::Style* m_timelineOpenPadlockStyle;
+    skin::Style* m_timelineClosedPadlockStyle;
+    skin::Style* m_timelineLayerStyle;
+    skin::Style* m_timelineEmptyFrameStyle;
+    skin::Style* m_timelineKeyframeStyle;
+    skin::Style* m_timelineGearStyle;
+    skin::Style* m_timelinePaddingStyle;
+    skin::Style* m_timelinePaddingTrStyle;
+    skin::Style* m_timelinePaddingBlStyle;
+    skin::Style* m_timelinePaddingBrStyle;
     Context* m_context;
     Editor* m_editor;
     Document* m_document;
     Sprite* m_sprite;
     Layer* m_layer;
     FrameNumber m_frame;
+    FrameNumber m_frameBegin;
+    FrameNumber m_frameEnd;
     State m_state;
     std::vector<Layer*> m_layers;
     int m_scroll_x;

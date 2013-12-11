@@ -33,7 +33,9 @@ namespace app {
       name##_W
 
     // Available parts in the skin sheet
-    enum SkinPart {
+    enum SkinParts {
+
+      PART_NONE,
 
       PART_RADIO_NORMAL,
       PART_RADIO_SELECTED,

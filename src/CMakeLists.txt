@@ -1,4 +1,4 @@
-# ASEPRITE
+# Aseprite
 # Copyright (C) 2001-2013  David Capello
 
 add_definitions(-DHAVE_CONFIG_H)
@@ -11,9 +11,8 @@ if(MSVC)
 endif(MSVC)
 
 # Libraries in this directory
-set(aseprite_libraries app-library raster-lib
-  scripting-lib undo-lib filters-lib ui-lib
-  she gfx-lib base-lib)
+set(aseprite_libraries app-library css-lib raster-lib scripting-lib
+  undo-lib filters-lib ui-lib she gfx-lib base-lib)
 
 # Directories where .h files can be found
 include_directories(. .. ../third_party)
@@ -150,6 +149,7 @@ endif()
 add_subdirectory(base)
 add_subdirectory(filters)
 add_subdirectory(gfx)
+add_subdirectory(css)
 add_subdirectory(raster)
 add_subdirectory(scripting)
 add_subdirectory(she)
@@ -244,6 +244,7 @@ endfunction()
 find_unittests(base base-lib ${sys_libs})
 find_unittests(gfx gfx-lib base-lib ${sys_libs})
 find_unittests(raster raster-lib gfx-lib base-lib ${libs3rdparty} ${sys_libs})
+find_unittests(css css-lib gfx-lib base-lib ${libs3rdparty} ${sys_libs})
 find_unittests(ui ui-lib she gfx-lib base-lib ${libs3rdparty} ${sys_libs})
 find_unittests(file ${all_libs})
 find_unittests(app ${all_libs})

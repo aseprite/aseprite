@@ -177,9 +177,12 @@ add_library(app-library
   ui/palette_view.cpp
   ui/popup_window_pin.cpp
   ui/skin/button_icon_impl.cpp
+  ui/skin/skin_part.cpp
   ui/skin/skin_property.cpp
   ui/skin/skin_slider_property.cpp
   ui/skin/skin_theme.cpp
+  ui/skin/style.cpp
+  ui/skin/style_sheet.cpp
   ui/status_bar.cpp
   ui/tabs.cpp
   ui/timeline.cpp

@@ -16,42 +16,37 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifndef APP_UI_SKIN_SKIN_SLIDER_PROPERTY_H_INCLUDED
-#define APP_UI_SKIN_SKIN_SLIDER_PROPERTY_H_INCLUDED
+#ifndef APP_UI_SKIN_SKIN_PART_H_INCLUDED
+#define APP_UI_SKIN_SKIN_PART_H_INCLUDED
 
-#include "app/ui/skin/skin_property.h"
+#include <vector>
 #include "base/shared_ptr.h"
-#include "gfx/rect.h"
 
-namespace ui {
-  class Slider;
-  class Graphics;
-}
+struct BITMAP;
 
 namespace app {
   namespace skin {
 
-    class ISliderBgPainter {
+    class SkinPart {
     public:
-      virtual void paint(ui::Slider* slider, ui::Graphics* graphics, const gfx::Rect& rc) = 0;
-    };
+      typedef std::vector<BITMAP*> Bitmaps;
 
-    class SkinSliderProperty : public ui::Property {
-    public:
-      static const char* Name;
+      SkinPart();
+      ~SkinPart();
 
-      // The given painter is deleted automatically when this
-      // property the destroyed.
-      SkinSliderProperty(ISliderBgPainter* painter);
-      ~SkinSliderProperty();
+      size_t size() const { return m_bitmaps.size(); }
 
-      ISliderBgPainter* getBgPainter() const;
+      void clear();
+      void setBitmap(size_t index, BITMAP* bitmap);
+      BITMAP* getBitmap(size_t index) const {
+        return (index < m_bitmaps.size() ? m_bitmaps[index]: NULL);
+      }
 
     private:
-      ISliderBgPainter* m_painter;
+      Bitmaps m_bitmaps;
     };
 
-    typedef SharedPtr<SkinSliderProperty> SkinSliderPropertyPtr;
+    typedef SharedPtr<SkinPart> SkinPartPtr;
 
   } // namespace skin
 } // namespace app

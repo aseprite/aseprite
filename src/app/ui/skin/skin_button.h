@@ -31,9 +31,9 @@ namespace app {
     template<typename Base = ui::Button>
     class SkinButton : public Base {
     public:
-      SkinButton(SkinPart partNormal,
-                 SkinPart partHot,
-                 SkinPart partSelected)
+      SkinButton(SkinParts partNormal,
+                 SkinParts partHot,
+                 SkinParts partSelected)
         : Base("")
         , m_partNormal(partNormal)
         , m_partHot(partHot)
@@ -41,9 +41,9 @@ namespace app {
       {
       }
 
-      void setParts(SkinPart partNormal,
-                    SkinPart partHot,
-                    SkinPart partSelected) {
+      void setParts(SkinParts partNormal,
+                    SkinParts partHot,
+                    SkinParts partSelected) {
         m_partNormal = partNormal;
         m_partHot = partHot;
         m_partSelected = partSelected;
@@ -55,7 +55,7 @@ namespace app {
         gfx::Rect bounds(Base::getClientBounds());
         ui::Graphics* g = ev.getGraphics();
         SkinTheme* theme = static_cast<SkinTheme*>(Base::getTheme());
-        SkinPart part;
+        SkinParts part;
 
         if (Base::isSelected())
           part = m_partSelected;
@@ -68,9 +68,9 @@ namespace app {
       }
 
     private:
-      SkinPart m_partNormal;
-      SkinPart m_partHot;
-      SkinPart m_partSelected;
+      SkinParts m_partNormal;
+      SkinParts m_partHot;
+      SkinParts m_partSelected;
     };
 
   } // namespace skin
