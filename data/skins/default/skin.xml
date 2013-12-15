@@ -362,8 +362,14 @@
       <text align="left" valign="middle" padding-left="4" />
     </style>
 
+    <!-- timeline_selected_cel -->
+    <style id="timeline_selected_cel">
+      <background color="timeline_clicked" part="timeline_clicked" />
+      <text color="timeline_clicked_text" />
+    </style>
+
     <!-- timeline_empty_frame -->
-    <style id="timeline_empty_frame" base="timeline_box">
+    <style id="timeline_empty_frame">
       <icon part="timeline_empty_frame_normal" />
     </style>
     <style id="timeline_empty_frame:active">
@@ -371,14 +377,14 @@
     </style>
 
     <!--timeline_keyframe-->
-    <style id="timeline_keyframe" base="timeline_box">
+    <style id="timeline_keyframe">
       <icon part="timeline_keyframe_normal" />
     </style>
     <style id="timeline_keyframe:active">
       <icon part="timeline_keyframe_active" />
     </style>
 
-    <!-- timeline_cel -->
+    <!-- timeline_gear -->
     <style id="timeline_gear" base="timeline_box">
       <icon part="timeline_gear" />
     </style>

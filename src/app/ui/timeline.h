@@ -54,7 +54,9 @@ namespace app {
     enum State {
       STATE_STANDBY,
       STATE_SCROLLING,
-      STATE_SELECTING_FRAME,
+      STATE_SELECTING_LAYERS,
+      STATE_SELECTING_FRAMES,
+      STATE_SELECTING_CELS,
       STATE_MOVING_SEPARATOR,
       STATE_MOVING_LAYER,
       STATE_MOVING_CEL,
@@ -116,6 +118,9 @@ namespace app {
     gfx::Rect getPartBounds(int part, int layer = 0, FrameNumber frame = FrameNumber(0)) const;
     void invalidatePart(int part, int layer, FrameNumber frame);
     void regenerateLayers();
+    void startRange(int layer, FrameNumber frame);
+    void updateRange(int layer, FrameNumber frame);
+    void disableRange();
     void hotThis(int hot_part, int hot_layer, FrameNumber hotFrame);
     void centerCel(int layer, FrameNumber frame);
     void showCel(int layer, FrameNumber frame);
@@ -125,6 +130,20 @@ namespace app {
     int getLayerIndex(const Layer* layer) const;
     bool isLayerActive(const Layer* layer) const;
     bool isFrameActive(FrameNumber frame) const;
+
+    struct Range {
+      bool enabled;
+      int layerBegin;
+      int layerEnd;
+      FrameNumber frameBegin;
+      FrameNumber frameEnd;
+
+      Range() : enabled(false) { }
+
+      bool inRange(int layer) const;
+      bool inRange(FrameNumber frame) const;
+      bool inRange(int layer, FrameNumber frame) const;
+    };
 
     skin::Style* m_timelineStyle;
     skin::Style* m_timelineBoxStyle;
@@ -140,14 +159,14 @@ namespace app {
     skin::Style* m_timelinePaddingTrStyle;
     skin::Style* m_timelinePaddingBlStyle;
     skin::Style* m_timelinePaddingBrStyle;
+    skin::Style* m_timelineSelectedCelStyle;
     Context* m_context;
     Editor* m_editor;
     Document* m_document;
     Sprite* m_sprite;
     Layer* m_layer;
     FrameNumber m_frame;
-    FrameNumber m_frameBegin;
-    FrameNumber m_frameEnd;
+    Range m_range;
     State m_state;
     std::vector<Layer*> m_layers;
     int m_scroll_x;

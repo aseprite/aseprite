@@ -92,6 +92,7 @@ static const char* kTimelinePadding = "timeline_padding";
 static const char* kTimelinePaddingTr = "timeline_padding_tr";
 static const char* kTimelinePaddingBl = "timeline_padding_bl";
 static const char* kTimelinePaddingBr = "timeline_padding_br";
+static const char* kTimelineSelectedCelStyle = "timeline_selected_cel";
 
 static const char* kTimelineActiveColor = "timeline_active";
 
@@ -124,11 +125,10 @@ Timeline::Timeline()
   , m_timelinePaddingTrStyle(get_style(kTimelinePaddingTr))
   , m_timelinePaddingBlStyle(get_style(kTimelinePaddingBl))
   , m_timelinePaddingBrStyle(get_style(kTimelinePaddingBr))
+  , m_timelineSelectedCelStyle(get_style(kTimelineSelectedCelStyle))
   , m_context(UIContext::instance())
   , m_editor(NULL)
   , m_document(NULL)
-  , m_frameBegin(-1)
-  , m_frameEnd(-1)
 {
   m_context->addObserver(this);
 
@@ -209,6 +209,7 @@ void Timeline::setLayer(Layer* layer)
   ASSERT(m_editor != NULL);
 
   m_layer = layer;
+  invalidate();
 
   if (m_editor->getLayer() != layer)
     m_editor->setLayer(m_layer);
@@ -278,12 +279,11 @@ bool Timeline::onProcessMessage(Message* msg)
         case A_PART_HEADER_FRAME:
           setFrame(m_clk_frame);
           captureMouse();
-          if (msg->shiftPressed())
+          if (msg->ctrlPressed())
             m_state = STATE_MOVING_FRAME;
           else {
-            m_state = STATE_SELECTING_FRAME;
-            m_frameBegin = m_frame;
-            m_frameEnd = m_frame;
+            m_state = STATE_SELECTING_FRAMES;
+            startRange(getLayerIndex(m_layer), m_clk_frame);
           }
           break;
         case A_PART_LAYER_TEXT: {
@@ -298,10 +298,17 @@ bool Timeline::onProcessMessage(Message* msg)
             invalidate();
           }
 
-          // Change the scroll to show the new selected cel.
+          // Change the scroll to show the new selected layer/cel.
           showCel(m_clk_layer, m_frame);
+
+          if (msg->ctrlPressed()) {
+            m_state = STATE_MOVING_LAYER;
+          }
+          else {
+            m_state = STATE_SELECTING_LAYERS;
+            startRange(m_clk_layer, m_frame);
+          }
           captureMouse();
-          m_state = STATE_MOVING_LAYER;
           break;
         }
         case A_PART_LAYER_EYE_ICON:
@@ -321,6 +328,7 @@ bool Timeline::onProcessMessage(Message* msg)
               old_frame != m_clk_frame) {
             setLayer(m_layers[m_clk_layer]);
             setFrame(m_clk_frame);
+            invalidate();
           }
 
           // Change the scroll to show the new selected cel.
@@ -328,16 +336,20 @@ bool Timeline::onProcessMessage(Message* msg)
 
           // Capture the mouse (to move the cel).
           captureMouse();
-          m_state = STATE_MOVING_CEL;
+
+          if (msg->ctrlPressed())
+            m_state = STATE_MOVING_CEL;
+          else {
+            m_state = STATE_SELECTING_CELS;
+            startRange(m_clk_layer, m_clk_frame);
+            invalidate();
+          }
           break;
         }
       }
 
       // Redraw the new clicked part (header, layer or cel).
-      invalidatePart(m_clk_part,
-                     m_clk_layer,
-                     m_clk_frame);
-      invalidate();
+      invalidatePart(m_clk_part, m_clk_layer, m_clk_frame);
       break;
 
     case kMouseMoveMessage: {
@@ -394,6 +406,15 @@ bool Timeline::onProcessMessage(Message* msg)
                      - HDRSIZE
                      + m_scroll_y) / LAYSIZE;
 
+        if (hot_layer >= (int)m_layers.size()) {
+          if (hasCapture())
+            hot_layer = m_layers.size()-1;
+          else
+            hot_layer = -1;
+        }
+        else if (hasCapture() && hot_layer < 0)
+          hot_layer = 0;
+
         // Is the mouse on a layer's label?
         if (mousePos.x < m_separator_x) {
           if (getPartBounds(A_PART_LAYER_EYE_ICON, hot_layer).contains(mousePos))
@@ -414,17 +435,38 @@ bool Timeline::onProcessMessage(Message* msg)
         }
       }
 
-      if (hasCapture()) {
-        if (m_state == STATE_SELECTING_FRAME) {
-          if (m_frame != m_hot_frame) {
-            m_frameEnd = m_hot_frame;
-            setFrame(m_hot_frame);
-          }
-        }
-      }
-
       // Set the new 'hot' thing.
       hotThis(hot_part, hot_layer, hot_frame);
+
+      if (hasCapture()) {
+        hot_layer = MID(0, hot_layer, (int)m_layers.size()-1);
+        hot_frame = MID(FrameNumber(0), hot_frame, m_sprite->getLastFrame());
+
+        switch (m_state) {
+          case STATE_SELECTING_LAYERS: {
+            if (m_layer != m_layers[hot_layer]) {
+              updateRange(hot_layer, m_frame);
+              setLayer(m_layers[m_clk_layer = hot_layer]);
+            }
+            break;
+          }
+
+          case STATE_SELECTING_FRAMES: {
+            updateRange(getLayerIndex(m_layer), hot_frame);
+            setFrame(m_clk_frame = hot_frame);
+            break;
+          }
+
+          case STATE_SELECTING_CELS:
+            if ((m_layer != m_layers[hot_layer])
+              || (m_frame != hot_frame)) {
+              updateRange(hot_layer, hot_frame);
+              setLayer(m_layers[m_clk_layer = hot_layer]);
+              setFrame(m_clk_frame = hot_frame);
+            }
+            break;
+        }
+      }
       return true;
     }
 
@@ -434,10 +476,10 @@ bool Timeline::onProcessMessage(Message* msg)
 
         MouseMessage* mouseMsg = static_cast<MouseMessage*>(msg);
 
-        releaseMouse();
-
         if (m_state == STATE_SCROLLING) {
           m_state = STATE_STANDBY;
+
+          releaseMouse();
           return true;
         }
 
@@ -511,6 +553,7 @@ bool Timeline::onProcessMessage(Message* msg)
                 }
               }
             }
+#if 0
             // Move a layer.
             else if (mouseMsg->left()) {
               if (m_hot_layer >= 0 &&
@@ -543,6 +586,7 @@ bool Timeline::onProcessMessage(Message* msg)
                 }
               }
             }
+#endif
             break;
           case A_PART_LAYER_EYE_ICON:
             // Hide/show layer.
@@ -612,14 +656,18 @@ bool Timeline::onProcessMessage(Message* msg)
 
         // Clean the clicked-part & redraw the hot-part.
         cleanClk();
-        invalidatePart(m_hot_part,
-                       m_hot_layer,
-                       m_hot_frame);
+
+        if (hasCapture())
+          invalidate();
+        else
+          invalidatePart(m_hot_part, m_hot_layer, m_hot_frame);
 
         // Restore the cursor.
         m_state = STATE_STANDBY;
         setCursor(mouseMsg->position().x,
                   mouseMsg->position().y);
+
+        releaseMouse();
         return true;
       }
       break;
@@ -814,7 +862,7 @@ void Timeline::onFrameChanged(Editor* editor)
   setFrame(editor->getFrame());
 
   if (!hasCapture())
-    m_frameBegin = m_frameEnd = FrameNumber(-1);
+    disableRange();
 
   showCurrentCel();
 }
@@ -822,6 +870,10 @@ void Timeline::onFrameChanged(Editor* editor)
 void Timeline::onLayerChanged(Editor* editor)
 {
   setLayer(editor->getLayer());
+
+  if (!hasCapture())
+    disableRange();
+
   showCurrentCel();
 }
 
@@ -978,6 +1030,13 @@ void Timeline::drawCel(ui::Graphics* g, int layer_index, FrameNumber frame, Cel*
     m_sprite->getStock()->getImage(cel->getImage()) == NULL);
   gfx::Rect bounds = getPartBounds(A_PART_CEL, layer_index, frame);
 
+  if (m_range.inRange(layer_index, frame)
+    || (isLayerActive(layer) && isFrameActive(frame))) {
+    drawPart(g, bounds, NULL, m_timelineSelectedCelStyle, false, false, true);
+  }
+  else
+    drawPart(g, bounds, NULL, m_timelineBoxStyle, is_active, is_hover);
+
   drawPart(g, bounds, NULL,
     is_empty ? m_timelineEmptyFrameStyle: m_timelineKeyframeStyle,
     is_active, is_hover);
@@ -1113,6 +1172,25 @@ void Timeline::regenerateLayers()
 
   for (size_t c=0; c<nlayers; c++)
     m_layers[c] = m_sprite->indexToLayer(LayerIndex(nlayers-c-1));
+}
+
+void Timeline::startRange(int layer, FrameNumber frame)
+{
+  m_range.enabled = true;
+  m_range.layerBegin = m_range.layerEnd = layer;
+  m_range.frameBegin = m_range.frameEnd = frame;
+}
+
+void Timeline::updateRange(int layer, FrameNumber frame)
+{
+  ASSERT(m_range.enabled);
+  m_range.layerEnd = layer;
+  m_range.frameEnd = frame;
+}
+
+void Timeline::disableRange()
+{
+  m_range.enabled = false;
 }
 
 void Timeline::hotThis(int hot_part, int hot_layer, FrameNumber hot_frame)
@@ -1274,22 +1352,41 @@ int Timeline::getLayerIndex(const Layer* layer) const
 
 bool Timeline::isLayerActive(const Layer* layer) const
 {
-  return layer == m_layer;
+  if (layer == m_layer)
+    return true;
+  else
+    return m_range.inRange(getLayerIndex(layer));
 }
 
 bool Timeline::isFrameActive(FrameNumber frame) const
 {
   if (frame == m_frame)
     return true;
-  else {
-    if (m_frameBegin < m_frameEnd) {
-      return (frame >= m_frameBegin && frame <= m_frameEnd);
-    }
-    else {
-      return (frame >= m_frameEnd && frame <= m_frameBegin);
-    }
-  }
-  return false;
+  else
+    return m_range.inRange(frame);
+}
+
+bool Timeline::Range::inRange(int layer) const
+{
+  if (enabled)
+    return ((layer >= layerBegin && layer <= layerEnd)
+      || (layer >= layerEnd && layer <= layerBegin));
+  else
+    return false;
+}
+
+bool Timeline::Range::inRange(FrameNumber frame) const
+{
+  if (enabled)
+    return ((frame >= frameBegin && frame <= frameEnd)
+      || (frame >= frameEnd && frame <= frameBegin));
+  else
+    return false;
+}
+
+bool Timeline::Range::inRange(int layer, FrameNumber frame) const
+{
+  return inRange(layer) && inRange(frame);
 }
 
 } // namespace app
