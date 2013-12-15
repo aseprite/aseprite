@@ -173,7 +173,7 @@ Widget* WidgetLoader::convertXmlElementToWidget(const TiXmlElement* elem, Widget
   else if (elem_name == "button") {
     const char *text = elem->Attribute("text");
 
-    widget = new Button(text ? TRANSLATE_ATTR(text): NULL);
+    widget = new Button(text ? TRANSLATE_ATTR(text): "");
     if (widget) {
       bool left   = bool_attr_is_true(elem, "left");
       bool right  = bool_attr_is_true(elem, "right");
@@ -215,7 +215,7 @@ Widget* WidgetLoader::convertXmlElementToWidget(const TiXmlElement* elem, Widget
     const char *text = elem->Attribute("text");
     const char *looklike = elem->Attribute("looklike");
 
-    text = (text ? TRANSLATE_ATTR(text): NULL);
+    text = (text ? TRANSLATE_ATTR(text): "");
 
     if (looklike != NULL && strcmp(looklike, "button") == 0) {
       widget = new CheckBox(text, kButtonWidget);
@@ -250,7 +250,7 @@ Widget* WidgetLoader::convertXmlElementToWidget(const TiXmlElement* elem, Widget
       bool readonly = bool_attr_is_true(elem, "readonly");
 
       widget = new Entry(ustrtol(maxsize, NULL, 10),
-                         text ? TRANSLATE_ATTR(text): NULL);
+                         text ? TRANSLATE_ATTR(text): "");
 
       if (readonly)
         ((Entry*)widget)->setReadOnly(true);
@@ -275,7 +275,7 @@ Widget* WidgetLoader::convertXmlElementToWidget(const TiXmlElement* elem, Widget
   else if (elem_name == "label") {
     const char *text = elem->Attribute("text");
 
-    widget = new Label(text ? TRANSLATE_ATTR(text): NULL);
+    widget = new Label(text ? TRANSLATE_ATTR(text): "");
     if (widget) {
       bool center = bool_attr_is_true(elem, "center");
       bool right  = bool_attr_is_true(elem, "right");
@@ -296,7 +296,7 @@ Widget* WidgetLoader::convertXmlElementToWidget(const TiXmlElement* elem, Widget
   else if (elem_name == "listitem") {
     const char *text = elem->Attribute("text");
 
-    widget = new ListItem(text ? TRANSLATE_ATTR(text): NULL);
+    widget = new ListItem(text ? TRANSLATE_ATTR(text): "");
   }
   /* splitter */
   else if (elem_name == "splitter") {
@@ -313,7 +313,7 @@ Widget* WidgetLoader::convertXmlElementToWidget(const TiXmlElement* elem, Widget
                                       vertical ? JI_VERTICAL: 0);
     if (position) {
       splitter->setPosition(strtod(position, NULL)
-                            * (type == Splitter::ByPixel ? jguiscale(): 1));
+        * (type == Splitter::ByPixel ? jguiscale(): 1));
     }
     widget = splitter;
   }
@@ -323,7 +323,7 @@ Widget* WidgetLoader::convertXmlElementToWidget(const TiXmlElement* elem, Widget
     const char* group = elem->Attribute("group");
     const char *looklike = elem->Attribute("looklike");
 
-    text = (text ? TRANSLATE_ATTR(text): NULL);
+    text = (text ? TRANSLATE_ATTR(text): "");
     int radio_group = (group ? ustrtol(group, NULL, 10): 1);
 
     if (looklike != NULL && strcmp(looklike, "button") == 0) {
