@@ -2252,10 +2252,15 @@ void SkinTheme::draw_bounds_nw(ui::Graphics* g, const gfx::Rect& rc, const SkinP
 
   // Center
   if (!is_transparent(bg)) {
-    g->fillRect(bg, Rect(rc).shrink(Border(skinPart->getBitmap(7)->w,
-                                           skinPart->getBitmap(1)->h,
-                                           skinPart->getBitmap(3)->w,
-                                           skinPart->getBitmap(5)->h)));
+    gfx::Rect inside = rc;
+    inside.shrink(Border(
+        skinPart->getBitmap(7)->w,
+        skinPart->getBitmap(1)->h,
+        skinPart->getBitmap(3)->w,
+        skinPart->getBitmap(5)->h));
+
+    if (IntersectClip clip = IntersectClip(g, inside))
+      g->fillRect(bg, inside);
   }
 }
 
