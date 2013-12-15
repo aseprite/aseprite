@@ -930,14 +930,17 @@ void Timeline::setCursor(int x, int y)
 
 void Timeline::getDrawableLayers(ui::Graphics* g, int* first_layer, int* last_layer)
 {
-  *first_layer = 0;
-  *last_layer = m_layers.size()-1;
+  *first_layer = m_scroll_y / LAYSIZE;
+  *first_layer = MID(0, *first_layer, m_layers.size()-1);
+  *last_layer = *first_layer + (getClientBounds().h - HDRSIZE) / LAYSIZE;
+  *last_layer = MID(0, *last_layer, m_layers.size()-1);
 }
 
 void Timeline::getDrawableFrames(ui::Graphics* g, FrameNumber* first_frame, FrameNumber* last_frame)
 {
-  *first_frame = FrameNumber(0);
-  *last_frame = m_sprite->getLastFrame();
+  *first_frame = FrameNumber((m_separator_w + m_scroll_x) / FRMSIZE);
+  *last_frame = *first_frame
+    + FrameNumber((getClientBounds().w - m_separator_w) / FRMSIZE);
 }
 
 void Timeline::drawPart(ui::Graphics* g, const gfx::Rect& bounds,
@@ -974,8 +977,10 @@ void Timeline::drawHeaderFrame(ui::Graphics* g, FrameNumber frame)
   bool is_active = isFrameActive(frame);
   bool is_hover = (m_hot_part == A_PART_HEADER_FRAME && m_hot_frame == frame);
   bool is_clicked = (m_clk_part == A_PART_HEADER_FRAME && m_clk_frame == frame);
-
   gfx::Rect bounds = getPartBounds(A_PART_HEADER_FRAME, 0, frame);
+  IntersectClip clip(g, bounds);
+  if (!clip)
+    return;
 
   // Draw the header for the layers.
   char buf[256];
@@ -991,6 +996,9 @@ void Timeline::drawLayer(ui::Graphics* g, int layer_index)
   bool hotlayer = (m_hot_layer == layer_index);
   bool clklayer = (m_clk_layer == layer_index);
   gfx::Rect bounds = getPartBounds(A_PART_LAYER, layer_index, FrameNumber(0));
+  IntersectClip clip(g, bounds);
+  if (!clip)
+    return;
 
   // Draw the eye (readable flag).
   bounds = getPartBounds(A_PART_LAYER_EYE_ICON, layer_index);
@@ -1035,6 +1043,9 @@ void Timeline::drawCel(ui::Graphics* g, int layer_index, FrameNumber frame, Cel*
   bool is_active = (isLayerActive(layer) || isFrameActive(frame));
   bool is_empty = (image == NULL);
   gfx::Rect bounds = getPartBounds(A_PART_CEL, layer_index, frame);
+  IntersectClip clip(g, bounds);
+  if (!clip)
+    return;
 
   if (m_range.inRange(layer_index, frame)
     || (isLayerActive(layer) && isFrameActive(frame))) {
