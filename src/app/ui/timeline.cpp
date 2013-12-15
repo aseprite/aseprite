@@ -371,7 +371,7 @@ bool Timeline::onProcessMessage(Message* msg)
       if (hasCapture()) {
         if (m_state == STATE_SCROLLING) {
           setScroll(m_scroll_x+jmouse_x(1)-jmouse_x(0),
-                    m_scroll_y+jmouse_y(1)-jmouse_y(0), true);
+                    m_scroll_y+jmouse_y(1)-jmouse_y(0));
 
           jmouse_control_infinite_scroll(getBounds());
           return true;
@@ -711,7 +711,7 @@ bool Timeline::onProcessMessage(Message* msg)
         }
 
         setScroll(m_scroll_x+dx,
-                  m_scroll_y+dy, true);
+                  m_scroll_y+dy);
       }
       break;
 
@@ -1308,7 +1308,7 @@ void Timeline::centerCel(int layer, FrameNumber frame)
   int scroll_x = getBounds().x + m_separator_x + m_separator_w + FRMSIZE*frame - target_x;
   int scroll_y = getBounds().y + HDRSIZE + LAYSIZE*layer - target_y;
 
-  setScroll(scroll_x, scroll_y, false);
+  setScroll(scroll_x, scroll_y);
 }
 
 void Timeline::showCel(int layer, FrameNumber frame)
@@ -1340,7 +1340,7 @@ void Timeline::showCel(int layer, FrameNumber frame)
 
   if (scroll_x != m_scroll_x ||
       scroll_y != m_scroll_y)
-    setScroll(scroll_x, scroll_y, true);
+    setScroll(scroll_x, scroll_y);
 }
 
 void Timeline::centerCurrentCel()
@@ -1365,64 +1365,17 @@ void Timeline::cleanClk()
   invalidatePart(clk_part, m_clk_layer, m_clk_frame);
 }
 
-void Timeline::setScroll(int x, int y, bool use_refresh_region)
+void Timeline::setScroll(int x, int y)
 {
-  int old_scroll_x = 0;
-  int old_scroll_y = 0;
-  int max_scroll_x;
-  int max_scroll_y;
-  Region region;
-
-  if (use_refresh_region) {
-    getDrawableRegion(region, kCutTopWindows);
-    old_scroll_x = m_scroll_x;
-    old_scroll_y = m_scroll_y;
-  }
-
-  max_scroll_x = m_sprite->getTotalFrames() * FRMSIZE - getBounds().w/2;
-  max_scroll_y = m_layers.size() * LAYSIZE - getBounds().h/2;
+  int max_scroll_x = m_sprite->getTotalFrames() * FRMSIZE - getBounds().w/2;
+  int max_scroll_y = m_layers.size() * LAYSIZE - getBounds().h/2;
   max_scroll_x = MAX(0, max_scroll_x);
   max_scroll_y = MAX(0, max_scroll_y);
 
   m_scroll_x = MID(0, x, max_scroll_x);
   m_scroll_y = MID(0, y, max_scroll_y);
 
-  if (use_refresh_region) {
-    int new_scroll_x = m_scroll_x;
-    int new_scroll_y = m_scroll_y;
-    int dx = old_scroll_x - new_scroll_x;
-    int dy = old_scroll_y - new_scroll_y;
-    Rect rect2;
-    Region reg1;
-
-    jmouse_hide();
-
-    // Scroll layers.
-    rect2 = Rect(getBounds().x,
-                 getBounds().y + HDRSIZE,
-                 m_separator_x,
-                 getBounds().y2() - (getBounds().y + HDRSIZE));
-    reg1.createIntersection(region, Region(rect2));
-    scrollRegion(reg1, 0, dy);
-
-    // Scroll header-frame.
-    rect2 = Rect(getBounds().x + m_separator_x + m_separator_w,
-                 getBounds().y,
-                 getBounds().x2() - (getBounds().x + m_separator_x + m_separator_w),
-                 HDRSIZE);
-    reg1.createIntersection(region, Region(rect2));
-    scrollRegion(reg1, dx, 0);
-
-    // Scroll cels.
-    rect2 = Rect(getBounds().x + m_separator_x + m_separator_w,
-                 getBounds().y + HDRSIZE,
-                 getBounds().x2() - (getBounds().x + m_separator_x + m_separator_w),
-                 getBounds().y2() - (getBounds().y + HDRSIZE));
-    reg1.createIntersection(region, Region(rect2));
-    scrollRegion(reg1, dx, dy);
-
-    jmouse_show();
-  }
+  invalidate();
 }
 
 int Timeline::getLayerIndex(const Layer* layer) const

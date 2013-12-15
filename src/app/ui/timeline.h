@@ -129,7 +129,7 @@ namespace app {
     void showCel(int layer, FrameNumber frame);
     void showCurrentCel();
     void cleanClk();
-    void setScroll(int x, int y, bool use_refresh_region);
+    void setScroll(int x, int y);
     int getLayerIndex(const Layer* layer) const;
     bool isLayerActive(const Layer* layer) const;
     bool isFrameActive(FrameNumber frame) const;
