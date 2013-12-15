@@ -384,6 +384,27 @@
       <icon part="timeline_keyframe_active" />
     </style>
 
+    <style id="timeline_fromleft">
+      <icon part="timeline_fromleft_normal" />
+    </style>
+    <style id="timeline_fromleft:active">
+      <icon part="timeline_fromleft_active" />
+    </style>
+
+    <style id="timeline_fromright">
+      <icon part="timeline_fromright_normal" />
+    </style>
+    <style id="timeline_fromright:active">
+      <icon part="timeline_fromright_active" />
+    </style>
+
+    <style id="timeline_fromboth">
+      <icon part="timeline_fromboth_normal" />
+    </style>
+    <style id="timeline_fromboth:active">
+      <icon part="timeline_fromboth_active" />
+    </style>
+
     <!-- timeline_gear -->
     <style id="timeline_gear" base="timeline_box">
       <icon part="timeline_gear" />

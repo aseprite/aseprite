@@ -87,6 +87,9 @@ static const char* kTimelineClosedPadlock = "timeline_closed_padlock";
 static const char* kTimelineLayer = "timeline_layer";
 static const char* kTimelineEmptyFrame = "timeline_empty_frame";
 static const char* kTimelineKeyframe = "timeline_keyframe";
+static const char* kTimelineFromLeft = "timeline_fromleft";
+static const char* kTimelineFromRight = "timeline_fromright";
+static const char* kTimelineFromBoth = "timeline_fromboth";
 static const char* kTimelineGear = "timeline_gear";
 static const char* kTimelinePadding = "timeline_padding";
 static const char* kTimelinePaddingTr = "timeline_padding_tr";
@@ -120,6 +123,9 @@ Timeline::Timeline()
   , m_timelineLayerStyle(get_style(kTimelineLayer))
   , m_timelineEmptyFrameStyle(get_style(kTimelineEmptyFrame))
   , m_timelineKeyframeStyle(get_style(kTimelineKeyframe))
+  , m_timelineFromLeftStyle(get_style(kTimelineFromLeft))
+  , m_timelineFromRightStyle(get_style(kTimelineFromRight))
+  , m_timelineFromBothStyle(get_style(kTimelineFromBoth))
   , m_timelineGearStyle(get_style(kTimelineGear))
   , m_timelinePaddingStyle(get_style(kTimelinePadding))
   , m_timelinePaddingTrStyle(get_style(kTimelinePaddingTr))
@@ -1021,13 +1027,13 @@ void Timeline::drawLayer(ui::Graphics* g, int layer_index)
 
 void Timeline::drawCel(ui::Graphics* g, int layer_index, FrameNumber frame, Cel* cel)
 {
-  Layer *layer = m_layers[layer_index];
+  Layer* layer = m_layers[layer_index];
+  Image* image = (cel ? m_sprite->getStock()->getImage(cel->getImage()): NULL);
   bool is_hover = (m_hot_part == A_PART_CEL &&
     m_hot_layer == layer_index &&
     m_hot_frame == frame);
   bool is_active = (isLayerActive(layer) || isFrameActive(frame));
-  bool is_empty = (cel == NULL ||
-    m_sprite->getStock()->getImage(cel->getImage()) == NULL);
+  bool is_empty = (image == NULL);
   gfx::Rect bounds = getPartBounds(A_PART_CEL, layer_index, frame);
 
   if (m_range.inRange(layer_index, frame)
@@ -1037,9 +1043,35 @@ void Timeline::drawCel(ui::Graphics* g, int layer_index, FrameNumber frame, Cel*
   else
     drawPart(g, bounds, NULL, m_timelineBoxStyle, is_active, is_hover);
 
-  drawPart(g, bounds, NULL,
-    is_empty ? m_timelineEmptyFrameStyle: m_timelineKeyframeStyle,
-    is_active, is_hover);
+  skin::Style* style;
+  if (is_empty) {
+    style = m_timelineEmptyFrameStyle;
+  }
+  else {
+#if 0 // TODO We must find a fast-way to compare keyframes. Cels could
+      // share images until the user draw over them. Also, we could
+      // calculate a hash for each image (and recalculate it when the
+      // user draw over it), so then we can compare hashes.  Other
+      // option is to use a thread to calculate differences, but I
+      // think it's too much for just UI stuff.
+    Cel* left = (layer->isImage() ? static_cast<LayerImage*>(layer)->getCel(frame.previous()): NULL);
+    Cel* right = (layer->isImage() ? static_cast<LayerImage*>(layer)->getCel(frame.next()): NULL);
+    Image* leftImg = (left ? m_sprite->getStock()->getImage(left->getImage()): NULL);
+    Image* rightImg = (right ? m_sprite->getStock()->getImage(right->getImage()): NULL);
+    bool fromLeft = (leftImg && count_diff_between_images(image, leftImg) == 0);
+    bool fromRight = (rightImg && count_diff_between_images(image, rightImg) == 0);
+
+    if (fromLeft && fromRight)
+      style = m_timelineFromBothStyle;
+    else if (fromLeft)
+      style = m_timelineFromLeftStyle;
+    else if (fromRight)
+      style = m_timelineFromRightStyle;
+    else
+#endif
+      style = m_timelineKeyframeStyle;
+  }
+  drawPart(g, bounds, NULL, style, is_active, is_hover);
 }
 
 void Timeline::drawPaddings(ui::Graphics* g)

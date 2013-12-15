@@ -154,6 +154,9 @@ namespace app {
     skin::Style* m_timelineLayerStyle;
     skin::Style* m_timelineEmptyFrameStyle;
     skin::Style* m_timelineKeyframeStyle;
+    skin::Style* m_timelineFromLeftStyle;
+    skin::Style* m_timelineFromRightStyle;
+    skin::Style* m_timelineFromBothStyle;
     skin::Style* m_timelineGearStyle;
     skin::Style* m_timelinePaddingStyle;
     skin::Style* m_timelinePaddingTrStyle;
