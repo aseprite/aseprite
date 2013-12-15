@@ -752,12 +752,21 @@ void Timeline::onPaint(ui::PaintEvent& ev)
   drawHeader(g);
 
   // Draw the header for each visible frame.
-  for (frame=first_frame; frame<=last_frame; ++frame)
-    drawHeaderFrame(g, frame);
+  {
+    IntersectClip clip(g, getFrameHeadersBounds());
+    if (clip) {
+      for (frame=first_frame; frame<=last_frame; ++frame)
+        drawHeaderFrame(g, frame);
+    }
+  }
 
   // Draw each visible layer.
   for (layer=first_layer; layer<=last_layer; layer++) {
-    drawLayer(g, layer);
+    {
+      IntersectClip clip(g, getLayerHeadersBounds());
+      if (clip)
+        drawLayer(g, layer);
+    }
 
     // Get the first CelIterator to be drawn (it is the first cel with cel->frame >= first_frame)
     CelIterator it, end;
@@ -768,6 +777,10 @@ void Timeline::onPaint(ui::PaintEvent& ev)
       for (; it != end && (*it)->getFrame() < first_frame; ++it)
         ;
     }
+
+    IntersectClip clip(g, getCelsBounds());
+    if (!clip)
+      continue;
 
     // Draw every visible cel for each layer.
     for (frame=first_frame; frame<=last_frame; ++frame) {
@@ -931,9 +944,9 @@ void Timeline::setCursor(int x, int y)
 void Timeline::getDrawableLayers(ui::Graphics* g, int* first_layer, int* last_layer)
 {
   *first_layer = m_scroll_y / LAYSIZE;
-  *first_layer = MID(0, *first_layer, m_layers.size()-1);
+  *first_layer = MID(0, *first_layer, (int)m_layers.size()-1);
   *last_layer = *first_layer + (getClientBounds().h - HDRSIZE) / LAYSIZE;
-  *last_layer = MID(0, *last_layer, m_layers.size()-1);
+  *last_layer = MID(0, *last_layer, (int)m_layers.size()-1);
 }
 
 void Timeline::getDrawableFrames(ui::Graphics* g, FrameNumber* first_frame, FrameNumber* last_frame)
@@ -1107,6 +1120,34 @@ void Timeline::drawPaddings(ui::Graphics* g)
       client.w - (lastFrame.x+lastFrame.w),
       client.h - (lastLayer.y+lastLayer.h)),
     NULL, m_timelinePaddingBrStyle);
+}
+
+gfx::Rect Timeline::getLayerHeadersBounds() const
+{
+  gfx::Rect rc = getClientBounds();
+  rc.w = m_separator_x;
+  rc.y += HDRSIZE;
+  rc.h -= HDRSIZE;
+  return rc;
+}
+
+gfx::Rect Timeline::getFrameHeadersBounds() const
+{
+  gfx::Rect rc = getClientBounds();
+  rc.x += m_separator_x;
+  rc.w -= m_separator_x;
+  rc.h = HDRSIZE;
+  return rc;
+}
+
+gfx::Rect Timeline::getCelsBounds() const
+{
+  gfx::Rect rc = getClientBounds();
+  rc.x += m_separator_x;
+  rc.w -= m_separator_x;
+  rc.y += HDRSIZE;
+  rc.h -= HDRSIZE;
+  return rc;
 }
 
 gfx::Rect Timeline::getPartBounds(int part, int layer, FrameNumber frame) const

@@ -115,6 +115,9 @@ namespace app {
     void drawCel(ui::Graphics* g, int layer_index, FrameNumber frame, Cel* cel);
     void drawPaddings(ui::Graphics* g);
     bool drawPart(ui::Graphics* g, int part, int layer, FrameNumber frame);
+    gfx::Rect getLayerHeadersBounds() const;
+    gfx::Rect getFrameHeadersBounds() const;
+    gfx::Rect getCelsBounds() const;
     gfx::Rect getPartBounds(int part, int layer = 0, FrameNumber frame = FrameNumber(0)) const;
     void invalidatePart(int part, int layer, FrameNumber frame);
     void regenerateLayers();
