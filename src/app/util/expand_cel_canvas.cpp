@@ -42,23 +42,20 @@
 
 namespace {
 
-static raster::ImageBufferPtr cel_buffer;
 static raster::ImageBufferPtr src_buffer;
 static raster::ImageBufferPtr dst_buffer;
 
 static void destroy_buffers()
 {
-  cel_buffer.reset(NULL);
   src_buffer.reset(NULL);
   dst_buffer.reset(NULL);
 }
 
 static void create_buffers()
 {
-  if (!cel_buffer) {
+  if (!src_buffer) {
     app::App::instance()->Exit.connect(&destroy_buffers);
 
-    cel_buffer.reset(new raster::ImageBuffer(1));
     src_buffer.reset(new raster::ImageBuffer(1));
     dst_buffer.reset(new raster::ImageBuffer(1));
   }
@@ -93,7 +90,7 @@ ExpandCelCanvas::ExpandCelCanvas(Context* context, TiledMode tiledMode, UndoTran
   if (m_cel == NULL) {
     // Create the image
     m_celImage = Image::create(m_sprite->getPixelFormat(), m_sprite->getWidth(),
-                               m_sprite->getHeight(), cel_buffer);
+                               m_sprite->getHeight());
     clear_image(m_celImage, m_sprite->getTransparentColor());
 
     // Create the cel
@@ -124,13 +121,12 @@ ExpandCelCanvas::ExpandCelCanvas(Context* context, TiledMode tiledMode, UndoTran
 
   // create two copies of the image region which we'll modify with the tool
   m_srcImage = crop_image(m_celImage,
-                          x1-m_cel->getX(),
-                          y1-m_cel->getY(), x2-x1, y2-y1,
-                          m_sprite->getTransparentColor(),
-                          src_buffer);
+    x1-m_cel->getX(),
+    y1-m_cel->getY(), x2-x1, y2-y1,
+    m_sprite->getTransparentColor(),
+    src_buffer);
 
-  m_dstImage = Image::createCopy(m_srcImage,
-                                 dst_buffer);
+  m_dstImage = Image::createCopy(m_srcImage, dst_buffer);
 
   // We have to adjust the cel position to match the m_dstImage
   // position (the new m_dstImage will be used in RenderEngine to
