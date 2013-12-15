@@ -135,6 +135,10 @@ Timeline::Timeline()
   , m_context(UIContext::instance())
   , m_editor(NULL)
   , m_document(NULL)
+  , m_scroll_x(0)
+  , m_scroll_y(0)
+  , m_separator_x(100 * jguiscale())
+  , m_separator_w(1)
 {
   m_context->addObserver(this);
 
@@ -178,10 +182,6 @@ void Timeline::updateUsingEditor(Editor* editor)
   m_layer = location.layer();
   m_frame = location.frame();
   m_state = STATE_STANDBY;
-  m_scroll_x = 0;
-  m_scroll_y = 0;
-  m_separator_x = 100 * jguiscale();
-  m_separator_w = 1;
   m_hot_part = A_PART_NOTHING;
   m_clk_part = A_PART_NOTHING;
   m_space_pressed = false;
