@@ -30,6 +30,11 @@
 #include "ui/message.h"
 #include "ui/system.h"
 
+// TODO remove these headers and make this state observable by the timeline.
+#include "app/app.h"
+#include "app/ui/main_window.h"
+#include "app/ui/timeline.h"
+
 #include <allegro.h>
 
 namespace app {
@@ -106,6 +111,9 @@ bool DrawingState::onMouseUp(Editor* editor, MouseMessage* msg)
   // Back to standby state.
   editor->backToPreviousState();
   editor->releaseMouse();
+
+  // Update the timeline. TODO make this state observable by the timeline.
+  App::instance()->getMainWindow()->getTimeline()->updateUsingEditor(editor);
   return true;
 }
 
