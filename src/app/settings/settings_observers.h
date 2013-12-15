@@ -30,8 +30,7 @@ namespace app {
   }
   class ColorSwatches;
 
-  class PenSettingsObserver
-  {
+  class PenSettingsObserver {
   public:
     virtual ~PenSettingsObserver() {}
 
@@ -40,8 +39,7 @@ namespace app {
     virtual void onSetPenAngle(int newAngle) {}
   };
 
-  class ToolSettingsObserver
-  {
+  class ToolSettingsObserver {
   public:
     virtual ~ToolSettingsObserver() {}
 
@@ -54,23 +52,21 @@ namespace app {
     virtual void onSetInkType(InkType newInkType) {}
   };
 
-  class SelectionSettingsObserver
-  {
+  class SelectionSettingsObserver {
   public:
     virtual ~SelectionSettingsObserver() {}
 
     virtual void onSetMoveTransparentColor(app::Color newColor) {}
   };
 
-  class GlobalSettingsObserver
-  {
+  class GlobalSettingsObserver {
   public:
-      virtual ~GlobalSettingsObserver() {}
+    virtual ~GlobalSettingsObserver() {}
 
-      virtual void onSetFgColor(app::Color newColor) {}
-      virtual void onSetBgColor(app::Color newColor) {}
-      virtual void onSetCurrentTool(tools::Tool* newTool) {}
-      virtual void onSetColorSwatches(ColorSwatches* swaches) {}
+    virtual void onSetFgColor(app::Color newColor) {}
+    virtual void onSetBgColor(app::Color newColor) {}
+    virtual void onSetCurrentTool(tools::Tool* newTool) {}
+    virtual void onSetColorSwatches(ColorSwatches* swaches) {}
   };
 
 } // namespace app

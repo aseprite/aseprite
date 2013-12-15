@@ -73,7 +73,7 @@ namespace app {
     virtual IColorSwatchesStore* getColorSwatchesStore() = 0;
 
     virtual void addObserver(GlobalSettingsObserver* observer) = 0;
-    virtual void removeObserver(GlobalSettingsObserver *observer) = 0;
+    virtual void removeObserver(GlobalSettingsObserver* observer) = 0;
   };
 
   // Tool's settings
@@ -100,7 +100,7 @@ namespace app {
     virtual void setInkType(InkType inkType) = 0;
 
     virtual void addObserver(ToolSettingsObserver* observer) = 0;
-    virtual void removeObserver(ToolSettingsObserver *observer) = 0;
+    virtual void removeObserver(ToolSettingsObserver* observer) = 0;
   };
 
   // Settings for a tool's pen
@@ -117,7 +117,7 @@ namespace app {
     virtual void setAngle(int angle) = 0;
 
     virtual void addObserver(PenSettingsObserver* observer) = 0;
-    virtual void removeObserver(PenSettingsObserver *observer) = 0;
+    virtual void removeObserver(PenSettingsObserver* observer) = 0;
   };
 
   class ISelectionSettings {
