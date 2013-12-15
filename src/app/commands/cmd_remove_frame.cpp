@@ -20,10 +20,13 @@
 #include "config.h"
 #endif
 
+#include "app/app.h"
 #include "app/commands/command.h"
 #include "app/context_access.h"
 #include "app/document_api.h"
 #include "app/modules/gui.h"
+#include "app/ui/main_window.h"
+#include "app/ui/timeline.h"
 #include "app/undo_transaction.h"
 #include "raster/sprite.h"
 #include "ui/ui.h"
@@ -63,7 +66,21 @@ void RemoveFrameCommand::onExecute(Context* context)
   Sprite* sprite(writer.sprite());
   {
     UndoTransaction undoTransaction(writer.context(), "Remove Frame");
-    document->getApi().removeFrame(sprite, writer.frame());
+
+    // TODO the range of selected frames should be in the DocumentLocation.
+    Timeline::Range range = App::instance()->getMainWindow()->getTimeline()->range();
+    if (range.enabled()) {
+      for (FrameNumber frame = range.frameEnd(),
+             begin = range.frameBegin().previous();
+           frame != begin;
+           frame = frame.previous()) {
+        document->getApi().removeFrame(sprite, frame);
+      }
+    }
+    else {
+      document->getApi().removeFrame(sprite, writer.frame());
+    }
+
     undoTransaction.commit();
   }
   update_screen_for_document(document);

@@ -63,6 +63,31 @@ namespace app {
       STATE_MOVING_FRAME,
     };
 
+    struct Range {
+      Range() : m_enabled(false) { }
+
+      bool enabled() const { return m_enabled; }
+      int layerBegin() const { return MIN(m_layerBegin, m_layerEnd); }
+      int layerEnd() const { return MAX(m_layerBegin, m_layerEnd); }
+      FrameNumber frameBegin() const { return MIN(m_frameBegin, m_frameEnd); }
+      FrameNumber frameEnd() const { return MAX(m_frameBegin, m_frameEnd); }
+
+      bool inRange(int layer) const;
+      bool inRange(FrameNumber frame) const;
+      bool inRange(int layer, FrameNumber frame) const;
+
+      void startRange(int layer, FrameNumber frame);
+      void endRange(int layer, FrameNumber frame);
+      void disableRange();
+
+    private:
+      bool m_enabled;
+      int m_layerBegin;
+      int m_layerEnd;
+      FrameNumber m_frameBegin;
+      FrameNumber m_frameEnd;
+    };
+
     Timeline();
     ~Timeline();
 
@@ -78,6 +103,8 @@ namespace app {
     void centerCurrentCel();
     State getState() const { return m_state; }
     bool isMovingCel() const;
+
+    Range range() const { return m_range; }
 
   protected:
     bool onProcessMessage(ui::Message* msg) OVERRIDE;
@@ -121,9 +148,6 @@ namespace app {
     gfx::Rect getPartBounds(int part, int layer = 0, FrameNumber frame = FrameNumber(0)) const;
     void invalidatePart(int part, int layer, FrameNumber frame);
     void regenerateLayers();
-    void startRange(int layer, FrameNumber frame);
-    void updateRange(int layer, FrameNumber frame);
-    void disableRange();
     void hotThis(int hot_part, int hot_layer, FrameNumber hotFrame);
     void centerCel(int layer, FrameNumber frame);
     void showCel(int layer, FrameNumber frame);
@@ -133,20 +157,6 @@ namespace app {
     int getLayerIndex(const Layer* layer) const;
     bool isLayerActive(const Layer* layer) const;
     bool isFrameActive(FrameNumber frame) const;
-
-    struct Range {
-      bool enabled;
-      int layerBegin;
-      int layerEnd;
-      FrameNumber frameBegin;
-      FrameNumber frameEnd;
-
-      Range() : enabled(false) { }
-
-      bool inRange(int layer) const;
-      bool inRange(FrameNumber frame) const;
-      bool inRange(int layer, FrameNumber frame) const;
-    };
 
     skin::Style* m_timelineStyle;
     skin::Style* m_timelineBoxStyle;

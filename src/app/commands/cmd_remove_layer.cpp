@@ -21,11 +21,14 @@
 #endif
 
 #include "app/app.h"
+#include "app/app.h"
 #include "app/commands/command.h"
 #include "app/context_access.h"
 #include "app/document_api.h"
 #include "app/modules/gui.h"
+#include "app/ui/main_window.h"
 #include "app/ui/status_bar.h"
+#include "app/ui/timeline.h"
 #include "app/undo_transaction.h"
 #include "raster/layer.h"
 #include "raster/sprite.h"
@@ -52,8 +55,11 @@ RemoveLayerCommand::RemoveLayerCommand()
 
 bool RemoveLayerCommand::onEnabled(Context* context)
 {
-  return context->checkFlags(ContextFlags::ActiveDocumentIsWritable |
-                             ContextFlags::HasActiveLayer);
+  ContextWriter writer(context);
+  Sprite* sprite(writer.sprite());
+  return
+    sprite &&
+    sprite->countLayers() > 1;
 }
 
 void RemoveLayerCommand::onExecute(Context* context)
@@ -65,17 +71,32 @@ void RemoveLayerCommand::onExecute(Context* context)
   {
     UndoTransaction undoTransaction(writer.context(), "Remove Layer");
 
-    layer_name = layer->getName();
+    // TODO the range of selected layer should be in the DocumentLocation.
+    Timeline::Range range = App::instance()->getMainWindow()->getTimeline()->range();
+    if (range.enabled()) {
+      Sprite* sprite = writer.sprite();
 
-    document->getApi().removeLayer(layer);
+      // TODO indexes in timeline are inverted!! fix that for a future release
+      for (LayerIndex layer = sprite->countLayers() - LayerIndex(range.layerBegin()+1),
+             end = sprite->countLayers() - LayerIndex(range.layerEnd()+2);
+           layer != end; --layer) {
+        document->getApi().removeLayer(sprite->indexToLayer(layer));
+      }
+    }
+    else {
+      layer_name = layer->getName();
+      document->getApi().removeLayer(layer);
+    }
+
     undoTransaction.commit();
   }
   update_screen_for_document(document);
 
   StatusBar::instance()->invalidate();
-  StatusBar::instance()
-    ->showTip(1000, "Layer `%s' removed",
-              layer_name.c_str());
+  if (!layer_name.empty())
+    StatusBar::instance()->showTip(1000, "Layer `%s' removed", layer_name.c_str());
+  else
+    StatusBar::instance()->showTip(1000, "Layers removed");
 }
 
 Command* CommandFactory::createRemoveLayerCommand()

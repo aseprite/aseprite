@@ -253,11 +253,13 @@ bool Timeline::onProcessMessage(Message* msg)
       if (m_space_pressed) m_space_pressed = false;
       break;
 
-    case kMouseDownMessage:
+    case kMouseDownMessage: {
+      MouseMessage* mouseMsg = static_cast<MouseMessage*>(msg);
+
       if (!m_document)
         break;
 
-      if (static_cast<MouseMessage*>(msg)->middle() || m_space_pressed) {
+      if (mouseMsg->middle() || m_space_pressed) {
         captureMouse();
         m_state = STATE_SCROLLING;
         return true;
@@ -268,12 +270,13 @@ bool Timeline::onProcessMessage(Message* msg)
       m_clk_layer = m_hot_layer;
       m_clk_frame = m_hot_frame;
 
+      captureMouse();
+
       switch (m_hot_part) {
         case A_PART_NOTHING:
           // Do nothing.
           break;
         case A_PART_SEPARATOR:
-          captureMouse();
           m_state = STATE_MOVING_SEPARATOR;
           break;
         case A_PART_HEADER_GEAR:
@@ -282,46 +285,52 @@ bool Timeline::onProcessMessage(Message* msg)
         case A_PART_HEADER_LAYER:
           // Do nothing.
           break;
-        case A_PART_HEADER_FRAME:
-          setFrame(m_clk_frame);
-          captureMouse();
-          if (msg->ctrlPressed())
-            m_state = STATE_MOVING_FRAME;
-          else {
-            m_state = STATE_SELECTING_FRAMES;
-            startRange(getLayerIndex(m_layer), m_clk_frame);
+        case A_PART_HEADER_FRAME: {
+          bool selectFrame = (mouseMsg->left() || !isFrameActive(m_clk_frame));
+
+          if (selectFrame) {
+            setFrame(m_clk_frame);
+            if (msg->ctrlPressed())
+              m_state = STATE_MOVING_FRAME;
+            else {
+              m_state = STATE_SELECTING_FRAMES;
+              m_range.startRange(getLayerIndex(m_layer), m_clk_frame);
+            }
           }
           break;
+        }
         case A_PART_LAYER_TEXT: {
           const DocumentReader document(const_cast<Document*>(m_document));
           const Sprite* sprite = m_sprite;
           int old_layer = getLayerIndex(m_layer);
+          bool selectLayer = (mouseMsg->left() || !isLayerActive(m_layers[m_clk_layer]));
           FrameNumber frame = m_frame;
 
-          // Did the user select another layer?
-          if (old_layer != m_clk_layer) {
-            setLayer(m_layers[m_clk_layer]);
-            invalidate();
+          if (selectLayer) {
+            // Did the user select another layer?
+            if (old_layer != m_clk_layer) {
+              setLayer(m_layers[m_clk_layer]);
+              invalidate();
+            }
           }
 
           // Change the scroll to show the new selected layer/cel.
           showCel(m_clk_layer, m_frame);
 
-          if (msg->ctrlPressed()) {
-            m_state = STATE_MOVING_LAYER;
+          if (selectLayer) {
+            if (msg->ctrlPressed()) {
+              m_state = STATE_MOVING_LAYER;
+            }
+            else {
+              m_state = STATE_SELECTING_LAYERS;
+              m_range.startRange(m_clk_layer, m_frame);
+            }
           }
-          else {
-            m_state = STATE_SELECTING_LAYERS;
-            startRange(m_clk_layer, m_frame);
-          }
-          captureMouse();
           break;
         }
         case A_PART_LAYER_EYE_ICON:
-          captureMouse();
           break;
         case A_PART_LAYER_PADLOCK_ICON:
-          captureMouse();
           break;
         case A_PART_CEL: {
           const DocumentReader document(const_cast<Document*>(m_document));
@@ -331,7 +340,7 @@ bool Timeline::onProcessMessage(Message* msg)
 
           // Select the new clicked-part.
           if (old_layer != m_clk_layer ||
-              old_frame != m_clk_frame) {
+            old_frame != m_clk_frame) {
             setLayer(m_layers[m_clk_layer]);
             setFrame(m_clk_frame);
             invalidate();
@@ -340,14 +349,11 @@ bool Timeline::onProcessMessage(Message* msg)
           // Change the scroll to show the new selected cel.
           showCel(m_clk_layer, m_frame);
 
-          // Capture the mouse (to move the cel).
-          captureMouse();
-
           if (msg->ctrlPressed())
             m_state = STATE_MOVING_CEL;
           else {
             m_state = STATE_SELECTING_CELS;
-            startRange(m_clk_layer, m_clk_frame);
+            m_range.startRange(m_clk_layer, m_clk_frame);
             invalidate();
           }
           break;
@@ -357,6 +363,7 @@ bool Timeline::onProcessMessage(Message* msg)
       // Redraw the new clicked part (header, layer or cel).
       invalidatePart(m_clk_part, m_clk_layer, m_clk_frame);
       break;
+    }
 
     case kMouseMoveMessage: {
       if (!m_document)
@@ -451,14 +458,14 @@ bool Timeline::onProcessMessage(Message* msg)
         switch (m_state) {
           case STATE_SELECTING_LAYERS: {
             if (m_layer != m_layers[hot_layer]) {
-              updateRange(hot_layer, m_frame);
+              m_range.endRange(hot_layer, m_frame);
               setLayer(m_layers[m_clk_layer = hot_layer]);
             }
             break;
           }
 
           case STATE_SELECTING_FRAMES: {
-            updateRange(getLayerIndex(m_layer), hot_frame);
+            m_range.endRange(getLayerIndex(m_layer), hot_frame);
             setFrame(m_clk_frame = hot_frame);
             break;
           }
@@ -466,7 +473,7 @@ bool Timeline::onProcessMessage(Message* msg)
           case STATE_SELECTING_CELS:
             if ((m_layer != m_layers[hot_layer])
               || (m_frame != hot_frame)) {
-              updateRange(hot_layer, hot_frame);
+              m_range.endRange(hot_layer, hot_frame);
               setLayer(m_layers[m_clk_layer = hot_layer]);
               setFrame(m_clk_frame = hot_frame);
             }
@@ -881,7 +888,7 @@ void Timeline::onFrameChanged(Editor* editor)
   setFrame(editor->getFrame());
 
   if (!hasCapture())
-    disableRange();
+    m_range.disableRange();
 
   showCurrentCel();
 }
@@ -891,7 +898,7 @@ void Timeline::onLayerChanged(Editor* editor)
   setLayer(editor->getLayer());
 
   if (!hasCapture())
-    disableRange();
+    m_range.disableRange();
 
   showCurrentCel();
 }
@@ -1258,25 +1265,6 @@ void Timeline::regenerateLayers()
     m_layers[c] = m_sprite->indexToLayer(LayerIndex(nlayers-c-1));
 }
 
-void Timeline::startRange(int layer, FrameNumber frame)
-{
-  m_range.enabled = true;
-  m_range.layerBegin = m_range.layerEnd = layer;
-  m_range.frameBegin = m_range.frameEnd = frame;
-}
-
-void Timeline::updateRange(int layer, FrameNumber frame)
-{
-  ASSERT(m_range.enabled);
-  m_range.layerEnd = layer;
-  m_range.frameEnd = frame;
-}
-
-void Timeline::disableRange()
-{
-  m_range.enabled = false;
-}
-
 void Timeline::hotThis(int hot_part, int hot_layer, FrameNumber hot_frame)
 {
   // If the part, layer or frame change.
@@ -1403,20 +1391,37 @@ bool Timeline::isFrameActive(FrameNumber frame) const
     return m_range.inRange(frame);
 }
 
+void Timeline::Range::startRange(int layer, FrameNumber frame)
+{
+  m_enabled = true;
+  m_layerBegin = m_layerEnd = layer;
+  m_frameBegin = m_frameEnd = frame;
+}
+
+void Timeline::Range::endRange(int layer, FrameNumber frame)
+{
+  ASSERT(m_enabled);
+  m_layerEnd = layer;
+  m_frameEnd = frame;
+}
+
+void Timeline::Range::disableRange()
+{
+  m_enabled = false;
+}
+
 bool Timeline::Range::inRange(int layer) const
 {
-  if (enabled)
-    return ((layer >= layerBegin && layer <= layerEnd)
-      || (layer >= layerEnd && layer <= layerBegin));
+  if (m_enabled)
+    return (layer >= layerBegin() && layer <= layerEnd());
   else
     return false;
 }
 
 bool Timeline::Range::inRange(FrameNumber frame) const
 {
-  if (enabled)
-    return ((frame >= frameBegin && frame <= frameEnd)
-      || (frame >= frameEnd && frame <= frameBegin));
+  if (m_enabled)
+    return (frame >= frameBegin() && frame <= frameEnd());
   else
     return false;
 }
