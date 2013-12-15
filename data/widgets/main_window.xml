@@ -13,7 +13,7 @@
 	  <vbox noborders="true" id="contextbar" />
 	  <splitter id="timelinesplitter"
 		    vertical="true" expansive="true"
-		    by="percetage" position="75">
+		    by="percetage" position="100">
 	    <hbox noborders="true" id="workspace" expansive="true" />
 	    <vbox noborders="true" id="timeline" expansive="true" />
 	  </splitter>

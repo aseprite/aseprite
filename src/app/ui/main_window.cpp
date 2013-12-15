@@ -25,6 +25,7 @@
 #include "app/app.h"
 #include "app/app_menus.h"
 #include "app/commands/commands.h"
+#include "app/ini_file.h"
 #include "app/load_widget.h"
 #include "app/modules/editors.h"
 #include "app/ui/color_bar.h"
@@ -83,8 +84,6 @@ MainWindow::MainWindow()
   m_timeline = new Timeline();
   m_colorBarSplitter = findChildT<Splitter>("colorbarsplitter");
   m_timelineSplitter = findChildT<Splitter>("timelinesplitter");
-
-  m_lastTimelineSplitterPos = m_timelineSplitter->getPosition();
 
   // configure all widgets to expansives
   m_menuBar->setExpansive(true);
@@ -164,13 +163,11 @@ void MainWindow::setAdvancedMode(bool advanced)
 
 bool MainWindow::getTimelineVisibility() const
 {
-  return m_timeline->isVisible();
+  return m_timelineSplitter->getPosition() < 100.0;
 }
 
 void MainWindow::setTimelineVisibility(bool visible)
 {
-  m_timeline->setVisible(visible);
-
   if (visible) {
     if (m_timelineSplitter->getPosition() >= 100.0)
       m_timelineSplitter->setPosition(m_lastTimelineSplitterPos);
@@ -181,8 +178,16 @@ void MainWindow::setTimelineVisibility(bool visible)
       m_timelineSplitter->setPosition(100.0);
     }
   }
-
   layout();
+}
+
+void MainWindow::popTimeline()
+{
+  if (!get_config_bool("Options", "AutoShowTimeline", true))
+    return;
+
+  if (!getTimelineVisibility())
+    setTimelineVisibility(true);
 }
 
 void MainWindow::onSaveLayout(SaveLayoutEvent& ev)

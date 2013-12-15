@@ -57,6 +57,7 @@ namespace app {
 
     bool getTimelineVisibility() const;
     void setTimelineVisibility(bool visible);
+    void popTimeline();
 
     // TabsDelegate implementation.
     void clickTab(Tabs* tabs, TabView* tabView, ui::MouseButtons buttons);

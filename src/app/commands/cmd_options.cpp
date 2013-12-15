@@ -69,6 +69,7 @@ void OptionsCommand::onExecute(Context* context)
   // Load the window widget
   base::UniquePtr<Window> window(app::load_widget<Window>("options.xml", "options"));
   Widget* check_smooth = app::find_widget<Widget>(window, "smooth");
+  Widget* check_autotimeline = app::find_widget<Widget>(window, "autotimeline");
   Widget* move_click2 = app::find_widget<Widget>(window, "move_click2");
   Widget* draw_click2 = app::find_widget<Widget>(window, "draw_click2");
   Widget* cursor_color_box = app::find_widget<Widget>(window, "cursor_color_box");
@@ -111,6 +112,9 @@ void OptionsCommand::onExecute(Context* context)
   if (get_config_bool("Options", "MoveSmooth", true))
     check_smooth->setSelected(true);
 
+  if (get_config_bool("Options", "AutoShowTimeline", true))
+    check_autotimeline->setSelected(true);
+
   // Checked background size
   m_checked_bg->addItem("16x16");
   m_checked_bg->addItem("8x8");
@@ -150,6 +154,7 @@ void OptionsCommand::onExecute(Context* context)
     docSettings->setPixelGridColor(pixel_grid_color->getColor());
 
     set_config_bool("Options", "MoveSmooth", check_smooth->isSelected());
+    set_config_bool("Options", "AutoShowTimeline", check_autotimeline->isSelected());
     set_config_bool("Options", "MoveClick2", move_click2->isSelected());
     set_config_bool("Options", "DrawClick2", draw_click2->isSelected());
 

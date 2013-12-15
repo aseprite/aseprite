@@ -27,6 +27,7 @@
 #include "app/context_access.h"
 #include "app/document_api.h"
 #include "app/modules/gui.h"
+#include "app/ui/main_window.h"
 #include "app/ui/status_bar.h"
 #include "app/undo_transaction.h"
 #include "raster/cel.h"
@@ -82,6 +83,8 @@ void NewFrameCommand::onExecute(Context* context)
     ->showTip(1000, "New frame %d/%d",
               (int)context->getActiveLocation().frame()+1,
               (int)sprite->getTotalFrames());
+
+  App::instance()->getMainWindow()->popTimeline();
 }
 
 Command* CommandFactory::createNewFrameCommand()
