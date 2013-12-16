@@ -303,7 +303,7 @@ bool Timeline::onProcessMessage(Message* msg)
           const DocumentReader document(const_cast<Document*>(m_document));
           const Sprite* sprite = m_sprite;
           int old_layer = getLayerIndex(m_layer);
-          bool selectLayer = (mouseMsg->left() || !isLayerActive(m_layers[m_clk_layer]));
+          bool selectLayer = (mouseMsg->left() || !isLayerActive(m_clk_layer));
           FrameNumber frame = m_frame;
 
           if (selectLayer) {
@@ -318,13 +318,20 @@ bool Timeline::onProcessMessage(Message* msg)
           showCel(m_clk_layer, m_frame);
 
           if (selectLayer) {
+            bool startRange = false;
+
             if (msg->ctrlPressed()) {
               m_state = STATE_MOVING_LAYER;
+              if (!m_range.inRange(m_clk_layer))
+                startRange = true;
             }
             else {
               m_state = STATE_SELECTING_LAYERS;
-              m_range.startRange(m_clk_layer, m_frame);
+              startRange = true;
             }
+
+            if (startRange)
+              m_range.startRange(m_clk_layer, m_frame);
           }
           break;
         }
@@ -566,40 +573,50 @@ bool Timeline::onProcessMessage(Message* msg)
                 }
               }
             }
-#if 0
             // Move a layer.
-            else if (mouseMsg->left()) {
-              if (m_hot_layer >= 0 &&
-                  m_hot_layer < (int)m_layers.size() &&
-                  m_hot_layer != m_clk_layer &&
-                  m_hot_layer != m_clk_layer+1) {
-                if (!m_layers[m_clk_layer]->isBackground()) {
-                  // Move the clicked-layer after the hot-layer.
-                  try {
-                    const ContextReader reader(m_context);
-                    ContextWriter writer(reader);
+            else if (m_state == STATE_MOVING_LAYER) {
+              if (m_hot_layer >= 0
+                && m_hot_layer < (int)m_layers.size()
+                && !isLayerActive(m_hot_layer)) {
 
-                    UndoTransaction undoTransaction(m_context, "Move Layer");
-                    m_document->getApi().restackLayerAfter(m_layers[m_clk_layer],
-                                                           m_layers[m_hot_layer]);
-                    undoTransaction.commit();
+                if (m_layers[m_clk_layer]->isBackground()) {
+                  Alert::show(PACKAGE "<<You can't move the `Background' layer.||&OK");
+                  break;
+                }
 
-                    // Select the new layer.
-                    setLayer(m_layers[m_clk_layer]);
+                // Move the clicked-layer after the hot-layer.
+                try {
+                  const ContextReader reader(m_context);
+                  ContextWriter writer(reader);
+
+                  UndoTransaction undoTransaction(m_context, "Move Layer");
+
+                  Layer* firstLayer = m_layers[m_range.layerBegin()];
+                  Layer* lastLayer = m_layers[m_range.layerEnd()];
+
+                  for (int i = m_range.layerBegin(); i <= m_range.layerEnd(); ++i) {
+                    m_document->getApi().restackLayerAfter(
+                      m_layers[i], m_layers[m_hot_layer]);
                   }
-                  catch (LockedDocumentException& e) {
-                    Console::showException(e);
-                  }
 
-                  invalidate();
+                  undoTransaction.commit();
+
+                  // Select the new layer.
+                  setLayer(m_layers[m_clk_layer]);
+
+                  regenerateLayers();
+
+                  m_range.startRange(getLayerIndex(firstLayer), m_frame);
+                  m_range.endRange(getLayerIndex(lastLayer), m_frame);
+                }
+                catch (LockedDocumentException& e) {
+                  Console::showException(e);
                   regenerateLayers();
                 }
-                else {
-                  Alert::show(PACKAGE "<<You can't move the `Background' layer.||&OK");
-                }
+
+                invalidate();
               }
             }
-#endif
             break;
           case A_PART_LAYER_EYE_ICON:
             // Hide/show layer.
@@ -1012,7 +1029,7 @@ void Timeline::drawHeaderFrame(ui::Graphics* g, FrameNumber frame)
 void Timeline::drawLayer(ui::Graphics* g, int layer_index)
 {
   Layer* layer = m_layers[layer_index];
-  bool is_active = isLayerActive(layer);
+  bool is_active = isLayerActive(layer_index);
   bool hotlayer = (m_hot_layer == layer_index);
   bool clklayer = (m_clk_layer == layer_index);
   gfx::Rect bounds = getPartBounds(A_PART_LAYER, layer_index, FrameNumber(0));
@@ -1060,7 +1077,7 @@ void Timeline::drawCel(ui::Graphics* g, int layer_index, FrameNumber frame, Cel*
   bool is_hover = (m_hot_part == A_PART_CEL &&
     m_hot_layer == layer_index &&
     m_hot_frame == frame);
-  bool is_active = (isLayerActive(layer) || isFrameActive(frame));
+  bool is_active = (isLayerActive(layer_index) || isFrameActive(frame));
   bool is_empty = (image == NULL);
   gfx::Rect bounds = getPartBounds(A_PART_CEL, layer_index, frame);
   IntersectClip clip(g, bounds);
@@ -1068,7 +1085,7 @@ void Timeline::drawCel(ui::Graphics* g, int layer_index, FrameNumber frame, Cel*
     return;
 
   if (m_range.inRange(layer_index, frame)
-    || (isLayerActive(layer) && isFrameActive(frame))) {
+    || (isLayerActive(layer_index) && isFrameActive(frame))) {
     drawPart(g, bounds, NULL, m_timelineSelectedCelStyle, false, false, true);
   }
   else
@@ -1375,12 +1392,12 @@ int Timeline::getLayerIndex(const Layer* layer) const
   return -1;
 }
 
-bool Timeline::isLayerActive(const Layer* layer) const
+bool Timeline::isLayerActive(int layer_index) const
 {
-  if (layer == m_layer)
+  if (layer_index == getLayerIndex(m_layer))
     return true;
   else
-    return m_range.inRange(getLayerIndex(layer));
+    return m_range.inRange(layer_index);
 }
 
 bool Timeline::isFrameActive(FrameNumber frame) const

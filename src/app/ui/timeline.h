@@ -155,7 +155,7 @@ namespace app {
     void cleanClk();
     void setScroll(int x, int y);
     int getLayerIndex(const Layer* layer) const;
-    bool isLayerActive(const Layer* layer) const;
+    bool isLayerActive(int layer_index) const;
     bool isFrameActive(FrameNumber frame) const;
 
     skin::Style* m_timelineStyle;
