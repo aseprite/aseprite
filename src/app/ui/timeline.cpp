@@ -626,6 +626,9 @@ bool Timeline::onProcessMessage(Message* msg)
               Layer* layer = m_layers[m_clk_layer];
               ASSERT(layer != NULL);
               layer->setReadable(!layer->isReadable());
+
+              // Redraw all views.
+              m_document->notifyGeneralUpdate();
             }
             break;
           case A_PART_LAYER_PADLOCK_ICON:
