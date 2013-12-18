@@ -35,6 +35,8 @@
 #include "app/modules/editors.h"
 #include "app/modules/gfx.h"
 #include "app/modules/gui.h"
+#include "app/settings/document_settings.h"
+#include "app/settings/settings.h"
 #include "app/ui/document_view.h"
 #include "app/ui/editor/editor.h"
 #include "app/ui/skin/skin_theme.h"
@@ -91,6 +93,8 @@ static const char* kTimelineFromLeft = "timeline_fromleft";
 static const char* kTimelineFromRight = "timeline_fromright";
 static const char* kTimelineFromBoth = "timeline_fromboth";
 static const char* kTimelineGear = "timeline_gear";
+static const char* kTimelineOnionskin = "timeline_onionskin";
+static const char* kTimelineOnionskinRange = "timeline_onionskin_range";
 static const char* kTimelinePadding = "timeline_padding";
 static const char* kTimelinePaddingTr = "timeline_padding_tr";
 static const char* kTimelinePaddingBl = "timeline_padding_bl";
@@ -103,6 +107,9 @@ enum {
   A_PART_NOTHING,
   A_PART_SEPARATOR,
   A_PART_HEADER_GEAR,
+  A_PART_HEADER_ONIONSKIN,
+  A_PART_HEADER_ONIONSKIN_RANGE_LEFT,
+  A_PART_HEADER_ONIONSKIN_RANGE_RIGHT,
   A_PART_HEADER_LAYER,
   A_PART_HEADER_FRAME,
   A_PART_LAYER,
@@ -127,6 +134,8 @@ Timeline::Timeline()
   , m_timelineFromRightStyle(get_style(kTimelineFromRight))
   , m_timelineFromBothStyle(get_style(kTimelineFromBoth))
   , m_timelineGearStyle(get_style(kTimelineGear))
+  , m_timelineOnionskinStyle(get_style(kTimelineOnionskin))
+  , m_timelineOnionskinRangeStyle(get_style(kTimelineOnionskinRange))
   , m_timelinePaddingStyle(get_style(kTimelinePadding))
   , m_timelinePaddingTrStyle(get_style(kTimelinePaddingTr))
   , m_timelinePaddingBlStyle(get_style(kTimelinePaddingBl))
@@ -273,18 +282,23 @@ bool Timeline::onProcessMessage(Message* msg)
       captureMouse();
 
       switch (m_hot_part) {
-        case A_PART_NOTHING:
-          // Do nothing.
-          break;
         case A_PART_SEPARATOR:
           m_state = STATE_MOVING_SEPARATOR;
           break;
-        case A_PART_HEADER_GEAR:
-          // TODO show config.
+        case A_PART_HEADER_ONIONSKIN_RANGE_LEFT: {
+          ISettings* m_settings = UIContext::instance()->getSettings();
+          IDocumentSettings* docSettings = m_settings->getDocumentSettings(m_document);
+          m_state = STATE_MOVING_ONIONSKIN_RANGE_LEFT;
+          m_origFrames = docSettings->getOnionskinPrevFrames();
           break;
-        case A_PART_HEADER_LAYER:
-          // Do nothing.
+        }
+        case A_PART_HEADER_ONIONSKIN_RANGE_RIGHT: {
+          ISettings* m_settings = UIContext::instance()->getSettings();
+          IDocumentSettings* docSettings = m_settings->getDocumentSettings(m_document);
+          m_state = STATE_MOVING_ONIONSKIN_RANGE_RIGHT;
+          m_origFrames = docSettings->getOnionskinNextFrames();
           break;
+        }
         case A_PART_HEADER_FRAME: {
           bool selectFrame = (mouseMsg->left() || !isFrameActive(m_clk_frame));
 
@@ -378,22 +392,48 @@ bool Timeline::onProcessMessage(Message* msg)
 
       int hot_part = A_PART_NOTHING;
       int hot_layer = -1;
-      FrameNumber hot_frame(-1);
       gfx::Point mousePos = static_cast<MouseMessage*>(msg)->position()
         - getBounds().getOrigin();
 
-      if (hasCapture()) {
-        if (m_state == STATE_SCROLLING) {
-          setScroll(m_scroll_x+jmouse_x(1)-jmouse_x(0),
-                    m_scroll_y+jmouse_y(1)-jmouse_y(0));
+      FrameNumber hot_frame =
+        FrameNumber((mousePos.x
+            - m_separator_x
+            - m_separator_w
+            + m_scroll_x) / FRMSIZE);
 
-          jmouse_control_infinite_scroll(getBounds());
-          return true;
+      if (hasCapture()) {
+        switch (m_state) {
+
+          case STATE_SCROLLING:
+            setScroll(
+              m_scroll_x+jmouse_x(1)-jmouse_x(0),
+              m_scroll_y+jmouse_y(1)-jmouse_y(0));
+
+            jmouse_control_infinite_scroll(getBounds());
+            return true;
+
+          case STATE_MOVING_ONIONSKIN_RANGE_LEFT: {
+            ISettings* m_settings = UIContext::instance()->getSettings();
+            IDocumentSettings* docSettings = m_settings->getDocumentSettings(m_document);
+            int newValue = m_origFrames + (m_clk_frame - hot_frame);
+            docSettings->setOnionskinPrevFrames(MAX(0, newValue));
+            invalidate();
+            return true;
+          }
+
+          case STATE_MOVING_ONIONSKIN_RANGE_RIGHT:
+            ISettings* m_settings = UIContext::instance()->getSettings();
+            IDocumentSettings* docSettings = m_settings->getDocumentSettings(m_document);
+            int newValue = m_origFrames - (m_clk_frame - hot_frame);
+            docSettings->setOnionskinNextFrames(MAX(0, newValue));
+            invalidate();
+            return true;
         }
+
         // If the mouse pressed the mouse's button in the separator,
         // we shouldn't change the hot (so the separator can be
         // tracked to the mouse's released).
-        else if (m_clk_part == A_PART_SEPARATOR) {
+        if (m_clk_part == A_PART_SEPARATOR) {
           hot_part = m_clk_part;
           m_separator_x = mousePos.x;
           invalidate();
@@ -401,24 +441,34 @@ bool Timeline::onProcessMessage(Message* msg)
         }
       }
 
+      // Is the mouse over onionskin handles?
+      gfx::Rect bounds = getOnionskinFramesBounds();
+      if (!bounds.isEmpty() && gfx::Rect(bounds.x, bounds.y, 3, bounds.h).contains(mousePos)) {
+        hot_part = A_PART_HEADER_ONIONSKIN_RANGE_LEFT;
+      }
+      else if (!bounds.isEmpty() && gfx::Rect(bounds.x+bounds.w-3, bounds.y, 3, bounds.h).contains(mousePos)) {
+        hot_part = A_PART_HEADER_ONIONSKIN_RANGE_RIGHT;
+      }
       // Is the mouse on the separator.
-      if (mousePos.x > m_separator_x-4 &&
-          mousePos.x < m_separator_x+4)  {
+      else if (mousePos.x > m_separator_x-4
+        && mousePos.x < m_separator_x+4)  {
         hot_part = A_PART_SEPARATOR;
       }
       // Is the mouse on the headers?
       else if (mousePos.y < HDRSIZE) {
         if (getPartBounds(A_PART_HEADER_GEAR).contains(mousePos))
           hot_part = A_PART_HEADER_GEAR;
+        else if (getPartBounds(A_PART_HEADER_ONIONSKIN).contains(mousePos))
+          hot_part = A_PART_HEADER_ONIONSKIN;
         else if (getPartBounds(A_PART_HEADER_LAYER).contains(mousePos))
           hot_part = A_PART_HEADER_LAYER;
         // Is on a frame header?
         else {
           hot_part = A_PART_HEADER_FRAME;
           hot_frame = FrameNumber((mousePos.x
-                                   - m_separator_x
-                                   - m_separator_w
-                                   + m_scroll_x) / FRMSIZE);
+              - m_separator_x
+              - m_separator_w
+              + m_scroll_x) / FRMSIZE);
         }
       }
       else {
@@ -448,10 +498,6 @@ bool Timeline::onProcessMessage(Message* msg)
         }
         else {
           hot_part = A_PART_CEL;
-          hot_frame = FrameNumber((mousePos.x
-                                   - m_separator_x
-                                   - m_separator_w
-                                   + m_scroll_x) / FRMSIZE);
         }
       }
 
@@ -513,6 +559,14 @@ bool Timeline::onProcessMessage(Message* msg)
           case A_PART_HEADER_GEAR:
             // Do nothing.
             break;
+          case A_PART_HEADER_ONIONSKIN: {
+            ISettings* m_settings = UIContext::instance()->getSettings();
+            IDocumentSettings* docSettings =
+              m_settings->getDocumentSettings(m_document);
+            if (docSettings)
+              docSettings->setUseOnionskin(!docSettings->getUseOnionskin());
+            break;
+          }
           case A_PART_HEADER_LAYER:
             // Do nothing.
             break;
@@ -784,6 +838,14 @@ void Timeline::onPaint(ui::PaintEvent& ev)
     if (clip) {
       for (frame=first_frame; frame<=last_frame; ++frame)
         drawHeaderFrame(g, frame);
+
+      // Draw onionskin indicators.
+      gfx::Rect bounds = getOnionskinFramesBounds();
+      if (!bounds.isEmpty()) {
+        drawPart(g, bounds,
+          NULL, m_timelineOnionskinRangeStyle,
+          false, false, false);
+      }
     }
   }
 
@@ -928,13 +990,9 @@ void Timeline::setCursor(int x, int y)
   int mx = x - getBounds().x;
 //int my = y - getBounds().y;
 
-  // Is the mouse in the separator.
-  if (mx > m_separator_x-2 && mx < m_separator_x+2)  {
-    jmouse_set_cursor(kSizeLCursor);
-  }
   // Scrolling.
-  else if (m_state == STATE_SCROLLING ||
-           m_space_pressed) {
+  if (m_state == STATE_SCROLLING ||
+      m_space_pressed) {
     jmouse_set_cursor(kScrollCursor);
   }
   // Moving a frame.
@@ -963,6 +1021,18 @@ void Timeline::setCursor(int x, int y)
     jmouse_set_cursor(kMoveCursor);
   }
   // Normal state.
+  else if (mx > m_separator_x-2 && mx < m_separator_x+2)  {
+      // Is the mouse in the separator.
+    jmouse_set_cursor(kSizeLCursor);
+  }
+  else if (m_hot_part == A_PART_HEADER_ONIONSKIN_RANGE_LEFT
+    || m_state == STATE_MOVING_ONIONSKIN_RANGE_LEFT) {
+    jmouse_set_cursor(kSizeLCursor);
+  }
+  else if (m_hot_part == A_PART_HEADER_ONIONSKIN_RANGE_RIGHT
+    || m_state == STATE_MOVING_ONIONSKIN_RANGE_RIGHT) {
+    jmouse_set_cursor(kSizeRCursor);
+  }
   else {
     jmouse_set_cursor(kArrowCursor);
   }
@@ -1001,11 +1071,20 @@ void Timeline::drawPart(ui::Graphics* g, const gfx::Rect& bounds,
 
 void Timeline::drawHeader(ui::Graphics* g)
 {
+  ISettings* m_settings = UIContext::instance()->getSettings();
+  IDocumentSettings* docSettings = m_settings->getDocumentSettings(m_document);
+
   drawPart(g, getPartBounds(A_PART_HEADER_GEAR),
     NULL, m_timelineGearStyle,
     false,
     m_hot_part == A_PART_HEADER_GEAR,
     m_clk_part == A_PART_HEADER_GEAR);
+
+  drawPart(g, getPartBounds(A_PART_HEADER_ONIONSKIN),
+    NULL, m_timelineOnionskinStyle,
+    docSettings->getUseOnionskin(),
+    m_hot_part == A_PART_HEADER_ONIONSKIN,
+    m_clk_part == A_PART_HEADER_ONIONSKIN);
 
   // Empty header space.
   drawPart(g, getPartBounds(A_PART_HEADER_LAYER),
@@ -1167,6 +1246,23 @@ gfx::Rect Timeline::getFrameHeadersBounds() const
   return rc;
 }
 
+gfx::Rect Timeline::getOnionskinFramesBounds() const
+{
+  ISettings* m_settings = UIContext::instance()->getSettings();
+  IDocumentSettings* docSettings = m_settings->getDocumentSettings(m_document);
+  if (docSettings->getUseOnionskin()) {
+    FrameNumber firstFrame = m_frame.previous(docSettings->getOnionskinPrevFrames());
+    FrameNumber lastFrame = m_frame.next(docSettings->getOnionskinNextFrames());
+
+    if (firstFrame < 0) firstFrame = FrameNumber(0);
+    if (lastFrame > m_sprite->getLastFrame()) lastFrame = m_sprite->getLastFrame();
+
+    return getPartBounds(A_PART_HEADER_FRAME, 0, firstFrame)
+      .createUnion(getPartBounds(A_PART_HEADER_FRAME, 0, lastFrame));
+  }
+  return gfx::Rect();
+}
+
 gfx::Rect Timeline::getCelsBounds() const
 {
   gfx::Rect rc = getClientBounds();
@@ -1196,9 +1292,14 @@ gfx::Rect Timeline::getPartBounds(int part, int layer, FrameNumber frame) const
                        FRMSIZE,
                        HDRSIZE);
 
-    case A_PART_HEADER_LAYER:
+    case A_PART_HEADER_ONIONSKIN:
       return gfx::Rect(FRMSIZE, 0,
-                       m_separator_x - FRMSIZE,
+                       FRMSIZE,
+                       HDRSIZE);
+
+    case A_PART_HEADER_LAYER:
+      return gfx::Rect(FRMSIZE*2, 0,
+                       m_separator_x - FRMSIZE*2,
                        HDRSIZE);
 
     case A_PART_HEADER_FRAME:
@@ -1304,8 +1405,10 @@ void Timeline::hotThis(int hot_part, int hot_layer, FrameNumber hot_frame)
                    m_hot_layer,
                    m_hot_frame);
 
+#if 0                           // TODO remove these lines
     if (getPartBounds(hot_part, hot_layer, hot_frame).isEmpty())
       m_hot_part = A_PART_NOTHING;
+#endif
   }
 }
 
@@ -1349,13 +1452,6 @@ void Timeline::showCel(int layer, FrameNumber frame)
   if (scroll_x != m_scroll_x ||
       scroll_y != m_scroll_y)
     setScroll(scroll_x, scroll_y);
-}
-
-void Timeline::centerCurrentCel()
-{
-  int layer = getLayerIndex(m_layer);
-  if (layer >= 0)
-    centerCel(layer, m_frame);
 }
 
 void Timeline::showCurrentCel()

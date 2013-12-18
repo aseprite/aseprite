@@ -418,26 +418,31 @@ int UIDocumentSettingsImpl::getOnionskinOpacityStep()
 void UIDocumentSettingsImpl::setUseOnionskin(bool state)
 {
   m_use_onionskin = state;
+  redrawDocumentViews();
 }
 
 void UIDocumentSettingsImpl::setOnionskinPrevFrames(int frames)
 {
   m_prev_frames_onionskin = frames;
+  redrawDocumentViews();
 }
 
 void UIDocumentSettingsImpl::setOnionskinNextFrames(int frames)
 {
   m_next_frames_onionskin = frames;
+  redrawDocumentViews();
 }
 
 void UIDocumentSettingsImpl::setOnionskinOpacityBase(int base)
 {
   m_onionskin_opacity_base = base;
+  redrawDocumentViews();
 }
 
 void UIDocumentSettingsImpl::setOnionskinOpacityStep(int step)
 {
   m_onionskin_opacity_step = step;
+  redrawDocumentViews();
 }
 
 //////////////////////////////////////////////////////////////////////

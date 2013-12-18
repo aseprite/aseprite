@@ -61,6 +61,8 @@ namespace app {
       STATE_MOVING_LAYER,
       STATE_MOVING_CEL,
       STATE_MOVING_FRAME,
+      STATE_MOVING_ONIONSKIN_RANGE_LEFT,
+      STATE_MOVING_ONIONSKIN_RANGE_RIGHT
     };
 
     struct Range {
@@ -100,7 +102,6 @@ namespace app {
     void setLayer(Layer* layer);
     void setFrame(FrameNumber frame);
 
-    void centerCurrentCel();
     State getState() const { return m_state; }
     bool isMovingCel() const;
 
@@ -144,6 +145,7 @@ namespace app {
     bool drawPart(ui::Graphics* g, int part, int layer, FrameNumber frame);
     gfx::Rect getLayerHeadersBounds() const;
     gfx::Rect getFrameHeadersBounds() const;
+    gfx::Rect getOnionskinFramesBounds() const;
     gfx::Rect getCelsBounds() const;
     gfx::Rect getPartBounds(int part, int layer = 0, FrameNumber frame = FrameNumber(0)) const;
     void invalidatePart(int part, int layer, FrameNumber frame);
@@ -171,6 +173,8 @@ namespace app {
     skin::Style* m_timelineFromRightStyle;
     skin::Style* m_timelineFromBothStyle;
     skin::Style* m_timelineGearStyle;
+    skin::Style* m_timelineOnionskinStyle;
+    skin::Style* m_timelineOnionskinRangeStyle;
     skin::Style* m_timelinePaddingStyle;
     skin::Style* m_timelinePaddingTrStyle;
     skin::Style* m_timelinePaddingBlStyle;
@@ -189,6 +193,7 @@ namespace app {
     int m_scroll_y;
     int m_separator_x;
     int m_separator_w;
+    int m_origFrames;
     // The 'hot' part is where the mouse is on top of
     int m_hot_part;
     int m_hot_layer;

@@ -294,6 +294,10 @@
     <part id="timeline_fromboth_normal"         x="240" y="108" w="12" h="12" />
     <part id="timeline_fromboth_active"         x="252" y="108" w="12" h="12" />
     <part id="timeline_gear"                    x="264" y="12" w="12" h="12" />
+    <part id="timeline_gear_active"             x="264" y="24" w="12" h="12" />
+    <part id="timeline_onionskin"               x="264" y="36" w="12" h="12" />
+    <part id="timeline_onionskin_active"        x="264" y="48" w="12" h="12" />
+    <part id="timeline_onionskin_range"         x="240" y="120" w1="3" w2="6" w3="3" h1="3" h2="6" h3="3" />
     <part id="timeline_padding"                 x="276" y="12" w1="1" w2="10" w3="1" h1="1" h2="10" h3="1" />
     <part id="timeline_padding_tr"              x="288" y="12" w1="1" w2="10" w3="1" h1="1" h2="10" h3="1" />
     <part id="timeline_padding_bl"              x="276" y="24" w1="1" w2="10" w3="1" h1="1" h2="10" h3="1" />
@@ -408,6 +412,28 @@
     <!-- timeline_gear -->
     <style id="timeline_gear" base="timeline_box">
       <icon part="timeline_gear" />
+    </style>
+    <style id="timeline_gear:active">
+      <icon part="timeline_gear_active" />
+    </style>
+    <style id="timeline_gear:clicked">
+      <icon part="timeline_gear_active" />
+    </style>
+
+    <!-- timeline_onionskin -->
+    <style id="timeline_onionskin" base="timeline_box">
+      <icon part="timeline_onionskin" />
+    </style>
+    <style id="timeline_onionskin:active">
+      <icon part="timeline_onionskin_active" />
+    </style>
+    <style id="timeline_onionskin:clicked">
+      <icon part="timeline_onionskin_active" />
+    </style>
+
+    <!-- timeline_onionskin_range -->
+    <style id="timeline_onionskin_range">
+      <background part="timeline_onionskin_range" />
     </style>
 
     <!-- paddings -->

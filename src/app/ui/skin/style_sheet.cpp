@@ -102,7 +102,7 @@ SkinPartPtr StyleSheet::convertPart(const css::Value& value)
 // static
 ui::Color StyleSheet::convertColor(const css::Value& value)
 {
-  ui::Color color;
+  ui::Color color = ui::ColorNone;
   if (value.type() == css::Value::String) {
     const std::string& color_id = value.string();
     color = get_color_by_id(color_id);
