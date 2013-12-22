@@ -437,7 +437,7 @@ bool Timeline::onProcessMessage(Message* msg)
         // tracked to the mouse's released).
         if (m_clk_part == A_PART_SEPARATOR) {
           hot_part = m_clk_part;
-          m_separator_x = mousePos.x;
+          m_separator_x = MAX(0, mousePos.x);
           invalidate();
           return true;
         }
