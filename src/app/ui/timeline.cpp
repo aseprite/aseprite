@@ -762,6 +762,11 @@ bool Timeline::onProcessMessage(Message* msg)
     case kKeyUpMessage:
       switch (static_cast<KeyMessage*>(msg)->scancode()) {
 
+        case kKeyEsc:
+          m_range.disableRange();
+          invalidate();
+          break;
+
         case kKeySpace:
           if (m_space_pressed) {
             // We have to clear all the KEY_SPACE in buffer.
