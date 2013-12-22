@@ -24,6 +24,7 @@
 
 #include <iosfwd>
 #include <vector>
+#include <string>
 
 namespace raster {
   class Image;

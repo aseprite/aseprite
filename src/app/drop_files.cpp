@@ -36,7 +36,7 @@
 #ifdef ALLEGRO_WINDOWS
   #include <winalleg.h>
 
-  #ifdef STRICT
+  #if defined STRICT || defined __GNUC__
     typedef WNDPROC wndproc_t;
   #else
     typedef FARPROC wndproc_t;

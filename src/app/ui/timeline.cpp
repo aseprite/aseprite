@@ -51,6 +51,7 @@
 #include "ui/ui.h"
 
 #include <allegro.h>
+#include <cstdio>
 #include <vector>
 
 // Size of the thumbnail in the screen (width x height), the really
@@ -1108,7 +1109,7 @@ void Timeline::drawHeaderFrame(ui::Graphics* g, FrameNumber frame)
 
   // Draw the header for the layers.
   char buf[256];
-  sprintf(buf, "%d", frame+1);
+  std::sprintf(buf, "%d", frame+1);
   drawPart(g, bounds, buf, m_timelineBoxStyle,
     is_active, is_hover, is_clicked);
 }
