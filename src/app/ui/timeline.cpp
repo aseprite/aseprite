@@ -589,29 +589,18 @@ bool Timeline::onProcessMessage(Message* msg)
 #if 0
             // Show the frame's properties dialog.
             else if (mouseMsg->left()) {
-              if (m_clk_frame == m_hot_frame) {
-                // Execute FrameProperties command for current frame.
-                Command* command = CommandsModule::instance()
-                  ->getCommandByName(CommandId::FrameProperties);
-                Params params;
-                params.set("frame", "current");
+              const ContextReader reader(m_context);
 
-                UIContext::instance()->executeCommand(command, &params);
-              }
-              else {
-                const ContextReader reader(m_context);
-
-                if (m_hot_frame >= 0 &&
-                    m_hot_frame < m_sprite->getTotalFrames() &&
-                    m_hot_frame != m_clk_frame+1) {
-                  {
-                    ContextWriter writer(reader);
-                    UndoTransaction undoTransaction(m_context, "Move Frame");
-                    m_document->getApi().moveFrameBefore(writer.sprite(), m_clk_frame, m_hot_frame);
-                    undoTransaction.commit();
-                  }
-                  invalidate();
+              if (m_hot_frame >= 0 &&
+                m_hot_frame < m_sprite->getTotalFrames() &&
+                m_hot_frame != m_clk_frame+1) {
+                {
+                  ContextWriter writer(reader);
+                  UndoTransaction undoTransaction(m_context, "Move Frame");
+                  m_document->getApi().moveFrameBefore(writer.sprite(), m_clk_frame, m_hot_frame);
+                  undoTransaction.commit();
                 }
+                invalidate();
               }
             }
 #endif
@@ -760,6 +749,38 @@ bool Timeline::onProcessMessage(Message* msg)
         releaseMouse();
         updateStatusBar();
         return true;
+      }
+      break;
+
+    case kDoubleClickMessage:
+      switch (m_hot_part) {
+
+        case A_PART_LAYER_TEXT: {
+          Command* command = CommandsModule::instance()
+            ->getCommandByName(CommandId::LayerProperties);
+
+          UIContext::instance()->executeCommand(command);
+          break;
+        }
+
+        case A_PART_HEADER_FRAME: {
+          Command* command = CommandsModule::instance()
+            ->getCommandByName(CommandId::FrameProperties);
+          Params params;
+          params.set("frame", "current");
+
+          UIContext::instance()->executeCommand(command, &params);
+          break;
+        }
+
+        case A_PART_CEL: {
+          Command* command = CommandsModule::instance()
+            ->getCommandByName(CommandId::CelProperties);
+
+          UIContext::instance()->executeCommand(command);
+          break;
+        }
+
       }
       break;
 
