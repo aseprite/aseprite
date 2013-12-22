@@ -22,11 +22,14 @@
 
 #include "app/app.h"
 #include "app/commands/command.h"
+#include "app/commands/commands.h"
 #include "app/context_access.h"
 #include "app/document_api.h"
 #include "app/document_location.h"
 #include "app/modules/gui.h"
 #include "app/ui/color_bar.h"
+#include "app/ui/main_window.h"
+#include "app/ui/timeline.h"
 #include "app/undo_transaction.h"
 #include "raster/layer.h"
 #include "raster/mask.h"
@@ -61,6 +64,17 @@ bool ClearCommand::onEnabled(Context* context)
 
 void ClearCommand::onExecute(Context* context)
 {
+  // Clear of several frames is handled with RemoveCel command.
+  Timeline::Range range = App::instance()->getMainWindow()->getTimeline()->range();
+  if (range.enabled()) {
+    Command* subCommand = CommandsModule::instance()
+      ->getCommandByName(CommandId::RemoveCel);
+    context->executeCommand(subCommand);
+    return;
+  }
+
+  // TODO add support to clear the mask in the selected range of frames.
+  
   ContextWriter writer(context);
   Document* document = writer.document();
   bool visibleMask = document->isMaskVisible();

@@ -359,11 +359,14 @@ bool Timeline::onProcessMessage(Message* msg)
           const DocumentReader document(const_cast<Document*>(m_document));
           const Sprite* sprite = document->getSprite();
           int old_layer = getLayerIndex(m_layer);
+          bool selectCel = (mouseMsg->left()
+            || !isLayerActive(m_clk_layer)
+            || !isFrameActive(m_clk_frame));
           FrameNumber old_frame = m_frame;
 
           // Select the new clicked-part.
-          if (old_layer != m_clk_layer ||
-            old_frame != m_clk_frame) {
+          if (old_layer != m_clk_layer
+            || old_frame != m_clk_frame) {
             setLayer(m_layers[m_clk_layer]);
             setFrame(m_clk_frame);
             invalidate();
@@ -376,7 +379,8 @@ bool Timeline::onProcessMessage(Message* msg)
             m_state = STATE_MOVING_CEL;
           else {
             m_state = STATE_SELECTING_CELS;
-            m_range.startRange(m_clk_layer, m_clk_frame);
+            if (selectCel)
+              m_range.startRange(m_clk_layer, m_clk_frame);
             invalidate();
           }
           break;

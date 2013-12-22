@@ -20,10 +20,13 @@
 #include "config.h"
 #endif
 
+#include "app/app.h"
 #include "app/commands/command.h"
 #include "app/context_access.h"
 #include "app/document_api.h"
 #include "app/modules/gui.h"
+#include "app/ui/main_window.h"
+#include "app/ui/timeline.h"
 #include "app/undo_transaction.h"
 #include "raster/cel.h"
 #include "raster/layer.h"
@@ -61,10 +64,38 @@ void RemoveCelCommand::onExecute(Context* context)
 {
   ContextWriter writer(context);
   Document* document(writer.document());
-  Cel* cel = writer.cel();
   {
     UndoTransaction undoTransaction(writer.context(), "Remove Cel");
-    document->getApi().removeCel(static_cast<LayerImage*>(writer.layer()), cel);
+
+    // TODO the range of selected frames should be in the DocumentLocation.
+    Timeline::Range range = App::instance()->getMainWindow()->getTimeline()->range();
+    if (range.enabled()) {
+      Sprite* sprite = writer.sprite();
+
+      // TODO indexes in timeline are inverted!! fix that for a future release
+      for (LayerIndex layerIdx = sprite->countLayers() - LayerIndex(range.layerBegin()+1),
+             end = sprite->countLayers() - LayerIndex(range.layerEnd()+2);
+           layerIdx != end; --layerIdx) {
+        Layer* layer = sprite->indexToLayer(layerIdx);
+        if (!layer->isImage())
+          continue;
+
+        LayerImage* layerImage = static_cast<LayerImage*>(layer);
+
+        for (FrameNumber frame = range.frameEnd(),
+               begin = range.frameBegin().previous();
+             frame != begin;
+             frame = frame.previous()) {
+          Cel* cel = layerImage->getCel(frame);
+          if (cel)
+            document->getApi().removeCel(layerImage, cel);
+        }
+      }
+    }
+    else {
+      document->getApi().removeCel(static_cast<LayerImage*>(writer.layer()), writer.cel());
+    }
+
     undoTransaction.commit();
   }
   update_screen_for_document(document);

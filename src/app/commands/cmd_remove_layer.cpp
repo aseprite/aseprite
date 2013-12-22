@@ -21,7 +21,6 @@
 #endif
 
 #include "app/app.h"
-#include "app/app.h"
 #include "app/commands/command.h"
 #include "app/context_access.h"
 #include "app/document_api.h"
