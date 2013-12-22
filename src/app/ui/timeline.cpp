@@ -40,6 +40,7 @@
 #include "app/ui/document_view.h"
 #include "app/ui/editor/editor.h"
 #include "app/ui/skin/skin_theme.h"
+#include "app/ui/status_bar.h"
 #include "app/ui_context.h"
 #include "app/undo_transaction.h"
 #include "app/util/celmove.h"
@@ -534,6 +535,7 @@ bool Timeline::onProcessMessage(Message* msg)
             break;
         }
       }
+      updateStatusBar();
       return true;
     }
 
@@ -756,6 +758,7 @@ bool Timeline::onProcessMessage(Message* msg)
                   mouseMsg->position().y);
 
         releaseMouse();
+        updateStatusBar();
         return true;
       }
       break;
@@ -1415,6 +1418,91 @@ void Timeline::hotThis(int hot_part, int hot_layer, FrameNumber hot_frame)
     if (getPartBounds(hot_part, hot_layer, hot_frame).isEmpty())
       m_hot_part = A_PART_NOTHING;
 #endif
+
+    updateStatusBar();
+  }
+}
+
+void Timeline::updateStatusBar()
+{
+  Layer* layer = ((m_hot_layer >= 0
+      && m_hot_layer < (int)m_layers.size()) ? m_layers[m_hot_layer]: NULL);
+
+  switch (m_hot_part) {
+
+    case A_PART_HEADER_ONIONSKIN: {
+      ISettings* m_settings = UIContext::instance()->getSettings();
+      IDocumentSettings* docSettings = m_settings->getDocumentSettings(m_document);
+      if (docSettings) {
+        StatusBar::instance()->setStatusText(0, "Onionskin is %s",
+          docSettings->getUseOnionskin() ? "enabled": "disabled");
+      }
+      else {
+        StatusBar::instance()->clearText();
+      }
+      break;
+    }
+
+    case A_PART_LAYER_TEXT:
+      if (layer != NULL) {
+        StatusBar::instance()->setStatusText(0, "Layer '%s' [%s%s]",
+          layer->getName().c_str(),
+          layer->isReadable() ? "visible": "hidden",
+          layer->isWritable() ? "": " locked");
+      }
+      else {
+        StatusBar::instance()->clearText();
+      }
+      break;
+
+    case A_PART_LAYER_EYE_ICON:
+      if (layer != NULL) {
+        StatusBar::instance()->setStatusText(0, "Layer '%s' is %s",
+          layer->getName().c_str(),
+          layer->isReadable() ? "visible": "hidden");
+      }
+      else {
+        StatusBar::instance()->clearText();
+      }
+      break;
+
+    case A_PART_LAYER_PADLOCK_ICON:
+      if (layer != NULL) {
+        StatusBar::instance()->setStatusText(0, "Layer '%s' is %s",
+          layer->getName().c_str(),
+          layer->isWritable() ? "unlocked (modifiable)": "locked (read-only)");
+      }
+      else {
+        StatusBar::instance()->clearText();
+      }
+      break;
+
+    case A_PART_HEADER_FRAME:
+      if (m_hot_frame >= FrameNumber(0)
+        && m_hot_frame <= m_sprite->getLastFrame()) {
+        StatusBar::instance()->setStatusText(0,
+          "Frame %d [%d msecs]",
+          (int)m_hot_frame+1,
+          m_sprite->getFrameDuration(m_hot_frame));
+      }
+      break;
+
+    case A_PART_CEL:
+      if (layer) {
+        Cel* cel = (layer->isImage() ? static_cast<LayerImage*>(layer)->getCel(m_hot_frame): NULL);
+        StatusBar::instance()->setStatusText(0,
+          "%s at frame %d",
+          cel ? "Cel": "Empty cel",
+          (int)m_hot_frame+1);
+      }
+      else {
+        StatusBar::instance()->clearText();
+      }
+      break;
+
+    default:
+      StatusBar::instance()->clearText();
+      break;
   }
 }
 

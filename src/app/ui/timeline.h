@@ -159,6 +159,7 @@ namespace app {
     int getLayerIndex(const Layer* layer) const;
     bool isLayerActive(int layer_index) const;
     bool isFrameActive(FrameNumber frame) const;
+    void updateStatusBar();
 
     skin::Style* m_timelineStyle;
     skin::Style* m_timelineBoxStyle;
