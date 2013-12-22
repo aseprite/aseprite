@@ -381,11 +381,15 @@ void DocumentApi::setFrameDuration(Sprite* sprite, FrameNumber frame, int msecs)
   m_document->notifyObservers<DocumentEvent&>(&DocumentObserver::onFrameDurationChanged, ev);
 }
 
-void DocumentApi::setConstantFrameRate(Sprite* sprite, int msecs)
+void DocumentApi::setConstantFrameRate(Sprite* sprite, FrameNumber from, FrameNumber to, int msecs)
 {
+  ASSERT(from >= FrameNumber(0));
+  ASSERT(from < to);
+  ASSERT(to <= sprite->getLastFrame());
+
   // Add undoers.
   if (undoEnabled()) {
-    for (FrameNumber fr(0); fr<sprite->getTotalFrames(); ++fr)
+    for (FrameNumber fr(from); fr<=to; ++fr)
       m_undoers->pushUndoer(new undoers::SetFrameDuration(
           getObjects(), sprite, fr));
   }

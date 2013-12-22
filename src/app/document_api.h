@@ -69,7 +69,7 @@ namespace app {
     void removeFrame(Sprite* sprite, FrameNumber frame);
     void setTotalFrames(Sprite* sprite, FrameNumber frames);
     void setFrameDuration(Sprite* sprite, FrameNumber frame, int msecs);
-    void setConstantFrameRate(Sprite* sprite, int msecs);
+    void setConstantFrameRate(Sprite* sprite, FrameNumber from, FrameNumber to, int msecs);
     void moveFrameBefore(Sprite* sprite, FrameNumber frame, FrameNumber beforeFrame);
 
     // Cels API
