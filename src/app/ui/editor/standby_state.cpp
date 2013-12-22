@@ -472,12 +472,13 @@ bool StandbyState::onUpdateStatusBar(Editor* editor)
       (editor->getDocument()->isMaskVisible() ? 
        editor->getDocument()->getMask(): NULL);
 
-    StatusBar::instance()->setStatusText
-      (0, "Pos %d %d, Size %d %d, Frame %d",
-       x, y,
-       (mask ? mask->getBounds().w: sprite->getWidth()),
-       (mask ? mask->getBounds().h: sprite->getHeight()),
-       editor->getFrame()+1);
+    StatusBar::instance()->setStatusText(0,
+      "Pos %d %d, Size %d %d, Frame %d [%d msecs]",
+      x, y,
+      (mask ? mask->getBounds().w: sprite->getWidth()),
+      (mask ? mask->getBounds().h: sprite->getHeight()),
+      editor->getFrame()+1,
+      sprite->getFrameDuration(editor->getFrame()));
   }
 
   return true;
