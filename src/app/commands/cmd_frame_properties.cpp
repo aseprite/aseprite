@@ -139,7 +139,7 @@ void FramePropertiesCommand::onExecute(Context* context)
     ContextWriter writer(reader);
     UndoTransaction undoTransaction(writer.context(), "Frame Duration");
     if (firstFrame != lastFrame)
-      writer.document()->getApi().setConstantFrameRate(writer.sprite(), firstFrame, lastFrame, num);
+      writer.document()->getApi().setFrameRangeDuration(writer.sprite(), firstFrame, lastFrame, num);
     else
       writer.document()->getApi().setFrameDuration(writer.sprite(), firstFrame, num);
     undoTransaction.commit();

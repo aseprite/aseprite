@@ -381,7 +381,7 @@ void DocumentApi::setFrameDuration(Sprite* sprite, FrameNumber frame, int msecs)
   m_document->notifyObservers<DocumentEvent&>(&DocumentObserver::onFrameDurationChanged, ev);
 }
 
-void DocumentApi::setConstantFrameRate(Sprite* sprite, FrameNumber from, FrameNumber to, int msecs)
+void DocumentApi::setFrameRangeDuration(Sprite* sprite, FrameNumber from, FrameNumber to, int msecs)
 {
   ASSERT(from >= FrameNumber(0));
   ASSERT(from < to);
@@ -395,7 +395,7 @@ void DocumentApi::setConstantFrameRate(Sprite* sprite, FrameNumber from, FrameNu
   }
 
   // Do the action.
-  sprite->setDurationForAllFrames(msecs);
+  sprite->setFrameRangeDuration(from, to, msecs);
 }
 
 void DocumentApi::moveFrameBefore(Sprite* sprite, FrameNumber frame, FrameNumber beforeFrame)

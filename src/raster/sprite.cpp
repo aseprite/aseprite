@@ -327,6 +327,13 @@ void Sprite::setFrameDuration(FrameNumber frame, int msecs)
     m_frlens[frame] = MID(1, msecs, 65535);
 }
 
+void Sprite::setFrameRangeDuration(FrameNumber from, FrameNumber to, int msecs)
+{
+  std::fill(
+    m_frlens.begin()+(size_t)from,
+    m_frlens.begin()+(size_t)to+1, MID(1, msecs, 65535));
+}
+
 void Sprite::setDurationForAllFrames(int msecs)
 {
   std::fill(m_frlens.begin(), m_frlens.end(), MID(1, msecs, 65535));

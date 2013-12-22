@@ -111,8 +111,7 @@ namespace raster {
 
     int getFrameDuration(FrameNumber frame) const;
     void setFrameDuration(FrameNumber frame, int msecs);
-
-    // Sets a constant frame-rate.
+    void setFrameRangeDuration(FrameNumber from, FrameNumber to, int msecs);
     void setDurationForAllFrames(int msecs);
 
     ////////////////////////////////////////
