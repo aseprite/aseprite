@@ -692,13 +692,7 @@ bool Timeline::onProcessMessage(Message* msg)
             }
             break;
           case A_PART_CEL: {
-            bool movement =
-              m_clk_part == A_PART_CEL &&
-              m_hot_part == A_PART_CEL &&
-              (m_clk_layer != m_hot_layer ||
-               m_clk_frame != m_hot_frame);
-
-            if (movement) {
+            if (m_state == STATE_MOVING_CEL) {
               set_frame_to_handle
                 (// Source cel.
                  m_layers[m_clk_layer],
@@ -710,8 +704,10 @@ bool Timeline::onProcessMessage(Message* msg)
 
             // Show the cel pop-up menu.
             if (mouseMsg->right()) {
-              Menu* popup_menu = movement ? AppMenus::instance()->getCelMovementPopupMenu():
-                                            AppMenus::instance()->getCelPopupMenu();
+              Menu* popup_menu = (m_state == STATE_MOVING_CEL) ?
+                AppMenus::instance()->getCelMovementPopupMenu():
+                AppMenus::instance()->getCelPopupMenu();
+
               if (popup_menu != NULL) {
                 gfx::Point mousePos = mouseMsg->position();
                 popup_menu->showPopup(mousePos.x, mousePos.y);
@@ -722,13 +718,12 @@ bool Timeline::onProcessMessage(Message* msg)
             }
             // Move the cel.
             else if (mouseMsg->left()) {
-              if (movement) {
+              if (m_state == STATE_MOVING_CEL) {
                 {
                   const ContextReader reader(m_context);
                   ContextWriter writer(reader);
                   move_cel(writer);
                 }
-
                 regenerateLayers();
                 invalidate();
               }
