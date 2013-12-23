@@ -135,7 +135,7 @@ private:
 //////////////////////////////////////////////////////////////////////
 
 template<typename ImageTraits>
-class PutAlphaInkProcessing : public SimpleInkProcessing<OpaqueInkProcessing<ImageTraits>, ImageTraits> {
+class PutAlphaInkProcessing : public SimpleInkProcessing<PutAlphaInkProcessing<ImageTraits>, ImageTraits> {
 public:
   PutAlphaInkProcessing(ToolLoop* loop) {
     m_color = loop->getPrimaryColor();
