@@ -28,14 +28,9 @@ struct FONT;
 struct BITMAP;
 
 namespace app {
-  struct RectTracker;
-
   using namespace raster;
 
   void dotted_mode(int offset);
-
-  RectTracker* rect_tracker_new(BITMAP* bmp, int x1, int y1, int x2, int y2);
-  void rect_tracker_free(RectTracker* tracker);
 
   void rectgrid(BITMAP* bmp, int x1, int y1, int x2, int y2, int w, int h);
 
