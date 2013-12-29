@@ -492,6 +492,10 @@ void _handle_key_release(int scancode)
       repeat_scan = -1;
    }
 
+   ASSERT(scancode < KEY_MAX);
+   if (scancode >= KEY_MAX)
+     return;
+
    if ((keyboard_driver->poll) || (!keyboard_polled)) {
       /* process immediately */
       key[scancode] = 0;
