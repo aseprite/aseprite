@@ -55,7 +55,7 @@ namespace app {
 
 using namespace ui;
 
-MovingPixelsState::MovingPixelsState(Editor* editor, MouseMessage* msg, PixelsMovement* pixelsMovement, HandleType handle)
+MovingPixelsState::MovingPixelsState(Editor* editor, MouseMessage* msg, PixelsMovementPtr pixelsMovement, HandleType handle)
   : m_currentEditor(editor)
   , m_discarded(false)
 {
@@ -100,7 +100,7 @@ MovingPixelsState::~MovingPixelsState()
   UIContext::instance()->removeObserver(this);
   UIContext::instance()->settings()->selection()->removeObserver(this);
 
-  delete m_pixelsMovement;
+  m_pixelsMovement.reset(NULL);
 
   m_currentEditor->getManager()->removeMessageFilter(kKeyDownMessage, m_currentEditor);
   m_currentEditor->getManager()->removeMessageFilter(kKeyUpMessage, m_currentEditor);
@@ -122,8 +122,7 @@ EditorState::BeforeChangeAction MovingPixelsState::onBeforeChangeState(Editor* e
 
     editor->getDocument()->resetTransformation();
 
-    delete m_pixelsMovement;
-    m_pixelsMovement = NULL;
+    m_pixelsMovement.reset(NULL);
 
     editor->releaseMouse();
 

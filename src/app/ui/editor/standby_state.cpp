@@ -491,27 +491,34 @@ gfx::Transformation StandbyState::getTransformation(Editor* editor)
 
 void StandbyState::transformSelection(Editor* editor, MouseMessage* msg, HandleType handle)
 {
-  EditorCustomizationDelegate* customization = editor->getCustomizationDelegate();
-  Document* document = editor->getDocument();
-  base::UniquePtr<Image> tmpImage(NewImageFromMask(editor->getDocumentLocation()));
-  int x = document->getMask()->getBounds().x;
-  int y = document->getMask()->getBounds().y;
-  int opacity = 255;
-  Sprite* sprite = editor->getSprite();
-  Layer* layer = editor->getLayer();
-  PixelsMovement* pixelsMovement =
-    new PixelsMovement(UIContext::instance(),
-                       document, sprite, layer,
-                       tmpImage, x, y, opacity,
-                       "Transformation");
+  try {
+    EditorCustomizationDelegate* customization = editor->getCustomizationDelegate();
+    Document* document = editor->getDocument();
+    base::UniquePtr<Image> tmpImage(NewImageFromMask(editor->getDocumentLocation()));
+    int x = document->getMask()->getBounds().x;
+    int y = document->getMask()->getBounds().y;
+    int opacity = 255;
+    Sprite* sprite = editor->getSprite();
+    Layer* layer = editor->getLayer();
+    PixelsMovementPtr pixelsMovement(
+      new PixelsMovement(UIContext::instance(),
+        document, sprite, layer,
+        tmpImage, x, y, opacity,
+        "Transformation"));
 
-  // If the Ctrl key is pressed start dragging a copy of the selection
-  if (customization && customization->isCopySelectionKeyPressed())
-    pixelsMovement->copyMask();
-  else
-    pixelsMovement->cutMask();
+    // If the Ctrl key is pressed start dragging a copy of the selection
+    if (customization && customization->isCopySelectionKeyPressed())
+      pixelsMovement->copyMask();
+    else
+      pixelsMovement->cutMask();
 
-  editor->setState(EditorStatePtr(new MovingPixelsState(editor, msg, pixelsMovement, handle)));
+    editor->setState(EditorStatePtr(new MovingPixelsState(editor, msg, pixelsMovement, handle)));
+  }
+  catch (const LockedDocumentException&) {
+    // Other editor is locking the document.
+
+    // TODO steal the PixelsMovement of the other editor and use it for this one.
+  }
 }
 
 //////////////////////////////////////////////////////////////////////

@@ -1188,10 +1188,10 @@ void Editor::pasteImage(const Image* image, int x, int y)
     }
   }
 
-  PixelsMovement* pixelsMovement =
+  PixelsMovementPtr pixelsMovement(
     new PixelsMovement(UIContext::instance(),
-                       document, sprite, layer,
-                       image, x, y, opacity, "Paste");
+      document, sprite, layer,
+      image, x, y, opacity, "Paste"));
 
   // Select the pasted image so the user can move it and transform it.
   pixelsMovement->maskImage(image, x, y);

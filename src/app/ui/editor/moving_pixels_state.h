@@ -21,9 +21,10 @@
 
 #include "app/context_observer.h"
 #include "app/settings/settings_observers.h"
-#include "app/ui/editor/handle_type.h"
-#include "app/ui/editor/standby_state.h"
 #include "app/ui/context_bar.h"
+#include "app/ui/editor/handle_type.h"
+#include "app/ui/editor/pixels_movement.h"
+#include "app/ui/editor/standby_state.h"
 #include "app/ui/status_bar.h"
 #include "base/compiler_specific.h"
 
@@ -33,14 +34,13 @@ namespace raster {
 
 namespace app {
   class Editor;
-  class PixelsMovement;
 
   class MovingPixelsState
     : public StandbyState
     , ContextObserver
     , SelectionSettingsObserver {
   public:
-    MovingPixelsState(Editor* editor, ui::MouseMessage* msg, PixelsMovement* pixelsMovement, HandleType handle);
+    MovingPixelsState(Editor* editor, ui::MouseMessage* msg, PixelsMovementPtr pixelsMovement, HandleType handle);
     virtual ~MovingPixelsState();
 
     // EditorState
@@ -69,7 +69,7 @@ namespace app {
     void dropPixels(Editor* editor);
 
     // Helper member to move/translate selection and pixels.
-    PixelsMovement* m_pixelsMovement;
+    PixelsMovementPtr m_pixelsMovement;
     Editor* m_currentEditor;
 
     // True if the image was discarded (e.g. when a "Cut" command was

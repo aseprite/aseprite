@@ -24,6 +24,7 @@
 #include "app/ui/editor/handle_type.h"
 #include "app/undo_transaction.h"
 #include "base/compiler_specific.h"
+#include "base/shared_ptr.h"
 #include "gfx/size.h"
 #include "raster/algorithm/flip_type.h"
 
@@ -129,6 +130,8 @@ namespace app {
     a = static_cast<PixelsMovement::MoveModifier>(a | b);
     return a;
   }
+
+  typedef SharedPtr<PixelsMovement> PixelsMovementPtr;
   
 } // namespace app
 
