@@ -149,15 +149,18 @@ public:
   UISelectionSettingsImpl();
   ~UISelectionSettingsImpl();
 
-  void setMoveTransparentColor(app::Color color);
-
   app::Color getMoveTransparentColor();
+  RotationAlgorithm getRotationAlgorithm();
+
+  void setMoveTransparentColor(app::Color color);
+  void setRotationAlgorithm(RotationAlgorithm algorithm);
 
   void addObserver(SelectionSettingsObserver* observer);
   void removeObserver(SelectionSettingsObserver* observer);
 
 private:
   app::Color m_moveTransparentColor;
+  RotationAlgorithm m_rotationAlgorithm;
 };
 
 } // anonymous namespace
@@ -640,12 +643,29 @@ IToolSettings* UISettingsImpl::getToolSettings(tools::Tool* tool)
 
 namespace {
 
-UISelectionSettingsImpl::UISelectionSettingsImpl() : m_moveTransparentColor(app::Color::fromMask())
+UISelectionSettingsImpl::UISelectionSettingsImpl() :
+  m_moveTransparentColor(app::Color::fromMask()),
+  m_rotationAlgorithm(kFastRotationAlgorithm)
 {
+  m_rotationAlgorithm = (RotationAlgorithm)get_config_int("Tools", "RotAlgorithm", m_rotationAlgorithm);
+  m_rotationAlgorithm = MID(
+    kFirstRotationAlgorithm,
+    m_rotationAlgorithm,
+    kLastRotationAlgorithm);
 }
 
 UISelectionSettingsImpl::~UISelectionSettingsImpl()
 {
+}
+
+app::Color UISelectionSettingsImpl::getMoveTransparentColor()
+{
+  return m_moveTransparentColor;
+}
+
+RotationAlgorithm UISelectionSettingsImpl::getRotationAlgorithm()
+{
+  return m_rotationAlgorithm;
 }
 
 void UISelectionSettingsImpl::setMoveTransparentColor(app::Color color)
@@ -654,9 +674,11 @@ void UISelectionSettingsImpl::setMoveTransparentColor(app::Color color)
   notifyObservers(&SelectionSettingsObserver::onSetMoveTransparentColor, color);
 }
 
-app::Color UISelectionSettingsImpl::getMoveTransparentColor()
+void UISelectionSettingsImpl::setRotationAlgorithm(RotationAlgorithm algorithm)
 {
-  return m_moveTransparentColor;
+  m_rotationAlgorithm = algorithm;
+  set_config_int("Tools", "RotAlgorithm", m_rotationAlgorithm);
+  notifyObservers(&SelectionSettingsObserver::onSetRotationAlgorithm, algorithm);
 }
 
 void UISelectionSettingsImpl::addObserver(SelectionSettingsObserver* observer)

@@ -15,6 +15,7 @@
 #include "raster/image.h"
 #include "raster/image_bits.h"
 #include "raster/primitives.h"
+#include "raster/primitives_fast.h"
 
 #include <allegro.h>
 #include <allegro/internal/aintern.h>
@@ -39,37 +40,58 @@ static void ase_rotate_scale_flip_coordinates(fixed w, fixed h,
                                               int h_flip, int v_flip,
                                               fixed xs[4], fixed ys[4]);
 
+template<typename ImageTraits, typename BlendFunc>
+static void image_scale_tpl(Image* dst, const Image* src, int x, int y, int w, int h, BlendFunc blend)
+{
+  int src_w = src->getWidth();
+  int src_h = src->getHeight();
+
+  for (int v=0; v<h; ++v) {
+    for (int u=0; u<w; ++u) {
+      color_t c = get_pixel_fast<ImageTraits>(src, src_w*u/w, src_h*v/h);
+      put_pixel_fast<ImageTraits>(dst, x+u, y+v,
+        blend(get_pixel_fast<ImageTraits>(dst, x+u, y+v), c));
+    }
+  }
+}
+
+static color_t rgba_blender(color_t back, color_t front) {
+  return rgba_blenders[BLEND_MODE_NORMAL](back, front, 255);
+}
+
+static color_t grayscale_blender(color_t back, color_t front) {
+  return graya_blenders[BLEND_MODE_NORMAL](back, front, 255);
+}
+
+static color_t if_blender(color_t back, color_t front) {
+  if (front != 0)
+    return front;
+  else
+    return back;
+}
+
 void image_scale(Image *dst, Image *src, int x, int y, int w, int h)
 {
   if (w == src->getWidth() && src->getHeight() == h)
     composite_image(dst, src, x, y, 255, BLEND_MODE_NORMAL);
   else {
-    BLEND_COLOR blender = NULL;
-    int u, v, c;
+    switch (dst->getPixelFormat()) {
 
-    if (dst->getPixelFormat() == IMAGE_RGB)
-      blender = rgba_blenders[BLEND_MODE_NORMAL];
-    else if (dst->getPixelFormat() == IMAGE_GRAYSCALE)
-      blender = graya_blenders[BLEND_MODE_NORMAL];
+      case IMAGE_RGB:
+        image_scale_tpl<RgbTraits>(dst, src, x, y, w, h, rgba_blender);
+        break;
 
-    for (v=0; v<h; v++) {
-      for (u=0; u<w; u++) {
-        c = get_pixel(src, src->getWidth()*u/w, src->getHeight()*v/h);
+      case IMAGE_GRAYSCALE:
+        image_scale_tpl<GrayscaleTraits>(dst, src, x, y, w, h, grayscale_blender);
+        break;
 
-        switch (dst->getPixelFormat()) {
+      case IMAGE_INDEXED:
+        image_scale_tpl<IndexedTraits>(dst, src, x, y, w, h, if_blender);
+        break;
 
-          case IMAGE_RGB:
-          case IMAGE_GRAYSCALE:
-            put_pixel(dst, x+u, y+v,
-                      blender(get_pixel(dst, x+u, y+v), c, 255));
-            break;
-
-          case IMAGE_INDEXED:
-            if (c != 0)
-              put_pixel(dst, x+u, y+v, c);
-            break;
-        }
-      }
+      case IMAGE_BITMAP:
+        image_scale_tpl<BitmapTraits>(dst, src, x, y, w, h, if_blender);
+        break;
     }
   }
 }

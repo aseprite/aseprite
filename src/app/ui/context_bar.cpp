@@ -44,6 +44,7 @@
 #include "ui/combobox.h"
 #include "ui/int_entry.h"
 #include "ui/label.h"
+#include "ui/listitem.h"
 #include "ui/popup_window.h"
 #include "ui/preferred_size_event.h"
 #include "ui/theme.h"
@@ -353,6 +354,39 @@ protected:
   }
 };
 
+class ContextBar::RotAlgorithmField : public ComboBox
+{
+public:
+  RotAlgorithmField() {
+    addItem(new Item("Fast", kFastRotationAlgorithm));
+    addItem(new Item("RotSprite", kRotSpriteRotationAlgorithm));
+
+    setSelectedItemIndex((int)
+      UIContext::instance()->settings()->selection()
+      ->getRotationAlgorithm());
+  }
+
+protected:
+  void onChange() OVERRIDE {
+    UIContext::instance()->settings()->selection()
+      ->setRotationAlgorithm(static_cast<Item*>(getSelectedItem())->algo());
+  }
+
+private:
+  class Item : public ListItem {
+  public:
+    Item(const std::string& text, RotationAlgorithm algo) :
+      ListItem(text),
+      m_algo(algo) {
+    }
+
+    RotationAlgorithm algo() const { return m_algo; }
+
+  private:
+    RotationAlgorithm m_algo;
+  };
+};
+
 ContextBar::ContextBar()
   : Box(JI_HORIZONTAL)
 {
@@ -386,6 +420,8 @@ ContextBar::ContextBar()
   addChild(m_selectionOptionsBox = new HBox());
   m_selectionOptionsBox->addChild(new Label("Transparent Color:"));
   m_selectionOptionsBox->addChild(m_transparentColor = new TransparentColorField);
+  m_selectionOptionsBox->addChild(new Label("Algorithm:"));
+  m_selectionOptionsBox->addChild(m_rotAlgo = new RotAlgorithmField());
 
   TooltipManager* tooltipManager = new TooltipManager();
   addChild(tooltipManager);

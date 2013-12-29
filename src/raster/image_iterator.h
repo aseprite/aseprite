@@ -447,6 +447,12 @@ namespace raster {
       return *this;
     }
 
+    ImageIteratorT& operator+=(int diff) {
+      while (diff-- > 0)
+        operator++();
+      return *this;
+    }
+
     ImageIteratorT operator++(int) {
       ImageIteratorT tmp(*this);
       operator++();

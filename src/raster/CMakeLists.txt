@@ -32,5 +32,6 @@ add_library(raster-lib
   quantization.cpp
   rgbmap.cpp
   rotate.cpp
+  rotsprite.cpp
   sprite.cpp
   stock.cpp)

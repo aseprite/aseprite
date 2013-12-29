@@ -21,6 +21,7 @@
 
 #include "app/color.h"
 #include "app/settings/ink_type.h"
+#include "app/settings/rotation_algorithm.h"
 #include "raster/pen_type.h"
 
 namespace app {
@@ -57,6 +58,7 @@ namespace app {
     virtual ~SelectionSettingsObserver() {}
 
     virtual void onSetMoveTransparentColor(app::Color newColor) {}
+    virtual void onSetRotationAlgorithm(RotationAlgorithm algorithm) {}
   };
 
   class GlobalSettingsObserver {
