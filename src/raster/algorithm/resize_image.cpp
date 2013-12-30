@@ -150,7 +150,7 @@ void resize_image(const Image* src, Image* dst, ResizeMethod method, const Palet
 
 void fixup_image_transparent_colors(Image* image)
 {
-  int x, y, u, v;
+  int x, y;
 
   switch (image->getPixelFormat()) {
 
@@ -168,20 +168,17 @@ void fixup_image_transparent_colors(Image* image)
             count = 0;
             r = g = b = 0;
 
-            LockImageBits<RgbTraits>::iterator it2 =
-              bits.begin_area(gfx::Rect(x-1, y-1, 3, 3));
+            gfx::Rect area = gfx::Rect(x-1, y-1, 3, 3).createIntersect(image->getBounds());
+            LockImageBits<RgbTraits>::iterator it2 = bits.begin_area(area);
+            LockImageBits<RgbTraits>::iterator end2 = bits.end_area(area);
 
-            for (v=y-1; v<=y+1; ++v) {
-              for (u=x-1; u<=x+1; ++u, ++it2) {
-                if ((u >= 0) && (v >= 0) && (u < image->getWidth()) && (v < image->getHeight())) {
-                  c = *it2;
-                  if (rgba_geta(c) > 0) {
-                    r += rgba_getr(c);
-                    g += rgba_getg(c);
-                    b += rgba_getb(c);
-                    ++count;
-                  }
-                }
+            for (; it2 != end2; ++it2) {
+              c = *it2;
+              if (rgba_geta(c) > 0) {
+                r += rgba_getr(c);
+                g += rgba_getg(c);
+                b += rgba_getb(c);
+                ++count;
               }
             }
 
@@ -211,18 +208,15 @@ void fixup_image_transparent_colors(Image* image)
             count = 0;
             k = 0;
 
-            LockImageBits<GrayscaleTraits>::iterator it2 =
-              bits.begin_area(gfx::Rect(x-1, y-1, 3, 3));
+            gfx::Rect area = gfx::Rect(x-1, y-1, 3, 3).createIntersect(image->getBounds());
+            LockImageBits<GrayscaleTraits>::iterator it2 = bits.begin_area(area);
+            LockImageBits<GrayscaleTraits>::iterator end2 = bits.end_area(area);
 
-            for (v=y-1; v<=y+1; ++v) {
-              for (u=x-1; u<=x+1; ++u, ++it2) {
-                if ((u >= 0) && (v >= 0) && (u < image->getWidth()) && (v < image->getHeight())) {
-                  c = *it2;
-                  if (graya_geta(c) > 0) {
-                    k += graya_getv(c);
-                    ++count;
-                  }
-                }
+            for (; it2 != end2; ++it2) {
+              c = *it2;
+              if (graya_geta(c) > 0) {
+                k += graya_getv(c);
+                ++count;
               }
             }
 
