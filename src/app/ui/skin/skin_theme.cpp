@@ -2196,7 +2196,7 @@ void SkinTheme::draw_bounds_template(Graphics* g, const Rect& rc,
   }
 }
 
-void SkinTheme::draw_bounds_array(BITMAP* bmp, int x1, int y1, int x2, int y2, int parts[8])
+void SkinTheme::draw_bounds_array(ui::Graphics* g, const gfx::Rect& rc, int parts[8])
 {
   int nw = parts[0];
   int n  = parts[1];
@@ -2208,9 +2208,9 @@ void SkinTheme::draw_bounds_array(BITMAP* bmp, int x1, int y1, int x2, int y2, i
   int w  = parts[7];
 
   set_alpha_blender();
-  draw_bounds_template(bmp, x1, y1, x2, y2,
-                       nw, n, ne, e,
-                       se, s, sw, w);
+  draw_bounds_template(g, rc,
+    nw, n, ne, e,
+    se, s, sw, w);
 }
 
 void SkinTheme::draw_bounds_nw(BITMAP* bmp, int x1, int y1, int x2, int y2, int nw, ui::Color bg)
@@ -2375,6 +2375,23 @@ void SkinTheme::drawProgressBar(BITMAP* bmp, int x1, int y1, int x2, int y2, flo
   if (1+u < w-2)
     rectfill(bmp, x1+u+1, y1+1, x2-1, y2-1,
              ui::to_system(getColor(ThemeColor::Background)));
+}
+
+void SkinTheme::paintProgressBar(ui::Graphics* g, const gfx::Rect& rc0, float progress)
+{
+  g->drawRect(getColor(ThemeColor::Text), rc0);
+
+  gfx::Rect rc = rc0;
+  rc.shrink(1);
+
+  int u = (int)((float)rc.w*progress);
+  u = MID(0, u, rc.w);
+
+  if (u > 0)
+    g->fillRect(getColor(ThemeColor::Selected), gfx::Rect(rc.x, rc.y, u, rc.h));
+
+  if (1+u < rc.w)
+    g->fillRect(getColor(ThemeColor::Background), gfx::Rect(rc.x+u, rc.y, rc.w-u, rc.h));
 }
 
 void SkinTheme::paintIcon(Widget* widget, Graphics* g, IButtonIcon* iconInterface, int x, int y)

@@ -77,6 +77,15 @@ void Graphics::drawVLine(ui::Color color, int x, int y, int h)
         m_dy+y+h-1, to_system(color));
 }
 
+void Graphics::drawLine(ui::Color color, const gfx::Point& a, const gfx::Point& b)
+{
+  line(m_bmp,
+    m_dx+a.x,
+    m_dy+a.y,
+    m_dx+b.x,
+    m_dy+b.y, to_system(color));
+}
+
 void Graphics::drawRect(ui::Color color, const gfx::Rect& rc)
 {
   rect(m_bmp,

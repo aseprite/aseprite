@@ -32,6 +32,7 @@ namespace ui {
 
     void drawHLine(ui::Color color, int x, int y, int w);
     void drawVLine(ui::Color color, int x, int y, int h);
+    void drawLine(ui::Color color, const gfx::Point& a, const gfx::Point& b);
 
     void drawRect(ui::Color color, const gfx::Rect& rc);
     void fillRect(ui::Color color, const gfx::Rect& rc);

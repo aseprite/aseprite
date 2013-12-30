@@ -152,6 +152,8 @@ StatusBar::StatusBar()
 {
   m_instance = this;
 
+  setDoubleBuffered(true);
+
 #define BUTTON_NEW(name, text, action)                                  \
   {                                                                     \
     (name) = new Button(text);                                          \
@@ -174,7 +176,7 @@ StatusBar::StatusBar()
 
   // The extra pixel in left and right borders are necessary so
   // m_commandsBox and m_movePixelsBox do not overlap the upper-left
-  // and upper-right pixels drawn in kPaintMessage message (see putpixels)
+  // and upper-right pixels drawn in onPaint() event (see putpixels)
   jwidget_set_border(this, 1*jguiscale(), 0, 1*jguiscale(), 0);
 
   // Construct the commands box
@@ -427,111 +429,6 @@ bool StatusBar::onProcessMessage(Message* msg)
 {
   switch (msg->type()) {
 
-    case kPaintMessage: {
-      gfx::Rect clip = static_cast<PaintMessage*>(msg)->rect();
-      SkinTheme* theme = static_cast<SkinTheme*>(this->getTheme());
-      ui::Color text_color = theme->getColor(ThemeColor::Text);
-      ui::Color face_color = theme->getColor(ThemeColor::Face);
-      Rect rc = getBounds();
-      BITMAP* doublebuffer = create_bitmap(clip.w, clip.h);
-      rc.offset(-clip.x, -clip.y);
-
-      clear_to_color(doublebuffer, to_system(face_color));
-
-      rc.shrink(Border(2*jguiscale(), 1*jguiscale(),
-                       2*jguiscale(), 2*jguiscale()));
-
-      int x = rc.x + 4*jguiscale();
-
-      // Color
-      if (m_state == SHOW_COLOR) {
-        // Draw eyedropper icon
-        BITMAP* icon = theme->get_toolicon("eyedropper");
-        if (icon) {
-          set_alpha_blender();
-          draw_trans_sprite(doublebuffer, icon,
-                            x, rc.y + rc.h/2 - icon->h/2);
-
-          x += icon->w + 4*jguiscale();
-        }
-
-        // Draw color
-        draw_color_button(doublebuffer, Rect(x, rc.y, 32*jguiscale(), rc.h),
-                          true, true, true, true,
-                          true, true, true, true,
-                          app_get_current_pixel_format(), m_color,
-                          false, false);
-
-        x += (32+4)*jguiscale();
-
-        // Draw color description
-        std::string str = m_color.toHumanReadableString(app_get_current_pixel_format(),
-                                                        app::Color::LongHumanReadableString);
-        if (m_alpha < 255) {
-          char buf[512];
-          usprintf(buf, ", Alpha %d", m_alpha);
-          str += buf;
-        }
-
-        textout_ex(doublebuffer, this->getFont(), str.c_str(),
-                   x, rc.y + rc.h/2 - text_height(this->getFont())/2,
-                   to_system(text_color), -1);
-
-        x += ji_font_text_len(this->getFont(), str.c_str()) + 4*jguiscale();
-      }
-
-      // Show tool
-      if (m_state == SHOW_TOOL) {
-        // Draw eyedropper icon
-        BITMAP* icon = theme->get_toolicon(m_tool->getId().c_str());
-        if (icon) {
-          set_alpha_blender();
-          draw_trans_sprite(doublebuffer, icon, x, rc.y + rc.h/2 - icon->h/2);
-          x += icon->w + 4*jguiscale();
-        }
-      }
-
-      // Status bar text
-      if (getTextSize() > 0) {
-        textout_ex(doublebuffer, getFont(), getText().c_str(),
-                   x,
-                   rc.y + rc.h/2 - text_height(getFont())/2,
-                   to_system(text_color), -1);
-
-        x += ji_font_text_len(getFont(), getText().c_str()) + 4*jguiscale();
-      }
-
-      // Draw progress bar
-      if (!m_progress.empty()) {
-        int width = 64;
-        int y1, y2;
-        int x = rc.x2() - (width+4);
-
-        y1 = rc.y;
-        y2 = rc.y2()-1;
-
-        for (ProgressList::iterator it = m_progress.begin(); it != m_progress.end(); ++it) {
-          Progress* progress = *it;
-
-          theme->drawProgressBar(doublebuffer,
-                                 x, y1, x+width-1, y2,
-                                 progress->getPos());
-
-          x -= width+4;
-        }
-      }
-
-      updateSubwidgetsVisibility();
-
-      blit(doublebuffer, ji_screen, 0, 0,
-           clip.x,
-           clip.y,
-           doublebuffer->w,
-           doublebuffer->h);
-      destroy_bitmap(doublebuffer);
-      return true;
-    }
-
     case kMouseEnterMessage: {
       updateSubwidgetsVisibility();
 
@@ -578,6 +475,90 @@ void StatusBar::onPreferredSize(PreferredSizeEvent& ev)
 {
   int s = 4*jguiscale() + jwidget_get_text_height(this) + 4*jguiscale();
   ev.setPreferredSize(Size(s, s));
+}
+
+void StatusBar::onPaint(ui::PaintEvent& ev)
+{
+  SkinTheme* theme = static_cast<SkinTheme*>(this->getTheme());
+  ui::Color text_color = theme->getColor(ThemeColor::Text);
+  ui::Color face_color = theme->getColor(ThemeColor::Face);
+  Rect rc = getClientBounds();
+  Graphics* g = ev.getGraphics();
+
+  g->fillRect(face_color, rc);
+
+  rc.shrink(Border(2, 1, 2, 2)*jguiscale());
+
+  int x = rc.x + 4*jguiscale();
+
+  // Color
+  if (m_state == SHOW_COLOR) {
+    // Draw eyedropper icon
+    BITMAP* icon = theme->get_toolicon("eyedropper");
+    if (icon) {
+      g->drawAlphaBitmap(icon, x, rc.y + rc.h/2 - icon->h/2);
+      x += icon->w + 4*jguiscale();
+    }
+
+    // Draw color
+    draw_color_button(g, gfx::Rect(x, rc.y, 32*jguiscale(), rc.h),
+      true, true, true, true,
+      true, true, true, true,
+      app_get_current_pixel_format(), m_color,
+      false, false);
+
+    x += (32+4)*jguiscale();
+
+    // Draw color description
+    std::string str = m_color.toHumanReadableString(app_get_current_pixel_format(),
+      app::Color::LongHumanReadableString);
+    if (m_alpha < 255) {
+      char buf[512];
+      usprintf(buf, ", Alpha %d", m_alpha);
+      str += buf;
+    }
+
+    g->drawString(str, text_color, ColorNone, false,
+      gfx::Point(x, rc.y + rc.h/2 - text_height(getFont())/2));
+
+    x += ji_font_text_len(getFont(), str.c_str()) + 4*jguiscale();
+  }
+
+  // Show tool
+  if (m_state == SHOW_TOOL) {
+    // Draw eyedropper icon
+    BITMAP* icon = theme->get_toolicon(m_tool->getId().c_str());
+    if (icon) {
+      g->drawAlphaBitmap(icon, x, rc.y + rc.h/2 - icon->h/2);
+      x += icon->w + 4*jguiscale();
+    }
+  }
+
+  // Status bar text
+  if (getTextSize() > 0) {
+    g->drawString(getText(), text_color, ColorNone, false,
+      gfx::Point(x, rc.y + rc.h/2 - text_height(getFont())/2));
+
+    x += ji_font_text_len(getFont(), getText().c_str()) + 4*jguiscale();
+  }
+
+  // Draw progress bar
+  if (!m_progress.empty()) {
+    int width = 64;
+    int x = rc.x2() - (width+4);
+
+    for (ProgressList::iterator it = m_progress.begin(); it != m_progress.end(); ++it) {
+      Progress* progress = *it;
+
+      theme->paintProgressBar(g,
+        gfx::Rect(x, rc.y, width, rc.h),
+        progress->getPos());
+
+      x -= width+4;
+    }
+  }
+
+  updateSubwidgetsVisibility();
 }
 
 bool StatusBar::CustomizedTipWindow::onProcessMessage(Message* msg)

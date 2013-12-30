@@ -165,34 +165,33 @@ void dotted_mode(int offset)
   drawing_mode(DRAW_MODE_COPY_PATTERN, pattern, 0, 0);
 }
 
-void rectgrid(BITMAP* bmp, int x1, int y1, int x2, int y2, int w, int h)
+static void rectgrid(ui::Graphics* g, const gfx::Rect& rc, const gfx::Size& tile)
 {
-  if (w < 1 || h < 1)
+  if (tile.w < 1 || tile.h < 1)
     return;
 
-  int x, y, u, v, c1, c2;
-
-  c1 = makecol_depth(bitmap_color_depth(bmp), 128, 128, 128);
-  c2 = makecol_depth(bitmap_color_depth(bmp), 192, 192, 192);
+  int x, y, u, v;
+  ui::Color c1 = ui::rgba(128, 128, 128);
+  ui::Color c2 = ui::rgba(192, 192, 192);
 
   u = 0;
   v = 0;
-  for (y=y1; y<=y2-h; y+=h) {
-    for (x=x1; x<=x2-w; x+=w)
-      rectfill(bmp, x, y, x+w-1, y+h-1, ((u++)&1)? c1: c2);
+  for (y=rc.y; y<rc.y2()-tile.h; y+=tile.h) {
+    for (x=rc.x; x<rc.x2()-tile.w; x+=tile.w)
+      g->fillRect(((u++)&1)? c1: c2, gfx::Rect(x, y, tile.w, tile.h));
 
-    if (x <= x2)
-      rectfill(bmp, x, y, x2, y+h-1, ((u++)&1)? c1: c2);
+    if (x < rc.x2())
+      g->fillRect(((u++)&1)? c1: c2, gfx::Rect(x, y, rc.x2()-x, tile.h));
 
     u = (++v);
   }
 
-  if (y <= y2) {
-    for (x=x1; x<=x2-w; x+=w)
-      rectfill(bmp, x, y, x+w-1, y2, ((u++)&1)? c1: c2);
+  if (y < rc.y2()) {
+    for (x=rc.x; x<rc.x2()-tile.w; x+=tile.w)
+      g->fillRect(((u++)&1)? c1: c2, gfx::Rect(x, y, tile.w, rc.y2()-y));
 
-    if (x <= x2)
-      rectfill(bmp, x, y, x2, y2, ((u++)&1)? c1: c2);
+    if (x < rc.x2())
+      g->fillRect(((u++)&1)? c1: c2, gfx::Rect(x, y, rc.x2()-x, rc.y2()-y));
   }
 }
 
@@ -208,28 +207,29 @@ void draw_emptyset_symbol(BITMAP* bmp, const Rect& rc, ui::Color color)
        center.x+size/2, center.y-size/2, ui::to_system(color));
 }
 
-void draw_color(BITMAP* bmp, const Rect& rc, PixelFormat pixelFormat, const app::Color& color)
+static void draw_color(ui::Graphics* g, const Rect& rc, PixelFormat pixelFormat, const app::Color& color)
 {
-  if (rc.w <= 0 || rc.h <= 0)
+  if (rc.w < 1 || rc.h < 1)
     return;
 
   app::Color::Type type = color.getType();
   BITMAP* graph;
 
   if (type == app::Color::MaskType) {
-    rectgrid(bmp, rc.x, rc.y, rc.x+rc.w-1, rc.y+rc.h-1, rc.w/4, rc.h/2);
+    rectgrid(g, rc, gfx::Size(rc.w/4, rc.h/2));
     return;
   }
   else if (type == app::Color::IndexType) {
     int index = color.getIndex();
 
     if (index >= 0 && index < get_current_palette()->size()) {
-      rectfill(bmp, rc.x, rc.y, rc.x+rc.w-1, rc.y+rc.h-1,
-               color_utils::color_for_allegro(color, bitmap_color_depth(bmp)));
+      g->fillRect(color_utils::color_for_ui(color), rc);
     }
     else {
-      rectfill(bmp, rc.x, rc.y, rc.x+rc.w-1, rc.y+rc.h-1, makecol(0, 0, 0));
-      line(bmp, rc.x+rc.w-2, rc.y+1, rc.x+1, rc.y+rc.h-2, makecol(255, 255, 255));
+      g->fillRect(ui::rgba(0, 0, 0), rc);
+      g->drawLine(ui::rgba(255, 255, 255),
+        gfx::Point(rc.x+rc.w-2, rc.y+1),
+        gfx::Point(rc.x+1, rc.y+rc.h-2));
     }
     return;
   }
@@ -237,9 +237,11 @@ void draw_color(BITMAP* bmp, const Rect& rc, PixelFormat pixelFormat, const app:
   switch (pixelFormat) {
 
     case IMAGE_INDEXED:
-      rectfill(bmp, rc.x, rc.y, rc.x+rc.w-1, rc.y+rc.h-1,
-               color_utils::color_for_allegro(app::Color::fromIndex(color_utils::color_for_image(color, pixelFormat)),
-                                              bitmap_color_depth(bmp)));
+      g->fillRect(
+        color_utils::color_for_ui(
+          app::Color::fromIndex(
+            color_utils::color_for_image(color, pixelFormat))),
+        rc);
       break;
 
     case IMAGE_RGB:
@@ -248,7 +250,7 @@ void draw_color(BITMAP* bmp, const Rect& rc, PixelFormat pixelFormat, const app:
         return;
 
       {
-        int rgb_bitmap_color = color_utils::color_for_image(color, pixelFormat);
+        raster::color_t rgb_bitmap_color = color_utils::color_for_image(color, pixelFormat);
         app::Color color2 = app::Color::fromRgb(rgba_getr(rgb_bitmap_color),
                                                 rgba_getg(rgb_bitmap_color),
                                                 rgba_getb(rgb_bitmap_color));
@@ -256,7 +258,7 @@ void draw_color(BITMAP* bmp, const Rect& rc, PixelFormat pixelFormat, const app:
                  color_utils::color_for_allegro(color2, 32));
       }
 
-      blit(graph, bmp, 0, 0, rc.x, rc.y, rc.w, rc.h);
+      g->blit(graph, 0, 0, rc.x, rc.y, rc.w, rc.h);
 
       destroy_bitmap(graph);
       break;
@@ -273,14 +275,14 @@ void draw_color(BITMAP* bmp, const Rect& rc, PixelFormat pixelFormat, const app:
                  color_utils::color_for_allegro(color2, 32));
       }
 
-      blit(graph, bmp, 0, 0, rc.x, rc.y, rc.w, rc.h);
+      g->blit(graph, 0, 0, rc.x, rc.y, rc.w, rc.h);
 
       destroy_bitmap(graph);
       break;
   }
 }
 
-void draw_color_button(BITMAP* bmp,
+void draw_color_button(ui::Graphics* g,
                        const Rect& rc,
                        bool outer_nw, bool outer_n, bool outer_ne, bool outer_e,
                        bool outer_se, bool outer_s, bool outer_sw, bool outer_w,
@@ -290,11 +292,11 @@ void draw_color_button(BITMAP* bmp,
   int scale = ui::jguiscale();
 
   // Draw background (the color)
-  draw_color(bmp,
-             Rect(rc.x+1*scale,
-                  rc.y+1*scale,
-                  rc.w-((outer_e) ? 2*scale: 1*scale),
-                  rc.h-((outer_s) ? 2*scale: 1*scale)), pixelFormat, color);
+  draw_color(g,
+    Rect(rc.x+1*scale,
+      rc.y+1*scale,
+      rc.w-((outer_e) ? 2*scale: 1*scale),
+      rc.h-((outer_s) ? 2*scale: 1*scale)), pixelFormat, color);
 
   // Draw opaque border
   {
@@ -308,16 +310,14 @@ void draw_color_button(BITMAP* bmp,
       outer_sw ? PART_COLORBAR_2_SW: (outer_s ? PART_COLORBAR_3_SW: PART_COLORBAR_1_SW),
       outer_w  ? PART_COLORBAR_0_W : PART_COLORBAR_1_W,
     };
-    theme->draw_bounds_array(bmp, rc.x, rc.y, rc.x+rc.w-1, rc.y+rc.h-1, parts);
+    theme->draw_bounds_array(g, rc, parts);
   }
 
   // Draw hot
   if (hot) {
-    theme->draw_bounds_nw(bmp,
-                          rc.x, rc.y,
-                          rc.x+rc.w-1,
-                          rc.y+rc.h-1 - (outer_s ? 1*scale: 0),
-                          PART_COLORBAR_BORDER_HOTFG_NW);
+    theme->draw_bounds_nw(g,
+      gfx::Rect(rc.x, rc.y, rc.w, rc.h-1 - (outer_s ? 1*scale: 0)),
+      PART_COLORBAR_BORDER_HOTFG_NW);
   }
 }
 

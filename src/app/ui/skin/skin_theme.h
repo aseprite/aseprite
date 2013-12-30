@@ -165,7 +165,7 @@ namespace app {
       gfx::Size get_part_size(int part_i) const;
 
       // helper functions to draw bounds/hlines with sheet parts
-      void draw_bounds_array(BITMAP* bmp, int x1, int y1, int x2, int y2, int parts[8]);
+      void draw_bounds_array(ui::Graphics* g, const gfx::Rect& rc, int parts[8]);
       void draw_bounds_nw(BITMAP* bmp, int x1, int y1, int x2, int y2, int nw, ui::Color bg = ui::ColorNone);
       void draw_bounds_nw(ui::Graphics* g, const gfx::Rect& rc, int nw, ui::Color bg = ui::ColorNone);
       void draw_bounds_nw(ui::Graphics* g, const gfx::Rect& rc, const SkinPartPtr skinPart, ui::Color bg = ui::ColorNone);
@@ -181,6 +181,7 @@ namespace app {
       }
 
       void drawProgressBar(BITMAP* bmp, int x1, int y1, int x2, int y2, float progress);
+      void paintProgressBar(ui::Graphics* g, const gfx::Rect& rc, float progress);
 
       Style* getStyle(const std::string& id) {
         return m_stylesheet.getStyle(id);

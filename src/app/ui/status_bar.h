@@ -86,6 +86,7 @@ namespace app {
     bool onProcessMessage(ui::Message* msg) OVERRIDE;
     void onResize(ui::ResizeEvent& ev) OVERRIDE;
     void onPreferredSize(ui::PreferredSizeEvent& ev) OVERRIDE;
+    void onPaint(ui::PaintEvent& ev) OVERRIDE;
 
   private:
     void onCurrentToolChange();
