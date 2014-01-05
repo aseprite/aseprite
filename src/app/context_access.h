@@ -77,7 +77,7 @@ namespace app {
   class ContextReader : public ContextAccess<DocumentReader> {
   public:
     ContextReader(const Context* context)
-      : ContextAccess(context) {
+      : ContextAccess<DocumentReader>(context) {
     }
   };
 
@@ -86,11 +86,11 @@ namespace app {
   class ContextWriter : public ContextAccess<DocumentWriter> {
   public:
     ContextWriter(const Context* context)
-      : ContextAccess(context) {
+      : ContextAccess<DocumentWriter>(context) {
     }
 
     ContextWriter(const ContextReader& reader)
-      : ContextAccess(reader.context(), reader.document()) {
+      : ContextAccess<DocumentWriter>(reader.context(), reader.document()) {
     }
   };
 

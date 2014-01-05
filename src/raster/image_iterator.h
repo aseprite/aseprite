@@ -486,11 +486,15 @@ namespace raster {
                                                             uint8_t*,
                                                             BitPixelAccess&> {
   public:
+    typedef ImageIteratorT<BitmapTraits,
+                           uint8_t*,
+                           BitPixelAccess&> Base;
+
     ImageIterator() {
     }
 
     ImageIterator(const Image* image, const gfx::Rect& bounds, int x, int y) :
-      ImageIteratorT(image, bounds, x, y) {
+      Base(image, bounds, x, y) {
     }
   };
 
@@ -499,11 +503,15 @@ namespace raster {
                                                                  uint8_t const*,
                                                                  const BitPixelAccess&> {
   public:
+    typedef ImageIteratorT<BitmapTraits,
+                           uint8_t const*,
+                           const BitPixelAccess&> Base;
+
     ImageConstIterator() {
     }
 
     ImageConstIterator(const Image* image, const gfx::Rect& bounds, int x, int y) :
-      ImageIteratorT(image, bounds, x, y) {
+      Base(image, bounds, x, y) {
     }
   };
 
